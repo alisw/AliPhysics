@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
-nev=10000
+nev=-1
 noanal=0
 nodraw=0
 rebin=1
@@ -35,7 +35,7 @@ Options:
 	-t,--trigger TYPE       Select trigger TYPE        ($type)
 	-e,--energy CMS         Center of mass energy      ($cms)
 	-b,--batch              Do batch processing        ($batch)
-	-P,--proof		Run in PROOF(Lite) mode    ($proof)
+	-P,--proof NWORKERS	Run in PROOF(Lite) mode    ($proof)
 	-M,--mc			Run over MC data           ($mc)
 	-S,--title STRING       Set the title string       ($tit)
 	-g,--gdb		Run in GDB mode    	   ($gdb)
@@ -48,6 +48,7 @@ TYPE is a comma or space separated list of
   INEL>0      As above + N_ch > 0 in -0.5<eta<+0.5
   NSD         Non-single diffractive ((VOA&VOC)|N_ch > 5 -1.9<eta<+1.9)
 
+If NWORKERS is 0, then the analysis will be run in local mode. 
 EOF
 }
 
@@ -64,7 +65,7 @@ while test $# -gt 0 ; do
 	-2|--pass2)          noanal=`toggle $noanal`   ;; 
 	-1|--pass1)          nodraw=`toggle $nodraw`   ;; 
 	-b|--batch)          batch=`toggle $batch`   ;; 
-	-P|--proof)          proof=`toggle $proof`   ;; 
+	-P|--proof)          proof=$2	      ; shift ;; 
 	-M|--mc)             mc=`toggle $mc`   ;; 
 	-g|--gdb)            gdb=`toggle $gdb`   ;; 
 	-H|--hhd)            hhd=`toggle $hhd`   ;; 
@@ -82,7 +83,11 @@ while test $# -gt 0 ; do
     shift
 done 
 
-base=`printf dndeta_%07d $nev`
+if test $nev -lt 0 ; then 
+    base=dndeta_xxxxxxx
+else 
+    base=`printf dndeta_%07d $nev`
+fi
 opts="-l -x"
 opts1=""
 redir=
@@ -120,9 +125,6 @@ fi
 
 if test $nodraw -lt 1 ; then
     rm -f result.root 
-    if test "x$tit" = "x" ; then 
-	tit="$nev events, v_{z}#in[$vzmin,$vzmax], $type"
-    fi
     tit=`echo $tit | tr ' ' '@'` 
     echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,$hhd,$comp\)"
     aliroot ${opts} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)

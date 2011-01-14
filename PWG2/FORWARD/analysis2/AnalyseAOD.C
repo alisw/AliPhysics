@@ -73,6 +73,11 @@ public:
   Int_t              fNAccepted;
   /** Number of events accepted */
   Int_t              fNAll;
+  /** Min vertex */
+  Double_t           fVtxMin;
+  /** Max vertex */
+  Double_t           fVtxMax;
+  
     
   //__________________________________________________________________
   /** 
@@ -151,9 +156,11 @@ public:
 		      vzMin < 0 ? 'm' : 'p', Int_t(TMath::Abs(vzMin)+.5), 
 		      vzMax < 0 ? 'm' : 'p', Int_t(TMath::Abs(vzMax)+.5), 
 		      rebin, trgName.Data());
-    fTitle = title;
+    fTitle  = title;
+    fVtxMin = vzMin;
+    fVtxMax = vzMax;
     if (!Open(file, outName)) return kFALSE;
-    if (!Process(vzMin,vzMax,mask)) return kFALSE;
+    if (!Process(mask)) return kFALSE;
     if (!Finish(rebin, mask, energy,doHHD,doComp)) return kFALSE;
 
     return kTRUE;
@@ -211,7 +218,7 @@ public:
    *
    * @return true on success, false otherwise 
    */
-  Bool_t Process(Double_t vzMin, Double_t vzMax, Int_t mask) 
+  Bool_t Process(Int_t mask) 
   {
     fNTriggered       = 0;                    // # of triggered ev.
     fNWithVertex      = 0;                    // # of ev. w/vertex
@@ -275,7 +282,7 @@ public:
       fNWithVertex++;
 
       // Select vertex range (in centimeters) 
-      if (!fAOD->InRange(vzMin, vzMax)) continue; 
+      if (!fAOD->InRange(fVtxMin, fVtxMax)) continue; 
       fNAccepted++;
  
       // Add contribution from this event
@@ -472,7 +479,8 @@ public:
     // Info("DrawIt", "Setting maximum to %f", max);
     stack->SetMinimum(ratios ? -0.1 : 0);
     stack->SetMaximum(max);
-    FixAxis(stack, 1/(1-yd)/1.5, "#frac{1}{N} #frac{dN_{ch}}{#eta}");
+    FixAxis(stack, 1/(1-yd)/1.5, 
+	    "#frac{1}{#it{N}} #frac{#it{dN}_{ch}}{#it{d#eta}}");
     p1->Clear();
     stack->DrawClone("nostack e1");
 
@@ -502,21 +510,39 @@ public:
     tit->Draw();
 
     // Put a nice label in the plot 
+    TString eS;
+    if (energy > 1000) eS = Form("%4.2fTeV", float(energy)/1000);
+    else               eS = Form("%3dGeV", energy);
     TLatex* tt = new TLatex(.93, .93, 
-			    Form("#sqrt{s}=%dGeV, %s", energy,
+			    Form("#sqrt{s}=%s, %s", eS.Data(),
 				 AliAODForwardMult::GetTriggerString(mask)));
     tt->SetNDC();
     tt->SetTextFont(132);
     tt->SetTextAlign(33);
     tt->Draw();
 
-    // Mark the plot as preliminary 
-    TLatex* pt = new TLatex(.93, .88, "Preliminary");
+    // Put number of accepted events on the plot 
+    TLatex* et = new TLatex(.93, .83, Form("%d events", fNAccepted));
+    et->SetNDC();
+    et->SetTextFont(132);
+    et->SetTextAlign(33);
+    et->Draw();
+
+    // Put number of accepted events on the plot 
+    TLatex* vt = new TLatex(.93, .88, 
+			    Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin, fVtxMax));
+    vt->SetNDC();
+    vt->SetTextFont(132);
+    vt->SetTextAlign(33);
+    vt->Draw();
+
+    // Mark the plot as preliminary
+    TLatex* pt = new TLatex(.12, .93, "Preliminary");
     pt->SetNDC();
     pt->SetTextFont(22);
     pt->SetTextSize(0.07);
     pt->SetTextColor(kRed+1);
-    pt->SetTextAlign(33);
+    pt->SetTextAlign(13);
     pt->Draw();
     c->cd();
 

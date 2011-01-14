@@ -151,40 +151,19 @@ AliForwardMultiplicityTask::InitializeSubs()
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
+  UInt_t what = AliForwardCorrectionManager::kAll;
+  if (!fEnableLowFlux) 
+    what ^= AliForwardCorrectionManager::kDoubleHit;
+  if (!fCorrections.IsUseMergingEfficiency())
+    what ^= AliForwardCorrectionManager::kMergingEfficiency;
+
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   fcm.Init(fEventInspector.GetCollisionSystem(), 
 	   fEventInspector.GetEnergy(),
-	   fEventInspector.GetField());
-  // Check that we have the energy loss fits, needed by 
-  //   AliFMDSharingFilter 
-  //   AliFMDDensityCalculator 
-  if (!fcm.GetELossFit()) { 
-    AliFatal(Form("No energy loss fits"));
-    return;
-  }
-  // Check that we have the double hit correction - (optionally) used by 
-  //  AliFMDDensityCalculator 
-  if (!fcm.GetDoubleHit()) {
-    AliWarning("No double hit corrections"); 
-  }
-  // Check that we have the secondary maps, needed by 
-  //   AliFMDCorrections 
-  //   AliFMDHistCollector
-  if (!fcm.GetSecondaryMap()) {
-    AliFatal("No secondary corrections");
-    return;
-  }
-  // Check that we have the vertex bias correction, needed by 
-  //   AliFMDCorrections 
-  if (!fcm.GetVertexBias()) { 
-    AliFatal("No event vertex bias corrections");
-    return;
-  }
-  // Check that we have the merging efficiencies, optionally used by 
-  //   AliFMDCorrections 
-  if (!fcm.GetMergingEfficiency()) {
-    AliWarning("No merging efficiencies");
-  }
+	   fEventInspector.GetField(),
+	   false,
+	   what);
+  if (!CheckCorrections(what)) return;
 
 
   const TAxis* pe = fcm.GetEtaAxis();
@@ -202,6 +181,7 @@ AliForwardMultiplicityTask::InitializeSubs()
 
   fEnergyFitter.Init(*pe);
   fEventInspector.Init(*pv);
+  fDensityCalculator.Init(*pe);
   fHistCollector.Init(*pv);
 
   this->Print();
@@ -394,26 +374,6 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   fSharingFilter.ScaleHistograms(list,hEventsTr->Integral());
   fDensityCalculator.ScaleHistograms(list,hEventsTrVtx->Integral());
   fCorrections.ScaleHistograms(list,hEventsTrVtx->Integral());
-}
-//____________________________________________________________________
-void
-AliForwardMultiplicityTask::Print(Option_t* option) const
-{
-  // 
-  // Print information 
-  // 
-  // Parameters:
-  //    option Not used
-  //
-  AliForwardMultiplicityBase::Print(option);
-  gROOT->IncreaseDirLevel();
-  fEventInspector   .Print(option);
-  fEnergyFitter     .Print(option);    
-  fSharingFilter    .Print(option);
-  fDensityCalculator.Print(option);
-  fCorrections      .Print(option);
-  fHistCollector    .Print(option);
-  gROOT->DecreaseDirLevel();
 }
 
 //

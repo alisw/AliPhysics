@@ -163,9 +163,9 @@ namespace {
     Double_t delta    = pp[AliForwardUtil::ELossFitter::kDelta];
     Double_t xi       = pp[AliForwardUtil::ELossFitter::kXi];
     Double_t sigma    = pp[AliForwardUtil::ELossFitter::kSigma];
-    Double_t sigma_n  = pp[AliForwardUtil::ELossFitter::kSigmaN];
+    Double_t sigmaN   = pp[AliForwardUtil::ELossFitter::kSigmaN];
 
-    return constant * AliForwardUtil::LandauGaus(x, delta, xi, sigma, sigma_n);
+    return constant * AliForwardUtil::LandauGaus(x, delta, xi, sigma, sigmaN);
   }
 
   // 
@@ -178,11 +178,11 @@ namespace {
     Double_t delta     = pp[AliForwardUtil::ELossFitter::kDelta];
     Double_t xi        = pp[AliForwardUtil::ELossFitter::kXi];
     Double_t sigma     = pp[AliForwardUtil::ELossFitter::kSigma];
-    Double_t sigma_n   = pp[AliForwardUtil::ELossFitter::kSigmaN];
+    Double_t sigmaN    = pp[AliForwardUtil::ELossFitter::kSigmaN];
     Int_t     n        = Int_t(pp[AliForwardUtil::ELossFitter::kN]);
     Double_t* a        = &(pp[AliForwardUtil::ELossFitter::kA]);
 
-    return constant * AliForwardUtil::NLandauGaus(x, delta, xi, sigma, sigma_n,
+    return constant * AliForwardUtil::NLandauGaus(x, delta, xi, sigma, sigmaN,
 						  n, a);
   }
   // 
@@ -195,10 +195,10 @@ namespace {
     Double_t delta     = pp[AliForwardUtil::ELossFitter::kDelta];
     Double_t xi        = pp[AliForwardUtil::ELossFitter::kXi];
     Double_t sigma     = pp[AliForwardUtil::ELossFitter::kSigma];
-    Double_t sigma_n   = pp[AliForwardUtil::ELossFitter::kSigmaN];
+    Double_t sigmaN    = pp[AliForwardUtil::ELossFitter::kSigmaN];
     Int_t    i         = Int_t(pp[AliForwardUtil::ELossFitter::kN]);
 
-    return constant * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigma_n,i);
+    return constant * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigmaN,i);
   }
 
 
@@ -230,7 +230,7 @@ AliForwardUtil::Landau(Double_t x, Double_t delta, Double_t xi)
 //____________________________________________________________________
 Double_t 
 AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
-			   Double_t sigma, Double_t sigma_n)
+			   Double_t sigma, Double_t sigmaN)
 {
   // 
   // Calculate the value of a Landau convolved with a Gaussian 
@@ -266,8 +266,8 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
   //    @f$ f@f$ evaluated at @f$ x@f$.  
   //
   Double_t deltap = delta - xi * mpshift;
-  Double_t sigma2 = sigma_n*sigma_n + sigma*sigma;
-  Double_t sigma1 = sigma_n == 0 ? sigma : TMath::Sqrt(sigma2);
+  Double_t sigma2 = sigmaN*sigmaN + sigma*sigma;
+  Double_t sigma1 = sigmaN == 0 ? sigma : TMath::Sqrt(sigma2);
   Double_t xlow   = x - fgConvolutionNSigma * sigma1;
   Double_t xhigh  = x + fgConvolutionNSigma * sigma1;
   Double_t step   = (xhigh - xlow) / fgConvolutionSteps;
@@ -286,7 +286,7 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
 //____________________________________________________________________
 Double_t 
 AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
-			    Double_t sigma, Double_t sigma_n, Int_t i)
+			    Double_t sigma, Double_t sigmaN, Int_t i)
 {
   // 
   // Evaluate 
@@ -312,14 +312,14 @@ AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi,
   // Return:
   //    @f$ f_i @f$ evaluated
   //  
-  Double_t delta_i =  (i == 1 ? delta : i * (delta + xi * TMath::Log(i)));
-  Double_t xi_i    =  i * xi;
-  Double_t sigma_i =  (i == 1 ? sigma : TMath::Sqrt(Double_t(i))*sigma);
-  if (sigma_i < 1e-10) { 
+  Double_t deltaI =  (i == 1 ? delta : i * (delta + xi * TMath::Log(i)));
+  Double_t xiI    =  i * xi;
+  Double_t sigmaI =  (i == 1 ? sigma : TMath::Sqrt(Double_t(i))*sigma);
+  if (sigmaI < 1e-10) { 
     // Fall back to landau 
-    return AliForwardUtil::Landau(x, delta_i, xi_i);
+    return AliForwardUtil::Landau(x, deltaI, xiI);
   }
-  return AliForwardUtil::LandauGaus(x, delta_i, xi_i, sigma_i, sigma_n);
+  return AliForwardUtil::LandauGaus(x, deltaI, xiI, sigmaI, sigmaN);
 }
 
 //____________________________________________________________________
@@ -327,7 +327,7 @@ Double_t
 AliForwardUtil::IdLandauGausdPar(Double_t x, 
 				 UShort_t par,   Double_t dPar, 
 				 Double_t delta, Double_t xi, 
-				 Double_t sigma, Double_t sigma_n, 
+				 Double_t sigma, Double_t sigmaN, 
 				 Int_t    i)
 {
   // 
@@ -369,38 +369,38 @@ AliForwardUtil::IdLandauGausdPar(Double_t x,
   if (dPar == 0) return 0;
   Double_t dp      = dPar;
   Double_t d2      = dPar / 2;
-  Double_t delta_i =  i * (delta + xi * TMath::Log(i));
-  Double_t xi_i    =  i * xi;
+  Double_t deltaI  =  i * (delta + xi * TMath::Log(i));
+  Double_t xiI     =  i * xi;
   Double_t si      =  TMath::Sqrt(Double_t(i));
-  Double_t sigma_i =  si*sigma;
+  Double_t sigmaI  =  si*sigma;
   Double_t y1      = 0;
   Double_t y2      = 0;
   Double_t y3      = 0;
   Double_t y4      = 0;
   switch (par) {
   case 0: 
-    y1 = ILandauGaus(x, delta_i+i*dp, xi_i, sigma_i, sigma_n, i);
-    y2 = ILandauGaus(x, delta_i+i*d2, xi_i, sigma_i, sigma_n, i);
-    y3 = ILandauGaus(x, delta_i-i*d2, xi_i, sigma_i, sigma_n, i);
-    y4 = ILandauGaus(x, delta_i-i*dp, xi_i, sigma_i, sigma_n, i);
+    y1 = ILandauGaus(x, deltaI+i*dp, xiI, sigmaI, sigmaN, i);
+    y2 = ILandauGaus(x, deltaI+i*d2, xiI, sigmaI, sigmaN, i);
+    y3 = ILandauGaus(x, deltaI-i*d2, xiI, sigmaI, sigmaN, i);
+    y4 = ILandauGaus(x, deltaI-i*dp, xiI, sigmaI, sigmaN, i);
     break;
   case 1: 
-    y1 = ILandauGaus(x, delta_i, xi_i+i*dp, sigma_i, sigma_n, i);
-    y2 = ILandauGaus(x, delta_i, xi_i+i*d2, sigma_i, sigma_n, i);
-    y3 = ILandauGaus(x, delta_i, xi_i-i*d2, sigma_i, sigma_n, i);
-    y4 = ILandauGaus(x, delta_i, xi_i-i*dp, sigma_i, sigma_n, i);
+    y1 = ILandauGaus(x, deltaI, xiI+i*dp, sigmaI, sigmaN, i);
+    y2 = ILandauGaus(x, deltaI, xiI+i*d2, sigmaI, sigmaN, i);
+    y3 = ILandauGaus(x, deltaI, xiI-i*d2, sigmaI, sigmaN, i);
+    y4 = ILandauGaus(x, deltaI, xiI-i*dp, sigmaI, sigmaN, i);
     break;
   case 2: 
-    y1 = ILandauGaus(x, delta_i, xi_i, sigma_i+si*dp, sigma_n, i);
-    y2 = ILandauGaus(x, delta_i, xi_i, sigma_i+si*d2, sigma_n, i);
-    y3 = ILandauGaus(x, delta_i, xi_i, sigma_i-si*d2, sigma_n, i);
-    y4 = ILandauGaus(x, delta_i, xi_i, sigma_i-si*dp, sigma_n, i);
+    y1 = ILandauGaus(x, deltaI, xiI, sigmaI+si*dp, sigmaN, i);
+    y2 = ILandauGaus(x, deltaI, xiI, sigmaI+si*d2, sigmaN, i);
+    y3 = ILandauGaus(x, deltaI, xiI, sigmaI-si*d2, sigmaN, i);
+    y4 = ILandauGaus(x, deltaI, xiI, sigmaI-si*dp, sigmaN, i);
     break;
   case 3: 
-    y1 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n+dp, i);
-    y2 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n+d2, i);
-    y3 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n-d2, i);
-    y4 = ILandauGaus(x, delta_i, xi_i, sigma_i, sigma_n-dp, i);
+    y1 = ILandauGaus(x, deltaI, xiI, sigmaI, sigmaN+dp, i);
+    y2 = ILandauGaus(x, deltaI, xiI, sigmaI, sigmaN+d2, i);
+    y3 = ILandauGaus(x, deltaI, xiI, sigmaI, sigmaN-d2, i);
+    y4 = ILandauGaus(x, deltaI, xiI, sigmaI, sigmaN-dp, i);
     break;
   default:
     return 0;
@@ -417,7 +417,7 @@ AliForwardUtil::IdLandauGausdPar(Double_t x,
 //____________________________________________________________________
 Double_t 
 AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
-			    Double_t sigma, Double_t sigma_n, Int_t n, 
+			    Double_t sigma, Double_t sigmaN, Int_t n, 
 			    Double_t* a)
 {
   // 
@@ -449,9 +449,9 @@ AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi,
   // Return:
   //    @f$ f_N(x;\Delta,\xi,\sigma')@f$ 
   //
-  Double_t result = ILandauGaus(x, delta, xi, sigma, sigma_n, 1);
+  Double_t result = ILandauGaus(x, delta, xi, sigma, sigmaN, 1);
   for (Int_t i = 2; i <= n; i++) 
-    result += a[i-2] * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigma_n,i);
+    result += a[i-2] * AliForwardUtil::ILandauGaus(x,delta,xi,sigma,sigmaN,i);
   return result;
 }
 namespace { 
@@ -473,7 +473,7 @@ namespace {
 TF1*
 AliForwardUtil::MakeNLandauGaus(Double_t  c, 
 				Double_t  delta, Double_t xi, 
-				Double_t  sigma, Double_t sigma_n, Int_t n, 
+				Double_t  sigma, Double_t sigmaN, Int_t n, 
 				Double_t* a, 
 				Double_t  xmin, Double_t xmax)
 {
@@ -508,7 +508,7 @@ AliForwardUtil::MakeNLandauGaus(Double_t  c,
   landaun->SetParameter(AliForwardUtil::ELossFitter::kDelta,  delta);   
   landaun->SetParameter(AliForwardUtil::ELossFitter::kXi,     xi);      
   landaun->SetParameter(AliForwardUtil::ELossFitter::kSigma,  sigma);   
-  landaun->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigma_n); 
+  landaun->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigmaN); 
   landaun->FixParameter(AliForwardUtil::ELossFitter::kN,      n);       
 
   // Set the range and name of the scale parameters 
@@ -522,7 +522,7 @@ AliForwardUtil::MakeNLandauGaus(Double_t  c,
 TF1*
 AliForwardUtil::MakeILandauGaus(Double_t  c, 
 				Double_t  delta, Double_t xi, 
-				Double_t  sigma, Double_t sigma_n, Int_t i, 
+				Double_t  sigma, Double_t sigmaN, Int_t i, 
 				Double_t  xmin, Double_t xmax)
 {
   // 
@@ -554,7 +554,7 @@ AliForwardUtil::MakeILandauGaus(Double_t  c,
   landaui->SetParameter(AliForwardUtil::ELossFitter::kDelta,  delta);   
   landaui->SetParameter(AliForwardUtil::ELossFitter::kXi,     xi);      
   landaui->SetParameter(AliForwardUtil::ELossFitter::kSigma,  sigma);   
-  landaui->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigma_n); 
+  landaui->SetParameter(AliForwardUtil::ELossFitter::kSigmaN, sigmaN); 
   landaui->FixParameter(AliForwardUtil::ELossFitter::kN,      i);       
 
   return landaui;

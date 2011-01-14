@@ -30,6 +30,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fMaxParticles(5),
     fAccI(0),
     fAccO(0),
+    fFMD1iMax(0),
+    fFMD2iMax(0),
+    fFMD2oMax(0),
+    fFMD3iMax(0),
+    fFMD3oMax(0),
     fDebug(0)
 {
   // 
@@ -48,6 +53,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fMaxParticles(5),
     fAccI(0),
     fAccO(0),
+    fFMD1iMax(0),
+    fFMD2iMax(0),
+    fFMD2oMax(0),
+    fFMD3iMax(0),
+    fFMD3oMax(0),
     fDebug(0)
 {
   // 
@@ -91,6 +101,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fMaxParticles(o.fMaxParticles),
     fAccI(o.fAccI),
     fAccO(o.fAccO),
+    fFMD1iMax(o.fFMD1iMax),
+    fFMD2iMax(o.fFMD2iMax),
+    fFMD2oMax(o.fFMD2oMax),
+    fFMD3iMax(o.fFMD3iMax),
+    fFMD3oMax(o.fFMD3oMax),
     fDebug(o.fDebug)
 {
   // 
@@ -133,6 +148,11 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fMaxParticles = o.fMaxParticles;
   fAccI         = o.fAccI;
   fAccO         = o.fAccO;
+  fFMD1iMax     = o.fFMD1iMax;
+  fFMD2iMax     = o.fFMD2iMax;
+  fFMD2oMax     = o.fFMD2oMax;
+  fFMD3iMax     = o.fFMD3iMax;
+  fFMD3oMax     = o.fFMD3oMax;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -140,6 +160,17 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   while ((obj = next())) fRingHistos.Add(obj);
   
   return *this;
+}
+
+//____________________________________________________________________
+void
+AliFMDDensityCalculator::Init(const TAxis&)
+{
+  // Intialize this sub-algorithm 
+  //
+  // Parameters:
+  //   etaAxis   Not used
+  CacheMaxWeights();
 }
 
 //____________________________________________________________________
@@ -245,6 +276,81 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 }
 
 //_____________________________________________________________________
+Int_t
+AliFMDDensityCalculator::FindMaxWeight(AliFMDCorrELossFit* cor,
+				       UShort_t d, Char_t r, Int_t iEta) const
+{
+  AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
+  if (!fit) { 
+    // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
+    return -1;
+  }
+  return fit->FindMaxWeight();
+}
+  
+//_____________________________________________________________________
+void
+AliFMDDensityCalculator::CacheMaxWeights()
+{
+  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
+  AliFMDCorrELossFit*           cor = fcm.GetELossFit();
+  const TAxis&                  eta = cor->GetEtaAxis();
+
+  Int_t nEta = eta.GetNbins();
+  fFMD1iMax.Set(nEta);
+  fFMD2iMax.Set(nEta);
+  fFMD2oMax.Set(nEta);
+  fFMD3iMax.Set(nEta);
+  fFMD3oMax.Set(nEta);
+  
+  for (Int_t i = 0; i < nEta; i++) {
+    fFMD1iMax[i] = FindMaxWeight(cor, 1, 'I', i+1);
+    fFMD2iMax[i] = FindMaxWeight(cor, 2, 'I', i+1);
+    fFMD2oMax[i] = FindMaxWeight(cor, 2, 'O', i+1);
+    fFMD3iMax[i] = FindMaxWeight(cor, 3, 'I', i+1);
+    fFMD3oMax[i] = FindMaxWeight(cor, 3, 'O', i+1);
+  }
+}
+
+//_____________________________________________________________________
+Int_t
+AliFMDDensityCalculator::GetMaxWeight(UShort_t d, Char_t r, Int_t iEta) const
+{
+  if (iEta < 0) return -1;
+
+  const TArrayI* max  = 0;
+  switch (d) { 
+  case 1:  max = &fFMD1iMax;                                       break;
+  case 2:  max = (r == 'I' || r == 'i' ? &fFMD2iMax : &fFMD2oMax); break;
+  case 3:  max = (r == 'I' || r == 'i' ? &fFMD3iMax : &fFMD3oMax); break;
+  }
+  if (!max) { 
+    AliWarning(Form("No array for FMD%d%c", d, r));
+    return -1;
+  }
+  
+  if (iEta >= max->fN) { 
+    AliWarning(Form("Eta bin %3d out of bounds [0,%d]", 
+		    iEta, max->fN-1));
+    return -1;
+  }
+
+  AliDebug(30,Form("Max weight for FMD%d%c eta bin %3d: %d", d, r, iEta, 
+		   max->At(iEta)));
+  return max->At(iEta);
+}
+
+//_____________________________________________________________________
+Int_t
+AliFMDDensityCalculator::GetMaxWeight(UShort_t d, Char_t r, Float_t eta) const
+{
+  AliForwardCorrectionManager&  fcm  = AliForwardCorrectionManager::Instance();
+  Int_t                         iEta = fcm.GetELossFit()->FindEtaBin(eta) -1;
+
+  return GetMaxWeight(d, r, iEta);
+}
+
+//_____________________________________________________________________
 Float_t 
 AliFMDDensityCalculator::NParticles(Float_t  mult, 
 				    UShort_t d, 
@@ -281,7 +387,7 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
     return 0;
   }
   
-  Int_t    m   = fit->FindMaxWeight();
+  Int_t    m   = GetMaxWeight(d,r,eta); // fit->FindMaxWeight();
   if (m < 1) { 
     AliWarning(Form("No good fits for FMD%d%c at eta=%f", d, r, eta));
     return 0;
@@ -292,7 +398,7 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   if (fDebug > 10) {
     AliInfo(Form("FMD%d%c, eta=%7.4f, %8.5f -> %8.5f", d, r, eta, mult, ret));
   }
-
+  
   fWeightedSum->Fill(ret);
   fSumOfWeights->Fill(ret);
 
@@ -573,7 +679,7 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
 }
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::Print(Option_t*) const
+AliFMDDensityCalculator::Print(Option_t* option) const
 {
   // 
   // Print information 
@@ -581,13 +687,42 @@ AliFMDDensityCalculator::Print(Option_t*) const
   // Parameters:
   //    option Not used
   //
-  char ind[gROOT->GetDirLevel()+1];
+  char ind[gROOT->GetDirLevel()+3];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << ind << "AliFMDDensityCalculator: " << GetName() << '\n'
 	    << ind << " Multiplicity cut:       " << fMultCut << '\n'
 	    << ind << " Max(particles):         " << fMaxParticles 
 	    << std::endl;
+  TString opt(option);
+  opt.ToLower();
+  if (opt.Contains("nomax")) return;
+  
+  std::cout << ind << " Max weights:\n";
+
+  for (UShort_t d=1; d<=3; d++) { 
+    UShort_t nr = (d == 1 ? 1 : 2);
+    for (UShort_t q=0; q<nr; q++) { 
+      ind[gROOT->GetDirLevel()]   = ' ';
+      ind[gROOT->GetDirLevel()+1] = '\0';
+      Char_t      r = (q == 0 ? 'I' : 'O');
+      std::cout << ind << " FMD" << d << r << ":";
+      ind[gROOT->GetDirLevel()+1] = ' ';
+      ind[gROOT->GetDirLevel()+2] = '\0';
+      
+      const TArrayI& a = (d == 1 ? fFMD1iMax : 
+			  (d == 2 ? (r == 'I' ? fFMD2iMax : fFMD2oMax) : 
+			   (r == 'I' ? fFMD3iMax : fFMD3oMax)));
+      Int_t j = 0;
+      for (Int_t i = 0; i < a.fN; i++) { 
+	if (a.fArray[i] < 1) continue; 
+	if (j % 6 == 0)      std::cout << "\n " << ind;
+	j++;
+	std::cout << "  " << std::setw(3) << i << ": " << a.fArray[i];
+      }
+      std::cout << std::endl;
+    }
+  }
 }
 
 //====================================================================
