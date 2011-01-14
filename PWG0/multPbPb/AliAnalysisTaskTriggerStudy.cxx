@@ -32,7 +32,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskTriggerStudy)
 
 //const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC"};//,"C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND","V0OR","NTRACKS"};//,"C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -129,6 +129,29 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   GetHistoSPD1  ("All", "All events before any selection")->Fill(outerLayerSPD);
   GetHistoV0M   ("All", "All events before any selection")->Fill(multV0);
 
+  // V0 triggers
+  Bool_t c0v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
+  Bool_t c0v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
+  Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+  Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+
+  Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
+  Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
+  Bool_t v0BG  = v0ABG || v0CBG;
+
+  // At least one track in eta < 0.8 with pt > 0.5
+  static AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+  cuts->SetPtRange(0.5,10000);
+  cuts->SetEtaRange(-0.8, 0.8);
+  Bool_t atLeast1Track = cuts->CountAcceptedTracks(fESD) > 0;
+
+  Bool_t vdArray[kNVDEntries];
+  vdArray[kVDV0AND]    = c0v0A && c0v0C;
+  vdArray[kVDV0OR]     = c0v0A || c0v0C;
+  vdArray[kVDNTRACKS]  = atLeast1Track;
+
+  FillTriggerOverlaps("All", "All Events",vdArray);
+
 
   // Physics selection
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
@@ -180,16 +203,6 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0sm4 = nFastOrOffline >= 4;
   Bool_t c0sm5 = nFastOrOffline >= 5;
   
-  // V0 triggers
-  Bool_t c0v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
-  Bool_t c0v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
-  Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
-  Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
-
-  Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
-  Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
-  Bool_t v0BG  = v0ABG || v0CBG;
-
 
   // TOF triggers 
   // FIXME: move to triggeranalysis?
@@ -229,12 +242,8 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t cMBAC  = c0v0A && c0v0C;
   
 
-  Bool_t vdArray[kNVDEntries];
-  vdArray[kVDC0MBS1] = c0sm1;
-  vdArray[kVDC0MBS2] = c0sm2;
-  vdArray[kVDC0VBA]  = c0v0A;
-  vdArray[kVDC0VBC]  = c0v0C;
-  //vdArray[kVDC0OM2]  = c0OM2;
+
+
 
   // Plots requested by Jurgen on 18/11/2010 + later updates (including plots for the note)
   // FIXME: will skip everything else
