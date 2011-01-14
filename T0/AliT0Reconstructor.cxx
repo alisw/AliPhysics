@@ -278,7 +278,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
-  Double32_t timeDiff=999999, meanTime=999999, timeclock=999999;
+  Double32_t timeDiff=999999, meanTime=999999, timeclock=9999999;
   Float_t c = 29.9792458; // cm/ns
   Double32_t vertex = 9999999;
   Int_t onlineMean=0;
@@ -471,7 +471,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	 vertex =  meanVertex - c*(timeDiff)/2. ; //+ (fdZonA - fdZonC)/2; 
 	}
       }  //if phys event       
-      AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %f \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
+      AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %i \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
       frecpoints->SetT0clock(timeclock);
       frecpoints->SetVertex(vertex);
       frecpoints->SetMeanTime(meanTime);
@@ -516,7 +516,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t c = 0.0299792458; // cm/ps
   Float_t currentVertex=0, shift=0;
-  Int_t ncont=0;
+  Int_t ncont=-1;
   const AliESDVertex* vertex = pESD->GetPrimaryVertex();
   if (!vertex)        vertex = pESD->GetPrimaryVertexSPD();
   if (!vertex)        vertex = pESD->GetPrimaryVertexTPC();
@@ -529,7 +529,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
     ncont = vertex->GetNContributors();
     //  cout<<"@@ spdver "<<spdver<<" ncont "<<ncont<<endl;
-    if(ncont>2 ) {
+    if(ncont>0 ) {
       shift = currentVertex/c;
     }
   }
