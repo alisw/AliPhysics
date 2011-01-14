@@ -95,7 +95,6 @@ Int_t AddTaskJetsDelta(char *nonStdFile,UInt_t filterMask,Bool_t kUseAODMC,UInt_
 
 
 
-
 AliAnalysisTaskJets *AddTaskJets(Char_t *jr, Char_t *jf, Float_t radius,UInt_t filterMask,float ptTrackMin,int iBack)
 {
   // Creates a jet finder task, configures it and adds it to the analysis manager.
@@ -234,6 +233,13 @@ AliJetFinder *CreateJetFinder(Char_t *jf,Float_t radius){
     Double_t rBkg = 0.6;
     if(radius>0)jh->SetRparam(radius);
     jh->SetAlgorithm(2); // antikt from fastjet/JetDefinition.hh
+    /*
+      $FASTJET/include/fastjet/JetDefinition.hh
+      enum JetAlgorithm {kt_algorithm, cambridge_algorithm,
+      antikt_algorithm, genkt_algorithm,
+      ee_kt_algorithm, ee_genkt_algorithm, ...};
+
+     */
     jetFinder = new AliFastJetFinder();
     jh->SetPtMin(1);
     jh->SetRparamBkg(rBkg);
@@ -438,7 +444,7 @@ AliJetReader *CreateJetReader(Char_t *jr,UInt_t filterMask){
   case "AODextra":
     AliJetAODReaderHeader *jrh = new AliJetAODReaderHeader();
     jrh->SetComment("AOD Reader with extra branch");
-    jrh->SetPtCut(ptCut); // set low p_T cut of to 150 MeV
+    jrh->SetPtCut(ptCut); // set low p_T cut of to ptCut
     jrh->SetTestFilterMask(32); // Change this one for a different set of cuts
     jrh->SetReadBranches(AliJetAODReaderHeader::kReadStdBranch | AliJetAODReaderHeader::kReadNonStdBranch);
     jrh->SetNonStdBranch("aodExtraTracks");
