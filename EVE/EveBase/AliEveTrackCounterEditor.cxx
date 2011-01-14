@@ -225,9 +225,10 @@ AliEveTrackCounterEditor::~AliEveTrackCounterEditor()
 
 void AliEveTrackCounterEditor::UpdateModel()
 {
-  if (fGedEditor && fM && fGedEditor->GetModel() == fM->GetEditorObject("TEveElement::GetEditorObject"))
+  TEveException e;
+  if (fGedEditor && fM && fGedEditor->GetModel() == fM->GetEditorObject(e))
   {
-    SetModel(fM->GetEditorObject("TEveElement::GetEditorObject"));
+    SetModel(fM->GetEditorObject(e));
   }
 }
 
