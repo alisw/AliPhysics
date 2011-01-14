@@ -587,3 +587,34 @@ int AliHLTEsdManagerImplementation::CheckClassConditions() const
 
   return 0;
 }
+
+AliESDEvent* AliHLTEsdManagerImplementation::CreateEsdEvent(bool bCreateStdContent) const
+{
+  // create ESDEvent object and optionally initialize standard content
+  AliESDEvent* pESD=new AliESDEvent;
+  if (pESD && bCreateStdContent) pESD->CreateStdContent();
+  return pESD;
+}
+
+int AliHLTEsdManagerImplementation::AddObject(AliESDEvent* pESD, const TObject* pObject, const char* branchname) const
+{
+  // add object to the list of ESD contributors
+  if (!pESD || !pObject) return -EINVAL;
+  TObject* pESDObject=pESD->FindListObject(branchname);
+  if (pESDObject) {
+    // copy the content to the already existing object
+    pObject->Copy(*pESDObject);
+  } else {
+    // add a new object
+    pESD->AddObject(pObject->Clone());
+  }
+  return 0;
+}
+
+int AliHLTEsdManagerImplementation::ResetEsdEvent(AliESDEvent* pESD) const
+{
+  // reset the specified ESD object
+  if (!pESD) return -EINVAL;
+  pESD->Reset();
+  return 0;
+}
