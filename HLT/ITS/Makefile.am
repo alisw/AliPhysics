@@ -39,7 +39,8 @@ libAliHLTITS_la_SOURCES	= $(MODULE_SRCS)
 pkginclude_HEADERS		= $(MODULE_HDRS)
 
 # linker flags
-libAliHLTITS_la_LIBADD		= $(top_builddir)/TPCLib/libAliHLTTPC.la
+libAliHLTITS_la_LIBADD		= $(top_builddir)/TPCLib/libAliHLTTPC.la \
+				  $(top_builddir)/BASE/util/libAliHLTUtil.la
 libAliHLTITS_la_LDFLAGS		= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \
