@@ -18,17 +18,8 @@
  * @author Kalliopi.Kanaki@ift.uib.no 
  */
 
-void drawTHnSparse( TString inputFile,
-            	    double minEta=-2,   double maxEta=2,
-	    	    int minTrackMult=0, int maxTrackMult=20000,
-            	    double minPt=0,     double maxPt=200,
-	    	    double minDCAr=-80, double maxDCAr=80,
-	    	    double minDCAz=-80, double maxDCAz=80,
-	    	    int minTPCclus=0,   int maxTPCclus=200,
-	    	    int minITSclus=0,   int maxITSclus=6,
-		    int vertexStatus=2
-            	  )
-{
+void drawTHnSparse(TString inputFile){
+ 
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetOptStat(10);
@@ -71,23 +62,6 @@ void drawTHnSparse( TString inputFile,
   
   TString t = "event properties for ";
   t+=hText->GetTitle();
-   
-  TCanvas *can0 = new TCanvas("can0",t,900,600); 
-  can0->Divide(3,2);
-  plotEventQuantities(can0,heventOFF,heventHLT,hText);
-   
-  TCanvas *can1 = new TCanvas("can1","track properties",1100,900); 
-  can1->Divide(4,3);
-  plotTrackQuantities(can1, htrackOFF, htrackHLT, hText, 
-                      minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
-  
-  TCanvas *can2 = new TCanvas("can2","2-D HLT track correlations",1200,800); 
-  can2->Divide(4,2);
-  plot2D(can2, htrackHLT, minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult);
-  
-  TCanvas *can3 = new TCanvas("can3","2-D OFF track correlations",1200,800); 
-  can3->Divide(4,2);
-  plot2D(can3, htrackOFF, minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult);
   
   TString folder = hText->GetTitle();
   folder.ReplaceAll(" ",""); 
@@ -95,10 +69,47 @@ void drawTHnSparse( TString inputFile,
   folder.Remove(6,15);
    
   gSystem->Exec("mkdir "+folder);
-  TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
+  
+  TCanvas *can0 = new TCanvas("can0",t,                            900,600); can0->Divide(3,2);  
+  TCanvas *can1 = new TCanvas("can1","track properties",          1100,900); can1->Divide(4,3);
+  TCanvas *can2 = new TCanvas("can2","2-D HLT track correlations",1200,800); can2->Divide(4,2);
+  TCanvas *can3 = new TCanvas("can3","2-D OFF track correlations",1200,800); can3->Divide(4,2);
 
-  can0->SaveAs(folder+"/event_properties_"+cuts+".root");
-  can0->SaveAs(folder+"/event_properties_"+cuts+".png");
+  plotEventQuantities(can0,heventHLT,heventOFF,hText);
+  can0->SaveAs(folder+"/event_properties.root");
+  can0->SaveAs(folder+"/event_properties.png");
+  
+  cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 200, 0, 6, 2);
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 160, 0, 6, 2);
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 140, 0, 6, 2);
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 100, 0, 6, 2);
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0,  50, 0, 6, 2);
+}
+
+void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+                 THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
+            	 double minEta,   double maxEta,
+	    	 int minTrackMult,int maxTrackMult,
+            	 double minPt,    double maxPt,
+	    	 double minDCAr,  double maxDCAr,
+	    	 double minDCAz,  double maxDCAz,
+	    	 int minTPCclus,  int maxTPCclus,
+	    	 int minITSclus,  int maxITSclus,
+		 int vertexStatus
+               )
+{
+  plotTrackQuantities(can1, htrackHLT, htrackOFF, hText, 
+                      minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
+  
+  plot2D(can2, htrackHLT, minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult);
+  
+  plot2D(can3, htrackOFF, minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult);
+  
+  TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, 
+                              minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
+
+  //can0->SaveAs(folder+"/event_properties_"+cuts+".root");
+  //can0->SaveAs(folder+"/event_properties_"+cuts+".png");
   can1->SaveAs(folder+"/track_properties_"+cuts+".root");
   can1->SaveAs(folder+"/track_properties_"+cuts+".png");  
   can2->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".root");
@@ -139,7 +150,7 @@ void printLegend(TLegend *l, TH1D *hlt, TH1D *off){
 
 //====================== for 1D distributions ===============================//
 
-void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size,
+void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size,
              double minEta,    double maxEta,
              double minPt,     double maxPt,
 	     double minDCAr,   double maxDCAr,
@@ -298,7 +309,7 @@ void plot2D(TCanvas* can, THnSparse* h,
   ht->Draw("colz"); 
 }
 
-void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size){
+void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size){
  
   for(int i=0; i<size; i++){         
       hlt = hHLT->Projection(i);
@@ -322,18 +333,18 @@ void plotAid(TCanvas* can, THnSparse* hOFF, THnSparse* hHLT, TText* hText, TH1D 
    } 
 }
 
-void plotEventQuantities(TCanvas* can, THnSparse* heventOFF, THnSparse* heventHLT, TText* hText){
+void plotEventQuantities(TCanvas* can, THnSparse* heventHLT, THnSparse* heventOFF, TText* hText){
 
   TH1D *hlt = NULL;
   TH1D *off = NULL;
  
   TLegend *leg1 = new TLegend(0.6,0.6,0.8,0.8);
  
-  plotAid(can, heventOFF, heventHLT, hText, hlt, off, leg1, 6);  
+  plotAid(can, heventHLT, heventOFF, hText, hlt, off, leg1, 6);  
   return;
 }
 
-void plotTrackQuantities( TCanvas* can, THnSparse* htrackOFF, THnSparse* htrackHLT, TText* hText,
+void plotTrackQuantities( TCanvas* can, THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
            	    	  double minEta,    double maxEta,
  	                  double minPt,     double maxPt,
 	   	    	  double minDCAr,   double maxDCAr,
@@ -348,7 +359,7 @@ void plotTrackQuantities( TCanvas* can, THnSparse* htrackOFF, THnSparse* htrackH
   TH1D *off = NULL;
  
   TLegend *leg1 = new TLegend(0.6,0.6,0.8,0.8);
-  plotAid(can, htrackOFF, htrackHLT, hText, hlt, off, leg1, 11, 
+  plotAid(can, htrackHLT, htrackOFF, hText, hlt, off, leg1, 11, 
           minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, VS);  
   return;
 }
