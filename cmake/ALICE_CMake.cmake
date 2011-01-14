@@ -360,9 +360,9 @@ macro(ALICE_BuildModule)
       get_property(EXCLUDEPACKAGE TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL) 
       if(NOT EXCLUDEPACKAGE)
         install(TARGETS ${PACKAGE} 
-                RUNTIME DESTINATION bin
-                LIBRARY DESTINATION lib
-                ARCHIVE DESTINATION bin)
+                RUNTIME DESTINATION bin/tgt_${ALICE_TARGET}
+                LIBRARY DESTINATION lib/tgt_${ALICE_TARGET}
+                ARCHIVE DESTINATION bin/tgt_${ALICE_TARGET})
       endif(NOT EXCLUDEPACKAGE)
   endforeach(PACKAGEFILE)
 
@@ -519,8 +519,8 @@ macro(ALICE_BuildExecutable)
     add_dependencies(${PACKAGE}-static libAliMDC root-static-libs)
     target_link_libraries(${PACKAGE}-static ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a -pthread -ldl -lcurses)
 
-    install(TARGETS ${PACKAGE}-static RUNTIME DESTINATION bin COMPONENT MDC)
-    install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a DESTINATION lib COMPONENT MDC)
+    install(TARGETS ${PACKAGE}-static RUNTIME DESTINATION bin/tgt_${ALICE_TARGET} COMPONENT MDC)
+    install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/libAliMDC.a ${ROOTLIBDIR}/libRoot.a ${ROOTLIBDIR}/libfreetype.a ${ROOTLIBDIR}/libpcre.a DESTINATION lib/tgt_${ALICE_TARGET} COMPONENT MDC)
     install(FILES ${PROJECT_SOURCE_DIR}/RAW/mdc.h DESTINATION include COMPONENT MDC)
     set(CPACK_RPM_PACKAGE_SUMMARY "AliMDC static libraries")
     set(CPACK_RPM_PACKAGE_NAME "alimdc")
