@@ -59,9 +59,15 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fNonStdFile(""),
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
-  fSubtraction(kRhoRecalc),
+  fSubtraction(k4Area),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
+  fh2CentvsRho(0x0),
+  fh2CentvsSigma(0x0),
+  fh2ShiftEta(0x0),
+  fh2ShiftPhi(0x0),
+  fh2ShiftEtaLeading(0x0),
+  fh2ShiftPhiLeading(0x0),
   fHistList(0x0)  
 {
 
@@ -78,9 +84,15 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fNonStdFile(""),
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
-  fSubtraction(kRhoRecalc),
+  fSubtraction(k4Area),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
+  fh2CentvsRho(0x0),
+  fh2CentvsSigma(0x0),
+  fh2ShiftEta(0x0),
+  fh2ShiftPhi(0x0),
+  fh2ShiftEtaLeading(0x0),
+  fh2ShiftPhiLeading(0x0),
   fHistList(0x0)  
 {
  DefineOutput(1, TList::Class());  
@@ -220,6 +232,24 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   //  Histogram booking, add som control histograms here
   //    
 
+ 
+    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density",100,0.,100.,100,0.,150.);
+    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs backgroun sigma",100,0.,100.,100,0.,150.);
+    fHistList->Add(fh2CentvsRho);
+    fHistList->Add(fh2CentvsSigma);
+
+   if(fSubtraction==k4Area){
+    fh2ShiftEta = new TH2F("fh2ShiftEta","extended correction Eta",100,-0.9,0.9,100,-0.9,0.9);
+    fh2ShiftPhi = new TH2F("fh2ShiftPhi","extended correction Phi",100,0.,6.5,100,0.,6.5);
+    fh2ShiftEtaLeading = new TH2F("fh2ShiftEtaLeading","extended correction Eta",100,-0.9,0.9,100,-0.9,0.9);
+    fh2ShiftPhiLeading = new TH2F("fh2ShiftPhiLeading","extended correction Phi",100,0.,6.5,100,0.,6.5);
+     fHistList->Add(fh2ShiftEta);
+     fHistList->Add(fh2ShiftPhi);
+     fHistList->Add(fh2ShiftEtaLeading);
+     fHistList->Add(fh2ShiftPhiLeading);
+   }
+    
+
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
@@ -327,15 +357,27 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
   // LOOP over all jet branches and subtract the background
 
    Float_t rho = 0;
+   Float_t sigma=0.;
    Double_t meanarea = 0;
-   if(fSubtraction==kArea)rho =  evBkg->GetBackground(2);
+   TLorentzVector backgroundv;
+   Float_t cent=0.;
+   cent = fAODOut->GetHeader()->GetCentrality();
+   sigma=evBkg->GetSigma(1); 
+
+   if(fSubtraction==kArea) rho = evBkg->GetBackground(1);
+   if(fSubtraction==k4Area){
+                rho = evBkg->GetBackground(0);
+                sigma=evBkg->GetSigma(0);}
+
    if(fSubtraction==kRhoRecalc){
-     meanarea=evBkg->GetMeanarea(2);
+     meanarea=evBkg->GetMeanarea(1);
      rho =RecalcRho(bkgClusters,meanarea);
-   }
-   if(fSubtraction==kRhoRC)rho =RhoRC(bkgClustersRC);
+        }
+   if(fSubtraction==kRhoRC) rho=RhoRC(bkgClustersRC);
+   fh2CentvsRho->Fill(cent,rho);
+   fh2CentvsSigma->Fill(cent,sigma);
    
-  for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
+   for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
     TClonesArray* jarrayOut = (TClonesArray*)fOutJetArrayList->At(iJB);
     
@@ -352,7 +394,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
       AliAODJet *jet = (AliAODJet*)jarray->At(i);
       AliAODJet tmpNewJet(*jet);
       Bool_t bAdd = false;
-
+     
 
       if(fSubtraction==kArea){	
 	Double_t background = rho * jet->EffectiveAreaCharged();
@@ -411,9 +453,40 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 
        }//kRhoRC
 
+        else if(fSubtraction==k4Area){
+         
+       	  backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
+        if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
+       
+	  // optionally rescale it and keep??
+	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	}
+	else{
+	  bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
+	}
+	// add background estimates to the new jet object
+	// allows to recover old p_T and rho...
+	tmpNewJet.SetBgEnergy(backgroundv.P(),0);
+
+       }//kArea4vector  
+
+
+
+
+
+
       if(bAdd){
         AliAODJet *newJet = new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);
 	// what about track references, clear for now...
+	if(fSubtraction==k4Area){
+         if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),jet->Pt()-newJet->Pt());
+         fh2ShiftEta->Fill(jet->Eta(),newJet->Eta());
+         fh2ShiftPhi->Fill(jet->Phi(),newJet->Phi());
+         if(i==0){fh2ShiftEtaLeading->Fill(jet->Eta(),newJet->Eta());
+	   fh2ShiftPhiLeading->Fill(jet->Phi(),newJet->Phi());}}
+
+
 	newJet->GetRefTracks()->Clear();
       }
 
@@ -452,8 +525,26 @@ Bool_t AliAnalysisTaskJetBackgroundSubtract::RescaleJetMomentum(AliAODJet *jet,F
   Double_t mass  = jet->M();
   Double_t pNew = jet->P() * scale;
   jet->SetPxPyPzE(scale*jet->Px(),scale*jet->Py(),scale*jet->Pz(),TMath::Sqrt(mass*mass+pNew*pNew));
+ 
+
+
   return kTRUE;
 }
+
+Bool_t AliAnalysisTaskJetBackgroundSubtract::RescaleJet4vector(AliAODJet *jet,TLorentzVector backgroundv){
+  
+  if(backgroundv.Pt()<0.) return kFALSE;
+  jet->SetPxPyPzE(jet->Px()-backgroundv.Px(),jet->Py()-backgroundv.Py(),jet->Pz()-backgroundv.Pz(),jet->E()-backgroundv.E());
+ 
+ return kTRUE;
+}
+
+
+
+
+
+
+
 
 Double_t AliAnalysisTaskJetBackgroundSubtract::RecalcRho(TClonesArray* bkgClusters,Double_t meanarea){
   

@@ -877,7 +877,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     if(externalBackground){
       // carefull has to be filled in a task before
       // todo, ReArrange to the botom
-      pTback = externalBackground->GetBackground(2)*leadingJet.EffectiveAreaCharged();
+      pTback = externalBackground->GetBackground(1)*leadingJet.EffectiveAreaCharged();
     }
     pt = leadingJet.Pt() - pTback;
     // correlation of leading jet with tracks
@@ -902,7 +902,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     }  
     
    
-    
+    TLorentzVector vecareab;
     for(int j = 0; j < nRec;j++){
       AliAODJet tmpRec (sortedJets[j].px(), sortedJets[j].py(), sortedJets[j].pz(), sortedJets[j].E());
       aodOutJet = 0;
@@ -913,6 +913,11 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
 	Double_t area1 = clustSeq.area(sortedJets[j]);
 	aodOutJet->SetEffArea(area1,0);
+        fastjet::PseudoJet vecarea=clustSeq.area_4vector(sortedJets[j]);  
+        vecareab.SetPxPyPzE(vecarea.px(),vecarea.py(),vecarea.pz(),vecarea.e());     
+	aodOutJet->SetVectorAreaCharged(&vecareab);
+
+
       }
 
 
@@ -1108,7 +1113,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t sigma2=0.;
      Double_t meanarea2=0.;
 
-     clustSeq.get_median_rho_and_sigma(sortedJets, range, false, bkg1, sigma1, meanarea1, true);
+     clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
      evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
 
      //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
@@ -1195,11 +1200,14 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
  Int_t nRecOverRan = inclusiveJetsRan.size();
  Int_t nRecRan     = inclusiveJetsRan.size();
+
  if(inclusiveJetsRan.size()>0){
    AliAODJet leadingJet (sortedJetsRan[0].px(), sortedJetsRan[0].py(), sortedJetsRan[0].pz(), sortedJetsRan[0].E());
    Float_t pt = leadingJet.Pt();
    
    Int_t iCount = 0;
+   TLorentzVector vecarearanb;
+
    for(int i = 1;i <= fh2NRecJetsPtRan->GetNbinsX();i++){
      Float_t ptCut = fh2NRecJetsPtRan->GetXaxis()->GetBinCenter(i);
       while(pt<ptCut&&iCount<nRecRan){
@@ -1249,7 +1257,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        aodOutJetRan =  new ((*jarrayran)[nAodOutJetsRan++]) AliAODJet(tmpRec);
        Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
        
-       aodOutJetRan->SetEffArea(arearan,0);    }
+       aodOutJetRan->SetEffArea(arearan,0);
+       fastjet::PseudoJet vecarearan=clustSeqRan.area_4vector(sortedJetsRan[j]);  
+       vecarearanb.SetPxPyPzE(vecarearan.px(),vecarearan.py(),vecarearan.pz(),vecarearan.e());
+       aodOutJetRan->SetVectorAreaCharged(&vecarearanb);
+
+     }
 
 
 

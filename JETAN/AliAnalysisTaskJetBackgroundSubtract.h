@@ -66,6 +66,8 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     AliAnalysisTaskJetBackgroundSubtract(const AliAnalysisTaskJetBackgroundSubtract&);
     AliAnalysisTaskJetBackgroundSubtract& operator=(const AliAnalysisTaskJetBackgroundSubtract&);
     Bool_t RescaleJetMomentum(AliAODJet *jet,Float_t pT);
+    Bool_t RescaleJet4vector(AliAODJet *jet,TLorentzVector backgroundv);
+
     Double_t RecalcRho(TClonesArray* fbkgclusters,Double_t meanarea);
     Double_t RhoRC(TClonesArray* fbkgclustersRC);
     void ResetOutJets();
@@ -83,9 +85,18 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     Int_t           fSubtraction;       // Parameter for subtraction mode 
     TList *fInJetArrayList; //! transient list to make ease the handling of input jets
     TList *fOutJetArrayList; //! transient list to make ease the reset of output jets
+
+    TH2F*         fh2CentvsRho;   //! centrality vs background density  
+    TH2F*         fh2CentvsSigma;   //! centrality vs background sigma  
+    TH2F*         fh2ShiftEta;   //! extended correction Eta
+    TH2F*         fh2ShiftPhi;   //! extended correction Phi
+    TH2F*         fh2ShiftEtaLeading;   //! extended correction Eta leading jet
+    TH2F*         fh2ShiftPhiLeading;   //! extended correction Phi leading jet
+
+ 
     TList *fHistList; //! the histograms output list
    
-    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 3) 
+    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 4) 
 };
  
 #endif
