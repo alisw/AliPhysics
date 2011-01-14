@@ -14,11 +14,11 @@ using namespace std;
 
 ClassImp(AliAnalysisMultPbTrackHistoManager)
 
-const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "With Vertex", "After ZDC cut" };
+const char * AliAnalysisMultPbTrackHistoManager::kStatStepNames[]     = { "All Events", "After centrality selection",  "After physics Selection", "With Vertex (quality cuts)", "After ZDC cut", "After vertex range cut (10 cm)" };
 const char * AliAnalysisMultPbTrackHistoManager::kHistoPtEtaVzNames[] = { "hGenPtEtaVz", "hRecPtEtaVz", "hRecPtEtaVzPrim", 
 									  "hRecPtEtaVzSecWeak", "hRecPtEtaVzSecMaterial", "hRecPtEtaVzFake"};
 const char * AliAnalysisMultPbTrackHistoManager::kHistoDCANames[]     = { "hGenDCA", "hRecDCA", "hRecDCAPrim", "hRecDCASecWeak","hRecDCASecMaterial", "hRecDCAFake"};
-const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", "hRec", "hRecPrim", "hRecSecWeak","hRecSecMaterial", "hRecFake"};
+const char * AliAnalysisMultPbTrackHistoManager::kHistoPrefix[]     = { "hGen", "hRec", "hRecPrim", "hRecSecWeak","hRecSecMaterial", "hRecFake", "hRecHighestMeanPt", "hRecLowestMeanPt"};
 const char * AliAnalysisMultPbTrackHistoManager::kSpeciesName[]     = { "pi+", "K+", "p", "l+",  "pi-", "K-", "barp", "l-", "Others"};
 
 
@@ -317,6 +317,61 @@ TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoSpecies(Histo_t id) {
 
 }
 
+
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoMeanPt(Histo_t id) {
+  // mean pt computed event by event
+  TString name = TString(kHistoPrefix[id])+"_MeanPt";
+
+  TH1D * h =  (TH1D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+
+    h = new TH1D (name.Data(), Form("Pt Event by Event(%s)",kHistoPrefix[id]), 100, 0, 1);			 
+    h->Sumw2();
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+
+}
+
+TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoPtEvent(Histo_t id) {
+
+  // Returns of dNdpt, used to compute mean pt event by event
+
+  TString name = TString(kHistoPrefix[id])+"_PtEvent";
+
+  TH1D * h =  (TH1D*) GetHisto(name);
+  if (!h) {
+    name+=fHNameSuffix;
+    Bool_t oldStatus = TH1::AddDirectoryStatus();
+    TH1::AddDirectory(kFALSE);
+
+    AliInfo(Form("Booking histo %s",name.Data()));
+    const Int_t nptbins = 68;
+    const Double_t binsPt[] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.5,5.0,5.5,6.0,6.5,7.0,8.0,9.0,10.0,11.0,12.0,13.0,14.0,15.0,16.0,18.0,20.0,22.0,24.0,26.0,28.0,30.0,32.0,34.0,36.0,40.0,45.0,50.0};
+
+    h = new TH1D (name.Data(), Form("Pt Event by Event(%s)",kHistoPrefix[id]), nptbins,binsPt);			 
+    h->SetBit(kKeepMaxMean,1);
+    if(id == kHistoRecLowestMeanPt ) h->SetBit(kKeepMinMean,1);
+    h->Sumw2();
+    TH1::AddDirectory(oldStatus);
+    fList->Add(h);
+
+
+  }
+  return h;
+  
+
+}
+
+
 TH1D * AliAnalysisMultPbTrackHistoManager::GetHistoVzEvent(Histo_t id) {
 
   // Returns histogram with Vz of the event
@@ -566,3 +621,142 @@ Int_t AliAnalysisMultPbTrackHistoManager::GetLocalParticleID(AliMCParticle * par
 
 
  
+Long64_t AliAnalysisMultPbTrackHistoManager::Merge(TCollection* list)
+{
+  // Merge a list of AliHistoListWrapper objects with this.
+  // Returns the number of merged objects (including this).
+
+  // We have to make sure that all the list contain the same histos in
+  // the same order. We thus also have to sort the list (sorting is
+  // done by name in TList).
+
+  //  AliInfo("Merging");
+
+  if (!list)
+    return 0;
+
+  if (list->IsEmpty())
+    return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+  // collections of all histograms
+  TList collections;
+
+  Int_t count = 0;
+
+  while ((obj = iter->Next())) {
+    Bool_t foundDiffinThisIterStep = kFALSE;
+
+    //    Printf("%d - %s",count, obj->GetName());
+    AliHistoListWrapper* entry = dynamic_cast<AliHistoListWrapper*> (obj);
+    if (entry == 0) 
+      continue;
+
+    TList * hlist = entry->GetList();
+
+    // Check if all histos in this fList are also in the one from entry and viceversa
+    // Use getters to automatically book non defined histos    
+
+    Bool_t areListsDifferent=kTRUE;
+    Int_t iloop = 0;
+    Int_t max_loops = hlist->GetSize() + fList->GetSize(); // In the worst case all of the histos will be different...
+    while(areListsDifferent) {
+      if(iloop>max_loops) AliFatal("Infinite Loop?");
+      iloop++;
+      // sort
+      hlist->Sort();
+      fList->Sort();
+      // loop over the largest 
+      TObject * hist =0;
+      TIterator * iterlist = 0;
+      TList * thislist  = 0; // the list over which I'm iterating
+      TList * otherlist = 0; // the other
+
+      if (hlist->GetSize() >= fList->GetSize()) { 
+	thislist  = hlist;
+	otherlist = fList;
+      }
+      else{
+	thislist  = fList;
+	otherlist = hlist;	
+      }
+      iterlist = thislist->MakeIterator();
+
+      while ((hist= iterlist->Next())){ 
+	if(!otherlist->FindObject(hist->GetName())){
+	  AliInfo(Form("Adding object %s",hist->GetName()));	  
+	  TH1 * hclone =  (TH1*) hist->Clone();
+	  if (!hclone->InheritsFrom("TH1")) AliFatal(Form("Found a %s. This class only supports objects inheriting from TH1",hclone->ClassName()));
+	  hclone->Reset();
+	  otherlist->Add(hclone);
+	  foundDiffinThisIterStep=kTRUE;
+	}
+      }
+
+      // re-sort before checking
+      hlist->Sort();
+      fList->Sort();
+
+      // check if everything is fine    
+      areListsDifferent=kFALSE;
+      if (hlist->GetSize() == fList->GetSize()) {	
+	Int_t nhist =  fList->GetSize();
+	for(Int_t ihist = 0; ihist < nhist; ihist++){
+	  if(strcmp(fList->At(ihist)->GetName(),hlist->At(ihist)->GetName())) areListsDifferent = kTRUE;
+	}
+      } else {
+	areListsDifferent=kTRUE;
+      }
+    }
+
+    // last check: if something is not ok die loudly 
+    if (hlist->GetSize() != fList->GetSize()) {
+      AliFatal("Mismatching size!");
+    }
+    Int_t nhist =  fList->GetSize();
+    for(Int_t ihist = 0; ihist < nhist; ihist++){
+      if(strcmp(fList->At(ihist)->GetName(),hlist->At(ihist)->GetName())){
+	AliFatal(Form("Mismatching histos: %s -> %s", fList->At(ihist)->GetName(),hlist->At(ihist)->GetName()));
+      } else {
+	// Specific merging strategies, according to the bits...
+	if (fList->At(ihist)->TestBits(kKeepMinMean|kKeepMaxMean)){
+	  TH1 * h1 = (TH1*) fList->At(ihist);
+	  TH1 * h2 = (TH1*) hlist->At(ihist);
+	  if (h1->GetEntries()>0 && h2->GetEntries()>0) {
+	    if (h1->TestBit(kKeepMinMean)) {
+	      AliInfo(Form("Keeping only the histo with the lowest mean [%s][%f][%f]",h1->GetName(), h1->GetMean(), h2->GetMean()));
+	      if(h1->GetMean() > h2->GetMean()) h1->Reset();
+	      else h2->Reset();
+	    }
+	    if (h1->TestBit(kKeepMaxMean)) {
+	      AliInfo(Form("Keeping only the histo with the highest mean [%s][%f][%f]",h1->GetName(), h1->GetMean(), h2->GetMean()));
+	      if(h2->GetMean() > h1->GetMean()) h1->Reset();
+	      else h2->Reset();
+	    }
+	  }
+	}
+      }
+    }
+    
+    if (foundDiffinThisIterStep){
+      iter->Reset(); // We found a difference: previous lists could
+		     // also be affected... We start from scratch
+      collections.Clear();
+      count = 0;
+    }
+    else {
+      
+      collections.Add(hlist);
+      
+      count++;
+    }
+  }
+
+  fList->Merge(&collections);
+  
+  delete iter;
+
+  return count+1;
+}

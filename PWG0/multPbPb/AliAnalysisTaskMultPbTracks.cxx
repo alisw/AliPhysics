@@ -18,6 +18,7 @@
 #include "AliGenEventHeader.h"
 #include "AliESDCentrality.h"
 #include "AliMultiplicity.h"
+#include "TFile.h"
 #include <iostream>
 #include "AliAnalysisMultPbCentralitySelector.h"
 #include "AliTriggerAnalysis.h"
@@ -115,7 +116,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   PostData(2,fTrackCuts);
   PostData(3,fCentrSelector);
 
-  // Cache histogram pointers
+  // Cache (some) histogram pointers to avoid loop in the histo manager
   static TH3D * hTracks  [AliAnalysisMultPbTrackHistoManager::kNHistos];
   static TH2D * hDCA     [AliAnalysisMultPbTrackHistoManager::kNHistos];
   static TH1D * hNTracks [AliAnalysisMultPbTrackHistoManager::kNHistos];
@@ -135,6 +136,9 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]        = fHistoManager->GetHistoMult(AliAnalysisMultPbTrackHistoManager::kHistoGen );
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]        = fHistoManager->GetHistoMult(AliAnalysisMultPbTrackHistoManager::kHistoRec );
+
+
+  fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Reset();
 
   fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
   if (strcmp(fESD->ClassName(),"AliESDEvent")) {
@@ -208,7 +212,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	// Fill generated histo
 	hTracks[AliAnalysisMultPbTrackHistoManager::kHistoGen]->Fill(mcPart->Pt(),mcPart->Eta(),zvGen);
 	Int_t partCode = fHistoManager->GetLocalParticleID(mcPart);
-	cout << "Part " << partCode << endl;
+	//	cout << "Part " << partCode << endl;
 	if (partCode == AliAnalysisMultPbTrackHistoManager::kPartPiPlus  || 
 	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPiMinus ||
 	    partCode == AliAnalysisMultPbTrackHistoManager::kPartKPlus   || 
@@ -216,7 +220,7 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 	    partCode == AliAnalysisMultPbTrackHistoManager::kPartP       || 
 	    partCode == AliAnalysisMultPbTrackHistoManager::kPartPBar  
 	    ){
-	  cout << "Found " << partCode << endl;
+	  //	  cout << "Found " << partCode << endl;
 	  
 	  fHistoManager->GetHistoPtEtaVz(AliAnalysisMultPbTrackHistoManager::kHistoGen, partCode);
 	}
@@ -252,6 +256,22 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
 
   if (!(zdcA && zdcC) && (!fIsMC)) return;
   fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatZDCCut);
+
+
+  if(TMath::Abs(vtxESD->GetZ()) > 10) return;
+  fHistoManager->GetHistoStats()->Fill(AliAnalysisMultPbTrackHistoManager::kStatVtxRangeCut);
+
+  // FIXME
+  Float_t ntracksOk = fTrackCuts->CountAcceptedTracks(fESD);
+  const AliMultiplicity * mult = fESD->GetMultiplicity();
+  if (ntracksOk < 1000 &&  mult->GetNumberOfITSClusters(1) > 4500) {
+    Float_t dummy;
+    Printf("IEV: %d, Orbit: %x, Period: %d, BC: %d\n",fESD->GetEventNumberInFile(), fESD->GetOrbitNumber(),fESD->GetPeriodNumber(),fESD->GetBunchCrossNumber());
+    printf("%s ----> Processing event # %lld\n", CurrentFileName(), Entry());
+    cout << "File " << AliAnalysisManager::GetAnalysisManager()->GetTree()->GetCurrentFile()->GetName() << endl;   
+    cout << "Nt " << ntracksOk << ", "<< fESD->GetNumberOfTracks() << " V0 " <<  fCentrSelector->GetCorrV0(fESD,dummy)  << " SPD1 " << mult->GetNumberOfITSClusters(1) << endl;       
+  }
+
 
   
   // Fill Vertex
@@ -318,8 +338,11 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     }
   }
   // for each track
-  if(accepted) 
+  if(accepted) {
     hTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(esdTrack->Pt(),esdTrack->Eta(),vtxESD->GetZ());
+    if (TMath::Abs(esdTrack->Eta())<0.5 && TMath::Abs(vtxESD->GetZ())<7)
+      fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(esdTrack->Pt());
+  }
   if(acceptedNoDCA)
     hDCA[AliAnalysisMultPbTrackHistoManager::kHistoRec]->Fill(weightedDCA,esdTrack->Pt());
 
@@ -390,10 +413,27 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(acceptedTracks);
   Float_t v0;
   fHistoManager->GetHistoV0vsNtracks(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(acceptedTracks, fCentrSelector->GetCorrV0(fESD,v0));
-  // FIXME
-  //  hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(fESD->GetMultiplicity()->GetNumberOfTracklets());
 
-
+  // Fill <pt> analysis histos
+  fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Scale(1,"width");// correct bin width
+  if (fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->GetEntries()>0)
+    fHistoManager->GetHistoMeanPt(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->GetMean());
+  if (fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->GetMean() >  
+      fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecHighestMeanPt)->GetMean()) {
+    // Found a new highest pt: first reset than add it to the container for the highest
+    fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecHighestMeanPt)->Reset();
+    fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecHighestMeanPt)
+      ->Add(fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec));
+  }
+  if ((fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->GetMean() <  
+       fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecLowestMeanPt)->GetMean() &&
+       fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->GetEntries()>0) ||
+      !(fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecLowestMeanPt)->GetEntries()>0)) {
+    // Found a new lowest pt: first reset than add it to the container for the lowest
+    fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecLowestMeanPt)->Reset();
+    fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRecLowestMeanPt)
+      ->Add(fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec));
+  }
 }
 
 void   AliAnalysisTaskMultPbTracks::Terminate(Option_t *){

@@ -12,6 +12,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisMultPbCentralitySelector.h"
 #include "TLegend.h"
+#include "AliBWTools.h"
 
 using namespace std;
 
@@ -229,7 +230,11 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   Float_t dNdetaE = TMath::Sqrt(f->IntegralError(0,0.1)*f->IntegralError(0,0.1) + errorData*errorData) / (etaMax-etaMin);
   cout << "dN/deta              " << dNdeta << " +- " << dNdetaE << endl;
   cout << "(dN/deta)/0.5 Npart  " << dNdeta/npart*2 << " +- " << dNdetaE/npart*2 << endl;
+  Double_t mean, meanerr;
+  AliBWTools::GetMeanDataAndExtrapolation(hCorrected, f, mean, meanerr,0,1000);
+  cout << "Mean Pt " << mean << "+-" << meanerr << endl;
   
+
   TH1D * hDataGen  = hManData->GetHistoPt(AliAnalysisMultPbTrackHistoManager::kHistoGen,        etaMin,etaMax,zmin,zmax);
   cout << "Generated dN/deta (data) =       " << hDataGen->Integral("width") << endl;
   hDataGen->Draw("same");  
@@ -239,6 +244,13 @@ void correct(TString dataFolder = "./output/LHC10g2d_130844_V0M_bin_10/", TStrin
   l->AddEntry(hMCPtGen, "Monte Carlo (generated)");
   l->AddEntry(f, "Hagedorn Fit");
   l->Draw();
+
+
+  Double_t errXCheck = 0, yieldXCheck=0;
+  AliBWTools::GetYield(hCorrected,f,yieldXCheck,errXCheck);
+  cout << "BWTools crosscheck: " << yieldXCheck << "+-" << errXCheck << endl;
+  
+
 }
 
 void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
@@ -282,7 +294,7 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // Set the components which are used in HistoSum, the static
   // function for GetFunctionHistoSum
   // Project onti DCA axis
-  //  const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
+  //const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
   const Int_t ptBinsFit[] = {3,20,-1};
   Int_t ibinPt = -1;
   while(ptBinsFit[(++ibinPt)+1]!=-1){
@@ -447,6 +459,8 @@ void LoadLibs(  Bool_t debug) {
    
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPbPb"));
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG2/SPECTRA/Fit"));
+
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
   TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
@@ -694,7 +708,8 @@ void ShowAcceptanceInVzSlices() {
 TF1 * GetFunctionHistoSum() {
 
   TF1 * f = new TF1 ("fHistoSum",HistoSum,-1,1,kHistoFitCompoments);
-  f->SetParNames("Primaries+Fakes", "Sec. Weak decays","Sec. Material");
+  //  f->SetParNames("Primaries+Fakes", "Sec. Weak decays","Sec. Material");
+  f->SetParNames("Primaries+Sec. Material", "Sec. Weak decays");
   f->SetNpx(1000);
   return f;
 

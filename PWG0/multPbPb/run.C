@@ -162,8 +162,9 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     gROOT->ProcessLine(".L $ALICE_ROOT/PWG0/multPbPb/AddTaskMultPbPbTracksAllCentrality.C");
     centrSelector->SetUseV0Range(kTRUE);
     Int_t ncentr = 11;
-    const Float_t minCentr[] = {0, 79, 247,577, 1185,2155,3565,5527,8203, 12167,15073};
-    const Float_t maxCentr[] = {79,247,577,1185,2155,3565,5527,8203,12167,15073,21000};
+   
+    const Float_t minCentr[] = {0 ,79 ,239,559 ,1165,2135,3555,5525,8213 ,12191,15079};
+    const Float_t maxCentr[] = {79,239,559,1165,2135,3555,5525,8213,12191,15079,21000};
     AliAnalysisTaskMultPbTracks ** tasks = AddTaskMultPbPbTracksAllCentrality("multPbPbtracks.root", cuts, centrSelector, ncentr,minCentr,maxCentr); 
     for(Int_t icentr = 0; icentr < ncentr; icentr++){
       tasks[icentr]->Print();

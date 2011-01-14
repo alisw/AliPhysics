@@ -10,7 +10,7 @@ debug=kFALSE
 runmode=1
 dataset=/alice/sim/LHC10f8a_130844
 ropt="-l"
-option="SAVE"
+option="DCA,SAVE"
 workers=26
 analysismode=9; #SPD + field on
 centrBin=-1
@@ -31,6 +31,7 @@ etaMax=0.5
 npart=381.188
 weakFactor=-1
 useSingleBin=kTRUE
+OUTPATH=output.BAK2010
 
 give_help() {
 
@@ -107,7 +108,7 @@ ENDOFGUIDE
 
 }
 
-while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:l" opt; do
+while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:lp:" opt; do
   case $opt in
     r)
       run=yes
@@ -149,8 +150,8 @@ while getopts "x:sr:c:gmd:o:w:n:e:b:t:k:vy:0:2:hz:a:l" opt; do
       ;;      
     c)
       correct=yes
-      dataDir="./output/${OPTARG%%,*}"
-      mcDir="./output/${OPTARG##*,}"
+      dataDir="./$OUTPATH/${OPTARG%%,*}"
+      mcDir="./$OUTPATH/${OPTARG##*,}"
       ;;      
     z)
       vzMin=${OPTARG%%,*}
