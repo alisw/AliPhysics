@@ -91,7 +91,18 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
-  void UseMergingEfficiency(Bool_t use=true) { fUseMergingEfficiency = use; }
+  /** 
+   * Whether to use the merging efficiency correction
+   * 
+   * @param use If true, use the merging efficiency correction
+   */
+  void SetUseMergingEfficiency(Bool_t use=true) { fUseMergingEfficiency = use; }
+  /** 
+   * Check 
+   * 
+   * @return true if the merging efficiency correction is used.
+   */
+  Bool_t IsUseMergingEfficiency() const { return fUseMergingEfficiency; }
   /** 
    * Print information
    * 

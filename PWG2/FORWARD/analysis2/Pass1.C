@@ -17,12 +17,12 @@
  */
 void
 Pass1(const char* esddir=".", 
-      Int_t       nEvents=1000,
-      Bool_t      proof=false, 
+      Int_t       nEvents=-1,
+      Int_t       proof=0, 
       Bool_t      mc=false)
 {
-  Printf("  MC:            %s", mc    ? "yes" : "no");
-  Printf("  Proof mode     %s", proof ? "yes" : "no");
+  Printf("  MC:            %s", mc        ? "yes" : "no");
+  Printf("  Proof mode     %s", proof > 0 ? "yes" : "no");
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/MakeAOD.C"); 
 

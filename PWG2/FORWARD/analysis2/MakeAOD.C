@@ -21,20 +21,22 @@
  * @ingroup pwg2_forward_scripts
  */
 void MakeAOD(const char* esddir, 
-	     Int_t       nEvents=1000, 
-	     Bool_t      proof=false,
+	     Int_t       nEvents=-1, 
+	     Int_t       proof=0,
 	     Bool_t      mc=false)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof) 
-    gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+  if (proof> 0) { 
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    LoadPars(proof);
+  }
   
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeESDChain.C");
-  TChain* chain = MakeESDChain(esddir,mc);
+  TChain* chain = MakeESDChain(esddir,true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
@@ -54,7 +56,6 @@ void MakeAOD(const char* esddir,
 				  "Cascades "
 				  "MuonTracks "
 				  "TrdTracks "
-				  "CaloClusters "
 				  "HLTGlobalTrigger");
   mgr->SetInputEventHandler(esdHandler);      
        
@@ -71,10 +72,23 @@ void MakeAOD(const char* esddir,
   aodHandler->SetOutputFileName("AliAODs.root");
 
   // --- Add tasks ---------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
+  // Physics selection 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AddTaskFMD(mc);
   AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+
+#if 0
+  // Centrality 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
+  // gDebug = 10;
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","+");
+  // gDebug = 0;
+  AddTaskCopyHeader();
+#endif
+
+  // FMD 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
+  AddTaskFMD(mc);
+
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;

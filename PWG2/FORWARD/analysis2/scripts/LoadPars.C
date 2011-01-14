@@ -3,9 +3,9 @@
  * 
  */
 void
-LoadPars()
+LoadPars(Int_t nWorkers=4)
 {
-  TProof::Open("workers=2");
+  TProof::Open(Form("workers=%d", nWorkers));
   const char* pkgs[] = { "STEERBase", "ESD", "AOD", "ANALYSIS", 
 			 "ANALYSISalice", "PWG2forward2", 0};
   const char** pkg = pkgs;

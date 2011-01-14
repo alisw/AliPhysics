@@ -137,6 +137,42 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   virtual AliFMDHistCollector& GetHistCollector() = 0;
+  /**
+   * Get reference to the EventInspector algorithm 
+   * 
+   * @return Reference to AliFMDEventInspector object 
+   */
+  virtual const AliFMDEventInspector& GetEventInspector() const = 0;
+  /**
+   * Get reference to the EnergyFitter algorithm 
+   * 
+   * @return Reference to AliFMDEnergyFitter object 
+   */
+  virtual const AliFMDEnergyFitter& GetEnergyFitter() const = 0;
+  /**
+   * Get reference to the SharingFilter algorithm 
+   * 
+   * @return Reference to AliFMDSharingFilter object 
+   */
+  virtual const AliFMDSharingFilter& GetSharingFilter() const = 0;
+  /**
+   * Get reference to the DensityCalculator algorithm 
+   * 
+   * @return Reference to AliFMDDensityCalculator object 
+   */
+  virtual const AliFMDDensityCalculator& GetDensityCalculator() const = 0;
+  /**
+   * Get reference to the Corrections algorithm 
+   * 
+   * @return Reference to AliFMDCorrections object 
+   */
+  virtual const AliFMDCorrections& GetCorrections() const = 0;
+  /**
+   * Get reference to the HistCollector algorithm 
+   * 
+   * @return Reference to AliFMDHistCollector object 
+   */
+  virtual const AliFMDHistCollector& GetHistCollector() const = 0;
   /** 
    * @} 
    */
@@ -182,6 +218,15 @@ protected:
     fFirstEvent    = o.fFirstEvent;
     return *this;
   }
+  /** 
+   * Check if all needed corrections are there and accounted for.  If not,
+   * do a Fatal exit 
+   * 
+   * @param what Which corrections is needed
+   * 
+   * @return true if all present, false otherwise
+   */  
+  Bool_t CheckCorrections(UInt_t what) const;
   /** 
    * Mark this event as one to store in the AOD 
    * 

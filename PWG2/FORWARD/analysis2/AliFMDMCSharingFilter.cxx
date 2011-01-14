@@ -55,11 +55,11 @@ AliFMDMCSharingFilter::AliFMDMCSharingFilter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
-  fFMD1i = new TH2D("FMD1i_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
-  fFMD2i = new TH2D("FMD2i_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
-  fFMD2o = new TH2D("FMD2o_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
-  fFMD3i = new TH2D("FMD3i_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
-  fFMD3o = new TH2D("FMD3o_corr", "Merged vs MC", 21, -.5, 20.5, 100, 0, 20);
+  fFMD1i = new TH2D("FMD1i_corr", "Merged vs MC", 21, -.5, 20.5, 300, 0, 15);
+  fFMD2i = new TH2D("FMD2i_corr", "Merged vs MC", 21, -.5, 20.5, 300, 0, 15);
+  fFMD2o = new TH2D("FMD2o_corr", "Merged vs MC", 21, -.5, 20.5, 300, 0, 15);
+  fFMD3i = new TH2D("FMD3i_corr", "Merged vs MC", 21, -.5, 20.5, 300, 0, 15);
+  fFMD3o = new TH2D("FMD3o_corr", "Merged vs MC", 21, -.5, 20.5, 300, 0, 15);
   fFMD1i->SetYTitle("#Delta E/#Delta_{mip} (ESD)");
   fFMD1i->SetXTitle("Hits (MC)");
   fFMD2i->SetYTitle("#Delta E/#Delta_{mip} (ESD)");

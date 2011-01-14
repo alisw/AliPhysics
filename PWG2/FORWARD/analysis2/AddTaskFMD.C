@@ -68,7 +68,7 @@ AddTaskFMD(Bool_t mc)
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
   task->GetDensityCalculator().SetMultCut(0.3);
   // Whether to use the merging efficiency correction 
-  task->GetCorrections().UseMergingEfficiency(false);
+  task->GetCorrections().SetUseMergingEfficiency(false);
   // Set the number of extra bins (beyond the secondary map border) 
   task->GetHistCollector().SetNCutBins(2);
   // Set the correction cut, that is, when bins in the secondary map 
