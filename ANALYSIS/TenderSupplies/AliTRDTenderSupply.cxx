@@ -57,7 +57,8 @@ AliTRDTenderSupply::AliTRDTenderSupply() :
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
   fChamberVdriftNew(NULL),
-  fPIDmethod(k1DLQpid),
+  fFileNNref(""),
+  fPIDmethod(kNNpid),
   fPthreshold(0.8),
   fNBadChambers(0),
   fGainCorrection(kTRUE)
@@ -76,7 +77,8 @@ AliTRDTenderSupply::AliTRDTenderSupply(const char *name, const AliTender *tender
   fChamberGainNew(NULL),
   fChamberVdriftOld(NULL),
   fChamberVdriftNew(NULL),
-  fPIDmethod(k1DLQpid),
+  fFileNNref(""),
+  fPIDmethod(kNNpid),
   fPthreshold(0.8),
   fNBadChambers(0),
   fGainCorrection(kTRUE)
@@ -113,10 +115,13 @@ void AliTRDTenderSupply::Init()
   // Set Normalisation Factors
   if(mgr->GetMCtruthEventHandler()){
     // Assume MC
+    //fESDpid->GetTRDResponse().SetGainNormalisationFactor(1.);
     SwitchOffGainCorrection();
   }
   else{
     // Assume Data
+    //if(fPIDmethod == kNNpid) fPidRecal->SetGainScaleFactor(1.14);
+    //fESDpid->GetTRDResponse().SetGainNormalisationFactor(1.14);
     SwitchOnGainCorrection();
   }
 }
@@ -141,9 +146,18 @@ void AliTRDTenderSupply::ProcessEvent()
   //
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliESDtrack *track=fESD->GetTrack(itrack);
+    // Recalculate likelihoods
     if(!(track->GetStatus() & AliESDtrack::kTRDout)) continue;
     if(fGainCorrection) ApplyGainCorrection(track);
-    fESDpid->MakeTRDPID(fESD->GetTrack(itrack));
+    switch(fPIDmethod){
+      case kNNpid:
+        break;
+      case k1DLQpid:
+        fESDpid->MakeTRDPID(fESD->GetTrack(itrack));
+        break;
+      default:
+        AliError("PID Method not implemented (yet)");
+    }
   }
 }
 
@@ -180,7 +194,7 @@ void AliTRDTenderSupply::SetChamberGain(){
       // Get Old gain calibration
       AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
  	   
-      AliCDBEntry *entry=fTender->GetCDBManager()->Get(*id);
+      AliCDBEntry *entry=fTender->GetCDBManager()->Get(id->GetPath(), id->GetFirstRun(), id->GetVersion());
       if (!entry) {
         AliError("No previous gain calibration entry found");
         return;
@@ -193,7 +207,7 @@ void AliTRDTenderSupply::SetChamberGain(){
       // Get Old drift velocity calibration
       AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
  	   
-      AliCDBEntry *entry=fTender->GetCDBManager()->Get(*id);
+      AliCDBEntry *entry=fTender->GetCDBManager()->Get(id->GetPath(), id->GetFirstRun(), id->GetVersion());
       if (!entry) {
         AliError("No previous drift velocity calibration entry found");
         return;

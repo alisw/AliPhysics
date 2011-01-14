@@ -30,6 +30,7 @@ public:
   AliTRDTenderSupply(const char *name, const AliTender *tender=NULL);
   virtual ~AliTRDTenderSupply();
 
+  void SetNNref(const char* file) {fFileNNref=file;}
   void SetPIDmethod(Int_t pidMethod) { fPIDmethod = pidMethod; }
   void SetCalibLowpThreshold(Double_t pmin) { fPthreshold = pmin; };
   
@@ -59,6 +60,7 @@ private:
   AliTRDCalDet *fChamberVdriftOld;   // Old drift velocity calibration
   AliTRDCalDet *fChamberVdriftNew;   // New drift velocity calibration
 
+  TString fFileNNref;                // path and name to the NNref file
   Int_t fPIDmethod;                  // PID method
   Double_t fPthreshold;              // Low Momentum threshold for calibration
   Int_t fBadChamberID[kNChambers];   // List of Bad Chambers
