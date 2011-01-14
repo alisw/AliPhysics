@@ -73,7 +73,7 @@ void AliInputEventHandler::SwitchOffBranches() const {
 	if (str.Length() == 0)
 	    continue;
 	fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 0);
-	AliInfo(Form("Branch %s switched off \n", str.Data()));
+	AliDebug(1,Form("Branch %s switched off", str.Data()));
     }
   delete tokens;
 }
@@ -89,7 +89,7 @@ void AliInputEventHandler::SwitchOnBranches() const {
       if (str.Length() == 0)
 	  continue;
       fTree->SetBranchStatus(Form("%s%s%s","*", str.Data(), "*"), 1);
-      AliInfo(Form("Branch %s switched on \n", str.Data()));
+      AliDebug(1,Form("Branch %s switched on", str.Data()));
   }
   delete tokens;
 }
