@@ -74,6 +74,14 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
   // Assignment operator
   if(this!=&cont) {
     TNamed::operator=(cont);
+    fEntries = cont.fEntries;
+    fLowerLimits.Set(fEntries);
+    fUpperLimits.Set(fEntries);
+    for (Int_t i = 0; i < fEntries; i++) {
+	fLowerLimits[i] = cont.fLowerLimits[i]; 
+	fUpperLimits[i] = cont.fUpperLimits[i];
+	fArray->AddAt(cont.fArray->At(i), i);
+    }
   }
   return *this;
 }
@@ -126,7 +134,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   fArray->AddAt(obj, idx);
 }
 
-Int_t AliOADBContainer::GetIndexForRun(Int_t run) 
+Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
 {
   // Find the index for a given run 
   Int_t found = 0;
@@ -142,13 +150,39 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run)
   return index;
 }
 
-void AliOADBContainer::WriteToFile(char* fname)
+void AliOADBContainer::WriteToFile(char* fname) const
 {
   // Write object to file
   TFile* f = new TFile(fname, "recreate");
   Write();
   f->Close();
 }
+Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
+{
+    // Initialize object from file
+    TFile* file = TFile::Open(fname);
+    if (!file) return (1);
+    AliOADBContainer* cont  = 0;
+    file->GetObject(key, cont);
+    if (!cont)
+    {
+	AliError("Object not found in file \n");	
+	return 1;
+    }
+    
+    fEntries = cont->GetNumberOfEntries();
+    fLowerLimits.Set(fEntries);
+    fUpperLimits.Set(fEntries);
+    for (Int_t i = 0; i < fEntries; i++) {
+	fLowerLimits[i] = cont->LowerLimit(i); 
+	fUpperLimits[i] = cont->UpperLimit(i);
+	fArray->AddAt(cont->GetObject(i), i);
+    }
+    
+    return 0;
+    
+}
+
 
 void AliOADBContainer::List()
 {
