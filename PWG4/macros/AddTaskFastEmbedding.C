@@ -19,12 +19,14 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
 
     // ## set ranges for toy ##
     //SetToyTrackRanges(
-    //    Double_t minPt = 50., Double_t maxPt = 50.,
-    //    Double_t minEta = -.5, Double_t maxEta = .5,
-    //    Double_t minPhi = 0., Double_t maxPhi = 2*TMath::Pi())
+    Double_t minPt = 70.;   Double_t maxPt = 70.;
+    Double_t minEta = -0.5; Double_t maxEta = 0.5;
+    Double_t minPhi = 0.;   Double_t maxPhi = 2*TMath::Pi();
+    //fToyDistributionTrackPt: 0 = uniform distribution
+    //                         else = exponential / power law (not implemented yet)
     //task->SetToyNumberOfTrackRange(5,700);
     //task->SetToyTrackRanges(0.15, 300., 5,-.9, .9, 0., 2*TMath::Pi());
-    task->SetToyTrackRanges();
+    task->SetToyTrackRanges(minPt,maxPt,0.,minEta,maxEta,minPhi,maxPhi);
     task->SetToyFilterMap((1<<32)-1);
 
     // ## set event selection for events of the addition AOD ##
