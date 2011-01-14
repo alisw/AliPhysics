@@ -5,11 +5,13 @@
 #define ALIFMDDENSITYCALCULATOR_H
 #include <TNamed.h>
 #include <TList.h>
+#include <TArrayI.h>
 #include "AliForwardUtil.h"
 class AliESDFMD;
 class TH2D;
 class TH1D;
 class TProfile;
+class AliFMDCorrELossFit;
 
 /** 
  * This class calculates the inclusive charged particle density
@@ -60,6 +62,12 @@ public:
    * @return Reference to this object
    */
   AliFMDDensityCalculator& operator=(const AliFMDDensityCalculator& o);
+  /** 
+   * Initialize this sub-algorithm
+   * 
+   * @param etaAxis Not used 
+   */
+  virtual void Init(const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
@@ -116,10 +124,50 @@ public:
   /** 
    * Print information 
    * 
-   * @param option Not used
+   * @param option Print options 
+   *   - max  Print max weights 
    */
   void Print(Option_t* option="") const;
 protected:
+  /** 
+   * Find the max weight to use for FMD<i>dr</i> in eta bin @a iEta
+   * 
+   * @param cor   Correction
+   * @param d     Detector 
+   * @param r     Ring 
+   * @param iEta  Eta bin 
+   */
+  Int_t FindMaxWeight(AliFMDCorrELossFit* cor,
+		      UShort_t d, Char_t r, Int_t iEta) const;
+
+  /** 
+   * Find the max weights and cache them 
+   * 
+   */  
+  void CacheMaxWeights();
+  /** 
+   * Find the (cached) maximum weight for FMD<i>dr</i> in 
+   * @f$\eta@f$ bin @a iEta
+   * 
+   * @param d     Detector
+   * @param r     Ring
+   * @param iEta  Eta bin
+   * 
+   * @return max weight or <= 0 in case of problems 
+   */
+  Int_t GetMaxWeight(UShort_t d, Char_t r, Int_t iEta) const;
+  /** 
+   * Find the (cached) maximum weight for FMD<i>dr</i> iat
+   * @f$\eta@f$ 
+   * 
+   * @param d     Detector
+   * @param r     Ring
+   * @param eta   Eta bin
+   * 
+   * @return max weight or <= 0 in case of problems 
+   */
+  Int_t GetMaxWeight(UShort_t d, Char_t r, Float_t eta) const;
+
   /** 
    * Get the number of particles corresponding to the signal mult
    * 
@@ -240,12 +288,17 @@ protected:
 
   TList    fRingHistos;    //  List of histogram containers
   Double_t fMultCut;       //  Low cut on scaled energy loss
-  TH1D*    fSumOfWeights;  //! Histogram
-  TH1D*    fWeightedSum;   //! Histogram
-  TH1D*    fCorrections;   //! Histogram
+  TH1D*    fSumOfWeights;  //  Histogram
+  TH1D*    fWeightedSum;   //  Histogram
+  TH1D*    fCorrections;   //  Histogram
   UShort_t fMaxParticles;  //  Maximum particle weight to use 
   TH1D*    fAccI;          //  Acceptance correction for inner rings
   TH1D*    fAccO;          //  Acceptance correction for outer rings
+  TArrayI  fFMD1iMax;      //  Array of max weights 
+  TArrayI  fFMD2iMax;      //  Array of max weights 
+  TArrayI  fFMD2oMax;      //  Array of max weights 
+  TArrayI  fFMD3iMax;      //  Array of max weights 
+  TArrayI  fFMD3oMax;      //  Array of max weights 
   Int_t    fDebug;         //  Debug level 
 
   ClassDef(AliFMDDensityCalculator,1); // Calculate Nch density 

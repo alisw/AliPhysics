@@ -740,6 +740,48 @@ AliFMDCorrELossFit::SetFit(UShort_t  d, Char_t r, Double_t eta,
 }
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit*
+AliFMDCorrELossFit::GetFit(UShort_t  d, Char_t r, Int_t etabin) const
+{
+  // 
+  // Get the fit corresponding to the specified parameters 
+  // 
+  // Parameters:
+  //    d      Detector 
+  //    r      Ring 
+  //    etabin Eta bin (1 based)
+  // 
+  // Return:
+  //    Fit parameters or null in case of problems 
+  //
+  TObjArray* ringArray = GetRingArray(d, r);
+  if (!ringArray)                                   return 0;
+  if (etabin <= 0 || etabin >= fEtaAxis.GetNbins()) return 0;
+  if      (etabin > ringArray->GetEntriesFast())    return 0;
+  else if (etabin >= ringArray->GetEntriesFast())   etabin--;
+  else if (!ringArray->At(etabin))                  etabin++;
+  return static_cast<ELossFit*>(ringArray->At(etabin));
+}
+//____________________________________________________________________
+AliFMDCorrELossFit::ELossFit*
+AliFMDCorrELossFit::GetFit(UShort_t  d, Char_t r, Double_t eta) const
+{
+  // 
+  // Find the fit corresponding to the specified parameters 
+  // 
+  // Parameters:
+  //    d   Detector 
+  //    r   Ring 
+  //    eta Eta value 
+  // 
+  // Return:
+  //    Fit parameters or null in case of problems 
+  //
+  Int_t etabin = FindEtaBin(eta);
+  return GetFit(d, r, etabin);
+}
+
+//____________________________________________________________________
+AliFMDCorrELossFit::ELossFit*
 AliFMDCorrELossFit::FindFit(UShort_t  d, Char_t r, Int_t etabin) const
 {
   // 

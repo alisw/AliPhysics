@@ -90,12 +90,6 @@ public:
    * @} 
    */
   /** 
-   * Print information 
-   * 
-   * @param option Not used
-   */
-  void Print(Option_t* option="") const;
-  /** 
    * @{ 
    * @name Access to sub-algorithms 
    */
@@ -135,6 +129,42 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   AliFMDHistCollector& GetHistCollector() { return fHistCollector; }
+  /**
+   * Get reference to the EventInspector algorithm 
+   * 
+   * @return Reference to AliFMDEventInspector object 
+   */
+  const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
+  /**
+   * Get reference to the EnergyFitter algorithm 
+   * 
+   * @return Reference to AliFMDEnergyFitter object 
+   */
+  const AliFMDEnergyFitter& GetEnergyFitter() const { return fEnergyFitter; }
+  /**
+   * Get reference to the SharingFilter algorithm 
+   * 
+   * @return Reference to AliFMDSharingFilter object 
+   */
+  const AliFMDSharingFilter& GetSharingFilter() const { return fSharingFilter; }
+  /**
+   * Get reference to the DensityCalculator algorithm 
+   * 
+   * @return Reference to AliFMDDensityCalculator object 
+   */
+  const AliFMDDensityCalculator& GetDensityCalculator() const { return fDensityCalculator; }
+  /**
+   * Get reference to the Corrections algorithm 
+   * 
+   * @return Reference to AliFMDCorrections object 
+   */
+  const AliFMDCorrections& GetCorrections() const { return fCorrections; }
+  /**
+   * Get reference to the HistCollector algorithm 
+   * 
+   * @return Reference to AliFMDHistCollector object 
+   */
+  const AliFMDHistCollector& GetHistCollector() const { return fHistCollector; }
   /** 
    * @} 
    */

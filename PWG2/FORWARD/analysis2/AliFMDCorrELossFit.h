@@ -493,6 +493,26 @@ public:
    * @return Fit parameters or null in case of problems 
    */
   ELossFit* FindFit(UShort_t d, Char_t r, Int_t etabin) const;
+  /** 
+   * Find the fit corresponding to the specified parameters 
+   * 
+   * @param d   Detector 
+   * @param r   Ring 
+   * @param eta Eta value 
+   * 
+   * @return Fit parameters or null in case of problems 
+   */
+  ELossFit* GetFit(UShort_t d, Char_t r, Double_t eta) const;
+  /** 
+   * Find the fit corresponding to the specified parameters 
+   * 
+   * @param d      Detector 
+   * @param r      Ring 
+   * @param etabin Eta bin (1 based)
+   * 
+   * @return Fit parameters or null in case of problems 
+   */
+  ELossFit* GetFit(UShort_t d, Char_t r, Int_t etabin) const;
   /* @} */
 
   /**						
