@@ -170,7 +170,7 @@ void AliCentralityGlauberFit::MakeFits()
 
       mu=0.0;
       for (Int_t nmu=0; nmu<fNmu; nmu++) {
-	mu = (fMulow*(1-nalpha*0.05) )  + ((Double_t) nmu ) * (fMuhigh  - fMulow ) / fNmu;
+	mu = fMulow  + (Double_t) nmu * (fMuhigh  - fMulow ) / fNmu;
 	
 	for (Int_t nk=0; nk<fNk; nk++) {
 	  k = fKlow  + ((Double_t) nk ) * (fKhigh  - fKlow ) / fNk;
