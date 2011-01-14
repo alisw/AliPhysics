@@ -244,7 +244,7 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
      Double_t pLower = refHistLower->GetBinContent(refHistLower->GetXaxis()->FindBin(dEdx));
      Double_t pUpper = refHistUpper->GetBinContent(refHistUpper->GetXaxis()->FindBin(dEdx));
 
-     pLayer = pLower + (pUpper - pLower)/(fgkPBins[pbin+1]-fgkPBins[pbin]) * plocal; 
+     pLayer = pLower + (pUpper - pLower)/(fgkPBins[pbin+1]-fgkPBins[pbin]) * (plocal - fgkPBins[pbin]); 
    }
  }
  else{
