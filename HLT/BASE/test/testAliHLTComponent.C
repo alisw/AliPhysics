@@ -616,7 +616,7 @@ int testEventProcessing()
   }
 
   // add the test component to the handler
-  pHLT->fpComponentHandler->AddComponent(new AliHLTTestComponent);
+  pHLT->GetComponentHandler()->AddComponent(new AliHLTTestComponent);
 
   // configurattion with just the TestComponent
   AliHLTConfiguration testcomponent("testcomponent", "TestComponent", "", "");

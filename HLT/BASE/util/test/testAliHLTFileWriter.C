@@ -208,6 +208,11 @@ int testAliHLTFileWriter()
     return iResult;
   }
 
+  if ((iResult=chandler.LoadLibrary("../../../rec/.libs/libHLTrec.so"))<0) {
+    cerr << "failed: loading libHLTrec" << endl;
+    return iResult;
+  }
+
   // create FileWriter component
   AliHLTComponent* pComponent=NULL;
   if ((iResult=chandler.CreateComponent("FileWriter", pComponent))<0) {

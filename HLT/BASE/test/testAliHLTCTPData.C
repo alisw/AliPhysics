@@ -124,6 +124,7 @@ public:
     fMine=new Byte_t[size];
     memset(fMine, 0, size);
     AliHLTComponentTriggerData* data=reinterpret_cast<AliHLTComponentTriggerData*>(fMine);
+    data->fStructSize=sizeof(AliHLTComponentTriggerData);
     data->fData=fMine+sizeof(AliHLTComponentTriggerData);
     Set(data);
   }
@@ -163,6 +164,7 @@ public:
     fData=data;
     fData->fDataSize=sizeof(AliHLTEventTriggerData);
     fEventData=reinterpret_cast<AliHLTEventTriggerData*>(fData->fData);
+    fEventData->fCommonHeaderWordCnt=gkAliHLTCommonHeaderCount;
     fCDH=fEventData->fCommonHeader;
     return 0;
   }
