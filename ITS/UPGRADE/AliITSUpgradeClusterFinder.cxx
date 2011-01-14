@@ -791,16 +791,15 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
   //
   // the clusterization is performed here
   //
-  AliITSsegmentationUpgrade *segmentation2 = 0x0;
+  AliITSsegmentationUpgrade *segmentation = new AliITSsegmentationUpgrade(); 
   AliITSRecPoint  recpnt;
-  if(!segmentation2) segmentation2 = new AliITSsegmentationUpgrade();
   Int_t nClusters =0;
   TClonesArray &lrecp = *fRecPoints;
 
   for(Int_t ilayer=0; ilayer < 6 ;ilayer ++){
     TClonesArray *pArrDig= (TClonesArray*)digList->At(ilayer);
     StartEvent();
-    AliInfo(Form("layer %i with digit entries %i",ilayer,pArrDig->GetEntries()));
+    AliDebug(1,Form("layer %i : # digits %i",ilayer,pArrDig->GetEntries()));
     for(Int_t ientr =0; ientr < pArrDig->GetEntries() ; ientr++){
       AliITSDigitUpgrade *dig = (AliITSDigitUpgrade*)pArrDig->At(ientr);
       Int_t colz=dig->GetzPixelNumber();
@@ -826,9 +825,9 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
 
       xPixC2 = GetClusterMeanRow(ilayer, nClu);
       zPixC2 = GetClusterMeanCol(ilayer, nClu);
-      xzl2[0] = xPixC2*(segmentation2->GetCellSizeX(ilayer))+0.5*(segmentation2-> GetCellSizeX(ilayer));
-      xzl2[1] = zPixC2*(segmentation2->GetCellSizeZ(ilayer))+0.5*(segmentation2->GetCellSizeZ(ilayer))-(segmentation2->GetHalfLength(ilayer));
-      check2 = segmentation2->DetToGlobal(ilayer,xzl2[0], xzl2[1],xcheck2,ycheck2,zcheck2);
+      xzl2[0] = xPixC2*(segmentation->GetCellSizeX(ilayer))+0.5*(segmentation-> GetCellSizeX(ilayer));
+      xzl2[1] = zPixC2*(segmentation->GetCellSizeZ(ilayer))+0.5*(segmentation->GetCellSizeZ(ilayer))-(segmentation->GetHalfLength(ilayer));
+      check2 = segmentation->DetToGlobal(ilayer,xzl2[0], xzl2[1],xcheck2,ycheck2,zcheck2);
       recpnt.SetType(GetClusterType(ilayer,nClu ));
       // recpnt.SetLocalCoord(xzl2[0],xzl2[1]); //temporary solution (no LocalToTrack Matrix)
       //from global to tracking system coordinate
@@ -860,7 +859,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       recpnt.SetZ(zclu1);
 
       Double_t xsize, zsize;
-      segmentation2->GetSegmentation(ilayer,xsize, zsize);
+      segmentation->GetSegmentation(ilayer,xsize, zsize);
       recpnt.SetSigmaY2(xsize/TMath::Sqrt(12)*xsize/TMath::Sqrt(12));
       recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
       new(lrecp[nClusters++]) AliITSRecPoint(recpnt);
@@ -868,5 +867,6 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       AliInfo(Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
     }//cluster list entries
   }//ilayer
+  if(segmentation) delete segmentation;
 }
 
