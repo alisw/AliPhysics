@@ -103,7 +103,7 @@ void AliTPCv2::CreateGeometry()
   // here I define a volume TPC
   // retrive the medium name with "TPC_" as a leading string
   //
-  TGeoPcon *tpc = new TGeoPcon(0.,360.,20); //20 sections
+  TGeoPcon *tpc = new TGeoPcon(0.,360.,24); //24 sections
   //
   tpc->DefineSection(0,-291.,77.,278.);
   tpc->DefineSection(1,-270,77.,278.);
@@ -121,19 +121,25 @@ void AliTPCv2::CreateGeometry()
   tpc->DefineSection(9,-73.3,60.1,278.);
   //
   tpc->DefineSection(10,-73.3,56.9,278.); 
-  tpc->DefineSection(11,73.3,56.9,278.);
+  tpc->DefineSection(11,-68.5,56.9,278.);
   //
-  tpc->DefineSection(12,73.3,60.1,278.);
-  tpc->DefineSection(13,74.0,60.1,278.);
+  tpc->DefineSection(12,-68.5,60.,278.);
+  tpc->DefineSection(13,-65.,60.,278.);
   //
-  tpc->DefineSection(14,74.0,60.8,278.);
-  tpc->DefineSection(15,253.6,65.5,278.);
+  tpc->DefineSection(14,-65.,56.9,278.); 
+  tpc->DefineSection(15,73.3,56.9,278.);
   //
-  tpc->DefineSection(16,253.6,65.6,278.);
-  tpc->DefineSection(17,259.6,65.6,278.);
+  tpc->DefineSection(16,73.3,60.1,278.);
+  tpc->DefineSection(17,74.0,60.1,278.);
   //
-  tpc->DefineSection(18,259.6,70.0,278.);
-  tpc->DefineSection(19,291.,77.,278.);
+  tpc->DefineSection(18,74.0,60.8,278.);
+  tpc->DefineSection(19,253.6,65.5,278.);
+  //
+  tpc->DefineSection(20,253.6,65.6,278.);
+  tpc->DefineSection(21,259.6,65.6,278.);
+  //
+  tpc->DefineSection(22,259.6,70.0,278.);
+  tpc->DefineSection(23,291.,77.,278.);
   //
   TGeoMedium *m1 = gGeoManager->GetMedium("TPC_Air");
   TGeoVolume *v1 = new TGeoVolume("TPC_M",tpc,m1);
