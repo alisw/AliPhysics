@@ -1,7 +1,0 @@
-SRCS=
-
-HDRS= $(SRCS:.cxx=.h)                
-
-DHDR= TRDfastLinkDef.h
-
-EINCLUDE= RAW
