@@ -48,8 +48,8 @@ alihlteve_clean_compiled_macros:
 	@echo "***** Removing .d and .$(SOEXT) files from EVE/hlt-macros/ *****"
 	$(MUTE)rm -f $(ALICE_ROOT)/EVE/hlt-macros/*_C.d
 	$(MUTE)rm -f $(ALICE_ROOT)/EVE/hlt-macros/*_C.$(SOEXT)
-	$(MUTE)rm -f -R $(HOME)/.trdQArec
-	$(MUTE)rm -f -R $(HOME)/.QArec
+	$(MUTE)-rm -f -R $(HOME)/.trdQArec
+	$(MUTE)-rm -f -R $(HOME)/.QArec
 
 ifeq (macosx,$(ALICE_TARGET))
 
