@@ -8,7 +8,7 @@ RECONSTRUCTION=1 # will perform reconstruction
 RAW=1 # will reconstruct from raw data
 CHECKS=1 # will perform checks
 SLASHTMP=1 #will use /tmp to put the temporary raw data 
-NEVENTS=100 # will simulate 100 events
+NEVENTS=50 # will simulate 100 events
 
 #RECOPTIONS="SAVEDIGITS NOFASTDECODERS" # reconstruction options with non-high performance decoders
 RECOPTIONS="SAVEDIGITS" # default reconstruction options

@@ -111,18 +111,16 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
 {
   /// Add a pad to a cluster
   
-  cluster.AddPad(*pad);
-  pad->SetClusterId(cluster.GetUniqueID());
+  AliMUONPad* addedPad = cluster.AddPad(*pad);
   
   Int_t cathode = pad->Cathode();
   TObjArray& padArray = *fPads[cathode];
-  padArray.Remove(pad);
-  TIter next(&padArray);
+  delete padArray.Remove(pad);
   
   // Check neighbours
   TObjArray neighbours;
-  AliMpPad p = fkSegmentations[pad->Cathode()]->PadByIndices(pad->Ix(),pad->Iy(),kTRUE);
-  Int_t nn = fkSegmentations[pad->Cathode()]->GetNeighbours(p,neighbours);
+  AliMpPad p = fkSegmentations[cathode]->PadByIndices(addedPad->Ix(),addedPad->Iy(),kTRUE);
+  Int_t nn = fkSegmentations[cathode]->GetNeighbours(p,neighbours);
   for (Int_t in = 0; in < nn; ++in) 
   {
     AliMpPad* p1 = static_cast<AliMpPad*>(neighbours.At(in));
@@ -134,7 +132,7 @@ AliMUONPreClusterFinderV2::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
     {
         if ( !p2->IsUsed() && p2->Ix()==p1->GetIx() 
              && p2->Iy() == p1->GetIy() &&
-             p2->Cathode() == pad->Cathode() )
+             p2->Cathode() == cathode )
         {
           AddPad(cluster,p2);
         }

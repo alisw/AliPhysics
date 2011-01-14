@@ -353,6 +353,7 @@ AliMUONSimpleClusterServer::UseDigits(TIter& next, AliMUONVDigitStore* digitStor
     if (!padArray)
     {
       padArray = new TObjArray(100);
+      padArray->SetOwner(kTRUE);
       fPads[cathode]->Add(detElemId,padArray);
     }
     

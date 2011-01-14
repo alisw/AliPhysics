@@ -232,7 +232,8 @@ AliMUONPreClusterFinderV3::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
   
   Int_t cathode = pad->Cathode();
   TObjArray& padArray = *fPads[cathode];
-  padArray.Remove(pad);
+  delete padArray.Remove(pad);
+  
   TIter next(&padArray);
   AliMUONPad* testPad;
   

@@ -116,27 +116,28 @@ AliMUONPreClusterFinder::AddPad(AliMUONCluster& cluster, AliMUONPad* pad)
     return;
   }
   
-  cluster.AddPad(*pad);
+  AliMUONPad* addedPad = cluster.AddPad(*pad);
   
   Int_t cathode = pad->Cathode();
   TObjArray& padArray = *fPads[cathode];
   // WARNING: this Remove method uses the AliMUONPad::IsEqual if that method is
   // present (otherwise just compares pointers) : so that one must be correct
   // if implemented !
-  padArray.Remove(pad);
- // TObject* o = padArray.Remove(pad); 
+  TObject* o = padArray.Remove(pad);
 //  if (!o)
 //  {
 //    AliFatal("Oups. Could not remove pad from pads to consider. Aborting as anyway "
 //             " we'll get an infinite loop. Please check the AliMUONPad::IsEqual method"
 //             " as the first suspect for failed remove");
 //  }  
+  delete o;
+  
   TIter next(&padArray);
   AliMUONPad* testPad;
 
   while ( ( testPad = static_cast<AliMUONPad*>(next())))
   {
-    if ( AliMUONPad::AreNeighbours(*testPad,*pad) )
+    if ( AliMUONPad::AreNeighbours(*testPad,*addedPad) )
     {
       AddPad(cluster,testPad);
     }
