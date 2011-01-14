@@ -304,7 +304,7 @@ void AliEMCALCalibTimeDepCorrection::WriteRootInfo(const TString &rootFileName,
   TTree *treeCorr = new TTree("treeCorr","");
 
   // global part only has one entry
-  treeGlob->Branch("fStartTime", &fStartTime, "fStartTime/I"); // really unsigned int..
+  treeGlob->Branch("fStartTime", &fStartTime, "fStartTime/i"); // unsigned int..
   treeGlob->Branch("fNTimeBins", &fNTimeBins, "fNTimeBins/I");
   treeGlob->Branch("fTimeBinSize", &fTimeBinSize, "fTimeBinSize/I");
   treeGlob->Fill();

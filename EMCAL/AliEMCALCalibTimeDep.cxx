@@ -283,7 +283,12 @@ Int_t AliEMCALCalibTimeDep::CalcCorrection()
   // the run (compare max-min for each sensor separately)
   if (fMaxTempVariation < fTemperatureResolution) {
     nBins = 1; // just one bin needed..
+  }
+  if (nBins == 1) {    
     binSize = fEndTime - fStartTime;
+  }
+  if (fVerbosity > 1) {
+    cout << " nBins " << nBins << " binSize " << binSize << endl;
   }
 
   // set up a reasonable default (correction = 1.0)
