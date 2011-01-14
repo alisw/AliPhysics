@@ -25,6 +25,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDVZERO.h"
 #include "TH2F.h"
+#include "AliESDUtils.h"
 
 using namespace std;
 
@@ -88,6 +89,7 @@ void AliAnalysisTaskTriggerStudy::UserCreateOutputObjects()
   // Called once
   fHistoList = new AliHistoListWrapper("histoList","histogram list for trigger studies");
   fTriggerAnalysis = new AliTriggerAnalysis();
+  if (fIsMC) fTriggerAnalysis->SetAnalyzeMC(1);
 }
 
 
@@ -115,31 +117,34 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   AliESDVZERO* esdV0 = fESD->GetVZEROData();
   Float_t multV0A=esdV0->GetMTotV0A();
   Float_t multV0C=esdV0->GetMTotV0C();
-  Float_t multV0 = multV0A+multV0C;
+  Float_t dummy = 0;  
+  Float_t multV0 =  AliESDUtils::GetCorrV0(fESD, dummy);
 
   // Get number of clusters in layer 1
   Float_t outerLayerSPD = mult->GetNumberOfITSClusters(1);  
   Float_t innerLayerSPD = mult->GetNumberOfITSClusters(0);  
   Float_t totalClusSPD = outerLayerSPD+innerLayerSPD;
 
+  if ( !fIsMC &&(!(fESD->IsTriggerClassFired("CMBS2A-B-NOPF-ALL")|| fESD->IsTriggerClassFired("CMBS2C-B-NOPF-ALL") || fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL")) )) return;
   GetHistoSPD1  ("All", "All events before any selection")->Fill(outerLayerSPD);
+  GetHistoV0M   ("All", "All events before any selection")->Fill(multV0);
 
 
   // Physics selection
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   if(!isSelected) return;
-  // FIXME trigger classes
-  // if ( !(fESD->IsTriggerClassFired("CMBS2A-B-NOPF-ALL")|| fESD->IsTriggerClassFired("CMBS2C-B-NOPF-ALL") || fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL")) ) return;
 
-  GetHistoSPD1  ("AllPSNoPrino", "All events after physsel, before Francesco")->Fill(outerLayerSPD);
+
+  GetHistoSPD1  ("AllPSNoPrino", "All events after physsel (no ZDC time)")->Fill(outerLayerSPD);
+  GetHistoV0M   ("AllPSNoPrino", "All events after physsel (no ZDC time)")->Fill(multV0);
 
 
   // Francesco's cuts
-  const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
-  if(vtxESDTPC->GetNContributors()<1) return;
-  if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
-  const AliESDVertex * vtxESDSPD= fESD->GetPrimaryVertexSPD(); 
-  Float_t tpcContr=vtxESDTPC->GetNContributors();
+  // const AliESDVertex * vtxESDTPC= fESD->GetPrimaryVertexTPC(); 
+  // if(vtxESDTPC->GetNContributors()<1) return;
+  // if (vtxESDTPC->GetNContributors()<(-10.+0.25*fESD->GetMultiplicity()->GetNumberOfITSClusters(0)))     return;
+  // const AliESDVertex * vtxESDSPD= fESD->GetPrimaryVertexSPD(); 
+  // Float_t tpcContr=vtxESDTPC->GetNContributors();
 
   
 
@@ -193,9 +198,10 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t c0OM3 = h->IsTriggerInputFired("0OM3"); // thr >= 3 (input 20)
 
   // ZDC triggers
-  Bool_t zdcA   = kFALSE;
-  Bool_t zdcC   = kFALSE;
-  Bool_t zdcBar = kFALSE;
+  Bool_t zdcA    = kFALSE;
+  Bool_t zdcC    = kFALSE;
+  Bool_t zdcBar  = kFALSE;
+  Bool_t zdcTime = fTriggerAnalysis->ZDCTimeTrigger(fESD);
 
   if (!fIsMC) {
     // If it's data, we use the TDCs
@@ -230,12 +236,25 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   vdArray[kVDC0VBC]  = c0v0C;
   //vdArray[kVDC0OM2]  = c0OM2;
 
-  // Plots requested by Jurgen on 18/11/2010
+  // Plots requested by Jurgen on 18/11/2010 + later updates (including plots for the note)
   // FIXME: will skip everything else
 
-  GetHistoSPD1  ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(outerLayerSPD);
-  GetHistoTracks("PhysSel", "All events after physics selection and Francesco's cut")->Fill(ntracks);
-  GetHistoV0M   ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(multV0);
+
+  if(zdcTime) {
+    GetHistoSPD1  ("ZDCTIME", "ZDC Time Cut")->Fill(outerLayerSPD);
+    GetHistoTracks("ZDCTIME", "ZDC Time Cut")->Fill(ntracks);
+    GetHistoV0M   ("ZDCTIME", "ZDC Time Cut")->Fill(multV0);
+  }
+
+  if(zdcTime && ntracks > 1) {
+    GetHistoSPD1  ("ZDCTIME1TRACK", "ZDC Time Cut & 1 Track")->Fill(outerLayerSPD);
+    GetHistoTracks("ZDCTIME1TRACK", "ZDC Time Cut & 1 Track")->Fill(ntracks);
+    GetHistoV0M   ("ZDCTIME1TRACK", "ZDC Time Cut & 1 Track")->Fill(multV0);
+  }
+
+  // GetHistoSPD1  ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(outerLayerSPD);
+  // GetHistoTracks("PhysSel", "All events after physics selection and Francesco's cut")->Fill(ntracks);
+  // GetHistoV0M   ("PhysSel", "All events after physics selection and Francesco's cut")->Fill(multV0);
   if(c0v0A && c0v0C) {
     GetHistoSPD1  ("V0AND", "V0A & V0C")->Fill(outerLayerSPD);
     GetHistoTracks("V0AND", "V0A & V0C")->Fill(ntracks);
@@ -550,7 +569,7 @@ TH1 *   AliAnalysisTaskTriggerStudy::GetHistoV0M(const char * name, const char *
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
     // h = new TH1F (hname.Data(), title, 1000, -0.5, 10000-0.5);
-    h = new TH1F (hname.Data(), title, 300, -0.5, 300-0.5);
+    h = new TH1F (hname.Data(), title, 500, -0.5, 500-0.5);
     h->Sumw2();
     h->SetXTitle("V0M");
     fHistoList->GetList()->Add(h);

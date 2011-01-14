@@ -27,9 +27,14 @@ class AliAnalysisMultPbTrackHistoManager : public AliHistoListWrapper {
 
 public:
 
-  typedef enum {kHistoGen, kHistoRec, kHistoRecPrim, kHistoRecSecWeak, kHistoRecSecMat, kHistoRecFake, kNHistos} Histo_t;
-  typedef enum {kStatAll,  kStatCentr, kStatPhysSel, kStatVtx, kStatZDCCut, kNStatBins} Stat_t;
+  typedef enum {kHistoGen, kHistoRec, kHistoRecPrim, kHistoRecSecWeak, kHistoRecSecMat, kHistoRecFake, kHistoRecHighestMeanPt, kHistoRecLowestMeanPt, kNHistos} Histo_t;
+  typedef enum {kStatAll,  kStatCentr, kStatPhysSel, kStatVtx, kStatZDCCut, kStatVtxRangeCut, kNStatBins} Stat_t;
   typedef enum {kPartPiPlus, kPartKPlus, kPartP, kPartLPlus, kPartPiMinus, kPartKMinus, kPartPBar, kPartLMinus, kPartOther, kNPart} Part_t;
+
+  // these bits define the behaviour at merging
+  // if kKeepMax(Mib)Mean is set, the histogram with the highest (lowest) mean is kept
+  enum {kKeepMaxMean = BIT(22), kKeepMinMean = BIT(23)};
+
 
 
   AliAnalysisMultPbTrackHistoManager();
@@ -56,7 +61,8 @@ public:
   TH1D * GetHistoSpecies(Histo_t id);
   TH1D * GetHistoProcess(Histo_t id);
   TH1D * GetHistoVzEvent(Histo_t id);
-
+  TH1D * GetHistoPtEvent(Histo_t id);
+  TH1D * GetHistoMeanPt (Histo_t id);
 
 
   // Misch utils
@@ -72,6 +78,11 @@ public:
 
   // 
   TH1 * GetHisto(const char * name);
+
+  virtual void Print(Option_t* option = "") const {fList->Print();}
+
+
+  Long64_t Merge(TCollection* list); // need to override this because of the mean pts
 
 private:
 
