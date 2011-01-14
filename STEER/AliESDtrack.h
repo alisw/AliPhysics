@@ -241,7 +241,8 @@ public:
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0) const;
   
   void    SetTRDpid(const Double_t *p);
-  
+  void    SetTRDsignal(Double_t sig) {fTRDsignal = sig;}
+	  
 // A.Bercuci
   void    SetTRDntracklets(UChar_t q){fTRDntracklets = q;}
   UChar_t GetTRDntracklets() const {return (fTRDntracklets>>3)&7;}
@@ -250,7 +251,7 @@ public:
   // reading of the v4-16-Release data with TRUNK related software (A.Bercuci@Apr 30th 09) 
   UChar_t GetTRDpidQuality() const {return GetTRDntrackletsPID();}
 // end A.Bercuci
-
+  
   void     SetNumberOfTRDslices(Int_t n);
   Int_t    GetNumberOfTRDslices() const;
   void     SetTRDslice(Double_t q, Int_t plane, Int_t slice);
