@@ -188,6 +188,8 @@ public:
   Double_t GetITSchi2() const {return fITSchi2;}
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
+  UChar_t GetITSSharedMap() const {return fITSSharedMap;}
+  void    SetITSSharedMap(UChar_t map) {fITSSharedMap=map;}
   void    SetITSModuleIndex(Int_t ilayer,Int_t idx) {fITSModule[ilayer]=idx;}
   Int_t   GetITSModuleIndex(Int_t ilayer) const {return fITSModule[ilayer];}
   Bool_t  GetITSModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,
@@ -200,6 +202,7 @@ public:
      return fFriendTrack->GetITStrack();
   }
   Bool_t  HasPointOnITSLayer(Int_t i) const {return TESTBIT(fITSClusterMap,i);}
+  Bool_t  HasSharedPointOnITSLayer(Int_t i) const {return TESTBIT(fITSSharedMap,i);}
 
   void    SetTPCpid(const Double_t *p);
   void    GetTPCpid(Double_t *p) const;
@@ -486,6 +489,7 @@ protected:
 
   Char_t  fITSncls;        // number of clusters assigned in the ITS
   UChar_t fITSClusterMap;  // map of clusters, one bit per a layer
+  UChar_t fITSSharedMap;   // map of shared clusters, one bit per a layer
   UChar_t fTRDncls;        // number of clusters assigned in the TRD
   UChar_t fTRDncls0;       // number of clusters assigned in the TRD before first material cross
   UChar_t fTRDntracklets;  // number of TRD tracklets used for tracking/PID
@@ -500,7 +504,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,57)  //ESDtrack 
+  ClassDef(AliESDtrack,58)  //ESDtrack 
 };
 
 

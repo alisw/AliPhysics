@@ -220,6 +220,7 @@ AliESDtrack::AliESDtrack() :
   fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
+  fITSSharedMap(0),
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
@@ -319,6 +320,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fTPCnclsFIter1(track.fTPCnclsIter1),
   fITSncls(track.fITSncls),
   fITSClusterMap(track.fITSClusterMap),
+  fITSSharedMap(track.fITSSharedMap),
   fTRDncls(track.fTRDncls),
   fTRDncls0(track.fTRDncls0),
   fTRDntracklets(track.fTRDntracklets),
@@ -431,6 +433,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
+  fITSSharedMap(0),
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
@@ -479,6 +482,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
 
   // Set ITS cluster map
   fITSClusterMap=track->GetITSClusterMap();
+  fITSSharedMap=0;
 
   fITSncls=0;
   for(i=0; i<6; i++) {
@@ -565,6 +569,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fTPCnclsFIter1(0),
   fITSncls(0),
   fITSClusterMap(0),
+  fITSSharedMap(0),
   fTRDncls(0),
   fTRDncls0(0),
   fTRDntracklets(0),
@@ -896,6 +901,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
 
   fITSncls = source.fITSncls;       
   fITSClusterMap = source.fITSClusterMap; 
+  fITSSharedMap = source.fITSSharedMap; 
   fTRDncls   = source.fTRDncls;       
   fTRDncls0  = source.fTRDncls0;      
   fTRDntracklets  = source.fTRDntracklets; 
@@ -1045,6 +1051,7 @@ void AliESDtrack::MakeMiniESDtrack(){
   fITSchi2 = 0;
   fITSncls = 0;       
   fITSClusterMap=0;
+  fITSSharedMap=0;
   fITSsignal = 0;     
   for (Int_t i=0;i<4;i++) fITSdEdxSamples[i] = 0.;
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 

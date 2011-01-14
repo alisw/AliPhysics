@@ -2896,6 +2896,7 @@ Float_t AliITStrackerMI::GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id
       if (fgLayers[l].GetClusterTracks(itrack,c)>=0 && fgLayers[l].GetClusterTracks(itrack,c)!=id){
 	list[l]=index;
 	clist[l] = (AliITSRecPoint*)GetCluster(index);
+	track->SetSharedWeight(l,weight);
 	shared+=weight; 
 	break;
       }

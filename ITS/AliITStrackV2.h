@@ -86,6 +86,8 @@ public:
   Int_t GetModuleIndex(Int_t ilayer) const {return fModule[ilayer];}
   void  SetModuleIndexInfo(Int_t ilayer,Int_t idet,Int_t status=1,Float_t xloc=0,Float_t zloc=0);
   Bool_t GetModuleIndexInfo(Int_t ilayer,Int_t &idet,Int_t &status,Float_t &xloc,Float_t &zloc) const;
+  void    SetSharedWeight(Int_t ilayer,Float_t w) {fSharedWeight[ilayer]=w;}
+  Float_t GetSharedWeight(Int_t ilayer) const {return fSharedWeight[ilayer];}
   Bool_t Invariant() const;
 
   void  SetExtraCluster(Int_t ilayer, Int_t idx) {fIndex[AliITSgeomTGeo::kNLayers+ilayer]=idx;}
@@ -107,11 +109,14 @@ protected:
 
   Int_t fModule[2*AliITSgeomTGeo::kNLayers]; // indices of crossed modules: 
                                              // see SetModuleIndexInfo()
+
+  Float_t fSharedWeight[AliITSgeomTGeo::kNLayers]; // probability of sharing
+
   AliESDtrack *fESDtrack;    //! pointer to the connected ESD track
 
 private:
   AliITStrackV2 &operator=(const AliITStrackV2 &tr);
-  ClassDef(AliITStrackV2,8)  //ITS reconstructed track
+  ClassDef(AliITStrackV2,9)  //ITS reconstructed track
 };
 
 inline void AliITStrackV2::SetSampledEdx(Float_t q, Int_t i) {

@@ -41,6 +41,7 @@ AliITStrackV2::AliITStrackV2() : AliKalmanTrack(),
   fESDtrack(0)
 {
   for(Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) {fIndex[i]=-1; fModule[i]=-1;}
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=0;}
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
@@ -73,6 +74,7 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
     SetIntegratedLength(t.GetIntegratedLength());
   }
 
+  for(Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=0;}
   for(Int_t i=0; i<4; i++) fdEdxSample[i]=0;
 }
 
@@ -82,6 +84,7 @@ void AliITStrackV2::ResetClusters() {
   // Reset the array of attached clusters.
   //------------------------------------------------------------------
   for (Int_t i=0; i<2*AliITSgeomTGeo::kNLayers; i++) fIndex[i]=-1;
+  for (Int_t i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=0;}
   SetChi2(0.); 
   SetNumberOfClusters(0);
 } 
@@ -91,13 +94,25 @@ void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   // Update track params
   fESDtrack->UpdateTrackParams(this,flags);
   // copy the module indices
-  for(Int_t i=0;i<12;i++) {
+  Int_t i;
+  for(i=0;i<2*AliITSgeomTGeo::kNLayers;i++) {
     //   printf("     %d\n",GetModuleIndex(i));
     fESDtrack->SetITSModuleIndex(i,GetModuleIndex(i));
   }
+  // copy the map of shared clusters
+  if(flags==AliESDtrack::kITSin) {
+    UChar_t itsSharedMap=0;
+    for(i=0;i<AliITSgeomTGeo::kNLayers;i++) {
+      if(fSharedWeight[i]>0) {SETBIT(itsSharedMap,i);printf("UpdateESD: l %d\n",i);}
+      
+    }
+    fESDtrack->SetITSSharedMap(itsSharedMap);
+  }
+  for(i=0;i<6;i++) if(fESDtrack->HasSharedPointOnITSLayer(i)) printf("shared on %d\n",i);
+
   // copy the 4 dedx samples
   Double_t sdedx[4]={0.,0.,0.,0.};
-  for(Int_t i=0; i<4; i++) sdedx[i]=fdEdxSample[i];
+  for(i=0; i<4; i++) sdedx[i]=fdEdxSample[i];
   fESDtrack->SetITSdEdxSamples(sdedx);
 }
 
@@ -117,6 +132,7 @@ AliITStrackV2::AliITStrackV2(const AliITStrackV2& t) :
     fIndex[i]=t.fIndex[i];
     fModule[i]=t.fModule[i];
   }
+  for (i=0; i<AliITSgeomTGeo::kNLayers; i++) {fSharedWeight[i]=t.fSharedWeight[i];}
 }
 
 //_____________________________________________________________________________
