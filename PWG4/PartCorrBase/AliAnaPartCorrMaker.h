@@ -17,7 +17,6 @@
 class TList; 
 class TClonesArray;
 #include<TObject.h>
-class TString;
 class TH1I;
 
 // --- Analysis system ---

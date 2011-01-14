@@ -36,7 +36,7 @@ class AliAnalysisTaskParticleCorrelation : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
   virtual void FinishTaskOutput();
   
-  void SetConfigFileName(TString name ) {fConfigName = name ; }
+  void SetConfigFileName(TString & name ) {fConfigName = name ; }
   TString GetConfigFileName() const {return fConfigName ; }
 	
   void SetAnalysisMaker(AliAnaPartCorrMaker * const maker) {fAna = maker;} 
