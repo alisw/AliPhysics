@@ -29,6 +29,8 @@ class AliOADBContainer : public TNamed {
   void  AppendObject(TObject* obj, Int_t lower, Int_t upper);
   void  UpdateObject(Int_t index, TObject* obj, Int_t lower, Int_t upper);
   void  RemoveObject(Int_t index);
+  void  AddDefaultObject(TNamed* obj);
+  void  CleanDefaultList();
   Int_t GetIndexForRun(Int_t run) const;
 // I/O  
   void  WriteToFile(char* fname)  const;
@@ -37,11 +39,13 @@ class AliOADBContainer : public TNamed {
   Int_t GetNumberOfEntries()    const {return fEntries;}
   Int_t LowerLimit(Int_t idx)   const {return fLowerLimits[idx];}
   Int_t UpperLimit(Int_t idx)   const {return fUpperLimits[idx];}
-  TObject* GetObject(Int_t idx) const {return fArray->At(idx);}
+  TObject* GetObject(Int_t run, char* def = "") const;
+  TObject* GetObjectByIndex(Int_t run) const;
 // Debugging  
   void List();
  private :
-  TObjArray*               fArray;         // Array with objects
+  TObjArray*               fArray;         // Array with objects corresponding to run ranges
+  TList*                   fDefaultList;   // List with default arrays
   TArrayI                  fLowerLimits;   // lower limit of run range
   TArrayI                  fUpperLimits;   // upper limit of run range
   Int_t                    fEntries;       // Number of entries

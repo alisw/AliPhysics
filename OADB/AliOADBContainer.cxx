@@ -28,6 +28,7 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 #include <TFile.h>
+#include <TList.h>
 
 ClassImp(AliOADBContainer);
 
@@ -35,6 +36,7 @@ ClassImp(AliOADBContainer);
 AliOADBContainer::AliOADBContainer() : 
   TNamed(),
   fArray(new TObjArray(100)),
+  fDefaultList(new TList()),
   fLowerLimits(),
   fUpperLimits(),
   fEntries(0)
@@ -44,6 +46,7 @@ AliOADBContainer::AliOADBContainer() :
 AliOADBContainer::AliOADBContainer(char* name) : 
   TNamed(name, "OADBContainer"),
   fArray(new TObjArray(100)),
+  fDefaultList(new TList()),
   fLowerLimits(),
   fUpperLimits(),
   fEntries(0)
@@ -61,6 +64,7 @@ AliOADBContainer::~AliOADBContainer()
 AliOADBContainer::AliOADBContainer(const AliOADBContainer& cont) :
   TNamed(cont),
   fArray(cont.fArray),
+  fDefaultList(cont.fDefaultList),
   fLowerLimits(cont.fLowerLimits),
   fUpperLimits(cont.fUpperLimits),
   fEntries(cont.fEntries)
@@ -134,8 +138,21 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
   fArray->AddAt(obj, idx);
 }
 
+void  AliOADBContainer::AddDefaultObject(TNamed* obj)
+{
+  // Add a default object
+  fDefaultList->Add(obj);
+}
+
+void  AliOADBContainer::CleanDefaultList()
+{
+  // Clean default list
+  fDefaultList->Delete();
+}
+
 Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
 {
+  //
   // Find the index for a given run 
   Int_t found = 0;
   Int_t index = -1;
@@ -147,18 +164,53 @@ Int_t AliOADBContainer::GetIndexForRun(Int_t run) const
 	  index = i;
 	}
     }
+
+  if (found > 1) {
+    AliError(Form("More than one (%5d) object found; return last (%5d) !\n", found, index));
+  } else if (index == -1) {
+    AliWarning(Form("No object found for run %5d !\n", run));
+  }
+  
   return index;
+}
+
+TObject* AliOADBContainer::GetObject(Int_t run, char* def) const
+{
+  // Return object for given run or default if not found
+  TObject* obj = 0;
+  Int_t idx = GetIndexForRun(run);
+  if (idx == -1) {
+    // no object found, try default
+    obj = fDefaultList->FindObject(def);
+    if (!obj) {
+      AliError("Default Object not found !\n");
+      return (0);
+    } else {
+      return (obj);
+    }
+  } else {
+    return (fArray->At(idx));
+  }
+}
+
+TObject* AliOADBContainer::GetObjectByIndex(Int_t run) const
+{
+  // Return object for given index
+  return (fArray->At(run));
 }
 
 void AliOADBContainer::WriteToFile(char* fname) const
 {
+  //
   // Write object to file
   TFile* f = new TFile(fname, "recreate");
   Write();
   f->Close();
 }
+
 Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
 {
+    // 
     // Initialize object from file
     TFile* file = TFile::Open(fname);
     if (!file) return (1);
@@ -176,7 +228,7 @@ Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
     for (Int_t i = 0; i < fEntries; i++) {
 	fLowerLimits[i] = cont->LowerLimit(i); 
 	fUpperLimits[i] = cont->UpperLimit(i);
-	fArray->AddAt(cont->GetObject(i), i);
+	fArray->AddAt(cont->GetObjectByIndex(i), i);
     }
     
     return 0;
@@ -186,6 +238,7 @@ Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
 
 void AliOADBContainer::List()
 {
+  //
   // List Objects
   for (Int_t i = 0; i < fEntries; i++) {
     printf("Lower %5d Upper %5d \n", fLowerLimits[i], fUpperLimits[i]);
