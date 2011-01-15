@@ -15,6 +15,7 @@
 
 class TList;
 class AliESDVertex;
+class AliAODRecoDecay;
 class AliAODRecoDecayHF;
 class AliAODRecoDecayHF2Prong;
 class AliAODRecoDecayHF3Prong;
@@ -114,7 +115,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsD0toKpipipi* GetCutsD0toKpipipi() const { return fCutsD0toKpipipi; }
   void SetCutsDStartoKpipi(AliRDHFCutsDStartoKpipi* cuts) { fCutsDStartoKpipi = cuts; }
   AliRDHFCutsDStartoKpipi* GetCutsDStartoKpipi() const { return fCutsDStartoKpipi; }
-
+  void SetMassCutBeforeVertexing(Bool_t flag) { fMassCutBeforeVertexing=flag; } 
 
   //
  private:
@@ -159,10 +160,14 @@ class AliAnalysisVertexingHF : public TNamed {
   AliRDHFCutsD0toKpipipi *fCutsD0toKpipipi; // D0->Kpipipi cuts
   AliRDHFCutsDStartoKpipi *fCutsDStartoKpipi; // Dstar->D0pi cuts
 
-
   TList *fListOfCuts;    // pointer to list of cuts for output file
   Bool_t fFindVertexForDstar; // reconstruct a secondary vertex or assume it's from the primary vertex
   Bool_t fFindVertexForCascades;  // reconstruct a secondary vertex or assume it's from the primary vertex
+  Bool_t fMassCutBeforeVertexing; // to go faster in PbPb
+  // dummies for invariant mass calculation
+  AliAODRecoDecay *fMassCalc2; // for 2 prong
+  AliAODRecoDecay *fMassCalc3; // for 3 prong
+  AliAODRecoDecay *fMassCalc4; // for 4 prong
   //
   void AddRefs(AliAODVertex *v,AliAODRecoDecayHF *rd,const AliVEvent *event,
 	       const TObjArray *trkArray) const;
@@ -200,6 +205,7 @@ class AliAnalysisVertexingHF : public TNamed {
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t &dispersion,Bool_t useTRefArray=kTRUE) const;
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
 		       Double_t *px,Double_t *py,Double_t *pz) const;
+  Bool_t SelectInvMass(TObjArray *trkArray) const;
   void   SelectTracksAndCopyVertex(const AliVEvent *event,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
