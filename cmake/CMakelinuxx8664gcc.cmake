@@ -86,10 +86,10 @@ if(${CMAKE_Fortran_COMPILER} MATCHES "g95")
 elseif(${CMAKE_Fortran_COMPILER} MATCHES "gfortran")
   
   set(FFLAGS "-DFORTRAN_GFORTRAN ${FFLAGS}")
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m32 -print-file-name=libgfortran.so
+  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.so
                   OUTPUT_VARIABLE _shlib
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m32 -print-file-name=libgfortranbegin.a
+  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortranbegin.a
                   OUTPUT_VARIABLE SHLIB
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   set(SHLIB "${_shlib} ${SHLIB}")
