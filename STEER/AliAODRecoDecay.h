@@ -131,6 +131,7 @@ class AliAODRecoDecay : public AliVTrack {
   Short_t  ChargeProng(Int_t ip) const;
   Double_t Getd0Prong(Int_t ip) const {return fd0[ip];}
   Double_t Prodd0d0(Int_t ip1=0,Int_t ip2=0) const {return fd0[ip1]*fd0[ip2];} 
+  void     SetPxPyPzProngs(Int_t nprongs,Double_t *px,Double_t *py,Double_t *pz);
   Double_t PxProng(Int_t ip) const {return fPx[ip];}
   Double_t PyProng(Int_t ip) const {return fPy[ip];}
   Double_t PzProng(Int_t ip) const {return fPz[ip];}
@@ -316,6 +317,26 @@ inline Double_t AliAODRecoDecay::QtProngFlightLine(Int_t ip,AliAODVertex *vtx1) 
   Double_t v[3];
   vtx1->GetPosition(v);
   return QtProngFlightLine(ip,v);
+}
+
+inline void AliAODRecoDecay::SetPxPyPzProngs(Int_t nprongs,Double_t *px,Double_t *py,Double_t *pz) 
+{
+  if(nprongs!=GetNProngs()) { 
+    printf("Wrong number of momenta, must be nProngs");
+    return;
+  }
+  if(!fPx) {
+    fPx = new Double32_t[nprongs];
+    fPy = new Double32_t[nprongs];
+    fPz = new Double32_t[nprongs];
+  }
+  for(Int_t i=0;i<nprongs;i++) {
+    fPx[i] = px[i]; 
+    fPy[i] = py[i]; 
+    fPz[i] = pz[i]; 
+  }
+
+  return;
 }
 
 inline void AliAODRecoDecay::SetDCAs(Int_t nDCA,Double_t *dca) 
