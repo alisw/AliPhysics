@@ -22,6 +22,7 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "TRefArray.h"
+class AliCentrality;
 
 class AliVEvent : public TObject {
 
@@ -126,68 +127,11 @@ public:
   virtual Bool_t IsPileupFromSPDInMultBins() const {
     return kFALSE;    
   }
-
-  virtual Int_t        EventIndex(Int_t itrack) const = 0;
-  virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const= 0;
-  virtual Int_t        EventIndexForPHOSCell(Int_t icell) const= 0;
-  virtual Int_t        EventIndexForEMCALCell(Int_t icell) const= 0;  
-
-  //---------- end of new stuff
-
-
-  /*  to be considered to go in here be implemented
-
-  void SetPrimaryVertex(const AliESDVertex *vertex) {
-    *fPrimaryVertex = *vertex;
-    fPrimaryVertex->SetName("PrimaryVertex");// error prone use class wide names?
-  }
-
-  void SetMultiplicity(const AliMultiplicity *mul) {
-    *fSPDMult = *mul;
-    // CKB 
-    //     new (&fSPDMult) AliMultiplicity(*mul);
-  }
-  const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
-  
-  
-  AliESDMuonTrack *GetMuonTrack(Int_t i) const {
-    return (AliESDMuonTrack *)fMuonTracks->UncheckedAt(i);
-  }
-  void AddMuonTrack(const AliESDMuonTrack *t) {
-    TClonesArray &fmu = *fMuonTracks;
-    new(fmu[fMuonTracks->GetEntriesFast()]) AliESDMuonTrack(*t);
-  }
-
-  AliESDv0 *GetV0(Int_t i) const {
-    return (AliESDv0*)fV0s->UncheckedAt(i);
-  }
-  Int_t AddV0(const AliESDv0 *v);
-
-  AliESDcascade *GetCascade(Int_t i) const {
-    return (AliESDcascade *)fCascades->UncheckedAt(i);
-  }
-  void AddCascade(const AliESDcascade *c) {
-    TClonesArray &fc = *fCascades;
-    new(fc[fCascades->GetEntriesFast()]) AliESDcascade(*c);
-  }
-
-  AliESDkink *GetKink(Int_t i) const {
-    return (AliESDkink *)fKinks->UncheckedAt(i);
-  }
-  Int_t AddKink(const AliESDkink *c);
-
-  AliESDCaloCluster *GetCaloCluster(Int_t i) const {
-    return (AliESDCaloCluster *)fCaloClusters->UncheckedAt(i);
-  }
-  Int_t AddCaloCluster(const AliESDCaloCluster *c);
-
-  Int_t GetNumberOfMuonTracks() const {return fMuonTracks->GetEntriesFast();}
-  Int_t GetNumberOfV0s()      const {return fV0s->GetEntriesFast();}
-  Int_t GetNumberOfCascades() const {return fCascades->GetEntriesFast();}
-  Int_t GetNumberOfKinks() const {return fKinks->GetEntriesFast();}
-  Int_t GetNumberOfCaloClusters() const {return fCaloClusters->GetEntriesFast();}
-
-  */
+  virtual AliCentrality* GetCentrality()                          = 0;
+  virtual Int_t        EventIndex(Int_t itrack)             const = 0;
+  virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const = 0;
+  virtual Int_t        EventIndexForPHOSCell(Int_t icell)   const = 0;
+  virtual Int_t        EventIndexForEMCALCell(Int_t icell)  const = 0;  
 
   ClassDef(AliVEvent,1)  // base class for AliEvent data
 };

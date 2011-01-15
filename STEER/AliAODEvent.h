@@ -33,6 +33,7 @@
 
 class TTree;
 class TFolder;
+class AliCentrality;
 
 class AliAODEvent : public AliVEvent {
 
@@ -232,7 +233,7 @@ class AliAODEvent : public AliVEvent {
   virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
   virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
   virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
-  
+  AliCentrality*       GetCentrality() {return fHeader->GetCentralityP();} 
   private :
 
   TList   *fAODObjects; //  list of AODObjects
