@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
+#include <TList.h>
 #include <TArrayI.h>
 #include <TObjArray.h>
 
@@ -26,12 +27,12 @@ class AliOADBContainer : public TNamed {
   AliOADBContainer(const AliOADBContainer& cont); 
   AliOADBContainer& operator=(const AliOADBContainer& cont);
 // Object adding and removal
-  void  AppendObject(TObject* obj, Int_t lower, Int_t upper);
-  void  UpdateObject(Int_t index, TObject* obj, Int_t lower, Int_t upper);
-  void  RemoveObject(Int_t index);
-  void  AddDefaultObject(TNamed* obj);
-  void  CleanDefaultList();
-  Int_t GetIndexForRun(Int_t run) const;
+  void   AppendObject(TObject* obj, Int_t lower, Int_t upper);
+  void   UpdateObject(Int_t index, TObject* obj, Int_t lower, Int_t upper);
+  void   RemoveObject(Int_t index);
+  void   AddDefaultObject(TNamed* obj);
+  void   CleanDefaultList();
+  TList* GetDefaultList() const {return fDefaultList;}
 // I/O  
   void  WriteToFile(char* fname)  const;
   Int_t InitFromFile(char* fname, char* key);
@@ -41,8 +42,13 @@ class AliOADBContainer : public TNamed {
   Int_t UpperLimit(Int_t idx)   const {return fUpperLimits[idx];}
   TObject* GetObject(Int_t run, char* def = "") const;
   TObject* GetObjectByIndex(Int_t run) const;
+  TObject* GetDefaultObject(char* key) 
+  {return(fDefaultList->FindObject(key));}
 // Debugging  
   void List();
+ private:
+  Int_t HasOverlap(Int_t lower, Int_t upper);
+  Int_t GetIndexForRun(Int_t run) const;
  private :
   TObjArray*               fArray;         // Array with objects corresponding to run ranges
   TList*                   fDefaultList;   // List with default arrays

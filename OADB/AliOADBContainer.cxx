@@ -41,6 +41,7 @@ AliOADBContainer::AliOADBContainer() :
   fUpperLimits(),
   fEntries(0)
 {
+  // Default constructor
 }
 
 AliOADBContainer::AliOADBContainer(char* name) : 
@@ -51,6 +52,7 @@ AliOADBContainer::AliOADBContainer(char* name) :
   fUpperLimits(),
   fEntries(0)
 {
+  // Constructor
 }
 
 
@@ -75,7 +77,9 @@ AliOADBContainer::AliOADBContainer(const AliOADBContainer& cont) :
 //______________________________________________________________________________
 AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
 {
+  //
   // Assignment operator
+  // Copy objects related to run ranges
   if(this!=&cont) {
     TNamed::operator=(cont);
     fEntries = cont.fEntries;
@@ -87,34 +91,58 @@ AliOADBContainer& AliOADBContainer::operator=(const AliOADBContainer& cont)
 	fArray->AddAt(cont.fArray->At(i), i);
     }
   }
+  //
+  // Copy default objects
+  TList* list = cont.GetDefaultList();
+  TIter next(list);
+  TObject* obj;
+  while((obj = next())) fDefaultList->Add(obj);
+  //
   return *this;
 }
 
 void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper)
 {
+  //
   // Append a new object to the list 
+  //
+  // Check that there is no overlap with existing run ranges
+  Int_t index = HasOverlap(lower, upper);
+  
+  if (index != -1) {
+    AliFatal(Form("Ambiguos validity range (%5d) !\n", index));
+    return;
+  }
+  //
+  // Adjust arrays
   fEntries++;
   fLowerLimits.Set(fEntries);
   fUpperLimits.Set(fEntries);
 
+  // Add the object
   fLowerLimits[fEntries - 1] = lower;
   fUpperLimits[fEntries - 1] = upper;
-
   fArray->Add(obj);
 }
 
 void AliOADBContainer::RemoveObject(Int_t idx)
 {
+  //
   // Remove object from the list 
+
+  //
+  // Check that index is inside range 
   if (idx < 0 || idx >= fEntries) 
     {
       AliError(Form("Index out of Range %5d >= %5d", idx, fEntries));
       return;
     }
-    
+  //
+  // Remove the object
   TObject* obj = fArray->RemoveAt(idx);
   delete obj;
-
+  //
+  // Adjust the run ranges and shrink the array
   for (Int_t i = idx; i < (fEntries-1); i++) {
     fLowerLimits[i] = fLowerLimits[i + 1]; 
     fUpperLimits[i] = fUpperLimits[i + 1];
@@ -126,18 +154,30 @@ void AliOADBContainer::RemoveObject(Int_t idx)
 
 void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t upper)
 {
+  //
   // Append a new object to the list 
+  
+  // Check that index is inside range
   if (idx < 0 || idx >= fEntries) 
     {
       AliError(Form("Index out of Range %5d >= %5d", idx, fEntries));
       return;
     }
-
+  //
+  // Check that there is no overlap with existing run ranges  
+  Int_t index = HasOverlap(lower, upper);
+  if (index != -1) {
+    AliFatal(Form("Ambiguos validity range (%5d) !\n", index));
+    return;
+  }
+  //
+  // Add object
   fLowerLimits[idx] = lower;
   fUpperLimits[idx] = upper;
   fArray->AddAt(obj, idx);
 }
-
+    
+ 
 void  AliOADBContainer::AddDefaultObject(TNamed* obj)
 {
   // Add a default object
@@ -230,7 +270,11 @@ Int_t AliOADBContainer::InitFromFile(char* fname, char* key)
 	fUpperLimits[i] = cont->UpperLimit(i);
 	fArray->AddAt(cont->GetObjectByIndex(i), i);
     }
-    
+
+    TIter next(cont->GetDefaultList());
+    TObject* obj;
+    while((obj = next())) fDefaultList->Add(obj);
+
     return 0;
     
 }
@@ -244,4 +288,22 @@ void AliOADBContainer::List()
     printf("Lower %5d Upper %5d \n", fLowerLimits[i], fUpperLimits[i]);
     (fArray->At(i))->Dump();
   }
+  TIter next(fDefaultList);
+  TObject* obj;
+  while((obj = next())) obj->Dump();
+
+}
+
+Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper)
+{
+  //
+  // Checks for overlpapping validity regions
+  for (Int_t i = 0; i < fEntries; i++) {
+    if ((lower >= fLowerLimits[i] && lower <= fUpperLimits[i]) ||
+	(upper >= fLowerLimits[i] && upper <= fUpperLimits[i]))
+      {
+	return (i);
+      }
+  }
+  return (-1);
 }
