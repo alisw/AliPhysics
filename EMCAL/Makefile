@@ -57,7 +57,9 @@ CXXFLAGS     += $(ALICEINC) -g
 F77FLAGS     += $(ALICEINC) -g -fPIC
 
 
-include lib$(PACKAGE).pkg
+SRCS     := $(wildcard *.cxx */*.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_EMCAL := $(DHDR)
 HDRS_EMCAL := $(HDRS)
@@ -93,7 +95,7 @@ clean:
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_EMCAL) $(SRCS_EMCAL) $(DHDR_EMCAL) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_EMCAL) $(SRCS_EMCAL) $(DHDR_EMCAL) Makefile Makefile.arch PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)

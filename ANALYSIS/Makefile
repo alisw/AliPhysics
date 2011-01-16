@@ -38,7 +38,10 @@ endif
 CXXFLAGS     += $(ALICEINC) -g
 
 CHECKXML      := $(shell root-config --has-xml)
-include lib$(PACKAGE).pkg
+
+SRCS     := $(wildcard *.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_ANALYSIS := $(DHDR)
 HDRS_ANALYSIS := $(HDRS)
@@ -71,7 +74,7 @@ G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_ANALYSIS) $(SRCS_ANALYSIS) $(DHDR_ANALYSIS) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_ANALYSIS) $(SRCS_ANALYSIS) $(DHDR_ANALYSIS) Makefile Makefile.arch PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)
