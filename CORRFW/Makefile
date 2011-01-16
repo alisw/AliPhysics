@@ -36,7 +36,10 @@ endif
 CXXFLAGS     += $(ALICEINC) -g
 
 PACKAGE = CORRFW
-include lib$(PACKAGE).pkg
+
+SRCS     := $(wildcard *.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_CORRFW := $(DHDR)
 HDRS_CORRFW := $(HDRS)
@@ -69,7 +72,7 @@ G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_CORRFW) $(SRCS_CORRFW) $(DHDR_CORRFW) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_CORRFW) $(SRCS_CORRFW) $(DHDR_CORRFW) Makefile Makefile.arch PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)

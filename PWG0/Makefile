@@ -36,7 +36,10 @@ endif
 CXXFLAGS     += $(ALICEINC) -g
 
 PACKAGE = PWG0base
-include lib$(PACKAGE).pkg
+
+SRCS     := $(wildcard *.cxx */*.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_PWG0base := $(DHDR)
 HDRS_PWG0base := $(HDRS)
@@ -68,7 +71,7 @@ clean:
 
 ### CREATE PAR FILE
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG0base) $(SRCS_PWG0base) $(DHDR_PWG0base) Makefile Makefile.arch lib$(PACKAGE).pkg PROOF-INF))
+$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG0base) $(SRCS_PWG0base) $(DHDR_PWG0base) Makefile Makefile.arch PROOF-INF))
 	@echo "Creating archive" $@ ...
 	@tar cfzh $@ $(PACKAGE)
 	@rm -rf $(PACKAGE)
@@ -102,7 +105,10 @@ test-%.par: %.par
 	@echo "INFO: Testing succeeded (already cleaned up)"
 
 ## libPWG0dep part
-include libPWG0dep.pkg
+
+SRCS     := $(wildcard *.cxx  */*.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_PWG0dep := $(DHDR)
 HDRS_PWG0dep := $(HDRS)
@@ -125,7 +131,10 @@ G__PWG0dep.cxx G__PWG0dep.h: $(HDRS_PWG0dep) $(DHDR_PWG0dep)
 	rootcint -f $@ -c $(ALICEINC) $^
 
 ## libPWG0selectors part
-include libPWG0selectors.pkg
+
+SRCS     := $(wildcard *.cxx  */*.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
 DHDR_PWG0selectors := $(DHDR)
 HDRS_PWG0selectors := $(HDRS)
