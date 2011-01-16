@@ -1361,7 +1361,6 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     //----------------------------------------------------------
     if(fCorrelate)	Correlate();
     
-    
     //----------------------------------------------------------
     // CALOCLUSTERS
     //----------------------------------------------------------
@@ -1384,212 +1383,209 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       if(GetDebug() > 0) printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
                                 iclus+1,nCaloClusters,GetReader()->GetDataType());
       
-      if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){
-        AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
-        AliVCaloCells * cell = 0x0; 
-        if(fCalorimeter == "PHOS") cell =  GetPHOSCells();
-        else			                 cell =  GetEMCALCells();
+      AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
+      AliVCaloCells * cell = 0x0; 
+      if(fCalorimeter == "PHOS") cell =  GetPHOSCells();
+      else			                 cell =  GetEMCALCells();
+      
+      //Get cluster kinematics
+      clus->GetPosition(pos);
+      clus->GetMomentum(mom,v);
+      tof = clus->GetTOF()*1e9;
+      if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
+      
+      //Check only certain regions
+      Bool_t in = kTRUE;
+      if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
+      if(!in) continue;
+      
+      //Get module of cluster
+      nCaloClustersAccepted++;
+      nModule = GetModuleNumber(clus);
+      if(nModule >=0 && nModule < fNModules) nClustersInModule[nModule]++;
+      
+      //MC labels
+      nLabel = clus->GetNLabels();
+      labels = clus->GetLabels();
+      
+      //Cells per cluster
+      nCaloCellsPerCluster =  clus->GetNCells();
+      //if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
+      
+      //matched cluster with tracks
+      nTracksMatched = clus->GetNTracksMatched();
+      trackIndex     = clus->GetTrackMatchedIndex();
+      if(trackIndex >= 0){
+        track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
+      }
+      else{
+        if(nTracksMatched == 1) nTracksMatched = 0;
+        track = 0;
+      }
+      
+      //Shower shape parameters
+      showerShape[0] = clus->GetM20();
+      showerShape[1] = clus->GetM02();
+      showerShape[2] = clus->GetDispersion();
+      
+      //======================
+      //Cells in cluster
+      //======================
+      
+      //Get list of contributors
+      UShort_t * indexList = clus->GetCellsAbsId() ;
+      // check time of cells respect to max energy cell
+      //Get maximum energy cell
+      Float_t emax  = -1;
+      Double_t tmax = -1;
+      Int_t imax    = -1;
+      Int_t absId   = -1 ;
+      //printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
+      //Loop on cluster cells
+      for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+        //	printf("Index %d\n",ipos);
+        absId  = indexList[ipos]; 
         
-        //Get cluster kinematics
-        clus->GetPosition(pos);
-        clus->GetMomentum(mom,v);
-        tof = clus->GetTOF()*1e9;
-        if(tof < fTimeCutMin || tof > fTimeCutMax) continue;
-        
-        //Check only certain regions
-        Bool_t in = kTRUE;
-        if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
-        if(!in) continue;
-        
-        //Get module of cluster
-        nCaloClustersAccepted++;
-        nModule = GetModuleNumber(clus);
-        if(nModule >=0 && nModule < fNModules) nClustersInModule[nModule]++;
-        
-        //MC labels
-        nLabel = clus->GetNLabels();
-        labels = clus->GetLabels();
-        
-        //Cells per cluster
-        nCaloCellsPerCluster =  clus->GetNCells();
-        //if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
-        
-        //matched cluster with tracks
-        nTracksMatched = clus->GetNTracksMatched();
-        trackIndex     = clus->GetTrackMatchedIndex();
-        if(trackIndex >= 0){
-          track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
-        }
-        else{
-          if(nTracksMatched == 1) nTracksMatched = 0;
-          track = 0;
-        }
-        
-        //Shower shape parameters
-        showerShape[0] = clus->GetM20();
-        showerShape[1] = clus->GetM02();
-        showerShape[2] = clus->GetDispersion();
-        
-        //======================
-        //Cells in cluster
-        //======================
-        
-        //Get list of contributors
-        UShort_t * indexList = clus->GetCellsAbsId() ;
-        // check time of cells respect to max energy cell
-        //Get maximum energy cell
-        Float_t emax  = -1;
-        Double_t tmax = -1;
-        Int_t imax    = -1;
-        Int_t absId   = -1 ;
-        //printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
-        //Loop on cluster cells
-        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-          //	printf("Index %d\n",ipos);
-          absId  = indexList[ipos]; 
-          
-          //Get position of cell compare to cluster
-          if(fFillAllPosHisto){
-            if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
-              
-              Double_t cellpos[] = {0, 0, 0};
-              GetEMCALGeometry()->GetGlobal(absId, cellpos);
-              
-              fhDeltaCellClusterXNCells->Fill(pos[0]-cellpos[0],nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterYNCells->Fill(pos[1]-cellpos[1],nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterZNCells->Fill(pos[2]-cellpos[2],nCaloCellsPerCluster) ;
-              
-              fhDeltaCellClusterXE->Fill(pos[0]-cellpos[0],mom.E())  ; 
-              fhDeltaCellClusterYE->Fill(pos[1]-cellpos[1],mom.E())  ; 
-              fhDeltaCellClusterZE->Fill(pos[2]-cellpos[2],mom.E())  ; 
-              
-              Float_t r     = TMath::Sqrt(pos[0]*pos[0]        +pos[1]*pos[1]);//     +pos[2]*pos[2]);
-              Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
-              fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-              
-              //					Float_t celleta = 0, cellphi = 0;
-              //					GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
-              //					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
-              //					GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-              //					GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
-              //																				 iIphi, iIeta,iphi,ieta);
-              //					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
-              //					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
-              //					printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-              //					printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-              //					printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-              //					printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
-              //					
-              
-            }//EMCAL and its matrices are available
-            else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
-              TVector3 xyz;
-              Int_t relId[4], module;
-              Float_t xCell, zCell;
-              
-              GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
-              module = relId[0];
-              GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
-              GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
-              
-              fhDeltaCellClusterXNCells->Fill(pos[0]-xyz.X(),nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterYNCells->Fill(pos[1]-xyz.Y(),nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterZNCells->Fill(pos[2]-xyz.Z(),nCaloCellsPerCluster) ;
-              
-              fhDeltaCellClusterXE->Fill(pos[0]-xyz.X(),mom.E())  ; 
-              fhDeltaCellClusterYE->Fill(pos[1]-xyz.Y(),mom.E())  ; 
-              fhDeltaCellClusterZE->Fill(pos[2]-xyz.Z(),mom.E())  ; 
-              
-              Float_t r     = TMath::Sqrt(pos[0]*pos[0]  +pos[1]*pos[1]);//     +pos[2]*pos[2]);
-              Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());//+xyz.Z()*xyz.Z());
-              fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
-              fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
-              
-              //		    	  printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
-              //		        printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
-              //	       		printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
-              //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
-            }//PHOS and its matrices are available
-          }//Fill all position histograms
-          
-          //Find maximum energy cluster
-          if(cell->GetCellAmplitude(absId) > emax) {
-            imax = ipos;
-            emax = cell->GetCellAmplitude(absId);
-            tmax = cell->GetCellTime(absId);
-          } 
-          
-        }// cluster cell loop
-        
-        // check time of cells respect to max energy cell
-        if(nCaloCellsPerCluster > 1){
-          for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-            if(imax == ipos) continue;
-            absId  = indexList[ipos]; 
-            Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
-            fhCellTimeSpreadRespectToCellMax->Fill(diff);
-            if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
-          }// fill cell-cluster histogram loop
-          
-        }//check time of cells respect to max energy cell
-        
-        //-----------------------------------------------------------
-        //Fill histograms related to single cluster or track matching
-        //-----------------------------------------------------------
-        
-        ClusterHistograms(mom, tof, pos, showerShape, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
-        
-        
-        //-----------------------------------------------------------
-        //Invariant mass
-        //-----------------------------------------------------------
-        if(GetDebug()>1) printf("Invariant mass \n");
-        
-        //do not do for bad vertex
-        // Float_t fZvtxCut = 40. ;	
-        if(v[2]<-GetZvertexCut() || v[2]> GetZvertexCut()) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-        
-        Int_t nModule2 = -1;
-        Int_t nCaloCellsPerCluster2=0;
-        if (nCaloClusters > 1 ) {
-          for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
-            AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
+        //Get position of cell compare to cluster
+        if(fFillAllPosHisto){
+          if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
             
-            //Get cluster kinematics
-            clus2->GetMomentum(mom2,v);
-            //Check only certain regions
-            Bool_t in2 = kTRUE;
-            if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
-            if(!in2) continue;	
-            //Get module of cluster
-            nModule2 = GetModuleNumber(clus2);
-            //Cells per cluster
-            nCaloCellsPerCluster2 = clus2->GetNCells();
-          }
-          //Fill invariant mass histograms
+            Double_t cellpos[] = {0, 0, 0};
+            GetEMCALGeometry()->GetGlobal(absId, cellpos);
+            
+            fhDeltaCellClusterXNCells->Fill(pos[0]-cellpos[0],nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterYNCells->Fill(pos[1]-cellpos[1],nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterZNCells->Fill(pos[2]-cellpos[2],nCaloCellsPerCluster) ;
+            
+            fhDeltaCellClusterXE->Fill(pos[0]-cellpos[0],mom.E())  ; 
+            fhDeltaCellClusterYE->Fill(pos[1]-cellpos[1],mom.E())  ; 
+            fhDeltaCellClusterZE->Fill(pos[2]-cellpos[2],mom.E())  ; 
+            
+            Float_t r     = TMath::Sqrt(pos[0]*pos[0]        +pos[1]*pos[1]);//     +pos[2]*pos[2]);
+            Float_t rcell = TMath::Sqrt(cellpos[0]*cellpos[0]+cellpos[1]*cellpos[1]);//+cellpos[2]*cellpos[2]);
+            fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
+            
+            //					Float_t celleta = 0, cellphi = 0;
+            //					GetEMCALGeometry()->EtaPhiFromIndex(absId, celleta, cellphi); 
+            //					Int_t imod = -1, iTower = -1, iIphi = -1, iIeta = -1, iphi = -1, ieta = -1;
+            //					GetEMCALGeometry()->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
+            //					GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,
+            //																				 iIphi, iIeta,iphi,ieta);
+            //					printf("AbsId %d, SM %d, Index eta %d, phi %d\n", absId, imod, ieta, iphi);
+            //					printf("Cluster E %f, eta %f, phi %f; Cell: Amp %f, eta %f, phi%f\n", mom.E(),mom.Eta(), mom.Phi()*TMath::RadToDeg(), cell->GetCellAmplitude(absId),celleta, cellphi*TMath::RadToDeg());
+            //					printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+            //					printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+            //					printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+            //					printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
+            //					
+            
+          }//EMCAL and its matrices are available
+          else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+            TVector3 xyz;
+            Int_t relId[4], module;
+            Float_t xCell, zCell;
+            
+            GetPHOSGeometry()->AbsToRelNumbering(absId,relId);
+            module = relId[0];
+            GetPHOSGeometry()->RelPosInModule(relId,xCell,zCell);
+            GetPHOSGeometry()->Local2Global(module,xCell,zCell,xyz);
+            
+            fhDeltaCellClusterXNCells->Fill(pos[0]-xyz.X(),nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterYNCells->Fill(pos[1]-xyz.Y(),nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterZNCells->Fill(pos[2]-xyz.Z(),nCaloCellsPerCluster) ;
+            
+            fhDeltaCellClusterXE->Fill(pos[0]-xyz.X(),mom.E())  ; 
+            fhDeltaCellClusterYE->Fill(pos[1]-xyz.Y(),mom.E())  ; 
+            fhDeltaCellClusterZE->Fill(pos[2]-xyz.Z(),mom.E())  ; 
+            
+            Float_t r     = TMath::Sqrt(pos[0]*pos[0]  +pos[1]*pos[1]);//     +pos[2]*pos[2]);
+            Float_t rcell = TMath::Sqrt(xyz.X()*xyz.X()+xyz.Y()*xyz.Y());//+xyz.Z()*xyz.Z());
+            fhDeltaCellClusterRNCells->Fill(r-rcell, nCaloCellsPerCluster) ; 
+            fhDeltaCellClusterRE     ->Fill(r-rcell, mom.E())  ; 
+            
+            //		    	  printf("x cluster %f, x cell %f, cluster-cell %f\n",pos[0], cellpos[0],pos[0]-cellpos[0]);
+            //		        printf("y cluster %f, y cell %f, cluster-cell %f\n",pos[1], cellpos[1],pos[1]-cellpos[1]);
+            //	       		printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
+            //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
+          }//PHOS and its matrices are available
+        }//Fill all position histograms
+        
+        //Find maximum energy cluster
+        if(cell->GetCellAmplitude(absId) > emax) {
+          imax = ipos;
+          emax = cell->GetCellAmplitude(absId);
+          tmax = cell->GetCellTime(absId);
+        } 
+        
+      }// cluster cell loop
+      
+      // check time of cells respect to max energy cell
+      if(nCaloCellsPerCluster > 1 &&  GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+          if(imax == ipos) continue;
+          absId  = indexList[ipos]; 
+          Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
+          printf("diff time %f %p",diff,fhCellTimeSpreadRespectToCellMax);
+          fhCellTimeSpreadRespectToCellMax->Fill(diff);
+          if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
+        }// fill cell-cluster histogram loop
+      }//check time of cells respect to max energy cell
+      
+      //-----------------------------------------------------------
+      //Fill histograms related to single cluster or track matching
+      //-----------------------------------------------------------
+      ClusterHistograms(mom, tof, pos, showerShape, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
+      
+      
+      //-----------------------------------------------------------
+      //Invariant mass
+      //-----------------------------------------------------------
+      if(GetDebug()>1) printf("Invariant mass \n");
+      
+      //do not do for bad vertex
+      // Float_t fZvtxCut = 40. ;	
+      if(v[2]<-GetZvertexCut() || v[2]> GetZvertexCut()) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+      
+      Int_t nModule2 = -1;
+      Int_t nCaloCellsPerCluster2=0;
+      if (nCaloClusters > 1 ) {
+        for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
+          AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
+          
+          //Get cluster kinematics
+          clus2->GetMomentum(mom2,v);
+          //Check only certain regions
+          Bool_t in2 = kTRUE;
+          if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
+          if(!in2) continue;	
+          //Get module of cluster
+          nModule2 = GetModuleNumber(clus2);
+          //Cells per cluster
+          nCaloCellsPerCluster2 = clus2->GetNCells();
+        }
+        //Fill invariant mass histograms
+        //All modules
+        
+        //printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
+        fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
+        //Single module
+        if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+          fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+        
+        //Select only clusters with at least 2 cells
+        if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
           //All modules
-          
-          //printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
-          fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          //Single module
+          fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
+          //Single modules
           if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-            fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          
-          //Select only clusters with at least 2 cells
-          if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
-            //All modules
-            fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-            //Single modules
-            if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-              fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          }
-          
-          //Asymetry histograms
-          fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
-          
-        }// 2nd cluster loop
-      }////more than 1 cluster in calorimeter  	
+            fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+        }
+        
+        //Asymetry histograms
+        fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
+        
+      }// 2nd cluster loop
     }//cluster loop
     
     //Number of clusters histograms
@@ -1732,7 +1728,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         Float_t celleta = 0.;
         Float_t cellphi = 0.;
         GetEMCALGeometry()->EtaPhiFromIndex(id, celleta, cellphi); 
-
+        
         fhEtaPhiAmp->Fill(celleta,cellphi,amp);
         Double_t cellpos[] = {0, 0, 0};
         GetEMCALGeometry()->GetGlobal(id, cellpos);
