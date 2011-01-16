@@ -174,36 +174,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   phosQA->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
   phosQA->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   
-	  //if(kPrintSettings)phosQA->Print("");	
-
-  // ========== FIXME ===============
-  //Temporal fix to avoid crash in train for tag v4-21-06-AN, PHOS cell position histograms will not make too much sense.
-  TGeoHMatrix *matrix[4];
-  //EMCAL alignment matrices
-  double rotationMatrix[4][9] = {-0.014585, -0.999892, -0.002031, 0.999892, -0.014589,  0.001950, -0.001979, -0.002003,  0.999996,
-    -0.014585,  0.999892,  0.002031, 0.999892,  0.014589, -0.001950, -0.001979,  0.002003, -0.999996,
-    -0.345861, -0.938280, -0.003412, 0.938281, -0.345869,  0.001950, -0.003010, -0.002527,  0.999992,
-    -0.345861,  0.938280,  0.003412, 0.938281,  0.345869, -0.001950, -0.003010,  0.002527, -0.999992};
-  
-  double translationMatrix[4][3] = {0.367264,    446.508738,  175.97185+0.3,
-    1.078181,    445.826258, -174.026758+0.3,
-    -153.843916, 418.304256,  175.956905+0.8,
-    -152.649580, 417.621779, -174.040392+0.8};
-  for(int j=0; j<4; j++)
-  {
-    matrix[j] = new TGeoHMatrix();
-    matrix[j]->SetRotation(rotationMatrix[j]);
-    matrix[j]->SetTranslation(translationMatrix[j]);
-    matrix[j]->Print();
-    cu->SetEMCALGeometryMatrixInSM(matrix[j],j);
-    cu->SetPHOSGeometryMatrixInSM(matrix[j],j);
-  }
-  cu->SwitchOnLoadOwnEMCALGeometryMatrices() ;
-  cu->SwitchOnLoadOwnPHOSGeometryMatrices() ;
-
-	emcalQA->SwitchOnFillAllPositionHistogram();
-  phosQA ->SwitchOnFillAllPositionHistogram();
-  // ========== MEFIX ===============
 
   // #### Configure Maker ####
   AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
