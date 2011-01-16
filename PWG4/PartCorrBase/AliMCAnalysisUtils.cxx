@@ -106,6 +106,108 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
 }
 
 //_________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
+                                              Int_t & ancPDG, Int_t & ancStatus) {
+  //Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
+  Int_t label1[100];
+  Int_t label2[100];
+  label1[0]= index1;
+  label2[0]= index2;
+  Int_t counter1 = 0;
+  Int_t counter2 = 0;
+
+  if(label1[0]==label2[0]) {
+    //printf("AliMCAnalysisUtils::CheckCommonAncestor() - Already the same label: %d\n",label1[0]);
+    counter1=1;
+    counter2=1;
+  }
+  else{
+    if(reader->ReadAODMCParticles()){
+      TClonesArray * mcparticles = reader->GetAODMCParticles(0);
+      
+      Int_t label=label1[0];
+      while(label > -1 && counter1 < 99){
+        counter1++;
+        AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
+        if(mom){
+         label  = mom->GetMother() ;
+         label1[counter1]=label;
+        }
+        //printf("\t counter %d, label %d\n", counter1,label);
+      }
+      //printf("Org label2=%d,\n",label2[0]);
+      label=label2[0];
+      while(label > -1 && counter2 < 99){
+        counter2++;
+        AliAODMCParticle * mom = (AliAODMCParticle *) mcparticles->At(label);
+        if(mom){
+          label  = mom->GetMother() ;
+          label2[counter2]=label;
+        }
+        //printf("\t counter %d, label %d\n", counter2,label);
+      }
+    }//AOD MC
+    else { //Kine stack from ESDs 
+      AliStack * stack = reader->GetStack();
+      Int_t label=label1[0];
+      while(label > -1 && counter1 < 99){
+        counter1++;
+        TParticle * mom = stack->Particle(label);
+        if(mom){
+          label  = mom->GetFirstMother() ;
+          label1[counter1]=label;
+        }
+        //printf("\t counter %d, label %d\n", counter1,label);
+      }
+      //printf("Org label2=%d,\n",label2[0]);
+      label=label2[0];
+      while(label > -1 && counter2 < 99){
+        counter2++;
+        TParticle * mom = stack->Particle(label);
+        if(mom){
+          label  = mom->GetFirstMother() ;
+          label2[counter2]=label;
+        }
+        //printf("\t counter %d, label %d\n", counter2,label);
+      }
+    }// Kine stack from ESDs
+  }//First labels not the same
+  
+  if(counter1==99 || counter2==99) printf("AliMCAnalysisUtils::CheckCommonAncestor() - Genealogy too large c1: %d, c2= %d\n", counter1, counter2);
+  //printf("CheckAncestor:\n");
+  Int_t commonparents = 0;
+  Int_t ancLabel = -1;
+  //printf("counters %d %d \n",counter1, counter2);
+  for (Int_t c1 = 0; c1 < counter1; c1++) {
+    for (Int_t c2 = 0; c2 < counter2; c2++) {
+      if(label1[c1]==label2[c2] && label1[c1]>-1) {
+        ancLabel = label1[c1];
+        commonparents++;
+        if(reader->ReadAODMCParticles()){
+          AliAODMCParticle * mom = (AliAODMCParticle *) reader->GetAODMCParticles(0)->At(label1[c1]);
+          if (mom) {
+            ancPDG    = mom->GetPdgCode();
+            ancStatus = mom->GetStatus();
+          }
+        }
+        else {
+          TParticle * mom = (reader->GetStack())->Particle(label1[c1]);
+          if (mom) {
+            ancPDG    = mom->GetPdgCode();
+            ancStatus = mom->GetStatusCode();
+          }
+        }
+        //First ancestor found, end the loops
+        counter1=0;
+        counter2=0;
+      }//Ancestor found
+    }//second cluster loop
+  }//first cluster loop
+  
+  return ancLabel;
+}
+
+//_________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) {
 	//Play with the montecarlo particles if available
 	Int_t tag = 0;
