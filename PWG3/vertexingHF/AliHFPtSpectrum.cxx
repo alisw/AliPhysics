@@ -986,6 +986,12 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
       Double_t uncConservativeMax =  TMath::MaxElement(4,consval) - correction;
       fgFcConservative->SetPoint(ibin,x,correction); // i,x,y
       fgFcConservative->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),uncConservativeMin,uncConservativeMax); // i,xl,xh,yl,yh
+      if( !(correction>0.) ){
+	fgFcExtreme->SetPoint(ibin,x,0.); // i,x,y
+	fgFcExtreme->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),0.,0.); // i,xl,xh,yl,yh
+	fgFcConservative->SetPoint(ibin,x,0.); // i,x,y
+	fgFcConservative->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),0.,0.); // i,xl,xh,yl,yh
+      }
     }
 
   }
@@ -1136,6 +1142,10 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     AliInfo(" Beware the conservative & extreme uncertainties are equal by definition !");
   }
 
+  // Define fc-conservative 
+  if(fAsymUncertainties & !fgFcConservative) fgFcConservative = new TGraphAsymmErrors(nbins+1);
+  double correction=0, correctionMax=0., correctionMin=0.;
+
   //
   // Do the calculation
   // 
@@ -1149,6 +1159,10 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     //  Statistical uncertainty:   delta_physics = sqrt ( (delta_reco)^2 )  / bin-width
     errvalue = fhRECpt->GetBinError(ibin);
     errvalue /= fhRECpt->GetBinWidth(ibin);
+
+    // Correction (fc) : Estimate of the relative amount feed-down subtracted
+    // correction =  [ 1  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th)/reco ] 
+    correction = 1 - (deltaY*branchingRatioBintoFinalDecay*fLuminosity[0]*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) ) / fhRECpt->GetBinContent(ibin) ;
 
     // Systematic uncertainties
     //     (syst but feed-down)  delta_physics = sqrt ( (delta_reco_syst)^2 )  / bin-width
@@ -1185,6 +1199,22 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
 					 ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
 					 ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
 					 ) / fhRECpt->GetBinWidth(ibin);
+
+      // Correction systematics (fc)
+      // min value with the maximum Nb
+      correctionMin = TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
+				   ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
+				   ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) )  +
+				   ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin)) ) +
+				   ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) ) 
+				   ) / fhRECpt->GetBinContent(ibin) ;
+      // max value with the minimum Nb
+      correctionMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
+				    ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
+				    ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) )  +
+				    ( (kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))*(kfactor*fhFeedDownEffpt->GetBinError(ibin)/fhFeedDownEffpt->GetBinContent(ibin))	) +
+				    ( (kfactor*fGlobalEfficiencyUncertainties[1])*(kfactor*fGlobalEfficiencyUncertainties[1]) )
+				    ) / fhRECpt->GetBinContent(ibin) ;
     }
     else{ // Don't consider Nb uncertainty in this case [ to be tested!!! ]
       errvalueExtremeMax =  TMath::Sqrt( ( (kfactor*fLuminosity[1]/fLuminosity[0])*(kfactor*fLuminosity[1]/fLuminosity[0]) ) +
@@ -1209,6 +1239,15 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
       fgYieldCorrExtreme->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
       fgYieldCorrConservative->SetPoint(ibin,x,value); // i,x,y
       fgYieldCorrConservative->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
+      //      cout << " bin " << ibin << ", correction " << correction << ", min correction unc " << correctionMin << ", max correction unc " << correctionMax << endl;
+      if(correction>0.){
+	fgFcConservative->SetPoint(ibin,x,correction);
+	fgFcConservative->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),correctionMin,correctionMax);
+      }
+      else{
+	fgFcConservative->SetPoint(ibin,x,0.);
+	fgFcConservative->SetPointError(ibin,(binwidths[ibin]/2.),(binwidths[ibin]/2.),0.,0.);
+      }
     }
 
   }
