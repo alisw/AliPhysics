@@ -75,7 +75,6 @@ AliAnalysisTaskSE(),
   fDebug(0),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
-  fDirName("$ALICE_ROOT/OADB/COMMON/CENTRALITY/data"),
   fFile(0),
   fFile2(0),
   fCurrentRun(-1),
@@ -132,7 +131,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fDebug(0),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
-  fDirName("$ALICE_ROOT/OADB/COMMON/CENTRALITY/data"),
   fFile(0),
   fFile2(0),
   fCurrentRun(-1),
@@ -200,7 +198,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fDebug(ana.fDebug),	  
   fAnalysisInput(ana.fDebug),
   fIsMCInput(ana.fIsMCInput),
-  fDirName(ana.fDirName),
   fFile(ana.fFile),
   fFile2(ana.fFile2),
   fCurrentRun(ana.fCurrentRun),
@@ -569,8 +566,8 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
   else fRunNo = 137366;
   // CHANGE HERE FOR RUN RANGES
   
-  TString fileName(Form("%s/AliCentralityBy1D_%d.root", fDirName.Data(), fRunNo));
-  TString fileName2(Form("%s/AliCentralityByFunction_%d.root", fDirName.Data(), fRunNo));
+  TString fileName(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
+  TString fileName2(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
   
   AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
   ReadCentralityHistos(fileName.Data());

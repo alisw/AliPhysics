@@ -36,7 +36,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *option);
 
   virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
-  void SetDirName(const char *n)           {fDirName = n;}
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
   
@@ -49,7 +48,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Int_t    fDebug;	   	// Debug flag
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
-  TString  fDirName;            // directory name in which file is being searched
   TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
   TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d  
   Int_t    fCurrentRun;         // current run number
@@ -103,7 +101,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0MvsTRK;    //control histogram for multiplicity
   TH2F *fHOutMultTRKvsCL1;    //control histogram for multiplicity
 
-  ClassDef(AliCentralitySelectionTask,2); 
+  ClassDef(AliCentralitySelectionTask, 3); 
 };
 
 #endif
