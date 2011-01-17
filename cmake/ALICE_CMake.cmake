@@ -578,7 +578,9 @@ macro(ALICE_GenerateLinkDef)
 endmacro(ALICE_GenerateLinkDef)
 
 macro(ALICE_BuildPAR)
-  if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+  
+  # if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+  if(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
     set(PARSRCS)
     foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
       get_filename_component(srcdir ${file} PATH)
@@ -615,6 +617,8 @@ macro(ALICE_BuildPAR)
     add_dependencies(test-par-all test-${PACKAGE}.par)
     add_dependencies(test-${MODULE}-par-all test-${PACKAGE}.par)
 
-  endif(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+  endif(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
+  # endif(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
+
 endmacro(ALICE_BuildPAR)
 
