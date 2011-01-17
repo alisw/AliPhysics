@@ -44,6 +44,7 @@ Int_t etaRangeTPC = 1;
 void loadlibs()
 {
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
   gSystem->Load("libPWG0base");
 }
 
@@ -1589,7 +1590,7 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
   //const char* fileName[] = { "multiplicityMC_400k_syst.root", "multiplicityMC_TPC_4kfiles_syst.root" };
   //const char* fileName[] = { "LHC09b9_0.9TeV_0T/mb1/spd/multiplicity.root", "LHC09b8_0.9TeV_0.5T/mb1/tpc/multiplicity.root" };
   //const char* fileName[] = { "spd/multiplicity.root", "tpc/multiplicity.root" };
-  const char* fileName[] = { "multiplicityparticle-efficiency.root", "multiplicity.root" };
+  const char* fileName[] = { "multiplicity.root", "multiplicity.root" };
   Float_t etaRangeArr[] = {0.49, 0.9};
   const char* titles[] = { "SPD Tracklets", "TPC Tracks" };
 
@@ -1603,6 +1604,8 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
   gPad->SetTopMargin(0.05);
   
   TLegend* legends[2];
+  
+  TH1* effGlobal = 0;
   
   for (Int_t loop=0; loop<1; ++loop)
   {
@@ -1711,6 +1714,8 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
       TH1* effPt = (TH1*) genePt->Clone(Form("effPt_%d", i));
       effPt->Reset();
       effPt->Divide(measPt, genePt, 1, 1, "B");
+      if (i == 0)
+        effGlobal = effPt;
 
       Int_t bin = 0;
       for (bin=20; bin>=1; bin--)
@@ -1813,6 +1818,38 @@ void EfficiencySpecies(Bool_t addDecayStopped = kFALSE)
     legend->Draw();
     canvas2->SaveAs(Form("%s.eps", canvas2->GetName()));  
   }
+  
+  TH1* pt = 0;
+  for (Int_t i=0; i<3; ++i)
+  {
+    TH3* gene = correction[i]->GetTrackCorrection()->GetGeneratedHistogram();
+    
+    // limit axes
+    gene->GetXaxis()->SetRangeUser(-vtxRange, vtxRange);
+    gene->GetYaxis()->SetRangeUser(-0.49, 0.49);
+    
+    if (!pt)
+      pt = gene->Project3D(Form("z_pt_%d", i));
+    else
+      pt->Add(gene->Project3D(Form("z_pt_%d", i)));
+  }
+  
+  new TCanvas;
+  
+  Float_t sum = 0;
+  for (Int_t i=1; i<30; i++)
+  {
+    Float_t tmpCorr = 100.0 * pt->GetBinContent(i) / pt->Integral() * (0.532348 - effGlobal->GetBinContent(i)) / 0.532348;
+    Printf("Yield in %d bin: %.1f%%, efficiency %.1f%%, correction: %.2f%%", i, 100.0 * pt->GetBinContent(i) / pt->Integral(), 100.0 * effGlobal->GetBinContent(i), tmpCorr);
+    sum += tmpCorr;
+  }
+  
+  Printf("%f", sum);
+  
+  
+  AliPWG0Helper::NormalizeToBinWidth(pt);
+  pt->Draw();
+            
   
   return;
 

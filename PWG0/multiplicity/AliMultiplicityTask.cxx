@@ -677,11 +677,11 @@ void AliMultiplicityTask::Exec(Option_t*)
       for (Int_t i = 0; i<7; ++i)
         nESDTracksSpecies[i] = 0;
 
-      Bool_t* foundPrimaries = new Bool_t[nPrim];   // to prevent double counting
+      Bool_t* foundPrimaries = new Bool_t[nMCPart];   // to prevent double counting
       for (Int_t i=0; i<nPrim; i++)
         foundPrimaries[i] = kFALSE;
 
-      Bool_t* foundPrimaries2 = new Bool_t[nPrim];   // to prevent double counting
+      Bool_t* foundPrimaries2 = new Bool_t[nMCPart];   // to prevent double counting
       for (Int_t i=0; i<nPrim; i++)
         foundPrimaries2[i] = kFALSE;
 
