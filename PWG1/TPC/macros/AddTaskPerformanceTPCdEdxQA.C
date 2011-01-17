@@ -32,7 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //____________________________________________
-AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, const char *triggerClass=0)
+AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, Bool_t highMult = kFALSE, const char *triggerClass=0)
 {
   //
   // Add AliPerformanceTask with TPC performance components
@@ -113,7 +113,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //
   // TPC performance
   //
-  AliPerformanceTPC *pCompTPC0 = new AliPerformanceTPC("AliPerformanceTPC","AliPerformanceTPC",kTPC,kFALSE); 
+  AliPerformanceTPC *pCompTPC0 = new AliPerformanceTPC("AliPerformanceTPC","AliPerformanceTPC",kTPC,kFALSE,-1,highMult); 
   if(!pCompTPC0) {
     Error("AddTaskPerformanceTPC", "Cannot create AliPerformanceTPC");
   }

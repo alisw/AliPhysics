@@ -56,14 +56,14 @@ AliPerformanceObject::AliPerformanceObject():
 }
 
 //_____________________________________________________________________________
-AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run):
+AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run, Bool_t highMult):
   TNamed(name,title),
   fAnalysisMode(-1),
   fRunNumber(run),
   fHptGenerator(kFALSE),
   fTriggerClass(0),
   fUseTrackVertex(kFALSE),
-  fHighMultiplicity(kFALSE),
+  fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
   fUseCentralityBin(0)
 {

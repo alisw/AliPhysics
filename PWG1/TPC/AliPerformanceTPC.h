@@ -31,7 +31,7 @@ class AliRecInfoCuts;
 class AliPerformanceTPC : public AliPerformanceObject {
 public :
   //AliPerformanceTPC(); 
-  AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1);
+  AliPerformanceTPC(Char_t* name="AliPerformanceTPC", Char_t* title="AliPerformanceTPC",Int_t analysisMode=0,Bool_t hptGenerator=kFALSE, Int_t run=-1, Bool_t highMult = kFALSE);
 
   virtual ~AliPerformanceTPC();
 
@@ -89,7 +89,7 @@ private:
   static Bool_t fgMergeTHnSparse;
 
   // TPC histogram
-  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside:pad:detector
+  THnSparseF *fTPCClustHisto; //-> padRow:phi:TPCside
   THnSparseF *fTPCEventHisto;  //-> Xv:Yv:Zv:mult:multP:multN:vertStatus
   THnSparseF *fTPCTrackHisto;  //-> nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus
   TObjArray* fFolderObj; // array of analysed histograms
@@ -106,7 +106,7 @@ private:
   AliPerformanceTPC(const AliPerformanceTPC&); // not implemented
   AliPerformanceTPC& operator=(const AliPerformanceTPC&); // not implemented
 
-  ClassDef(AliPerformanceTPC,8);
+  ClassDef(AliPerformanceTPC,9);
 };
 
 #endif
