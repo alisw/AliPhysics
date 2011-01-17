@@ -72,7 +72,7 @@ private:
 	
 	Int_t    fL1Threshold[2]; // L1 thresholds from raw data
 	
-	ClassDef(AliESDCaloTrigger, 2)
+	ClassDef(AliESDCaloTrigger, 3)
 };
 #endif
 

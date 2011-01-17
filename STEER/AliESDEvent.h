@@ -470,7 +470,7 @@ protected:
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
   AliCentrality *fCentrality; //! Centrality for AA collision
-  ClassDef(AliESDEvent,12)  //ESDEvent class 
+  ClassDef(AliESDEvent,13)  //ESDEvent class 
 };
 #endif 
 
