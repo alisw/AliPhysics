@@ -50,7 +50,6 @@ class TList;
 ClassImp(AliFlowAnalysisWithMixedHarmonics)
 
 //================================================================================================================
-
 AliFlowAnalysisWithMixedHarmonics::AliFlowAnalysisWithMixedHarmonics(): 
 fHistList(NULL),
 fHistListName(NULL),
@@ -96,12 +95,15 @@ fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
 fNonIsotropicTermsVsMPro(NULL),
+f2pCorrelatorCosPsiDiff(NULL),
+f2pCorrelatorCosPsiSum(NULL),
+f2pCorrelatorSinPsiDiff(NULL),
+f2pCorrelatorSinPsiSum(NULL),
 fResultsList(NULL),
 f3pCorrelatorHist(NULL),
 fDetectorBiasHist(NULL),
 f3pCorrelatorVsMHist(NULL),
-fDetectorBiasVsMHist(NULL),
-f2pCorrelatorHist(NULL)
+fDetectorBiasVsMHist(NULL)
 {
  // Constructor. 
  
@@ -289,7 +291,10 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        fImEtaEBE[1]->Fill(TMath::Abs(dEta1-dEta2),TMath::Sin(n*(dPsi1+dPsi2)),1.);
 
        //2particle correlator <cos(n*(psi1 - ps12))>
-       f2pCorrelatorHist->Fill(TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1-dPsi2)));
+       f2pCorrelatorCosPsiSum->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1+dPsi2)));
+       f2pCorrelatorSinPsiDiff->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1-dPsi2)));
+       f2pCorrelatorSinPsiSum->Fill(TMath::Abs(dPt1-dPt2),TMath::Sin(n*(dPsi1+dPsi2)));
        
        if(b1stPOIisAlsoRP)
        {
@@ -494,7 +499,20 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
   {
    this->Set3pCorrelatorVsPtSumDiffPro(p3pCorrelatorVsPtSumDiffPro,sd);  
   }
- }  
+ }
+
+ TProfile *g2pCorrelatorCosPsiDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiDiff"));
+ if(g2pCorrelatorCosPsiDiff)
+   this->Set2pCorrelatorCosPsiDiff(g2pCorrelatorCosPsiDiff);
+ TProfile *g2pCorrelatorCosPsiSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorCosPsiSum"));
+ if(g2pCorrelatorCosPsiSum)
+   this->Set2pCorrelatorCosPsiSum(g2pCorrelatorCosPsiSum);
+ TProfile *g2pCorrelatorSinPsiDiff = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiDiff"));
+ if(g2pCorrelatorSinPsiDiff)
+   this->Set2pCorrelatorSinPsiDiff(g2pCorrelatorSinPsiDiff);
+ TProfile *g2pCorrelatorSinPsiSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSum"));
+ if(g2pCorrelatorSinPsiSum)
+   this->Set2pCorrelatorSinPsiSum(g2pCorrelatorSinPsiSum);
   
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
 
@@ -536,12 +554,6 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
  if(detectorBiasVsMHist)
  {
   this->SetDetectorBiasVsMHist(detectorBiasVsMHist);  
- }
- TString s2pCorrelatorHistName = "f2pCorrelatorHist";
- TH1D *h2pCorrelatorHist = dynamic_cast<TH1D*>(resultsList->FindObject(s2pCorrelatorHistName.Data()));
- if(h2pCorrelatorHist)
- {
-  this->Set2pCorrelatorHist(h2pCorrelatorHist);  
  }
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForResultsHistograms()
@@ -809,22 +821,6 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
    }  
  fResultsList->Add(fDetectorBiasHist);
  
- // d) 2-p correlator <<cos[n(psi1-psi2]>> 
- TString s2pCorrelatorHistName = "f2pCorrelatorHist";
- f2pCorrelatorHist = new TH1D(s2pCorrelatorHistName.Data(),"",20000,-1,1);
- f2pCorrelatorHist->SetStats(kTRUE);
- f2pCorrelatorHist->GetXaxis()->SetLabelOffset(0.01);
- f2pCorrelatorHist->GetXaxis()->SetNdivisions(10);
- f2pCorrelatorHist->GetXaxis()->SetLabelSize(0.05);
- if(fHarmonic == 1)
- {
-  f2pCorrelatorHist->GetXaxis()->SetBinLabel(1,"#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT");
- } else
-   {
-    f2pCorrelatorHist->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#psi_{1}+#psi_{2})]#GT#GT",fHarmonic)); 
-   }
- fResultsList->Add(f2pCorrelatorHist);
-
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
       
 //================================================================================================================
@@ -1016,8 +1012,33 @@ void AliFlowAnalysisWithMixedHarmonics::BookDifferential()
   fProfileList->Add(f3pCorrelatorVsPtSumDiffPro[sd]);
   f3pCorrelatorVsEtaSumDiffPro[sd]->GetXaxis()->SetTitle(psdTitleFlag2[sd].Data());
   fProfileList->Add(f3pCorrelatorVsEtaSumDiffPro[sd]);
- }  
-       
+ }
+
+ f2pCorrelatorCosPsiDiff = new TProfile("f2pCorrelatorCosPsiDiff","",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiDiff->SetStats(kFALSE);
+ f2pCorrelatorCosPsiSum = new TProfile("f2pCorrelatorCosPsiSum","",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorCosPsiSum->SetStats(kFALSE);
+ f2pCorrelatorSinPsiDiff = new TProfile("f2pCorrelatorSinPsiDiff","",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiDiff->SetStats(kFALSE);
+ f2pCorrelatorSinPsiSum = new TProfile("f2pCorrelatorSinPsiSum","",fnBinsPt,0.,fPtMax);
+ f2pCorrelatorSinPsiSum->SetStats(kFALSE);
+ if(fHarmonic == 1) {
+   f2pCorrelatorCosPsiDiff->SetTitle(Form("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorCosPsiSum->SetTitle(Form("#LT#LTcos(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorSinPsiDiff->SetTitle(Form("#LT#LTsin(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+   f2pCorrelatorSinPsiSum->SetTitle(Form("#LT#LTsin(#psi_{1}+#psi_{2})#GT#GT #font[72]{vs} %s",psdTitleFlag[1].Data())); 
+ }
+ else {
+   f2pCorrelatorCosPsiDiff->SetTitle(Form("#LT#LTcos[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorCosPsiSum->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorSinPsiDiff->SetTitle(Form("#LT#LTsin[%d(#psi_{1}-#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+   f2pCorrelatorSinPsiSum->SetTitle(Form("#LT#LTsin[%d(#psi_{1}+#psi_{2})]#GT#GT #font[72]{vs} %s",fHarmonic,psdTitleFlag2[1].Data()));
+ }
+ fProfileList->Add(f2pCorrelatorCosPsiDiff);
+ fProfileList->Add(f2pCorrelatorCosPsiSum);
+ fProfileList->Add(f2pCorrelatorSinPsiDiff);
+ fProfileList->Add(f2pCorrelatorSinPsiSum);
+
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDifferential()     
    
 //================================================================================================================
@@ -1190,6 +1211,32 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0);
  }
+
+ if(!f2pCorrelatorCosPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
  if(!fEvaluateDifferential3pCorrelator){return;}
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1300,6 +1347,32 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   cout<<endl;
   exit(0);
  }
+
+ if(!f2pCorrelatorCosPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+
  if(!f3pCorrelatorHist)
  {                        
   cout<<endl;
@@ -1311,13 +1384,6 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
  {                        
   cout<<endl;
   cout<<" WARNING (MH): fDetectorBiasHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }   
- if(!f2pCorrelatorHist)
- {                        
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorHist is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
   cout<<endl;
   exit(0);
  }   
@@ -1370,6 +1436,12 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
     d3pCorrelatorError = f3pCorrelatorHist->GetBinError(1); 
    }
  
+ // <<cos[n*(psi1+psi2-2phi3)]>>:
+ Double_t d3pCorrelatorPoi = 0.;
+ Double_t d3pCorrelatorPoiError = 0.;
+ GetCorrelatorAndError(f3pCorrelatorVsPtSumDiffPro[0],
+		       d3pCorrelatorPoi,
+		       d3pCorrelatorPoiError);
  cout<<endl;
  cout<<"*******************************************************"<<endl;
  cout<<"*******************************************************"<<endl;
@@ -1378,9 +1450,11 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
  if(fHarmonic!=1)
  {
   cout<<"  cos["<<fHarmonic<<"(phi1+phi2-2phi3)] = "<<d3pCorrelator<<" +/- "<<d3pCorrelatorError<<endl;
+  cout<<"  cos["<<fHarmonic<<"(psi1+psi2-2phi3)] = "<<d3pCorrelatorPoi<<" +/- "<<d3pCorrelatorPoiError<<endl;
  } else
    {
     cout<<"  cos(phi1+phi2-2phi3) = "<<d3pCorrelator<<" +/- "<<d3pCorrelatorError<<endl;
+    cout<<"  cos(psi1+psi2-2phi3) = "<<d3pCorrelatorPoi<<" +/- "<<d3pCorrelatorPoiError<<endl;
    }
  if(!fCorrectForDetectorEffects)
  {
@@ -1825,7 +1899,7 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
 
   gIntegratedValue = -1000.;
   if((gSumWeight)&&(iBinCounter)) 
-    gIntegratedValue = gSumBinContentTimesWeight/(gSumWeight*iBinCounter);
+    gIntegratedValue = gSumBinContentTimesWeight/gSumWeight;
  } // end of if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)) 
 
  // b) Calculate differential 3-p correlator by using particle weights: 
@@ -1836,5 +1910,36 @@ void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator(Double
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::CalculateDifferential3pCorrelator() 
 
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::GetCorrelatorAndError(TProfile *g3pCorrelatorVsPt, Double_t &g3pCorrelatorValue, Double_t &g3pCorrelatorError) {
+  //Retrieves the 3p correlator <<cos[n(psi1+psi2-2phi3)]>> 
+  //and its error
+  Double_t gSumXi = 0.;
+  Double_t gSumYi = 0.;
+  Double_t gSumXiYi = 0.;
+  Double_t gSumXiYi2 = 0.;
+  Double_t gSumXi2Yi2 = 0.;
+  Double_t gSumDeltaXi2 = 0.;
+  Double_t gSumYi2DeltaXi2 = 0.;
+
+  for(Int_t iBin = 1; iBin <= g3pCorrelatorVsPt->GetNbinsX(); iBin++) {
+    gSumXi += g3pCorrelatorVsPt->GetBinEntries(iBin);
+    gSumYi += g3pCorrelatorVsPt->GetBinContent(iBin);
+    gSumXiYi += g3pCorrelatorVsPt->GetBinEntries(iBin)*g3pCorrelatorVsPt->GetBinContent(iBin);
+    gSumXiYi2 += g3pCorrelatorVsPt->GetBinEntries(iBin)*TMath::Power(g3pCorrelatorVsPt->GetBinContent(iBin),2);
+    gSumXi2Yi2 += TMath::Power(g3pCorrelatorVsPt->GetBinEntries(iBin)*g3pCorrelatorVsPt->GetBinContent(iBin),2);
+    gSumDeltaXi2 += TMath::Power(g3pCorrelatorVsPt->GetBinError(iBin),2);
+    gSumYi2DeltaXi2 += TMath::Power(g3pCorrelatorVsPt->GetBinContent(iBin),2) + TMath::Power(g3pCorrelatorVsPt->GetBinError(iBin),2);
+  }
+
+  g3pCorrelatorValue = -1000.;
+  g3pCorrelatorError = 1000.;
+  
+  if(gSumXi != 0.)
+    g3pCorrelatorValue = gSumXiYi/gSumXi;
+  if((gSumXi != 0.)&&(gSumXiYi != 0.))
+    g3pCorrelatorError = TMath::Abs((gSumXiYi/gSumXi))*TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumYi2DeltaXi2)/gSumXiYi),2) + TMath::Power((gSumDeltaXi2/gSumXi),2));
+}
 //================================================================================================================
 
