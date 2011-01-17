@@ -26,7 +26,8 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
-  esdTrackCuts->SetMinDCAToVertexXY(0.0100);
+  // |d0|>100 micron for pt<2GeV, no cut above 2
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
   esdTrackCuts->SetPtRange(0.8,1.e10);
