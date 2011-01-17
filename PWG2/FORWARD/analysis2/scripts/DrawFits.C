@@ -1,5 +1,6 @@
 /**
- * Script to draw the energy loss fits 
+ * Script to draw the energy loss fits from the output file of 
+ * AliFMDELossFitter(Task). 
  * 
  * @ingroup pwg2_forward_analysis_scripts
  */
@@ -21,6 +22,36 @@ TCanvas* canvas = 0;
 const char* pdfName = "FitResults.pdf";
 
 //____________________________________________________________________
+/** 
+ * Open a file.  The file is expected to contain the directory 
+ * structure 
+ *
+ * @verbatim 
+ *  file
+ *   +- Forward 
+ *       +- fmdEnergyFitter 
+ *           +- chi2   (THStack)
+ *           +- c      (THStack)
+ *           +- delta  (THStack)
+ *           +- xi     (THStack)
+ *           +- sigma  (THStack)
+ *           +- sigman (THStack)
+ *           +- n      (THStack)
+ *           +- a2     (THStack)
+ *           +- ...    (THStack)
+ *           +- an     (THStack)
+ *           +- FMD1I (TList)
+ *           |   +- FMD1I_edist (TH1)
+ *           |   +- EDists      (TList)
+ *           ...
+ * @endverbatim
+ * 
+ * @param fname File to open  
+ * 
+ * @return Pointer to the list of objects 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TList* OpenFile(const char* fname)
 {
   TFile* file = TFile::Open(fname, "READ");
@@ -44,6 +75,15 @@ TList* OpenFile(const char* fname)
   return fitter;
 }
 //____________________________________________________________________
+/** 
+ * Open file if not done already 
+ * 
+ * @param fname File to open
+ * 
+ * @return List of fits 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TList* CheckFitter(const char* fname="AnalysisResults.root")
 {
   if (!fitter) return OpenFile(fname);
@@ -51,6 +91,14 @@ TList* CheckFitter(const char* fname="AnalysisResults.root")
 }
 
 //____________________________________________________________________
+/** 
+ * Make canvas if not done already 
+ * 
+ * 
+ * @return Canvas 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TCanvas* CheckCanvas()
 {
   if (canvas) return canvas;
@@ -82,6 +130,13 @@ TCanvas* CheckCanvas()
 }
   
 //____________________________________________________________________
+/** 
+ * Draw summary 
+ * 
+ * @param fname 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void DrawSummary(const char* fname="AnalysisResults.root")
 {
   if (!CheckFitter(fname)) {
@@ -176,6 +231,13 @@ void DrawSummary(const char* fname="AnalysisResults.root")
 }
 
 //____________________________________________________________________
+/** 
+ * Draw ring fits 
+ * 
+ * @param fname 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void DrawRings(const char* fname="AnalysisResults.root")
 {
   if (!CheckFitter(fname)) {
@@ -230,6 +292,13 @@ void DrawRings(const char* fname="AnalysisResults.root")
 }
 
 //____________________________________________________________________
+/** 
+ * Draw fits in eta bins 
+ * 
+ * @param fname 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void DrawEtaBins(const char* fname="AnalysisResults.root")
 {
   if (!CheckFitter(fname)) {
@@ -294,6 +363,37 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
 }   
 
 //____________________________________________________________________
+/** 
+ * Draw energy loss fits to a multi-page PDF
+ *
+ * The input file is the result of running AliFMDELossFitter - 
+ * either directly via AliFMDELossFitterTask or as part of a larger 
+ * train (AliForwardMultiplicityTask or AliForwardMCMultiplicityTask). 
+ * 
+ * @verbatim 
+ *  file
+ *   +- Forward 
+ *       +- fmdEnergyFitter 
+ *           +- chi2   (THStack)
+ *           +- c      (THStack)
+ *           +- delta  (THStack)
+ *           +- xi     (THStack)
+ *           +- sigma  (THStack)
+ *           +- sigman (THStack)
+ *           +- n      (THStack)
+ *           +- a2     (THStack)
+ *           +- ...    (THStack)
+ *           +- an     (THStack)
+ *           +- FMD1I (TList)
+ *           |   +- FMD1I_edist (TH1)
+ *           |   +- EDists      (TList)
+ *           ...
+ * @endverbatim
+ *
+ * @param fname 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 DrawFits(const char* fname="AnalysisResults.root")
 {
@@ -307,3 +407,6 @@ DrawFits(const char* fname="AnalysisResults.root")
   DrawEtaBins(fname);
   canvas->Print(Form("%s]", pdfName));
 }
+//
+// EOF
+//

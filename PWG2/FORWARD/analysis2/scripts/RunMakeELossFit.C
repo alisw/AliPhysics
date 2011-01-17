@@ -8,6 +8,11 @@
  * @param filename  Input file name 
  *
  * @ingroup pwg2_forward_analysis_scripts
+ *
+ * @depcrecated 
+ * The class AliFMDELossFitter automatically generates the
+ * AliFMDCorrELossFit object.
+ *
  */
 void
 RunMakeELossFit(UShort_t    sys, 

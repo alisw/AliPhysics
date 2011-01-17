@@ -908,9 +908,10 @@ public:
 
     // Finally, rebin the histogram, and set new content
     h->Rebin(rebin);
+    h->Reset();
     for(Int_t i =1;i<=nBinsNew; i++) {
       h->SetBinContent(i,tmp->GetBinContent(i));
-      // h->SetBinError(i,tmp->GetBinError(i));
+      h->SetBinError(i,tmp->GetBinError(i));
     }
     
     delete tmp;
