@@ -132,10 +132,12 @@ public:
   virtual void        Rluset(Int_t lfn, Int_t move=0);   
 
   // set AMPT specific
-  virtual void       SetIsoft(Int_t i);
-  virtual void       SetNtMax(Int_t max);
-  virtual void       SetIpop(Int_t pop);
-  virtual void       SetXmu(Float_t m);
+  virtual void        SetIsoft(Int_t i);
+  virtual void        SetNtMax(Int_t max);
+  virtual void        SetIpop(Int_t pop);
+  virtual void        SetXmu(Float_t m);
+  virtual void        SetAlpha(Float_t alpha);
+  virtual void        SetStringFrag(Float_t a, Float_t b);
 
 protected:
   Double_t     fEfrm;     // Energy in the centre of mass (CMS) or lab-frame (LAB)

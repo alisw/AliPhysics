@@ -22,8 +22,7 @@
   gSystem->Load("libpythia6.so");
   gSystem->Load("libAliPythia6.so");
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT_ORIG/include");
-  gSystem->AddIncludePath("-I$ALICE_ROOT_ORIG/PYTHIA6");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/PYTHIA6");
   if (gSystem->Getenv("TMPDIR")) 
     gSystem->SetBuildDir(gSystem->Getenv("TMPDIR"));
   if (!gAlice)

@@ -45,8 +45,8 @@ c     read initialization value for hadron cascade:
       NTMAX    = 150		! NTMAX: number of timesteps (D=150), see below
       DT       = 0.2		! DT: timestep in fm (hadron cascade time= DT*NTMAX) (D=0.2)
 c     parj(41) and (42) are a and b parameters in Lund string fragmentation:
-      PARJ(41) = 2.2		! PARJ(41): parameter a in Lund symmetric splitting function
-      PARJ(42) = 0.5      	! PARJ(42): parameter b in Lund symmetric splitting function
+      PARJ(41) = 0.5		! PARJ(41): parameter a in Lund symmetric splitting function
+      PARJ(42) = 0.9      	! PARJ(42): parameter b in Lund symmetric splitting function
 c     IHPR2(11)=3 (or 2) allows the popcorn mechanism in PYTHIA and 
 c     increase the net-baryon stopping in rapidity (value HIJING is 1):
       ipop      = 1	      	! (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
@@ -63,7 +63,7 @@ c     Minimum pt of hard or semihard scatterings in HIJING: D=2.0 GeV.
 c     read initialization value for parton cascade:
       xmu      = 3.2264d0	! parton screening mass in fm^(-1) (D=3.2264d0), see below
       izpc     = 0		! IZPC: (D=0 forward-angle parton scatterings; 100,isotropic)
-      alpha    = 0.47140452d0	! alpha in parton cascade
+      alpha    = 0.3333d0	! alpha in parton cascade
 c     quark coalescence radii in momentum and space for string melting:
       dpcoal   = 1d6		! dpcoal in GeV
       drcoal   = 1d6		! drcoal in fm

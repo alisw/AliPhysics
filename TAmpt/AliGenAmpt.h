@@ -53,10 +53,12 @@ class AliGenAmpt : public AliGenMC
     virtual void    SetBoostLHC(Int_t flag = 0)       {fLHC        = flag;}
     virtual void    SetRandomPz(Bool_t flag = 0)      {fRandomPz   = flag;}
     virtual void    SwitchOffHeavyQuarks(Bool_t flag = kTRUE) {fNoHeavyQuarks = flag;}
-    virtual void    SetIsoft(Int_t i)                 {fIsoft = i;  }
-    virtual void    SetNtMax(Int_t max)               {fNtMax = max;}
-    virtual void    SetIpop(Int_t pop)                {fIpop  = pop;}
-    virtual void    SetXmu(Float_t m)                 {fXmu   = m;  }
+    virtual void    SetIsoft(Int_t i)                         {fIsoft = i;  }
+    virtual void    SetNtMax(Int_t max)                       {fNtMax = max;}
+    virtual void    SetIpop(Int_t pop)                        {fIpop  = pop;}
+    virtual void    SetXmu(Float_t m)                         {fXmu   = m;  }
+    virtual void    SetAlpha(Float_t alpha)                   {fAlpha = alpha;            }
+    virtual void    SetStringFrag(Float_t a, Float_t b)       {fStringA = a; fStringB = b;}
 	    
     // Getters
     virtual TString GetReferenceFrame()  const {return fFrame;}
@@ -128,6 +130,9 @@ class AliGenAmpt : public AliGenMC
     Int_t                    fNtMax;           // NTMAX: number of timesteps (D=150)
     Int_t                    fIpop;            // (D=1,yes;0,no) flag for popcorn mechanism(netbaryon stopping)
     Float_t                  fXmu;             // parton screening mass in fm^(-1) (D=3.2264d0)
+    Float_t                  fAlpha;           // alpha running (fixed) coupling
+    Float_t                  fStringA;         // string frag parameter A
+    Float_t                  fStringB;         // string frag parameter B
     AliGenHijingEventHeader *fHeader;          // header
 
   private:
@@ -141,6 +146,6 @@ class AliGenAmpt : public AliGenMC
     // check if stable
     Bool_t Stable(TParticle*  particle) const;
 
-    ClassDef(AliGenAmpt, 1) // AliGenerator interface to Ampt
+    ClassDef(AliGenAmpt, 2) // AliGenerator interface to Ampt
 };
 #endif

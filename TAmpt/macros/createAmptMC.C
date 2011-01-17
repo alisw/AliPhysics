@@ -119,8 +119,12 @@ void createAmptMC(Int_t nEvents,
   genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off
   genHi->SetSpectators(1);   // track spectators 
   genHi->SetIsoft(1);        // standard AMPT
-  genHi->SetNtMax(3);        // time bins
   genHi->SetXmu(3.2264);     // parton xsection
+  genHi->SetNtMax(3);        // time bins
+  if (0) { //RHIC settings
+    genHi->SetAlpha(0.47140452);
+    genHi->SetStringFrag(2.2,0.5);
+  }
   genHi->Init();
 
   TClonesArray *inucs = new TClonesArray("TParticle",10000);

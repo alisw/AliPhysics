@@ -76,6 +76,9 @@ AliGenAmpt::AliGenAmpt()
     fNtMax(150),
     fIpop(1),
     fXmu(3.2264),
+    fAlpha(1./3),
+    fStringA(0.5),
+    fStringB(0.9),
     fHeader(new AliGenAmptEventHeader("Ampt"))
 {
   // Constructor
@@ -125,6 +128,9 @@ AliGenAmpt::AliGenAmpt(Int_t npart)
     fNtMax(150),
     fIpop(1),
     fXmu(3.2264),
+    fAlpha(1./3),
+    fStringA(0.5),
+    fStringB(0.9),
     fHeader(new AliGenAmptEventHeader("Ampt"))
 {
   // Default PbPb collisions at 5.5 TeV
@@ -207,6 +213,8 @@ void AliGenAmpt::Init()
   fAmpt->SetNtMax(fNtMax);
   fAmpt->SetIpop(fIpop);
   fAmpt->SetXmu(fXmu);
+  fAmpt->SetAlpha(fAlpha);
+  fAmpt->SetStringFrag(fStringA, fStringB);
 
   AliGenMC::Init();
     

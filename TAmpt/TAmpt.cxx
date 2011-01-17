@@ -1239,6 +1239,21 @@ void TAmpt::SetIpop(Int_t pop)
 //______________________________________________________________________________
 void TAmpt::SetXmu(Float_t m)     
 {
-  // set parton screening mass in fm^
+  // set parton screening mass in fm^-1.
   PARA2.xmu     = m;  
+}
+
+//______________________________________________________________________________
+void TAmpt::SetAlpha(Float_t alpha)     
+{
+  // set parton screening mass in fm^-1.
+  PARA2.alpha     = alpha;  
+}
+
+//______________________________________________________________________________
+void TAmpt::SetStringFrag(Float_t a, Float_t b)
+{
+  // Set string frag parameters, f(z) = 1/z*(1-z)^a*exp(-b*mz^2/z).
+   SetPARJ(41, a);
+   SetPARJ(42, b);
 }
