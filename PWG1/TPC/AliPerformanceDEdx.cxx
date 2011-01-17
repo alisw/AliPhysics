@@ -437,13 +437,13 @@ void AliPerformanceDEdx::Analyse()
   TObjArray *arr[7] = {0};
   TF1 *f1[7] = {0};
   
-  for(Int_t i=1; i<8; i++) 
+  for(Int_t i=0; i<7; i++) 
   { 
     arr[i] = new TObjArray;
     f1[i] = new TF1("gaus","gaus");
     //printf("i %d \n",i);
 
-    h2D = (TH2F*)fDeDxHisto->Projection(0,i);
+    h2D = (TH2F*)fDeDxHisto->Projection(0,i+1);
 
     f1[i]->SetRange(40,60); // should be pion peak
     h2D->FitSlicesY(f1[i],0,-1,10,"QNR",arr[i]); // gaus fit of pion peak
@@ -472,6 +472,7 @@ void AliPerformanceDEdx::Analyse()
 
     aFolderObj->Add(h1D);
   }
+
     // select MIPs (version from AliTPCPerfomanceSummary)
     fDeDxHisto->GetAxis(0)->SetRangeUser(35,60);
     fDeDxHisto->GetAxis(2)->SetRangeUser(-20,20);
@@ -509,6 +510,12 @@ void AliPerformanceDEdx::Analyse()
     if (fFolderObj) delete fFolderObj;
     fFolderObj = aFolderObj;
     aFolderObj=0;
+
+
+  for(Int_t i=0;i<7;i++) { 
+    if(f1[i]) delete f1[i]; f1[i]=0;
+  }
+
 }
 
 //_____________________________________________________________________________
