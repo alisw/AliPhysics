@@ -10,15 +10,13 @@
 //                   whatever the name of the macro itself, whose first two
 //                   arguments must have to be the task and the 'dataLabel' argument.
 //
-Bool_t AddRsnAnalysisMult
+Bool_t AddRsnAnalysisPhiKKMult
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C",// RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
+  const char *configs = "RsnConfigPhiKKNoSA.C",// RsnConfigPhiKKSA.C",
   const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
-{
-  cout << "Entering" << endl;
-  
+{  
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
@@ -31,8 +29,7 @@ Bool_t AddRsnAnalysisMult
   for (Int_t i = 0; i < 6; i++)
   {
     // create the task and connect with physics selection
-    AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));
-    task->SetZeroEventPercentWarning(100.0);
+    AliRsnAnalysisPhiKK *task = new AliRsnAnalysisPhiKK(Form("RsnAnalysis_%d", i));
     task->SelectCollisionCandidates();
 
     // add the task to manager

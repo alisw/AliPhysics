@@ -215,9 +215,9 @@ Bool_t RsnConfig
   // 0) invariant mass
   // 1) transverse momentum
   // 2) rapidity
-  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,  0.9, 1.4, 0.001);
-  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt     ,  0.0, 5.0, 0.100);
-  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY      , -1.0, 1.0, 0.100);
+  AliRsnValue *axisIM = new AliRsnValue("IM", AliRsnValue::kPairInvMass,  0.9,  1.3, 0.001);
+  AliRsnValue *axisPt = new AliRsnValue("PT", AliRsnValue::kPairPt     ,  0.0, 10.0, 0.100);
+  AliRsnValue *axisY  = new AliRsnValue("Y" , AliRsnValue::kPairY      , -1.1,  1.1, 0.100);
 
   // create function and add axes
   AliRsnFunction *fcn = new AliRsnFunction;
