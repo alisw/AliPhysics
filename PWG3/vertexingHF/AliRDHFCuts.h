@@ -140,7 +140,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
 
-  ClassDef(AliRDHFCuts,6);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,7);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
