@@ -223,9 +223,14 @@ void AddAnalysisTasks()
   //
   // TPC (Jacek Otwinowski & Michael Knichel)
   //
+  //
+  // Optionally MC information can be used by setting the 1st argument to true
+  // Optionally friends information can be switched off by setting the 2st argument 
+  // to false
+  // Optionally highMult axis can be used by setting the 3st argument to true (for PbPb)
   if (doTPC) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE);
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE);
     tpcQA->SelectCollisionCandidates();
   }  
   //
