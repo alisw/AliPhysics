@@ -21,7 +21,7 @@
 #include "AliGenAmpt.h"
 #endif
 
-void fastGenAmpt(Int_t nev = 1, char* filename = "galice.root")
+void fastGenAmpt(Int_t nev = 1, const char* filename = "galice.root")
 {
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();
