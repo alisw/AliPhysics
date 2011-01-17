@@ -1189,7 +1189,10 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistV0C->Merge(&collections[n++]);
   fHistZDC->Merge(&collections[n++]);
   fHistTDCZDC->Merge(&collections[n++]);
-  fHistTimeZDC->Merge(&collections[n++]);
+  if (fHistTimeZDC)
+    fHistTimeZDC->Merge(&collections[n++]);
+  else
+    n++;
   fHistFMDA->Merge(&collections[n++]);
   fHistFMDC->Merge(&collections[n++]);
   fHistFMDSingle->Merge(&collections[n++]);
