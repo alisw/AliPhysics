@@ -24,7 +24,7 @@ class AliESDVertex;
 class AliPerformanceObject : public TNamed {
 public :
   AliPerformanceObject(); 
-  AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1); 
+  AliPerformanceObject(const char* name="AliPerformanceObject", const char* title="AliPerformanceObject", Int_t run=-1, Bool_t highMult=kFALSE); 
   virtual ~AliPerformanceObject();
 
   // Init data members
@@ -127,7 +127,7 @@ protected:
   AliPerformanceObject(const AliPerformanceObject&); // not implemented
   AliPerformanceObject& operator=(const AliPerformanceObject&); // not implemented
 
-  ClassDef(AliPerformanceObject,5);
+  ClassDef(AliPerformanceObject,6);
 };
 
 #endif

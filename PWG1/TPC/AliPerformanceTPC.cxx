@@ -98,8 +98,8 @@ AliPerformanceTPC::AliPerformanceTPC():
 */
 
 //_____________________________________________________________________________
-AliPerformanceTPC::AliPerformanceTPC(Char_t* name, Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run):
-  AliPerformanceObject(name,title,run),
+AliPerformanceTPC::AliPerformanceTPC(Char_t* name, Char_t* title,Int_t analysisMode,Bool_t hptGenerator, Int_t run, Bool_t highMult):
+  AliPerformanceObject(name,title,run,highMult),
   fTPCClustHisto(0),
   fTPCEventHisto(0),
   fTPCTrackHisto(0),
@@ -169,10 +169,22 @@ void AliPerformanceTPC::Init()
   //
 
   //
+  //padRow:phi:TPCSide
+  Int_t binsTPCClustHisto[3] =   {160,  144,  2};
+  Double_t minTPCClustHisto[3] = {0.,   0.,   0.};
+  Double_t maxTPCClustHisto[3] = {160., 2.*TMath::Pi(), 2.};
+
+  fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide",3,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
+  fTPCClustHisto->GetAxis(0)->SetTitle("padRow");
+  fTPCClustHisto->GetAxis(1)->SetTitle("phi (rad)");
+  fTPCClustHisto->GetAxis(2)->SetTitle("TPCSide");
+  //fTPCClustHisto->Sumw2();
+
   //padRow:phi:TPCSide:pad:detector:glZ
-  Int_t binsTPCClustHisto[6] =   {160,  180,  2, 256, 512, 250};
-  Double_t minTPCClustHisto[6] = {0.,   0.,   0., -128, 0, -250};
-  Double_t maxTPCClustHisto[6] = {160., 2.*TMath::Pi(), 2., 128, 512,250};
+  /*
+  Int_t binsTPCClustHisto[6] =   {160,  144,  2, 128, 72, 50};
+  Double_t minTPCClustHisto[6] = {0.,   0.,   0., 0, 0, -250};
+  Double_t maxTPCClustHisto[6] = {160., 2.*TMath::Pi(), 2., 128, 72,250};
 
   fTPCClustHisto = new THnSparseF("fTPCClustHisto","padRow:phi:TPCSide:pad:detector:gZ",6,binsTPCClustHisto,minTPCClustHisto,maxTPCClustHisto);
   fTPCClustHisto->GetAxis(0)->SetTitle("padRow");
@@ -182,6 +194,7 @@ void AliPerformanceTPC::Init()
   fTPCClustHisto->GetAxis(4)->SetTitle("detector");
   fTPCClustHisto->GetAxis(5)->SetTitle("glZ (cm)");
   //fTPCClustHisto->Sumw2();
+  */
   
   Int_t maxMult;
   if (fHighMultiplicity) { maxMult = 4001; } else { maxMult = 151; }
@@ -498,12 +511,13 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
              //fTPCClustHisto1->Fill(vTPCClust1);
 
              //  
-             Float_t pad = cluster->GetPad();
-             Int_t detector = cluster->GetDetector();
 	     Double_t phi = TMath::ATan2(gclf[1],gclf[0]);
 	     if(phi < 0) phi += 2.*TMath::Pi();
 	    
-             Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
+             //Float_t pad = cluster->GetPad();
+             //Int_t detector = cluster->GetDetector();
+             //Double_t vTPCClust[6] = { irow, phi, TPCside, pad, detector, gclf[2] };
+             Double_t vTPCClust[3] = { irow, phi, TPCside };
              fTPCClustHisto->Fill(vTPCClust);
         }
       }
