@@ -77,7 +77,10 @@ class AliFlowAnalysisWithMixedHarmonics
   virtual void CorrectForDetectorEffects();
   virtual void CorrectForDetectorEffectsVsM();
   virtual void PrintOnTheScreen();  
-  
+  virtual void GetCorrelatorAndError(TProfile *g3pCorrelatorVsPt, 
+				     Double_t &g3pCorrelatorValue, 
+				     Double_t &g3pCorrelatorError);
+
   // 4.) Method GetOutputHistograms and method called within it:
   virtual void GetOutputHistograms(TList *outputListHistos);
   virtual void GetPointersForBaseHistograms();
@@ -148,6 +151,16 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile* Get3pPOICorrelatorVsM() const {return this->f3pPOICorrelatorVsM;};
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
+  void Set2pCorrelatorCosPsiDiff(TProfile* const g2pCorrelatorCosPsiDiff) {this->f2pCorrelatorCosPsiDiff = g2pCorrelatorCosPsiDiff;};
+  TProfile* Get2pCorrelatorCosPsiDiff() const {return this->f2pCorrelatorCosPsiDiff;};
+  void Set2pCorrelatorCosPsiSum(TProfile* const g2pCorrelatorCosPsiSum) {this->f2pCorrelatorCosPsiSum = g2pCorrelatorCosPsiSum;};
+  TProfile* Get2pCorrelatorCosPsiSum() const {return this->f2pCorrelatorCosPsiSum;};
+  void Set2pCorrelatorSinPsiDiff(TProfile* const g2pCorrelatorSinPsiDiff) {this->f2pCorrelatorSinPsiDiff = g2pCorrelatorSinPsiDiff;};
+  TProfile* Get2pCorrelatorSinPsiDiff() const {return this->f2pCorrelatorSinPsiDiff;};
+  void Set2pCorrelatorSinPsiSum(TProfile* const g2pCorrelatorSinPsiSum) {this->f2pCorrelatorSinPsiSum = g2pCorrelatorSinPsiSum;};
+  TProfile* Get2pCorrelatorSinPsiSum() const {return this->f2pCorrelatorSinPsiSum;};
+
+
   void SetResultsList(TList* const rlist) {this->fResultsList = rlist;}
   TList* GetResultsList() const {return this->fResultsList;}    
   void Set3pCorrelatorHist(TH1D* const s3pHist) {this->f3pCorrelatorHist = s3pHist;};
@@ -163,8 +176,8 @@ class AliFlowAnalysisWithMixedHarmonics
   void Set3pCorrelatorVsEtaSumDiffPro(TProfile* const s3pcvpsd, Int_t const sd) {this->f3pCorrelatorVsEtaSumDiffPro[sd] = s3pcvpsd;};
   TProfile* Get3pCorrelatorVsEtaSumDiffPro(Int_t sd) const {return this->f3pCorrelatorVsEtaSumDiffPro[sd];};
 
-  void Set2pCorrelatorHist(TH1D* const s2pHist) {this->f2pCorrelatorHist = s2pHist;};
-  TH1D* Get2pCorrelatorHist() const {return this->f2pCorrelatorHist;};    
+  //void Set2pCorrelatorHist(TH1D* const s2pHist) {this->f2pCorrelatorHist = s2pHist;};
+  //TH1D* Get2pCorrelatorHist() const {return this->f2pCorrelatorHist;};    
 
  private:
   AliFlowAnalysisWithMixedHarmonics(const AliFlowAnalysisWithMixedHarmonics& afawQc);
@@ -231,6 +244,10 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
+  TProfile *f2pCorrelatorCosPsiDiff; // <<cos[n(psi1-psi2)] 
+  TProfile *f2pCorrelatorCosPsiSum; // <<cos[n(psi1+psi2)] 
+  TProfile *f2pCorrelatorSinPsiDiff; // <<sin[n(psi1-psi2)] 
+  TProfile *f2pCorrelatorSinPsiSum; // <<sin[n(psi1+psi2)] 
 
   // 5.) Final results:
   TList *fResultsList; // list holding objects with final results 
@@ -238,7 +255,7 @@ class AliFlowAnalysisWithMixedHarmonics
   TH1D *fDetectorBiasHist; // bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (in %)
   TH1D *f3pCorrelatorVsMHist; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity corrected for detector effects
   TH1D *fDetectorBiasVsMHist; // bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (in %) versus multiplicity
-  TH1D *f2pCorrelatorHist;//<<cos[(psi1-psi2)]>>
+  //TH1D *f2pCorrelatorHist;//<<cos[(psi1-psi2)]>>
 
   ClassDef(AliFlowAnalysisWithMixedHarmonics, 0);
 
