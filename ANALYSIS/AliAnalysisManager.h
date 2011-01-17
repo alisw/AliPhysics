@@ -19,6 +19,9 @@
 #ifndef ROOT_THashTable
 #include <THashTable.h>
 #endif
+#ifndef ROOT_Riostream
+#include <Riostream.h>
+#endif
 
 class TClass;
 class TTree;
@@ -115,6 +118,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
    TObjArray          *GetZombieTasks() const     {return fZombies;}
+   static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}

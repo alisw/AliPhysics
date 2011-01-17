@@ -1673,10 +1673,10 @@ const char *AliAnalysisAlien::GetJobStatus(Int_t jobidstart, Int_t lastid, Int_t
    Int_t pid;
    for (Int_t ijob=0; ijob<nentries; ijob++) {
       status = (TGridJobStatus *)list->At(ijob);
-      pid = gROOT->ProcessLine(Form("atoi(((TAlienJobStatus*)0x%lx)->GetKey(\"queueId\"));", (ULong_t)status));
+      pid = gROOT->ProcessLine(Form("atoi(((TAlienJobStatus*)%p)->GetKey(\"queueId\"));", status));
       if (pid<jobidstart) continue;
       if (pid == lastid) {
-         gROOT->ProcessLine(Form("sprintf((char*)0x%lx,((TAlienJobStatus*)0x%lx)->GetKey(\"status\"));",(ULong_t)mstatus, (ULong_t)status));
+         gROOT->ProcessLine(Form("sprintf((char*)%p,((TAlienJobStatus*)%p)->GetKey(\"status\"));",mstatus, status));
       }   
       switch (status->GetStatus()) {
          case TGridJobStatus::kWAITING:
@@ -2445,6 +2445,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          if (!fIncludePath.IsNull()) {
             TString includePath = fIncludePath;
             includePath.ReplaceAll(" ",":");
+            includePath.ReplaceAll("$ALICE_ROOT","");
+            includePath.ReplaceAll("${ALICE_ROOT}","");
+            includePath.ReplaceAll("-I","");
             includePath.Strip(TString::kTrailing, ':');
             Info("StartAnalysis", "Adding extra includes: %s",includePath.Data()); 
             optionsList.Add(new TNamed("ALIROOT_EXTRA_INCLUDES",includePath.Data()));
@@ -2461,15 +2464,15 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
                printf("%s  %s\n", obj->GetName(), obj->GetTitle());
             }   
             if (!gROOT->ProcessLine(Form("gProof->UploadPackage(\"%s\");",alirootLite.Data()))
-              && !gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\", (TList*)0x%lx);",alirootLite.Data(),(ULong_t)&optionsList))) {
+              && !gROOT->ProcessLine(Form("gProof->EnablePackage(\"%s\", (TList*)%p);",alirootLite.Data(),&optionsList))) {
                   Info("StartAnalysis", "AliRootProofLite enabled");
             } else {                      
                Error("StartAnalysis", "There was an error trying to enable package AliRootProofLite.par");
                return kFALSE;
             }   
          } else {
-            if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)0x%lx);", 
-                                   fAliROOTVersion.Data(), (ULong_t)&optionsList))) {
+            if (gROOT->ProcessLine(Form("gProof->EnablePackage(\"VO_ALICE@AliRoot::%s\", (TList*)%p, kTRUE);", 
+                                   fAliROOTVersion.Data(), &optionsList))) {
                Error("StartAnalysis", "There was an error trying to enable package VO_ALICE@AliRoot::%s", fAliROOTVersion.Data());
                return kFALSE;
             }         
@@ -2547,7 +2550,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
          }   
          TFileCollection *coll = new TFileCollection();
          coll->AddFromFile(fFileForTestMode);
-         gROOT->ProcessLine(Form("gProof->RegisterDataSet(\"test_collection\", (TFileCollection*)0x%lx, \"OV\");", (ULong_t)coll));
+         gROOT->ProcessLine(Form("gProof->RegisterDataSet(\"test_collection\", (TFileCollection*)%p, \"OV\");", coll));
          gROOT->ProcessLine("gProof->ShowDataSets()");
       }
       return kTRUE;

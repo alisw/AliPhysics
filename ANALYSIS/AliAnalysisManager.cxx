@@ -27,6 +27,7 @@
 
 #include "AliAnalysisManager.h"
 
+#include <cerrno>
 #include <Riostream.h>
 #include <TError.h>
 #include <TClass.h>
@@ -2022,6 +2023,19 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisManager::IsPipe(std::ostream &out)
+{
+// Check if the stdout is connected to a pipe (C.Holm)
+  Bool_t ispipe = kFALSE;
+  out.seekp(0, std::ios_base::cur);
+  if (out.fail()) {
+    out.clear();
+    if (errno == ESPIPE) ispipe = kTRUE;
+  }
+  return ispipe;
+}
+   
+//______________________________________________________________________________
 void AliAnalysisManager::SetInputEventHandler(AliVEventHandler* const handler)
 {
 // Set the input event handler and create a container for it.
@@ -2184,8 +2198,10 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
    static Bool_t oneoftwo = kFALSE;
    static Int_t nrefresh = 0;
    static Int_t nchecks = 0;
+   static char lastChar = 0;
    const char symbol[4] = {'-','\\','|','/'}; 
    
+   if (!lastChar) lastChar = (IsPipe(std::cerr))?'\r':'\n';
    if (!refresh) {
       nrefresh = 0;
       if (!size) return;
@@ -2248,10 +2264,10 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
      Int_t rsec   = remain % 60;
      Int_t rmin   = (remain / 60) % 60;
      Int_t rhour  = (remain / 60 / 60);
-     fprintf(stderr, "[%6.2f %%]   TIME %.2d:%.2d:%.2d  ETA %.2d:%.2d:%.2d\r",
-	     percent, hours, minutes, seconds, rhour, rmin, rsec);
+     fprintf(stderr, "[%6.2f %%]   TIME %.2d:%.2d:%.2d  ETA %.2d:%.2d:%.2d%c",
+	     percent, hours, minutes, seconds, rhour, rmin, rsec, lastChar);
    }
-   else fprintf(stderr, "[%6.2f %%]\r", percent);
+   else fprintf(stderr, "[%6.2f %%]%c", percent, lastChar);
    if (refresh && oneoftwo) oname = nname;
    if (owatch) owatch->Continue();
    if (last) {
