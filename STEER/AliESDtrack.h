@@ -57,8 +57,9 @@ public:
     kTIME=0x80000000,
     kGlobalMerge=0x08000000,
     kITSpureSA=0x10000000,
-    kMultInV0=0x2000000,    //BIT(25): assumed to be belong to V0 in multiplicity estimates
-    kMultSec=0x4000000     //BIT(26): assumed to be secondary (due to the DCA) in multiplicity estimates
+    kMultInV0 =0x2000000,    //BIT(25): assumed to be belong to V0 in multiplicity estimates
+    kMultSec  =0x4000000,     //BIT(26): assumed to be secondary (due to the DCA) in multiplicity estimates
+    kEmbedded =0x8000000     // BIT(27), 1<<27: Is a track that has been embedded into the event      
   }; 
   enum {
     kTRDnPlanes = 6,
@@ -504,7 +505,7 @@ protected:
  private:
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,58)  //ESDtrack 
+  ClassDef(AliESDtrack,59)  //ESDtrack 
 };
 
 
