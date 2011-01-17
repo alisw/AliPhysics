@@ -184,6 +184,8 @@ enum EAliAnalysisFlags {
    void                 WriteStatisticsMsg(Int_t nevents);
    Int_t                GetNcalls() const {return fNcalls;}
    Bool_t               ValidateOutputFiles() const;
+   
+   static const char*   GetOADBPath();
 
 protected:
    void                 ImportWrappers(TList *source);

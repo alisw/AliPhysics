@@ -2375,3 +2375,21 @@ void AliAnalysisManager::WriteStatisticsMsg(Int_t nevents)
    }   
    out.close();
 }
+
+//______________________________________________________________________________
+const char* AliAnalysisManager::GetOADBPath()
+{
+// returns the path of the OADB
+// this static function just depends on environment variables
+
+   static TString oadbPath;
+
+   if (gSystem->Getenv("OADB_PATH"))
+      oadbPath = gSystem->Getenv("OADB_PATH");
+   else if (gSystem->Getenv("ALICE_ROOT"))
+      oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_ROOT"));
+   else
+      cout << "ERROR: Cannot figure out AODB path. Define ALICE_ROOT or OADB_PATH!" << endl;
+      
+   return oadbPath;
+}
