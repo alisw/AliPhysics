@@ -13,22 +13,21 @@
 Bool_t AddRsnAnalysisMult
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C",// RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
+  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C",
   const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
 )
 {
-  cout << "Entering" << endl;
-  
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   
   // initialize multiplicity bins
-  Int_t  multMin[6] = {0, 0, 6, 10, 15, 23       };
-  Int_t  multMax[6] = {0, 5, 9, 14, 22, 100000000};
+  Int_t multMin[] = {0, 0, 6, 10, 15, 23       ,  6, 11, 21, 31, 51,  76, 101, 126, 151, 201      };
+  Int_t multMax[] = {0, 5, 9, 14, 22, 100000000, 10, 20, 30, 50, 75, 100, 125, 150, 200, 100000000};
+  Int_t nmult = sizeof(multMin) / sizeof(multMin[0]);
   
   // initialize several tasks, each one with different multiplicity cut
   // and all with the same primary vertex + pile-up cut
-  for (Int_t i = 0; i < 6; i++)
+  for (Int_t i = 0; i < nmult; i++)
   {
     // create the task and connect with physics selection
     AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));

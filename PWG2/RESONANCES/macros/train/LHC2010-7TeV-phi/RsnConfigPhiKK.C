@@ -14,21 +14,16 @@
 */
 
 //
-// This function configures the entire task for all resonances the user is interested in.
-// This is done by creating all configuration objects which are defined in the package.
+// This function configures a phi analysis task object.
+// This is simpler than configuring an AliRsnAnalysiSE task, since it is aimed
+// at a single type of resonance, but using all facilities of the framework.
 //
-// Generally speaking, one has to define the following objects for each resonance:
-//
-//  1 - an AliRsnPairDef to define the resonance decay channel to be studied
-//  2 - an AliRsnPair{Ntuple|Functions} where the output is stored
-//  3 - one or more AliRsnCut objects to define track selections
-//      which will have then to be organized into AliRsnCutSet objects
-//  4 - an AliRsnCutManager to include all cuts to be applied (see point 3)
-//  5 - definitions to build the TNtuple or histograms which are returned
+// One has to define only the cuts and the function templates, which are 
+// then replicated always for all possible types (+-, ++ and -- and trues)
 //
 // The return value is used to know if the configuration was successful
 //
-Bool_t RsnConfig
+Bool_t RsnConfigPhiKK
 (
   const char *taskName, 
   const char *options,
@@ -68,18 +63,18 @@ Bool_t RsnConfig
   Info("RsnConfig", "=== suffix used           : %s ====================================================", suffix.Data());
 
   // retrieve analysis manager & task
-  AliAnalysisManager *mgr  = AliAnalysisManager::GetAnalysisManager();
-  AliRsnAnalysisSE   *task = (AliRsnAnalysisSE*)mgr->GetTask(taskName);
+  AliAnalysisManager  *mgr  = AliAnalysisManager::GetAnalysisManager();
+  AliRsnAnalysisPhiKK *task = (AliRsnAnalysisPhiKK*)mgr->GetTask(taskName);
 
   // for safety, return if no task is passed
   if (!task)
   {
-    Error("RsnConfig2010PhiFcn", "Task not found");
+    Error("RsnConfigPhiKK", "Task not found");
     return kFALSE;
   }
   
   //
-  // -- Setup event cuts (added directly to task) ---------------------------------------------------
+  // -- Setup event cuts ----------------------------------------------------------------------------
   //
   
   // define a common cut on primary vertex, which also checks pile-up
@@ -110,22 +105,7 @@ Bool_t RsnConfig
   }
 
   //
-  // -- Setup pairs ---------------------------------------------------------------------------------
-  //
-
-  // decay channels
-  AliRsnPairDef *pairDefPM = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455);
-  AliRsnPairDef *pairDefPP = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '+', 333, 1.019455);
-  AliRsnPairDef *pairDefMM = new AliRsnPairDef(AliPID::kKaon, '-', AliPID::kKaon, '-', 333, 1.019455);
-
-  // computation objects
-  AliRsnPairFunctions *pairPM = new AliRsnPairFunctions(Form("PairPM%s", suffix.Data()), pairDefPM);
-  AliRsnPairFunctions *truePM = new AliRsnPairFunctions(Form("TruePM%s", suffix.Data()), pairDefPM);
-  AliRsnPairFunctions *pairPP = new AliRsnPairFunctions(Form("PairPP%s", suffix.Data()), pairDefPP);
-  AliRsnPairFunctions *pairMM = new AliRsnPairFunctions(Form("PairMM%s", suffix.Data()), pairDefMM);
-
-  //
-  // -- Setup cuts ----------------------------------------------------------------------------------
+  // -- Setup other cuts (for tracks and pairs) -----------------------------------------------------
   //
 
   // track cut -----------------------
@@ -137,14 +117,14 @@ Bool_t RsnConfig
   cuts2010->SetPID(AliPID::kKaon);
   // --> include or not the ITS standalone (TPC is always in)
   cuts2010->SetUseITSTPC(kTRUE);
-  cuts2010->SetUseITSSA (addITSSA);
+  cuts2010->SetUseITSSA(addITSSA);
   // --> set the quality cuts using the general macro and using the 'Copy()' method in AliESDtrackCuts
   cuts2010->CopyCutsTPC(QualityCutsTPC());
   cuts2010->CopyCutsITS(QualityCutsITS());
   // --> set values for PID flags, depending on the choice expressed in the options
-  cuts2010->SetCheckITS (addPID);
-  cuts2010->SetCheckTPC (addPID);
-  cuts2010->SetCheckTOF (addPID);
+  cuts2010->SetCheckITS(addPID);
+  cuts2010->SetCheckTPC(addPID);
+  cuts2010->SetCheckTOF(addPID);
   // --> set the ITS PID-related variables
   cuts2010->SetITSband(3.0);
   // --> set the TPC PID-related variables
@@ -178,34 +158,16 @@ Bool_t RsnConfig
   // setup cut set for tracks------------------------------------------------------------
   // --> in this case, only common cuts are applied, depending if working with ESD or AOD
   // --> these cuts are added always
-  pairPM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
-  truePM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
-  pairPP->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
-  pairMM->GetCutManager()->GetCommonDaughterCuts()->AddCut(cuts2010);
-  
-  pairPM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
-  truePM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
-  pairPP->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
-  pairMM->GetCutManager()->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
+  task->GetCommonDaughterCuts()->AddCut(cuts2010);
+  task->GetCommonDaughterCuts()->SetCutScheme(cuts2010->GetName());
   
   // cut set for pairs---------------------
   // --> add dip angle cut only if required
   if (addDipCut)
   {
-    pairPM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    truePM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    pairPP->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    pairMM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    
-    pairPM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
-    truePM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
-    pairPP->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
-    pairMM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutDip->GetName());
+    task->GetMotherCuts()->AddCut(cutDip);
+    task->GetMotherCuts()->SetCutScheme(cutDip->GetName());
   }
-  
-  // set additional option for true pairs
-  truePM->SetOnlyTrue  (kTRUE);
-  truePM->SetCheckDecay(kTRUE);
 
   //
   // -- Setup functions -----------------------------------------------------------------------------
@@ -226,20 +188,11 @@ Bool_t RsnConfig
   if ( !fcn->AddAxis(axisY   ) ) return kFALSE;
 
   // add functions to pairs
-  pairPM->AddFunction(fcn);
-  truePM->AddFunction(fcn);
-  pairPP->AddFunction(fcn);
-  pairMM->AddFunction(fcn);
+  task->AddFunction(fcn);
 
   //
   // -- Conclusion ----------------------------------------------------------------------------------
   //
-
-  // add all created AliRsnPair objects to the AliRsnAnalysisManager in the task
-  task->GetAnalysisManager()->Add(pairPM);
-  task->GetAnalysisManager()->Add(pairPP);
-  task->GetAnalysisManager()->Add(pairMM);
-  if (isSim) task->GetAnalysisManager()->Add(truePM);
 
   return kTRUE;
 }
