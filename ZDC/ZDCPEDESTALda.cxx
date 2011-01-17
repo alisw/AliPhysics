@@ -180,9 +180,9 @@ int main(int argc, char **argv) {
      hPedOutOfTimehg[j] = new TH1F(namhist2hg, namhist2hg, 200, 0., 200.);
      hPedCorrhg[j] = new TH2F(namhist3hg,namhist3hg,100,0.,200.,100,0.,200.);
      // --- Low gain chain histos
-     hPedlg[j] = new TH1F(namhist1lg, namhist1lg, 100, 0., 1000.);
-     hPedOutOfTimelg[j] = new TH1F(namhist2lg, namhist2lg, 100, 0., 1000.);
-     hPedCorrlg[j] = new TH2F(namhist3lg,namhist3lg,100,0.,1000.,100,0.,1000.);
+     hPedlg[j] = new TH1F(namhist1lg, namhist1lg, 100, 0., 1500.);
+     hPedOutOfTimelg[j] = new TH1F(namhist2lg, namhist2lg, 100, 0., 1500.);
+     hPedCorrlg[j] = new TH2F(namhist3lg,namhist3lg,100,0.,1500.,100,0.,1500.);
   }
 
 
@@ -507,36 +507,57 @@ int main(int argc, char **argv) {
   }
   
   // --- Correlations
-  // NB -> The correlations are NOT fitted since at the moment
-  // (Sptember 2009) they are NOT correlations and the DA would fail!!!
-/*  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
+  Float_t CorrCoeff0[2*kNChannels], CorrCoeff1[2*kNChannels];
   TProfile *hPedCorrProfhg[kNChannels], *hPedCorrProflg[kNChannels];
   TF1 *ffunchg[kNChannels], *ffunclg[kNChannels];
   char namhist4[50];
   for(int i=0;i<kNChannels;i++) {
+    if(i==0 || i==7 || i== 10 || i==11){
      sprintf(namhist4,"ADCHRvsOOT%d_Prof",i);
      hPedCorrProfhg[i] = hPedCorrhg[i]->ProfileX(namhist4,-1,-1,"S");
      hPedCorrProfhg[i]->SetName(namhist4);
-     hPedCorrProfhg[i]->Fit("pol1","Q");
-     ffunchg[i] = hPedCorrProfhg[i]->GetFunction("pol1");
-     CorrCoeff0[i] = (Double_t)  ffunchg[i]->GetParameter(0);
-     CorrCoeff1[i] = (Double_t) ffunchg[i]->GetParameter(1);
-     fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i],CorrCoeff1[i]);
-     //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
+     if(hPedCorrProfhg[i]->GetEntries()!=0){
+       hPedCorrProfhg[i]->Fit("pol1","Q");
+       ffunchg[i] = hPedCorrProfhg[i]->GetFunction("pol1");
+       CorrCoeff0[i] = (Double_t)  ffunchg[i]->GetParameter(0);
+       CorrCoeff1[i] = (Double_t) ffunchg[i]->GetParameter(1);
+       //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",i, CorrCoeff0[i], i, CorrCoeff1[i]);
+     }
+     else{
+       printf(" Warning -> Correlation for high range ch. %d has no entry and can't be fitted!\n",i);
+     }
+    }
+    else{
+       CorrCoeff0[i] = 0.;
+       CorrCoeff1[i] = 0.;
+    }
+    fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i],CorrCoeff1[i]);
+     
   }    
   for(int i=0;i<kNChannels;i++) {
+    if(i==0 || i==7 || i== 10 || i==11){
      sprintf(namhist4,"ADCLRvsOOT%d_Prof",i);
      hPedCorrProflg[i] = hPedCorrlg[i]->ProfileX(namhist4,-1,-1,"S");
      hPedCorrProflg[i]->SetName(namhist4);
-     hPedCorrProflg[i]->Fit("pol1","Q");
-     ffunclg[i] = hPedCorrProflg[i]->GetFunction("pol1");
-     CorrCoeff0[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(0);
-     CorrCoeff1[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(1);
-     fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
-     //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
-     //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
+     if(hPedCorrProflg[i]->GetEntries()!=0){
+       hPedCorrProflg[i]->Fit("pol1","Q");
+       ffunclg[i] = hPedCorrProflg[i]->GetFunction("pol1");
+       CorrCoeff0[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(0);
+       CorrCoeff1[i+kNChannels] =  (Double_t) ffunclg[i]->GetParameter(1);
+       //printf("\t CorrCoeff0[%d] = %f, CorrCoeff1[%d] = %f\n",
+       //		i+kNChannels, CorrCoeff0[i+kNChannels], i+kNChannels, CorrCoeff1[i+kNChannels]);
+     }
+     else{
+       printf(" Warning -> Correlation for low range ch. %d has no entry and can't be fitted!\n",i);
+     }
+    }
+    else{
+       CorrCoeff0[i+kNChannels] = 0.;
+       CorrCoeff1[i+kNChannels] = 0.;
+    }
+    fprintf(fileShuttle,"\t%f\t%f\n",CorrCoeff0[i+kNChannels],CorrCoeff1[i+kNChannels]);
   }    
-*/
+
   //						       
   fclose(fileShuttle);
   //
