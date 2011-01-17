@@ -304,6 +304,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     gSigmaCorrExtreme->SetNameTitle("gSigmaCorrExtreme","Extreme gSigmaCorr (by Nb)");
     gYieldCorrConservative->SetNameTitle("gYieldCorrConservative","Conservative gYieldCorr (by Nb)");
     gSigmaCorrConservative->SetNameTitle("gSigmaCorrConservative","Conservative gSigmaCorr (by Nb)");
+    gFcConservative = spectra->GetFeedDownCorrectionFcConservative();
+    gFcConservative->SetNameTitle("gFcConservative","gFcConservative");
   }
 
   //
@@ -567,18 +569,18 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     if(gSigmaCorrExtreme) gSigmaCorrExtreme->Write();
     if(gYieldCorrConservative) gYieldCorrConservative->Write();
     if(gSigmaCorrConservative) gSigmaCorrConservative->Write();
+    if(asym && gFcConservative) gFcConservative->Write();
   }
 
   if(option==1){
     histofc->Write();
     histofcMax->Write();     histofcMin->Write(); 
     if(asym && gFcExtreme) gFcExtreme->Write();
-    if(asym && gFcConservative) gFcConservative->Write();
   }
 
 
   // Draw the cross-section 
-  spectra->DrawSpectrum(gPrediction);
+  //  spectra->DrawSpectrum(gPrediction);
 
   //  out->Close();
 
