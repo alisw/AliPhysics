@@ -45,6 +45,10 @@ class TH1;
  * @endverbatim 
  * and stored in SVN for later use. 
  *
+ * @depcrecated 
+ * The class AliFMDELossFitter automatically generates the
+ * AliFMDCorrELossFit object.
+ *
  * @ingroup pwg2_forward_analysis_scripts
  */
 

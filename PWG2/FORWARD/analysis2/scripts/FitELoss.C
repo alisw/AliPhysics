@@ -1,6 +1,9 @@
 /**
  * Test script to fit the energy loss spectra 
  * 
+ * @deprecated
+ * This is a simple test script 
+ *
  * @ingroup pwg2_forward_analysis_scripts
  */
 #ifndef __CINT__
@@ -23,6 +26,21 @@ class TF1;
 #endif
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param ef 
+ * @param d 
+ * @param r 
+ * @param etabin 
+ * 
+ * @return 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TH1* GetEDist(TList* ef, UShort_t d, Char_t r, UShort_t etabin)
 {
   TList* dL = static_cast<TList*>(ef->FindObject(Form("FMD%d%c",d,r)));
@@ -57,6 +75,21 @@ TH1* GetEDist(TList* ef, UShort_t d, Char_t r, UShort_t etabin)
 }
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param ef 
+ * @param d 
+ * @param r 
+ * @param eta 
+ * 
+ * @return  
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+*/
 TH1* GetEDist(TList* ef, UShort_t d, Char_t r, Float_t eta)
 {
   if (!ef) { 
@@ -80,6 +113,18 @@ TH1* GetEDist(TList* ef, UShort_t d, Char_t r, Float_t eta)
 }
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param file 
+ * 
+ * @return 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TList* GetEF(TFile* file) 
 {
   TList* forward = static_cast<TList*>(file->Get("PWG2forwardDnDeta/Forward"));
@@ -100,6 +145,17 @@ TList* GetEF(TFile* file)
 TList* ef = 0;
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * 
+ * @return 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TList*  CheckEF()
 {
   if (ef) return ef;
@@ -116,6 +172,17 @@ TList*  CheckEF()
 TCanvas* c = 0;
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * 
+ * @return 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 TCanvas* CheckC()
 {
   if (c) return c;
@@ -146,6 +213,16 @@ TCanvas* CheckC()
 }
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param f 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void PrintFit(TF1* f)
 {
   Int_t    nu     = f->GetNDF();
@@ -163,6 +240,19 @@ void PrintFit(TF1* f)
 }
   
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param n 
+ * @param d 
+ * @param r 
+ * @param eta 
+ *
+ * @deprecated
+ * This is a simple test script 
+ *
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void FitELoss(Int_t n, UShort_t d, Char_t r, Float_t eta)
 {
   TList* ef1 = CheckEF();
@@ -210,3 +300,6 @@ void FitELoss(Int_t n, UShort_t d, Char_t r, Float_t eta)
 
   c1->cd();
 }
+//
+// EOF
+//

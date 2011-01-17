@@ -16,6 +16,7 @@ cms=900
 hhd=1
 comp=1
 tit=
+pass1=Pass1.C
 
 usage()
 {
@@ -41,6 +42,7 @@ Options:
 	-g,--gdb		Run in GDB mode    	   ($gdb)
 	-H,--hhd		Do comparison to HHD	   ($hhd)
 	-O,--other		Do comparison to other	   ($comp)
+	-E,--eloss		Run energy loss script     
 
 TYPE is a comma or space separated list of 
  
@@ -75,6 +77,7 @@ while test $# -gt 0 ; do
 	-V|--vz-max)         vzmax=$2         ; shift ;; 
 	-e|--energy)         cms=$2           ; shift ;;
 	-S|--title)          tit="$2"         ; shift ;;
+	-E|--eloss)          pass1=MakeELossFits.C ; nodraw=1 ;;
 	-t|--type)           
 	    if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    shift ;;
@@ -106,17 +109,20 @@ if test $noanal -lt 1 ; then
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x $ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds --args"
     fi
-    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\) $redir"
+    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) $redir"
     if test $batch -gt 0 ; then 
-	aliroot $opts $opts1 ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\) 2>&1 | tee ${base}.log
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) 2>&1 | tee ${base}.log
     else 
-	aliroot $opts $opts1 ${ana}/Pass1.C\(\".\",$nev,$proof,$mc\)
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc\)
     fi
+    fail=$?
     rm -f event_stat.root \
 	EventStat_temp.root \
 	outputs_valid \
 	`printf %09d.stat $nev` 
-    if test ! -f AnalysisResults.root || test ! -f AliAODs.root ; then 
+    if  test $fail -gt 0               || \
+	test ! -f AnalysisResults.root || \
+	test ! -f AliAODs.root ; then 
 	echo "Analysis failed" 
 	exit 1
     fi

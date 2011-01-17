@@ -12,6 +12,18 @@
 #endif 
 
 //____________________________________________________________________
+/** 
+ * Extract the energy loss correction object from file and rename it 
+ * according to the settings 
+ * 
+ * @param fname  File to extract from 
+ * @param sys    Collision system (pp, PbPb)
+ * @param sNN    Center of mass energy (in GeV) per nucleon
+ * @param field  L3 magnetic field (-5,0,5) in kGaus
+ * @param mc     Whether this is from MC data or not 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 ExtractELoss(const char* fname="energyFits.root", 
 	     UShort_t sys=1, UShort_t sNN=900, Short_t field=5, Bool_t mc=false)
@@ -77,17 +89,30 @@ ExtractELoss(const char* fname="energyFits.root",
     
   
 //____________________________________________________________________
+/** 
+ * Extract the energy loss correction object from file and rename it 
+ * according to the settings 
+ * 
+ * @param fname  File to extract from 
+ * @param sys    Collision system (pp, PbPb)
+ * @param sNN    Center of mass energy (in GeV) per nucleon
+ * @param field  L3 magnetic field (-5,0,5) in kGaus
+ * @param mc     Whether this is from MC data or not 
+ * 
+ * @ingroup pwg2_forward_analysis_scripts
+ */
 void
 ExtractELoss(const char* fname="energyFits.root", 
 	     const char* sys="p-p", 
 	     Float_t     sNN=900, 
-	     Float_t     field=5)
+	     Float_t     field=5,
+	     Bool_t      mc=false)
 {
   UShort_t uSys   = AliForwardUtil::ParseCollisionSystem(sys);
   UShort_t usNN   = AliForwardUtil::ParseCenterOfMassEnergy(uSys,sNN);
   Short_t  sField = AliForwardUtil::ParseMagneticField(field);
 
-  ExtractELoss(fname, uSys, usNN, sField);
+  ExtractELoss(fname, uSys, usNN, sField, mc);
 }
 
 //____________________________________________________________________
