@@ -131,7 +131,7 @@ AlidNdEtaTask::~AlidNdEtaTask()
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
 
-  if (fOutput) {
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }
@@ -198,6 +198,7 @@ void AlidNdEtaTask::UserCreateOutputObjects()
   // create result objects and add to output list
 
   Printf("AlidNdEtaTask::CreateOutputObjects");
+  //AliLog::SetClassDebugLevel("AliPhysicsSelection", AliLog::kDebug);
 
   if (fOnlyPrimaries)
     Printf("WARNING: Processing only primaries (MC information used). This is for systematical checks only.");
@@ -454,6 +455,7 @@ void AlidNdEtaTask::UserExec(Option_t*)
       return;
     }
     
+    // TODO use flags here!
     eventTriggered = inputHandler->IsEventSelected();
         
     static AliTriggerAnalysis* triggerAnalysis = 0;
@@ -604,8 +606,10 @@ isManager()->GetInputEventHandler());
         
       const AliMultiplicity* mult = fESD->GetMultiplicity();
       if (!mult)
+      {
 	Printf("Returning, no Multiplicity found");
         return;
+      }
       
       if (mult->GetNumberOfTracklets() == 0)
       {
