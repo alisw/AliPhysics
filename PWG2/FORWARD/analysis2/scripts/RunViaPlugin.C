@@ -5,23 +5,44 @@ class AliAnalysisAlien;
 AliAnalysisAlien*
 CreateAlienHandler(const TString& runMode,
 		   const TString& dataDir,
+		   const TArrayI& runs,
 		   const TString& anaSource,
 		   const TString& addLibs,
 		   const TString& anaName,
+		   Bool_t         uPar,
 		   const TString& aliceTag, 
 		   const TString& rootTag, 
 		   const TString& apiTag);
 
 //____________________________________________________________________
+/** 
+ * 
+ * 
+ * @param runMode 
+ * @param dataDir 
+ * @param what 
+ * @param nEvents 
+ * @param mc 
+ */
 void
 RunViaPlugin(const Char_t* runMode="", 
 	     const Char_t* dataDir=".", 
+	     const Char_t* what="aod",
 	     Long64_t      nEvents=-1, 
 	     Bool_t        mc=false)
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
+  TString mode(runMode); 
+  mode.ToLower();
+  Bool_t proof = mode.Contains("proof");
+  if (proof) { 
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    LoadPars(0);
+  }
+    
+  
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
 						    "FMD analysis train");
@@ -53,29 +74,59 @@ RunViaPlugin(const Char_t* runMode="",
   mgr->SetOutputEventHandler(aodHandler);
   aodHandler->SetOutputFileName("AliAODs.root");
 
-  // --- Add tasks ---------------------------------------------------
-  // Physics selection 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+  // --- What to do --------------------------------------------------
+  TString anaName("FMD");
+  TString swhat(what);
+  swhat.ToLower();
+  if (swhat.Contains("aod")) { 
+    // --- Add tasks ---------------------------------------------------
+    // Physics selection 
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+    AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+    
+    
+    // FMD 
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
+    AddTaskFMD(mc);
+    anaName = "FMD_AOD";
+  }
+  else if (swhat.Contains("eloss")) { 
+    // FMD Eloss fitter
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMDELoss.C");
+    AddTaskFMDELoss(mc);
 
-  // FMD 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
-  AddTaskFMD(mc);
+    anaName = "FMD_ELoss";
+  }
+  else if (swhat.Contains("corr")) { 
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMDCorr.C");
+    AddTaskFMDCorr();
+
+    anaName = "FMD_Corr";
+  }
+    
 
   // --- Create the plug-in object -----------------------------------
-  TString mode(runMode);
+  TString mode(runMode); mode.ToLower();
   TString dir(dataDir);
   TString anaSource("");
   TString addLibs("");
-  TString anaName("FMD");
   TString aliceTag("v4-21-04-AN");
   TString rootTag("v5-27-06b");
   TString apiTag("V1.1x");
+  TArrayI runs; // <-- Add run numbers to this array 
+  /* For example 
+   * 
+   * runs.Resize(118560-118506+1);
+   * for (Int_t r = 118506; r <= 118560; r++) 
+   *  runs.AddAt(r-118506,r);
+   */
   AliAnalysisAlien* alienHandler = CreateAlienHandler(mode,
 						      dir,
+						      runs,
 						      anaSource,
 						      addLibs,
 						      anaName,
+						      proof,
 						      aliceTag, 
 						      rootTag, 
 						      apiTag);
@@ -121,9 +172,11 @@ RunViaPlugin(const Char_t* runMode="",
 AliAnalysisAlien*
 CreateAlienHandler(const TString& runMode,
 		   const TString& dataDir,
+		   const TArrayI& runs,
 		   const TString& anaSource,
 		   const TString& addLibs,
 		   const TString& anaName,
+		   Bool_t         usePars,
 		   const TString& aliceTag, 
 		   const TString& rootTag, 
 		   const TString& apiTag) 
@@ -133,6 +186,11 @@ CreateAlienHandler(const TString& runMode,
   // Overwrite all generated files, datasets and output 
   // results from a previous session
   plugin->SetOverwriteMode();
+
+  // Set tag on job 
+  TString tag(anaName);
+  tag.Append(" job");
+  plugin->SetJobTag(tag);
 
   // Set the running mode 
   plugin->SetRunMode(runMode.Data());
@@ -159,19 +217,26 @@ CreateAlienHandler(const TString& runMode,
 
   // ...then add run numbers to be considered
   // If not set all runs proccessed
-  //plugin->AddRunNumber(126437); 
+  for (Int_t i = 0; i < runs.fN; i++) 
+    plugin->AddRunNumber(runs.fArray[i]); 
 
   // Set events to run over for each file !!!
   //plugin->SetRunRange(0, 10); 
   
   // Define alien work directory where all files will be copied. 
   // Relative to alien $HOME.
-  plugin->SetGridWorkingDir("work");
+  TString work(anaName);
+  work.Append("_work");
+  plugin->SetGridWorkingDir(work.Data());
   
   // Declare alien output directory. Relative to working directory.
-  TString outputDir = anaName;
-  outputDir += "_out";
+  TString outputDir(anaName);
+  outputDir.Append("_out");
   plugin->SetGridOutputDir(outputDir.Data());
+
+  // Write to a single folder
+  plugin->SetOutputSingleFolder(outputDir.Data());
+  plugin->SetOutputToRunNo();
   
   // Declare the analysis source files names separated by blancs. 
   // To be compiled runtime using ACLiC on the worker nodes.
@@ -183,14 +248,24 @@ CreateAlienHandler(const TString& runMode,
   // Add all extra files (task .cxx/.h) here.
   if (!addLibs.IsNull()) 
     plugin->SetAdditionalLibs(addLibs.Data());
-  
+
+  // Load PAR files 
+  if (usePars) { 
+    plugin->EnablePackage("STEERBase");
+    plugin->EnablePackage("ESD");
+    plugin->EnablePackage("AOD");
+    plugin->EnablePackage("ANALYSIS");
+    plugin->EnablePackage("ANALYSISalice");
+    plugin->EnablePackage("PWG2forward2");
+  }
+
   // No need for output file names. Procedure is automatic.
   // It's works better this way
   plugin->SetDefaultOutputs(kTRUE);
 
   // Set a name for the generated analysis macro (default MyAnalysis.C).
   // Make this unique !!!
-  TString macroName = anaName;
+  TString macroName(anaName);
   macroName += "Task.C";
   plugin->SetAnalysisMacro(macroName.Data());
   
@@ -212,8 +287,8 @@ CreateAlienHandler(const TString& runMode,
   plugin->SetInputFormat("xml-single");
 
   // Optionally modify the name of the generated JDL (default analysis.jdl)
-  TString jdlName = anaName;
-  jdlName += ".jdl";
+  TString jdlName(anaName);
+  jdlName.Append(".jdl");
   plugin->SetJDLName(jdlName.Data());
   
   // Optionally modify job price (default 1)
