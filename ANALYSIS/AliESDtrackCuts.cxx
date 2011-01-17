@@ -734,14 +734,15 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly
     return -1;
   }
   
-  AliESDtrackCuts* esdTrackCuts = GetStandardTPCOnlyTrackCuts();
-  esdTrackCuts->SetEtaRange(-0.8, 0.8);
-  esdTrackCuts->SetPtRange(0.15);
+  static AliESDtrackCuts* esdTrackCuts = 0;
+  if (!esdTrackCuts)
+  {
+    esdTrackCuts = GetStandardTPCOnlyTrackCuts();
+    esdTrackCuts->SetEtaRange(-0.8, 0.8);
+    esdTrackCuts->SetPtRange(0.15);
+  }
   
   Int_t nTracks = esdTrackCuts->CountAcceptedTracks(esd);
-  
-  delete esdTrackCuts;
-  esdTrackCuts = 0;
   
   return nTracks;
 }
