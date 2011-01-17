@@ -63,7 +63,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   // Add ESD handler
   AliESDInputHandler* esdH = new AliESDInputHandler;
-  esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
+  esdH->SetReadFriends(kFALSE);
+  //esdH->SetInactiveBranches("AliESDACORDE FMD ALIESDTZERO ALIESDZDC AliRawDataErrorLogs CaloClusters Cascades EMCALCells EMCALTrigger ESDfriend Kinks AliESDTZERO ALIESDACORDE MuonTracks TrdTracks");
   mgr->SetInputEventHandler(esdH);
 
   // physics selection
@@ -171,8 +172,8 @@ void run(Char_t* data, Long64_t nRuns = -1, Long64_t offset = 0, Bool_t aDebug =
 
   //task->SetUseMCVertex();
   
-  if (requiredData != 2)
-    task->SetSkipParticles();
+  //if (requiredData != 2)
+  //  task->SetSkipParticles();
 
   mgr->AddTask(task);
 
