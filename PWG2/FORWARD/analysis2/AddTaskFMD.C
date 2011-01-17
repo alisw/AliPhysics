@@ -16,6 +16,8 @@
 AliAnalysisTask*
 AddTaskFMD(Bool_t mc)
 {
+  gSystem->Load("libPWG2forward2");
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddTaskFMD", "No analysis manager to connect to.");

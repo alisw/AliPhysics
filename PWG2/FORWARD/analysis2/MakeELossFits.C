@@ -10,20 +10,22 @@
  * @ingroup pwg2_forward_scripts
  */
 void MakeELossFits(const char* esddir, 
-		    Int_t       nEvents=1000, 
-		    Bool_t      mc=false,
-		    Bool_t      proof=false)
+		   Int_t       nEvents=1000, 
+		   Int_t       proof=0,
+		   Bool_t      mc=false)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
   // --- Check for proof mode, and possibly upload pars --------------
-  if (proof) 
-    gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+  if (proof > 0) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
+    LoadPars(proof);
+  }
   
   // --- Our data chain ----------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeESDChain.C");
-  TChain* chain = MakeESDChain(esddir, mc);
+  TChain* chain = MakeESDChain(esddir, true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
   Info("MakeELossFits", "Will analyse %d events", nEvents);
@@ -53,7 +55,6 @@ void MakeELossFits(const char* esddir,
   aodHandler->SetOutputFileName("AliAODs.root");
 
   // --- Add tasks ---------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
@@ -114,12 +115,12 @@ void MakeELossFits(const char* esddir,
   // Some informative output 
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && !proof) mgr->SetUseProgressBar(kTRUE);
+  if (mgr->GetDebugLevel() < 1 && proof <= 0) mgr->SetUseProgressBar(kTRUE);
 
   // Run the train 
   t.Start();
   Printf("=== RUNNING ANALYSIS ==================================");
-  mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
+  mgr->StartAnalysis(proof > 0 ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();
 }

@@ -230,6 +230,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  AliInfo(Form("Running terminate of %s", GetName()));
   TList* list = dynamic_cast<TList*>(GetOutputData(1));
   if (!list) {
     AliError(Form("No output list defined (%p)", GetOutputData(1)));
@@ -249,6 +250,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
     list->ls();
     return;
   }
+  AliInfo("Fitting energy loss spectra");
   fEnergyFitter.Fit(list);
 }
 
