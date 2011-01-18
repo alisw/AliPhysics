@@ -1301,6 +1301,12 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	    fHistograms->FillHistogram("MC_Eta_ConvGamma_PtGamma_Pt", particle->Pt(),daughter0->Pt());
 	    fHistograms->FillHistogram("MC_Eta_ConvGamma_PtGamma_Pt", particle->Pt(),daughter1->Pt());
 
+	    Double_t alfa=0.;
+	    if((daughter0->Energy()+daughter1->Energy()) > 0.){
+	      alfa= TMath::Abs((daughter0->Energy()-daughter1->Energy())/(daughter0->Energy()+daughter1->Energy()));
+	      }
+	    fHistograms->FillHistogram("MC_Eta_alpha",alfa);
+
 	  }
 					
 	}
@@ -1690,8 +1696,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 			
       if(fV0Reader->HasSameMCMother() == kFALSE){
 	fHistograms->FillHistogram("ESD_TrueConvCombinatorial_R", fV0Reader->GetXYRadius());
+	fHistograms->FillHistogram("ESD_TrueConvCombinatorial_Pt", fV0Reader->GetMotherCandidatePt());
 	if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
 	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_R", fV0Reader->GetXYRadius());
+	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_Pt", fV0Reader->GetMotherCandidatePt());
 	}
 	continue;
       }
@@ -1700,6 +1708,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
       //      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
 
       if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
+	fHistograms->FillHistogram("ESD_TrueConvHadronicBck_R", fV0Reader->GetXYRadius());
+	fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Pt", fV0Reader->GetMotherCandidatePt());
 	continue;
       }
 
@@ -2254,6 +2264,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 	    if(massTwoGammaCandidate>0.1 && massTwoGammaCandidate<0.15){
 	      fHistograms->FillHistogram("ESD_Mother_alfa_Pi0", alfa);
 	    }
+	    if(massTwoGammaCandidate>0.5 && massTwoGammaCandidate<0.57){
+	      fHistograms->FillHistogram("ESD_Mother_alfa_Eta", alfa);
+	    }
+
 	    fHistograms->FillHistogram("ESD_Mother_R", spaceVectorTwoGammaCandidate.Pt());    // Pt in Space == R!!!
 	    fHistograms->FillHistogram("ESD_Mother_ZR", twoGammaCandidate->GetZ(), spaceVectorTwoGammaCandidate.Pt());
 	    fHistograms->FillHistogram("ESD_Mother_XY", twoGammaCandidate->GetX(), twoGammaCandidate->GetY());
@@ -2748,6 +2762,12 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 	      fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 
+	      if(massBG>0.1 && massBG<0.15){
+		fHistograms->FillHistogram("ESD_Background_alfa_Pi0", alfa);
+	      }
+	      if(massBG>0.5 && massBG<0.57){
+		fHistograms->FillHistogram("ESD_Background_alfa_Eta", alfa);
+	      }
 
 	      if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(currentEventGoodV02.GetEta())<0.9 ){
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
@@ -2870,6 +2890,12 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 		fHistograms->FillHistogram("ESD_Background_InvMass",massBG);
 		fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 
+		if(massBG>0.1 && massBG<0.15){
+		  fHistograms->FillHistogram("ESD_Background_alfa_Pi0", alfa);
+		}
+		if(massBG>0.5 && massBG<0.57){
+		  fHistograms->FillHistogram("ESD_Background_alfa_Eta", alfa);
+		}
 
 		if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
@@ -2991,7 +3017,13 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 
 		  fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_alpha",massBG,momentumVectorbackgroundCandidate.Pt());
 
-		  
+		  if(massBG>0.1 && massBG<0.15){
+		    fHistograms->FillHistogram("ESD_Background_alfa_Pi0", alfa);
+		  }
+		  if(massBG>0.5 && massBG<0.57){
+		    fHistograms->FillHistogram("ESD_Background_alfa_Eta", alfa);
+		  }
+
 		  if ( TMath::Abs(currentEventGoodV0.GetEta())<0.9 &&  TMath::Abs(previousGoodV0.GetEta())<0.9 ){
 		    fHistograms->FillHistogram("ESD_Background_InvMass_vs_Pt_Fiducial",massBG,momentumVectorbackgroundCandidate.Pt());
 		    fHistograms->FillHistogram("ESD_Background_InvMass_Fiducial",massBG);
