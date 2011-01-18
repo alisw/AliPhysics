@@ -9414,7 +9414,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   moth->AddNode(webCam,2,
 		new TGeoTranslation( xpos,-ypos,
 		     zpos+forwWebTStirr4Sh->GetZ(1)+webcamShape->GetDZ()) );
-/*  // Overlaps with TPC_M_1 !!!! mods in TPC needed
+
   xpos = kRearUpHookWide/2 + kRearUpWebStirrDep/2;
   ypos = kRingCHeight;
   zpos = kRingCZPos + kRingCThick;
@@ -9440,7 +9440,7 @@ void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
   zpos -= webcamShape->GetDZ();
   moth->AddNode(webCam,3,
 		new TGeoTranslation( 0, ypos,-zpos) );
-*/
+
   xpos = ringC2C3->GetX(14) + kUpperSlideWidth/2;
   ypos = ringC2C3->GetY(14);
   zpos = kRingCZPos + kRingCThick;
