@@ -490,8 +490,18 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2TriggerVtx->Fill(kSelected*(iCl+1),zvtx);
       fh2TriggerCount->Fill(iCl,kSelected);
       fh2TriggerCount->Fill(0.,kSelected);
-      if(fUseAODInput)AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
-    }
+      if(fUseAODInput){
+	AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+	if(fFilterAODCollisions&&aod){
+	  Float_t cent = aod->GetHeader()->GetCentrality();
+	  if(cent<=80){
+	    aodH->SetFillAOD(kTRUE);
+	  }
+	}
+      }
+
+
+    }    
   }
 
   if (fDebug > 1)printf(" AliAnalysisTaskJetServices: Analysing event # %5d\n", (Int_t) fEntry);
