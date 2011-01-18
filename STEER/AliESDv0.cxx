@@ -156,6 +156,15 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
   // Main constructor  (K0s)
   //--------------------------------------------------------------------
 
+  //Make sure the daughters are ordered (needed for the on-the-fly V0s)
+  Short_t cN=t1.Charge(), cP=t2.Charge();
+  if ((cN>0) && (cN != cP)) {
+     fParamN.~AliExternalTrackParam();
+     new (&fParamN) AliExternalTrackParam(t2);
+     fParamP.~AliExternalTrackParam();
+     new (&fParamP) AliExternalTrackParam(t1);
+  }
+
   for (Int_t i=0; i<6; i++) {
     fPosCov[i]= 0.;
   }
