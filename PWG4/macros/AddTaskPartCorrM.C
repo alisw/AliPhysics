@@ -53,6 +53,8 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     }
   }
   
+  reader->SetZvertexCut(10.);
+  
   //Min particle pT
   reader->SetEMCALPtMin(0.5); 
   reader->SetPHOSPtMin(0.5);
@@ -142,7 +144,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anaphoton->SwitchOnTrackMatchRejection();
     //settings for different multiplicity analysis
     anaphoton->SwitchOffEventSelection() ;
-    anaphoton->SetZvertexCut(10.);
     anaphoton->SetMultiplicity(80, 120);
     
     if(calorimeter == "EMCAL"){
@@ -182,7 +183,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     //settings for different multiplicity analysis
     anapi0->SwitchOnEventSelection() ;
     anapi0->SetNCentrBin(1);
-    anapi0->SetZvertexCut(10.);
     anapi0->SetMultiplicity(80, 120);
     anapi0->SetMultiBin(1);  
     anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
@@ -224,7 +224,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     if(kUseKinematics) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms
     else  anapi0ebe->SwitchOffDataMC() ;	
     anapi0ebe->SwitchOffEventSelection() ;
-    anapi0ebe->SetZvertexCut(10.);
     anapi0ebe->SetMultiplicity(80, 120);
     anapi0ebe->SetMultiBin(1);  
     anapi0ebe->SetNeutralMesonSelection(nms);
@@ -254,7 +253,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anacorrhadronpi0->SelectIsolated(kFALSE); // do correlation with non isolated pi0
     anacorrhadronpi0->SetMultiplicity(80, 100);
     anacorrhadronpi0->SetMultiBin(1);
-    anacorrhadronpi0->SetZvertexCut(10.);
     anacorrhadronpi0->SwitchOffNeutralCorr();
     anacorrhadronpi0->SwitchOffEventSelection();
     anacorrhadronpi0->SwitchOnSeveralUECalculation();
@@ -275,7 +273,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
     anaisolpi0->SetDebug(-1);
     anaisolpi0->SetMinPt(2.);
-    anaisolpi0->SetZvertexCut(10.);
     anaisolpi0->SetInputAODName(Form("Pi0s%s",calorimeter.Data()));
     anaisolpi0->AddToHistogramsName("AnaIsolPi0_");
     anaisolpi0->SetCalorimeter(calorimeter);
@@ -317,7 +314,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anacorrhadronisopi0->SelectIsolated(kTRUE); // do correlation with isolated pi0
     anacorrhadronisopi0->SetMultiplicity(80, 100);
     anacorrhadronisopi0->SetMultiBin(1);
-    anacorrhadronisopi0->SetZvertexCut(10.);
     anacorrhadronisopi0->SwitchOffNeutralCorr();
     anacorrhadronisopi0->SwitchOffEventSelection();  
     anacorrhadronisopi0->SwitchOnSeveralUECalculation();
@@ -344,7 +340,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anacharge->SetDebug(-1); //10 for lots of messages
     anacharge->SetMinPt(1.0);
     // anacharge->SetCaloPID(pid);
-    anacharge->SetZvertexCut(10.);
     if(kUseKinematics) anacharge->SwitchOnDataMC() ;//Access MC stack and fill more histograms
     else  anacharge->SwitchOffDataMC() ;
     anacharge->SwitchOffCaloPID();
@@ -388,7 +383,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   anacorrhadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrhadron->SetMultiplicity(80, 120);
   anacorrhadron->SetMultiBin(1);
-  anacorrhadron->SetZvertexCut(10.);
   anacorrhadron->SwitchOffNeutralCorr();
   anacorrhadron->SwitchOffEventSelection();
   anacorrhadron->SwitchOnSeveralUECalculation();
@@ -413,7 +407,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   AliAnaParticleIsolation *anaisol = new AliAnaParticleIsolation();
   anaisol->SetDebug(-1);
   anaisol->SetMinPt(2.0);
-  anaisol->SetZvertexCut(10.);
   anaisol->SetInputAODName(Form("Triggers%s",calorimeter.Data()));
   anaisol->AddToHistogramsName("AnaIsolTrig_");
   anaisol->SetCalorimeter(calorimeter);
@@ -457,7 +450,6 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   anacorrisohadron->SetDeltaPhiCutRange(1.5,4.5);
   anacorrisohadron->SetMultiplicity(80, 100);
   anacorrisohadron->SetMultiBin(1);
-  anacorrisohadron->SetZvertexCut(10.);
   anacorrisohadron->SwitchOffNeutralCorr();
   anacorrisohadron->SwitchOffEventSelection();
   anacorrisohadron->SwitchOnSeveralUECalculation();

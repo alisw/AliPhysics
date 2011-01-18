@@ -172,7 +172,6 @@ public:
   virtual void SetMultiBin(Int_t n=1) {fMultiBin=n ;} //number of bins in Multiplicity  
   virtual void SetNZvertBin(Int_t n=1) {fNZvertBin=n ;} //number of bins for vertex position
   virtual void SetNRPBin(Int_t n=1)    {fNrpBin=n ;}    //number of bins in reaction plain  
-  virtual void SetZvertexCut(Float_t zcut=40.){fZvtxCut=zcut ;} //cut on vertex position
   virtual void SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
   virtual void SwitchOnEventSelection()    {fUseSelectEvent = kTRUE ; }
   virtual void SwitchOffEventSelection()   {fUseSelectEvent = kFALSE ; } 
@@ -181,7 +180,7 @@ public:
   virtual Int_t GetNZvertBin() const       {return fNZvertBin ;} //number of bins in vertex   
   virtual Int_t GetNRPBin()    const       {return fNrpBin ;}    //number of bins in reaction plain 
   //Getters for event selection
-  virtual Float_t GetZvertexCut() const {return fZvtxCut ;} //cut on vertex position  
+  virtual Float_t GetZvertexCut() const {return GetReader()->GetZvertexCut();} //cut on vertex position  
   virtual Int_t GetMaxMulti()     const {return fMaxMulti  ; }  
   virtual Int_t GetMinMulti()     const {return fMinMulti  ; }  
   
@@ -307,7 +306,6 @@ private:
   Int_t    fMultiBin ;	         // Number of bins in event container for multiplicity
   Int_t    fNZvertBin ;	         // Number of bins in event container for vertex position
   Int_t    fNrpBin ;	           // Number of bins in event container for reaction plain
-  Float_t  fZvtxCut ;	           // Cut on vertex position  
   Int_t    fMaxMulti ;           // Maximum multiplicity of particles in the analysis
   Int_t    fMinMulti ;           // Maximum multiplicity of particles in the analysis
   Bool_t   fUseSelectEvent ;     // Select events based on multiplicity and vertex cuts

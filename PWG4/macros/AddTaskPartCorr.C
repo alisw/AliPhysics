@@ -58,6 +58,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
     }
   }
   
+  reader->SetZvertexCut(10.);
+  
   //Min particle pT
   reader->SetEMCALPtMin(0.3); 
   reader->SetPHOSPtMin(0.3);
@@ -116,7 +118,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   anaphoton->SetDebug(-1); //10 for lots of messages
   //settings for different multiplicity analysis
   anaphoton->SwitchOffEventSelection() ;
-  anaphoton->SetZvertexCut(10.);
   anaphoton->SetMultiplicity(80, 120);
 
   if(calorimeter == "PHOS"){
@@ -181,7 +182,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   anapi0->SwitchOnOwnMix();
   anapi0->SwitchOnEventSelection() ;
   anapi0->SetNCentrBin(1);
-  anapi0->SetZvertexCut(10.);
   //anapi0->SetMultiplicity(80, 120);
   anapi0->SetMultiBin(1);  
   if(kUseKinematics)anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms
@@ -203,7 +203,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   
   AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
   anapi0ebe->SwitchOffEventSelection() ;
-  anapi0ebe->SetZvertexCut(10.);
   anapi0ebe->SetMultiplicity(80, 120);
   anapi0ebe->SetMultiBin(1);  
   anapi0ebe->SetDebug(-1);//10 for lots of messages
@@ -391,7 +390,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   }
   anacorrhadron->SwitchOnDecayCorr();
   anacorrhadron->SetMultiBin(1);
-  anacorrhadron->SetZvertexCut(10.);
   anacorrhadron->SwitchOffNeutralCorr();
   anacorrhadron->SwitchOffEventSelection();
   anacorrhadron->SetPtCutRange(0.1,100);
@@ -431,7 +429,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   }
   anacorrisohadron->SwitchOnDecayCorr();
   anacorrisohadron->SetMultiBin(1);
-  anacorrisohadron->SetZvertexCut(10.);
   anacorrisohadron->SwitchOffNeutralCorr();
   anacorrisohadron->SwitchOffEventSelection();
   anacorrisohadron->SetPtCutRange(0.1,100);
@@ -472,7 +469,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   }
   anacorrhadronpi0->SwitchOnDecayCorr();
   anacorrhadronpi0->SetMultiBin(1);
-  anacorrhadronpi0->SetZvertexCut(10.);
   anacorrhadronpi0->SwitchOffNeutralCorr();
   anacorrhadronpi0->SwitchOffEventSelection();
   anacorrhadronpi0->SetPtCutRange(0.1,100);
@@ -512,7 +508,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   }
   anacorrhadronisopi0->SwitchOnDecayCorr();
   anacorrhadronisopi0->SetMultiBin(1);
-  anacorrhadronisopi0->SetZvertexCut(10.);
   anacorrhadronisopi0->SwitchOffNeutralCorr();
   anacorrhadronisopi0->SwitchOffEventSelection();
   anacorrhadronisopi0->SetPtCutRange(0.1,100);
