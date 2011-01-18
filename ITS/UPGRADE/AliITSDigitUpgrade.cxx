@@ -73,8 +73,8 @@ void AliITSDigitUpgrade::PrintInfo(){
   Double_t xz[2]={-1,-1};
   GetPosition(fNLayer,GetxPixelNumber(),GetzPixelNumber(),xz[0],xz[1]);
    
-  AliDebug(10, Form("pixid  %10.0i (%6.3f,%6.3f) in layer %i ",(Int_t)fPixId,xz[0],xz[1],fNLayer));
-  AliDebug(10,Form(" Eloss %f  Nel %f   track ID %i   %i  %i ", fSignal, fNelectrons,fTracks[0],fTracks[1],fTracks[2]));
-  AliDebug(10,Form(" ElossID %f  %f %f  \n", fSignalID[0],fSignalID[1],fSignalID[2]));
+  printf("pixid  %10.0i (%6.3f,%6.3f) in layer %i \n",(Int_t)fPixId,xz[0],xz[1],fNLayer);
+  printf(" Eloss %f  Nel %f   track ID %i   %i  %i ", fSignal, fNelectrons,fTracks[0],fTracks[1],fTracks[2]);
+  printf(" ElossID %f  %f %f  \n", fSignalID[0],fSignalID[1],fSignalID[2]);
 }
 
