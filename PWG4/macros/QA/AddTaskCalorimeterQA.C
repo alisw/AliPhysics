@@ -44,6 +44,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   reader->SetEMCALPtMin(0.); 
   reader->SetPHOSPtMin (0.);
   reader->SetCTSPtMin  (0.);
+  reader->SetZvertexCut(10.);
   
   if(kUseKinematics){
     if(inputDataType == "ESD"){
