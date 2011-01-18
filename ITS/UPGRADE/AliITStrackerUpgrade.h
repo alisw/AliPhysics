@@ -23,6 +23,7 @@
 
 class AliITSclusterTable;
 class AliITStrackSA;
+class AliITSsegmentationUpgrade;
 class AliESDVertex;
 class AliESDEvent;
 class AliITSVertexer;
@@ -148,11 +149,12 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   Int_t fMinNPoints;        // minimum number of clusters for a track
   Float_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
   AliITSlayerUpgrade** fLayers;
+  AliITSsegmentationUpgrade *fSegmentation;
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
 
-  ClassDef(AliITStrackerUpgrade,1)
+  ClassDef(AliITStrackerUpgrade,2)
 };
 
 #endif
