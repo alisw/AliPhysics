@@ -1478,12 +1478,12 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       genHi->SetReferenceFrame("CMS");
       genHi->SetProjectile("A", 208, 82);
       genHi->SetTarget    ("A", 208, 82);
-      genHi->SetPtHardMin (10);
-      genHi->SetImpactParameterRange(10.,15.);
+      genHi->SetPtHardMin (2);
+      genHi->SetImpactParameterRange(0.,30.);
       genHi->SetJetQuenching(0); // enable jet quenching
       genHi->SetShadowing(1);    // enable shadowing
       genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off
-      genHi->SetSpectators(0);   // track spectators 
+      genHi->SetSpectators(1);   // track spectators 
       gGener = genHi;
     }
     default: break;
