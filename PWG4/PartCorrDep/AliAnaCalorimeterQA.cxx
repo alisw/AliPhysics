@@ -1526,7 +1526,6 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           if(imax == ipos) continue;
           absId  = indexList[ipos]; 
           Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
-          printf("diff time %f %p",diff,fhCellTimeSpreadRespectToCellMax);
           fhCellTimeSpreadRespectToCellMax->Fill(diff);
           if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
         }// fill cell-cluster histogram loop
