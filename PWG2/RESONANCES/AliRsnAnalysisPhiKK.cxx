@@ -19,18 +19,20 @@ ClassImp(AliRsnAnalysisPhiKK)
 //_____________________________________________________________________________
 AliRsnAnalysisPhiKK::AliRsnAnalysisPhiKK(const char *name, Bool_t useKine) :
   AliRsnVAnalysisTaskSE(name, useKine),
-  fGood(0),
-  fMother(),
+  
   fPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455),
-  fCutEvent(Form("%s_cutEvent", name), AliRsnTarget::kEvent),
+  
+  fCutEvent      (Form("%s_cutEvent"   , name), AliRsnTarget::kEvent),
   fCutTrackCommon(Form("%s_cutTrackCom", name), AliRsnTarget::kDaughter),
-  fCutTrackPos(Form("%s_cutTrackPos", name), AliRsnTarget::kDaughter),
-  fCutTrackNeg(Form("%s_cutTrackNeg", name), AliRsnTarget::kDaughter),
-  fCutPair(Form("%s_cutPair", name), AliRsnTarget::kMother),
-  fFuncPM("AliRsnFunction", 0),
-  fFuncPP("AliRsnFunction", 0),
-  fFuncMM("AliRsnFunction", 0),
+  fCutTrackPos   (Form("%s_cutTrackPos", name), AliRsnTarget::kDaughter),
+  fCutTrackNeg   (Form("%s_cutTrackNeg", name), AliRsnTarget::kDaughter),
+  fCutPair       (Form("%s_cutPair", name), AliRsnTarget::kMother),
+  
+  fFuncPM  ("AliRsnFunction", 0),
+  fFuncPP  ("AliRsnFunction", 0),
+  fFuncMM  ("AliRsnFunction", 0),
   fFuncTrue("AliRsnFunction", 0),
+  
   fOutList(0x0)
 {
 //
@@ -44,18 +46,20 @@ AliRsnAnalysisPhiKK::AliRsnAnalysisPhiKK(const char *name, Bool_t useKine) :
 //_____________________________________________________________________________
 AliRsnAnalysisPhiKK::AliRsnAnalysisPhiKK(const AliRsnAnalysisPhiKK& copy) :
   AliRsnVAnalysisTaskSE(copy),
-  fGood(0),
-  fMother(),
+  
   fPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455),
-  fCutEvent(Form("%s_cutEvent", copy.GetName()), AliRsnTarget::kEvent),
-  fCutTrackCommon(Form("%s_cutTrackCom", copy.GetName()), AliRsnTarget::kDaughter),
-  fCutTrackPos(Form("%s_cutTrackPos", copy.GetName()), AliRsnTarget::kDaughter),
-  fCutTrackNeg(Form("%s_cutTrackNeg", copy.GetName()), AliRsnTarget::kDaughter),
-  fCutPair(Form("%s_cutPair", copy.GetName()), AliRsnTarget::kMother),
-  fFuncPM(copy.fFuncPM),
-  fFuncPP(copy.fFuncPP),
-  fFuncMM(copy.fFuncMM),
+  
+  fCutEvent      (copy.fCutEvent),
+  fCutTrackCommon(copy.fCutTrackCommon),
+  fCutTrackPos   (copy.fCutTrackPos),
+  fCutTrackNeg   (copy.fCutTrackNeg),
+  fCutPair       (copy.fCutPair),
+  
+  fFuncPM  (copy.fFuncPM),
+  fFuncPP  (copy.fFuncPP),
+  fFuncMM  (copy.fFuncMM),
   fFuncTrue(copy.fFuncTrue),
+  
   fOutList(0x0)
 {
 //
@@ -129,9 +133,6 @@ void AliRsnAnalysisPhiKK::RsnUserCreateOutputObjects()
     fcn[3] = (AliRsnFunction*)fFuncTrue.At(i);
     for (j = 0; j < 4; j++)
     {
-      fcn[j]->SetPairDef(&fPairDef);
-      fcn[j]->SetPair(&fMother);
-      
       hName  = GetName();
       hName += '_';
       hName += suf[j];
@@ -154,119 +155,115 @@ void AliRsnAnalysisPhiKK::RsnUserExec(Option_t*)
 // using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
 //
 
-  // skip if the global event pointers are NULL
-  // and point to first event in the target 
-  AliRsnEvent *event = AliRsnEvent::GetCurrentEvent1();
-  if (!event) return;
-  AliRsnTarget::SwitchToFirst();
+  // allocate statically all class objects used here
+  static TArrayI                   good(0);
+  static AliRsnDaughter            kaon[2], temp;
+  static AliRsnMother              phi;
+  static AliRsnDaughter::ERefType  type;
+  static AliRsnFunction           *fcn = 0x0;
+  static TClonesArray             *ref = 0x0;
   
-  // select good kaons, applying all cuts
-  Int_t i, index, tot = event->GetAbsoluteSum(), ngood = 0;
-  Bool_t assignOK;
-  AliRsnDaughter::ERefType type;
-  fGood.Set(tot);
+  // define constants used for kinematics
+  static const Double_t kaonMass = 0.493677;
+  
+  // simpler variables are declared non static
+  Int_t  i, j, k, index, ngood = 0;
+  Int_t  tot = AliRsnTarget::GetCurrentEvent()->GetAbsoluteSum();
+  Bool_t assignOK, truePair;
+
+  // point to first event in the target 
+  AliRsnTarget::SwitchToFirst();
+  if (!AliRsnTarget::GetCurrentEvent()) return;
+  
+  // initially, set the array of good indexes 
+  // to the full number of tracks and reset the counter
+  good.Set(tot);
+  ngood = 0;
+  
+  // loop on tracks and get those which satisfy cuts
   for (i = 0; i < tot; i++)
   {
     // assign track and skip all that are not charged tracks
-    assignOK = event->ConvertAbsoluteIndex(i, index, type);
-    if (!assignOK || type != AliRsnDaughter::kTrack) continue;
-    event->SetDaughter(fDaughter[0], index, AliRsnDaughter::kTrack);
+    assignOK = AliRsnTarget::GetCurrentEvent()->ConvertAbsoluteIndex(i, index, type);
+    if (!assignOK) continue;
+    if (type != AliRsnDaughter::kTrack) continue;
+    AliRsnTarget::GetCurrentEvent()->SetDaughter(temp, index, AliRsnDaughter::kTrack);
     
     // skip tracks which don't pass common cuts
-    if (!fCutTrackCommon.IsSelected(fDaughter)) continue;
+    if (!fCutTrackCommon.IsSelected(&temp)) continue;
     
     // accept tracks which pass also charge-related cuts
-    if ((fDaughter[0].Charge() > 0) && (fCutTrackPos.IsSelected(&fDaughter[0])))
+    if ( (temp.Charge() > 0) && (fCutTrackPos.IsSelected(&temp)) )
     {
-      fGood[ngood] = index;
+      good[ngood] = index;
       ++ngood;
     }
-    else if ((fDaughter[0].Charge() < 0) && (fCutTrackNeg.IsSelected(&fDaughter[0])))
+    else if ( (temp.Charge() < 0) && (fCutTrackNeg.IsSelected(&temp)) )
     {
-      fGood[ngood] = index;
+      good[ngood] = index;
       ++ngood;
     }
   }
-  fGood.Set(ngood);
+  
+  // rese the arrays to the real counts
+  good.Set(ngood);
   
   // now that the 'tot' value is useless, set it to
-  // the total number of functions, which by construction is THE SAME
-  // for all collections
+  // the total number of functions, which by construction 
+  // is THE SAME for all collections
   tot = fFuncPM.GetEntries();
   
-  // loop on selected tracks and fill histograms
-  Int_t i0, i1, m0, m1, motherPDG;
-  const Double_t  kaonMass = 0.493677;
-  const Int_t     phiPDG   = 333;
-  const Int_t     kaonPDG  = 313;
-  AliRsnFunction *fcn;
-  for (i0 = 0; i0 < ngood; i0++)
+  // fill histograms: do a unique loop on all good indexes
+  // and choose the histogram to fill from track charges
+  for (i = 0; i < ngood; i++)
   {
-    index = fGood[i0];
-    event->SetDaughter(fDaughter[0], index, AliRsnDaughter::kTrack);
+    AliRsnTarget::GetCurrentEvent()->SetDaughter(kaon[0], good[i], AliRsnDaughter::kTrack);
     
-    for (i1 = i0 + 1; i1 < ngood; i1++)
+    for (j = 0; j < ngood; j++)
     {
-      index = fGood[i1];
-      event->SetDaughter(fDaughter[1], index, AliRsnDaughter::kTrack);
-      
-      // skip in case the two indexes match
-      if (fDaughter[0].GetID() == fDaughter[1].GetID()) continue;
-      
+      // reject equal indexes
+      if (good[i] == good[j]) continue;
+      AliRsnTarget::GetCurrentEvent()->SetDaughter(kaon[1], good[j], AliRsnDaughter::kTrack);
+  
       // adjust charges of pair def
-      fPairDef.SetDaughters(AliPID::kKaon, fDaughter[0].ChargeChar(), AliPID::kKaon, fDaughter[1].ChargeChar());
+      fPairDef.SetDaughters(AliPID::kKaon, kaon[0].ChargeChar(), AliPID::kKaon, kaon[1].ChargeChar());
     
       // fill the pair using the kaon masses and the passed daughters
-      fMother.SetDaughters(&fDaughter[0], kaonMass, &fDaughter[1], kaonMass);
+      phi.SetDaughters(&kaon[0], kaonMass, &kaon[1], kaonMass);
       
       // check pair cuts
-      if (!fCutPair.IsSelected(&fMother)) continue;
+      if (!fCutPair.IsSelected(&phi)) continue;
       
-      // if pair is like-sign, fill appropriate histos
+      // choose the functions to fill according to charges
       if (fPairDef.IsLikeSign())
       {
-        if (fDaughter[0].Charge() > 0)
-        {
-          for (i = 0; i < tot; i++)
-          {
-            fcn = (AliRsnFunction*)fFuncPP[i];
-            fcn->Fill();
-          }
-        }
-        else
-        {
-          for (i = 0; i < tot; i++)
-          {
-            fcn = (AliRsnFunction*)fFuncMM[i];
-            fcn->Fill();
-          }
-        }
+        if (kaon[0].IsPos()) ref = &fFuncPP; else ref = &fFuncMM;
+        truePair = kFALSE;
       }
       else
       {
-        // if pair is unlike-sign, check that it is true
-        motherPDG = fMother.CommonMother(m0, m1);
-        if (motherPDG == phiPDG)
-        {
-          if (m0 < 0 || m1 < 0) motherPDG = 0;
-          if (TMath::Abs(fDaughter[0].GetPDG()) != kaonPDG) motherPDG = 0;
-          if (TMath::Abs(fDaughter[1].GetPDG()) != kaonPDG) motherPDG = 0;
-        }
+        ref = &fFuncPM;
+        truePair = IsTruePair(&kaon[0], &kaon[1]);
+      }
         
-        // fill unlike-sign histo
-        for (i = 0; i < tot; i++)
+      // loop on functions in chosen collection and fill
+      for (k = 0; k < tot; k++)
+      {
+        // fill standard histogram
+        fcn = (AliRsnFunction*)fFuncPP[k];
+        fcn->SetPairDef(&fPairDef);
+        fcn->SetPair(&phi);
+        fcn->Fill();
+        
+        // in case of true pair, fill its histogram
+        if (truePair)
         {
-          fcn = (AliRsnFunction*)fFuncPM[i];
+          fcn = (AliRsnFunction*)fFuncTrue[k];
           fcn->Fill();
-          if (motherPDG == phiPDG)
-          {
-            fcn = (AliRsnFunction*)fFuncTrue[i];
-            fcn->Fill();
-          }
         }
       }
-    } // for (i1)
-  } // for (i0)
+    } // end internal loop
+  } // end external loop
   
   PostData(2, fOutList);
 }
@@ -322,4 +319,54 @@ Bool_t AliRsnAnalysisPhiKK::EventProcess()
   // but call the mother class method which updates info object
   fTaskInfo.SetEventUsed(kTRUE);
   return AliRsnVAnalysisTaskSE::EventProcess();
+}
+
+//______________________________________________________________________________
+Bool_t AliRsnAnalysisPhiKK::IsTruePair(AliRsnDaughter *d1, AliRsnDaughter *d2)
+{
+//
+// Checks if the two daughters in argument come from the same phi resonance
+// and, if they do, check also that they are both kaons
+//
+
+  // constants related to PDG
+  static const Int_t phiPDG  = 333;
+  static const Int_t kaonPDG = 321;
+
+  // check #1: is MC present?
+  if (!d1->GetRefMC() || !d2->GetRefMC()) return kFALSE;
+
+  // check #2: same mother?
+  Int_t m1 = -1;
+  Int_t m2 = -2;
+  if (d1->IsESD() && d2->IsESD() )
+  {
+    if (d1->GetRefMCESD() && d2->GetRefMCESD())
+    {
+      m1 = d1->GetRefMCESD()->Particle()->GetFirstMother();
+      m2 = d2->GetRefMCESD()->Particle()->GetFirstMother();
+    }
+  }
+  if (d1->IsAOD() && d2->IsAOD())
+  {
+    if (d1->GetRefMCAOD() && d2->GetRefMCAOD())
+    {
+      m1 = d1->GetRefMCAOD()->GetMother();
+      m2 = d2->GetRefMCAOD()->GetMother();
+    }
+  }
+  if (m1 < 0 || m2 < 0 || (m1 > 0 && m2 > 0 && m1 != m2)) return kFALSE;
+  
+  // check #3: is the common mother a phi (PDG = 333)?
+  if (d1->GetMotherPDG() != phiPDG) return kFALSE;
+  
+  // check #4: are the two particles a K+K- pair?
+  m1 = d1->GetPDG();
+  m2 = d2->GetPDG();
+  if (m1 == kaonPDG && m2 == -kaonPDG) 
+    return kTRUE;
+  else if (m1 == -kaonPDG && m2 == kaonPDG)
+    return kTRUE;
+  else
+    return kFALSE;
 }
