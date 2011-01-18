@@ -637,7 +637,7 @@ isManager()->GetInputEventHandler());
     // get the ESD vertex
     vtxESD = AliPWG0Helper::GetVertex(fESD, fAnalysisMode);
     
-    Double_t vtx[3];
+    //    Double_t vtx[3];
 
     // fill z vertex resolution
     if (vtxESD)
@@ -1255,6 +1255,7 @@ isManager()->GetInputEventHandler());
       if (vtxESD)
         fdNdEtaAnalysisTrVtx->FillEvent(vtxMC[2], nAcceptedParticles);
     }
+  }
   }
 }
 
