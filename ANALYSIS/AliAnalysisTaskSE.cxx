@@ -587,9 +587,10 @@ void AliAnalysisTaskSE::ConnectMultiHandler()
    fInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
    fMultiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
    if (fMultiInputHandler) {
-//     fMultiInputHandler = (AliMultiInputEventHandler*)fInputHandler;
       fInputHandler = dynamic_cast<AliInputEventHandler *>(fMultiInputHandler->GetFirstInputEventHandler());
       fMCEventHandler = dynamic_cast<AliMCEventHandler *>(fMultiInputHandler->GetFirstMCEventHandler());
+   } else { 
+      fMCEventHandler = dynamic_cast<AliMCEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
    }
    if (fMCEventHandler) fMCEvent = fMCEventHandler->MCEvent();
 }
