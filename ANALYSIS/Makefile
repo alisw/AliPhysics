@@ -1,7 +1,7 @@
 
-include $(ROOTSYS)/test/Makefile.arch
+include Makefile.arch
 
-PACKAGE = ANALYSIS
+PACKAGE = ANALYSISalice
 
 default-target: lib$(PACKAGE).so
 
@@ -35,9 +35,14 @@ ifeq ($(ALICEINC),-I.)
   endif
 endif
 
-CXXFLAGS     += $(ALICEINC) -g
-
 CHECKXML      := $(shell root-config --has-xml)
+
+ifeq ($(CHECKXML),yes)
+  CXXFLAGS += -DWITHXML
+  CINTFLAGS += -DWITHXML
+endif
+
+CXXFLAGS += $(ALICEINC) -g
 
 SRCS     := $(wildcard *.cxx)
 HDRS     := $(SRCS:.cxx=.h)
