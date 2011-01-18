@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: $
+// $Id$
 #ifndef AliHLTSCALARS_H
 #define AliHLTSCALARS_H
 /* This file is property of and copyright by the ALICE HLT Project        *
