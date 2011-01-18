@@ -256,10 +256,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     TRefArray   *aodV0Refs = NULL;
     if (nV0s > 0) aodV0Refs = new TRefArray(nV0s);
 
-    
-
-
-
     // Array to take into account the tracks already added to the AOD
     Bool_t * usedTrack = NULL;
     if (nTracks>0) {
@@ -353,24 +349,31 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 
     //setting best TOF PID
-    AliESDpid *esdPid = new AliESDpid;
+
+    AliESDpid *esdPid = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetESDpid();
+
+    Bool_t isPidOwner = kFALSE;
+    if(!esdPid){ //in case of no Tender attached 
+      esdPid = new AliESDpid;
+      isPidOwner = kTRUE;
+    }
     
-    if(!esd->GetTOFHeader()){
+    if(!esd->GetTOFHeader()){ //protection in case the pass2 LHC10b,c,d have been processed without tender. 
       Float_t *t0spread= new Float_t[10];
       Float_t intrinsicTOFres=100; //ps ok for LHC10b,c,d pass2!! 
       for (Int_t i=0; i<10; i++) t0spread[i] = (TMath::Sqrt(esd->GetSigma2DiamondZ()))/0.03; //0.03 to convert from cm to ps
-      
       esdPid->GetTOFResponse().SetT0resolution(t0spread);
       esdPid->GetTOFResponse().SetTimeResolution(intrinsicTOFres);
+      
+      esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0);
+    
       delete[] t0spread;
       t0spread=0x0;
     }
-    else{
-      esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0); //TOF_T0 uses the T0 computed with TOF, kBest_T0 uses the best information available 
-    }
-    esdPid->MakePID(esd, kFALSE);
     
-    
+    if(esd->GetTOFHeader() && isPidOwner) esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0); //in case of AOD production strating form LHC10e without Tender. 
+
+
     // Cascades (Modified by A.Maire - February 2009)
     for (Int_t nCascade = 0; nCascade < nCascades; ++nCascade) {
 
@@ -1235,7 +1238,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
 	aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
 	aodTrack->SetChi2perNDF(Chi2perNDF(track));
-	aodTrack->SetFlags(track->GetStatus());
+	
 	aodTrackRefs->AddAt(aodTrack, nTrack);
 	
 	delete track;
@@ -1365,7 +1368,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     delete    aodV0Refs;
     delete    aodV0VtxRefs;
     delete    aodTrackRefs;
-    delete    esdPid;
+    if (isPidOwner) delete  esdPid;
     return;
 }
 
