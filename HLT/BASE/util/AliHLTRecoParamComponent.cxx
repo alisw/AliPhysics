@@ -22,13 +22,18 @@
 /// @brief  Online HLT RecoParam generator component
 ///
 
+#include <cstring>
+
 #include "AliHLTRecoParamComponent.h"
+#include "AliHLTReadoutList.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRecoParamComponent)
 
 AliHLTRecoParamComponent::AliHLTRecoParamComponent()
   : AliHLTCalibrationProcessor()
+  , fOnlineConfig()
+  , fOutputSize(0)
 {
   // see header file for class documentation
   // or
@@ -58,11 +63,11 @@ AliHLTComponentDataType AliHLTRecoParamComponent::GetOutputDataType()
 void AliHLTRecoParamComponent::GetOutputDataSize(unsigned long& constBase, double& inputMultiplier)
 {
   // see header file for class documentation
-
-  // this is nothing more than an assumption, in fact it's very difficult to predict how
-  // much output the component produces
-  constBase=100*1024;
-  inputMultiplier=1;
+  const UInt_t streamerInfoEstSize = 1024; // Estimated size of streamer info
+  // total size: FXSHeader + StreamerInfo + XML configuration
+  constBase = AliHLTCalibrationProcessor::fgkFXSProtocolHeaderSize +
+    streamerInfoEstSize + fOutputSize;
+  inputMultiplier = 0;
 }
 
 void AliHLTRecoParamComponent::GetOCDBObjectDescription( TMap* const /*targetArray*/)
@@ -102,6 +107,8 @@ int AliHLTRecoParamComponent::ShipDataToFXS( const AliHLTComponentEventData& /*e
 {
   // see header file for class documentation
 
+  AliHLTReadoutList rdList(AliHLTReadoutList::kHLT);
+  PushToFXS(&fOnlineConfig, "HLT", "OnlineRecoParam", &rdList);
   return 0;
 }
 
@@ -109,14 +116,31 @@ int AliHLTRecoParamComponent::ScanConfigurationArgument(int argc, const char** a
 {
   // see header file for class documentation
   int iResult=0;
-  if (argc<=0) return 0;
-  int i=0;
-  TString argument=argv[i];
-
-  // -firstarg
-  if (argument.Contains("-firstarg")) {
-    return 1;
+  int result=0;
+  char* configFile;
+  if (argc == 1) {
+    int argLen = strlen(argv[0]);
+    char argument[argLen+1];
+    strcpy(argument, argv[0]);
+    argument[argLen] = '\0';
+    if (strstr(argument, "-configfile")) {
+      strtok(argument, "=");
+      configFile = strtok(0, "=");
+      if (configFile)
+        result = fOnlineConfig.LoadConfiguration(configFile);
+      if (result > 0) {
+        fOutputSize = result; // configuration file was successfully read
+	iResult = 1;
+      }
+    }
   }
-
+  if (result == 0) {
+    HLTError("Missing argument -configfile");
+    iResult = -EPROTO;
+  }
+  else if (result < 0) {
+    HLTError("Could not read configuration file %s", configFile);
+    iResult = -ENOENT;
+  }
   return iResult;
 }

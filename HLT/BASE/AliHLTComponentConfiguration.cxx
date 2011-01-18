@@ -81,16 +81,37 @@ void AliHLTComponentConfiguration::SetOnlineCommand(const char* cmd)
 {
   // set the online command string
 
-  // TODO: think about parsing the string directly and set the
-  // various other parameters.
   fOnlineCommand=cmd;
+}
+
+void AliHLTComponentConfiguration::PrintStatus() const
+{
+  // see header file for function documentation
+  HLTLogKeyword("configuration status");
+  if (!fLibrary.IsNull()) HLTMessage("  - component library: \"%s\"",
+    fLibrary.Data());
+  else HLTMessage("  - component library missing");
+  if (!fOnlineCommand.IsNull()) HLTMessage("  - online command: \"%s\"",
+    fOnlineCommand.Data());
+  else HLTMessage("  - online command missing");
+  if (!fNodeNames.IsNull()) HLTMessage("  - online nodes: \"%s\"",
+    fNodeNames.Data());
+  else HLTMessage("  - no online nodes");
 }
 
 void AliHLTComponentConfiguration::Print(const char* option) const
 {
   // print information
-
-  // TODO: implement proper function for this class
-
   AliHLTConfiguration::Print(option);
+  if (option && strcmp(option, "status")==0) {
+    PrintStatus();
+  }
+  else {
+  HLTLogKeyword("configuration");
+  HLTMessage("component library %s, online command %s, online nodes %s",
+	     GetComponentLibrary(),
+	     GetOnlineCommand(),
+	     GetNodeSettings()
+	     );
+   }
 }

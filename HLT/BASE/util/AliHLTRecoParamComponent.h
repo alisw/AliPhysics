@@ -14,6 +14,7 @@
 ///
 
 #include "AliHLTCalibrationProcessor.h"
+#include "AliHLTOnlineConfiguration.h"
 
 /**
  * @class AliHLTRecoParamComponent
@@ -111,6 +112,9 @@ private:
   AliHLTRecoParamComponent& operator=(const AliHLTRecoParamComponent&);
 
   static const char* fgkConfigurationObject; //! configuration object
+  
+  AliHLTOnlineConfiguration fOnlineConfig;
+  int fOutputSize;
 
   ClassDef(AliHLTRecoParamComponent, 0) // Online HLT RecoParam generator component
 };

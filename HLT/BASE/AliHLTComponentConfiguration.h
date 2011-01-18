@@ -52,6 +52,21 @@ class AliHLTComponentConfiguration : public AliHLTConfiguration {
   /** destructor */
   virtual ~AliHLTComponentConfiguration();
 
+  /**
+   * Return the component library.
+   */
+  const char* GetComponentLibrary() const {return fLibrary.Data();}
+
+  /**
+   * Return the online command.
+   */
+  const char* GetOnlineCommand() const {return fOnlineCommand.Data();}
+
+  /**
+   * Return the online nodes.
+   */
+  const char* GetNodeSettings() const {return fNodeNames.Data();}
+  
   void SetComponentLibrary(const char* library) {fLibrary=library;}
 
   void SetNodeNames(const char* nodes) {fNodeNames=nodes;}
@@ -61,14 +76,21 @@ class AliHLTComponentConfiguration : public AliHLTConfiguration {
     if (!fNodeNames.IsNull()) fNodeNames+=" "; fNodeNames+=node;
   }
 
-  /// set and parse the online command string
+  /// set the online command string
   void SetOnlineCommand(const char* cmd);
 
   /**
-   * overloaded from TObject
+   * overloaded from AliHLTConfiguration
+   */
+  virtual void PrintStatus() const;
+
+  /**
+   * overloaded from AliHLTConfiguration
    * options:
+   *   status  - print status
    */
   virtual void Print(const char* option="") const;
+
 
  protected:
   

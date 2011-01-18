@@ -7,14 +7,19 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-//  @file   AliHLTOnlineConfiguration.h
-//  @author 
-//  @date   
-//  @brief  
-//  @note   
+///  @file   AliHLTOnlineConfiguration.h
+///  @author Matthias Richter
+///  @author Lars Christian Raae
+///  @date   
+///  @brief  Description of the HLT online configuration
 
-#include "TObject.h"
-#include "TArrayC.h"
+#include <vector>
+
+#include "AliHLTLogging.h"
+#include <TObject.h>
+#include <TArrayC.h>
+#include <TList.h>
+#include <TXMLNode.h>
 
 /**
  * @class AliHLTOnlineConfiguration
@@ -34,7 +39,7 @@
  * root file storage. Later extension will be the implementation of a custom
  * Streamer function implementing the most efficient compression.
  */
-class AliHLTOnlineConfiguration : public TObject {
+class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
  public:
   /// standard constructor
   AliHLTOnlineConfiguration();
@@ -47,8 +52,11 @@ class AliHLTOnlineConfiguration : public TObject {
   /// compress the xml buffer
   int Compress();
 
-  /// compress the xml buffer
+  /// uncompress the xml buffer
   int Uncompress();
+  
+  /// parse the xml buffer
+  int Parse();
 
   /// overloaded from TObject, print info
   virtual void        Print(const char* options) const;
@@ -78,8 +86,104 @@ class AliHLTOnlineConfiguration : public TObject {
   };
 
  private:
-  TArrayC fXMLBuffer; // buffer for XML configuration
+  /// buffer for XML configuration
+  TArrayC fXMLBuffer;
+  /// size of XML buffer
   UInt_t fXMLSize;
+  /// list of parsed configuration entries
+  TList fConfEntryList;
+  
+  /**
+   * Parse XML configuration.
+   * @param node       XML root node of configuration
+   * @return
+   *   -EINVAL if unparsable or empty configuration
+   *   -EPROTO if no configuration is loaded
+   *   0 if any elements were successfully parsed
+   */
+  int ParseConfiguration(TXMLNode* node);
+
+  /**
+   * Parse XML configuration entry.
+   * @param node       XML root node of entry
+   * @param id         online component ID
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */
+  int ParseEntry(TXMLNode* node, const char* id);
+  
+  /**
+   * Parse standard component configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseStandardComponent(const char* id, const char* cmd, TString& sources, TString& nodes);
+  
+  /**
+   * Parse RORCPublisher configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseRORCPublisher(const char* id, const char* cmd, TString& sources, TString& nodes);
+
+  /**
+   * Parse TCPDumpSubscriber configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseTCPDumpSubscriber(const char* id, const char* cmd, TString& sources, TString& nodes);
+
+  /**
+   * Parse Relay configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseRelay(const char* id, const char* cmd, TString& sources, TString& nodes);
+
+  /**
+   * Parse HLTOutFormatter configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseHLTOutFormatter(const char* id, const char* cmd, TString& sources, TString& nodes);
+
+  /**
+   * Parse HLTOutWriterSubscriber configuration.
+   * @param id         online component ID
+   * @param cmd        online command
+   * @param sources    component sources
+   * @param nodes      online computing nodes
+   * @return
+   *   -EINVAL if parsing error
+   *   0 if entry was successfully parsed
+   */  
+  int ParseHLTOutWriterSubscriber(const char* id, const char* cmd, TString& sources, TString& nodes);
 
   ClassDef(AliHLTOnlineConfiguration, 1); // description of HLT online configuration
 };
