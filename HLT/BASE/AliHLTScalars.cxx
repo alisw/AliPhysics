@@ -26,7 +26,8 @@
 
 #include "AliHLTScalars.h"
 #include "TString.h"
-#include "AliLog.h"
+#include "AliHLTLogging.h" // HLT logging
+#include "TClass.h" // for Class_Name macro for logging
 #include "TIterator.h"
 #include "Riostream.h"
 #include <cassert>
@@ -247,7 +248,8 @@ void AliHLTScalars::Copy(TObject& object) const
 	
 	if (object.IsA() != AliHLTScalars::Class())
 	{
-		AliError(Form("Cannot copy to an object of type '%s'.", object.ClassName()));
+		AliHLTLogging log;
+		log.LoggingVarargs(kHLTLogError, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , "Cannot copy to an object of type '%s'.", object.ClassName());
 		return;
 	}
 	AliHLTScalars* obj = static_cast<AliHLTScalars*>(&object);
@@ -324,9 +326,10 @@ Bool_t AliHLTScalars::IsEqual(const TObject *obj) const
 	assert(obj != NULL);
 	if (obj->IsA()->GetBaseClass(AliHLTScalars::Class()) == NULL)
 	{
-		AliError(Form("Cannot compare object of type '%s'' with an object of type '%s'.",
+		AliHLTLogging log;
+		log.LoggingVarargs(kHLTLogError, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , "Cannot compare object of type '%s'' with an object of type '%s'.",
 			      this->ClassName(), obj->ClassName()
-			));
+			);
 		return kFALSE;
 	}
 	const AliHLTScalars* rhs = static_cast<const AliHLTScalars*>(obj);
@@ -366,7 +369,8 @@ void AliHLTScalars::AliScalar::Copy(TObject& object) const
 	
 	if (object.IsA() != AliHLTScalars::AliScalar::Class())
 	{
-		AliError(Form("Cannot copy to an object of type '%s'.", object.ClassName()));
+		AliHLTLogging log;
+		log.LoggingVarargs(kHLTLogError, Class_Name() , FUNCTIONNAME() , __FILE__ , __LINE__ , "Cannot copy to an object of type '%s'.", object.ClassName());
 		return;
 	}
 	AliHLTScalars::AliScalar* obj = static_cast<AliHLTScalars::AliScalar*>(&object);
