@@ -75,7 +75,9 @@ class AliTriggerAnalysis : public TObject
     Float_t GetV0AdcThr()     const { return fV0AdcThr; }
     Float_t GetFMDLowThreshold() const { return fFMDLowCut; }
     Float_t GetFMDHitThreshold() const { return fFMDHitCut; }
-    
+    TMap * GetTriggerClasses() const { return fTriggerClasses;}
+
+
     virtual Long64_t Merge(TCollection* list);
     void SaveHistograms() const;
     

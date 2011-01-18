@@ -536,11 +536,15 @@ Bool_t AliTriggerAnalysis::IsTriggerClassFired(const AliESDEvent* aEsd, const Ch
     else if (op == '|') tcl =tcl || inpnext;
     else {
        AliError(Form("Syntax error in %s", tclass));
-       tcltokens->Delete();
+       delete tcltokens;
+       tcltokens = 0;
+       //      tcltokens->Delete();
        return kFALSE;
     }
   }
-  tcltokens->Delete();
+  delete tcltokens;
+  tcltokens = 0;
+       //  tcltokens->Delete();
   return tcl;
 }
 
@@ -682,7 +686,7 @@ Int_t AliTriggerAnalysis::SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, B
     if(layer == 2)
       firstChip = 400;
 
-    for (Int_t i=0; i<1200; i++)
+    for (Int_t i=firstChip; i<lastChip; i++)
     {
       if (mult->TestFastOrFiredChips(i) == kTRUE)
       {
@@ -1239,7 +1243,7 @@ void AliTriggerAnalysis::SaveHistograms() const
   if (fHistFMDSum) fHistFMDSum->Write();
   else Printf("Cannot save fHistFMDSum");
   if (fSPDGFOEfficiency) fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
-  else Printf("Cannot save fSPDGFOEfficiency");
+  //  else Printf("Cannot save fSPDGFOEfficiency");
   
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);
 }

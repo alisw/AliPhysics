@@ -21,7 +21,7 @@
 #include "TObjString.h"
 #include "AliVEvent.h"
 
-#define VERBOSE_STAT
+//#define VERBOSE_STAT
 
 class AliESDEvent;
 class TH2F;
@@ -39,9 +39,9 @@ public:
   enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatFMD,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C,kStatZDCA,kStatZDCC,kStatZDCAC,kStatZDCTime,kStatV0,kStatOffline,kStatBG,kStatAccepted};
 
 #ifdef VERBOSE_STAT
-  enum {kStatRowBG=0,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset
+  enum {kStatRowAllB=0, kStatRowAllAC, kStatRowAllE, kStatRowBG,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset
 #else
-  enum {kStatRowBG=0,kStatRowAcc,kStatRowGood}; // offset wrt fBGStatOffset
+  enum {kStatRowAllB=0, kStatRowAllAC, kStatRowAllE, kStatRowBG, kStatRowAcc,kStatRowGood}; // offset wrt fBGStatOffset
 #endif
 
   enum {kStatIdxAll=0,kStatIdxBin0=1};
@@ -65,12 +65,13 @@ public:
   void SetAnalyzeMC(Bool_t flag = kTRUE) { fMC = flag; }
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
   void SetSkipV0(Bool_t flag=kTRUE) { fSkipV0 = flag;}
+  void SetSkipZDCTime(Bool_t flag=kTRUE) { fSkipZDCTime = flag;}
    
   void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
     
   virtual void Print(Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
-  void SaveHistograms(const char* folder = 0) const;
+  void SaveHistograms(const char* folder = 0);
     
   const TList* GetCollisionTriggerClasses() const { return &fCollTrigClasses; }
   const TList* GetBGTriggerClasses()        const { return &fBGTrigClasses; }
@@ -115,6 +116,7 @@ protected:
   Bool_t fSkipTriggerClassSelection;  // flag that determines if the trigger classs selection is skipped
   Bool_t fUsingCustomClasses;         // flag that is set if costum trigger classes are defined
   Bool_t fSkipV0;                     // ignore information from v0
+  Bool_t fSkipZDCTime;                     // ignore ZDC timing cut (used in HI)
 
   Float_t fBIFactorA;                 // ratio of interacting over non interacting bunch intensities for beam 1
   Float_t fBIFactorC;                 // ratio of interacting over non interacting bunch intensities for beam 2
@@ -133,7 +135,7 @@ protected:
 
   Bool_t fIsPP; // True if processing pp run, false if heavy ion
 
-  ClassDef(AliPhysicsSelection, 11)
+  ClassDef(AliPhysicsSelection, 12)
     
     private:
   AliPhysicsSelection(const AliPhysicsSelection&);
