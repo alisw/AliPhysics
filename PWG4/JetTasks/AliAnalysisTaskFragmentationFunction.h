@@ -1,6 +1,6 @@
-/*************************************************************************
- * Task for Fragmentation Function Analysis in PWG4 Jet Task Force Train *
- *************************************************************************/
+// *************************************************************************
+// * Task for Fragmentation Function Analysis in PWG4 Jet Task Force Train *
+// *************************************************************************
 
 #ifndef ALIANALYSISTASKFRAGMENTATIONFUNCTION_H
 #define ALIANALYSISTASKFRAGMENTATIONFUNCTION_H
@@ -17,7 +17,7 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TProfile;
-//class THnSparse; 
+class THnSparse; 
 class TRandom3;
 
 #include "AliAnalysisTaskSE.h"
@@ -123,7 +123,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     AliFragFuncQATrackHistos& operator=(const AliFragFuncQATrackHistos &o);
     virtual ~AliFragFuncQATrackHistos();
     virtual void DefineHistos();
-    virtual void FillTrackQA(Float_t eta, Float_t phi, Float_t pt);
+    virtual void FillTrackQA(Float_t eta, Float_t phi, Float_t pt, Bool_t weightPt = kFALSE, Float_t norm = 0.);
     virtual void AddToOutput(TList* list) const;
 
   private:
@@ -143,10 +143,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     TH2F*   fh2EtaPhi;        //! track phi vs eta 
     TH1F*   fh1Pt;            //! track transverse momentum 
     TH2F*   fh2HighPtEtaPhi;  //! phi vs eta for high pt (>fgHighPtThreshold) tracks
+    TH2F*   fh2PhiPt;         //! track phi vs pt
 
     TString fNameQAT;         // histo names prefix
     
-    ClassDef(AliFragFuncQATrackHistos, 1);
+    ClassDef(AliFragFuncQATrackHistos, 2);
   };
   
   //----------------------------------------
@@ -272,13 +273,14 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 	     Int_t nJetPt = 0,   Float_t jetPtMin = 0, Float_t jetPtMax = 0,
 	     Int_t nDeltaPhi = 0, Float_t deltaPhiMin = 0, Float_t deltaPhiMax = 0,
 	     Int_t nDeltaEta = 0, Float_t deltaEtaMin = 0, Float_t deltaEtaMax = 0,
-	     Int_t nDeltaPt  = 0, Float_t deltaPtMin  = 0, Float_t deltaPtMax  = 0);
+	     Int_t nDeltaPt  = 0, Float_t deltaPtMin  = 0, Float_t deltaPtMax  = 0,
+	     Int_t nInBal    = 0, Float_t inBalMin  = 0, Float_t inBalMax  = 0);
     AliFragFuncQADiJetHistos(const AliFragFuncQADiJetHistos& copy);
     AliFragFuncQADiJetHistos& operator=(const AliFragFuncQADiJetHistos &o);
     virtual ~AliFragFuncQADiJetHistos();
     
     virtual void DefineQADiJetHistos();
-    virtual void FillDiJetQA(Double_t invMass, Double_t deltaPhi, Double_t deltaEta, Double_t deltaPt, Double_t jetBin);
+    virtual void FillDiJetQA(Double_t invMass, Double_t deltaPhi, Double_t deltaEta, Double_t deltaPt, Double_t inBal, Double_t jetBin);
     virtual void AddToOutput(TList* list) const;
     
     private:
@@ -299,11 +301,15 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     Int_t   fNBinsDeltaPt;     // FF histos bins in jet delta pt
     Float_t fDeltaPtMin;       // FF histos limits in jet delta pt
     Float_t fDeltaPtMax;       // FF histos limits in jet delta pt
+    Int_t   fNBinsInBal;       // FF histos bins in jet delta pt
+    Float_t fInBalMin;         // FF histos limits in pt inbalance
+    Float_t fInBalMax;         // FF histos limits in pt inbalance
 
     TH2F*   fh2InvMass;        // FF dijet invariant mass histos
     TH2F*   fh2DeltaPhi;       // FF dijet delta phi histos
     TH2F*   fh2DeltaEta;       // FF dijet delta eta histos
     TH2F*   fh2DeltaPt;        // FF dijet delta pt histos
+    TH2F*   fh2InBal;        // FF dijet delta pt histos
 
     TString fNameQADJ;         // histo names prefix
     
@@ -327,6 +333,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetJetTypeGen(Int_t i){fJetTypeGen = i;}
   virtual void   SetJetTypeRecEff(Int_t i){fJetTypeRecEff = i;}
 
+  virtual void   SetBranchRecBackJets(const char* c){fBranchRecBackJets = c;}
   virtual void   SetBranchGenJets(const char* c){fBranchGenJets = c;}
   virtual void   SetBranchRecJets(const char* c){fBranchRecJets = c;}
 
@@ -336,6 +343,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fTrackPhiMin = trackPhiMin; fTrackPhiMax = trackPhiMax;}
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
   virtual void   UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;}
+  virtual void   SetEventClass(Int_t i){fEventClass = i;}
+  virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
 			    Float_t jetPhiMin = 0., Float_t jetPhiMax = 2*TMath::Pi())
   {fJetPtCut = jetPt; fJetEtaMin = jetEtaMin; fJetEtaMax = jetEtaMax; 
@@ -351,16 +360,21 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
   virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2) 
   { fBckgType[0] = bg0; fBckgType[1] = bg1; fBckgType[2] = bg2;}
-  virtual void   SetIJMode(Int_t ij = 1) {fIJMode = ij;}
+  virtual void   SetIJMode(Int_t ij = 1)      {fIJMode = ij;}
+  virtual void   SetQAMode(Int_t qa = 3)      {fQAMode = qa;}
+  virtual void   SetFFMode(Int_t ff = 1)      {fFFMode = ff;}
+  virtual void   SetDJMode(Int_t dj = 1)      {fDJMode = dj;}
+  virtual void   SetEffMode(Int_t eff = 1)    {fEffMode = eff;}
+  virtual void   SetPhiCorrMode(Int_t pc = 1) {fPhiCorrMode = pc;}
+  virtual void   SetBckgSubMethod(Int_t bg = 2) {fBckgSubMethod = bg;}
 
   virtual void   UseRecEffRecJetPtBins(Bool_t useRec = kTRUE) { fUseRecEffRecJetPtBins = useRec; }
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
-  //  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
+  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
 
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
-
 
   void   SetFFHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
 			Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
@@ -385,6 +399,13 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
     fQATrackNBinsEta = nEta; fQATrackEtaMin = etaMin; fQATrackEtaMax = etaMax;
     fQATrackNBinsPhi = nPhi; fQATrackPhiMin = phiMin; fQATrackPhiMax = phiMax; }
   
+  void  SetPhiCorrHistoBins(Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200.,
+			         Int_t nEta = 1, Float_t etaMin = -0.9, Float_t etaMax = 0.9,
+			         Int_t nPhi = 64, Float_t phiMin = -3.2, Float_t phiMax = 3.2)
+  { fPhiCorrNBinsPt = nPt; fPhiCorrPtMin = ptMin; fPhiCorrPtMax = ptMax;
+    fPhiCorrNBinsEta = nEta; fPhiCorrEtaMin = etaMin; fPhiCorrEtaMax = etaMax;
+    fPhiCorrNBinsPhi = nPhi; fPhiCorrPhiMin = phiMin; fPhiCorrPhiMax = phiMax; }
+
   void   SetIJHistoBins(Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 200., 
 			Int_t nZ = 22,  Float_t zMin = 0.,  Float_t zMax = 1.1,	Int_t nCosTheta = 100,  Float_t costhetaMin = 0.,  Float_t costhetaMax = 1.,
 			Int_t nTheta = 200,  Float_t thetaMin = -0.5,  Float_t thetaMax = 1.5, Int_t nJt = 25,  Float_t jtMin = 0.,  Float_t jtMax = 5.)
@@ -403,61 +424,79 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   void SetQADiJetHistoBins(Int_t nInvMass = 245, Float_t invMassMin = 5., Float_t invMassMax = 250., Int_t nJetPt = 245, Float_t jetPtMin = 5, Float_t jetPtMax = 250, 
 			   Int_t nDeltaPhi = 100, Float_t deltaPhiMin = 0., Float_t deltaPhiMax = TMath::Pi(), Int_t nDeltaEta = 22, Float_t deltaEtaMin = 0., 
-			   Float_t deltaEtaMax = 1.1, Int_t nDeltaPt = 100, Float_t deltaPtMin = 0., Float_t deltaPtMax = 100.)
+			   Float_t deltaEtaMax = 1.1, Int_t nDeltaPt = 100, Float_t deltaPtMin = 0., Float_t deltaPtMax = 100.,
+			   Int_t nInBal = 22, Float_t inBalMin = -1.1, Float_t inBalMax = 1.1)
   {
     fQADiJetNBinsInvMass = nInvMass; fQADiJetInvMassMin = invMassMin; fQADiJetInvMassMax = invMassMax; fQADiJetNBinsJetPt = nJetPt; fQADiJetJetPtMin = jetPtMin; 
     fQADiJetJetPtMax = jetPtMax; fQADiJetNBinsDeltaPhi = nDeltaPhi; fQADiJetDeltaPhiMin = deltaPhiMin; fQADiJetDeltaPhiMax = deltaPhiMax; fQADiJetNBinsDeltaEta = nDeltaEta; 
     fQADiJetDeltaEtaMin = deltaEtaMin; fQADiJetDeltaEtaMax = deltaEtaMax; fQADiJetNBinsDeltaPt = nDeltaPt; fQADiJetDeltaPtMin = deltaPtMin; fQADiJetDeltaPtMax = deltaPtMax;
+    fQADiJetNBinsInBal = nInBal; fQADiJetInBalMin = inBalMin; fQADiJetInBalMax = inBalMax;
   }
 
   Float_t  GetFFRadius() const { return fFFRadius; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
   void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j);
   void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& pt);  
-  void	   GetOutNJetsTracks(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
-  void	   GetOutNJetsTracksStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
-  void     GetOutPerpJetTracks(TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius,Double_t& sumPt);
+  void     GetTracksOutOfNJets(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
+  void     GetTracksOutOfNJetsStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
+  void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius, Double_t& sumPt);
+  void     GetTracksTiltedwrpJetAxisWindow(Float_t alpha, TList* inputlist, TList* outputlist, AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t &normFactor);
+
   Double_t GetDiJetBin(Double_t invMass, Double_t leadingJetPt, Double_t eMean, Int_t kindSlices); // function to find which bin fill
   Double_t InvMass(const AliAODJet* jet1, const AliAODJet* jet2);
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isGenPrim);
   void     FillSingleTrackRecEffHisto(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
-  void     FillJetTrackRecEffHisto(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, TList* tracksGen,
+  void     FillJetTrackRecEffHisto(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, const TList* tracksGen,
 				   const TArrayI& indexAODTr,const TArrayS& isGenPrim, const Bool_t useRecJetPt);
-  Float_t  CalcJetArea(Float_t etaJet, Float_t rc);
+
+  void     FillSingleTrackResponse(THnSparse* hnResponse, TList* tracksGen, TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
+
+  void     FillJetTrackResponse(THnSparse* hnResponsePt, THnSparse* hnResponseZ, THnSparse* hnResponseXi, 
+				Double_t jetPtGen, Double_t jetPtRec, TList* jetTrackList,
+				const TList* tracksGen, TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim,const Bool_t useRecJetPt);
+  
+  // 
+
+
+  Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
   void     FillBckgHistos(Int_t type, TList* inputtracklist, TList* inputjetlist, AliAODJet* jet, 
 			  Float_t leadTrackPt, TLorentzVector* leadTrackV, AliFragFuncHistos* ffbckghistocuts,
 			  AliFragFuncHistos* ffbckghistoleading,AliFragFuncIntraJetHistos* ijbckghistocuts, 
 			  AliFragFuncIntraJetHistos* ijbckghistoleading,AliFragFuncQATrackHistos* qabckghistos);    
+  AliAODJet* GetAODBckgSubJet(AliAODJet* jet, Int_t method);
 
   // Consts
   
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
-  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat, kBckgClusters};
+  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat, kBckgClusters, kBckgASide, kBckgASideWindow, kBckgPerpWindow};
 
  
  private:
   
   Int_t   GetListOfTracks(TList* list, Int_t type);
   Int_t	  GetListOfJets(TList* list, Int_t type);
-  Int_t   GetListOfBckgJets(TList *list, Int_t type);
+  Int_t   GetListOfBckgJets(/*TList *list, Int_t type*/) const;
 
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
   //AliMCEvent*  fMCEvent;  // MC event
   
-  TString fBranchRecJets;         // branch name for reconstructed jets
-  TString fBranchGenJets;         // branch name for generated jets
+  TString fBranchRecJets;       // branch name for reconstructed jets
+  TString fBranchRecBackJets;   // branch name for reconstructed background jets
+  TString fBranchGenJets;       // branch name for generated jets
   
-  Int_t   fTrackTypeGen;  // type of generated tracks
-  Int_t   fJetTypeGen;    // type of generated jets
+  Int_t   fTrackTypeGen;        // type of generated tracks
+  Int_t   fJetTypeGen;          // type of generated jets
 
-  Int_t   fJetTypeRecEff; // type of jets used for filling reconstruction efficiency histos
+  Int_t   fJetTypeRecEff;       // type of jets used for filling reconstruction efficiency histos
 
-  UInt_t  fFilterMask;	  // filter bit for selected tracks
+  UInt_t  fFilterMask;	        // filter bit for selected tracks
   Bool_t  fUsePhysicsSelection; // switch for event selection
-	
+  Int_t   fEventClass;          // event class to be looked at for this instace of the task
+  Float_t fMaxVertexZ;          // maximum abs(z) position of primiary vertex [cm]
+
   // track cuts
   Float_t fTrackPtCut;    // track transverse momentum cut
   Float_t fTrackEtaMin;   // track eta cut
@@ -483,8 +522,13 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
   Bool_t  fBckgMode;        // Set background subtraction mode
-  Bool_t  fIJMode;          // Set intrajet mode
   Int_t   fBckgType[3];        // Set background subtraction mode
+  Int_t   fIJMode;          // Set intrajet mode
+  Int_t   fQAMode;          // QA mode: 0x00=0 none, 0x01=1 track qa, 0x10=2 track qa, 0x11=3 both
+  Int_t   fFFMode;          // fragmentation function mode
+  Int_t   fDJMode;          // dijet mode: 0x00=0 none, 0x01=1 di-jet, 0x10=2 di-jet qa, 0x11=3 both
+  Int_t   fEffMode;         // efficiency mode
+  Int_t   fPhiCorrMode;     // track phi correlation mode
 
   Bool_t  fUseRecEffRecJetPtBins; // bin track reconstruction efficiency in reconstructed/generated jet pt bins 
 
@@ -544,6 +588,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQADiJetHistos* fQADiJetHistosRecCuts;       //! Dijet QA : reconstructed tracks after cuts
   AliFragFuncQADiJetHistos* fQADiJetHistosGen;           //! DiJet QA: jets from generated tracks  
 
+  AliFragFuncQATrackHistos* fPhiCorrHistosJetArea;        //! tracks in area of leading jet (phi = phi_jet - phi_track, eta = eta_track)
+  AliFragFuncQATrackHistos* fPhiCorrHistosTransverseArea; //! tracks in area transverse region (shift of phi by 90�)
+  AliFragFuncQATrackHistos* fPhiCorrHistosAwayArea;       //! tracks in area in away region (shift of phi by 180�)
 
   Float_t  fQATrackHighPtThreshold;       // track QA high transverse momentum threshold
   
@@ -649,6 +696,23 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fQADiJetDeltaPtMin;    // dijet QA histos limits
   Float_t fQADiJetDeltaPtMax;    // dijet QA histos limits
 
+  Int_t   fQADiJetNBinsInBal;  // dijet QA histos bins
+  Float_t fQADiJetInBalMin;    // dijet QA histos limits
+  Float_t fQADiJetInBalMax;    // dijet QA histos limits
+
+  // phi correlation
+  Int_t   fPhiCorrNBinsPt;  // track related to jet histos bins 
+  Float_t fPhiCorrPtMin;    // track related to jet histos limits
+  Float_t fPhiCorrPtMax;    // track related to jet histos limits
+  
+  Int_t   fPhiCorrNBinsEta; // track related to jet histos bins
+  Float_t fPhiCorrEtaMin;   // track related to jet histos limits
+  Float_t fPhiCorrEtaMax;   // track related to jet histos limits
+  
+  Int_t   fPhiCorrNBinsPhi; // track related to jet histos bins
+  Float_t fPhiCorrPhiMin;   // track related to jet histos limits
+  Float_t fPhiCorrPhiMax;   // track related to jet histos limits
+
   // Histograms
   TList	*fCommonHistList;         // List of common histos
   
@@ -656,6 +720,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F	*fh1VertexNContributors;  //! NContributors to prim vertex
   TH1F	*fh1VertexZ;              //! prim vertex z distribution
   TH1F	*fh1EvtMult;              //! number of reconstructed tracks after cuts 
+  TH1F	*fh1EvtCent;              //! centrality percentile 
 
   TProfile* fh1Xsec;              //! pythia cross section and trials
   TH1F*     fh1Trials;            //! sum of trials
@@ -678,10 +743,19 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosRecEffGen;                 //! tracking efficiency: FF generated primaries  
   AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
 
+  // momentum resolution 
+  THnSparseF* fhnResponseSinglePt;    //! single track response pt
+  THnSparseF* fhnResponseJetTrackPt;  //! jet track response pt 
+  THnSparseF* fhnResponseJetZ;        //! jet track response z 
+  THnSparseF* fhnResponseJetXi;       //! jet track response xi
+
 
   // Background
   TH1F  *fh1OutLeadingMult;       //! background multiplicity outside leading jet
   TH1F  *fh1PerpMult;             //! background multiplicity perpendicular to the leading jet
+  TH1F  *fh1ASideMult;            //! background multiplicity perpendicular to the leading jet
+  TH1F  *fh1ASideWindowMult;      //! background multiplicity perpendicular to the leading jet
+  TH1F  *fh1PerpWindowMult;       //! background multiplicity perpendicular to the leading jet
   TH1F  *fh1Out2JetsMult;         //! background multiplicity outside 2 jets
   TH1F  *fh1Out3JetsMult;         //! background multiplicity outside 3 jets
 
@@ -718,9 +792,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncIntraJetHistos*  fIJBckgHisto2Gen;        //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto2GenLeading; //!
 
-  TRandom3*                   fRandom; 
+  TRandom3*                   fRandom;          // TRandom3 for background estimation 
+  Int_t                       fBckgSubMethod;   // Bckg method: 1 = leading jet excluded, 2 = 2 most energetic jets excluded        
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 8);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 9);
 };
 
 #endif
