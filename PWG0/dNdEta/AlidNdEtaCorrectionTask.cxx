@@ -190,11 +190,12 @@ AlidNdEtaCorrectionTask::~AlidNdEtaCorrectionTask()
 
   // histograms are in the output list and deleted when the output
   // list is deleted by the TSelector dtor
-
-  if (fOutput) {
+	
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }
+	
 }
 
 //________________________________________________________________________
@@ -336,6 +337,10 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
   fpTResolution = new TH2F("fpTResolution", ";MC p_{T} (GeV/c);(MC p_{T} - ESD p_{T}) / MC p_{T}", 160, 0, 20, 201, -0.2, 0.2);
   fOutput->Add(fpTResolution);
 
+  fpTCorrelation = new TH2F("fpTCorrelation", "fpTCorrelation;MC p_{T} (GeV/c);ESD p_{T}", 160, 0, 20, 160, 0, 20);
+  fOutput->Add(fpTCorrelation);
+  fpTCorrelationShift = new TH2F("fpTCorrelationShift", "fpTCorrelationShift;MC p_{T} (GeV/c);MC p_{T} - ESD p_{T}", 160, 0, 20, 100, -1, 1);
+  fOutput->Add(fpTCorrelationShift);
   fpTCorrelationAllESD = new TH2F("fpTCorrelationAllESD", "fpTCorrelationAllESD;MC p_{T} (GeV/c);ESD p_{T}", 160, 0, 20, 160, 0, 20);
   fOutput->Add(fpTCorrelationAllESD);
   fpTCorrelationShiftAllESD = new TH2F("fpTCorrelationShiftAllESD", "fpTCorrelationShiftAllESD;MC p_{T} (GeV/c);MC p_{T} - ESD p_{T}", 160, 0, 20, 100, -1, 1);
@@ -665,6 +670,11 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         }
         
 	AliDebug(3,Form("particle %d: pt = %.6f, eta = %.6f",i,esdTrack->Pt(), esdTrack->Eta())); 
+	// 2 Options for INEL>0 trigger - choose one
+ 	// 1. HL
+	//if (esdTrack->Pt() < 0.15)
+ 	// foundInEta10 = kTRUE;
+ 	// 2. MB Working Group definition
         if (esdTrack->Pt() < fPtMin)
           continue;
         
@@ -815,9 +825,14 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     if (AliPWG0Helper::IsPrimaryCharged(particle, nPrim) == kFALSE)
       continue;
     
-    if (TMath::Abs(particle->Eta()) < 1.0)
+    // for INEL > 0, MB Working Group definition use the second option
+    // 1. standard
+    //if (TMath::Abs(particle->Eta()) < 1.0)
+    // 2. MB Working Group definition
+    if (TMath::Abs(particle->Eta()) < 0.8 && particle->Pt() > fPtMin)
     {
       oneParticleEvent = kTRUE;
+      fNumberEventMC->Fill(fESD->GetEventNumberInFile());
       break;
     }
   }
@@ -880,6 +895,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
     Int_t processType2 = processType;
     if (oneParticleEvent)
       processType2 |= AliPWG0Helper::kOnePart;
+
     fdNdEtaCorrection->FillMCParticle(vtxMC[2], eta, thirdDim, eventTriggered, eventVertex, processType2);
 
     if (fOption.Contains("process-types"))
@@ -1016,7 +1032,7 @@ void AlidNdEtaCorrectionTask::Exec(Option_t*)
         //if (TMath::Abs(particle->Eta() < 0.9) && particle->Pt() > 0)
 	// 2. INEL > 0 MB WOrking Group definition
 	if (TMath::Abs(particle->Eta() < 0.8) && particle->Pt() > 0){
-          fpTResolution->Fill(particle->Pt(), (particle->Pt() - thirdDimArr[i]) / particle->Pt());
+	  fpTResolution->Fill(particle->Pt(), (particle->Pt() - thirdDimArr[i]) / particle->Pt());
 	  fpTCorrelation->Fill(particle->Pt(),thirdDimArr[i]);
 	  fpTCorrelationShift->Fill(particle->Pt(),particle->Pt()-thirdDimArr[i]);
 	}

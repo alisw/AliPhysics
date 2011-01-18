@@ -605,7 +605,7 @@ isManager()->GetInputEventHandler());
       }
         
       const AliMultiplicity* mult = fESD->GetMultiplicity();
-      if (!mult)
+      if (!mult){
       {
 	Printf("Returning, no Multiplicity found");
         return;
@@ -978,6 +978,7 @@ isManager()->GetInputEventHandler());
         {
           Float_t eta = etaArr[i];
           Float_t thirdDim = thirdDimArr[i];
+	  fEta->Fill(eta);
 
           fdNdEtaAnalysisESD->FillTrack(vtx[2], eta, thirdDim);
 
@@ -1217,9 +1218,10 @@ isManager()->GetInputEventHandler());
       if (processType == AliPWG0Helper::kND)
         fdNdEtaAnalysisND->FillTrack(vtxMC[2], eta, thirdDim);
       
-      if (oneParticleEvent)
-	AliDebug(3,Form("filling dNdEtaAnalysis object:: vtx = %f, eta = %f, pt = %f",vtxMC[2], eta, thirdDim));
-        fdNdEtaAnalysisOnePart->FillTrack(vtxMC[2], eta, thirdDim);
+      if (oneParticleEvent){
+	      AliDebug(3,Form("filling dNdEtaAnalysis object:: vtx = %f, eta = %f, pt = %f",vtxMC[2], eta, thirdDim));
+	      fdNdEtaAnalysisOnePart->FillTrack(vtxMC[2], eta, thirdDim);
+      }
 
       if (eventTriggered)
       {
