@@ -33,9 +33,7 @@ Bool_t RsnConfig
   const char *taskName, 
   const char *options,
   const char *config,
-  const char *path,
-  Int_t       multMin = 0,
-  Int_t       multMax = 0
+  const char *path
 )
 {
   // load useful macros
@@ -152,7 +150,6 @@ Bool_t RsnConfig
   
   // pair cut ----------------------------------------
   // --> dip angle between daughters: (it is a cosine)
-  AliRsnCutValue *cutDip = new AliRsnCutValue("cutDip", AliRsnValue::kPairDipAngle,  0.02, 1.01);
   AliRsnCutValue *cutY   = new AliRsnCutValue("cutY"  , AliRsnValue::kPairY       , -0.5 , 0.5 );
   cutY->GetValueObj()->SetSupportObject(pairDefPM);
 
@@ -176,19 +173,11 @@ Bool_t RsnConfig
   truePM->GetCutManager()->GetMotherCuts()->AddCut(cutY);
   pairPP->GetCutManager()->GetMotherCuts()->AddCut(cutY);
   pairMM->GetCutManager()->GetMotherCuts()->AddCut(cutY);
-  // --> add dip angle cut only if required
-  if (addDipCut)
-  {
-    pairPM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    truePM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    pairPP->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    pairMM->GetCutManager()->GetMotherCuts()->AddCut(cutDip);
-    scheme.Append(Form("&%s", cutDip->GetName()));
-  }
-  pairPM->GetCutManager()->GetMotherCuts()->SetCutScheme(scheme.Data());
-  truePM->GetCutManager()->GetMotherCuts()->SetCutScheme(scheme.Data());
-  pairPP->GetCutManager()->GetMotherCuts()->SetCutScheme(scheme.Data());
-  pairMM->GetCutManager()->GetMotherCuts()->SetCutScheme(scheme.Data());
+  
+  pairPM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutY->GetName());
+  truePM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutY->GetName());
+  pairPP->GetCutManager()->GetMotherCuts()->SetCutScheme(cutY->GetName());
+  pairMM->GetCutManager()->GetMotherCuts()->SetCutScheme(cutY->GetName());
   
   // set additional option for true pairs
   truePM->SetOnlyTrue  (kTRUE);
