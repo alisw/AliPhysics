@@ -8,7 +8,7 @@
 //  3) subset of (2) whose daughters satisfy primary track cuts (nsigma to vertex, no kink daughters)
 //  4) subset of (3) whose daughters satisty the BB TPC compatibility cut at 3 sigma
 //
-Bool_t AddRsnEfficiency(const char *dataLabel, const char *path)
+Bool_t AddRsnEfficiency(const char *dataLabel, const char *path = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/fixed_rapidity")
 {
   // load useful macros
   gROOT->LoadMacro(Form("%s/QualityCutsITS.C", path));
@@ -37,7 +37,7 @@ Bool_t AddRsnEfficiency(const char *dataLabel, const char *path)
   Int_t        nmult    = sizeof(mult) / sizeof(mult[0]);
   AliRsnValue *axisIM   = new AliRsnValue("IM"  , AliRsnValue::kPairInvMass     , 0.9, 1.4, 0.001);
   AliRsnValue *axisPt   = new AliRsnValue("PT"  , AliRsnValue::kPairPt          , 0.0, 5.0, 0.100);
-  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-0.5, 0.5, 0.500);
+  AliRsnValue *axisY    = new AliRsnValue("Y"   , AliRsnValue::kPairY           ,-1.1, 1.1, 0.100);
   AliRsnValue *axisMult = new AliRsnValue("Mult", AliRsnValue::kEventMultESDCuts, nmult, mult);
   
   // initialize the support object: AliESDtrackCuts

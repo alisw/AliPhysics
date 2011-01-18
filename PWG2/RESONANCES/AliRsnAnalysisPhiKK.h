@@ -7,8 +7,8 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
-#ifndef AliRsnAnalysisPhiKK_H
-#define AliRsnAnalysisPhiKK_H
+#ifndef ALIRSNANALYSISPHIKK_H
+#define ALIRSNANALYSISPHIKK_H
 
 #include "TClonesArray.h"
 
@@ -41,15 +41,14 @@ class AliRsnAnalysisPhiKK : public AliRsnVAnalysisTaskSE
     AliRsnCutSet*           GetPosDaughterCuts()    {return &fCutTrackPos;}
     AliRsnCutSet*           GetNegDaughterCuts()    {return &fCutTrackNeg;}
     AliRsnCutSet*           GetMotherCuts()         {return &fCutPair;}
+    AliRsnPairDef*          GetPairDef()            {return &fPairDef;}
     
+    static Bool_t           IsTruePair(AliRsnDaughter *d1, AliRsnDaughter *d2);
     void                    AddFunction(AliRsnFunction* const fcn);
     TList*                  GenerateHistograms();
 
   private:
   
-    TArrayI                 fGood;              // indexes of good tracks
-    AliRsnDaughter          fDaughter[2];       // daughter data-member (to save memory)
-    AliRsnMother            fMother;            // mother data-member (to save memory)
     AliRsnPairDef           fPairDef;           // resonance decay tree (fixed)
     
     AliRsnCutSet            fCutEvent;          // cut set for events

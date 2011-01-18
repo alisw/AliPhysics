@@ -14,7 +14,7 @@ Bool_t AddRsnAnalysis
 (
   const char *options,
   const char *configs = "RsnConfigNoSA.C RsnConfigSA.C",
-  const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
+  const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/fixed_rapidity"
 )
 {
   // retrieve analysis manager
