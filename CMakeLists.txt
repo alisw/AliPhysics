@@ -11,6 +11,8 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 #--------------------------------------------------------------------------------#
 
 project(AliRoot CXX C Fortran)
+
+# Environment variables
 set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE $ENV{ALICE})
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
@@ -163,10 +165,24 @@ set(LIBS ${ROOTCLIBS} ${ROOTPLIBS} ${SYSLIBS})
 # Configure ARVerion.h
 # ------------------------------
 if(Subversion_FOUND)
+  if(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
   Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
   set(ALIROOT_SVN_REVISION ${PROJECT_WC_REVISION})
   set(ALIROOT_SVN_BRANCH ${PROJECT_WC_URL})
   string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${ALIROOT_SVN_BRANCH})
+
+  elseif(EXISTS ${PROJECT_SOURCE_DIR}/.git/ )
+    execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND git svn info OUTPUT_VARIABLE OUTPUTVAR)
+    string(REPLACE "\n" ";" OUTPUTVAR ${OUTPUTVAR})
+    foreach(f ${OUTPUTVAR})
+      if(${f} MATCHES URL)
+	string(REGEX MATCH "[^/]+$" ALIROOT_SVN_BRANCH ${f})
+      elseif(${f} MATCHES Revision)
+	string(REGEX MATCH "[^/]+$" ALIROOT_SVN_REVISION ${f})
+      endif(${f} MATCHES URL)   
+    endforeach()
+  endif(EXISTS ${PROJECT_SOURCE_DIR}/.svn/ )
+
   message(STATUS "Aliroot Revision - ${ALIROOT_SVN_REVISION} Branch - ${ALIROOT_SVN_BRANCH}")
   if(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
     file(REMOVE ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
