@@ -107,7 +107,7 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
 
 //_________________________________________________________________________
 Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
-                                              Int_t & ancPDG, Int_t & ancStatus) {
+                                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum) {
   //Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
   Int_t label1[100];
   Int_t label2[100];
@@ -188,6 +188,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
           if (mom) {
             ancPDG    = mom->GetPdgCode();
             ancStatus = mom->GetStatus();
+            momentum.SetPxPyPzE(mom->Px(),mom->Py(),mom->Pz(),mom->E());
           }
         }
         else {
@@ -195,6 +196,7 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
           if (mom) {
             ancPDG    = mom->GetPdgCode();
             ancStatus = mom->GetStatusCode();
+            mom->Momentum(momentum);
           }
         }
         //First ancestor found, end the loops
