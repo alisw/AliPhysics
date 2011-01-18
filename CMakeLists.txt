@@ -13,6 +13,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(AliRoot CXX C Fortran)
 set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE $ENV{ALICE})
+set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 
 if(NOT ALICE)
   message(WARNING "Environment variable ALICE is not set")
