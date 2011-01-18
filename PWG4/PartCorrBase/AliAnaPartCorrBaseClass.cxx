@@ -47,7 +47,7 @@ ClassImp(AliAnaPartCorrBaseClass)
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
     TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
     fCheckCaloPID(0), fRecalculateCaloPID(0), fMinPt(0), fMaxPt(0),
-    fMultiBin(0),fNZvertBin(0),fNrpBin(0),fZvtxCut(0.), fMaxMulti(0),fMinMulti(0),
+    fMultiBin(0),fNZvertBin(0),fNrpBin(0), fMaxMulti(0),fMinMulti(0),
     fUseSelectEvent(kFALSE), fMakePlots(kFALSE),
     fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
     fOutputAODBranch(0x0), fNewAOD(kFALSE),
@@ -418,7 +418,6 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fMultiBin = 1;
   fNZvertBin = 1;
   fNrpBin    = 1;
-  fZvtxCut   = 10;
   fMaxMulti   = 1000;
   fMinMulti   = 0;
   fUseSelectEvent = kFALSE ;

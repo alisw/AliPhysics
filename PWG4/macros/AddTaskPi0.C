@@ -75,6 +75,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   //CTS is off when calling this method
   //reader->SwitchOnCaloFilterPatch();
   
+  reader->SetZvertexCut(10.);
+  
   //Min particle pT
   reader->SetEMCALPtMin(0.1); 
   reader->SetPHOSPtMin(0.);
@@ -125,7 +127,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
-  anaphoton->SetZvertexCut(10);
   if(calorimeter == "PHOS"){
     anaphoton->SetNCellCut(0);// At least 2 cells
     anaphoton->SetMinPt(0.);

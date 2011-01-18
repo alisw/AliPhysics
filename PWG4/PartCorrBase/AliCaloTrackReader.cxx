@@ -69,7 +69,7 @@ ClassImp(AliCaloTrackReader)
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
-    fEMCALClustersListName("")
+    fEMCALClustersListName(""),fZvtxCut(0.)
 {
   //Ctor
   
@@ -326,6 +326,8 @@ void AliCaloTrackReader::InitParameters()
   fV0ADC[0] = 0;   fV0ADC[1] = 0; 
   fV0Mul[0] = 0;   fV0Mul[1] = 0; 
 
+  fZvtxCut   = 10.;
+  
 }
 
 //________________________________________________________________
@@ -433,6 +435,8 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   //Fill Vertex array
   
   FillVertexArray();
+  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
+  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;  
   
   //Fill the arrays with cluster/tracks/cells data
    if(fFillEMCALCells) 

@@ -214,7 +214,9 @@ public:
   virtual void GetVertex(Double_t vertex[3], const Int_t evtIndex) const ;
   virtual void FillVertexArray();
  // virtual void       GetSecondInputAODVertex(Double_t *) const {;}
-  
+  virtual Float_t GetZvertexCut() const {return fZvtxCut ;} //cut on vertex position  
+  virtual void SetZvertexCut(Float_t zcut=10.){fZvtxCut=zcut ;} //cut on vertex position
+
   void SwitchOnWriteDeltaAOD()  {fWriteOutputDeltaAOD = kTRUE ;  }
   void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
@@ -317,7 +319,8 @@ public:
 
   Bool_t           fCaloFilterPatch;    // CaloFilter patch
   TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
-  
+  Float_t          fZvtxCut ;	           // Cut on vertex position  
+
   ClassDef(AliCaloTrackReader,22)
 } ;
 
