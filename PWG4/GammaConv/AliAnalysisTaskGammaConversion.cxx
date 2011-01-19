@@ -2448,16 +2448,17 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 
 	    Double_t lowMassPi0=0.1;
 	    Double_t highMassPi0=0.15;
-	    if ( fKFCreateAOD && (massTwoGammaCandidate > lowMassPi0) && (massTwoGammaCandidate < highMassPi0) ){
+	    if ( ( massTwoGammaCandidate > lowMassPi0) && (massTwoGammaCandidate < highMassPi0) ){
 	      new((*fKFReconstructedPi0sTClone)[fKFReconstructedPi0sTClone->GetEntriesFast()])  AliKFParticle(*twoGammaCandidate);
 	      fGammav1.push_back(firstGammaIndex);
 	      fGammav2.push_back(secondGammaIndex);
-	      AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	      if( fKFCreateAOD ) {
+		AddPionToAOD(twoGammaCandidate, massTwoGammaCandidate, firstGammaIndex, secondGammaIndex);
+	      }
 	    }
 	  }
 
 	}
-	  //}
 	delete twoGammaCandidate;
     }
   }
