@@ -7,3 +7,8 @@ set ( DHDR  OADBLinkDef.h)
 
 set ( EXPORT ${HDRS})
 
+
+# Install data to destination 
+install (DIRECTORY COMMON PWG1 PWG2 PWG3 PWG4 
+         DESTINATION OADB 
+	 PATTERN ".svn" EXCLUDE)
