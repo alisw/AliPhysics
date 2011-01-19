@@ -23,6 +23,7 @@ class AliInputEventHandler;
 class AliMCEvent;
 class AliStack;
 class TVector3;
+class TTree;
 
 class AliAnalyseUE : public TObject {
 

@@ -19,6 +19,7 @@ class TH3F;
 class TProfile;
 class THnSparse; 
 class TRandom3;
+class TArrayS;
 
 #include "AliAnalysisTaskSE.h"
 
