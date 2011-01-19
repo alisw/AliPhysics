@@ -179,7 +179,7 @@ Double_t AliTRDCalDet::GetRMSRobust(Double_t robust) const
   //
 
   // sorted
-  Int_t *index = new Int_t[kNdet];
+  Int_t *index = new Int_t[kNdet+1];
   TMath::Sort((Int_t)kNdet,fData,index);
  
   // reject
@@ -542,8 +542,8 @@ Double_t AliTRDCalDet::CalcMean(Bool_t wghtPads)
   Double_t meanWP = 0.0;
   Double_t pads=0.0;
   Double_t padsALL=(144*16*24+144*12*6)*18;
-  Double_t meanSM[18];
-  Double_t meanSMWP[18];
+  Double_t *meanSM = new Double_t[18];
+  Double_t *meanSMWP = new Double_t[18];
 
   Int_t det = 0;
   while(det < 540) {
@@ -594,5 +594,8 @@ Double_t AliTRDCalDet::CalcMean(Bool_t wghtPads)
     det++;
   }
   
+  delete []meanSM;
+  delete []meanSMWP;
+
   return (sum/ndet);
 }
