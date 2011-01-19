@@ -1856,6 +1856,7 @@ void AliAnalysisAlien::SetDefaults()
    fNreplicas                  = 2;
    fRunRange[0]                = 0;
    fRunRange[1]                = 0;
+   fRunPrefix                  = "%d";
    fNrunsPerMaster             = 1;
    fMaxMergeFiles              = 100;
    fRunNumbers                 = "";
