@@ -1,44 +1,39 @@
 //
-// This class contains the dead channel correction 
+// This class contains the acceptance correction due to dead channels
 //
 //
-#ifndef ALIFMDCORRDEADCHANNELS_H
-#define ALIFMDCORRDEADCHANNELS_H
+#ifndef ALIFMDCORRACCEPTANCE_H
+#define ALIFMDCORRACCEPTANCE_H
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>
 class TH2D;
 
 /**
- * This class contains the merging efficiency correction.
+ * This class contains the acceptance correction due to dead channels
  *
- * The secondary correction is given by 
- * @f[
- *   m_{r,v}(\eta) = 
- * @f]
- *
- * These are generated from Monte-Carlo truth and ESD information. 
+ * These are generated from the on-line dead channel calculations 
  *
  * @ingroup pwg2_forward_corr
  */
-class AliFMDCorrDeadChannels : public TObject 
+class AliFMDCorrAcceptance : public TObject 
 {
 public:
   /** 
    * Default constructor 
    */
-  AliFMDCorrDeadChannels();
+  AliFMDCorrAcceptance();
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliFMDCorrDeadChannels(const AliFMDCorrDeadChannels& o);
+  AliFMDCorrAcceptance(const AliFMDCorrAcceptance& o);
   /**
    * Destructor 
    * 
    */
-  virtual ~AliFMDCorrDeadChannels();
+  virtual ~AliFMDCorrAcceptance();
   /** 
    * @{ 
    * @name Get corrections and parameters 
@@ -50,26 +45,26 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliFMDCorrDeadChannels& operator=(const AliFMDCorrDeadChannels& o);
+  AliFMDCorrAcceptance& operator=(const AliFMDCorrAcceptance& o);
   /** 
-   * Get the secondary correction @f$ c_{r,v}@f$ 
+   * Get the acceptance correction @f$ a_{r,v}@f$ 
    *
    * @param d  Detector number (1-3)
    * @param r  Ring identifier (I or O)
    * @param v  Primary interaction point @f$z@f$ coordinate
    * 
-   * @return The correction @f$ c_{r,v}@f$ 
+   * @return The correction @f$ a_{r,v}@f$ 
    */
   TH2D* GetCorrection(UShort_t d, Char_t r, Double_t v) const;
   /** 
-   * Get the secondary correction @f$ c_{r,v}@f$ 
+   * Get the acceptance correction @f$ a_{r,v}@f$ 
    *
    * @param d  Detector number (1-3)
    * @param r  Ring identifier (I or O)
    * @param b  Bin corresponding to the primary interaction point 
    *           @f$z@f$ coordinate (1 based)
    * 
-   * @return The correction @f$ c_{r,v}@f$ 
+   * @return The correction @f$ a_{r,v}@f$ 
    */
   TH2D* GetCorrection(UShort_t d, Char_t r, UShort_t b) const;
   /** 
@@ -85,26 +80,26 @@ public:
    * @name Set corrections and parameters 
    */
   /** 
-   * Set the secondary map correction @f$ m_{r,v}(\eta)@f$.
+   * Set the acceptance correction @f$ a_{r,v}(\eta)@f$.
    * Note, that the object takes ownership of the passed pointer.
    * 
    * @param d    Detector number (1-3)
    * @param r    Ring identifier (I or O)
    * @param v    Primary interaction point @f$z@f$ coordinate  
-   * @param h    @f$ m_{r,v}(\eta)@f$ 
+   * @param h    @f$ a_{r,v}(\eta)@f$ 
    * 
    * @return true if operation succeeded 
    */
   Bool_t SetCorrection(UShort_t d, Char_t r, Double_t v, TH2D* h);
   /** 
-   * Set the secondary map correction @f$ m_{r,v}(\eta)@f$ 
+   * Set the acceptance correction @f$ a_{r,v}(\eta)@f$ 
    * Note, that the object takes ownership of the passed pointer.
    * 
    * @param d    Detector number (1-3)
    * @param r    Ring identifier (I or O)
    * @param b    Bin corresponding to the primary interaction point 
    *             @f$z@f$ coordinate  (1 based)
-   * @param h    @f$ m_{r,v}(\eta)@f$ 
+   * @param h    @f$ a_{r,v}(\eta)@f$ 
    * 
    * @return true if operation succeeded 
    */
@@ -188,19 +183,19 @@ protected:
 
   TObjArray fRingArray;      // Array of per-ring, per-vertex 2nd map
   TAxis     fVertexAxis;     // The vertex axis 
-  ClassDef(AliFMDCorrDeadChannels,1); // 
+  ClassDef(AliFMDCorrAcceptance,1); // Acceptance correction due to dead areas
 };
 
 //____________________________________________________________________
 inline void 
-AliFMDCorrDeadChannels::SetVertexAxis(Int_t nBins, Double_t min, 
+AliFMDCorrAcceptance::SetVertexAxis(Int_t nBins, Double_t min, 
 					   Double_t max)
 {
   fVertexAxis.Set(nBins, min, max);
 }
 //____________________________________________________________________
 inline void 
-AliFMDCorrDeadChannels::SetVertexAxis(const TAxis& e)
+AliFMDCorrAcceptance::SetVertexAxis(const TAxis& e)
 {
   fVertexAxis.Set(e.GetNbins(), e.GetXmin(), e.GetXmax());
 }
