@@ -79,9 +79,9 @@ void MakeELossFits(const char* esddir,
   // algorithm. 
   task->GetEnergyFitter().SetEtaAxis(200, -4, 6);
   // Set maximum energy loss to consider 
-  task->GetEnergyFitter().SetMaxE(10); 
+  task->GetEnergyFitter().SetMaxE(15); 
   // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(300);
+  task->GetEnergyFitter().SetNEbins(100);
   // Set whether to use increasing bin sizes 
   task->GetEnergyFitter().SetUseIncreasingBins(true);
   // Set whether to do fit the energy distributions 

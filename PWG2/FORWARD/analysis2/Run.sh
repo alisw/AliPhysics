@@ -132,8 +132,8 @@ fi
 if test $nodraw -lt 1 ; then
     rm -f result.root 
     tit=`echo $tit | tr ' ' '@'` 
-    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,$hhd,$comp\)"
-    aliroot ${opts} ${ana}/Pass2.C\(\"AliAODs.root\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
+    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\".\",\"$type\",$cms,$vzmin,$vzmax,$rebin,$hhd,$comp\)"
+    aliroot ${opts} ${ana}/Pass2.C\(\".\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
 fi
 
 
