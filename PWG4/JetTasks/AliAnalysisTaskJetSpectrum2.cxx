@@ -897,7 +897,9 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   fh1PtHardTrials->Fill(ptHard,nTrials);
 
   // Real
-  fh1ZVtx->Fill(aod->GetPrimaryVertex()->GetZ());
+  if(aod->GetPrimaryVertex()){// No vtx for pure MC
+    fh1ZVtx->Fill(aod->GetPrimaryVertex()->GetZ());
+  }
 
   // the loops for rec and gen should be indentical... pass it to a separate
   // function ...
