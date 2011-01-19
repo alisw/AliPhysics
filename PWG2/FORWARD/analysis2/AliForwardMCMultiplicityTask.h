@@ -9,7 +9,7 @@
 #include "AliFMDEnergyFitter.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
-#include "AliFMDMCCorrections.h"
+#include "AliFMDMCCorrector.h"
 #include "AliFMDHistCollector.h"
 #include "AliAODForwardMult.h"
 #include "AliFMDEnergyFitter.h"
@@ -120,9 +120,9 @@ public:
   /**
    * Get reference to the Corrections algorithm 
    * 
-   * @return Reference to AliFMDCorrections object 
+   * @return Reference to AliFMDCorrector object 
    */
-  AliFMDCorrections& GetCorrections() { return fCorrections; }
+  AliFMDCorrector& GetCorrections() { return fCorrections; }
   /**
    * Get reference to the HistCollector algorithm 
    * 
@@ -156,9 +156,9 @@ public:
   /**
    * Get reference to the Corrections algorithm 
    * 
-   * @return Reference to AliFMDCorrections object 
+   * @return Reference to AliFMDCorrector object 
    */
-  const AliFMDCorrections& GetCorrections() const { return fCorrections; }
+  const AliFMDCorrector& GetCorrections() const { return fCorrections; }
   /**
    * Get reference to the HistCollector algorithm 
    * 
@@ -194,7 +194,7 @@ protected:
   AliFMDEnergyFitter        fEnergyFitter;      // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm
-  AliFMDMCCorrections       fCorrections;       // Algorithm
+  AliFMDMCCorrector         fCorrections;       // Algorithm
   AliFMDHistCollector       fHistCollector;     // Algorithm
 
   TList* fList; // Output list 

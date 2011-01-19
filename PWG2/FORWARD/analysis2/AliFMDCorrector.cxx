@@ -2,7 +2,7 @@
 // This class calculates the exclusive charged particle density
 // in each for the 5 FMD rings. 
 //
-#include "AliFMDCorrections.h"
+#include "AliFMDCorrector.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -14,13 +14,13 @@
 #include <iostream>
 #include <iomanip>
 
-ClassImp(AliFMDCorrections)
+ClassImp(AliFMDCorrector)
 #if 0
 ; // For Emacs
 #endif 
 
 //____________________________________________________________________
-AliFMDCorrections::AliFMDCorrections()
+AliFMDCorrector::AliFMDCorrector()
   : TNamed(), 
     fRingHistos(),
     fUseMergingEfficiency(true),
@@ -30,7 +30,7 @@ AliFMDCorrections::AliFMDCorrections()
 }
 
 //____________________________________________________________________
-AliFMDCorrections::AliFMDCorrections(const char* title)
+AliFMDCorrector::AliFMDCorrector(const char* title)
   : TNamed("fmdCorrections", title), 
     fRingHistos(), 
     fUseMergingEfficiency(true),
@@ -49,7 +49,7 @@ AliFMDCorrections::AliFMDCorrections(const char* title)
 }
 
 //____________________________________________________________________
-AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
+AliFMDCorrector::AliFMDCorrector(const AliFMDCorrector& o)
   : TNamed(o), 
     fRingHistos(), 
     fUseMergingEfficiency(o.fUseMergingEfficiency),
@@ -65,7 +65,7 @@ AliFMDCorrections::AliFMDCorrections(const AliFMDCorrections& o)
 }
 
 //____________________________________________________________________
-AliFMDCorrections::~AliFMDCorrections()
+AliFMDCorrector::~AliFMDCorrector()
 {
   // Destructor 
   // 
@@ -74,8 +74,8 @@ AliFMDCorrections::~AliFMDCorrections()
 }
 
 //____________________________________________________________________
-AliFMDCorrections&
-AliFMDCorrections::operator=(const AliFMDCorrections& o)
+AliFMDCorrector&
+AliFMDCorrector::operator=(const AliFMDCorrector& o)
 {
   // Assignment operator 
   // 
@@ -94,8 +94,8 @@ AliFMDCorrections::operator=(const AliFMDCorrections& o)
 }
 
 //____________________________________________________________________
-AliFMDCorrections::RingHistos*
-AliFMDCorrections::GetRingHistos(UShort_t d, Char_t r) const
+AliFMDCorrector::RingHistos*
+AliFMDCorrector::GetRingHistos(UShort_t d, Char_t r) const
 {
   // 
   // Get the ring histogram container 
@@ -119,7 +119,7 @@ AliFMDCorrections::GetRingHistos(UShort_t d, Char_t r) const
     
 //____________________________________________________________________
 Bool_t
-AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
+AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 			   UShort_t                vtxbin)
 {
   // 
@@ -137,19 +137,25 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
-      Char_t      r = (q == 0 ? 'I' : 'O');
-      TH2D*       h = hists.Get(d,r);
-      RingHistos* rh= GetRingHistos(d,r);
-      TH2D* bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
-      TH2D* ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
+      Char_t      r  = (q == 0 ? 'I' : 'O');
+      TH2D*       h  = hists.Get(d,r);
+      RingHistos* rh = GetRingHistos(d,r);
+      TH2D*       bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
+      TH2D*       ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
+      TH2D*       ac = fcm.GetAcceptance()->GetCorrection(d, r, uvb);
       if (!bg) { 
 	AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
 			d, r, uvb));
 	continue;
       }
       if (!ef) { 
-	AliWarning(Form("No event vertex bias correction in vertex bin %d",
-			uvb));
+	AliWarning(Form("No event %s vertex bias correction in vertex bin %d",
+			(r == 'I' || r == 'i' ? "inner" : "outer"), uvb));
+	continue;
+      }
+      if (!ac) { 
+	AliWarning(Form("No acceptance correction for FMD%d%c in vertex bin %d",
+			d, r, uvb));
 	continue;
       }
 
@@ -158,6 +164,9 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
       
       // Divide by the event selection efficiency 
       h->Divide(ef);
+
+      // Divide by the acceptance correction 
+      h->Divide(ac);
 
       if (fUseMergingEfficiency) {
 	if (!fcm.GetMergingEfficiency()) { 
@@ -198,7 +207,7 @@ AliFMDCorrections::Correct(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDCorrections::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDCorrector::ScaleHistograms(TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -217,7 +226,7 @@ AliFMDCorrections::ScaleHistograms(TList* dir, Int_t nEvents)
 }
 //____________________________________________________________________
 void
-AliFMDCorrections::DefineOutput(TList* dir)
+AliFMDCorrector::DefineOutput(TList* dir)
 {
   TList* d = new TList;
   d->SetName(GetName());
@@ -231,7 +240,7 @@ AliFMDCorrections::DefineOutput(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDCorrections::Print(Option_t* /* option */) const
+AliFMDCorrector::Print(Option_t* /* option */) const
 {
   // 
   // Print information
@@ -241,11 +250,11 @@ AliFMDCorrections::Print(Option_t* /* option */) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDCorrections: " << GetName() <<  std::endl;
+  std::cout << ind << "AliFMDCorrector: " << GetName() <<  std::endl;
 }
 
 //====================================================================
-AliFMDCorrections::RingHistos::RingHistos()
+AliFMDCorrector::RingHistos::RingHistos()
   : AliForwardUtil::RingHistos(), 
     fDensity(0)
 {
@@ -255,7 +264,7 @@ AliFMDCorrections::RingHistos::RingHistos()
 }
 
 //____________________________________________________________________
-AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
+AliFMDCorrector::RingHistos::RingHistos(UShort_t d, Char_t r)
   : AliForwardUtil::RingHistos(d,r), 
     fDensity(0)
 {
@@ -275,7 +284,7 @@ AliFMDCorrections::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDensity->SetZTitle("Primary N_{ch} density");
 }
 //____________________________________________________________________
-AliFMDCorrections::RingHistos::RingHistos(const RingHistos& o)
+AliFMDCorrector::RingHistos::RingHistos(const RingHistos& o)
   : AliForwardUtil::RingHistos(o), 
     fDensity(o.fDensity)
 {
@@ -287,8 +296,8 @@ AliFMDCorrections::RingHistos::RingHistos(const RingHistos& o)
 }
 
 //____________________________________________________________________
-AliFMDCorrections::RingHistos&
-AliFMDCorrections::RingHistos::operator=(const RingHistos& o)
+AliFMDCorrector::RingHistos&
+AliFMDCorrector::RingHistos::operator=(const RingHistos& o)
 {
   // 
   // Assignment operator 
@@ -307,7 +316,7 @@ AliFMDCorrections::RingHistos::operator=(const RingHistos& o)
   return *this;
 }
 //____________________________________________________________________
-AliFMDCorrections::RingHistos::~RingHistos()
+AliFMDCorrector::RingHistos::~RingHistos()
 {
   // 
   // Destructor 
@@ -317,7 +326,7 @@ AliFMDCorrections::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDCorrections::RingHistos::Output(TList* dir)
+AliFMDCorrector::RingHistos::Output(TList* dir)
 {
   // 
   // Make output 
@@ -330,7 +339,7 @@ AliFMDCorrections::RingHistos::Output(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDCorrections::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
 { 
   // 
   // Scale the histograms to the total number of events 

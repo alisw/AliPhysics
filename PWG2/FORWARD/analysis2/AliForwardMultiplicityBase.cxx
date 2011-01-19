@@ -22,7 +22,7 @@
 #include "AliFMDEnergyFitter.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
-#include "AliFMDCorrections.h"
+#include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
 #include <TROOT.h>
 #include <iostream>
@@ -58,7 +58,7 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
     return false;
   }
   // Check that we have the secondary maps, needed by 
-  //   AliFMDCorrections 
+  //   AliFMDCorrector 
   //   AliFMDHistCollector
   if (what & AliForwardCorrectionManager::kSecondaryMap && 
       !fcm.GetSecondaryMap()) {
@@ -66,14 +66,14 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
     return false;
   }
   // Check that we have the vertex bias correction, needed by 
-  //   AliFMDCorrections 
+  //   AliFMDCorrector 
   if (what & AliForwardCorrectionManager::kVertexBias && 
       !fcm.GetVertexBias()) { 
     AliFatal("No event vertex bias corrections");
     return false;
   }
   // Check that we have the merging efficiencies, optionally used by 
-  //   AliFMDCorrections 
+  //   AliFMDCorrector 
   if (what & AliForwardCorrectionManager::kMergingEfficiency && 
       !fcm.GetMergingEfficiency()) {
     AliFatal("No merging efficiencies");

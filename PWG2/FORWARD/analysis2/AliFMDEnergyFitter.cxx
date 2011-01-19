@@ -16,7 +16,6 @@
 #include <TROOT.h>
 #include <iostream>
 #include <iomanip>
-#include <TFile.h>
 
 ClassImp(AliFMDEnergyFitter)
 #if 0
@@ -334,13 +333,6 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   if (!fDoMakeObject) return;
 
   MakeCorrectionsObject(d);
-  d->ls();
-  TDirectory* savdir = gDirectory;
-  TFile* tmp = TFile::Open("elossfits.root", "RECREATE");
-  d->Write();
-  tmp->Write();
-  tmp->Close();
-  savdir->cd();
 }
 
 //____________________________________________________________________

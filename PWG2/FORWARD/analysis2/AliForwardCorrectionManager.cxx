@@ -16,8 +16,15 @@ const char* AliForwardCorrectionManager::fgkDoubleHitSkel    = "doublehit";
 const char* AliForwardCorrectionManager::fgkELossFitsSkel    = "elossfits";
 const char* AliForwardCorrectionManager::fgkVertexBiasSkel   = "vertexbias";
 const char* AliForwardCorrectionManager::fgkMergingEffSkel   = "merging";
+const char* AliForwardCorrectionManager::fgkAcceptanceSkel   = "acceptance";
 
 #define PREFIX "$(ALICE_ROOT)/PWG2/FORWARD/corrections/"
+#define ELOSSFIT_DIR   "ELossFits"
+#define MERGING_DIR    "MergingEfficiency"
+#define SECONDARY_DIR  "SecondaryMap"
+#define DOUBLE_DIR     "DoubleHit"
+#define VERTEX_DIR     "VertexBias"
+#define ACCEPTANCE_DIR "Acceptance"
 
 //____________________________________________________________________
 AliForwardCorrectionManager& AliForwardCorrectionManager::Instance()
@@ -39,16 +46,18 @@ AliForwardCorrectionManager::AliForwardCorrectionManager()
     fSys(0),
     fSNN(0),
     fField(999),
-    fELossFitsPath(PREFIX "ELossFits"),
-    fMergingEffPath(PREFIX "MergingEfficiency"), 
-    fSecondaryMapPath(PREFIX "SecondaryMap"),
-    fDoubleHitPath(PREFIX "DoubleHit"),
-    fVertexBiasPath(PREFIX "VertexBias"),
+    fELossFitsPath(PREFIX ELOSSFIT_DIR),
+    fMergingEffPath(PREFIX MERGING_DIR), 
+    fSecondaryMapPath(PREFIX SECONDARY_DIR),
+    fDoubleHitPath(PREFIX DOUBLE_DIR),
+    fVertexBiasPath(PREFIX VERTEX_DIR),
+    fAcceptancePath(PREFIX ACCEPTANCE_DIR),
     fELossFit(0),
     fSecondaryMap(0),
     fDoubleHit(0),
     fVertexBias(0),
-    fMergingEfficiency(0)
+    fMergingEfficiency(0),
+    fAcceptance(0)
 {
   // 
   // Default constructor 
@@ -66,11 +75,13 @@ AliForwardCorrectionManager::AliForwardCorrectionManager(const AliForwardCorrect
     fSecondaryMapPath(o.fSecondaryMapPath),
     fDoubleHitPath(o.fDoubleHitPath),
     fVertexBiasPath(o.fVertexBiasPath),
+    fAcceptancePath(o.fAcceptancePath),
     fELossFit(o.fELossFit),
     fSecondaryMap(o.fSecondaryMap),
     fDoubleHit(o.fDoubleHit),
     fVertexBias(o.fVertexBias),
-    fMergingEfficiency(o.fMergingEfficiency)
+    fMergingEfficiency(o.fMergingEfficiency),
+    fAcceptance(o.fAcceptance)
 
 {
   // 
@@ -102,11 +113,13 @@ AliForwardCorrectionManager::operator=(const AliForwardCorrectionManager& o)
   fSecondaryMapPath = o.fSecondaryMapPath;
   fDoubleHitPath    = o.fDoubleHitPath;
   fVertexBiasPath   = o.fVertexBiasPath;
+  fAcceptancePath   = o.fAcceptancePath;
   fELossFit         = o.fELossFit;
   fSecondaryMap     = o.fSecondaryMap;
   fDoubleHit        = o.fDoubleHit;
   fVertexBias       = o.fVertexBias;
   fMergingEfficiency= o.fMergingEfficiency;
+  fAcceptance       = o.fAcceptance;
   return *this;
 }
 
@@ -202,10 +215,18 @@ AliForwardCorrectionManager::Init(UShort_t cms,
       ret = kFALSE;
     }
   }
+  // Read acceptance correction if requested 
+  if (what & kAcceptance) {
+    if (!ReadAcceptance(cms, sNN, 0)) {
+      AliWarning(Form("Failed to read in acceptance for "
+		      "cms=%d, sNN=%dGeV, field=%dkG", cms, sNN, 0));
+      ret = kFALSE;
+    }
+  }
   // Read event selection efficiencies if requested 
   if (what & kVertexBias) {
     if (!ReadVertexBias(cms, sNN, field)) {
-      AliWarning(Form("Failed to read in event selection efficiency for "
+      AliWarning(Form("Failed to read in vertex bias correction for "
 		      "cms=%d, sNN=%dGeV, field=%dkG", cms, sNN, field));
       ret = kFALSE;
     }
@@ -290,6 +311,7 @@ AliForwardCorrectionManager::GetFileDir(ECorrection what) const
   else if (what & kELossFits)           return fELossFitsPath;
   else if (what & kVertexBias)          return fVertexBiasPath;
   else if (what & kMergingEfficiency)   return fMergingEffPath;
+  else if (what & kAcceptance)          return fAcceptancePath;
 
   AliWarning(Form("Unknown correction: %d", what));
   return 0;
@@ -434,6 +456,7 @@ AliForwardCorrectionManager::GetObjectName(ECorrection what) const
   else if (what & kELossFits)          return fgkELossFitsSkel;
   else if (what & kVertexBias)         return fgkVertexBiasSkel;
   else if (what & kMergingEfficiency)  return fgkMergingEffSkel;
+  else if (what & kAcceptance)         return fgkAcceptanceSkel;
   return 0;
 }
 
@@ -678,6 +701,42 @@ AliForwardCorrectionManager::ReadMergingEfficiency(UShort_t sys,
   if (!fMergingEfficiency) {
     AliWarning(Form("Object %s (%p) is not an AliFMDCorrMergingEfficiency "
 		    "object, but %s", fgkMergingEffSkel, o, o->ClassName()));
+    return kFALSE;
+  }
+
+  // file->Close();
+  return kTRUE;
+}
+
+//____________________________________________________________________
+Bool_t 
+AliForwardCorrectionManager::ReadAcceptance(UShort_t sys, 
+					    UShort_t sNN, 
+					    Short_t field)
+{
+  // 
+  // Read in the event selection efficiency 
+  // 
+  // Parameters:
+  //    sys   Collision system
+  //    sNN   Center of mass energy [GeV]
+  //    field Magnetic field in the L3 magnet [kG]
+  // 
+  // Return:
+  //    True on success, false otherwise 
+  //
+  if (fInit) { 
+    AliWarning("Corrections manager initialised, do a forced Init(...)");
+    return kFALSE;
+  }
+
+  TObject* o = GetObject(kAcceptance, sys, sNN, field, false);
+  if (!o) return kFALSE;
+
+  fAcceptance = dynamic_cast<AliFMDCorrAcceptance*>(o);
+  if (!fAcceptance) {
+    AliWarning(Form("Object %s (%p) is not an AliFMDCorrAcceptance object, "
+		    "but %s", fgkAcceptanceSkel, o, o->ClassName()));
     return kFALSE;
   }
 
