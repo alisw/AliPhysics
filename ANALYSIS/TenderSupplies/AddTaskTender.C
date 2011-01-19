@@ -34,12 +34,13 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");
   tpcSupply->SetDebugLevel(2);
-  tpcSupply->SetMip(50.);
+  //tpcSupply->SetMip(50.);
   tender->AddSupply(tpcSupply);
 
   //========= Attach TOF supply ======
-  AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOFtender");
-  tender->AddSupply(TOFtender);
+  AliTOFTenderSupply *tofTender = new AliTOFTenderSupply("TOFtender");
+  tofTender->SetTimeZeroType(AliESDpid::kTOF_T0);
+  tender->AddSupply(tofTender);
   
   //========= Attach TRD supply ======
   AliTRDTenderSupply *trdSupply=new AliTRDTenderSupply("TRDtender");

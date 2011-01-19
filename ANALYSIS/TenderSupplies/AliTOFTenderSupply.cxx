@@ -26,23 +26,36 @@
 #include <AliESDpid.h>
 #include <AliTender.h>
 
-#include "AliTOFcalib.h"
-#include "AliTOFT0maker.h"
+#include <AliTOFcalib.h>
+#include <AliTOFT0maker.h>
+
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
+#include <AliT0CalibSeasonTimeShift.h>
 
 #include "AliTOFTenderSupply.h"
-
 
 AliTOFTenderSupply::AliTOFTenderSupply() :
   AliTenderSupply(),
   fESDpid(0x0),
   fIsMC(kFALSE),
+  fApplyT0(kFALSE),
+  fTimeZeroType(3),
+  fCorrectExpTimes(kTRUE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
   fTOFres(100.)
+
+
 {
   //
   // default ctor
   //
+
+  fT0shift[0] = 0;
+  fT0shift[1] = 0;
+  fT0shift[2] = 0;
+  fT0shift[3] = 0;
 }
 
 //_____________________________________________________
@@ -50,13 +63,22 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   AliTenderSupply(name,tender),
   fESDpid(0x0),
   fIsMC(kFALSE),
+  fApplyT0(kFALSE),
+  fTimeZeroType(3),
+  fCorrectExpTimes(kTRUE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.)
+  fTOFres(100.) 
+ 
 {
   //
   // named ctor
   //
+
+  fT0shift[0] = 0;
+  fT0shift[1] = 0;
+  fT0shift[2] = 0;
+  fT0shift[3] = 0;
 }
 
 //_____________________________________________________
@@ -89,13 +111,14 @@ void AliTOFTenderSupply::Init()
   //
   if (!fTOFCalib){
       fTOFCalib=new AliTOFcalib();
-      fTOFCalib->SetCorrectTExp(kTRUE); // apply a fine tuning on the expected times at low momenta
+      fTOFCalib->SetCorrectTExp(fCorrectExpTimes); // apply a fine tuning on the expected times at low momenta
       if(fIsMC) fTOFCalib->SetCalibrateTOFsignal(kFALSE); // no new calibration
 //      fTOFCalib->Init();
   }
   if (!fTOFT0maker) {
       fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib);
       fTOFT0maker->SetTimeResolution(fTOFres); // set TOF resolution for the PID
+      printf("tof time res = %f\n",fTOFres);
   }
 }
 
@@ -112,30 +135,76 @@ void AliTOFTenderSupply::ProcessEvent()
 
   AliESDEvent *event=fTender->GetEvent();
   if (!event) return;
-
+    
   //recalculate TOF signal
   if (fTender->RunChanged()){
     fTOFCalib->Init(fTender->GetRun());
+    
+    if(event->GetT0TOF()){ // read T0 detector correction from OCDB
+      // OCDB instance
+      AliCDBManager* ocdbMan = AliCDBManager::Instance();
+      ocdbMan->SetRun(fTender->GetRun());    
+      AliCDBEntry *entry = ocdbMan->Get("T0/Calib/TimeAdjust/");
+      if(entry) {
+	AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
+	Float_t *t0means= clb->GetT0Means();
+	//      Float_t *t0sigmas = clb->GetT0Sigmas();
+	fT0shift[0] = t0means[0];
+	fT0shift[1] = t0means[1];
+	fT0shift[2] = t0means[2];
+	fT0shift[3] = t0means[3];
+      }   
+    }
   }
   fTOFCalib->CalibrateESD(event);
+  
+  if(fIsMC){
+    Float_t t0true = fTOFT0maker->TuneForMC(event);
+    
+    if(event->GetT0TOF()){// add the t0 smearing also to the T0 detector information
+      event->SetT0TOF(0,event->GetT0TOF(0) + t0true);
+      event->SetT0TOF(1,event->GetT0TOF(1) + t0true);
+      event->SetT0TOF(2,event->GetT0TOF(2) + t0true);  
+    }
+  }
+  
+  if(event->GetT0TOF()){ // write the T0 detector corrected times
+    if(event->GetT0TOF(0) == 0) event->SetT0TOF(0, 9999999.);
+    if(event->GetT0TOF(1) == 0) event->SetT0TOF(1, 99999.);
+    if(event->GetT0TOF(2) == 0) event->SetT0TOF(2, 99999.);
 
-  if(fIsMC) fTOFT0maker->TuneForMC(event);
+    event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
+    event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
+    event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);      
 
+    if(event->GetT0TOF(0) > 9000000) event->SetT0TOF(0, 9999999.);
+    if(event->GetT0TOF(1) > 90000) event->SetT0TOF(1, 99999.);
+    if(event->GetT0TOF(2) > 90000) event->SetT0TOF(2, 99999.);
+  }
+  
   //Calculate event time zero
   fTOFT0maker->ComputeT0TOF(event);
-  fTOFT0maker->ApplyT0TOF(event);
+  fTOFT0maker->WriteInESD(event);
 
-  event->SetT0(0.0);
+  // subtract the T0-TOF information to the TOF times
+  if(fApplyT0){
+    fTOFT0maker->ApplyT0TOF(event);
+    event->SetT0(0.0);
+  }
 
   //
   // recalculate PID probabilities
   //
 
+  fESDpid->SetTOFResponse(event, (AliESDpid::EStartTimeType_t)fTimeZeroType);
+  
   Int_t ntracks=event->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     fESDpid->MakeTOFPID(event->GetTrack(itrack),0);
   }
-
+  
+  
 }
+
 
 

@@ -9,6 +9,8 @@ void SETUP()
   CheckLoadLibrary("libGeom");
   CheckLoadLibrary("libVMC");
   CheckLoadLibrary("libMinuit");
+  CheckLoadLibrary("libGui");
+  CheckLoadLibrary("libXMLParser");
   
   // Load the AliROOT library
   CheckLoadLibrary("libANALYSIS");
@@ -16,11 +18,13 @@ void SETUP()
   CheckLoadLibrary("libESD");
   CheckLoadLibrary("libCDB");
   CheckLoadLibrary("libTENDER");
-  //Load libs needed for TOFbase
+  //Load libs needed for TOF
   CheckLoadLibrary("libProof");
   CheckLoadLibrary("libRAWDatabase");
   CheckLoadLibrary("libSTEER");
   CheckLoadLibrary("libTOFbase");
+  CheckLoadLibrary("libT0base");
+  CheckLoadLibrary("libT0rec");
 
   CheckLoadLibrary("libTENDERSupplies");
   
