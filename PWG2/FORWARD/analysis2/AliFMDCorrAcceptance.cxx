@@ -1,15 +1,15 @@
 //
-// This class contains the dead channels correction 
+// This class contains the acceptance correction due to dead channels 
 // 
 //
-#include "AliFMDCorrDeadChannels.h"
+#include "AliFMDCorrAcceptance.h"
 #include <TBrowser.h>
 #include <TH2D.h>
 #include <AliLog.h>
 #include <iostream>
 
 //____________________________________________________________________
-AliFMDCorrDeadChannels::AliFMDCorrDeadChannels()
+AliFMDCorrAcceptance::AliFMDCorrAcceptance()
   : fRingArray(), 
     fVertexAxis(0,0,0)
 {
@@ -23,8 +23,8 @@ AliFMDCorrDeadChannels::AliFMDCorrDeadChannels()
   
 }
 //____________________________________________________________________
-AliFMDCorrDeadChannels::AliFMDCorrDeadChannels(const 
-					       AliFMDCorrDeadChannels& o)
+AliFMDCorrAcceptance::AliFMDCorrAcceptance(const 
+					       AliFMDCorrAcceptance& o)
   : TObject(o), 
     fRingArray(o.fRingArray), 
     fVertexAxis(o.fVertexAxis.GetNbins(), o.fVertexAxis.GetXmin(), 
@@ -40,7 +40,7 @@ AliFMDCorrDeadChannels::AliFMDCorrDeadChannels(const
   fVertexAxis.SetTitle("v_{z} [cm]");
 }
 //____________________________________________________________________
-AliFMDCorrDeadChannels::~AliFMDCorrDeadChannels()
+AliFMDCorrAcceptance::~AliFMDCorrAcceptance()
 {
   //
   // Destructor 
@@ -49,8 +49,8 @@ AliFMDCorrDeadChannels::~AliFMDCorrDeadChannels()
   fRingArray.Clear();
 }
 //____________________________________________________________________
-AliFMDCorrDeadChannels&
-AliFMDCorrDeadChannels::operator=(const AliFMDCorrDeadChannels& o)
+AliFMDCorrAcceptance&
+AliFMDCorrAcceptance::operator=(const AliFMDCorrAcceptance& o)
 {
   // 
   // Assignment operator 
@@ -68,10 +68,10 @@ AliFMDCorrDeadChannels::operator=(const AliFMDCorrDeadChannels& o)
 }
 //____________________________________________________________________
 TH2D*
-AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, Double_t v) const
+AliFMDCorrAcceptance::GetCorrection(UShort_t d, Char_t r, Double_t v) const
 {
   // 
-  // Get the dead channels correction @f$ c_{r,v}@f$ 
+  // Get the acceptance correction @f$ a_{r,v}@f$ 
   // 
   // Parameters:
   //    d  Detector number (1-3)
@@ -79,7 +79,7 @@ AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, Double_t v) const
   //    v  Primary interaction point @f$z@f$ coordinate
   // 
   // Return:
-  //    The correction @f$ c_{r,v}@f$ 
+  //    The correction @f$ a_{r,v}@f$ 
   //
   Int_t b = FindVertexBin(v);
   if (b <= 0) return 0;
@@ -87,10 +87,10 @@ AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, Double_t v) const
 }
 //____________________________________________________________________
 TH2D*
-AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, UShort_t b) const
+AliFMDCorrAcceptance::GetCorrection(UShort_t d, Char_t r, UShort_t b) const
 {
   // 
-  // Get the dead channels correction @f$ c_{r,v}@f$ 
+  // Get the acceptance correction @f$ a_{r,v}@f$ 
   // 
   // Parameters:
   //    d  Detector number (1-3)
@@ -99,7 +99,7 @@ AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, UShort_t b) const
   //           @f$z@f$ coordinate (1 based)
   // 
   // Return:
-  //    The correction @f$ c_{r,v}@f$ 
+  //    The correction @f$ a_{r,v}@f$ 
   //
   TObjArray* ringArray = GetRingArray(d, r);
   if (!ringArray) return 0;
@@ -121,7 +121,7 @@ AliFMDCorrDeadChannels::GetCorrection(UShort_t d, Char_t r, UShort_t b) const
   
 //____________________________________________________________________
 Int_t
-AliFMDCorrDeadChannels::FindVertexBin(Double_t v) const
+AliFMDCorrAcceptance::FindVertexBin(Double_t v) const
 {
   // 
   // Find the vertex bin that corresponds to the passed vertex 
@@ -147,7 +147,7 @@ AliFMDCorrDeadChannels::FindVertexBin(Double_t v) const
 }
 //____________________________________________________________________
 Int_t
-AliFMDCorrDeadChannels::GetRingIndex(UShort_t d, Char_t r) const
+AliFMDCorrAcceptance::GetRingIndex(UShort_t d, Char_t r) const
 {
   // 
   // Get the index corresponding to the given ring 
@@ -169,7 +169,7 @@ AliFMDCorrDeadChannels::GetRingIndex(UShort_t d, Char_t r) const
 }
 //____________________________________________________________________
 TObjArray*
-AliFMDCorrDeadChannels::GetRingArray(UShort_t d, Char_t r) const
+AliFMDCorrAcceptance::GetRingArray(UShort_t d, Char_t r) const
 {
   // 
   // Get the ring array corresponding to the specified ring
@@ -194,7 +194,7 @@ AliFMDCorrDeadChannels::GetRingArray(UShort_t d, Char_t r) const
 }
 //____________________________________________________________________
 TObjArray*
-AliFMDCorrDeadChannels::GetOrMakeRingArray(UShort_t d, Char_t r)
+AliFMDCorrAcceptance::GetOrMakeRingArray(UShort_t d, Char_t r)
 {
   // 
   // Get the ring array corresponding to the specified ring
@@ -223,11 +223,11 @@ AliFMDCorrDeadChannels::GetOrMakeRingArray(UShort_t d, Char_t r)
 
 //____________________________________________________________________
 Bool_t
-AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r, 
-					   UShort_t b, TH2D*  h) 
+AliFMDCorrAcceptance::SetCorrection(UShort_t d, Char_t r, 
+				    UShort_t b, TH2D*  h) 
 {
   // 
-  // Set the dead channels map correction @f$ m_{r,v}(\eta)@f$ 
+  // Set the acceptance correction @f$ a_{r,v}(\eta)@f$ 
   // Note, that the object takes ownership of the passed pointer.
   // 
   // Parameters:
@@ -235,7 +235,7 @@ AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r,
   //    r    Ring identifier (I or O)
   //    b    Bin corresponding to the primary interaction point 
   //             @f$z@f$ coordinate  (1 based)
-  //    h    @f$ m_{r,v}(\eta)@f$ 
+  //    h    @f$ a_{r,v}(\eta)@f$ 
   // 
   // Return:
   //    true if operation succeeded 
@@ -249,7 +249,7 @@ AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r,
     return false;
   }
   h->SetName(Form("FMD%d%c_vtxbin%03d", d, r, b));
-  h->SetTitle(Form("Dead Channels correction for FMD%d%c "
+  h->SetTitle(Form("Acceptance correction for FMD%d%c "
 		   "in vertex bin %d [%+8.4f,%+8.4f]", 
 		   d, r, b, fVertexAxis.GetBinLowEdge(b), 
 		   fVertexAxis.GetBinUpEdge(b)));
@@ -263,18 +263,18 @@ AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r,
 }
 //____________________________________________________________________
 Bool_t
-AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r, 
-					   Double_t v, TH2D*  h) 
+AliFMDCorrAcceptance::SetCorrection(UShort_t d, Char_t r, 
+				    Double_t v, TH2D*  h) 
 {
   // 
-  // Set the dead channels map correction @f$ m_{r,v}(\eta)@f$.
+  // Set the acceptance correction @f$ a_{r,v}(\eta)@f$.
   // Note, that the object takes ownership of the passed pointer.
   // 
   // Parameters:
   //    d    Detector number (1-3)
   //    r    Ring identifier (I or O)
   //    v    Primary interaction point @f$z@f$ coordinate  
-  //    h    @f$ m_{r,v}(\eta)@f$ 
+  //    h    @f$ a_{r,v}(\eta)@f$ 
   // 
   // Return:
   //    true if operation succeeded 
@@ -289,7 +289,7 @@ AliFMDCorrDeadChannels::SetCorrection(UShort_t d, Char_t r,
 }
 //____________________________________________________________________
 void
-AliFMDCorrDeadChannels::Browse(TBrowser* b)
+AliFMDCorrAcceptance::Browse(TBrowser* b)
 {
   // 
   // Browse this object in the browser
@@ -302,7 +302,7 @@ AliFMDCorrDeadChannels::Browse(TBrowser* b)
 }
 //____________________________________________________________________
 void
-AliFMDCorrDeadChannels::Print(Option_t* option) const
+AliFMDCorrAcceptance::Print(Option_t* option) const
 {
   // 
   // Print this object 
@@ -310,7 +310,7 @@ AliFMDCorrDeadChannels::Print(Option_t* option) const
   // Parameters:
   //    option 
   //  
-  std::cout << "Merging efficiency correction" << std::endl;
+  std::cout << "Acceptance correction due to dead channels" << std::endl;
   fRingArray.Print(option);
   fVertexAxis.Print(option);
 }
