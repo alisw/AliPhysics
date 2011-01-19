@@ -345,7 +345,8 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
    this->CalculateDifferential3pCorrelator(gIntegrated3pCorrelator); // to be improved - add relevant if statements for the min # POIs as well
 
   //3particle correlator vs ref. mult
-  f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
+   if(fCalculateVsM)
+     f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
  }
  
  // g) Reset all event-by-event quantities: 
