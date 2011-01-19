@@ -1,7 +1,6 @@
-PACKAGE = invalid-only-for-proof
+PACKAGE = PWG4JetTasks
 
-include $(ROOTSYS)/test/Makefile.arch
-include lib$(PACKAGE).pkg
+include Makefile.arch
 
 ifndef PACKCXXFLAGS
    PACKCXXFLAGS = $(CXXFLAGS)
@@ -81,6 +80,7 @@ endif
 #ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
+    ALICEINC += -I$(ALICE_ROOT)/ANALYSIS
     ALICEINC += -I$(ALICE_ROOT)/JETAN   # some extra includes
     ALICEINC += -I$(ALICE_ROOT)/PHOS
     ALICEINC += -I$(ALICE_ROOT)/EMCAL
@@ -90,10 +90,18 @@ endif
 
 CXXFLAGS += $(ALICEINC) -g
 
-SRCS         += G__$(PACKAGE).cxx
-OBJS          = $(SRCS:.cxx=.o)
+SRCS     := $(wildcard $(subst PWG4,,$(PACKAGE))/*.cxx)
+HDRS     := $(SRCS:.cxx=.h)
+DHDR     := $(PACKAGE)LinkDef.h
 
-lib$(PACKAGE).so: $(OBJS)
+DHDR_PWG4 := $(DHDR)
+HDRS_PWG4 := $(HDRS)
+SRCS_PWG4 := $(SRCS) G__$(PACKAGE).cxx
+OBJS_PWG4 := $(SRCS_PWG4:.cxx=.o)
+
+PARFILE       = $(PACKAGE).par
+
+lib$(PACKAGE).so: $(OBJS_PWG4)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(ARCH),macosx)
@@ -113,4 +121,3 @@ clean:
 G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
 	@echo "Generating dictionaries ..." $(ALICEINC)
 	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
-
