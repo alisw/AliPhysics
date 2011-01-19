@@ -9,7 +9,10 @@
 #include <TPad.h>
 #include <TFile.h>
 #include <TTree.h>
+#include <TChain.h>
 #include <TError.h>
+#include <TSystemDirectory.h>
+#include <TROOT.h>
 #include <TStyle.h>
 #include <THStack.h>
 #include <TLegend.h>
@@ -127,7 +130,7 @@ public:
   /** 
    * Run 
    * 
-   * @param file   Input file with AOD tree
+   * @param file   Input path for files with AOD trees
    * @param vzMin  Minimum interaction point z coordinate 
    * @param vzMax  Maximum interaction point z coordinate 
    * @param rebin  How many times to re-bin the @f$ dN_{ch}/d\eta@f$
@@ -139,7 +142,7 @@ public:
    * 
    * @return True on success, false otherwise 
    */
-  Bool_t Run(const char* file="AliAODs.root", 
+  Bool_t Run(const char* file=".", 
 	     Double_t vzMin=-10, Double_t vzMax=10, Int_t rebin=1,
 	     Int_t mask=AliAODForwardMult::kInel, Int_t energy=900,
 	     const char* title="", Bool_t doHHD=false, Bool_t doComp=false)
@@ -165,6 +168,129 @@ public:
 
     return kTRUE;
   }
+  //__________________________________________________________________
+  /** 
+   * Scan directory @a dir for AODs 
+   * 
+   * @param dir        Directory to scan
+   * @param chain      Chain to add to
+   * @param recursive  Whether to scan recusively 
+   */
+  void ScanDirectory(TSystemDirectory* dir, TChain* chain, bool recursive)
+  {
+    gROOT->IndentLevel();
+    printf("Scanning %s ...\n", dir->GetName());
+    gROOT->IncreaseDirLevel();
+
+    // Get list of files, and go back to old working directory
+    TString oldDir(gSystem->WorkingDirectory());
+    TList* files = dir->GetListOfFiles();
+    gSystem->ChangeDirectory(oldDir);
+
+    // Sort list of files and check if we should add it 
+    files->Sort();
+    TIter next(files);
+    TSystemFile* file = 0;
+    while ((file = static_cast<TSystemFile*>(next()))) {
+      TString name(file->GetName());
+    
+      // Ignore special links 
+      if (name == "." || name == "..") continue;
+
+      // Check if this is a directory 
+      if (file->IsDirectory()) { 
+	if (recursive) 
+	  ScanDirectory(static_cast<TSystemDirectory*>(file),chain,recursive);
+	continue;
+      }
+    
+      // If this is not a root file, ignore 
+      if (!name.EndsWith(".root")) continue;
+
+      // If this file does not contain AliESDs, ignore 
+      if (!name.Contains("AliAOD")) continue;
+    
+      // Get the path 
+      TString aod(Form("%s/%s", file->GetTitle(), name.Data()));
+
+      // Print and add 
+      gROOT->IndentLevel();
+      printf("adding %s\n", aod.Data());
+      chain->Add(aod);
+
+    }
+    gROOT->DecreaseDirLevel();
+  }
+  
+  //__________________________________________________________________
+  /** 
+   * Make a chain of AOD files 
+   * 
+   * @param aoddir     Directory so search
+   * @param recursive  Whether to scan recusively 
+   * 
+   * @return The new chain
+   */
+  TChain*
+  MakeChain(const char* aoddir, bool recursive=false)
+  {
+    // --- Our data chain ----------------------------------------------
+    TChain* chain = new TChain("aodTree");
+    
+    // --- Get list of AODs --------------------------------------------
+    // Open source directory, and make sure we go back to were we were 
+    TString oldDir(gSystem->WorkingDirectory());
+    TSystemDirectory d(aoddir, aoddir);
+    ScanDirectory(&d, chain, recursive);
+    
+    chain->GetListOfFiles()->ls();
+    if (chain->GetListOfFiles()->GetEntries() <= 0) { 
+      delete chain;
+      chain = 0;
+    }
+    return chain;
+  }
+
+  //__________________________________________________________________
+  /** 
+   * Open data.  Make a chain of all AOD files in the given path 
+   * and below.  
+   * 
+   * @param path    Path to search
+   * @param outname Output name 
+   * 
+   * @return 
+   */
+  Bool_t Open(const char* path, const char* outname) 
+  {
+    Clear("");
+    
+    // Get the AOD tree 
+    fTree = MakeChain(path, true);
+    if (!fTree) {
+      Error("Init", "Couldn't get the tree");
+      return kFALSE;
+    }
+
+    // Set the branch pointer 
+    fTree->SetBranchAddress("Forward", &fAOD);
+
+    // Set the branch pointer 
+    fTree->SetBranchAddress("ForwardMC", &fMCAOD);
+
+    // Set the branch pointer 
+    fTree->SetBranchAddress("primary", &fPrimary);
+
+    fOut = TFile::Open(outname, "RECREATE");
+    if (!fOut) { 
+      Error("Open", "Couldn't open %s", outname);
+      return kFALSE;
+    }
+    return kTRUE;
+    
+  }
+
+#if 0
   //__________________________________________________________________
   /** 
    * Open the files @a fname containg the tree with AliAODEvent objects, 
@@ -196,10 +322,12 @@ public:
     fTree->SetBranchAddress("Forward", &fAOD);
 
     // Set the branch pointer 
-    fTree->SetBranchAddress("ForwardMC", &fMCAOD);
+    if (fTree->GetBranch("ForwardMC")) 
+      fTree->SetBranchAddress("ForwardMC", &fMCAOD);
 
     // Set the branch pointer 
-    fTree->SetBranchAddress("primary", &fPrimary);
+    if (fTree->GetBranch("primary")) 
+      fTree->SetBranchAddress("primary", &fPrimary);
 
     fOut = TFile::Open(outname, "RECREATE");
     if (!fOut) { 
@@ -208,6 +336,8 @@ public:
     }
     return kTRUE;
   }
+#endif
+
   //__________________________________________________________________
   /** 
    * Process the events 
@@ -893,7 +1023,9 @@ public:
 	Int_t bin = (i-1)*rebin + j;
 	if(h->GetBinContent(bin) <= 0) continue;
 	Double_t c =  h->GetBinContent(bin);
-	Double_t w = 1 / TMath::Power(c,2);
+	
+	//Double_t w = 1 / TMath::Power(c,2);
+	Double_t w = 1 / TMath::Power(h->GetBinError(bin),2);
 	content    += c;
 	sumw       += w;
 	wsum       += w * c;
@@ -902,7 +1034,7 @@ public:
       
       if(content > 0 ) {
 	tmp->SetBinContent(i, wsum / sumw);
-	tmp->SetBinError(i,TMath::Sqrt(sumw));
+	tmp->SetBinError(i,1/TMath::Sqrt(sumw));
       }
     }
 
