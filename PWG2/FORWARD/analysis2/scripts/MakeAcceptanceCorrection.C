@@ -1,5 +1,5 @@
 //_____________________________________________________________________
-TH2* MakeOneRing(UShort_t d, Char_t r, Float_t vz, Int_t& nDead)
+TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 {
   AliFMDGeometry*   geom = AliFMDGeometry::Instance();
   AliFMDParameters* pars = AliFMDParameters::Instance();
@@ -8,15 +8,17 @@ TH2* MakeOneRing(UShort_t d, Char_t r, Float_t vz, Int_t& nDead)
   UShort_t nT = (r == 'I' || r == 'i' ? 512 : 256);
   
   // Make our two histograms 
-  TH2* hAll = new TH2D("all","All",200,-4,6,nS,0,2*TMath::Pi());
+  TH2D* hAll = new TH2D("all","All",200,-4,6,nS,0,2*TMath::Pi());
   hAll->SetXTitle("#eta");
   hAll->SetYTitle("#phi");
   hAll->Sumw2();
   hAll->SetDirectory(0);
-  TH2* hOK  = static_cast<TH2*>(hAll->Clone());
+  TH2D* hOK  = static_cast<TH2D*>(hAll->Clone());
   hOK->SetDirectory(0);
   
   // Loop over all sectors and strips in this ring 
+  Int_t nOK  = 0;
+  Int_t nAll = 0;
   for (UShort_t s = 0; s < nS; s++) { 
     for (UShort_t t = 0; t < nT; t++) { 
       // Get eta,phi by quering the geometry (first for (x,y,z), then
@@ -27,11 +29,16 @@ TH2* MakeOneRing(UShort_t d, Char_t r, Float_t vz, Int_t& nDead)
       z -= vz;
       Double_t q, eta, phi, theta;
       AliFMDGeometry::XYZ2REtaPhiTheta(x, y, z, q, eta, phi, theta);
+      if (phi < 0) phi += 2*TMath::Pi();
 
       // Check if this is a dead channel or not 
       Bool_t isDead = pars->IsDead(d, r, s, t);
       hAll->Fill(eta, phi);
-      if (!isDead) hOK->Fill(eta, phi);
+      nAll++;
+      if (!isDead) {
+	hOK->Fill(eta, phi);
+	nOK++;
+      }
       else         nDead++;
     }
   }
@@ -41,12 +48,15 @@ TH2* MakeOneRing(UShort_t d, Char_t r, Float_t vz, Int_t& nDead)
   // Clean up
   delete hAll;
 
+  Info("MakeAcceptanceCorrections","Made correction for FMD%d%c at vz=%f - "
+       "%d strips out of %d OK", d, r, vz, nOK, nAll);
+
   // Return result 
   return hOK;
 }
 
 //_____________________________________________________________________
-void MakeAcceptanceCorrection(Int_t   runNo, 
+void MakeAcceptanceCorrection(Int_t   runNo=121526, 
 			      Int_t   nVtxBins=10, 
 			      Float_t vtxLow=-10, 
 			      Float_t vtxHigh=10){
@@ -60,19 +70,26 @@ void MakeAcceptanceCorrection(Int_t   runNo,
   //TGrid::Connect("alien://",0,0,"t");
   // --- Initialisations ------------------------------------------
   //Set up CDB manager
+  Info("MakeAcceptanceCorrections","Setting up OCDB");
   AliCDBManager* cdb = AliCDBManager::Instance();
   //cdb->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
-  cdb->SetDefaultStorage("local:///home/canute/ALICE/AliRoot/OCDB");
+  cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
   cdb->SetRun(runNo);
   
+  // Get the geometry 
+  Info("MakeAcceptanceCorrections","Loading geometry");
+  AliGeomManager::LoadGeometry();
+
   // Get an initialize parameters 
+  Info("MakeAcceptanceCorrections","Intialising parameters");
   AliFMDParameters* pars = AliFMDParameters::Instance();
   pars->Init();
 
   // Get an initialise geometry 
+  Info("MakeAcceptanceCorrections","Initialising geomtry");
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
-  geom->InitTransforms();
+  geom->InitTransformations();
 
   // --- Output object -----------------------------------------------
   // Make our correction object 
@@ -82,14 +99,14 @@ void MakeAcceptanceCorrection(Int_t   runNo,
   // --- Loop over verticies and rings -------------------------------
   Int_t nDead = 0;
   Float_t dV = (vtxHigh - vtxLow) / nVtxBins;
-  for (Float_t v = vtxLow+dV/2; v < vtxHigh; v += dV) { 
+  for (Double_t v = vtxLow+dV/2; v < vtxHigh; v += dV) { 
     for(UShort_t d = 1; d <= 3;d++) { 
       UShort_t nR = (d == 1 ? 1 : 2);
       for (UShort_t q = 0; q < nR; q++) { 
 	Char_t   r  = (q == 0 ? 'I' : 'O');
 
 	// Delegate to other function 
-	TH2* ratio = MakeOneRing(d, r, v, nDead);
+	TH2D* ratio = MakeOneRing(d, r, v, nDead);
 	if (!ratio) continue;
 
 	// Set the correction 
@@ -99,10 +116,27 @@ void MakeAcceptanceCorrection(Int_t   runNo,
   }
 
   // Write to a file 
+#if 0
   TFile* out = TFile::Open(Form("acceptance_%d.root", runNo), "RECREATE");
   corr->Write("acceptance");
   out->Write();
   out->Close();
+#else 
+  Info("MakeAcceptanceCorrections","Writing to disk");
+  AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
+  TString fname = cm.GetFileName(AliForwardCorrectionManager::kAcceptance, 
+				 2, 2760, 0, false);
+  TFile* out = TFile::Open(fname.Data(), "RECREATE");
+  corr->Write(cm.GetObjectName(AliForwardCorrectionManager::kAcceptance));
+  out->Write();
+  out->Close();
+  Info("MakeAcceptanceCorrections","File %s generated.  "
+       "It should be copied to %s", fname.Data(), 
+       cm.GetFileDir(AliForwardCorrectionManager::kAcceptance));
+  out = TFile::Open(fname.Data(), "READ");
+  new TBrowser;
+#endif
+  
 }
 
 //

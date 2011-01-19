@@ -2,9 +2,9 @@
 // This class calculates the exclusive charged particle density
 // in each for the 5 FMD rings. 
 //
-#ifndef ALIFMDMCCORRECTIONS_H
-#define ALIFMDMCCORRECTIONS_H
-#include "AliFMDCorrections.h"
+#ifndef ALIFMDMCCORRECTOR_H
+#define ALIFMDMCCORRECTOR_H
+#include "AliFMDCorrector.h"
 #include <TList.h>
 class TProfile2D;
 class TH2;
@@ -34,14 +34,14 @@ class TH2;
  * @ingroup pwg2_forward_algo
  * @ingroup pwg2_forward_mc
  */
-class AliFMDMCCorrections : public AliFMDCorrections
+class AliFMDMCCorrector : public AliFMDCorrector
 {
 public:
   /** 
    * Constructor 
    */
-  AliFMDMCCorrections()
-    : AliFMDCorrections(),
+  AliFMDMCCorrector()
+    : AliFMDCorrector(),
       fFMD1i(0), 
       fFMD2i(0),
       fFMD2o(0),
@@ -54,8 +54,8 @@ public:
    * 
    * @param name Name of object
    */
-  AliFMDMCCorrections(const char* name)
-    : AliFMDCorrections(name),
+  AliFMDMCCorrector(const char* name)
+    : AliFMDCorrector(name),
       fFMD1i(0), 
       fFMD2i(0),
       fFMD2o(0),
@@ -68,8 +68,8 @@ public:
    * 
    * @param o Object to copy from 
    */
-  AliFMDMCCorrections(const AliFMDMCCorrections& o)
-    : AliFMDCorrections(o),
+  AliFMDMCCorrector(const AliFMDMCCorrector& o)
+    : AliFMDCorrector(o),
       fFMD1i(o.fFMD1i), 
       fFMD2i(o.fFMD2i),
       fFMD2o(o.fFMD2o),
@@ -80,7 +80,7 @@ public:
   /** 
    * Destructor 
    */
-  virtual ~AliFMDMCCorrections();
+  virtual ~AliFMDMCCorrector();
   /** 
    * Assignement operator
    * 
@@ -88,7 +88,7 @@ public:
    * 
    * @return Reference to this object
    */
-  AliFMDMCCorrections& operator=(const AliFMDMCCorrections&);
+  AliFMDMCCorrector& operator=(const AliFMDMCCorrector&);
   /** 
    * Initialize this object 
    * 
@@ -150,7 +150,7 @@ protected:
   TProfile2D* fFMD3o; // Comparison
   TList*      fComps; // List of comparisons 
   
-  ClassDef(AliFMDMCCorrections,1); // Calculate Nch density 
+  ClassDef(AliFMDMCCorrector,1); // Calculate Nch density 
 };
 
 #endif

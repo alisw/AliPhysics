@@ -9,6 +9,7 @@
 #include "AliFMDCorrDoubleHit.h"
 #include "AliFMDCorrVertexBias.h"
 #include "AliFMDCorrMergingEfficiency.h"
+#include "AliFMDCorrAcceptance.h"
 #include <TString.h>
 class TFile;
 
@@ -29,11 +30,13 @@ public:
     kVertexBias                = 0x04, 
     kMergingEfficiency         = 0x08,
     kDoubleHit                 = 0x10,
+    kAcceptance                = 0x20,
     kAll                       = (kSecondaryMap| 
 				  kELossFits|
 				  kVertexBias|
 				  kMergingEfficiency|
-				  kDoubleHit)
+				  kDoubleHit|
+				  kAcceptance)
   };
   /** 
    * Access to the singleton object 
@@ -113,10 +116,23 @@ public:
    * @return Get the vertex bias correction object or null 
    */
   AliFMDCorrVertexBias* GetVertexBias() const { return fVertexBias; }
+  /** 
+   * Get the merging efficiency 
+   * 
+   * 
+   * @return Get the vertex efficiency correction 
+   */
   AliFMDCorrMergingEfficiency* GetMergingEfficiency() const 
   {
     return fMergingEfficiency;
   }
+  /** 
+   * Get the acceptance correction due to dead channels 
+   * 
+   * 
+   * @return Acceptance correction due to dead channels 
+   */
+  AliFMDCorrAcceptance* GetAcceptance() const { return fAcceptance; }
   /** 
    * @{ 
    * @name Path, file, and object access utilities 
@@ -130,7 +146,7 @@ public:
    * @param field Magnetic field in the L3 magnet [kG]
    * @param mc    Whether the correction objects should be valid for MC
    * 
-   * @return The full path or null 
+   * @return The file name (sans directory) or null 
    */
   TString GetFileName(ECorrection what, 
 		      UShort_t    sys, 
@@ -142,7 +158,7 @@ public:
    * 
    * @param what Which stuff to get the path for 
    * 
-   * @return The full path or null
+   * @return The file name (sans directory) or null
    */
   TString GetFileName(ECorrection what) const;
   /** 
@@ -150,7 +166,7 @@ public:
    *
    * @param what  Which stuff to get the path for 
    * 
-   * @return The full path or null 
+   * @return The files directory full path or null 
    */
   const Char_t* GetFileDir(ECorrection what) const;
   /** 
@@ -325,6 +341,16 @@ private:
    * @return True on success, false otherwise 
    */
   Bool_t ReadMergingEfficiency(UShort_t sys, UShort_t sNN, Short_t field);
+  /** 
+   * Read in the acceptance correction due to dead-channels 
+   * 
+   * @param sys   Collision system		      
+   * @param sNN   Center of mass energy [GeV]	      
+   * @param field Magnetic field in the L3 magnet [kG]
+   * 
+   * @return True on success, false otherwise 
+   */
+  Bool_t ReadAcceptance(UShort_t sys, UShort_t sNN, Short_t field);
   /* 
    * @} 
    */
@@ -345,6 +371,7 @@ private:
   TString fSecondaryMapPath; // Path to secondary efficiency correction
   TString fDoubleHitPath;    // Path to double hit correction
   TString fVertexBiasPath;   // Path to event selection efficiency correction
+  TString fAcceptancePath;   // Path to acceptance correction from dead areas
   /* 
    * @}
    */
@@ -357,6 +384,7 @@ private:
   static const Char_t* fgkELossFitsSkel;     // Name of correction object 
   static const Char_t* fgkVertexBiasSkel;    // Name of correction object 
   static const Char_t* fgkMergingEffSkel;    // Name of correction object 
+  static const Char_t* fgkAcceptanceSkel;    // Name of correction object 
   /* 
    * @} 
    */
@@ -364,11 +392,12 @@ private:
    * @{ 
    * @name Correction objects 
    */
-  AliFMDCorrELossFit*     fELossFit;     // Energy loss fits 
-  AliFMDCorrSecondaryMap* fSecondaryMap; // Secondary particle correction
-  AliFMDCorrDoubleHit*    fDoubleHit;    // Double hit correction (low flux)
-  AliFMDCorrVertexBias*   fVertexBias;   // Vertex bias correction
-  AliFMDCorrMergingEfficiency* fMergingEfficiency;
+  AliFMDCorrELossFit*          fELossFit;     // Energy loss fits 
+  AliFMDCorrSecondaryMap*      fSecondaryMap; // Secondary particle correction
+  AliFMDCorrDoubleHit*         fDoubleHit;    // Double hit corr. (low flux)
+  AliFMDCorrVertexBias*        fVertexBias;   // Vertex bias correction
+  AliFMDCorrMergingEfficiency* fMergingEfficiency; // Merging eff. 
+  AliFMDCorrAcceptance*        fAcceptance;   // Acceptance corr. 
   /* 
    * @}
    */

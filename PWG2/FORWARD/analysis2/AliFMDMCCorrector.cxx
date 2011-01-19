@@ -15,7 +15,7 @@
 //   - AliFMDCorrVertexBias
 //   - AliFMDCorrMergingEfficiency
 //
-#include "AliFMDMCCorrections.h"
+#include "AliFMDMCCorrector.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -28,14 +28,14 @@
 #include <iostream>
 #include <iomanip>
 
-ClassImp(AliFMDMCCorrections)
+ClassImp(AliFMDMCCorrector)
 #if 0
 ; // For Emacs
 #endif 
 
 
 //____________________________________________________________________
-AliFMDMCCorrections::~AliFMDMCCorrections()
+AliFMDMCCorrector::~AliFMDMCCorrector()
 {
   // 
   // Destructor 
@@ -49,8 +49,8 @@ AliFMDMCCorrections::~AliFMDMCCorrections()
 }
 
 //____________________________________________________________________
-AliFMDMCCorrections&
-AliFMDMCCorrections::operator=(const AliFMDMCCorrections& o)
+AliFMDMCCorrector&
+AliFMDMCCorrector::operator=(const AliFMDMCCorrector& o)
 {
   // 
   // Assignement operator
@@ -61,14 +61,14 @@ AliFMDMCCorrections::operator=(const AliFMDMCCorrections& o)
   // Return:
   //    Reference to this object
   //
-  AliFMDCorrections::operator=(o);
+  AliFMDCorrector::operator=(o);
 
   return *this;
 }
 
 //____________________________________________________________________
 Bool_t
-AliFMDMCCorrections::CorrectMC(AliForwardUtil::Histos& hists,
+AliFMDMCCorrector::CorrectMC(AliForwardUtil::Histos& hists,
 			       UShort_t                vtxbin)
 {
   // 
@@ -115,7 +115,7 @@ AliFMDMCCorrections::CorrectMC(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDMCCorrections::Init(const TAxis& eAxis)
+AliFMDMCCorrector::Init(const TAxis& eAxis)
 {
   // 
   // Initialize this object 
@@ -138,7 +138,7 @@ AliFMDMCCorrections::Init(const TAxis& eAxis)
 
 //____________________________________________________________________
 TProfile2D*
-AliFMDMCCorrections::Make(UShort_t d, Char_t r, 
+AliFMDMCCorrector::Make(UShort_t d, Char_t r, 
 				const TAxis& axis) const
 {
   // 
@@ -167,7 +167,7 @@ AliFMDMCCorrections::Make(UShort_t d, Char_t r,
 }
 //____________________________________________________________________
 void
-AliFMDMCCorrections::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
+AliFMDMCCorrector::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
 {
   // 
   // Fill comparison profiles
@@ -201,7 +201,7 @@ AliFMDMCCorrections::Fill(UShort_t d, Char_t r, TH2* esd, TH2* mc)
 
 //____________________________________________________________________
 Bool_t
-AliFMDMCCorrections::CompareResults(AliForwardUtil::Histos& esd,
+AliFMDMCCorrector::CompareResults(AliForwardUtil::Histos& esd,
 					  AliForwardUtil::Histos& mc)
 {
   // 
@@ -227,7 +227,7 @@ AliFMDMCCorrections::CompareResults(AliForwardUtil::Histos& esd,
 
 //____________________________________________________________________
 void
-AliFMDMCCorrections::DefineOutput(TList* dir)
+AliFMDMCCorrector::DefineOutput(TList* dir)
 {
   // 
   // Output diagnostic histograms to directory 
@@ -235,7 +235,7 @@ AliFMDMCCorrections::DefineOutput(TList* dir)
   // Parameters:
   //    dir List to write in
   //  
-  AliFMDCorrections::DefineOutput(dir);
+  AliFMDCorrector::DefineOutput(dir);
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
 
   fComps = new TList;
