@@ -53,7 +53,7 @@ void compare_HLT_offline_grid(TString runNumber,
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
-  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE;
+  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -78,6 +78,10 @@ void compare_HLT_offline_grid(TString runNumber,
          }  
 	 if(argument.CompareTo("D0", TString::kIgnoreCase)==0){
 	   bD0 = kTRUE;
+	   continue;
+	 }  
+	 if(argument.CompareTo("CB", TString::kIgnoreCase)==0){
+	   bCB = kTRUE;
 	   continue;
 	 }  
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
@@ -140,6 +144,7 @@ void compare_HLT_offline_grid(TString runNumber,
   }
   if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
   if(bD0)     gROOT->LoadMacro("AliAnalysisTaskD0Trigger.cxx+"); 
+  if(bCB)     gROOT->LoadMacro("AliAnalysisTaskHLTCentralBarrel.cxx+");
    
   //-------------- define the tasks ------------//
   
@@ -178,6 +183,13 @@ void compare_HLT_offline_grid(TString runNumber,
     AliAnalysisDataContainer *coutputD0 =  mgr->CreateContainer("D0_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-D0-comparison.root");  
     mgr->ConnectInput(taskD0,0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskD0,1,coutputD0);
+  }
+  if(bCB){
+     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_central_barrel");
+     mgr->AddTask(taskCB);
+     AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("central_barrel_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");       
+     mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
+     mgr->ConnectOutput(taskCB,1,coutputCB);
   }
   // Enable debug printouts
   mgr->SetDebugLevel(2);
