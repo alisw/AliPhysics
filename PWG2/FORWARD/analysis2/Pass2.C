@@ -20,7 +20,7 @@
  * @ingroup pwg2_forward_scripts
  */
 void
-Pass2(const char* file="AliAODs.root", 
+Pass2(const char* file=".", 
       const char* triggers="INEL", 
       Int_t       energy=900, 
       Double_t    vzMin=-10, 
