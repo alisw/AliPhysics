@@ -41,10 +41,11 @@
 #pragma link C++ class AliFMDDensityCalculator+;
 #pragma link C++ class AliFMDDensityCalculator::RingHistos+;
 #pragma link C++ class AliFMDMCDensityCalculator+;
-#pragma link C++ class AliFMDCorrections+;
-#pragma link C++ class AliFMDCorrections::RingHistos+;
-#pragma link C++ class AliFMDMCCorrections+;
+#pragma link C++ class AliFMDCorrector+;
+#pragma link C++ class AliFMDCorrector::RingHistos+;
+#pragma link C++ class AliFMDMCCorrector+;
 #pragma link C++ class AliFMDHistCollector+;
+#pragma link C++ class AliFMDCorrAcceptance+;
 #pragma link C++ class AliFMDCorrELossFit+;
 #pragma link C++ class AliFMDCorrELossFit::ELossFit+;
 #pragma link C++ class AliFMDCorrSecondaryMap+;

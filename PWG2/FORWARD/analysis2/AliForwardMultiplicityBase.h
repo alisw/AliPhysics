@@ -10,7 +10,7 @@ class AliFMDEventInspector;
 class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
-class AliFMDCorrections;
+class AliFMDCorrector;
 class AliFMDHistCollector;
 class AliESDEvent;
 class TH2D;
@@ -128,9 +128,9 @@ public:
   /**
    * Get reference to the Corrections algorithm 
    * 
-   * @return Reference to AliFMDCorrections object 
+   * @return Reference to AliFMDCorrector object 
    */
-  virtual AliFMDCorrections& GetCorrections() = 0;
+  virtual AliFMDCorrector& GetCorrections() = 0;
   /**
    * Get reference to the HistCollector algorithm 
    * 
@@ -164,9 +164,9 @@ public:
   /**
    * Get reference to the Corrections algorithm 
    * 
-   * @return Reference to AliFMDCorrections object 
+   * @return Reference to AliFMDCorrector object 
    */
-  virtual const AliFMDCorrections& GetCorrections() const = 0;
+  virtual const AliFMDCorrector& GetCorrections() const = 0;
   /**
    * Get reference to the HistCollector algorithm 
    * 

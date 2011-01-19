@@ -1,8 +1,8 @@
 // This class calculates the exclusive charged particle density
 // in each for the 5 FMD rings. 
 //
-#ifndef ALIFMDCORRECTIONS_H
-#define ALIFMDCORRECTIONS_H
+#ifndef ALIFMDCORRECTOR_H
+#define ALIFMDCORRECTOR_H
 #include <TNamed.h>
 #include <TList.h>
 #include "AliForwardUtil.h"
@@ -32,29 +32,29 @@ class TH2D;
  *
  * @ingroup pwg2_forward_algo 
  */
-class AliFMDCorrections : public TNamed
+class AliFMDCorrector : public TNamed
 {
 public:
   /** 
    * Constructor 
    */
-  AliFMDCorrections();
+  AliFMDCorrector();
   /** 
    * Constructor 
    * 
    * @param name Name of object
    */
-  AliFMDCorrections(const char* name);
+  AliFMDCorrector(const char* name);
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliFMDCorrections(const AliFMDCorrections& o);
+  AliFMDCorrector(const AliFMDCorrector& o);
   /** 
    * Destructor 
    */
-  virtual ~AliFMDCorrections();
+  virtual ~AliFMDCorrector();
   /** 
    * Assignement operator
    * 
@@ -62,7 +62,7 @@ public:
    * 
    * @return Reference to this object
    */
-  AliFMDCorrections& operator=(const AliFMDCorrections&);
+  AliFMDCorrector& operator=(const AliFMDCorrector&);
   /** 
    * Do the calculations 
    * 
@@ -174,7 +174,7 @@ protected:
   Bool_t   fUseMergingEfficiency; // Whether to use the merging efficiency
   Int_t    fDebug;                //  Debug level 
 
-  ClassDef(AliFMDCorrections,2); // Calculate Nch density 
+  ClassDef(AliFMDCorrector,2); // Calculate Nch density 
 };
 
 #endif

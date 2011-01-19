@@ -20,9 +20,12 @@
 #include "AliAODForwardMult.h"
 #include "AliForwardCorrectionManager.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 #include <TH1.h>
 #include <TDirectory.h>
 #include <TTree.h>
+#include <TFile.h>
 
 //====================================================================
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
@@ -252,6 +255,37 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   }
   AliInfo("Fitting energy loss spectra");
   fEnergyFitter.Fit(list);
+
+  // Investigate output slot 
+  AliAnalysisDataSlot* oslot = GetOutputSlot(1);
+  if (oslot) { 
+    AliAnalysisDataContainer* ocont = oslot->GetContainer();
+    if (ocont) { 
+      TFile* ofile = ocont->GetFile();
+      if (ofile) {
+	AliInfo(Form("Output file %s opened with option %s (%s)", 
+		     ofile->GetName(), ofile->GetOption(), 
+		     ofile->IsWritable() ? "read-write" : "read-only"));
+	ofile->Flush();
+      }
+      else 
+	AliWarning("No output file associated with data container");
+    }
+    else 
+      AliWarning("No container associated with slot 1");
+  }
+  else 
+    AliWarning("Slot number 1 not defined");
+  
+  // Temporary code to save output to a file - should be disabled once 
+  // the plugin stuff works 
+  list->ls();
+  TDirectory* savdir = gDirectory;
+  TFile* tmp = TFile::Open("elossfits.root", "RECREATE");
+  list->Write(list->GetName(), TObject::kSingleKey);
+  tmp->Write();
+  tmp->Close();
+  savdir->cd();
 }
 
 //____________________________________________________________________

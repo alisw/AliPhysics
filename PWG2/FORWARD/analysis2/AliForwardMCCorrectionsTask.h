@@ -1,13 +1,13 @@
 // 
 // Calculate the corrections in the forward regions
 // 
-#ifndef ALIFORWARDCORRECTIONS_H
-#define ALIFORWARDCORRECTIONS_H
+#ifndef ALIFORWARDMCCORRECTIONS_H
+#define ALIFORWARDMCCORRECTIONS_H
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
-#include "AliFMDCorrections.h"
+#include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
 #include "AliAODForwardMult.h"
 #include <AliESDFMD.h>
