@@ -145,10 +145,13 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNormalizeNbOfCluster(kFALSE)
   ,fMaxCluster(0)
   ,fNbMaxCluster(0)
+  ,fFirstRunGain(0)
   ,fVersionGainUsed(0)
   ,fSubVersionGainUsed(0)
+  ,fFirstRunGainLocal(0)
   ,fVersionGainLocalUsed(0)
   ,fSubVersionGainLocalUsed(0)
+  ,fFirstRunVdrift(0)
   ,fVersionVdriftUsed(0) 
   ,fSubVersionVdriftUsed(0)
   ,fCalibraMode(new AliTRDCalibraMode())
@@ -224,10 +227,13 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNormalizeNbOfCluster(c.fNormalizeNbOfCluster)
   ,fMaxCluster(c.fMaxCluster)
   ,fNbMaxCluster(c.fNbMaxCluster)
+  ,fFirstRunGain(c.fFirstRunGain)
   ,fVersionGainUsed(c.fVersionGainUsed)
   ,fSubVersionGainUsed(c.fSubVersionGainUsed)
+  ,fFirstRunGainLocal(c.fFirstRunGainLocal)
   ,fVersionGainLocalUsed(c.fVersionGainLocalUsed)
   ,fSubVersionGainLocalUsed(c.fSubVersionGainLocalUsed)
+  ,fFirstRunVdrift(c.fFirstRunVdrift)
   ,fVersionVdriftUsed(c.fVersionVdriftUsed) 
   ,fSubVersionVdriftUsed(c.fSubVersionVdriftUsed)
   ,fCalibraMode(0x0)
@@ -525,7 +531,7 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
 
   // DB Setting
   // Get cal
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",AliCDBManager::Instance()->GetRun(),fVersionGainUsed,fSubVersionGainUsed);
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",fFirstRunGain,fVersionGainUsed,fSubVersionGainUsed);
   if(!entry) {
     AliError("No gain det calibration entry found");
     return kFALSE;

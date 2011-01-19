@@ -98,10 +98,13 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetVector2d(Bool_t vector2d = kTRUE)                      { fVector2d        = vector2d;          }
 	  void     SetLinearFitterOn(Bool_t linearfitteron = kTRUE)          { fLinearFitterOn      = linearfitteron;}
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
+	  void     SetFirstRunGain(Int_t firstRunGain)                       { fFirstRunGain = firstRunGain;   }
 	  void     SetVersionGainUsed(Int_t versionGainUsed)                 { fVersionGainUsed = versionGainUsed;   }
 	  void     SetSubVersionGainUsed(Int_t subVersionGainUsed)           { fSubVersionGainUsed = subVersionGainUsed;   }
+	  void     SetFirstRunGainLocal(Int_t firstRunGainLocal)             { fFirstRunGainLocal = firstRunGainLocal;   }
 	  void     SetVersionGainLocalUsed(Int_t versionGainLocalUsed)       { fVersionGainLocalUsed = versionGainLocalUsed;   }
 	  void     SetSubVersionGainLocalUsed(Int_t subVersionGainLocalUsed) { fSubVersionGainLocalUsed = subVersionGainLocalUsed;   }
+	  void     SetFirstRunVdrift(Int_t firstRunVdrift)                   { fFirstRunVdrift = firstRunVdrift;   }
 	  void     SetVersionVdriftUsed(Int_t versionVdriftUsed)             { fVersionVdriftUsed = versionVdriftUsed;   }
 	  void     SetSubVersionVdriftUsed(Int_t subVersionVdriftUsed)       { fSubVersionVdriftUsed = subVersionVdriftUsed;   }
 	
@@ -202,10 +205,13 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Float_t  fMaxCluster;             // Max amplitude of one cluster
 	  Short_t  fNbMaxCluster;           // Number of tb at the end
   // Back correction
+	  Int_t    fFirstRunGain;           // FirstRunGain 
 	  Int_t    fVersionGainUsed;        // VersionGainUsed 
 	  Int_t    fSubVersionGainUsed;     // SubVersionGainUsed
+	  Int_t    fFirstRunGainLocal;      // FirstRunGainLocal 
 	  Int_t    fVersionGainLocalUsed;   // VersionGainUsed 
 	  Int_t    fSubVersionGainLocalUsed;// SubVersionGainUsed
+	  Int_t    fFirstRunVdrift;         // FirstRunVdrift 
 	  Int_t    fVersionVdriftUsed;      // VersionVdriftUsed 
 	  Int_t    fSubVersionVdriftUsed;   // SubVersionVdriftUsed
   // Calibration mode

@@ -160,10 +160,13 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fOfflineTracks;                    // Only Offline refitted tracks
   Bool_t      fStandaloneTracks;                 // Take only standalone tracks
 
+  Int_t       fFirstRunGain;                     // FirstRunGainUsed 
   Int_t       fVersionGainUsed;                  // VersionGainUsed 
   Int_t       fSubVersionGainUsed;               // SubVersionGainUsed
+  Int_t       fFirstRunGainLocal;                // FirstRunGainLocalUsed 
   Int_t       fVersionGainLocalUsed;             // VersionGainLocalUsed 
   Int_t       fSubVersionGainLocalUsed;          // SubVersionGainLocalUsed
+  Int_t       fFirstRunVdrift;                   // FirstRunVdriftUsed 
   Int_t       fVersionVdriftUsed;                // VersionVdriftUsed 
   Int_t       fSubVersionVdriftUsed;             // SubVersionVdriftUsed
 
