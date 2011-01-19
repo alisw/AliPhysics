@@ -425,7 +425,7 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 		TString pattern = ".root";
 		TString optionQuery = "-y -m";
 		if(selectedId.GetVersion() >= 0) {
-			pattern.Prepend(Form("_v%d*",selectedId.GetVersion()));
+			pattern.Prepend(Form("_v%d_s0",selectedId.GetVersion()));
 			optionQuery = "";
 		}
 
@@ -885,22 +885,64 @@ void AliCDBGrid::QueryValidFiles()
 	TString filter;
 	MakeQueryFilter(fRun, fRun, fMetaDataFilter, filter);
 
-	TString pattern = Form("%s/Run*", fPathFilter.GetPath().Data());
+	TString path = fPathFilter.GetPath();
+
+	TString pattern = "Run*";
 	TString optionQuery = "-y";
 	if(fVersion >= 0) {
-		pattern += Form("_v%d*", fVersion);
+		pattern += Form("_v%d_s0", fVersion);
 		optionQuery = "";
 	}
 	pattern += ".root";
 	AliDebug(2,Form("pattern: %s", pattern.Data()));
 
-	AliInfo(Form("fDBFolder = %s, pattern = %s, filter = %s",fDBFolder.Data(), pattern.Data(), filter.Data()));
+	TString tempPattern = pattern;
+	TString addFolder = "";
+	if (!path.Contains("*")){
+		if (!path.BeginsWith("/")) addFolder += "/";
+		addFolder += path;
+	}
+	else{
+		if (path.BeginsWith("/")) path.Remove(0,1);
+		if (path.EndsWith("/")) path.Remove(path.Length()-1,1);	
+		TObjArray* tokenArr = path.Tokenize("/");
+		if (tokenArr->GetEntries() != 3) {
+			AliError("Not a 3 level path! Keeping old query...");
+			tempPattern = pattern.Prepend(path+"/");
+		}
+		else{
+			TString str0 = ((TObjString*)tokenArr->At(0))->String();
+			TString str1 = ((TObjString*)tokenArr->At(1))->String();
+			TString str2 = ((TObjString*)tokenArr->At(2))->String();
+			if (str0 != "*" && str1 != "*" && str2 == "*"){
+				// e.g. "ITS/Calib/*"
+				addFolder = "/"+str0+"/"+str1;
+			}
+			else if (str0 != "*" && str1 == "*" && str2 == "*"){	
+				// e.g. "ITS/*/*"
+				addFolder = "/"+str0;
+			}
+			else if (str0 == "*" && str1 == "*" && str2 == "*"){	
+				// e.g. "*/*/*"
+				// do nothing: addFolder is already an empty string;
+			}
+			else{
+				// e.g. "ITS/*/RecoParam"
+				tempPattern = pattern.Prepend(path+"/");
+			}
+		}
+		delete tokenArr; tokenArr=0;
+	}
+
+	TString folderCopy(Form("%s%s",fDBFolder.Data(),addFolder.Data()));
+
+	AliDebug(2,Form("fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), tempPattern.Data(), filter.Data()));
 
 	if (optionQuery == "-y"){
 		AliInfo("Only latest version will be returned");
 	} 
 
-	TGridResult *res = gGrid->Query(fDBFolder, pattern, filter, optionQuery.Data());  
+	TGridResult *res = gGrid->Query(folderCopy, tempPattern, filter, optionQuery.Data());  
 
 	if (!res) {
 		AliError("Grid query failed");
