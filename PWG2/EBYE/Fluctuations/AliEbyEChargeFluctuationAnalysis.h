@@ -37,12 +37,12 @@ class AliEbyEChargeFluctuationAnalysis : public TObject {
   
   AliEbyEChargeFluctuationAnalysis();
   virtual ~AliEbyEChargeFluctuationAnalysis();
-
+  
   void SetBaseAnalysis(AliEbyEEventBase * const baseAnalysis) {
     fEbyEBase = baseAnalysis;}
   AliEbyEEventBase *GetEbyEEventBaseObject() const {
     return fEbyEBase;}
-
+  
   void InitHistos();
   
   void Analyze(AliESDEvent *esd);
@@ -52,17 +52,26 @@ class AliEbyEChargeFluctuationAnalysis : public TObject {
   void Calculate(TObjArray *gTrackArray, Int_t cent);
   TList *GetListCFQA() const {return fListCFQA;}
   TList *GetListMeasureCF() const {return fListMeasureCF;}
- 
+    
+  void ReadFromFile();
   
  private:
-TList *fListCFQA;       //! Global list
-TList *fListMeasureCF;  //! List Of Mesures for Multiplisity Fluctuation
-AliEbyEEventBase *fEbyEBase;//EbyE Events base
+  
+  TList *fListCFQA;           //! Global list
+  TList *fListMeasureCF;      //! List Of Mesures for Multiplisity Fluctuation
+  AliEbyEEventBase *fEbyEBase;//! EbyE Events base
+  
+  TH1F *fhNpAverage;   
+  TH1F *fhNnAverage;   
+  TH1F *fhNCAverage;   
+  TH1F *fhNetAverage;  
+  TH1F *fhNnSNpAverage;
 
-AliEbyEChargeFluctuationAnalysis(const AliEbyEChargeFluctuationAnalysis&);            //! Not implemented
-AliEbyEChargeFluctuationAnalysis& operator=(const AliEbyEChargeFluctuationAnalysis&); //! Not implemented
-
-ClassDef(AliEbyEChargeFluctuationAnalysis,1);
+  
+  AliEbyEChargeFluctuationAnalysis(const AliEbyEChargeFluctuationAnalysis&);            //! Not implemented
+  AliEbyEChargeFluctuationAnalysis& operator=(const AliEbyEChargeFluctuationAnalysis&); //! Not implemented
+  
+  ClassDef(AliEbyEChargeFluctuationAnalysis,1);
 };
 
 #endif

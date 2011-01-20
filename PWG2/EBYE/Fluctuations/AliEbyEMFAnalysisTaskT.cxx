@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -14,67 +13,95 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/*-------------------------------------------------------------------------
- *                     AliEbyEMFAnalysisTask Class  
- *       This class deals with runing  Multiplicity Fluctuation Task 
- *                 origin: Satyajit Jena <sjena@cern.ch>
- *       MF: Multiplicity Fluctuation
- *------------------------------------------------------------------------*/
- 
- 
+/* $Id$ */
+
+#include "AliEbyEMFAnalysisTaskT.h"
+#include "Riostream.h"
 #include "TChain.h"
-#include "TString.h"
-#include "TList.h"
-#include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3D.h"
 #include "TCanvas.h"
+#include "TList.h"
+#include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliVEvent.h"
-#include "AliESD.h"
+#include "AliStack.h"
+#include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
 #include "AliAODEvent.h"
-
+#include "AliMCEvent.h"
+#include "AliMultiplicity.h"
 #include "AliEbyEMultiplicityFluctuationAnalysis.h"
-#include "AliEbyEMFAnalysisTask.h"
 #include "AliEbyEEventBase.h"
 
-ClassImp(AliEbyEMFAnalysisTask)
+
+ClassImp(AliEbyEMFAnalysisTaskT)
 
 //________________________________________________________________________
-AliEbyEMFAnalysisTask::AliEbyEMFAnalysisTask(const char *name) 
-  : AliAnalysisTaskSE(name),
+AliEbyEMFAnalysisTaskT::AliEbyEMFAnalysisTaskT() 
+:AliAnalysisTaskSE(),
   fListPhy(0),
   fEbyEMFBase(0),  
   fEvtCounter(0),
-  fECnt(0)
- 
+  fECnt(0),
+  fTree(0)
 {
-  // DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+    // Dummy constructor ALWAYS needed for I/O.
 }
 
 //________________________________________________________________________
-void AliEbyEMFAnalysisTask::UserCreateOutputObjects()
+AliEbyEMFAnalysisTaskT::AliEbyEMFAnalysisTaskT(const char *name) 
+   :AliAnalysisTaskSE(name),
+    fListPhy(0),
+    fEbyEMFBase(0),  
+    fEvtCounter(0),
+    fECnt(0),
+    fTree(0)
 {
-  fListPhy = new TList();
-
-  fEvtCounter = new TH1F("hEvtCounter","Event Statistic",50,0,50);
-  fListPhy->Add(fEvtCounter);
- 
-  // fListPhy->Add(dynamic_cast<AliEbyEEventBase*>(fEbyEMFBase->GetEbyEEventBaseObject())->GetQA());
-  fListPhy->Add(fEbyEMFBase->GetListMFQA());
-  fListPhy->Add(fEbyEMFBase->GetListMeasureMF());
-
-  PostData(1, fListPhy);
+  
+  DefineOutput(1, TList::Class());                                         
+  DefineOutput(2, TTree::Class());                                         
 }
 
 //________________________________________________________________________
-void AliEbyEMFAnalysisTask::UserExec(Option_t *) 
+AliEbyEMFAnalysisTaskT::~AliEbyEMFAnalysisTaskT()
 {
+   
+    if (fListPhy && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+        delete fListPhy;
+    }
+    if(fTree) delete fTree;
+}
 
+//________________________________________________________________________
+void AliEbyEMFAnalysisTaskT::UserCreateOutputObjects()
+{
+  
+    fListPhy = new TList();
+    fListPhy->SetOwner();  
+    fEvtCounter = new TH1F("hEvtCounter","Event Statistic",50,0,50);
+    fListPhy->Add(fEvtCounter);
+    
+    fListPhy->Add(dynamic_cast<AliEbyEEventBase*>(fEbyEMFBase->GetEbyEEventBaseObject())->GetQA());
+    fListPhy->Add(fEbyEMFBase->GetListMFQA());
+    fListPhy->Add(fEbyEMFBase->GetListMeasureMF());
+    
+    //  fTree = new TTree("thisss","mine");
+
+     fTree = fEbyEMFBase->GetFluctuationTree();
+
+    
+
+    PostData(1, fListPhy); 
+    //  PostData(2,fEbyEMFBase->GetFluctuationTree());
+     PostData(2, fTree); 
+}
+
+//________________________________________________________________________
+void AliEbyEMFAnalysisTaskT::UserExec(Option_t *) 
+{
+   
   fEvtCounter->Fill(0);  
   fECnt++;
   
@@ -95,19 +122,18 @@ void AliEbyEMFAnalysisTask::UserExec(Option_t *)
       }
 
     }
-  
 
 }
 
-//______________________________________________________________________//
-void AliEbyEMFAnalysisTask::Terminate(Option_t *) {
 
-fListPhy = dynamic_cast<TList*> (GetOutputData(1));
-  if (!fListPhy) {
-    Error("Terminate","Out Put List not available");
-    return;
-  }
+//________________________________________________________________________
+void AliEbyEMFAnalysisTaskT::Terminate(Option_t *) 
+{
+    // Draw result to screen, or perform fitting, normalizations
+    // Called once at the end of the query
+        
+  fListPhy = dynamic_cast<TList*> (GetOutputData(1));
+  if(!fListPhy) { Printf("ERROR: could not retrieve TList fOutput"); return; }
+        
 
-  Info("AliEbyEMFAnalysisTask","Multiplicity  Fluctuation Job Successfully finished");
-  
 }
