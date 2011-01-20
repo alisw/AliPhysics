@@ -61,7 +61,7 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fBeamEnergy(0.)
 {
   // Default constructor    
-
+  for(Int_t i=0; i<2; i++) fADCRes[i]=0.;
 }
 
 //____________________________________________________________________________
@@ -118,6 +118,7 @@ Bool_t AliZDCDigitizer::Init()
   // Initialize the digitizer
   
   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
+  if(!entry) AliFatal("No calibration data loaded!");  
   AliGRPObject* grpData = 0x0;
   if(entry){
     TMap* m = dynamic_cast<TMap*>(entry->GetObject());  // old GRP entry
@@ -132,7 +133,10 @@ Bool_t AliZDCDigitizer::Init()
     entry->SetOwner(0);
     AliCDBManager::Instance()->UnloadFromCache("GRP/GRP/Data");
   }
-  if(!grpData) AliError("No GRP entry found in OCDB!");
+  if(!grpData){
+    AliError("No GRP entry found in OCDB! \n ");
+    return kFALSE;
+  }
   
   TString beamType = grpData->GetBeamType();
   if(beamType==AliGRPObject::GetInvalidString()){
@@ -505,6 +509,11 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
     }
   }
+  
+  if(!zdcSignal){
+    printf("\n No spectator signal available for ZDC digitization\n");
+    return;
+  } 
   
   Int_t nentries = (Int_t) zdcSignal->GetEntries();
   

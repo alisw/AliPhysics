@@ -38,6 +38,13 @@ fDiscZEMCentralityThr(0),
 fDiscMBThreshold(0)
 {
   // Default constructor
+  for(Int_t j=0; j<4; j++){
+     fADCEMDWindow[j] = fDiscEMDWindow[j] = 0.;
+     if(j<2){
+       fADCCentralWindow[j] = fADCSemicentralWindow[j] = 0.;
+       fDiscCentralWindow[j] = fDiscSemicentralWindow[j] = 0.;
+     }
+  }
 }  
 
 //________________________________________________________________

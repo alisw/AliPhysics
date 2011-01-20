@@ -55,6 +55,11 @@ AliGenZDC::AliGenZDC()
   //
   // Default constructor
   //
+  for(Int_t i=0; i<201; i++){
+    fProbintp[i]=0.;
+    fProbintn[i]=0.;
+    fPp[i]=0.;
+  }
 }
 
 //_____________________________________________________________________________
@@ -107,7 +112,7 @@ void AliGenZDC::Generate()
   //
   Int_t i;
 
-  Double_t mass, pLab[3], fP0, fP[3], fBoostP[3], ddp[3], dddp0, dddp[3]; 
+  Double_t mass, pLab[3], fP0, fP[3], fBoostP[3], ddp[3]={0.,0.,0.}, dddp0, dddp[3]; 
   Float_t  fPTrack[3], ptot = fPMin;
   Int_t nt;
   
@@ -218,26 +223,28 @@ void AliGenZDC::ExtractFermi(Int_t id, Double_t *ddp)
 // Compute Fermi momentum for spectator nucleons
 //
   
-  Int_t i;
+  Int_t index=0;
   Float_t xx = gRandom->Rndm();
   assert ( id==kProton || id==kNeutron );
   if(id==kProton){
-    for(i=1; i<=200; i++){
+    for(Int_t i=1; i<=200; i++){
        if((xx>=fProbintp[i-1]) && (xx<fProbintp[i])) break;
-       }
+       index = i;
+    }
   }
   else {
-    for(i=0; i<=200; i++){
+    for(Int_t i=1; i<=200; i++){
        if((xx>=fProbintn[i-1]) && (xx<fProbintn[i])) break;
-       }
-   }
-         Float_t pext = fPp[i]+0.001;
-	 Float_t phi = k2PI*(gRandom->Rndm());
-	 Float_t cost = (1.-2.*(gRandom->Rndm()));
-	 Float_t tet = TMath::ACos(cost);
-	 ddp[0] = pext*TMath::Sin(tet)*TMath::Cos(phi);
-	 ddp[1] = pext*TMath::Sin(tet)*TMath::Sin(phi);
-	 ddp[2] = pext*cost;
+       index = i;
+    }
+  }
+  Float_t pext = fPp[index]+0.001;
+  Float_t phi = k2PI*(gRandom->Rndm());
+  Float_t cost = (1.-2.*(gRandom->Rndm()));
+  Float_t tet = TMath::ACos(cost);
+  ddp[0] = pext*TMath::Sin(tet)*TMath::Cos(phi);
+  ddp[1] = pext*TMath::Sin(tet)*TMath::Sin(phi);
+  ddp[2] = pext*cost;
 
   if(fDebugOpt == 1){
     printf("\n\n		Extraction of Fermi momentum\n");

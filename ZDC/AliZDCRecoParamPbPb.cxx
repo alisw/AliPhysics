@@ -134,9 +134,12 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam(Float_t beamEnergy)
   // Create high flux reco parameter
   TH1::AddDirectory(0);
   TH2::AddDirectory(0);
-  //
+  
   TFile *fileGlauberMC =  TFile::Open("$ALICE_ROOT/ZDC/GlauberMCDist.root");
-  if(!fileGlauberMC) printf(" AliZDCRecoParamPbPb::GetHighFluxParam() ERROR opening file $ALICE_ROOT/ZDC/SpectatorSignal.root\n");
+  if(!fileGlauberMC) {
+    printf(" Opening file $ALICE_ROOT/ZDC/GlauberMCDist.root failed\n");
+    return NULL;
+  }
   
   Float_t sqrtS = 2*beamEnergy;
   
@@ -157,8 +160,8 @@ AliZDCRecoParamPbPb *AliZDCRecoParamPbPb::GetHighFluxParam(Float_t beamEnergy)
   }
   else printf(" No AliZDCRecoParam provided for Pb-Pb @ sqrt(s) = %1.0f GeV\n", sqrtS);
   //
-  hNpartDist->SetDirectory(0);
-  hbDist->SetDirectory(0);
+  if(hNpartDist) hNpartDist->SetDirectory(0);
+  if(hbDist) hbDist->SetDirectory(0);
 
   AliZDCRecoParamPbPb* zdcRecoParam = new AliZDCRecoParamPbPb(hNpartDist, hbDist, 0.1);
   //

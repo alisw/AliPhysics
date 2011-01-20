@@ -57,6 +57,8 @@ AliZDCDataDCS::AliZDCDataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime,
    TTimeStamp(startTimeDCSQuery).AsString(), 
    TTimeStamp(endTimeDCSQuery).AsString()));
 
+   for(Int_t i=0; i<kNAlignDet; i++) fAlignData[i] = 0.;
+
    Init();
 
 }

@@ -99,10 +99,7 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fHits = new TClonesArray("AliZDCHit",1000);
   gAlice->GetMCApp()->AddHitList(fHits);
   
-  char sensname[5],senstitle[25];
-  sprintf(sensname,"ZDC");
-  sprintf(senstitle,"ZDC dummy");
-  SetName(sensname); SetTitle(senstitle);
+  SetName("ZDC"); SetTitle("ZDC");
 
 }
 
@@ -237,7 +234,7 @@ void AliZDC::MakeBranch(Option_t *opt)
   //
 
   char branchname[10];
-  sprintf(branchname,"%s",GetName());
+  snprintf(branchname, 10, "%s", GetName());
 
   const char *cH = strstr(opt,"H");
   
@@ -511,8 +508,10 @@ void AliZDC::Digits2Raw()
   //
   UInt_t lADCDataChannel = 0;
   
+  Int_t indADC0=0, indADC1=0, indADC2=0, indADC3=0;
+  
   // loop over digits
-  for(Int_t iDigit=0; iDigit<treeD->GetEntries(); iDigit++){
+  for(Int_t iDigit=0; iDigit<(Int_t) (treeD->GetEntries()); iDigit++){
     treeD->GetEntry(iDigit);
     if(!pdigit) continue;
     //digit.Print("");
@@ -527,7 +526,7 @@ void AliZDC::Digits2Raw()
     	 break;
        } 
       }
-      else{
+      else if(iDigit>knADCData1+knADCData2){
        if(digit.GetSector(0)==mapADC[k][2] && digit.GetSector(1)==mapADC[k][3]){
     	 lADCDataGEO = (UInt_t) mapADC[k][0];
     	 lADCDataChannel = (UInt_t) mapADC[k][1];
@@ -540,72 +539,84 @@ void AliZDC::Digits2Raw()
     //	digit.GetSector(0),digit.GetSector(1),lADCDataGEO,lADCDataChannel);
      
     if(lADCDataGEO==0){ 
-      Int_t indHG = iDigit;
-      Int_t indLG = indHG+knADCData1;
+      if(indADC0>knADCData1) AliError(" Problem with digit index 4 ADC0\n");
+      Int_t indLG = indADC0+knADCData1;
       // High gain ADC ch.	 
       if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-      lADCDataValue1[indHG] = digit.GetADCValue(0);    
-      lADCData1[indHG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 
-        	    lADCDataOvFlwHG << 12 | (lADCDataValue1[indHG] & 0xfff); 
+      lADCDataValue1[indADC0] = digit.GetADCValue(0);    
+      lADCData1[indADC0] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 
+        	    lADCDataOvFlwHG << 12 | (lADCDataValue1[indADC0] & 0xfff); 
       // Low gain ADC ch.
       if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
       lADCDataValue1[indLG] = digit.GetADCValue(1); 
       lADCData1[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
         	    lADCDataOvFlwLG << 12 | (lADCDataValue1[indLG] & 0xfff);  
+		    
+      indADC0++;
+      //
       // Ch. debug
       //printf(" lADCDataGEO %d lADCDataValue1[%d] = %d  lADCDataValue1[%d] = %d\n", 
       //  lADCDataGEO,iDigit,lADCDataValue1[indLG],indLG,lADCDataValue1[indLG]);
     }
     else if(lADCDataGEO==1){ 
-        Int_t indHG = iDigit-knADCData1;
-	Int_t indLG = indHG+knADCData2;
-        // High gain ADC ch.       
-        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-        lADCDataValue2[indHG] = digit.GetADCValue(0);    
-        lADCData2[indHG] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
-    		      lADCDataOvFlwHG << 12 | (lADCDataValue2[indHG] & 0xfff); 
-        // Low gain ADC ch.
-        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-        lADCDataValue2[indLG] = digit.GetADCValue(1); 
-        lADCData2[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
-    		      lADCDataOvFlwLG << 12 | (lADCDataValue2[indLG] & 0xfff);  
-        //Ch. debug
-        //printf(" lADCDataGEO %d  lADCDataValue2[%d] = %d  lADCDataValue2[%d] = %d\n", 
-        //  lADCDataGEO,indHG,lADCDataValue2[indHG],indLG,lADCDataValue2[indLG]);
+      if(indADC1>knADCData2) AliError(" Problem with digit index 4 ADC1\n");
+      Int_t indLG = indADC1+knADCData2;
+      // High gain ADC ch.	 
+      if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
+      lADCDataValue2[indADC1] = digit.GetADCValue(0);	 
+      lADCData2[indADC1] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
+        	    lADCDataOvFlwHG << 12 | (lADCDataValue2[indADC1] & 0xfff); 
+      // Low gain ADC ch.
+      if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
+      lADCDataValue2[indLG] = digit.GetADCValue(1); 
+      lADCData2[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
+        	    lADCDataOvFlwLG << 12 | (lADCDataValue2[indLG] & 0xfff);  
+        	  
+      indADC1++;
+      //
+      //Ch. debug
+      //printf(" lADCDataGEO %d  lADCDataValue2[%d] = %d  lADCDataValue2[%d] = %d\n", 
+      //  lADCDataGEO,indHG,lADCDataValue2[indHG],indLG,lADCDataValue2[indLG]);
     }
     else if(lADCDataGEO==2){ 
-        Int_t indHG = iDigit-knADCData1-knADCData2;
-	Int_t indLG = indHG+knADCData3;
-	// High gain ADC ch.       
-        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-        lADCDataValue3[indHG] = digit.GetADCValue(0);    
-        lADCData3[indHG] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
-    		      lADCDataOvFlwHG << 12 | (lADCDataValue3[indHG] & 0xfff); 
-        // Low gain ADC ch.
-        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-        lADCDataValue3[indLG] = digit.GetADCValue(1); 
-        lADCData3[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
-     		      lADCDataOvFlwLG << 12 | (lADCDataValue3[indLG] & 0xfff);  
-        //Ch. debug
-        //printf(" lADCDataGEO %d   lADCDataValue3[%d] = %d  lADCDataValue3[%d] = %d\n", 
-        //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
+      if(indADC2>knADCData2) AliError(" Problem with digit index 4 ADC2\n");
+      Int_t indLG = indADC2+knADCData3;
+      // High gain ADC ch.	 
+      if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
+      lADCDataValue3[indADC1] = digit.GetADCValue(0);    
+      lADCData3[indADC1] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
+        	    lADCDataOvFlwHG << 12 | (lADCDataValue3[indADC2] & 0xfff); 
+      // Low gain ADC ch.
+      if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
+      lADCDataValue3[indLG] = digit.GetADCValue(1); 
+      lADCData3[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
+        	    lADCDataOvFlwLG << 12 | (lADCDataValue3[indLG] & 0xfff);  
+        	  
+      indADC2++;
+      //
+      //Ch. debug
+      //printf(" lADCDataGEO %d   lADCDataValue3[%d] = %d  lADCDataValue3[%d] = %d\n", 
+      //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
     }
     else if(lADCDataGEO==3){ 
-        Int_t indHG = iDigit-knADCData1-knADCData2-knADCData3;
-	Int_t indLG = indHG+knADCData4;
-	// High gain ADC ch.       
-        if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
-        lADCDataValue4[indHG] = digit.GetADCValue(0);    
-        lADCData4[indHG] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
-    		      lADCDataOvFlwHG << 12 | (lADCDataValue4[indHG] & 0xfff); 
-        // Low gain ADC ch.
-        if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-        lADCDataValue4[indLG] = digit.GetADCValue(1); 
-        lADCData4[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
-    		      lADCDataOvFlwLG << 12 | (lADCDataValue4[indLG] & 0xfff);  
-        // Ch. debug
-        //printf(" lADCDataGEO %d lADCDataValue4[%d] = %d  lADCDataValue4[%d] = %d\n", 
-        //  lADCDataGEO,indHG,lADCDataValue4[indHG],indLG,lADCDataValue4[indLG]);
+      if(indADC3>knADCData3) AliError(" Problem with digit index 4 ADC2\n");
+      Int_t indLG = indADC3+knADCData4;
+      // High gain ADC ch.	 
+      if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
+      lADCDataValue4[indADC3] = digit.GetADCValue(0);    
+      lADCData4[indADC3] = lADCDataGEO << 27 | lADCDataChannel << 17 | 
+        	    lADCDataOvFlwHG << 12 | (lADCDataValue4[indADC3] & 0xfff); 
+      // Low gain ADC ch.
+      if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
+      lADCDataValue4[indLG] = digit.GetADCValue(1); 
+      lADCData4[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
+        	    lADCDataOvFlwLG << 12 | (lADCDataValue4[indLG] & 0xfff);  
+        	  
+      indADC3++;
+      //
+      // Ch. debug
+      //printf(" lADCDataGEO %d lADCDataValue4[%d] = %d  lADCDataValue4[%d] = %d\n", 
+      //  lADCDataGEO,indHG,lADCDataValue4[indHG],indLG,lADCDataValue4[indLG]);
     }		  
 
   }
@@ -626,10 +637,10 @@ void AliZDC::Digits2Raw()
   //printf("\t AliZDC::Digits2Raw -> ADCEndBlock = %d\n",lADCEndBlock);
 
   // open the output file
-  char fileName[30];
-  strcpy(fileName,AliDAQ::DdlFileName("ZDC",0));
+  TString fileName;
+  fileName.Form("%s",AliDAQ::DdlFileName("ZDC",0)); 
 
-  AliFstream* file = new AliFstream(fileName);
+  AliFstream* file = new AliFstream(fileName.Data());
 
   // write the DDL data header
   AliRawDataHeaderSim header;
@@ -733,6 +744,7 @@ Int_t AliZDC::Pedestal(Int_t Det, Int_t Quad, Int_t Res) const
   // Getting calibration object for ZDC set
   AliCDBManager *man = AliCDBManager::Instance();
   AliCDBEntry  *entry = man->Get("ZDC/Calib/Pedestals");
+  if(!entry) AliFatal("No calibration data loaded!");  
   AliZDCPedestals *calibPed = (AliZDCPedestals*) entry->GetObject();
   //
   if(!calibPed){

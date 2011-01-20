@@ -92,7 +92,11 @@ AliZDCv3::AliZDCv3() :
   //
   // Default constructor for Zero Degree Calorimeter
   //
-  
+  for(Int_t i=0; i<3; i++){
+     fDimZN[i] = fDimZP[i] = 0.;
+     fPosZNC[i] = fPosZNA[i] = fPosZPC[i]= fPosZPA[i] = fPosZEM[i] = 0.;
+     fFibZN[i] = fFibZP[i] = 0.;
+  }
 }
  
 //_____________________________________________________________________________

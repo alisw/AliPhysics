@@ -674,9 +674,9 @@ Bool_t AliZDCRawStream::Next()
         if((fBuffer & 0x07000000) != 0x06000000){
           fRawReader->AddMajorErrorLog(kZDCDataError);
         }
-        else if((fBuffer & 0x07000000) == 0x06000001){ // Corrupted event!!!
-          fIsADCEventGood = kFALSE;
-        }
+        //else if((fBuffer & 0x07000000) == 0x06000001){ // Corrupted event!!!
+        //  fIsADCEventGood = kFALSE;
+        //}
       }
     
       // If the not valid datum isn't followed by the 1st ADC header
