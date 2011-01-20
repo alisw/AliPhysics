@@ -703,3 +703,25 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse tpcResp) const{
  return;
 
 }
+//-----------------------
+Bool_t AliAODPidHF::IsTOFPiKexcluded(AliAODTrack *track,Double_t nsigmaK){
+
+
+ if(!CheckStatus(track,"TOF")) return 0;
+
+  Double_t time[AliPID::kSPECIESN];
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  AliAODPid *pidObj = track->GetDetPid();
+  pidObj->GetIntegratedTimes(time);
+  Double_t sigTOF=pidObj->GetTOFsignal();
+  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  Double_t sigmaTOFtrack;
+  if (sigmaTOFPid[3]>0) sigmaTOFtrack=sigmaTOFPid[3];
+  else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
+  
+  if((sigTOF-time[3])>nsigmaK*sigmaTOFtrack)return kTRUE;// K, Pi excluded (->LIKELY A PROTON)
+  
+  return kFALSE;
+
+}
+
