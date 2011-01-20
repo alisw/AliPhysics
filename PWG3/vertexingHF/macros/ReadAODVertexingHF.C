@@ -138,11 +138,13 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
 
+      d->GetPrimaryVtx()->Print();
+
       Bool_t unsetvtx=kFALSE;
-      if(!d->GetOwnPrimaryVtx()) {
-	d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-	unsetvtx=kTRUE;
-      }
+      //if(!d->GetOwnPrimaryVtx()) {
+      //d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      //unsetvtx=kTRUE;
+      //}
       Int_t okD0=0,okD0bar=0; 
       if(d->SelectD0(cutsD0,okD0,okD0bar)) {
 	//cout<<1e8*d->Prodd0d0()<<endl;
@@ -160,16 +162,16 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
 	  trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
 	  cout<<"references to standard AOD not available"<<endl;
 	}
-	cout<<"pt of positive track: "<<trk0->Pt()<<endl;
+	//cout<<"pt of positive track: "<<trk0->Pt()<<endl;
 
 	// make a AliNeutralTrackParam from the D0 
 	// and calculate impact parameters to primary vertex
 	AliNeutralTrackParam trackD0(d);
-	cout<<"pt of D0: "<<d->Pt()<<" (AliAODRecoDecay); "<<trackD0.Pt()<<" (track)"<<endl;
+	//cout<<"pt of D0: "<<d->Pt()<<" (AliAODRecoDecay); "<<trackD0.Pt()<<" (track)"<<endl;
 	//trackD0.Print();
 	Double_t dz[2],covdz[3];
 	trackD0.PropagateToDCA(vtx1,aod->GetMagneticField(),1000.,dz,covdz);
-	cout<<"D0 impact parameter rphi: "<<dz[0]<<" +- "<<TMath::Sqrt(covdz[0])<<endl;
+	//cout<<"D0 impact parameter rphi: "<<dz[0]<<" +- "<<TMath::Sqrt(covdz[0])<<endl;
       }
       if(unsetvtx) d->UnsetOwnPrimaryVtx();
     }
@@ -183,18 +185,18 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     for (Int_t iDstar = 0; iDstar < nDstar; iDstar++) {
       AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)arrayDstar->UncheckedAt(iDstar);
       Bool_t unsetvtx=kFALSE;
-      if(!c->GetOwnPrimaryVtx()) {
-	c->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-	c->Get2Prong()->SetOwnPrimaryVtx(vtx1);
-	unsetvtx=kTRUE;
-      }
+      //if(!c->GetOwnPrimaryVtx()) {
+      //c->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      //c->Get2Prong()->SetOwnPrimaryVtx(vtx1);
+      //unsetvtx=kTRUE;
+      //}
       if(c->SelectDstar(cutsDstar,cutsD0)) {
 	hDeltaMassDstar->Fill(c->DeltaInvMass());
 	// get daughters
 	AliAODTrack *trk = (AliAODTrack*)c->GetBachelor();
 	AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)c->Get2Prong();
-	cout<<"pt of soft pi: "<<trk->Pt()<<endl;
-	cout<<"pt of D0: "<<d->Pt()<<endl;
+	//cout<<"pt of soft pi: "<<trk->Pt()<<endl;
+	//cout<<"pt of D0: "<<d->Pt()<<endl;
       }
 
       if(unsetvtx) {
