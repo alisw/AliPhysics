@@ -731,6 +731,12 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackSA* tr,Double_t *primar
   if(otrack==0) {
     return 0;
   }
+
+  CookLabel(otrack,0.); //MI change - to see fake ratio
+  Int_t label=FindLabel(otrack);
+  otrack->SetLabel(label);
+
+
   Int_t indexc[6];
   for(Int_t i=0;i<6;i++) indexc[i]=0;
   for(Int_t nind=0;nind<otrack->GetNumberOfClusters();nind++){
@@ -957,49 +963,61 @@ Int_t AliITStrackerUpgrade::FindTrackLowChiSquare() const {
 }
 
 //__________________________________________________________
-/*Int_t AliITStrackerUpgrade::FindLabel(Int_t l0, Int_t l1, Int_t l2, Int_t l3, Int_t l4, Int_t l5){
+Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
+  //
 
-//function used to determine the track label
-  
-Int_t lb[6] = {l0,l1,l2,l3,l4,l5};
-Int_t aa[6]={1,1,1,1,1,1};
-Int_t ff=0; 
-Int_t ll=0;
-Int_t k=0;Int_t w=0;Int_t num=6;
-for(Int_t i=5;i>=0;i--) if(lb[i]==-1) num=i;
-  
-while(k<num){
-  
-for(Int_t i=k+1;i<num;i++){
-    
-if(lb[k]==lb[i] && aa[k]!=0){
-      
-aa[k]+=1;
-aa[i]=0;
-}
-}
-k++;
-}
+  Int_t labl[AliITSgeomTGeo::kNLayers][3];
+  Int_t cnts[AliITSgeomTGeo::kNLayers][3];
+  for(Int_t j=0;j<AliITSgeomTGeo::GetNLayers();j++){
+    for(Int_t k=0;k<3;k++){
+      labl[j][k]=-2;
+      cnts[j][k]=1;
+    }
+  }
+  Int_t iNotLabel=0;
+  for(Int_t i=0;i<track->GetNumberOfClusters(); i++) {
+    Int_t indexc = track->GetClusterIndex(i);
+    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(indexc);
+    AliDebug(2,Form(" cluster index %i  ",indexc));
+    Int_t iLayer=cl->GetLayer();
+    for(Int_t k=0;k<3;k++){
+      labl[iLayer][k]=cl->GetLabel(k);
+      if(labl[iLayer][k]<0) iNotLabel++;
+    }
+  }
+  if(iNotLabel==3*track->GetNumberOfClusters()) return -2;
 
-while(w<num){
- 
-for(Int_t j=0;j<6;j++){
-if(aa[w]<aa[j]){
-ff=aa[w];
-aa[w]=aa[j];
-aa[j]=ff;
-ll=lb[w];
-lb[w]=lb[j];
-lb[j]=ll;
+  for(Int_t j1=0;j1<AliITSgeomTGeo::kNLayers; j1++) {
+    for(Int_t j2=0; j2<j1;  j2++){
+      for(Int_t k1=0; k1<3; k1++){
+        for(Int_t k2=0; k2<3; k2++){
+          if(labl[j1][k1]>=0 && labl[j1][k1]==labl[j2][k2] && cnts[j2][k2]>0){
+            cnts[j2][k2]++;
+            cnts[j1][k1]=0;
+          }
+        }
+      }
+    }
+  }
+
+
+  Int_t cntMax=0;
+  Int_t label=-1;
+  for(Int_t j=0;j<AliITSgeomTGeo::kNLayers;j++){
+    for(Int_t k=0;k<3;k++){
+      if(cnts[j][k]>cntMax && labl[j][k]>=0){
+        cntMax=cnts[j][k];
+        label=labl[j][k];
+      }
+    }
+  }
+
+  Int_t lflag=0;
+  for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++)
+  if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
+  if(lflag<track->GetNumberOfClusters()) label = -label;
+  return label;
 }
-}
-w++;
-}
-  
-if(num<1) return -1; 
-return lb[num-1];
-}
-*/
 //_____________________________________________________________________________
 /*Int_t AliITStrackerUpgrade::Label(Int_t gl1, Int_t gl2, Int_t gl3, Int_t gl4, Int_t gl5, Int_t gl6,Int_t gl7, Int_t gl8, Int_t gl9, Int_t gl10,Int_t gl11,
   Int_t gl12, Int_t gl13, Int_t gl14,Int_t gl15, Int_t gl16, Int_t gl17, Int_t gl18, Int_t minNPoints){
@@ -1622,8 +1640,9 @@ AliCluster *AliITStrackerUpgrade::GetCluster(Int_t index) const {
   //       Return pointer to a given cluster
   //--------------------------------------------------------------------
   Int_t l=(index & 0xf0000000) >> 28;
+  Int_t c=(index & 0x0fffffff) >> 0;
   AliInfo(Form("index %i  cluster index %i layer %i", index,index & 0x0fffffff,index & 0xf0000000));
-  return fLayers[l]->GetCluster(index);
+  return fLayers[l]->GetCluster(c);
 }
 //______________________________________________________________________________
 Int_t AliITStrackerUpgrade::CorrectForPipeMaterial(AliITStrackMI *t, TString direction) {
@@ -1672,15 +1691,15 @@ if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 Double_t xOverX0,x0,lengthTimesMeanDensity;
 
 switch(mode) {
- case 1:
+ case 0:
    xOverX0 = AliITSRecoParam::GetdPipe();
    x0 = AliITSRecoParam::GetX0Be();
    lengthTimesMeanDensity = xOverX0*x0;
    lengthTimesMeanDensity *= dir;
    if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
    break;
- case 0:
-   if (!t->PropagateToTGeo(xToGo,1)) return 0;
+ case 1:
+   if (!t->PropagateToTGeo(xToGo,20)) return 0; // "20" removes the d0 mean shift of ~20 um -> To be understood.   
    break;
  case 2:
    if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");
