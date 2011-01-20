@@ -36,6 +36,7 @@ ClassImp(AliAlignObj)
 
 //_____________________________________________________________________________
 AliAlignObj::AliAlignObj():
+  TObject(),
   fVolPath(),
   fVolUID(0)
 {
