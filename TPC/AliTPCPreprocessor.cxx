@@ -249,8 +249,11 @@ UInt_t AliTPCPreprocessor::Process(TMap* dcsAliasMap)
   TObject * status;
 
   UInt_t dcsResult=0;
-  if (!dcsAliasMap) dcsResult=1;
-  if (dcsAliasMap->GetEntries() == 0 ) dcsResult=1;  
+  if (!dcsAliasMap) { 
+     dcsResult=1;
+  } else {
+     if (dcsAliasMap->GetEntries() == 0 ) dcsResult=1;
+  }  
   status = new TParameter<int>("dcsResult",dcsResult);
   resultArray->Add(status);
 
@@ -1319,8 +1322,9 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
 	                                 fileNameEntry->GetString().Data());
         TFile *f = TFile::Open(fileName);
         if (!f) {
-          char message[40];
-	  sprintf(message,"Error opening Altro configuration file, id = %d",id);
+	  const int mess_length=40;
+          char message[mess_length];
+	  snprintf(message,mess_length,"Error opening Altro configuration file, id = %d",id);
 	  Log (message);
 	  result =2;
 	  break;

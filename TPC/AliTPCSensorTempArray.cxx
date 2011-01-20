@@ -123,8 +123,12 @@ void AliTPCSensorTempArray::ReadSensors(const char *dbEntry)
   // Read list of temperature sensors from text file
   //
   AliCDBEntry *entry = AliCDBManager::Instance()->Get(dbEntry);
+  if (!entry) {
+     AliWarning(Form("No OCDB entry  %s available\n",dbEntry));
+     return;
+  }        
   TTree *tree = (TTree*) entry->GetObject();
-  fSensors = AliTPCSensorTemp::ReadTree(tree);
+  if (tree) fSensors = AliTPCSensorTemp::ReadTree(tree);
 
 }  
 
