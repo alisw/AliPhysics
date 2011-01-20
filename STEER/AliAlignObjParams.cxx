@@ -78,6 +78,8 @@ AliAlignObjParams::AliAlignObjParams(const AliAlignObj& theAlignObj) :
   Double_t rot[3];
   if (theAlignObj.GetAngles(rot))
     SetRotation(rot[0],rot[1],rot[2]);
+  else
+    fRotation[0]=fRotation[1]=fRotation[2]=0.;
 }
 
 //_____________________________________________________________________________
