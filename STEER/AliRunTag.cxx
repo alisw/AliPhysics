@@ -395,7 +395,7 @@ Int_t       AliRunTag::GetNEvents() const
 Int_t      AliRunTag::GetFileId(const char *guid)
 {
   for (int iter=0; iter<fNumFiles; iter++) {
-    if (strcmp(((AliFileTag *) fFileTags[iter])->GetGUID(), guid))
+    if (!strcmp(((AliFileTag *) fFileTags[iter])->GetGUID(), guid))
       return iter;
   }
   return -1;

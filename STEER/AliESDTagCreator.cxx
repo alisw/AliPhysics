@@ -278,6 +278,7 @@ void AliESDTagCreator::CreateTag(TChain* chain, const char *type) {
     }
     else {
       AliFileTag *nftag = new AliFileTag();
+      nftag->SetGUID(fguid);
 
 //       if(fSession == "grid") {
 // 	TString fturltemp = "alien://"; fturltemp += url->GetFile();
@@ -677,7 +678,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   AliDebug(1, Form("writing tags to file %s", fileName));
  
   TFile* ftag = TFile::Open(fileName, "recreate");
- 
+  
   AliRunTag *tag = new AliRunTag();
   AliEventTag *evTag = new AliEventTag();
   TTree * ttag = new TTree("T","A Tree with event tags");
