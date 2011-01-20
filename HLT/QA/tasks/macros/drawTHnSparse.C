@@ -3,7 +3,9 @@
  * Drawing macro for reading the THnSparse output of the 
  * HLT/QA/tasks/AliAnalysisTaskHLTCentralBarrel.cxx task.
  * 
- * The cuts are user defined as arguments of the function.
+ * The cuts are user defined in lines 156-158 as arguments of the 
+ * function cutStsudies(...).
+ * 
  * The input file contains information about the run number
  * and date that will appear in the canvas title.
  * 
@@ -14,50 +16,129 @@
  * Since the run information is available, there will be a new
  * folder created and the canvas ROOT files will be saved in there.
  *
+ * The macro should be compiled before running:
+ *
+ * root[0] .L drawTHnSparse.C++
+ * root[1] drawTHnSparse("../HLT-OFFLINE-CentralBarrel-comparison.root")
+ *
  * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no 
  */
 
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TSystem.h"
+#include "TROOT.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TList.h"
+#include "THnSparse.h"
+#include "TCanvas.h"
+#include "TText.h"
+#include "TPaveText.h"
+#include "TPaveStats.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TLegend.h"
+#include "TStyle.h"
+
+#include <iostream>
+#include <sstream>
+
+using std::stringstream;
+using std::endl;
+#endif
+
+void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+                    THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
+            	    double minEta,   double maxEta,
+	    	    int minTrackMult,int maxTrackMult,
+            	    double minPt,    double maxPt,
+	    	    double minDCAr,  double maxDCAr,
+	    	    double minDCAz,  double maxDCAz,
+	    	    int minTPCclus,  int maxTPCclus,
+	    	    int minITSclus,  int maxITSclus,
+		    int vertexStatus
+                  );
+void printStats(TH1D *hlt, TH1D *off);
+void defineYaxisMax(TH1D *hlt, TH1D *off);
+void printLegend(TLegend *l, TH1D *hlt, TH1D *off);
+void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size);	   
+void plot2D(TCanvas* can, THnSparse* h,
+            double minEta,    double maxEta,
+            double minPt,     double maxPt,
+	    double minDCAr,   double maxDCAr,
+	    double minDCAz,   double maxDCAz,
+	    int minTPCclus,   int maxTPCclus,
+	    int minITSclus,   int maxITSclus, 
+ 	    int minTrackMult, int maxTrackMult
+           );
+void plotEventQuantities(TCanvas* can, THnSparse* heventHLT, THnSparse* heventOFF, TText* hText);
+TString fix1DTitle(const char* c);
+TString fix2DTitle(const char* c1, const char* c2);
+TString cutsToString( double minEta,	double maxEta,
+ 	              double minPt,	double maxPt,
+	   	      double minDCAr,	double maxDCAr,
+	   	      double minDCAz,	double maxDCAz,
+	   	      int minTPCclus,	int maxTPCclus,
+	   	      int minITSclus,	int maxITSclus, 
+	              int minTrackMult, int maxTrackMult,
+		      int VS
+	            );
+TString itoa(int i);
+void plotTrackQuantities( TCanvas* can, THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
+           	    	  double minEta,    double maxEta,
+ 	                  double minPt,     double maxPt,
+	   	    	  double minDCAr,   double maxDCAr,
+	   	    	  double minDCAz,   double maxDCAz,
+	   	    	  int minTPCclus,   int maxTPCclus,
+	   	    	  int minITSclus,   int maxITSclus, 
+	                  int minTrackMult, int maxTrackMult,
+			  int VS
+                        );
+
+//------------------------------------------------------------------//		
+//--------------- end of function declarations ---------------------//
+//------------------------------------------------------------------//
+			
 void drawTHnSparse(TString inputFile){
  
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetOptStat(10);
-  //gROOT->ForceStyle();
   TH1::AddDirectory(kFALSE);
 
   TFile *file = TFile::Open(inputFile);
   if(!file){
-    printf("Error: No file %s in folder.\n", inputFile);
+    printf("Error: No file %s in folder.\n", inputFile.Data());
     return;
   }
 
   TList *list = static_cast<TList*>(file->Get("esd_thnsparse"));
   if(!list){
-    printf("Error: No List contained in file %s.\n", inputFile);
+    printf("Error: No List contained in file %s.\n", inputFile.Data());
     return;
   }
 
-  THnSparseF *heventHLT = (THnSparse*)list->FindObject("fEventHLT"); 
+  THnSparseF *heventHLT = (THnSparseF*)list->FindObject("fEventHLT"); 
   if(!heventHLT){
-      printf("Error: There is no HLT THnSparse object in file %s\n", inputFile);
+      printf("Error: There is no HLT THnSparse object in file %s\n", inputFile.Data());
   }
-  THnSparseF *heventOFF = (THnSparse*)list->FindObject("fEventOFF");  
+  THnSparseF *heventOFF = (THnSparseF*)list->FindObject("fEventOFF");  
   if(!heventOFF){
-      printf("Error: There is no OFF THnSparse object in file %s\n", inputFile);
+      printf("Error: There is no OFF THnSparse object in file %s\n", inputFile.Data());
   } 
-  THnSparseF *htrackHLT = (THnSparse*)list->FindObject("fTrackHLT");
+  THnSparseF *htrackHLT = (THnSparseF*)list->FindObject("fTrackHLT");
   if(!htrackHLT){
       printf("Error: No HLT THnSparse object found\n");
       return;
   } 
-  THnSparseF *htrackOFF = (THnSparse*)list->FindObject("fTrackOFF");  
+  THnSparseF *htrackOFF = (THnSparseF*)list->FindObject("fTrackOFF");  
   if(!htrackOFF){
       printf("Error: No OFF THnSparse object found\n");
       return;
   }
       
-  TText *hText = list->FindObject("text");
+  TText *hText = (TText*)list->FindObject("text");
   if(!hText) printf("No hText\n");
   
   TString t = "event properties for ";
@@ -78,25 +159,26 @@ void drawTHnSparse(TString inputFile){
   plotEventQuantities(can0,heventHLT,heventOFF,hText);
   can0->SaveAs(folder+"/event_properties.root");
   can0->SaveAs(folder+"/event_properties.png");
+    
+  cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000,   0, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);    
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0.4, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);
+  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0.9, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);
   
-  cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 200, 0, 6, 2);
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 160, 0, 6, 2);
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 140, 0, 6, 2);
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0, 100, 0, 6, 2);
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80, 0,  50, 0, 6, 2);
+  file->Close();    
 }
 
+//TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
 void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
-                 THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
-            	 double minEta,   double maxEta,
-	    	 int minTrackMult,int maxTrackMult,
-            	 double minPt,    double maxPt,
-	    	 double minDCAr,  double maxDCAr,
-	    	 double minDCAz,  double maxDCAz,
-	    	 int minTPCclus,  int maxTPCclus,
-	    	 int minITSclus,  int maxITSclus,
-		 int vertexStatus
-               )
+                    THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
+            	    double minEta,   double maxEta,
+	    	    int minTrackMult,int maxTrackMult,
+            	    double minPt,    double maxPt,
+	    	    double minDCAr,  double maxDCAr,
+	    	    double minDCAz,  double maxDCAz,
+	    	    int minTPCclus,  int maxTPCclus,
+	    	    int minITSclus,  int maxITSclus,
+		    int vertexStatus
+                  )
 {
   plotTrackQuantities(can1, htrackHLT, htrackOFF, hText, 
                       minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
@@ -108,8 +190,6 @@ void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
   TString cuts = cutsToString(minEta, maxEta, minPt, maxPt, minDCAr, maxDCAr, minDCAz, maxDCAz, minTPCclus, maxTPCclus, 
                               minITSclus, maxITSclus, minTrackMult, maxTrackMult, vertexStatus);
 
-  //can0->SaveAs(folder+"/event_properties_"+cuts+".root");
-  //can0->SaveAs(folder+"/event_properties_"+cuts+".png");
   can1->SaveAs(folder+"/track_properties_"+cuts+".root");
   can1->SaveAs(folder+"/track_properties_"+cuts+".png");  
   can2->SaveAs(folder+"/HLT_2D_track_correlations_"+cuts+".root");
@@ -117,7 +197,7 @@ void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
   can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".root");
   can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".png");
   
-  return;
+  return; //folder+"/track_properties_"+cuts+".root";
 }
 
 void printStats(TH1D *hlt, TH1D *off){  
@@ -178,11 +258,11 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
    hOFF->GetAxis(10)->SetRangeUser(minITSclus, maxITSclus);
    hOFF->GetAxis(11)->SetRangeUser(minTrackMult, maxTrackMult);
    if(VS!=2) hOFF->GetAxis(12)->SetRangeUser(VS,VS);
-  
+       
    for(int i=0; i<size; i++){
   
-      hlt = hHLT->Projection(i);
-      off = hOFF->Projection(i); 
+      hlt = hHLT->Projection(i); if(!hlt){ printf("plotAid: empty HLT histogram\n"); continue; }
+      off = hOFF->Projection(i); if(!off){ printf("plotAid: empty OFF histogram\n"); continue; }
       
       hlt->SetTitle(fix1DTitle(hHLT->Projection(i)->GetTitle())); 
    
@@ -201,8 +281,8 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
       }
         
       defineYaxisMax(hlt, off);
-      //off->SetLineColor(2);
-      off->SetLineStyle(2);
+      off->SetLineColor(2);
+      //off->SetLineStyle(2);
      
       can->cd(i+1);
       hlt->Draw();
@@ -227,7 +307,7 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
     	 
     	 pave->Draw();
     	 can->Update();
-      }
+      }      
    } 
 }
 
@@ -255,7 +335,8 @@ void plot2D(TCanvas* can, THnSparse* h,
   TH2D *ht = h->Projection(1,0);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(0)->GetTitle()));
 
-  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  TString s = "";
+  s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
   ht->SetXTitle(s);
   ht->Draw("colz");
   
@@ -267,44 +348,44 @@ void plot2D(TCanvas* can, THnSparse* h,
   can->cd(3);
   ht = h->Projection(1,5);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(5)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(5)->GetTitle())+" (cm)";
+  s = fix1DTitle(h->Projection(5)->GetTitle())+" (cm)";
   ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(4);
   ht = h->Projection(1,6);
   ht->SetTitle(fix2DTitle(h->Projection(1)->GetTitle(), h->Projection(6)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
   ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(5);
   ht = h->Projection(6,0);
   ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(0)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
   ht->SetXTitle(s);
-  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
   ht->SetYTitle(s);
   ht->Draw("colz");
   
   can->cd(6);
   ht = h->Projection(6,3);
   ht->SetTitle(fix2DTitle(h->Projection(6)->GetTitle(), h->Projection(3)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
+  s = fix1DTitle(h->Projection(6)->GetTitle())+" (cm)";
   ht->SetYTitle(s);
   ht->Draw("colz");
   
   can->cd(7);
   ht = h->Projection(3,0);
   ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(0)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
+  s = fix1DTitle(h->Projection(0)->GetTitle())+" (GeV/c)";
   ht->SetXTitle(s);
   ht->Draw("colz");
   
   can->cd(8);
   ht = h->Projection(3,4);
   ht->SetTitle(fix2DTitle(h->Projection(3)->GetTitle(), h->Projection(4)->GetTitle()));
-  TString s = fix1DTitle(h->Projection(4)->GetTitle())+" (rad)";
+  s = fix1DTitle(h->Projection(4)->GetTitle())+" (rad)";
   ht->SetXTitle(s);
   ht->Draw("colz"); 
 }
