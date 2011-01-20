@@ -69,6 +69,7 @@ AliAnalysisTaskSE("Task CFits"),
   fMaxChi2Clu(2.5),
   fNSigmaDCAxy(7.),
   fNSigmaDCAz(7.),
+  fEtaRange(0.8),
   fLowMult(0),
   fUpMult(9999),
   fYear(2010),
@@ -589,7 +590,6 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     pdgPart = part->GetPDG();
     if(!pdgPart)continue;
     if(pdgPart->Charge()==0) continue; //no neutral particles
-    if(TMath::Abs(part->Eta()) > 0.9) continue; //pseudorapidity-acceptance cut
     if(part->Energy() != TMath::Abs(part->Pz())) yMC = 0.5*TMath::Log((part->Energy()+part->Pz())/(part->Energy()-part->Pz()));
     if(TMath::Abs(yMC) > fMaxY) continue; //rapidity cut
     if(pdgPart->Charge()>0) signMC=1;
@@ -755,7 +755,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     countBinTrk++;  
     
     //pseudorapidity and rapidity
-    if(TMath::Abs(track->Eta()) > 0.9) continue;
+    if(TMath::Abs(track->Eta()) > fEtaRange) continue;
     
     label="eta";
     fHistNTracks->Fill(countBinTrk);
