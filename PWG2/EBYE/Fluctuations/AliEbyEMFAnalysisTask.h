@@ -12,7 +12,6 @@
  * 
  *------------------------------------------------------------------------*/
 
-
 class TString;
 class TH1F;
 class TH2F;
@@ -21,7 +20,7 @@ class TList;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliEbyEEventBase;
+//class AliEbyEEventBase;
 class AliEbyEMultiplicityFluctuationAnalysis;
 
 class  AliEbyEMFAnalysisTask: public AliAnalysisTaskSE {
@@ -35,6 +34,8 @@ class  AliEbyEMFAnalysisTask: public AliAnalysisTaskSE {
  
   void SetAnalysisObject(AliEbyEMultiplicityFluctuationAnalysis *const analysis) { fEbyEMFBase = analysis;}
 
+ 
+
  private:
 
   TList *fListPhy;
@@ -42,7 +43,7 @@ class  AliEbyEMFAnalysisTask: public AliAnalysisTaskSE {
   AliEbyEMultiplicityFluctuationAnalysis *fEbyEMFBase;
   TH1F *fEvtCounter;
   Int_t fECnt;
-    
+ 
   AliEbyEMFAnalysisTask(const AliEbyEMFAnalysisTask&); 
   AliEbyEMFAnalysisTask& operator=(const AliEbyEMFAnalysisTask&); 
   
