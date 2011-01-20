@@ -56,13 +56,15 @@ AliEbyECFAnalysisTask::AliEbyECFAnalysisTask(const char *name)
 }
 
 //________________________________________________________________________
-void AliEbyECFAnalysisTask::UserCreateOutputObjects()
-{
+void AliEbyECFAnalysisTask::UserCreateOutputObjects() {
+  //
   fListPhy = new TList();
 
   fEvtCounter = new TH1F("hEvtCounter","Event Statistic",50,0,50);
   fListPhy->Add(fEvtCounter);
  
+ 
+
   fListPhy->Add(dynamic_cast<AliEbyEEventBase*>(fEbyECFBase->GetEbyEEventBaseObject())->GetQA());
   fListPhy->Add(fEbyECFBase->GetListCFQA());
   fListPhy->Add(fEbyECFBase->GetListMeasureCF());
@@ -71,9 +73,8 @@ void AliEbyECFAnalysisTask::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliEbyECFAnalysisTask::UserExec(Option_t *) 
-{
-
+void AliEbyECFAnalysisTask::UserExec(Option_t *) {
+  //
   fEvtCounter->Fill(0);  
   fECnt++;
   
@@ -99,7 +100,7 @@ void AliEbyECFAnalysisTask::UserExec(Option_t *)
 
 //______________________________________________________________________//
 void AliEbyECFAnalysisTask::Terminate(Option_t *) {
-
+  //
 fListPhy = dynamic_cast<TList*> (GetOutputData(1));
   if (!fListPhy) {
     Error("Terminate","Out Put List not available");
