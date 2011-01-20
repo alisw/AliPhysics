@@ -110,7 +110,7 @@ class AliAODPidHF : public AliAODPid{
  
 
 
- ClassDef(AliAODPidHF,6) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,7) // AliAODPid for heavy flavor PID
 
 };
 
