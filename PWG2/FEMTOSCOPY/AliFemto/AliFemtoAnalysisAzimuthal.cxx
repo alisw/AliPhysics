@@ -190,20 +190,6 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
   // Perform event processing in bins of z vertex, multiplicity and Reaction Plane angle
   // cout << " AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) " << endl;
 
-  // get right mixing buffer
-  double vertexZ = hbtEvent->PrimVertPos().z();
-  double mult = hbtEvent->UncorrectedNumberOfPrimaries();
-  //double rpangle = GetQVector() // Not possible at the moment to get rpangle for mixing wrt RP
-  
-  fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,fPsi); 
-  if (!fMixingBuffer) {
-    if ( vertexZ < fVertexZ[0] ) fUnderFlowVertexZ++;
-    if ( vertexZ > fVertexZ[1] ) fOverFlowVertexZ++;
-    if ( mult < fMult[0] ) fUnderFlowMult++;
-    if ( mult > fMult[1] ) fOverFlowMult++;
-    return;
-  }
-
   //****from AliFemtoSimpleAnalysis****
 
   fPicoEvent=0; // we will get a new pico event, if not prevent corr. fctn to access old pico event
@@ -226,8 +212,24 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
     fPicoEvent = new AliFemtoPicoEvent; // this is what we will make pairs from and put in Mixing Buffer, no memory leak. we will delete picoevents when they come out of the mixing buffer
     FillHbtParticleCollection(fFemtoParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->FirstParticleCollection());
     FillHbtParticleCollection(fFlowParticleCut,(AliFemtoEvent*)hbtEvent,fPicoEvent->SecondParticleCollection());
-
-    cout << "#particles in Collection: " << fPicoEvent->FirstParticleCollection()->size() << endl;
+    
+      // get right mixing buffer
+  double vertexZ = hbtEvent->PrimVertPos().z();
+  double mult = hbtEvent->UncorrectedNumberOfPrimaries();
+  TVector2 Q = GetQVector(fPicoEvent->SecondParticleCollection());
+  double Psi=Q.Phi()/2.;
+  if (Psi > TMath::Pi()) Psi -= TMath::Pi();
+      
+   fMixingBuffer = fPicoEventCollectionVectorHideAway->PicoEventCollection(vertexZ,mult,fPsi); 
+  if (!fMixingBuffer) {
+    if ( vertexZ < fVertexZ[0] ) fUnderFlowVertexZ++;
+    if ( vertexZ > fVertexZ[1] ) fOverFlowVertexZ++;
+    if ( mult < fMult[0] ) fUnderFlowMult++;
+    if ( mult > fMult[1] ) fOverFlowMult++;
+    return;
+  }   
+    
+    //cout << "#particles in Collection: " << fPicoEvent->FirstParticleCollection()->size() << endl;
     
     //switch which allows only using events with ParticleCollections containing a minimum number of entries
     if (fPicoEvent->FirstParticleCollection()->size() >= fMinSizePartCollection ) {
@@ -236,7 +238,7 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
 
       //------ Make real pairs (assume identical) ------//
       MakePairs("real", fPicoEvent->FirstParticleCollection() );
-      cout << "AliFemtoAnalysisAzimuthal::ProcessEvent() - reals done ";
+      //cout << "AliFemtoAnalysisAzimuthal::ProcessEvent() - reals done ";
 
       //---- Make pairs for mixed events, looping over events in mixingBuffer ----//
       AliFemtoPicoEvent* storedEvent;
@@ -246,7 +248,7 @@ void AliFemtoAnalysisAzimuthal::ProcessEvent(const AliFemtoEvent* hbtEvent) {
         MakePairs("mixed",fPicoEvent->FirstParticleCollection(),
                             storedEvent->FirstParticleCollection() );
       }
-      cout << " - mixed done   " << endl;
+      //cout << " - mixed done   " << endl;
 
       //--------- If mixing buffer is full, delete oldest event ---------//
       if ( MixingBufferFull() ) {
