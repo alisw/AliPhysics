@@ -71,8 +71,6 @@
 #include "AliFlowCommonConstants.h"
 #include "AliAnalysisTaskFlowEvent.h"
 
-#include "AliESDpid.h"
-
 #include "AliLog.h"
 
 ClassImp(AliAnalysisTaskFlowEvent)
@@ -123,8 +121,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV2(0.),
   fV3(0.),
   fV4(0.),
-  fMyTRandom3(NULL),
-  fESDpid(NULL)
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent()"<<endl;
@@ -176,8 +173,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV2(0.),
   fV3(0.),
   fV4(0.),
-  fMyTRandom3(NULL),
-  fESDpid(NULL)
+  fMyTRandom3(NULL)
 {
   // Constructor
   cout<<"AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, Bool_t on, UInt_t iseed)"<<endl;
@@ -192,9 +188,6 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   //Candidates input slot
   if( fLoadCandidates )
     DefineInput(availableINslot, TObjArray::Class());
-
-  //PID
-  fESDpid=new AliESDpid();
 
   // Define output slots here
   // Define here the flow event output
@@ -217,7 +210,6 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   // Destructor
   //
   delete fMyTRandom3;
-  delete fESDpid;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
 
@@ -245,44 +237,6 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     AliError("WRONG ANALYSIS TYPE! only ESD, ESDMCkineESD, ESDMCkineMC, AOD, MC and AUTOMATIC are allowed.");
     exit(1);
   }
-
-  //PID
-  if (fCutsRP->GetParamType()==AliFlowTrackCuts::kMC)
-  {
-    fESDpid->GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
-                                                       1.75295e+01,
-                                                       3.40030e-09,
-                                                       1.96178e+00,
-                                                       3.91720e+00);
-  }
-  else
-  {
-    fESDpid->GetTPCResponse().SetBetheBlochParameters( 0.0283086,
-                                                       2.63394e+01,
-                                                       5.04114e-11,
-                                                       2.12543e+00,
-                                                       4.88663e+00 );
-  }
-
-  // Added by F. Noferini for TOF PID
-  // F. Noferini personal tuning for DATA
-  if(0){
-    Double_t AlephParameters[5];
-    
-    AlephParameters[0] = 4.36414e-02;
-    AlephParameters[1] = 1.75977e+01;
-    AlephParameters[2] = 1.14385e-08;
-    AlephParameters[3] = 2.27907e+00;
-    AlephParameters[4] = 3.36699e+00;
-    
-    Float_t mip = 49;
-    fESDpid->GetTPCResponse().SetBetheBlochParameters(AlephParameters[0],AlephParameters[1],AlephParameters[2],AlephParameters[3],AlephParameters[4]);
-    fESDpid->GetTPCResponse().SetMip(mip);
-  }
-  // End F. Noferini added part
-
-  fCutsRP->SetESDpid(fESDpid);
-  fCutsPOI->SetESDpid(fESDpid);
 
   //set the common constants
   AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
@@ -317,11 +271,6 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliESDPmdTrack* pmdtracks = NULL;//pmd      
   TH2F* histFMD = NULL;
 
-  // Added by F. Noferini for TOF PID
-  fESDpid->SetTOFResponse(myESD,AliESDpid::kTOF_T0);
-  fESDpid->MakePID(myESD,kFALSE);
-  // End F. Noferini added part
-
   int availableINslot=1;
   if(strcmp(fRPType,"FMD")==0) {
     TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
@@ -335,7 +284,6 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       exit(2);
     }
   }
-
 
   if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
   {
@@ -352,8 +300,6 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     //first attach all possible information to the cuts
     fCutsRP->SetEvent( InputEvent(), MCEvent() );  //attach event
     fCutsPOI->SetEvent( InputEvent(), MCEvent() );
-    fCutsRP->SetESDpid(fESDpid);
-    fCutsPOI->SetESDpid(fESDpid);
 
     //then make the event
     flowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );

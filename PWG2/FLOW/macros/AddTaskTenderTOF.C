@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kTRUE,Bool_t applyT0=kFALSE){
+AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE,Bool_t applyT0=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

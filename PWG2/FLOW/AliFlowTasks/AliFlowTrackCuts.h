@@ -15,6 +15,7 @@
 #include "TMCProcess.h"
 #include "AliESDtrack.h"
 #include "AliPID.h"
+#include "AliESDpid.h"
 
 class TObjArray;
 class AliVParticle;
@@ -23,7 +24,6 @@ class AliFlowTrack;
 class AliMCEvent;
 class AliVEvent;
 class AliMultiplicity; 
-class AliESDpid;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -99,10 +99,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TObjArray* GetQA() const {return fQA;}
 
   //MC stuff
-  void SetCutMC( Bool_t b=kTRUE ) {fCutMC=b;}
-  void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; fCutMC=kTRUE;}
-  void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; fCutMC=kTRUE;}
-  void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; fCutMC=kTRUE; }
+  void SetCutMC( Bool_t b=kTRUE );
+  void SetMCprocessType( TMCProcess t ) { fMCprocessType = t; fCutMCprocessType=kTRUE; SetCutMC();}
+  void SetMCisPrimary( Bool_t b ) { fMCisPrimary=b; fCutMCisPrimary=kTRUE; SetCutMC();}
+  void SetMCPID( Int_t pid ) { fMCPID=pid; fCutMCPID=kTRUE; SetCutMC(); }
   TMCProcess GetMCprocessType() const { return fMCprocessType; }
   Bool_t GetMCisPrimary() const {return fMCisPrimary;}
   Int_t GetMCPID() const {return fMCPID;}
@@ -123,7 +123,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   
   void SetMCevent(AliMCEvent* mcEvent) {fMCevent=mcEvent;}
   AliMCEvent* GetMCevent() const {return fMCevent;}
-  void SetEvent(AliVEvent* event, AliMCEvent* mcEvent=NULL) {Clear();fEvent=event;fMCevent=mcEvent;}
+  void SetEvent(AliVEvent* event, AliMCEvent* mcEvent=NULL);
   AliVEvent* GetEvent() const {return fEvent;}
   Int_t GetNumberOfInputObjects() const;
   TObject* GetInputObject(Int_t i);
@@ -131,10 +131,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //PID
   void SetPID(AliPID::EParticleType pid, PIDsource s=kTPCTOFpid) {fAliPID=pid; fPIDsource=s; fCutPID=kTRUE; InitPIDcuts();}
-  void SetESDpid(AliESDpid* o) {fESDpid=o;}
   void SetTPCTOFpidCrossOverPt(Double_t pt) {fTPCTOFpidCrossOverPt=pt;}
   void SetTPCpidCuts(TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
   void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
+  AliESDpid& GetESDpid() {return fESDpid;}
 
  protected:
   Bool_t PassesCuts(AliVParticle* track);
@@ -195,7 +195,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliESDtrack fTPCtrack;             //!placeholder for TPC only track to avoid new/delete on every track
 
   //PID
-  AliESDpid* fESDpid; //pid obj
+  AliESDpid fESDpid; //pid obj
   PIDsource fPIDsource; //pid source
   TMatrixF* fTPCpidCuts; //tpc pid cuts
   TMatrixF* fTOFpidCuts; //tof pid cuts
