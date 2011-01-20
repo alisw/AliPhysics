@@ -15,10 +15,11 @@
 //similar macros for the other D mesons
 
 //Author: Alessandro Grelli, a.grelli@uu.nl
+//        Yifei Wang, yifei@physi.uni-heidelberg.de
 
 
 //macro to make a .root file which contains an AliRDHFCutsDStartoKpipi for AliAnalysisTaskSEDStarSpectra task and CF task
-void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
+void makeInputAliAnalysisTaskSEStarSpectra(){
 
   AliRDHFCutsDStartoKpipi* RDHFDStartoKpipi=new AliRDHFCutsDStartoKpipi();
   RDHFDStartoKpipi->SetName("DStartoKpipiCuts");
@@ -29,6 +30,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
   //default
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetMinNClustersITS(4); // default is 5
   //esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny); 
@@ -42,6 +44,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
   //default
   esdSoftPicuts->SetRequireTPCRefit(kFALSE);
   esdSoftPicuts->SetRequireITSRefit(kFALSE);
+  esdSoftPicuts->SetMinNClustersITS(4); // default is 4
   esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					  AliESDtrackCuts::kAny); //test d0 asimmetry
   esdSoftPicuts->SetPtRange(0.0,1.e10);
@@ -51,233 +54,171 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
   RDHFDStartoKpipi->AddTrackCutsSoftPi(esdSoftPicuts);
 
   const Int_t nvars=14;
-  const Int_t nptbins=13;
+  const Int_t nptbins=10;
   
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
   ptbins[0]=0.;
-  ptbins[1]=0.5;
-  ptbins[2]=1.;
-  ptbins[3]=2.;
-  ptbins[4]=3.;
-  ptbins[5]=4.;
-  ptbins[6]=5.; 
-  ptbins[7]=6.;
-  ptbins[8]=8.;
-  ptbins[9]=12.;
-  ptbins[10]=16.;
-  ptbins[11]=20.;
-  ptbins[12]=25.;
-  ptbins[13]=999.;
+  ptbins[1]=1.;
+  ptbins[2]=2.;
+  ptbins[3]=3.;
+  ptbins[4]=4.;
+  ptbins[5]=5.; 
+  ptbins[6]=6.;
+  ptbins[7]=8.;
+  ptbins[8]=12.;
+  ptbins[9]=16.;
+  ptbins[10]=25.;
 
   RDHFDStartoKpipi->SetPtBins(nptbins+1,ptbins);
   
+
   Float_t** rdcutsvalmine;
   rdcutsvalmine=new Float_t*[nvars];
   for(Int_t iv=0;iv<nvars;iv++){
     rdcutsvalmine[iv]=new Float_t[nptbins];
   }
 
-  if(set_cuts=="utrecht"){
-    //0-0.5
-    rdcutsvalmine[0][0]=0.7;
-    rdcutsvalmine[1][0]=0.03;
-    rdcutsvalmine[2][0]=0.8;
-    rdcutsvalmine[3][0]=0.3;
-    rdcutsvalmine[4][0]=0.3;
-    rdcutsvalmine[5][0]=0.1;
-    rdcutsvalmine[6][0]=0.1;
-    rdcutsvalmine[7][0]=0.00035;
-    rdcutsvalmine[8][0]=0.73;
-    rdcutsvalmine[9][0]=0.3;
-    rdcutsvalmine[10][0]=0.1;
-    rdcutsvalmine[11][0]=0.05;
-    rdcutsvalmine[12][0]=100.;
-    rdcutsvalmine[13][0]=0.5;
-    //0.5-1
-    rdcutsvalmine[0][1]=0.7;
-    rdcutsvalmine[1][1]=0.03;
-    rdcutsvalmine[2][1]=0.8;
-    rdcutsvalmine[3][1]=0.3;
-    rdcutsvalmine[4][1]=0.3;
-    rdcutsvalmine[5][1]=0.1;
-    rdcutsvalmine[6][1]=0.1;
-    rdcutsvalmine[7][1]=-0.00020;
-    rdcutsvalmine[8][1]=0.73;
-    rdcutsvalmine[9][1]=0.3;
-    rdcutsvalmine[10][1]=0.1;
-    rdcutsvalmine[11][1]=0.05;
-    rdcutsvalmine[12][1]=100.;
-    rdcutsvalmine[13][1]=0.5;
-    //1-2
-    rdcutsvalmine[0][2]=0.7;
-    rdcutsvalmine[1][2]=0.02;
-    rdcutsvalmine[2][2]=0.8;
-    rdcutsvalmine[3][2]=0.4;
-    rdcutsvalmine[4][2]=0.4;
-    rdcutsvalmine[5][2]=0.1;
-    rdcutsvalmine[6][2]=0.1;
-    rdcutsvalmine[7][2]=-0.00036;
-    rdcutsvalmine[8][2]=0.82;
-    rdcutsvalmine[9][2]=0.3;
-    rdcutsvalmine[10][2]=0.1;
-    rdcutsvalmine[11][2]=0.05;
-    rdcutsvalmine[12][2]=100.;
-    rdcutsvalmine[13][2]=0.5;
-    //2-3
-    rdcutsvalmine[0][3]=0.7;
-    rdcutsvalmine[1][3]=0.02;
-    rdcutsvalmine[2][3]=0.8;
-    rdcutsvalmine[3][3]=0.7;
-    rdcutsvalmine[4][3]=0.7;
-    rdcutsvalmine[5][3]=0.08;
-    rdcutsvalmine[6][3]=0.08;
-    rdcutsvalmine[7][3]=-0.00016;
-    rdcutsvalmine[8][3]=0.90;
-    rdcutsvalmine[9][3]=0.3;
-    rdcutsvalmine[10][3]=0.1;
-    rdcutsvalmine[11][3]=0.05;
-    rdcutsvalmine[12][3]=100.;
-    rdcutsvalmine[13][3]=0.5;
-    //3-4
-    rdcutsvalmine[0][4]=0.7;
-    rdcutsvalmine[1][4]=0.05;
-    rdcutsvalmine[2][4]=0.8;
-    rdcutsvalmine[3][4]=1.;
-    rdcutsvalmine[4][4]=1.;
-    rdcutsvalmine[5][4]=0.042;
-    rdcutsvalmine[6][4]=0.056;
-    rdcutsvalmine[7][4]=-0.000065;
-    rdcutsvalmine[8][4]=0.9;
-    rdcutsvalmine[9][4]=0.3;
-    rdcutsvalmine[10][4]=0.1;
-    rdcutsvalmine[11][4]=0.05;
-    rdcutsvalmine[12][4]=100.;
-    rdcutsvalmine[13][4]=0.5;
-    //4-5
-    rdcutsvalmine[0][5]=0.7;
-    rdcutsvalmine[1][5]=0.08;
-    rdcutsvalmine[2][5]=0.9;
-    rdcutsvalmine[3][5]=1.2;
-    rdcutsvalmine[4][5]=1.2;
-    rdcutsvalmine[5][5]=0.07;
-    rdcutsvalmine[6][5]=0.07;
-    rdcutsvalmine[7][5]=0.0001;
-    rdcutsvalmine[8][5]=0.9;
-    rdcutsvalmine[9][5]=0.3;
-    rdcutsvalmine[10][5]=0.1;
-    rdcutsvalmine[11][5]=0.05;
-    rdcutsvalmine[12][5]=100.;
-    rdcutsvalmine[13][5]=0.5;
-    //5-6
-    rdcutsvalmine[0][6]=0.7;
-    rdcutsvalmine[1][6]=0.1;
-    rdcutsvalmine[2][6]=1.0;
-    rdcutsvalmine[3][6]=1.;
-    rdcutsvalmine[4][6]=1.;
-    rdcutsvalmine[5][6]=0.08;
-    rdcutsvalmine[6][6]=0.08;
-    rdcutsvalmine[7][6]=0.0005;
-    rdcutsvalmine[8][6]=0.8;
-    rdcutsvalmine[9][6]=0.3;
-    rdcutsvalmine[10][6]=0.1;
-    rdcutsvalmine[11][6]=0.05;
-    rdcutsvalmine[12][6]=100000.;
-    rdcutsvalmine[13][6]=0.5;
-    //6-8
-    rdcutsvalmine[0][7]=0.7;
-    rdcutsvalmine[1][7]=0.1;
-    rdcutsvalmine[2][7]=1.0;
-    rdcutsvalmine[3][7]=1.;
-    rdcutsvalmine[4][7]=1.;
-    rdcutsvalmine[5][7]=0.1;
-    rdcutsvalmine[6][7]=0.1;
-    rdcutsvalmine[7][7]=0.001;
-    rdcutsvalmine[8][7]=0.7;
-    rdcutsvalmine[9][7]=0.3;
-    rdcutsvalmine[10][7]=0.1;
-    rdcutsvalmine[11][7]=0.05;
-    rdcutsvalmine[12][7]=100.;
-    rdcutsvalmine[13][7]=0.5;
-    //8-12
-    rdcutsvalmine[0][8]=0.7;
-    rdcutsvalmine[1][8]=0.1;
-    rdcutsvalmine[2][8]=1.0;
-    rdcutsvalmine[3][8]=1.;
-    rdcutsvalmine[4][8]=1.;
-    rdcutsvalmine[5][8]=0.1;
-    rdcutsvalmine[6][8]=0.1;
-    rdcutsvalmine[7][8]=0.006;
-    rdcutsvalmine[8][8]=0.7;
-    rdcutsvalmine[9][8]=0.3;
-    rdcutsvalmine[10][8]=0.1;
-    rdcutsvalmine[11][8]=0.05;
-    rdcutsvalmine[12][8]=100.;
-    rdcutsvalmine[13][8]=0.5;
-    //12-16
-    rdcutsvalmine[0][9]=0.7;
-    rdcutsvalmine[1][9]=0.1;
-    rdcutsvalmine[2][9]=1.0;
-    rdcutsvalmine[3][9]=0.3;
-    rdcutsvalmine[4][9]=0.3;
-    rdcutsvalmine[5][9]=0.15;
-    rdcutsvalmine[6][9]=0.15;
-    rdcutsvalmine[7][9]=0.01;
-    rdcutsvalmine[8][9]=0.7;
-    rdcutsvalmine[9][9]=0.3;
-    rdcutsvalmine[10][9]=0.1;
-    rdcutsvalmine[11][9]=0.05;
-    rdcutsvalmine[12][9]=100.;
-    rdcutsvalmine[13][9]=0.5;
-    //16-20
-    rdcutsvalmine[0][10]=0.7;
-    rdcutsvalmine[1][10]=0.2;
-    rdcutsvalmine[2][10]=1.0;
-    rdcutsvalmine[3][10]=.3;
-    rdcutsvalmine[4][10]=.3;
-    rdcutsvalmine[5][10]=0.15;
-    rdcutsvalmine[6][10]=0.15;
-    rdcutsvalmine[7][10]=0.01;
-    rdcutsvalmine[8][10]=0.7;
-    rdcutsvalmine[9][10]=0.3;
-    rdcutsvalmine[10][10]=0.1;
-    rdcutsvalmine[11][10]=0.05;
-    rdcutsvalmine[12][10]=100.;
-    rdcutsvalmine[13][10]=0.5;
-    //20-24
-    rdcutsvalmine[0][11]=0.7;
-    rdcutsvalmine[1][11]=0.2;
-    rdcutsvalmine[2][11]=1.0;
-    rdcutsvalmine[3][11]=.3;
-    rdcutsvalmine[4][11]=.3;
-    rdcutsvalmine[5][11]=0.15;
-    rdcutsvalmine[6][11]=0.15;
-    rdcutsvalmine[7][11]=0.01;
-    rdcutsvalmine[8][11]=0.7;
-    rdcutsvalmine[9][11]=0.3;
-    rdcutsvalmine[10][11]=0.1;
-    rdcutsvalmine[11][11]=0.05;
-    rdcutsvalmine[12][11]=100.;
-    rdcutsvalmine[13][11]=0.5;
-    //>25
-    rdcutsvalmine[0][12]=0.7;
-    rdcutsvalmine[1][12]=0.6;
-    rdcutsvalmine[2][12]=1.0;
-    rdcutsvalmine[3][12]=.4;
-    rdcutsvalmine[4][12]=.4;
-    rdcutsvalmine[5][12]=0.5;
-    rdcutsvalmine[6][12]=0.5;
-    rdcutsvalmine[7][12]=0.1;
-    rdcutsvalmine[8][12]=0.7;
-    rdcutsvalmine[9][12]=0.3;
-    rdcutsvalmine[10][12]=0.1;
-    rdcutsvalmine[11][12]=0.05;
-    rdcutsvalmine[12][12]=100.;
-    rdcutsvalmine[13][12]=0.5;
-  }
-  if(set_cuts=="heidelberg"){
+/*UU
+  //0-1
+  rdcutsvalmine[0][0]=0.7;
+  rdcutsvalmine[1][0]=0.022;
+  rdcutsvalmine[2][0]=0.7;
+  rdcutsvalmine[3][0]=0.21;
+  rdcutsvalmine[4][0]=0.21;
+  rdcutsvalmine[5][0]=0.05;
+  rdcutsvalmine[6][0]=0.05;
+  rdcutsvalmine[7][0]=-0.00002;
+  rdcutsvalmine[8][0]=0.85;
+  rdcutsvalmine[9][0]=0.3;
+  rdcutsvalmine[10][0]=0.1;
+  rdcutsvalmine[11][0]=0.05;
+  rdcutsvalmine[12][0]=100.;
+  rdcutsvalmine[13][0]=0.5;
+  //1-2
+  rdcutsvalmine[0][1]=0.7;
+  rdcutsvalmine[1][1]=0.04;
+  rdcutsvalmine[2][1]=0.8;
+  rdcutsvalmine[3][1]=0.3;
+  rdcutsvalmine[4][1]=0.3;
+  rdcutsvalmine[5][1]=0.08;
+  rdcutsvalmine[6][1]=0.08;
+  rdcutsvalmine[7][1]=-0.00036;
+  rdcutsvalmine[8][1]=0.82;
+  rdcutsvalmine[9][1]=0.3;
+  rdcutsvalmine[10][1]=0.1;
+  rdcutsvalmine[11][1]=0.05;
+  rdcutsvalmine[12][1]=100.;
+  rdcutsvalmine[13][1]=0.5;
+  //2-3
+  rdcutsvalmine[0][2]=0.7;
+  rdcutsvalmine[1][2]=0.02;
+  rdcutsvalmine[2][2]=0.8;
+  rdcutsvalmine[3][2]=0.7;
+  rdcutsvalmine[4][2]=0.7;
+  rdcutsvalmine[5][2]=0.08;
+  rdcutsvalmine[6][2]=0.08;
+  rdcutsvalmine[7][2]=-0.00016;
+  rdcutsvalmine[8][2]=0.90;
+  rdcutsvalmine[9][2]=0.3;
+  rdcutsvalmine[10][2]=0.1;
+  rdcutsvalmine[11][2]=0.05;
+  rdcutsvalmine[12][2]=100.;
+  rdcutsvalmine[13][2]=0.5;
+  //3-5
+  rdcutsvalmine[0][3]=0.7;
+  rdcutsvalmine[1][3]=0.05;
+  rdcutsvalmine[2][3]=0.8;
+  rdcutsvalmine[3][3]=1.;
+  rdcutsvalmine[4][3]=1.;
+  rdcutsvalmine[5][3]=0.042;
+  rdcutsvalmine[6][3]=0.056;
+  rdcutsvalmine[7][3]=-0.000065;
+  rdcutsvalmine[8][3]=0.9;
+  rdcutsvalmine[9][3]=0.3;
+  rdcutsvalmine[10][3]=0.1;
+  rdcutsvalmine[11][3]=0.05;
+  rdcutsvalmine[12][3]=100.;
+  rdcutsvalmine[13][3]=0.5;
+  //5-8
+  rdcutsvalmine[0][4]=0.7;
+  rdcutsvalmine[1][4]=0.08;
+  rdcutsvalmine[2][4]=0.9;
+  rdcutsvalmine[3][4]=1.2;
+  rdcutsvalmine[4][4]=1.2;
+  rdcutsvalmine[5][4]=0.07;
+  rdcutsvalmine[6][4]=0.07;
+  rdcutsvalmine[7][4]=0.0001;
+  rdcutsvalmine[8][4]=0.9;
+  rdcutsvalmine[9][4]=0.3;
+  rdcutsvalmine[10][4]=0.1;
+  rdcutsvalmine[11][4]=0.05;
+  rdcutsvalmine[12][4]=100.;
+  rdcutsvalmine[13][4]=0.5;
+  //8-12
+  rdcutsvalmine[0][5]=0.7;
+  rdcutsvalmine[1][5]=0.1;
+  rdcutsvalmine[2][5]=1.0;
+  rdcutsvalmine[3][5]=1.;
+  rdcutsvalmine[4][5]=1.;
+  rdcutsvalmine[5][5]=0.08;
+  rdcutsvalmine[6][5]=0.08;
+  rdcutsvalmine[7][5]=0.0004;
+  rdcutsvalmine[8][5]=0.9;
+  rdcutsvalmine[9][5]=0.3;
+  rdcutsvalmine[10][5]=0.1;
+  rdcutsvalmine[11][5]=0.05;
+  rdcutsvalmine[12][5]=100000.;
+  rdcutsvalmine[13][5]=0.5;
+  //12-18
+  rdcutsvalmine[0][6]=0.7;
+  rdcutsvalmine[1][6]=0.1;
+  rdcutsvalmine[2][6]=1.0;
+  rdcutsvalmine[3][6]=1.;
+  rdcutsvalmine[4][6]=1.;
+  rdcutsvalmine[5][6]=0.1;
+  rdcutsvalmine[6][6]=0.1;
+  rdcutsvalmine[7][6]=0.0005;
+  rdcutsvalmine[8][6]=0.9;
+  rdcutsvalmine[9][6]=0.3;
+  rdcutsvalmine[10][6]=0.1;
+  rdcutsvalmine[11][6]=0.05;
+  rdcutsvalmine[12][6]=100.;
+  rdcutsvalmine[13][6]=0.5;
+  //18-25
+  rdcutsvalmine[0][7]=0.7;
+  rdcutsvalmine[1][7]=0.1;
+  rdcutsvalmine[2][7]=1.0;
+  rdcutsvalmine[3][7]=1.;
+  rdcutsvalmine[4][7]=1.;
+  rdcutsvalmine[5][7]=0.1;
+  rdcutsvalmine[6][7]=0.1;
+  rdcutsvalmine[7][7]=0.001;
+  rdcutsvalmine[8][7]=0.9;
+  rdcutsvalmine[9][7]=0.3;
+  rdcutsvalmine[10][7]=0.1;
+  rdcutsvalmine[11][7]=0.05;
+  rdcutsvalmine[12][7]=100.;
+  rdcutsvalmine[13][7]=0.5;
+  //>25
+  rdcutsvalmine[0][8]=0.7;
+  rdcutsvalmine[1][8]=0.1;
+  rdcutsvalmine[2][8]=1.0;
+  rdcutsvalmine[3][8]=.3;
+  rdcutsvalmine[4][8]=.3;
+  rdcutsvalmine[5][8]=0.15;
+  rdcutsvalmine[6][8]=0.15;
+  rdcutsvalmine[7][8]=0.01;
+  rdcutsvalmine[8][8]=0.8;
+  rdcutsvalmine[9][8]=0.3;
+  rdcutsvalmine[10][8]=0.1;
+  rdcutsvalmine[11][8]=0.05;
+  rdcutsvalmine[12][8]=100.;
+  rdcutsvalmine[13][8]=0.5;
+*/  
 
-    //0-0.5
+ // HD cuts
+    
     rdcutsvalmine[0][0]=0.7;
     rdcutsvalmine[1][0]=0.03;
     rdcutsvalmine[2][0]=0.7;
@@ -292,7 +233,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][0]=0.05;
     rdcutsvalmine[12][0]=100.;
     rdcutsvalmine[13][0]=0.5;
-    //0.5-1
+
     rdcutsvalmine[0][1]=0.7;
     rdcutsvalmine[1][1]=0.03;
     rdcutsvalmine[2][1]=0.7;
@@ -308,7 +249,6 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[12][1]=100.;
     rdcutsvalmine[13][1]=0.5;
 
-    //1-2
     rdcutsvalmine[0][2]=0.7;
     rdcutsvalmine[1][2]=0.03;
     rdcutsvalmine[2][2]=0.7;
@@ -323,22 +263,22 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][2]=0.05;
     rdcutsvalmine[12][2]=100.;
     rdcutsvalmine[13][2]=0.5;
-    //2-3
+
     rdcutsvalmine[0][3]=0.7;
     rdcutsvalmine[1][3]=0.03;
     rdcutsvalmine[2][3]=0.7;
-    rdcutsvalmine[3][3]=0.8;
-    rdcutsvalmine[4][3]=0.8;
+    rdcutsvalmine[3][3]=0.9;
+    rdcutsvalmine[4][3]=0.9;
     rdcutsvalmine[5][3]=0.1;
     rdcutsvalmine[6][3]=0.1;
-    rdcutsvalmine[7][3]=-0.00002;
-    rdcutsvalmine[8][3]=0.9;
+    rdcutsvalmine[7][3]=0.000002;
+    rdcutsvalmine[8][3]=0.8;
     rdcutsvalmine[9][3]=0.3;
     rdcutsvalmine[10][3]=0.1;
     rdcutsvalmine[11][3]=0.05;
     rdcutsvalmine[12][3]=100.;
     rdcutsvalmine[13][3]=0.5;
-    //3-4
+
     rdcutsvalmine[0][4]=0.7;
     rdcutsvalmine[1][4]=0.03;
     rdcutsvalmine[2][4]=0.7;
@@ -353,12 +293,12 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][4]=0.05;
     rdcutsvalmine[12][4]=100.;
     rdcutsvalmine[13][4]=0.5;
-    //4-5
+
     rdcutsvalmine[0][5]=0.7;
     rdcutsvalmine[1][5]=0.03;
     rdcutsvalmine[2][5]=0.7;
-    rdcutsvalmine[3][5]=0.9;
-    rdcutsvalmine[4][5]=0.9;
+    rdcutsvalmine[3][5]=1.0;
+    rdcutsvalmine[4][5]=1.0;
     rdcutsvalmine[5][5]=0.1;
     rdcutsvalmine[6][5]=0.1;
     rdcutsvalmine[7][5]=0.000002;
@@ -368,7 +308,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][5]=0.05;
     rdcutsvalmine[12][5]=100.;
     rdcutsvalmine[13][5]=0.5;
-    //5-6
+
     rdcutsvalmine[0][6]=0.7;
     rdcutsvalmine[1][6]=0.03;
     rdcutsvalmine[2][6]=0.7;
@@ -383,7 +323,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][6]=0.05;
     rdcutsvalmine[12][6]=100.;
     rdcutsvalmine[13][6]=0.5;
-    //6-8
+
     rdcutsvalmine[0][7]=0.7;
     rdcutsvalmine[1][7]=0.03;
     rdcutsvalmine[2][7]=0.7;
@@ -398,7 +338,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][7]=0.05;
     rdcutsvalmine[12][7]=100.;
     rdcutsvalmine[13][7]=0.5;
-    //8-12
+
     rdcutsvalmine[0][8]=0.7;
     rdcutsvalmine[1][8]=0.03;
     rdcutsvalmine[2][8]=0.7;
@@ -413,7 +353,7 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][8]=0.05;
     rdcutsvalmine[12][8]=100.;
     rdcutsvalmine[13][8]=0.5;
-    //12-16
+
     rdcutsvalmine[0][9]=0.7;
     rdcutsvalmine[1][9]=0.03;
     rdcutsvalmine[2][9]=0.7;
@@ -428,76 +368,10 @@ void makeInputAliAnalysisTaskSEDStarSpectra(const char *set_cuts="utrecht"){
     rdcutsvalmine[11][9]=0.05;
     rdcutsvalmine[12][9]=100.;
     rdcutsvalmine[13][9]=0.5;
-    //16-20
-    rdcutsvalmine[0][10]=0.7;
-    rdcutsvalmine[1][10]=0.03;
-    rdcutsvalmine[2][10]=0.7;
-    rdcutsvalmine[3][10]=1.0;
-    rdcutsvalmine[4][10]=1.0;
-    rdcutsvalmine[5][10]=0.1;
-    rdcutsvalmine[6][10]=0.1;
-    rdcutsvalmine[7][10]=0.000002;
-    rdcutsvalmine[8][10]=0.8;
-    rdcutsvalmine[9][10]=0.3;
-    rdcutsvalmine[10][10]=0.1;
-    rdcutsvalmine[11][10]=0.05;
-    rdcutsvalmine[12][10]=100.;
-    rdcutsvalmine[13][10]=0.5;
-    //20-24
-    rdcutsvalmine[0][11]=0.7;
-    rdcutsvalmine[1][11]=0.03;
-    rdcutsvalmine[2][11]=0.7;
-    rdcutsvalmine[3][11]=1.0;
-    rdcutsvalmine[4][11]=1.0;
-    rdcutsvalmine[5][11]=0.1;
-    rdcutsvalmine[6][11]=0.1;
-    rdcutsvalmine[7][11]=0.000002;
-    rdcutsvalmine[8][11]=0.8;
-    rdcutsvalmine[9][11]=0.3;
-    rdcutsvalmine[10][11]=0.1;
-    rdcutsvalmine[11][11]=0.05;
-    rdcutsvalmine[12][11]=100.;
-    rdcutsvalmine[13][11]=0.5;
-    //>24
-    rdcutsvalmine[0][12]=0.7;
-    rdcutsvalmine[1][12]=0.03;
-    rdcutsvalmine[2][12]=0.7;
-    rdcutsvalmine[3][12]=1.0;
-    rdcutsvalmine[4][12]=1.0;
-    rdcutsvalmine[5][12]=0.1;
-    rdcutsvalmine[6][12]=0.1;
-    rdcutsvalmine[7][12]=0.000002;
-    rdcutsvalmine[8][12]=0.8;
-    rdcutsvalmine[9][12]=0.3;
-    rdcutsvalmine[10][12]=0.1;
-    rdcutsvalmine[11][12]=0.05;
-    rdcutsvalmine[12][12]=100.;
-    rdcutsvalmine[13][12]=0.5;
-  }
+
+
 
   RDHFDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
-
-  Bool_t pidflag=kFALSE;
-  RDHFDStartoKpipi->SetUsePID(pidflag);
-  if(pidflag) cout<<"PID is used"<<endl;
-  else cout<<"PID is not used"<<endl;
-
-  // PID SETTINGS
-  AliAODPidHF* pidObj=new AliAODPidHF();
-  // pidObj->SetName("pid4DSatr");
-  Int_t mode=1;
-  Double_t priors[5]={0.01,0.001,0.3,0.3,0.3};
-  pidObj->SetPriors(priors);
-  pidObj->SetMatch(mode);
-  pidObj->SetSigma(0,2); // TPC
-  pidObj->SetSigma(3,3); // TOF
-  pidObj->SetTPC(kTRUE);
-  pidObj->SetTOF(kTRUE);
-  RDHFDStartoKpipi->SetPidHF(pidObj);
-
-  //activate pileup rejection
-  RDHFDStartoKpipi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
-
   RDHFDStartoKpipi->PrintAll();
 
   TFile* fout=new TFile("DStartoKpipiCuts.root","recreate");   //set this!! 
@@ -525,7 +399,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
   
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetEtaRange(-0.9,0.9);
   esdTrackCuts->SetPtRange(0.1,1.e10);
   
  // soft pion pre-selections 
@@ -579,7 +453,7 @@ void makeInputAliAnalysisTaskSEDstarSignificanceMaximization(){
   rdcutsvalmine[6][0]=0.05;
   rdcutsvalmine[7][0]=-0.00002;
   rdcutsvalmine[8][0]=0.85;
-  rdcutsvalmine[9][0]=0.3.;
+  rdcutsvalmine[9][0]=0.3;
   rdcutsvalmine[10][0]=0.1;
   rdcutsvalmine[11][0]=0.05;
   rdcutsvalmine[12][0]=100.;

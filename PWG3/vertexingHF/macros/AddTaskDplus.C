@@ -32,7 +32,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
 
   AliRDHFCutsDplustoKpipi* prodcuts=new AliRDHFCutsDplustoKpipi();
   if(stdcuts) prodcuts->SetStandardCutsPP2010();
-  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
+  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("ProdCuts");
   
   //AliRDHFCutsDplustoKpipi *prodcuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("ProdCuts");
   //AliRDHFCutsDplustoKpipi *analysiscuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
