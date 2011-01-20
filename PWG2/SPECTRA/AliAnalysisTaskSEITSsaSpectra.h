@@ -59,6 +59,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fLowMult=LowBin;
     fUpMult=UpBin;
   }
+  void SetEtaMax(Double_t maxeta){
+    fEtaRange=maxeta;
+  }
 
   void SetYear(Int_t year){fYear=year;}
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
@@ -183,6 +186,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Double_t fMaxChi2Clu;      // maximum cluster
   Double_t fNSigmaDCAxy;     // DCA cut in bend. plane
   Double_t fNSigmaDCAz;      // DCA cut along z
+  Double_t fEtaRange;        // limits in pseudorap
   Int_t fLowMult;      // Multiplicity bin
   Int_t fUpMult;      // Multiplicity bin
   Int_t fYear;        // Year (2009, 2010)
@@ -195,7 +199,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 2);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 3);
 };
 
 #endif
