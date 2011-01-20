@@ -163,9 +163,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   TRandom3* fMyTRandom3;     // TRandom3 generator
   // end afterburner
   
-  //PID stuff
-  AliESDpid *fESDpid;//pid object
-
   ClassDef(AliAnalysisTaskFlowEvent, 1); // example of analysis
 };
 

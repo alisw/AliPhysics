@@ -93,7 +93,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCparticle(NULL),
   fEvent(NULL),
   fTPCtrack(),
-  fESDpid(NULL),
+  fESDpid(),
   fPIDsource(kTPCTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
@@ -142,7 +142,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMCparticle(NULL),
   fEvent(NULL),
   fTPCtrack(),
-  fESDpid(NULL),
+  fESDpid(),
   fPIDsource(kTPCTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
@@ -152,6 +152,12 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   //constructor 
   SetName(name);
   SetTitle("AliFlowTrackCuts");
+  fESDpid.GetTPCResponse().SetBetheBlochParameters( 0.0283086,
+                                                    2.63394e+01,
+                                                    5.04114e-11,
+                                                    2.12543e+00,
+                                                    4.88663e+00 );
+
 }
 
 //-----------------------------------------------------------------------
@@ -267,6 +273,45 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   delete fAliESDtrackCuts;
   delete fTPCpidCuts;
   delete fTOFpidCuts;
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::SetEvent(AliVEvent* event, AliMCEvent* mcEvent)
+{
+  //set the event
+  Clear();
+  fEvent=event;
+  fMCevent=mcEvent;
+
+  //do the magic for ESD
+  AliESDEvent* myESD = dynamic_cast<AliESDEvent*>(event);
+  if (fCutPID && myESD)
+  {
+    //TODO: maybe call it only for the TOF options?
+    // Added by F. Noferini for TOF PID
+    fESDpid.SetTOFResponse(myESD,AliESDpid::kTOF_T0);
+    fESDpid.MakePID(myESD,kFALSE);
+    // End F. Noferini added part
+  }
+
+  //TODO: AOD
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrackCuts::SetCutMC( Bool_t b )
+{
+  //will we be cutting on MC information?
+  fCutMC=b;
+
+  //if we cut on MC info then also the Bethe Bloch should be the one tuned for MC
+  if (fCutMC)
+  {
+    fESDpid.GetTPCResponse().SetBetheBlochParameters( 2.15898e+00/50.,
+                                                       1.75295e+01,
+                                                       3.40030e-09,
+                                                       1.96178e+00,
+                                                       3.91720e+00);
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -772,13 +817,18 @@ void AliFlowTrackCuts::Clear(Option_t*)
 Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* t )
 {
   //check if passes PID cut using timing in TOF
-  if (!fESDpid) return kFALSE;
-  if (!(t && (t->GetStatus() & AliESDtrack::kTOFout) && (t->GetStatus() & AliESDtrack::kTIME)
-       && (t->GetTOFsignal() > 12000) && (t->GetTOFsignal() < 100000) && (t->GetIntegratedLength() > 365)))
-       return kFALSE;
+  Bool_t goodtrack = (t) && 
+                     (t->GetStatus() & AliESDtrack::kTOFpid) && 
+                     (t->GetTOFsignal() > 12000) && 
+                     (t->GetTOFsignal() < 100000) && 
+                     (t->GetIntegratedLength() > 365) && 
+                    !(t->GetStatus() & AliESDtrack::kTOFmismatch);
+
+  if (!goodtrack) return kFALSE;
+  
   Float_t pt = t->Pt();
   Float_t p = t->GetP();
-  Float_t trackT0 = fESDpid->GetTOFResponse().GetStartTime(p);
+  Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = t->GetTOFsignal()- trackT0; 
   //2=pion 3=kaon 4=protons
   Double_t inttimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
@@ -815,10 +865,6 @@ Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* t )
 Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
 {
   //check if passes PID cut using dedx signal in the TPC
-  if (!fESDpid) 
-  {
-    return kFALSE;
-  }
   if (!fTPCpidCuts)
   {
     printf("no TPCpidCuts\n");
@@ -827,7 +873,7 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
 
   const AliExternalTrackParam* tpcparam = track->GetInnerParam();
   if (!tpcparam) return kFALSE;
-  Float_t sigExp = fESDpid->GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
+  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
   Float_t sigTPC = track->GetTPCsignal();
   Float_t s = (sigTPC-sigExp)/sigExp;
   Double_t pt = track->Pt();
@@ -1018,10 +1064,6 @@ void AliFlowTrackCuts::InitPIDcuts()
 //-----------------------------------------------------------------------
 // part added by F. Noferini (some methods)
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
-  if (!fESDpid) 
-  {
-    return kFALSE;
-  }
   SetPriors();
 
   Bool_t goodtrack = track && (track->GetStatus() & AliESDtrack::kTOFpid) && (track->GetTOFsignal() > 12000) && (track->GetTOFsignal() < 100000) && (track->GetIntegratedLength() > 365) && !(track->GetStatus() & AliESDtrack::kTOFmismatch);
@@ -1236,8 +1278,8 @@ Int_t AliFlowTrackCuts::GetESDPdg(AliESDtrack *track,Option_t *option,Int_t ipar
     track->GetIntegratedTimes(exptimes);
 
     // Take resolution for TOF response
-    // like fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
-    Float_t resolution = fESDpid->GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
+    // like fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
+    Float_t resolution = fESDpid.GetTOFResponse().GetExpectedSigma(p, exptimes[ipart], mass[ipart]);
 
     if(TMath::Abs(exptimes[ipart] - track->GetTOFsignal()) < 3 * resolution){
       pdg = pdgvalues[ipart] * Int_t(track->GetSign());

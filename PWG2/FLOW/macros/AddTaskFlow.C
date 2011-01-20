@@ -157,6 +157,9 @@ void AddTaskFlow(Float_t centrMin=-1,
     //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
     //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCTOFpid);
     //cutsPOI->SetTPCTOFpidCrossOverPt(0.4);
+    //francesco's TPC Bethe Bloch for data:
+    //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
+    //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
   }
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
