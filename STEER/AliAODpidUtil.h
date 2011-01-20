@@ -66,9 +66,12 @@ inline Float_t AliAODpidUtil::NumberOfSigmasTPC(const AliAODTrack *track, AliPID
 
 inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const {
   Double_t times[AliPID::kSPECIES];
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
   AliAODPid *pidObj = track->GetDetPid();
   pidObj->GetIntegratedTimes(times);
-  return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
+  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  if (sigmaTOFPid[type]>0) return (pidObj->GetTOFsignal() - times[type])/sigmaTOFPid[type];
+  else return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
 }
 
 inline Float_t AliAODpidUtil::NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const {
