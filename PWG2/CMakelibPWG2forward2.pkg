@@ -68,7 +68,7 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 	  PATTERN ".so" EXCLUDE)
 
 # Install other scripts
-install ( FILES #FORWARD/analysis2/AddTaskCopyHeader.C
+install ( FILES FORWARD/analysis2/AddTaskCopyHeader.C
                 FORWARD/analysis2/AddTaskFMD.C
                 FORWARD/analysis2/AnalyseAOD.C
                 FORWARD/analysis2/MakeAOD.C
