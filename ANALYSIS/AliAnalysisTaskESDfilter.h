@@ -45,6 +45,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t bfield, AliESDpid *esdpid);
     void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t bfield, AliESDpid *esdpid);
 
+    virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
+
  private:
     AliAnalysisTaskESDfilter(const AliAnalysisTaskESDfilter&);
     AliAnalysisTaskESDfilter& operator=(const AliAnalysisTaskESDfilter&);
@@ -63,8 +65,9 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     Double_t     fHighPthreshold;    //  Pt threshold for detector signal setting
     TF1 *        fPtshape;           //  Pt spectrum distribution
     Bool_t       fEnableFillAOD;     //  value that decides if this task activates AOD filling
+    Int_t        fTimeZeroType;      //  time zero type 
 
-    ClassDef(AliAnalysisTaskESDfilter, 5); // Analysis task for standard ESD filtering
+    ClassDef(AliAnalysisTaskESDfilter, 6); // Analysis task for standard ESD filtering
 };
  
 #endif

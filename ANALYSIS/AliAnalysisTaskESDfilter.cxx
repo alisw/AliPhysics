@@ -63,7 +63,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fTPCOnlyFilterMask(0),
     fHighPthreshold(0),
     fPtshape(0x0),
-    fEnableFillAOD(kTRUE)
+    fEnableFillAOD(kTRUE),
+    fTimeZeroType(AliESDpid::kTOF_T0)
 {
   // Default constructor
 }
@@ -77,7 +78,8 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fTPCOnlyFilterMask(0),
     fHighPthreshold(0),
     fPtshape(0x0),
-    fEnableFillAOD(kTRUE)
+    fEnableFillAOD(kTRUE),
+    fTimeZeroType(AliESDpid::kTOF_T0)
 {
   // Constructor
 }
@@ -365,13 +367,13 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
       esdPid->GetTOFResponse().SetT0resolution(t0spread);
       esdPid->GetTOFResponse().SetTimeResolution(intrinsicTOFres);
       
-      esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0);
+      esdPid->SetTOFResponse(esd, (AliESDpid::EStartTimeType_t)fTimeZeroType);
     
       delete[] t0spread;
       t0spread=0x0;
     }
     
-    if(esd->GetTOFHeader() && isPidOwner) esdPid->SetTOFResponse(esd, AliESDpid::kBest_T0); //in case of AOD production strating form LHC10e without Tender. 
+    if(esd->GetTOFHeader() && isPidOwner) esdPid->SetTOFResponse(esd, (AliESDpid::EStartTimeType_t)fTimeZeroType); //in case of AOD production strating form LHC10e without Tender. 
 
 
     // Cascades (Modified by A.Maire - February 2009)

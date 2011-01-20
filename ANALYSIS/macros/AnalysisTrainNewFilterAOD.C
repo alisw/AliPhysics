@@ -88,7 +88,7 @@ Bool_t      usePhysicsSelection = kTRUE; // use physics selection
 Bool_t      useBKrejection      = kFALSE; // use BK rejection
 Bool_t      useCentrality       = kTRUE; // centrality delta AOD
 Bool_t      useTender           = kFALSE; // use tender wagon
-Bool_t      useV0tender         = kTRUE;  // use V0 correction in tender
+Bool_t      useV0tender         = kFALSE;  // use V0 correction in tender
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
 Bool_t      useFastReadOption   = kTRUE;  // use xrootd tweaks
 Bool_t      useOverwriteMode    = kTRUE;  // overwrite existing collections
@@ -378,9 +378,9 @@ void AddAnalysisTasks()
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, useCentrality);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, useCentrality, AliESDpid::kTOF_T0);
       } else {
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection, useCentrality);
+	AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection, useCentrality, AliESDpid::kTOF_T0);
       }   
    }   
 

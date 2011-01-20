@@ -2,7 +2,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
 					   Bool_t usePhysicsSelection=kFALSE,
-					   Bool_t useCentralityTask=kFALSE)
+					   Bool_t useCentralityTask=kFALSE, 
+                                           Int_t tofTimeZeroType=AliESDpid::kTOF_T0)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -40,6 +41,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // Barrel tracks filter
    AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
    mgr->AddTask(esdfilter);
+   esdfilter->SetTimeZeroType(tofTimeZeroType);
    // Muons
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
    mgr->AddTask(esdmuonfilter);
