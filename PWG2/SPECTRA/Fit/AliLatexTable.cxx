@@ -360,10 +360,10 @@ void AliLatexTable::PrintTable(Option_t * opt){
     
     Int_t nrow = fRows->GetEntriesFast();
 
-    Int_t * col_widths = GetColWidths();
+    Int_t * colWidths = GetColWidths();
 
     Int_t total_lenght = 0;
-    for(Int_t icol = 0; icol < fNcol; icol++) total_lenght = total_lenght + col_widths[icol] + 2 ;
+    for(Int_t icol = 0; icol < fNcol; icol++) total_lenght = total_lenght + colWidths[icol] + 2 ;
     
 
     for(Int_t irow = 0; irow < nrow; irow++){
@@ -386,7 +386,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
 	const char * colstr = strTmp.Data();
 	char format [200];
 	if (TString(opt)!="CSV") {
-	  sprintf(format, "%%%ds", col_widths[icol] + 2);	
+	  sprintf(format, "%%%ds", colWidths[icol] + 2);	
 	} else {
 	  sprintf(format, "%%s");	
 	}
@@ -398,7 +398,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
       printf ("\n");
     }
     
-
+    delete colWidths;
     return;
   }
   
@@ -476,12 +476,12 @@ void AliLatexTable::StripLatex(TString &text, TString format) {
     //    cout << "col " << text.Data() << endl;
     // in case of multicol span, replace first column with content and
     // add n empty cols
-    TObjArray * array = TPRegexp("multicolumn\\{(.*)\\}\\{.*\\}\\{(.*)\\}").MatchS(text); // Added double \\ because gcc 4 triggers hard error on unknown escape sequence. Hope it still works...
+    TObjArray * array = TPRegexp("multicolumn\\{([^}]*)\\}\\{[^}]*\\}\\{([^]]*)\\}").MatchS(text); // Added double \\ because gcc 4 triggers hard error on unknown escape sequence. Hope it still works...
     const TString content = ((TObjString *)array->At(2))->GetString();
     Int_t nspan   = ((TObjString *)array->At(1))->GetString().Atoi();
     text = content;
-//     cout << "ns " << nspan <<  ((TObjString *)array->At(1))->GetString() << endl;
-//     cout << "t " << text << endl;
+    // cout << "ns " << nspan <<  ((TObjString *)array->At(1))->GetString() << endl;
+    // cout << "t " << text << endl;
     
     for(Int_t ispan = 1; ispan < nspan; ispan++){
       text+=" & ";
