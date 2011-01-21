@@ -25,7 +25,10 @@ AliFemtoXi::AliFemtoXi():
   fCTauXi(0), fCTauOmega(0),
   fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
   fKeyBac(0)
-{/* no-op */}
+{
+  fTopologyMapBachelor[0] = 0.0;
+  fTopologyMapBachelor[1] = 0.0;
+}
 // -----------------------------------------------------------------------
 void AliFemtoXi::UpdateXi(){
   //Calc. derived members of the xi class
