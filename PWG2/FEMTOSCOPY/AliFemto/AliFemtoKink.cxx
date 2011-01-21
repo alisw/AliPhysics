@@ -72,7 +72,9 @@ AliFemtoKink::AliFemtoKink():
   fDaughter(),            
   fParent(),               
   fPosition(0,0,0)        
-{/* no-op */}
+{
+  for (int id=0; id<3; id++) fDeltaEnergy[id] = 0.0;
+}
 // -----------------------------------------------------------------------
 AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
   fDcaParentDaughter(0), fDcaDaughterPrimaryVertex(0), 
