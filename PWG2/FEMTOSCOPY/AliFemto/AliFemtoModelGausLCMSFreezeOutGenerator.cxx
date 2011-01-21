@@ -77,12 +77,14 @@ void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aP
   if (!(inf1->GetEmissionPoint())) {
     AliFemtoLorentzVector *tPos = new AliFemtoLorentzVector(0,0,0,0);
     inf1->SetEmissionPoint(tPos);
+    delete tPos;
   }
   else
     inf1->SetEmissionPoint(0,0,0,0);
   if (!(inf2->GetEmissionPoint())) {
     AliFemtoLorentzVector *tPos = new AliFemtoLorentzVector(tXout,tXside,tXlong,tXtime);
     inf2->SetEmissionPoint(tPos);
+    delete tPos;
   }
   else
     inf2->SetEmissionPoint(tXout, tXside, tXlong, tXtime);
