@@ -996,6 +996,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
                   Error("CreateJDL", "Could not create alien output directory %s", fGridOutputDir.Data());
                   // error = kTRUE;
                }
+            } else {
+               Warning("CreateJDL", "#### Output directory %s exists! If this contains old data, jobs will fail with ERROR_SV !!! ###", fGridOutputDir.Data());
             }   
             gGrid->Cd(workdir);
          }   
