@@ -35,6 +35,7 @@
 #include <TMath.h>
 
 AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() : 
+  TObject(),
   fNhitsLeft(0),
   fOldModule(-1),
   fClusterTypeFlag(kTRUE),
@@ -268,7 +269,7 @@ Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t Layer, UShort_t charg
       AddLabelIndex(fColSum,fRowSum);
     }
     if (size>0) {
-      if(size>1) AliInfo(Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
+      if(size>1) AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
       fClusterList[Layer].Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, GetClusterWidthZ(), GetClusterWidthPhi(), GetClusterType(size), fCharge,fLabels);
       fCharge=0;
       for(Int_t i=0; i<10; i++) fLabels[i]=-5;
@@ -868,7 +869,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
       new(lrecp[nClusters++]) AliITSRecPoint(recpnt);
       //Int_t idx = fRecPoints->GetEntries();
-      AliInfo(Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
+      AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
     }//cluster list entries
   }//ilayer
   if(segmentation) delete segmentation;

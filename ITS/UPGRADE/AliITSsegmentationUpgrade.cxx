@@ -42,7 +42,7 @@ ClassImp(AliITSsegmentationUpgrade)
 							  fHalfLength(0)
 { 
 
-  AliInfo("Default constructor is called");
+  AliDebug(2,"Default constructor is called");
   // Default constructor
 
   if(!gGeoManager) AliGeomManager::LoadGeometry("geometry.root");
@@ -50,10 +50,9 @@ ClassImp(AliITSsegmentationUpgrade)
   TArrayD *x=0;
   TArrayD *z=0; 
   if(!f){
-    AliInfo("Segmentation not available");
-  
+    AliError("Segmentation not available");
+    return;
   }else {
-  
     x=(TArrayD*)f->Get("CellSizeX");  
     z=(TArrayD*)f->Get("CellSizeZ");
   }
@@ -73,7 +72,6 @@ ClassImp(AliITSsegmentationUpgrade)
     }   
 
     // setting the geometry parameters (needed for trasformations Global-Local)
-
     fMaxRadius.Set(i+1);   fMaxRadius.AddAt(shape->GetRmax(),i);
     fMinRadius.Set(i+1);   fMinRadius.AddAt(shape->GetRmin(),i);
     fHalfLength.Set(i+1); fHalfLength.AddAt(shape->GetDz(),i);
@@ -81,14 +79,9 @@ ClassImp(AliITSsegmentationUpgrade)
     fCellSizeZ.Set(i+1);
     fCellSizeX.AddAt(x->At(i),i);
     fCellSizeZ.AddAt(z->At(i),i); 
-
     i++;  
   }
-
-
-
 }
-
 //_______________________________________________________________
 AliITSsegmentationUpgrade::AliITSsegmentationUpgrade(TArrayD radii, TArrayD widths, TArrayD Length): TObject(),
 												     fCellSizeX(0),
