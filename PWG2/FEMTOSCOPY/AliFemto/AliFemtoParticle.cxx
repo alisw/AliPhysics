@@ -54,6 +54,7 @@ AliFemtoParticle::AliFemtoParticle() :
 {
   // Default constructor
   /* no-op for default */
+  for (int ip=0; ip<6; ip++) fPurity[ip] = 0.0;
   //  cout << "Created particle " << this << endl;
 }
 //_____________________
@@ -88,6 +89,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoParticle& aParticle):
     fXi    = new AliFemtoXi(*aParticle.fXi);
   fFourMomentum = aParticle.fFourMomentum;
   fHelix = aParticle.fHelix;
+  for (int ip=0; ip<6; ip++) fPurity[ip] = 0.0;
 
 //   for (int iter=0; iter<11; iter++)
 //     fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
@@ -280,6 +282,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoV0* const hbtV0,const double& m
   if(hbtV0->ValidHiddenInfo()){
     fHiddenInfo= hbtV0->GetHiddenInfo()->Clone();
   }
+  for (int ip=0; ip<6; ip++) fPurity[ip] = 0.0;
   // ***
 }
 //_____________________
@@ -312,6 +315,7 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoKink* const hbtKink,const doubl
   fFourMomentum.SetVect(temp);
   double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
+  for (int ip=0; ip<6; ip++) fPurity[ip] = 0.0;
 }
 
 //_____________________
@@ -344,6 +348,8 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& 
   double ener = ::sqrt(temp.Mag2()+mass*mass);
   fFourMomentum.SetE(ener);
   fHiddenInfo = 0;
+  for (int ip=0; ip<6; ip++) fPurity[ip] = 0.0;
+
 }
 //_____________________
 AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
