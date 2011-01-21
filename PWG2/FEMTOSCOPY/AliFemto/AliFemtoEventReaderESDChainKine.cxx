@@ -255,6 +255,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   }
   else {
     printf ("No Stack ???\n");
+    delete hbtEvent;
     return 0;
   }
 
