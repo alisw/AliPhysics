@@ -946,8 +946,8 @@ Double_t AliJetSpectrumUnfolding::BayesUncertaintyTerms(THnSparseF* const M, THn
   //
 
   Double_t result = 0;
-  Float_t term[9];
-  Int_t tmpBin[4], tmpBin1[4];
+  Float_t term[9] = {0.};
+  Int_t tmpBin[4] = {0}, tmpBin1[4] = {0};
   const Int_t nFilledBins = C->GetNbins();
   if (!(nt>0&&nt<0))
     return 0;

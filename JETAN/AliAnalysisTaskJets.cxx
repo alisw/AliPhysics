@@ -271,7 +271,7 @@ void AliAnalysisTaskJets::UserExec(Option_t */*option*/)
   if(jarray)fHistos->FillHistos(jarray);
 
 
-  if(aodH&&fFilterPt>0){
+  if(jarray&&aodH&&fFilterPt>0){
     if(jarray->GetEntries()>0){
       AliAODJet *jet = (AliAODJet*)jarray->At(0);
       if(jet->Pt()>fFilterPt){
