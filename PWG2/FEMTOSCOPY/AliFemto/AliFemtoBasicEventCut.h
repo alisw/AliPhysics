@@ -60,7 +60,7 @@ inline int  AliFemtoBasicEventCut::NEventsPassed() const {return fNEventsPassed;
 inline int  AliFemtoBasicEventCut::NEventsFailed() const {return fNEventsFailed;}
 inline void AliFemtoBasicEventCut::SetTriggerSelection(int trig) { fSelectTrigger = trig; }
 inline AliFemtoBasicEventCut* AliFemtoBasicEventCut::Clone() { AliFemtoBasicEventCut* c = new AliFemtoBasicEventCut(*this); return c;}
-inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(false), fNEventsPassed(0), fNEventsFailed(0), fAcceptOnlyPhysics(false) {
+inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : AliFemtoEventCut(c), fAcceptBadVertex(false), fNEventsPassed(0), fNEventsFailed(0), fAcceptOnlyPhysics(false), fSelectTrigger(0) {
   fEventMult[0] = c.fEventMult[0];
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
