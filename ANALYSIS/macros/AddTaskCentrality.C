@@ -24,7 +24,7 @@ AliCentralitySelectionTask *AddTaskCentrality()
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CentralityStat",
                 TList::Class(), AliAnalysisManager::kOutputContainer,
-                "EventStat_temp.root");
+                "Centrality_temp.root");
   
   mgr->ConnectInput(centralityTask, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(centralityTask,1,coutput1);
