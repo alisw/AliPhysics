@@ -150,8 +150,8 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
       if(tmpdig->GetPixId()==pixid) { 
 	iNdigPart++; 
 	if(iNdigPart<=3) {
-          tids[iNdigPart] = tmpdig->GetTrack(0);
-          elossID[iNdigPart] = tmpdig->GetSignal();
+          tids[iNdigPart-1] = tmpdig->GetTrack(0);
+          elossID[iNdigPart-1] = tmpdig->GetSignal();
 	}     
 	eloss+=tmpdig->GetSignal();
 	nele+=tmpdig->GetNelectrons();

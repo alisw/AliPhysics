@@ -60,6 +60,10 @@ AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() :
   fTmpLabel[1]=-5;
   fTmpLabel[2]=-5;
   for(int il=0; il<10;il++) fLabels[il]=-5;
+  for(int k=0; k<999999; k++){
+  fHitCol[k]=999;
+  fHitRow[k]=999;
+  }
 }
 
 //___________________________________________________________________________________

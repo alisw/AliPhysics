@@ -18,13 +18,12 @@
     void ResetClusters();
     const AliITSRecPoint *GetNextCluster(Int_t &ci);
     AliITSRecPoint *GetCluster(Int_t i) const { return fClusters[i]; }
-    Int_t GetNumberOfClusters() const;
+    Int_t GetNumberOfClusters() const { return fN; }
   protected:
     AliITSlayerUpgrade(const AliITSlayerUpgrade&);
     AliITSlayerUpgrade &operator=(const AliITSlayerUpgrade &tr);
     Double_t fPhiOffset;        // offset of the first detector in Phi
     Double_t fZOffset;          // offset of the first detector in Z
-//    AliITSdetector *fDetectors; // array of detectors
 
     AliITSRecPoint *fClusters[AliITSRecoParam::fgkMaxClusterPerLayer]; // pointers to clusters
     Int_t fNsel;         // numbers of selected clusters 

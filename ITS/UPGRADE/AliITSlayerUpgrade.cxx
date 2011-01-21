@@ -28,6 +28,10 @@ AliITSlayerUpgrade::AliITSlayerUpgrade():
 {  //--------------------------------------------------------------------
   //default AliITSlayerUpgrade constructor
   //--------------------------------------------------------------------
+  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) {
+  fIndex[i] = -1;
+  fClusters[i]= 0x0;
+  }
 }
 //___________________________________________________________________________
 AliITSlayerUpgrade::AliITSlayerUpgrade(Double_t p,Double_t z):
@@ -40,7 +44,10 @@ AliITSlayerUpgrade::AliITSlayerUpgrade(Double_t p,Double_t z):
   //main AliITSlayerUpgrade constructor
   //--------------------------------------------------------------------
 
-  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) fClusters[i]=0;
+  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) {
+  fIndex[i] = -1;
+  fClusters[i]= 0x0;
+  }
 
 }
 
@@ -56,9 +63,14 @@ void AliITSlayerUpgrade::ResetClusters() {
   // This function removes loaded clusters
   //--------------------------------------------------------------------
 
-for (Int_t i=0; i<fN; i++) delete fClusters[i];
+  for (Int_t i=0; i<fN; i++) {
+  fIndex[i]=-1;
+  if(fClusters[i]) {
+    delete fClusters[i];
+    }
+  }
   fN=0;
-return;
+  return;
 }
 
 
@@ -67,7 +79,7 @@ Int_t AliITSlayerUpgrade::InsertCluster(AliITSRecPoint *c) {
   // This function inserts a cluster to this layer in increasing
   // order of the cluster's fZ
   //--------------------------------------------------------------------
-fClusters[fN]=c;
+  fClusters[fN]=c;
   fN++;
   return 0;
 }
@@ -85,11 +97,5 @@ const AliITSRecPoint *AliITSlayerUpgrade::GetNextCluster(Int_t &ci){
      c=fClusters[ci];
   }
   return c;
-}
-//_____________________________________________________________________
-  Int_t AliITSlayerUpgrade::GetNumberOfClusters() const {
-  Int_t n=0;
-  n=fN;
-return n;
 }
 
