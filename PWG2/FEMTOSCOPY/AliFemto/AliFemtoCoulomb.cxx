@@ -32,6 +32,11 @@ AliFemtoCoulomb::AliFemtoCoulomb() :
     assert(0);
   }
   cout << "You have 1 default Coulomb correction!" << endl;
+
+  for (int ie=0; ie<1000; ie++) {
+    fEta[ie] = 0.0;
+    fCoulomb[ie] = 0.0;
+  }
 }
 
 AliFemtoCoulomb::AliFemtoCoulomb(const AliFemtoCoulomb& aCoul) :
