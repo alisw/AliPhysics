@@ -98,9 +98,21 @@ const AliHLTComponentDataType kAliHLTDataTypeMCObject = AliHLTComponentDataTypeI
 const char kAliHLTESDVertexDataTypeIDstring[8] = kAliHLTESDVertexDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeESDVertex = AliHLTComponentDataTypeInitializer(kAliHLTESDVertexDataTypeIDstring, kAliHLTDataOriginAny);
 
+/** KF vertex data specification */
+const char kAliHLTKFVertexDataTypeIDstring[8] = kAliHLTKFVertexDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeKFVertex = AliHLTComponentDataTypeInitializer(kAliHLTKFVertexDataTypeIDstring, kAliHLTDataOriginAny);
+
 /** Global Vertexer data specification */
 const char kAliHLTDataTypeGlobalVertexerIDstring[8] = kAliHLTDataTypeGlobalVertexerID;
 const AliHLTComponentDataType kAliHLTDataTypeGlobalVertexer = AliHLTComponentDataTypeInitializer(kAliHLTDataTypeGlobalVertexerIDstring, kAliHLTDataOriginAny);
+
+/** Primary finder data specification */
+const char kAliHLTPrimaryFinderDataTypeIDstring[8] = kAliHLTDataTypePrimaryFinderID;
+const AliHLTComponentDataType kAliHLTDataTypePrimaryFinder = AliHLTComponentDataTypeInitializer(kAliHLTPrimaryFinderDataTypeIDstring, kAliHLTDataOriginAny);
+
+/** V0 finder data specification */
+const char kAliHLTV0FinderDataTypeIDstring[8] = kAliHLTDataTypeV0FinderID;
+const AliHLTComponentDataType kAliHLTDataTypeV0Finder = AliHLTComponentDataTypeInitializer(kAliHLTV0FinderDataTypeIDstring, kAliHLTDataOriginAny);
 
 /** ESD data specification */
 const char kAliHLTESDObjectDataTypeIDstring[8] = kAliHLTESDObjectDataTypeID;
