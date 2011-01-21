@@ -99,6 +99,7 @@ Int_t       iPWG4FastEmbedding = 0;      // Generate non-standard AOD for embedd
 Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
 Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
 Int_t       iPWG4JetSpectrum   = 0;      // jet spectrum analysis
+Int_t       iPWG4JetResponse   = 0;      // jet response matrix
 Int_t       iPWG4JCORRAN       = 0;      // JCORRAN module
 Int_t       iPWG4UE            = 0;      // Underlying Event analysis
 Int_t       iPWG4LeadingUE     = 0;      // Underlying Event analysis
@@ -431,11 +432,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       mgr->ConnectInput (tagTask, 0, mgr->GetCommonInputContainer());
       mgr->ConnectOutput(tagTask, 1, coutTags);
    }   
-    
+
    if (iPWG4FastEmbedding) {
-     Printf("adding fast embedding task\n");
-     gROOT->LoadMacro("src/AliAnalysisTaskFastEmbedding.cxx++g");
-     gROOT->LoadMacro("macros/AddTaskFastEmbedding.C");
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFastEmbedding.C");
      AliAnalysisTask *taskEmbedding = AddTaskFastEmbedding(kFastEmbeddingAOD);
    }
 
@@ -534,7 +533,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        taskCl->SetNRandomCones(10);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
-       if(kDeltaAODJetName.Length()==0)taskCl->SetJetTriggerPtCut(40.);
+       if(kDeltaAODJetName.Length()==0&&kFilterAOD)taskCl->SetJetTriggerPtCut(40.);
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
   
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
@@ -639,7 +638,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ->SetPhysicsSelectionFlag(iPhysicsSelectionFlag); // 
      taskjetServ->SetNonStdFile(kDeltaAODJetName.Data());
      if(kIsPbPb){
-       if(kDeltaAODJetName.Length()>0)taskjetServ->SetFilterAODCollisions(kTRUE);
+       if(kDeltaAODJetName.Length()>0&&kFilterAOD)taskjetServ->SetFilterAODCollisions(kTRUE);
+       //       else if(iAODanalysis)taskjetServ->SetFilterAODCollisions(kTRUE);
+
        taskjetServ->SetZVertexCut(8.);
      }
      if(iAODanalysis){
@@ -719,8 +720,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if (!taskChem) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetChem cannot run for this train conditions - EXCLUDED");
    }
 
+   if (iPWG4JetResponse) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetResponse.C");
+     AliAnalysisTask *taskJetResponse = AddTaskJetResponse("FASTKT", 0.4, kHighPtFilterMask, 0.15, 0);
+   }
 
-   
    if(iPWG4JCORRAN){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJCORRANTask.C");
      AliJCORRANTask* corran = AddTaskJCORRAN(kDeltaAODJCORRANName.Data(),0);
@@ -917,21 +921,32 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        TString dest;
        dest = Form("%s/%s/%s.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
        if(AliAnalysisAlien::FileExists(dest.Data())){
-	 //	 Printf("%s exist on grid removing...",dest.Data());
-	 //	 gGrid->Rm(dest.Data());
+	 Printf("%s exist on grid removing...",dest.Data());
+	 gGrid->Rm(dest.Data());
        }
+       Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
 
 
        TString dest;
        dest = Form("%s/%s/%s_merge.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
        if(AliAnalysisAlien::FileExists(dest.Data())){
-	 //	 Printf("%s exist on grid removing...",dest.Data());
-	 //	 gGrid->Rm(dest.Data());
+	 Printf("%s exist on grid removing...",dest.Data());
+	 gGrid->Rm(dest.Data());
        }
+       Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
 
-       
+       dest = Form("%s/%s/%s_merge_final.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
+       if(AliAnalysisAlien::FileExists(dest.Data())){
+	 Printf("%s exist on grid removing...",dest.Data());
+	 gGrid->Rm(dest.Data());
+       }
+       Printf("%s copy ...",dest.Data());
+       TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
+
+
+       /*
        dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
        if(AliAnalysisAlien::FileExists(dest.Data())){
 	 Printf("%s exist on grid removing...",dest.Data());
@@ -939,6 +954,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        TFile::Cp(Form("file:%s/STEER/LQ1dRef_v1.root",
 		      gSystem->ExpandPathName("$ALICE_ROOT")),Form("alien://%s",dest.Data()));
+       */
      }
      AliLog::SetGlobalLogLevel(AliLog::kError);
      if((kUseSysInfo>0&&smode=="LOCAL")||!strcmp(plugin_mode, "test")){
@@ -1264,7 +1280,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("ANALYSIS", mode, kTRUE);
             success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
             success &= LoadLibrary("ROOTFILES", mode, kTRUE);
-            success &= LoadLibrary("EventMixing", mode,kTRUE);
+            // success &= LoadLibrary("EventMixing", mode,kTRUE);
             success &= LoadLibrary("CORRFW", mode, kTRUE);
          } else {   
             success &= LoadLibrary("libSTEERBase.so", mode);
@@ -1272,7 +1288,7 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libAOD.so", mode);
             success &= LoadLibrary("libANALYSIS.so", mode);
             success &= LoadLibrary("libANALYSISalice.so", mode);
-            success &= LoadLibrary("libEventMixing.so", mode);
+            // success &= LoadLibrary("libEventMixing.so", mode);
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }   
@@ -2055,11 +2071,14 @@ Bool_t PatchAnalysisMacro(){
 
 
   if(gGrid&&kPluginAliRootVersion.Length()==0){
+    /*
     add += "\n // Dirty hack for TRD reference data \n";
     add += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
     add += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
     add += "\"); \n";
+    */
   }
+
   add += "// BKC \n\n";
   st.Insert(index,add.Data());
 
@@ -2106,10 +2125,12 @@ Bool_t PatchAnalysisMacro(){
   TString add2 = "";
   add2 += "\n gSystem->AddIncludePath(\"./\"); \n";
   if(gGrid&&kPluginAliRootVersion.Length()==0){
+    /*
     add2 += "\n // Dirty hack for TRD reference data \n";
     add2 += "\n gSystem->Setenv(\"ALICE_ROOT\",\"";
     add2 += Form("alien://%s/rootfiles/",gGrid->GetHomeDirectory());
     add2 += "\"); \n";
+    */
   }
   add2 += "// BKC \n\n";
   if(index<0)Printf("%s:%d index out of bounds",(char*)__FILE__,__LINE__);
