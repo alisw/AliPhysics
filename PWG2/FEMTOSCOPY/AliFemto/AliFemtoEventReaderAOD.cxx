@@ -288,9 +288,11 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	// Getting the AOD track through the ref of the additional info
 	AliAODTrack *aodtrack = pwg2aodtrack->GetRefAODTrack();	
-	if (!aodtrack->TestFilterBit(fFilterBit))
+	if (!aodtrack->TestFilterBit(fFilterBit)) {
+	  delete trackCopy;
 	  continue;
-	
+	}
+
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, pwg2aodtrack);
 	
 	if (mcP) {
