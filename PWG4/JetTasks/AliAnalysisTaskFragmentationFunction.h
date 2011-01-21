@@ -745,10 +745,10 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
 
   // momentum resolution 
-  THnSparseF* fhnResponseSinglePt;    //! single track response pt
-  THnSparseF* fhnResponseJetTrackPt;  //! jet track response pt 
-  THnSparseF* fhnResponseJetZ;        //! jet track response z 
-  THnSparseF* fhnResponseJetXi;       //! jet track response xi
+  THnSparse* fhnResponseSinglePt;    //! single track response pt
+  THnSparse* fhnResponseJetTrackPt;  //! jet track response pt 
+  THnSparse* fhnResponseJetZ;        //! jet track response z 
+  THnSparse* fhnResponseJetXi;       //! jet track response xi
 
 
   // Background
