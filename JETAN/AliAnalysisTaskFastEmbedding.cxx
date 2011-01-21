@@ -53,7 +53,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
       ,fAODevent(0)
       ,fAODtree(0)
       ,fAODfile(0)
-      ,rndm(new TRandom3())
+      ,rndm(0)
       ,fAODPathArray(0)
       ,fAODPath("AliAOD.root")
       ,fTrackBranch("aodExtraTracks")
@@ -97,7 +97,7 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
       ,fAODevent(0)
       ,fAODtree(0)
       ,fAODfile(0)
-      ,rndm(new TRandom3())
+      ,rndm(0)
       ,fAODPathArray(0)
       ,fAODPath("AliAOD.root")
       ,fTrackBranch("aodExtraTracks")
@@ -233,6 +233,11 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
     // create output objects
     if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()");
 
+    rndm = new TRandom3();
+    Int_t id = GetJobID();
+    if(id>-1) rndm->SetSeed(id);
+    else      rndm->SetSeed();   // a TTUID is generated and used for seed
+    AliInfo(Form("TRandom3 seed: %d", rndm->GetSeed()));
 
 
     // embed mode with AOD
@@ -338,8 +343,6 @@ void AliAnalysisTaskFastEmbedding::Init()
     // Initialization
     if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::Init()");
 
-
-    // set seed for rndm according to sub-job id  *not implemented yet*
 }
 
 
@@ -544,7 +547,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 					      fToyFilterMap,  // select info
 					      -999.    // chi2 per NDF
 		                            );
-	   tmpTr->SetFlags(1);
+	   tmpTr->SetFlags(1<<27);
 
            new((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr);
            dummy = (*tracks)[nAODtracks-1];
@@ -572,13 +575,13 @@ void AliAnalysisTaskFastEmbedding::Terminate(Option_t *)
 }
 
 //__________________________________________________________________________
-/* NEEDS TO BE TESTED
+/* NEEDS TO BE TESTED */
 Int_t AliAnalysisTaskFastEmbedding::GetJobID()
 {
-   Int_t id=0;
+   Int_t id=-1;
 
-   const char* env = gSystem->Getenv("ALIENCOUNTER"); // GRID
-   if(!env || !strlen(env)) env = gSystem->Getenv("LSB_JOBINDEX"); // GSI
+   const char* env = gSystem->Getenv("ALIEN_PROC_ID"); // GRID
+   //if(!env || !strlen(env)) env = gSystem->Getenv("LSB_JOBINDEX"); // GSI
 
    if(env && strlen(env)){
        id= atoi(env);
@@ -586,13 +589,15 @@ Int_t AliAnalysisTaskFastEmbedding::GetJobID()
    }
    else{
        AliInfo("Job index not found. Okay if running locally.");
+       /*
        Int_t nEvents = fAODtree->GetEntries();
        fNEntriesPerJob = nEvents;
        AliInfo(Form("Asuming single job, set entries per job to maximum %d", fNEntriesPerJob));
+       */
    }
 
    return id;
-}*/
+}
 
 //__________________________________________________________________________
 
