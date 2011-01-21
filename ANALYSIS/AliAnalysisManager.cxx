@@ -2389,7 +2389,7 @@ const char* AliAnalysisManager::GetOADBPath()
    else if (gSystem->Getenv("ALICE_ROOT"))
       oadbPath.Form("%s/OADB", gSystem->Getenv("ALICE_ROOT"));
    else
-      cout << "ERROR: Cannot figure out AODB path. Define ALICE_ROOT or OADB_PATH!" << endl;
+      ::Fatal("AliAnalysisManager::GetOADBPath", "Cannot figure out AODB path. Define ALICE_ROOT or OADB_PATH!");
       
    return oadbPath;
 }
