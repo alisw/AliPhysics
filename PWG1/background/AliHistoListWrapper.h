@@ -32,6 +32,7 @@ class TCollection;
 class AliHistoListWrapper : public TNamed
 {
 public:
+
   AliHistoListWrapper();
   AliHistoListWrapper(const char* name, const char* title);
   AliHistoListWrapper(const AliHistoListWrapper& obj);  
@@ -44,8 +45,10 @@ public:
 
   AliHistoListWrapper& operator=(const AliHistoListWrapper& wrap);
 
-private:
+protected:
   TList * fList;
+
+private:
 
   ClassDef(AliHistoListWrapper, 1); 
 };
