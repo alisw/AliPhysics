@@ -554,7 +554,11 @@ bool AliFemtoModelWeightGeneratorLednicky::SetPid(const int aPid1,const int aPid
 
 }    
 AliFemtoModelWeightGeneratorLednicky::~AliFemtoModelWeightGeneratorLednicky() 
-{ /* no-op */ }
+{ 
+  if (fLLName) delete [] fLLName;
+  if (fNumProcessPair) delete [] fNumProcessPair;
+/* no-op */ 
+}
 
 //_____________________________________________
 void     AliFemtoModelWeightGeneratorLednicky::SetPairType(Int_t aPairType)
