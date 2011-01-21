@@ -22,6 +22,10 @@ AliFemtoCutMonitorParticleEtCorr::AliFemtoCutMonitorParticleEtCorr():
   fNEventsProcessed(0)
 {
   // Default constructor
+  for (int ib=0; ib<200; ib++) {
+    fPtSumEvent[ib] = 0; 
+    fMultSumEvent[ib] = 0;
+  }
 }
 
 AliFemtoCutMonitorParticleEtCorr::AliFemtoCutMonitorParticleEtCorr(const char *aName, int aPhiBins):
@@ -45,6 +49,12 @@ AliFemtoCutMonitorParticleEtCorr::AliFemtoCutMonitorParticleEtCorr(const char *a
   fPtCovPerPhi->Sumw2();
   fPtMultPerPhi->Sumw2();
   fPhiBins = aPhiBins;
+
+  for (int ib=0; ib<200; ib++) {
+    fPtSumEvent[ib] = 0; 
+    fMultSumEvent[ib] = 0;
+  }
+
 }
 
 AliFemtoCutMonitorParticleEtCorr::AliFemtoCutMonitorParticleEtCorr(const AliFemtoCutMonitorParticleEtCorr &aCut):
@@ -64,6 +74,11 @@ AliFemtoCutMonitorParticleEtCorr::AliFemtoCutMonitorParticleEtCorr(const AliFemt
   fPtMultPerPhi = new TH2D(*aCut.fPtMultPerPhi);
   fPhiBins = aCut.fPhiBins;
   fNEventsProcessed = aCut.fNEventsProcessed;
+
+  for (int ib=0; ib<200; ib++) {
+    fPtSumEvent[ib] = 0; 
+    fMultSumEvent[ib] = 0;
+  }
 }
 
 AliFemtoCutMonitorParticleEtCorr::~AliFemtoCutMonitorParticleEtCorr()
