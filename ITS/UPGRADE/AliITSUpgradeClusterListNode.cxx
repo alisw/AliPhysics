@@ -67,7 +67,7 @@ AliITSUpgradeClusterListNode::AliITSUpgradeClusterListNode(const AliITSUpgradeCl
   fNext(obj.fNext)
 {
   // copy constructor
-for(Int_t i=0; i> 1000; i++) fDigitLabel[i]=obj.fDigitLabel[i];
+for(Int_t i=0; i< 10; i++) fDigitLabel[i]=obj.fDigitLabel[i];
 }
 
 AliITSUpgradeClusterListNode::~AliITSUpgradeClusterListNode() 

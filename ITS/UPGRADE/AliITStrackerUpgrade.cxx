@@ -507,7 +507,8 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackSA* tr,Double_t *primar
     Int_t index = tr->GetClusterIndexSA(ncl); 
     Int_t lay = (index & 0xf0000000) >> 28;
     Int_t cli = index&0x0fffffff;
-    AliITSRecPoint* cl = (AliITSRecPoint*)fLayers[lay]->GetCluster(cli);
+    //AliITSRecPoint* cl = (AliITSRecPoint*)fLayers[lay]->GetCluster(cli);
+    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(index);
     if(cl->TestBit(kSAflag)==kTRUE) cl->ResetBit(kSAflag);  
     inx[lay]=index;
  
