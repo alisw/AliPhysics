@@ -184,6 +184,9 @@ void AliAnalysisTaskBGvsTime::UserExec(Option_t *)
 
 
   fESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if(!fESD) {
+    AliFatal("Cannot get ESD");
+  }
   if (strcmp(fESD->ClassName(),"AliESDEvent")) {
     AliFatal("Not processing ESDs");
   }
