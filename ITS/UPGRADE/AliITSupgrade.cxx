@@ -22,6 +22,7 @@
 #include <TVirtualMC.h>         //->gMC in StepManager
 #include <TPDGCode.h>           //StepHistory
 #include <TClonesArray.h>
+#include <TGeoGlobalMagField.h>
 #include "AliRun.h"             //CreateMaterials()    
 #include "AliMC.h"             //CreateMaterials()    
 #include "AliMagF.h"            //CreateMaterials()
@@ -221,6 +222,8 @@ void AliITSupgrade::CreateMaterials()
   Float_t tmaxfdBe = -20.;    // Maximum angle due to field deflection
   Float_t deemaxBe = -.3;     // Maximum fractional energy loss, DLS
   Float_t stminBe  = -.8;
+  Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();//from CreateMaterials in STRUCT/AliPIPEv3.cxx
+  Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();//from CreateMaterials in STRUCT/AliPIPEv3.cxx
 
       
   AliMixture(++matId,"UpgradeAir"  ,aAir  ,zAir  ,dAir  ,nAir  ,wAir  ); 
@@ -230,7 +233,7 @@ void AliITSupgrade::CreateMaterials()
   AliMedium(kSi  ,"UpgradeSi"  , matId, sens, itgfld, maxfld, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
     
   AliMaterial(++matId,"UpgradeBe"  ,aBe  ,zBe  ,dBe  ,radBe  ,absBe  );  
-  AliMedium(kBe  ,"UpgradeBe"  , matId, unsens, itgfld, maxfld, tmaxfdBe, stemaxBe, deemaxBe, epsilBe, stminBe);
+  AliMedium(kBe  ,"UpgradeBe"  , matId, unsens, isxfld, sxmgmx, tmaxfdBe, stemaxBe, deemaxBe, epsilBe, stminBe);
 
   AliMaterial(++matId, "UpgradeCu", aCu, zCu, dCu, radCu, absCu);
   AliMedium(kCu, "UpgradeCu", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
