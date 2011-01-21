@@ -102,7 +102,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutMeanPt(kFALSE),
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
-  fCutSPDvertexerAnomaly(kTRUE),
+  fCutSPDvertexerAnomaly(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
