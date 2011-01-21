@@ -37,7 +37,11 @@ AliFemtoV0::AliFemtoV0():
   fHiddenInfo(0)  /***/
 { 
   // Default empty constructor
-  /* no-op */
+  fTrackTopologyMapPos[0] = 0.0;
+  fTrackTopologyMapPos[1] = 0.0;
+  fTrackTopologyMapNeg[0] = 0.0;
+  fTrackTopologyMapNeg[1] = 0.0;
+
 }
 // -----------------------------------------------------------------------
 AliFemtoV0::AliFemtoV0(const AliFemtoV0& v) :
