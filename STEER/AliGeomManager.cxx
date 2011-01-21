@@ -1533,8 +1533,9 @@ void AliGeomManager::CheckOverlapsOverPNs(Double_t threshold)
 //_____________________________________________________________________________
 Int_t AliGeomManager::GetNalignable(const char* module)
 {
-  // Get number of declared alignable volumes for given detector in current geometry
-  //
+  // Get number of declared alignable volumes in current geometry
+  // for the given detector "module" passed as a vaild detector name
+  // if the detector name is invalid return -1
   
   // return the detector index corresponding to detector
   Int_t index = -1 ;
@@ -1542,6 +1543,7 @@ Int_t AliGeomManager::GetNalignable(const char* module)
     if ( strcmp(module, fgkDetectorName[index]) == 0 )
       break ;
   }
+  if(index==fgkNDetectors) return -1;
   return fgNalignable[index];
 }
   
