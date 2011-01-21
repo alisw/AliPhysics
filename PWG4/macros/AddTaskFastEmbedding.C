@@ -19,7 +19,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
 
     // ## set ranges for toy ##
     //SetToyTrackRanges(
-    Double_t minPt = 70.;   Double_t maxPt = 70.;
+    Double_t minPt = 40.;   Double_t maxPt = 300.;
     Double_t minEta = -0.5; Double_t maxEta = 0.5;
     Double_t minPhi = 0.;   Double_t maxPhi = 2*TMath::Pi();
     //fToyDistributionTrackPt: 0 = uniform distribution

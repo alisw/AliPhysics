@@ -29,6 +29,7 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 	virtual ~AliAnalysisTaskFastEmbedding();
 
 	virtual void UserCreateOutputObjects();
+	virtual void LocalInit() { Init(); }
 	virtual void Init();
         virtual void UserExec(Option_t*);
 	virtual void Terminate(Option_t */*option*/);
@@ -115,10 +116,10 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
         TH1F  *fh1MCTrackN;        //! nb. of MC tracks
 
         // NEEDS TO BE TESTED
-	//Int_t GetJobID();    // get job id (i.e. aliencounter on the GRID)  // not tested yet
+	Int_t GetJobID();    // get job id (sub-job id on the GRID)
 
 
-	ClassDef(AliAnalysisTaskFastEmbedding, 1);
+	ClassDef(AliAnalysisTaskFastEmbedding, 2);
 };
 
 #endif
