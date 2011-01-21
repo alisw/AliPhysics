@@ -54,6 +54,83 @@ ClassImp(AliITSupgrade)
 {
   //
   // default ctor
+  //
+}
+
+//__________________________________________________________________________________________________
+AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPipe):
+  AliITS(name,title),
+  fWidths(0),
+  fRadii(0),
+  fRadiiCu(0),
+  fWidthsCu(0),
+  fCopper(0),
+  fBeampipe(isBeamPipe),
+  fRadiusBP(0),
+  fWidthBP(0),
+  fHalfLengthBP(0),
+  fNlayers(0),
+  fHalfLength(0),
+  fSdigits(0),
+  fDigits(0),
+  fSegmentation(0x0)
+{
+  fNlayers = 6;
+  fWidths.Set(fNlayers);
+  fRadii.Set(fNlayers);
+  fRadiiCu.Set(fNlayers);
+  fWidthsCu.Set(fNlayers);
+  fCopper.Set(fNlayers);
+  fHalfLength.Set(fNlayers);
+
+  // Default values are used in order to simulate the standard ITS material budget (see The ALICE Collaboration et al 2008 JINST 3 S08002 - Figure 3.2).
+  // The cell segmentation is chosen to achieve the tracking resolution as described in Table 3.2 of The ALICE Collaboration et al 2008 JINST 3 S08002,
+  // apart from SPD0 where the 9 um value is considered : resolution*sqrt(12)
+
+  Double_t xsz[6]={31.18*1e-04,41.6*1e-04,131.6*1e-04,131.6*1e-04,69.3*1e-04,69.3*1e-04};
+  Double_t zsz[6]={416*1e-04,416*1e-04,97*1e-04,97*1e-04,2875*1e-04,2875*1e-04};
+  Double_t Lhalf[6]={80.,80.,80.,80.,80.,80.};
+  Double_t r[6]={4.,7.6,14.9,23.8,39.1,43.6};
+  Double_t thick[6]={75.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04};
+
+  Int_t  nlayers =6;
+  TArrayD xsizeSi(nlayers);
+  TArrayD zsizeSi(nlayers);
+
+  // adding beam pipe upgrade
+  if(isBeamPipe){
+    fRadiusBP = 2.9;
+    fWidthBP = 0.08;
+    fHalfLengthBP = Lhalf[0];
+  }
+
+  // setting the geonetry parameters and the segmentation
+  Int_t npixHalf[6], npixR[6];
+  Double_t HalfL[6], xszInt[6];
+  Int_t c[6]={1,1,1,1,1,1};
+
+  for(Int_t i=0; i<nlayers; i++){
+    // recalc length 
+    npixHalf[i]=(Int_t)(Lhalf[i]/zsz[i]);
+    HalfL[i]=npixHalf[i]*zsz[i];
+    // recalc segmentation 
+    npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
+    xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
+    xsizeSi.AddAt(xszInt[i],i);
+    zsizeSi.AddAt(zsz[i],i);
+
+    fHalfLength.AddAt(HalfL[i],i);
+
+    fRadii.AddAt(r[i],i);
+    fWidths.AddAt(thick[i],i);
+
+    fRadiiCu.AddAt(r[i]+thick[i],i);
+    fWidthsCu.AddAt(0.015,i);//micron
+    fCopper.AddAt(c[i],i);
+  }
+
+  SetFullSegmentation(xsizeSi,zsizeSi);
+  Init();
 }
 //__________________________________________________________________________________________________
 AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths, TArrayD radii,TArrayD halfLengths, TArrayD radiiCu, TArrayD widthsCu, TArrayS copper,Bool_t bp,Double_t radiusBP, Double_t widthBP, Double_t halfLengthBP):
@@ -64,9 +141,9 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
   fWidthsCu(widthsCu),
   fCopper(copper),
   fBeampipe(bp),
-  fRadiusBP(radiusBP),
-  fWidthBP(widthBP),
-  fHalfLengthBP(halfLengthBP),
+  fRadiusBP(0),
+  fWidthBP(0),
+  fHalfLengthBP(0),
   fNlayers(widths.GetSize()),
   fHalfLength(halfLengths),
   fSdigits(0),
@@ -83,6 +160,12 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
     fRadii.Set(i+1);
     fRadii.AddAt(radii.At(i),i);
     AliDebug(1,"Creating Volume");
+  }
+
+  if(bp){
+    fRadiusBP=radiusBP;
+    fWidthBP=widthBP;
+    fHalfLengthBP=halfLengthBP;
   }
   Init();
 
@@ -166,6 +249,7 @@ void AliITSupgrade::CreateGeometry()
   TGeoVolumeAssembly *vol= CreateVol();
   gGeoManager->GetVolume("ALIC")->AddNode(vol,0);
   AliInfo("Stop ITS upgrade preliminary version building");
+  PrintSummary();
 } 
 //__________________________________________________________________________________________________
 void AliITSupgrade::Init()
@@ -232,7 +316,7 @@ void AliITSupgrade::StepManager()
     hit.SetStartStatus(status);
     return; // don't save entering hit.
   } 
-    // Fill hit structure with this new hit.
+  // Fill hit structure with this new hit.
     
   new((*fHits)[fNhits++]) AliITShit(hit); // Use Copy Construtor.
   // Save old position... for next hit.
@@ -463,4 +547,65 @@ void AliITSupgrade::SetTreeAddress()
     }
   }
   AliDebug(1,"Stop.");
+}
+//____________________________________________________________________________________________________ 
+void AliITSupgrade::PrintSummary()
+{
+
+  // pdg booklet or http://pdg.lbl.gov/2010/reviews/rpp2010-rev-atomic-nuclear-prop.pdf
+
+  // X0 as X0[g/cm^2]/density 
+  Double_t beX0= 65.19/1.848; 
+  Double_t  cuX0= 12.86/8.96; 
+  Double_t siX0= 21.82/2.329;
+
+  if(!fSegmentation) fSegmentation= new AliITSsegmentationUpgrade();
+  printf(" %10s %10s %10s %10s %10s %10s %10s %10s\n","Name","R [cm]","x/X0 [%]","Phi res[um]","Z res[um]","X segm[um]","Y segm[um]","widths [um]");
+
+   printf(" Beampipe   %10.3f %10f %10s %10s %10s %10s %10.1f\n", fRadiusBP, 100.*fWidthBP/beX0,"-","-","-","-",fWidthBP*1.e+4); 
+  //else printf("     -------  No Beam Pipe Upgrade ---------------- \n");
+  for(Int_t i=0; i< fNlayers; i++){
+    printf(" Si Layer %1i %10.3f %10f %10.2f %10.2f %10.2f %10.2f %10.1f\n",i, fRadii.At(i), 100.*fWidths.At(i)/siX0, (fSegmentation->GetCellSizeX(i) *1.e+4)/TMath::Sqrt(12.), (fSegmentation->GetCellSizeZ(i)*1.e+4)/TMath::Sqrt(12.),fSegmentation->GetCellSizeX(i) *1.e+4, fSegmentation->GetCellSizeZ(i)*1.e+4,fWidths.At(i)*1.e+4);
+    printf(" Cu Layer   %10.3f %10f %10s %10s %10s %10s %10.1f\n", fRadiiCu.At(i), 100.*fWidthsCu.At(i)/cuX0,"-","-","-","-",fWidthsCu.At(i)*1.e+4);
+  }
+}
+//____________________________________________________________________________________________________ 
+void AliITSupgrade::SetSegmentationX(Double_t x, Int_t lay){
+TFile *f = TFile::Open("Segmentation.root","UPDATE");
+if(!f) { 
+  AliError("\n\n\n Segmentation.root file does not exist. The segmentation is 0! \n\n\n");
+  return;
+ }
+else {
+  TArrayD *a = (TArrayD*)f->Get("CellSizeX");
+  if(!a)  {
+   AliError("CessSizeX array does not exist!");
+   return; 
+   }
+  a->AddAt(x,lay);
+  f->WriteObjectAny(a,"TArrayD","CellSizeX");
+  f->Close();
+  delete f;
+ }
+}
+//____________________________________________________________________________________________________ 
+void AliITSupgrade::SetSegmentationZ(Double_t z, Int_t lay){
+
+TFile *f = TFile::Open("Segmentation.root","UPDATE");
+if(!f) { 
+  AliError("\n\n\n Segmentation.root file does not exist. The segmentation is 0! \n\n\n");
+  return;
+ }
+else {
+  TArrayD *a = (TArrayD*)f->Get("CellSizeZ");
+  if(!a)  {
+   AliError("CellSizeZ array does not exist!");
+   return;
+   }
+  a->AddAt(z,lay);
+  f->WriteObjectAny(a,"TArrayD","CellSizeZ");
+  f->Close();
+  delete f;
+ }
+
 }

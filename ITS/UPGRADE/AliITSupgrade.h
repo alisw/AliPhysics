@@ -36,7 +36,8 @@ class AiITShit;
 class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliITS-AliITSupgrade
 {
  public:
-  AliITSupgrade();                                                    //default ctor
+  AliITSupgrade();                                                              //default ctor
+  AliITSupgrade(const char *name, const char *title, Bool_t isBeamPipe=kTRUE);  //ctor for standard ITS 
   AliITSupgrade(const char *name, const char *title, TArrayD widths, TArrayD radii,TArrayD halfLengths, TArrayD radiiCu, TArrayD widthsCu, TArrayS copper,Bool_t bp, Double_t radiusBP, Double_t widthPB, Double_t halfLengthsBP);  //ctor
   virtual       ~AliITSupgrade();                                       //dtor
   
@@ -80,8 +81,15 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   TGeoVolumeAssembly * CreateVol();
   void SetFullSegmentation(TArrayD xsize, TArrayD zsize);
 
+  void SetRadius(Double_t r, Int_t lay) {fRadii.AddAt(r,lay);}
+  void SetWidth(Double_t w, Int_t lay) {fWidths.AddAt(w,lay);}
+  void SetRadiusCu(Double_t rCu, Int_t lay) {fRadiiCu.AddAt(rCu,lay);}
+  void SetWidthCu(Double_t wCu, Int_t lay) {fWidthsCu.AddAt(wCu,lay);}
+  void SetSegmentationX(Double_t x, Int_t lay);
+  void SetSegmentationZ(Double_t z, Int_t lay);
 
   void StepHistory();
+  void PrintSummary();
 
  protected:
   TArrayD fWidths;
