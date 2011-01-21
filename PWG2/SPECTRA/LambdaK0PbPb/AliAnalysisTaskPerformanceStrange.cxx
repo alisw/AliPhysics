@@ -3078,7 +3078,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   
   // Post output data
   PostData(1, fListHist);
-  PostData(1, fCentrSelector);
+  PostData(2, fCentrSelector);
 }      
 
 //________________________________________________________________________

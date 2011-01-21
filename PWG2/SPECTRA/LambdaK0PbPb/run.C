@@ -218,7 +218,7 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-      //      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-11-AN");
+      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-11-AN");
  
 
       // Enable the needed package
