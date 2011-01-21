@@ -82,11 +82,22 @@ AliAODPWG4ParticleCorrelation::~AliAODPWG4ParticleCorrelation()
 }
 
 //______________________________________________________________________________
+void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/) 
+{
+  // Clear
+  if(fListOfObjArrays){
+    fListOfObjArrays->Clear();
+    delete   fListOfObjArrays ;
+  }
+}
+
+
+//______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& part) :
   AliAODPWG4Particle(part), fIsolated(part.fIsolated),
   fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
-  fListOfObjArrays()
+  fListOfObjArrays(new TList)
 {
   // Copy constructor
 

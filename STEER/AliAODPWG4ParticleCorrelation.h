@@ -27,12 +27,15 @@ class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {
   AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p);  
   
   virtual ~AliAODPWG4ParticleCorrelation();
+  virtual void Clear(const Option_t* /*opt*/);
+  
   AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& photon); 
 private:
   AliAODPWG4ParticleCorrelation& operator=(const AliAODPWG4ParticleCorrelation& photon);
   
 public:
-  virtual TObjArray* GetObjArray(TString refname)  const { return   (TObjArray*) fListOfObjArrays->FindObject(refname); } 
+  virtual TObjArray* GetObjArray(TString refname)  const { if(fListOfObjArrays) return (TObjArray*) fListOfObjArrays->FindObject(refname); 
+                                                           else return 0x0;} 
   virtual TList*     GetObjArrayList()             const { return  fListOfObjArrays; } 
   virtual void       AddObjArray(TObjArray * refarray)  { fListOfObjArrays->Add(refarray); }
 
