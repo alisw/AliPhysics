@@ -43,6 +43,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     // To be implemented by user
     virtual void   UserCreateOutputObjects()  {;}
     virtual void   UserExec(Option_t* /*option*/) {;}
+    virtual void   UserExecMix(Option_t *option = "") {;}
     virtual Bool_t UserNotify() {return kTRUE;}
     virtual void   NotifyRun()  {;}
     
