@@ -37,6 +37,8 @@ AliGenFixed::AliGenFixed()
   //
   // Default constructor
   //
+    for (Int_t i = 0; i < 3; i++) fP[i] = 0.;
+    
 }
 
 //_____________________________________________________________________________
@@ -50,6 +52,7 @@ AliGenFixed::AliGenFixed(Int_t npart)
   //
   fName="Fixed";
   fTitle="Fixed Particle Generator";
+  for (Int_t i = 0; i < 3; i++) fP[i] = 0.;
 }
 
 //_____________________________________________________________________________
