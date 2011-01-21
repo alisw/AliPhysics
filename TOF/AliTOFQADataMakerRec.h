@@ -20,6 +20,7 @@ class AliCDBManager;
 class AliCDBEntry;
 class AliCDBStorage;
 class AliTOFChannelOnlineStatusArray;
+class AliTOFDecoderSummaryData;
 
 class AliTOFQADataMakerRec: public AliQADataMakerRec {
 
@@ -50,26 +51,32 @@ private:
           Bool_t CheckEquipID( const Int_t * const equipmentID); 
           Bool_t FilterLTMData(const Int_t * const equipmentID) const ; 
           Bool_t FilterSpare(  const Int_t * const equipmentID) const ;
-	  
+	  // void   ResetAllTRMcounters();
 	  Bool_t fEnableNoiseFiltering; //the choice is not implemented so far
 	  Bool_t fEnableDqmShifterOpt;  // draw option flag to help
 					// DQM shifter in the
 					// interpretation of the TOF
 					// raw QA histograms
+	
 	  Int_t  fProcessedRawEventN;   // number of processed rawData events
-	  
+	  Bool_t fIsSOC;  //flag for StartOfCycle operations
 	  //lines for the DQM GUI
 	  TLine* fLineExpTimeMin;
 	  TLine* fLineExpTimeMax;
 	  TLine* fLineExpTotMin;
 	  TLine* fLineExpTotMax;
-	  TLine* fLineSMid035[10];
-	  TLine* fLineSMid3671[10];
-
+	  TLine* fLineSMid[17];
+	  
 	  AliTOFRawStream fTOFRawStream; // AliTOFRawStream variable
+	  //counters for TRM - usage disabled
+	  /* Short_t fTRMNoisyArray[720]; */
+	  /* Short_t fTRMHwOkArray[720]; */
+	  /* Short_t fTRMEnabledArray[720]; */
+	  
+	  AliTOFDecoderSummaryData * fDecoderSummary;
 
-	  ClassDef(AliTOFQADataMakerRec,4)  // description 
-
+	  ClassDef(AliTOFQADataMakerRec,5)  // description 
+	    
 };
 
 #endif // ALITOFQADATAMAKERREC_H
