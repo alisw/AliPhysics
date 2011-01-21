@@ -519,7 +519,7 @@ TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t nor
 
   // Simple exponential in 1/mt*MT, as a function of dNdpt
   char formula[500];
-  sprintf(formula,"[0]*x*exp(-sqrt(x**2+%f**2)/[1])", mass);
+  snprintf(formula,500,"[0]*x*exp(-sqrt(x**2+%f**2)/[1])", mass);
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
@@ -535,7 +535,7 @@ TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char *
 
   // Simple exponential in 1/pt*dNdpT, as a function of dNdpt
   char formula[500];
-  sprintf(formula,"[0]*x*exp(-x/[1])");
+  snprintf(formula,500,"[0]*x*exp(-x/[1])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
@@ -550,7 +550,7 @@ TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char *
 TF1 * AliBWFunc::GetBoltzmanndNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
   // Boltzmann (exp in 1/mt*dNdmT times mt) as a function of dNdpt
  char formula[500];
- sprintf(formula,"[0]*x*sqrt(x**2+%f**2)*exp(-sqrt(x**2+%f**2)/[1])", mass,mass);
+ snprintf(formula,500,"[0]*x*sqrt(x**2+%f**2)*exp(-sqrt(x**2+%f**2)/[1])", mass,mass);
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
@@ -585,7 +585,7 @@ TF1 * AliBWFunc::GetLevidNdptTimesPt(Double_t mass, Double_t temp, Double_t n, D
   // Levi function, dNdpt
   char formula[500];
 
-  sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
+  snprintf(formula,500,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x))/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, n, temp,mass);
@@ -603,7 +603,7 @@ TF1 * AliBWFunc::GetPowerLawdNdptTimesPt(Double_t pt0, Double_t n, Double_t norm
   // PowerLaw function, dNdpt
   char formula[500];
 
-  sprintf(formula,"x*[0]*( 1 + x/[1] )^(-[2])");
+  snprintf(formula,500,"x*[0]*( 1 + x/[1] )^(-[2])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, pt0, n);
   fLastFunc->SetParLimits(1, 0.01, 10);
@@ -620,7 +620,7 @@ TF1 * AliBWFunc::GetPowerLawdNdpt(Double_t pt0, Double_t n, Double_t norm, const
   // PowerLaw function, 1/pt dNdpt
   char formula[500];
 
-  sprintf(formula," [0]*( 1 + x/[1] )^(-[2])");
+  snprintf(formula,500," [0]*( 1 + x/[1] )^(-[2])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, pt0, n);
   //  fLastFunc->SetParLimits(2, 0.01, 10);
@@ -637,7 +637,7 @@ TF1 * AliBWFunc::GetLevidNdpt(Double_t mass, Double_t temp, Double_t n, Double_t
   // Levi function, dNdpt
   char formula[500];
 
-  sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
+  snprintf(formula,500,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (sqrt([3]*[3]+x*x) -[3])/([1]*[2])  )^(-[1])");
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, n, temp,mass);
   fLastFunc->SetParLimits(2, 0.01, 10);
@@ -654,11 +654,11 @@ TF1 * AliBWFunc::GetLevidNdmt(Double_t mass, Double_t temp, Double_t n, Double_t
   // Levi function, 1/mt dNdmt
   char formula[500];
   if (var == kOneOverMtdNdmt)
-    sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x -[3])/([1]*[2])  )^(-[1])");
+    snprintf(formula,500,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x -[3])/([1]*[2])  )^(-[1])");
   else if (var == kdNdmt) 
-    sprintf(formula,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x-[3])/([1]*[2])  )^(-[1])");
+    snprintf(formula,500,"( x*[0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x-[3])/([1]*[2])  )^(-[1])");
   if (var == kOneOverMtdNdmtMinusM)
-    sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x)/([1]*[2])  )^(-[1])");
+    snprintf(formula,500,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + (x)/([1]*[2])  )^(-[1])");
 
   //sprintf(formula,"( [0]*([1]-1)*([1]-2)  )/( [1]*[2]*( [1]*[2]+[3]*([1]-2) )  ) * ( 1 + x/([1]*[2])  )^(-[1])");
   //  sprintf(formula,"[0] * ( 1 + x/([1]*[2])  )^(-[1])");
@@ -738,7 +738,7 @@ TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, cons
   // Simple exp in 1/mt dNdmt, as a function of dNdpt
   // mt scaling
   char formula[500];
-  sprintf(formula,"[0]*exp(-sqrt(x**2+%f**2)/[1])", mass);
+  snprintf(formula,500,"[0]*exp(-sqrt(x**2+%f**2)/[1])", mass);
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);
