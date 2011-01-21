@@ -10,15 +10,18 @@
 //                   whatever the name of the macro itself, whose first two
 //                   arguments must have to be the task and the 'dataLabel' argument.
 //
-Bool_t AddRsnAnalysis
+Bool_t AddRsnAnalysisRes
 (
   const char *options,
-  const char *configs = "RsnConfigNoSA.C RsnConfigSA.C RsnConfigDipNoSA.C RsnConfigDipSA.C",
-  const char *path    = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi"
+  const char *configs = "RsnConfigResNoSA.C RsnConfigResSA.C",
+  const char *path    = "$(ALICE_INSTALL)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/fixed_rapidity"
 )
-{  
+{
+  // retrieve analysis manager
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    
   // create the task and connect with physics selection
-  AliRsnAnalysisSE *task = new AliRsnAnalysisSE(Form("RsnAnalysis_%d", i));
+  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
   task->SetZeroEventPercentWarning(100.0);
   task->SelectCollisionCandidates();
 
@@ -41,7 +44,7 @@ Bool_t AddRsnAnalysis
     const char *argName   = Form("\"%s\"", task->GetName());
     const char *argOption = Form("\"%s\"", options);
     const char *argPath   = Form("\"%s\"", path);
-    gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s,0,0)", path, macro, argName, argOption, argPath));
+    gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", path, macro, argName, argOption, argPath));
   }
 
   // connect input container according to source choice
@@ -56,6 +59,6 @@ Bool_t AddRsnAnalysis
   AliAnalysisDataContainer *outputHist = mgr->CreateContainer("RsnHist", TList::Class(), AliAnalysisManager::kOutputContainer, commonPath);
   mgr->ConnectOutput(task, 1, outputInfo);
   mgr->ConnectOutput(task, 2, outputHist);
-    
+
   return kTRUE;
 }
