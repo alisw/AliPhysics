@@ -51,6 +51,15 @@ AliABSO::AliABSO()
   //
   // Default constructor
   //
+    for (Int_t i = 0; i < 2; i++) 
+    {
+	fNLayers[i] = 0;
+	for (Int_t j = 0; j < 15; j++) 
+	{
+	    fZLayers[i][j] = 0.;
+	    fMLayers[i][j] = 0;
+	}
+    }
 }
  
 //_____________________________________________________________________________
@@ -60,9 +69,15 @@ AliABSO::AliABSO(const char *name, const char *title)
   //
   // Standard constructor
   //
-  //PH  SetMarkerColor(7);
-  //PH  SetMarkerStyle(2);
-  //PH  SetMarkerSize(0.4);
+    for (Int_t i = 0; i < 2; i++) 
+    {
+	fNLayers[i] = 0;
+	for (Int_t j = 0; j < 15; j++) 
+	{
+	    fZLayers[i][j] = 0.;
+	    fMLayers[i][j] = 0;
+	}
+    }
 }
  
 //_____________________________________________________________________________
