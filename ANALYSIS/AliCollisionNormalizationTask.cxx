@@ -107,6 +107,9 @@ void AliCollisionNormalizationTask::UserExec(Option_t*)
 
   // Get the ESD
   AliESDEvent * aESD = dynamic_cast<AliESDEvent*>(fInputEvent);
+  if(!aESD) {
+    AliFatal("Cannot get ESD");
+  }
   if (strcmp(aESD->ClassName(),"AliESDEvent")) {
     AliFatal("Not processing ESDs");
   }
