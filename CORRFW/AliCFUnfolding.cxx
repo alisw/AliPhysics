@@ -38,12 +38,27 @@
 // of iterations or the similarity criterion is reached.               //
 //                                                                     //
 // Currently the similarity criterion is the Chi2 between the a priori //
-// and the unfolded spectrum.                                          //
+// and the unfolded spectrum (OBSOLETE).                               //
+//                                                                     //
+// Chi2 calculation became absolute with the correlated error          //
+// calculation.                                                        //
+// Errors on the unfolded distribution are not known until the end     //
+// Use the convergence criterion instead                               //
 //                                                                     //
 // Currently the user has to define the max. number of iterations      //
 // (::SetMaxNumberOfIterations)                                        //
-// and the chi2 below which the procedure will stop                    //
-// (::SetMaxChi2 or ::SetMaxChi2PerDOF)                                //
+// and                                                                 //
+//     - the chi2 below which the procedure will stop                  //
+// (::SetMaxChi2 or ::SetMaxChi2PerDOF)   (OBSOLETE)                   //
+//     - the convergence criterion below which the procedure will stop //
+// SetMaxConvergencePerDOF(Double_t val);                              //
+//                                                                     //
+// Correlated error calculation can be activated by using:             //
+// SetUseCorrelatedErrors(Bool_t b) in combination with convergence    //
+// criterion                                                           //
+// Documentation about correlated error calculation method can be      //
+// found in AliCFUnfolding::CalculateCorrelatedErrors()                //
+// Author: marta.verweij@cern.ch                                       //
 //                                                                     //
 // An optional possibility is to smooth the unfolded spectrum at the   //
 // end of each iteration, either using a fit function                  //
@@ -80,6 +95,8 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
+#include "TProfile.h"
+#include "TRandom3.h"
 
 ClassImp(AliCFUnfolding)
 
@@ -91,12 +108,15 @@ AliCFUnfolding::AliCFUnfolding() :
   fPrior(0x0),
   fEfficiency(0x0),
   fMeasured(0x0),
-  fMaxNumIterations(0),
+  fMeasuredOrig(0x0),
+  fMaxNumIterations(20),
   fNVariables(0),
-  fMaxChi2(0),
   fUseSmoothing(kFALSE),
   fSmoothFunction(0x0),
   fSmoothOption(""),
+  fMaxConvergence(0),
+  fUseCorrelatedErrors(kTRUE),
+  fNRandomIterations(20),
   fOriginalPrior(0x0),
   fInverseResponse(0x0),
   fMeasuredEstimate(0x0),
@@ -105,7 +125,13 @@ AliCFUnfolding::AliCFUnfolding() :
   fUnfolded(0x0),
   fCoordinates2N(0x0),
   fCoordinatesN_M(0x0),
-  fCoordinatesN_T(0x0)
+  fCoordinatesN_T(0x0),
+  fRandomizedDist(0x0),
+  fRandom3(0x0),
+  fRandomUnfolded(0x0),
+  fDeltaUnfoldedP(0x0),
+  fNCalcCorrErrors(0),
+  fRandomSeed(0)
 {
   //
   // default constructor
@@ -121,12 +147,15 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   fPrior(0x0),
   fEfficiency((THnSparse*)efficiency->Clone()),
   fMeasured((THnSparse*)measured->Clone()),
+  fMeasuredOrig((THnSparse*)measured->Clone()),
   fMaxNumIterations(0),
   fNVariables(nVar),
-  fMaxChi2(0),
   fUseSmoothing(kFALSE),
   fSmoothFunction(0x0),
   fSmoothOption(""),
+  fMaxConvergence(0),
+  fUseCorrelatedErrors(kTRUE),
+  fNRandomIterations(20),
   fOriginalPrior(0x0),
   fInverseResponse(0x0),
   fMeasuredEstimate(0x0),
@@ -135,7 +164,13 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
   fUnfolded(0x0),
   fCoordinates2N(0x0),
   fCoordinatesN_M(0x0),
-  fCoordinatesN_T(0x0)
+  fCoordinatesN_T(0x0),
+  fRandomizedDist(0x0),
+  fRandom3(0x0),
+  fRandomUnfolded(0x0),
+  fDeltaUnfoldedP(0x0),
+  fNCalcCorrErrors(0),
+  fRandomSeed(0)
 {
   //
   // named constructor
@@ -164,6 +199,7 @@ AliCFUnfolding::AliCFUnfolding(const Char_t* name, const Char_t* title, const In
     AliInfo(Form("efficiency matrix has %d bins in dimension %d",fEfficiency->GetAxis(iVar)->GetNbins(),iVar));
     AliInfo(Form("measured   matrix has %d bins in dimension %d",fMeasured  ->GetAxis(iVar)->GetNbins(),iVar));
   }
+
   Init();
 }
 
@@ -176,12 +212,15 @@ AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   fPrior((THnSparse*)c.fPrior->Clone()),
   fEfficiency((THnSparse*)c.fEfficiency->Clone()),
   fMeasured((THnSparse*)c.fMeasured->Clone()),
+  fMeasuredOrig((THnSparse*)c.fMeasuredOrig->Clone()),
   fMaxNumIterations(c.fMaxNumIterations),
   fNVariables(c.fNVariables),
-  fMaxChi2(c.fMaxChi2),
   fUseSmoothing(c.fUseSmoothing),
   fSmoothFunction((TF1*)c.fSmoothFunction->Clone()),
   fSmoothOption(fSmoothOption),
+  fMaxConvergence(c.fMaxConvergence),
+  fUseCorrelatedErrors(c.fUseCorrelatedErrors),
+  fNRandomIterations(c.fNRandomIterations),
   fOriginalPrior((THnSparse*)c.fOriginalPrior->Clone()),
   fInverseResponse((THnSparse*)c.fInverseResponse->Clone()),
   fMeasuredEstimate((THnSparse*)fMeasuredEstimate->Clone()),
@@ -190,7 +229,13 @@ AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   fUnfolded((THnSparse*)c.fUnfolded->Clone()),
   fCoordinates2N(new Int_t(*c.fCoordinates2N)),
   fCoordinatesN_M(new Int_t(*c.fCoordinatesN_M)),
-  fCoordinatesN_T(new Int_t(*c.fCoordinatesN_T))
+  fCoordinatesN_T(new Int_t(*c.fCoordinatesN_T)),
+  fRandomizedDist((THnSparse*)c.fRandomizedDist->Clone()),
+  fRandom3((TRandom3*)c.fRandom3->Clone()),
+  fRandomUnfolded((THnSparse*)c.fRandomUnfolded->Clone()),
+  fDeltaUnfoldedP((TProfile*)c.fDeltaUnfoldedP),
+  fNCalcCorrErrors(c.fNCalcCorrErrors),
+  fRandomSeed(c.fRandomSeed)
 {
   //
   // copy constructor
@@ -210,12 +255,15 @@ AliCFUnfolding& AliCFUnfolding::operator=(const AliCFUnfolding& c) {
     fPrior = (THnSparse*)c.fPrior->Clone() ;
     fEfficiency = (THnSparse*)c.fEfficiency->Clone() ;
     fMeasured = (THnSparse*)c.fMeasured->Clone() ;
+    fMeasuredOrig = ((THnSparse*)c.fMeasuredOrig->Clone()),
     fMaxNumIterations = c.fMaxNumIterations ;
     fNVariables = c.fNVariables ;
-    fMaxChi2 = c.fMaxChi2 ;
+    fMaxConvergence = c.fMaxConvergence ;
     fUseSmoothing = c.fUseSmoothing ;
     fSmoothFunction = (TF1*)c.fSmoothFunction->Clone();
     fSmoothOption = c.fSmoothOption ;
+    fUseCorrelatedErrors = c.fUseCorrelatedErrors;
+    fNRandomIterations = c.fNRandomIterations;
     fOriginalPrior = (THnSparse*)c.fOriginalPrior->Clone() ;
     fInverseResponse = (THnSparse*)c.fInverseResponse->Clone() ;
     fMeasuredEstimate = (THnSparse*)fMeasuredEstimate->Clone() ;
@@ -225,6 +273,12 @@ AliCFUnfolding& AliCFUnfolding::operator=(const AliCFUnfolding& c) {
     fCoordinates2N  = new Int_t(*c.fCoordinates2N)  ;
     fCoordinatesN_M = new Int_t(*c.fCoordinatesN_M) ;
     fCoordinatesN_T = new Int_t(*c.fCoordinatesN_T) ;
+    fRandomizedDist = (THnSparse*)c.fRandomizedDist->Clone();
+    fRandom3 = (TRandom3*)c.fRandom3->Clone();
+    fRandomUnfolded = (THnSparse*)c.fRandomUnfolded->Clone();
+    fDeltaUnfoldedP = (TProfile*)c.fDeltaUnfoldedP;
+    fNCalcCorrErrors = c.fNCalcCorrErrors;
+    fRandomSeed = c.fRandomSeed ;
   }
   return *this;
 }
@@ -239,6 +293,7 @@ AliCFUnfolding::~AliCFUnfolding() {
   if (fPrior)              delete fPrior;
   if (fEfficiency)         delete fEfficiency;
   if (fMeasured)           delete fMeasured;
+  if (fMeasuredOrig)       delete fMeasuredOrig;
   if (fSmoothFunction)     delete fSmoothFunction;
   if (fOriginalPrior)      delete fOriginalPrior;
   if (fInverseResponse)    delete fInverseResponse;
@@ -248,6 +303,10 @@ AliCFUnfolding::~AliCFUnfolding() {
   if (fCoordinates2N)      delete [] fCoordinates2N; 
   if (fCoordinatesN_M)     delete [] fCoordinatesN_M; 
   if (fCoordinatesN_T)     delete [] fCoordinatesN_T; 
+  if (fRandomizedDist)     delete fRandomizedDist;
+  if (fRandom3)            delete fRandom3;
+  if (fRandomUnfolded)     delete fRandomUnfolded;
+  if (fDeltaUnfoldedP)     delete fDeltaUnfoldedP;
 }
 
 //______________________________________________________________
@@ -256,6 +315,8 @@ void AliCFUnfolding::Init() {
   //
   // initialisation function : creates internal settings
   //
+
+  fRandom3 = new TRandom3(fRandomSeed);
 
   fCoordinates2N  = new Int_t[2*fNVariables];
   fCoordinatesN_M = new Int_t[fNVariables];
@@ -268,8 +329,15 @@ void AliCFUnfolding::Init() {
   fInverseResponse  = (THnSparse*) fResponse->Clone();
   // create the frame of the unfolded spectrum
   fUnfolded = (THnSparse*) fPrior->Clone();
+  // create the frame of the random unfolded spectrum
+  fRandomUnfolded = (THnSparse*) fPrior->Clone();
   // create the frame of the measurement estimate spectrum
   fMeasuredEstimate = (THnSparse*) fMeasured->Clone();
+  // create the frame of the original measurement spectrum
+  fMeasuredOrig = (THnSparse*) fMeasured->Clone();
+
+  InitDeltaUnfoldedProfile();
+
 }
 
 //______________________________________________________________
@@ -295,20 +363,13 @@ void AliCFUnfolding::CreateEstMeasured() {
   // fill it
   for (Long_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
     Double_t conditionalValue = fConditional->GetBinContent(iBin,fCoordinates2N);
-    Double_t conditionalError = fConditional->GetBinError  (iBin);
     GetCoordinates();
     Double_t priorTimesEffValue = priorTimesEff->GetBinContent(fCoordinatesN_T);
-    Double_t priorTimesEffError = priorTimesEff->GetBinError  (fCoordinatesN_T);
     Double_t fill = conditionalValue * priorTimesEffValue ;
     
     if (fill>0.) {
-      // error calculation : gaussian error propagation (may be overestimated...)
-      Double_t err2  = TMath::Power(fMeasuredEstimate->GetBinError(fCoordinatesN_M),2) ;
-      err2 += TMath::Power(conditionalValue*priorTimesEffError,2) + TMath::Power(conditionalError*priorTimesEffValue,2) ;
-      Double_t err = TMath::Sqrt(err2);
-      fMeasuredEstimate->SetBinError(fCoordinatesN_M,err);
-
       fMeasuredEstimate->AddBinContent(fCoordinatesN_M,fill);
+      fMeasuredEstimate->SetBinError(fCoordinatesN_M,0.);
     }
   }
   delete priorTimesEff ;
@@ -330,24 +391,13 @@ void AliCFUnfolding::CreateInvResponse() {
 
   for (Long_t iBin=0; iBin<fConditional->GetNbins(); iBin++) {
     Double_t conditionalValue = fConditional->GetBinContent(iBin,fCoordinates2N);
-    Double_t conditionalError = fConditional->GetBinError  (iBin);
     GetCoordinates();
     Double_t estMeasuredValue   = fMeasuredEstimate->GetBinContent(fCoordinatesN_M);
-    Double_t estMeasuredError   = fMeasuredEstimate->GetBinError  (fCoordinatesN_M);
     Double_t priorTimesEffValue = priorTimesEff    ->GetBinContent(fCoordinatesN_T);
-    Double_t priorTimesEffError = priorTimesEff    ->GetBinError  (fCoordinatesN_T);
     Double_t fill = (estMeasuredValue>0. ? conditionalValue * priorTimesEffValue / estMeasuredValue : 0. ) ;
-    // error calculation : gaussian error propagation (may be overestimated...)
-    Double_t err  = 0. ;
-    if (estMeasuredValue>0.) {
-      err = TMath::Sqrt( TMath::Power(conditionalError * priorTimesEffValue * estMeasuredValue ,2) +
-			 TMath::Power(conditionalValue * priorTimesEffError * estMeasuredValue ,2) + 
-			 TMath::Power(conditionalValue * priorTimesEffValue * estMeasuredError ,2) )
-	/ TMath::Power(estMeasuredValue,2) ;
-    }
     if (fill>0. || fInverseResponse->GetBinContent(fCoordinates2N)>0.) {
       fInverseResponse->SetBinContent(fCoordinates2N,fill);
-      fInverseResponse->SetBinError  (fCoordinates2N,err );
+      fInverseResponse->SetBinError  (fCoordinates2N,0.);
     }
   } 
   delete priorTimesEff ;
@@ -358,33 +408,66 @@ void AliCFUnfolding::CreateInvResponse() {
 void AliCFUnfolding::Unfold() {
   //
   // Main routine called by the user : 
-  // it calculates the unfolded spectrum from the response matrix and the measured spectrum
-  // several iterations are performed until a reasonable chi2 is reached
+  // it calculates the unfolded spectrum from the response matrix, measured spectrum and efficiency
+  // several iterations are performed until a reasonable chi2 or convergence criterion is reached
   //
 
-  Int_t iIterBayes=0 ;
-  Double_t chi2=0 ;
+  Int_t iIterBayes     = 0 ;
+  Double_t convergence = 0.;
 
   for (iIterBayes=0; iIterBayes<fMaxNumIterations; iIterBayes++) { // bayes iterations
     CreateEstMeasured();
     CreateInvResponse();
     CreateUnfolded();
-    chi2 = GetChi2();
-    AliDebug(0,Form("Chi2 at iteration %d is %e",iIterBayes,chi2));
-    if (fMaxChi2>0. && chi2<fMaxChi2) {
+    if (fUseCorrelatedErrors) {
+      convergence = GetConvergence();
+      AliDebug(0,Form("convergence at iteration %d is %e",iIterBayes,convergence));
+    } 
+    else AliWarning("No errors will be calculated. Activate SetUseCorrelatedErrors(kTRUE)\n");
+
+    if (fMaxConvergence>0. && convergence<fMaxConvergence && fNCalcCorrErrors<1) {
+      fNRandomIterations=iIterBayes;
       break;
     }
+
     // update the prior distribution
     if (fUseSmoothing) {
       if (Smooth()) {
 	AliError("Couldn't smooth the unfolded spectrum!!");
-	AliInfo(Form("\n\n=======================\nFinished at iteration %d : Chi2 is %e and you required it to be < %e\n=======================\n\n",iIterBayes,chi2,fMaxChi2));
+	if (fUseCorrelatedErrors) {
+	  if (fNCalcCorrErrors>0) {
+	    AliInfo(Form("=======================\nUnfolding of randomized distribution finished at iteration %d with convergence %e \n",iIterBayes,convergence));
+	  }
+	  else {
+	    AliInfo(Form("\n\n=======================\nFinished at iteration %d : convergence is %e and you required it to be < %e\n=======================\n\n",iIterBayes,convergence,fMaxConvergence));
+	  }
+	}
 	return;
       }
     }
-    fPrior = (THnSparse*)fUnfolded->Clone() ; // this should be changed (memory)
+    if(fNCalcCorrErrors>0) {
+      if (fPrior) delete fPrior ;
+      fPrior = (THnSparse*)fRandomUnfolded->Clone() ;
+    } 
+    else {
+      if (fPrior) delete fPrior ;
+      fPrior = (THnSparse*)fUnfolded->Clone() ;
+    }
   }
-  AliInfo(Form("\n\n=======================\nFinished at iteration %d : Chi2 is %e and you required it to be < %e\n=======================\n\n",iIterBayes,chi2,fMaxChi2));
+
+  if (fUseCorrelatedErrors && fNCalcCorrErrors==0) {
+    fNCalcCorrErrors=1;
+    CalculateCorrelatedErrors();
+  }
+
+  if (fUseCorrelatedErrors) {
+    if (fNCalcCorrErrors>1) {
+      AliInfo(Form("\n\n=======================\nFinished at iteration %d : convergence is %e and you required it to be < %e\n=======================\n\n",iIterBayes,convergence,fMaxConvergence));
+    }
+    else if(fNCalcCorrErrors>0) {
+      AliInfo(Form("=======================\nUnfolding of randomized distribution finished at iteration %d with convergence %e \n",iIterBayes,convergence));
+    }
+  }
 }
 
 //______________________________________________________________
@@ -398,32 +481,123 @@ void AliCFUnfolding::CreateUnfolded() {
 
 
   // clear the unfolded spectrum
-  fUnfolded->Reset();
+  if(fNCalcCorrErrors>0) {
+    //unfold randomized dist
+    fRandomUnfolded->Reset();
+  }
+  else {  
+    //unfold measured dist
+    fUnfolded->Reset();
+  }
   
   for (Long_t iBin=0; iBin<fInverseResponse->GetNbins(); iBin++) {
     Double_t invResponseValue = fInverseResponse->GetBinContent(iBin,fCoordinates2N);
-    Double_t invResponseError = fInverseResponse->GetBinError  (iBin);
     GetCoordinates();
     Double_t effValue      = fEfficiency->GetBinContent(fCoordinatesN_T);
-    Double_t effError      = fEfficiency->GetBinError  (fCoordinatesN_T);
     Double_t measuredValue = fMeasured  ->GetBinContent(fCoordinatesN_M);
-    Double_t measuredError = fMeasured  ->GetBinError  (fCoordinatesN_M);
     Double_t fill = (effValue>0. ? invResponseValue * measuredValue / effValue : 0.) ;
-    
-    if (fill>0.) {
-      // error calculation : gaussian error propagation (may be overestimated...)
-      Double_t err2 = TMath::Power(fUnfolded->GetBinError(fCoordinatesN_T),2) ;
-      err2 += TMath::Power(invResponseError * measuredValue * effValue,2) / TMath::Power(effValue,4) ;
-      err2 += TMath::Power(invResponseValue * measuredError * effValue,2) / TMath::Power(effValue,4) ;
-      err2 += TMath::Power(invResponseValue * measuredValue * effError,2) / TMath::Power(effValue,4) ;
-      Double_t err = TMath::Sqrt(err2);
-      fUnfolded->SetBinError(fCoordinatesN_T,err);
 
-      fUnfolded->AddBinContent(fCoordinatesN_T,fill);
+    if (fill>0.) {
+        
+      Double_t err = 0.;
+      
+      if(fNCalcCorrErrors>0) {
+	fRandomUnfolded->SetBinError(fCoordinatesN_T,err);
+	fRandomUnfolded->AddBinContent(fCoordinatesN_T,fill);
+      }
+      else {
+	fUnfolded->SetBinError(fCoordinatesN_T,err);
+	fUnfolded->AddBinContent(fCoordinatesN_T,fill);
+      }
     }
   }
 }
-    
+
+//______________________________________________________________
+
+void AliCFUnfolding::CalculateCorrelatedErrors() {
+
+  fRandomizedDist     = (THnSparse*) fMeasuredOrig->Clone(); 
+  fPrior              = (THnSparse*) fOriginalPrior->Clone();
+
+  // Step 1: Create randomized distribution (fRandomizedDist) of each bin of the measured spectrum to calculate correlated errors. Poisson statistics: mean = measured value of bin
+  // Step 2: Unfold randomized distribution
+  // Step 3: Store difference of unfolded spectrum from measured distribution and unfolded distribution from randomized distribution -> fDeltaUnfoldedP (TProfile with option "S")
+  // Step 4: Repeat Step 1-3 several times (fNRandomIterations)
+  // Step 5: The spread of fDeltaUnfoldedP for each bin is the error on the unfolded spectrum of that specific bin
+
+    //Do fNRandomIterations = bayes iterations performed
+    for(int i=0; i<fNRandomIterations; i++) {
+      if (fPrior)          delete fPrior ;
+      if (fRandomizedDist) delete fRandomizedDist ;
+      fPrior          = (THnSparse*) fOriginalPrior->Clone();
+      fRandomizedDist = (THnSparse*) fMeasuredOrig->Clone();
+      CreateRandomizedDist();
+      if (fMeasured) delete fMeasured ;
+      fMeasured = (THnSparse*) fRandomizedDist->Clone();
+      //Unfold fRandomizedDist
+      Unfold();
+      FillDeltaUnfoldedProfile();
+    }
+
+    // Get statistical errors for final unfolded spectrum
+    // ie. spread of each pt bin in fDeltaUnfoldedP
+    Double_t sigma       = 0.;
+    Double_t dummy       = 0.;
+    for (Long_t iBin=0; iBin<fRandomUnfolded->GetNbins(); iBin++) {
+      dummy = fUnfolded->GetBinContent(iBin,fCoordinatesN_M);
+      sigma = fDeltaUnfoldedP->GetBinError(fCoordinatesN_M[0]);
+      fUnfolded->SetBinError(fCoordinatesN_M,sigma);
+      fNCalcCorrErrors = 2;
+    }
+
+}
+
+//______________________________________________________________
+void AliCFUnfolding::InitDeltaUnfoldedProfile() {
+  //
+  //Initialize the fDeltaUnfoldedP profile
+  //Errors will be filled with spread between unfolded measured and unfolded randomized spectra
+  //
+
+  Int_t nbinsx = fResponse->GetAxis(0)->GetNbins();
+  Double_t xbins[nbinsx];
+  for(int ix=0; ix<nbinsx; ix++) {
+    xbins[ix] = fResponse->GetAxis(0)->GetBinLowEdge(ix+1);
+  }
+  xbins[nbinsx] = fResponse->GetAxis(0)->GetBinUpEdge(nbinsx);
+  fDeltaUnfoldedP = new TProfile("fDeltaUnfoldedP","Profile of pTUnfolded with spread in error",nbinsx,xbins,"S");
+}
+//______________________________________________________________
+void AliCFUnfolding::CreateRandomizedDist() {
+  //
+  // Create randomized dist from measured distribution
+  //
+
+  Double_t random = 0.;
+  Double_t measuredValue = 0.;
+  Double_t measuredError = 0.;
+  for (Long_t iBin=0; iBin<fRandomizedDist->GetNbins(); iBin++) {
+    measuredValue = fMeasuredOrig->GetBinContent(iBin,fCoordinatesN_M); //used as mean
+    measuredError = fMeasuredOrig->GetBinError(fCoordinatesN_M); //used as sigma
+    // random        = fRandom3->PoissonD(measuredValue); //doesn't work for normalized spectra, use Gaus (assuming raw counts in bin is large >10)
+    random        = fRandom3->Gaus(measuredValue,measuredError);
+    fRandomizedDist->SetBinContent(iBin,random);
+  }
+}
+
+//______________________________________________________________
+void AliCFUnfolding::FillDeltaUnfoldedProfile() {
+  //
+  // Store difference of unfolded spectrum from measured distribution and unfolded distribution from randomized distribution
+  //
+
+  for (Long_t iBin2=0; iBin2<fRandomUnfolded->GetNbins(); iBin2++) {
+    Double_t delta = fUnfolded->GetBinContent(iBin2,fCoordinatesN_M)-fRandomUnfolded->GetBinContent(iBin2,fCoordinatesN_M);
+    fDeltaUnfoldedP->Fill(fDeltaUnfoldedP->GetBinCenter(fCoordinatesN_M[0]),delta);
+  }
+}
+
 //______________________________________________________________
 
 void AliCFUnfolding::GetCoordinates() {
@@ -452,25 +626,34 @@ void AliCFUnfolding::CreateConditional() {
   for (Int_t iDim=0; iDim<fNVariables; iDim++) dim[iDim] = fNVariables+iDim ; //dimensions corresponding to TRUE values (i.e. from N to 2N-1)
   fProjResponseInT = fConditional->Projection(fNVariables,dim,"E"); //project
   delete [] dim; 
-  
+
   // fill the conditional probability matrix
   for (Long_t iBin=0; iBin<fResponse->GetNbins(); iBin++) {
     Double_t responseValue = fResponse->GetBinContent(iBin,fCoordinates2N);
-    Double_t responseError = fResponse->GetBinError  (iBin);
     GetCoordinates();
     Double_t projValue = fProjResponseInT->GetBinContent(fCoordinatesN_T);
-    Double_t projError = fProjResponseInT->GetBinError  (fCoordinatesN_T);
-    
+   
     Double_t fill = responseValue / projValue ;
     if (fill>0. || fConditional->GetBinContent(fCoordinates2N)>0.) {
       fConditional->SetBinContent(fCoordinates2N,fill);
-      // gaussian error for the moment
-      Double_t err2 = TMath::Power(responseError*projValue,2) + TMath::Power(responseValue*projError,2) ;
-      Double_t err = TMath::Sqrt(err2);
-      err /= TMath::Power(projValue,2) ;
+      Double_t err = 0.;
       fConditional->SetBinError  (fCoordinates2N,err);
     }
   }
+}
+//______________________________________________________________
+
+Int_t AliCFUnfolding::GetDOF() {
+  //
+  // number of dof = number of bins
+  //
+
+  Int_t nDOF = 1 ;
+  for (Int_t iDim=0; iDim<fNVariables; iDim++) {
+    nDOF *= fPrior->GetAxis(iDim)->GetNbins();
+  }
+  AliDebug(0,Form("Number of degrees of freedom = %d",nDOF));
+  return nDOF;
 }
 
 //______________________________________________________________
@@ -478,12 +661,16 @@ void AliCFUnfolding::CreateConditional() {
 Double_t AliCFUnfolding::GetChi2() {
   //
   // Returns the chi2 between unfolded and a priori spectrum
+  // This function became absolute with the correlated error calculation.
+  // Errors on the unfolded distribution are not known until the end
+  // Use the convergence criterion instead
   //
 
-  Double_t chi2 = 0. ;
+  Double_t chi2      = 0. ;
+  Double_t error_unf = 0.;
   for (Long_t iBin=0; iBin<fPrior->GetNbins(); iBin++) {
     Double_t priorValue = fPrior->GetBinContent(iBin,fCoordinatesN_T);
-    Double_t error_unf  = fUnfolded->GetBinError(fCoordinatesN_T);
+    error_unf  = fUnfolded->GetBinError(fCoordinatesN_T);
     chi2 += (error_unf > 0. ? TMath::Power((fUnfolded->GetBinContent(fCoordinatesN_T) - priorValue)/error_unf,2) / priorValue : 0.) ;
   }
   return chi2;
@@ -491,17 +678,44 @@ Double_t AliCFUnfolding::GetChi2() {
 
 //______________________________________________________________
 
-void AliCFUnfolding::SetMaxChi2PerDOF(Double_t val) {
+Double_t AliCFUnfolding::GetConvergence() {
   //
-  // Max. chi2 per degree of freedom : user setting
+  // Returns convergence criterion = \sum_t ((U_t^{n-1}-U_t^n)/U_t^{n-1})^2
+  // U is unfolded spectrum, t is the bin, n = current, n-1 = previous
+  //
+  Double_t convergence = 0.;
+  Double_t priorValue  = 0.;
+  Double_t currentValue = 0.;
+  for (Long_t iBin=0; iBin < fPrior->GetNbins(); iBin++) {
+    priorValue = fPrior->GetBinContent(iBin,fCoordinatesN_T);
+    if (fNCalcCorrErrors > 0) 
+      currentValue = fRandomUnfolded->GetBinContent(fCoordinatesN_T);
+    else 
+      currentValue = fUnfolded->GetBinContent(fCoordinatesN_T);
+
+    if (priorValue > 0.)
+      convergence += ((priorValue-currentValue)/priorValue)*((priorValue-currentValue)/priorValue);
+    else {
+      AliWarning(Form("priorValue = %f. Adding 0 to convergence criterion.",priorValue)); 
+      convergence += 0.;
+    }
+  }
+  return convergence;
+}
+
+//______________________________________________________________
+
+void AliCFUnfolding::SetMaxConvergencePerDOF(Double_t val) {
+  //
+  // Max. convergence criterion per degree of freedom : user setting
+  // convergence criterion = DOF*val; DOF = number of bins
+  // In Jan-Fiete's multiplicity note: Convergence criterion = DOF*0.001^2
   //
 
-  Int_t nDOF = 1 ;
-  for (Int_t iDim=0; iDim<fNVariables; iDim++) {
-    nDOF *= fPrior->GetAxis(iDim)->GetNbins();
-  }
-  AliInfo(Form("Number of degrees of freedom = %d",nDOF));
-  fMaxChi2 = val * nDOF ;
+  fUseCorrelatedErrors = kTRUE;
+  Int_t nDOF = GetDOF() ;
+  fMaxConvergence = val * nDOF ;
+  AliInfo(Form("MaxConvergence = %e. Number of degrees of freedom = %d",fMaxConvergence,nDOF));
 }
 
 //______________________________________________________________
@@ -540,8 +754,6 @@ Short_t AliCFUnfolding::SmoothUsingNeighbours(THnSparse* hist) {
   for (Long_t iBin=0; iBin<copy->GetNbins(); iBin++) { //loop on non-empty bins
     Double_t content = copy->GetBinContent(iBin,coordinates);
     Double_t error2  = TMath::Power(copy->GetBinError(iBin),2);
-
-    printf("coord = [%d,%d]\n",coordinates[0],coordinates[1]);
 
     // skip the under/overflow bins...
     Bool_t isOutside = kFALSE ;
