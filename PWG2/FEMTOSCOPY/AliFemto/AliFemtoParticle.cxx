@@ -147,6 +147,7 @@ AliFemtoParticle::~AliFemtoParticle(){
     delete fV0;
   }
   if (fKink) delete fKink;
+  if (fXi) delete fXi;
   //  cout << "Trying to delete HiddenInfo: " << fHiddenInfo << endl;
   if (fHiddenInfo) 
     {
