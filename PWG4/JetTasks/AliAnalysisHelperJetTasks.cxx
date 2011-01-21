@@ -149,7 +149,7 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
   if(nRecJets==0||nGenJets==0)return;
 
   // UShort_t *iFlag = new UShort_t[nGenJets*nRecJets];
-  UShort_t iFlag[kMaxJets*kMaxJets];
+  UShort_t iFlag[kMaxJets*kMaxJets] = {0}; // all values set to zero
   for(int i = 0;i < nGenJets;++i){
     for(int j = 0;j < nRecJets;++j){
       iFlag[i*nGenJets+j] = 0;
@@ -742,11 +742,11 @@ Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrac
   Double_t psum102 = 0;
   Double_t psum103 = 0;
 
-  Double_t thrust[kTracks];
+  Double_t thrust[kTracks] = {0.0};
   Double_t th = -3;
-  Double_t thrust02[kTracks];
+  Double_t thrust02[kTracks] = {0.0};
   Double_t th02 = -4;
-  Double_t thrust03[kTracks];
+  Double_t thrust03[kTracks] = {0.0};
   Double_t th03 = -5;
 
   //Sphericity calculation variables
