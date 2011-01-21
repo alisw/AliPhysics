@@ -157,8 +157,6 @@ AliFemtoEvent* AliFemtoEventReaderStandard::ReturnHbtEvent()
     hbtEvent->SetIsCollisionCandidate(kTRUE);
   }
 
-  hbtEvent = new AliFemtoEvent;
-  
   double fV1[3];
 
   //setting basic things
