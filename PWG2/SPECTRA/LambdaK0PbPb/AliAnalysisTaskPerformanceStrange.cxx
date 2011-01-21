@@ -2323,8 +2323,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       if (myTrackNeg) lDcaNegToPrimVertex = TMath::Abs(myTrackNeg->GetD(lPrimaryVtxPosition[0],lPrimaryVtxPosition[1],lMagneticField) );
       
       // Quality tracks cuts:
-      if ( !(myTracksCuts->IsSelected(myTrackPos)) || !(myTracksCuts->IsSelected(myTrackNeg)) ) continue;
-
+      if ( !(myTracksCuts->IsSelected(myTrackPos)) || !(myTracksCuts->IsSelected(myTrackNeg)) ) {
+	if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+      }
       // Armenteros variables:
       lAlphaV0      =  v0->AlphaV0();
       lPtArmV0      =  v0->PtArmV0();
@@ -2538,7 +2543,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     // Daughter momentum cut: ! FIX it in case of AOD !
     if ( (lPtPos  < cutMinPtDaughter ) ||
          (lPtNeg  < cutMinPtDaughter )
-	 ) continue;
+	 ) {
+      if (negPiKF) delete negPiKF; negPiKF=NULL;
+      if (posPiKF) delete posPiKF; posPiKF=NULL;
+      if (posPKF)  delete posPKF;  posPKF=NULL;
+      if (negAPKF) delete negAPKF; negAPKF=NULL;        
+      continue;
+    }
     
     AliKFParticle v0K0sKF;
     v0K0sKF+=(*negPiKF);
@@ -2580,9 +2591,20 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     lPtLambda     = v0LambdaKF.GetPt();
     lPtAntiLambda = v0AntiLambdaKF.GetPt();
 
-if (lPtK0s==0) continue;
-if (lPtLambda==0) continue;
-
+    if (lPtK0s==0) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
+    if (lPtLambda==0) {
+      if (negPiKF) delete negPiKF; negPiKF=NULL;
+      if (posPiKF) delete posPiKF; posPiKF=NULL;
+      if (posPKF)  delete posPKF;  posPKF=NULL;
+      if (negAPKF) delete negAPKF; negAPKF=NULL;  
+      continue;
+    }
     // Pt Resolution
     deltaPtK0s        = (lPtK0s - mcMotherPt)/mcMotherPt;
     deltaPtLambda     = (lPtLambda - mcMotherPt)/mcMotherPt;
@@ -3056,6 +3078,7 @@ if (lPtLambda==0) continue;
   
   // Post output data
   PostData(1, fListHist);
+  PostData(1, fCentrSelector);
 }      
 
 //________________________________________________________________________
