@@ -191,9 +191,13 @@ Bool_t AliCollisionNormalizationTask::IsEventInBinZero() {
 
   Bool_t isZeroBin = kTRUE;
   const AliESDEvent* esd= dynamic_cast<AliESDEvent*>(fInputEvent);
+  if (!esd){ 
+    Printf("AliCollisionNormalizationTask::IsEventInBinZero: Can't get ESD");
+    return kFALSE;   
+  }
   const AliMultiplicity* mult = esd->GetMultiplicity();
   if (!mult){
-    Printf("AliAnalysisTaskBGvsTime::IsBinZero: Can't get mult object");
+    Printf("AliCollisionNormalizationTask::IsEventInBinZero: Can't get mult object");
     return kFALSE;
   }
   Int_t ntracklet = mult->GetNumberOfTracklets();
