@@ -342,10 +342,10 @@ void AliUA1JetFinderV1::RunAlgoritm(Float_t etbgTotal, Double_t dEtTotal, Int_t&
 
 
   // tmp array of jets form algoritm
-  Float_t etaAlgoJet[kMaxJets];
-  Float_t phiAlgoJet[kMaxJets];
-  Float_t etAlgoJet[kMaxJets];
-  Int_t   ncellsAlgoJet[kMaxJets];
+  Float_t etaAlgoJet[kMaxJets] = {0.0};
+  Float_t phiAlgoJet[kMaxJets] = {0.0};
+  Float_t etAlgoJet[kMaxJets] = {0.0};
+  Int_t   ncellsAlgoJet[kMaxJets] = {0};
 
   //run algorithm//
 
@@ -511,7 +511,7 @@ void AliUA1JetFinderV1::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   Float_t rc= header->GetRadius();
-  Float_t etIn[kMaxJets];
+  Float_t etIn[kMaxJets] = {0};
   Float_t etOut = 0;
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
      // if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
@@ -580,7 +580,7 @@ void AliUA1JetFinderV1::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float
 
   //calculate energy inside
   Float_t rc= header->GetRadius();
-  Float_t etIn[kMaxJets];
+  Float_t etIn[kMaxJets] = {0.0};
 
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
      //if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
@@ -646,16 +646,12 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
    Int_t ndiv = 100;
 
    // jet energy and area arrays
-   char hEtname[256];char hAreaname[256];
-
    for(Int_t mjet=0; mjet<nJ; mjet++){
      if(!fhEtJet[mjet]){ 
-       sprintf(hEtname, "hEtJet%d", mjet); 
-       fhEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
+       fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
      }
-     if(!fhAreaJet[mjet]){ 
-       sprintf(hAreaname, "hAreaJet%d", mjet);
-       fhAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);       
+     if(!fhAreaJet[mjet]){        
+       fhAreaJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"area dist in eta ",ndiv,etamin,etamax);       
      }
      fhEtJet[mjet]->Reset();
      fhAreaJet[mjet]->Reset();
@@ -765,16 +761,12 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
 
    // jet energy and area arrays
    // jet energy and area arrays
-   char hEtname[256];char hAreaname[256];
-
    for(Int_t mjet=0; mjet<nJ; mjet++){
      if(!fhEtJet[mjet]){ 
-       sprintf(hEtname, "hEtJet%d", mjet); 
-       fhEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
+       fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
      }
      if(!fhAreaJet[mjet]){ 
-       sprintf(hAreaname, "hAreaJet%d", mjet);
-       fhAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);       
+       fhAreaJet[mjet] = new TH1F(Form("hAreaJet%d", mjet),"area dist in eta ",ndiv,etamin,etamax);       
      }
      fhEtJet[mjet]->Reset();
      fhAreaJet[mjet]->Reset();

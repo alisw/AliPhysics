@@ -272,10 +272,6 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
        }
        fAODevent = new AliAODEvent();
        fAODevent->ReadFromTree(fAODtree);
-       if(!fAODevent){
-           AliError("AOD event not found.");
-           return;
-       }
     } //end: embed mode with AOD
 
 

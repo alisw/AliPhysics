@@ -64,8 +64,8 @@ AliCdfJetFinder::AliCdfJetFinder():
     fAODtracksWrite(0),
     fAnalyseJets(0),
     fRefArr (NULL),
-    fNJets(-9999),
-    fNPart(-9999),
+    fNJets(0),
+    fNPart(0),
     fRadius(0.7),
     fMinJetParticles(1),
     fJetPtCut(0.),
@@ -891,6 +891,9 @@ for(  Int_t part = 0 ; part < fNPart ; part++ )
       }
     }
 
+  delete [] dphipartljet;
+  delete [] zpartljet;
+  delete [] idxpartLJ;
 }
 
 

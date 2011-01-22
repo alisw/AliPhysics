@@ -1386,13 +1386,14 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	return iCount;
       }
       TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
+      if(!aodExtraTracks)return iCount;
       for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
 	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
 	if (!track) continue;
 
 	AliAODTrack *trackAOD = dynamic_cast<AliAODTrack*> (track);
+	if(!trackAOD)continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
-
 	list->Add(trackAOD);
 	iCount++;
       }
