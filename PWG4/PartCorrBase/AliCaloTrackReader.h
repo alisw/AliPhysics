@@ -229,9 +229,16 @@ public:
   void SwitchOffCaloFilterPatch() {fCaloFilterPatch = kFALSE ; }
   Bool_t IsCaloFilterPatchOn()    {if(fDataType == kAOD) { return fCaloFilterPatch ; } 
                                    else                  { return kFALSE ; } }
-  
-  virtual AliCentrality* GetCentrality() const {return 0x0;}
-
+  //Centrality
+  virtual AliCentrality* GetCentrality() const {return 0x0;} //Actual method to recover the pointer is in the ESD/AODReader
+  void SetCentralityClass(TString name)    { fCentralityClass   = name       ;}
+  void SetCentralityOpt(Int_t opt)         { fCentralityOpt     = opt        ;}
+  TString GetCentralityClass()      const  { return fCentralityClass         ;}
+  Int_t   GetCentralityOpt()        const  { return fCentralityOpt           ;}
+  Int_t   GetEventCentrality()      const ;
+  void    SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+    {fCentralityBin[0]=min; fCentralityBin[1]=max;  if(min>=0 && max > 0) fCentralityOpt = 100; }
+  Float_t GetCentralityBin(Int_t i) const  { if(i < 0 || i > 1) return 0 ; else return fCentralityBin[i] ; }
   
   //MC reader methods:
   
@@ -320,8 +327,13 @@ public:
   Bool_t           fCaloFilterPatch;    // CaloFilter patch
   TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
   Float_t          fZvtxCut ;	           // Cut on vertex position  
-
-  ClassDef(AliCaloTrackReader,22)
+  
+  //Centrality
+  TString          fCentralityClass;    // Name of selected centrality class     
+  Int_t            fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
+  Int_t            fCentralityBin[2];   // Minimum and maximum value of the centrality for the analysis
+  
+  ClassDef(AliCaloTrackReader,23)
 } ;
 
 
