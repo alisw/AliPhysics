@@ -93,10 +93,11 @@ void AliFastJetFinder::FindJets()
   if(debug)cout<<"----------in AliFastJetFinder::FindJets() ------------------"<<endl;
 
   // check if we are reading AOD jets
+  /* NOT used
   TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
   if (fromAod) { refs = fReader->GetReferences(); }
-  
+  */
   // RUN ALGORITHM  
   // read input particles -----------------------------
 
