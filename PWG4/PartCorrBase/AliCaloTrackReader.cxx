@@ -69,7 +69,9 @@ ClassImp(AliCaloTrackReader)
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
-    fEMCALClustersListName(""),fZvtxCut(0.)
+    fEMCALClustersListName(""),fZvtxCut(0.),
+    fCentralityClass("V0M"),fCentralityOpt(10)
+
 {
   //Ctor
   
@@ -328,6 +330,9 @@ void AliCaloTrackReader::InitParameters()
 
   fZvtxCut   = 10.;
   
+  //Centrality
+  fCentralityBin[0]=fCentralityBin[1]=-1;
+  
 }
 
 //________________________________________________________________
@@ -363,7 +368,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 	
   printf("Read Kine from, stack? %d, AOD ? %d \n", fReadStack, fReadAODMCParticles) ;
   printf("Delta AOD File Name =     %s\n", fDeltaAODFileName.Data()) ;
+  if(GetCentrality())
+    printf("Centrality: Class %s, Option %d, Bin [%d,%d] \n", fCentralityClass.Data(),fCentralityOpt,fCentralityBin[0], fCentralityBin[1]) ;
+
   printf("    \n") ;
+  
 } 
 
 //___________________________________________________
@@ -432,6 +441,13 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 //    
 //  }
 	
+  //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
+  //If we need a centrality bin, we select only those events in the corresponding bin.
+  if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100){
+    Int_t cen = GetEventCentrality();
+    if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
+  }
+  
   //Fill Vertex array
   
   FillVertexArray();
@@ -506,6 +522,23 @@ void AliCaloTrackReader::SetInputEvent(AliVEvent* const input)
     fVertex[i][1] = 0.0 ; 
     fVertex[i][2] = 0.0 ; 
   }
+}
+
+//__________________________________________________
+Int_t AliCaloTrackReader::GetEventCentrality() const {
+  //Return current event centrality
+  
+  if(GetCentrality()){
+    if(fCentralityOpt==100)     return (Int_t) GetCentrality()->GetCentralityPercentile(fCentralityClass);
+    else if(fCentralityOpt==10) return GetCentrality()->GetCentralityClass10(fCentralityClass); 
+    else if(fCentralityOpt==5)  return GetCentrality()->GetCentralityClass5(fCentralityClass);
+    else {
+      printf("AliAnaPartCorrBaseClass::Unknown centrality option %d, use 5, 10 or 100\n",fCentralityOpt);
+      return 0;
+    } 
+  }
+  else return 0;
+  
 }
 
 //____________________________________________________________________________

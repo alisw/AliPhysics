@@ -87,12 +87,8 @@ public:
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
   //Centrality
-  AliCentrality* GetCentrality() const  { return fReader->GetCentrality() ;}
-  void SetCentralityClass(TString name)    { fCentralityClass   = name       ;}
-  void SetCentralityOpt(Int_t opt)         { fCentralityOpt     = opt        ;}
-  TString GetCentralityClass()     const   { return fCentralityClass         ;}
-  Int_t   GetCentralityPercent()   const   { return fCentralityOpt           ;}
-  Int_t   GetEventCentrality()     const ;
+  AliCentrality* GetCentrality()      const  { return fReader->GetCentrality()      ;}
+  Int_t          GetEventCentrality() const  { return fReader->GetEventCentrality() ;}
  
   virtual void Terminate(TList * /*outputList*/) {;}
 	
@@ -323,9 +319,6 @@ private:
   TString       fAODObjArrayName ;   //  Name of ref array kept in a TList in AliAODParticleCorrelation with clusters or track references.
   TString       fAddToHistogramsName;//  Add this string to histograms name
   
-  TString       fCentralityClass;    // Name of selected centrality class     
-  Int_t         fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
-  
   //Analysis helper classes access pointers
   AliCaloPID               * fCaloPID; //! PID calculation
   AliFiducialCut           * fFidCut;  //! Acceptance cuts
@@ -360,7 +353,7 @@ private:
   Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
   Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,14)
+  ClassDef(AliAnaPartCorrBaseClass,15)
 } ;
 
 
