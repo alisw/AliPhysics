@@ -42,7 +42,7 @@
 #include "AliStack.h"
 #include "AliVCaloCells.h"
 #include "AliFiducialCut.h"
-#include "AliVTrack.h"
+#include "AliAODTrack.h"
 #include "AliVCluster.h"
 #include "AliVEvent.h"
 #include "AliVEventHandler.h"
@@ -678,36 +678,37 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
       }
       
     }
-    
-    for(Int_t ircu = 0; ircu < fNRCU; ircu++){
-      fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
-                                                    Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
-                                                    nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-      fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
-      fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
-      outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
       
-      //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hT0TimeAmp_Mod%d_RCU%d",imod,ircu),
-      //															  Form("Cell Energy vs T0-Cell Time in Module %d, RCU %d ",imod,ircu), 
-      //															  nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
-      //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
-      //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("T_{0} - T_{EMCal} (ns)");
-      //				outputContainer->Add(fhT0TimeAmpPerRCU[imod*fNRCU+ircu]);
-      //			
-			
-      //				for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
-      //						for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
-      //							Int_t index =  (imod2*fNRCU+ircu2)+(fNModules*fNRCU)*(ircu+imod)+fNRCU*fNModules*imod; 
-      //							fhTimeCorrRCU[index]  = new TH2F (Form("hTimeCorrRCU_Mod%d_RCU%d_CompareTo_Mod%d_RCU%d",imod, ircu,imod2, ircu2),
-      //																			Form("Cell Energy > 0.3, Correlate cell Time in Module %d, RCU %d to Module %d, RCU %d",imod,ircu,imod2, ircu2),
-      //																			ntimebins,timemin,timemax,ntimebins,timemin,timemax); 
-      //							fhTimeCorrRCU[index]->SetXTitle("Trigger Cell Time (ns)");
-      //							fhTimeCorrRCU[index]->SetYTitle("Cell Time (ns)");
-      //							outputContainer->Add(fhTimeCorrRCU[index]);
-      //						}
-      //				}
+      for(Int_t ircu = 0; ircu < fNRCU; ircu++){
+        fhTimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hTimeAmp_Mod%d_RCU%d",imod,ircu),
+                                                      Form("Cell Energy vs Cell Time in Module %d, RCU %d ",imod,ircu), 
+                                                      nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+        fhTimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("time (ns)");
+        outputContainer->Add(fhTimeAmpPerRCU[imod*fNRCU+ircu]);
+        
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]  = new TH2F (Form("hT0TimeAmp_Mod%d_RCU%d",imod,ircu),
+        //															  Form("Cell Energy vs T0-Cell Time in Module %d, RCU %d ",imod,ircu), 
+        //															  nptbins,ptmin,ptmax,ntimebins,timemin,timemax); 
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetXTitle("E (GeV)");
+        //				fhT0TimeAmpPerRCU[imod*fNRCU+ircu]->SetYTitle("T_{0} - T_{EMCal} (ns)");
+        //				outputContainer->Add(fhT0TimeAmpPerRCU[imod*fNRCU+ircu]);
+        //			
+        
+        //				for(Int_t imod2 = 0; imod2 < fNModules; imod2++){
+        //						for(Int_t ircu2 = 0; ircu2 < fNModules; ircu2++){
+        //							Int_t index =  (imod2*fNRCU+ircu2)+(fNModules*fNRCU)*(ircu+imod)+fNRCU*fNModules*imod; 
+        //							fhTimeCorrRCU[index]  = new TH2F (Form("hTimeCorrRCU_Mod%d_RCU%d_CompareTo_Mod%d_RCU%d",imod, ircu,imod2, ircu2),
+        //																			Form("Cell Energy > 0.3, Correlate cell Time in Module %d, RCU %d to Module %d, RCU %d",imod,ircu,imod2, ircu2),
+        //																			ntimebins,timemin,timemax,ntimebins,timemin,timemax); 
+        //							fhTimeCorrRCU[index]->SetXTitle("Trigger Cell Time (ns)");
+        //							fhTimeCorrRCU[index]->SetYTitle("Cell Time (ns)");
+        //							outputContainer->Add(fhTimeCorrRCU[index]);
+        //						}
+        //				}
+      }
     }
-    
     
     fhIMMod[imod]  = new TH2F (Form("hIM_Mod%d",imod),
                                Form("Cluster pairs Invariant mass vs reconstructed pair energy in Module %d",imod),
@@ -1414,13 +1415,18 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       
       //matched cluster with tracks
       nTracksMatched = clus->GetNTracksMatched();
-      trackIndex     = clus->GetTrackMatchedIndex();
-      if(trackIndex >= 0){
-        track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
-      }
-      else{
-        if(nTracksMatched == 1) nTracksMatched = 0;
-        track = 0;
+      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
+        trackIndex     = clus->GetTrackMatchedIndex();
+        if(trackIndex >= 0){
+          track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
+        }
+        else{
+          if(nTracksMatched == 1) nTracksMatched = 0;
+          track = 0;
+        }
+      }//kESD
+      else{//AODs
+        if(nTracksMatched > 0) track = (AliVTrack*)clus->GetTrackMatched(0);
       }
       
       //Shower shape parameters
@@ -1621,17 +1627,19 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     cell = GetEMCALCells();
   
   if(!cell) {
-    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s ESD CELLS available for analysis\n",fCalorimeter.Data());
+    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s CELLS available for analysis\n",fCalorimeter.Data());
     abort();
   }
   
   if(GetDebug() > 0) 
-    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In ESD %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
+    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
   
   for (Int_t iCell = 0; iCell < cell->GetNumberOfCells(); iCell++) {      
-    if(GetDebug() > 2)  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
+    if(GetDebug() > 2)  
+      printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cell->GetAmplitude(iCell), cell->GetCellNumber(iCell));
     nModule = GetModuleNumberCellIndexes(cell->GetCellNumber(iCell),fCalorimeter, icol, irow, iRCU);
-    if(GetDebug() > 2) printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
+    if(GetDebug() > 2) 
+      printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
     
     if(nModule < fNModules) {	
       //Check if the cell is a bad channel
@@ -1646,7 +1654,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           }
         }
       }
-      
+      else return;
+
       //Get Recalibration factor if set
       if (GetCaloUtils()->IsRecalibrationOn()) {
         if(fCalorimeter == "PHOS") recalF = GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
@@ -1656,26 +1665,17 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       
       amp     = cell->GetAmplitude(iCell)*recalF;
       time    = cell->GetTime(iCell)*1e9;//transform time to ns
-      if(time < fTimeCutMin || time > fTimeCutMax) continue;
       
+      //Remove noisy channels, only possible in ESDs
+      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
+        if(time < fTimeCutMin || time > fTimeCutMax) continue;
+      }
       //if(amp > 3 && fCalorimeter=="EMCAL") printf("Amp = %f, time = %f, (mod, col, row)= (%d,%d,%d)\n",
       //										   amp,time,nModule,icol,irow);
       
-      //printf("%s: time %g\n",fCalorimeter.Data(), time);
       id      = cell->GetCellNumber(iCell);
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
-      fhTime     ->Fill(time);
-      fhTimeId   ->Fill(time,id);
-      fhTimeAmp  ->Fill(amp,time);
-      //Double_t t0 = GetReader()->GetInputEvent()->GetT0();
-      //printf("---->>> Time EMCal %e, T0 %e, T0 vertex %e, T0 clock %e, T0 trig %d \n",time,t0, 
-      //	   GetReader()->GetInputEvent()->GetT0zVertex(),
-      //	   GetReader()->GetInputEvent()->GetT0clock(),
-      //	   GetReader()->GetInputEvent()->GetT0Trig());
-      //fhT0Time     ->Fill(time-t0);
-      //fhT0TimeId   ->Fill(time-t0,id);
-      //fhT0TimeAmp  ->Fill(amp,time-t0);
       
       fhAmplitudeMod[nModule]->Fill(amp);
       if(fCalorimeter=="EMCAL"){
@@ -1685,40 +1685,60 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         fhAmplitudeModFraction[nModule*3+ifrac]->Fill(amp);
       }
       
-      fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
-      //printf("id %d, nModule %d, iRCU %d: Histo Name %s\n",id, nModule,iRCU, fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->GetName());
-      //fhT0TimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time-t0);
       nCellsInModule[nModule]++;
       fhGridCellsMod[nModule]    ->Fill(icol,irow);
       fhGridCellsEMod[nModule]   ->Fill(icol,irow,amp);
-      if(amp > 0.3){
-        fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
+      
+      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
+        //printf("%s: time %g\n",fCalorimeter.Data(), time);
+        fhTime     ->Fill(time);
+        fhTimeId   ->Fill(time,id);
+        fhTimeAmp  ->Fill(amp,time);
         
-        //					AliESDCaloCells * cell2 = 0x0; 
-        //					if(fCalorimeter == "PHOS") cell2 =  GetReader()->GetInputEvent()->GetPHOSCells();
-        //					else		           cell2 = GetReader()->GetInputEvent()->GetEMCALCells();
-        //					Int_t icol2    = -1;
-        //					Int_t irow2    = -1;
-        //					Int_t iRCU2    = -1;
-        //					Float_t amp2   =  0.;
-        //					Float_t time2  =  0.;
-        //					Int_t id2      = -1;
-        //					Int_t nModule2 = -1;
-        //					for (Int_t iCell2 = 0; iCell2 < ncells; iCell2++) {  
-        //						amp2    = cell2->GetAmplitude(iCell2);
-        //						if(amp2 < 0.3) continue;
-        //						if(iCell2 == iCell) continue;
-        //						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
-        //						//printf("%s: time %g\n",fCalorimeter.Data(), time);
-        //						id2      = cell2->GetCellNumber(iCell2);
-        //						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), fCalorimeter, icol2, irow2, iRCU2);
-        //						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
-        //						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
-        //						fhTimeCorrRCU[index]->Fill(time,time2);	
-        //						
-        //					}// second cell loop
-      }// amplitude cut
-    }//nmodules
+        //Double_t t0 = GetReader()->GetInputEvent()->GetT0();
+        //printf("---->>> Time EMCal %e, T0 %e, T0 vertex %e, T0 clock %e, T0 trig %d \n",time,t0, 
+        //	   GetReader()->GetInputEvent()->GetT0zVertex(),
+        //	   GetReader()->GetInputEvent()->GetT0clock(),
+        //	   GetReader()->GetInputEvent()->GetT0Trig());
+        //fhT0Time     ->Fill(time-t0);
+        //fhT0TimeId   ->Fill(time-t0,id);
+        //fhT0TimeAmp  ->Fill(amp,time-t0);
+        
+        //printf("id %d, nModule %d, iRCU %d: Histo Name %s\n",id, nModule,iRCU, fhTimeAmpPerRCU[nModule*fNRCU+iRCU]->GetName());
+        //fhT0TimeAmpPerRCU[nModule*fNRCU+iRCU]->Fill(amp, time-t0);
+        
+        fhTimeAmpPerRCU  [nModule*fNRCU+iRCU]->Fill(amp, time);
+        
+        if(amp > 0.3){
+          fhGridCellsTimeMod[nModule]->Fill(icol,irow,time);
+          
+          //					AliESDCaloCells * cell2 = 0x0; 
+          //					if(fCalorimeter == "PHOS") cell2 =  GetReader()->GetInputEvent()->GetPHOSCells();
+          //					else		           cell2 = GetReader()->GetInputEvent()->GetEMCALCells();
+          //					Int_t icol2    = -1;
+          //					Int_t irow2    = -1;
+          //					Int_t iRCU2    = -1;
+          //					Float_t amp2   =  0.;
+          //					Float_t time2  =  0.;
+          //					Int_t id2      = -1;
+          //					Int_t nModule2 = -1;
+          //					for (Int_t iCell2 = 0; iCell2 < ncells; iCell2++) {  
+          //						amp2    = cell2->GetAmplitude(iCell2);
+          //						if(amp2 < 0.3) continue;
+          //						if(iCell2 == iCell) continue;
+          //						time2    = cell2->GetTime(iCell2)*1e9;//transform time to ns
+          //						//printf("%s: time %g\n",fCalorimeter.Data(), time);
+          //						id2      = cell2->GetCellNumber(iCell2);
+          //						nModule2 = GetModuleNumberCellIndexes(cell2->GetCellNumber(iCell2), fCalorimeter, icol2, irow2, iRCU2);
+          //						Int_t index = (nModule2*fNRCU+iRCU2)+(fNModules*fNRCU)*(iRCU+fNRCU*nModule); 
+          //						//printf("id %d, nModule %d, iRCU %d, id2 %d, nModule2 %d, iRCU2 %d, index %d: Histo Name %s\n",id, nModule,iRCU,cell2->GetCellNumber(iCell2),nModule2,iRCU2,index, fhTimeCorrRCU[index]->GetName());
+          //						fhTimeCorrRCU[index]->Fill(time,time2);	
+          //						
+          //					}// second cell loop
+          
+        }// amplitude cut
+      }
+    
     
     //Get Eta-Phi position of Cell
     if(fFillAllPosHisto)
@@ -1755,10 +1775,12 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         fhXYZCell->Fill(xyz.X(),xyz.Y(),xyz.Z())  ;
       }//PHOS cells
     }//fill cell position histograms
+    
     if     (fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ncells ++ ;
     else if(fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin)  ncells ++ ;
-    //else  
-    //  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());       
+    else  
+      printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());    
+    }//nmodules
   }//cell loop
   if(ncells > 0 )fhNCells->Fill(ncells) ; //fill the cells after the cut 
   
@@ -1815,20 +1837,17 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
   fhNCellsPerClusterMIP->Fill(e, nCaloCellsPerCluster,eta);
   
   //Position
-  if(fFillAllPosHisto)
-  {
-    fhXE     ->Fill(pos[0],e);
-    fhYE     ->Fill(pos[1],e);
-    fhZE     ->Fill(pos[2],e);
-    fhXYZ    ->Fill(pos[0], pos[1],pos[2]);
+  fhXE     ->Fill(pos[0],e);
+  fhYE     ->Fill(pos[1],e);
+  fhZE     ->Fill(pos[2],e);
+  fhXYZ    ->Fill(pos[0], pos[1],pos[2]);
     
-    fhXNCells->Fill(pos[0],nCaloCellsPerCluster);
-    fhYNCells->Fill(pos[1],nCaloCellsPerCluster);
-    fhZNCells->Fill(pos[2],nCaloCellsPerCluster);
-    Float_t rxyz = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);//+pos[2]*pos[2]);
-    fhRE     ->Fill(rxyz,e);
-    fhRNCells->Fill(rxyz  ,nCaloCellsPerCluster);
-  }
+  fhXNCells->Fill(pos[0],nCaloCellsPerCluster);
+  fhYNCells->Fill(pos[1],nCaloCellsPerCluster);
+  fhZNCells->Fill(pos[2],nCaloCellsPerCluster);
+  Float_t rxyz = TMath::Sqrt(pos[0]*pos[0]+pos[1]*pos[1]);//+pos[2]*pos[2]);
+  fhRE     ->Fill(rxyz,e);
+  fhRNCells->Fill(rxyz  ,nCaloCellsPerCluster);
   
   fhClusterTimeEnergy->Fill(e,tof);
 	
@@ -2118,9 +2137,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
 	
   //Match tracks and clusters
   //To be Modified in case of AODs
-	
-  //if(ntracksmatched==1 && trackIndex==-1) ntracksmatched=0;
-	
+		
   if( nTracksMatched > 0){
     if(fFillAllTH12){
       fhECharged      ->Fill(e);	
@@ -2151,54 +2168,53 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     Int_t nTPC   = 0;
     
     //In case of ESDs get the parameters in this way
-    //		if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-    if (track->GetOuterParam() ) {
-      okout = kTRUE;
-      
-      bfield = GetReader()->GetInputEvent()->GetMagneticField();
-      okpos = track->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
-      okmom = track->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
-      if(!(okpos && okmom)) return;
-      
-      TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-      TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-      tphi = position.Phi();
-      teta = position.Eta();
-      tmom = momentum.Mag();
-      
-      //Double_t tphi  = track->GetOuterParam()->Phi();
-      //Double_t teta  = track->GetOuterParam()->Eta();
-      //Double_t tmom  = track->GetOuterParam()->P();
-      tpt       = track->Pt();
-      tmom2     = track->P();
-      tpcSignal = track->GetTPCsignal();
-      
-      nITS = track->GetNcls(0);
-      nTPC = track->GetNcls(1);
-    }//Outer param available 
-    //}// ESDs
-    //			else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
-    //				AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
-    //				if (pid) {
-    //					okout = kTRUE;
-    //					pid->GetEMCALPosition(emcpos);
-    //					pid->GetEMCALMomentum(emcmom);	
-    //					
-    //					TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
-    //					TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
-    //					tphi = position.Phi();
-    //					teta = position.Eta();
-    //					tmom = momentum.Mag();
-    //					
-    //					tpt       = ((AliAODTrack*)track)->Pt();
-    //					tmom2     = ((AliAODTrack*)track)->P();
-    //					tpcSignal = pid->GetTPCsignal();
-    //				
-    //					//nITS = ((AliAODTrack*)track)->GetNcls(0);
-    //					//nTPC = ((AliAODTrack*)track)->GetNcls(1);
-    //				}//Outer param available 
-    //			}//AODs
-    //			else return; //Do nothing case not implemented.
+    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+      if (track->GetOuterParam() ) {
+        okout = kTRUE;
+        
+        bfield = GetReader()->GetInputEvent()->GetMagneticField();
+        okpos = track->GetOuterParam()->GetXYZAt(radius,bfield,emcpos);
+        okmom = track->GetOuterParam()->GetPxPyPzAt(radius,bfield,emcmom);
+        if(!(okpos && okmom)) return;
+        
+        TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+        TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+        tphi = position.Phi();
+        teta = position.Eta();
+        tmom = momentum.Mag();
+        
+        //Double_t tphi  = track->GetOuterParam()->Phi();
+        //Double_t teta  = track->GetOuterParam()->Eta();
+        //Double_t tmom  = track->GetOuterParam()->P();
+        tpt       = track->Pt();
+        tmom2     = track->P();
+        tpcSignal = track->GetTPCsignal();
+        
+        nITS = track->GetNcls(0);
+        nTPC = track->GetNcls(1);
+      }//Outer param available 
+    }// ESDs
+    else if(GetReader()->GetDataType()==AliCaloTrackReader::kAOD) {
+      AliAODPid* pid = (AliAODPid*) ((AliAODTrack *) track)->GetDetPid();
+      if (pid) {
+        okout = kTRUE;
+        pid->GetEMCALPosition(emcpos);
+        pid->GetEMCALMomentum(emcmom);	
+        
+        TVector3 position(emcpos[0],emcpos[1],emcpos[2]);
+        TVector3 momentum(emcmom[0],emcmom[1],emcmom[2]);
+        tphi = position.Phi();
+        teta = position.Eta();
+        tmom = momentum.Mag();
+        
+        tpt       = track->Pt();
+        tmom2     = track->P();
+        tpcSignal = pid->GetTPCsignal();
+        
+        //nITS = ((AliAODTrack*)track)->GetNcls(0);
+        //nTPC = ((AliAODTrack*)track)->GetNcls(1);
+      }//pid 
+    }//AODs
 		
     if(okout){
       Double_t deta = teta - eta;
