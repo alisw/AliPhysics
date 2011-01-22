@@ -347,7 +347,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
   if(fNonStdFile.Length()!=0){
     // case that we have an AOD extension we need can fetch the jets from the extended output
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-    fAODExtension = aodH->GetExtension(fNonStdFile.Data());    
+    fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);    
     if(!fAODExtension){
       if(fDebug>1)Printf("AODExtension found for %s",fNonStdFile.Data());
     }
@@ -1045,8 +1045,8 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   if(nOver>0){
     TIterator *jetIter = jetsList.MakeIterator();
     AliAODJet *tmpJet = (AliAODJet*)(jetIter->Next());  
-    Float_t pt = tmpJet->Pt();
     if(tmpJet){
+      Float_t pt = tmpJet->Pt();
       for(int i = 1;i <= fh2NJetsPt[iType]->GetNbinsX();i++){
 	Float_t ptCut = fh2NJetsPt[iType]->GetXaxis()->GetBinCenter(i);
 	while(pt<ptCut&&tmpJet){
@@ -1381,6 +1381,7 @@ void AliAnalysisTaskJetSpectrum2::UserExecOld(Option_t */*option*/)
        Int_t iSubJetCounter = 0;
        for(Int_t k=0;k<nJets;k++){
 	 AliAODJet *jet = dynamic_cast<AliAODJet*>(aodRecJets->At(k));
+	 if(!jet)continue;
 	 fh1Ptjet->Fill(jet->Pt());
 	 Float_t ptsub1=jet->Pt()-bkg1*jet->EffectiveAreaCharged();
 	 Float_t ptsub2=jet->Pt()-bkg2*jet->EffectiveAreaCharged();
@@ -1573,8 +1574,9 @@ void AliAnalysisTaskJetSpectrum2::UserExecOld(Option_t */*option*/)
   if(nRecOver>0){
     TIterator *recIter = aodRecJets->MakeIterator();
     AliAODJet *tmpRec = (AliAODJet*)(recIter->Next());  
-    Float_t pt = tmpRec->Pt();
+    Float_t pt = 0;
     if(tmpRec){
+      pt = tmpRec->Pt();
       for(int i = 1;i <= fh2NRecJetsPt->GetNbinsX();i++){
 	Float_t ptCut = fh2NRecJetsPt->GetXaxis()->GetBinCenter(i);
 	while(pt<ptCut&&tmpRec){
@@ -2091,6 +2093,7 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
     if(!tca)return iCount;
     for(int it = 0;it < tca->GetEntriesFast();++it){
       AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+      if(!part)continue;
       if(part->Pt()<fMinTrackPt)continue;
       if(!part->IsPhysicalPrimary())continue;
       if(type == kTrackAODMCAll){

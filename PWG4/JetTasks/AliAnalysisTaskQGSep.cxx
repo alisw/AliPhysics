@@ -287,7 +287,7 @@ void AliAnalysisTaskQGSep::LoopAOD(){
   }
 
   Int_t idxj[4];
-  TMath::Sort(nRecJets, e, idxj);
+  TMath::Sort(TMath::Min(nRecJets,4), e, idxj);
   for(Int_t i = 0; i < nRecJets; i++){
     recJets[i] = rJets[idxj[i]];
   }
@@ -427,7 +427,7 @@ void AliAnalysisTaskQGSep::LoopAODMC(){
   }
 
   Int_t idxj[4];
-  TMath::Sort(nRecJets, e, idxj);
+  TMath::Sort(TMath::Min(nRecJets,4), e, idxj);
   for(Int_t i = 0; i < nRecJets; i++){
     recJets[i] = rJets[idxj[i]];
   }
@@ -449,7 +449,7 @@ void AliAnalysisTaskQGSep::LoopAODMC(){
   TMath::Sort(nMCtracks, pTMC, idxMC);
   
   
-  Int_t flagQ[4], flagG[4];   
+  Int_t flagQ[4] = {0}, flagG[4] = {0};   
   for(Int_t iJ = 0; iJ < nRecJets; iJ++){
     //flag jet as q/g
     

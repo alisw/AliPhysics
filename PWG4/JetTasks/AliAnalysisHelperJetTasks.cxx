@@ -375,6 +375,7 @@ void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* 
     TFile* fIn = dynamic_cast<TFile*>(fileList.At(0));
     if(!fIn){
       Printf("Input File not Found");
+      return;
     }
     // fetch the keys for the directories
     TList *ldKeys = fIn->GetListOfKeys();

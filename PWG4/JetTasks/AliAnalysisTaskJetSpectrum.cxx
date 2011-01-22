@@ -215,10 +215,12 @@ Bool_t AliAnalysisTaskJetSpectrum::Notify()
       if(!xtree){
 	Printf("%s:%d tree not found in the pyxsec.root",(char*)__FILE__,__LINE__);
       }
-      xtree->SetBranchAddress("xsection",&xsection);
-      xtree->SetBranchAddress("ntrials",&ntrials);
-      ftrials = ntrials;
-      xtree->GetEntry(0);
+      else{
+	xtree->SetBranchAddress("xsection",&xsection);
+	xtree->SetBranchAddress("ntrials",&ntrials);
+	ftrials = ntrials;
+	xtree->GetEntry(0);
+      }
     }
     fh1Xsec->Fill("<#sigma>",xsection);
     fh1Trials->Fill("#sum{ntrials}",ftrials);
