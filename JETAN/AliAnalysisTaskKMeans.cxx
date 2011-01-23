@@ -492,7 +492,6 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
   
     mPhi    = best.GetMx();
     mEta    = best.GetMy();
-    sigma2  = best.GetSigma2();
     nk      = best.GetK();
     im      = (best.GetInd())[0];
     etaC    = mEta[im];    

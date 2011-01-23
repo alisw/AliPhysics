@@ -52,6 +52,7 @@ AliJetHadronCorrectionv1::AliJetHadronCorrectionv1(const char *name,const char *
      fSamplingFraction(0)
 {
   fgHadrCorr = this;
+  for (Int_t i = 0; i < 8; i++) fPar[i] = 0.;
 }
 
 AliJetHadronCorrectionv1*

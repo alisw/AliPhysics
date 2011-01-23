@@ -95,9 +95,7 @@ void AliFastJetInput::FillInput(){
   Int_t fOpt   = fReader->GetReaderHeader()->GetDetector();
 
   // check if we are reading AOD jets
-  TRefArray *refs = 0;
   Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
-  if (fromAod) { refs = fReader->GetReferences(); }
   
   // RUN ALGORITHM  
   // read input particles -----------------------------
