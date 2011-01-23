@@ -15,7 +15,7 @@
 
 class AliMCVertex : public AliVVertex {
     public:
-    AliMCVertex() {;}
+  AliMCVertex() {fPosition[0] = 0.; fPosition[1] = 0.; fPosition[2] = 0.;}
     AliMCVertex(Double_t xv, Double_t yv, Double_t zv)
 	{fPosition[0] = xv; fPosition[1] = yv; fPosition[2] = zv;}
     virtual ~AliMCVertex() {;}

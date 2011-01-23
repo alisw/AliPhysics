@@ -39,9 +39,11 @@ AliAODPid::AliAODPid():
     fHMPIDsignal(0)
 {
   // default constructor
-    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=0; 
-    for(Int_t i=0; i<3; i++) fEMCALPosition[i] = 0.;
+    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]   = 0; 
+    for(Int_t i=0; i<3; i++) fEMCALPosition[i]    = 0.;
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
+    for(Int_t i=0; i<6; i++) fTRDmomentum[i]      = 0.;
+    for(Int_t i=0; i<3; i++) fEMCALMomentum[i]    = 0.;
   
 }
 

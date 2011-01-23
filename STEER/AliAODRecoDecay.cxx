@@ -522,7 +522,7 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
     return -1;
   }
   
-  Int_t dgLabels[10];
+  Int_t dgLabels[10] = {0};
 
   // loop on daughters and write the labels
   for(Int_t i=0; i<ndg; i++) {

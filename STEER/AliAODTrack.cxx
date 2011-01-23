@@ -346,27 +346,22 @@ AliAODTrack::AODTrkPID_t AliAODTrack::GetMostProbablePID() const
   // Returns the most probable PID array element.
   
   Int_t nPID = 10;
-  if (fPID) {
-    AODTrkPID_t loc = kUnknown;
-    Double_t max = 0.;
-    Bool_t allTheSame = kTRUE;
-    
-    for (Int_t iPID = 0; iPID < nPID; iPID++) {
-      if (fPID[iPID] >= max) {
-	if (fPID[iPID] > max) {
-	  allTheSame = kFALSE;
-	  max = fPID[iPID];
-	  loc = (AODTrkPID_t)iPID;
-	} else {
-	  allTheSame = kTRUE;
-	}
+  AODTrkPID_t loc = kUnknown;
+  Double_t max = 0.;
+  Bool_t allTheSame = kTRUE;
+  
+  for (Int_t iPID = 0; iPID < nPID; iPID++) {
+    if (fPID[iPID] >= max) {
+      if (fPID[iPID] > max) {
+	allTheSame = kFALSE;
+	max = fPID[iPID];
+	loc = (AODTrkPID_t)iPID;
+      } else {
+	allTheSame = kTRUE;
       }
     }
-    
-    return allTheSame ? kUnknown : loc;
-  } else {
-    return kUnknown;
   }
+  return allTheSame ? kUnknown : loc;
 }
 
 //______________________________________________________________________________

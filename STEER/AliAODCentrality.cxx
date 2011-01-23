@@ -117,6 +117,15 @@ fMultFMDA    	  (cnt.fMultFMDA ),
 fMultFMDC         (cnt.fMultFMDC )
 {
   // Copy constructor.
+  for (int i=0;i<6;i++) fNClusters[i] = cnt.fNClusters[i];
+  for (int i=0;i<2;i++) fNChips[i]    = cnt.fNChips[i];
+  for (int i=0;i<5;i++) fZNCtower[i]  = cnt.fZNCtower[i];
+  for (int i=0;i<5;i++) fZPCtower[i]  = cnt.fZPCtower[i];
+  for (int i=0;i<5;i++) fZNAtower[i]  = cnt.fZNAtower[i];
+  for (int i=0;i<5;i++) fZPAtower[i]  = cnt.fZPAtower[i];
+  for (int i=0;i<2;i++) fCentrZNC[i]  = cnt.fCentrZNC[i];
+  for (int i=0;i<2;i++) fCentrZNA[i]  = cnt.fCentrZNA[i];
+
 }
 
 //______________________________________________________________________________

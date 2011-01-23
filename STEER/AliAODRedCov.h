@@ -35,7 +35,10 @@ template <Int_t N> class AliAODRedCov {
    //
 
  public:
-  AliAODRedCov() {}
+  AliAODRedCov() {
+    for(Int_t i=0; i<N; i++)         fDiag[i]       = 0.;
+    for(Int_t i=0; i<N*(N-1)/2; i++) fODia[i]       = 0.;
+  }
   virtual ~AliAODRedCov() {}
   template <class T> void GetCovMatrix(T *cmat) const;
   template <class T> void SetCovMatrix(T *cmat);

@@ -60,6 +60,8 @@ AliAODCluster::AliAODCluster(Int_t id,
   fType(ttype)
 {
   // constructor
+  for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
+  for (Int_t i = 0; i < 13; i++) fPID[i]      = 0;
  
   if(x)   {for (Int_t i = 0; i < 3  ; i++) SetPositionAt(x[i]  ,i);}
   if(pid) {for (Int_t i = 0; i < 13 ; i++) SetPIDAt     (pid[i],i);}
@@ -85,6 +87,9 @@ AliAODCluster::AliAODCluster(Int_t id,
   fType(ttype)
 {
   // constructor
+  for (Int_t i = 0; i <  3; i++) fPosition[i] = 0.;
+  for (Int_t i = 0; i < 13; i++) fPID[i]      = 0;
+
   if(x)   {for (Int_t i = 0; i < 3  ; i++) SetPositionAt(x[i]  ,i);}
   if(pid) {for (Int_t i = 0; i < 13 ; i++) SetPIDAt     (pid[i],i);}
   SetLabel(label, nLabel);
@@ -122,7 +127,7 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
   // Copy constructor
 
   if(fPosition) {for(Int_t i = 0; i < 3  ; i++) fPosition[i] = clus.fPosition[i];}
-  if(fPID)      {for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];}
+  for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];
 
   SetLabel(clus.fLabel, clus.fNLabel);
 }
@@ -134,7 +139,7 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
   if(this!=&clus) {
     
 	if(fPosition) {for(Int_t i = 0; i < 3 ;  i++) fPosition[i] = clus.fPosition[i];}
-	if(fPID)      {for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];}
+	for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];
     
     fEnergy = clus.fEnergy;
     fChi2 = clus.fChi2;
@@ -173,27 +178,22 @@ UShort_t AliAODCluster::GetMostProbablePID() const
   Int_t nPID = 13;
   UShort_t unknown = AliVCluster::kUnknown;
   
-  if (fPID) {
-    UShort_t loc = unknown;
-    Double_t max = 0.;
-    Bool_t allTheSame = kTRUE;
-    
-    for (Int_t iPID = 0; iPID < nPID; iPID++) {
-      if (fPID[iPID] >= max) {
-        if (fPID[iPID] > max) {
-          allTheSame = kFALSE;
-          max = fPID[iPID];
-          loc = (UShort_t)iPID;
-        } else {
-          allTheSame = kTRUE;
-        }
+  UShort_t loc = unknown;
+  Double_t max = 0.;
+  Bool_t allTheSame = kTRUE;
+  
+  for (Int_t iPID = 0; iPID < nPID; iPID++) {
+    if (fPID[iPID] >= max) {
+      if (fPID[iPID] > max) {
+	allTheSame = kFALSE;
+	max = fPID[iPID];
+	loc = (UShort_t)iPID;
+      } else {
+	allTheSame = kTRUE;
       }
     }
-    
-    return allTheSame ? unknown : loc;
-  } else {
-    return unknown;
   }
+  return allTheSame ? unknown : loc;
 }
 
 //______________________________________________________________________________
