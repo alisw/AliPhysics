@@ -54,7 +54,7 @@ void AliGenEpos::Init() {
 
 void AliGenEpos::Generate() {
   // Does actual generation and output conversion
-	  Float_t polar[3]   =   {0,0,0};
+	  Float_t polar[3]    =   {0,0,0};
 	  Float_t origin0[3]  =   {0,0,0};
 	  Float_t origin[3]   =   {0,0,0};
 	  fNprimaries = 0;
@@ -74,6 +74,7 @@ void AliGenEpos::Generate() {
 
 	  Int_t *idsOnStack = NULL;
 	  idsOnStack = new Int_t[np];
+	  for (int i = 0; i < np; i++) idsOnStack[i] = 0;
 	  TParticle *iparticle;
 
 	  for (int i = 0; i < np; i++) {
