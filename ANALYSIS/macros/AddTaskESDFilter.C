@@ -3,7 +3,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
                                            Bool_t writeDimuonAOD=kFALSE,
 					   Bool_t usePhysicsSelection=kFALSE,
 					   Bool_t useCentralityTask=kFALSE, 
-                                           Int_t tofTimeZeroType=AliESDpid::kTOF_T0)
+                                           Int_t tofTimeZeroType=AliESDpid::kTOF_T0,
+					   Bool_t enableTPCOnlyAODTracks=kFALSE)
 {
 // Creates a filter task and adds it to the analysis manager.
 
@@ -100,6 +101,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
  
+   // TPC only tracks: Optionally enable the writing of TPConly information
+   // constrained to SPD vertex in the filter below
+   AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+   esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
 
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
@@ -119,7 +124,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(esdTrackCutsH2);
    // 64
    trackFilter->AddCuts(esdTrackCutsH3);
- 
+   // 128 , 1 << 7
+   trackFilter->AddCuts(esdTrackCutsTPCOnly);
+   if(enableTPCOnlyAODTracks)esdfilter->SetTPCOnlyFilterMask(128);
+
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
    esdV0Cuts->SetMinRadius(0.2);
