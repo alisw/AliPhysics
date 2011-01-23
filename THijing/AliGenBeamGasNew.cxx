@@ -229,8 +229,8 @@ void AliGenBeamGasNew::Generate()
       entry = (AliGenCocktailEntry*) fEntries->At(i);
       entry->SetFirst(lastpart);
       gen = entry->Generator();
-      entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-      entry->Generator()->Generate();
+      gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+      gen->Generate();
       entry->SetLast(partArray->GetEntriesFast());
     } 
     
