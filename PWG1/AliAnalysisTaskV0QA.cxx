@@ -111,7 +111,13 @@ fclRefsP(0)
 
  {
   // Default Constructor.
-
+   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+     fprobabilityPos[i] = 0.;
+     fprobabilityNeg[i] = 0.;
+   }
+   for (Int_t i = 0; i < 100000; i++) {
+     fLabelsTPC[i] = 0;
+   }
  }
 
 //________________________________________________________________________
@@ -195,6 +201,13 @@ fclRefsN(0),
 fclRefsP(0)
 
  {
+   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+     fprobabilityPos[i] = 0.;
+     fprobabilityNeg[i] = 0.;
+   }
+   for (Int_t i = 0; i < 100000; i++) {
+     fLabelsTPC[i] = 0;
+   }
 
    fnEv=0;
    fDim=37; 
