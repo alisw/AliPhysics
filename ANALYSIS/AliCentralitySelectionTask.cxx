@@ -330,7 +330,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   
   Int_t    nTracks = 0;             //  no. tracks
   Int_t    nTracklets = 0;          //  no. tracklets
-  Int_t    nClusters[6];            //  no. clusters on 6 ITS layers
+  Int_t    nClusters[6] = {0};      //  no. clusters on 6 ITS layers
   Int_t    nChips[2];               //  no. chips on 2 SPD layers
   Float_t  spdCorr =0;              //  corrected spd2 multiplicity
 

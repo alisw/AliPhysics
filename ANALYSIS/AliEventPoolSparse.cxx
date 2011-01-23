@@ -262,7 +262,7 @@ void  AliEventPoolSparse::Init(){
   
   // Tag objects.
   AliRunTag *tag = new AliRunTag; 	 
-  AliEventTag *evTag = new AliEventTag;  
+  AliEventTag *evTag = 0;  
   fTagChain->SetBranchAddress("AliTAG",&tag); 	 
   
   TString guid(""); 	 

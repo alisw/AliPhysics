@@ -351,8 +351,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 
 
     //setting best TOF PID
-
-    AliESDpid *esdPid = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetESDpid();
+    AliESDInputHandler* handler = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    
+    AliESDpid *esdPid = 0;
+    if (handler) esdPid = handler->GetESDpid();
 
     Bool_t isPidOwner = kFALSE;
     if(!esdPid){ //in case of no Tender attached 
