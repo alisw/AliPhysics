@@ -37,7 +37,7 @@ class AliJetBkg : public TObject
     Float_t BkgChargedFastJet();
     Float_t BkgStat();
     Float_t BkgFastJetCone(TClonesArray* fAODJets);
-    Float_t BkgRemoveJetLeading(TClonesArray* fAODJets);
+//    Float_t BkgRemoveJetLeading(TClonesArray* fAODJets);
     Float_t BkgRemoveJetLeadingFromUArray(TClonesArray* fAODJets);
     Float_t EtaToTheta(Float_t arg);
     Bool_t EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius);

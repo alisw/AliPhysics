@@ -97,7 +97,15 @@ void AliUA1JetFinderV2::FindJetsC()
   Int_t*   cFlagT = new Int_t[nIn]; // Temporarily added
   Int_t*   sFlagT = new Int_t[nIn]; // Temporarily added
   Int_t*   injet  = new Int_t[nIn];
-  
+
+  for (Int_t i = 0; i < nIn; i++) {
+    ptT[i]    = 0.;
+    etaT[i]   = 0.;
+    phiT[i]   = 0.;
+    cFlagT[i] = 0; 
+    sFlagT[i] = 0; 
+    injet[i]  = 0;
+  }
   //total energy in array
   Float_t  etbgTotal = 0.0;
   TH1F*    hPtTotal  = new TH1F("hPt","Pt distribution of all particles ",100,0.0,15.0);
@@ -342,7 +350,16 @@ void AliUA1JetFinderV2::FindJets()
   Float_t *etaCell2  = new Float_t[nIn]; //! Cell eta - Extracted from UnitArray
   Float_t *phiCell2  = new Float_t[nIn]; //! Cell phi - Extracted from UnitArray
   Int_t   *flagCell2 = new Int_t[nIn];  //! Cell phi - Extracted from UnitArray
-
+  for(Int_t i = 0; i < nIn; i++) {
+    etCell[i]    = 0.;
+    etaCell[i]   = 0.;
+    phiCell[i]   = 0.;
+    flagCell[i]  = 0.;
+    etCell2[i]   = 0.;
+    etaCell2[i]  = 0.;
+    phiCell2[i]  = 0.;
+    flagCell2[i] = 0.;
+  }
   // Information extracted from fUnitArray
   // Load input vectors and calculate total energy in array
   for(Int_t i=0; i<nIn; i++) 
@@ -743,10 +760,10 @@ void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* const e
   Float_t etseed  = header->GetEtSeed();
 
   // Tmp array of jets form algoritm
-  Float_t etaAlgoJet[30];
-  Float_t phiAlgoJet[30];
-  Float_t etAlgoJet[30];
-  Int_t   ncellsAlgoJet[30];
+  Float_t etaAlgoJet[30]    = {0.};
+  Float_t phiAlgoJet[30]    = {0.};
+  Float_t etAlgoJet[30]     = {0.};
+  Int_t   ncellsAlgoJet[30] = {0.};
 
   // Run algorithm//
 
@@ -1129,11 +1146,9 @@ void AliUA1JetFinderV2::SubtractBackg(const Int_t& nIn, const Int_t&nJ, Float_t&
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   fOpt = fReader->GetReaderHeader()->GetDetector();
   Float_t rc= header->GetRadius();
-  Float_t etIn[30];
+  Float_t etIn[30] = {0.};
   Float_t etOut = 0;
-  
-  for(Int_t j=0;j<30;j++){etIn[j]=0.;}
-  
+    
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
 
     for(Int_t ijet=0; ijet<nJ; ijet++){
@@ -1398,7 +1413,7 @@ void AliUA1JetFinderV2::SubtractBackgStat(const Int_t& nIn, const Int_t&nJ,Float
   
   //calculate energy inside
   Float_t rc= header->GetRadius();
-  Float_t etIn[30];
+  Float_t etIn[30] = {0.};
   
   for(Int_t jpart = 0; jpart < nIn; jpart++)
     { // loop for all particles in array

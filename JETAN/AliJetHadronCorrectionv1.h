@@ -27,7 +27,7 @@ class AliJetHadronCorrectionv1 : public AliJetHadronCorrection
   void TrackPositionEMCal(AliAODTrack* track,Double_t &eta, Double_t &phi);
 
  protected:
-  AliJetHadronCorrectionv1():fSamplingFraction(0) {;}
+  AliJetHadronCorrectionv1():fSamplingFraction(0) {for (Int_t i = 0; i < 8; i++) fPar[i] = 0.;}
   AliJetHadronCorrectionv1(const char *name, const char *title);
 
  private:

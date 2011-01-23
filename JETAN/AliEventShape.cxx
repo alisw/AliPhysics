@@ -108,7 +108,12 @@ TArrayD * AliEventShape::GetThrustParamMC(AliMCEvent* mcEvent, Int_t  nstudymin,
   pxT = new Double_t[nmctracks];
   pyT = new Double_t[nmctracks];
   ptT = new Double_t[nmctracks];
-
+  for (Int_t i = 0; i < nmctracks; i++)
+    {
+      pxT[i] = 0;
+      pyT[i] = 0;
+      ptT[i] = 0;
+    }
   for (Int_t iMCTracks = 0; iMCTracks < nPrim; ++iMCTracks) {    
       TParticle* trackmc = stack->Particle(iMCTracks);
       if (!trackmc) continue;
