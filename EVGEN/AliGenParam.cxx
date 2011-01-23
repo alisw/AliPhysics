@@ -377,7 +377,7 @@ void AliGenParam::Generate()
 	      
 	      if (np >1) {
 		  decayed = kTRUE;
-		  TParticle* iparticle =  (TParticle *) particles->At(0);
+		  TParticle* iparticle =  0;
 		  Int_t ipF, ipL;
 		  for (i = 1; i<np ; i++) {
 		      trackIt[i] = 1;

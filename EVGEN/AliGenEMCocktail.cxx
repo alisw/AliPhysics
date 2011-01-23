@@ -193,10 +193,8 @@ void AliGenEMCocktail::Generate()
   
 // Loop over generators and generate events
   Int_t igen = 0;
-  const char* genName = 0;
   while((entry = (AliGenCocktailEntry*)next())) {
     gen = entry->Generator();
-    genName = entry->GetName();
     gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
     
     if (fNPart > 0) {

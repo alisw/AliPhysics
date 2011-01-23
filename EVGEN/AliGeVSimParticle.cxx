@@ -64,6 +64,8 @@ AliGeVSimParticle::AliGeVSimParticle():
     fIsEllipticOld(kFALSE)
 {
     // Default constructor
+  for (Int_t i = 0; i < 4; i++) fV1[i] = 0.;
+  for (Int_t i = 0; i < 3; i++) fV2[i] = 0.;
 }
 
 AliGeVSimParticle::AliGeVSimParticle(Int_t pdg, Int_t model, Float_t multiplicity,

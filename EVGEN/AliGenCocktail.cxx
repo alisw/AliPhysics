@@ -223,8 +223,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	entry = (AliGenCocktailEntry*) fEntries->At(i);
 	entry->SetFirst(0);
 	gen = entry->Generator();
-	entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-	entry->Generator()->Generate();
+	gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	gen->Generate();
 	entry->SetLast(partArray->GetEntriesFast());
     } 
     

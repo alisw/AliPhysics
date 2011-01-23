@@ -451,7 +451,7 @@ void AliGenCorrHF::Generate()
 	}
 	
 	if (np >1) {
-	  TParticle* iparticle =  (TParticle *) particles->At(0);
+	  TParticle* iparticle = 0;
 	  Int_t ipF, ipL;
 	  for (i = 1; i<np ; i++) {
 	    trackIt[i] = 1;
@@ -673,7 +673,11 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
       fIpParaFunc = IpBeauty;
       mq = 4.75;
     }
-    Double_t z11, z12, z21, z22, pz1, pz2, e1, e2, mh, ptemp, rand[2];
+    Double_t z11 = 0.;
+    Double_t z12 = 0.;
+    Double_t z21 = 0.;
+    Double_t z22 = 0.;
+    Double_t pz1, pz2, e1, e2, mh, ptemp, rand[2];
     char tag[100]; 
     TH2F *h2h[12], *h2s[12], *hProbHH; // hard & soft fragmentation and HH-probability functions
     for (Int_t ipt = 0; ipt<fgnptbins; ipt++) { 
