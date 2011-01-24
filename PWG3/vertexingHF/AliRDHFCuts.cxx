@@ -26,6 +26,7 @@
 #include "AliAODEvent.h"
 #include "AliVVertex.h"
 #include "AliESDVertex.h"
+#include "AliLog.h"
 #include "AliAODVertex.h"
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
@@ -61,7 +62,11 @@ fWhyRejection(0),
 fRemoveDaughtersFromPrimary(kFALSE),
 fOptPileup(0),
 fMinContrPileup(3),
-fMinDzPileup(0.6)
+fMinDzPileup(0.6),
+fUseCentrality(0),
+fMinCentrality(0.),
+fMaxCentrality(100.)
+
 {
   //
   // Default Constructor
@@ -93,7 +98,12 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
   fOptPileup(source.fOptPileup),
   fMinContrPileup(source.fMinContrPileup),
-  fMinDzPileup(source.fMinDzPileup)  
+  fMinDzPileup(source.fMinDzPileup),
+  fUseCentrality(source.fUseCentrality),
+  fMinCentrality(source.fMinCentrality),
+  fMaxCentrality(source.fMaxCentrality)
+
+
 {
   //
   // Copy constructor
@@ -135,6 +145,9 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fOptPileup=source.fOptPileup;
   fMinContrPileup=source.fMinContrPileup;
   fMinDzPileup=source.fMinDzPileup;
+  fUseCentrality=source.fUseCentrality;
+  fMinCentrality=source.fMinCentrality;
+  fMaxCentrality=source.fMaxCentrality;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -173,9 +186,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   fWhyRejection=0;
 
   // multiplicity cuts no implemented yet
-
-
-
+   
   const AliVVertex *vertex = event->GetPrimaryVertex();
 
   if(!vertex) return kFALSE;
@@ -204,6 +215,37 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       return kFALSE;
     }
   }
+
+  //centrality selection
+  if (!(fUseCentrality==kCentOff)){  
+
+    AliAODHeader *header=((AliAODEvent*)event)->GetHeader();
+    AliCentrality *centrality=header->GetCentralityP();
+    if(centrality){
+      Float_t cent=-999.;
+      if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+      else {
+        if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+        else{
+	  if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+          else{
+	    if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+            else {
+	      fWhyRejection=3;
+	      return kFALSE;
+	    }
+	  }
+        }
+      }
+	    
+	    
+      if (cent<fMinCentrality || cent>fMaxCentrality){
+	fWhyRejection=2; 
+	return kFALSE; 
+      }
+    }
+  }
+
 
   return kTRUE;
 }
@@ -326,6 +368,20 @@ void AliRDHFCuts::SetVarsForOpt(Int_t nVars,Bool_t *forOpt) {
 
   return;
 }
+
+//---------------------------------------------------------------------------
+
+void AliRDHFCuts::SetUseCentrality(Int_t flag) {
+  //
+  // enable centrality selection  
+  //
+  fUseCentrality=flag;
+  if(fUseCentrality>=kCentInvalid) AliWarning("Centrality estimator not valid");
+ 
+  return;
+}
+
+
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetCuts(Int_t nVars,Int_t nPtBins,Float_t **cutsRD) {
   //
@@ -497,6 +553,32 @@ Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
     return 0;
   }
   return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
+}
+//-------------------------------------------------------------------
+Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent) {
+  //
+  // centrality percentile
+  //
+  AliAODHeader *header=aodEvent->GetHeader();
+  AliCentrality *centrality=header->GetCentralityP();
+  Float_t cent=-999.;
+  if(centrality){ 
+     if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+     else {
+       if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+       else{
+	 if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+         else{
+	   if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+           else {
+	     AliWarning("Centrality estimator not valid");
+	     return kFALSE;
+	   }
+	 }
+       }
+     } 
+   }
+  return cent;
 }
 //-------------------------------------------------------------------
 Bool_t AliRDHFCuts::CompareCuts(const AliRDHFCuts *obj) const {

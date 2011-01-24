@@ -33,6 +33,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   virtual void SetStandardCutsPP2010() {return;}  
   virtual void SetStandardCutsPbPb2010() {return;}  
 
+
+  void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;} 
+  void SetMaxCentrality(Float_t maxCentrality=100.) {fMinCentrality=maxCentrality;} 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
@@ -49,6 +52,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
          {fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
+  void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {
     if(fPidHF) delete fPidHF;
     fPidHF=new AliAODPidHF(*pidObj);
@@ -74,6 +78,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const Float_t *GetCuts() const {return fCutsRD;} 
   void    GetCuts(Float_t**& cutsRD) const;
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
+  Float_t GetCentrality(AliAODEvent* aodEvent);
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
@@ -82,7 +87,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  GetIsUsePID() const {return fUsePID;}
   Bool_t  GetIsPrimaryWithoutDaughters() const {return fRemoveDaughtersFromPrimary;}
   Bool_t GetOptPileUp() const {return fOptPileup;}
-
+  Int_t GetUseCentrality() const {return fUseCentrality;}
+  Float_t GetMinCentrality() const {return fMinCentrality;}
+  Float_t GetMaxCentrality() const {return fMaxCentrality;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Bool_t IsEventSelected(AliVEvent *event);
@@ -106,6 +113,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   enum{kAll,kTracks,kPID,kCandidate};
   enum{kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+  enum{kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid};
 
  protected:
 
@@ -139,9 +147,15 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t  fOptPileup;      // option for pielup selection
   Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
+  Int_t   fUseCentrality; // off =0 (default)
+                          // 1 = V0 
+                          // 2 = Tracks
+                          // 3 = Tracklets
+                          // 4 = SPD clusters outer 
+  Float_t fMinCentrality; // minimum centrality for selected events
+  Float_t fMaxCentrality; // maximum centrality for selected events
 
-  ClassDef(AliRDHFCuts,7);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,8);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
-
