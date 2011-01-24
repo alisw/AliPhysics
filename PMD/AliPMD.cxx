@@ -64,8 +64,27 @@ AliPMD::AliPMD()
   //
   // Default constructor
   //
-  fIshunt = 0;
-
+  fIshunt     = 0;
+  fPar[0]     = 1.;
+  fPar[1]     = 1.;
+  fPar[2]     = 0.8;
+  fPar[3]     = 0.02;
+  fIn[0]      = 6.;
+  fIn[1]      = 20.;
+  fIn[2]      = 600.;
+  fIn[3]      = 27.;
+  fIn[4]      = 27.;
+  fGeo[0]     = 0.;
+  fGeo[1]     = 0.2;
+  fGeo[2]     = 4.;
+  fPadSize[0] = 0.8;
+  fPadSize[1] = 1.0;
+  fPadSize[2] = 1.2;
+  fPadSize[3] = 1.5;
+  fNumPads[0] = 0;
+  fNumPads[1] = 0;
+  fNumPads[2] = 0;
+  fNumPads[3] = 0;
 }
  
 //_____________________________________________________________________________
@@ -84,22 +103,26 @@ AliPMD::AliPMD(const char *name, const char *title)
 
   fIshunt =  0;
   
-  fPar[0] = 1;
-  fPar[1] = 1;
-  fPar[2] = 0.8;
-  fPar[3] = 0.02;
-  fIn[0]  = 6;
-  fIn[1]  = 20;
-  fIn[2]  = 600;
-  fIn[3]  = 27;
-  fIn[4]  = 27;
-  fGeo[0] = 0;
-  fGeo[1] = 0.2;
-  fGeo[2] = 4;
+  fPar[0]     = 1.;
+  fPar[1]     = 1.;
+  fPar[2]     = 0.8;
+  fPar[3]     = 0.02;
+  fIn[0]      = 6.;
+  fIn[1]      = 20.;
+  fIn[2]      = 600.;
+  fIn[3]      = 27.;
+  fIn[4]      = 27.;
+  fGeo[0]     = 0.;
+  fGeo[1]     = 0.2;
+  fGeo[2]     = 4.;
   fPadSize[0] = 0.8;
   fPadSize[1] = 1.0;
   fPadSize[2] = 1.2;
   fPadSize[3] = 1.5;
+  fNumPads[0] = 0;
+  fNumPads[1] = 0;
+  fNumPads[2] = 0;
+  fNumPads[3] = 0;
 }
 
 AliLoader* AliPMD::MakeLoader(const char* topfoldername)
