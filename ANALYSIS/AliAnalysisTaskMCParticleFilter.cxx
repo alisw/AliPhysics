@@ -324,18 +324,18 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     if (ip < nprim) {
       // Select the primary event
       write = kTRUE;
-    } else if (part->GetUniqueID() == 4) {
+    } else if (part->GetUniqueID() == kPDecay) {
       // Particles from decay
       // Check that the decay chain ends at a primary particle
       AliMCParticle* mother = mcpart;
       Int_t imo = mcpart->GetMother();
-      while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
+      while((imo >= nprim) && (mother->GetUniqueID() == kPDecay)) {
 	mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo =  mother->GetMother();
       }
       // Select according to pseudorapidity and production point of primary ancestor
       if (imo < nprim && Select(((AliMCParticle*) mcE->GetTrack(imo))->Particle(), rv, zv))write = kTRUE;         
-    } else if (part->GetUniqueID() == 5) {
+    } else if (part->GetUniqueID() == kPPair) {
       // Now look for pair production
       Int_t imo = mcpart->GetMother();
       if (imo < nprim) {
@@ -345,7 +345,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	// Check if the gamma comes from the decay chain of a primary particle
 	AliMCParticle* mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo = mother->GetMother();
-	while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
+	while((imo >= nprim) && (mother->GetUniqueID() == kPDecay)) {
 	  mother =   (AliMCParticle*) mcE->GetTrack(imo);
 	  imo =  mother->GetMother();
 	}
