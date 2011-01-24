@@ -84,7 +84,7 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fSxyColl(0.),
   fX(0.13),
   fNpp(8.),
-  fDoPartProd(1)
+  fDoPartProd(kFALSE)
 {
   //ctor
   fdNdEtaParam[0] = 8.0;
@@ -156,7 +156,7 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fSxyColl(in.fSxyColl),
   fX(in.fX),
   fNpp(in.fNpp),
-  fDoPartProd(1)
+  fDoPartProd(kFALSE)
 {
   //copy ctor
   memcpy(fdNdEtaParam,in.fdNdEtaParam,2*sizeof(Double_t));

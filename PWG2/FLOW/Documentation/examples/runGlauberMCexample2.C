@@ -21,6 +21,23 @@
   // run the code to produce an ntuple:
   //  AliGlauberMC::runAndSaveNucleons(10000,"Pb","Pb",72);
   Double_t mind=0.4;
-  AliGlauberMC::RunAndSaveNtuple(nevents,sysA,sysB,signn,mind);
+  //  AliGlauberMC::RunAndSaveNtuple(nevents,sysA,sysB,signn,mind);
+  Double_t r=6.62;
+  Double_t a=0.546;
+  const char *fname="glau_pbpb_ntuple.root";
+
+  AliGlauberMC mcg(sysA,sysB,signn);
+  mcg.SetMinDistance(mind);
+  mcg.Setr(r);
+  mcg.Seta(a);
+  mcg.SetDoPartProduction(kFALSE);
+  //mcg.SetDoPartProduction(kTRUE);
+  mcg.Run(nevents);
+
+  TNtuple  *nt=mcg.GetNtuple();
+  TFile out(fname,"recreate",fname,9);
+  if(nt) nt->Write();
+  printf("total cross section with a nucleon-nucleon cross section \t%f is \t%f",signn,mcg.GetTotXSect());
+  out.Close();
 
 }

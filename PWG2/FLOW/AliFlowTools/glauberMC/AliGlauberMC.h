@@ -23,7 +23,7 @@ class TArray;
 
 class AliGlauberMC : public TNamed {
 public:
-   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 72);
+   AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 64);
    virtual     ~AliGlauberMC();
    AliGlauberMC(const AliGlauberMC& in);
    AliGlauberMC& operator=(const AliGlauberMC& in);
@@ -65,8 +65,8 @@ public:
    Double_t     GetTotXSectErr()     const;
    void         Reset();
    static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
-   Int_t NegativeBinomialRandom(Int_t k, Double_t nmean) const;
-   Int_t DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha) const;
+   Int_t  NegativeBinomialRandom(Int_t k, Double_t nmean) const;
+   Int_t  DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha) const;
    void   SetBmin(Double_t bmin)      {fBMin = bmin;}
    void   SetBmax(Double_t bmax)      {fBMax = bmax;}
    void   SetdNdEtaParam( Double_t nnp = 8., Double_t x = 0.13);
@@ -82,7 +82,7 @@ public:
    static void       RunAndSaveNtuple( Int_t n,
                                        const Option_t *sysA="Pb",
                                        const Option_t *sysB="Pb",
-                                       Double_t signn=65,
+                                       Double_t signn=64,
                                        Double_t mind=0.4,
 				       Double_t r=6.62,
 				       Double_t a=0.546,
@@ -125,7 +125,7 @@ private:
    Int_t        fTotalEvents;    //All events within selected impact parameter range
    Double_t     fBMin;           //Minimum impact parameter to be generated
    Double_t     fBMax;           //Maximum impact parameter to be generated
-   Double_t	    fdNdEtaParam[2];	   //Parameters: nnp, x
+   Double_t	fdNdEtaParam[2];	   //Parameters: nnp, x
    Double_t     fdNdEtaGBWParam[3];  //Parameters: delta, lambda, snn
    Double_t     fdNdEtaNBDParam[3];       //Parameters:  k, nmean, beta
    Double_t     fdNdEtaTwoNBDParam[6];    //Parameters: k1, nmean1, k2, nmean2, alpha, beta
