@@ -2036,6 +2036,7 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
       gamma.SetPx(gammakf->GetPx());
       gamma.SetPy(gammakf->GetPy());
       gamma.SetPz(gammakf->GetPz());
+      gamma.SetE(gammakf->GetE());
       gamma.SetLabel1(fElectronv1[gammaIndex]);
       gamma.SetLabel2(fElectronv2[gammaIndex]);
       gamma.SetChi2(gammakf->Chi2());
