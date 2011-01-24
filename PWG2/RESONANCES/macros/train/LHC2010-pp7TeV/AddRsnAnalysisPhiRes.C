@@ -10,43 +10,30 @@
 //                   whatever the name of the macro itself, whose first two
 //                   arguments must have to be the task and the 'dataLabel' argument.
 //
-Bool_t AddRsnAnalysisRes
+Bool_t AddRsnAnalysisPhiRes
 (
-  const char *options,
-  const char *configs = "RsnConfigResNoSA.C RsnConfigResSA.C",
-  const char *path    = "$(ALICE_INSTALL)/PWG2/RESONANCES/macros/train/LHC2010-7TeV-phi/fixed_rapidity"
+  const char *options     = "", 
+  const char *taskName    = "RsnAnalysis",
+  const char *configMacro = "RsnConfigPhiRes",
+  const char *configPath  = "$(ALICE_INSTALL)/PWG2/RESONANCES/macros/train/LHC2010-pp7TeV"
 )
 {
   // retrieve analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     
   // create the task and connect with physics selection
-  AliRsnAnalysisSE *task = new AliRsnAnalysisSE("RsnAnalysis");
+  AliRsnAnalysisSE *task = new AliRsnAnalysisSE(taskName);
   task->SetZeroEventPercentWarning(100.0);
   task->SelectCollisionCandidates();
 
   // add the task to manager
   mgr->AddTask(task);
-
-  // load and execute all required configuration macroes in the string (arg #2)
-  TString    sList   = configs;
-  TObjArray *list    = sList.Tokenize(" ");
-  Int_t      nConfig = list->GetEntries();
-  Int_t      iConfig = 0;
-  for (iConfig = 0; iConfig < nConfig; iConfig++)
-  {
-    TObjString *ostr = (TObjString*)list->At(iConfig);
-    
-    // the config macro is assumed to be stored in the path in argument #3
-    // and to have three arguments: task name, a free string of options and the path where it is stored
-    // --> all of them is a string, and then it must be passed with the quote marks
-    const char *macro     = ostr->GetString().Data();
-    const char *argName   = Form("\"%s\"", task->GetName());
-    const char *argOption = Form("\"%s\"", options);
-    const char *argPath   = Form("\"%s\"", path);
-    gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", path, macro, argName, argOption, argPath));
-  }
-
+  
+  // execute the related config with settings for adding and not adding ITS-SA
+  gROOT->LoadMacro(Form("%s/%s.C", configPath, configMacro));
+  gROOT->ProcessLine(Form("%s(\"%s\",\"%s\",\"%s\")", configMacro, taskName, options                , configPath));
+  gROOT->ProcessLine(Form("%s(\"%s\",\"%s\",\"%s\")", configMacro, taskName, Form("its+%s", options), configPath));
+  
   // connect input container according to source choice
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 

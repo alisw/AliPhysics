@@ -52,10 +52,11 @@ Bool_t AliRsnCutESDPrimary::IsSelected(TObject *object)
 //
 
   // coherence check
-  if (!TargetOK(object)) return kFALSE;
+  if (!TargetOK(object, AliRsnTarget::kDaughter)) return kFALSE;
   
   // retrieve the TPC signal
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
+  AliRsnDaughter *daughter = fDaughter;
+  
   AliESDtrack *esdTrack = daughter->GetRefESDtrack();
   if (!esdTrack) 
   {

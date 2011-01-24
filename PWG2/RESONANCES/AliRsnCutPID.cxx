@@ -263,30 +263,32 @@ Bool_t AliRsnCutPID::IsSelected(TObject *object)
   
   // convert the object into the unique correct type
   
-  if (!TargetOK(object))
+  if (!TargetOK(object, AliRsnTarget::kDaughter))
   {
     AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
     return kTRUE;
   }
   
   // if target is OK, do a dynamic cast
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
+  AliRsnDaughter *daughter = fDaughter;
   
   // depending on the PID type, recalls the appropriate method:
   // in case of perfect PID, checks only if the PID type is 
   // corresponding to the request in the cut (fMinI)
   // while in case of realistic PID checks also the probability
   // to be within the required interval
-  if (fPerfect)
+  if (fPerfect && daughter)
   {
     fCutValueI = PerfectPID(daughter);
     return OkValueI();
   }
-  else
+  else if (daughter)
   {
     fCutValueI = RealisticPID(daughter, fCutValueD);
     return OkValueI() && OkRangeD();
   }
+  else
+    return kFALSE;
 }
 
 //__________________________________________________________________________________________________
