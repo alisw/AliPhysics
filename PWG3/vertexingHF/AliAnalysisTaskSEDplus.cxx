@@ -136,6 +136,9 @@ AliAnalysisTaskSEDplus::~AliAnalysisTaskSEDplus()
     delete fHistNEvents;
     fHistNEvents=0;
   }  
+  for(Int_t i=0;i<3;i++){
+    if(fHistCentrality[i]){delete fHistCentrality[i]; fHistCentrality[i]=0;}
+  }
   for(Int_t i=0;i<3*fNPtBins;i++){
     if(fMassHist[i]){ delete fMassHist[i]; fMassHist[i]=0;}
     if(fCosPHist[i]){ delete fCosPHist[i]; fCosPHist[i]=0;}
@@ -450,6 +453,13 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   Int_t index=0;
   Int_t indexLS=0;
   Int_t nbins=GetNBinsHistos();
+  fHistCentrality[0]=new TH1F("centrality","centrality",100,0.5,30000.5);
+  fHistCentrality[1]=new TH1F("centrality(selectedCent)","centrality(selectedCent)",100,0.5,30000.5);
+  fHistCentrality[2]=new TH1F("centrality(OutofCent)","centrality(OutofCent)",100,0.5,30000.5);
+  for(Int_t i=0;i<3;i++){
+    fHistCentrality[i]->Sumw2();
+    fOutput->Add(fHistCentrality[i]);
+  }
   for(Int_t i=0;i<fNPtBins;i++){
 
     index=GetHistoIndex(i);
@@ -697,7 +707,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
   
   
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",7,-0.5,6.5);
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",8,-0.5,7.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with PbPb HM trigger");
@@ -705,7 +715,8 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after loose cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"no. of D+ after tight cuts");
- 
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
+
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   
   fHistNEvents->Sumw2();
@@ -790,15 +801,23 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
   fCounter->StoreEvent(aod,fReadMC);
   fHistNEvents->Fill(0); // count event
-  // Post the data already here
-  if(fRDCutsAnalysis->IsEventSelected(aod))fHistNEvents->Fill(1);
+
+  Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
+  Float_t centrality=aod->GetNTracks();//fRDCutsAnalysis->GetCentrality(aod);
+  fHistCentrality[0]->Fill(centrality);
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(2);
   if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(3); 
-  
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(7);fHistCentrality[2]->Fill(centrality);}
+
+  // Post the data already here  
   PostData(1,fOutput);
-  
+  if(!isEvSel)return;
+
+  fHistCentrality[1]->Fill(centrality);
+  fHistNEvents->Fill(1);
+
   TClonesArray *arrayMC=0;
   AliAODMCHeader *mcHeader=0;
 
@@ -1079,172 +1098,17 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
-  fYVsPt = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPt"));
-  fYVsPtTC = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtTC"));
-  fYVsPtSig = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtSig"));
-  fYVsPtSigTC = dynamic_cast<TH2F*>(fOutput->FindObject("hYVsPtSigTC"));
-  fPtVsMass = dynamic_cast<TH2F*>(fOutput->FindObject("hPtVsMass"));
-  fPtVsMassTC = dynamic_cast<TH2F*>(fOutput->FindObject("hPtVsMassTC"));
 
   TString hisname;
   Int_t index=0;
- 
 
-  Int_t indexLS=0;
   for(Int_t i=0;i<fNPtBins;i++){
     index=GetHistoIndex(i);
-    if(fDoLS)indexLS=GetLSHistoIndex(i);
-    hisname.Form("hMassPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPAllPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenAllPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02AllPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertAllPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxAllPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCAAllPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
+    
     hisname.Form("hMassPt%dTC",i);
     fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassPt%dTCPlus",i);
-    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hMassPt%dTCMinus",i);
-    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    if(fDoLS){
-      hisname.Form("hLSPt%dLC",i);
-      fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hCosPAllPt%dLS",i);
-      fCosPHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDLenAllPt%dLS",i);
-      fDLenHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSumd02AllPt%dLS",i);
-      fSumd02HistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSigVertAllPt%dLS",i);
-      fSigVertHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hPtMaxAllPt%dLS",i);
-      fPtMaxHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDCAAllPt%dLS",i);
-      fDCAHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      hisname.Form("hLSPt%dTC",i);
-      fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-    } 
+  } 
     
-    index=GetSignalHistoIndex(i);    
-    if(fDoLS)indexLS++;
-    hisname.Form("hSigPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPSigPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenSigPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02SigPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertSigPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxSigPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCASigPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    
-    hisname.Form("hSigPt%dTC",i);
-    fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigPt%dTCPlus",i);
-    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigPt%dTCMinus",i);
-    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    if(fDoLS){
-      hisname.Form("hLSPt%dLCnw",i);
-      fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hCosPSigPt%dLS",i);
-      fCosPHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDLenSigPt%dLS",i);
-      fDLenHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSumd02SigPt%dLS",i);
-      fSumd02HistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSigVertSigPt%dLS",i);
-      fSigVertHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hPtMaxSigPt%dLS",i);
-      fPtMaxHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDCASigPt%dLS",i);
-      fDCAHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-
-      hisname.Form("hLSPt%dTCnw",i);
-      fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    }
-    
-    index=GetBackgroundHistoIndex(i); 
-    if(fDoLS)indexLS++;
-    hisname.Form("hBkgPt%d",i);
-    fMassHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hCosPBkgPt%d",i);
-    fCosPHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDLenBkgPt%d",i);
-    fDLenHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSumd02BkgPt%d",i);
-    fSumd02Hist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hSigVertBkgPt%d",i);
-    fSigVertHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hPtMaxBkgPt%d",i);
-    fPtMaxHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hDCABkgPt%d",i);
-    fDCAHist[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hBkgPt%dTC",i);
-    fMassHistTC[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hBkgPt%dTCPlus",i);
-    fMassHistTCPlus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    hisname.Form("hBkgPt%dTCMinus",i);
-    fMassHistTCMinus[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    if(fDoLS){
-      hisname.Form("hLSPt%dLCntrip",i);
-      fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
- 
-
-      hisname.Form("hCosPBkgPt%dLS",i);
-      fCosPHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDLenBkgPt%dLS",i);
-      fDLenHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSumd02BkgPt%dLS",i);
-      fSumd02HistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hSigVertBkgPt%dLS",i);
-      fSigVertHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hPtMaxBkgPt%dLS",i);
-      fPtMaxHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      hisname.Form("hDCABkgPt%dLS",i);
-      fDCAHistLS[index]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      hisname.Form("hLSPt%dTCntrip",i);
-      fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      
-      indexLS++;
-      hisname.Form("hLSPt%dLCntripsinglecut",i);
-      fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      hisname.Form("hLSPt%dTCntripsinglecut",i);
-      fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      
-      indexLS++;
-      hisname.Form("hLSPt%dLCspc",i);
-      fMassHistLS[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-      
-      hisname.Form("hLSPt%dTCspc",i);
-      fMassHistLSTC[indexLS]=dynamic_cast<TH1F*>(fOutput->FindObject(hisname.Data()));
-    }
- 
-  }
-  fCounter = dynamic_cast<AliNormalizationCounter*>(GetOutputData(3)); 
-
-  if(fFillNtuple){
-    fNtupleDplus = dynamic_cast<TNtuple*>(GetOutputData(4));
-  }
-
   TCanvas *c1=new TCanvas("c1","D+ invariant mass distribution",500,500);
   c1->cd();
   TH1F *hMassPt=(TH1F*)fOutput->FindObject("hMassPt3TC");

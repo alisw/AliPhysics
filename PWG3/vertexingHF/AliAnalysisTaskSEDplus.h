@@ -89,6 +89,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   TH1F *fPtMaxHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 5 (LC)
   TH1F *fDCAHistLS[3*kMaxPtBins];//!hist. for LS cuts variable 6 (LC)
   TH1F *fMassHistLSTC[5*kMaxPtBins];//!hist. for LS inv mass (TC)
+  TH1F *fHistCentrality[3];//!hist. for cent distr (all,sel ev, )
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
   TH2F *fPtVsMassTC;  //! hist. of pt vs. mass (analysis cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
@@ -110,7 +111,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,9); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,10); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
