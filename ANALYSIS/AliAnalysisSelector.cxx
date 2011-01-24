@@ -144,6 +144,9 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
    if (returnCode <= 0) {
       cout << "Error retrieving event:" << entry << " Skipping ..." << endl;
       fAnalysis->CountEvent(1,0,1,0);
+      // Try to skip file
+      Abort("Bad stream to file. Trying next image.", kAbortFile);
+      return kFALSE;
    } else {
       fAnalysis->ExecAnalysis();
       if (returnCode<100000000) fAnalysis->CountEvent(1,1,0,0);

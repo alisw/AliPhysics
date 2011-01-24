@@ -2840,7 +2840,7 @@ Bool_t AliAnalysisAlien::SubmitMerging()
       }
       delete list;
       Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, mergeJDLName);
-      if (!done) return kFALSE;
+      if (!done && (i==ntosubmit-1)) return kFALSE;
    }
    if (!ntosubmit) return kTRUE;
    Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR MERGING JOBS HAVE FINISHED. #### \
