@@ -103,12 +103,11 @@ void AliITStrackV2::UpdateESDtrack(ULong_t flags) const {
   if(flags==AliESDtrack::kITSin) {
     UChar_t itsSharedMap=0;
     for(i=0;i<AliITSgeomTGeo::kNLayers;i++) {
-      if(fSharedWeight[i]>0) {SETBIT(itsSharedMap,i);printf("UpdateESD: l %d\n",i);}
+      if(fSharedWeight[i]>0) SETBIT(itsSharedMap,i);
       
     }
     fESDtrack->SetITSSharedMap(itsSharedMap);
   }
-  for(i=0;i<6;i++) if(fESDtrack->HasSharedPointOnITSLayer(i)) printf("shared on %d\n",i);
 
   // copy the 4 dedx samples
   Double_t sdedx[4]={0.,0.,0.,0.};
@@ -444,11 +443,13 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
   //Double_t theta2=1.0259e-6*14*14/28/(beta2*p2)*x0*9.36*2.33;
 
-  Double_t cnv=GetBz()*kB2C;
+  Double_t bz=GetBz();
+  Double_t cnv=bz*kB2C;
+  Double_t curv=GetC(bz);
   {
-    Double_t dummy = 4/r2 - GetC()*GetC();
+    Double_t dummy = 4/r2 - curv*curv;
     if (dummy < 0) return kFALSE;
-    Double_t parp = 0.5*(GetC()*dx + dy*TMath::Sqrt(dummy));
+    Double_t parp = 0.5*(curv*dx + dy*TMath::Sqrt(dummy));
     Double_t sigma2p = theta2*(1.-GetSnp())*(1.+GetSnp())*(1. + GetTgl()*GetTgl());
     Double_t ovSqr2 = 1./TMath::Sqrt(r2);
     Double_t tfact = ovSqr2*(1.-dy*ovSqr2)*(1.+dy*ovSqr2);
@@ -462,7 +463,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
     cov[3] *= eps2p;
   }
   {
-    Double_t parl=0.5*GetC()*dz/TMath::ASin(0.5*GetC()*TMath::Sqrt(r2));
+    Double_t parl=0.5*curv*dz/TMath::ASin(0.5*curv*TMath::Sqrt(r2));
     Double_t sigma2l=theta2;
     sigma2l += cov[2]/r2 + cov[0]*dy*dy*dz*dz/(r2*r2*r2);
     sigma2l += ers[2]*ers[2]/r2;
@@ -589,3 +590,4 @@ GetLocalXat(Double_t r,Double_t &xloc) const {
 
   return kTRUE;
 }
+

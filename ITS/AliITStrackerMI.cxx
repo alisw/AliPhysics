@@ -3914,8 +3914,9 @@ void AliITStrackerMI::GetDCASigma(const AliITStrackMI* track, Float_t & sigmarfi
   //to be paramterized using external parameters in future 
   //
   // 
-  sigmarfi = 0.0040+1.4 *TMath::Abs(track->GetC())+332.*track->GetC()*track->GetC();
-  sigmaz   = 0.0110+4.37*TMath::Abs(track->GetC());
+  Double_t curv=track->GetC();
+  sigmarfi = 0.0040+1.4 *TMath::Abs(curv)+332.*curv*curv;
+  sigmaz   = 0.0110+4.37*TMath::Abs(curv);
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::SignDeltas(const TObjArray *clusterArray, Float_t vz)
@@ -4976,4 +4977,3 @@ Float_t AngleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute
   }
 return;
 }
-
