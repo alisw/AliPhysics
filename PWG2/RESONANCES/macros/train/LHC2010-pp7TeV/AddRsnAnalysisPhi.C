@@ -30,8 +30,8 @@ Bool_t AddRsnAnalysisPhi
   mgr->AddTask(task);
   
   // execute the related config with settings for adding and not adding ITS-SA
-  gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", configPath, configMacro, taskName, options                , configPath));
-  gROOT->ProcessLine(Form(".x %s/%s(%s,%s,%s)", configPath, configMacro, taskName, Form("its+%s", options), configPath));
+  gROOT->ProcessLine(Form(".x %s/%s.C(%s,%s,%s)", configPath, configMacro, taskName, options                , configPath));
+  gROOT->ProcessLine(Form(".x %s/%s.C(%s,%s,%s)", configPath, configMacro, taskName, Form("its+%s", options), configPath));
   
   // connect input container according to source choice
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());

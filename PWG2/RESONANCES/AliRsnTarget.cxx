@@ -11,7 +11,6 @@
 
 #include "AliLog.h"
 
-#include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 
@@ -22,7 +21,7 @@ ClassImp(AliRsnTarget)
 AliRsnEvent* AliRsnTarget::fgCurrentEvent = 0x0;
 
 //_____________________________________________________________________________
-Bool_t AliRsnTarget::TargetOK(TObject *object)
+Bool_t AliRsnTarget::TargetOK(TObject *object, ETargetType ref)
 {
 //
 // This method compares the target type stored as data member
@@ -41,34 +40,47 @@ Bool_t AliRsnTarget::TargetOK(TObject *object)
   switch (fTargetType)
   {
     case kDaughter:
-      if (dynamic_cast<AliRsnDaughter*>(object) == 0x0)
+      fDaughter = dynamic_cast<AliRsnDaughter*>(object);
+      fMother   = 0x0;
+      fEvent    = 0x0;
+      if (fDaughter)
+        return kTRUE;
+      else
       {
         AliError(Form("[%s] Target mismatch: expected 'AliRsnDaughter', passed '%s'", GetName(), object->ClassName()));
         Print();
         return kFALSE;
       }
-      break;
     case kMother:
-      if (dynamic_cast<AliRsnMother*>(object) == 0x0)
+      fDaughter = 0x0;
+      fMother   = dynamic_cast<AliRsnMother*>(object);
+      fEvent    = 0x0;
+      if (fMother)
+        return kTRUE;
+      else
       {
         AliError(Form("[%s] Target mismatch: expected 'AliRsnMother', passed '%s'", GetName(), object->ClassName()));
         Print();
         return kFALSE;
       }
-      break;
     case kEvent:
-      if (dynamic_cast<AliRsnEvent*>(object) == 0x0)
+      fDaughter = 0x0;
+      fMother   = 0x0;
+      fEvent    = dynamic_cast<AliRsnEvent*>(object);
+      if (fEvent)
+        return kTRUE;
+      else
       {
         AliError(Form("[%s] Target mismatch: expected 'AliRsnEvent', passed '%s'", GetName(), object->ClassName()));
         Print();
         return kFALSE;
       }
-      break;
     default:
-      return kTRUE;
+      fDaughter = 0x0;
+      fMother   = 0x0;
+      fEvent    = 0x0;
+      return kFALSE;
   }
-  
-  return kTRUE;
 }
 
 //______________________________________________________________________________

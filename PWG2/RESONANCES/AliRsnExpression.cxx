@@ -262,7 +262,7 @@ AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
   default:
     i--; // push back
     AliErrorGeneral("AliRsnExpression::Element", Form("Unexpected symbol on input. %s", token.Data()));
-    if (result) delete result;
+    //if (result) delete result;
     result = new AliRsnExpression;
   }
   return result;

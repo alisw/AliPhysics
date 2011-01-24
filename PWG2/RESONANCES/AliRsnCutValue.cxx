@@ -95,13 +95,6 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
   // make sure that target of this object matches that
   // of the inserted value object
   SetTargetType(fValue.GetTargetType());
-
-  // check target coherence
-  if (!TargetOK(object))
-  {
-    AliWarning("Returning kFALSE");
-    return kFALSE;
-  }
   
   // try to compute values
   Bool_t success = fValue.Eval(object);

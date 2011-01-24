@@ -117,10 +117,12 @@ Bool_t AliRsnCutBetheBloch::IsSelected(TObject *object)
 //
 
   // dynamic cast the object into AliRsnDaughter
-  if (!TargetOK(object)) return kFALSE;
+  if (!TargetOK(object, AliRsnTarget::kDaughter)) return kFALSE;
 
   // retrieve the TPC signal
-  AliRsnDaughter *track = dynamic_cast<AliRsnDaughter*>(object);
+  AliRsnDaughter *track = fDaughter;
+  
+  // if track is meaningful, retrieve its ESD format
   AliESDtrack    *esd   = track->GetRefESDtrack();
   if (!esd) {
     AliError("ESD information unavailable");

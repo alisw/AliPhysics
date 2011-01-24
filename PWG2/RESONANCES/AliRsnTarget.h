@@ -16,6 +16,9 @@
 
 #include "AliRsnEvent.h"
 
+class AliRsnDaughter;
+class AliRsnMother;
+
 class AliRsnTarget : public TNamed
 {
   public:
@@ -28,18 +31,21 @@ class AliRsnTarget : public TNamed
       kTargetTypes
     };
 
-    AliRsnTarget() : fTargetType(kTargetTypes) { /*nothing*/ }
-    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type) { /*nothing*/ }
-    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType) { /*nothing*/ }
-    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
+    AliRsnTarget() : fTargetType(kTargetTypes), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
+    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
+    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
+    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; fDaughter = 0x0; fMother = 0x0; fEvent = 0x0; return (*this); }
     virtual ~AliRsnTarget() { /*nothing*/ }
     
-    Bool_t         IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
-    ETargetType    GetTargetType() const             {return fTargetType;}
-    Char_t         GetTargetTypeChar() const;
-    const char*    GetTargetTypeName() const;
-    void           SetTargetType(ETargetType type)   {fTargetType = type;}
-    Bool_t         TargetOK(TObject *object);
+    Bool_t           IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
+    ETargetType      GetTargetType() const             {return fTargetType;}
+    Char_t           GetTargetTypeChar() const;
+    const char*      GetTargetTypeName() const;
+    void             SetTargetType(ETargetType type)   {fTargetType = type;}
+    Bool_t           TargetOK(TObject *object, ETargetType ref);
+    AliRsnDaughter*  GetTargetDaughter()               {return fDaughter;}
+    AliRsnMother*    GetTargetMother()                 {return fMother;}
+    AliRsnEvent*     GetTargetEvent()                  {return fEvent;}
     
     static AliRsnEvent*  GetCurrentEvent()                   {return fgCurrentEvent;}
     static void          SetCurrentEvent(AliRsnEvent *event) {fgCurrentEvent = event;}
@@ -50,6 +56,10 @@ class AliRsnTarget : public TNamed
   
     ETargetType         fTargetType;     //  target type selected for this object
     static AliRsnEvent *fgCurrentEvent;  //! pointer to current event (useful in many cases)
+    
+    AliRsnDaughter     *fDaughter;       //  utility pointer to target object (daughter)
+    AliRsnMother       *fMother;         //  utility pointer to target object (mother)
+    AliRsnEvent        *fEvent;          //  utility pointer to target object (event)
     
     // ROOT dictionary
     ClassDef(AliRsnTarget, 1)
