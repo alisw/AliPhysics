@@ -86,6 +86,7 @@ public:
     return *this;
   }
   virtual ~THerwig6();
+  static THerwig6 *Instance();
 
   // acces to hep common block
   int         GetNEVHEP        () const;
@@ -224,6 +225,7 @@ public:
   void             Jimmin();
   void             Jmefin();
 protected:
+  static   THerwig6 *fgInstance;
   ClassDef(THerwig6,0)  //Interface to Herwig6.1 Event Generator
 };
 

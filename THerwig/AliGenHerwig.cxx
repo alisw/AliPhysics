@@ -129,7 +129,7 @@ void AliGenHerwig::SetEventListRange(Int_t eventFirst, Int_t eventLast)
 {
   fEv1Pr = eventFirst;
   fEv2Pr = eventLast;
-  if ( fEv2Pr == -1 ) fEv2Pr = fEv2Pr;
+  if ( fEv2Pr == -1 ) fEv2Pr = fEv1Pr;
 }
 
 void AliGenHerwig::Init()
@@ -519,6 +519,9 @@ void AliGenHerwig::MakeHeader()
 //
 // Number of trials
     ((AliGenHerwigEventHeader*) fHeader)->SetTrials(fTrials);
+//
+// Event weight (cross section)
+    ((AliGenHerwigEventHeader*) fHeader)->SetWeight(fHerwig->GetEVWGT());
 //
 // Event Vertex 
     fHeader->SetPrimaryVertex(fVertex);

@@ -19,10 +19,13 @@ class AliGenHerwigEventHeader : public AliGenEventHeader
     void     SetProcessType(Int_t type)  {fProcessType = type;}
     Int_t    Trials() {return fTrials;}
     void     SetTrials(Int_t trials) {fTrials = trials;}
+    Int_t    Weight() {return fWeight;}
+    void     SetWeight(Float_t weight) {fWeight = weight;}
 protected:
     Int_t    fProcessType;               // HERWIG process id for this event 
     Int_t    fTrials;                    // Number of trials to fulfill trigger condition
-    ClassDef(AliGenHerwigEventHeader, 1)  // Event header for Herwig event
+    Float_t  fWeight;                    // Event weight (= cross section in nb for unweighted events)
+    ClassDef(AliGenHerwigEventHeader, 2)  // Event header for Herwig event
 };
 	
 	

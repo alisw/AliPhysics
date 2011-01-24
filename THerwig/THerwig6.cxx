@@ -54,6 +54,7 @@
 #include "TClonesArray.h"
 #include "TParticle.h"
 #include "TObjArray.h"
+#include "Riostream.h"
 
 
 ClassImp(THerwig6)
@@ -63,6 +64,7 @@ extern "C" {
   void   herwig6_close_fortran_file_(int* lun);
 }
 
+THerwig6 *THerwig6::fgInstance = 0;
 
 THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6")
 {
@@ -75,6 +77,10 @@ THerwig6::THerwig6() : TGenerator("Herwig6","Herwig6")
   fParticles = new TClonesArray("TParticle",50);
 
   // initialize common-blocks
+  
+  if (fgInstance) 
+    cout << "WARNING: creating second instance of THerwig6" << endl;
+  fgInstance = this;
  }
 
 THerwig6::THerwig6(const THerwig6 & source): TGenerator(source)
@@ -85,8 +91,14 @@ THerwig6::THerwig6(const THerwig6 & source): TGenerator(source)
  THerwig6::~THerwig6()
  {
    // Destructor. The data members of TGenerator are delete by itself
+   fgInstance = 0;
  }
 
+//------------------------------------------------------------------------------
+THerwig6 *THerwig6::Instance()
+ {
+   return fgInstance ? fgInstance : new THerwig6;
+ }
 //______________________________________________________________________________
 void THerwig6::GenerateEvent()
 {

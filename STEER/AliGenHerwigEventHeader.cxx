@@ -21,7 +21,8 @@ ClassImp(AliGenHerwigEventHeader)
 
 AliGenHerwigEventHeader::AliGenHerwigEventHeader():
     fProcessType(0),
-    fTrials(0)
+    fTrials(0),
+    fWeight(1.)
 {
 // Default Constructor
 }
@@ -29,7 +30,8 @@ AliGenHerwigEventHeader::AliGenHerwigEventHeader():
 AliGenHerwigEventHeader::AliGenHerwigEventHeader(const char* name):
     AliGenEventHeader(name),
     fProcessType(0),
-    fTrials(0)
+    fTrials(0),
+    fWeight(1.)
 {
 // Constructor
 }
