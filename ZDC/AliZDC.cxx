@@ -539,7 +539,10 @@ void AliZDC::Digits2Raw()
     //	digit.GetSector(0),digit.GetSector(1),lADCDataGEO,lADCDataChannel);
      
     if(lADCDataGEO==0){ 
-      if(indADC0>knADCData1) AliError(" Problem with digit index 4 ADC0\n");
+      if(indADC0>knADCData1){
+        AliError(" Problem with digit index 4 ADC0\n");
+	return;
+      }
       Int_t indLG = indADC0+knADCData1;
       // High gain ADC ch.	 
       if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
@@ -548,7 +551,7 @@ void AliZDC::Digits2Raw()
         	    lADCDataOvFlwHG << 12 | (lADCDataValue1[indADC0] & 0xfff); 
       // Low gain ADC ch.
       if(digit.GetADCValue(1) > 2047) lADCDataOvFlwLG = 1; 
-      lADCDataValue1[indLG] = digit.GetADCValue(1); 
+      lADCDataValue1[indLG-1] = digit.GetADCValue(1); 
       lADCData1[indLG] = lADCDataGEO << 27 |  lADCDataChannel << 17 | 0x1 << 16 |
         	    lADCDataOvFlwLG << 12 | (lADCDataValue1[indLG] & 0xfff);  
 		    
@@ -559,7 +562,10 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,iDigit,lADCDataValue1[indLG],indLG,lADCDataValue1[indLG]);
     }
     else if(lADCDataGEO==1){ 
-      if(indADC1>knADCData2) AliError(" Problem with digit index 4 ADC1\n");
+      if(indADC1>knADCData2){
+         AliError(" Problem with digit index 4 ADC1\n");
+	 return;
+      }
       Int_t indLG = indADC1+knADCData2;
       // High gain ADC ch.	 
       if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
@@ -579,7 +585,10 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,indHG,lADCDataValue2[indHG],indLG,lADCDataValue2[indLG]);
     }
     else if(lADCDataGEO==2){ 
-      if(indADC2>knADCData2) AliError(" Problem with digit index 4 ADC2\n");
+      if(indADC2>knADCData2){
+        AliError(" Problem with digit index 4 ADC2\n");
+	return;
+      }
       Int_t indLG = indADC2+knADCData3;
       // High gain ADC ch.	 
       if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
@@ -599,7 +608,10 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
     }
     else if(lADCDataGEO==3){ 
-      if(indADC3>knADCData3) AliError(" Problem with digit index 4 ADC2\n");
+      if(indADC3>knADCData3){
+         AliError(" Problem with digit index 4 ADC2\n");
+	 return;
+      }
       Int_t indLG = indADC3+knADCData4;
       // High gain ADC ch.	 
       if(digit.GetADCValue(0) > 2047) lADCDataOvFlwHG = 1; 
