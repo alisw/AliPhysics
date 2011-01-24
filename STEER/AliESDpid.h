@@ -73,10 +73,10 @@ inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EP
   return fTPCResponse.GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),type); 
 }
 
-inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const {
+inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const {
   Double_t times[AliPID::kSPECIES];
   track->GetIntegratedTimes(times);
-  return (track->GetTOFsignal() - timeZeroTOF - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
+  return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
 }
 
 inline Float_t AliESDpid::NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const {
