@@ -918,10 +918,11 @@ int AliHLTDataBuffer::AliHLTRawBuffer::operator>(const AliHLTRawBuffer& op) cons
 AliHLTUInt8_t* AliHLTDataBuffer::AliHLTRawBuffer::UseBuffer(AliHLTUInt32_t size)
 {
   // mark a portion of the buffer as used
-  if (size>0 && fTotalSize>=size) {
+  if (fTotalSize>=size) {
     fSize=size;
     fLastEventCount=AliHLTDataBuffer::fgEventCount;
-    return fPtr;
+    // only return pointer if there is a portion of the buffer used
+    if (size>0) return fPtr;
   }
   return NULL;
 }
@@ -931,7 +932,7 @@ AliHLTDataBuffer::AliHLTRawBuffer* AliHLTDataBuffer::AliHLTRawBuffer::Split(AliH
   // split a buffer at specified size
   // only possible for buffers with external memory
   if (fTotalSize>size && 
-      (fSize==0 || fSize<=size) &&
+      (fSize==0 || fSize<=size) && // used size must fit into the first part
       fExternalPtr!=NULL) {
     AliHLTRawBuffer* part2=new AliHLTRawBuffer(fTotalSize-size, fPtr+size);
     if (part2) {
