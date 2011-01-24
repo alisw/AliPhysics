@@ -166,7 +166,7 @@ void compare_HLT_offline_local(TString file,
     chain=CreateESDChain(file.Data());
   }
   
-  else if(!file || file->IsZombie()){
+  else if(!file){
     printf("File %s does not exist or is corrupted.\n",file.Data());
     return;  
   }
