@@ -331,7 +331,7 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
    //plugin->SetAnalysisSource("AliDStarJets.cxx");
    // Declare all libraries (other than the default ones for the framework. These will be
    // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-   plugin->SetAdditionalLibs("libPWG3base.so libPWG3muon.so libPWG3vertexingHF.so");
+   plugin->SetAdditionalLibs("libPWG3base.so libPWG3vertexingHF.so");
    // use par files
    if(useParFiles) {
      plugin->EnablePackage("STEERBase.par");
@@ -342,11 +342,15 @@ AliAnalysisGrid* CreateAlienHandler(TString pluginmode="test",Bool_t useParFiles
      plugin->EnablePackage("CORRFW.par");
      plugin->EnablePackage("PWG3base.par");
      plugin->EnablePackage("PWG3vertexingHF.par");
-     plugin->EnablePackage("PWG3muon.par");
    }
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TPC -I$ALICE_ROOT/CONTAINERS -I$ALICE_ROOT/STEER -I$ALICE_ROOT/TRD -I$ALICE_ROOT/macros -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWG3 -I$ALICE_ROOT/PWG3/base -I$ALICE_ROOT/PWG3/vertexingHF -g");
 
    plugin->SetDefaultOutputs(kTRUE);
+   // merging via jdl
+   plugin->SetMergeViaJDL(kTRUE);
+   plugin->SetOneStageMerging(kFALSE);
+   plugin->SetMaxMergeStages(2);
+
    // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
    plugin->SetAnalysisMacro("AnalysisHF.C");
    // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
