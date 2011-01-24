@@ -390,6 +390,7 @@ macro(ALICE_GenerateDictionary)
   # Format neccesary arguments
   ALICE_Format(DINC "-I" "" "${DINC};${CMAKE_INCLUDE_EXPORT_DIRECTORY}")
   set_source_files_properties(${PDS} PROPERTIES GENERATED TRUE)
+  set_source_files_properties(${PDS} PROPERTIES COMPILE_FLAGS "-w")
   add_custom_command(OUTPUT  ${PDS}
                      COMMAND cd ${PROJECT_SOURCE_DIR} && ${ROOTCINT} -f ${CMAKE_CURRENT_BINARY_DIR}/${PDS} -c -D_MODULE=\\\"${MODULE}\\\" ${DEDEFINE} ${DCINTFLAGS} ${DINC} ${DCINTHDRS} ${DDH}
                      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
