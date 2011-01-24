@@ -1624,7 +1624,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
             cdir->cd();
             return -1;
          }   
-         line = Form("gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+         line = Form("gProof->AddInput((TObject*)%p);", this);
          gROOT->ProcessLine(line);
          if (chain) {
             chain->SetProof();
@@ -1721,7 +1721,6 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    // Set the dataset flag
    TObject::SetBit(kUseDataSet);
    fTree = 0;
-   TChain *chain = 0;
    if (fGridHandler) {
       // Start proof analysis using the grid handler
       if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
@@ -1748,19 +1747,13 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
       task->LocalInit();
    }
    
-   line = Form("gProof->AddInput((TObject*)0x%lx);", (ULong_t)this);
+   line = Form("gProof->AddInput((TObject*)%p);", this);
    gROOT->ProcessLine(line);
    Long_t retv;
-   if (chain) {
-//      chain->SetProof();
-      cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON TEST CHAIN " << chain->GetName() << endl;
-      retv = chain->Process("AliAnalysisSelector", "", nentries, firstentry);
-   } else {   
-      line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
-                  dataset, nentries, firstentry);
-      cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
-      retv = (Long_t)gROOT->ProcessLine(line);
-   }   
+   line = Form("gProof->Process(\"%s\", \"AliAnalysisSelector\", \"\", %lld, %lld);",
+               dataset, nentries, firstentry);
+   cout << "===== RUNNING PROOF ANALYSIS " << GetName() << " ON DATASET " << dataset << endl;
+   retv = (Long_t)gROOT->ProcessLine(line);
    return retv;
 }   
 
