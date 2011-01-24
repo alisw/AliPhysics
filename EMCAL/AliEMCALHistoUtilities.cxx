@@ -34,6 +34,7 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TProfile.h>
 #include <THnSparse.h>
 #include <TF1.h>
 #include <TGraph.h>
@@ -78,13 +79,17 @@ TList* AliEMCALHistoUtilities::MoveHistsToList(const char* name, Bool_t putToBro
   TList *list = new TList;
   list->SetName(name);
   if(setOwner) list->SetOwner(setOwner);
-  TObject *objHist;
+  TObject *objHist=0;
+  // Move from gROOT to list
   while((objHist=nextHist())){
+    //objHist->Dump();
     if (!objHist->InheritsFrom("TH1")) continue;
-    ((TH1*)objHist)->SetDirectory(0); // Remove from gROOT
+    ((TH1*)objHist)->SetDirectory(0);
     list->Add(objHist);
-    gDirectory->GetList()->Remove(objHist);
   }
+  // Clear gROOT
+  gDirectory->GetList()->Clear();
+
   if(putToBrowser) gROOT->GetListOfBrowsables()->Add((TObject*)list);
   return list;
 }
@@ -97,10 +102,12 @@ void AliEMCALHistoUtilities::FillH1(TList *l, Int_t ind, Double_t x, Double_t w,
   if(l == 0) return;
 
   if(ind>=0 && ind < l->GetSize()){
-    hid = (TH1*)l->At(ind);
+    hid = dynamic_cast<TH1 *>(l->At(ind));
+    if (hid==0) return;
+
     if(error <= 0.0) { // standard way
       hid->Fill(x,w);
-    } else{
+    } else {
       bin = hid->FindBin(x);
       hid->SetBinContent(bin,w);
       hid->SetBinError(bin,error);
@@ -114,8 +121,19 @@ void AliEMCALHistoUtilities::FillH2(TList *l, Int_t ind, Double_t x, Double_t y,
   static TH2* hid=0;
   if(l == 0) return;
   if(ind>=0 && ind < l->GetSize()){
-    hid = (TH2*)l->At(ind);
-    hid->Fill(x,y,w);
+    hid = dynamic_cast<TH2 *>(l->At(ind));
+    if(hid) hid->Fill(x,y,w);
+  }
+}
+
+void AliEMCALHistoUtilities::FillHProf(TList *l, Int_t ind, Double_t x, Double_t y, Double_t w)
+{
+  // fill profile histogram
+  static TProfile* h=0;
+  if(l == 0) return;
+  if(ind>=0 && ind < l->GetSize()){
+    h = dynamic_cast<TProfile *>(l->At(ind));
+    if(h>0) h->Fill(x,y,w);
   }
 }
 

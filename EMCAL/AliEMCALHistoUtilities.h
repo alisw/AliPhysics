@@ -41,6 +41,7 @@ class AliEMCALHistoUtilities: public TNamed {
   static TList *MoveHistsToList(const char* name="ListOfHists", Bool_t putToBrowser=kTRUE, Bool_t setOwner=kFALSE);
   static void FillH1(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t w=1., Double_t error=0.);
   static void FillH2(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t y=-99999., Double_t w=1.);
+  static void FillHProf(TList *l=0, Int_t ind=0, Double_t x=-99999., Double_t y=-99999., Double_t w=1.);
   static void FillHnSparse(TList *l=0, Int_t ind=0, Double_t* x=0, Double_t w=1.);
   static int  SaveListOfHists(TList *mylist=0, const char* name="test", Bool_t kSingleKey=kFALSE,
   const char* opt="RECREATE");
