@@ -11,7 +11,7 @@
  * Usage:
  * <pre>
  *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
- *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global cb",kTRUE,100)' 2>&1 | tee task.log
+ *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global cb","./",kTRUE,100)' 2>&1 | tee task.log
  *   aliroot -b -l -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
  * </pre>
  * 
@@ -164,6 +164,11 @@ void compare_HLT_offline_local(TString file,
   else if(file.Contains(".txt")){
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
     chain=CreateESDChain(file.Data());
+  }
+  
+  else if(!file || file->IsZombie()){
+    printf("File %s does not exist or is corrupted.\n",file.Data());
+    return;  
   }
 
   if(!chain){
