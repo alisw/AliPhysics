@@ -50,54 +50,6 @@ Bool_t AliAnalysisGrid::CreateToken(const char *username)
 // Check if a valid token exists - if not create one
    ::Warning("AliAnalysisGrid::CreateToken()", "**** !!!! Obsolete method. Please remove the line calling this in your plugin configuration !!!! ****\n");
    return kTRUE;
-   TString user = gSystem->Getenv("USER");
-   if (!user.Length()) {
-      printf("Error in AliAnalysisGrid::CreateToken: $USER environment empty");
-      return kFALSE;
-   }
-   Int_t err_msg = gSystem->Exec("no_command > /dev/null 2>/dev/null");
-   Int_t token_value = gSystem->Exec("bash alien-token-info > /dev/null 2>/dev/null");
-   if (token_value == err_msg) {
-      printf("Error in AliAnalysisGrid::CreateToken: You do not seem to have <alien-token-info> in your path.");
-      return kFALSE;
-   }
-   
-   Bool_t to_create_token = kFALSE;
-   if (!token_value) {
-      // Token still valid, check alien_API_USER environment
-      TString token_user = gSystem->Getenv("alien_API_USER");
-      if (token_user.Length()) {
-         // Environment file sourced
-         if (!username) return kTRUE;                // for default $USER
-         if (token_user == username) return kTRUE;   // for <username>
-         // A valid token existing, and environment sourced, but for a different user
-         to_create_token = kTRUE;
-      }
-   } else {
-      // Token not valid anymore for <username>. Call alien-token-init   
-      to_create_token = kTRUE;
-   }
-   if (to_create_token) {   
-      printf("______________________________________________________________________________________\n");
-      printf("AliAnalysisGrid::CreateToken: Seems you need a token. Calling alien-token-init for you\n");
-      printf("______________________________________________________________________________________\n");
-      Int_t token_init = 0;
-      if (username) token_init = gSystem->Exec(Form("alien-token-init %s", username));
-      else          token_init = gSystem->Exec("alien-token-init");
-      if (token_init == err_msg) {
-         printf("   Woops - semms alien-token-init is not in your path...\n");
-         return kFALSE;
-      } else if (token_init != 0) {
-         printf("   Woops - did not succeed...\n");
-         return kFALSE;
-      }
-   }
-   // We have a valid token - just source it
-   printf("______________________________________________________________________________________\n");
-   printf("AliAnalysisGrid::CreateToken: Your token needs to be sourced in the current shell\n");
-   printf("   USE:    > source /tmp/gclient_env_%d\n", gSystem->GetUid(user));
-   printf("______________________________________________________________________________________\n");
-   return kFALSE;
 }
 
 //______________________________________________________________________________
