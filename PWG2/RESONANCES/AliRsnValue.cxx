@@ -304,18 +304,40 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
   AliRsnMother   *mother   = dynamic_cast<AliRsnMother*>(object);
   
+  // common variables
+  TLorentzVector pRec;   // 4-momentum for single track or pair sum (reco)
+  TLorentzVector pSim;   // 4-momentum for single track or pair sum (MC)
+  TLorentzVector pRec0;  // 4-momentum of first daughter (reco)
+  TLorentzVector pSim0;  // 4-momentum of first daughter (MC)
+  TLorentzVector pRec1;  // 4-momentum of second daughter (reco)
+  TLorentzVector pSim1;  // 4-momentum of second daughter (MC)
+  
   // check that the input object is the correct class type
   switch (fTargetType)
   {
     case AliRsnTarget::kDaughter:
-      if (!daughter)
+      if (daughter)
+      {
+        pRec = daughter->Psim();
+        pSim = daughter->Prec();
+      }
+      else
       {
         AliError(Form("[%s] expected: AliRsnDaughter, passed: [%s]", GetName(), object->ClassName()));
         return kFALSE;
       }
       break;
     case AliRsnTarget::kMother:
-      if (!mother)
+      if (mother)
+      {
+        pRec  = mother->Sum();
+        pSim  = mother->SumMC();
+        pRec0 = mother->GetDaughter(0)->Prec();
+        pRec1 = mother->GetDaughter(1)->Prec();
+        pSim0 = mother->GetDaughter(0)->Psim();
+        pSim1 = mother->GetDaughter(1)->Psim();
+      }
+      else
       {
         AliError(Form("[%s] expected: AliRsnMother, passed: [%s]", GetName(), object->ClassName()));
         return kFALSE;
@@ -336,28 +358,6 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
   // cast the support object to the types which could be needed
   AliESDtrackCuts *esdCuts = dynamic_cast<AliESDtrackCuts*>(fSupportObject);
   AliRsnPairDef   *pairDef = dynamic_cast<AliRsnPairDef*>(fSupportObject);
-
-  // common variables
-  TLorentzVector pRec;   // 4-momentum for single track or pair sum (reco)
-  TLorentzVector pSim;   // 4-momentum for single track or pair sum (MC)
-  TLorentzVector pRec0;  // 4-momentum of first daughter (reco)
-  TLorentzVector pSim0;  // 4-momentum of first daughter (MC)
-  TLorentzVector pRec1;  // 4-momentum of second daughter (reco)
-  TLorentzVector pSim1;  // 4-momentum of second daughter (MC)
-  if (daughter)
-  {
-    pRec = daughter->Psim();
-    pSim = daughter->Prec();
-  }
-  if (mother)
-  {
-    pRec  = mother->Sum();
-    pSim  = mother->SumMC();
-    pRec0 = mother->GetDaughter(0)->Prec();
-    pRec1 = mother->GetDaughter(1)->Prec();
-    pSim0 = mother->GetDaughter(0)->Psim();
-    pSim1 = mother->GetDaughter(1)->Psim();
-  }
     
   // compute value depending on type
   switch (fValueType)

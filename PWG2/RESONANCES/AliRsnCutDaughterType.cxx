@@ -52,11 +52,11 @@ Bool_t AliRsnCutDaughterType::IsSelected(TObject *object)
 //
 
   // coherence check
-  if (!TargetOK(object)) return kFALSE;
+  if (!TargetOK(object, AliRsnTarget::kDaughter)) return kFALSE;
   
   // check the daughter according to the selected type
   // in some cases this means to retrieve the track status
-  AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
+  AliRsnDaughter *daughter = fDaughter;
   AliVTrack   *track  = dynamic_cast<AliVTrack*>(daughter->GetRef());
   AliESDtrack *esdT   = dynamic_cast<AliESDtrack*>(daughter->GetRef());
   ULong_t      status = 0x0;
