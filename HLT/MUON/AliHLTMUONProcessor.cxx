@@ -671,7 +671,7 @@ int AliHLTMUONProcessor::FetchFieldIntegral(Double_t& bfieldintegral) const
 	{
 		TVirtualMagField* vfield = TGeoGlobalMagField::Instance()->GetField();
 		AliMagF* field = dynamic_cast<AliMagF*>(vfield);
-		if (vfield->IsA() != AliMagF::Class() and field != NULL)
+		if (vfield->IsA() != AliMagF::Class() or field == NULL)
 		{
 			HLTError(Form(
 				"The magnetic field is not of type AliMagF."
