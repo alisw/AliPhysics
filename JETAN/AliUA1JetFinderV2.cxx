@@ -335,10 +335,27 @@ void AliUA1JetFinderV2::FindJets()
   Int_t      loop1     = 0;
   Int_t*     injet     = new Int_t[nCandidate];
   Int_t*     sflag     = new Int_t[nCandidate];
+  
+  for(Int_t i = 0; i < nCandidate; i++) {
+      ptT[i]       = 0;
+      en2T[i]      = 0;
+      pt2T[i]      = 0;
+      detT[i]      = 0;
+      etaT[i]      = 0;
+      phiT[i]      = 0;
+      cFlagT[i]    = 0;
+      cFlag2T[i]   = 0;
+      sFlagT[i]    = 0;
+      cClusterT[i] = 0;
+      vectT[i]     = 0;
+      injet[i]     = 0;
+      sflag[i]     = 0;
+}
+
   TRefArray* trackRef  = new TRefArray();
 
   //total energy in array
-  Float_t  etbgTotal = 0.0;
+  Float_t etbgTotal = 0.0;
   TH1F*    hPtTotal  = new TH1F("hPt","Pt distribution of all particles ",100,0.0,15.0);
 
   // Input cell info
