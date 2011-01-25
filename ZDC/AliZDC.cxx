@@ -539,7 +539,7 @@ void AliZDC::Digits2Raw()
     //	digit.GetSector(0),digit.GetSector(1),lADCDataGEO,lADCDataChannel);
      
     if(lADCDataGEO==0){ 
-      if(indADC0>knADCData1){
+      if(indADC0>=knADCData1){
         AliError(" Problem with digit index 4 ADC0\n");
 	return;
       }
@@ -562,7 +562,7 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,iDigit,lADCDataValue1[indLG],indLG,lADCDataValue1[indLG]);
     }
     else if(lADCDataGEO==1){ 
-      if(indADC1>knADCData2){
+      if(indADC1>=knADCData2){
          AliError(" Problem with digit index 4 ADC1\n");
 	 return;
       }
@@ -585,7 +585,7 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,indHG,lADCDataValue2[indHG],indLG,lADCDataValue2[indLG]);
     }
     else if(lADCDataGEO==2){ 
-      if(indADC2>knADCData2){
+      if(indADC2>=knADCData3){
         AliError(" Problem with digit index 4 ADC2\n");
 	return;
       }
@@ -608,7 +608,7 @@ void AliZDC::Digits2Raw()
       //  lADCDataGEO,indHG,lADCDataValue3[indHG],indLG,lADCDataValue3[indLG]);
     }
     else if(lADCDataGEO==3){ 
-      if(indADC3>knADCData3){
+      if(indADC3>=knADCData4){
          AliError(" Problem with digit index 4 ADC2\n");
 	 return;
       }
