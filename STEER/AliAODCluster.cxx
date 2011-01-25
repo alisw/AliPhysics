@@ -126,8 +126,8 @@ AliAODCluster::AliAODCluster(const AliAODCluster& clus) :
 {
   // Copy constructor
 
-  if(fPosition) {for(Int_t i = 0; i < 3  ; i++) fPosition[i] = clus.fPosition[i];}
-  for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];
+  for(Int_t i = 0; i < 3  ; i++) fPosition[i]  = clus.fPosition[i];
+  for(Int_t i = 0; i < 13 ; i++)  fPID[i]      = clus.fPID[i];
 
   SetLabel(clus.fLabel, clus.fNLabel);
 }
@@ -138,7 +138,7 @@ AliAODCluster& AliAODCluster::operator=(const AliAODCluster& clus)
   // Assignment operator
   if(this!=&clus) {
     
-	if(fPosition) {for(Int_t i = 0; i < 3 ;  i++) fPosition[i] = clus.fPosition[i];}
+	for(Int_t i = 0; i < 3 ;  i++) fPosition[i] = clus.fPosition[i];
 	for(Int_t i = 0; i < 13 ; i++) fPID[i]      = clus.fPID[i];
     
     fEnergy = clus.fEnergy;
