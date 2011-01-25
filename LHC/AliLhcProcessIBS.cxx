@@ -49,6 +49,11 @@ AliLhcProcessIBS::AliLhcProcessIBS(AliLHC* lhc, const char* name, const char* ti
      fTaueArray(0)
 {
 // Constructor
+  for (Int_t i = 0; i < 2; i++) {
+    fBeam[i] = 0;
+    fR[i]    = 0.;
+    fE[i]    = 0.;
+  }
 }
 
 AliLhcProcessIBS::AliLhcProcessIBS(const AliLhcProcessIBS& ibs):
@@ -61,6 +66,11 @@ AliLhcProcessIBS::AliLhcProcessIBS(const AliLhcProcessIBS& ibs):
     fTaueArray(0)
 {
 // Copy Constructor
+  for (Int_t i = 0; i < 2; i++) {
+    fBeam[i] = 0;
+    fR[i]    = 0.;
+    fE[i]    = 0.;
+  }
 }
 
 
