@@ -168,7 +168,7 @@ AliITStrackerUpgrade::~AliITStrackerUpgrade(){
     delete [] fCluCoord;
   }
   
- if(fSegmentation) delete fSegmentation;
+  if(fSegmentation) delete fSegmentation;
 }
 
 //____________________________________________________________________________
@@ -238,25 +238,25 @@ void AliITStrackerUpgrade::Init(){
 }
 //_______________________________________________________________________
 Int_t AliITStrackerUpgrade::LoadClusters(TTree *clusTree){ 
-//
-// Load clusters for tracking
-// 
+  //
+  // Load clusters for tracking
+  // 
 
   TClonesArray statITSCluster("AliITSRecPoint");
   TClonesArray *ITSCluster = &statITSCluster;
 
-    TBranch* itsClusterBranch=clusTree->GetBranch("ITSRecPoints");
-    if (!itsClusterBranch){
-      AliError("can't get the branch with the ITS clusters ! \n");
-      return 1;
-    }
-    itsClusterBranch->SetAddress(&ITSCluster);
-    clusTree->GetEvent(0);
-    Int_t nCluster = ITSCluster->GetEntriesFast();
-    for(Int_t i=0; i<nCluster; i++){
-      AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->UncheckedAt(i);
-      fLayers[recp->GetLayer()]->InsertCluster(new AliITSRecPoint(*recp));
-    }//loop clusters
+  TBranch* itsClusterBranch=clusTree->GetBranch("ITSRecPoints");
+  if (!itsClusterBranch){
+    AliError("can't get the branch with the ITS clusters ! \n");
+    return 1;
+  }
+  itsClusterBranch->SetAddress(&ITSCluster);
+  clusTree->GetEvent(0);
+  Int_t nCluster = ITSCluster->GetEntriesFast();
+  for(Int_t i=0; i<nCluster; i++){
+    AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->UncheckedAt(i);
+    fLayers[recp->GetLayer()]->InsertCluster(new AliITSRecPoint(*recp));
+  }//loop clusters
 
   SetClusterTree(clusTree);
   return 0;
@@ -360,7 +360,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
     TClonesArray &clulay = *fCluLayer[ilay];
     TClonesArray &clucoo = *fCluCoord[ilay];
     if (!ForceSkippingOfLayer(ilay)){
-    AliDebug(2,Form("number of clusters in layer %i : %i",ilay,fLayers[ilay]->GetNumberOfClusters()));
+      AliDebug(2,Form("number of clusters in layer %i : %i",ilay,fLayers[ilay]->GetNumberOfClusters()));
       for(Int_t cli=0;cli<fLayers[ilay]->GetNumberOfClusters();cli++){
         AliITSRecPoint* cls = (AliITSRecPoint*)fLayers[ilay]->GetCluster(cli);
         if(cls->TestBit(kSAflag)==kTRUE) continue;
@@ -620,7 +620,7 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackSA* tr,Double_t *primar
               Double_t yclu1 = p1->GetY();
               Double_t zclu1 = p1->GetZ();
 	      layer=p1->GetLayer();
-	      fSegmentation->GetRadius(layer);
+	      radius = fSegmentation->GetRadius(layer);
 	      Double_t cv=0.,tgl2=0.,phi2=0.;
 	      Int_t cln1=mrk1;
 	      AliITSclusterTable* arr1 = (AliITSclusterTable*)GetClusterCoord(firstLay,cln1);
@@ -697,15 +697,13 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackSA* tr,Double_t *primar
               
 	      // Propagate inside the innermost layer with a cluster 
 	      if(ot.Propagate(ot.GetX()-0.1*ot.GetX())) {
-		Double_t rt=0.;
-		rt=fSegmentation->GetRadius(5);
-		if(RefitAtBase(rt,&ot,inx)){ //fit from layer 1 to layer 6
+		if(RefitAtBase(AliITSRecoParam::GetrInsideITSscreen(),&ot,inx)){ //fit from layer 1 to layer 6
 		  AliITStrackMI otrack2(ot);
 		  otrack2.ResetCovariance(10.); 
 		  otrack2.ResetClusters();
 		  
 		  //fit from layer 6 to layer 1
-		  if(RefitAtBase(/*AliITSRecoParam::GetrInsideSPD1()*/fSegmentation->GetRadius(0),&otrack2,inx)) {//check clind
+		  if(RefitAtBase(/*AliITSRecoParam::GetrInsideSPD1()*/fSegmentation->GetRadius(0)-0.3,&otrack2,inx)) {//check clind
 		    new(arrMI[nFoundTracks]) AliITStrackMI(otrack2);
 		    new(arrSA[nFoundTracks]) AliITStrackSA(trac);
 		    ++nFoundTracks;
@@ -782,8 +780,8 @@ Int_t AliITStrackerUpgrade::SearchClusters(Int_t layer,Double_t phiwindow,Double
 
   AliDebug(2,"Starting...");
   if(ForceSkippingOfLayer(layer)) {
-  AliDebug(2,Form("Forcing skipping of layer %i. Exiting",layer));
-  return 0;
+    AliDebug(2,Form("Forcing skipping of layer %i. Exiting",layer));
+    return 0;
   }
 
   Int_t nc=0;
@@ -1015,7 +1013,7 @@ Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
 
   Int_t lflag=0;
   for(Int_t i=0;i<AliITSgeomTGeo::kNLayers;i++)
-  if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
+    if(labl[i][0]==label || labl[i][1]==label || labl[i][2]==label) lflag++;
   if(lflag<track->GetNumberOfClusters()) label = -label;
   return label;
 }
@@ -1277,7 +1275,7 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackMI *track,
 	  clAcc=cl;                                                              
 	  maxchi2=chi2;                                                          
 	} else {                                                                 
-	   return kFALSE;                                                         
+	  return kFALSE;                                                         
 	}                                                                        
       }                                                                          
     }              
@@ -1571,16 +1569,16 @@ Int_t AliITStrackerUpgrade::PropagateBack(AliESDEvent *event) {
     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
     if (esd->GetStatus()&AliESDtrack::kITSout) continue;
 
-/*
-    AliITStrackMI *t=0;
-    try {
+    /*
+      AliITStrackMI *t=0;
+      try {
       t=new AliITStrackMI(*esd);
-    } catch (const Char_t *msg) {
+      } catch (const Char_t *msg) {
       //Warning("PropagateBack",msg);
       delete t;
       continue;
-    }
-*/
+      }
+    */
     AliITStrackMI *t = new AliITStrackMI(*esd);
     t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 
@@ -1618,7 +1616,7 @@ Int_t AliITStrackerUpgrade::PropagateBack(AliESDEvent *event) {
       inx[lay]=index;
     }
     //   
-    if (RefitAtBase(43.6,&fTrackToFollow,inx)) {
+    if (RefitAtBase(fSegmentation->GetRadius(5),&fTrackToFollow,inx)) {
       //fTrackToFollow.SetLabel(t->GetLabel());//
       //fTrackToFollow.CookdEdx();
       //CookLabel(&fTrackToFollow,0.); //For comparison only
@@ -1647,86 +1645,86 @@ AliCluster *AliITStrackerUpgrade::GetCluster(Int_t index) const {
 }
 //______________________________________________________________________________
 Int_t AliITStrackerUpgrade::CorrectForPipeMaterial(AliITStrackMI *t, TString direction) {
-//-------------------------------------------------------------------
-// Propagate beyond beam pipe and correct for material
-// (material budget in different ways according to fUseTGeo value)
-// Add time if going outward (PropagateTo or PropagateToTGeo)
-//-------------------------------------------------------------------
+  //-------------------------------------------------------------------
+  // Propagate beyond beam pipe and correct for material
+  // (material budget in different ways according to fUseTGeo value)
+  // Add time if going outward (PropagateTo or PropagateToTGeo)
+  //-------------------------------------------------------------------
 
-// Define budget mode:
-// 0: material from AliITSRecoParam (hard coded)
-// 1: material from TGeo in one step (on the fly)
-// 2: material from lut
-// 3: material from TGeo in one step (same for all hypotheses)
-Int_t mode;
-switch(fUseTGeo) {
- case 0:
-   mode=0;
-   break;
- case 1:
-   mode=1;
-   break;
- case 2:
-   mode=2;
-   break;
- case 3:
-   if(fTrackingPhase.Contains("Clusters2Tracks"))
-     { mode=3; } else { mode=1; }
-   break;
- case 4:
-   if(fTrackingPhase.Contains("Clusters2Tracks"))
-     { mode=3; } else { mode=2; }
-   break;
- default:
-   mode=0;
-   break;
- }
-if(fTrackingPhase.Contains("Default")) mode=0;
-Int_t index=fCurrentEsdTrack;
+  // Define budget mode:
+  // 0: material from AliITSRecoParam (hard coded)
+  // 1: material from TGeo in one step (on the fly)
+  // 2: material from lut
+  // 3: material from TGeo in one step (same for all hypotheses)
+  Int_t mode;
+  switch(fUseTGeo) {
+  case 0:
+    mode=0;
+    break;
+  case 1:
+    mode=1;
+    break;
+  case 2:
+    mode=2;
+    break;
+  case 3:
+    if(fTrackingPhase.Contains("Clusters2Tracks"))
+      { mode=3; } else { mode=1; }
+    break;
+  case 4:
+    if(fTrackingPhase.Contains("Clusters2Tracks"))
+      { mode=3; } else { mode=2; }
+    break;
+  default:
+    mode=0;
+    break;
+  }
+  if(fTrackingPhase.Contains("Default")) mode=0;
+  Int_t index=fCurrentEsdTrack;
 
-Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
-Double_t rToGo=(dir>0 ? AliITSRecoParam::GetrInsidePipe() : AliITSRecoParam::GetrOutsidePipe());
-Double_t xToGo;
-if (!t->GetLocalXat(rToGo,xToGo)) return 0;
+  Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
+  Double_t rToGo=(dir>0 ? AliITSRecoParam::GetrInsidePipe() : AliITSRecoParam::GetrOutsidePipe());
+  Double_t xToGo;
+  if (!t->GetLocalXat(rToGo,xToGo)) return 0;
 
-Double_t xOverX0,x0,lengthTimesMeanDensity;
+  Double_t xOverX0,x0,lengthTimesMeanDensity;
 
-switch(mode) {
- case 0:
-   xOverX0 = AliITSRecoParam::GetdPipe();
-   x0 = AliITSRecoParam::GetX0Be();
-   lengthTimesMeanDensity = xOverX0*x0;
-   lengthTimesMeanDensity *= dir;
-   if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
-   break;
- case 1:
-   if (!t->PropagateToTGeo(xToGo,20)) return 0; // "20" removes the d0 mean shift of ~20 um -> To be understood.   
-   break;
- case 2:
-   if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");
-   xOverX0 = fxOverX0Pipe;
-   lengthTimesMeanDensity = fxTimesRhoPipe;
-   lengthTimesMeanDensity *= dir;
-   if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
-   break;
- case 3:
-   if(!fxOverX0PipeTrks || index<0 || index>=fNtracks) Error("CorrectForPipeMaterial","Incorrect usage of UseTGeo option!\n");
-   if(fxOverX0PipeTrks[index]<0) {
-     if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
-     Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
-				((1.-t->GetSnp())*(1.+t->GetSnp())));
-     fxOverX0PipeTrks[index] = TMath::Abs(xOverX0)/angle;
-     fxTimesRhoPipeTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
-     return 1;
-   }
-   xOverX0 = fxOverX0PipeTrks[index];
-   lengthTimesMeanDensity = fxTimesRhoPipeTrks[index];
-   lengthTimesMeanDensity *= dir;
-   if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
-   break;
- }
+  switch(mode) {
+  case 0:
+    xOverX0 = AliITSRecoParam::GetdPipe();
+    x0 = AliITSRecoParam::GetX0Be();
+    lengthTimesMeanDensity = xOverX0*x0;
+    lengthTimesMeanDensity *= dir;
+    if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
+    break;
+  case 1:
+    if (!t->PropagateToTGeo(xToGo,1)) return 0;    
+    break;
+  case 2:
+    if(fxOverX0Pipe<0) BuildMaterialLUT("Pipe");
+    xOverX0 = fxOverX0Pipe;
+    lengthTimesMeanDensity = fxTimesRhoPipe;
+    lengthTimesMeanDensity *= dir;
+    if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
+    break;
+  case 3:
+    if(!fxOverX0PipeTrks || index<0 || index>=fNtracks) Error("CorrectForPipeMaterial","Incorrect usage of UseTGeo option!\n");
+    if(fxOverX0PipeTrks[index]<0) {
+      if (!t->PropagateToTGeo(xToGo,1,xOverX0,lengthTimesMeanDensity)) return 0;
+      Double_t angle=TMath::Sqrt((1.+t->GetTgl()*t->GetTgl())/
+				 ((1.-t->GetSnp())*(1.+t->GetSnp())));
+      fxOverX0PipeTrks[index] = TMath::Abs(xOverX0)/angle;
+      fxTimesRhoPipeTrks[index] = TMath::Abs(lengthTimesMeanDensity)/angle;
+      return 1;
+    }
+    xOverX0 = fxOverX0PipeTrks[index];
+    lengthTimesMeanDensity = fxTimesRhoPipeTrks[index];
+    lengthTimesMeanDensity *= dir;
+    if (!t->PropagateTo(xToGo,xOverX0,lengthTimesMeanDensity/xOverX0)) return 0;
+    break;
+  }
 
-return 1;
+  return 1;
 }
 //__________________________________________________________________________
 Int_t AliITStrackerUpgrade::RefitInward(AliESDEvent *event) {
@@ -1759,13 +1757,13 @@ Int_t AliITStrackerUpgrade::RefitInward(AliESDEvent *event) {
     //  fTrackToFollow.ResetCovariance(10.);
     //Refitting...
     //The beam pipe
-    // if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
-    fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
-    AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
-    Double_t r[3]={0.,0.,0.};
-    Double_t maxD=3.;
-    esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
-    // }
+    if (CorrectForPipeMaterial(&fTrackToFollow,"inward")) {
+      fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSrefit);
+      AliESDtrack  *esdTrack =fTrackToFollow.GetESDtrack();
+      Double_t r[3]={0.,0.,0.};
+      Double_t maxD=3.;
+      esdTrack->RelateToVertex(event->GetVertex(),GetBz(r),maxD);
+    }
     delete t;
   }
 
