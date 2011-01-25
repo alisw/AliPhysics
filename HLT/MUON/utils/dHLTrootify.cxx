@@ -296,7 +296,7 @@ void PrintUsage(bool asError = true)
  */
 int ParseCommandLine(
 		int argc,
-		const char** argv,
+		char** argv,
 		const char** filenames,
 		AliHLTMUONDataBlockType* filetypes,
 		int& numOfFiles,
@@ -454,7 +454,7 @@ int ParseCommandLine(
 }
 
 
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
 	// Test endianess of this machine during runtime and print warning if it is not
 	// little endian.
