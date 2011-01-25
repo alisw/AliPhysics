@@ -966,10 +966,10 @@ void AliUA1JetFinderV2::RunAlgoritmC(Float_t etbgTotal, Double_t dEtTotal, Int_t
   Float_t etseed  = header->GetEtSeed();
 
   // Tmp array of jets form algoritm
-  Float_t etaAlgoJet[30];
-  Float_t phiAlgoJet[30];
-  Float_t etAlgoJet[30];
-  Int_t   ncellsAlgoJet[30];
+  Float_t etaAlgoJet[30]    = {0.};
+  Float_t phiAlgoJet[30]    = {0.};
+  Float_t etAlgoJet[30]     = {0.};
+  Int_t   ncellsAlgoJet[30] = {0};
 
   // Run algorithm//
 
@@ -1345,7 +1345,7 @@ void AliUA1JetFinderV2::SubtractBackgC(const Int_t& nIn, const Int_t&nJ, Float_t
   //calculate energy inside and outside cones
   AliUA1JetHeaderV1* header = (AliUA1JetHeaderV1*) fHeader;
   Float_t rc= header->GetRadius();
-  Float_t etIn[30];
+  Float_t etIn[30] = {0.};
   Float_t etOut = 0;
   for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
     // if((fReader->GetCutFlag(jpart)) != 1) continue; // pt cut
