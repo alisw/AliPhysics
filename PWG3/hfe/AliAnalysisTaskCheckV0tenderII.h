@@ -29,6 +29,7 @@ class TList;
 class AliHFEcollection;
 class AliESDv0KineCuts;
 class AliKFVertex;
+class AliESDv0;
 
 class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
  public:

@@ -12,10 +12,9 @@
 #ifndef ALIHFEPIDBASE_H
 #include "AliHFEpidBase.h"
 #endif
+#include "AliPID.h"
 
 class AliVParticle;
-class AliPID;
-
 class AliHFEpidQAmanager;
 
 class AliHFEpidTOF : public AliHFEpidBase{

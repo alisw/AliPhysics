@@ -33,12 +33,14 @@ class AliESDEvent;
 class AliESDtrackCuts;
 class AliMCEvent;
 class AliVParticle;
+class AliESDpid;
 
 class AliVEvent;
 class AliVertexerTracks;
 class AliHFEpid;
 class AliHFEcuts;
 class AliHFEextraCuts;
+class AliHFEdca;
 
 class AliAnalysisTaskDCA : public AliAnalysisTaskSE{
  public:
