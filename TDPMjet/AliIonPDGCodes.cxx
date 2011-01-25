@@ -39,6 +39,7 @@ AliIonPDGCodes::AliIonPDGCodes(const AliIonPDGCodes &/*PDGCodes*/)
     :TObject(),
      fNIon(200)
 {
+  for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=0;
 }
 
 //______________________________________________________________________________
