@@ -130,8 +130,9 @@ void AliGenTPHIC::Generate()
   // The event differectial cross section is assigned as a weight
   // to each track of the event.
 
-  Float_t polar[3]= {0,0,0};
-  Float_t origin0[3],origin[3];
+  Float_t polar[3]   = {0,0,0};
+  Float_t origin0[3] = {0,0,0};
+  Float_t origin[3]  = {0,0,0};
   Float_t p[3], tof;
   Double_t weight;
 
