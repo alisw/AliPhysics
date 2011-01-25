@@ -377,7 +377,7 @@ int AliHLTMUONProcessor::FetchTMapFromCDB(const char* pathToEntry, TMap*& map) c
 		);
 		return -EPROTO;
 	}
-	map = dynamic_cast<TMap*>(obj);
+	map = static_cast<TMap*>(obj);
 	
 	return 0;
 }
@@ -421,7 +421,7 @@ int AliHLTMUONProcessor::GetValueFromTMap(
 		);
 		return -EPROTO;
 	}
-	value = dynamic_cast<TObjString*>(valueObj)->GetString();
+	value = static_cast<TObjString*>(valueObj)->GetString();
 	
 	return 0;
 }
