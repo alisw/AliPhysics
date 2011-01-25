@@ -836,7 +836,7 @@ void AliHLTMUONMansoTrackerFSM::ProjectToStation4(
 		else
 		{
 			tag->fCandidate = AddTrackCandidate();
-			if (tag->fCandidate != NULL) *tag->fCandidate = *fMc1.fCandidate;
+			if (tag->fCandidate != NULL and fMc1.fCandidate != NULL) *tag->fCandidate = *fMc1.fCandidate;
 		}
 		// Now fill the cluster point found on station 5 and RoI on station 4.
 		if (tag->fCandidate != NULL)
