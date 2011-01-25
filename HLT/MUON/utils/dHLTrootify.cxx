@@ -166,9 +166,10 @@ int RootifyFiles(
 	AliHLTConfiguration sink("sink", "ROOTFileWriter", "convert", params.Data());
 	
 	// Build and run the HLT tasks.
-	if (sys.BuildTaskList("sink") != 0) return HLTSYSTEM_ERROR;
-	if (maxLogging) sys.PrintTaskList();
-	if (sys.Run() != 0) return HLTSYSTEM_ERROR;
+	int resultcode = EXIT_SUCCESS;
+	if (sys.BuildTaskList("sink") != 0) resultcode = HLTSYSTEM_ERROR;
+	if (resultcode == EXIT_SUCCESS and maxLogging) sys.PrintTaskList();
+	if (resultcode == EXIT_SUCCESS and sys.Run() != 0) resultcode = HLTSYSTEM_ERROR;
 	
 	// Clean up all the dynamically allocate objects.
 	for (int i = 0; i < numOfFiles; i++)
@@ -177,7 +178,7 @@ int RootifyFiles(
 	}
 	delete [] filePubs;
 
-	return EXIT_SUCCESS;
+	return resultcode;
 }
 
 /**
