@@ -2359,24 +2359,54 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	TParticle  *lMCESDPartPos  = stack->Particle(lLabelTrackPos);
 	if(!lMCESDPartPos) { 
 	  Printf("no MC particle for positive and/or negative daughter\n");
-	  continue;
+	  
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    
 	}
 	TParticle  *lMCESDPartNeg  = stack->Particle(lLabelTrackNeg);
-	if (!lMCESDPartNeg) continue;
+	if (!lMCESDPartNeg) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
 	lPDGCodePosDaughter = lMCESDPartPos->GetPdgCode();
 	lPDGCodeNegDaughter = lMCESDPartNeg->GetPdgCode();
 	lIndexPosMother = lMCESDPartPos->GetFirstMother();
 	lIndexNegMother = lMCESDPartNeg->GetFirstMother();
 	
-	if (lIndexPosMother == -1) continue;
+	if (lIndexPosMother == -1) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
 	TParticle  *lMCESDMother    = stack->Particle(lIndexPosMother);
-	if (!lMCESDMother) continue;
+	if (!lMCESDMother) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
 	lPdgcodeMother         = lMCESDMother->GetPdgCode();
 	lIndexMotherOfMother   = lMCESDMother->GetFirstMother();
 	if (lIndexMotherOfMother ==-1) lPdgcodeMotherOfMother = 0;
 	else {
 	  TParticle  *lMCESDMotherOfMother    = stack->Particle(lIndexMotherOfMother);
-	  if (!lMCESDMotherOfMother) continue;
+	  if (!lMCESDMotherOfMother) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
 	  lPdgcodeMotherOfMother = lMCESDMotherOfMother->GetPdgCode();
 	}
 	
@@ -2503,11 +2533,23 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       // Monte-Carlo particle associated to reconstructed particles:  
       if (fAnalysisMC) {
 	AliAODMCParticle *lMCAODPartPos = (AliAODMCParticle*)mcArray->At(lLabelTrackPos);
-	if (!lMCAODPartPos) continue;
+	if (!lMCAODPartPos) {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    }
 	AliAODMCParticle *lMCAODPartNeg = (AliAODMCParticle*)mcArray->At(lLabelTrackNeg);
-	if(!lMCAODPartNeg) { 
+	if(!lMCAODPartNeg)  
 	 // Printf("strange analysis::UserExec:no MC particle for negative daughter\n");
-	  continue;
+	  {
+        if (negPiKF) delete negPiKF; negPiKF=NULL;
+	if (posPiKF) delete posPiKF; posPiKF=NULL;
+	if (posPKF)  delete posPKF;  posPKF=NULL;
+	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	continue;
+    
 	}
 	lPDGCodePosDaughter = lMCAODPartPos->GetPdgCode();
 	lPDGCodeNegDaughter = lMCAODPartNeg->GetPdgCode();
