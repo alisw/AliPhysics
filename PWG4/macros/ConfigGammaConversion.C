@@ -690,9 +690,9 @@ Double_t kGCfirstXBinNITSClusters = -0.5;
 Double_t kGClastXBinNITSClusters = 6.5;
 
 //TPCcluster to Findable-plots
-Int_t kGCnYBinsClsToF = 120;
+Int_t kGCnYBinsClsToF = 200;
 Double_t kGCfirstYBinClsToF = 0.;
-Double_t kGClastYBinClsToF = 1.2;
+Double_t kGClastYBinClsToF = 2.0;
 
 //TPCchi2 -plots
 Int_t kGCnXBinsTPCchi2 = 100;
@@ -1560,6 +1560,11 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   else{
     cout<<"Using mixed event for bg."<<endl;
   }
+  if(kGCUseTrackMultiplicityForBG){
+    cout<<"Using track multiplicity for bck"<<endl;
+  }else{
+    cout<<"Using V0 multiplicity for bck"<<endl;
+  }
   gammaconversion->SetDoRotation(kGCUseRotationMethodInBG);
   cout<<"Using :"<<kGCnumberOfRotationEventsForBG<<" rotations in bg calculation"<<endl;
   gammaconversion->SetNumberOfRotationsBG(kGCnumberOfRotationEventsForBG);
@@ -1880,6 +1885,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
      histograms->AddHistogram("MC_DecayOmegaGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
      histograms->AddHistogram("MC_DecayK0sGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
      histograms->AddHistogram("MC_DecayEtapGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+     histograms->AddHistogram("MC_DecayPhiGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
      histograms->AddHistogram("MC_DecayAllGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
   }
 
@@ -1895,6 +1901,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDENITSClusters == kTRUE){ histograms->AddHistogram("ESD_E_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
     if(kGCplotESDENTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_E_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
     if(kGCplotESDENTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_E_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
+    if(kGCplotESDENTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_TrueConversion_E_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
     if(kGCplotESDETPCchi2 == kTRUE){ histograms->AddHistogram("ESD_E_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
 
 		
@@ -1906,6 +1913,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDPNITSClusters == kTRUE){ histograms->AddHistogram("ESD_P_nITSClusters" ,"" , kGCnXBinsNITSClusters, kGCfirstXBinNITSClusters, kGClastXBinNITSClusters, "", "");}
     if(kGCplotESDPNTPCClustersToFP== kTRUE){ histograms->AddHistogram("ESD_P_nTPCClustersToFP" ,"" ,kGCnXBinsP, kGCfirstXBinP, kGClastXBinP,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}	
     if(kGCplotESDPNTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_P_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
+    if(kGCplotESDPNTPCClustersToFR== kTRUE){ histograms->AddHistogram("ESD_TrueConversion_P_nTPCClustersToFR" ,"" ,kGCnXBinsR, kGCfirstXBinR, kGClastXBinR,kGCnYBinsClsToF, kGCfirstYBinClsToF, kGClastYBinClsToF,"", "",0);}
     if(kGCplotESDPTPCchi2 == kTRUE){ histograms->AddHistogram("ESD_P_TPCchi2" ,"" , kGCnXBinsTPCchi2, kGCfirstXBinTPCchi2, kGClastXBinTPCchi2, "", "");}
 
     if(kGCplotESDConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_ConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
@@ -2255,8 +2263,8 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
       }
 
       //      if(kGCdoNeutralMesonV0MCCheck == kTRUE){
-      histograms->AddHistogram("ESD_TrueBckGG_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
-      histograms->AddHistogram("ESD_TrueBckCont_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_TrueBckGG_InvMass_vs_Pt","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
+      histograms->AddHistogram("ESD_TrueBckCont_InvMass_vs_Pt","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
       histograms->AddHistogram("ESD_TruePi0Sec_InvMass_vs_Pt","Invariant mass vs Pt",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
       histograms->AddHistogram("ESD_TruePi0DalitzCont_InvMass_vs_Pt","Invariant mass vs Pt",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,kGCnYBinsSpectra, kGCfirstYBinSpectra, kGClastYBinSpectra,"InvMass [GeV]","Counts");
 	histograms->AddHistogram("ESD_TruePi0_InvMass","Invariant mass",kGCnXBinsSpectra,kGCfirstXBinSpectra, kGClastXBinSpectra,"InvMass [GeV]","Counts");
@@ -2952,11 +2960,22 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   switch(BackgroundScheme){
   case 0: //Rotation
     kGCUseRotationMethodInBG=kTRUE;
+    kGCdoBGProbability=kFALSE;
     break;
-  case 1: // mixed event
+  case 1: // mixed event with track multiplicity
     kGCUseRotationMethodInBG=kFALSE;
+    kGCUseTrackMultiplicityForBG=kFALSE;
+    kGCdoBGProbability=kFALSE;
     break;
-
+  case 2: // mixed event with V0 multiplicity
+    kGCUseRotationMethodInBG=kFALSE;
+    kGCUseTrackMultiplicityForBG=kTRUE;
+    kGCdoBGProbability=kFALSE;
+    break;
+  case 3: //Rotation
+    kGCUseRotationMethodInBG=kTRUE;
+    kGCdoBGProbability=kTRUE;
+    break;
   default:
     return iResult;
   }
@@ -2997,6 +3016,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 5:
     kGCnumberOfRotationEventsForBG = 50;
+    break;
+  case 6:
+    kGCnumberOfRotationEventsForBG = 80;
+    break;
+  case 7:
+    kGCnumberOfRotationEventsForBG = 100;
     break;
   default:
     return iResult;
