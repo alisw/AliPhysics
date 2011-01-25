@@ -311,17 +311,22 @@ void AliTRDv0Info::SetV0Info(const AliESDv0 *esdv0)
   for(Int_t idecay(0), part1(-1), part2(-1); idecay < kNDecays; idecay++){
 
     fArmenteros[idecay]=Armenteros(esdv0, idecay);//Attribute the Armenteros yes/no decision for every decay type
-    if(idecay == kLambda){ //protons and pions from Lambda
+    switch(idecay){
+    case kLambda: //protons and pions from Lambda
       part1 = AliPID::kProton;
       part2 = AliPID::kPion;
-    } else if(idecay == kAntiLambda) { //antiprotons and pions from Anti-Lambda
+      break;
+    case kAntiLambda: //antiprotons and pions from Anti-Lambda
       part1 = AliPID::kPion;
       part2 = AliPID::kProton;
-    } else if(idecay == kK0s) {//pions from K0s
+      break;
+    case kK0s: //pions from K0s
       part1 = part2 = AliPID::kPion;
-    } else if(idecay == kGamma) {//electrons from conversions
+      break;
+    case kGamma://electrons from conversions
       part1 = part2 = AliPID::kElectron;
-    } 
+      break;
+    }
     fInvMass[idecay] = InvMass(part1, part2, esdv0);//Calculate invariant mass for all of our four supposed decays
 
     // Comment out until bug fix is provided

@@ -206,16 +206,19 @@ void AliTRDv0Monitor::UserExec(Option_t *)
       }
 
     
-      for(Int_t idecay(0), part(-1); idecay <  AliTRDv0Info::kNDecays; idecay++){//loop over decay types considered for reference data
-        if(idecay ==  AliTRDv0Info::kLambda){ //protons and pions from Lambda
+      for(Int_t idecay(0), part(-1); idecay <  Int_t(AliTRDv0Info::kNDecays); idecay++){//loop over decay types considered for reference data
+        switch(idecay){
+        case AliTRDv0Info::kLambda: //protons and pions from Lambda
+        case AliTRDv0Info::kAntiLambda: //antiprotons and pions from Anti-Lambda     
           part = AliPID::kProton;
-        } else if(idecay == AliTRDv0Info::kAntiLambda) { //antiprotons and pions from Anti-Lambda     
-          part = AliPID::kProton;
-        } else if(idecay ==   AliTRDv0Info::kK0s) {//pions from K0s
+          break;
+        case AliTRDv0Info::kK0s: //pions from K0s
           part = AliPID::kPion;
-        } else if(idecay ==  AliTRDv0Info::kGamma) {//electrons from conversions
+          break;
+        case  AliTRDv0Info::kGamma: //electrons from conversions
           part = AliPID::kElectron;
-        } 
+          break;
+        }
         
         //fill histograms with track/V0 quality cuts only
         fhPsiPair[idecay][0]->Fill(v0->GetV0Momentum(),v0->GetPsiPair());//Angle between daughter momentum plane and plane perpendicular to magnetic field
