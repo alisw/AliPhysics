@@ -839,7 +839,10 @@ class AliV0Reader : public TObject {
   Int_t GetNindex(Int_t i) {return fV0Nindex.at(i);}
 
   void ResetNGoodV0s(){fNumberOfGoodV0s=0;}
+  Int_t GetFirstTPCRow(Double_t radius);
 
+  void SetUseCorrectedTPCClsInfo(Bool_t flag){fUseCorrectedTPCClsInfo = flag;}
+  Bool_t GetUseCorrectedTPCClsInfo() const {return fUseCorrectedTPCClsInfo;}
 
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
@@ -966,8 +969,9 @@ class AliV0Reader : public TObject {
   Bool_t fUseChargedTrackMultiplicityForBG; // flag
   Int_t fNumberOfGoodV0s; // number of good V0s
   Int_t fIsHeavyIon; // flag
+  Bool_t fUseCorrectedTPCClsInfo;
 
-  ClassDef(AliV0Reader,17)
+  ClassDef(AliV0Reader,18)
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)

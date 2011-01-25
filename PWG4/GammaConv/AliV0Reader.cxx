@@ -140,7 +140,8 @@ AliV0Reader::AliV0Reader() :
   fNEventsForBGCalculation(20),
   fUseChargedTrackMultiplicityForBG(kTRUE),
   fNumberOfGoodV0s(0),
-  fIsHeavyIon(0)
+  fIsHeavyIon(0),
+  fUseCorrectedTPCClsInfo(kFALSE)
 {
   //fESDpid = new AliESDpid;	
 }
@@ -237,7 +238,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fNEventsForBGCalculation(original.fNEventsForBGCalculation),
   fUseChargedTrackMultiplicityForBG(original.fUseChargedTrackMultiplicityForBG),
   fNumberOfGoodV0s(original.fNumberOfGoodV0s),
-  fIsHeavyIon(original.fIsHeavyIon)
+  fIsHeavyIon(original.fIsHeavyIon),
+  fUseCorrectedTPCClsInfo(original.fUseCorrectedTPCClsInfo)
 {
 	
 }
@@ -841,13 +843,21 @@ Bool_t AliV0Reader::NextV0(){
       fCFManager->GetParticleContainer()->Fill(containerInput,kStepMinClsTPC);		// for CF	
     }
     Double_t negclsToF = 0.;
-    if(fCurrentNegativeESDTrack->GetTPCNclsF()!=0  ){
-      negclsToF = (Double_t)fCurrentNegativeESDTrack->GetNcls(1)/(Double_t)fCurrentNegativeESDTrack->GetTPCNclsF();
+    if (!fUseCorrectedTPCClsInfo ){
+      if(fCurrentNegativeESDTrack->GetTPCNclsF()!=0  ){
+	negclsToF = (Double_t)fCurrentNegativeESDTrack->GetNcls(1)/(Double_t)fCurrentNegativeESDTrack->GetTPCNclsF();
+      }
+    }else{
+      negclsToF = fCurrentNegativeESDTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(GetXYRadius()));
     }
 
     Double_t posclsToF = 0.;
-    if(fCurrentPositiveESDTrack->GetTPCNclsF()!=0  ){
-      posclsToF = (Double_t)fCurrentPositiveESDTrack->GetNcls(1)/(Double_t)fCurrentPositiveESDTrack->GetTPCNclsF();
+    if (!fUseCorrectedTPCClsInfo ){
+      if(fCurrentPositiveESDTrack->GetTPCNclsF()!=0  ){
+	posclsToF = (Double_t)fCurrentPositiveESDTrack->GetNcls(1)/(Double_t)fCurrentPositiveESDTrack->GetTPCNclsF();
+      }
+    }else{
+      posclsToF = fCurrentPositiveESDTrack->GetTPCClusterInfo(2,0,GetFirstTPCRow(GetXYRadius()));
     }
 
     if( negclsToF < fMinClsTPCToF ||  posclsToF < fMinClsTPCToF ){
@@ -1673,4 +1683,33 @@ Bool_t AliV0Reader::GetArmenterosQtAlfa(const AliKFParticle* positiveKFParticle,
 
 }
 
+Int_t AliV0Reader::GetFirstTPCRow(Double_t radius){
 
+
+  Int_t firstTPCRow=0;
+  Double_t radiusI  =  84.8;
+  Double_t radiusO  = 134.6;
+  Double_t radiusOB = 198.;
+  Double_t rSizeI   = 0.75;
+  Double_t rSizeO   = 1.;
+  Double_t rSizeOB  = 1.5;
+  Int_t nClsI=63;
+  Int_t nClsIO=127;
+
+  if(radius <= radiusI){
+    return firstTPCRow;
+  }
+  if(radius>radiusI && radius<=radiusO){
+    firstTPCRow = (Int_t)((radius-radiusI)/rSizeI);
+  }
+  if(radius>radiusO && radius<=radiusOB){
+    firstTPCRow = (Int_t)(nClsI+(radius-radiusO)/rSizeO);
+  }
+
+  if(radius>radiusOB){
+    firstTPCRow =(Int_t)(nClsIO+(radius-radiusOB)/rSizeOB);
+  }
+
+
+  return firstTPCRow;
+}
