@@ -43,7 +43,11 @@ AliHLTGlobalTrigger* AliHLTGlobalTrigger::CreateNew(const char* name)
     // was compiled. So assuming that this is an interpreted class. In this case
     // we need to use a interface wrapper class to make things work properly.
     AliHLTGlobalTriggerWrapper* trigger = new AliHLTGlobalTriggerWrapper(name);
-    if (not trigger->IsValid()) return NULL;
+    if (not trigger->IsValid())
+    {
+      delete trigger;
+      return NULL;
+    }
     return trigger;
   }
   else
