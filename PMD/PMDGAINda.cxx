@@ -1,7 +1,7 @@
 /*
 PMD DA for online calibration
 
-contact: basanta@phy.iitb.ac.in
+contact: basanta@iitb.ac.in, Satyajit.Jena@cern.ch
 Link: https://twiki.cern.ch/twiki/bin/view/ALICE/DA
 Reference run:/afs/cern.ch/user/s/sjena/public/run83496.raw
 Run Type: PHYSICS
