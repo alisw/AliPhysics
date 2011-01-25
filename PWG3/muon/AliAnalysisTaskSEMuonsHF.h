@@ -12,11 +12,13 @@
 //*************************************************************************
 
 #include "AliAnalysisTaskSE.h"
+#include "AliMuonsHFHeader.h"
+#include "AliMuonInfoStoreRD.h"
+#include "AliDimuInfoStoreRD.h"
 
 class TString;
 class TList;
 class TClonesArray;
-class AliMuonsHFHeader;
 
 class AliAnalysisTaskSEMuonsHF : public AliAnalysisTaskSE {
  public:

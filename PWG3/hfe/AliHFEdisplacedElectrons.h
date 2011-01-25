@@ -41,6 +41,7 @@ class TPDGCode;
 
 class TString;
 class TList;
+class TParticle;
 
 class AliLog;
 
