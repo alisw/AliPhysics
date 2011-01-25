@@ -17,12 +17,12 @@
 
 //==================   TRAIN NAME   ============================================
 TString     train_name         = "FILTERpass1"; // local folder name
-TString     train_tag          = "pass1";        // Train special tag appended to 
+TString     train_tag          = "_PbPb";        // Train special tag appended to 
                                             // visible name. ("data", "sim", "pp", "highmult", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("FILTER%s$2_$3", train_tag.Data()); //# FIXED #
                // Add train composition and other comments
-TString     job_comment        = "PhysSel -> AODs: std(+jets)/(di)muon/vertexing/dielectrons";
+TString     job_comment        = "tenders w. TOF corrections, centrality, AODstd(+jets), vertexing_highmult";
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
 //==============================================================================
 
@@ -48,7 +48,7 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-21-05-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     aliroot_version    = "v4-21-13-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here (test mode)
 TString     alien_datadir      = "/alice/data/2010/LHC10h";
                // Work directory in GRID (DON'T CHANGE)
@@ -56,7 +56,7 @@ TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/AOD/AOD$2";
                // Data pattern - change as needed for test mode
 TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
 // Set the run range
-Int_t run_numbers[10] = {137230}; // **********************!!!!!!!
+Int_t run_numbers[10] = {137844}; // **********************!!!!!!!
 //Int_t       run_range[2]       =  {114786, 114949};  // LHC09a7   *CHANGE ME*
 // AliEn output directory. If blank will become output_<train_name>
                // Output directory (DON'T CHANGE)
@@ -67,7 +67,9 @@ TString     data_collection    = "$1/qa1.xml";
 TString     outputSingleFolder = "";
 //TString     outputSingleFolder = "deltas";
 // Number of files merged in a chunk
-Int_t       maxMergeFiles      = 20;
+Int_t       maxMergeFiles      = 10;
+// Number of test files
+Int_t       nTestFiles         = 3;
 // Files that should not be merged
 TString     mergeExclude       = "AliAOD.root AliAOD.VertexingHF.root AliAOD.Jets.root deltaAODPartCorr.root AliAOD.Muons.root AliAOD.Dimuons.root AliAOD.Dielectron.root AliAODCentrality.root";
 // Make replicas on the storages below
@@ -85,15 +87,14 @@ TString     local_xmldataset   = "";
 // ### Other flags to steer the analysis
 //==============================================================================
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
-Bool_t      useBKrejection      = kFALSE; // use BK rejection
+Bool_t      useTender           = kTRUE; // use tender wagon
 Bool_t      useCentrality       = kTRUE; // centrality delta AOD
-Bool_t      useTender           = kFALSE; // use tender wagon
 Bool_t      useV0tender         = kFALSE;  // use V0 correction in tender
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
-Bool_t      useFastReadOption   = kTRUE;  // use xrootd tweaks
+Bool_t      useFastReadOption   = kFALSE;  // use xrootd tweaks
 Bool_t      useOverwriteMode    = kTRUE;  // overwrite existing collections
 Bool_t      useDATE             = kFALSE; // use date in train name
-Bool_t      useDBG              = kFALSE;  // activate debugging
+Bool_t      useDBG              = kTRUE;  // activate debugging
 Bool_t      useMC               = kFALSE;  // use MC info
 Bool_t      useTAGS             = kFALSE;  // use ESD tags for selection
 Bool_t      useKFILTER          = kFALSE;  // use Kinematics filter
@@ -109,7 +110,7 @@ Bool_t      saveProofToAlien    = kFALSE; // save proof outputs in AliEn
 Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 0;      // Jet delta AODs
 Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
@@ -117,7 +118,7 @@ Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
 Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG3)
 Int_t       iPWG3hfe           = 0;      // Electrons analysis (PWG3)
-Int_t       iPWG3JPSIfilter    = 1;      // JPSI filtering (PWG3)
+Int_t       iPWG3JPSIfilter    = 0;      // JPSI filtering (PWG3)
 Int_t       iPWG3JPSI          = 0;      // JPSI analysis (PWG3)
 Int_t       iPWG3d2h           = 0;      // D0->2 hadrons (PWG3)
 Int_t        iPWG3d0mass       = 1;      // D0 mass (PWG3D2H)                                                                              
@@ -157,8 +158,8 @@ Int_t       iPWG2forward       = 0;      // FMD analysis (PWG2)
 // ### Configuration macros used for each module
 //==============================================================================
 TString     configPWG2femto    = "$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/Train3/ConfigFemtoAnalysis.C";
-//TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_highmult.C";
-TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C";
+TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF_highmult.C";
+//TString     configPWG3d2h      = "$ALICE_ROOT/PWG3/vertexingHF/ConfigVertexingHF.C";
 // Temporaries.
 TString anaPars = "";
 TString anaLibs = "";
@@ -247,6 +248,7 @@ void AnalysisTrainNew(const char *analysis_mode="grid",
    if (iPWG4omega3pi)  printf("=  PWG4 omega to 3 pions                                         =\n");
    printf("==================================================================\n");
    printf(":: use physics selection: %d\n", (UInt_t)usePhysicsSelection);
+   printf(":: use centrality:        %d\n", (UInt_t)useCentrality);
    printf(":: use xrootd tweaks:     %d\n", (UInt_t)useFastReadOption);
    printf(":: use overwrite xml    : %d\n", (UInt_t)useOverwriteMode);
    printf(":: use merge via JDL:     %d\n", (UInt_t)useMergeViaJDL);
@@ -367,20 +369,25 @@ void AddAnalysisTasks()
    // Physics selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       mgr->RegisterExtraFile("event_stat.root");
-      AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC,useBKrejection);
+      AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC);
+      mgr->AddStatisticsTask();
+   }
+   
+   if (useCentrality) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();   
    }
    
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-      if (useCentrality) mgr->RegisterExtraFile("AliAODCentrality.root");
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, useCentrality, AliESDpid::kTOF_T0);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, kFALSE, AliESDpid::kTOF_T0, kTRUE);
       } else {
-	AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection, useCentrality, AliESDpid::kTOF_T0);
+         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection,kFALSE, AliESDpid::kTOF_T0, kTRUE);
       }   
    }   
 
