@@ -904,7 +904,7 @@ AliHLTReadoutList AliHLTReadoutList::operator ~ () const
   readoutlist.fReadoutList.fList[7] = 0xFFFFFFFF & (~fReadoutList.fList[7]);
   readoutlist.fReadoutList.fList[8] = 0xFFFFFFFF & (~fReadoutList.fList[8]);
   readoutlist.fReadoutList.fList[9] = 0x00FFFFFF & (~fReadoutList.fList[9]);
-  readoutlist.fReadoutList.fList[10] = 0x00000000 & (~fReadoutList.fList[10]);
+  readoutlist.fReadoutList.fList[10] = 0x00000000;// & (~fReadoutList.fList[10]); // Commented out the end part to suppress coverty warning.
   readoutlist.fReadoutList.fList[11] = 0x0003FFFF & (~fReadoutList.fList[11]);
   readoutlist.fReadoutList.fList[12] = 0xFFFFFFFF & (~fReadoutList.fList[12]);
   readoutlist.fReadoutList.fList[13] = 0xFFFFFFFF & (~fReadoutList.fList[13]);
