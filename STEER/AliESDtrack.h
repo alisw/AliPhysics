@@ -242,7 +242,7 @@ public:
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
-  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0) const;
+  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   
   void    SetTRDpid(const Double_t *p);
   void    SetTRDsignal(Double_t sig) {fTRDsignal = sig;}

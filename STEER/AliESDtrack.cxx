@@ -1701,7 +1701,7 @@ UShort_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
 }
 
 //_______________________________________________________________________
-Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/) const
+Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
 {
   //
   // TPC cluster information
@@ -1721,7 +1721,7 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   Int_t findable=0;
   Int_t last=-nNeighbours;
   
-  for (Int_t i=0; i<159; ++i){
+  for (Int_t i=row0; i<row1; ++i){
     //look to current row
     if (fTPCClusterMap[i]) {
       last=i;
