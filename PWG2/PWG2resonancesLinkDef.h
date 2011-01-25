@@ -49,4 +49,7 @@
 #pragma link C++ class AliRsnAnalysisPhiKK+;
 #pragma link C++ class AliRsnAnalysisKStarKpi+;
 
+#pragma link C++ class AliRsnVAnalysisTask+;
+#pragma link C++ class AliRsnAnalysisTask+;
+
 #endif
