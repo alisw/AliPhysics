@@ -40,6 +40,7 @@ class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
 class AliTriggerAnalysis;
+class AliESDtrack;
 class TH1I; 
 class TList;
 

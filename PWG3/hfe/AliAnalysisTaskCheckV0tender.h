@@ -27,6 +27,8 @@
 class TH1F;
 class TList;
 class AliHFEcollection;
+class AliESDv0;
+class AliESDtrack;
 
 class AliAnalysisTaskCheckV0tender : public AliAnalysisTaskSE{
  public:

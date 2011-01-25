@@ -20,8 +20,8 @@
 #include "AliAnalysisTaskME.h"
 
 #include "AliDielectronPID.h"
+#include "AliDielectron.h"
 
-class AliDielectron;
 class TH1D;
 
 class AliAnalysisTaskDielectronME : public AliAnalysisTaskME {
