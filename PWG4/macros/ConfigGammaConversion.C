@@ -109,8 +109,8 @@ Int_t  kGCUseMultiplicityBin=0;
 
 Int_t kGCIsHeavyIon = 0;
 Int_t kGCUseCentrality = 0;
-Int_t  kGCUseCentralityBin = 0;
-
+Int_t kGCUseCentralityBin = 0;
+Int_t kGCUseCorrectedTPCClsInfo = 0;
 
 
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
@@ -1576,6 +1576,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   gammaconversion->SetUseMultiplicityBin(kGCUseMultiplicityBin);
 
   v0Reader->SetIsHeavyIon(kGCIsHeavyIon);
+  v0Reader->SetUseCorrectedTPCClsInfo(kGCUseCorrectedTPCClsInfo);
   gammaconversion->SetUseCentrality(kGCUseCentrality);
   if(kGCUseCentrality){
     gammaconversion->SetUseCentralityBin(kGCUseCentralityBin);
@@ -2754,17 +2755,24 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 4:  // 60% of findable clusters
     kGCminClsTPCCutToF= 0.6;
+    kGCUseCorrectedTPCClsInfo=0;
     break;
   case 5:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.0;
+    kGCUseCorrectedTPCClsInfo=0;
     break;
   case 6:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.7;
+    kGCUseCorrectedTPCClsInfo=0;
     break;
   case 7:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.35;
+    kGCUseCorrectedTPCClsInfo=0;
     break;
-
+  case 8:
+    kGCminClsTPCCutToF= 0.35;
+    kGCUseCorrectedTPCClsInfo=1;
+    break;
   default:
     return iResult;
   }
