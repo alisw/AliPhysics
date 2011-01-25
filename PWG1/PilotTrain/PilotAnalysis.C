@@ -4,16 +4,18 @@ void AddAnalysisTasks();
 class AliAnalysisAlien;                                                                                                                    
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
-Int_t runNumbers[5] = {137844};
+// Collision type: 0 = p-p   1 = Pb-Pb
+Int_t  iCollisionType = 1;
+Int_t runNumbers[5] = {139504};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 0;
+Bool_t doCentrality   = 1;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVertex       = 1;
 Bool_t doSPD          = 1;   // needs RP   
-Bool_t doTPC          = 0;
+Bool_t doTPC          = 1;
 Bool_t doSDD          = 1;   // needs RP
 Bool_t doSSDdEdx      = 1;
 // new 
@@ -30,18 +32,18 @@ Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
 
 TString     train_name         = "QA";      // QA local folder name
-TString     train_tag          = "pp";        // Train special tag appended to 
+TString     train_tag          = "PbPb";        // Train special tag appended to 
                                             // visible name. ("sim", "pp", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
-TString     job_comment        = "PWG1 QA train (no TPC)"; // Can add observations here
+TString     job_comment        = "PWG1 QA train "; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
 TString     root_version       = "v5-27-06b";
-TString     aliroot_version    = "v4-21-12-AN";
+TString     aliroot_version    = "v4-21-13-AN";
                // Production directory - change as needed for test mode
-TString     grid_datadir       = "/alice/data/2010/LHC10e";
+TString     grid_datadir       = "/alice/data/2010/LHC10h";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
@@ -51,7 +53,7 @@ Int_t       debug_level        = 1;        // Debugging
                // File merging
 Int_t       maxMergeFiles      = 10;       // Max files to merge in a chunk
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass2/*ESDs.root";
+TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
                // Output directory (DON'T CHANGE)
 TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
@@ -263,7 +265,18 @@ void AddAnalysisTasks()
   //
   if (doITS) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
-      AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
+      AliAnalysisTaskITSTrackingCheck *itsQA = 0;
+      AliAnalysisTaskITSTrackingCheck *itsQACent0010 = 0;
+      AliAnalysisTaskITSTrackingCheck *itsQACent3050 = 0;
+      AliAnalysisTaskITSTrackingCheck *itsQACent6080 = 0;
+      if(iCollisionType==0) {
+        itsQA = AddTaskPerformanceITS(kFALSE);
+      } else {
+        itsQA = AddTaskPerformanceITS(kFALSE);
+        itsQACent0010 = AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,3500,10000);
+        itsQACent3050 = AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,590,1570);
+        itsQACent6080 = AddTaskPerformanceITS(kFALSE,kFALSE,kFALSE,70,310);
+      }
   }
   //
   // TRD (Alex Bercuci, M. Fasel) 
@@ -322,8 +335,12 @@ void AddAnalysisTasks()
   //
   if (doImpParRes) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskImpParRes.C");
- //   AliAnalysisTaskSE* taskimpparres= AddTaskImpParRes();
-    AliAnalysisTaskSE* taskimpparres= AddTaskImpParRes(kFALSE,-1,kFALSE,kFALSE);
+    AliAnalysisTaskSE* taskimpparres=0;
+    if(iCollisionType==0) {
+       taskimpparres= AddTaskImpParRes();
+    } else {
+       taskimpparres= AddTaskImpParRes(kFALSE,-1,kFALSE,kFALSE);
+    }
     taskimpparres->SelectCollisionCandidates();
   }  
   //
