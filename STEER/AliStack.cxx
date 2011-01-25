@@ -314,6 +314,7 @@ Bool_t AliStack::PurifyKine()
 	  if((part=GetParticleMapEntry(i))) {
 //
 //        Check of this track should be kept for physics reasons 
+	    printf("KeepPhysics %5d %5d \n", i, part->GetPdgCode());
 	      if (KeepPhysics(part)) KeepTrack(i);
 //
 	      part->ResetBit(kDaughtersBit);
@@ -513,7 +514,20 @@ Bool_t AliStack::KeepPhysics(const TParticle* part)
 	//
 	// e+e- from pair production of primary gammas
 	//
-	if ((part->GetUniqueID()) == kPPair) keep = kTRUE;
+	if ((part->GetUniqueID()) == kPPair)  keep = kTRUE;
+    }
+    //
+    // Decay(cascade) from primaries
+    // 
+    if ((part->GetUniqueID() == kPDecay) && (parent >= 0)) {
+      // Particles from decay
+      TParticle* father = GetParticleMapEntry(parent);
+      Int_t imo = parent;
+      while((imo > fHgwmk) && (father->GetUniqueID() == kPDecay)) {
+	father = GetParticleMapEntry(imo);
+	imo =  father->GetFirstMother();
+      }
+      if (imo <= fHgwmk) keep = kTRUE;
     }
     return keep;
 }
