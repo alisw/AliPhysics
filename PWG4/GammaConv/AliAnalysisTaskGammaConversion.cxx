@@ -1542,10 +1542,18 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram("ESD_E_Phi", fV0Reader->GetNegativeTrackPhi());
     fHistograms->FillHistogram("ESD_E_nTPCClusters", fV0Reader->GetNegativeTracknTPCClusters());
     fHistograms->FillHistogram("ESD_E_nITSClusters", fV0Reader->GetNegativeTracknITSClusters());
-    if(fV0Reader->GetNegativeTracknTPCFClusters()!=0 && fV0Reader->GetNegativeTracknTPCClusters()!=0 ){
-      Double_t eClsToF= (Double_t)fV0Reader->GetNegativeTracknTPCClusters()/(Double_t)fV0Reader->GetNegativeTracknTPCFClusters();
-      fHistograms->FillHistogram("ESD_E_nTPCClustersToFP", fV0Reader->GetNegativeTrackP(),eClsToF );
-      fHistograms->FillHistogram("ESD_E_nTPCClustersToFR", fV0Reader->GetXYRadius(),eClsToF );
+    Double_t eClsToF= 0;
+    if(!fV0Reader->GetUseCorrectedTPCClsInfo()){
+      if(fV0Reader->GetNegativeTracknTPCFClusters()!=0 ){
+	eClsToF=(Double_t)fV0Reader->GetNegativeTracknTPCClusters()/(Double_t)fV0Reader->GetNegativeTracknTPCFClusters();
+      }
+    }else{
+      eClsToF= fV0Reader->GetNegativeESDTrack()->GetTPCClusterInfo(2,0,fV0Reader->GetFirstTPCRow(fV0Reader->GetXYRadius()));
+    }
+    fHistograms->FillHistogram("ESD_E_nTPCClustersToFP", fV0Reader->GetNegativeTrackP(),eClsToF );
+    fHistograms->FillHistogram("ESD_E_nTPCClustersToFR", fV0Reader->GetXYRadius(),eClsToF );
+
+    if(fV0Reader->GetNegativeTracknTPCClusters()!=0 ){
       fHistograms->FillHistogram("ESD_E_TPCchi2", fV0Reader->GetNegativeTrackTPCchi2()/(Double_t)fV0Reader->GetNegativeTracknTPCClusters());
     }
 
@@ -1557,12 +1565,22 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram("ESD_P_Phi", fV0Reader->GetPositiveTrackPhi());
     fHistograms->FillHistogram("ESD_P_nTPCClusters", fV0Reader->GetPositiveTracknTPCClusters());
     fHistograms->FillHistogram("ESD_P_nITSClusters", fV0Reader->GetPositiveTracknITSClusters());
-    if(fV0Reader->GetPositiveTracknTPCFClusters()!=0 && (Double_t)fV0Reader->GetPositiveTracknTPCClusters()!=0 ){
-      Double_t pClsToF= (Double_t)fV0Reader->GetPositiveTracknTPCClusters()/(Double_t)fV0Reader->GetPositiveTracknTPCFClusters();
-      fHistograms->FillHistogram("ESD_P_nTPCClustersToFP",fV0Reader->GetPositiveTrackP(), pClsToF);
-      fHistograms->FillHistogram("ESD_P_nTPCClustersToFR",fV0Reader->GetXYRadius(), pClsToF);
+    Double_t pClsToF= 0;
+    if(!fV0Reader->GetUseCorrectedTPCClsInfo()){
+      if(fV0Reader->GetPositiveTracknTPCFClusters()!=0){
+	pClsToF = (Double_t)fV0Reader->GetPositiveTracknTPCClusters()/(Double_t)fV0Reader->GetPositiveTracknTPCFClusters();
+      }
+    }else{
+      pClsToF= fV0Reader->GetPositiveESDTrack()->GetTPCClusterInfo(2,0,fV0Reader->GetFirstTPCRow(fV0Reader->GetXYRadius()));
+    }
+
+    fHistograms->FillHistogram("ESD_P_nTPCClustersToFP",fV0Reader->GetPositiveTrackP(), pClsToF);
+    fHistograms->FillHistogram("ESD_P_nTPCClustersToFR",fV0Reader->GetXYRadius(), pClsToF);
+
+    if(fV0Reader->GetPositiveTracknTPCClusters()!=0){
       fHistograms->FillHistogram("ESD_P_TPCchi2", fV0Reader->GetPositiveTrackTPCchi2()/(Double_t)fV0Reader->GetPositiveTracknTPCClusters());
     }
+
 
 
     fHistograms->FillHistogram("ESD_ConvGamma_Energy", fV0Reader->GetMotherCandidateEnergy());
@@ -1791,18 +1809,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Pt_Chi2", fV0Reader->GetMotherCandidatePt(), fV0Reader->GetMotherCandidateChi2());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Eta_Chi2", fV0Reader->GetMotherCandidateEta(), fV0Reader->GetMotherCandidateChi2());
 				
+	fHistograms->FillHistogram("ESD_TrueConversion_E_nTPCClustersToFR", fV0Reader->GetXYRadius(),eClsToF );
+	fHistograms->FillHistogram("ESD_TrueConversion_P_nTPCClustersToFR",fV0Reader->GetXYRadius(), pClsToF);
 
-	if(fV0Reader->GetNegativeTracknTPCFClusters()!=0 && fV0Reader->GetNegativeTracknTPCClusters()!=0 ){
-	  Double_t eClsToF= (Double_t)fV0Reader->GetNegativeTracknTPCClusters()/
-	    (Double_t)fV0Reader->GetNegativeTracknTPCFClusters();
-	  fHistograms->FillHistogram("ESD_TrueConversion_E_nTPCClustersToFR", fV0Reader->GetXYRadius(),eClsToF );
-	}
-
-	if(fV0Reader->GetPositiveTracknTPCFClusters()!=0 && fV0Reader->GetPositiveTracknTPCClusters()!=0 ){
-	  Double_t pClsToF= (Double_t)fV0Reader->GetPositiveTracknTPCClusters()
-	    /(Double_t)fV0Reader->GetPositiveTracknTPCFClusters();
-	  fHistograms->FillHistogram("ESD_TrueConversion_P_nTPCClustersToFR",fV0Reader->GetXYRadius(), pClsToF);
-	}
 	fHistograms->FillHistogram("ESD_TrueConversion_XY", fV0Reader->GetX(),fV0Reader->GetY());
 	fHistograms->FillHistogram("ESD_TrueConversion_R", fV0Reader->GetXYRadius());
 	fHistograms->FillHistogram("ESD_TrueConversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
