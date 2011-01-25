@@ -1278,14 +1278,20 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
         // crate info
       AliMpTriggerCrate* crate = ddlStore->GetTriggerCrate(iDDL, iReg);
 
-      if (!crate) 
+      if (!crate)
+      {
 	AliWarning(Form("Missing crate number %d in DDL %d\n", iReg, iDDL));
-
+	continue;
+      }
+      
       // regional info tree, make sure that no reg card missing
       AliMUONRegionalTrigger* regTrg  = triggerStore->FindRegional(crate->GetId());
-      if (!regTrg) 
+      if (!regTrg)
+      {
         AliError(Form("Missing regional board %d in trigger Store\n", crate->GetId()));
-    
+	continue;
+      }
+      
       // Regional card header
       word = 0;
 
