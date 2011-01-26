@@ -14,6 +14,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliAODHFUtil.h"
 
 class TList;
 class TString;
@@ -53,7 +54,8 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   TClonesArray *fCascadesTClArr;       // Array of Cascades : V0 + track (lambda_c)
   TClonesArray *fLikeSign2ProngTClArr; // Array of LikeSign2Prong
   TClonesArray *fLikeSign3ProngTClArr; // Array of LikeSign3Prong 
-  
+  AliAODHFUtil *fHFUtilInfo;              // VZERO branch (to be removed)
+
   ClassDef(AliAnalysisTaskSEVertexingHF,5); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 

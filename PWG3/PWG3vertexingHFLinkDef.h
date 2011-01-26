@@ -10,6 +10,7 @@
 #pragma link C++ class AliAODRecoDecayHF3Prong+;
 #pragma link C++ class AliAODRecoDecayHF4Prong+;
 #pragma link C++ class AliAODRecoCascadeHF+;
+#pragma link C++ class AliAODHFUtil+;
 #pragma link C++ class AliAODPidHF+;
 #pragma link C++ class AliRDHFCuts+;
 #pragma link C++ class AliHFSystErr+;
@@ -46,7 +47,6 @@
 #pragma link C++ class AliHFMassFitter+;
 #pragma link C++ class AliHFPtSpectrum+;
 #pragma link C++ class AliNormalizationCounter+;
-#pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignJPSI+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEJPSItoEle+;

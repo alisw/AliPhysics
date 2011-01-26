@@ -35,6 +35,10 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSEVertexingHF.h"
 
+#include "AliESDUtils.h"
+#include "AliAODHFUtil.h"
+
+
 ClassImp(AliAnalysisTaskSEVertexingHF)
 
 
@@ -52,7 +56,8 @@ fCharm4ProngTClArr(0),
 fDstarTClArr(0),
 fCascadesTClArr(0),
 fLikeSign2ProngTClArr(0),
-fLikeSign3ProngTClArr(0)
+fLikeSign3ProngTClArr(0),
+fHFUtilInfo(0)
 {
   // Default constructor
 }
@@ -71,7 +76,8 @@ fCharm4ProngTClArr(0),
 fDstarTClArr(0),
 fCascadesTClArr(0),
 fLikeSign2ProngTClArr(0),
-fLikeSign3ProngTClArr(0)
+fLikeSign3ProngTClArr(0),
+fHFUtilInfo(0)
 {
   // Standard constructor
 
@@ -191,6 +197,14 @@ void AliAnalysisTaskSEVertexingHF::UserCreateOutputObjects()
     AddAODBranch("TClonesArray", &fLikeSign3ProngTClArr, filename);
   }
 
+  //---Way to pass information temporarily not available in AOD---
+  // no if() {
+    fHFUtilInfo = new AliAODHFUtil("fHFUtilInfoC");
+    fHFUtilInfo->SetName("fHFUtilInfo");
+    AddAODBranch( "AliAODHFUtil", &fHFUtilInfo, filename);
+  // }
+  //--------------------------------------------------------------  
+
   return;
 }
 
@@ -217,6 +231,16 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
                        fLikeSign2ProngTClArr,
                        fLikeSign3ProngTClArr);
   
+  //---Way to pass information temporarily not available in AOD---
+  AliESDEvent *eventE = dynamic_cast<AliESDEvent*> (InputEvent());
+  if(eventE) {
+    Float_t *vChCorr = new Float_t[64];
+    Float_t dummy;
+    AliESDUtils::GetCorrV0(eventE,dummy,vChCorr);
+    fHFUtilInfo->SetVZERO( vChCorr );
+  }
+  //--------------------------------------------------------------
+
   return;
 }
 
