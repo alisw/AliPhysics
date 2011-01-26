@@ -113,7 +113,7 @@ void AliSISConeJetFinder::FindJets()
     if(fOpt==0) 
       {
 	TClonesArray *lvArray = fReader->GetMomentumArray();
-	Int_t nIn = lvArray->GetEntries();
+
 	
 	// We check if lvArray is ok
 	if(lvArray == 0)
@@ -122,6 +122,8 @@ void AliSISConeJetFinder::FindJets()
 	    delete plugin;
 	    return;
 	  }
+	
+	Int_t nIn = lvArray->GetEntries();
 	
 	if(nIn == 0)// nIn = Number of particles in the event
 	  {
