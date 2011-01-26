@@ -69,8 +69,8 @@ int AliHLTProcessor::DoProcessing( const AliHLTComponentEventData& evtData, cons
   if (eddTmp) {
     int ret = GetEventDoneData(eddTmp->fDataSize, &edd);
     if (ret) {
-      HLTError( "Cannot get event done data of %u bytes for event %lu: %s (%d)", 
-		eddTmp->fDataSize, evtData.fEventID, strerror(ret), ret );
+      HLTError( "Cannot get event done data of %u bytes for event %lu: error (%d)", 
+		eddTmp->fDataSize, evtData.fEventID, ret );
       return -ENOMEM;
     }
     edd->fStructSize = sizeof(AliHLTComponentEventDoneData);
