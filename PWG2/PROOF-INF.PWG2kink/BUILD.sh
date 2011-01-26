@@ -1,5 +1,3 @@
 #! /bin/sh
 
-touch libPWG2.pkg
-
-make libPWG2evchar.so
+make libPWG2kink.so
