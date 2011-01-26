@@ -31,10 +31,10 @@ class AliRsnCutTrackQuality : public AliRsnCut
 
     void      DisableAll();
     
-    void      AddStatusFlag(ULong_t flag)         {fFlags = fFlags | flag;}
-    void      SetStatusFlags(ULong_t flags)       {fFlags = flags;}
-    void      SetPtRange(Double_t a, Double_t b)  {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
-    void      SetEtaRange(Double_t a, Double_t b) {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
+    void      AddStatusFlag(ULong_t f, Bool_t on)   {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
+    void      SetStatusFlags(ULong_t f, Bool_t on)  {if (on) fFlagsOn = f; else fFlagsOff = f;}
+    void      SetPtRange(Double_t a, Double_t b)    {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
+    void      SetEtaRange(Double_t a, Double_t b)   {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
     
     void      SetDCARPtFormula(const char *formula) {fDCARptFormula = formula; fDCARptFormula.ReplaceAll("pt", "x"); fDCARfixed = kFALSE;}
     void      SetDCARmax(Double_t value)            {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
@@ -55,7 +55,8 @@ class AliRsnCutTrackQuality : public AliRsnCut
     Bool_t     CheckESD(AliESDtrack *track);
     Bool_t     CheckAOD(AliAODTrack *track);
   
-    ULong_t    fFlags;              // required status flag (used AliESDtrack ones, connected with '|')
+    ULong_t    fFlagsOn;            // status flags which must be ON (used AliESDtrack ones, connected with '|')
+    ULong_t    fFlagsOff;           // status flags which must be OFF (used AliESDtrack ones, connected with '|')
     Double_t   fPt[2];              // pt range
     Double_t   fEta[2];             // eta range
     Bool_t     fRejectKinkDaughter; // switch to kTRUE if daughters of kinks must be rejected
