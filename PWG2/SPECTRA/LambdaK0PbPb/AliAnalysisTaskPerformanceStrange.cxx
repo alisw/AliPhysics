@@ -1418,7 +1418,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     return;
   }
 
-  // FIXME: levent not used
+  // FIXME: levent not used. Can I remove it?
   AliVEvent* lEvent = InputEvent();
   
   if (!lEvent) {
@@ -1439,7 +1439,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   
   // Centrality selection
   static AliESDtrackCuts * trackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(); // FIXME: make it a data member
-  Bool_t isCentralitySelected = fCentrSelector->IsCentralityBinSelected(fESD,trackCuts); // FIXME esd track cuts if needed  
+  Bool_t isCentralitySelected = fCentrSelector->IsCentralityBinSelected(fESD,trackCuts); 
   if(!isCentralitySelected) return;
   // FIXME: add to hist number events another entry for centrality.
 
@@ -2317,7 +2317,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       lPPos = TMath::Sqrt(lMomPos[0]*lMomPos[0] + lMomPos[1]*lMomPos[1] + lMomPos[2]*lMomPos[2]);
       lPNeg = TMath::Sqrt(lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1] + lMomNeg[2]*lMomNeg[2]);
 
-      // Inner Wall parameter:
+      // Inner Wall parameter (used for pid):
       const AliExternalTrackParam *myInnerWallTrackPos = myTrackPos->GetInnerParam(); 
       if(myInnerWallTrackPos) lMomInnerWallPos = myInnerWallTrackPos->GetP(); 
       const AliExternalTrackParam *myInnerWallTrackNeg = myTrackNeg->GetInnerParam(); 
