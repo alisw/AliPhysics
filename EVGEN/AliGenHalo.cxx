@@ -240,6 +240,7 @@ void AliGenHalo::Init()
     sum1/=250.;
     sum2/=250.;
     printf("\n %f %f \n \n", sum1, sum2);
+    delete file;
 }
 
 //____________________________________________________________
