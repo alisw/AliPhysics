@@ -117,7 +117,7 @@ Bool_t AliRsnCutBetheBloch::IsSelected(TObject *object)
 //
 
   // dynamic cast the object into AliRsnDaughter
-  if (!TargetOK(object, AliRsnTarget::kDaughter)) return kFALSE;
+  if (!TargetOK(object)) return kFALSE;
 
   // retrieve the TPC signal
   AliRsnDaughter *track = fDaughter;
