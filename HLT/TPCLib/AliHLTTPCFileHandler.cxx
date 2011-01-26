@@ -1,36 +1,36 @@
-// @(#) $Id$
+// $Id$
 // Original: AliHLTFileHandler.cxx,v 1.49 2005/06/23 17:46:55 hristov 
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
- *                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+//**************************************************************************
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//*                                                                        *
+//* Primary Authors: U. Frankenfeld, A. Vestbo, C. Loizides                *
+//*                  Matthias Richter <Matthias.Richter@ift.uib.no>        *
+//*                  for The ALICE HLT Project.                            *
+//*                                                                        *
+//* Permission to use, copy, modify and distribute this software and its   *
+//* documentation strictly for non-commercial purposes is hereby granted   *
+//* without fee, provided that the above copyright notice appears in all   *
+//* copies and that both the copyright notice and this permission notice   *
+//* appear in the supporting documentation. The authors make no claims     *
+//* about the suitability of this software for any purpose. It is          *
+//* provided "as is" without express or implied warranty.                  *
+//**************************************************************************
 
-/** @file   AliHLTTPCFileHandler.cxx
-    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
-            Matthias Richter
-    @date   
-    @brief  file input for the TPC tracking code before migration to the
-            HLT component framework
+/// @file   AliHLTTPCFileHandler.cxx
+/// @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+///         Matthias Richter
+/// @date   
+/// @brief  file input for the TPC tracking code before migration to the
+///         HLT component framework
 
 // see below for class documentation
 // or
 // refer to README to build package
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
+
 #include <cassert>
 #include <TClonesArray.h>
 #include <TSystem.h>
@@ -499,6 +499,7 @@ AliHLTTPCDigitRowData * AliHLTTPCFileHandler::AliDigits2Memory(UInt_t & nrow,Int
   }
 
   Int_t * ndigits = new Int_t[fRowMax+1];
+  memset(ndigits, 0, (fRowMax+1)*sizeof(Int_t));
   Float_t xyz[3];
 
   // The digits of the current event have been indexed: all digits are organized in
