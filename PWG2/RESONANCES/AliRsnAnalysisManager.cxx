@@ -135,10 +135,11 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
   while ((pair = (AliRsnPair*)next())) 
   {
     AliDebug(AliLog::kDebug+1, Form("InitAllPairs of the PairManager(%s) [%d] ...", pair->GetName(), i++));
-    pair->Init("", list);
+//     pair->Init("", list);
+    pair->Init(GetName(), list);
     
     // add a counter for used/unused events for each pair
-    TH1I *hPairUsed = new TH1I(Form("_%s_USED", pair->GetName()), "Used events for pair", 2, 0, 2);
+    TH1I *hPairUsed = new TH1I(Form("%s_%s_USED", GetName(),pair->GetName()), "Used events for pair", 2, 0, 2);
     list->Add(hPairUsed);
   }
   

@@ -52,7 +52,7 @@ Bool_t AliRsnCutDaughterType::IsSelected(TObject *object)
 //
 
   // coherence check
-  if (!TargetOK(object, AliRsnTarget::kDaughter)) return kFALSE;
+  if (!TargetOK(object)) return kFALSE;
   
   // check the daughter according to the selected type
   // in some cases this means to retrieve the track status
