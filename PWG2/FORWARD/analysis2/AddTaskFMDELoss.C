@@ -40,7 +40,7 @@ AddTaskFMDELoss(Bool_t mc)
   // Set maximum energy loss to consider 
   task->GetEnergyFitter().SetMaxE(15); 
   // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(100);
+  task->GetEnergyFitter().SetNEbins(450);
   // Set whether to use increasing bin sizes 
   task->GetEnergyFitter().SetUseIncreasingBins(true);
   // Set whether to do fit the energy distributions 
@@ -57,6 +57,9 @@ AddTaskFMDELoss(Bool_t mc)
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
+  task->GetEnergyFitter().SetMaxRelativeParameterError(0.12);
+  task->GetEnergyFitter().SetMaxChi2PerNDF(10);
+  task->GetEnergyFitter().SetMinWeight(1e-5);
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 
   AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;

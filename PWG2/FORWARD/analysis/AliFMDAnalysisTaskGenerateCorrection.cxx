@@ -793,19 +793,21 @@ void AliFMDAnalysisTaskGenerateCorrection::ReadFromFile(const Char_t* filename, 
   
   fout.Close();
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
-  if(storeInOCDB) {
-    TFile fbg(pars->GetPath(pars->GetBackgroundID()),"RECREATE");
-    fBackground->Write(AliFMDAnaParameters::GetBackgroundID());
-    fbg.Close();
-    TFile feselect(pars->GetPath(pars->GetEventSelectionEffID()),"RECREATE");
-    fEventSelectionEff->Write(AliFMDAnaParameters::GetEventSelectionEffID());
-    feselect.Close();
-    
+  if (!storeInOCDB) {
+    pars->SetBackgroundPath(".");
+    pars->SetEnergyPath(".");
+    pars->SetEventSelectionPath(".");
+    pars->SetSharingEfficiencyPath(".");
   }
-  
-  
-  
-  
+  AliInfo(Form("Generating %s", pars->GetPath(pars->GetBackgroundID())));
+  TFile fbg(pars->GetPath(pars->GetBackgroundID()),"RECREATE");
+  fBackground->Write(AliFMDAnaParameters::GetBackgroundID());
+  fbg.Close();
+
+  AliInfo(Form("Generating %s", pars->GetPath(pars->GetEventSelectionEffID())));
+  TFile feselect(pars->GetPath(pars->GetEventSelectionEffID()),"RECREATE");
+  fEventSelectionEff->Write(AliFMDAnaParameters::GetEventSelectionEffID());
+  feselect.Close();
 }
 //_____________________________________________________________________
 //

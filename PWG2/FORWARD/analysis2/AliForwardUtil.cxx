@@ -66,7 +66,7 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
 }
 //____________________________________________________________________
 UShort_t
-AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t v)
+AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
 {
   // 
   // Parse the center of mass energy given as a float and return known 
@@ -80,7 +80,8 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t sys, Float_t v)
   //    Center of mass energy per nucleon
   //
   Float_t energy = v; 
-  if (sys != AliForwardUtil::kPP) energy = energy / 208 * 82;
+  // Below no longer needed apparently
+  // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
   if (TMath::Abs(energy - 2750.)  < 10)  return 2750;

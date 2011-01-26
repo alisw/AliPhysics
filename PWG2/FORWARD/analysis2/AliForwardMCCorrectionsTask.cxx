@@ -457,7 +457,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 
   // Get the input data - MC event
   AliMCEvent*  mcEvent = MCEvent();
-  if (mcEvent) { 
+  if (!mcEvent) { 
     AliWarning("No MC event found");
     return;
   }

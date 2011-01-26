@@ -22,6 +22,19 @@ class AliESDEvent;
 class AliForwardUtil : public TObject
 {
 public:
+    /** 
+     * Get the standard color for a ring  
+     *
+     * @param d Detector
+     * @param r Ring 
+     * 
+     * @return 
+     */
+  static Color_t RingColor(UShort_t d, Char_t r)
+  { 
+    return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))
+	    + ((r == 'I' || r == 'i') ? 2 : -2));
+  }
   //==================================================================
   /** 
    * @{ 
@@ -540,8 +553,7 @@ public:
      */
     Color_t Color() const 
     { 
-      return ((fDet == 1 ? kRed : (fDet == 2 ? kGreen : kBlue))
-	      + ((fRing == 'I' || fRing == 'i') ? 2 : -2));
+      return AliForwardUtil::RingColor(fDet, fRing);
     }
     UShort_t fDet;   // Detector
     Char_t   fRing;  // Ring

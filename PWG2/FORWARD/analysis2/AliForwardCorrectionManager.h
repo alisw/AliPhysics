@@ -45,6 +45,18 @@ public:
    */
   static AliForwardCorrectionManager& Instance();
   /** 
+   *
+   * @param prefix Prefix to correction objects. 
+   */
+  void SetPrefix(const char* prefix);
+  void SetFileDir(ECorrection what, const char* dirname);
+  void SetSecondaryMapPath(const char* d) { SetFileDir(kSecondaryMap, d); }
+  void SetDoubleHitPath(const char* d)    { SetFileDir(kDoubleHit, d); }
+  void SetELossFitsPath(const char* d)    { SetFileDir(kELossFits, d); }
+  void SetVertexBiasPath(const char* d)   { SetFileDir(kVertexBias, d); }
+  void SetMergingEffPath(const char* d)   { SetFileDir(kMergingEfficiency, d); }
+  void SetAcceptancePath(const char* d)   { SetFileDir(kAcceptance, d); }
+  /** 
    * Read in corrections based on the parameters given 
    * 
    * @param collisionSystem Collision system

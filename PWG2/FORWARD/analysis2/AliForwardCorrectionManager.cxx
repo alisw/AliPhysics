@@ -124,6 +124,49 @@ AliForwardCorrectionManager::operator=(const AliForwardCorrectionManager& o)
 }
 
 //____________________________________________________________________
+void
+AliForwardCorrectionManager::SetPrefix(const char* prefix)
+{
+  fELossFitsPath    = Form("%s/%s", prefix, ELOSSFIT_DIR);
+  fMergingEffPath   = Form("%s/%s", prefix, MERGING_DIR); 
+  fSecondaryMapPath = Form("%s/%s", prefix, SECONDARY_DIR);
+  fDoubleHitPath    = Form("%s/%s", prefix, DOUBLE_DIR);
+  fVertexBiasPath   = Form("%s/%s", prefix, VERTEX_DIR);
+  fAcceptancePath   = Form("%s/%s", prefix, ACCEPTANCE_DIR);
+  
+}
+//____________________________________________________________________
+void
+AliForwardCorrectionManager::SetFileDir(ECorrection what, const char* dir)
+{
+  TString *path = 0;
+  // 
+  // Get the path to the specified object 
+  // 
+  // Parameters:
+  //    what  Which stuff to get the path for 
+  // 
+  // Return:
+  //    The full path or null 
+  //
+  if      (what & kSecondaryMap)        path = &fSecondaryMapPath;
+  else if (what & kDoubleHit)           path = &fDoubleHitPath;
+  else if (what & kELossFits)           path = &fELossFitsPath;
+  else if (what & kVertexBias)          path = &fVertexBiasPath;
+  else if (what & kMergingEfficiency)   path = &fMergingEffPath;
+  else if (what & kAcceptance)          path = &fAcceptancePath;
+  else { 
+    AliWarning(Form("No such path defined for 0x%02x", what));
+    return;
+  }
+  if (!path) {
+    AliWarning(Form("Couldn't find string for path 0x%02x", what));
+    return;
+  }
+  *path = dir;
+}
+
+//____________________________________________________________________
 Bool_t
 AliForwardCorrectionManager::Init(const char* cms, 
 				  Float_t     sNN, 
@@ -147,6 +190,8 @@ AliForwardCorrectionManager::Init(const char* cms,
   //    true on success
   //
   UShort_t col = AliForwardUtil::ParseCollisionSystem(cms);
+  // AliInfo(Form("Initialising with cms='%s', sNN=%fGeV field=%fkG", 
+  //	       cms, sNN, field));
   return Init(col, 
 	      AliForwardUtil::ParseCenterOfMassEnergy(col, sNN),
 	      AliForwardUtil::ParseMagneticField(field), 
@@ -177,7 +222,38 @@ AliForwardCorrectionManager::Init(UShort_t cms,
   //    
   //
   if (force) fInit = kFALSE;
-  if (fInit) return kTRUE;
+  if (fInit) {
+    // Check that the initialisation and the passed parameters 
+    // match - if not give an error but continue - this allows 
+    // users to override particular settings. 
+    Bool_t same = true;
+    if (fSys != cms) { 
+      AliWarning(Form("Initialised collision system %s (%d) and "
+		      "passed same %s (%d) does not match", 
+		      AliForwardUtil::CollisionSystemString(fSys), fSys,
+		      AliForwardUtil::CollisionSystemString(cms), cms));
+      same = false;
+    }
+    if (TMath::Abs(fSNN - sNN) >= 10) {
+      AliWarning(Form("Initialised center of mass energy per nuclean "
+		      "%s (%d) and passed same %s (%d) does not match",
+		      AliForwardUtil::CenterOfMassEnergyString(fSNN), fSNN,
+		      AliForwardUtil::CenterOfMassEnergyString(sNN), sNN));
+      same = false;
+    }
+    if (fField != field) {
+      AliWarning(Form("Initialied L3 magnetic field %s (%d) and passed "
+		      "same %s (%d) does not match", 
+		      AliForwardUtil::MagneticFieldString(fField), fField,
+		      AliForwardUtil::MagneticFieldString(field), field));
+      same = false;
+    }
+    if (!same) 
+      AliWarning("Intialised parameters and these are not the same " 
+		 "- PROCEED WITH CAUTION!");
+      
+    return kTRUE;
+  }
 
   Bool_t ret = kTRUE;
   if (fSys == cms && TMath::Abs(fSNN - sNN) < 10 && fField == field) { 
@@ -189,7 +265,9 @@ AliForwardCorrectionManager::Init(UShort_t cms,
   fSys   = cms;
   fSNN   = sNN;
   fField = field;
-	       
+
+  // AliInfo(Form("Initialising with cms=%d, sNN=%dGeV field=%dkG", 
+  //  	       cms, sNN, field));
   // Read secondary map if requested 
   if (what & kSecondaryMap) {
     if (!ReadSecondaryMap(cms, sNN, field)) {

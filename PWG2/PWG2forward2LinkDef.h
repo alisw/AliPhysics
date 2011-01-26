@@ -29,6 +29,7 @@
 
 #pragma link C++ nestedclasses;
 
+#pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
 #pragma link C++ class AliFMDEventInspector+;
