@@ -13,9 +13,7 @@
 Bool_t AddRsnAnalysisPhi
 (
   const char *options     = "", 
-  const char *taskName    = "RsnAnalysis",
-  const char *configMacro = "RsnConfigPhi",
-  const char *configPath  = "$(ALICE_INSTALL)/PWG2/RESONANCES/macros/train/LHC2010-pp7TeV"
+  const char *taskName    = "RsnAnalysis"
 )
 {
   // retrieve analysis manager
@@ -29,9 +27,14 @@ Bool_t AddRsnAnalysisPhi
   // add the task to manager
   mgr->AddTask(task);
   
+  // load the compiled macro for configuring
+  // (it is compiled to be sure there are not errors)
+  gSystem->SetIncludePath("-I- -I$ALICE_ROOT/include -I$ALICE_ROOT/STEER -I$ALICE_INSTALL/PWG2/RESONANCES -I$ALICE_INSTALL/PWG2/RESONANCES/macros/train/LHC2010-pp7TeV");
+  gROOT->LoadMacro("RsnConfigPhi.C++g");
+  
   // execute the related config with settings for adding and not adding ITS-SA
-  gROOT->ProcessLine(Form(".x %s/%s.C(%s,%s,%s)", configPath, configMacro, taskName, options                , configPath));
-  gROOT->ProcessLine(Form(".x %s/%s.C(%s,%s,%s)", configPath, configMacro, taskName, Form("its+%s", options), configPath));
+  RsnConfigPhi(taskName, options                , kTRUE );
+  RsnConfigPhi(taskName, Form("its+%s", options), kFALSE);
   
   // connect input container according to source choice
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
