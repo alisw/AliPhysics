@@ -227,6 +227,13 @@ Int_t AliEMCALTriggerTRU::L0()
 		if (!nPeaks)
 		{
 			ZeroRegion();
+
+			for (Int_t x = 0; x < xsize; x++)
+			{
+			  delete [] peaks[x];
+			}
+			delete [] peaks;
+
 			continue;
 		}
 		
@@ -278,6 +285,8 @@ Int_t AliEMCALTriggerTRU::L0()
 				}
 			}
 			
+			delete [] idx;
+
 			if ( !foundPeak ) 
 			{
 				fPatches->RemoveAt( j );

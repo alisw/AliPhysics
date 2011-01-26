@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -93,7 +94,7 @@ void AliEMCALTriggerSTURawStream::Reset()
 Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 {
 	// STU data decoder from Olivier Bourrion LPSC CNRS-IN2P3
-	// bourrion@lpsc.in2p3.fr
+	// bourrion_at_lpsc_dot_in2p3_dot_fr
 	
 	UInt_t word32[1772]; // 32b words
 	for (Int_t i=0;i<1772;i++) word32[i] = 0;

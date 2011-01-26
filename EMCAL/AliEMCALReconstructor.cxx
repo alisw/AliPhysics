@@ -76,6 +76,7 @@ AliEMCALRawUtils*           AliEMCALReconstructor::fgRawUtils         = 0;   // 
 AliEMCALClusterizer*        AliEMCALReconstructor::fgClusterizer      = 0;   // EMCAL clusterizer class
 TClonesArray*               AliEMCALReconstructor::fgDigitsArr        = 0;   // list of digits, to be used multiple times
 TObjArray*                  AliEMCALReconstructor::fgClustersArr      = 0;   // list of clusters, to be used multiple times
+TClonesArray*               AliEMCALReconstructor::fgTriggerDigits    = 0;   // list of trigger digits, to be used multiple times
 AliEMCALTriggerElectronics* AliEMCALReconstructor::fgTriggerProcessor = 0x0;
 //____________________________________________________________________________
 AliEMCALReconstructor::AliEMCALReconstructor() 
@@ -132,9 +133,9 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   fTriggerData = new AliEMCALTriggerData();
 
   //Init temporary list of digits
-  fgDigitsArr   = new TClonesArray("AliEMCALDigit",1000);
-  fgClustersArr = new TObjArray(1000);
-	
+  fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
+  fgClustersArr   = new TObjArray(1000);
+  fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit",1000);	
 } 
 
 //____________________________________________________________________________
@@ -156,6 +157,11 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   if(fgClustersArr){
     fgClustersArr->Clear();
     delete fgClustersArr; 
+  }
+  
+  if(fgTriggerDigits){
+    fgTriggerDigits->Clear("C");
+    delete fgTriggerDigits; 
   }
   
   if(fgRawUtils)         delete fgRawUtils;
@@ -338,8 +344,8 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
  	  AliWarning("Cannot retrieve V0 ESD! Run w/ null V0 charges");
    }
 
-   TClonesArray *trgDigits = new TClonesArray("AliEMCALTriggerRawDigit",1000);
-	
+   if (fgTriggerDigits) fgTriggerDigits->Clear("C");
+
    TBranch *branchtrg = digitsTree->GetBranch("EMTRG");
 	
    if (!branchtrg) 
@@ -348,22 +354,22 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
  	  return;
    }
 	
-   branchtrg->SetAddress(&trgDigits);
+   branchtrg->SetAddress(&fgTriggerDigits);
    branchtrg->GetEntry(0);
   
    // Note: fgTriggerProcessor reset done at the end of this method
-   fgTriggerProcessor->Digits2Trigger(trgDigits, v0M, fTriggerData);
+   fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
 
    // Fill ESD
    AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");
   
    if (trgESD)
    {
- 	  trgESD->Allocate(trgDigits->GetEntriesFast());
+ 	  trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
 	  
- 	  for (Int_t i = 0; i < trgDigits->GetEntriesFast(); i++)
+ 	  for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++)
  	  {	  
- 		  AliEMCALTriggerRawDigit* rdig = (AliEMCALTriggerRawDigit*)trgDigits->At(i);
+ 		  AliEMCALTriggerRawDigit* rdig = (AliEMCALTriggerRawDigit*)fgTriggerDigits->At(i);
 		  
  		  Int_t px, py;
  		  if (fGeom->GetPositionInEMCALFromAbsFastORIndex(rdig->GetId(), px, py))
