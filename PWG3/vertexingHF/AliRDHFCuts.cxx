@@ -217,31 +217,23 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   //centrality selection
-  if (!(fUseCentrality==kCentOff)){  
-
-    AliAODHeader *header=((AliAODEvent*)event)->GetHeader();
-    AliCentrality *centrality=header->GetCentralityP();
-    if(centrality){
-      Float_t cent=-999.;
-      if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
-      else {
-        if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
-        else{
-	  if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
-          else{
-	    if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
-            else {
-	      fWhyRejection=3;
-	      return kFALSE;
-	    }
-	  }
-        }
+  if (!(fUseCentrality==kCentOff)){ 
+    if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){
+      AliWarning("Centrality estimator not valid");
+      fWhyRejection=3;
+      return kFALSE;
+    }else{
+      Float_t centvalue=GetCentrality((AliAODEvent*)event);
+      if (centvalue<0.){
+	if (fWhyRejection==3) return kFALSE;
+	else return kTRUE;
       }
-	    
-	    
-      if (cent<fMinCentrality || cent>fMaxCentrality){
-	fWhyRejection=2; 
-	return kFALSE; 
+      else{
+	
+	if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
+	  fWhyRejection=2; 
+	  return kFALSE; 
+	}
       }
     }
   }
@@ -370,13 +362,12 @@ void AliRDHFCuts::SetVarsForOpt(Int_t nVars,Bool_t *forOpt) {
 }
 
 //---------------------------------------------------------------------------
-
 void AliRDHFCuts::SetUseCentrality(Int_t flag) {
   //
-  // enable centrality selection  
+  // set centrality estimator
   //
   fUseCentrality=flag;
-  if(fUseCentrality>=kCentInvalid) AliWarning("Centrality estimator not valid");
+  if (fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid) AliWarning("Centrality estimator not valid");
  
   return;
 }
@@ -555,29 +546,29 @@ Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
   return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
 }
 //-------------------------------------------------------------------
-Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent) {
+Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent) const {
   //
-  // centrality percentile
+  // Get centrality percentile
   //
   AliAODHeader *header=aodEvent->GetHeader();
   AliCentrality *centrality=header->GetCentralityP();
   Float_t cent=-999.;
-  if(centrality){ 
-     if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
-     else {
-       if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
-       else{
-	 if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
-         else{
-	   if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
-           else {
-	     AliWarning("Centrality estimator not valid");
-	     return kFALSE;
-	   }
-	 }
-       }
-     } 
-   }
+  if(!centrality) return cent;
+  else{
+    if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+    else {
+      if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+      else{
+	if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+	else{
+	  if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+	  else {
+	    AliWarning("Centrality estimator not valid");
+	  }
+	}
+      }
+    } 
+  }
   return cent;
 }
 //-------------------------------------------------------------------
