@@ -17,6 +17,8 @@
 #pragma link C++ class AliRsnCutDaughterType+;
 #pragma link C++ class AliRsnCutESD2010+;
 #pragma link C++ class AliRsnCutAOD2010+;
+#pragma link C++ class AliRsnCutTrackQuality+;
+#pragma link C++ class AliRsnCutPIDTOF+;
 
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnExpression+;
@@ -51,5 +53,7 @@
 
 #pragma link C++ class AliRsnVAnalysisTask+;
 #pragma link C++ class AliRsnAnalysisTask+;
+
+#pragma link C++ class AliAnalysisTaskSigma1385+;
 
 #endif

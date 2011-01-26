@@ -30,7 +30,7 @@ class AliRsnAnalysisManager : public TNamed
 {
   public:
 
-    AliRsnAnalysisManager(const char*name = "defaultAnalysisMgr");
+    AliRsnAnalysisManager(const char*name = "RSN");
     AliRsnAnalysisManager(const AliRsnAnalysisManager& copy);
     AliRsnAnalysisManager& operator=(const AliRsnAnalysisManager& copy);
     virtual ~AliRsnAnalysisManager() { }

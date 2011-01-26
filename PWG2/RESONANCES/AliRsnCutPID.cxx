@@ -263,7 +263,7 @@ Bool_t AliRsnCutPID::IsSelected(TObject *object)
   
   // convert the object into the unique correct type
   
-  if (!TargetOK(object, AliRsnTarget::kDaughter))
+  if (!TargetOK(object))
   {
     AliError(Form("[%s]: this cut works only with AliRsnDaughter objects", GetName()));
     return kTRUE;

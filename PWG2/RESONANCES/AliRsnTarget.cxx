@@ -20,8 +20,11 @@ ClassImp(AliRsnTarget)
 
 AliRsnEvent* AliRsnTarget::fgCurrentEvent = 0x0;
 
+const Double_t fgkVeryBig   = 1E+10;
+const Double_t fgkVerySmall = 1E-10;
+
 //_____________________________________________________________________________
-Bool_t AliRsnTarget::TargetOK(TObject *object, ETargetType ref)
+Bool_t AliRsnTarget::TargetOK(TObject *object)
 {
 //
 // This method compares the target type stored as data member

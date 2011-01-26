@@ -44,7 +44,7 @@ class AliRsnCutManager : public TNamed
     AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
     
     Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
-    Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
+    Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts1.IsSelected(daughter);}
     Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
     Bool_t         PassMotherCuts(AliRsnMother *mother)             {return fMotherCuts.IsSelected(mother);}
     Bool_t         PassSpecificDaughterCuts(Bool_t first, AliRsnDaughter *daughter)

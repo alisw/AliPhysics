@@ -42,7 +42,7 @@ class AliRsnTarget : public TNamed
     Char_t           GetTargetTypeChar() const;
     const char*      GetTargetTypeName() const;
     void             SetTargetType(ETargetType type)   {fTargetType = type;}
-    Bool_t           TargetOK(TObject *object, ETargetType ref);
+    Bool_t           TargetOK(TObject *object);
     AliRsnDaughter*  GetTargetDaughter()               {return fDaughter;}
     AliRsnMother*    GetTargetMother()                 {return fMother;}
     AliRsnEvent*     GetTargetEvent()                  {return fEvent;}
@@ -60,6 +60,9 @@ class AliRsnTarget : public TNamed
     AliRsnDaughter     *fDaughter;       //  utility pointer to target object (daughter)
     AliRsnMother       *fMother;         //  utility pointer to target object (mother)
     AliRsnEvent        *fEvent;          //  utility pointer to target object (event)
+    
+    static const Double_t fgkVeryBig;    //  utility value for very large value
+    static const Double_t fgkVerySmall;  //  utility value for very small value
     
     // ROOT dictionary
     ClassDef(AliRsnTarget, 1)
