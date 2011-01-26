@@ -160,7 +160,7 @@ AliEMCALReconstructor::~AliEMCALReconstructor()
   }
   
   if(fgTriggerDigits){
-    fgTriggerDigits->Clear("C");
+    fgTriggerDigits->Clear();
     delete fgTriggerDigits; 
   }
   
@@ -344,7 +344,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
  	  AliWarning("Cannot retrieve V0 ESD! Run w/ null V0 charges");
    }
 
-   if (fgTriggerDigits) fgTriggerDigits->Clear("C");
+   if (fgTriggerDigits) fgTriggerDigits->Clear();
 
    TBranch *branchtrg = digitsTree->GetBranch("EMTRG");
 	
