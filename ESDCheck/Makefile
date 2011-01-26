@@ -10,7 +10,7 @@ ifneq ($(ANALYSIS_NEW_INCLUDE),)
   ALICEINC += -I../$(ESD_INCLUDE) -I../$(ANALYSIS_NEW_INCLUDE)
 else
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include
+    ALICEINC += -I$(ALICE_ROOT)/include  -I$(ALICE_ROOT)/PMD  -I$(ALICE_ROOT)/ANALYSIS
   endif
 endif
 
@@ -22,8 +22,11 @@ endif
 CXXFLAGS     += $(ALICEINC) -g
 
 PACKAGE = AnalysisCheck
-include lib$(PACKAGE).pkg
 
+DHDR =
+HDRS =
+SRCS =
+FSRCS =
 DHDR_AnalysisCheck := $(DHDR)
 HDRS_AnalysisCheck := $(HDRS)
 SRCS_AnalysisCheck := $(SRCS) G__$(PACKAGE).cxx

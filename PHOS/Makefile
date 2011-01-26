@@ -2,9 +2,9 @@ PACKAGE = invalid-only-for-proof
 
 include $(ROOTSYS)/test/Makefile.arch
 
-SRCS     := $(wildcard *.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 ifndef PACKCXXFLAGS
    PACKCXXFLAGS = $(CXXFLAGS)

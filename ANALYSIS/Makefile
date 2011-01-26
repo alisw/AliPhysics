@@ -31,7 +31,7 @@ endif
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/ANALYSIS/Tender -I$(ALICE_ROOT)/TOF
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/ANALYSIS/Tender -I$(ALICE_ROOT)/TOF -I$(ALICE_ROOT)/TRD/Cal -I$(ALICE_ROOT)/VZERO -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/T0
   endif
 endif
 
@@ -44,9 +44,9 @@ endif
 
 CXXFLAGS += $(ALICEINC) -g
 
-SRCS     := $(wildcard *.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 DHDR_ANALYSIS := $(DHDR)
 HDRS_ANALYSIS := $(HDRS)

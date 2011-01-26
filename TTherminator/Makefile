@@ -19,8 +19,11 @@ else
 endif
 
 PACKAGE = TTherminator
-include lib$(PACKAGE).pkg
 
+DHDR =
+HDRS =
+SRCS =
+FSRCS =
 DHDR_TTherminator := $(DHDR)
 HDRS_TTherminator := $(HDRS)
 SRCS_TTherminator := $(SRCS) G__$(PACKAGE).cxx

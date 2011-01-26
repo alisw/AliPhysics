@@ -34,9 +34,9 @@ else
   endif
 endif
 
-SRCS     := $(wildcard $(subst PWG3,,$(PACKAGE))/*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard $(subst PWG3,,$(PACKAGE))/*.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 CXXFLAGS     += $(ALICEINC) -g
 
 DHDR_PWG3 := $(DHDR)

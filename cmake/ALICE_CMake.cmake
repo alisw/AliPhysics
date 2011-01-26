@@ -593,7 +593,7 @@ macro(ALICE_BuildPAR)
     endforeach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})
     
     add_custom_target(${PACKAGE}.par
-                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/' < Makefile > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
+                      COMMAND sed -e 's/include .\(ROOTSYS\)\\/test\\/Makefile.arch/include Makefile.arch/\; s/PACKAGE = .*/PACKAGE = ${PACKAGE}/\; s,SRCS *=.*,SRCS = ${SRCS},\;' < Makefile | sed -e 's,HDRS *=.*,HDRS = ${HDRS},\; s,FSRCS *=.*,FSRCS = ${FSRCS},\; s,DHDR *=.*,DHDR = ${DHDR},' > ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile
                       COMMAND cp -pR ${ROOTSYS}/test/Makefile.arch ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/Makefile.arch
                       COMMAND cp -pR PROOF-INF.${PACKAGE} ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}/PROOF-INF
 #                      COMMAND cp -pR lib${PACKAGE}.pkg ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE}
@@ -604,6 +604,7 @@ macro(ALICE_BuildPAR)
                       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} )
 
 
+    add_dependencies(${PACKAGE}.par ${SRCS} ${FSRCS} ${HDRS} ${DHDR})
     add_dependencies(par-all ${PACKAGE}.par)
     add_dependencies(${MODULE}-par-all ${PACKAGE}.par)
 
@@ -615,6 +616,7 @@ macro(ALICE_BuildPAR)
                       COMMAND ${CMAKE_COMMAND} -E cmake_echo_color --green --bold "${PACKAGE}.par testing succeeded"
                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
+    add_dependencies(test-${PACKAGE}.par ${PACKAGE}.par)
     add_dependencies(test-par-all test-${PACKAGE}.par)
     add_dependencies(test-${MODULE}-par-all test-${PACKAGE}.par)
 

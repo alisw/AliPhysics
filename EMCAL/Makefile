@@ -57,9 +57,9 @@ CXXFLAGS     += $(ALICEINC) -g
 F77FLAGS     += $(ALICEINC) -g -fPIC
 
 
-SRCS     := $(wildcard *.cxx */*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx */*.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 DHDR_EMCAL := $(DHDR)
 HDRS_EMCAL := $(HDRS)
