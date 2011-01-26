@@ -2,9 +2,9 @@ PACKAGE = invalid-only-for-proof
 
 include $(ROOTSYS)/test/Makefile.arch
 
-SRCS     := $(wildcard *.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 
 ALICEINC      = -I.
@@ -21,7 +21,7 @@ ifneq ($(ESD_INCLUDE),)
    endif
  else
     ifneq ($(ALICE_ROOT),)
-       ALICEINC += -I$(ALICE_ROOT)/include
+       ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/JETAN -I$(ALICE_ROOT)/JETAN/fastjet -I$(ALICE_ROOT)/ANALYSIS
      endif
 endif
 

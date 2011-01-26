@@ -17,7 +17,7 @@ ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ANALYSISalice_INCLUDE)
  else
     ifneq ($(ALICE_ROOT),)
-       ALICEINC += -I$(ALICE_ROOT)/include
+       ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PWG2
      endif
 endif
 
@@ -31,10 +31,18 @@ endif
 
 ifneq ($(PWG2femtoscopy_INCLUDE),)
   ALICEINC += -I../$(PWG2femtoscopy_INCLUDE)
+ else
+    ifneq ($(ALICE_ROOT),)
+       ALICEINC += -I$(ALICE_ROOT)/PWG2/AOD
+     endif
 endif
 
 ifneq ($(PWG2femtoscopyUser_INCLUDE),)
   ALICEINC += -I../$(PWG2femtoscopyUser_INCLUDE)
+ else
+    ifneq ($(ALICE_ROOT),)
+       ALICEINC += -I$(ALICE_ROOT)/PWG2/AOD -I$(ALICE_ROOT)/PWG2/FEMTOSCOPY/AliFemto
+     endif
 endif
 
 ifneq ($(PWG2flowCommon_INCLUDE),)
@@ -43,10 +51,18 @@ endif
 
 ifneq ($(PWG2flowTasks_INCLUDE),)
   ALICEINC += -I../$(PWG2flowTasks_INCLUDE)
+ else
+    ifneq ($(ALICE_ROOT),)
+       ALICEINC += -I$(ALICE_ROOT)/PWG2/FLOW/AliFlowCommon
+     endif
 endif
 
 ifneq ($(PWG2resonances_INCLUDE),)
   ALICEINC += -I../$(PWG2resonances_INCLUDE)
+ else
+    ifneq ($(ALICE_ROOT),)
+       ALICEINC += -I$(ALICE_ROOT)/PWG2/RESONANCES
+     endif
 endif
 
 ifneq ($(PWG2unicor_INCLUDE),)
@@ -63,6 +79,10 @@ endif
 
 ifneq ($(PWG2forward_INCLUDE),)
   ALICEINC += -I../$(PWG2forward_INCLUDE)
+ else
+    ifneq ($(ALICE_ROOT),)
+       ALICEINC += -I$(ALICE_ROOT)/FMD
+     endif
 endif
 
 # only if no par file was loaded before
@@ -79,7 +99,7 @@ endif
 
 #ALICEINC += -IFEMTOSCOPY/AliFemto -IANALYSIS -IFEMTOSCOPY/AliFemtoUser
 
-include lib$(PACKAGE).pkg
+# include lib$(PACKAGE).pkg
 
 ifneq ($(EINCLUDE),)
   ALICEINC += $(EINCLUDE:%=-I$(ALICE_ROOT)/%)
@@ -88,6 +108,10 @@ endif
 CXXFLAGS     += $(ALICEINC) -g
 F77FLAGS     += $(ALICEINC) -g -fPIC
 
+DHDR =
+HDRS =
+SRCS =
+FSRCS =
 
 DHDR_PWG2 := $(DHDR)
 HDRS_PWG2 := $(HDRS)
@@ -114,7 +138,10 @@ endif
 %.o:    %.F
 	$(F77) $(F77FLAGS) -c $< -o $@
 
-G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS_PWG2) $(DHDR_PWG2)
+G__$(PACKAGE).h:G__$(PACKAGE).cxx
+	@if test -f $@ ; then : ; else rm -f $< ; $(MAKE) $@ ; fi
+
+G__$(PACKAGE).cxx: $(HDRS_PWG2) $(DHDR_PWG2)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 

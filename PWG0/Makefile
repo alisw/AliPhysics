@@ -2,7 +2,8 @@
 
 include Makefile.arch
 
-default-target: libPWG0base.so libPWG0dep.so libPWG0selectors.so
+PACKAGE = PWG0base
+default-target: lib$(PACKAGE).so
 
 ALICEINC      = -I.
 
@@ -23,7 +24,7 @@ ifneq ($(ESD_INCLUDE),)
 	endif
 else
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/PYTHIA6 -I$(ALICE_ROOT)/EVGEN -I$(ALICE_ROOT)/RAW -I$(ALICE_ROOT)/TPC  -I$(ALICE_ROOT)/PWG0
 else
   endif
 endif
@@ -35,11 +36,9 @@ endif
 
 CXXFLAGS     += $(ALICEINC) -g
 
-PACKAGE = PWG0base
-
-SRCS     := $(wildcard *.cxx */*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx */*.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 DHDR_PWG0base := $(DHDR)
 HDRS_PWG0base := $(HDRS)
@@ -62,7 +61,7 @@ endif
 %.o:    %.cxx %.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-G__PWG0base.cxx G__PWG0base.h: $(HDRS_PWG0base) $(DHDR_PWG0base)
+G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS_PWG0base) $(DHDR_PWG0base)
 	@echo "Generating dictionary ..."
 	rootcint -f $@ -c $(ALICEINC) $^
 
@@ -103,56 +102,3 @@ test-%.par: %.par
 	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
 	@rm -rf par-tmp
 	@echo "INFO: Testing succeeded (already cleaned up)"
-
-## libPWG0dep part
-
-SRCS     := $(wildcard *.cxx  */*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
-
-DHDR_PWG0dep := $(DHDR)
-HDRS_PWG0dep := $(HDRS)
-SRCS_PWG0dep := $(SRCS) G__PWG0dep.cxx
-OBJS_PWG0dep := $(SRCS_PWG0dep:.cxx=.o)
-
-libPWG0dep.so: $(OBJS_PWG0dep)
-	@echo "Linking" $@ ...
-	@/bin/rm -f $@
-ifeq ($(ARCH),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
-else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
-endif
-	@chmod a+x $@
-	@echo "done"
-
-G__PWG0dep.cxx G__PWG0dep.h: $(HDRS_PWG0dep) $(DHDR_PWG0dep)
-	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
-
-## libPWG0selectors part
-
-SRCS     := $(wildcard *.cxx  */*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
-
-DHDR_PWG0selectors := $(DHDR)
-HDRS_PWG0selectors := $(HDRS)
-SRCS_PWG0selectors := $(SRCS) G__PWG0selectors.cxx
-OBJS_PWG0selectors := $(SRCS_PWG0selectors:.cxx=.o)
-
-libPWG0selectors.so: $(OBJS_PWG0selectors)
-	@echo "Linking" $@ ...
-	@/bin/rm -f $@
-ifeq ($(ARCH),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
-else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
-endif
-	@chmod a+x $@
-	@echo "done"
-
-G__PWG0selectors.cxx G__PWG0selectors.h: $(HDRS_PWG0selectors) $(DHDR_PWG0selectors)
-	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(ALICEINC) $^
-
