@@ -79,6 +79,13 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
     AliFatal("No merging efficiencies");
     return false;
   }
+  // Check that we have the acceptance correction, needed by 
+  //   AliFMDCorrector 
+  if (what & AliForwardCorrectionManager::kAcceptance && 
+      !fcm.GetAcceptance()) { 
+    AliFatal("No acceptance corrections");
+    return false;
+  }
   return true;
 }
 

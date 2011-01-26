@@ -31,7 +31,7 @@ AliFMDCorrector::AliFMDCorrector()
 
 //____________________________________________________________________
 AliFMDCorrector::AliFMDCorrector(const char* title)
-  : TNamed("fmdCorrections", title), 
+  : TNamed("fmdCorrector", title), 
     fRingHistos(), 
     fUseMergingEfficiency(true),
     fDebug(0)
