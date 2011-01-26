@@ -275,14 +275,17 @@ void AliMCEvent::ReorderAndExpandTreeTR()
 
 //
 //  Activate the used branches only. Otherwisw we get a bad memory leak.
-    fTreeTR->SetBranchStatus("*",        0);
-    fTreeTR->SetBranchStatus("AliRun.*", 1);
-    fTreeTR->SetBranchStatus("ITS.*",    1);
-    fTreeTR->SetBranchStatus("TPC.*",    1);
-    fTreeTR->SetBranchStatus("TRD.*",    1);
-    fTreeTR->SetBranchStatus("TOF.*",    1);
-    fTreeTR->SetBranchStatus("FRAME.*",  1);
-    fTreeTR->SetBranchStatus("MUON.*",   1);
+    if (fTreeTR) {
+	fTreeTR->SetBranchStatus("*",        0);
+	fTreeTR->SetBranchStatus("AliRun.*", 1);
+	fTreeTR->SetBranchStatus("ITS.*",    1);
+	fTreeTR->SetBranchStatus("TPC.*",    1);
+	fTreeTR->SetBranchStatus("TRD.*",    1);
+	fTreeTR->SetBranchStatus("TOF.*",    1);
+	fTreeTR->SetBranchStatus("FRAME.*",  1);
+	fTreeTR->SetBranchStatus("MUON.*",   1);
+    }
+    
 //
 //  Connect the active branches
     TClonesArray* trefs[7];
