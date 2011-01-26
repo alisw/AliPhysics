@@ -78,7 +78,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   const Float_t *GetCuts() const {return fCutsRD;} 
   void    GetCuts(Float_t**& cutsRD) const;
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
-  Float_t GetCentrality(AliAODEvent* aodEvent);
+  Float_t GetCentrality(AliAODEvent* aodEvent) const;
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
@@ -159,3 +159,4 @@ class AliRDHFCuts : public AliAnalysisCuts
 };
 
 #endif
+
