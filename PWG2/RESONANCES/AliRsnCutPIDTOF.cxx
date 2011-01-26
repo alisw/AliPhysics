@@ -45,11 +45,11 @@ AliESDEvent*   AliRsnCutPIDTOF::fgLastEvent       = 0x0;
 
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDTOF::AliRsnCutPIDTOF(const char *name, Bool_t isMC, Double_t min, Double_t max, Bool_t forceMatching) :
+AliRsnCutPIDTOF::AliRsnCutPIDTOF(const char *name, AliPID::EParticleType pid, Bool_t isMC, Double_t min, Double_t max, Bool_t forceMatching) :
   AliRsnCut(name, AliRsnCut::kDaughter, min, max),
   fIsMC(isMC),
   fForceMatching(forceMatching),
-  fPIDtype(AliPID::kPion),
+  fPIDtype(pid),
   fESDpid(),
   fAODpid()
 {

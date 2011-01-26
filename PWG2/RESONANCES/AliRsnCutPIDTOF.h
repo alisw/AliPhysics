@@ -27,7 +27,7 @@ class AliRsnCutPIDTOF : public AliRsnCut
 {
   public:
 
-    AliRsnCutPIDTOF(const char *name = "cutPIDTOF", Bool_t isMC = kFALSE, Double_t min = -10.0, Double_t max = 10.0, Bool_t forceMatching = kFALSE);
+    AliRsnCutPIDTOF(const char *name = "cutPIDTOF", AliPID::EParticleType pid = AliPID::kKaon, Bool_t isMC = kFALSE, Double_t min = -10.0, Double_t max = 10.0, Bool_t forceMatching = kFALSE);
     AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy);
     AliRsnCutPIDTOF& operator=(const AliRsnCutPIDTOF& copy);
     virtual ~AliRsnCutPIDTOF() { }

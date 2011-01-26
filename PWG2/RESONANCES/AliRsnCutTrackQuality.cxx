@@ -34,7 +34,8 @@ ClassImp(AliRsnCutTrackQuality)
 //_________________________________________________________________________________________________
 AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
-  fFlags(0xFFFFFFFF),
+  fFlagsOn(0xFFFFFFFF),
+  fFlagsOff(0x0),
   fRejectKinkDaughter(kFALSE),
   fDCARfixed(kTRUE),
   fDCARptFormula(""),
@@ -60,7 +61,8 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
 //_________________________________________________________________________________________________
 AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) :
   AliRsnCut(copy),
-  fFlags(copy.fFlags),
+  fFlagsOn(copy.fFlagsOn),
+  fFlagsOff(copy.fFlagsOff),
   fRejectKinkDaughter(copy.fRejectKinkDaughter),
   fDCARfixed(copy.fDCARfixed),
   fDCARptFormula(copy.fDCARptFormula),
@@ -92,7 +94,8 @@ AliRsnCutTrackQuality& AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
 //
 
   
-  fFlags = copy.fFlags;
+  fFlagsOn = copy.fFlagsOn;
+  fFlagsOff = copy.fFlagsOff;
   fRejectKinkDaughter = copy.fRejectKinkDaughter;
   fDCARfixed = copy.fDCARfixed;
   fDCARptFormula = copy.fDCARptFormula;
@@ -119,7 +122,8 @@ void AliRsnCutTrackQuality::DisableAll()
 // Disable all cuts
 //
   
-  fFlags = 0xFFFFFFFF;
+  fFlagsOn = 0xFFFFFFFF;
+  fFlagsOff = 0x0;
   fRejectKinkDaughter = kFALSE;
   fDCARfixed = kTRUE;
   fDCARptFormula = "";
@@ -156,11 +160,17 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
     AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
     return kFALSE;
   }
-  ULong_t status = (ULong_t)vtrack->GetStatus();
-  ULong_t check  = status & fFlags;
-  if (check == 0)
+  ULong_t status   = (ULong_t)vtrack->GetStatus();
+  ULong_t checkOn  = status & fFlagsOn;
+  ULong_t checkOff = status & fFlagsOff;
+  if (checkOn == 0)
   {
-    AliDebug(AliLog::kDebug + 2, Form("Status cut non passed: required %lx, track has %lx", fFlags, status));
+    AliDebug(AliLog::kDebug + 2, Form("Not all required flags are present: required %lx, track has %lx", fFlagsOn, status));
+    return kFALSE;
+  }
+  if (checkOff != 0)
+  {
+    AliDebug(AliLog::kDebug + 2, Form("Some forbidden flags are present: required %lx, track has %lx", fFlagsOff, status));
     return kFALSE;
   }
   
@@ -298,7 +308,9 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
   // if the DCA cut is not fixed, compute current value
   if (!fDCARfixed)
   {
-    static const TFormula dcaXY(Form("%s_dcaXY", GetName()), fDCARptFormula.Data());
+    static TString str(fDCARptFormula);
+    str.ReplaceAll("pt", "x");
+    static const TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
     fDCARmax = dcaXY.Eval(track->Pt());
   }
   // check the cut
@@ -313,7 +325,9 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
   // if the DCA cut is not fixed, compute current value
   if (!fDCAZfixed)
   {
-    static const TFormula dcaZ(Form("%s_dcaXY", GetName()), fDCAZptFormula.Data());
+    static TString str(fDCAZptFormula);
+    str.ReplaceAll("pt", "x");
+    static const TFormula dcaZ(Form("%s_dcaXY", GetName()), str.Data());
     fDCAZmax = dcaZ.Eval(track->Pt());
   }
   // check the cut
