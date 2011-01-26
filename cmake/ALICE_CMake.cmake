@@ -477,7 +477,7 @@ macro(ALICE_BuildExecutable)
 
   ALICE_Format(PELIBSDIR "-L" "" "${PELIBSDIR}")
   ALICE_CheckLibraries(PBLIBS "${PBLIBS}")
-  ALICE_CheckLibraries(PELIBS "${PELIBS}")
+  #ALICE_CheckLibraries(PELIBS "${PELIBS}")
 
   ALICE_CorrectPaths(EINCLUDE "${EINCLUDE}")
   ALICE_CorrectPaths(PINC "${PINC}")
