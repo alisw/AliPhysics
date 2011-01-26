@@ -123,7 +123,11 @@ void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
   Double_t mom=track->P();  
   AliAODPid *pidObj = track->GetDetPid();
 
-  Double_t dedx = pidObj->GetITSsignal();
+  Double_t dedx = 0.;
+  if (pidObj) {
+      dedx = pidObj->GetITSsignal();
+  }
+  
   Bool_t mismatch = kTRUE;
   Bool_t isSA = kTRUE;
   if(track->GetStatus() & AliESDtrack::kTPCin){
