@@ -27,7 +27,7 @@ class AliRsnCutPIDTOF : public AliRsnCut
 {
   public:
 
-    AliRsnCutPIDTOF(const char *name = "cutPIDTOF", Bool_t isMC = kFALSE, Double_t min = -10.0, Double_t max = 10.0);
+    AliRsnCutPIDTOF(const char *name = "cutPIDTOF", Bool_t isMC = kFALSE, Double_t min = -10.0, Double_t max = 10.0, Bool_t forceMatching = kFALSE);
     AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy);
     AliRsnCutPIDTOF& operator=(const AliRsnCutPIDTOF& copy);
     virtual ~AliRsnCutPIDTOF() { }
@@ -41,7 +41,8 @@ class AliRsnCutPIDTOF : public AliRsnCut
     Bool_t  CheckESD(AliESDtrack *track);
     Bool_t  CheckAOD(AliAODTrack *track);
   
-    Bool_t                 fIsMC;             //  switch for MC analysis    
+    Bool_t                 fIsMC;             //  switch for MC analysis   
+    Bool_t                 fForceMatching;    //  decide if non TOF matched tracks pass the cut or not 
     AliPID::EParticleType  fPIDtype;          //  particle type for which PID is checked   
     AliESDpid              fESDpid;           //  PID utility for ESD
     AliAODpidUtil          fAODpid;           //  PID utility for AOD

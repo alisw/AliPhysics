@@ -45,9 +45,10 @@ AliESDEvent*   AliRsnCutPIDTOF::fgLastEvent       = 0x0;
 
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDTOF::AliRsnCutPIDTOF(const char *name, Bool_t isMC, Double_t min, Double_t max) :
+AliRsnCutPIDTOF::AliRsnCutPIDTOF(const char *name, Bool_t isMC, Double_t min, Double_t max, Bool_t forceMatching) :
   AliRsnCut(name, AliRsnCut::kDaughter, min, max),
   fIsMC(isMC),
+  fForceMatching(forceMatching),
   fPIDtype(AliPID::kPion),
   fESDpid(),
   fAODpid()
@@ -61,6 +62,7 @@ AliRsnCutPIDTOF::AliRsnCutPIDTOF(const char *name, Bool_t isMC, Double_t min, Do
 AliRsnCutPIDTOF::AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy) :
   AliRsnCut(copy),
   fIsMC(copy.fIsMC),
+  fForceMatching(copy.fForceMatching),
   fPIDtype(copy.fPIDtype),
   fESDpid(copy.fESDpid),
   fAODpid(copy.fAODpid)
@@ -78,6 +80,7 @@ AliRsnCutPIDTOF& AliRsnCutPIDTOF::operator=(const AliRsnCutPIDTOF& copy)
 //
 
   fIsMC = copy.fIsMC;
+  fForceMatching = copy.fForceMatching;
   fPIDtype = copy.fPIDtype;
   fESDpid = copy.fESDpid;
   fAODpid = copy.fAODpid;
@@ -95,19 +98,27 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
   // coherence check
   if (!TargetOK(object)) return kFALSE;
   
-  // reject not TOF-matched tracks
-  // status is checked in the same way for all tracks
+  // reject always non-track objects
   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
   if (!vtrack)
   {
     AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
     return kFALSE;
   }
+  
+  // for non TOF-matched tracks, the TOF PID check cannot be done:
+  // -- if 'fForceMatching' is kTRUE
+  //    all non matched tracks are rejected as if they didn't pass the cut
+  // -- if 'fForceMatching' is kFALSE
+  //    all non matched tracks are ignored, as if they did pass the cut
   ULong_t status = (ULong_t)vtrack->GetStatus();
   if ((status & AliESDtrack::kTOFout) == 0 || (status & AliESDtrack::kTIME) == 0)
   {
     AliDebug(AliLog::kDebug + 2, "Track is not matched with TOF");
-    return kFALSE;
+    if (fForceMatching)
+      return kFALSE;
+    else
+      return kTRUE;
   }
   
   // retrieve real object type
