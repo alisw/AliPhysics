@@ -3300,6 +3300,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
 	  
 	  AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
+	  if(!trackVP)continue;
 	  TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	  
 	  Float_t jetPt   = jet->Pt();
@@ -3378,6 +3379,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     for(Int_t ij=0; ij<nGenJets; ++ij){
       
       AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsGen->At(ij));
+      if(!jet)continue;
       if(fQAMode&2) fQAJetHistosGen->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
       
       if(ij==0){ // leading jet
@@ -3506,7 +3508,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 		    {
 		      if (it < jettracklist1->GetSize())
 			{ 
-			  Float_t trackPt1 = (dynamic_cast<AliVParticle*> (jettracklist1->At(it)))->Pt();
+			  AliVParticle *vp = (dynamic_cast<AliVParticle*> (jettracklist1->At(it)));
+			  Float_t trackPt1 = (vp?vp->Pt():0);
 			  Float_t jetPt1   = jet1->Pt();
 			  
 			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -3561,6 +3564,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       {
 	AliAODJet* jet1 = dynamic_cast<AliAODJet*>(fJetsGen->At(0));
 	AliAODJet* jet2 = dynamic_cast<AliAODJet*>(fJetsGen->At(1));
+	if(jet1&&jet2){
 	
 	Double_t deltaPhi = 0;
 	Double_t phi1 = TVector2::Phi_0_2pi(jet1->Phi());
@@ -3682,6 +3686,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	      } // End if(jetBin > 0)
 	    else { Printf("Jet bins for di-jet studies not set !");}
 	  } // End if (go)
+	}// end if jet1 and jet2
       } // End if(nGenJets > 1)
   } // end: di-jet
   
@@ -3892,6 +3897,8 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
     return -1;
   }
 
+  if(!fAOD) return -1;
+
   if(!fAOD->GetTracks()) return 0;
 
   if(type==kTrackUndef) return 0;
@@ -3900,7 +3907,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
   if(type==kTrackAODCuts || type==kTrackAODQualityCuts || type==kTrackAOD){
 
     // all rec. tracks, esd filter mask, eta range
-    if(!fAOD) return -1;
+
     
     for(Int_t it=0; it<fAOD->GetNumberOfTracks(); ++it){
       AliAODTrack *tr = fAOD->GetTrack(it);
@@ -3948,6 +3955,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfTracks(TList *list, Int_t t
     
     for(int it=0; it<tca->GetEntriesFast(); ++it){
       AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+      if(!part)continue;
       if(!part->IsPhysicalPrimary())continue;
       
       if (type==kTrackAODMCCharged || type==kTrackAODMCChargedAcceptance){
@@ -4205,7 +4213,7 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
 
     AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
-
+    if(!track)continue;
     Double_t trackMom[3];
     track->PxPyPz(trackMom);
     TVector3 track3mom(trackMom);
@@ -4271,12 +4279,12 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
   for(Int_t iRec=0; iRec<nTracksRec; iRec++){ 
       
     AliAODTrack* rectrack = dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)); 
-
+    if(!rectrack)continue;
     Int_t label = TMath::Abs(rectrack->GetLabel());
 
     // find MC track in our list
     AliAODMCParticle* gentrack = dynamic_cast<AliAODMCParticle*> (tca->At(label));
-
+   
     Int_t listIndex = -1;
     if(gentrack) listIndex = tracksAODMCCharged->IndexOf(gentrack);
 
@@ -4293,7 +4301,7 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
   for(Int_t iGen=0; iGen<nTracksGen; iGen++){
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (tracksAODMCCharged->At(iGen));
-
+    if(!gentrack)continue;
     Int_t pdg = gentrack->GetPdgCode();    
 
     // 211 - pi, 2212 - proton, 321 - Kaon, 11 - electron, 13 - muon
@@ -4306,9 +4314,11 @@ void  AliAnalysisTaskFragmentationFunction::AssociateGenRec(TList* tracksAODMCCh
 
       if(iRec>=0){
 	Float_t genPt = gentrack->Pt();
-	Float_t recPt = (dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)))->Pt(); 
-	
-	fh2PtRecVsGenPrim->Fill(genPt,recPt);
+	AliAODTrack* vt = dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)); 
+	if(vt){
+	  Float_t recPt = vt->Pt();
+	  fh2PtRecVsGenPrim->Fill(genPt,recPt);
+	}
       }
     }
   }
@@ -4329,7 +4339,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(AliFragFun
     if(isGenPrim[iGen] != 1) continue; // select primaries
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (tracksGen->At(iGen));
-    
+    if(gentrack)continue;
     Double_t ptGen  = gentrack->Pt();
     Double_t etaGen = gentrack->Eta();
     Double_t phiGen = TVector2::Phi_0_2pi(gentrack->Phi());
@@ -4365,7 +4375,7 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(TObject* hist
   for(Int_t iTr=0; iTr<nTracksJet; iTr++){
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (jetTrackList->At(iTr));
-
+    if(!gentrack)continue;
     // find jet track in gen tracks list
     Int_t iGen = tracksGen->IndexOf(gentrack); 
 
@@ -4395,8 +4405,9 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackRecEffHisto(TObject* hist
 
     if(dynamic_cast<AliFragFuncHistos*>(histGen) && dynamic_cast<AliFragFuncHistos*>(histRec)){
       
-      AliFragFuncHistos* effFFhistGen = dynamic_cast<AliFragFuncHistos*>(histGen); 
-      AliFragFuncHistos* effFFhistRec = dynamic_cast<AliFragFuncHistos*>(histRec); 
+      // after checking can afford normal cast
+      AliFragFuncHistos* effFFhistGen = (AliFragFuncHistos*)(histGen); 
+      AliFragFuncHistos* effFFhistRec = (AliFragFuncHistos*)(histRec); 
 
       if(useRecJetPt) effFFhistGen->FillFF( ptGen, jetPtRec, incrementJetPtGenFF );
       else            effFFhistGen->FillFF( ptGen, jetPtGen, incrementJetPtGenFF );
@@ -4435,7 +4446,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackResponse(THnSparse* hn
     if(isGenPrim[iGen] != 1) continue; // select primaries
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (tracksGen->At(iGen));
-    
+    if(!gentrack)continue;
     Double_t ptGen  = gentrack->Pt();
     Double_t etaGen = gentrack->Eta();
     Double_t phiGen = TVector2::Phi_0_2pi(gentrack->Phi());
@@ -4448,6 +4459,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackResponse(THnSparse* hn
     Int_t iRec = indexAODTr[iGen]; // can be -1 if no good reconstructed track 
     if(iRec>=0){ 
       AliAODTrack* rectrack = dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)); 
+      if(!rectrack)continue;
       Double_t ptRec = rectrack->Pt();
       
       Double_t entries[2] = {ptRec,ptGen}; // AliCorrFW convention: gen vs rec
@@ -4471,7 +4483,7 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackResponse(THnSparse* hnRes
   for(Int_t iTr=0; iTr<nTracksJet; iTr++){
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (jetTrackList->At(iTr));
-
+    if(!gentrack)continue;
     // find jet track in gen tracks list
     Int_t iGen = tracksGen->IndexOf(gentrack); 
 
@@ -4501,21 +4513,23 @@ void AliAnalysisTaskFragmentationFunction::FillJetTrackResponse(THnSparse* hnRes
     if(iRec>=0){
 
       AliAODTrack* rectrack = dynamic_cast<AliAODTrack*>(tracksRec->At(iRec)); 
-      Double_t ptRec = rectrack->Pt();
+      if(rectrack){
+	Double_t ptRec = rectrack->Pt();
+	
+	Double_t zRec    = ptRec / jetPtGen;
+	Double_t xiRec   = 0;
+	if(zRec>0) xiRec = TMath::Log(1/zRec);
       
-      Double_t zRec    = ptRec / jetPtGen;
-      Double_t xiRec   = 0;
-      if(zRec>0) xiRec = TMath::Log(1/zRec);
-      
-      Double_t jetPt = useRecJetPt ? jetPtRec : jetPtGen;
-
-      Double_t entriesPt[3] = {jetPt,ptRec,ptGen}; // AliCorrFW convention: gen vs rec
-      Double_t entriesZ[3]  = {jetPt,zRec,zGen}; 
-      Double_t entriesXi[3] = {jetPt,xiRec,xiGen}; 
-      
-      hnResponsePt->Fill(entriesPt);
-      hnResponseZ->Fill(entriesZ);
-      hnResponseXi->Fill(entriesXi);
+	Double_t jetPt = useRecJetPt ? jetPtRec : jetPtGen;
+	
+	Double_t entriesPt[3] = {jetPt,ptRec,ptGen}; // AliCorrFW convention: gen vs rec
+	Double_t entriesZ[3]  = {jetPt,zRec,zGen}; 
+	Double_t entriesXi[3] = {jetPt,xiRec,xiGen}; 
+	
+	hnResponsePt->Fill(entriesPt);
+	hnResponseZ->Fill(entriesZ);
+	hnResponseXi->Fill(entriesXi);
+      }
     } 
   }
 }
@@ -4537,7 +4551,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxis(Float_t alp
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
 
     AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
-
+    if(!track)continue;
     Double_t trackMom[3];
     track->PxPyPz(trackMom);
     TVector3 track3mom(trackMom);
@@ -4571,7 +4585,9 @@ void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxisWindow(Float
 
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++)
     {
+
       AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
+      if(!track)continue;
       Float_t trackEta = track->Eta();
       Float_t trackPhi = track->Phi();
 
@@ -4629,7 +4645,9 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJets(Int_t nCases, TLi
 
   // Estimate jet and background areas
   Float_t* areaJet = new Float_t[nCases];
+  memset(areaJet, 0, sizeof(Float_t) * nCases);
   Float_t* areaJetLarge = new Float_t[nCases];
+  memset(areaJetLarge, 0, sizeof(Float_t) * nCases);
   Float_t areaFull = (fTrackEtaMax-fTrackEtaMin)*(fTrackPhiMax-fTrackPhiMin);
   Float_t areaOut = areaFull;
 
@@ -4643,6 +4661,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJets(Int_t nCases, TLi
     {
       // Get jet information
       AliAODJet* jet = dynamic_cast<AliAODJet*>(jetlist->At(ij));
+      if(!jet)continue;
       TVector3 jet3mom;
       jet3mom.SetPtEtaPhi(jet->Pt(),jet->Eta(),jet->Phi());
       new((*vect3Jet)[ijet]) TVector3((TVector3)jet3mom);
@@ -4663,7 +4682,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJets(Int_t nCases, TLi
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
     
     AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
-    
+    if(!track)continue;
     Double_t trackMom[3];
     track->PxPyPz(trackMom);
     TVector3 track3mom(trackMom);
@@ -4754,6 +4773,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJetsStat(Int_t nCases,
     {
       // Get jet information
       AliAODJet* jet = dynamic_cast<AliAODJet*>(jetlist->At(ij));
+      if(!jet)continue;
       TVector3 jet3mom;
       jet3mom.SetPtEtaPhi(jet->Pt(),jet->Eta(),jet->Phi());
       new((*vect3Jet)[ijet]) TVector3((TVector3)jet3mom);
@@ -4773,7 +4793,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJetsStat(Int_t nCases,
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
     
     AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
-    
+    if(!track)continue;
     Double_t trackMom[3];
     track->PxPyPz(trackMom);
     TVector3 track3mom(trackMom);
@@ -4954,6 +4974,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
       for(Int_t it=0; it<tracklistperp->GetSize(); ++it){
 	
 	AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(tracklistperp->At(it));
+	if(!trackVP)continue;
 	TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	
 	Float_t jetPt   = jet->Pt();
