@@ -903,8 +903,10 @@ void AliHLTHOMERReader::ReleaseCurrentEvent()
 int AliHLTHOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, unsigned long timeoutUsec )
     {
 // see header file for class documentation
-    int ret;
+    int ret=0;
     struct timeval oldSndTO, newSndTO;
+    memset(&oldSndTO, 0, sizeof(oldSndTO));
+    memset(&newSndTO, 0, sizeof(newSndTO));
     if ( useTimeout )
 	{
 	socklen_t optlen=sizeof(oldSndTO);
