@@ -511,6 +511,9 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   // Return:
   //    true on success, false 
   //
+  // AliInfo(Form("Parameters from 1st ESD event: cms=%s, sNN=%f, field=%f",
+  // 	       esd->GetBeamType(), 2*esd->GetBeamEnergy(), 
+  // 	       esd->GetMagneticField()));
   fCollisionSystem = 
     AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
   fEnergy          = 

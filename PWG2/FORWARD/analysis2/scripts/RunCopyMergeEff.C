@@ -4,6 +4,15 @@ Color_t Color(UShort_t d, Char_t r ) const
 	  + ((r == 'I' || r == 'i') ? 2 : -2));
 }
 
+void
+RunCopyMergeEff(UShort_t sys, UShort_t cms, Short_t field, const Char_t* path=0)
+{
+  RunCopyMergeEff(sys == 1 ? "pp" : "PbPb", 
+		  cms, 
+		  field, 
+		  path);
+}
+
 /** 
  * 
  * @param sys       Collision system 
@@ -13,7 +22,8 @@ Color_t Color(UShort_t d, Char_t r ) const
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-RunCopyMergeEff(UShort_t sys, UShort_t cms, Short_t field)
+RunCopyMergeEff(const char* sys, UShort_t cms, 
+		Short_t field, const char* path=0)
 {
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
   gSystem->Load("libPWG2forward.so");
@@ -21,7 +31,13 @@ RunCopyMergeEff(UShort_t sys, UShort_t cms, Short_t field)
   AliFMDAnaParameters* p = AliFMDAnaParameters::Instance();
   p->SetEnergy(Float_t(cms));
   p->SetMagField(Float_t(field));
-  p->SetCollisionSystem(sys == 1 ? "pp" : "PbPb");
+  p->SetCollisionSystem(sys);
+  if (path) {
+    p->SetBackgroundPath(path);
+    p->SetEnergyPath(path);
+    p->SetEventSelectionPath(path);
+    p->SetSharingEfficiencyPath(path);
+  }
   p->Init(true, AliFMDAnaParameters::kBackgroundCorrection|
 	  AliFMDAnaParameters::kSharingEfficiency);
   
@@ -70,9 +86,10 @@ RunCopyMergeEff(UShort_t sys, UShort_t cms, Short_t field)
       }
     }
   }
+  UShort_t isys = AliForwardUtil::ParseCollisionSystem(sys);
   AliForwardCorrectionManager& mgr = AliForwardCorrectionManager::Instance();
   TString fname(mgr.GetFileName(AliForwardCorrectionManager::kMergingEfficiency,
-				sys, cms, field, false));
+				isys, cms, field, false));
   TFile* output = TFile::Open(fname.Data(), "RECREATE");
   if (!output) { 
     Warning("Run", "Failed to open output file %s", fname.Data());

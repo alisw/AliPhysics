@@ -46,16 +46,32 @@ void MakeAOD(const char* esddir,
 
   // --- ESD input handler -------------------------------------------
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  esdHandler->SetInactiveBranches("AliESDACORDE "
-				  "AliRawDataErrorLogs "
-				  "CaloClusters "
-				  "Cascades "
-				  "EMCALCells "
+  esdHandler->SetInactiveBranches(// "AliESDRun " 
+				  // "AliESDHeader "
+				  // "AliESDZDC "
+				  // "AliESDFMD "
+				  // "AliESDVZERO " 
+				  "AliESDTZERO " 
+				  "TPCVertex " 
+				  // "SPDVertex "
+				  // "PrimaryVertex "
+				  // "AliMultiplicity "
+				  "PHOSTrigger "
 				  "EMCALTrigger "
-				  "Kinks "
-				  "Cascades "
-				  "MuonTracks "
+				  "SPDPileupVertices " 
+				  "TrkPileupVertices " 
+				  "Tracks "
+				  "MuonTracks " 
+				  "PmdTracks "
 				  "TrdTracks "
+				  "V0s " 
+				  "Cascades " 
+				  "Kinks " 
+				  "CaloClusters "
+				  "EMCALLCells "
+				  "PHOSCells "
+				  "AliRawDataErrorLogs "
+				  "ALIESDCACORDE " 
 				  "HLTGlobalTrigger");
   mgr->SetInputEventHandler(esdHandler);      
        
@@ -76,11 +92,13 @@ void MakeAOD(const char* esddir,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
 
-#if 0
+#if 1
   // Centrality 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
   // gDebug = 10;
   Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","+");
+  // gDebug = 10;
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","+g");
   // gDebug = 0;
   AddTaskCopyHeader();
 #endif

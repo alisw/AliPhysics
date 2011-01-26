@@ -178,9 +178,9 @@ public:
    */
   void ScanDirectory(TSystemDirectory* dir, TChain* chain, bool recursive)
   {
-    gROOT->IndentLevel();
-    printf("Scanning %s ...\n", dir->GetName());
-    gROOT->IncreaseDirLevel();
+    // gROOT->IndentLevel();
+    // printf("Scanning %s ...\n", dir->GetName());
+    // gROOT->IncreaseDirLevel();
 
     // Get list of files, and go back to old working directory
     TString oldDir(gSystem->WorkingDirectory());
@@ -214,12 +214,12 @@ public:
       TString aod(Form("%s/%s", file->GetTitle(), name.Data()));
 
       // Print and add 
-      gROOT->IndentLevel();
-      printf("adding %s\n", aod.Data());
+      // gROOT->IndentLevel();
+      // printf("adding %s\n", aod.Data());
       chain->Add(aod);
 
     }
-    gROOT->DecreaseDirLevel();
+    // gROOT->DecreaseDirLevel();
   }
   
   //__________________________________________________________________
@@ -276,10 +276,12 @@ public:
     fTree->SetBranchAddress("Forward", &fAOD);
 
     // Set the branch pointer 
-    fTree->SetBranchAddress("ForwardMC", &fMCAOD);
+    if (fTree->GetBranch("ForwardMC"))
+      fTree->SetBranchAddress("ForwardMC", &fMCAOD);
 
     // Set the branch pointer 
-    fTree->SetBranchAddress("primary", &fPrimary);
+    if (fTree->GetBranch("primary"))
+      fTree->SetBranchAddress("primary", &fPrimary);
 
     fOut = TFile::Open(outname, "RECREATE");
     if (!fOut) { 
@@ -1023,27 +1025,26 @@ public:
 	Int_t bin = (i-1)*rebin + j;
 	if(h->GetBinContent(bin) <= 0) continue;
 	Double_t c =  h->GetBinContent(bin);
-	
-	//Double_t w = 1 / TMath::Power(c,2);
-	Double_t w = 1 / TMath::Power(h->GetBinError(bin),2);
+	Double_t e =  h->GetBinError(bin);
+	Double_t w =  1 / (e*e); // 1/c/c
 	content    += c;
 	sumw       += w;
 	wsum       += w * c;
 	nbins++;
       }
       
-      if(content > 0 ) {
+      if(content > 0 && nbins > 0) {
 	tmp->SetBinContent(i, wsum / sumw);
-	tmp->SetBinError(i,1/TMath::Sqrt(sumw));
+	tmp->SetBinError(i,1./TMath::Sqrt(sumw));
       }
     }
 
     // Finally, rebin the histogram, and set new content
     h->Rebin(rebin);
     h->Reset();
-    for(Int_t i =1;i<=nBinsNew; i++) {
+    for(Int_t i = 1; i<= nBinsNew; i++) {
       h->SetBinContent(i,tmp->GetBinContent(i));
-      h->SetBinError(i,tmp->GetBinError(i));
+      h->SetBinError(i,  tmp->GetBinError(i));
     }
     
     delete tmp;

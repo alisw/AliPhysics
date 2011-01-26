@@ -53,8 +53,11 @@ set ( SRCS
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
 set ( EINCLUDE  ANALYSIS )
+
+set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h )
 
 set ( DHDR  PWG2forward2LinkDef.h)
 
