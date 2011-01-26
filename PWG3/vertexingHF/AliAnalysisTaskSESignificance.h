@@ -24,6 +24,8 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
 {
  public:
 
+  enum FeedDownEnum {kBoth,kCharmOnly,kBeautyOnly};
+
   AliAnalysisTaskSESignificance();
   AliAnalysisTaskSESignificance(const char *name, TList *listMDV,AliRDHFCuts *RDCuts, Int_t decaychannel,Int_t selectionlevel=AliRDHFCuts::kAll);
  
@@ -31,6 +33,9 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
 
   Bool_t CheckConsistency();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+  void SetBFeedDown(FeedDownEnum flagB);//see enum
+  void SetDFromCharmOnly(){SetBFeedDown(kCharmOnly);}
+  void SetDFromBeautyOnly(){SetBFeedDown(kBeautyOnly);}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetNBins(Int_t nbins){fNBins=nbins;}
@@ -40,6 +45,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
   Int_t GetNBins()const {return fNBins;}
   Int_t GetFillWithPartAntiPartBoth()const {return fPartOrAndAntiPart;}
+  Int_t GetBFeedDown()const {return fBFeedDown;}
 
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -84,6 +90,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   AliRDHFCuts *fRDCuts;//prong cut values
   Int_t fNPtBins; //number of pt bins
   Bool_t fReadMC;    //flag for access to MC
+  FeedDownEnum fBFeedDown; //flag to search for D from B decays
   Int_t fDecChannel; //decay channel identifier
   Int_t fSelectionlevel;//selection level: kALL,kTracks,kCandidate
   Int_t fNBins;  //number of bins in the mass histograms

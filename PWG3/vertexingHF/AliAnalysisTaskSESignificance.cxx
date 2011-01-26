@@ -71,6 +71,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   fRDCuts(0),
   fNPtBins(0),
   fReadMC(kFALSE),
+  fBFeedDown(kBoth),
   fDecChannel(0),
   fSelectionlevel(0),
   fNBins(100),
@@ -90,6 +91,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
   fRDCuts(rdCuts),
   fNPtBins(0),
   fReadMC(kFALSE),
+  fBFeedDown(kBoth),
   fDecChannel(decaychannel),
   fSelectionlevel(selectionlevel),
   fNBins(100),
@@ -192,6 +194,14 @@ Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
   return result;
 }
 //_________________________________________________________________
+void AliAnalysisTaskSESignificance::SetBFeedDown(FeedDownEnum flagB){
+  if(fReadMC)fBFeedDown=flagB;
+  else {
+    if(flagB||flagB>2){AliInfo("B feed down not allowed without MC info\n");}
+    else fBFeedDown=flagB;
+  }
+}
+//_________________________________________________________________
 void  AliAnalysisTaskSESignificance::SetMassLimits(Float_t range, Int_t pdg){
   Float_t mass=0;
   Int_t abspdg=TMath::Abs(pdg);
@@ -220,7 +230,10 @@ void AliAnalysisTaskSESignificance::LocalInit()
   TList *mdvList =  new TList();
   mdvList->SetOwner();
   mdvList = fCutList;
-  
+  AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi();
+  analysis=(AliRDHFCutsDplustoKpipi*)fRDCuts;
+  mdvList->Add(analysis);
+
   PostData(2,mdvList);
 
   return;
@@ -475,7 +488,27 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
+
+    if(fReadMC&&fBFeedDown&&isSelected){
+      Int_t labD = d->MatchToMC(absPdgMom,arrayMC,nprongs,pdgdaughters);
+      if(labD>=0){
+	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+	Int_t label=partD->GetMother();
+	AliAODMCParticle *mot = (AliAODMCParticle*)arrayMC->At(label);
+	while(label>=0){//get first mother
+	  mot = (AliAODMCParticle*)arrayMC->At(label);
+	  label=mot->GetMother();
+	}
+	Int_t pdgMotCode = mot->GetPdgCode();
+	if(TMath::Abs(pdgMotCode)<=4){
+	  if(fBFeedDown==kBeautyOnly)isSelected=kFALSE; //from primary charm
+	}else{
+	  if(fBFeedDown==kCharmOnly)isSelected=kFALSE; //from beauty
+	}
+      }
+    }
     
+
     if(isSelected&&isFidAcc) {
       fHistNEvents->Fill(2); // count selected with loosest cuts
       if(fDebug>1) printf("+++++++Is Selected\n");
