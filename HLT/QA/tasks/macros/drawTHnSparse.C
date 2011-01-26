@@ -40,15 +40,21 @@
 #include "TH2D.h"
 #include "TLegend.h"
 #include "TStyle.h"
+#include "TPad.h"
 
 #include <iostream>
-#include <sstream>
+//#include <sstream>
+#include <cstdlib>
 
-using std::stringstream;
+//using std::stringstream;
 using std::endl;
 #endif
 
-void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+
+//---------- forward declerations ---------------//
+
+TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+//void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
                     THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
             	    double minEta,   double maxEta,
 	    	    int minTrackMult,int maxTrackMult,
@@ -95,10 +101,10 @@ void plotTrackQuantities( TCanvas* can, THnSparse* htrackHLT, THnSparse* htrackO
 	                  int minTrackMult, int maxTrackMult,
 			  int VS
                         );
+			
+vector<TString> outputNames;
 
 //------------------------------------------------------------------//		
-//--------------- end of function declarations ---------------------//
-//------------------------------------------------------------------//
 			
 void drawTHnSparse(TString inputFile){
  
@@ -160,15 +166,57 @@ void drawTHnSparse(TString inputFile){
   can0->SaveAs(folder+"/event_properties.root");
   can0->SaveAs(folder+"/event_properties.png");
     
-  cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000,   0, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);    
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0.4, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);
-  //cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0.9, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2);
+  TString s = "";                                                       // eta   mult      pt     DCAr    DCAz    TPCclus ITSclus  vertexStatus
+  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2); outputNames.push_back(s); 
+  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 2, 6, 2); outputNames.push_back(s); 
+  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 4, 6, 2); outputNames.push_back(s); 
+ 
+  TCanvas *ov = new TCanvas("ov","",1100,900);
+  ov->Divide(4,3);
+
+  TCanvas *ca[outputNames.size()]; 
+  TFile   *ff[outputNames.size()]; 
+  TPad    *pad[12]; 
+  TH1D    *g[outputNames.size()];
   
+  for(int j=1; j<12; j++){ // not 13, last pad is empty (TODO)        
+    for(UInt_t i=0; i<outputNames.size(); i++){  
+           
+        ff[i] = TFile::Open(outputNames[i].Data());   
+        if(!ff[i] || ff[i]->IsZombie()){
+           printf("Non-existent, corrupted or zombie file %s\n", outputNames[i].Data());
+           return;
+        } 
+        ca[i]  = (TCanvas*)ff[i]->GetObjectUnchecked("can1");		    
+	if(!ca[i]){
+	   printf("Empty canvas in file %s.\n", outputNames[i].Data());
+	   continue;
+	}	
+        pad[j] = (TPad*)ca[i]->GetListOfPrimitives()->FindObject(Form("can1_%d",j));         	
+        if(!pad[j]){
+           printf("Empty pad in canvas %s.\n", ca[i]->GetName());
+           continue;	     
+        }
+        g[i] =(TH1D*)pad[j]->FindObject(Form("fTrackHLT_proj_%d",j-1));
+	if(!g[i]){
+	   printf("Empty histogram for i=%d, file %s.\n", i, outputNames[i].Data());
+	   continue;
+	}
+        
+        ov->cd(j);	
+        if(i==0) g[i]->Draw();
+        else { 
+	  g[i]->SetLineColor(i+1); 
+	  defineYaxisMax(g[0], g[i]);
+	  g[i]->Draw("sames");
+	}					 
+    }
+  }  
   file->Close();    
 }
 
-//TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
-void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
+//void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
                     THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
             	    double minEta,   double maxEta,
 	    	    int minTrackMult,int maxTrackMult,
@@ -197,7 +245,7 @@ void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
   can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".root");
   can3->SaveAs(folder+"/OFF_2D_track_correlations_"+cuts+".png");
   
-  return; //folder+"/track_properties_"+cuts+".root";
+  return folder+"/track_properties_"+cuts+".root";
 }
 
 void printStats(TH1D *hlt, TH1D *off){  
@@ -481,13 +529,15 @@ TString cutsToString( double minEta,	double maxEta,
 }
 
 TString itoa(int i){
-  stringstream si;
-  si << i;
-  return si.str();
+  //stringstream si;
+  //si << i;
+  //return si.str();
+  TString x; x += i; return x;
 }
 
 TString itoa(double i){
-  stringstream si;
-  si << i;
-  return si.str();
+  //stringstream si;
+  //si << i;
+  //return si.str();
+  TString x; x += i; return x;
 }

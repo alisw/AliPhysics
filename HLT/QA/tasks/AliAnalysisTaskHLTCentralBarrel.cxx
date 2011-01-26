@@ -103,9 +103,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   
   static const int sizeTrack = 13;
   
-  Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  400,  400,    3,  400,  400, 6,  2000, 2 };
-  Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1, -100, -100, -1.5, -100, -100, 0,     0, 0 };
-  Double_t maxTrack [sizeTrack] = { 150, 200,   4,   3,   7,  100,  100,  1.5,  100,  100, 6, 20000, 2 };
+  Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  400,  400,    3,  400,  400, 10,  2000, 2 };
+  Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1, -100, -100, -1.5, -100, -100,  0,     0, 0 };
+  Double_t maxTrack [sizeTrack] = { 150, 200,   4,   3,   7,  100,  100,  1.5,  100,  100, 10, 20000, 2 };
    
   fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
   fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
@@ -256,7 +256,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	// plotting the DCA calculated by Sergey 
 	esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
       }
-      	
+      
+      Int_t dummycl[10];
+
       Double_t trackHLT[] = {
         		       TMath::Abs(esdTrackHLT->Pt())
         		      ,esdTrackHLT->GetTPCNcls()    
@@ -268,7 +270,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         		      ,esdTrackHLT->Charge()	    
         		      ,DCAr			    
         		      ,DCAz			    
-			      ,esdTrackHLT->GetNcls(0)
+			      //,esdTrackHLT->GetNcls(0)
+			      ,esdTrackHLT->GetITSclusters(dummycl)
 			      ,nr_tracksHLT
 			      ,vertHLT->GetStatus() 
         		    };
