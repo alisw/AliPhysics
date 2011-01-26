@@ -134,26 +134,26 @@ void AliAnalysisTaskHIMultCorr::UserCreateOutputObjects() {
   fOutList->Add(fCorrObjCent2->GetHistList());
 
   if (fIsMC) {
-    if (fCorrObj)      fCorrObj->SetIsMC();
-    if (fCorrObjCent0) fCorrObjCent0->SetIsMC();
-    if (fCorrObjCent1) fCorrObjCent1->SetIsMC();
-    if (fCorrObjCent2) fCorrObjCent2->SetIsMC();
+    fCorrObj->SetIsMC();
+    fCorrObjCent0->SetIsMC();
+    fCorrObjCent1->SetIsMC();
+    fCorrObjCent2->SetIsMC();
   }
 
   if (fESDTrackCuts) {
-    if (fCorrObj)      fCorrObj->SetESDTrackCuts(fESDTrackCuts);
-    if (fCorrObjCent0) fCorrObjCent0->SetESDTrackCuts(fESDTrackCuts);
-    if (fCorrObjCent1) fCorrObjCent1->SetESDTrackCuts(fESDTrackCuts);
-    if (fCorrObjCent2) fCorrObjCent2->SetESDTrackCuts(fESDTrackCuts);
+    fCorrObj->SetESDTrackCuts(fESDTrackCuts);
+    fCorrObjCent0->SetESDTrackCuts(fESDTrackCuts);
+    fCorrObjCent1->SetESDTrackCuts(fESDTrackCuts);
+    fCorrObjCent2->SetESDTrackCuts(fESDTrackCuts);
   }
   else
     AliError("No ESD trackCuts!!");
 
   if (fESDTrackCuts2) {
-    if (fCorrObj)      fCorrObj->SetESDTrackCuts2(fESDTrackCuts2);
-    if (fCorrObjCent0) fCorrObjCent0->SetESDTrackCuts2(fESDTrackCuts2);
-    if (fCorrObjCent1) fCorrObjCent1->SetESDTrackCuts2(fESDTrackCuts2);
-    if (fCorrObjCent2) fCorrObjCent2->SetESDTrackCuts2(fESDTrackCuts2);
+    fCorrObj->SetESDTrackCuts2(fESDTrackCuts2);
+    fCorrObjCent0->SetESDTrackCuts2(fESDTrackCuts2);
+    fCorrObjCent1->SetESDTrackCuts2(fESDTrackCuts2);
+    fCorrObjCent2->SetESDTrackCuts2(fESDTrackCuts2);
   }
 
   // ------------------------------------------------------------------
