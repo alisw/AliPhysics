@@ -37,9 +37,9 @@ CXXFLAGS     += $(ALICEINC) -g
 
 PACKAGE = CORRFW
 
-SRCS     := $(wildcard *.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard *.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 DHDR_CORRFW := $(DHDR)
 HDRS_CORRFW := $(HDRS)

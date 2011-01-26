@@ -90,9 +90,9 @@ endif
 
 CXXFLAGS += $(ALICEINC) -g
 
-SRCS     := $(wildcard $(subst PWG4,,$(PACKAGE))/*.cxx)
-HDRS     := $(SRCS:.cxx=.h)
-DHDR     := $(PACKAGE)LinkDef.h
+SRCS     = $(wildcard $(subst PWG4,,$(PACKAGE))/*.cxx)
+HDRS     = $(SRCS:.cxx=.h)
+DHDR     = $(PACKAGE)LinkDef.h
 
 DHDR_PWG4 := $(DHDR)
 HDRS_PWG4 := $(HDRS)
