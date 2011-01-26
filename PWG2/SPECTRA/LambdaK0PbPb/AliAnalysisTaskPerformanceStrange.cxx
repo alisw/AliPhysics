@@ -1418,7 +1418,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     return;
   }
 
-
+  // FIXME: levent not used
   AliVEvent* lEvent = InputEvent();
   
   if (!lEvent) {
@@ -1445,7 +1445,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
  // Done by the AliPhysicsSelection Task ! Only the selected events are passed to this task
 
-  fHistNumberEvents->Fill(1.5);
+  fHistNumberEvents->Fill(1.5); // FIXME: use enum here
 
 
   //*************************
@@ -1462,7 +1462,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //*************************************
   // Cut used:
   //*************************************
-      
+  // FIXME: Create a cut object, to be configured in the steering macro and to be streamed in the output to reference those cuts
   // Cut Rapidity:
   Double_t lCutRap  = 0.75;
 
@@ -1491,7 +1491,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //*******************
   // PID parameters:
   //*******************
-      
+  // FIXME: OADB or momber TFormula?
   Double_t fAlephParameters[5] = {0,0,0,0,0,};
 
   fAlephParameters[0] = 0.0283086;
@@ -1504,6 +1504,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   //*******************
   // Access MC:
   //*******************
+  // FIXME:: move this two branches directly in the loops below
   if (fAnalysisMC) {
     if(fAnalysisType == "ESD") {
       AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -1547,6 +1548,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     }
 
     // PID parameters for MC simulations:
+    // FIXME: set above, with the others
     fAlephParameters[0] = 2.15898e+00/50.;
     fAlephParameters[1] = 1.75295e+01;
     fAlephParameters[2] = 3.40030e-09;
@@ -1604,10 +1606,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     
     lmcPrimVtxR = TMath::Sqrt(mcPrimaryVtx.At(0)*mcPrimaryVtx.At(0)+mcPrimaryVtx.At(1)*mcPrimaryVtx.At(1));
   
-
+    // FIXME: move these loops to other functions, for better readibility?
     if(fAnalysisType == "ESD") {
       
-      lNbMCPrimary = stack->GetNprimary();
+      lNbMCPrimary = stack->GetNprimary(); // FIXME: This does not correspond to our definition of primaries, but maybe it is ok for strange particles
       lNbMCPart    = stack->GetNtrack();
       
       fHistMCMultiplicityPrimary->Fill(lNbMCPrimary);
@@ -1642,7 +1644,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	id0  = p0->GetDaughter(0);
 	id1  = p0->GetDaughter(1);
 
-	// Decay Radius and Production Radius
+	// Decay Radius
 	if ( id0 <= lNbMCPart && id0 > 0 && id1 <= lNbMCPart && id1 > 0) {
 	  TParticle *pDaughter0 = stack->Particle(id0);
 	  TParticle *pDaughter1 = stack->Particle(id1);
@@ -1658,7 +1660,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  //Printf("ERROR: particle with label %d and/or %d not found in stack (mc loop)", id0,id1);
 	  mcDecayPosR = -1.0;
 	}
-	
+	// FIXME using array of histos and conversion PDGCode -> enum would make this much easier to read
+	// We could also have a function FillMcHistos (pos, radius, rap...) which we call from both the AOD and ESD loops
 	if (lPdgcodeCurrentPart==310)   {
 	  fHistMCtracksProdRadiusK0s->Fill(mcPosX,mcPosY);
 	  fHistMCtracksDecayRadiusK0s->Fill(mcDecayPosR);
@@ -1675,7 +1678,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  if (TMath::Abs(lRapCurrentPart) < lCutRap) fHistMCPtAllAntiLambda->Fill(lPtCurrentPart);
 	}
 	
-	  // FIXME: not sure if I understand this: is it correct?
+	  // FIXME: not sure if I understand this: is it correct? (definition of primaries)
 	if ( ( ( TMath::Abs(lPdgCurrentMother) == 3212)  ||
 	       ( TMath::Abs(lPdgCurrentMother) == 3224)  ||
 	       ( TMath::Abs(lPdgCurrentMother) == 3214)  ||
@@ -1733,8 +1736,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	
 	//}	
 	//} // end loop over reconstructed V0s inside MC loop
-;
- 
+	
+	// FIXME: same comemtn for array of histos
         // Rap distribution
         if (lPdgcodeCurrentPart==310) {
 	  fHistMCRapK0s->Fill(lRapCurrentPart);
@@ -1804,6 +1807,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       
     } // end ESD condition
 
+    // FIXME: I skipped the AOD loop
     else if(fAnalysisType == "AOD") {
       lNbMCPart = mcArray->GetEntriesFast();
       lNbMCPrimary = 0;
@@ -1975,7 +1979,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   } // End Loop over MC condition
 
   
-
 
 
   //************************************
@@ -2236,14 +2239,17 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       AliESDtrack *myTrackPosTest = ((AliESDEvent*)fESD)->GetTrack(lIndexTrackPos);
       AliESDtrack *myTrackNegTest = ((AliESDEvent*)fESD)->GetTrack(lIndexTrackNeg);
       if (!myTrackPosTest || !myTrackNegTest) {
+	// FIXME: shouldn't this be fatal?
 	Printf("strange analysis::UserExec:: Error:Could not retreive one of the daughter track\n");
 	continue;
       }
       // Remove like-sign
       if ( myTrackPosTest->GetSign() == myTrackNegTest->GetSign()){
+	// FIXME: how can this happen?
 	continue;
       } 
      
+      //    FIXME: are the GetParamN/GetParamP reliable? If so, why do you need to check the sign below?
       // VO's main characteristics to check the reconstruction cuts
       lOnFlyStatus       = v0->GetOnFlyStatus();
       lChi2V0            = v0->GetChi2V0();
@@ -2350,8 +2356,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       else {
 	nSigmaPosPion = 0; nSigmaNegPion =0; nSigmaPosProton = 0; nSigmaNegProton= 0;
       }
-      
-      
       
       // Monte-Carlo particle associated to reconstructed particles: 
       if (fAnalysisMC) {
@@ -2638,6 +2642,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	if (posPiKF) delete posPiKF; posPiKF=NULL;
 	if (posPKF)  delete posPKF;  posPKF=NULL;
 	if (negAPKF) delete negAPKF; negAPKF=NULL;  
+	// FIXME: should you really continue here and below?
 	continue;
     }
     if (lPtLambda==0) {
@@ -2842,7 +2847,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       fHistArmenterosPodolanskiMI->Fill(lAlphaV0,lPtArmV0);
     }*/
     
-    
+    // FIXME: associated histos, what are they used for?
+
     // K0s associated histograms in |rap| < lCutRap:
 
 ////////////////////////////
