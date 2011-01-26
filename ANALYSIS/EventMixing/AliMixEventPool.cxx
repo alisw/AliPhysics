@@ -126,6 +126,7 @@ void AliMixEventPool::CreateEntryListsRecursivly(Int_t index)
    if (index >= 0) {
       AliDebug(AliLog::kDebug, Form("index = %d", index));
       cut = dynamic_cast<AliMixEventCutObj *>(fListOfEventCuts.At(index));
+      if (!cut) return;
       cut->Reset();
       while (cut->HasMore()) {
          cut->AddStep();
@@ -258,6 +259,8 @@ void AliMixEventPool::SetCutValuesFromBinIndex(Int_t index)
 
    if (index < 0 || index >= timesNum) {
       AliError(Form("index=%d is out of range !!!", index));
+      delete [] lenght;
+      delete [] indexes;
       return;
    }
 
