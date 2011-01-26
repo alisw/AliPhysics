@@ -119,6 +119,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   AliAnalysisTaskSESignificance *sigTask = new AliAnalysisTaskSESignificance("SignificanceAnalysis",listMDV,analysiscuts,decCh,AliRDHFCuts::kAll);//AliRDHFCuts::kCandidate
   sigTask->SetReadMC(readMC);
   //sigTask->SetDoLikeSign(kTRUE);
+  //sigTask->SetBFeedDown(AliAnalysisTaskSESignificance::kBoth);
   sigTask->SetDebugLevel(3);
   sigTask->SetFillWithPartAntiPartBoth(flagOPartAntiPart);
   mgr->AddTask(sigTask);
