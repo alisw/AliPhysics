@@ -131,6 +131,11 @@ AliTRDcluster::AliTRDcluster(const AliTRDtrackletWord *const tracklet, Int_t det
   //
   // Constructor from online tracklet 
   //
+
+  for (Int_t i = 0; i < 7; i++) {
+    fSignals[i] = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
