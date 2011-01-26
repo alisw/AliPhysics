@@ -605,10 +605,10 @@ void AliAnalysisTaskITSsaTracks::Terminate(Option_t */*option*/)
     return;
   }
   fHistNEvents= dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
-  fHistdedxvsPtITSpureSA3cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPtITSpureSA3cls%s"));
-  fHistdedxvsPITSpureSA3cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPITSpureSA3cls%s"));
-  fHistdedxvsPtITSpureSA4cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPtITSpureSA4cls%s"));
-  fHistdedxvsPITSpureSA4cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPITSpureSA4cls%s"));
+  fHistdedxvsPtITSpureSA3cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPtITSpureSA3cls"));
+  fHistdedxvsPITSpureSA3cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPITSpureSA3cls"));
+  fHistdedxvsPtITSpureSA4cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPtITSpureSA4cls"));
+  fHistdedxvsPITSpureSA4cls= dynamic_cast<TH2F*>(fOutput->FindObject("hdedxvsPITSpureSA4cls"));
     
   TString spname[3]={"Pion","Kaon","Proton"};
 
