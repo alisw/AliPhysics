@@ -113,6 +113,11 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          AliESDv0 vertex(nt,nidx,pt,pidx);
          if (vertex.GetChi2V0() > fChi2max) continue;
 	 
+         Double_t x=vertex.Xv(), y=vertex.Yv();
+         Double_t r2=x*x + y*y;
+         if (r2 < fRmin*fRmin) continue;
+         if (r2 > fRmax*fRmax) continue;
+
 	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
 	 if (cpa < fCPAmin) continue;
 	 vertex.SetDcaV0Daughters(dca);
