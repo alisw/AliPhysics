@@ -318,7 +318,7 @@ Bool_t AliMixInputEventHandler::MixBuffer()
    Int_t counter = 0;
    AliInputEventHandler *eh = 0;
    TObjArrayIter next(&fInputHandlers);
-   while ((eh = (AliInputEventHandler *) next())) {
+   while ((eh = dynamic_cast<AliInputEventHandler *> (next()))) {
       if (!eh) continue;
       if (fEventPool && fEventPool->GetListOfEventCuts()->GetEntries() > 0) {
          entryMix = -1;
