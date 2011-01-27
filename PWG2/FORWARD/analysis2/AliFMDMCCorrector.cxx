@@ -25,8 +25,6 @@
 #include <TH2D.h>
 #include <TROOT.h>
 #include <TProfile2D.h>
-#include <iostream>
-#include <iomanip>
 
 ClassImp(AliFMDMCCorrector)
 #if 0
@@ -89,24 +87,28 @@ AliFMDMCCorrector::CorrectMC(AliForwardUtil::Histos& hists,
     for (UShort_t q=0; q<nr; q++) { 
       Char_t      r  = (q == 0 ? 'I' : 'O');
       TH2D*       h  = hists.Get(d,r);
-      TH2D*       bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
-      TH2D*       ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
-      if (!bg) { 
-	AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
-			d, r, uvb));
-	continue;
-      }
-      if (!ef) { 
-	AliWarning(Form("No event vertex bias correction in vertex bin %d",
-			uvb));
-	continue;
-      }
 
-      // Divide by primary/total ratio
-      h->Divide(bg);
-      
-      // Divide by the event selection efficiency 
-      h->Divide(ef);
+
+      if (fUseSecondaryMap) {
+        TH2D*       bg = fcm.GetSecondaryMap()->GetCorrection(d,r,uvb);
+        if (!bg) {
+          AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
+              d, r, uvb));
+          continue;
+        }
+        // Divide by primary/total ratio
+        h->Divide(bg);
+      }
+      if (fUseVertexBias) {
+        TH2D*       ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
+        if (!ef) {
+          AliWarning(Form("No event vertex bias correction in vertex bin %d",
+			uvb));
+          continue;
+        }
+        // Divide by the event selection efficiency
+        h->Divide(ef);
+      }
     }
   }
   
@@ -123,6 +125,8 @@ AliFMDMCCorrector::Init(const TAxis& eAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
+  AliFMDCorrector::Init(eAxis);
+
   fFMD1i = Make(1,'I',eAxis);
   fFMD2i = Make(2,'I',eAxis);
   fFMD2o = Make(2,'O',eAxis);

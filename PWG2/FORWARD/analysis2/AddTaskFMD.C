@@ -69,6 +69,12 @@ AddTaskFMD(Bool_t mc)
   task->GetDensityCalculator().SetMaxParticles(2);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
   task->GetDensityCalculator().SetMultCut(0.3);
+  // Whether to use the secondary map correction
+  task->GetCorrections().SetUseSecondaryMap(true);
+  // Whether to use the vertex bias correction
+  task->GetCorrections().SetUseVertexBias(true);
+  // Whether to use the vertex bias correction
+  task->GetCorrections().SetUseAcceptance(true);
   // Whether to use the merging efficiency correction 
   task->GetCorrections().SetUseMergingEfficiency(false);
   // Set the number of extra bins (beyond the secondary map border) 
