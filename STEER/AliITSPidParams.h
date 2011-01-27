@@ -22,7 +22,7 @@ class AliITSPidParams : public TNamed {
   AliITSPidParams(Char_t * name);
   ~AliITSPidParams();
 
-  void InitDefaults();
+  void InitMC();
   Double_t GetLandauGausNormPdgCode(Double_t dedx, Int_t pdgCode, Double_t mom, Int_t lay) const;
   Double_t GetLandauGausNorm(Double_t dedx, Int_t partType, Double_t mom, Int_t lay) const;
 

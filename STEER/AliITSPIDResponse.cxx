@@ -47,7 +47,11 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBsa[2]=2.60065E-3;
     fBBsa[3]=3.59533E-4;
     fBBsa[4]=7.51168E-5;  
-    for(Int_t i=0; i<5;i++) fResolSA[i]=0.15;
+    fResolSA[0]=1.;   // 0 cluster tracks should not be used
+    fResolSA[1]=0.25;  // rough values for tracks with 1 or 2
+    fResolSA[2]=0.2;   // clusters (not to be used)
+    fResolSA[3]=0.116; // value from pp 2010 run (L. Milano, 18-Jan-11)
+    fResolSA[4]=0.104; // value from pp 2010 run
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
   }else{
     fBBtpcits[0]=1.04;
@@ -60,7 +64,11 @@ AliITSPIDResponse::AliITSPIDResponse(Bool_t isMC):
     fBBsa[2]=1.161;
     fBBsa[3]=0.93;
     fBBsa[4]=-1.2973;
-    for(Int_t i=0; i<5;i++) fResolSA[i]=0.15;
+    fResolSA[0]=1.;   // 0 cluster tracks should not be used
+    fResolSA[1]=0.25;  // rough values for tracks with 1 or 2
+    fResolSA[2]=0.2;   // clusters (not to be used)
+    fResolSA[3]=0.110; // value from pp 2010 simulations (L. Milano, 18-Jan-11)
+    fResolSA[4]=0.096; // value from pp 2010 simulations
     for(Int_t i=0; i<5;i++) fResolTPCITS[i]=0.13;
   }
 }
@@ -80,6 +88,7 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
 }
 
 
+//_________________________________________________________________________
 Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
   //
   // returns AliExternalTrackParam::BetheBloch normalized to 
@@ -91,6 +100,7 @@ Double_t AliITSPIDResponse::BetheAleph(Double_t p, Double_t mass) const {
   return bb;
 }
 
+//_________________________________________________________________________
 Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const {
   //
   // returns AliExternalTrackParam::BetheBloch normalized to 
@@ -119,6 +129,7 @@ Double_t AliITSPIDResponse::Bethe(Double_t p, Double_t mass, Bool_t isSA) const 
   return bb;
 }
 
+//_________________________________________________________________________
 Double_t AliITSPIDResponse::GetResolution(Double_t bethe, 
 					  Int_t nPtsForPid, 
 					  Bool_t isSA) const {
@@ -134,6 +145,7 @@ Double_t AliITSPIDResponse::GetResolution(Double_t bethe,
 
 
 
+//_________________________________________________________________________
 void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Double_t condprobfun[AliPID::kSPECIES]) const {
   //
   // Method to calculate PID probabilities for a single track
@@ -180,3 +192,18 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   return;
 }
 
+//_________________________________________________________________________
+Int_t AliITSPIDResponse::GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA) const{
+  // method to get particle identity with simple cuts on dE/dx vs. momentum
+
+  Double_t massp=AliPID::ParticleMass(AliPID::kProton);
+  Double_t massk=AliPID::ParticleMass(AliPID::kKaon);
+  Double_t bethep=Bethe(mom,massp,isSA);
+  Double_t bethek=Bethe(mom,massk,isSA);
+  if(signal>(0.5*(bethep+bethek))) return AliPID::kProton;
+  Double_t masspi=AliPID::ParticleMass(AliPID::kPion);
+  Double_t bethepi=Bethe(mom,masspi,isSA);
+  if(signal>(0.5*(bethepi+bethek))) return AliPID::kKaon;
+  return AliPID::kPion;
+    
+}

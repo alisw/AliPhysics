@@ -36,6 +36,7 @@ public:
    Float_t bethe = Bethe(mom,AliPID::ParticleMass(type),isSA);
    return (signal - bethe)/GetResolution(bethe,nPtsForPid,isSA);
  }
+ Int_t GetParticleIdFromdEdxVsP(Float_t mom, Float_t signal, Bool_t isSA=kFALSE) const;
 
 private:
 
