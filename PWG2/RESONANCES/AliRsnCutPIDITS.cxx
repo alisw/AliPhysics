@@ -203,5 +203,5 @@ void AliRsnCutPIDITS::Print(const Option_t *) const
 //
 
   AliInfo(Form("Cut name, type                  : %s %s", GetName(), ClassName()));
-  AliInfo(Form("ITS PID cut: limit, large, small: %.3ff %.3ff %.3ff", fMomentumLimit, fLargeCut, fSmallCut));
+  AliInfo(Form("ITS PID cut: limit, large, small: %.3f %.3f %.3f", fMomentumLimit, fLargeCut, fSmallCut));
 }

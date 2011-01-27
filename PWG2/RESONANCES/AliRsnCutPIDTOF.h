@@ -34,6 +34,7 @@ class AliRsnCutPIDTOF : public AliRsnCut
     
     void             SetMC(Bool_t yn = kTRUE) {fIsMC = yn;}
     virtual Bool_t   IsSelected(TObject *object);
+    virtual void     Print(const Option_t *option = "") const;
 
   protected:
   
