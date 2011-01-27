@@ -323,13 +323,13 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   }
   
   AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
+  Int_t countGood3[14];
+  Int_t countGood4[22];
+  Int_t countGoodMod[260];
   if (eC) {
       eC->PrintId();
       eC->PrintMetaData();
       TObjArray* calsdd=(TObjArray*)eC->GetObject();
-      Int_t countGood3[14];
-      Int_t countGood4[22];
-      Int_t countGoodMod[260];
       for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
       for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
       for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
