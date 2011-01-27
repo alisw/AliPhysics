@@ -1250,9 +1250,9 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
       AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
       if (fitMIP) {
-	corrTimeGain = fitMIP->Eval(time);
+	corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitMIP, time);/*fitMIP->Eval(time);*/
       } else {
-	if (fitFPcosmic) corrTimeGain = fitFPcosmic->Eval(time); // This value describes the ratio FP-to-MIP, hardwired for the moment
+	if (fitFPcosmic) corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitFPcosmic, time);/*fitFPcosmic->Eval(time);*/
       }
     }
   }
