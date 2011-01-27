@@ -24,9 +24,9 @@
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
 #include "AliFMDHistCollector.h"
+#include "AliESDEvent.h"
 #include <TROOT.h>
-#include <iostream>
-#include <iomanip>
+
 
 //====================================================================
 Bool_t 
@@ -88,7 +88,80 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
   }
   return true;
 }
+//____________________________________________________________________
+Bool_t
+AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, const TAxis*& pv)
+{
+  UInt_t what = AliForwardCorrectionManager::kAll;
+  if (!fEnableLowFlux)
+    what ^= AliForwardCorrectionManager::kDoubleHit;
+  if (!GetCorrections().IsUseSecondaryMap()) {
+    what ^= AliForwardCorrectionManager::kSecondaryMap;
+    // Need to make eta and vertex axis here since we don't read
+    // that from the secondary correction objects
+    pe = new TAxis(200, -4, 6);
+    pv = new TAxis(10, -10, 10);
+  }
+  if (!GetCorrections().IsUseVertexBias())
+    what ^= AliForwardCorrectionManager::kVertexBias;
+  if (!GetCorrections().IsUseAcceptance())
+    what ^= AliForwardCorrectionManager::kAcceptance;
+  if (!GetCorrections().IsUseMergingEfficiency())
+    what ^= AliForwardCorrectionManager::kMergingEfficiency;
 
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
+      GetEventInspector().GetEnergy(),
+      GetEventInspector().GetField(),
+      false,
+      what)) return false;
+  if (!CheckCorrections(what)) return false;
+
+  // Get the eta axis from the secondary maps - if read in
+  if (!pe) {
+    pe = fcm.GetEtaAxis();
+    if (!pe) AliFatal("No eta axis defined");
+  }
+  // Get the vertex axis from the secondary maps - if read in
+  if (!pv) {
+    pv = fcm.GetVertexAxis();
+    if (!pv) AliFatal("No vertex axis defined");
+  }
+
+  return true;
+}
+//____________________________________________________________________
+AliESDEvent*
+AliForwardMultiplicityBase::GetESDEvent()
+{
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!esd) {
+    AliWarning("No ESD event found for input event");
+    return 0;
+  }
+
+  // On the first event, initialize the parameters
+  if (fFirstEvent && esd->GetESDRun()) {
+    GetEventInspector().ReadRunDetails(esd);
+
+    AliInfo(Form("Initializing with parameters from the ESD:\n"
+                 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
+                 "         AliESDEvent::GetBeamType()     ->%s\n"
+                 "         AliESDEvent::GetCurrentL3()    ->%f\n"
+                 "         AliESDEvent::GetMagneticField()->%f\n"
+                 "         AliESDEvent::GetRunNumber()    ->%d\n",
+                 esd->GetBeamEnergy(),
+                 esd->GetBeamType(),
+                 esd->GetCurrentL3(),
+                 esd->GetMagneticField(),
+                 esd->GetRunNumber()));
+
+    fFirstEvent = false;
+
+    InitializeSubs();
+  }
+  return esd;
+}
 //____________________________________________________________________
 void
 AliForwardMultiplicityBase::MarkEventForStore() const

@@ -74,6 +74,7 @@ AliFMDMCDensityCalculator::Init(const TAxis& eAxis)
   // Parameters:
   //    etaAxis Eta axis to use 
   //
+  AliFMDDensityCalculator::Init(eAxis);
   fFMD1i  = Make(1,'I',eAxis);
   fFMD2i  = Make(2,'I',eAxis);
   fFMD2o  = Make(2,'O',eAxis);

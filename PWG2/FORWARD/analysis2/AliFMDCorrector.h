@@ -64,6 +64,12 @@ public:
    */
   AliFMDCorrector& operator=(const AliFMDCorrector&);
   /** 
+   * Initialize this object
+   *
+   * @param etaAxis Eta axis to use  -- not used
+   */
+  virtual void Init(const TAxis& etaAxis);
+  /**
    * Do the calculations 
    * 
    * @param hists    Cache of histograms 
@@ -92,18 +98,60 @@ public:
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
   /** 
+   * @{
+   * @name Enable/disable parts of the corrections
+   */
+  /** 
+   *  Whether to do correction for secondaries
+   *
+   * @param use If true, use the secondary correction
+   */
+  void SetUseSecondaryMap(Bool_t use=true) { fUseSecondaryMap = use; }
+  /**
+   * Check
+   *
+   * @return true if the correction for secondaries is done
+   */
+  Bool_t IsUseSecondaryMap() const { return fUseSecondaryMap; }
+  /**
+   *  Whether to do correction for vertex bias
+   *
+   * @param use If true, use the vertex bias correction
+   */
+  void SetUseVertexBias(Bool_t use=true) { fUseVertexBias = use; }
+  /**
+   * Check
+   *
+   * @return true if the correction for vertex bias is done
+   */
+  Bool_t IsUseVertexBias() const { return fUseVertexBias; }
+  /**
+   *  Whether to do correction for dead-channel acceptance
+   *
+   * @param use If true, use the dead-channel acceptance correction
+   */
+  void SetUseAcceptance(Bool_t use=true) { fUseAcceptance = use; }
+  /**
+   * Check
+   *
+   * @return true if the correction for dead-channel acceptance is done
+   */
+  Bool_t IsUseAcceptance() const { return fUseAcceptance; }
+  /**
    * Whether to use the merging efficiency correction
-   * 
+   *
    * @param use If true, use the merging efficiency correction
    */
   void SetUseMergingEfficiency(Bool_t use=true) { fUseMergingEfficiency = use; }
-  /** 
-   * Check 
-   * 
+  /**
+   * Check
+   *
    * @return true if the merging efficiency correction is used.
    */
   Bool_t IsUseMergingEfficiency() const { return fUseMergingEfficiency; }
-  /** 
+  /* @} */
+
+  /**
    * Print information
    * 
    * @param option Not used 
@@ -171,10 +219,13 @@ protected:
   RingHistos* GetRingHistos(UShort_t d, Char_t r) const;
 
   TList    fRingHistos;           // List of histogram containers
+  Bool_t   fUseSecondaryMap;      // Whether to do correction for secondaries
+  Bool_t   fUseVertexBias;        // Whether to do correction for vertex bias
+  Bool_t   fUseAcceptance;        // Whether to do correction for dead ch's.
   Bool_t   fUseMergingEfficiency; // Whether to use the merging efficiency
   Int_t    fDebug;                //  Debug level 
 
-  ClassDef(AliFMDCorrector,2); // Calculate Nch density 
+  ClassDef(AliFMDCorrector,2); // Correct the inclusive d2N/detadphi
 };
 
 #endif
