@@ -23,6 +23,10 @@ class AliRDHFCuts : public AliAnalysisCuts
 {
  public:
 
+  enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid};
+  enum ESelLevel {kAll,kTracks,kPID,kCandidate};
+  enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
   virtual ~AliRDHFCuts();
@@ -35,7 +39,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
 
   void SetMinCentrality(Float_t minCentrality=0.) {fMinCentrality=minCentrality;} 
-  void SetMaxCentrality(Float_t maxCentrality=100.) {fMinCentrality=maxCentrality;} 
+  void SetMaxCentrality(Float_t maxCentrality=100.) {fMaxCentrality=maxCentrality;} 
   void SetMinVtxType(Int_t type=3) {fMinVtxType=type;}  
   void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}  
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
@@ -78,7 +82,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   const Float_t *GetCuts() const {return fCutsRD;} 
   void    GetCuts(Float_t**& cutsRD) const;
   Float_t GetCutValue(Int_t iVar,Int_t iPtBin) const;
-  Float_t GetCentrality(AliAODEvent* aodEvent) const;
+  Float_t GetCentrality(AliAODEvent* aodEvent){return GetCentrality(aodEvent,(AliRDHFCuts::ECentrality)fUseCentrality);}
+  Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator) const;
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
@@ -110,10 +115,6 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
   void MakeTable()const;
-
-  enum{kAll,kTracks,kPID,kCandidate};
-  enum{kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
-  enum{kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid};
 
  protected:
 
@@ -159,4 +160,3 @@ class AliRDHFCuts : public AliAnalysisCuts
 };
 
 #endif
-
