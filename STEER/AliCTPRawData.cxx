@@ -93,11 +93,10 @@ void AliCTPRawData::RawData()
   AliDebug(1,Form("CTP trigger mask = 0x%llx",l2class));
   AliDebug(1,Form("CTP detector cluster = 0x%x",l2cluster));
 
-  char  fileName[15];
-  strcpy(fileName,AliDAQ::DdlFileName("TRG",0));
-  AliInfo(Form("Storing CTP raw data in %s",fileName));
+  TString fileName = AliDAQ::DdlFileName("TRG",0);
+  AliInfo(Form("Storing CTP raw data in %s",fileName.Data()));
   AliFstream* outfile;         // logical name of the output file 
-  outfile = new AliFstream(fileName);
+  outfile = new AliFstream(fileName.Data());
 
   // Writing CTP raw data here
   // The format is taken as in
