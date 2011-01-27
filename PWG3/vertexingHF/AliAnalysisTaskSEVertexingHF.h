@@ -56,7 +56,7 @@ class AliAnalysisTaskSEVertexingHF : public AliAnalysisTaskSE
   TClonesArray *fLikeSign3ProngTClArr; // Array of LikeSign3Prong 
   AliAODHFUtil *fHFUtilInfo;              // VZERO branch (to be removed)
 
-  ClassDef(AliAnalysisTaskSEVertexingHF,5); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEVertexingHF,6); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 
 #endif
