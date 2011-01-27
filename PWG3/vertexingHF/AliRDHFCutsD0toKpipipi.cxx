@@ -122,9 +122,9 @@ void AliRDHFCutsD0toKpipipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars
     } else {
       dd->InvMassD0bar(mD0bar);
       if(TMath::Abs(pdgdaughters[0])==321) {
-       vars[iter]=mD0[0];
+       vars[iter]=mD0bar[0];
       }else{
-       vars[iter]=mD0[1];
+       vars[iter]=mD0bar[1];
       }
    }
   }

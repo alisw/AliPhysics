@@ -187,7 +187,7 @@ void AliAnalysisTaskSEMonitNorm::UserExec(Option_t *)
   Int_t v0Con = trigAnalys->V0Trigger(esdE, AliTriggerAnalysis::kCSide, kTRUE, kFALSE);
   Int_t v0Aon = trigAnalys->V0Trigger(esdE, AliTriggerAnalysis::kASide, kTRUE, kFALSE);
 
-  Bool_t v0andON;
+  Bool_t v0andON=kFALSE;
   if((v0Aon==AliTriggerAnalysis::kV0BB)&&(v0Con==AliTriggerAnalysis::kV0BB))v0andON=kTRUE;   
 
   Bool_t v0orON =((v0Aon==AliTriggerAnalysis::kV0BB)||(v0Con==AliTriggerAnalysis::kV0BB));

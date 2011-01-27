@@ -375,9 +375,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	
 	//******** DEFINE number of variables of the container***** for now set at 13, in the future in the config macro.
 	
-	Double_t* containerInput = new Double_t[fNvar];
-	Double_t* containerInputMC = new Double_t[fNvar]; 
-	
 	//loop on the MC event
 	
 	TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -401,6 +398,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		AliError("Could not find MC Header in AOD");
 		return;
 	}
+
+	Double_t* containerInput = new Double_t[fNvar];
+	Double_t* containerInputMC = new Double_t[fNvar]; 
+	
        
        	AliCFVertexingHF* cfVtxHF=0x0;
 	switch (fDecayChannel){

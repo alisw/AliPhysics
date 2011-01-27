@@ -538,6 +538,12 @@ AliMultiDimVector* AliMultiDimVector:: ShrinkPtBins(Int_t firstBin, Int_t lastBi
   Float_t loosecuts[fgkMaxNVariables];
   Float_t tightcuts[fgkMaxNVariables];
   TString axisTitles[fgkMaxNVariables];
+  for(Int_t j=0;j<fgkMaxNVariables;j++) {
+    nofcells[j]=0;
+    loosecuts[j]=0.;
+    tightcuts[j]=0.;
+    axisTitles[j]="";
+  }
   for(Int_t i=0;i<fNVariables;i++){
     nofcells[i]=fNCutSteps[i];
     if(fGreaterThan[i]){
