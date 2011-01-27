@@ -178,7 +178,7 @@ void AliAnalysisTaskSELambdac::SetPtBinLimit(Int_t n, Float_t* lim){
   }
   if(fDebug > 1){
     printf("Number of Pt bins = %d\n",fNPtBins);
-    for(Int_t i=0; i<fNPtBins+1; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
+    for(Int_t i=0; i<fNPtBins; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
   }
 }
 //_________________________________________________________________
@@ -1093,11 +1093,11 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
    Int_t iprongs[3]={0,1,2};
    Double_t mass[2]={0.,0.};
  //topological constr
-   AliKFParticle *Lambdac=d->ApplyVertexingKF(iprongs,3,pdgs,kTRUE,field,mass);
-   if(!Lambdac) return kFALSE;
+   AliKFParticle *lambdac=d->ApplyVertexingKF(iprongs,3,pdgs,kTRUE,field,mass);
+   if(!lambdac) return kFALSE;
 //  Double_t probTot=TMath::Prob(Lambdac->GetChi2(),Lambdac->GetNDF());
 //  if(probTot<fCutsKF[0]) return kFALSE;
-  if(Lambdac->GetChi2()>fCutsKF[0]) return kFALSE;
+  if(lambdac->GetChi2()>fCutsKF[0]) return kFALSE;
  //mass constr for K*
    Int_t ipRes[2];
    Int_t pdgres[2];
@@ -1110,15 +1110,15 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
     ipRes[0]=2;ipRes[1]=1;
     pdgres[0]=pdgs[2];pdgres[1]=321;
    }
-   AliKFParticle *KappaStar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+   AliKFParticle *kappaStar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
 
-  Double_t probKstar=TMath::Prob(KappaStar->GetChi2(),KappaStar->GetNDF());
+  Double_t probKstar=TMath::Prob(kappaStar->GetChi2(),kappaStar->GetNDF());
   if(probKstar>fCutsKF[1]) {
     AliAODTrack *esdProng1=(AliAODTrack*)d->GetDaughter(ipRes[0]);
     AliAODTrack *esdProng2=(AliAODTrack*)d->GetDaughter(ipRes[1]);
     AliKFParticle prong1(*esdProng1,pdgres[0]);
     AliKFParticle prong2(*esdProng2,pdgres[1]);
-    if(KappaStar->GetPt()<fCutsKF[2] && prong1.GetAngle(prong2)>fCutsKF[3]) return kFALSE;
+    if(kappaStar->GetPt()<fCutsKF[2] && prong1.GetAngle(prong2)>fCutsKF[3]) return kFALSE;
   } 
  //mass constr for Lambda
    mass[0]=1.520;mass[1]=0.005;
@@ -1130,27 +1130,27 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
     ipRes[0]=2;ipRes[1]=1;
     pdgres[0]=pdgs[2];pdgres[1]=pdgs[1];
    }
-   AliKFParticle *Lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-  Double_t probLa=TMath::Prob(Lambda1520->GetChi2(),Lambda1520->GetNDF());
+   AliKFParticle *lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+  Double_t probLa=TMath::Prob(lambda1520->GetChi2(),lambda1520->GetNDF());
   if(probLa>fCutsKF[4]) {
     AliAODTrack *esdProng1=(AliAODTrack*)d->GetDaughter(ipRes[0]);
     AliAODTrack *esdProng2=(AliAODTrack*)d->GetDaughter(ipRes[1]);
     AliKFParticle prong1(*esdProng1,pdgres[0]);
     AliKFParticle prong2(*esdProng2,pdgres[1]);
-    if(Lambda1520->GetPt()<fCutsKF[5] && prong1.GetAngle(prong2)>fCutsKF[6]) return kFALSE;
+    if(lambda1520->GetPt()<fCutsKF[5] && prong1.GetAngle(prong2)>fCutsKF[6]) return kFALSE;
   } 
  //mass constr for Delta
    mass[0]=1.2;mass[1]=0.15;
    ipRes[0]=0;ipRes[1]=2;
-   pdgres[0]=pdgs[0];pdgres[2]=pdgs[2];
-   AliKFParticle *Delta=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-  Double_t probDelta=TMath::Prob(Delta->GetChi2(),Delta->GetNDF());
+   pdgres[0]=pdgs[0];pdgres[1]=pdgs[2];
+   AliKFParticle *delta=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+  Double_t probDelta=TMath::Prob(delta->GetChi2(),delta->GetNDF());
   if(probDelta>fCutsKF[7]) {
     AliAODTrack *esdProng1=(AliAODTrack*)d->GetDaughter(ipRes[0]);
     AliAODTrack *esdProng2=(AliAODTrack*)d->GetDaughter(ipRes[1]);
     AliKFParticle prong1(*esdProng1,pdgres[0]);
     AliKFParticle prong2(*esdProng2,pdgres[1]);
-    if(Delta->GetPt()<fCutsKF[8] && prong1.GetAngle(prong2)>fCutsKF[9]) return kFALSE;
+    if(delta->GetPt()<fCutsKF[8] && prong1.GetAngle(prong2)>fCutsKF[9]) return kFALSE;
   } 
  return kTRUE;
 }
@@ -1162,15 +1162,15 @@ Bool_t AliAnalysisTaskSELambdac::IspiKpResonant(AliAODRecoDecayHF3Prong *d,Doubl
         Double_t mass[2]={1.520,0.005};
         Int_t ipRes[2]={1,2};
         Int_t pdgres[2]={321,2212};
-        AliKFParticle *Lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-	Double_t probLa=TMath::Prob(Lambda1520->GetChi2(),Lambda1520->GetNDF());
+        AliKFParticle *lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probLa=TMath::Prob(lambda1520->GetChi2(),lambda1520->GetNDF());
 	if(probLa>0.9) return kTRUE;
  //K* -> kpi
         mass[0]=0.8961;mass[1]=0.03;
         ipRes[0]=0;ipRes[1]=1;
         pdgres[0]=211;pdgres[1]=321;
-        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
+        AliKFParticle *kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probKa=TMath::Prob(kstar->GetChi2(),kstar->GetNDF());
        if(probKa>0.9) return kTRUE;
 
  return kFALSE;
@@ -1184,15 +1184,15 @@ Bool_t AliAnalysisTaskSELambdac::IspKpiResonant(AliAODRecoDecayHF3Prong *d,Doubl
         Double_t mass[2]={1.520,0.005};
         Int_t ipRes[2]={0,1};
         Int_t pdgres[2]={2212,321};
-        AliKFParticle *Lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-	Double_t probLa=TMath::Prob(Lambda1520->GetChi2(),Lambda1520->GetNDF());
+        AliKFParticle *lambda1520=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probLa=TMath::Prob(lambda1520->GetChi2(),lambda1520->GetNDF());
 	if(probLa>0.9) return kTRUE;
  //K* -> kpi
         mass[0]=0.8961;mass[1]=0.03;
         ipRes[0]=1;ipRes[1]=2;
         pdgres[1]=211;pdgres[0]=321;
-        AliKFParticle *Kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
-	Double_t probKa=TMath::Prob(Kstar->GetChi2(),Kstar->GetNDF());
+        AliKFParticle *kstar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
+	Double_t probKa=TMath::Prob(kstar->GetChi2(),kstar->GetNDF());
 	if(probKa>0.9) return kTRUE;
 
  return kFALSE;

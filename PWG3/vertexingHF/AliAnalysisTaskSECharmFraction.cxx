@@ -5633,6 +5633,15 @@ Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){
 	fCutsTight->SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
 	fCutsLoose->SetCuts(nvars,nptbins,cutsMatrixTransposeLoose);
 
+	for (Int_t ivar = 0; ivar<nvars; ivar++){
+	  delete [] cutsMatrixTransposeStand[ivar];
+	  delete [] cutsMatrixTransposeLoose[ivar];
+	}
+	delete [] cutsMatrixTransposeStand;
+	cutsMatrixTransposeStand=NULL;
+	delete [] cutsMatrixTransposeLoose;
+	cutsMatrixTransposeLoose=NULL;
+
 	fCutsTight->SetUseSpecialCuts(kTRUE);
 	fCutsLoose->SetUseSpecialCuts(kTRUE);
 	fCutsTight->SetRemoveDaughtersFromPrim(kTRUE);
@@ -5656,6 +5665,7 @@ Int_t  AliAnalysisTaskSECharmFraction::SetStandardCuts(Float_t *&ptbinlimits){
 
 	fCutsTight->SetPidHF(pidObj);
 	fCutsLoose->SetPidHF(pidObj);
+	delete pidObj; pidObj=NULL;
 	fCutsTight->SetUsePID(kTRUE);
 	fCutsLoose->SetUsePID(kTRUE);
 

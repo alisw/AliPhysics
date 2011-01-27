@@ -317,7 +317,16 @@ void AliAnalysisTaskSEBtoJPSItoEle::Terminate(Option_t */*option*/)
      printf("+++\n+++  MC template histo copied ---> OK\n+++\n");
      //fCdfFit->DoMinimization(pseudoProperValues,invMassValues,ncand);
      fCdfFit->DoMinimization();
-   } 
+
+     if(pseudoProperValues) delete [] pseudoProperValues;
+     pseudoProperValues=NULL;
+     if(invMassValues) delete [] invMassValues;
+     invMassValues=NULL;
+
+     if(fCdfFit) delete [] fCdfFit;
+     fCdfFit=NULL;
+
+  } 
 
   return;
 }

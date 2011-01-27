@@ -130,7 +130,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
 
   if(lab2Prong<0) return -1;
 
-  Int_t dgLabels[10];
+  Int_t dgLabels[10]={0,0,0,0,0,0,0,0,0,0};
 
   // loop on daughters and write labels
   for(Int_t i=0; i<ndg; i++) {

@@ -564,6 +564,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
   }
   
+  if(pdgdaughters) {delete [] pdgdaughters; pdgdaughters=NULL;}
+
   PostData(1,fOutput);    
   return;
 }

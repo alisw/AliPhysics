@@ -599,13 +599,11 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts *trackCuts) const
 }
 //___________________________________________________________
 
-Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t *fill) const
+Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t fill[4]) const
 {
 	//
 	// filling the unfolding matrix
 	//
-	
-	fill = new Double_t[4];
 	
 	if(fmcPartCandidate){
 		
@@ -618,8 +616,6 @@ Bool_t AliCFVertexingHF::FillUnfoldingMatrix(Double_t *fill) const
 		return kTRUE;
 	}
 	
-	delete [] fill;
-	fill = 0x0;
 	return kFALSE;
 }
 //___________________________________________________________

@@ -206,7 +206,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t SelectInvMass(Int_t decay,Int_t nprongs,
 		       Double_t *px,Double_t *py,Double_t *pz) const;
   Bool_t SelectInvMass(TObjArray *trkArray) const;
-  void   SelectTracksAndCopyVertex(const AliVEvent *event,
+  void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;

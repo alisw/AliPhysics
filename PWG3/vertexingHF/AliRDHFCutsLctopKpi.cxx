@@ -445,6 +445,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  for(Int_t iv=0;iv<nvars;iv++){
   prodcutsval[iv]=new Float_t[nptbins];
  }
+
  for(Int_t ipt=0;ipt<nptbins;ipt++){
   prodcutsval[0][ipt]=0.18;
   prodcutsval[1][ipt]=0.4;
@@ -496,6 +497,17 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  SetUsePID(kTRUE);
 
  PrintAll();
+
+ for(Int_t iiv=0;iiv<nvars;iiv++){
+  delete [] prodcutsval[iiv];
+ }
+ delete [] prodcutsval;
+ prodcutsval=NULL;
+ delete [] ptbins;
+ ptbins=NULL;
+
+ delete pidObjp;
+ pidObjp=NULL;
 
  return;
 }

@@ -1174,6 +1174,10 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   SetUseSpecialCuts(kTRUE);
   SetRemoveDaughtersFromPrim(kTRUE);
   
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
+
   // PID SETTINGS
   AliAODPidHF* pidObj=new AliAODPidHF();
   //pidObj->SetName("pid4D0");
@@ -1197,6 +1201,9 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 
 
   PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
 
   return;
 
@@ -1282,6 +1289,9 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
   SetUseSpecialCuts(kTRUE);
   SetRemoveDaughtersFromPrim(kFALSE);// THIS IS VERY IMPORTANT! TOO SLOW IN PbPb
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
   
   // PID SETTINGS
   AliAODPidHF* pidObj=new AliAODPidHF();
@@ -1306,6 +1316,10 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
 
 
   PrintAll();
+
+
+  delete pidObj;
+  pidObj=NULL;
 
   return;
 
