@@ -293,20 +293,20 @@ void AliTrackletTaskUni::UserCreateOutputObjects()
     man->SetDefaultStorage("alien://Folder=/alice/simulation/2008/v4-15-Release/Residual");
     if (newGeom) {
       // new geom
-      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130844,8);
+      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data");
       AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
       if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130844,6,-1)) AliFatal("Failed to misalign geometry");
     }
     else {
       // old geom
-      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",130845,7);
+      AliCDBEntry*  obj = man->Get("GRP/Geometry/Data");
       AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
       if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",130845,5,-1)) AliFatal("Failed to misalign geometry");
     }
   }
   else {
     man->SetDefaultStorage("raw://"); man->SetRun(137045);
-    AliCDBEntry*  obj = man->Get("GRP/Geometry/Data",137045,3);
+    AliCDBEntry*  obj = man->Get("GRP/Geometry/Data");
     AliGeomManager::SetGeometry((TGeoManager*) obj->GetObject());
     if (!AliGeomManager::ApplyAlignObjsToGeom("ITS",137045,8,-1)) AliFatal("Failed to misalign geometry");
   }
