@@ -3,7 +3,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Gaute Øvrebekk <st05886@alf.uib.no>                   *
+//* Primary Authors: Gaute Ovrebekk <st05886@alf.uib.no>                   *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -15,11 +15,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTITSClusterFinderComponent.cxx
-    @author Gaute Øvrebekk <st05886@alf.uib.no>
-    @date   
-    @brief  Component to run offline clusterfinders
-*/
+/// @file   AliHLTITSClusterFinderComponent.cxx
+/// @author Gaute Ovrebekk <st05886@alf.uib.no>
+/// @date   
+/// @brief  Component to run offline clusterfinders
+///
 
 #if __GNUC__>= 3
 using namespace std;
@@ -42,6 +42,8 @@ using namespace std;
 #include "AliHLTITSClusterFinderSSD.h"
 #include "TMap.h"
 #include "AliITSRecPointContainer.h"
+#include "AliRunLoader.h"
+#include "AliLoader.h"
 
 #include <cstdlib>
 #include <cerrno>
@@ -77,7 +79,10 @@ AliHLTITSClusterFinderComponent::AliHLTITSClusterFinderComponent(int mode)
   fLastModule(0),
   fnClusters(0),
   fclusters(),
-  fBenchmark(GetComponentID())
+  fBenchmark(GetComponentID()),
+  fOutputSizeOffset(0),
+  fInputMultiplierDigits(20),
+  fpLoader(NULL)
 { 
   // see header file for class documentation
   // or
@@ -155,10 +160,10 @@ AliHLTComponentDataType AliHLTITSClusterFinderComponent::GetOutputDataType()
 
 void AliHLTITSClusterFinderComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 0;
+  constBase = fOutputSizeOffset;
   switch(fModeSwitch){
   case kClusterFinderDigits:
-    inputMultiplier = 40;
+    inputMultiplier = fInputMultiplierDigits;
     break;
   case kClusterFinderSPD:
   case kClusterFinderSDD: 	 
@@ -364,6 +369,11 @@ Int_t AliHLTITSClusterFinderComponent::DoDeinit() {
 
   fUseOfflineFinder = 0;
 
+  if (fpLoader) {
+    fpLoader->UnloadDigits();
+  }
+  fpLoader=NULL;
+
   return 0;
 }
 
@@ -389,9 +399,11 @@ int AliHLTITSClusterFinderComponent::DoEvent
       return 0;
     }
 
+  AliHLTUInt32_t totalInputSize=0;
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
   for( const AliHLTComponentBlockData *i= GetFirstInputBlock(fInputDataType); i!=NULL; i=GetNextInputBlock() ){
+    totalInputSize+=i->fSize;
     fBenchmark.AddInput(i->fSize);
   }
 
@@ -425,9 +437,30 @@ int AliHLTITSClusterFinderComponent::DoEvent
       //
       // Conclusion: TTree objects are hardly to be sent via TMessage, there are direct
       // links to the file required anyhow.
+      //
+      // 2011-01-28 hotfix reloaded: accessing the files like that fails if there are
+      // multiple digit files because of a large number of events. New ugly fix is to
+      // use the global runloader instance to get hold on the digits tree.
       fnClusters = 0;
-      TFile* dummy=new TFile("ITS.Digits.root");
-      tD->SetDirectory(dummy);
+      AliRunLoader* pRunLoader=AliRunLoader::Instance();
+      if (!pRunLoader) {
+	HLTError("failed to get global runloader instance");
+	return -ENOSYS;
+      }
+      // get the specific loader for the module
+      if (!fpLoader) {
+	const char* loaderType="ITSLoader";
+	fpLoader=pRunLoader->GetLoader(loaderType);
+	if (!fpLoader) {
+	  HLTError("can not get loader \"%s\" from runloader", loaderType);
+	  return -ENOSYS;
+	}
+	// prepare the loader
+	fpLoader->LoadDigits("read");
+      }
+      pRunLoader->GetEvent(GetEventCount());
+
+      tD=fpLoader->TreeD();
       tR->Reset();
       tR->SetDirectory(0);
       fDettype->SetTreeAddressD(tD);
@@ -444,12 +477,16 @@ int AliHLTITSClusterFinderComponent::DoEvent
 	fnClusters += fRecPoints->GetEntries();
       }
 
-      tD->SetDirectory(0);
-      delete dummy;
-
       UInt_t bufferSize = fnClusters * sizeof(AliHLTITSSpacePointData) + sizeof(AliHLTITSClusterData);
       if( size + bufferSize > maxBufferSize ){
-	HLTWarning( "Output buffer size exceed (buffer size %d, required size %d)", maxBufferSize, size+bufferSize);
+	//HLTWarning( "Output buffer size exceed (buffer size %d, required size %d)", maxBufferSize, size+bufferSize);
+	if (totalInputSize>0) {
+	  fInputMultiplierDigits=(float)(size+bufferSize)/totalInputSize;
+	  fInputMultiplierDigits+=1.;
+	} else {
+	  fOutputSizeOffset=totalInputSize;
+	  fInputMultiplierDigits=1.;
+	}
 	ret = -ENOSPC;      
 	break;		
       }
