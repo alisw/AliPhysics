@@ -18,7 +18,7 @@
 //Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHLTESDs.root", Float_t ptLowerCut=0.1, Float_t ptUpperCut=10., Bool_t bDedxAndClus=kFALSE)
 {
   gSystem->AddIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/TPC -I$ALICE/geant3/TGeant3");
-  gROOT->LoadMacro("AliHLTTPCTrackerEvaluation.C++");
+  gROOT->LoadMacro("$ALICE_ROOT/HLT/TPCLib/macros/AliHLTTPCTrackerEvaluation.C++");
  
   AliHLTTPCTrackerEvaluation();
   // the attempt to pass the arguments with a self-called macro hasn't worked so far
@@ -65,6 +65,7 @@
 #include "TDatabasePDG.h"
 
 #include "AliCDBManager.h"
+#include "AliGRPManager.h"
 #include "AliTPCcalibDB.h"
 #include "TProfile.h"
 
@@ -91,6 +92,17 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
    }
 
    gBenchmark->Start("AliHLTTPCTrackerEvaluation");
+
+   AliCDBManager* man = AliCDBManager::Instance();
+   man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+   man->SetRun(0);
+   man->SetSpecificStorage("GRP/GRP/Data","local://$PWD");
+   AliGRPManager grpman;
+   if (!grpman.ReadGRPEntry() ||
+       !grpman.SetMagField()) {
+     cerr << "can not set magnetic field from GRP" << endl;
+     return -1;
+   }
 
    ::Info("AliHLTTPCTrackerEvaluation.C","Calculating reconstruction efficiency...");
 
@@ -589,7 +601,7 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
      //if(i>0) binx1++;
             
      TH1D *p;
-     p = (hPt    ->ProjectionY("", binx1, binx2));  
+     p = (hPt    ->ProjectionY("hPtProj", binx1, binx2));  
      //cout<<i<<" "<<pMin<<" "<<pMax<<" "<<binx1<<" "<<binx2<<": "<<p->GetEntries()<<endl;
      if(p->GetEntries()>50){
        fGauss->SetParameter(2,0);
@@ -600,28 +612,28 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
      //KKK I am resetting only the sigma and its error, perhaps we should do this with all the fit parameters ???
      // SG I don't know;
 
-     p    = (hPhi   ->ProjectionY("", binx1, binx2));  
+     p    = (hPhi   ->ProjectionY("hPtProj2", binx1, binx2));  
      if(p->GetEntries()>50){
        fGauss->SetParameter(2,0);
        p->Fit("gauss","Q"); 
        hResPhi->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
      }
      
-     p = (hLambda->ProjectionY("", binx1, binx2));  
+     p = (hLambda->ProjectionY("hLambdaProj", binx1, binx2));  
      if(p->GetEntries()>50){
        fGauss->SetParameter(2,0);
        p->Fit("gauss","Q"); 
        hResLambda->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
      }
      
-     p     = (hY     ->ProjectionY("", binx1, binx2));  
+     p     = (hY     ->ProjectionY("hYProj", binx1, binx2));  
      if(p->GetEntries()>50){
        fGauss->SetParameter(2,0);
        p->Fit("gauss","Q"); 
        hResY->Fill(pMin, fGauss->GetParameter(2)); fGauss->GetParError(2);
      }
        
-     p      = (hZ     ->ProjectionY("", binz1, binz2));  
+     p      = (hZ     ->ProjectionY("hZProj", binz1, binz2));  
      //cout<<i<<" "<<zMin<<" "<<zMax<<" "<<binz1<<" "<<binz2<<endl;
      //cout<<p->GetEntries()<<endl;
      if(p->GetEntries()>50){
@@ -662,13 +674,15 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
   
 
    //----------------- optional canvases 2 and 3 for dE/dx and clusters ----------------
-      
+
+   TCanvas *c2 = NULL;
+   TCanvas *c3 = NULL;
    if(bDedxAndClus){     
-      TCanvas *c2 = new TCanvas("c2","dE/dx",500,450);
+      c2 = new TCanvas("c2","dE/dx",500,450);
       c2->cd();
       hDedx->Draw();  
         
-      TCanvas *c3 = new TCanvas("c","clusters",500,450);
+      c3 = new TCanvas("c","clusters",500,450);
       c3->cd();   
       hClus->Draw();
       hnhit_ref->SetLineColor(kRed);
@@ -709,11 +723,13 @@ Int_t AliHLTTPCTrackerEvaluation(const Char_t *dir=".", const char* input="AliHL
 
 //-------------------- OUTPUT FILE ---------------------------------------- 
    
-   //TFile fc("CAtrackerEvaluation.root","RECREATE");
-   //c1->Write();
-   //c2->Write();
-   //c3->Write();
-   //fc.Close(); // KKK commented out temporarily
+   TFile fc("CAtrackerEvaluation.root","RECREATE");
+   c0->Write();
+   c1->Write();
+   if (c2) c2->Write();
+   if (c3) c3->Write();
+   c4->Write();
+   fc.Close();
    
    gBenchmark->Stop("AliHLTTPCTrackerEvaluation");
    gBenchmark->Show("AliHLTTPCTrackerEvaluation");
