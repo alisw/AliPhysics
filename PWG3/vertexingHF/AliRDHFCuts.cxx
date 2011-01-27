@@ -31,6 +31,7 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliESDtrackCuts.h"
+#include "AliCentrality.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliRDHFCuts.h"
 
@@ -217,7 +218,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   //centrality selection
-  if (!(fUseCentrality==kCentOff)){ 
+  if (!(fUseCentrality==kCentOff)){  
     if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){
       AliWarning("Centrality estimator not valid");
       fWhyRejection=3;
@@ -364,10 +365,10 @@ void AliRDHFCuts::SetVarsForOpt(Int_t nVars,Bool_t *forOpt) {
 //---------------------------------------------------------------------------
 void AliRDHFCuts::SetUseCentrality(Int_t flag) {
   //
-  // set centrality estimator
+  // set centrality estimator  
   //
   fUseCentrality=flag;
-  if (fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid) AliWarning("Centrality estimator not valid");
+  if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid) AliWarning("Centrality estimator not valid");
  
   return;
 }
@@ -434,6 +435,17 @@ void AliRDHFCuts::PrintAll() const {
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
   printf("Use PID %d\n",(Int_t)fUsePID);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
+  printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
+  if(fOptPileup==1) printf(" -- Reject pileup event");
+  if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
+  if(fUseCentrality>0) {
+    TString estimator="";
+    if(fUseCentrality==1) estimator = "V0";
+    if(fUseCentrality==2) estimator = "Tracks";
+    if(fUseCentrality==3) estimator = "Tracklets";
+    if(fUseCentrality==4) estimator = "SPD clusters outer"; 
+    printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
+  }
 
   if(fVarNames){
     cout<<"Array of variables"<<endl;
@@ -546,7 +558,7 @@ Float_t AliRDHFCuts::GetCutValue(Int_t iVar,Int_t iPtBin) const {
   return fCutsRD[GetGlobalIndex(iVar,iPtBin)];
 }
 //-------------------------------------------------------------------
-Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent) const {
+Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentrality estimator) const {
   //
   // Get centrality percentile
   //
@@ -555,15 +567,16 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent) const {
   Float_t cent=-999.;
   if(!centrality) return cent;
   else{
-    if (fUseCentrality==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+    if (estimator==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
     else {
-      if (fUseCentrality==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+      if (estimator==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
       else{
-	if (fUseCentrality==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+	if (estimator==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
 	else{
-	  if (fUseCentrality==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+	  if (estimator==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
 	  else {
 	    AliWarning("Centrality estimator not valid");
+
 	  }
 	}
       }
