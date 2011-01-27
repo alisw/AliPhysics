@@ -227,7 +227,21 @@ protected:
    * @return true if all present, false otherwise
    */  
   Bool_t CheckCorrections(UInt_t what) const;
+  /**
+   * Read corrections
+   *
+   */
+  virtual Bool_t ReadCorrections(const TAxis*& pe, const TAxis*& pv);
+  /**
+   * Get the ESD event. IF this is the first event, initialise
+   */
+  virtual AliESDEvent* GetESDEvent();
   /** 
+   * Initialise the sub objects and stuff.  Called on first event
+   *
+   */
+  virtual void InitializeSubs() = 0;
+  /**
    * Mark this event as one to store in the AOD 
    * 
    */

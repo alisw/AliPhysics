@@ -25,8 +25,7 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TROOT.h>
-#include <iostream>
-#include <iomanip>
+
 
 //====================================================================
 AliForwardMultiplicityTask::AliForwardMultiplicityTask()
@@ -151,25 +150,10 @@ AliForwardMultiplicityTask::InitializeSubs()
   // Initialise the sub objects and stuff.  Called on first event 
   // 
   //
-  UInt_t what = AliForwardCorrectionManager::kAll;
-  if (!fEnableLowFlux) 
-    what ^= AliForwardCorrectionManager::kDoubleHit;
-  if (!fCorrections.IsUseMergingEfficiency())
-    what ^= AliForwardCorrectionManager::kMergingEfficiency;
+  const TAxis* pe = 0;
+  const TAxis* pv = 0;
 
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  fcm.Init(fEventInspector.GetCollisionSystem(), 
-	   fEventInspector.GetEnergy(),
-	   fEventInspector.GetField(),
-	   false,
-	   what);
-  if (!CheckCorrections(what)) return;
-
-
-  const TAxis* pe = fcm.GetEtaAxis();
-  const TAxis* pv = fcm.GetVertexAxis();
-  if (!pe) AliFatal("No eta axis defined");
-  if (!pv) AliFatal("No vertex axis defined");
+  if (!ReadCorrections(pe,pv)) return;
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
@@ -182,6 +166,7 @@ AliForwardMultiplicityTask::InitializeSubs()
   fEnergyFitter.Init(*pe);
   fEventInspector.Init(*pv);
   fDensityCalculator.Init(*pe);
+  fCorrections.Init(*pe);
   fHistCollector.Init(*pv);
 
   this->Print();
@@ -228,33 +213,8 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  // AliInfo(Form("Event # %6d (esd=%p)", cnt, esd));
-  if (!esd) { 
-    AliWarning("No ESD event found for input event");
-    return;
-  }
+  AliESDEvent* esd = GetESDEvent();
 
-  // On the first event, initialize the parameters 
-  if (fFirstEvent && esd->GetESDRun()) { 
-    fEventInspector.ReadRunDetails(esd);
-    
-    AliInfo(Form("Initializing with parameters from the ESD:\n"
-		 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-		 "         AliESDEvent::GetBeamType()     ->%s\n"
-		 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-		 "         AliESDEvent::GetMagneticField()->%f\n"
-		 "         AliESDEvent::GetRunNumber()    ->%d\n",
-		 esd->GetBeamEnergy(), 
-		 esd->GetBeamType(),
-		 esd->GetCurrentL3(), 
-		 esd->GetMagneticField(),
-		 esd->GetRunNumber()));
-
-    fFirstEvent = false;
-
-    InitializeSubs();
-  }
   // Clear stuff 
   fHistos.Clear();
   fESDFMD.Clear();

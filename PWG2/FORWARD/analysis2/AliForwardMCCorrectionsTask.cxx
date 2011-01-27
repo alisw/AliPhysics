@@ -491,11 +491,11 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
     return;
   }
 
-  UInt_t   triggers;
-  Bool_t   gotTrigggers;
-  Bool_t   gotInel;
-  Double_t vZ;
-  Bool_t   gotVertex;
+  // UInt_t   triggers;
+  // Bool_t   gotTrigggers = false;
+  Bool_t   gotInel = false;
+  // Double_t vZ;
+  Bool_t   gotVertex = false;
 #if 0
   // Use event inspector instead 
   // Get the triggers 
@@ -788,8 +788,8 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
     // Get event counts 
     Int_t nEventsAll   = eventsAll->GetBinContent(v);
     Int_t nEventsTr    = eventsTr->GetBinContent(v);
-    Int_t nEventsVtx   = eventsVtx->GetBinContent(v);
-    Int_t nEventsTrVtx = eventsTrVtx->GetBinContent(v);
+    // Int_t nEventsVtx   = eventsVtx->GetBinContent(v);
+    // Int_t nEventsTrVtx = eventsTrVtx->GetBinContent(v);
 
     // Project event histograms, set names, and store  
     TH2D* primIAllV   = GetVertexProj(v, primIAll);

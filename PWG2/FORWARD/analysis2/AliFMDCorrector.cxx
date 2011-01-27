@@ -23,6 +23,9 @@ ClassImp(AliFMDCorrector)
 AliFMDCorrector::AliFMDCorrector()
   : TNamed(), 
     fRingHistos(),
+    fUseSecondaryMap(true),
+    fUseVertexBias(true),
+    fUseAcceptance(true),
     fUseMergingEfficiency(true),
     fDebug(0)
 {
@@ -33,6 +36,9 @@ AliFMDCorrector::AliFMDCorrector()
 AliFMDCorrector::AliFMDCorrector(const char* title)
   : TNamed("fmdCorrector", title), 
     fRingHistos(), 
+    fUseSecondaryMap(true),
+    fUseVertexBias(true),
+    fUseAcceptance(true),
     fUseMergingEfficiency(true),
     fDebug(0)
 {
@@ -52,6 +58,9 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
 AliFMDCorrector::AliFMDCorrector(const AliFMDCorrector& o)
   : TNamed(o), 
     fRingHistos(), 
+    fUseSecondaryMap(o.fUseSecondaryMap),
+    fUseVertexBias(o.fUseVertexBias),
+    fUseAcceptance(o.fUseAcceptance),
     fUseMergingEfficiency(o.fUseMergingEfficiency),
     fDebug(o.fDebug)
 {
@@ -85,12 +94,33 @@ AliFMDCorrector::operator=(const AliFMDCorrector& o)
 
   fDebug   = o.fDebug;
   fRingHistos.Delete();
+  fUseSecondaryMap = o.fUseSecondaryMap;
+  fUseVertexBias = o.fUseVertexBias;
+  fUseAcceptance = o.fUseAcceptance;
   fUseMergingEfficiency = o.fUseMergingEfficiency;
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
   while ((obj = next())) fRingHistos.Add(obj);
   
   return *this;
+}
+
+//____________________________________________________________________
+void
+AliFMDCorrector::Init(const TAxis&)
+{
+  //
+  // Initialize this object
+  //
+  // Parameters:
+  //    etaAxis Eta axis to use
+  //
+  if (!fUseSecondaryMap)
+    AliWarning("Secondary maps not used - BE CAREFUL");
+  if (!fUseVertexBias)
+    AliWarning("Vertex bias not used");
+  if (!fUseAcceptance)
+    AliWarning("Acceptance from dead-channels not used");
 }
 
 //____________________________________________________________________
@@ -120,7 +150,7 @@ AliFMDCorrector::GetRingHistos(UShort_t d, Char_t r) const
 //____________________________________________________________________
 Bool_t
 AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
-			   UShort_t                vtxbin)
+			 UShort_t                vtxbin)
 {
   // 
   // Do the calculations 
@@ -140,33 +170,41 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
       Char_t      r  = (q == 0 ? 'I' : 'O');
       TH2D*       h  = hists.Get(d,r);
       RingHistos* rh = GetRingHistos(d,r);
-      TH2D*       bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
-      TH2D*       ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
-      TH2D*       ac = fcm.GetAcceptance()->GetCorrection(d, r, uvb);
-      if (!bg) { 
-	AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
-			d, r, uvb));
-	continue;
+
+      if (fUseSecondaryMap) {
+        TH2D*  bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
+        if (!bg) {
+          AliWarning(Form("No secondary correction for FMDM%d%c in vertex bin %d",
+                          d, r, uvb));
+          continue;
+        }
+        // Divide by primary/total ratio
+        h->Divide(bg);
       }
-      if (!ef) { 
-	AliWarning(Form("No event %s vertex bias correction in vertex bin %d",
-			(r == 'I' || r == 'i' ? "inner" : "outer"), uvb));
-	continue;
+      if (fUseVertexBias) {
+        TH2D*  ef = fcm.GetVertexBias()->GetCorrection(r, uvb);
+        if (!ef) {
+          AliWarning(Form("No event %s vertex bias correction in vertex bin %d",
+                          (r == 'I' || r == 'i' ? "inner" : "outer"), uvb));
+          continue;
+        }
+        // Divide by the event selection efficiency
+        h->Divide(ef);
       }
-      if (!ac) { 
-	AliWarning(Form("No acceptance correction for FMD%d%c in vertex bin %d",
+      if (fUseAcceptance) {
+        TH2D*  ac = fcm.GetAcceptance()->GetCorrection(d, r, uvb);
+        if (!ac) {
+          AliWarning(Form("No acceptance correction for FMD%d%c in vertex bin %d",
 			d, r, uvb));
-	continue;
+          continue;
+        }
+        // Divide by the acceptance correction
+        h->Divide(ac);
       }
 
-      // Divide by primary/total ratio
-      h->Divide(bg);
+
+
       
-      // Divide by the event selection efficiency 
-      h->Divide(ef);
-
-      // Divide by the acceptance correction 
-      h->Divide(ac);
 
       if (fUseMergingEfficiency) {
 	if (!fcm.GetMergingEfficiency()) { 
@@ -250,7 +288,13 @@ AliFMDCorrector::Print(Option_t* /* option */) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDCorrector: " << GetName() <<  std::endl;
+  std::cout << ind << "AliFMDCorrector: " << GetName() <<  "\n"
+            << std::boolalpha
+            << ind << " Use secondary maps:     " << fUseSecondaryMap << "\n"
+            << ind << " Use vertex bias:        " << fUseVertexBias << "\n"
+            << ind << " Use acceptance:         " << fUseAcceptance << "\n"
+            << ind << " Use merging efficiency: " << fUseMergingEfficiency
+            << std::endl;
 }
 
 //====================================================================
