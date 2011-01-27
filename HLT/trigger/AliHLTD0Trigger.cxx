@@ -505,6 +505,11 @@ Int_t AliHLTD0Trigger::RecV0(const TObject* iter){
   Double_t pvpos[3];
   
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
+  if (!event) {
+    HLTError("input object is not of type AliESDEvent");
+    return 0;
+  }
+
   event->GetStdContent();
   Int_t nV0 = event->GetNumberOfV0s();
   Double_t field = event->GetMagneticField();
