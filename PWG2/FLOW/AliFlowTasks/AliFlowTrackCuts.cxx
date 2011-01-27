@@ -87,6 +87,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fNClustersITSMin(INT_MIN),  
   fUseAODFilterBit(kFALSE),
   fAODFilterBit(0),
+  fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexZ(kFALSE),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -141,6 +143,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fNClustersITSMin(INT_MIN),
   fUseAODFilterBit(kFALSE),
   fAODFilterBit(0),
+  fCutDCAToVertexXY(kFALSE),
+  fCutDCAToVertexZ(kFALSE),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -203,6 +207,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fNClustersITSMin(that.fNClustersITSMin),
   fUseAODFilterBit(that.fUseAODFilterBit),
   fAODFilterBit(that.fAODFilterBit),
+  fCutDCAToVertexXY(that.fCutDCAToVertexXY),
+  fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -260,6 +266,10 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutNClustersITS=that.fCutNClustersITS;
   fNClustersITSMax=that.fNClustersITSMax;
   fNClustersITSMin=that.fNClustersITSMin;  
+  fUseAODFilterBit=that.fUseAODFilterBit;
+  fAODFilterBit=that.fAODFilterBit;
+  fCutDCAToVertexXY=that.fCutDCAToVertexXY;
+  fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
@@ -540,7 +550,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(AliAODTrack* track)
   
   if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
   
-  if (GetMaxDCAToVertexXY() && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
+  if (fCutDCAToVertexXY && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
     
 
   return pass;
