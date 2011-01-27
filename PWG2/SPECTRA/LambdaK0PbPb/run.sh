@@ -17,7 +17,7 @@ fitBin="00"
 partID=1
 task=no
 fit=no
-
+usePID=kTRUE
 
 give_help() {
 
@@ -41,6 +41,7 @@ Available options:
                                need the -d. in the case you are running on CAF, they 
                                must have the same path
   -x <suffix>                  Add extra suffix to files 
+  -i                           Disable PID cuts
  Grid only options
   -g <gridmode>                Plugin Mode [default=$mode]
   -p <recopass>                Reconstruction pass [default=$pass]       
@@ -64,7 +65,7 @@ ENDOFGUIDE
 
 }
 
-while getopts "r:hd:mg:p:n:w:t:l:f:b:x:" opt; do
+while getopts "r:hd:mg:p:n:w:t:l:f:b:x:i" opt; do
   case $opt in
     r)
       runMode=$OPTARG
@@ -76,6 +77,9 @@ while getopts "r:hd:mg:p:n:w:t:l:f:b:x:" opt; do
       ;;
     b)
       fitBin=`printf %2.2d $OPTARG`
+      ;;
+    i)
+      usePID=kFALSE
       ;;
     d)
       run=$OPTARG
@@ -140,13 +144,13 @@ if [ "$task" = "yes" ]
 
     if [ "$runMode" = "2" ]
     then
-	echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$option,$suffix,$workers,\"$mode\"\)
-	root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,\"$option\",\"$suffix\",$workers,\"$mode\"\)
+	echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,$suffix,$workers,\"$mode\"\)
+	root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\"\)
     else
 	for run in $runlist 
 	do
-	    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$option,$suffix,$workers,\"$mode\"\)
-	    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,\"$option\",\"$suffix\",$workers,\"$mode\"\)
+	    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,$option,$suffix,$workers,\"$mode\"\)
+	    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$usePID,\"$option\",\"$suffix\",$workers,\"$mode\"\)
 	done
     fi
 elif [ "$fit" = "yes" ]
