@@ -78,7 +78,8 @@ void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
   if (pidObj) mom = pidObj->GetTPCmomentum();
   UShort_t nTPCClus=pidObj->GetTPCsignalN();
    
-  Double_t dedx=pidObj->GetTPCsignal(); 
+  Double_t dedx = 0.;
+  if (pidObj) dedx = pidObj->GetTPCsignal(); 
   Bool_t mismatch=kTRUE;
 
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {

@@ -401,7 +401,7 @@ void AliLego::StepManager()
 	    TClonesArray &lvols = *fVolumesBwd;
 	    if (fStepsBackward < fStepsForward) {
 		AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesBwd)[fStepsBackward]);
-		if (tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
+		if (tmp && tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
 		    fStepsBackward += 2;
 		    fVolumesBwd->RemoveAt(fStepsBackward-1);
 		    fVolumesBwd->RemoveAt(fStepsBackward-2);		  

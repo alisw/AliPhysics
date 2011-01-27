@@ -526,55 +526,53 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 		// Save the track references in a TClonesArray
 		AliTrackReference* ref = dynamic_cast<AliTrackReference*>((*fTRBuffer)[j]);
 		// Save the pointer in a TRefArray
-		new ((*fTrackReferences)[nen]) AliTrackReference(*ref);
-		rarray->AddAt((*fTrackReferences)[nen], j);
-		nen++;
+		if (ref) {
+		    new ((*fTrackReferences)[nen]) AliTrackReference(*ref);
+		    rarray->AddAt((*fTrackReferences)[nen], j);
+		    nen++;
+		}
 	    } // loop over track references for entry i
 	} // if TreeTR available
 	Int_t nentries = fMCParticles->GetEntriesFast();
 	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
 	mcParticle = dynamic_cast<AliMCParticle*>((*fMCParticles)[nentries]);
 	fMCParticleMap->AddAt(mcParticle, i);
-
-	TParticle* part = mcParticle->Particle();
-	Int_t imo  = part->GetFirstMother();
-	Int_t id1  = part->GetFirstDaughter();
-	Int_t id2  = part->GetLastDaughter();
-	if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
-	    // Remapping of the mother and daughter indices
-	    if (imo < fNprimaries) {
-		mcParticle->SetMother(imo + fPrimaryOffset);
+	if (mcParticle) {
+	    TParticle* part = mcParticle->Particle();
+	    Int_t imo  = part->GetFirstMother();
+	    Int_t id1  = part->GetFirstDaughter();
+	    Int_t id2  = part->GetLastDaughter();
+	    if (fPrimaryOffset > 0 || fSecondaryOffset > 0) {
+		// Remapping of the mother and daughter indices
+		if (imo < fNprimaries) {
+		    mcParticle->SetMother(imo + fPrimaryOffset);
+		} else {
+		    mcParticle->SetMother(imo + fSecondaryOffset - fNprimaries);
+		}
+		
+		if (id1 < fNprimaries) {
+		    mcParticle->SetFirstDaughter(id1 + fPrimaryOffset);
+		    mcParticle->SetLastDaughter (id2 + fPrimaryOffset);
+		} else {
+		    mcParticle->SetFirstDaughter(id1 + fSecondaryOffset - fNprimaries);
+		    mcParticle->SetLastDaughter (id2 + fSecondaryOffset - fNprimaries);
+		}
+		
+		
+		if (i > fNprimaries) {
+		    mcParticle->SetLabel(i + fPrimaryOffset);
+		} else {
+		    mcParticle->SetLabel(i + fSecondaryOffset - fNprimaries);
+		}
 	    } else {
-		mcParticle->SetMother(imo + fSecondaryOffset - fNprimaries);
+		mcParticle->SetFirstDaughter(id1);
+		mcParticle->SetLastDaughter (id2);
+		mcParticle->SetMother       (imo);
 	    }
-
-	    if (id1 < fNprimaries) {
-		mcParticle->SetFirstDaughter(id1 + fPrimaryOffset);
-		mcParticle->SetLastDaughter (id2 + fPrimaryOffset);
-	    } else {
-		mcParticle->SetFirstDaughter(id1 + fSecondaryOffset - fNprimaries);
-		mcParticle->SetLastDaughter (id2 + fSecondaryOffset - fNprimaries);
-	    }
-
-	    
-	    if (i > fNprimaries) {
-		mcParticle->SetLabel(i + fPrimaryOffset);
-	    } else {
-		mcParticle->SetLabel(i + fSecondaryOffset - fNprimaries);
-	    }
-	    
-	    
-	} else {
-	    mcParticle->SetFirstDaughter(id1);
-	    mcParticle->SetLastDaughter (id2);
-	    mcParticle->SetMother       (imo);
 	}
-
     } else {
 	mcParticle = dynamic_cast<AliMCParticle*>(fMCParticleMap->At(i));
     }
-    
-    
     return mcParticle;
 }
 
@@ -602,12 +600,20 @@ Int_t AliMCEvent::FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const
 	while((event = (AliMCEvent*)next())) {
 	    if (oldidx < (event->GetPrimaryOffset() + event->GetNumberOfPrimaries())) break;
 	}
-	return (oldidx - event->GetPrimaryOffset());
+	if (event) {
+	    return (oldidx - event->GetPrimaryOffset());
+	} else {
+	    return (-1);
+	}
     } else {
 	while((event = (AliMCEvent*)next())) {
 	    if (oldidx < (event->GetSecondaryOffset() + (event->GetNumberOfTracks() - event->GetNumberOfPrimaries()))) break;
 	}
-	return (oldidx - event->GetSecondaryOffset() + event->GetNumberOfPrimaries());
+	if (event) {
+	    return (oldidx - event->GetSecondaryOffset() + event->GetNumberOfPrimaries());
+	} else {
+	    return (-1);
+	}
     }
 }
 

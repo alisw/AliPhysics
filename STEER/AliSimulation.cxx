@@ -1011,23 +1011,25 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
       Double_t vtxPos[3] = {0., 0., 0.}; 
       Double_t vtxSig[3] = {0., 0., 0.};
       AliCDBEntry* entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertex");
-      AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
-      if(vertex) {
-	  if(vertex->GetXRes()>2.8) { // > pipe radius --> it's a dummy object, don't use it 
-	      entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
-	      vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+      if (entry) {
+	  AliESDVertex* vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+	  if (vertex) {
+	      if(vertex->GetXRes()>2.8) { // > pipe radius --> it's a dummy object, don't use it 
+		  entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
+		  vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+	      }
 	  }
-      }
-      if (vertex) {
-	  vertex->GetXYZ(vtxPos);
-	  vertex->GetSigmaXYZ(vtxSig);
-	  AliInfo("Overwriting Config.C vertex settings !");
-	  AliInfo(Form("Vertex position from OCDB entry: x = %13.3f, y = %13.3f, z = %13.3f (sigma = %13.3f)\n",
-		 vtxPos[0], vtxPos[1], vtxPos[2], vtxSig[2]));
-
-	  AliGenerator *gen = gAlice->GetMCApp()->Generator();
-	  gen->SetOrigin(vtxPos[0], vtxPos[1], vtxPos[2]);   // vertex position
-	  gen->SetSigmaZ(vtxSig[2]);
+	  if (vertex) {
+	      vertex->GetXYZ(vtxPos);
+	      vertex->GetSigmaXYZ(vtxSig);
+	      AliInfo("Overwriting Config.C vertex settings !");
+	      AliInfo(Form("Vertex position from OCDB entry: x = %13.3f, y = %13.3f, z = %13.3f (sigma = %13.3f)\n",
+			   vtxPos[0], vtxPos[1], vtxPos[2], vtxSig[2]));
+	      
+	      AliGenerator *gen = gAlice->GetMCApp()->Generator();
+	      gen->SetOrigin(vtxPos[0], vtxPos[1], vtxPos[2]);   // vertex position
+	      gen->SetSigmaZ(vtxSig[2]);
+	  }
       }
   }
   
@@ -1877,6 +1879,8 @@ Bool_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* e
     } else if (!fileName.IsNull()) {
       rawReader = new AliRawReaderDate(fileName);
     }
+    if (!rawReader) return (kFALSE);
+    
 //     if (!fEquipIdMap.IsNull() && fRawReader)
 //       fRawReader->LoadEquipmentIdsMap(fEquipIdMap);
     //
@@ -2345,7 +2349,7 @@ void AliSimulation::WriteGRPEntry()
   grpObj->SetDipoleCurrent(currentDip,(AliGRPObject::Stats)0);  
   grpObj->SetL3Polarity(factorSol>0 ? 0:1);  
   grpObj->SetDipolePolarity(factorDip>0 ? 0:1);
-  grpObj->SetUniformBMap(field->IsUniform());            // for special MC with k5kGUniform map
+  if (field) grpObj->SetUniformBMap(field->IsUniform()); // for special MC with k5kGUniform map
   grpObj->SetPolarityConventionLHC();                    // LHC convention +/+ current -> -/- field main components
   //
   grpObj->SetCavernTemperature(0,(AliGRPObject::Stats)0);
