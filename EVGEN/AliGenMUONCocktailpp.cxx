@@ -308,7 +308,11 @@ void AliGenMUONCocktailpp::CreateCocktail()
 	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
 
 	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp", "UpsilonPP");	
+    } else {
+	AliError("Initialisation failed");
+	return;
     }
+    
 
     AddReso2Generator(nameJpsi,genjpsi,sigmajpsi,fJpsiPol);
     AddReso2Generator(nameChic1,genchic2,sigmachic1,fChic2Pol);
@@ -408,9 +412,11 @@ void AliGenMUONCocktailpp::AddReso2Generator(Char_t* nameReso,
         decReso = new AliDecayerPolarized(polReso,AliDecayerPolarized::kHelicity,AliDecayerPolarized::kMuon);
         AliInfo(Form("******Reference frame: %s, alpha: %f","Helicity",polReso));
 	  }
-      decReso->SetForceDecay(kAll);
-      decReso->Init();
-      genReso->SetDecayer(decReso);
+      if (decReso) {
+	  decReso->SetForceDecay(kAll);
+	  decReso->Init();
+	  genReso->SetDecayer(decReso);
+      }
      }
     
     AddGenerator(genReso,nameReso,ratioReso); // Adding Generator    

@@ -21,7 +21,7 @@ class AliGenSTRANGElib :
 public AliGenLib
 {
  public:
-    enum constants{kKaon, kPhi, kLambda, kLambda1520=3124};
+    enum constants{kKaon, kPhi, kLambda, kLambda1520=3124, kOmegaMinus = 3334, kXiMinus = 3312};
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
     GenFunc   GetY (Int_t param, const char* tname=0) const;
     GenFuncIp GetIp(Int_t param, const char* tname=0) const;    

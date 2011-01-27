@@ -37,7 +37,6 @@
 /* $Id$ */
 
 #include <TMath.h>
-#include <TPDGCode.h>
 #include <TRandom.h>
 
 #include "AliGenSTRANGElib.h"

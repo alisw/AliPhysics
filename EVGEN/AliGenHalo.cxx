@@ -31,6 +31,7 @@
 
 #include "AliGenHalo.h"
 #include "AliRun.h"
+#include "AliLog.h"
 
 ClassImp(AliGenHalo)
 
@@ -124,6 +125,7 @@ void AliGenHalo::Init()
 	printf("\n File %s opened for reading, %p ! \n ",  fFileName.Data(), (void*)fFile);
     } else {
 	printf("\n Opening of file %s failed,  %p ! \n ",  fFileName.Data(), (void*)fFile);
+	return;
     }
 
     if (fNskip > 0) {
@@ -156,8 +158,14 @@ void AliGenHalo::Init()
 	Fatal("Init()", "No gas pressure file for given run period !");
     }
 
-
-    FILE* file = fopen(name, "r");
+    
+    FILE* file = 0;
+    if (name) file = fopen(name, "r");
+    if (!file) {
+	AliError("No gas pressure file");
+	return;
+    }
+    
     Float_t z;
     Int_t i;
     Float_t p[5];    

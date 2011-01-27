@@ -97,10 +97,6 @@ void AliOmegaDalitz::Init()
       if ( q <= 4.0 * epsilon )
       {
 	AliFatal("Error in calculating Dalitz mass histogram binning!");
-	if ( idecay == 1 ) 
-	  fEPMass = 0;
-	else
-	  fMPMass = 0;
       }	
 
       kwHelp = (1.0 + q /  (1.0 - delta)) * (1.0 + q / (1.0 - delta))

@@ -123,8 +123,13 @@ void AliGenHaloProtvino::Init()
 	Fatal("Init()", "No gas pressure file for given run period !");
     }
 
+    FILE* file = 0;
+    if (name) file = fopen(name, "r");
+    if (!file) {
+	AliError("No gas pressure file");
+	return;
+    }
 
-    FILE* file = fopen(name, "r");
     Float_t z;
     Int_t i;
     Float_t p[5];    
