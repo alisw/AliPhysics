@@ -40,6 +40,7 @@
 #include "AliGRPObject.h"
 #include "AliGRPManager.h"
 #include "AliHLTSystem.h"
+#include "AliHLTConfigurationHandler.h"
 #include "AliHLTPluginBase.h"
 #include "AliRawReaderFile.h"
 #include "AliRawReaderDate.h"
@@ -60,10 +61,9 @@
 ClassImp(AliHLTSimulation);
 
 AliHLTSimulation::AliHLTSimulation()
-  :
-  fOptions(),
-  fpPluginBase(new AliHLTPluginBase),
-  fpRawReader(NULL)
+  : fOptions()
+  , fpPluginBase(new AliHLTPluginBase)
+  , fpRawReader(NULL)
 {
   // see header file for class documentation
   // or
@@ -156,7 +156,34 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 	}
       } else if (token.Contains("writerawfiles=")) {
 	if (!token.ReplaceAll("writerawfiles=", "").Contains("HLT")) {
+	  if (TestBit(kOneChain) && AliHLTOUTComponent::TestGlobalOption(AliHLTOUTComponent::kWriteRawFiles)) {
+	    AliWarning("empty argument 'writerawfiles=' disables HLTOUTComponent mode 'raw' which was set by argument 'hltout-mode'");
+	  }
 	  AliHLTOUTComponent::ClearGlobalOption(AliHLTOUTComponent::kWriteRawFiles);
+	}
+      } else if (token.BeginsWith("hltout-mode=")) {
+	// this is a legacy mode to emulate the behavior before Dec 2010 where only
+	// one chain was executed on either digits or simulated raw data and the output
+	// was controlled via global flags
+	// add to the arguments for AliHLTSystem as also there the information is needed
+	if (sysOp.Length()>0) sysOp+=" ";
+	sysOp+=token;
+	TString param=token.ReplaceAll("hltout-mode=", "");
+	SetBit(kOneChain);
+	if (param.CompareTo("raw")==0) {
+	  // please note that this option
+	  AliHLTOUTComponent::SetGlobalOption(AliHLTOUTComponent::kWriteRawFiles);
+	  AliHLTOUTComponent::ClearGlobalOption(AliHLTOUTComponent::kWriteDigits);
+	} else if (param.CompareTo("digits")==0) {
+	  // please note that this option
+	  AliHLTOUTComponent::ClearGlobalOption(AliHLTOUTComponent::kWriteRawFiles);
+	  AliHLTOUTComponent::SetGlobalOption(AliHLTOUTComponent::kWriteDigits);
+	} else if (param.CompareTo("legacy")==0) {
+	  AliHLTOUTComponent::SetGlobalOption(AliHLTOUTComponent::kWriteRawFiles);
+	  AliHLTOUTComponent::SetGlobalOption(AliHLTOUTComponent::kWriteDigits);
+	} else {
+	  AliError(Form("invalid parameter for argument 'hltout-mode=' %s, allowed: raw, digits, legacy ... ignoring argument  and using the standard simulation", param.Data()));
+	  ResetBit(kOneChain);
 	}
       } else {
 	if (sysOp.Length()>0) sysOp+=" ";
@@ -165,6 +192,12 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     }
     delete pTokens;
   }
+  // only store the options for AliHLTSystem
+  fOptions=sysOp;
+
+  // if no specific hltout-mode has been chosen set the split mode for
+  // running separate chains for digits and raw data
+  if (!fOptions.Contains("hltout-mode=")) fOptions+=" hltout-mode=split";
 
   AliCDBManager* man = AliCDBManager::Instance();
   if (man && man->IsDefaultStorageSet())
@@ -191,14 +224,20 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
     AliError("unable to get instance of AliCDBMetaData, can not prepare OCDB entries");    
   }
 
-  // scan options
-  if (pSystem->ScanOptions(sysOp.Data())<0) {
+  // configure the main HLTSystem instance for digit simulation (pRawReader NULL)
+  return ConfigureHLTSystem(pSystem, fOptions.Data(), pRunLoader, TestBit(kOneChain)?fpRawReader:NULL);
+}
+
+int AliHLTSimulation::ConfigureHLTSystem(AliHLTSystem* pSystem, const char* options, AliRunLoader* pRunLoader, AliRawReader* pRawReader) const
+{
+  // scan options and configure AliHLTSystem
+  if (pSystem->ScanOptions(options)<0) {
     AliError("error setting options for HLT system");
     return -EINVAL;	
   }
 
   if (!pSystem->CheckStatus(AliHLTSystem::kReady)) {
-    if ((pSystem->Configure(fpRawReader, pRunLoader))<0) {
+    if ((pSystem->Configure(pRawReader, pRunLoader))<0) {
       AliError("error during HLT system configuration");
       return -EFAULT;
     }
@@ -206,7 +245,6 @@ int AliHLTSimulation::Init(AliRunLoader* pRunLoader, const char* options)
 
   return 0;
 }
-
 
 int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
 {
@@ -221,7 +259,6 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
     return -EINVAL;
   }
 
-  int nEvents = pRunLoader->GetNumberOfEvents();
   int iResult=0;
 
   AliHLTSystem* pSystem=fpPluginBase->GetInstance();
@@ -235,15 +272,45 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
     return -EFAULT;
   }
 
+  // run the main HLTSystem instance for digit simulation (pRawReader NULL)
+  // in legacy mode only one chain is run and the output is controlled via
+  // global flags
+  if (!TestBit(kOneChain)) AliInfo("running HLT simulation for digits");
+  iResult=RunHLTSystem(pSystem, pRunLoader, TestBit(kOneChain)?fpRawReader:NULL);
+
+  // now run once again with the raw data as input, a completely new HLT system
+  // with new configurations is used
+  if (fpRawReader && !TestBit(kOneChain)) {
+    AliInfo("running HLT simulation for raw data");
+    int iLocalResult=0;
+    AliHLTConfigurationHandler* confHandler=new AliHLTConfigurationHandler;
+    // note that the configuration handler is owned by the
+    // AliHLTSystem instance from now on
+    AliHLTSystem rawSimulation(kHLTLogDefault, "", NULL, confHandler);
+    if ((iLocalResult=ConfigureHLTSystem(&rawSimulation, fOptions.Data(), pRunLoader, fpRawReader))>=0) {
+      iLocalResult=RunHLTSystem(&rawSimulation, pRunLoader, fpRawReader);
+    }
+    if (iResult>=0) iResult=iLocalResult;
+  }
+
+  return iResult;
+}
+
+int AliHLTSimulation::RunHLTSystem(AliHLTSystem* pSystem, AliRunLoader* pRunLoader, AliRawReader* pRawReader) const
+{
+  // run reconstruction cycle for AliHLTSystem
+  int nEvents = pRunLoader->GetNumberOfEvents();
+  int iResult=0;
+
   // Note: the rawreader is already placed at the first event
-  if ((iResult=pSystem->Reconstruct(1, pRunLoader, fpRawReader))>=0) {
+  if ((iResult=pSystem->Reconstruct(1, pRunLoader, pRawReader))>=0) {
     pSystem->FillESD(0, pRunLoader, NULL);
     for (int i=1; i<nEvents; i++) {
-      if (fpRawReader && !fpRawReader->NextEvent()) {
+      if (pRawReader && !pRawReader->NextEvent()) {
 	AliError("mismatch in event count, rawreader corrupted");
 	break;
       }
-      pSystem->Reconstruct(1, pRunLoader, fpRawReader);
+      pSystem->Reconstruct(1, pRunLoader, pRawReader);
       pSystem->FillESD(i, pRunLoader, NULL);
     }
     // send specific 'event' to execute the stop sequence
@@ -251,7 +318,6 @@ int AliHLTSimulation::Run(AliRunLoader* pRunLoader)
   }
   return iResult;
 }
-
 
 AliHLTSimulation* AliHLTSimulationCreateInstance()
 {

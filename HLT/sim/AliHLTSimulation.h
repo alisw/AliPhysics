@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTSIMULATION_H
 #define ALIHLTSIMULATION_H
@@ -7,17 +7,12 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTSimulation.h
-    @author Matthias Richter
-    @date   
-    @brief  Binding class for HLT simulation in AliRoot
+/// @file   AliHLTSimulation.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Binding class for HLT simulation in AliRoot
+///
 
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-                                                                          */
 /**
  * @defgroup alihlt_aliroot_simulation HLT simulation in AliRoot
  * This section describes the the simulation of the HLT in AliRoot.
@@ -63,6 +58,7 @@ class AliRunLoader;
 class AliHLTPluginBase;
 class AliRawReader;
 class AliSimulation;
+class AliHLTSystem;
 
 /**
  * @class AliHLTSimulation
@@ -101,8 +97,18 @@ class AliHLTSimulation : public TObject {
   /** init simulation */
   int Init(AliRunLoader* pRunLoader, const char* options);
 
+  int ConfigureHLTSystem(AliHLTSystem* pSystem, const char* options, AliRunLoader* pRunLoader, AliRawReader* pRawReader) const;
+
   /** run simulation with an instance of the run loader */
   int Run(AliRunLoader* pRunLoader);
+
+  /// run reconstruction cycle for AliHLTSystem
+  int RunHLTSystem(AliHLTSystem* pSystem, AliRunLoader* pRunLoader, AliRawReader* pRawReader) const;
+
+  enum EOptions {
+    // indicate that only one chain should be run, behavior before Dec 2010
+    kOneChain = BIT(15)
+  };
 
  private:
   /** standard constructor */
