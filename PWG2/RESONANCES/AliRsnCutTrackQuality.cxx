@@ -34,7 +34,7 @@ ClassImp(AliRsnCutTrackQuality)
 //_________________________________________________________________________________________________
 AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
-  fFlagsOn(0xFFFFFFFF),
+  fFlagsOn(0x0),
   fFlagsOff(0x0),
   fRejectKinkDaughter(kFALSE),
   fDCARfixed(kTRUE),
@@ -122,7 +122,7 @@ void AliRsnCutTrackQuality::DisableAll()
 // Disable all cuts
 //
   
-  fFlagsOn = 0xFFFFFFFF;
+  fFlagsOn = 0x0;
   fFlagsOff = 0x0;
   fRejectKinkDaughter = kFALSE;
   fDCARfixed = kTRUE;
@@ -153,7 +153,10 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
   // coherence check
   if (!TargetOK(object)) return kFALSE;
   
-  // status is checked in the same way for all tracks
+  // status is checked in the same way for all tracks, using AliVTrack
+  // as a convention, if a the collection of 'on' flags is '0x0', it 
+  // is assumed that no flags are required, and this check is skipped;
+  // for the collection of 'off' flags this is not needed
   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
   if (!vtrack)
   {
@@ -163,7 +166,7 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
   ULong_t status   = (ULong_t)vtrack->GetStatus();
   ULong_t checkOn  = status & fFlagsOn;
   ULong_t checkOff = status & fFlagsOff;
-  if (checkOn == 0)
+  if (fFlagsOn != 0x0 && checkOn != fFlagsOn)
   {
     AliDebug(AliLog::kDebug + 2, Form("Not all required flags are present: required %lx, track has %lx", fFlagsOn, status));
     return kFALSE;
@@ -209,6 +212,10 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
   cuts.SetPtRange (fPt[0], fPt[1]);
   cuts.SetEtaRange(fEta[0], fEta[1]);
   
+  // status flags
+  //if ((fFlagsOn & AliESDtrack::kITSrefit) != 0) cuts.SetRequireITSRefit(kTRUE);
+  //if ((fFlagsOn & AliESDtrack::kTPCrefit) != 0) cuts.SetRequireTPCRefit(kTRUE);
+  
   // transverse DCA cuts
   if (fDCARfixed)
     cuts.SetMaxDCAToVertexXY(fDCARmax);
@@ -217,11 +224,11 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
     
   // longitudinal DCA cuts
   if (fDCAZfixed)
-    cuts.SetMaxDCAToVertexZ(fDCARmax);
+    cuts.SetMaxDCAToVertexZ(fDCAZmax);
   else
     cuts.SetMaxDCAToVertexZPtDep(fDCAZptFormula.Data());
     
-  // these options are always disabled in currend version
+  // these options are always disabled in current version
   cuts.SetDCAToVertex2D(kFALSE);
   cuts.SetRequireSigmaToVertex(kFALSE);
   

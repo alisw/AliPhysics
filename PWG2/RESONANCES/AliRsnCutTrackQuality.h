@@ -36,9 +36,9 @@ class AliRsnCutTrackQuality : public AliRsnCut
     void      SetPtRange(Double_t a, Double_t b)    {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
     void      SetEtaRange(Double_t a, Double_t b)   {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
     
-    void      SetDCARPtFormula(const char *formula) {fDCARptFormula = formula; fDCARptFormula.ReplaceAll("pt", "x"); fDCARfixed = kFALSE;}
+    void      SetDCARPtFormula(const char *formula) {fDCARptFormula = formula; fDCARfixed = kFALSE;}
     void      SetDCARmax(Double_t value)            {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
-    void      SetDCAZPtFormula(const char *formula) {fDCAZptFormula = formula; fDCAZptFormula.ReplaceAll("pt", "x"); fDCAZfixed = kFALSE;}
+    void      SetDCAZPtFormula(const char *formula) {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
     void      SetDCAZmax(Double_t value)            {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
     
     void      SetSPDminNClusters(Int_t value)       {fSPDminNClusters = value;}
