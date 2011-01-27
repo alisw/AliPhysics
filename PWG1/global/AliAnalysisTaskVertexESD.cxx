@@ -101,7 +101,10 @@ AliAnalysisTaskSE(name),
   fhSPDVertexXPile(0),
   fhSPDVertexYPile(0),
   fhSPDVertexZPile(0),
-  fhSPDVertexDiffZPile(0),
+  fhSPDVertexDiffZPileContr2(0),
+  fhSPDVertexDiffZPileContr3(0),
+  fhSPDVertexDiffZPileContr4(0),
+  fhSPDVertexDiffZPileContr5(0),
   fhSPDContributorsPile(0),
   fhSPDDispContributors(0)
 {
@@ -166,8 +169,15 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhSPDVertexYPile);
   fhSPDVertexZPile = new TH1F("fhSPDVertexZPile","SPDVertexPile z; z vertex [cm]; events",200,-40,40);
   fOutput->Add(fhSPDVertexZPile);
-  fhSPDVertexDiffZPile = new TH1F("fhSPDVertexDiffZPile","SPDVertexDiff z; zmain - zdiff [cm]; events",200,-80,80);
-  fOutput->Add(fhSPDVertexDiffZPile);
+  
+  fhSPDVertexDiffZPileContr2 = new TH1F("fhSPDVertexDiffZPileContr2","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fOutput->Add(fhSPDVertexDiffZPileContr2);
+  fhSPDVertexDiffZPileContr3 = new TH1F("fhSPDVertexDiffZPileContr3","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fOutput->Add(fhSPDVertexDiffZPileContr3);
+  fhSPDVertexDiffZPileContr4 = new TH1F("fhSPDVertexDiffZPileContr4","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fOutput->Add(fhSPDVertexDiffZPileContr4);
+  fhSPDVertexDiffZPileContr5 = new TH1F("fhSPDVertexDiffZPileContr5","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fOutput->Add(fhSPDVertexDiffZPileContr5);
 
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
@@ -475,7 +485,11 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       fhSPDContributorsPile->Fill(spdvp->GetNContributors());
       fhSPDDispContributors->Fill(spdv->GetNContributors(),spdvp->GetNContributors());
       fhSPDVertexZPile->Fill(spdvp->GetZv());
-      fhSPDVertexDiffZPile->Fill(spdv->GetZv()-spdvp->GetZv());
+      if(spdvp->GetNContributors()>=2) {fhSPDVertexDiffZPileContr2->Fill(spdv->GetZv()-spdvp->GetZv());}
+      if(spdvp->GetNContributors()>=3) {fhSPDVertexDiffZPileContr3->Fill(spdv->GetZv()-spdvp->GetZv());}
+      if(spdvp->GetNContributors()>=4) {fhSPDVertexDiffZPileContr4->Fill(spdv->GetZv()-spdvp->GetZv());}
+      if(spdvp->GetNContributors()>=5) {fhSPDVertexDiffZPileContr5->Fill(spdv->GetZv()-spdvp->GetZv());}
+      
     }
    
     xpile=spdvp->GetXv();
