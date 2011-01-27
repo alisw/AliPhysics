@@ -781,9 +781,9 @@ Double_t AliAnalysisTaskJetChem::GetJetRadius(const AliAODJet* jet, const Double
   }
 
 
-  Double_t deltaR[kArraySize];
-  Double_t pt[kArraySize];
-  Int_t index[kArraySize];
+  Double_t deltaR[kArraySize] = {kInitVal};
+  Double_t pt[kArraySize] = {kInitVal};
+  Int_t index[kArraySize] = {kInitVal};
   for(int i=0; i<kArraySize; i++) index[i] = kInitVal;
   
 
