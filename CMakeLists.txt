@@ -16,6 +16,9 @@ project(AliRoot CXX C Fortran)
 set(ALICE_ROOT $ENV{ALICE_ROOT})
 set(ALICE $ENV{ALICE})
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
+# Environment for SHUTTLE
+set(DIMDIR $ENV{DIMDIR})
+set(ODIR $ENV{ODIR})
 
 if(NOT ALICE)
   message(WARNING "Environment variable ALICE is not set")
