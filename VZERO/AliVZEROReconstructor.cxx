@@ -53,6 +53,7 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fESDVZEROfriend(0x0),
                         fCalibData(NULL),
                         fTimeSlewing(NULL),
+                        fSaturationCorr(NULL),
                         fCollisionMode(0),
                         fBeamEnergy(0.),
                         fDigitsArray(0)
@@ -94,6 +95,10 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
 		       delays->GetBinContent(i+1)+
 		       kV0Offset);
   }
+
+  AliCDBEntry *entry5 =  AliCDBManager::Instance()->Get("VZERO/Calib/Saturation");
+  if (!entry5) AliFatal("Saturation entry is not found in OCDB !");
+  fSaturationCorr = (TObjArray*)entry5->GetObject();
 }
 
 
@@ -350,7 +355,10 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 			  aBBflag[pmNumber],aBGflag[pmNumber]));
 	    };
 
-	mult[pmNumber] = adc[pmNumber]*fCalibData->GetMIPperADC(pmNumber);
+	TF1 *saturationFunc = (TF1*)fSaturationCorr->UncheckedAt(pmNumber);
+	if (!saturationFunc) AliFatal(Form("Saturation correction for channel %d is not found!",pmNumber));
+	AliDebug(1,Form("Saturation PM=%d   %f %f",pmNumber,adc[pmNumber],saturationFunc->Eval(adc[pmNumber])));
+	mult[pmNumber] = saturationFunc->Eval(adc[pmNumber])*fCalibData->GetMIPperADC(pmNumber);
 
 	// Fill ESD friend object
 	for (Int_t iEv = 0; iEv < AliESDVZEROfriend::kNEvOfInt; iEv++) {

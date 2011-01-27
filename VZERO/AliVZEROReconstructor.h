@@ -71,13 +71,14 @@ private:
   AliVZEROCalibData* fCalibData;      //! calibration data
   Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
+  TObjArray*         fSaturationCorr; //! Array with functions for correcting the signal saturation
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
 
   mutable TClonesArray *fDigitsArray; // clones-array for ConvertDigits() and FillESD()
 
-  ClassDef(AliVZEROReconstructor, 2)  // class for the VZERO reconstruction
+  ClassDef(AliVZEROReconstructor, 3)  // class for the VZERO reconstruction
 };
 
 #endif
