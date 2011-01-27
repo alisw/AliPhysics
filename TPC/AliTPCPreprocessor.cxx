@@ -1065,14 +1065,7 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
         if (fileNameEntry!=NULL) {
           TString fileName = GetFile(sourceFXS, "CEnew",
                                      fileNameEntry->GetString().Data());
-          TFile *f = TFile::Open(fileName);
-          if (!f) {
-            Log ("Error opening new central electrode file.");
-//             result =2;
-            break;
-          }
-          AliTPCCalibCE *calCE;
-          f->GetObject("tpcCalibCE",calCE);
+          AliTPCCalibCE *calCE=AliTPCCalibCE::ReadFromFile(fileName.Data());        
           
           if (!calCE) {
             Log ("No valid new calibCE object.");
@@ -1086,7 +1079,6 @@ UInt_t AliTPCPreprocessor::ExtractCE(Int_t sourceFXS)
             arrFitGraphs->Add(obj->Clone());
           }
           delete calCE;
-	  f->Close();          
         }
         ++index2;
       }
