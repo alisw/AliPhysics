@@ -27,7 +27,7 @@ TList * listToLoad = new TList(); // Additional classes to be loaded, see InitAn
 TChain * GetAnalysisChain(const char * incollection);
 void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug=0) ;
 
-void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full")
+void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Bool_t usePID = kTRUE, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full")
 {
   // runMode:
   //
@@ -121,7 +121,10 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
     cout << "3" << endl;
     task[ibin]->SetAnalysisCut("no");
     cout << "4" << endl;
-    task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
+    if(usePID) 
+      task[ibin]->SetUsePID("withPID"); // withPID or withoutPID
+    else
+      task[ibin]->SetUsePID("withoutPID"); // withPID or withoutPID
     cout << "5" << endl;
   }
 
