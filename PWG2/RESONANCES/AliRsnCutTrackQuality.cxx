@@ -36,7 +36,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
   AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
   fFlagsOn(0x0),
   fFlagsOff(0x0),
-  fRejectKinkDaughter(kFALSE),
+  fRejectKinkDaughters(kTRUE),
   fDCARfixed(kTRUE),
   fDCARptFormula(""),
   fDCARmax(fgkVeryBig),
@@ -63,7 +63,7 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
   AliRsnCut(copy),
   fFlagsOn(copy.fFlagsOn),
   fFlagsOff(copy.fFlagsOff),
-  fRejectKinkDaughter(copy.fRejectKinkDaughter),
+  fRejectKinkDaughters(copy.fRejectKinkDaughters),
   fDCARfixed(copy.fDCARfixed),
   fDCARptFormula(copy.fDCARptFormula),
   fDCARmax(copy.fDCARmax),
@@ -96,7 +96,7 @@ AliRsnCutTrackQuality& AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
   
   fFlagsOn = copy.fFlagsOn;
   fFlagsOff = copy.fFlagsOff;
-  fRejectKinkDaughter = copy.fRejectKinkDaughter;
+  fRejectKinkDaughters = copy.fRejectKinkDaughters;
   fDCARfixed = copy.fDCARfixed;
   fDCARptFormula = copy.fDCARptFormula;
   fDCARmax = copy.fDCARmax;
@@ -124,7 +124,7 @@ void AliRsnCutTrackQuality::DisableAll()
   
   fFlagsOn = 0x0;
   fFlagsOff = 0x0;
-  fRejectKinkDaughter = kFALSE;
+  fRejectKinkDaughters = kFALSE;
   fDCARfixed = kTRUE;
   fDCARptFormula = "";
   fDCARmax = fgkVeryBig;
@@ -212,10 +212,6 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
   cuts.SetPtRange (fPt[0], fPt[1]);
   cuts.SetEtaRange(fEta[0], fEta[1]);
   
-  // status flags
-  //if ((fFlagsOn & AliESDtrack::kITSrefit) != 0) cuts.SetRequireITSRefit(kTRUE);
-  //if ((fFlagsOn & AliESDtrack::kTPCrefit) != 0) cuts.SetRequireTPCRefit(kTRUE);
-  
   // transverse DCA cuts
   if (fDCARfixed)
     cuts.SetMaxDCAToVertexXY(fDCARmax);
@@ -235,7 +231,7 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
   // TPC related cuts for TPC+ITS tracks
   cuts.SetMinNClustersTPC(fTPCminNClusters);
   cuts.SetMaxChi2PerClusterTPC(fTPCmaxChi2);
-  cuts.SetAcceptKinkDaughters(!fRejectKinkDaughter);
+  cuts.SetAcceptKinkDaughters(!fRejectKinkDaughters);
   
   // ITS related cuts for TPC+ITS tracks
   if (fSPDminNClusters > 0)
@@ -290,7 +286,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
   
   // step #3: reject kink daughters
   AliAODVertex *vertex = track->GetProdVertex();
-  if (vertex && fRejectKinkDaughter)
+  if (vertex && fRejectKinkDaughters)
   {
     if (vertex->GetType() == AliAODVertex::kKink)
     {
@@ -358,4 +354,37 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
   
   // if we are here, all cuts were passed and no exit point was got
   return kTRUE;
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutTrackQuality::Print(const Option_t *) const
+{
+//
+// Print information on this cut
+//
+
+  AliInfo(Form("Cut name                : %s", GetName()));
+  AliInfo(Form("Required flags (off, on): %lx %lx", fFlagsOn, fFlagsOff));
+  AliInfo(Form("Ranges in eta, pt       : %.2f - %.2f, %.2f - %.2f", fEta[0], fEta[1], fPt[0], fPt[1]));
+  AliInfo(Form("Kink daughters are      : %s", (fRejectKinkDaughters ? "rejected" : "accepted")));
+  AliInfo(Form("TPC requirements        : min. cluster = %d, max chi2 = %f", fTPCminNClusters, fTPCmaxChi2));
+  AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fITSminNClusters, fSPDminNClusters, fITSmaxChi2));
+  
+  if (fDCARfixed)
+  {
+    AliInfo(Form("DCA r cut               : fixed to %f cm", fDCARmax));
+  }
+  else
+  {
+    AliInfo(Form("DCA r cut formula       : %s", fDCARptFormula.Data()));
+  }
+    
+  if (fDCAZfixed)
+  {
+    AliInfo(Form("DCA z cut               : fixed to %f cm", fDCAZmax));
+  }
+  else
+  {
+    AliInfo(Form("DCA z cut formula       : %s", fDCAZptFormula.Data()));
+  }
 }
