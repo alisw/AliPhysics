@@ -90,7 +90,7 @@ class AliCFVertexingHF : public TObject {
 
 	Bool_t RecoAcceptStep(AliESDtrackCuts *trackCuts) const;
 	
-	Bool_t FillUnfoldingMatrix(Double_t *fill) const;
+	Bool_t FillUnfoldingMatrix(Double_t fill[4]) const;
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
 	void SetDselection(UShort_t originDselection); 

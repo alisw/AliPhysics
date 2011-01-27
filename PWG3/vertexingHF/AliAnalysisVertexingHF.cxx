@@ -420,7 +420,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   UChar_t  *seleFlags = new UChar_t[trkEntries]; // bit 0: displaced, bit 1: softpi
   Int_t     nSeleTrks=0;
   Int_t *evtNumber    = new Int_t[trkEntries];
-  SelectTracksAndCopyVertex(event,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
+  SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
     
   //AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
   printf(" Selected tracks: %d\n",nSeleTrks);
@@ -605,10 +605,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       } // end loop on V0's
     } 
   
-    // If there is less than 2 particles exit
+    // If there is less than 2 particles continue
     if(trkEntries<2) {
       AliDebug(1,Form(" Not enough tracks: %d",trkEntries));
-      return;
+      continue;
     }
 
     if(postrack1->Charge()<0 && !fLikeSign) continue;
@@ -1980,6 +1980,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
 }
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
+						       Int_t trkEntries,
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 			           UChar_t *seleFlags,Int_t *evtNumber)
 {
@@ -2045,7 +2046,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 
     // single track selection
     okDisplaced=kFALSE; okSoftPi=kFALSE;
-    if(fMixEvent){
+    if(fMixEvent && i<trkEntries){
       evtNumber[i]=((AliMixedEvent*)event)->EventIndex(i);
       const AliVVertex* eventVtx=((AliMixedEvent*)event)->GetEventVertex(i);
       Double_t vtxPos[3],primPos[3],primCov[6],trasl[3];
@@ -2064,7 +2065,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
       }
     }
 
-    if(SingleTrkCuts(esdt,okDisplaced,okSoftPi)) {
+    if(SingleTrkCuts(esdt,okDisplaced,okSoftPi) && nSeleTrks<trkEntries) {
       seleTrksArray.AddLast(esdt);
       seleFlags[nSeleTrks]=0;
       if(okDisplaced) SETBIT(seleFlags[nSeleTrks],kBitDispl);
@@ -2113,6 +2114,7 @@ Bool_t AliAnalysisVertexingHF::SingleTrkCuts(AliESDtrack *trk,
     selectInfo = fTrackFilter->IsSelected(trk);
   }
   if(selectInfo) okDisplaced=kTRUE;
+
   // Track selection, soft pions
   selectInfo = 0; 
   if(fDstar && fTrackFilterSoftPi) {

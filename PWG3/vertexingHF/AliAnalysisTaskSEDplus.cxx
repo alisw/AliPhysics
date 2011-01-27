@@ -252,7 +252,7 @@ void AliAnalysisTaskSEDplus::SetPtBinLimit(Int_t n, Float_t* lim){
   }
   if(fDebug > 1){
     printf("Number of Pt bins = %d\n",fNPtBins);
-    for(Int_t i=0; i<fNPtBins+1; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
+    for(Int_t i=0; i<fNPtBins; i++) printf(" Bin%d = %8.2f-%8.2f\n",i,fArrayBinLimits[i],fArrayBinLimits[i+1]);    
   }
 }
 //________________________________________________________________

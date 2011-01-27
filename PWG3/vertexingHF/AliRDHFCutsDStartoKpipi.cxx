@@ -584,7 +584,11 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
   }
   
   SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
-  
+
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
+
   // PID SETTINGS FOR D* analysis
   AliAODPidHF* pidObj=new AliAODPidHF();
   //pidObj->SetName("pid4DSatr");
@@ -601,6 +605,9 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
   SetUsePID(kTRUE);
 
   PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
 
   return;
 }
@@ -688,6 +695,10 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
   }
   
   SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+  cutsMatrixTransposeStand=NULL;
   
   // PID SETTINGS
   AliAODPidHF* pidObj=new AliAODPidHF();
@@ -705,6 +716,9 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
   SetUsePID(kTRUE);
 
   PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
 
   return;
 

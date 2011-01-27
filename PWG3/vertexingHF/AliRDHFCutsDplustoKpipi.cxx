@@ -479,6 +479,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval=new Float_t*[nvars];
   
   for(Int_t ic=0;ic<nvars;ic++){anacutsval[ic]=new Float_t[nptbins];}
+
   //Double_t cutsDplus[12]={0.2,0.4,0.4,0.,0.,0.01,0.06,0.02,0.,0.85,0.,10000000000.};
   Int_t ic=0;
   for(Int_t ipt=0;ipt<nptbins;ipt++){
@@ -606,6 +607,10 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   
   PrintAll();
 
+  for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
+  delete [] anacutsval;
+  anacutsval=NULL;
+
   return;
 }
 
@@ -643,6 +648,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   const Int_t nptbins=10;
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
+
   ptbins[0]=0.;
   ptbins[1]=1.;
   ptbins[2]=2.;
@@ -764,6 +770,13 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
   SetRemoveDaughtersFromPrim(kFALSE);
     
   PrintAll();
+
+  for(Int_t iic=0;ic<nvars;iic++){delete [] anacutsval[iic];}
+  delete [] anacutsval;
+  anacutsval=NULL;
+
+  delete [] ptbins;
+  ptbins=NULL;
 
   return;
 }
