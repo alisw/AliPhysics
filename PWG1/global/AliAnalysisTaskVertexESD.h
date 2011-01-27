@@ -86,7 +86,10 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhSPDVertexXPile; //! output histo
   TH1F        *fhSPDVertexYPile; //! output histo
   TH1F        *fhSPDVertexZPile; //! output histo
-  TH1F        *fhSPDVertexDiffZPile; //! output histo
+  TH1F        *fhSPDVertexDiffZPileContr2; //! output histo
+  TH1F        *fhSPDVertexDiffZPileContr3; //! output histo
+  TH1F        *fhSPDVertexDiffZPileContr4; //! output histo
+  TH1F        *fhSPDVertexDiffZPileContr5; //! output histo
   TH1F        *fhSPDContributorsPile; //! output histo
   TH2F        *fhSPDDispContributors; //! output histo
 
