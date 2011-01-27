@@ -81,7 +81,18 @@ void AliAnalysisTaskJetsTM::UserExec(Option_t *)
   }
 
   AliAODEvent* aodE  = dynamic_cast<AliAODEvent*>  (fInputEvent);
+
+  if (!aodE) {
+    Printf("ERROR: AOD not available");
+    return;
+  }
+
   TClonesArray* jets = dynamic_cast<TClonesArray*> (aodE->FindListObject("jetsAOD_FASTKT04"));
+  if (!jets) {
+    Printf("ERROR: Jet branch not available");
+    return;
+  }
+
   Int_t nJ = jets->GetEntries();
 
   Float_t ptmax = 0.;
