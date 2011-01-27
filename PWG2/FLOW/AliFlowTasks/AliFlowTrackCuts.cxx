@@ -82,6 +82,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
+  fCutNClustersITS(kFALSE),
+  fNClustersITSMax(INT_MAX),
+  fNClustersITSMin(INT_MIN),  
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -131,6 +134,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutNClustersTPC(kFALSE),
   fNClustersTPCMax(INT_MAX),
   fNClustersTPCMin(INT_MIN),  
+  fCutNClustersITS(kFALSE),
+  fNClustersITSMax(INT_MAX),
+  fNClustersITSMin(INT_MIN),  
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -188,6 +194,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutNClustersTPC(that.fCutNClustersTPC),
   fNClustersTPCMax(that.fNClustersTPCMax),
   fNClustersTPCMin(that.fNClustersTPCMin),
+  fCutNClustersITS(that.fCutNClustersITS),
+  fNClustersITSMax(that.fNClustersITSMax),
+  fNClustersITSMin(that.fNClustersITSMin),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -242,6 +251,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutNClustersTPC=that.fCutNClustersTPC;
   fNClustersTPCMax=that.fNClustersTPCMax;
   fNClustersTPCMin=that.fNClustersTPCMin;  
+  fCutNClustersITS=that.fCutNClustersITS;
+  fNClustersITSMax=that.fNClustersITSMax;
+  fNClustersITSMin=that.fNClustersITSMin;  
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
@@ -447,19 +459,24 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
 
   Bool_t isMCparticle = kFALSE; //some things are different for MC particles, check!
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*>(vparticle);
+  AliAODTrack* aodTrack = NULL;
   if (esdTrack)
+    //for an ESD track we do some magic sometimes like constructing TPC only parameters
+    //or doing some hybrid, handle that here
     HandleESDtrack(esdTrack);
   else
   {
     HandleVParticle(vparticle);
     //now check if produced particle is MC
     isMCparticle = (dynamic_cast<AliMCParticle*>(fTrack))!=NULL;
+    aodTrack = dynamic_cast<AliAODTrack*>(vparticle); //keep the additional dynamic cast out of the way for ESDs
   }
   ////////////////////////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////
 
   if (!fTrack) return kFALSE;
-  if (esdTrack) esdTrack=static_cast<AliESDtrack*>(fTrack); //because it may be different from global
+  //because it may be different from global, not needed for aodTrack because we dont do anything funky there
+  if (esdTrack) esdTrack = static_cast<AliESDtrack*>(fTrack);
   
   Bool_t pass=kTRUE;
   //check the common cuts for the current particle fTrack (MC,AOD,ESD)
@@ -481,78 +498,114 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   //when additionally MC info is required
   if (fCutMC && !PassesMCcuts()) pass=kFALSE;
 
-  //check all else for ESDs using aliesdtrackcuts
-  if (esdTrack && (fParamType!=kMC) ) 
+  //the case of ESD or AOD
+  if (esdTrack) PassesESDcuts(esdTrack);
+  if (aodTrack) PassesAODcuts(aodTrack);
+
+  //true by default, if we didn't set any cuts
+  return pass;
+}
+
+//_______________________________________________________________________
+Bool_t AliFlowTrackCuts::PassesAODcuts(AliAODTrack* track)
+{
+  Bool_t pass = kTRUE;
+
+  if (fCutNClustersTPC)
   {
-    if (fIgnoreTPCzRange)
-    {
-      const AliExternalTrackParam* pin = esdTrack->GetOuterParam();
-      const AliExternalTrackParam* pout = esdTrack->GetInnerParam();
-      if (pin&&pout)
-      {
-        Double_t zin = pin->GetZ();
-        Double_t zout = pout->GetZ();
-        if (zin*zout<0) pass=kFALSE;   //reject if cross the membrane
-        if (zin < fIgnoreTPCzRangeMin || zin > fIgnoreTPCzRangeMax) pass=kFALSE;
-        if (zout < fIgnoreTPCzRangeMin || zout > fIgnoreTPCzRangeMax) pass=kFALSE;
-      }
-    }
- 
-    if (fAliESDtrackCuts)
-    {
-      if (!fAliESDtrackCuts->IsSelected(static_cast<AliESDtrack*>(fTrack))) pass=kFALSE;
-    }
- 
-    Int_t ntpccls = ( fParamType==kESD_TPConly )?
-                      esdTrack->GetTPCNclsIter1():esdTrack->GetTPCNcls();    
-    if (fCutChi2PerClusterTPC)
-    {
-      Float_t tpcchi2 = (fParamType==kESD_TPConly)?
-                         esdTrack->GetTPCchi2Iter1():esdTrack->GetTPCchi2();
-      tpcchi2 = (ntpccls>0)?tpcchi2/ntpccls:-FLT_MAX;
-      if (tpcchi2<fMinChi2PerClusterTPC || tpcchi2 >=fMaxChi2PerClusterTPC)
-        pass=kFALSE;
-    }
-
-    if (fCutNClustersTPC)
-    {
-      if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
-    }
-
-    if (fCutPID)
-    {
-      switch (fPIDsource)    
-      {
-        case kTPCpid:
-          if (!PassesTPCpidCut(esdTrack)) pass=kFALSE;
-          break;
-        case kTOFpid:
-          if (!PassesTOFpidCut(esdTrack)) pass=kFALSE;
-          break;
-        case kTPCTOFpid:
-          if (pt< fTPCTOFpidCrossOverPt)
-          {
-            if (!PassesTPCpidCut(esdTrack)) pass=kFALSE;
-          }
-          else //if (pt>=fTPCTOFpidCrossOverPt)
-          {
-            if (!PassesTOFpidCut(esdTrack)) pass=kFALSE;
-          }
-          break;
-	      // part added by F. Noferini
-        case kTOFbayesian:
-	        if (!PassesTOFbayesianCut(esdTrack)) pass=kFALSE;
-	        break;
-	      // end part added by F. Noferini
-        default:
-          printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
-          pass=kFALSE;
-          break;
-      }
-    }    
+    Int_t ntpccls = track->GetTPCNcls();
+    if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
   }
 
-  return pass; //true by default, if we didn't set any cuts
+  if (fCutNClustersITS)
+  {
+    Int_t nitscls = track->GetITSNcls();
+    if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
+  }
+
+  return pass;
+}
+
+//_______________________________________________________________________
+Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
+{
+  Bool_t pass=kTRUE;
+  if (fIgnoreTPCzRange)
+  {
+    const AliExternalTrackParam* pin = track->GetOuterParam();
+    const AliExternalTrackParam* pout = track->GetInnerParam();
+    if (pin&&pout)
+    {
+      Double_t zin = pin->GetZ();
+      Double_t zout = pout->GetZ();
+      if (zin*zout<0) pass=kFALSE;   //reject if cross the membrane
+      if (zin < fIgnoreTPCzRangeMin || zin > fIgnoreTPCzRangeMax) pass=kFALSE;
+      if (zout < fIgnoreTPCzRangeMin || zout > fIgnoreTPCzRangeMax) pass=kFALSE;
+    }
+  }
+ 
+  Int_t ntpccls = ( fParamType==kESD_TPConly )?
+                    track->GetTPCNclsIter1():track->GetTPCNcls();    
+  if (fCutChi2PerClusterTPC)
+  {
+    Float_t tpcchi2 = (fParamType==kESD_TPConly)?
+                       track->GetTPCchi2Iter1():track->GetTPCchi2();
+    tpcchi2 = (ntpccls>0)?tpcchi2/ntpccls:-FLT_MAX;
+    if (tpcchi2<fMinChi2PerClusterTPC || tpcchi2 >=fMaxChi2PerClusterTPC)
+      pass=kFALSE;
+  }
+
+  if (fCutNClustersTPC)
+  {
+    if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
+  }
+
+  Int_t nitscls = track->GetNcls(0);
+  if (fCutNClustersITS)
+  {
+    if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
+  }
+
+  Double_t pt = fTrack->Pt();
+  if (fCutPID)
+  {
+    switch (fPIDsource)    
+    {
+      case kTPCpid:
+        if (!PassesTPCpidCut(track)) pass=kFALSE;
+        break;
+      case kTOFpid:
+        if (!PassesTOFpidCut(track)) pass=kFALSE;
+        break;
+      case kTPCTOFpid:
+        if (pt< fTPCTOFpidCrossOverPt)
+        {
+          if (!PassesTPCpidCut(track)) pass=kFALSE;
+        }
+        else //if (pt>=fTPCTOFpidCrossOverPt)
+        {
+          if (!PassesTOFpidCut(track)) pass=kFALSE;
+        }
+        break;
+	    // part added by F. Noferini
+      case kTOFbayesian:
+	      if (!PassesTOFbayesianCut(track)) pass=kFALSE;
+	      break;
+	    // end part added by F. Noferini
+      default:
+        printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
+        pass=kFALSE;
+        break;
+    }
+  }    
+
+  //some stuff is still handled by AliESDtrackCuts class - delegate
+  if (fAliESDtrackCuts)
+  {
+    if (!fAliESDtrackCuts->IsSelected(track)) pass=kFALSE;
+  }
+ 
+  return pass;
 }
 
 //-----------------------------------------------------------------------

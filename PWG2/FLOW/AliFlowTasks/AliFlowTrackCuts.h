@@ -24,6 +24,8 @@ class AliFlowTrack;
 class AliMCEvent;
 class AliVEvent;
 class AliMultiplicity; 
+class AliAODTrack;
+class AliESDtrack;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -42,8 +44,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid, kTOFbayesian};
 
   //setters (interface to AliESDtrackCuts)
-  void SetMinNClustersTPC( Int_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMinNClustersTPC(a);}
-  void SetMinNClustersITS( Int_t a ) {InitESDcuts(); fAliESDtrackCuts->SetMinNClustersITS(a);}
+  void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
+  void SetMinNClustersITS( Int_t a ) {fCutNClustersITS=kTRUE; fNClustersITSMin=a;}
   void SetClusterRequirementITS( AliESDtrackCuts::Detector det,
                                  AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff )
                                  { InitESDcuts(); fAliESDtrackCuts->SetClusterRequirementITS(det,req); } 
@@ -138,6 +140,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
  protected:
   Bool_t PassesCuts(AliVParticle* track);
+  Bool_t PassesESDcuts(AliESDtrack* track);
+  Bool_t PassesAODcuts(AliAODTrack* track);
   Bool_t PassesCuts(AliFlowTrackSimple* track);
   Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
@@ -181,6 +185,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutNClustersTPC;       //cut on clusters?
   Int_t fNClustersTPCMax;        //max tpc ncls
   Int_t fNClustersTPCMin;        //min tpc clusters  
+  Bool_t fCutNClustersITS;       //cut on clusters?
+  Int_t fNClustersITSMax;        //max tpc ncls
+  Int_t fNClustersITSMin;        //min tpc clusters  
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
