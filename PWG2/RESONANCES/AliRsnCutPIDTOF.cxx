@@ -241,3 +241,15 @@ Bool_t AliRsnCutPIDTOF::CheckAOD(AliAODTrack *track)
   fCutValueD = (Double_t)fAODpid.NumberOfSigmasTOF(track, fPIDtype);
   return OkRangeD();
 }
+
+//_________________________________________________________________________________________________
+void AliRsnCutPIDTOF::Print(const Option_t *) const
+{
+//
+// Print information on this cut
+//
+
+  AliInfo(Form("Cut name, type            : %s %s", GetName(), ClassName()));
+  AliInfo(Form("TOF PID cut range (sigmas): %.3f %.3f", fMinD, fMaxD));
+  AliInfo(Form("Unmatched tracks are      : %s", (fForceMatching ? "rejected" : "accepted")));
+}
