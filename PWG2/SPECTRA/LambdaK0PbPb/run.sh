@@ -12,6 +12,12 @@ offset=0
 debug=kTRUE
 option="SAVE" #FIXME:set option
 suffix=""
+fitFolder="LHC10h_000137161_p1_5plus"
+fitBin="00"
+partID=1
+task=no
+fit=no
+
 
 give_help() {
 
@@ -19,7 +25,7 @@ cat <<ENDOFGUIDE
 This scripts runs the the physics selection and centrality on a specified run/dataset
 
 Available options:
- Mode control, at least one of the following options should be used
+ * Run the task *
   -r <mode>                    Run the task
                                Modes (compulsory):
                                   0 local
@@ -34,6 +40,7 @@ Available options:
                                (one entry per line). If you use this option you don't 
                                need the -d. in the case you are running on CAF, they 
                                must have the same path
+  -x <suffix>                  Add extra suffix to files 
  Grid only options
   -g <gridmode>                Plugin Mode [default=$mode]
   -p <recopass>                Reconstruction pass [default=$pass]       
@@ -41,14 +48,34 @@ Available options:
   -p <path>                    Data set path
   -n <nev>                     Number of events
   -w <workers>                 Number of workers [default=$workers]
+
+ * Fit the results *
+  -f <folder>                  Run the fitting macro in the subfolder of ./output
+  -b <bin>                     Centrality bin index [default=$fitBin]
+  -p <particleID>              Fit particle defined by particleID [default=$partID]
+                                 0=K0 
+                                 1=Lambda 
+                                 2=Anti-Lambda 
+                                 3=Lambda + Anti-Lambda, 
+                                 4=Csi 
+                                 6=Omega
+  -x <suffix>                  Add extra suffix to files 
 ENDOFGUIDE
 
 }
 
-while getopts "r:hd:mg:p:n:w:t:l:" opt; do
+while getopts "r:hd:mg:p:n:w:t:l:f:b:x:" opt; do
   case $opt in
     r)
       runMode=$OPTARG
+      task=yes
+      ;;
+    f) 
+      fitFolder=$OPTARG
+      fit=yes
+      ;;
+    b)
+      fitBin=`printf %2.2d $OPTARG`
       ;;
     d)
       run=$OPTARG
@@ -73,6 +100,10 @@ while getopts "r:hd:mg:p:n:w:t:l:" opt; do
       ;;
     p)
       pass=$OPTARG
+      partID=$OPTARG
+      ;;
+    x)
+      suffix=$OPTARG
       ;;
     h)
       give_help
@@ -92,28 +123,38 @@ while getopts "r:hd:mg:p:n:w:t:l:" opt; do
 done
 
 
-runlist=$run
-if [ "$listfile" != "" ]
+if [ "$task" = "yes" ]
     then
-    runlist=""
-    while read line
-    do
-	runlist="$runlist $line"
-    done < $listfile
+    runlist=$run
+    if [ "$listfile" != "" ]
+    then
+	runlist=""
+	while read line
+	do
+	    runlist="$runlist $line"
+	done < $listfile	
+    fi
+
+    echo "Run list: $runlist"
     
-fi
 
-echo "Run list: $runlist"
-
-
-if [ "$runMode" = "2" ]
-then
-    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$option,$suffix,$workers,\"$mode\"\)
-    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,\"$option\",\"$suffix\",$workers,\"$mode\"\)
-else
-    for run in $runlist 
-    do
+    if [ "$runMode" = "2" ]
+    then
 	echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$option,$suffix,$workers,\"$mode\"\)
 	root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,\"$option\",\"$suffix\",$workers,\"$mode\"\)
-    done
+    else
+	for run in $runlist 
+	do
+	    echo root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,$option,$suffix,$workers,\"$mode\"\)
+	    root $ROPT run.C\(\"$run\",\"$pass\",$nev,$offset,$debug,$runMode,$mc,\"$option\",\"$suffix\",$workers,\"$mode\"\)
+	done
+    fi
+elif [ "$fit" = "yes" ]
+then    
+    root FitSpectrum.C\(\"./output/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",$partID\)
+else
+    give_help
 fi
+
+
+	
