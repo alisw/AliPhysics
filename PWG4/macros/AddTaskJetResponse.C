@@ -1,4 +1,4 @@
-AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 5){
+AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 5){
 
   Printf("adding task jet response\n");
 
@@ -12,26 +12,32 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* jf = "FASTKT", Float_t ra
 	return NULL;
     }
 
-    AliAnalysisTaskJetResponse *task = new AliAnalysisTaskJetResponse("JetResponse");
+    TString suffix = "";
+    suffix += Form("_%s", jf);
+    suffix += Form("%02d", (int)((radius+0.01)*10.));
+    suffix += Form("_B0");                                // no background subtraction for extra-only
+    suffix += Form("_Filter%05d", filterMask);
+    suffix += Form("_Cut%05d", (int)((1000.*ptTrackMin)));
+    if(type=="clusters") suffix += Form("_Skip00");
 
-    TString branch1 = "jetsAODextraonly";
-    branch1 += Form("_%s", jf);
-    branch1 += Form("%02d", (int)((radius+0.01)*10.));
-    branch1 += Form("_B%d", iBack);
-    branch1 += Form("_Filter%05d", filterMask); 
-    branch1 += Form("_Cut%05d", (int)((1000.*kPtTrackMin)));
+    TString suffix2 = "";
+    suffix2 += Form("_%s", jf);
+    suffix2 += Form("%02d", (int)((radius+0.01)*10.));
+    suffix2 += Form("_B%d", iBack);
+    suffix2 += Form("_Filter%05d", filterMask);
+    suffix2 += Form("_Cut%05d", (int)((1000.*ptTrackMin)));
+    if(type=="clusters") suffix2 += Form("_Skip00");
+
+    AliAnalysisTaskJetResponse *task = new AliAnalysisTaskJetResponse(Form("JetResponse%s", suffix2.Data()));
+
+    TString branch1 = Form("%sAODextraonly%s",type, suffix.Data());
     Printf("Branch1: %s",branch1.Data());
 
-    TString branch2 = "jetsAODextra";
-    branch2 += Form("_%s", jf);
-    branch2 += Form("%02d", (int)((radius+0.01)*10.));
-    branch2 += Form("_B%d", iBack);
-    branch2 += Form("_Filter%05d", filterMask); 
-    branch2 += Form("_Cut%05d", (int)((1000.*kPtTrackMin)));
+    TString branch2 = Form("%sAODextra%s",type, suffix2.Data());
     Printf("Branch2: %s",branch2.Data());
  
     task->SetBranchNames(branch1,branch2);
-    //task->SetOfflineTrgMask(AliVEvent::kMB);
+    task->SetOfflineTrgMask(AliVEvent::kMB);
 
     task->SetEvtClassMin(eventClassMin);
     task->SetEvtClassMax(eventClassMax);
@@ -42,8 +48,8 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* jf = "FASTKT", Float_t ra
     mgr->AddTask(task);
 
     AliAnalysisDataContainer *coutputJetResponse = mgr->CreateContainer(
-         Form("jetresponse%s%02d_B%d_Filter%05d_Cut%05d", jf, (int)((radius+0.01)*10.), iBack, filterMask, (int)((1000.*kPtTrackMin))), TList::Class(), AliAnalysisManager::kOutputContainer,
-         Form("%s:PWG4_JetResponse_%s%02d_B%d_Filter%05d_Cut%05d", AliAnalysisManager::GetCommonFileName(), jf, (int)((radius+0.01)*10.), iBack, filterMask, (int)((1000.*kPtTrackMin))));
+         Form("jetresponse_%s%s", type,suffix2.Data()), TList::Class(), AliAnalysisManager::kOutputContainer,
+         Form("%s:PWG4_JetResponse_%s%s", AliAnalysisManager::GetCommonFileName(), type, suffix2.Data()));
 
     mgr->ConnectInput (task, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());

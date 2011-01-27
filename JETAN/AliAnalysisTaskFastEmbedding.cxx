@@ -58,9 +58,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
       ,fAODPath("AliAOD.root")
       ,fTrackBranch("aodExtraTracks")
       ,fMCparticlesBranch("aodExtraMCparticles")
+      ,fJetBranch("")
       ,fEntry(0)
-      ,fJobId(0)
-      ,fNEntriesPerJob(1000)
       ,fEmbedMode(0)
       ,fEvtSelecMode(0)
       ,fEvtSelMinJetPt(-1)
@@ -102,9 +101,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
       ,fAODPath("AliAOD.root")
       ,fTrackBranch("aodExtraTracks")
       ,fMCparticlesBranch("aodExtraMCparticles")
+      ,fJetBranch("")
       ,fEntry(0)
-      ,fJobId(0)
-      ,fNEntriesPerJob(1000)
       ,fEmbedMode(0)
       ,fEvtSelecMode(0)
       ,fEvtSelMinJetPt(-1)
@@ -144,9 +142,8 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
       ,fAODPath(copy.fAODPath)
       ,fTrackBranch(copy.fTrackBranch)
       ,fMCparticlesBranch(copy.fMCparticlesBranch)
+      ,fJetBranch(copy.fJetBranch)
       ,fEntry(copy.fEntry)
-      ,fJobId(copy.fJobId)
-      ,fNEntriesPerJob(copy.fNEntriesPerJob)
       ,fEmbedMode(copy.fEmbedMode)
       ,fEvtSelecMode(copy.fEvtSelecMode)
       ,fEvtSelMinJetPt(copy.fEvtSelMinJetPt)
@@ -189,9 +186,8 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
         fAODPath           = o.fAODPath;
         fTrackBranch       = o.fTrackBranch;
         fMCparticlesBranch = o.fMCparticlesBranch;
+        fJetBranch         = o.fJetBranch;
         fEntry             = o.fEntry;
-        fJobId             = o.fJobId;
-        fNEntriesPerJob    = o.fNEntriesPerJob;
         fEmbedMode         = o.fEmbedMode;
         fEvtSelecMode      = o.fEvtSelecMode;
         fEvtSelMinJetPt    = o.fEvtSelMinJetPt;
@@ -245,33 +241,13 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
 
        // open input AOD
        if(fAODPathArray){
-           Int_t nFiles = fAODPathArray->GetEntries();
-           Int_t n = rndm->Integer(nFiles);
-           AliInfo(Form("Select file %d", n));
-           TObjString *objStr = (TObjString*) fAODPathArray->At(n);
-           if(!objStr){
-              AliError("Could not get path of aod file.");
-              return;
-           }
-           fAODPath = objStr->GetString();
+           Int_t rc = SelectAODfile();
+           if(rc<0) return;
        }
 
-       TDirectory *owd = gDirectory;
-       fAODfile = TFile::Open(fAODPath.Data());
-       owd->cd();
-       if(!fAODfile){
-	       AliError("Could not open AOD file.");
-	       return;
-       }
+       Int_t rc = OpenAODfile();
+       if(rc<0) return;
 
-       fAODtree = (TTree*)fAODfile->Get("aodTree");
-	   
-       if(!fAODtree){
-           AliError("AOD tree not found.");
-	   return;
-       }
-       fAODevent = new AliAODEvent();
-       fAODevent->ReadFromTree(fAODtree);
     } //end: embed mode with AOD
 
 
@@ -371,20 +347,43 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
           return;
        }
 
-       Int_t maxEntry = fEntry+fNEntriesPerJob-1;
+       // fetch jets
+       TClonesArray *aodJets = 0;
+       if(fJetBranch.Length()) aodJets = dynamic_cast<TClonesArray*>(fAODevent->FindListObject(fJetBranch.Data()));
+       else                    aodJets = fAODevent->GetJets();
+       if(!aodJets){
+          AliError("Could not find jets in AOD. Check jet branch when indicated.");
+          return;
+       }
+        
+
        Int_t nEvents = fAODtree->GetEntries();
-       if(maxEntry>nEvents) maxEntry=nEvents;
 
        Bool_t useEntry = kFALSE;
        while(!useEntry){  // protection need, if no event fulfills requierment
-          if(fEntry>maxEntry) fEntry=fJobId*fNEntriesPerJob;
+          if(fEntry>nEvents){
+              fEntry=0;
+              if(!fAODPathArray){
+                 AliDebug(AliLog::kDebug, "Last event in AOD reached, start from entry 0 again.");
+              } 
+              else {
+                 AliDebug(AliLog::kDebug, "Last event in AOD reached, select new AOD file ...");
+                 Int_t rc = SelectAODfile();
+                 if(rc<0) return;
+
+                 rc = OpenAODfile();
+                 if(rc<0) return;
+              }
+          }
+    
           fAODtree->GetEvent(fEntry);
 
 	  // jet pt selection
 	  if(fEvtSelecMode==kEventsJetPt){
-             Int_t nJets = fAODevent->GetNJets();
+             Int_t nJets = aodJets->GetEntries();
              for(Int_t ij=0; ij<nJets; ++ij){
-                 AliAODJet *jet = fAODevent->GetJet(ij);
+                 AliAODJet *jet = dynamic_cast<AliAODJet*>(aodJets->At(ij));
+                 if(!jet) continue;
 
                  if(   (fEvtSelMinJetPt==-1. || jet->Pt()>=fEvtSelMinJetPt)
 	            && (fEvtSelMaxJetPt==-1. || jet->Pt()<=fEvtSelMaxJetPt)){
@@ -469,10 +468,11 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
        if(fEmbedMode==kAODJet4Mom){
 
 	   // loop over jets
-	   Int_t nJets = fAODevent->GetNJets();
+	   Int_t nJets = aodJets->GetEntries();
            fh1TrackN->Fill((Float_t)nJets);
 	   for(Int_t ij=0; ij<nJets; ++ij){
-	       AliAODJet *jet = fAODevent->GetJet(ij);
+               AliAODJet *jet = dynamic_cast<AliAODJet*>(aodJets->At(ij));
+               if(!jet) continue;
 	       AliAODTrack *tmpTr = (AliAODTrack*)jet;
 
 	       new ((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr);
@@ -571,7 +571,6 @@ void AliAnalysisTaskFastEmbedding::Terminate(Option_t *)
 }
 
 //__________________________________________________________________________
-/* NEEDS TO BE TESTED */
 Int_t AliAnalysisTaskFastEmbedding::GetJobID()
 {
    Int_t id=-1;
@@ -585,11 +584,6 @@ Int_t AliAnalysisTaskFastEmbedding::GetJobID()
    }
    else{
        AliInfo("Job index not found. Okay if running locally.");
-       /*
-       Int_t nEvents = fAODtree->GetEntries();
-       fNEntriesPerJob = nEvents;
-       AliInfo(Form("Asuming single job, set entries per job to maximum %d", fNEntriesPerJob));
-       */
    }
 
    return id;
@@ -597,5 +591,45 @@ Int_t AliAnalysisTaskFastEmbedding::GetJobID()
 
 //__________________________________________________________________________
 
+Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
 
+     Int_t nFiles = fAODPathArray->GetEntries();
+     Int_t n = rndm->Integer(nFiles);
+     AliInfo(Form("Select AOD file %d", n));
+     TObjString *objStr = (TObjString*) fAODPathArray->At(n);
+     if(!objStr){
+          AliError("Could not get path of aod file.");
+          return -1;
+     }
+     fAODPath = objStr->GetString();
+
+     return n;
+}
+
+Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
+
+    TDirectory *owd = gDirectory;
+    fAODfile = TFile::Open(fAODPath.Data());
+    owd->cd();
+    if(!fAODfile){
+       AliError("Could not open AOD file.");
+       return -1;
+    }
+
+    fAODtree = (TTree*)fAODfile->Get("aodTree");
+
+    if(!fAODtree){
+       AliError("AOD tree not found.");
+       return -1;
+    }
+
+    fAODevent = new AliAODEvent();
+    fAODevent->ReadFromTree(fAODtree);
+    if(!fAODevent){
+       AliError("AOD event not found.");
+       return -1;
+    }
+
+    return 1;
+}
 

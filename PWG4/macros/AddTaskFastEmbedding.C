@@ -19,7 +19,7 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(){
 
     // ## set ranges for toy ##
     //SetToyTrackRanges(
-    Double_t minPt = 40.;   Double_t maxPt = 300.;
+    Double_t minPt = 30.;   Double_t maxPt = 300.;
     Double_t minEta = -0.5; Double_t maxEta = 0.5;
     Double_t minPhi = 0.;   Double_t maxPhi = 2*TMath::Pi();
     //fToyDistributionTrackPt: 0 = uniform distribution
@@ -65,11 +65,32 @@ AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(TObjArray* aodarray){
 }
 
 
-AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath){
+AliAnalysisTaskFastEmbedding* AddTaskFastEmbedding(const char* filepath, Int_t mode = 0){
 
     AliAnalysisTaskFastEmbedding *task = AddTaskFastEmbedding();
     if(strlen(filepath)){
-       task->SetAODPath(filepath);
+
+       if(mode==0){ // path to single AOD
+          task->SetAODPath(filepath);
+       }
+       if(mode==1){ // path to text file with list of paths of multiple AODs
+           TObjArray* array = new TObjArray();
+           TObjString* ostr = 0;
+           TString line;
+           ifstream in;
+           in.open(filepath);
+           while(in.good()){
+              in >> line;
+              if(line.Length() == 0) continue;
+              Printf("found aod path %s", line.Data());
+              ostr = new TObjString(line.Data());
+              array->Add(ostr);
+           }
+           Printf("-> %d aod paths found", array->GetEntries());
+           
+           task->SetArrayOfAODPaths(array);
+       }
+
        task->SetEmbedMode(AliAnalysisTaskFastEmbedding::kAODFull);
     }
 

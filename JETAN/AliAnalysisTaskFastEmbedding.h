@@ -38,9 +38,7 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 	void SetArrayOfAODPaths(TObjArray* arr) {fAODPathArray = arr;}
         void SetTrackBranch(TString name) {fTrackBranch = name;}
         void SetMCparticlesBranch(TString name) {fMCparticlesBranch = name;}
-
-	void SetNEntriesPerJob(Int_t n) {fNEntriesPerJob = n;}
-	Int_t GetNEntriesPerJob() { return fNEntriesPerJob;}
+        void SetJetBranch(TString name) {fJetBranch = name;}
 
 	void SetEmbedMode(Int_t m) {fEmbedMode = m;}
 	Int_t GetEmbedMode() {return fEmbedMode;} 
@@ -79,10 +77,9 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 
         TString fTrackBranch; // name of branch for extra tracks in AOD out
         TString fMCparticlesBranch; // name of branch for extra mcparticles in AOD out
+        TString fJetBranch; // name of branch for extra jets AOD in
 
         Int_t fEntry; // entry of extra AOD
-	Int_t fJobId; // (sub-)job counter
-	Int_t fNEntriesPerJob; // number of entries of extra AOD used per (sub-)job
 
 	Int_t fEmbedMode;
 	Int_t fEvtSelecMode;
@@ -115,11 +112,12 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
         TH2F  *fh2MCTrackEtaPhi;   //! MC track eta-phi
         TH1F  *fh1MCTrackN;        //! nb. of MC tracks
 
-        // NEEDS TO BE TESTED
 	Int_t GetJobID();    // get job id (sub-job id on the GRID)
+        Int_t SelectAODfile();
+        Int_t OpenAODfile();
 
 
-	ClassDef(AliAnalysisTaskFastEmbedding, 2);
+	ClassDef(AliAnalysisTaskFastEmbedding, 3);
 };
 
 #endif
