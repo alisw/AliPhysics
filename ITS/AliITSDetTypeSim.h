@@ -138,7 +138,6 @@ class AliITSDetTypeSim : public TObject {
     static const Int_t fgkDefaultNModulesSPD; // Total numbers of SPD modules by default
     static const Int_t fgkDefaultNModulesSDD; // Total numbers of SDD modules by default
     static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules by default
-    Int_t fNMod[3];                           // numbers of modules from different types
 
     TObjArray    *fSimulation;   //! [NDet]
     TObjArray    *fSegmentation; //! [NDet]
@@ -160,7 +159,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
     AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
        
-    ClassDef(AliITSDetTypeSim,13) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,12) // ITS Simulation structure
  
 };
 

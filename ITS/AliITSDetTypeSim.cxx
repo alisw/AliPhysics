@@ -114,9 +114,6 @@ fTriggerConditions(NULL)
   fDDLMapSDD=new AliITSDDLModuleMapSDD();
   fSimuPar= new AliITSSimuParam();
   fSSDCalibration=new AliITSCalibrationSSD();
-  fNMod[0] = fgkDefaultNModulesSPD;
-  fNMod[1] = fgkDefaultNModulesSDD;
-  fNMod[2] = fgkDefaultNModulesSSD;
   SetRunNumber();
 }
 //----------------------------------------------------------------------
@@ -619,13 +616,13 @@ if(!deadSPD || !noisySPD || !foEffSPD || !foNoiSPD
   }
 
 
-  fNMod[0] = calDeadSPD->GetEntries();
-  fNMod[1] = calSDD->GetEntries();
-  //  fNMod[2] = noiseSSD->GetEntries();
+  Int_t nmods0 = calDeadSPD->GetEntries();
+  Int_t nmods1 = calSDD->GetEntries();
+
   AliDebug(1,Form("%i SPD, %i SDD and %i SSD in calibration database",
-	       fNMod[0], fNMod[1], fNMod[2]));
+		  nmods0,nmods1,fgkDefaultNModulesSSD));
   AliITSCalibration* cal;
-  for (Int_t i=0; i<fNMod[0]; i++) {
+  for (Int_t i=0; i<nmods0; i++) {
     cal = (AliITSCalibration*) calDeadSPD->At(i);
     SetCalibrationModel(i, cal);
     cal = (AliITSCalibration*) calNoisySPD->At(i);
@@ -755,14 +752,12 @@ void AliITSDetTypeSim::SetDefaultSimulation(){
 //___________________________________________________________________
 void AliITSDetTypeSim::SetTreeAddressS(TTree* treeS, const Char_t* name){
   // Set branch address for the ITS summable digits Trees.  
-  char branchname[30];
 
   if(!treeS){
     return;
   }
   TBranch *branch;
-  sprintf(branchname,"%s",name);
-  branch = treeS->GetBranch(branchname);
+  branch = treeS->GetBranch(name);
   TClonesArray *sdigi = &fSDigits;
   if (branch) branch->SetAddress(&sdigi);
 
@@ -774,7 +769,7 @@ void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, const Char_t* name){
   const char *det[3] = {"SPD","SDD","SSD"};
   TBranch *branch;
   
-  char branchname[30];
+  TString branchname;
   
   if(!treeD){
     return;
@@ -797,14 +792,11 @@ void AliITSDetTypeSim::SetTreeAddressD(TTree* treeD, const Char_t* name){
       ResetDigits(i);
     }
     
-    if(fgkNdettypes==3) sprintf(branchname,"%sDigits%s",name,det[i]);
-    else sprintf(branchname,"%sDigits%d",name,i+1);
-    if(fDigits){
-      branch = treeD->GetBranch(branchname);
-      if(branch) branch->SetAddress(&((*fDigits)[i]));
-    }
+    if(fgkNdettypes==3) branchname.Form("%sDigits%s",name,det[i]);
+    else branchname.Form("%sDigits%d",name,i+1);
+    branch = treeD->GetBranch(branchname.Data());
+    if(branch) branch->SetAddress(&((*fDigits)[i]));    
   }
-
 }
 //___________________________________________________________________
 void AliITSDetTypeSim::ResetDigits(){
@@ -842,8 +834,8 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
   const char *all = strstr(opt,"All");
   const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
 			strstr(opt,"SSD")};
-  if( !det[0] && !det[1] && !det[2] ) all = "All";
-  else all = 0;
+  if(!all && !det[0] && !det[1] && !det[2] ) all = "All";
+
   static Bool_t setDef = kTRUE;
   if(setDef) SetDefaultSimulation();
   setDef = kFALSE;
@@ -854,7 +846,7 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
     Error("SDigits2Digits","Error: No trees or SDigits. Returning.");
     return;
   } 
-  sprintf(name,"%s",name);
+
   TBranch* brchSDigits = trees->GetBranch(name);
   
   Int_t id;

@@ -44,6 +44,7 @@ class AliITSDriftSpeedSDD : public TObject {
     for(Int_t i=fgkMaxPolDeg-1; i>=0; --i) drSpeed=fDriftSpeedParam[i]+nAnode*drSpeed;
     return drSpeed;
   }
+  static UShort_t GetMaxPolDeg() {return fgkMaxPolDeg;}
 
  protected:
   static const Float_t fgkDriftSpeedDefault; // default for drift speed

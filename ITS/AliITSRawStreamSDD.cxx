@@ -208,9 +208,11 @@ Bool_t AliITSRawStreamSDD::Next()
 	}
       } else if (nData30 == 0x02 || nData30 == 0x03) {
 	fChannel = nData30-2;
-	fChannelData[fCarlosId][fChannel] += 
-	  (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
-	fLastBit[fCarlosId][fChannel] += 30;
+	if(fCarlosId>=0 && fCarlosId<kModulesPerDDL){
+	  fChannelData[fCarlosId][fChannel] += 
+	    (ULong64_t(fData & 0x3FFFFFFF) << fLastBit[fCarlosId][fChannel]);
+	  fLastBit[fCarlosId][fChannel] += 30;
+	}
       } else if (nData28== 0x04) {
 	// JTAG word -- do nothing
       } else {                               // unknown data format

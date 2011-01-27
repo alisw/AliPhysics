@@ -283,7 +283,8 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 	      param[ic]=auxP;
 	    }
 
-	    if(param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
+	    if(polDeg>=0 && polDeg<=AliITSDriftSpeedSDD::GetMaxPolDeg() && 
+	       param[0]>minValP0 && param[0]<maxValP0 && param[1]>minValP1){
 	      if(polDeg==3){
 		if(modID<kNumberOfSDDLay3){ 
 		  for(Int_t ic=0;ic<4;ic++) aveCoefLay3[ic]+=param[ic];
