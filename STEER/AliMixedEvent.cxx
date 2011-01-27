@@ -335,7 +335,7 @@ Bool_t AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *si
 	if(TMath::Abs(sumsigma[i])<1.e-13) continue;
 	pos[i]=sum[i]/sumsigma[i];
     }
-    for(Int_t i2=0;i2<6;i2++){
+    for(Int_t i2=0;i2<3;i2++){
 	if(TMath::Abs(sumsigma[i2])<1.e-13) {sig[i2]=0.; continue;}
 	sig[i2]=1./sumsigma[i2];
     }
