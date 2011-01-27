@@ -527,15 +527,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   //Nsigma Method
   Float_t resodedx[4];
   if(fMC){
-    resodedx[0]=0.13;
-    resodedx[1]=0.13;
-    resodedx[2]=0.134;
-    resodedx[3]=0.127;
+    resodedx[0]=0.0001; //default value
+    resodedx[1]=0.0001; //default value
+    resodedx[2]=0.108;
+    resodedx[3]=0.0998;
   }else{
-    resodedx[0]=0.23;
-    resodedx[1]=0.18;
-    resodedx[2]=0.16;
-    resodedx[3]=0.14;
+    resodedx[0]=0.0001; //default value
+    resodedx[1]=0.0001; //default value
+    resodedx[2]=0.116;
+    resodedx[3]=0.103;
   }
   /////////////////////
   if(fMC){
