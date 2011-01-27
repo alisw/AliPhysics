@@ -83,15 +83,18 @@ ClassImp(AliITSClusterFinderV2SSD)
 
   if (repa->GetCorrectLorentzAngleSSD()) {
     AliMagF* field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField()); 
-    if (field == 0)
+    if (field == 0) {
       AliError("Cannot get magnetic field from TGeoGlobalMagField");
-    Float_t Bfield = field->SolenoidField();
-    // NB: spatial shift has opposite sign for lay 5 and 6, but strip numbering also changes direction, so no sign-change 
-    // Shift due to ExB on drift N-side, units: strip width 
-    fLorentzShiftP = -repa->GetTanLorentzAngleElectronsSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
-    // Shift due to ExB on drift P-side, units: strip width 
-    fLorentzShiftN = -repa->GetTanLorentzAngleHolesSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
-    AliDebug(1,Form("Bfield %f Lorentz Shift P-side %f N-side %f",Bfield,fLorentzShiftN,fLorentzShiftP));
+    }
+    else {
+      Float_t Bfield = field->SolenoidField();
+      // NB: spatial shift has opposite sign for lay 5 and 6, but strip numbering also changes direction, so no sign-change 
+      // Shift due to ExB on drift N-side, units: strip width 
+      fLorentzShiftP = -repa->GetTanLorentzAngleElectronsSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
+      // Shift due to ExB on drift P-side, units: strip width 
+      fLorentzShiftN = -repa->GetTanLorentzAngleHolesSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
+      AliDebug(1,Form("Bfield %f Lorentz Shift P-side %f N-side %f",Bfield,fLorentzShiftN,fLorentzShiftP));
+    }
   }
 }
  

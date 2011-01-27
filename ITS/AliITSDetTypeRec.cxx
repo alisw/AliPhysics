@@ -133,7 +133,9 @@ fLoadOnlySPDCalib(rec.fLoadOnlySPDCalib),
 fFastOrFiredMap(rec.fFastOrFiredMap){
 
   // Copy constructor. 
-
+  for(Int_t i=0; i<3; i++){    
+    fkDigClassName[i]=rec.fkDigClassName[i];  // NB only copies Char_t*, so not so safe, but this code should never be reached anyways
+  }
 }
 //______________________________________________________________________
 AliITSDetTypeRec& AliITSDetTypeRec::operator=(const AliITSDetTypeRec& source){

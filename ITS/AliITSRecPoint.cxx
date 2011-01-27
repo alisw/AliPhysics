@@ -96,6 +96,7 @@ fDriftSide(0)
     case 4:
       fdEdX=fQ*2.16;
       SetSigmaYZ(hit[5]);
+      break;
     case 5:
       fdEdX=fQ*2.16;
       hit[5]=-hit[5];

@@ -48,6 +48,8 @@ fConsumed(kFALSE),
 fTotalSignal(-1),
 fNTracks(-1){
     // default constructor
+    for (Int_t i = 0; i < 10; i++) 
+      fTrack[i] = -1;
 }
 //______________________________________________________________________
 AliITSclusterSSD::AliITSclusterSSD(Int_t ndigits, Int_t *DigitIndexes, 
@@ -67,6 +69,8 @@ fNTracks(-1){
 
     fDigitsIndex = new TArrayI(fNDigits,DigitIndexes );	
     fCrossedClusterIndexes = new TArrayI(300);
+    for (Int_t i = 0; i < 10; i++) 
+      fTrack[i] = -1;
 }
 //______________________________________________________________________
 AliITSclusterSSD::~AliITSclusterSSD(){
@@ -95,6 +99,8 @@ fNTracks(-1){
     fTotalSignal =-1;
     fNTracks     = -1;
     Int_t i;
+    for (i = 0; i < 10; i++) 
+      fTrack[i] = -1;
     for (i = 0; i< fNCrosses ; i++){
 	fCrossedClusterIndexes[i] = OneSCluster.fCrossedClusterIndexes[i];
     }

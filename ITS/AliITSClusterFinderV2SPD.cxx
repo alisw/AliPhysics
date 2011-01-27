@@ -110,10 +110,13 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
   if(repa->GetCorrectLorentzAngleSPD()) { // only if CorrectLorentzAngleSPD required
     // here retrieve the value of the field
     AliMagF* field = dynamic_cast<AliMagF*>(TGeoGlobalMagField::Instance()->GetField());
-    if (field == 0)
+    if (field == 0) {
       AliError("Cannot get magnetic field from TGeoGlobalMagField");
-    Float_t magField = field->SolenoidField();
-    tanLorentzAngle=repa->GetTanLorentzAngleHolesSPD() * magField / defaultField ;
+    }
+    else {
+      Float_t magField = field->SolenoidField();
+      tanLorentzAngle=repa->GetTanLorentzAngleHolesSPD() * magField / defaultField ;
+    }
   }
   //
 

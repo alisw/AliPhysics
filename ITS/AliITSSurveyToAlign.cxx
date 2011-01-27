@@ -253,7 +253,7 @@ Bool_t AliITSSurveyToAlign::ApplyAlignObjSDD()
       //      printf("%s  %f  %f  %f\n",fxSDDl[iLadd], fsymnameSDDl[iLadd].Data(), fySDDl[iLadd]  , fzSDDl[iLadd]);
       //printf("%d  %f\n", iLadd, fzSDDl[iLadd]);
 
-      if(fsymnameSDDl[iLadd].Contains("SDD") && fsymnameSDDl[iLadd].Contains("Ladder"))
+      if(ap != 0 && fsymnameSDDl[iLadd].Contains("SDD") && fsymnameSDDl[iLadd].Contains("Ladder"))
 	{
 	  //	  printf("%d  %s  %d\n",240+iLadd, fsymnameSDDl[iLadd].Data(),fuidSDDl[iLadd] );
 

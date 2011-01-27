@@ -528,8 +528,8 @@ Bool_t AliITSRawStreamSSD::Next()
 
 
   flag=1;
-  // relModuleID range 0 - 108
-  if(relModuleID > kModulesPerDDL){
+  // relModuleID range 0 - 107
+  if(relModuleID >= kModulesPerDDL){
     fRawReader->AddMajorErrorLog(kWrongModuleIdErr,Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
     AliWarning(Form("Module ID = %d > %d (max)",relModuleID,kModulesPerDDL));
     return kFALSE;
