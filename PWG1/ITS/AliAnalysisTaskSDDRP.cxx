@@ -316,34 +316,39 @@ void AliAnalysisTaskSDDRP::UserCreateOutputObjects() {
   
     
   AliCDBEntry* eR=(AliCDBEntry*)man->Get("ITS/Calib/RespSDD");
-  eR->PrintId();
-  eR->PrintMetaData();
-  fResp=(AliITSresponseSDD*)eR->GetObject();
-    
-  AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
-  eC->PrintId();
-  eC->PrintMetaData();
-  TObjArray* calsdd=(TObjArray*)eC->GetObject();
-  Int_t countGood3[14];
-  Int_t countGood4[22];
-  Int_t countGoodMod[260];
-  for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
-  for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
-  for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
-  for(Int_t imod=0;imod<260;imod++){
-    AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
-    if(cal->IsBad()) continue;
-    Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
-    Int_t lay,lad,det;
-    AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
-    if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
-    for(Int_t ian=0; ian<512; ian++){
-      if(cal->IsBadChannel(ian)) continue;
-      countGoodMod[imod]++;
-      if(lay==3) countGood3[lad-1]++;
-      else if(lay==4) countGood4[lad-1]++;
-    }
+  if (eR) {
+      eR->PrintId();
+      eR->PrintMetaData();
+      fResp=(AliITSresponseSDD*)eR->GetObject();
   }
+  
+  AliCDBEntry* eC=(AliCDBEntry*)man->Get("ITS/Calib/CalibSDD");
+  if (eC) {
+      eC->PrintId();
+      eC->PrintMetaData();
+      TObjArray* calsdd=(TObjArray*)eC->GetObject();
+      Int_t countGood3[14];
+      Int_t countGood4[22];
+      Int_t countGoodMod[260];
+      for(Int_t ilad=0;ilad<14;ilad++) countGood3[ilad]=0;
+      for(Int_t ilad=0;ilad<22;ilad++) countGood4[ilad]=0;
+      for(Int_t imod=0;imod<260;imod++) countGoodMod[imod]=0;
+      for(Int_t imod=0;imod<260;imod++){
+	  AliITSCalibrationSDD* cal=(AliITSCalibrationSDD*)calsdd->At(imod);
+	  if(cal->IsBad()) continue;
+	  Int_t modId=imod+AliITSgeomTGeo::GetModuleIndex(3,1,1);
+	  Int_t lay,lad,det;
+	  AliITSgeomTGeo::GetModuleId(modId,lay,lad,det);
+	  if(fExcludeBadMod && !CheckModule(lay,lad,det)) continue;
+	  for(Int_t ian=0; ian<512; ian++){
+	      if(cal->IsBadChannel(ian)) continue;
+	      countGoodMod[imod]++;
+	      if(lay==3) countGood3[lad-1]++;
+	      else if(lay==4) countGood4[lad-1]++;
+	  }
+      }
+  }
+  
   for(Int_t imod=0;imod<260;imod++) fGoodAnMod->SetBinContent(imod+1,countGoodMod[imod]);
   fGoodAnMod->SetMinimum(0);
   for(Int_t ilad=0;ilad<14;ilad++) fGoodAnLadLay3->SetBinContent(ilad+1,countGood3[ilad]);
@@ -477,7 +482,8 @@ void AliAnalysisTaskSDDRP::UserExec(Option_t *)
   }
 
   AliESDInputHandlerRP *hand = dynamic_cast<AliESDInputHandlerRP*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  TTree* tR = hand->GetTreeR("ITS");
+  TTree* tR = 0;
+  if (hand) tR = hand->GetTreeR("ITS");
   if (tR){
     TClonesArray *ITSrec= new TClonesArray("AliITSRecPoint");
     TBranch *branch =tR->GetBranch("ITSRecPoints");

@@ -392,7 +392,8 @@ void AliAnalysisTaskSPD::LoadGeometryFromOCDB(){
   man->SetDefaultStorage(fOCDBLocation.Data());
   man->SetRun(fRunNb);  
   AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
-  AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+  if (obj)
+      AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
   AliGeomManager::GetNalignable("ITS");
   AliGeomManager::ApplyAlignObjsFromCDB("ITS"); 
 }
