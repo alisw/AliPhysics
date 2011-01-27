@@ -45,6 +45,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliAnalysisTaskAODCentralityMaker.h"
+#include "AliLog.h"
 
 ClassImp(AliAnalysisTaskAODCentralityMaker)
 
@@ -122,7 +123,11 @@ void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
 {
   AliVEvent*   event = InputEvent();
   AliESDEvent* esd   = dynamic_cast<AliESDEvent*>(event);
-
+  if (!esd) {
+      AliError("No ESD Event");
+      return;
+  }
+  
   Float_t beamEnergy = esd->GetBeamEnergy();
   Int_t   nTracks    = event->GetNumberOfTracks();     
   Int_t   nPmdTracks = esd->GetNumberOfPmdTracks();     

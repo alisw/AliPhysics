@@ -345,56 +345,57 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
     if (handler && aodH) {
 	fMCEvent = aodH->MCEvent();
 	Bool_t merging = aodH->GetMergeEvents();
-	
-	if (!(handler->IsStandard()) && !(handler->AODIsReplicated())) {
+	AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
+
+	if (aod && !(handler->IsStandard()) && !(handler->AODIsReplicated())) {
 	    if ((handler->NeedsHeaderReplication()) && (fgAODHeader))
 	    {
 	      // copy the contents by assigment
-	      *fgAODHeader =  *(dynamic_cast<AliAODHeader*>(InputEvent()->GetHeader()));
+	      *fgAODHeader =  *(aod->GetHeader());
 	    }
 	    if ((handler->NeedsTracksBranchReplication() || merging) && (fgAODTracks))
 	    {
-		TClonesArray* tracks = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracks();
+		TClonesArray* tracks = aod->GetTracks();
 		new (fgAODTracks) TClonesArray(*tracks);
 	    }
 	    if ((handler->NeedsVerticesBranchReplication() || merging) && (fgAODVertices))
 	    {
-		TClonesArray* vertices = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetVertices();
+		TClonesArray* vertices = aod->GetVertices();
 		new (fgAODVertices) TClonesArray(*vertices);
 	    }
 	    if ((handler->NeedsV0sBranchReplication()) && (fgAODV0s))
 	    {
-		TClonesArray* v0s = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetV0s();
+		TClonesArray* v0s = aod->GetV0s();
 		new (fgAODV0s) TClonesArray(*v0s);
 	    }
 	    if ((handler->NeedsTrackletsBranchReplication()) && (fgAODTracklets))
 	    {
-	      *fgAODTracklets = *(dynamic_cast<AliAODEvent*>(InputEvent()))->GetTracklets();
+	      *fgAODTracklets = *aod->GetTracklets();
 	    }
 	    if ((handler->NeedsPMDClustersBranchReplication()) && (fgAODPMDClusters))
 	    {
-		TClonesArray* pmdClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetPmdClusters();
+		TClonesArray* pmdClusters = aod->GetPmdClusters();
 		new (fgAODPMDClusters) TClonesArray(*pmdClusters);
 	    }
 	    if ((handler->NeedsJetsBranchReplication() || merging) && (fgAODJets))
 	    {
-		TClonesArray* jets = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetJets();
+		TClonesArray* jets = aod->GetJets();
 		new (fgAODJets) TClonesArray(*jets);
 	    }
 	    if ((handler->NeedsFMDClustersBranchReplication()) && (fgAODFMDClusters))
 	    {
-		TClonesArray* fmdClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetFmdClusters();
+		TClonesArray* fmdClusters = aod->GetFmdClusters();
 		new (fgAODFMDClusters) TClonesArray(*fmdClusters);
 	    }
 	    if ((handler->NeedsCaloClustersBranchReplication() || merging) && (fgAODCaloClusters))
 	    {
-		TClonesArray* caloClusters = (dynamic_cast<AliAODEvent*>(InputEvent()))->GetCaloClusters();
+		TClonesArray* caloClusters = aod->GetCaloClusters();
 		new (fgAODCaloClusters) TClonesArray(*caloClusters);
 	    }
 
 	    if ((handler->NeedsMCParticlesBranchReplication() || merging) && (fgAODMCParticles))
 	    {
-		TClonesArray* mcParticles = (TClonesArray*) ((dynamic_cast<AliAODEvent*>(InputEvent()))->FindListObject("mcparticles"));
+		TClonesArray* mcParticles = (TClonesArray*) (aod->FindListObject("mcparticles"));
 		new (fgAODMCParticles) TClonesArray(*mcParticles);
 	    }
 	    

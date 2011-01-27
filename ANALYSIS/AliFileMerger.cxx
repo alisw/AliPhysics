@@ -121,13 +121,10 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
 
     if(currentFile) delete currentFile;
   }
-  Bool_t separate = kFALSE;
-  if (separate) {
-    StoreSeparateResults(mergeArray,outputFileName);
-  }
-  else {
+
+  // StoreSeparateResults(mergeArray,outputFileName);
     StoreResults(mergeArray,outputFileName);
-  }
+
   delete mergeArray;
   delete res;
 

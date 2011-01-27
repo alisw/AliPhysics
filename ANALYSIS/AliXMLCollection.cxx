@@ -425,7 +425,6 @@ void AliXMLCollection::ParseXML() {
     AliError(Form("cannot find the <event> tag in %s",fXmlFile.Data()));
     return;
   }
-  if (!xevent) return;
   
   do {
     if (xml.GetAttr(xevent, "name")) {

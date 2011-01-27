@@ -350,7 +350,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-  
+    if (!esd) {
+	AliError("No ESD Event");
+	return;
+    }
+    
     if (fRunNo<=0) {
       if (SetupRun(esd)<0)
          AliFatal("Centrality File not available for this run");
@@ -460,17 +464,18 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   //  else     printf("  Centrality by V0 vs TKL not available!!!\n\n");
   if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
   //  else     printf("  Centrality by ZEM vs ZDC not available!!!\n\n");
-
-  esdCent->SetCentralityV0M(fCentV0M);
-  esdCent->SetCentralityFMD(fCentFMD);
-  esdCent->SetCentralityTRK(fCentTRK);
-  esdCent->SetCentralityTKL(fCentTKL);
-  esdCent->SetCentralityCL0(fCentCL0);
-  esdCent->SetCentralityCL1(fCentCL1);
-  esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
-  esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
-  esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
-
+  if (esdCent) {
+      esdCent->SetCentralityV0M(fCentV0M);
+      esdCent->SetCentralityFMD(fCentFMD);
+      esdCent->SetCentralityTRK(fCentTRK);
+      esdCent->SetCentralityTKL(fCentTKL);
+      esdCent->SetCentralityCL0(fCentCL0);
+      esdCent->SetCentralityCL1(fCentCL1);
+      esdCent->SetCentralityV0MvsFMD(fCentV0MvsFMD);
+      esdCent->SetCentralityTKLvsV0M(fCentTKLvsV0M);
+      esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
+  }
+  
   fHOutCentV0M->Fill(fCentV0M);
   fHOutCentFMD->Fill(fCentFMD);
   fHOutCentTRK->Fill(fCentTRK);

@@ -118,7 +118,7 @@ void AliTagAnalysis::ChainLocalTags(const char *dirname) {
   const char * name = 0x0;
   // Add all files matching *pattern* to the chain
   while((name = gSystem->GetDirEntry(dirp))) {
-    if (strstr(name,tagPattern)) { 
+    if (tagPattern && strstr(name,tagPattern)) { 
       fTagFilename = fTagDirName;
       fTagFilename += "/";
       fTagFilename += name;
@@ -596,7 +596,7 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
   collection->Reset();
   while (collection->Next()) {
     AliInfo(Form("Adding: %s",collection->GetTURL("")));
-    fAnalysisChain->Add(collection->GetTURL(""));
+    if (fAnalysisChain) fAnalysisChain->Add(collection->GetTURL(""));
     TEntryList *list = (TEntryList *)collection->GetEventList("");
     for(Int_t i = 0; i < list->GetN(); i++) fEventList->Enter(iAccepted+list->GetEntry(i));
 
@@ -604,7 +604,7 @@ TChain *AliTagAnalysis::GetInputChain(const char* system, const char *wn) {
     else if(fsystem == "PbPb") iAccepted += 1;
   }
 
-  fAnalysisChain->SetEventList(fEventList);
+  if (fAnalysisChain) fAnalysisChain->SetEventList(fEventList);
   
   AliInfo(Form("Number of selected events: %d",fEventList->GetN()));
 
