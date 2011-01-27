@@ -85,6 +85,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
   fNClustersITSMin(INT_MIN),  
+  fUseAODFilterBit(kFALSE),
+  fAODFilterBit(0),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -136,7 +138,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fNClustersTPCMin(INT_MIN),  
   fCutNClustersITS(kFALSE),
   fNClustersITSMax(INT_MAX),
-  fNClustersITSMin(INT_MIN),  
+  fNClustersITSMin(INT_MIN),
+  fUseAODFilterBit(kFALSE),
+  fAODFilterBit(0),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -197,6 +201,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutNClustersITS(that.fCutNClustersITS),
   fNClustersITSMax(that.fNClustersITSMax),
   fNClustersITSMin(that.fNClustersITSMin),
+  fUseAODFilterBit(that.fUseAODFilterBit),
+  fAODFilterBit(that.fAODFilterBit),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -522,6 +528,20 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(AliAODTrack* track)
     Int_t nitscls = track->GetITSNcls();
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
+  
+   if (fCutChi2PerClusterTPC)
+  {
+    Double_t chi2tpc = track->Chi2perNDF();
+    if (chi2tpc < fMinChi2PerClusterTPC || chi2tpc > fMaxChi2PerClusterTPC) pass=kFALSE;
+  }
+  
+  if (GetRequireTPCRefit() && !(track->GetStatus() & AliESDtrack::kTPCrefit) ) pass=kFALSE;
+  if (GetRequireITSRefit() && !(track->GetStatus() & AliESDtrack::kITSrefit) ) pass=kFALSE;
+  
+  if (fUseAODFilterBit && !track->TestFilterBit(fAODFilterBit)) pass=kFALSE;
+  
+  if (GetMaxDCAToVertexXY() && track->DCA()>GetMaxDCAToVertexXY()) pass=kFALSE;
+    
 
   return pass;
 }

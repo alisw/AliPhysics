@@ -71,7 +71,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetSPDtrackletDeltaPhiMin( Double_t m ) {fSPDtrackletDeltaPhiMin=m; fCutSPDtrackletDeltaPhi=kTRUE;}
   void SetIgnoreSignInPID( Bool_t b ) {fIgnoreSignInPID=b;}
   void SetIgnoreTPCzRange( Double_t min, Double_t max ) 
-                         { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; } 
+                         { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; }
+  void SetAODfilterBit( UInt_t a ) {fAODFilterBit = a; fUseAODFilterBit = kTRUE;}  						 
+						 
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
   Int_t GetMinNClustersITS() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClustersITS();}
@@ -96,7 +98,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t GetFakesAreOK() const {return fFakesAreOK;}
   Double_t GetSPDtrackletDeltaPhiMax() const {return fSPDtrackletDeltaPhiMax;}
   Double_t GetSPDtrackletDeltaPhiMin() const {return fSPDtrackletDeltaPhiMin;}
-
+  UInt_t GetAODFilterBit() const {if (!fUseAODFilterBit) return 0; return fAODFilterBit;}
+ 
   void SetQA(const char* dirname);
   TObjArray* GetQA() const {return fQA;}
 
@@ -188,6 +191,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutNClustersITS;       //cut on clusters?
   Int_t fNClustersITSMax;        //max tpc ncls
   Int_t fNClustersITSMin;        //min tpc clusters  
+  Bool_t fUseAODFilterBit;       //use AOD filter bit selection?
+  UInt_t fAODFilterBit;          //AOD filter bit to select
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
@@ -219,5 +224,4 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 };
 
 #endif
-
 
