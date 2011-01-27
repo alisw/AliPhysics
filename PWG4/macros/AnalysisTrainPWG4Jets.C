@@ -84,7 +84,9 @@ Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write stand
 Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
 TString     kDefaultJetBranch     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranch     = "";      // is currently set when filled (jet clsuters  
+TString     kDefaultJetBackgroundBranch_extra     = "";      // is currently set when filled (jet clsuters  
 TString     kJetSubtractBranches     = "";      // is currently set when filled (jet clsuters  
+TString     kJetSubtractBranches_extra     = "";      // is currently set when filled (jet clsuters  
 
 TString     kDefaultJetBranchMC     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
 TString     kDefaultJetBackgroundBranchMC     = "";      // is currently set when filled (jet clsuters  
@@ -131,6 +133,7 @@ TString     kDeltaAODJetName   = "AliAOD.Jets.root";
 TString     kDeltaAODJCORRANName   = "AliAOD.JCORRAN.root";     
 TString     kDeltaAODPartCorrName   = "AliAOD.PartCorr.root";     
 TString     kFastEmbeddingAOD  = "emb/AliAOD.root";
+TString     kFastEmbAODList    = "";
 
 //==============================================================================
 // ### PROOF Steering varibales
@@ -175,9 +178,9 @@ Int_t         kGridRunRange[2]       =  {0, -1}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
-Int_t         kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
-TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
-TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
+Int_t       kGridMaxMergeFiles     = 12; // Number of files merged in a chunk grid run range
+TString     kGridMergeExclude      = "AliAOD.root"; // Files that should not be merged
+TString     kGridOutputStorages     = "disk=2"; // Make replicas on the storages
 // == grid process variables
 Int_t       kGridRunsPerMaster     = 100; // Number of runs per master job
 Int_t       kGridFilesPerJob       = 100; // Maximum number of files per job (gives size of AOD)
@@ -435,7 +438,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if (iPWG4FastEmbedding) {
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFastEmbedding.C");
-     AliAnalysisTask *taskEmbedding = AddTaskFastEmbedding(kFastEmbeddingAOD);
+     AliAnalysisTaskFastEmbedding *taskEmbedding = 0;
+     if(kFastEmbAODList.Length()) taskEmbedding = AddTaskFastEmbedding(kFastEmbAODList, 1);
+     else                         taskEmbedding = AddTaskFastEmbedding(kFastEmbeddingAOD, 0);
+     //taskEmbedding->SetJetBranch("jets");
    }
 
     // Jet analysis
@@ -482,9 +488,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if (iPWG4FastEmbedding && iJETAN) {
-     AliAnalysisTaskJets *taskEmbJets = AddTaskJets("AODextra", "FASTKT", 0.4, kHighPtFilterMask);
+     AliAnalysisTaskJets *taskEmbJets = AddTaskJets("AODextra", "FASTJET", 0.4, kHighPtFilterMask);
      taskEmbJets->ReadAODFromOutput();
-     taskEmbJets = AddTaskJets("AODextraonly", "FASTKT", 0.4, kHighPtFilterMask);
+     kJetSubtractBranches_extra += Form("%s ", taskEmbJets->GetNonStdBranch());
+
+     taskEmbJets = AddTaskJets("AODextraonly", "FASTJET", 0.4, kHighPtFilterMask);
+     taskEmbJets->ReadAODFromOutput();
+    
+     taskEmbJets = AddTaskJets("AODextra", "UA1", 0.4, kHighPtFilterMask,1.,0);
+     taskEmbJets->ReadAODFromOutput();
+     taskEmbJets = AddTaskJets("AODextraonly", "UA1", 0.4, kHighPtFilterMask,1.,0);
+     taskEmbJets->ReadAODFromOutput();
+     taskEmbJets = AddTaskJets("AODextra", "UA1", 0.4, kHighPtFilterMask,1.,2);
      taskEmbJets->ReadAODFromOutput();
    }
 
@@ -506,15 +521,25 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
 	 
          if (iPWG4FastEmbedding) {
+           AliAnalysisTaskJetCluster *taskClEmb = 0;
            taskClEmb = AddTaskJetCluster("AODextra","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
-           taskClEmb->SetBackgroundCalc(kFALSE);
+           taskClEmb->SetBackgroundCalc(kTRUE);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
            taskClEmb->SetGhostEtamax(0.9);
+	   kDefaultJetBackgroundBranch_extra = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskClEmb->GetJetOutputBranch());
 
            taskClEmb = AddTaskJetCluster("AODextraonly","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
            taskClEmb->SetBackgroundCalc(kFALSE);
            taskClEmb->SetCentralityCut(fCenLo,fCenUp);
            taskClEmb->SetGhostEtamax(0.9);
+
+           taskClEmb = AddTaskJetCluster("AODextra","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
+           taskClEmb->SetCentralityCut(fCenLo,fCenUp);
+           taskClEmb->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
+           kJetSubtractBranches_extra += Form("%s ",taskClEmb->GetJetOutputBranch());
+
+           taskClEmb = AddTaskJetCluster("AODextraonly","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
+           taskClEmb->SetCentralityCut(fCenLo,fCenUp);
          }
 
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.2,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
@@ -590,6 +615,16 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 
 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
 	if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())){
+	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
+	}
+      }
+      if(kJetSubtractBranches_extra.Length()){
+
+	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
+	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
+	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+        //taskSubtract->SetDebugLevel(3);
+	if(kJetSubtractBranches_extra.Contains(kDefaultJetBranch.Data())){
 	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
 	}
       }
@@ -722,7 +757,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if (iPWG4JetResponse) {
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetResponse.C");
-     AliAnalysisTask *taskJetResponse = AddTaskJetResponse("FASTKT", 0.4, kHighPtFilterMask, 0.15, 0);
+     AliAnalysisTask *taskJetResponse = 0;
+
+     if(iJETAN){
+        taskJetResponse = AddTaskJetResponse("jets", "FASTJET", 0.4, kHighPtFilterMask, 0.15, 0);
+        taskJetResponse = AddTaskJetResponse("jets", "FASTJET", 0.4, kHighPtFilterMask, 0.15, 1);
+
+        taskJetResponse = AddTaskJetResponse("jets", "UA1", 0.4, kHighPtFilterMask, 1., 0);
+        taskJetResponse = AddTaskJetResponse("jets", "UA1", 0.4, kHighPtFilterMask, 1., 2);
+     }
+     if(iPWG4Cluster){
+        taskJetResponse = AddTaskJetResponse("clusters", "ANTIKT", 0.4, kHighPtFilterMask, 0.15, 0);
+        taskJetResponse = AddTaskJetResponse("clusters", "ANTIKT", 0.4, kHighPtFilterMask, 0.15, 1);
+     }
+     if (!taskJetResponse) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetResponse cannot run for this train conditions - EXCLUDED");
+
    }
 
    if(iPWG4JCORRAN){
