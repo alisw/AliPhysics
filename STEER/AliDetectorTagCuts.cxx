@@ -82,8 +82,10 @@ void AliDetectorTagCuts::SetDetectorValidityValue(TString det, UShort_t val)
   // Set Validity requiement for detector
 
   Short_t detid = AliDAQ::DetectorID(det.Data());
-  fDetectorValidityMatch[detid] = val;
-  fDetectorsFlag = kTRUE;
+  if (detid >= 0) {
+    fDetectorValidityMatch[detid] = val;
+    fDetectorsFlag = kTRUE;
+  }
 }
 
 //___________________________________________________________________________
