@@ -77,10 +77,10 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
   Int_t nEntries = fresult->GetEntries();
 
   TString alienUrl;
-  const char* guid;
-  const char* md5;
-  const char* turl;
-  Long64_t size = -1;
+//   const char* guid;
+//   const char* md5;
+//   const char* turl;
+//   Long64_t size = -1;
 
   Int_t counter = 0;
   for(Int_t i = 0; i < nEntries; i++) {
@@ -125,14 +125,14 @@ Bool_t AliESDTagCreator::ReadLocalCollection(const char *localpath) {
   // case where it finds an AliESDs.root file it creates the tags
   
   void *dira =  gSystem->OpenDirectory(localpath);
-  Char_t fPath[256];
+  Char_t fPath[512];
   const char * dirname = 0x0;
   const char * filename = 0x0;
   const char * pattern = "AliESDs.root"; 
 
   Int_t counter = 0;
   while((dirname = gSystem->GetDirEntry(dira))) {
-    sprintf(fPath,"%s/%s",localpath,dirname);
+    snprintf(fPath, 512,"%s/%s",localpath,dirname);
     void *dirb =  gSystem->OpenDirectory(fPath);
     while((filename = gSystem->GetDirEntry(dirb))) {
       if(strstr(filename,pattern)) {
@@ -672,7 +672,7 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   else lastEvent = fLastEvent;
 
   char fileName[256];
-  sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
+  snprintf(fileName, 256, "Run%d.Event%d_%d.ESD.tag.root", 
 	  iInitRunNumber,fFirstEvent,lastEvent);
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));
@@ -830,7 +830,7 @@ void AliESDTagCreator::CreateESDTagsFullRun(TTree *chain, AliGRPObject *grpData,
   Int_t iFirstEvent = 0;
 
   char fileName[256];
-  sprintf(fileName, "Run%d.Event%d_%d.ESD.tag.root", 
+  snprintf(fileName, 256, "Run%d.Event%d_%d.ESD.tag.root", 
 	  iInitRunNumber,iFirstEvent,iNumberOfEvents);
   AliInfo(Form("writing tags to file %s", fileName));
   AliDebug(1, Form("writing tags to file %s", fileName));

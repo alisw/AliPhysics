@@ -107,14 +107,14 @@ Bool_t AliAODTagCreator::ReadLocalCollection(const char *localpath, const char* 
   // case where it finds an AliAOD.root file it creates the tags
   
   void *dira =  gSystem->OpenDirectory(localpath);
-  Char_t fPath[256];
+  Char_t fPath[512];
   const char * dirname  = 0x0;
   const char * filename = 0x0;
 
   fChain = new TChain("aodTree");
 
   while((dirname = gSystem->GetDirEntry(dira))) {
-    sprintf(fPath,"%s/%s",localpath,dirname);
+    snprintf(fPath,512,"%s/%s",localpath,dirname);
     void *dirb =  gSystem->OpenDirectory(fPath);
     while((filename = gSystem->GetDirEntry(dirb))) {
 	TString bstr = dirname;
@@ -189,7 +189,7 @@ void AliAODTagCreator::CreateAODTags(Int_t fFirstEvent, Int_t fLastEvent, TList 
     else lastEvent = fLastEvent;
 
     char fileName[256];
-    sprintf(fileName, "Run%d.Event%d_%d.AOD.tag.root", 
+    snprintf(fileName, 256, "Run%d.Event%d_%d.AOD.tag.root", 
 	    fAODEvent->GetRunNumber(), fFirstEvent, lastEvent );
     AliInfo(Form("writing tags to file %s", fileName));
     AliDebug(1, Form("writing tags to file %s", fileName));
@@ -317,15 +317,16 @@ void AliAODTagCreator::CreateTags(const char* type)
 	if (iEventNumber == 0) oldRun = fAODEvent->GetRunNumber();
 	// Reference to the input file
 	TFile *file = fChain->GetFile();
-	const TUrl *url = file->GetEndpointUrl();
+	//	const TUrl *url = file->GetEndpointUrl();
 	fguid = file->GetUUID().AsString();
 
-	if (!strcmp(type,"grid")) {
-	    TString fturltemp = "alien://"; fturltemp += url->GetFile();
-	    fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
-	} else {
-	    fturl = url->GetFile();
-	}
+// 	if (!strcmp(type,"grid")) {
+// 	    TString fturltemp = "alien://"; fturltemp += url->GetFile();
+// 	    fturl = fturltemp(0,fturltemp.Index(".root",5,0,TString::kExact)+5);
+// 	} else {
+// 	    fturl = url->GetFile();
+// 	}
+	fturl = file->GetName();
 	
 	fAODEvent->GetStdContent();
 	
