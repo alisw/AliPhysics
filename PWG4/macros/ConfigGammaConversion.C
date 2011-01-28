@@ -2484,6 +2484,8 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
   //---------------------------------------------------  2 gamma Background -------------------------------------------------------
 
   if(kGCcalculateBackground==kTRUE){
+    histograms->AddHistogram("ESD_GlobalPrimaryVtxZ","Z primary vertex Global",300, -15., 15.,"Z[cm]","counts");
+    histograms->AddHistogram("ESD_SPDPrimaryVtxZ","Z primary vertex SPD",300, -15., 15.,"Z[cm]","counts");
     histograms->AddHistogram("ESD_Z_distribution" ,"Z primary vertex" , 2000, -30, 30,"Z[cm]","counts");
     histograms->AddHistogram("ESD_multiplicity_distribution" ,"multiplicity distribution" , 200, 0, 200,"counts","Multiplicity");
     histograms->AddHistogram("ESD_ZvsMultiplicity" ,"Z vs Multiplicity" , 1000, -10, 10,200,0,200,"Z[cm]","Multiplicity");
