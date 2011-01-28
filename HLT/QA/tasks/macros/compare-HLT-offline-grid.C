@@ -111,7 +111,7 @@ void compare_HLT_offline_grid(TString runNumber,
   //AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(kFALSE,kTRUE);
 
   // Create and configure the alien handler plugin
-  gROOT->LoadMacro("CreateAlienHandler.C");
+  gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/CreateAlienHandler.C");
   AliAnalysisGrid *alienHandler = CreateAlienHandler(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, detectorTask);
   if (!alienHandler) return;
   
