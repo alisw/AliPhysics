@@ -419,7 +419,7 @@ void AliLego::StepManager()
 	    new(lvols[fStepsBackward]) AliDebugVolume(vol,copy,step,pos[0], pos[1], pos[2], status);
 	    
 	    AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsBackward]);
-	    if (! (tmp->IsVEqual(vol, copy)) && (!fErrorCondition)) 
+	    if (tmp && !(tmp->IsVEqual(vol, copy)) && (!fErrorCondition)) 
 	    {
 		AliWarning(Form("Problem at (x,y,z): %d %f %f %f, volumes: %s %s step: %f\n", 
 				fStepsBackward, pos[0], pos[1], pos[2], tmp->GetName(), vol, step));
