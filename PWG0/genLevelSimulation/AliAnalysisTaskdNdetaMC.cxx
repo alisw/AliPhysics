@@ -273,6 +273,10 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
   // also a AliEvent...
   //  AliVEvent* mcEvent = MCEvent();
   AliMCEvent* mcEvent = MCEvent();
+  if (!mcEvent) {
+     Printf("ERROR: Could not retrieve MC event");
+     return;
+  }
   AliGenPythiaEventHeader * headPy  = 0;
   AliGenDPMjetEventHeader * headPho = 0;
   AliGenEventHeader * htmp = mcEvent->GenEventHeader();
@@ -289,10 +293,6 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
     
   }
 
-  if (!mcEvent) {
-     Printf("ERROR: Could not retrieve MC event");
-     return;
-  }
 
   //  Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
   //  Check if the evend is single diffractive
