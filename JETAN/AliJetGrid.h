@@ -47,7 +47,7 @@ class AliJetGrid : public TNamed {
 			Float_t &maxphi, Float_t &mineta, Float_t &maxeta) const ;
   void      GetBinParam(Int_t &phibintpc, Int_t &etabintpc, 
 			Int_t &phibinemc, Int_t &etabinemc, Int_t &nbinphi) const;
-  void      GetIJFromIndex(Int_t index, Int_t i, Int_t j) const;
+  void      GetIJFromIndex(Int_t index, Int_t& i, Int_t& j) const;
   void      GetEtaPhiFromIndex2(Int_t index, Float_t &phi, Float_t &eta);
   Int_t     GetNEntries();
   Int_t     GetNEntries2();
