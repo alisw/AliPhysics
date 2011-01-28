@@ -2369,6 +2369,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		  if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==111){
                      gamma1MotherLabel=-111;
                   }
+		  if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==221){
+                     gamma1MotherLabel=-221;
+                  }
 		}
 	      }
 	      Int_t indexKF2 = fKFReconstructedGammasV0Index.at(secondGammaIndex);
@@ -2391,6 +2394,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		    if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==111){
                       gamma2MotherLabel=-111;
                     }
+		    if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==221){
+                      gamma2MotherLabel=-221;
+                    }
+		    
  		  }
 		}
 		if(gamma1MotherLabel>=0 && gamma1MotherLabel==gamma2MotherLabel){
@@ -2421,7 +2428,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      }else{
 			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
-		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111){
+		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111 || gamma1MotherLabel==-221 || gamma2MotherLabel==-221){
 			fHistograms->FillHistogram("ESD_TruePi0DalitzCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
 		    }
@@ -2445,7 +2452,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      }else{
 			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
-		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111){
+		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111 || gamma1MotherLabel==-221 || gamma2MotherLabel==-221){
 			fHistograms->FillHistogram("ESD_TruePi0DalitzCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
 		    }
@@ -2470,7 +2477,7 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      }else{
 			fHistograms->FillHistogram("ESD_TrueBckCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
-		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111){
+		      if(gamma1MotherLabel==-111 || gamma2MotherLabel==-111 || gamma1MotherLabel==-221 || gamma2MotherLabel==-221 ){
 			fHistograms->FillHistogram("ESD_TruePi0DalitzCont_InvMass_vs_Pt",massTwoGammaCandidate,momentumVectorTwoGammaCandidate.Pt());
 		      }
 		    }
