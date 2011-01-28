@@ -40,6 +40,7 @@
 #include <AliCDBEntry.h>
 #include <AliCDBManager.h>
 #include <AliCDBId.h>
+#include <AliSplineFit.h>
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"

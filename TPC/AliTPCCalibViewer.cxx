@@ -420,9 +420,7 @@ Int_t AliTPCCalibViewer::EasyDraw(const char* drawCommand, Int_t sector, const c
   // writeDrawCommand: write the command, that is passed to TTree::Draw
   //
    if (sector >= 0 && sector < 72) {
-      char sectorChr[3];
-      sprintf(sectorChr, "%i", sector);
-      return EasyDraw(drawCommand, sectorChr, cuts, drawOptions, writeDrawCommand);
+      return EasyDraw(drawCommand, Form("%i", sector), cuts, drawOptions, writeDrawCommand);
    }
    Error("EasyDraw","The TPC contains only sectors between 0 and 71.");
    return -1;
@@ -503,9 +501,7 @@ Int_t AliTPCCalibViewer::EasyDraw1D(const char* drawCommand, Int_t sector, const
   //
 
    if (sector >= 0 && sector < 72) {
-      char sectorChr[3];
-      sprintf(sectorChr, "%i", sector);
-      return EasyDraw1D(drawCommand, sectorChr, cuts, drawOptions, writeDrawCommand);
+      return EasyDraw1D(drawCommand, Form("%i",sector), cuts, drawOptions, writeDrawCommand);
    }
   Error("EasyDraw","The TPC contains only sectors between 0 and 71.");
   return -1;
@@ -553,9 +549,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, Int_t sector, con
    // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
    // 
    if (sector >= 0 && sector < 72) {
-      char sectorChr[3];
-      sprintf(sectorChr, "%i", sector);
-      return DrawHisto1D(drawCommand, sectorChr, cuts, sigmas, plotMean, plotMedian, plotLTM);
+      return DrawHisto1D(drawCommand, Form("%i", sector), cuts, sigmas, plotMean, plotMedian, plotLTM);
    }
    Error("DrawHisto1D","The TPC contains only sectors between 0 and 71.");
    return -1;
@@ -599,9 +593,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
    Double_t sigma = TMath::RMS(entries, values);
    Double_t maxY = htemp->GetMaximum();
    
-   char c[500];
    TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
-//    sprintf(c, "%s, sector: %i", type, sector);
    //fListOfObjectsToBeDeleted->Add(legend);
 
    if (plotMean) {
@@ -612,8 +604,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "Mean: %f", mean);
-      legend->AddEntry(line, c, "l");
+      legend->AddEntry(line, Form("Mean: %f", mean), "l");
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(mean + nsigma[i] * sigma, 0, mean + nsigma[i] * sigma, maxY);
@@ -626,8 +617,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
          lineMinusSigma->SetLineColor(kRed);
          lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
-         legend->AddEntry(lineMinusSigma, c, "l");
+         legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma)), "l");
       }
    }
    if (plotMedian) {
@@ -638,8 +628,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "Median: %f", median);
-      legend->AddEntry(line, c, "l");
+      legend->AddEntry(line, Form("Median: %f", median), "l");
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(median + nsigma[i] * sigma, 0, median + nsigma[i]*sigma, maxY);
@@ -652,8 +641,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
          lineMinusSigma->SetLineColor(kBlue);
          lineMinusSigma->SetLineStyle(2 + i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
-         legend->AddEntry(lineMinusSigma, c, "l");
+         legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma)), "l");
       }
    }
    if (plotLTM) {
@@ -666,8 +654,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
       line->SetLineWidth(2);
       line->SetLineStyle(1);
       line->Draw();
-      sprintf(c, "LTM: %f", ltm);
-      legend->AddEntry(line, c, "l");
+      legend->AddEntry(line, Form("LTM: %f", ltm), "l");
       // draw sigma lines
       for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
          TLine* linePlusSigma = new TLine(ltm + nsigma[i] * ltmRms, 0, ltm + nsigma[i] * ltmRms, maxY);
@@ -681,8 +668,7 @@ Int_t  AliTPCCalibViewer::DrawHisto1D(const char* drawCommand, const char* secto
          lineMinusSigma->SetLineColor(kGreen+2);
          lineMinusSigma->SetLineStyle(2+i);
          lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i] * ltmRms));
-         legend->AddEntry(lineMinusSigma, c, "l");
+         legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i] * ltmRms)), "l");
       }
    }
    if (!plotMean && !plotMedian && !plotLTM) return -1;
@@ -713,9 +699,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, Int_t sector, const c
    // plotMean/plotMedian/plotLTM: specifies where to put the center
    //
    if (sector >= 0 && sector < 72) {
-      char sectorChr[3];
-      sprintf(sectorChr, "%i", sector);
-      return SigmaCut(drawCommand, sectorChr, cuts, sigmaMax, plotMean, plotMedian, plotLTM, pm, sigmas, sigmaStep);
+      return SigmaCut(drawCommand, Form("%i", sector), cuts, sigmaMax, plotMean, plotMedian, plotLTM, pm, sigmas, sigmaStep);
    }
    Error("SigmaCut","The TPC contains only sectors between 0 and 71.");
    return -1;
@@ -870,6 +854,9 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
          DrawLines(cutGraphMean, nsigma, legend, kRed, kTRUE);
       }
    }
+  delete [] index;
+  delete [] xarray;
+  delete [] yarray;
    /*
    if (plotMedian) {
       cutHistoMedian = AliTPCCalibViewer::SigmaCut(htemp, median, sigma, sigmaMax, sigmaStep, pm);
@@ -916,9 +903,7 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand,       Int_t sector, 
       End_Latex  
    */
    if (sector >= 0 && sector < 72) {
-      char sectorChr[3];
-      sprintf(sectorChr, "%i", sector);
-      return Integrate(drawCommand, sectorChr, cuts, sigmaMax, plotMean, plotMedian, plotLTM, sigmas, sigmaStep);
+      return Integrate(drawCommand, Form("%i", sector), cuts, sigmaMax, plotMean, plotMedian, plotLTM, sigmas, sigmaStep);
    }
    Error("Integrate","The TPC contains only sectors between 0 and 71.");
    return -1;
@@ -1112,6 +1097,10 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
          DrawLines(integralGraphLTM, nsigma, legend, kGreen+2, kTRUE);
       }
    }
+   delete [] index;
+   delete [] xarray;
+   delete [] yarray;
+  
    if (!plotMean && !plotMedian && !plotLTM) return -1;
    legend->Draw();
    return entries;
@@ -1125,7 +1114,6 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
    // 
    
    // start to draw the lines, loop over requested sigmas
-   char c[500];
    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
       if (!pm) { 
          Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
@@ -1139,8 +1127,7 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
          lineLeft->SetLineColor(color);
          lineLeft->SetLineStyle(2 + i);
          lineLeft->Draw();
-         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft, c, "l");
+         legend->AddEntry(lineLeft, Form("Fraction(%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
       }
       else { // if (pm)
          Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
@@ -1154,8 +1141,7 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
          lineLeft1->SetLineColor(color);
          lineLeft1->SetLineStyle(2 + i);
          lineLeft1->Draw();
-         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft1, c, "l");
+         legend->AddEntry(lineLeft1, Form("Fraction(+%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
          bin = histogram->GetXaxis()->FindBin(-nsigma[i]);
          TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineUp2);
@@ -1167,8 +1153,7 @@ void AliTPCCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *leg
          lineLeft2->SetLineColor(color);
          lineLeft2->SetLineStyle(2 + i);
          lineLeft2->Draw();
-         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft2, c, "l");
+         legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
       }
    }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
 }
@@ -1181,7 +1166,6 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
    // 
    
    // start to draw the lines, loop over requested sigmas
-   char c[500];
    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
       if (!pm) { 
          TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
@@ -1194,8 +1178,7 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
          lineLeft->SetLineColor(color);
          lineLeft->SetLineStyle(2 + i);
          lineLeft->Draw();
-         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
-         legend->AddEntry(lineLeft, c, "l");
+         legend->AddEntry(lineLeft, Form("Fraction(%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i])), "l");
       }
       else { // if (pm)
          TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
@@ -1208,8 +1191,7 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
          lineLeft1->SetLineColor(color);
          lineLeft1->SetLineStyle(2 + i);
          lineLeft1->Draw();
-         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
-         legend->AddEntry(lineLeft1, c, "l");
+         legend->AddEntry(lineLeft1, Form("Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i])), "l");
          TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], graph->Eval(-nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineUp2);
          lineUp2->SetLineColor(color);
@@ -1220,8 +1202,7 @@ void AliTPCCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legen
          lineLeft2->SetLineColor(color);
          lineLeft2->SetLineStyle(2 + i);
          lineLeft2->Draw();
-         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i]));
-         legend->AddEntry(lineLeft2, c, "l");
+         legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i])), "l");
       }
    }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
 }
@@ -1808,7 +1789,7 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
-   chi2 = chi2;
+//    chi2 = chi2;
    
    TString *preturnFormula = new TString(Form("( %e+",fitParam[0])), &returnFormula = *preturnFormula;
    
@@ -1819,7 +1800,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    returnFormula.Append(" )");
    delete formulaTokens;
    delete fitter;
-   delete[] values;
+  for (Int_t i = 0; i < dim + 1; i++){
+    delete [] values[i];
+  }
+  delete [] values;
    return preturnFormula;
 }
 
