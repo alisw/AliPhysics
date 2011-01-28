@@ -458,12 +458,12 @@ AliKMeansResult::AliKMeansResult(Int_t k):
 AliKMeansResult::AliKMeansResult(const AliKMeansResult &res):
   TObject(res),
   fK(res.GetK()),
-  fMx(0),
-  fMy(0),
-  fSigma2(0),
-  fRk(0),
-  fTarget(0),
-  fInd(0)
+  fMx(new Double_t[res.GetK()]),
+  fMy(new Double_t[res.GetK()]),
+  fSigma2(new Double_t[res.GetK()]),
+  fRk(new Double_t[res.GetK()]),
+  fTarget(new Double_t[res.GetK()]),
+  fInd(new Int_t[res.GetK()])
 {
   // Copy constructor
   for (Int_t i = 0; i <fK; i++) {
