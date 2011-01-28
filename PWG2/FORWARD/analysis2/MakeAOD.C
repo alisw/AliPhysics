@@ -60,7 +60,7 @@ void MakeAOD(const char* esddir,
 				  "EMCALTrigger "
 				  "SPDPileupVertices " 
 				  "TrkPileupVertices " 
-				  "Tracks "
+				  // "Tracks "
 				  "MuonTracks " 
 				  "PmdTracks "
 				  "TrdTracks "
@@ -101,6 +101,11 @@ void MakeAOD(const char* esddir,
   Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","+g");
   // gDebug = 0;
   AddTaskCopyHeader();
+
+
+  // Central multiplicity
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","+");
+  AddTaskCentralMult();
 #endif
 
   // FMD 
