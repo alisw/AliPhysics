@@ -359,8 +359,6 @@ void TDPMjet::GenerateEvent()
    Float_t Elab = fEpn;
    Int_t irej=0;
    Dt_Kkinc(fIp, fIpz, fIt, fItz, fIdp, Elab, kkmat, irej);
-//   dt_evtout(4);
-   if(irej!=0) return;
 }
 //______________________________________________________________________________
 void TDPMjet::Dt_Dtuini(int nevts, double epn, int npmass, int npchar, 
