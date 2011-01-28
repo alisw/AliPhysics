@@ -108,6 +108,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAliPID(AliPID::kPion)
 {
   //io constructor 
+  SetPriors(); //init arrays
 }
 
 //-----------------------------------------------------------------------
@@ -171,7 +172,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
                                                     5.04114e-11,
                                                     2.12543e+00,
                                                     4.88663e+00 );
-
+  SetPriors(); //init arrays
 }
 
 //-----------------------------------------------------------------------
@@ -231,6 +232,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
+  SetPriors(); //init arrays
 }
 
 //-----------------------------------------------------------------------
@@ -1147,7 +1149,6 @@ void AliFlowTrackCuts::InitPIDcuts()
 //-----------------------------------------------------------------------
 // part added by F. Noferini (some methods)
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
-  SetPriors();
 
   Bool_t goodtrack = track && (track->GetStatus() & AliESDtrack::kTOFpid) && (track->GetTOFsignal() > 12000) && (track->GetTOFsignal() < 100000) && (track->GetIntegratedLength() > 365) && !(track->GetStatus() & AliESDtrack::kTOFmismatch);
 

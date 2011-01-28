@@ -384,9 +384,12 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     //pmd
     
     // if monte carlo event get reaction plane from monte carlo (depends on generator)
-    if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
-    //set reference multiplicity, TODO: maybe move it to the constructor?
-    flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
+    if (flowEvent)
+    {
+      if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
+      //set reference multiplicity, TODO: maybe move it to the constructor?
+      flowEvent->SetReferenceMultiplicity(AliESDtrackCuts::GetReferenceMultiplicity(myESD,kTRUE));
+    }
   }
 
   // Make the FlowEvent for ESD input combined with MC info
@@ -448,11 +451,16 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   //inject candidates
   if(fLoadCandidates) {
     TObjArray* Candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
-    AliFlowCandidateTrack *cand;
-    for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand ) {
-      cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
-      cand->SetForPOISelection();
-      flowEvent->AddTrack(cand);
+    AliFlowCandidateTrack *cand = NULL;
+    if (Candidates)
+    {
+      for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand )
+      {
+        cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
+        if (!cand) continue;
+        cand->SetForPOISelection();
+        flowEvent->AddTrack(cand);
+      }
     }
   }
 

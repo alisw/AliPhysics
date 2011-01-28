@@ -326,8 +326,8 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
       AliWarning(Form("pParticle->GetLabel()!=pMcParticle->Label(), %i, %i", pParticle->GetLabel(), pMcParticle->Label()));
 
     //check if pParticle passes the cuts
-    Bool_t rpOK = kTRUE;
-    Bool_t poiOK = kTRUE;
+    Bool_t rpOK = kFALSE;
+    Bool_t poiOK = kFALSE;
     if (rpCFManager && poiCFManager)
     {
       if(anOption == kESDkine)
