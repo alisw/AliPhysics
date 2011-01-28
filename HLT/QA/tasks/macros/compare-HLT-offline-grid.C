@@ -28,6 +28,7 @@ void compare_HLT_offline_grid(TString runNumber,
 			      TString gridOutputDir, 
 			      const char* mode = "full", 
 			      const char* detectorTask="global",
+			      TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/",
 			      bool fUseHLTTrigger=kFALSE
 			     )
 {
@@ -49,7 +50,8 @@ void compare_HLT_offline_grid(TString runNumber,
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libHLTbase");
-  gROOT->ProcessLine(".include $ALICE_ROOT/include");
+  gROOT->ProcessLine(".include $ALICE_ROOT/include"); 
+  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I.")
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
@@ -80,7 +82,7 @@ void compare_HLT_offline_grid(TString runNumber,
 	   bD0 = kTRUE;
 	   continue;
 	 }  
-	 if(argument.CompareTo("CB", TString::kIgnoreCase)==0){
+	 if(argument.CompareTo("cb", TString::kIgnoreCase)==0){
 	   bCB = kTRUE;
 	   continue;
 	 }  
@@ -117,35 +119,47 @@ void compare_HLT_offline_grid(TString runNumber,
  
   //-------------- Compile the analysis tasks ---------- //
   if(bPHOS && bEMCAL) {
-    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
-    pHLT->LoadComponentLibraries("libHLTbase");
-    pHLT->LoadComponentLibraries("libAliHLTUtil");
-    pHLT->LoadComponentLibraries("libAliHLTGlobal");
-    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
-    gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
-    gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+");  
-    
+    gSystem->Load("libHLTbase");
+    gSystem->Load("libAliHLTUtil");
+    gSystem->Load("libAliHLTGlobal");
+    TString strTask1("AliAnalysisTaskHLTCalo.cxx+");
+    TString strTask2("AliAnalysisTaskHLTPHOS.cxx+");    
+    TString strTask3("AliAnalysisTaskHLTEMCAL.cxx+");    
+    gROOT->LoadMacro(taskFolder+strTask1); 
+    gROOT->LoadMacro(taskFolder+strTask2);  
+    gROOT->LoadMacro(taskFolder+strTask3);      
   }
   else if(bPHOS) {
-    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
-    pHLT->LoadComponentLibraries("libHLTbase");
-    pHLT->LoadComponentLibraries("libAliHLTUtil");
-    pHLT->LoadComponentLibraries("libAliHLTGlobal");
-    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
-    gROOT->LoadMacro("AliAnalysisTaskHLTPHOS.cxx+");  
+    gSystem->Load("libHLTbase");
+    gSystem->Load("libAliHLTUtil");
+    gSystem->Load("libAliHLTGlobal");
+    TString strTask1("AliAnalysisTaskHLTCalo.cxx+");
+    TString strTask2("AliAnalysisTaskHLTPHOS.cxx+");    
+    gROOT->LoadMacro(taskFolder+strTask1); 
+    gROOT->LoadMacro(taskFolder+strTask2);  
   }
   else if(bEMCAL) {
-    AliHLTSystem * pHLT = AliHLTPluginBase::GetInstance();
-    pHLT->LoadComponentLibraries("libHLTbase");
-    pHLT->LoadComponentLibraries("libAliHLTUtil");
-    pHLT->LoadComponentLibraries("libAliHLTGlobal");
-    gROOT->LoadMacro("AliAnalysisTaskHLTCalo.cxx+"); 
-    gROOT->LoadMacro("AliAnalysisTaskHLTEMCAL.cxx+");  
+    gSystem->Load("libHLTbase");
+    gSystem->Load("libAliHLTUtil");
+    gSystem->Load("libAliHLTGlobal");
+    TString strTask1("AliAnalysisTaskHLTCalo.cxx+");
+    TString strTask2("AliAnalysisTaskHLTEMCAL.cxx+");    
+    gROOT->LoadMacro(taskFolder+strTask1); 
+    gROOT->LoadMacro(taskFolder+strTask2);  
   }
-  if(bGLOBAL) gROOT->LoadMacro("AliAnalysisTaskHLT.cxx+");
-  if(bD0)     gROOT->LoadMacro("AliAnalysisTaskD0Trigger.cxx+"); 
-  if(bCB)     gROOT->LoadMacro("AliAnalysisTaskHLTCentralBarrel.cxx+");
-   
+  if(bGLOBAL){
+     TString strTask("AliAnalysisTaskHLT.cxx+");   
+     gROOT->LoadMacro(taskFolder+strTask);
+  }
+  if(bD0){
+    TString strTask("AliAnalysisTaskD0Trigger.cxx+");
+    gROOT->LoadMacro(taskFolder+strTask);     
+  }
+  if(bCB){
+    TString strTask("AliAnalysisTaskHLTCentralBarrel.cxx+");
+    gROOT->LoadMacro(taskFolder+strTask);
+  } 
+ 
   //-------------- define the tasks ------------//
   
   if(bPHOS){
@@ -185,9 +199,9 @@ void compare_HLT_offline_grid(TString runNumber,
     mgr->ConnectOutput(taskD0,1,coutputD0);
   }
   if(bCB){
-     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_central_barrel");
+     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_CB");
      mgr->AddTask(taskCB);
-     AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("central_barrel_histograms",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");       
+     AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");       
      mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskCB,1,coutputCB);
   }
@@ -205,7 +219,7 @@ void compare_HLT_offline_grid(TString runNumber,
 void compare_HLT_offline_grid(){
   cout << " " << endl;
   cout << " Usage examples:" << endl;
-  cout << "    compare-HLT-offline-grid.C'(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, taskOption, fUseHLTTrigger)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-grid.C'(\"000115322\",\"/alice/data/2010/LHC10b\",\"ESDcomparison\",\"output\",\"full\",\"global\",kTRUE)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-grid.C'(runNumber, dataDir, gridWorkingDir, gridOutputDir, mode, taskOption, taskFolder, fUseHLTTrigger)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-grid.C'(\"000115322\",\"/alice/data/2010/LHC10b\",\"ESDcomparison\",\"output\",\"full\",\"global\",\"./\",kTRUE)' 2>&1 | tee log" << endl;
   cout << " " << endl;
 }
