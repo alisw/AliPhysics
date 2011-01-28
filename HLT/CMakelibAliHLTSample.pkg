@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTSample.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTSample                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,18 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS
-    AliHLTSampleComponent1.h
-    AliHLTSampleComponent2.h
-    AliHLTSampleCalibrationComponent.h
-    AliHLTSampleESDAnalysisComponent.h
-    AliHLTSampleRawAnalysisComponent.h
-    AliHLTSampleMonitoringComponent.h
-    AliHLTAgentSample.h
-    AliHLTSamplePreprocessor.h
-    AliHLTSampleOfflineSinkComponent.h
-    AliHLTDummyComponent.h
-    )
+set ( CLASS_HDRS  	AliHLTSampleComponent1.h AliHLTSampleComponent2.h AliHLTSampleCalibrationComponent.h AliHLTSampleESDAnalysisComponent.h AliHLTSampleRawAnalysisComponent.h AliHLTSampleMonitoringComponent.h AliHLTAgentSample.h AliHLTSamplePreprocessor.h AliHLTSampleOfflineSinkComponent.h AliHLTDummyComponent.h)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -47,7 +36,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/shuttle HLT/SampleLib STEER RAW)
 
-set ( ELIBS  "-lHLTbase -lCDB -lSTEERBase")
+set ( LIBRARY_DEP  -lHLTbase -lCDB -lSTEERBase)
 
 include ("CMakehlt.conf")
 

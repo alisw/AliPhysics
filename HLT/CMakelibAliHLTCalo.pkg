@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTCalo.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTCalo                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -28,25 +28,7 @@
 
 include ("CMakehlt.conf")
 
-set ( CLASS_HDRS
-    AliHLTCaloRawAnalyzerComponentv3.h
-    AliHLTCaloUtilities.h
-    AliHLTCaloMapper.h
-    AliHLTCaloDefinitions.h
-    AliHLTCaloConstants.h
-    AliHLTCaloSanityInspector.h
-    AliHLTCaloSharedMemoryInterfacev2.h
-    AliHLTCaloFourier.h
-    AliHLTCaloConstantsHandler.h
-    AliHLTCaloClusterizer.h
-    AliHLTCaloClusterizerNbyN.h
-    AliHLTCaloClusterizerComponent.h
-    AliHLTCaloDigitMaker.h
-    AliHLTCaloClusterAnalyser.h
-    AliHLTCaloProcessor.h
-    AliHLTCaloGeometry.h
-    AliHLTCaloRecoParamHandler.h
-    )
+set ( CLASS_HDRS  AliHLTCaloRawAnalyzerComponentv3.h AliHLTCaloUtilities.h AliHLTCaloMapper.h AliHLTCaloDefinitions.h AliHLTCaloConstants.h AliHLTCaloSanityInspector.h AliHLTCaloSharedMemoryInterfacev2.h AliHLTCaloFourier.h AliHLTCaloConstantsHandler.h AliHLTCaloClusterizer.h AliHLTCaloClusterizerNbyN.h AliHLTCaloClusterizerComponent.h AliHLTCaloDigitMaker.h AliHLTCaloClusterAnalyser.h AliHLTCaloProcessor.h AliHLTCaloGeometry.h AliHLTCaloRecoParamHandler.h)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -56,7 +38,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util STEER RAW  EMCAL )
 
-set ( ELIBS  "-lHLTbase  -lEMCALrec  -lEMCALbase -lEMCALUtils -lESD -lSTEER -lRAWDatarec")
+set ( LIBRARY_DEP  -lHLTbase  -lEMCALrec   -lESD -lSTEER -lRAWDatarec)
 
 include ("CMakehlt.conf")
 

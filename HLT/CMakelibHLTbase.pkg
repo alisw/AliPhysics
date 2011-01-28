@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibHLTbase.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for HLTbase                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -27,85 +27,12 @@
 #--------------------------------------------------------------------------------#
 include ("CMakehlt.conf")
 
-set ( CLASS_HDRS
-    AliHLTComponent.h
-    AliHLTComponentHandler.h
-    AliHLTMisc.h
-    AliHLTSystem.h
-    AliHLTReconstructorBase.h
-    AliHLTPluginBase.h
-    AliHLTProcessor.h
-    AliHLTCalibrationProcessor.h
-    AliHLTConfiguration.h
-    AliHLTComponentConfiguration.h
-    AliHLTConfigurationHandler.h
-    AliHLTOnlineConfiguration.h
-    AliHLTTTreeProcessor.h
-    AliHLTTask.h
-    AliHLTDumpTask.h
-    AliHLTControlTask.h
-    AliHLTLogging.h
-    AliHLTErrorGuard.h
-    AliHLTDataBuffer.h
-    AliHLTConsumerDescriptor.h
-    AliHLTDataSource.h
-    AliHLTDataSink.h
-    AliHLTOfflineInterface.h
-    AliHLTOfflineDataSource.h
-    AliHLTOfflineDataSink.h
-    AliHLTModuleAgent.h
-    AliHLTModulePreprocessor.h
-    AliHLTShuttleInterface.h
-    AliHLTDimServer.h
-    AliHLTHOMERLibManager.h
-    AliHLTHOMERManager.h
-    AliHLTHOMERProxyHandler.h
-    AliHLTHOMERBlockDesc.h
-    AliHLTHOMERSourceDesc.h
-    AliHLTEsdManager.h
-    AliHLTDAQ.h
-    AliHLTOUT.h
-    AliHLTOUTHomerBuffer.h
-    AliHLTOUTTask.h
-    AliHLTOUTHandler.h
-    AliHLTOUTHandlerIgnore.h
-    AliHLTOUTHandlerEquId.h
-    AliHLTOUTHandlerDetectorDDL.h
-    AliHLTOUTHandlerChain.h
-    AliHLTOUTHandlerEsdBranch.h
-    AliHLTMemoryFile.h
-    AliHLTMessage.h
-    AliHLTEventStatistics.h
-    AliHLTBlockDataCollection.h
-    AliHLTTriggerDecision.h
-    AliHLTGlobalTriggerDecision.h
-    AliHLTReadoutList.h
-    AliHLTTriggerDomain.h
-    AliHLTDomainEntry.h
-    AliHLTTriggerMenu.h
-    AliHLTTriggerMenuItem.h
-    AliHLTTriggerMenuSymbol.h
-    AliHLTCTPData.h
-    AliHLTScalars.h
-    AliHLTRunStatistics.h
-    )
+set ( CLASS_HDRS   	AliHLTComponent.h AliHLTComponentHandler.h AliHLTMisc.h AliHLTSystem.h AliHLTReconstructorBase.h AliHLTPluginBase.h AliHLTProcessor.h AliHLTCalibrationProcessor.h AliHLTConfiguration.h AliHLTComponentConfiguration.h AliHLTConfigurationHandler.h AliHLTOnlineConfiguration.h AliHLTTTreeProcessor.h AliHLTTask.h AliHLTDumpTask.h AliHLTControlTask.h AliHLTLogging.h AliHLTErrorGuard.h AliHLTDataBuffer.h AliHLTConsumerDescriptor.h AliHLTDataSource.h AliHLTDataSink.h AliHLTOfflineInterface.h AliHLTOfflineDataSource.h AliHLTOfflineDataSink.h AliHLTModuleAgent.h AliHLTModulePreprocessor.h AliHLTShuttleInterface.h AliHLTDimServer.h AliHLTHOMERLibManager.h AliHLTHOMERManager.h AliHLTHOMERProxyHandler.h AliHLTHOMERBlockDesc.h AliHLTHOMERSourceDesc.h AliHLTEsdManager.h AliHLTDAQ.h AliHLTOUT.h AliHLTOUTHomerBuffer.h AliHLTOUTTask.h AliHLTOUTHandler.h AliHLTOUTHandlerIgnore.h AliHLTOUTHandlerEquId.h AliHLTOUTHandlerDetectorDDL.h AliHLTOUTHandlerChain.h AliHLTOUTHandlerEsdBranch.h AliHLTMemoryFile.h AliHLTMessage.h AliHLTEventStatistics.h AliHLTBlockDataCollection.h AliHLTTriggerDecision.h AliHLTGlobalTriggerDecision.h AliHLTReadoutList.h AliHLTTriggerDomain.h AliHLTDomainEntry.h AliHLTTriggerMenu.h AliHLTTriggerMenuItem.h AliHLTTriggerMenuSymbol.h AliHLTCTPData.h AliHLTScalars.h AliHLTRunStatistics.h)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
-list(APPEND MODULE_SRCS 
-    AliHLT_C_Component_WrapperInterface.cxx 
-    AliHLTDataTypes.cxx
-    )
+list(APPEND MODULE_SRCS AliHLT_C_Component_WrapperInterface.cxx AliHLTDataTypes.cxx)
 
-list(APPEND MODULE_HDRS 
-    ${CLASS_HDRS}
-    AliHLTDataTypes.h
-    AliHLTLoggingVariadicFree.h 
-    AliHLTExternalTrackParam.h 
-    AliHLTCommonCDBEntries.h 
-    AliHLT_C_Component_WrapperInterface.h 
-    AliHLTDefinitions.h 
-    AliHLTStdIncludes.h
-    )
+list(APPEND MODULE_HDRS ${CLASS_HDRS} AliHLTDataTypes.h AliHLTLoggingVariadicFree.h AliHLTExternalTrackParam.h AliHLTCommonCDBEntries.h AliHLT_C_Component_WrapperInterface.h AliHLTDefinitions.h AliHLTStdIncludes.h)
 
 set ( MODULE_DHDR 	HLTbaseLinkDef.h)
 
@@ -121,9 +48,6 @@ endif(MODULE_HDRS)
 if (MODULE_DHDR)
 ALICE_Format (DHDR "BASE/" "" "${MODULE_DHDR}")
 endif(MODULE_DHDR)
-
-set ( ELIBS  "-lGeom -lMinuit -lEG -lVMC -lTreePlayer -lRIO -lXMLIO -lThread -lProof -lProofPlayer -lXMLParser -lGui")
-set ( ELIBSDIR  "${ROOTLIBDIR}")
 
 if(NOT DHDR)
   set(CINTAUTOLINK 1)

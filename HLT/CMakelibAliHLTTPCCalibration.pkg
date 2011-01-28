@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTTPCCalibration.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTTPCCalibration                                          #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,15 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS
-    AliHLTTPCCalibrationComponent.h
-    AliHLTTPCAnalysisTaskcalib.h
-    AliHLTTPCCalibSeedMakerComponent.h
-    AliHLTTPCCalibTimeComponent.h
-    AliHLTTPCCalibTimeGainComponent.h
-    AliHLTTPCCalibrationAgent.h
-    )
-
+set ( CLASS_HDRS   AliHLTTPCCalibrationComponent.h AliHLTTPCAnalysisTaskcalib.h AliHLTTPCCalibSeedMakerComponent.h AliHLTTPCCalibTimeComponent.h AliHLTTPCCalibTimeGainComponent.h AliHLTTPCCalibrationAgent.h)
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
 set ( MODULE_HDRS  	${CLASS_HDRS})
@@ -43,7 +35,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/TPCLib HLT/TPCLib/offline HLT/BASE HLT/BASE/util HLT/TPCLib/calibration TPC ANALYSIS STEER)
 
-set ( ELIBS  "-lHLTbase -lAliHLTTPC")
+set ( LIBRARY_DEP  -lHLTbase -lAliHLTTPC)
 
 include ("CMakehlt.conf")
 

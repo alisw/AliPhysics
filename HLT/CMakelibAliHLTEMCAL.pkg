@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTEMCAL.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTEMCAL                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,21 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS
-    AliHLTEMCALDefinitions.h
-    AliHLTEMCALRawAnalyzerComponent.h
-    AliHLTEMCALMapper.h
-    AliHLTEMCALRawAnalyzerCrudeComponent.h
-    AliHLTEMCALRawAnalyzerLMSComponent.h
-    AliHLTEMCALRawAnalyzerPeakFinderComponent.h
-    AliHLTEMCALRawAnalyzerFastFitComponent.h
-    AliHLTEMCALRawAnalyzerNNComponent.h
-    AliHLTEMCALConstants.h
-    AliHLTEMCALDigitMakerComponent.h
-    AliHLTEMCALClusterizerComponent.h
-    AliHLTEMCALGeometry.h
-    AliHLTEMCALRecoParamHandler.h
-    )
+set ( CLASS_HDRS  AliHLTEMCALDefinitions.h AliHLTEMCALRawAnalyzerComponent.h AliHLTEMCALMapper.h AliHLTEMCALRawAnalyzerCrudeComponent.h AliHLTEMCALRawAnalyzerLMSComponent.h AliHLTEMCALRawAnalyzerPeakFinderComponent.h AliHLTEMCALRawAnalyzerFastFitComponent.h AliHLTEMCALRawAnalyzerNNComponent.h AliHLTEMCALConstants.h AliHLTEMCALDigitMakerComponent.h AliHLTEMCALClusterizerComponent.h AliHLTEMCALGeometry.h AliHLTEMCALRecoParamHandler.h)
 
 string(REPLACE ".cxx" ".h" MODULE_SRCS "${CLASS_HDRS}")
 
@@ -50,7 +36,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/EMCAL HLT/TPC HLT/TRD HLT/CALO EMCAL TPC TRD STEER RAW)
 
-set ( ELIBS  "-lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils -lTPCrec -lTPCbase -lTRDrec -lTRDbase -lSTEER -lSTEERBase -lRAWDatarec")
+set ( LIBRARY_DEP  -lHLTbase -lAliHLTUtil -lAliHLTCalo -lESD -lCDB -lEMCALrec -lEMCALsim -lEMCALbase -lEMCALUtils -lTPCrec -lTPCbase -lTRDrec -lTRDbase -lSTEER -lSTEERBase -lRAWDatarec)
 
 include ("CMakehlt.conf")
 

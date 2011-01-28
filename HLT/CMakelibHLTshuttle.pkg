@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibHLTshuttle.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for HLTshuttle                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -38,7 +38,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/shuttle HLT/BASE STEER)
 
-set ( ELIBS  "-lHLTbase -lCDB")
+set ( LIBRARY_DEP  -lHLTbase -lCDB)
 
 include ("CMakehlt.conf")
 

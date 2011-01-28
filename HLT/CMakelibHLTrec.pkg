@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibHLTrec.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for HLTrec                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -37,9 +37,9 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  "HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW")
+set ( EINCLUDE  HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW)
 
-set ( ELIBS  "-lHLTbase -lCDB -lESD -lSTEERBase -lSTEER -lRAWDatarec -lRAWDatabase")
+set ( LIBRARY_DEP  -lHLTbase -lCDB -lESD -lSTEERBase -lSTEER -lRAWDatarec -lRAWDatabase)
 
 include ("CMakehlt.conf")
 

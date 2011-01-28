@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTTRD.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTTRD                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,26 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS
-    AliHLTTRDClusterizerComponent.h
-    AliHLTTRDDefinitions.h
-    AliHLTTRDTrackerV1Component.h
-    AliHLTTRDClusterizer.h
-    AliHLTTRDEsdWriterComponent.h
-    AliHLTTRDCalibrationComponent.h
-    AliHLTTRDCalibFitComponent.h
-    AliHLTTRDCalibHistoComponent.h
-    AliHLTTRDCluster.h
-    AliHLTTRDTracklet.h
-    AliHLTTRDTrack.h
-    AliHLTTRDAgent.h
-    AliHLTTRDUtils.h
-    AliHLTTRDOfflineClusterizerComponent.h
-    AliHLTTRDOfflineTrackerV1Component.h
-    AliHLTTRDClusterHistoComponent.h
-    AliHLTTRDTrackHistoComponent.h
-    AliHLTTRDHistoMergerComponent.h
-    )
+set ( CLASS_HDRS  AliHLTTRDClusterizerComponent.h AliHLTTRDDefinitions.h AliHLTTRDTrackerV1Component.h AliHLTTRDClusterizer.h AliHLTTRDEsdWriterComponent.h AliHLTTRDCalibrationComponent.h AliHLTTRDCalibFitComponent.h AliHLTTRDCalibHistoComponent.h AliHLTTRDCluster.h AliHLTTRDTracklet.h AliHLTTRDTrack.h AliHLTTRDAgent.h AliHLTTRDUtils.h AliHLTTRDOfflineClusterizerComponent.h AliHLTTRDOfflineTrackerV1Component.h AliHLTTRDClusterHistoComponent.h AliHLTTRDTrackHistoComponent.h AliHLTTRDHistoMergerComponent.h)
 
 string (REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
 
@@ -55,8 +36,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util HLT/TRD TRD TRD/Cal STEER RAW STAT)
 
-set ( ELIBS  "-lHLTbase -lAliHLTUtil -lMLP -lXMLParser -lESD -lCDB -lTRDrec -lTRDbase -lSTEER -lSTEERBase -lRAWDatarec -lSTAT")
-set ( ELIBSDIR  "${ROOTLIBDIR}")
+set ( LIBRARY_DEP  -lHLTbase -lAliHLTUtil -lESD -lCDB -lTRDrec -lTRDbase -lSTEER -lSTEERBase -lRAWDatarec)
 
 include ("CMakehlt.conf")
 

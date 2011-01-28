@@ -1,4 +1,4 @@
-# $Id$
+# $Id: CMakelibAliHLTEve.pkg 46803 2011-01-28 22:12:12Z richterm $
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTEve                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,23 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS
-    AliHLTEveBase.h
-    AliHLTEveCalo.h
-    AliHLTEvePhos.h
-    AliHLTEveEmcal.h
-    AliHLTEveTPC.h
-    AliHLTEveHLT.h
-    AliHLTEveITS.h
-    AliHLTEveISSD.h
-    AliHLTEveISPD.h
-    AliHLTEveISDD.h
-    AliHLTEveTRD.h
-    AliHLTEveMuon.h
-    AliHLTEveAny.h
-    AliHLTEveMultCorr.h
-    AliHLTEveHistoMerger.h
-    )
+set ( CLASS_HDRS  	AliHLTEveBase.h AliHLTEveCalo.h AliHLTEvePhos.h AliHLTEveEmcal.h AliHLTEveTPC.h AliHLTEveHLT.h AliHLTEveITS.h AliHLTEveISSD.h AliHLTEveISPD.h AliHLTEveISDD.h AliHLTEveTRD.h AliHLTEveMuon.h AliHLTEveAny.h AliHLTEveMultCorr.h AliHLTEveHistoMerger.h)
 
 set ( MODULE_SRCS )
 set ( MODULE_HDRS )
@@ -51,7 +35,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/shuttle HLT/EVE EVE/EveHLT EVE/EveBase EVE/EveDet HLT/BASE/util HLT/BASE/HOMER  HLT/TPCLib ITS PHOS TRIGGER VZERO EMCAL STEER TRD HLT/TRD HLT/MUON MUON HLT/rec)
 
-set ( ELIBS  "-lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON -lEveDet")
+set ( LIBRARY_DEP  -lHLTbase -lCDB -lSTEERBase -AliHLTTPC -lMUONbase -lAliHLTMUON -lEveDet)
 
 include ("CMakehlteve.conf")
 
