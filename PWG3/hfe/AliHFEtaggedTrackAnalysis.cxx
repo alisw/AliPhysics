@@ -26,9 +26,11 @@
 #include "AliCFCutBase.h"
 #include "AliCFContainer.h"
 #include "AliCFManager.h"
+#include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
 
+#include "AliHFEcollection.h"
 #include "AliHFEcontainer.h"
 #include "AliHFEcuts.h"
 #include "AliHFEpid.h"
@@ -48,6 +50,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   , fPIDqa(NULL)
   , fCuts(NULL)
   , fCFM(NULL)
+  , fQAhistos(NULL)
   , fClean(kFALSE)
 {
   //
@@ -73,6 +76,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnal
   , fPIDqa(ref.fPIDqa)
   , fCuts(ref.fCuts)
   , fCFM(ref.fCFM)
+  , fQAhistos(ref.fQAhistos)
   , fClean(ref.fClean)
 {
   //
@@ -95,6 +99,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
     fPIDqa = ref.fPIDqa;
     fCuts = ref.fCuts;
     fCFM = ref.fCFM;
+    fQAhistos = ref.fQAhistos;
     fClean = ref.fClean;
 
     if(ref.fContainer) InitContainer();
@@ -141,6 +146,13 @@ void AliHFEtaggedTrackAnalysis::InitContainer(){
     fContainer->SetStepTitle("taggedTrackContainerReco", fPID->SortedDetectorName(ipid), ipid + AliHFEcuts::kNcutStepsRecTrack);
   }
   fCFM->SetParticleContainer(fContainer->GetCFContainer("taggedTrackContainerReco"));
+
+  // temporarily special QA
+  fQAhistos = new AliHFEcollection("taggedTrackQA", "Special QA for the TaggedTrackAnalysis");
+  fQAhistos->CreateTH2F("TPCclusters2_1", "TPCclusterInfo for findable clusters for 2 neighbors", 30, 0.1, 10., 162, 0., 161.);
+  fQAhistos->CreateTH2F("TPCclusters2_0", "TPCclusterInfo for the ratio for 2 neighbors", 30, 0.1, 10., 100, 0., 1.);
+  fQAhistos->BinLogAxis("TPCclusters2_1", 0);   // pt axis in logarithmic binning
+  fQAhistos->BinLogAxis("TPCclusters2_0", 0);   // pt axis in logarithmic binning
 }
 
 //____________________________________________________________
@@ -177,17 +189,24 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
     AliDebug(2, Form("Cut passed, filling container %d", icut - offset + 1));
     fVarManager->FillContainer(fCFM->GetParticleContainer(), icut - offset + 1);
   }
-  if(survived){
+  
+   if(survived){
     AliDebug(2, "Use track in the PID");
     // Try a loose cut to reject pion contamination
     if(fClean) {
       if(abinitioPID == AliPID::kElectron){
-	AliHFEpidTPC *pidTPC = (AliHFEpidTPC *) fPID->GetDetPID(AliHFEpid::kTPCpid);
-	if(pidTPC) {
-	  Double_t numberOfSigmaTPC = pidTPC->NumberOfSigmas(track,AliPID::kElectron,AliHFEpidObject::kESDanalysis);
-	  if(numberOfSigmaTPC < -5) return;
-	}
+	      AliHFEpidTPC *pidTPC = (AliHFEpidTPC *) fPID->GetDetPID(AliHFEpid::kTPCpid);
+	      if(pidTPC) {
+	        Double_t numberOfSigmaTPC = pidTPC->NumberOfSigmas(track,AliPID::kElectron,AliHFEpidObject::kESDanalysis);
+	        if(numberOfSigmaTPC < -5) return;
+	      }
       }
+    }
+    // temporarily monitoring of the number of TPC clusters 
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(esdtrack && abinitioPID == AliPID::kElectron){
+      fQAhistos->Fill("TPCclusters2_1", track->Pt(), esdtrack->GetTPCClusterInfo(2,1));
+      fQAhistos->Fill("TPCclusters2_0", track->Pt(), esdtrack->GetTPCClusterInfo(2,0));
     }
     // Apply PID
     AliHFEpidObject hfetrack;
@@ -210,9 +229,10 @@ void AliHFEtaggedTrackAnalysis::SetCuts(AliHFEcuts *cuts){
     fCuts->CreateStandardCuts();
     fCuts->SetQAOn();
     SetBit(kIsOwnerCuts);
+  } else {
+    AliDebug(1, "Setting single track cuts");
+    fCuts = cuts;
   }
-  AliDebug(1, "Setting single track cuts");
-  fCuts = cuts;
   const Int_t kNcutSteps = AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kNcutStepsRecTrack + AliHFEcuts::kNcutStepsDETrack;
   printf("Setting Number of cut steps %d\n", kNcutSteps);
   fCFM->SetNStepParticle(kNcutSteps);

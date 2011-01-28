@@ -28,10 +28,20 @@
 #include <THnSparse.h>
 #endif
 
+#ifndef ROOT_TH2
+#include <TH2.h>
+#endif
+
+#ifndef ALIHFECOLLECTION_H
+#include "AliHFEcollection.h"
+#endif
+
+class TBrowser;
 class TCollection;
 class TF1;
 class TGraph;
 class TH1;
+//class TH2;
 class TList;
 class TObjArray;
 
@@ -49,6 +59,9 @@ class AliHFEtrdPIDqa : public TNamed{
     virtual void Copy(TObject &o) const;
     virtual Long64_t Merge(TCollection *coll);
     virtual ~AliHFEtrdPIDqa();
+   
+    virtual void Browse(TBrowser *b);
+    virtual Bool_t IsFolder() const { return kTRUE; }
 
     void ProcessTracks(TObjArray * const  l, Int_t species);
     void ProcessTrack(AliVTrack *track, Int_t species);
@@ -58,15 +71,20 @@ class AliHFEtrdPIDqa : public TNamed{
     void StoreResults(const Char_t *filename = "HFEtrdPIDqa.root");
     void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root");
 
-    void DrawTracklet(Int_t tracklet);
+    void DrawTracklet(Int_t tracklet, Bool_t doFit = kFALSE);
     void ClearLists();
 
     //---------------------------------------------------
     // Getters for Histograms
-    THnSparseF *GetLikelihoodHistogram() const { return fLikeTRD; }
-    THnSparseF *GetQAHistogram() const { return fQAtrack; }
-    THnSparseF *GetdEdxHistogram() const { return fQAdEdx; }
-    THnSparseF *GetHistoTruncMean() const { return fTRDtruncMean; }
+    THnSparseF *GetLikelihoodHistogram() const { return fHistos ? dynamic_cast<THnSparseF *>(fHistos->Get("fLikeTRD")) : NULL; }
+    THnSparseF *GetQAHistogram() const { return fHistos ? dynamic_cast<THnSparseF *>(fHistos->Get("fQAtrack")) : NULL; }
+    THnSparseF *GetdEdxHistogram() const { return fHistos ? dynamic_cast<THnSparseF *>(fHistos->Get("fQAdEdx")) : NULL; }
+    THnSparseF *GetHistoTruncMean() const { return fHistos ? dynamic_cast<THnSparseF *>(fHistos->Get("fTRDtruncMean")) : NULL; }
+    TH2 *GetSliceChargePions(Bool_t pions = kTRUE) const { 
+      const Char_t * species = pions ? "Pions" : "Electrons";
+      return fHistos ? dynamic_cast<TH2 *>(fHistos->Get(Form("fTRDslices%s", species))) : NULL; 
+    }
+    AliHFEcollection *GetHistos() const { return fHistos; }
     //---------------------------------------------------
   protected:
     // Description of the containers we use to store basic information
@@ -127,10 +145,7 @@ class AliHFEtrdPIDqa : public TNamed{
     static const Double_t fgkMinBinCommon[kQuantitiesCommon];   // Bin Limits for common quantities (lower limit)
     static const Double_t fgkMaxBinCommon[kQuantitiesCommon];   // Bin Limits for common quantities (upper limit)
     AliHFEpidTRD *fTRDpid;        // HFE PID for TRD
-    THnSparseF *fLikeTRD;         // Histo for Likelihoods
-    THnSparseF *fQAtrack;         // QA histo for quantities based on track level
-    THnSparseF *fQAdEdx;          // QA for tracklet charge
-    THnSparseF *fTRDtruncMean;    // QA for truncated mean
+    AliHFEcollection *fHistos;    // Histogram collection
 
     // List for Histograms:
     TList *fPionEfficiencies;     //! List for Pion efficiencies
@@ -139,7 +154,7 @@ class AliHFEtrdPIDqa : public TNamed{
 
     TList *fThresholds;           //! List for Threshold Graphs
   
-  ClassDef(AliHFEtrdPIDqa, 2)     // QA class for TRD PID 
+  ClassDef(AliHFEtrdPIDqa, 3)     // QA class for TRD PID 
 };
 #endif
 

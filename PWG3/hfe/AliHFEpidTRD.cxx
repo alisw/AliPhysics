@@ -54,6 +54,8 @@ AliHFEpidTRD::AliHFEpidTRD() :
   //
   // default  constructor
   // 
+  memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
+  SetUseDefaultParameters();
 }
 
 //___________________________________________________________________
@@ -67,6 +69,7 @@ AliHFEpidTRD::AliHFEpidTRD(const char* name) :
   // default  constructor
   // 
   memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
+  SetUseDefaultParameters();
 }
 
 //___________________________________________________________________
@@ -100,7 +103,9 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   // Performs the copying of the object
   //
   AliHFEpidTRD &target = dynamic_cast<AliHFEpidTRD &>(ref);
-
+  
+  Bool_t defaultParameters = UseDefaultParameters();
+  target.SetUseDefaultParameters(defaultParameters);
   target.fMinP = fMinP;
   target.fPIDMethod = fPIDMethod;
   target.fElectronEfficiency = fElectronEfficiency;
@@ -121,10 +126,12 @@ Bool_t AliHFEpidTRD::InitializePID(){
   // InitializePID: Load TRD thresholds and create the electron efficiency axis
   // to navigate 
   //
-  if(fPIDMethod == kLQ)
-    InitParameters1DLQ();
-  else
-    InitParameters();
+  if(UseDefaultParameters()){
+    if(fPIDMethod == kLQ)
+      InitParameters1DLQ();
+    else
+      InitParameters();
+  }
   return kTRUE;
 }
 
@@ -169,6 +176,17 @@ Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p) const 
   GetParameters(electronEff, params);
   Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
   return TMath::Max(TMath::Min(threshold, 0.99), 0.2); // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
+}
+
+//___________________________________________________________________
+void AliHFEpidTRD::SetThresholdParameters(Double_t electronEff, Double_t *params){
+  //
+  // Set threshold parameters for the given bin
+  //
+  if(electronEff >= 1. || electronEff < 0.7) return;
+  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.05); 
+  memcpy(&fThreshParams[effbin * 4], params, sizeof(Double_t) * 4); 
+  SetUseDefaultParameters(kFALSE);
 }
 
 //___________________________________________________________________
@@ -257,10 +275,10 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpi
   Double_t pidProbs[AliPID::kSPECIES]; memset(pidProbs, 0, sizeof(Double_t) * AliPID::kSPECIES);
   if(anaType == AliHFEpidObject::kESDanalysis){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    esdtrack->GetTRDpid(pidProbs);
+    if(esdtrack) esdtrack->GetTRDpid(pidProbs);
   } else {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    fAODpid->MakeTRDPID(const_cast<AliAODTrack *>(aodtrack), pidProbs);
+    if(aodtrack)fAODpid->MakeTRDPID(const_cast<AliAODTrack *>(aodtrack), pidProbs);
   }
   return pidProbs[AliPID::kElectron];
 }
@@ -273,10 +291,10 @@ Double_t AliHFEpidTRD::GetP(const AliVParticle *track, AliHFEpidObject::Analysis
   Double_t p = 0.;
   if(anaType == AliHFEpidObject::kESDanalysis){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    p = esdtrack->GetOuterParam() ? esdtrack->GetOuterParam()->P() : esdtrack->P();
+    if(esdtrack) p = esdtrack->GetOuterParam() ? esdtrack->GetOuterParam()->P() : esdtrack->P();
   } else {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    p = aodtrack->P();
+    if(aodtrack) p = aodtrack->P();
   }
   return p;
 }
@@ -290,17 +308,41 @@ Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, A
   Double_t charge = 0.;
   if(anaType == AliHFEpidObject::kESDanalysis){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    for(Int_t islice = 0; islice < esdtrack->GetNumberOfTRDslices(); islice++) charge += esdtrack->GetTRDslice(static_cast<UInt_t>(layer), islice);
+    if(esdtrack)
+      for(Int_t islice = 0; islice < esdtrack->GetNumberOfTRDslices(); islice++) charge += esdtrack->GetTRDslice(static_cast<UInt_t>(layer), islice);
   } else {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    AliAODPid *aoddetpid = aodtrack->GetDetPid();
-    for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
+    AliAODPid *aoddetpid = aodtrack ? aodtrack->GetDetPid() : NULL;
+    if(aoddetpid)
+      for(Int_t islice = 0; islice < aoddetpid->GetTRDnSlices(); islice++) charge += aoddetpid->GetTRDsignal()[layer * aoddetpid->GetTRDnSlices() + islice];
   }
   return charge;
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track) const {
+void AliHFEpidTRD::GetTRDmomenta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType, Double_t *mom) const {
+  //
+  // Fill Array with momentum information at the TRD tracklet
+  //
+  if(anaType == AliHFEpidObject::kESDanalysis){
+    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    if(esdtrack)
+      for(Int_t itl = 0; itl < 6; itl++) 
+        mom[itl] = esdtrack->GetTRDmomentum(itl);
+  } else {
+    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    AliAODPid *aoddetpid = aodtrack ? aodtrack->GetDetPid() : NULL;
+    if(aoddetpid){
+      Float_t *trdmom = aoddetpid->GetTRDmomentum();
+      for(Int_t itl = 0; itl < 6; itl++){
+        mom[itl] = trdmom[itl]; 
+      }
+    }
+  }
+}
+
+//___________________________________________________________________
+Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track, Float_t truncation) const {
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 1: Take all Slices available
@@ -310,15 +352,19 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track) const {
   // Calculate mean over the last 2/3 slices
   //
   const Int_t kNSlices = 48;
-  AliDebug(3, Form("Number of Tracklets: %d\n", track->GetTRDpidQuality()));
+  const Int_t kSlicePerLayer = 7;
+  // Weight the slice to equalize the MPV of the dQ/dl-distribution per slice to the one in the first slice
+  // Pions are used as reference for the equalization
+  const Double_t kWeightSlice[8] = {1., 2.122, 1.8, 1.635, 1.595, 1.614, 1.16, 7.0};
+  AliDebug(3, Form("Number of Tracklets: %d\n", track->GetTRDntrackletsPID()));
   Double_t trdSlices[kNSlices], tmp[kNSlices];
   Int_t indices[48];
   Int_t icnt = 0;
   for(Int_t idet = 0; idet < 6; idet++)
-    for(Int_t islice = 0; islice < 8; islice++){
+    for(Int_t islice = 0; islice < kSlicePerLayer; islice++){
       AliDebug(2, Form("Chamber[%d], Slice[%d]: TRDSlice = %f", idet, islice, track->GetTRDslice(idet, islice)));
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
-      trdSlices[icnt++] = track->GetTRDslice(idet, islice);
+      trdSlices[icnt++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
     }
   AliDebug(1, Form("Number of Slices: %d\n", icnt));
   if(icnt < 6) return 0.;   // We need at least 6 Slices for the truncated mean
@@ -326,14 +372,14 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track) const {
   memcpy(tmp, trdSlices, sizeof(Double_t) * icnt);
   for(Int_t ien = 0; ien < icnt; ien++)
     trdSlices[ien] = tmp[indices[ien]];
-  Double_t trdSignal = TMath::Mean(static_cast<Int_t>(static_cast<Double_t>(icnt) * 2./3.), trdSlices);
+  Double_t trdSignal = TMath::Mean(static_cast<Int_t>(static_cast<Float_t>(icnt) * truncation), trdSlices);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;
   AliDebug(3, Form("PID Meth. 1: p[%f], TRDSignal[%f]", mom, trdSignal));
   return trdSignal;
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track) const {
+Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track, Float_t truncation) const {
   //
   // Calculation of the TRD Signal via truncated mean
   // Method 2: Take only first 5 slices per chamber
@@ -341,24 +387,28 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track) const {
   // Cut out upper half 
   // Now do mean with the reamining 3 slices per chamber
   //
-  Double_t trdSlicesLowTime[30], trdSlicesRemaining[32];
-  Int_t indices[30];
+  const Double_t kWeightSlice[8] = {1., 2.122, 1.8, 1.635, 1.595, 1.614, 1.16, 7.0};
+  const Int_t kLayers = 6;
+  const Int_t kSlicesLow = 6;
+  const Int_t kSlicesHigh = 1;
+  Double_t trdSlicesLowTime[kLayers*kSlicesLow], trdSlicesRemaining[kLayers*(kSlicesHigh + kSlicesLow)];
+  Int_t indices[kLayers*kSlicesLow];
   Int_t cntLowTime=0, cntRemaining = 0;
   for(Int_t idet = 0; idet < 6; idet++)
-    for(Int_t islice = 0; islice < 8; islice++){
+    for(Int_t islice = 0; islice < kSlicesLow+kSlicesHigh; islice++){
       if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
-      if(islice < 5){
+      if(islice < kSlicesLow){
         AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
-        trdSlicesLowTime[cntLowTime++] = track->GetTRDslice(idet, islice);
+        trdSlicesLowTime[cntLowTime++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
       } else{
         AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
-        trdSlicesRemaining[cntRemaining++] = track->GetTRDslice(idet, islice);
+        trdSlicesRemaining[cntRemaining++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
       }
     }
   if(cntLowTime < 4 || cntRemaining < 2) return 0.; // Min. Number of Slices at high time is 2 (matches with 1 layer), for the truncated mean we need at least 4 Slices
   TMath::Sort(cntLowTime, trdSlicesLowTime, indices, kFALSE);
   // Fill the second array with the lower half of the first time bins
-  for(Int_t ien = 0; ien < static_cast<Int_t>(static_cast<Double_t>(cntLowTime) * 0.5); ien++)
+  for(Int_t ien = 0; ien < static_cast<Int_t>(static_cast<Float_t>(cntLowTime) * truncation); ien++)
     trdSlicesRemaining[cntRemaining++] = trdSlicesLowTime[indices[ien]];
   Double_t trdSignal = TMath::Mean(cntRemaining, trdSlicesRemaining);
   Double_t mom = track->GetOuterParam() ? track->GetOuterParam()->P() : -1;

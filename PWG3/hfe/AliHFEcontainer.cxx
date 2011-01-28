@@ -103,15 +103,18 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
   //
   if(fNVars){
     fVariables = new TObjArray(fNVars);
-    for(UInt_t ivar = 0; ivar < fNVars; ivar++)
-      fVariables->AddAt(new AliHFEvarInfo(*dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar))), ivar);
+    AliHFEvarInfo *vtmp = NULL;
+    for(UInt_t ivar = 0; ivar < fNVars; ivar++){
+      vtmp = dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
+      if(vtmp) fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
+    }
   }
   fContainers = new THashList;
   fContainers->SetOwner();
   AliCFContainer *ctmp = NULL;
   for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
     ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
-    CreateContainer(ctmp->GetName(), ctmp->GetTitle(), ctmp->GetNStep());
+    if(ctmp) CreateContainer(ctmp->GetName(), ctmp->GetTitle(), ctmp->GetNStep());
   }
   // Copy also correlation matrices
   if(ref.fCorrelationMatrices){
@@ -120,7 +123,7 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
     fCorrelationMatrices->SetOwner();
     for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
       htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
-      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+      if(htmp) CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
     }
   }
 }
@@ -135,12 +138,18 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
   TNamed::operator=(ref);
   fContainers = new THashList();
   fNVars = ref.fNVars;
-  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++)
-    fContainers->Add(new AliCFContainer(*dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien))));
+  AliCFContainer *ctmp = NULL;
+  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
+    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
+    fContainers->Add(new AliCFContainer(*ctmp));
+  }
   if(fNVars){
     fVariables = new TObjArray(fNVars);
-    for(UInt_t ivar = 0; ivar < fNVars; ivar++)
-      fVariables->AddAt(new AliHFEvarInfo(*dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar))), ivar);
+    AliHFEvarInfo *vtmp = NULL;
+    for(UInt_t ivar = 0; ivar < fNVars; ivar++){
+      vtmp = dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
+      if(vtmp) fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
+    }
   } else {
     fVariables = NULL;
   }
@@ -151,7 +160,7 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
     fCorrelationMatrices->SetOwner();
     for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
       htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
-      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+      if(htmp) CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
     }
   }
   return *this;
@@ -229,13 +238,18 @@ void AliHFEcontainer::CreateContainer(const Char_t *name, const Char_t *title, U
   }
   
   Int_t *nBins = new Int_t[fNVars];
-  for(UInt_t ivar = 0; ivar < fNVars; ivar++) nBins[ivar] = (dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar)))->GetNumberOfBins();
   AliHFEvarInfo *var = NULL;
+  for(UInt_t ivar = 0; ivar < fNVars; ivar++){ 
+    var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
+    nBins[ivar] = var ? var->GetNumberOfBins() : 0;
+  }
   AliCFContainer *cont = new AliCFContainer(name, title, nStep, fNVars, nBins);
   for(UInt_t ivar = 0; ivar < fNVars; ivar++){
     var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
-    cont->SetBinLimits(ivar, var->GetBinning());
-    cont->SetVarTitle(ivar, var->GetVarName()->Data());
+    if(var){
+      cont->SetBinLimits(ivar, var->GetBinning());
+      cont->SetVarTitle(ivar, var->GetVarName()->Data());
+    }
   }
   delete[] nBins;
   fContainers->Add(cont);
@@ -257,19 +271,23 @@ void AliHFEcontainer::CreateCorrelationMatrix(const Char_t *name, const Char_t *
   AliHFEvarInfo *var = NULL;
   for(UInt_t ivar = 0; ivar < fNVars; ivar++){
     var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
-    nBins[ivar] = var->GetNumberOfBins();
-    nBins[ivar+fNVars] = var->GetNumberOfBins();
+    if(var){
+      nBins[ivar] = var->GetNumberOfBins();
+      nBins[ivar+fNVars] = var->GetNumberOfBins();
+    }
   }
 
   THnSparseF * hTmp = new THnSparseF(name, title, 2*fNVars, nBins);
   for(UInt_t ivar = 0; ivar < fNVars; ivar++){
     var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
-    hTmp->SetBinEdges(ivar,var->GetBinning());
-    //hTmp->GetAxis(ivar)->Set(var->GetNumberOfBins(), var->GetBinning());
-    hTmp->GetAxis(ivar)->SetTitle(var->GetVarName()->Data());
-    //hTmp->GetAxis(ivar + fNVars)->Set(var->GetNumberOfBins(), var->GetBinning());
-    hTmp->GetAxis(ivar + fNVars)->SetTitle(Form("%s_{MC}", var->GetVarName()->Data()));
-    hTmp->SetBinEdges(ivar+fNVars,var->GetBinning());
+    if(var){
+      hTmp->SetBinEdges(ivar,var->GetBinning());
+      //hTmp->GetAxis(ivar)->Set(var->GetNumberOfBins(), var->GetBinning());
+      hTmp->GetAxis(ivar)->SetTitle(var->GetVarName()->Data());
+      //hTmp->GetAxis(ivar + fNVars)->Set(var->GetNumberOfBins(), var->GetBinning());
+      hTmp->GetAxis(ivar + fNVars)->SetTitle(Form("%s_{MC}", var->GetVarName()->Data()));
+      hTmp->SetBinEdges(ivar+fNVars,var->GetBinning());
+    }
   }
   hTmp->Sumw2();
   fCorrelationMatrices->AddLast(hTmp);
@@ -354,7 +372,7 @@ AliCFContainer *AliHFEcontainer::MakeMergedCFContainer(const Char_t *name, const
   Int_t *dummyBinning = new Int_t[fNVars];
   for(UInt_t ibin = 0; ibin < fNVars; ibin++) dummyBinning[ibin] = 1;
   AliCFContainer *cmerged = new AliCFContainer(name, title, nStepMerged, fNVars, dummyBinning);
-  delete dummyBinning;
+  delete[] dummyBinning;
   // Fill container with content
   AliInfo("Filling new container");
   Int_t cstep = 0;
@@ -384,7 +402,8 @@ void AliHFEcontainer::MakeLinearBinning(UInt_t var, UInt_t nBins, Double_t begin
   //
   // Set Linear binning for the given container
   //
-  (dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var)))->SetBinning(nBins, AliHFEtools::MakeLinearBinning(nBins, begin, end));
+  AliHFEvarInfo *myvar = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var));
+  if(myvar) myvar->SetBinning(nBins, AliHFEtools::MakeLinearBinning(nBins, begin, end));
 }
 
 //__________________________________________________________________
@@ -392,7 +411,8 @@ void AliHFEcontainer::MakeLogarithmicBinning(UInt_t var, UInt_t nBins, Double_t 
   //
   // Set Logarithmic binning for the given container
   //
-  (dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var)))->SetBinning(nBins, AliHFEtools::MakeLogarithmicBinning(nBins, begin, end));
+  AliHFEvarInfo *myvar = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var));
+  if(myvar) myvar->SetBinning(nBins, AliHFEtools::MakeLogarithmicBinning(nBins, begin, end));
 }
 
 //__________________________________________________________________
@@ -400,7 +420,8 @@ void AliHFEcontainer::SetVariableName(UInt_t var, const Char_t *varname){
   //
   // Variable name
   // 
-  (dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var)))->SetVarName(varname);
+  AliHFEvarInfo *myvar = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var));
+  if(myvar) myvar->SetVarName(varname);
 }
 
 //__________________________________________________________________
@@ -424,22 +445,29 @@ void AliHFEcontainer::Print(const Option_t *)const{
     if(nVars != fNVars)
       std::cout << "Inconsistency in number of Variables [" << fNVars << "|" << nVars << "]" << std::endl;
     AliHFEvarInfo *var = NULL;
-    for(UInt_t ivar = 0; ivar < fNVars; ivar++){
-      var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
-      std::cout << "Variable " << ivar << ": Name: " << var->GetVarName()->Data() << ", Number of Bins: " << var->GetNumberOfBins() << std::endl;
+    if(fVariables){
+      for(UInt_t ivar = 0; ivar < fNVars; ivar++){
+        var = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(ivar));
+        if(var)
+          std::cout << "Variable " << ivar << ": Name: " << var->GetVarName()->Data() << ", Number of Bins: " << var->GetNumberOfBins() << std::endl;
+      }
     }
   }
   std::cout << std::endl;
 
   // Print CF Containers:
-  std::cout << "Containers[" << fContainers->GetEntries() << "]: "<< std::endl;
-  std::cout << "=====================================================\n";
-  for(Int_t icont = 0; icont < fContainers->GetEntries(); icont++){
-    AliCFContainer *c = dynamic_cast<AliCFContainer *>(fContainers->At(icont));
-    std::cout << "Name: " << c->GetName() << ", Title: "  << c->GetTitle() << std::endl;
-    for(Int_t istep = 0; istep < c->GetNStep(); istep++)
-      std::cout << "Step " << istep << ": Title " << c->GetStepTitle(istep) << std::endl;
-    std::cout << "------------------------------------------------------\n";
+  if(fContainers){
+    std::cout << "Containers[" << fContainers->GetEntries() << "]: "<< std::endl;
+    std::cout << "=====================================================\n";
+    for(Int_t icont = 0; icont < fContainers->GetEntries(); icont++){
+      AliCFContainer *c = dynamic_cast<AliCFContainer *>(fContainers->At(icont));
+      if(c){
+        std::cout << "Name: " << c->GetName() << ", Title: "  << c->GetTitle() << std::endl;
+        for(Int_t istep = 0; istep < c->GetNStep(); istep++)
+          std::cout << "Step " << istep << ": Title " << c->GetStepTitle(istep) << std::endl;
+      }
+      std::cout << "------------------------------------------------------\n";
+    }
   }
   std::cout << "Number of Events: " << fNEvents << std::endl;
 }

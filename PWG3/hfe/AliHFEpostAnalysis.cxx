@@ -187,29 +187,30 @@ TH1 *AliHFEpostAnalysis::CreateHistoSignalToBackgroundMC(Int_t mode, Int_t charg
   if(charge) fSignalToBackgroundMC->GetAxis(3)->SetRange(0, fSignalToBackgroundMC->GetAxis(3)->GetLast() + 1);
 
   TH1 *hEff = dynamic_cast<TH1D *>(hNom->Clone());
-  char hname[256];
-  sprintf(hname, mode ? "sigToBack" : "sigEff");
-  char cname[256];
-  Color_t mycolor = kBlack;
-  switch(charge){
-    case 0: mycolor = kBlue; sprintf(cname, "All"); break;
-    case 1: mycolor = kBlack; sprintf(cname, "Neg"); break;
-    case 2: mycolor = kRed; sprintf(cname, "Pos"); break;
-    default: break;
-  }
-  sprintf(hname, "%s%s", hname, cname);
-  hEff->SetName(hname);
-  hEff->SetTitle(mode ? "Signal/Background" : "Signal/(Signal+Background)");
-  hEff->Divide(hDenom);
+  if(hEff){
+    TString hname, cname;
+    hname = mode ? "sigToBack" : "sigEff";
+    Color_t mycolor = kBlack;
+    switch(charge){
+      case 0: mycolor = kBlue; cname = "All"; break;
+      case 1: mycolor = kBlack; cname = "Neg"; break;
+      case 2: mycolor = kRed; cname ="Pos"; break;
+      default: break;
+    }
+    hname += cname;
+    hEff->SetName(hname);
+    hEff->SetTitle(mode ? "Signal/Background" : "Signal/(Signal+Background)");
+    hEff->Divide(hDenom);
 
-  // Make nice plots
-  hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  hEff->GetYaxis()->SetTitle("Efficiency");
-  hEff->SetStats(kFALSE);
-  hEff->SetLineColor(kBlack);
-  hEff->SetLineWidth(1);
-  hEff->SetMarkerStyle(22);
-  hEff->SetMarkerColor(mycolor);
+    // Make nice plots
+    hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
+    hEff->GetYaxis()->SetTitle("Efficiency");
+    hEff->SetStats(kFALSE);
+    hEff->SetLineColor(kBlack);
+    hEff->SetLineWidth(1);
+    hEff->SetMarkerStyle(22);
+    hEff->SetMarkerColor(mycolor);
+  }
 
   delete hNom; delete hDenom;
   return hEff;
@@ -337,7 +338,7 @@ TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
   fPIDperformance->GetAxis(3)->SetRange(0, fPIDperformance->GetAxis(3)->GetNbins() + 1);
 
   TH1 *hNom = NULL, *hDenom = NULL;
-  char hname[256], htitle[256], cname[256];
+  TString hname, htitle, cname;
   Color_t mycolor = kBlack;
   if(charge) fPIDperformance->GetAxis(3)->SetRange(charge, charge);
   // Normalisation by all candidates - no restriction in axis 4 - only for mode == 1 
@@ -350,36 +351,36 @@ TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
   switch(mode){
     case 0: // Electron purity
       fPIDperformance->GetAxis(4)->SetRange(2,3);
-      sprintf(hname, "electronPurity");
-      sprintf(htitle, "Electron Purity");
+      hname = "electronPurity";
+      htitle = "Electron Purity";
       break;
     case 1: // Signal purity
       fPIDperformance->GetAxis(4)->SetRange(3,3);   // here signal not divided into charm and beauty
-      sprintf(hname, "signalPurity");
-      sprintf(htitle, "Signal Purity");
+      hname = "signalPurity";
+      htitle = "Signal Purity";
       break;
     case 2: // Fake contamination
       fPIDperformance->GetAxis(4)->SetRange(1,1);
-      sprintf(hname, "fakeContamination");
-      sprintf(htitle, "Contamination of misidentified hadrons");
+      hname = "fakeContamination";
+      htitle = "Contamination of misidentified hadrons";
       break;
     default: break;
   }
   switch(charge){
     case 0: 
-      sprintf(cname, "All"); 
+      cname = "All"; 
       mycolor = kBlue;
       break;
     case 1: 
-      sprintf(cname, "Neg"); 
+      cname = "Neg"; 
       mycolor = kBlack;
       break;
     case 2: 
-      sprintf(cname, "Pos"); 
+      cname = "Pos"; 
       mycolor = kRed;
       break;
   }
-  sprintf(hname, "%s%s", hname, cname);
+  hname += cname;
   hNom = fPIDperformance->Projection(0);
   hNom->Sumw2();
   hNom->SetName("hNom");
@@ -389,19 +390,21 @@ TH1 *AliHFEpostAnalysis::CreateHistoPIDperformance(Int_t mode, Int_t charge){
 
   // Create Efficiency histogram
   TH1 *hEff = dynamic_cast<TH1D *>(hNom->Clone());
-  hEff->SetName(hname);
-  hEff->SetTitle(htitle);
-  hEff->Divide(hDenom);
-  hEff->Scale(100.);
-  hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
-  hEff->GetYaxis()->SetTitle(mode < 2 ? "Purity / %" : "Contamination / %");
-  hEff->GetYaxis()->SetRangeUser(0., 100.);
-  hEff->SetStats(kFALSE);
-  hEff->SetLineColor(kBlack);
-  hEff->SetLineWidth(1);
-  hEff->SetMarkerColor(mycolor);
-  hEff->SetMarkerStyle(22);
-  delete hNom; delete hDenom;
+  if(hEff){
+    hEff->SetName(hname.Data());
+    hEff->SetTitle(htitle.Data());
+    hEff->Divide(hDenom);
+    hEff->Scale(100.);
+    hEff->GetXaxis()->SetTitle("p_{T} / GeV/c");
+    hEff->GetYaxis()->SetTitle(mode < 2 ? "Purity / %" : "Contamination / %");
+    hEff->GetYaxis()->SetRangeUser(0., 100.);
+    hEff->SetStats(kFALSE);
+    hEff->SetLineColor(kBlack);
+    hEff->SetLineWidth(1);
+    hEff->SetMarkerColor(mycolor);
+    hEff->SetMarkerStyle(22);
+    delete hNom; delete hDenom;
+  }
   return hEff;
 }
 

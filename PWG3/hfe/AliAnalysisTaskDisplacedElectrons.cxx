@@ -379,16 +379,16 @@ void AliAnalysisTaskDisplacedElectrons::ProcessMC(){
 
   fDeCFM->SetMCEventInfo(fMCEvent);
 
-  Double_t nContributor = 0;
+  Double_t nContributor[1] = {0};
   const AliVVertex *mcPrimVtx = fMCEvent->GetPrimaryVertex();
-  if(mcPrimVtx) nContributor = mcPrimVtx->GetNContributors();
+  if(mcPrimVtx) nContributor[0] = mcPrimVtx->GetNContributors();
   
   // 
   // cut at MC event level
   //
 
   if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) return;
-  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContributor,AliHFEcuts::kEventStepGenerated);
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(nContributor,AliHFEcuts::kEventStepGenerated);
   
   AliStack *stack = 0x0;
   
@@ -464,7 +464,7 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   }
 
   fDeCFM->SetRecEventInfo(fESD);
-  Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
+  Double_t nContrib[1] = {fESD->GetPrimaryVertex()->GetNContributors()};
 
   Bool_t alreadyseen = kFALSE;
   AliLabelContainer cont(fESD->GetNumberOfTracks());
@@ -479,7 +479,7 @@ void AliAnalysisTaskDisplacedElectrons::ProcessESD(){
   // cut at ESD event level
   //
   if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
-  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContrib, AliHFEcuts::kEventStepReconstructed);
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(nContrib, AliHFEcuts::kEventStepReconstructed);
   
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){
     track = fESD->GetTrack(itrack);
@@ -574,9 +574,9 @@ void AliAnalysisTaskDisplacedElectrons::ProcessData(){
   Int_t nHFEelectrons= 0;
   
   fDeCFM->SetRecEventInfo(fESD);
-  Double_t nContrib = fESD->GetPrimaryVertex()->GetNContributors();
+  Double_t nContrib[1] = {fESD->GetPrimaryVertex()->GetNContributors()};
   if(!fDeCFM->CheckEventCuts(AliHFEcuts::kEventStepReconstructed, fESD)) return;
-  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(&nContrib, AliHFEcuts::kEventStepReconstructed);
+  if(GetPlugin(kCorrection)) fDeCFM->GetEventContainer()->Fill(nContrib, AliHFEcuts::kEventStepReconstructed);
   
   
   for(Int_t itrack = 0; itrack < fESD->GetNumberOfTracks(); itrack++){

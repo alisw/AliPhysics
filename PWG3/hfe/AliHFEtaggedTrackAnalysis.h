@@ -25,6 +25,7 @@
 #include <TObject.h>
 #endif
 
+class AliHFEcollection;
 class AliHFEcontainer;
 class AliHFEcuts;
 class AliHFEpid;
@@ -45,6 +46,7 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEpidQAmanager *GetPIDqa() const { return fPIDqa; }
     TList * GetPIDQA() const;
     TList * GetCutQA() const;
+    AliHFEcollection * GetQAcollection() const { return fQAhistos; }
     Bool_t  GetClean() const { return fClean; }; 
 
     void SetCuts(AliHFEcuts *cuts);
@@ -62,6 +64,7 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliHFEpidQAmanager  *fPIDqa;        // PID monitoring
     AliHFEcuts          *fCuts;         // Single track cuts
     AliCFManager        *fCFM;          // CF Manager used for the track filtering
+    AliHFEcollection    *fQAhistos;     // QA histos
     Bool_t               fClean;        // Clean
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)

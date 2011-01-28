@@ -195,14 +195,14 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
     if(!TString(fInputEvent->IsA()->GetName()).CompareTo("AliESDEvent")){
       // case ESD
       SetESDanalysis();
-      AliESDv0 *esdV0 = (dynamic_cast<AliESDEvent *>(fInputEvent))->GetV0(iv0);
+      AliESDv0 *esdV0 = (static_cast<AliESDEvent *>(fInputEvent))->GetV0(iv0);
       if(!esdV0) continue;
       if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
       v0status = ProcessV0(esdV0);
     } else {
       // case AOD
       SetAODanalysis();
-      AliAODv0 *aodV0 = (dynamic_cast<AliAODEvent *>(fInputEvent))->GetV0(iv0);
+      AliAODv0 *aodV0 = (static_cast<AliAODEvent *>(fInputEvent))->GetV0(iv0);
       if(aodV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
       v0status = ProcessV0(aodV0);
       if(AliHFEV0cuts::kUndef != v0status){
@@ -238,12 +238,13 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
   // Process single V0
   // Apply general cut and special cuts for gamma, K0s, Lambda
   //
+  if(!v0)  return AliHFEV0cuts::kUndef;
   AliVTrack* daughter[2];
-  daughter[0] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((dynamic_cast<AliESDv0 *>(v0))->GetPindex()));
-  daughter[1] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((dynamic_cast<AliESDv0 *>(v0))->GetNindex()));
+  daughter[0] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((static_cast<AliESDv0 *>(v0))->GetPindex()));
+  daughter[1] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((static_cast<AliESDv0 *>(v0))->GetNindex()));
   if(!daughter[0] || !daughter[1]) return AliHFEV0cuts::kUndef;
 
-  if(fMCEvent) fMCon = kTRUE;
+  if(fMCEvent != NULL) fMCon = kTRUE;
   //printf("-D: fMCEvent %x, fMCon: %i\n", fMCEvent, fMCon);
 
   Int_t dMC[2] = {-1, -1};
@@ -258,7 +259,7 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
     }
     // check common single track cuts
     for(Int_t i=0; i<2; ++i){
-      if(!fV0cuts->TrackCutsCommon(dynamic_cast<AliESDtrack*>(daughter[i]))) return AliHFEV0cuts::kUndef;
+      if(!fV0cuts->TrackCutsCommon(static_cast<AliESDtrack*>(daughter[i]))) return AliHFEV0cuts::kUndef;
     }
     // check commom V0 cuts
     if(!fV0cuts->V0CutsCommon(dynamic_cast<AliESDv0 *>(v0))) return AliHFEV0cuts::kUndef;
@@ -405,6 +406,9 @@ Bool_t AliHFEV0pid::IsGammaConv(TObject *v0){
   //
   // Identify Gamma
   //
+
+  if(!v0) return kFALSE;
+
   AliVTrack* daughter[2];
   Int_t pIndex = 0, nIndex = 0;
   Double_t invMass = 0.;
@@ -412,7 +416,7 @@ Bool_t AliHFEV0pid::IsGammaConv(TObject *v0){
   Int_t v0id = -1;
   if(IsESDanalysis()){
     // ESD - cut V0
-    AliESDv0 *esdV0 = dynamic_cast<AliESDv0 *>(v0);
+    AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
     v0id = esdV0->GetLabel();
     // apply FULL gamma cuts
     if(!fV0cuts->GammaCuts(esdV0)) return kFALSE;
@@ -422,7 +426,7 @@ Bool_t AliHFEV0pid::IsGammaConv(TObject *v0){
     mPt = esdV0->Pt();
   } else {
     // AOD Analysis - not possible to cut
-    AliAODv0 *aodV0 = dynamic_cast<AliAODv0 *>(v0);
+    AliAODv0 *aodV0 = static_cast<AliAODv0 *>(v0);
     v0id = aodV0->GetID();
     pIndex = aodV0->GetPosID();
     nIndex = aodV0->GetNegID();
@@ -459,6 +463,9 @@ Bool_t AliHFEV0pid::IsK0s(TObject *v0){
   //
   // Identify K0s
   //
+
+  if(!v0) return kFALSE;
+
   AliVTrack* daughter[2];
   Int_t pIndex = 0, nIndex = 0;
   Int_t v0id = -1;
@@ -466,7 +473,7 @@ Bool_t AliHFEV0pid::IsK0s(TObject *v0){
   Double_t mPt = 0.;
   if(IsESDanalysis()){
     // ESD - cut V0
-    AliESDv0 *esdV0 = dynamic_cast<AliESDv0 *>(v0);
+    AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
     if(!fV0cuts->K0Cuts(esdV0)) return kFALSE;
     v0id = esdV0->GetLabel();
     pIndex = esdV0->GetPindex();
@@ -475,7 +482,7 @@ Bool_t AliHFEV0pid::IsK0s(TObject *v0){
     mPt = esdV0->Pt();
   } else {
     // AOD Analysis - not possible to cut
-    AliAODv0 *aodV0 = dynamic_cast<AliAODv0 *>(v0);
+    AliAODv0 *aodV0 = static_cast<AliAODv0 *>(v0);
     aodV0->GetID();
     pIndex = aodV0->GetPosID();
     nIndex = aodV0->GetNegID();
@@ -515,11 +522,13 @@ Bool_t AliHFEV0pid::IsPhi(TObject *v0){
   //const Double_t kPhiMass=TDatabasePDG::Instance()->GetParticle(333)->Mass();  // PDG phi mass
   //AliVTrack* daughter[2];
   //Double_t invMass = 0.;
+
+  if(!v0) return kFALSE;
  
   Int_t pIndex = 0, nIndex = 0;
   if(IsESDanalysis()){
     // ESD - cut V0
-    AliESDv0 *esdV0 = dynamic_cast<AliESDv0 *>(v0);
+    AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
     pIndex = esdV0->GetPindex();
     nIndex = esdV0->GetNindex();
   } else {
@@ -535,6 +544,9 @@ Bool_t AliHFEV0pid::IsLambda(TObject *v0){
   //
   // Identify Lambda
   //
+
+  if(!v0) return kFALSE;
+
   AliVTrack* daughter[2];
   Int_t pIndex = 0, nIndex = 0;
   Double_t invMass = 0.;
@@ -543,7 +555,7 @@ Bool_t AliHFEV0pid::IsLambda(TObject *v0){
   Int_t v0id = -1;
   if(IsESDanalysis()){
     // ESD - cut V0
-    AliESDv0 *esdV0 = dynamic_cast<AliESDv0 *>(v0);
+    AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
     v0id = esdV0->GetLabel();
     if(!fV0cuts->LambdaCuts(esdV0,isLambda)) return kFALSE; 
     mPt = esdV0->Pt();
@@ -560,7 +572,7 @@ Bool_t AliHFEV0pid::IsLambda(TObject *v0){
     // AOD Analysis - not possible to cut
     
     // again - two cases as above
-    AliAODv0 *aodV0 = dynamic_cast<AliAODv0 *>(v0);
+    AliAODv0 *aodV0 = static_cast<AliAODv0 *>(v0);
     v0id = aodV0->GetID();
     pIndex = aodV0->GetPosID();
     nIndex = aodV0->GetNegID();

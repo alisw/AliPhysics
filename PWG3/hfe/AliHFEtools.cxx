@@ -91,21 +91,24 @@ Bool_t AliHFEtools::BinLogAxis(TObject *o, Int_t dim){
   
   TAxis *axis = 0x0;
   if(o->InheritsFrom("TH1")){
-    axis = (dynamic_cast<TH1F*>(o))->GetXaxis();
+    TH1 *h1 = dynamic_cast<TH1F*>(o); 
+    if(h1) axis = h1->GetXaxis();
   }
   else if(o->InheritsFrom("TH2")){
-    if(0 == dim){
-      axis = (dynamic_cast<TH2F*>(o))->GetXaxis();
+    TH2 *h2 = dynamic_cast<TH2F*>(o);
+    if(h2 && 0 == dim){
+      axis = h2->GetXaxis();
     }
-    else if(1 == dim){
-      axis = (dynamic_cast<TH2F*>(o))->GetYaxis();
+    else if(h2 && 1 == dim){
+      axis = h2->GetYaxis();
     }
      else{
        AliError("Only dim = 0 or 1 possible for TH2F");
      }
   }
   else if(o->InheritsFrom("THnSparse")){
-    axis = (dynamic_cast<THnSparse*>(o))->GetAxis(dim);
+    THnSparse *hs = dynamic_cast<THnSparse*>(o);
+    if(hs) axis = hs->GetAxis(dim);
   }
   else{
     AliError("Type of input object not recognized, please check your code or update this finction");
@@ -130,7 +133,7 @@ Bool_t AliHFEtools::BinLogAxis(TObject *o, Int_t dim){
     newBins[i] = factor * newBins[i-1];
   }
   axis->Set(bins, newBins);
-  delete newBins;
+  delete[] newBins;
 
   return kTRUE;
 }

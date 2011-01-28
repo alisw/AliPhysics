@@ -91,7 +91,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   if(IsQAOn()){
     fIsQAOn = kTRUE;
     fQAlist = dynamic_cast<TList *>(c.fQAlist->Clone());
-    fQAlist->SetOwner();
+    if(fQAlist) fQAlist->SetOwner();
   }
 }
 
@@ -116,7 +116,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     if(IsQAOn()){
       fIsQAOn = kTRUE;
       fQAlist = dynamic_cast<TList *>(c.fQAlist->Clone());
-      fQAlist->SetOwner();
+      if(fQAlist) fQAlist->SetOwner();
     }else fQAlist = 0x0;
   }
   return *this;
@@ -307,27 +307,30 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
   Float_t impactR, impactZ;
   GetImpactParameters(track, impactR, impactZ);
   Int_t nTPCf = GetTPCfindableClusters(track, fTPCiter1), nclsTPC = GetTPCncls(track, fTPCiter1);
-  (dynamic_cast<TH1F *>(fQAlist->At(0 + when * kNhistos)))->Fill(impactR);
-  (dynamic_cast<TH1F *>(fQAlist->At(1 + when * kNhistos)))->Fill(impactZ);
+  TH1 *htmp = NULL;
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(0 + when * kNhistos)))) htmp->Fill(impactR);
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(1 + when * kNhistos)))) htmp->Fill(impactZ);
   // printf("TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
-  (dynamic_cast<TH1F *>(fQAlist->At(2 + when * kNhistos)))->Fill(nTPCf > 0. ? static_cast<Float_t>(nclsTPC)/static_cast<Float_t>(nTPCf) : 1.);
-  (dynamic_cast<TH1F *>(fQAlist->At(3 + when * kNhistos)))->Fill(GetTRDnTrackletsPID(track));
-  (dynamic_cast<TH1F *>(fQAlist->At(4 + when * kNhistos)))->Fill(nclsTPC);
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(2 + when * kNhistos)))) htmp->Fill(nTPCf > 0. ? static_cast<Float_t>(nclsTPC)/static_cast<Float_t>(nTPCf) : 1.);
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(3 + when * kNhistos)))) htmp->Fill(GetTRDnTrackletsPID(track));
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(4 + when * kNhistos)))) htmp->Fill(nclsTPC);
   UChar_t itsPixel = track->GetITSClusterMap();
   TH1 *pixelHist = dynamic_cast<TH1F *>(fQAlist->At(5 + when * kNhistos));
   //Int_t firstEntry = pixelHist->GetXaxis()->GetFirst();
-  Double_t firstEntry = 0.5;
-  if(!((itsPixel & BIT(0)) || (itsPixel & BIT(1))))
-    pixelHist->Fill(firstEntry + 3);
-  else{
-    if(itsPixel & BIT(0)){
-      pixelHist->Fill(firstEntry);
-      if(itsPixel & BIT(1)) pixelHist->Fill(firstEntry + 2);
-      else pixelHist->Fill(firstEntry + 4);
-    }
-    if(itsPixel & BIT(1)){
-      pixelHist->Fill(firstEntry + 1);
-      if(!(itsPixel & BIT(0))) pixelHist->Fill(firstEntry + 5);
+  if(pixelHist){
+    Double_t firstEntry = 0.5;
+    if(!((itsPixel & BIT(0)) || (itsPixel & BIT(1))))
+      pixelHist->Fill(firstEntry + 3);
+    else{
+      if(itsPixel & BIT(0)){
+        pixelHist->Fill(firstEntry);
+        if(itsPixel & BIT(1)) pixelHist->Fill(firstEntry + 2);
+        else pixelHist->Fill(firstEntry + 4);
+      }
+      if(itsPixel & BIT(1)){
+        pixelHist->Fill(firstEntry + 1);
+        if(!(itsPixel & BIT(0))) pixelHist->Fill(firstEntry + 5);
+      }
     }
   }
 }
@@ -348,12 +351,14 @@ void AliHFEextraCuts::FillCutCorrelation(ULong64_t survivedCut){
   //
   const Int_t kNhistos = 6;
   TH2 *correlation = dynamic_cast<TH2F *>(fQAlist->At(2 * kNhistos));
-  for(Int_t icut = 0; icut < kNcuts; icut++){
-    if(!TESTBIT(fRequirements, icut)) continue;
-    for(Int_t jcut = icut; jcut < kNcuts; jcut++){
-      if(!TESTBIT(fRequirements, jcut)) continue;
-      if(TESTBIT(survivedCut, icut) && TESTBIT(survivedCut, jcut))
-	      correlation->Fill(icut, jcut);
+  if(correlation){
+    for(Int_t icut = 0; icut < kNcuts; icut++){
+      if(!TESTBIT(fRequirements, icut)) continue;
+      for(Int_t jcut = icut; jcut < kNcuts; jcut++){
+        if(!TESTBIT(fRequirements, jcut)) continue;
+        if(TESTBIT(survivedCut, icut) && TESTBIT(survivedCut, jcut))
+	        correlation->Fill(icut, jcut);
+      }
     }
   }
 }
@@ -445,10 +450,11 @@ Int_t AliHFEextraCuts::GetTRDnTrackletsPID(AliVTrack *track){
 	Int_t nTracklets = 0;
 	if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
 		AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-		nTracklets = esdtrack->GetTRDntrackletsPID();
+		if(esdtrack) nTracklets = esdtrack->GetTRDntrackletsPID();
 	} else if(!TString(track->IsA()->GetName()).CompareTo("AliAODTrack")){
 		AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-		AliAODPid *pidobject = aodtrack->GetDetPid();
+		AliAODPid *pidobject = NULL;
+    if(aodtrack) pidobject = aodtrack->GetDetPid();
 		// this is normally NOT the way to do this, but due to limitation in the
 		// AOD track it is not possible in a different way
 		if(pidobject){
@@ -471,7 +477,7 @@ Int_t AliHFEextraCuts::GetITSstatus(AliVTrack *track, Int_t layer){
 		Int_t det;
 		Float_t xloc, zloc;
 		AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-		esdtrack->GetITSModuleIndexInfo(layer, det, status, xloc, zloc);
+		if(esdtrack) esdtrack->GetITSModuleIndexInfo(layer, det, status, xloc, zloc);
 	}
 	return status;
 }
@@ -485,7 +491,7 @@ Int_t AliHFEextraCuts::GetTPCfindableClusters(AliVTrack *track, Bool_t iter1){
 	Int_t nClusters = 159; // in case no Information available consider all clusters findable
 	if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-		nClusters = esdtrack->GetTPCNclsF();
+		if(esdtrack) nClusters = esdtrack->GetTPCNclsF();
   }
 	return nClusters;
 }
@@ -500,17 +506,18 @@ Int_t AliHFEextraCuts::GetTPCncls(AliVTrack *track, Bool_t iter1){
 	TString type = track->IsA()->GetName();
 	if(!type.CompareTo("AliESDtrack")){
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-    if(iter1)
-		  nClusters = esdtrack->GetTPCNclsIter1();
-    else
-		  nClusters = esdtrack->GetTPCNcls();
+    if(esdtrack){ // coverity
+      if(iter1)
+		    nClusters = esdtrack->GetTPCNclsIter1();
+      else
+		    nClusters = esdtrack->GetTPCNcls();
+    }
   }
 	else if(!type.CompareTo("AliAODTrack")){
 		AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-		const TBits &tpcmap = aodtrack->GetTPCClusterMap();
-		for(UInt_t ibit = 0; ibit < tpcmap.GetNbits(); ibit++)
-			if(tpcmap.TestBitNumber(ibit)) nClusters++;
-
+	  const TBits &tpcmap = aodtrack->GetTPCClusterMap();
+	  for(UInt_t ibit = 0; ibit < tpcmap.GetNbits(); ibit++)
+		  if(tpcmap.TestBitNumber(ibit)) nClusters++;
 	}
 	return nClusters;
 }
@@ -523,14 +530,16 @@ void AliHFEextraCuts::GetImpactParameters(AliVTrack *track, Float_t &radial, Flo
 	TString type = track->IsA()->GetName();
 	if(!type.CompareTo("AliESDtrack")){
 		AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-		esdtrack->GetImpactParameters(radial, z);
+    if(esdtrack) esdtrack->GetImpactParameters(radial, z);
 	}
 	else if(!type.CompareTo("AliAODTrack")){
 		AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-		Double_t xyz[3];
-		aodtrack->XYZAtDCA(xyz);
-		z = xyz[2];
-		radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+    if(aodtrack){
+		  Double_t xyz[3];
+		  aodtrack->XYZAtDCA(xyz);
+		  z = xyz[2];
+		  radial = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]+xyz[1]);
+    }
 	}
 }
 
@@ -566,7 +575,8 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
   AliESDtrack *esdtrack = NULL;
   if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
     // Case ESD track: take copy constructor
-    esdtrack = new AliESDtrack(*dynamic_cast<AliESDtrack *>(track));
+    AliESDtrack *tmptrack = dynamic_cast<AliESDtrack *>(track);
+    if(tmptrack) esdtrack = new AliESDtrack(*tmptrack);
   } else {
     // Case AOD track: take different constructor
     esdtrack = new AliESDtrack(track);
@@ -588,14 +598,14 @@ void AliHFEextraCuts::GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfei
 	// Get HFE impact parameter cut(pt dependent)
 	//
   
-        TString type = track->IsA()->GetName();
-        if(!type.CompareTo("AliESDtrack")){
-        AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-
-        Double_t pt = esdtrack->Pt();	
-        //hfeimpactRcut=0.0064+0.078*exp(-0.56*pt);  // used Carlo's old parameter 
-        hfeimpactRcut=0.011+0.077*exp(-0.65*pt); // used Carlo's new parameter
-        hfeimpactnsigmaRcut=3; // 3 sigma trail cut
+  TString type = track->IsA()->GetName();
+  if(!type.CompareTo("AliESDtrack")){
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(!esdtrack) return;
+    Double_t pt = esdtrack->Pt();	
+    //hfeimpactRcut=0.0064+0.078*exp(-0.56*pt);  // used Carlo's old parameter 
+    hfeimpactRcut=0.011+0.077*exp(-0.65*pt); // used Carlo's new parameter
+    hfeimpactnsigmaRcut=3; // 3 sigma trail cut
   }
 }
 

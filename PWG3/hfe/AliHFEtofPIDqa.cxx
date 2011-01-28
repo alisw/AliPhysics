@@ -144,15 +144,16 @@ void AliHFEtofPIDqa::Initialize(){
 
   // Make common binning
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
-  const Int_t kPbins = 100;
   const Int_t kSteps = 2;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
   const Double_t kMaxP = 20.;
-  
+  // Quantities where one can switch between low and high resolution
+  Int_t kPbins = fQAmanager->HasHighResolutionHistos() ?  1000 : 100;
+  Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
+
   // 1st histogram: TOF sigmas: (species, p nsigma, step)
-  const Int_t kSigmaBins = 240;
   Int_t nBinsSigma[4] = {kPIDbins, kPbins, kSigmaBins, kSteps};
   Double_t minSigma[4] = {kMinPID, kMinP, -12., 0};
   Double_t maxSigma[4] = {kMaxPID, kMaxP, 12., 2.};
@@ -181,16 +182,18 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   Double_t contentSignal[4];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
-  contentSignal[2] = tofpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+  contentSignal[2] = tofpid ? tofpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype): 0.;
   contentSignal[3] = step;
-  (dynamic_cast<THnSparseF *>(fHistos->Get("tofnSigma")))->Fill(contentSignal);
-  Double_t timeTof = tofpid->GetTOFsignal(track->GetRecTrack(), anatype);
-  Double_t time0 = tofpid->GetTime0(anatype);
-  Double_t tof = timeTof - time0;
-  Double_t times[AliPID::kSPECIES]; tofpid->GetIntegratedTimes(track->GetRecTrack(), times, anatype);
-  fHistos->Fill("tofTimeRes",contentSignal[1], tof - times[AliPID::kPion]);
+  fHistos->Fill("tofnSigma", contentSignal);
+  if(tofpid){
+    Double_t timeTof = tofpid->GetTOFsignal(track->GetRecTrack(), anatype);
+    Double_t time0 = tofpid->GetTime0(anatype);
+    Double_t tof = timeTof - time0;
+    Double_t times[AliPID::kSPECIES]; tofpid->GetIntegratedTimes(track->GetRecTrack(), times, anatype);
+    fHistos->Fill("tofTimeRes",contentSignal[1], tof - times[AliPID::kPion]);
+  }
   if(species > -1){
-    contentSignal[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+    contentSignal[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.;
     fHistos->Fill("tofMonitorTPC", contentSignal);
   }
 }
@@ -201,21 +204,19 @@ TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   // Plot the Spectrum
   //
   THnSparseF *hSignal = dynamic_cast<THnSparseF *>(fHistos->Get("tofnSigma"));
+  if(!hSignal) return NULL;
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
   if(species > 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
   TH2 *hTmp = hSignal->Projection(2,1);
-  Char_t hname[256], htitle[256];
-  sprintf(hname, "hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
-  sprintf(htitle, "TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
+  TString hname = Form("hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
+          htitle = Form("TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
-    strncat(hname, AliPID::ParticleName(species), strlen(AliPID::ParticleName(species)));
-     Char_t speciesname[256];
-     sprintf(speciesname, " for %ss", AliPID::ParticleName(species));
-     strncat(htitle, speciesname, strlen(speciesname));
+    hname += AliPID::ParticleName(species);
+    htitle += Form(" for %ss", AliPID::ParticleName(species));
   }
-  hTmp->SetName(hname);
-  hTmp->SetTitle(htitle);
+  hTmp->SetName(hname.Data());
+  hTmp->SetTitle(htitle.Data());
   hTmp->SetStats(kFALSE);
   hTmp->GetXaxis()->SetTitle("p [GeV/c]");
   hTmp->GetYaxis()->SetTitle("TOF time|_{el} - expected time|_{el} [#sigma]");

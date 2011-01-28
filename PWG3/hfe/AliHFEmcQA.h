@@ -159,7 +159,7 @@ class AliHFEmcQA: public TObject {
     AliHistsComm fHistComm[2][6]; // struct of additional histograms of given particles
 
     TList *fQAhistos;           // Container for QA histos
-    TParticle *fHeavyQuark[50]; // store pointer of heavy flavour quark 
+    TParticle *fHeavyQuark[50]; //! store pointer of heavy flavour quark 
     Int_t fIsHeavy[2]; // count of heavy flavour
     Int_t fNparents; // number of heavy hadrons to be considered
     Int_t fParentSelect[2][7]; // heavy hadron species

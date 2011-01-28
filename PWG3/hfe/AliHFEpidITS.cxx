@@ -107,6 +107,7 @@ Double_t AliHFEpidITS::GetITSSignalV1(AliVParticle *vtrack){
     return 0.;
   }
   AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
+  if(!track) return 0.;
   Double_t signal = 0.;
 #ifdef TRUNK
   Double_t dedx[4];
@@ -130,6 +131,7 @@ Double_t AliHFEpidITS::GetITSSignalV2(AliVParticle *vtrack){
     return 0.;
   }
   AliESDtrack *track = dynamic_cast<AliESDtrack *>(vtrack);
+  if(!track) return 0.;
   Double_t dedx[4], tmp[4];
   Int_t indices[4];
   track->GetITSdEdxSamples(tmp);

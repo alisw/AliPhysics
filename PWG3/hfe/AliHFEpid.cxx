@@ -235,22 +235,21 @@ Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont, cons
     }
     AliDebug(2, "Particlae selected by detector");
     if(fVarManager && cont){
-      Char_t reccontname[256];
-      sprintf(reccontname, "%sReco", contname);
-      AliDebug(2, Form("Filling container %s", reccontname));
+      TString reccontname = contname; reccontname += "Reco";
+      AliDebug(2, Form("Filling container %s", reccontname.Data()));
       if(fVarManager->IsSignalTrack())
-        fVarManager->FillContainerStepname(cont, reccontname, SortedDetectorName(idet));
+        fVarManager->FillContainerStepname(cont, reccontname.Data(), SortedDetectorName(idet));
       if(HasMCData()){
-        Char_t mccontname[256];
-        sprintf(mccontname, "%sMC", contname);
-        AliDebug(2, Form("MC Information available, Filling container %s", mccontname));
-        if(fVarManager->IsSignalTrack())
-          fVarManager->FillContainerStepname(cont, mccontname, SortedDetectorName(idet), kTRUE);
-	if(cont->GetCorrelationMatrix("correlationstepafterTOF")){
-	  TString tstept("TOFPID"); 
-	  if(!tstept.CompareTo(SortedDetectorName(idet))) {
-	    fVarManager->FillCorrelationMatrix(cont->GetCorrelationMatrix("correlationstepafterTOF"));
-	    //printf("Step %s\n",(const char*) SortedDetectorName(idet));
+        TString mccontname = contname; mccontname += "MC";
+        AliDebug(2, Form("MC Information available, Filling container %s", mccontname.Data()));
+        if(fVarManager->IsSignalTrack()) {
+          fVarManager->FillContainerStepname(cont, mccontname.Data(), SortedDetectorName(idet), kTRUE);
+	  if(cont->GetCorrelationMatrix("correlationstepafterTOF")){
+	    TString tstept("TOFPID"); 
+	    if(!tstept.CompareTo(SortedDetectorName(idet))) {
+	      fVarManager->FillCorrelationMatrix(cont->GetCorrelationMatrix("correlationstepafterTOF"));
+	      //printf("Step %s\n",(const char*) SortedDetectorName(idet));
+	    }
 	  }
 	}
       }
@@ -286,8 +285,10 @@ void AliHFEpid::ConfigureTPCasymmetric(Double_t pmin, Double_t pmax, Double_t si
   // TPC alone, symmetric 3 sigma cut and asymmetric sigma cut in the momentum region between 2GeV/c and 10 GeV/c and sigma between -1 and 100
   //
   AliHFEpidTPC *pid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
-  pid->SetTPCnSigma(3);
-  pid->SetAsymmetricTPCsigmaCut(pmin, pmax, sigmamin, sigmamax);
+  if(pid){
+    pid->SetTPCnSigma(3);
+    pid->SetAsymmetricTPCsigmaCut(pmin, pmax, sigmamin, sigmamax);
+  }
 }
 
 //____________________________________________________________
@@ -296,8 +297,10 @@ void AliHFEpid::ConfigureTPCrejectionSimple(){
   // TPC alone, symmetric 3 sigma cut and 2 - -100 sigma pion rejection
   //   
   AliHFEpidTPC *pid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
-  pid->SetTPCnSigma(3);
-  pid->SetRejectParticle(AliPID::kPion, 0., -100., 10., 1.);
+  if(pid){
+    pid->SetTPCnSigma(3);
+    pid->SetRejectParticle(AliPID::kPion, 0., -100., 10., 1.);
+  }
 }
 
 //____________________________________________________________
@@ -308,8 +311,7 @@ void AliHFEpid::ConfigureTPCrejection(){
   if(HasMCData()) printf("Configuring TPC for MC\n");
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
   AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fDetectorPID[kTOFpid]);
-  tpcpid->SetTPCnSigma(2);
-  tofpid->SetTOFnSigma(3);
+  if(tofpid) tofpid->SetTOFnSigma(3);
 
   //TF1 *upperCut = new TF1("upperCut", "[0] * TMath::Exp([1]*x)", 0, 20);
   TF1 *upperCut = new TF1("upperCut", "[0]", 0, 20); // Use constant upper cut
@@ -319,15 +321,21 @@ void AliHFEpid::ConfigureTPCrejection(){
   //upperCut->SetParameter(1, -0.4357);
 
   if(HasMCData()) lowerCut->SetParameter(0, -2.5);
-  else lowerCut->SetParameter(0, -3.7);
+  else lowerCut->SetParameter(0, -3.71769);
+  //else lowerCut->SetParameter(0, -3.7);
 
-  lowerCut->SetParameter(1, -0.8);
+  lowerCut->SetParameter(1, -0.40263);
+  //lowerCut->SetParameter(1, -0.8);
 
   if(HasMCData()) lowerCut->SetParameter(2, -2.2);
-  else lowerCut->SetParameter(2, -0.35);
+  else lowerCut->SetParameter(2, 0.267857);
+  //else lowerCut->SetParameter(2, -0.35);
 
-  tpcpid->SetUpperSigmaCut(upperCut);
-  tpcpid->SetLowerSigmaCut(lowerCut);
+  if(tpcpid){
+    tpcpid->SetTPCnSigma(2);
+    tpcpid->SetUpperSigmaCut(upperCut);
+    tpcpid->SetLowerSigmaCut(lowerCut);
+  }
   AddCommonObject(upperCut);
   AddCommonObject(lowerCut);
 }
@@ -338,9 +346,11 @@ void AliHFEpid::ConfigureTPCstrategyParis(){
   // TPC alone, symmetric 3 sigma cut and 2 - -100 sigma pion rejection
   //   
   AliHFEpidTPC *pid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
-  pid->SetTPCnSigma(2);
-  pid->SetRejectParticle(AliPID::kProton, 0., -3., 10., 3.);
-  pid->SetRejectParticle(AliPID::kKaon, 0., -3., 10., 3.);
+  if(pid){
+    pid->SetTPCnSigma(2);
+    pid->SetRejectParticle(AliPID::kProton, 0., -3., 10., 3.);
+    pid->SetRejectParticle(AliPID::kKaon, 0., -3., 10., 3.);
+  }
 }
 
 //____________________________________________________________

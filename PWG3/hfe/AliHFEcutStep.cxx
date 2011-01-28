@@ -119,9 +119,9 @@ void AliHFEcutStep::SetMC(AliMCEvent *mc){
   //
   // Set MC information to the cuts in the cut step
   //
+  AliCFCutBase *cfc = NULL;
   for(Int_t icut = 0; icut < fCuts->GetEntriesFast(); icut++){
-    if(fCuts->UncheckedAt(icut)->InheritsFrom("AliCFCutBase"))
-      (dynamic_cast<AliCFCutBase *>(fCuts->UncheckedAt(icut)))->SetMCEventInfo(mc);
+    if((cfc = dynamic_cast<AliCFCutBase *>(fCuts->UncheckedAt(icut)))) cfc->SetMCEventInfo(mc);
   }
 }
 
@@ -130,9 +130,9 @@ void AliHFEcutStep::SetRecEvent(AliVEvent *rec){
   //
   // Publish rec event to the cut step
   //
+  AliCFCutBase *cfc = NULL;
   for(Int_t icut = 0; icut < fCuts->GetEntriesFast(); icut++){
-    if(fCuts->UncheckedAt(icut)->InheritsFrom("AliCFCutBase"))
-      (dynamic_cast<AliCFCutBase *>(fCuts->UncheckedAt(icut)))->SetRecEventInfo(rec);
+    if((cfc = dynamic_cast<AliCFCutBase *>(fCuts->UncheckedAt(icut)))) cfc->SetRecEventInfo(rec);
   }
 }
 
