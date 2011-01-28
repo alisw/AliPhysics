@@ -55,7 +55,7 @@ ClassImp(AliAnalysisTaskSigma1385)
       fListHistCascade(0), fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), fNtuple1(0), fNtuple2(0),fNtuple3(0), fNtuple4(0),
       
       //-------------------------------- For PID
-      
+  isMC(0),    
   fIsMC(isMC),
   fCheckITS(kTRUE),
   fCheckTPC(kTRUE),
@@ -90,7 +90,8 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
     fListHistCascade(0), fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0),
     
         //-------------------------------- For PID
-      
+   
+  isMC(0),    
   fIsMC(isMC),
   fCheckITS(kTRUE),
   fCheckTPC(kTRUE),
@@ -173,7 +174,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
   Info("AliAnalysisTaskSigma1385","Starting UserExec");  
   
   AliMCEventHandler* eventHandler;
-  AliMCEvent* mcEvent;
+  AliMCEvent* mcEvent=0;
   
   if(fDataType == "SIM") {
   
@@ -191,7 +192,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
   
   }
   
-  AliStack* stack;
+  AliStack* stack=0;
   if(fDataType == "SIM") {stack = mcEvent->Stack(); fIsMC=1; isMC=1;}
 
   AliESDEvent *lESDevent = 0x0;
@@ -263,7 +264,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
   Int_t run = lESDevent->GetRunNumber();
   if (run != fLastRun)
   {
-    cout << "Run = " << run << " -- LAST = " << fLastRun << endl;
+    //cout << "Run = " << run << " -- LAST = " << fLastRun << endl;
     fLastRun = run;
     
     // setup TOF maker & calibration
