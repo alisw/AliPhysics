@@ -2399,6 +2399,7 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
       if(kGCplotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}	
       if(kGCplotMCPi0Rapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Rapid" ,"" , kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}	
       if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}
+	if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid_allDaughters" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");} // OWN primary Pi0 debug
       if(kGCplotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
@@ -2874,6 +2875,9 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 4:
     kGCQtMax=0.03;
     break;
+  case 5: // OWN try to improve (get rid of) low InvMass peak in PbPb
+    kGCQtMax=0.02;
+    break; // end OWN ///////////////////////////////////////////////
   default:
     return iResult;
   }
