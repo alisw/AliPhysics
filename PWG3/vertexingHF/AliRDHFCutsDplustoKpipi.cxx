@@ -771,7 +771,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
     
   PrintAll();
 
-  for(Int_t iic=0;ic<nvars;iic++){delete [] anacutsval[iic];}
+  for(Int_t iic=0;iic<nvars;iic++){delete [] anacutsval[iic];}
   delete [] anacutsval;
   anacutsval=NULL;
 
