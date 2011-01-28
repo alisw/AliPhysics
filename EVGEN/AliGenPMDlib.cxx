@@ -117,7 +117,7 @@ Double_t AliGenPMDlib::PtScal(Double_t pt, Int_t np)
 Double_t AliGenPMDlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
-  return PtScal(*px,3);
+  return PtScal(*px,2);
 }
 
 // y-distribution

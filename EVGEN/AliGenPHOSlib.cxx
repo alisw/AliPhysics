@@ -166,9 +166,9 @@ Double_t AliGenPHOSlib::YPi0Flat( const Double_t */*py*/, const Double_t *)
 //      7=>BARYONS-BARYONBARS
 
   //    SCALING EN MASSE PAR RAPPORT A PTPI
-  //    MASS                1=>PI,  2=>K, 3=>ETA, 4=>OMEGA,  5=>ETA',6=>PHI
+  //    MASS                0=>PI,  1=>K, 2=>ETA, 3=>OMEGA,  4=>ETA',5=>PHI
   const Double_t khm[10] = {0.1396, 0.494,  0.547,    0.782,   0.957,   1.02, 
-  //    MASS               7=>BARYON-BARYONBAR  
+  //    MASS               6=>BARYON-BARYONBAR  
                                          0.938, 0. , 0., 0.};
   //     VALUE MESON/PI AT 5 GEV
   const Double_t kfmax[10]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
@@ -191,7 +191,7 @@ Double_t AliGenPHOSlib::YPi0Flat( const Double_t */*py*/, const Double_t *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,2);  //  2==> Kaon in the PtScal function
+  return PtScal(*px,1);  //  1==> Kaon in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YKaon( const Double_t *py, const Double_t *)
@@ -266,7 +266,7 @@ Int_t AliGenPHOSlib::IpKaon0L(TRandom *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,3);  //  3==> Eta in the PtScal function
+  return PtScal(*px,2);  //  2==> Eta in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YEta( const Double_t *py, const Double_t *)
@@ -333,7 +333,7 @@ Double_t AliGenPHOSlib::YEtaFlat( const Double_t */*py*/, const Double_t *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,4);  //  4==> Omega in the PtScal function
+  return PtScal(*px,3);  //  3==> Omega in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YOmega( const Double_t *py, const Double_t *)
@@ -401,7 +401,7 @@ Double_t AliGenPHOSlib::YOmegaFlat( const Double_t */*py*/, const Double_t *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,5);  //  5==> Etaprime in the PtScal function
+  return PtScal(*px,4);  //  4==> Etaprime in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YEtaprime( const Double_t *py, const Double_t *)
@@ -436,7 +436,7 @@ Double_t AliGenPHOSlib::YOmegaFlat( const Double_t */*py*/, const Double_t *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,6);  //  6==> Phi in the PtScal function
+  return PtScal(*px,5);  //  5==> Phi in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YPhi( const Double_t *py, const Double_t *)
@@ -471,7 +471,7 @@ Double_t AliGenPHOSlib::YOmegaFlat( const Double_t */*py*/, const Double_t *)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,7);  //  7==> Baryon in the PtScal function
+  return PtScal(*px,6);  //  6==> Baryon in the PtScal function
 }
 
  Double_t AliGenPHOSlib::YBaryon( const Double_t *py, const Double_t *)

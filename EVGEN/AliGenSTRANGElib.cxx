@@ -59,17 +59,17 @@ ClassImp(AliGenSTRANGElib)
 //     10=>Omega-antiOmega
 
   //    MASS SCALING RESPECT TO PIONS
-  //    MASS                1=>PI,  2=>K, 3=>ETA,4=>OMEGA,5=>ETA',6=>PHI 
+  //    MASS                0=>PI,  1=>K, 2=>ETA,3=>OMEGA,4=>ETA',5=>PHI 
   const Double_t khm[11] = {0.1396, 0.494,0.547, 0.782,   0.957,  1.02, 
-  //    MASS               7=>BARYON-BARYONBAR  
+  //    MASS               6=>BARYON-BARYONBAR  
                                  0.938, 
-  //    MASS               8=>Lambda-antiLambda  
+  //    MASS               7=>Lambda-antiLambda  
                                   1.1157,
-  //    MASS               9=>Xi-antiXi  
+  //    MASS               8=>Xi-antiXi  
                                   1.3213, 
-  //    MASS              10=>Omega-antiOmega  
+  //    MASS               9=>Omega-antiOmega  
                                   1.6725,
-  //    MASS              11=>Lambda(1520)
+  //    MASS              10=>Lambda(1520)
                                   1.5195};
   //     VALUE MESON/PI AT 5 GEV
   const Double_t kfmax[11]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
@@ -120,7 +120,7 @@ ClassImp(AliGenSTRANGElib)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,2);  //  2==> Kaon in the PtScal function
+  return PtScal(*px,1);  //  1==> Kaon in the PtScal function
 }
 
  Double_t AliGenSTRANGElib::YKaon( const Double_t *py, const Double_t *)
@@ -172,7 +172,7 @@ ClassImp(AliGenSTRANGElib)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,6);  //  6==> Phi in the PtScal function
+  return PtScal(*px,5);  //  5==> Phi in the PtScal function
 }
 
  Double_t AliGenSTRANGElib::YPhi( const Double_t *py, const Double_t *)
@@ -207,7 +207,7 @@ ClassImp(AliGenSTRANGElib)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,8);  //  8==> Lambda-antiLambda in the PtScal function
+  return PtScal(*px,7);  //  7==> Lambda-antiLambda in the PtScal function
 }
 
  Double_t AliGenSTRANGElib::YLambda( const Double_t *py, const Double_t *)
@@ -246,7 +246,7 @@ ClassImp(AliGenSTRANGElib)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,9);  //  9==> Xi-antiXi in the PtScal function
+  return PtScal(*px,8);  //  8==> Xi-antiXi in the PtScal function
 }
 
  Double_t AliGenSTRANGElib::YXiMinus( const Double_t *py, const Double_t *)
@@ -285,7 +285,7 @@ ClassImp(AliGenSTRANGElib)
 //                pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,10);  //  10==> Omega-antiOmega in the PtScal function
+  return PtScal(*px,9);  //  9==> Omega-antiOmega in the PtScal function
 }
 
  Double_t AliGenSTRANGElib::YOmegaMinus( const Double_t *py, const Double_t *)
@@ -325,7 +325,7 @@ Double_t AliGenSTRANGElib::PtLambda1520( const Double_t *px, const Double_t *)
 //                  pt-distribution
 //____________________________________________________________
 
-  return PtScal(*px,11);   //   11=> Lambda(1520) in the PtScal function
+  return PtScal(*px,10);   //   10=> Lambda(1520) in the PtScal function
 }
 
 Double_t AliGenSTRANGElib::YLambda1520( const Double_t *py, const Double_t *)

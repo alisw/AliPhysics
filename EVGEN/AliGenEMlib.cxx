@@ -88,7 +88,7 @@ Int_t AliGenEMlib::IpEta(TRandom *)
 Double_t AliGenEMlib::PtEta( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Eta pT
-  return MtScal(*px,2);
+  return MtScal(*px,1);
 }
 
 Double_t AliGenEMlib::YEta( const Double_t *py, const Double_t */*dummy*/ )
@@ -111,7 +111,7 @@ Int_t AliGenEMlib::IpRho(TRandom *)
 Double_t AliGenEMlib::PtRho( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Rho pT
-  return MtScal(*px,3);
+  return MtScal(*px,2);
 }
 
 Double_t AliGenEMlib::YRho( const Double_t *py, const Double_t */*dummy*/ )
@@ -134,7 +134,7 @@ Int_t AliGenEMlib::IpOmega(TRandom *)
 Double_t AliGenEMlib::PtOmega( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Omega pT
-  return MtScal(*px,4);
+  return MtScal(*px,3);
 }
 
 Double_t AliGenEMlib::YOmega( const Double_t *py, const Double_t */*dummy*/ )
@@ -157,7 +157,7 @@ Int_t AliGenEMlib::IpEtaprime(TRandom *)
 Double_t AliGenEMlib::PtEtaprime( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Eta pT
-  return MtScal(*px,5);
+  return MtScal(*px,4);
 }
 
 Double_t AliGenEMlib::YEtaprime( const Double_t *py, const Double_t */*dummy*/ )
@@ -180,7 +180,7 @@ Int_t AliGenEMlib::IpPhi(TRandom *)
 Double_t AliGenEMlib::PtPhi( const Double_t *px, const Double_t */*dummy*/ )
 {
 // Phi pT
-  return MtScal(*px,6);
+  return MtScal(*px,5);
 }
 
 Double_t AliGenEMlib::YPhi( const Double_t *py, const Double_t */*dummy*/ )

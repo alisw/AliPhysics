@@ -114,7 +114,7 @@ Double_t AliGenMUONlib::PtScal(Double_t pt, Int_t np)
 Double_t AliGenMUONlib::PtKaon( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
-  return PtScal(*px,2);
+  return PtScal(*px,1);
 }
 
 // y-distribution
@@ -1160,7 +1160,7 @@ Int_t AliGenMUONlib::IpUpsilonFamily(TRandom *)
 Double_t AliGenMUONlib::PtPhi( const Double_t *px, const Double_t */*dummy*/)
 {
 // Phi pT
-  return PtScal(*px,7);
+  return PtScal(*px,6);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YPhi( const Double_t *px, const Double_t */*dummy*/)
@@ -1186,7 +1186,7 @@ Int_t AliGenMUONlib::IpPhi(TRandom *)
 Double_t AliGenMUONlib::PtOmega( const Double_t *px, const Double_t */*dummy*/)
 {
 // Omega pT
-  return PtScal(*px,5);
+  return PtScal(*px,4);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YOmega( const Double_t *px, const Double_t */*dummy*/)
@@ -1213,7 +1213,7 @@ Int_t AliGenMUONlib::IpOmega(TRandom *)
 Double_t AliGenMUONlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Eta pT
-  return PtScal(*px,3);
+  return PtScal(*px,2);
 }
 //    y-distribution
 Double_t AliGenMUONlib::YEta( const Double_t *px, const Double_t */*dummy*/)

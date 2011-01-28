@@ -546,7 +546,7 @@ Double_t AliGenGSIlib::PtEtaPHOS( const Double_t *px, const Double_t */*dummy*/ 
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,3);  //  3==> Eta in the PtScal function
+  return PtScal(*px,2);  //  2==> Eta in the PtScal function
    
 }
 Double_t AliGenGSIlib::YEtaPHOS(const Double_t *py, const Double_t */*dummy*/)
@@ -590,7 +590,7 @@ Double_t AliGenGSIlib::PtEtaprimePHOS( const Double_t *px, const Double_t */*dum
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,5);  //  5==> Etaprime in the PtScal function
+  return PtScal(*px,4);  //  4==> Etaprime in the PtScal function
    
 }
 Double_t AliGenGSIlib::YEtaprimePHOS(const Double_t *py, const Double_t */*dummy*/)
@@ -634,7 +634,7 @@ Double_t AliGenGSIlib::PtOmega( const Double_t *px, const Double_t */*dummy*/ )
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,4);  //  4==> Omega in the PtScal function
+  return PtScal(*px,3);  //  3==> Omega in the PtScal function
    
 }
 Double_t AliGenGSIlib::YOmega(const Double_t *py, const Double_t */*dummy*/)
@@ -680,7 +680,7 @@ Double_t AliGenGSIlib::PtRho( const Double_t *px, const Double_t */*dummy*/ )
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,11);  //  11==> Rho in the PtScal function
+  return PtScal(*px,10);  //  10==> Rho in the PtScal function
    
 }
 Double_t AliGenGSIlib::YRho(const Double_t *py, const Double_t */*dummy*/)
@@ -823,7 +823,7 @@ Double_t AliGenGSIlib::PtKaonPHOS( const Double_t *px, const Double_t */*dummy*/
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,2);  //  2==> Kaon in the PtScal function
+  return PtScal(*px,1);  //  1==> Kaon in the PtScal function
    
 }
 Double_t AliGenGSIlib::YKaonPHOS(const Double_t *py, const Double_t */*dummy*/)
@@ -867,7 +867,7 @@ Double_t AliGenGSIlib::PtPhiPHOS( const Double_t *px, const Double_t */*dummy*/ 
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,6);  //  6==> Phi in the PtScal function
+  return PtScal(*px,5);  //  5==> Phi in the PtScal function
    
 }
 Double_t AliGenGSIlib::YPhiPHOS(const Double_t *py, const Double_t */*dummy*/)
@@ -928,7 +928,7 @@ Double_t AliGenGSIlib::PtBaryons( const Double_t *px, const Double_t */*dummy*/ 
 //
 //____________________________________________________________--------------
 
-  return PtScal(*px,7);  //  7==> Baryon in the PtScal function
+  return PtScal(*px,6);  //  6==> Baryon in the PtScal function
    
 }
 Double_t AliGenGSIlib::YBaryons(const Double_t *py, const Double_t */*dummy*/)
@@ -969,8 +969,8 @@ Double_t AliGenGSIlib::YBaryons(const Double_t *py, const Double_t */*dummy*/)
 
 // The present adds the Rhos
 
-// MASS   1=>PI, 2=>K, 3=>ETA, 4=>OMEGA, 5=>ETA', 6=>PHI 
-//        7=>BARYON-BARYONBAR, 11==>RHO
+// MASS   0=>PI, 1=>K, 2=>ETA, 3=>OMEGA, 4=>ETA', 5=>PHI 
+//        6=>BARYON-BARYONBAR, 10==>RHO
 
   const Double_t khm[11] = {0.1396, 0.494,  0.547,    0.782,   0.957,   1.02, 
                                          0.938, 0. , 0., 0., 0.769};
