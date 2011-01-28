@@ -2,8 +2,8 @@
 //345678901234567890123456789012345678901234567890123456789012345678901234567890
 //       1         2         3         4         5         6         7         8
 //
-// Class AliTwoTrackRes 
-// J. Mercado. Last modified: 28.12.2009
+// Class AliTwoTrackRes
+// J. Mercado <mercado@physi.uni-heidelberg.de> Last modified: 20.01.2011
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ public:
   
   AliTwoTrackRes() : AliAnalysisTask("",""), fChain(0), fESDEvent(0), fOutContainer(0), 
     fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), 
-    fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist() {}
+    fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist(), fOutFilename() {}
   AliTwoTrackRes(const char *name);
   AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes);
   virtual ~AliTwoTrackRes();
@@ -65,6 +65,7 @@ public:
 		     int ns1, int ns2);
   void   FillNTuple2(double minsep, double sep, double corr, double qf, 
 		     int ns1, int ns2);
+  void   SetOutfile(char *outfil) {fOutFilename = outfil;}
 
 private:
 
@@ -83,6 +84,7 @@ private:
   TVector3        fTpcEnt1;       // Nominal TPC entrance point track 1
   TVector3        fTpcEnt2;       // Nominal TPC entrance point track 2
   TVector3        fTpcDist;       // Nominal TPC entrance separation 
+  TString         fOutFilename;   // Output filename
 
   ClassDef(AliTwoTrackRes, 0);
 };
@@ -90,4 +92,5 @@ private:
 
 //______________________________________________________________________________
 // EOF
+
 
