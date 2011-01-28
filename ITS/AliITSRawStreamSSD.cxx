@@ -542,6 +542,10 @@ Bool_t AliITSRawStreamSSD::Next()
     AliError("fRawReader->GetDDLID returns a negative value");
     ddlid=0;
   }
+  if(ddlid>=kDDLsNumber){
+    AliError(Form("fRawReader->GetDDLID returns a too big value %i \n",ddlid));
+    return kFALSE;
+  }
   fModuleID = fgkDDLModuleMap[ddlid][relModuleID];
       
   fCoord2 =  (fData >> 12) & 0x000007FF; 

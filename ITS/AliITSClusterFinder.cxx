@@ -58,6 +58,10 @@ fXmax(0){
     //   none.
     // Return:
     //   A default constructed AliITSCulsterFinder
+  for(Int_t i=0; i<2200; i++){
+    fNdet[i]=0;
+    fNlayer[i]=0;
+  }
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp):
@@ -84,7 +88,10 @@ fXmax(0){
     //   none.
     // Return:
     //   A Standard constructed AliITSCulsterFinder
-
+  for(Int_t i=0; i<2200; i++){
+    fNdet[i]=0;
+    fNlayer[i]=0;
+  }
 }
 //----------------------------------------------------------------------
 AliITSClusterFinder::AliITSClusterFinder(AliITSDetTypeRec* dettyp,
@@ -114,7 +121,11 @@ fXmax(0){
     // Return:
     //   A Standard constructed AliITSCulsterFinder
 
-    fNdigits = fDigits->GetEntriesFast();
+  fNdigits = fDigits->GetEntriesFast();
+  for(Int_t i=0; i<2200; i++){
+    fNdet[i]=0;
+    fNlayer[i]=0;
+  }
 }
 
 //______________________________________________________________________

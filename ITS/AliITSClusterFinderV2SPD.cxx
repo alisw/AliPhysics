@@ -267,7 +267,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
         y -= tanLorentzAngle*thick;
         //
 
-	Float_t hit[5]; //y,z,sigma(y)^2, sigma(z)^2, charge
+	Float_t hit[6]; //y,z,sigma(y)^2, sigma(z)^2, charge
         {
         Double_t loc[3]={y,0.,z},trk[3]={0.,0.,0.};
         mT2L->MasterToLocal(loc,trk);
@@ -277,6 +277,7 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
 	hit[2] = fYpitchSPD*fYpitchSPD/12.;
 	hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
 	hit[4] = 1.;
+	hit[5] = 0.;
 
 	if(!rawdata) milab[3]=fNdet[iModule];
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
