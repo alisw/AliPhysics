@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTZDCESDRecoComponent $
+// $Id$
 
 #ifndef ALIHLTZDCESDRECOCOMPONENT_H
 #define ALIHLTZDCESDRECOCOMPONENT_H

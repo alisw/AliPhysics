@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTZDCAgent.cxx  $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 

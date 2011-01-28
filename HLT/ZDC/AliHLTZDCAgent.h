@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTZDCAgent.h $
+// $Id$
 
 #ifndef ALIHLTZDCAGENT_H
 #define ALIHLTZDCAGENT_H
