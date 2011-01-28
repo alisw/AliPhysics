@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTVZERO                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,10 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS     AliHLTVZERORecoComponent.h AliHLTVZEROAgent.h)
+set ( CLASS_HDRS
+    AliHLTVZERORecoComponent.h
+    AliHLTVZEROAgent.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -35,7 +39,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/VZERO VZERO STEER RAW)
 
-set ( LIBRARY_DEP  -lHLTbase -lCDB -lESD -lSTEER -lSTEERBase -lRAWDatarec -lRAWDatabase -lVZERObase -lVZEROrec -L${ROOTLIBDIR} -lEG)
+set ( ELIBS  "-lHLTbase -lCDB -lESD -lSTEER -lSTEERBase -lRAWDatarec -lRAWDatabase -lVZERObase -lVZEROrec -L${ROOTLIBDIR} -lEG")
 
 include ("CMakehlt.conf")
 

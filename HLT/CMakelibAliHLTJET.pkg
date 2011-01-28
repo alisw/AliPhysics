@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTJET                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,25 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS 	AliHLTJETAgent.h AliHLTJETBase.h AliHLTJETTrackCuts.h AliHLTJETJetCuts.h AliHLTJETReader.h AliHLTJETReaderHeader.h cone/AliHLTJETConeGrid.h cone/AliHLTJETConeEtaPhiCell.h cone/AliHLTJETConeSeedCuts.h cone/AliHLTJETConeJetCandidate.h cone/AliHLTJETConeHeader.h cone/AliHLTJETConeFinder.h cone/AliHLTJETConeJetComponent.h analysis/AliHLTJETAnalysisBase.h analysis/AliHLTJETAnalysisJets.h analysis/AliHLTJETAnalysisMerge.h analysis/AliHLTJETAnalysisComponent.h)
+set ( CLASS_HDRS
+    AliHLTJETAgent.h
+    AliHLTJETBase.h
+    AliHLTJETTrackCuts.h
+    AliHLTJETJetCuts.h
+    AliHLTJETReader.h
+    AliHLTJETReaderHeader.h
+    cone/AliHLTJETConeGrid.h
+    cone/AliHLTJETConeEtaPhiCell.h
+    cone/AliHLTJETConeSeedCuts.h
+    cone/AliHLTJETConeJetCandidate.h
+    cone/AliHLTJETConeHeader.h
+    cone/AliHLTJETConeFinder.h
+    cone/AliHLTJETConeJetComponent.h
+    analysis/AliHLTJETAnalysisBase.h
+    analysis/AliHLTJETAnalysisJets.h
+    analysis/AliHLTJETAnalysisMerge.h
+    analysis/AliHLTJETAnalysisComponent.h
+    )
 
 set ( CLASS_HDRS_FJ  	fastjet/AliHLTJETFastJetHeader.h fastjet/AliHLTJETFastJetFinder.h fastjet/AliHLTJETFastJetComponent.h)
 
@@ -39,7 +58,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE 	HLT/BASE HLT/BASE/util HLT/JET HLT/JET/cone HLT/JET/fastjet HLT/JET/analysis ANALYSIS JETAN STEER)
 
-set ( LIBRARY_DEP 	-lHLTbase -lAliHLTUtil -lESD -lSTEER -lSTEERBase -lAOD -lESD -lANALYSIS -lANALYSISalice -lJETAN -L${ROOTLIBDIR} -lEG)
+set ( ELIBS 	"-lHLTbase -lAliHLTUtil -lESD -lSTEER -lSTEERBase -lAOD -lESD -lANALYSIS -lANALYSISalice -lJETAN -L${ROOTLIBDIR} -lEG")
 
 include ("CMakehlt.conf")
 

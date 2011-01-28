@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTHOMER                                                   #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,13 +27,16 @@
 #--------------------------------------------------------------------------------#
  include ("CMakehlt.conf")
 
-set ( CLASS_HDRS   	AliHLTHOMERReader.h AliHLTHOMERWriter.h)
+set ( CLASS_HDRS
+    AliHLTHOMERReader.h
+    AliHLTHOMERWriter.h
+    )
 
 set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTHOMERData.h)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
-set ( MODULE_DHDR  	AliHLTHOMERLinkDef.h)
+set ( MODULE_DHDR  	"AliHLTHOMERLinkDef.h")
 
 if (MODULE_SRCS)
 ALICE_Format (SRCS "BASE/HOMER/" "" "${MODULE_SRCS}")

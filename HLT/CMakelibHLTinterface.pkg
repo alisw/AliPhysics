@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTinterface                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -33,7 +34,7 @@ set ( MODULE_DHDR  	HLTinterface-LinkDef.h)
 
 set ( EINCLUDE  HLT/BASE/interface HLT/BASE  )
 
-set ( LIBRARY_DEP  -lHLTbase)
+set ( ELIBS  "-lHLTbase")
 
 include ("CMakehlt.conf")
 

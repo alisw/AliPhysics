@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTshuttle                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -37,7 +38,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/shuttle HLT/BASE STEER)
 
-set ( LIBRARY_DEP  -lHLTbase -lCDB)
+set ( ELIBS  "-lHLTbase -lCDB")
 
 include ("CMakehlt.conf")
 

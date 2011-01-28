@@ -1,3 +1,4 @@
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTRCU                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -25,7 +26,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS   	AliHLTAltroChannelSelectorComponent.h AliHLTAltroEncoder.h AliHLTAltroGenerator.h AliHLTAltroTimebinAverageComponent.h AliHLTRCUAgent.h)
+set ( CLASS_HDRS
+    AliHLTAltroChannelSelectorComponent.h
+    AliHLTAltroEncoder.h
+    AliHLTAltroGenerator.h
+    AliHLTAltroTimebinAverageComponent.h
+    AliHLTRCUAgent.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -35,7 +42,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE RAW)
 
-set ( LIBRARY_DEP  -lHLTbase -lRAWDatarec)
+set ( ELIBS  "-lHLTbase -lRAWDatarec")
 
 include ("CMakehlt.conf")
 
