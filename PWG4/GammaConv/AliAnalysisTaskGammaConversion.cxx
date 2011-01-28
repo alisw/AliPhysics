@@ -1126,6 +1126,14 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
     // process motherparticles (2 gammas as daughters)
     // the motherparticle had already to pass the R and the eta cut, but no line cut.
     // the line cut is just valid for the conversions!
+
+    // OWN primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////////
+    if (particle->GetPdgCode()==111){
+      if( TMath::Abs(rapidity) < fV0Reader->GetRapidityMesonCut() ){
+	fHistograms->FillHistogram("MC_Pi0_Pt_vs_Rapid_allDaughters", particle->Pt(),rapidity);
+      }
+    }
+    // end OWN primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////
 		
     if(particle->GetNDaughters() == 2){
 			
