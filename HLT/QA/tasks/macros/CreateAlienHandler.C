@@ -50,7 +50,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   plugin->SetOverwriteMode();                // overwrites the contents of the working and output directory
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -85,12 +85,18 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   	    bD0 = kTRUE;
 	    continue;
          }  
+	 if(argument.CompareTo("cb", TString::kIgnoreCase)==0){
+  	    bCB = kTRUE;
+	    continue;
+         }  
 	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
 	    bTPC    = kTRUE;
 	    bPHOS   = kTRUE;
-	    bEMCAL   = kTRUE;
+	    bEMCAL  = kTRUE;
 	    bITS    = kTRUE;
 	    bGLOBAL = kTRUE;
+	    bD0     = kTRUE;
+	    bCB     = kTRUE;
 	    continue;
          }
          else break;
@@ -137,6 +143,11 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAnalysisSource("AliAnalysisTaskD0Trigger.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskD0Trigger.h AliAnalysisTaskD0Trigger.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-D0-comparison.root");    
+  }
+  if(bCB) {
+    plugin->SetAnalysisSource("AliAnalysisTaskHLTCentralBarrel.cxx");  
+    plugin->SetAdditionalLibs("AliAnalysisTaskHLTCentralBarrel.h AliAnalysisTaskHLTCentralBarrel.cxx"); 
+    plugin->SetOutputFiles("HLT-OFFLINE-CentralBarrel-comparison.root");    
   }
   
   // Optionally define the files to be archived.
