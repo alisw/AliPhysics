@@ -34,6 +34,7 @@
 #pragma link C++ class AliAODcascade+;
 #pragma link C++ class AliAODHandler+;
 #pragma link C++ class AliAODExtension+;
+#pragma link C++ class AliAODBranchReplicator+;
 #pragma link C++ class AliAODInputHandler+;
 #pragma link C++ class AliAODTracklets+;
 #pragma link C++ class AliAODTagCreator+;

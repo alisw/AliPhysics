@@ -1,5 +1,5 @@
-#ifndef AliAODVertex_H
-#define AliAODVertex_H
+#ifndef ALIAODVERTEX_H
+#define ALIAODVERTEX_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -53,6 +53,8 @@ class AliAODVertex : public AliVVertex {
   AliAODVertex(const AliAODVertex& vtx); 
   AliAODVertex& operator=(const AliAODVertex& vtx);
 
+  virtual AliAODVertex* CloneWithoutRefs() const;
+  
   void     SetX(Double_t x) { fPosition[0] = x; }
   void     SetY(Double_t y) { fPosition[1] = y; }
   void     SetZ(Double_t z) { fPosition[2] = z; }
@@ -124,7 +126,12 @@ class AliAODVertex : public AliVVertex {
   
   void     PrintIndices() const;
   void     Print(Option_t* option = "") const;
-  private:
+
+  const char* AsString() const;
+  
+  static const char* GetTypeName(AODVtx_t type);
+  
+private:
   void     MakeProngs() {if (fNprong > 0) {fProngs = new TRef[fNprong]; fIprong=0;}}
 	  
  private:

@@ -42,8 +42,9 @@
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
-
-
+#include "AliCodeTimer.h"
+#include "AliAODBranchReplicator.h"
+#include "Riostream.h"
 
 ClassImp(AliAODHandler)
 
@@ -169,6 +170,37 @@ Bool_t AliAODHandler::Init(Option_t* opt)
      }   
   }   
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliAODHandler::Print(Option_t* opt) const
+{
+  // Print info about this object
+
+  cout << opt << Form("IsStandard %d filename=%s",fIsStandard,fFileName.Data()) << endl;
+  
+  if ( fExtensions ) 
+  {
+    cout << opt << fExtensions->GetEntries() << " extensions :" << endl;
+    PrintExtensions("Extensions",*fExtensions);    
+  }
+  if ( fFilters ) 
+  {
+    cout << opt << fFilters->GetEntries() << " filters :" << endl;
+    PrintExtensions("Filters",*fFilters);      
+  }
+}
+
+//______________________________________________________________________________
+void AliAODHandler::PrintExtensions(const char* name, const TObjArray& array) const
+{
+  // Show the list of aod extensions
+  TIter next(&array);
+  AliAODExtension* ext(0x0);
+  while ( ( ext = static_cast<AliAODExtension*>(next()) ) )
+  {
+    ext->Print("   ");
+  }
 }
 
 //______________________________________________________________________________
@@ -533,6 +565,7 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filen
 AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title)
 {
 // Add an AOD extension with some branches in a different file.
+  
    TString fname(filename);
    if (!fname.EndsWith(".root")) fname += ".root";
    if (!fExtensions) {
@@ -663,6 +696,14 @@ ClassImp(AliAODExtension)
 //-------------------------------------------------------------------------
 
 //______________________________________________________________________________
+AliAODExtension::AliAODExtension() : TNamed(), 
+fAODEvent(0), fTreeE(0), fFileE(0), fNtotal(0), fNpassed(0), 
+fSelected(kFALSE), fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE), fObjectList(0x0)
+{
+  // default ctor
+}
+
+//______________________________________________________________________________
 AliAODExtension::AliAODExtension(const char* name, const char* title, Bool_t isfilter)
                 :TNamed(name,title), 
                  fAODEvent(0), 
@@ -670,7 +711,11 @@ AliAODExtension::AliAODExtension(const char* name, const char* title, Bool_t isf
                  fFileE(0), 
                  fNtotal(0), 
                  fNpassed(0),
-                 fSelected(kFALSE)
+                 fSelected(kFALSE),
+fRepFiMap(0x0),
+fRepFiList(0x0),
+fEnableReferences(kTRUE),
+fObjectList(0x0)
 {
 // Constructor.
   if (isfilter) {
@@ -691,6 +736,10 @@ AliAODExtension::~AliAODExtension()
     fAODEvent = 0;
   }
   if (fTreeE) delete fTreeE;
+  fRepFiMap->DeleteAll();
+  delete fRepFiMap; // the map is owner
+  delete fRepFiList; // the list is not
+  delete fObjectList; // not owner
 }
 
 //______________________________________________________________________________
@@ -701,6 +750,8 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
 //       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
 //       return;
 //    }   
+  AliCodeTimerAuto(GetName(),0);
+
     if (!fAODEvent) {
        char type[20];
        gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
@@ -739,6 +790,15 @@ Bool_t AliAODExtension::FinishEvent()
   }  
   // Filtered AOD. Fill only if event is selected.
   if (!fSelected) return kTRUE;
+
+  TIter next(fRepFiList);
+  
+  AliAODBranchReplicator* repfi;
+
+  while ( ( repfi = static_cast<AliAODBranchReplicator*>(next()) ) )
+  {
+    repfi->ReplicateAndFilter(*fAODEvent);
+  }
   fNpassed++;
   fTreeE->Fill();
   fSelected = kFALSE; // so that next event will not be selected unless demanded
@@ -749,7 +809,13 @@ Bool_t AliAODExtension::FinishEvent()
 Bool_t AliAODExtension::Init(Option_t *option)
 {
 // Initialize IO.
-  if(!fAODEvent) fAODEvent = new AliAODEvent();
+  AliCodeTimerAuto(GetName(),0);
+  
+  if(!fAODEvent) 
+  {
+    fAODEvent = new AliAODEvent();    
+  }
+  
   TDirectory *owd = gDirectory;
   TString opt(option);
   opt.ToLower();
@@ -763,10 +829,106 @@ Bool_t AliAODExtension::Init(Option_t *option)
     fFileE = new TFile(GetName(), "RECREATE");
   }  
   fTreeE = new TTree("aodTree", "AliAOD tree");
-  fTreeE->Branch(fAODEvent->GetList());
-  fTreeE->BranchRef();
+  
+  delete fObjectList;
+  fObjectList = new TList;
+  fObjectList->SetOwner(kFALSE); // be explicit we're not the owner...
+  TIter next(fAODEvent->GetList());
+  TObject* o;
+  
+  while ( ( o = next() ) )
+  {
+    if ( fRepFiMap )
+    {
+      TObject* specified = fRepFiMap->FindObject(o->GetName());
+      if (specified)
+      {
+        AliAODBranchReplicator* repfi = dynamic_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(o->GetName()));
+        if ( repfi ) 
+        {        
+          TList* replicatedList = repfi->GetList();
+          if (replicatedList)
+          {
+            TIter nextRep(replicatedList);
+            TObject* objRep;
+            while ( ( objRep = nextRep() ) )
+            {
+              if (!fObjectList->FindObject(objRep))
+              {
+                fObjectList->Add(objRep);
+              }
+            }
+          }
+          else
+          {
+            AliError(Form("replicatedList from %s is null !",repfi->GetName()));
+          }
+        }
+      }
+      else
+      {
+        fObjectList->Add(o);
+      }
+    }    
+  }
+
+  next.Reset();
+  
+  while ( ( o = next() ) )
+  {
+    TObject* out = fObjectList->FindObject(o->GetName());
+    AliInfo(Form("OBJECT IN %20s %p -> OUT %p %s",o->GetName(),o,out,((out!=o && out) ? "REPLICATED":"-")));
+  }
+  
+  fTreeE->Branch(fObjectList);
+  
+  if (fEnableReferences) fTreeE->BranchRef();
+  
   owd->cd();
+  
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliAODExtension::Print(Option_t* opt) const
+{
+  // Print info about this extension
+  
+  cout << opt << Form("AliAODExtension - %s - %s",GetName(),GetTitle()) << endl;
+  cout << opt << opt << Form("References are %s enabled",fEnableReferences ? "" : "not") << endl;
+  
+  TIter next(fRepFiMap);
+  TObjString* s;
+  
+  TString skipped;
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    AliAODBranchReplicator* br = static_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(s->String().Data()));
+    if ( !br ) 
+    {
+      skipped += s->String();
+      skipped += ' ';
+    }
+  }
+  
+  if ( skipped.Length() )
+  {
+    cout << opt << opt << "Branches that will be skipped altogether : " << skipped.Data() << endl;
+  }
+  
+  next.Reset();
+  
+  while ( ( s = static_cast<TObjString*>(next()) ) )
+  {
+    AliAODBranchReplicator* br = static_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(s->String().Data()));
+    
+    if (br)
+    {
+      cout << opt << opt << "Branch " << s->String() 
+      << " will be filtered by class " << br->ClassName() << endl;
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -801,4 +963,35 @@ Bool_t AliAODExtension::TerminateIO()
     fAODEvent = 0;
   }
   return kTRUE;
+}
+
+//______________________________________________________________________________
+void AliAODExtension::FilterBranch(const char* branchName, AliAODBranchReplicator* repfi)
+{
+  // Specify a filter/replicator for a given branch
+  //
+  // If repfi=0x0, this will disable the branch (in the output) completely.
+  //
+  // repfi is adopted by this class, i.e. user should not delete it.
+  //
+  // WARNING : branch name must be exact.
+  //
+  // See also the documentation for AliAODBranchReplicator class.
+  //
+  
+  if (!fRepFiMap)
+  {
+    fRepFiMap = new TMap;
+    fRepFiMap->SetOwnerKeyValue(kTRUE,kTRUE);
+    fRepFiList = new TList;
+    fRepFiList->SetOwner(kFALSE);
+  }
+  
+  fRepFiMap->Add(new TObjString(branchName),repfi);
+  
+  if (repfi && !fRepFiList->FindObject(repfi))
+  {
+    // insure we get unique and non-null replicators in this list
+    fRepFiList->Add(repfi);
+  }
 }

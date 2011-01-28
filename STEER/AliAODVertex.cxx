@@ -183,6 +183,28 @@ AliAODVertex::AliAODVertex(const AliAODVertex& vtx) :
 }
 
 //______________________________________________________________________________
+AliAODVertex* AliAODVertex::CloneWithoutRefs() const
+{
+  // Special method to copy all but the refs 
+  
+  Double_t cov[6] = { 0.0 };
+      
+  if (fCovMatrix) fCovMatrix->GetCovMatrix(cov);
+  
+  AliAODVertex* v = new AliAODVertex(fPosition,
+                                     cov,
+                                     fChi2perNDF,
+                                     0x0,
+                                     fID,
+                                     fType,
+                                     0);
+  
+  v->SetNContributors(fNContributors);  
+  
+  return v;
+}
+
+//______________________________________________________________________________
 AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx) 
 {
   // Assignment operator
@@ -536,6 +558,75 @@ void AliAODVertex::PrintIndices() const
   while (TObject *daugh = iter.Next()) {
     printf("Particle %p originates from this vertex.\n", static_cast<void*>(daugh));
   }
+}
+
+//______________________________________________________________________________
+const char* AliAODVertex::AsString() const
+{
+  // Make a string describing this object
+  
+  TString tmp(Form("%10s pos(%7.2f,%7.2f,%7.2f)",GetTypeName((AODVtx_t)GetType()),GetX(),GetY(),GetZ()));
+  
+  if (GetType()==kPrimary || GetType()==kMainSPD || GetType()==kPileupSPD )
+  {
+    tmp += Form(" ncontrib %d chi2/ndf %4.1f",GetNContributors(),GetChi2perNDF());
+
+  }
+  
+  if ( !fParent.GetObject() ) 
+  {
+    tmp += " no parent";
+  }
+  if ( fDaughters.GetEntriesFast() > 0 )
+  {
+    if ( fDaughters.GetEntriesFast() == 1 ) 
+    {
+      tmp += " origin of 1 particle";
+    }
+    else
+    {
+      tmp += Form(" origin of %2d particles",fDaughters.GetEntriesFast());
+    }
+  }
+  
+  return tmp.Data();
+}
+
+//______________________________________________________________________________
+const char* AliAODVertex::GetTypeName(AODVtx_t type)
+{
+  // Return an ASCII version of type
+  
+  switch (type)
+  {
+    case kPrimary:
+      return "primary";
+      break;
+    case kKink:
+      return "kink";
+      break;
+    case kV0:
+      return "v0";
+      break;
+    case kCascade:
+      return "cascade";
+      break;
+    case kMainSPD:
+      return "mainSPD";
+      break;
+    case kPileupSPD:
+      return "pileupSPD";
+      break;
+    case kPileupTracks:
+      return "pileupTRK";
+      break;
+    case kMainTPC:
+      return "mainTPC";
+      break;
+    default:
+      return "unknown";
+      break;
+  };
 }
 
 //______________________________________________________________________________
