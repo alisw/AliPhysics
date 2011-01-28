@@ -2,8 +2,8 @@
 //345678901234567890123456789012345678901234567890123456789012345678901234567890
 //       1         2         3         4         5         6         7         8
 //
-// Tool to study two-track effects in ALICE for femtoscopic studies
-// J. Mercado. Last modified: 28.12.2009
+// Tool to study two-track effects in ALICE for femtoscopic analyses
+// J. Mercado <mercado@physi.uni-heidelberg.de> Last modified: 20.01.2011
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -27,7 +27,7 @@ AliTwoTrackRes::AliTwoTrackRes(const char *name) :
   AliAnalysisTask(name,""), fChain(0), fESDEvent(0), 
   fOutContainer(0), fTrackCuts(0), fNTuple1(0), 
   fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), fQ(), fTpcEnt1(), fTpcEnt2(), 
-  fTpcDist()
+  fTpcDist(), fOutFilename()
 {
   DefineInput(0, TChain::Class());     // Slot input 0 reads from a TChain  
   DefineOutput(0, TObjArray::Class()); // Slot output 0 writes into a TObjArray
@@ -36,7 +36,7 @@ AliTwoTrackRes::AliTwoTrackRes(const char *name) :
 AliTwoTrackRes::AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes) : 
   AliAnalysisTask(aTwoTrackRes), fChain(0), fESDEvent(0), fOutContainer(0), 
   fTrackCuts(0), fNTuple1(0), fNTuple2(0), fP1(), fP2(), fPb1(), fPb2(), fP(), 
-  fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist()
+  fQ(), fTpcEnt1(), fTpcEnt2(), fTpcDist(), fOutFilename()
 {
   //Copy constructor
   fChain = aTwoTrackRes.fChain;
@@ -54,6 +54,7 @@ AliTwoTrackRes::AliTwoTrackRes(const AliTwoTrackRes& aTwoTrackRes) :
   fTpcEnt1 = aTwoTrackRes.fTpcEnt1;
   fTpcEnt2 = aTwoTrackRes.fTpcEnt2;
   fTpcDist = aTwoTrackRes.fTpcDist;
+  fOutFilename = aTwoTrackRes.fOutFilename;
 }
 
 AliTwoTrackRes& AliTwoTrackRes::operator=(const AliTwoTrackRes& aTwoTrackRes)
@@ -76,6 +77,7 @@ AliTwoTrackRes& AliTwoTrackRes::operator=(const AliTwoTrackRes& aTwoTrackRes)
   fTpcEnt1 = aTwoTrackRes.fTpcEnt1;
   fTpcEnt2 = aTwoTrackRes.fTpcEnt2;
   fTpcDist = aTwoTrackRes.fTpcDist;
+  fOutFilename = aTwoTrackRes.fOutFilename;
   return *this;
 }
 
@@ -98,7 +100,7 @@ void AliTwoTrackRes::ConnectInputData(Option_t *) {
   Int_t cutMode = 1;                     // select cut mode
   if (cutMode == 1) {
   cov1 = 2; cov2 = 2; cov3 = 0.5; cov4 = 0.5; cov5 = 2;
-  nSigma = 3; minNClustersTPC = 100; maxChi2PerClusterTPC = 3.5;
+  nSigma = 3; minNClustersTPC = 75; maxChi2PerClusterTPC = 3.5;
   fTrackCuts->SetMaxCovDiagonalElements(cov1, cov2, cov3, cov4, cov5);
   fTrackCuts->SetMaxNsigmaToVertex(nSigma);
   fTrackCuts->SetRequireSigmaToVertex(kTRUE);
@@ -144,12 +146,13 @@ void AliTwoTrackRes::Exec(Option_t *) {
   Int_t  ntracks = fESDEvent->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++) {
     AliESDtrack *track1 = fESDEvent->GetTrack(itrack);
-    AliExternalTrackParam *trp1 =  const_cast<AliExternalTrackParam*> (track1->GetTPCInnerParam());
+    AliExternalTrackParam *trp1 = const_cast<AliExternalTrackParam*> 
+      (track1->GetTPCInnerParam());
     if (!trp1) continue;
     if (!track1->IsOn(AliESDtrack::kTPCpid)) continue;
     track1->GetTPCpid(pidTrk1);
     Int_t q1 = trp1->Charge();
-    if (!((fTrackCuts->AcceptTrack(track1)) && (q1 == 1) && 
+    if (!((fTrackCuts->AcceptTrack(track1)) && (q1 == 1) &&
 	  (pidTrk1[AliPID::kPion]+pidTrk1[AliPID::kMuon] > 0.5))) continue;
     if (!track1->GetInnerXYZ(tpcEnt1)) continue;
     clu1 = track1->GetTPCClusterMap();
@@ -158,12 +161,13 @@ void AliTwoTrackRes::Exec(Option_t *) {
     SetTpcEnt1(tpcEnt1[0], tpcEnt1[1], tpcEnt1[2]);
     for(Int_t jtrack = 0; jtrack < itrack; jtrack++) {
       AliESDtrack *track2 = fESDEvent->GetTrack(jtrack);
-      AliExternalTrackParam *trp2 = const_cast<AliExternalTrackParam*> (track2->GetTPCInnerParam());
+      AliExternalTrackParam *trp2 = const_cast<AliExternalTrackParam*> 
+	(track2->GetTPCInnerParam());
       if (!trp2) continue;
       if (!track2->IsOn(AliESDtrack::kTPCpid)) continue;
       track2->GetTPCpid(pidTrk2);
       Int_t q2 = trp2->Charge();
-      if (!((fTrackCuts->AcceptTrack(track2)) && (q2 == 1) && 
+      if (!((fTrackCuts->AcceptTrack(track2)) && (q2 == 1) &&
 	    (pidTrk2[AliPID::kPion]+pidTrk2[AliPID::kMuon] > 0.5))) continue;
       if (!track2->GetInnerXYZ(tpcEnt2)) continue;
       clu2 = track2->GetTPCClusterMap();
@@ -177,12 +181,8 @@ void AliTwoTrackRes::Exec(Option_t *) {
 	x1.SetXYZ(-pos1[0], -pos1[1], pos1[2]);
 	tdistrot[i-tpcIn] = x1.Mag();
       }
-      Double_t maxdist = 0.0;
-      for (Int_t j = 0; j < tpcOut-tpcIn; j++) {
-	if (tdist[j] > maxdist) { maxdist = tdist[j]; }
-      }
-      Double_t mindist = maxdist;
-      int jmin=0;
+      Double_t mindist = 100000;
+      Int_t jmin=0;
       for (Int_t j = 0; j < tpcOut-tpcIn; j++) {
 	if (tdist[j] < mindist) {jmin=j;  mindist = tdist[j]; }
       }
@@ -194,8 +194,9 @@ void AliTwoTrackRes::Exec(Option_t *) {
       Int_t    nsh2 = GetNSha(clu2, sha2);
       Double_t corr = Corr(clu1, clu2, sha1, sha2);
       Double_t qfac = Qfac(clu1, clu2, sha1, sha2);
+      if ((TMath::Abs(track1->Eta())>0.8)&&(TMath::Abs(track2->Eta())>0.8)) continue;
       if ((TMath::Abs(dphi)<0.35)&&(deta<0.35)) {
-	FillNTuple1(mindist,dist,corr,qfac,nsh1,nsh2);}    // True
+      FillNTuple1(mindist,dist,corr,qfac,nsh1,nsh2);}    // True
       Double_t tr2rot = RotTr2Phi();                // Rotate trck2
       SetTr2(track2->Pt(), track2->Eta(), tr2rot, mpi);
       tpcEnt2[0] = -tpcEnt2[0];
@@ -222,7 +223,7 @@ void AliTwoTrackRes::Terminate(Option_t *) {
 // Write output and clean up
 
   fOutContainer = (TObjArray*)GetOutputData(0);
-  TFile *f1  = new TFile( "twotrackres_femto.root", "RECREATE" );
+  TFile *f1  = new TFile( fOutFilename, "RECREATE" );
   fOutContainer->Write();
   f1->Flush();
   f1->Close();
@@ -354,4 +355,5 @@ void AliTwoTrackRes::FillNTuple2(double minsep, double sep, double corr,
 
 //______________________________________________________________________________
 // EOF
+
 
