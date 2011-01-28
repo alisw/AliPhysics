@@ -1169,7 +1169,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     TObjString* obj2 = 0;
     while ((obj2 = dynamic_cast<TObjString*> (iter2->Next())))
     {
-      TParameter<Long64_t>* param2 = dynamic_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obj2));
+      TParameter<Long64_t>* param2 = static_cast<TParameter<Long64_t>*> (entry->fTriggerClasses->GetValue(obj2));
       
       TParameter<Long64_t>* param1 = dynamic_cast<TParameter<Long64_t>*> (fTriggerClasses->GetValue(obj2));
       if (param1)
