@@ -221,27 +221,27 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-11-AN");
+      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-13-AN");
  
 
       // Enable the needed package
       // FIXME: what if I don't want to use par files?
       gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
       gSystem->AddIncludePath("-I${ALICE_ROOT}/STEER/");
-      gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
-      gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
-      gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
-      gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
-      gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
-      gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
-      gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
-      gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
-      gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
-      gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
-      gProof->UploadPackage("$ALICE_ROOT/obj/CORRFW");
-      gProof->EnablePackage("$ALICE_ROOT/obj/CORRFW");
-      gProof->UploadPackage("~/Desktop/OADB");//FIXME
-      gProof->EnablePackage("~/Desktop/OADB");//FIXME
+      // gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
+      // gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
+      // gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
+      // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
+      // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
+      // gProof->UploadPackage("$ALICE_ROOT/obj/CORRFW");
+      // gProof->EnablePackage("$ALICE_ROOT/obj/CORRFW");
+      // gProof->UploadPackage("~/Desktop/OADB");//FIXME
+      // gProof->EnablePackage("~/Desktop/OADB");//FIXME
       
     }
   else
