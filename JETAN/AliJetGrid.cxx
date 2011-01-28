@@ -629,7 +629,7 @@ void AliJetGrid::SetIndexIJ()
 }
 
 //__________________________________________________________
-void AliJetGrid::GetIJFromIndex(Int_t index, Int_t i, Int_t j) const
+void AliJetGrid::GetIJFromIndex(Int_t index, Int_t& i, Int_t& j) const
 { 
 // Returns i position id of eta and j position id of phi for a given grid index
   i = (*fIndexI)[index];
