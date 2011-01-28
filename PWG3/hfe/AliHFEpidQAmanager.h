@@ -51,10 +51,13 @@ class AliHFEpidQAmanager : public TObject{
     AliHFEdetPIDqa *GetDetectorPIDqa(AliHFEpid::EDETtype_t detector) const { return fDetPIDqa[detector]; }
     AliHFEpidBase *GetDetectorPID(AliHFEpid::EDETtype_t detector) const { return fDetPID[detector]; }
     TList *MakeList(const Char_t *name);
+    void SetHighResolutionHistos() { SetBit(kHighResolutionHistos, kTRUE); };
+    Bool_t HasHighResolutionHistos() const { return TestBit(kHighResolutionHistos); }
 
   protected:
     enum{
-      kIsOwner = BIT(14)
+      kIsOwner = BIT(14),
+      kHighResolutionHistos = BIT(15)
     };
     Bool_t IsOwner() const { return TestBit(kIsOwner); }
     void SetOwner() { SetBit(kIsOwner, kTRUE); }

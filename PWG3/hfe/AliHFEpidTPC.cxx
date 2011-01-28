@@ -51,6 +51,7 @@ AliHFEpidTPC::AliHFEpidTPC() :
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
+  , fElectronMeanCorrection(NULL)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
   , fPID(NULL)
@@ -58,6 +59,11 @@ AliHFEpidTPC::AliHFEpidTPC() :
   //
   // default  constructor
   // 
+  memset(fRejection, 0, sizeof(Float_t) * 4 * AliPID::kSPECIES);
+  memset(fLineCrossingSigma, 0, sizeof(Double_t) * AliPID::kSPECIES);
+  memset(fPAsigCut, 0, sizeof(Float_t) * 2);
+  memset(fNAsigmaTPC, 0, sizeof(Float_t) * 2);
+
 }
 
 //___________________________________________________________________
@@ -67,6 +73,7 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
+  , fElectronMeanCorrection(NULL)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
   , fPID(NULL)
@@ -74,6 +81,8 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   //
   // default  constructor
   // 
+  //
+  memset(fRejection, 0, sizeof(Float_t) * 4 * AliPID::kSPECIES);
   memset(fLineCrossingSigma, 0, sizeof(Double_t) * AliPID::kSPECIES);
   memset(fPAsigCut, 0, sizeof(Float_t) * 2);
   memset(fNAsigmaTPC, 0, sizeof(Float_t) * 2);
@@ -86,6 +95,7 @@ AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   , fLineCrossingsEnabled(0)
   , fUpperSigmaCut(NULL)
   , fLowerSigmaCut(NULL)
+  , fElectronMeanCorrection(NULL)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
   , fPID(NULL)
@@ -117,6 +127,7 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
   target.fUpperSigmaCut = fUpperSigmaCut;
   target.fLowerSigmaCut = fLowerSigmaCut;
+  target.fElectronMeanCorrection = fElectronMeanCorrection;
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
   target.fPID = new AliPID(*fPID);
@@ -258,6 +269,9 @@ Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EPartic
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
     if(aodtrack && fAODpid) nSigmas = fAODpid->NumberOfSigmasTPC(aodtrack, species);
   }
+  // Correct for the mean o
+  if(fElectronMeanCorrection)
+    nSigmas -= fElectronMeanCorrection->Eval(GetP(track, anaType));   
   return nSigmas;
 }
 
@@ -270,11 +284,11 @@ Double_t AliHFEpidTPC::GetP(const AliVParticle *track, AliHFEpidObject::Analysis
   if(anatype == AliHFEpidObject::kESDanalysis){
     // ESD analysis: Use Inner Params for the momentum estimate
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    p = esdtrack->GetInnerParam() ? esdtrack->GetInnerParam()->GetP() : esdtrack->P();
+    if(esdtrack) p = esdtrack->GetInnerParam() ? esdtrack->GetInnerParam()->GetP() : esdtrack->P();
   } else { 
     // AOD analysis: Use TPC momentum stored in the AliAODpid object
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    p = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCmomentum() : aodtrack->P();
+    if(aodtrack) p = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCmomentum() : aodtrack->P();
   }
   return p;
 }

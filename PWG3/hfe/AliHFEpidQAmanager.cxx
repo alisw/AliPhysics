@@ -110,8 +110,8 @@ void AliHFEpidQAmanager::Initialize(AliHFEpid *pid){
     fDetPID[idet] = pid->GetDetPID(static_cast<AliHFEpid::EDETtype_t>(idet));
     if(pid->HasDetector(static_cast<AliHFEpid::EDETtype_t>(idet))){
       CreateDetPIDqa(static_cast<AliHFEpid::EDETtype_t>(idet));
-      fDetPIDqa[idet]->Initialize();
       fDetPIDqa[idet]->SetPIDqaManager(this);
+      fDetPIDqa[idet]->Initialize();
     }
   }
 }

@@ -119,16 +119,18 @@ void AliHFEefficiency::UserCreateOutputObjects(){
   if(fCutTRD){
     AliHFEcutStep *hfeTRD = fFilter->GetCutStep("HFETRD");
     AliHFEextraCuts *hfecuts = dynamic_cast<AliHFEextraCuts *>(hfeTRD->GetCut("HFETRDCuts"));
-    hfecuts->SetMinTrackletsTRD(4);
+    if(hfecuts) hfecuts->SetMinTrackletsTRD(4);
   }
   AliHFEcutStep *hfeITS = fFilter->GetCutStep("HFEITS");
   AliHFEextraCuts *hfeitscuts = dynamic_cast<AliHFEextraCuts *>(hfeITS->GetCut("HFEPixelsCuts"));
-  hfeitscuts->SetRequireITSpixel(AliHFEextraCuts::kFirst);
+  if(hfeitscuts)hfeitscuts->SetRequireITSpixel(AliHFEextraCuts::kFirst);
 
   AliHFEcutStep *primary = fFilter->GetCutStep("Primary");
   AliCFTrackIsPrimaryCuts *primcuts = dynamic_cast<AliCFTrackIsPrimaryCuts *>(primary->GetCut("PrimaryCuts"));
-  primcuts->SetMaxDCAToVertexXY(3);
-  primcuts->SetMaxDCAToVertexZ(5);
+  if(primcuts){ 
+    primcuts->SetMaxDCAToVertexXY(3);
+    primcuts->SetMaxDCAToVertexZ(5);
+  }
 
   fAcceptanceCuts = new AliCFAcceptanceCuts("Acceptance", "MC Acceptance Cuts");
   fAcceptanceCuts->SetMinNHitITS(3);
@@ -204,7 +206,7 @@ void AliHFEefficiency::Terminate(Option_t *){
   PostProcess();
 
   TList *l = dynamic_cast<TList *>(GetOutputData(2));
-  DrawPtResolution(l);
+  if(l) DrawPtResolution(l);
 }
 
 void AliHFEefficiency::FilterMC(){
@@ -234,7 +236,7 @@ void AliHFEefficiency::Load(const char* filename){
   //
   TFile *input = TFile::Open(filename);
   AliHFEcontainer *cin = dynamic_cast<AliHFEcontainer *>(input->Get("Efficiency"));
-  fEfficiency = dynamic_cast<AliHFEcontainer *>(cin->Clone());
+  if(cin) fEfficiency = dynamic_cast<AliHFEcontainer *>(cin->Clone());
   input->Close();
   delete input;
 }
@@ -371,6 +373,7 @@ void AliHFEefficiency::DrawPtResolution(const TList * const l){
   // Draw pt resolution
   //
   TH2 *h2 = dynamic_cast<TH2 *>(l->FindObject("ptres"));
+  if(!h2) return;
   TGraphErrors *mean = new TGraphErrors(h2->GetNbinsX());
   TGraphErrors *rms = new TGraphErrors(h2->GetNbinsX());
 

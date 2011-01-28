@@ -48,6 +48,7 @@ class AliHFEcollection : public TNamed{
   
 
   virtual void Browse(TBrowser *b);
+  virtual Bool_t IsFolder() const { return kTRUE; }
 
   // Set & Create functions
   Bool_t CreateTH1F(const char* name, const char* title, Int_t nBin, Float_t nMin, Float_t nMax, Int_t logAxis = -1);

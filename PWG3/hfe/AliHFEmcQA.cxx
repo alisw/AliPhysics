@@ -50,7 +50,7 @@ ClassImp(AliHFEmcQA)
 
 //_______________________________________________________________________________________________
 AliHFEmcQA::AliHFEmcQA() : 
-	fMCEvent(NULL) 
+	       fMCEvent(NULL) 
         ,fMCHeader(NULL)
         ,fMCArray(NULL)
         ,fQAhistos(NULL)
@@ -58,6 +58,13 @@ AliHFEmcQA::AliHFEmcQA() :
 {
         // Default constructor
         
+  for(Int_t mom = 0; mom < 50; mom++){
+    fHeavyQuark[mom] = NULL;
+  }
+  for(Int_t mom = 0; mom < 2; mom++){
+    fIsHeavy[mom] = 0;
+  }
+
 }
 
 //_______________________________________________________________________________________________
@@ -70,6 +77,12 @@ AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         ,fNparents(p.fNparents) 
 {
         // Copy constructor
+  for(Int_t mom = 0; mom < 50; mom++){
+    fHeavyQuark[mom] = NULL;
+  }
+  for(Int_t mom = 0; mom < 2; mom++){
+    fIsHeavy[mom] = 0;
+  }
 }
 
 //_______________________________________________________________________________________________
@@ -1042,15 +1055,15 @@ Int_t AliHFEmcQA::GetElecSource(TParticle * const mcpart)
 {
   // decay particle's origin 
 
-  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
-
-  Int_t origin = -1;
-  Bool_t isFinalOpenCharm = kFALSE;
-
   if(!mcpart){
     AliDebug(1, "no mcparticle, return\n");
     return -1;
   }
+
+  if ( abs(mcpart->GetPdgCode()) != AliHFEmcQA::kElectronPDG ) return kMisID;
+
+  Int_t origin = -1;
+  Bool_t isFinalOpenCharm = kFALSE;
 
   Int_t iLabel = mcpart->GetFirstMother();
   if (iLabel<0){

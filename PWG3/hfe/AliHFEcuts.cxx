@@ -212,7 +212,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   }
   if(fCutList){
     target.fCutList = dynamic_cast<TObjArray *>(fCutList->Clone());
-    target.fCutList->SetOwner();
+    if(target.fCutList) target.fCutList->SetOwner(); // Coverity
   }
   if(target.fHistQA){
     target.fHistQA->Clear();

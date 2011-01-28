@@ -29,7 +29,6 @@ class TList;
 class AliHFEcollection;
 class AliESDv0KineCuts;
 class AliKFVertex;
-class AliESDv0;
 
 class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
  public:
@@ -69,8 +68,7 @@ class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
   Bool_t  CheckSigns(AliESDv0 * const v0);
 
   Int_t   PDGtoPIDv0(Int_t pdgV0) const;
-  Int_t   PDGtoPID(Int_t pdg) const;
-  
+  Int_t   PDGtoPID(Int_t pdg) const;  
 
   TList              *fOutput;        //! Container for output histos
   AliHFEcollection   *fColl;          //! collection of Data output

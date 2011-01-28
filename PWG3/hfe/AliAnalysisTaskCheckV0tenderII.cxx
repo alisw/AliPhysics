@@ -188,10 +188,11 @@ void AliAnalysisTaskCheckV0tenderII::UserExec(Option_t *){
   // Event Loop
   // 
   AliMCEventHandler* mcHandler = (dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()));
-  AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  AliESDpid *workingPID = NULL;
-  if(inh && (workingPID = inh->GetESDpid())) workingPID = inh->GetESDpid();
-  else workingPID = AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE);
+
+  //AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  //AliESDpid *workingPID = NULL;
+  //if(inh && (workingPID = inh->GetESDpid())) workingPID = inh->GetESDpid();
+  //else workingPID = AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE);
      
   // check the MC data
   if(fMCEvent && !mcHandler ) return;
@@ -229,7 +230,7 @@ void AliAnalysisTaskCheckV0tenderII::ProcessV0s(){
 
   Int_t nV0s = fInputEvent->GetNumberOfV0s();
   for(Int_t i=0; i<nV0s; ++i){
-    AliESDv0 *esdV0 = (dynamic_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
+    AliESDv0 *esdV0 = (static_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
 
@@ -366,7 +367,7 @@ void AliAnalysisTaskCheckV0tenderII::ProcessDaughtersMC(AliESDv0 * const v0){
   // check the identity of the V0tender selected V0 daughters
   // !!! for positive check only the true identity plays a role here, 
   // not the true V0 mother identity (e.g. selected electron could come
-  // from primary vertex or pion dalitz deca or true gamma conversion) !!!
+  // from primary vertex or pion dalitz deca or true gamma conversion) !!!!
   //
 
   const char * type[3] = {"Electron", "Pion", "Proton"};

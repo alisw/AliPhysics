@@ -160,11 +160,12 @@ void AliAnalysisTaskCheckV0tender::UserExec(Option_t *){
   //
   // Event Loop
   // 
+
   AliMCEventHandler* mcHandler = (dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()));
-  AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  AliESDpid *workingPID = NULL;
-  if(inh && (workingPID = inh->GetESDpid())) workingPID = inh->GetESDpid();
-  else workingPID = AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE);
+  //AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  //AliESDpid *workingPID = NULL;
+  //if(inh && (workingPID = inh->GetESDpid())) workingPID = inh->GetESDpid();
+  //else workingPID = AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE);
      
   // check the MC data
   if(fMCEvent && !mcHandler ) return;
@@ -202,7 +203,7 @@ void AliAnalysisTaskCheckV0tender::ProcessV0s(){
 
   Int_t nV0s = fInputEvent->GetNumberOfV0s();
   for(Int_t i=0; i<nV0s; ++i){
-    AliESDv0 *esdV0 = (dynamic_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
+    AliESDv0 *esdV0 = (static_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     Int_t pid = GetTenderPidV0(esdV0);
@@ -255,7 +256,7 @@ void AliAnalysisTaskCheckV0tender::ProcessV0sMC(){
   // V0 loop
   for(Int_t i=0; i<nV0s; ++i){
     Bool_t id = kFALSE;
-    AliESDv0 *esdV0 = (dynamic_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
+    AliESDv0 *esdV0 = (static_cast<AliESDEvent *>(fInputEvent))->GetV0(i);
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     Int_t pid = GetTenderPidV0(esdV0);

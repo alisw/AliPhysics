@@ -134,18 +134,21 @@ void AliHFEtrdPIDqaV1::Initialize(){
   Double_t minTPCSigma[4] = {kMinPID, kMinP, -12., 0};
   Double_t maxTPCSigma[4] = {kMaxPID, kMaxP, 12., 2.};
   fHistos->CreateTHnSparse("hTPCsigma", "TPC sigma; species p [GeV/c]; TPC dEdx - <dE/dx>|_{el} [#sigma]; selection step", 4, nBinsTPCSigma, minTPCSigma, maxTPCSigma);
+  fHistos->Sumw2("hTPCsigma");
   // Create Monitoring histogram for the Likelihood distribution
   const Int_t kTRDLikelihoodBins = 100;
   Int_t nBinsTRDlike[4] = {kPIDbins, kPbins, kTRDLikelihoodBins, kSteps};
   Double_t minTRDlike[4] = {kMinPID, kMinP, 0., 0.};
   Double_t maxTRDlike[4] = {kMaxPID, kMaxP, 1., 2.};
   fHistos->CreateTHnSparse("hTRDlikelihood", "TRD Likelihood Distribution; species; p [GeV/c]; TRD electron Likelihood; selection step", 4, nBinsTRDlike, minTRDlike, maxTRDlike);
+  fHistos->Sumw2("hTRDlikelihood");
   // Create Monitoring histogram for the TRD total charge
   const Int_t kTRDchargeBins = 1000;
   Int_t nBinsTRDcharge[4] = {kPIDbins, kPbins, kTRDchargeBins, kSteps};
   Double_t minTRDcharge[4] = {kMinPID, kMinP, 0., 0.};
   Double_t maxTRDcharge[4] = {kMaxPID, kMaxP, 100000., 2.};
   fHistos->CreateTHnSparse("hTRDcharge", "Total TRD charge; species; p [GeV/c]; TRD charge [a.u.]; selection step", 4, nBinsTRDcharge, minTRDcharge, maxTRDcharge);
+  fHistos->Sumw2("hTRDcharge");
 }
 
 //____________________________________________________________
@@ -162,8 +165,8 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
  
   Double_t container[4];
   container[0] = species;
-  container[1] = trdpid->GetP(track->GetRecTrack(), anatype);
-  container[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+  container[1] = trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0.;
+  container[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.;
   container[3] = step;
   fHistos->Fill("hTPCsigma", container);
 

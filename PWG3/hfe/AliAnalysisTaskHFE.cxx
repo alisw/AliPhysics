@@ -162,6 +162,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   DefineOutput(2, TList::Class());
 
   fPID = new AliHFEpid("hfePid");
+  fPIDqa = new AliHFEpidQAmanager;
   fVarManager = new AliHFEvarManager("hfeVarManager");
 }
 
@@ -333,7 +334,6 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fPID->InitializePID();
   if(IsQAOn(kPIDqa)){
     AliInfo("PID QA switched on");
-    fPIDqa = new AliHFEpidQAmanager;
     fPIDqa->Initialize(fPID);
     fQA->Add(fPIDqa->MakeList("HFEpidQA"));
   }
@@ -411,6 +411,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fOutput->Add(fTaggedTrackAnalysis->GetContainer());
     fQA->Add(fTaggedTrackAnalysis->GetPIDQA());
     fQA->Add(fTaggedTrackAnalysis->GetCutQA());
+    fQA->Add(fTaggedTrackAnalysis->GetQAcollection());
   }
   PrintStatus();
 }
@@ -452,12 +453,14 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   // need the centrality for everything (MC also)
   fCentralityF = 99.0;
   ReadCentrality();
+  //printf("fCentralityF %f\n",fCentralityF);
   
   // See if pile up and z in the range
   RejectionPileUpVertexRangeEventCut();
 
   // Protect agains missing 
   if(HasMCData()){
+    //printf("Has MC data\n");
     fSignalCuts->SetMCEvent(fMCEvent);
     ProcessMC();  // Run the MC loop + MC QA in case MC Data are available
   }
@@ -572,8 +575,9 @@ void AliAnalysisTaskHFE::ProcessMC(){
   Double_t eventContainer [3];
   eventContainer[0] = fMCEvent->GetPrimaryVertex()->GetZ();
   eventContainer[2] = fCentralityF;
-  if(fCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) 
-    fCFM->GetEventContainer()->Fill(eventContainer,AliHFEcuts::kEventStepGenerated);
+  //printf("z position is %f\n",eventContainer[0]);
+  //if(fCFM->CheckEventCuts(AliHFEcuts::kEventStepGenerated, fMCEvent)) 
+  fCFM->GetEventContainer()->Fill(eventContainer,AliHFEcuts::kEventStepGenerated);
   Int_t nElectrons = 0;
   if(IsESDanalysis()){
     if (HasMCData() && IsQAOn(kMCqa)) {
@@ -646,7 +650,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
   // Do event Normalization
   Double_t eventContainer[3];
-  eventContainer[0] = fInputEvent->GetPrimaryVertex()->GetZ();
+  eventContainer[0] = 0.0;
+  if(fESD->GetPrimaryVertexTracks()) eventContainer[0] = fESD->GetPrimaryVertexTracks()->GetZ();
   eventContainer[1] = 0.;
   eventContainer[2] = fCentralityF;
   if(fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0AND))
@@ -922,10 +927,11 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   // Function is still in development
   //
   AliDebug(3, "Processing AOD Event");
-  Double_t eventContainer[2];
+  Double_t eventContainer[3];
   eventContainer[0] = fInputEvent->GetPrimaryVertex()->GetZ();
   eventContainer[1] = 1.; // No Information available in AOD analysis, assume all events have V0AND
-
+  eventContainer[2] = fCentralityF; 
+  
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent *>(fInputEvent);
   if(!fAOD){
     AliError("AOD Event required for AOD Analysis")
@@ -1044,11 +1050,13 @@ Bool_t AliAnalysisTaskHFE::ProcessMCtrack(AliVParticle *track){
  Double_t vertex[3]; // Production vertex cut to mask gammas which are NOT supposed to have hits in the first ITS layer(s)
   if(IsESDanalysis()){
     AliMCParticle *mctrack = dynamic_cast<AliMCParticle *>(track);
-    vertex[0] = mctrack->Particle()->Vx();
-    vertex[1] = mctrack->Particle()->Vy();
+    if(mctrack){
+      vertex[0] = mctrack->Particle()->Vx();
+      vertex[1] = mctrack->Particle()->Vy();
+    }
   } else {
     AliAODMCParticle *aodmctrack = dynamic_cast<AliAODMCParticle *>(track);
-    aodmctrack->XvYvZv(vertex);
+    if(aodmctrack) aodmctrack->XvYvZv(vertex);
   }
 
   if(!fCFM->CheckParticleCuts(AliHFEcuts::kStepMCGenerated, track)) return kFALSE;
@@ -1154,9 +1162,11 @@ void AliAnalysisTaskHFE::MakeEventContainer(){
 
   Double_t *vertexBins = AliHFEtools::MakeLinearBinning(nBins[0], binMin[0], binMax[0]);
   Double_t *v0andBins = AliHFEtools::MakeLinearBinning(nBins[1], binMin[1], binMax[1]);
+  Double_t *centralityBins = AliHFEtools::MakeLinearBinning(nBins[2], binMin[2], binMax[2]);
   evCont->SetBinLimits(0, vertexBins);
   evCont->SetBinLimits(1, v0andBins);
-  delete[] vertexBins; delete[] v0andBins;
+  evCont->SetBinLimits(2, centralityBins);
+  delete[] vertexBins; delete[] v0andBins; delete[] centralityBins;
 
   fCFM->SetEventContainer(evCont);
 }
@@ -1280,13 +1290,18 @@ Bool_t AliAnalysisTaskHFE::FillProductionVertex(const AliVParticle * const track
  
   if(TString(mctrack->IsA()->GetName()).CompareTo("AliMCParticle") == 0){
     // case MCParticle
-    xv =  (dynamic_cast<const AliMCParticle *>(mctrack)->Xv());
-    yv =  (dynamic_cast<const AliMCParticle *>(mctrack)->Yv());
-       
+    const AliMCParticle *mcpart = dynamic_cast<const AliMCParticle *>(mctrack);
+    if(mcpart){
+      xv =  mcpart->Xv();
+      yv =  mcpart->Yv();
+    }
   } else {
     // case AODMCParticle
-    xv =  (dynamic_cast<const AliAODMCParticle *>(mctrack)->Xv());
-    yv =  (dynamic_cast<const AliAODMCParticle *>(mctrack)->Yv());
+    const AliAODMCParticle *mcpart = dynamic_cast<const AliAODMCParticle *>(mctrack);
+    if(mcpart){
+      xv =  mcpart->Xv();
+      yv =  mcpart->Yv();
+    }
   }
 
   //printf("xv %f, yv %f\n",xv,yv);
@@ -1344,7 +1359,7 @@ void AliAnalysisTaskHFE::ReadCentrality() {
    //AliAODCentrality *aodCentrality = fAOD->GetCentrality();
    //Double_t fCentralityF = aodCentrality->GetCentralityPercentile("V0M");
    fCentralityF = 99.0; // Fake for the moment
-   
+
    
  } else {
    
@@ -1354,6 +1369,10 @@ void AliAnalysisTaskHFE::ReadCentrality() {
      AliError("ESD Event required for ESD Analysis")
        return;
    }
+   const char* type = fESD->GetBeamType();
+
+   if (strstr(type,"Pb-Pb")) {
+   
    // Centrality
    AliCentrality *esdCentrality = fESD->GetCentrality();
    Float_t fCentralityF_temp = esdCentrality->GetCentralityPercentile("V0M");
@@ -1369,6 +1388,32 @@ void AliAnalysisTaskHFE::ReadCentrality() {
    else if ( fCentralityF_temp >= 70. && fCentralityF_temp <  80.) fCentralityF = 8;
    else if ( fCentralityF_temp >= 80. && fCentralityF_temp <  90.) fCentralityF = 9;
    else if ( fCentralityF_temp >= 90. && fCentralityF_temp <=100.) fCentralityF = 10;
+
+   }
+
+   
+   if (strstr(type,"p-p")) {
+     fCentralityF = 0;
+     Int_t centralityF_temp = 0;
+     const AliESDVertex *vtxESD = fESD->GetPrimaryVertexTracks();
+     if(vtxESD && vtxESD->GetStatus()) centralityF_temp = vtxESD->GetNContributors();
+     
+     //printf("centralityF_temp %d\n",centralityF_temp);
+     
+     if( centralityF_temp <=  0) fCentralityF =  0;
+     else if ( centralityF_temp >  0 && centralityF_temp <  2) fCentralityF = 1;
+     else if ( centralityF_temp >=  2 && centralityF_temp <  3) fCentralityF = 2;
+     else if ( centralityF_temp >= 3 && centralityF_temp <  4) fCentralityF = 3;
+     else if ( centralityF_temp >= 4 && centralityF_temp <  5) fCentralityF = 4;
+     else if ( centralityF_temp >= 5 && centralityF_temp <  10) fCentralityF = 5;
+     else if ( centralityF_temp >= 10 && centralityF_temp <  20) fCentralityF = 6;
+     else if ( centralityF_temp >= 20 && centralityF_temp <  30) fCentralityF = 7;
+     else if ( centralityF_temp >= 30 && centralityF_temp <  40) fCentralityF = 8;
+     else if ( centralityF_temp >= 40 && centralityF_temp <  50) fCentralityF = 9;
+     else if ( centralityF_temp >= 50) fCentralityF = 10;
+     
+
+   }
 
   //printf("centrality %f\n",fCentralityF);
 

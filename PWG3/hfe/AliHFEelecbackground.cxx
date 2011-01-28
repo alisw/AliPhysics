@@ -775,21 +775,21 @@ void AliHFEelecbackground::PairAnalysis(AliESDtrack* const track, AliESDtrack* c
     
     Double_t norradius = TMath::Sqrt(fkVertex->GetX()*fkVertex->GetX()+fkVertex->GetY()*fkVertex->GetY());
     
-    AliESDtrack *trackCopy = new AliESDtrack(*track);
-    AliESDtrack *trackPartCopy = new AliESDtrack(*trackPart);
+    AliESDtrack trackCopy = AliESDtrack(*track);
+    AliESDtrack trackPartCopy = AliESDtrack(*trackPart);
     Bool_t propagateok = kTRUE;
-    if((!(trackPartCopy->PropagateTo(norradius,fBz))) || (!(trackCopy->PropagateTo(norradius,fBz)))) propagateok = kFALSE;
+    if((!(trackPartCopy.PropagateTo(norradius,fBz))) || (!(trackCopy.PropagateTo(norradius,fBz)))) propagateok = kFALSE;
     if(!propagateok) {
-      if(trackCopy) delete trackCopy;
-      if(trackPartCopy) delete trackPartCopy;
+      //if(trackCopy) delete trackCopy;
+      //if(trackPartCopy) delete trackPartCopy;
       return;
     }  
   
-    CalculateMotherVariable(trackCopy,trackPartCopy,&results[0]);
-    CalculateMotherVariableR(trackCopy,trackPartCopy,&resultsr[0]);
+    CalculateMotherVariable(&trackCopy,&trackPartCopy,&results[0]);
+    CalculateMotherVariableR(&trackCopy,&trackPartCopy,&resultsr[0]);
     
-    if(trackCopy) delete trackCopy;
-    if(trackPartCopy) delete trackPartCopy;
+    //if(trackCopy) delete trackCopy;
+    //if(trackPartCopy) delete trackPartCopy;
     
   }
   else {

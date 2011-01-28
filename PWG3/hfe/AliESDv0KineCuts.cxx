@@ -43,11 +43,47 @@ AliESDv0KineCuts::AliESDv0KineCuts() :
   fV0(0x0)
   , fEvent(0x0)
   , fPrimaryVertex(0x0)
+  , fGcutChi2NDF(0)
+  , fGcutInvMass(0)
+  , fK0cutChi2NDF(0)
+  , fLcutChi2NDF(0)
 {
   //
   // Default constructor
   //
 
+  // default gamma cuts values
+  fGcutChi2NDF = 40;           // Chi2NF cut value for the AliKFparticle gamma
+  fGcutCosPoint[0] = 0;        // cos of the pointing angle [min, max]
+  fGcutCosPoint[1] = 0.02;     // cos of the pointing angle [min, max]
+  fGcutDCA[0] = 0.;            // DCA between the daughter tracks [min, max]
+  fGcutDCA[1] = 0.25;          // DCA between the daughter tracks [min, max]
+  fGcutVertexR[0] = 8.;        // radius of the conversion point [min, max]
+  fGcutVertexR[1] = 90.;       // radius of the conversion point [min, max]
+  fGcutPsiPair[0] = 0.;        // value of the psi pair cut [min, max]
+  fGcutPsiPair[1] = 0.05;      // value of the psi pair cut [min, max]
+  fGcutInvMass = 0.05;         // upper value on the gamma invariant mass
+
+  fK0cutChi2NDF = 40;          // Chi2NF cut value for the AliKFparticle K0
+  fK0cutCosPoint[0] = 0.;      // cos of the pointing angle [min, max]
+  fK0cutCosPoint[1] = 0.02;    // cos of the pointing angle [min, max]
+  fK0cutDCA[0] = 0.;           // DCA between the daughter tracks [min, max]
+  fK0cutDCA[1] = 0.2;          // DCA between the daughter tracks [min, max]
+  fK0cutVertexR[0] = 2.0;      // radius of the decay point [min, max]
+  fK0cutVertexR[1] = 30.0;     // radius of the decay point [min, max]
+  fK0cutInvMass[0] = 0.486;    // invariant mass window
+  fK0cutInvMass[1] = 0.508;    // invariant mass window
+  // Lambda & anti-Lambda cut values
+  fLcutChi2NDF = 40;           // Chi2NF cut value for the AliKFparticle K0
+  fLcutCosPoint[0] = 0.;       // cos of the pointing angle [min, max]
+  fLcutCosPoint[1] = 0.02;     // cos of the pointing angle [min, max]
+  fLcutDCA[0] = 0.;            // DCA between the daughter tracks [min, max]
+  fLcutDCA[1] = 0.2;           // DCA between the daughter tracks [min, max]
+  fLcutVertexR[0] = 2.0;       // radius of the decay point [min, max]
+  fLcutVertexR[1] = 40.0;      // radius of the decay point [min, max]
+  fLcutInvMass[0] = 1.11;      // invariant mass window
+  fLcutInvMass[1] = 1.12;      // invariant mass window
+  
 }
 //____________________________________________________________________
 AliESDv0KineCuts::~AliESDv0KineCuts(){
@@ -164,8 +200,8 @@ Int_t  AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
 
   // Gamma cuts
   const Double_t cutAlphaG = 0.35; 
-  const Double_t cutAlphaG2[2] = {0.6, 0.8};
   const Double_t cutQTG = 0.05;
+  const Double_t cutAlphaG2[2] = {0.6, 0.8};
   const Double_t cutQTG2 = 0.04;
 
   // K0 cuts
@@ -286,15 +322,6 @@ Bool_t  AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdg
 
   Float_t iMass = v0->GetEffMass(0, 0);
 
-  // Cut values
-  const Double_t cutMass = 0.05;               // old [0.05]  
-  const Double_t cutChi2NDF = 40.;             // old [7.]  
-  const Double_t cutCosPoint[2] = {0., 0.02};  // old [0., 0.03]
-  const Double_t cutDCA[2] = {0., 0.25};       // old [0., 0.25]
-  const Double_t cutProdVtxR[2] = {8., 90.};   // old [6., 9999]
-  const Double_t cutPsiPair[2] = {0., 0.05};   // old [0. 0.05]
-  const Double_t cutOAngle[2] = {0, 0.1};      // old [0., 0.1]
-
   // cos pointing angle
   Double_t cosPoint = v0->GetV0CosineOfPointingAngle();
   cosPoint = TMath::ACos(cosPoint);
@@ -313,9 +340,6 @@ Bool_t  AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdg
     r2 = TMath::Sqrt(xy[0]*xy[0] + xy[1]*xy[1]);
   }
 
-  // Opening angle
-  Double_t oAngle = OpenAngle(v0);
-
   // psi pair 
   Double_t psiPair = PsiPair(v0);
   
@@ -326,19 +350,17 @@ Bool_t  AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdg
   
   // apply the cuts
 
-  if(iMass > cutMass) return kFALSE;
+  if(iMass > fGcutInvMass) return kFALSE;
 
-  if(chi2ndf > cutChi2NDF) return kFALSE;
+  if(chi2ndf > fGcutChi2NDF) return kFALSE;
 
-  if(cosPoint < cutCosPoint[0] || cosPoint > cutCosPoint[1]) return kFALSE;
+  if(cosPoint < fGcutCosPoint[0] || cosPoint > fGcutCosPoint[1]) return kFALSE;
 
-  if(dca < cutDCA[0] || dca > cutDCA[1]) return kFALSE;
+  if(dca < fGcutDCA[0] || dca > fGcutDCA[1]) return kFALSE;
 
-  if(r < cutProdVtxR[0] || r > cutProdVtxR[1]) return kFALSE;
+  if(r < fGcutVertexR[0] || r > fGcutVertexR[1]) return kFALSE;
 
-  if(psiPair < cutPsiPair[0] || psiPair > cutPsiPair[1]) return kFALSE;
-
-  if(oAngle < cutOAngle[0] || oAngle > cutOAngle[1]) return kFALSE;
+  if(psiPair < fGcutPsiPair[0] || psiPair > fGcutPsiPair[1]) return kFALSE;
   
   // all cuts passed
 
@@ -387,12 +409,6 @@ Bool_t  AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, 
 
   Float_t iMass = v0->GetEffMass(2, 2);
 
-  const Double_t cutMass[2] = {0.486, 0.508};   // ORG [0.485, 0.51]
-  const Double_t cutChi2NDF = 40.;              // ORG [7.]
-  const Double_t cutCosPoint[2] = {0., 0.02};  // ORG [0., 0.03]
-  const Double_t cutDCA[2] = {0., 0.2};        // ORG [0., 0.1]
-  const Double_t cutProdVtxR[2] = {2.0, 30.};   // ORG [0., 8.1]
-  
   // cos pointing angle
   Double_t cosPoint = v0->GetV0CosineOfPointingAngle();
   cosPoint = TMath::ACos(cosPoint);
@@ -414,15 +430,15 @@ Bool_t  AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, 
   //
   // apply the cuts
   //
-  if(iMass < cutMass[0] || iMass > cutMass[1]) return kFALSE;
+  if(iMass < fK0cutInvMass[0] || iMass > fK0cutInvMass[1]) return kFALSE;
 
-  if(chi2ndf > cutChi2NDF) return kFALSE;
+  if(chi2ndf > fK0cutChi2NDF) return kFALSE;
 
-  if(cosPoint < cutCosPoint[0] || cosPoint > cutCosPoint[1]) return kFALSE;
+  if(cosPoint < fK0cutCosPoint[0] || cosPoint > fK0cutCosPoint[1]) return kFALSE;
 
-  if(dca < cutDCA[0] || dca > cutDCA[1]) return kFALSE;
+  if(dca < fK0cutDCA[0] || dca > fK0cutDCA[1]) return kFALSE;
 
-  if(r < cutProdVtxR[0] || r > cutProdVtxR[1]) return kFALSE;
+  if(r < fK0cutVertexR[0] || r > fK0cutVertexR[1]) return kFALSE;
 
   // all cuts passed
   pdgV0 = 310;
@@ -514,13 +530,6 @@ Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pd
     iMass = (type == 0) ? v0->GetEffMass(2, 4) : v0->GetEffMass(4, 2);
   }
 
-  // Cuts
-  const Double_t cutMass[2] = {1.11, 1.12};   // ORG [1.11, 1.12]
-  const Double_t cutChi2NDF = 40.;              // ORG [5.]
-  const Double_t cutCosPoint[2] = {0., 0.02};  // ORG [0., 0.03]
-  const Double_t cutDCA[2] = {0., 0.2};        // ORG [0., 0.2]
-  const Double_t cutProdVtxR[2] = {2., 40.};   // ORG [0., 24.]
- 
   // cos pointing angle
   Double_t cosPoint = v0->GetV0CosineOfPointingAngle();
   cosPoint = TMath::ACos(cosPoint);
@@ -550,15 +559,15 @@ Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pd
   // apply the cuts
   //
 
-  if(iMass < cutMass[0] || iMass > cutMass[1]) return kFALSE;
+  if(iMass < fLcutInvMass[0] || iMass > fLcutInvMass[1]) return kFALSE;
 
-  if(chi2ndf > cutChi2NDF) return kFALSE;
+  if(chi2ndf > fLcutChi2NDF) return kFALSE;
 
-  if(cosPoint < cutCosPoint[0] || cosPoint > cutCosPoint[1]) return kFALSE;
+  if(cosPoint < fLcutCosPoint[0] || cosPoint > fLcutCosPoint[1]) return kFALSE;
 
-  if(dca < cutDCA[0] || dca > cutDCA[1]) return kFALSE;
+  if(dca < fLcutDCA[0] || dca > fLcutDCA[1]) return kFALSE;
 
-  if(r < cutProdVtxR[0] || r > cutProdVtxR[1]) return kFALSE;
+  if(r < fLcutVertexR[0] || r > fLcutVertexR[1]) return kFALSE;
 
   // all cuts passed
 
@@ -695,23 +704,6 @@ void   AliESDv0KineCuts::SetEvent(AliVEvent* const event){
   }
   
   SetEvent(dynamic_cast<AliESDEvent*>(event));
-}
-//________________________________________________________________
-Double_t AliESDv0KineCuts::OpenAngle(AliESDv0 *v0) const {
-  //
-  // Opening angle between two daughter tracks
-  //
-  Double_t mn[3] = {0,0,0};
-  Double_t mp[3] = {0,0,0};
-    
-  
-  v0->GetNPxPyPz(mn[0],mn[1],mn[2]);//reconstructed cartesian momentum components of negative daughter;
-  v0->GetPPxPyPz(mp[0],mp[1],mp[2]);//reconstructed cartesian momentum components of positive daughter;
-
-  
-  Double_t openAngle = TMath::ACos((mp[0]*mn[0] + mp[1]*mn[1] + mp[2]*mn[2])/(TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1] + mp[2]*mp[2])*TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1] + mn[2]*mn[2])));
-  
-  return TMath::Abs(openAngle);
 }
 //________________________________________________________________
 Double_t AliESDv0KineCuts::PsiPair(AliESDv0* const v0) {

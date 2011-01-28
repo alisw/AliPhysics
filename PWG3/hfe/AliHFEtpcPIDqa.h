@@ -28,6 +28,7 @@
 #include "AliHFEpidBase.h"
 #endif
 
+class TBrowser;
 class TH2;
 class AliHFEcollection;
 class AliVParticle;
@@ -41,6 +42,8 @@ class AliHFEtpcPIDqa : public AliHFEdetPIDqa{
     ~AliHFEtpcPIDqa();
     void Copy(TObject &o) const;
     virtual Long64_t Merge(TCollection *col);
+    virtual void Browse(TBrowser *b);
+    virtual Bool_t IsFolder() const { return kTRUE; };
   
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);

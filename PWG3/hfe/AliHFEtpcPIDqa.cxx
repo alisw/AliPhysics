@@ -26,6 +26,7 @@
 // Author:
 //    Markus Fasel <M.Fasel@gsi.de>
 //
+#include <TBrowser.h>
 #include <TClass.h>
 #include <TH2.h>
 #include <THnSparse.h>
@@ -133,6 +134,41 @@ Long64_t AliHFEtpcPIDqa::Merge(TCollection *coll){
 }
 
 //_________________________________________________________
+void AliHFEtpcPIDqa::Browse(TBrowser *b){
+  //
+  // Browse the PID QA
+  //
+  if(b){
+    if(fHistos){
+      b->Add(fHistos, fHistos->GetName());
+
+      // Make Projections of the dE/dx Spectra and add them to a new Folder
+      TString specnames[4] = {"All", "Electrons", "Pions", "Protons"};
+      Int_t specind[4] = {-1, AliPID::kElectron, AliPID::kPion, AliPID::kProton};
+      TList *listdEdx = new TList;
+      listdEdx->SetOwner();
+      TList *listNsigma = new TList;
+      listNsigma->SetOwner();
+
+      TH2 *hptr = NULL; 
+      for(Int_t ispec = 0; ispec < 4; ispec++){
+        for(Int_t istep = 0; istep < 2; istep++){
+          hptr = MakeSpectrumdEdx(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTPCdEdx%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listdEdx->Add(hptr);
+          hptr = MakeSpectrumNSigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTPCnsigma%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listNsigma->Add(hptr);
+        }
+      }
+      
+      b->Add(listdEdx, "Projections dE/dx");
+      b->Add(listNsigma, "Projections NSigma");
+    }
+  }
+}
+
+//_________________________________________________________
 void AliHFEtpcPIDqa::Initialize(){
   //
   // Define Histograms
@@ -143,22 +179,23 @@ void AliHFEtpcPIDqa::Initialize(){
   // Make common binning
   const Int_t kNdim = 5;
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
-  const Int_t kPbins = 100;
   const Int_t kSteps = 2;
   const Int_t kCentralityBins = 11;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
   const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
   const Double_t kMaxP = 20.;
-  
+  // Quantities where one can switch between low and high resolution
+  Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
+  Int_t kDedxbins = fQAmanager->HasHighResolutionHistos() ? 400 : 200;
+  Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
+ 
   // 1st histogram: TPC dEdx: (species, p, dEdx, step)
-  const Int_t kDedxbins = 200;
   Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins};
   Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0.};
   Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11.}; 
   fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Centrality; Selection Step", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
-  const Int_t kSigmaBins = 240;
   Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
   Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0.};
   Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 100.};
@@ -181,14 +218,14 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   Double_t contentSignal[5];
   contentSignal[0] = species;
-  contentSignal[1] = tpcpid->GetP(track->GetRecTrack(), anatype);
+  contentSignal[1] = tpcpid ? tpcpid->GetP(track->GetRecTrack(), anatype) : 0.;
   contentSignal[2] = GetTPCsignal(track->GetRecTrack(), anatype);
   contentSignal[3] = step;
   contentSignal[4] = centrality;
-  (dynamic_cast<THnSparseF *>(fHistos->Get("tpcDedx")))->Fill(contentSignal);
+  fHistos->Fill("tpcDedx", contentSignal);
 
-  contentSignal[2] = tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype); 
-  (dynamic_cast<THnSparseF *>(fHistos->Get("tpcnSigma")))->Fill(contentSignal);
+  contentSignal[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.; 
+  fHistos->Fill("tpcnSigma", contentSignal);
 }
 
 //_________________________________________________________
@@ -213,21 +250,19 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumdEdx(AliHFEdetPIDqa::EStep_t istep, Int_t speci
   // Plot the Spectrum
   //
   THnSparseF *hSignal = dynamic_cast<THnSparseF *>(fHistos->Get("tpcDedx"));
+  if(!hSignal) return NULL;
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
-  if(species > 0 && species < AliPID::kSPECIES)
+  if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
   TH2 *hTmp = hSignal->Projection(2,1);
-  Char_t hname[256], htitle[256];
-  sprintf(hname, "hTPCsignal%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
-  sprintf(htitle, "TPC dE/dx Spectrum %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
+  TString hname = Form("hTPCsignal%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
+          htitle = Form("TPC dE/dx Spectrum %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
-    strncat(hname, AliPID::ParticleName(species), strlen(AliPID::ParticleName(species)));
-     Char_t speciesname[256];
-     sprintf(speciesname, " for %ss", AliPID::ParticleName(species));
-     strncat(htitle, speciesname, strlen(speciesname));
+    hname += AliPID::ParticleName(species);
+    htitle += Form(" for %ss", AliPID::ParticleName(species));
   }
-  hTmp->SetName(hname);
-  hTmp->SetTitle(htitle);
+  hTmp->SetName(hname.Data());
+  hTmp->SetTitle(htitle.Data());
   hTmp->SetStats(kFALSE);
   hTmp->GetXaxis()->SetTitle("p [GeV/c]");
   hTmp->GetYaxis()->SetTitle("TPC signal [a.u.]");
@@ -242,21 +277,19 @@ TH2 *AliHFEtpcPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   // Plot the Spectrum
   //
   THnSparseF *hSignal = dynamic_cast<THnSparseF *>(fHistos->Get("tpcnSigma"));
+  if(!hSignal) return NULL;
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
   if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
   TH2 *hTmp = hSignal->Projection(2,1);
-  Char_t hname[256], htitle[256];
-  sprintf(hname, "hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
-  sprintf(htitle, "TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
+  TString hname = Form("hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
+          htitle = Form("TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
-    strncat(hname, AliPID::ParticleName(species), strlen(AliPID::ParticleName(species)));
-     Char_t speciesname[256];
-     sprintf(speciesname, " for %ss", AliPID::ParticleName(species));
-     strncat(htitle, speciesname, strlen(speciesname));
+    hname += AliPID::ParticleName(species);
+    htitle += Form(" for %ss", AliPID::ParticleName(species));
   }
-  hTmp->SetName(hname);
-  hTmp->SetTitle(htitle);
+  hTmp->SetName(hname.Data());
+  hTmp->SetTitle(htitle.Data());
   hTmp->SetStats(kFALSE);
   hTmp->GetXaxis()->SetTitle("p [GeV/c]");
   hTmp->GetYaxis()->SetTitle("TPC dE/dx - <dE/dx>|_{el} [#sigma]");

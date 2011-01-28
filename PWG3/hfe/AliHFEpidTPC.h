@@ -51,6 +51,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     void AddTPCdEdxLineCrossing(Int_t species, Double_t sigma);
     Bool_t HasAsymmetricSigmaCut() const { return TestBit(kAsymmetricSigmaCut);}
     Bool_t HasParticleRejection() const { return TestBit(kRejection); }
+    void SetElectronMeanCorrection(TF1 *electronLineCorrection) { fElectronMeanCorrection = electronLineCorrection; }
     void SetTPCnSigma(Short_t nSigma) { fNsigmaTPC = nSigma; };
     inline void SetAsymmetricTPCsigmaCut(Float_t pmin, Float_t pmax, Float_t sigmaMin, Float_t sigmaMax);
     inline void SetRejectParticle(Int_t species, Float_t pmin, Float_t sigmaMin, Float_t pmax, Float_t sigmaMax);
@@ -76,6 +77,7 @@ class AliHFEpidTPC : public AliHFEpidBase{
     UChar_t fLineCrossingsEnabled;                          // Bitmap showing which line crossing is set
     TF1 *fUpperSigmaCut;                                    // Upper Sigma Cut
     TF1 *fLowerSigmaCut;                                    // Lower Sigma Cut
+    TF1 *fElectronMeanCorrection;                           // Correct the mean of the electron line position as function  of the momentum
     Float_t fPAsigCut[2];                                   // Momentum region where to perform asymmetric sigma cut
     Float_t fNAsigmaTPC[2];                                 // Asymmetric TPC Sigma band        
     Short_t fNsigmaTPC;                                     // TPC sigma band
