@@ -212,7 +212,7 @@ void AliGenAfterBurnerFlow::SetFlowParameters(Int_t pdg, Int_t order, Int_t type
   // private function
   // 
 
-  if(TMath::Abs(pdg)>fgkPDG){
+  if(TMath::Abs(pdg)>=fgkPDG){
     Error("AliAfterBurnerFlow","Overflow");
     return;
   }
@@ -369,7 +369,7 @@ Float_t AliGenAfterBurnerFlow::GetNpNorm(Int_t npart)
 
 Bool_t AliGenAfterBurnerFlow::IsPrimary(Int_t pdg)
 {
-  if(pdg>fgkPDG) return kFALSE;
+  if(pdg>=fgkPDG) return kFALSE;
   return fIsPrim[pdg];
 }
 
@@ -566,7 +566,7 @@ void AliGenAfterBurnerFlow::Generate()
       //exclude incoming protons in PYTHIA     
       if(particle->GetPdgCode()==21) continue;
 
-      if(TMath::Abs(pdg)>fgkPDG) continue; 
+      if(TMath::Abs(pdg)>=fgkPDG) continue; 
       // is particle primary?
       if(!fIsPrim[TMath::Abs(pdg)]) continue; 
 
