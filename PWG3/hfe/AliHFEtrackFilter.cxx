@@ -191,7 +191,7 @@ void AliHFEtrackFilter::InitCF(){
     AliHFEcutStep *cutStep = NULL;
     for(Int_t istep = 0; istep < fCutSteps->GetEntriesFast(); istep++){
       cutStep = dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(istep)); 
-      ctmp->SetStepTitle(istep + 1, cutStep->GetName());
+      if(cutStep) ctmp->SetStepTitle(istep + 1, cutStep->GetName());
     }
     fEfficiencyContainers->AddAt(ctmp, 0);
   }
@@ -222,7 +222,7 @@ void AliHFEtrackFilter::InitCF(AliHFEcontainer *cont){
     AliHFEcutStep *cutStep = NULL;
     for(Int_t istep = 0; istep < fCutSteps->GetEntriesFast(); istep++){
       cutStep = dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(istep)); 
-      ctmp->SetStepTitle(istep + 1, cutStep->GetName());
+      if(cutStep) ctmp->SetStepTitle(istep + 1, cutStep->GetName());
     }
   }
   ReleaseContainers();
@@ -485,8 +485,9 @@ void AliHFEtrackFilter::SetMC(AliMCEvent * const mc){
   //
   fMC = mc;
   fMCsignal->SetMC(fMC);
+  AliHFEcutStep *cs = NULL;
   for(Int_t icut = 0; icut < fCutSteps->GetEntriesFast(); icut++)
-    (dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(icut)))->SetMC(fMC);
+    if((cs = dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(icut)))) cs->SetMC(fMC);
 }
 
 //__________________________________________________________________
@@ -494,8 +495,9 @@ void AliHFEtrackFilter::SetRecEvent(AliVEvent *rec){
   //
   // Publish MC event to the single cut steps
   //
+  AliHFEcutStep *cs = NULL;
   for(Int_t icut = 0; icut < fCutSteps->GetEntriesFast(); icut++)
-    (dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(icut)))->SetRecEvent(rec);
+    if((cs = dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(icut)))) cs->SetRecEvent(rec);
 }
 
 

@@ -70,6 +70,7 @@ class AliHFEspectrum : public TNamed{
     void SetStepToCorrect(Int_t step) { fStepData = step; };
     void SetStepBeforeCutsV0(Int_t step) { fStepBeforeCutsV0 = step; };
     void SetStepAfterCutsV0(Int_t step) { fStepAfterCutsV0 = step; };
+    void SetNbDimensions(Int_t nbDimensions) { fNbDimensions = nbDimensions; };
 
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
     void SetNumberOfIteration(Int_t numberOfIteration) { fNumberOfIterations = numberOfIteration; };

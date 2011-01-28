@@ -55,31 +55,36 @@ class AliHFEpidTRD : public AliHFEpidBase{
     AliHFEpidTRD(const AliHFEpidTRD &ref);
     AliHFEpidTRD& operator=(const AliHFEpidTRD &ref);
     virtual ~AliHFEpidTRD();
-    
+
     virtual Bool_t InitializePID();
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
-    Double_t GetTRDSignalV1(const AliESDtrack *track) const;
-    Double_t GetTRDSignalV2(const AliESDtrack *track) const;
+    Double_t GetTRDSignalV1(const AliESDtrack *track, Float_t truncation = 0.7) const;
+    Double_t GetTRDSignalV2(const AliESDtrack *track, Float_t trucation = 0.7) const;
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
+    void SetThresholdParameters(Double_t electronEff, Double_t *params);
     void SetMinP(Double_t p) { fMinP = p; }
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
     Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
+    void     GetTRDmomenta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType, Double_t *mom) const;
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     Double_t GetTRDthresholds(Double_t electronEff, Double_t p) const;
     Double_t GetChargeLayer(const AliVParticle *track, UInt_t layer, AliHFEpidObject::AnalysisType_t anatype) const;
   protected:
     enum{
-      kTRDsignals = BIT(16)
+      kTRDsignals = BIT(16),
+      kTRDdefaultThresholds = BIT(17)
     };
     void Copy(TObject &ref) const;
     void InitParameters();
     void InitParameters1DLQ();
     void GetParameters(Double_t electronEff, Double_t *parameters) const;
+    void SetUseDefaultParameters(Bool_t useDefault = kTRUE) { SetBit(kTRDdefaultThresholds, useDefault); }
+    Bool_t UseDefaultParameters() const { return TestBit(kTRDdefaultThresholds); }
 
   private:
     static const Double_t fgkVerySmall;                       // Check for 0

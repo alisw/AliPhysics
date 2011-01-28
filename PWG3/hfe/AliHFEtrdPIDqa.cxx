@@ -22,6 +22,7 @@
 //   Markus Fasel <M.Fasel@gsi.de>
 //
 #include <TAxis.h>
+#include <TBrowser.h>
 #include <TClass.h>
 #include <TCanvas.h>
 #include <TF1.h>
@@ -73,10 +74,7 @@ const Double_t AliHFEtrdPIDqa::fgkMaxBinCommon[kQuantitiesCommon] = {
 AliHFEtrdPIDqa::AliHFEtrdPIDqa():
   TNamed("trdPIDqa", ""),
   fTRDpid(NULL),
-  fLikeTRD(NULL),
-  fQAtrack(NULL),
-  fQAdEdx(NULL),
-  fTRDtruncMean(NULL),
+  fHistos(NULL),
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
@@ -91,10 +89,7 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa():
 AliHFEtrdPIDqa::AliHFEtrdPIDqa(const Char_t *name):
   TNamed(name, ""),
   fTRDpid(NULL),
-  fLikeTRD(NULL),
-  fQAtrack(NULL),
-  fQAdEdx(NULL),
-  fTRDtruncMean(NULL),
+  fHistos(NULL),
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
@@ -109,10 +104,7 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa(const Char_t *name):
 AliHFEtrdPIDqa::AliHFEtrdPIDqa(const AliHFEtrdPIDqa &ref):
   TNamed(ref),
   fTRDpid(NULL),
-  fLikeTRD(NULL),
-  fQAtrack(NULL),
-  fQAdEdx(NULL),
-  fTRDtruncMean(NULL),
+  fHistos(NULL),
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
@@ -140,11 +132,7 @@ AliHFEtrdPIDqa::~AliHFEtrdPIDqa(){
   // Destructor
   //
   if(fTRDpid) delete fTRDpid;
-  if(fLikeTRD) delete fLikeTRD;
-  if(fQAtrack) delete fQAtrack;
-  if(fQAdEdx) delete fQAdEdx;
-  if(fTRDtruncMean) delete fTRDtruncMean;
-  
+  if(fHistos) delete fHistos;
   if(fPionEfficiencies) delete fPionEfficiencies;
   if(fProtonEfficiencies) delete fProtonEfficiencies;
   if(fKaonEfficiencies) delete fKaonEfficiencies;
@@ -159,10 +147,7 @@ void AliHFEtrdPIDqa::Copy(TObject &ref) const{
 
   AliHFEtrdPIDqa &target = dynamic_cast<AliHFEtrdPIDqa &>(ref);
   target.fTRDpid = fTRDpid;
-  target.fLikeTRD = dynamic_cast<THnSparseF *>(fLikeTRD->Clone());
-  target.fQAtrack = dynamic_cast<THnSparseF *>(fQAtrack->Clone());
-  target.fQAdEdx = dynamic_cast<THnSparseF *>(fQAdEdx->Clone());
-  target.fTRDtruncMean = dynamic_cast<THnSparseF *>(fTRDtruncMean->Clone());
+  target.fHistos = dynamic_cast<AliHFEcollection *>(fHistos->Clone());
 }
 
 //__________________________________________________________________
@@ -173,21 +158,35 @@ Long64_t AliHFEtrdPIDqa::Merge(TCollection *coll){
   if(!coll) return 0;
   if(coll->IsEmpty()) return 1;
   
-  TIterator *it = coll->MakeIterator();
+  AliHFEtrdPIDqa *refQA = NULL;
+  TIter it(coll);
   TObject *o = NULL;
   Long64_t count = 0;
-  while((o = it->Next())){
-    AliHFEtrdPIDqa *refQA = dynamic_cast<AliHFEtrdPIDqa *>(o);
+  TList listHistos;
+  while((o = it())){
+    refQA = dynamic_cast<AliHFEtrdPIDqa *>(o);
     if(!refQA) continue;
 
-    if(fLikeTRD) fLikeTRD->Add(refQA->fLikeTRD);
-    if(fQAtrack) fQAtrack->Add(refQA->fQAtrack);
-    if(fQAdEdx) fQAdEdx->Add(refQA->fQAdEdx);
-    if(fTRDtruncMean) fTRDtruncMean->Add(refQA->fTRDtruncMean);
-    count++;
+    listHistos.Add(refQA->fHistos);
+    count++; 
   }
-  delete it;
+  fHistos->Merge(&listHistos);
   return count+1;
+}
+
+//__________________________________________________________________
+void AliHFEtrdPIDqa::Browse(TBrowser *b){
+  //
+  // Enable Browser functionality
+  //
+  if(b){
+    // Add objects to the browser
+    if(fHistos) b->Add(fHistos, fHistos->GetName());
+    if(fPionEfficiencies) b->Add(fPionEfficiencies, "Pion Efficiencies");
+    if(fProtonEfficiencies) b->Add(fProtonEfficiencies, "Proton Efficiencies");  
+    if(fKaonEfficiencies) b->Add(fKaonEfficiencies, "Kaon Efficiencies");
+    if(fThresholds) b->Add(fThresholds, "Thresholds");
+  }
 }
 
 //__________________________________________________________________
@@ -195,6 +194,8 @@ void AliHFEtrdPIDqa::Init(){
   //
   // Initialize Object
   //
+  
+  fHistos = new AliHFEcollection("TRDqa", "Histos for TRD QA");
 
   CreateLikelihoodHistogram();
   CreateQAHistogram();
@@ -216,10 +217,8 @@ void AliHFEtrdPIDqa::CreateLikelihoodHistogram(){
   binMin[kElectronLike] = 0.;      
   binMax[kElectronLike] = 1.;
 
-  fLikeTRD = new THnSparseF("fLikeTRD","TRD Likelihood Studies", kQuantitiesLike, nbins, binMin, binMax);
-  Double_t *binLog = AliHFEtools::MakeLogarithmicBinning(nbins[kP], binMin[kP], binMax[kP]);
-  fLikeTRD->GetAxis(kP)->Set(nbins[kP], binLog);
-  delete[] binLog;
+  fHistos->CreateTHnSparse("fLikeTRD","TRD Likelihood Studies", kQuantitiesLike, nbins, binMin, binMax);
+  fHistos->BinLogAxis("fLikeTRD", kP);
 }
 
 //__________________________________________________________________
@@ -238,10 +237,8 @@ void AliHFEtrdPIDqa::CreateQAHistogram(){
   binMax[kNonZeroTrackletCharge] = AliESDtrack::kTRDnPlanes + 1.;
   binMax[kNClusters] = 200.;
 
-  fQAtrack = new THnSparseF("fQAtrack","TRD QA Histogram", kQuantitiesQA, nbins, binMin, binMax);
-  Double_t *binLog = AliHFEtools::MakeLogarithmicBinning(nbins[kP], binMin[kP], binMax[kP]);
-  fQAtrack->GetAxis(kP)->Set(nbins[kP], binLog);
-  delete[] binLog;
+  fHistos->CreateTHnSparse("fQAtrack","TRD QA Histogram", kQuantitiesQA, nbins, binMin, binMax);
+  fHistos->BinLogAxis("fQAtrack", kP);
 }
 
 //__________________________________________________________________
@@ -263,10 +260,9 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
   binMax[kNclusters] = 260.;
   binMax[kNonZeroSlices] = 8.;
 
-  fQAdEdx = new THnSparseF("fQAdEdx","TRD summed dEdx", kQuantitiesdEdx, nbins, binMin, binMax);
-  Double_t *binLog = AliHFEtools::MakeLogarithmicBinning(nbins[kP], binMin[kP], binMax[kP]);
-  fQAdEdx->GetAxis(kP)->Set(nbins[kP], binLog);
-  delete[] binLog;
+  fHistos->CreateTHnSparse("fQAdEdx","TRD summed dEdx", kQuantitiesdEdx, nbins, binMin, binMax);
+  fHistos->BinLogAxis("fQAdEdx", kP);
+  fHistos->Sumw2("fQAdEdx");
 }
 
 //__________________________________________________________________
@@ -288,10 +284,10 @@ void AliHFEtrdPIDqa::CreateHistoTruncatedMean(){
   binMax[kTRDdEdxMethod1] = 20000.;
   binMax[kTRDdEdxMethod2] = 20000.;
 
-  fTRDtruncMean = new THnSparseF("fTRDtruncMean","TRD TruncatedMean studies", kQuantitiesTruncMean, nbins, binMin, binMax);
-  Double_t *binLog = AliHFEtools::MakeLogarithmicBinning(nbins[kP], binMin[kP], binMax[kP]);
-  fTRDtruncMean->GetAxis(kP)->Set(nbins[kP], binLog);
-  delete[] binLog;
+  fHistos->CreateTHnSparse("fTRDtruncMean","TRD TruncatedMean studies", kQuantitiesTruncMean, nbins, binMin, binMax);
+  fHistos->BinLogAxis("fTRDtruncMean", kP);
+  fHistos->CreateTH2F("fTRDslicesPions","TRD dEdx per slice for Pions", 8, 0, 8, 500, 0, 2000);
+  fHistos->CreateTH2F("fTRDslicesElectrons","TRD dEdx per slice for Electrons", 8, 0, 8, 500, 0, 2000);
 }
 
 
@@ -326,6 +322,7 @@ void AliHFEtrdPIDqa::ProcessTrackESD(AliESDtrack *track, Int_t species){
   //
   // Process single ESD track
   //
+  if(!track) return;
   if((track->GetStatus() & AliESDtrack::kTRDout) == 0) return;  // require TRD track
   FillTRDLikelihoods(track, species);
   FillTRDQAplots(track, species);
@@ -337,6 +334,7 @@ void AliHFEtrdPIDqa::ProcessTrackAOD(AliAODTrack * const track, Int_t /*species*
   // Process single AOD track
   // AOD PID object required
   //
+  if(!track) return;
   AliAODPid *trackPID = track->GetDetPid();
   if(!trackPID) return;
 
@@ -362,7 +360,7 @@ void AliHFEtrdPIDqa::FillTRDLikelihoods(AliESDtrack *track, Int_t species){
   quantities[kNTracklets] = track->GetTRDntrackletsPID();
   quantities[kElectronLike] = trdLike[AliPID::kElectron];
 
-  fLikeTRD->Fill(quantities);
+  fHistos->Fill("fLikeTRD", quantities);
 }
 
 //__________________________________________________________________
@@ -393,8 +391,7 @@ void AliHFEtrdPIDqa::FillTRDQAplots(AliESDtrack *track, Int_t species){
   quantitiesQA[kSpecies]  = quantitiesdEdx[kSpecies] 
                           = quantitiesTruncMean[kSpecies] 
                           = species;
-  quantitiesQA[kP]  = quantitiesdEdx[kP] 
-                    = quantitiesTruncMean[kP]
+  quantitiesQA[kP]  = quantitiesTruncMean[kP]
                     = outerPars ? outerPars->P() : track->P();
   quantitiesQA[kNTracklets] = quantitiesdEdx[kNTracklets] 
                             = quantitiesTruncMean[kNTracklets]
@@ -404,8 +401,18 @@ void AliHFEtrdPIDqa::FillTRDQAplots(AliESDtrack *track, Int_t species){
 
   Double_t dEdxSum = 0., qSlice = 0.;
   // remove the last slice from the histogram
-  Int_t ntrackletsNonZero = 0, nSlices = track->GetNumberOfTRDslices() - 1, nSlicesNonZero = 0;
+  Int_t ntrackletsNonZero = 0, nSlices = track->GetNumberOfTRDslices(), nSlicesNonZero = 0;
+  TString speciesname = "pions";
+  Bool_t selectedForSlicemon = kFALSE;
+  
+  switch(species){
+    case AliPID::kElectron: speciesname = "Electrons"; selectedForSlicemon = kTRUE; break;
+    case AliPID::kPion: speciesname = "Pions"; selectedForSlicemon = kTRUE; break;
+    default: speciesname = "undefined"; selectedForSlicemon = kFALSE; break;
+  };
+  AliDebug(1, Form("species %d, speciesname %s, momentum %f, selected %s", species, speciesname.Data(), track->P(), selectedForSlicemon ? "yes" : "no"));
   for(Int_t iplane = 0; iplane < AliESDtrack::kTRDnPlanes; iplane++){
+    quantitiesdEdx[kP] = track->GetTRDmomentum(iplane);
     dEdxSum = 0.;
     for(Int_t islice = 0; islice < nSlices; islice++){
       qSlice = track->GetTRDslice(iplane, islice);
@@ -413,21 +420,27 @@ void AliHFEtrdPIDqa::FillTRDQAplots(AliESDtrack *track, Int_t species){
         // cut out 0 slices
         nSlicesNonZero++;
         dEdxSum += qSlice;
+        // Reweighting of the slices for the truncated mean: select all pion tracks above
+        // 1.5 GeV and monitor the dEdx as function of slice
+        if(selectedForSlicemon && track->P() > 1.5){
+          AliDebug(2, Form("Filling Histogram fTRDslices%s", speciesname.Data()));
+          fHistos->Fill(Form("fTRDslices%s", speciesname.Data()), static_cast<Double_t>(islice), qSlice);
+        }
       }
     }
     quantitiesdEdx[kNonZeroSlices] = nSlicesNonZero;
     quantitiesdEdx[kdEdx] = dEdxSum;
     if(dEdxSum) ntrackletsNonZero++;
     // Fill dEdx histogram
-    if(dEdxSum > 1e-1) fQAdEdx->Fill(quantitiesdEdx); // Cut out 0 entries
+    if(dEdxSum > 1e-1) fHistos->Fill("fQAdEdx", quantitiesdEdx); // Cut out 0 entries
   }
   quantitiesQA[kNonZeroTrackletCharge] = ntrackletsNonZero;
-  fQAtrack->Fill(quantitiesQA);
+  fHistos->Fill("fQAtrack", quantitiesQA);
 
   quantitiesTruncMean[kTPCdEdx] = track->GetTPCsignal();
-  quantitiesTruncMean[kTRDdEdxMethod1] = fTRDpid->GetTRDSignalV1(track);
-  quantitiesTruncMean[kTRDdEdxMethod2] = fTRDpid->GetTRDSignalV2(track);
-  fTRDtruncMean->Fill(quantitiesTruncMean);
+  quantitiesTruncMean[kTRDdEdxMethod1] = fTRDpid->GetTRDSignalV1(track, 0.6);
+  quantitiesTruncMean[kTRDdEdxMethod2] = fTRDpid->GetTRDSignalV2(track, 0.6);
+  fHistos->Fill("fTRDtruncMean", quantitiesTruncMean);
 }
 
 /////////////////////////////////////////////////////////
@@ -523,8 +536,10 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
       printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
 
       threshhist = dynamic_cast<TGraph *>(lHistos->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
+      if(!threshhist) continue;
       threshparam = MakeThresholds(threshhist);
       threshparam->SetName(Form("thresh_%d_%d", itracklet, static_cast<Int_t>(fgkElectronEff[ieff] * 100)));
+      lFormulas->Add(threshparam);
     }
   }
 
@@ -543,28 +558,33 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
   // elPion Efficiency, Proton Efficiency and Kaon Efficiency at discrete
   // electron efficiencies
   //
-  Int_t binTracklets = fLikeTRD->GetAxis(kNTracklets)->FindBin(nTracklets);
-  fLikeTRD->GetAxis(kNTracklets)->SetRange(binTracklets, binTracklets);
+  THnSparse *hLikeTRD = dynamic_cast<THnSparseF *>(fHistos->Get("fLikeTRD"));
+  if(!hLikeTRD){
+    AliError("Likelihood Histogram not available");
+    return;
+  }
+  Int_t binTracklets = hLikeTRD->GetAxis(kNTracklets)->FindBin(nTracklets);
+  hLikeTRD->GetAxis(kNTracklets)->SetRange(binTracklets, binTracklets);
   
-  Int_t binElectrons = fLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kElectron); 
+  Int_t binElectrons = hLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kElectron); 
   AliDebug(1, Form("BinElectrons %d", binElectrons));
-  Int_t binPions = fLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kPion);
+  Int_t binPions = hLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kPion);
   AliDebug(1, Form("BinPions %d", binPions));
-  Int_t binProtons =  fLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kProton);
+  Int_t binProtons =  hLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kProton);
   AliDebug(1, Form("BinProtons %d", binProtons));
-  fLikeTRD->GetAxis(kSpecies)->SetRange(binElectrons, binElectrons);
-  TH2 *likeElectron = fLikeTRD->Projection(kElectronLike, kP);
+  hLikeTRD->GetAxis(kSpecies)->SetRange(binElectrons, binElectrons);
+  TH2 *likeElectron = hLikeTRD->Projection(kElectronLike, kP);
   likeElectron->SetName("likeElectron");
-  fLikeTRD->GetAxis(kSpecies)->SetRange(binPions, binPions);
-  TH2 *likePion = fLikeTRD->Projection(kElectronLike, kP);
+  hLikeTRD->GetAxis(kSpecies)->SetRange(binPions, binPions);
+  TH2 *likePion = hLikeTRD->Projection(kElectronLike, kP);
   likePion->SetName("likePion");
-  fLikeTRD->GetAxis(kSpecies)->SetRange(binProtons, binProtons);
-  TH2 *likeProton = fLikeTRD->Projection(kElectronLike, kP);
+  hLikeTRD->GetAxis(kSpecies)->SetRange(binProtons, binProtons);
+  TH2 *likeProton = hLikeTRD->Projection(kElectronLike, kP);
   likeProton->SetName("likeProton");
   
   // Undo ranges
-  fLikeTRD->GetAxis(kSpecies)->SetRange(0, fLikeTRD->GetAxis(kSpecies)->GetNbins());
-  fLikeTRD->GetAxis(kNTracklets)->SetRange(0, fLikeTRD->GetAxis(kNTracklets)->GetNbins());
+  hLikeTRD->GetAxis(kSpecies)->SetRange(0, hLikeTRD->GetAxis(kSpecies)->GetNbins());
+  hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kNTracklets)->GetNbins());
 
   // Prepare List for output
   TList *listPions = new TList; listPions->SetName(Form("%dTracklets", nTracklets));
@@ -673,7 +693,7 @@ Bool_t AliHFEtrdPIDqa::CalculateEfficiency(TH1 * const input, Int_t threshbin, D
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
+void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Bool_t doFit){
   //
   // Draw efficiencies and threshold as function of p
   //
@@ -686,12 +706,17 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
   TList *lprotons = dynamic_cast<TList *>(fProtonEfficiencies->FindObject(Form("%dTracklets", itracklet))); 
   
   TList *lthresholds = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", itracklet))); 
+  if(!(lpions && lprotons && lthresholds)){
+    AliDebug(1, "Relevant lists not found. Did you forget to run FinishAnalysis()?");
+    return;
+  }
 
   TGraphErrors *pi, *pr;
   TGraph *tr;
   TLegend *leg;
   TCanvas *c1 = new TCanvas(Form("tracklet%d", itracklet), Form("Tracklet %d", itracklet), 1024, 768);
   c1->Divide(3,2);
+  TF1 *threshfit = NULL;
   for(Int_t ieff = 0; ieff < kNElectronEffs; ieff++){
     c1->cd(ieff + 1);
     leg = new TLegend(0.6, 0.7, 0.89, 0.89);
@@ -700,6 +725,7 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
     pi = dynamic_cast<TGraphErrors *>(lpions->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
     pr = dynamic_cast<TGraphErrors *>(lprotons->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
     tr = dynamic_cast<TGraph *>(lthresholds->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
+    if(!(pi && pr && tr)) continue;
 
     // Define nice plot, draw
     // Axis Title
@@ -727,6 +753,13 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet){
     // Draw
     pi->Draw("ape"); pr->Draw("pesame"); tr->Draw("psame");
 
+    // Optionally do Fit
+    if(doFit){
+      threshfit = MakeThresholds(tr);
+      threshfit->SetLineColor(kBlack);
+      threshfit->Draw("same");
+    }
+
     // Add entries to legend
     leg->AddEntry(pi, "Pion Efficiency", "lp");
     leg->AddEntry(pr, "Proton Efficiency", "lp");
@@ -743,7 +776,7 @@ TF1 *AliHFEtrdPIDqa::MakeThresholds(TGraph *threshist){
   //
 
   TF1 *threshparam = new TF1("thresh", "1-[0]-[1]*x-[2]*TMath::Exp(-[3]*x)", 0.1, 10);
-  threshist->Fit(threshparam, "NE", "", 0, 10);
+  threshist->Fit(threshparam, "NE", "", 0.1, 3.5);
   return threshparam;
 }
 

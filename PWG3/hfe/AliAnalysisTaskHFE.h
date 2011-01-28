@@ -40,7 +40,6 @@ class AliVEvent;
 class AliMCEvent;
 class AliVParticle;
 class AliTriggerAnalysis;
-class AliESDtrack;
 class TH1I; 
 class TList;
 
@@ -85,6 +84,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
 
     // Get Components for configuration
     AliHFEvarManager *GetVarManager() const { return fVarManager; }
+    AliHFEpidQAmanager *GetPIDQAManager() const { return fPIDqa; }
     AliHFEpid *GetPID() const { return fPID; }
 
     void SetHFECuts(AliHFEcuts * const cuts) { fCuts = cuts; };
@@ -137,7 +137,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliCFManager *fCFM;                   //! Correction Framework Manager
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliHFEpid *fPID;                      // PID
-    AliHFEpidQAmanager *fPIDqa;           //! PID QA
+    AliHFEpidQAmanager *fPIDqa;           // PID QA
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks

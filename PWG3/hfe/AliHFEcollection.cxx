@@ -47,19 +47,6 @@ AliHFEcollection::AliHFEcollection():
   //
   // default constructor
   //
-
-  fList = new THashList();
-  fList->SetOwner();
-  if(!fList){
-    AliError("Initialization of the list failed");
-  }
-  else{
-    // list is owner of the objects. Once list is deleted, the objects
-    // it contains will be deleted too
-    //fList->SetOwner(kTRUE);
-  }
-  //Printf("%s:%d,%p",(char*)__FILE__,__LINE__,fInstance);
-  
 }
 //___________________________________________________________________
 AliHFEcollection::AliHFEcollection(const char* name, const char* title):
@@ -72,15 +59,9 @@ AliHFEcollection::AliHFEcollection(const char* name, const char* title):
   //
  
   fList = new THashList();
-  fList->SetOwner();
-  fList->SetName(Form("list_%s", name));
-  if(!fList){
-    AliError("Initialization of the list failed");
-  }
-  else{
-    // list is owner of the objects. Once list is deleted, the objects
-    // it contains will be deleted too
-    // fList->SetOwner(kTRUE);
+  if(fList){
+    fList->SetOwner();
+    fList->SetName(Form("list_%s", name));
   }
 }
 //___________________________________________________________________
@@ -397,7 +378,8 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2){
     return kTRUE;
   }  
   if(fList->FindObject(name)->InheritsFrom("TProfile")){
-    (dynamic_cast<TProfile*>(fList->FindObject(name)))->Fill(v1, v2);
+    TProfile *pr = dynamic_cast<TProfile*>(fList->FindObject(name));
+    if(pr) pr->Fill(v1, v2);
     return kTRUE;
   }  
   
@@ -532,18 +514,17 @@ Long64_t AliHFEcollection::Merge(TCollection *list){
   if(list->IsEmpty())
     return 1;
   
-  TIterator *iter = list->MakeIterator();
+  TIter it(list);
   TObject *o = NULL;
   Int_t index = 0;
-  while((o = iter->Next())){
+  TList templist;       // Create temporary list containing all the lists to merge
+  while((o = it())){
     AliHFEcollection *coll = dynamic_cast<AliHFEcollection *>(o);
     if(!coll) continue; 
-    TList templist;       // Create temporary list containing all the lists to merge
     templist.Add(coll->fList);
-    fList->Merge(&templist);
     index++;
   }
-  delete iter;
+  fList->Merge(&templist);
   return index + 1;
 }
 //____________________________________________________________________

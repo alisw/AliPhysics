@@ -34,7 +34,6 @@ class AliAODTrack;
 class AliMCEvent;
 
 class AliHFEpid;
-class TH2F;
 
 
 //________________________________________________________________

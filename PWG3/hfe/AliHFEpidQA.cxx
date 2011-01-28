@@ -406,9 +406,11 @@ void AliHFEpidQA::FillIllumination(const TObjArray * const tracks, Int_t species
     if(!TString(o->IsA()->GetName()).CompareTo("AliESDtrack")){
       // work on local copy in order to not spoil others
       esdtrack = new AliESDtrack(*(dynamic_cast<AliESDtrack *>(o)));
+      if(!esdtrack) continue;
     } else if(!TString(o->IsA()->GetName()).CompareTo("AliAODrack")){
       // Bad hack: Fill ESD track with AOD information
       esdtrack = new AliESDtrack(dynamic_cast<AliAODTrack *>(o));
+      if(!esdtrack) continue;
     } else {
       // Non usable
       continue;
@@ -499,10 +501,12 @@ void AliHFEpidQA::MakePurity(const TObjArray *tracks, Int_t species){
     if(!TString(mcTrack->IsA()->GetName()).CompareTo("AliMCParticle")){
       // case ESD
       AliMCParticle *mcp = dynamic_cast<AliMCParticle *>(mcTrack);
+      if(!mcp) continue;
       trackPdg = TMath::Abs(mcp->Particle()->GetPdgCode());
     } else {
       // case AOD
       AliAODMCParticle *aodmcp = dynamic_cast<AliAODMCParticle *>(mcTrack);
+      if(!aodmcp) continue;
       trackPdg = TMath::Abs(aodmcp->GetPdgCode());
     }
     if(trackPdg == pdg)    // Correct identification
@@ -558,6 +562,7 @@ void AliHFEpidQA::FillElectronLikelihoods(const TObjArray * const particles, Int
     if(!TString(recTrack->IsA()->GetName()).CompareTo("AliESDtrack")){
       // case ESD
       AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(recTrack);
+      if(!esdTrack) continue;
       status = esdTrack->GetStatus();
 
       //TPC momentum and likelihoods
@@ -629,14 +634,14 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
   // 8) TRD Ntrk, 9) TRD Ncls, 10) TRD dEdx, 
 
   Double_t data[12];
-  memset(data, -99, sizeof(Double_t) *12);
+ 
 
   Int_t run = fEvent->GetRunNumber();
     
   AliVParticle *recTrack = NULL;
   TIter trackIter(particles); 
   while((recTrack = dynamic_cast<AliVParticle *>(trackIter()))){
-    memset(data, -99, sizeof(Double_t) *10);
+    for(Int_t i=0; i<12; ++i) data[i] = -99.;
     // ESD
     if(!TString(recTrack->IsA()->GetName()).CompareTo("AliESDtrack")){
       // case ESD
@@ -834,7 +839,7 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
       //
       if(status & AliESDtrack::kTOFpid){
 	Double_t p = esdTrack->GetOuterParam() ? esdTrack->GetOuterParam()->P() : esdTrack->P();
-	Double_t t0 = fESDpid->GetTOFResponse().GetTimeZero();
+	Double_t t0 = fESDpid->GetTOFResponse().GetStartTime(esdTrack->P());
 
 	//TOF beta
 	sprintf(hname, "hTOF_beta_%s", typeName[species]);
@@ -1032,7 +1037,9 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
   if((esd = dynamic_cast<AliESDEvent *>(fEvent))){
     AliESDtrack *track = NULL, *partnerTrack = NULL;
     while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
+      if(!hfetrack) continue;
       track = dynamic_cast<AliESDtrack *>(hfetrack->GetTrack());
+      if(!track) continue;
       partnerTrack = esd->GetTrack(hfetrack->GetPartnerID());
       Double_t nSigmaTrack = TMath::Abs(fESDpid->NumberOfSigmasTPC(track, AliPID::kElectron) - shift);
       Double_t nSigmaPartner = TMath::Abs(fESDpid->NumberOfSigmasTPC(partnerTrack, AliPID::kElectron) - shift);
@@ -1041,10 +1048,12 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
     }
   } else {
     aod = dynamic_cast<AliAODEvent *>(fEvent);
-    AliAODTrack *track = NULL, *partnerTrack = NULL;
+    if(!aod) return NULL;
+    //AliAODTrack *track = NULL, *partnerTrack = NULL;
     while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
-      track = dynamic_cast<AliAODTrack *>(hfetrack->GetTrack());
-      partnerTrack = aod->GetTrack(hfetrack->GetPartnerID());
+      if(!hfetrack) continue;
+      //track = dynamic_cast<AliAODTrack *>(hfetrack->GetTrack());
+      //partnerTrack = aod->GetTrack(hfetrack->GetPartnerID());
       // will be coming soon
     }
   }
@@ -1127,6 +1136,7 @@ Double_t AliHFEpidQA::TRDlikeTracklet(Int_t layer, AliESDtrack * const track, Do
   if(p < 0) return kFALSE;
 
   Int_t mombin = TRDmomBin(p);  // momentum bin
+  if(mombin < 0) return -1.;
   Float_t dEdxTRDsum = 0;              // dEdxTRDsum for checking if tracklet is available
   Float_t dEdxTRD[8];           // dEdx for a tracklet in the ESD slices
   Double_t ddEdxTRD[8];         // dEdx as Double_t for TMultiLayerPerceptron::Evaluate()

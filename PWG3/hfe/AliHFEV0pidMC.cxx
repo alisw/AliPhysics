@@ -105,6 +105,7 @@ Bool_t  AliHFEV0pidMC::Process(TObjArray * const particles, Int_t type){
     fColl->Fill("h_QA_nParticles", 0);
     // only ESD for now
     AliESDtrack *track = dynamic_cast<AliESDtrack *>(recTrack);
+    if(!track) continue;
     const AliExternalTrackParam *ext = track->GetOuterParam();
     if(!ext) continue;
     // MC label
