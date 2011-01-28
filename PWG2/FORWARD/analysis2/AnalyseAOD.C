@@ -62,6 +62,10 @@ public:
   TH2D*              fPrimary;
   /** Sum primary information */
   TH2D*              fSumPrimary;
+  /** Central region */
+  TH2D*              fCentral;
+  /** Central region */
+  TH2D*              fSumCentral;
   /** Vertex efficiency */
   Double_t           fVtxEff;
   /** Title to put on the plot */
@@ -96,6 +100,8 @@ public:
       fMCSum(0),
       fPrimary(0), 
       fSumPrimary(0),
+      fCentral(0),
+      fSumCentral(0),
       fVtxEff(0),
       fTitle(""),
       fDoHHD(kTRUE)
@@ -118,11 +124,16 @@ public:
     if (fSum)        delete fSum;
     if (fMCSum)      delete fMCSum;
     if (fSumPrimary) delete fSumPrimary;
+    if (fCentral)    delete fCentral;
+    if (fSumCentral) delete fSumCentral;
     fTree       = 0;
     fOut        = 0;
     fSum        = 0;
     fMCSum      = 0;
+    fPrimary    = 0;
     fSumPrimary = 0;
+    fCentral    = 0;
+    fSumCentral = 0;
     fVtxEff     = 0;
     
   }
@@ -282,6 +293,10 @@ public:
     // Set the branch pointer 
     if (fTree->GetBranch("primary"))
       fTree->SetBranchAddress("primary", &fPrimary);
+    
+    // Set branch pointer 
+    if (fTree->GetBranch("Central")) 
+      fTree->SetBranchAddress("Central", &fCentral);
 
     fOut = TFile::Open(outname, "RECREATE");
     if (!fOut) { 
@@ -391,12 +406,23 @@ public:
 	fSumPrimary = 
 	  static_cast<TH2D*>(fPrimary->Clone("primarySum"));
 	Info("Process", "Created MC truth histogram (%d,%f,%f)x(%d,%f,%f)", 
-	     fMCSum->GetNbinsX(), 
-	     fMCSum->GetXaxis()->GetXmin(),
-	     fMCSum->GetXaxis()->GetXmax(),
-	     fMCSum->GetNbinsY(), 
-	     fMCSum->GetYaxis()->GetXmin(),
-	     fMCSum->GetYaxis()->GetXmax());
+	     fSumPrimary->GetNbinsX(), 
+	     fSumPrimary->GetXaxis()->GetXmin(),
+	     fSumPrimary->GetXaxis()->GetXmax(),
+	     fSumPrimary->GetNbinsY(), 
+	     fSumPrimary->GetYaxis()->GetXmin(),
+	     fSumPrimary->GetYaxis()->GetXmax());
+      }
+      if (!fSumCentral && fTree->GetBranch("Central")) { 
+	fSumCentral = 
+	  static_cast<TH2D*>(fCentral->Clone("centralSum"));
+	Info("Process", "Created Cental histogram (%d,%f,%f)x(%d,%f,%f)", 
+	     fSumCentral->GetNbinsX(), 
+	     fSumCentral->GetXaxis()->GetXmin(),
+	     fSumCentral->GetXaxis()->GetXmax(),
+	     fSumCentral->GetNbinsY(), 
+	     fSumCentral->GetYaxis()->GetXmin(),
+	     fSumCentral->GetYaxis()->GetXmax());
       }
       
       // Add contribution from this event 
@@ -423,7 +449,8 @@ public:
       // Add contribution from this event
       if (fMCSum) fMCSum->Add(&(fMCAOD->GetHistogram()));
 
-      
+      // Add contribution from this event
+      if (fSumCentral) fSumCentral->Add(fCentral);      
     }
     printf("\n");
     fVtxEff = Double_t(fNWithVertex)/fNTriggered;
@@ -497,15 +524,33 @@ public:
       dndetaTruth->SetFillStyle(0);
       Rebin(dndetaTruth, rebin);
     }
+    TH1D* dndetaCentral = 0;
+    if (fSumCentral) { 
+      dndetaCentral = fSumCentral->ProjectionX("dndetaCentral", -1, -1, "e");
+      dndetaCentral->SetTitle("ALICE Central");
+      dndetaCentral->Scale(1./fNTriggered, "width");
+      dndetaCentral->SetMarkerColor(kGray+3);
+      dndetaCentral->SetMarkerStyle(22);
+      dndetaCentral->SetMarkerSize(1);
+      dndetaCentral->SetFillStyle(0);
+      Rebin(dndetaCentral, rebin <= 1 ? 1 : 2*(rebin/2));
+      // 1 -> 1
+      // 2 -> 2*2/2 -> 2*1 -> 2
+      // 3 -> 2*3/2 -> 2*1 -> 2
+      // 4 -> 2*4/2 -> 2*2 -> 4
+      // 5 -> 2*5/2 -> 2*2 -> 4
+      // 6 -> 2*6/2 -> 2*3 -> 6
+    }
 
-    DrawIt(dndeta, dndetaMC, dndetaTruth, mask, energy, doHHD, doComp);
+    DrawIt(dndeta, dndetaMC, dndetaTruth, dndetaCentral, 
+	   mask, energy, doHHD, doComp);
 
     return kTRUE;
   }
   //__________________________________________________________________
   /** 
    */
-  void DrawIt(TH1* dndeta, TH1* dndetaMC, TH1* dndetaTruth, 
+  void DrawIt(TH1* dndeta, TH1* dndetaMC, TH1* dndetaTruth, TH1* dndetaCentral,
 	      Int_t mask, Int_t energy, Bool_t doHHD, 
 	      Bool_t doComp)
   {
@@ -562,6 +607,13 @@ public:
     // Add the analysis results to the list 
     stack->Add(dndetaSym);
     stack->Add(dndeta);
+
+    // If we have central region data, add that 
+    if (dndetaCentral) { 
+      stack->Add(dndetaCentral);
+      max = TMath::Max(dndetaCentral->GetMaximum(),max);
+    }
+
 
     // Get graph of 'other' data - e.g., UA5, CMS, ... - and check if
     // there's any graphs.  Set the pad division based on that.
