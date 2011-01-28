@@ -643,7 +643,7 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
   // count clusters
   // loop over the SPD subdetectors
   int nclLayer = 0;
-  int detMin = AliITSgeomTGeo::GetModuleIndex(il+1,1,1);
+  int detMin = TMath::Max(0,AliITSgeomTGeo::GetModuleIndex(il+1,1,1));
   int detMax = AliITSgeomTGeo::GetModuleIndex(il+2,1,1);
   for (int idt=detMin;idt<detMax;idt++) {
     if (!fCreateClustersCopy) itsClusters = rpcont->UncheckedGetClusters(idt);
@@ -656,7 +656,8 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
       if (!cluster) continue;
       if (fCreateClustersCopy) 	cluster = new ((*fClArr[il])[nclLayer]) AliITSRecPoint(*cluster);
       clArr.AddAtAndExpand(cluster,nclLayer++);
-      nClustersInChip[ fSPDSeg.GetChipFromLocal(0,cluster->GetDetLocalZ()) ]++; 
+      Int_t chipNo = fSPDSeg.GetChipFromLocal(0,cluster->GetDetLocalZ());
+      if(chipNo>=0)nClustersInChip[ chipNo ]++; 
     }
     for(Int_t ifChip=5;ifChip--;) if (nClustersInChip[ifChip]) fNFiredChips[il]++;
   }
@@ -711,7 +712,8 @@ void AliITSMultReconstructor::LoadClusterFiredChips(TTree* itsClusterTree) {
   fNFiredChips[1] = 0;
   
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  TClonesArray* itsClusters=rpcont->FetchClusters(0,itsClusterTree);
+  TClonesArray* itsClusters=NULL;
+  rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){
     AliWarning("No SPD rec points found, multiplicity not calculated");
     return;
