@@ -177,7 +177,8 @@ Int_t AliIonPDGCodes::PDGFromId(Int_t id) const
   // Return PDG code and pseudo ENDF code from Geant3 code
   //
   const Int_t kOffset=10000000;
-  if(id>0 && id<fNIon) return fPDGCode[id+kOffset];
+  id -= kOffset;
+  if(id >= 0 && id < fNIon) return fPDGCode[id];
   else return -1;
 }
 
