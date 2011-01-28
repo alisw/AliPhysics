@@ -16,6 +16,7 @@
  * - GRID output directory with respect to the working one, where the output files of the task are located (you have to create it yourself in advance)
  * - run in full mode, i.e. completely on the GRID with all the chunks of the run processed
  * - specify the analysis task you want to run
+ * - specify the path where the task is located, by default it takes $ALICE_ROOT/HLT/QA/tasks
  * - specify whether you are interested only in HLT triggered events
  *
  * @ingroup alihlt_qa
