@@ -114,7 +114,12 @@ class AliHLTEsdManager : public AliHLTLogging {
    * Create an AliESDEvent object.
    * The standard content can optionally be initialized.
    */
-  virtual AliESDEvent* CreateEsdEvent(bool bCreateStdContent=false) const = 0;
+  virtual TObject* CreateEsdEvent(bool bCreateStdContent=false) const = 0;
+
+  /**
+   * Delete instance of AliESDEvent
+   */
+  virtual int DestroyEsdEvent(TObject* pESDInstance) const=0;
 
   /**
    * Add object to ESD event.
@@ -122,7 +127,7 @@ class AliHLTEsdManager : public AliHLTLogging {
    * Note: some of the objects have (branch-)names which differ from the object name
    * However, parameter branchname is never used when adding an object not yet existing.
    */
-  virtual int AddObject(AliESDEvent* pESD, const TObject* pObject, const char* branchname) const = 0;
+  virtual int AddObject(TObject* pESDInstance, const TObject* pObject, const char* branchname) const = 0;
 
   /**
    * Reset the specified object.
@@ -130,7 +135,7 @@ class AliHLTEsdManager : public AliHLTLogging {
    * The actual implementation is outside the HLT base library in a
    * child class.
    */
-  virtual int ResetEsdEvent(AliESDEvent* pESD) const = 0;
+  virtual int ResetEsdEvent(TObject* pESDInstance) const = 0;
 
  protected:
   /** constructor */
