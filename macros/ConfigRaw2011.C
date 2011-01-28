@@ -87,7 +87,7 @@ static UInt_t seed    = dt.Get();
 // Comment line
 static TString comment;
 
-void ConfigRAW2011()
+void Config()
 {
     
 
