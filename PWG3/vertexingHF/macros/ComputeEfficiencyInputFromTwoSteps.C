@@ -24,7 +24,7 @@ TH1 * MultiplyHistos(TH1 *h1, TH1 *h2) {
   // Get the bins & limits
   Double_t *limits = new Double_t[nbins1+1];
   Double_t xlow=0., binwidth=0.;
-  for (Int_t i=0; i<=nbins1; i++) {
+  for (Int_t i=1; i<=nbins1; i++) {
     binwidth = h1->GetBinWidth(i);
     xlow = h1->GetBinLowEdge(i);
     limits[i-1] = xlow;
@@ -34,7 +34,7 @@ TH1 * MultiplyHistos(TH1 *h1, TH1 *h2) {
   TH1D *hMultiply = new TH1D("hMultiply","hMultiply",nbins1,limits);
 
   Double_t value=0., err=0.;
-  for (Int_t ibin=0; ibin<nbins1; ibin++) {
+  for (Int_t ibin=1; ibin<=nbins1; ibin++) {
     value = h1->GetBinContent(ibin) * h2->GetBinContent(ibin);
     err = value * TMath::Sqrt(  (h1->GetBinError(ibin)/h1->GetBinContent(ibin)) * (h1->GetBinError(ibin)/h1->GetBinContent(ibin))  +
 				(h2->GetBinError(ibin)/h2->GetBinContent(ibin)) * (h2->GetBinError(ibin)/h2->GetBinContent(ibin))   );
