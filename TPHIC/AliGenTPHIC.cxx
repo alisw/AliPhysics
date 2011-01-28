@@ -362,20 +362,20 @@ void AliGenTPHIC::SetProcess       (Int_t   proc  )
 {
   // Get 4-momentum of the first recoil nucleus after
   // the 2-photon process.
-  return TLorentzVector(fTPHICgen->GetPTAG1(1),
+  return TLorentzVector(fTPHICgen->GetPTAG1(0),
+			fTPHICgen->GetPTAG1(1),
 			fTPHICgen->GetPTAG1(2),
-			fTPHICgen->GetPTAG1(3),
-			fTPHICgen->GetPTAG1(4));
+			fTPHICgen->GetPTAG1(3));
 }
 //____________________________________________________________
   TLorentzVector AliGenTPHIC::MomentumRecNucl2()
 {
   // Get 4-momentum of the first recoil nucleus after
   // the 2-photon process.
-  return TLorentzVector(fTPHICgen->GetPTAG2(1),
+  return TLorentzVector(fTPHICgen->GetPTAG2(0),
+			fTPHICgen->GetPTAG2(1),
 			fTPHICgen->GetPTAG2(2),
-			fTPHICgen->GetPTAG2(3),
-			fTPHICgen->GetPTAG2(4));
+			fTPHICgen->GetPTAG2(3));
 }
 //____________________________________________________________
   Float_t AliGenTPHIC::GetXSectionCurrent()
