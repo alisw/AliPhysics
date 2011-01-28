@@ -264,7 +264,7 @@ void AliGenHaloProtvino::Generate()
       }
 // Count tracks      
       nread++;
-      if (fNpart !=-1 && nread > fNpart) break;
+      if (fNpart !=-1 && nread >= fNpart) break;
   }
 //
 // Mean time between interactions
