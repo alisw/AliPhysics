@@ -46,7 +46,10 @@ class AliITSresponseSDD : public TObject {
   virtual void SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetModuleTimeZero(Int_t modIndex, Float_t tzero){
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods) AliError(Form("SDD module number %d out of range",modIndex));
+    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return;
+    }
     fTimeZero[modIndex-kNSPDmods]=tzero;
   }
 
@@ -79,7 +82,10 @@ class AliITSresponseSDD : public TObject {
   virtual void SetADC2keV(Float_t conv){fADC2keV=conv;}
   virtual Float_t GetADC2keV()const {return fADC2keV;}
   virtual void SetADCtokeV(Int_t modIndex, Float_t conv){
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods) AliError(Form("SDD module number %d out of range",modIndex));
+    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return;
+    }
     fADCtokeV[modIndex-kNSPDmods]=conv;
   }
   virtual Float_t GetADCtokeV(Int_t modIndex) const {
