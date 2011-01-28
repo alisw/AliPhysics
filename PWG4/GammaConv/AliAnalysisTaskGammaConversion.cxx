@@ -2366,6 +2366,9 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 		      gamma1MotherLabel=fV0Reader->GetMotherMCParticle()->GetFirstMother();
 		    }
 		  }
+		  if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==111){
+                     gamma1MotherLabel=-111;
+                  }
 		}
 	      }
 	      Int_t indexKF2 = fKFReconstructedGammasV0Index.at(secondGammaIndex);
@@ -2385,7 +2388,10 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 			gamma2MotherLabel=fV0Reader->GetMotherMCParticle()->GetFirstMother();
 		      }
 		    }
-		  }
+		    if(fV0Reader->GetMotherMCParticle()->GetPdgCode() ==111){
+                      gamma2MotherLabel=-111;
+                    }
+ 		  }
 		}
 		if(gamma1MotherLabel>=0 && gamma1MotherLabel==gamma2MotherLabel){
 		  if(fV0Reader->CheckIfPi0IsMother(gamma1MotherLabel)){
