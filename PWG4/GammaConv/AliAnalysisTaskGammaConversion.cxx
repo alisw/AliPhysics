@@ -529,6 +529,19 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
   }
   */
+  Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
+  Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
+  Bool_t v0AND = v0A && v0C;
+
+  if(fSelectV0AND && !v0AND){
+    eventQuality=5;
+    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    if(fDoMCTruth){
+      CheckMesonProcessTypeEventQuality(eventQuality);
+    }
+
+    return;
+  }
 
   if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
     //    cout<< "Event not taken"<< endl;
@@ -556,19 +569,6 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     return;
   }
 
-  Bool_t v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
-  Bool_t v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
-  Bool_t v0AND = v0A && v0C;
-
-  if(fSelectV0AND && !v0AND){
-    eventQuality=5;
-    fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-    if(fDoMCTruth){
-      CheckMesonProcessTypeEventQuality(eventQuality);
-    }
-
-    return;
-  }
   fMultiplicity = fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
 
   if( CalculateMultiplicityBin() != fUseMultiplicityBin){
