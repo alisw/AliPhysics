@@ -25,7 +25,9 @@
 #include "AliHLTOUT.h"
 #include "AliHLTMessage.h"
 #include "AliHLTErrorGuard.h"
-#include "AliESDEvent.h"
+#include "AliHLTEsdManager.h"
+#include "AliHLTComponent.h" // DataType2Text
+#include "AliHLTMisc.h"
 #include "TString.h"
 #include "TObjString.h"
 #include "TObjArray.h"
@@ -41,6 +43,7 @@ AliHLTOUTHandlerEsdBranch::AliHLTOUTHandlerEsdBranch(const char* branchname)
   , fESD(NULL)
   , fpData(NULL)
   , fSize(0)
+  , fManager(NULL)
 { 
   // see header file for class documentation
   // or
@@ -52,6 +55,12 @@ AliHLTOUTHandlerEsdBranch::AliHLTOUTHandlerEsdBranch(const char* branchname)
 AliHLTOUTHandlerEsdBranch::~AliHLTOUTHandlerEsdBranch()
 {
   // see header file for class documentation
+  if (fESD) fManager->DestroyEsdEvent(fESD);
+  fESD=NULL;
+  if (fpData) delete fpData;
+  fpData=NULL;
+  if (fManager) AliHLTEsdManager::Delete(fManager);
+  fManager=NULL;
 }
 
 int AliHLTOUTHandlerEsdBranch::ProcessData(AliHLTOUT* pData)
@@ -65,13 +74,27 @@ int AliHLTOUTHandlerEsdBranch::ProcessData(AliHLTOUT* pData)
     return -EPERM;
   }
 
+  if (!fManager) {
+    fManager=AliHLTMisc::LoadInstance((AliHLTEsdManager*)NULL, "AliHLTEsdManagerImplementation", "libHLTrec.so");
+  }
+
+  if (!fManager) {
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t spec=kAliHLTVoidDataSpec;
+    if (pData->SelectFirstDataBlock()>=0) {
+      pData->GetDataBlockDescription(dt, spec);
+      ALIHLTERRORGUARD(1, "failed to create AliHLTEsdManagerImplementation object, skipping handling of HLTOUT data %s 0x%80x", AliHLTComponent::DataType2Text(dt).c_str(), spec);
+    }  
+    return -ENOSYS;
+  }
+
   if (!fESD) {
     // create the ESD container, but without std content
-    fESD = new AliESDEvent;
+    fESD = fManager->CreateEsdEvent();
   }
   if (!fpData) fpData=new TArrayC;
   if (fESD && fpData) {
-    fESD->Reset();
+    fManager->ResetEsdEvent(fESD);
     iResult=ExtractAndAddObjects(pData);
   }
 
@@ -101,6 +124,7 @@ int AliHLTOUTHandlerEsdBranch::ExtractAndAddObjects(AliHLTOUT* pData)
   // A specific child class is required if multiple blocks should be
   // treated.
 
+  if (!fESD || !fManager) return -ENOSYS;
   int iResult=0;
   iResult=pData->SelectFirstDataBlock(); 
   if (iResult<0) return iResult;
@@ -116,7 +140,7 @@ int AliHLTOUTHandlerEsdBranch::ExtractAndAddObjects(AliHLTOUT* pData)
       }
     }
     if (!bname.IsNull()) {
-      iResult=Add(pObject, bname.Data());
+      iResult=fManager->AddObject(fESD, pObject, bname.Data());
     } else {
       iResult=-EBADF;
     }
@@ -135,22 +159,6 @@ int AliHLTOUTHandlerEsdBranch::ExtractAndAddObjects(AliHLTOUT* pData)
   }
 
   return iResult;
-}
-
-int AliHLTOUTHandlerEsdBranch::Add(TObject* object, const char* branchname)
-{
-  // add object to the specified branch in the internal ESD
-  if (fESD && object) {
-    TObject* pESDObject=fESD->FindListObject(branchname);
-    if (pESDObject) {
-      // copy the content to the already existing object
-      object->Copy(*pESDObject);
-    } else {
-      // add a new object
-      fESD->AddObject(object->Clone());
-    }
-  }
-  return 0;
 }
 
 int AliHLTOUTHandlerEsdBranch::GetProcessedData(const AliHLTUInt8_t* &pData)

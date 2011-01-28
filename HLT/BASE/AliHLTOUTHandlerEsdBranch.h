@@ -16,7 +16,8 @@
 #include "TString.h"
 
 class TArrayC;
-class AliESDEvent;
+class TObject;
+class AliHLTEsdManager;
 
 /**
  * @class AliHLTOUTHandlerEsdBranch
@@ -104,13 +105,6 @@ class AliHLTOUTHandlerEsdBranch : public AliHLTOUTHandler {
    */
   virtual int ExtractAndAddObjects(AliHLTOUT* pData);
 
-  /**
-   * Add object to internal ESD.
-   * If there is an object with 'branchname' the object is copied, otherwise
-   * added.
-   */
-  virtual int Add(TObject* object, const char* branchname);
-
  private:
   /** copy constructor prohibited */
   AliHLTOUTHandlerEsdBranch(const AliHLTOUTHandlerEsdBranch&);
@@ -118,10 +112,11 @@ class AliHLTOUTHandlerEsdBranch : public AliHLTOUTHandler {
   AliHLTOUTHandlerEsdBranch& operator=(const AliHLTOUTHandlerEsdBranch&);
 
   TString fBranch; //! transient
-  AliESDEvent* fESD; //! transient
+  TObject* fESD; //! transient
   TArrayC* fpData;  //! transient
   int fSize; //! transient
+  AliHLTEsdManager* fManager; //! transient
 
-  ClassDef(AliHLTOUTHandlerEsdBranch, 1)
+  ClassDef(AliHLTOUTHandlerEsdBranch, 0)
 };
 #endif
