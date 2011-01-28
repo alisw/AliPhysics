@@ -69,7 +69,8 @@ void AliJetHadronCorrectionv1::SetGeometry2(AliJetDummyGeo *geometry)
     if (!geometry)
     {
 	SetParameters();
-	fSamplingFraction = geometry->GetSampling();
+//      commented out since geometry is 0x0 after null check
+//	fSamplingFraction = geometry->GetSampling();
     }else
     {
         SetParameters(geometry->GetName());
