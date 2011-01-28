@@ -183,7 +183,9 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const AliFemtoCorrFctnDirec
   fUseLCMS(0)
 {
   // Copy constructor
-  int ibin = aCorrFctn.fbinctn->GetNbinsX();
+  int ibin = 0;
+  if (aCorrFctn.fbinctn)
+    ibin = aCorrFctn.fbinctn->GetNbinsX();
 
   fMaxL = aCorrFctn.fMaxL;
   fMaxJM = (fMaxL+1)*(fMaxL+1);
@@ -287,7 +289,9 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   if (this == &aCorrFctn)
     return *this;
   
-  int ibin = aCorrFctn.fbinctn->GetNbinsX();
+  int ibin = 0;
+  if (aCorrFctn.fbinctn)
+    ibin = aCorrFctn.fbinctn->GetNbinsX();
 
   fMaxL = aCorrFctn.fMaxL;
   fMaxJM = (fMaxL+1)*(fMaxL+1);
