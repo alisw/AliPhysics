@@ -553,6 +553,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     return; // aborts if the primary vertex does not have contributors.
   }
 
+   
 
   if(!fV0Reader->CheckForPrimaryVertexZ() ){
     eventQuality=2;
@@ -561,6 +562,14 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
       CheckMesonProcessTypeEventQuality(eventQuality);
     }
     return;
+  }
+
+  if(fV0Reader->GetESDEvent()->GetPrimaryVertexTracks()->GetNContributors()>0) {
+    fHistograms->FillHistogram("ESD_GlobalPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
+  }else{
+    if(fV0Reader->GetESDEvent()->GetPrimaryVertexSPD()->GetNContributors()>0) {
+      fHistograms->FillHistogram("ESD_SPDPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
+    }
   }
 
   if(fRemovePileUp && fV0Reader->GetESDEvent()->IsPileupFromSPD()) {
