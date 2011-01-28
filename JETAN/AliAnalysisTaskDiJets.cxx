@@ -183,15 +183,18 @@ void AliAnalysisTaskDiJets::UserExec(Option_t */*option*/)
     AliAODJet* jet2 = (AliAODJet*) (jets->At(1));
     TLorentzVector v2 = *(jet2->MomentumVector());
     TLorentzVector v = v1 + v2;
-    Int_t ndi = fDiJets->GetEntriesFast();
-    TClonesArray &lref = *fDiJets;
-    new(lref[ndi]) AliAODDiJet(v);
-    AliAODDiJet* dijet = (AliAODDiJet*) (fDiJets->At(ndi));
-    dijet->SetJetRefs(jet1, jet2);
+    if (fDiJets) {
+	Int_t ndi = fDiJets->GetEntriesFast();
+	TClonesArray &lref = *fDiJets;
+	new(lref[ndi]) AliAODDiJet(v);
+	AliAODDiJet* dijet = (AliAODDiJet*) (fDiJets->At(ndi));
+	dijet->SetJetRefs(jet1, jet2);
+	fH1DeltaPhi->Fill(dijet->DeltaPhi());
+	fH1PhiImbal->Fill(dijet->PhiImbalance());
 
+    }
+    
     fH1DeltaPt->Fill(jet1->Pt()-jet2->Pt());
-    fH1DeltaPhi->Fill(dijet->DeltaPhi());
-    fH1PhiImbal->Fill(dijet->PhiImbalance());
     fH1Asym->Fill((jet1->Pt()-jet2->Pt())/(jet1->Pt()+jet2->Pt()));
     fH2Pt2vsPt1->Fill(jet1->Pt(),jet2->Pt());
     fH2DifvsSum->Fill(jet1->Pt()+jet2->Pt(),jet1->Pt()-jet2->Pt());
