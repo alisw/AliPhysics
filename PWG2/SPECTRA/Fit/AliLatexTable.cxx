@@ -75,7 +75,7 @@ AliLatexTable::~AliLatexTable() {
 void AliLatexTable::SetNextCol(Int_t val){
   // Set next column in current row - integer
   char col[200];
-  sprintf(col, " %d ", val);
+  snprintf(col, 200, " %d ", val);
   SetNextCol(col);
 
 } 
@@ -84,7 +84,7 @@ void AliLatexTable::SetNextCol(Int_t val, Int_t err){
 
   // Set next column in current row - int +- int
   char col[200];
-  sprintf(col, " $%d \\pm %d$ ", val, err);
+  snprintf(col, 200, " $%d \\pm %d$ ", val, err);
   SetNextCol(col);
 
 } 
@@ -103,12 +103,12 @@ void AliLatexTable::SetNextCol(Double_t val, Int_t scientificNotation, Bool_t ro
       GetMantissaAndExpBase10(val, mantissa, exp);
     
       if (exp == 0) {
-	sprintf(format, " $%%%d.%df $", scientificNotation, scientificNotation);
-	sprintf(col, format, mantissa);      
+	snprintf(format, 100," $%%%d.%df $", scientificNotation, scientificNotation);
+	snprintf(col, 200, format, mantissa);      
       }
       else  {
-	sprintf(format, " $%%%d.%df \\cdot 10^{%%0.0f} $", scientificNotation, scientificNotation);
-	sprintf(col, format, mantissa, exp);
+	snprintf(format, 100," $%%%d.%df \\cdot 10^{%%0.0f} $", scientificNotation, scientificNotation);
+	snprintf(col, 200,format, mantissa, exp);
       }
 
 
@@ -118,12 +118,12 @@ void AliLatexTable::SetNextCol(Double_t val, Int_t scientificNotation, Bool_t ro
 
     } else {
       char format[100];
-      sprintf(format, " $%%%d.%df $", -scientificNotation,-scientificNotation);    
-      sprintf(col, format , TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
+      snprintf(format, 100," $%%%d.%df $", -scientificNotation,-scientificNotation);    
+      snprintf(col, 200, format , TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
       SetNextCol(col);
     } 
   }else {
-    sprintf(col, " %f ", val);
+    snprintf(col,200, " %f ", val);
     SetNextCol(col);
   }
 
@@ -154,12 +154,12 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Int_t scientificNotat
 
       char format[100];
       if (exp == 0) {
-	sprintf(format, " $%%%d.%df \\pm %%%d.%df $", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-	sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err));
+	snprintf(format, 100," $%%%d.%df \\pm %%%d.%df $", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	snprintf(col, 200,format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err));
       }
       else  {
-	sprintf(format, " $%%%d.%df \\pm %%%d.%df \\cdot 10^{%%0.0f}$", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-	sprintf(col, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err), exp);
+	snprintf(format, 100, " $%%%d.%df \\pm %%%d.%df \\cdot 10^{%%0.0f}$", nSigDigits, nSigDigits, nSigDigits, nSigDigits);
+	snprintf(col, 200, format, mantissa, mantissa_err/TMath::Power(10,exp - exp_err), exp);
       }
 
 
@@ -169,13 +169,13 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Int_t scientificNotat
 
     } else  {
       char format[100];
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation);    
-      sprintf(col, format , TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(err*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
+      snprintf(format, 100, " $%%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation);    
+      snprintf(col, 200, format , TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(err*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
       SetNextCol(col);
     }
   }
   else {
-    sprintf(col, " $%f \\pm %f$ ", val, err);
+    snprintf(col, 200, " $%f \\pm %f$ ", val, err);
     SetNextCol(col);
   }
 } 
@@ -211,16 +211,16 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int
 
       char format[100];
       if (exp == 0) {
-	sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", 
+	snprintf(format, 100, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", 
 		nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-	sprintf(col, format, mantissa, 
+	snprintf(col, 200, format, mantissa, 
 		mantissa_err/TMath::Power(10,exp - exp_err), 
 		mantissa_errsyst/TMath::Power(10,exp - exp_errsyst));
       }
       else  {
-	sprintf(format, " $%%%d.%df \\pm %%%d.%df  \\pm %%%d.%df \\cdot 10^{%%0.0f}$", 
+	snprintf(format, 100, " $%%%d.%df \\pm %%%d.%df  \\pm %%%d.%df \\cdot 10^{%%0.0f}$", 
 		nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits, nSigDigits);
-	sprintf(col, format, mantissa, 
+	snprintf(col, 200, format, mantissa, 
 		mantissa_err/TMath::Power(10,exp - exp_err), 
 		mantissa_errsyst/TMath::Power(10,exp - exp_errsyst),
 		exp);
@@ -233,13 +233,13 @@ void AliLatexTable::SetNextCol(Double_t val, Double_t err, Double_t errSyst, Int
 
     } else  {
       char format[100];
-      sprintf(format, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation, -scientificNotation,-scientificNotation);    
-      sprintf(col, format ,TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(err*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(errSyst*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
+      snprintf(format, 100, " $%%%d.%df \\pm %%%d.%df \\pm %%%d.%df $", -scientificNotation,-scientificNotation,-scientificNotation,-scientificNotation, -scientificNotation,-scientificNotation);    
+      snprintf(col, 200, format ,TMath::Nint(val*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(err*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation), TMath::Nint(errSyst*TMath::Power(10,-scientificNotation))/TMath::Power(10,-scientificNotation));
       SetNextCol(col);
     } 
   }
   else {
-    sprintf(col, " $%f \\pm %f  \\pm %f$ ", val, err, errSyst);
+    snprintf(col, 200, " $%f \\pm %f  \\pm %f$ ", val, err, errSyst);
     SetNextCol(col);
   }
 } 
@@ -386,9 +386,9 @@ void AliLatexTable::PrintTable(Option_t * opt){
 	const char * colstr = strTmp.Data();
 	char format [200];
 	if (TString(opt)!="CSV") {
-	  sprintf(format, "%%%ds", colWidths[icol] + 2);	
+	  snprintf(format, 200, "%%%ds", colWidths[icol] + 2);	
 	} else {
-	  sprintf(format, "%%s");	
+	  snprintf(format, 200, "%%s");	
 	}
 	printf(format, colstr);
 	if (TString(opt)=="CSV") printf(", ");
