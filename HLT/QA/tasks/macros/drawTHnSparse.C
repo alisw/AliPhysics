@@ -3,7 +3,7 @@
  * Drawing macro for reading the THnSparse output of the 
  * HLT/QA/tasks/AliAnalysisTaskHLTCentralBarrel.cxx task.
  * 
- * The cuts are user defined in lines 156-158 as arguments of the 
+ * The cuts are user defined in lines 167-168 as arguments of the 
  * function cutStsudies(...).
  * 
  * The input file contains information about the run number
@@ -19,7 +19,7 @@
  * The macro should be compiled before running:
  *
  * root[0] .L drawTHnSparse.C++
- * root[1] drawTHnSparse("../HLT-OFFLINE-CentralBarrel-comparison.root")
+ * root[1] drawTHnSparse("HLT-OFFLINE-CentralBarrel-comparison.root")
  *
  * @ingroup alihlt_qa
  * @author Kalliopi.Kanaki@ift.uib.no 
@@ -54,7 +54,6 @@ using std::endl;
 //---------- forward declerations ---------------//
 
 TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
-//void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
                     THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
             	    double minEta,   double maxEta,
 	    	    int minTrackMult,int maxTrackMult,
@@ -90,7 +89,6 @@ TString cutsToString( double minEta,	double maxEta,
 	              int minTrackMult, int maxTrackMult,
 		      int VS
 	            );
-TString itoa(int i);
 void plotTrackQuantities( TCanvas* can, THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
            	    	  double minEta,    double maxEta,
  	                  double minPt,     double maxPt,
@@ -167,11 +165,10 @@ void drawTHnSparse(TString inputFile){
   can0->SaveAs(folder+"/event_properties.png");
     
   TString s = "";                                                       // eta   mult      pt     DCAr    DCAz    TPCclus ITSclus  vertexStatus
-  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 0, 6, 2); outputNames.push_back(s); 
-  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 2, 6, 2); outputNames.push_back(s); 
-  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -80, 80, -80, 80,  0, 200, 4, 6, 2); outputNames.push_back(s); 
- 
-  TCanvas *ov = new TCanvas("ov","",1100,900);
+  s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -20, 20, -20, 20,  0, 200, 0, 6, 2); outputNames.push_back(s); 
+  //s = cutStudies(can1, can2, can3, folder, htrackHLT, htrackOFF, hText, -2, 2, 0, 20000, 0, 200, -20, 20, -20, 20,  0, 200, 1, 6, 2); outputNames.push_back(s); 
+  
+  TCanvas *ov = new TCanvas("ov","overlaid histograms of track properties",1100,900);
   ov->Divide(4,3);
 
   TCanvas *ca[outputNames.size()]; 
@@ -209,14 +206,14 @@ void drawTHnSparse(TString inputFile){
 	  g[i]->SetLineColor(i+1); 
 	  defineYaxisMax(g[0], g[i]);
 	  g[i]->Draw("sames");
-	}					 
+	}
+	ff[i]->Close();					 
     }
   }  
-  file->Close();    
+  file->Close();  
 }
 
 TString cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
-//void cutStudies( TCanvas* can1, TCanvas* can2, TCanvas* can3, TString folder,
                     THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hText,
             	    double minEta,   double maxEta,
 	    	    int minTrackMult,int maxTrackMult,
@@ -330,8 +327,7 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
         
       defineYaxisMax(hlt, off);
       off->SetLineColor(2);
-      //off->SetLineStyle(2);
-     
+    
       can->cd(i+1);
       hlt->Draw();
       off->Draw("sames");
@@ -339,20 +335,19 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
       
       if(i==0){
          printLegend(l,hlt,off);
-      	 TPaveText *pave = new TPaveText(50,500,140,2100);
+      	 TPaveText *pave = new TPaveText(25,5600,140,36400);
          pave->SetFillColor(kWhite);
          pave->SetLineColor(kWhite);
 	 pave->SetShadowColor(kWhite);
-         //TText *t1 = 
-	 pave->AddText(itoa(minEta)+" < #eta < "+itoa(maxEta));
-	 pave->AddText(itoa(minPt)+" < p_{T} (GeV/c) < "+itoa(maxPt));
-	 pave->AddText(itoa(minTrackMult)+" < track mult < "+itoa(maxTrackMult));
-	 pave->AddText(itoa(minDCAr)+" < DCAr (cm) < "+itoa(maxDCAr));
-	 pave->AddText(itoa(minDCAz)+" < DCAz (cm) < "+itoa(maxDCAz));
-	 pave->AddText(itoa(minTPCclus)+" < TPC clusters/track < "+itoa(maxTPCclus));
-	 pave->AddText(itoa(minITSclus)+" < ITS clusters/track < "+itoa(maxITSclus));  
-	 if(VS!=2) pave->AddText("vertex status: "+itoa(VS));
-    	 
+	 TString s;	 	 
+	 s=""; s+=minEta; s+=" < eta < "; s+=maxEta; pave->AddText(s);
+	 s=""; s+=minPt; s+=" < pt (GeV/c) < "; s+=maxPt; pave->AddText(s);
+	 s=""; s+=minTrackMult; s+=" < track mult < "; s+=maxTrackMult; pave->AddText(s);
+	 s=""; s+=minDCAr; s+=" < DCAr (cm) < "; s+=maxDCAr; pave->AddText(s);
+	 s=""; s+=minDCAz; s+=" < DCAz (cm) < "; s+=maxDCAz; pave->AddText(s);
+	 s=""; s+=minTPCclus; s+=" < TPC clusters/track < "; s+=maxTPCclus; pave->AddText(s);
+	 s=""; s+=minITSclus; s+=" < ITS clusters/track < "; s+=maxITSclus; pave->AddText(s);
+	 if(VS!=2) { s=""; s+="vertex status "; s+=VS; pave->AddText(s); }
     	 pave->Draw();
     	 can->Update();
       }      
@@ -515,29 +510,14 @@ TString cutsToString( double minEta,	double maxEta,
 	            )
 {
   TString cuts = "";
-  cuts += "eta"+itoa(minEta)+"_"+itoa(maxEta)+"_";
-  cuts += "Pt"+itoa(minPt)+"_"+itoa(maxPt)+"_";
-  cuts += "TM"+itoa(minTrackMult)+"_"+itoa(maxTrackMult)+"_";
-  cuts += "DCAr"+itoa(minDCAr)+"_"+itoa(maxDCAr)+"_";
-  cuts += "DCAz"+itoa(minDCAz)+"_"+itoa(maxDCAz)+"_";
-  cuts += "TPCclus"+itoa(minTPCclus)+"_"+itoa(maxTPCclus)+"_";
-  cuts += "ITSclus"+itoa(minITSclus)+"_"+itoa(maxITSclus)+"_";
-  
-  if(VS==2) cuts.Chop(); 
-  else cuts += "VS"+itoa(VS); 
+  char s[300]; sprintf(s, "eta%2g_%2g_Pt%2g_%2g_TM%d_%d_DCAr%2g_%2g_DCAz%2g_%2g_TPCclus%d_%d_ITSclus%d_%d", 
+                           minEta,maxEta,minPt,maxPt,minTrackMult,maxTrackMult,minDCAr,maxDCAr,minDCAz,maxDCAz,minTPCclus,maxTPCclus,minITSclus,maxITSclus);
+  cuts = s; cuts.ReplaceAll(" ","");
+ 
+  if(VS!=2){
+    char v[10]; 
+    sprintf(v, "_VS%d",VS);
+    cuts+=v;
+  }
   return cuts;
-}
-
-TString itoa(int i){
-  //stringstream si;
-  //si << i;
-  //return si.str();
-  TString x; x += i; return x;
-}
-
-TString itoa(double i){
-  //stringstream si;
-  //si << i;
-  //return si.str();
-  TString x; x += i; return x;
 }
