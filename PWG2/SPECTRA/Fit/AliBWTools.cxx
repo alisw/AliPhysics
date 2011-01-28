@@ -295,7 +295,10 @@ TH1F * AliBWTools::Combine3HistosWithErrors(const TH1 * h1,  const TH1 * h2,  co
   if (statFrom == 0)      hStatError = h1; 
   else if (statFrom == 1) hStatError = h2; 
   else if (statFrom == 2) hStatError = h3; 
-  else Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+  else {
+    Printf("AliBWTools::Combine3HistosWithErrors: wrong value of the statFrom parameter");
+    return NULL;
+  }
   Printf("AliBWTools::Combine3HistosWithErrors: improve error on combined");
   // Loop over all bins and take weighted mean of all points
   Int_t nBinComb = hcomb->GetNbinsX();
@@ -1110,9 +1113,11 @@ void AliBWTools::AddHisto(TH1 * hdest, const TH1* hsource, Bool_t getMirrorBins)
 
   if (hdest == NULL) {
     Printf("Error: hdest is NULL\n");
+    return;
   } 
   if (hsource == NULL) {
     Printf("Error: hsource is NULL\n");
+    return;
   } 
 
   Int_t nBinSource = hsource->GetNbinsX();
