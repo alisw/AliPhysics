@@ -975,6 +975,7 @@ Int_t  AliMinResSolve::PreconILUKsymb(Int_t lofM)
   delete[] jbuf;
   for(int i=fSize; i--;) if (fMatU->GetRow(i)->GetNElems()) delete[] ulvl[i]; 
   delete[] ulvl; 
+  delete[] iw;
   //
   fMatL->SortIndices();
   fMatU->SortIndices();
@@ -1101,6 +1102,7 @@ Int_t  AliMinResSolve::PreconILUKsymbDense(Int_t lofM)
   delete[] jbuf;
   for(int i=fSize; i--;) if (fMatU->GetRow(i)->GetNElems()) delete[] ulvl[i]; 
   delete[] ulvl; 
+  delete[] iw;
   //
   fMatL->SortIndices();
   fMatU->SortIndices();

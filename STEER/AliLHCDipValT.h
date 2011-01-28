@@ -188,9 +188,9 @@ void AliLHCDipValT<Element>::SetSize(Int_t sz)
   if (sz>0) {
     arr = new Element[sz];
     int nc = GetSizeTotal() > sz ? sz:GetSizeTotal(); // n elems to copy
-    if (nc) memcpy(arr, fArray, nc*sizeof(Element));
+    if (nc && fArray) memcpy(arr, fArray, nc*sizeof(Element));
     if (nc<sz) memset(arr+nc, 0, (sz-nc)*sizeof(Element));
-    if (GetSizeTotal()) delete[] fArray;
+    if (fArray) delete[] fArray;
     fArray = arr;
     fSizeTot = sz;
   }

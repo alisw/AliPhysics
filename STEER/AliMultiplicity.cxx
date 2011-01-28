@@ -273,8 +273,8 @@ void AliMultiplicity::Duplicate(const AliMultiplicity& m){
   }
   fDPhiWindow2   = m.fDPhiWindow2;
   fDThetaWindow2 = m.fDThetaWindow2;
-  fDPhiShift     = fDPhiShift;
-  fNStdDev       = fNStdDev;
+  fDPhiShift     = m.fDPhiShift;
+  fNStdDev       = m.fNStdDev;
   fFastOrFiredChips = m.fFastOrFiredChips;
   fClusterFiredChips = m.fClusterFiredChips;
 }

@@ -524,7 +524,7 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   else if (btypestr.Contains(protonBeam)) btype = kBeamTypepp;
   else AliInfoGeneral("AliMagF",Form("Assume no LHC magnet field for the beam type %s, ",beamtype));
   char ttl[80];
-  sprintf(ttl,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
+  snprintf(ttl,79,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
 	  (int)TMath::Sign(diCur,float(sclDip)),uniform ? " Constant":"",
 	  convention==kConvLHC ? "LHC":"DCS2008");
   // LHC and DCS08 conventions have opposite dipole polarities

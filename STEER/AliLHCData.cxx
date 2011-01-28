@@ -349,7 +349,7 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     dim += 1;
   }
   //
-  Bool_t last = kFALSE;
+  // Bool_t last = kFALSE;
   while (iFirst<=iLast) {
     AliDCSArray *dcsVal = (AliDCSArray*) arr->At(iFirst++);
     double tstamp = dcsVal->GetTimeStamp();
@@ -377,7 +377,7 @@ Int_t AliLHCData::FillScalarRecord(int refs[2], const char* rec, const char* rec
     //
     fData.Add(curValF);
     refs[kNStor]++;
-    if (last) break;
+    // if (last) break;
   }
   //
   if (fFile2Process) {
