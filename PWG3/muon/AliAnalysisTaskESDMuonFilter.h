@@ -4,8 +4,18 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-#include <TList.h> 
-#include "AliAnalysisTaskSE.h"
+//
+// Add the muon tracks to the generic AOD track branch during the 
+// filtering of the ESD. 
+//
+// Authors: R. Arnaldi 5/5/08 and L. Aphecetche January 2011
+
+#ifndef ALIANALYSISTASKSE_H
+#  include "AliAnalysisTaskSE.h"
+#endif
+#ifndef ALIANALYSISCUTS_H
+#  include "AliAnalysisCuts.h"
+#endif
 
 class AliAnalysisFilter;
 class AliStack;
@@ -13,8 +23,8 @@ class AliStack;
 class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
 {
  public:
-    AliAnalysisTaskESDMuonFilter();
-    AliAnalysisTaskESDMuonFilter(const char* name);
+    AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE);
+    AliAnalysisTaskESDMuonFilter(const char* name, Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE);
     virtual ~AliAnalysisTaskESDMuonFilter() {;}
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -34,11 +44,37 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
     void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
-    AliAnalysisFilter* fTrackFilter; //  Track Filter
-    Bool_t fEnableMuonAOD; // flag for enabling Muon AOD production
-    Bool_t fEnableDimuonAOD; // flag for enabling Dimuon AOD production
-    ClassDef(AliAnalysisTaskESDMuonFilter, 1); // Analysis task for standard ESD filtering
+  void AddFilteredAOD(const char* aodfilename, const char* title);
 
+  AliAnalysisFilter* fTrackFilter; //  Track Filter
+  Bool_t fEnableMuonAOD; // flag for enabling Muon AOD production
+  Bool_t fEnableDimuonAOD; // flag for enabling Dimuon AOD production
+  Bool_t fOnlyMuon; // flag for disabling branches irrelevant for (most) muon analyses
+  Bool_t fKeepAllEvents; // keep even events where there's no muons (to get e.g. unbiased vertex distribution)
+  
+  ClassDef(AliAnalysisTaskESDMuonFilter, 3); // Analysis task for standard ESD filtering
 };
  
+class AliAnalysisNonMuonTrackCuts : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNonMuonTrackCuts();
+  virtual ~AliAnalysisNonMuonTrackCuts() {}
+  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+
+  ClassDef(AliAnalysisNonMuonTrackCuts,1); // Select muon spectrometer tracks
+};
+
+class AliAnalysisNonPrimaryVertices : public AliAnalysisCuts
+{
+public:
+  AliAnalysisNonPrimaryVertices();
+  virtual ~AliAnalysisNonPrimaryVertices() {}
+  virtual Bool_t IsSelected(TObject* obj);
+  virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
+  
+  ClassDef(AliAnalysisNonPrimaryVertices,1); // Select primary vertices
+};
+
 #endif

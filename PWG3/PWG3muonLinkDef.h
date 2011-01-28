@@ -10,6 +10,9 @@
 #pragma link C++ class AliAnalysisTaskSingleMu+;
 #pragma link C++ class AliAnalysisTaskLUT+;
 #pragma link C++ class AliAnalysisTaskESDMuonFilter+;
+#pragma link C++ class AliAODMuonReplicator+;
+#pragma link C++ class AliAnalysisNonMuonTrackCuts+;
+#pragma link C++ class AliAnalysisNonPrimaryVertices+;
 #pragma link C++ class AliAnalysisTaskTrigChEff+;
 #pragma link C++ class AliESDMuonTrackCuts+;
 #pragma link C++ class AliAnalysisTaskSingleMuESD+;
