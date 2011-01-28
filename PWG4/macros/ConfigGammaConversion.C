@@ -2406,15 +2406,21 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_SD_EvtQ1_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_SD_EvtQ2_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_SD_EvtQ3_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_SD_EvtQ4_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_SD_EvtQ5_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_DD_EvtQ1_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_DD_EvtQ2_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_DD_EvtQ3_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_DD_EvtQ4_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_DD_EvtQ5_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+
 
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_ND_EvtQ1_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_ND_EvtQ2_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_ND_EvtQ3_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
-
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_ND_EvtQ4_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
+      if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_ND_EvtQ5_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
       if(kGCplotMCPi0PtFiducial == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_Fiducial" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
       if(kGCplotMCPi0PtWithinAcceptanceFiducial == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_withinAcceptance_Fiducial" ,"" , kGCnXBinsPt,kGCfirstXBinPt, kGClastXBinPt, "", "");}
