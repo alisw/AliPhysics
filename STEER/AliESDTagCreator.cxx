@@ -85,12 +85,12 @@ Bool_t AliESDTagCreator::ReadGridCollection(TGridResult *fresult) {
   Int_t counter = 0;
   for(Int_t i = 0; i < nEntries; i++) {
     alienUrl = fresult->GetKey(i,"turl");
-    guid = fresult->GetKey(i,"guid");
-    if(fresult->GetKey(i,"size")) size = atol (fresult->GetKey(i,"size"));
-    md5 = fresult->GetKey(i,"md5");
-    turl = fresult->GetKey(i,"turl");
-    if(md5 && !strlen(guid)) md5 = 0;
-    if(guid && !strlen(guid)) guid = 0;
+//     guid = fresult->GetKey(i,"guid");
+//     if(fresult->GetKey(i,"size")) size = atol (fresult->GetKey(i,"size"));
+//     md5 = fresult->GetKey(i,"md5");
+//     turl = fresult->GetKey(i,"turl");
+//     if(md5 && !strlen(guid)) md5 = 0;
+//     if(guid && !strlen(guid)) guid = 0;
     
     fChain->Add(alienUrl);
     //fGUIDList->Add(new TObjString(guid));
