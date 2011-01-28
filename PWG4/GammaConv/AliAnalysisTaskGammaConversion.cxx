@@ -563,6 +563,10 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
   if(fSelectV0AND && !v0AND){
     eventQuality=5;
     fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+    if(fDoMCTruth){
+      CheckMesonProcessTypeEventQuality(eventQuality);
+    }
+
     return;
   }
   fMultiplicity = fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
@@ -694,7 +698,17 @@ void AliAnalysisTaskGammaConversion::CheckMesonProcessTypeEventQuality(Int_t evt
     if(particle->GetPdgCode()!=111){     //Pi0
       continue;
     }
-    if(TMath::Abs(particle->Eta())> fV0Reader->GetEtaCut() )	continue;
+
+    Double_t rapidity;
+    if(particle->Energy() - particle->Pz() == 0 || particle->Energy() + particle->Pz() == 0){
+      rapidity=0;
+    }
+    else{
+      rapidity = 0.5*(TMath::Log((particle->Energy()+particle->Pz()) / (particle->Energy()-particle->Pz())));
+    }	
+
+    if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ) continue; 
+
     if(evtQ==1){
       switch(GetProcessType(fGCMCEvent)){
       case  kProcSD:
@@ -726,6 +740,37 @@ void AliAnalysisTaskGammaConversion::CheckMesonProcessTypeEventQuality(Int_t evt
       }
     }
 
+   if(evtQ==4){
+      switch(GetProcessType(fGCMCEvent)){
+      case  kProcSD:
+	fHistograms->FillHistogram("MC_SD_EvtQ4_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcDD:
+	fHistograms->FillHistogram("MC_DD_EvtQ4_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcND:
+	fHistograms->FillHistogram("MC_ND_EvtQ4_Pi0_Pt", particle->Pt());
+	break;
+      default:
+	AliError("Unknown Process");
+      }
+    }
+
+   if(evtQ==5){
+      switch(GetProcessType(fGCMCEvent)){
+      case  kProcSD:
+	fHistograms->FillHistogram("MC_SD_EvtQ5_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcDD:
+	fHistograms->FillHistogram("MC_DD_EvtQ5_Pi0_Pt", particle->Pt());
+	break;
+      case  kProcND:
+	fHistograms->FillHistogram("MC_ND_EvtQ5_Pi0_Pt", particle->Pt());
+	break;
+      default:
+	AliError("Unknown Process");
+      }
+    }
 
   }
 
