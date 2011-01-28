@@ -66,8 +66,17 @@ void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
     handler->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(handler);
   }
-  AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask("PhysSelTask");
+
+  bool isMc = true;
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+
+  AliCentralitySelectionTask *centTask = AddTaskCentrality();
+  
+  AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(isMc);
   mgr->AddTask(physSelTask);
+
+  mgr->AddTask(centTask);
   AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
   mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
