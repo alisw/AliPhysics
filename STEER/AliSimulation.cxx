@@ -1016,7 +1016,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 	  if (vertex) {
 	      if(vertex->GetXRes()>2.8) { // > pipe radius --> it's a dummy object, don't use it 
 		  entry = AliCDBManager::Instance()->Get("GRP/Calib/MeanVertexSPD");
-		  vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
+		  if (entry) vertex = dynamic_cast<AliESDVertex*> (entry->GetObject());
 	      }
 	  }
 	  if (vertex) {
