@@ -214,15 +214,15 @@ void AliESDpidCuts::DefineHistograms(Color_t color){
   }
   Char_t hname[256], htitle[256];
   for(Int_t imode = 0; imode < 2; imode++){
-    sprintf(hname, "fHclusterRatio%s", imode ? "After" : "Before");
-    sprintf(htitle, "TPC cluster Ratio %s cuts;Ratio;Entries", imode ? "after" : "before");
+    snprintf(hname, 256, "fHclusterRatio%s", imode ? "After" : "Before");
+    snprintf(htitle, 256, "TPC cluster Ratio %s cuts;Ratio;Entries", imode ? "after" : "before");
     fHclusterRatio[imode] = new TH1F(hname, htitle, 20, 0., 1.);
     for(Int_t ispec = 0; ispec < AliPID::kSPECIES; ispec++){
-      sprintf(hname, "fHnSigma%sTPC%s", AliPID::ParticleName(ispec), imode ? "after" : "before");
-      sprintf(htitle, "TPC sigma for %s %s cuts;sigma;Entries", AliPID::ParticleName(ispec), imode ? "after" : "before");
+      snprintf(hname, 256, "fHnSigma%sTPC%s", AliPID::ParticleName(ispec), imode ? "after" : "before");
+      snprintf(htitle, 256, "TPC sigma for %s %s cuts;sigma;Entries", AliPID::ParticleName(ispec), imode ? "after" : "before");
       fHnSigmaTPC[ispec][imode] = new TH1F(hname, htitle, 200, -10., 10.);
-      sprintf(hname, "fHnSigma%sTOF%s", AliPID::ParticleName(ispec), imode ? "after" : "before");
-      sprintf(htitle, "TOF sigma for %s %s cuts;sigma;Entries", AliPID::ParticleName(ispec), imode ? "after" : "before");
+      snprintf(hname, 256, "fHnSigma%sTOF%s", AliPID::ParticleName(ispec), imode ? "after" : "before");
+      snprintf(htitle, 256, "TOF sigma for %s %s cuts;sigma;Entries", AliPID::ParticleName(ispec), imode ? "after" : "before");
       fHnSigmaTOF[ispec][imode] = new TH1F(hname, htitle, 200, -10., 10.);
     }
   }

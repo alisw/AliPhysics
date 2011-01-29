@@ -643,8 +643,8 @@ Int_t AliESDv0Cuts::CountAcceptedV0s(AliESDEvent* esd)
 
   Char_t str[256];
   for (Int_t i=0; i<2; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,256, " ");
+    else snprintf(str,256, "_cut");
 
     fhDcaPosToVertex[i]      = new TH1F(Form("dcaPosToVertex%s",str),"",120,0,3);
     fhDcaNegToVertex[i]      = new TH1F(Form("dcaNegToVertex%s",str),"",120,0,3);
@@ -706,7 +706,7 @@ Bool_t AliESDv0Cuts::LoadHistograms(const Char_t* dir)
     else
     {
       gDirectory->cd("after_cuts");
-      sprintf(str,"_cut");
+      snprintf(str,5, "_cut");
     }
 
     fhDcaPosToVertex[i]      = dynamic_cast<TH1F*> (gDirectory->Get(Form("dcaPosToVertex%s",str)     ));

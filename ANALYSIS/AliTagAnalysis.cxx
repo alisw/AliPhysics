@@ -674,27 +674,27 @@ AliTagAnalysis::CreateChainFromCollection(const char* collectionname, const char
  
   char nstr[2000];
 
-  sprintf(nstr, "TotalEvents=%i", iTotalEvents);
+  snprintf(nstr, 2000, "TotalEvents=%i", iTotalEvents);
   TObjString *iTotStr = new TObjString(nstr);
   aUserInfo->Add(iTotStr);
 
-  sprintf(nstr, "AcceptedEvents=%i", iAccepted);
+  snprintf(nstr, 2000, "AcceptedEvents=%i", iAccepted);
   TObjString *iAccStr = new TObjString(nstr);
   aUserInfo->Add(iAccStr);
 
-  sprintf(nstr, "RejectedRun=%i", iRejRun);
+  snprintf(nstr, 2000, "RejectedRun=%i", iRejRun);
   TObjString *iRejRunStr = new TObjString(nstr);
   aUserInfo->Add(iRejRunStr);
 
-  sprintf(nstr, "RejectedLHC=%i", iRejLHC);
+  snprintf(nstr, 2000, "RejectedLHC=%i", iRejLHC);
   TObjString *iRejLHCStr = new TObjString(nstr);
   aUserInfo->Add(iRejLHCStr);
 
-  sprintf(nstr, "RejectedDet=%i", iRejDet);
+  snprintf(nstr, 2000, "RejectedDet=%i", iRejDet);
   TObjString *iRejDetStr = new TObjString(nstr);
   aUserInfo->Add(iRejDetStr);
 
-  sprintf(nstr, "RejectedEvt=%i", iRejEvt);
+  snprintf(nstr, 2000, "RejectedEvt=%i", iRejEvt);
   TObjString *iRejEvtStr = new TObjString(nstr);
   aUserInfo->Add(iRejEvtStr);
 
