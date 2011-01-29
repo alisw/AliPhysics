@@ -192,7 +192,7 @@ Bool_t AliMCEventHandler::GetEvent(Int_t iev)
   }
   // Folder name
   char folder[20];
-  sprintf(folder, "Event%d", iev);
+  snprintf(folder, 20, "Event%d", iev);
   // TreeE
   fTreeE->GetEntry(iev);
   // Tree K

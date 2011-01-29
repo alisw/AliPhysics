@@ -162,7 +162,7 @@ Bool_t AliESDInputHandlerRP::LoadEvent(Int_t iev)
     }
     // Folder name
     char folder[20];
-    sprintf(folder, "Event%d", iev);
+    snprintf(folder, 20, "Event%d", iev);
     // Tree R
     TIter next(fRFiles);
     TFile* file;

@@ -1381,7 +1381,7 @@ Bool_t AliSimulation::WriteRawData(const char* detectors,
       if (runLoader) for (Int_t iEvent = 0; 
 			  iEvent < runLoader->GetNumberOfEvents(); iEvent++) {
 	char command[256];
-	sprintf(command, "rm -r raw%d", iEvent);
+	snprintf(command, 256, "rm -r raw%d", iEvent);
 	gSystem->Exec(command);
       }
       delete runLoader;
@@ -1427,7 +1427,7 @@ Bool_t AliSimulation::WriteRawFiles(const char* detectors)
     runLoader->GetEvent(iEvent);
     TString baseDir = gSystem->WorkingDirectory();
     char dirName[256];
-    sprintf(dirName, "raw%d", iEvent);
+    snprintf(dirName, 256, "raw%d", iEvent);
     gSystem->MakeDirectory(dirName);
     if (!gSystem->ChangeDirectory(dirName)) {
       AliError(Form("couldn't change to directory %s", dirName));
@@ -1497,7 +1497,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
   char command[256];
   // Note the option -s. It is used in order to avoid
   // the generation of SOR/EOR events.
-  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d", 
+  snprintf(command, 256, "dateStream -c -s -D -o %s -# %d -C -run %d", 
 	  dateFileName, runLoader->GetNumberOfEvents(),runLoader->GetHeader()->GetRun());
   FILE* pipe = gSystem->OpenPipe(command, "w");
 
@@ -1540,7 +1540,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
         ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
 
         char rawFileName[256];
-        sprintf(rawFileName, "raw%d/%s", 
+        snprintf(rawFileName, 256, "raw%d/%s", 
                 iEvent, AliDAQ::DdlFileName(iDet,iDDL));
 
 	// check existence and size of raw data file
@@ -1569,7 +1569,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
 
   AliInfo(Form("converting selected by trigger cluster raw data DDL files to DATE file %s", selDateFileName));
   
-  sprintf(command, "dateStream -c -s -D -o %s -# %d -C -run %d", 
+  snprintf(command, 256, "dateStream -c -s -D -o %s -# %d -C -run %d", 
 	  selDateFileName,selEvents,runLoader->GetHeader()->GetRun());
   FILE* pipe2 = gSystem->OpenPipe(command, "w");
 
@@ -1604,7 +1604,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
         ldc += AliDAQ::NumberOfLdcs(iDet) / AliDAQ::NumberOfDdls(iDet);
 
         char rawFileName[256];
-        sprintf(rawFileName, "raw%d/%s", 
+        snprintf(rawFileName, 256, "raw%d/%s", 
                 iEvent, AliDAQ::DdlFileName(iDet,iDDL));
 
 	// check existence and size of raw data file
