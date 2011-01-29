@@ -157,61 +157,61 @@ void AliAnalysisTaskCosmic::UserCreateOutputObjects()
 
     for (Int_t i = 0; i < 6; i++) {
 	// Pt
-	sprintf(name, "fhPt%2s", ext[i].Data());
-	fhPt[i]   = new TH1F(name,   " pT distribution",        800, 0., 200.);
+	snprintf(name, 12, "fhPt%2s", ext[i].Data());
+	fhPt[i]   = new TH1F(name, " pT distribution",        800, 0., 200.);
 	fhPt[i]->SetXTitle("p_{T} [Gev]");
 	// Phi
-	sprintf(name, "fhPhi%2s", ext[i].Data());
+	snprintf(name, 12, "fhPhi%2s", ext[i].Data());
 	fhPhi[i]   = new TH1F(name,   "Phi distribution",        62,  0., 2. * TMath::Pi());
 	fhPhi[i]->SetXTitle("#phi [rad]");
 	// Theta
-	sprintf(name, "fhTheta%2s", ext[i].Data());
+	snprintf(name, 12, "fhTheta%2s", ext[i].Data());
 	fhTheta[i]   = new TH1F(name,   "Theta distribution",    62,  0., TMath::Pi());    
 	fhTheta[i]->SetXTitle("#theta [rad]");
 	// Delta Phi
-	sprintf(name, "fhDPhi%2s", ext[i].Data());
+	snprintf(name, 12, "fhDPhi%2s", ext[i].Data());
 	fhDPhi[i]   = new TH1F(name,   "DeltaPhi distribution",        320, -0.4, 0.4);
 	fhDPhi[i]->SetXTitle("#Delta#phi [rad]");
 	// Delta Theta
-	sprintf(name, "fhDTheta%2s", ext[i].Data());
+	snprintf(name, 12, "fhDTheta%2s", ext[i].Data());
 	fhDTheta[i]   = new TH1F(name,   "DeltaTheta distribution",    320, -0.4, 0.4);    
 	fhDTheta[i]->SetXTitle("#Delta#theta [rad]");
 	// Delta Z
-	sprintf(name, "fhDZ%2s", ext[i].Data());
+	snprintf(name, 12, "fhDZ%2s", ext[i].Data());
 	fhDZ[i]   = new TH1F(name,   "DeltaZ distribution",        200, -10., 10.);
 	fhDZ[i]->SetXTitle("#DeltaZ [cm]");
 	// Delta X
-	sprintf(name, "fhDX%2s", ext[i].Data());
+	snprintf(name, 12, "fhDX%2s", ext[i].Data());
 	fhDX[i]   = new TH1F(name,   "DeltaX distribution",        200, -10., 10.);
 	fhDX[i]->SetXTitle("#DeltaX [cm]");
 	// Delta Y
-	sprintf(name, "fhDY%2s", ext[i].Data());
+	snprintf(name, 12, "fhDY%2s", ext[i].Data());
 	fhDY[i]   = new TH1F(name,   "DeltaY distribution",        200, -10, 10.);
 	fhDY[i]->SetXTitle("#DeltaY [cm]");
 	// Delta Pt
-	sprintf(name, "fhDPt%2s", ext[i].Data());
+	snprintf(name, 12, "fhDPt%2s", ext[i].Data());
 	fhDPt[i]   = new TH1F(name,   "DeltaPt distribution",        200, -20., 20.);
 	fhDPt[i]->SetXTitle("#Delta p_{T}  [GeV]");
 
 	// Delta 1/Pt
-	sprintf(name, "fhD1ovPt%2s", ext[i].Data());
+	snprintf(name, 12, "fhD1ovPt%2s", ext[i].Data());
 	fhD1ovPt[i]   = new TH1F(name,   "Delta 1/Pt distribution",        200, -1., 1.);
 	fhD1ovPt[i]->SetXTitle("#Delta 1/Pt");
 
 	// Delta Pt over Pt
-	sprintf(name, "fhDPtovPt%2s", ext[i].Data());
+	snprintf(name, 12, "fhDPtovPt%2s", ext[i].Data());
 	fhDPtovPt[i]   = new TH1F(name,   "DeltaPt/Pt distribution",        200, -2., 2.);
 	fhDPtovPt[i]->SetXTitle("#DeltaPt/Pt");
 
 
 
 	// Delta Pt/ Pt vs Pt
-	sprintf(name, "fpDPt%2s", ext[i].Data());
+	snprintf(name, 12, "fpDPt%2s", ext[i].Data());
 	fpDPt[i] = new TProfile(name, "#Delta Pt / Pt", 20, 0., 20., -1, 1., "S");
 	fpDPt[i]->SetXTitle("p_{T} [GeV]");
 	fpDPt[i]->SetYTitle("#Delta 1/p_{T} [GeV^{-1}]");
 	// Delta Pt error
-	sprintf(name, "fpDPtS%2s", ext[i].Data());
+	snprintf(name, 12, "fpDPtS%2s", ext[i].Data());
 	fpDPtS[i] = new TProfile(name, "#Delta Pt / <sigma>", 20, 0., 20., 0., 10.);
 	fpDPtS[i]->SetXTitle("p_{T}");
 	fpDPtS[i]->SetYTitle("#Delta p_{T} / <#sigma_{p_{T}}>");
