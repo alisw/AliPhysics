@@ -536,7 +536,7 @@ void AliFRAMEv2::CreateGeometry()
       char name[16];
       Int_t mod = i + 13;
       if (mod > 17) mod -= 18;
-      sprintf(name, "BSEGMO%d", mod);
+      snprintf(name, 16, "BSEGMO%d", mod);
       gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
       gGeoManager->GetVolume(name)->SetVisibility(kFALSE);
 
@@ -549,8 +549,8 @@ void AliFRAMEv2::CreateGeometry()
       dx =  TMath::Sin(phi1*kdeg2rad)*r;
       dy = -TMath::Cos(phi1*kdeg2rad)*r;
       
-      char nameR[64];
-      sprintf(nameR, "B43_Rot_%d", i);
+      char nameR[16];
+      snprintf(nameR, 16, "B43_Rot_%d", i);
       TGeoRotation* rot = new TGeoRotation(nameR,  90.0, phi1, 0., 0., 90., phi2);  
       AliMatrix(idrotm[2034+i],  90.0, phi1, 0., 0., 90., phi2);  
       TGeoVolume* vol77 = gGeoManager->GetVolume("B077");
@@ -795,7 +795,7 @@ void AliFRAMEv2::CreateGeometry()
   for (i = 0; i < 18; i++) {
 
       char nameMo[16];
-      sprintf(nameMo, "BSEGMO%d",i);
+      snprintf(nameMo, 16, "BSEGMO%d",i);
       // M
       gMC->Gspos("BTSH_M" , i+1 , nameMo,  0., 0., dz, 0, "ONLY"); 
       // AM, CM
@@ -820,9 +820,9 @@ void AliFRAMEv2::CreateGeometry()
 
   for (i = 0; i < 18; i++) {
     char nameCh[16];
-    sprintf(nameCh, "BTRD%d",i);
+    snprintf(nameCh, 16, "BTRD%d",i);
     char nameMo[16];
-    sprintf(nameMo, "BSEGMO%d",i);
+    snprintf(nameMo, 16, "BSEGMO%d",i);
     gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
     gMC->Gspos(nameCh, 1, nameMo, 0., 0., -12.62, 0, "ONLY"); // CBL 28/6/2006
@@ -837,11 +837,11 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[2] = 372.6; 
   ptrd1[3] = 14.525/2;
   char nameChA[16];
-  sprintf(nameChA, "BTOFA");
+  snprintf(nameChA, 16, "BTOFA");
   TGeoTrd1 *trd1=new TGeoTrd1(nameChA,ptrd1[0],ptrd1[1],ptrd1[2],ptrd1[3]); 
   trd1->SetName("BTOFA"); // just to avoid a warning
   char nameChB[16];
-  sprintf(nameChB, "BTOFB");
+  snprintf(nameChB, 16, "BTOFB");
   TGeoBBox *box1 = new TGeoBBox(nameChB,64.25 ,372.6, 14.525/2);
   box1->SetName("BTOFB"); // just to avoid a warning
   TGeoTranslation *tr1 = new TGeoTranslation("trnsl1",0, 0, -14.525/2 );
@@ -853,9 +853,9 @@ void AliFRAMEv2::CreateGeometry()
 
   for (i = 0; i < 18; i++) {
     char nameCh[16];
-    sprintf(nameCh, "BTOF%d",i);
+    snprintf(nameCh, 16, "BTOF%d",i);
     char nameMo[16];
-    sprintf(nameMo, "BSEGMO%d",i);
+    snprintf(nameMo, 16, "BSEGMO%d",i);
     TGeoVolume* btf = new TGeoVolume(nameCh, Btofcs, gGeoManager->GetMedium("FRAME_Air"));
     btf->SetName(nameCh); 
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
@@ -1385,13 +1385,13 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
     const Int_t kAlu   = idtmed[2008];
 
     Float_t dx, dy;
-    char mname [128];
-    char cname [128];
-    char t1name[128];
-    char t2name[128];
-    char t3name[128];
-    char t4name[128];
-    char t5name[128];
+    char mname[16];
+    char cname [16];
+    char t1name[16];
+    char t2name[16];
+    char t3name[16];
+    char t4name[16];
+    char t5name[16];
     
     // 
     Float_t dxP =  2. * (287. * TMath::Sin(10.* TMath::Pi()/180.) - 2.);
@@ -1402,12 +1402,12 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
     thshM[0]  =  dxP / 2.;
     thshM[1]  =  dyP / 2.;
     thshM[2]  =  dzP / 2.;
-    sprintf(mname, "BTSH_%s", name);
+    snprintf(mname, 16, "BTSH_%s", name);
     gMC->Gsvolu(mname,  "BOX ", kAir, thshM,  3);
     //
     // Aluminum sheet
     thshM[2] = 0.025;
-    sprintf(cname, "BTSHA_%s", name);
+    snprintf(cname, 16, "BTSHA_%s", name);
     gMC->Gsvolu(cname, "BOX ", kAlu, thshM,  3);
     gMC->Gspos(cname, 1, mname, 0., 0., -0.5, 0);
     //
@@ -1417,15 +1417,15 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
     thshT[1] = 0.5;
     thshT[2] = (dyP / 2. - 8.);
     //
-    sprintf(t1name, "BTSHT1_%s", name);
+    snprintf(t1name, 16, "BTSHT1_%s", name);
     gMC->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
     dx = - dxP / 2. + 8. - 0.5;
     gMC->Gspos(t1name, 1, mname,  dx, 0., 0.025, rot1);
     //
-    sprintf(t2name, "BTSHT2_%s", name);
-    sprintf(t3name, "BTSHT3_%s", name);
-    sprintf(t4name, "BTSHT4_%s", name);
-    sprintf(t5name, "BTSHT5_%s", name);
+    snprintf(t2name, 16, "BTSHT2_%s", name);
+    snprintf(t3name, 16, "BTSHT3_%s", name);
+    snprintf(t4name, 16, "BTSHT4_%s", name);
+    snprintf(t5name, 16, "BTSHT5_%s", name);
     thshT[2] = (thshM[1] - 12.);
     gMC->Gsvolu(t2name,  "TUBE", kAlu, thshT,  3);
     thshT[2] = 7.9/2.;
@@ -1468,8 +1468,8 @@ void AliFRAMEv2::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t
     const Int_t   kSteel = idtmed[2064];
 
     Float_t ptrap[11];
-    char nameA[64];
-    sprintf(nameA, "%sA", name );
+    char nameA[16];
+    snprintf(nameA, 16, "%sA", name );
     theta0 *= kdeg2rad;
     phi0   *= kdeg2rad;
     Float_t theta   = TMath::ATan(TMath::Tan(theta0)/TMath::Sin(phi0));

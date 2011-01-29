@@ -161,14 +161,14 @@ void AliDIPOv3::CreateSpectrometerDipole()
 
     TGeoVolumeAssembly* asYoke = new TGeoVolumeAssembly("DYoke");	
 // Base
-    char name[32];
+    char name[16];
     Float_t lx0 = gapWidthFront + 2. * blockHeight;
     Float_t lx  = lx0;
     
     TGeoVolumeAssembly* asYokeBase = new TGeoVolumeAssembly("DYokeBase");	
     for (Int_t i = 0; i < 7; i++) {
-	sprintf(name, "DYokeBaseBlock%1d", i);
-	TGeoVolume*  voBaseBlock = new TGeoVolume(name,
+      snprintf(name, 16, "DYokeBaseBlock%1d", i);
+      TGeoVolume*  voBaseBlock = new TGeoVolume(name,
 						  new TGeoBBox(lx/2., blockHeight/2., blockLength/2.),
 						  kMedSteel);
 	asYokeBase->AddNode(voBaseBlock, 1, new TGeoTranslation(0., 0., Float_t(i - 3) * blockLength));
@@ -348,7 +348,7 @@ void AliDIPOv3::CreateSpectrometerDipole()
     for (Int_t i = 0; i < 9; i++) 
     {
 	char nameR[16];
-	sprintf(nameR, "rotdcs%1d", i);
+	snprintf(nameR, 16, "rotdcs%1d", i);
 	Float_t phi = Float_t(i) * 3.75;
 	TGeoRotation* rot   = new TGeoRotation(nameR, 90., phi, 90., 90. + phi,    0.,   0.);	
 	asDCoilSupport->AddNode(voDCS021, i, new TGeoCombiTrans(0., 0.004, -(sW - coilH)/2., rot));    
