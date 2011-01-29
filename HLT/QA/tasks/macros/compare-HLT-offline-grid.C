@@ -52,7 +52,7 @@ void compare_HLT_offline_grid(TString runNumber,
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libHLTbase");
   gROOT->ProcessLine(".include $ALICE_ROOT/include"); 
-  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I.")
+  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I.");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
