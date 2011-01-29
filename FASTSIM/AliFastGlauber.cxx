@@ -284,7 +284,7 @@ void AliFastGlauber::Init(Int_t mode)
     Char_t almondName[100];
     TFile* ff = new TFile(fName.Data());
     for(Int_t k=0; k<40; k++) {
-      sprintf(almondName,"WAlmondFixedB%d",k);
+      snprintf(almondName,100, "WAlmondFixedB%d",k);
       fgWAlmondCurrent = (TF2*)ff->Get(almondName);
       fgWAlmondFixedB[k] = fgWAlmondCurrent;
     }
@@ -350,13 +350,13 @@ void AliFastGlauber::DrawWSb() const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"r_{0} = %.2f fm",fWSr0);
+  snprintf(label,100, "r_{0} = %.2f fm",fWSr0);
   l1a->AddEntry(fgWSb,label,"");
-  sprintf(label,"d = %.2f fm",fWSd);
+  snprintf(label,100, "d = %.2f fm",fWSd);
   l1a->AddEntry(fgWSb,label,"");
-  sprintf(label,"n = %.2e fm^{-3}",fWSn);
+  snprintf(label,100, "n = %.2e fm^{-3}",fWSn);
   l1a->AddEntry(fgWSb,label,"");
-  sprintf(label,"#omega = %.2f",fWSw);
+  snprintf(label,100, "#omega = %.2f",fWSw);
   l1a->AddEntry(fgWSb,label,"");
   l1a->Draw();
   c1->Update();
@@ -396,7 +396,7 @@ void AliFastGlauber::DrawParticipants() const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"#sigma^{inel.}_{NN} = %.1f mbarn",fSigmaNN);
+  snprintf(label,100, "#sigma^{inel.}_{NN} = %.1f mbarn",fSigmaNN);
   l1a->AddEntry(fgWParticipants,label,"");
   l1a->Draw();
   c3->Update();
@@ -436,7 +436,7 @@ void AliFastGlauber::DrawGeo() const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"#sigma_{NN}^{inel.} = %.1f mbarn",fSigmaNN);
+  snprintf(label,100, "#sigma_{NN}^{inel.} = %.1f mbarn",fSigmaNN);
   l1a->AddEntry(fgWSgeo,label,"");
   l1a->Draw();
   c5->Update();
@@ -460,7 +460,7 @@ void AliFastGlauber::DrawBinary() const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"#sigma_{NN}^{hard} = %.1f mbarn",fSigmaHard);
+  snprintf(label,100, "#sigma_{NN}^{hard} = %.1f mbarn",fSigmaHard);
   l1a->AddEntry(fgWSb,label,"");
   l1a->Draw();
   c6->Update();
@@ -484,9 +484,9 @@ void AliFastGlauber::DrawN() const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"#sigma^{hard}_{NN} = %.1f mbarn",fSigmaHard);
+  snprintf(label,100, "#sigma^{hard}_{NN} = %.1f mbarn",fSigmaHard);
   l1a->AddEntry(fgWSN,label,"");
-  sprintf(label,"#sigma^{inel.}_{NN} = %.1f mbarn",fSigmaNN);
+  snprintf(label,100, "#sigma^{inel.}_{NN} = %.1f mbarn",fSigmaNN);
   l1a->AddEntry(fgWSN,label,"");
   l1a->Draw();
   c7->Update();
@@ -510,7 +510,7 @@ void AliFastGlauber::DrawKernel(Double_t b) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"b = %.1f fm",b);
+  snprintf(label, 100, "b = %.1f fm",b);
   l1a->AddEntry(fgWStarfi,label,"");
   l1a->Draw();
   c8->Update();
@@ -534,7 +534,7 @@ void AliFastGlauber::DrawAlmond(Double_t b) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"b = %.1f fm",b);
+  snprintf(label, 100, "b = %.1f fm",b);
   l1a->AddEntry(fgWAlmond,label,"");
   l1a->Draw();
   c9->Update();
@@ -1246,7 +1246,7 @@ void AliFastGlauber::StoreAlmonds() const
   Char_t almondName[100];
   TFile* ff = new TFile(fName.Data(),"update");
   for(Int_t k=0; k<40; k++) {
-    sprintf(almondName,"WAlmondFixedB%d",k);
+    snprintf(almondName, 100, "WAlmondFixedB%d",k);
     Double_t b = 0.25+k*0.5;
     Info("StoreAlmonds"," b = %f\n",b); 
     fgWAlmond->SetParameter(0,b);

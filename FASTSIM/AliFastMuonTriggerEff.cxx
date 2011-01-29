@@ -207,9 +207,9 @@ Int_t AliFastMuonTriggerEff::LoadTables(Char_t *namet=""){
   // Load the trigger tables
   //
     Char_t hNameA[100],hNameL[100],hNameH[100];
-    sprintf(hNameA,"hEffAPt%s",namet);
-    sprintf(hNameL,"hEffLPt%s",namet);
-    sprintf(hNameH,"hEffHPt%s",namet);
+    snprintf(hNameA, 100, "hEffAPt%s",namet);
+    snprintf(hNameL, 100, "hEffLPt%s",namet);
+    snprintf(hNameH, 100, "hEffHPt%s",namet);
     fhEffAPt = (TH3F*)gDirectory->Get(hNameA);
     fhEffLPt = (TH3F*)gDirectory->Get(hNameL);
     fhEffHPt = (TH3F*)gDirectory->Get(hNameH);
@@ -247,11 +247,11 @@ void AliFastMuonTriggerEff::Init()
     Int_t intb=0;
     Char_t namet[10];
     if(TMath::Abs(fBkg)<0.00001){
-      sprintf(namet,"00");
+      snprintf(namet, 10, "00");
     }else if(TMath::Abs(fBkg-0.5)<0.00001){
-      sprintf(namet,"05");
+      snprintf(namet, 10, "05");
     }else if(TMath::Abs(fBkg-1.0)<0.00001){
-      sprintf(namet,"10");
+      snprintf(namet, 10, "10");
     }else{
       PLIN; printf("A table for Bkg level: %f does not exists\n",fBkg);
       intb=1;
@@ -261,13 +261,13 @@ void AliFastMuonTriggerEff::Init()
       TH3F* ha1,*hl1,*hh1,*ha2,*hl2,*hh2,*ha0,*hl0,*hh0;
       Char_t name1[10],name2[10]; Float_t b1,b2;
       if(fBkg>0&&fBkg<0.5){
-        sprintf(name1,"00");
-        sprintf(name2,"05");
+        snprintf(name1,10, "00");
+        snprintf(name2,10, "05");
 	b1=0.;
 	b2=0.5;
       }else if(fBkg>0.5){
-        sprintf(name1,"05");
-        sprintf(name2,"10");
+        snprintf(name1, 10, "05");
+        snprintf(name2, 10, "10");
 	b1=0.5;
 	b2=1.0;
 	if(fBkg>1.0){

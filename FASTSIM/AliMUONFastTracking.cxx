@@ -143,8 +143,8 @@ void AliMUONFastTracking::Init(Float_t bkg)
   }
   
   char filename [100]; 
-  if (fClusterFinder==kOld) sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
-  else sprintf (filename,"$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT-AZ.root"); 
+  if (fClusterFinder==kOld) snprintf (filename, 100, "$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT.root"); 
+  else snprintf (filename, 100, "$(ALICE_ROOT)/FASTSIM/data/MUONtrackLUT-AZ.root"); 
 
   TFile *file = new TFile(filename); 
   ReadLUT(file);
@@ -167,13 +167,13 @@ void AliMUONFastTracking::ReadLUT(TFile* file)
 
   const Float_t kBkg[4] = {0, 0.5, 1, 2};
   for (Int_t ibkg=0; ibkg<4; ibkg++) {
-    sprintf (tag,"BKG%g",kBkg[ibkg]); 
+    snprintf (tag, 40, "BKG%g",kBkg[ibkg]); 
     file->cd(tag);
     for (Int_t isplp = 0; isplp<kSplitP; isplp++) { 
       for (Int_t ispltheta = 0; ispltheta<kSplitTheta; ispltheta++) { 
-	sprintf (tag2,"heff[%d][%d]",isplp,ispltheta); 
+	snprintf (tag2, 40, "heff[%d][%d]",isplp,ispltheta); 
 	heff[isplp][ispltheta] = (TH3F*)gDirectory->Get(tag2);
-	sprintf (tag2,"hacc[%d][%d]",isplp,ispltheta); 
+	snprintf (tag2, 40, "hacc[%d][%d]",isplp,ispltheta); 
 	hacc[isplp][ispltheta] = (TH3F*)gDirectory->Get(tag2);
       }
     }    
@@ -618,17 +618,17 @@ void AliMUONFastTracking::SetSpline(){
 	ysigmaphi[ip]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
-      sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineEff[%d][%d]",ispline,ivar);
       fSplineEff[ispline][ivar] = new TSpline3(splname,xsp2,yeff,5 * nbins[ivar]);
-      sprintf (splname,"fSplineAcc[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineAcc[%d][%d]",ispline,ivar);
       fSplineAcc[ispline][ivar] = new TSpline3(splname,xsp2,yacc,5 * nbins[ivar]);
-      sprintf (splname,"fSplineSigmap[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmap[%d][%d]",ispline,ivar);
       fSplineSigmap[ispline][ivar] = new TSpline3(splname,xspl,ysigmap,nbins[ivar]);
-      sprintf (splname,"fSplineSigma1p[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigma1p[%d][%d]",ispline,ivar);
       fSplineSigma1p[ispline][ivar] = new TSpline3(splname,xspl,ysigma1p,nbins[ivar]);
-      sprintf (splname,"fSplineSigmatheta[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmatheta[%d][%d]",ispline,ivar);
       fSplineSigmatheta[ispline][ivar] = new TSpline3(splname,xspl,ysigmatheta,nbins[ivar]);
-      sprintf (splname,"fSplineSigmaphi[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmaphi[%d][%d]",ispline,ivar);
       fSplineSigmaphi[ispline][ivar] = new TSpline3(splname,xspl,ysigmaphi,nbins[ivar]);
       ispline++;
     }
@@ -647,17 +647,17 @@ void AliMUONFastTracking::SetSpline(){
 	ysigmaphi[itheta]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
-      sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineEff[%d][%d]",ispline,ivar);
       fSplineEff[ispline][ivar] = new TSpline3(splname,xspl,yeff, nbins[ivar]);
-      sprintf (splname,"fSplineAcc[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineAcc[%d][%d]",ispline,ivar);
       fSplineAcc[ispline][ivar] = new TSpline3(splname,xspl,yacc, nbins[ivar]);
-      sprintf (splname,"fSplineSigmap[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmap[%d][%d]",ispline,ivar);
       fSplineSigmap[ispline][ivar] = new TSpline3(splname,xspl,ysigmap,nbins[ivar]);
-      sprintf (splname,"fSplineSigma1p[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigma1p[%d][%d]",ispline,ivar);
       fSplineSigma1p[ispline][ivar] = new TSpline3(splname,xspl,ysigma1p,nbins[ivar]);
-      sprintf (splname,"fSplineSigmatheta[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmatheta[%d][%d]",ispline,ivar);
       fSplineSigmatheta[ispline][ivar] = new TSpline3(splname,xspl,ysigmatheta,nbins[ivar]);
-      sprintf (splname,"fSplineSigmaphi[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmaphi[%d][%d]",ispline,ivar);
       fSplineSigmaphi[ispline][ivar] = new TSpline3(splname,xspl,ysigmaphi,nbins[ivar]);
       ispline++;
     }
@@ -676,17 +676,17 @@ void AliMUONFastTracking::SetSpline(){
 	ysigmaphi[iphi]   = fCurrentEntry[ip][itheta][iphi]->GetSigmaphi();
       }
       if (fPrintLevel>3) cout << " creating new spline " << splname << endl;
-      sprintf (splname,"fSplineEff[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineEff[%d][%d]",ispline,ivar);
       fSplineEff[ispline][ivar] = new TSpline3(splname,xspl,yeff, nbins[ivar]);
-      sprintf (splname,"fSplineAcc[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineAcc[%d][%d]",ispline,ivar);
       fSplineAcc[ispline][ivar] = new TSpline3(splname,xspl,yacc, nbins[ivar]);
-      sprintf (splname,"fSplineSigmap[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmap[%d][%d]",ispline,ivar);
       fSplineSigmap[ispline][ivar] = new TSpline3(splname,xspl,ysigmap,nbins[ivar]);
-      sprintf (splname,"fSplineSigma1p[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigma1p[%d][%d]",ispline,ivar);
       fSplineSigma1p[ispline][ivar] = new TSpline3(splname,xspl,ysigma1p,nbins[ivar]);
-      sprintf (splname,"fSplineSigmatheta[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmatheta[%d][%d]",ispline,ivar);
       fSplineSigmatheta[ispline][ivar] = new TSpline3(splname,xspl,ysigmatheta,nbins[ivar]);
-      sprintf (splname,"fSplineSigmaphi[%d][%d]",ispline,ivar);
+      snprintf (splname, 40, "fSplineSigmaphi[%d][%d]",ispline,ivar);
       fSplineSigmaphi[ispline][ivar] = new TSpline3(splname,xspl,ysigmaphi,nbins[ivar]);
       ispline++;
     }
@@ -773,7 +773,7 @@ TF1* AliMUONFastTracking::GetFitP(Int_t ip,Int_t itheta,Int_t iphi) {
   // gets the correct prec-pgen distribution for a given LUT cell 
   if (!fFitp[ip][itheta][iphi]) {
     char name[256];
-    sprintf(name, "fit_%d_%d_%d", ip, itheta, iphi);
+    snprintf(name, 256, "fit_%d_%d_%d", ip, itheta, iphi);
     fFitp[ip][itheta][iphi] = new TF1(name ,FitP,-20.,20.,6);
     fFitp[ip][itheta][iphi]->SetNpx(500);    
     fFitp[ip][itheta][iphi]->SetParameters(0.,0.,0.,0.,0.,0.);    
