@@ -69,7 +69,7 @@ public:
 	       UShort_t    cms, 
 	       Short_t     field, 
 	       Bool_t      mc, 
-	       const char* filename="AnalysisResults.root") 
+	       const char* filename="forward_eloss.root") 
     : fFitter(0), 
       fAxis(0),
       fFits("AliFMDCorrELossFit::ELossFit"),
