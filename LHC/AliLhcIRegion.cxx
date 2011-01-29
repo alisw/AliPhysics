@@ -170,27 +170,27 @@ void AliLhcIRegion::DrawPlots()
   Float_t* t = fAccelerator->TimeA();
   //
   char name1[20], name2[20], hname[20];
-  sprintf(name1,"c%s",GetName());
-  sprintf(name2,"b%s",GetName());
+  snprintf(name1,20, "c%s",GetName());
+  snprintf(name2,20, "b%s",GetName());
   char title[30];
-  sprintf(title,"Luminosity Lifetime for %s",GetName());
+  snprintf(title,30, "Luminosity Lifetime for %s",GetName());
   
   //
-  sprintf(hname,"%s%d",name1,0);
+  snprintf(hname,20, "%s%d",name1,0);
   TH1 *g1 = new TH1F(hname,"Luminosity",fNmax,0,t[fNmax]);
   g1->SetMinimum(0);
   g1->SetMaximum(fLumiArray[0]*1.1);
   g1->SetStats(0);
   g1->GetXaxis()->SetTitle("t (h)");
   g1->GetYaxis()->SetTitle("L(t) (cm**-2 s**-1)");
-  sprintf(hname,"%s%d",name1,1);
+  snprintf(hname,20, "%s%d",name1,1);
   TH1 *g2 = new TH1F(hname,"Luminosity",fNmax,0,t[fNmax]);
   g2->SetMinimum(0);
   g2->SetMaximum(1.1);
   g2->SetStats(0);
   g2->GetXaxis()->SetTitle("t (h)");
   g2->GetYaxis()->SetTitle("L(t)/L0");
-  sprintf(hname,"%s%d",name1,3);
+  snprintf(hname, 20, "%s%d",name1,3);
 
   TH1 *g3 = new TH1F(hname,"Average Luminosity",fNmax,0,t[fNmax]);
   g3->SetMinimum(0);
@@ -199,7 +199,7 @@ void AliLhcIRegion::DrawPlots()
   
   g3->GetXaxis()->SetTitle("t (h)");
   g3->GetYaxis()->SetTitle("L(t)/L0");
-  sprintf(hname,"%s%d",name1,3);
+  snprintf(hname,20,"%s%d",name1,3);
 
   TH1 *g4 = new TH1F(hname,"Beta*",fNmax,0,t[fNmax]);
   g4->SetMinimum(0);
