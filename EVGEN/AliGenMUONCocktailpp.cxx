@@ -272,13 +272,13 @@ void AliGenMUONCocktailpp::CreateCocktail()
     Char_t nameUpsP[10];    
     Char_t nameUpsPP[10];    
 
-    sprintf(nameJpsi,"Jpsi");    
-    sprintf(nameChic1,"Chic1");
-    sprintf(nameChic2,"Chic2");
-    sprintf(namePsiP,"PsiP");
-    sprintf(nameUps,"Ups");
-    sprintf(nameUpsP,"UpsP");
-    sprintf(nameUpsPP,"UpsPP");
+    snprintf(nameJpsi,10, "Jpsi");    
+    snprintf(nameChic1,10, "Chic1");
+    snprintf(nameChic2,10, "Chic2");
+    snprintf(namePsiP,10, "PsiP");
+    snprintf(nameUps,10, "Ups");
+    snprintf(nameUpsP,10, "UpsP");
+    snprintf(nameUpsPP,10, "UpsPP");
 
     if(cmsEnergy == 10){
 	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 10", "Jpsi");
