@@ -426,8 +426,8 @@ Float_t AliGenGeVSim::FindScaler(Int_t paramId, Int_t pdg) {
       
       form = 0;
       
-      if (i == 0) sprintf(buffer, patt1, params[paramId], ending[j]);      
-      else sprintf(buffer, patt2, pdg, params[paramId], ending[j]);
+      if (i == 0) snprintf(buffer, 80, patt1, params[paramId], ending[j]);      
+      else snprintf(buffer, 80, patt2, pdg, params[paramId], ending[j]);
       
       form = (TF1 *)gROOT->GetFunction(buffer);
 
@@ -579,7 +579,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
     
     if (!fCurrentForm) {
 
-      sprintf(buff, pattern[1], pdg);
+      snprintf(buff, 40, pattern[1], pdg);
       fCurrentForm = (TF2*)gROOT->GetFunction(buff);
 
       if (!fCurrentForm) Error(where, msg[0], pdg);
@@ -597,7 +597,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
       
       if (!fHist[i]) {
 	
-	sprintf(buff, pattern[3+2*i], pdg);
+	snprintf(buff, 40, pattern[3+2*i], pdg);
 	fHist[i] = (TH1D*)gROOT->FindObject(buff);
 	
 	if (!fHist[i]) Error(where, msg[1+i], pdg);
@@ -614,7 +614,7 @@ void AliGenGeVSim::SetFormula(Int_t pdg) {
     
     if (!fPtYHist) {
       
-      sprintf(buff, pattern[7], pdg);
+      snprintf(buff, 40, pattern[7], pdg);
       fPtYHist = (TH2D*)gROOT->FindObject(buff);
     }
 
