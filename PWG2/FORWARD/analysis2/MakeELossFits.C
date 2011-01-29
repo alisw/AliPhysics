@@ -31,8 +31,9 @@ void MakeELossFits(const char* esddir,
   Info("MakeELossFits", "Will analyse %d events", nEvents);
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
-						    "FMD analysis train");
+  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward ELoss Train", 
+						    "Forward energy loss");
+  AliAnalysisManager::SetCommonFileName("forward_eloss.root");
 
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
   esdHandler->SetInactiveBranches("AliESDACORDE "
@@ -61,7 +62,7 @@ void MakeELossFits(const char* esddir,
   mgr->AddTask(task);
 
   // --- Make the output container and connect it --------------------
-  TString outputfile = "energyFits.root";
+  TString outputfile = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer* histOut = 
     mgr->CreateContainer("Forward", TList::Class(), 
 			 AliAnalysisManager::kOutputContainer,outputfile);

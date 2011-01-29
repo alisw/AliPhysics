@@ -137,7 +137,7 @@ TCanvas* CheckCanvas()
  * 
  * @ingroup pwg2_forward_analysis_scripts
  */
-void DrawSummary(const char* fname="AnalysisResults.root")
+void DrawSummary(const char* fname="forward_eloss.root")
 {
   if (!CheckFitter(fname)) {
     Error("DrawFits", "File not opened");
@@ -395,7 +395,7 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-DrawFits(const char* fname="AnalysisResults.root")
+DrawAnaFits(const char* fname="forward_eloss.root")
 {
   if (!CheckCanvas()) {
     Error("DrawFits", "No canvas");
