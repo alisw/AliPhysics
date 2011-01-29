@@ -376,7 +376,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
   } else {
     par[2]  = 350./2.; // 11-oct-04 - for 26 division
     AliDebug(2,Form(" par[0] %7.2f (old) \n",  par[0]));
-    Float_t *parSM = g->GetSuperModulesPars(); 
+    Float_t parSM[] = {g->GetSuperModulesPar(0),g->GetSuperModulesPar(1),g->GetSuperModulesPar(2)};
     for(int i=0; i<3; i++) par[i] = parSM[i];
   }
   gMC->Gsvolu("SMOD", "BOX", fIdTmedArr[kIdAIR], par, 3);
@@ -969,7 +969,7 @@ void AliEMCALv0::AddAlignableVolumesInALICE() const
   // eventual changes in the geometry.
   //
 
-  Float_t * pars = GetGeometry()->GetSuperModulesPars();
+  Float_t pars[] = {GetGeometry()->GetSuperModulesPar(0),GetGeometry()->GetSuperModulesPar(1),GetGeometry()->GetSuperModulesPar(2)};
   double rpos = (GetGeometry()->GetEnvelop(0) + GetGeometry()->GetEnvelop(1))/2.;
   double phi, phiRad, xpos, ypos, zpos;
 

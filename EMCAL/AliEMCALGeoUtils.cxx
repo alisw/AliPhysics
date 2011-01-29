@@ -64,7 +64,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils():
   fCentersOfCellsPhiDir(0x0),fEtaCentersOfCells(0x0),
   fNCells(0),fNPhi(0),fCentersOfCellsXDir(0x0),fArm1EtaMin(0),
   fArm1EtaMax(0),fArm1PhiMin(0),fArm1PhiMax(0),fEtaMaxOfTRD1(0),
-  fShishKebabTrd1Modules(0),fParSM(0x0),fPhiModuleSize(0.),
+  fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
   fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
   fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
   fZLength(0.),fSampling(0.)
@@ -74,6 +74,9 @@ AliEMCALGeoUtils::AliEMCALGeoUtils():
   fEnvelop[0] = 0.;
   fEnvelop[1] = 0.;
   fEnvelop[2] = 0.;
+  fParSM[0]   = 0.;
+  fParSM[1]   = 0.;
+  fParSM[2]   = 0.;
   for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
 
   for (Int_t i = 0; i < 48; i++)
@@ -90,7 +93,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const AliEMCALGeoUtils & geo)
     fCentersOfCellsPhiDir(geo.fCentersOfCellsPhiDir),fEtaCentersOfCells(geo.fEtaCentersOfCells),
     fNCells(geo.fNCells),fNPhi(geo.fNPhi),fCentersOfCellsXDir(geo.fCentersOfCellsXDir),fArm1EtaMin(geo.fArm1EtaMin),
     fArm1EtaMax(geo.fArm1EtaMax),fArm1PhiMin(geo.fArm1PhiMin),fArm1PhiMax(geo.fArm1PhiMax),fEtaMaxOfTRD1(geo.fEtaMaxOfTRD1),
-    fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fParSM(geo.fParSM),fPhiModuleSize(geo.fPhiModuleSize),
+    fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fPhiModuleSize(geo.fPhiModuleSize),
     fEtaModuleSize(geo.fEtaModuleSize),fPhiTileSize(geo.fPhiTileSize),fEtaTileSize(geo.fEtaTileSize),fNZ(geo.fNZ),
     fIPDistance(geo.fIPDistance),fLongModuleSize(geo.fLongModuleSize),fShellThickness(geo.fShellThickness),
     fZLength(geo.fZLength),fSampling(geo.fSampling)
@@ -98,6 +101,9 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const AliEMCALGeoUtils & geo)
   fEnvelop[0] = geo.fEnvelop[0];
   fEnvelop[1] = geo.fEnvelop[1];
   fEnvelop[2] = geo.fEnvelop[2];
+  fParSM[0]   = geo.fParSM[0];
+  fParSM[1]   = geo.fParSM[1];
+  fParSM[2]   = geo.fParSM[2];
   for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
   
   for (Int_t i = 0; i < 48; i++)
@@ -114,7 +120,7 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
     fCentersOfCellsPhiDir(0x0),fEtaCentersOfCells(0x0),
     fNCells(0),fNPhi(0),fCentersOfCellsXDir(0x0),fArm1EtaMin(0),
     fArm1EtaMax(0),fArm1PhiMin(0),fArm1PhiMax(0),fEtaMaxOfTRD1(0),
-    fShishKebabTrd1Modules(0),fParSM(0x0),fPhiModuleSize(0.),
+    fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
     fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
     fZLength(0.),fSampling(0.)
@@ -151,20 +157,22 @@ AliEMCALGeoUtils::AliEMCALGeoUtils(const Text_t* name, const Text_t* title)
   fEnvelop[0] = fEMCGeometry->GetEnvelop(0);
   fEnvelop[1] = fEMCGeometry->GetEnvelop(1);
   fEnvelop[2] = fEMCGeometry->GetEnvelop(2);
+  fParSM[0]   = fEMCGeometry->GetSuperModulesPar(0);
+  fParSM[1]   = fEMCGeometry->GetSuperModulesPar(1);
+  fParSM[2]   = fEMCGeometry->GetSuperModulesPar(2);
   fArm1EtaMin = fEMCGeometry->GetArm1EtaMin();
   fArm1EtaMax = fEMCGeometry->GetArm1EtaMax();
   fArm1PhiMin = fEMCGeometry->GetArm1PhiMin();
   fArm1PhiMax = fEMCGeometry->GetArm1PhiMax();
   fShellThickness = fEMCGeometry->GetShellThickness();
-  fZLength = fEMCGeometry->GetZLength();
-  fSampling = fEMCGeometry->GetSampling();
-  fParSM = fEMCGeometry->GetSuperModulesPars();
+  fZLength    = fEMCGeometry->GetZLength();
+  fSampling   = fEMCGeometry->GetSampling();
   fEtaModuleSize = fEMCGeometry->GetEtaModuleSize();
   fPhiModuleSize = fEMCGeometry->GetPhiModuleSize();
   fEtaTileSize = fEMCGeometry->GetEtaTileSize();
   fPhiTileSize = fEMCGeometry->GetPhiTileSize();
-  fNZ = fEMCGeometry->GetNZ();
-  fIPDistance = fEMCGeometry->GetIPDistance();
+  fNZ          = fEMCGeometry->GetNZ();
+  fIPDistance  = fEMCGeometry->GetIPDistance();
   fLongModuleSize = fEMCGeometry->GetLongModuleSize();
 
   CreateListOfTrd1Modules();

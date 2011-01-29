@@ -123,7 +123,7 @@ public:
   Int_t    GetNTowers(void) const {return fEMCGeometry->GetNTowers();}
   //
   Double_t GetPhiCenterOfSM(Int_t nsupmod) const {return fEMCGeometry->GetPhiCenterOfSM(nsupmod);}
-  Float_t *GetSuperModulesPars(void) const {return fEMCGeometry->GetSuperModulesPars();}
+  Float_t  GetSuperModulesPar(Int_t ipar) const {return fEMCGeometry->GetSuperModulesPar(ipar);}
   //
   Bool_t   GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const {return fEMCGeometry->GetPhiBoundariesOfSM(nSupMod, phiMin, phiMax);}
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const {return fEMCGeometry->GetPhiBoundariesOfSMGap(nPhiSec, phiMin, phiMax);}

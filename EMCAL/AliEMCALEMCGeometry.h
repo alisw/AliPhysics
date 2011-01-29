@@ -114,7 +114,7 @@ public:
   Int_t   GetNTowers() const {return fNPhi * fNZ ;}
   //
   Double_t GetPhiCenterOfSM(Int_t nsupmod) const;
-  Float_t *GetSuperModulesPars() {return fParSM;}
+  Float_t GetSuperModulesPar(Int_t ipar) {return fParSM[ipar];}
   //
   Bool_t   GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;

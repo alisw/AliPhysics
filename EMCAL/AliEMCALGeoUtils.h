@@ -203,7 +203,7 @@ protected:
   Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
   Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
   TList    *fShishKebabTrd1Modules;  //! list of modules
-  Float_t  *fParSM;                  // SM sizes as in GEANT (TRD1)
+  Float_t  fParSM[3];                  // SM sizes as in GEANT (TRD1)
   Float_t  fPhiModuleSize;           // Phi -> X 
   Float_t  fEtaModuleSize;           // Eta -> Y 
   Float_t  fPhiTileSize;             // Size of phi tile

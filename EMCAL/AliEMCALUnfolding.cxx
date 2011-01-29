@@ -76,7 +76,7 @@ AliEMCALUnfolding::AliEMCALUnfolding():
   fDigitsArr(NULL)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
-  
+ 
   Init() ;
 }
 
@@ -127,9 +127,9 @@ void AliEMCALUnfolding::Init()
 {
   // Make all memory allocations which can not be done in default constructor.
   // Attach the Clusterizer task to the list of EMCAL tasks
-  
+
   AliRunLoader *rl = AliRunLoader::Instance();
-  if (rl->GetAliRun()){
+  if (rl && rl->GetAliRun()){
     AliEMCAL* emcal = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"));
     if(emcal)fGeom = emcal->GetGeometry();
   }
