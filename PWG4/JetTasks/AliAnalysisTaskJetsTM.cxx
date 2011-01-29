@@ -103,6 +103,7 @@ void AliAnalysisTaskJetsTM::UserExec(Option_t *)
 //
   for (Int_t i = 0; i < nJ; i++) {
       AliAODJet* jet = dynamic_cast<AliAODJet*> (jets->At(i));
+      if (!jet) continue;
       Float_t ptJ  = jet->Pt();
       Float_t etaJ = TMath::Abs(jet->Eta());
       if ((ptJ > 20.) && (ptJ  > ptmax) && etaJ < 0.5) {
