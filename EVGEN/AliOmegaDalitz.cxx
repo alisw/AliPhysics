@@ -104,10 +104,6 @@ void AliOmegaDalitz::Init()
       if ( kwHelp <= 0.0 )
       {
 	AliFatal("Error in calculating Dalitz mass histogram binning!");
-	if ( idecay == 1 ) 
-	  fEPMass = 0;
-	else
-	  fMPMass = 0;
       }	
       krollWada = (2.0 / mLL) * TMath::Exp(1.5 * TMath::Log(kwHelp))
                               * TMath::Sqrt(1.0 - 4.0 * epsilon / q)   
