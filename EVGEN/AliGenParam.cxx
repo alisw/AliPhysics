@@ -186,7 +186,7 @@ void AliGenParam::Init()
   */
   //End_Html
     char name[256];
-    sprintf(name, "pt-parameterisation for %s", GetName());
+    snprintf(name, 256, "pt-parameterisation for %s", GetName());
     
     if (fPtPara) fPtPara->Delete();
     fPtPara = new TF1(name, fPtParaFunc, fPtMin, fPtMax,0);
@@ -196,15 +196,15 @@ void AliGenParam::Init()
     
     fPtPara->SetNpx(npx);
 
-    sprintf(name, "y-parameterisation  for %s", GetName());
+    snprintf(name, 256, "y-parameterisation  for %s", GetName());
     if (fYPara) fYPara->Delete();
     fYPara  = new TF1(name, fYParaFunc, fYMin, fYMax, 0);
     gROOT->GetListOfFunctions()->Remove(fYPara);
 
     
-    sprintf(name, "pt-for-%s", GetName());
+    snprintf(name, 256, "pt-for-%s", GetName());
     TF1 ptPara(name ,fPtParaFunc, 0, 15, 0);
-    sprintf(name, "y-for-%s", GetName());
+    snprintf(name, 256, "y-for-%s", GetName());
     TF1 yPara(name, fYParaFunc, -6, 6, 0);
 
 //
