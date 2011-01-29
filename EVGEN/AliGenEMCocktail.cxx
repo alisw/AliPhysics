@@ -90,7 +90,7 @@ void AliGenEMCocktail::CreateCocktail()
 // pizero
   AliGenParam * genpizero=0;
   Char_t namePizero[10];    
-  sprintf(namePizero,"Pizero");    
+  snprintf(namePizero,10, "Pizero");    
   genpizero = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kPizero, "DUMMY");
   AddSource2Generator(namePizero,genpizero);
   TF1 *fPtPizero = genpizero->GetPt();
@@ -98,7 +98,7 @@ void AliGenEMCocktail::CreateCocktail()
 // eta  
   AliGenParam * geneta=0;
   Char_t nameEta[10];    
-  sprintf(nameEta,"Eta");    
+  snprintf(nameEta,10, "Eta");    
   geneta = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kEta, "DUMMY");
   AddSource2Generator(nameEta,geneta);
   TF1 *fPtEta = geneta->GetPt();
@@ -106,7 +106,7 @@ void AliGenEMCocktail::CreateCocktail()
 // rho  
   AliGenParam * genrho=0;
   Char_t nameRho[10];    
-  sprintf(nameRho,"Rho");    
+  snprintf(nameRho,10, "Rho");    
   genrho = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kRho, "DUMMY");
   AddSource2Generator(nameRho,genrho);
   TF1 *fPtRho = genrho->GetPt();
@@ -114,7 +114,7 @@ void AliGenEMCocktail::CreateCocktail()
 // omega
   AliGenParam * genomega=0;
   Char_t nameOmega[10];    
-  sprintf(nameOmega,"Omega");    
+  snprintf(nameOmega,10, "Omega");    
   genomega = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kOmega, "DUMMY");
   AddSource2Generator(nameOmega,genomega);
   TF1 *fPtOmega = genomega->GetPt();
@@ -122,7 +122,7 @@ void AliGenEMCocktail::CreateCocktail()
 // etaprime
   AliGenParam * genetaprime=0;
   Char_t nameEtaprime[10];    
-  sprintf(nameEtaprime,"Etaprime");    
+  snprintf(nameEtaprime,10, "Etaprime");    
   genetaprime = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kEtaprime, "DUMMY");
   AddSource2Generator(nameEtaprime,genetaprime);
   TF1 *fPtEtaprime = genetaprime->GetPt();
@@ -130,7 +130,7 @@ void AliGenEMCocktail::CreateCocktail()
 // phi  
   AliGenParam * genphi=0;
   Char_t namePhi[10];    
-  sprintf(namePhi,"Phi");    
+  snprintf(namePhi, 10, "Phi");    
   genphi = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kPhi, "DUMMY");
   AddSource2Generator(namePhi,genphi);
   TF1 *fPtPhi = genphi->GetPt();
