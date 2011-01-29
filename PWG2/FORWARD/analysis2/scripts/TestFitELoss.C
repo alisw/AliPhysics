@@ -253,7 +253,7 @@ void PrintFit(TF1* f)
  *
  * @ingroup pwg2_forward_analysis_scripts
  */
-void FitELoss(Int_t n, UShort_t d, Char_t r, Float_t eta)
+void TestFitELoss(Int_t n, UShort_t d, Char_t r, Float_t eta)
 {
   TList* ef1 = CheckEF();
   TCanvas* c1 = CheckC();

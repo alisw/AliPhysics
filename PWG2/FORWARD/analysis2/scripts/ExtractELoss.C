@@ -25,7 +25,7 @@
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-ExtractELoss(const char* fname="energyFits.root", 
+ExtractELoss(const char* fname="forward_eloss.root", 
 	     UShort_t sys=1, UShort_t sNN=900, Short_t field=5, Bool_t mc=false)
 {
 #ifdef __CINT__

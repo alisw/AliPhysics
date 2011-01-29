@@ -41,8 +41,9 @@ void MakeAOD(const char* esddir,
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Analysis Train", 
-						    "FMD analysis train");
+  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Train", 
+						    "Forward multiplicity");
+  AliAnalysisManager::SetCommonFileName("forward.root");
 
   // --- ESD input handler -------------------------------------------
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
