@@ -681,9 +681,9 @@ void AliGenCorrHF::GetHadronPair(TFile* fG, Int_t idq, Double_t y1, Double_t y2,
     char tag[100]; 
     TH2F *h2h[12], *h2s[12], *hProbHH; // hard & soft fragmentation and HH-probability functions
     for (Int_t ipt = 0; ipt<fgnptbins; ipt++) { 
-      sprintf(tag,"h2h_pt%d",ipt); 
+      snprintf(tag,100, "h2h_pt%d",ipt); 
       h2h[ipt] = (TH2F*) fG->Get(tag); 
-      sprintf(tag,"h2s_pt%d",ipt); 
+      snprintf(tag,100, "h2s_pt%d",ipt); 
       h2s[ipt] = (TH2F*) fG->Get(tag); 
     }
 
