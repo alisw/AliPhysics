@@ -95,7 +95,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 //
 //  Add generator to list   
     char theName[256];
-    sprintf(theName, "%s_%d",Name, fNGenerators);
+    snprintf(theName, 256, "%s_%d",Name, fNGenerators);
     Generator->SetName(theName);
 
     AliGenCocktailEntry *entry = 
