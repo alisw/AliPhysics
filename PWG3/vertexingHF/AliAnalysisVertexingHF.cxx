@@ -2023,6 +2023,9 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     // skip pure ITS SA tracks
     if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
 
+    // skip tracks without ITS
+    if(!(track->GetStatus()&AliESDtrack::kITSin)) continue;
+
     // TEMPORARY: check that the cov matrix is there
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
