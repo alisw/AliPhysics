@@ -3,46 +3,70 @@ Note: The CMake build of AliRoot builds out-of-source
 
 Steps to Build AliRoot with CMake :
 
-1. Check out Aliroot source into any folder
+1. Check out Aliroot source into a folder (usually specified by the environment variable ALICE)
 	
-	svn co http://alisoft.cern.ch/AliRoot/trunk ~/trunk
+	cd $ALICE
+	svn co http://alisoft.cern.ch/AliRoot/trunk AliRoot
 
-2. Create a new folder and set the environment variable ALICE_ROOT to point to it
+2. Set the environment variable ALICE_ROOT to point to the source you have checked out
+
+       cd AliRoot
+       export ALICE_ROOT=`pwd`
+
+
+3. Create a new folder where the build will take place. It must be different from the source directory!
 	
-	mkdir AliRoot
-	cd AliRoot
-	export ALICE_ROOT=`pwd`
+	cd ..
+	mkdir objdir
+	cd objdir
 
-3. Execute the following commands to build AliRoot
+4. Optionally specify the place for installation using the environment variable ALICE_INSTALL.
+It you do not specify it, "make install" will put lib, bin and include in ALICE_ROOT
 
-	cmake <Path to Source>
+5. Optionally specify the location of Geant3 using the environment variable GEANT3DIR
 
-eg.	cmake ~/trunk
-	make
+6. Execute the following commands to configure the build
 
-4. In order to build addtional targets like THydjet and SHUTTLE add the following options to the cmake command
+	cmake $ALICE_ROOT
+
+Note: Some files CMakeLists.txt will be created in the source tree, so you need write access there. This 
+is a temporary situation that will change soon.
+
+7. Build and install AliRoot. Note that the parralel build is fully operational with CMake.
+
+   	 make -j4
+	 make install
+
+If you make changes in the source tree, it is enough to do
+
+       	 make
+	 make install
+
+to get them in use.
+
+9. In order to build addtional targets like THydjet and SHUTTLE add the following options to the cmake command
 
 	cmake -DTHydjet=ON -DSHUTTLE=ON <path_to_source>
 
-5. Static libraries can be built using
+10. Static libraries can be built using
 
 	make alilibs-static
 
-6. Individual Modules can be built using
+11. Individual Modules can be built using
 
 	make <Module>-all
 	make <Module>-all-static 
 
 eg.	make STEER-all STEER-all-static
 
-7. Individual Packages can be built using
+12. Individual Packages can be built using
 
 	make <Package>
 	make <Package>-static
 
 eg.	make STEERbase STEERbase-static
 
-8. The code can be checked for the ALICE coding conventions on a package, module or class level using the following targets. 
+13. The code can be checked for the ALICE coding conventions on a package, module or class level using the following targets. 
 
   make check-all
   make <Module>-check-all
@@ -51,13 +75,13 @@ eg.	make STEERbase STEERbase-static
 
   The resulting violations will be written to the folder <Build_Directory>/<Module>/check/viols
 
-9. To Build PARs the following targets can be used. The resulting packages will be created in the cmake build directory
+14. To Build PARs the following targets can be used. The resulting packages will be created in the cmake build directory
 
   make par-all 
   make <Package>.par
   make <Module>-par-all   //build all par packages in the module
 
-10. To test PARs after building run
+15. To test PARs after building run
 
   make test-par-all
   make test-<Package>
