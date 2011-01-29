@@ -168,7 +168,7 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
       printf("WARNING! In THerwig6:Initialize():\n");
       printf(" specified beam=%s is unrecognized .\n",beam);
       printf(" resetting to \"P\" .");
-      sprintf(cbeam,"P");
+      snprintf(cbeam, 8, "P");
    }
 
    if ( (!strncmp(target, "E+"    ,2)) &&
@@ -191,7 +191,7 @@ void THerwig6::Initialize(const char *beam, const char *target, double pbeam1, d
       printf("WARNING! In THerwig6:Initialize():\n");
       printf(" specified target=%s is unrecognized .\n",target);
       printf(" resetting to \"P\" .");
-      sprintf(ctarget,"P");
+      snprintf(ctarget,8, "P");
    }
 
    // initialization:
