@@ -426,7 +426,7 @@ void AliGenHBTosl::Generate()
  
  char msg[1000];
  logfile<<endl;
- sprintf(msg,"\n");
+ snprintf(msg,1000, "\n");
  Int_t middlebin = fQNBins/2;
  
  for (Int_t k = middlebin-5; k < middlebin+5; k++)
@@ -434,21 +434,21 @@ void AliGenHBTosl::Generate()
      Double_t tx = work->GetXaxis()->GetBinCenter(30);
      Double_t ty = work->GetYaxis()->GetBinCenter(30);
      Double_t tz = work->GetZaxis()->GetBinCenter(k);
-     sprintf(msg,"% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
+     snprintf(msg,1000, "% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
      logfile<<msg;
    }
  logfile<<endl;
   
  for (Int_t k = middlebin-5; k < middlebin+5; k++)
   {
-    sprintf(msg,"% 6.5f ",work->GetBinContent(30,30,k));
+    snprintf(msg,1000, "% 6.5f ",work->GetBinContent(30,30,k));
     logfile<<msg;
   }
  logfile<<endl;
 
  for (Int_t k = middlebin-5; k < middlebin+5; k++)
   {
-    sprintf(msg,"% 6.5f ",chiarray[30][30][k]);
+    snprintf(msg, 1000, "% 6.5f ",chiarray[30][30][k]);
     logfile<<msg;
   }
  logfile<<endl;
@@ -520,7 +520,7 @@ void AliGenHBTosl::Generate()
      Double_t qoutc  = work->GetXaxis()->GetBinCenter(xmax);
      
 
-     sprintf(msg,"Generate Fill bin chi2(%d,%d,%d)=%f",xmax,ymax,zmax,chiarray[xmax][ymax][zmax]);
+     snprintf(msg,1000, "Generate Fill bin chi2(%d,%d,%d)=%f",xmax,ymax,zmax,chiarray[xmax][ymax][zmax]);
      logfile<<msg;
      
      qout  = gRandom->Uniform(qoutc -binwdh, qoutc +binwdh);
@@ -898,21 +898,21 @@ void AliGenHBTosl::StartSignal()
     {
       c1->cd();
       char buff[50];
-      sprintf(buff,"QTWorkPass2.%3d.root",counter);
+      snprintf(buff,50, "QTWorkPass2.%3d.root",counter);
       TFile* file = TFile::Open(buff,"update");
       work->Write();
       work->SetDirectory(0x0);
       file->Close();
       delete file;
 
-      sprintf(buff,"QTBackgroundPass2.%3d.root",counter);
+      snprintf(buff,50, "QTBackgroundPass2.%3d.root",counter);
       file = TFile::Open(buff,"update");
       fQBackground->Write();
       fQBackground->SetDirectory(0x0);
       file->Close();
       delete file;
 
-      sprintf(buff,"QTSignalPass2.%3d.root",counter);
+      snprintf(buff,50, "QTSignalPass2.%3d.root",counter);
       file = TFile::Open(buff,"update");
       fQSignal->Write();
       fQSignal->SetDirectory(0x0);
@@ -960,21 +960,21 @@ void AliGenHBTosl::StartSignal()
       Double_t tx = work->GetXaxis()->GetBinCenter(30);
       Double_t ty = work->GetYaxis()->GetBinCenter(30);
       Double_t tz = work->GetZaxis()->GetBinCenter(k);
-      sprintf(msg,"% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
+      snprintf(msg,1000, "% 6.5f ",GetQOutQSideQLongCorrTheorValue(tx,ty,tz));
       logfile<<msg;
     }
    logfile<<endl;
 
    for (Int_t k = 25; k < 36; k++)
     {
-      sprintf(msg,"%6.5f ",work->GetBinContent(30,30,k));
+      snprintf(msg, 1000, "%6.5f ",work->GetBinContent(30,30,k));
       logfile<<msg;
     }
    logfile<<endl;
 
    for (Int_t k = 25; k < 36; k++)
     {
-      sprintf(msg,"% 6.5f ",chiarray[30][30][k]);
+      snprintf(msg,1000, "% 6.5f ",chiarray[30][30][k]);
       logfile<<msg;
     }
    logfile<<endl;
