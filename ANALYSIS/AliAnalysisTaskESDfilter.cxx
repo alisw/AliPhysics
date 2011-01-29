@@ -221,8 +221,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 //
 //
     Int_t nV0s      = esd->GetNumberOfV0s();
-    Int_t nCascades = esd->GetNumberOfCascades();
-    Int_t nKinks    = esd->GetNumberOfKinks();
+    Int_t nCascades = 0; // esd->GetNumberOfCascades();
+    Int_t nKinks    = 0; // esd->GetNumberOfKinks();
     Int_t nVertices = nV0s + nCascades /*V0 wihtin cascade already counted*/+ nKinks + 1 /* = prim. vtx*/;
     Int_t nPileSPDVertices=1+esd->GetNumberOfPileupVerticesSPD(); // also SPD main vertex
     Int_t nPileTrkVertices=esd->GetNumberOfPileupVerticesTracks();
@@ -1243,8 +1243,6 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
 	aodTrack->SetChi2perNDF(Chi2perNDF(track));
 	aodTrack->SetFlags(track->GetStatus());
-	aodTrackRefs->AddAt(aodTrack, nTrack);
-	
 	delete track;
       } // end of loop on tracks
       
