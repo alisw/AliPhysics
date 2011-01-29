@@ -1501,7 +1501,7 @@ void AliUA1JetFinderV2::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
   TH1F* hAreaJet[30];
   for(Int_t mjet=0; mjet<nJ; mjet++){
     char hEtname[256]; char hAreaname[256];
-    sprintf(hEtname, "hEtJet%d", mjet); sprintf(hAreaname, "hAreaJet%d", mjet);
+    snprintf(hEtname, 256, "hEtJet%d", mjet); snprintf(hAreaname, 256, "hAreaJet%d", mjet);
     hEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);
     hAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);
   }
@@ -1618,7 +1618,7 @@ void AliUA1JetFinderV2::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ,Floa
   TH1F* hAreaJet[30];
   for(Int_t mjet=0; mjet<nJ; mjet++){
     char hEtname[256]; char hAreaname[256];
-    sprintf(hEtname, "hEtJet%d", mjet); sprintf(hAreaname, "hAreaJet%d", mjet);
+    snprintf(hEtname, 256, "hEtJet%d", mjet); snprintf(hAreaname, 256, "hAreaJet%d", mjet);
     hEtJet[mjet] = new TH1F(hEtname,"et dist in eta ",ndiv,etamin,etamax);        // change range
     hAreaJet[mjet] = new TH1F(hAreaname,"area dist in eta ",ndiv,etamin,etamax);  // change range
   }
