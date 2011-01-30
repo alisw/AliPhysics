@@ -51,7 +51,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     virtual void   SetSubtractionMethod(Int_t i){fSubtraction = i;}
     virtual Int_t  GetSubtractionMethod(){return fSubtraction;}
     virtual void   SetBackgroundBranch(char* c){fBackgroundBranch = c;}  
-    virtual void   SetNonStdFile(char* c){fNonStdFile = c;}  
+    virtual void   SetNonStdOutputFile(char* c){fNonStdFile = c;}  
     virtual void   SetToReplace(char* c){fReplaceString1 = c;}  
     const char*    GetToReplace(){return fReplaceString1.Data();}  
     virtual void   SetReplacementMask(char* c){fReplaceString2 = c;}  

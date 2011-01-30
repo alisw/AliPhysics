@@ -669,7 +669,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(AODEvent()->FindListObject(fBackgroundBranch.Data()));
-    if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
+   if(!externalBackground)externalBackground = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
+   if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
   }
   //
   // Execute analysis for current event
