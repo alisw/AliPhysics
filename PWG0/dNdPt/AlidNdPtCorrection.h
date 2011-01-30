@@ -341,12 +341,12 @@ private:
   //  deta, dphi, pt1 for cosmics
   THnSparseF *fCosmicsHisto; //-> deta:dphi:pt
   
-  THnSparseF *fEventCount; //-> trig, trig + vertex
+  THnSparseF *fEventCount; //-> trig, trig + vertex, selected event
 
   AlidNdPtCorrection(const AlidNdPtCorrection&); // not implemented
   AlidNdPtCorrection& operator=(const AlidNdPtCorrection&); // not implemented
 
-  ClassDef(AlidNdPtCorrection,2);
+  ClassDef(AlidNdPtCorrection,3);
 };
 
 #endif

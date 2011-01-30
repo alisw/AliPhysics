@@ -137,8 +137,10 @@ ClassImp(AlidNdPtAnalysis)
 
   // Generic histograms to be corrected
   fRecEventHist(0),
-  fRecTrackHist(0)
+  fRecTrackHist(0),
 
+  // Candle event histogram
+  fRecCandleEventMatrix(0)
 {
   // default constructor
   for(Int_t i=0; i<AlidNdPtHelper::kCutSteps; i++) { 
@@ -234,7 +236,10 @@ AlidNdPtAnalysis::AlidNdPtAnalysis(Char_t* name, Char_t* title): AlidNdPt(name,t
 
   // Generic histograms to be corrected
   fRecEventHist(0),
-  fRecTrackHist(0)
+  fRecTrackHist(0),
+
+  // Candle event histogram
+  fRecCandleEventMatrix(0)
 {
   //
   // constructor
@@ -278,6 +283,7 @@ AlidNdPtAnalysis::~AlidNdPtAnalysis() {
   if(fRecNDEventMatrix) delete fRecNDEventMatrix; fRecNDEventMatrix=0;
   if(fRecNSDEventMatrix) delete fRecNSDEventMatrix; fRecNSDEventMatrix=0;
 
+  if(fRecCandleEventMatrix) delete fRecCandleEventMatrix; fRecCandleEventMatrix=0;
   //
   if(fGenTrackEventMatrix) delete fGenTrackEventMatrix; fGenTrackEventMatrix=0;
   if(fGenTrackSDEventMatrix) delete fGenTrackSDEventMatrix; fGenTrackSDEventMatrix=0;
@@ -524,6 +530,13 @@ void AlidNdPtAnalysis::Init(){
   fRecNSDEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
   fRecNSDEventMatrix->GetAxis(1)->SetTitle("multiplicity MB");
   fRecNSDEventMatrix->Sumw2();
+
+  fRecCandleEventMatrix = new THnSparseF("fRecCandleEventMatrix","mcZv:multMB",2,binsEventMatrix,minEventMatrix,maxEventMatrix);
+  fRecCandleEventMatrix->SetBinEdges(0,binsZv);
+  fRecCandleEventMatrix->SetBinEdges(1,binsMult);
+  fRecCandleEventMatrix->GetAxis(0)->SetTitle("mcZv (cm)");
+  fRecCandleEventMatrix->GetAxis(1)->SetTitle("multiplicity MB");
+  fRecCandleEventMatrix->Sumw2();
 
   // 
   // track to event corrections
@@ -965,7 +978,6 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     return;
   }
 
-
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
   AliPhysicsSelection *trigSel = NULL;
@@ -1142,6 +1154,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 
   } // end bUseMC
 
+
   // get reconstructed vertex  
   const AliESDVertex* vtxESD = 0; 
   Bool_t isRecVertex = kFALSE;
@@ -1194,6 +1207,17 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
     return; 
   }
 
+  Bool_t isEventSelected = kTRUE;
+  if(evtCuts->IsEventSelectedRequired()) 
+  { 
+     // select events with at least 
+     // one prompt track in acceptance
+     // pT>0.5 GeV/c, |eta|<0.8 for the Cross Section studies
+
+     isEventSelected = AlidNdPtHelper::SelectEvent(esdEvent,esdTrackCuts);
+     //printf("isEventSelected %d \n", isEventSelected);
+  }
+
   TObjArray *allChargedTracks=0;
   Int_t multAll=0, multAcc=0, multRec=0;
   Int_t *labelsAll=0, *labelsAcc=0, *labelsRec=0;
@@ -1204,7 +1228,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   Int_t highPtCount = 0;
 
   // check event cuts
-  if(isEventOK && isEventTriggered)
+  if(isEventOK && isEventTriggered && isEventSelected)
   {
     // get all charged tracks
     allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
@@ -1397,11 +1421,23 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      // 
      Double_t vRecEventHist[2] = {vtxESD->GetZv(),multMBTracks};
      fRecEventHist->Fill(vRecEventHist);
-
    } 
 
    if(IsUseMCInfo())  
    {
+     if(!mcEvent) return; 
+
+     if(evtCuts->IsEventSelectedRequired()) 
+     { 
+       // select events with at least 
+       // one MC primary track in acceptance
+       // pT>0.5 GeV/c, |eta|<0.8 for the Cross Section studies
+
+       Bool_t isMCEventSelected = AlidNdPtHelper::SelectMCEvent(mcEvent);
+       //printf("isMCEventSelected %d \n", isMCEventSelected);
+       if(!isMCEventSelected) return;  
+     }
+
      Double_t vMultTrueEventMatrix[2] = { multRec, multMCTrueTracks };
      if(isEventOK && isEventTriggered) {   
        if(TMath::Abs(vtxMC[2]) < 10.0) // both Rec. and corresponding MC events must be accepted
@@ -1549,6 +1585,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        //
        // MC histograms for track efficiency studies
        //
+       Int_t countRecCandle = 0;
        for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
        {
          TParticle* particle = stack->Particle(iMc);
@@ -1617,12 +1654,13 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
              if(iMc == labelsRec[iRec]) 
 	     {
                fRecTrackMatrix->Fill(vTrackMatrix);
-
+                 
                if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) {
 	         fRecPrimTrackMatrix->Fill(vTrackMatrix);
 	         //AliESDtrack *track = esdEvent->GetTrack(iRec);
                  //if(track && track->GetKinkIndex(0) < 0) 
 		 //  printf("prim kink \n");
+		 countRecCandle++;
 	       }
 
                if(!prim) fRecSecTrackMatrix->Fill(vTrackMatrix);
@@ -1636,7 +1674,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
            }
          }
        }
+
+       if(countRecCandle>0) fRecCandleEventMatrix->Fill(vEventMatrix);
      }
+
+
    } // end bUseMC
 
   if(allChargedTracks) delete allChargedTracks; allChargedTracks = 0;
@@ -1886,6 +1928,7 @@ Long64_t AlidNdPtAnalysis::Merge(TCollection* const list)
     fRecNDEventMatrix->Add(entry->fRecNDEventMatrix);
     fRecNSDEventMatrix->Add(entry->fRecNSDEventMatrix);
 
+    fRecCandleEventMatrix->Add(entry->fRecCandleEventMatrix);
     //
     fGenTrackEventMatrix->Add(entry->fGenTrackEventMatrix);
     fGenTrackSDEventMatrix->Add(entry->fGenTrackSDEventMatrix);

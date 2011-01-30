@@ -40,10 +40,14 @@ public:
     fSigmaMeanXv = sxv; fSigmaMeanYv = syv; fSigmaMeanZv = szv;
   }
 
+
   void SetRedoTPCVertex(const Bool_t redo = kTRUE) {fRedoTPCVertex = redo;}
   void SetUseBeamSpotConstraint(const Bool_t useConstr = kTRUE) {fUseBeamSpotConstraint = useConstr;}
+  void SetEventSelectedRequired(const Bool_t evtSel = kTRUE) {fEventSelectedRequired = evtSel;} 
+
 
   // getters 
+  Bool_t  IsEventSelectedRequired() const {return fEventSelectedRequired;}
   Bool_t  IsTriggerRequired() const {return fTriggerRequired;}
   Bool_t  IsRecVertexRequired() const {return fRecVertexRequired;}
   Int_t   GetEventProcessType() const {return fEventProcessType;}  
@@ -63,6 +67,7 @@ public:
  
   Bool_t IsRedoTPCVertex() const {return fRedoTPCVertex;}
   Bool_t IsUseBeamSpotConstraint() const {return fUseBeamSpotConstraint;}
+
 
   // cuts init function
   void Init();
@@ -100,10 +105,12 @@ private:
   Bool_t fRedoTPCVertex;         // redo vertex
   Bool_t fUseBeamSpotConstraint; // use beam spot contraints  
 
+  Bool_t fEventSelectedRequired; // event with at least one track (pT>0.5 GeV, |eta|<0.8) required
+
   AlidNdPtEventCuts(const AlidNdPtEventCuts&); // not implemented
   AlidNdPtEventCuts& operator=(const AlidNdPtEventCuts&); // not implemented
 
-  ClassDef(AlidNdPtEventCuts, 1)
+  ClassDef(AlidNdPtEventCuts, 2)
 };
 
 #endif // ALIDNDPTEVENTCUTS_H

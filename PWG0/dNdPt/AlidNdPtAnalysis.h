@@ -90,6 +90,9 @@ public :
   THnSparseF *GetRecNDEventMatrix() const {return fRecNDEventMatrix;}
   THnSparseF *GetRecNSDEventMatrix() const {return fRecNSDEventMatrix;}
 
+  //
+  THnSparseF *GetRecCandleEventMatrix() const {return fRecCandleEventMatrix;}
+
   // 
   THnSparseF *GetGenTrackEventMatrix() const {return fGenTrackEventMatrix;}
   THnSparseF *GetGenTrackSDEventMatrix() const {return fGenTrackSDEventMatrix;}
@@ -189,6 +192,7 @@ private:
   THnSparseF *fRecNDEventMatrix; //-> mcZv:multMB
   THnSparseF *fRecNSDEventMatrix; //-> mcZv:multMB
 
+
   //
   // track-event level correction 
   //
@@ -266,10 +270,15 @@ private:
   THnSparseF *fRecEventHist; //-> Zv:multMB
   THnSparseF *fRecTrackHist; //-> Zv:pT:eta
 
+  //
+  // candle events track corrections
+  //
+  THnSparseF *fRecCandleEventMatrix; //-> Zv:multMB
+
   AlidNdPtAnalysis(const AlidNdPtAnalysis&); // not implemented
   AlidNdPtAnalysis& operator=(const AlidNdPtAnalysis&); // not implemented
 
-  ClassDef(AlidNdPtAnalysis,3);
+  ClassDef(AlidNdPtAnalysis,4);
 };
 
 #endif
