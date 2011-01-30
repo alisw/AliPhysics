@@ -178,9 +178,9 @@ Int_t         kGridRunRange[2]       =  {0, -1}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
 TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
-Int_t       kGridMaxMergeFiles     = 12; // Number of files merged in a chunk grid run range
-TString     kGridMergeExclude      = "AliAOD.root"; // Files that should not be merged
-TString     kGridOutputStorages     = "disk=2"; // Make replicas on the storages
+Int_t         kGridMaxMergeFiles      = 25; // Number of files merged in a chunk grid run range
+TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
+TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
 Int_t       kGridRunsPerMaster     = 100; // Number of runs per master job
 Int_t       kGridFilesPerJob       = 100; // Maximum number of files per job (gives size of AOD)
@@ -380,8 +380,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    //                                                                                                                              
    // Tender and supplies. Needs to be called for every event.                                                                     
    //                                                                                                                              
+
    if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/ANALYSIS/TenderSupplies/AddTaskTender.C");
       AliAnalysisTaskSE *tender = AddTaskTender(kTRUE);
       //      tender->SelectCollisionCandidates();                                                                                      
       tender->SetDebugLevel(2);
@@ -390,7 +391,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if(iPhysicsSelection && !iAODanalysis){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      Int_t iTriggerHIC = 0;
      Bool_t rejectBkg = true;
      if(kIsPbPb){
@@ -399,13 +400,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      }
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,rejectBkg);  
      iPhysicsSelectionFlag = AliVEvent::kMB;
-     //     mgr->RegisterExtraFile("EventStat_tmp.root");
+     mgr->RegisterExtraFile("EventStat_temp.root");
+     mgr->AddStatisticsTask();
    }
 
    if(iCentralitySelection){
 
      // has to run before AOD filter
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/ANALYSIS/macros/AddTaskCentrality.C");
      //     const char* file1="$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161.root";
      //     const char* file2="$ALICE_ROOT/ANALYSIS/macros/AliCentralityByFunction_137161.root";
      AliCentralitySelectionTask *taskC = AddTaskCentrality();
@@ -414,7 +416,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDFilterPWG4Train.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskESDFilterPWG4Train.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
       taskesdfilter->SetEnableFillAOD(!kFilterAOD);
 
@@ -437,7 +439,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }   
 
    if (iPWG4FastEmbedding) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFastEmbedding.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskFastEmbedding.C");
      AliAnalysisTaskFastEmbedding *taskEmbedding = 0;
      if(kFastEmbAODList.Length()) taskEmbedding = AddTaskFastEmbedding(kFastEmbAODList, 1);
      else                         taskEmbedding = AddTaskFastEmbedding(kFastEmbeddingAOD, 0);
@@ -446,7 +448,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
     // Jet analysis
    if (iJETAN) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJets.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJets.C");
       AliAnalysisTaskJets *taskjets = 0;
       if(iJETAN&1){
 	/*
@@ -462,10 +464,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 
 	// STANDARD UA jet finders pT cut 1 GeV background mode 2 R = 0.4
-	taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
-	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
-	// EXTRA UA1 Jet finder same as above with R = 0.2
-
+	if(kIsPbPb){
+	  taskjets = AddTaskJets("AOD","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	  if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
+	}
 
 	TString cTmp("");
 
@@ -474,13 +476,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	if(kDeltaAODJetName.Length()>0)taskjets->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	cTmp = taskjets->GetNonStdBranch();
 	if(cTmp.Length()>0)kJetSubtractBranches += Form("%s ",cTmp.Data());
+
 	if(kUseAODMC){
 	  // STANDARD UA jet finders pT cut 1 GeV background mode 2 R = 0.4
-	  taskjets = AddTaskJets("AODMC","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
-	  taskjets = AddTaskJets("AODMC2","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	  if(kIsPbPb){
+	    taskjets = AddTaskJets("AODMC","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	    taskjets = AddTaskJets("AODMC2","UA1",0.4,kHighPtFilterMask,1.,2); // background subtraction
+	  }
+	  else{
+	    taskjets = AddTaskJets("AODMC","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction
+	    taskjets = AddTaskJets("AODMC2","UA1",0.4,kHighPtFilterMask,1.,0); // no background subtraction
+	  }
 	}
-
-
 	if(kDeltaAODJetName.Length()>0)mgr->RegisterExtraFile(kDeltaAODJetName.Data()); 
       }
       if (!taskjets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
@@ -504,7 +511,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4Cluster){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
      Float_t fCenUp = 0;
      Float_t fCenLo = 0;
@@ -513,6 +520,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        fCenUp = 80;
      }
      if(iPWG4Cluster&1){
+
        if(kIsPbPb){
 	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetBackgroundCalc(kTRUE);
@@ -548,22 +556,31 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetGhostEtamax(0.9);
        }
        else{
-	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data()); // this one is for the background jets
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1,kDeltaAODJetName.Data(),0.15); // this one is for the background jets
 	 taskCl->SetBackgroundCalc(kTRUE);
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
+	 taskCl->SetGhostEtamax(0.9);
+
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1,kDeltaAODJetName.Data(),0.15); 
+	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetGhostEtamax(0.9);
        } 
 
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
+       if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        taskCl->SetNRandomCones(10);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
-       if(kDeltaAODJetName.Length()==0&&kFilterAOD)taskCl->SetJetTriggerPtCut(40.);
+       if(kDeltaAODJetName.Length()==0&&kFilterAOD){
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40.);
+	 else taskCl->SetJetTriggerPtCut(20.);
+       }
+
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
   
        taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.2,0,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
-       taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
+       if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        kJetSubtractBranches += Form("%s ",taskCl->GetJetOutputBranch());
 
        if(kUseAODMC){
@@ -579,16 +596,25 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch()); 
 	 }
 	 else{
+	   taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
+	   taskCl->SetBackgroundCalc(kTRUE);
+	   taskCl->SetGhostEtamax(0.9);
+	   kDefaultJetBackgroundBranchMC = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
+	   
+	   taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.6,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
+	   taskCl->SetBackgroundCalc(kTRUE);
+	   taskCl->SetGhostEtamax(0.9);
+	   kDefaultJetBackgroundBranchMC2 = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch()); 
 	   // pp background calcs...
 	 }
 	 
 	 taskCl = AddTaskJetCluster("AODMC","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
 	 taskCl->SetGhostEtamax(0.9);
-	 taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC.Data());	 
+	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC.Data());	 
 	 kDefaultJetBranchMC = taskCl->GetJetOutputBranch();
 
 	 taskCl = AddTaskJetCluster("AODMC2","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1, kDeltaAODJetName.Data(),0.15); // this one is for the background and random jets
-	 taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC2.Data());	 
+	 if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranchMC2.Data());	 
 	 kDefaultJetBranchMC2 = taskCl->GetJetOutputBranch();
 
        }
@@ -599,31 +625,34 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iJETSUBTRACT){
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetBackgroundSubtract.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetBackgroundSubtract.C");
       AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
       if(kJetSubtractBranches.Length()){
 
 	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,3,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 
+	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data()); 
+	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
 
 	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,2,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 
-	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+
 	//	taskSubtract->SetDebugLevel(3);
 
 	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 
-	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-	if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())){
+	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+
+	if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())&&kIsPbPb){
 	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
 	}
       }
       if(kJetSubtractBranches_extra.Length()){
-
 	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
 	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
         //taskSubtract->SetDebugLevel(3);
+	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
 	if(kJetSubtractBranches_extra.Contains(kDefaultJetBranch.Data())){
 	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
 	}
@@ -632,7 +661,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if (iDIJETAN) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskDiJets.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskDiJets.C");
       AliAnalysisTaskDiJets *taskdijets = 0;
       if(iDIJETAN&1)taskdijets = AddTaskDiJets(); 
       if (!taskdijets) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJets cannot run for this train conditions - EXCLUDED");
@@ -647,7 +676,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG1QASym){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG1/PilotTrain/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
      if (!taskQASym) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQASym cannot run for this train conditions - EXCLUDED");
    }
@@ -655,14 +684,14 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if(iPWG4TmpSourceSara){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskEta.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskEta.C");
      AliAnalysisTaskEta *taskEta = AddTaskEta();
      if (!taskEta) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskEta cannot run for this train conditions - EXCLUDED");
    }
 
 
    if(iPWG4JetServices){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetServices.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetServices.C");
      AliAnalysisTaskJetServices *taskjetServ = 0;
      taskjetServ = AddTaskJetServices();
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
@@ -685,7 +714,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4JetSpectrum){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetSpectrum2.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      if(iPWG4JetSpectrum&1){
        if(kIsPbPb){
@@ -733,12 +762,44 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 	 }
        }
+       else{ // ! PbPb
+	 Int_t i = 0;
+	 TString tmp(kDefaultJetBranch.Data());
+	 //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
+	 //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
+	 tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),0),Form(kJetSubtractMask1.Data(),1));
+	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),tmp.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	 taskjetSpectrum->SetDebugLevel(3);
+	 //	   taskjetSpectrum->SetMinJetPt(10);
+	 taskjetSpectrum->SetTrackEtaWindow(0.8);
+	 taskjetSpectrum->SetJetEtaWindow(0.4);
+	 if(iAODanalysis)SetAODInput(taskjetSpectrum);
+	 
+
+	 TString tmp2(kDefaultJetBranch.Data());
+	 tmp2.ReplaceAll(Form(kJetSubtractMask2.Data(),0),Form(kJetSubtractMask2.Data(),2));
+	 taskjetSpectrum = AddTaskJetSpectrum2(tmp2.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	 //	 taskjetSpectrum->SetDebugLevel(3);
+	 //	   taskjetSpectrum->SetMinJetPt(10);
+	 taskjetSpectrum->SetTrackEtaWindow(0.8);
+	 taskjetSpectrum->SetJetEtaWindow(0.4);
+
+	 // check the old subtracted vs. the new subtracted
+	 TString tmp3(kDefaultJetBranch.Data());
+	 tmp3.ReplaceAll(Form(kJetSubtractMask2.Data(),0),Form(kJetSubtractMask2.Data(),3));
+	 taskjetSpectrum = AddTaskJetSpectrum2(tmp3.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	 //	 taskjetSpectrum->SetDebugLevel(3);
+	 //	   taskjetSpectrum->SetMinJetPt(10);
+	 taskjetSpectrum->SetTrackEtaWindow(0.8);
+	 taskjetSpectrum->SetJetEtaWindow(0.4);
+	 if(iAODanalysis)SetAODInput(taskjetSpectrum);
+       }
        if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
      }
    }
 
    if(iPWG4Fragmentation){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragmentationFunction.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskFragmentationFunction.C");
        AliAnalysisTaskFragmentationFunction *taskFrag = 0;
      if(kUseAODMC){
 
@@ -750,13 +811,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4JetChem){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetChem.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetChem.C");
      AliAnalysisTask *taskChem = AddTaskJetChem(kHighPtFilterMask);
      if (!taskChem) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetChem cannot run for this train conditions - EXCLUDED");
    }
 
    if (iPWG4JetResponse) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetResponse.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetResponse.C");
      AliAnalysisTask *taskJetResponse = 0;
 
      if(iJETAN){
@@ -775,7 +836,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4JCORRAN){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJCORRANTask.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJCORRANTask.C");
      AliJCORRANTask* corran = AddTaskJCORRAN(kDeltaAODJCORRANName.Data(),0);
      if(!corran)::Warning("AnalysisTrainPWG4Jets", "AliJCORRANTask cannot run for this train conditions - EXCLUDED");
      else{
@@ -784,7 +845,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4UE){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskUE.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskUE.C");
      AliAnalysisTaskUE *taskUE = 0;
      if(iPWG4UE&1)taskUE = AddTaskUE(); 
      if(iPWG4UE&2){
@@ -803,7 +864,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4LeadingUE){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskLeadingTrackUE.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskLeadingTrackUE.C");
      AliAnalysisTaskLeadingTrackUE *taskLeadingUE = AddTaskLeadingTrackUE(kUseMC);
      if (!taskLeadingUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTasLeadingTrackkUE cannot run for this train conditions - EXCLUDED");
      //     taskLeadingUE->SetFilterBit(64);
@@ -811,26 +872,26 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if(iPWG4CorrectionsUE){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCorrectionsUE.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskCorrectionsUE.C");
      AliAnalysisTaskCorrectionsUE *taskCorrectionsUE = 0;
      if(iPWG4CorrectionsUE&1)taskCorrectionsUE = AddTaskCorrectionsUE("jetsAOD_NONE","CDF","MP_eta05","TRANSV","MSP",kFALSE);
      if (!taskCorrectionsUE) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskCorrectionsUE cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4ThreeJets){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskThreeJets.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskThreeJets.C");
      AliAnalysisTaskThreeJets *taskThree = AddTaskThreeJets();
      if(!taskThree)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskThreets cannot run for this train conditions - EXCLUDED");
    }
    if(iPWG4QGSep){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskQGSep.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskQGSep.C");
      AliAnalysisTaskQGSep *taskQGSep = AddTaskQGSep(kUseMC,iAODanalysis);
      if(!taskQGSep)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQGSep cannot run for this train conditions - EXCLUDED");
    }
   
 
    if(iPWG4Minijet){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskMinijet.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskMinijet.C");
      AliAnalysisTaskMinijet *taskMini = AddTaskMinijet(-1,"esd",kUseMC,kGridDataSet);
      // if we ha highmult trigger add another task
      if(!taskMini)::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskMinjet cannot run for this train conditions - EXCLUDED");
@@ -838,7 +899,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if(iPWG4PtQAMC){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskPWG4HighPtQAMC.C");
      AliPWG4HighPtQAMC *taskQAMC = 0;
      if(kUseMC){
        if(iPWG4PtQAMC&1){
@@ -851,7 +912,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4PtQATPC){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQATPConly.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskPWG4HighPtQATPConly.C");
      AliPWG4HighPtQATPConly *taskQATPC = 0;
      if(iPWG4PtQATPC&1)taskQATPC = AddTaskPWG4HighPtQATPConly(kGridDataSet.Data(),1);
      if(iPWG4PtQATPC&2)taskQATPC = AddTaskPWG4HighPtQATPConly(kGridDataSet.Data(),2);
@@ -860,7 +921,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4Cosmics){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4CosmicCandidates.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskPWG4CosmicCandidates.C");
 
      AliPWG4CosmicCandidates *taskPWG4CosmicCandidates = AddTaskPWG4CosmicCandidates(0);
      taskPWG4CosmicCandidates = AddTaskPWG4CosmicCandidates(1);
@@ -870,18 +931,18 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
    if(iPWG4PtSpectra){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
      AliPWG4HighPtSpectra *taskPtSpectra = AddTaskPWG4HighPtSpectra(kGridDataSet.Data());
      if (!taskPtSpectra) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskPtSpectra cannot run for this train conditions - EXCLUDED");
    }
    if(iPWG4KMeans){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskKMeans.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskKMeans.C");
      AliAnalysisTaskKMeans *taskKMeans = AddTaskKMeans();
      if (!taskKMeans) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskKMenans cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4PartCorr){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPartCorr.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskPartCorr.C");
      AliAnalysisTaskParticleCorrelation *taskpartcorrPHOS = AddTaskPartCorr("AOD", "PHOS",kFALSE,kIsMC);
      if (!taskpartcorrPHOS) ::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation PHOS cannot run for this train conditions - EXCLUDED");
      AliAnalysisTaskParticleCorrelation *taskpartcorrEMCAL = AddTaskPartCorr("AOD", "EMCAL",kFALSE,kIsMC);
@@ -890,7 +951,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    } 
 
    if(iPWG4CaloQA){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/QA/AddTaskCalorimeterQA.C");
      AliAnalysisTaskParticleCorrelation *taskcaloQA =  AddTaskCalorimeterQA("ESD",kFALSE,kIsMC,kCaloQAOutputFileName.Data());
      if(!taskcaloQA)::Warning("AnalysisTrainNew", "AliAnalysisTaskParticleCorrelation QA cannot run - EXCLUDED");
      //  if(kCaloQAOutputFileName.Length()>0)mgr->RegisterExtraFile(kCaloQAOutputFileName.Data());
@@ -899,21 +960,21 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if(iPWG4JetCorr){
      //     using namespace JetCorrelHD;
      TString cdir = gSystem->WorkingDirectory();
-     gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCorrel.C");
+     gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT_SRC/PWG4/macros/"));
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetCorrel.C");
      AliAnalysisTaskJetCorrel *taskjetcorr = AddTaskJetCorrel();
      gSystem->ChangeDirectory(cdir);
      if (!taskjetcorr) ::Warning("AnalysisTrainNew", "AliAnalysisTaskJetCorrel  cannot run for this train conditions - EXCLUDED");
    } 
 
    if(iPWG4Tagged){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskTaggedPhotons.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskTaggedPhotons.C");
      AliAnalysisTaskTaggedPhotons * taskTagged = AddTaskTaggedPhotons(kFALSE); // EMCAL
      taskTagged = AddTaskTaggedPhotons(kTRUE); // PHOS 
      if (!taskTagged) ::Warning("AnalysisTrainNew", "AliAnalysisTaskTaggedPhotons  cannot run for this train conditions - EXCLUDED");     
    }
    if (iPWG4omega3pi) {
-     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskomega3pi.C");
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskomega3pi.C");
      AliAnalysisTaskOmegaPi0PiPi *taskomega3pi = AddTaskomega3pi();
      if (!taskomega3pi) ::Warning("AnalysisTrainNew", "AliAnalysisTaskomega3pi cannot run\
  for these train conditions - EXCLUDED");
@@ -921,9 +982,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
    // PWG4 gamma conversion analysis
    if (iPWG4GammaConv) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskGammaConversion.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskGammaConversion.C");
       TString cdir = gSystem->WorkingDirectory();
-      gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT/PWG4/macros/"));
+      gSystem->ChangeDirectory(gSystem->ExpandPathName("$ALICE_ROOT_SRC/PWG4/macros/"));
       //      TString gcArguments = "-run-on-train -run-jet -run-chic -run-neutralmeson -run-cf";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
       //      TString gcArguments = "-run-on-train -run-jet -run-neutralmeson -run-cf -use-own-xyz";
@@ -939,7 +1000,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }   
 
    if (iPWG4CaloConv) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskCaloConv.C");
+      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskCaloConv.C");
       AliAnalysisTaskCaloConv * taskCaloConv = AddTaskCaloConv();
       if (!taskCaloConv) ::Warning("AnalysisTrainNew", "AliAnalysisTaskCaloConv cannot run for these train conditions - EXCLUDED");
    }   
@@ -985,7 +1046,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
-
+       /*
        dest = Form("%s/%s/%s_merge_final.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
        if(AliAnalysisAlien::FileExists(dest.Data())){
 	 Printf("%s exist on grid removing...",dest.Data());
@@ -993,7 +1054,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
-
+       */
 
        /*
        dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
@@ -1302,15 +1363,16 @@ Bool_t Connect(const char *mode) {
 //______________________________________________________________________________
 Bool_t LoadCommonLibraries(const char *mode)
 {
-// Load common analysis libraries.
+   if (!gSystem->Getenv("ALICE_ROOT_SRC")) {
+      ::Error("AnalysisTrainPWG4Jets.C", "Analysis train requires that ALICE_ROOT_SRC is set to pick up Configurations"); 
+      return kFALSE;
+   }   
+   
+   // Load common analysis libraries.
    Int_t imode = -1;
    if (!strcmp(mode, "LOCAL")) imode = 0;
    if (!strcmp(mode, "PROOF")) imode = 1;
    if (!strcmp(mode, "GRID"))  imode = 2;
-   if (!gSystem->Getenv("ALICE_ROOT")) {
-      ::Error("AnalysisTrainPWG4Jets.C::LoadCommonLibraries", "Analysis train requires that ALICE_ROOT is set to pick up Configurations"); 
-      return kFALSE;
-   }   
    Bool_t success = kTRUE;
    // ROOT libraries
    gSystem->Load("libTree.so");
@@ -1421,11 +1483,11 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    }
 
    if(iPWG1QASym){
-     if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+     if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT_SRC")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
-     if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+     if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT_SRC")), mode, kTRUE))return kFALSE;
    }
 
    /*
@@ -1787,17 +1849,17 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
      while(in1>>iRun){
        if(iRun>=0){
 	 if(iRun>=0&&nRun>=kGridOffsetRunFromList&&(nRun<kGridMaxRunsFromList)){
-	   Printf("AnalysisTrainPWG4Jets Adding run number from File %s", Form(kGridRunPattern.Data(),iRun));
+	   Printf("AnalysisTrainPWG4Jets Adding run number from File %d: %s",nRun,Form(kGridRunPattern.Data(),iRun));
 	   plugin->AddRunNumber(Form(kGridRunPattern.Data(),iRun));
 
 	 }
 	 else{
-	   Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
+	   Printf("AnalysisTrainPWG4Jets Skipping run number from File %d: %d",nRun, iRun);
 	 }
 	 nRun++;
        }
        else{
-	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %d", iRun);
+	 Printf("AnalysisTrainPWG4Jets Skipping run number from File %d: %d",nRun, iRun);
        }
      }
    }
