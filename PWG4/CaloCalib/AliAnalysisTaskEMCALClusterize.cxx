@@ -82,7 +82,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fGeom(0), fGeomName("EMCAL_FIRSTYEARV1"),  fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
   , fCalibData(0),       fPedestalData(0),     fOCDBpath("raw://")
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
-  , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
+  , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kFALSE)
 {
   // Constructor
@@ -100,22 +100,22 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   
   if (fDigitsArr){
     fDigitsArr->Clear("C");
-    delete fDigitsArr; fDigitsArr=0;
+    delete fDigitsArr; 
   }
   
   if (fClusterArr){
     fClusterArr->Delete();
-    delete fClusterArr; fClusterArr=0;
+    delete fClusterArr;
   }
   
   if (fCaloClusterArr){
     fCaloClusterArr->Delete();
-    delete fCaloClusterArr; fCaloClusterArr=0;
+    delete fCaloClusterArr; 
   }
 
-  if(fClusterizer) {delete fClusterizer; fClusterizer = 0;}
-  if(fGeom)        {delete fGeom;        fGeom        = 0;}
-  if(fUnfolder)    {delete fUnfolder;    fUnfolder    = 0;}
+  if(fClusterizer) {delete fClusterizer;}
+  if(fGeom)        {delete fGeom;       }
+  if(fUnfolder)    {delete fUnfolder;   }
 
 }
 
@@ -129,7 +129,7 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
   fOutputAODBranch->SetName(fOutputAODBranchName);
   AddAODBranch("TClonesArray", &fOutputAODBranch);
-
+  printf("AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects() - Create Branch: %s \n",fOutputAODBranchName.Data());
 }
 
 //________________________________________________________________________
@@ -145,7 +145,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   AliVEvent * event = InputEvent();
   if (!event) {
-    printf("ERROR: event not available\n");
+    printf("AliAnalysisTaskEMCALClusterize::UserExec() - ERROR: event not available\n");
     return;
   }
   
