@@ -857,12 +857,13 @@ void AlidNdPtCorrection::Init(){
   fCosmicsHisto->Sumw2();
 
   //
-  Int_t binsEventCount[2]={2,2};
-  Double_t minEventCount[2]={0,0}; 
-  Double_t maxEventCount[2]={2,2}; 
-  fEventCount = new THnSparseF("fEventCount","trig vs trig+vertex",2,binsEventCount,minEventCount,maxEventCount);
+  Int_t binsEventCount[3]={2,2,2};
+  Double_t minEventCount[3]={0,0,0}; 
+  Double_t maxEventCount[3]={2,2,2}; 
+  fEventCount = new THnSparseF("fEventCount","trig vs trig+vertex",3,binsEventCount,minEventCount,maxEventCount);
   fEventCount->GetAxis(0)->SetTitle("trig");
   fEventCount->GetAxis(1)->SetTitle("trig+vert");
+  fEventCount->GetAxis(2)->SetTitle("selected");
   fEventCount->Sumw2();
 
 
@@ -1024,6 +1025,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     AliDebug(AliLog::kError, "cuts not available");
     return;
   }
+
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
@@ -1254,8 +1256,19 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     return; 
   }
 
+  Bool_t isEventSelected = kTRUE;
+  if(evtCuts->IsEventSelectedRequired()) 
+  { 
+     // select events with at least 
+     // one prompt track in acceptance
+     // pT>0.5 GeV/c, |eta|<0.8 for the Cross Section studies
+
+     isEventSelected = AlidNdPtHelper::SelectEvent(esdEvent,esdTrackCuts);
+     //printf("isEventSelected %d \n", isEventSelected);
+  }
+
   Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
-  Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
+  Double_t vEventCount[3] = { isEventTriggered, isTrigAndVertex, isEventSelected };
   fEventCount->Fill(vEventCount);
 
   //
@@ -1267,7 +1280,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   Bool_t isCosmic = kFALSE;
 
 
-  if(isEventOK && isEventTriggered)
+  if(isEventOK && isEventTriggered && isEventSelected)
   {
     // get all charged tracks
     allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
@@ -1464,7 +1477,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
   // empty events corrections
   // no reconstructed zv
-  if( isEventTriggered && multMBTracks==0 ) 
+  if( isEventTriggered && multMBTracks==0 && isEventSelected ) 
   {
     if(GetAnalysisMode()==AlidNdPtHelper::kMCRec && IsUseMCInfo()) 
     {
@@ -1479,8 +1492,20 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
 
   if(IsUseMCInfo())  
   {
+    if(!mcEvent) return; 
+
+    Bool_t isMCEventSelected = kTRUE;
+    if(evtCuts->IsEventSelectedRequired()) 
+    { 
+      // select events with at least 
+      // one MC primary track in acceptance
+      // pT>0.5 GeV/c, |eta|<0.8 for the Cross Section studies
+      isMCEventSelected = AlidNdPtHelper::SelectMCEvent(mcEvent);
+      //printf("isMCEventSelected %d \n", isMCEventSelected);
+    }
+
     // select MC events 
-    if(evtCuts->AcceptMCEvent(mcEvent))
+    if(evtCuts->AcceptMCEvent(mcEvent) && isMCEventSelected)
     {
       //
       // event histograms

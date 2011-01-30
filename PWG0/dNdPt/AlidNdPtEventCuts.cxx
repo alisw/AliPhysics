@@ -48,6 +48,7 @@ AliAnalysisCuts(name, title)
 , fSigmaMeanZv(0)
 , fRedoTPCVertex(kTRUE)
 , fUseBeamSpotConstraint(kTRUE)
+, fEventSelectedRequired(kFALSE)
 {
   // default constructor 
   

@@ -53,7 +53,7 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Bool_t isMatch, const Bool_t isITSTPC) const;
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Bool_t isMatch, const Bool_t isTPC,const Bool_t isITSTPC) const;
 
   // Getters
   THnSparseF *GetRecMCTrackHistTPCITS() const {return fRecMCTrackHistTPCITS;}
@@ -69,7 +69,7 @@ private:
   //
 
   //TPC -> ITS matching efficiency
-  THnSparseF *fRecMCTrackHistTPCITS; //-> eta:phi:pt:isPrim:charge:isMatch
+  THnSparseF *fRecMCTrackHistTPCITS; //-> eta:phi:pt:isPrim:charge:isMatch:isTPC
 
   //ITS -> TPC matching efficiency
   THnSparseF *fRecMCTrackHistITSTPC; //-> eta:phi:pt:isPrim:charge:isMatch
@@ -77,7 +77,7 @@ private:
   AlidNdPtEfficiency(const AlidNdPtEfficiency&); // not implemented
   AlidNdPtEfficiency& operator=(const AlidNdPtEfficiency&); // not implemented
 
-  ClassDef(AlidNdPtEfficiency,1);
+  ClassDef(AlidNdPtEfficiency,2);
 };
 
 #endif

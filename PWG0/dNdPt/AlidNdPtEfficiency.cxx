@@ -96,12 +96,12 @@ void AlidNdPtEfficiency::Init(){
   //
 
   // TPC -> ITS matching efficiency
-  // eta:phi:pt:isPrim:charge:isMatch
-  Int_t binsRecMCTrackHistTPCITS[6]=  { 30,  90,             ptNbins,   2,   3,  2 };
-  Double_t minRecMCTrackHistTPCITS[6]={-1.5, 0.,             ptMin,     0., -1., 0 };
-  Double_t maxRecMCTrackHistTPCITS[6]={ 1.5, 2.*TMath::Pi(), ptMax,     2.,  2., 2.};
+  // eta:phi:pt:isPrim:charge:isMatch:isTPC
+  Int_t binsRecMCTrackHistTPCITS[7]=  { 30,  90,             ptNbins, 2,   3,  2,  2  };
+  Double_t minRecMCTrackHistTPCITS[7]={-1.5, 0.,             ptMin,   0., -1., 0., 0. };
+  Double_t maxRecMCTrackHistTPCITS[7]={ 1.5, 2.*TMath::Pi(), ptMax,   2.,  2., 2., 2. };
 
-  fRecMCTrackHistTPCITS = new THnSparseF("fRecMCTrackHistTPCITS","eta:phi:pt:isPrim:charge:isMatch",6,binsRecMCTrackHistTPCITS,minRecMCTrackHistTPCITS,maxRecMCTrackHistTPCITS);
+  fRecMCTrackHistTPCITS = new THnSparseF("fRecMCTrackHistTPCITS","eta:phi:pt:isPrim:charge:isMatch:isTPC",7,binsRecMCTrackHistTPCITS,minRecMCTrackHistTPCITS,maxRecMCTrackHistTPCITS);
   fRecMCTrackHistTPCITS->SetBinEdges(2,binsPt);
   fRecMCTrackHistTPCITS->GetAxis(0)->SetTitle("#eta");
   fRecMCTrackHistTPCITS->GetAxis(1)->SetTitle("#phi (rad)");
@@ -109,6 +109,7 @@ void AlidNdPtEfficiency::Init(){
   fRecMCTrackHistTPCITS->GetAxis(3)->SetTitle("isPrim");
   fRecMCTrackHistTPCITS->GetAxis(4)->SetTitle("charge");
   fRecMCTrackHistTPCITS->GetAxis(5)->SetTitle("isMatch");
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetTitle("isTPC");
   fRecMCTrackHistTPCITS->Sumw2();
 
   // ITS -> TPC matching efficiency
@@ -144,14 +145,16 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
   }
 
   // get selection cuts
-  AlidNdPtEventCuts *evtCuts = GetEventCuts(); 
+  AlidNdPtEventCuts *evtCuts      = GetEventCuts(); 
   AlidNdPtAcceptanceCuts *accCuts = GetAcceptanceCuts(); 
-  AliESDtrackCuts *esdTrackCuts = GetTrackCuts(); 
+  AliESDtrackCuts *esdTrackCuts   = GetTrackCuts(); 
 
   if(!evtCuts || !accCuts  || !esdTrackCuts) {
     AliDebug(AliLog::kError, "cuts not available");
     return;
   }
+
+   
 
   // trigger selection
   Bool_t isEventTriggered = kTRUE;
@@ -225,8 +228,9 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
     allChargedTracks = AlidNdPtHelper::GetAllChargedTracks(esdEvent,GetAnalysisMode());
     if(!allChargedTracks) return;
 
-    Bool_t isMatch = kFALSE;
     Int_t entries = allChargedTracks->GetEntries();
+    Bool_t isTPC = kFALSE;
+    Bool_t isMatch = kFALSE;
 
     // TPC -> ITS prolongation efficiency
     for(Int_t iTrack=0; iTrack<entries;++iTrack) 
@@ -234,23 +238,30 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
       AliESDtrack *track = (AliESDtrack*)allChargedTracks->At(iTrack);
       if(!track) continue;
 
+      isTPC = kFALSE;
+
       if(track->Charge()==0) continue;
-      if (!track->GetTPCInnerParam()) continue;
+      if(!track->GetTPCInnerParam()) continue;
+      if(!(track->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
       // Get TPC only tracks (must be deleted by user) 
       AliESDtrack* tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
       if(!tpcTrack) continue;
+      if(!tpcTrack->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack; continue; } 
 
       // check loose cuts for TPC tracks
       if(!esdTrackCuts->AcceptTrack(tpcTrack))  { delete tpcTrack; continue; } 
 
-      if(track->GetNcls(0) >= 2 && (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) 
+      isTPC = kTRUE;
+      isMatch = kFALSE;
+      if( (track->GetStatus()&AliESDtrack::kITSrefit) && 
+	  (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) ) 
       {
         isMatch = kTRUE;
       }
 
       //
-      FillHistograms(tpcTrack, stack, isMatch, 0);
+      FillHistograms(tpcTrack, stack, isMatch, isTPC, kFALSE);
       if(tpcTrack) delete tpcTrack;
     } 
 
@@ -271,22 +282,25 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
       if(!track->HasPointOnITSLayer(0) && !track->HasPointOnITSLayer(1)) continue;
 
       // Check matching with TPC only track
-      isMatch = kFALSE;
       for(Int_t jTrack=0; jTrack<entries;++jTrack) 
       {
+        isMatch = kFALSE;
+
         if(iTrack==jTrack) continue;
 
         AliESDtrack *track2 = (AliESDtrack*)allChargedTracks->At(jTrack);
         if(!track2) continue;
         if(track2->Charge()==0) continue;
-	if (!track2->GetTPCInnerParam()) continue;
+	if(!track2->GetTPCInnerParam()) continue;
+        if(!(track2->GetStatus() & AliESDtrack::kTPCrefit)) continue;
 
         // Get TPC only tracks (must be deleted by user) 
         AliESDtrack* tpcTrack2 = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, jTrack);
         if(!tpcTrack2) continue;
+        if(!tpcTrack2->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack2; continue; } 
 
         // check loose cuts for TPC tracks
-        //if(!esdTrackCuts->AcceptTrack(tpcTrack2)) { delete tpcTrack2; continue; }
+        if(!esdTrackCuts->AcceptTrack(tpcTrack2)) { delete tpcTrack2; continue; }
 
         // check matching
         if (TMath::Abs(track->GetY() - tpcTrack2->GetY()) > 3) { delete tpcTrack2; continue; }
@@ -301,8 +315,7 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
       }
 
        //
-       Bool_t isITSTPC = kTRUE;
-       FillHistograms(track, stack, isMatch, isITSTPC);
+       FillHistograms(track, stack, isMatch, kFALSE, kTRUE);
     } 
   }
 
@@ -311,7 +324,7 @@ void AlidNdPtEfficiency::Process(AliESDEvent *const esdEvent, AliMCEvent * const
 }
 
 //_____________________________________________________________________________
-void AlidNdPtEfficiency::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Bool_t isMatch, const Bool_t isITSTPC) const
+void AlidNdPtEfficiency::FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, const Bool_t isMatch, const Bool_t isTPC,  const Bool_t isITSTPC) const
 {
   //
   // Fill ESD track and MC histograms 
@@ -341,12 +354,13 @@ void AlidNdPtEfficiency::FillHistograms(AliESDtrack *const esdTrack, AliStack *c
 
   // fill histo
   Double_t vRecMCTrackHist[6] = { eta,phi,pt,isPrim,charge,isMatch }; 
+  Double_t vRecMCTrackHistTPCITS[7] = { eta,phi,pt,isPrim,charge,isMatch,isTPC }; 
 
   if(isITSTPC) {
     fRecMCTrackHistITSTPC->Fill(vRecMCTrackHist);
   }
   else {
-    fRecMCTrackHistTPCITS->Fill(vRecMCTrackHist);
+    fRecMCTrackHistTPCITS->Fill(vRecMCTrackHistTPCITS);
   }
 }
 
@@ -410,6 +424,7 @@ void AlidNdPtEfficiency::Analyse()
   //
 
   //eff vs eta
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(0);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
   h1D = (TH1D *)fRecMCTrackHistTPCITS->Projection(0);
@@ -418,8 +433,10 @@ void AlidNdPtEfficiency::Analyse()
   h1Dc->Divide(h1Dall);
   aFolderObj->Add(h1Dc);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(1,2);  
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(1,2);  
 
   //eff vs phi
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   fRecMCTrackHistTPCITS->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(1);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
@@ -429,8 +446,10 @@ void AlidNdPtEfficiency::Analyse()
   h1Dc->Divide(h1Dall);
   aFolderObj->Add(h1Dc);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(1,2);  
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(1,2);  
 
   //eff vs pT
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(2,2);  
   fRecMCTrackHistTPCITS->GetAxis(0)->SetRangeUser(-0.8, 0.799);  
   h1Dall = (TH1D *)fRecMCTrackHistTPCITS->Projection(2);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(2,2);  
@@ -440,10 +459,11 @@ void AlidNdPtEfficiency::Analyse()
   h1Dc->Divide(h1Dall);
   aFolderObj->Add(h1Dc);
   fRecMCTrackHistTPCITS->GetAxis(5)->SetRange(1,2);  
+  fRecMCTrackHistTPCITS->GetAxis(6)->SetRange(1,2);  
 
 
   //
-  // TPC->ITS efficiency
+  // ITS->TPC efficiency
   //
 
   fRecMCTrackHistITSTPC->GetAxis(0)->SetRangeUser(-1.5, 1.499);  
