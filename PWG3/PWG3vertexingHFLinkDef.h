@@ -35,6 +35,7 @@
 #pragma link C++ class AliCFVertexingHF+;
 #pragma link C++ class AliCFVertexingHF2Prong+;
 #pragma link C++ class AliCFVertexingHF3Prong+;
+#pragma link C++ class AliCFVertexingHFCascade+;
 #pragma link C++ class AliCFTaskVertexingHF+;
 #pragma link C++ class AliCFHeavyFlavourTaskMultiVarMultiStep+;
 #pragma link C++ class AliCFTaskForDStarAnalysis+;
