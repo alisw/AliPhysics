@@ -61,6 +61,9 @@ class AlidNdPtHelper : public TObject
     static Bool_t IsGoodImpPar(const AliESDtrack *const track);
     static Int_t ConvertPdgToPid(const TParticle *const particle);
 
+    static Bool_t SelectEvent(const AliESDEvent* const aEsd, AliESDtrackCuts* const esdTrackCuts);
+    static Bool_t SelectMCEvent(AliMCEvent* const mcEvent);
+
     static TObjArray *GetAllChargedTracks(AliESDEvent *const esdEvent, AnalysisMode analysisMode);
 
     static TH1F* MakeResol(TH2F * const his, Int_t integ, Bool_t type, Bool_t drawBins, Int_t minHistEntries);

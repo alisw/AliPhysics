@@ -781,6 +781,74 @@ return track;
 } 
 
 //_____________________________________________________________________________
+Bool_t AlidNdPtHelper::SelectEvent(const AliESDEvent* const esdEvent, AliESDtrackCuts* const esdTrackCuts) {
+// select events with at least
+// one reconstructed primary track in acceptance
+// pT>0.5 GeV/c, |eta|<0.8 for cross section studies
+
+if(!esdEvent) return kFALSE;
+if(!esdTrackCuts) return kFALSE;
+
+  AliESDtrack *track=0;
+  Int_t count = 0;
+  for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++) 
+  { 
+    track = esdEvent->GetTrack(iTrack);
+    if(!track) continue;
+    if(track->Charge()==0) continue;
+    if(!esdTrackCuts->AcceptTrack(track)) continue;
+    if(track->Pt() < 0.5) continue;
+    if(TMath::Abs(track->Eta()) > 0.8) continue;
+
+    count++;
+  }
+
+  if(count > 0) return kTRUE;
+  else return kFALSE;
+
+return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AlidNdPtHelper::SelectMCEvent(AliMCEvent* const mcEvent) {
+//
+// select events with at least
+// one prompt (MC primary) track in acceptance
+// pT>0.5 GeV/c, |eta|<0.8 for cross section studies
+//
+
+if(!mcEvent) return kFALSE;
+AliStack* stack = mcEvent->Stack(); 
+if(!stack) return kFALSE;
+
+  Int_t count = 0;
+  for (Int_t iMc = 0; iMc < stack->GetNtrack(); ++iMc) 
+  {
+    TParticle* particle = stack->Particle(iMc);
+    if (!particle) continue;
+
+    // only charged particles
+    if(!particle->GetPDG()) continue;
+    Double_t charge = particle->GetPDG()->Charge()/3.;
+    if(charge == 0) continue;
+
+    // physical primary
+    Bool_t prim = stack->IsPhysicalPrimary(iMc);
+    if(!prim) continue;
+
+    if(particle->Pt() < 0.5) continue;
+    if(TMath::Abs(particle->Eta()) > 0.8) continue;
+
+    count++;
+  }
+
+  if(count > 0) return kTRUE;
+  else return kFALSE;
+
+return kFALSE;
+}
+
+//_____________________________________________________________________________
 Int_t AlidNdPtHelper::GetTPCMBTrackMult(const AliESDEvent *const esdEvent,const AlidNdPtEventCuts *const evtCuts, const AlidNdPtAcceptanceCuts *const accCuts,const  AliESDtrackCuts *const trackCuts)
 {
   //
