@@ -72,7 +72,7 @@ AddTaskFMD(Bool_t mc)
   // Whether to use the secondary map correction
   task->GetCorrections().SetUseSecondaryMap(true);
   // Whether to use the vertex bias correction
-  task->GetCorrections().SetUseVertexBias(true);
+  task->GetCorrections().SetUseVertexBias(false);
   // Whether to use the vertex bias correction
   task->GetCorrections().SetUseAcceptance(true);
   // Whether to use the merging efficiency correction 
