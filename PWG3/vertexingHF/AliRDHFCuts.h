@@ -113,6 +113,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetWhyRejection(Int_t why) {fWhyRejection=why; return;}
   Int_t GetWhyRejection() const {return fWhyRejection;}
 
+  void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
+
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
   void MakeTable()const;
 
@@ -155,8 +157,9 @@ class AliRDHFCuts : public AliAnalysisCuts
                           // 4 = SPD clusters outer 
   Float_t fMinCentrality; // minimum centrality for selected events
   Float_t fMaxCentrality; // maximum centrality for selected events
+  Bool_t  fFixRefs;       // fix the daughter track references 
 
-  ClassDef(AliRDHFCuts,8);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,9);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
