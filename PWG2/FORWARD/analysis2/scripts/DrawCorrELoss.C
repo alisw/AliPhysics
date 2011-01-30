@@ -48,7 +48,7 @@ DrawCorrELoss(const char* fname, const char* option="err")
 
   TFile* file = TFile::Open(fname, "READ");
   if (!file) { 
-    Error("DrawELossFits", "Failed to open %s", fname);
+    Error("DrawCorrELoss", "Failed to open %s", fname);
     return;
   }
   TString pname(fname);
@@ -57,7 +57,7 @@ DrawCorrELoss(const char* fname, const char* option="err")
   AliFMDCorrELossFit* fits = 
     static_cast<AliFMDCorrELossFit*>(file->Get("elossfits"));
   if (!fits) { 
-    Error("DrawELossFits", "Object 'elossfits' not found in %s", fname);
+    Error("DrawCorrELoss", "Object 'elossfits' not found in %s", fname);
     return;
   }
 
