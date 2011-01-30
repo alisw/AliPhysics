@@ -57,6 +57,7 @@ class AliAnalysisVertexingHF : public TNamed {
 		      TClonesArray *aodLikeSign3ProngTClArr);
 
   TList* FillListOfCuts();
+  void FixReferences(AliAODEvent *aod);  
   void PrintStatus() const;
   void SetSecVtxWithKF() { fSecVtxWithKF=kTRUE; }
   void SetD0toKpiOn() { fD0toKpi=kTRUE; }

@@ -1203,6 +1203,78 @@ void AliAnalysisVertexingHF::AddDaughterRefs(AliAODVertex *v,
 
   return;
 }	
+//---------------------------------------------------------------------------
+void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)  
+{
+  // Checks that the references to the daughter tracks are properly
+  // assigned and reassigns them if needed
+  //
+
+
+  TClonesArray *inputArray=(TClonesArray*)aod->GetList()->FindObject("VerticesHF");
+  if(!inputArray) return;
+
+  AliAODTrack *track = 0;
+  AliAODVertex *vertex = 0;
+
+  Bool_t needtofix=kFALSE;
+  for(Int_t iv=0; iv<inputArray->GetEntriesFast(); iv++) {
+    vertex = (AliAODVertex*)inputArray->UncheckedAt(iv);
+    for(Int_t id=0; id<vertex->GetNDaughters(); id++) {
+      track = (AliAODTrack*)vertex->GetDaughter(id);
+      if(!track->GetStatus()) needtofix=kTRUE;
+    }
+    if(needtofix) break;
+  }
+
+  if(!needtofix) return;
+
+
+  printf("Fixing references\n");
+
+  fAODMapSize = 100000;
+  fAODMap = new Int_t[fAODMapSize];
+
+  for(Int_t i=0; i<aod->GetNumberOfTracks(); i++) {
+    track = aod->GetTrack(i);
+
+    // skip pure ITS SA tracks
+    if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+
+    // skip tracks without ITS
+    if(!(track->GetStatus()&AliESDtrack::kITSin)) continue;
+
+    // TEMPORARY: check that the cov matrix is there
+    Double_t covtest[21];
+    if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
+    //
+
+    fAODMap[(Int_t)track->GetID()] = i;
+  }
+
+
+  Int_t ids[4]={-1,-1,-1,-1};
+  for(Int_t iv=0; iv<inputArray->GetEntriesFast(); iv++) {
+    Bool_t cascade=kFALSE;
+    vertex = (AliAODVertex*)inputArray->UncheckedAt(iv);
+    Int_t id=0;
+    Int_t nDgs = vertex->GetNDaughters();
+    for(id=0; id<nDgs; id++) {
+      track = (AliAODTrack*)vertex->GetDaughter(id);
+      if(track->Charge()==0) {cascade=kTRUE; continue;} // cascade
+      ids[id]=(Int_t)track->GetID();
+      vertex->RemoveDaughter(track);
+    }
+    if(cascade) continue;
+    for(id=0; id<nDgs; id++) {
+      track = aod->GetTrack(fAODMap[ids[id]]);
+      vertex->AddDaughter(track);
+    }
+    
+  }
+
+  return;
+}
 //----------------------------------------------------------------------------
 AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 				   TObjArray *twoTrackArray,AliVEvent *event,
