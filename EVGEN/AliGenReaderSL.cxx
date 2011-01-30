@@ -90,21 +90,21 @@ Int_t AliGenReaderSL::NextEvent()
     eGamma2 = 0.;
   
     // Event line 
-    fscanf(fFile,"%s %d %d %d ",linelabel, &i1, &ntrk, &i2);
+    fscanf(fFile,"%6s %d %d %d ",linelabel, &i1, &ntrk, &i2);
     fNParticles = ntrk;
-//    printf("Event line: %s i1 = %5d ntrk = %5d i2 = %5d \n", linelabel, i1, ntrk, i2);
+    //printf("Event line: %s i1 = %5d ntrk = %5d i2 = %5d \n", linelabel, i1, ntrk, i2);
 
     // Gamma line
     if (fFormat == 1) {
-	fscanf(fFile, "%s %f  ",linelabel, &eGamma1); 
+	fscanf(fFile, "%14s %f  ",linelabel, &eGamma1); 
     } else if (fFormat == 2) {
-	fscanf(fFile, "%s %f %f ",linelabel, &eGamma1, &eGamma2); 
+	fscanf(fFile, "%14s %f %f ",linelabel, &eGamma1, &eGamma2); 
     }
   
-//  printf("Gamma line: %s Egamma1 = %13.3f Egamma2 = %13.3f \n", linelabel, eGamma1, eGamma2); 
+//    printf("Gamma line: %s Egamma1 = %13.3f Egamma2 = %13.3f \n", linelabel, eGamma1, eGamma2); 
 
     // Vertex line 
-    fscanf(fFile, "%s %lf %lf %lf %lf %d %d %d %d",
+    fscanf(fFile, "%7s %lf %lf %lf %lf %d %d %d %d",
 	   linelabel, &x1, &x2, &x3, &x4, &i1, &i2, &i3, &nvtx);
 //    printf("Vertex line: %s (x = %13.3f, y =  %13.3f, z =  %13.3f, t =  %13.3f) i1 = %5d i2 = %5d i3 = %5d nvtx = %5d \n", 
 //	   linelabel, x1, x2, x3, x4, i1, i2, i3, nvtx);
@@ -137,7 +137,7 @@ TParticle* AliGenReaderSL::NextParticle()
 	int i2 = 0;
 	int i3 = 0;
 	int i4 = 0;
-	fscanf(fFile,"%s %d %f %f %f %d %d %d %d",
+	fscanf(fFile,"%6s %d %f %f %f %d %d %d %d",
 	       tracklabel, &i1, &px, &py, &pz, &i2, &i3, &i4, &pdg);
 //	printf("Particle %5d %13.3f %13.3f %13.3f \n",  pdg, px, py, pz);
     }
