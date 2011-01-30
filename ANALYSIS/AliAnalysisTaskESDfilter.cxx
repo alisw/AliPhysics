@@ -1224,7 +1224,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
 	track->GetCovarianceXYZPxPyPz(covTr);
 	track->GetESDpid(pid);
 	if(mcH)mcH->SelectParticle(esdTrack->GetLabel());
-	aodTrack = new(tracks[jTracks++]) AliAODTrack(track->GetID(),
+	aodTrack = new(tracks[jTracks++]) AliAODTrack(track->GetID()*-1,
 						      track->GetLabel(),
 						      p,
 						      kTRUE,
