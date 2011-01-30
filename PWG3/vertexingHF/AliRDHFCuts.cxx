@@ -33,6 +33,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliCentrality.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliAnalysisVertexingHF.h"
 #include "AliRDHFCuts.h"
 
 ClassImp(AliRDHFCuts)
@@ -66,8 +67,8 @@ fMinContrPileup(3),
 fMinDzPileup(0.6),
 fUseCentrality(0),
 fMinCentrality(0.),
-fMaxCentrality(100.)
-
+fMaxCentrality(100.),
+fFixRefs(kFALSE)
 {
   //
   // Default Constructor
@@ -102,9 +103,8 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMinDzPileup(source.fMinDzPileup),
   fUseCentrality(source.fUseCentrality),
   fMinCentrality(source.fMinCentrality),
-  fMaxCentrality(source.fMaxCentrality)
-
-
+  fMaxCentrality(source.fMaxCentrality),
+  fFixRefs(source.fFixRefs)
 {
   //
   // Copy constructor
@@ -149,6 +149,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fUseCentrality=source.fUseCentrality;
   fMinCentrality=source.fMinCentrality;
   fMaxCentrality=source.fMaxCentrality;
+  fFixRefs=source.fFixRefs;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -183,6 +184,16 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // Event selection
   // 
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
+
+  // TEMPORARY FIX FOR REFERENCES
+  // Fix references to daughter tracks
+  if(fFixRefs) {
+    AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
+    fixer->FixReferences((AliAODEvent*)event);
+    delete fixer;
+  }
+  //
+
 
   fWhyRejection=0;
 
@@ -480,7 +491,7 @@ void AliRDHFCuts::PrintAll() const {
    for(Int_t iv=0;iv<fnVars;iv++){
      for(Int_t ib=0;ib<fnPtBins;ib++){
        cout<<"fCutsRD["<<iv<<"]["<<ib<<"] = "<<fCutsRD[GetGlobalIndex(iv,ib)]<<"\t";
-     }
+     } 
      cout<<endl;
    }
    cout<<endl;
