@@ -178,8 +178,6 @@ void AliEbyEFluctuationAnalysisTask::UserExec(Option_t *) {
     AliESDVZERO* esdV0 = gESD->GetVZEROData();
     mult = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
 
-    fHistEventStats->Fill(3); //offline cut
-
     const AliESDVertex *vertex = GetVertex(gESD);
     if(!vertex) return;
     fHistEventStats->Fill(3); //vertexcut
