@@ -373,10 +373,10 @@ void AliModule::Digits2Raw()
   Char_t* buffer = new Char_t[ddlSize+1];
 
   for (Int_t iDDL = 0; iDDL < nDDLs; iDDL++) {
-    char fileName[20];
-    strcpy(fileName,AliDAQ::DdlFileName(GetName(),iDDL));
+    char fileName[256]="";
+    strncpy(fileName,AliDAQ::DdlFileName(GetName(),iDDL),255);
     fstream rawFile(fileName, ios::out);
-    if (!rawFile) return;
+    if (!rawFile) break;
 
     AliRawDataHeader header;
     header.fSize = ddlSize + sizeof(header);

@@ -853,7 +853,7 @@ Int_t AliMillepede::GlobalFit(double par[], double error[], double pull[])
   int nGloFix = 0;
   double lConstraint;
 
-  double step[fgkMaxGlobalPar];
+  double step[fgkMaxGlobalPar]={0};
 
   double localPars[2*fgkMaxLocalPar];
 

@@ -126,6 +126,7 @@ AliRun::~AliRun()
    {
     TFolder* evfold = fRunLoader->GetEventFolder();
     TFolder* modfold = dynamic_cast<TFolder*>(evfold->FindObjectAny(AliConfig::GetModulesFolderName()));
+    if(!modfold) AliFatal(Form("Folder %s not found\n",AliConfig::GetModulesFolderName().Data()));
     TIter next(fModules);
     AliModule *mod;
     while((mod = (AliModule*)next()))
