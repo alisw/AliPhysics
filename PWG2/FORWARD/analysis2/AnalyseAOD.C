@@ -80,6 +80,14 @@ public:
   Int_t              fNAccepted;
   /** Number of events accepted */
   Int_t              fNAll;
+  /** Number of B triggers */
+  Int_t              fNB;
+  /** Number of A triggers */
+  Int_t              fNA;
+  /** Number of C triggers */
+  Int_t              fNC;
+  /** Number of E triggers */
+  Int_t              fNE;
   /** Min vertex */
   Double_t           fVtxMin;
   /** Max vertex */
@@ -104,7 +112,17 @@ public:
       fSumCentral(0),
       fVtxEff(0),
       fTitle(""),
-      fDoHHD(kTRUE)
+      fDoHHD(kTRUE),
+      fNTriggered(0),
+      fNWithVertex(0),
+      fNAccepted(0),
+      fNAll(0),
+      fNB(0),
+      fNA(0),
+      fNC(0),
+      fNE(0),
+      fVtxMin(0),
+      fVtxMax(0)
   {}
   //__________________________________________________________________
   /** 
@@ -135,6 +153,16 @@ public:
     fCentral    = 0;
     fSumCentral = 0;
     fVtxEff     = 0;
+    fNTriggered	= 0;
+    fNWithVertex= 0;
+    fNAccepted	= 0;
+    fNAll	= 0;
+    fNB		= 0;
+    fNA		= 0;
+    fNC		= 0;
+    fNE		= 0;
+    // fVtxMin	= 0;
+    // fVtxMax	= 0;
     
   }
   //__________________________________________________________________
@@ -429,6 +457,10 @@ public:
       if (fSumPrimary) fSumPrimary->Add(fPrimary);
      
       fNAll++;
+      if (fAOD->IsTriggerBits(AliAODForwardMult::kB)) fNB++;
+      if (fAOD->IsTriggerBits(AliAODForwardMult::kA)) fNA++;
+      if (fAOD->IsTriggerBits(AliAODForwardMult::kC)) fNC++;
+      if (fAOD->IsTriggerBits(AliAODForwardMult::kE)) fNE++;
       
       // fAOD->Print();
       // Other trigger/event requirements could be defined 
@@ -453,13 +485,17 @@ public:
       if (fSumCentral) fSumCentral->Add(fCentral);      
     }
     printf("\n");
-    fVtxEff = Double_t(fNWithVertex)/fNTriggered;
+    // fVtxEff = Double_t(fNWithVertex)/fNTriggered;
+    fVtxEff = Double_t(fNWithVertex) / (fNB-fNA-fNC+2*fNE);
 
     Info("Process", "Total of %9d events\n"
-	 "               %9d has a trigger\n" 
-	 "               %9d has a vertex\n" 
-	 "               %9d was used\n",
-	 nAvailable, fNTriggered, fNWithVertex, fNAccepted);
+	 "              of these %9d has a trigger\n" 
+	 "              of these %9d has a vertex\n" 
+	 "              of these  %9d was used\n"
+	 "              B=%9d, A=%9d, C=%9d, E=%9d -> %9d\n"
+	 "              Vertex efficiency: %f",
+	 nAvailable, fNTriggered, fNWithVertex, fNAccepted,
+	 fNB, fNA, fNC, fNE, fNB-fNA-fNC+2*fNE, fVtxEff);
 
     return kTRUE;
   }
