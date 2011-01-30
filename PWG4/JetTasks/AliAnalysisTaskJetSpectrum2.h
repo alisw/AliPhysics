@@ -42,7 +42,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void Init();
     virtual void LocalInit() { Init(); }
     virtual void UserExec(Option_t *option);
-    virtual void UserExecOld(const Option_t *option = "");
     virtual void Terminate(Option_t *option);
     virtual Bool_t Notify();
 
@@ -71,8 +70,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetFilterMask(UInt_t i){fFilterMask = i;}
     virtual void SetEventSelectionMask(UInt_t i){fEventSelectionMask = i;}
     virtual void SetNonStdFile(char* c){fNonStdFile = c;} 
-    virtual void SetUseOldFill(Bool_t b){fUseOldFill = b;}
-    // use for the CF
 
 
     // Helper
@@ -135,7 +132,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Bool_t        fUseExternalWeightOnly; // use only external weight
     Bool_t        fLimitGenJetEta;        // Limit the eta of the generated jets
     Bool_t        fBkgSubtraction;        // flag for bckg subtraction
-    Bool_t        fUseOldFill;            // flag for using the old filling....
     Short_t       fNMatchJets;            // number of leading jets considered from the list
     Int_t         fFillCorrBkg;           // flag for filling bckg response matrix
     UInt_t        fFilterMask;            // filter bit for slecected tracks
@@ -184,8 +180,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2NGenTracksPt;          //! Number of found tracks above threshold
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
-    TH2F*         fh2PhiPt[kMaxJets];       //! delta phi correlation of tracks with the jet      
-    TH2F*         fh2PhiEta[kMaxJets];      //! eta   phi correlation of tracks with the jet      
     TH2F*         fh2RhoPtRec[kMaxJets];    //! jet shape variable rho
     TH2F*         fh2PsiPtRec[kMaxJets];    //! jet shape variable psi
     TH2F*         fh2RhoPtGen[kMaxJets];    //! 
@@ -213,6 +207,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2LeadingTrackPtTrackPhi[kJetTypes]; //! phi distribution of accepted leading tracks
     TH2F*         fh2RhoPt[kJetTypes][kMaxJets];     //! jet shape variable rho
     TH2F*         fh2PsiPt[kJetTypes][kMaxJets];     //! jet shape variable psi
+    TH2F*         fh2PhiPt[kJetTypes][kMaxJets];       //! phi distribution correlation of jets      
+    TH2F*         fh2EtaPt[kJetTypes][kMaxJets];       //! phi distribution correlation of jets      
+    TH2F*         fh2PhiEta[kJetTypes][kMaxJets];      //! eta phi distribution of jet      
+
 
 
     TH1F*   fh1DijetMinv[kJetTypes];            //! dijet inv mass
