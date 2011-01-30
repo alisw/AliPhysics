@@ -11,8 +11,10 @@ const TString analysisMode = "TPC"; //"TPC", "Global"
 
 //void runTaskFluctuations(Int_t mode = mPROOF, Int_t nRuns = 600000, 
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_4plus#esdTree", Int_t offset=0) {
-void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
+//void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
 //void runTaskFluctuations(Int_t mode = mGrid, Bool_t DATA = kTRUE) {
+//void runTaskFluctuations(Int_t mode = mGridPAR, Bool_t DATA = kTRUE) {
+void runTaskFluctuations(Int_t mode = mLocalPAR, Bool_t DATA = kTRUE) {
   // Time:
   TStopwatch timer;
   timer.Start();
@@ -89,11 +91,11 @@ void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
   if(!mgr->InitAnalysis()){return;}
   mgr->PrintStatus(); 
   if(mode == mLocal || mode == mLocalPAR) 
-    mgr->StartAnalysis("local",chain);
+    //mgr->StartAnalysis("local",chain);
   else if(mode == mPROOF) 
     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
-    mgr->StartAnalysis("grid");
+    //mgr->StartAnalysis("grid");
 
   // Print real and CPU time used for analysis:  
   timer.Stop();
@@ -135,11 +137,16 @@ void LoadLibraries(const anaModes mode) {
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
-    SetupPar("STEERBase");
-    SetupPar("ESD");
-    SetupPar("AOD");
-    SetupPar("ANALYSIS");
-    SetupPar("ANALYSISalice");
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    //SetupPar("STEERBase");
+    //SetupPar("ESD");
+    //SetupPar("AOD");
+    //SetupPar("ANALYSIS");
+    //SetupPar("ANALYSISalice");
     SetupPar("PWG2ebye");
 }
   
@@ -156,7 +163,12 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Open("prf000-iep-grid.saske.sk");
 
     gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
- 
+    gSystem->Load("libSTEERBase");
+    gSystem->Load("libESD");
+    gSystem->Load("libAOD");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+
     // Clear the Packages    
     //gProof->ClearPackage("STEERBase.par");
     //gProof->ClearPackage("ESD.par");
@@ -172,7 +184,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->UploadPackage("ANALYSIS.par"); 
     //gProof->UploadPackage("ANALYSISalice.par");
     //gProof->UploadPackage("CORRFW.par");
-    //gProof->UploadPackage("PWG2ebye");
+    gProof->UploadPackage("PWG2ebye.par");
 
     // Enable the Packages 
     //gProof->EnablePackage("STEERBase");
@@ -180,7 +192,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->EnablePackage("AOD");
     //gProof->EnablePackage("ANALYSIS");
     //gProof->EnablePackage("ANALYSISalice");
-    //gProof->EnablePackage("PWG2ebye");
+    gProof->EnablePackage("PWG2ebye");
 
     // Show enables Packages
     //gProof->ShowEnabledPackages();
