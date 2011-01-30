@@ -40,7 +40,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
   TString        GeometryName() const                           { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
-  void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; }
+  void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
   void           SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; }
 
   //AOD methods
@@ -57,30 +57,30 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   virtual void  RecPoints2Clusters(TClonesArray *fdigitsArr, TObjArray *fRecPoints, TObjArray *clusArray);
   
   //Geometry  
-  AliEMCALGeometry      *fGeom;             //! emcal geometry
+  AliEMCALGeometry      *fGeom;             // EMCAL geometry
   TString                fGeomName;         // Name of geometry to use.
-  TGeoHMatrix           *fGeomMatrix[10];   //! Geometry matrices with alignments
+  TGeoHMatrix           *fGeomMatrix[10];   // Geometry matrices with alignments
   Bool_t                 fGeomMatrixSet;    // Set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices; // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
 
   //OCDB
-  AliEMCALCalibData     *fCalibData;        //! emcal calib data
-  AliCaloCalibPedestal  *fPedestalData;     //! emcal pedestal
+  AliEMCALCalibData     *fCalibData;        // EMCAL calib data
+  AliCaloCalibPedestal  *fPedestalData;     // EMCAL pedestal
   TString                fOCDBpath;         // Path with OCDB location
 
   //Temporal arrays
-  TClonesArray          *fDigitsArr;        //-> digits array
-  TObjArray             *fClusterArr;       //! recpoints array
-  TObjArray             *fCaloClusterArr;   //! CaloClusters array
+  TClonesArray          *fDigitsArr;        //-> Digits array
+  TObjArray             *fClusterArr;       //-> Recpoints array
+  TObjArray             *fCaloClusterArr;   //-> CaloClusters array
 
   //Clusterizers 
-  AliEMCALRecParam      *fRecParam;         //! reconstruction parameters container
-  AliEMCALClusterizer   *fClusterizer;      //! emcal clusterizer
-  AliEMCALAfterBurnerUF *fUnfolder;         //! unfolding procedure
+  AliEMCALRecParam      *fRecParam;         // Reconstruction parameters container
+  AliEMCALClusterizer   *fClusterizer;      //! EMCAL clusterizer
+  AliEMCALAfterBurnerUF *fUnfolder;         //! Unfolding procedure
   Bool_t                 fJustUnfold;       // Just unfold, do not recluster
   
   //AOD
-  TClonesArray          *fOutputAODBranch;  //-> AOD Branch with output clusters  
+  TClonesArray          *fOutputAODBranch;  //! AOD Branch with output clusters  
   TString                fOutputAODBranchName;  // New of output AOD branch
   Bool_t                 fFillAODFile;      // Fill the output AOD file with the new clusters, 
                                             // if not they will be only available for the event they were generated
