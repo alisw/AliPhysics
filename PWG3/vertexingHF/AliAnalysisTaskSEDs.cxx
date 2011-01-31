@@ -215,10 +215,10 @@ void AliAnalysisTaskSEDs::Init()
   if(fDebug > 1) printf("AnalysisTaskSEDs::Init() \n");
 
   fListCuts=new TList();
-  AliRDHFCutsDstoKKpi *production = new AliRDHFCutsDstoKKpi();
-  production=fProdCuts;
-  AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi();
-  analysis=fAnalysisCuts;
+  AliRDHFCutsDstoKKpi *production = new AliRDHFCutsDstoKKpi(*fProdCuts);
+  production->SetName("ProductionCuts");
+  AliRDHFCutsDstoKKpi *analysis = new AliRDHFCutsDstoKKpi(*fAnalysisCuts);
+  analysis->SetName("AnalysisCuts");
   
   fListCuts->Add(production);
   fListCuts->Add(analysis);
@@ -415,7 +415,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
   }
 
-  if(!array3Prong) {
+  if(!aod || !array3Prong) {
     printf("AliAnalysisTaskSEDs::UserExec: Charm3Prong branch not found!\n");
     return;
   }
