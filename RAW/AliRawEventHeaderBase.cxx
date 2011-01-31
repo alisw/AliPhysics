@@ -369,7 +369,7 @@ UInt_t AliRawEventHeaderBase::Get(const char *datamember) const
   // in front
 
   char buf[256] = "f";
-  strcat(buf,datamember);
+  strncat(buf,datamember,sizeof(buf)-2);
 
   TDataMember *member = IsA()->GetDataMember(buf);
   if (!member) {
@@ -402,7 +402,7 @@ const UInt_t* AliRawEventHeaderBase::GetP(const char *datamember) const
   // in front
 
   char buf[256] = "f";
-  strcat(buf,datamember);
+  strncat(buf,datamember,sizeof(buf)-2);
 
   TDataMember *member = IsA()->GetDataMember(buf);
   if (!member) {
