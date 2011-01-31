@@ -127,6 +127,7 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance(const char *name, T
    // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,TList::Class());
+  DefineOutput(3,AliRDHFCuts::Class()); //class of the cuts
   CheckConsistency();
 }
 
@@ -197,8 +198,8 @@ Bool_t AliAnalysisTaskSESignificance::CheckConsistency(){
 void AliAnalysisTaskSESignificance::SetBFeedDown(FeedDownEnum flagB){
   if(fReadMC)fBFeedDown=flagB;
   else {
-    if(flagB||flagB>2){AliInfo("B feed down not allowed without MC info\n");}
-    else fBFeedDown=flagB;
+    AliInfo("B feed down not allowed without MC info\n");
+    fBFeedDown=kBoth;
   }
 }
 //_________________________________________________________________
@@ -227,16 +228,61 @@ void AliAnalysisTaskSESignificance::LocalInit()
 
   if(fDebug > 1) printf("AnalysisTaskSESignificance::Init() \n");
 
+  switch(fDecChannel){
+  case 0:
+    {
+      AliRDHFCutsDplustoKpipi* copycut=new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+  case 1:
+    {
+      AliRDHFCutsD0toKpi* copycut=new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+  case 2:
+    {
+      AliRDHFCutsDStartoKpipi* copycut=new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+  case 3:
+    {
+      AliRDHFCutsDstoKKpi* copycut=new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+  case 4:
+    {
+      AliRDHFCutsD0toKpipipi* copycut=new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+  case 5:
+    {
+      AliRDHFCutsLctopKpi* copycut=new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fRDCuts)));
+      // Post the data
+      PostData(3,copycut);
+    }
+    break;
+
+  default:
+    return;
+  }
+
   TList *mdvList =  new TList();
   mdvList->SetOwner();
   mdvList = fCutList;
-  AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi();
-  analysis=(AliRDHFCutsDplustoKpipi*)fRDCuts;
-  mdvList->Add(analysis);
-
+  
   PostData(2,mdvList);
 
-  return;
+
 }
 //________________________________________________________________________
 void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
@@ -291,13 +337,15 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
     }
   }
 
-  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",6,-0.5,5.5);
+  fHistNEvents=new TH1F("fHistNEvents","Number of AODs scanned",8,-0.5,7.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvSelected (vtx)");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"MC Cand from c");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"MC Cand from b");
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutput->Add(fHistNEvents);
 
@@ -374,7 +422,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       break; 
     }
   }
-  if(!arrayProng) {
+  if(!aod || !arrayProng) {
     AliError("AliAnalysisTaskSESignificance::UserExec:Branch not found!\n");
     return;
   }
@@ -489,7 +537,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
     Int_t isSelected=fRDCuts->IsSelected(d,fSelectionlevel,aod);
 
-    if(fReadMC&&fBFeedDown&&isSelected){
+    if(fReadMC && fBFeedDown!=kBoth && isSelected){
       Int_t labD = d->MatchToMC(absPdgMom,arrayMC,nprongs,pdgdaughters);
       if(labD>=0){
 	AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
@@ -500,11 +548,19 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  label=mot->GetMother();
 	}
 	Int_t pdgMotCode = mot->GetPdgCode();
+	
 	if(TMath::Abs(pdgMotCode)<=4){
+	  fHistNEvents->Fill(6);
 	  if(fBFeedDown==kBeautyOnly)isSelected=kFALSE; //from primary charm
 	}else{
-	  if(fBFeedDown==kCharmOnly)isSelected=kFALSE; //from beauty
+	  fHistNEvents->Fill(7);
+	  if(fBFeedDown==kCharmOnly) isSelected=kFALSE; //from beauty
 	}
+	
+	/*
+	if(TMath::Abs(pdgMotCode)==4 && fBFeedDown==kBeautyOnly) isSelected=kFALSE; //from primary charm
+	if(TMath::Abs(pdgMotCode)==5 && fBFeedDown==kCharmOnly) isSelected=kFALSE; //from beauty
+	*/
       }
     }
     
@@ -530,6 +586,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       for(Int_t ivals=0;ivals<nVals;ivals++){
 	if(addresses[ivals]>=((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetNTotCells()){
 	  if (fDebug>1) printf("Overflow!!\n");
+	  delete addresses;
 	  return;
 	}
 
