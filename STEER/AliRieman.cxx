@@ -75,7 +75,7 @@ AliRieman::AliRieman() :
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
-  for (Int_t i=0;i<6;i++) {
+  for (Int_t i=0;i<5;i++) {
     fSumPolY[i]=0;
     fSumPolZ[i]=0;
   }
