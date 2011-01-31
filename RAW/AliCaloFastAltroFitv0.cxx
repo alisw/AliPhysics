@@ -85,10 +85,8 @@ AliCaloFastAltroFitv0& AliCaloFastAltroFitv0::operator= (const AliCaloFastAltroF
 }
 
 void AliCaloFastAltroFitv0::FastFit(Int_t* t, Int_t* y, Int_t nPoints, Double_t sig, Double_t tau, 
-				  Double_t n, Double_t ped, Double_t tMax)
+				    Double_t /*n*/, Double_t ped, Double_t tMax)
 {
-  // n 2 here and unused
-  n = 2.;
   Reset();
 
   fSig = sig;
