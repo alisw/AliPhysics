@@ -656,26 +656,32 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
  //  Read pedestal file from file exchage server
  //  Keep original entry from OCDB in case no new pedestals are available
  //
- AliTPCCalPad *calPadPed=0;
+ AliTPCCalPad *calPadPedOCDB=0;
  AliCDBEntry* entry = GetFromOCDB("Calib", "Pedestals");
- if (entry) calPadPed = (AliTPCCalPad*)entry->GetObject();
- if ( calPadPed==NULL ) {
+ if (entry) calPadPedOCDB = (AliTPCCalPad*)entry->GetObject();
+ if ( calPadPedOCDB==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC pedestal entry available.\n");
-     calPadPed = new AliTPCCalPad("PedestalsMean","PedestalsMean");
  }
 
- AliTPCCalPad *calPadRMS=0;
+ AliTPCCalPad *calPadRMSOCDB=0;
  entry = GetFromOCDB("Calib", "PadNoise");
- if (entry) calPadRMS = (AliTPCCalPad*)entry->GetObject();
- if ( calPadRMS==NULL ) {
+ if (entry) calPadRMSOCDB = (AliTPCCalPad*)entry->GetObject();
+ if ( calPadRMSOCDB==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC noise entry available.\n");
-     calPadRMS = new AliTPCCalPad("PedestalsRMS","PedestalsRMS");
  }
+
+  AliTPCCalPad* calPadPed = new AliTPCCalPad("PedestalsMean","PedestalsMean");
+  AliTPCCalPad* calPadRMS = new AliTPCCalPad("PedestalsRMS","PedestalsRMS");
 
 
  UInt_t result=0;
 
  Int_t nSectors = fROC->GetNSectors();
+ TVectorD foundSectorsPed(nSectors);
+ foundSectorsPed=0;
+ TVectorD foundSectorsRMS(nSectors);
+ foundSectorsRMS=0;
+
  TList* list = GetFileSources(sourceFXS,"pedestals");
  
  if (list && list->GetEntries()>0) {
@@ -708,15 +714,51 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
         changed=true;
         for (Int_t sector=0; sector<nSectors; sector++) {
            AliTPCCalROC *rocPed=calPed->GetCalRocPedestal(sector, kFALSE);
-           if ( rocPed )  calPadPed->SetCalROC(rocPed,sector);
+           if ( rocPed ) {
+	       AliTPCCalROC* roc=calPadPed->GetCalROC(sector);
+	       roc->Add(rocPed,1);
+	       foundSectorsPed[sector]++;
+	   }
            AliTPCCalROC *rocRMS=calPed->GetCalRocRMS(sector, kFALSE);
-           if ( rocRMS )  calPadRMS->SetCalROC(rocRMS,sector);
+           if ( rocRMS )  {
+               AliTPCCalROC* roc=calPadRMS->GetCalROC(sector);
+	       roc->Add(rocRMS,1);
+	       foundSectorsRMS[sector]++;
+	   } 
         }
         delete calPed; 
         f->Close();
       }
      ++index;
     }  // while(list)
+
+//
+//  Check if calibration is complete -- otherwise take from old OCDB entry
+
+// inner sectors
+    for (Int_t sector=0; sector<nSectors/2; sector++) {
+       if (foundSectorsPed[sector] < 1 ) {
+          AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
+	  calPadPed->SetCalROC(rocOCDB,sector);
+       }
+       if (foundSectorsRMS[sector] < 1 ) {
+          AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
+	  calPadRMS->SetCalROC(rocOCDB,sector);
+       }
+    }
+// outer sectors -- two updates needed
+    for (Int_t sector=nSectors/2; sector<nSectors; sector++) {
+       if (foundSectorsPed[sector] < 2 ) {
+          AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
+	  calPadPed->SetCalROC(rocOCDB,sector);
+       }
+       if (foundSectorsRMS[sector] < 2 ) {
+          AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
+	  calPadRMS->SetCalROC(rocOCDB,sector);
+       }       
+    }
+
+    
 //
 //  Store updated pedestal entry to OCDB
 //
@@ -739,6 +781,8 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 
   delete calPadPed;
   delete calPadRMS;
+  delete calPadPedOCDB;
+  delete calPadRMSOCDB;
 
   return result;
 }
@@ -752,37 +796,38 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
  //  Read pulser calibration file from file exchage server
  //  Keep original entry from OCDB in case no new pulser calibration is available
  //
- TObjArray    *pulserObjects=0;
- AliTPCCalPad *pulserTmean=0;
- AliTPCCalPad *pulserTrms=0;
- AliTPCCalPad *pulserQmean=0;
+ 
+ TObjArray *pulserObjects = new TObjArray;
+ TObjArray *pulserObjectsOCDB=0;   
+  
  AliCDBEntry* entry = GetFromOCDB("Calib", "Pulser");
- if (entry) pulserObjects = (TObjArray*)entry->GetObject();
- if ( pulserObjects==NULL ) {
+ if (entry) pulserObjectsOCDB = (TObjArray*)entry->GetObject();
+ if ( pulserObjectsOCDB==NULL ) {
      Log("AliTPCPreprocsessor: No previous TPC pulser entry available.\n");
-     pulserObjects = new TObjArray;    
  }
 
- pulserTmean = (AliTPCCalPad*)pulserObjects->FindObject("PulserTmean");
- if ( !pulserTmean ) {
-    pulserTmean = new AliTPCCalPad("PulserTmean","PulserTmean");
-    pulserObjects->Add(pulserTmean);
- }
- pulserTrms = (AliTPCCalPad*)pulserObjects->FindObject("PulserTrms");
- if ( !pulserTrms )  { 
-    pulserTrms = new AliTPCCalPad("PulserTrms","PulserTrms");
-    pulserObjects->Add(pulserTrms);
- }
- pulserQmean = (AliTPCCalPad*)pulserObjects->FindObject("PulserQmean");
- if ( !pulserQmean )  { 
-    pulserQmean = new AliTPCCalPad("PulserQmean","PulserQmean");
-    pulserObjects->Add(pulserQmean);
- }
+ AliTPCCalPad *pulserTmean = new AliTPCCalPad("PulserTmean","PulserTmean");
+ pulserObjects->Add(pulserTmean);
+ 
+ AliTPCCalPad *pulserTrms = new AliTPCCalPad("PulserTrms","PulserTrms");
+ pulserObjects->Add(pulserTrms);
+ 
+ AliTPCCalPad *pulserQmean = new AliTPCCalPad("PulserQmean","PulserQmean");
+ pulserObjects->Add(pulserQmean);
+ 
 
 
  UInt_t result=0;
 
  Int_t nSectors = fROC->GetNSectors();
+ TVectorD foundTmean(nSectors);
+ foundTmean=0;
+ TVectorD foundTrms(nSectors);
+ foundTrms=0;
+ TVectorD foundQmean(nSectors);
+ foundQmean=0;
+
+
  TList* list = GetFileSources(sourceFXS,"pulser");
  
  if (list && list->GetEntries()>0) {
@@ -815,17 +860,88 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
         changed=true;
         for (Int_t sector=0; sector<nSectors; sector++) {
            AliTPCCalROC *rocTmean=calPulser->GetCalRocT0(sector);
-           if ( rocTmean )  pulserTmean->SetCalROC(rocTmean,sector);
+           if ( rocTmean ) {
+               AliTPCCalROC* roc=pulserTmean->GetCalROC(sector);
+	       roc->Add(rocTmean,1);
+	       foundTmean[sector]++;
+           }
            AliTPCCalROC *rocTrms=calPulser->GetCalRocRMS(sector);
-           if ( rocTrms )  pulserTrms->SetCalROC(rocTrms,sector);
+           if ( rocTrms ) {
+               AliTPCCalROC* roc=pulserTrms->GetCalROC(sector);
+	       roc->Add(rocTrms,1);
+	       foundTrms[sector]++;
+           }
            AliTPCCalROC *rocQmean=calPulser->GetCalRocQ(sector);
-           if ( rocQmean )  pulserQmean->SetCalROC(rocQmean,sector);
+           if ( rocQmean ) {
+               AliTPCCalROC* roc=pulserQmean->GetCalROC(sector);
+	       roc->Add(rocQmean,1);
+	       foundQmean[sector]++;
+           }
         }
        delete calPulser;
        f->Close();
       }
      ++index;
     }  // while(list)
+
+
+
+
+if (pulserObjectsOCDB) {
+  AliTPCCalPad* pulserTmeanOCDB = (AliTPCCalPad*)pulserObjectsOCDB->FindObject("PulserTmean");
+  AliTPCCalPad* pulserTrmsOCDB  = (AliTPCCalPad*)pulserObjectsOCDB->FindObject("PulserTrms");
+  AliTPCCalPad* pulserQmeanOCDB = (AliTPCCalPad*)pulserObjectsOCDB->FindObject("PulserQmean");
+ 
+//
+//  Check if calibration is complete -- otherwise take from old OCDB entry
+
+// inner sectors
+    for (Int_t sector=0; sector<nSectors/2; sector++) {
+       if (foundTmean[sector] < 1 ) {
+         if (pulserTmeanOCDB) {
+          AliTPCCalROC* rocOCDB = pulserTmeanOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserTmean->SetCalROC(rocOCDB,sector);
+         }
+       }
+       if (foundTrms[sector] < 1 ) {
+         if (pulserTrmsOCDB) {
+          AliTPCCalROC* rocOCDB = pulserTrmsOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserTrms->SetCalROC(rocOCDB,sector);
+         }
+       }
+       if (foundQmean[sector] < 1 ) {
+         if (pulserQmeanOCDB) {
+          AliTPCCalROC* rocOCDB = pulserQmeanOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserQmean->SetCalROC(rocOCDB,sector);
+         }
+       }
+    }
+  
+// outer sectors -- two updates needed
+
+    for (Int_t sector=0; sector<nSectors/2; sector++) {
+       if (foundTmean[sector] < 2 ) {
+         if (pulserTmeanOCDB) {
+          AliTPCCalROC* rocOCDB = pulserTmeanOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserTmean->SetCalROC(rocOCDB,sector);
+         }
+       }
+       if (foundTrms[sector] < 2 ) {
+         if (pulserTrmsOCDB) {
+          AliTPCCalROC* rocOCDB = pulserTrmsOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserTrms->SetCalROC(rocOCDB,sector);
+         }
+       }
+       if (foundQmean[sector] < 2 ) {
+         if (pulserQmeanOCDB) {
+          AliTPCCalROC* rocOCDB = pulserQmeanOCDB->GetCalROC(sector);
+          if ( rocOCDB ) pulserQmean->SetCalROC(rocOCDB,sector);
+         }
+       }
+
+    }
+}
+
 //
 //  Store updated pedestal entry to OCDB
 //
@@ -845,6 +961,8 @@ UInt_t AliTPCPreprocessor::ExtractPulser(Int_t sourceFXS)
   }
   pulserObjects->Delete();
   delete pulserObjects;
+  pulserObjectsOCDB->Delete();
+  delete pulserObjectsOCDB;
 
   return result;
 }
@@ -1123,7 +1241,7 @@ UInt_t AliTPCPreprocessor::ExtractQA(Int_t sourceFXS)
  
  if (list && list->GetEntries()>0) {
 
-//  only one QA objetc should be available!
+//  only one QA object should be available!
 
     AliTPCdataQA *calQA;
 
