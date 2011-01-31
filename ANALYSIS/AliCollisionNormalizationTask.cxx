@@ -125,7 +125,8 @@ void AliCollisionNormalizationTask::UserExec(Option_t*)
   // NB never call IsEventSelected more than once per event
   // (statistics histogram would be altered)
 
-  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  // FIXME: using only MB events, foresee more events?
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
 
   // Get the Multiplicity cut
   const AliMultiplicity* mult = aESD->GetMultiplicity();

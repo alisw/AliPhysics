@@ -290,20 +290,36 @@ Double_t AliCollisionNormalization::ComputeNint() {
   Double_t bg = 0; // This will include beam gas + accidentals
   if (fHistStatBin0->GetNbinsY() > 4) { // FIXME: we need a better criterion to decide...
     AliInfo("Using BG computed by Physics Selection");
-    bg = fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),AliPhysicsSelection::kStatRowBG);
-    bg += fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),AliPhysicsSelection::kStatRowAcc);
+    // WARNING
+    // CHECK IF THE COMPUTATION OF BG OFFSET IS STILL OK, IN CASE OF CHANGES TO THE PHYSICS SELECTION
+    Int_t bgOffset = 0; 
+    Int_t nbiny = fHistStatBin0->GetNbinsY();
+    for(Int_t ibiny =1; ibiny <= nbiny; ibiny++){
+      bgOffset++;
+      printf("%d, %s\n", bgOffset, fHistStatBin0->GetYaxis()->GetBinLabel(ibiny) );
+      
+      if(!strncmp("All B", fHistStatBin0->GetYaxis()->GetBinLabel(ibiny),5)) break;
+      if((ibiny+1)==nbiny) AliFatal("Cannot compute bg offset");
+    }
+    
+    if(fVerbose > 2) AliInfo(Form("BG Offset: %d",bgOffset));
+    
+
+    bg = fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(), bgOffset+AliPhysicsSelection::kStatRowBG);
+    bg += fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),bgOffset+AliPhysicsSelection::kStatRowAcc);
     Int_t cint1B = (Int_t) fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),1);	
     if (cint1B != Int_t(triggeredEventsWith0MultWithBG)) {
       AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, Int_t(triggeredEventsWith0MultWithBG)));
     }
   } else {
     AliInfo("Computing BG using CINT1A/B/C/E, ignoring intensities");
+    AliError("This will only work for early runs!!! USE BG FROM PHYSICS SELECTION INSTEAD");
     Int_t icol = fHistStatBin0->GetNbinsX();
     Int_t cint1B = (Int_t) fHistStatBin0->GetBinContent(icol,1);	
     Int_t cint1A = (Int_t) fHistStatBin0->GetBinContent(icol,2);	
     Int_t cint1C = (Int_t) fHistStatBin0->GetBinContent(icol,3);	
     Int_t cint1E = (Int_t) fHistStatBin0->GetBinContent(icol,4);      
-    bg   = cint1A + cint1C-2*cint1E ;
+    bg   = cint1A + cint1C-2*cint1E ; // FIXME: to be changed to take into account ratios of events
     if (cint1B != triggeredEventsWith0MultWithBG) {
       AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, (Int_t)triggeredEventsWith0MultWithBG));
     }
