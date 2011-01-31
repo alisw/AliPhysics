@@ -425,10 +425,10 @@ void AliAnalysisTaskSEDplus::Init(){
   
   //PostData(2,fRDCutsloose);//we should then put those cuts in a tlist if we have more than 1
   fListCuts=new TList();
-  AliRDHFCutsDplustoKpipi *production = new AliRDHFCutsDplustoKpipi();
-  production=fRDCutsProduction;
-  AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi();
-  analysis=fRDCutsAnalysis;
+  AliRDHFCutsDplustoKpipi *production = new AliRDHFCutsDplustoKpipi(*fRDCutsProduction);
+  production->SetName("ProductionCuts");
+  AliRDHFCutsDplustoKpipi *analysis = new AliRDHFCutsDplustoKpipi(*fRDCutsAnalysis);
+  analysis->SetName("AnalysisCuts");
   
   fListCuts->Add(production);
   fListCuts->Add(analysis);
@@ -786,7 +786,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign3Prong");
   }
 
-  if(!array3Prong) {
+  if(!aod || !array3Prong) {
     printf("AliAnalysisTaskSEDplus::UserExec: Charm3Prong branch not found!\n");
     return;
   }
@@ -833,7 +833,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       printf("AliAnalysisTaskSEDplus::UserExec: MC particles branch not found!\n");
-      //    return;
+      return;
     }
     
   // load MC header
