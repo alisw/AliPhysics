@@ -234,7 +234,8 @@ Bool_t AliTrackResidualsFast::Update()
   
   Int_t fixedparamat[6]={0,0,0,0,0,0}; 
   const Int_t unfixedparam=GetNFreeParam();
-  Int_t position[6],last=0;//position is of size 6 but only unfiexedparam indeces will be used
+  Int_t position[6]={0,0,0,0,0,0};
+  Int_t last=0;//position is of size 6 but only unfiexedparam indeces will be used
   
   if(fBFixed[0]==kTRUE){
     fixedparamat[0]=1;
