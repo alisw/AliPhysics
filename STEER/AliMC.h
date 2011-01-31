@@ -103,7 +103,7 @@ public:
 // Track reference related
    AliTrackReference* AddTrackReference(Int_t label, Int_t id = -999);
    // const TClonesArray*      TrackReferences()   const {return &fTrackReferences;}
-   virtual void       RemapTrackReferencesIDs(Int_t *map); //remaping track references MI
+   virtual void       RemapTrackReferencesIDs(const Int_t *map); //remaping track references MI
    virtual void       ResetTrackReferences();
    virtual void       FixParticleDecaytime();
 // Geometry related

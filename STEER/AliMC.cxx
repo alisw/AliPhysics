@@ -843,7 +843,7 @@ void AliMC::ReadTransPar()
     itmed=0;
     for(i=0;i<256;i++) line[i]='\0';
     // Read up to the end of line excluded
-    iret=fscanf(lun,"%[^\n]",line);
+    iret=fscanf(lun,"%256[^\n]",line);
     if(iret<0) {
       //End of file
       fclose(lun);
@@ -1111,7 +1111,7 @@ void AliMC::ResetTrackReferences()
 }
 
 //_______________________________________________________________________
-void AliMC::RemapTrackReferencesIDs(Int_t *map)
+void AliMC::RemapTrackReferencesIDs(const Int_t *map)
 {
   // 
   // Remapping track reference
