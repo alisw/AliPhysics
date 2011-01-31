@@ -7,6 +7,8 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
+#include <string.h>
+
 #include "AliEveMUONData.h"
 
 #include <EveDet/AliEveMUONChamberData.h>
@@ -97,7 +99,7 @@ AliEveMUONData::AliEveMUONData(const AliEveMUONData &mdata) :
   //
   // Copy constructor
   //
-
+  memset(fTrackList,0,256*sizeof(Int_t));
 }
 
 //______________________________________________________________________________
