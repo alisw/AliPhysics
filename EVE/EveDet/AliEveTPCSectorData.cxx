@@ -190,6 +190,8 @@ AliEveTPCSectorData::AliEveTPCSectorData(Int_t sector, Int_t bsize) :
   fCurrentRow(0), fCurrentPad(0), fCurrentPos(0), fCurrentStep(0)
 {
   // Constructor.
+	
+  memset(fPadBuffer,0,2048*sizeof(Short_t));
 
   if (fgParam == 0) InitStatics();
 
