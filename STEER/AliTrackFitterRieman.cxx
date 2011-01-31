@@ -60,6 +60,8 @@ AliTrackFitterRieman::AliTrackFitterRieman():
   //
   // default constructor
   //
+  fCorrY[0] = fCorrY[1] = fCorrY[2] = fCorrY[3] = 0;
+  fCorrZ[0] = fCorrZ[1] = fCorrZ[2] = fCorrZ[3] = 0;
 }
 
 
@@ -78,6 +80,8 @@ AliTrackFitterRieman::AliTrackFitterRieman(AliTrackPointArray *array, Bool_t own
   //
   // Constructor
   //
+  fCorrY[0] = fCorrY[1] = fCorrY[2] = fCorrY[3] = 0;
+  fCorrZ[0] = fCorrZ[1] = fCorrZ[2] = fCorrZ[3] = 0;
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
 }
 
@@ -96,6 +100,8 @@ AliTrackFitterRieman::AliTrackFitterRieman(const AliTrackFitterRieman &rieman):
   //
   // copy constructor
   //
+  fCorrY[0] = fCorrY[1] = fCorrY[2] = fCorrY[3] = 0;
+  fCorrZ[0] = fCorrZ[1] = fCorrZ[2] = fCorrZ[3] = 0;
   if (AliLog::GetDebugLevel("","AliTrackFitterRieman")) fDebugStream = new TTreeSRedirector("RiemanAlignDebug.root");
 }
 
