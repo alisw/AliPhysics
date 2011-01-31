@@ -238,6 +238,7 @@ void AliAnalysisTaskSEVertexingHF::UserExec(Option_t */*option*/)
     Float_t dummy;
     AliESDUtils::GetCorrV0(eventE,dummy,vChCorr);
     fHFUtilInfo->SetVZERO( vChCorr );
+    delete [] vChCorr;
   }
   //--------------------------------------------------------------
 
