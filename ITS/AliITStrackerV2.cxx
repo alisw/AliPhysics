@@ -648,7 +648,7 @@ AliITStrackerV2::AliITSlayer::AliITSlayer():
   //--------------------------------------------------------------------
   
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
-
+  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++)fIndex[i]=0;
 }
 
 AliITStrackerV2::AliITSlayer::
@@ -669,7 +669,7 @@ AliITSlayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd):
   for (Int_t i=0; i<kNsector; i++) fN[i]=0;
 
   for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++) fClusters[i]=0;
-
+  for (Int_t i=0; i<AliITSRecoParam::fgkMaxClusterPerLayer; i++)fIndex[i]=0;
 }
 
 AliITStrackerV2::AliITSlayer::~AliITSlayer() {
@@ -1005,13 +1005,21 @@ Bool_t AliITStrackerV2::RefitAt(Double_t xx,AliITStrackV2 *t,
  
      {
      Double_t hI=i-0.5*step; 
-     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {             
-        Double_t rs=0.5*(fgLayers[i-step].GetR() + r);
-        Double_t d=0.0034, x0=38.6; 
-        if (TMath::Abs(hI-1.5)<0.01) {rs=9.; d=0.0097; x0=42;}
-        if (!t->PropagateTo(rs,-step*d,x0)) {
-          return kFALSE;
-        }
+     if (TMath::Abs(hI-1.5)<0.01 || TMath::Abs(hI-3.5)<0.01) {  
+       Int_t iLay = i-step;
+       Double_t rs = 0.;
+       if(iLay<0 || iLay>= AliITSgeomTGeo::kNLayers){
+	 rs=0.5*(fgLayers[i-step].GetR() + r);
+       }
+       else{
+	 AliError(Form("Invalid layer %d ",iLay));
+	 return kFALSE;
+       }
+       Double_t d=0.0034, x0=38.6; 
+       if (TMath::Abs(hI-1.5)<0.01) {rs=9.; d=0.0097; x0=42;}
+       if (!t->PropagateTo(rs,-step*d,x0)) {
+	 return kFALSE;
+       }
      }
      }
 

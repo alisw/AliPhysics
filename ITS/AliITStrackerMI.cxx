@@ -92,9 +92,16 @@ fPlaneEff(0) {
   //Default constructor
   Int_t i;
   for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
-  for(i=0;i<2;i++) {fxOverX0Shield[i]=-1.;fxTimesRhoShield[i]=-1.;}
+  for(i=0;i<2;i++) {
+    fxOverX0Shield[i]=-1.;
+    fxTimesRhoShield[i]=-1.;
+    fConstraint[i]=0;
+  }
   for(i=0;i<6;i++) {fxOverX0Layer[i]=-1.;fxTimesRhoLayer[i]=-1.;}
   fOriginal.SetOwner();
+  for(i=0;i<AliITSgeomTGeo::kNLayers;i++)fForceSkippingOfLayer[i]=0;
+  for(i=0;i<100000;i++)fBestTrackIndex[i]=0;
+
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITStrackerMI(const Char_t *geom) : AliTracker(),
@@ -256,6 +263,7 @@ fPlaneEff(0) {
     if(AliITSReconstructor::GetRecoParam()->GetHistoPlaneEff()) fPlaneEff->SetCreateHistos(kTRUE);
   }
 }
+/*
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITStrackerMI(const AliITStrackerMI &tracker):AliTracker(tracker),
 fI(tracker.fI),
@@ -300,6 +308,7 @@ fPlaneEff(tracker.fPlaneEff) {
     fxTimesRhoShield[i]=tracker.fxTimesRhoShield[i];
   }
 }
+
 //------------------------------------------------------------------------
 AliITStrackerMI & AliITStrackerMI::operator=(const AliITStrackerMI &tracker){
   //Assignment operator
@@ -307,6 +316,7 @@ AliITStrackerMI & AliITStrackerMI::operator=(const AliITStrackerMI &tracker){
   new(this) AliITStrackerMI(tracker);
   return *this;
 }
+*/
 //------------------------------------------------------------------------
 AliITStrackerMI::~AliITStrackerMI()
 {
@@ -1499,7 +1509,7 @@ fNMaxSigmaCl(3)
       fBy20[j1][1]=0;
     }
   }
-
+  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++)fClusters[i]=NULL;
 
 }
 //------------------------------------------------------------------------
@@ -1587,8 +1597,9 @@ fNMaxSigmaCl(3) {
       fBy20[j1][1]=0;
     }
   }
-
+  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++)fClusters[i]=NULL;
 }
+/*
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSlayer::AliITSlayer(const AliITSlayer& layer):
 fR(layer.fR),
@@ -1622,6 +1633,7 @@ fNMaxSigmaCl(layer.fNMaxSigmaCl)
 {
   //Copy constructor
 }
+*/
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSlayer::~AliITSlayer() {
   //--------------------------------------------------------------------

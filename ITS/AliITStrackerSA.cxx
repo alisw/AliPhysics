@@ -172,7 +172,7 @@ fCluCoord(0)
   fVertexer = vertexer;
  
 }
-
+/*
 //____________________________________________________________________________
 AliITStrackerSA::AliITStrackerSA(const AliITStrackerSA& tracker):AliITStrackerMI(),
 fPhiEstimate(tracker.fPhiEstimate),
@@ -223,7 +223,7 @@ AliITStrackerSA& AliITStrackerSA::operator=(const AliITStrackerSA& source){
   return *this;
  
 }
-
+*/
 //____________________________________________________________________________
 AliITStrackerSA::~AliITStrackerSA(){
   // destructor

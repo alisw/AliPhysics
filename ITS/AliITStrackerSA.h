@@ -36,8 +36,6 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(const Char_t *geom);
   AliITStrackerSA(const Char_t *geom,AliESDVertex *vert);
   AliITStrackerSA(const Char_t *geom,AliITSVertexer *vertexer);
-  AliITStrackerSA(const AliITStrackerSA& tracker);
-  AliITStrackerSA& operator=(const AliITStrackerSA& source);
   virtual ~AliITStrackerSA();  
   virtual Int_t Clusters2Tracks(AliESDEvent *event);
   Int_t FindTracks(AliESDEvent* event, Bool_t useAllClusters=kFALSE);
@@ -127,6 +125,10 @@ class AliITStrackerSA : public AliITStrackerMI {
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
+
+ private:
+  AliITStrackerSA(const AliITStrackerSA& tracker);
+  AliITStrackerSA& operator=(const AliITStrackerSA& source);
 
   ClassDef(AliITStrackerSA,10)
 };

@@ -54,7 +54,7 @@ void AliITSVertexer3DTapan::LoadClusters(TTree *cTree) {
        if (lay>2) break;  //load the SPD clusters only
 
        Int_t ncl=clusters->GetEntriesFast();
-       Float_t hPhi;
+       Float_t hPhi=0.;
        while (ncl--) {
           AliITSRecPoint *c=(AliITSRecPoint*)clusters->UncheckedAt(ncl);
 	  Float_t pos[3];
@@ -89,7 +89,8 @@ AliESDVertex *AliITSVertexer3DTapan::FindVertexForCurrentEvent(TTree *cTree) {
   //
   LoadClusters(cTree);
 
-  Double_t pos[3], postemp[3], sigpos[3];
+  Double_t pos[3], postemp[3];
+  Double_t sigpos[3]={0.,0.,0.};
   Int_t ncontr, ncontrtemp;
   Float_t cuts[3];
   Int_t vtxstatus=0;
@@ -138,7 +139,11 @@ AliESDVertex *AliITSVertexer3DTapan::FindVertexForCurrentEvent(TTree *cTree) {
   }
   AliInfo(Form("Final step: %d %f %f %f st=%d",ncontr,pos[0],pos[1],pos[2],vtxstatus));
 
-  return new AliESDVertex(pos,sigpos,(Double_t)vtxstatus,ncontr,"AliITSVertexer3DTapan");
+  Double_t covma[6]={0.,0.,0.,0.,0.,0.};
+  covma[0]=sigpos[0];
+  covma[2]=sigpos[1];
+  covma[5]=sigpos[2];
+  return new AliESDVertex(pos,covma,(Double_t)vtxstatus,ncontr,"AliITSVertexer3DTapan");
 
 }
 
