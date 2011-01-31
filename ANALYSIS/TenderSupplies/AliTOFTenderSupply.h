@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//  TPC tender, reapply pid on the fly                                //
+//  TOF tender, reapply pid on the fly                                //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -16,7 +16,8 @@
 class AliESDpid;
 class AliTOFcalib;
 class AliTOFT0maker;
-
+class AliESDEevent;
+class AliESDtrack;
 class AliTOFTenderSupply: public AliTenderSupply {
 
 public:
@@ -30,10 +31,24 @@ public:
 
   // TOF method
   void SetTOFres(Float_t res){fTOFres=res;}
-  void SetApplyT0(Bool_t flag=kTRUE){fApplyT0=flag;};
-  void SetCorrectExpTimes(Bool_t flag=kTRUE){fCorrectExpTimes=flag;};
+  void SetApplyT0(Bool_t flag=kTRUE){fApplyT0=flag;}
+  void SetCorrectExpTimes(Bool_t flag=kTRUE){fCorrectExpTimes=flag;}
+  void SetLHC10dPatch(Bool_t flag=kFALSE){ 
+    if (flag == kTRUE) {
+      Print(" **** TOF Tender: special setting LHC10d patch is ON");
+      Print(" **** TOF Tender: this setting is valid only on LHC10d pass2");
+    }
+    fLHC10dPatch=flag;
+    return;
+  }
   
   virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
+
+  /* theoretical expected time related stuff for LHC10d patch */
+  static Float_t GetBetaTh(Float_t m, Float_t p) {return TMath::Sqrt(1. / (1. + m * m / (p * p)));}; // get beta th
+  static Float_t GetExpTimeTh(Float_t m, Float_t p, Float_t L) {return L / 2.99792457999999984e-02 / GetBetaTh(m, p);}; // get exp time th
+  void RecomputeTExp(AliESDEvent *event) const;
+  void RecomputeTExp(AliESDtrack *track) const;
 
 private:
   AliESDpid          *fESDpid;         //! ESD pid object
@@ -42,6 +57,7 @@ private:
   Bool_t fApplyT0;           // flag to subtract the T0-TOF (deprecated)
   Int_t  fTimeZeroType;      // flag to discriminate the time zero type 
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
+  Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
 
   // variables for TOF calibrations
   AliTOFcalib     *fTOFCalib;    //! recalibrate TOF signal with OCDB
@@ -53,9 +69,8 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 2);
+  ClassDef(AliTOFTenderSupply, 3);
 };
 
 
 #endif 
-

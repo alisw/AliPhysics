@@ -16,11 +16,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// TOF tender: reapply TOF pid on the fly                                    //
+// TOF tender: 
+//             load updated calibration if needed
+//             reapply TOF pid on the fly                                    //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 #include <AliLog.h>
 #include <AliESDEvent.h>
+#include <AliESDtrack.h>
 #include <AliESDInputHandler.h>
 #include <AliAnalysisManager.h>
 #include <AliESDpid.h>
@@ -42,6 +45,7 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fApplyT0(kFALSE),
   fTimeZeroType(3),
   fCorrectExpTimes(kTRUE),
+  fLHC10dPatch(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
   fTOFres(100.)
@@ -66,6 +70,7 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fApplyT0(kFALSE),
   fTimeZeroType(3),
   fCorrectExpTimes(kTRUE),
+  fLHC10dPatch(kFALSE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
   fTOFres(100.) 
@@ -157,7 +162,9 @@ void AliTOFTenderSupply::ProcessEvent()
     }
   }
   fTOFCalib->CalibrateESD(event);
-  
+
+  if (fLHC10dPatch) RecomputeTExp(event);
+
   if(fIsMC){
     Float_t t0true = fTOFT0maker->TuneForMC(event);
     
@@ -207,4 +214,52 @@ void AliTOFTenderSupply::ProcessEvent()
 }
 
 
+//_____________________________________________________
+void AliTOFTenderSupply::RecomputeTExp(AliESDEvent *event) const
+{
+  /*
+   * calibrate TExp
+   */
 
+  
+  /* loop over tracks */
+  AliESDtrack *track = NULL;
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+    /* get track and calibrate */
+    track = event->GetTrack(itrk);
+    RecomputeTExp(track);
+  }
+  
+}
+
+//_____________________________________________________
+void AliTOFTenderSupply::RecomputeTExp(AliESDtrack *track) const
+{
+  /*** 
+       THIS METHOD IS BASED ON THEORETICAL EXPECTED TIME COMPUTED
+       USING AVERAGE MOMENTUM BETWEEN INNER/OUTER TRACK PARAMS 
+       IT IS A ROUGH APPROXIMATION APPLIED TO FIX LHC10d-pass2 DATA
+       WHERE A WRONG GEOMETRY (FULL TRD) WAS INSERTED
+  ***/
+
+  Double_t texp[AliPID::kSPECIES];
+  if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) return;
+
+
+  /* get track params */
+  Float_t l = track->GetIntegratedLength();
+  Float_t p = track->P();
+  if (track->GetInnerParam() && track->GetOuterParam()) {
+    Float_t pin = track->GetInnerParam()->P();
+    Float_t pout = track->GetOuterParam()->P();
+    p = 0.5 * (pin + pout);
+  }
+  /* loop over particle types and compute expected time */
+  for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
+    texp[ipart] = GetExpTimeTh(AliPID::ParticleMass(ipart), p, l) - 37.; 
+  // 37 is a final semiempirical offset to further adjust (calibrations were
+  // done with "standard" integratedTimes)
+  /* set integrated times */
+  track->SetIntegratedTimes(texp);
+
+}
