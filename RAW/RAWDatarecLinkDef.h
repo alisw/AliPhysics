@@ -10,7 +10,6 @@
 #pragma link C++ class AliRawReaderRoot+;
 #pragma link C++ class AliRawReaderChain+;
 #pragma link C++ class AliRawReaderDate+;
-#pragma link C++ class AliRawReaderDateV3+;
 #pragma link C++ class AliRawReaderMemory+;
 #pragma link C++ class AliAltroRawStream+;
 #pragma link C++ class AliCaloRawStream+;
