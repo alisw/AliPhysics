@@ -252,23 +252,7 @@ void AliITSPlaneEffSPD::CopyHistos(AliITSPlaneEffSPD &target) const {
   }
 return;
 }
-/*    commented out by M.Masera 8/3/08
-//______________________________________________________________________
-AliITSPlaneEff&  AliITSPlaneEffSPD::operator=(const
-                                           AliITSPlaneEff &s){
-    //    Assignment operator
-    // Inputs:
-    //    AliITSPlaneEffSPD &s The original class for which
-    //                                this class is a copy of
-    // Outputs:
-    //    none.
-    // Return:
 
-    if(&s == this) return *this;
-    AliError("operator=: Not allowed to make a =, use default creater instead");
-    return *this;
-}
-*/
 //_______________________________________________________________________
 Int_t AliITSPlaneEffSPD::GetMissingTracksForGivenEff(Double_t eff, Double_t RelErr,
           UInt_t im, UInt_t ic) const {
@@ -965,7 +949,7 @@ Bool_t AliITSPlaneEffSPD::WriteHistosToFile(TString filename, Option_t* option) 
      AliWarning("WriteHistosToFile: null output filename!");
      return kFALSE;
   }
-  char branchname[30];
+  char branchname[51];
   TFile *hFile=new TFile(filename.Data(),option,
                          "The File containing the TREEs with ITS PlaneEff Histos");
   TTree *SPDTree=new TTree("SPDTree","Tree whith Residuals and Cluster Type distributions for SPD");
@@ -1010,15 +994,15 @@ Bool_t AliITSPlaneEffSPD::WriteHistosToFile(TString filename, Option_t* option) 
   SPDTree->Branch("histXZ","TH2F",&histXZ,128000,0);
   SPDTree->Branch("histClusterType","TH2I",&histClusterType,128000,0);
   for(Int_t clu=0;clu<kNclu;clu++) {
-    sprintf(branchname,"histXclu_%d",clu+1);
+    snprintf(branchname,50,"histXclu_%d",clu+1);
     SPDTree->Branch(branchname,"TH1F",&histXclu[clu],128000,0);
-    sprintf(branchname,"histZclu_%d",clu+1);
+    snprintf(branchname,50,"histZclu_%d",clu+1);
     SPDTree->Branch(branchname,"TH1F",&histZclu[clu],128000,0);
   }
   for(Int_t chip=0;chip<kNChip;chip++) {
-    sprintf(branchname,"histXchip_%d",chip);
+    snprintf(branchname,50,"histXchip_%d",chip);
     SPDTree->Branch(branchname,"TH1F",&histXchip[chip],128000,0);
-    sprintf(branchname,"histZchip_%d",chip);
+    snprintf(branchname,50,"histZchip_%d",chip);
     SPDTree->Branch(branchname,"TH1F",&histZchip[chip],128000,0);
   }
   SPDTree->Branch("histTrErrX","TH1F",&histTrErrX,128000,0);
@@ -1028,9 +1012,9 @@ Bool_t AliITSPlaneEffSPD::WriteHistosToFile(TString filename, Option_t* option) 
   SPDTree->Branch("profXvsPhi","TProfile",&profXvsPhi,128000,0);
   SPDTree->Branch("profZvsDip","TProfile",&profZvsDip,128000,0);
   for(Int_t clu=0;clu<kNclu;clu++) {
-    sprintf(branchname,"profXvsPhiclu_%d",clu+1);
+    snprintf(branchname,50,"profXvsPhiclu_%d",clu+1);
     SPDTree->Branch(branchname,"TProfile",&profXvsPhiclu[clu],128000,0);
-    sprintf(branchname,"profZvsDipclu_%d",clu+1);
+    snprintf(branchname,50,"profZvsDipclu_%d",clu+1);
     SPDTree->Branch(branchname,"TProfile",&profZvsDipclu[clu],128000,0);
   }
 
@@ -1074,7 +1058,7 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
      AliWarning("ReadHistosFromFile: incorrect output filename!");
      return kFALSE;
   }
-  char branchname[30];
+  char branchname[51];
 
   TH1F *h  = 0;
   TH2F *h2 = 0;
@@ -1097,17 +1081,17 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
    
   TBranch *histXclu[kNclu], *histZclu[kNclu];
   for(Int_t clu=0; clu<kNclu; clu++) {
-    sprintf(branchname,"histXclu_%d",clu+1);
+    snprintf(branchname,50,"histXclu_%d",clu+1);
     histXclu[clu]= (TBranch*) tree->GetBranch(branchname);
-    sprintf(branchname,"histZclu_%d",clu+1);
+    snprintf(branchname,50,"histZclu_%d",clu+1);
     histZclu[clu]= (TBranch*) tree->GetBranch(branchname);
   }
 
   TBranch *histXchip[kNChip], *histZchip[kNChip];
   for(Int_t chip=0; chip<kNChip; chip++) {
-    sprintf(branchname,"histXchip_%d",chip);
+    snprintf(branchname,50,"histXchip_%d",chip);
     histXchip[chip]= (TBranch*) tree->GetBranch(branchname);
-    sprintf(branchname,"histZchip_%d",chip);
+    snprintf(branchname,50,"histZchip_%d",chip);
     histZchip[chip]= (TBranch*) tree->GetBranch(branchname);
   }
 
@@ -1120,9 +1104,9 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
 
   TBranch *profXvsPhiclu[kNclu], *profZvsDipclu[kNclu];
   for(Int_t clu=0; clu<kNclu; clu++) {
-    sprintf(branchname,"profXvsPhiclu_%d",clu+1);
+    snprintf(branchname,50,"profXvsPhiclu_%d",clu+1);
     profXvsPhiclu[clu]= (TBranch*) tree->GetBranch(branchname);
-    sprintf(branchname,"profZvsDipclu_%d",clu+1);
+    snprintf(branchname,50,"profZvsDipclu_%d",clu+1);
     profZvsDipclu[clu]= (TBranch*) tree->GetBranch(branchname);
   }
 
@@ -1133,7 +1117,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histX->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histX->GetEntry(j);
     fHisResX[j]->Add(h);
   }
@@ -1143,7 +1126,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histZ->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histZ->GetEntry(j);
     fHisResZ[j]->Add(h);
   }
@@ -1153,7 +1135,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histXZ->SetAddress(&h2);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h2; h2=0;
     histXZ->GetEntry(j);
     fHisResXZ[j]->Add(h2);
   }
@@ -1163,7 +1144,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histClusterType->SetAddress(&h2i);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h2i; h2i=0;
     histClusterType->GetEntry(j);
     fHisClusterSize[j]->Add(h2i);
   }
@@ -1175,7 +1155,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     histXclu[clu]->SetAddress(&h);
     for(Int_t j=0;j<kNHisto;j++){
-      delete h; h=0;
       histXclu[clu]->GetEntry(j);
       fHisResXclu[j][clu]->Add(h);
     }
@@ -1185,7 +1164,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     histZclu[clu]->SetAddress(&h);
     for(Int_t j=0;j<kNHisto;j++){
-      delete h; h=0;
       histZclu[clu]->GetEntry(j);
       fHisResZclu[j][clu]->Add(h);
     }
@@ -1199,7 +1177,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     histXchip[chip]->SetAddress(&h);
     for(Int_t j=0;j<kNHisto;j++){
-      delete h; h=0;
       histXchip[chip]->GetEntry(j);
       fHisResXchip[j][chip]->Add(h);
     }
@@ -1209,7 +1186,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     histZchip[chip]->SetAddress(&h);
     for(Int_t j=0;j<kNHisto;j++){
-      delete h; h=0;
       histZchip[chip]->GetEntry(j);
       fHisResZchip[j][chip]->Add(h);
     }
@@ -1220,7 +1196,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histTrErrX->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histTrErrX->GetEntry(j);
     fHisTrackErrX[j]->Add(h);
   }
@@ -1230,7 +1205,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histTrErrZ->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histTrErrZ->GetEntry(j);
     fHisTrackErrZ[j]->Add(h);
   }
@@ -1240,7 +1214,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histClErrX->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histClErrX->GetEntry(j);
     fHisClusErrX[j]->Add(h);
   }
@@ -1250,7 +1223,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   histClErrZ->SetAddress(&h);
   for(Int_t j=0;j<kNHisto;j++){
-    delete h; h=0;
     histClErrZ->GetEntry(j);
     fHisClusErrZ[j]->Add(h);
   }
@@ -1260,7 +1232,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   profXvsPhi->SetAddress(&p);
   for(Int_t j=0;j<kNHisto;j++){
-    delete p; p=0;
     profXvsPhi->GetEntry(j);
     fProfResXvsPhi[j]->Add(p);
   }
@@ -1269,8 +1240,7 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
   if(nevent!=kNHisto)
     {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
   profZvsDip->SetAddress(&p);
-  for(Int_t j=0;j<kNHisto;j++){
-    delete p; p=0;
+  for(Int_t j=0;j<kNHisto;j++){ 
     profZvsDip->GetEntry(j);
     fProfResZvsDip[j]->Add(p);
   }
@@ -1282,7 +1252,6 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     profXvsPhiclu[clu]->SetAddress(&p);
     for(Int_t j=0;j<kNHisto;j++){
-      delete p; p=0;
       profXvsPhiclu[clu]->GetEntry(j);
       fProfResXvsPhiclu[j][clu]->Add(p);
     }
@@ -1291,21 +1260,21 @@ Bool_t AliITSPlaneEffSPD::ReadHistosFromFile(TString filename) {
     if(nevent!=kNHisto)
       {AliWarning("ReadHistosFromFile: trying to read too many or too few histos!"); return kFALSE;}
     profZvsDipclu[clu]->SetAddress(&p);
-    for(Int_t j=0;j<kNHisto;j++){
-      delete p; p=0;
+    for(Int_t j=0;j<kNHisto;j++){ 
       profZvsDipclu[clu]->GetEntry(j);
       fProfResZvsDipclu[j][clu]->Add(p);
     }
   }
 
 
-  delete h;   h=0;
-  delete h2;  h2=0;
-  delete h2i; h2i=0;
-  delete p;   p=0;
+  delete h;   
+  delete h2;  
+  delete h2i; 
+  delete p;   
 
   if (file) {
     file->Close();
+    delete file;
   }
 return kTRUE;
 }
