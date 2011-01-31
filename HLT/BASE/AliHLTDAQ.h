@@ -60,6 +60,8 @@ class AliHLTDAQ {
 
   static std::string HLTOrigin(const char *detectorName);
   static std::string HLTOrigin(Int_t detectorID);
+  
+  static std::string HLTSpecificationFromDdlID(Int_t ddlID);
 
   static AliHLTDAQ* GetInstance();
 

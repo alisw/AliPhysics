@@ -249,6 +249,35 @@ string AliHLTDAQ::HLTOrigin(Int_t detectorID)
   return origin;
 }
 
+string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
+{
+  string result = "";
+  Int_t ddlIndex;
+  Int_t detectorID = DetectorIDFromDdlID(ddlID, ddlIndex);
+  if (detectorID < 0)
+    return result;
+  Int_t TPCID = DetectorID("TPC");
+  char* strtmp = new char[11];
+  if (detectorID != TPCID) {
+    sprintf(strtmp, "0x%08x", 0x1 << ddlIndex);
+    result = strtmp;
+  }
+  else { // TPC
+    int partition;
+    int slice;
+    if (ddlID < 840) {
+      partition = ddlID % 2;
+      slice = (ddlID - 768) / 2;
+    } else {
+      partition = (ddlID % 4) + 2;
+      slice = (ddlID - 840) / 4;
+    }
+    sprintf(strtmp, "0x%02x%02x%02x%02x", slice, slice, partition, partition);
+    result = strtmp;
+  }
+  return result;
+}
+
 AliHLTDAQ* AliHLTDAQ::GetInstance()
 {
   // see header file for class documentation
