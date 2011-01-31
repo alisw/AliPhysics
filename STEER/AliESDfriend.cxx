@@ -26,7 +26,7 @@
 
 ClassImp(AliESDfriend)
 
-AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",15000),
+AliESDfriend::AliESDfriend(): TObject(), fTracks("AliESDfriendTrack",1),
   fESDVZEROfriend(NULL),
   fESDTZEROfriend(NULL)
 
