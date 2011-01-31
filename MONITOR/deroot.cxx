@@ -63,6 +63,8 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
     snprintf(command, sizeof(command), "%s/raw%ld", ddlFilesFolder, gdcCounter);
     if (gSystem->MakeDirectory(command) < 0) {
       cerr << "Can not create directory " << command << endl;
+      fclose(dateFile);
+      delete [] dateEvent;
       return(1);
     }
     gdcSize=Root2Date(rootEvent, dateEvent, command);
