@@ -55,11 +55,11 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     TObject::operator=(esd);
     fTracks = esd.fTracks;
 
-    delete fESDVZEROfriend; fESDVZEROfriend = NULL;
-    if (!esd.fESDVZEROfriend) fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
+    delete fESDVZEROfriend;
+    fESDVZEROfriend = new AliESDVZEROfriend(*esd.fESDVZEROfriend);
 
-    delete fESDTZEROfriend; fESDTZEROfriend = NULL;
-    if (!esd.fESDTZEROfriend) fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
+    delete fESDTZEROfriend;
+    fESDTZEROfriend = new AliESDTZEROfriend(*esd.fESDTZEROfriend);
  
  
  
