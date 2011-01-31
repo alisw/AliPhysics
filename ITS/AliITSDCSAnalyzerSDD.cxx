@@ -465,39 +465,28 @@ void AliITSDCSAnalyzerSDD::AnalyzeData(TMap* dcsMap)
 void AliITSDCSAnalyzerSDD::Init()
 {
 // Initialization of DCS DP names
-  Char_t dpName[50];
-  Char_t modName[50];
+  TString modName;
 
-  for( Int_t iLay = 3; iLay < 5; iLay++ )
-  {    
-     Int_t maxLad = ( iLay == 3) ? kNladders3 : kNladders4;
-     Int_t maxMod = ( iLay == 3) ? kNmodLad3 : kNmodLad4;
+  for( Int_t iLay = 3; iLay < 5; iLay++ ){
+    Int_t maxLad = ( iLay == 3) ? kNladders3 : kNladders4;
+    Int_t maxMod = ( iLay == 3) ? kNmodLad3 : kNmodLad4;
 
-     for(Int_t iLad=0; iLad<maxLad; iLad++)
-     {
-        for(Int_t iMod=0; iMod<maxMod;iMod++)
-        {
-           sprintf(modName,"SDD_LAYER%i_LADDER%02d_MODULE%d", iLay, iLad, iMod);
-           Int_t id = AliITSgeomTGeo::GetModuleIndex( iLay, iLad + 1, iMod + 1 ) - 240;
-
-           sprintf(dpName,"%s_HV",modName);
-           fHVDPNames[id]=dpName;
-           sprintf(dpName,"%s_MV",modName);
-           fMVDPNames[id]=dpName;
-           sprintf(dpName,"%s_OK",modName);
-           fOKDPNames[id]=dpName;
-           sprintf(dpName,"%s_TEMP_L",modName);
-           fTLDPNames[id]=dpName;
-           sprintf(dpName,"%s_TEMP_R",modName);
-           fTRDPNames[id]=dpName;
-           sprintf(dpName,"%s_TEMP_L_STATE",modName);
-           fTLStDPNames[id]=dpName;
-           sprintf(dpName,"%s_TEMP_R_STATE",modName);
-           fTRStDPNames[id]=dpName;
-
-        } /*for( iMod )*/
-     } /*for( iLad )*/
-
+    for(Int_t iLad=0; iLad<maxLad; iLad++){
+      for(Int_t iMod=0; iMod<maxMod;iMod++){
+	modName.Form("SDD_LAYER%i_LADDER%02d_MODULE%d", iLay, iLad, iMod);
+	Int_t id = AliITSgeomTGeo::GetModuleIndex( iLay, iLad + 1, iMod + 1 ) - 240;
+	
+	fHVDPNames[id].Form("%s_HV",modName.Data());
+	fMVDPNames[id].Form("%s_MV",modName.Data());
+	fOKDPNames[id].Form("%s_OK",modName.Data());
+	fTLDPNames[id].Form("%s_TEMP_L",modName.Data());
+	fTRDPNames[id].Form("%s_TEMP_R",modName.Data());
+	fTLStDPNames[id].Form("%s_TEMP_L_STATE",modName.Data());
+	fTRStDPNames[id].Form("%s_TEMP_R_STATE",modName.Data());
+	
+      } /*for( iMod )*/
+    } /*for( iLad )*/
+    
   } /*for( iLay )*/
 
   
@@ -540,8 +529,8 @@ void AliITSDCSAnalyzerSDD::Export( char *outputDCSFileName )
 
    for( Int_t moduleLoop = 0; moduleLoop < kNmodules; moduleLoop++ )
    {                    // loops through all modules and writes appropriate object into the file
-      sprintf( buffer, "DCSDataSDD_module%i", moduleLoop );
-      if( fDCSData[moduleLoop] ) fDCSData[moduleLoop]->Write( buffer, TObject::kSingleKey );
+     snprintf( buffer, 99 , "DCSDataSDD_module%i", moduleLoop );
+     if( fDCSData[moduleLoop] ) fDCSData[moduleLoop]->Write( buffer, TObject::kSingleKey );
    } /*for( moduleLoop )*/
 
    newFile->Close();
