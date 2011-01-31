@@ -474,7 +474,7 @@ Bool_t AliQAHistNavigator::GetListOfFiles()
         char fullName[1000];
         for (std::list<string>::iterator si=names.begin(); si!=names.end(); ++si)
         {
-          sprintf(fullName,"%s", si->c_str());
+          snprintf(fullName,sizeof(fullName),"%s", si->c_str());
           AliQADirList* f = new AliQADirList();
           f->SetName(fullName);
           fPListOfFiles->GetDirs()->AddLast(f);
