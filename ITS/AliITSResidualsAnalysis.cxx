@@ -334,11 +334,12 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
   fTrackDir=new TH2F*[fnHist];
 
   Bool_t binning;
-  Float_t **binningZPhi;
+  Float_t **binningZPhi=new Float_t*[2];
   Float_t *binningz;
   Float_t *binningphi;
 
-  binningZPhi=CheckSingleLayer(volIDs); 
+
+  CheckSingleLayer(volIDs,binningZPhi); 
   fvolidsToBin=new Int_t*[fnPhi*fnZ];
   binningphi=binningZPhi[0];
   binningz=binningZPhi[1];
@@ -481,6 +482,11 @@ void AliITSResidualsAnalysis::InitHistograms(const TArrayI *volIDs)
  
   }
   fWriteHist=kFALSE;
+
+  // deleting
+  delete [] binningZPhi;
+  delete [] binningz;
+  delete [] binningphi;
 
   return;
 }
@@ -936,13 +942,12 @@ void AliITSResidualsAnalysis::DrawHists() const
 }
 
 //____________________________________________________________________________
-Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
+void AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids,Float_t **binningzphi)
 {
   //
   // Checks if volumes array is a single (ITS) layer or not
   //
-  
-  Float_t **binningzphi=new Float_t*[2];
+  // binningzphi=new Float_t*[2];
   Int_t iModule;
   AliGeomManager::ELayerID iLayer = AliGeomManager::VolUIDToLayer((UShort_t)volids->At(0),iModule);
   //Check that one single Layer is going to be aligned
@@ -950,7 +955,7 @@ Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
     if(iLayer != AliGeomManager::VolUIDToLayer((UShort_t)volids->At(nvol),iModule)){
       printf("Wrong Layer! \n %d , %d , %d ,%d \n",(Int_t)AliGeomManager::VolUIDToLayer((UShort_t)volids->At(nvol),iModule),nvol,volids->GetSize(),iModule);
       fsingleLayer=kFALSE;
-      return binningzphi;
+      return;
     }
   }
   
@@ -1026,13 +1031,13 @@ Float_t** AliITSResidualsAnalysis::CheckSingleLayer(const TArrayI *volids)
     for(Int_t j=0;j<fnPhi;j++){
       fCoordToBinTable[j]=new Double_t*[1];
     }
-    return binningzphi;
+    return;
     /////////////////////
     // return 0x0;
   } 
   }
   fsingleLayer=kTRUE;
-  return binningzphi;
+  return;
 }
 
 //____________________________________________________________________________
@@ -1055,6 +1060,7 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
   /*  TGeoPNEntry *pne;
       TGeoPhysicalNode *pn;
       TGeoHMatrix *globMatrix;*/
+  // to delete: orderPhiZ phiArray zArray phiArrayOrdered zArrayOrdered orderArrayPhi orderArrayZ
   
   Bool_t used=kFALSE;
   
@@ -1190,8 +1196,7 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
     fvolidsToBin[iModule][1]=orderPhiZ[istar][jstar][0];
     fvolidsToBin[iModule][2]=orderPhiZ[istar][jstar][1];
   }
-  
-    
+      
   //now constructing the binning
   for(Int_t iModPhi=0;iModPhi<fnPhi-1;iModPhi++){
     phiBin[iModPhi+1]=(Float_t)phiArrayOrdered[iModPhi]+0.5*(phiArrayOrdered[iModPhi+1]-phiArrayOrdered[iModPhi]);
@@ -1215,6 +1220,27 @@ Bool_t AliITSResidualsAnalysis::SetBinning(const TArrayI *volids,Float_t *phiBin
      printf("Mean Z mod %d su %d:  %f \n",iModPhi+1,fnZ,zBin[iModPhi]);
   }
   return kTRUE;
+
+
+  // deleting objects
+  /*
+  for(Int_t j=0;j<fnPhi;j++){
+    for(Int_t i=0;i<fnZ;i++){
+      for(Int_t k=0;k<2;k++){
+	delete orderPhiZ[j][i][k];
+      }
+    }
+  }
+  */
+   
+    delete [] orderPhiZ;
+    delete [] phiArray; 
+    delete [] zArray; 
+    delete [] phiArrayOrdered; 
+    delete [] zArrayOrdered; 
+    delete [] orderArrayPhi; 
+    delete [] orderArrayZ;
+      
 }
 
 

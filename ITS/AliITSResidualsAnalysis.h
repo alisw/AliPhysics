@@ -46,7 +46,7 @@ class AliITSResidualsAnalysis : public AliAlignmentTracks {
 
   void FillVolumeCorrelationHists(Int_t ivol,Int_t volIDalignable,Int_t volIDpoint,Bool_t used) const;
   Bool_t SetBinning(const TArrayI *volids,Float_t *phiBin,Float_t *zBin);
-  Float_t** CheckSingleLayer(const TArrayI *volids);
+  void CheckSingleLayer(const TArrayI *volids,Float_t **binningzphi);
   TArrayI* GetITSLayersVolids(Int_t layers[6]) const;
   TArrayI* GetSPDSectorsVolids(Int_t sectors[10]) const;
   Int_t WhichSector(Int_t module) const;
