@@ -15,7 +15,8 @@ AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE
   //========= Add tender to the ANALYSIS manager and set default storage =====
   AliTender *tender=new AliTender("AnalysisTender");
   tender->SetCheckEventSelection(kFALSE);
-  tender->SetDefaultCDBStorage("raw://");
+  //tender->SetDefaultCDBStorage("raw://");
+  tender->SetDefaultCDBStorage("alien://folder=/alice/data/2010/OCDB");
   mgr->AddTask(tender);
   
   //========= Attach TOF supply ======
