@@ -180,7 +180,7 @@ void AliDetector::Browse(TBrowser *b)
   //
   // Insert Detector objects in the list of objects to be browsed
   //
-  char name[64];
+  char name[64]="";
   if( fHits == 0) return;
   TObject *obj;
   Int_t i, nobjects;
@@ -188,7 +188,7 @@ void AliDetector::Browse(TBrowser *b)
   nobjects = fHits->GetEntries();
   for (i=0;i<nobjects;i++) {
     obj = fHits->At(i);
-    sprintf(name,"%s_%d",obj->GetName(),i);
+    snprintf(name,63,"%s_%d",obj->GetName(),i);
     b->Add(obj, &name[0]);
   }
 }
