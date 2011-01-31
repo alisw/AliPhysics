@@ -346,8 +346,6 @@ void AliGenUHKM::Generate()
   }
 
   Int_t* idsOnStack = new Int_t[np];
-  Int_t* newPos     = new Int_t[np];
-  for(Int_t i=0; i<np; i++) newPos[i] = i;
   
   //_________ Loop for particle selection
   for(Int_t i=0; i<np; i++) {
