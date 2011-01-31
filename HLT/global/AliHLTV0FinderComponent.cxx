@@ -388,8 +388,8 @@ void AliHLTV0FinderComponent::FindV0s()
       if (length  < fDecayLengthInSigmas * sigmaLength)
         continue;
       //Keep v0
-      fV0s.push_back(iTr);
-      fV0s.push_back(jTr);
+      fV0s.push_back(info.fID);
+      fV0s.push_back(jnfo.fID);
 
       fV0s[0] += 1;
     }
