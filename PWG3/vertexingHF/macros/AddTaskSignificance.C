@@ -1,4 +1,4 @@
-AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8)
+AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4SignifMaximDplus.root",Int_t decCh=0,Bool_t readMC=kFALSE,Int_t flagOPartAntiPart=0,Int_t nofsteps=8,AliAnalysisTaskSESignificance::FeedDownEnum fromcb=AliAnalysisTaskSESignificance::kBoth)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D meson candidates
@@ -10,7 +10,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   //============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskSignificanceN", "No analysis manager to connect to.");
+    ::Error("AddTaskSignificance", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -25,6 +25,8 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   TString suffix2="";
   if(flagOPartAntiPart==1) suffix2="P"; //P=particle, A=antiparticle
   if(flagOPartAntiPart==-1) suffix2="A";
+  if(fromcb==AliAnalysisTaskSESignificance::kCharmOnly) suffix2+="prompt";
+  if(fromcb==AliAnalysisTaskSESignificance::kBeautyOnly) suffix2+="feeddown";
 
   TString cutsobjname="loosercuts";
   //Analysis cuts
@@ -119,7 +121,7 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   AliAnalysisTaskSESignificance *sigTask = new AliAnalysisTaskSESignificance("SignificanceAnalysis",listMDV,analysiscuts,decCh,AliRDHFCuts::kAll);//AliRDHFCuts::kCandidate
   sigTask->SetReadMC(readMC);
   //sigTask->SetDoLikeSign(kTRUE);
-  //sigTask->SetBFeedDown(AliAnalysisTaskSESignificance::kBoth);
+  sigTask->SetBFeedDown(fromcb);
   sigTask->SetDebugLevel(3);
   sigTask->SetFillWithPartAntiPartBoth(flagOPartAntiPart);
   mgr->AddTask(sigTask);
@@ -133,6 +135,8 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   AliAnalysisDataContainer *coutputSig = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   contname=Form("coutputmv%s",suffix.Data());
   AliAnalysisDataContainer *coutputmv = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  contname=Form("cloosecuts%s",suffix.Data());
+  AliAnalysisDataContainer *coutputcuts = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
 
   mgr->ConnectInput(sigTask,0,mgr->GetCommonInputContainer());
@@ -140,6 +144,8 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
   mgr->ConnectOutput(sigTask,1,coutputSig);
   
   mgr->ConnectOutput(sigTask,2,coutputmv);
+
+  mgr->ConnectOutput(sigTask,3,coutputcuts);
  
   return sigTask;
 }
