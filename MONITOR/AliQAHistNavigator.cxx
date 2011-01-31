@@ -206,8 +206,8 @@ Bool_t AliQAHistNavigator::OpenCurrentFile()
     if (fPFile) fPFile->Close();
     if (!(fPFile->Open(GetFileName(),"READ")))
     {
-        return kFALSE;
         cout<<"There is no file: "<<GetFileName()<<endl;
+        return kFALSE;
     }
     return kTRUE;
 }
