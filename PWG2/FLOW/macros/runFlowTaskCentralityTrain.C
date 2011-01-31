@@ -150,17 +150,21 @@ void LoadLibraries(const anaModes mode)
     gSystem->Load("libANALYSISalice");   
     gSystem->Load("libTOFbase"); 
     gSystem->Load("libTOFrec"); 
+    gSystem->Load("libTRDbase");
+    gSystem->Load("libVZERObase");
+    gSystem->Load("libVZEROrec");
+    gSystem->Load("libT0base");
+    gSystem->Load("libT0rec");    
     gSystem->Load("libTENDER");
+    gSystem->Load("libTENDERSupplies");
 
     if (mode == mLocal || mode == mGrid)
     {
-      gSystem->Load("libTENDERSupplies");
       gSystem->Load("libPWG2flowCommon"); 
       gSystem->Load("libPWG2flowTasks"); 
     }
     if (mode == mLocalPAR || mode == mGridPAR )
     {
-      AliAnalysisAlien::SetupPar("TENDERSupplies");
       AliAnalysisAlien::SetupPar("PWG2flowCommon");
       AliAnalysisAlien::SetupPar("PWG2flowTasks");
     }

@@ -18,7 +18,7 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-27-06b");
-  plugin->SetAliROOTVersion("v4-21-07-AN");  
+  plugin->SetAliROOTVersion("v4-21-13-AN");  
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
@@ -57,11 +57,11 @@ AliAnalysisGrid* CreateAlienHandler() {
   //plugin->SetAdditionalLibs("libCORRFW.so libTOFbase.so libTOFrec.so");
   if(!bUseParFiles)
   {
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so libPWG2flowCommon.so libPWG2flowTasks.so");
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTENDER.so libTENDERSupplies.so libPWG2flowCommon.so libPWG2flowTasks.so");
   } 
   else // load libs via par files
   { 
-    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so");
+    plugin->SetAdditionalLibs("libGui.so libProof.so libMinuit.so libXMLParser.so libRAWDatabase.so libRAWDatarec.so libCDB.so libSTEERBase.so libSTEER.so libTOFbase.so libTOFrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libT0base.so libT0rec.so libTENDER.so libTENDERSupplies.so");
     plugin->EnablePackage("PWG2flowCommon.par");
     plugin->EnablePackage("PWG2flowTasks.par");
   }
