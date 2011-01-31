@@ -680,7 +680,7 @@ void AliRawReader::DumpData(Int_t limit)
 	line[pos+offset] = '.';
       }
       char hex[3];
-      sprintf(hex, "%2.2x", byte);
+      snprintf(hex, 3, "%2.2x", byte);
       line[max+max/4+3+2*pos+offset] = hex[0];
       line[max+max/4+4+2*pos+offset] = hex[1];
       pos++;
