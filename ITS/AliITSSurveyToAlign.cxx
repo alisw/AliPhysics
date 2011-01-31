@@ -1084,16 +1084,14 @@ void AliITSSurveyToAlign::CalcShiftSDD(Double_t &x0,Double_t &y0,Double_t &z0) c
   y0=x2;
   z0=x3;
 
-
-  for(Int_t iP1=0; iP1<=6; iP1++)
+/*
+  for(Int_t iP1=0; iP1<6; iP1++)
     {
       if(!fSDDisMe[iP1]) continue;
-
-      //      printf("%d Me: %6.3f  %6.3f  %6.3f\n",iP1, fSDDmeP[iP1][0], fSDDmeP[iP1][1], fSDDmeP[iP1][2]);
-      //      printf("%d Id: %6.3f  %6.3f  %6.3f\n",iP1, fSDDidP[iP1][0], fSDDidP[iP1][1], fSDDidP[iP1][2]);
-
+      printf("%d Me: %6.3f  %6.3f  %6.3f\n",iP1, fSDDmeP[iP1][0], fSDDmeP[iP1][1], fSDDmeP[iP1][2]);
+      printf("%d Id: %6.3f  %6.3f  %6.3f\n",iP1, fSDDidP[iP1][0], fSDDidP[iP1][1], fSDDidP[iP1][2]);
     }
-
+*/
 
   return;
 }
@@ -1123,7 +1121,7 @@ void AliITSSurveyToAlign::CalcShiftRotSDD(Double_t &tet,Double_t &psi,Double_t &
 
   //  printf("\n");
 
-  for(Int_t iP1=0; iP1<=6; iP1++)
+  for(Int_t iP1=0; iP1<6; iP1++)
     {
       if(!fSDDisMe[iP1]) continue;
 
