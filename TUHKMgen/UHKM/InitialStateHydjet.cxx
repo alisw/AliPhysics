@@ -394,12 +394,12 @@ Bool_t InitialStateHydjet::MultIni() {
     fParams.fMuI3 = 0.;
     fParams.fMuS = 0.;
     //create strange potential object and set strangeness density 0
-    StrangePotential* psp = new StrangePotential(0., fDatabase);
-    psp->SetBaryonPotential(fParams.fMuB);
-    psp->SetTemperature(fParams.fT);
+    StrangePotential psp(0., fDatabase);
+    psp.SetBaryonPotential(fParams.fMuB);
+    psp.SetTemperature(fParams.fT);
     //compute strangeness potential
     if(fParams.fMuB > 0.01)
-      fParams.fMuS = psp->CalculateStrangePotential();
+      fParams.fMuS = psp.CalculateStrangePotential();
     
     //if user choose fYlmax larger then allowed by kinematics at the specified beam energy sqrt(s)     
     if(fParams.fYlmax > TMath::Log(fParams.fSqrtS/0.94)){
