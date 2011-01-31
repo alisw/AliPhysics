@@ -92,7 +92,12 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
 	}
         
         d->cd(j);
-        if(i==0) g[i]->Draw();
+        if(i==0){
+	  g[i]->SetLineColor(kBlack); 
+	  TPaveStats *st = (TPaveStats*)g[i]->FindObject("stats"); 
+	  st->SetTextColor(kBlack);
+	  g[i]->Draw();
+	}
         else { 
 	  g[i]->SetLineColor(i+1); 
 	  defineYaxisMax(g[0], g[i]);
