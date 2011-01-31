@@ -48,7 +48,6 @@
 #pragma link C++ class  AliRunLoader+;
 #pragma link C++ class  AliReconstructor+;
 #pragma link C++ class  AliTrackMap+;
-#pragma link C++ class  AliTrackMapper+;
 #pragma link C++ class  AliMemoryWatcher+;
 #pragma link C++ class  AliMC+;
 #pragma link C++ class  AliSimulation+;

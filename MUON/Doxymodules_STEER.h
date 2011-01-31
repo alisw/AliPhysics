@@ -135,7 +135,6 @@
     class  AliRunLoader {};
     class  AliReconstructor {};
     class  AliTrackMap {};
-    class  AliTrackMapper {};
     class  AliMemoryWatcher {};
     class  AliMC {};
     class  AliSimulation {};
