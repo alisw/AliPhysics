@@ -81,7 +81,10 @@ int main(int argc, char **argv)
 
   gEve->RegisterGeometryAlias("Default", Form("%s/alice-data/default_geo.root", evedir.Data()));
 
-  AliEveConfigManager::InitializeMaster();
+	try {AliEveConfigManager::InitializeMaster();}
+	catch (TEveException exc) {
+		AliErrorGeneral("alihlteve_main",exc.Data());
+	}
 
   app->Run(kTRUE);
 
