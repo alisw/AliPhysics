@@ -643,7 +643,7 @@ void AliTrackPoint::Print(Option_t *) const
 
 
 //________________________________
-void AliTrackPoint::SetAlignCovMatrix(const TMatrixDSym alignparmtrx){
+void AliTrackPoint::SetAlignCovMatrix(const TMatrixDSym& alignparmtrx){
   // Add the uncertainty on the cluster position due to alignment
   // (using the 6x6 AliAlignObj Cov. Matrix alignparmtrx) to the already
   // present Cov. Matrix 

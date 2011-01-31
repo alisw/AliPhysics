@@ -56,7 +56,7 @@ class AliTrackPoint : public TObject {
 
   Float_t  GetAngle() const;
   Bool_t   GetRotMatrix(TGeoRotation& rot) const;
-  void SetAlignCovMatrix(const TMatrixDSym alignparmtrx);
+  void SetAlignCovMatrix(const TMatrixDSym& alignparmtrx);
 
   AliTrackPoint& Rotate(Float_t alpha) const;
   AliTrackPoint& MasterToLocal() const;
