@@ -97,7 +97,11 @@ TChain* AliXRDPROOFtoolkit::MakeChain(const char*fileIn, const char * treeName, 
     counter++;
     if (counter<startFile) continue;
     if (counter>maxFiles+startFile) break;
-    chain->Add(currentFile.Data());
+    TFile * f = TFile::Open(currentFile.Data());
+    if (f){
+      chain->Add(currentFile.Data());
+    }
+    delete f;
   }
 
   in.close();
@@ -250,163 +254,6 @@ TDSet* AliXRDPROOFtoolkit::MakeSetRandom(const char*fileIn, const char * treeNam
 
 
 
-//______________________________________________________________________________
-void AliXRDPROOFtoolkit::CheckFiles (const char*fileIn, Int_t checkLevel, const char*treeToRetrieve, const char*varexp, const char*selection)
-{
-  //
-  // check the files
-  //  
-  fstream fic;
-  fic.open(fileIn, ios_base::in);
-  fstream focGood;
-  fstream focBad;
-  focGood.open(Form("%s.Good",fileIn), ios_base::out|ios_base::trunc);
-  focBad.open(Form("%s.Bad",fileIn), ios_base::out|ios_base::trunc);
-  //
-  if(!fic.is_open()) {
-    cout<<"Can't open file "<<fileIn<<endl;
-    return;
-  }
-  //
-  //
-  //
-  Long64_t size;
-  char buffer[256];
-  char * line;
-  char * machine;
-  Int_t level=0;
-  Float_t compressionFactor;
-  Int_t nkey;
-  Int_t version;
-  TObjString * fileName=0x0;
-  TObjString * machineName=0x0;
-  //  TChain chain ("check_chain");
-  
-  TFile fout(Form("%s.root",fileIn),"recreate");
-  TTree * tree=new TTree("stats", "stats of AliXRDPROOFtoolkit::CheckFiles function");
-  
-  tree->Branch ("machine", "TObjString", &machineName, 256000,0);
-  tree->Branch ("file", "TObjString", &fileName, 256000,0);
-  tree->Branch ("level", &level, "level/I");
-  tree->Branch ("size", &size, "size/L");
-  tree->Branch ("nkey", &nkey, "nkey/I");
-  tree->Branch ("compress", &compressionFactor, "compress/F");
-  tree->Branch ("version", &version, "version/I");
-
-  // start loop over the files
-  fic.getline(buffer, sizeof(buffer));
-  while (fic.good()){
-
-    // get the machine name if present in the file
-    machine=strchr(buffer, '\t');
-    if(machine!=0x0){
-      machine[0]='\0';
-      line=machine+1;
-      machine=buffer;
-      machineName=new TObjString(machine);
-    }else {
-      machineName=new TObjString("x");
-      line=buffer;
-    }
-    cout<<"Inspecting file :"<<line<<endl;  
-
- 
-    TTree * getTree=0x0;
-    fileName=new TObjString(line);
-    
-    TFile * f=TFile::Open(line);
-    //    chain.AddFile(line);
-    level=0;
-    size=-1;
-    nkey=-1;
-    compressionFactor=-1;
-    version=-1;
-    
-    if (fileName->String().Contains("AliESDs.root")){
-      //
-      // check  friend file 
-      //
-      char  fnameFriend[1000];
-      sprintf(fnameFriend,"%s/AliESDfriends.root",gSystem->DirName(fileName->String().Data()));
-      cout<<"Inspecting file :"<<fnameFriend<<endl;  
-      TFile * ffriend=TFile::Open(fnameFriend);
-      if (!ffriend) level=-4;
-      else{
-	if (ffriend->IsZombie()) level=-3;
-	if (ffriend->TestBit(TFile::kRecovered) || ffriend->TestBit(TFile::kWriteError)){
-	  level=-2;
-	}
-	ffriend->Close();
-	delete ffriend;
-      }
-    }
-    
-
-    if(level>=-1 && f!=0x0){
-      level=1;
-      size=f->GetSize();
-      nkey=f->GetNkeys();
-      compressionFactor=f->GetCompressionFactor();
-      version=f->GetVersion();
-
-      if(checkLevel>0 && !f->IsZombie()){
-	level=2;
-	if(checkLevel>1 && (getTree=(TTree*)f->Get(treeToRetrieve))!=0x0){
-	  level=3;
-	  Int_t tentries = getTree->GetEntries();
-	  if (tentries>=0) level=4;
-	  cout<<"Number of entries :"<<getTree->GetEntries()<<endl;  
-	  
-	  if(checkLevel>3  &&tentries>0) {
-	    getTree->SetBranchStatus("*",1);	    
-	    try{
-	      TH1F his("his","his",100,-1,1);
-	      Int_t selected = getTree->Draw(Form("%s>>his",varexp), selection, "goff", 1, tentries-1);
-	      cout<<"Selected\t"<<selected<<endl;
-	      if(selected>-1){
-		level=5;
-		
-		//try to remove the created histogrames ...
-// 		TH1F *htemp = (TH1F*)gPad->GetPrimitive("htemp"); // 1D
-// 		TGraph *graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
-// 		if(htemp!=0x0) {cout<<"removing TH1D"<<endl; delete htemp;}
-// 		else if(graph!=0x0) {cout<<"removing TGraph"<<endl; delete graph;}
-// 		else cout<<"nothing to remove : memory leak ..."<<endl;
-
-	      }
-	    }catch(std::bad_alloc){
-	      cout<<"Warning : Draw option send std::badalloc"<<endl;
-	    }
-	  }
-	  delete getTree;
-	}
-      }
-      f->Close();
-      delete f;
-    }
-    if (level>checkLevel){
-      focGood<<line<<endl;
-    }
-    else{
-      focBad<<line<<"\t"<<level<<endl;
-    }
-
-      
-    tree->Fill();
-    fic.getline(buffer, sizeof(buffer)); 
-  }
-
-  //now use chain to check
-  //chain.Lookup(kTRUE);
-
-
-  // Save the tree
-  tree->Write();
-  fout.Close();
-  focGood.close();
-  focBad.close();
-  
-}
 
 Int_t  AliXRDPROOFtoolkit::CheckTreeInFile(const char*fileName,const char*treeName, Int_t debugLevel, const char *branchName){
   //

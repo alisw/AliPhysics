@@ -202,6 +202,12 @@ AliTPCtrackerMI::AliTPCtrackerMI()
   //
   // default constructor
   //
+  for (Int_t irow=0; irow<200; irow++){
+    fXRow[irow]=0;
+    fYMax[irow]=0;
+    fPadLength[irow]=0;
+  }
+
 }
 //_____________________________________________________________________
 
