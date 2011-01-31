@@ -520,6 +520,10 @@ Bool_t AliAnalysisAlien::CheckInputData()
          Error("CkeckInputData", "AliEn path to base data directory must be set.\n = Use: SetGridDataDir()");
          return kFALSE;
       }
+      if (fMergeViaJDL) {
+         Error("CheckInputData", "Merging via jdl works only with run numbers, run range or provided xml");
+         return kFALSE;
+      }   
       Info("CheckInputData", "Analysis will make a single xml for base data directory %s",fGridDataDir.Data());
       if (fDataPattern.Contains("tag") && TestBit(AliAnalysisGrid::kTest))
          TObject::SetBit(AliAnalysisGrid::kUseTags, kTRUE); // ADDED (fix problem in determining the tag usage in test mode) 
@@ -2814,6 +2818,10 @@ Bool_t AliAnalysisAlien::SubmitMerging()
    gGrid->Cd(fGridOutputDir);
    TString mergeJDLName = fExecutable;
    mergeJDLName.ReplaceAll(".sh", "_merge.jdl");
+   if (!fInputFiles) {
+      Error("SubmitMerging", "You have to use explicit run numbers or run range to merge via JDL!");
+      return kFALSE;
+   }   
    Int_t ntosubmit = fInputFiles->GetEntries();
    for (Int_t i=0; i<ntosubmit; i++) {
       TString runOutDir = gSystem->BaseName(fInputFiles->At(i)->GetName());
@@ -2843,9 +2851,11 @@ Bool_t AliAnalysisAlien::SubmitMerging()
       if (!done && (i==ntosubmit-1)) return kFALSE;
    }
    if (!ntosubmit) return kTRUE;
-   Info("StartAnalysis", "\n#### STARTING AN ALIEN SHELL FOR YOU. EXIT WHEN YOUR MERGING JOBS HAVE FINISHED. #### \
-   \n You may exit at any time and terminate the job later using the option <terminate> but disabling SetMergeViaJDL\
-   \n ##################################################################################");
+   Info("StartAnalysis", "\n #### STARTING AN ALIEN SHELL FOR YOU. You can exit any time or inspect your jobs in a different shell.##########\
+                          \n Make sure your jobs are in a final state (you can resubmit failed ones via 'masterjob <id> resubmit ERROR_ALL')\
+                          \n Rerun in 'terminate' mode to submit all merging stages, each AFTER the previous one completed. The final merged \
+                          \n output will be written to your alien output directory, while separate stages in <Stage_n>. \
+                          \n ################################################################################################################");
    gSystem->Exec("aliensh");
    return kTRUE;
 }
