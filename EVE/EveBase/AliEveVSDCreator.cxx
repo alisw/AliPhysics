@@ -184,7 +184,7 @@ void AliEveVSDCreator::CreateTrees()
   return;
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+/*
   try
   {
     if (fDebugLevel > 1)
@@ -206,7 +206,7 @@ void AliEveVSDCreator::CreateTrees()
   {
     Warning(kEH, exc);
   }
-
+*/
 end_esd_processing:
 
   try
