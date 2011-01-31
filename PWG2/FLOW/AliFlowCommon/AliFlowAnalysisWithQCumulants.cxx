@@ -5638,8 +5638,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, TSt
  // Remark: cumulants calculated here are NOT corrected for non-uniform acceptance. This correction is applied in the method ...
  // to be improved (description) 
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -5719,7 +5719,7 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
 {
  // calculate final results for integrated flow of RPs and POIs 
   
- Int_t typeFlag = -1;
+ Int_t typeFlag = 0;
 
  if(type == "RP")
  {
@@ -6155,8 +6155,8 @@ void AliFlowAnalysisWithQCumulants::FillCommonHistResultsDiffFlow(TString type)
 {
  // fill common result histograms for differential flow
  
- Int_t typeFlag = -1;
- //Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ //Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -6466,8 +6466,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelations(TString type, 
  // 2: <<6'>>
  // 3: <<8'>>
  
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -6661,8 +6661,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfEventWeights(TString t
  // Calculate sums of various event weights for reduced correlations. 
  // (These quantitites are needed in expressions for unbiased estimators relevant for the statistical errors.)
 
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -6773,8 +6773,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowSumOfProductOfEventWeights(
  // Table:
  // [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>] x [0=<2>,1=<2'>,2=<4>,3=<4'>,4=<6>,5=<6'>,6=<8>,7=<8'>]
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -6906,8 +6906,8 @@ void AliFlowAnalysisWithQCumulants::FinalizeReducedCorrelations(TString type, TS
 {
  // Transfer profiles into histograms and calculate statistical errors correctly.
 
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -7020,8 +7020,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowProductOfCorrelations(TStri
  //                 <4'><8>, <4'><8'>, <6><6'>, <6><8'>, <6'><8>, 
  //                 <6'><8'>, <8><8'>.
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -7177,8 +7177,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCovariances(TString type, T
  //     5th bin: Cov(<2'>,<4'>) * (sum_{i=1}^{N} w_{<2'>}_i w_{<4'>}_i )/[(sum_{i=1}^{N} w_{<2'>}_i) * (sum_{j=1}^{N} w_{<4'>}_j)] 
  //     ...
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -7375,8 +7375,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlow(TString type, TString ptOr
 {
  // calculate differential flow from differential cumulants and previously obtained integrated flow: (to be improved: description)
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -9462,8 +9462,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWe
 {
  // Calculate all correlations needed for differential flow using particle weights.
  
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -9801,8 +9801,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTerms(T
  //Double_t dImQ3n = (*fImQ)(2,0);
  //Double_t dImQ4n = (*fImQ)(3,0);
 
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -9978,8 +9978,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTerms(T
  //Double_t dImQ3n = (*fImQ)(2,0);
  //Double_t dImQ4n = (*fImQ)(3,0);
 
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -10136,8 +10136,8 @@ void AliFlowAnalysisWithQCumulants::FinalizeCorrectionTermsForNUADiffFlow(TStrin
  
  // to be improved: debugged - I do not correctly transfer all profiles into histos (bug appears only after merging) 
   
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -10184,8 +10184,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulantsCorrectedForNUA(TS
 { 
  // Calculate generalized differential flow Q-cumulants (corrected for non-uniform acceptance)
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -10271,8 +10271,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectedForNUA(TString typ
  
  // to be improved (rewritten completely)
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
 
  if(type == "RP")
  {
@@ -11123,8 +11123,8 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoops(
  //           <4'> = <cos(n*(psi1+phi2-phi3-phi4))>
  // ...
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
@@ -11320,8 +11320,8 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrelations(TString type,
 {
  // Compare correlations needed for diff. flow calculated with nested loops and those calculated from Q-vectors
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
@@ -11402,8 +11402,8 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrelationsWithNestedLoopsU
  //           <4'> = <w2 w3 w4 cos(n*(psi1+phi2-phi3-phi4))>
  // ...
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
@@ -11579,8 +11579,8 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNes
  //    5:
  //    6:
   
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
@@ -11739,8 +11739,8 @@ void AliFlowAnalysisWithQCumulants::CrossCheckDiffFlowCorrectionTermsForNUA(TStr
 {
  // Compare corrections temrs for non-uniform acceptance needed for diff. flow calculated with nested loops and those calculated from Q-vectors
  
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
@@ -12181,8 +12181,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUACosTermsUs
  Double_t dSM1p2k = (*fSMpk)(0,2);
  Double_t dSM2p1k = (*fSMpk)(1,1);
 
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -12387,8 +12387,8 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrectionsForNUASinTermsUs
  Double_t dSM1p2k = (*fSMpk)(0,2);
  Double_t dSM2p1k = (*fSMpk)(1,1);
 
- Int_t t = -1; // type flag 
- Int_t pe = -1; // ptEta flag
+ Int_t t = 0; // type flag 
+ Int_t pe = 0; // ptEta flag
  
  if(type == "RP")
  {
@@ -12582,8 +12582,8 @@ void AliFlowAnalysisWithQCumulants::EvaluateDiffFlowCorrectionTermsForNUAWithNes
  //    5:
  //    6:
      
- Int_t typeFlag = -1;
- Int_t ptEtaFlag = -1;
+ Int_t typeFlag = 0;
+ Int_t ptEtaFlag = 0;
  if(type == "RP")
  {
   typeFlag = 0;
