@@ -12,6 +12,8 @@
  *     recraw-local.C'("raw://run12345")'
  *     recraw-local.C'("raw://run12345", minEvent, MaxEvent)'
  *     recraw-local.C'("raw.root", "local://$PWD", minEvent, MaxEvent)'
+ *     recraw-local.C'("10000135031045.10..root", "raw://", -1, -1)'
+ *     recraw-local.C'("alien:///alice/data/2010/LHC10f/000135031/10000135031045.10..root", "raw://", -1, -1)'
  *
  * Defaults
  *     cdb="raw://"  -> take OCDB from GRID
