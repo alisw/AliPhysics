@@ -736,7 +736,7 @@ AliAODExtension::~AliAODExtension()
     fAODEvent = 0;
   }
   if (fTreeE) delete fTreeE;
-  fRepFiMap->DeleteAll();
+  if (fRepFiMap) fRepFiMap->DeleteAll();
   delete fRepFiMap; // the map is owner
   delete fRepFiList; // the list is not
   delete fObjectList; // not owner
