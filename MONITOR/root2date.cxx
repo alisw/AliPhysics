@@ -19,7 +19,7 @@ int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddl
  aliHeader=gdcRootEvent->GetHeader();
 
  char runNbFileName[256];
- sprintf(runNbFileName,"%s/run%u",ddlDir,aliHeader->Get("RunNb"));
+ snprintf(runNbFileName,sizeof(runNbFileName),"%s/run%u",ddlDir,aliHeader->Get("RunNb"));
  ofstream runNbFile(runNbFileName);
  runNbFile.close();
 

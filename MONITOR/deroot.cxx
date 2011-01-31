@@ -58,9 +58,9 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
   size_t gdcSize;
   if (ddlFilesFolder) {
     char command[256];
-    sprintf(command, "rm -rf %s/raw%ld", ddlFilesFolder, gdcCounter);
+    snprintf(command, sizeof(command), "rm -rf %s/raw%ld", ddlFilesFolder, gdcCounter);
     gSystem->Exec(command);
-    sprintf(command, "%s/raw%ld", ddlFilesFolder, gdcCounter);
+    snprintf(command, sizeof(command), "%s/raw%ld", ddlFilesFolder, gdcCounter);
     if (gSystem->MakeDirectory(command) < 0) {
       cerr << "Can not create directory " << command << endl;
       return(1);
