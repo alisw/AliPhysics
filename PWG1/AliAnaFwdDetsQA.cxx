@@ -275,6 +275,10 @@ void AliAnaFwdDetsQA::UserExec(Option_t */*option*/)
   }
 
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  if (!esd) {
+    Printf("ERROR: Could not retrieve esd");
+    return;
+  }
   const AliESDTZERO* esdT0 = esd->GetESDTZERO();
   Double_t t0zvtx = esdT0->GetT0zVertex();
   Double_t t0time = esdT0->GetT0();
@@ -323,90 +327,6 @@ void AliAnaFwdDetsQA::Terminate(Option_t *)
     return;
   }
 	
-  fT0vtxRec = dynamic_cast<TH1F*>(fListOfHistos->At(0));
-  fT0time = dynamic_cast<TH1F*>(fListOfHistos->At(1));
-  fT0mult = dynamic_cast<TH1F*>(fListOfHistos->At(2));
-  fT0vtxRecGen = dynamic_cast<TH2F*>(fListOfHistos->At(3));
-  fT0vtxRes = dynamic_cast<TH1F*>(fListOfHistos->At(4));
-
-  fV0a = dynamic_cast<TH1F*>(fListOfHistos->At(5));
-  fV0c = dynamic_cast<TH1F*>(fListOfHistos->At(6));
-  fV0multA = dynamic_cast<TH1F*>(fListOfHistos->At(7));
-  fV0multC = dynamic_cast<TH1F*>(fListOfHistos->At(8));
-  fV0multAcorr = dynamic_cast<TH2F*>(fListOfHistos->At(9));
-  fV0multCcorr = dynamic_cast<TH2F*>(fListOfHistos->At(10));
-  fV0Acorr = dynamic_cast<TH2F*>(fListOfHistos->At(11));
-  fV0Ccorr = dynamic_cast<TH2F*>(fListOfHistos->At(12));
-
-  fT0ampl = dynamic_cast<TH1F*>(fListOfHistos->At(13));
-  fV0ampl = dynamic_cast<TH1F*>(fListOfHistos->At(14));
-  fT0time2 = dynamic_cast<TH1F*>(fListOfHistos->At(15));
-
-
-  // draw the histograms if not in batch mode
-  if (!gROOT->IsBatch()) {
-    new TCanvas;
-    fT0vtxRec->DrawCopy("E");
-    new TCanvas;
-    fT0time->DrawCopy("E");
-    new TCanvas;
-    fT0mult->DrawCopy("E");
-    new TCanvas;
-    fT0vtxRes->DrawCopy("E");
-    new TCanvas;
-    fT0vtxRecGen->DrawCopy();
-    new TCanvas;
-    fV0a->DrawCopy("E");
-    new TCanvas;
-    fV0c->DrawCopy("E");
-    new TCanvas;
-    fV0multA->DrawCopy("E");
-    new TCanvas;
-    fV0multC->DrawCopy("E");
-    new TCanvas;
-    fV0multAcorr->DrawCopy();
-    new TCanvas;
-    fV0multCcorr->DrawCopy();
-    new TCanvas;
-    fV0Acorr->DrawCopy();
-    new TCanvas;
-    fV0Ccorr->DrawCopy();
-    new TCanvas;
-    fT0ampl->DrawCopy("E");
-    new TCanvas;
-    fV0ampl->DrawCopy("E");
-    new TCanvas;
-    fT0time2->DrawCopy("E");
-  }
-
-  // write the output histograms to a file
-  TFile* outputFile = TFile::Open("FwdDetsQA.root", "recreate");
-  if (!outputFile || !outputFile->IsOpen())
-    {
-      Error("AliAnaFwdDetsQA", "opening output file FwdDetsQA.root failed");
-      return;
-    }
-  fT0vtxRec->Write();
-  fT0time->Write();
-  fT0mult->Write();
-  fT0vtxRecGen->Write();
-  fT0vtxRes->Write();
-  fT0ampl->Write();
-  fT0time2->Write();
-
-  fV0a->Write();
-  fV0c->Write();
-  fV0multA->Write();
-  fV0multC->Write();
-  fV0multAcorr->Write();
-  fV0multCcorr->Write();
-  fV0Acorr->Write();
-  fV0Ccorr->Write();
-  fV0ampl->Write();
-
-  outputFile->Close();
-  delete outputFile;
-
   //delete esd;
   Info("AliAnaFwdDetsQA", "Successfully finished");
 }
