@@ -821,6 +821,7 @@ Int_t AliITSQASDDDataMakerRec::MakeRecPoints(TTree * clustersTree)
   TClonesArray *recpoints=NULL; 
   if(fkOnline){recpoints = rpcont->FetchClusters(0,clustersTree,fAliITSQADataMakerRec->GetEventNumber());}
   else{recpoints = rpcont->FetchClusters(0,clustersTree);}
+  AliDebug(10,Form("Fetched RecPoints for %d SDD modules",recpoints->GetEntriesFast()));
   if(!rpcont->GetStatusOK() || !rpcont->IsSDDActive()){
     AliError("can't get SDD clusters !");
     return rv;
