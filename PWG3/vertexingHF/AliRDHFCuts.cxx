@@ -235,8 +235,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       fWhyRejection=3;
       return kFALSE;
     }else{
-      Float_t centvalue=GetCentrality((AliAODEvent*)event);
-      if (centvalue<0.){
+      Float_t centvalue=GetCentrality((AliAODEvent*)event);      if (centvalue<0.){
 	if (fWhyRejection==3) return kFALSE;
 	else return kTRUE;
       }
@@ -271,7 +270,7 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
 
   for(Int_t idg=0; idg<ndaughters; idg++) {
     AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(idg);
-    if(!dgTrack) retval = kFALSE;
+    if(!dgTrack) {retval = kFALSE; continue;}
     //printf("charge %d\n",dgTrack->Charge());
     if(dgTrack->Charge()==0) continue; // it's not a track, but a V0
 
