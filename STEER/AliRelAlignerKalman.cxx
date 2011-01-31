@@ -1548,6 +1548,7 @@ Int_t AliRelAlignerKalman::FindMatchingTracks(TObjArray& arrITS, TObjArray& arrT
       }//else
     }//for j
   }//for i
+  delete [] matchedArr;
   return iMatched;
 }
 

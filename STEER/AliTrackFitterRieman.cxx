@@ -173,6 +173,10 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
   //  Float_t debugRatio = 1./(1.+debugLevel);
   Float_t debugRatio = debugLevel? 1.0/debugLevel : 1.0;
 
+  if (!fPoints) {
+    AliError("Track points array not available! Exiting...");
+    return kFALSE;
+  }
   Int_t npoints = fPoints->GetNPoints();
   if ( npoints<fMinNPoints) return kFALSE;
   //
