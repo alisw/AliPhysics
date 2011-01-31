@@ -554,6 +554,8 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
   name += fVersionGainUsed;
   name += "Subver";
   name += fSubVersionGainUsed;
+  name += "FirstRun";
+  name += fFirstRunGain;
   name += "Nz";
   name += fCalibraMode->GetNz(0);
   name += "Nrphi";
@@ -566,6 +568,8 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
   namee += fVersionVdriftUsed;
   namee += "Subver";
   namee += fSubVersionVdriftUsed;
+  namee += "FirstRun";
+  namee += fFirstRunVdrift;
   namee += "Nz";
   namee += fCalibraMode->GetNz(1);
   namee += "Nrphi";
@@ -2511,6 +2515,8 @@ void AliTRDCalibraFillHisto::CreatePH2d(Int_t nn)
   name += fVersionVdriftUsed;
   name += "Subver";
   name += fSubVersionVdriftUsed;
+  name += "FirstRun";
+  name += fFirstRunVdrift;
   name += "Nz";
   name += fCalibraMode->GetNz(1);
   name += "Nrphi";

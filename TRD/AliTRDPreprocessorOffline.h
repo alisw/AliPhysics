@@ -84,6 +84,7 @@ public:
 
   Int_t    GetVersionGainUsed() const                                { return fVersionGainUsed;        }
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
+  Int_t    GetFirstRunVdriftUsed() const                             { return fFirstRunVdriftUsed;     }
   Int_t    GetVersionVdriftUsed() const                              { return fVersionVdriftUsed;      }
   Int_t    GetSubVersionVdriftUsed() const                           { return fSubVersionVdriftUsed;   }
 
@@ -109,6 +110,7 @@ public:
   TObjArray * fCalibObjects;              // array with calibration objects 
   Int_t    fVersionGainUsed;              // VersionGainUsed 
   Int_t    fSubVersionGainUsed;           // SubVersionGainUsed
+  Int_t    fFirstRunVdriftUsed;           // FirstRunVdrift 
   Int_t    fVersionVdriftUsed;            // VersionVdriftUsed 
   Int_t    fSubVersionVdriftUsed;         // SubVersionVdriftUsed
   Bool_t   fSwitchOnValidation;           // Validation
@@ -122,6 +124,7 @@ public:
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;
+  Int_t GetFirstRun(TString name) const;
 
   
 

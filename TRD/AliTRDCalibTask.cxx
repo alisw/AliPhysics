@@ -421,14 +421,10 @@ void AliTRDCalibTask::UserExec(Option_t *)
   //cout << "AliTRDCalibTask::Exec() IN" << endl;
   
   // Init Versions and subversions used
-  if((fVersionGainUsed==-1) || (fSubVersionGainUsed==-1) || (fVersionGainLocalUsed==-1) || (fSubVersionGainLocalUsed==-1) || (fVersionVdriftUsed==-1) || (fSubVersionVdriftUsed==-1)) {
+  if((fFirstRunGain==-1) || (fVersionGainUsed==-1) || (fSubVersionGainUsed==-1) || (fFirstRunGainLocal==-1) || (fVersionGainLocalUsed==-1) || (fSubVersionGainLocalUsed==-1) || (fFirstRunVdrift==-1) || (fVersionVdriftUsed==-1) || (fSubVersionVdriftUsed==-1)) {
     if(!SetVersionSubversion()) {
-      fVersionGainUsed=0;
-      fSubVersionGainUsed=0;
-      fVersionGainLocalUsed=0;
-      fSubVersionGainLocalUsed=0;
-      fVersionVdriftUsed=0;
-      fSubVersionVdriftUsed=0;
+      PostData(1, fListHist);
+      return;
     }
   }
   if(fCounter==0) {

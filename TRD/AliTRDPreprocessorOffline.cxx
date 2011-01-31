@@ -78,6 +78,7 @@ AliTRDPreprocessorOffline::AliTRDPreprocessorOffline():
   fCalibObjects(new TObjArray(8)),
   fVersionGainUsed(0),
   fSubVersionGainUsed(0),
+  fFirstRunVdriftUsed(0),
   fVersionVdriftUsed(0), 
   fSubVersionVdriftUsed(0),
   fSwitchOnValidation(kTRUE),
@@ -280,6 +281,7 @@ Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
   if(ReadVdriftT0Global(fileName)) {
     
     TString nameph = fPH2d->GetTitle();
+    fFirstRunVdriftUsed = GetFirstRun(nameph); 
     fVersionVdriftUsed = GetVersion(nameph);  
     fSubVersionVdriftUsed = GetSubVersion(nameph);    
 
@@ -1017,6 +1019,33 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
     
     TString vertry(subversion);
     vertry += ver;
+    vertry += "FirstRun";
+
+    //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
+
+    if(strstr(name.Data(),vertry.Data())) return ver;
+    
+  }
+  
+  return -1;
+
+}
+
+//_____________________________________________________________________________
+Int_t AliTRDPreprocessorOffline::GetFirstRun(TString name) const
+{
+  //
+  // Get first run from the title
+  //
+  
+  // Some patterns
+  const Char_t *firstrun = "FirstRun";
+  if(!strstr(name.Data(),firstrun)) return -1;
+  
+  for(Int_t ver = 0; ver < 999999999; ver++) {
+
+    TString vertry(firstrun);
+    vertry += ver;
     vertry += "Nz";
 
     //printf("vertry %s and name %s\n",vertry.Data(),name.Data());
@@ -1028,4 +1057,6 @@ Int_t AliTRDPreprocessorOffline::GetSubVersion(TString name) const
   return -1;
 
 }
+
+
 
