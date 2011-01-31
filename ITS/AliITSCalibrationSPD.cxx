@@ -54,7 +54,7 @@ void AliITSCalibrationSPD::AddBad(UInt_t col, UInt_t row) {
 //____________________________________________________________________________
 void AliITSCalibrationSPD::SetChipBad(UInt_t chip) {
   // set full chip bad
-  if (chip>=5 || chip<0 ) {AliError("Wrong chip number");
+  if (chip>=5) {AliError("Wrong chip number");
   }
   else {
     fBadChip[chip]=kTRUE;
@@ -63,7 +63,7 @@ void AliITSCalibrationSPD::SetChipBad(UInt_t chip) {
 //____________________________________________________________________________
 void AliITSCalibrationSPD::UnSetChipBad(UInt_t chip) {
   // unset full chip bad
-  if (chip>=5 || chip<0 ) {AliError("Wrong chip number");
+  if (chip>=5 ) {AliError("Wrong chip number");
   }
   else {
     fBadChip[chip]=kFALSE;
