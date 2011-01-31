@@ -60,8 +60,8 @@ class AliITSgeomSPD : public TObject {
         if(i>=0&&i<fNbinx) fLowBinEdgeX[i] = s;}
     virtual void SetLowBinEdgeZ(Int_t i,Float_t s){//puts value in fLowbinEdgeZ
 	if(i>=0&&i<fNbinz) fLowBinEdgeZ[i] = s;};
-    virtual void LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col);
-    virtual void DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl);
+    // virtual void LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col);
+    //    virtual void DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl);
     virtual void Print(ostream *os) const; // output streamer to standard out.
     virtual void Read(istream *is); // input streamer from standard in.
     virtual void Print(Option_t *option="") const {TObject::Print(option);}

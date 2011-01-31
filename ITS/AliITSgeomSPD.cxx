@@ -154,6 +154,7 @@ void AliITSgeomSPD::SetShape(const char *name,const char *title,
     fDz    = dz;
     return;
 }
+/*
 //______________________________________________________________________
 void AliITSgeomSPD::LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col){
 // Returns the row and column pixel numbers for a given local coordinate
@@ -172,6 +173,7 @@ void AliITSgeomSPD::LToDet(Float_t xl,Float_t zl,Int_t &row,Int_t &col){
     } //end if too low.
     return;
 }
+ Method commented because buggy and unused
 //______________________________________________________________________
 void AliITSgeomSPD::DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl){
 // returns the pixel center local coordinate system location for a given
@@ -184,6 +186,7 @@ void AliITSgeomSPD::DetToL(Int_t row,Int_t col,Float_t &xl,Float_t &zl){
     else if(col<0) zl = fLowBinEdgeZ[0];else zl = fLowBinEdgeZ[fNbinz-1];
     return;
 }
+*/
 //______________________________________________________________________
 void AliITSgeomSPD::Print(ostream *os) const {
 // Standard output format for this class
@@ -392,6 +395,8 @@ AliITSgeomSPD425Short::AliITSgeomSPD425Short(Int_t npar,Float_t *par) :
     SetLowBinEdgeZ(0,-dz);
     for(i=0;i<knbinx;i++) SetLowBinEdgeX(i+1,GetBinLowEdgeX(i)+binSizeX[i]);
     for(i=0;i<knbinz;i++) SetLowBinEdgeZ(i+1,GetBinLowEdgeZ(i)+binSizeZ[i]);
+    delete [] binSizeX;
+    delete [] binSizeZ;
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomSPD425Short &p){
@@ -476,6 +481,8 @@ AliITSgeomSPD425Long::AliITSgeomSPD425Long(){
     SetLowBinEdgeZ(0,-dz);
     for(i=0;i<knbinx;i++) SetLowBinEdgeX(i+1,GetBinLowEdgeX(i)+binSizeX[i]);
     for(i=0;i<knbinz;i++) SetLowBinEdgeZ(i+1,GetBinLowEdgeZ(i)+binSizeZ[i]);
+    delete [] binSizeX;
+    delete [] binSizeZ;
 }
 //----------------------------------------------------------------------
 ostream &operator<<(ostream &os,AliITSgeomSPD425Long &p){
