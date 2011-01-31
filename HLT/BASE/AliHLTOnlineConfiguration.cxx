@@ -32,6 +32,7 @@
 #include <TXMLNode.h>
 #include <TString.h>
 
+#include "AliHLTDAQ.h"
 #include "AliHLTOnlineConfiguration.h"
 #include "AliHLTComponentConfiguration.h"
 
@@ -117,6 +118,7 @@ int AliHLTOnlineConfiguration::Parse()
           SetBit(kParsed);
       }
     }
+    delete domParser;
   }
   else
     iResult = -EPROTO; 
@@ -233,6 +235,7 @@ int AliHLTOnlineConfiguration::ParseStandardComponent(const char* id, const char
     else if (strcmp(strtmp, "componentlibrary") == 0)
       complib = strtok(0, " -");
   }
+  delete [] cmdcopy;
   if (hasArgs) {
     // Parse component arguments
     int start = strstr(cmd, "-componentargs") + strlen("-componentargs") + 2
@@ -267,6 +270,7 @@ int AliHLTOnlineConfiguration::ParseStandardComponent(const char* id, const char
     entry->SetNodeNames(nodes.Data());
     fConfEntryList.Add(entry);
   }
+  delete [] compargs;
   return iResult;
 }
 
@@ -276,11 +280,10 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
   int iResult = 0;
   const char compid[] = "RawReaderPublisher";
   const char complib[] = "libAliHLTUtil.so";
-  const char compargs[] = "";
   // Parse (and validate) component command
-  int ddlid;
+  int ddlID;
   int res = sscanf(cmd, "RORCPublisher -slot %*d %*d %*d %*d -rorcinterface %*d -sleep "
-    "-sleeptime %*d -maxpendingevents %*d -alicehlt -ddlid %d", &ddlid);
+    "-sleeptime %*d -maxpendingevents %*d -alicehlt -ddlid %d", &ddlID);
   if (res != 1) {
     iResult = -EINVAL;
     HLTError("Configuration component %s has <Cmd> element of unknown format\n"
@@ -288,6 +291,13 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
       "-sleep -sleeptime %%d -maxpendingevents %%d -alicehlt -ddlid %%d", id);
   }
   else {
+    Int_t ddlIndex;
+    Int_t detectorID = AliHLTDAQ::DetectorIDFromDdlID(ddlID, ddlIndex);
+    string HLTOrigin = AliHLTDAQ::HLTOrigin(detectorID);
+    string HLTSpecification = AliHLTDAQ::HLTSpecificationFromDdlID(ddlID);
+    char compargs[100];
+    sprintf(compargs, "-minid %d -datatype 'DDL_RAW ' '%s' -dataspec %s",
+      ddlID, HLTOrigin.c_str(), HLTSpecification.c_str());
     AliHLTComponentConfiguration* entry = new AliHLTComponentConfiguration(id,
       compid, sources.Data(), compargs);
     entry->SetOnlineCommand(cmd);
@@ -390,7 +400,7 @@ void AliHLTOnlineConfiguration::Clear(Option_t * option)
   /// overloaded from TObject, clear object
 
   TObject::Clear(option);
-  fConfEntryList.Clear();
+  fConfEntryList.Delete();
   fXMLBuffer.Reset();
   fXMLSize = 0;
   ResetBit(kLoaded);
