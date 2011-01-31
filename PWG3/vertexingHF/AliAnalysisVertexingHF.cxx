@@ -1371,12 +1371,8 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
 
   // select Cascades
-  Bool_t okLcksp=0, okLcLpi=0;
   if(fCascades && fInputAOD){
     okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
-    if(okCascades==1) okLcksp=1;
-    if(okCascades==2) okLcLpi=1;
-    if(okCascades==3) { okLcksp=1; okLcLpi=1;}
   }
   else { AliDebug(2,Form("The cascade is contructed from ESDs, no cuts are applied")); okCascades=kTRUE; }// no cuts implemented from ESDs
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
@@ -2220,7 +2216,10 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   esdV0->PxPyPz(pxpypz);
   Double_t cv[21]; for(int i=0; i<21; i++) cv[i]=0;
   AliNeutralTrackParam *trackesdV0 = new AliNeutralTrackParam(xyz,pxpypz,cv,0);
-  if(!trackesdV0) return 0;
+  if(!trackesdV0) {
+    delete vertexV0;
+    return 0;
+  }
   Double_t d0z0[2],covd0z0[3];
   AliAODVertex *primVertexAOD = PrimaryVertex(); 
   trackesdV0->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
@@ -2231,6 +2230,8 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   AliExternalTrackParam *negV0track = (AliExternalTrackParam*)twoTrackArrayV0->UncheckedAt(1);
   if( !posV0track || !negV0track) {
     if(trackesdV0) {delete trackesdV0; trackesdV0=NULL;}
+    delete vertexV0;
+    delete primVertexAOD;
     return 0;
   }
   posV0track->PropagateToDCA(primVertexAOD,fBzkG,kVeryBig,d0z0,covd0z0);
