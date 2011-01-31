@@ -778,6 +778,9 @@ Int_t AliBaseCalibViewer::Integrate(const Char_t* drawCommand, const Char_t* sec
          DrawLines(integralGraphLTM, nsigma, legend, kGreen+2, kTRUE);
       }
    }
+   delete [] index;
+   delete [] xarray;
+   delete [] yarray;
    if (!plotMean && !plotMedian && !plotLTM) return -1;
    legend->Draw();
    return entries;
