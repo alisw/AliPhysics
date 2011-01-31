@@ -379,6 +379,7 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   fESDVZERO->SetBit(AliESDVZERO::kOnlineBitsFilled,kTRUE);
   fESDVZERO->SetBBFlag(aBBflag);
   fESDVZERO->SetBGFlag(aBGflag);
+  fESDVZERO->SetBit(AliESDVZERO::kCorrectedForSaturation,kTRUE);
 
   // now fill the V0 decision and channel flags
   {
