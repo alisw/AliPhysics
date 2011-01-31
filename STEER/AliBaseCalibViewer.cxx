@@ -243,7 +243,10 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
    fitter->ClearPoints();
    
    Int_t entries = Draw(drawStr.Data(), cutStr.Data(), "goff");
-   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   if (entries == -1) {
+     delete fitter;
+     return new TString("An ERROR has occured during fitting!");
+   }
    Double_t **values = new Double_t*[dim+1] ; 
    
    for (Int_t i = 0; i < dim + 1; i++){
@@ -251,7 +254,11 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff");
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff");
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) {
+	delete fitter;
+	delete [] values;
+	return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -278,6 +285,7 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
    returnFormula.Append(" )");
    delete formulaTokens;
    delete fitter;
+   for (Int_t i = 0; i < dim + 1; i++) delete [] values[i];
    delete[] values;
    return preturnFormula;
 }
