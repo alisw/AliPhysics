@@ -166,6 +166,10 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return bGenValues;
+      }
       Short_t signDau=part->Charge();
       if(signDau==charge){
 	nDauLS++;
@@ -180,6 +184,10 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
     for(Int_t iDau=0; iDau<2; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return bGenValues;
+      }
       Int_t pdgCode=TMath::Abs(part->GetPdgCode());
       if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
 	Short_t signDau=part->Charge();
@@ -201,6 +209,10 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	  Int_t indDR = labelFirstDauRes+iDauRes;
 	  AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(fmcArray->At(indDR));
+	  if(!partDR){
+	    AliError("Daughter particle not found in MC array");
+	    return bGenValues;
+	  }
 	  Short_t signDau=partDR->Charge();
 	  if(signDau==charge){
 	    nDauLS++;
@@ -233,6 +245,10 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   Double_t vertDec[3] = {0,0,0};   // decay vertex		
   for(Int_t iDau=0; iDau<3; iDau++){
     AliAODMCParticle* part=dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter[iDau]));
+    if(!part){
+      AliError("Daughter particle not found in MC array");
+      return bGenValues;
+    }
     px[iDau]=part->Px();
     py[iDau]=part->Py();
     pz[iDau]=part->Pz();
@@ -373,6 +389,10 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
     for(Int_t iDau=0; iDau<3; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       daughter[iDau]=TMath::Abs(part->GetPdgCode());
     }
   }else if(nDau==2){
@@ -380,6 +400,10 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
     for(Int_t iDau=0; iDau<2; iDau++){
       Int_t ind = labelFirstDau+iDau;
       AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(ind));
+      if(!part){
+	AliError("Daughter particle not found in MC array");
+	return checkCD;
+      }
       Int_t pdgCode=TMath::Abs(part->GetPdgCode());
       if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
 	if(nDauFound>=3) return checkCD;
@@ -392,6 +416,10 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
 	for(Int_t iDauRes=0; iDauRes<2; iDauRes++){
 	  Int_t indDR = labelFirstDauRes+iDauRes;
 	  AliAODMCParticle* partDR = dynamic_cast<AliAODMCParticle*>(fmcArray->At(indDR));
+	  if(!partDR){
+	    AliError("Daughter particle not found in MC array");
+	    return checkCD;
+	  }
 	  Int_t pdgCodeDR=TMath::Abs(partDR->GetPdgCode());
 	  if(nDauFound>=3) return checkCD;
 	  daughter[nDauFound]=pdgCodeDR;
