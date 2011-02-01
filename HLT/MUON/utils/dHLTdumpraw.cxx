@@ -2458,7 +2458,7 @@ int ParseBuffer(
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	case kChannelsDataBlock:
-		return DumpChannelsBlock(buffer, bufferSize, continueParse);
+		subResult = DumpChannelsBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	case kMansoTracksDataBlock:
