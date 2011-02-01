@@ -55,8 +55,8 @@ int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddl
      FILE *ddlFile;
      if((ddlFile=fopen(ddlFileName, "wb"))) {
        fwrite(p, chunkSize, 1, ddlFile);
+       fclose(ddlFile);
      }
-     fclose(ddlFile);
    }
    p+=chunkSize;
   }
