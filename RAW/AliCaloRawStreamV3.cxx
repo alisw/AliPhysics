@@ -170,7 +170,7 @@ Bool_t AliCaloRawStreamV3::NextChannel()
     if ( fFilter > 0 ) { // some data should be filtered out
       if ( (fFilter & (1<<fCaloFlag)) != 0) {  
 	// this particular data should be filtered out
-	NextChannel(); // go to the next address instead
+	return NextChannel(); // go to the next address instead
       }
     }
     return kTRUE;
