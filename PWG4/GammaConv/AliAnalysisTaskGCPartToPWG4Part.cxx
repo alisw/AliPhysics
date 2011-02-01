@@ -23,6 +23,10 @@
 
 #include "AliAODInputHandler.h"
 
+#include "AliAODMCParticle.h"
+
+#include "AliMCAnalysisUtils.h"
+
 // Gamma - jet correlation analysis task
 // Authors: Svein Lindal
 
@@ -34,9 +38,10 @@ ClassImp(AliAnalysisTaskGCPartToPWG4Part)
 //________________________________________________________________________
 AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part() 
 : AliAnalysisTaskSE(), 
-  fDeltaAODFileName("AliAODConversionGamma.root"),
-  fAODBranchName("ConvGamma_gamma"),
-  fAODPWG4Particles(NULL)
+  fDeltaAODFileName(""),
+  fAODBranchName("GammaConv_gamma"),
+  fAODPWG4Particles(NULL),
+  fAnaUtils(NULL)
 {
   // Dummy Constructor
 }
@@ -48,6 +53,10 @@ AliAnalysisTaskGCPartToPWG4Part::~AliAnalysisTaskGCPartToPWG4Part() {
     fAODPWG4Particles = NULL;
   delete fAODPWG4Particles;
 
+  if(fAnaUtils)
+    delete fAnaUtils;
+  fAnaUtils = NULL;
+
 }
 
 
@@ -55,9 +64,10 @@ AliAnalysisTaskGCPartToPWG4Part::~AliAnalysisTaskGCPartToPWG4Part() {
 //________________________________________________________________________
 AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *name) : 
   AliAnalysisTaskSE(name), 
-  fDeltaAODFileName("AliAODConversionGamma.root"),
-  fAODBranchName("ConvGamma_gamma"),
-  fAODPWG4Particles(NULL)
+  fDeltaAODFileName(""),
+  fAODBranchName("GammaConv_gamma"),
+  fAODPWG4Particles(NULL),
+  fAnaUtils(NULL)
 {
   // Constructor
   DefineInput(0, TChain::Class());
@@ -65,6 +75,8 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
 
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
+
+  fAnaUtils = new AliMCAnalysisUtils();
 }
 
 
@@ -119,25 +131,99 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
     return;
   }
   
-
-
+  TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+  
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
+    //AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
     
     
-    if(!photon) {
+    //if(!photon) {
       AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
       if (!aodO) {
+
 	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
 	continue;
       }
       
-      //if(aodO->Pt() < GetMinPt()) continue;
-      AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
-
-    }
+      AliAODPWG4ParticleCorrelation * photon = AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
+      Int_t tag = CheckTag(photon, tracks, arrayMC);
+      if(tag > 0 ) photon->SetTag(tag);
+     
   }
 }
+
+
+//////_________________________________________________________________________________________
+Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC) {
+
+  Int_t tag = 0;
+
+  Int_t l1 = particle->GetTrackLabel(0);
+  Int_t l2 = particle->GetTrackLabel(1);
+  
+  AliAODTrack * track1 = NULL;
+  AliAODTrack * track2 = NULL;
+
+
+  for(int i = 0; i < tracks->GetEntriesFast(); i++) {
+    
+    AliAODTrack * track = (AliAODTrack*)tracks->At(i);
+    if (track->GetID() == l1) {
+      track1 = track;
+    } else if (track->GetID() == l2) {
+      track2 = track; 
+    }
+    
+    if(track1 && track2) break;
+  }
+
+
+   
+  if(track1->GetLabel() < 0 || track2->GetLabel() < 0) {
+    //cout << "error balla"<< endl; 
+  
+  } else { 
+
+    AliAODMCParticle * mcPart1 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track1->GetLabel()));
+    AliAODMCParticle * mcPart2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track2->GetLabel()));
+    
+    if (mcPart1 && mcPart2) {
+      
+      //if(mcPart1)
+      // cout << mcPart1->GetMother()<< " " <<mcPart2->GetMother() << endl;
+      //cout << mcPart1->GetPdgCode()<< " " << mcPart2->GetPdgCode() << endl;
+      
+      if(mcPart1->GetMother() == mcPart2->GetMother()) {
+	//cout << mcPart1->GetMother()->GetLabel();
+	
+	Int_t motherIndex = mcPart1->GetMother();
+	AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherIndex));
+	// cout << "yeay  " <<  mother->GetPdgCode() << endl;
+	//  cout << mother->IsPrimary();
+	
+	
+	tag = fAnaUtils->CheckOriginInAOD(&motherIndex, 1, arrayMC);
+	
+	if(fAnaUtils->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt)) {
+	  cout << tag << endl;
+	  cout << "prim : " << mother->IsPrimary();
+	  cout << " " << mother->GetLabel() << endl;
+	} 
+
+	if(! mother->IsPrimary()) {
+	  //AliAODMCParticle * gp = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother->GetMother()));
+	  //cout << gp->GetPdgCode()  << endl;
+	} else if (motherIndex < 10) {
+	  cout << "MI: " << motherIndex << endl;
+	}
+
+      }
+    }
+  }
+  //cout << "REturn tag " << tag << endl;
+  return tag;
+}
+
 
 ///__________________________________________________________________________________
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector) {
