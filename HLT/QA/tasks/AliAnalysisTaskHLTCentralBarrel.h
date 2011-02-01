@@ -36,7 +36,7 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     virtual void  NotifyRun();
 
     // function to select only HLT triggered events
-    void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) { fUseHLTTrigger = useHLT;        }
+    //void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) { fUseHLTTrigger = useHLT;        }
     // function to select centrality
     void SetUseCentrality(Bool_t useCentrality = kFALSE)  { fUseCentrality = useCentrality; }
     // function to create the THnSparse and name the axis

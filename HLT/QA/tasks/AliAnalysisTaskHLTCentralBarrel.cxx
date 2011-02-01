@@ -32,7 +32,7 @@
 #include "AliESDInputHandler.h"
 #include "AliTracker.h"
 #include "AliESDVZERO.h"
-#include "AliHLTGlobalTriggerDecision.h"
+//#include "AliHLTGlobalTriggerDecision.h"
 
 #include "TAxis.h"
 #include "TString.h"
@@ -146,7 +146,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      return;
   }
     
-  if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;
+//  if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;
   
   if(fUseCentrality){
     Int_t centbin = CalculateCentrality(esdHLT);
