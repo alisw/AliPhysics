@@ -498,7 +498,8 @@ int AliHLTMUONMansoTrackerFSMComponent::Reconfigure(
 	///     then new configuration parameters are loaded, otherwise nothing is done.
 	/// \param componentId  The name of the component in the current chain.
 	
-	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::MansoTrackerFSMCDBPath()) == 0;
+	TString path = cdbEntry;
+	bool givenConfigPath = (path == AliHLTMUONConstants::MansoTrackerFSMCDBPath());
 	
 	if (cdbEntry == NULL or givenConfigPath)
 	{

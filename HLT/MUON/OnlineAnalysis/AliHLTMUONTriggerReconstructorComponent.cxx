@@ -801,8 +801,9 @@ int AliHLTMUONTriggerReconstructorComponent::Reconfigure(
 	///      "HLT/ConfigMUON/TriggerReconstructor".
 	/// \param componentId  The name of the component in the current chain.
 	
-	bool startsWithMUON = TString(cdbEntry).Index("MUON/", 5, 0, TString::kExact) == 0;
-	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::TriggerReconstructorCDBPath()) == 0;
+	TString path = cdbEntry;
+	bool startsWithMUON = path.Index("MUON/", 5, 0, TString::kExact) == 0;
+	bool givenConfigPath = (path == AliHLTMUONConstants::TriggerReconstructorCDBPath());
 	
 	if (cdbEntry == NULL or startsWithMUON or givenConfigPath)
 	{

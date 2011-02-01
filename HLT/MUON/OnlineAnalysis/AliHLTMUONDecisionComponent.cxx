@@ -356,7 +356,8 @@ int AliHLTMUONDecisionComponent::Reconfigure(const char* cdbEntry, const char* c
 	///     then new configuration parameters are loaded, otherwise nothing is done.
 	/// \param componentId  The name of the component in the current chain.
 	
-	bool givenConfigPath = strcmp(cdbEntry, AliHLTMUONConstants::DecisionComponentCDBPath()) == 0;
+	TString path = cdbEntry;
+	bool givenConfigPath = (path == AliHLTMUONConstants::DecisionComponentCDBPath());
 	
 	if (cdbEntry == NULL or givenConfigPath)
 	{
