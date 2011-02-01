@@ -21,6 +21,8 @@
 // Author: F.Carminati
 //         Federico.Carminati@cern.ch
 
+#include <string.h>
+
 #include <RVersion.h>
 #include <TArrayI.h>
 #include <TClonesArray.h>
@@ -841,9 +843,9 @@ void AliMC::ReadTransPar()
     for(i=0;i<kncuts;i++) cut[i]=-99;
     for(i=0;i<knflags;i++) flag[i]=-99;
     itmed=0;
-    for(i=0;i<256;i++) line[i]='\0';
+    memset(line,0,256);
     // Read up to the end of line excluded
-    iret=fscanf(lun,"%256[^\n]",line);
+    iret=fscanf(lun,"%255[^\n]",line);
     if(iret<0) {
       //End of file
       fclose(lun);
