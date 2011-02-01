@@ -31,6 +31,7 @@ AliAltroBuffer(fileName,mapping),
   fN(0)
 {
   // Constructor
+  memset(fArray, 0, kMaxWords*sizeof(UShort_t));
 }
 
 //_____________________________________________________________________________
