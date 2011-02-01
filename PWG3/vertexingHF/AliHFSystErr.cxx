@@ -409,14 +409,13 @@ void AliHFSystErr::DrawErrors(TGraphAsymmErrors *grErrFeeddown) const {
 //   leg->AddEntry(hTotErr,"Total (excl. norm.)","l");
   
 
-  if(fNorm) {
-    fNorm->SetFillColor(1);
-    fNorm->SetFillStyle(3002);
-    //fNorm->Draw("same");
-    //TH1F *hNormRefl = ReflectHisto(fNorm);
-    //hNormRefl->Draw("same");
-    leg->AddEntry(fNorm,"Normalization (10%)","");
-  }
+  fNorm->SetFillColor(1);
+  fNorm->SetFillStyle(3002);
+  //fNorm->Draw("same");
+  //TH1F *hNormRefl = ReflectHisto(fNorm);
+  //hNormRefl->Draw("same");
+  leg->AddEntry(fNorm,"Normalization (10%)","");
+
   if(grErrFeeddown) {
     grErrFeeddown->SetFillColor(kTeal-8);
     grErrFeeddown->SetFillStyle(3001);
