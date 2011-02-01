@@ -130,6 +130,15 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     }
     
 
+    // Fix references to daughter tracks
+    //AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
+    //fixer->FixReferences(aod);
+    //delete fixer;
+    //
+    //AliRDHFCutsD0toKpi *mycuts=new AliRDHFCutsD0toKpi();
+    //mycuts->SetFixRefs(kTRUE);
+    //mycuts->IsEventSelected(aod);
+
     // loop over D0->Kpi candidates
     Int_t nD0toKpi = arrayD0toKpi->GetEntriesFast();
     nTotD0toKpi += nD0toKpi;
@@ -138,42 +147,11 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
 
-      d->GetPrimaryVtx()->Print();
-
-      Bool_t unsetvtx=kFALSE;
-      //if(!d->GetOwnPrimaryVtx()) {
-      //d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      //unsetvtx=kTRUE;
-      //}
-      Int_t okD0=0,okD0bar=0; 
-      if(d->SelectD0(cutsD0,okD0,okD0bar)) {
-	//cout<<1e8*d->Prodd0d0()<<endl;
-	hMass->Fill(d->InvMassD0(),0.5);
-	hMass->Fill(d->InvMassD0bar(),0.5);
-	hCPtaVSd0d0->Fill(1e8*d->Prodd0d0(),d->CosPointingAngle());
-	hSecVtxZ->Fill(d->GetSecVtxZ());
-	//cout<<d->GetSecVtxX() <<endl;
-
 	// get daughter AOD tracks
 	AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
 	AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
-	if(!trk0 || !trk1) {
-	  trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
-	  trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
-	  cout<<"references to standard AOD not available"<<endl;
-	}
-	//cout<<"pt of positive track: "<<trk0->Pt()<<endl;
 
-	// make a AliNeutralTrackParam from the D0 
-	// and calculate impact parameters to primary vertex
-	AliNeutralTrackParam trackD0(d);
-	//cout<<"pt of D0: "<<d->Pt()<<" (AliAODRecoDecay); "<<trackD0.Pt()<<" (track)"<<endl;
-	//trackD0.Print();
-	Double_t dz[2],covdz[3];
-	trackD0.PropagateToDCA(vtx1,aod->GetMagneticField(),1000.,dz,covdz);
-	//cout<<"D0 impact parameter rphi: "<<dz[0]<<" +- "<<TMath::Sqrt(covdz[0])<<endl;
-      }
-      if(unsetvtx) d->UnsetOwnPrimaryVtx();
+	if(trk0->GetStatus()) printf("ok %d\n",iD0toKpi);
     }
 
 
@@ -182,27 +160,42 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     nTotDstar += nDstar;
     cout<<"Number of D*->D0pi: "<<nDstar<<endl;
     
+  AliRDHFCutsDStartoKpipi *cuts = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+
+
+ AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+ //esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+ esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  //esdTrackCuts->SetRequireITSRefit(kTRUE);
+  //esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+              AliESDtrackCuts::kAny);
+ // default is kBoth, otherwise kAny
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+
+ // soft pion pre-selections
+  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
+  //esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  //esdSoftPicuts->SetRequireTPCRefit(kFALSE);
+  //esdSoftPicuts->SetRequireITSRefit(kFALSE);
+  //esdSoftPicuts->SetMinNClustersITS(4); // default is 5
+  //esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  //                  AliESDtrackCuts::kAny); //test d0 asimmetry
+  //esdSoftPicuts->SetPtRange(0.0,15.0); 
+
+  cuts->AddTrackCuts(esdTrackCuts);
+  cuts->AddTrackCutsSoftPi(esdSoftPicuts);
+  Float_t cutsArrayDStartoKpipi[14]={0.15,0.07.,0.85,0.8,0.8,0.06.,0.06.,0.001,0.6,0.15, 0.03, 0.2, 5, 0.5}; // first 9 for D0 from D*, last 5 for D*
+  cuts->SetCuts(14,cutsArrayDStartoKpipi);
+
     for (Int_t iDstar = 0; iDstar < nDstar; iDstar++) {
       AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)arrayDstar->UncheckedAt(iDstar);
-      Bool_t unsetvtx=kFALSE;
-      //if(!c->GetOwnPrimaryVtx()) {
-      //c->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      //c->Get2Prong()->SetOwnPrimaryVtx(vtx1);
-      //unsetvtx=kTRUE;
-      //}
-      if(c->SelectDstar(cutsDstar,cutsD0)) {
-	hDeltaMassDstar->Fill(c->DeltaInvMass());
-	// get daughters
-	AliAODTrack *trk = (AliAODTrack*)c->GetBachelor();
-	AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)c->Get2Prong();
-	//cout<<"pt of soft pi: "<<trk->Pt()<<endl;
-	//cout<<"pt of D0: "<<d->Pt()<<endl;
-      }
 
-      if(unsetvtx) {
-	c->UnsetOwnPrimaryVtx();
-	c->Get2Prong()->UnsetOwnPrimaryVtx();
-      }
+      if(cuts->IsSelected(c,AliRDHFCuts::kTracks)) printf("passed\n");
+
     }
 
     
@@ -215,7 +208,7 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     Int_t nVtxsHF = arrayVerticesHF->GetEntriesFast();
     nTotHF += nVtxsHF;
     cout<<"Number of heavy-flavour vertices: "<<nVtxsHF<<endl;
-    for (Int_t iVtx = 0; iVtx < nVtxsHF; iVtx++) {
+    for (Int_t iVtx = 0; iVtx <0; iVtx++) {
       AliAODVertex *vtxHF = (AliAODVertex*)arrayVerticesHF->UncheckedAt(iVtx);
       // print info
       //cout << iVtx << ": vertex z position: " << vtxHF->GetZ() << endl;
