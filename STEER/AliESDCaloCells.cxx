@@ -46,6 +46,7 @@ AliESDCaloCells::AliESDCaloCells(const AliESDCaloCells& c) :
 
   fCellNumber = new Short_t[fNCells];
   fAmplitude  = new Double32_t[fNCells];
+  fTime       = new Double32_t[fNCells];
   
   for(Int_t i = 0; i < fNCells; i++){
     fCellNumber[i]    = c.fCellNumber[i];
