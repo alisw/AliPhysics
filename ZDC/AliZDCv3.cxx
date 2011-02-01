@@ -2292,7 +2292,7 @@ void AliZDCv3::InitTables()
        if(read==0) AliDebug(3, " Error in reading light table 6");
       }
     }
-    fclose(fp5);
+    fclose(fp6);
   }
   char *lightfName7 = gSystem->ExpandPathName("$ALICE_ROOT/ZDC/light22620552209s");
   FILE *fp7 = fopen(lightfName7,"r");
