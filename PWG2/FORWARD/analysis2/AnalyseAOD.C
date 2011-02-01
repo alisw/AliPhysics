@@ -564,11 +564,13 @@ public:
     if (fSumCentral) { 
       dndetaCentral = fSumCentral->ProjectionX("dndetaCentral", -1, -1, "e");
       dndetaCentral->SetTitle("ALICE Central");
-      dndetaCentral->Scale(1./fNTriggered, "width");
+      // dndetaCentral->Scale(1./fNTriggered, "width");
+      dndetaCentral->Scale(1./(fNB-fNA-fNC+2*fNE), "width");
       dndetaCentral->SetMarkerColor(kGray+3);
       dndetaCentral->SetMarkerStyle(22);
       dndetaCentral->SetMarkerSize(1);
       dndetaCentral->SetFillStyle(0);
+      dndetaCentral->GetXaxis()->SetRangeUser(-1,1);
       Rebin(dndetaCentral, rebin <= 1 ? 1 : 2*(rebin/2));
       // 1 -> 1
       // 2 -> 2*2/2 -> 2*1 -> 2

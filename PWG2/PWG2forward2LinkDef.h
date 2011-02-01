@@ -58,7 +58,8 @@
 #pragma link C++ class AliForwardMultiplicityBase+;
 #pragma link C++ class AliForwardMultiplicityTask+;
 #pragma link C++ class AliForwardMCMultiplicityTask+;
-#pragma link C++ class AliForwardCorrectionManager+;
+// Note: custom streamer to ensure singleton consistency!
+#pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 
 #else

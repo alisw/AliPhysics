@@ -17,6 +17,7 @@ hhd=1
 comp=1
 tit=
 pass1=Pass1.C
+output=forward.root
 
 usage()
 {
@@ -77,7 +78,9 @@ while test $# -gt 0 ; do
 	-V|--vz-max)         vzmax=$2         ; shift ;; 
 	-e|--energy)         cms=$2           ; shift ;;
 	-S|--title)          tit="$2"         ; shift ;;
-	-E|--eloss)          pass1=MakeELossFits.C ; nodraw=1 ;;
+	-E|--eloss)          pass1=MakeELossFits.C ; 
+	                     output=forward_eloss.root ;
+			     nodraw=1 ;;
 	-t|--type)           
 	    if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    shift ;;
@@ -120,11 +123,14 @@ if test $noanal -lt 1 ; then
 	EventStat_temp.root \
 	outputs_valid \
 	`printf %09d.stat $nev` 
-    if  test $fail -gt 0               || \
-	test ! -f AnalysisResults.root || \
-	test ! -f AliAODs.root ; then 
-	echo "Analysis failed" 
-	exit 1
+    if  test $fail -gt 0  ; then 
+        echo "Return value $fail not 0" ; exit $fail 
+    fi
+    if test ! -f ${output} ; then 
+	echo "$output not made" ; exit 1; 
+    fi
+    if test ! -f AliAODs.root ; then 
+	echo "No AOD creates" ; exit 1;
     fi
     echo "Analysis done"
 fi

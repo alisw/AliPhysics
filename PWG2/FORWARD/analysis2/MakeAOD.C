@@ -97,15 +97,15 @@ void MakeAOD(const char* esddir,
   // Centrality 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
   // gDebug = 10;
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","+");
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","");
   // gDebug = 10;
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","+g");
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","");
   // gDebug = 0;
   AddTaskCopyHeader();
 
 
   // Central multiplicity
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","+");
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","");
   AddTaskCentralMult();
 #endif
 
