@@ -101,8 +101,8 @@ public:
     void SetRejectOutliersSigma2Median( const Bool_t b=kTRUE );
     void SetOutRejSigma2Median( const Double_t s ) {fOutRejSigma2Median = s;}
     Bool_t SetTrackParams( const AliExternalTrackParam* exparam1, const AliExternalTrackParam* exparam2 );
-    const AliExternalTrackParam* GetTrackParams1() const {return fPTrackParamArr1;}
-    const AliExternalTrackParam* GetTrackParams2() const {return fPTrackParamArr2;}
+    const AliExternalTrackParam* GetTrackParams1() const {return fPTrackParam1;}
+    const AliExternalTrackParam* GetTrackParams2() const {return fPTrackParam2;}
     void SetMinPointsVol1( const Int_t min ) {fMinPointsVol1=min;}
     void SetMinPointsVol2( const Int_t min ) {fMinPointsVol2=min;}
     void SetRequireMatchInTPC( const Bool_t s=kTRUE ) {fRequireMatchInTPC = s;}
@@ -142,13 +142,12 @@ protected:
     Bool_t IsOutlierSigma2Median( const AliExternalTrackParam* pITS, const AliExternalTrackParam* pTPC );
 
 private:
-    static const Int_t fgkNTracksPerMeasurement=1;        //how many tracks for one update
     static const Int_t fgkNSystemParams=9;                //how many fit parameters
-    static const Int_t fgkNtracksSigma2Median=500;              //how many sets for median and rms
+    static const Int_t fgkNtracksSigma2Median=500;        //how many sets for median and rms
     
     //Track parameters
-    AliExternalTrackParam* fPTrackParamArr1;   //!local track parameters
-    AliExternalTrackParam* fPTrackParamArr2;   //!local track parameters
+    AliExternalTrackParam* fPTrackParam1;   //!local track parameters
+    AliExternalTrackParam* fPTrackParam2;   //!local track parameters
     Double_t fMagField; //magnetic field
 
     //Kalman filter related stuff
@@ -188,7 +187,6 @@ private:
     Int_t fNMatchedCosmics; //number of cosmic events with matching tracklets (good cosmics)
     Int_t fNMatchedTPCtracklets;//number of cosmic events with 2 matching TPC tracklets
     Int_t fNProcessedEvents; //number of processed events
-    Int_t fTrackInBuffer; //!number of tracks in buffer
     UInt_t fTimeStamp;    //time stamp
     Int_t fRunNumber;    //run number
     Int_t fNMerges;      //how many succesful merges

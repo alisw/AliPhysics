@@ -87,8 +87,8 @@ ClassImp(AliRelAlignerKalman)
 //______________________________________________________________________________
 AliRelAlignerKalman::AliRelAlignerKalman():
     TObject(),
-    fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
-    fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
+    fPTrackParam1(new AliExternalTrackParam()),
+    fPTrackParam2(new AliExternalTrackParam()),
     fMagField(0.),
     fNMeasurementParams(4),
     fPX(new TVectorD( fgkNSystemParams )),
@@ -120,7 +120,6 @@ AliRelAlignerKalman::AliRelAlignerKalman():
     fNMatchedCosmics(0),
     fNMatchedTPCtracklets(0),
     fNProcessedEvents(0),
-    fTrackInBuffer(0),
     fTimeStamp(0),
     fRunNumber(0),
     fNMerges(0),
@@ -138,8 +137,8 @@ AliRelAlignerKalman::AliRelAlignerKalman():
 //______________________________________________________________________________
 AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     TObject(static_cast<TObject>(a)),
-    fPTrackParamArr1(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
-    fPTrackParamArr2(new AliExternalTrackParam[fgkNTracksPerMeasurement]),
+    fPTrackParam1(new AliExternalTrackParam()),
+    fPTrackParam2(new AliExternalTrackParam()),
     fMagField(a.fMagField),
     fNMeasurementParams(a.fNMeasurementParams),
     fPX(new TVectorD( *a.fPX )),
@@ -171,7 +170,6 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
     fNMatchedCosmics(a.fNMatchedCosmics),
     fNMatchedTPCtracklets(a.fNMatchedTPCtracklets),
     fNProcessedEvents(a.fNProcessedEvents),
-    fTrackInBuffer(0),
     fTimeStamp(a.fTimeStamp),
     fRunNumber(a.fRunNumber),
     fNMerges(a.fNMerges),
@@ -229,7 +227,6 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
   fNMatchedCosmics=a.fNMatchedCosmics;
   fNMatchedTPCtracklets=a.fNMatchedTPCtracklets;
   fNProcessedEvents=a.fNProcessedEvents;
-  fTrackInBuffer=0; //because the array is reset, not copied
   fTimeStamp=a.fTimeStamp;
   fRunNumber=a.fRunNumber;
   fNMerges=a.fNMerges;
@@ -257,8 +254,8 @@ AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a
 AliRelAlignerKalman::~AliRelAlignerKalman()
 {
   //destructor
-  delete [] fPTrackParamArr1;
-  delete [] fPTrackParamArr2;
+  delete fPTrackParam1;
+  delete fPTrackParam2;
   delete fPX;
   delete fPXcov;
   delete fPH;
@@ -441,17 +438,10 @@ Bool_t AliRelAlignerKalman::SetTrackParams( const AliExternalTrackParam* exparam
   //INPUT OUTLIER REJECTION
   if (fRejectOutliersSigma2Median && IsOutlierSigma2Median(exparam1,exparam2) ) return kFALSE;
 
-  fPTrackParamArr1[fTrackInBuffer] = *exparam1;
-  fPTrackParamArr2[fTrackInBuffer] = *exparam2;
+  *fPTrackParam1 = *exparam1;
+  *fPTrackParam2 = *exparam2;
   
-  fTrackInBuffer++;
-
-  if (fTrackInBuffer == fgkNTracksPerMeasurement)
-  {
-    fTrackInBuffer = 0;
-    return kTRUE;
-  }
-  return kFALSE;
+  return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -499,61 +489,57 @@ Bool_t AliRelAlignerKalman::PrepareMeasurement()
 {
   //Calculate the residuals and their covariance matrix
   
-  for (Int_t i=0;i<fgkNTracksPerMeasurement;i++)
-  {
-    const Double_t* pararr1 = fPTrackParamArr1[i].GetParameter();
-    const Double_t* pararr2 = fPTrackParamArr2[i].GetParameter();
+    const Double_t* pararr1 = fPTrackParam1->GetParameter();
+    const Double_t* pararr2 = fPTrackParam2->GetParameter();
 
     //Take the track parameters and calculate the input to the Kalman filter
-    Int_t x = i*4;
-    (*fPMeasurement)(x+0) = pararr2[0]-pararr1[0];
-    (*fPMeasurement)(x+1) = pararr2[1]-pararr1[1];
+    (*fPMeasurement)(0) = pararr2[0]-pararr1[0];
+    (*fPMeasurement)(1) = pararr2[1]-pararr1[1];
     if (!fYZOnly)
     {
-      (*fPMeasurement)(x+2) = pararr2[2]-pararr1[2];
-      (*fPMeasurement)(x+3) = pararr2[3]-pararr1[3];
+      (*fPMeasurement)(2) = pararr2[2]-pararr1[2];
+      (*fPMeasurement)(3) = pararr2[3]-pararr1[3];
     }
 
     //the covariance
-    const Double_t* parcovarr1 = fPTrackParamArr1[i].GetCovariance();
-    const Double_t* parcovarr2 = fPTrackParamArr2[i].GetCovariance();
-    (*fPMeasurementCov)(x+0,x+0)=parcovarr1[0];
-    (*fPMeasurementCov)(x+0,x+1)=parcovarr1[1];
-    (*fPMeasurementCov)(x+1,x+0)=parcovarr1[1];
-    (*fPMeasurementCov)(x+1,x+1)=parcovarr1[2];
-    (*fPMeasurementCov)(x+0,x+0)+=parcovarr2[0];
-    (*fPMeasurementCov)(x+0,x+1)+=parcovarr2[1];
-    (*fPMeasurementCov)(x+1,x+0)+=parcovarr2[1];
-    (*fPMeasurementCov)(x+1,x+1)+=parcovarr2[2];
+    const Double_t* parcovarr1 = fPTrackParam1->GetCovariance();
+    const Double_t* parcovarr2 = fPTrackParam2->GetCovariance();
+    (*fPMeasurementCov)(0,0)=parcovarr1[0];
+    (*fPMeasurementCov)(0,1)=parcovarr1[1];
+    (*fPMeasurementCov)(1,0)=parcovarr1[1];
+    (*fPMeasurementCov)(1,1)=parcovarr1[2];
+    (*fPMeasurementCov)(0,0)+=parcovarr2[0];
+    (*fPMeasurementCov)(0,1)+=parcovarr2[1];
+    (*fPMeasurementCov)(1,0)+=parcovarr2[1];
+    (*fPMeasurementCov)(1,1)+=parcovarr2[2];
     if (!fYZOnly)
     {
-      (*fPMeasurementCov)(x+0,x+2)=parcovarr1[3];
-      (*fPMeasurementCov)(x+0,x+3)=parcovarr1[6];
-      (*fPMeasurementCov)(x+1,x+2)=parcovarr1[4];
-      (*fPMeasurementCov)(x+1,x+3)=parcovarr1[7];
-      (*fPMeasurementCov)(x+2,x+0)=parcovarr1[3];
-      (*fPMeasurementCov)(x+2,x+1)=parcovarr1[4];
-      (*fPMeasurementCov)(x+2,x+2)=parcovarr1[5];
-      (*fPMeasurementCov)(x+2,x+3)=parcovarr1[8];
-      (*fPMeasurementCov)(x+3,x+0)=parcovarr1[6];
-      (*fPMeasurementCov)(x+3,x+1)=parcovarr1[7];
-      (*fPMeasurementCov)(x+3,x+2)=parcovarr1[8];
-      (*fPMeasurementCov)(x+3,x+3)=parcovarr1[9];
-      (*fPMeasurementCov)(x+0,x+2)+=parcovarr2[3];
-      (*fPMeasurementCov)(x+0,x+3)+=parcovarr2[6];
-      (*fPMeasurementCov)(x+1,x+2)+=parcovarr2[4];
-      (*fPMeasurementCov)(x+1,x+3)+=parcovarr2[7];
-      (*fPMeasurementCov)(x+2,x+0)+=parcovarr2[3];
-      (*fPMeasurementCov)(x+2,x+1)+=parcovarr2[4];
-      (*fPMeasurementCov)(x+2,x+2)+=parcovarr2[5];
-      (*fPMeasurementCov)(x+2,x+3)+=parcovarr2[8];
-      (*fPMeasurementCov)(x+3,x+0)+=parcovarr2[6];
-      (*fPMeasurementCov)(x+3,x+1)+=parcovarr2[7];
-      (*fPMeasurementCov)(x+3,x+2)+=parcovarr2[8];
-      (*fPMeasurementCov)(x+3,x+3)+=parcovarr2[9];
+      (*fPMeasurementCov)(0,2)=parcovarr1[3];
+      (*fPMeasurementCov)(0,3)=parcovarr1[6];
+      (*fPMeasurementCov)(1,2)=parcovarr1[4];
+      (*fPMeasurementCov)(1,3)=parcovarr1[7];
+      (*fPMeasurementCov)(2,0)=parcovarr1[3];
+      (*fPMeasurementCov)(2,1)=parcovarr1[4];
+      (*fPMeasurementCov)(2,2)=parcovarr1[5];
+      (*fPMeasurementCov)(2,3)=parcovarr1[8];
+      (*fPMeasurementCov)(3,0)=parcovarr1[6];
+      (*fPMeasurementCov)(3,1)=parcovarr1[7];
+      (*fPMeasurementCov)(3,2)=parcovarr1[8];
+      (*fPMeasurementCov)(3,3)=parcovarr1[9];
+      (*fPMeasurementCov)(0,2)+=parcovarr2[3];
+      (*fPMeasurementCov)(0,3)+=parcovarr2[6];
+      (*fPMeasurementCov)(1,2)+=parcovarr2[4];
+      (*fPMeasurementCov)(1,3)+=parcovarr2[7];
+      (*fPMeasurementCov)(2,0)+=parcovarr2[3];
+      (*fPMeasurementCov)(2,1)+=parcovarr2[4];
+      (*fPMeasurementCov)(2,2)+=parcovarr2[5];
+      (*fPMeasurementCov)(2,3)+=parcovarr2[8];
+      (*fPMeasurementCov)(3,0)+=parcovarr2[6];
+      (*fPMeasurementCov)(3,1)+=parcovarr2[7];
+      (*fPMeasurementCov)(3,2)+=parcovarr2[8];
+      (*fPMeasurementCov)(3,3)+=parcovarr2[9];
     }
     
-  }
   //if (fApplyCovarianceCorrection)
   //  *fPMeasurementCov += *fPMeasurementCovCorr;
   return kTRUE;
@@ -604,48 +590,40 @@ Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& 
 
   if (fCorrectionMode)
   {
-    for (Int_t i=0;i<fgkNTracksPerMeasurement;i++)
-    {
-      AliExternalTrackParam track(fPTrackParamArr2[i]); //make a copy track
+      AliExternalTrackParam track(*fPTrackParam2); //make a copy track
       if (!CorrectTrack( &track, state )) return kFALSE; //predict what the ideal track would be by applying correction
       
-      const Double_t* oldparam = fPTrackParamArr2[i].GetParameter();
+      const Double_t* oldparam = fPTrackParam2->GetParameter();
       const Double_t* newparam = track.GetParameter();
 
-      Int_t x = 4*i;
       //calculate the predicted residual
-      pred(x+0) = oldparam[0] - newparam[0];
-      pred(x+1) = oldparam[1] - newparam[1];
+      pred(0) = oldparam[0] - newparam[0];
+      pred(1) = oldparam[1] - newparam[1];
       if (!fYZOnly)
       {
-        pred(x+2) = oldparam[2] - newparam[2];
-        pred(x+3) = oldparam[3] - newparam[3];
+        pred(2) = oldparam[2] - newparam[2];
+        pred(3) = oldparam[3] - newparam[3];
       }
       return kTRUE;
-    }
   }
   else
   {
-    for (Int_t i=0;i<fgkNTracksPerMeasurement;i++)
-    {
-      AliExternalTrackParam track(fPTrackParamArr1[i]); //make a copy track
+      AliExternalTrackParam track(fPTrackParam1); //make a copy track
       if (!MisalignTrack( &track, state )) return kFALSE; //predict what the measured track would be by applying misalignment
 
-      const Double_t* oldparam = fPTrackParamArr1[i].GetParameter();
+      const Double_t* oldparam = fPTrackParam1->GetParameter();
       const Double_t* newparam = track.GetParameter();
 
-      Int_t x = 4*i;
       //calculate the predicted residual
-      pred(x+0) = newparam[0] - oldparam[0];
-      pred(x+1) = newparam[1] - oldparam[1];
+      pred(0) = newparam[0] - oldparam[0];
+      pred(1) = newparam[1] - oldparam[1];
       if (!fYZOnly)
       {
-        pred(x+2) = newparam[2] - oldparam[2];
-        pred(x+3) = newparam[3] - oldparam[3];
+        pred(2) = newparam[2] - oldparam[2];
+        pred(3) = newparam[3] - oldparam[3];
       }
       return kTRUE;
     }
-  }
   return kFALSE;
 }
 
