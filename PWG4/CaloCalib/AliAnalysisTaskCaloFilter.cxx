@@ -25,19 +25,26 @@
 // Author: Gustavo Conesa Balbastre (INFN - Frascati)
 //////////////////////////////////////////////////////////
 
-#include "AliAnalysisTaskCaloFilter.h"
+//Root
+#include "TGeoManager.h"
+
+//STEER
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliLog.h"
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
-#include "AliEMCALRecoUtils.h"
-#include "AliEMCALGeometry.h"
 #include "AliVEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 #include "AliESDtrackCuts.h"
-#include "TGeoManager.h"
+#include "AliTriggerAnalysis.h"
+
+//EMCAL
+#include "AliEMCALRecoUtils.h"
+#include "AliEMCALGeometry.h"
+
+#include "AliAnalysisTaskCaloFilter.h"
 
 ClassImp(AliAnalysisTaskCaloFilter)
   
@@ -48,7 +55,7 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
   fCaloFilter(0), fCorrect(kFALSE), 
   fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fEMCALRecoUtils(new AliEMCALRecoUtils),
-  fESDtrackCuts(0), fTrackMultEtaCut(0.8),
+  fESDtrackCuts(0), fTriggerAnalysis (new AliTriggerAnalysis), fTrackMultEtaCut(0.8),
   fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
   fGeoMatrixSet(kFALSE)
 {
@@ -65,7 +72,7 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
   fCaloFilter(0), fCorrect(kFALSE),
   fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fEMCALRecoUtils(new AliEMCALRecoUtils),
-  fESDtrackCuts(0), fTrackMultEtaCut(0.8),
+  fESDtrackCuts(0), fTriggerAnalysis (new AliTriggerAnalysis), fTrackMultEtaCut(0.8),
   fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
   fGeoMatrixSet(kFALSE)
 {
@@ -81,9 +88,10 @@ AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
 {
   //Destructor.
 	
-  if(fEMCALGeo)       delete fEMCALGeo;	
-  if(fEMCALRecoUtils) delete fEMCALRecoUtils;
-  if(fESDtrackCuts)   delete fESDtrackCuts;
+  if(fEMCALGeo)        delete fEMCALGeo;	
+  if(fEMCALRecoUtils)  delete fEMCALRecoUtils;
+  if(fESDtrackCuts)    delete fESDtrackCuts;
+  if(fTriggerAnalysis) delete fTriggerAnalysis;
 
 }
 
@@ -100,16 +108,15 @@ void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
-  //
-  
+  // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
+
   if (fDebug > 0)  
     printf("CaloFilter: Analysing event # %d\n", (Int_t)Entry());
   
-  // Copy input ESD or AOD header, vertex, CaloClusters and CaloCells to output AOD
   
   AliVEvent* event = InputEvent();
   if(!event) {
-    printf("AliAnalysisTaskCaloFilter::CreateAODFromESD() - This event does not contain Input?");
+    printf("AliAnalysisTaskCaloFilter::UserExec - This event does not contain Input?");
     return;
   }
 
@@ -121,17 +128,44 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   Bool_t bESD = kFALSE;
   if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
   
-  //Get track multiplicity
-  Int_t trackMult = 0;
+  //-------------------------------------------
+  //Event selection parameters
+  //-------------------------------------------
+  //Is it a pileup event?
+  Bool_t bPileup = event->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
+  //Bool_t bPileup = event->IsPileupFromSPD(); 
+  //if(bPileup) return kFALSE;
+  Int_t  trackMult    = 0;
+  Bool_t bV0AND       = kFALSE;
+  Bool_t bGoodVertex  = kFALSE;
   if(bESD){
+    //Get track multiplicity
     Int_t nTracks   = InputEvent()->GetNumberOfTracks() ;
     for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
       AliVTrack * track = (AliVTrack*)InputEvent()->GetTrack(itrack) ; // retrieve track from esd
       if(!fESDtrackCuts->AcceptTrack((AliESDtrack*)track)) continue;
       //Count the tracks in eta < 0.8
       if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
-    }    
-  }
+    }  
+    //V0AND?   
+    
+    bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(dynamic_cast<AliESDEvent*> (event), AliTriggerAnalysis::kV0AND);
+    //if(!bV0AND) return kFALSE;
+    //Well reconstructed vertex
+    bGoodVertex = CheckForPrimaryVertex();
+    //if(!bGoodVertex) return kFALSE;
+    
+  }//ESDs
+  
+  if(fDebug > 0)
+    printf("AliAnalysisTaskCaloFilter::UserExec() - PileUp %d, Good Vertex %d, v0AND %d, Track Mult in |eta| < %2.1f = %d\n",
+           bPileup,bGoodVertex,bV0AND, fTrackMultEtaCut, trackMult);
+  //Put bools with event selection parameters in an array, as a patch, put it later in the MC labels list
+  Int_t eventBools[] = {bPileup,bGoodVertex,bV0AND};
+  
+  //----------------------------------------------------
+  //Set in AOD General Event Parameters, vertex, runnumber etc 
+  //----------------------------------------------------
   
   // set arrays and pointers
   Float_t posF[3];
@@ -206,7 +240,9 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   TClonesArray &caloClusters = *(AODEvent()->GetCaloClusters());
   Int_t jClusters=0;
   
+  //-------------------------------------------
   //Do Corrections in EMCAL 
+  //-------------------------------------------
   //If EMCAL, and requested, correct energy, position ...
   //Need to do this in a separate loop before filling the ESDs because of the track matching recalculations
   if(fCorrect && (fCaloFilter==kEMCAL || fCaloFilter==kBoth) ) {
@@ -245,6 +281,10 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
           fGeoMatrixSet=kTRUE;
         }//ESD
       }//Load matrices from Data 
+      
+      //Recover time dependent corrections, put then in recalibration histograms. Do it once
+      fEMCALRecoUtils->SetTimeDependentCorrections(InputEvent()->GetRunNumber());
+
     }//first event
     
     
@@ -297,7 +337,9 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
   } // corrections in EMCAL
   
-  //Now loop on clusters to fill AODs
+  //-------------------------------------------
+  // Now loop on clusters to fill AODs
+  //-------------------------------------------
   for (Int_t iClust=0; iClust<nCaloClus; ++iClust) {
     
     AliVCluster * cluster = event->GetCaloCluster(iClust);
@@ -326,9 +368,10 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       //      }
       
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
-      if(DebugLevel() > 2)
-        printf("Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
-
+      if(DebugLevel() > 2){
+        if(cluster->IsEMCAL()) printf("EMCAL Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
+        if(cluster->IsPHOS())  printf("PHOS  Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
+      }
     }
     //--------------------------------------------------------------
 
@@ -340,8 +383,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
       AliAODCaloCluster(id,
-			0,
-			0x0,
+			3,
+			eventBools,
 			energy,
 			posF,
 			NULL,
@@ -438,6 +481,33 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   return;
 }
 
+//____________________________________________________________________________
+Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex(){
+  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
+  //It only works for ESDs
+  
+  AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
+  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+    return 1;
+  }
+  
+  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
+    // SPD vertex
+    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return 1;
+      
+    }
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+      //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return 0;
+    }
+  }
+  return 0;
+  //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+}
+
+
 //_____________________________________________________
 void AliAnalysisTaskCaloFilter::PrintInfo(){
 
@@ -448,7 +518,6 @@ void AliAnalysisTaskCaloFilter::PrintInfo(){
   printf("\t Calorimeter Filtering Option     ? %d\n",fCaloFilter);
   //printf("\t Use handmade geo matrices?   EMCAL %d, PHOS %d\n",fLoadEMCALMatrices, fLoadPHOSMatrices);
   printf("\t Use handmade geo matrices?   EMCAL %d, PHOS 0\n",fLoadEMCALMatrices);
-
 }
 
 //_____________________________________________________
