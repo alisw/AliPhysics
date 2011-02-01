@@ -145,6 +145,8 @@ AliHLTMUONFullTracker::AliHLTMUONFullTracker() :
   /// fChPoint = (AliHLTMUONRecHitStruct***)(malloc(10 * sizeof(AliHLTMUONRecHitStruct)));
   /// for( Int_t ich=0;ich<10;ich++)
   ///   fChPoint[ich] = (AliHLTMUONRecHitStruct**)(malloc(300 * sizeof(AliHLTMUONRecHitStruct)));
+  
+  fNofCells[0] = fNofCells[1] = 0;
 
   try{
     fChPoint = new AliHLTMUONRecHitStruct**[fgkMaxNofCh-1];
