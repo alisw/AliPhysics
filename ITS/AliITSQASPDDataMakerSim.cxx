@@ -119,8 +119,8 @@ Int_t AliITSQASPDDataMakerSim::InitDigits()
   //fGenOffsetD = (fAliITSQADataMakerSim->fDigitsQAList[AliRecoParam::kDefault])->GetEntries();
   //fSPDhDTask must be incremented by one unit every time a histogram is ADDED to the QA List
 
-  Char_t name[50];
-  Char_t title[50];
+  Char_t name[51];
+  Char_t title[51];
 
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
@@ -130,8 +130,8 @@ Int_t AliITSQASPDDataMakerSim::InitDigits()
   
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; iLay++) {
-    sprintf(name,"SPDModPattern_SPD%d",iLay+1);
-    sprintf(title,"Module map - SPD Layer %d",iLay+1);
+    snprintf(name,50,"SPDModPattern_SPD%d",iLay+1);
+    snprintf(title,50,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
@@ -153,8 +153,8 @@ Int_t AliITSQASPDDataMakerSim::InitDigits()
 
   TH1F** hMultSPDdigits = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"SPDDigitMultiplicity_SPD%d",iLay+1);
-    sprintf(title,"Digit multiplicity - SPD Layer %d",iLay+1);
+    snprintf(name,50,"SPDDigitMultiplicity_SPD%d",iLay+1);
+    snprintf(title,50,"Digit multiplicity - SPD Layer %d",iLay+1);
     hMultSPDdigits[iLay]=new TH1F(name,title,200,0.,200.);
     hMultSPDdigits[iLay]->GetXaxis()->SetTitle("Digit multiplicity");
     hMultSPDdigits[iLay]->GetYaxis()->SetTitle("Entries");
@@ -170,6 +170,8 @@ Int_t AliITSQASPDDataMakerSim::InitDigits()
   fSPDhDTask++;
 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Digits histograms booked\n",fSPDhDTask));
+  delete [] hmod;
+  delete [] hMultSPDdigits;
   return rv ; 
 }
 
@@ -224,8 +226,8 @@ Int_t AliITSQASPDDataMakerSim::InitSDigits()
   //printf("--W-- AliITSQASPDDataMakerSim::InitSDigits()  fGenOffset= %d \n",fGenOffset);
   //fSPDhSTask must be incremented by one unit every time a histogram is ADDED to the QA List
   
-  Char_t name[50];
-  Char_t title[50];
+  Char_t name[51];
+  Char_t title[51];
 
   TH1F *hlayer = new TH1F("SPDLayPattern_SPD","Layer map - SPD",6,0.,6.);
   hlayer->GetXaxis()->SetTitle("Layer number");
@@ -235,8 +237,8 @@ Int_t AliITSQASPDDataMakerSim::InitSDigits()
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"SPDModPattern_SPD%d",iLay+1);
-    sprintf(title,"Module map - SPD Layer %d",iLay+1);
+    snprintf(name,50,"SPDModPattern_SPD%d",iLay+1);
+    snprintf(title,50,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");
@@ -245,6 +247,7 @@ Int_t AliITSQASPDDataMakerSim::InitSDigits()
   }
 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD SDigits histograms booked\n",fSPDhSTask));
+  delete [] hmod;
   return rv ; 
 }
 
@@ -320,6 +323,7 @@ Int_t AliITSQASPDDataMakerSim::InitHits()
   fSPDhHTask++;
 
   AliDebug(AliQAv1::GetQADebugLevel(),Form("%d SPD Hits histograms booked\n",fSPDhHTask));
+  delete [] hmod;
   return rv ; 
 }
 

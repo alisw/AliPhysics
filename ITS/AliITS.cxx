@@ -83,7 +83,6 @@ the AliITS class.
 #include "AliITSsimulation.h"
 #include "AliITSsimulationFastPoints.h"
 #include "AliMC.h"
-#include "AliITSDigitizer.h"
 #include "AliITSRecPoint.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
@@ -252,20 +251,7 @@ AliITS::~AliITS(){
       delete fpSDigits;
     }
 }
-//______________________________________________________________________
-AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)const{
-    // Creates the AliITSDigitizer in a standard way for use via AliModule.
-    // This function can not be included in the .h file because of problems
-    // with the order of inclusion (recursive).
-    // Inputs:
-    //    AliRunDigitizer *manager  The Manger class for Digitization
-    // Output:
-    //    none.
-    // Return:
-    //    A new AliITSRunDigitizer (cast as a AliDigitizer).
 
-     return new AliITSDigitizer(manager);
-}
 //______________________________________________________________________
 void AliITS::Init(){
     // Initializer ITS after it has been built

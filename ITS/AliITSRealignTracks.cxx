@@ -193,7 +193,6 @@ Bool_t AliITSRealignTracks::SelectFitter(Int_t fit,Int_t minTrackPoint){
  
   else if(fit==0){
     AliTrackFitterRieman *fitter=new AliTrackFitterRieman();
-    fitter=new AliTrackFitterRieman();
     fitter->SetMinNPoints(minTrackPoint);
     SetTrackFitter(fitter);
   }
@@ -944,7 +943,10 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minN
   delete volFit;
   delete volFit2;
   delete sequence;
-
+  for(Int_t m=0;m<nLayers;m++){
+    delete [] lastIndex[m];
+  }
+  delete [] lastIndex;
   return kTRUE;
   
 }
@@ -1046,6 +1048,10 @@ Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,
   delete volFit;
   delete volFit2;
   delete sequence;
+  for(Int_t m=0;m<nLayers;m++){
+    delete [] lastIndex[m];
+  }
+  delete [] lastIndex;
 
   return kTRUE;
 }

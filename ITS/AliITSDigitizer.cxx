@@ -37,6 +37,7 @@
 #include "AliRunDigitizer.h"
 #include "AliITSDigitizer.h"
 #include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 #include "AliITSsimulation.h"
 
 ClassImp(AliITSDigitizer)
@@ -57,6 +58,8 @@ fFlagFirstEv(kTRUE){
     //      none.
     // Return:
     //      A blank AliITSDigitizer class.
+  fModActive = new Bool_t[AliITSgeomTGeo::GetNModules()];
+  for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
 
 }
 //______________________________________________________________________
@@ -75,7 +78,8 @@ fFlagFirstEv(kTRUE){
     //      none.
     // Return:
     //      An AliItSDigitizer class.
-
+  fModActive = new Bool_t[AliITSgeomTGeo::GetNModules()];
+  for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
 }
 
 
@@ -116,17 +120,13 @@ Bool_t AliITSDigitizer::Init(){
 	fInit     = kFALSE;
 	Warning("Init","ITS not found");
 	return fInit;
-    } else if(fITS->GetITSgeom()){
-	//cout << "fRoif,fRoiifile="<<fRoif<<" "<<fRoiifile<<endl;
-	fModActive = new Bool_t[fITS->GetITSgeom()->GetIndexMax()];
-    } else{
+    } 
+    if(!fITS->GetITSgeom()){
 	fRoiifile = 0;
 	fInit     = kFALSE;
 	Warning("Init","ITS geometry not found");
 	return fInit;
     } // end if
-    // fModActive needs to be set to a default all kTRUE value
-    for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
     return fInit;
 }
 //______________________________________________________________________
@@ -139,7 +139,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     // Return:
     //      none.
 
-    char name[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  char name[21] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     const char *all;
     const char *det[3] = {strstr(opt,"SPD"),strstr(opt,"SDD"),
                           strstr(opt,"SSD")};
@@ -158,7 +158,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
 	return;
     } // end if
 
-    sprintf(name,"%s",fITS->GetName());
+    snprintf(name,20,"%s",fITS->GetName());
 
     Int_t size   = fITS->GetITSgeom()->GetIndexMax();
     Int_t module,id,ifiles,mask;
@@ -185,6 +185,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     if ( outRL == 0x0)
      {
        Error("Exec","Can not get Output Run Loader");
+       delete [] fl;
        return;
      }
     outRL->GetEvent(event);
@@ -192,6 +193,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     if ( outgime == 0x0)
      {
        Error("Exec","Can not get Output ITS Loader");
+       delete [] fl;
        return;
      }
 
@@ -206,7 +208,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     else {
       AliDebug(1,"No Region of Interest selected. Digitizing everything");
     }
-    if(fModActive==0) fRoif = 0; // fModActive array must be define for RIO cuts.
+
 
     for(ifiles=0; ifiles<nfiles; ifiles++ )
      {
@@ -217,7 +219,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
 
     for(module=0; module<size; module++ )
      {
-       if(fModActive && fRoif!=0) if(!fModActive[module]) continue;
+       if(fRoif!=0) if(!fModActive[module]) continue;
        id = fITS->GetITSgeom()->GetModuleType(module);
        if(!all && !det[id]) continue;
        sim      = (AliITSsimulation*)fITS->GetSimulationModel(id);
@@ -246,6 +248,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
             } else {
                 Error( "Exec", "branch ITS not found in TreeS, input file %d ",
                        ifiles );
+		delete [] fl;
 		return;
             } // end if brchSDigits
             sdig->Clear();
@@ -318,7 +321,6 @@ void AliITSDigitizer::SetByRegionOfInterest(TTree *ts){
 
     nm = fITS->GetITSgeom()->GetIndexMax();
     for(m=0;m<nm;m++){
-      //cout << " fModActive["<<m<<"]=";
       fModActive[m] = kFALSE; // Not active by default
       sdig->Clear();
       brchSDigits->GetEvent(m);

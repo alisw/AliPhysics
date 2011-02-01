@@ -9,7 +9,6 @@
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
 #include "AliITSDetTypeRec.h"
-#include "AliITSDigitizer.h"
 #include "AliITS.h"
 #include "AliITSresponseSDD.h"
 #include "AliITSreconstruction.h"

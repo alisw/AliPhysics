@@ -1,13 +1,13 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
+#include "TROOT.h"
 #include "Riostream.h"
 #include "TDatime.h"
 #include "TClassTable.h"
 #include "AliRun.h"
 #include "AliRunDigitizer.h"
-#include "AliITSDigitizer.h"
 #include "AliITS.h"
-#include "AliITSDetType.h"
+#include "AliITSDetTypeSim.h"
 #include "AliITSLoader.h"
 #include "AliITSresponseSDD.h"
 #include "TStopwatch.h"
@@ -65,7 +65,7 @@ Int_t AliITSHits2Digits(TString inFile = "galice.root"){
 
     TStopwatch timer;
     Int_t evNumber1 = 0;
-    Int_t evNumber2 = AliRunLoader::GetNumberOfEvents();
+    Int_t evNumber2 = rl->GetNumberOfEvents();
     timer.Start();
     retval = gime->LoadHits();
     if (retval)
