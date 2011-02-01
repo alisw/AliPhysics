@@ -899,25 +899,25 @@ void AliFlowTrackCuts::Clear(Option_t*)
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* t )
+Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* track )
 {
   //check if passes PID cut using timing in TOF
-  Bool_t goodtrack = (t) && 
-                     (t->GetStatus() & AliESDtrack::kTOFpid) && 
-                     (t->GetTOFsignal() > 12000) && 
-                     (t->GetTOFsignal() < 100000) && 
-                     (t->GetIntegratedLength() > 365) && 
-                    !(t->GetStatus() & AliESDtrack::kTOFmismatch);
+  Bool_t goodtrack = (track) && 
+                     (track->GetStatus() & AliESDtrack::kTOFpid) && 
+                     (track->GetTOFsignal() > 12000) && 
+                     (track->GetTOFsignal() < 100000) && 
+                     (track->GetIntegratedLength() > 365) && 
+                    !(track->GetStatus() & AliESDtrack::kTOFmismatch);
 
   if (!goodtrack) return kFALSE;
   
-  Float_t pt = t->Pt();
-  Float_t p = t->GetP();
+  Float_t pt = track->Pt();
+  Float_t p = track->GetP();
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
-  Float_t timeTOF = t->GetTOFsignal()- trackT0; 
+  Float_t timeTOF = track->GetTOFsignal()- trackT0; 
   //2=pion 3=kaon 4=protons
   Double_t inttimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
-  t->GetIntegratedTimes(inttimes);
+  track->GetIntegratedTimes(inttimes);
   //construct the pid index because it's screwed up in TOF
   Int_t pid = 0;
   switch (fAliPID)
@@ -956,9 +956,7 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
     return kFALSE;
   }
 
-  const AliExternalTrackParam* tpcparam = track->GetInnerParam();
-  if (!tpcparam) return kFALSE;
-  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
+  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(track->GetP(), fAliPID);
   Float_t sigTPC = track->GetTPCsignal();
   Float_t s = (sigTPC-sigExp)/sigExp;
   Double_t pt = track->Pt();
