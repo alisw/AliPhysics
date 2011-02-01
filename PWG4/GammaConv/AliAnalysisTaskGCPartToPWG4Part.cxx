@@ -178,7 +178,7 @@ Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * 
   }
 
 
-   
+  if(!track1 || !track2) return tag;
   if(track1->GetLabel() < 0 || track2->GetLabel() < 0) {
     //cout << "error balla"<< endl; 
   
