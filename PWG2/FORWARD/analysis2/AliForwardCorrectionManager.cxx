@@ -229,6 +229,8 @@ AliForwardCorrectionManager::Init(UShort_t cms,
     // Check that the initialisation and the passed parameters 
     // match - if not give an error but continue - this allows 
     // users to override particular settings. 
+    
+    AliInfo("We are already initialised - checking settings...");
     Bool_t same = true;
     if (fSys != cms) { 
       AliWarning(Form("Initialised collision system %s (%d) and "
@@ -251,10 +253,13 @@ AliForwardCorrectionManager::Init(UShort_t cms,
 		      AliForwardUtil::MagneticFieldString(field), field));
       same = false;
     }
-    if (!same) 
+    if (!same) {
       AliWarning("Intialised parameters and these are not the same " 
 		 "- PROCEED WITH CAUTION!");
-      
+    }
+    else
+      AliInfo("Initialized values consistent with data");
+    
     return kTRUE;
   }
 
@@ -849,6 +854,10 @@ AliForwardCorrectionManager::Print(Option_t* option) const
 	    << ind << "    2-hit corr.:    " << fSecondaryMapPath << "\n"
 	    << ind << "    Vertex bias:    " << fVertexBiasPath << "\n"
 	    << ind << "    Acceptance:     " << fAcceptancePath << std::endl;
+  TString opt(option);
+  opt.ToUpper();
+  if (!opt.Contains("R")) return;
+  
   gROOT->IncreaseDirLevel();
   if (fELossFit)	  fELossFit->Print(option);
   else 

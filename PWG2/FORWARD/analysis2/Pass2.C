@@ -31,7 +31,7 @@ Pass2(const char* file=".",
       bool        comp=true)
 {
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C"); 
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AnalyseAOD.C","g"); 
+  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AnalyseAOD.C","+g"); 
   
   Int_t trgMask; 
   TString     trgs(triggers);

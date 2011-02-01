@@ -29,7 +29,11 @@ AddTaskFMD(Bool_t mc)
   if (mc) task = new AliForwardMCMultiplicityTask("FMD");
   else    task = new AliForwardMultiplicityTask("FMD");
   mgr->AddTask(task);
+  
+  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+  fcm.Init(1,900,5);
 
+  
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
   // Set the number of SPD tracklets for which we consider the event a
@@ -62,13 +66,13 @@ AddTaskFMD(Bool_t mc)
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
   // Set the low cut used for sharing - overrides settings in eloss fits
-  task->GetSharingFilter().SetLowCut(0.3);
+    task->GetSharingFilter().SetLowCut(0.3);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().SetNXi(1);
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(2);
   // Set the lower multiplicity cut.  Overrides setting in energy loss fits.
-  task->GetDensityCalculator().SetMultCut(0.3);
+  task->GetDensityCalculator().SetMultCut(0.3); //was 0.3
   // Whether to use the secondary map correction
   task->GetCorrections().SetUseSecondaryMap(true);
   // Whether to use the vertex bias correction
