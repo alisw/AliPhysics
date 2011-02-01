@@ -161,7 +161,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     printf("AliAnalysisTaskCaloFilter::UserExec() - PileUp %d, Good Vertex %d, v0AND %d, Track Mult in |eta| < %2.1f = %d\n",
            bPileup,bGoodVertex,bV0AND, fTrackMultEtaCut, trackMult);
   //Put bools with event selection parameters in an array, as a patch, put it later in the MC labels list
-  Int_t eventBools[] = {bPileup,bGoodVertex,bV0AND};
+  Int_t eventSelection[] = {bPileup,bGoodVertex,bV0AND,trackMult};
   
   //----------------------------------------------------
   //Set in AOD General Event Parameters, vertex, runnumber etc 
@@ -189,9 +189,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   header->SetPeriodNumber(event->GetPeriodNumber());
   header->SetEventType(event->GetEventType());
   header->SetMuonMagFieldScale(-999.); // FIXME
-  //printf("Track Multiplicity for eta < %f: %d \n",fTrackMultEtaCut,trackMult);
-  header->SetCentrality(0);        // FIXME
-  //printf("Centrality %f\n",header->GetCentrality());
+  //header->SetCentrality(0);        // FIXME
   
   header->SetTriggerMask(event->GetTriggerMask()); 
   header->SetTriggerCluster(event->GetTriggerCluster());
@@ -370,7 +368,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
       if(DebugLevel() > 2){
         if(cluster->IsEMCAL()) printf("EMCAL Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
-        if(cluster->IsPHOS())  printf("PHOS  Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
+      if(cluster->IsPHOS())  printf("PHOS  Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
       }
     }
     //--------------------------------------------------------------
@@ -383,8 +381,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
       AliAODCaloCluster(id,
-			3,
-			eventBools,
+			4,
+			eventSelection,
 			energy,
 			posF,
 			NULL,
@@ -457,7 +455,6 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       else {
         aodEMcells.SetCell(iCell,eventEMcells.GetCellNumber(iCell),0);
         //printf("BAD channel\n");
-
       }
     }
     aodEMcells.Sort();
