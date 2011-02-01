@@ -107,36 +107,36 @@ private:
   TList*  fOutputContainer; //!histogram container
   TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
 
-  TH2F*   fHmgg;            //! two-cluster inv.mass vs pt of pair
-  TH2F*   fHmggDifferentSM; //! two-cluster inv.mass vs pt of pair, each cluster in different SM
-  TH2F*   fHmggSM[4];       //! two-cluster inv.mass per SM
-  TH2F*   fHmggPairSM[4];   //! two-cluster inv.mass per Pair
+  TH2F*   fHmgg;             //! two-cluster inv.mass vs pt of pair
+  TH2F*   fHmggDifferentSM;  //! two-cluster inv.mass vs pt of pair, each cluster in different SM
+  TH2F*   fHmggSM[AliEMCALGeoParams::fgkEMCALModules];       //! two-cluster inv.mass per SM
+  TH2F*   fHmggPairSM[AliEMCALGeoParams::fgkEMCALModules];   //! two-cluster inv.mass per Pair
   
-  TH2F*   fHOpeningAngle;            //! two-cluster opening angle vs pt of pair, with mass close to pi0
-  TH2F*   fHOpeningAngleDifferentSM; //! two-cluster opening angle vs pt of pair, each cluster in different SM, with mass close to pi0
-  TH2F*   fHOpeningAngleSM[4];       //! two-cluster opening angle vs pt per SM,with mass close to pi0
-  TH2F*   fHOpeningAnglePairSM[4];   //! two-cluster opening angle vs pt per Pair,with mass close to pi0
+  TH2F*   fHOpeningAngle;             //! two-cluster opening angle vs pt of pair, with mass close to pi0
+  TH2F*   fHOpeningAngleDifferentSM;  //! two-cluster opening angle vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHOpeningAngleSM[AliEMCALGeoParams::fgkEMCALModules];       //! two-cluster opening angle vs pt per SM,with mass close to pi0
+  TH2F*   fHOpeningAnglePairSM[AliEMCALGeoParams::fgkEMCALModules];   //! two-cluster opening angle vs pt per Pair,with mass close to pi0
 
-  TH2F*   fHIncidentAngle;            //! cluster incident angle vs pt of pair, with mass close to pi0
-  TH2F*   fHIncidentAngleDifferentSM; //! cluster incident angle vs pt of pair, each cluster in different SM, with mass close to pi0
-  TH2F*   fHIncidentAngleSM[4];       //! cluster incident angle vs pt per SM,with mass close to pi0
-  TH2F*   fHIncidentAnglePairSM[4];   //! cluster incident angle vs pt per Pair,with mass close to pi0
+  TH2F*   fHIncidentAngle;             //! cluster incident angle vs pt of pair, with mass close to pi0
+  TH2F*   fHIncidentAngleDifferentSM;  //! cluster incident angle vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHIncidentAngleSM[AliEMCALGeoParams::fgkEMCALModules];       //! cluster incident angle vs pt per SM,with mass close to pi0
+  TH2F*   fHIncidentAnglePairSM[AliEMCALGeoParams::fgkEMCALModules];   //! cluster incident angle vs pt per Pair,with mass close to pi0
   
-  TH2F*   fHAsymmetry;            //! two-cluster asymmetry vs pt of pair, with mass close to pi0
-  TH2F*   fHAsymmetryDifferentSM; //! two-cluster asymmetry vs pt of pair, each cluster in different SM, with mass close to pi0
-  TH2F*   fHAsymmetrySM[4];       //! two-cluster asymmetry vs pt per SM,with mass close to pi0
-  TH2F*   fHAsymmetryPairSM[4];   //! two-cluster asymmetry vs pt per Pair,with mass close to pi0
+  TH2F*   fHAsymmetry;             //! two-cluster asymmetry vs pt of pair, with mass close to pi0
+  TH2F*   fHAsymmetryDifferentSM;  //! two-cluster asymmetry vs pt of pair, each cluster in different SM, with mass close to pi0
+  TH2F*   fHAsymmetrySM[AliEMCALGeoParams::fgkEMCALModules];       //! two-cluster asymmetry vs pt per SM,with mass close to pi0
+  TH2F*   fHAsymmetryPairSM[AliEMCALGeoParams::fgkEMCALModules];   //! two-cluster asymmetry vs pt per Pair,with mass close to pi0
   
-  TH2F*   fhTowerDecayPhotonHit[4] ;       //! Cells ordered in column/row for different module, number of times a decay photon hits
-  TH2F*   fhTowerDecayPhotonEnergy[4] ;    //! Cells ordered in column/row for different module, accumulated energy in the tower by decay photons.
-  TH2F*   fhTowerDecayPhotonAsymmetry[4] ; //! Cells ordered in column/row for different module, accumulated asymmetry in the tower by decay photons.
+  TH2F*   fhTowerDecayPhotonHit[AliEMCALGeoParams::fgkEMCALModules] ;       //! Cells ordered in column/row for different module, number of times a decay photon hits
+  TH2F*   fhTowerDecayPhotonEnergy[AliEMCALGeoParams::fgkEMCALModules] ;    //! Cells ordered in column/row for different module, accumulated energy in the tower by decay photons.
+  TH2F*   fhTowerDecayPhotonAsymmetry[AliEMCALGeoParams::fgkEMCALModules] ; //! Cells ordered in column/row for different module, accumulated asymmetry in the tower by decay photons.
 
-  TH1I*   fhNEvents;           //! Number of events counter histogram
-  TList * fCuts ;              //! List with analysis cuts
+  TH1I*         fhNEvents;     //! Number of events counter histogram
+  TList *       fCuts ;        //! List with analysis cuts
   Bool_t        fLoadMatrices; // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
-  TGeoHMatrix * fMatrix[4];    // Geometry matrices with alignments
+  TGeoHMatrix * fMatrix[AliEMCALGeoParams::fgkEMCALModules];    // Geometry matrices with alignments
   
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,11);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,12);
 
 };
 

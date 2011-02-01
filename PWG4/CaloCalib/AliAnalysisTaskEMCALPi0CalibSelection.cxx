@@ -2,7 +2,7 @@
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: Boris Polishchuk                                               *
- * Adapted to AOD reading by Gustavo Conesa  *
+ * Adapted to AOD reading by Gustavo Conesa                               *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -61,7 +61,7 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
 {
   //Named constructor which should be used.
   
-  for(Int_t iMod=0; iMod < 12; iMod++) {
+  for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
     for(Int_t iX=0; iX<24; iX++) {
       for(Int_t iZ=0; iZ<48; iZ++) {
         fHmpi0[iMod][iZ][iX]=0;
@@ -69,19 +69,19 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
     } 
   }
   
-  for(Int_t iSM=0; iSM<4; iSM++) {
-    fHmggSM[iSM]              =0;
-    fHmggPairSM[iSM]          =0;
-    fHOpeningAngleSM[iSM]     =0;
-    fHOpeningAnglePairSM[iSM] =0;
-    fHAsymmetrySM[iSM]     =0;
-    fHAsymmetryPairSM[iSM] =0;
-    fHIncidentAngleSM[iSM]    =0;
-    fHIncidentAnglePairSM[iSM]=0;
-    fhTowerDecayPhotonHit[iSM] =0;
-    fhTowerDecayPhotonEnergy[iSM]=0;
-    fhTowerDecayPhotonAsymmetry[iSM]=0;
-    fMatrix[iSM] = 0x0;
+  for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) {
+    fHmggSM[iSM]                     = 0;
+    fHmggPairSM[iSM]                 = 0;
+    fHOpeningAngleSM[iSM]            = 0;
+    fHOpeningAnglePairSM[iSM]        = 0;
+    fHAsymmetrySM[iSM]               = 0;
+    fHAsymmetryPairSM[iSM]           = 0;
+    fHIncidentAngleSM[iSM]           = 0;
+    fHIncidentAnglePairSM[iSM]       = 0;
+    fhTowerDecayPhotonHit[iSM]       = 0;
+    fhTowerDecayPhotonEnergy[iSM]    = 0;
+    fhTowerDecayPhotonAsymmetry[iSM] = 0;
+    fMatrix[iSM]                     = 0x0;
   }
   
   DefineOutput(1, TList::Class());
@@ -182,14 +182,15 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   //Create output container, init geometry 
 	
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
+  Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
   
   fOutputContainer = new TList();
   const Int_t buffersize = 255;
   char hname[buffersize], htitl[buffersize];
   
-  for(Int_t iMod=0; iMod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); iMod++) {
-    for(Int_t iRow=0; iRow<AliEMCALGeoParams::fgkEMCALRows; iRow++) {
-      for(Int_t iCol=0; iCol<AliEMCALGeoParams::fgkEMCALCols; iCol++) {
+  for(Int_t iMod=0; iMod < nSM; iMod++) {
+    for(Int_t iRow=0; iRow < AliEMCALGeoParams::fgkEMCALRows; iRow++) {
+      for(Int_t iCol=0; iCol < AliEMCALGeoParams::fgkEMCALCols; iCol++) {
         snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
         snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
         fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
@@ -241,7 +242,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   
   TString pairname[] = {"A side (0-2)", "C side (1-3)","Row 0 (0-1)", "Row 1 (2-3)"};
   
-  for(Int_t iSM=0; iSM<4; iSM++) {
+  for(Int_t iSM = 0; iSM < nSM; iSM++) {
     
     snprintf(hname, buffersize, "hmgg_SM%d",iSM);
     snprintf(htitl, buffersize, "Two-gamma inv. mass for super mod %d",iSM);
@@ -686,7 +687,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::PrintInfo(){
 	printf("Switchs:\n \t Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, \n \t Analyze Old AODs? %d, Mass per channel same SM clusters? %d\n",
            fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fOldAOD, fSameSM) ;
 	printf("EMCAL Geometry name: < %s >, Load Matrices %d\n",fEMCALGeoName.Data(), fLoadMatrices) ;
-  if(fLoadMatrices) {for(Int_t ism = 0; ism < 4; ism++) fMatrix[ism]->Print();}
+  if(fLoadMatrices) {for(Int_t ism = 0; ism < AliEMCALGeoParams::fgkEMCALModules; ism++) fMatrix[ism]->Print();}
 
   
 }
