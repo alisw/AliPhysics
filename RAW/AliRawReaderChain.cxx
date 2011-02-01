@@ -175,7 +175,10 @@ AliRawReaderChain::AliRawReaderChain(TChain *chain) :
 // create raw-reader objects which takes as an input a root chain
 // from a root file collection
 
-  if (!fChain) fIsValid = kFALSE;
+  if (!fChain) {
+    fIsValid = kFALSE;
+    return;
+  }
 
   fChain->SetBranchStatus("*",1);
   fChain->SetBranchAddress("rawevent",&fEvent,&fBranch);
@@ -188,7 +191,10 @@ AliRawReaderChain::AliRawReaderChain(TEntryList *elist) :
 // create raw-reader objects which takes as an input a root chain
 // from a root file collection
 
-  if (!elist) fIsValid = kFALSE;
+  if (!elist) {
+    fIsValid = kFALSE;
+    return;
+  }
 
   fChain = new TChain("RAW");
 
