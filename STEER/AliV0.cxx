@@ -41,7 +41,7 @@ void  AliV0::Update(Float_t vertex[3])
   //
   //find intersection linear
   //
-  Double_t phase[2][2],radius[2];
+  Double_t phase[2][2]={{0}},radius[2]={0};
   Int_t  points = phelix.GetRPHIintersections(mhelix, phase, radius,200);
   Double_t delta1=10000,delta2=10000;  
   /*
