@@ -51,7 +51,7 @@ int Root2Date(AliRawVEvent *gdcRootEvent, unsigned char *gdcDateEvent, char *ddl
      Int_t ddlIndex;
      Int_t detId = AliDAQ::DetectorIDFromDdlID(aliEquipmentHeader->GetId(),ddlIndex);
      char ddlFileName[256];
-     sprintf(ddlFileName,"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
+     snprintf(ddlFileName,sizeof(ddlFileName),"%s/%s",ddlDir,AliDAQ::DdlFileName(detId,ddlIndex));
      FILE *ddlFile;
      if((ddlFile=fopen(ddlFileName, "wb"))) {
        fwrite(p, chunkSize, 1, ddlFile);
