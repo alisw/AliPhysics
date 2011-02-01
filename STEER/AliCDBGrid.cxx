@@ -407,8 +407,8 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 	validFileIds.SetOwner(1);
 
 	// look for file matching query requests (path, runRange, version)
-	if(selectedId.GetFirstRun() == fRun &&
-			fPathFilter.Comprises(selectedId.GetAliCDBPath()) && fVersion < 0 && !fMetaDataFilter){
+	if(selectedId.GetFirstRun() == fRun && fPathFilter.Comprises(selectedId.GetAliCDBPath()) &&
+			fVersion == selectedId.GetVersion() && !fMetaDataFilter){
 		// look into list of valid files previously loaded with AliCDBStorage::FillValidFileIds()
 		AliDebug(2, Form("List of files valid for run %d was loaded. Looking there for fileids valid for path %s!",
 					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
@@ -416,8 +416,8 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
 
 	} else {
 		// List of files valid for reqested run was not loaded. Looking directly into CDB
-		AliDebug(2, Form("List of files valid for run %d was not loaded. Looking directly into CDB for fileids valid for path %s!",
-					selectedId.GetFirstRun(), selectedId.GetPath().Data()));
+		AliDebug(2, Form("List of files valid for run %d and version %d was not loaded. Looking directly into CDB for fileids valid for path %s!",
+					selectedId.GetFirstRun(), selectedId.GetVersion(), selectedId.GetPath().Data()));
 
 		TString filter;
 		MakeQueryFilter(selectedId.GetFirstRun(), selectedId.GetLastRun(), 0, filter);
