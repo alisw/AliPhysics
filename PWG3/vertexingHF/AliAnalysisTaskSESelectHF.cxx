@@ -130,7 +130,7 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
     inputArrayD0toKpi=(TClonesArray*)aodIn->GetList()->FindObject("D0toKpi");
   }
 
-  if(!inputArrayD0toKpi) {
+  if(!inputArrayD0toKpi || !aodIn) {
     printf("AliAnalysisTaskSESelectHF::UserExec: D0toKpi branch not found!\n");
     return;
   }
@@ -169,9 +169,9 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       dIn->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
+    
     //Int_t okD0=0,okD0bar=0; 
     //if(dIn->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-    if(dIn) {
       // get daughter AOD tracks
       AliAODTrack *trk0 = (AliAODTrack*)dIn->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)dIn->GetDaughter(1);
@@ -191,7 +191,8 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       dOut->SetSecondaryVtx(v);
       dOut->SetOwnPrimaryVtx((AliAODVertex*)((dIn->GetOwnPrimaryVtx())->Clone()));
       v->SetParent(dOut);
-    }
+    
+    
     if(unsetvtx) dIn->UnsetOwnPrimaryVtx();
   } // end loop on D0->Kpi
 
