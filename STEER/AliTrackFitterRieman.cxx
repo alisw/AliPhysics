@@ -199,7 +199,7 @@ Bool_t AliTrackFitterRieman::Fit(const TArrayI *volIds,const TArrayI *volIdsFit,
 
   Reset();
 
-  if (fPoints && AliLog::GetDebugLevel("","AliTrackFitterRieman")>1&& gRandom->Rndm()<debugRatio){
+  if (fPoints && volIdsFit && AliLog::GetDebugLevel("","AliTrackFitterRieman")>1&& gRandom->Rndm()<debugRatio){
     Int_t nVol    = volIds->GetSize();
     Int_t nVolFit = volIdsFit->GetSize();
     Int_t volId  = volIds->At(0);    
