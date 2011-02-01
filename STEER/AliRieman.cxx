@@ -106,7 +106,7 @@ AliRieman::AliRieman(Int_t capacity) :
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0;
-  for (Int_t i=0;i<6;i++) {
+  for (Int_t i=0;i<5;i++) {
     fSumPolY[i]=0;
     fSumPolZ[i]=0;
   }
@@ -137,7 +137,7 @@ AliRieman::AliRieman(const AliRieman &rieman):
   for (Int_t i=0;i<6;i++) fParams[i] = rieman.fParams[i];
   for (Int_t i=0;i<9;i++) fSumXY[i]  = rieman.fSumXY[i];
   for (Int_t i=0;i<9;i++) fSumXZ[i]  = rieman.fSumXZ[i];
-  for (Int_t i=0;i<6;i++) {
+  for (Int_t i=0;i<5;i++) {
     fSumPolY[i]=rieman.fSumPolY[i];
     fSumPolZ[i]=rieman.fSumPolZ[i];
   }
@@ -174,7 +174,7 @@ void AliRieman::Reset()
   for (Int_t i=0;i<6;i++) fParams[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXY[i] = 0;
   for (Int_t i=0;i<9;i++) fSumXZ[i] = 0; 
-  for (Int_t i=0;i<6;i++) {
+  for (Int_t i=0;i<5;i++) {
     fSumPolY[i]=0;
     fSumPolZ[i]=0;
   }
