@@ -36,7 +36,7 @@ void  AliKink::Update()
   //
   //find intersection linear
   //
-  Double_t phase[2][2],radius[2];
+  Double_t phase[2][2]={{0}},radius[2]={0};
   Double_t delta1=10000,delta2=10000;  
   Int_t points=0;
   /*
