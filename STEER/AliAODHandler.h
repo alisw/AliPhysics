@@ -99,7 +99,7 @@ class AliAODHandler : public AliVEventHandler {
     void SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader *genHeader); // Utility function t catch different types of eventheaders
     AliAODHandler(const AliAODHandler&);             // Not implemented
     AliAODHandler& operator=(const AliAODHandler&);  // Not implemented
-  void PrintExtensions(const char* name, const TObjArray& array) const;
+  void PrintExtensions(const TObjArray& array) const;
   
  private:
     Bool_t                   fIsStandard;                         // Flag for standard aod creation
@@ -167,7 +167,12 @@ enum EAliAODExtensionFlags {
   void Print(Option_t* opt="") const;
   
   void FilterBranch(const char* branchName, AliAODBranchReplicator* replicator=0x0);
+
+  /* Use DisableReferences if and only if the output AOD contains no TRef or TRefArray,
+   otherwise the produced AOD won't be valid.
+   */
   void DisableReferences() { fEnableReferences=kFALSE; }
+  
   void EnableReferences() { fEnableReferences=kTRUE; }
   
  private:

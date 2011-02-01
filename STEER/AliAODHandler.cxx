@@ -182,17 +182,17 @@ void AliAODHandler::Print(Option_t* opt) const
   if ( fExtensions ) 
   {
     cout << opt << fExtensions->GetEntries() << " extensions :" << endl;
-    PrintExtensions("Extensions",*fExtensions);    
+    PrintExtensions(*fExtensions);    
   }
   if ( fFilters ) 
   {
     cout << opt << fFilters->GetEntries() << " filters :" << endl;
-    PrintExtensions("Filters",*fFilters);      
+    PrintExtensions(*fFilters);      
   }
 }
 
 //______________________________________________________________________________
-void AliAODHandler::PrintExtensions(const char* name, const TObjArray& array) const
+void AliAODHandler::PrintExtensions(const TObjArray& array) const
 {
   // Show the list of aod extensions
   TIter next(&array);
@@ -849,6 +849,7 @@ Bool_t AliAODExtension::Init(Option_t *option)
           TList* replicatedList = repfi->GetList();
           if (replicatedList)
           {
+            AliAODEvent::AssignIDtoCollection(replicatedList);
             TIter nextRep(replicatedList);
             TObject* objRep;
             while ( ( objRep = nextRep() ) )
@@ -869,7 +870,13 @@ Bool_t AliAODExtension::Init(Option_t *option)
       {
         fObjectList->Add(o);
       }
-    }    
+    } 
+    else
+    {
+      // no replicator / filter map created, so works as before, i.e. 
+      // assume we copy everything.
+      fObjectList->Add(o);
+    }
   }
 
   next.Reset();
@@ -879,11 +886,11 @@ Bool_t AliAODExtension::Init(Option_t *option)
     TObject* out = fObjectList->FindObject(o->GetName());
     AliInfo(Form("OBJECT IN %20s %p -> OUT %p %s",o->GetName(),o,out,((out!=o && out) ? "REPLICATED":"-")));
   }
-  
-  fTreeE->Branch(fObjectList);
-  
+
   if (fEnableReferences) fTreeE->BranchRef();
-  
+
+  fTreeE->Branch(fObjectList);
+    
   owd->cd();
   
   return kTRUE;
