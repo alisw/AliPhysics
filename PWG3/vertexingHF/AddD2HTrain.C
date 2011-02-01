@@ -3,7 +3,6 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
 		  Int_t addD0MassLS=1,
 		  Int_t addDplus=1,
 		  Int_t addLSD0=0,
-		  Int_t addLSJpsi=0,
 		  Int_t addCFD0=0,
 		  Int_t addPromptD0=1,
 		  Int_t addDs=0,
@@ -61,17 +60,6 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
     ntasks++;
   }
 
-  if(addLSJpsi && readMC) {
-    taskName="AddTaskBkgLikeSignJPSI.C"; taskName.Prepend(loadMacroPath.Data());
-    gROOT->LoadMacro(taskName.Data());
-    AliAnalysisTaskSEBkgLikeSignJPSI *lsJPSITask = AddTaskBkgLikeSignJPSI();
-    ntasks++;
-  }
-
-  //taskName="AddTaskBtoJPSItoEle.C"; taskName.Prepend(loadMacroPath.Data());
-  //gROOT->LoadMacro(taskName.Data());
-  //AliAnalysisTaskSEBtoJPSItoEle *jpsiTask = AddTaskBtoJPSItoEle();
- 
   if(addCFD0 && readMC) {
     taskName="AddTaskCFMultiVarMultiStep.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
