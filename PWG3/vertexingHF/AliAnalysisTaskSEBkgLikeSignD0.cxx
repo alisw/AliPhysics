@@ -245,7 +245,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
   }
 
 
-  if(!arrayD0toKpi) {
+  if(!aod || !arrayD0toKpi) {
     printf("AliAnalysisTaskSEBkgLikeSignD0::UserExec: D0toKpi branch not found!\n");
     return;
   }
@@ -285,14 +285,13 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
         d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
         unsetvtx=kTRUE;
     }
+    /*
     Int_t okD0ls=0; Int_t okD0barls=0;
     //if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0ls,okD0barls)) {
     if(d) {
        AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
-       AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
-       if(!trk0 || !trk1) {
+       if(!trk0) {
           trk0=aod->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
-          trk1=aod->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
           printf("references to standard AOD not available \n");
        }
        if(okD0ls) fHistMassLS->Fill(d->InvMassD0());
@@ -314,6 +313,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
         }
       PostData(1,fOutput);
       }
+    */
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
@@ -336,17 +336,16 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
     }
     //Int_t okD0=0; Int_t okD0bar=0;
     //if(d->SelectD0(fVHF->GetD0toKpiCuts(),okD0,okD0bar)) {
-    if(d) {
-      fHistMassD0->Fill(d->InvMassD0());
-      fHistMassD0->Fill(d->InvMassD0bar());
-      fHistCtsD0->Fill(d->CosThetaStarD0());
-      fHistCtsD0->Fill(d->CosThetaStarD0bar());
-      fHistd0d0D0->Fill(1e8*d->Prodd0d0());
-      fHistCPtaD0->Fill(d->CosPointingAngle());
-      fHistDCAD0->Fill(100*d->GetDCA());
-      PostData(1,fOutput);
-    }
-   if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    fHistMassD0->Fill(d->InvMassD0());
+    fHistMassD0->Fill(d->InvMassD0bar());
+    fHistCtsD0->Fill(d->CosThetaStarD0());
+    fHistCtsD0->Fill(d->CosThetaStarD0bar());
+    fHistd0d0D0->Fill(1e8*d->Prodd0d0());
+    fHistCPtaD0->Fill(d->CosPointingAngle());
+    fHistDCAD0->Fill(100*d->GetDCA());
+    PostData(1,fOutput);
+    
+    if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }
 
   return;
@@ -381,13 +380,13 @@ void AliAnalysisTaskSEBkgLikeSignD0::Terminate(Option_t */*option*/)
   fHistDCALS    = dynamic_cast<TH1F*>(fOutput->FindObject("fHistDCALS"));
 
   if(fLsNormalization>0) {
-    fHistMassLS->Scale((1/fLsNormalization)*fHistMassLS->GetEntries());
-    fHistCtsLS->Scale((1/fLsNormalization)*fHistCtsLS->GetEntries());
-    fHistCtsLSpos->Scale((1/fLsNormalization)*fHistCtsLSpos->GetEntries());
-    fHistCtsLSneg->Scale((1/fLsNormalization)*fHistCtsLSneg->GetEntries());
-    fHistCPtaLS->Scale((1/fLsNormalization)*fHistCPtaLS->GetEntries());
-    fHistd0d0LS->Scale((1/fLsNormalization)*fHistd0d0LS->GetEntries());
-    fHistDCALS->Scale((1/fLsNormalization)*fHistDCALS->GetEntries());
+    if(fHistMassLS) fHistMassLS->Scale((1/fLsNormalization)*fHistMassLS->GetEntries());
+    if(fHistCtsLS) fHistCtsLS->Scale((1/fLsNormalization)*fHistCtsLS->GetEntries());
+    if(fHistCtsLSpos) fHistCtsLSpos->Scale((1/fLsNormalization)*fHistCtsLSpos->GetEntries());
+    if(fHistCtsLSneg) fHistCtsLSneg->Scale((1/fLsNormalization)*fHistCtsLSneg->GetEntries());
+    if(fHistCPtaLS) fHistCPtaLS->Scale((1/fLsNormalization)*fHistCPtaLS->GetEntries());
+    if(fHistd0d0LS) fHistd0d0LS->Scale((1/fLsNormalization)*fHistd0d0LS->GetEntries());
+    if(fHistDCALS) fHistDCALS->Scale((1/fLsNormalization)*fHistDCALS->GetEntries());
   }
 
   return;
