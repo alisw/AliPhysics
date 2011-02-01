@@ -49,8 +49,10 @@ class AliAODPidHF : public AliAODPid{
  //Getters
  Double_t GetSigma(Int_t idet) const{return fnSigma[idet];}
  Double_t GetTofSigma() const{return fTOFSigma;}
- void GetPriors(Double_t *priors) const{priors=fPriors;return;}
- void GetPLimit(Double_t *plim) const{plim=fPLimit;}
+ //void GetPriors(Double_t *priors) const{priors=fPriors;return;}
+ //void GetPLimit(Double_t *plim) const{plim=fPLimit;}
+ void GetPriors(Double_t *priors) const{for(Int_t i=0;i<fnPriors;i++){priors[i]=fPriors[i];}return;}
+ void GetPLimit(Double_t *plim) const{for(Int_t i=0;i<fnPLimit;i++){plim[i]=fPLimit[i];}return;}
  Bool_t GetAsym() const{return fAsym;}
  Bool_t GetTPC() const{return fTPC;}
  Bool_t GetTOF() const{return fTOF;}

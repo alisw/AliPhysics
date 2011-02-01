@@ -554,7 +554,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
     Int_t isSelectedTracks = fRDCutsProduction->IsSelected(d,AliRDHFCuts::kTracks);
     if(!isSelectedTracks) continue;
     
-    Int_t selection=fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate);
+    Int_t selection=fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod);
     if(selection>0) {
       Int_t iPtBin = -1;
       Double_t ptCand = d->Pt();
@@ -672,7 +672,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
        }
       }
 
-      Bool_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate);
+      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
 
       if(invMasspiKp<0. && invMasspKpi<0.) continue;
 
@@ -724,7 +724,7 @@ Double_t ptmax=0;
          if(invMasspiKp>0.) fhMassPtGreater3->Fill(invMasspiKp);
          if(invMasspKpi>0.) fhMassPtGreater3->Fill(invMasspKpi);
         }
-	if(passTightCuts){
+	if(passTightCuts>0){
 	 if(invMasspiKp>0. && invMasspKpi>0.){
 	 if(invMasspiKp>0.) fhMassPtGreater3TC->Fill(invMasspiKp,0.5);
 	 if(invMasspKpi>0.) fhMassPtGreater3TC->Fill(invMasspKpi,0.5);
@@ -751,7 +751,7 @@ Double_t ptmax=0;
 	fPtMaxHist[index]->Fill(ptmax);
 	fDCAHist[index]->Fill(dca);
 	
-	if(passTightCuts){
+	if(passTightCuts>0){
 	 if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
 	  if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
 	  if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
@@ -776,7 +776,7 @@ Double_t ptmax=0;
 	    fSumd02Hist[index]->Fill(sumD02);
 	    fPtMaxHist[index]->Fill(ptmax);
 	    fDCAHist[index]->Fill(dca);
-	    if(passTightCuts){
+	    if(passTightCuts>0){
 	     if(invMasspiKp>0. && invMasspKpi>0. && passTightCuts==3){
 	      if(invMasspiKp>0.) fMassHistTC[index]->Fill(invMasspiKp,0.5);
 	      if(invMasspKpi>0.) fMassHistTC[index]->Fill(invMasspKpi,0.5);
