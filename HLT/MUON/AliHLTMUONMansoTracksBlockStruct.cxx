@@ -34,6 +34,7 @@ std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONMansoTrackStruct& track
 	)
 {
+	std::ios::fmtflags oldflags = stream.flags();
 	stream	<< "{fId = " << track.fFlags
 		<< ", fTrigRec = " << track.fTrigRec
 		<< ", fFlags = " << std::showbase << std::hex
@@ -47,6 +48,7 @@ std::ostream& operator << (
 		<< ", fHit[2] = " << track.fHit[2]
 		<< ", fHit[3] = " << track.fHit[3]
 		<< "}";
+	stream.flags(oldflags);
 	return stream;
 }
 

@@ -1316,7 +1316,9 @@ int DumpTriggerRecordStruct(
 	
 	result = CheckField(record->fFlags, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << "Flags: " << showbase << hex << record->fFlags << dec;
+	cout.flags(oldflags);
 		
 	// Print the individual trigger bits.
 	AliHLTMUONParticleSign sign;
@@ -1481,7 +1483,9 @@ int DumpTrigRecInfoStruct(
 	{
 		result = CheckField(debuginfo->fDetElemId[i], buffer, bufferSize, continueParse);
 		if (result != EXIT_SUCCESS) return result;
+		ios::fmtflags oldflags = cout.flags();
 		cout << setw(12) << right << debuginfo->fDetElemId[i] << setw(0);
+		cout.flags(oldflags);
 		if (i != 3) cout << " | ";
 	}
 	cout << endl;
@@ -1620,27 +1624,39 @@ int DumpChannelStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(channel->fClusterId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << setw(16) << left << channel->fClusterId << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(channel->fBusPatch, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(16) << left << channel->fBusPatch << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(channel->fManu, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(16) << left << channel->fManu << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(channel->fChannelAddress, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(16) << left << channel->fChannelAddress << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(channel->fSignal, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(16) << left << channel->fSignal << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(channel->fRawDataWord, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
-	cout << showbase << hex << channel->fRawDataWord << dec << setw(0) <<endl;
+	oldflags = cout.flags();
+	cout << showbase << hex << channel->fRawDataWord << dec << setw(0) << endl;
+	cout.flags(oldflags);
 
 	return result;
 }
@@ -1694,7 +1710,9 @@ int DumpMansoTrackStruct(
 	
 	result = CheckField(track->fFlags, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << "Flags: " << showbase << hex << track->fFlags << dec;
+	cout.flags(oldflags);
 	
 	// Print the individual trigger bits.
 	AliHLTMUONParticleSign sign;
@@ -1783,19 +1801,27 @@ int DumpMansoRoIStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(roi->fX, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << setw(13) << left << roi->fX << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(roi->fY, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(13) << left << roi->fY << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(roi->fZ, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(13) << left << roi->fZ << setw(0);
+	cout.flags(oldflags);
 
 	result = CheckField(roi->fRadius, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << roi->fRadius << setw(0) << endl;
+	cout.flags(oldflags);
 
 	return result;
 }
@@ -1828,11 +1854,15 @@ int DumpMansoCandidateStruct(
 	cout << "      Value : ";
 	result = CheckField(candidate->fZmiddle, buffer, bufferSize, continueParse);
 	if(result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << setw(24) << right << candidate->fZmiddle << setw(0) << " | ";
+	cout.flags(oldflags);
 	
 	result = CheckField(candidate->fBl, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(31) << right << candidate->fBl << setw(0) << endl;
+	cout.flags(oldflags);
 	
 	return result;
 }
@@ -1887,7 +1917,9 @@ int DumpTrackStruct(
 	
 	result = CheckField(track->fFlags, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << "Flags: " << showbase << hex << track->fFlags << dec;
+	cout.flags(oldflags);
 	
 	// Print the individual trigger bits.
 	AliHLTMUONParticleSign sign;
@@ -2022,10 +2054,13 @@ int DumpTrackDecisionStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(decision->fTrackId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << setw(13) << left << decision->fTrackId << setw(0);
+	cout.flags(oldflags);
 	
 	result = CheckField(decision->fTriggerBits, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(12) << left << showbase << hex << decision->fTriggerBits
 		<< setw(0) << dec;
 		
@@ -2034,6 +2069,7 @@ int DumpTrackDecisionStruct(
 	AliHLTMUONUtils::UnpackTrackDecisionBits(decision->fTriggerBits, highPt, lowPt);
 	cout << setw(7) << left << (highPt ? "yes" : "no");
 	cout << setw(8) << left << (lowPt ? "yes" : "no");
+	cout.flags(oldflags);
 	
 	result = CheckField(decision->fPt, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
@@ -2138,16 +2174,22 @@ int DumpPairDecisionStruct(
 	// bytes assumed to be corrupted rubbish.
 	int result = CheckField(decision->fTrackAId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	ios::fmtflags oldflags = cout.flags();
 	cout << setw(13) << left << decision->fTrackAId << setw(0);
+	cout.flags(oldflags);
 	
 	result = CheckField(decision->fTrackBId, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(13) << left << decision->fTrackBId << setw(0);
+	cout.flags(oldflags);
 	
 	result = CheckField(decision->fTriggerBits, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
+	oldflags = cout.flags();
 	cout << setw(12) << left << showbase << hex << decision->fTriggerBits
 		<< setw(0) << dec;
+	cout.flags(oldflags);
 		
 	// Print the individual trigger bits.
 	bool highMass, lowMass, unlike;
@@ -2156,12 +2198,14 @@ int DumpPairDecisionStruct(
 			decision->fTriggerBits,
 			highMass, lowMass, unlike, highPtCount, lowPtCount
 		);
+	oldflags = cout.flags();
 	cout << setw(7) << left << (highMass ? "yes" : "no");
 	cout << setw(7) << left << (lowMass ? "yes" : "no");
 	cout << setw(7) << left << (unlike ? "yes" : "no");
 	cout << setw(6) << left << AliHLTUInt16_t(highPtCount);
 	cout << setw(8) << left << AliHLTUInt16_t(lowPtCount);
 	cout << setw(0);
+	cout.flags(oldflags);
 	
 	result = CheckField(decision->fInvMass, buffer, bufferSize, continueParse);
 	if (result != EXIT_SUCCESS) return result;
@@ -2483,7 +2527,7 @@ int ParseBuffer(
 		break;
 	default :
 		cout << "ERROR: Unknown data block type. Found a type number of "
-			<< showbase << hex << int(type) << dec
+			<< showbase << hex << int(type) << noshowbase << dec
 			<< " (" << int(type) << ")." << endl;
 		result = PARSE_ERROR;
 	}

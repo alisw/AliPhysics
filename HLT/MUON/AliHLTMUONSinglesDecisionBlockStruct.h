@@ -65,10 +65,12 @@ inline std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONTrackDecisionStruct& trig
 	)
 {
+	std::ios::fmtflags oldflags = stream.flags();
 	stream	<< "{fTrackId = " << trig.fTrackId << ", fTriggerBits = "
 		<< std::showbase << std::hex << trig.fTriggerBits << std::dec
 		<< ", fPt = " << trig.fPt
 		<< "}";
+	stream.flags(oldflags);
 	return stream;
 }
 

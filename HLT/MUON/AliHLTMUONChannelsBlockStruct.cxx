@@ -34,6 +34,7 @@ std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONChannelStruct& channel
 	)
 {
+	std::ios::fmtflags oldflags = stream.flags();
 	stream	<< "{fClusterId = " << channel.fClusterId
 		<< ", fBusPatch = " << channel.fBusPatch
 		<< ", fManu = " << channel.fManu
@@ -41,6 +42,7 @@ std::ostream& operator << (
 		<< ", fSignal = " << channel.fSignal
 		<< ", fRawDataWord = " << std::showbase << std::hex
 		<< channel.fRawDataWord << std::dec << "}";
+	stream.flags(oldflags);
 	return stream;
 }
 

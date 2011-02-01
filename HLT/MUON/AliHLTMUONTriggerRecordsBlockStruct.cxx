@@ -31,6 +31,7 @@ std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONTriggerRecordStruct& trigrec
 	)
 {
+	std::ios::fmtflags oldflags = stream.flags();
 	stream	<< "{fId = " << trigrec.fFlags
 		<< ", fFlags = " << std::showbase << std::hex
 		<< trigrec.fFlags << std::dec
@@ -42,6 +43,7 @@ std::ostream& operator << (
 		<< ", fHit[2] = " << trigrec.fHit[2]
 		<< ", fHit[3] = " << trigrec.fHit[3]
 		<< "}";
+	stream.flags(oldflags);
 	return stream;
 }
 

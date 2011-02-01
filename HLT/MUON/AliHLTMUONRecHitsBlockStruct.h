@@ -69,9 +69,11 @@ inline std::ostream& operator << (
 		std::ostream& stream, const AliHLTMUONRecHitStruct& hit
 	)
 {
+	std::ios::fmtflags oldflags = stream.flags();
 	stream	<< "{fFlags = " << std::showbase << std::hex
 		<< hit.fFlags << std::dec << ", fX = " << hit.fX
 		<< ", fY = " << hit.fY << ", fZ = " << hit.fZ << "}";
+	stream.flags(oldflags);
 	return stream;
 }
 
