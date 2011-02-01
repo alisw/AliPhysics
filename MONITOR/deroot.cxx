@@ -73,7 +73,7 @@ int deroot(const char *rootFileName, const char *dateFileName, const char *ddlFi
     gdcSize=Root2Date(rootEvent, dateEvent, NULL);
 
   delete rootEvent;
-  cerr << "\r     \r" << setprecision(3) << 100*(float)(gdcCounter+1)/t->GetEntries() << "% ";
+  cerr << "\r     \r" << int(100*(float)(gdcCounter+1)/t->GetEntries()) << "% ";
   fwrite(dateEvent, gdcSize, 1, dateFile);
  }
 
