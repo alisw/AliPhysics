@@ -12,6 +12,7 @@ class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
 class AliFMDCorrector;
 class AliFMDHistCollector;
+class AliForwardCorrectionManager;
 class AliESDEvent;
 class TH2D;
 class TList;
@@ -183,17 +184,15 @@ protected:
    * 
    * @param name Name of task 
    */
-  AliForwardMultiplicityBase(const char* name) 
-    : AliAnalysisTaskSE(name), 
-      fEnableLowFlux(true), 
-      fFirstEvent(true)
-  {}
+  AliForwardMultiplicityBase(const char* name); 
   /** 
    * Constructor
    */
-  AliForwardMultiplicityBase() : AliAnalysisTaskSE(), 
-      fEnableLowFlux(true), 
-      fFirstEvent(true)
+  AliForwardMultiplicityBase() 
+  : AliAnalysisTaskSE(), 
+    fEnableLowFlux(true), 
+    fFirstEvent(true),
+    fCorrManager(0)
   {}
   /** 
    * Copy constructor 
@@ -203,7 +202,8 @@ protected:
   AliForwardMultiplicityBase(const AliForwardMultiplicityBase& o)
     : AliAnalysisTaskSE(o),
       fEnableLowFlux(o.fEnableLowFlux), 
-      fFirstEvent(o.fFirstEvent)
+      fFirstEvent(o.fFirstEvent),
+      fCorrManager(o.fCorrManager)
   {}
   /** 
    * Assignment operator 
@@ -216,6 +216,7 @@ protected:
   {
     fEnableLowFlux = o.fEnableLowFlux;
     fFirstEvent    = o.fFirstEvent;
+    fCorrManager   = o.fCorrManager;
     return *this;
   }
   /** 
@@ -231,7 +232,9 @@ protected:
    * Read corrections
    *
    */
-  virtual Bool_t ReadCorrections(const TAxis*& pe, const TAxis*& pv);
+  virtual Bool_t ReadCorrections(const TAxis*& pe, 
+				 const TAxis*& pv,
+				 Bool_t mc=false);
   /**
    * Get the ESD event. IF this is the first event, initialise
    */
@@ -249,8 +252,17 @@ protected:
 
   Bool_t                 fEnableLowFlux;// Whether to use low-flux specific code
   Bool_t                 fFirstEvent;   // Whether the event is the first seen 
+private:
+  /**
+   * A pointer to the corrections manager.  This is here to make the
+   * corrections manager persistent - that is, when we write the
+   * analysis train to a file (as done in PROOF) we should also write
+   * down the corrections mananger.   This pointer ensures that. 
+   * 
+   */
+  AliForwardCorrectionManager* fCorrManager; // Pointer to corrections manager
 
-  ClassDef(AliForwardMultiplicityBase,1) // Forward multiplicity class
+  ClassDef(AliForwardMultiplicityBase,2) // Forward multiplicity class
 };
 
 #endif

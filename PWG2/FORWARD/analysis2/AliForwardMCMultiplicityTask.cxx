@@ -168,7 +168,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv)) return;
+  if (!ReadCorrections(pe,pv,true)) return;
 
   fHistos.Init(*pe);
   fAODFMD.Init(*pe);
