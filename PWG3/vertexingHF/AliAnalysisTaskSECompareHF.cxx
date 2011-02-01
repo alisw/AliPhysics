@@ -173,7 +173,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
   }
 
 
-  if(!inputArrayVertices) {
+  if(!inputArrayVertices || !aod) {
     printf("AliAnalysisTaskSECompareHF::UserExec: Vertices branch not found!\n");
     return;
   }
