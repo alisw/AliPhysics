@@ -13,7 +13,7 @@ ClassImp(AliITSVertexer)
 //////////////////////////////////////////////////////////////////////
 // Base class for primary vertex reconstruction                     //
 // AliESDVertexer is a class for full 3D primary vertex finding     //
-// derived classes: AliITSVertexerIons AliITSvertexer3D             //
+// derived classes: AliITSvertexer3D, AliITSVertexerZ.              //       
 //                  AliITSVertexerCosmics                           //
 //////////////////////////////////////////////////////////////////////
 

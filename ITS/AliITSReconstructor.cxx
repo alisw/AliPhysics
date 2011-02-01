@@ -32,7 +32,6 @@
 #include "AliITStrackerMI.h"
 #include "AliITStrackerV2.h"
 #include "AliITStrackerSA.h"
-#include "AliITSVertexerIons.h"
 #include "AliITSVertexerFast.h"
 #include "AliITSVertexerFixed.h"
 #include "AliITSVertexer3D.h"
@@ -190,8 +189,7 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   AliITSVertexer *vptr;
   Int_t vtxOpt = GetRecoParam()->GetVertexer();
   if(vtxOpt==3){
-    AliDebug(1,"AliITSVertexerIons has been selected");
-    vptr =  new AliITSVertexerIons();
+    AliFatal("Option AliITSVertexerIons is no longer supported");
   }
   else if(vtxOpt==4){
     Double_t smear[3]={GetRecoParam()->GetVertexerFastSmearX(),
