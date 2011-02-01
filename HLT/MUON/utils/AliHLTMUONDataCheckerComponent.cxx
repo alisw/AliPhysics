@@ -1448,7 +1448,7 @@ namespace
 		char dataType[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2];
 		memset( dataType, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
 		strncat( dataType, fDescriptor->fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
-		strcat( dataType, ":" );
+		strncat( dataType, ":", 1 );
 		strncat( dataType, fDescriptor->fDataType.fID, kAliHLTComponentDataTypefIDsize );
 		
 		HLTError("Problem found with data block %d, fDataType = '%s',"
@@ -1589,7 +1589,7 @@ namespace
 			char dataType[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2];
 			memset( dataType, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
 			strncat( dataType, fDescriptor->fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
-			strcat( dataType, ":" );
+			strncat( dataType, ":", 1 );
 			strncat( dataType, fDescriptor->fDataType.fID, kAliHLTComponentDataTypefIDsize );
 				
 			HLTError("Problem found with data block %d, fDataType = '%s',"
@@ -1623,7 +1623,7 @@ namespace
 			char dataType[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2];
 			memset( dataType, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
 			strncat( dataType, fDescriptor->fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
-			strcat( dataType, ":" );
+			strncat( dataType, ":", 1 );
 			strncat( dataType, fDescriptor->fDataType.fID, kAliHLTComponentDataTypefIDsize );
 				
 			HLTError("Problem found with data block %d, fDataType = '%s',"
@@ -1651,7 +1651,7 @@ namespace
 				char dataType[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2];
 				memset( dataType, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
 				strncat( dataType, fDescriptor->fDataType.fOrigin, kAliHLTComponentDataTypefOriginSize );
-				strcat( dataType, ":" );
+				strncat( dataType, ":", 1 );
 				strncat( dataType, fDescriptor->fDataType.fID, kAliHLTComponentDataTypefIDsize );
 				
 				HLTError("Problem found with data block %d, fDataType = '%s',"
