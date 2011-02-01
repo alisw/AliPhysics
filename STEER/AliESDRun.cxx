@@ -46,6 +46,7 @@ AliESDRun::AliESDRun() :
   fTriggerClasses(kNTriggerClasses),
   fDetInDAQ(0),
   fDetInReco(0)
+  
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
@@ -54,6 +55,7 @@ AliESDRun::AliESDRun() :
   fMeanBeamInt[0][0]=fMeanBeamInt[0][1]=fMeanBeamInt[1][0]=fMeanBeamInt[1][1]=-1;
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
+  for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=0.;
 }
 
 //______________________________________________________________________________
@@ -97,6 +99,8 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
 	else
 		fEMCALMatrix[sm]=NULL;
   }
+  for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=esd.fT0spread[i];
+
 }
 
 //______________________________________________________________________________
@@ -142,6 +146,7 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
 		  fEMCALMatrix[sm]=0;
 	}
   } 
+  for (Int_t i=0; i<kT0spreadSize;i++) fT0spread[i]=esd.fT0spread[i];
   return *this;
 }
 
@@ -351,3 +356,34 @@ Bool_t AliESDRun::InitMagneticField() const
   }
   //
 }
+
+//_____________________________________________________________________________
+void AliESDRun::SetT0spread(Int_t i,Float_t t) 
+{
+  //
+  // Setting the T0 spread value at index i 
+  //
+
+  if ( (i>=0) && (i<kT0spreadSize)) {
+    fT0spread[i]=t;
+  } else {
+    AliError(Form("Index %d out of bound",i));
+  }
+  return;
+}
+
+//_____________________________________________________________________________
+void AliESDRun::SetT0spread(Float_t *t) 
+{
+  //
+  // Setting the T0 spread values
+  //
+  if (t == 0x0){
+    AliError(Form("Null pointer passed"));
+  }
+  else{
+    for (Int_t i=0;i<kT0spreadSize;i++) fT0spread[i]=t[i];
+  }
+  return;
+}
+

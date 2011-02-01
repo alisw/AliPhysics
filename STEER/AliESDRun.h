@@ -23,6 +23,7 @@ public:
 
   enum StatusBits {kBInfoStored = BIT(14), kUniformBMap = BIT(15), kConvSqrtSHalfGeV = BIT(16)};
 
+
   AliESDRun();
   AliESDRun(const AliESDRun& esd);
   AliESDRun& operator=(const AliESDRun& esd);
@@ -86,6 +87,7 @@ public:
   enum {kNTriggerClasses = 50};
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
+  enum {kT0spreadSize = 4};
   //
   Double_t   GetMeanIntensity(int beam,int btp)     const 
   { return (beam>=0&&beam<2&&btp>=0&&btp<2) ? fMeanBeamInt[beam][btp]:0;}
@@ -93,8 +95,13 @@ public:
   { if (beam>=0&&beam<2&&btp>=0&&btp<2) fMeanBeamInt[beam][btp]=v;}  
   Double_t   GetMeanIntensityIntecting(int beam)    const {return GetMeanIntensity(beam,0);}
   Double_t   GetMeanIntensityNonIntecting(int beam) const {return GetMeanIntensity(beam,1);}
-  //
- private:
+  // 
+  Float_t    GetT0spread(Int_t i) const {
+    return ((i >= 0)  && (i<kT0spreadSize)) ? fT0spread[i] : 0;}
+  void       SetT0spread(Int_t i, Float_t t);
+  void       SetT0spread(Float_t *t);
+
+private:
   Float_t         fCurrentL3;       // signed current in the L3     (LHC convention: +current -> +Bz)
   Float_t         fCurrentDip;      // signed current in the Dipole (LHC convention: +current -> -Bx)
   Float_t         fBeamEnergy;      // beamEnergy entry from GRP
@@ -113,8 +120,9 @@ public:
   UInt_t          fDetInReco;       // Detector mask for detectors in reconstruction
   TGeoHMatrix*    fPHOSMatrix[kNPHOSMatrix]; //PHOS module position and orientation matrices
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
+  Float_t         fT0spread[kT0spreadSize];     // spread of time distributions on T0A, T0C, (T0A+T0C)/2, (T0A-T0C)/2
 
-  ClassDef(AliESDRun,9)
+  ClassDef(AliESDRun,10)
 };
 
 #endif 
