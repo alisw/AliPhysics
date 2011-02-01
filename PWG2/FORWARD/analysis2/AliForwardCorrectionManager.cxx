@@ -7,7 +7,10 @@
 #include <AliLog.h>
 #include <TFile.h>
 #include <TSystem.h>
-
+#include <TBrowser.h>
+#include <TROOT.h>
+#include <iostream>
+#include <iomanip>
     
 //____________________________________________________________________
 AliForwardCorrectionManager* AliForwardCorrectionManager::fgInstance = 0;
@@ -821,6 +824,138 @@ AliForwardCorrectionManager::ReadAcceptance(UShort_t sys,
   // file->Close();
   return kTRUE;
 }
+//____________________________________________________________________
+void
+AliForwardCorrectionManager::Print(Option_t* option) const
+{
+  char ind[gROOT->GetDirLevel()+1];
+  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
+  ind[gROOT->GetDirLevel()] = '\0';
+
+  std::cout << ind << "AliForwardCorrectionManager:\n"
+	    << ind << "  Initialised:      " 
+	    << (fInit ? "yes" : "no") << std::endl;
+  if (fInit) 
+    std::cout << ind << "  Collision system: " 
+	      << AliForwardUtil::CollisionSystemString(fSys) << "\n"
+	      << ind << "  Sqrt(s_NN):       "
+	      << AliForwardUtil::CenterOfMassEnergyString(fSNN) << "\n"
+	      << ind << "  Magnetic field:   " 
+	      << AliForwardUtil::MagneticFieldString(fField) << std::endl;
+  std::cout << ind << "  Paths:\n" 
+	    << ind << "    ELoss Fits:     " << fELossFitsPath << "\n"
+	    << ind << "    Merging eff.:   " << fMergingEffPath << "\n"
+	    << ind << "    Secondary maps: " << fSecondaryMapPath << "\n"
+	    << ind << "    2-hit corr.:    " << fSecondaryMapPath << "\n"
+	    << ind << "    Vertex bias:    " << fVertexBiasPath << "\n"
+	    << ind << "    Acceptance:     " << fAcceptancePath << std::endl;
+  gROOT->IncreaseDirLevel();
+  if (fELossFit)	  fELossFit->Print(option);
+  else 
+    std::cout << ind << "  Energy loss fits  not initialised" << std::endl;
+  
+  if (fSecondaryMap)	  fSecondaryMap->Print(option);
+  else 
+    std::cout << ind << "  Secondary particle correction not initialised" 
+	      << std::endl;
+
+  if (fDoubleHit)	  fDoubleHit->Print(option);
+  else 
+    std::cout << ind << "  Double hit corr. not initialised" << std::endl;
+
+  if (fVertexBias)	  fVertexBias->Print(option);
+  else 
+    std::cout << ind << "  Vertex bias correction not initialised" << std::endl;
+  if (fMergingEfficiency) fMergingEfficiency->Print(option);
+  else 
+    std::cout << ind << "  Merging eff.  not initialised" << std::endl;
+
+  if (fAcceptance)	  fAcceptance->Print(option);
+  else 
+    std::cout << ind << "  Acceptance corr.  not initialised" << std::endl;
+  gROOT->DecreaseDirLevel();  
+}
+
+//____________________________________________________________________
+void
+AliForwardCorrectionManager::Browse(TBrowser* b)
+{
+  if (fELossFit)	  b->Add(fELossFit,          "Energy loss fits");
+  if (fSecondaryMap)	  b->Add(fSecondaryMap,      "Secondary particle corr");
+  if (fDoubleHit)	  b->Add(fDoubleHit,         "Double hit corr");
+  if (fVertexBias)	  b->Add(fVertexBias,        "Vertex bias corr");
+  if (fMergingEfficiency) b->Add(fMergingEfficiency, "Merging eff");
+  if (fAcceptance)	  b->Add(fAcceptance,        "Acceptance corr");
+}
+
+#if 1
+//______________________________________________________________________________
+void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliForwardCorrectionManager.
+
+   if (R__b.IsReading()) {
+      R__b.ReadClassBuffer(AliForwardCorrectionManager::Class(),this);
+      if (fgInstance) 
+	AliWarning(Form("Singleton instance already set (%p) when reading "
+			"singleton object (%p).  Read object will be new "
+			"singleton object", fgInstance, this));
+      fgInstance = this;
+   } else {
+      R__b.WriteClassBuffer(AliForwardCorrectionManager::Class(),this);
+   }
+}
+#endif
+#if 0
+//______________________________________________________________________________
+void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
+{
+   // Stream an object of class AliForwardCorrectionManager.
+
+   UInt_t R__s, R__c;
+   if (R__b.IsReading()) {
+      Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
+      TObject::Streamer(R__b);
+      R__b >> fInit;
+      R__b >> fSys;
+      R__b >> fSNN;
+      R__b >> fField;
+      fELossFitsPath.Streamer(R__b);
+      fMergingEffPath.Streamer(R__b);
+      fSecondaryMapPath.Streamer(R__b);
+      fDoubleHitPath.Streamer(R__b);
+      fVertexBiasPath.Streamer(R__b);
+      fAcceptancePath.Streamer(R__b);
+      R__b >> fELossFit;
+      R__b >> fSecondaryMap;
+      R__b >> fDoubleHit;
+      R__b >> fVertexBias;
+      R__b >> fMergingEfficiency;
+      R__b >> fAcceptance;
+      R__b.CheckByteCount(R__s, R__c, AliForwardCorrectionManager::IsA());
+   } else {
+      R__c = R__b.WriteVersion(AliForwardCorrectionManager::IsA(), kTRUE);
+      TObject::Streamer(R__b);
+      R__b << fInit;
+      R__b << fSys;
+      R__b << fSNN;
+      R__b << fField;
+      fELossFitsPath.Streamer(R__b);
+      fMergingEffPath.Streamer(R__b);
+      fSecondaryMapPath.Streamer(R__b);
+      fDoubleHitPath.Streamer(R__b);
+      fVertexBiasPath.Streamer(R__b);
+      fAcceptancePath.Streamer(R__b);
+      R__b << fELossFit;
+      R__b << fSecondaryMap;
+      R__b << fDoubleHit;
+      R__b << fVertexBias;
+      R__b << fMergingEfficiency;
+      R__b << fAcceptance;
+      R__b.SetByteCount(R__c, kTRUE);
+   }
+}
+#endif
 
 //____________________________________________________________________
 //

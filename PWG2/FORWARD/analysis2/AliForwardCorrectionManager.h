@@ -12,9 +12,14 @@
 #include "AliFMDCorrAcceptance.h"
 #include <TString.h>
 class TFile;
+class TBrowser;
 
 /**
  * Manager (singleton) of corrections 
+ *
+ * Note, that this class has a custom streamer.  That is to ensure
+ * that the singleton pointer is correctly set on reading in an object
+ * of this type.
  * 
  * @ingroup pwg2_forward_corr 
  */
@@ -38,6 +43,12 @@ public:
 				  kDoubleHit|
 				  kAcceptance)
   };
+  /** 
+   * Default constructor.  This is public for the sake of the ROOT I/O
+   * system, but should never be used outside of that system - that
+   * is, do not use this constructor
+   */
+  AliForwardCorrectionManager();
   /** 
    * Access to the singleton object 
    * 
@@ -279,11 +290,26 @@ public:
   /* 
    * @} 
    */
-private:
-  /** 
-   * Default constructor 
+  /**
+   * @{ 
+   * @name Misc 
    */
-  AliForwardCorrectionManager();
+  /** 
+   * Print this object 
+   * 
+   * @param option Passed verbatim to correction objects
+   */
+  void Print(Option_t* option="") const;
+  /** 
+   * Browse this object 
+   * 
+   * @param b Browser to use 
+   */
+  void Browse(TBrowser* b);
+  /* 
+   * @}
+   */
+private:
   /** 
    * Copy constructor 
    * 
@@ -413,8 +439,7 @@ private:
   /* 
    * @}
    */
-
-  ClassDef(AliForwardCorrectionManager,1) // Manager of corrections 
+  ClassDef(AliForwardCorrectionManager,2) // Manager of corrections 
 };
 //____________________________________________________________________
 inline const TAxis* 

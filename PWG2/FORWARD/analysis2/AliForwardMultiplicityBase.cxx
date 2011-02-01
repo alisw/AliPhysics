@@ -29,6 +29,17 @@
 
 
 //====================================================================
+AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name) 
+  : AliAnalysisTaskSE(name), 
+    fEnableLowFlux(true), 
+    fFirstEvent(true),
+    fCorrManager(0)
+{
+  // Set our persistent pointer 
+  fCorrManager = &AliForwardCorrectionManager::Instance();
+}
+
+//____________________________________________________________________
 Bool_t 
 AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
 {
@@ -90,7 +101,9 @@ AliForwardMultiplicityBase::CheckCorrections(UInt_t what) const
 }
 //____________________________________________________________________
 Bool_t
-AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, const TAxis*& pv)
+AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, 
+					    const TAxis*& pv, 
+					    Bool_t        mc)
 {
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
@@ -111,11 +124,14 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe, const TAxis*& pv)
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
   if (!fcm.Init(GetEventInspector().GetCollisionSystem(),
-      GetEventInspector().GetEnergy(),
-      GetEventInspector().GetField(),
-      false,
-      what)) return false;
+		GetEventInspector().GetEnergy(),
+		GetEventInspector().GetField(),
+		mc,
+		what)) return false;
   if (!CheckCorrections(what)) return false;
+
+  // Sett our persistency pointer 
+  // fCorrManager = &fcm;
 
   // Get the eta axis from the secondary maps - if read in
   if (!pe) {
