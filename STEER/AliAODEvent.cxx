@@ -412,7 +412,7 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 void AliAODEvent::ClearStd()
 {
   // clears the standard arrays
-  fHeader        ->RemoveQTheta();
+  fHeader        ->Clear();
   fTracks        ->Delete();
   fVertices      ->Delete();
   fV0s           ->Delete();

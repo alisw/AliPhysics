@@ -152,6 +152,7 @@ class AliAODHeader : public AliVHeader {
   UInt_t GetOfflineTrigger() { return fOfflineTrigger; }
   void SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
   TString GetESDFileName()   {return fESDFileName;}
+  void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
   

@@ -365,6 +365,13 @@ void AliAODHeader::RemoveQTheta()
   return;
 }
 
+void AliAODHeader::Clear(Option_t* /*opt*/)
+{
+  RemoveQTheta();
+  if (fCentralityP) delete fCentralityP;
+  return;
+}
+
 //______________________________________________________________________________
 void AliAODHeader::Print(Option_t* /*option*/) const 
 {
