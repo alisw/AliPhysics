@@ -186,10 +186,11 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
 {
 // create a ITS vertexer
 
-  AliITSVertexer *vptr;
+  AliITSVertexer *vptr = NULL;
   Int_t vtxOpt = GetRecoParam()->GetVertexer();
   if(vtxOpt==3){
     AliFatal("Option AliITSVertexerIons is no longer supported");
+    return vptr;
   }
   else if(vtxOpt==4){
     Double_t smear[3]={GetRecoParam()->GetVertexerFastSmearX(),

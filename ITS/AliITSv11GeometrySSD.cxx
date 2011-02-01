@@ -5818,7 +5818,8 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
 								endcapsidecoverboxtrans[2*(kendcapcoverholenumber[0]-1)+3
 								+i*(kendcapcoverholenumber[1]-1)+j]);
 	}
-	return endcapsidecovermother;
+  delete [] endcapsidecoverboxtrans;
+  return endcapsidecovermother;
  } 
  ////////////////////////////////////////////////////////////////////////////////
  TGeoVolume** AliITSv11GeometrySSD::GetEndCapCards() const { 

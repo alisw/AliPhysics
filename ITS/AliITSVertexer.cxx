@@ -139,7 +139,7 @@ void AliITSVertexer::FindMultiplicity(TTree *itsClusterTree){
   for(Int_t i=0;i<nosingleclus;i++){
     ths[i] = multReco.GetCluster(i)[0];
     phs[i] = multReco.GetCluster(i)[1];
-    labelss[i] = multReco.GetCluster(i)[2];
+    labelss[i] = (Int_t)multReco.GetCluster(i)[2];
   }
   Short_t nfcL1 = multReco.GetNFiredChips(0);
   Short_t nfcL2 = multReco.GetNFiredChips(1);
