@@ -24,7 +24,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
   plugin->SetROOTVersion("v5-27-06b");
-  plugin->SetAliROOTVersion("v4-21-04-AN");
+  plugin->SetAliROOTVersion("v4-21-13-AN");
   
   cout << "===========================================================================================" << endl;
   cout << "  " << endl;
@@ -137,14 +137,15 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAdditionalLibs("libHLTbase.so AliAnalysisTaskHLT.h AliAnalysisTaskHLT.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-GLOBAL-comparison.root");
   }
-  if(bD0) {
+  if(bD0){
     //plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics -I$ALICE_ROOT/HLT/trigger");
     //plugin->SetAdditionalLibs("libRAWDatabase.so libProof.so libGui.so libCDB.so libSTEER.so libHLTbase.so libAliHLTUtil.so libAliHLTGlobal.so AliAnalysisTaskD0Trigger.cxx AliAnalysisTaskD0Trigger.h");  
     plugin->SetAnalysisSource("AliAnalysisTaskD0Trigger.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskD0Trigger.h AliAnalysisTaskD0Trigger.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-D0-comparison.root");    
   }
-  if(bCB) {
+  if(bCB){
+    plugin->AddIncludePath("-I$ALICE_ROOT/HLT/BASE");
     plugin->SetAnalysisSource("AliAnalysisTaskHLTCentralBarrel.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskHLTCentralBarrel.h AliAnalysisTaskHLTCentralBarrel.cxx"); 
     plugin->SetOutputFiles("HLT-OFFLINE-CentralBarrel-comparison.root");    
