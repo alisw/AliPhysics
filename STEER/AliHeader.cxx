@@ -196,12 +196,12 @@ void AliHeader::AddDetectorEventHeader(AliDetectorEventHeader* header)
 //  Some basic checks
 
     if (!header) {
-	Warning("AddDetectorEventHeader","Detector %s tries to add empty header \n", header->GetName());
+	Warning("AddDetectorEventHeader","Detector tries to add empty header \n");
 	return;
     }
     
     if (strlen(header->GetName()) == 0) {
-	Warning("AddDetectorEventHeader","Detector %s tries to add header without name \n", header->GetName());
+	Warning("AddDetectorEventHeader","Detector tries to add header without name \n");
 	return;
     }
     
