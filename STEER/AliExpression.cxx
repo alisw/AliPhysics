@@ -268,7 +268,6 @@ AliExpression* AliExpression::Element( TObjArray &st, Int_t &i )
       default:
           i--; // push back
           AliErrorGeneral( "AliExpression::Element", Form("Unexpected symbol on input. %s", token.Data()) );
-          if( result ) delete result;
           result = new AliExpression;
    }
    return result;
