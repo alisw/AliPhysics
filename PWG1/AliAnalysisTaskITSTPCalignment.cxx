@@ -429,7 +429,7 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
     Int_t n = FindMatchingTracks(arrayParamITS, arrayParamTPC, event);
     AliInfo(Form("n matched: %i\n",n));
 
-    TH1F* nMatchingEff=dynamic_cast<TH1F*>(fList->At(3));
+    TH1F* nMatchingEff=static_cast<TH1F*>(fList->At(3));
     Float_t ratio = (float)n/(float)ntracks;
     nMatchingEff->Fill(ratio);
 
@@ -438,8 +438,10 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
 
     for (Int_t i=0;i<n;i++)
     {
-      AliExternalTrackParam* paramsITS=dynamic_cast<AliExternalTrackParam*>(arrayParamITS[i]);
-      AliExternalTrackParam* paramsTPC=dynamic_cast<AliExternalTrackParam*>(arrayParamTPC[i]);
+      AliExternalTrackParam* paramsITS=static_cast<AliExternalTrackParam*>(arrayParamITS[i]);
+      AliExternalTrackParam* paramsTPC=static_cast<AliExternalTrackParam*>(arrayParamTPC[i]);
+
+      if (!(paramsITS&&paramsTPC)) continue;
 
       //QA
       if (fDoQA) DoQA(paramsITS,paramsTPC);
@@ -577,6 +579,7 @@ Int_t AliAnalysisTaskITSTPCalignment::FindMatchingTracks(TObjArray& arrITS, TObj
       }//else
     }//for j
   }//for i
+  delete [] matchedArr;
   return iMatched+1;
 }
 
@@ -592,27 +595,27 @@ void AliAnalysisTaskITSTPCalignment::DoQA(AliExternalTrackParam* paramsITS,
 
   TList* pList=NULL;
   Double_t field = fInputEvent->GetMagneticField();
-  if (field >= 1.)  pList = dynamic_cast<TList*>(fList->At(0));
-  if (field <= -1.) pList = dynamic_cast<TList*>(fList->At(1));
-  if (field < 1. && field > -1.) pList = dynamic_cast<TList*>(fList->At(2));
+  if (field >= 1.)  pList = static_cast<TList*>(fList->At(0));
+  if (field <= -1.) pList = static_cast<TList*>(fList->At(1));
+  if (field < 1. && field > -1.) pList = static_cast<TList*>(fList->At(2));
   if (!pList) return;
 
-  TH2F* pZYAResidualsHist = dynamic_cast<TH2F*>(pList->At(0));
-  TH2F* pZYCResidualsHist = dynamic_cast<TH2F*>(pList->At(1));
-  TH2F* pLPAResidualsHist = dynamic_cast<TH2F*>(pList->At(2));
-  TH2F* pLPCResidualsHist = dynamic_cast<TH2F*>(pList->At(3));
-  TH2F* pPhiYAResidualsHist = dynamic_cast<TH2F*>(pList->At(4));
-  TH2F* pPhiYCResidualsHist = dynamic_cast<TH2F*>(pList->At(5));
-  TH2F* pPhiZAResidualsHist = dynamic_cast<TH2F*>(pList->At(6));
-  TH2F* pPhiZCResidualsHist = dynamic_cast<TH2F*>(pList->At(7));
-  TH2F* pPtYAResidualsHist = dynamic_cast<TH2F*>(pList->At(8));
-  TH2F* pPtYCResidualsHist = dynamic_cast<TH2F*>(pList->At(9));
-  TH2F* pPtZAResidualsHist = dynamic_cast<TH2F*>(pList->At(10));
-  TH2F* pPtZCResidualsHist = dynamic_cast<TH2F*>(pList->At(11));
-  TH2F* pLowPtYAResidualsHist = dynamic_cast<TH2F*>(pList->At(12));
-  TH2F* pLowPtYCResidualsHist = dynamic_cast<TH2F*>(pList->At(13));
-  TH2F* pLowPtZAResidualsHist = dynamic_cast<TH2F*>(pList->At(14));
-  TH2F* pLowPtZCResidualsHist = dynamic_cast<TH2F*>(pList->At(15));
+  TH2F* pZYAResidualsHist = static_cast<TH2F*>(pList->At(0));
+  TH2F* pZYCResidualsHist = static_cast<TH2F*>(pList->At(1));
+  TH2F* pLPAResidualsHist = static_cast<TH2F*>(pList->At(2));
+  TH2F* pLPCResidualsHist = static_cast<TH2F*>(pList->At(3));
+  TH2F* pPhiYAResidualsHist = static_cast<TH2F*>(pList->At(4));
+  TH2F* pPhiYCResidualsHist = static_cast<TH2F*>(pList->At(5));
+  TH2F* pPhiZAResidualsHist = static_cast<TH2F*>(pList->At(6));
+  TH2F* pPhiZCResidualsHist = static_cast<TH2F*>(pList->At(7));
+  TH2F* pPtYAResidualsHist = static_cast<TH2F*>(pList->At(8));
+  TH2F* pPtYCResidualsHist = static_cast<TH2F*>(pList->At(9));
+  TH2F* pPtZAResidualsHist = static_cast<TH2F*>(pList->At(10));
+  TH2F* pPtZCResidualsHist = static_cast<TH2F*>(pList->At(11));
+  TH2F* pLowPtYAResidualsHist = static_cast<TH2F*>(pList->At(12));
+  TH2F* pLowPtYCResidualsHist = static_cast<TH2F*>(pList->At(13));
+  TH2F* pLowPtZAResidualsHist = static_cast<TH2F*>(pList->At(14));
+  TH2F* pLowPtZCResidualsHist = static_cast<TH2F*>(pList->At(15));
 
   if (paramsITS->GetZ() > 0.0)
   {
