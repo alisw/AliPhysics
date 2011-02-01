@@ -28,13 +28,13 @@ char * kXML = "collection.xml";
 
 const TString kInputData = "ESD"; //ESD, AOD, MC
 TString kTreeName = "esdTree";
-Bool_t kUsePhysSel = kFALSE;
+Bool_t kUsePhysSel = kTRUE;
 
 void anaCaloFilter(Int_t mode=mLocal)
 {
   // Main
   char cmd[200] ; 
-  sprintf(cmd, ".! rm -rf aod.root pi0calib.root") ; 
+  sprintf(cmd, ".! rm -rf AliAOD.root") ; 
   gROOT->ProcessLine(cmd) ; 
   //--------------------------------------------------------------------
   // Load analysis libraries
@@ -42,9 +42,9 @@ void anaCaloFilter(Int_t mode=mLocal)
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
   LoadLibraries(mode) ;
-  //gSystem->Unload("libPWG4CaloCalib.so");
-  //Try to set the new library
-  //gSystem->Load("./PWG4CaloCalib/libPWG4CaloCalib.so");
+  //gSystem->ListLibraries(); 
+  //gSystem->Unload("libPWG4CaloCalib.so"); 
+  //gSystem->Unload("libEMCALUtils.so");
   //gSystem->ListLibraries();
 
   //-------------------------------------------------------------------------------------------------
@@ -70,7 +70,7 @@ void anaCaloFilter(Int_t mode=mLocal)
 
     // AOD output handler
     AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetOutputFileName("aod.root");
+    aodoutHandler->SetOutputFileName("AliAOD.root");
     ////aodoutHandler->SetCreateNonStandardAOD();
     mgr->SetOutputEventHandler(aodoutHandler);
     
@@ -102,7 +102,7 @@ void anaCaloFilter(Int_t mode=mLocal)
     
     // ESD physics selection task
     if(kInputData == "ESD" && kUsePhysSel){
-      gROOT->LoadMacro("AddTaskPhysicsSelection.C");
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
     
@@ -114,7 +114,6 @@ void anaCaloFilter(Int_t mode=mLocal)
     if(kUsePhysSel)filter->SelectCollisionCandidates(); 
     filter->SetCaloFilter(AliAnalysisTaskCaloFilter::kBoth); //kPHOS or kBoth
     filter->SwitchOnClusterCorrection();
-    filter->PrintInfo();
     //filter->SetDebugLevel(10);
     AliEMCALRecoUtils * reco = filter->GetEMCALRecoUtils();
     reco->SetParticleType(AliEMCALRecoUtils::kPhoton);
@@ -124,15 +123,15 @@ void anaCaloFilter(Int_t mode=mLocal)
 
     TGeoHMatrix *matrix[4];
     
-    double rotationMatrix[4][9] = {-0.014585, -0.999892, -0.002031, 0.999892, -0.014589,  0.001950, -0.001979, -0.002003,  0.999996,
-				   -0.014585,  0.999892,  0.002031, 0.999892,  0.014589, -0.001950, -0.001979,  0.002003, -0.999996,
-				   -0.345861, -0.938280, -0.003412, 0.938281, -0.345869,  0.001950, -0.003010, -0.002527,  0.999992,
-				   -0.345861,  0.938280,  0.003412, 0.938281,  0.345869, -0.001950, -0.003010,  0.002527, -0.999992};
+    double rotationMatrix[4][9] = {-0.014587, -0.999892, -0.002031, 0.999892, -0.014591,  0.001979, -0.002009, -0.002002,  0.999996,
+				 -0.014587,  0.999892,  0.002031, 0.999892,  0.014591, -0.001979, -0.002009,  0.002002, -0.999996,
+				 -0.345864, -0.938278, -0.003412, 0.938276, -0.345874,  0.003010, -0.004004, -0.002161,  0.999990,
+				 -0.345861,  0.938280,  0.003412, 0.938276,  0.345874, -0.003010, -0.004004,  0.002161, -0.999990};
     
-    double translationMatrix[4][3] = {0.367264,    446.508738,  175.97185+0.3,
-				      1.078181,    445.826258, -174.026758+0.3,
-				      -153.843916, 418.304256,  175.956905+0.8,
-				      -152.649580, 417.621779, -174.040392+0.8};
+    double translationMatrix[4][3] = {0.351659,    447.576446,  176.269742,
+				      1.062577,    446.893974, -173.728870,
+				      -154.213287, 419.306156,  176.753692,
+				      -153.018950, 418.623681, -173.243605};
     for(int j=0; j<4; j++)
       {
 	matrix[j] = new TGeoHMatrix();
@@ -145,9 +144,17 @@ void anaCaloFilter(Int_t mode=mLocal)
     
     filter->SwitchOnLoadOwnEMCALGeometryMatrices();
     
-    
     reco->SetNonLinearityFunction(AliEMCALRecoUtils::kNoCorrection);
-    
+
+    //Time dependent corrections    
+    //Recover file from alien  /alice/cern.ch/user/g/gconesab/TimeDepCorrectionDB
+    reco->SwitchOnTimeDepCorrection();
+    char cmd[200] ;
+    sprintf(cmd, ".!tar xvfz CorrectionFiles.tgz") ;
+    gROOT->ProcessLine(cmd) ;
+
+    //Recalibration factors
+    //Recover the file from alien  /alice/cern.ch/user/g/gconesab/RecalDB
     reco->SwitchOnRecalibration();
     TFile * f = new TFile("RecalibrationFactors.root","read");
     TH2F * h0 = (TH2F*)f->Get("EMCALRecalFactors_SM0");
@@ -160,6 +167,8 @@ void anaCaloFilter(Int_t mode=mLocal)
     reco->SetEMCALChannelRecalibrationFactors(2,h2);
     reco->SetEMCALChannelRecalibrationFactors(3,h3);
     
+    //Bad channels
+    //Recover the file from alien  /alice/cern.ch/user/g/gconesab/BadChannelsDB
     reco->SwitchOnBadChannelsRemoval();
     reco->SwitchOnDistToBadChannelRecalculation();
     TFile * fbad = new TFile("BadChannels.root","read");
@@ -173,7 +182,7 @@ void anaCaloFilter(Int_t mode=mLocal)
     reco->SetEMCALChannelStatusMap(3,hbad3);
 
     //reco->Print("");
-    
+    filter->PrintInfo(); 
     mgr->AddTask(filter);
         
     //AliAnalysisDataContainer *cout_cuts2 = mgr->CreateContainer("Cuts", TList::Class(), 
@@ -198,10 +207,12 @@ void anaCaloFilter(Int_t mode=mLocal)
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
 
-cout <<" Analysis ended sucessfully "<< endl ;
-
+    cout <<" Analysis ended sucessfully "<< endl ;
+    
   }
   else cout << "Chain was not produced ! "<<endl;
+  
+  sprintf(cmd, ".! rm -rf CorrectionFiles") ;
   
 }
 
@@ -405,7 +416,7 @@ void CreateChain(const anaModes mode, TChain * chain){
 
       TString datafile="";
       if(kInputData == "ESD") datafile = "AliESDs.root" ;
-      else if(kInputData == "AOD") datafile = "aod.root" ;
+      else if(kInputData == "AOD") datafile = "AliAOD.root" ;
       else if(kInputData == "MC")  datafile = "galice.root" ;
       
       //Loop on ESD files, add them to chain
