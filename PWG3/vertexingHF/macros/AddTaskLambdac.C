@@ -1,4 +1,4 @@
-AliAnalysisTaskSELambdac *AddTaskLambdac(const char *name,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF)
+AliAnalysisTaskSELambdac *AddTaskLambdac(TString *finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF)
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -20,9 +20,9 @@ AliAnalysisTaskSELambdac *AddTaskLambdac(const char *name,Bool_t storeNtuple,Boo
   prodcuts->SetName("LctopKpiProdCuts");
 
   AliRDHFCutsLctopKpi *analysiscuts = new AliRDHFCutsLctopKpi();
-  analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
   if(stdcuts) analysiscuts->SetStandardCutsPP2010();
-  else analysiscuts->SetName("LctopKpiAnalysisCuts");
+  else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
+  analysiscuts->SetName("LctopKpiAnalysisCuts");
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSELambdac *lambdacTask = new AliAnalysisTaskSELambdac("LambdacAnalysis",storeNtuple,analysiscuts,prodcuts);
