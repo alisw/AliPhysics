@@ -93,8 +93,8 @@ void AliAnalysisTaskMixInfo::UserExec(Option_t *)
             fMixInfo->FillHistogram(AliMixInfo::kMainEvents, mixEH->CurrentBinIndex());
          }
 
-      if (mixEH->CurrentEntryMix() >= 0)
-         AliDebug(AliLog::kDebug + 1, Form("Main %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->NumberMixed(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
+         if (mixEH->CurrentEntryMix() >= 0)
+            AliDebug(AliLog::kDebug + 1, Form("Main %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
       }
    }
    // Post output data.
@@ -115,7 +115,7 @@ void AliAnalysisTaskMixInfo::UserExecMix(Option_t *)
          AliError("Mix entry is -1 and it should not happen !!!!!");
          return ;
       }
-      AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->NumberMixed(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->CurrentBinIndex()));
+      AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
    }
    // Post output data.
    PostData(1, fOutputList);

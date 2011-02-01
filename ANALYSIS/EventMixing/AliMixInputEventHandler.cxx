@@ -299,8 +299,8 @@ Bool_t AliMixInputEventHandler::MixBuffer()
    if (!fEntryCounter) {
       AliDebug(AliLog::kDebug + 3, Form("-> fEntryCounter == 0"));
       // runs UserExecMix for all tasks, if needed
-			if (el) UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
-			else UserExecMixAllTasks(fEntryCounter, -1, currentMainEntry, -1, 0);
+      if (el) UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+      else UserExecMixAllTasks(fEntryCounter, -1, currentMainEntry, -1, 0);
       return kTRUE;
    }
    if (!el) {
@@ -310,7 +310,7 @@ Bool_t AliMixInputEventHandler::MixBuffer()
    } else {
       elNum = el->GetN();
       if (elNum < fBufferSize + 1) {
-				 UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+         UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
          AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (%lld) +++++++++++++++++++", fEntryCounter, elNum));
          return kTRUE;
       }
@@ -320,7 +320,7 @@ Bool_t AliMixInputEventHandler::MixBuffer()
    Int_t counter = 0;
    AliInputEventHandler *eh = 0;
    TObjArrayIter next(&fInputHandlers);
-   while ((eh = dynamic_cast<AliInputEventHandler *> (next()))) {
+   while ((eh = dynamic_cast<AliInputEventHandler *>(next()))) {
       if (fEventPool && fEventPool->GetListOfEventCuts()->GetEntries() > 0) {
          entryMix = -1;
          if (elNum >= fBufferSize) {
@@ -387,7 +387,7 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
    if (!fEntryCounter) {
       // runs UserExecMix for all tasks, if needed
       if (el) UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
-			else UserExecMixAllTasks(fEntryCounter, -1, currentMainEntry, -1, 0);
+      else UserExecMixAllTasks(fEntryCounter, -1, currentMainEntry, -1, 0);
       AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (fEntryCounter=0, idEntryList=%d) +++++++++++++++++++", fEntryCounter, idEntryList));
       return kTRUE;
    }
@@ -486,12 +486,11 @@ void AliMixInputEventHandler::UserExecMixAllTasks(Long64_t entryCounter, Int_t i
    while ((mixTask = (AliAnalysisTaskSE *) next())) {
       if (dynamic_cast<AliAnalysisTaskSE *>(mixTask)) {
          AliDebug(AliLog::kDebug, Form("%s %lld %d [%lld,%lld] %d", mixTask->GetName(), entryCounter, numMixed, entryMainReal, entryMixReal, idEntryList));
-         fCurrentEntry = idEntryList;
-         fCurrentEntryMain = entryCounter;
-         fCurrentEntryMix = entryMainReal;
-         fCurrentBinIndex = entryMixReal;
-
-         if (entryMixReal > -1) mixTask->UserExecMix("");
+         fCurrentEntry = entryCounter;
+         fCurrentEntryMain = entryMainReal;
+         fCurrentEntryMix = entryMixReal;
+         fCurrentBinIndex = idEntryList;
+         if (entryMixReal >= 0) mixTask->UserExecMix("");
       }
    }
 }

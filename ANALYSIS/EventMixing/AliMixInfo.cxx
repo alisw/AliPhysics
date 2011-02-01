@@ -206,12 +206,12 @@ void AliMixInfo::Draw(Option_t* option)
    style->SetPalette(4, cols);
    cMain->cd(2);
 //    cMain->SetGrid();
-   if (hMixInfo2D){
-   hMixInfo2D->SetMaximum(4);
-   hMixInfo2D->SetStats(0);
-   hMixInfo2D->SetTitle("");
-   hMixInfo2D->GetXaxis()->SetNdivisions(510);
-   hMixInfo2D->GetYaxis()->SetNdivisions(0);
+   if (hMixInfo2D) {
+      hMixInfo2D->SetMaximum(4);
+      hMixInfo2D->SetStats(0);
+      hMixInfo2D->SetTitle("");
+      hMixInfo2D->GetXaxis()->SetNdivisions(510);
+      hMixInfo2D->GetYaxis()->SetNdivisions(0);
    }
 
    if (hMixInfo2D) hMixInfo2D->Draw(Form("COL %s", option));
@@ -231,7 +231,7 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
    // Function which is run when user move mouse over mix info
    //
 
-  if (!mixInfo) return;
+   if (!mixInfo) return;
 
    TObject *select = gPad->GetSelected();
    if (!select) return;
