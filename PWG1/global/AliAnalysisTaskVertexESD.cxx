@@ -476,7 +476,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Float_t ezpile=-999.;
   Int_t ntrkspile=-1;
 
-  if(esdE->GetNumberOfPileupVerticesSPD()>0 && spdvp){
+  if(esdE->GetNumberOfPileupVerticesSPD()>0 && spdvp && spdv){
   
     if(spdvp->GetNContributors()>0) {
      
