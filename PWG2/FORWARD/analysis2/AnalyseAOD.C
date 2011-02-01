@@ -486,16 +486,21 @@ public:
     }
     printf("\n");
     // fVtxEff = Double_t(fNWithVertex)/fNTriggered;
-    fVtxEff = Double_t(fNWithVertex) / (fNB-fNA-fNC+2*fNE);
-
+    Int_t nGood = (fNB-fNA-fNC+2*fNE);
+    fVtxEff = nGood > 0 ? Double_t(fNAccepted) / nGood : 0;
+    
     Info("Process", "Total of %9d events\n"
-	 "              of these %9d has a trigger\n" 
-	 "              of these %9d has a vertex\n" 
-	 "              of these  %9d was used\n"
-	 "              B=%9d, A=%9d, C=%9d, E=%9d -> %9d\n"
-	 "              Vertex efficiency: %f",
+	 "                   of these %9d has a trigger\n" 
+	 "                   of these %9d has a vertex\n" 
+	 "                   of these %9d was used\n"
+	 "                   Triggers by type:\n"
+	 "                     B   = %9d\n"
+	 "                     A|C = %9d (%9d+%-9d)\n"
+	 "                     E   = %9d\n"
+	 "                   Implies %9d good triggers\n"
+	 "                   Vertex efficiency: %f",
 	 nAvailable, fNTriggered, fNWithVertex, fNAccepted,
-	 fNB, fNA, fNC, fNE, fNB-fNA-fNC+2*fNE, fVtxEff);
+	 fNB, fNA+fNC, fNA, fNC, fNE, nGood, fVtxEff);
 
     return kTRUE;
   }
@@ -1114,6 +1119,13 @@ public:
       for(Int_t j = 1; j<=rebin;j++) {
 	Int_t bin = (i-1)*rebin + j;
 	if(h->GetBinContent(bin) <= 0) continue;
+	if(h->GetBinContent(bin) > 0 && h->GetBinContent(bin+1)<=0) {
+	  std::cout<<"removing bin "<<bin<<std::endl;
+	  continue;}
+	
+	if(h->GetBinContent(bin) > 0 && h->GetBinContent(bin-1)<=0) {
+	  std::cout<<"removing bin "<<bin<<std::endl;
+	  continue;}
 	Double_t c =  h->GetBinContent(bin);
 	Double_t e =  h->GetBinError(bin);
 	Double_t w =  1 / (e*e); // 1/c/c

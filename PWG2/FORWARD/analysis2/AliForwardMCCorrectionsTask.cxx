@@ -23,7 +23,7 @@
 #include "AliInputEventHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
-#include "AliFMDStripIndex.h"
+//#include "AliFMDStripIndex.h"
 #include <TH1.h>
 #include <TH3D.h>
 #include <TDirectory.h>
@@ -556,7 +556,7 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
       // Get the detector coordinates 
       UShort_t d, s, t;
       Char_t r;
-      AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
+      // AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
       
       // Check if mother (?) is charged and that we haven't dealt with it 
       // already

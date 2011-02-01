@@ -225,16 +225,16 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   UShort_t ivz      = 0;
   Double_t vz       = 0;
   UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, ivz, vz);
-  if (found & AliFMDEventInspector::kNoEvent)    return;
-  if (found & AliFMDEventInspector::kNoTriggers) return;
  
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
   MarkEventForStore();
 
-  if (found & AliFMDEventInspector::kNoSPD)     return;
-  if (found & AliFMDEventInspector::kNoFMD)     return;
-  if (found & AliFMDEventInspector::kNoVertex)  return;
+  if (found & AliFMDEventInspector::kNoEvent)    return;
+  if (found & AliFMDEventInspector::kNoTriggers) return;
+  if (found & AliFMDEventInspector::kNoSPD)      return;
+  if (found & AliFMDEventInspector::kNoFMD)      return;
+  if (found & AliFMDEventInspector::kNoVertex)   return;
   fAODFMD.SetIpZ(vz);
 
   if (found & AliFMDEventInspector::kBadVertex) return;

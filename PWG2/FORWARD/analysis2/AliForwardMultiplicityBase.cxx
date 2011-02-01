@@ -26,7 +26,8 @@
 #include "AliFMDHistCollector.h"
 #include "AliESDEvent.h"
 #include <TROOT.h>
-
+#include <iostream>
+#include <iomanip>
 
 //====================================================================
 AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name) 
@@ -202,10 +203,16 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   // Parameters:
   //    option Not used
   //
+  
   std::cout << "AliForwardMultiplicityBase: " << GetName() << "\n" 
-	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no")
-	    << std::endl;
+	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") << "\n"
+	    << "  Off-line trigger mask:  0x" 
+	    << std::hex     << std::setfill('0') 
+	    << std::setw (8) << fOfflineTriggerMask 
+	    << std::dec     << std::setfill (' ') << std::endl;
   gROOT->IncreaseDirLevel();
+  if (fCorrManager) fCorrManager->Print();
+  else              std::cout << "  Correction manager not set yet" << std::endl;
   GetEventInspector()   .Print(option);
   GetEnergyFitter()     .Print(option);    
   GetSharingFilter()    .Print(option);

@@ -57,6 +57,9 @@ TH2D* MakeOneRing(UShort_t d, Char_t r, Double_t vz, Int_t& nDead)
 
 //_____________________________________________________________________
 void MakeAcceptanceCorrection(Int_t   runNo=121526, 
+			      Int_t   system = 1,
+			      Float_t energy = 900,
+			      Float_t field  = 5,
 			      Int_t   nVtxBins=10, 
 			      Float_t vtxLow=-10, 
 			      Float_t vtxHigh=10){
@@ -67,13 +70,19 @@ void MakeAcceptanceCorrection(Int_t   runNo=121526,
   
   // Float_t delta = (vtxHigh - vtxLow) / (Float_t)nVtxBins;
   
-  //TGrid::Connect("alien://",0,0,"t");
+  Bool_t kGridOnline = kTRUE; 
+  if(!(TGrid::Connect("alien://",0,0,"t")))
+    kGridOnline = kFALSE;
+  
   // --- Initialisations ------------------------------------------
   //Set up CDB manager
   Info("MakeAcceptanceCorrections","Setting up OCDB");
+  
   AliCDBManager* cdb = AliCDBManager::Instance();
-  //cdb->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
-  cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
+  if(kGridOnline)
+    cdb->SetDefaultStorage("alien://Folder=/alice/data/2010/OCDB");
+  else
+    cdb->SetDefaultStorage("local://$(ALICE_ROOT)/OCDB");
   cdb->SetRun(runNo);
   
   // Get the geometry 
@@ -125,7 +134,7 @@ void MakeAcceptanceCorrection(Int_t   runNo=121526,
   Info("MakeAcceptanceCorrections","Writing to disk");
   AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
   TString fname = cm.GetFileName(AliForwardCorrectionManager::kAcceptance, 
-				 2, 2760, 0, false);
+				 system, energy, field, false);
   TFile* out = TFile::Open(fname.Data(), "RECREATE");
   corr->Write(cm.GetObjectName(AliForwardCorrectionManager::kAcceptance));
   out->Write();
