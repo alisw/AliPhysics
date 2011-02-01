@@ -275,7 +275,7 @@ void printLegend(TLegend *l, TH1D *hlt, TH1D *off){
 
 //====================== for 1D distributions ===============================//
 
-void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size,
+void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* /*hText*/, TH1D *hlt, TH1D *off, TLegend *l, int size,
              double minEta,    double maxEta,
              double minPt,     double maxPt,
 	     double minDCAr,   double maxDCAr,
@@ -339,7 +339,6 @@ void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D 
          pave->SetFillColor(kWhite);
          pave->SetLineColor(kWhite);
 	 pave->SetShadowColor(kWhite);
-	 TString s;	 	 
 	 s=""; s+=minEta; s+=" < eta < "; s+=maxEta; pave->AddText(s);
 	 s=""; s+=minPt; s+=" < pt (GeV/c) < "; s+=maxPt; pave->AddText(s);
 	 s=""; s+=minTrackMult; s+=" < track mult < "; s+=maxTrackMult; pave->AddText(s);
@@ -433,7 +432,7 @@ void plot2D(TCanvas* can, THnSparse* h,
   ht->Draw("colz"); 
 }
 
-void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* hText, TH1D *hlt, TH1D *off, TLegend *l, int size){
+void plotAid(TCanvas* can, THnSparse* hHLT, THnSparse* hOFF, TText* /*hText*/, TH1D *hlt, TH1D *off, TLegend *l, int size){
  
   for(int i=0; i<size; i++){         
       hlt = hHLT->Projection(i);
