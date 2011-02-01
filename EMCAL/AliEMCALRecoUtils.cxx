@@ -1161,6 +1161,8 @@ void AliEMCALRecoUtils::InitTrackCuts()
   SetRequireITSRefit(kTRUE);
   SetMaxDCAToVertexZ(2);
   SetDCAToVertex2D(kFALSE);
+  SetMaxChi2PerClusterITS(); //which by default sets the value to 1e10.
+  SetMinNClustersITS();
 }
 
 //__________________________________________________
