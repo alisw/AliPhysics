@@ -944,9 +944,10 @@ Int_t  AliGenHBTprocessor::GetNumberOfTracks()
   { 
     if (i >= GetNumberOfEvents()) break; //protection not to overshoot nb of events
     AliStack* stack = cab->GetStack(i);
-    if (stack == 0x0)
+    if (stack == 0x0) {
      Error("GetNumberOfTracks","There is no stack %d",i);
-
+     continue;
+    }
     n+=stack->GetNprimary();
   }
  return n;
