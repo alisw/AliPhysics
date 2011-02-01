@@ -46,6 +46,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliEMCALTrack.h"
+#include "AliEMCALCalibTimeDepCorrection.h"
 
 ClassImp(AliEMCALRecoUtils)
   
@@ -59,8 +60,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fMatchedClusterIndex(0x0), fResidualZ(0x0), fResidualR(0x0), fCutR(20), fCutZ(20),
   fCutMinNClusterTPC(0), fCutMinNClusterITS(0), fCutMaxChi2PerClusterTPC(0), fCutMaxChi2PerClusterITS(0),
   fCutRequireTPCRefit(0), fCutRequireITSRefit(0), fCutAcceptKinkDaughters(0),
-  fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),
-  fPIDUtils()
+  fCutMaxDCAToVertexXY(0), fCutMaxDCAToVertexZ(0),fCutDCAToVertex2D(0),fPIDUtils(),
+  fUseTimeCorrectionFactors(kFALSE),  fTimeCorrectionFactorsSet(kFALSE)
 {
 //
   // Constructor.
@@ -105,8 +106,8 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fCutRequireTPCRefit(reco.fCutRequireTPCRefit), fCutRequireITSRefit(reco.fCutRequireITSRefit),
   fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),
   fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY), fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),fCutDCAToVertex2D(reco.fCutDCAToVertex2D),
-  fPIDUtils(reco.fPIDUtils)
-
+  fPIDUtils(reco.fPIDUtils), 
+  fUseTimeCorrectionFactors(reco.fUseTimeCorrectionFactors),  fTimeCorrectionFactorsSet(reco.fTimeCorrectionFactorsSet)
 {
   //Copy ctor
   
@@ -127,38 +128,41 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   if(this == &reco)return *this;
   ((TNamed *)this)->operator=(reco);
 
-  fNonLinearityFunction  = reco.fNonLinearityFunction;
-  fParticleType          = reco.fParticleType;
-  fPosAlgo               = reco.fPosAlgo; 
-  fW0                    = reco.fW0;
-  fRecalibration         = reco.fRecalibration;
+  fNonLinearityFunction      = reco.fNonLinearityFunction;
+  fParticleType              = reco.fParticleType;
+  fPosAlgo                   = reco.fPosAlgo; 
+  fW0                        = reco.fW0;
+  fRecalibration             = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
-  fRemoveBadChannels     = reco.fRemoveBadChannels;
-  fRecalDistToBadChannels= reco.fRecalDistToBadChannels;
-  fEMCALBadChannelMap    = reco.fEMCALBadChannelMap;
-  fNCellsFromEMCALBorder = reco.fNCellsFromEMCALBorder;
-  fNoEMCALBorderAtEta0   = reco.fNoEMCALBorderAtEta0;
+  fRemoveBadChannels         = reco.fRemoveBadChannels;
+  fRecalDistToBadChannels    = reco.fRecalDistToBadChannels;
+  fEMCALBadChannelMap        = reco.fEMCALBadChannelMap;
+  fNCellsFromEMCALBorder     = reco.fNCellsFromEMCALBorder;
+  fNoEMCALBorderAtEta0       = reco.fNoEMCALBorderAtEta0;
 
 
   for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
   for(Int_t i = 0; i < 6  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
   
-  fCutR                  = reco.fCutR;
-  fCutZ                  = reco.fCutZ;
+  fCutR                      = reco.fCutR;
+  fCutZ                      = reco.fCutZ;
 
-  fCutMinNClusterTPC        = reco.fCutMinNClusterTPC;
-  fCutMinNClusterITS        = reco.fCutMinNClusterITS; 
-  fCutMaxChi2PerClusterTPC  = reco.fCutMaxChi2PerClusterTPC;
-  fCutMaxChi2PerClusterITS  = reco.fCutMaxChi2PerClusterITS;
-  fCutRequireTPCRefit       = reco.fCutRequireTPCRefit;
-  fCutRequireITSRefit       = reco.fCutRequireITSRefit;
-  fCutAcceptKinkDaughters   = reco.fCutAcceptKinkDaughters;
-  fCutMaxDCAToVertexXY      = reco.fCutMaxDCAToVertexXY;
-  fCutMaxDCAToVertexZ       = reco.fCutMaxDCAToVertexZ;
-  fCutDCAToVertex2D         = reco.fCutDCAToVertex2D;
+  fCutMinNClusterTPC         = reco.fCutMinNClusterTPC;
+  fCutMinNClusterITS         = reco.fCutMinNClusterITS; 
+  fCutMaxChi2PerClusterTPC   = reco.fCutMaxChi2PerClusterTPC;
+  fCutMaxChi2PerClusterITS   = reco.fCutMaxChi2PerClusterITS;
+  fCutRequireTPCRefit        = reco.fCutRequireTPCRefit;
+  fCutRequireITSRefit        = reco.fCutRequireITSRefit;
+  fCutAcceptKinkDaughters    = reco.fCutAcceptKinkDaughters;
+  fCutMaxDCAToVertexXY       = reco.fCutMaxDCAToVertexXY;
+  fCutMaxDCAToVertexZ        = reco.fCutMaxDCAToVertexZ;
+  fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
 
-  fPIDUtils              = reco.fPIDUtils;
+  fPIDUtils                  = reco.fPIDUtils;
   
+  fUseTimeCorrectionFactors  = reco.fUseTimeCorrectionFactors;
+  fTimeCorrectionFactorsSet  = reco.fTimeCorrectionFactorsSet;
+
   
   if(reco.fResidualR){
     // assign or copy construct
@@ -340,8 +344,8 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
     case kPi0GammaGamma:
     {
       //Non-Linearity correction (from Olga Data with function p0+p1*exp(-p2*E))
-      //Double_t fNonLinearityParams[0] = 0.1457;
-      //Double_t fNonLinearityParams[1] = -0.02024;
+      //Double_t fNonLinearityParams[0] = 1.04;
+      //Double_t fNonLinearityParams[1] = -0.1445;
       //Double_t fNonLinearityParams[2] = 1.046;
       energy /= (fNonLinearityParams[0]+fNonLinearityParams[1]*exp(-fNonLinearityParams[2]*energy)); //Olga function
       break;
@@ -362,9 +366,10 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
     {
       //From beam test, Alexei's results, for different ZS thresholds
       //                        th=30 MeV; th = 45 MeV; th = 75 MeV
-      //fNonLinearityParams[0] = 0.107;      1.003;      1.002 
+      //fNonLinearityParams[0] = 1.007;      1.003;      1.002 
       //fNonLinearityParams[1] = 0.894;      0.719;      0.797 
       //fNonLinearityParams[2] = 0.246;      0.334;      0.358 
+      //Rescale the param[0] with 1.03
       energy /= fNonLinearityParams[0]/(1+fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]));
       
       break;
@@ -1021,6 +1026,7 @@ void AliEMCALRecoUtils::GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &d
   }
   dR = fResidualR->At(FindMatchedPos(index));
   dZ = fResidualZ->At(FindMatchedPos(index));
+  //printf("dR %f, dZ %f\n",dR, dZ);
 }
 
 //__________________________________________________
@@ -1183,3 +1189,33 @@ void AliEMCALRecoUtils::Print(const Option_t *) const
 
     
 }
+
+//__________________________________________________
+void AliEMCALRecoUtils::SetTimeDependentCorrections(Int_t runnumber){
+  //Get EMCAL time dependent corrections from file and put them in the recalibration histograms
+  //Do it only once and only if it is requested
+  
+  if(!fUseTimeCorrectionFactors) return;
+  if(fTimeCorrectionFactorsSet)  return;
+  
+  printf("AliEMCALRecoUtils::GetTimeDependentCorrections() - Get Correction Factors for Run number %d\n",runnumber);
+ 
+  AliEMCALCalibTimeDepCorrection  *corr =  new AliEMCALCalibTimeDepCorrection();
+  corr->ReadRootInfo(Form("CorrectionFiles/Run%d_Correction.root",runnumber));
+  
+  SwitchOnRecalibration();
+  for(Int_t ism = 0; ism < 4; ism++){
+    for(Int_t icol = 0; icol < 48; icol++){
+      for(Int_t irow = 0; irow < 24; irow++){
+        Float_t orgRecalFactor = GetEMCALChannelRecalibrationFactors(ism)->GetBinContent(icol,irow);
+        Float_t newRecalFactor = orgRecalFactor*corr->GetCorrection(ism, icol,irow,0);
+        GetEMCALChannelRecalibrationFactors(ism)->SetBinContent(icol,irow,newRecalFactor);
+        //printf("ism %d, icol %d, irow %d, corrections : org %f, time dep %f, final %f (org*time %f)\n",ism, icol, irow, 
+        //        orgRecalFactor, corr->GetCorrection(ism, icol,irow,0),
+        //       (GetEMCALChannelRecalibrationFactors(ism))->GetBinContent(icol,irow),newRecalFactor);
+      }
+    }
+  }
+   fTimeCorrectionFactorsSet = kTRUE;
+}
+

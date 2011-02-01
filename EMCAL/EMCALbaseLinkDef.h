@@ -13,7 +13,6 @@
 #pragma link C++ class AliEMCALDigit+;
 #pragma link C++ class AliEMCALCalibData+;
 #pragma link C++ class AliEMCALCalibTimeDep+;
-#pragma link C++ class AliEMCALCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALPreprocessor+;
 #pragma link C++ class AliEMCALSensorTemp+;
 #pragma link C++ class AliEMCALSensorTempArray+;
@@ -25,7 +24,6 @@
 #pragma link C++ class AliEMCALQAChecker+;
 #pragma link C++ class AliEMCALSpaceFrame+;
 #pragma link C++ class AliEMCALCCUSBRawStream+;
-#pragma link C++ class AliEMCALSuperModuleCalibTimeDepCorrection+;
 #pragma link C++ class AliEMCALBiasAPD+;
 #pragma link C++ class AliEMCALCalibAbs+;
 #pragma link C++ class AliEMCALCalibReference+;

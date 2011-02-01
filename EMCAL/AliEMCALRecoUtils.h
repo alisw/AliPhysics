@@ -80,14 +80,14 @@ public:
   void     SetMisalRotShiftArray(Float_t * misal) 
   { for(Int_t i = 0; i < 15; i++)fMisalRotShift[i] = misal[i]; }
   
-  Int_t    GetParticleType() const         {return  fParticleType    ;}
-  void     SetParticleType(Int_t particle) {fParticleType = particle ;}
+  Int_t    GetParticleType()        const  { return  fParticleType    ;}
+  void     SetParticleType(Int_t particle) { fParticleType = particle ;}
   
-  Int_t    GetPositionAlgorithm() const    {return fPosAlgo;}
-  void     SetPositionAlgorithm(Int_t alg) {fPosAlgo = alg ;}
+  Int_t    GetPositionAlgorithm()   const  { return fPosAlgo          ;}
+  void     SetPositionAlgorithm(Int_t alg) { fPosAlgo = alg           ;}
   
-  Float_t  GetW0() const     {return fW0;}
-  void     SetW0(Float_t w0) {fW0  = w0 ;}
+  Float_t  GetW0()                 const   { return fW0               ;}
+  void     SetW0(Float_t w0)               { fW0  = w0                ;}
 
   //Non Linearity
   
@@ -102,20 +102,24 @@ public:
     else { AliInfo(Form("Index %d larger than 6, do nothing\n",i));}
   }
   
-  Int_t GetNonLinearityFunction() const    {return fNonLinearityFunction;}
-  void  SetNonLinearityFunction(Int_t fun) {fNonLinearityFunction = fun ;}
+  Int_t GetNonLinearityFunction() const    { return fNonLinearityFunction ;}
+  void  SetNonLinearityFunction(Int_t fun) { fNonLinearityFunction = fun  ;}
   
   void Print(const Option_t*) const;
   
   //Recalibration
   void RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells);
 
-  Bool_t IsRecalibrationOn()  const { return fRecalibration ; }
-  void SwitchOnRecalibration()    {fRecalibration = kTRUE ; if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors();}
-  void SwitchOffRecalibration()   {fRecalibration = kFALSE ; }
-  
+  Bool_t IsRecalibrationOn()  const        { return fRecalibration ; }
+  void SwitchOnRecalibration()             { fRecalibration = kTRUE ; if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors();}
+  void SwitchOffRecalibration()            { fRecalibration = kFALSE ; }
   void InitEMCALRecalibrationFactors() ;
-  
+
+  //Recalibrate channels with time dependent corrections
+  void SwitchOnTimeDepCorrection()        { fUseTimeCorrectionFactors = kTRUE ; SwitchOnRecalibration();}
+  void SwitchOffTimeDepCorrection()       { fUseTimeCorrectionFactors = kFALSE;}
+  void SetTimeDependentCorrections(Int_t runnumber);
+    
   Float_t GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
     if(fEMCALRecalibrationFactors) return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
     else return 1;}
@@ -124,27 +128,27 @@ public:
     if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors();
     ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c);}  
   
-  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM) const {return (TH2F*)fEMCALRecalibrationFactors->At(iSM);}	
-  void SetEMCALChannelRecalibrationFactors(TObjArray *map)      {fEMCALRecalibrationFactors = map;}
-  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) {fEMCALRecalibrationFactors->AddAt(h,iSM);}
+  TH2F * GetEMCALChannelRecalibrationFactors(Int_t iSM)   const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ;}	
+  void SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ;}
+  void SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecalibrationFactors->AddAt(h,iSM)          ;}
 
   //Modules fiducial region, remove clusters in borders
   Bool_t CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) ;
-  void   SetNumberOfCellsFromEMCALBorder(Int_t n) {fNCellsFromEMCALBorder = n; }
-  Int_t  GetNumberOfCellsFromEMCALBorder() const  {return fNCellsFromEMCALBorder; }
+  void   SetNumberOfCellsFromEMCALBorder(Int_t n) { fNCellsFromEMCALBorder = n    ;}
+  Int_t  GetNumberOfCellsFromEMCALBorder() const  { return fNCellsFromEMCALBorder ;}
     
-  void   SwitchOnNoFiducialBorderInEMCALEta0()  {fNoEMCALBorderAtEta0 = kTRUE; }
-  void   SwitchOffNoFiducialBorderInEMCALEta0() {fNoEMCALBorderAtEta0 = kFALSE; }
-  Bool_t IsEMCALNoBorderAtEta0()                {return fNoEMCALBorderAtEta0;}
+  void   SwitchOnNoFiducialBorderInEMCALEta0()    { fNoEMCALBorderAtEta0 = kTRUE  ;}
+  void   SwitchOffNoFiducialBorderInEMCALEta0()   { fNoEMCALBorderAtEta0 = kFALSE ;}
+  Bool_t IsEMCALNoBorderAtEta0()                  { return fNoEMCALBorderAtEta0   ;}
   
   // Bad channels
-  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels ; }
-  void SwitchOnBadChannelsRemoval ()  {fRemoveBadChannels = kTRUE  ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
-  void SwitchOffBadChannelsRemoval()  {fRemoveBadChannels = kFALSE ; }
+  Bool_t IsBadChannelsRemovalSwitchedOn()  const { return fRemoveBadChannels      ;}
+  void SwitchOnBadChannelsRemoval ()             { fRemoveBadChannels = kTRUE ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
+  void SwitchOffBadChannelsRemoval()             { fRemoveBadChannels = kFALSE    ;}
 	
-  Bool_t IsDistanceToBadChannelRecalculated()  const { return fRecalDistToBadChannels ; }
-  void SwitchOnDistToBadChannelRecalculation()   {fRecalDistToBadChannels = kTRUE  ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
-  void SwitchOffDistToBadChannelRecalculation()  {fRecalDistToBadChannels = kFALSE ; }
+  Bool_t IsDistanceToBadChannelRecalculated() const { return fRecalDistToBadChannels;}
+  void SwitchOnDistToBadChannelRecalculation()   { fRecalDistToBadChannels = kTRUE  ; if(!fEMCALBadChannelMap)InitEMCALBadChannelStatusMap();}
+  void SwitchOffDistToBadChannelRecalculation()  { fRecalDistToBadChannels = kFALSE ;}
   
   void InitEMCALBadChannelStatusMap() ;
 	
@@ -176,27 +180,26 @@ public:
   Bool_t IsMatched(Int_t index);
   UInt_t FindMatchedPos(Int_t index) const;
 
-  Float_t GetCutR() const { return fCutR; }
-  Float_t GetCutZ() const { return fCutZ; }
-
-  void SetCutR(Float_t cutR) { fCutR=cutR; }
-  void SetCutZ(Float_t cutZ) { fCutZ=cutZ; }
+  Float_t GetCutR()    const { return fCutR ;}
+  Float_t GetCutZ()    const { return fCutZ ;}
+  void SetCutR(Float_t cutR) { fCutR=cutR   ;}
+  void SetCutZ(Float_t cutZ) { fCutZ=cutZ   ;}
 
   //Track Cuts 
   Bool_t IsAccepted(AliESDtrack *track);
   void InitTrackCuts();
 
   // track quality cut setters  
-  void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
-  void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
-  void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
-  void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
-  void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit=b;}
-  void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit=b;}
-  void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters=b;}
-  void SetMaxDCAToVertexXY(Float_t dist=1e10)         {fCutMaxDCAToVertexXY = dist;}
-  void SetMaxDCAToVertexZ(Float_t dist=1e10)          {fCutMaxDCAToVertexZ = dist;}
-  void SetDCAToVertex2D(Bool_t b=kFALSE)              {fCutDCAToVertex2D = b;}
+  void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC       = min  ;}
+  void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS       = min  ;}
+  void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC = max  ;}
+  void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS = max  ;}
+  void SetRequireTPCRefit(Bool_t b=kFALSE)       {fCutRequireTPCRefit      = b    ;}
+  void SetRequireITSRefit(Bool_t b=kFALSE)       {fCutRequireITSRefit      = b    ;}
+  void SetAcceptKinkDaughters(Bool_t b=kTRUE)    {fCutAcceptKinkDaughters  = b    ;}
+  void SetMaxDCAToVertexXY(Float_t dist=1e10)    {fCutMaxDCAToVertexXY     = dist ;}
+  void SetMaxDCAToVertexZ(Float_t dist=1e10)     {fCutMaxDCAToVertexZ      = dist ;}
+  void SetDCAToVertex2D(Bool_t b=kFALSE)         {fCutDCAToVertex2D        = b    ;}
 
   // getters
 
@@ -214,13 +217,13 @@ public:
 
 private:
   
-  Float_t fMisalTransShift[15];   // Shift parameters
-  Float_t fMisalRotShift[15];     // Shift parameters
-  Int_t   fNonLinearityFunction;  // Non linearity function choice
-  Float_t fNonLinearityParams[6]; // Parameters for the non linearity function
-  Int_t   fParticleType;          // Particle type for depth calculation
-  Int_t   fPosAlgo;               // Position recalculation algorithm
-  Float_t fW0;                    // Weight0
+  Float_t    fMisalTransShift[15];       // Shift parameters
+  Float_t    fMisalRotShift[15];         // Shift parameters
+  Int_t      fNonLinearityFunction;      // Non linearity function choice
+  Float_t    fNonLinearityParams[6];     // Parameters for the non linearity function
+  Int_t      fParticleType;              // Particle type for depth calculation
+  Int_t      fPosAlgo;                   // Position recalculation algorithm
+  Float_t    fW0;                        // Weight0
   
   Bool_t     fRecalibration;             // Switch on or off the recalibration
   TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
@@ -230,25 +233,29 @@ private:
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
 
-  TArrayI *fMatchedClusterIndex;  //Array that stores indexes of matched clusters
-  TArrayF *fResidualZ;            //Array that stores the residual z
-  TArrayF *fResidualR;            //Array that stores the residual r
-  Float_t fCutR; //dR cut on matching
-  Float_t fCutZ; //dZ cut on matching
+  TArrayI  * fMatchedClusterIndex;       // Array that stores indexes of matched clusters
+  TArrayF  * fResidualZ;                 // Array that stores the residual z
+  TArrayF  * fResidualR;                 // Array that stores the residual r
+  Float_t    fCutR;                      // dR cut on matching
+  Float_t    fCutZ;                      // dZ cut on matching
 
   enum { kNCuts = 11 }; 
-  Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
-  Int_t   fCutMinNClusterITS;         // min number of its clusters  
-  Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
-  Float_t fCutMaxChi2PerClusterITS;   // max its fit chi2 per its cluster
-  Bool_t  fCutRequireTPCRefit;        // require TPC refit
-  Bool_t  fCutRequireITSRefit;        // require ITS refit
-  Bool_t  fCutAcceptKinkDaughters;    // accepting kink daughters?
-  Float_t fCutMaxDCAToVertexXY;       // track-to-vertex cut in max absolute distance in xy-plane
-  Float_t fCutMaxDCAToVertexZ;        // track-to-vertex cut in max absolute distance in z-plane
-  Bool_t  fCutDCAToVertex2D;          // if true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
+  Int_t      fCutMinNClusterTPC;         // Min number of tpc clusters
+  Int_t      fCutMinNClusterITS;         // Min number of its clusters  
+  Float_t    fCutMaxChi2PerClusterTPC;   // Max tpc fit chi2 per tpc cluster
+  Float_t    fCutMaxChi2PerClusterITS;   // Max its fit chi2 per its cluster
+  Bool_t     fCutRequireTPCRefit;        // Require TPC refit
+  Bool_t     fCutRequireITSRefit;        // Require ITS refit
+  Bool_t     fCutAcceptKinkDaughters;    // Accepting kink daughters?
+  Float_t    fCutMaxDCAToVertexXY;       // Track-to-vertex cut in max absolute distance in xy-plane
+  Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
+  Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
 
-  AliEMCALPIDUtils * fPIDUtils;               // Recalculate PID parameters
+  AliEMCALPIDUtils * fPIDUtils;          // Recalculate PID parameters
+  
+  //Time Correction
+  Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
+  Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
   
   ClassDef(AliEMCALRecoUtils, 6)
   
