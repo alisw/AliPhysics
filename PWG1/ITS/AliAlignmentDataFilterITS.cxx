@@ -326,7 +326,7 @@ void AliAlignmentDataFilterITS::UserExec(Option_t */*option*/)
 	while((pair = dynamic_cast<TPair*> (iter1.Next()))){	 
 	  TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
 	  TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());	 
-	  cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+	  if(keyStr && valStr) cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
 	}	 
 	
 	TList *cdbListCopy = new TList();	 
@@ -395,6 +395,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   Int_t uid=10000+esd->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
+  if(!esdTree) return;
   // Get the list of OCDB objects used for reco 
   TList *cdbList = (TList*)(esdTree->GetTree()->GetUserInfo())->FindObject("cdbList");
   TIter iter2(cdbList);	     
@@ -575,6 +576,7 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   //printf("d0mu %f  z0mu %f\n",d0z0mu[0],d0z0mu[1]);
 
   vertexForTree = new AliESDVertex(*(esd->GetPrimaryVertexSPD()));
+  vertexForTree->SetID(0);
 
   Float_t dzOverlap[2];
   Float_t curvArray[2],curverrArray[2];
@@ -750,6 +752,7 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
   Int_t uid=20000+esd->GetEventNumberInFile();
 
   TTree* esdTree = dynamic_cast<TTree*> (GetInputData(0));
+  if(!esdTree) return;
   // Get the list of OCDB objects used for reco 
   TList *cdbList = (TList*)(esdTree->GetTree()->GetUserInfo())->FindObject("cdbList");
   TIter iter2(cdbList);	     

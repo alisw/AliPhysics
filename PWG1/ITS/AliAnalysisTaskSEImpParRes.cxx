@@ -1703,8 +1703,8 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
      
   }  // end loop of tracks
   
-  if(vtxESDRec)  {delete vtxESDRec;  vtxESDRec=NULL;}
-  if(vtxESDTrue) {delete vtxESDTrue; vtxESDTrue=NULL;}
+  delete vtxESDRec;  vtxESDRec=NULL;
+  delete vtxESDTrue; vtxESDTrue=NULL;
   PostData(1, fOutputitspureSARec);
   PostData(2, fOutputitspureSASkip);
   PostData(3, fOutputallPointRec);
