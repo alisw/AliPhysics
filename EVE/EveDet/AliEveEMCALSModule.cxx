@@ -93,9 +93,9 @@ AliEveEMCALSModule::AliEveEMCALSModule(const AliEveEMCALSModule &esm) :
   // Copy constructor.
   Char_t name[256];
   if (fSModuleID < 10) {
-    sprintf(name,"Full Super Module %02d",fSModuleID);
+    snprintf(name,256,"Full Super Module %02d",fSModuleID);
   } else {
-    sprintf(name,"Half Super Module %02d",fSModuleID);
+    snprintf(name,256,"Half Super Module %02d",fSModuleID);
   }
   SetName(name);
 
@@ -303,7 +303,7 @@ void AliEveEMCALSModule::UpdateQuads()
 	  hitY = bufferHit[ih][4];
 	  hitZ = bufferHit[ih][5];
 	  fPointSet->SetPoint(ih,hitX,hitY,hitZ);
-	  sprintf(form,"N=%d", fPointSet->Size());
+	  snprintf(form,1000,"N=%d", fPointSet->Size());
 	  fPointSet->SetTitle(form);
 	  fPointSet->SetMarkerSize(.5);
 	  fPointSet->SetMarkerColor((Color_t)2);
