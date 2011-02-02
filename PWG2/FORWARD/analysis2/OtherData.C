@@ -30,11 +30,11 @@ enum {
   /** Color used for ALICE data */
   ALICEColor = kMagenta+1,
   /** Marker style INEL data */
-  INELStyle  = 20,
+  INELStyle  = 22,
   /** Marker style INEL>0 data */
-  INELGtStyle= 22,
+  INELGtStyle= 29,
   /** Marker style NSD data */
-  NSDStyle   = 21,
+  NSDStyle   = 23,
   /** Colour offset for mirror data */
   MirrorOff  = 4
 };

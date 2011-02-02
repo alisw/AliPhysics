@@ -80,6 +80,8 @@ public:
   Int_t              fNAccepted;
   /** Number of events accepted */
   Int_t              fNAll;
+  /** Number of events accepted */
+  Int_t              fNMB;
   /** Number of B triggers */
   Int_t              fNB;
   /** Number of A triggers */
@@ -92,7 +94,8 @@ public:
   Double_t           fVtxMin;
   /** Max vertex */
   Double_t           fVtxMax;
-  
+  /** Whether to cut edges in the rebinning */
+  Bool_t             fCutEdges;
     
   //__________________________________________________________________
   /** 
@@ -117,12 +120,14 @@ public:
       fNWithVertex(0),
       fNAccepted(0),
       fNAll(0),
+      fNMB(0),
       fNB(0),
       fNA(0),
       fNC(0),
       fNE(0),
       fVtxMin(0),
-      fVtxMax(0)
+      fVtxMax(0),
+      fCutEdges(false)
   {}
   //__________________________________________________________________
   /** 
@@ -157,6 +162,7 @@ public:
     fNWithVertex= 0;
     fNAccepted	= 0;
     fNAll	= 0;
+    fNMB        = 0;
     fNB		= 0;
     fNA		= 0;
     fNC		= 0;
@@ -335,53 +341,6 @@ public:
     
   }
 
-#if 0
-  //__________________________________________________________________
-  /** 
-   * Open the files @a fname containg the tree with AliAODEvent objects, 
-   * and also open the output file @a outname for writting. 
-   * 
-   * @param fname   Input file name 
-   * @param outname Output file name 
-   * 
-   * @return true on success, false otherwise 
-   */
-  Bool_t Open(const char* fname, const char* outname) 
-  {
-    Clear("");
-    
-    TFile* file = TFile::Open(fname, "READ");
-    if (!file) { 
-      Error("Open", "Cannot open file %s", fname);
-      return kFALSE;
-    }
-
-    // Get the AOD tree 
-    fTree = static_cast<TTree*>(file->Get("aodTree"));
-    if (!fTree) {
-      Error("Init", "Couldn't get the tree");
-      return kFALSE;
-    }
-
-    // Set the branch pointer 
-    fTree->SetBranchAddress("Forward", &fAOD);
-
-    // Set the branch pointer 
-    if (fTree->GetBranch("ForwardMC")) 
-      fTree->SetBranchAddress("ForwardMC", &fMCAOD);
-
-    // Set the branch pointer 
-    if (fTree->GetBranch("primary")) 
-      fTree->SetBranchAddress("primary", &fPrimary);
-
-    fOut = TFile::Open(outname, "RECREATE");
-    if (!fOut) { 
-      Error("Open", "Couldn't open %s", outname);
-      return kFALSE;
-    }
-    return kTRUE;
-  }
-#endif
 
   //__________________________________________________________________
   /** 
@@ -409,49 +368,15 @@ public:
       }
 
       // Create sum histogram on first event - to match binning to input
-      if (!fSum) {
+      if (!fSum) 
 	fSum = static_cast<TH2D*>(fAOD->GetHistogram().Clone("d2ndetadphi"));
-	Info("Process", "Created sum histogram (%d,%f,%f)x(%d,%f,%f)", 
-	     fSum->GetNbinsX(), 
-	     fSum->GetXaxis()->GetXmin(),
-	     fSum->GetXaxis()->GetXmax(),
-	     fSum->GetNbinsY(), 
-	     fSum->GetYaxis()->GetXmin(),
-	     fSum->GetYaxis()->GetXmax());
-      }
-      if (!fMCSum && fTree->GetBranch("ForwardMC")) { 
+      if (!fMCSum && fTree->GetBranch("ForwardMC")) 
 	fMCSum = 
 	  static_cast<TH2D*>(fMCAOD->GetHistogram().Clone("d2ndetadphiMC"));
-	Info("Process", "Created MC sum histogram (%d,%f,%f)x(%d,%f,%f)", 
-	     fMCSum->GetNbinsX(), 
-	     fMCSum->GetXaxis()->GetXmin(),
-	     fMCSum->GetXaxis()->GetXmax(),
-	     fMCSum->GetNbinsY(), 
-	     fMCSum->GetYaxis()->GetXmin(),
-	     fMCSum->GetYaxis()->GetXmax());
-      }
-      if (!fSumPrimary && fTree->GetBranch("primary")) { 
-	fSumPrimary = 
-	  static_cast<TH2D*>(fPrimary->Clone("primarySum"));
-	Info("Process", "Created MC truth histogram (%d,%f,%f)x(%d,%f,%f)", 
-	     fSumPrimary->GetNbinsX(), 
-	     fSumPrimary->GetXaxis()->GetXmin(),
-	     fSumPrimary->GetXaxis()->GetXmax(),
-	     fSumPrimary->GetNbinsY(), 
-	     fSumPrimary->GetYaxis()->GetXmin(),
-	     fSumPrimary->GetYaxis()->GetXmax());
-      }
-      if (!fSumCentral && fTree->GetBranch("Central")) { 
-	fSumCentral = 
-	  static_cast<TH2D*>(fCentral->Clone("centralSum"));
-	Info("Process", "Created Cental histogram (%d,%f,%f)x(%d,%f,%f)", 
-	     fSumCentral->GetNbinsX(), 
-	     fSumCentral->GetXaxis()->GetXmin(),
-	     fSumCentral->GetXaxis()->GetXmax(),
-	     fSumCentral->GetNbinsY(), 
-	     fSumCentral->GetYaxis()->GetXmin(),
-	     fSumCentral->GetYaxis()->GetXmax());
-      }
+      if (!fSumPrimary && fTree->GetBranch("primary")) 
+	fSumPrimary = static_cast<TH2D*>(fPrimary->Clone("primarySum"));
+      if (!fSumCentral && fTree->GetBranch("Central"))
+	fSumCentral = static_cast<TH2D*>(fCentral->Clone("centralSum"));
       
       // Add contribution from this event 
       if (fSumPrimary) fSumPrimary->Add(fPrimary);
@@ -462,6 +387,9 @@ public:
       if (fAOD->IsTriggerBits(AliAODForwardMult::kC)) fNC++;
       if (fAOD->IsTriggerBits(AliAODForwardMult::kE)) fNE++;
       
+      // Other trigger/event requirements could be defined 
+      if (fAOD->IsTriggerBits(AliAODForwardMult::kInel)) fNMB++;
+
       // fAOD->Print();
       // Other trigger/event requirements could be defined 
       if (!fAOD->IsTriggerBits(mask)) continue; 
@@ -487,9 +415,11 @@ public:
     printf("\n");
     // fVtxEff = Double_t(fNWithVertex)/fNTriggered;
     Int_t nGood = (fNB-fNA-fNC+2*fNE);
-    fVtxEff = nGood > 0 ? Double_t(fNAccepted) / nGood : 0;
+    fVtxEff = (Double_t(fNMB) / fNTriggered) * 
+      (nGood > 0 ? Double_t(fNAccepted) / nGood : 0);
     
     Info("Process", "Total of %9d events\n"
+	 "                   of these %9d are minimum bias\n"
 	 "                   of these %9d has a trigger\n" 
 	 "                   of these %9d has a vertex\n" 
 	 "                   of these %9d was used\n"
@@ -499,7 +429,7 @@ public:
 	 "                     E   = %9d\n"
 	 "                   Implies %9d good triggers\n"
 	 "                   Vertex efficiency: %f",
-	 nAvailable, fNTriggered, fNWithVertex, fNAccepted,
+	 nAvailable, fNMB, fNTriggered, fNWithVertex, fNAccepted,
 	 fNB, fNA+fNC, fNA, fNC, fNE, nGood, fVtxEff);
 
     return kTRUE;
@@ -568,7 +498,7 @@ public:
     TH1D* dndetaCentral = 0;
     if (fSumCentral) { 
       dndetaCentral = fSumCentral->ProjectionX("dndetaCentral", -1, -1, "e");
-      dndetaCentral->SetTitle("ALICE Central");
+      dndetaCentral->SetTitle("ALICE Central - track(let)s");
       // dndetaCentral->Scale(1./fNTriggered, "width");
       dndetaCentral->Scale(1./(fNB-fNA-fNC+2*fNE), "width");
       dndetaCentral->SetMarkerColor(kGray+3);
@@ -665,6 +595,7 @@ public:
     THStack*     ratios   = MakeRatios(dndeta,      dndetaSym, 
 				       dndetaHHD,   dndetaHHDSym, 
 				       dndetaTruth, dndetaTruthSym, 
+				       dndetaCentral,
 				       other);
 
     // Check if we have ratios 
@@ -710,7 +641,9 @@ public:
 	    "#frac{1}{#it{N}} #frac{#it{dN}_{ch}}{#it{d#eta}}");
     p1->Clear();
     stack->DrawClone("nostack e1");
-
+    if (dndetaCentral) 
+      dndetaCentral->GetXaxis()->SetRangeUser(-1,1);
+      
     // Draw other data 
     if (other) {
       TGraphAsymmErrors* o      = 0;
@@ -757,7 +690,7 @@ public:
 
     // Put number of accepted events on the plot 
     TLatex* vt = new TLatex(.93, .88, 
-			    Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin, fVtxMax));
+			    Form("v_{z}#in[%+5.1f,%+5.1f]cm",fVtxMin,fVtxMax));
     vt->SetNDC();
     vt->SetTextFont(132);
     vt->SetTextAlign(33);
@@ -817,7 +750,10 @@ public:
       band->SetPointError(1, 0, .1);
       band->SetFillColor(kYellow+2);
       band->SetFillStyle(3002);
+      band->SetLineStyle(2);
+      band->SetLineWidth(1);
       band->Draw("3 same");
+      band->DrawClone("X L same");
 
       // Replot the ratios on top 
       ratios->DrawClone("nostack e1 same");
@@ -886,64 +822,55 @@ public:
   //__________________________________________________________________
   /** 
    */ 
-  THStack* MakeRatios(const TH1* dndeta, const TH1* sym, 
-		      const TH1* hhd,    const TH1* hhdsym, 
-		      const TH1* mc,     const TH1* mcsym,
+  THStack* MakeRatios(const TH1* dndeta, const TH1* dndetaSym, 
+		      const TH1* hhd,    const TH1* hhdSym, 
+		      const TH1* mc,     const TH1* mcSym,
+		      const TH1* central, 
 		      TMultiGraph* other) const 
   {
     // If we have 'other' data, then do the ratio of the results to that
     Bool_t hasOther = (other && other->GetListOfGraphs() && 
 		       other->GetListOfGraphs()->GetEntries() > 0);
-    Bool_t hasHhd   = (hhd && hhdsym);
-    if (!hasOther && !hasHhd && !mc && !mcsym) return 0;
+    Bool_t hasHhd   = (hhd && hhdSym);
+    if (!hasOther && !hasHhd && !mc && !mcSym) return 0;
 
     THStack* ratios = new THStack("ratios", "Ratios");
     if (hasOther) {
+      TGraphAsymmErrors* ua5    = 0;
+      TGraphAsymmErrors* alice  = 0;
+      TGraphAsymmErrors* cms    = 0;
       TGraphAsymmErrors* o      = 0;
       TIter              nextG(other->GetListOfGraphs());
       while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
-	ratios->Add(Ratio(dndeta, o));
-	ratios->Add(Ratio(sym,    o));
-	ratios->Add(Ratio(hhd,    o));
-	ratios->Add(Ratio(hhdsym, o));
+	ratios->Add(Ratio(dndeta,    o));
+	ratios->Add(Ratio(dndetaSym, o));
+	ratios->Add(Ratio(hhd,       o));
+	ratios->Add(Ratio(hhdSym,    o));
+	ratios->Add(Ratio(central,   o));
+	TString oName(o->GetName());
+	oName.ToLower();
+	if (oName.Contains("ua5"))   ua5 = o;
+	if (oName.Contains("alice")) alice = o;
+	if (oName.Contains("cms"))   cms = o;
       }
+      if (ua5 && alice) 
+	ratios->Add(Ratio(alice, ua5));
+      if (cms && alice) 
+	ratios->Add(Ratio(alice, cms));
     }
+    
 
     // If we have data from HHD's analysis, then do the ratio of 
     // our result to that data. 
     if (hasHhd) { 
-      TH1F* t1 = static_cast<TH1F*>(dndeta->Clone(Form("%s_%s", 
-						       dndeta->GetName(), 
-						       hhd->GetName())));
-      TH1F* t2 = static_cast<TH1F*>(sym->Clone(Form("%s_%s", 
-						    sym->GetName(), 
-						    hhdsym->GetName())));
-      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), hhd->GetTitle()));
-      t2->SetTitle(Form("%s / %s", sym->GetTitle(), hhdsym->GetTitle()));
-      t1->Divide(hhd);
-      t2->Divide(hhdsym);
-      t1->SetMarkerColor(hhd->GetMarkerColor());
-      t2->SetMarkerColor(hhdsym->GetMarkerColor());
-      ratios->Add(t1);
-      ratios->Add(t2);
+      ratios->Add(Ratio(dndeta,    hhd));
+      ratios->Add(Ratio(dndetaSym, hhdSym));
     }
 
     // Do comparison to MC 
     if (mc) { 
-      TH1D* t1 = static_cast<TH1D*>(dndeta->Clone(Form("%s_%s", 
-						       dndeta->GetName(), 
-						       mc->GetName())));
-      TH1D* t2 = static_cast<TH1D*>(sym->Clone(Form("%s_%s", 
-						    sym->GetName(), 
-						    mcsym->GetName())));
-      t1->SetTitle(Form("%s / %s", dndeta->GetTitle(), mc->GetTitle()));
-      t2->SetTitle(Form("%s / %s", sym->GetTitle(), mcsym->GetTitle()));
-      t1->Divide(mc);
-      t2->Divide(mcsym);
-      t1->SetMarkerColor(mc->GetMarkerColor());
-      t2->SetMarkerColor(mcsym->GetMarkerColor());
-      ratios->Add(t1);
-      ratios->Add(t2);
+      ratios->Add(Ratio(dndeta,    mc));
+      ratios->Add(Ratio(dndetaSym, mcSym));
     }
 
     // Check if we have ratios 
@@ -969,7 +896,7 @@ public:
    * @param ynDiv  Divisions on Y axis 
    */
   void FixAxis(THStack* stack, Double_t s, const char* ytitle, 
-	       Int_t ynDiv=10, Bool_t force=true) 
+	       Int_t ynDiv=210, Bool_t force=true) 
   {
     if (force) stack->Draw("nostack e1");
 
@@ -1014,8 +941,8 @@ public:
     ret->SetName(Form("%s_over_%s", h->GetName(), g->GetName()));
     ret->SetTitle(Form("%s / %s", h->GetTitle(), g->GetTitle()));
     ret->Reset();
-    ret->SetMarkerStyle(h->GetMarkerStyle());
-    ret->SetMarkerColor(g->GetMarkerColor());
+    ret->SetMarkerStyle(g->GetMarkerStyle());
+    ret->SetMarkerColor(h->GetMarkerColor());
     ret->SetMarkerSize(0.9*g->GetMarkerSize());
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[g->GetN()-1];
@@ -1037,7 +964,74 @@ public:
     if (ret->GetEntries() <= 0) { delete ret; ret = 0; }
     return ret;
   }
+  //__________________________________________________________________
+  /** 
+   * Make the ratio of h1 to h2 
+   * 
+   * @param h1 First histogram (numerator) 
+   * @param h2 Second histogram (denominator)
+   * 
+   * @return h1 / h2
+   */
+  TH1* Ratio(const TH1* h1, const TH1* h2) const
+  {
+    TH1* t1 = static_cast<TH1*>(h1->Clone(Form("%s_%s", 
+					       h1->GetName(), 
+					       h2->GetName())));
+    t1->SetTitle(Form("%s / %s", h1->GetTitle(), h2->GetTitle()));
+    t1->Divide(h2);
+    t1->SetMarkerColor(h1->GetMarkerColor());
+    t1->SetMarkerStyle(h2->GetMarkerStyle());
+    return t1;
+  }
+  //__________________________________________________________________
+  /** 
+   * Calculate the ratio of two graphs - g1 / g2
+   * 
+   * @param g1 Numerator 
+   * @param g2 Denominator
+   * 
+   * @return g1 / g2 in a histogram 
+   */
+  TH1* Ratio(const TGraphAsymmErrors* g1, const TGraphAsymmErrors* g2) const
+  {
+    Int_t    nBins = g1->GetN();
+    TArrayF  bins(nBins+1);
+    Double_t dx = 0;
+    for (Int_t i = 0; i < nBins; i++) { 
+      Double_t x   = g1->GetX()[i];
+      Double_t exl = g1->GetEXlow()[i];
+      Double_t exh = g1->GetEXhigh()[i];
+      bins.fArray[i]   = x-exl;
+      bins.fArray[i+1] = x+exh;
+      Double_t dxi = exh+exl;
+      if (i == 0) dx  = dxi;
+      else if (dxi != dx) dx = 0;
+    }
+    TString name(Form("%s_%s", g1->GetName(), g2->GetName()));
+    TString title(Form("%s / %s", g1->GetTitle(), g2->GetTitle()));
+    TH1* h = 0;
+    if (dx != 0) {
+      h = new TH1F(name.Data(), title.Data(), nBins, bins[0], bins[nBins]);
+    }
+    else {
+      h = new TH1F(name.Data(), title.Data(), nBins, bins.fArray);
+    }
+    h->SetMarkerStyle(g2->GetMarkerStyle());
+    h->SetMarkerColor(g1->GetMarkerColor());
+    h->SetMarkerSize(0.9*g2->GetMarkerSize());
 
+    for (Int_t i = 0; i < nBins; i++) { 
+      Double_t x  = g1->GetX()[i];
+      Double_t c1 = g1->GetY()[i];
+      Double_t e1 = g1->GetErrorY(i);
+      Double_t c2 = g2->Eval(x);
+      
+      h->SetBinContent(i+1, c1 / c2);
+      h->SetBinError(i+1, e1 / c2);
+    }
+    return h;
+  }
   //__________________________________________________________________
   /** 
    * Make an extension of @a h to make it symmetric about 0 
@@ -1117,16 +1111,21 @@ public:
       Double_t wsum    = 0;
       Int_t    nbins   = 0;
       for(Int_t j = 1; j<=rebin;j++) {
-	Int_t bin = (i-1)*rebin + j;
-	if(h->GetBinContent(bin) <= 0) continue;
-	if(h->GetBinContent(bin) > 0 && h->GetBinContent(bin+1)<=0) {
-	  std::cout<<"removing bin "<<bin<<std::endl;
-	  continue;}
-	
-	if(h->GetBinContent(bin) > 0 && h->GetBinContent(bin-1)<=0) {
-	  std::cout<<"removing bin "<<bin<<std::endl;
-	  continue;}
-	Double_t c =  h->GetBinContent(bin);
+	Int_t    bin = (i-1)*rebin + j;
+	Double_t c   =  h->GetBinContent(bin);
+
+	if (c <= 0) continue;
+
+	if (fCutEdges) {
+	  if (h->GetBinContent(bin+1)<=0 || 
+	      h->GetBinContent(bin-1)) {
+	    Warning("Rebin", "removing bin %d=%f of %s (%d=%f,%d=%f)", 
+		    bin, c, h->GetName(), 
+		    bin+1, h->GetBinContent(bin+1), 
+		    bin-1, h->GetBinContent(bin-1));
+	    continue;
+	  }	
+	}
 	Double_t e =  h->GetBinError(bin);
 	Double_t w =  1 / (e*e); // 1/c/c
 	content    += c;

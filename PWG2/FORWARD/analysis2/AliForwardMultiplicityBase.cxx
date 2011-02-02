@@ -109,13 +109,6 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
     what ^= AliForwardCorrectionManager::kDoubleHit;
-  if (!GetCorrections().IsUseSecondaryMap()) {
-    what ^= AliForwardCorrectionManager::kSecondaryMap;
-    // Need to make eta and vertex axis here since we don't read
-    // that from the secondary correction objects
-    pe = new TAxis(200, -4, 6);
-    pv = new TAxis(10, -10, 10);
-  }
   if (!GetCorrections().IsUseVertexBias())
     what ^= AliForwardCorrectionManager::kVertexBias;
   if (!GetCorrections().IsUseAcceptance())
@@ -205,14 +198,16 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   //
   
   std::cout << "AliForwardMultiplicityBase: " << GetName() << "\n" 
-	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") << "\n"
+	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") 
+	    << "\n"
 	    << "  Off-line trigger mask:  0x" 
 	    << std::hex     << std::setfill('0') 
 	    << std::setw (8) << fOfflineTriggerMask 
 	    << std::dec     << std::setfill (' ') << std::endl;
   gROOT->IncreaseDirLevel();
   if (fCorrManager) fCorrManager->Print();
-  else              std::cout << "  Correction manager not set yet" << std::endl;
+  else  
+    std::cout << "  Correction manager not set yet" << std::endl;
   GetEventInspector()   .Print(option);
   GetEnergyFitter()     .Print(option);    
   GetSharingFilter()    .Print(option);
