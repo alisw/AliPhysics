@@ -102,11 +102,4 @@ protected:
   ClassDef(AliEveHOMERSourceMap, 0); // A map of HOMER sources.
 };
 
-
-// Include concrete implementations (used to be in the same file).
-
-#include "AliEveHOMERSourceMapByDet.h"
-#include "AliEveHOMERSourceMapByType.h"
-
-
 #endif

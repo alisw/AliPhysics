@@ -8,6 +8,8 @@
  **************************************************************************/
 
 #include "AliEveHOMERSourceMap.h"
+#include "AliEveHOMERSourceMapByDet.h"
+#include "AliEveHOMERSourceMapByType.h"
 
 //______________________________________________________________________
 //
