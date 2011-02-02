@@ -174,7 +174,7 @@ AliITSv11GeomCableRound(const char* name, Double_t radius) :
     fLayMedia[i] = 0;
   };
 }
-
+/*
 //________________________________________________________________________
 AliITSv11GeomCableRound::AliITSv11GeomCableRound(const AliITSv11GeomCableRound &s) :
   AliITSv11GeomCable(s),fRadius(s.fRadius),fNlayer(s.fNlayer),fPhiMin(s.fPhiMin),
@@ -207,7 +207,7 @@ operator=(const AliITSv11GeomCableRound &s) {
   };
   return *this;
 }
-
+*/
 //________________________________________________________________________
 Int_t AliITSv11GeomCableRound::GetPoint( Int_t iCheckPt, Double_t *coord)
   const {

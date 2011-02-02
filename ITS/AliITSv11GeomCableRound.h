@@ -20,8 +20,6 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
 
  public:
   AliITSv11GeomCableRound(const char* name, Double_t radius);
-  AliITSv11GeomCableRound(const AliITSv11GeomCableRound &source);
-  AliITSv11GeomCableRound& operator=(const AliITSv11GeomCableRound &source);
   virtual ~AliITSv11GeomCableRound() {};
 
   virtual Int_t GetPoint(Int_t iCheckPt, Double_t *coord) const;
@@ -54,6 +52,10 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
   Double_t   fLayThickness[fgkCableMaxLayer]; // layer thicknesses
   Int_t      fLayColor[fgkCableMaxLayer];     // layer colors
   TGeoMedium *fLayMedia[fgkCableMaxLayer];    // layer media
+
+ private:
+  AliITSv11GeomCableRound(const AliITSv11GeomCableRound &source);
+  AliITSv11GeomCableRound& operator=(const AliITSv11GeomCableRound &source);
 
   ClassDef(AliITSv11GeomCableRound,1)
 };

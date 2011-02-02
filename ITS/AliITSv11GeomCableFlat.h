@@ -22,8 +22,6 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
  public:
   AliITSv11GeomCableFlat();
   AliITSv11GeomCableFlat(const char* name, Double_t width, Double_t thick);
-  AliITSv11GeomCableFlat(const AliITSv11GeomCableFlat &source);
-  AliITSv11GeomCableFlat& operator=(const AliITSv11GeomCableFlat &source);
   virtual ~AliITSv11GeomCableFlat() {};
 
   void        SetNLayers(Int_t nLayers);
@@ -62,6 +60,10 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
   TGeoTranslation *fTranslation[fgkCableMaxLayer];  // layer translations
   TGeoMedium      *fLayMedia[fgkCableMaxLayer];     // layer media
   Int_t            fLayColor[fgkCableMaxLayer];     // layer colors
+
+ private:
+  AliITSv11GeomCableFlat(const AliITSv11GeomCableFlat &source);
+  AliITSv11GeomCableFlat& operator=(const AliITSv11GeomCableFlat &source);
 
   ClassDef(AliITSv11GeomCableFlat,1)
 };

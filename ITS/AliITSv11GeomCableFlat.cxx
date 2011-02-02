@@ -55,6 +55,7 @@ AliITSv11GeomCableFlat::AliITSv11GeomCableFlat():
     fLayColor[i]     = 0;
     fLayMedia[i]     = 0;  
  };
+  for(Int_t i=0;i<3;i++)fPreviousX[i]=0.;
 }
 
 //________________________________________________________________________
@@ -72,8 +73,9 @@ AliITSv11GeomCableFlat(const char* name, Double_t width, Double_t thick) :
     fLayColor[i]     = 0;
     fLayMedia[i]     = 0;  
   }; 
+  for(Int_t i=0;i<3;i++)fPreviousX[i]=0.;
 }
-
+/*
 //________________________________________________________________________
 AliITSv11GeomCableFlat::AliITSv11GeomCableFlat(const AliITSv11GeomCableFlat &s) :
   AliITSv11GeomCable(s),fWidth(s.fWidth),fThick(s.fThick),fNlayer(s.fNlayer)
@@ -85,6 +87,8 @@ AliITSv11GeomCableFlat::AliITSv11GeomCableFlat(const AliITSv11GeomCableFlat &s) 
     fLayMedia[i] = s.fLayMedia[i];
     fLayColor[i] = s.fLayColor[i];
   }
+  for(Int_t i=0;i<3;i++)fPreviousX[i]=s.fPreviousX[i];
+
 }
 
 //________________________________________________________________________
@@ -106,7 +110,7 @@ operator=(const AliITSv11GeomCableFlat &s) {
   };
   return *this;
 }
-
+*/
 //________________________________________________________________________
 Int_t AliITSv11GeomCableFlat::GetPoint( Int_t iCheckPt, Double_t *coord)
   const {
