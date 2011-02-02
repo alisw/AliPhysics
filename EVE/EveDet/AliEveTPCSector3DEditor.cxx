@@ -81,7 +81,7 @@ void AliEveTPCSector3DEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTPCSector3D*>(obj);
+  fM = static_cast<AliEveTPCSector3D*>(obj);
 
   fRnrFrame->SetState(fM->fRnrFrame ? kButtonDown : kButtonUp);
   fDriftVel->SetValue(fM->fDriftVel);
