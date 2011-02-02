@@ -93,6 +93,7 @@ AliEveBeamsInfo::AliEveBeamsInfo(const char* name) :
 AliEveBeamsInfo::~AliEveBeamsInfo()
 {
   // Deleting variables
+  RemoveTriggerClasses();
   delete fEsd;
   delete fPhysicsSelection;
   delete fEventNumber;
@@ -114,7 +115,6 @@ AliEveBeamsInfo::~AliEveBeamsInfo()
   delete fEventTypeLabel;
   delete fAl;
   delete fHisto2dv;
-  RemoveTriggerClasses();
 }
 
 //______________________________________________________________________________
