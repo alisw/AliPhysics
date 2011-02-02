@@ -761,7 +761,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           if (!selectedByCorrSelMacro) continue;
 
           returnedHist = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
-          if (returnedHist)
+          if (returnedHist && numHistoMacros)
           {
             if (!histos[histoIndex])  histos[histoIndex] = returnedHist;
             else  
