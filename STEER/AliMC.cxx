@@ -921,7 +921,7 @@ void AliMC::AddHit(Int_t id, Int_t track, Int_t *vol, Float_t *hits) const
   //  Add a hit to detector id
   //
   TObjArray &dets = *gAlice->Modules();
-  if(dets[id]) dynamic_cast<AliModule*>(dets[id])->AddHit(track,vol,hits);
+  if(dets[id]) static_cast<AliModule*>(dets[id])->AddHit(track,vol,hits);
 }
 
 //_______________________________________________________________________
@@ -931,7 +931,7 @@ void AliMC::AddDigit(Int_t id, Int_t *tracks, Int_t *digits) const
   // Add digit to detector id
   //
   TObjArray &dets = *gAlice->Modules();
-  if(dets[id]) dynamic_cast<AliModule*>(dets[id])->AddDigit(tracks,digits);
+  if(dets[id]) static_cast<AliModule*>(dets[id])->AddDigit(tracks,digits);
 }
 
 //_______________________________________________________________________
