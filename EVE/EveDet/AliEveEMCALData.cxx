@@ -391,7 +391,7 @@ void AliEveEMCALData::LoadHitsFromEMCALLoader(AliEMCALLoader* const emcl)
 					fSM[iSupMod]->RegisterHit(id,iSupMod,amp,x,y,z);
 				}//hit exists
 			}//hit loop
-			if(hits)hits->Clear();
+			hits->Clear();
 		}// track loop
 	}//treeH exists
 }
@@ -641,8 +641,6 @@ void AliEveEMCALData::LoadRecPointsFromESD()
   Int_t nclus = caloClusters->GetEntries();
   cout << "nclus: " << nclus << endl; 
   
-  if(!caloClusters) return;
-
   for (Int_t iclus =  0; iclus <  nclus; iclus++) 
     {
       AliESDCaloCluster *clus = (AliESDCaloCluster *) caloClusters->At(iclus) ; 
