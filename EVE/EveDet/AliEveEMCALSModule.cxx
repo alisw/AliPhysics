@@ -57,9 +57,9 @@ AliEveEMCALSModule::AliEveEMCALSModule(Int_t smid, const Text_t* n, const Text_t
   // Constructor.
   Char_t name[256];
   if (smid < 10) {
-    sprintf(name,"Full Super Module %02d",smid);
+    snprintf(name,256,"Full Super Module %02d",smid);
   } else {
-    sprintf(name,"Half Super Module %02d",smid);
+    snprintf(name,256,"Half Super Module %02d",smid);
   }
   SetName(name);
 
