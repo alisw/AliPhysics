@@ -124,7 +124,7 @@ void AliEveV0Editor::DisplayDetailed()
   // This part is for getting the different objects to display
   //
   char displayInfo[100] = {0};
-  sprintf(displayInfo,"pt = %.3f",fM->GetPt());
+  snprintf(displayInfo,100,"pt = %.3f",fM->GetPt());
   TEveLine *lv0TransverseMomentumDirection = new TEveLine(displayInfo);
   lv0TransverseMomentumDirection->SetLineColor(kOrange+8);
   lv0TransverseMomentumDirection->SetLineWidth(2);
