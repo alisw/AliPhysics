@@ -179,14 +179,15 @@ void AliITSPIDResponse::GetITSProbabilities(Float_t mom, Double_t qclu[4], Doubl
   for (Int_t iPart = 0; iPart < nPart; iPart++) {
     sumProb += itsProb[iPart];
   }
+  sumProb += 2*itsProb[2]; // muon and electron cannot be distinguished from pions
 
   for (Int_t iPart = 0; iPart < nPart; iPart++) {
     itsProb[iPart]/=sumProb;
   }
   
-  condprobfun[AliPID::kElectron] = itsProb[2]/3.;
-  condprobfun[AliPID::kMuon] = itsProb[2]/3.;
-  condprobfun[AliPID::kPion] = itsProb[2]/3.;
+  condprobfun[AliPID::kElectron] = itsProb[2];
+  condprobfun[AliPID::kMuon] = itsProb[2];
+  condprobfun[AliPID::kPion] = itsProb[2];
   condprobfun[AliPID::kKaon] = itsProb[1];
   condprobfun[AliPID::kProton] = itsProb[0];
   return;
