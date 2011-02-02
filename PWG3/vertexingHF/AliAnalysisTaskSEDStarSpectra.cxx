@@ -68,6 +68,9 @@
 
 ClassImp(AliAnalysisTaskSEDStarSpectra)
 
+
+// I like pink
+
 //__________________________________________________________________________
 AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   AliAnalysisTaskSE(),
@@ -249,12 +252,15 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
- 
+    
     Int_t isDStar = 0;
+    
+    TClonesArray *mcArray = 0; // fix coverity
+
     // mc analysis 
     if(fUseMCInfo){
     //MC array need for maching
-      TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
       // find associated MC particle for D* ->D0toKpi
       Int_t mcLabel = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);

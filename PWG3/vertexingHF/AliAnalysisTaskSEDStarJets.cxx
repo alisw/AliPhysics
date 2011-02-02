@@ -292,8 +292,11 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 
   // TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
+  TClonesArray *mcArray = 0;
+
   if(fUseMCInfo){
-    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  
+    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     //loop on the MC event - some basic MC info on D*, D0 and soft pion
     if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
     
@@ -324,9 +327,10 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 	Int_t daughter1 = mcPart->GetDaughter(1);
 	
 	AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
-	
-	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
-	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
+	AliAODMCParticle* mcPartDaughter0 = 0;
+	AliAODMCParticle* mcPartDaughter1 = 0;
+	mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
+	mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
 	
 	Double_t eta0 = mcPartDaughter0->Eta();
 	Double_t eta1 = mcPartDaughter1->Eta();
@@ -351,8 +355,10 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 	  daughD01 = mcPartDaughter1->GetDaughter(1);
 	}
 	
-	AliAODMCParticle* mcD0PartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD00));
-	AliAODMCParticle* mcD0PartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD01));
+	AliAODMCParticle* mcD0PartDaughter0 = 0;
+	AliAODMCParticle* mcD0PartDaughter1 = 0;
+	mcD0PartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD00));
+	mcD0PartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughD01));
 	
 	if (!mcD0PartDaughter0 || !mcD0PartDaughter1) {
 	  AliWarning("At least one Daughter Particle not found in tree, but it should be, this check was already done..."); 
@@ -491,8 +497,9 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
           Bool_t isDStar = kFALSE; // just to count
 	  
           //switch of MC for real data
+
 	  if(fUseMCInfo){
-	    TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 	    mcLabel = vtx->MatchToMC(421, mcArray,2,pdgDgD0toKpi) ;   //MC D0
 	    // matching to MC D*
 	    if(mcLabel !=-1 && pLabel!=-1 && nJets ==1) { // count only once in case of multijets
