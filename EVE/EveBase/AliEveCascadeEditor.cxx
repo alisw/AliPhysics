@@ -184,7 +184,7 @@ void AliEveCascadeEditor::DisplayDetailed()
   
   // Clusters linked with the bachelor track
   daughterIndex = bacTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t bacResult = gInterpreter->ProcessLine(macroWithIndex);
   if (bacResult) {
 	  bacDaughterCluster = reinterpret_cast<TEvePointSet*>(bacResult);
@@ -201,7 +201,7 @@ void AliEveCascadeEditor::DisplayDetailed()
   
   // Clusters linked with the negative daughter track (V0)
   daughterIndex = negTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
   if (negResult) {
 	  negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
@@ -218,7 +218,7 @@ void AliEveCascadeEditor::DisplayDetailed()
 
   // Clusters linked with the positive daughter track (V0)
   daughterIndex = posTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t posResult = gInterpreter->ProcessLine(macroWithIndex);
   if (posResult) {
 	  posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
@@ -363,34 +363,34 @@ void AliEveCascadeEditor::DisplayDetailed()
   // Calculation of the invariant mass with the max prob PID hypothesis first
   // pseudorapidity, phi angle, pt, radius, dcas
   char info[100] = {0};
-  sprintf(info,"#phi = %.3f rad = %.1f deg",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
+  snprintf(info,100,"#phi = %.3f rad = %.1f deg",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->Draw();
 
-  sprintf(info,"radius = %.3f [cm]",fM->GetRadius());
+  snprintf(info,100,"radius = %.3f [cm]",fM->GetRadius());
   ltx->DrawLatex(0.05, 0.8, info);
 
-  sprintf(info,"p_{T} = %.3f [GeV/c]",fM->GetPt());
+  snprintf(info,100,"p_{T} = %.3f [GeV/c]",fM->GetPt());
   ltx->DrawLatex(0.05, 0.7, info);
 
-  sprintf(info,"Xi dghtrs dca = %.4f [cm]",fM->GetDaughterDCA());
+  snprintf(info,100,"Xi dghtrs dca = %.4f [cm]",fM->GetDaughterDCA());
   ltx->DrawLatex(0.05, 0.6, info);
 
-  sprintf(info,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
+  snprintf(info,100,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
   ltx->DrawLatex(0.05, 0.5, info);
 
   
   if(fM->GetCharge() < 0){
-	  sprintf(info,"mass_{#Xi^{-}} : %.3f [GeV/c^{2}]", fM->GetXiMinusInvMass()    );
+	  snprintf(info,100,"mass_{#Xi^{-}} : %.3f [GeV/c^{2}]", fM->GetXiMinusInvMass()    );
 	  ltx->DrawLatex(0.05, 0.3, info);
-	  sprintf(info,"mass_{#Omega^{-}} : %.3f [GeV/c^{2}]", fM->GetOmegaMinusInvMass() );
+	  snprintf(info,100,"mass_{#Omega^{-}} : %.3f [GeV/c^{2}]", fM->GetOmegaMinusInvMass() );
 	  ltx->DrawLatex(0.05, 0.2, info);
   }
   else {
-	  sprintf(info,"mass_{#Xi^{+}} : %.3f [GeV/c^{2}]", fM->GetXiPlusInvMass()     );
+	  snprintf(info,100,"mass_{#Xi^{+}} : %.3f [GeV/c^{2}]", fM->GetXiPlusInvMass()     );
 	  ltx->DrawLatex(0.05, 0.3, info);
-	  sprintf(info,"mass_{#Omega^{+}} : %.3f [GeV/c^{2}]", fM->GetOmegaPlusInvMass()  );
+	  snprintf(info,100,"mass_{#Omega^{+}} : %.3f [GeV/c^{2}]", fM->GetOmegaPlusInvMass()  );
 	  ltx->DrawLatex(0.05, 0.2, info);
   }
   
