@@ -163,8 +163,8 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
   // the correspondent array entry should be filled by zero.
   // WARNING: this function should be called once per event!
 
-  char hname[128];
-  char htitl[128];
+  TString hname;
+  TString htitle;
 
   for(Int_t iX=0; iX<64; iX++) {
     for (Int_t iZ=0; iZ<56; iZ++) {
@@ -179,9 +179,11 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 	}
 	else
 	  {
-	    sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
-	    sprintf(htitl,"HG/LG ratio for crystal %d_%d_%d",fMod,iX,iZ);
-	    fHgLgRatio[iX][iZ] = new TH1F(hname,htitl,400,14.,18.);
+	    hname.Clear(); htitle.Clear();
+	    hname += fMod; hname += "_"; hname += iX; hname += "_"; hname += iZ;
+	    htitle += "HG/LG ratio for crystal "; htitle += hname;
+	    
+	    fHgLgRatio[iX][iZ] = new TH1F(hname,htitle,400,14.,18.);
 // 	    printf("iX=%d iZ=%d,e[iX][iZ][1]=%.3f,e[iX][iZ][0]=%.3f\n",
 // 		   iX,iZ,e[iX][iZ][1],e[iX][iZ][0]);
 	    fHgLgRatio[iX][iZ]->Fill(e[iX][iZ][1]/e[iX][iZ][0]);
@@ -197,18 +199,22 @@ void AliPHOSRcuDA1::FillHistograms(Float_t e[64][56][2], Float_t t[64][56][2])
 
 	if(fTimeEnergy[iX][iZ][iGain]) 
 	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
-	else {
-	  sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
-	  sprintf(htitl,"Energy vs TOF for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
-	  fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitl,100,0.,1024.,50,0.,50.);
-	  fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
-	  fHistoArray.Add(fTimeEnergy[iX][iZ][iGain]);
-	}
+	else 
+	  {
+	    hname.Clear(); htitle.Clear();
+	    hname += fMod; hname += "_"; hname += iX; hname += "_"; hname += iZ;
+	    htitle = "Energy vs TOF for crystal "; htitle += hname; htitle += " and gain "; htitle += iGain;
+	    hname += "_"; hname += iGain;
+	    
+	    fTimeEnergy[iX][iZ][iGain] = new TH2F(hname,htitle,100,0.,1024.,50,0.,50.);
+	    fTimeEnergy[iX][iZ][iGain]->Fill(e[iX][iZ][iGain],t[iX][iZ][iGain]);
+	    fHistoArray.Add(fTimeEnergy[iX][iZ][iGain]);
+	  }
       }
-
+      
     }
   }
-
+  
 }
 
 //-------------------------------------------------------------------
@@ -234,9 +240,9 @@ void AliPHOSRcuDA1::SetWriteToFile(Bool_t write)
   }
 
   if(!fHistoFile) {
-    char rootname[128];
-    sprintf(rootname,"%s.root",GetName());
-    fHistoFile =  new TFile(rootname,"update");
+    TString rootname(GetName());
+    rootname += ".root";
+    fHistoFile =  new TFile(rootname.Data(),"update");
   } 
   
   fWriteToFile = write;

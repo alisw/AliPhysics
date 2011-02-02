@@ -300,7 +300,6 @@ Bool_t AliPHOSPreprocessor::DoFindBadChannelsEmc(Int_t system, TList* list, AliP
 
   TIter iter(list);
   TObjString *source;
-  char hnam[80];
   TH1F* h1=0;
 
   const Float_t fQualityCut = 1.;
@@ -326,9 +325,10 @@ Bool_t AliPHOSPreprocessor::DoFindBadChannelsEmc(Int_t system, TList* list, AliP
       for(Int_t iX=0; iX<64; iX++) {
 	for(Int_t iZ=0; iZ<56; iZ++) {
 	  
-	  sprintf(hnam,"%d_%d_%d_%d",mod,iX,iZ,1); // high gain	
+	  TString hnam;
+	  hnam += mod; hnam += "_"; hnam += iX; hnam += "_"; hnam += iZ; hnam += "_"; hnam += "1";
 	  h1 = (TH1F*)f.Get(hnam);
-
+	  
 	  if(h1) {
 	    Double_t mean = h1->GetMean();
 	    
