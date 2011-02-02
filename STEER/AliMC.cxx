@@ -1207,11 +1207,9 @@ void AliMC::ReorderAndExpandTreeTR()
     AliDebug(1, "fRunLoader->MakeTrackRefsContainer()");
     rl->MakeTrackRefsContainer(); 
     TTree * treeTR = rl->TreeTR();
-    if (treeTR){
 	// make branch for central track references
 	TClonesArray* pRef = &fTrackReferences;
 	treeTR->Branch("TrackReferences", &pRef);
-    }
 
     AliStack* stack  = rl->Stack();
     Int_t np = stack->GetNprimary();
