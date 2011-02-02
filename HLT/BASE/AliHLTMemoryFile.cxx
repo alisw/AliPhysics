@@ -156,6 +156,7 @@ Long64_t AliHLTMemoryFile::SysSeek(Int_t /*fd*/, Long64_t offset, Int_t whence)
     break;
   case SEEK_END:
     position+=fSize;
+    break;
   default:
     position=-1;
     errno=EINVAL;
