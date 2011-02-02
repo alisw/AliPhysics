@@ -273,7 +273,7 @@ void AliEveTrackCounterEditor::DoActivate()
 
    char fname[200];
    TDatime dat;
-   sprintf(fname, "ScanSummary.%i.%i.txt", dat.GetDate(), dat.GetTime());
+   snprintf(fname, 200,"ScanSummary.%i.%i.txt", dat.GetDate(), dat.GetTime());
    fScanSummaryFile = new ofstream(fname);
    (*fScanSummaryFile) << "Scan summary" << std::endl;
    (*fScanSummaryFile) << "Scan started at " << dat.GetDate() << " " << dat.GetTime() << std::endl;
