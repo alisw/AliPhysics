@@ -75,7 +75,7 @@ void AliEveTPCSector2DEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTPCSector2D*>(obj);
+  fM = static_cast<AliEveTPCSector2D*>(obj);
 
   fShowMax->SetState(fM->fShowMax ? kButtonDown : kButtonUp);
   SetupAverage();
