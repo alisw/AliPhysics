@@ -2103,7 +2103,7 @@ void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
       gamma.SetDetector("CTS"); //tag the gamma as reconstructed in the central barrel
       gamma.SetPdg(AliPID::kEleCon); //photon id
       gamma.SetTag(-1); //Here I usually put a flag saying that montecarlo says it is prompt, decay fragmentation photon, or hadrons or whatever
-      //PH      gamma.SetChi2(gammakf->Chi2());
+      //PH    gamma.SetChi2(gammakf->Chi2());
       
       AddToAODBranch(fAODGamma, gamma);
       
@@ -2723,17 +2723,27 @@ void AliAnalysisTaskGammaConversion::MoveParticleAccordingToVertex(AliKFParticle
 }
 
 void AliAnalysisTaskGammaConversion::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle){
+  // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
+  Double_t dx = fESDEvent->GetPrimaryVertex()->GetX()-0.;
+  Double_t dy = fESDEvent->GetPrimaryVertex()->GetY()-0.;
+  Double_t dz = fESDEvent->GetPrimaryVertex()->GetZ()-0.;
+  
+  kfParticle->X() = kfParticle->GetX() - dx;
+  kfParticle->Y() = kfParticle->GetY() - dy;
+  kfParticle->Z() = kfParticle->GetZ() - dz;
+
+
   // Rotate the kf particle
   Double_t c = cos(angle);
   Double_t s = sin(angle);
   
-  Double_t mA[7][ 7];
-  for( Int_t i=0; i<7; i++ ){
-    for( Int_t j=0; j<7; j++){
+  Double_t mA[8][ 8];
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++){
       mA[i][j] = 0;
     }
   }
-  for( int i=0; i<7; i++ ){
+  for( int i=0; i<8; i++ ){
     mA[i][i] = 1;
   }
   mA[0][0] =  c;  mA[0][1] = s;
@@ -2741,38 +2751,47 @@ void AliAnalysisTaskGammaConversion::RotateKFParticle(AliKFParticle * kfParticle
   mA[3][3] =  c;  mA[3][4] = s;
   mA[4][3] = -s;  mA[4][4] = c;
   
-  Double_t mAC[7][7];
-  Double_t mAp[7];
+  Double_t mAC[8][8];
+  Double_t mAp[8];
   
-  for( Int_t i=0; i<7; i++ ){
+  for( Int_t i=0; i<8; i++ ){
     mAp[i] = 0;
-    for( Int_t k=0; k<7; k++){
+    for( Int_t k=0; k<8; k++){
       mAp[i]+=mA[i][k] * kfParticle->GetParameter(k);
     }
   }
   
-  for( Int_t i=0; i<7; i++){
+  for( Int_t i=0; i<8; i++){
     kfParticle->Parameter(i) = mAp[i];
   }
 
-  for( Int_t i=0; i<7; i++ ){
-    for( Int_t j=0; j<7; j++ ){
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++ ){
       mAC[i][j] = 0;
-      for( Int_t k=0; k<7; k++ ){
+      for( Int_t k=0; k<8; k++ ){
 	mAC[i][j]+= mA[i][k] * kfParticle->GetCovariance(k,j);
       }
     }
   }
 
-  for( Int_t i=0; i<7; i++ ){
+  for( Int_t i=0; i<8; i++ ){
     for( Int_t j=0; j<=i; j++ ){
       Double_t xx = 0;
-      for( Int_t k=0; k<7; k++){
+      for( Int_t k=0; k<8; k++){
 	xx+= mAC[i][k]*mA[j][k];
       }
       kfParticle->Covariance(i,j) = xx;
     }
   }
+
+  Double_t dx1 = 0.-fESDEvent->GetPrimaryVertex()->GetX();
+  Double_t dy1 = 0.-fESDEvent->GetPrimaryVertex()->GetY();
+  Double_t dz1 = 0.-fESDEvent->GetPrimaryVertex()->GetZ();
+  
+  kfParticle->X() = kfParticle->GetX() - dx1;
+  kfParticle->Y() = kfParticle->GetY() - dy1;
+  kfParticle->Z() = kfParticle->GetZ() - dz1;
+
 }
 
 
@@ -2794,7 +2813,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
   }
 
   if(fDoRotation == kTRUE){
-    TRandom3 *random = new TRandom3();
+    TRandom3 *random = new TRandom3(0);
+
     for(Int_t iCurrent=0;iCurrent<currentEventV0s->GetEntriesFast();iCurrent++){
       AliKFParticle currentEventGoodV0 = *(AliKFParticle *)(currentEventV0s->At(iCurrent)); 
       for(Int_t iCurrent2=iCurrent+1;iCurrent2<currentEventV0s->GetEntriesFast();iCurrent2++){
@@ -2819,7 +2839,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  Double_t nRadiansPM = fNDegreesPMBackground*TMath::Pi()/180;
 	  
 	  Double_t rotationValue = random->Rndm()*2*nRadiansPM + TMath::Pi()-nRadiansPM;
-
+	  
 	  RotateKFParticle(&currentEventGoodV02,rotationValue);
 
 	  AliKFParticle *backgroundCandidate = new AliKFParticle(currentEventGoodV0,currentEventGoodV02);
@@ -2828,7 +2848,6 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  Double_t widthBG = 0.;
 	  Double_t chi2BG =10000.;	
 	  backgroundCandidate->GetMass(massBG,widthBG);
-
 	  //	  if(backgroundCandidate->GetNDF()>0){
 	  chi2BG = backgroundCandidate->GetChi2();
 	  if((chi2BG>0 && chi2BG<fV0Reader->GetChi2CutMeson())  || fApplyChi2Cut == kFALSE){
@@ -2952,6 +2971,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    Double_t widthBG = 0.;
 	    Double_t chi2BG =10000.;	
 	    backgroundCandidate->GetMass(massBG,widthBG);
+
 	    //	if(backgroundCandidate->GetNDF()>0){
 	    //	  chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
 	    chi2BG = backgroundCandidate->GetChi2();
@@ -3075,6 +3095,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	      Double_t widthBG = 0.;
 	      Double_t chi2BG =10000.;	
 	      backgroundCandidate->GetMass(massBG,widthBG);
+
 	      /*	    if(backgroundCandidate->GetNDF()>0){
 			    chi2BG = backgroundCandidate->GetChi2()/backgroundCandidate->GetNDF();
 			    {//remember to remove
