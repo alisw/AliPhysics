@@ -7,8 +7,12 @@
 \usepackage{color}
 \usepackage{units}
 \usepackage{listings}
+\usepackage[colorlinks,urlcolor=black,hyperindex,%
+            linktocpage,a4paper,bookmarks=true]{hyperref}
 \def\AlwaysText#1{\ifmmode\relax\text{#1}\else #1\fi}
 \newcommand{\AbbrName}[1]{\AlwaysText{{\scshape #1}}}
+\newcommand{\CERN}{\AbbrName{cern}}
+\newcommand{\ALICE}{\AbbrName{alice}}
 \newcommand{\SPD}{\AbbrName{spd}}
 \newcommand{\ESD}{\AbbrName{esd}}
 \newcommand{\AOD}{\AbbrName{aod}}
@@ -16,22 +20,31 @@
 \newcommand{\INELONE}{$\AbbrName{inel}>0$}
 \newcommand{\NSD}{\AbbrName{nsd}}
 \newcommand{\FMD}[1][]{\AbbrName{fmd\ifx|#1|\else#1\fi}}
+\newcommand{\OCDB}{\AbbrName{ocdb}}
+\newcommand{\mult}[1][]{\ensuremath N_{\text{ch}#1}}
 \newcommand{\dndetadphi}[1][]{{\ensuremath% 
     \ifx|#1|\else\left.\fi%
-    \frac{d^2N_{ch}}{d\eta\,d\varphi}%
+    \frac{d^2\mult{}}{d\eta\,d\varphi}%
     \ifx|#1|\else\right|_{#1}\fi%
 }}
 \newcommand{\landau}[1]{{\ensuremath% 
     \text{landau}\left(#1\right)}}
 \newcommand{\dndeta}[1][]{{\ensuremath% 
     \ifx|#1|\else\left.\fi%
-    \frac{1}{N}\frac{dN_{ch}}{d\eta}%
+    \frac{1}{N}\frac{d\mult{}}{d\eta}%
     \ifx|#1|\else\right|_{#1}\fi%
 }}
 \newcommand{\MC}{\AlwaysText{MC}}
-\newcommand{\Nsel}{{\ensuremath N_{v,\text{trigger,vertex}}}}
+\newcommand{\Ntrgvtx}[1][]{{\ensuremath N_{#1\text{trg,vtx}}}}
+\newcommand{\Ntrg}{{\ensuremath N_{\text{trg}}}}
+\newcommand{\Nvtx}[1][]{{\ensuremath N_{#1\text{vtx}}}}
+\newcommand{\Nsel}{{\ensuremath N_{\text{selected}}}}
+\newcommand{\Ngood}{{\ensuremath N_{\text{good}}}}
 \newcommand{\GeV}[1]{\unit[#1]{\AlwaysText{GeV}}}
 \newcommand{\cm}[1]{\unit[#1]{\AlwaysText{cm}}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+\newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\etaphi}{\ensuremath(\eta,\varphi)}
 
 \setlength{\parskip}{1ex}
 \setlength{\parindent}{0em}
@@ -51,7 +64,9 @@
 
 This document describes the steps performed in the analysis of the
 charged particle multiplicity in the forward pseudo--rapidity
-regions. 
+regions.  The primary detector used for this is the \FMD{}
+\cite{FWD:2004mz,cholm:2009}.  The \SPD{} is used for determination of
+the position of the primary interaction point.  
 
 The analysis is performed as a two--step process.  
 \begin{enumerate}
@@ -74,48 +89,50 @@ event--by--event the following steps are taken (in order) for each
 event $i$
 \begin{description}
 \item[Event inspection] The global properties of the event is
-  determined, including the trigger type, vertex $z$ coordinate, and
-  whether this is a low--flux event or not. 
+  determined, including the trigger type and primary interaction
+  point\footnote{`Vertex' and `primary interaction point' will be used
+    interchangeably in the text, since there is no ambiguity with
+    particle production vertex in this analysis.} $z$ coordinate (see
+  \secref{sec:sub:event_inspection}).  
 \item[Sharing filter] The \ESD{} object is read in and corrected for
-  sharing.  The result is a new \ESD{} object.
+  sharing.  The result is a new \ESD{} object (see
+  \secref{sec:sub:sharing_filter}). 
 \item[Density calculator] The (possibly un--corrected) \ESD{} object
-  is then inspected and an inclusive, per--ring charged particle
-  density $\dndetadphi[incl,r,v,i]$  is made.  This
-  calculation depends in general upon the interaction
-  vertex\footnote{In the following simply labelled 'primary vertex' or
-    'vertex'.} position along the $z$ axis ($v_z$).  
-\item[Corrections] The 5 $\dndetadphi[incl,r,v,i]$ are
-  corrected for secondary production, event selection efficiency, and
-  possibly the sharing efficiency.  These corrections are highly
-  dependent on the vertex $z$ coordinate.  The result is an per--ring,
-  charged primary particle density $\dndetadphi[r,v,i]$
+  is then inspected and an inclusive (primary \emph{and} secondary
+  particles), per--ring charged particle density
+  $\dndetadphi[incl,r,v,i]$ is made.  This calculation depends in
+  general upon the interaction vertex position along the $z$ axis
+  $v_z$ (see \secref{sec:sub:density_calculator}).
+\item[Corrections] The 5 $\dndetadphi[incl,r,v,i]$ are corrected for
+  secondary production and acceptance.  The correction for the
+  secondary particle production is highly dependent on the vertex $z$
+  coordinate.  The result is a per--ring, charged primary particle
+  density $\dndetadphi[r,v,i]$ (see \secref{sec:sub:corrector}). 
 \item[Histogram collector] Finally, the 5 $\dndetadphi[r,v,i]$ are
   summed into a single $\dndetadphi[v,i]$ histogram, taking care of
   the overlaps between the detector rings.  In principle, this
   histogram is independent of the vertex, except that the
   pseudo--rapidity range, and possible holes in that range, depends on
-  $v_z$ --- or rather the bin in which the $v_z$ falls. 
+  $v_z$ --- or rather the bin in which the $v_z$ falls (see
+  \secref{sec:sub:hist_collector}).
 \end{description}
 
 Each of these steps will be detailed in the following. 
 
 \subsection{Event inspection}
+\label{sec:sub:event_inspection}
 
 The first thing to do, is to inspect the event for triggers.  A number
 of trigger bits, like \INEL{}, \INELONE{}, \NSD{}, and so on is then
 propagated to the \AOD{} output.  
 
-Next, the number of \emph{tracklets} reconstructed in the Silicon
-Pixel Detector (\SPD{}) compared to a threshold.  If the number of
-track--lets falls belows this threshold, the event is consider a
-low--flux event.   
-
 Just after the sharing filter (described below) but before any more
 processing, the vertex information is queried.  If there is no vertex
 information, or if the vertex $z$ coordinate is outside the
-pre--defined range, then no further processing takes place. 
+pre--defined range, then no further processing of that event takes place. 
 
 \subsection{Sharing filter}
+\label{sec:sub:sharing_filter}
 
 The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
 E/\Delta E_{mip}$ for each of the 51,200 strips.  The \FMD{} is
@@ -158,16 +175,25 @@ strips, as well as the $\eta$ coverage is given in
 \end{table}
 
 A particle originating from the vertex can, because of it's incident
-angle on the \FMD{} sensors traverse more than one strip.  That means
-that the energy loss of the particle is distributed over 1 or more
-strips.  The signal in each strip should therefore possibly merged
-with it's neighbor strip signals to properly reconstruct the energy
-loss of a single particle.  
+angle on the \FMD{} sensors traverse more than one strip (see
+\figref{fig:share_fraction}).  This means that the energy loss of the
+particle is distributed over 1 or more strips.  The signal in each
+strip should therefore possibly be merged with it's neighboring strip
+signals to properly reconstruct the energy loss of a single particle.
 
-The effect is most pronounced in low--flux events, like proton--proton
-collisions or peripheral Pb--Pb collisions, while in high--flux events
-the hit density is so high that most likely each and every strip will
-be hit and the effect cancel out on average. 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[keepaspectratio,height=3cm]{share_fraction}
+  \caption{A particle traversing 2 strips and depositing energy in
+    each strip. }
+  \label{fig:share_fraction}
+\end{figure}
+
+The effect is most pronounced in low--flux\footnote{Events with a low
+  hit density.} events, like proton--proton collisions or peripheral
+Pb--Pb collisions, while in high--flux events the hit density is so
+high that most likely each and every strip will be hit and the effect
+cancel out on average.
 
 Since the particles travel more or less in straight lines toward the
 \FMD{} sensors, the sharing effect predominantly in the $r$ or
@@ -223,14 +249,14 @@ sector.
 
 Here the function \FuncSty{SignalInStrip}($t$) returns the properly
 path--length corrected signal in strip $t$.  The function
-\FuncSty{MultiplicityInStrip} is where the real processing takes
-place (see page \pageref{func:MultiplicityInStrip}). 
+\FuncSty{MultiplicityOfStrip} is where the real processing takes
+place (see page \pageref{func:MultiplicityOfStrip}). 
 
 \begin{function}[htbp]
-  \caption{MultiplicityInStrip(\DataSty{current},$\eta$,\DataSty{previous},\DataSty{next},\DataSty{low
+  \caption{MultiplicityOfStrip(\DataSty{current},$\eta$,\DataSty{previous},\DataSty{next},\DataSty{low
       flux flag},\DataSty{previous signal used},\DataSty{this signal
       used})} 
-  \label{func:MultiplicityInStrip}
+  \label{func:MultiplicityOfStrip}
   \SetKwData{Current}{current} 
   \SetKwData{Next}{next} 
   \SetKwData{Previous}{previous} 
@@ -275,9 +301,9 @@ place (see page \pageref{func:MultiplicityInStrip}).
     \Return{0}
   }
 \end{function}
-Here, the function \FuncSty{GetHighCut} evaluates a Landau
-distribution fitted to the energy spectrum in the $\eta$ bin
-specified.  It returns 
+Here, the function \FuncSty{GetHighCut} evaluates a fit to the energy
+distribution in the specified $\eta$ bin (see also
+\secref{sec:sub:density_calculator}).  It returns
 $$
 \Delta_{mp} - 2 w
 $$
@@ -286,18 +312,18 @@ width of the Landau distribution.
 
 The \KwSty{if} in line 5, says that if the previous strip was merged
 with current one, and the signal of the current strip was added to
-that, then we the current signal is set to 0, and we mark it as used
-for the next iteration (\DataSty{previous signal
-  used}$\leftarrow$true). 
+that, then the current signal is set to 0, and we mark it as used for
+the next iteration (\DataSty{previous signal used}$\leftarrow$true).
 
 The \KwSty{if} in line 10 checks if the current signal is smaller than
-the next signal, the next signal is larger than the upper cut defined
-above, and if we have a low--flux event.  If that condition is met,
-then the current signal is the smaller of two possible candidates for
-merging, and it should be merged into the next signal.  Note, that
-this \emph{only} applies in low--flux events.  
+the next signal, if the next signal is larger than the upper cut
+defined above, and if we have a low--flux event\footnote{Note, that in
+  the current implementation there are never any low--flux events.}.
+If that condition is met, then the current signal is the smaller of
+two possible candidates for merging, and it should be merged into the
+next signal.  Note, that this \emph{only} applies in low--flux events.
 
-On line 15, we test if the previous signal lies between our low and
+In line 15, we test if the previous signal lies between our low and
 high cuts, and if it has not been marked as being used.  If so, we add
 it to our current signal.  
 
@@ -315,62 +341,54 @@ as unused and return a 0.
 
 
 \subsection{Density calculator}
+\label{sec:sub:density_calculator}
 
-The density calculator loops over all the strip signals and calculates
-the inclusive (primary + secondary) charged particle density in
-pre-defined $(\eta,\varphi)$ bins.  
+The density calculator loops over all the strip signals in the \ESD{}
+and calculates the inclusive (primary + secondary) charged particle
+density in pre--defined $\etaphi$ bins.
 
 \subsubsection{Inclusive number of charged particles} 
 
-If the event is classified as a low--flux event, then the number of
-charged particles in a given by a simple threshold: 
-\begin{align}
-  N_{ch,t} &= \left\{
-    \begin{array}{cl}
-      0 & \Delta_t < \text{low cut}\\ 
-      1 & \Delta_t \ge \text{low cut}\\ 
-    \end{array}\right.\quad,
-\end{align}
-where $t$ is the strip identifier, $\Delta_t$ is the scaled energy
-deposition in that strip, and 'low cut' is a predefined
-cut\footnote{This low--flux mode is perhaps deprecated.}.  
-
-For high flux events, the number charged particles in a strip is
-calculated using multiple Landau distributions fitted to the energy
-loss spectrum at a given $\eta$ value.
+The number charged particles in a strip is calculated using multiple
+Landau-like distributions fitted to the energy loss spectrum at a given
+$\eta$ value.
 \begin{align}
   \Delta_{i,mp} &= i (\Delta_{1,mp}+ \xi_1 \log(i))\nonumber\\
   \xi_i         &= i\xi_1\nonumber\\
   \sigma_i      &= \sqrt{i}\sigma_1\nonumber\\
-  N_{ch,t} &= \frac{\sum_i^{N_{max}}
+  \mult[,t]     &= \frac{\sum_i^{N_{max}}
     i\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}{
     \sum_i^{N_{max}}\,a_i\,F(\Delta_t;\Delta_{i,mp},\xi_i,\sigma_i)}\quad,
 \end{align}
 where $F(x;\Delta_{mp},\xi,\sigma)$ is the evaluation of the Landau
 distribution $f_L$ with most probable value $\Delta_{mp}$ and width
-$\xi$, folded with a Gaussian distribution with spread $\sigma$
-\cite{nim:b1:16,phyrev:a28:615}.
+$\xi$, folded with a Gaussian distribution with spread $\sigma$ at the
+energy loss $x$ \cite{nim:b1:16,phyrev:a28:615}.
+\begin{align}
+  \label{eq:energy_response}
+  F(x;\Delta_{mp},\xi,\sigma) = \frac{1}{\sigma \sqrt{2 \pi}}
+  \int_{-\infty}^{+\infty} d\Delta' f_{L}(x;\Delta',\xi)
+  \exp{-\frac{(\Delta_{mp}-\Delta')^2}{2\sigma^2}}\quad,
+\end{align}
+where $\Delta_{1,mp}$, $\xi_1$, and $\sigma_1$ are the parameters for
+the first MIP peak, $a_1=1$, and $a_i$ is the relative weight of the
+$i^{\text{th}}$ MIP peak.  The parameters $\Delta_{1,mp}, \xi_1,
+\sigma_1, a_2, \ldots a_{N_{max}}$ are obtained by fitting
 $$
-F(x;\Delta_{mp},\xi,\sigma) = \frac{1}{\sigma \sqrt{2 \pi}}
-\int_{-\infty}^{+\infty} d\Delta' f_{L}(x;\Delta',\xi)
-\exp{-\frac{(\Delta_{mp}-\Delta')^2}{2\sigma^2}}
-$$
-$\Delta_{1,mp}$, $\xi_1$, and $\sigma_1$ are the parameters for the
-first MIP peak, $a_1=1$, and $a_i$ is the relative weight of the
-$i^{\text{th}}$ MIP peak.   The parameters $\Delta_{1,mp}, \xi_1,
-\sigma_1, a_2, \ldots a_{N_{max}}$ are obtained by fitting 
-$$
+F_j(x;\Delta_{mp},\xi,\sigma) = 
 \sum_{i=1}^{j} F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
 $$
-for increasing $j$ to the energy loss spectra in separate $\eta$
-bins. 
+for increasing $j$ to the energy loss spectra in separate $\eta$ bins.
+The fit procedure is stopped when the reduced $\chi^2$ exceeds a
+certain threshold, or when the weight $a_j$ is smaller than some
+number (typically $10^5$).  An example of the result of these fits are
+given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}. 
 
-\subsubsection{Acceptance and double-hit corrections}
+\subsubsection{Azimuthal Acceptance}
 
-Before the signal $N_{ch,t}$ can be added to the $(\eta,\varphi)$
+Before the signal $\mult[,t]$ can be added to the $\etaphi$
 bin in one of the 5 per--ring histograms, it needs to be corrected for
-the $\varphi$ acceptance of the strip, as well as a correction for
-double hits in low--flux events.   
+the $\varphi$ acceptance of the strip.
 
 The acceptance correction is only applicable where the strip length
 does not cover the full sector.  This is the case for the outer strips
@@ -384,50 +402,23 @@ where $l_t$ is the strip length in radians at constant $r$, and
 $\Delta\varphi$ is $2\pi$ divided by the number of sectors in the
 ring (20 for inner type rings, and 40 for outer type rings). 
 
-Even in low--flux events it is possible that more than one particle
-hits a strip.  However, for low--flux events, it is not possible to
-reconstruct the 3\textsuperscript{rd} nor even the
-2\textsuperscript{nd} MIP peak in the energy loss spectrum.
-Therefore, the strip signal needs to be corrected to the average
-number of particle impinging on a strip at a given $\eta$\footnote{As
-  before, this low--flux mode is deprecated and this correction is not
-  applied}.  
-\begin{align}
-  d_{t,r}(\eta) &= \left\{
-    \begin{array}{cl} \langle
-      n_{t,r}(\eta)\rangle & \text{low flux}\\
-      1 & \text{high flux}
-    \end{array}\right.\quad.
-\end{align}
-This correction is calculated separately for each ring in $\eta$ bins
-from simulated events like
-\begin{align}
-  \label{eq:double_hit_corr} 
-  \langle n_{t,r}(\eta)\rangle &= \frac{
-    \sum_i N_{\text{strips},r,i}(\eta)}{
-    \sum_i N_{ch,r,i}(\eta)}\quad,
-\end{align}
-where $N_{\text{strips},r,i}(\eta)$ is the number of strips in ring
-$r$ in a given $\eta$ bin that have been hit in the $i^{\text{th}}$
-event, and $N_{ch,r,i}(\eta)$ is the number of charged particles that
-fell within the same $\eta$ bin in the $i^{\text{th}}$ event.
-
-The final $(\eta,\varphi)$ content of the 5 output vertex dependent,
+The final $\etaphi$ content of the 5 output vertex dependent,
 per--ring histograms of the inclusive charged particle density is then
 given by
 \begin{align}
   \label{eq:density}
-  \dndetadphi[incl,r,v,i(\eta,\varphi)] &= \sum_t^{t\in(\eta,\varphi)}
-  N_{ch,t}\,a_t\,d_{t,r}(\eta)
+  \dndetadphi[incl,r,v,i\etaphi] &= \sum_t^{t\in\etaphi}
+  \mult[,t]\,a_t
 \end{align}
-where $t$ runs over the strips in the $(\eta,\varphi)$ bin. 
+where $t$ runs over the strips in the $\etaphi$ bin. 
 
 \subsection{Corrections}
+\label{sec:sub:corrector}
 
 The corrections code receives the five vertex dependent,
 per--ring histograms of the inclusive charged particle density
 $\dndetadphi[incl,r,v,i]$ from the density calculator and applies
-three corrections 
+two corrections 
 
 \subsubsection{Secondary correction}
 %%
@@ -441,193 +432,65 @@ three corrections
 %% - hHits_FMD<d><r>_vtx<v>  is 2D of eta,phi for all track-refs that
 %%   hit the FMD - The 2D version of hMCHits_nocuts_FMD<d><r>_vtx<v>
 %%   used below. 
-  This is a 2 dimensional histogram generated from simulations of the
-  ratio of primary particles to the total number of particles that
-  fall within an $(\eta,\varphi)$ bin for a given vertex bin
+This is a 2 dimensional histogram generated from simulations, as the
+ratio of primary particles to the total number of particles that fall
+within an $\etaphi$ bin for a given vertex bin
 
-  \begin{align}
-    \label{eq:secondary}
-    s_v(\eta,\varphi) &=
-    \frac{\sum_i^{\Nsel}N_{ch,\text{primary},i}(\eta,\varphi)}{
-      \sum_i^{\Nsel}N_{ch,\text{\FMD{}},i}(\eta,\varphi)}\quad,
-  \end{align}
-  where $\Nsel$ is the number of events with a valid trigger and a
-  vertex in bin $v$, and $N_{ch,\FMD{},i}$ is the total number of
-  charged particles that hit the \FMD{} in event $i$ in the specified
-  $(\eta,\varphi)$ bin and $N_{ch,\text{primary},i}$ is number of
-  primary charged particles in event $i$ within the specified
-  $(\eta,\varphi)$ bin.
-
-  $N_{ch,primary}(\eta,\varphi)$ is given by summing over the charged
-  particles labelled as primaries \emph{at the time of the collision}
-  as defined in the simulation code.  That is, it is the number of
-  primaries within the bin at the collision point --- not at the
-  \FMD{}.  
-
-\subsubsection{Event selection efficiency}
-%% AliFMDAnalysisTaskGenerateCorrection
-%% 
-%% Analysed_FMD<r>_vtx<v> 2D histogram (eta,phi)
-%% EventsSelected[<v>]    bin content 
-%% Inel_FMD<r>_vtx<v>     2D histogram (eta,phi) 
-%% EventsAll[<v>]         bin content 
-%%
-%% correction is 
-%%
-%%      Analysed_FMD<d><r>_vtx<v> / EventsSelected[<v>]
-%%    ---------------------------------------------------
-%%      Inel_FMD<r>_vtx<v> / EventsAll[<v>] 
-%% 
-%% Inel_FMD<r>_vtx<v>        is d^2N_incl,ch/d\eta d\varphi for all
-%%                           events  
-%% Analysed_FMD<d><r>_vtx<v> is d^2N_{incl,ch}/d\eta d\varphi for
-%%                           events with trigger _and_ vertex
-%% EventsSelected            is dN/dv_z for events with trigger _and_
-%%                           vertex
-%% EventsAll                 is dN/dv_z for all events 
-  This correction is made from simulations.  It is a 2--dimensional
-  histogram of the ratio of average number of charged particles in
-  events that are triggered as interactions \emph{and} have vertex, to
-  the average number of charged particles in all events in
-  $(\eta,\varphi)$ bins
-  \begin{align}
-    \label{eq:event_sel_eff}
-    e_{v}(\eta,\varphi) &= 
-    \frac{\frac{1}{N_{v}} \sum_{i}^{N_{v}} N_{ch,\MC{},i}(\eta,\varphi)}{
-      \frac{1}{\Nsel{}}\sum_{i}^{\Nsel{}}
-      N_{ch,\MC{},i}(\eta,\varphi)}\nonumber\\
-    &= \frac{\Nsel{}}{N_{v}} \frac{\sum_{i}^{N_{v}} 
-      N_{ch,\MC{},i}(\eta,\varphi)}{\sum_{i}^{\Nsel{}}
-      N_{ch,\MC{},i}(\eta,\varphi)}\quad,
-  \end{align}
-  where $N_{v}$ is the total number of events in vertex bin $v$, and
-  $\Nsel{}$ is the number of events with a collision trigger and
-  vertex within the predefined range, for vertex bin $v$.
-  $N_{ch,\MC{},i}$ is the number of charged 'MC truth' particles
-  within the specified $(\eta,\varphi)$ range for event $i$.
-
-\subsubsection{Sharing correction efficiency}
-%% hits_NoCuts_FMD<d><r>_vtxbin<v>_proj 
-%% hMCHits_nocuts_FMD<d><r>_vtxbin<v>
-%% 
-%% Correction is 
-%% 
-%%     hits_NoCuts_FMD<d><r>_vtxbin<v>_proj / hEvents[<v>]
-%%    -----------------------------------------------------
-%%     hMChits_nocuts_FMD<d><r>_vtxbin<v> / nMCEventsNoCuts[<v>] 
-%%
-%% Or 
-%%
-%%     sum_eta hits_FMD<d><r>_vtxbin<v> / EventSel1D / hEvents[<v>]
-%%   ---------------------------------------------------------------
-%%     hMCHits_nocuts_FMD<d><r>_vtxbin<v> / nMCEventsNoCuts[<v>] 
-%%   
-%% - hits_NoCuts_FMD<d><r>_vtxbin<v>_proj 
-%%   A projection of hits_FMD<d><r>_vtxbin<v> onto the eta axis and
-%%   possibly scaled to EventSel1D. 
-%% - EventSel1D - the 1D event selection efficiency (per vertex) 
-%%   This is the ratio of hEventAll divided hEventsSelected, with
-%%   errors calculated as 
-%% 
-%%      da = sqrt(e_sel^2 + e_all^2)
-%%      a  = c_all - c_sel 
-%%      e  = sqrt(da^2 + a^2 / (c_ell*c_sel)^2)
-%%         = sqrt(e_sel^2 + e_all^2 + (c_all-c_sel)^2 /
-%%         (c_ell*c_sel)^2)
-%%
-%%   where hEventsAll[<v>] is the total number of events in the v bin,
-%%   and hEventsSelected[<v>] is the notoal number of events with
-%%   trigger and vertex in the v bin. Both for MC
-%% - hits_FMD<d><r>_vtxbin<v>
-%%   from AliFMDAnalysisTaskBackgroundCorrection - the uncorrected
-%%   multiplicity in each ring - i.e.,
-%%   \dndetadphi[incl,r,v,i(\eta,\varphi)] 
-%% - hMCHits_nocuts_FMD<d><r>_vtxbin<v> - from
-%%   AliFMDAnalysisTaskSharing - a 1D histogram in eta - sum of eta of
-%%   track-refs that hit FMD with some requirements on the neighbors  
-%% - hEvents[<v>] - bin content of dN/dv_{z} 
-%% - nMCEventsNoCuts -  hPrimEvents[<v>] - bin content of dN/dv_{z}
-%%   for MC events - from AliFMDAnalysisTaskSharing - number of not
-%%   empty mc events per vertex bin 
-%% 
-This is a one dimension histogram in $\eta$, generated from running
-the full analysis on simulated data\footnote{With improved energy loss
-  fits, this correction is redundant and not used} .
-  \begin{align}
-    \label{eq:sharing_corr}
-    m_v(\eta) &=
-    \frac{\frac1{\Nsel}\sum_i^{\Nsel{}}N_{ch,\text{\FMD{}},i}(\eta)}{
-      \frac{1}{e_{v}}\frac1{\Nsel{}}\left.\frac{dN_{ch}}{d\eta}
-      \right|_{incl,r,v(\eta)}^{\MC{}}}
-    \nonumber\\
-    &=
-    \frac{\frac1{\Nsel}\sum_i^{\Nsel{}}N_{ch,\text{\FMD{}},i}(\eta)}{
-      \frac1{N_v}\left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}^{\MC}}
-    \nonumber\\
-    &= 
-    \frac{N_v}{\Nsel{}}
-    \frac{\sum_i^{\Nsel{}}N_{ch,\text{\FMD{}},i}(\eta)}{
-      \left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}^{\MC}}\\
-    \intertext{since}
-    e_{v} &= \frac{N_{v}}{\Nsel{}}\quad,
-%% \pm 
-%%    \sqrt{\sqrt{\Nsel{}}^2 + \sqrt{N_v^2} +
-%%      \frac{(N_v-\Nsel{})^2}{(\Nsel{}N_v)^2}}\nonumber \\
-%%    &= \frac{N_{v}}{\Nsel{}} \pm 
-%%    \sqrt{\Nsel{} + N_v + \frac1{\Nsel{}^2} + \frac1{N_v^2} -
-%%      \frac1{\Nsel{}N_v}}\quad, 
-  \end{align}
-  and $N_v$ is the total number of simulated events with vertex in bin
-  $v$, $\Nsel{}$ is the number of simulated events with a collision
-  trigger and a reconstructed vertex, $N_{ch,\text{\FMD{}},i}(\eta)$ is
-  the total number of 'MC truth' charged particles that impinge on the
-  \FMD{} in the given eta  bin in event $i$, and 
-  \begin{align}
-    \left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}^{\MC{}} &= 
-    \int_0^{2\pi}d\varphi\dndetadphi[incl,r,v(\eta,\varphi)]
-    \nonumber\\
-    &=  \int_0^{2\pi}d\varphi\sum_i^{\Nsel{}}\dndetadphi[incl,i,r,v(\eta,\varphi)]\quad,
-  \end{align}
-  where the integrand is \eqref{eq:density} for simulated data i.e.,
-  this is the inclusive total charge particle density in a given $v$
-  bin for ring $r$ in event $i$. 
-
-Putting equations \eqref{eq:secondary}, \eqref{eq:event_sel_eff}, and
-\eqref{eq:sharing_corr} together we get the total correction
-$c_v(\eta,\varphi)$ to be 
 \begin{align}
-  \label{eq:total_corr}
-  c_v(\eta,\varphi) =\ &
-  s_v(\eta,\varphi)\,e_v(\eta,\varphi)\,m_v(\eta)\nonumber\\ 
-  =\ & \frac{\sum_i^{\Nsel}N_{ch,\text{primary},i}(\eta,\varphi)}{
-      \sum_i^{\Nsel}N_{ch,\text{\FMD{}},i}(\eta,\varphi)}
-    \nonumber\\
-    & \times\ \frac{\Nsel{}}{N_{v}} \frac{\sum_{i}^{N_{v}} 
-      N_{ch,\MC{},i}(\eta,\varphi)}{\sum_{i}^{\Nsel{}}
-      N_{ch,\MC{},i}(\eta,\varphi)}\nonumber\\
-    & \times\ \frac{N_v}{\Nsel{}}
-    \frac{\sum_i^{\Nsel{}}N_{ch,\text{\FMD{}},i}(\eta)}{
-      \left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}^{\MC}}\nonumber\\
-  =\ & \frac{\sum_i^{\Nsel}N_{ch,\text{primary},i}(\eta,\varphi)}{
-      \sum_i^{\Nsel}N_{ch,\text{\FMD{}},i}(\eta,\varphi)}
-    \frac{\sum_{i}^{N_{v}} N_{ch,\MC{},i}(\eta,\varphi)}{
-      \sum_{i}^{\Nsel{}} N_{ch,\MC{},i}(\eta,\varphi)}
-    \frac{\sum_i^{\Nsel{}}N_{ch,\text{\FMD{}},i}(\eta)}{
-      \left.\frac{dN_{ch}}{d\eta}\right|_{incl,r,v(\eta)}^{\MC}}\quad,
+  \label{eq:secondary}
+  s_v\etaphi &=
+  \frac{\sum_i^{\Ntrgvtx[v,]}\mult[,\text{primary},i]\etaphi}{
+    \sum_i^{\Ntrgvtx[v,]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
 \end{align}
-which\footnote{Note that $\sum_{i}^{\Nsel{}} N_{ch,\FMD{},i}(\eta) =
-  \int_0^{2\pi}d\varphi\,\sum_{i}^{\Nsel{}}
-  N_{ch,\FMD{},i}(\eta,\varphi)$} is independent of the overall
-number of events $N_v$ and $\Nsel{}$.
+where $\Ntrgvtx$ is the number of events with a valid trigger and a
+vertex in bin $v$, and $\mult[,\FMD{},i]$ is the total number of
+charged particles that hit the \FMD{} in event $i$ in the specified
+$\etaphi$ bin and $\mult[,\text{primary},i]$ is number of
+primary charged particles in event $i$ within the specified
+$\etaphi$ bin.
+
+$\mult[,\text{primary}]\etaphi$ is given by summing over the
+charged particles labelled as primaries \emph{at the time of the
+  collision} as defined in the simulation code.  That is, it is the
+number of primaries within the $\etaphi$ bin at the collision
+point --- not at the \FMD{}.
+
+\subsubsection{Acceptance due to dead channels}
+
+Some of the strips in the \FMD{} have been marked up as \emph{dead},
+meaning that they are not used in the reconstruction or analysis.
+This leaves holes in the acceptance of each defined $\etaphi$
+which need to be corrected for.  
+
+Dead channels are marked specially in the \ESD{}s with the flag
+\textit{Invalid Multiplicity}.  This is used in the analysis to build
+up and event--by--event acceptance correction in each $\etaphi$
+bin by calculating the ratio
+\begin{align}
+  \label{eq:dead_channels} 
+  a_{v,i}\etaphi &= 
+  \frac{\sum_t^{t\in\etaphi}\left\{\begin{array}{cl}
+        1 & \text{if not dead}\\
+        0 & \text{otherwise}
+      \end{array}\right.}{\sum_t^{t\in\etaphi} 1}\quad,
+\end{align}
+where $t$ runs over the strips in the $\etaphi$ bin.  This
+correction is obviously $v_z$ dependent since which $\etaphi$
+bin a strip $t$ corresponds to depends on it's relative position to
+the primary vertex. 
+
+Alternatively, pre--made acceptance factors can be used.  These are
+made from the off-line conditions database (\OCDB{}).
 
 The 5 output vertex dependent, per--ring histograms of the primary
 charged particle density is then given by
 \begin{align}
-  \dndetadphi[r,v,i(\eta,\varphi)] &=
-  c_v(\eta,\varphi)\dndetadphi[incl,r,v,i(\eta,\varphi)]
+  \dndetadphi[r,v,i\etaphi] &=
+  s_v\etaphi a_{v,i}\etaphi\dndetadphi[incl,r,v,i\etaphi]
 \end{align}
 
 \subsection{Histogram collector}
+\label{sec:sub:hist_collector}
 
 The histogram collector collects the information from the 5 vertex
 dependent, per--ring histograms of the primary charged particle
@@ -636,8 +499,8 @@ of the charged particle density $\dndetadphi[v,i]$.
 
 To do this, it first calculates, for each vertex bin, the $\eta$ bin
 range to use for each ring.  It investigates the secondary correction
-maps $s_v(\eta,\varphi)$ to find the edges of the map.  The edges are
-given by the $\eta$ range where $s_v(\eta,\varphi)$ is larger than
+maps $s_v\etaphi$ to find the edges of the map.  The edges are
+given by the $\eta$ range where $s_v\etaphi$ is larger than
 some threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
 applies safety margin of a $N_{cut}$ bins\footnote{Typically
   $N_{cut}=1$.}, to ensure that the data selected does not have too
@@ -652,16 +515,16 @@ The output vertex dependent histogram of the primary
 charged particle density is then given by
 \begin{align}
   \label{eq:superhist}
-  \dndetadphi[v,i(\eta,\varphi)] &=
-  \frac{1}{N_{r\in(\eta,\varphi)}}\sum_{r}^{r\in(\eta,\varphi)}  
-  \dndetadphi[r,v,i(\eta,\varphi)]\\
-  \delta\left[\dndetadphi[v,i(\eta,\varphi)]\right] &=
-  \frac{1}{N_{r\in(\eta,\varphi)}}\sqrt{\sum_{r}^{r\in(\eta,\varphi)}   
-    \delta\left[\dndetadphi[r,v,i(\eta,\varphi)]\right]^2}
+  \dndetadphi[v,i\etaphi] &=
+  \frac{1}{N_{r\in\etaphi}}\sum_{r}^{r\in\etaphi}  
+  \dndetadphi[r,v,i\etaphi]\\
+  \delta\left[\dndetadphi[v,i\etaphi]\right] &=
+  \frac{1}{N_{r\in\etaphi}}\sqrt{\sum_{r}^{r\in\etaphi}   
+    \delta\left[\dndetadphi[r,v,i\etaphi]\right]^2}
   \quad,
 \end{align}
-where $N_{r\in(\eta,\varphi)}$ is the number of overlapping histograms
-in the given $(\eta,\varphi)$ bin. 
+where $N_{r\in\etaphi}$ is the number of overlapping histograms
+in the given $\etaphi$ bin. 
 
 The histogram collector stores the found $\eta$ ranges in the
 underflow bin of the histogram produced.  The content of the overflow
@@ -683,20 +546,32 @@ depends on the current vertex bin of event $i$.
 
 To build the final $\dndeta$ distribution it is enough to sum
 \eqref{eq:superhist} and \eqref{eq:overflow} over all interesting
-events and then scale it to the number of events that had a collision
-trigger
+events and then normalise the selected trigger type.
 \begin{align}
-  \dndetadphi[(\eta,\varphi)] &= \sum_i^{N_{\text{selected}}}
-  \dndetadphi[i,v(\eta,\varphi)]\\ 
-  I(\eta) &= \sum_i^{N_{\text{selected}}}I_{i,v}(\eta)\\
-  \intertext{With $N_{\text{trigger}}$ equal to the number of events with a
-    collision trigger, we get}
-  \dndeta[(\eta)] &=
-  \frac{\Nsel{}}{N_{\text{trigger}}}\frac{1}{\Delta\eta}
-  \frac{1}{I(\eta)}\sum_{\varphi}\dndetadphi[(\eta,\varphi)]\quad,
+  \dndetadphi[\etaphi] &= \sum_i^{\Nsel}\dndetadphi[i,v\etaphi]\\ 
+  I(\eta) &= \sum_i^{\Nsel}I_{i,v}(\eta)\quad.
 \end{align}
-where $\Delta\eta$ is the $\eta$ bin width.  Note that in general
-$\Nsel{}\ne N_{\text{selected}}$. 
+Note, that $I(\eta)\le\Nsel$.  
+
+With $N_x$ equal to the number of events with trigger $x$ (\INEL,
+\INELONE, \NSD, or a particular centrality), we get
+\begin{align}
+  \label{eq:dndeta:x}
+  \dndeta[(\eta),x] &=
+  \frac{N_{\INEL}}{\Ngood}\frac{\Nsel}{N_x}\frac{1}{\Delta\eta}
+  \frac{1}{I(\eta)}\sum_{\varphi}\dndetadphi[\etaphi]\quad,
+\end{align}
+where $\Nsel$ is the number of events with trigger $x$ and a vertex
+within the define cuts, $\Ngood=N_B-N_A-N_C+2N_E$, $N_{\INEL}$ is the
+number of inelastic triggers, and $\Delta\eta$ is the $\eta$ bin
+width.  Note, that if $x=\INEL$ then the expression
+\eqref{eq:dndeta:x} reduces to 
+\begin{align*}
+  \dndeta[(\eta),\INEL] =
+  \frac{\Nsel}{\Ngood}\frac{1}{\Delta\eta}
+  \frac{1}{I(\eta)}\sum_{\varphi}\dndetadphi[\etaphi]\quad.  
+\end{align*}
+Example code is shown in Appendix~\ref{app:exa_pass2}.
 
 \section{Using the per--event $\dndetadphi[i,v]$ histogram for other
   analysis} 
@@ -772,7 +647,74 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
 
 \clearpage
 \appendix 
+\section{Nomenclature} 
+
+\begin{table}[hbp]
+  \centering
+  \begin{tabular}[t]{|lp{.8\textwidth}|}
+    \hline 
+    \textbf{Symbol}&\textbf{Description}\\
+    \hline 
+    \INEL & In--elastic event\\ 
+    \INELONE & In--elastic event with at least one tracklet in the
+    \SPD{} in the region $-1\le\eta\le1$\\ 
+    \NSD{} & Non--single--diffractive event.  Single diffractive
+    events are events where one of the incident collision systems
+    (proton or nucleus) is excited and radiates particles, but there
+    is no other processes taking place\\ 
+    \hline
+    $\Ntrg{}$ & Number of events with a valid (minimum bias) trigger\\
+    $\Ntrgvtx{}$ & Number of events with a valid (minimum bias) trigger
+    \emph{and} a valid vertex within the selected vertex range.\\ 
+    $\Nsel{}$ & Number of events selected for analysis in the second
+    pass\\ 
+    $\Ngood$ & The number of expected \INEL{} events, given by the
+    formula $N_B-N_A-N_C+2N_E$, where each of $N_x$ is count the
+    number of interaction triggers with requirements of beam from both
+    side, on the A side, on the C side, or no beam, respectively.\\
+    \hline
+    $\mult{}$ & Charged particle multiplicity\\ 
+    $\mult[,\text{primary}]$ & Primary charged particle multiplicity
+    as given by simulations\\ 
+    $\mult[,\text{\FMD{}}]$ & Number of charged particles that hit the
+    \FMD{} as given by simulations\\ 
+    $\mult[,t]$ & Number of charged particles in an \FMD{} strip as
+    given by evaluating the energy response functions $F$\\ 
+    \hline
+    $F$ & Energy response function (see \eqref{eq:energy_response})\\
+    $\Delta_{mp}$ & Most probably energy loss\\ 
+    $\xi$ & `Width' parameter of a Landau distribution\\
+    $\sigma$ & Variance of a Gaussian distribution\\ 
+    $n_i$ & Relative weight of the $i$--fold MIP peak in the energy
+    loss spectra.\\ 
+    \hline
+    $a_t$ & Azimuthal acceptance of strip $t$\\ 
+    $s_v\etaphi$ & Secondary particle correction factor in
+    $\etaphi$ for a given vertex bin $v$\\ 
+    $a_{v,i}\etaphi$ & Acceptance in $\etaphi$ for a given
+    vertex bin $v$\\ 
+    \hline
+    $\dndetadphi[incl,r,v,i]$ & Inclusive (primary \emph{and}
+    secondary) charge particle density in event $i$ with vertex $v$,
+    for \FMD{} ring $r$.\\ 
+    $\dndetadphi[r,v,i]$ & Primary charged particle
+    density in event $i$ with vertex $v$ for \FMD{} ring $r$. \\
+    $\dndetadphi[v,i]$ & Primary charged particle density in event $i$
+    with vertex $v$\\  
+    $I_{v,i}(\eta)$ & $\eta$ acceptance of event $i$ with vertex $v$\\ 
+    $I(\eta)$ & Integrated $\eta$ acceptance over $\Nsel$ events.
+    Note, that this has a value of $\Nsel$ for $(\eta)$ bins where we
+    have full coverage\\ 
+    \hline 
+  \end{tabular}
+  \caption{Nomenclature used in this document}
+  \label{tab:nomenclature}
+\end{table}
+\clearpage
+
+
 \section{Second pass example code}
+\label{app:exa_pass2}
 \lstset{basicstyle=\small\ttfamily,% 
   keywordstyle=\color[rgb]{0.627,0.125,0.941}\bfseries,% 
   identifierstyle=\color[rgb]{0.133,0.545,0.133}\itshape,%
@@ -788,21 +730,22 @@ void Analyse()
 { 
   gSystem->Load("libANALYSIS.so");      // Load analysis libraries
   gSystem->Load("libANALYSISalice.so"); // General ALICE stuff
-  gSystem->Load("libPWG2forward2.so");  // New code 
+  gSystem->Load("libPWG2forward2.so");  // Forward analysis code
 
   TH2D*              sum        = 0;                  // Summed hist
   TFile*             file       = TFile::Open("AliAODs.root","READ");
   TTree*             tree       = static_cast<TTree*>(file->Get("aodTree"));
   AliAODForwardMult* mult       = 0;                  // AOD object
-  int                nTriggered = 0;                  // # of triggered ev.
-  int                nWithVertex= 0;                  // # of ev. w/vertex
-  int                nAvailable = tree->GetEntries(); // How many entries
+  int                nInel      = 0;                  // # of INEL ev.
+  int                nGood      = 0;                  // # of total INEL
+  int                nSelected  = 0;                  // # of triggered ev.
+  int                nTriggered = 0;                  // # of ev. w/vertex
   float              vzLow      = -10;                // Lower ip cut
   float              vzHigh     = +10;                // Upper ip cut
   int                mask       = AliAODForwardMult::kInel;// Trigger mask
   tree->SetBranchAddress("Forward", &forward);        // Set the address
 
-  for (int i = 0; i < nAvailable; i++) { 
+  for (int i = 0; i < tree->GetEntries(); i++) { 
     // Read the i'th event 
     tree->GetEntry(i);
 
@@ -810,16 +753,20 @@ void Analyse()
     if (!sum) 
       sum = static_cast<TH2D*>(mult->GetHistogram()->Clone("d2ndetadphi"));
     
+    // Count triggers 
+    if (mult->IsTriggerBits(AliForwardMult::kB))    nGood++;
+    if (mult->IsTriggerBits(AliForwardMult::kA))    nGood--;
+    if (mult->IsTriggerBits(AliForwardMult::kC))    nGood--;
+    if (mult->IsTriggerBits(AliForwardMult::kE))    nGood += 2;
+    if (mult->IsTriggerBits(AliForwardMult::kInel)) nInel++;
+
     // Other trigger/event requirements could be defined 
     if (!mult->IsTriggerBits(mask)) continue; 
     nTriggered++;
 
-    // Check if we have vertex 
-    if (!mult->HasIpZ()) continue;
-    nWithVertex++;
-
-    // Select vertex range (in centimeters) 
-    if (!mult->InRange(vzLow, vzHigh) continue; 
+    // Check if we have vertex and select vertex range (in centimeters) 
+    if (!mult->HasIpZ() || !mult->InRange(vzLow, vzHigh) continue; 
+    nSelected++;
 
     // Add contribution from this event
     sum->Add(&(mult->GetHistogram()));
@@ -831,14 +778,37 @@ void Analyse()
   TH1D* dndeta = sum->Projection("dndeta", 1, -1, "e");
   // Normalize to the acceptance, and scale by the vertex efficiency 
   dndeta->Divide(norm);
-  dndeta->Scale(double(nWithVertex)/nTriggered, "width");
+  dndeta->Scale(double(nInel * nSelected) / (nTriggered * nGood), "width");
   // And draw the result
   dndeta->Draw();
 }
 \end{lstlisting}
 
+\section{$\Delta E$ fits} 
+\label{app:eloss_fits}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[keepaspectratio,width=.8\textwidth]{eloss_fits}
+  \caption{Summary of energy loss fits}
+  \label{fig:eloss_fits}
+\end{figure}
+
 \begin{thebibliography}{99}
+\bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\ \textit{et al}
+  \textit{ALICE technical design report on forward detectors: FMD, T0
+    and V0}, \CERN{}, 2004, CERN-LHCC-2004-025
+\bibitem{cholm:2009} Christensen, C.~H., \textit{The ALICE Forward
+    Multiplicity Detector --- From Design to Installation},
+  Ph.D.~thesis, University of Copenhagen, 2009,
+  \url{http://www.nbi.dk/~cholm/}. 
 \bibitem{nim:b1:16} Nucl.Instrum.Meth.B1:16
 \bibitem{phyrev:a28:615} Phys.Rev.A28:615
 \end{thebibliography}
 \end{document}
+
+% Local Variables:
+%   ispell-local-dictionary: "british"
+% End:
+%
+% LocalWords:  tracklet diffractive
