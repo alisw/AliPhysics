@@ -861,7 +861,7 @@ Float_t AliEveLego::GetPtMaxAE()
 Int_t AliEveLego::GetParticleType(AliESDtrack *track)
 {
   // Determine the particle type
-  Double_t *prob = new Double_t[5];
+	Double_t prob[5]={0.};
   track->GetESDpid(prob);
 
   Double_t max = prob[0];

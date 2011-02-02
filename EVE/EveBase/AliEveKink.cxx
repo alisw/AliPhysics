@@ -69,8 +69,7 @@ AliEveKink::AliEveKink(TEveRecTrack* tMoth, TEveRecTrack* tDaug,
   fMotherTrack->SetLineColor(2);  // red
   fMotherTrack->SetStdTitle();
   fMotherTrack->SetLineWidth(3);
-  TEvePathMark* pmM = 0;
-  pmM = new TEvePathMark(TEvePathMark::kDecay);
+  TEvePathMark* pmM = new TEvePathMark(TEvePathMark::kDecay);
   pmM->fV.Set(kink->fVKink);
   fMotherTrack->AddPathMark(*pmM);
 
@@ -82,6 +81,7 @@ AliEveKink::AliEveKink(TEveRecTrack* tMoth, TEveRecTrack* tDaug,
   AddElement(fMotherTrack);
   fDaughterTrack->IncDenyDestroy();
   AddElement(fDaughterTrack);
+  delete pmM;
 }
 
 //______________________________________________________________________________
