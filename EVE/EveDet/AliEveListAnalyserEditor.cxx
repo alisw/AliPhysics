@@ -869,7 +869,7 @@ void AliEveListAnalyserEditor::RemoveMacros()
   ftlMacroList->GetSelectedEntries(iterator);
   fM->RemoveSelectedMacros(iterator);
 
-  if (iterator != 0)  delete iterator;
+  delete iterator;
 
   iterator = new TList();
   ftlMacroSelList->GetSelectedEntries(iterator);
@@ -1364,18 +1364,12 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
       // Cancel creation
       if (!useGivenType)
       {
-        if (typeStr != 0)
-        {
-          typeStr->Clear();
-          delete typeStr;
-        }
+        typeStr->Clear();
+        delete typeStr;
         typeStr = 0;
 
-        if (typeStr2 != 0)
-        {
-          typeStr2->Clear();
-          delete typeStr2;
-        }
+        typeStr2->Clear();
+        delete typeStr2;
         typeStr2 = 0;
 
         return;
@@ -1509,26 +1503,26 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
     gSystem->Exec(Form("rm -f %s.C", name));
 
     tempStr->Clear();
-    if (tempStr != 0) delete tempStr;
+    delete tempStr;
     tempStr = 0;
 
     typeStr->Clear();
-    if (typeStr != 0) delete typeStr;
+    delete typeStr;
     typeStr = 0;
 
     return;
   }
 
   tempStr->Clear();
-  if (tempStr != 0) delete tempStr;
+  delete tempStr;
   tempStr = 0;
 
   typeStr->Clear();
-  if (typeStr != 0) delete typeStr;
+  delete typeStr;
   typeStr = 0;
 
   typeStr2->Clear();
-  if (typeStr2 != 0) delete typeStr2;
+  delete typeStr2;
   typeStr2 = 0;
 
   fprintf(fp, "{\n%s\n", fGeneralMacroTemplate[type]);
