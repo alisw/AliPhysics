@@ -605,13 +605,15 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     } 
   }  
 
+
+  Int_t selEntries = selIterator->GetEntries();
   // Collect the commands for each selection macro and add them to "data-from-list"
-  if (selIterator->GetEntries() > 0) {
-    selCmds         = new TString[selIterator->GetEntries()];
-    mSelType        = new AliEveListAnalyserMacroType[selIterator->GetEntries()];
-    mSelObjectType  = new TClass*[selIterator->GetEntries()];
-    mSelObjectType2 = new TClass*[selIterator->GetEntries()];
-    for (Int_t i = 0; i < selIterator->GetEntries(); i++){
+  if (selEntries > 0) {
+    selCmds         = new TString[selEntries];
+    mSelType        = new AliEveListAnalyserMacroType[selEntries];
+    mSelObjectType  = new TClass*[selEntries];
+    mSelObjectType2 = new TClass*[selEntries];
+    for (Int_t i = 0; i < selEntries; i++){
       macro = (TGeneralMacroData*)fMacroList->GetValue(selIterator->At(i)->GetTitle());
 
       if (!macro){
@@ -741,7 +743,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
           // Select object by default (so it will be processed, if there are no correlated objects selection macros!)
           selectedByCorrSelMacro = kTRUE;
-          for (Int_t j = 0; j < selIterator->GetEntries(); j++){
+          for (Int_t j = 0; j < selEntries; j++){
             if (mSelType[j] == kCorrelObjectSelect){
           // Check, whether the macro can deal with both objects. If not, skip it.
           // Note: Again, via selCmds[i], the automatic objects are casted to the correct type!
@@ -834,7 +836,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
           // Select object by default (so it will be processed, if there are no correlated objects selection macros!)
           selectedByCorrSelMacro = kTRUE;
-          for (Int_t j = 0; j < selIterator->GetEntries(); j++) {
+          for (Int_t j = 0; j < selEntries; j++) {
             if (mSelType[j] == kCorrelObjectSelect) {
               // Check, whether the macro can deal with both objects. If not, skip it.
               // Note: Again, via selCmds[i], the automatic objects are casted to the correct type! 
