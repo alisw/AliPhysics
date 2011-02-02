@@ -496,9 +496,9 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
 
   if (fIsMUONTrack) {
     if (mtrack->GetMatchTrigger()) {
-      sprintf(form,"MUONTrack %2d (MT)", fLabel);
+      snprintf(form,1000,"MUONTrack %2d (MT)", fLabel);
     } else {
-      sprintf(form,"MUONTrack %2d     ", fLabel);
+      snprintf(form,1000,"MUONTrack %2d     ", fLabel);
     }
     SetName(form);
     SetLineStyle(1);
@@ -660,9 +660,9 @@ void AliEveMUONTrack::MakeESDTrack(AliESDMuonTrack *mtrack)
 
   char form[1000];
   if (mtrack->GetMatchTrigger()) {
-    sprintf(form,"ESDTrack %2d (MT)", fLabel);
+    snprintf(form,1000,"ESDTrack %2d (MT)", fLabel);
   } else {
-    sprintf(form,"ESDTrack %2d     ", fLabel);
+    snprintf(form,1000,"ESDTrack %2d     ", fLabel);
   }
   SetName(form);
   SetLineStyle(3);
@@ -694,7 +694,7 @@ void AliEveMUONTrack::MakeMCTrack(TParticle *part)
   fPart     = new TParticle(*part);
 
   char form[1000];
-  sprintf(form,"TEveMCTrack %2d ", fLabel);
+  snprintf(form,1000,"TEveMCTrack %2d ", fLabel);
   SetName(form);
   SetLineStyle(2);
   SetLineColor(8);
@@ -747,7 +747,7 @@ void AliEveMUONTrack::MakeRefTrack(AliMUONTrack *mtrack)
   fIsRefTrack = kTRUE;
 
   char form[1000];
-  sprintf(form,"RefTrack %2d ", fLabel);
+  snprintf(form,1000,"RefTrack %2d ", fLabel);
   SetName(form);
   SetLineStyle(2);
   SetLineColor(0);
