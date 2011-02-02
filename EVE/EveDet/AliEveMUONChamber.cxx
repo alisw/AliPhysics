@@ -49,9 +49,9 @@ AliEveMUONChamber::AliEveMUONChamber(Int_t id, const Text_t* n, const Text_t* t)
 
   Char_t name[256];
   if (id < 10) {
-    sprintf(name,"Chamber %02d (trac)",id);
+    snprintf(name,256,"Chamber %02d (trac)",id);
   } else {
-    sprintf(name,"Chamber %02d (trig)",id);
+    snprintf(name,256,"Chamber %02d (trig)",id);
   }
   SetName(name);
 
