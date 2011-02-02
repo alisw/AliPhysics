@@ -1944,6 +1944,7 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectGain(const TObjArray *vectorFit, 
       } // Row
       if(count > 0) mean = mean/count;
     }
+    if(mean < 0.1) mean = 0.1;
     object->SetValue(detector,mean);
   }
  
