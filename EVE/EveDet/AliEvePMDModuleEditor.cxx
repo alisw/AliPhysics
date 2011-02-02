@@ -122,7 +122,7 @@ void AliEvePMDModuleEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEvePMDModule*>(obj);
+  fM = static_cast<AliEvePMDModule*>(obj);
 
   fInfoLabel0->SetText(Form("Cells hit per Module : %d", fM->GetNPads()));
   fInfoLabel1->SetText(Form("ADC       per Module : %d", fM->GetAdc()));
