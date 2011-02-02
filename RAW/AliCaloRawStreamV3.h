@@ -46,10 +46,6 @@ public :
   Bool_t  IsLEDMonData()   const {return (fCaloFlag == kLEDMonData);} 
 
   Int_t   GetCaloFlag() const { return fCaloFlag; } 
-  Int_t   GetFilter() const { return fFilter; } 
-
-  void SkipData(EAliCaloFlag caloFlag=kLEDMonData) 
-    { fFilter |= (1<<caloFlag); }
 
 protected:
 
@@ -62,7 +58,6 @@ protected:
   Int_t            fRow;      // index of current row
   Int_t            fColumn;   // index of current column
   Int_t            fCaloFlag; // low (0) or (1) high gain; see enum EAliCaloFlag above
-  Int_t            fFilter;   // default 0 = let everything through
   Int_t            fNModules; // number of (super)modules
   Int_t            fNRCU;     // number of RCU per (super)module
   Int_t            fNSides;   // Division of EMCal in "A" "C" sides
@@ -70,7 +65,7 @@ protected:
   Bool_t           fExternalMapping; // use external mapping or create a default one
   AliAltroMapping *fMapping[20];     // pointers to ALTRO mapping
 
-  ClassDef(AliCaloRawStreamV3, 2)   // class for reading PHOS/EMCAL raw digits
+  ClassDef(AliCaloRawStreamV3, 3)   // class for reading PHOS/EMCAL raw digits
 
 };
 

@@ -51,7 +51,6 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(AliRawReader* rawReader, TString calo, Al
   fRow(-1),
   fColumn(-1),
   fCaloFlag(0),
-  fFilter(0),
   fNModules(0),
   fNRCU(0),
   fNSides(0),
@@ -118,7 +117,6 @@ AliCaloRawStreamV3::AliCaloRawStreamV3(const AliCaloRawStreamV3& stream) :
   fRow(-1),
   fColumn(-1),
   fCaloFlag(0),
-  fFilter(0),
   fNModules(0),
   fNRCU(0),
   fNSides(0),
@@ -154,7 +152,7 @@ void AliCaloRawStreamV3::Reset()
   // reset PHOS/EMCAL raw stream params
   AliAltroRawStreamV3::Reset();
   fModule = fRow = fColumn = -1;
-  fFilter = fCaloFlag = 0;
+  fCaloFlag = 0;
   fCalo="";
 }
 
@@ -167,12 +165,6 @@ Bool_t AliCaloRawStreamV3::NextChannel()
 
   if (AliAltroRawStreamV3::NextChannel()) {
     ApplyAltroMapping();
-    if ( fFilter > 0 ) { // some data should be filtered out
-      if ( (fFilter & (1<<fCaloFlag)) != 0) {  
-	// this particular data should be filtered out
-	return NextChannel(); // go to the next address instead
-      }
-    }
     return kTRUE;
   }
   else
