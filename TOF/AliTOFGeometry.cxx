@@ -1386,7 +1386,7 @@ Float_t AliTOFGeometry::GetZ(const Int_t * const det) const
 }
 //_____________________________________________________________________________
 
-void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t **coord)
+void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t coord[4][3])
 {
   //
   // Returns the local coordinates (x, y, z) in sector reference frame

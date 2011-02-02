@@ -257,8 +257,7 @@ void AliEveTOFSector::LoadQuads()
   Int_t tdc = -1;
   Int_t tot = -1;
 
-  Double_t **coord = new Double_t*[4];
-  for (Int_t ii=0; ii<4; ii++) coord[ii] = new Double_t[3];
+  Double_t coord[4][3];
 
   Reset(kQT_FreeQuad, kFALSE, 32);
 

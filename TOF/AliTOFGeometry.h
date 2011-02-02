@@ -98,7 +98,7 @@ class AliTOFGeometry: public TObject{
   virtual Float_t GetZ(const Int_t * const det) const ;
   virtual void    DetToStripRF(Int_t nPadX, Int_t nPadZ,
 			       Float_t &x,  Float_t &z) const;
-  virtual void    DetToSectorRF(Int_t vol[5], Double_t ** coord);
+  virtual void    DetToSectorRF(Int_t vol[5], Double_t coord[4][3]);
   virtual Float_t GetPadDx(const Float_t * const pos);
   virtual Float_t GetPadDy(const Float_t * const pos);
   virtual Float_t GetPadDz(const Float_t * const pos);
