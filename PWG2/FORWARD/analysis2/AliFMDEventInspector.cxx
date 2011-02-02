@@ -368,7 +368,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     return kFALSE;
   }
 
-#if 1
   // Check if this is a collision candidate (INEL)
   // Note, that we should use the value cached in the input 
   // handler rather than calling IsCollisionCandiate directly 
@@ -376,19 +375,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
   Bool_t inel = ih->IsEventSelected();
-#else 
-  // Get the physics selection - add that by using the macro 
-  // AddTaskPhysicsSelection.C 
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
-  if (!ps) { 
-    AliWarning("No physics selection");
-    return kFALSE;
-  }
-  
-  // Check if this is a collision candidate (INEL)
-  Bool_t inel = ps->IsCollisionCandidate(esd);
-#endif
   if (inel) { 
     triggers |= AliAODForwardMult::kInel;
     fHTriggers->Fill(kInel+0.5);
