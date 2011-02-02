@@ -167,14 +167,19 @@ void AliEveHF::SetMaxProbPdgPid()
       {
       case 0:
 	fProngMaxProbPdg[ip] = -11;
+	break;
       case 1:
 	fProngMaxProbPdg[ip] = -13;
+    break;
       case 2:
 	fProngMaxProbPdg[ip] = 211;
+    break;
       case 3:
 	fProngMaxProbPdg[ip] = 321;
+    break;
       case 4:
 	fProngMaxProbPdg[ip] = 2212;
+    break;
       }
   }
 
