@@ -2,9 +2,6 @@ AliAnalysisGrid* CreateAlienHandler() {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
   //   source /tmp/gclient_env_$UID in the current shell.
-  // Set if you want to use par files on Grid:
-  Bool_t bUseParFiles = kTRUE;
-
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
@@ -44,27 +41,25 @@ AliAnalysisGrid* CreateAlienHandler() {
   plugin->SetOutputToRunNo();  
 
   // Define alien work directory where all files will be copied. Relative to alien $HOME.
-  plugin->SetGridWorkingDir("Fluctuations/PbPb/2.76TeV/LHC10h/Pass1_4Plus/TPCOnly");
+  plugin->SetGridWorkingDir("Fluctuations/PbPb/2.76TeV/LHC10h/Pass1_4Plus/Systematics/Centrality/TPC/TPCOnly");
   // Declare alien output directory. Relative to working directory.
   plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
   // Declare the analysis source files names separated by blancs. To be compiled runtime
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliAnalysisFluctuationsTask.cxx");
+  plugin->SetAnalysisSource("AliEbyEFluctuationAnalysisTask.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  //plugin->SetAdditionalLibs("AliAnalysisFluctuationsTask.h AliAnalysisFluctuationsTask.cxx");
-  if(!bUseParFiles) 
-    plugin->SetAdditionalLibs("libPWG2ebye.so");
-  else 
-    plugin->EnablePackage("PWG2ebye.par");
-
+  plugin->SetAdditionalLibs("AliEbyEFluctuationAnalysisTask.h AliEbyEFluctuationAnalysisTask.cxx");
+  
   // Do not specify your outputs by hand anymore:
   plugin->SetDefaultOutputs(kTRUE);
   // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
   plugin->SetAnalysisMacro("fluctuationsAnalysis.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore)
-  plugin->SetSplitMaxInputFileNumber(450);
-  
+  plugin->SetSplitMaxInputFileNumber(100);
+  // Optionally set number of runs per masterjob:
+  plugin->SetNrunsPerMaster(7);
+ 
   // Optionally set time to live (default 30000 sec)
   plugin->SetTTL(30000);
   // Optionally set input format (default xml-single)
@@ -75,6 +70,9 @@ AliAnalysisGrid* CreateAlienHandler() {
   plugin->SetPrice(1);      
   // Optionally modify split mode (default 'se')    
   plugin->SetSplitMode("se");
-  
+
+  //Merging
+  plugin->SetMergeViaJDL(kTRUE);
+
   return plugin;
 }

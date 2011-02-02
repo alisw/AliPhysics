@@ -11,10 +11,8 @@ const TString analysisMode = "TPC"; //"TPC", "Global"
 
 //void runTaskFluctuations(Int_t mode = mPROOF, Int_t nRuns = 600000, 
 //Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_4plus#esdTree", Int_t offset=0) {
-//void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
+void runTaskFluctuations(Int_t mode = mLocal, Bool_t DATA = kTRUE) {
 //void runTaskFluctuations(Int_t mode = mGrid, Bool_t DATA = kTRUE) {
-//void runTaskFluctuations(Int_t mode = mGridPAR, Bool_t DATA = kTRUE) {
-void runTaskFluctuations(Int_t mode = mLocalPAR, Bool_t DATA = kTRUE) {
   // Time:
   TStopwatch timer;
   timer.Start();
@@ -27,24 +25,35 @@ void runTaskFluctuations(Int_t mode = mLocalPAR, Bool_t DATA = kTRUE) {
     gROOT->LoadMacro("CreateAlienHandler.C");
     AliAnalysisGrid *alienHandler = CreateAlienHandler();  
     if (!alienHandler) return;
-    //gROOT->LoadMacro("AliEbyEFluctuationAnalysisTask.cxx++");
+    gROOT->LoadMacro("AliEbyEFluctuationAnalysisTask.cxx++");
   }
   // Chains:   
   if(mode==mLocal || mode == mLocalPAR) {
-    //gROOT->LoadMacro("AliEbyEFluctuationAnalysisTask.cxx++");
-    if (analysisType!="AOD") { 
+    gROOT->LoadMacro("AliEbyEFluctuationAnalysisTask.cxx++");
+    if (analysisType=="ESD") { 
       TChain* chain = new TChain("esdTree");
-      chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/pass1_4plus/Set1/AliESDs.root");
-      chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/pass1_4plus/Set2/AliESDs.root");
-      chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/pass1_4plus/Set3/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set1/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set2/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set3/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set4/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set5/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set6/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set7/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set8/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set9/AliESDs.root");
+      chain->Add("/data/alice2/pchrist/HeavyIons/Data/Pass1_4Plus/Set10/AliESDs.root");
     }
-    else  
+    else if(analysisType == "MC") {
+      TChain *chain = new TChain("TE");
+      chain->AddFile("galice.root");
+    }
+    else
       TChain* chain = CreateAODChain(dataDir, nRuns, offset);
   }
   //Proof
   if(mode == mPROOF) {
     gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
-    //gProof->Load("AliEbyEFluctuationAnalysisTask.cxx++");
+    gProof->Load("AliEbyEFluctuationAnalysisTask.cxx++");
   }
 
   // Create analysis manager:
@@ -64,38 +73,41 @@ void runTaskFluctuations(Int_t mode = mLocalPAR, Bool_t DATA = kTRUE) {
   } // end of if(analysisType == "AOD")  
   if(analysisType == "MC") {
     AliVEventHandler* esdH = new AliESDInputHandler;
-    mgr->SetInputEventHandler(esdH); 
+    mgr->SetInputEventHandler(esdH);
     AliMCEventHandler *mc = new AliMCEventHandler();
+    mc->SetReadTR(kFALSE);
     mgr->SetMCtruthEventHandler(mc); 
   } // end of  if(analysisType == "MC")
-  
+    
+  // Task to check the offline trigger:
+  //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
+  if(analysisType != "MC") {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
+    AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection(!DATA);
+    if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
+    // Enable debug printouts:
+    mgr->SetDebugLevel(2);
+    
+    //Add the centrality determination task
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+    //taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);
+  }
+
   // Load the analysis task:
   gROOT->LoadMacro("AddTaskFluctuations.C");
   AliEbyEFluctuationAnalysisTask* taskFA = AddTaskFluctuations(analysisType.Data(),
 							       analysisMode.Data());
-  
-  // Task to check the offline trigger:
-  //if(mode == mLocal || mode == mGrid || mode == mGridPAR)
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C"); 
-  AliPhysicsSelectionTask* physicsSelTask = AddTaskPhysicsSelection();
-  if(!DATA){physicsSelTask->GetPhysicsSelection()->SetAnalyzeMC();}
-  // Enable debug printouts:
-  mgr->SetDebugLevel(2);
-  
-  //Add the centrality determination task
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  taskCentrality->SelectCollisionCandidates(AliVEvent::kMB);
 
   // Run the analysis:
   if(!mgr->InitAnalysis()){return;}
   mgr->PrintStatus(); 
   if(mode == mLocal || mode == mLocalPAR) 
-    //mgr->StartAnalysis("local",chain);
+    mgr->StartAnalysis("local",chain);
   else if(mode == mPROOF) 
     mgr->StartAnalysis("proof",dataDir,nRuns,offset);
   else if(mode == mGrid || mode == mGridPAR) 
-    //mgr->StartAnalysis("grid");
+    mgr->StartAnalysis("grid");
 
   // Print real and CPU time used for analysis:  
   timer.Stop();
@@ -127,6 +139,8 @@ void LoadLibraries(const anaModes mode) {
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
+    // Use AliRoot includes to compile our task                                   
+    gROOT->ProcessLine(".include $ALICE_ROOT/include");
     if(mode==mLocal || mode==mGrid)
       gSystem->Load("libPWG2ebye");
     if(mode==mGridPAR)
@@ -137,16 +151,11 @@ void LoadLibraries(const anaModes mode) {
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
     //--------------------------------------------------------  
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-    //SetupPar("STEERBase");
-    //SetupPar("ESD");
-    //SetupPar("AOD");
-    //SetupPar("ANALYSIS");
-    //SetupPar("ANALYSISalice");
+    SetupPar("STEERBase");
+    SetupPar("ESD");
+    SetupPar("AOD");
+    SetupPar("ANALYSIS");
+    SetupPar("ANALYSISalice");
     SetupPar("PWG2ebye");
 }
   
@@ -163,12 +172,7 @@ void LoadLibraries(const anaModes mode) {
     //TProof::Open("prf000-iep-grid.saske.sk");
 
     gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-12-AN");
-    gSystem->Load("libSTEERBase");
-    gSystem->Load("libESD");
-    gSystem->Load("libAOD");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");
-
+ 
     // Clear the Packages    
     //gProof->ClearPackage("STEERBase.par");
     //gProof->ClearPackage("ESD.par");
@@ -184,7 +188,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->UploadPackage("ANALYSIS.par"); 
     //gProof->UploadPackage("ANALYSISalice.par");
     //gProof->UploadPackage("CORRFW.par");
-    gProof->UploadPackage("PWG2ebye.par");
+    //gProof->UploadPackage("PWG2ebye");
 
     // Enable the Packages 
     //gProof->EnablePackage("STEERBase");
@@ -192,7 +196,7 @@ void LoadLibraries(const anaModes mode) {
     //gProof->EnablePackage("AOD");
     //gProof->EnablePackage("ANALYSIS");
     //gProof->EnablePackage("ANALYSISalice");
-    gProof->EnablePackage("PWG2ebye");
+    //gProof->EnablePackage("PWG2ebye");
 
     // Show enables Packages
     //gProof->ShowEnabledPackages();
