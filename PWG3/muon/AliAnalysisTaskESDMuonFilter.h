@@ -40,6 +40,8 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
     void SetWriteMuonAOD(Bool_t enableMuonAOD){fEnableMuonAOD = enableMuonAOD;}
     void SetWriteDimuonAOD(Bool_t enableDimuonAOD){fEnableDimuonAOD = enableDimuonAOD;}
 
+  void PrintTask(Option_t *option="", Int_t indent=0) const;
+
  private:
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
