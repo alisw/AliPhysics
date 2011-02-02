@@ -148,21 +148,21 @@ private:
    * @param comparabletrack track to look for pythia information
    * @return pythiatrack    track information from pythia lookup
    */
-  AliHLTTPCTrack GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack) const;
+  AliHLTTPCTrack GetComparableTrackPythiaInfo(const AliHLTTPCTrack& comparabletrack) const;
 
   /** compare discarded track parameters with parameters from Pythia event
    * @param discardedtrack  pointer to a discarded track (usually with low pt)
    * @return 0 upon correct decision (track with low pt accoridng to Pythia, i.e. track = delta-electron or similar noise)
    * @return 1 upon wrong decision (track wrongly discarded, should by taken into account according to Pythia information)
    */
-  Bool_t GetTrashTrackPythiaInfo(AliHLTTPCTrack* discardedtrack) const;
+  Bool_t GetTrashTrackPythiaInfo(const AliHLTTPCTrack* discardedtrack) const;
 
   /** compare information of a cluster not assigned to any track with its Pythia information
    * @param discardedcluster  pointer to discarded cluster
    * @return 0 upon correct decision (cluster not assigned to any track is true in Pythia, i.e. cluster = noise cluster)
    * @return 1 upon wrong decision (cluster wrongly discarded, i.e. it belongs to a valuable track according to Pythia)
    */
-  Bool_t GetClusterPythiaInfo(AliHLTTPCClusterData* discardedcluster) const;
+  Bool_t GetClusterPythiaInfo(const AliHLTTPCClusterData* discardedcluster) const;
 
   /** compare two tracks in order to find if the match
    * @param firsttracklistelement   track from orignal tracking, stored in AliHLTTPCTrackList

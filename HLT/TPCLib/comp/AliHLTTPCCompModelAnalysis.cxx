@@ -70,9 +70,10 @@ AliHLTTPCCompModelAnalysis::~AliHLTTPCCompModelAnalysis()
     for ( UInt_t slice=0; slice<36; slice++ )
 	for ( UInt_t patch=0; patch<6; patch++ )
 	    {
-	    if ( fDiscardedClusters[slice][patch]->fSpacePoints )
+	    if ( fDiscardedClusters[slice][patch]!=NULL )
 		{
 		delete [] fDiscardedClusters[slice][patch];
+		fDiscardedClusters[slice][patch]=NULL;
 		}
 	    }
     }
@@ -229,21 +230,23 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
   if(firsttracks == 0)
     {
       HLTError("No tracks in first track array!");
-      return EINVAL;
+      return -EINVAL;
     };
  
 
   if(secondtracks == 0)
     {
       HLTError("No tracks in second track array!");
-      return EINVAL;
+      return -EINVAL;
     };
 
   // take track from first tracking,
   for(Int_t ii=0; ii < firsttracks; ii++)
     {
       // build track list for all tracks in first array
+      // FIXME: I can't find the cleanup of the linked list fFirstTrackList
       AliHLTTPCTrackList* currenttrackentry = new AliHLTTPCTrackList;
+      if (!currenttrackentry) return -ENOMEM;
       currenttrackentry->fTrack = *(fFirstTrackArray.GetCheckedTrack(ii));
 
       // get its pythia information, 
@@ -267,7 +270,9 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
   for(Int_t ii=0; ii < secondtracks; ii++)
     {
       // build track list for all tracks in second array
+      // FIXME: I can't find the cleanup of the linked list fSecondTrackArray
       AliHLTTPCTrackList* currenttrackentry = new AliHLTTPCTrackList;
+      if (!currenttrackentry) return -ENOMEM;
       currenttrackentry->fTrack = *(fSecondTrackArray.GetCheckedTrack(ii));
 
       // get its pythia information, 
@@ -632,7 +637,7 @@ Int_t AliHLTTPCCompModelAnalysis::CompareClusters(Bool_t relativedifferences)
   return 0;
 }
 
-AliHLTTPCTrack AliHLTTPCCompModelAnalysis::GetComparableTrackPythiaInfo(AliHLTTPCTrack comparabletrack) const
+AliHLTTPCTrack AliHLTTPCCompModelAnalysis::GetComparableTrackPythiaInfo(const AliHLTTPCTrack& comparabletrack) const
 {
   // see headerfile for class documentation
 
@@ -680,7 +685,7 @@ Int_t AliHLTTPCCompModelAnalysis::MarkTrashCluster(AliHLTTPCClusterData *discard
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*discardedtrack*/ ) const
+Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(const AliHLTTPCTrack* /*discardedtrack*/ ) const
 {
   // see header file for class documentation
   // store information from pythia in current track list entry
@@ -689,7 +694,7 @@ Bool_t AliHLTTPCCompModelAnalysis::GetTrashTrackPythiaInfo(AliHLTTPCTrack* /*dis
   return 0;
 }
 
-Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(AliHLTTPCClusterData* /*discardedcluster*/) const
+Bool_t AliHLTTPCCompModelAnalysis::GetClusterPythiaInfo(const AliHLTTPCClusterData* /*discardedcluster*/) const
 {
   // see header file for class documentation
   // Pythia information can be
@@ -1263,8 +1268,6 @@ Int_t AliHLTTPCCompModelAnalysis::DisplayTrackResults()
       return EINVAL;
     }
 
-  return 0; // exit after cluster analysis has been done
- 
   // start with comparison
   if(CompareTracks() != 0)
     {

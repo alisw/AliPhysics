@@ -203,6 +203,7 @@ int AliHLTTPCCompModelDeflater::CompressTracks( AliHLTUInt8_t* inData, UInt_t co
       
       printf( "outuptSize: %lu\n", (unsigned long)outputSize );
       
+      // FIXME: check return value of OutputBit(s) to make code more robust
       InitBitDataOutput( output, outputSize );
       HLTDebug( "Output: Position: %lu / %u (0x%02X)", GetCurrentByteOutputPosition(), GetCurrentBitOutputPosition(), (unsigned)GetCurrentOutputByte() );
       OutputBits( 0, 4 ); // Version information
@@ -537,6 +538,7 @@ int AliHLTTPCCompModelDeflater::CompressRemainingClusters( AliHLTUInt8_t* inData
 	}
       
       InitBitDataOutput( output, outputSize );
+      // FIXME: check return value of OutputBits to make code more robust
       OutputBits( 0, 4 ); // Version information
       //OutputBit( fWriteShape ); // Data format flag
       Pad8Bits();

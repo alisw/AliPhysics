@@ -563,6 +563,7 @@ void AliHLTTPCCompModelConverter::SelectRemainingClusters()
 unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
     {
       // see header file for class documentation
+      int iResult=0;
 #if 0
     for ( UInt_t slice=0; slice<36; slice++ )
 	for ( UInt_t patch=0; patch<6; patch++ )
@@ -584,9 +585,10 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 
     dataWritten += sizeof(AliHLTUInt32_t);
 
-    for(Int_t slice=0; slice<35; slice++)
+    // FIXME: get rid of hardcoded numbers
+    for(Int_t slice=0; slice<35 && iResult>=0; slice++)
 	{
-	for(Int_t patch=0; patch < 6; patch++)
+	for(Int_t patch=0; patch < 6 && iResult>=0; patch++)
 	    {
 	    if ( !fClusters[slice][patch] )
 		{
@@ -631,13 +633,15 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 			if(!tempPt)
 			    {
 			    HLTError( "Zero row pointer " );
-			    return EINVAL;
+			    iResult=-EINVAL;
+			    break;
 			    }
 			if(localcounter != tempPt->fNClusters)
 			    {
 			    HLTError( "Mismatching clustercounter %lu - %d ", 
 				      (unsigned long)localcounter, (Int_t)tempPt->fNClusters );
-			    return EINVAL;
+			    iResult=EINVAL;
+			    break;
 			    }
 			dataWritten += size;
 			}
@@ -645,7 +649,7 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 			delete [] data;
 		    size = sizeof(AliHLTTPCRemainingRow) + npoints[padrow]*sizeof(AliHLTTPCRemainingCluster);
 		    data = new Byte_t[size];
-		    tempPt = (AliHLTTPCRemainingRow*)data;
+		    tempPt = reinterpret_cast<AliHLTTPCRemainingRow*>(data);
 		    
 		    localcounter=0;
 		    tempPt->fPadRow = padrow;
@@ -656,7 +660,8 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 		    {
 		    HLTError( "Cluster counter out of range: %lu - %lu",
 			      (unsigned long)localcounter, (unsigned long)npoints[padrow] );
-		    return EINVAL;
+		    iResult=-EINVAL;
+		    break;
 		    }
 	      
 		localcounter++;
@@ -666,12 +671,14 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 	    if ( tempPt )
 		{
 		dataWritten += size;
-		if(data)
-		    delete [] data;
 		}
+	    if(data)
+	      delete [] data;
 	    }
 	}
     delete [] npoints;
+    // FIXME check the caller and propagate an error condition
+    if (iResult<0) return 0;
     return dataWritten;
 #endif
     }
@@ -679,7 +686,10 @@ unsigned long AliHLTTPCCompModelConverter::GetRemainingClustersOutputDataSize()
 int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt, unsigned long& dataSize )
     { 
       // see header file for class documentation
-      
+      int iResult=0;
+
+      // FIXME: almost identical code to  GetRemainingClustersOutputDataSize
+      // try to combine
       const Int_t nrows = AliHLTTPCTransform::GetNRows();
       Int_t * npoints = new Int_t[nrows];
       unsigned long dataWritten = 0;
@@ -689,9 +699,9 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt
       dataWritten += sizeof(AliHLTUInt32_t);
       writePtr += sizeof(AliHLTUInt32_t);
 
-      for(Int_t slice=0; slice<=35; slice++)
+      for(Int_t slice=0; slice<=35 && iResult>=0; slice++)
 	{
-	  for(Int_t patch=0; patch < 6; patch++)
+	  for(Int_t patch=0; patch < 6 && iResult>=0; patch++)
 	    {
 	      if ( !fClusters[slice][patch] )
 		{
@@ -740,20 +750,23 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt
 			  if(!tempPt)
 			    {
 			      HLTError( "Zero row pointer " );
-			      return EINVAL;
+			      iResult=-EINVAL;
+			      break;
 			    }
 			  if(localcounter != tempPt->fNClusters)
 			    {
 			      HLTError( "Mismatching clustercounter %lu - %d ", 
 					(unsigned long)localcounter, (Int_t)tempPt->fNClusters );
-			      return EINVAL;
+			      iResult=-EINVAL;
+			      break;
 			    }
 			  //cout<<"Writing row "<<(int)tempPt->fPadRow<<" with "<<(int)tempPt->fNClusters<<" clusters"<<endl;
 			  //fwrite(tempPt,size,1,outfile);
 			  if ( dataWritten+size > dataSize )
 			    {
 			      HLTWarning( "Cannot write remaining clusters to output. Data size too large (exceeding %lu bytes)", (unsigned long)dataSize );
-			      return ENOBUFS;
+			      iResult=-ENOBUFS;
+			      break;
 			    }
 			  memcpy( writePtr, tempPt, size );
 			  dataWritten += size;
@@ -774,7 +787,8 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt
 		    {
 		      HLTError( "Cluster counter out of range: %lu - %lu",
 				(unsigned long)localcounter, (unsigned long)npoints[padrow] );
-		      return EINVAL;
+		      iResult=EINVAL;
+		      break;
 		    }
 		  
 		  Float_t xyz[3] = {points[j].fX,points[j].fY,points[j].fZ};
@@ -811,20 +825,21 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt
 	      if ( dataWritten+size > dataSize )
 		{
 		HLTWarning( "Cannot write remaining clusters to output. Data size too large (exceeding %lu bytes)", (unsigned long)dataSize );
-		return ENOBUFS;
+		iResult=-ENOBUFS;
+		break;
 		}
 	      if ( tempPt )
 		{
 		  memcpy( writePtr, tempPt, size );
 		  dataWritten += size;
 		  writePtr += size;
-		  if(data)
-		    delete [] data;
 		}
+	      if(data)
+		delete [] data;
 	    }
 	}
       dataSize = dataWritten;
 
       delete [] npoints;
-      return 0;
+      return iResult;
     }
