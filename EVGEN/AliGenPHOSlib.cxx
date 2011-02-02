@@ -172,7 +172,6 @@ Double_t AliGenPHOSlib::YPi0Flat( const Double_t */*py*/, const Double_t *)
                                          0.938, 0. , 0., 0.};
   //     VALUE MESON/PI AT 5 GEV
   const Double_t kfmax[10]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
-  np--;
   Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
   Double_t kfmax2=f5/kfmax[np];
   // PIONS

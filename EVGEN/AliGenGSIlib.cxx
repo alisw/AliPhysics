@@ -979,7 +979,6 @@ Double_t AliGenGSIlib::YBaryons(const Double_t *py, const Double_t */*dummy*/)
 
   const Double_t kfmax[11]={1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 
-  np--;
   Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
   Double_t kfmax2=f5/kfmax[np];
   // PIONS

@@ -99,7 +99,6 @@ Double_t AliGenPMDlib::PtScal(Double_t pt, Int_t np)
   const Double_t khm[10] = {.13957,.493,.5488,.769,.7826,.958,1.02,0,0,0};
   //     VALUE MESON/PI AT 5 GEV
   const Double_t kfmax[10]={1.,0.3,0.55,1.0,1.0,1.0,1.0,0,0,0};
-  np--;
   Double_t f5=TMath::Power(((sqrt(100.018215)+2.)/(sqrt(100.+khm[np]*khm[np])+2.0)),12.3);
   Double_t fmax2=f5/kfmax[np];
   // PIONS
@@ -117,7 +116,7 @@ Double_t AliGenPMDlib::PtScal(Double_t pt, Int_t np)
 Double_t AliGenPMDlib::PtEta( const Double_t *px, const Double_t */*dummy*/)
 {
 // Kaon pT
-  return PtScal(*px,2);
+  return PtScal(*px, 1);
 }
 
 // y-distribution

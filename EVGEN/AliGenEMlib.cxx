@@ -215,10 +215,9 @@ Double_t AliGenEMlib::YFlat(Double_t /*y*/)
 // given particle np, from the pizero Pt distribution using  
 // mt scaling. 
 
-// MASS   1=>PIZERO, 2=>ETA, 3=>RHO, 4=>OMEGA, 5=>ETAPRIME, 6=>PHI
+// MASS   0=>PIZERO, 1=>ETA, 2=>RHO, 3=>OMEGA, 4=>ETAPRIME, 5=>PHI
 
   const Double_t khm[6] = {0.13498, 0.54751, 0.7755, 0.78265, 0.95778, 1.01946};
-  np--;
 
   Double_t scaledPt = sqrt(pt*pt + khm[np]*khm[np] - khm[0]*khm[0]);
   Double_t scaledYield = PtPizero(&scaledPt, (Double_t*) 0);
