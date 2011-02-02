@@ -29,6 +29,7 @@
 
 #include <RVersion.h>
 
+
 //______________________________________________________________________________
 //
 // Display scaled ITS modules in a paged layout, also providing
@@ -212,7 +213,7 @@ void  AliEveITSModuleStepper::Apply()
   {
     if (idx < fModuleIDs.size())
     {
-      AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
+      AliEveITSScaledModule* mod = static_cast<AliEveITSScaledModule*>(*childit);
       mod->SetID(fModuleIDs[idx], kFALSE);
       TEveTrans& tr = mod->RefMainTrans();
       tr.UnitTrans();
@@ -507,7 +508,7 @@ void AliEveITSModuleStepper::RenderModuleIDs()
   {
     if (idx < fModuleIDs.size())
     {
-      AliEveITSScaledModule* mod = dynamic_cast<AliEveITSScaledModule*>(*childit);
+      AliEveITSScaledModule* mod = static_cast<AliEveITSScaledModule*>(*childit);
       TEveTrans& tr = mod->RefMainTrans();
       tr.GetPos(x,y,z);
       x += fStepper->GetDx()*0.5;
@@ -530,7 +531,7 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
 {
   // Render the overlay elements.
 
-  AliEveITSScaledModule* sm = dynamic_cast<AliEveITSScaledModule*>(*BeginChildren());
+  AliEveITSScaledModule* sm = static_cast<AliEveITSScaledModule*>(*BeginChildren());
   Int_t scaleIdx = fScaleInfo->GetScale() - 1;
   Int_t cnx = 0, cnz = 0;
   switch(sm->GetSubDetID())
@@ -573,7 +574,7 @@ void AliEveITSModuleStepper::Render(TGLRnrCtx& rnrCtx)
       TGLRect rect(*rnrCtx.GetPickRectangle());
       rnrCtx.GetCamera()->WindowToViewport(rect);
       gluPickMatrix(rect.X(), rect.Y(), rect.Width(), rect.Height(),
-                    (Int_t*) rnrCtx.GetCamera()->RefViewport().CArr());
+		    (Int_t*) rnrCtx.GetCamera()->RefViewport().CArr());
     }
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

@@ -204,7 +204,7 @@ void AliEveITSScaledModule::LoadQuads()
 	}
         else
 	{
-	  sd = dynamic_cast<ScaledDigit_t*>(GetId(miter->second));
+	  sd = static_cast<ScaledDigit_t*>(GetId(miter->second));
           if(c1 < sd->fMinI)
 	    sd->fMinI = c1;
 	  else if( c1 > sd->fMaxI)
@@ -355,7 +355,7 @@ void AliEveITSScaledModule::SetQuadValues()
   Int_t num = fPlex.Size();
   for (Int_t i = 0 ; i < num; i++)
   {
-    ScaledDigit_t* sd = dynamic_cast<ScaledDigit_t*>(GetId(i));
+    ScaledDigit_t* sd = static_cast<ScaledDigit_t*>(GetId(i));
     Int_t v = 0;
     switch(fScaleInfo->GetStatType())
     {
@@ -432,7 +432,7 @@ void  AliEveITSScaledModule::DigitSelected(Int_t idx)
 
   // DigitBase_t *qb  = GetDigit(idx);
   TObject     *obj = GetId(idx);
-  ScaledDigit_t *sd = dynamic_cast<ScaledDigit_t*>(obj);
+  ScaledDigit_t *sd = static_cast<ScaledDigit_t*>(obj);
   TClonesArray *digits = fInfo->GetDigits(fID, fDetID);
   Int_t ndigits = digits->GetEntriesFast();
 

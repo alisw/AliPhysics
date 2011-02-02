@@ -47,7 +47,7 @@ void AliEveITSModuleStepperEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveITSModuleStepper*>(obj);
+  fM = static_cast<AliEveITSModuleStepper*>(obj);
   fStepper->SetModel(fM->GetStepper());
 }
 

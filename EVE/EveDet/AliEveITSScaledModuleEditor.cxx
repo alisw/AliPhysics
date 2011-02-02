@@ -109,7 +109,7 @@ void AliEveITSScaledModuleEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fModule = dynamic_cast<AliEveITSScaledModule*>(obj);
+  fModule = static_cast<AliEveITSScaledModule*>(obj);
 
   // widgets
   fScale->SetIntNumber(fModule->GetScaleInfo()->GetScale());
