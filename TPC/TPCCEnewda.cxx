@@ -322,16 +322,18 @@ int main(int argc, char **argv) {
 //   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
 //   calibCE.Write("tpcCalibCE");
 //   delete fileTPC;
+  
   calibCE.DumpToFile(RESULT_FILE,"name=tpcCalibCE,type=3");
   printf("TPCCEnewda: Wrote %s\n",RESULT_FILE);
   
   /* store the result file on FES */
-  
+
   status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
   if (status) {
     status = -2;
   }
   
+  printf("TPCCEnewda: Amore part %s\n",RESULT_FILE);
   SendToAmoreDB(calibCE,runNb);
   
   return status;
@@ -359,11 +361,12 @@ void SendToAmoreDB(AliTPCCalibCE &calibCE, unsigned long32 runNb)
   TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
   amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
   Int_t statusDA=0;
-  statusDA+=amoreDA.Send("CET0",calibCE.GetCalPadT0());
-  statusDA+=amoreDA.Send("CEQ",calibCE.GetCalPadQ());
-  statusDA+=amoreDA.Send("CERMS",calibCE.GetCalPadRMS());
-  statusDA+=amoreDA.Send("DriftA",grA);
-  statusDA+=amoreDA.Send("DriftC",grC);
+//   statusDA+=amoreDA.Send("CET0",calibCE.GetCalPadT0());
+//   statusDA+=amoreDA.Send("CEQ",calibCE.GetCalPadQ());
+//   statusDA+=amoreDA.Send("CERMS",calibCE.GetCalPadRMS());
+//   statusDA+=amoreDA.Send("DriftA",grA);
+//   statusDA+=amoreDA.Send("DriftC",grC);
+  statusDA+=amoreDA.Send("FitGraphs",calibCE.GetArrFitGraphs());
   statusDA+=amoreDA.Send("Info",&info);
   if ( statusDA!=0 )
     printf("TPCCEnewda: Waring: Failed to write one of the calib objects to the AMORE database\n");

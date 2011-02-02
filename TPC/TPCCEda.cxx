@@ -310,12 +310,12 @@ int main(int argc, char **argv) {
   //
   // Analyse CE data and write them to rootfile
   //
-//   calibCE->Analyse();
   printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE->GetNeventsProcessed());
   
 //   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
 //   calibCE->Write("tpcCalibCE");
 //   delete fileTPC;
+  
   calibCE->DumpToFile(RESULT_FILE,Form("name=tpcCalibCE,type=%d",saveOption));
   printf("TPCCEda: Wrote %s\n",RESULT_FILE);
   
@@ -325,9 +325,11 @@ int main(int argc, char **argv) {
   if (status) {
     status = -2;
   }
-  
-  SendToAmoreDB(calibCE,runNb);
 
+  printf("TPCCEda: Amore part\n");
+  calibCE->Analyse();
+  SendToAmoreDB(calibCE,runNb);
+  
   delete calibCE;
   return status;
 }

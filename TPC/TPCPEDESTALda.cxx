@@ -26,6 +26,7 @@ TPCda_pedestal.cxx - calibration algorithm for TPC pedestal runs
 18/09/2008  christian.lippmann@cern.ch :  Noisy channels are output to ASCII file. Use max noise in ALTRO.
 19/09/2008  J.Wiechula@gsi.de:            Added export of the calibration data to the AMORE data base.
                                           Added support for configuration files.
+31/01/2011  Christian.Lippmann@cern.ch :  Updates for changed setup at P2 with 2 LDCs per sector
 
 contact: marian.ivanov@cern.ch
 
@@ -38,6 +39,12 @@ and save results in a file (named from RESULT_FILE define - see below).
 #define FILE_ID "pedestals"
 #define MAPPING_FILE "tpcMapping.root"
 #define CONFIG_FILE "TPCPEDESTALda.conf"
+#define PED_FILE "tpcPedestals.data"
+#define NOISE_FILE "tpcNoise.data"
+#define PEDMEM_FILE "tpcPedestalMem.data"
+#define NOISY_FILE "tpcNoisyChannels.data"
+#define VERYNOISY_FILE "tpcVeryNoisyChannels.data"
+#define DEAD_FILE "tpcDeadChannels.data"
 #define AliDebugLevel() -1
 
 extern "C" {
@@ -102,6 +109,20 @@ int main(int argc, char **argv) {
     printf("Wrong number of arguments\n");
     return -1;
   }
+
+  TString daterolename(gSystem->Getenv("DATE_ROLE_NAME"));
+  if ( daterolename == "" ) {
+    printf("Error: Variable DATE_ROLE_NAME not defined! Exiting ...\n");
+    return -1;
+  }
+  bool inner;
+  if      ( daterolename.EndsWith("-0") ) inner = true;
+  else if ( daterolename.EndsWith("-1") ) inner = false;
+  else {
+    printf("Error: Variable DATE_ROLE_NAME neither ends with -0 nor -1 (E.g. ldc-TPC-C12-1)! Exiting ...\n");
+    return -1;
+  }
+
   AliLog::SetClassDebugLevel("AliTPCRawStream",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);
   AliLog::SetClassDebugLevel("AliTPCAltroMapping",-5);
@@ -109,10 +130,10 @@ int main(int argc, char **argv) {
 
   /* magic line */
   gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
-          "*",
-          "TStreamerInfo",
-          "RIO",
-          "TStreamerInfo()");
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()");
 
   /* declare monitoring program */
   int i, status;
@@ -268,7 +289,8 @@ int main(int argc, char **argv) {
     if (mapping->GetSideFromRoc(roc)==1) sideName='C';
     sector = mapping->GetSectorFromRoc(roc);
   }
-  gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+//   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",gSystem->Getenv("DATE_ROLE_NAME"),FILE_ID));
   
   //
   // end cheet
@@ -282,9 +304,9 @@ int main(int argc, char **argv) {
     statusDA+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
     statusDA+=amoreDA.Send("Info",&info);
     if ( statusDA )
-      printf("Waring: Failed to write one of the calib objects to the AMORE database\n");
+      printf("Warning: Failed to write one of the calib objects to the AMORE database\n");
   }  else {
-    printf("Waring: No data found!\n");
+    printf("Warning: No data found!\n");
   }
   // reset env var
   if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
@@ -296,16 +318,15 @@ int main(int argc, char **argv) {
   ofstream noisefile;
   ofstream pedmemfile;
   ofstream noisychannelfile;
+  ofstream verynoisychannelfile;
+  ofstream deadchannelfile;
 
-  char filename[255];
-  sprintf(filename,"tpcPedestals.data");
-  pedfile.open(filename);
-  sprintf(filename,"tpcNoise.data");
-  noisefile.open(filename);
-  sprintf(filename,"tpcPedestalMem.data");
-  pedmemfile.open(filename);
-  sprintf(filename,"tpcNoisyChannels.data");
-  noisychannelfile.open(filename);
+  pedfile.open(PED_FILE);
+  noisefile.open(NOISE_FILE);
+  pedmemfile.open(PEDMEM_FILE);
+  noisychannelfile.open(NOISY_FILE);
+  verynoisychannelfile.open(VERYNOISY_FILE);
+  deadchannelfile.open(DEAD_FILE);
 
   TArrayF **timePed = calibPedestal.GetTimePedestals();  // pedestal values for each time bin
 
@@ -313,38 +334,47 @@ int main(int argc, char **argv) {
   Int_t ctr_altro   = 0;
   Int_t ctr_pattern = 0;
   Int_t ctr_noisy   = 0;
+  Int_t ctr_vnoisy  = 0;
+  Int_t ctr_dead    = 0;
 
-  pedfile          << 10 << std::endl; // Mark file to contain PEDESTALS per channel
-  noisefile        << 11 << std::endl; // Mark file to contain NOISE per altro
-  pedmemfile       << 12 << std::endl; // Mark file to contain PEDESTALs per time bin
-  noisychannelfile << 14 << std::endl; // Mark file to contain NOISY CHANNELS
+  pedfile              << 10 << std::endl; // Mark file to contain PEDESTALS per channel
+  noisefile            << 11 << std::endl; // Mark file to contain NOISE per altro
+  pedmemfile           << 12 << std::endl; // Mark file to contain PEDESTALs per time bin
+  noisychannelfile     << 14 << std::endl; // Mark file to contain NOISY or DEAD CHANNELS
+  verynoisychannelfile << 14 << std::endl; // Mark file to contain NOISY or DEAD CHANNELS
+  deadchannelfile      << 14 << std::endl; // Mark file to contain NOISY or DEAD CHANNELS
 
+  // inner==true : calROC from ldc-0 contains: rcus 0,1 for IROC and rcu 2 for OROC 
+  // inner==false: calROC from ldc-1 contains: nothing  for IROC and rcus 3,4,5 for OROC 
   for ( Int_t roc = 0; roc < 72; roc++ ) {
     if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
+    bool isIROC  = mapping->IsIROC(roc);
     Int_t side   = mapping->GetSideFromRoc(roc);
     Int_t sector = mapping->GetSectorFromRoc(roc);
-    //printf("Analysing ROC %d (side %d, sector %d) ...\n", roc, side, sector);
-    Int_t nru = mapping->IsIROC(roc) ? 2 : 4;
-    for ( int rcu = 0; rcu < nru; rcu++ ) {
-      Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2;
+    Int_t minrcu, maxrcu;
+    if      ( isIROC ) { minrcu=0; maxrcu=1; }
+    else if ( inner  ) { minrcu=2; maxrcu=2; }
+    else               { minrcu=3; maxrcu=5; }
+    for ( int rcu = minrcu; rcu <= maxrcu; rcu++ ) {
+      //Int_t patch = mapping->IsIROC(roc) ? rcu : rcu+2;
       for ( int branch = 0; branch < 2; branch++ ) {
-        for ( int fec = 0; fec < mapping->GetNfec(patch, branch); fec++ ) {
+        for ( int fec = 0; fec < mapping->GetNfec(rcu, branch); fec++ ) {
           for ( int altro = 0; altro < 8; altro++ ) {
             Float_t rms = 0.;
             Float_t maxrms = 0.;
             Float_t ctr_altrochannel = 0.;
             for ( int channel = 0; channel < 16; channel++ ) {
               Int_t hwadd     = mapping->CodeHWAddress(branch, fec, altro, channel);
-              Int_t row       = mapping->GetPadRow(patch, hwadd);        // row in a ROC
-              Int_t globalrow = mapping->GetGlobalPadRow(patch, hwadd);  // row in full sector
-              Int_t pad       = mapping->GetPad(patch, hwadd);
+              Int_t row       = mapping->GetPadRow(rcu, hwadd);        // row in a ROC
+              Int_t globalrow = mapping->GetGlobalPadRow(rcu, hwadd);  // row in full sector
+              Int_t pad       = mapping->GetPad(rcu, hwadd);
               Float_t ped     = calibPedestal.GetCalRocPedestal(roc)->GetValue(row,pad);
               // fixed pedestal
-              pedfile << ctr_channel++ << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-                  << hwadd << "\t" << ped << std::endl;
-              // pedestal(t)
+              pedfile << ctr_channel++ << "\t" << side << "\t" << sector << "\t" << rcu << "\t"
+		      << hwadd << "\t" << ped << std::endl;
+              // pedestal(t)=pedestal memories
               if ( timePed && fabs(timePed[globalrow][pad].GetSum()) > 1e-10 ) {
-                pedmemfile << ctr_pattern++ << "\t" << side << "\t" << sector << "\t" << patch
+                pedmemfile << ctr_pattern++ << "\t" << side << "\t" << sector << "\t" << rcu
                     << "\t" << hwadd;
                 for ( Int_t timebin = 0; timebin < 1024; timebin++ )
                   pedmemfile << "\t" << timePed[globalrow][pad].At(timebin);
@@ -353,34 +383,38 @@ int main(int argc, char **argv) {
               // rms=noise
               Float_t rms2 = calibPedestal.GetCalRocRMS(roc)->GetValue(row,pad);
               if ( fabs(ped) < 1.e-10 ) {                        // dead channel
-                noisychannelfile << ctr_noisy++ << "\t" << side << "\t" << sector << "\t"
-                    << patch << "\t" << hwadd << "\t" << rms2 << std::endl;
+                deadchannelfile << ctr_dead++ << "\t" << side << "\t" << sector << "\t"
+				<< rcu << "\t" << hwadd << "\t" << rms2 << std::endl;
               } else if ( (ped > 1.e-10) && (rms2 > 1.e-10) ) {  // not dead
-              // Find noisy channels
-                if ( ((roc<36)             && (rms2 > 2.0))  ||  // IROC
-                       ((roc>35) && (row<65) && (rms2 > 2.0))  ||  // OROC, small pads
-                       ((roc>35) && (row>64) && (rms2 > 3.0)) ) {  // OROC, large pads (50% more signal)
+		// Find noisy channels
+                if ( rms2 > 6.0 ) { // VERY noisy
+                  verynoisychannelfile << ctr_vnoisy++ << "\t" << side << "\t" << sector << "\t"
+				       << rcu << "\t" << hwadd << "\t" << rms2 << std::endl;
+		  
+		} else if ( ((roc<36)             && (rms2 > 2.0))  ||  // IROC
+			    ((roc>35) && (row<65) && (rms2 > 2.0))  ||  // OROC, small pads
+			    ((roc>35) && (row>64) && (rms2 > 3.0)) ) {  // OROC, large pads (50% more signal)
                   noisychannelfile << ctr_noisy++ << "\t" << side << "\t" << sector << "\t"
-                      << patch << "\t" << hwadd << "\t" << rms2 << std::endl;
-                       } else {
-                       // Not noisy. Get average and maximum noise in this ALTRO
-                         rms += rms2;
-                         ctr_altrochannel += 1.;
-                         if (rms2 > maxrms) maxrms = rms2;
-                       } // end if noisy
+				   << rcu << "\t" << hwadd << "\t" << rms2 << std::endl;
+		} else {
+		  // Not noisy. Get average and maximum noise in this ALTRO
+		  rms += rms2;
+		  ctr_altrochannel += 1.;
+		  if (rms2 > maxrms) maxrms = rms2;
+		} // end if noisy
               } // end if some signal
             } // end channel for loop
             Int_t hwadd = mapping->CodeHWAddress(branch, fec, altro, 0);   // ALTRO address
-      // Noise data (rms) averaged over all channels in this ALTRO.
+	    // Noise data (rms) averaged over all channels in this ALTRO.
             if ( ctr_altrochannel > 1.e-10 ) {
-        /*
-        // average noise of this ALTRO (excluding high-noise channels)
-              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
+	      /*
+	      // average noise of this ALTRO (excluding high-noise channels)
+              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << rcu << "\t"
               << hwadd << "\t" << rms/ctr_altrochannel << std::endl;
-        */
-        // maximum noise of this ALTRO (excluding high-noise channels)
-              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << patch << "\t"
-                  << hwadd << "\t" << maxrms << std::endl;
+	      */
+	      // maximum noise of this ALTRO (excluding high-noise channels)
+              noisefile << ctr_altro << "\t" << side << "\t" << sector << "\t" << rcu << "\t"
+			<< hwadd << "\t" << maxrms << std::endl;
               ctr_altro++;
             }
           } // end altro for loop
@@ -393,7 +427,9 @@ int main(int argc, char **argv) {
   noisefile.close();
   pedmemfile.close();
   noisychannelfile.close();
-  printf("Wrote ASCII files. Found %d noisy channels.\n", ctr_noisy);
+  verynoisychannelfile.close();
+  deadchannelfile.close();
+  printf("Wrote ASCII files. Found %d noisy, %d very noisy and %d dead channels.\n", ctr_noisy, ctr_vnoisy, ctr_dead);
 
   return status;
 

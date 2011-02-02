@@ -243,7 +243,9 @@ int main(int argc, char **argv) {
     if (mapping->GetSideFromRoc(roc)==1) sideName='C';
     sector = mapping->GetSectorFromRoc(roc);
   }
-  gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+//   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",gSystem->Getenv("DATE_ROLE_NAME"),FILE_ID));
+  
   // 
   // end cheet
   if (sector>-1){
