@@ -142,7 +142,7 @@ void AliEveTOFSectorEditor::SetModel(TObject* obj)
 {
   // Set object to monitor at visualization level
 
-  fM = dynamic_cast<AliEveTOFSector*>(obj);
+  fM = static_cast<AliEveTOFSector*>(obj);
 
   fSectorID->SetValue(fM->GetSectorID());
   fAutoTrans->SetState(fM->GetAutoTrans()  ? kButtonDown : kButtonUp);
