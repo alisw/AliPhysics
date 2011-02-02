@@ -59,7 +59,7 @@ void AliEveVZEROModuleEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveVZEROModule*>(obj);
+  fM = static_cast<AliEveVZEROModule*>(obj);
 
   fSampleIndex->SetValue(fM->GetSampleIndex());
 }
