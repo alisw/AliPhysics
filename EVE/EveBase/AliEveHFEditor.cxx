@@ -122,7 +122,7 @@ void AliEveHFEditor::DisplayDetailed()
   // This part is for getting the different objects to display
   //
   char displayInfo[100] = {0};
-  sprintf(displayInfo,"pt = %.3f",fM->GetPt());
+  snprintf(displayInfo,100,"pt = %.3f",fM->GetPt());
   TEveLine *lhfTransverseMomentumDirection = new TEveLine(displayInfo);
   lhfTransverseMomentumDirection->SetLineColor(kOrange+8);
   lhfTransverseMomentumDirection->SetLineWidth(2);
@@ -158,7 +158,7 @@ void AliEveHFEditor::DisplayDetailed()
   TEvePointSet *posDaughterCluster = 0;
 
   daughterIndex = negTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
   if (negResult) {
     negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
@@ -174,7 +174,7 @@ void AliEveHFEditor::DisplayDetailed()
   }
 
   daughterIndex = posTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t posResult = gInterpreter->ProcessLine(macroWithIndex);
   if (posResult) {
     posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
@@ -306,21 +306,21 @@ void AliEveHFEditor::DisplayDetailed()
   // pseudorapidity, phi angle, pt, radius, dcas
   char info[100] = {0};
 
-  sprintf(info,"Cos Pointing angle = %.3f ",fM->GetCosPointingAngle());
+  snprintf(info,100,"Cos Pointing angle = %.3f ",fM->GetCosPointingAngle());
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->DrawLatex(0.05, 0.8, info);
 
-  sprintf(info,"p_{T} = %.3f [GeV/c]",fM->GetPt());
+  snprintf(info,100,"p_{T} = %.3f [GeV/c]",fM->GetPt());
   ltx->DrawLatex(0.05, 0.7, info);
 
-  sprintf(info,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
+  snprintf(info,100,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
   ltx->DrawLatex(0.05, 0.6, info);
 
-  sprintf(info, "D^{0} inv. mass = %.3f", fM->GetInvariantMassPart());
+  snprintf(info,100,"D^{0} inv. mass = %.3f", fM->GetInvariantMassPart());
   ltx->DrawLatex(0.05, 0.5, info);
 
- sprintf(info, "D^{0}bar inv. mass = %.3f", fM->GetInvariantMassAntiPart());
+  snprintf(info,100,"D^{0}bar inv. mass = %.3f", fM->GetInvariantMassAntiPart());
   ltx->DrawLatex(0.05, 0.4, info);
 
   gEve->Redraw3D();
