@@ -212,7 +212,7 @@ void AliEveTPCLoaderEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTPCLoader*>(obj);
+  fM = static_cast<AliEveTPCLoader*>(obj);
 
   // !!!! order changed, need TGTextEntry::SetText NO BLOODY EMIT.
   fFile->SetText(fM->fFile);
