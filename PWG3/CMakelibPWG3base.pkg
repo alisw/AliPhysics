@@ -29,6 +29,8 @@ set ( SRCS   base/AliQuarkoniaAcceptance.cxx base/AliQuarkoniaEfficiency.cxx bas
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
+string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
+
 set ( DHDR  PWG3baseLinkDef.h)
 
 set ( EINCLUDE  PWG3/base)

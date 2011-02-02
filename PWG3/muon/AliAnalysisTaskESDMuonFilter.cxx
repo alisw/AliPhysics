@@ -120,12 +120,42 @@ AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name, Boo
   // Constructor
 }
 
+//______________________________________________________________________________
 void AliAnalysisTaskESDMuonFilter::UserCreateOutputObjects()
 {
   // Create the output container
   if (fTrackFilter) OutputTree()->GetUserInfo()->Add(fTrackFilter);
 }
 
+//______________________________________________________________________________
+void AliAnalysisTaskESDMuonFilter::PrintTask(Option_t *option, Int_t indent) const
+{
+  // Specify how we are configured
+  
+  AliAnalysisTaskSE::PrintTask(option,indent);
+  
+  TString spaces(' ',indent+3);
+  
+  if ( fOnlyMuon ) 
+  {
+    cout << spaces.Data() << "Keep only muon information " << endl;        
+  }
+  else 
+  {
+    cout << spaces.Data() << "Keep all information from standard AOD" << endl;
+  }
+
+  if ( fKeepAllEvents ) 
+  {
+    cout << spaces.Data() << "Keep all events, regardless of number of muons" << endl;    
+  }
+  else 
+  {
+    cout << spaces.Data() << "Keep only events with at least one muon" << endl;
+  }
+}
+
+//______________________________________________________________________________
 void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const char* title)
 {
   // Add an output filtered and replicated aod
@@ -135,10 +165,10 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
 
   AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title);
 
-  if ( ext && fOnlyMuon ) 
-  {
-    ext->DisableReferences();
-    
+  if (!ext) return;
+  
+  if ( fOnlyMuon ) 
+  {    
     ext->FilterBranch("cascades",0x0);
     ext->FilterBranch("v0s",0x0);
     ext->FilterBranch("kinks",0x0);
@@ -155,10 +185,12 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
                                                              new AliAnalysisNonMuonTrackCuts,
                                                              new AliAnalysisNonPrimaryVertices);
     ext->FilterBranch("tracks",murep);    
-    ext->FilterBranch("vertices",murep);    
+    ext->FilterBranch("vertices",murep);  
+    ext->FilterBranch("dimuons",murep);
   }  
 }
 
+//______________________________________________________________________________
 void AliAnalysisTaskESDMuonFilter::Init()
 {
   // Initialization
@@ -167,6 +199,7 @@ void AliAnalysisTaskESDMuonFilter::Init()
 }
 
 
+//______________________________________________________________________________
 void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event					    
@@ -177,6 +210,7 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
   ConvertESDtoAOD();
 }
 
+//______________________________________________________________________________
 void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD() 
 {
   // ESD Muon Filter analysis task executed for each event

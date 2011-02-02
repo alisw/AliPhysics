@@ -12,6 +12,9 @@ ifneq ($(ESD_INCLUDE),)
 	ifneq ($(STEERBase_INCLUDE),)
 		ALICEINC += -I../$(STEERBase_INCLUDE)
 	endif				
+	ifneq ($(CDB_INCLUDE),)
+		ALICEINC += -I../$(CDB_INCLUDE)
+	endif				
 	ifneq ($(AOD_INCLUDE),)
 		ALICEINC += -I../$(AOD_INCLUDE)
 	endif
