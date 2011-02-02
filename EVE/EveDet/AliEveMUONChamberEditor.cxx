@@ -101,7 +101,7 @@ void AliEveMUONChamberEditor::SetModel(TObject* obj)
   // ...
   //
 
-  fM = dynamic_cast<AliEveMUONChamber*>(obj);
+  fM = static_cast<AliEveMUONChamber*>(obj);
 
   fThreshold->SetValue(fM->fThreshold);
   fMaxVal->SetValue(fM->fMaxVal);
