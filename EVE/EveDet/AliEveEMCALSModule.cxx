@@ -248,16 +248,15 @@ void AliEveEMCALSModule::UpdateQuads()
   
   */
 
-  if (fEMCALSModuleData != 0) {
 
-    if (!fgStaticInit)
-      InitStatics(fEMCALSModuleData);
+  if (!fgStaticInit)
+    InitStatics(fEMCALSModuleData);
 
-    // digits ------------------------
+  // digits ------------------------
 
-    // Define TEveQuadSet for digits
-    fQuadSet->SetOwnIds(kTRUE);
-    fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
+   // Define TEveQuadSet for digits
+   fQuadSet->SetOwnIds(kTRUE);
+  fQuadSet->Reset(TEveQuadSet::kQT_RectangleYZFixedDimX, kFALSE, 32);
     fQuadSet->SetDefWidth (fEMCALSModuleData->GetPhiTileSize());
     fQuadSet->SetDefHeight(fEMCALSModuleData->GetEtaTileSize());
     fQuadSet->RefMainTrans().SetFrom(*fEMCALSModuleData->GetSModuleMatrix());
@@ -354,8 +353,6 @@ void AliEveEMCALSModule::UpdateQuads()
 	} // end clusters loop
       }
     else { if (fDebug) printf("There is no clusters in SM %d \n", smId); }
-
-  } // end if (fEMCALSModuleData != 0)
 
 }
 
