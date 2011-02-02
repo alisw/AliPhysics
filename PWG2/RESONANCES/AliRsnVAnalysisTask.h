@@ -61,6 +61,9 @@ class AliRsnVAnalysisTask : public AliAnalysisTaskSE
     
     void SetMixing(Bool_t doMix = kTRUE) {fIsMixing = doMix;}
     Bool_t IsMixing() { return fIsMixing;}
+    
+    void UseMixingRange(Bool_t useMixRange = kTRUE) {fUseMixingRange = useMixRange;}
+    Bool_t IsUsingMixingRange() { return fUseMixingRange;}
 
   protected:
 
@@ -80,6 +83,7 @@ class AliRsnVAnalysisTask : public AliAnalysisTaskSE
     AliRsnVATProcessInfo    fTaskInfo;         //  task info
     
     AliMixInputEventHandler *fMixedEH;         //! mixed event hadnler
+    Bool_t 									fUseMixingRange;   //
 
     void                    SetupMixingEvents();
     void                    SetDebugForAllClasses();

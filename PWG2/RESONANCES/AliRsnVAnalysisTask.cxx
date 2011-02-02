@@ -36,7 +36,8 @@ AliRsnVAnalysisTask::AliRsnVAnalysisTask
   fMCOnly(mcOnly),
   fInfoList(0x0),
   fTaskInfo(name),
-  fMixedEH(0)
+  fMixedEH(0),
+  fUseMixingRange(kTRUE)
 {
 //
 // Default constructor.
@@ -62,7 +63,8 @@ AliRsnVAnalysisTask::AliRsnVAnalysisTask(const AliRsnVAnalysisTask& copy) :
   fMCOnly(copy.fMCOnly),
   fInfoList(0x0),
   fTaskInfo(copy.fTaskInfo),
-  fMixedEH(copy.fMixedEH)
+  fMixedEH(copy.fMixedEH),
+  fUseMixingRange(copy.fUseMixingRange)
 {
 //
 // Copy constructor.
@@ -172,6 +174,8 @@ void AliRsnVAnalysisTask::UserExec(Option_t* opt)
 // objects obtained from dynamic-casts called in ConnectInputData().
 //
   if (!IsMixing()) {
+		
+		
 		if (fMCOnly && fMCEvent)
 		{
 			fRsnEvent[0].SetRef  (fMCEvent[0]);
@@ -379,6 +383,20 @@ Bool_t AliRsnVAnalysisTask::EventProcess()
 // which is useful for all the operations which 
 // need to be done only once for each event.
 //
+  
+  // if not using mixing cuts return kTRUE
+  if (!IsUsingMixingRange()) return kTRUE;
+  
+  // cut if event was in range of mixing cuts
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
+	if(inEvHMain) {
+		fMixedEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
+		if(fMixedEH) {
+			if (fMixedEH->CurrentBinIndex()<0) return kFALSE;
+		}
+		
+	}
   
   // in this case, return always a success
   return kTRUE;

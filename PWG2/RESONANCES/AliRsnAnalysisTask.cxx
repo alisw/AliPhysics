@@ -140,6 +140,8 @@ Bool_t AliRsnAnalysisTask::EventProcess()
 
   // initially, an event is expected to be bad
   fTaskInfo.SetEventUsed(kFALSE);
+	
+	if (!AliRsnVAnalysisTask::EventProcess()) return kFALSE;
   
   // check #1: number of tracks in event (reject empty events)
   Int_t    ntracks = fRsnEvent[0].GetMultiplicity();
@@ -181,5 +183,5 @@ Bool_t AliRsnAnalysisTask::EventProcess()
   // final return value is positive
   // but call the mother class method which updates info object
   fTaskInfo.SetEventUsed(kTRUE);
-  return AliRsnVAnalysisTask::EventProcess();
+  return kTRUE;
 }
