@@ -14,7 +14,6 @@
 //#include <TObject.h> 
 #include <TNamed.h> 
 
-#define ITSMILLENSENSVOL    2198
 
 class AliAlignObjParams; 
 class TGeoHMatrix; 
@@ -64,12 +63,13 @@ protected:
   void      AddSensitiveVolume(UShort_t volid);
 
 private:
+  static const Int_t fgkSensModules = 2198;
   Int_t          fNSensVol; ///
   Int_t          fIndex; ///
   UShort_t       fVolumeID; ///
   // il symname e' il nome del TNamed...
-  Int_t          fSensVolIndex[ITSMILLENSENSVOL]; ///
-  UShort_t       fSensVolVolumeID[ITSMILLENSENSVOL]; ///
+  Int_t          fSensVolIndex[fgkSensModules]; ///
+  UShort_t       fSensVolVolumeID[fgkSensModules]; ///
   TGeoHMatrix   *fMatrix; /// ideal TGeoHMatrix of the supermodule
   TGeoHMatrix   *fSensVolMatrix; ///
   TGeoHMatrix   *fSensVolModifMatrix; ///

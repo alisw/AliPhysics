@@ -54,6 +54,10 @@ AliITSAlignMilleModule::AliITSAlignMilleModule() : TNamed(),
   fSensVolMatrix = new TGeoHMatrix; 
   fSensVolModifMatrix = new TGeoHMatrix; 
   fTempAlignObj=new AliAlignObjParams;
+  for(Int_t k=0; k<fgkSensModules; k++){
+    fSensVolIndex[k] = 0;
+    fSensVolVolumeID[k] = 0;
+  }
 } 
 //-------------------------------------------------------------
 AliITSAlignMilleModule::AliITSAlignMilleModule(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv, UShort_t *volidsv) : TNamed(), 
@@ -72,8 +76,13 @@ AliITSAlignMilleModule::AliITSAlignMilleModule(Int_t index, UShort_t volid, char
   fTempAlignObj=new AliAlignObjParams;
   if (Set(index,volid,symname,m,nsv,volidsv)) {
     AliInfo("Error in AliITSAlignMilleModule::Set() - initializing void supermodule...");
+
   }
-} 
+  for(Int_t k=0; k<fgkSensModules; k++){
+    fSensVolIndex[k] = 0;
+    fSensVolVolumeID[k] = 0;
+  }
+}
 //-------------------------------------------------------------
 AliITSAlignMilleModule::AliITSAlignMilleModule(UShort_t volid) : TNamed(), 
   fNSensVol(0), 
@@ -101,6 +110,10 @@ AliITSAlignMilleModule::AliITSAlignMilleModule(UShort_t volid) : TNamed(),
   }
   else {
     AliInfo("Wrong VolumeID or Geometry not loaded - initializing void supermodule...");
+  for(Int_t k=0; k<fgkSensModules; k++){
+    fSensVolIndex[k] = 0;
+    fSensVolVolumeID[k] = 0;
+  }
   }
 } 
 //-------------------------------------------------------------
@@ -654,6 +667,10 @@ AliITSAlignMilleModule::AliITSAlignMilleModule(const AliITSAlignMilleModule &m) 
   fTempAlignObj(new AliAlignObjParams)
 {
   // Copy constructor
+  for(Int_t k=0; k<fgkSensModules; k++){
+    fSensVolIndex[k] = 0;
+    fSensVolVolumeID[k] = 0;
+  }
   for (int i=0; i<fNSensVol; i++) {
     fSensVolIndex[i]=m.fSensVolIndex[i];
     fSensVolVolumeID[i]=m.fSensVolVolumeID[i];
