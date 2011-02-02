@@ -778,14 +778,11 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
 
   trackParamAtCluster = fTrack->GetTrackParamAtCluster();
 
-  if (IsMUONTrack() || IsESDTrack()) {
-    trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
-    charge = (Int_t)trackParam->GetCharge();
-  }
-  if (IsRefTrack()) {
-    trackParam = fTrack->GetTrackParamAtVertex();
+  if (IsMUONTrack() || IsESDTrack() || IsRefTrack()) {
     charge = (Int_t)trackParam->GetCharge();
     trackParam = (AliMUONTrackParam*)trackParamAtCluster->At(i1);
+  } else {
+    return;
   }
 
   vect[0] = xr[i1];
