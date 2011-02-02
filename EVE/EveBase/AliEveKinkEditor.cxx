@@ -135,9 +135,9 @@ void AliEveKinkEditor::DisplayDetailed()
   TLatex* ltx = new TLatex(0.1, 0.9, info);
   ltx->SetTextSize(0.08);
 
-  sprintf(info,"radius = %.3f [cm]",fM->GetKinkRadius());
+  snprintf(info,100,"radius = %.3f [cm]",fM->GetKinkRadius());
   ltx->DrawLatex(0.1, 0.8, info);
-  sprintf(info,"mass_{K^{+, -}} = %.3f [GeV/c^{2}]",fM->GetInvMass(13));
+  snprintf(info,100,"mass_{K^{+, -}} = %.3f [GeV/c^{2}]",fM->GetInvMass(13));
   ltx->DrawLatex(0.1, 0.3, info);
 
   gEve->Redraw3D();
