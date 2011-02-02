@@ -115,7 +115,7 @@ void AliEveTPCSectorVizEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTPCSectorViz*>(obj);
+  fM = static_cast<AliEveTPCSectorViz*>(obj);
 
   fSectorID->SetValue(fM->fSectorID);
   fAutoTrans->SetState(fM->fAutoTrans  ? kButtonDown : kButtonUp);
