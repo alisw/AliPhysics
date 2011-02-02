@@ -1509,8 +1509,10 @@ fNMaxSigmaCl(3)
       fBy20[j1][1]=0;
     }
   }
-  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++)fClusters[i]=NULL;
-
+  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+    fClusters[i]=NULL;
+    fClusterIndex[i]=0;
+  }
 }
 //------------------------------------------------------------------------
 AliITStrackerMI::AliITSlayer::
@@ -1597,7 +1599,10 @@ fNMaxSigmaCl(3) {
       fBy20[j1][1]=0;
     }
   }
-  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++)fClusters[i]=NULL;
+  for(Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+    fClusters[i]=NULL;
+    fClusterIndex[i]=0;
+  }
 }
 /*
 //------------------------------------------------------------------------

@@ -138,7 +138,7 @@ fCDBManager(0) {
     }
   }
 }
-
+/*
 //____________________________________________________________________________ 
 AliITSQASSDDataMakerRec::AliITSQASSDDataMakerRec(const AliITSQASSDDataMakerRec& qadm) :
 TObject(),
@@ -169,7 +169,7 @@ AliITSQASSDDataMakerRec& AliITSQASSDDataMakerRec::operator = (const AliITSQASSDD
   new(this) AliITSQASSDDataMakerRec(qac);
   return *this;
 }
-
+*/
 //__________________________________________________________________
 AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
   // destructor
@@ -600,7 +600,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
     fHistSSDOccupancyLayer5->GetZaxis()->SetRangeUser(0.0,100.0);
     Char_t fLabel[3];
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDOccupancyLayer5->SetStats(kFALSE);
@@ -1127,9 +1127,9 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
   //((TH2D *)fAliITSQADataMakerRec->GetRawsData(fGenRawsOffset[specie]+fSSDRawsOffset-fSSDRawsDAOffset+3))->Reset();
   
   AliCDBEntry *entryBadChannelsSSD = fCDBManager->Get("ITS/Calib/BadChannelsSSD");
-  if(!entryBadChannelsSSD) 
-    AliError("OCDB entry for the bad channel list is not valid!"); 
-  AliITSBadChannelsSSDv2 *badchannelsSSD = (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
+  if(!entryBadChannelsSSD)AliError("OCDB entry for the bad channel list is not valid!"); 
+  AliITSBadChannelsSSDv2 *badchannelsSSD = NULL;
+  if(entryBadChannelsSSD)badchannelsSSD = (AliITSBadChannelsSSDv2 *)entryBadChannelsSSD->GetObject();
   if(!badchannelsSSD)
     AliError("Bad channel list object is not a valid AliITSBadChannelsSSD object!");
 
@@ -1147,25 +1147,26 @@ void AliITSQASSDDataMakerRec::MonitorOCDBObjects() {
     nPSideChannelsLayer6 = 0, nNSideChannelsLayer6 = 0;
 
     Int_t badChannel = 0;
-    for(Int_t j = 0; j < fgkNumberOfPSideStrips; j++) {
-      badChannel = (Int_t)(badchannelsSSD->GetBadChannelP(i,j));
-      if(badChannel != 0) {
-        if(layer == 5)
-          nPSideChannelsLayer5 += 1;
-        if(layer == 6)
-          nPSideChannelsLayer6 += 1;
-        nBadPSideChannels += 1;
-      }//badchannel flag != 0
-      badChannel = (Int_t)(badchannelsSSD->GetBadChannelN(i,j));
-      if(badChannel != 0) {
-        if(layer == 5)
-          nNSideChannelsLayer5 += 1;
-        if(layer == 6)
-          nNSideChannelsLayer6 += 1;
-nBadNSideChannels += 1;
-      }//badchannel flag != 0
-    }//loop over strips
-
+    if(badchannelsSSD){
+      for(Int_t j = 0; j < fgkNumberOfPSideStrips; j++) {
+	badChannel = (Int_t)(badchannelsSSD->GetBadChannelP(i,j));
+	if(badChannel != 0) {
+	  if(layer == 5)
+	    nPSideChannelsLayer5 += 1;
+	  if(layer == 6)
+	    nPSideChannelsLayer6 += 1;
+	  nBadPSideChannels += 1;
+	}//badchannel flag != 0
+	badChannel = (Int_t)(badchannelsSSD->GetBadChannelN(i,j));
+	if(badChannel != 0) {
+	  if(layer == 5)
+	    nNSideChannelsLayer5 += 1;
+	  if(layer == 6)
+	    nNSideChannelsLayer6 += 1;
+	  nBadNSideChannels += 1;
+	}//badchannel flag != 0
+      }//loop over strips
+    }
 
     //cout << "Bad channels P side module " << module << ": " << nBadPSideChannels << endl;
     //cout << "Bad channels N side module " << module << ": " << nBadNSideChannels << endl;
@@ -1546,8 +1547,9 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
   Int_t rv = 0 ; 
   Int_t gLayer = 0, gLadder = 0, gModule = 0;
   Int_t lLadderLocationY = 0;
+  TClonesArray *recpoints = NULL;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  TClonesArray *recpoints = rpcont->FetchClusters(0,clustersTree); 
+  rpcont->FetchClusters(0,clustersTree); 
   if(!rpcont->GetStatusOK() || !rpcont->IsSSDActive()){
     AliError("can't get SSD clusters !");
     return rv;

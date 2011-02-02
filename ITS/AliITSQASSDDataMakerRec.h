@@ -28,8 +28,7 @@ class AliITSQASSDDataMakerRec: public TObject {
 
 public:
   AliITSQASSDDataMakerRec(AliITSQADataMakerRec *aliITSQADataMakerRec, Bool_t kMode = kFALSE, Int_t ldc=0);  //ctor
-  AliITSQASSDDataMakerRec(const AliITSQASSDDataMakerRec& qadm);
-  AliITSQASSDDataMakerRec& operator = (const AliITSQASSDDataMakerRec& qac);
+
   virtual Int_t InitRaws();
   virtual Int_t InitDigits();
   virtual Int_t InitRecPoints();
@@ -48,6 +47,8 @@ public:
   void ResetDetector(AliQAv1::TASKINDEX_t task);
  private:
 
+  AliITSQASSDDataMakerRec(const AliITSQASSDDataMakerRec& qadm);
+  AliITSQASSDDataMakerRec& operator = (const AliITSQASSDDataMakerRec& qac);
   void GetOccupancyStrip(TH1 *lHisto, Int_t *occupancyMatrix); 
   Double_t GetOccupancyModule(TH1 *lHisto, 
 			      Int_t stripside,

@@ -164,9 +164,14 @@ void AliITSsDigitize::Exec(const Option_t *opt){
     // Return:
     //      none.
     Option_t *lopt;
-//    Int_t nparticles,evnt;
- 
-    if(strstr(opt,"All")||strstr(opt,"ALL")||strstr(opt,"ITS")||opt==0){
+    Bool_t condition =kFALSE;
+    if(opt){
+      if(strstr(opt,"All")||strstr(opt,"ALL")||strstr(opt,"ITS"))condition =kTRUE;
+    }
+    else{
+      condition = kTRUE;
+    } 
+    if(condition){
         fDet[0] = fDet[1] = fDet[2] = kTRUE;
         lopt = "All";
     }else{

@@ -99,30 +99,6 @@ AliITSreconstruction::AliITSreconstruction(const char* filename):
 
 }
 
-//______________________________________________________________________
-AliITSreconstruction::AliITSreconstruction(const AliITSreconstruction &rec):TTask(rec),
-fInit(rec.fInit),
-fEnt(rec.fEnt),
-fEnt0(rec.fEnt0),
-fDetTypeRec(rec.fDetTypeRec),
-fDfArp(rec.fDfArp),
-fITSgeom(rec.fITSgeom),
-fLoader(rec.fLoader),
-fRunLoader(rec.fRunLoader)
-{
-    // Copy constructor. 
-
-  
-}
-
-//______________________________________________________________________
-AliITSreconstruction& AliITSreconstruction::operator=(const AliITSreconstruction& source){
-    // Assignment operator. 
-  this->~AliITSreconstruction();
-  new(this) AliITSreconstruction(source);
-  return *this;
-
-}
 
 //______________________________________________________________________
 AliITSreconstruction::~AliITSreconstruction(){
@@ -209,8 +185,14 @@ void AliITSreconstruction::Exec(const Option_t *opt){
     //      none.
     Option_t *lopt;
     Int_t evnt;
-
-    if(strstr(opt,"All")||strstr(opt,"ALL")||strstr(opt,"ITS")||opt==0){
+    Bool_t condition =kFALSE;
+    if(opt){
+      if(strstr(opt,"All")||strstr(opt,"ALL")||strstr(opt,"ITS"))condition =kTRUE;
+    }
+    else{
+      condition = kTRUE;
+    }
+    if(condition){
       fDet[0] = fDet[1] = fDet[2] = kTRUE;
       lopt = "All";
     }else{
