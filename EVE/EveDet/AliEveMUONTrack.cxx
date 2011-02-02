@@ -643,7 +643,7 @@ void AliEveMUONTrack::MakeMUONTriggerTrack(AliMUONTriggerTrack *mtrack)
 
   char form[1000];
 
-  sprintf(form,"MUONTriggerTrack %2d",mtrack->GetLoTrgNum());
+  snprintf(form,1000,"MUONTriggerTrack %2d",mtrack->GetLoTrgNum());
   SetName(form);
   SetLineStyle(1);
 
