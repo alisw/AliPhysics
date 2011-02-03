@@ -19,11 +19,11 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libEGPythia6.so");   // TGenerator interface
     gSystem->Load("libpythia6.so");     // Pythia
     gSystem->Load("libAliPythia6.so");  // ALICE specific implementations
-    gSystem->Load("libRALICE.so");
 
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    gSystem->Load("libANALYSISRL.so");
+    gSystem->Load("libANALYSIScalib.so");
+    gSystem->Load("libEventMixing.so");
 
     gSystem->Load("libPWG0base.so");
     gSystem->Load("libPWG0dep.so");
@@ -33,7 +33,6 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWG1.so");
 
     gSystem->Load("libCORRFW.so");
-    gSystem->Load("libPWG2.so");
     gSystem->Load("libPWG2AOD.so");
     gSystem->Load("libPWG2ebye.so");
     gSystem->Load("libPWG2evchar.so");
@@ -51,9 +50,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWG3hfe.so");
     gSystem->Load("libPWG3muondep.so");
     gSystem->Load("libPWG3muon.so");
-    gSystem->Load("libPWG3.so");
     gSystem->Load("libPWG3vertexingHF.so");
-    gSystem->Load("libPWG3vertexingOld.so");
 
     gSystem->Load("libJETAN.so");
     gSystem->Load("libPWG4CaloCalib.so");
