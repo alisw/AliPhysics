@@ -40,7 +40,7 @@ ClearCanvas(TCanvas* c)
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-DrawCorrELoss(const char* fname, const char* option="err")
+DrawCorrELoss(const char* fname, const char* option="summary error")
 {
   //__________________________________________________________________
   // Load libraries and object 
@@ -51,7 +51,7 @@ DrawCorrELoss(const char* fname, const char* option="err")
     Error("DrawCorrELoss", "Failed to open %s", fname);
     return;
   }
-  TString pname(fname);
+  TString pname(gSystem->BaseName(fname));
   pname.ReplaceAll(".root", ".pdf");
 
   AliFMDCorrELossFit* fits = 
@@ -62,15 +62,24 @@ DrawCorrELoss(const char* fname, const char* option="err")
   }
 
   //__________________________________________________________________
+  TString opts(option);
+  opts.ToLower();
+  Bool_t summary = opts.Contains("summary");
+  if (summary) opts.ReplaceAll("summary", "");
+
+  //__________________________________________________________________
   // Create a canvas
-  TCanvas* c = new TCanvas("c", "c", 800 / TMath::Sqrt(2), 800);
+  Int_t h = 800;
+  Int_t w = h / TMath::Sqrt(2);
+  if (summary) w = h;
+  TCanvas* c = new TCanvas("c", "c", w, h);
   c->SetFillColor(0);
   c->SetBorderSize(0);
   c->SetBorderMode(0);
   c->Print(Form("%s[", pname.Data()));
   
   gStyle->SetOptStat(0);
-  gStyle->SetTitleColor(0);
+  gStyle->SetTitleFillColor(0);
   gStyle->SetTitleStyle(0);
   gStyle->SetTitleBorderSize(0);
   gStyle->SetTitleX(.7);
@@ -83,53 +92,62 @@ DrawCorrELoss(const char* fname, const char* option="err")
 
   ClearCanvas(c);
   //__________________________________________________________________
-  // Create a title page 
-  TLatex* ll = new TLatex(.5,.8, fname);
-  ll->SetTextAlign(22);
-  ll->SetTextSize(0.05);
-  ll->SetNDC();
-  ll->Draw();
-
-  TLatex* l = new TLatex(.5,.8, fname);
-  l->SetNDC();
-  l->SetTextSize(0.03);
-  l->SetTextFont(132);
-  l->SetTextAlign(12);
-  l->DrawLatex(0.2, 0.70, "1^{st} page is a summary of fit parameters");
-  l->DrawLatex(0.2, 0.67, "2^{nd} page is a summary of relative errors");
-  l->DrawLatex(0.2, 0.64, "Subsequent pages shows the fitted functions");
-  l->DrawLatex(0.3, 0.60, "Black line is the full fitted function");
-  l->DrawLatex(0.3, 0.57, "Coloured lines are the individual N-mip components");
-  l->DrawLatex(0.3, 0.54, "Full drawn lines correspond to used components");
-  l->DrawLatex(0.3, 0.51, "Dashed lines correspond to ignored components");
-  l->DrawLatex(0.2, 0.47, "Each component has the form");
-  l->DrawLatex(0.3, 0.42, "f_{n}(x; #Delta, #xi, #sigma') = "
-	       "#int_{-#infty}^{+#infty}d#Delta' "
-	       "landau(x; #Delta, #xi)gaus(x; #Delta', #sigma')");
-  l->DrawLatex(0.2, 0.37, "The full function is given by");
-  l->DrawLatex(0.3, 0.32, "f_{N}(x; #Delta, #xi, #sigma', #bf{a}) = "
-	       "#sum_{i=1}^{N} a_{i} "
-	       "f_{i}(x; #Delta_{i}, #xi_{i}, #sigma_{i}')");
-  l->DrawLatex(0.3, 0.26, "#Delta_{i} = i (#Delta_{1} + #xi_{1} log(i))");
-  l->DrawLatex(0.3, 0.23, "#xi_{i} = i #xi_{1}");
-  l->DrawLatex(0.3, 0.20, "#sigma_{i} = #sqrt{i} #sigma_{1}");
-  l->DrawLatex(0.3, 0.17, "#sigma_{n} #dot{=} 0");
-  l->DrawLatex(0.3, 0.14, "#sigma'^{2} = #sigma^{2}_{n} + #sigma^{2}");
-  l->DrawLatex(0.3, 0.11, "a_{1} = 1");
-  c->Print(pname.Data(), "Title:Title page");
-
-  ClearCanvas(c);
+  if (!summary) {
+    // Create a title page 
+    TLatex* ll = new TLatex(.5,.8, fname);
+    ll->SetTextAlign(22);
+    ll->SetTextSize(0.05);
+    ll->SetNDC();
+    ll->Draw();
+    
+    TLatex* l = new TLatex(.5,.8, fname);
+    l->SetNDC();
+    l->SetTextSize(0.03);
+    l->SetTextFont(132);
+    l->SetTextAlign(12);
+    l->DrawLatex(0.2, 0.70, "1^{st} page is a summary of fit parameters");
+    l->DrawLatex(0.2, 0.67, "2^{nd} page is a summary of relative errors");
+    l->DrawLatex(0.2, 0.64, "Subsequent pages shows the fitted functions");
+    l->DrawLatex(0.3, 0.60, "Black line is the full fitted function");
+    l->DrawLatex(0.3, 0.57, "Coloured lines are the individual N-mip comp.");
+    l->DrawLatex(0.3, 0.54, "Full drawn lines correspond to used components");
+    l->DrawLatex(0.3, 0.51, "Dashed lines correspond to ignored components");
+    l->DrawLatex(0.2, 0.47, "Each component has the form");
+    l->DrawLatex(0.3, 0.42, "f_{n}(x; #Delta, #xi, #sigma') = "
+		 "#int_{-#infty}^{+#infty}d#Delta' "
+		 "landau(x; #Delta, #xi)gaus(x; #Delta', #sigma')");
+    l->DrawLatex(0.2, 0.37, "The full function is given by");
+    l->DrawLatex(0.3, 0.32, "f_{N}(x; #Delta, #xi, #sigma', #bf{a}) = "
+		 "#sum_{i=1}^{N} a_{i} "
+		 "f_{i}(x; #Delta_{i}, #xi_{i}, #sigma_{i}')");
+    l->DrawLatex(0.3, 0.26, "#Delta_{i} = i (#Delta_{1} + #xi_{1} log(i))");
+    l->DrawLatex(0.3, 0.23, "#xi_{i} = i #xi_{1}");
+    l->DrawLatex(0.3, 0.20, "#sigma_{i} = #sqrt{i} #sigma_{1}");
+    l->DrawLatex(0.3, 0.17, "#sigma_{n} #dot{=} 0");
+    l->DrawLatex(0.3, 0.14, "#sigma'^{2} = #sigma^{2}_{n} + #sigma^{2}");
+    l->DrawLatex(0.3, 0.11, "a_{1} = 1");
+    c->Print(pname.Data(), "Title:Title page");
+    
+    ClearCanvas(c);
+  }
 
   //__________________________________________________________________
   // Draw overview page 
-  fits->Draw(option);
+  fits->Draw(opts.Data());
   c->Print(pname.Data(), "Title:Fit overview");
 
+  if (summary) {
+    c->Print(Form("%s]", pname.Data()));
+    TString pngName(pname.Data());		
+    pngName.ReplaceAll(".pdf", ".png");
+    c->Print(pngName.Data());
+    return;
+  }
   ClearCanvas(c);
-
+  
   //__________________________________________________________________
   // Draw relative parameter errors 
-  fits->Draw("rel");
+  fits->Draw("relative");
   c->Print(pname.Data(), "Title:Relative parameter errors");
 
   //__________________________________________________________________
