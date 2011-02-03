@@ -160,7 +160,7 @@ void AliEveV0Editor::DisplayDetailed()
   TEvePointSet *posDaughterCluster = 0;
   
   daughterIndex = negTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t negResult = gInterpreter->ProcessLine(macroWithIndex);
   if (negResult) {
     negDaughterCluster = reinterpret_cast<TEvePointSet*>(negResult);
@@ -176,7 +176,7 @@ void AliEveV0Editor::DisplayDetailed()
   }
 
   daughterIndex = posTrack->GetIndex();
-  sprintf(macroWithIndex,"clusters_from_index(%d)",daughterIndex);
+  snprintf(macroWithIndex,100,"clusters_from_index(%d)",daughterIndex);
   Long_t posResult = gInterpreter->ProcessLine(macroWithIndex);
   if (posResult) {
     posDaughterCluster = reinterpret_cast<TEvePointSet*>(posResult);
@@ -312,30 +312,30 @@ void AliEveV0Editor::DisplayDetailed()
   // Calculation of the invariant mass with the max prob PID hypothesis first
   // pseudorapidity, phi angle, pt, radius, dcas
   char info[100] = {0};
-  sprintf(info,"#phi = %.3f rad = %.1f deg",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
+  snprintf(info,100,"#phi = %.3f rad = %.1f deg",fM->GetPhi(),(180./TMath::Pi())*fM->GetPhi());
   TLatex* ltx = new TLatex(0.05, 0.9, info);
   ltx->SetTextSize(0.08);
   ltx->Draw();
 
-  sprintf(info,"radius = %.3f [cm]",fM->GetRadius());
+  snprintf(info,100,"radius = %.3f [cm]",fM->GetRadius());
   ltx->DrawLatex(0.05, 0.8, info);
 
-  sprintf(info,"p_{T} = %.3f [GeV/c]",fM->GetPt());
+  snprintf(info,100,"p_{T} = %.3f [GeV/c]",fM->GetPt());
   ltx->DrawLatex(0.05, 0.7, info);
 
-  sprintf(info,"daughters dca = %.3f [cm]",fM->GetDaughterDCA());
+  snprintf(info,100,"daughters dca = %.3f [cm]",fM->GetDaughterDCA());
   ltx->DrawLatex(0.05, 0.6, info);
 
-  sprintf(info,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
+  snprintf(info,100,"#eta = - ln( tan(#theta/2) ) = %.3f",fM->GetEta());
   ltx->DrawLatex(0.05, 0.5, info);
 
-  sprintf(info,"mass_{K^{0}_{s}} = %.3f [GeV/c^{2}]",fM->GetK0sInvMass());
+  snprintf(info,100,"mass_{K^{0}_{s}} = %.3f [GeV/c^{2}]",fM->GetK0sInvMass());
   ltx->DrawLatex(0.05, 0.3, info);
 
-  sprintf(info,"mass_{#Lambda} = %.3f [GeV/c^{2}]",fM->GetLambdaInvMass());
+  snprintf(info,100,"mass_{#Lambda} = %.3f [GeV/c^{2}]",fM->GetLambdaInvMass());
   ltx->DrawLatex(0.05, 0.2, info);
 
-  sprintf(info,"mass_{#bar{#Lambda}} = %.3f [GeV/c^{2}]",fM->GetAntiLambdaInvMass());
+  snprintf(info,100,"mass_{#bar{#Lambda}} = %.3f [GeV/c^{2}]",fM->GetAntiLambdaInvMass());
   ltx->DrawLatex(0.05, 0.1, info);
 
   gEve->Redraw3D();
