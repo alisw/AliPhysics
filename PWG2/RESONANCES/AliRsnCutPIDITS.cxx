@@ -32,40 +32,34 @@ ClassImp(AliRsnCutPIDITS)
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDITS::AliRsnCutPIDITS
-(const char *name, AliPID::EParticleType type, Bool_t isMC, Double_t momLimit, Double_t cut1, Double_t cut2) :
-  AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
-  fPIDtype(type),
-  fIsMC(isMC),
-  fMomentumLimit(momLimit),
-  fLargeCut(TMath::Max(cut1, cut2)),
-  fSmallCut(TMath::Min(cut1, cut2)),
+(const char *name, AliPID::EParticleType ref, Double_t min, Double_t max, Bool_t rejectOutside) :
+  AliRsnCut(name, AliRsnCut::kDaughter, min, max),
+  fRejectOutside(rejectOutside),
+  fMomMin(0.0),
+  fMomMax(1E+20),
+  fRefType(ref),
   fESDpid(),
   fAODpid()
 {
 //
 // Main constructor.
 //
-
-  SetMC(isMC);
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDITS::AliRsnCutPIDITS
 (const AliRsnCutPIDITS& copy) :
   AliRsnCut(copy),
-  fPIDtype(copy.fPIDtype),
-  fIsMC(copy.fIsMC),
-  fMomentumLimit(copy.fMomentumLimit),
-  fLargeCut(copy.fLargeCut),
-  fSmallCut(copy.fSmallCut),
+  fRejectOutside(copy.fRejectOutside),
+  fMomMin(copy.fMomMin),
+  fMomMax(copy.fMomMax),
+  fRefType(copy.fRefType),
   fESDpid(copy.fESDpid),
   fAODpid(copy.fAODpid)
 {
 //
 // Copy constructor.
 //
-
-  SetMC(copy.fIsMC);
 }
 
 //_________________________________________________________________________________________________
@@ -77,14 +71,12 @@ AliRsnCutPIDITS& AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS& copy)
 
   AliRsnCut::operator=(copy);
 
-  fPIDtype = copy.fPIDtype;
-  fMomentumLimit = copy.fMomentumLimit;
-  fLargeCut = copy.fLargeCut;
-  fSmallCut = copy.fSmallCut;
-  fESDpid = copy.fESDpid;
-  fAODpid = copy.fAODpid;
-  
-  SetMC(copy.fIsMC);
+  fRejectOutside = copy.fRejectOutside;
+  fMomMin        = copy.fMomMin;
+  fMomMax        = copy.fMomMax;
+  fRefType       = copy.fRefType;
+  fESDpid        = copy.fESDpid;
+  fAODpid        = copy.fAODpid;
   
   return (*this);
 }
@@ -96,8 +88,8 @@ void AliRsnCutPIDITS::SetMC(Bool_t yn)
 // Properly set the PID response
 //
 
-  fIsMC = yn;
-  AliITSPIDResponse itsresponse(fIsMC);
+  AliITSPIDResponse itsresponse(yn);
+  
   fESDpid.GetITSResponse() = itsresponse;
   fAODpid.GetITSResponse() = itsresponse;
 }
@@ -117,81 +109,64 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
   if (!vtrack)
   {
-    AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
+    AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
     return kFALSE;
   }
   
   // check status, to know it track is an ITS+TPC or ITS standalone
-  // and reject it if it is of none of the allowed types
+  // and reject it if it is of none of them
   Bool_t isSA = kFALSE;
-  if (IsITSTPC(vtrack)) isSA = kFALSE;
-  else if (IsITSSA(vtrack)) isSA = kTRUE;
+  if (IsTPC(vtrack)) isSA = kFALSE;
+  else if (IsSA(vtrack)) isSA = kTRUE;
   else
   {
-    AliWarning("Track is neither ITS+TPC nor ITS standalone");
+    AliDebug(AliLog::kDebug + 2, "Status flags unmatched");
     return kFALSE;
   }
-  
-  // common evaluation variables
-  Double_t mom = vtrack->P();
-  Int_t    k, nITSpidLayers;
 
-  // retrieve real object type
+  // common evaluation variables
+  Int_t        k, nITSpidLayers = 0;
+  Double_t     mom      = vtrack->P();
   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
+
+  // check momentum
+  if (mom < fMomMin || mom > fMomMax)
+  {
+    AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
+    return (!fRejectOutside);
+  }
+
+  // count number of PID layers...
   if (esdTrack) 
   {
-    AliDebug(AliLog::kDebug + 2, "Checking an ESD track");
-    
-    // count PID layers and reject if they are too few
-    nITSpidLayers = 0;
     UChar_t itsCluMap = esdTrack->GetITSClusterMap();
     for(k = 2; k < 6; k++) if(itsCluMap & (1 << k)) ++nITSpidLayers;
-    if (nITSpidLayers < 3)
-    {
-      AliDebug(AliLog::kDebug+2, "Rejecting track with too few ITS pid layers");
-      return kFALSE;
-    }
-  
-    // create the PID response object and compute nsigma
-    AliITSPIDResponse &itsrsp = fESDpid.GetITSResponse();
-    fCutValueD = itsrsp.GetNumberOfSigmas(mom, esdTrack->GetITSsignal(), fPIDtype, nITSpidLayers, isSA);
   }
   else if (aodTrack)
   {
-    AliDebug(AliLog::kDebug + 2, "Checking an AOD track");
-    
-    // count PID layers and reject if they are too few
-    nITSpidLayers = 0;
     for(k = 2; k < 6; k++) if (TESTBIT(aodTrack->GetITSClusterMap(), k)) ++nITSpidLayers;
-    if (nITSpidLayers < 3)
-    {
-      AliDebug(AliLog::kDebug+2, "Rejecting track with too few ITS pid layers");
-      return kFALSE;
-    }
-    
-    // compute nsigma
-    fCutValueD = fAODpid.NumberOfSigmasITS(aodTrack, fPIDtype);
   }
   else
   {
-    AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
+    AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
     return kFALSE;
   }
-  
-  // determine cut range from the momentum
-  if (mom < fMomentumLimit)
+  // ...and reject tracks where it is smaller than 3
+  if (nITSpidLayers < 3)
   {
-    fMinD = -fLargeCut;
-    fMaxD =  fLargeCut;
+    AliDebug(AliLog::kDebug+2, "Rejecting track with too few ITS pid layers");
+    return kFALSE;
   }
+    
+  // assign PID nsigmas to default cut check value
+  // since bad object types are rejected before, here we have an ESD track or AOD track
+  if (esdTrack) 
+    fCutValueD = fESDpid.GetITSResponse().GetNumberOfSigmas(mom, esdTrack->GetITSsignal(), fRefType, nITSpidLayers, isSA);
   else
-  {
-    fMinD = -fSmallCut;
-    fMaxD =  fSmallCut;
-  }
+    fCutValueD = fAODpid.NumberOfSigmasITS(aodTrack, fRefType);
   
-  // check the cut using the standard AliRsnCut facilities
+  // use default cut checking method
   return OkRangeD();
 }
 
@@ -202,6 +177,8 @@ void AliRsnCutPIDITS::Print(const Option_t *) const
 // Print information on this cut
 //
 
-  AliInfo(Form("Cut name, type                  : %s %s", GetName(), ClassName()));
-  AliInfo(Form("ITS PID cut: limit, large, small: %.3f %.3f %.3f", fMomentumLimit, fLargeCut, fSmallCut));
+  AliInfo(Form("Cut name                    : %s", GetName()));
+  AliInfo(Form("--> cut range (nsigma)      : %.3f %.3f", fMinD, fMaxD));
+  AliInfo(Form("--> momentum range          : %.3f %.3f", fMomMin, fMomMax));
+  AliInfo(Form("--> tracks outside range are: %s", (fRejectOutside ? "rejected" : "accepted")));
 }
