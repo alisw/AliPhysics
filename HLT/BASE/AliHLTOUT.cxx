@@ -307,7 +307,9 @@ int AliHLTOUT::InitHandlers()
   if (remnants.size()>0) {
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "InitHandlers" , __FILE__ , __LINE__ , "no handlers found for %d data blocks out of %d", remnants.size(), iCount);
     AliHLTOUTBlockDescriptorVector::iterator block=fBlockDescList.begin();
-    for (AliHLTOUTIndexList::iterator element=remnants.begin(); element!=remnants.end(); element++) {
+    for (AliHLTOUTIndexList::iterator element=remnants.begin();
+	 element!=remnants.end() && block!=fBlockDescList.end();
+	 element++) {
       for (int trials=0; trials<2; trials++) {
 	do {
 	  // we start searching the index from the current position in the block list
@@ -319,9 +321,6 @@ int AliHLTOUT::InitHandlers()
 	}
       }
       assert(block!=fBlockDescList.end());
-      if (block!=fBlockDescList.end()) {
-	//HLTDebug("   %s", AliHLTComponent::DataType2Text((AliHLTComponentDataType)*block).c_str());
-      }
     }
   }
   return iResult;
