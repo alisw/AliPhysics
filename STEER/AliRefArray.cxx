@@ -156,7 +156,8 @@ void AliRefArray::AddReferences(UInt_t from, UInt_t *refs, UInt_t nref)
   //
   if (from>=fNElems) Expand(from+1);
   UInt_t chk = nref + (fElems[from]<0); // if <0, need to transfer to indices the only existing reference
-  if (!fRefInd || (fRefInd[0]+chk)>=fRefSize) ExpandReferences(chk>fRefSize ? chk:fRefSize);
+  if      (!fRefInd) ExpandReferences(chk+1);
+  else if ( fRefInd[0]+chk >= fRefSize ) ExpandReferences(chk);
   UInt_t &freeSlot = fRefInd[0];
   // if there is already single ref, transfer it to indices
   Int_t ref = fElems[from];
