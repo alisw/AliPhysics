@@ -1177,14 +1177,14 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     
     // Calculate the value
     //    physics =  [ reco  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th) ] / bin-width
-    value = ( fhRECpt->GetBinContent(ibin) && fhRECpt->GetBinContent(ibin)!=0 && 
-	      fhFeedDownMCpt->GetBinContent(ibin) && fhFeedDownEffpt->GetBinContent(ibin) ) ?
+    value = ( fhRECpt->GetBinContent(ibin) && fhRECpt->GetBinContent(ibin)!=0. && 
+	      fhFeedDownMCpt->GetBinContent(ibin)>0. && fhFeedDownEffpt->GetBinContent(ibin)>0. ) ?
       fhRECpt->GetBinContent(ibin) - (deltaY*branchingRatioBintoFinalDecay*fLuminosity[0]*fTrigEfficiency[0]*fhFeedDownEffpt->GetBinContent(ibin)*fhFeedDownMCpt->GetBinContent(ibin) ) 
       : 0. ;
     value /= fhRECpt->GetBinWidth(ibin);
 
     //  Statistical uncertainty:   delta_physics = sqrt ( (delta_reco)^2 )  / bin-width
-    errvalue = (fhRECpt->GetBinError(ibin) && fhRECpt->GetBinError(ibin)!=0.)  ? 
+    errvalue = (value!=0. && fhRECpt->GetBinError(ibin) && fhRECpt->GetBinError(ibin)!=0.)  ? 
       fhRECpt->GetBinError(ibin) : 0.;
     errvalue /= fhRECpt->GetBinWidth(ibin);
 
