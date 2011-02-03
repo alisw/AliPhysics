@@ -54,6 +54,10 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 { // analyse ESD event
     ResetEventValues();
+     if(!ev){
+            Printf("ERROR: Event does not exist");   
+	    return 0;
+     }
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
 
     Double_t protonMass = fgProtonMass;
@@ -241,7 +245,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		      fCharge = track->Charge();
 		      fParticlePid = maxpid;
 		      fPidProb = maxpidweight;
-		      fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
+		      if(track) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
 		      fTreeDeposit->Fill();
 		    }
 			 
@@ -318,7 +322,7 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
-    dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
+    if(track) dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
 
     bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
       (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
@@ -342,7 +346,11 @@ void AliAnalysisEtReconstructed::Init()
 bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Double_t magField)
 { // propagate track to detector radius
 
-   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+  if(!track){
+    cout<<"Warning: track empty"<<endl;
+    return kFALSE;
+  }
+  AliESDtrack *esdTrack= dynamic_cast<AliESDtrack*>(track);
    // Printf("Propagating track: eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
 
     Bool_t prop = esdTrack->PropagateTo(fDetectorRadius, magField);

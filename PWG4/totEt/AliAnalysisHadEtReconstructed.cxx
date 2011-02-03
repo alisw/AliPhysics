@@ -89,6 +89,10 @@ AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed()
 Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 { // analyse ESD event
     ResetEventValues();
+  if(!ev){
+    Printf("ERROR: Event does not exist");   
+    return 0;
+  }
 
     AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev);
     //for PID
@@ -145,10 +149,14 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	      nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
 	      nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
 	    }
-	    bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
-	    bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
-	    bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
-	    bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
+// 	    bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
+// 	    bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
+// 	    bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
+// 	    bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
+	  bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
+	  bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
+	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>3.0 && nSigmaKaon<3.0 && track->Pt()<0.5);
+	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && nSigmaKaon>3.0 && track->Pt()<1.0);
 
 	    bool unidentified = (!isProton && !isKaon && !isElectron && !isPion);
 	    Float_t dEdx = track->GetTPCsignal();
@@ -353,17 +361,29 @@ void AliAnalysisHadEtReconstructed::AddEt(Float_t rawEt, Float_t rawEtNoPID, Flo
 }
 
 Bool_t AliAnalysisHadEtReconstructed::IsInPHOS(AliESDtrack *track){//This function will need to be elaborated on later to include PHOS dead channels
+  if(!track){
+    cout<<"Error: Track does not exist!!"<<endl;
+    return kFALSE;
+  }
   return   TMath::Abs(track->Eta()) < fCuts->GetGeometryPhosEtaAccCut()//in eta acceptance
     && track->Phi()*180.0/TMath::Pi() > fCuts->GetGeometryPhosPhiAccMinCut()//greater than the minimum phi
     && track->Phi()*180.0/TMath::Pi() < fCuts->GetGeometryPhosPhiAccMaxCut();//less than the maximum phi
 }
 Bool_t AliAnalysisHadEtReconstructed::IsInEMCAL(AliESDtrack *track){//This function will need to be elaborated on later to include EMCAL dead channels
+  if(!track){
+    cout<<"Error: Track does not exist!!"<<endl;
+    return kFALSE;
+  }
   return   TMath::Abs(track->Eta()) < fCuts->GetGeometryEmcalEtaAccCut()//in eta acceptance
     && track->Phi()*180.0/TMath::Pi() > fCuts->GetGeometryEmcalPhiAccMinCut()//greater than the minimum phi
     && track->Phi()*180.0/TMath::Pi() < fCuts->GetGeometryEmcalPhiAccMaxCut();//less than the maximum phi
 }
 Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 { // check vertex
+  if(!track){
+    cout<<"Error: Track does not exist!!"<<endl;
+    return kFALSE;
+  }
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
@@ -456,7 +476,7 @@ void AliAnalysisHadEtReconstructed::ResetEventValues(){//resetting event by even
 }
 void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and adding them to the output TList
 
-  TString *strTPC = new TString("TPC");
+  //TString *strTPC = new TString("TPC");
   TString *strITS = new TString("ITS");
   TString *strTPCITS = new TString("TPCITS");
   for(Int_t i=0;i<2;i++){
@@ -473,11 +493,12 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
       maxPtdEdx = 5;
       maxdEdx = 500.0;
       break;
-    case 2:
-      cutName = strTPC;
-      maxPtdEdx = 5;
-      maxdEdx = 500.0;
-      break;
+      //not deleting this completely since we might want to add it back in later
+//     case 2:
+//       cutName = strTPC;
+//       maxPtdEdx = 5;
+//       maxdEdx = 500.0;
+//       break;
     default:
       cerr<<"Error:  cannot make histograms!"<<endl;
       return;
@@ -577,9 +598,9 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	  default:
 	    acceptance = sFull;
 	  }
-	  sprintf(histoname,"Reco%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
-	  sprintf(histotitle,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	  sprintf(xtitle,"Reconstructed %s",etstring->Data());
+	  snprintf(histoname,200,"Reco%s%sAcceptance%s%s",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
 	}
       }

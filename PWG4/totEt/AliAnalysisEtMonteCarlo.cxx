@@ -41,7 +41,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
      ResetEventValues();
      
     // Get us an mc event
-    AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
+     if(!ev){
+            Printf("ERROR: Event does not exist");   
+	    return 0;
+     }
+     AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
 
     Double_t protonMass =fgProtonMass;
 

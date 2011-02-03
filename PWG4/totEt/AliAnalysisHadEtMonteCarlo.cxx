@@ -61,7 +61,10 @@ void AliAnalysisHadEtMonteCarlo::ResetEventValues(){//resetting event variables
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
   FillHisto1D("NEvents",0.5,1);
-
+  if(!ev || !ev2){
+    Printf("ERROR: Event does not exist");   
+    return 0;
+  }
   AnalyseEvent(ev);
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
   AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
@@ -125,10 +128,14 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    nSigmaKaon = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kKaon));
 	    nSigmaElectron = TMath::Abs(pID->NumberOfSigmasITS(track,AliPID::kElectron));
 	  }
+// 	  bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
+// 	  bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
+// 	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
+// 	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
 	  bool isPion = (nSigmaPion<3.0 && nSigmaProton>2.0 && nSigmaKaon>2.0);
 	  bool isElectron = (nSigmaElectron<2.0 && nSigmaPion>4.0 && nSigmaProton>3.0 && nSigmaKaon>3.0);
-	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>2.0 && nSigmaKaon<2.0);
-	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<2.0 && nSigmaKaon>2.0);
+	  bool isKaon = (nSigmaPion>3.0 && nSigmaProton>3.0 && nSigmaKaon<3.0 && track->Pt()<0.5);
+	  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && nSigmaKaon>3.0 && track->Pt()<1.0);
 
 	  bool unidentified = (!isProton && !isKaon && !isElectron);
 	  Float_t dEdx = track->GetTPCsignal();
@@ -469,6 +476,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 { // analyse MC event
      ResetEventValues();
+     if(!ev){
+            Printf("ERROR: Event does not exist");   
+	    return 0;
+     }
      
     // Get us an mc event
     AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
@@ -1369,16 +1380,16 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	  TString *partidstring = NULL;
 	  if(pid==1){partid = sPID; partidstring = sPID;}
 	  else{partid = sNoPID; partidstring = sNoPIDString;}
-	  sprintf(histoname,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
-	  sprintf(histotitle,"(Simulated %s - reconstructed %s)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
-	  sprintf(ytitle,"(Simulated %s - reconstructed %s)/(Simulated %s)",etstring->Data(),etstring->Data(),etstring->Data());
-	  sprintf(xtitle,"Simulated %s",etstring->Data());
+	  snprintf(histoname,200,"Sim%sMinusReco%s%sAcceptance%s%s",et->Data(),et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	  snprintf(histotitle,200,"(Simulated %s - reconstructed %s)/(Simulated %s) with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),etstring->Data(),etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	  snprintf(ytitle,50,"(Simulated %s - reconstructed %s)/(Simulated %s)",etstring->Data(),etstring->Data(),etstring->Data());
+	  snprintf(xtitle,50,"Simulated %s",etstring->Data());
 	  CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
 	  if(hadet==0 && type==0 && fInvestigatePiKP){//we only want to do this once...  not the most elegant way of coding but hey...
-	    sprintf(histoname,"SimPiKPMinusRecoPiKP%sAcceptance%s%s",acceptance->Data(),detector->Data(),partid->Data());
-	    sprintf(histotitle,"(Sim PiKP - reco PiKP)/(Sim PiKP) with %s acceptance for p_{T}>%s GeV/c%s",acceptance->Data(),ptstring->Data(),partidstring->Data());
-	    sprintf(ytitle,"(Sim PiKP - reco PiKP)/(Sim PiKP)");
-	    sprintf(xtitle,"Simulated E_{T}^{#pi,K,p}");
+	    snprintf(histoname,200,"SimPiKPMinusRecoPiKP%sAcceptance%s%s",acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"(Sim PiKP - reco PiKP)/(Sim PiKP) with %s acceptance for p_{T}>%s GeV/c%s",acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    snprintf(ytitle,50,"(Sim PiKP - reco PiKP)/(Sim PiKP)");
+	    snprintf(xtitle,50,"Simulated E_{T}^{#pi,K,p}");
 	    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
 	  }
 	}
@@ -1395,81 +1406,81 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimPtSmeared");
-    sprintf(histotitle,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimPtSmeared");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/10.0,etDiff/10.0);
-    sprintf(histoname,"SimPiKPEtPtSmeared");
-    sprintf(histotitle,"Simulated E_{T} for 0.5 percent momentum smearing");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtPtSmeared");
+    snprintf(histotitle,200,"Simulated E_{T} for 0.5 percent momentum smearing");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimEfficiencySmeared");
-    sprintf(histotitle,"Simulated (true-smeared)/true for efficiency smearing");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimEfficiencySmeared");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for efficiency smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff*5,etDiff*5);
-    sprintf(histoname,"SimPiKPEtEfficiencySmeared");
-    sprintf(histotitle,"Simulated E_{T} for efficiency smearing");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtEfficiencySmeared");
+    snprintf(histotitle,200,"Simulated E_{T} for efficiency smearing");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedTPC");
-    sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.15 GeV/c smearing");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimPtCutSmearedTPC");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for p_{T}>0.15 GeV/c smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-    sprintf(histoname,"SimPiKPEtPtCutSmearedTPC");
-    sprintf(histotitle,"Simulated E_{T} for p_{T}>0.15 GeV/c smearing");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtPtCutSmearedTPC");
+    snprintf(histotitle,200,"Simulated E_{T} for p_{T}>0.15 GeV/c smearing");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimPtCutSmearedITS");
-    sprintf(histotitle,"Simulated (true-smeared)/true for p_{T}>0.10 GeV/c smearing");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimPtCutSmearedITS");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for p_{T}>0.10 GeV/c smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-    sprintf(histoname,"SimPiKPEtPtCutSmearedITS");
-    sprintf(histotitle,"Simulated E_{T} for p_{T}>0.10 GeV/c smearing");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtPtCutSmearedITS");
+    snprintf(histotitle,200,"Simulated E_{T} for p_{T}>0.10 GeV/c smearing");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimPIDSmeared");
-    sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimPIDSmeared");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for PID smearing");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-    sprintf(histoname,"SimPiKPEtPIDSmeared");
-    sprintf(histotitle,"Simulated E_{T} for PID smearing");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtPIDSmeared");
+    snprintf(histotitle,200,"Simulated E_{T} for PID smearing");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
 
     //======================================================================
 
-    sprintf(histoname,"SimPiKPEtMinusSimPIDSmearedNoID");
-    sprintf(histotitle,"Simulated (true-smeared)/true for PID smearing No ID");
-    sprintf(ytitle,"(true-smeared)/true");
-    sprintf(xtitle,"true p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtMinusSimPIDSmearedNoID");
+    snprintf(histotitle,200,"Simulated (true-smeared)/true for PID smearing No ID");
+    snprintf(ytitle,50,"(true-smeared)/true");
+    snprintf(xtitle,50,"true p, K, p E_{T}");
     CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
-    sprintf(histoname,"SimPiKPEtPIDSmearedNoID");
-    sprintf(histotitle,"Simulated E_{T} for PID smearing No ID");
-    sprintf(ytitle,"Number of events");
-    sprintf(xtitle,"p, K, p E_{T}");
+    snprintf(histoname,200,"SimPiKPEtPIDSmearedNoID");
+    snprintf(histotitle,200,"Simulated E_{T} for PID smearing No ID");
+    snprintf(ytitle,50,"Number of events");
+    snprintf(xtitle,50,"p, K, p E_{T}");
     CreateHisto1D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt);
   }
   delete sTPC;
