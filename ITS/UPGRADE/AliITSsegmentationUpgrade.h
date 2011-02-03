@@ -5,7 +5,7 @@
 
 /* $Id$ */
 #include <TArrayD.h>
-
+#include <TObject.h>
 
 //////////////////////////////////////////////////
 //  Authors A.Mastroserio			//
