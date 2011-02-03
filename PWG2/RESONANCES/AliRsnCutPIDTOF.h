@@ -13,53 +13,76 @@
 #define ALIRSNCUTPIDTOF_H
 
 #include "AliPID.h"
+
+#include "AliVTrack.h"
+#include "AliESDtrack.h"
 #include "AliESDpid.h"
+#include "AliAODTrack.h"
 #include "AliAODpidUtil.h"
 
-class AliTOFT0maker;
-class AliTOFcalib;
-class AliESDtrack;
-class AliAODTrack;
-
+#include "AliRsnDaughter.h"
 #include "AliRsnCut.h"
 
 class AliRsnCutPIDTOF : public AliRsnCut
 {
   public:
 
-    AliRsnCutPIDTOF(const char *name = "cutPIDTOF", AliPID::EParticleType pid = AliPID::kKaon, Bool_t isMC = kFALSE, Double_t min = -10.0, Double_t max = 10.0, Bool_t forceMatching = kFALSE);
+    AliRsnCutPIDTOF(const char *name            = "cutTOF",
+                    EPARTYPE    particle        = AliPID::kKaon,
+                    Double_t    nSigmaMin       = -3.,
+                    Double_t    nSigmaMax       =  3.,
+                    Bool_t      rejectUnmatched = kFALSE);
+                    
     AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy);
     AliRsnCutPIDTOF& operator=(const AliRsnCutPIDTOF& copy);
     virtual ~AliRsnCutPIDTOF() { }
+
+    AliESDpid*      ESDpid()  {return &fESDpid;}
+    AliAODpidUtil*  AODpid()  {return &fAODpid;}
     
-    void             SetMC(Bool_t yn = kTRUE) {fIsMC = yn;}
-    virtual Bool_t   IsSelected(TObject *object);
-    virtual void     Print(const Option_t *option = "") const;
+    void            SetRejectUnmatched(Bool_t yn = kTRUE)      {fRejectUnmatched = yn;}
+    void            SetNSigmaRange(Double_t min, Double_t max) {fMinD = min; fMaxD = max;}
+    void            SetRefType(EPARTYPE type)                  {fRefType = type; fRefMass = AliPID::ParticleMass(type);}
+
+    Bool_t          IsMatched(AliVTrack *vtrack);
+    virtual Bool_t  IsSelected(TObject *object);
+    virtual void    Print(const Option_t *option = "") const;
 
   protected:
   
-    void    ProcessCurrentEvent();
-    Bool_t  CheckESD(AliESDtrack *track);
-    Bool_t  CheckAOD(AliAODTrack *track);
-  
-    Bool_t                 fIsMC;             //  switch for MC analysis   
-    Bool_t                 fForceMatching;    //  decide if non TOF matched tracks pass the cut or not 
-    AliPID::EParticleType  fPIDtype;          //  particle type for which PID is checked   
-    AliESDpid              fESDpid;           //  PID utility for ESD
-    AliAODpidUtil          fAODpid;           //  PID utility for AOD
-    
-  //static Bool_t          fgTOFcalibrateESD; //! TOF settings
-    static Bool_t          fgTOFcorrectTExp;  //! TOF settings
-    static Bool_t          fgTOFuseT0;        //! TOF settings
-    static Bool_t          fgTOFtuneMC;       //! TOF settings
-    static Double_t        fgTOFresolution;   //! TOF settings
-    static AliTOFT0maker  *fgTOFmaker;        //! TOF time0 computator
-    static AliTOFcalib    *fgTOFcalib;        //! TOF calibration
-    static Int_t           fgLastRun;         //! last run number
-    static Int_t           fgLastEventID;     //! ID of last event processed
-    static AliESDEvent    *fgLastEvent;       //! pointer to last processed event
+    Bool_t            fRejectUnmatched;  //  decide if non TOF matched tracks pass the cut or not
+    EPARTYPE          fRefType;          //  particle type for which PID is checked   
+    Double_t          fRefMass;          //  reference mass used for computations
+    AliESDpid         fESDpid;           //  PID utility for ESD
+    AliAODpidUtil     fAODpid;           //  PID utility for AOD
 
     ClassDef(AliRsnCutPIDTOF, 1)
 };
+
+inline Bool_t AliRsnCutPIDTOF::IsMatched(AliVTrack *vtrack)
+{
+//
+// Checks if the track has the status flags required for an ITS standalone track
+//
+
+  if (!vtrack)
+  {
+    AliWarning("NULL argument: impossible to check status");
+    return kFALSE;
+  }
+
+  Bool_t isTOFout = ((vtrack->GetStatus() & AliESDtrack::kTOFout) != 0);
+  Bool_t isTIME   = ((vtrack->GetStatus() & AliESDtrack::kTIME) != 0);
+
+  // if flags are not set, track is not matched
+  if ( !isTOFout || !isTIME ) return kFALSE;
+
+  // do an additional check on integrated length for ESD tracks
+  AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(vtrack);
+  if (esdTrack) if (esdTrack->GetIntegratedLength() < 350.) return kFALSE;
+
+  // if we are here, flags are OK and length also
+  return kTRUE;
+}
 
 #endif

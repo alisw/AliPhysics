@@ -32,12 +32,12 @@ ClassImp(AliRsnCutPIDTPC)
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
-(const char *name, AliPID::EParticleType type, Double_t momLimit, Double_t cut1, Double_t cut2) :
-  AliRsnCut(name, AliRsnCut::kDaughter, 0.0, 0.0),
-  fPIDtype(type),
-  fMomentumLimit(momLimit),
-  fLargeCut(TMath::Max(cut1, cut2)),
-  fSmallCut(TMath::Min(cut1, cut2)),
+(const char *name, AliPID::EParticleType type, Double_t min, Double_t max, Bool_t rejectOutside) :
+  AliRsnCut(name, AliRsnCut::kDaughter, min, max),
+  fRejectOutside(rejectOutside),
+  fMomMin(0.0),
+  fMomMax(1E+20),
+  fRefType(type),
   fESDpid(),
   fAODpid()
 {
@@ -50,10 +50,10 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
 (const AliRsnCutPIDTPC& copy) :
   AliRsnCut(copy),
-  fPIDtype(copy.fPIDtype),
-  fMomentumLimit(copy.fMomentumLimit),
-  fLargeCut(copy.fLargeCut),
-  fSmallCut(copy.fSmallCut),
+  fRejectOutside(copy.fRejectOutside),
+  fMomMin(copy.fMomMin),
+  fMomMax(copy.fMomMax),
+  fRefType(copy.fRefType),
   fESDpid(copy.fESDpid),
   fAODpid(copy.fAODpid)
 {
@@ -71,12 +71,12 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
 
   AliRsnCut::operator=(copy);
 
-  fPIDtype = copy.fPIDtype;
-  fMomentumLimit = copy.fMomentumLimit;
-  fLargeCut = copy.fLargeCut;
-  fSmallCut = copy.fSmallCut;
-  fESDpid = copy.fESDpid;
-  fAODpid = copy.fAODpid;
+  fRejectOutside = copy.fRejectOutside;
+  fMomMin  = copy.fMomMin;
+  fMomMax  = copy.fMomMax;
+  fRefType = copy.fRefType;
+  fESDpid  = copy.fESDpid;
+  fAODpid  = copy.fAODpid;
   
   return (*this);
 }
@@ -103,63 +103,44 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
   if (!TargetOK(object)) return kFALSE;
   
   // reject not TPC tracks
-  // status is checked in the same way for all tracks
   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
-  if (!vtrack)
-  {
-    AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
-    return kFALSE;
-  }
-  ULong_t status = (ULong_t)vtrack->GetStatus();
-  if ((status & AliESDtrack::kTPCin) == 0)
+  if (!vtrack) return kFALSE;
+  if (!IsTPC(vtrack))
   {
     AliDebug(AliLog::kDebug + 2, "Track is not found in TPC");
     return kFALSE;
   }
   
   // common evaluation variables
-  Double_t mom;
-
-  // retrieve real object type
+  Double_t     mom;
   AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
   AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
-  if (esdTrack) 
-  {
-    AliDebug(AliLog::kDebug + 2, "Checking an ESD track");
-    
+
+  // get inner momentum and check it w.r. to allowed range:
+  // all tracks outside it will pass the cut or not, depending on 'fRejectOutside'
+  if (esdTrack)
     mom = esdTrack->GetInnerParam()->P();
-    
-    AliTPCPIDResponse &tpcrsp = fESDpid.GetTPCResponse();
-    fCutValueD = tpcrsp.GetNumberOfSigmas(mom, esdTrack->GetTPCsignal(), esdTrack->GetTPCsignalN(), fPIDtype);
-  }
   else if (aodTrack)
-  {
-    AliDebug(AliLog::kDebug + 2, "Checking an AOD track");
-    
-    AliAODPid *pidObj = aodTrack->GetDetPid();
-    mom = pidObj->GetTPCmomentum();
-  
-    fCutValueD = fAODpid.NumberOfSigmasTPC(aodTrack, fPIDtype);
-  }
+    mom = aodTrack->GetDetPid()->GetTPCmomentum();
   else
   {
-    AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
+    AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
     return kFALSE;
   }
-  
-  // determine cut range from the momentum
-  if (mom < fMomentumLimit)
+  if ((mom < fMomMin || mom > fMomMax))
   {
-    fMinD = -fLargeCut;
-    fMaxD =  fLargeCut;
+    AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
+    return (!fRejectOutside);
   }
+
+  // assign PID nsigmas to default cut check value
+  // since bad object types are rejected before, here we have an ESD track or AOD track
+  if (esdTrack) 
+    fCutValueD = fESDpid.GetTPCResponse().GetNumberOfSigmas(mom, esdTrack->GetTPCsignal(), esdTrack->GetTPCsignalN(), fRefType);
   else
-  {
-    fMinD = -fSmallCut;
-    fMaxD =  fSmallCut;
-  }
-  
-  // check the cut using the standard AliRsnCut facilities
+    fCutValueD = fAODpid.NumberOfSigmasTPC(aodTrack, fRefType);
+
+  // use AliRsnCut default method to check cut
   return OkRangeD();
 }
 
@@ -170,6 +151,8 @@ void AliRsnCutPIDTPC::Print(const Option_t *) const
 // Print information on this cut
 //
 
-  AliInfo(Form("Cut name, type                  : %s %s", GetName(), ClassName()));
-  AliInfo(Form("TPC PID cut: limit, large, small: %.3f %.3f %.3f", fMomentumLimit, fLargeCut, fSmallCut));
+  AliInfo(Form("Cut name                    : %s", GetName()));
+  AliInfo(Form("--> cut range (nsigma)      : %.3f %.3f", fMinD, fMaxD));
+  AliInfo(Form("--> momentum range          : %.3f %.3f", fMomMin, fMomMax));
+  AliInfo(Form("--> tracks outside range are: %s", (fRejectOutside ? "rejected" : "accepted")));
 }
