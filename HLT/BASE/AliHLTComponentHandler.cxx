@@ -658,10 +658,9 @@ int AliHLTComponentHandler::RegisterScheduledComponents()
 int AliHLTComponentHandler::ActivateAgents(const char* library, const char* blackList)
 {
   // see header file for class documentation
-  int iResult=0;
   vector<AliHLTModuleAgent*> agents;
   for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent(); 
-       pAgent && iResult>=0;
+       pAgent!=NULL;
        pAgent=AliHLTModuleAgent::GetNextAgent()) {
 
     // check if we found the agent for the specified library
