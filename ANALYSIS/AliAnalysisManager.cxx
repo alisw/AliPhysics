@@ -529,7 +529,7 @@ void AliAnalysisManager::PackOutput(TList *target)
       }
    }
    // Write statistics message on the workers.
-   WriteStatisticsMsg(fNcalls);
+   if (fStatistics) WriteStatisticsMsg(fNcalls);
    
    if (fMode == kProofAnalysis) {
       TIter next(fOutputs);
@@ -977,7 +977,7 @@ void AliAnalysisManager::Terminate()
    }   
    delete allOutputs;
    //Write statistics information on the client
-   WriteStatisticsMsg(fNcalls);
+   if (fStatistics) WriteStatisticsMsg(fNcalls);
    if (getsysInfo) {
       TDirectory *crtdir = gDirectory;
       TFile f("syswatch.root", "RECREATE");
@@ -2346,26 +2346,20 @@ void AliAnalysisManager::AddStatisticsMsg(const char *line)
 //______________________________________________________________________________
 void AliAnalysisManager::WriteStatisticsMsg(Int_t nevents)
 {
-// Write the statistics message in a file named <nevents.stat>.
 // If fStatistics is present, write the file in the format ninput_nprocessed_nfailed_naccepted.stat
    static Bool_t done = kFALSE;
    if (done) return;
    done = kTRUE;
+   if (!fStatistics) return;
    ofstream out;
-   if (fStatistics) {
-      AddStatisticsMsg(Form("Number of input events:        %lld",fStatistics->GetNinput()));
-      AddStatisticsMsg(Form("Number of processed events:    %lld",fStatistics->GetNprocessed()));      
-      AddStatisticsMsg(Form("Number of failed events (I/O): %lld",fStatistics->GetNfailed()));
-      AddStatisticsMsg(Form("Number of accepted events for mask %s: %lld", AliAnalysisStatistics::GetMaskAsString(fStatistics->GetOfflineMask()), fStatistics->GetNaccepted()));
-      out.open(Form("%lld_%lld_%lld_%lld.stat",fStatistics->GetNinput(),
-                    fStatistics->GetNprocessed(),fStatistics->GetNfailed(),
-                    fStatistics->GetNaccepted()), ios::out);      
-      out << fStatisticsMsg << endl;
-   } else {
-      if (!nevents) return;
-      out.open(Form("%09d.stat", nevents), ios::out);
-      if (!fStatisticsMsg.IsNull()) out << fStatisticsMsg << endl;
-   }   
+   AddStatisticsMsg(Form("Number of input events:        %lld",fStatistics->GetNinput()));
+   AddStatisticsMsg(Form("Number of processed events:    %lld",fStatistics->GetNprocessed()));      
+   AddStatisticsMsg(Form("Number of failed events (I/O): %lld",fStatistics->GetNfailed()));
+   AddStatisticsMsg(Form("Number of accepted events for mask %s: %lld", AliAnalysisStatistics::GetMaskAsString(fStatistics->GetOfflineMask()), fStatistics->GetNaccepted()));
+   out.open(Form("%lld_%lld_%lld_%lld.stat",fStatistics->GetNinput(),
+                 fStatistics->GetNprocessed(),fStatistics->GetNfailed(),
+                 fStatistics->GetNaccepted()), ios::out);      
+   out << fStatisticsMsg << endl;
    out.close();
 }
 
