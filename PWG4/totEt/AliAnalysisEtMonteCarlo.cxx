@@ -51,6 +51,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 
     // Hijing header
     AliGenEventHeader* genHeader = event->GenEventHeader();
+    if(!genHeader){
+            Printf("ERROR: Event generation header does not exist");   
+	    return 0;
+    }
     AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
     if (hijingGenHeader) {
       fImpactParameter = hijingGenHeader->ImpactParameter();
