@@ -406,16 +406,21 @@ TVector2 AliFemtoAnalysisAzimuthal::GetQVector(AliFemtoParticleCollection* parti
   TVector2 mQ;
   float mQx=0, mQy=0;
 
-      AliFemtoParticle* flowparticle;
-      AliFemtoParticleIterator pIter;
-      AliFemtoParticleIterator startLoop = particlecollection->begin();
-      AliFemtoParticleIterator endLoop   = particlecollection->end();
-      for (pIter=startLoop;pIter!=endLoop;pIter++){
-	flowparticle = *pIter;
-	mQx += (cos(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
-	mQy += (sin(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
-      }
+  if (!particlecollection) {
+    mQ.Set(0.0, 0.0);
+    return mQ;
+  }
 
+  AliFemtoParticle* flowparticle;
+  AliFemtoParticleIterator pIter;
+  AliFemtoParticleIterator startLoop = particlecollection->begin();
+  AliFemtoParticleIterator endLoop   = particlecollection->end();
+  for (pIter=startLoop;pIter!=endLoop;pIter++){
+    flowparticle = *pIter;
+    mQx += (cos(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
+    mQy += (sin(2*flowparticle->FourMomentum().Phi()))*(flowparticle->Track()->Pt());
+  }
+  
   mQ.Set(mQx,mQy);
   return mQ;
 }
