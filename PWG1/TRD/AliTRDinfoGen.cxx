@@ -558,7 +558,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
 
     // read REC info
-    esdFriendTrack = fESDfriend->GetTrack(itrk);
+    esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL;
+
     if(esdFriendTrack){
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
