@@ -11,6 +11,7 @@
 #include "TH1.h"
 
 #include "AliESDInputHandler.h"
+#include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliESDEvent.h"
