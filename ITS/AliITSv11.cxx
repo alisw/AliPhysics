@@ -33,7 +33,6 @@
 #include "AliITS.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDetTypeSim.h"
-#include "AliITSgeom.h"
 #include "AliITShit.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSPD.h"
@@ -101,7 +100,7 @@ fIgm(kv11)
   
 }
 //______________________________________________________________________
-AliITSv11::AliITSv11(Int_t debugITS,Int_t debugSPD,Int_t debugSDD,
+AliITSv11::AliITSv11(Int_t /* debugITS */,Int_t debugSPD,Int_t debugSDD,
 		   Int_t debugSSD,Int_t debugSUP) :
 AliITS("ITS","ITS geometry v11"),
 fByThick(kTRUE),
@@ -116,10 +115,10 @@ fIgm(kv11)
   // Standard default constructor for the ITS version 11.
 
 
-  //   fSPDgeom = new AliITSv11GeometrySPD(debugSPD);
+  fSPDgeom = new AliITSv11GeometrySPD(debugSPD);
   fSDDgeom = new AliITSv11GeometrySDD(debugSDD);
   fSDDgeom->SetDebug(debugSDD);
-  //   fSupgeom = new AliITSv11GeometrySupport(debugSUP);
+  fSupgeom = new AliITSv11GeometrySupport(debugSUP);
 
   Int_t i;
   fIdN = 6;
@@ -132,7 +131,7 @@ fIgm(kv11)
   fIdName[5] = fSSDgeom->GetSenstiveVolumeName6();
   fIdSens    = new Int_t[fIdN];
   for(i=0;i<fIdN;i++) fIdSens[i] = 0;
-  debugITS = (debugSPD && debugSSD && debugSUP && debugSDD); //remove temp. warnings
+  //  debugITS = (debugSPD && debugSSD && debugSUP && debugSDD); //remove temp. warnings
 }
 //______________________________________________________________________
 AliITSv11::~AliITSv11() {
@@ -200,120 +199,7 @@ void AliITSv11::CreateMaterials(){
     fSSDgeom->CreateMaterials();
     fSupgeom->CreateMaterials();
 }
-/*
-//______________________________________________________________________
-void AliITSv11::InitAliITSgeom(){
-  //
-  // Fill fITSgeom with the 3 sub-detector geometries
-  //
 
-  if (gGeoManager) gGeoManager->Export("geometry.root");
-
-    const Int_t knlayers = 6;
-    const Int_t kndeep = 3;
-    const AliITSDetector kidet[knlayers]={kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
-    const TString knames[knlayers] = {
-      "AliITSv11:spd missing",  // lay=1
-      "AliITSv11:spd missing",  // lay=2
-      "/ALIC_1/ITSV_1/ITSsddLayer3_1/ITSsddLadd_%d/ITSsddSensor_%d/ITSsddWafer_%d", // lay=3
-      "/ALIC_1/ITSV_1/ITSsddLayer4_1/ITSsddLadd_%d/ITSsddSensor_%d/ITSsddWafer_%d", // lay=4
-      "AliITSv11:ssd missing",  // lay=5
-      "AliITSv11:ssd missing"   // lay=6
-    };
-
-    const Int_t kitsGeomTreeCopys[knlayers][kndeep]= {{10, 2, 4},// lay=1
-                                                     {10, 4, 4}, // lay=2
-                                                     {14, 6, 1}, // lay=3
-                                                     {22, 8, 1}, // lay=4
-                                                     {34,22, 1}, // lay=5
-                                                     {38,25, 1}};// lay=6
-    Int_t       nlad[knlayers],ndet[knlayers];
-    Int_t       mod,lay,lad=0,det=0,i,j,k,cp0,cp1,cp2;
-    TString path,shapeName;
-    TGeoHMatrix materix;
-    Double_t trans[3]={3*0.0},rot[10]={9*0.0,1.0};
-    TArrayD shapePar;
-    TArrayF shapeParF;
-    Bool_t shapeDefined[3]={kFALSE,kFALSE,kFALSE};
-
-    AliDebug(1,"Reading Geometry transformation directly from Modler.");
-    mod = 0;
-    for(i=0;i<knlayers;i++){
-        k = 1;
-        for(j=0;j<kndeep;j++) if(kitsGeomTreeCopys[i][j]!=0)
-            k *= TMath::Abs(kitsGeomTreeCopys[i][j]);
-        mod += k;
-    } // end for i
-
-    SetITSgeom(0);
-    nlad[0]=20;nlad[1]=40;nlad[2]=14;nlad[3]=22;nlad[4]=34;nlad[5]=38;
-    ndet[0]= 4;ndet[1]= 4;ndet[2]= 6;ndet[3]= 8;ndet[4]=22;ndet[5]=25;
-    AliITSgeom* geom = new AliITSgeom(0,6,nlad,ndet,mod);
-    SetITSgeom(geom);
-    mod = 0;
-    for(lay=1;lay<=knlayers;lay++){
-
-        for(cp0=0; cp0<kitsGeomTreeCopys[lay-1][0]; cp0++){
-            for(cp1=0; cp1<kitsGeomTreeCopys[lay-1][1]; cp1++){
-                for(cp2=1; cp2<=kitsGeomTreeCopys[lay-1][2]; cp2++){
-
-                    path.Form(knames[lay-1].Data(),
-                              cp0,cp1,cp2);
-                    switch (lay){
-                    case 1:{
-                        det = cp2;
-                        lad = cp1+2*(cp0-1);
-                    }break;
-                    case 2:{
-                        det = cp2;
-                        lad = cp1+4*(cp0-1);
-                    } break;
-                    case 3: case 4: case 5: case 6:{
-                        det = cp1;
-                        lad = cp0;
-                    } break;
-                    } // end switch
-                         //AliInfo(Form("path=%s lay=%d lad=%d det=%d",
-                         //             path.Data(),lay,lad,det));
-                    gMC->GetTransformation(path.Data(),materix);
-                    gMC->GetShape(path.Data(),shapeName,shapePar);
-                    shapeParF.Set(shapePar.GetSize());
-                    for(i=0;i<shapePar.GetSize();i++) shapeParF[i]=shapePar[i];
-                    geom->CreateMatrix(mod,lay,lad,det,kidet[lay-1],trans,rot);
-                    geom->SetTrans(mod,materix.GetTranslation());
-                    geom->SetRotMatrix(mod,materix.GetRotationMatrix());
-		    geom->GetGeomMatrix(mod)->SetPath(path.Data());
-                    switch (lay){
-                    case 1: case 2:
-			if(!shapeDefined[kSPD]){
-                        geom->ReSetShape(kSPD,new AliITSgeomSPD425Short(
-                                shapeParF.GetSize(),shapeParF.GetArray()));
-			shapeDefined[kSPD] = kTRUE;
-                    }break;
-                    case 3: case 4:
-			if(!shapeDefined[kSDD]){
-                        geom->ReSetShape(kSDD,new AliITSgeomSDD256(
-                                shapeParF.GetSize(),shapeParF.GetArray()));
-			shapeDefined[kSDD] = kTRUE;
-                    }break;
-                    case 5: case 6:
-			if(!shapeDefined[kSSD]){
-                        geom->ReSetShape(kSSD,new AliITSgeomSSD75and275(
-                                shapeParF.GetSize(),shapeParF.GetArray()));
-			shapeDefined[kSSD] = kTRUE;
-                    }break;
-                    default:{
-                    }break;
-                    } // end switch
-                    mod++;
-                } /// end for cp2
-            } // end for cp1
-        } // end for cp0
-    } // end for lay
-
-//   fSDDgeom->ExportSensorGeometry(GetITSgeom(), +3, 0);  //SDD
-}
-*/
 //______________________________________________________________________
 void AliITSv11::Init(){
   //
@@ -325,15 +211,7 @@ void AliITSv11::Init(){
     UpdateInternalGeometry();
     AliITS::Init();
 
-    //
-/*
-    if(GetITSgeom()!=0) SetITSgeom(0x0);
-    AliITSgeom* geom = new AliITSgeom();
-    SetITSgeom(geom);
-    AliITS::Init();
-*/    //
 }
-
 
 //______________________________________________________________________
 void AliITSv11::SetDefaults(){

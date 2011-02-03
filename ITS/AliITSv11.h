@@ -22,7 +22,7 @@ class AliITSv11 : public AliITS {
  public:
     AliITSv11();
     AliITSv11(const char *name, const char *title);
-    AliITSv11(Int_t debugITS, Int_t debugSPD = 0, Int_t debugSDD = 0,
+    AliITSv11(Int_t /* debugITS */, Int_t debugSPD = 0, Int_t debugSDD = 0,
 	     Int_t debugSSD = 0, Int_t debugSUP = 0);
     virtual       ~AliITSv11() ;
     virtual void   CreateGeometry();
@@ -52,7 +52,6 @@ class AliITSv11 : public AliITS {
  private:
     AliITSv11(const AliITSv11 &source);            // copy constructor
     AliITSv11& operator=(const AliITSv11 &source); // assignment operator
-    //void InitAliITSgeom();
 
     Bool_t fByThick;          // Flag to use services materials by thickness
                                 // ture, or mass false.

@@ -30,6 +30,7 @@
 
 
 // General Root includes
+#include <Riostream.h>
 #include <TMath.h>
 
 // Root Geometry includes
@@ -46,8 +47,6 @@
 #include <TGeoPcon.h>
 #include <TGeoTorus.h>
 
-#include "AliITSgeom.h"
-#include "AliITSgeomSDD.h"
 #include "AliITSv11GeometrySDD.h"
 #include "AliITSv11GeomCableFlat.h"
 #include "AliITSv11GeomCableRound.h"
@@ -5521,125 +5520,6 @@ TGeoVolumeAssembly *AliITSv11GeometrySDD::CreateDetectorsAssemblyLadd2() {
 
 
 //________________________________________________________________________
-Int_t AliITSv11GeometrySDD::ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD,
-						 Int_t startMod) {
-//
-// export the geometry in a AliITSgeom object
-// Obsolete
-//
-
-  if (! geom) {
-    printf("error:Try to fill null (AliITSgeom *) object");
-    return kFALSE;
-  };
-  if (! fMotherVol) {
-    printf("error:Try to set sensor geometry while geometry is not defined\n");
-    return kFALSE;
-  };
-
-  const Float_t kDxyz[3] = {fgkWaferWidthSens/2., fgkWaferThickSens/2.,
-			    fgkWaferLengthSens/2.};
-  if(!(geom->IsShapeDefined(kSDD)))
-    geom->ReSetShape(kSDD, new AliITSgeomSDD256(3, kDxyz));
-
-  char layerName[30];
-  char ladderName[30];
-  char sensorName[30];
-  char senstivName[30];
-  const Int_t kNLay = 2;
-  const Int_t kNLadd[kNLay] = {fgkLay3Nladd, fgkLay4Nladd};
-  const Int_t kNDet[kNLay]  = {fgkLay3Ndet,  fgkLay4Ndet};
-
-  if (GetDebug(1))
-    printf("AliITSv11GeometrySDD::SetSensorGeometry(), nodes found :\n");
-
-  Int_t firstSDDmod = startMod;
-  for (Int_t iLay=0; iLay<kNLay; iLay++) {
-    /////////////////////////////////////////
-    snprintf(layerName, 30, "ITSsddLayer%i_1",iLay+3);
-    TGeoNode *layNode = fMotherVol->GetNode(layerName);
-    if (layNode) {
-      if (GetDebug(1)) printf("%s\n",layNode->GetName());
-      TGeoVolume *layVolume = layNode->GetVolume();
-      TGeoHMatrix layMatrix(*layNode->GetMatrix());
-
-      for (Int_t iLadd=0; iLadd<kNLadd[iLay]; iLadd++) {
-	/////////////////////////////////////////
-	snprintf(ladderName, 30, "ITSsddLadd_%i", iLadd);
-	TGeoNode *laddNode = layVolume->GetNode(ladderName);
-	if (laddNode) {
-	  if (GetDebug(1)) printf("|   %s\n",laddNode->GetName());
-	  TGeoVolume *laddVolume = laddNode->GetVolume();
-	  TGeoHMatrix laddMatrix(layMatrix);
-	  laddMatrix.Multiply(laddNode->GetMatrix());
-
-	  for (Int_t iDet=0; iDet<kNDet[iLay]; iDet++) {
-	    /////////////////////////////////////////
-	    snprintf(sensorName, 30, "ITSsddSensor_%i",iDet);
-	    TGeoNode *detNode = laddVolume->GetNode(sensorName);
-	    if (detNode) {
-	      if (GetDebug(1)) printf("|   |   %s\n",detNode->GetName());
-	      TGeoVolume *detVolume = detNode->GetVolume();
-	      TGeoHMatrix detMatrix(laddMatrix);
-	      detMatrix.Multiply(detNode->GetMatrix());
-
-	      TGeoNode *wafNode = detVolume->GetNode("ITSsddWafer_1");
-	      if (wafNode) {
-		TGeoVolume *wafVolume = wafNode->GetVolume();
-		TGeoHMatrix wafMatrix(detMatrix);
-		detMatrix.Multiply(wafNode->GetMatrix());
-		//--------------------------------------------------------
-		snprintf(senstivName, 30, "%s%s", fgSDDsensitiveVolName3,"_1");
-		TGeoNode *sensitivNode = wafVolume->GetNode(senstivName);
-	      if (sensitivNode) {
-		TGeoHMatrix sensMatrix(wafMatrix);
-		sensMatrix.Multiply(sensitivNode->GetMatrix());
-
-		// Sticking to the convention for local wafer coordinate
-		// in AliITSgeom :
-		if (iDet >= kNDet[iLay]/2) {
-		  //		  TGeoRotation rotY("",0,180,0);
-		  TGeoRotation rotY("",-180,-180,0);
-		  sensMatrix.Multiply(&rotY);
-		};
-		// Creating the matrix in AliITSgeom for
-		// this sensitive volume :
-		Double_t *trans = sensMatrix.GetTranslation();
-		Double_t *r     = sensMatrix.GetRotationMatrix();
-		Double_t rot[10] = {r[0],r[1],r[2],
-				    r[3],r[4],r[5],
-				    r[6],r[7],r[8], 1.0};
-		//rot[9]!=0.0 => not a unity matrix
-		geom->CreateMatrix(startMod,iLay+iLaySDD,iLadd+1,iDet+1,
-				  kSDD,trans,rot);
-		// iLadd+1, iDet+1 because ladd. and det. start at +1
-		// elsewhere
-		startMod++;
-
-	      } else
-		printf("Error (ExportSensorGeometry) %s not found !\n",
-		       senstivName);
-	      } else
-		printf("Error (ExportSensorGeometry) %s not found !\n",
-		       "ITSsddWafer_1");
-	    } else
-	      printf("Error (ExportSensorGeometry) %s not found !\n",
-		     sensorName);
-	  };
-	} else 
-	  printf("Error (ExportSensorGeometry) %s not found !\n",
-		 ladderName);
-      };  
-    } else
-      printf("Error (ExportSensorGeometry) %s not found !\n",
-	     layerName);
-  };
-
-  return (startMod-firstSDDmod);
-}
-
-
-//________________________________________________________________________
 Int_t AliITSv11GeometrySDD::
 GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const {
 //
@@ -5661,7 +5541,7 @@ GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const {
 
  // Get the layer index :
   if (node->GetNdaughters()==fgkLay3Ndet)
-    lay = 3;            // this has to be equal to the iLaySDD argument given to ExportSensorGeometry() !!!
+    lay = 3;
   else lay = 4;
 
   return kTRUE;

@@ -29,7 +29,6 @@ class TGeoArb8;
 class TGeoNode;
 class TGeoMedium;
 class TGeoMatrix;
-class AliITSgeom;
 class AliITSv11GeomCableFlat;
 
 #include "AliITSv11Geometry.h"
@@ -51,8 +50,6 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   virtual void  ForwardLayer4(TGeoVolume *moth);
   virtual void  SDDCables(TGeoVolume *moth);
 
-  virtual Int_t ExportSensorGeometry(AliITSgeom *geom, Int_t iLaySDD,
-				      Int_t startMod);
   virtual Int_t GetCurrentLayLaddDet(Int_t &lay, Int_t &ladd, Int_t&det) const;
 
   // Functions for coding, testing, debugging 

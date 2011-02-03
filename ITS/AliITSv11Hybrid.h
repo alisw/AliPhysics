@@ -132,7 +132,6 @@ class AliITSv11Hybrid : public AliITS {
  private:
     AliITSv11Hybrid(const AliITSv11Hybrid &source); // copy constructor
     AliITSv11Hybrid& operator=(const AliITSv11Hybrid &source); // assignment operator
-    void InitAliITSgeom() const;
 
     Bool_t fByThick;          // Flag to use services materials by thickness
                               // ture, or mass false.
