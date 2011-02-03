@@ -65,7 +65,7 @@ class AliTPCMonitorAltro : public TNamed {
     void         SetWrite10Bit(Int_t wr) { fwrite10bit =wr  ;}
     
   
-    void         SetActFilename(Char_t* name){ sprintf(ffilename,"%s",name); } 
+    void         SetActFilename(Char_t* name){ snprintf(ffilename,256,"%s",name); }
     void         SetVerbose(Int_t val)   { fverb=val;}
      
  private:

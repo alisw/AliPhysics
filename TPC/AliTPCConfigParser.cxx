@@ -246,7 +246,10 @@ TObject* AliTPCConfigParser::NextValue(TObject *key){
 TObject* AliTPCConfigParser::NextValueIter(TObjArray *key){
   if (!key) return 0;
   //check if the collection has changed
-  if (fValIter && key!=fValIter->GetCollection()) delete fValIter;
+  if (fValIter && key!=fValIter->GetCollection()) {
+    delete fValIter;
+    fValIter=0x0;
+  }
   if (!fValIter) fValIter=key->MakeIterator();
   TObject *value=fValIter->Next();
   if (!value) {

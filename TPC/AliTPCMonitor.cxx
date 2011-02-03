@@ -66,6 +66,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "TROOT.h" 
 #include "TDirectory.h"
 #include "TSystem.h"
+#include "TString.h"
 #include "TPaveText.h"   
 #include "TFile.h"
 #include <Riostream.h>
@@ -552,7 +553,7 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
   if (!fRawReader){
     fRawReader = AliRawReader::Create(GetFile());
     SetLastProcFile(GetFile());
-  } else if (strcmp(GetLastProcFile(),GetFile())!=0){
+  } else if (TString(GetLastProcFile())!=GetFile()) {
     delete fRawReader;
     fRawReader = AliRawReader::Create(GetFile());
 //     printf("New file!!!\n");
@@ -569,7 +570,7 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
   {
     if(fVerb) cout << "AliTPCMonitor::ReadDataNew get event " << endl;
     if(fRawReader->IsA()==AliRawReaderRoot::Class()){
-      printf("Root, NextEvent: %d\n",GetEventID());
+      AliInfo(Form("Root, NextEvent: %d\n",GetEventID()));
       if (!fRawReader->GotoEvent(GetEventID())){AliError("Could not get next Event"); return 11 ;}
     } else if(!fRawReader->NextEvent()) { AliError("Could not get next Event"); return 11 ;}
     // skip all events but physics, calibration and software trigger events!
@@ -592,11 +593,11 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
     Int_t eventNr=fRawReader->GetEventIndex();
     if (!fRawReader->ReadNextData(data)) {
       skip=kTRUE;
-      printf("%d - %d\n",fEventNumber,fRawReader->GetNumberOfEvents());
+      AliInfo(Form("%d / %d",fEventNumber,fRawReader->GetNumberOfEvents()));
       if(fRawReader->IsA()==AliRawReaderRoot::Class()){
         if (fEventNumber<fRawReader->GetNumberOfEvents()-1){
           ++eventNr;
-          printf("inc conter\n");
+//           printf("inc conter\n");
         }
         else {
           AliError("No more events");
@@ -608,7 +609,7 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
     fEventNumberOld = eventNr;
   }
   
-//   printf("secid: %d\n",secid);
+  AliInfo(Form("secid: %d",secid));
   
   //========================== Histogram filling ======================
   ResetHistos() ;
@@ -634,23 +635,29 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
     rcupatch      = GetRCUPatch(fRunId, fEqId);
     Int_t rcupatchSector=rcupatch%6;
     lastrcuid     = (rcupatch+1000);
-//     printf("RCU patch: %d, LDC: %d, EqId: %d\n",rcupatch, fLdcId, fEqId);
+
+    Int_t currentSector=rcupatch/6;
+    
     if(fLdcIdOld!=fLdcId &&  fChannelIter!=0) {
       if(secid==-1)
       {
         FillGlobal(GetLastSector());
         ResetArrays();
-//         printf("filled sector: %d\n",GetLastSector());
+        if (fVerb) printf("filled sector: %d\n",GetLastSector());
         fChannelIter =0;
       }
-      else
-      {
-        return lastrcuid;
+//       else
+//       {
+//         printf("RET: filled sector: %d\n",GetLastSector());
+//         return lastrcuid;
 //         if (rcupatch/6!=secid) continue;
-      }
+//       }
 //       fChannelIter=0;
     }
+    
     if (!CheckEqId(secid,fEqId)) continue;
+    if (fVerb) printf("Sector: %d, RCU patch: %d, LDC: %d, EqId: %d\n",currentSector,rcupatch, fLdcId, fEqId);
+    
     while ( altro->NextChannel() ){
       hw=altro->GetHWAddress();
       nextHwAddress         = ( hw + (rcupatchSector<<12) );
@@ -830,8 +837,8 @@ void AliTPCMonitor::ResetHistos()
   // Reset all but
   for(Int_t i =0; i<fHistList->GetEntries(); i++)
   {
-    if(GetProcNextEvent()==0 && strcmp(((TH1*)fHistList->At(i))->GetName(),"SIDE A")==0) continue;
-    if(GetProcNextEvent()==0 && strcmp(((TH1*)fHistList->At(i))->GetName(),"SIDE C")==0) continue;
+    TString name=fHistList->At(i)->GetName();
+    if(GetProcNextEvent()==0 && (name=="SIDE A" || name=="SIDE C")) continue;
     ((TH1*)fHistList->At(i))->Reset();
   }
   ResetArrays();
@@ -862,24 +869,24 @@ Int_t AliTPCMonitor::CheckEqId(Int_t secid,Int_t eqid)
   //skip all eqids which do not belong to the TPC
   if ( eqid<768||eqid>983 ) return 0;
   //
-  if(fRunId<704 && 0) // commented out --> runs with runid < 704 in 2006 are not recognized anymore
-  {
-    if( (secid>-1) && (secid<36) )   // if ( secid is in range) { take only specific eqids}  else { take all }
-    {
-      if(      (secid==13) && ( eqid!=408 && eqid!=409  &&  eqid!=509 && eqid!=512  && eqid!=513 && eqid!=517 )) {passed=0;}
-      else if( (secid==4)  && ( eqid!=404 && eqid!=504  &&  eqid!=407 && eqid!=503  && eqid!=508 && eqid!=506 )) {passed=0;}
-    }
-    else                                                                   {if(fVerb) cout << "passed check "<< endl; }
-  }
-  else
-  {
+//   if(fRunId<704 && 0) // commented out --> runs with runid < 704 in 2006 are not recognized anymore
+//   {
+//     if( (secid>-1) && (secid<36) )   // if ( secid is in range) { take only specific eqids}  else { take all }
+//     {
+//       if(      (secid==13) && ( eqid!=408 && eqid!=409  &&  eqid!=509 && eqid!=512  && eqid!=513 && eqid!=517 )) {passed=0;}
+//       else if( (secid==4)  && ( eqid!=404 && eqid!=504  &&  eqid!=407 && eqid!=503  && eqid!=508 && eqid!=506 )) {passed=0;}
+//     }
+//     else                                                                   {if(fVerb) cout << "passed check "<< endl; }
+//   }
+//   else
+//   {
     if( (secid>-1) && (secid<36) )   // if ( secid is in range) { take only specific eqids}  else { take all }
     {
       if(eqid!=fMapEqidsSec[secid][0] && eqid!= fMapEqidsSec[secid][1] && eqid!=fMapEqidsSec[secid][2] &&
          eqid!=fMapEqidsSec[secid][3] && eqid!= fMapEqidsSec[secid][4] && eqid!=fMapEqidsSec[secid][5] )  {passed=0;}
     }
     else                                                                   {if(fVerb) cout << "passed check "<< endl;}
-  }
+//   }
   
   return passed;
 }
@@ -1017,20 +1024,20 @@ void AliTPCMonitor::DrawHists(Int_t histos)
   
   
   if(fVerb)    cout << " Draw histos " << endl;
-  Char_t cside[10];
-  if(GetLastSector()/18==0 ) sprintf(cside,"A");
-  else                       sprintf(cside,"C");
+  TString cside;
+  if(GetLastSector()/18==0 ) cside="A";
+  else                       cside="C";
   
-  Char_t titleSEC[256];   sprintf(titleSEC   ,"Sector %i Side %s Run : %05i EventID %i "       ,GetLastSector()%18,cside,fRunId, fEventNumber);
-  Char_t titleEvent[256]; sprintf(titleEvent ,"Time <-> Channles  %s"                          ,titleSEC);
-  Char_t titleIROC[256];  sprintf(titleIROC  ,"IROC %s"                                        ,titleSEC);
-  Char_t titleOROC[256];  sprintf(titleOROC  ,"OROC %s"                                        ,titleSEC);
+  TString titleSEC  = Form("Sector %i Side %s Run : %05i EventID %i "       ,GetLastSector()%18,cside.Data(),fRunId, fEventNumber);
+  TString titleEvent= Form("Time <-> Channles  %s"                          ,titleSEC.Data());
+  TString titleIROC = Form("IROC %s"                                        ,titleSEC.Data());
+  TString titleOROC = Form("OROC %s"                                        ,titleSEC.Data());
   
-  Char_t titleMAX[256];   sprintf(titleMAX   ,"Max (timebin: %i,%i) %s"                        ,GetRangeMaxAdcMin(),GetRangeMaxAdcMax(),titleSEC);
-  Char_t titleSUM[256];   sprintf(titleSUM   ,"Sum (timebin: %i,%i) %s"                        ,GetRangeSumMin()   ,GetRangeSumMax()   ,titleSEC);
-  Char_t titleBASE[256];  sprintf(titleBASE  ,"Baseline RMS<->Mean  (timebin: %i-%i) %s"       ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC);
-  Char_t titleMEAN[256];  sprintf(titleMEAN  ,"Baseline Mean (timebin: %i-%i) %s"              ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC);
-  Char_t titleRMS[256] ;  sprintf(titleRMS   ,"Baseline RMS (timebin: %i-%i) %s"               ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC);
+  TString titleMAX  = Form("Max (timebin: %i,%i) %s"                        ,GetRangeMaxAdcMin(),GetRangeMaxAdcMax(),titleSEC.Data());
+  TString titleSUM  = Form("Sum (timebin: %i,%i) %s"                        ,GetRangeSumMin()   ,GetRangeSumMax()   ,titleSEC.Data());
+  TString titleBASE = Form("Baseline RMS<->Mean  (timebin: %i-%i) %s"       ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC.Data());
+  TString titleMEAN = Form("Baseline Mean (timebin: %i-%i) %s"              ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC.Data());
+  TString titleRMS  = Form("Baseline RMS (timebin: %i-%i) %s"               ,GetRangeBaseMin()  ,GetRangeBaseMax()  ,titleSEC.Data());
   
   if(histos==1)
   {
@@ -1048,14 +1055,14 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     fHistIROC->SetYTitle("pad");
     if(GetPedestals()) fHistIROC->SetZTitle("max ADC (baseline sub)");
     else               fHistIROC->SetZTitle("max ADC ");
-    fHistIROC->SetTitle(titleIROC);
+    fHistIROC->SetTitle(titleIROC.Data());
     fHistIROC->SetMinimum(0.01);
     fHistIROC->Draw("COLZ");
     ciroc->UseCurrentStyle();
     
     
-    fHistIROCTime->SetXTitle("row"); fHistIROCTime->SetZTitle("peak time (fit)");       fHistIROCTime->SetYTitle("pad");      fHistIROCTime->SetTitle(titleIROC);
-    fHistIROCRMS->SetXTitle("row");  fHistIROCRMS->SetZTitle( "baseline rms (ADC)");    fHistIROCRMS->SetYTitle("pad");       fHistIROCRMS->SetTitle(titleIROC);
+    fHistIROCTime->SetXTitle("row"); fHistIROCTime->SetZTitle("peak time (fit)");       fHistIROCTime->SetYTitle("pad");      fHistIROCTime->SetTitle(titleIROC.Data());
+    fHistIROCRMS->SetXTitle("row");  fHistIROCRMS->SetZTitle( "baseline rms (ADC)");    fHistIROCRMS->SetYTitle("pad");       fHistIROCRMS->SetTitle(titleIROC.Data());
     
       // OROC
     TCanvas* coroc = 0;
@@ -1070,24 +1077,38 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     fHistOROC->SetYTitle("pad");
     if(GetPedestals()) fHistOROC->SetZTitle("max ADC (baseline sub)");
     else               fHistOROC->SetZTitle("max ADC ");
-    fHistOROC->SetTitle(titleOROC);
+    fHistOROC->SetTitle(titleOROC.Data());
     fHistOROC->SetMinimum(0.01);
     fHistOROC->Draw("COLZ");
     coroc->UseCurrentStyle();
     
     
-    fHistOROCTime->SetXTitle("row"); fHistOROCTime->SetZTitle("peak time (fit) (timebins)"); fHistOROCTime->SetYTitle("pad"); fHistOROCTime->SetTitle(titleOROC);
-    fHistOROCRMS->SetXTitle("row");  fHistOROCRMS->SetZTitle("baseline rms (ADC)");          fHistOROCRMS->SetYTitle("pad");  fHistOROCRMS->SetTitle(titleOROC);
+    fHistOROCTime->SetXTitle("row"); fHistOROCTime->SetZTitle("peak time (fit) (timebins)"); fHistOROCTime->SetYTitle("pad"); fHistOROCTime->SetTitle(titleOROC.Data());
+    fHistOROCRMS->SetXTitle("row");  fHistOROCRMS->SetZTitle("baseline rms (ADC)");          fHistOROCRMS->SetYTitle("pad");  fHistOROCRMS->SetTitle(titleOROC.Data());
     
-      // SUM
-    Char_t namesum[256] ; sprintf(namesum,"ADC sum (bins: %i, %i)",GetRangeSumMin() ,GetRangeSumMax() );
-    fHistIROCSUM->SetXTitle("row");      fHistIROCSUM->SetZTitle(namesum);      fHistIROCSUM->SetYTitle("pad");      fHistIROCSUM->SetTitle(titleIROC);
-    fHistOROCSUM->SetXTitle("row");      fHistOROCSUM->SetZTitle(namesum);      fHistOROCSUM->SetYTitle("pad");      fHistOROCSUM->SetTitle(titleOROC);
+    // SUM
+    TString namesum=Form("ADC sum (bins: %i, %i)",GetRangeSumMin() ,GetRangeSumMax() );
+    fHistIROCSUM->SetXTitle("row");
+    fHistIROCSUM->SetZTitle(namesum.Data());
+    fHistIROCSUM->SetYTitle("pad");
+    fHistIROCSUM->SetTitle(titleIROC.Data());
     
-      // BASE
-    Char_t namebase[256] ; sprintf(namebase ,"base mean (timbebin: %i, %i )",GetRangeBaseMin(),GetRangeBaseMax());
-    fHistIROCBASE->SetXTitle("row"); fHistIROCBASE->SetZTitle(namebase);  fHistIROCBASE->SetYTitle("pad");      fHistIROCBASE->SetTitle(titleIROC);
-    fHistOROCBASE->SetXTitle("row"); fHistOROCBASE->SetZTitle(namebase);  fHistOROCBASE->SetYTitle("pad");      fHistOROCBASE->SetTitle(titleOROC);
+    fHistOROCSUM->SetXTitle("row");
+    fHistOROCSUM->SetZTitle(namesum);
+    fHistOROCSUM->SetYTitle("pad");
+    fHistOROCSUM->SetTitle(titleOROC.Data());
+    
+    // BASE
+    TString namebase=Form("base mean (timbebin: %i, %i )",GetRangeBaseMin(),GetRangeBaseMax());
+    fHistIROCBASE->SetXTitle("row");
+    fHistIROCBASE->SetZTitle(namebase.Data());
+    fHistIROCBASE->SetYTitle("pad");
+    fHistIROCBASE->SetTitle(titleIROC.Data());
+    
+    fHistOROCBASE->SetXTitle("row");
+    fHistOROCBASE->SetZTitle(namebase);
+    fHistOROCBASE->SetYTitle("pad");
+    fHistOROCBASE->SetTitle(titleOROC.Data());
     
     if(fHistIROCClone) fHistIROCClone->Delete();
     if(fHistOROCClone) fHistOROCClone->Delete();
@@ -1097,15 +1118,13 @@ void AliTPCMonitor::DrawHists(Int_t histos)
       // Executables
     if(fExecPlaneMax==0)
     {
-      Char_t carry1[100];
-      sprintf(carry1,".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
-      ciroc->AddExec("pad",carry1);
-      coroc->AddExec("pad",carry1);
+      TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+      ciroc->AddExec("pad",carry1.Data());
+      coroc->AddExec("pad",carry1.Data());
       
-      Char_t carry2[100];
-      sprintf(carry2,".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
-      ciroc->AddExec("row",carry2);
-      coroc->AddExec("row",carry2);
+      TString carry2=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+      ciroc->AddExec("row",carry2.Data());
+      coroc->AddExec("row",carry2.Data());
       fExecPlaneMax=1;
     }
     coroc->Update();
@@ -1122,7 +1141,7 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     fHistDistrMaxIROC->GetXaxis()->SetRangeUser(0.0,1000.0);
     fHistDistrMaxIROC->SetXTitle("max ADC (ADC)");
     fHistDistrMaxIROC->SetYTitle("counts");
-    fHistDistrMaxIROC->SetTitle(titleMAX);
+    fHistDistrMaxIROC->SetTitle(titleMAX.Data());
     fHistDistrMaxIROC->Draw("");
     fHistDistrMaxOROC->SetLineColor(2);
     fHistDistrMaxOROC->Draw("same");
@@ -1143,7 +1162,7 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     
     fHistDistrSumIROC->SetXTitle("sum ADC (ADC)");
     fHistDistrSumIROC->SetYTitle("counts");
-    fHistDistrSumIROC->SetTitle(titleSUM);
+    fHistDistrSumIROC->SetTitle(titleSUM.Data());
     fHistDistrSumIROC->Draw("");
     fHistDistrSumOROC->SetLineColor(2);
     fHistDistrSumOROC->Draw("same");
@@ -1159,7 +1178,7 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     fHistDistrBaseMeanIROC = fHistDistrBase2dIROC->ProjectionX("fHistDistrBaseMeanIROC");
     fHistDistrBaseMeanIROC->SetXTitle("base mean (ADC)");
     fHistDistrBaseMeanIROC->SetYTitle("counts");
-    fHistDistrBaseMeanIROC->SetTitle(titleMEAN);
+    fHistDistrBaseMeanIROC->SetTitle(titleMEAN.Data());
     fHistDistrBaseMeanIROC->Draw("");
     
     fHistDistrBaseMeanOROC = fHistDistrBase2dOROC->ProjectionX("fHistDistrBaseMeanOROC");
@@ -1177,7 +1196,7 @@ void AliTPCMonitor::DrawHists(Int_t histos)
     fHistDistrBaseRmsIROC = fHistDistrBase2dIROC->ProjectionY("fHistDistrBaseRmsIROC");
     fHistDistrBaseRmsIROC->SetXTitle("base rms (ADC)");
     fHistDistrBaseRmsIROC->SetYTitle("counts");
-    fHistDistrBaseRmsIROC->SetTitle(titleRMS);
+    fHistDistrBaseRmsIROC->SetTitle(titleRMS.Data());
     fHistDistrBaseRmsIROC->Draw("");
     
     fHistDistrBaseRmsOROC = fHistDistrBase2dOROC->ProjectionY("fHistDistrBaseRmsOROC");
@@ -1202,11 +1221,11 @@ void AliTPCMonitor::DrawHists(Int_t histos)
       if(!(cglobC=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("SIDE C all"))) cglobC = CreateCanvas("SIDE C all");
       if(!(cglobA=(TCanvas*)gROOT->GetListOfCanvases()->FindObject("SIDE A all"))) cglobA = CreateCanvas("SIDE A all");
       
-      Char_t globtitle1[256]; sprintf(globtitle1,"SIDE A Run %05i (EventID %i)",fRunId,fEventNumber);
-      Char_t globtitle2[256]; sprintf(globtitle2,"SIDE C Run %05i (EventID %i)",fRunId,fEventNumber);
+      TString globtitle1=Form("SIDE A Run %05i (EventID %i)",fRunId,fEventNumber);
+      TString globtitle2=Form("SIDE C Run %05i (EventID %i)",fRunId,fEventNumber);
       
-      fHistGlobalMaxA->SetTitle(globtitle1);
-      fHistGlobalMaxC->SetTitle(globtitle2);
+      fHistGlobalMaxA->SetTitle(globtitle1.Data());
+      fHistGlobalMaxC->SetTitle(globtitle2.Data());
       fHistGlobalMaxA->SetXTitle("x/mm");
       fHistGlobalMaxA->SetYTitle("y/mm");
       fHistGlobalMaxC->SetXTitle("x/mm");
@@ -1221,14 +1240,13 @@ void AliTPCMonitor::DrawHists(Int_t histos)
       cglobC->cd() ; fHistGlobalMaxC->Draw("COLZ");
       cglobA->cd() ; fHistGlobalMaxA->Draw("COLZ");
       
-      Char_t nameom[256];
-      sprintf(nameom,".x  %s/TPC/AliTPCMonitorExec.C(3)",gSystem->Getenv("ALICE_ROOT"));
+      TString nameom=Form(".x  %s/TPC/AliTPCMonitorExec.C(3)",gSystem->Getenv("ALICE_ROOT"));
       
       if(fExecGlob==0)
       {
-        if(fVerb)cout << " set exec " << nameom << endl;
-        cglobC->AddExec("glob",nameom);
-        cglobA->AddExec("glob",nameom);
+        if(fVerb)cout << " set exec " << nameom.Data() << endl;
+        cglobC->AddExec("glob",nameom.Data());
+        cglobA->AddExec("glob",nameom.Data());
         fExecGlob = 1;
       }
       else
@@ -1236,9 +1254,9 @@ void AliTPCMonitor::DrawHists(Int_t histos)
         cglobC->DeleteExec("glob");
         cglobA->DeleteExec("glob");
         
-        if(fVerb)  cout << " set exec " << nameom << endl;
-        cglobC->AddExec("glob",nameom);
-        cglobA->AddExec("glob",nameom);
+        if(fVerb)  cout << " set exec " << nameom.Data() << endl;
+        cglobC->AddExec("glob",nameom.Data());
+        cglobA->AddExec("glob",nameom.Data());
         
       }
       cglobC->Update();
@@ -1264,20 +1282,20 @@ void AliTPCMonitor::DrawRMSMap()
   crmsiroc->cd();  fHistIROCRMS->Draw("COLZ");
   crmsoroc->cd();  fHistOROCRMS->Draw("COLZ");
   
-  Char_t carry1[100];  sprintf(carry1,".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
-  Char_t carry2[100];  sprintf(carry2,".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry2=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
   
   if(fExecPadIrocRms==0)
   {
-    crmsiroc->AddExec("pad",carry1);
-    crmsiroc->AddExec("row",carry2);
+    crmsiroc->AddExec("pad",carry1.Data());
+    crmsiroc->AddExec("row",carry2.Data());
     fExecPadIrocRms=1;
   }
   
   if(fExecPadOrocRms==0)
   {
-    crmsoroc->AddExec("pad",carry1);
-    crmsoroc->AddExec("row",carry2);
+    crmsoroc->AddExec("pad",carry1.Data());
+    crmsoroc->AddExec("row",carry2.Data());
     fExecPadOrocRms=1;
   }
   
@@ -1315,9 +1333,9 @@ void AliTPCMonitor::ExecPad()
   
   TCanvas* cpad      = 0;
   //  Char_t   namehist[50];
-  Char_t   projhist[60];
-  Char_t   namesel[256];
-  Char_t   namecanv[256];
+  TString   projhist;
+  TString   namesel;
+  TString   namecanv;
   
   Int_t    xbinmin  = 0;
   Int_t    xbinmax  = 0;
@@ -1326,21 +1344,21 @@ void AliTPCMonitor::ExecPad()
   Int_t    rocid     = 0;
   // Check wich Canvas executed the event
   TH2S* fHistIndex=0;
-  sprintf(namesel,select->GetName());
-  if(strcmp(namesel,"fHistOROC")==0 || strcmp(namesel,"fHistOROCRMS")==0 || strcmp(namesel,"fHistOROCTime")==0 )
+  namesel=select->GetName();
+  if(namesel=="fHistOROC" || namesel=="fHistOROCRMS" || namesel=="fHistOROCTime" )
   {
     rocid = 1;
     fPadUsedRoc =1;
-    sprintf(projhist,"ProjectionOROC");
-    sprintf(namecanv,"coroc_ch");
+    projhist=Form("ProjectionOROC");
+    namecanv=Form("coroc_ch");
     fHistIndex = fHistOROCIndex;
   }
-  if(strcmp(namesel,"fHistIROC")==0 || strcmp(namesel,"fHistIROCRMS")==0 || strcmp(namesel,"fHistIROCTime")==0 )
+  if(namesel=="fHistIROC" || namesel=="fHistIROCRMS" || namesel=="fHistIROCTime" )
   {
     rocid = 0;
     fPadUsedRoc=0;
-    sprintf(projhist,"ProjectionIROC");
-    sprintf(namecanv,"ciroc_ch");
+    projhist=Form("ProjectionIROC");
+    namecanv=Form("ciroc_ch");
     fHistIndex = fHistIROCIndex;
   }
   
@@ -1365,6 +1383,7 @@ void AliTPCMonitor::ExecPad()
   }
   
   // Get Bin
+  if (!fHistIndex) return;
   Int_t testy = fHistIndex->GetYaxis()->FindBin(y);
   Int_t testx = fHistIndex->GetXaxis()->FindBin(x);
   Int_t binchannel = (Int_t)fHistIndex->GetCellContent(testx,testy);
@@ -1384,7 +1403,6 @@ void AliTPCMonitor::ExecPad()
 //   return;
   
   // Make title and Pave for channel Info
-  Char_t title[256];
   Int_t npadRow , npad  , nhw , nmax , hwadd;
   
   hwadd   = (Int_t)fHistChannelTime->GetCellContent(binchannel,0);
@@ -1412,27 +1430,20 @@ void AliTPCMonitor::ExecPad()
   Short_t fecget      = (hwadd & fgkHwMaskFEC)   >> 7;
   Short_t branchget   = (hwadd & fgkHwMaskBranch)>> 11;
   
+  legstat->AddText(Form("Branch (map) \t %i (%i) \n",branchget,branch));
+  legstat->AddText(Form("Fec in patch \t %i \n",fecloc));
+  legstat->AddText(Form("Fec in branch (map)\t %i (%i)\n",fecget,feclocbran));
+  legstat->AddText(Form("Connector  \t %i \n",connector));
+  legstat->AddText(Form("Fec No.   \t %i \n",fecnr));
+  legstat->AddText(Form("Fec chan  \t %i \n",fecch));
+  legstat->AddText(Form("Altro chip\t %i \n",altrochip));
+  legstat->AddText(Form("Altro chan\t %i \n",altrochannel));
   
-  Char_t nstat1[100];  Char_t nstat2[100];  Char_t nstat3[100];  Char_t nstat4[100];
-  Char_t nstat5[100];  Char_t nstat6[100];  Char_t nstat7[100];  Char_t nstat8[100];
-  
-  sprintf(nstat1,"Branch (map) \t %i (%i) \n",branchget,branch);
-  sprintf(nstat2,"Fec in patch \t %i \n",fecloc);
-  sprintf(nstat8,"Fec in branch (map)\t %i (%i)\n",fecget,feclocbran);
-  sprintf(nstat7,"Connector  \t %i \n",connector);
-  sprintf(nstat3,"Fec No.   \t %i \n",fecnr);
-  sprintf(nstat4,"Fec chan  \t %i \n",fecch);
-  sprintf(nstat5,"Altro chip\t %i \n",altrochip);
-  sprintf(nstat6,"Altro chan\t %i \n",altrochannel);
-  
-  legstat->AddText(nstat1); legstat->AddText(nstat2);  legstat->AddText(nstat8);  legstat->AddText(nstat7);
-  legstat->AddText(nstat3); legstat->AddText(nstat4);  legstat->AddText(nstat5);  legstat->AddText(nstat6);
-  
-  sprintf(title,"Row=%d Pad=%d Hw =%d maxADC =%d count =%d",npadRow,npad,nhw,nmax,binchannel);
+  TString title=Form("Row=%d Pad=%d Hw =%d maxADC =%d count =%d",npadRow,npad,nhw,nmax,binchannel);
   
 //   hp->SetName(projhist);
   hp->SetTitleSize(0.04);
-  hp->SetTitle(title);
+  hp->SetTitle(title.Data());
   hp->SetYTitle("ADC");
   hp->SetXTitle("Timebin");
   hp->GetXaxis()->SetTitleColor(1);
@@ -1505,15 +1516,10 @@ void AliTPCMonitor::ExecRow()
   if(!select->InheritsFrom("TH2")) {   return;  }
   
   Int_t rocid = 0;
-  //  Char_t namehist[50];
-  Char_t rowhist[60];
-  Char_t rowhistsum[60];
-  Char_t rowhistmax[60];
-  Char_t rowhistxmax[60];
   
-  sprintf(rowhist,         "hrowtime");
-  sprintf(rowhistxmax    ,"hxmax");
-  sprintf(rowhistmax    , "hrowmax");
+  const Char_t *rowhist="hrowtime";
+  const Char_t *rowhistxmax="hxmax";
+  const Char_t *rowhistmax="hrowmax";
   
   // get position
   Int_t   px  = gPad->GetEventX();
@@ -1550,10 +1556,10 @@ void AliTPCMonitor::ExecRow()
   
   Int_t    setrange      = 0;
   
-  
-  if(     strcmp(select->GetName(),"fHistIROC")==0 || strcmp(select->GetName(),"fHistIROCRMS")==0 ) { fHistIndex = fHistIROCIndex;     rocid =1;   }
-  else if(strcmp(select->GetName(),"fHistOROC")==0 || strcmp(select->GetName(),"fHistOROCRMS")==0 ) { fHistIndex = fHistOROCIndex;     rocid =2;   }
-  else                                                                                  { cout << " not implemented for this histo " << endl; return; }
+  TString name=select->GetName();
+  if(     name=="fHistIROC" || name=="fHistIROCRMS" ) { fHistIndex = fHistIROCIndex;     rocid =1;   }
+  else if(name=="fHistOROC" || name=="fHistOROCRMS" ) { fHistIndex = fHistOROCIndex;     rocid =2;   }
+  else  { cout << " not implemented for this histo " << endl; return; }
   
   gPad->GetCanvas()->FeedbackMode(kTRUE);
   
@@ -1592,7 +1598,6 @@ void AliTPCMonitor::ExecRow()
     
     delete gROOT->Get(rowhist);
     delete gROOT->Get(rowhistmax);
-    delete gROOT->Get(rowhistsum);
     delete gROOT->Get("hxmax");
     delete gROOT->Get("legrow");
   }
@@ -1652,8 +1657,7 @@ void AliTPCMonitor::ExecRow()
   }
   
   cxmax->cd();
-  Char_t hxtitle[50] ; sprintf(hxtitle,"max adc in pads at x=%5.1f mm",xval);
-  hxmax->SetTitle(hxtitle);
+  hxmax->SetTitle(Form("max adc in pads at x=%5.1f mm",xval));
   hxmax->SetXTitle("row");
   if(!GetPedestals()) hxmax->SetYTitle("max adc (baseline sub.)");
   else                hxmax->SetYTitle("max adc ");
@@ -1670,17 +1674,23 @@ void AliTPCMonitor::ExecRow()
   cxmax->Update();
   
   crowtime->cd();
-  Char_t title[256];
-  Char_t titlemax[256];
-  if(rocid==1) {sprintf(title,"%s Row=%d",((TH2*)select)->GetTitle(),row)   ;    sprintf(titlemax,"IROC  max/sum Row=%d",row   );}
-  else         {sprintf(title,"%s Row=%d",((TH2*)select)->GetTitle(),row-63);    sprintf(titlemax,"OROC  max/sum Row=%d",row-63);}
+  TString title;
+  TString titlemax;
+  if(rocid==1) {
+    title.Form("%s Row=%d",((TH2*)select)->GetTitle(),row)   ;
+    titlemax.Form("IROC  max/sum Row=%d",row   );
+  }  else  {
+    title.Form("%s Row=%d",((TH2*)select)->GetTitle(),row-63);
+    titlemax.Form("OROC  max/sum Row=%d",row-63);
+  }
+  
   if(fVerb) cout << " set name " << endl;
   
   
   // row vs time
   crowtime->cd();
   hrowtime->SetTitleSize(0.04);
-  hrowtime->SetTitle(title);
+  hrowtime->SetTitle(title.Data());
   hrowtime->SetYTitle("timbin");
   hrowtime->SetXTitle("pad in row");
   hrowtime->SetZTitle("signal (ADC)");
@@ -1709,7 +1719,7 @@ void AliTPCMonitor::ExecRow()
     hrowmax->SetMaximum(profrowymax);
   }
   hrowmax->SetTitleSize(0.04);
-  hrowmax->SetTitle(title);
+  hrowmax->SetTitle(title.Data());
   hrowmax->SetYTitle("max adc");
   hrowmax->SetXTitle("pad in row");
   hrowmax->GetXaxis()->SetTitleColor(1);
@@ -1733,26 +1743,26 @@ void AliTPCMonitor::Write10bitChannel()
   Int_t  row     = (Int_t)fMapHand->GetPadRow(fPadUsedHwAddr);
   Int_t  channel = (Int_t)fPadMapHw[fPadUsedHwAddr];
   
-  Char_t filenameroot[256];
-  Char_t filenamedat[256];
-  Char_t projhist[256];
+  TString filenameroot;
+  TString filenamedat;
+  TString projhist;
   
-  if(fPadUsedRoc==1) { sprintf(projhist,"ProjectionOROC"); }
-  if(fPadUsedRoc==0) { sprintf(projhist,"ProjectionIROC"); }
+  if(fPadUsedRoc==1) { projhist.Form("ProjectionOROC"); }
+  if(fPadUsedRoc==0) { projhist.Form("ProjectionIROC"); }
   
-  sprintf(filenamedat, "Channel_Run%05i_EventID_%i_Pad_%i_Row_%i.dat"      ,fRunId,fEventNumber,pad,row);
-  sprintf(filenameroot,"Channel_Run%05i_EventID_%i_Pad_%i_Row_%i.root"     ,fRunId,fEventNumber,pad,row);
+  filenamedat.Form("Channel_Run%05i_EventID_%i_Pad_%i_Row_%i.dat"      ,fRunId,fEventNumber,pad,row);
+  filenameroot.Form("Channel_Run%05i_EventID_%i_Pad_%i_Row_%i.root"     ,fRunId,fEventNumber,pad,row);
   
   TH1D* hpr = 0;
   if((hpr=(TH1D*)gROOT->Get(projhist)))
   {
       // root histo
-    TFile f(filenameroot,"recreate");
+    TFile f(filenameroot.Data(),"recreate");
     hpr->Write();
     f.Close();
     
       // raw singal
-    ofstream datout(filenamedat,ios::out);
+    ofstream datout(filenamedat.Data(),ios::out);
     datout <<"Timebin \t ADC value " << endl;
     for(Int_t i = 1; i <GetTimeBins(); i++)
     {
@@ -1774,39 +1784,39 @@ void AliTPCMonitor::ExecTransform()
   // fft is only performed for a data sample of size 2^n
   // reduce window according to largest  power of 2 which is smaller than the viewing  range
   
-  Char_t namecanv[256];
-  Char_t namecanv2[256];
-  Char_t projhist[256];
-  Char_t namehtrimag[256];
-  Char_t namehtrreal[256];
-  Char_t namehtrmag[256];
+  TString namecanv;
+  TString namecanv2;
+  TString projhist;
+  TString namehtrimag;
+  TString namehtrreal;
+  TString namehtrmag;
   
-  if(fPadUsedRoc==1) {    sprintf(namecanv,"coroc_ch_trans") ; sprintf(namecanv2,"coroc_ch_trans2") ;   sprintf(projhist,"ProjectionOROC");  }
-  if(fPadUsedRoc==0) {    sprintf(namecanv,"ciroc_ch_trans") ; sprintf(namecanv2,"ciroc_ch_trans2") ;  sprintf(projhist,"ProjectionIROC");  }
+  if(fPadUsedRoc==1) {    namecanv="coroc_ch_trans"; namecanv2="coroc_ch_trans2";  projhist="ProjectionOROC";  }
+  if(fPadUsedRoc==0) {    namecanv="ciroc_ch_trans"; namecanv2="ciroc_ch_trans2";  projhist="ProjectionIROC";  }
   
   TH1D*  hproj = 0;
   
   if((TH1D*)gROOT->Get(projhist)==0){AliWarning("Proj histo does not exist \n Move mouse over 2d histo choose channel \n and drag mouse form histo again!");  return ;}
-  else      hproj = (TH1D*)gROOT->Get(projhist) ;
+  else      hproj = (TH1D*)gROOT->Get(projhist.Data()) ;
   
   
-  if(fPadUsedRoc==1) {  sprintf(namehtrimag,"htransimagfreq_oroc");    sprintf(namehtrreal,"htransrealfreq_oroc"); sprintf(namehtrmag,"htransmagfreq_oroc");  }
-  else               {  sprintf(namehtrimag,"htransimagfreq_iroc");    sprintf(namehtrreal,"htransrealfreq_iroc"); sprintf(namehtrmag,"htransmagfreq_iroc");  }
+  if(fPadUsedRoc==1) {  namehtrimag="htransimagfreq_oroc";    namehtrreal="htransrealfreq_oroc"; namehtrmag="htransmagfreq_oroc";  }
+  else               {  namehtrimag="htransimagfreq_iroc";    namehtrreal="htransrealfreq_iroc"; namehtrmag="htransmagfreq_iroc";  }
   
-  if( gROOT->Get(namehtrimag))  delete  gROOT->Get(namehtrimag);
-  if( gROOT->Get(namehtrreal))  delete  gROOT->Get(namehtrreal);
-  if( gROOT->Get(namehtrmag))  delete  gROOT->Get(namehtrmag);
+  if( gROOT->Get(namehtrimag.Data()))  delete  gROOT->Get(namehtrimag.Data());
+  if( gROOT->Get(namehtrreal.Data()))  delete  gROOT->Get(namehtrreal.Data());
+  if( gROOT->Get(namehtrmag.Data()))  delete  gROOT->Get(namehtrmag.Data());
   
   TCanvas *ctrans = 0;
-  if(!(ctrans = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv)))
+  if(!(ctrans = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv.Data())))
   {
-    ctrans = CreateCanvas(namecanv);
+    ctrans = CreateCanvas(namecanv.Data());
     ctrans->Divide(1,2);
   }
   TCanvas *ctrans2 = 0;
-  if(!(ctrans2 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv2)))
+  if(!(ctrans2 = (TCanvas*)gROOT->GetListOfCanvases()->FindObject(namecanv2.Data())))
   {
-    ctrans2 = CreateCanvas(namecanv2);
+    ctrans2 = CreateCanvas(namecanv2.Data());
 //      ctrans2->Divide(1,2);
   }
   
@@ -1827,19 +1837,19 @@ void AliTPCMonitor::ExecTransform()
   Double_t  deltat = 1.0/(Float_t)GetSamplingFrequency();
   
   // output histo
-  TH1D* htransrealfreq = new TH1D(namehtrreal,namehtrreal,10000,-1/(2*deltat),1/(2*deltat));
-  TH1D* htransimagfreq = new TH1D(namehtrimag,namehtrimag,10000,-1/(2*deltat),1/(2*deltat));
-  TH1D* htransmag      = new TH1D(namehtrmag,namehtrmag,10000,-1/(2*deltat),1/(2*deltat));
+  TH1D* htransrealfreq = new TH1D(namehtrreal.Data(),namehtrreal.Data(),10000,-1/(2*deltat),1/(2*deltat));
+  TH1D* htransimagfreq = new TH1D(namehtrimag.Data(),namehtrimag.Data(),10000,-1/(2*deltat),1/(2*deltat));
+  TH1D* htransmag      = new TH1D(namehtrmag.Data(),namehtrmag.Data(),10000,-1/(2*deltat),1/(2*deltat));
   
-  Char_t titlereal[256];
-  Char_t titleimag[256];
-  Char_t titlemag[256];
-  if(fPadUsedRoc==1) {    sprintf(titlereal,"OROC DFT real part");  sprintf(titleimag,"OROC DFT imag part");  sprintf(titlemag,"OROC DFT magnitude");  }
-  else {                  sprintf(titlereal,"IROC DFT real part");  sprintf(titleimag,"IROC DFT imag part");  sprintf(titlemag,"IROC DFT magnitude");  }
+  TString titlereal;
+  TString titleimag;
+  TString titlemag;
+  if(fPadUsedRoc==1) {    titlereal="OROC DFT real part";  titleimag="OROC DFT imag part";  titlemag="OROC DFT magnitude";  }
+  else {                  titlereal="IROC DFT real part";  titleimag="IROC DFT imag part";  titlemag="IROC DFT magnitude";  }
   
-  htransrealfreq->SetTitle(titlereal);  htransrealfreq->SetXTitle("f/hz");  htransrealfreq->SetYTitle("z_{real}(f)");
-  htransimagfreq->SetTitle(titleimag);  htransimagfreq->SetXTitle("f/hz");  htransimagfreq->SetYTitle("z_{imag}(f)");
-  htransmag->SetTitle(titlemag);  htransmag->SetXTitle("f/hz");  htransmag->SetYTitle("mag(f)");
+  htransrealfreq->SetTitle(titlereal.Data());  htransrealfreq->SetXTitle("f/hz");  htransrealfreq->SetYTitle("z_{real}(f)");
+  htransimagfreq->SetTitle(titleimag.Data());  htransimagfreq->SetXTitle("f/hz");  htransimagfreq->SetYTitle("z_{imag}(f)");
+  htransmag->SetTitle(titlemag.Data());  htransmag->SetXTitle("f/hz");  htransmag->SetYTitle("mag(f)");
   
   // create complex packed data array
   const Int_t kdatasiz = 2*bins;
@@ -1993,10 +2003,8 @@ void AliTPCMonitor::ResizeCanv()
 {
   // Resize canvases and delete some of them
   
-  Char_t carry1[100];
-  sprintf(carry1,".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
-  Char_t carry3[100];
-  sprintf(carry3,".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry1=Form(".x %s/TPC/AliTPCMonitorExec.C(1)",gSystem->Getenv("ALICE_ROOT"));
+  TString carry3=Form(".x %s/TPC/AliTPCMonitorExec.C(2)",gSystem->Getenv("ALICE_ROOT"));
   if(fVerb) cout <<  " canv 1 " << endl;
   
   if(gROOT->GetListOfCanvases()->FindObject(        "coroc_ch")) {  delete gROOT->GetListOfCanvases()->FindObject("coroc_ch") ; }
@@ -2009,8 +2017,8 @@ void AliTPCMonitor::ResizeCanv()
     TCanvas* ciroc = CreateCanvas("ciroc");
     ciroc->cd();
     fHistIROC->Draw("COLZ");
-    ciroc->AddExec("pad",carry1);
-    ciroc->AddExec("row",carry3);
+    ciroc->AddExec("pad",carry1.Data());
+    ciroc->AddExec("row",carry3.Data());
     fExecPlaneMax=1;
     ciroc->Update();
   }
@@ -2022,8 +2030,8 @@ void AliTPCMonitor::ResizeCanv()
     coroc->cd();
     fHistOROC->Draw("COLZ");
     
-    coroc->AddExec("pad",carry1);
-    coroc->AddExec("row",carry3);
+    coroc->AddExec("pad",carry1.Data());
+    coroc->AddExec("row",carry3.Data());
     coroc->Update();
     fExecPlaneMax=1;
   }
@@ -2062,10 +2070,11 @@ Int_t AliTPCMonitor::ExecProcess()
   if(event != 61)  return -1;
   
   TObject *select = gPad->GetSelected();
+  TString name=select->GetName();
   if(!select)  return -1;
   if(!select->InheritsFrom("TH2")) {gPad->SetUniqueID(0);    return -1;  }
-  if(       strcmp(select->GetName(),"hglobal" )==0 || ( strcmp(select->GetName(),"SIDE A" )==0) ) side = 0;
-  else  if( strcmp(select->GetName(),"hglobal2")==0 || ( strcmp(select->GetName(),"SIDE C" )==0) ) side = 1;
+  if(       name=="hglobal"  || name=="SIDE A"  ) side = 0;
+  else  if( name=="hglobal2" || name=="SIDE C"  ) side = 1;
   
   // get position
   Int_t   px    = gPad->GetEventX();
@@ -2114,9 +2123,9 @@ Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid) const
   // Return RCU patch index for given equipment id eqid
   Int_t patch = 0;
   //if(runid>=704)
-  if ( eqid<768 || eqid>983 ) return 0; //no TPC eqid
   if(runid>=0)
   {
+    if ( eqid<768 || eqid>983 ) return 0; //no TPC eqid
     if(eqid>=1000) return 0;
     patch = fMapEqidsRcu[eqid] ;
   }
@@ -2179,33 +2188,34 @@ TCanvas* AliTPCMonitor::CreateCanvas(const Char_t* name)
   Int_t ysize    = GetCanvasYSize();
   Int_t xspace   = GetCanvasXSpace();
   Int_t yspace   = GetCanvasYSpace();
-  
+
+  TString sname=name;
   // ROC 2dim max distribution
-  if(     strcmp(name,"coroc"         )==0) {    canv   = new TCanvas("coroc"         ,"coroc"      ,                   -1+xoffset,(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"ciroc"         )==0) {    canv   = new TCanvas("ciroc"         ,"ciroc"      ,                   -1+xoffset,                     0    ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  if(     sname=="coroc") {    canv   = new TCanvas("coroc"         ,"coroc"      ,                   -1+xoffset,(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="ciroc") {    canv   = new TCanvas("ciroc"         ,"ciroc"      ,                   -1+xoffset,                     0    ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // ROC  2dim rms distribution
-  else if(strcmp(name,"crmsoroc"      )==0) {    canv   = new TCanvas("crmsoroc"      ,"crmsoroc"   ,                   -1+xoffset,(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"crmsiroc"      )==0) {    canv   = new TCanvas("crmsiroc"      ,"crmsiroc"   ,                   -1+xoffset,                        0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="crmsoroc") {    canv   = new TCanvas("crmsoroc"      ,"crmsoroc"   ,                   -1+xoffset,(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="crmsiroc") {    canv   = new TCanvas("crmsiroc"      ,"crmsiroc"   ,                   -1+xoffset,                        0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // Global ADC max Histos
-  else if(strcmp(name,"SIDE C all"    )==0) {    canv   = new TCanvas("SIDE C all"    ,"SIDE C all" ,   (Int_t)(3*xspace+ xoffset),(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"SIDE A all"    )==0) {    canv   = new TCanvas("SIDE A all"    ,"SIDE A all" ,   (Int_t)(3*xspace+ xoffset),                        0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="SIDE C all") {    canv   = new TCanvas("SIDE C all"    ,"SIDE C all" ,   (Int_t)(3*xspace+ xoffset),(Int_t)(yspace+0.5*ysize) ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="SIDE A all") {    canv   = new TCanvas("SIDE A all"    ,"SIDE A all" ,   (Int_t)(3*xspace+ xoffset),                        0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // 1 dim max sum basekine distribution
-  else if(strcmp(name,"cmax"          )==0) {    canv   = new TCanvas("cmax"          ,"cmax"       ,                   -1+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
-  else if(strcmp(name,"csum"          )==0) {    canv   = new TCanvas("csum"          ,"csum"       ,               xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
-  else if(strcmp(name,"cbasemean"     )==0) {    canv   = new TCanvas("cbasemean"     ,"cbasemean"  ,             2*xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
-  else if(strcmp(name,"cbaserms"      )==0) {    canv   = new TCanvas("cbaserms"      ,"cbaserms"   ,             3*xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="cmax") {    canv   = new TCanvas("cmax"          ,"cmax"       ,                   -1+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="csum") {    canv   = new TCanvas("csum"          ,"csum"       ,               xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="cbasemean") {    canv   = new TCanvas("cbasemean"     ,"cbasemean"  ,             2*xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="cbaserms") {    canv   = new TCanvas("cbaserms"      ,"cbaserms"   ,             3*xspace+xoffset,                 3*yspace ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
   // Projections of single channel
-  else if(strcmp(name,"coroc_ch"      )==0) {    canv   = new TCanvas("coroc_ch"      ,"coroc_ch"   ,   (Int_t)(1.5*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"ciroc_ch"      )==0) {    canv   = new TCanvas("ciroc_ch"      ,"ciroc_ch"   ,   (Int_t)(1.5*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="coroc_ch") {    canv   = new TCanvas("coroc_ch"      ,"coroc_ch"   ,   (Int_t)(1.5*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="ciroc_ch") {    canv   = new TCanvas("ciroc_ch"      ,"ciroc_ch"   ,   (Int_t)(1.5*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // FFT for single channel
-  else if(strcmp(name,"coroc_ch_trans")==0) {    canv   = new TCanvas("coroc_ch_trans","coroc_ch_trans",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"ciroc_ch_trans")==0) {    canv   = new TCanvas("ciroc_ch_trans","ciroc_ch_trans",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"coroc_ch_trans2")==0) {    canv   = new TCanvas("coroc_ch_trans2","coroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
-  else if(strcmp(name,"ciroc_ch_trans2")==0) {    canv   = new TCanvas("ciroc_ch_trans2","ciroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="coroc_ch_trans") {    canv   = new TCanvas("coroc_ch_trans","coroc_ch_trans",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="ciroc_ch_trans") {    canv   = new TCanvas("ciroc_ch_trans","ciroc_ch_trans",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="coroc_ch_trans2") {    canv   = new TCanvas("coroc_ch_trans2","coroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),(Int_t)(yspace+0.5*ysize),(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
+  else if(sname=="ciroc_ch_trans2") {    canv   = new TCanvas("ciroc_ch_trans2","ciroc_ch_trans2",(Int_t)(3.0*xspace+xoffset),                       0 ,(Int_t)(1.5*xsize),(Int_t)(1.5*ysize)); return canv;  }
   // row profile histograms
-  else if(strcmp(name,"crowtime"     )==0) {    canv   = new TCanvas("crowtime"     ,"crowtime"  ,              1*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
-  else if(strcmp(name,"crowmax"      )==0) {    canv   = new TCanvas("crowmax"      ,"crowmax"   ,              2*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
-  else if(strcmp(name,"cxmax"        )==0) {    canv   = new TCanvas("cxmax"        ,"cxmax"     ,              3*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="crowtime") {    canv   = new TCanvas("crowtime"     ,"crowtime"  ,              1*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="crowmax") {    canv   = new TCanvas("crowmax"      ,"crowmax"   ,              2*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
+  else if(sname=="cxmax") {    canv   = new TCanvas("cxmax"        ,"cxmax"     ,              3*xspace+xoffset,         2*yspace +ysize ,(Int_t)(1.0*xsize),(Int_t)(1.0*ysize)); return canv;  }
   else                                      {    cout   << " Warning Canvas name unknown "  << endl;                                                                                                  return 0   ;  }
 }
 
@@ -2218,9 +2228,8 @@ void AliTPCMonitor::WriteHistos()
   if(GetEventProcessed())
   {
     AliInfo("Write histos to file");
-    Char_t name[256];
-    sprintf(name,"SIDE_%i_SECTOR_%02i_RUN_%05i_EventID_%06i.root",(GetLastSector()/18),(GetLastSector()%18),fRunId,fEventNumber);
-    TFile* f = new TFile(name,"recreate");
+    TString name=Form("SIDE_%i_SECTOR_%02i_RUN_%05i_EventID_%06i.root",(GetLastSector()/18),(GetLastSector()%18),fRunId,fEventNumber);
+    TFile* f = new TFile(name.Data(),"recreate");
     for(Int_t i =0; i<fHistList->GetEntries(); i++)
     {
       if(((TH1*)fHistList->At(i))!=0)

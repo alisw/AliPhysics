@@ -314,9 +314,8 @@ TH1F * AliTPCCalROC::MakeHisto1D(Float_t min, Float_t max,Int_t type){
       max = mean+sigma;
     }
   }
-  char  name[1000];
-  sprintf(name,"%s ROC 1D%d",GetTitle(),fSector);
-  TH1F * his = new TH1F(name,name,100, min,max);
+  TString name=Form("%s ROC 1D%d",GetTitle(),fSector);
+  TH1F * his = new TH1F(name.Data(),name.Data(),100, min,max);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
     for (UInt_t ipad=0; ipad<npads; ipad++){
@@ -364,9 +363,9 @@ TH2F * AliTPCCalROC::MakeHisto2D(Float_t min, Float_t max,Int_t type){
   for (UInt_t irow=0; irow<fNRows; irow++){
     if (GetNPads(irow)>maxPad) maxPad = GetNPads(irow);
   }
-  char  name[1000];
-  sprintf(name,"%s ROC%d",GetTitle(),fSector);
-  TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
+
+  TString name=Form("%s ROC%d",GetTitle(),fSector);
+  TH2F * his = new TH2F(name.Data(),name.Data(),fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
     for (UInt_t ipad=0; ipad<npads; ipad++){
@@ -395,9 +394,8 @@ TH2F * AliTPCCalROC::MakeHistoOutliers(Float_t delta, Float_t fraction, Int_t ty
     if (GetNPads(irow)>maxPad) maxPad = GetNPads(irow);
   }
 
-  char  name[1000];
-  sprintf(name,"%s ROC Outliers%d",GetTitle(),fSector);
-  TH2F * his = new TH2F(name,name,fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
+  TString name=Form("%s ROC Outliers%d",GetTitle(),fSector);
+  TH2F * his = new TH2F(name.Data(),name.Data(),fNRows+10,-5, fNRows+5, maxPad+10, -(Int_t(maxPad/2))-5, maxPad/2+5);
   for (UInt_t irow=0; irow<fNRows; irow++){
     UInt_t npads = (Int_t)GetNPads(irow);
     for (UInt_t ipad=0; ipad<npads; ipad++){

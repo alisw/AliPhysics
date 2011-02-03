@@ -113,6 +113,7 @@ AliTPCmapper::AliTPCmapper(const AliTPCmapper& mapper) :
   fTpcDdlOffset(mapper.fTpcDdlOffset)
 {
   // Copy Constructor
+  for ( Int_t i = 0; i < 6; i++ )  fMapping[i]=0;
   for ( Int_t i = 0; i < fNrcu; i++ ) fMapping[i] = mapper.fMapping[i];
 }
 
@@ -197,17 +198,20 @@ Int_t AliTPCmapper::GetHWAddressSector(Int_t globalpadrow, Int_t pad) const
 {
   // Get the hardware address from pad coordinates
   Int_t patch = 0;
+  Int_t hwAddress=-1;
   if ( globalpadrow < fNpadrowIROC   ) {
     patch = GetPatch(0,  globalpadrow, pad);
-    return fMapping[patch]->GetHWAddress(globalpadrow, pad, 0);
+    if (patch>-1)
+      hwAddress = fMapping[patch]->GetHWAddress(globalpadrow, pad, 0);
   } else if ( globalpadrow < fNpadrow ) {
     patch = GetPatch(36, globalpadrow - fNpadrowIROC, pad);
-    return fMapping[patch]->GetHWAddress(globalpadrow - fNpadrowIROC,
-					 pad, 36);
+    if (patch>-1)
+      hwAddress = fMapping[patch]->GetHWAddress(globalpadrow - fNpadrowIROC, pad, 36);
   } else {
     AliWarning(Form("Padrow outside range (globalpadrow %d) !", globalpadrow));
-    return -1;
+    hwAddress = -1;
   }
+  return hwAddress;
 }
 
 

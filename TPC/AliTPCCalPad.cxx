@@ -413,9 +413,8 @@ TH1F * AliTPCCalPad::MakeHisto1D(Float_t min, Float_t max,Int_t type, Int_t side
       max = mean+sigma;
     }
   }
-  char  name[1000];
-  sprintf(name,"%s Pad 1D",GetTitle());
-  TH1F * his = new TH1F(name,name,100, min,max);
+  TString name=Form("%s Pad 1D",GetTitle());
+  TH1F * his = new TH1F(name.Data(),name.Data(),100, min,max);
     for (Int_t isec = 0; isec < kNsec; isec++) {
       if (side==1 && isec%36>18) continue;
       if (side==-1 && isec%36<18) continue;

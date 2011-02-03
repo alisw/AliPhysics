@@ -298,7 +298,7 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
     fmapping[actPos] = mappingRow;
     if( (actPos - oldPos) > 1) {
       for(Int_t j = (oldPos+1); j < actPos; j++) {
-	fmapping[j] = fmappingEmptyRow;
+        fmapping[j] = fmappingEmptyRow;
       }
     }
     oldPos = actPos;
@@ -307,6 +307,8 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
   
   in->close();
   delete in;
+
+  delete [] fmappingEmptyRow;
 }
 
 //_____________________________________________________________________________________________
@@ -401,14 +403,14 @@ void AliTPCMonitorMappingHandler::ReadfecGainMap(char* fecgainmap)
   Float_t val    = 0.0 ;
   
   while(!datin.eof())
+  {
+    datin >> fecnr ;
+    for(Int_t in = 0; in<128; in++)
     {
-      datin >> fecnr ;
-      for(Int_t in = 0; in<128; in++)
-	{
-	  datin >> val ;
-	  fecGainMap[fecnr][in] = val;
-	}
+      datin >> val ;
+      fecGainMap[fecnr][in] = val;
     }
+  }
 }
 
 //_____________________________________________________________________________________________

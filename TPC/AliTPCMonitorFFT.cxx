@@ -180,7 +180,7 @@ Int_t AliTPCMonitorFFT::ComplexRadix2TransformWrap(Double_t* data,   Int_t strid
 }
 
 //__________________________________________________________________
-Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t logn) const
+Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride, size_t n, Int_t /*logn*/) const
 {
   // Wrapper function from gnu scientific library
   /* This is the Goldrader bit-reversal algorithm */
@@ -188,7 +188,7 @@ Int_t AliTPCMonitorFFT::ComplexBitReverseOrderWrap(Double_t* data, Int_t stride,
   size_t i;
   size_t j = 0;
   
-  logn = 0 ; /* not needed for this algorithm */
+//   logn = 0 ; /* not needed for this algorithm */
   
   for (i = 0; i < n - 1; i++)
     {
