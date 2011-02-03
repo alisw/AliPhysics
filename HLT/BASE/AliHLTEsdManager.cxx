@@ -23,6 +23,7 @@
 */
 
 #include "AliHLTEsdManager.h"
+#include "AliHLTMisc.h"
 #include "TSystem.h"
 #include "TClass.h"
 #include "TROOT.h"
@@ -53,32 +54,7 @@ const char* AliHLTEsdManager::fgkImplLibrary="libHLTrec.so";
 AliHLTEsdManager* AliHLTEsdManager::New()
 {
   // see header file for class documentation
-  int iLibResult=0;
-  AliHLTEsdManager* instance=NULL;
-  AliHLTLogging log;
-  TClass* pCl=NULL;
-  ROOT::NewFunc_t pNewFunc=NULL;
-  do {
-    pCl=TClass::GetClass(fgkImplName);
-  } while (!pCl && (iLibResult=gSystem->Load(fgkImplLibrary))==0);
-  if (iLibResult>=0) {
-    if (pCl && (pNewFunc=pCl->GetNew())!=NULL) {
-      void* p=(*pNewFunc)(NULL);
-      if (p) {
-	instance=reinterpret_cast<AliHLTEsdManager*>(p);
-	if (!instance) {
-	  log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "type cast to AliHLTEsdManager instance failed");
-	}
-      } else {
-	log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "can not create AliHLTEsdManager instance from class descriptor");
-      }
-    } else {
-      log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "can not find AliHLTEsdManager class descriptor");
-    }
-  } else {
-    log.Logging(kHLTLogError, "AliHLTEsdManager::New", "ESD handling", "can not load libHLTrec library");
-  }
-  return instance;
+  return AliHLTMisc::LoadInstance((AliHLTEsdManager*)NULL, fgkImplName, fgkImplLibrary);
 }
 
 void AliHLTEsdManager::Delete(AliHLTEsdManager* instance)
