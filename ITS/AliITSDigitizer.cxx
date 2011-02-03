@@ -59,7 +59,7 @@ fFlagFirstEv(kTRUE){
     // Return:
     //      A blank AliITSDigitizer class.
   fModActive = new Bool_t[AliITSgeomTGeo::GetNModules()];
-  for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNModules();i++) fModActive[i] = kTRUE;
 
 }
 //______________________________________________________________________
@@ -79,7 +79,7 @@ fFlagFirstEv(kTRUE){
     // Return:
     //      An AliItSDigitizer class.
   fModActive = new Bool_t[AliITSgeomTGeo::GetNModules()];
-  for(Int_t i=0;i<fITS->GetITSgeom()->GetIndexMax();i++) fModActive[i] = kTRUE;
+  for(Int_t i=0;i<AliITSgeomTGeo::GetNModules();i++) fModActive[i] = kTRUE;
 }
 
 
