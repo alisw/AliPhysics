@@ -129,7 +129,6 @@ Revision 0.01  2005/07/25 A. De Caro
 #include "AliTOFdigit.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFrawData.h"
-//#include "AliTOFRawStream.h"
 
 #include "AliTOFDeltaBCOffset.h"
 #include "AliTOFCTPLatency.h"
@@ -196,8 +195,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
 }
 
 //------------------------------------------------------------------------
-AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source)
-  :TTask(source),
+AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source) :
+  TTask(source),
   fRunLoader(0),
   fTOFLoader(0),
   fTreeD(0),
@@ -281,16 +280,9 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
       AliFatal("AliTOFClusterFinder: Can not get TreeD");
     }
 
-  TBranch *branch = fTreeD->GetBranch("TOF");
-  if (!branch) { 
-    AliError("can't get the branch with the TOF digits !");
-    return;
-  }
-
-  TClonesArray staticdigits("AliTOFdigit",10000);
-  staticdigits.Clear();
-  TClonesArray *digits =&staticdigits;
-  branch->SetAddress(&digits);
+  fDigits->Clear();
+  fTreeD->GetBranch("TOF")->SetAutoDelete(kFALSE);
+  fTreeD->SetBranchAddress("TOF",&fDigits);
 
   ResetRecpoint();
 
@@ -305,7 +297,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   fTreeR->Branch("TOF", &fRecPoints, bufsize);
 
   fTreeD->GetEvent(0);
-  Int_t nDigits = digits->GetEntriesFast();
+  Int_t nDigits = fDigits->GetEntriesFast();
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
   Int_t ii;
@@ -313,7 +305,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   Int_t parTOF[7]={0,0,0,0,0,0,0}; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
-    AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
+    AliTOFdigit *d = (AliTOFdigit*)fDigits->UncheckedAt(ii);
     dig[0]=d->GetSector();
     dig[1]=d->GetPlate();
     dig[2]=d->GetStrip();
@@ -379,32 +371,21 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
   Int_t inholes = 0;
 
-  ///  fRunLoader->GetEvent(iEvent);
-
   if (digitsTree == 0x0)
     {
       AliFatal("AliTOFClusterFinder: Can not get TreeD");
     }
 
-  TBranch *branch = digitsTree->GetBranch("TOF");
-  if (!branch) { 
-    AliError("can't get the branch with the TOF digits !");
-    return;
-  }
-
-  TClonesArray staticdigits("AliTOFdigit",10000);
-  staticdigits.Clear();
-  TClonesArray *digits = & staticdigits;
-  branch->SetAddress(&digits);
+  fDigits->Clear();
+  digitsTree->GetBranch("TOF")->SetAutoDelete(kFALSE);
+  digitsTree->SetBranchAddress("TOF",&fDigits);
 
   ResetRecpoint();
-
-  fTreeR=clusterTree;
   Int_t bufsize = 32000;
-  fTreeR->Branch("TOF", &fRecPoints, bufsize);
+  clusterTree->Branch("TOF", &fRecPoints, bufsize);
 
   digitsTree->GetEvent(0);
-  Int_t nDigits = digits->GetEntriesFast();
+  Int_t nDigits = fDigits->GetEntriesFast();
   AliDebug(2,Form("Number of TOF digits: %d",nDigits));
 
   Int_t ii;
@@ -412,7 +393,7 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
   Int_t parTOF[7]={0,0,0,0,0,0,0}; //The TOF signal parameters
   Bool_t status=kTRUE; // assume all sim channels ok in the beginning...
   for (ii=0; ii<nDigits; ii++) {
-    AliTOFdigit *d = (AliTOFdigit*)digits->UncheckedAt(ii);
+    AliTOFdigit *d = (AliTOFdigit*)fDigits->UncheckedAt(ii);
     dig[0]=d->GetSector();
     dig[1]=d->GetPlate();
     dig[2]=d->GetStrip();
@@ -484,7 +465,6 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   clustersTree->Branch("TOF", &fRecPoints, bufsize);
 
   TClonesArray * clonesRawData;
-
   Int_t dummy = -1;
 
   Int_t detectorIndex[5];
@@ -493,7 +473,6 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
-  //AliTOFRawStream tofInput(rawReader);
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
@@ -522,7 +501,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
     }
     
     clonesRawData = (TClonesArray*)fTOFRawStream.GetRawData();
-    
+
     for (Int_t iRawData = 0; iRawData<clonesRawData->GetEntriesFast(); iRawData++) {
 
       AliTOFrawData *tofRawDatum = (AliTOFrawData*)clonesRawData->UncheckedAt(iRawData);
@@ -597,7 +576,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 
     } // closed loop on TOF raw data per current DDL file
 
-    clonesRawData->Clear();
+    clonesRawData->Clear("C");
 
   } // closed loop on DDL index
 
@@ -655,7 +634,6 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
   ofstream ftxt;
   if (fVerbose==2) ftxt.open("TOFdigitsRead.txt",ios::app);
 
-  //AliTOFRawStream tofInput(rawReader);
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
@@ -759,7 +737,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 
     } // closed loop on TOF raw data per current DDL file
 
-    clonesRawData->Clear();
+    clonesRawData->Clear("C");
 
   } // closed loop on DDL index
 
@@ -807,9 +785,9 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
     fTreeD = fTOFLoader->TreeD();
     }
 
-  TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
   Int_t bufsize = 32000;
-  fTreeD->Branch("TOF", &tofDigits, bufsize);
+  fDigits->Clear();
+  fTreeD->Branch("TOF", &fDigits, bufsize);
 
   fRunLoader->GetEvent(iEvent);
 
@@ -822,7 +800,6 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
   Int_t detectorIndex[5];
   Int_t digit[4];
 
-  //AliTOFRawStream tofInput(rawReader);
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
@@ -872,13 +849,13 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
       Int_t tracknum[3]={-1,-1,-1};
 
-      TClonesArray &aDigits = *tofDigits;
-      Int_t last=tofDigits->GetEntriesFast();
+      TClonesArray &aDigits = *fDigits;
+      Int_t last=fDigits->GetEntriesFast();
       new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
 
     } // while loop
 
-    clonesRawData->Clear();
+    clonesRawData->Clear("C");
 
   } // DDL Loop
 
@@ -886,8 +863,6 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
 
   fTOFLoader = fRunLoader->GetLoader("TOFLoader");
   fTOFLoader->WriteDigits("OVERWRITE");
-
-  delete tofDigits;
 
   AliDebug(1, Form("Execution time to read TOF raw data and to write TOF clusters : R:%.2fs C:%.2fs",
 		   stopwatch.RealTime(),stopwatch.CpuTime()));
@@ -914,18 +889,15 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
     return;
     }
 
-  TClonesArray *tofDigits = new TClonesArray("AliTOFdigit",10000);
   Int_t bufsize = 32000;
-  digitsTree->Branch("TOF", &tofDigits, bufsize);
+  digitsTree->Branch("TOF", &fDigits, bufsize);
 
   TClonesArray * clonesRawData;
-
   Int_t dummy = -1;
 
   Int_t detectorIndex[5];
   Int_t digit[4];
 
-  //AliTOFRawStream tofInput(rawReader);
   fTOFRawStream.Clear();
   fTOFRawStream.SetRawReader(rawReader);
 
@@ -975,19 +947,17 @@ void AliTOFClusterFinder::Raw2Digits(AliRawReader *rawReader, TTree* digitsTree)
 
       Int_t tracknum[3]={-1,-1,-1};
 
-      TClonesArray &aDigits = *tofDigits;
-      Int_t last=tofDigits->GetEntriesFast();
+      TClonesArray &aDigits = *fDigits;
+      Int_t last=fDigits->GetEntriesFast();
       new (aDigits[last]) AliTOFdigit(tracknum, detectorIndex, digit);
 
     } // while loop
 
-    clonesRawData->Clear();
+    clonesRawData->Clear("C");
 
   } // DDL Loop
 
   digitsTree->Fill();
-
-  delete tofDigits;
 
   AliDebug(1, Form("Got %d digits: ", fDigits->GetEntries()));
   AliDebug(1, Form("Execution time to read TOF raw data and fill TOF digit tree : R:%.2fs C:%.2fs",

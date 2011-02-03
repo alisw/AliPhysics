@@ -508,8 +508,10 @@ AliTOFRawStream::~AliTOFRawStream()
   delete fDecoder;
   delete fDecoderV2;
   
-  fTOFrawData->Clear();
-  delete fTOFrawData;
+  if (fTOFrawData) {
+    fTOFrawData->Clear("C");
+    delete fTOFrawData;
+  }
 
   //delete fCableLengthMap;
 
