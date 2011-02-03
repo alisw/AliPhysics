@@ -139,9 +139,6 @@ T* AliHLTMisc::LoadInstance(const T* /*t*/, const char* classname, const char* l
       void* p=(*pNewFunc)(NULL);
       if (p) {
 	pInstance=reinterpret_cast<T*>(p);
-	if (!pInstance) {
-	  log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "type cast (%s) to instance failed", classname);
-	}
       } else {
 	log.Logging(kHLTLogError, "AliHLTMisc::LoadInstance", "HLT Analysis", "can not create instance of type %s from class descriptor", classname);
       }
