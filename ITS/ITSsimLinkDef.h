@@ -14,8 +14,6 @@
 // Standard ITS classes
 
 #pragma link C++ class  AliITS+;
-#pragma link C++ class  AliITSvPPRcoarseasymm+;
-#pragma link C++ class  AliITSvPPRasymmFMD+;
 #pragma link C++ class  AliITSv11+;
 #pragma link C++ class  AliITSv11GeomCable+;
 #pragma link C++ class  AliITSv11GeomCableFlat+;

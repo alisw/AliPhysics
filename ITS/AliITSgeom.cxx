@@ -111,18 +111,6 @@ pixel coordinate system.
 // all of the necessary information about the detector and it's coordinate
 // transformations.
 //
-// TObjArray fShape containting objects of type AliITSgeom
-//     A pointer to an array of TObjects containing the detailed shape
-// information for each type of detector used in the ITS. For example
-// I have created AliITSgeomSPD, AliITSgeomSDD, and 
-// AliITSsegmenttionSSD as example structures, derived from TObjects, 
-// to hold the detector information. I would recommend that one element 
-// in each of these structures, that which describes the shape of the 
-// active volume, be one of the ROOT classes derived from TShape. In this 
-// way it would be easy to have the display program display the correct 
-// active ITS volumes. See the example classes AliITSgeomSPD, 
-// AliITSgeomSDD, and AliITSgeomSSD for a more detailed 
-// example.
 ////////////////////////////////////////////////////////////////////////
 #include <Riostream.h>
 #include <ctype.h>
@@ -131,9 +119,6 @@ pixel coordinate system.
 #include <TSystem.h>
 #include <TArrayI.h>
 
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
 #include "AliITSgeom.h"
 #include "AliLog.h"
 
@@ -148,8 +133,7 @@ fNmodules(0),    // The total number of modules
 fNlayers(0),     // The number of layers.
 fNlad(),         //[] Array of the number of ladders/layer(layer)
 fNdet(),         //[] Array of the number of detector/ladder(layer)
-fGm(0,0),        // Structure of translation. and rotation.
-fShape(0,0)      // Array of shapes and detector information.
+fGm(0,0)        // Structure of translation. and rotation.
 {
     //     The default constructor for the AliITSgeom class. It, by default,
     // sets fNlayers to zero and zeros all pointers.
@@ -162,7 +146,6 @@ fShape(0,0)      // Array of shapes and detector information.
     //    a zeroed AliITSgeom object.
 
     fGm.SetOwner(kTRUE);
-    fShape.SetOwner(kTRUE);
     return;
 }
 
@@ -176,8 +159,7 @@ fNmodules(mods),     // The total number of modules
 fNlayers(nlayers),   // The number of layers.
 fNlad(nlayers,nlads),//[] Array of the number of ladders/layer(layer)
 fNdet(nlayers,ndets),//[] Array of the number of detector/ladder(layer)
-fGm(mods,0),         // Structure of translation. and rotation.
-fShape(5,0)          // Array of shapes and detector information.
+fGm(mods,0)         // Structure of translation. and rotation.
 {
     //     A simple constructor to set basic geometry class variables
     // Inputs:
@@ -201,7 +183,6 @@ fShape(5,0)          // Array of shapes and detector information.
     //     A properly inilized AliITSgeom object.
 
     fGm.SetOwner(kTRUE);
-    fShape.SetOwner(kTRUE);
     return;
 }
 //______________________________________________________________________
@@ -237,9 +218,6 @@ void AliITSgeom::Init(Int_t itype,Int_t nlayers,const Int_t *nlads,
     fGm.Clear();
     fGm.Expand(mods);        // Structure of translation. and rotation.
     fGm.SetOwner(kTRUE);
-    fShape.Clear();
-    fShape.Expand(5);         // Array of shapes and detector information.
-    fShape.SetOwner(kTRUE);
     return;
 }
 //______________________________________________________________________
@@ -290,7 +268,6 @@ AliITSgeom::~AliITSgeom(){
     // fNdet, or fGm have had memory allocated to them, there pointer values
     // are non zero, then this memory space is freed and they are set
     // to zero. In addition, fNlayers is set to zero. The destruction of
-    // TObjArray fShape is, by default, handled by the TObjArray destructor.
     // Inputs:
     //    none.
     // Outputs:
@@ -299,340 +276,6 @@ AliITSgeom::~AliITSgeom(){
     //    none.
 
     return;
-}
-//______________________________________________________________________
-void AliITSgeom::ReadNewFile(const char *filename){
-    // It is generally preferred to define the geometry in AliITSgeom
-    // directly from the GEANT geometry, see AliITSvPPRasymm.cxx for
-    // and example. Under some circumstances this may not be possible.
-    // This function will read in a formatted file for all of the
-    // information needed to define the geometry in AliITSgeom.
-    // Unlike the older file format, this file may contain comments
-    // and the order of the data does not need to be completely
-    // respected. A file can be created using the function WriteNewFile
-    // defined below.
-    // Inputs:
-    //    const char *filename The file name of the file to be read in.
-    // Outputs:
-    //     none
-    // Return:
-    //     none.
-    Int_t ncmd=9;
-    const char *cmda[]={"Version"        ,"fTrans"  ,"fNmodules",
-	                "fNlayers"       ,"fNladers","fNdetectors",
-	                "fNDetectorTypes","fShape"  ,"Matrix"};
-    Int_t i,j,lNdetTypes,ldet;
-    char cmd[20],c;
-    AliITSgeomMatrix *m=0;
-    ifstream *fp=0;
-    char *filtmp=0;
-    Bool_t arrayGm = kFALSE, arrayShape = kFALSE;
-
-    filtmp = gSystem->ExpandPathName(filename);
-    AliInfo(Form("Reading New .det file %s",filtmp));
-    fp = new ifstream(filtmp,ios::in);  // open file to write
-    while(fp->get(c)!=NULL){ // for ever loop
-        if(c==' ') continue; // remove blanks
-        if(c=='\n') continue;
-        if(c=='#' || c=='!') {while(fp->get(c)) if(c=='\n') break; continue;}
-        if(c=='/'){
-            fp->get(c);{
-                if(c=='/') {while(fp->get(c)) if(c=='\n') break; continue;}
-                if(c=='*'){
-                  NotYet:
-                    while(fp->get(c)) if(c=='*') break;
-                    fp->get(c);{
-                        if(c=='/') continue;
-                        goto NotYet;
-                    } //
-                } // end if c=='*'
-            } // end if second /
-        } // end if first /
-        fp->putback(c);
-        *fp >> cmd;
-        for(i=0;i<ncmd;i++) if(strcmp(cmd,cmda[i])==0) break;
-        switch (i){
-        case 0:   // Version
-	    while(isspace(fp->peek())) fp->get(); // skip spaces
-	    if(isdigit(fp->peek())){ // new TString
-		*fp >> j;
-		fVersion.Resize(j);
-		for(j=0;j<fVersion.Length();j++) *fp >> fVersion[j];
-	    }else{
-		fVersion.Resize(20);
-		for(j=0;isprint(fp->peek())&&j<20;j++) *fp >> fVersion[j];
-	    } // end if isdigit
-            break;
-        case 1:  // fTrans
-            *fp >> fTrans;
-            break;
-        case 2:  // fNModules
-            *fp >> fNmodules;
-            fGm.Clear();
-            fGm.Expand(fNmodules);
-            fGm.SetOwner(kTRUE);
-            arrayGm = kTRUE;
-            break;
-        case 3:  // fNlayers
-            *fp >> fNlayers;
-            fNlad.Set(fNlayers);
-            fNdet.Set(fNlayers);
-            break;
-        case 4:  // fNladers
-            for(j=0;j<fNlayers;j++) *fp >> fNlad[j];
-            break;
-        case 5:  // fNdetectors
-            for(j=0;j<fNlayers;j++) *fp >> fNdet[j];
-            break;
-        case 6:  // fNDetectorTypes
-            *fp >> lNdetTypes;
-            fShape.Clear();
-            fShape.Expand(lNdetTypes);
-            fShape.SetOwner(kTRUE);
-            arrayShape = kTRUE;
-            break;
-        case 7:  // fShape
-            *fp >> ldet;
-            if(!arrayShape) fShape.Expand(5);
-            fShape.SetOwner(kTRUE);
-            switch (ldet){
-            case kSPD :{
-                AliITSgeomSPD *spd = new AliITSgeomSPD();
-                *fp >> *spd;
-                ReSetShape(ldet,spd);
-            } break;
-            case kSDD : case kSDDp:{
-                AliITSgeomSDD *sdd = new AliITSgeomSDD();
-                *fp >> *sdd;
-                ReSetShape(ldet,sdd);
-            }break;
-            case kSSD : case kSSDp :{
-                AliITSgeomSSD *ssd = new AliITSgeomSSD();
-                *fp >> *ssd;
-                ReSetShape(ldet,ssd);
-            }break;
-            default:{
-                AliError(Form("Unknown fShape type number=%d c=%c",ldet,c));
-                while(fp->get(c)) if(c=='\n') break; // skip to end of line.
-            }break;
-            } // end switch
-            break;
-        case 8:  // Matrix
-            *fp >> ldet;
-            if(!arrayGm){
-                fGm.Clear();
-                fGm.Expand(2270);
-                arrayGm = kTRUE;
-            } // end if
-	    if(ldet<0||ldet>=fGm.GetSize()){
-		Error("ReadNewFile","ldet<0||ldet>=fGm.GetSize()=%d , ldet=%d",
-		      fGm.GetSize(),ldet);
-		return;
-	    } // end if
-            delete fGm.At(ldet);
-            fGm.AddAt((TObject*)new AliITSgeomMatrix(),ldet);
-            m = (AliITSgeomMatrix*) fGm.At(ldet);
-            *fp >> *m;
-            m = 0;
-            break;
-        default:
-            AliError(Form("Data line i=%d ",i));
-            while(fp->get(c)) if(c=='\n') break; // skip this line
-            break;
-        } // end switch i
-    } // end while
-    delete fp;
-
-    return;
-}
-//______________________________________________________________________
-void AliITSgeom::WriteNewFile(const char *filename)const{
-    // Writes AliITSgeom, AliITSgeomMatrix, and the defined 
-    // AliITSgeomS*D classes to a file in a format that 
-    // is more readable and commendable.
-    // Inputs:
-    //     const char *filename The file name of the file to be write to.
-    // Outputs:
-    //     none
-    // Return:
-    //     none
-    ofstream *fp;
-    Int_t i;
-    char *filtmp;
-
-    filtmp = gSystem->ExpandPathName(filename);
-    fp = new ofstream(filtmp,ios::out);  // open file to write
-    *fp << "//Comment lines begin with two //, one #, or one !" << endl;
-    *fp << "#Blank lines are skipped including /* and */ sections." << endl;
-    *fp << "!and, in principle the order of the lines is not important" <<endl;
-    *fp << "/* In AliITSgeom.h are defined an enumerated type called" << endl;
-    *fp << " AliITSDetectors These are kSPD=" << (Int_t) kSPD ;
-    *fp << ", kSDD=" << (Int_t) kSDD << ", kSSD=" << (Int_t) kSSD;
-    *fp << ", kSSDp=" << (Int_t) kSSDp << ", and kSDDp=" << (Int_t) kSDDp;
-    *fp << "*/" << endl;
-    *fp << "Version "<< fVersion.Length()<<" " << fVersion.Data() << endl;//
-                                                // This should be consistent
-                                                // with the geometry version.
-    *fp << "fTrans " << fTrans << endl;
-    *fp << "fNmodules " << fNmodules << endl;
-    *fp << "fNlayers " << fNlayers << endl;
-    *fp << "fNladers ";
-    for(i=0;i<fNlayers;i++) *fp << fNlad[i] << " ";
-    *fp << endl;
-    *fp << "fNdetectors ";
-    for(i=0;i<fNlayers;i++) *fp << fNdet[i] << " ";
-    *fp << endl;
-    *fp << "fNDetectorTypes " << fShape.GetEntriesFast() << endl;
-    for(i=0;i<fShape.GetEntriesFast();i++){
-	if(!IsShapeDefined(i)) continue; // only print out used shapes.
-	switch (i){
-	case kSPD :
-	    *fp << "fShape " << (Int_t) kSPD << " ";
-	    *fp << *((AliITSgeomSPD*)(fShape.At(i)));
-	    break;
-	case kSDD :
-	    *fp << "fShape " << (Int_t) kSDD << " ";
-	    *fp << *((AliITSgeomSDD*)(fShape.At(i)));
-	    break;
-	case kSSD : case kSSDp :
-	    *fp << "fShape " << i << " ";
-	    *fp << *((AliITSgeomSSD*)(fShape.At(i)));
-	    break;
-	default:
-	    Error("AliITSgeom::WriteNewFile","Unknown Shape value");
-	} // end switch (i)
-    } // end for i
-    for(i=0;i<fNmodules;i++){
-	*fp << "Matrix " << i << " ";
-	*fp << *GetGeomMatrix(i);
-    } // end for i
-    *fp << "//End of File" << endl;;
-
-    delete fp;
-    return;
-}
-//______________________________________________________________________
-AliITSgeom::AliITSgeom(const char *filename):
-TObject(),
-fVersion("test"),// Transformation version.
-fTrans(0),       // Flag to keep track of which transformation 
-fNmodules(0),    // The total number of modules
-fNlayers(0),     // The number of layers.
-fNlad(),         // TArrayI of the number of ladders/layer(layer)
-fNdet(),         // TArrayI of the number of detector/ladder(layer)
-fGm(0,0),        // TObjArray Structure of translation. and rotation.
-fShape(0,0)      // TObjArray of detector geom.
-{
-    //     The constructor for the AliITSgeom class. All of the data to fill
-    // this structure is read in from the file given my the input filename.
-    // Inputs:
-    //    const char *filename The file name of the file to be read in.
-    // Outputs:
-    //    none
-    // Return:
-    //    An AliITSgeom class initialized from a file.
-    FILE     *pf=0;
-    Int_t    i,lm=0,id[3];
-    Int_t    l,a,d;
-    Float_t  x,y,z,o,p,q,r,s,t;
-    Double_t rot6[6],tran[3];
-    char     buf[200],*buff=0; // input character buffer;
-    char    *filtmp;
-
-    filtmp = gSystem->ExpandPathName(filename);
-    Info("AliITSgeom","reading old .det file %s",filtmp);
-    fVersion="GEANT5";
-    pf = fopen(filtmp,"r");
-
-    fNlayers = 6; // set default number of ladders
-  TryAgain:
-    fNlad.Set(fNlayers);
-    fNdet.Set(fNlayers);
-    fNmodules = 0;
-    // find the number of ladders and detectors in this geometry.
-    for(i=0;i<fNlayers;i++){fNlad[i]=fNdet[i]=0;} // zero out arrays
-    while(fgets(buf,200,pf)!=NULL){ // for ever loop
-        for(i=0;i<200;i++)if(buf[i]!=' '){ // remove blank spaces.
-            buff = &(buf[i]);
-            break;
-        } // end for i
-        // remove blank lines and comments.
-        if(buff[0]=='\n'||buff[0]=='#'||buff[0]=='!'||
-           (buff[0]=='/'&&buff[1]=='/')) continue;
-        if(isalpha(buff[0])) { // must be the new file formated file.
-            fclose(pf);
-            ReadNewFile(filename);
-            return;
-        } // end if isalpha(buff[0])
-        sscanf(buff,"%d %d %d %f %f %f %f %f %f %f %f %f",
-               &l,&a,&d,&x,&y,&z,&o,&p,&q,&r,&s,&t);
-        if(l>lm) lm = l;
-        if(l<1 || l>fNlayers) {
-            printf("error in file %s layer=%d min. is 1 max is %d"
-                   " Trying new format\n",filename,l,fNlayers);
-            fclose(pf);
-            ReadNewFile(filename);
-            return;
-            //continue;
-        }// end if l
-        fNmodules++;
-        if(l<=fNlayers&&fNlad[l-1]<a) fNlad[l-1] = a;
-        if(l<=fNlayers&&fNdet[l-1]<d) fNdet[l-1] = d;
-    } // end while ever loop
-    if(lm>fNlayers){
-        fNlayers = lm;
-        goto TryAgain;
-    } // end if lm>fNlayers
-    // counted the number of ladders and detectors now allocate space.
-    fGm.Expand(fNmodules);
-    fGm.SetOwner(kTRUE);
-    fShape.SetOwner(kTRUE);
-
-    // Set up Shapes for a default configuration of 6 layers.
-    fTrans   = 0; // standard GEANT global/local coordinate system.
-    // prepare to read in transforms
-    lm = 0; // reuse lm as counter of modules.
-    rewind(pf); // start over reading file
-    while(fgets(buf,200,pf)!=NULL){ // for ever loop
-        for(i=0;i<200;i++)if(buf[i]!=' '){ // remove blank spaces.
-            buff = &(buf[i]);
-            break;
-        } // end for i
-        // remove blank lines and comments.
-        if(buff[0]=='\n'||buff[0]=='#'||buff[0]=='!'||
-           (buff[0]=='/'&&buff[1]=='/')) continue;
-        x = y = z = o = p = q = r = s = t = 0.0;
-        sscanf(buff,"%d %d %d %f %f %f %f %f %f %f %f %f",
-               &l,&a,&d,&x,&y,&z,&o,&p,&q,&r,&s,&t);
-        if(l<1 || l>fNlayers) {
-            Warning("AliITSgeom","error in file %s layer=%d"
-                    " min. is 1 max is %d",filename,l,fNlayers);
-            continue;
-        }// end if l
-        id[0] = l;id[1] = a;id[2] = d;
-        tran[0] = tran[1] = tran[2]  = 0.0;
-        tran[0] = (Double_t)x;tran[1] = (Double_t)y;tran[2] = (Double_t)z;
-        rot6[0] = rot6[1] = rot6[2] = rot6[3] = rot6[4] = rot6[5] =0.0;
-        rot6[0] = (Double_t)o;rot6[1] = (Double_t)p;rot6[2] = (Double_t)q;
-        rot6[3] = (Double_t)r;rot6[4] = (Double_t)s;rot6[5] = (Double_t)t;
-	if(lm<0||lm>=fGm.GetSize()){
-	    Error("AliITSgeom(filename)","lm<0||lm>=fGm.GetSize()=%d , lm=%d",
-		  fGm.GetSize(),lm);
-	    return;
-	} // end if
-        switch (l){
-        case 1: case 2: // layer 1 or2 SPD
-            fGm.AddAt(new AliITSgeomMatrix(rot6,kSPD,id,tran),lm++);
-            break;
-        case 3: case 4: // layer 3 or 4 SDD
-            fGm.AddAt(new AliITSgeomMatrix(rot6,kSDD,id,tran),lm++);
-            break;
-        case 5: case 6: // layer 5 or 6 SSD
-            fGm.AddAt(new AliITSgeomMatrix(rot6,kSSD,id,tran),lm++);
-            break;
-        } // end switch
-    } // end while ever loop
-    fclose(pf);
 }
 //______________________________________________________________________
 AliITSgeom::AliITSgeom(const AliITSgeom &source) : 
@@ -643,10 +286,8 @@ fNmodules(source.fNmodules),// The total number of modules
 fNlayers(source.fNlayers), // The number of layers.
 fNlad(source.fNlad),    // Array of the number of ladders/layer(layer)
 fNdet(source.fNdet),    // Array of the number of detector/ladder(layer)
-fGm(source.fGm.GetSize(),source.fGm.LowerBound()),// Structure of 
+fGm(source.fGm.GetSize(),source.fGm.LowerBound())// Structure of 
                                                   // translation and rotation.
-fShape(source.fShape.GetSize(),source.fShape.LowerBound())// Array of shapes 
-                                                   // and detector information.
 {
     //     The copy constructor for the AliITSgeom class. It calls the
     // = operator function. See the = operator function for more details.
@@ -665,27 +306,6 @@ fShape(source.fShape.GetSize(),source.fShape.LowerBound())// Array of shapes
                                              source.fGm.At(i)))),i);
     } // end for i
     fGm.SetOwner(kTRUE);
-    n = source.fShape.GetLast()+1;
-    for(i=source.fShape.LowerBound();i<n;i++){
-        switch ((AliITSDetector)i){
-        case kSPD :{
-            fShape.AddAt(new AliITSgeomSPD(*((AliITSgeomSPD*)(
-                                                 source.fShape.At(i)))),i);
-        } break;
-        case kSDD : case kSDDp:{
-            fShape.AddAt(new AliITSgeomSDD(*((AliITSgeomSDD*)(
-                                                 source.fShape.At(i)))),i);
-        }break;
-        case kSSD : case kSSDp :{
-            fShape.AddAt(new AliITSgeomSSD(*((AliITSgeomSSD*)(
-                                                 source.fShape.At(i)))),i);
-        }break;
-        default:{
-            AliError(Form("Unknown fShape type number=%d",i));
-        }break;
-        } // end switch
-    } // end for i
-    fShape.SetOwner(kTRUE);
     return;
 }
 //______________________________________________________________________
@@ -708,7 +328,6 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
 
     // if there is an old structure allocated delete it first.
     this->fGm.Clear();
-    this->fShape.Clear();
 
     this->fVersion  = source.fVersion;
     this->fTrans    = source.fTrans;
@@ -722,27 +341,6 @@ AliITSgeom& AliITSgeom::operator=(const AliITSgeom &source){
                                              source.fGm.At(i)))),i);
     } // end for i
     fGm.SetOwner(kTRUE);
-    this->fShape.Expand(source.fShape.GetEntriesFast());
-    for(i=source.fShape.LowerBound();i<source.fShape.GetLast();i++){
-        switch ((AliITSDetector)i){
-        case kSPD :{
-            fShape.AddAt(new AliITSgeomSPD(*((AliITSgeomSPD*)(
-                                                 source.fShape.At(i)))),i);
-        } break;
-        case kSDD : case kSDDp:{
-            fShape.AddAt(new AliITSgeomSDD(*((AliITSgeomSDD*)(
-                                                 source.fShape.At(i)))),i);
-        }break;
-        case kSSD : case kSSDp :{
-            fShape.AddAt(new AliITSgeomSSD(*((AliITSgeomSSD*)(
-                                                 source.fShape.At(i)))),i);
-        }break;
-        default:{
-            AliError(Form("Unknown fShape type number=%d",i));
-        }break;
-        } // end switch
-    } // end for i
-    fShape.SetOwner(kTRUE);
     return *this;
 }
 //______________________________________________________________________
@@ -949,50 +547,6 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
     return 0;
 }
 //______________________________________________________________________
-Bool_t AliITSgeom::IsInside(Int_t module,Double_t point[3])const{
-    // Determins if the give point is inside of the module as defined
-    // by this set of coordinate transforms.
-    // Inputs:
-    //    Int_t    module    The module to be checked
-    //    Double_t point[3]  A 3 vector global point
-    // Outputs:
-    //    none.
-    // Return:
-    //    kTRUE if point is inside of module, kFALSE otherwise.
-    Double_t l[3],dx,dy,dz;
-    AliITSDetector idet = (AliITSDetector)(this->GetGeomMatrix(module)->
-                                           GetDetectorIndex());
-
-    this->GtoL(module,point,l);
-    switch(idet){
-    case kSPD:{
-        AliITSgeomSPD *spd = (AliITSgeomSPD*)(fShape.At((Int_t)idet));
-        dx = spd->GetDx();
-        dy = spd->GetDy();
-        dz = spd->GetDz();}
-        break;
-    case kSDD: case kSDDp:{
-        AliITSgeomSDD *sdd = (AliITSgeomSDD*)(fShape.At((Int_t)idet));
-        dx = sdd->GetDx();
-        dy = sdd->GetDy();
-        dz = sdd->GetDz();}
-        break;
-    case kSSD: case kSSDp:{
-        AliITSgeomSSD *ssd = (AliITSgeomSSD*)(fShape.At((Int_t)idet));
-        dx = ssd->GetDx();
-        dy = ssd->GetDy();
-        dz = ssd->GetDz();}
-        break;
-    default: // Detector not defined.
-        return kFALSE;
-        break;
-    }// end switch
-    if(TMath::Abs(l[0])>dx) return kFALSE;
-    if(TMath::Abs(l[2])>dz) return kFALSE;
-    if(TMath::Abs(l[1])>dy) return kFALSE;
-    return kTRUE;
-}
-//______________________________________________________________________
 void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other)const{
     //     This function was primarily created for diagnostic reasons. It
     // print to a file pointed to by the file pointer fp the difference
@@ -1112,7 +666,7 @@ void AliITSgeom::PrintGeom(ostream *wb)const{
     //     none.
     // Return:
     //     none.
-    Int_t i,nshapes;
+  Int_t i;
 
     wb->setf(ios::scientific);
     *wb << fTrans << " ";
@@ -1123,89 +677,6 @@ void AliITSgeom::PrintGeom(ostream *wb)const{
     for(i=0;i<fNmodules;i++) {
         *wb <<setprecision(16) << *(GetGeomMatrix(i)) << "\n";
     } // end for i
-    nshapes = fShape.GetEntries();
-    *wb << nshapes <<endl;
-    for(i=0;i<nshapes;i++) if(fShape.At(i)!=0) switch (i){
-    case kSPD:
-        *wb << kSPD <<","<< (AliITSgeomSPD*)(fShape.At(kSPD));
-        break;
-    case kSDD:
-        *wb << kSDD <<","<< (AliITSgeomSDD*)(fShape.At(kSDD));
-        break;
-    case kSSD:
-        *wb << kSSD <<","<< (AliITSgeomSSD*)(fShape.At(kSSD));
-        break;
-    case kSSDp:
-        *wb << kSSDp <<","<< (AliITSgeomSSD*)(fShape.At(kSSDp));
-        break;
-    case kSDDp:
-        *wb << kSDDp <<","<< (AliITSgeomSDD*)(fShape.At(kSDDp));
-        break;
-    } // end for i / switch
-    return;
-}
-//______________________________________________________________________
-void AliITSgeom::ReadGeom(istream *rb){
-    //     Stream in an object of class AliITSgeom from standard input.
-    // Intputs:
-    //     ifstream *rb    The input streaming buffer.
-    // Outputs:
-    //     none.
-    // Return:
-    //     none.
-    Int_t i,j;
-
-    fGm.Clear();
-
-    *rb >> fTrans >> fNmodules >> fNlayers;
-    fNlad.Set(fNlayers);
-    fNdet.Set(fNlayers);
-    for(i=0;i<fNlayers;i++) *rb >> fNlad[i];
-    for(i=0;i<fNlayers;i++) *rb >> fNdet[i];
-    fGm.Expand(fNmodules);
-    fGm.SetOwner(kTRUE);
-    for(i=0;i<fNmodules;i++){
-	if(i<0||i>=fGm.GetSize()){
-	    Error("ReadGeom","i<0||i>=fGm.GetSize()=%d , i=%d",
-		  fGm.GetSize(),i);
-	    return;
-	} // end if
-        fGm.AddAt(new AliITSgeomMatrix,i);
-        *rb >> *(GetGeomMatrix(i));
-    } // end for i
-    *rb >> i;
-    fShape.Expand(i);
-    fShape.SetOwner(kTRUE);
-    for(i=0;i<fShape.GetEntries();i++) {
-        *rb >> j;
-        switch (j){
-        case kSPD:{
-            AliITSgeomSPD *s = new AliITSgeomSPD();
-            *rb >> *s;
-            fShape.AddAt(s,kSPD);}
-            break;
-        case kSDD:{
-            AliITSgeomSDD *s = new AliITSgeomSDD();
-            *rb >> *s;
-            fShape.AddAt(s,kSDD);}
-            break;
-        case kSSD:{
-            AliITSgeomSSD *s = new AliITSgeomSSD();
-            *rb >> *s;
-            fShape.AddAt(s,kSSD);}
-            break;
-        case kSSDp:{
-            AliITSgeomSSD *s = new AliITSgeomSSD();
-            *rb >> *s;
-            fShape.AddAt(s,kSSDp);}
-            break;
-        case kSDDp:{
-            AliITSgeomSDD *s = new AliITSgeomSDD();
-            *rb >> *s;
-            fShape.AddAt(s,kSDDp);}
-            break;
-        } // end  switch
-    } //  end for i
     return;
 }
 //______________________________________________________________________
@@ -1512,75 +983,6 @@ void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay)const{
     } // end for i
     for(i=0;i<27;i++) n[i] = in[i];
 }
-//----------------------------------------------------------------------
-Double_t AliITSgeom::GetAverageRadiusOfLayer(Int_t layer,Double_t &range)const{
-    // Loops over all modules for a given layer and computes the
-    // average cylindrical radius (about the z axis) and the range of
-    // radii covered by this layer. Units, [cm] the Alice default unit.
-    // Input:
-    //    Int_t layer     The layer for which the average radii is to be found
-    // Output:
-    //    Double_t &range The range of radii covered by this layer
-    // Return:
-    //    The average radii for this layer.
-    Double_t r=0.0,rmin=1.0e6,rmax=-1.0,rp,t[3],l[3],dl[3];
-    Int_t    n=0,i,j,lay,lad,det;
-    AliITSDetector idet;
-
-    for(i=0;i<GetIndexMax();i++) {
-        GetModuleId(i,lay,lad,det);
-	idet = GetModuleType(i);
-        if(lay!=layer) continue;
-        dl[0] = dl[1] = dl[2] = 0.0;
-        if(IsShapeDefined((Int_t)idet)) {
-	    switch(idet){
-	    case kSPD:{
-		dl[0] = ((AliITSgeomSPD*)GetShape(idet))->GetDx();
-		dl[1] = ((AliITSgeomSPD*)GetShape(idet))->GetDy();
-		dl[2] = ((AliITSgeomSPD*)GetShape(idet))->GetDz();
-	    } break;
-	    case kSDD: case kSDDp:{
-		dl[0] = ((AliITSgeomSDD*)GetShape(idet))->GetDx();
-		dl[1] = ((AliITSgeomSDD*)GetShape(idet))->GetDy();
-		dl[2] = ((AliITSgeomSDD*)GetShape(idet))->GetDz();
-	    } break;
-	    case kSSD: case kSSDp:{
-		dl[0] = ((AliITSgeomSSD*)GetShape(idet))->GetDx();
-		dl[1] = ((AliITSgeomSSD*)GetShape(idet))->GetDy();
-		dl[2] = ((AliITSgeomSSD*)GetShape(idet))->GetDz();
-	    } break;
-	    case kND:{
-		Warning("GetAverageRadiusOfLayer",
-			"idet=kND undefined detector type");
-		continue;
-	    }break;
-	    default:{
-		Warning("GetAverageRadiusOfLayer",
-			"idet=%d not a defined value",(Int_t)idet);
-		continue;
-	    }break;
-	    }// end switch.
-        } // end of
-        n++;
-        GetTransCyln(i,t);
-        rp = t[0];
-        r += rp;
-        if(rmin>rp) rmin = rp;
-        if(rmax<rp) rmax = rp;
-        for(j=0;j<8;j++){ // loop over the corners
-            l[0] = dl[0];if(j%2==0) l[0] = -dl[0];
-            l[1] = dl[1];if(j==2||j==3||j==6||j==7) l[1] = -dl[1];
-            l[2] = dl[2];if(j>3) l[2] = -dl[2];
-            LtoG(i,l,t);
-            rp = TMath::Sqrt(t[0]*t[0]+t[1]*t[1]);
-            if(rmin>rp) rmin = rp;
-            if(rmax<rp) rmax = rp;
-        } // end for j
-    } // end for i
-    r /= (Double_t)n;
-    range = TMath::Max(rmax-r,r-rmin);
-    return r;
-}
 //_______________________________________________________________________
 void AliITSgeom::DetLToTrackingV2(Int_t md,Float_t xin,Float_t zin,
                                   Float_t &yout,Float_t &zout) {
@@ -1630,35 +1032,6 @@ void AliITSgeom::TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,
     if(md<(GetModuleIndex(2,1,1))) xout = -xout;
     xout += (x*((Float_t)TMath::Cos(al))+y*((Float_t)TMath::Sin(al)));
     zout  = -zin+z; 
-}
-//----------------------------------------------------------------------
-ostream &operator<<(ostream &os,AliITSgeom &p){
-    // Standard output streaming function.
-    // Inputs:
-    //   ostream    os   The output stream
-    //   AliITSgeom p    The AliITSgeom class to be printed out
-    // Outputs:
-    //   none.
-    // Return:
-    //   The input stream
-
-    p.PrintGeom(&os);
-    return os;
-}
-//----------------------------------------------------------------------
-istream &operator>>(istream &is,AliITSgeom &r){
-    // Standard input streaming function.
-    // Inputs:
-    //   istream    is  The input stream
-    //   AliITSgeom p   The AliITSgeom class to be filled from this 
-    //                  input stream
-    // Outputs:
-    //   none.
-    // Return:
-    //   The input stream
-
-    r.ReadGeom(&is);
-    return is;
 }
 //----------------------------------------------------------------------
 

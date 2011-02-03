@@ -109,9 +109,7 @@ fDebug(0){                   // Debug flag
     // Return:
     //   A default inilized AliITSInitGeometry object
 
-    if(version == kvPPRasymmFMD && (fMinorVersion==1|| fMinorVersion==2)){
-        fName="AliITSvPPRasymmFMD";
-    }else if(version == kv11Hybrid){
+    if(version == kv11Hybrid){
         fName="AliITSv11Hybrid";
     }else {
         AliFatal(Form("Undefined geometry: fMajorVersion=%d, "
@@ -170,14 +168,6 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(Int_t major,Int_t minor){
     //   pointer = 0 then failed to init.
 
     switch(major){
-    case kvPPRcourseasymm:
-        SetGeometryName("AliITSvPPRcourseasymm");
-        SetVersion(kvPPRcourseasymm,minor);
-        break;
-    case kvPPRasymmFMD:
-        SetGeometryName("AliITSvPPRasymmFMD");
-        SetVersion(kvPPRasymmFMD,minor);
-        break;
     case kv11:
         SetGeometryName("AliITSv11");
         SetVersion(kv11,minor);
@@ -219,12 +209,6 @@ Bool_t AliITSInitGeometry::InitAliITSgeom(AliITSgeom *geom){
         return kFALSE;
     } // end if
     switch(fMajorVersion) {
-    case kvPPRasymmFMD: { 
-        return InitAliITSgeomPPRasymmFMD(geom);
-    } break; // end case
-    case kvPPRcourseasymm: { 
-        return kTRUE; // No sensitive detectors in course geometry
-    } break; // end case
     case kv11Hybrid: { 
         return InitAliITSgeomV11Hybrid(geom);
     } break; // end case
@@ -264,99 +248,7 @@ void AliITSInitGeometry::TransposeTGeoHMatrix(TGeoHMatrix *m)const{
     return;
 }
 
-//______________________________________________________________________
-Bool_t AliITSInitGeometry::InitAliITSgeomPPRasymmFMD(AliITSgeom *geom){
-    // Initilizes the geometry transformation class AliITSgeom
-    // to values appropreate to this specific geometry. Now that
-    // the segmentation is part of AliITSgeom, the detector
-    // segmentations are also defined here.
-    // Inputs:
-    //   AliITSgeom *geom  A pointer to the AliITSgeom class
-    // Outputs:
-    //   AliITSgeom *geom  This pointer recreated and properly inilized.
-    // Return:
-    //   none.
-  //    const Double_t kcm2micron = 1.0E4;
-    const Int_t kItype=0; // Type of transormation defined 0=> Geant
-    const Int_t klayers = 6; // number of layers in the ITS
-    const Int_t kladders[klayers]   = {20,40,14,22,34,38}; // Number of ladders
-    const Int_t kdetectors[klayers] = {4,4,6,8,22,25};// number of detector/lad
-    const AliITSDetector kIdet[6]   = {kSPD,kSPD,kSDD,kSDD,kSSD,kSSD};
-    const TString kPathbase = "/ALIC_1/ITSV_1/ITSD_1/";
-    const TString kNames[2][klayers] = {
-	{"%sIT12_1/I12A_%d/I10A_%d/I103_%d/I101_1/ITS1_1", // lay=1
-	 "%sIT12_1/I12A_%d/I20A_%d/I1D3_%d/I1D1_1/ITS2_1", // lay=2
-	 "%sIT34_1/I004_%d/I302_%d/ITS3_%d/", // lay=3
-	 "%sIT34_1/I005_%d/I402_%d/ITS4_%d/", // lay=4
-	 "%sIT56_1/I565_%d/I562_%d/ITS5_%d/", // lay=5
-	 "%sIT56_1/I569_%d/I566_%d/ITS6_%d/"},// lay=6
-// 	{"%sIT12_1/I12B_%d/I10B_%d/I107_%d/I101_1/ITS1_1", // lay=1
-// 	 "%sIT12_1/I12B_%d/I20B_%d/I1D7_%d/I1D1_1/ITS2_1", // lay=2
-	{"%sIT12_1/I12B_%d/I10B_%d/L1H-STAVE%d_1/I107_%d/I101_1/ITS1_1",//lay=1
-	 "%sIT12_1/I12B_%d/I20B_%d/L2H-STAVE%d_1/I1D7_%d/I1D1_1/ITS2_1",//lay=2
-	 "%sIT34_1/I004_%d/I302_%d/ITS3_%d", // lay=3
-	 "%sIT34_1/I005_%d/I402_%d/ITS4_%d", // lay=4
-	 "%sIT56_1/I565_%d/I562_%d/ITS5_%d", // lay=5
-	 "%sIT56_1/I569_%d/I566_%d/ITS6_%d"}};// Lay=6
-    /*
-      Int_t itsGeomTreeCopys[knlayers][3]= {{10, 2, 4},// lay=1
-      {10, 4, 4},// lay=2
-      {14, 6, 1},// lay=3
-      {22, 8, 1},// lay=4
-      {34,22, 1},// lay=5
-      {38,25, 1}};//lay=6
-    */
-    Int_t mod,nmods=0,lay,lad,det,cpn0,cpn1,cpn2, cpnHS;
-    Double_t tran[3]={0.0,0.0,0.0},rot[10]={9*0.0,1.0};
-    TArrayD shapePar;
-    TString path,shapeName;
-    TGeoHMatrix matrix;
-    Bool_t initSeg[3]={kFALSE,kFALSE,kFALSE};
-    TStopwatch *time = 0x0;if(fTiming) time=new TStopwatch();
 
-    if(fTiming) time->Start();
-    for(mod=0;mod<klayers;mod++) nmods += kladders[mod]*kdetectors[mod];
-    geom->Init(kItype,klayers,kladders,kdetectors,nmods);
-    for(mod=0;mod<nmods;mod++){
-        DecodeDetectorLayers(mod,lay,lad,det); // Write
-        geom->CreateMatrix(mod,lay,lad,det,kIdet[lay-1],tran,rot);
-        RecodeDetector(mod,cpn0,cpn1,cpn2); // Write reusing lay,lad,det.
-
-	if (kIdet[lay-1]==kSPD) { // we need 1 more copy number because 
-                                  // of the half-stave
-	  if (det<3) cpnHS = 0; else cpnHS = 1;
-	  path.Form(kNames[fMinorVersion-1][lay-1].Data(),kPathbase.Data(),
-		    cpn0,cpn1,cpnHS,cpn2);
-	} else {
-	  path.Form(kNames[fMinorVersion-1][lay-1].Data(),kPathbase.Data(),
-		    cpn0,cpn1,cpn2);
-	};
-//         path.Form(kNames[fMinorVersion-1][lay-1].Data(),
-//                   kPathbase.Data(),cpn0,cpn1,cpn2);
-
-        geom->GetGeomMatrix(mod)->SetPath(path);
-        GetTransformation(path.Data(),matrix);
-        geom->SetTrans(mod,matrix.GetTranslation());
-	TransposeTGeoHMatrix(&matrix); //Transpose TGeo's rotation matrixes
-        geom->SetRotMatrix(mod,matrix.GetRotationMatrix());
-        if(initSeg[kIdet[lay-1]]) continue;
-        GetShape(path,shapeName,shapePar);
-        if(shapeName.CompareTo("BOX")){
-	  Error("InitITSgeomPPRasymmFMD",
-		"Geometry changed without proper code update or error "
-		"in reading geometry. Shape is not BOX. Shape is %s",
-		shapeName.Data());
-	  return kFALSE;
-        } // end if
-	InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
-    } // end for module
-    if(fTiming){
-        time->Stop();
-        time->Print();
-        delete time;
-    } // end if
-    return kTRUE;
-}
 //______________________________________________________________________
 Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
     // Initilizes the geometry transformation class AliITSgeom
@@ -469,7 +361,6 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11Hybrid(AliITSgeom *geom){
 	    "or error in reading geometry. Shape is not BOX.");
       return kFALSE;
     } // end if
-    InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
   } // end for module
 
   if(fTiming){
@@ -540,7 +431,6 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11(AliITSgeom *geom){
 	    "or error in reading geometry. Shape is not BOX.");
       return kFALSE;
     } // end if
-    InitGeomShapePPRasymmFMD(kIdet[lay-1],initSeg,shapePar,geom);
     
   } // end for module
   
@@ -552,140 +442,7 @@ Bool_t AliITSInitGeometry::InitAliITSgeomV11(AliITSgeom *geom){
   return kTRUE;
 }
 
-//______________________________________________________________________
-Bool_t AliITSInitGeometry::InitGeomShapePPRasymmFMD(AliITSDetector idet,
-						       Bool_t *initSeg,
-						       TArrayD &shapePar,
-						       AliITSgeom *geom){
-    // Initilizes the geometry segmentation class AliITSgeomS?D, or
-    // AliITSsegmentationS?D depending on the vaule of fSegGeom,
-    // to values appropreate to this specific geometry. Now that
-    // the segmentation is part of AliITSgeom, the detector
-    // segmentations are also defined here.
-    // Inputs:
-    //   Int_t      lay    The layer number/name.
-    //   AliITSgeom *geom  A pointer to the AliITSgeom class
-    // Outputs:
-    //   AliITSgeom *geom  This pointer recreated and properly inilized.
-    // Return:
-    //   none.
-  //   const Double_t kcm2micron = 1.0E4;
-    const Double_t kmicron2cm = 1.0E-4;
-    Int_t i;
-    TArrayF shapeParF;
-
-    shapeParF.Set(shapePar.GetSize());
-    for(i=0;i<shapePar.GetSize();i++) shapeParF[i]=shapePar[i];
-    switch (idet){
-    case kSPD:{
-	initSeg[idet] = kTRUE;
-	AliITSgeomSPD *geomSPD = new AliITSgeomSPD425Short();
-	Float_t bx[256],bz[280];
-	for(i=000;i<256;i++) bx[i] = 50.0*kmicron2cm;//in x all are 50 microns.
-	for(i=000;i<160;i++) bz[i] =425.0*kmicron2cm; // most are 425 microns
-	// except below
-	for(i=160;i<280;i++) bz[i] =   0.0*kmicron2cm; // Outside of detector.
-	bz[ 31] = bz[ 32] = 625.0*kmicron2cm; // first chip boundry
-	bz[ 63] = bz[ 64] = 625.0*kmicron2cm; // first chip boundry
-	bz[ 95] = bz[ 96] = 625.0*kmicron2cm; // first chip boundry
-	bz[127] = bz[128] = 625.0*kmicron2cm; // first chip boundry
-	bz[160] = 425.0*kmicron2cm;// Set so that there is no zero 
-                                   // pixel size for fNz.
-	geomSPD->ReSetBins(shapeParF[1],256,bx,160,bz);
-	geom->ReSetShape(idet,geomSPD);
-    }break;
-    case kSDD:{
-	initSeg[idet] = kTRUE;
-	AliITSgeomSDD *geomSDD = new AliITSgeomSDD256(shapeParF.GetSize(),
-						      shapeParF.GetArray());
-	geom->ReSetShape(idet,geomSDD);
-    }break;
-    case kSSD:{
-	initSeg[idet] = kTRUE;
-	AliITSgeomSSD *geomSSD = new AliITSgeomSSD275and75(
-	    shapeParF.GetSize(),shapeParF.GetArray());
-	geom->ReSetShape(idet,geomSSD);
-    }break;
-    default:{// Others, Note no kSDDp or kSSDp in this geometry.
-	geom->ReSetShape(idet,0);
-	Info("InitGeomShapePPRasymmFMD",
-	     "default Dx=%f Dy=%f Dz=%f default=%d",
-	     shapePar[0],shapePar[1],shapePar[2],idet);
-    }break;
-    } // end switch
-    return kTRUE;
-}
-//______________________________________________________________________
-Bool_t AliITSInitGeometry::InitSegmentationPPRasymmFMD(AliITSDetector idet,
-						       Bool_t *initSeg,
-						       TArrayD &shapePar,
-						       AliITSgeom *geom){
-    // Initilizes the geometry segmentation class AliITSgeomS?D, or
-    // AliITSsegmentationS?D depending on the vaule of fSegGeom,
-    // to values appropreate to this specific geometry. Now that
-    // the segmentation is part of AliITSgeom, the detector
-    // segmentations are also defined here.
-    // Inputs:
-    //   Int_t      lay    The layer number/name.
-    //   AliITSgeom *geom  A pointer to the AliITSgeom class
-    // Outputs:
-    //   AliITSgeom *geom  This pointer recreated and properly inilized.
-    // Return:
-    //   none.
-    const Double_t kcm2micron = 1.0E4;
-    Int_t i;
-
-    switch (idet){
-    case kSPD:{
-	initSeg[idet] = kTRUE;
-	AliITSsegmentationSPD *segSPD = new AliITSsegmentationSPD();
-	segSPD->SetDetSize(2.*shapePar[0]*kcm2micron, // X
-			   2.*shapePar[2]*kcm2micron, // Z
-			   2.*shapePar[1]*kcm2micron);// Y  Microns
-	segSPD->SetNPads(256,160);// Number of Bins in x and z
-	Float_t bx[256],bz[280];
-	for(i=000;i<256;i++) bx[i] =  50.0; // in x all are 50 microns.
-	for(i=000;i<160;i++) bz[i] = 425.0; // most are 425 microns
-	// except below
-	for(i=160;i<280;i++) bz[i] =   0.0; // Outside of detector.
-	bz[ 31] = bz[ 32] = 625.0; // first chip boundry
-	bz[ 63] = bz[ 64] = 625.0; // first chip boundry
-	bz[ 95] = bz[ 96] = 625.0; // first chip boundry
-	bz[127] = bz[128] = 625.0; // first chip boundry
-	bz[160] = 425.0;// Set so that there is no zero pixel size for fNz.
-	segSPD->SetBinSize(bx,bz); // Based on AliITSgeomSPD for now.
-	geom->ReSetShape(idet,segSPD);
-    }break;
-    case kSDD:{
-	initSeg[idet] = kTRUE;
-	AliITSsegmentationSDD *segSDD = new AliITSsegmentationSDD();
-	segSDD->SetDetSize(shapePar[0]*kcm2micron, // X
-			   2.*shapePar[2]*kcm2micron, // Z
-			   2.*shapePar[1]*kcm2micron);// Y  Microns
-	segSDD->SetNPads(256,256);// Anodes, Samples
-	geom->ReSetShape(idet,segSDD);
-    }break;
-    case kSSD:{
-	initSeg[idet] = kTRUE;
-	AliITSsegmentationSSD *segSSD = new AliITSsegmentationSSD();
-	segSSD->SetDetSize(2.*shapePar[0]*kcm2micron, // X
-			   2.*shapePar[2]*kcm2micron, // Z
-			   2.*shapePar[1]*kcm2micron);// Y  Microns.
-	segSSD->SetPadSize(95.,0.); // strip x pitch in microns
-	segSSD->SetNPads(768,2); // number of strips on each side, sides.
-	segSSD->SetAngles(0.0075,0.0275); // strip angels rad P and N side.
-	geom->ReSetShape(idet,segSSD);
-    }break;
-    default:{// Others, Note no kSDDp or kSSDp in this geometry.
-	geom->ReSetShape(idet,0);
-	Info("InitSegmentationPPRasymmFMD",
-	     "default segmentation Dx=%f Dy=%f Dz=%f default=%d",
-	     shapePar[0],shapePar[1],shapePar[2],idet);
-    }break;
-    } // end switch
-    return kTRUE;
-}
-//______________________________________________________________________
+//_______________________________________________________________________
 Bool_t AliITSInitGeometry::GetTransformation(const TString &volumePath,
 					     TGeoHMatrix &mat){
     // Returns the Transformation matrix between the volume specified
@@ -1003,12 +760,6 @@ void AliITSInitGeometry::DecodeDetector(
     case kvDefault:{
         Error("DecodeDetector","Major version = kvDefault, not supported");
     }break;
-    case kvPPRcourseasymm:{
-        return DecodeDetectorvPPRcourseasymm(mod,layer,cpn0,cpn1,cpn2);
-    }break;
-    case kvPPRasymmFMD:{
-        return DecodeDetectorvPPRasymmFMD(mod,layer,cpn0,cpn1,cpn2);
-    }break;
     case kv11:{
         return DecodeDetectorv11(mod,layer,cpn0,cpn1,cpn2);
     }break;
@@ -1046,12 +797,6 @@ void AliITSInitGeometry::RecodeDetector(Int_t mod,Int_t &cpn0,
         Error("RecodeDetector","Major version = kvDefault, not supported");
         return;
     }
-    case kvPPRcourseasymm:{
-        return RecodeDetectorvPPRcourseasymm(mod,cpn0,cpn1,cpn2);
-    }break;
-    case kvPPRasymmFMD:{
-        return RecodeDetectorvPPRasymmFMD(mod,cpn0,cpn1,cpn2);
-    }break;
     case kv11:{
         return RecodeDetectorv11(mod,cpn0,cpn1,cpn2);
     }break;
@@ -1093,12 +838,6 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &layer,
               "Major version = kvDefault, not supported");
         return;
     }break;
-    case kvPPRcourseasymm:{
-        return DecodeDetectorLayersvPPRcourseasymm(mod,layer,lad,det);
-    }break;
-    case kvPPRasymmFMD:{
-        return DecodeDetectorLayersvPPRasymmFMD(mod,layer,lad,det);
-    }break;
     case kv11:{
         return DecodeDetectorLayersv11(mod,layer,lad,det);
     }break;
@@ -1114,259 +853,7 @@ void AliITSInitGeometry::DecodeDetectorLayers(Int_t mod,Int_t &layer,
     return;
 }
 
-//______________________________________________________________________
-void AliITSInitGeometry::DecodeDetectorvPPRasymmFMD(Int_t &mod,Int_t layer,
-                                    Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
-    // decode geometry into detector module number. There are two decoding
-    // Scheams. Old which does not follow the ALICE coordinate system
-    // requirements, and New which dose.
-    // Inputs:
-    //    Int_t layer    The ITS layer
-    //    Int_t cpn0     The lowest copy number
-    //    Int_t cpn1     The middle copy number
-    //    Int_t cpn2     the highest copy number
-    // Output:
-    //    Int_t &mod     The module number assoicated with this set
-    //                   of copy numbers.
-    // Return:
-    //    none.
-    const Int_t kDetPerLadderSPD[2]={2,4};
-    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-    Int_t lay=-1,lad=-1,det=-1,i;
 
-    if(fDecode){ // New decoding scheam
-        switch (layer){
-        case 1:{
-            lay = layer;
-            det = 5-cpn2;
-            if(cpn0==4&&cpn1==1) lad=1;
-            else if(cpn0==4&&cpn1==2) lad=20;
-            else if(cpn0<4){
-                lad = 8-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
-            }else{ // cpn0>4
-                lad = 28-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
-            } // end if
-        } break;
-        case 2:{
-            lay = layer;
-            det = 5-cpn2;
-            if(cpn0==4&&cpn1==1) lad=1;
-            else if(cpn0<4){
-                lad = 14-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
-            }else{ // cpn0>4
-                lad = 54-cpn1-kDetPerLadderSPD[layer-1]*(cpn0-1);
-            } // end if
-        } break;
-        case 3:{
-            lay = layer;
-            if(cpn0<5) lad = 5-cpn0;
-            else lad = 19-cpn0;
-            det = 7-cpn1;
-        } break;
-        case 4:{
-            lay = layer;
-            if(cpn0<7) lad = 7-cpn0;
-            else lad = 29-cpn0;
-            det = 9-cpn1;
-        } break;
-        case 5:{
-            lay = layer;
-            if(cpn0<10) lad = 10-cpn0;
-            else lad = 44-cpn0;
-            det = 23-cpn1;
-        } break;
-        case 6:{
-            lay = layer;
-            if(cpn0<9) lad = 9-cpn0;
-            else lad = 47-cpn0;
-            det = 26-cpn1;
-        } break;
-        } // end switch
-        mod = 0;
-        for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
-        mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
-        return;
-    } // end if
-    // Old decoding scheam
-    switch(layer){
-    case 1: case 2:{
-        lay = layer;
-        lad = cpn1+kDetPerLadderSPD[layer-1]*(cpn0-1);
-        det = cpn2;
-        }break;
-    case 3: case 4:{
-        lay = layer;
-        lad = cpn0;
-        det = cpn1;
-        }break;
-    case 5: case 6:{
-        lay = layer;
-        lad = cpn0;
-        det = cpn1;
-        }break;
-    default:{
-        }break;
-    } // end switch
-    mod = 0;
-    for(i=0;i<layer-1;i++) mod += kLadPerLayer[i]*kDetPerLadder[i];
-    mod += kDetPerLadder[layer-1]*(lad-1)+det-1;// module start at zero.
-    return;
-}
-//______________________________________________________________________
-void AliITSInitGeometry::RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,
-                                        Int_t &cpn1,Int_t &cpn2){
-    // decode geometry into detector module number. There are two decoding
-    // Scheams. Old which does not follow the ALICE coordinate system
-    // requirements, and New which dose.
-    // Inputs:
-    //    Int_t mod      The module number assoicated with this set
-    //                   of copy numbers.
-    // Output:
-    //    Int_t cpn0     The lowest copy number
-    //    Int_t cpn1     The middle copy number
-    //    Int_t cpn2     the highest copy number
-    // Return:
-    //    none.
-    const Int_t kITSgeoTreeCopys[6][3]= {{10, 2, 4},// lay=1
-                                         {10, 4, 4},// lay=2
-                                         {14, 6, 1},// lay=3
-                                         {22, 8, 1},// lay=4
-                                         {34,22, 1},// lay=5
-                                         {38,25, 1}};//lay=6
-    const Int_t kDetPerLadderSPD[2]={2,4};
-    //    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    //    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-    Int_t lay,lad,det;
-
-    cpn0 = cpn1 = cpn2 = 0;
-    DecodeDetectorLayers(mod,lay,lad,det);
-    if(fDecode){ // New decoding scheam
-        switch (lay){
-        case 1:{
-            cpn2 = 5-det;     // Detector 1-4
-            cpn1 = 1+(lad-1)%kDetPerLadderSPD[lay-1];
-            cpn0 = 5-(lad+kDetPerLadderSPD[lay-1])/kDetPerLadderSPD[lay-1];
-            if(mod>27) cpn0 = 15-(lad+kDetPerLadderSPD[lay-1])/
-			   kDetPerLadderSPD[lay-1];
-        } break;
-        case 2:{
-            cpn2 = 5-det;     // Detector 1-4
-            cpn1 = 4-(lad+2)%kDetPerLadderSPD[lay-1];
-            cpn0 = 1+(14-cpn1-lad)/kDetPerLadderSPD[lay-1];
-            if(mod>131) cpn0 = 1+(54-lad-cpn1)/kDetPerLadderSPD[lay-1];
-        } break;
-        case 3:{
-            cpn2 = 1;
-            if(lad<5) cpn0 = 5-lad;
-            else cpn0 = 19-lad;
-            cpn1 = 7-det;
-        } break;
-        case 4:{
-            cpn2 = 1;
-            if(lad<7) cpn0 = 7-lad;
-            else cpn0 = 29-lad;
-            cpn1 = 9-det;
-        } break;
-        case 5:{
-            cpn2 = 1;
-            if(lad<10) cpn0 = 10-lad;
-            else cpn0 = 44-lad;
-            cpn1 = 23-det;
-        } break;
-        case 6:{
-            cpn2 = 1;
-            if(lad<9) cpn0 = 9-lad;
-            else cpn0 = 47-lad;
-            cpn1 = 26-det;
-        } break;
-        default:{
-	  AliError(Form("New: mod=%d lay=%d not 1-6.",mod,lay));
-            return;
-        } break;
-        } // end switch
-        if(cpn0<1||cpn1<1||cpn2<1||
-           cpn0>kITSgeoTreeCopys[lay-1][0]||
-           cpn1>kITSgeoTreeCopys[lay-1][1]||
-           cpn2>kITSgeoTreeCopys[lay-1][2])
-            Error("RecodeDetector",
-                  "cpn0=%d cpn1=%d cpn2=%d mod=%d lay=%d lad=%d det=%d",
-                  cpn0,cpn1,cpn2,mod,lay,lad,det);
-        return;
-    } // end if
-    // Old encoding
-    switch (lay){
-    case 1: case 2:{
-        cpn2 = det;     // Detector 1-4
-        cpn0 = (lad+kDetPerLadderSPD[lay-1]-1)/kDetPerLadderSPD[lay-1];
-        cpn1 = (lad+kDetPerLadderSPD[lay-1]-1)%kDetPerLadderSPD[lay-1] + 1;
-    } break;
-    case 3: case 4: case 5 : case 6:{
-        cpn2 = 1;
-        cpn1 = det;
-        cpn0 = lad;
-    } break;
-    default:{
-      AliError(Form("Old: mod=%d lay=%d not 1-6.",mod,lay));
-        return;
-    } break;
-    } // end switch
-    if(cpn0<1||cpn1<1||cpn2<1||
-       cpn0>kITSgeoTreeCopys[lay-1][0]||
-       cpn1>kITSgeoTreeCopys[lay-1][1]||
-       cpn2>kITSgeoTreeCopys[lay-1][2])
-        Error("RecodeDetector",
-              "cpn0=%d cpn1=%d cpn2=%d mod=%d lay=%d lad=%d det=%d",
-              cpn0,cpn1,cpn2,mod,lay,lad,det);
-    return;
-}
-//______________________________________________________________________
-void AliITSInitGeometry::DecodeDetectorLayersvPPRasymmFMD(Int_t mod,Int_t &lay,
-                                              Int_t &lad,Int_t &det){
-    // decode geometry into detector module number. There are two decoding
-    // Scheams. Old which does not follow the ALICE coordinate system
-    // requirements, and New which dose. Note, this use of layer ladder
-    // and detector numbers are strictly for internal use of this
-    // specific code. They do not represent the "standard" layer ladder
-    // or detector numbering except in a very old and obsoleate sence.
-    // Inputs:
-    //    Int_t mod      The module number assoicated with this set
-    //                   of copy numbers.
-    // Output:
-    //    Int_t lay     The layer number
-    //    Int_t lad     The ladder number
-    //    Int_t det     the dettector number
-    // Return:
-    //    none.
-  //    const Int_t kDetPerLadderSPD[2]={2,4};
-    const Int_t kDetPerLadder[6]={4,4,6,8,22,25};
-    const Int_t kLadPerLayer[6]={20,40,14,22,34,38};
-    Int_t mod2;
-
-    det  = 0;
-    lad  = 0;
-    lay  = 0;
-    mod2 = 0;
-    do{
-        mod2 += kLadPerLayer[lay]*kDetPerLadder[lay];
-        lay++;
-    }while(mod2<=mod); // end while
-    if(lay>6||lay<1) Error("DecodeDetectorLayers","0<lay=%d>6",lay);
-    mod2 -= kLadPerLayer[lay-1]*kDetPerLadder[lay-1];
-    do{
-        lad++;
-        mod2 += kDetPerLadder[lay-1];
-    }while(mod2<=mod); // end while
-    if(lad>kLadPerLayer[lay-1]||lad<1) Error("DecodeDetectorLayers",
-            "lad=%d>kLadPerLayer[lay-1=%d]=%d mod=%d mod2=%d",lad,lay-1,
-                                            kLadPerLayer[lay-1],mod,mod2);
-    mod2 -= kDetPerLadder[lay-1];
-    det = mod-mod2+1;
-    if(det>kDetPerLadder[lay-1]||det<1) Error("DecodeDetectorLayers",
-           "det=%d>detPerLayer[lay-1=%d]=%d mod=%d mod2=%d lad=%d",det,
-                                  lay-1,kDetPerLadder[lay-1],mod,mod2,lad);
-    return;
-}
 //______________________________________________________________________
 void AliITSInitGeometry::DecodeDetectorv11Hybrid(Int_t &mod,Int_t layer,
                                  Int_t cpn0,Int_t cpn1,Int_t cpn2) const {
@@ -1632,9 +1119,6 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
                        " month=%d day=%d hours=%d minuits=%d seconds=%d\n",
                        year,month,day,hours,minuits,seconds);
     switch (i){
-    case kvPPRasymmFMD:{
-        maj = kvPPRasymmFMD;
-    } break;
     case kv11:{
         maj = kv11;
     } break;

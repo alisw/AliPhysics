@@ -1367,7 +1367,6 @@ void AliITS::UpdateInternalGeometry(){
 
   AliITSVersion_t version = (AliITSVersion_t)IsVersion();
   Int_t minor = 0;
-  if(version==kvPPRasymmFMD) minor=2;  // default minor version for this geom.
   AliITSInitGeometry initgeom;
   AliITSgeom* geom = initgeom.CreateAliITSgeom(version,minor);
   SetITSgeom(geom);

@@ -17,8 +17,7 @@ $Id$
 #include "AliITSgeom.h"
 
 typedef enum {
-  kvDefault=0,kvPPRcourseasymm=6,kvPPRasymmFMD=10,
-  kv11=11,kv11Hybrid=110
+  kvDefault=0,kv11=11,kv11Hybrid=110
 } AliITSVersion_t;
 
 class TArrayD;
@@ -84,27 +83,6 @@ class AliITSInitGeometry : public TObject{
 
  private:
     // Decode module number into old layer, ladder, and detector numbers
-    void DecodeDetectorLayersvPPRcourseasymm(Int_t mod,Int_t &lay,
-                                   Int_t &lad,Int_t &det) const {
-        lay=lad=det=mod;/*Dummy*/};
-    // find module number by layer, and copy numbers
-    void DecodeDetectorvPPRcourseasymm(Int_t &mod,Int_t lay,Int_t cpn0,
-                             Int_t cpn1,Int_t cpn2) const{
-        mod=lay=cpn0=cpn1=cpn2;/*Dummy*/};
-    // Given module number, find copy numbers.
-    void RecodeDetectorvPPRcourseasymm(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                             Int_t &cpn2) const {
-        cpn0=cpn1=cpn2=mod;/*Dummy*/};
-    // Decode module number into old layer, ladder, and detector numbers
-    void DecodeDetectorLayersvPPRasymmFMD(Int_t mod,Int_t &lay,
-                                         Int_t &lad,Int_t &det);
-    // find module number by layer, and copy numbers
-    void DecodeDetectorvPPRasymmFMD(Int_t &mod,Int_t lay,Int_t cpn0,
-                                    Int_t cpn1,Int_t cpn2) const;
-    // Given module number, find copy numbers.
-    void RecodeDetectorvPPRasymmFMD(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                                    Int_t &cpn2);
-    // Decode module number into old layer, ladder, and detector numbers
     void DecodeDetectorLayersv11(Int_t mod,Int_t &lay,
                                          Int_t &lad,Int_t &det)const{
         lay=lad=det=mod;};
@@ -126,14 +104,9 @@ class AliITSInitGeometry : public TObject{
     void DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,Int_t &lad,
                                     Int_t &det);
 		   
-    // Virtual MC code reproduction
-    Bool_t InitAliITSgeomPPRasymmFMD(AliITSgeom *geom);
+    // Virtual MC code 
     Bool_t InitAliITSgeomV11Hybrid(AliITSgeom *geom);
     Bool_t InitAliITSgeomV11(AliITSgeom *geom);
-    Bool_t InitGeomShapePPRasymmFMD(AliITSDetector idet,Bool_t *initSeg,
-				       TArrayD &shapePar,AliITSgeom *geom);
-    Bool_t InitSegmentationPPRasymmFMD(AliITSDetector idet,Bool_t *initSeg,
-				       TArrayD &shapePar,AliITSgeom *geom);
     Bool_t GetTransformation(const TString &volumePath,TGeoHMatrix &mat);
     Bool_t GetShape(const TString &volumePath,TString &shapeType,TArrayD &par);
     void TransposeTGeoHMatrix(TGeoHMatrix *m) const;

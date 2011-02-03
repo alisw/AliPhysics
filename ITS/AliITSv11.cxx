@@ -118,6 +118,8 @@ fIgm(kv11)
   fSPDgeom = new AliITSv11GeometrySPD(debugSPD);
   fSDDgeom = new AliITSv11GeometrySDD(debugSDD);
   fSDDgeom->SetDebug(debugSDD);
+  fSSDgeom = new AliITSv11GeometrySSD();
+  fSSDgeom->SetDebug(debugSSD);
   fSupgeom = new AliITSv11GeometrySupport(debugSUP);
 
   Int_t i;

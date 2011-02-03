@@ -26,6 +26,7 @@
 #include <TMath.h>
 //
 #include "AliITSgeomMatrix.h"
+#include "AliLog.h"
 
 typedef enum {kND=-1,kSPD=0, kSDD=1, kSSD=2, kSSDp=3,kSDDp=4} AliITSDetector;
 
@@ -35,7 +36,6 @@ class AliITSgeom : public TObject {
 
  public:
     AliITSgeom();                      // Default constructor
-    AliITSgeom(const char *filename);  // Constructor
     AliITSgeom(Int_t itype,Int_t nlayers,const Int_t *nlads,const Int_t *ndets,
                Int_t nmods); // Constructor
     AliITSgeom(const AliITSgeom &source);    // Copy constructor
@@ -48,8 +48,6 @@ class AliITSgeom : public TObject {
     void CreateMatrix(Int_t mod,Int_t lay,Int_t lad,Int_t det,
                       AliITSDetector idet,const Double_t tran[3],
                       const Double_t rot[10]);
-    void ReadNewFile(const char *filename);  // Constructor for new format.
-    void WriteNewFile(const char *filename)const; // Output for new format.
     // Getters
     Int_t GetTransformationType() const {return fTrans;}
     //
@@ -67,11 +65,6 @@ class AliITSgeom : public TObject {
     // of the detector but may have been displaced by some typically small
     // amount. These are modified transformation similar to that used by GEANT.
     Bool_t IsGeantToDisplaced() const {return ((fTrans&&0xfffd)!= 0);}
-    // returns kTRUE if the shape defined by ishape has been defined in this
-    // set of transformations. Typical values of ishape are kSPD, kSDD, kSSD,
-    // kSSD2.
-    Bool_t IsShapeDefined(Int_t ishape)const {
-        return ((fShape.At(ishape))!=0);}
     //
     //     This function returns a pointer to the particular AliITSgeomMatrix
     // class for a specific module index.
@@ -253,36 +246,6 @@ class AliITSgeom : public TObject {
     void GetGlobalNormal(Int_t index,Double_t n[3]){
         GetGeomMatrix(index)->GetGlobalNormal(n[0],n[1],n[2]);}
     //
-    //     Will define fShape if it isn't already defined.
-    void DefineShapes(Int_t size=5){fShape.Expand(size);}
-    //     this function returns a pointer to the array of detector
-    // descriptions, Segmentation.
-    virtual TObjArray *GetShapeArray(){return &fShape;};
-    //     this function returns a pointer to the class describing a particular
-    // detector type based on AliITSDetector value. This will return a pointer
-    // to one of the classes AliITSgeomSPD, AliITSgeomSDD, or 
-    // AliITSgeomSSD, for example.
-    virtual TObject *GetShape(AliITSDetector idet){
-        return fShape.At((Int_t)idet);};
-    virtual TObject *GetShape(AliITSDetector idet)const{
-        return fShape.At((Int_t)idet);};
-    //     This function returns a pointer to the class describing the
-    // detector for a particular module index. This will return a pointer
-    // to one of the classes AliITSgeomSPD, AliITSgeomSDD, 
-    // or AliITSgeomSSD, for example.
-    virtual TObject *GetShape(Int_t index){
-        return fShape.At(GetGeomMatrix(index)->GetDetectorIndex());}
-    virtual TObject *GetShape(Int_t index)const{
-        return fShape.At(GetGeomMatrix(index)->GetDetectorIndex());}
-    //     This function returns a pointer to the class describing the
-    // detector for a particular layer ladder and detector numbers. This
-    // will return a pointer to one of the classes AliITSgeomSPD,
-    // AliITSgeomSDD, or AliITSgeomSSD, for example.
-    virtual TObject *GetShape(Int_t lay,Int_t lad,Int_t det)
-        {return GetShape(GetModuleIndex(lay,lad,det));}
-    //     Determine if a give point is inside of a detectors sensitive
-    // volume (as defined by these transformations).
-    virtual Bool_t IsInside(Int_t module,Double_t point[3])const;
     //
     //  Setters
     //     Sets the rotation angles and matrix for a give module index
@@ -330,19 +293,6 @@ class AliITSgeom : public TObject {
                   Float_t x,Float_t y,Float_t z){Double_t t[3];
                   t[0] = x;t[1] = y;t[2] = z;
                   SetTrans(GetModuleIndex(lay,lad,det),t);}
-    //
-    //     This function adds one more shape element to the TObjArray
-    // fShape. It is primarily used in the constructor functions of the
-    // AliITSgeom class. The pointer *shape can be the pointer to any
-    // class that is derived from TObject (this is true for nearly every
-    // ROOT class). This does not appear to be working properly at this time.
-    void AddShape(TObject *shp){fShape.AddLast(shp);}
-    //     This function deletes an existing shape element, of type TObject,
-    // and replaces it with the one specified. This is primarily used to
-    // changes the parameters to the geom class for a particular
-    // type of detector.
-    void ReSetShape(Int_t dtype,TObject *shp){
-        delete (fShape.At(dtype));fShape.AddAt(shp,dtype);}
     //
     //  transformations
     //     Transforms from the ALICE Global coordinate system
@@ -755,9 +705,6 @@ class AliITSgeom : public TObject {
     // the detector/module specified by the the module index number.
     Double_t Distance(Int_t index,const Double_t g[3])const{
         return  TMath::Sqrt(GetGeomMatrix(index)->Distance2(g));}
-    // loops over modules and computes the average cylindrical
-    // radius to a given layer and the range.
-    Double_t GetAverageRadiusOfLayer(Int_t layer,Double_t &range)const;
     //  Geometry manipulation
     // This function performs a Cartesian translation and rotation of
     // the full ITS from its default position by an amount determined by
@@ -790,8 +737,6 @@ class AliITSgeom : public TObject {
     // This function prints out this class in a single stream. This steam
     // can be read by ReadGeom.
     void PrintGeom(ostream *out)const;
-    // This function reads in that single steam printed out by PrintGeom.
-    void ReadGeom(istream *in);
 
     //Conversion from det. local coordinates to local ("V2") coordinates
     //used for tracking
@@ -810,12 +755,9 @@ class AliITSgeom : public TObject {
     TArrayI    fNlad;    // Array of the number of ladders/layer(layer)
     TArrayI    fNdet;    // Array of the number of detector/ladder(layer)
     TObjArray  fGm;      // Structure of translation. and rotation.
-    TObjArray  fShape;   // Array of shapes and detector information.
 
-    ClassDef(AliITSgeom,3) // ITS geometry class
+    ClassDef(AliITSgeom,4) // ITS geometry class
 }; 
 // Input and output function for standard C++ input/output.
-ostream& operator<<(ostream &os,AliITSgeom &source);
-istream& operator>>(istream &os,AliITSgeom &source);
 
 #endif
