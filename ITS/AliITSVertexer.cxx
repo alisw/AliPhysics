@@ -210,7 +210,8 @@ void AliITSVertexer::Init(TString filename){
   // analysis of an entire file
   AliRunLoader *rl = AliRunLoader::Instance();
   if(!rl){
-    Fatal("AliITSVertexer","Run Loader not found");
+    AliFatal("Run Loader not found");
+    return;
   }
   if (fLastEvent < 0) SetLastEvent(rl->GetNumberOfEvents()-1);
 

@@ -119,7 +119,6 @@ void Displayv11(){
     //
     geom = new AliITSgeom();
     initgeom.InitAliITSgeom(geom);
-    geom->WriteNewFile("ITSgeomV11.det");
     //
     TControlBar *bar=new TControlBar("vertical","ITS Geometry Display",10,10);
     bar->AddButton("Set Clipping on","ISetits(2,1)","Clipping on");

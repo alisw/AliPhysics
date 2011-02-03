@@ -198,7 +198,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   // lc2 and gc2 are local and global coordinates for layer 2
   Float_t gc2[3]={0.,0.,0.}; //; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  itsRec=rpcont->FetchClusters(0,itsClusterTree);
+  rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){
     AliWarning("Null pointer for RecPoints branch, vertex not calculated");
     ResetHistograms();

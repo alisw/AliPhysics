@@ -487,7 +487,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
   Float_t gc2f[3]={0.,0.,0.};
   Double_t gc2[3]={0.,0.,0.};
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  itsRec=rpcont->FetchClusters(0,itsClusterTree);
+  rpcont->FetchClusters(0,itsClusterTree);
   if(!rpcont->IsSPDActive()){
     AliWarning("No SPD rec points found, 3D vertex not calculated");
     return -1;
@@ -719,9 +719,10 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   TH3F *h3dcs = new TH3F("h3dcs","xyz distribution",nbrcs,rl,rh,nbrcs,rl,rh,nbzcs,zl,zh);
 
   // cleanup of the TCLonesArray of tracklets (i.e. fakes are removed)
-  Int_t *validate = new Int_t [fLines.GetEntriesFast()];
-  for(Int_t i=0; i<fLines.GetEntriesFast();i++)validate[i]=0;
-  for(Int_t i=0; i<fLines.GetEntriesFast()-1;i++){
+  Int_t vsiz = fLines.GetEntriesFast();
+  Int_t *validate = new Int_t [vsiz];
+  for(Int_t i=0; i<vsiz;i++)validate[i]=0;
+  for(Int_t i=0; i<vsiz-1;i++){
     AliStrLine *l1 = (AliStrLine*)fLines.At(i);
     for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
       AliStrLine *l2 = (AliStrLine*)fLines.At(j);
@@ -748,7 +749,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
 
   Int_t numbtracklets=0;
-  for(Int_t i=0; i<fLines.GetEntriesFast();i++)if(validate[i]>=1)numbtracklets++;
+  for(Int_t i=0; i<vsiz;i++)if(validate[i]>=1)numbtracklets++;
   if(numbtracklets<2){
     delete [] validate; 
     delete h3d; 
