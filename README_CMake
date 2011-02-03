@@ -6,7 +6,9 @@ Steps to Build AliRoot with CMake :
 1. Check out Aliroot source into a folder (usually specified by the environment variable ALICE)
 	
 	cd $ALICE
-	svn co http://alisoft.cern.ch/AliRoot/trunk AliRoot
+	svn co https://alisoft.cern.ch/AliRoot/trunk AliRoot
+
+Note: Please use https:// if you want to be able to commit changes to the SVN repository.
 
 2. Set the environment variable ALICE_ROOT to point to the source you have checked out
 
