@@ -123,7 +123,7 @@ int AliHLTEsdManagerImplementation::WriteESD(const AliHLTUInt8_t* pBuffer, AliHL
 			       AliHLTComponentDataType dt, AliESDEvent* tgtesd, int eventno)
 {
   // see header file for class documentation
-  if (!pBuffer && size<=0) return -EINVAL;
+  if (pBuffer==NULL || size<4) return -EINVAL;
   int iResult=0;
   AliHLTUInt32_t firstWord=*((AliHLTUInt32_t*)pBuffer);
   if (firstWord==size-sizeof(AliHLTUInt32_t)) {
@@ -249,11 +249,6 @@ TTree* AliHLTEsdManagerImplementation::EmbedIntoTree(AliESDEvent* pESD, const ch
     iResult=-ENOMEM;
   }
 
-  if (iResult<0) {
-    pTree->GetUserInfo()->Clear();
-    delete pTree;
-  }
-
   return pTree;
 }
 
@@ -320,9 +315,9 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
 
     fpFile=new TFile(fName, "RECREATE");
     fpTree=new TTree(fTreeName, "Tree with HLT ESD objects");
-    fpTree->SetDirectory(0);
     fpEsd=new AliESDEvent;
-    if (fpEsd) {
+    if (fpEsd && fpTree) {
+      fpTree->SetDirectory(0);
       fpEsd->CreateStdContent();
       *fpEsd=*pSrcESD;
       if (fpTree) {
@@ -386,6 +381,9 @@ int AliHLTEsdManagerImplementation::AliHLTEsdListEntry::WriteESD(AliESDEvent* pS
       fpTree->GetUserInfo()->Clear();
     }
   }
+
+  // FIXME: use auto_ptr for the tree and ESD event and add proper
+  // cleanup if something fails
 
   return iResult;
 }
