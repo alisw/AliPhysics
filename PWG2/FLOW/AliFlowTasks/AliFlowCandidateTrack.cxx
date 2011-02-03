@@ -28,10 +28,34 @@ AliFlowCandidateTrack::AliFlowCandidateTrack():
     fMass(0),
     fNDaughters(0)
 {
-  for(int i=0; i!=5; ++i)
+  for(int i=0; i!=5; ++i) {
     fDaughter[i] = -1;
+    fTrack[i] = NULL;
+  }
 }
 
+AliFlowCandidateTrack::AliFlowCandidateTrack(const AliFlowCandidateTrack& aTrack):
+  AliFlowTrack(aTrack),
+  fMass(aTrack.fMass),
+  fNDaughters(aTrack.fNDaughters)
+{
+  for(int i=0; i!=5; ++i) {
+    fDaughter[i] = aTrack.fDaughter[i];
+    fTrack[i] = aTrack.fTrack[i];
+  }
+}
+
+AliFlowCandidateTrack&  AliFlowCandidateTrack::operator=(const AliFlowCandidateTrack& aTrack)
+{
+  AliFlowTrack::operator=(aTrack);
+  fMass = aTrack.fMass;
+  fNDaughters = aTrack.fNDaughters;
+  for(int i=0; i!=5; ++i) {
+    fDaughter[i] = aTrack.fDaughter[i];
+    fTrack[i] = aTrack.fTrack[i];
+  }
+  return *this;
+}
 
 AliFlowCandidateTrack::~AliFlowCandidateTrack()
 {
