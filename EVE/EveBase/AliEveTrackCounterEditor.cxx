@@ -237,7 +237,7 @@ void AliEveTrackCounterEditor::SetModel(TObject* obj)
 {
    // Set model object.
 
-   fM = dynamic_cast<AliEveTrackCounter*>(obj);
+   fM = static_cast<AliEveTrackCounter*>(obj);
 
    if (fM->GetActive())
    {

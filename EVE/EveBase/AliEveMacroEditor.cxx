@@ -107,7 +107,7 @@ void AliEveMacroEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveMacro*>(obj);
+  fM = static_cast<AliEveMacro*>(obj);
 
   fSources->Select  (fM->GetSources(), kFALSE);
   fTags   ->SetText (fM->GetTags(),  kFALSE);

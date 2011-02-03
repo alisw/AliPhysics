@@ -149,7 +149,7 @@ void AliEveV0ListEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveV0List*>(obj);
+  fM = static_cast<AliEveV0List*>(obj);
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());

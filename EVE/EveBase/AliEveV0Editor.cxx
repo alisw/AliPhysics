@@ -75,7 +75,7 @@ void AliEveV0Editor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveV0*>(obj);
+  fM = static_cast<AliEveV0*>(obj);
 
   // Set values of widgets
   fInfoLabel0->SetText(Form("Radius = %f, DCA = %f", fM->GetRadius(), fM->GetDaughterDCA()));

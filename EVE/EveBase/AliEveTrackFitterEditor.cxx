@@ -69,7 +69,7 @@ void AliEveTrackFitterEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveTrackFitter*>(obj);
+  fM = static_cast<AliEveTrackFitter*>(obj);
 
   if(fM->GetConnected())
   {

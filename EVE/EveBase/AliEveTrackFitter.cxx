@@ -142,7 +142,7 @@ void AliEveTrackFitter::AddFitPoint(Int_t pointId)
 
   Float_t x, y, z;
 
-  TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
+  TEvePointSet* ps = static_cast<TEvePointSet*>((TQObject*) gTQSender);
 
   PointMap_t::iterator g = fSPMap.find(Point_t(ps, pointId));
   if (g != fSPMap.end())

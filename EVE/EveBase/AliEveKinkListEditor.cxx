@@ -114,7 +114,7 @@ void AliEveKinkListEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveKinkList*>(obj);
+  fM = static_cast<AliEveKinkList*>(obj);
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());
