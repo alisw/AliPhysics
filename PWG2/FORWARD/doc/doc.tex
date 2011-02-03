@@ -8,7 +8,10 @@
 \usepackage{units}
 \usepackage{listings}
 \usepackage[colorlinks,urlcolor=black,hyperindex,%
-            linktocpage,a4paper,bookmarks=true]{hyperref}
+            linktocpage,a4paper,bookmarks=true,%
+            bookmarksopen=true,bookmarksopenlevel=2,%
+            bookmarksnumbered=true]{hyperref}
+%% \usepackage{bookmark}
 \def\AlwaysText#1{\ifmmode\relax\text{#1}\else #1\fi}
 \newcommand{\AbbrName}[1]{\AlwaysText{{\scshape #1}}}
 \newcommand{\CERN}{\AbbrName{cern}}
@@ -45,10 +48,13 @@
 \newcommand{\secref}[1]{Section~\ref{#1}}
 \newcommand{\figref}[1]{Figure~\ref{#1}}
 \newcommand{\etaphi}{\ensuremath(\eta,\varphi)}
-
+% Azimuthal acceptance
+\newcommand{\Corners}{\ensuremath A^{\varphi}_{t}} 
+% Acceptance due to dead strips
+\newcommand{\DeadCh}{\ensuremath A^{\eta}_{v,i}\etaphi} 
+\newcommand{\SecMap}{\ensuremath S_v\etaphi}
 \setlength{\parskip}{1ex}
 \setlength{\parindent}{0em}
-
 \title{Analysing the FMD data for $\dndeta$}
 \author{Christian Holm
   Christensen\thanks{\texttt{$\langle$cholm@nbi.dk$\rangle$}}\quad\&\quad
@@ -57,6 +63,7 @@
   University of Copenhagen}
 \date{\today}
 \begin{document}
+\pdfbookmark{Analysing the FMD data for dN/deta}{top}
 \maketitle 
 
 \tableofcontents 
@@ -65,24 +72,71 @@
 This document describes the steps performed in the analysis of the
 charged particle multiplicity in the forward pseudo--rapidity
 regions.  The primary detector used for this is the \FMD{}
-\cite{FWD:2004mz,cholm:2009}.  The \SPD{} is used for determination of
-the position of the primary interaction point.  
+\cite{FWD:2004mz,cholm:2009}. 
+
+The \FMD{} is
+organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2}, and \FMD{3}, each
+consisting of 1 (\FMD{1}) or 2 (\FMD{2} and~3) \emph{rings}.
+The rings fall into two types: \emph{Inner} or \emph{outer} rings.
+Each ring is in turn  azimuthally divided into \emph{sectors}, and each
+sector is radially divided into \emph{strips}.  How many sectors,
+strips, as well as the $\eta$ coverage is given in
+\tablename~\ref{tab:fmd:overview}. 
+
+\begin{table}[htbp]
+  \begin{center}
+    \caption{Physical dimensions of Si segments and strips.}
+    \label{tab:fmd:overview}
+    \vglue0.2cm
+    \begin{tabular}{|c|cc|cr@{\space--\space}l|r@{\space--\space}l|}
+      \hline
+      \textbf{Sub--detector/} &
+      \textbf{Azimuthal}&
+      \textbf{Radial} &
+      $z$ &
+      \multicolumn{2}{c|}{\textbf{$r$}} &
+      \multicolumn{2}{c|}{\textbf{$\eta$}} \\
+      \textbf{Ring}& 
+      \textbf{sectors} &
+      \textbf{strips} & 
+      \textbf{[cm]} &
+      \multicolumn{2}{c|}{\textbf{range [cm]}} &
+      \multicolumn{2}{c|}{\textbf{coverage}} \\
+      \hline
+      FMD1i & 20& 512& 320  &  4.2& 17.2& 3.68&  5.03\\
+      FMD2i & 20& 512&  83.4&  4.2& 17.2& 2.28&  3.68\\
+      FMD2o & 40& 256&  75.2& 15.4& 28.4& 1.70&  2.29\\
+      FMD3i & 20& 512& -75.2&  4.2& 17.2&-2.29& -1.70\\
+      FMD3o & 40& 256& -83.4& 15.4& 28.4&-3.40& -2.01\\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+
+The \SPD{} is used for determination of the position of the primary
+interaction point.
 
 The analysis is performed as a two--step process.  
 \begin{enumerate}
 \item The Event--Summary--Data (\ESD{}) is processed event--by--event
   and passed through a number of algorithms, and
   $\dndetadphi$ for each event is output to an Analysis--Object--Data
-  (\AOD{}) tree.
+  (\AOD{}) tree (see \secref{sec:gen_aod}).
 \item The \AOD{} data is read in and the sub--sample of the data under
   investigation is selected (e.g., \INEL{}, \INELONE{}, \NSD{}, or
   some centrality class) and the $\dndetadphi$ histogram read in for
-  those events to build up $\dndeta$
+  those events to build up $\dndeta$ (see \secref{sec:ana_aod}).
 \end{enumerate}
 The details of each step above will be expanded upon in the
 following. 
 
+In Appendix~\ref{app:nomen} is an overview of the nomenclature used in
+this document. 
+
+
+
 \section{Generating $\dndetadphi[i]$ event--by--event}
+\label{sec:gen_aod}
 
 When reading in the \ESD{}s and generating the $\dndetadphi$
 event--by--event the following steps are taken (in order) for each
@@ -135,46 +189,9 @@ pre--defined range, then no further processing of that event takes place.
 \label{sec:sub:sharing_filter}
 
 The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
-E/\Delta E_{mip}$ for each of the 51,200 strips.  The \FMD{} is
-organised in 3 \emph{sub--detectors} \FMD{1}, \FMD{2}, and \FMD{3}, each
-consisting of 1 (\FMD{1}) or 2 (\FMD{2} and \FMD{3}) \emph{rings}.
-The rings fall into two types: \emph{Inner} or \emph{outer} rings.
-Each ring is in turn  azimuthal divided into \emph{sectors}, and each
-sector is radially divided into \emph{strips}.  How many sectors,
-strips, as well as the $\eta$ coverage is given in
-\tablename~\ref{tab:fmd:overview}. 
+E/\Delta E_{mip}$ for each of the 51,200 strips.  
 
-\begin{table}[htbp]
-  \begin{center}
-    \caption{Physical dimensions of Si segments and strips.}
-    \label{tab:fmd:overview}
-    \vglue0.2cm
-    \begin{tabular}{|c|cc|cr@{\space--\space}l|r@{\space--\space}l|}
-      \hline
-      \textbf{Sub--detector/} &
-      \textbf{Azimuthal}&
-      \textbf{Radial} &
-      $z$ &
-      \multicolumn{2}{c|}{\textbf{$r$}} &
-      \multicolumn{2}{c|}{\textbf{$\eta$}} \\
-      \textbf{Ring}& 
-      \textbf{sectors} &
-      \textbf{strips} & 
-      \textbf{[cm]} &
-      \multicolumn{2}{c|}{\textbf{range [cm]}} &
-      \multicolumn{2}{c|}{\textbf{coverage}} \\
-      \hline
-      FMD1i & 20& 512& 320  &  4.2& 17.2& 3.68&  5.03\\
-      FMD2i & 20& 512&  83.4&  4.2& 17.2& 2.28&  3.68\\
-      FMD2o & 40& 256&  75.2& 15.4& 28.4& 1.70&  2.29\\
-      FMD3i & 20& 512& -75.2&  4.2& 17.2&-2.29& -1.70\\
-      FMD3o & 40& 256& -83.4& 15.4& 28.4&-3.40& -2.01\\
-      \hline
-    \end{tabular}
-  \end{center}
-\end{table}
-
-A particle originating from the vertex can, because of it's incident
+A particle originating from the vertex can, because of its incident
 angle on the \FMD{} sensors traverse more than one strip (see
 \figref{fig:share_fraction}).  This means that the energy loss of the
 particle is distributed over 1 or more strips.  The signal in each
@@ -196,14 +213,15 @@ high that most likely each and every strip will be hit and the effect
 cancel out on average.
 
 Since the particles travel more or less in straight lines toward the
-\FMD{} sensors, the sharing effect predominantly in the $r$ or
-\emph{strip} direction.  Only neighboring strips in a given sector is
+\FMD{} sensors, the sharing effect is predominantly in the $r$ or
+\emph{strip} direction.  Only neighbouring strips in a given sector is
 therefor investigated for this effect.  
 
 Algorithm~\ref{algo:sharing} is applied to the signals in a given
 sector.
 
 \begin{algorithm}[htpb]
+  \belowpdfbookmark{Algorithm 1}{algo:sharing}
   \SetKwData{usedThis}{current strip used}
   \SetKwData{usedPrev}{previous strip used}
   \SetKwData{Output}{output}
@@ -253,6 +271,7 @@ path--length corrected signal in strip $t$.  The function
 place (see page \pageref{func:MultiplicityOfStrip}). 
 
 \begin{function}[htbp]
+  \belowpdfbookmark{MultiplicityOfStrip}{func:MultiplicityOfStrip}
   \caption{MultiplicityOfStrip(\DataSty{current},$\eta$,\DataSty{previous},\DataSty{next},\DataSty{low
       flux flag},\DataSty{previous signal used},\DataSty{this signal
       used})} 
@@ -279,11 +298,11 @@ place (see page \pageref{func:MultiplicityOfStrip}).
     \Return{0}
   }
   \highCut $\leftarrow$ \GetHighCut($t$,\Eta)\;
-  \If{\Current $<$ \Next and \Next $>$ \highCut and \lowFlux set}{ 
-    \usedThis $\leftarrow$ false\;
-    \usedPrev $\leftarrow$ false\;
-    \Return{0}
-  }
+  %\If{\Current $<$ \Next and \Next $>$ \highCut and \lowFlux set}{ 
+  %  \usedThis $\leftarrow$ false\;
+  %  \usedPrev $\leftarrow$ false\;
+  %  \Return{0}
+  %}
   \total $\leftarrow$ \Current\;
   \lIf{\lowCut $<$ \Previous $<$ \highCut and not \usedPrev}{ 
     \total $\leftarrow$ \total + \Previous\;
@@ -315,19 +334,21 @@ with current one, and the signal of the current strip was added to
 that, then the current signal is set to 0, and we mark it as used for
 the next iteration (\DataSty{previous signal used}$\leftarrow$true).
 
-The \KwSty{if} in line 10 checks if the current signal is smaller than
-the next signal, if the next signal is larger than the upper cut
-defined above, and if we have a low--flux event\footnote{Note, that in
-  the current implementation there are never any low--flux events.}.
-If that condition is met, then the current signal is the smaller of
-two possible candidates for merging, and it should be merged into the
-next signal.  Note, that this \emph{only} applies in low--flux events.
+% The \KwSty{if} in line 10 checks if the current signal is smaller than
+% the next signal, if the next signal is larger than the upper cut
+% defined above, and if we have a low--flux event\footnote{Note, that in
+%   the current implementation there are never any low--flux events.}.
+% If that condition is met, then the current signal is the smaller of
+% two possible candidates for merging, and it should be merged into the
+% next signal.  Note, that this \emph{only} applies in low--flux events.
 
-In line 15, we test if the previous signal lies between our low and
+In line 11, % 15, 
+we test if the previous signal lies between our low and
 high cuts, and if it has not been marked as being used.  If so, we add
 it to our current signal.  
 
-The next \KwSty{if} on line 16 checks if the next signal is within our
+The next \KwSty{if} on line 12 % 16 
+checks if the next signal is within our
 cut bounds.  If so, we add that signal to the current signal and mark
 it as used for the next iteration (\DataSty{this signal
   used}$\leftarrow$true).  It will then be zero'ed on the next
@@ -343,11 +364,14 @@ as unused and return a 0.
 \subsection{Density calculator}
 \label{sec:sub:density_calculator}
 
-The density calculator loops over all the strip signals in the \ESD{}
+The density calculator loops over all the strip signals in the sharing
+corrected\footnote{The sharing correction can be disabled, in which
+  case the density calculator used the input \ESD{} signals.} \ESD{}
 and calculates the inclusive (primary + secondary) charged particle
 density in pre--defined $\etaphi$ bins.
 
 \subsubsection{Inclusive number of charged particles} 
+\label{sec:sub:sub:eloss_fits}
 
 The number charged particles in a strip is calculated using multiple
 Landau-like distributions fitted to the energy loss spectrum at a given
@@ -372,16 +396,17 @@ energy loss $x$ \cite{nim:b1:16,phyrev:a28:615}.
 \end{align}
 where $\Delta_{1,mp}$, $\xi_1$, and $\sigma_1$ are the parameters for
 the first MIP peak, $a_1=1$, and $a_i$ is the relative weight of the
-$i^{\text{th}}$ MIP peak.  The parameters $\Delta_{1,mp}, \xi_1,
-\sigma_1, a_2, \ldots a_{N_{max}}$ are obtained by fitting
+$i$-fold MIP peak.  The parameters $\Delta_{1,mp}, \xi_1,
+\sigma_1, \mathbf{a} = \left(a_2, \ldots a_{N_{max}}\right)$ are
+obtained by fitting 
 $$
-F_j(x;\Delta_{mp},\xi,\sigma) = 
-\sum_{i=1}^{j} F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
+F_j(x;C,\Delta_{mp},\xi,\sigma,\mathbf{a}) = C 
+\sum_{i=1}^{j} a_i F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
 $$
 for increasing $j$ to the energy loss spectra in separate $\eta$ bins.
 The fit procedure is stopped when the reduced $\chi^2$ exceeds a
 certain threshold, or when the weight $a_j$ is smaller than some
-number (typically $10^5$).  An example of the result of these fits are
+number (typically $10^{-5}$).  Examples of the result of these fits are
 given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}. 
 
 \subsubsection{Azimuthal Acceptance}
@@ -396,7 +421,7 @@ in both the inner and outer type rings.  The acceptance correction is
 then simply 
 \begin{align}
   \label{eq:acc_corr}
-  a_t &= \frac{l_t}{\Delta\varphi}\quad
+  \Corners{} &= \frac{l_t}{\Delta\varphi}\quad
 \end{align}
 where $l_t$ is the strip length in radians at constant $r$, and
 $\Delta\varphi$ is $2\pi$ divided by the number of sectors in the
@@ -408,7 +433,7 @@ given by
 \begin{align}
   \label{eq:density}
   \dndetadphi[incl,r,v,i\etaphi] &= \sum_t^{t\in\etaphi}
-  \mult[,t]\,a_t
+  \mult[,t]\,\Corners{}
 \end{align}
 where $t$ runs over the strips in the $\etaphi$ bin. 
 
@@ -438,7 +463,7 @@ within an $\etaphi$ bin for a given vertex bin
 
 \begin{align}
   \label{eq:secondary}
-  s_v\etaphi &=
+  \SecMap{} &=
   \frac{\sum_i^{\Ntrgvtx[v,]}\mult[,\text{primary},i]\etaphi}{
     \sum_i^{\Ntrgvtx[v,]}\mult[,\text{\FMD{}},i]\etaphi}\quad,
 \end{align}
@@ -468,16 +493,15 @@ up and event--by--event acceptance correction in each $\etaphi$
 bin by calculating the ratio
 \begin{align}
   \label{eq:dead_channels} 
-  a_{v,i}\etaphi &= 
+  \DeadCh{} &= 
   \frac{\sum_t^{t\in\etaphi}\left\{\begin{array}{cl}
         1 & \text{if not dead}\\
         0 & \text{otherwise}
       \end{array}\right.}{\sum_t^{t\in\etaphi} 1}\quad,
 \end{align}
-where $t$ runs over the strips in the $\etaphi$ bin.  This
-correction is obviously $v_z$ dependent since which $\etaphi$
-bin a strip $t$ corresponds to depends on it's relative position to
-the primary vertex. 
+where $t$ runs over the strips in the $\etaphi$ bin.  This correction
+is obviously $v_z$ dependent since which $\etaphi$ bin a strip $t$
+corresponds to depends on its relative position to the primary vertex.
 
 Alternatively, pre--made acceptance factors can be used.  These are
 made from the off-line conditions database (\OCDB{}).
@@ -486,7 +510,7 @@ The 5 output vertex dependent, per--ring histograms of the primary
 charged particle density is then given by
 \begin{align}
   \dndetadphi[r,v,i\etaphi] &=
-  s_v\etaphi a_{v,i}\etaphi\dndetadphi[incl,r,v,i\etaphi]
+  \SecMap{} \frac{1}{\DeadCh{}}\dndetadphi[incl,r,v,i\etaphi]
 \end{align}
 
 \subsection{Histogram collector}
@@ -499,9 +523,9 @@ of the charged particle density $\dndetadphi[v,i]$.
 
 To do this, it first calculates, for each vertex bin, the $\eta$ bin
 range to use for each ring.  It investigates the secondary correction
-maps $s_v\etaphi$ to find the edges of the map.  The edges are
-given by the $\eta$ range where $s_v\etaphi$ is larger than
-some threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
+maps $\SecMap{}$ to find the edges of each map.  The edges are given
+by the $\eta$ range where $\SecMap{}$ is larger than some
+threshold\footnote{Typically $t_s\approx 0.1$.}  $t_s$. The code
 applies safety margin of a $N_{cut}$ bins\footnote{Typically
   $N_{cut}=1$.}, to ensure that the data selected does not have too
 large corrections associated with it.
@@ -543,6 +567,7 @@ given $\eta$ bin.  The subscript $v$ indicates that the content
 depends on the current vertex bin of event $i$.
 
 \section{Building the final $\dndeta$}
+\label{sec:ana_aod}
 
 To build the final $\dndeta$ distribution it is enough to sum
 \eqref{eq:superhist} and \eqref{eq:overflow} over all interesting
@@ -612,11 +637,14 @@ $n_{i,[\eta_1,\eta_2]}$ as shown in \eqref{eq:event_n} in two bins
 $n_{i,[\eta_1,\eta_2]}$ and $n_{i,[-\eta_2,-\eta_1]}$ \textit{e.g.},
 $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$. 
 
+\clearpage
 \section{Some results}
 
-\figurename{}s \ref{fig:1} to \ref{fig:3} shows some results.
+%% \figurename{}s \ref{fig:1} to \ref{fig:3} shows some results.
+Figures below show some examples.  Note these are not finalised
+plots. 
 
-\begin{figure}[tbp]
+\begin{figure}[hbp]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
     dndeta_0900GeV_m10-p10cm_rb05_inel}
@@ -625,6 +653,8 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
     to other measurements shown where applicable}
   \label{fig:1}
 \end{figure} 
+
+\iffalse
 \begin{figure}[tbp]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
@@ -644,10 +674,13 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
     to other measurements shown where applicable}
   \label{fig:3}
 \end{figure} 
+\fi
 
 \clearpage
+%% \currentpdfbookmark{Appendices}{Appendices}
 \appendix 
 \section{Nomenclature} 
+\label{app:nomen}
 
 \begin{table}[hbp]
   \centering
@@ -663,15 +696,15 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
     (proton or nucleus) is excited and radiates particles, but there
     is no other processes taking place\\ 
     \hline
-    $\Ntrg{}$ & Number of events with a valid (minimum bias) trigger\\
-    $\Ntrgvtx{}$ & Number of events with a valid (minimum bias) trigger
+    $\Ntrg{}$ & Number of events with a valid trigger\\
+    $\Ntrgvtx{}$ & Number of events with a valid trigger
     \emph{and} a valid vertex within the selected vertex range.\\ 
     $\Nsel{}$ & Number of events selected for analysis in the second
     pass\\ 
-    $\Ngood$ & The number of expected \INEL{} events, given by the
+    $\Ngood$ & The number of expected minimum bias events, given by the
     formula $N_B-N_A-N_C+2N_E$, where each of $N_x$ is count the
     number of interaction triggers with requirements of beam from both
-    side, on the A side, on the C side, or no beam, respectively.\\
+    sides, on the A side, on the C side, or no beam, respectively.\\
     \hline
     $\mult{}$ & Charged particle multiplicity\\ 
     $\mult[,\text{primary}]$ & Primary charged particle multiplicity
@@ -685,14 +718,13 @@ $n_{i,f}=n_{i,[-3,-1]}$ and $n_{i,b}=n_{i,[1,3]}$.
     $\Delta_{mp}$ & Most probably energy loss\\ 
     $\xi$ & `Width' parameter of a Landau distribution\\
     $\sigma$ & Variance of a Gaussian distribution\\ 
-    $n_i$ & Relative weight of the $i$--fold MIP peak in the energy
+    $a_i$ & Relative weight of the $i$--fold MIP peak in the energy
     loss spectra.\\ 
     \hline
-    $a_t$ & Azimuthal acceptance of strip $t$\\ 
-    $s_v\etaphi$ & Secondary particle correction factor in
-    $\etaphi$ for a given vertex bin $v$\\ 
-    $a_{v,i}\etaphi$ & Acceptance in $\etaphi$ for a given
-    vertex bin $v$\\ 
+    $\Corners{}$ & Azimuthal acceptance of strip $t$\\ 
+    $\SecMap{}$ & Secondary particle correction factor in $\etaphi$
+    for a given vertex bin $v$\\  
+    $\DeadCh{}$ & Acceptance in $\etaphi$ for a given vertex bin $v$\\ 
     \hline
     $\dndetadphi[incl,r,v,i]$ & Inclusive (primary \emph{and}
     secondary) charge particle density in event $i$ with vertex $v$,
@@ -789,11 +821,26 @@ void Analyse()
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[keepaspectratio,width=.8\textwidth]{eloss_fits}
-  \caption{Summary of energy loss fits}
+  \includegraphics[keepaspectratio,width=\textwidth]{eloss_fits}
+  \caption{Summary of energy loss fits in each $\eta$ bin (see also
+    \secref{sec:sub:sub:eloss_fits}).
+    \newline
+    On the left side: Top panel shows the
+    reduced $\chi^2$, second from the top shows the found
+    scaling constant, 3\textsuperscript{rd} from the top is
+    the most probable energy loss $\Delta_{mp}$, 4\textsuperscript{th}
+    shows the width parameter $\xi$ of the Landau, and the
+    5\textsuperscript{th} is the Gaussian width $\sigma$.
+    \newline
+    On the right: The top panel shows the maximum number of
+    multi--particle signals that where fitted, and the 4 bottom panels
+    shows the weights $a_2,a_3,a_4,$ and $a_5$ for 2, 3, 4, and 5
+    particle responses.}
   \label{fig:eloss_fits}
 \end{figure}
 
+\clearpage
+\currentpdfbookmark{References}{References}
 \begin{thebibliography}{99}
 \bibitem{FWD:2004mz} \ALICE{} Collaboration, Bearden, I.~G.\ \textit{et al}
   \textit{ALICE technical design report on forward detectors: FMD, T0
@@ -802,8 +849,17 @@ void Analyse()
     Multiplicity Detector --- From Design to Installation},
   Ph.D.~thesis, University of Copenhagen, 2009,
   \url{http://www.nbi.dk/~cholm/}. 
-\bibitem{nim:b1:16} Nucl.Instrum.Meth.B1:16
-\bibitem{phyrev:a28:615} Phys.Rev.A28:615
+\bibitem{nim:b1:16} 
+%% \bibitem{Hancock:1983ry}
+  S.~Hancock, F.~James, J.~Movchet {\it et al.},
+  ``Energy Loss Distributions For Single Particles And Several
+  Particles In A Thin Silicon Absorber,'' Nucl.\ Instrum.\ Meth.\
+  \textbf{B1} (1984)  16. 
+\bibitem{phyrev:a28:615} 
+%% \bibitem{Hancock:1983fp}
+  S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss And
+  Energy Straggling Of Protons And Pions In The Momentum Range
+  0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615.
 \end{thebibliography}
 \end{document}
 
