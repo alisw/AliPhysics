@@ -354,10 +354,10 @@ void AliITS::MakeBranchS(const char* fl){
     Error("MakeBranchS","fDetTypeSim is 0!");
   }
   Int_t buffersize = 4000;
-  char branchname[30];
+  char branchname[31];
 
   // only one branch for SDigits.
-  sprintf(branchname,"%s",GetName());
+  snprintf(branchname,30,"%s",GetName());
 
   if(fLoader->TreeS()){
     TClonesArray* sdig = (TClonesArray*)fDetTypeSim->GetSDigits();
@@ -390,7 +390,7 @@ void AliITS:: MakeBranchInTreeD(TTree* treeD, const char* file){
   const Char_t *det[3] = {"SPD","SDD","SSD"};
   const Char_t* digclass;
   Int_t buffersize = 4000;
-  Char_t branchname[30];
+  Char_t branchname[31];
   
   if(!fDetTypeSim->GetDigits()){
     fDetTypeSim->SetDigits(new TObjArray(fgkNTYPES));
@@ -402,7 +402,7 @@ void AliITS:: MakeBranchInTreeD(TTree* treeD, const char* file){
       (fDetTypeSim->GetDigits())->AddAt(new TClonesArray(classn.Data(),1000),i);
     }
     else ResetDigits(i);  
-    if(fgkNTYPES==3) sprintf(branchname,"%sDigits%s",GetName(),det[i]);
+    if(fgkNTYPES==3) snprintf(branchname,30,"%sDigits%s",GetName(),det[i]);
     else sprintf(branchname,"%sDigits%d",GetName(),i+1);
     TObjArray* dig = DigitsAddress(i);
     if(GetDigits() && treeD) AliDetector::MakeBranchInTree(treeD,branchname, &dig,buffersize,file);
@@ -458,7 +458,7 @@ void AliITS::AddHit(Int_t track, Int_t *vol, Float_t *hits){
 }
 
 //______________________________________________________________________
-void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
+void AliITS::FillModules(Int_t /* evnt */,Int_t bgrev,Int_t nmodules,
                          Option_t *option, const char *filename){
   // fill the modules with the sorted by module hits; add hits from
   // background if option=Add.
@@ -468,7 +468,6 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
   static TFile *file;
   const char *addBgr = strstr(option,"Add");
   
-  evnt = nmodules; // Dummy use of variables to remove warnings
   if (addBgr ) {
     if(first) {
       file=new TFile(filename);
@@ -480,8 +479,8 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
     if(trH1) delete trH1;
     trH1=0;
     
-    char treeName[20];
-    sprintf(treeName,"TreeH%d",bgrev);
+    char treeName[21];
+    snprintf(treeName,20,"TreeH%d",bgrev);
     trH1 = (TTree*)gDirectory->Get(treeName);
     if (!trH1) {
       Error("FillModules","cannot find Hits Tree for event:%d",bgrev);
@@ -495,8 +494,10 @@ void AliITS::FillModules(Int_t evnt,Int_t bgrev,Int_t nmodules,
     FillModules(trH1,10000000); // Default mask 10M.
     TTree *fAli=fLoader->GetRunLoader()->TreeK();
     TFile *fileAli=0;
-    if (fAli) fileAli =fAli->GetCurrentFile();
-    fileAli->cd();
+    if (fAli) {
+      fileAli =fAli->GetCurrentFile();
+      fileAli->cd();
+    }
   } // end if add
   
   
@@ -517,13 +518,14 @@ void AliITS::FillModules(TTree *treeH, Int_t mask) {
 
     if (treeH == 0x0)
      {
-       Error("FillModules","Tree is NULL");
+       AliError("Tree H  is NULL");
+       return;
      }
     Int_t lay,lad,det,index;
     AliITShit *itsHit=0;
     AliITSmodule *mod=0;
-    char branchname[20];
-    sprintf(branchname,"%s",GetName());
+    char branchname[21];
+    snprintf(branchname,20,"%s",GetName());
     TBranch *branch = treeH->GetBranch(branchname);
     if (!branch) {
         Error("FillModules","%s branch in TreeH not found",branchname);
