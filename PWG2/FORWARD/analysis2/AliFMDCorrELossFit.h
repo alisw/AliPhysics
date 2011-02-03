@@ -544,7 +544,8 @@ public:
    * Draw this object 
    *
    * @param option Options.  Possible values are 
-   *  - err Plot error bars 
+   *  - error Plot error bars 
+   *  - relative Plot relative errors
    */
   void Draw(Option_t* option=""); //*MENU*
   /** 

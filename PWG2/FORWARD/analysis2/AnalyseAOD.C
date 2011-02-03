@@ -1,3 +1,4 @@
+
 /**
  * @file 
  * 
@@ -24,6 +25,7 @@
 #include <TSystem.h>
 #include "AliAODForwardMult.h"
 #include "OtherData.C"
+#include <ctime>
 
 /** 
  * Draw the data stored in the AOD 
@@ -358,12 +360,21 @@ public:
     fNWithVertex      = 0;                    // # of ev. w/vertex
     fNAccepted        = 0;                    // # of ev. used
     Int_t nAvailable  = fTree->GetEntries();  // How many entries
+    Int_t start       = time(NULL);
  
     for (int i = 0; i < nAvailable; i++) { 
       fTree->GetEntry(i);
       if (((i+1) % 100) == 0) {
-	fprintf(stdout,"Event # %9d of %9d, %9d accepted so far\r", 
-	       i+1, nAvailable, fNAccepted);
+	Int_t  now  = time(NULL);
+	double t    = difftime(now,start);
+	double full = t / (i+1) * nAvailable;
+	int    rem  = full-t;
+	Int_t  ss   = rem % 60;
+	Int_t  mm   = (rem / 60) % 60;
+	Int_t  hh   = (rem / 60 / 60);
+	fprintf(stdout,"Event # %9d of %9d, %9d accepted so far  "
+		"ETA %02d:%02d:%02d\r", i+1, nAvailable, fNAccepted,
+		hh, mm, ss);
 	fflush(stdout);
       }
 
@@ -412,7 +423,15 @@ public:
       // Add contribution from this event
       if (fSumCentral) fSumCentral->Add(fCentral);      
     }
-    printf("\n");
+    Int_t  now  = time(NULL);
+    Int_t  t    = Int_t(difftime(now,start));
+    Int_t  ss   = t % 60;
+    Int_t  mm   = (t / 60) % 60;
+    Int_t  hh   = (t / 60 / 60);
+    fprintf(stdout,"%9d events processed in %02d:%02d:%02d%33s\n", 
+	    nAvailable, hh, mm, ss, " ");
+    fflush(stdout);
+
     // fVtxEff = Double_t(fNWithVertex)/fNTriggered;
     Int_t nGood = (fNB-fNA-fNC+2*fNE);
     fVtxEff = (Double_t(fNMB) / fNTriggered) * 

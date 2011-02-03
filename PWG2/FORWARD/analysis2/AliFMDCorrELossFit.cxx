@@ -1,6 +1,7 @@
-// Object holding the Energy loss fit 'correction'
+// Object holding the Energy loss fit 'correction' 
 // 
 // These are generated from Monte-Carlo or real ESDs. 
+//
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
 #include <TF1.h>
@@ -9,6 +10,7 @@
 #include <THStack.h>
 #include <TH1D.h>
 #include <AliLog.h>
+#include <TMath.h>
 #include <TList.h>
 #include <iostream>
 #include <iomanip>
@@ -913,6 +915,8 @@ namespace {
   }
 }
 
+#define IDX2RING(I) (i == 0 || i == 1 || i == 3 ? 'I' : 'O')
+#define IDX2DET(I)  (i == 0 ? 1 : (i == 1 || i == 2 ? 2 : 3))
 //____________________________________________________________________
 void
 AliFMDCorrELossFit::Draw(Option_t* option)
@@ -926,10 +930,10 @@ AliFMDCorrELossFit::Draw(Option_t* option)
   //
   TString opt(Form("nostack %s", option));
   opt.ToLower();
-  Bool_t  rel = (opt.Contains("rel"));
-  Bool_t  err = (opt.Contains("err"));
-  if (rel) opt.ReplaceAll("rel","");
-  if (err) opt.ReplaceAll("err","");
+  Bool_t  rel = (opt.Contains("relative"));
+  Bool_t  err = (opt.Contains("error"));
+  if (rel) opt.ReplaceAll("relative","");
+  if (err) opt.ReplaceAll("error","");
   Int_t    nRings = fRings.GetEntriesFast();
   UShort_t maxN   = 0;
   for (Int_t i = 0; i < nRings; i++) { 
@@ -944,58 +948,65 @@ AliFMDCorrELossFit::Draw(Option_t* option)
     }
   }
   // AliInfo(Form("Maximum N is %d", maxN));
-  Int_t nPad = 7+maxN-1; // 7 regular params, and maxN-1 weights
+  Int_t nPad = 6+maxN-1; // 7 regular params, and maxN-1 weights
   TVirtualPad* pad = gPad;
   pad->Divide(2, (nPad+1)/2, 0.1, 0, 0);
+
+  enum { 
+    kChi2nu = 0, 
+    kC      = 1, 
+    kDelta  = 2, 
+    kXi     = 3, 
+    kSigma  = 4, 
+    kN      = 5 
+  };
   
-  THStack* chi2nu;
-  THStack* c;
-  THStack* delta;
-  THStack* xi;
-  THStack* sigma;
-  THStack* sigman;
+  THStack* sChi2nu;
+  THStack* sC;
+  THStack* sDelta;
+  THStack* sXi;
+  THStack* sSigma;
+  // THStack* sigman;
   THStack* n;
   TList stacks;
-  stacks.AddAt(chi2nu= new THStack("chi2",   "#chi^{2}/#nu"), 0);
-  stacks.AddAt(c     = new THStack("c",       "C"),           1);
-  stacks.AddAt(delta = new THStack("delta",  "#Delta_{mp}"),  2);
-  stacks.AddAt(xi    = new THStack("xi",     "#xi"),          3);
-  stacks.AddAt(sigma = new THStack("sigma",  "#sigma"),       4);
-  stacks.AddAt(sigman= new THStack("sigman", "#sigma_{n}"),   5);
-  stacks.AddAt(n     = new THStack("n",      "N"),            6);
+  stacks.AddAt(sChi2nu= new THStack("chi2",   "#chi^{2}/#nu"), kChi2nu);
+  stacks.AddAt(sC     = new THStack("c",       "C"),           kC);
+  stacks.AddAt(sDelta = new THStack("delta",  "#Delta_{mp}"),  kDelta);
+  stacks.AddAt(sXi    = new THStack("xi",     "#xi"),          kXi);
+  stacks.AddAt(sSigma = new THStack("sigma",  "#sigma"),       kSigma);
+  //stacks.AddAt(sigman= new THStack("sigman", "#sigma_{n}"),   5);
+  stacks.AddAt(n     = new THStack("n",      "N"),            kN);
   for (Int_t i = 1; i <= maxN; i++) {
-    stacks.AddAt(new THStack(Form("a_%02d", i+1), Form("a_{%d}", i+1)), 6+i);
+    stacks.AddAt(new THStack(Form("a_%02d", i+1), Form("a_{%d}", i+1)), kN+i);
   }
+
+  TArrayD min(nPad);
+  TArrayD max(nPad);
+  min.Reset(100000);
+  max.Reset(-100000);
 
   for (Int_t i = 0; i < nRings; i++) { 
     if (!fRings.At(i)) continue;
     TObjArray* a     = static_cast<TObjArray*>(fRings.At(i));
     Int_t      nFits = a->GetEntriesFast();
-    Int_t      color = 0;
-    switch (i) { 
-    case 0: color = kRed+2;   break;
-    case 1: color = kGreen+2; break;
-    case 2: color = kGreen-2; break;
-    case 3: color = kBlue+2;  break;
-    case 4: color = kBlue-2;  break;
-    }
+    Int_t      color = AliForwardUtil::RingColor(IDX2DET(i), IDX2RING(i));
 
     TH1D* hChi    = MakeHist(fEtaAxis,a->GetName(), "chi2",   color);
     TH1D* hC      = MakeHist(fEtaAxis,a->GetName(), "c",      color);
     TH1D* hDelta  = MakeHist(fEtaAxis,a->GetName(), "delta",  color);
     TH1D* hXi     = MakeHist(fEtaAxis,a->GetName(), "xi",     color);
     TH1D* hSigma  = MakeHist(fEtaAxis,a->GetName(), "sigma",  color);
-    TH1D* hSigmaN = MakeHist(fEtaAxis,a->GetName(), "sigman", color);
+    // TH1D* hSigmaN = MakeHist(fEtaAxis,a->GetName(), "sigman", color);
     TH1D* hN      = MakeHist(fEtaAxis,a->GetName(), "n",      color);
     TH1D* hA[maxN];
     const char* ho = (rel || !err ? "hist" : "e");
-    chi2nu->Add(hChi,   "hist"); // 0
-    c     ->Add(hC,     ho);     // 1
-    delta ->Add(hDelta, ho);     // 2
-    xi    ->Add(hXi,    ho);     // 3
-    sigma ->Add(hSigma, ho);     // 4
-    sigman->Add(hSigmaN,ho);     // 5
-    n     ->Add(hN,     "hist"); // 6
+    sChi2nu->Add(hChi,   "hist"); // 0
+    sC     ->Add(hC,     ho);     // 1
+    sDelta ->Add(hDelta, ho);     // 2
+    sXi    ->Add(hXi,    ho);     // 3
+    sSigma ->Add(hSigma, ho);     // 4
+    // sigman->Add(hSigmaN,ho);     // 5
+    n     ->Add(hN,     "hist"); // 5
     hChi->SetFillColor(color);
     hChi->SetFillStyle(3001);
     hN->SetFillColor(color);
@@ -1003,43 +1014,72 @@ AliFMDCorrELossFit::Draw(Option_t* option)
 
     for (Int_t k = 1; k <= maxN; k++) { 
       hA[k-1] = MakeHist(fEtaAxis,a->GetName(), Form("a%02d",k+1), color);
-      static_cast<THStack*>(stacks.At(6+k))->Add(hA[k-1], ho);
+      static_cast<THStack*>(stacks.At(kN+k))->Add(hA[k-1], ho);
     }
 			  
     for (Int_t j = 0; j < nFits; j++) {
       ELossFit* f = static_cast<ELossFit*>(a->At(j));
       if (!f) continue;
 
-      Int_t     b = f->fBin;
-      Int_t     nW = f->FindMaxWeight();
-      hChi   ->SetBinContent(b, (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu));
+      Int_t     b      = f->fBin;
+      Int_t     nW     = f->FindMaxWeight();
+      Double_t  vChi2nu = (f->fNu <= 0 ? 0 : f->fChi2 / f->fNu);
+      Double_t  vC      = (rel ? (f->fC     >0 ?f->fEC     /f->fC      :0) 
+			   : f->fC);
+      Double_t  vDelta  = (rel ? (f->fDelta >0 ?f->fEDelta /f->fDelta  :0) 
+			   : f->fDelta);
+      Double_t  vXi     = (rel ? (f->fXi    >0 ?f->fEXi    /f->fXi     :0) 
+			   : f->fXi);
+      Double_t  vSigma  = (rel ? (f->fSigma >0 ?f->fESigma /f->fSigma  :0) 
+			   : f->fSigma);
+      // Double_t  sigman = (rel ? (f->fSigmaN>0 ?f->fESigmaN/f->fSigmaN :0) 
+      //                     : f->SigmaN); 
+      hChi   ->SetBinContent(b, vChi2nu);
       hN     ->SetBinContent(b, nW);
-
-      if (rel) { 
-	hC     ->SetBinContent(b, f->fC     >0 ?f->fEC     /f->fC      :0);
-	hDelta ->SetBinContent(b, f->fDelta >0 ?f->fEDelta /f->fDelta  :0);
-	hXi    ->SetBinContent(b, f->fXi    >0 ?f->fEXi    /f->fXi     :0);
-	hSigma ->SetBinContent(b, f->fSigma >0 ?f->fESigma /f->fSigma  :0);
-	hSigmaN->SetBinContent(b, f->fSigmaN>0 ?f->fESigmaN/f->fSigmaN :0);
+      hC     ->SetBinContent(b, vC);
+      hDelta ->SetBinContent(b, vDelta);
+      hXi    ->SetBinContent(b, vXi);
+      hSigma ->SetBinContent(b, vSigma);
+      if (vChi2nu > 1e-12) {
+	min[kChi2nu] = TMath::Min(min[kChi2nu], vChi2nu);
+	max[kChi2nu] = TMath::Max(max[kChi2nu], vChi2nu);
       }
-      else {
-	hC     ->SetBinContent(b, f->fC);
-	hDelta ->SetBinContent(b, f->fDelta);
-	hXi    ->SetBinContent(b, f->fXi);
-	hSigma ->SetBinContent(b, f->fSigma);
-	hSigmaN->SetBinContent(b, f->fSigmaN);
+      if (vC > 1e-12) {
+	min[kC] = TMath::Min(min[kC], vC);
+	max[kC] = TMath::Max(max[kC], vC);
+      }
+      if (vDelta > 1e-12) {
+	min[kDelta] = TMath::Min(min[kDelta], vDelta);
+	max[kDelta] = TMath::Max(max[kDelta], vDelta);
+      }
+      if (vXi > 1e-12) {
+	min[kXi] = TMath::Min(min[kXi], vXi);
+	max[kXi] = TMath::Max(max[kXi], vXi);
+      }
+      if (vSigma > 1e-12) {
+	min[kSigma] = TMath::Min(min[kSigma], vSigma);
+	max[kSigma] = TMath::Max(max[kSigma], vSigma);
+      }
+      if (nW > 1e-12) { 
+	min[kN] = TMath::Min(min[kN], Double_t(nW));
+	max[kN] = TMath::Max(max[kN], Double_t(nW));
+      }
+      // hSigmaN->SetBinContent(b,  sigman);
+      if (!rel) {
 	hC     ->SetBinError(b, f->fEC);
 	hDelta ->SetBinError(b, f->fEDelta);
 	hXi    ->SetBinError(b, f->fEXi);
 	hSigma ->SetBinError(b, f->fESigma);
-	hSigmaN->SetBinError(b, f->fESigmaN);
+	// hSigmaN->SetBinError(b, f->fESigmaN);
       }
       for (Int_t k = 0; k < f->fN-1 && k < maxN; k++) { 
-	if (rel) 
-	  hA[k]->SetBinContent(b, f->fA[k] > 0 ? f->fEA[k] / f->fA[k] : 0);
-	else {
-	  hA[k]->SetBinContent(b, f->fA[k]);
-	  hA[k]->SetBinError(b, f->fEA[k]);
+	Double_t vA = (rel ? (f->fA[k] > 0 ? f->fEA[k] / f->fA[k] : 0) 
+		       : f->fA[k]);
+	hA[k]->SetBinContent(b, vA);
+	if (!rel) hA[k]->SetBinError(b, f->fEA[k]);
+	if (vA > 1e-12) {
+	  min[kN+1+k] = TMath::Min(min[kN+1+k], vA);
+	  max[kN+1+k] = TMath::Max(max[kN+1+k], vA);
 	}
       }
     }
@@ -1055,8 +1095,13 @@ AliFMDCorrELossFit::Draw(Option_t* option)
     p->SetGridy();
     if (rel && i != 0 && i != 6 && i != 5 && i != 4) p->SetLogy();
 
+    Double_t powMax = TMath::Log10(max[i]);
+    Double_t powMin = min[i] <= 0 ? powMax : TMath::Log10(min[i]);
+    if (powMax-powMin > 2. && min[i] != 0) p->SetLogy();
+
     THStack* stack = static_cast<THStack*>(stacks.At(i));
-    // AliInfo(Form("Drawing %s (%d) in pad %d", stack->GetName(), i, iPad));
+    // stack->SetMinimum(min[i]);
+    // stack->SetMaximum(max[i]);
     stack->Draw(opt.Data());
 
     TString tit(stack->GetTitle());
@@ -1068,32 +1113,21 @@ AliFMDCorrELossFit::Draw(Option_t* option)
     yaxis->SetTitleSize(0.15);
     yaxis->SetLabelSize(0.08);
     yaxis->SetTitleOffset(0.35);
+    yaxis->SetTitleFont(132);
+    yaxis->SetLabelFont(132);
     yaxis->SetNdivisions(5);
+
 
     TAxis* xaxis = stack->GetHistogram()->GetXaxis();
     xaxis->SetTitle("#eta");
     xaxis->SetTitleSize(0.15);
     xaxis->SetLabelSize(0.08);
     xaxis->SetTitleOffset(0.35);
+    xaxis->SetTitleFont(132);
+    xaxis->SetLabelFont(132);
     xaxis->SetNdivisions(10);
 
-
-    if (!rel) {
-      switch (i) { 
-      case 0:                         break; // chi^2/nu 
-      case 1:                         break; // C 
-      case 2: stack->SetMinimum(0.4); break; // Delta 
-      case 3: stack->SetMinimum(0.02);break; // xi
-      case 4: stack->SetMinimum(0.05);break; // sigma
-      case 5:                         break; // sigmaN
-      case 6: 
-	stack->SetMinimum(-.1); 
-	stack->SetMaximum(maxN+.5); 
-	break;                              // N
-      default:                       break; // Weights
-      }
-    }
-    stack->DrawClone(opt.Data());
+    stack->Draw(opt.Data());
   }
   pad->cd();      
 }
