@@ -68,8 +68,11 @@ class AliFlowAnalysisWithScalarProduct {
    
    // correction for non-uniform acceptance:
    void   SetApplyCorrectionForNUA(Bool_t const acfNUA) {this->fApplyCorrectionForNUA = acfNUA;}
-   Bool_t GetApplyCorrectionForNUA() const              {return this->fApplyCorrectionForNUA;}        
-
+   Bool_t GetApplyCorrectionForNUA() const              {return this->fApplyCorrectionForNUA;}   
+   // harmonic:     
+   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+   Int_t GetHarmonic() const {return this->fHarmonic;};  
+   
    // Output 
    TList*    GetHistList() const    { return this->fHistList ; } // Gets output histogram list
    //histogram getters
@@ -200,6 +203,7 @@ class AliFlowAnalysisWithScalarProduct {
    Int_t      fEventNumber;           // event counter
    Bool_t     fDebug ;                // flag for analysis: more print statements
    Bool_t     fApplyCorrectionForNUA; // apply correction for non-uniform acceptance
+   Int_t      fHarmonic;              // harmonic 
 
    Double_t   fRelDiffMsub;      // the relative difference the two subevent multiplicities can have
 
