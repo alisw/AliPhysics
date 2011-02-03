@@ -23,6 +23,7 @@
 #include "AliVCaloCells.h"
 #include "TRefArray.h"
 class AliCentrality;
+class AliVVZERO;
 
 class AliVEvent : public TObject {
 
@@ -132,6 +133,8 @@ public:
   virtual Int_t        EventIndexForCaloCluster(Int_t iclu) const = 0;
   virtual Int_t        EventIndexForPHOSCell(Int_t icell)   const = 0;
   virtual Int_t        EventIndexForEMCALCell(Int_t icell)  const = 0;  
+
+  virtual AliVVZERO *GetVZEROData() const = 0;
 
   ClassDef(AliVEvent,1)  // base class for AliEvent data
 };

@@ -113,6 +113,8 @@ public:
   // Primary vertex
     virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
     virtual Bool_t ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);
+  // VZERO
+  virtual AliVVZERO *GetVZEROData() const {return 0;}
 private:
   TList   fEventList;            //! List of Events
   Int_t   fNEvents;              //! Number of Events 

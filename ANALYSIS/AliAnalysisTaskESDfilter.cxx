@@ -219,6 +219,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD() {
     header->SetDiamond(diamxy,diamcov);
     header->SetDiamondZ(esd->GetDiamondZ(),esd->GetSigma2DiamondZ());
 //
+//  VZERO
+    AliAODVZERO* vzeroData = AODEvent()->GetVZEROData();
+    *vzeroData = *esd->GetVZEROData();
+//
 //
     Int_t nV0s      = esd->GetNumberOfV0s();
     Int_t nCascades = 0; // esd->GetNumberOfCascades();

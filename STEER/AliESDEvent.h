@@ -41,8 +41,9 @@
 
 #include "AliTOFHeader.h"
 
+#include "AliESDVZERO.h"
+
 class AliESDfriend;
-class AliESDVZERO;
 class AliESDHLTtrack;
 class AliESDVertex;
 class AliESDPmdTrack;

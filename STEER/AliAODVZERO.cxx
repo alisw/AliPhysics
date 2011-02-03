@@ -118,6 +118,37 @@ AliAODVZERO& AliAODVZERO::operator=(const AliAODVZERO& source)
 }
 
 //__________________________________________________________________________
+AliAODVZERO& AliAODVZERO::operator=(const AliVVZERO& source)
+{
+  // Assignment operator
+  // used in esd->aod filter
+  if(this==&source) return *this;
+  AliVVZERO::operator=(source);
+
+  fV0ATime = source.GetV0ATime();
+  fV0CTime = source.GetV0CTime();
+  fV0ADecision = source.GetV0ADecision();
+  fV0CDecision = source.GetV0CDecision();
+
+  for(Int_t j=0; j<64; j++) {
+    fMultiplicity[j] = source.GetMultiplicity(j);
+    fBBFlag[j] = source.GetBBFlag(j);
+    fBGFlag[j] = source.GetBGFlag(j);
+  }
+
+  fBBtriggerV0A = fBGtriggerV0A = fBBtriggerV0C = fBGtriggerV0C = 0;
+  for(Int_t j=0; j<32; j++) {
+    if (source.BBTriggerV0A(j)) fBBtriggerV0A |= (1 << j);
+    if (source.BGTriggerV0A(j)) fBGtriggerV0A |= (1 << j);
+    if (source.BBTriggerV0C(j)) fBBtriggerV0C |= (1 << j);
+    if (source.BGTriggerV0C(j)) fBGtriggerV0C |= (1 << j);
+  }
+
+  return *this;
+
+}
+
+//__________________________________________________________________________
 Short_t AliAODVZERO::GetNbPMV0A() const
 {
   // Returns the number of

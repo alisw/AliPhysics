@@ -16,6 +16,7 @@ public:
   AliAODVZERO(const AliAODVZERO& source);
   AliAODVZERO(const AliVVZERO& source);
   AliAODVZERO &operator=(const AliAODVZERO& source);
+  AliAODVZERO &operator=(const AliVVZERO& source);
 
   virtual ~AliAODVZERO() {};
 

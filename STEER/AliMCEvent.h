@@ -134,6 +134,8 @@ public:
   virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
   virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
   AliCentrality*       GetCentrality()  {return 0;} 
+
+  virtual AliVVZERO *GetVZEROData() const {return 0;}
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;
