@@ -48,7 +48,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fUsePhiWeights(usePhiWeights),
   fListWeights(NULL),
   fRelDiffMsub(1.0),
-  fApplyCorrectionForNUA(kFALSE)
+  fApplyCorrectionForNUA(kFALSE),
+  fHarmonic(2) 
 {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name)"<<endl;
@@ -72,7 +73,8 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fUsePhiWeights(kFALSE),
   fListWeights(NULL),
   fRelDiffMsub(1.0),
-  fApplyCorrectionForNUA(kFALSE)
+  fApplyCorrectionForNUA(kFALSE),
+  fHarmonic(0)
   {
   // Constructor
   cout<<"AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct()"<<endl;
@@ -111,6 +113,8 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
     cout<<"Corrections for non-uniform acceptance applied in the Scalar Product method"<<endl;
   }
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
+  // harmonic: 
+  fSP->SetHarmonic(fHarmonic);
     
   //for using phi weights:
   if(fUsePhiWeights) {

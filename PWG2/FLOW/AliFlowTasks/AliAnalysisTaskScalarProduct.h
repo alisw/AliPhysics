@@ -38,6 +38,9 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
   Bool_t GetApplyCorrectionForNUA() const {return this->fApplyCorrectionForNUA;};
+  
+  void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
+  Int_t GetHarmonic() const {return this->fHarmonic;};   
 
  private:
 
@@ -54,6 +57,8 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   Double_t  fRelDiffMsub;   // the relative difference the two subevent multiplicities can have
   
   Bool_t fApplyCorrectionForNUA; // apply automatic correction for non-uniform acceptance 
+  
+  Int_t fHarmonic;               // harmonic
   
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
 };

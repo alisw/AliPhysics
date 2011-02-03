@@ -114,7 +114,8 @@ void AliAnalysisTaskCumulants::UserCreateOutputObjects()
  cout<<"AliAnalysisTaskCumulants::UserCreateOutputObjects()"<<endl;
 
  // Analyser:
- fGFC = new AliFlowAnalysisWithCumulants();
+ fGFC = new AliFlowAnalysisWithCumulants(); 
+ fGFC->SetHarmonic(fHarmonic);
  
  // Calculation vs multiplicity:
  if(fCalculateVsMultiplicity)
