@@ -172,30 +172,15 @@ AliHFMassFitter::~AliHFMassFitter() {
   //destructor
 
   cout<<"AliHFMassFitter destructor called"<<endl;
-  if(fhistoInvMass) {
-    cout<<"deleting histogram..."<<endl;
-    delete fhistoInvMass;
-    fhistoInvMass=NULL;
-  }
-  if(fntuParam){
-    cout<<"deleting ntuple..."<<endl;
-    delete fntuParam;
 
-    fntuParam=NULL;
-  }
+  delete fhistoInvMass;
 
-  if(fFitPars) {
-    delete[] fFitPars;
-    cout<<"deleting parameter array..."<<endl;
-    fFitPars=NULL;
-  }
+  delete fntuParam;
 
-  if(fFixPar) {
-    delete[] fFixPar;
-    cout<<"deleting bool array..."<<endl;
-    fFixPar=NULL;
-  }
-
+  delete[] fFitPars;
+  
+  delete[] fFixPar;
+  
   fcounter = 0;
 }
 
@@ -225,17 +210,13 @@ AliHFMassFitter& AliHFMassFitter::operator=(const AliHFMassFitter &mfit){
   fContourGraph= mfit.fContourGraph;
 
   if(mfit.fParsSize > 0){
-    if(fFitPars) {
-      delete[] fFitPars;
-      fFitPars=NULL;
-    }
+    delete[] fFitPars;
+    
     fFitPars=new Float_t[fParsSize];
     memcpy(fFitPars,mfit.fFitPars,mfit.fParsSize*sizeof(Float_t));
 
-    if(fFixPar) {
-      delete[] fFixPar;
-      fFixPar=NULL;
-    }
+    delete[] fFixPar;
+    
     fFixPar=new Bool_t[fNFinalPars];
     memcpy(fFixPar,mfit.fFixPar,mfit.fNFinalPars*sizeof(Float_t));
   }
@@ -390,14 +371,7 @@ void AliHFMassFitter::Reset() {
   fMass=1.85;
   fSigmaSgn=0.012;
   cout<<"Reset "<<fhistoInvMass<<endl;
-  if(fhistoInvMass) {
-    delete fhistoInvMass;
-    fhistoInvMass=NULL;
-    cout<<fhistoInvMass<<endl;
-  }
-  else cout<<"histogram doesn't exist, do not delete"<<endl;
-  
-
+  delete fhistoInvMass;
 }
 
 //_________________________________________________________________________
@@ -1222,19 +1196,12 @@ Bool_t AliHFMassFitter::MassFitter(Bool_t draw){
     
   }
 
-  if (ftypeOfFit4Sgn == 1 && funcbkg1) {
+  if (ftypeOfFit4Sgn == 1) {
     delete funcbkg1;
-    funcbkg1=NULL;
   }
-  if (funcbkg) {
-    delete funcbkg;
-    funcbkg=NULL;
-  }
-  if (funcmass) {
-    delete funcmass;
-    funcmass=NULL;
-  }
-
+  delete funcbkg;
+  delete funcmass;
+  
   AddFunctionsToHisto();
   if (draw) DrawFit();
  
@@ -1334,6 +1301,7 @@ void  AliHFMassFitter::GetFitPars(Float_t *vector) const {
 void AliHFMassFitter::IntS(Float_t *valuewitherror) const {
 
   //gives the integral of signal obtained from fit parameters
+  if(!valuewitherror)valuewitherror=new Float_t[2];
 
   Int_t index=fParsSize/2 - 3;
   valuewitherror[0]=fFitPars[index];
@@ -1382,10 +1350,7 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     }else{
       bonly->SetLineColor(kBlue+3);
       hlist->Add((TF1*)bonly->Clone());
-      if(bonly) {
-	delete bonly;
-	bonly=NULL;
-      }
+      delete bonly;
     }
 
   }
@@ -1438,14 +1403,9 @@ void AliHFMassFitter::AddFunctionsToHisto(){
     hlist->Add((TF1*)blastpar->Clone());
     hlist->ls();
   
-    if(bfullrange) {
-      delete bfullrange;
-      bfullrange=NULL;
-    }
-    if(blastpar) {
-      delete blastpar;
-      blastpar=NULL;
-    }
+    delete bfullrange;
+    delete blastpar;
+    
   }
 
 
@@ -1484,11 +1444,8 @@ void AliHFMassFitter::WriteHisto(TString path) const {
 
   cout<<fcounter<<" "<<hget->GetName()<<" written in "<<path<<endl;
 
-  if(output) {
-    delete output;
-    output=NULL;
-  }
-
+  delete output;
+  
 }
 
 //_________________________________________________________________________
@@ -1509,10 +1466,8 @@ void AliHFMassFitter::WriteNtuple(TString path) const{
     nget=NULL;
   }
   */
-  if(output) {
-    delete output;
-    output=NULL;
-  }
+
+  delete output;
 }
 
 //_________________________________________________________________________
