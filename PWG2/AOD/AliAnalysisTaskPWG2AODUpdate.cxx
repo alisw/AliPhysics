@@ -89,6 +89,8 @@ void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
   fAOD = AODEvent();
   if (!fAOD) { printf ("No output AOD !!! Not adding PWG2 information\n"); }
  
+  if ((!fESD) || (!fAOD)) return;
+
   Double_t pos[3];
   Double_t p[3];
   Double_t tpcentrancepoint[3];
