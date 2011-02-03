@@ -287,7 +287,9 @@ void AliEveITSDigitsInfo::ReadRaw(AliRawReader* raw, Int_t mode)
 	digits = fSPDmap[module];
 	if (digits == 0)
 	  fSPDmap[module] = digits = new TClonesArray("AliITSdigit", 16);
-      }
+      } else if(!digits) {
+		  AliFatal("No module found\n");
+	  }
 
       AliITSdigit* d = new ((*digits)[digits->GetEntriesFast()]) AliITSdigit();
       d->SetCoord1(column);

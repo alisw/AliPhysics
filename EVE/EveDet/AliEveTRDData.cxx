@@ -532,10 +532,10 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
       //trk->CookPID();
   
       Int_t species = 0; Float_t pid = 0.;
-      for(Int_t is=0; is<(Int_t) AliPID::kSPECIES; ++is) 
+      for(Int_t is=0; is<AliPID::kSPECIES; ++is) 
         if(trk->GetPID(is) > pid){
           pid = trk->GetPID(is);
-          species = is;
+		  species = (AliPID::EParticleType) is;
         }
       switch(species){
       case AliPID::kElectron:

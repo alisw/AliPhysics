@@ -1398,18 +1398,12 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
       // Cancel creation
       if (!useGivenType2)
       {
-        if (typeStr != 0)
-        {
-          typeStr->Clear();
-          delete typeStr;
-        }
+        typeStr->Clear();
+        delete typeStr;
         typeStr = 0;
 
-        if (typeStr2 != 0)
-        {
-          typeStr2->Clear();
-          delete typeStr2;
-        }
+        typeStr2->Clear();
+        delete typeStr2;
         typeStr2 = 0;
 
         return;
