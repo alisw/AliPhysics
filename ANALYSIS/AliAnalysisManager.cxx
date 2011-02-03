@@ -1070,7 +1070,7 @@ void AliAnalysisManager::Terminate()
       if (crtdir) crtdir->cd();
    }
    // Validate the output files
-   if (ValidateOutputFiles()) {
+   if (ValidateOutputFiles() && fIsRemote && fMode!=kProofAnalysis) {
       ofstream out;
       out.open("outputs_valid", ios::out);
       out.close();
