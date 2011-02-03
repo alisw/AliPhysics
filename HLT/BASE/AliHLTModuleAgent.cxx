@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -138,11 +138,10 @@ AliHLTOUTHandler* AliHLTModuleAgent::GetOutputHandler(AliHLTComponentDataType /*
 int AliHLTModuleAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
 {
   // default method, simply deletes object
-  if (pInstance) return -EINVAL;
-  delete pInstance;
-  return 0;
+  if (!pInstance) return -EINVAL;
+  HLTWarning("potential memory leak due to missing implementation, agent %s must implement function DeleteOutputHandler", GetModuleId());
+  return -ENOSYS;
 }
-
 
 // likely to be moved to AliHLTOUTHandler
 // AliRawStream* AliHLTModuleAgent::GetRawStream(AliHLTComponentDataType /*dt*/,
