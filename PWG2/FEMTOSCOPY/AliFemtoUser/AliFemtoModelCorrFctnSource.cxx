@@ -189,7 +189,7 @@ void AliFemtoModelCorrFctnSource::AddRealPair(AliFemtoPair* aPair)
 	  cout << "RP aware cut requested, but not connected to the CF" << endl;
 	  if (!(fPairCut->Pass(aPair))) return;
 	}
-	if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+	else if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
       }
     }
     else
@@ -219,7 +219,7 @@ void AliFemtoModelCorrFctnSource::AddMixedPair(AliFemtoPair* aPair)
 	  cout << "RP aware cut requested, but not connected to the CF" << endl;
 	  if (!(fPairCut->Pass(aPair))) return;
 	}
-	if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
+	else if (!(ktc->Pass(aPair, arp->GetCurrentReactionPlane()))) return;
       }
     }
     else
