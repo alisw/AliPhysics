@@ -316,26 +316,11 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     return 0;
   }
 
-
- 
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
-  }
-  
   // PID selection
   Int_t returnvaluePID=3;
   Int_t returnvalueCuts=3;
-                                          
 
-  //if(selectionLevel==AliRDHFCuts::kAll || 
-  if(selectionLevel==AliRDHFCuts::kCandidate ||     
-     selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(d);
-  }
-  if(returnvaluePID==0)return 0;
-  
+
   
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -414,8 +399,24 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       AliDebug(3,"delete new vertex\n");
     }
     
-    return returnvalueCuts;
+    if(!returnvalueCuts) return 0;
   }
+  
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate ||     
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+  }
+  if(returnvaluePID==0)return 0;
+
+  // selection on daughter tracks 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kTracks) {
+    if(!AreDaughtersSelected(d)) return 0;
+  }
+  
+ 
+
 
   return 3;
 }
