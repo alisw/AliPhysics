@@ -342,7 +342,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   }
  
   //  cout<<"Pid = "<<returnvaluePID<<endl;
-  return returnvalueComb;CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
+  return returnvalueComb;
 }
 
 //------------------------------------------------------------------------------------------
