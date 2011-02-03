@@ -82,7 +82,8 @@ public:
     
   const TBits* GetFlowBits() const {return &fFlowBits;}
 
-  void SetIndexOnCollection(int i) {fCollIndex=i;}
+  void  SetID(Int_t i) {fID=i;}
+  Int_t GetID() {return fID;}
 
  private:
   AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge);
@@ -93,7 +94,7 @@ public:
   Int_t fCharge;         //charge
   TBits    fFlowBits;    // bits to set if track is selected
   TBits    fSubEventBits;// bits to set if track is selected for a subevent
-  Int_t    fCollIndex;   // stores the relative position of the track in the original collection
+  Int_t    fID;          // Unique track ID, point back to the ESD track
 
   ClassDef(AliFlowTrackSimple,1)                 // macro for rootcint
 

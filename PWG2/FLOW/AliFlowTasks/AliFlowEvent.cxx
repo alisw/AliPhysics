@@ -635,6 +635,13 @@ AliFlowEvent::AliFlowEvent( AliFlowTrackCuts* rpCuts,
         if (!pTrack) continue;
         pTrack->TagPOI();
       }
+      
+      //store the index of the ESD track for AODs and ESDs
+      //TODO: should be moved to AliFlowTrackCuts
+      Int_t trackID = -1;
+      AliVTrack *toGetfID = dynamic_cast<AliVTrack*> (particle);
+      if (toGetfID) trackID = toGetfID->GetID();
+      pTrack->SetID(trackID);
 
       AddTrack(pTrack);
     }//end of while (i < numberOfTracks)
