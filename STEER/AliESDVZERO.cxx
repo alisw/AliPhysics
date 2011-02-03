@@ -1,3 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-------------------------------------------------------------------------
+//     Container class for ESD VZERO data
+//     Author: Brigitte Cheynis & Cvetan Cheshkov
+//-------------------------------------------------------------------------
+
 #include "AliESDVZERO.h"
 #include "AliLog.h"
 
@@ -5,7 +25,7 @@ ClassImp(AliESDVZERO)
 
 //__________________________________________________________________________
 AliESDVZERO::AliESDVZERO()
-  :TObject(),
+  :AliVVZERO(),
    fBBtriggerV0A(0),
    fBGtriggerV0A(0),
    fBBtriggerV0C(0),
@@ -30,7 +50,7 @@ AliESDVZERO::AliESDVZERO()
 
 //__________________________________________________________________________
 AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
-  :TObject(o),
+  :AliVVZERO(o),
    fBBtriggerV0A(o.fBBtriggerV0A),
    fBGtriggerV0A(o.fBGtriggerV0A),
    fBBtriggerV0C(o.fBBtriggerV0C),
@@ -58,7 +78,7 @@ AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
 	      UInt_t BBtriggerV0C, UInt_t BGtriggerV0C,
 	      Float_t *Multiplicity, Float_t *Adc, 
 	      Float_t *Time, Float_t *Width, Bool_t *BBFlag, Bool_t *BGFlag)
-  :TObject(),
+  :AliVVZERO(),
    fBBtriggerV0A(BBtriggerV0A),
    fBGtriggerV0A(BGtriggerV0A),
    fBBtriggerV0C(BBtriggerV0C),
@@ -86,7 +106,7 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
 {
 
   if(this==&o) return *this;
-  TObject::operator=(o);
+  AliVVZERO::operator=(o);
   // Assignment operator
   fBBtriggerV0A=o.fBBtriggerV0A;
   fBGtriggerV0A=o.fBGtriggerV0A;
@@ -167,26 +187,6 @@ Float_t AliESDVZERO::GetMTotV0C() const
   for(Int_t i=0;i<32;i++) 
     mul+=  fMultiplicity[i];
   return mul;
-}
-
-//__________________________________________________________________________
-Float_t* AliESDVZERO::GetMRingV0A() const
-{
-//  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
-//  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
-  AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
-  AliInfo("use Float_t AliESDVZERO::GetMRingV0C(Int_t ring)");
-  return 0x0;
-}
-
-//__________________________________________________________________________
-Float_t* AliESDVZERO::GetMRingV0C() const
-{
-//  cout << "AliESDVZERO::GetMRingV0C() not supported any more" << endl;
-//  cout << "use Int_t AliESDVZERO::GetMRingV0C(Int_t ring)" << endl;
-  AliInfo("AliESDVZERO::GetMRingV0C() not supported any more");
-  AliInfo("use Float_t AliESDVZERO::GetMRingV0C(Int_t ring)"); 
-  return 0x0;
 }
 
 //__________________________________________________________________________
@@ -398,17 +398,3 @@ Bool_t AliESDVZERO::GetBGFlag(Int_t i) const
   if (OutOfRange(i, "AliESDVZERO::GetBGFlag:",64)) return kFALSE;
   return fBGFlag[i];
 }
-
-//__________________________________________________________________________
-Bool_t AliESDVZERO::OutOfRange(Int_t i, const char* /*s*/, Int_t upper) const
-{
-  // checks if i is a valid index.
-  // s = name of calling method
-  if (i > upper || i < 0) {
-//    cout << s << " Index " << i << " out of range" << endl;
-     AliInfo(Form("Index %d out of range",i));
-     return kTRUE;
-  }
-  return kFALSE;
-}
-

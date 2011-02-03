@@ -50,7 +50,9 @@ public:
 
   virtual Decision GetV0ADecision() const = 0;
   virtual Decision GetV0CDecision() const = 0;
-  
+
+protected:  
+
   Bool_t OutOfRange(Int_t i, const char *s, Int_t upper) const;
     
   ClassDef(AliVVZERO,1)
