@@ -189,7 +189,9 @@ void AliHLTReconstructor::Init()
   }
 
   fpEsdManager=AliHLTEsdManager::New();
-  fpEsdManager->SetOption(esdManagerOptions.Data());
+  if (fpEsdManager) {
+    fpEsdManager->SetOption(esdManagerOptions.Data());
+  }
 
   AliHLTMisc::Instance().InitStreamerInfos(fgkCalibStreamerInfoEntry);
 }
