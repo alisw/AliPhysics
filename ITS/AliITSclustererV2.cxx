@@ -54,7 +54,18 @@ fHlSSD(0),
 fTanP(0),
 fTanN(0){
    //default constructor
- }
+  for(Int_t i=0;i<260;i++){
+    fYSPD[i]=0.;
+    fZSPD[i]=0.;
+  }
+  for(Int_t i=0;i<2200;i++){
+    fYshift[i]=0.;
+    fZshift[i]=0.;
+    fNdet[i]=0;
+    fNlayer[i]=0;
+  }
+
+}
 AliITSclustererV2::AliITSclustererV2(const Char_t *geom):
 fNModules(AliITSgeomTGeo::GetNModules()),
 fEvent(0),
@@ -562,7 +573,6 @@ FindClustersSPD(const TClonesArray *digits, TClonesArray *clusters) {
 	 lp[4]= (zmax-zmin+1)*100 + (ymax-ymin+1);
 	 
 	 milab[3]=fNdet[fI];
-	 d=(AliITSdigitSPD*)digits->UncheckedAt(idx[0]);
 	 Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[fI]};
 	 new (cl[n]) AliITSclusterV2(milab,lp,info); n++; 	 
        }
@@ -681,10 +691,12 @@ void AliITSclustererV2::FindClustersSPD(AliITSRawStream* input,
     }
 
     // fill the current digit into the bins array
-    Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
-    bins[index].SetIndex(index);
-    bins[index].SetMask(1);
-    bins[index].SetQ(1);
+    if(bins){
+      Int_t index = (input->GetCoord2()+1) * kNzBins + (input->GetCoord1()+1);
+      bins[index].SetIndex(index);
+      bins[index].SetMask(1);
+      bins[index].SetQ(1);
+    }
   }
 
   delete [] binsSPDInit;
