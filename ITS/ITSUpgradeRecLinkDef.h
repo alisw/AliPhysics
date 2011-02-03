@@ -15,7 +15,7 @@
  
 #pragma link C++ class AliITSlayerUpgrade+;
 #pragma link C++ class AliITStrackerUpgrade+;
-//#pragma link C++ class AliITSReconstructor+;
+#pragma link C++ class AliITStrackU+;
 #pragma link C++ class AliITSUpgradeReconstructor+;
 #pragma link C++ class AliITSUpgradeClusterList+;
 #pragma link C++ class AliITSUpgradeClusterListNode+;

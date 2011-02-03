@@ -22,7 +22,7 @@
 #include <TClonesArray.h>
 
 class AliITSclusterTable;
-class AliITStrackSA;
+class AliITStrackU;
 class AliITSsegmentationUpgrade;
 class AliESDVertex;
 class AliESDEvent;
@@ -46,7 +46,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   Int_t RefitInward(AliESDEvent *event);//{return 0;}
   AliCluster *GetCluster(Int_t index) const;
 
-  AliITStrackV2* FitTrack(AliITStrackSA* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
+  AliITStrackV2* FitTrack(AliITStrackU* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
   void StoreTrack(AliITStrackV2 *t,AliESDEvent *event, Bool_t pureSA) /*const*/; 
   Int_t FindTrackLowChiSquare() const;
   Int_t LoadClusters(TTree *clusTree);
@@ -97,7 +97,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   Int_t FindLabel(AliITStrackV2* track) const;
  
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
-                       AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
+                       AliITStrackU* trs,Double_t zvertex,Int_t flagp); 
 
   void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,Double_t* vertex);
   void GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz);
@@ -118,7 +118,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   static void GetNTeor(Int_t layer,const AliITSRecPoint* cl,
                        Float_t tgl,Float_t tgphitr,
                        Float_t &ny,Float_t &nz);
-
+  static const Int_t fgMaxNLayer = 8; //max number of layers in ITSUpgrade
   Int_t fNLayer;//number of layer in ITSUpgrade
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Bool_t fITSStandAlone; //Tracking is performed in the ITS alone if kTRUE
@@ -137,7 +137,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   AliESDVertex *fVert;        //! primary vertex
   AliITSVertexer *fVertexer;  //! vertexer 
   TClonesArray *fListOfTracks;   //! container for found tracks 
-  TClonesArray *fListOfSATracks; //! container for found SA tracks 
+  TClonesArray *fListOfUTracks; //! container for found SA tracks 
   TTree *fITSclusters;        //! pointer to ITS tree of clusters
   Bool_t fInwardFlag;       // set to kTRUE for inward track finding
   Int_t fOuterStartLayer;     // Outward search for tracks with <6 points: outer layer to start from
