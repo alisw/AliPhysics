@@ -458,7 +458,7 @@ void AliITS::AddHit(Int_t track, Int_t *vol, Float_t *hits){
 }
 
 //______________________________________________________________________
-void AliITS::FillModules(Int_t /* evnt */,Int_t bgrev,Int_t nmodules,
+void AliITS::FillModules(Int_t /* evnt */,Int_t bgrev,Int_t /* nmodules */,
                          Option_t *option, const char *filename){
   // fill the modules with the sorted by module hits; add hits from
   // background if option=Add.

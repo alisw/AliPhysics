@@ -98,7 +98,7 @@ class AliITS : public AliDetector {
     //=================== Hits =========================================
     virtual void StepManager() {} // See Step Manager for specific geometry.
     //------------ sort hits by module for Digitisation ----------------
-    virtual void FillModules(Int_t /* evnt */,Int_t bgrev,Int_t nmodules,
+    virtual void FillModules(Int_t /* evnt */,Int_t bgrev,Int_t /* nmodules */,
 			     Option_t *opt, const char *filename); 
     virtual Bool_t InitModules(Int_t size,Int_t &nmodules);  
     virtual void FillModules(TTree *treeH, Int_t mask = 0);

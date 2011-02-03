@@ -45,9 +45,6 @@ $Id$
 #include <TMath.h>
 
 #include "AliLog.h"
-#include "AliITSgeomSPD.h"
-#include "AliITSgeomSDD.h"
-#include "AliITSgeomSSD.h"
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
