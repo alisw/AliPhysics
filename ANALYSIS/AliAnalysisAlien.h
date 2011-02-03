@@ -37,6 +37,7 @@ public:
    virtual void        AddIncludePath(const char *path);
    virtual void        AddRunNumber(Int_t run);
    virtual void        AddRunNumber(const char *run);
+   virtual void        AddRunList(const char *runList);
    virtual void        AddDataFile(const char *lfn);
    virtual void        AddExternalPackage(const char *name);
    virtual void        SetExecutable(const char *name="analysis.sh")     {fExecutable = name;}

@@ -392,6 +392,20 @@ void AliAnalysisAlien::AddRunNumber(Int_t run)
 }   
 
 //______________________________________________________________________________
+void AliAnalysisAlien::AddRunList(const char* runList)
+{
+// Add several runs into the list of runs; they are expected to be separated by a blank character.  
+  TString    sList = runList;
+  TObjArray *list  = sList.Tokenize(" ");
+  Int_t n = list->GetEntries();
+  for (Int_t i = 0; i < n; i++) {
+    TObjString *os = (TObjString*)list->At(i);
+    AddRunNumber(os->GetString().Atoi());
+  }
+  delete list;
+}
+
+//______________________________________________________________________________
 void AliAnalysisAlien::AddRunNumber(const char* run)
 {
 // Add a run number to the list of runs to be processed.
