@@ -233,18 +233,10 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   }
 
 
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
-  }
-
 
   Int_t returnvalue=3;
   Int_t returnvaluePID=3;
 
-     if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedPID(d);
-     if(returnvaluePID==0) return 0;
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -317,8 +309,20 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
-    
+   
+    if(!returnvalue) return 0;
   }
+
+  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedPID(d);
+  if(returnvaluePID==0) return 0;
+
+  // selection on daughter tracks 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kTracks) {
+    if(!AreDaughtersSelected(d)) return 0;
+  }
+
+
   Int_t returnvalueTot=CombinePIDCuts(returnvalue,returnvaluePID);
   return returnvalueTot;
 }

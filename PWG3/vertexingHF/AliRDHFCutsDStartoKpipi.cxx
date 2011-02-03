@@ -256,29 +256,9 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   AliAODTrack *b = (AliAODTrack*)d->GetBachelor();
 
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(dd)) return 0;
-    if(fTrackCutsSoftPi) {
-      AliAODVertex *vAOD = d->GetPrimaryVtx();
-      Double_t pos[3],cov[6];
-      vAOD->GetXYZ(pos);
-      vAOD->GetCovarianceMatrix(cov);
-      const AliESDVertex vESD(pos,cov,100.,100);
-      if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi)) return 0;
-    }
-  }
   
   Int_t returnvalue=1;
   Int_t returnvaluePID=3;
-
-  // selection on PID 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kCandidate ||
-     selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(d);
-  }
 
 
   // selection on candidate
@@ -288,11 +268,6 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     Double_t pt=d->Pt();
     Int_t ptbin=PtBin(pt);
  
-    // select D0 that passes D* cuts
-    returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel);
-
-    if((b->Charge()==+1 && returnvalue==2) || (b->Charge()==-1 && returnvalue==1)) return 0; 
-    
     // DStarMass and D0mass
     Double_t mDSPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -310,9 +285,35 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     // cut on the angle between D0 decay plane and soft pion
     if(d->AngleD0dkpPisoft() > fCutsRD[GetGlobalIndex(13,ptbin)]) return 0;
   
+    // select D0 that passes D* cuts
+    returnvalue = IsD0FromDStarSelected(pt,dd,selectionLevel);
+    if((b->Charge()==+1 && returnvalue==2) || (b->Charge()==-1 && returnvalue==1)) return 0; 
+    
+  }
+
+  // selection on PID 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate ||
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+  }
+  if(returnvaluePID!=3) returnvalue =0;
+
+
+  // selection on daughter tracks 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kTracks) {
+    if(!AreDaughtersSelected(dd)) return 0;
+    if(fTrackCutsSoftPi) {
+      AliAODVertex *vAOD = d->GetPrimaryVtx();
+      Double_t pos[3],cov[6];
+      vAOD->GetXYZ(pos);
+      vAOD->GetCovarianceMatrix(cov);
+      const AliESDVertex vESD(pos,cov,100.,100);
+      if(!IsDaughterSelected(b,&vESD,fTrackCutsSoftPi)) return 0;
+    }
   }
   
-  if(returnvaluePID!=3) returnvalue =0;
   return returnvalue;
 
 }
