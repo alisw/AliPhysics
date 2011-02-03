@@ -47,6 +47,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
    fEventNumber(0),
    fDebug(kFALSE),
    fApplyCorrectionForNUA(kFALSE),
+   fHarmonic(2),
    fRelDiffMsub(1.),
    fWeightsList(NULL),
    fUsePhiWeights(kFALSE),
@@ -314,6 +315,9 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fCommonHistsmuQ = new AliFlowCommonHist("AliFlowCommonHistmuQ");
   fHistList->Add(fCommonHistsmuQ);
 
+  (fCommonHistsSP->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
+  (fCommonHistsmuQ->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
+
   fHistQNorm = new TH1D("Flow_QNorm_SP","Flow_QNorm_SP",110,0.,1.1);
   fHistQNorm -> SetYTitle("dN/d(|(Qa+Qb)/(Ma+Mb)|)");
   fHistQNorm -> SetXTitle("|(Qa+Qb)/(Ma+Mb)|");
@@ -429,9 +433,9 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
     //get Q vectors for the eta-subevents
     AliFlowVector* vQarray = new AliFlowVector[2];
     if (fUsePhiWeights) {
-      anEvent->Get2Qsub(vQarray,2,fWeightsList,kTRUE);
+      anEvent->Get2Qsub(vQarray,fHarmonic,fWeightsList,kTRUE);
     } else {
-      anEvent->Get2Qsub(vQarray);
+      anEvent->Get2Qsub(vQarray,fHarmonic);
     }
     //subevent a
     AliFlowVector vQa = vQarray[0];
@@ -514,8 +518,8 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 	      //calculate vU
 	      TVector2 vU;
 	      //do not need to use weight for v as the length will be made 1
-	      Double_t dUX = TMath::Cos(2*dPhi);
-	      Double_t dUY = TMath::Sin(2*dPhi);
+	      Double_t dUX = TMath::Cos(fHarmonic*dPhi);
+	      Double_t dUY = TMath::Sin(fHarmonic*dPhi);
 	      vU.Set(dUX,dUY);
 	      Double_t dModulus = vU.Mod();
 	      if (dModulus > 0.) vU.Set(dUX/dModulus,dUY/dModulus);  // make length 1
@@ -538,8 +542,8 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub0/TMath::TwoPi()));
 		    dW = fPhiWeightsSub0->GetBinContent(phiBin); 
 		    dPhiCenter = fPhiWeightsSub0->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(2*dPhiCenter) )/(dMq-1);
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(2*dPhiCenter) )/(dMq-1);
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-1);
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-1);
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -549,8 +553,8 @@ void AliFlowAnalysisWithScalarProduct::FillSP(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub1/TMath::TwoPi()));
 		    dW = fPhiWeightsSub1->GetBinContent(phiBin);
 		    dPhiCenter = fPhiWeightsSub1->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(2*dPhiCenter) )/(dMq-1);
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(2*dPhiCenter) )/(dMq-1);
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) )/(dMq-1);
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) )/(dMq-1);
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -688,9 +692,9 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
     //get Q vectors for the eta-subevents
     AliFlowVector* vQarray = new AliFlowVector[2];
     if (fUsePhiWeights) {
-      anEvent->Get2Qsub(vQarray,2,fWeightsList,kTRUE);
+      anEvent->Get2Qsub(vQarray,fHarmonic,fWeightsList,kTRUE);
     } else {
-      anEvent->Get2Qsub(vQarray);
+      anEvent->Get2Qsub(vQarray,fHarmonic);
     }
     //subevent a
     AliFlowVector vQa = vQarray[0];
@@ -732,8 +736,8 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 	    	    
 	    //calculate vU
 	    TVector2 vU;
-	    Double_t dUX = TMath::Cos(2*dPhi);
-	    Double_t dUY = TMath::Sin(2*dPhi);
+	    Double_t dUX = TMath::Cos(fHarmonic*dPhi);
+	    Double_t dUY = TMath::Sin(fHarmonic*dPhi);
 	    vU.Set(dUX,dUY);
 	    Double_t dModulus = vU.Mod();
 	    // make length 1
@@ -759,8 +763,8 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub0/TMath::TwoPi()));
 		    dW = fPhiWeightsSub0->GetBinContent(phiBin); 
 		    dPhiCenter = fPhiWeightsSub0->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(2*dPhiCenter) );
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(2*dPhiCenter) );
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) );
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) );
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -770,8 +774,8 @@ void AliFlowAnalysisWithScalarProduct::FillmuQ(AliFlowEventSimple* anEvent) {
 		    Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub1/TMath::TwoPi()));
 		    dW = fPhiWeightsSub1->GetBinContent(phiBin);
 		    dPhiCenter = fPhiWeightsSub1->GetBinCenter(phiBin);
-		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(2*dPhiCenter) );
-		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(2*dPhiCenter) );
+		    dQmX = (vQ.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter) );
+		    dQmY = (vQ.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter) );
 		    
 		    vQm.Set(dQmX,dQmY);
 		  }
@@ -987,6 +991,12 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   //calculate flow and fill the AliFlowCommonHistResults
   if (fDebug) cout<<"AliFlowAnalysisWithScalarProduct::Finish()"<<endl;
   
+  // access harmonic:
+  if(fCommonHistsSP && fCommonHistsSP->GetHarmonic())
+  {
+   fHarmonic = (Int_t)(fCommonHistsSP->GetHarmonic())->GetBinContent(1); 
+  }
+  
   //access all boolean flags needed in Finish():
   this->AccessFlags();
 
@@ -1057,7 +1067,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dVerr = (1./(2.*pow(dQaQb,0.5)))*dStatErrorQaQb;
   } 
   fCommonHistsResSP->FillIntegratedFlow(dV,dVerr);
-  cout<<"v2(subevents) = "<<dV<<" +- "<<dVerr<<endl;
+  cout<<Form("v%i(subevents) = ",fHarmonic)<<dV<<" +- "<<dVerr<<endl;
 	
   //Calculate differential flow and integrated flow (RP, POI)
   //---------------------------------------------------------
@@ -1132,7 +1142,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dErrVRP = TMath::Sqrt(dErrVRP);
   }
   fCommonHistsResSP->FillIntegratedFlowRP(dVRP,dErrVRP);
-  cout<<"v2(RP) = "<<dVRP<<" +- "<<dErrVRP<<endl;
+  cout<<Form("v%i(RP) = ",fHarmonic)<<dVRP<<" +- "<<dErrVRP<<endl;
   
 
   //v as a function of Pt for POI selection 
@@ -1171,7 +1181,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
     dErrVPOI = TMath::Sqrt(dErrVPOI);
   }
   fCommonHistsResSP->FillIntegratedFlowPOI(dVPOI,dErrVPOI);
-  cout<<"v2(POI) = "<<dVPOI<<" +- "<<dErrVPOI<<endl;
+  cout<<Form("v%i(POI) = ",fHarmonic)<<dVPOI<<" +- "<<dErrVPOI<<endl;
 
   cout<<endl;
   cout<<"*************************************"<<endl;
