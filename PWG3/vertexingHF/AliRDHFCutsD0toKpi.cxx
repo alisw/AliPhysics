@@ -210,27 +210,10 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
     return 0;
   }
 
-  // selection on daughter tracks 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kTracks) {
-    if(!AreDaughtersSelected(d)) return 0;
-  }
-
-
  
   // returnvalue: 0 not sel, 1 only D0, 2 only D0bar, 3 both
   Int_t returnvaluePID=3;
   Int_t returnvalueCuts=3;
-
-  // selection on PID 
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kCandidate ||
-     selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(d);
-  }
-
-
-
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -335,12 +318,31 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       }
 
     } // if(fUseKF)
+
+    if(!returnvalueCuts) return 0;
   }
 
- 
 
+  // selection on PID 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate ||
+     selectionLevel==AliRDHFCuts::kPID) {
+    returnvaluePID = IsSelectedPID(d);
+    if(!returnvaluePID) return 0;
+  }
+
+  Int_t returnvalueComb=CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
+
+  if(!returnvalueComb) return 0;
+
+  // selection on daughter tracks 
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kTracks) {
+    if(!AreDaughtersSelected(d)) return 0;
+  }
+ 
   //  cout<<"Pid = "<<returnvaluePID<<endl;
-  return CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
+  return returnvalueComb;CombineSelectionLevels(3,returnvalueCuts,returnvaluePID);
 }
 
 //------------------------------------------------------------------------------------------
