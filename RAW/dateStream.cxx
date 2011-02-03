@@ -826,7 +826,8 @@ void parseLdc( char * const line ) {
 		 lineNmb );
 	exit( 1 );
       }
-      if ( sscanf( idNum, "%d", (int*)&currLdcId ) != 1 ) {
+      int inCurrLdcId;
+      if ( sscanf( idNum, "%d", &inCurrLdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d LDC declaration, numeric ID needed (%s)",
 		 myName,
@@ -834,6 +835,7 @@ void parseLdc( char * const line ) {
 		 idNum );
 	exit( 1 );
       }
+      currLdcId = (eventLdcIdType)inCurrLdcId;
       DBG_VERBOSE printf( "%d)     LDC - ID:%d\n",
 			  lineNmb,
 			  currLdcId );
