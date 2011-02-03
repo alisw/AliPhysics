@@ -451,14 +451,32 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   //inject candidates
   if(fLoadCandidates) {
     TObjArray* Candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
-    AliFlowCandidateTrack *cand = NULL;
+    //if(Candidates->GetEntriesFast()) 
+      //printf("I received %d candidates\n",Candidates->GetEntriesFast());
     if (Candidates)
     {
-      for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand )
-      {
-        cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
+      for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand ) {
+        AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
         if (!cand) continue;
-        cand->SetForPOISelection();
+        cand->SetForPOISelection(kTRUE);
+        cand->SetForRPSelection(kFALSE);
+        //printf(" Ⱶ Checking at candidate %d with %d daughters\n",iCand,cand->GetNDaughters());
+        for(int iDau=0; iDau!=cand->GetNDaughters(); ++iDau) {
+          //printf("    Ⱶ Daughter %d with fID %d", iDau, cand->GetIDDaughter(iDau) );
+          for(int iRPs=0; iRPs!=flowEvent->NumberOfTracks(); ++iRPs ) {
+            AliFlowTrack *iRP = dynamic_cast<AliFlowTrack*>(flowEvent->GetTrack( iRPs ));
+            if (!iRP) continue;
+            if( !iRP->InRPSelection() )
+              continue;
+            if( cand->GetIDDaughter(iDau) == iRP->GetID() ) {
+              //printf(" was in RP set");
+              cand->SetDaughter( iDau, iRP );
+              //temporarily untagging all daugters
+              iRP->SetForRPSelection(kFALSE);
+            }
+          }
+          //printf("\n");
+        }
         flowEvent->AddTrack(cand);
       }
     }

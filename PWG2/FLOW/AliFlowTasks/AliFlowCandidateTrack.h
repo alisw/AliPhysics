@@ -15,9 +15,10 @@
 
 class AliFlowCandidateTrack : public AliFlowTrack {
   protected:
-    Double_t fMass;      // mass
-    Int_t fNDaughters;   // number of daughters (5 max)
-    Int_t fDaughter[5]; // index of daughters
+    Double_t fMass;           // mass
+    Int_t fNDaughters;        // number of daughters (5 max)
+    Int_t fDaughter[5];       // fID of daughter, points back to ESD track
+    AliFlowTrack *fTrack[5];  // pointer to daughter in FlowEvent
     
   public:
     AliFlowCandidateTrack();
@@ -28,8 +29,13 @@ class AliFlowCandidateTrack : public AliFlowTrack {
     Double_t Mass(void)            { return fMass; }
     void SetMass(Double_t value)   { fMass=value; }
 
-    Int_t GetNDaughters(void)      { return fNDaughters; }
-    void AddDaughter(Int_t value)  { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
+    Int_t GetNDaughters(void)           { return fNDaughters; }
+    void  AddDaughter(Int_t value)      { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
+    Int_t GetIDDaughter(Int_t value) { return fDaughter[value]; }
+
+    void SetDaughter(Int_t value, AliFlowTrack *track) { fTrack[value]=track; }
+    AliFlowTrack *GetDaughter(Int_t value) { return fTrack[value]; }
+
 
     ClassDef(AliFlowCandidateTrack, 1);
 };
