@@ -344,8 +344,12 @@ void AliAnalysisTaskSESignificance::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(4,"nTotEntries Mass hists");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"MC Cand from c");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"MC Cand from b");
+  if(fReadMC){
+    fHistNEvents->GetXaxis()->SetBinLabel(7,"MC Cand from c");
+    fHistNEvents->GetXaxis()->SetBinLabel(8,"MC Cand from b");
+  } else{
+    fHistNEvents->GetXaxis()->SetBinLabel(7,"N candidates");
+  }
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   fOutput->Add(fHistNEvents);
 
@@ -422,7 +426,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       break; 
     }
   }
-  if(!aod || !arrayProng) {
+  if(!arrayProng) {
     AliError("AliAnalysisTaskSESignificance::UserExec:Branch not found!\n");
     return;
   }
@@ -531,7 +535,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   }
   
   for (Int_t iProng = 0; iProng < nProng; iProng++) {
-    
+    fHistNEvents->Fill(6);
     d=(AliAODRecoDecayHF*)arrayProng->UncheckedAt(iProng);
     
     Bool_t isFidAcc = fRDCuts->IsInFiducialAcceptance(d->Pt(),d->Y(absPdgMom));
@@ -557,10 +561,6 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	  if(fBFeedDown==kCharmOnly) isSelected=kFALSE; //from beauty
 	}
 	
-	/*
-	if(TMath::Abs(pdgMotCode)==4 && fBFeedDown==kBeautyOnly) isSelected=kFALSE; //from primary charm
-	if(TMath::Abs(pdgMotCode)==5 && fBFeedDown==kCharmOnly) isSelected=kFALSE; //from beauty
-	*/
       }
     }
     
@@ -845,32 +845,6 @@ void AliAnalysisTaskSESignificance::FillDs(AliAODRecoDecayHF* d,TClonesArray *ar
   }
   
      
-  //MC histograms
- 
-  //Ds channel
-	// Int_t isKKpi=0;
-	// Int_t ispiKK=0;
-        //   isKKpi=isSelected&1;
-	//   ispiKK=isSelected&2;
-
-	// Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-	// AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
-	// Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
-
-	//       if(isKKpi){
-	//        if(pdgCode0==321){
-        //         fSigHist[index]->Fill(masses[0]);
-	//        }else{
-	//         fRflHist[index]->Fill(masses[0]);
-	//        }
-	//       }
-	//       if(ispiKK){
-	//        if(pdgCode0==211){
-        //         fSigHist[index]->Fill(masses[1]);
-	//        }else{
-	//         fRflHist[index]->Fill(masses[1]);
-	//        }
-	//       }
 
 }
 
@@ -883,34 +857,7 @@ void AliAnalysisTaskSESignificance::FillD04p(AliAODRecoDecayHF* /*d*/,TClonesArr
 void AliAnalysisTaskSESignificance::FillLambdac(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Double_t* /*masses*/,Int_t /*matchtoMC*/){
   AliInfo("Lambdac channel not implemented\n");
 
-  //Lambdac channel
-  // Int_t ispKpi=0;
-  // Int_t ispiKp=0;
-
-  // ispKpi=isSelected&1;
-  // ispiKp=isSelected&2;
-  // if(matchtoMC>=0){	
-  // Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-  // AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
-  // Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
-  // if(ispKpi){
-  //   if(pdgCode0==2212){
-  //     fSigHist[index]->Fill(invMass[0]);
-  //   }else{
-  //     fRflHist[index]->Fill(invMass[0]);
-  //   }
-  // }
-  // if(ispiKp){
-  //   if(pdgCode0==211){
-  //     fSigHist[index]->Fill(invMass[1]);
-  //   }else{
-  //     fRflHist[index]->Fill(invMass[1]);
-  //   }
-  // }
-  // }else{
-  //   fBkgHist[index]
-  // }
-
+ 
 
 }
 
