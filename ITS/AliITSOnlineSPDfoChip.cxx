@@ -64,13 +64,14 @@ fActiveHS(c.fActiveHS),
 fChipId(c.fChipId),
 fNumDACparams(c.fNumDACparams),
 fNumChipConfigs(c.fNumChipConfigs),
+fDACparams(0x0),
 fChipConfigArray(0x0)
 {
   //
   //copy constructor 
   // fChipConfigArray is not copied. This method is private
   //
-
+  fDACparams = new Short_t[fNumDACparams];
   for(Int_t iPar =0; iPar < fNumDACparams; iPar++) fDACparams[iPar] = c.fDACparams[iPar]; 
 }    
 //--------------------------------------------------
