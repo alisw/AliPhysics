@@ -100,7 +100,7 @@ void AliEveJetPlaneEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveJetPlane*>(obj);
+  fM = static_cast<AliEveJetPlane*>(obj);
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());

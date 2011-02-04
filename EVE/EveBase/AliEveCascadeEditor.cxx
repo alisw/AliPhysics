@@ -98,7 +98,7 @@ void AliEveCascadeEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveCascade*>(obj);
+  fM = static_cast<AliEveCascade*>(obj);
 
   // Set values of widgets
   fInfoLabelRadius->SetText(Form("Radius = %f cm",     fM->GetRadius() ));

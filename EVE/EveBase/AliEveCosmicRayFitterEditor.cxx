@@ -65,7 +65,7 @@ void AliEveCosmicRayFitterEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveCosmicRayFitter*>(obj);
+  fM = static_cast<AliEveCosmicRayFitter*>(obj);
 
   if(fM->GetConnected())
   {

@@ -73,7 +73,7 @@ void AliEveHFEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveHF*>(obj);
+  fM = static_cast<AliEveHF*>(obj);
 
   // Set values of widgets
   fInfoLabel0->SetText(Form("CosPointingAngle = %f",  fM->GetCosPointingAngle()));

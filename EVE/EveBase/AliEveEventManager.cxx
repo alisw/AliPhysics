@@ -1567,6 +1567,7 @@ Bool_t AliEveEventManager::InsertGlobal(const TString& tag, TEveElement* model,
          model->SetRnrChildren(kFALSE);
 
          TEveElement* old_model = dynamic_cast<TEveElement*>(pair->Value());
+		 if(!old_model) AliFatal("old_model == 0, dynamic cast failed\n");
          while (old_model->HasChildren())
          {
             TEveElement *el = old_model->FirstChild();

@@ -71,7 +71,7 @@ void AliEveEventManagerEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveEventManager*>(obj);
+  fM = static_cast<AliEveEventManager*>(obj);
 
   fEventInfo->LoadBuffer(fM->GetEventInfoVertical());
 }

@@ -323,7 +323,7 @@ void AliEveITSScaledModule::LoadQuads()
 	}
 	else
 	{
-	  sd = dynamic_cast<ScaledDigit_t*>(GetId(miter->second));
+	  sd = static_cast<ScaledDigit_t*>(GetId(miter->second));
 	  if(c1 < sd->fMinI)
 	    sd->fMinI = c1;
 	  else if( c1 > sd->fMaxI)

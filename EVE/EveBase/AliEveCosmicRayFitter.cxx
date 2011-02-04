@@ -150,6 +150,7 @@ void AliEveCosmicRayFitter::AddFitPoint(Int_t n)
 
   Float_t x, y, z;
   TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
+  if(!ps) AliFatal("ps == 0, dynamic cast failed\n");
 
   std::map<Point_t, Int_t>::iterator g = fSPMap.find(Point_t(ps, n));
   if(g != fSPMap.end())
@@ -363,8 +364,11 @@ void AliEveCosmicRayFitter::DrawDebugGraph()
   // draw graphs
 
   TCanvas * canvas = 0;
-  if (gPad) gPad->Clear();
-  else if (gPad==0 || gPad->GetCanvas()->IsEditable() == kFALSE) {
+  if (gPad) {
+	  gPad->Clear();
+	  canvas=gPad->GetCanvas();
+  }
+  if (gPad==0 || gPad->GetCanvas()->IsEditable() == kFALSE) {
     canvas = new TCanvas("canvas", "CosmicRayFitter", 800, 400);
     canvas->Clear();
   }

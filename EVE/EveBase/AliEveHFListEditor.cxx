@@ -90,7 +90,7 @@ void AliEveHFListEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveHFList*>(obj);
+  fM = static_cast<AliEveHFList*>(obj);
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());

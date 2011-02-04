@@ -43,7 +43,7 @@ namespace {
   {
     TEveElement::List_i i = cont->BeginChildren();
     while (i != cont->EndChildren()) {
-      AliEveTrack* track = dynamic_cast<AliEveTrack*>(*i);
+      AliEveTrack* track = static_cast<AliEveTrack*>(*i);
       map.insert(std::make_pair(track->GetLabel(), track));
       if (recurse)
         MapTracks(map, track, recurse);
@@ -61,7 +61,7 @@ void AliEveKineTools::SetDaughterPathMarks(TEveElement* cont, AliStack* stack, B
   TEveElement::List_i  iter = cont->BeginChildren();
   while(iter != cont->EndChildren())
   {
-    AliEveTrack* track = dynamic_cast<AliEveTrack*>(*iter);
+    AliEveTrack* track = static_cast<AliEveTrack*>(*iter);
     TParticle* p = stack->Particle(track->GetLabel());
     if (p->GetNDaughters())
     {

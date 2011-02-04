@@ -398,7 +398,7 @@ void AliRun::SetRunLoader(AliRunLoader* rloader)
   TString evfoldname;
   TFolder* evfold = fRunLoader->GetEventFolder();
   if (evfold) evfoldname = evfold->GetName();
-  else AliWarning("Did not get Event Folder from Run Loader");
+  else AliFatal("Did not get Event Folder from Run Loader");
   
   if ( fRunLoader->GetAliRun() )
    {//if alrun already exists in folder

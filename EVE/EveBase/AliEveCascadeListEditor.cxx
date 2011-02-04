@@ -114,7 +114,7 @@ void AliEveCascadeListEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveCascadeList*>(obj);
+  fM = static_cast<AliEveCascadeList*>(obj);
 
   // Set values of widgets
   // fXYZZ->SetValue(fM->GetXYZZ());

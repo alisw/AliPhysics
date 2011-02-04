@@ -69,7 +69,7 @@ void AliEveKinkEditor::SetModel(TObject* obj)
 {
   // Set model object.
 
-  fM = dynamic_cast<AliEveKink*>(obj);
+  fM = static_cast<AliEveKink*>(obj);
 
   // Set values of widgets
   fInfoLabel0->SetText(Form("Radius = %f, Kink Angle = %f", fM->GetKinkRadius(), (fM->GetKinkAngle(2))*TMath::RadToDeg() ));
