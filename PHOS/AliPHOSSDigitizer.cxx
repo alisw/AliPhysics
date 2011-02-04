@@ -256,7 +256,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
     for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
+      
       AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
+      if(!hit) AliFatal("Wrong conversion to AliPHOSHit gives a null pointer!");
+      
       // Assign primary number only if contribution is significant
       
       if( hit->GetEnergy() > fPrimThreshold)
@@ -277,7 +280,10 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigits->Expand(nSdigits) ;
 
     for (i = 0 ; i < nSdigits ; i++) { 
-      AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ; 
+      
+      AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ;
+      if(!digit) AliFatal("Wrong dynamic cast to AliPHOSDigit gives a null pointer!");
+      
       digit->SetIndexInList(i) ;     
     }
 
@@ -355,7 +361,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
   // Prints list of digits produced in the current pass of AliPHOSDigitizer
 
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   // Get PHOS Geometry object
   AliPHOSGeometry *geom;
@@ -375,8 +381,8 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
     Int_t maxEmc = geom->GetNModules() * geom->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; (index < sdigits->GetEntriesFast()) && 
-	 ((dynamic_cast<AliPHOSDigit *> (sdigits->At(index)))->GetId() <= maxEmc) ; index++) {
-      digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
+	 ((static_cast<AliPHOSDigit *> (sdigits->At(index)))->GetId() <= maxEmc) ; index++) {
+      digit = static_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
       //  if(digit->GetNprimary() == 0) 
       // 	continue;
 //       printf("%6d  %8d    %6.5e %4d      %2d :\n", // YVK
@@ -416,6 +422,10 @@ void AliPHOSSDigitizer::Unload() const
   // Unloads the objects from the folder
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+
+  if(!phosLoader)
+    AliFatal("Wrong dynamic cast from AliRunLoader to AliPHOSLoader gives a null pointer!");
+  
   phosLoader->UnloadHits() ; 
   phosLoader->UnloadSDigits() ; 
 }

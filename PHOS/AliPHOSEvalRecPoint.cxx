@@ -233,7 +233,7 @@ void AliPHOSEvalRecPoint::Init()
   // initialization
   AliPHOSClusterizer* clusterizer = GetClusterizer();
   if(!clusterizer) {
-    Fatal("Init", "Cannot get clusterizer") ;
+    AliFatal("Cannot get clusterizer") ;
   }
 
   TClonesArray* digits = AliPHOSLoader::GetPHOSLoader(fEventFolderName)->Digits();

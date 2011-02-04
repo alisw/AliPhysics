@@ -239,6 +239,8 @@ void  AliPHOSPIDv0::MakeRecParticles()
     AliPHOSEmcRecPoint * emc = 0 ;
     if(ts->GetEmcIndex()>=0)
       emc = (AliPHOSEmcRecPoint *) fEMCRecPoints->At(ts->GetEmcIndex()) ;
+    else
+      AliFatal(Form("ts->GetEmcIndex() return illegal index %d",ts->GetEmcIndex()));
     
     AliPHOSRecPoint    * cpv = 0 ;
     if(ts->GetCpvIndex()>=0)

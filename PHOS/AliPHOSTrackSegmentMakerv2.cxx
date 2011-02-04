@@ -172,7 +172,7 @@ void  AliPHOSTrackSegmentMakerv2::FillOneModule()
   //First EMC clusters
   Int_t totalEmc = fEMCRecPoints->GetEntriesFast() ;
   for(fEmcFirst = fEmcLast; (fEmcLast < totalEmc) &&  
-	((dynamic_cast<AliPHOSRecPoint *>(fEMCRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
+	((static_cast<AliPHOSRecPoint *>(fEMCRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
       fEmcLast ++)  ;
   
   //Now TPC tracks
@@ -294,7 +294,7 @@ void  AliPHOSTrackSegmentMakerv2::MakeLinks()
   
   Int_t iEmcRP;
   for(iEmcRP = fEmcFirst; iEmcRP < fEmcLast; iEmcRP++ ) {
-    emcclu = dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ;
+    emcclu = static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP)) ;
     TVector3 vecEmc ;
     emcclu->GetLocalPosition(vecEmc) ;
     Int_t mod=emcclu->GetPHOSMod() ;
@@ -325,8 +325,11 @@ void  AliPHOSTrackSegmentMakerv2::MakePairs()
 
   //Make arrays to mark clusters already chosen
   Int_t * emcExist = 0;
+
   if(fEmcLast > fEmcFirst)
     emcExist = new Int_t[fEmcLast-fEmcFirst] ;
+  else
+    AliFatal(Form("fEmcLast > fEmcFirst: %d > %d is not true!",fEmcLast,fEmcFirst));
   
   Int_t index;
   for(index = 0; index <fEmcLast-fEmcFirst; index ++)
@@ -357,10 +360,10 @@ void  AliPHOSTrackSegmentMakerv2::MakePairs()
          Float_t dx,dz ; 
          linkUp->GetXZ(dx,dz) ;
 	 new ((* fTrackSegments)[fNTrackSegments]) 
-	   AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(linkUp->GetEmc())) , 
+	   AliPHOSTrackSegment(static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(linkUp->GetEmc())) , 
 			       nullpointer,
 			       linkUp->GetTrack(),dx,dz) ;
-       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+       (static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
        emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
        //mark track as already used 
@@ -375,7 +378,7 @@ void  AliPHOSTrackSegmentMakerv2::MakePairs()
     for(iEmcRP = 0; iEmcRP < fEmcLast-fEmcFirst  ; iEmcRP++ ){
       if(emcExist[iEmcRP] > 0 ){
        new ((*fTrackSegments)[fNTrackSegments])  
-         AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst)), 
+         AliPHOSTrackSegment(static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst)), 
                            nullpointer) ;
        (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++;    
