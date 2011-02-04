@@ -13,7 +13,7 @@
 
 //#include "AliESDtrack.h"
 
-//#include "Riostream.h"
+#include "Riostream.h"
 #include "AliInputEventHandler.h"
 #include "AliStack.h"
 //#include "AliMCEventHandler.h"
@@ -30,6 +30,7 @@
 #include "AliESDtrackCuts.h"
 //#include "AliESDpidCuts.h"
 //#include "AliESDpid.h"
+#include "AliCentrality.h"
 
    class     AliMCEventHandler;
      class   Riostream;
@@ -39,17 +40,18 @@ ClassImp(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask)
 
 //________________________________________________________________________
 AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::AliAnalysisChargedHadronSpectraITSTruncatedMeanTask(const char *name) 
-:AliAnalysisTaskSE(name),fESD(0),fCuts(0),fMC(0),
-fLowMultiplicity(-1),fUpMultiplicity(-1),
+:AliAnalysisTaskSE(name),fESD(0),fCuts(0),fCutsMul(0),fMC(0),
+fLowMultiplicity(-1),fUpMultiplicity(-1),fLowCentrality(-10.0),fUpCentrality(-10.0),
 fYCut(100.0),fsigmacut(3.0),fnsigmaxy(7.0),fnsigmaz(5.0),fchargeCut(0.0),
-fCorrectSDD(0),fCorrectSSD(0),
+fCorrectSDD(0),fCorrectSSD(0),fHIsettings(0),fdovertexrescuts(0),
  fK0weight(0),flambdaweight(0),fAntilambdaweight(0),
-fHistStats(0),fHistPhiPtBeforeCuts(0),fHistPhiPtAfterCuts(0),fHistEtaPtBeforeCuts(0),fHistEtaPtAfterCuts(0),fHistDCABeforeCuts(0),fHistDCAAfterCuts(0),
+fHistStats(0),fHistZVertexBeforeCut(0),fHistZVertexAfterCut(0),fHistXYVertexBeforeCut(0),fHistXYVertexAfterCut(0),
+fHistPhiPtBeforeCuts(0),fHistPhiPtAfterCuts(0),fHistEtaPtBeforeCuts(0),fHistEtaPtAfterCuts(0),fHistDCABeforeCuts(0),fHistDCAAfterCuts(0),
 fHistPminusTPCinPAfterCuts(0),fHistPminusTPCinPglobalAfterCuts(0),
 fHistMydEPpositive(0),fHistMydETPCinPpositive(0),fHistMydETPCinPglobalpositive(0),
 fHistMydEPnegative(0),fHistMydETPCinPnegative(0),fHistMydETPCinPglobalnegative(0),
 fHistL3dEP(0),fHistL4dEP(0),fHistL5dEP(0),fHistL6dEP(0),fHistL3dETPCinP(0),
- fHistL4dETPCinP(0),fHistL5dETPCinP(0),fHistL6dETPCinP(0),fHistEtaPtPions(0), fHistEtaPtKaons(0),fHistEtaPtProtons(0),fHistwhichhasmin(0),
+ fHistL4dETPCinP(0),fHistL5dETPCinP(0),fHistL6dETPCinP(0),fHistwhichhasmin(0),fHistMysignalminusESD(0),
 fHistminsignalforPionP(0),fHistminsignalforKaonP(0),fHistminsignalforProtonP(0),
 fHistminsignalifPionP(0),fHistminsignalifKaonP(0),fHistminsignalifProtonP(0),fHistminsignalifAntiPionP(0),fHistminsignalifAntiKaonP(0),fHistminsignalifAntiProtonP(0),
 fDCAXYZforcleanPions(0),fDCAXYZforcleanAntiPions(0),fDCAXYZforcleanProtons(0),fDCAXYZforcleanAntiProtons(0),
@@ -58,10 +60,6 @@ fHistNtrackwithstandardcuts(0),fHistNtrackwithITSPIDcuts(0),
 fHistSignalinTPCKaonforstandardcuts(0),fHistSignalinTPCKaonforITSPIDcuts(0),fHistSignalinTPCAntiKaonforstandardcuts(0),fHistSignalinTPCAntiKaonforITSPIDcuts(0),
 fHistSignalinTPCProtonforstandardcuts(0),fHistSignalinTPCProtonforITSPIDcuts(0),fHistSignalinTPCAntiProtonforstandardcuts(0),fHistSignalinTPCAntiProtonforITSPIDcuts(0),
 fHistStandartMul(0),fHistMytrackMul(0),
-fHistEtaPtPionsMC(0),fHistEtaPtKaonsMC(0),fHistEtaPtProtonsMC(0),
- fHistEtaPtPionsMCDET(0),fHistEtaPtKaonsMCDET(0),fHistEtaPtProtonsMCDET(0),
- fHistEtaPtPionsCon(0),fHistEtaPtKaonsCon(0),fHistEtaPtProtonsCon(0),
-fHistEtaPtPionsConPID(0),fHistEtaPtKaonsConPID(0),fHistEtaPtProtonsConPID(0),
 fHistminsignalifPionPPrimary(0),fHistminsignalifKaonPPrimary(0),fHistminsignalifProtonPPrimary(0),fHistminsignalifProtonPPrimaryfake(0),
 fHistminsignalifAntiPionPPrimary(0),fHistminsignalifAntiKaonPPrimary(0),fHistminsignalifAntiProtonPPrimary(0),fHistminsignalifAntiProtonPPrimaryfake(0),
 fHistminsignalifPionPSecondary(0),fHistminsignalifKaonPSecondary(0),
@@ -89,19 +87,49 @@ fDCAXYZOpenforcleanPionsMCPrimary(0),fDCAXYZOpenforcleanAntiPionsMCPrimary(0),fD
 fDCAXYZOpenforcleanProtonsHI(0),fDCAXYZOpenforcleanAntiProtonsHI(0),fDCAXYZOpenforcleanPionsMEPrimary(0),fDCAXYZOpenforcleanAntiPionsMEPrimary(0),fDCAXYZOpenforcleanPionsMESecondary(0),fDCAXYZOpenforcleanAntiPionsMESecondary(0),fDCAXYZOpenforcleanPionsR(0),fDCAXYZOpenforcleanAntiPionsR(0),fDCAXYZOpenforcleanProtonsR(0),fDCAXYZOpenforcleanAntiProtonsR(0),
 fElectronsource(0),fAntiElectronsource(0), 
 fMuonsource(0),fAntiMuonsource(0),
-fPionNTPCClusters(0),fAntiPionNTPCClusters(0),
+fPionNTPCClusters(0),fAntiPionNTPCClusters(0),fKaonNTPCClusters(0),fAntiKaonNTPCClusters(0),fProtonNTPCClusters(0),fAntiProtonNTPCClusters(0),
+fPionchi2(0),fAntiPionchi2(0),fKaonchi2(0),fAntiKaonchi2(0),fProtonchi2(0),fAntiProtonchi2(0),
+fTracksCutmonitoring(0),fParticlesCutmonitoring(0),fVertexshift(0),fPtESDminusPtMCvPtESDafterallcuts(0),fPtESDminusPtMCvPtESDafterTPCcuts(0),
 fTPCPIDCUT(0), fESDpid(0),fPrimaryElectronsMother(0),
 flist(0)
 {
 	//Constructor
 	 fESDpid=new AliESDpid();
-	 fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00);
-	 
+	// fESDpid->GetTPCResponse().SetBetheBlochParameters(0.0283086,2.63394e+01,5.04114e-11,2.12543e+00,4.88663e+00);
+	 fESDpid->GetTPCResponse().SetBetheBlochParameters(1.28949/50., 2.74095e+01, TMath::Exp(-3.21763e+01), 2.44026, 6.58800); 
 	 
 	
 	 
-	 for(int i=0;i<2;i++){ flinearpar[i]=0.0;}
-	for(int i=0;i<5;i++){ fpar[i]=0.0;}
+	fCutsMul=new AliESDtrackCuts("Mul","Mul");
+	fCutsMul->SetMinNClustersTPC(70);
+	fCutsMul->SetMaxChi2PerClusterTPC(4);
+	fCutsMul->SetAcceptKinkDaughters(kFALSE);
+	fCutsMul->SetRequireTPCRefit(kTRUE);
+	// ITS
+	fCutsMul->SetRequireITSRefit(kTRUE);
+	fCutsMul->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+						AliESDtrackCuts::kAny);
+	fCutsMul->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+	
+	fCutsMul->SetMaxDCAToVertexZ(2);
+	fCutsMul->SetDCAToVertex2D(kFALSE);
+	fCutsMul->SetRequireSigmaToVertex(kFALSE);
+	
+	fCutsMul->SetEtaRange(-0.8,+0.8);
+	fCutsMul->SetPtRange(0.15, 1e10);
+	 
+	fdcaxypar[0]=0.0050;
+	fdcaxypar[1]=0.0060;
+	fdcaxypar[2]=0.9;
+	
+	fdcazpar[0]=0.0146;
+	fdcazpar[1]=0.0070;
+	fdcazpar[2]=1.114758;
+	fdcazpar[3]=0.0216;
+
+	
+	
+	
  	Printf("end of AliAnalysisChargedHadronSpectraITSTruncatedMeanTask");
 	 DefineOutput(1, TList::Class());
 }
@@ -163,7 +191,14 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fHistStats->GetXaxis()->SetBinLabel(10,"MC_event_with_z<10.0");
 	flist->Add(fHistStats);
 	
-	
+	fHistZVertexBeforeCut=new TH1F("HistZVertexBeforeCut","ZVertex;z[cm];N_{counts}",400,-20,20);
+	flist->Add(fHistZVertexBeforeCut);
+	fHistZVertexAfterCut=new TH1F("HistZVertexAfterCut","ZVertex;z[cm];N_{counts}",400,-20,20);
+	flist->Add(fHistZVertexAfterCut);
+	fHistXYVertexBeforeCut=new TH2F("HistXYVertexBeforeCut","XYVertex;x[cm];y[cm];N_{conuts}",100,-0.4,0.4,100,-0.4,0.4); 
+	flist->Add(fHistXYVertexBeforeCut);
+	fHistXYVertexAfterCut=new TH2F("HistXYVertexAfterCut","XYVertex;x[cm];y[cm];N_{conuts}",100,-0.4,0.4,100,-0.4,0.4); 
+	flist->Add(fHistXYVertexAfterCut);
 	
 	fHistPhiPtBeforeCuts=new  TH2F("HistPhiPtBeforeCuts",";#phi;pt[GeV/c]",70,0,2.0*TMath::Pi(),nptbins,-1.0*ptmax,ptmax);
 	flist->Add(fHistPhiPtBeforeCuts);
@@ -233,21 +268,16 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fHistL6dETPCinP=new TH2F("HistL6dETPCinP",";P[GeV/c];dE[in 300#mum]",ndec*npredec,tabx,ny,starty,ny*jump+starty);
 	flist->Add(fHistL6dETPCinP);
 	
-	fHistEtaPtPions=new  TH2F("HistEtaPtPions",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtPions);
-	fHistEtaPtKaons=new  TH2F("HistEtaPtKaons",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtKaons);
-	fHistEtaPtProtons=new  TH2F("HistEtaPtProtons",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtProtons);
 
-	fHistwhichhasmin=new TH1F("Histwhichhasmin","Histwhichhasmin",4,-0.5,3.5);
+
+	fHistwhichhasmin=new TH2F("Histwhichhasmin","Histwhichhasmin;L;Q",4,-0.5,3.5,100,0,1000);
 	fHistwhichhasmin->GetXaxis()->SetBinLabel(1,"SDD1");
 	fHistwhichhasmin->GetXaxis()->SetBinLabel(2,"SDD2");
 	fHistwhichhasmin->GetXaxis()->SetBinLabel(3,"SSD1");
 	fHistwhichhasmin->GetXaxis()->SetBinLabel(4,"SSD2");
 	flist->Add(fHistwhichhasmin);
-	
-
+	fHistMysignalminusESD=new TH1F("HistMysignalminus","HistMysignalminus;my-ESD;N",100,-0.2,0.2);
+	flist->Add(fHistMysignalminusESD);
 	
 	fHistminsignalforPionP=new TH2F("HistminsignalforPionP",";P[GeV/c];dE[in 300#mum]",kPtBins,binsPtDummy,ny,starty,ny*jump+starty);
 	flist->Add(fHistminsignalforPionP);
@@ -327,11 +357,49 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	flist->Add(fPionNTPCClusters);
 	fAntiPionNTPCClusters=new TH2F("fAntiPionNTPCClusters","fAntiPionNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160);
 	flist->Add(fAntiPionNTPCClusters);
+	fKaonNTPCClusters=new TH2F("fKaonNTPCClusters","fKaonNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160); 
+	flist->Add(fKaonNTPCClusters);
+	fAntiKaonNTPCClusters=new TH2F("fAntiKaonNTPCClusters","fAntiKaonNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160);
+	flist->Add(fAntiKaonNTPCClusters);
+	fProtonNTPCClusters=new TH2F("fProtonNTPCClusters","fProtonNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160); 
+	flist->Add(fProtonNTPCClusters);
+	fAntiProtonNTPCClusters=new TH2F("fAntiProtonNTPCClusters","fAntiProtonNTPCClusters;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,60,160);
+	flist->Add(fAntiProtonNTPCClusters);
 	
-	fHistStandartMul=new TH1F("fHistStandartMul",";Ntracks;counts",300,0,300);
-	flist->Add(fHistStandartMul);
-	fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,300);
-	flist->Add(fHistMytrackMul);
+	
+	fPionchi2=new TH2F("fPionchi2","fPionchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6);
+	flist->Add(fPionchi2);
+	fAntiPionchi2=new TH2F("fAntiPionchi2","fAntiPionchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6);
+	flist->Add(fAntiPionchi2);
+	fKaonchi2=new TH2F("fKaonchi2","fKaonchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6); 
+	flist->Add(fKaonchi2);
+	fAntiKaonchi2=new TH2F("fAntiKaonchi2","fAntiKaonchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6);
+	flist->Add(fAntiKaonchi2);
+	fProtonchi2=new TH2F("fProtonchi2","fProtonchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6); 
+	flist->Add(fProtonchi2);
+	fAntiProtonchi2=new TH2F("fAntiProtonchi2","fAntiProtonchi2;Pt [GeV/c];NClusters",kPtBins,binsPtDummy,20,0,6);
+	flist->Add(fAntiProtonchi2);
+	
+	if(fHIsettings)
+	{
+		fHistStandartMul=new TH1F("fHistStandartMul",";Ntracks;counts",300,0,3000);
+		flist->Add(fHistStandartMul);
+		fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,3000);
+		flist->Add(fHistMytrackMul);
+	}
+	else
+	{
+		fHistStandartMul=new TH1F("fHistStandartMul",";Ntracks;counts",300,0,300);
+		flist->Add(fHistStandartMul);
+		fHistMytrackMul=new TH1F("fHistMytrackMul",";Ntracks;counts",300,0,300);
+		flist->Add(fHistMytrackMul);
+	}
+	fTracksCutmonitoring=new TH2F("fTracksCutmonitoring",";cut;pt[GeV/c];N_{entries}",4,0.5,4.5,kPtBins,binsPtDummy);	
+	fTracksCutmonitoring->GetXaxis()->SetBinLabel(1,"TPCin");
+	fTracksCutmonitoring->GetXaxis()->SetBinLabel(2,"standard");
+	fTracksCutmonitoring->GetXaxis()->SetBinLabel(3,"ITSpid");
+	fTracksCutmonitoring->GetXaxis()->SetBinLabel(4,"DCA");
+	flist->Add(fTracksCutmonitoring);
 	
 	if(!fMC)
 	{
@@ -342,33 +410,6 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	}
 	
 	
-	fHistEtaPtPionsMC=new  TH2F("HistEtaPtPionsMC",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtPionsMC);
-	fHistEtaPtKaonsMC=new  TH2F("HistEtaPtKaonsMC",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtKaonsMC);
-	fHistEtaPtProtonsMC=new  TH2F("HistEtaPtProtonsMC",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtProtonsMC);
-	
-	fHistEtaPtPionsMCDET=new  TH2F("HistEtaPtPionsMCDET",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtPionsMCDET);
-	fHistEtaPtKaonsMCDET=new  TH2F("HistEtaPtKaonsMCDET",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtKaonsMCDET);
-	fHistEtaPtProtonsMCDET=new  TH2F("HistEtaPtProtonsMCDET",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtProtonsMCDET);
-	
-	fHistEtaPtPionsCon=new  TH2F("HistEtaPtPionsCon",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtPionsCon);
-	fHistEtaPtKaonsCon=new  TH2F("HistEtaPtKaonsCon",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtKaonsCon);
-	fHistEtaPtProtonsCon=new  TH2F("HistEtaPtProtonsCon",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtProtonsCon);
-	
-	fHistEtaPtPionsConPID=new  TH2F("HistEtaPtPionsConPID",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtPionsConPID);
-	fHistEtaPtKaonsConPID=new  TH2F("HistEtaPtKaonsConPID",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtKaonsConPID);
-	fHistEtaPtProtonsConPID=new  TH2F("HistEtaPtProtonsConPID",";#eta;pt[GeV/c]",netabins,-1.0*etamax,etamax,nptbins,-1.0*ptmax,ptmax);//eta pt
-	flist->Add(fHistEtaPtProtonsConPID);
 
 	fHistminsignalifPionPPrimary=new TH2F("HistminsignalifPionPPrimary",";Pt[GeV/c];log(dE_real)-log(dE_fit)",kPtBins,binsPtDummy,ny,-4,4);
 	flist->Add(fHistminsignalifPionPPrimary);
@@ -621,7 +662,74 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fPrimaryElectronsMother=new TH1F("fPrimaryElectronsMother",";pdg code",4990,10.5,5000.5);
 	flist->Add(fPrimaryElectronsMother);
 	
+	Double_t type[13]={-0.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5,10.5,11.5};
+	Double_t cutlevel[10]={0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5};
 	
+	fParticlesCutmonitoring=new TH3F("fParticlesCutmonitoring",";particle;cut;Pt [GeV/c]",12,type,9,cutlevel,kPtBins,binsPtDummy);
+
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(1,"pion");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(2,"kaon");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(3,"proton");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(4,"antipion");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(5,"antikaon");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(6,"antiproton");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(7,"pionfake");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(8,"kaonfake");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(9,"protonfake");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(10,"antipionfake");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(11,"antikaonfake");
+	fParticlesCutmonitoring->GetXaxis()->SetBinLabel(12,"antiprotonfake");
+	
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(1,"TPCin");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(2,"TPCrefit");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(3,"nTPCclu");	
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(4,"chi2");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(5,"ITSrefit");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(6,"SPDany");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(7,"standard");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(8,"ITSpid");
+	fParticlesCutmonitoring->GetYaxis()->SetBinLabel(9,"DCA");
+	flist->Add(fParticlesCutmonitoring);
+	
+	fVertexshift=new TH3F("fVertexshift",";#delta_{x};#delta_{y};#delta_{z}",50,-0.06,0.06,50,-0.06,0.06,50,-2,2);
+	flist->Add(fVertexshift);
+	
+	Double_t deltapttpc[41];
+	Double_t deltaptall[41];
+	for(int i=0;i<41;i++)
+	{
+		deltapttpc[i]=-0.8+i*(1.6/40);
+		deltaptall[i]=-0.2+i*(0.4/40);
+	}
+	fPtESDminusPtMCvPtESDafterallcuts= new TH3F("fPtESDminusPtMCvPtESDafterallcuts",";#delta_{PtESD-PtMC};PtESD;type",40,deltaptall,kPtBins,binsPtDummy,12,type);
+	flist->Add(fPtESDminusPtMCvPtESDafterallcuts);
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(1,"pion");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(2,"kaon");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(3,"proton");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(4,"antipion");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(5,"antikaon");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(6,"antiproton");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(7,"pionfake");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(8,"kaonfake");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(9,"protonfake");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(10,"antipionfake");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(11,"antikaonfake");
+	fPtESDminusPtMCvPtESDafterallcuts->GetZaxis()->SetBinLabel(12,"antiprotonfake");
+	
+	fPtESDminusPtMCvPtESDafterTPCcuts= new TH3F("fPtESDminusPtMCvPtESDafterTPCcuts",";#delta_{PtESD-PtMC};PtESD;type",40,deltapttpc,kPtBins,binsPtDummy,12,type);
+	flist->Add(fPtESDminusPtMCvPtESDafterTPCcuts);
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(1,"pion");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(2,"kaon");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(3,"proton");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(4,"antipion");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(5,"antikaon");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(6,"antiproton");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(7,"pionfake");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(8,"kaonfake");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(9,"protonfake");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(10,"antipionfake");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(11,"antikaonfake");
+	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(12,"antiprotonfake");
 	PostData(1,  flist);
 	Printf("end of CreateOutputObjects with MC");
 }
@@ -633,10 +741,13 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::LocalInit()
 }
 
 //________________________________________________________________________
-
 void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *) 
 {
-	//UserExec	
+	//UserExec
+	Bool_t isphysevent=0;
+	Bool_t isgoodvertex=0;
+	Bool_t isvxerteinZ=0;
+		
 	 fESD = dynamic_cast<AliESDEvent*> (InputEvent());
 	if (!fESD) 
 	{
@@ -644,7 +755,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		return;
 	}
 	
-	Float_t refmultiplicity=AliESDtrackCuts::GetReferenceMultiplicity(fESD,1);
+	Float_t refmultiplicity=fCutsMul->CountAcceptedTracks(fESD);
 	if(fLowMultiplicity>-1)
 	{
 		if(refmultiplicity<fLowMultiplicity)
@@ -656,15 +767,97 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			return;
 	}
 	AliStack* stack=0x0;
+	Double_t mcXvertex=0.0;
+	Double_t mcYvertex=0.0;
 	Double_t mcZvertex=0.0;
+	
 	if(fMC)
 	{
 		AliMCEvent* mcEvent  = (AliMCEvent*) MCEvent();
 		Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 		stack = mcEvent->Stack();
+		mcXvertex=mcEvent->GetPrimaryVertex()->GetX();
+		mcYvertex=mcEvent->GetPrimaryVertex()->GetY();
 		mcZvertex=mcEvent->GetPrimaryVertex()->GetZ();
 	}	
 	
+	
+	fHistStats->Fill(0);
+	//Event selection 
+	//if( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()==0)	
+	  UInt_t isSelected = 0;
+	 if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
+	  	isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	Printf("Mask_selection %u %u", isSelected,AliVEvent::kMB);  
+        if(!(isSelected&AliVEvent::kMB))
+        {
+		 isphysevent=0;
+		 Printf("No phys event.........\n");
+	}	
+	else
+	{
+		 isphysevent=1;
+		 if(!fHIsettings)
+			fHistStats->Fill(1);
+	}
+	if(isphysevent&&fHIsettings)
+	{	
+		AliCentrality *centrality = fESD->GetCentrality();
+		if(!(fLowCentrality<0.0)&&fUpCentrality>0.0)
+		{
+			if(!centrality->IsEventInCentralityClass(fLowCentrality,fUpCentrality,"V0M"))
+				return;
+			else
+				fHistStats->Fill(1);
+		}	
+	}
+	
+	//Good vertex	
+	const AliESDVertex *vertex = 0x0;
+	if(isphysevent)
+	{
+		vertex = fESD->GetPrimaryVertexTracks();
+		if(vertex->GetNContributors()<1) 
+		{
+			// SPD vertex
+			vertex = fESD->GetPrimaryVertexSPD();
+			if(vertex->GetNContributors()<1) 
+			{
+				Printf("No good  Vertex.........\n");
+				isgoodvertex=0;
+			}
+			else
+			{
+				isgoodvertex=1;
+				fHistStats->Fill(2);	
+				fHistZVertexBeforeCut->Fill(vertex ->GetZ());
+				fHistXYVertexBeforeCut->Fill(vertex ->GetX(),vertex ->GetY());
+			}	
+		}
+		else
+		{
+			isgoodvertex=1;	
+			fHistStats->Fill(2);	
+			fHistZVertexBeforeCut->Fill(vertex ->GetZ());
+			fHistXYVertexBeforeCut->Fill(vertex ->GetX(),vertex ->GetY()); 
+		}
+		if(isgoodvertex)
+		{	
+			if(TMath::Abs(vertex ->GetZ())>10.0)
+			{
+				Printf("No good  Z of Vertex.........\n");
+				isvxerteinZ=0;
+			}
+			else
+				isvxerteinZ=1;
+		}	
+	}
+	if(fdovertexrescuts&&fMC)
+	{
+		cout<<TMath::Abs(vertex->GetX()-mcXvertex)<<" "<<TMath::Abs(vertex->GetY()-mcYvertex)<<" "<<TMath::Abs(vertex->GetZ()-mcZvertex)<<endl;
+		if(TMath::Abs(vertex->GetX()-mcXvertex)>0.015||TMath::Abs(vertex->GetY()-mcYvertex)>0.015||TMath::Abs(vertex->GetZ()-mcZvertex)>0.15)
+			isvxerteinZ=0;	
+	}  
 	if(stack)//Looping over MC information of all events
 	{
 		fHistStats->Fill(8);
@@ -681,7 +874,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if (TMath::Abs(particleMC->Y())>fYCut)
 				continue;
 			if (particleMC->Pt()>2.0)
-				continue;		
+				continue;
+			//Printf("%d aa",imc);			
+			if(!(pdgcodeMC==211||pdgcodeMC==-211||pdgcodeMC==321||pdgcodeMC==-321||pdgcodeMC==2212||pdgcodeMC==-2212))	
+				continue;
 			if(pdgcodeMC==211)	
 				fHistminsignalifPionPMCPrimaryBeforeEventCuts->Fill(particleMC->Pt());
 			if(pdgcodeMC==-211)	
@@ -695,66 +891,25 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if(pdgcodeMC==-2212)
 				fHistminsignalifAntiProtonPMCPrimaryBeforeEventCuts->Fill(particleMC->Pt());
 			
-			if(TMath::Abs(mcZvertex)>10.0)
+			if(TMath::Abs(mcZvertex)<10.0)
+			{		
+				if(pdgcodeMC==211)	
+					fHistminsignalifPionPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+				if(pdgcodeMC==-211)	
+					fHistminsignalifAntiPionPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+				if(pdgcodeMC==321)
+					fHistminsignalifKaonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+				if(pdgcodeMC==-321)
+					fHistminsignalifAntiKaonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+				if(pdgcodeMC==2212)
+					fHistminsignalifProtonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+				if(pdgcodeMC==-2212)
+					fHistminsignalifAntiProtonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
+			}
+			if(!isphysevent)
 				continue;
-			
-			if(pdgcodeMC==211)	
-				fHistminsignalifPionPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
-			if(pdgcodeMC==-211)	
-				fHistminsignalifAntiPionPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
-			if(pdgcodeMC==321)
-				fHistminsignalifKaonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
-			if(pdgcodeMC==-321)
-				fHistminsignalifAntiKaonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
-			if(pdgcodeMC==2212)
-				fHistminsignalifProtonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());
-			if(pdgcodeMC==-2212)
-				fHistminsignalifAntiProtonPMCPrimaryBeforeEventCutswithgoodZvertex->Fill(particleMC->Pt());	
-		}
-	}	
-	fHistStats->Fill(0);
-	//Event selection 
-	//if( ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()==0)	
-	  UInt_t isSelected = 0;
-	 if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
-	  	isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	Printf("Mask_selection %d", isSelected);  
-        if(!(isSelected&AliVEvent::kMB))
-        {
-		Printf("Not Physics event.........\n");
-		PostData(1,  flist);
-		Printf("end of Exec");
-		return;
-	}	
-	fHistStats->Fill(1);
-	//Good vertex	
-	const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
-	if(vertex->GetNContributors()<1) 
-	{
-  		// SPD vertex
-  		vertex = fESD->GetPrimaryVertexSPD();
-  		if(vertex->GetNContributors()<1) 
-		{
-   			Printf("No good  Vertex.........\n");
-			PostData(1,  flist);
-			Printf("end of Exec");
-			return;
-  		}
-	}
-	if(stack)
-	{
-		for (int imc=0;imc<stack->GetNtrack();imc++)
-		{
-			if(!(stack->IsPhysicalPrimary(imc)))
-				continue;
-			TParticle *particleMC = stack->Particle(imc);
-			if(!particleMC)
-				continue;
-			Int_t pdgcodeMC = particleMC->GetPdgCode();
-			if (TMath::Abs(particleMC->Y())>fYCut)
-				continue;
-			if (particleMC->Pt()>2.0)
-				continue;		
+			if(!isgoodvertex)
+				continue;	
 			if(pdgcodeMC==211)	
 				fHistminsignalifPionPMCPrimaryAfterEventCutsBeforeVertexZ->Fill(particleMC->Pt());
 			if(pdgcodeMC==-211)	
@@ -766,19 +921,52 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if(pdgcodeMC==2212)
 				fHistminsignalifProtonPMCPrimaryAfterEventCutsBeforeVertexZ->Fill(particleMC->Pt());
 			if(pdgcodeMC==-2212)
-				fHistminsignalifAntiProtonPMCPrimaryAfterEventCutsBeforeVertexZ->Fill(particleMC->Pt());
+				fHistminsignalifAntiProtonPMCPrimaryAfterEventCutsBeforeVertexZ->Fill(particleMC->Pt());	
+			if(!isvxerteinZ)
+				continue;		
+			if(pdgcodeMC==211)	
+			{
+				fHistminsignalifPionPMCPrimary->Fill(particleMC->Pt());
+			}	
+			if(pdgcodeMC==-211)
+			{	
+				fHistminsignalifAntiPionPMCPrimary->Fill(particleMC->Pt());
+			}		
+			if(pdgcodeMC==321)
+			{	
+				fHistminsignalifKaonPMCPrimary->Fill(particleMC->Pt());
+			}	
+			if(pdgcodeMC==-321)
+			{	
+				fHistminsignalifAntiKaonPMCPrimary->Fill(particleMC->Pt());
+			}	
+			if(pdgcodeMC==2212)
+			{	
+				fHistminsignalifProtonPMCPrimary->Fill(particleMC->Pt());
+			}	
+			if(pdgcodeMC==-2212)
+			{	
+				fHistminsignalifAntiProtonPMCPrimary->Fill(particleMC->Pt());
+			}		
+							
 		}
-	}
-	fHistStats->Fill(2);
-	if(TMath::Abs(vertex ->GetZ())>10.0)
+	}		 
+	
+	if(!(isphysevent&&isgoodvertex&&isvxerteinZ))
 	{
-		Printf("No good  Z of Vertex.........\n");
+		Printf("No Good event.........\n");
 		PostData(1,  flist);
 		Printf("end of Exec");
 		return;
 	}
-	fHistStats->Fill(3);
 	
+	fHistStats->Fill(3);
+		
+	fHistZVertexAfterCut->Fill(vertex ->GetZ());
+	fHistXYVertexAfterCut->Fill(vertex ->GetX(),vertex ->GetY()); 
+	
+	if(fMC)
+		fVertexshift->Fill(vertex->GetX()-mcXvertex,vertex->GetY()-mcYvertex,vertex->GetZ()-mcZvertex);	
 	if(fCuts==0)
 	{
 		Printf("No CUTS Defined.........\n");
@@ -793,9 +981,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	Int_t mynumberoftracks=0;
 	 AliESDtrack *trackESD=0;
 	 
-	const Float_t pionmass=0.13957;
-	const Float_t kaonmass=0.493677;
-	const Float_t protonmass=0.938272;
+	const Float_t pionmass=AliPID::ParticleMass(2);
+	const Float_t kaonmass=AliPID::ParticleMass(3);
+	const Float_t protonmass=AliPID::ParticleMass(4);
 
  	for(int tr1=0;tr1<nTracks;tr1++)
   	{	
@@ -807,39 +995,18 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Double_t p=trackESD->P();
 		Double_t eta=trackESD->Eta();
 		Double_t phi=trackESD->Phi();
-		Float_t dcaxy = 0., dcaz = 0.;
+		Float_t dcaxy=0.0; 
+		Float_t dcaz=0.0;
 		trackESD->GetImpactParameters(dcaxy,dcaz);
 		Double_t pz=trackESD->Pz();
-		UShort_t nTPCclusters=trackESD->GetTPCNcls();
-		fHistPhiPtBeforeCuts->Fill(phi,pt);//phi pt
-		fHistEtaPtBeforeCuts->Fill(eta,pt);
-		fHistDCABeforeCuts->Fill(dcaxy,dcaz);		
-		//standart cuts 	
-		if(fCuts->AcceptTrack(trackESD)==kFALSE)
-			continue;
-		//Tpc pid cut for debug	
-		Double_t pinTPC=trackESD->GetTPCInnerParam()->GetP();//momentum in primary vertex taken from TPC tracking
-		Double_t pinTPCglobal=trackESD->GetInnerParam()->GetP();//momentum at the inner  wall of the TPC taken from global tracking
-		Float_t sigKaon     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kKaon);
-		Float_t sigProton     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kProton);
-		Double_t tpcSignal =trackESD ->GetTPCsignal();
-		if(fTPCPIDCUT)
-		{
-			if(fTPCPIDCUT->AcceptTrack(trackESD,fESD)==kFALSE)
-				continue;
-		}		
-		Bool_t cutDCA=SelectOnImpPar(trackESD);	
-		
-		//fHistStats->Fill(4);
-		Double_t tmpQESD[4]={-1.0,-1.0,-1.0,-1.0};
-		trackESD->GetITSdEdxSamples(tmpQESD);
-		if(fCorrectSDD&&fMC)
-			CorrectSDD(tmpQESD	);	
-		if(fCorrectSSD&&fMC)
-			CorrectSSD(tmpQESD	);	
-		Int_t nSSDSDD=0;
-		Int_t nSSDSDDall=0;
-		
+		 UShort_t nTPCclusters=trackESD->GetTPCNcls();
+		 Float_t chi2=trackESD->GetTPCchi2();
+		 if(nTPCclusters>0)
+		 	chi2=chi2/((Float_t)nTPCclusters);
+		else
+			chi2=-1.0;
+		if(!trackESD->IsOn(AliESDtrack::kTPCin))
+			continue;			
 		//Y assumtion
 		Float_t yforpion=0.5*TMath::Log((TMath::Sqrt(pionmass*pionmass+p*p)+pz)/(TMath::Sqrt(pionmass*pionmass+p*p)-pz));
 		Float_t yforkaon=0.5*TMath::Log((TMath::Sqrt(kaonmass*kaonmass+p*p)+pz)/(TMath::Sqrt(kaonmass*kaonmass+p*p)-pz));
@@ -847,6 +1014,128 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		
 		if(TMath::Abs(yforpion)>fYCut&&TMath::Abs(yforkaon)>fYCut&&TMath::Abs(yforproton)>fYCut) //go trought one y cut
 			continue;
+		Int_t label=-1;
+		if(fMC)
+			label=trackESD->GetLabel();
+		//if(label<0)	
+		//	Printf("label %d %f %f %f %f %d %f %f\n",label,p,pt,eta,chi2,nTPCclusters,dcaxy,dcaz);	
+		Int_t pdgcode=0;
+		Int_t primary=0;
+		Double_t chargeMC=1.0;
+		Float_t etaMC=10.0;
+		Float_t ptMC=10.0;
+		Int_t   uniqueID=-1;
+		Int_t pdgcodefake=0;
+		Int_t primaryfake=0;
+		TParticle *particle2=0x0;
+		if(label>=0&&stack&&fMC)
+		{
+			primary=stack->IsPhysicalPrimary(TMath::Abs(label));
+			particle2 = stack->Particle(TMath::Abs(label));
+			pdgcode=particle2->GetPdgCode();
+			chargeMC=particle2->GetPDG(0)->Charge()/3.0;
+			etaMC=particle2->Eta();
+			ptMC=particle2->Pt();
+			uniqueID=particle2->GetUniqueID();
+		}
+		if(label<0&&stack&&fMC)
+		{
+			primaryfake=stack->IsPhysicalPrimary(TMath::Abs(label));
+			particle2 = stack->Particle(TMath::Abs(label));
+			pdgcodefake=particle2->GetPdgCode();
+			uniqueID=particle2->GetUniqueID();
+			
+		}	
+		
+		Int_t typeParticle=-10;
+		if((primaryfake||primary))
+		{
+			
+			if((pdgcodefake==211||pdgcode==211)&&TMath::Abs(yforpion)<fYCut)
+				typeParticle=0;
+			if((pdgcodefake==321||pdgcode==321)&&TMath::Abs(yforkaon)<fYCut)
+				typeParticle=1;
+			if((pdgcodefake==2212||pdgcode==2212)&&TMath::Abs(yforproton)<fYCut)
+				typeParticle=2;
+			if((pdgcodefake==-211||pdgcode==-211)&&TMath::Abs(yforpion)<fYCut)
+				typeParticle=3;
+			if((pdgcodefake==-321||pdgcode==-321)&&TMath::Abs(yforkaon)<fYCut)
+				typeParticle=4;
+			if((pdgcodefake==-2212||pdgcode==-2212)&&TMath::Abs(yforproton)<fYCut)
+				typeParticle=5;
+			
+			if(primaryfake)	
+				typeParticle+=6;
+		}	
+		
+		fTracksCutmonitoring->Fill(1,TMath::Abs(pt));
+		if(fMC)
+		{
+			fParticlesCutmonitoring->Fill(typeParticle,1,TMath::Abs(pt));	
+			if(trackESD->IsOn(AliESDtrack::kTPCrefit))
+			{
+				fParticlesCutmonitoring->Fill(typeParticle,2,TMath::Abs(pt));
+				if(nTPCclusters>70)
+				{
+					fParticlesCutmonitoring->Fill(typeParticle,3,TMath::Abs(pt));
+					if(chi2<4.0)
+					{
+						fParticlesCutmonitoring->Fill(typeParticle,4,TMath::Abs(pt));
+						fPtESDminusPtMCvPtESDafterTPCcuts->Fill(TMath::Abs(pt)-particle2->Pt(),TMath::Abs(pt),typeParticle);
+						if(trackESD->IsOn(AliESDtrack::kITSrefit))
+						{
+							fParticlesCutmonitoring->Fill(typeParticle,5,TMath::Abs(pt));
+							if(trackESD->HasPointOnITSLayer(0)||trackESD->HasPointOnITSLayer(1))
+							{
+								fParticlesCutmonitoring->Fill(typeParticle,6,TMath::Abs(pt));
+							}
+						}
+					}		
+					
+				}	
+			}
+		}	
+			
+			
+		fHistPhiPtBeforeCuts->Fill(phi,pt);//phi pt
+		fHistEtaPtBeforeCuts->Fill(eta,pt);
+		fHistDCABeforeCuts->Fill(dcaxy,dcaz);	
+		
+		
+
+			
+		//standart cuts 	
+		if(fCuts->AcceptTrack(trackESD)==kFALSE)
+			continue;
+		fTracksCutmonitoring->Fill(2,TMath::Abs(pt));	
+		if(fMC)
+			fParticlesCutmonitoring->Fill(typeParticle,7,TMath::Abs(pt));
+		//Tpc pid cut for debug	
+		Double_t pinTPC=trackESD->GetTPCInnerParam()->GetP();//momentum in primary vertex taken from TPC tracking
+		Double_t pinTPCglobal=trackESD->GetInnerParam()->GetP();//momentum at the inner  wall of the TPC taken from global tracking
+		Float_t sigKaon= fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kKaon);
+		Float_t sigProton= fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kProton);
+		Double_t tpcSignal =trackESD ->GetTPCsignal();
+		
+		if(fTPCPIDCUT)
+		{
+			if(fTPCPIDCUT->AcceptTrack(trackESD,fESD)==kFALSE)
+				continue;
+		}
+				
+		Bool_t cutDCA=SelectOnImpPar(trackESD);	
+		
+		//fHistStats->Fill(4);
+		Double_t tmpQESD[4]={-1.0,-1.0,-1.0,-1.0};
+		trackESD->GetITSdEdxSamples(tmpQESD);
+		if(fCorrectSDD&&fMC)
+			CorrectSDD(tmpQESD);	
+		if(fCorrectSSD&&fMC)
+			CorrectSSD(tmpQESD);	
+		Int_t nSSDSDD=0;
+		Int_t nSSDSDDall=0;
+		
+		
 		
 		if(TMath::Abs(yforpion)<fYCut&&cutDCA) 
 			fHistNtrackwithstandardcuts->Fill(TMath::Abs(pt),0);
@@ -883,13 +1172,31 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		//	cout<<"BAD "<<stack->Particle(TMath::Abs(trackESD->GetLabel()))->GetPdgCode()<<endl;
 			continue;
 		}	
+		fTracksCutmonitoring->Fill(3,TMath::Abs(pt));
+		if(fMC)
+			fParticlesCutmonitoring->Fill(typeParticle,8,TMath::Abs(pt));
+		if(cutDCA)
+		{
+			fTracksCutmonitoring->Fill(4,TMath::Abs(pt));
+			if(fMC)
+			{
+				fParticlesCutmonitoring->Fill(typeParticle,9,TMath::Abs(pt));	
+				fPtESDminusPtMCvPtESDafterallcuts->Fill(TMath::Abs(pt)-particle2->Pt(),TMath::Abs(pt),typeParticle);
+			}		
+		}
 		if(TMath::Abs(yforpion)<fYCut&&cutDCA) 
 		{
 			fHistNtrackwithITSPIDcuts->Fill(TMath::Abs(pt),0);
 			if(pt>0.0)
+			{
 				 fPionNTPCClusters->Fill(pt,nTPCclusters);
+				 fPionchi2->Fill(pt,chi2);
+			}
 			else
-				fAntiPionNTPCClusters->Fill(TMath::Abs(pt),nTPCclusters);	
+			{
+				fAntiPionNTPCClusters->Fill(TMath::Abs(pt),nTPCclusters);
+				fAntiPionchi2->Fill(TMath::Abs(pt),chi2);
+			}		
 		}	
 		if(TMath::Abs(yforkaon)<fYCut&&cutDCA) 
 		{
@@ -965,13 +1272,13 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		}		
 	
 		if(whichLmin==0)
-			fHistwhichhasmin->Fill(0);
+			fHistwhichhasmin->Fill(0.0,tmpQESD[0]);
 		if(whichLmin==1)
-			fHistwhichhasmin->Fill(1);
+			fHistwhichhasmin->Fill(1.0,tmpQESD[1]);
 		if(whichLmin==2)
-			fHistwhichhasmin->Fill(2);
+			fHistwhichhasmin->Fill(2.0,tmpQESD[2]);
 		if(whichLmin==3)
-			fHistwhichhasmin->Fill(3);
+			fHistwhichhasmin->Fill(3.0,tmpQESD[3]);
 		if(pt>0.0)
 		{			
 			fHistMydEPpositive->Fill(p,myITSsignal);
@@ -987,87 +1294,14 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Float_t signaltouse=myITSsignal;	
 			
 		
-		Float_t itspidsignalforpions=TMath::Log(signaltouse)-TMath::Log(BBparametrization(p/pionmass,fpar));
-		Float_t itspidsignalforkaons=TMath::Log(signaltouse)-TMath::Log(BBparametrization(p/kaonmass,fpar));
-		Float_t itspidsignalforprotons=TMath::Log(signaltouse)-TMath::Log(BBparametrization(p/protonmass,fpar));
+		Float_t itspidsignalforpions=TMath::Log(signaltouse)-TMath::Log(fESDpid->GetITSResponse().Bethe(p,pionmass,kFALSE));
+		Float_t itspidsignalforkaons=TMath::Log(signaltouse)-TMath::Log(fESDpid->GetITSResponse().Bethe(p,kaonmass,kFALSE));
+		Float_t itspidsignalforprotons=TMath::Log(signaltouse)-TMath::Log(fESDpid->GetITSResponse().Bethe(p,protonmass,kFALSE));
 		if(cutDCA)
+		{
 			mynumberoftracks++;
-		
-		Int_t pa= TypeofParticle(pinTPC,signaltouse);			
-		Int_t label=-1;
-		if(fMC)
-			label=trackESD->GetLabel();
-		Int_t pdgcode=0;
-		Int_t primary=0;
-		Double_t chargeMC=1.0;
-		Float_t etaMC=10.0;
-		Float_t ptMC=10.0;
-		Int_t   uniqueID=-1;
-		Int_t pdgcodefake=0;
-		Int_t primaryfake=0;
-		
-		
-		TParticle *particle2=0x0;
-			
-		if(label>0&&stack&&fMC)
-		{
-			primary=stack->IsPhysicalPrimary(TMath::Abs(label));
-			particle2 = stack->Particle(TMath::Abs(label));
-			pdgcode=particle2->GetPdgCode();
-			chargeMC=particle2->GetPDG(0)->Charge()/3.0;
-			etaMC=particle2->Eta();
-			ptMC=particle2->Pt();
-			uniqueID=particle2->GetUniqueID();
-		}
-		if(label<0&&stack&&fMC)
-		{
-			primaryfake=stack->IsPhysicalPrimary(TMath::Abs(label));
-			particle2 = stack->Particle(TMath::Abs(label));
-			pdgcodefake=particle2->GetPdgCode();
-			uniqueID=particle2->GetUniqueID();
-			
-		}
-		if(pa==0&&TMath::Abs(yforpion)<=fYCut&&cutDCA)
-		{
-			fHistEtaPtPions->Fill(eta,pt);
-			fHistminsignalforPionP->Fill(pinTPC,signaltouse);
-			if(stack&&fMC)
-			{
-				if(!primary)
-					fHistEtaPtPionsCon->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)!=211)	
-					fHistEtaPtPionsConPID->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)==211)	
-					fHistEtaPtPionsMCDET->Fill(eta,pt);
-			}
-		}	
-		if(pa==1&&TMath::Abs(yforkaon)<=fYCut&&cutDCA)
-		{
-			fHistEtaPtKaons->Fill(eta,pt);
-			fHistminsignalforKaonP->Fill(pinTPC,signaltouse);
-			if(stack&&fMC)
-			{	
-				if(!primary)
-					fHistEtaPtKaonsCon->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)!=321)		
-					fHistEtaPtKaonsConPID->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)==321)	
-					fHistEtaPtKaonsMCDET->Fill(eta,pt);	
-			}
-		}	
-		if(pa==2&&TMath::Abs(yforproton)<=fYCut&&cutDCA)
-		{
-			fHistEtaPtProtons->Fill(eta,pt);
-			fHistminsignalforProtonP->Fill(pinTPC,signaltouse);
-			if(stack&&fMC)
-			{
-				if(!primary)
-					fHistEtaPtProtonsCon->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)!=2212)	
-					fHistEtaPtProtonsConPID->Fill(etaMC,chargeMC*ptMC);
-				if(primary&&TMath::Abs(pdgcode)==2212)	
-					fHistEtaPtProtonsMCDET->Fill(eta,pt);		
-			}
+			if(nSSDSDD==4)
+				fHistMysignalminusESD->Fill((signaltouse-trackESD->GetITSsignal())/signaltouse);	
 		}
 		if(TMath::Abs(yforpion)<=fYCut)
 		{
@@ -1116,18 +1350,26 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					if(pdgcode==-11||pdgcode==-13)
 					{
 						fHistminsignalifMuEPositiveP->Fill(pt,itspidsignalforpions);
-						if(pdgcode==-11)
+						if(!primary)
 						{
-							fHistStats->Fill(6);
-							fAntiElectronsource->Fill(pt,uniqueID);
-						}	
-						else if(pdgcode==-13)	
-						{
-							fHistStats->Fill(7);
-							fAntiMuonsource->Fill(pt,uniqueID);
+							if(pdgcode==-11)
+							{
+								fHistStats->Fill(6);
+								fAntiElectronsource->Fill(pt,uniqueID);
+							}	
+							else if(pdgcode==-13)	
+							{
+								fHistStats->Fill(7);
+								fAntiMuonsource->Fill(pt,uniqueID);
+							}
 						}
-						if(primary&&pdgcode==-11)
+						else if(primary&&pdgcode==-11)
+						{
 							fPrimaryElectronsMother->Fill(stack->Particle(particle2->GetFirstMother())->GetPdgCode());
+							fAntiElectronsource->Fill(pt,0);
+						}			
+						else if(primary&&pdgcode==-13)
+							fAntiMuonsource->Fill(pt,0);
 					}
 					if(pdgcodefake==211)
 					{
@@ -1198,18 +1440,26 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					if(pdgcode==11||pdgcode==13)
 					{
 						fHistminsignalifMuENegativeP->Fill(TMath::Abs(pt),itspidsignalforpions);	
-						if(pdgcode==11)
+						if(!primary)
 						{
-							fHistStats->Fill(6);
-							fElectronsource->Fill(TMath::Abs(pt),uniqueID);
-						}	
-						else if(pdgcode==13)	
-						{
-							fHistStats->Fill(7);
-							fMuonsource->Fill(TMath::Abs(pt),uniqueID);
+							if(pdgcode==11)
+							{
+								fHistStats->Fill(6);
+								fElectronsource->Fill(TMath::Abs(pt),uniqueID);
+							}	
+							else if(pdgcode==13)	
+							{
+								fHistStats->Fill(7);
+								fMuonsource->Fill(TMath::Abs(pt),uniqueID);
+							}
 						}
-						if(primary&&pdgcode==11)
+						else if(primary&&pdgcode==11)
+						{
 							fPrimaryElectronsMother->Fill(stack->Particle(particle2->GetFirstMother())->GetPdgCode());
+							fElectronsource->Fill(TMath::Abs(pt),0);
+						}	
+						else if(primary&&pdgcode==13)
+							fMuonsource->Fill(TMath::Abs(pt),0);
 					}
 					if(pdgcodefake==-211)
 					{
@@ -1245,6 +1495,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if(pt>0.0)
 			{
 				fHistminsignalifKaonP->Fill(pt,itspidsignalforkaons);
+				if((itspidsignalforkaons>-0.2)&&(itspidsignalforkaons<0.2))
+				{
+					fKaonNTPCClusters->Fill(pt,nTPCclusters);
+					fKaonchi2->Fill(pt,chi2);
+				}		
 				if(primary)
 				{
 					if(pdgcode==321)
@@ -1262,10 +1517,17 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					else
 						fHistminsignalifKaonSecondaryfake->Fill(pt,itspidsignalforkaons);
 				}
+				
+				
 			}	
 			else
 			{
 				fHistminsignalifAntiKaonP->Fill(TMath::Abs(pt),itspidsignalforkaons);
+				if((itspidsignalforkaons>-0.2)&&(itspidsignalforkaons<0.2))
+				{
+					fAntiKaonNTPCClusters->Fill(TMath::Abs(pt),nTPCclusters);
+					fAntiKaonchi2->Fill(TMath::Abs(pt),chi2);
+				}
 				if(primary)
 				{
 					if(pdgcode==-321)
@@ -1305,6 +1567,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					if((itspidsignalforprotons>-0.2)&&(itspidsignalforprotons<0.5))
 					{
 						fDCAXYZforcleanProtons->Fill(pt,dcaxy,dcaz);
+						fProtonNTPCClusters->Fill(pt,nTPCclusters);
+						fProtonchi2->Fill(pt,chi2);
 						if(fMC)
 						{	
 							if(primary&&pdgcode==2212)
@@ -1370,6 +1634,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 					if((itspidsignalforprotons>-0.2)&&(itspidsignalforprotons<0.5))
 					{//select on clean
 						fDCAXYZforcleanAntiProtons->Fill(TMath::Abs(pt),dcaxy,dcaz);
+						
 						if(fMC)
 						{
 							if(primary&&pdgcode==-2212)
@@ -1409,6 +1674,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 				if((itspidsignalforprotons>-0.2)&&(itspidsignalforprotons<0.5))
 				{//select on clean
 					fDCAXYZOpenforcleanAntiProtons->Fill(TMath::Abs(pt),dcaxy,dcaz);
+					fAntiProtonNTPCClusters->Fill(TMath::Abs(pt),nTPCclusters);
+					fAntiProtonchi2->Fill(TMath::Abs(pt),chi2);
 					if(fMC)
 					{
 						if(primary&&pdgcode==-2212)
@@ -1428,53 +1695,6 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	fHistMytrackMul->Fill(mynumberoftracks);
 	
 		
-	if(stack)//Looping over MC information of all events which passed ESD cuts
-	{
-		for (int imc=0;imc<stack->GetNtrack();imc++)
-		{
-			if(!(stack->IsPhysicalPrimary(imc)))
-				continue;
-			TParticle *particleMC = stack->Particle(imc);
-			if(!particleMC)
-				continue;
-			Int_t pdgcodeMC = particleMC->GetPdgCode();
-			if (TMath::Abs(particleMC->Y())>fYCut)
-				continue;
-			if (particleMC->Pt()>2.0)
-				continue;		
-			if(pdgcodeMC==211)	
-			{
-				fHistEtaPtPionsMC->Fill(particleMC->Eta(),particleMC->Pt());
-				fHistminsignalifPionPMCPrimary->Fill(particleMC->Pt());
-			}	
-			if(pdgcodeMC==-211)
-			{	
-				fHistEtaPtPionsMC->Fill(particleMC->Eta(),-1.0*particleMC->Pt());
-				fHistminsignalifAntiPionPMCPrimary->Fill(particleMC->Pt());
-			}		
-			if(pdgcodeMC==321)
-			{	
-				fHistEtaPtKaonsMC->Fill(particleMC->Eta(),particleMC->Pt());
-				fHistminsignalifKaonPMCPrimary->Fill(particleMC->Pt());
-			}	
-			if(pdgcodeMC==-321)
-			{	
-				fHistEtaPtKaonsMC->Fill(particleMC->Eta(),-1.0*particleMC->Pt());
-				fHistminsignalifAntiKaonPMCPrimary->Fill(particleMC->Pt());
-			}	
-			if(pdgcodeMC==2212)
-			{	
-				fHistEtaPtProtonsMC->Fill(particleMC->Eta(),particleMC->Pt());
-				fHistminsignalifProtonPMCPrimary->Fill(particleMC->Pt());
-			}	
-			if(pdgcodeMC==-2212)
-			{	
-				fHistEtaPtProtonsMC->Fill(particleMC->Eta(),-1.0*particleMC->Pt());
-				fHistminsignalifAntiProtonPMCPrimary->Fill(particleMC->Pt());
-			}	
-			
-		}
-	}	
 	// Post output data.
 	Printf("Done..........\n");
 	PostData(1,  flist);
@@ -1488,13 +1708,12 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::Terminate(Option_t *)
 	//Terminate
 	if(fCuts)
 		fCuts->Dump();
-	Printf("BB parameters %f  %f %f %f %f",fpar[0],fpar[1],fpar[2],fpar[3],fpar[4]);
-	Printf("linear parameters a=%f  b=%f ",flinearpar[0],flinearpar[1]);
 	Printf("YCut=%f",fYCut);
 	Printf("nsigma=%f",fsigmacut);
 	Printf("DCA cut xy sigma =%f  zsigma=%f", fnsigmaxy, fnsigmaz);	
 	Printf("ChargeCut=%f ", fchargeCut);
-	
+	Printf("DCAxy parameters %f  %f %f",fdcaxypar[0],fdcaxypar[1],fdcaxypar[2]);
+	Printf("DCAz parameters %f  %f %f %f",fdcazpar[0],fdcazpar[1],fdcazpar[2],fdcazpar[3]);
 	if(fTPCPIDCUT)
 		fTPCPIDCUT->Dump();
 	if(fMC)
@@ -1519,8 +1738,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::Terminate(Option_t *)
 		fAntilambdaweight->Print("All");
 	}
 	Printf("Mul low %d Mul up %d",fLowMultiplicity, fUpMultiplicity);
-	
-	
+	Printf("cent low %f cent up %f",fLowCentrality,fUpCentrality);
+	if(fdovertexrescuts)
+		Printf("Veretx resolution cut");
 	Printf("end of Terminate");
 }
 //___________________________________________________
@@ -1539,57 +1759,11 @@ Float_t  AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::MyITSsignalusing3p
 	TMath::Sort(3,tmpQESD,indexes,0);
 	//cout<<tmpQESD[indexes[0]]<<" "<<tmpQESD[indexes[1]]<<" "<<tmpQESD[indexes[2]]<<endl;
 	return	(tmpQESD[indexes[0]]+tmpQESD[indexes[1]]*0.5)/1.5;	
-}
-//______________________________________________________________
-  Int_t AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::TypeofParticle(Float_t mom,Float_t signal) const
-  {
-  	//nsigma cut show which type
-  	const Float_t pionmass=0.13957;
-	 const Float_t kaonmass=0.493677;
-	 const Float_t protonmass=0.938272;
-  	if(mom<0.15||mom>1.1)
-		return -1;
-	Float_t bg[3]={mom/pionmass,mom/kaonmass,mom/protonmass};
-	Float_t nsigma[3]={4.0,4.0,4.0};
-	for(int i=0;i<3;i++)
-	{
-		Float_t peak=BBparametrization(bg[i],fpar);
-		Float_t rms= flinearpar[0]*peak+flinearpar[1];
-		nsigma[i]=TMath::Abs((peak-signal)/rms);		
-	}
-	Int_t pa=TMath::LocMin(3,nsigma);	
-	if(nsigma[pa]<fsigmacut)
-	{		
-		return pa;
-	}		
-	else
-		return -1;
 }			 
-  //______________________________________________________________________________________
-   Float_t AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::BBparametrization(Float_t x,const Float_t* par) const
-{
-	//BBparametrization
-	
-	Float_t bg=x;
-//	cout<<"bg  "<<x[0]<<endl;
-//	cout<<par[0]<<"  "<<par[1]<<"  "<<par[2]<<"  "<<par[3]<<"  "<<par[4]<<"  "<<endl;
-	Float_t beta = bg/TMath::Sqrt(1.+ bg*bg);
-	Float_t gamma=bg/beta;
-	
-	Float_t eff=1.0;
-	if(bg<par[2])
-		 eff=(bg-par[3])*(bg-par[3])+par[4];
-	else
-		eff=(par[2]-par[3])*(par[2]-par[3])+par[4];
-	return (par[1]+2.0*TMath::Log(gamma)-beta*beta)*(par[0]/(beta*beta))*eff;	
-
-}
 //____________________________________________________________________________________________________
-  void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetFunctionParam( Float_t * const par)
+  void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetFunctionParam( Double_t * const par)
   {
-  	//setter for BB parameters
-  	for(int i=0;i<5;i++)
-		fpar[i]=par[i];
+  	fESDpid->GetITSResponse().SetBetheBlochParamsITSTPC(par);
   }
   //_____________________________________________________________________________________________________
   void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::CorrectSDD(Double_t *tmpQESD) const
@@ -1623,12 +1797,12 @@ Float_t  AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::MyITSsignalusing3p
  	//
  	Float_t d0z0[2],covd0z0[3];
  	t->GetImpactParameters(d0z0,covd0z0);
- 	Float_t sigma= 0.0050+0.0060/TMath::Power(t->Pt(),0.9);
+ 	Float_t sigma= fdcaxypar[0]+fdcaxypar[1]/TMath::Power(t->Pt(),fdcaxypar[2]);
  	Float_t d0max = fnsigmaxy*sigma;
  	//
- 	Float_t sigmaZ = 0.0146+0.0070/TMath::Power(t->Pt(),1.114758);
+ 	Float_t sigmaZ = fdcazpar[0]+fdcazpar[1]/TMath::Power(t->Pt(),fdcazpar[2]);
  	if (t->Pt() > 1) 
-		sigmaZ = 0.0216;
+		sigmaZ = fdcazpar[3];
 	 Float_t d0maxZ = fnsigmaz*sigmaZ;
  	//
  	if(TMath::Abs(d0z0[0]) < d0max && TMath::Abs(d0z0[1]) < d0maxZ) //error 
@@ -1659,4 +1833,27 @@ Float_t  AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::MyITSsignalusing3p
 		return fAntilambdaweight->Eval(motherpt);	
 	return 1.0;	
     }
-    
+  //________________________________________________________________________________________________  
+void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetDCA2010()
+{
+	//setting the DCA for 2010
+	fdcaxypar[0]=0.0026;
+	fdcaxypar[1]=0.005;
+	fdcaxypar[2]=1.01;
+	
+	fdcazpar[0]=1000000.0;
+	fdcazpar[1]=0.0;
+	fdcazpar[2]=1.0;
+	fdcazpar[3]=1000000.0;
+}
+//______________________________________________________________________________________________________________
+void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetCentralityCut(Float_t low, Float_t up)
+{
+	//centrality cut setter
+	if((up>low)&&(!(low<0.0))&&(!(up>100.0)))
+	{
+		SetHImode();
+		fLowCentrality=low;
+		fUpCentrality=up;
+	}
+}

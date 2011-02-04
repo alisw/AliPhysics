@@ -39,8 +39,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   void SetMCOn(){fMC=kTRUE;
    fESDpid->GetTPCResponse().SetBetheBlochParameters(2.15898e+00/50.,1.75295e+01,3.40030e-09,1.96178e+00,3.91720e+00);}
   void SetAliESDtrackCuts(AliESDtrackCuts* const cuts ){fCuts=cuts;/*flist->Add(fCuts);*/}
-  void SetFunctionParam( Float_t * const par);
-  void SetLinearParam(Float_t a, Float_t b){flinearpar[0]=a;flinearpar[1]=b;}
+  void SetFunctionParam(Double_t* const par);
    void SetMultiplicityCut(Int_t low, Int_t up){fLowMultiplicity=low;fUpMultiplicity=up;}
   void SetCorrectSDD(){fCorrectSDD=kTRUE;}
    void SetCorrectSSD(){fCorrectSSD=kTRUE;}
@@ -50,26 +49,42 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
   void SetChargeCut(Float_t chargeCut){fchargeCut=TMath::Abs(chargeCut)>50.0?50.0:TMath::Abs(chargeCut);}
      void SetTPCPIDCUT(AliESDpidCuts* const cuts){fTPCPIDCUT=cuts;}
      void SetWeights(TGraph* const setK0weight, TGraph* const  setlambdaweight,TGraph* const setAntilambdaweight){fK0weight=setK0weight;flambdaweight=setlambdaweight;fAntilambdaweight=setAntilambdaweight;}
+     void SetDCA2010();
+     void SetHImode(){fHIsettings=kTRUE;}
+     void SetCentralityCut(Float_t low, Float_t up); 
+     void SetDoVertexrescuts(){fdovertexrescuts=kTRUE;}
  private:
  
  
  AliESDEvent *fESD;    //ESD object    
   AliESDtrackCuts *fCuts;//cuts 
+  AliESDtrackCuts *fCutsMul;//cuts for multiplicty 
+  
+  
+  
   Bool_t fMC;//if TRUE use MC 
   Int_t fLowMultiplicity;//low Multiplicity cut
   Int_t fUpMultiplicity;//up Multiplicity cut
+  Float_t fLowCentrality;//low Centrality cut
+  Float_t fUpCentrality;//up  Centrality cut
   
-  Float_t fpar[5];//BB parameters
-  Float_t flinearpar[2];//resolution parameters a*dE+b=res 
+  
   Float_t fYCut;//cut in y
   Float_t fsigmacut;//cut in sigma in n-sigma method
   Float_t fnsigmaxy; //cut in sigma on xy dca
   Float_t fnsigmaz;//cut in sigma on Z dca
+  Float_t fdcaxypar[3];//parameters for DCAxy cut 
+  Float_t fdcazpar[4];//parameters for DCAz cut 
+  
   Float_t fchargeCut;//cut for the low charges
   
   
  Bool_t fCorrectSDD;//In LHC10a3 in some runs dE in SDD had to scaled to SSD flag if this should be done 
   Bool_t fCorrectSSD;//this same but for dE SSS
+  
+  Bool_t fHIsettings;//speciall settings fot HI mode
+  Bool_t fdovertexrescuts;// check on Vmc-VESD 
+  
   
   
   TGraph* fK0weight ;//weight for pions comming from K0shorts
@@ -77,7 +92,15 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
    TGraph* fAntilambdaweight ;//weight for antiprotons comming from antilambdas
   
    
+   
+   
 TH1F *fHistStats; //histogram with statistic of events
+TH1F* fHistZVertexBeforeCut; //Z of vertex before cut 
+TH1F* fHistZVertexAfterCut; //Z of vertex after cut
+TH2F* fHistXYVertexBeforeCut; //XY of vertex before cut 
+TH2F* fHistXYVertexAfterCut; //XY of vertex after cut
+
+
 TH2F* fHistPhiPtBeforeCuts;//phi pt before cuts 
 TH2F* fHistPhiPtAfterCuts;//phi pt after cuts 
 TH2F* fHistEtaPtBeforeCuts;//eta pt before cuts 
@@ -111,13 +134,10 @@ TH2F* fHistL5dETPCinP;//SSD1
 TH2F* fHistL6dETPCinP;//SSD2
 
 
-//eta pt from n sigma method 
-TH2F* fHistEtaPtPions;//pions
-TH2F* fHistEtaPtKaons;//kaons
-TH2F* fHistEtaPtProtons;//protons
 
-TH1F* fHistwhichhasmin;// ITS  layer with minimal charged
 
+TH2F* fHistwhichhasmin;// ITS  layer with minimal charged
+TH1F* fHistMysignalminusESD;// My signal minus ESD
 //dE for n-sigma method
 TH2F* fHistminsignalforPionP; //pions
 TH2F* fHistminsignalforKaonP;//kaons
@@ -149,45 +169,24 @@ TH3F* fDCAXYZOpenforcleanAntiProtons;//antikaons
 TH2F* fHistNtrackwithstandardcuts;//TPC cuts
 TH2F* fHistNtrackwithITSPIDcuts;//TPC cuts + ITS pid cuts
 
-TH2F*	fHistSignalinTPCKaonforstandardcuts;//TPC signal for Kaons tpc cuts tracks
-TH2F*	fHistSignalinTPCKaonforITSPIDcuts;//TPC signal for Kaons tpc+itspid cuts tracks
+TH2F* fHistSignalinTPCKaonforstandardcuts;//TPC signal for Kaons tpc cuts tracks
+TH2F* fHistSignalinTPCKaonforITSPIDcuts;//TPC signal for Kaons tpc+itspid cuts tracks
 
-TH2F*	fHistSignalinTPCAntiKaonforstandardcuts;//TPC signal for AntiKaons tpc cuts tracks
-TH2F*	fHistSignalinTPCAntiKaonforITSPIDcuts; //TPC signal for AntiKaons tpc+itspid cuts tracks
+TH2F* fHistSignalinTPCAntiKaonforstandardcuts;//TPC signal for AntiKaons tpc cuts tracks
+TH2F* fHistSignalinTPCAntiKaonforITSPIDcuts; //TPC signal for AntiKaons tpc+itspid cuts tracks
 
 
-TH2F*	fHistSignalinTPCProtonforstandardcuts; //TPC signal for Protons tpc cuts tracks
-TH2F*	fHistSignalinTPCProtonforITSPIDcuts;//TPC signal for Protons tpc+itspid cuts tracks
+TH2F* fHistSignalinTPCProtonforstandardcuts; //TPC signal for Protons tpc cuts tracks
+TH2F* fHistSignalinTPCProtonforITSPIDcuts;//TPC signal for Protons tpc+itspid cuts tracks
 
-TH2F*	fHistSignalinTPCAntiProtonforstandardcuts;//TPC signal for AntiProtons tpc cuts tracks
-TH2F*	fHistSignalinTPCAntiProtonforITSPIDcuts; //TPC signal for AntiProtons tpc+itspid cuts tracks
+TH2F* fHistSignalinTPCAntiProtonforstandardcuts;//TPC signal for AntiProtons tpc cuts tracks
+TH2F* fHistSignalinTPCAntiProtonforITSPIDcuts; //TPC signal for AntiProtons tpc+itspid cuts tracks
 
 
 //Multiplicity histos
 TH1F* fHistStandartMul;//number from AliESDtrackCuts::GetReferenceMultiplicity
 TH1F* fHistMytrackMul;//number of my tracks
 
-
-
-//MC particles for n sigma method eta pt
-TH2F* fHistEtaPtPionsMC;//pions
-TH2F* fHistEtaPtKaonsMC;//koans
-TH2F* fHistEtaPtProtonsMC;//protons
-
-//detected particles in n-sigma methos  eta pt
-TH2F* fHistEtaPtPionsMCDET;//pions
-TH2F* fHistEtaPtKaonsMCDET;//kaons
-TH2F* fHistEtaPtProtonsMCDET;//protons
-
-//contamination from secondraries in n-sigma method eta pt
-TH2F* fHistEtaPtPionsCon;//pions
-TH2F* fHistEtaPtKaonsCon;//kaons
-TH2F* fHistEtaPtProtonsCon;//protons
-
-//contamination from PIS in n-sigma method eta pt
-TH2F* fHistEtaPtPionsConPID;//pions
-TH2F* fHistEtaPtKaonsConPID;//kaons
-TH2F* fHistEtaPtProtonsConPID;//protons
 
 //log dE-logdEfit as function of  global p at p.v. for primary tracks 
 TH2F* fHistminsignalifPionPPrimary; //pions
@@ -366,12 +365,40 @@ TH2F* fAntiMuonsource;//mu-
 //N tpc clusters for 
 TH2F* fPionNTPCClusters; //pions tracks
 TH2F* fAntiPionNTPCClusters;//antipions tracks 
+
+TH2F* fKaonNTPCClusters; //Kaons tracks
+TH2F* fAntiKaonNTPCClusters;//antiKaons tracks 
+
+TH2F* fProtonNTPCClusters; //Protons tracks
+TH2F* fAntiProtonNTPCClusters;//antiProtons tracks
+
+TH2F* fPionchi2; //pions tracks
+TH2F* fAntiPionchi2;//antipions tracks 
+
+TH2F* fKaonchi2; //Kaons tracks
+TH2F* fAntiKaonchi2;//antiKaons tracks 
+
+TH2F* fProtonchi2; //Protons tracks
+TH2F* fAntiProtonchi2;//antiProtons tracks
  
+
+TH2F* fTracksCutmonitoring;// Number of tracks as fun of pt on each step of selection 
+TH3F* fParticlesCutmonitoring;//Number of as particles as fun of pt on each step of selection x 0-pion 1-kaon,2-proton,3-antipion,4-antikaon,5-antiproton
+TH3F* fVertexshift; //shift of the vertex due to reconstruction
+
+TH3F* fPtESDminusPtMCvPtESDafterallcuts;//ptESD -ptMC v ptESD after all cuts 
+TH3F* fPtESDminusPtMCvPtESDafterTPCcuts;//ptESD - ptMC v ptESD after TPC cuts (refit,chi2,nclus);
+
+
+
 //TPC pid objects 
 AliESDpidCuts* fTPCPIDCUT;//cut
 AliESDpid* fESDpid; // global thing
 
 TH1F* fPrimaryElectronsMother; //name says all 
+
+
+
 
 
  TList *flist;//output list
@@ -382,8 +409,6 @@ AliAnalysisChargedHadronSpectraITSTruncatedMeanTask& operator=(const AliAnalysis
 
  Float_t MyITSsignalusing4points(Double_t* const) const;
   Float_t MyITSsignalusing3points(Double_t* const) const;
-  Int_t TypeofParticle(Float_t mom,Float_t signal) const;
-Float_t BBparametrization(Float_t x,const Float_t * par) const;
 void CorrectSDD(Double_t *tmpQESD) const;
 void CorrectSSD(Double_t *tmpQESD) const;
     Bool_t SelectOnImpPar(AliESDtrack* const t) const;
@@ -391,7 +416,7 @@ void CorrectSSD(Double_t *tmpQESD) const;
     
     
     
- ClassDef(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask, 1); // example of analysis
+ ClassDef(AliAnalysisChargedHadronSpectraITSTruncatedMeanTask, 2); // example of analysis
 };
 
 #endif
