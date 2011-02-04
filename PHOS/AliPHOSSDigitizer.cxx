@@ -217,6 +217,9 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
+  if(!phosLoader) 
+    AliFatal("phosLoader is null pointer!!") ; 
+  
   //switch off reloading of this task while getting event
   if (!fInit) { // to prevent overwrite existing file
     AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
