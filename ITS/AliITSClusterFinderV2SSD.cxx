@@ -728,7 +728,7 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
 
 //  TClonesArray &cl=*clusters;
   
-  AliITSsegmentationSSD *seg = dynamic_cast<AliITSsegmentationSSD*>(fDetTypeRec->GetSegmentationModel(2));
+  AliITSsegmentationSSD *seg = static_cast<AliITSsegmentationSSD*>(fDetTypeRec->GetSegmentationModel(2));
   if (fModule>fLastSSD1) 
     seg->SetLayer(6);
   else 

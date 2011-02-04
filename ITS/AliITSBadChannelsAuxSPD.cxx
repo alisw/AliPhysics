@@ -338,11 +338,11 @@ Bool_t AliITSBadChannelsAuxSPD::CreateHTMLReport(char *name, Int_t* &badChannels
 
 	  // Create report
 	  buffer->Append("SPD module = ");
-	  snprintf(temp,10,"%d",module);
+	  snprintf(temp,9,"%d",module);
 	  buffer->Append(temp);
 	  buffer->Append("<br>\n");
 	  buffer->Append("Number of bad channels = ");
-	  snprintf(temp,10,"%d",size);
+	  snprintf(temp,9,"%d",size);
 	  buffer->Append(temp);
 
 	  tags ? buffer->Append("<br>\n") : buffer->Append("\n");

@@ -1015,7 +1015,8 @@ Bool_t AliITSHandleDaSSD::SaveCalibrationSSDLDC(Char_t*& dafname)
   if (dafname) dadatafilename.Form("%s/", dafname);
   dadatafilename += TString::Format("ITSSSDda_%i.root", fLdcId);
   tmpfname = new Char_t[dadatafilename.Length()+1];
-  dafname = strcpy(tmpfname, dadatafilename.Data());
+  Int_t sz = dadatafilename.Sizeof();
+  dafname = strncpy(tmpfname, dadatafilename.Data(),sz);
   TFile *fileRun = new TFile (dadatafilename.Data(),"RECREATE");
   if (fileRun->IsZombie()) {
     AliError(Form("AliITSHandleDaSSD: SaveCalibrationSSDLDC() error open file %s", dadatafilename.Data()));
@@ -1188,6 +1189,7 @@ Bool_t AliITSHandleDaSSD::AllocateSimulatedModules(const Int_t copymodind)
       fModules[modind] = module;
       for (Int_t strind = 0; strind < module->GetNumberOfStrips(); strind++) {
         AliITSChannelDaSSD *cstrip = fModules[copymodind]->GetStrip(strind);
+	if(!cstrip)return kFALSE;
         Long_t      eventsnumber = cstrip->GetEventsNumber();
         AliITSChannelDaSSD *strip = new AliITSChannelDaSSD(strind, eventsnumber);
         for (Long_t evind = 0; evind < eventsnumber; evind++) {

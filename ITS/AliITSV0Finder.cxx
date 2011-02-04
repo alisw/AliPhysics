@@ -181,6 +181,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   //          max distance DCA between 2 tracks cut 
   //          maxDist = TMath::Min(kMaxDist,kMaxDist0+pvertex->GetRr()*kMaxDist);
   //
+  const Bool_t kCheckPropagate = kFALSE;
   const Float_t kMaxDist0 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist0();
   const Float_t kMaxDist1 = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist1();
   const Float_t kMaxDist = AliITSReconstructor::GetRecoParam()->GetESDV0Params()->GetMaxDist();
@@ -359,7 +360,8 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
 
     alpha = TMath::ATan2(yy,xx);    
     //    if (!trackat0.Propagate(alpha,0)) continue;    
-    trackat0.Propagate(alpha,0); //PH The check on the return value is temporarily disabled (bug 45751) 
+    //    trackat0.Propagate(alpha,0); //PH The check on the return value is temporarily disabled (bug 45751) 
+    if(!trackat0.Propagate(alpha,0) && kCheckPropagate)continue;
     // calculate normalized distances to the vertex 
     //
     Float_t ptfac  = (1.+100.*TMath::Abs(trackat0.GetC()));
