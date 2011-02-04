@@ -324,7 +324,8 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   if (SP){
     AliAnalysisTaskScalarProduct *taskSP = new AliAnalysisTaskScalarProduct("TaskScalarProduct",WEIGHTS[0]);
     taskSP->SetRelDiffMsub(1.0);
-    taskSP->SetApplyCorrectionForNUA(kTRUE);
+    taskSP->SetApplyCorrectionForNUA(kFALSE);
+    //taskSP->SetHarmonic(2); // default is v2
     mgr->AddTask(taskSP);
   }
   if (LYZ1SUM){
@@ -367,10 +368,13 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     taskQC->SetUsePhiWeights(WEIGHTS[0]); 
     taskQC->SetUsePtWeights(WEIGHTS[1]);
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
+    taskQC->SetCalculateCumulantsVsM(kFALSE);
     taskQC->SetnBinsMult(10000);
     taskQC->SetMinMult(0.);
     taskQC->SetMaxMult(10000.);
-    taskQC->SetApplyCorrectionForNUA(kTRUE);
+    //taskQC->SetHarmonic(2); // default is v2
+    taskQC->SetApplyCorrectionForNUA(kFALSE);
+    taskQC->SetFillMultipleControlHistograms(kFALSE);     
     mgr->AddTask(taskQC);
   }
   if (FQD){

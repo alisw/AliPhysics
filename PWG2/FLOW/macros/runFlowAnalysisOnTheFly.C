@@ -302,11 +302,13 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
    if(usePtWeights) qc->SetUsePtWeights(usePtWeights);
    if(useEtaWeights) qc->SetUseEtaWeights(useEtaWeights);
    // qc->SetHarmonic(2); // default is v2
-   // qc->SetApplyCorrectionForNUA(kTRUE); // default
+   qc->SetApplyCorrectionForNUA(kFALSE);
+   qc->SetFillMultipleControlHistograms(kFALSE);     
    // qc->SetCalculate2DFlow(kFALSE); // default
    // qc->SetMultiplicityWeight("combinations"); // default
    // qc->SetMultiplicityWeight("unit");
    // qc->SetMultiplicityWeight("multiplicity");  
+   qc->SetCalculateCumulantsVsM(kFALSE);
    qc->SetnBinsMult(10000);
    qc->SetMinMult(0);
    qc->SetMaxMult(10000);      

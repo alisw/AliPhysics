@@ -181,12 +181,15 @@ class AliFlowAnalysisWithQCumulants{
   AliFlowCommonHistResults* GetCommonHistsResults6th() const {return this->fCommonHistsResults6th;};
   void SetCommonHistsResults8th(AliFlowCommonHistResults* const chr8th) {this->fCommonHistsResults8th = chr8th;};
   AliFlowCommonHistResults* GetCommonHistsResults8th() const {return this->fCommonHistsResults8th;};
+  void SetFillMultipleControlHistograms(Bool_t const fmch) {this->fFillMultipleControlHistograms = fmch;};
+  Bool_t GetFillMultipleControlHistograms() const {return this->fFillMultipleControlHistograms;};  
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetAnalysisLabel(const char *aLabel) {this->fAnalysisLabel->Append(*aLabel);}; // to be improved (Append(*aLabel) changed into Append(aLabel)) 
   TString *GetAnalysisLabel() const {return this->fAnalysisLabel;};
   void SetPrintFinalResults(Bool_t const printOrNot, Int_t const i) {this->fPrintFinalResults[i] = printOrNot;};
   Bool_t GetPrintFinalResults(Int_t i) const {return this->fPrintFinalResults[i];};
+  
    
   // 2a.) particle weights:
   void SetWeightsList(TList* const wlist) {this->fWeightsList = (TList*)wlist->Clone();}
@@ -419,6 +422,7 @@ class AliFlowAnalysisWithQCumulants{
   Double_t fEtaMin; // minimum eta   
   Double_t fEtaMax; // maximum eta
   Double_t fEtaBinWidth; // bin width for eta histograms  
+  Bool_t fFillMultipleControlHistograms; // fill separately control histos for events with >= 2, 4, 6 and 8 particles 
   Int_t fHarmonic; // harmonic 
   TString *fAnalysisLabel; // analysis label (all histograms and output file will have this label)
   Bool_t fPrintFinalResults[4]; // print on the screen the final results (0=RF, 1=RP, 2=POI, 3=RF rebinned in M)
