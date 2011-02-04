@@ -42,13 +42,14 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fEvent(NULL),
  fQC(NULL), 
  fListHistos(NULL),
+ fFillMultipleControlHistograms(kFALSE),
  fHarmonic(2),  
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
  fPropagateErrorAlsoFromNIT(kFALSE),
  fCalculate2DFlow(kFALSE),
  fStoreDistributions(kFALSE),
- fCalculateCumulantsVsM(kTRUE), 
+ fCalculateCumulantsVsM(kFALSE), 
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE),  
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -93,6 +94,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fEvent(NULL),
  fQC(NULL),
  fListHistos(NULL),
+ fFillMultipleControlHistograms(kFALSE),
  fHarmonic(0),  
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
@@ -135,6 +137,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC = new AliFlowAnalysisWithQCumulants();
  
  // Common:
+ fQC->SetFillMultipleControlHistograms(fFillMultipleControlHistograms);
  fQC->SetHarmonic(fHarmonic);
  fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
  fQC->SetApplyCorrectionForNUAVsM(fApplyCorrectionForNUAVsM);

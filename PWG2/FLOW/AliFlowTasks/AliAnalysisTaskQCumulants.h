@@ -38,6 +38,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   virtual void Terminate(Option_t *);
   
   // Common:
+  void SetFillMultipleControlHistograms(Bool_t const fmch) {this->fFillMultipleControlHistograms = fmch;};
+  Bool_t GetFillMultipleControlHistograms() const {return this->fFillMultipleControlHistograms;}; 
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};
   void SetApplyCorrectionForNUA(Bool_t const applyCorrectionForNUA) {this->fApplyCorrectionForNUA = applyCorrectionForNUA;};
@@ -86,15 +88,16 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   AliFlowAnalysisWithQCumulants *fQC; // Q-cumulant object
   TList *fListHistos;                 // collection of output 
   // Common:
-  Int_t fHarmonic;                   // harmonic  
-  Bool_t fApplyCorrectionForNUA;     // apply correction for non-uniform acceptance 
-  Bool_t fApplyCorrectionForNUAVsM;  // apply correction for non-uniform acceptance versus M    
-  Bool_t fPropagateErrorAlsoFromNIT; // propagate error by taking into account also non-isotrpic terms  
-  Bool_t fCalculate2DFlow;           // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
-  Bool_t fStoreDistributions;        // store or not distributions of correlations
-  Bool_t fCalculateCumulantsVsM;     // calculate cumulants versus multiplicity  
-  Bool_t fMinimumBiasReferenceFlow;  // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
-  Bool_t fForgetAboutCovariances;    // when propagating error forget about the covariances  
+  Bool_t fFillMultipleControlHistograms; // fill separately control histos for events with >= 2, 4, 6 and 8 particles
+  Int_t fHarmonic;                       // harmonic  
+  Bool_t fApplyCorrectionForNUA;         // apply correction for non-uniform acceptance 
+  Bool_t fApplyCorrectionForNUAVsM;      // apply correction for non-uniform acceptance versus M    
+  Bool_t fPropagateErrorAlsoFromNIT;     // propagate error by taking into account also non-isotrpic terms  
+  Bool_t fCalculate2DFlow;               // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
+  Bool_t fStoreDistributions;            // store or not distributions of correlations
+  Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
+  Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
+  Bool_t fForgetAboutCovariances;        // when propagating error forget about the covariances  
   Bool_t fStorePhiDistributionForOneEvent; // store phi distribution for one event to illustrate flow
   Double_t fPhiDistributionForOneEventSettings[4]; // [v_min,v_max,refMult_min,refMult_max]        
   // Multiparticle correlations vs multiplicity:
