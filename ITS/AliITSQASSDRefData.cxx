@@ -116,12 +116,10 @@ Int_t AliITSQASSDRefData::GetID(const char* name) {
   TString stringName = name;
   TObjString *dummyString = 0;
   for (Int_t id=0; id<fNameList->GetEntriesFast(); id++){
-    dummyString = dynamic_cast <TObjString *>(fNameList->At(id));
+    dummyString = static_cast <TObjString *>(fNameList->At(id));
     refName = dummyString->GetString();
-    //Printf("(AliITSQASSDRefData::GetID) String name from the list: %s",refName.Data());
     if(refName == stringName) {
       status = id;
-      //Printf("(AliITSQASSDRefData::GetID) String name found from the list: %s - Id: %d",refName.Data(),status);
     }
   }
 
@@ -134,11 +132,10 @@ Double_t AliITSQASSDRefData::GetReferenceValue(const char* name) {
   TString refName = "";
   TObjString *dummyString = 0;
   for (Int_t id=0; id<fNameList->GetEntriesFast(); id++){
-    dummyString = dynamic_cast <TObjString *>(fNameList->At(id));
+    dummyString = static_cast <TObjString *>(fNameList->At(id));
     refName = dummyString->GetString();
 
-    if(refName.Data()==name)
-      return fRefList->At(id);
+    if(refName.Data()==name) return fRefList->At(id);
   }
   AliError(Form("Reference name %s unknown",name));
   return -1;
@@ -164,7 +161,7 @@ void AliITSQASSDRefData::PrintTable() {
   TString refName = "";
   TObjString *dummyString = 0;
   for(id=0; id<fRefList->GetSize()-1; id++) {
-    dummyString = dynamic_cast <TObjString *>(fNameList->At(id));
+    dummyString = static_cast <TObjString *>(fNameList->At(id));
     refName = dummyString->GetString();
     Printf("%i ------ %4.3g -------- %s",id,fRefList->At(id),refName.Data());
 	   

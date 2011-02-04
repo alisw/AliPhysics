@@ -349,10 +349,10 @@ void AliITSQADataMakerRec::MakeRecPoints(TTree * clustersTree)
     AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
     TClonesArray *recpoints =NULL;
     if(fkOnline){
-      recpoints= rpcont->FetchClusters(0,clustersTree,GetEventNumber());
+      rpcont->FetchClusters(0,clustersTree,GetEventNumber());
     } 
     else{
-      recpoints= rpcont->FetchClusters(0,clustersTree);
+      rpcont->FetchClusters(0,clustersTree);
     }
     if(!rpcont->GetStatusOK()){
       AliError("cannot access to ITS recpoints");

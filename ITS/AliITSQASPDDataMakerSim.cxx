@@ -301,8 +301,8 @@ Int_t AliITSQASPDDataMakerSim::InitHits()
 
   TH1F **hmod = new TH1F*[2];
   for (Int_t iLay=0; iLay<2; ++iLay) {
-    sprintf(name,"SPDModPattern_SPD%d",iLay+1);
-    sprintf(title,"Module map - SPD Layer %d",iLay+1);
+    snprintf(name,49,"SPDModPattern_SPD%d",iLay+1);
+    snprintf(title,49,"Module map - SPD Layer %d",iLay+1);
     hmod[iLay]=new TH1F(name,title,240,0,240);
     hmod[iLay]->GetXaxis()->SetTitle("Module number");
     hmod[iLay]->GetYaxis()->SetTitle("Entries");

@@ -202,10 +202,10 @@ Int_t AliITSQASSDDataMakerSim::MakeSDigits(TTree *sdigits) {
     if(ndigits != 0)
       AliDebug(AliQAv1::GetQADebugLevel(),Form("Module: %d - Digits: %d",iModule,ndigits));
 
-    for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
-      AliITSpListItem *dig=(AliITSpListItem*)iSSDsdigits->At(iDigit);
-      dig=0;
-    }//digit loop
+//     for (Int_t iDigit = 0; iDigit < ndigits; iDigit++) {
+//       AliITSpListItem *dig=(AliITSpListItem*)iSSDsdigits->At(iDigit);
+//       dig=0;
+//     }//digit loop
   }//module loop
   return rv ; 
 }

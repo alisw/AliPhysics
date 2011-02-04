@@ -615,7 +615,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 					     600,600+fgkSSDLADDERSLAYER6);
     fHistSSDOccupancyLayer6->GetZaxis()->SetRangeUser(0.0,100.0);
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDOccupancyLayer6->SetStats(kFALSE);
