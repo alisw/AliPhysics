@@ -14,7 +14,7 @@
  * @ingroup pwg2_forward_scripts
  */
 AliAnalysisTask*
-AddTaskFMD(Bool_t mc)
+AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field)
 {
   gSystem->Load("libPWG2forward2");
 
@@ -30,9 +30,9 @@ AddTaskFMD(Bool_t mc)
   else    task = new AliForwardMultiplicityTask("FMD");
   mgr->AddTask(task);
   
-  AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-  fcm.Init(1,900,5);
-
+  // --- Do a local initialisation with assumed values ---------------
+  if (sys > 0 && sNN > 0) 
+    AliForwardCorrectionManager::Instance().Init(sys,sNN,field);
   
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
