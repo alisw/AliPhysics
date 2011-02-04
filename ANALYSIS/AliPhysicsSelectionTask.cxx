@@ -47,7 +47,7 @@ AliPhysicsSelectionTask::AliPhysicsSelectionTask(const char* opt) :
   }
   // Define input and output slots here
   DefineOutput(1, TList::Class());
-  fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDFMD.,AliESDVZERO,AliESDZDC.,SPDVertex.,PrimaryVertex.";
+  fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDFMD.,AliESDVZERO.,AliESDZDC.,SPDVertex.,PrimaryVertex.";
   
   AliLog::SetClassDebugLevel("AliPhysicsSelectionTask", AliLog::kWarning);
 }
