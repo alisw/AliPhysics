@@ -106,7 +106,8 @@ AliExpression::AliExpression( int op, AliExpression* a ) :
 Bool_t AliExpression::Value( const TObjArray &vars )
 {
    //  Evaluate the expression
-   if ( fArg2 == 0 && fVname.IsNull() ) {
+  if ( ( fArg2 == 0 && fVname.IsNull() ) ||
+       ( fArg2 == 0 && ( fOperator == kOpOR || fOperator == kOpAND || fOperator == kOpNOT ) ) ) {
        AliError( "Expression undefined." );
        return kFALSE;
    }
