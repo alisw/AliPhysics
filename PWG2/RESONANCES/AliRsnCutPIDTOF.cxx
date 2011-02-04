@@ -11,7 +11,9 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include "AliRsnEvent.h"
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
+
 #include "AliRsnCutPIDTOF.h"
 
 ClassImp(AliRsnCutPIDTOF)
@@ -20,6 +22,7 @@ ClassImp(AliRsnCutPIDTOF)
 AliRsnCutPIDTOF::AliRsnCutPIDTOF
 (const char *name, AliPID::EParticleType ref, Double_t min, Double_t max, Bool_t rejectUnmatched) :
   AliRsnCut(name, AliRsnCut::kDaughter, min, max),
+  fInitialized(kFALSE),
   fRejectUnmatched(rejectUnmatched),
   fRefType(AliPID::kUnknown),
   fRefMass(0.0),
@@ -38,6 +41,7 @@ AliRsnCutPIDTOF::AliRsnCutPIDTOF
 //_________________________________________________________________________________________________
 AliRsnCutPIDTOF::AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy) :
   AliRsnCut(copy),
+  fInitialized(kFALSE),
   fRejectUnmatched(copy.fRejectUnmatched),
   fRefType(AliPID::kUnknown),
   fRefMass(0.0),
@@ -62,9 +66,10 @@ AliRsnCutPIDTOF& AliRsnCutPIDTOF::operator=(const AliRsnCutPIDTOF& copy)
 // which sets the mass accordingly and coherently.
 //
 
+  fInitialized     = kFALSE;
   fRejectUnmatched = copy.fRejectUnmatched;
-  fESDpid = copy.fESDpid;
-  fAODpid = copy.fAODpid;
+  fESDpid          = copy.fESDpid;
+  fAODpid          = copy.fAODpid;
 
   SetRefType(copy.fRefType);
   
@@ -77,6 +82,9 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
 //
 // Cut checker.
 //
+
+  // initialize if needed
+  if (!fInitialized) Initialize();
 
   // coherence check
   if (!TargetOK(object)) return kFALSE;
@@ -151,4 +159,22 @@ void AliRsnCutPIDTOF::Print(const Option_t *) const
   AliInfo(Form("Cut name, type            : %s %s", GetName(), ClassName()));
   AliInfo(Form("TOF PID cut range (sigmas): %.3f %.3f", fMinD, fMaxD));
   AliInfo(Form("Unmatched tracks are      : %s", (fRejectUnmatched ? "rejected" : "accepted")));
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutPIDTOF::Initialize()
+{
+//
+// Initialize ESD pid object from global one
+//
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliESDInputHandler *handler = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
+  if (handler)
+  {
+    AliESDpid *pid = handler->GetESDpid();
+    fESDpid = (*pid);
+  }
+  
+  fInitialized = kTRUE;
 }

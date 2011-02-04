@@ -54,6 +54,9 @@ class AliRsnCutPIDTPC : public AliRsnCut
 
   private:
 
+    void Initialize();
+
+    Bool_t          fInitialized;    // a mono-usage flag which initializes the ESD pid object
     Bool_t          fRejectOutside;  // choose if tracks outside momentum range are rejected or not
     Double_t        fMomMin;         // min p in range where this cut is checked
     Double_t        fMomMax;         // max p in range where this cut is checked
