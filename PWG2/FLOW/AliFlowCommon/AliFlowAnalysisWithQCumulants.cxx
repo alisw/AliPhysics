@@ -92,6 +92,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fEtaMin(0),
  fEtaMax(0),
  fEtaBinWidth(0),
+ fFillMultipleControlHistograms(kFALSE),
  fHarmonic(2),
  fAnalysisLabel(NULL),
  // 2a.) particle weights:
@@ -116,7 +117,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fMinMult(0.),  
  fMaxMult(10000.), 
  fPropagateErrorAlsoFromNIT(kFALSE), 
- fCalculateCumulantsVsM(kTRUE), 
+  fCalculateCumulantsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -765,6 +766,7 @@ void AliFlowAnalysisWithQCumulants::Finish()
  fMinimumBiasReferenceFlow = (Bool_t)fIntFlowFlags->GetBinContent(11); 
  fForgetAboutCovariances = (Bool_t)fIntFlowFlags->GetBinContent(12);
  fStorePhiDistributionForOneEvent = (Bool_t)fIntFlowFlags->GetBinContent(13);
+ fFillMultipleControlHistograms = (Bool_t)fIntFlowFlags->GetBinContent(14);
  fEvaluateIntFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(1);
  fEvaluateDiffFlowNestedLoops = (Bool_t)fEvaluateNestedLoops->GetBinContent(2); 
  fCrossCheckInPtBinNo = (Int_t)fEvaluateNestedLoops->GetBinContent(3);
@@ -1063,9 +1065,7 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrectionsForNUASinTerms()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
 {
@@ -1100,9 +1100,7 @@ void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
    
 } // end of void AliFlowAnalysisWithQCumulants::GetOutputHistograms(TList *outputListHistos)
 
-
 //================================================================================================================================
-
 
 TProfile* AliFlowAnalysisWithQCumulants::MakePtProjection(TProfile2D *profilePtEta) const
 {
@@ -1338,9 +1336,7 @@ void AliFlowAnalysisWithQCumulants::WriteHistograms(TDirectoryFile *outputFileNa
  outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
 }
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
 {
@@ -1350,42 +1346,46 @@ void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
  commonHistsName += fAnalysisLabel->Data();
  fCommonHists = new AliFlowCommonHist(commonHistsName.Data());
  fHistList->Add(fCommonHists);  
- // common control histogram (for events with 2 and more particles)
- TString commonHists2ndOrderName = "AliFlowCommonHist2ndOrderQC";
- commonHists2ndOrderName += fAnalysisLabel->Data();
- fCommonHists2nd = new AliFlowCommonHist(commonHists2ndOrderName.Data());
- fHistList->Add(fCommonHists2nd);  
- // common control histogram (for events with 4 and more particles)
- TString commonHists4thOrderName = "AliFlowCommonHist4thOrderQC";
- commonHists4thOrderName += fAnalysisLabel->Data();
- fCommonHists4th = new AliFlowCommonHist(commonHists4thOrderName.Data());
- fHistList->Add(fCommonHists4th);  
- // common control histogram (for events with 6 and more particles)
- TString commonHists6thOrderName = "AliFlowCommonHist6thOrderQC";
- commonHists6thOrderName += fAnalysisLabel->Data();
- fCommonHists6th = new AliFlowCommonHist(commonHists6thOrderName.Data());
- fHistList->Add(fCommonHists6th);  
- // common control histogram (for events with 8 and more particles)
- TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
- commonHists8thOrderName += fAnalysisLabel->Data();
- fCommonHists8th = new AliFlowCommonHist(commonHists8thOrderName.Data());
- fHistList->Add(fCommonHists8th);    
- // common histograms for final results (calculated for events with 2 and more particles)
+ if(fFillMultipleControlHistograms)
+ {
+  // common control histogram (for events with 2 and more particles)
+  TString commonHists2ndOrderName = "AliFlowCommonHist2ndOrderQC";
+  commonHists2ndOrderName += fAnalysisLabel->Data();
+  fCommonHists2nd = new AliFlowCommonHist(commonHists2ndOrderName.Data());
+  fHistList->Add(fCommonHists2nd);  
+  // common control histogram (for events with 4 and more particles)
+  TString commonHists4thOrderName = "AliFlowCommonHist4thOrderQC";
+  commonHists4thOrderName += fAnalysisLabel->Data();
+  fCommonHists4th = new AliFlowCommonHist(commonHists4thOrderName.Data());
+  fHistList->Add(fCommonHists4th);  
+  // common control histogram (for events with 6 and more particles)
+  TString commonHists6thOrderName = "AliFlowCommonHist6thOrderQC";
+  commonHists6thOrderName += fAnalysisLabel->Data();
+  fCommonHists6th = new AliFlowCommonHist(commonHists6thOrderName.Data());
+  fHistList->Add(fCommonHists6th);  
+  // common control histogram (for events with 8 and more particles)
+  TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
+  commonHists8thOrderName += fAnalysisLabel->Data();
+  fCommonHists8th = new AliFlowCommonHist(commonHists8thOrderName.Data());
+  fHistList->Add(fCommonHists8th);    
+ } // end of if(fFillMultipleControlHistograms)
+ 
+ // common histograms for final results for QC{2}:
  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC";
  commonHistResults2ndOrderName += fAnalysisLabel->Data();
  fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data());
  fHistList->Add(fCommonHistsResults2nd);  
- // common histograms for final results (calculated for events with 4 and more particles)
+ // common histograms for final results for QC{4}:
  TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderQC";
  commonHistResults4thOrderName += fAnalysisLabel->Data();
  fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data());
  fHistList->Add(fCommonHistsResults4th); 
- // common histograms for final results (calculated for events with 6 and more particles)
+ // common histograms for final results for QC{6}:
  TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderQC";
  commonHistResults6thOrderName += fAnalysisLabel->Data();
  fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data());
  fHistList->Add(fCommonHistsResults6th);  
- // common histograms for final results (calculated for events with 8 and more particles)
+ // common histograms for final results for QC{8}:
  TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderQC";
  commonHistResults8thOrderName += fAnalysisLabel->Data();
  fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data());
@@ -1496,7 +1496,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // a) Book profile to hold all flags for integrated flow:
  TString intFlowFlagsName = "fIntFlowFlags";
  intFlowFlagsName += fAnalysisLabel->Data();
- fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",13,0,13);
+ fIntFlowFlags = new TProfile(intFlowFlagsName.Data(),"Flags for Integrated Flow",14,0,14);
  fIntFlowFlags->SetTickLength(-0.01,"Y");
  fIntFlowFlags->SetMarkerStyle(25);
  fIntFlowFlags->SetLabelSize(0.05);
@@ -1514,6 +1514,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  fIntFlowFlags->GetXaxis()->SetBinLabel(11,"fMinimumBiasReferenceFlow");
  fIntFlowFlags->GetXaxis()->SetBinLabel(12,"fForgetAboutCovariances");
  fIntFlowFlags->GetXaxis()->SetBinLabel(13,"fStorePhiDistributionForOneEvent");
+ fIntFlowFlags->GetXaxis()->SetBinLabel(14,"fFillMultipleControlHistograms");
  fIntFlowList->Add(fIntFlowFlags);
 
  // b) Book event-by-event quantities:
@@ -5711,9 +5712,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, TSt
    
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCumulants(TString type, Bool_t useParticleWeights, TString eventWeights); 
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFlow(TString type)
 {
@@ -5744,17 +5743,35 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  
  if(type == "POI")
  {
-  yield2ndPt = (TH1F*)(fCommonHists2nd->GetHistPtPOI())->Clone();
-  yield4thPt = (TH1F*)(fCommonHists4th->GetHistPtPOI())->Clone();
-  yield6thPt = (TH1F*)(fCommonHists6th->GetHistPtPOI())->Clone();
-  yield8thPt = (TH1F*)(fCommonHists8th->GetHistPtPOI())->Clone();  
+  if(fFillMultipleControlHistograms)
+  {
+   yield2ndPt = (TH1F*)(fCommonHists2nd->GetHistPtPOI())->Clone();
+   yield4thPt = (TH1F*)(fCommonHists4th->GetHistPtPOI())->Clone();
+   yield6thPt = (TH1F*)(fCommonHists6th->GetHistPtPOI())->Clone();
+   yield8thPt = (TH1F*)(fCommonHists8th->GetHistPtPOI())->Clone();  
+  } else
+    {
+     yield2ndPt = (TH1F*)(fCommonHists->GetHistPtPOI())->Clone();
+     yield4thPt = (TH1F*)(fCommonHists->GetHistPtPOI())->Clone();
+     yield6thPt = (TH1F*)(fCommonHists->GetHistPtPOI())->Clone();
+     yield8thPt = (TH1F*)(fCommonHists->GetHistPtPOI())->Clone();     
+    }
  } 
  else if(type == "RP")
  {
-  yield2ndPt = (TH1F*)(fCommonHists2nd->GetHistPtRP())->Clone();
-  yield4thPt = (TH1F*)(fCommonHists4th->GetHistPtRP())->Clone();
-  yield6thPt = (TH1F*)(fCommonHists6th->GetHistPtRP())->Clone();
-  yield8thPt = (TH1F*)(fCommonHists8th->GetHistPtRP())->Clone();  
+  if(fFillMultipleControlHistograms)
+  {
+   yield2ndPt = (TH1F*)(fCommonHists2nd->GetHistPtRP())->Clone();
+   yield4thPt = (TH1F*)(fCommonHists4th->GetHistPtRP())->Clone();
+   yield6thPt = (TH1F*)(fCommonHists6th->GetHistPtRP())->Clone();
+   yield8thPt = (TH1F*)(fCommonHists8th->GetHistPtRP())->Clone();  
+  } else
+    {
+     yield2ndPt = (TH1F*)(fCommonHists->GetHistPtRP())->Clone();
+     yield4thPt = (TH1F*)(fCommonHists->GetHistPtRP())->Clone();
+     yield6thPt = (TH1F*)(fCommonHists->GetHistPtRP())->Clone();
+     yield8thPt = (TH1F*)(fCommonHists->GetHistPtRP())->Clone();    
+    } 
  } 
  
  Int_t nBinsPt = yield2ndPt->GetNbinsX();
@@ -7558,7 +7575,6 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
      {
       fIntFlowFlags->Fill(1.5,2); // 2 = "multiplicity"        
      } 
- // corrected for non-uniform acceptance or not:
  fIntFlowFlags->Fill(2.5,(Int_t)fApplyCorrectionForNUA);
  fIntFlowFlags->Fill(3.5,(Int_t)fPrintFinalResults[0]);
  fIntFlowFlags->Fill(4.5,(Int_t)fPrintFinalResults[1]);
@@ -7570,6 +7586,7 @@ void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
  fIntFlowFlags->Fill(10.5,(Int_t)fMinimumBiasReferenceFlow);
  fIntFlowFlags->Fill(11.5,(Int_t)fForgetAboutCovariances);
  fIntFlowFlags->Fill(12.5,(Int_t)fStorePhiDistributionForOneEvent); 
+ fIntFlowFlags->Fill(13.5,(Int_t)fFillMultipleControlHistograms);  
 } // end of void AliFlowAnalysisWithQCumulants::StoreIntFlowFlags()
 
 //================================================================================================================================
@@ -7591,9 +7608,7 @@ void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
     
 } // end of void AliFlowAnalysisWithQCumulants::StoreDiffFlowFlags()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms() 
 {
@@ -7625,7 +7640,8 @@ void AliFlowAnalysisWithQCumulants::GetPointersForCommonHistograms()
  TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
  commonHists8thOrderName += fAnalysisLabel->Data();
  AliFlowCommonHist *commonHist8th = dynamic_cast<AliFlowCommonHist*>(fHistList->FindObject(commonHists8thOrderName.Data()));
- if(commonHist8th) this->SetCommonHists8th(commonHist8th);  
+ if(commonHist8th) this->SetCommonHists8th(commonHist8th); 
+  
  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderQC"; 
  commonHistResults2ndOrderName += fAnalysisLabel->Data(); 
  AliFlowCommonHistResults *commonHistRes2nd = dynamic_cast<AliFlowCommonHistResults*>
@@ -9438,25 +9454,24 @@ void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
 
 } // end of void AliFlowAnalysisWithQCumulants::GetPointersForNestedLoopsHistograms()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::StoreHarmonic()
 {
  // Store flow harmonic in common control histograms.
 
  (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic);
- (fCommonHists2nd->GetHarmonic())->Fill(0.5,fHarmonic);
- (fCommonHists4th->GetHarmonic())->Fill(0.5,fHarmonic);
- (fCommonHists6th->GetHarmonic())->Fill(0.5,fHarmonic);
- (fCommonHists8th->GetHarmonic())->Fill(0.5,fHarmonic);
-
+ if(fFillMultipleControlHistograms)
+ {
+  (fCommonHists2nd->GetHarmonic())->Fill(0.5,fHarmonic);
+  (fCommonHists4th->GetHarmonic())->Fill(0.5,fHarmonic);
+  (fCommonHists6th->GetHarmonic())->Fill(0.5,fHarmonic);
+  (fCommonHists8th->GetHarmonic())->Fill(0.5,fHarmonic);
+ }
+ 
 } // end of void AliFlowAnalysisWithQCumulants::StoreHarmonic()
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta) // type = RP or POI 
 {
@@ -9639,9 +9654,7 @@ void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWe
 
 } // end of void AliFlowAnalysisWithQCumulants::CalculateDiffFlowCorrelationsUsingParticleWeights(TString type, TString ptOrEta); // type = RP or POI 
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimple *anEvent)
 {
@@ -9649,28 +9662,29 @@ void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimp
  
  Int_t nRP = anEvent->GetEventNSelTracksRP(); // number of RPs (i.e. number of particles used to determine the reaction plane)
  fCommonHists->FillControlHistograms(anEvent); 
- if(nRP>1)
+ if(fFillMultipleControlHistograms)
  {
-  fCommonHists2nd->FillControlHistograms(anEvent);                                        
-  if(nRP>3)
+  if(nRP>1)
   {
-   fCommonHists4th->FillControlHistograms(anEvent);                                        
-   if(nRP>5)
+   fCommonHists2nd->FillControlHistograms(anEvent);                                        
+   if(nRP>3)
    {
-    fCommonHists6th->FillControlHistograms(anEvent);                                        
-    if(nRP>7)
+    fCommonHists4th->FillControlHistograms(anEvent);                                        
+    if(nRP>5)
     {
-     fCommonHists8th->FillControlHistograms(anEvent);                                        
-    } // end of if(nRP>7)  
-   } // end of if(nRP>5) 
-  } // end of if(nRP>3)                                                                                                                      
- } // end of if(nRP>1) 
+     fCommonHists6th->FillControlHistograms(anEvent);                                        
+     if(nRP>7)
+     {
+      fCommonHists8th->FillControlHistograms(anEvent);                                        
+     } // end of if(nRP>7)  
+    } // end of if(nRP>5) 
+   } // end of if(nRP>3)                                                                                                                      
+  } // end of if(nRP>1) 
+ } // end of if(fFillMultipleControlHistograms)
  
 } // end of void AliFlowAnalysisWithQCumulants::FillCommonControlHistograms(AliFlowEventSimple *anEvent)
 
-
 //================================================================================================================================
-
 
 void AliFlowAnalysisWithQCumulants::ResetEventByEventQuantities()
 {
