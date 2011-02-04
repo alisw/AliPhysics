@@ -123,7 +123,9 @@ void AliZDCReconstructor::Init()
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
   if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
-  fMeanPhase = phaseLHC->GetMeanPhase();
+  // 4/2/2011 According to A. Di Mauro BEAM 2 measurement is more reliable 
+  // than BEAM1 and therefore laso than the average of the 2
+  fMeanPhase = phaseLHC->GetMeanPhaseB2();
     
   if(fIsCalibrationMB==kFALSE)  
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
@@ -1361,9 +1363,11 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
     }
   }
+  // 4/2/2011 -> Subtracting L0 (tdcValues[15]) instead of ADC gate 
+  // we try to keep the TDC oscillations as low as possible!
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
-      if(tdcValues[jk][lk]!=0.) tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[14][0])+fMeanPhase;
+      if(tdcValues[jk][lk]!=0.) tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
     }
   }
   fESDZDC->SetZDCTDCData(tdcValues);
