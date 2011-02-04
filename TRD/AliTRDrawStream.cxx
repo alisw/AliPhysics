@@ -123,7 +123,7 @@ AliTRDrawStream::ErrorBehav_t AliTRDrawStream::fgErrorBehav[] = {
 
 AliTRDrawStream::AliTRDrawStream(AliRawReader *rawReader) :
   fStats(), 
-  fStoreError(&AliTRDrawStream::StoreErrorTree),
+  fStoreError(&AliTRDrawStream::ForgetError),
   fRawReader(rawReader),
   fDigitsManager(0x0),
   fDigitsParam(0x0),
