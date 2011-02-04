@@ -1,5 +1,5 @@
 #ifndef ALIREFARRAY_H
-
+#define ALIREFARRAY_H
 //_________________________________________________________________________
 // 
 //        Class for association of multiple UInt_t labels to array of UInt_t
