@@ -325,21 +325,19 @@ void AliITSDetTypeRec::SetTreeAddressD(TTree* const treeD){
   char branchname[30];
 
   if(!treeD) return;
-  if (fDigits == 0x0) fDigits = new TObjArray(fgkNdettypes);
+  if (fDigits == 0x0) {
+    fDigits = new TObjArray(fgkNdettypes);
+  }
+  else {
+    ResetDigits();
+  }
   for (i=0; i<fgkNdettypes; i++) {
     digclass = GetDigitClassName(i);
-    if(!(fDigits->At(i))) {
-      fDigits->AddAt(new TClonesArray(digclass,1000),i);
-    }
-    else{
-      ResetDigits(i);
-    } 
-    if (fgkNdettypes==3) sprintf(branchname,"%sDigits%s",det[3],det[i]);
-    else  sprintf(branchname,"%sDigits%d",det[3],i+1);
-    if (fDigits) {
-      branch = treeD->GetBranch(branchname);
-      if (branch) branch->SetAddress(&((*fDigits)[i]));
-    }
+    fDigits->AddAt(new TClonesArray(digclass,1000),i); 
+    if (fgkNdettypes==3) snprintf(branchname,29,"%sDigits%s",det[3],det[i]);
+    else  snprintf(branchname,29,"%sDigits%d",det[3],i+1);
+    branch = treeD->GetBranch(branchname);
+    if (branch) branch->SetAddress(&((*fDigits)[i]));
   } 
 
 }
@@ -777,9 +775,9 @@ void AliITSDetTypeRec::MakeBranchR(TTree *treeR, Option_t *opt){
  
   
   if(oFast){
-    sprintf(branchname,"%sRecPointsF",detname);
+    snprintf(branchname,29,"%sRecPointsF",detname);
   } else {
-    sprintf(branchname,"%sRecPoints",detname);
+    snprintf(branchname,29,"%sRecPoints",detname);
   }
   
   if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
@@ -801,13 +799,13 @@ void AliITSDetTypeRec::SetTreeAddressR(TTree* const treeR){
    if(!treeR) return;
    if(fRecPoints==0x0) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
    TBranch *branch;
-   sprintf(branchname,"%sRecPoints",namedet);
+   snprintf(branchname,29,"%sRecPoints",namedet);
    branch = treeR->GetBranch(branchname);
    if (branch) {
       branch->SetAddress(&fRecPoints);
     } 
     else {
-      sprintf(branchname,"%sRecPointsF",namedet);
+      snprintf(branchname,29,"%sRecPointsF",namedet);
       branch = treeR->GetBranch(branchname);
       if (branch) {
 	branch->SetAddress(&fRecPoints);
@@ -882,8 +880,10 @@ void AliITSDetTypeRec::DigitsToRecPoints(TTree *treeD,TTree *treeR,Int_t lastent
       if(det[id]) first = GetITSgeom()->GetStartDet(id);
       rec = (AliITSClusterFinder*)GetReconstructionModel(id);
       TClonesArray *itsDigits  = DigitsAddress(id);
-      if (!rec)
-          AliFatal("The reconstruction class was not instanciated!");
+      if (!rec){
+	AliFatal("The reconstruction class was not instanciated!");
+	return;
+      }
       ResetDigits();  // MvL: Not sure we neeed this when rereading anyways
       if (all) {
           treeD->GetEvent(lastentry+module);
@@ -987,8 +987,10 @@ void AliITSDetTypeRec::DigitsToRecPoints(AliRawReader* rawReader,Option_t *opt){
   for(id=0;id<3;id++){
     if (!all && !det[id]) continue;
     rec = (AliITSClusterFinder*)GetReconstructionModel(id);
-    if (!rec)
+    if (!rec){
       AliFatal("The reconstruction class was not instantiated");
+      return;
+    }
     rec->SetDetTypeRec(this);
     rec->RawdataToClusters(rawReader);    
   } 
@@ -1145,7 +1147,8 @@ TBits AliITSDetTypeRec::GetFiredChipMap(TTree *treeR) const{
    }
    
   AliITSRecPointContainer* rpcont=AliITSRecPointContainer::Instance();
-  TClonesArray *recpoints = rpcont->FetchClusters(0,treeR);
+  TClonesArray *recpoints = NULL;
+  rpcont->FetchClusters(0,treeR);
   if(!rpcont->GetStatusOK() || !rpcont->IsSPDActive()){
     AliError("no clusters. fired chip map stays empty. Exiting.");
      return isfiredchip;
