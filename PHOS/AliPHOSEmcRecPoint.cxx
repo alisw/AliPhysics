@@ -743,7 +743,7 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
     if(emax<fEnergyList[id])
       imaxDigit=id ;
   }
-  digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[imaxDigit] )) ; 
+  digit = static_cast<AliPHOSDigit *>(digits->At( fDigitsList[imaxDigit] )) ; 
   Int_t nprimaries = digit->GetNprimary() ;
   if ( nprimaries > fMaxTrack ) {
     fMulTrack = - 1 ;
@@ -758,7 +758,7 @@ void  AliPHOSEmcRecPoint::EvalPrimaries(TClonesArray * digits)
   for (Int_t index = 0 ; index < GetDigitsMultiplicity() ; index++ ) { // all digits
     if(index==imaxDigit) //already in
       continue ; 
-    digit = dynamic_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
+    digit = static_cast<AliPHOSDigit *>(digits->At( fDigitsList[index] )) ; 
     nprimaries = digit->GetNprimary() ;
     for(Int_t ipr=0; ipr<nprimaries; ipr++){
       Int_t iprimary = digit->GetPrimary(ipr+1) ;

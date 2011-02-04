@@ -380,7 +380,7 @@ void  AliPHOSTrackSegmentMakerv2::MakePairs()
        new ((*fTrackSegments)[fNTrackSegments])  
          AliPHOSTrackSegment(static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(iEmcRP+fEmcFirst)), 
                            nullpointer) ;
-       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+       (static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++;    
       } 
     }

@@ -520,7 +520,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   TVector3 fakeVtx(0.,0.,0.) ;
   for(index = 0; index < nEmc; index++){
     AliPHOSEmcRecPoint * rp =
-      dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) );
+      static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) );
     rp->Purify(emcMinE) ;
     if(rp->GetMultiplicity()==0){
       fEMCRecPoints->RemoveAt(index) ;
@@ -538,7 +538,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   fEMCRecPoints->Sort() ; 
   //  fEMCRecPoints->Expand(fEMCRecPoints->GetEntriesFast()) ;
   for(index = 0; index < fEMCRecPoints->GetEntries(); index++){
-    dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) )->SetIndexInList(index) ;
+    static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) )->SetIndexInList(index) ;
   }
   
   //For each rec.point set the distance to the nearest bad crystal (BVP)
@@ -546,7 +546,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
 
   //Now the same for CPV
   for(index = 0; index < fCPVRecPoints->GetEntries(); index++){
-    AliPHOSCpvRecPoint * rp = dynamic_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) );
+    AliPHOSCpvRecPoint * rp = static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) );
     rp->EvalAll(fDigitsArr) ;
     rp->EvalAll(fW0CPV,fakeVtx,fDigitsArr) ;
     rp->EvalLocal2TrackingCSTransform();
@@ -554,7 +554,7 @@ void AliPHOSClusterizerv1::WriteRecPoints()
   fCPVRecPoints->Sort() ;
   
   for(index = 0; index < fCPVRecPoints->GetEntries(); index++)
-    dynamic_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) )->SetIndexInList(index) ;
+    static_cast<AliPHOSCpvRecPoint *>( fCPVRecPoints->At(index) )->SetIndexInList(index) ;
   
   fCPVRecPoints->Expand(fCPVRecPoints->GetEntriesFast()) ;
   
@@ -682,7 +682,7 @@ void AliPHOSClusterizerv1::MakeUnfolding()
     Int_t index ;   
     for(index = 0 ; index < numberofNotUnfolded ; index++){
       
-      AliPHOSEmcRecPoint * emcRecPoint = dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) ) ;
+      AliPHOSEmcRecPoint * emcRecPoint = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(index) ) ;
       if(emcRecPoint->GetPHOSMod()> nModulesToUnfold)
         break ;
       
@@ -720,12 +720,12 @@ void AliPHOSClusterizerv1::MakeUnfolding()
     Int_t index ;   
     for(index = 0 ; index < numberofCpvNotUnfolded ; index++){
       
-      AliPHOSRecPoint * recPoint = dynamic_cast<AliPHOSRecPoint *>( fCPVRecPoints->At(index) ) ;
+      AliPHOSRecPoint * recPoint = static_cast<AliPHOSRecPoint *>( fCPVRecPoints->At(index) ) ;
 
       if(recPoint->GetPHOSMod()> nModulesToUnfold)
         break ;
       
-      AliPHOSEmcRecPoint * emcRecPoint = dynamic_cast<AliPHOSEmcRecPoint*>(recPoint) ; 
+      AliPHOSEmcRecPoint * emcRecPoint = static_cast<AliPHOSEmcRecPoint*>(recPoint) ; 
       
       Int_t nMultipl = emcRecPoint->GetMultiplicity() ; 
       AliPHOSDigit ** maxAt = new AliPHOSDigit*[nMultipl] ;
@@ -801,7 +801,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
   Int_t iparam ;
   Int_t iDigit ;
   for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-    digit = dynamic_cast<AliPHOSDigit*>( fDigitsArr->At(emcDigits[iDigit] ) ) ;   
+    digit = static_cast<AliPHOSDigit*>( fDigitsArr->At(emcDigits[iDigit] ) ) ;   
     fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
     fGeom->RelPosInModule(relid, xDigit, zDigit) ;
     efit[iDigit] = 0;
@@ -841,7 +841,7 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
         fEMCRecPoints->Expand(2*fNumberOfEmcClusters) ;
       
       (*fEMCRecPoints)[fNumberOfEmcClusters] = new AliPHOSEmcRecPoint("") ;
-      emcRP = dynamic_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ;
+      emcRP = static_cast<AliPHOSEmcRecPoint *>( fEMCRecPoints->At(fNumberOfEmcClusters) ) ;
       fNumberOfEmcClusters++ ;
       emcRP->SetNExMax((Int_t)nPar/3) ;
     }
@@ -850,13 +850,13 @@ void  AliPHOSClusterizerv1::UnfoldCluster(AliPHOSEmcRecPoint * iniEmc,
         fCPVRecPoints->Expand(2*fNumberOfCpvClusters) ;
       
       (*fCPVRecPoints)[fNumberOfCpvClusters] = new AliPHOSCpvRecPoint("") ;
-      emcRP = dynamic_cast<AliPHOSEmcRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;
+      emcRP = static_cast<AliPHOSEmcRecPoint *>( fCPVRecPoints->At(fNumberOfCpvClusters) ) ;
       fNumberOfCpvClusters++ ;
     }
     
     Float_t eDigit ;
     for(iDigit = 0 ; iDigit < nDigits ; iDigit ++){
-      digit = dynamic_cast<AliPHOSDigit*>( fDigitsArr->At( emcDigits[iDigit] ) ) ; 
+      digit = static_cast<AliPHOSDigit*>( fDigitsArr->At( emcDigits[iDigit] ) ) ; 
       fGeom->AbsToRelNumbering(digit->GetId(), relid) ;
       fGeom->RelPosInModule(relid, xDigit, zDigit) ;
 //      ratio = epar * ShowerShape(xDigit - xpar,zDigit - zpar,vIncid) / efit[iDigit] ; 
@@ -877,17 +877,17 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
 
-  TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
+  TList * toMinuit = static_cast<TList*>( gMinuit->GetObjectFit() ) ;
 
-  AliPHOSEmcRecPoint * emcRP = dynamic_cast<AliPHOSEmcRecPoint*>( toMinuit->At(0) )  ;
-  TClonesArray * digits = dynamic_cast<TClonesArray*>( toMinuit->At(1) )  ;
+  AliPHOSEmcRecPoint * emcRP = static_cast<AliPHOSEmcRecPoint*>( toMinuit->At(0) )  ;
+  TClonesArray * digits = static_cast<TClonesArray*>( toMinuit->At(1) )  ;
   // A bit buggy way to get an access to the geometry
   // To be revised!
-  AliPHOSGeometry *geom = dynamic_cast<AliPHOSGeometry *>(toMinuit->At(2));
+  AliPHOSGeometry *geom = static_cast<AliPHOSGeometry *>(toMinuit->At(2));
 
-//  TVector3 * vtx = dynamic_cast<TVector3*>(toMinuit->At(3)) ;  //Vertex position
+//  TVector3 * vtx = static_cast<TVector3*>(toMinuit->At(3)) ;  //Vertex position
   
-  //  AliPHOSEmcRecPoint * emcRP = dynamic_cast<AliPHOSEmcRecPoint *>( gMinuit->GetObjectFit() ) ; // EmcRecPoint to fit
+  //  AliPHOSEmcRecPoint * emcRP = static_cast<AliPHOSEmcRecPoint *>( gMinuit->GetObjectFit() ) ; // EmcRecPoint to fit
 
   Int_t * emcDigits     = emcRP->GetDigitsList() ;
 
@@ -910,7 +910,7 @@ void AliPHOSClusterizerv1::UnfoldingChiSquare(Int_t & nPar, Double_t * Grad, Dou
 
   for( iDigit = 0 ; iDigit < nOdigits ; iDigit++) {
 
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At( emcDigits[iDigit] ) ); 
+    digit = static_cast<AliPHOSDigit*>( digits->At( emcDigits[iDigit] ) ); 
 
     Int_t relid[4] ;
     Float_t xDigit ;

@@ -244,7 +244,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
 {
   // ctor Init() is called by RunDigitizer
   fManager = rd ; 
-  SetTitle(dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
+  SetTitle(static_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
   fcdb = new AliPHOSCalibData(-1);
@@ -256,7 +256,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   // dtor
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   if(rl){                                                                                                                               
-    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));    
+    AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));    
     
     if(phosLoader)
       phosLoader->CleanDigitizer() ;
@@ -288,11 +288,11 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   //First stream 
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   Int_t readEvent = event ; 
   if (fManager) 
-    readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
+    readEvent = static_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
 		  readEvent, GetTitle(), fEventFolderName.Data())) ; 
   rl->GetEvent(readEvent) ;
@@ -367,10 +367,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       }
       rl2->LoadHeader();
     }
-    AliPHOSLoader * phosLoader2 = dynamic_cast<AliPHOSLoader*>(rl2->GetLoader("PHOSLoader"));
+    AliPHOSLoader * phosLoader2 = static_cast<AliPHOSLoader*>(rl2->GetLoader("PHOSLoader"));
  
     if(fManager){ 
-      readEvent = dynamic_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+      readEvent = static_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
     }
     TClonesArray * digs ;
     if(AliPHOSSimParam::GetInstance()->IsStreamDigits(i)){ //This is Digits Stream
@@ -397,10 +397,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   Int_t nextSig = 200000 ; 
   TClonesArray * sdigits ;  
   for(Int_t i = 0 ; i < fInput ; i++){
-    sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+    sdigits = static_cast<TClonesArray *>(sdigArray->At(i)) ;
     if ( !sdigits->GetEntriesFast() )
       continue ; 
-    Int_t curNext = dynamic_cast<AliPHOSDigit *>(sdigits->At(0))->GetId() ;
+    Int_t curNext = static_cast<AliPHOSDigit *>(sdigits->At(0))->GetId() ;
     if(curNext < nextSig) 
       nextSig = curNext ;
   }
@@ -429,7 +429,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       Float_t noise = gRandom->Gaus(0.,apdNoise) ; 
       new((*digits)[idigit]) AliPHOSDigit( -1, absID, noise, TimeOfNoise() ) ;
       //look if we have to add signal?
-      digit = dynamic_cast<AliPHOSDigit *>(digits->At(idigit)) ;
+      digit = static_cast<AliPHOSDigit *>(digits->At(idigit)) ;
       idigit++ ;
     
       if(absID==nextSig){
@@ -451,8 +451,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       
         //loop over inputs
         for(Int_t i = 0 ; i < fInput ; i++){
-  	  if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] ){
-  	    curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+  	  if( static_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] ){
+  	    curSDigit = static_cast<AliPHOSDigit*>(static_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
             if(AliPHOSSimParam::GetInstance()->IsStreamDigits(i)){ //This is Digits Stream
               curSDigit->SetEnergy(Calibrate(curSDigit->GetEnergy(),curSDigit->GetId())) ;
               curSDigit->SetTime(CalibrateT(curSDigit->GetTime(),curSDigit->GetId())) ;
@@ -482,8 +482,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	    *digit += *curSDigit ;  //add energies
 
 	    index[i]++ ;
-	    if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	      curSDigit = dynamic_cast<AliPHOSDigit*>(dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+	    if( static_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	      curSDigit = static_cast<AliPHOSDigit*>(static_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
 	    else
 	      curSDigit = 0 ;
 	  }
@@ -497,10 +497,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
         //Find next signal module
         nextSig = 200000 ;
         for(Int_t i = 0 ; i < fInput ; i++){
-	  sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+	  sdigits = static_cast<TClonesArray *>(sdigArray->At(i)) ;
 	  Int_t curNext = nextSig ;
 	  if(sdigits->GetEntriesFast() > index[i] ){
-	    curNext = dynamic_cast<AliPHOSDigit *>(sdigits->At(index[i]))->GetId() ;
+	    curNext = static_cast<AliPHOSDigit *>(sdigits->At(index[i]))->GetId() ;
 	  }
 	  if(curNext < nextSig) nextSig = curNext ;
         }
@@ -512,13 +512,13 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   if(AliPHOSSimParam::GetInstance()->IsEDigitizationOn()){
     Float_t adcW=AliPHOSSimParam::GetInstance()->GetADCchannelW() ;
     for(Int_t i = 0 ; i < nEMC ; i++){                                                                                                       
-      digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+      digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
       digit->SetEnergy(adcW*ceil(digit->GetEnergy()/adcW)) ;
     } 
   }
   //Apply decalibration if necessary
   for(Int_t i = 0 ; i < nEMC ; i++){
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
     Decalibrate(digit) ;
   }
  
@@ -542,11 +542,11 @@ void AliPHOSDigitizer::Digitize(Int_t event)
         idigit++ ;
         //look if we have to add signal?
         if(absID==nextSig){
-          digit = dynamic_cast<AliPHOSDigit *>(digits->At(idigit-1)) ;
+          digit = static_cast<AliPHOSDigit *>(digits->At(idigit-1)) ;
           //Add SDigits from all inputs
           for(Int_t i = 0 ; i < fInput ; i++){
-	     if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	       curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
+	     if( static_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	       curSDigit = static_cast<AliPHOSDigit*>( static_cast<TClonesArray *>(sdigArray->At(i))->At(index[i])) ; 	
 	     else
 	       curSDigit = 0 ;
 
@@ -563,8 +563,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	       //add energies
 	       *digit += *curSDigit ;  
 	       index[i]++ ;
-	       if( dynamic_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
-	         curSDigit = dynamic_cast<AliPHOSDigit*>( dynamic_cast<TClonesArray *>(sdigArray->At(i))->At(index[i]) ) ; 	
+	       if( static_cast<TClonesArray *>(sdigArray->At(i))->GetEntriesFast() > index[i] )
+	         curSDigit = static_cast<AliPHOSDigit*>( static_cast<TClonesArray *>(sdigArray->At(i))->At(index[i]) ) ; 	
 	       else
 	         curSDigit = 0 ;
 	     }
@@ -573,10 +573,10 @@ void AliPHOSDigitizer::Digitize(Int_t event)
           //Find next signal module
           nextSig = 200000 ;
           for(Int_t i = 0 ; i < fInput ; i++){
-	    sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+	    sdigits = static_cast<TClonesArray *>(sdigArray->At(i)) ;
 	    Int_t curNext = nextSig ;
 	    if(sdigits->GetEntriesFast() > index[i] )
-	      curNext = dynamic_cast<AliPHOSDigit *>( sdigits->At(index[i]) )->GetId() ;
+	      curNext = static_cast<AliPHOSDigit *>( sdigits->At(index[i]) )->GetId() ;
 	    if(curNext < nextSig) nextSig = curNext ;
           }
       
@@ -592,7 +592,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //set amplitudes in bad channels to zero
 
   for(Int_t i = 0 ; i <digits->GetEntriesFast(); i++){
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
     geom->AbsToRelNumbering(digit->GetId(),relId);
     if(relId[1] == 0) // Emc
       if(fcdb->IsBadChannelEmc(relId[0],relId[3],relId[2])) digit->SetEnergy(0.); 
@@ -601,7 +601,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   //remove digits below thresholds
   Float_t emcThreshold = AliPHOSSimParam::GetInstance()->GetEmcDigitsThreshold() ;
   for(Int_t i = 0 ; i < nEMC ; i++){
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ;
+    digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
 
     if(digit->GetEnergy() < emcThreshold){
       digits->RemoveAt(i) ;
@@ -628,7 +628,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
   Float_t cpvDigitThreshold = AliPHOSSimParam::GetInstance()->GetCpvDigitsThreshold() ;
   for(Int_t i = nEMC; i < nCPV ; i++){
-    if( dynamic_cast<AliPHOSDigit*>(digits->At(i))->GetEnergy() < cpvDigitThreshold )
+    if( static_cast<AliPHOSDigit*>(digits->At(i))->GetEnergy() < cpvDigitThreshold )
       digits->RemoveAt(i) ;
   } 
     
@@ -637,7 +637,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   
   //Set indexes in list of digits and make true digitization of the energy
   for (Int_t i = 0 ; i < ndigits ; i++) { 
-    digit = dynamic_cast<AliPHOSDigit*>( digits->At(i) ) ; 
+    digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ; 
     digit->SetIndexInList(i) ;     
     if(digit->GetId() > fEmcCrystals){ //digitize CPV only
       digit->SetAmp(DigitizeCPV(digit->GetEnergy(),digit->GetId()) ) ;
@@ -751,7 +751,7 @@ void AliPHOSDigitizer::Exec(Option_t *option)
      gBenchmark->Start("PHOSDigitizer");
   
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   // Post Digitizer to the white board
   phosLoader->PostDigitizer(this) ;
@@ -846,7 +846,7 @@ Bool_t AliPHOSDigitizer::Init()
   fEventNames[0]     = fEventFolderName.Data() ; 
   Int_t index ; 
   for (index = 1 ; index < fInput ; index++) {
-    fInputFileNames[index] = dynamic_cast<AliStream*>(fManager->GetInputStream(index))->GetFileName(0); 
+    fInputFileNames[index] = static_cast<AliStream*>(fManager->GetInputStream(index))->GetFileName(0); 
     TString tempo = fManager->GetInputFolderName(index) ;
     fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added by fManager
   }
@@ -856,7 +856,7 @@ Bool_t AliPHOSDigitizer::Init()
   if(!rl){
     rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
   }
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   phosLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 
   return fInit ; 
@@ -915,7 +915,7 @@ void AliPHOSDigitizer::Print(const Option_t *)const
   
 
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   TClonesArray * digits = phosLoader->Digits() ; 
   const AliPHOSGeometry *geom = AliPHOSGeometry::GetInstance() ;
   
@@ -932,7 +932,7 @@ void AliPHOSDigitizer::Print(const Option_t *)const
     Int_t maxEmc = geom->GetNModules()*geom->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; (index < digits->GetEntriesFast()) && 
-	   (dynamic_cast<AliPHOSDigit *>(digits->At(index))->GetId() <= maxEmc) ; index++) {
+	   (static_cast<AliPHOSDigit *>(digits->At(index))->GetId() <= maxEmc) ; index++) {
       digit = (AliPHOSDigit * )  digits->At(index) ;
       if(digit->GetNprimary() == 0) 
 	continue;
@@ -988,12 +988,12 @@ void AliPHOSDigitizer::Unload()
     TString tempo(fEventNames[i]) ; 
     tempo += i ;
     AliRunLoader* rl = AliRunLoader::GetRunLoader(tempo) ; 
-    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+    AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
     phosLoader->UnloadSDigits() ; 
   }
   
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   phosLoader->UnloadDigits() ; 
 }
 
@@ -1010,7 +1010,7 @@ void AliPHOSDigitizer::WriteDigits()
   //      and names of files, from which digits are made.
 
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
  
   const TClonesArray * digits = phosLoader->Digits() ; 
   TTree * treeD = phosLoader->TreeD();
