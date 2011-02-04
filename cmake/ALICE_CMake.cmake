@@ -1,3 +1,5 @@
+# -*- mode: cmake -*-
+
 # AliRoot Build System Utility Macro and Function definitions
 #
 # Author: Johny Jose (johny.jose@cern.ch)
@@ -477,7 +479,7 @@ macro(ALICE_BuildExecutable)
 
   ALICE_Format(PELIBSDIR "-L" "" "${PELIBSDIR}")
   ALICE_CheckLibraries(PBLIBS "${PBLIBS}")
-  #ALICE_CheckLibraries(PELIBS "${PELIBS}")
+  ALICE_CheckLibraries(PELIBS "${PELIBS}")
 
   ALICE_CorrectPaths(EINCLUDE "${EINCLUDE}")
   ALICE_CorrectPaths(PINC "${PINC}")
