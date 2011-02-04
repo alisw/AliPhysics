@@ -23,7 +23,7 @@
 // version: 0.0.1                                                    //
 // Updated May 27 1999.                                              //
 // Added Cylindrical random and global based changes.                //
-// Added  function PrintComparison.                                  //
+//                                                                   //
 // Modified and added functions Feb. 7 2006                          //
 ///////////////////////////////////////////////////////////////////////
 
@@ -546,77 +546,7 @@ Int_t AliITSgeom::GetLastDet(Int_t dtype)const{
     Warning("GetLastDet","undefined detector type %d",dtype);
     return 0;
 }
-//______________________________________________________________________
-void AliITSgeom::PrintComparison(FILE *fp,AliITSgeom *other)const{
-    //     This function was primarily created for diagnostic reasons. It
-    // print to a file pointed to by the file pointer fp the difference
-    // between two AliITSgeom classes. The format of the file is basically,
-    // define d? to be the difference between the same element of the two
-    // classes. For example dfrx = this->GetGeomMatrix(i)->frx 
-    // - other->GetGeomMatrix(i)->frx.
-    // if(at least one of dfx0, dfy0, dfz0,dfrx,dfry,dfrz are non zero) then
-    // print layer ladder detector dfx0 dfy0 dfz0 dfrx dfry dfrz
-    // if(at least one of the 9 elements of dfr[] are non zero) then print
-    // layer ladder detector dfr[0] dfr[1] dfr[2]
-    //                       dfr[3] dfr[4] dfr[5]
-    //                       dfr[6] dfr[7] dfr[8]
-    // Only non zero values are printed to save space. The differences are
-    // typical written to a file because there are usually a lot of numbers
-    // printed out and it is usually easier to read them in some nice editor
-    // rather than zooming quickly past you on a screen. fprintf is used to
-    // do the printing. The fShapeIndex difference is not printed at this time.
-    // Inputs:
-    //    FILE *fp           A file pointer to an opened file for writing 
-    //                       in which the results of the comparison will 
-    //                       be written.
-    //    AliITSgeom *other  The other AliITSgeom class to which this one is
-    //                       being compared.
-    // Outputs:
-    //    none.
-    // Return:
-    //    none.
-    Int_t    i,j,idt[3],ido[3];
-    Double_t tt[3],to[3];  // translation
-    Double_t rt[3],ro[3];  // phi in radians
-    Double_t mt[3][3],mo[3][3]; // matrices
-    AliITSgeomMatrix *gt,*go;
-    Bool_t   t;
 
-    for(i=0;i<this->fNmodules;i++){
-        gt  =  this->GetGeomMatrix(i);
-        go  = other->GetGeomMatrix(i);
-        gt->GetIndex(idt);
-        go->GetIndex(ido);
-        t = kFALSE;
-        for(i=0;i<3;i++) t = t&&idt[i]!=ido[i];
-        if(t) fprintf(fp,"%4.4d %1.1d %2.2d %2.2d %1.1d %2.2d %2.2d\n",i,
-                      idt[0],idt[1],idt[2],ido[0],ido[1],ido[2]);
-        gt->GetTranslation(tt);
-        go->GetTranslation(to);
-        gt->GetAngles(rt);
-        go->GetAngles(ro);
-        t = kFALSE;
-        for(i=0;i<3;i++) t = t&&tt[i]!=to[i];
-        if(t) fprintf(fp,"%1.1d %2.2d %2.2d dTrans=%f %f %f drot=%f %f %f\n",
-                      idt[0],idt[1],idt[2],
-                      tt[0]-to[0],tt[1]-to[1],tt[2]-to[2],
-                      rt[0]-ro[0],rt[1]-ro[1],rt[2]-ro[2]);
-        t = kFALSE;
-        gt->GetMatrix(mt);
-        go->GetMatrix(mo);
-        for(i=0;i<3;i++)for(j=0;j<3;j++)  t = mt[i][j] != mo[i][j];
-        if(t){
-            fprintf(fp,"%1.1d %2.2d %2.2d dfr= %e %e %e\n",
-                    idt[0],idt[1],idt[2],
-                    mt[0][0]-mo[0][0],mt[0][1]-mo[0][1],mt[0][2]-mo[0][2]);
-            fprintf(fp,"        dfr= %e %e %e\n",
-                    mt[1][0]-mo[1][0],mt[1][1]-mo[1][1],mt[1][2]-mo[1][2]);
-            fprintf(fp,"        dfr= %e %e %e\n",
-                    mt[2][0]-mo[2][0],mt[2][1]-mo[2][1],mt[2][2]-mo[2][2]);
-        } // end if t
-    } // end for i
-    return;
-}
 //______________________________________________________________________
 void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const{
     //     This function prints out the coordinate transformations for

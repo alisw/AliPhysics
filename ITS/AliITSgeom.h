@@ -729,9 +729,6 @@ class AliITSgeom : public TObject {
     // This converts the geometry
     void GeantToTracking(const AliITSgeom &source);
     //  Other routines.
-    // This routine prints, to a file, the difference between this class
-    // and "other".
-    void PrintComparison(FILE *fp,AliITSgeom *other)const;
     // This routine prints, to a file, the contents of this class.
     void PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const;
     // This function prints out this class in a single stream. This steam

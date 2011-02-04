@@ -20,8 +20,6 @@ class AliAlignObjParams;
 class AliITSMisAligner : public AliMisAligner{
     public:
 	AliITSMisAligner();
-	AliITSMisAligner(const AliITSMisAligner &mAligner);
-	AliITSMisAligner &operator= (const AliITSMisAligner &mAligner);
 	~AliITSMisAligner() {};
 
 	TClonesArray* MakeAlObjsArray();
@@ -191,6 +189,8 @@ class AliITSMisAligner : public AliMisAligner{
 	TString      fStrSensor; // name of sensitive volume
 
     private:
+	AliITSMisAligner(const AliITSMisAligner &mAligner);
+	AliITSMisAligner &operator= (const AliITSMisAligner &mAligner);
 	enum {kNLayers = 6}; // The number of layers.
 	static const Int_t  fgkNLadders[kNLayers];  // Array of the number of ladders/layer(layer)
 	static const Int_t  fgkNDetectors[kNLayers];// Array of the number of detector/ladder(layer)

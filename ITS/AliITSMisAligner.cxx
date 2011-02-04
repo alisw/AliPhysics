@@ -93,61 +93,6 @@ AliITSMisAligner::AliITSMisAligner():
     }
 }
 
-//________________________________________________________________________
-AliITSMisAligner::AliITSMisAligner(const AliITSMisAligner &mAligner):
-    AliMisAligner(),
-    fRnd(mAligner.fRnd),
-    fInd(0),
-    fAlignObjArray(mAligner.fAlignObjArray),
-    fStrSPD("ITS/SPD"),
-    fStrSDD("ITS/SDD"),
-    fStrSSD("ITS/SSD"),
-    fStrStave("/Stave"),
-    fStrHalfStave("/HalfStave"),
-    fStrLadder("/Ladder"),
-    fStrSector("/Sector"),
-    fStrSensor("/Sensor"),
-    fUnifSPDSector(kFALSE),
-    fUnifSPDHS(kFALSE),
-    fUnifSDDLadder(kFALSE),
-    fUnifSSDLadder(kFALSE),
-    fUnifSPDLadder(kFALSE),
-    fUnifSDDModule(kFALSE),
-    fUnifSSDModule(kFALSE)
-{
-    //
-    // copy constructor
-    //
-
-  SetMisalType(mAligner.GetMisalType());
-}
-
-//________________________________________________________________________
-AliITSMisAligner &AliITSMisAligner::operator= (const AliITSMisAligner &mAligner)
-{
-    //
-    // assignment operator
-    //
-    fRnd = mAligner.fRnd;
-    fInd = 0;
-    fAlignObjArray = mAligner.fAlignObjArray;
-    fStrSPD = "ITS/SPD";
-    fStrSDD = "ITS/SDD";
-    fStrSSD = "ITS/SSD";
-    fStrStave = "/Stave";
-    fStrHalfStave = "/HalfStave";
-    fStrLadder = "/Ladder";
-    fStrSector = "/Sector";
-    fStrSensor = "/Sensor";
-    fUnifSPDSector = mAligner.fUnifSPDSector;
-    fUnifSPDHS = kFALSE;
-    fUnifSDDLadder = kFALSE;
-    fUnifSSDLadder = kFALSE;
-    fUnifSPDLadder = kFALSE;
-    fUnifSDDModule = kFALSE;
-    fUnifSSDModule = kFALSE;
-    return (*this);
-}
 
 //_______________________________________________________________________________________
 TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
@@ -194,7 +139,7 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     // all SSD ladders as from survey, + shift and smearing in the "residual" and "full" case
     for(Int_t ii=0; ii<surveyArray->GetEntriesFast(); ii++)
     {
-	AliAlignObjParams* aop = dynamic_cast<AliAlignObjParams*> (surveyArray->UncheckedAt(ii));
+	AliAlignObjParams* aop = static_cast<AliAlignObjParams*> (surveyArray->UncheckedAt(ii));
 	TString sName(aop->GetSymName());
 
 	if(sName.Contains("SSD") && !sName.Contains("Sensor"))
@@ -231,7 +176,7 @@ TClonesArray* AliITSMisAligner::MakeAlObjsArray() {
     // all SSD modules
     for(Int_t ii=0; ii<surveyArray->GetEntriesFast(); ii++)
     {
-	AliAlignObjParams* aop = dynamic_cast<AliAlignObjParams*> (surveyArray->UncheckedAt(ii));
+	AliAlignObjParams* aop = static_cast<AliAlignObjParams*> (surveyArray->UncheckedAt(ii));
 	TString sName(aop->GetSymName());
 	if(sName.Contains("SSD") && sName.Contains("Sensor"))
 	{

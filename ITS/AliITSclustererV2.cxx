@@ -54,10 +54,8 @@ fHlSSD(0),
 fTanP(0),
 fTanN(0){
    //default constructor
-  for(Int_t i=0;i<260;i++){
-    fYSPD[i]=0.;
-    fZSPD[i]=0.;
-  }
+  for(Int_t i=0;i<260;i++)fYSPD[i]=0.;
+  for(Int_t i=0;i<170;i++)fZSPD[i]=0.;
   for(Int_t i=0;i<2200;i++){
     fYshift[i]=0.;
     fZshift[i]=0.;

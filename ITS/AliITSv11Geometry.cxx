@@ -1533,15 +1533,15 @@ void AliITSv11Geometry::MakeFigure1(Double_t x0,Double_t y0,Double_t r0,
     TText *t = new TText();
     t->SetTextSize(0.02);
     Char_t txt[100];
-    sprintf(txt,"(x0=%5.2f,y0=%5.2f)",x0,y0);
+    snprintf(txt,99,"(x0=%5.2f,y0=%5.2f)",x0,y0);
     t->DrawText(x0,y0,txt);
-    sprintf(txt,"(x1=%5.2f,y1=%5.2f)",x1,y1);
+    snprintf(txt,99,"(x1=%5.2f,y1=%5.2f)",x1,y1);
     for(j=0;j<4;j++) {
         t->SetTextColor(j+1);
         t->DrawText(x1,y1,txt);
-        sprintf(txt,"r0=%5.2f",ra0[j]);
+        snprintf(txt,99,"r0=%5.2f",ra0[j]);
         t->DrawText(0.5*(x0+xa0[j]),0.5*(y0+ya0[j]),txt);
-        sprintf(txt,"r1=%5.2f",ra1[j]);
+        snprintf(txt,99,"r1=%5.2f",ra1[j]);
         t->DrawText(0.5*(x1+xa1[j]),0.5*(y1+ya1[j]),txt);
     } // end for j
 }
