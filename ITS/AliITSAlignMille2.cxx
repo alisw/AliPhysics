@@ -3219,10 +3219,11 @@ Int_t AliITSAlignMille2::LoadSuperModuleFile(const Char_t *sfile)
   for (Int_t i=0; i<nsma; i++) {
     AliAlignObjParams *a = (AliAlignObjParams*)sma->UncheckedAt(i);
     volid=a->GetVolUID();
-    strcpy(st,a->GetSymName());
+    strncpy(st,a->GetSymName(),TMath::Min(sizeof(st),strlen(a->GetSymName())+1));
     a->GetMatrix(m);
     //
-    sscanf(st,"%s",symname);
+    symname[0] = '\0';
+    sscanf(st,"%249s",symname);
     //
     // decode module list
     char *stp=strstr(st,"ModuleList:");
@@ -3231,7 +3232,7 @@ Int_t AliITSAlignMille2::LoadSuperModuleFile(const Char_t *sfile)
     int idx[2200];
     char spp[200]; int jp=0;
     char cl[20];
-    strcpy(st,stp);
+    strncpy(st,stp,TMath::Min(sizeof(st),strlen(stp)+1));
     int l=strlen(st);
     int j=0;
     int n=0;
@@ -3243,7 +3244,7 @@ Int_t AliITSAlignMille2::LoadSuperModuleFile(const Char_t *sfile)
 	if (strlen(spp)) {
 	  int k=strcspn(spp,"-");
 	  if (k<int(strlen(spp))) { // c'e' il -
-	    strcpy(cl,&(spp[k+1]));
+	    strncpy(cl,&(spp[k+1]), TMath::Min(sizeof(cl),strlen(&spp[k+1])+1));
 	    spp[k]=0;
 	    int ifrom=atoi(spp); int ito=atoi(cl);
 	    for (int b=ifrom; b<=ito; b++) {
@@ -4390,7 +4391,7 @@ TClonesArray* AliITSAlignMille2::CreateDeltas()
       // SPD Sector -> Layer parentship is fake, need special treatment
       if ( mdName.CountChar('/')==2 && mdName.BeginsWith("ITS/SPD") && // SPD sector
 	   prName.CountChar('/')==1 && mdName.BeginsWith("ITS/SPD") )  // SPD Layer
-	parent = parent ? parent->GetParent(): GetMilleModuleIfContained(prName.Data());
+	parent = parent->GetParent();//: GetMilleModuleIfContained(prName.Data());
     }
     //
     AliAlignObjParams*       preob  = GetPrealignedObject(algname);  // was it prealigned ?

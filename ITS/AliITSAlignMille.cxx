@@ -176,9 +176,12 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"GEOMETRY_FILE")) {
-      sscanf(st,"%s %s",tmp,st2);
+      tmp[0] = '\0';
+      st2[0] = '\0';
+      sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** geometry file not found! ");
+	fclose(pfc);
 	return -1;
       }  
       fGeometryFileName=st2;
@@ -186,30 +189,38 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"PREALIGNMENT_FILE")) {
-      sscanf(st,"%s %s",tmp,st2);
+      tmp[0] = '\0';
+      st2[0] = '\0';
+      sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** prealignment file not found! ");
+	fclose(pfc);
 	return -1;
       }  
       fPreAlignmentFileName=st2;
       itx=ApplyToGeometry();
       if (itx) {
 	AliInfo(Form("*** WARNING! *** error %d reading prealignment file! ",itx));
+	fclose(pfc);
 	return -6;
       }
     }
 
     if (strstr(st,"SUPERMODULE_FILE")) {
-      sscanf(st,"%s %s",tmp,st2);
+      tmp[0] = '\0';
+      st2[0] = '\0';
+      sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** supermodule file not found! ");
+	fclose(pfc);
 	return -1;
       }  
-      if (LoadSuperModuleFile(st2)) return -1;
+      if (LoadSuperModuleFile(st2)) {fclose(pfc); return -1;}
     }
 
     if (strstr(st,"SET_B_FIELD")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       if (f1>0) {
 	fBField = f1;
 	fBOn = kTRUE;
@@ -224,32 +235,38 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SET_PARSIG_TRA")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       fParSigTranslations=f1;
     }
 
     if (strstr(st,"SET_PARSIG_ROT")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       fParSigRotations=f1;
     }
 
     if (strstr(st,"SET_NSTDDEV")) {
-      sscanf(st,"%s %d",tmp,&idx);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %d",tmp,&idx);
       fNStdDev=idx;
     }
 
     if (strstr(st,"SET_RESCUT_INIT")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       fResCutInitial=f1;
     }
 
     if (strstr(st,"SET_RESCUT_OTHER")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       fResCut=f1;
     }
 
     if (strstr(st,"SET_LOCALSIGMAFACTOR")) {
-      sscanf(st,"%s %f %f",tmp,&f1,&f2);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f %f",tmp,&f1,&f2);
       if (f1>0 && f2>0) {
 	fSigmaXfactor=f1;
 	fSigmaZfactor=f2;
@@ -257,7 +274,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SET_STARTFAC")) {
-      sscanf(st,"%s %f",tmp,&f1);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %f",tmp,&f1);
       fStartFac=f1;
     }
 
@@ -267,17 +285,19 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       //    ndet = detector number: 1-6 for LAYER and 1-3 for DETECTOR (SPD=1, SDD=2, SSD=3)
       //    updw = 1 for Y>0, -1 for Y<0, 0 if not specified
       //    nreqpts = minimum number of points of that type
-      sscanf(st,"%s %s %d %d %d",tmp,st2,&itx,&ity,&itz);
+      tmp[0] = '\0';
+      st2[0] = '\0';
+      sscanf(st,"%99s %199s %d %d %d",tmp,st2,&itx,&ity,&itz);
       itx--;
       if (strstr(st2,"LAYER")) {
-	if (itx<0 || itx>5) return -7;
+	if (itx<0 || itx>5) {fclose(pfc); return -7;}
 	if (ity>0) fNReqLayUp[itx]=itz;
 	else if (ity<0) fNReqLayDown[itx]=itz;
 	else fNReqLay[itx]=itz;
 	fRequirePoints=kTRUE;
       }
       else if (strstr(st2,"DETECTOR")) { // DETECTOR
-	if (itx<0 || itx>2) return -7;
+	if (itx<0 || itx>2) {fclose(pfc); return -7;}
 	if (ity>0) fNReqDetUp[itx]=itz;
 	else if (ity<0) fNReqDetDown[itx]=itz;
 	else fNReqDet[itx]=itz;	
@@ -292,10 +312,11 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
 
     if (strstr(st,"MODULE_INDEX")) { // works only for sensitive modules
       f1=0; f2=0;
-      sscanf(st,"%s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
-      if (idx<0 || idx>2197) return 1; // bad index
+      tmp[0] = '\0';
+      sscanf(st,"%99s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
+      if (idx<0 || idx>2197) {fclose(pfc); return 1;} // bad index
       voluid=GetModuleVolumeID(idx);
-      if (!voluid || voluid>14300) return 1; // bad index
+      if (!voluid || voluid>14300) {fclose(pfc); return 1;} // bad index
       fModuleIndex[nmod]=idx;
       fModuleVolumeID[nmod]=voluid;
       fFreeParam[nmod][0]=itx;
@@ -312,14 +333,15 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
    
     if (strstr(st,"MODULE_VOLUID")) {
       f1=0; f2=0;
-      sscanf(st,"%s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
+      tmp[0] = '\0';
+      sscanf(st,"%99s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
       voluid=UShort_t(idx);
       if (voluid>14335 && fUseSuperModules) { // custom supermodule
 	int ism=-1;
 	for (int j=0; j<fNSuperModules; j++) {
 	  if (voluid==fSuperModule[j]->GetVolumeID()) ism=j;
 	}
-	if (ism<0) return -1; // bad volid
+	if (ism<0) {fclose(pfc); return -1;} // bad volid
 	fModuleIndex[nmod]=fSuperModule[ism]->GetIndex();
 	fModuleVolumeID[nmod]=voluid;
 	fFreeParam[nmod][0]=itx;
@@ -344,7 +366,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       }
       else { // sensitive volume
 	idx=GetModuleIndex(voluid);
-	if (idx<0 || idx>2197) return 1; // bad index
+	if (idx<0 || idx>2197) {fclose(pfc); return 1;} // bad index
 	fModuleIndex[nmod]=idx;
 	fModuleVolumeID[nmod]=voluid;
 	fFreeParam[nmod][0]=itx;
@@ -1615,10 +1637,11 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
   for (Int_t i=0; i<nsma; i++) {
     AliAlignObjParams *a = (AliAlignObjParams*)sma->UncheckedAt(i);
     volid=a->GetVolUID();
-    strcpy(st,a->GetSymName());
+    strncpy(st,a->GetSymName(),TMath::Min(sizeof(st),strlen(a->GetSymName())+1));
     a->GetMatrix(m);
 
-    sscanf(st,"%s",symname);
+    symname[0] = '\0';
+    sscanf(st,"%249s",symname);
     // decode module list
     char *stp=strstr(st,"ModuleList:");
     if (!stp) return -3;
@@ -1626,7 +1649,7 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
     int idx[2200];
     char spp[200]; int jp=0;
     char cl[20];
-    strcpy(st,stp);
+    strncpy(st,stp,TMath::Min(sizeof(st),strlen(stp)+1));
     int l=strlen(st);
     int j=0;
     int n=0;
@@ -1638,7 +1661,7 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
 	if (strlen(spp)) {
 	  int k=strcspn(spp,"-");
 	  if (k<int(strlen(spp))) { // c'e' il -
-	    strcpy(cl,&(spp[k+1]));
+	    strncpy(cl,&(spp[k+1]), TMath::Min(sizeof(cl),strlen(&spp[k+1])+1));
 	    spp[k]=0;
 	    int ifrom=atoi(spp); int ito=atoi(cl);
 	    for (int b=ifrom; b<=ito; b++) {
