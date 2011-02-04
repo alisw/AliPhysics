@@ -79,7 +79,7 @@ AliITSOnlineSPDfoAnalyzer::AliITSOnlineSPDfoAnalyzer(const AliITSOnlineSPDfoAnal
   //
   
   for(Int_t iqual =0; iqual<3; iqual++) fGeneralThresholds[iqual] =foan.fGeneralThresholds[iqual];
-  for (UInt_t chipNr=0; chipNr<11; chipNr++) {
+  for (UInt_t chipNr=0; chipNr<10; chipNr++) {
     for (UInt_t hs=0; hs<6; hs++) {
       for(Int_t i=0; i<kNqualityFlags;i++) fNh[i][hs][chipNr]=NULL;
     }
@@ -95,7 +95,7 @@ AliITSOnlineSPDfoAnalyzer::~AliITSOnlineSPDfoAnalyzer()
   // 
   
   for (UInt_t hs=0; hs<6; hs++) {
-    for (UInt_t chipNr=0; chipNr<11; chipNr++) {
+    for (UInt_t chipNr=0; chipNr<10; chipNr++) {
       for(Int_t i=0; i<kNqualityFlags ; i++ ) if(fNh[i][hs][chipNr]!=NULL) delete fNh[i][hs][chipNr];          
     }
   }
@@ -107,7 +107,7 @@ AliITSOnlineSPDfoAnalyzer& AliITSOnlineSPDfoAnalyzer::operator=(const AliITSOnli
   // assignment operator, only copies the filename and params (not the processed data)
   if (this!=&foan) {
     for (UInt_t hs=0; hs<6; hs++) {
-      for (UInt_t chipNr=0; chipNr<11; chipNr++) {
+      for (UInt_t chipNr=0; chipNr<10; chipNr++) {
 	for(Int_t i=0; i<kNqualityFlags ; i++ ) if(fNh[i][hs][chipNr]!=NULL) delete fNh[i][hs][chipNr];
       }
     }
@@ -258,7 +258,6 @@ void AliITSOnlineSPDfoAnalyzer::Process()
   } 
   
   TKey *key;
-  Double_t *dacvalues;
   TIter iter((fFOHandler->GetFile())->GetListOfKeys());  
   while ((key = (TKey*)(iter.Next()))) {
     TString classname = key->GetClassName();
@@ -270,7 +269,7 @@ void AliITSOnlineSPDfoAnalyzer::Process()
       break; 
     }
     
-    dacvalues = fFOHandler->GetDACvaluesD(key->GetName(), GetFOHandler()->GetFOscanInfo()->GetNumDACindex());
+    Double_t *dacvalues = fFOHandler->GetDACvaluesD(key->GetName(), GetFOHandler()->GetFOscanInfo()->GetNumDACindex());
     
     for(Int_t i=0; i< array->GetSize(); i++){
       AliITSOnlineSPDfoChip *chip = (AliITSOnlineSPDfoChip *)array->At(i); 
@@ -283,6 +282,8 @@ void AliITSOnlineSPDfoAnalyzer::Process()
       if(!fNh[quality][hs][chipid]) BuildTHnSparse(hs,chipid);
       fNh[quality][hs][chipid]->Fill(dacvalues);       
     } 
+
+    if(dacvalues) delete dacvalues;
   } 
 }
 //---------------------------------------------
@@ -366,10 +367,13 @@ void AliITSOnlineSPDfoAnalyzer::GetCanvases(const THnSparse *hn,Int_t hs, Int_t 
       TH2D *h2=0x0;       
       if(idim == 0) {
         h1 = hn->Projection(k-1);
-        if(!h1) printf("no histogram!!...\n\n\n");
+        if(!h1) {
+         printf("no histogram!!...\n\n\n");
+        } else {
         h1->SetXTitle(Form("DAC %i  ( %s )",k-1,dacname[k-1].Data()));
         h1->SetYTitle("entries (eff within thresholds)");
         h1->Draw();
+        }
       } 
       
       if(idim==1) {      

@@ -34,6 +34,11 @@ AliITSOnlineSPDscan::AliITSOnlineSPDscan(const Char_t *fileName, Bool_t readFrom
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
 
+  for(Int_t ihs=0; ihs<6; ihs++){
+  fCurrentHitArray[ihs]=0x0; 
+  fCurrentHitEvent[ihs]=0x0;
+  }
+
   Bool_t bRead = readFromGridFile;
 
   if (!bRead) {
@@ -79,6 +84,12 @@ AliITSOnlineSPDscan::AliITSOnlineSPDscan(const AliITSOnlineSPDscan& /*scan*/) :
   fScanInfo(NULL),
   fFileName(".")
 {
+
+  for(Int_t ihs=0; ihs<6; ihs++){
+  fCurrentHitArray[ihs]=0x0;
+  fCurrentHitEvent[ihs]=0x0;
+  }
+
   printf("This object should not be copied!");
 }
 

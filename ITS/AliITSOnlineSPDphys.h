@@ -21,7 +21,7 @@ class AliITSOnlineSPDHitArray;
 class AliITSOnlineSPDphys {
 
  public:
-  AliITSOnlineSPDphys():fFile(NULL),fWrite(kFALSE),fModified(kFALSE),fInfoModified(kFALSE),fPhysInfo(NULL),fFileName("."){}
+  AliITSOnlineSPDphys():fFile(NULL),fWrite(kFALSE),fModified(kFALSE),fInfoModified(kFALSE),fPhysInfo(NULL),fFileName("."){for(Int_t ihs=0; ihs<6; ihs++) fHitArray[ihs]=0x0;}
   AliITSOnlineSPDphys(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDphys(const AliITSOnlineSPDphys& phys);
   virtual ~AliITSOnlineSPDphys();

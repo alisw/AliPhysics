@@ -22,7 +22,7 @@ class AliITSOnlineSPDHitEvent;
 class AliITSOnlineSPDscan {
 
  public:
-  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("./test.root"){}
+  AliITSOnlineSPDscan():fFile(NULL),fWrite(kFALSE),fCurrentStep(-1),fModified(kFALSE),fInfoModified(kFALSE),fScanInfo(NULL),fFileName("./test.root"){for(Int_t ihs=0; ihs<6; ihs++){fCurrentHitArray[ihs]=0x0; fCurrentHitEvent[ihs]=0x0;}}
   AliITSOnlineSPDscan(const Char_t *fileName, Bool_t readFromGridFile=kFALSE);
   AliITSOnlineSPDscan(const AliITSOnlineSPDscan& scan);
   virtual ~AliITSOnlineSPDscan();

@@ -64,7 +64,6 @@ fActiveHS(c.fActiveHS),
 fChipId(c.fChipId),
 fNumDACparams(c.fNumDACparams),
 fNumChipConfigs(c.fNumChipConfigs),
-fDACparams(0x0),
 fChipConfigArray(0x0)
 {
   //

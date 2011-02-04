@@ -26,6 +26,8 @@ AliITSOnlineSPDphys::AliITSOnlineSPDphys(const Char_t *fileName, Bool_t readFrom
   // look for a previously saved info object 
   // (if file not found create a new one and return, else read)
 
+  for(Int_t ihs =0; ihs<6; ihs++) fHitArray[ihs]=0x0;
+
   Bool_t bRead = readFromGridFile;
 
   if (!bRead) {

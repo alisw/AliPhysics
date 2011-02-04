@@ -42,6 +42,7 @@ AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
     fDeadPixelMap[gloChip] = new AliITSIntMap();
     fNoisyPixelMap[gloChip] = new AliITSIntMap();    
   }
+
   ActivateALL();
   UnSetDeadALL();
 }
@@ -2778,6 +2779,7 @@ void AliITSOnlineCalibrationSPDhandler::ActivateALL() {
   // activate all eq,hs,chips
   for (UInt_t eq=0; eq<20; eq++) {
     ActivateEq(eq);
+
     for (UInt_t hs=0; hs<6; hs++) {
       ActivateHS(eq,hs);
       for (UInt_t chip=0; chip<10; chip++) {

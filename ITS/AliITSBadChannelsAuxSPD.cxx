@@ -338,11 +338,11 @@ Bool_t AliITSBadChannelsAuxSPD::CreateHTMLReport(char *name, Int_t* &badChannels
 
 	  // Create report
 	  buffer->Append("SPD module = ");
-	  sprintf(temp,"%d",module);
+	  snprintf(temp,10,"%d",module);
 	  buffer->Append(temp);
 	  buffer->Append("<br>\n");
 	  buffer->Append("Number of bad channels = ");
-	  sprintf(temp,"%d",size);
+	  snprintf(temp,10,"%d",size);
 	  buffer->Append(temp);
 
 	  tags ? buffer->Append("<br>\n") : buffer->Append("\n");
@@ -355,10 +355,10 @@ Bool_t AliITSBadChannelsAuxSPD::CreateHTMLReport(char *name, Int_t* &badChannels
 	    {
 	      // Create and add the current channel
 	      buffer->Append("(");
-	      sprintf(temp,"%d",badChannelsArray[position++]);
+	      snprintf(temp,10,"%d",badChannelsArray[position++]);
 	      buffer->Append(temp);
 	      buffer->Append(", ");
-	      sprintf(temp,"%d",badChannelsArray[position++]);
+	      snprintf(temp,10,"%d",badChannelsArray[position++]);
 	      buffer->Append(temp);
 	      buffer->Append(")");
 
@@ -388,19 +388,19 @@ Bool_t AliITSBadChannelsAuxSPD::CreateHTMLReport(char *name, Int_t* &badChannels
   tags ? buffer->Append("<br>\n") : buffer->Append("\n");
 
   buffer->Append("Total number of bad channels = ");
-  sprintf(temp,"%d",totalNumberOfBadChannels);
+  snprintf(temp,10,"%d",totalNumberOfBadChannels);
   buffer->Append(temp);
 
   tags ? buffer->Append("<br>\n") : buffer->Append("\n");
 
   buffer->Append("Number of modules with bad channels = ");
-  sprintf(temp,"%d",numberOfModulesWithBadChannels);
+  snprintf(temp,10,"%d",numberOfModulesWithBadChannels);
   buffer->Append(temp);
 
   tags ? buffer->Append("<br>\n") : buffer->Append("\n");
 
   buffer->Append("Number of modules = ");
-  sprintf(temp,"%d",indexArraySize);
+  snprintf(temp,10,"%d",indexArraySize);
   buffer->Append(temp);
 
   if (tags)
