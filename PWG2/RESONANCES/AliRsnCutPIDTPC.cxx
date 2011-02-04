@@ -16,16 +16,8 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include <Riostream.h>
-
-#include "AliESDpid.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFcalib.h"
-#include "AliCDBManager.h"
-#include "AliITSPIDResponse.h"
-
-#include "AliRsnEvent.h"
-#include "AliRsnDaughter.h"
+#include "AliAnalysisManager.h"
+#include "AliESDInputHandler.h"
 #include "AliRsnCutPIDTPC.h"
 
 ClassImp(AliRsnCutPIDTPC)
@@ -34,6 +26,7 @@ ClassImp(AliRsnCutPIDTPC)
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
 (const char *name, AliPID::EParticleType type, Double_t min, Double_t max, Bool_t rejectOutside) :
   AliRsnCut(name, AliRsnCut::kDaughter, min, max),
+  fInitialized(kFALSE),
   fRejectOutside(rejectOutside),
   fMomMin(0.0),
   fMomMax(1E+20),
@@ -50,6 +43,7 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
 (const AliRsnCutPIDTPC& copy) :
   AliRsnCut(copy),
+  fInitialized(kFALSE),
   fRejectOutside(copy.fRejectOutside),
   fMomMin(copy.fMomMin),
   fMomMax(copy.fMomMax),
@@ -71,12 +65,13 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
 
   AliRsnCut::operator=(copy);
 
+  fInitialized   = kFALSE;
   fRejectOutside = copy.fRejectOutside;
-  fMomMin  = copy.fMomMin;
-  fMomMax  = copy.fMomMax;
-  fRefType = copy.fRefType;
-  fESDpid  = copy.fESDpid;
-  fAODpid  = copy.fAODpid;
+  fMomMin        = copy.fMomMin;
+  fMomMax        = copy.fMomMax;
+  fRefType       = copy.fRefType;
+  fESDpid        = copy.fESDpid;
+  fAODpid        = copy.fAODpid;
   
   return (*this);
 }
@@ -98,6 +93,9 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
 //
 // Cut checker.
 //
+
+  // initialize if needed
+  if (!fInitialized) Initialize();
 
   // coherence check
   if (!TargetOK(object)) return kFALSE;
@@ -155,4 +153,22 @@ void AliRsnCutPIDTPC::Print(const Option_t *) const
   AliInfo(Form("--> cut range (nsigma)      : %.3f %.3f", fMinD, fMaxD));
   AliInfo(Form("--> momentum range          : %.3f %.3f", fMomMin, fMomMax));
   AliInfo(Form("--> tracks outside range are: %s", (fRejectOutside ? "rejected" : "accepted")));
+}
+
+//_________________________________________________________________________________________________
+void AliRsnCutPIDTPC::Initialize()
+{
+//
+// Initialize ESD pid object from global one
+//
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliESDInputHandler *handler = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
+  if (handler)
+  {
+    AliESDpid *pid = handler->GetESDpid();
+    fESDpid = (*pid);
+  }
+
+  fInitialized = kTRUE;
 }

@@ -48,8 +48,11 @@ class AliRsnCutPIDTOF : public AliRsnCut
     virtual Bool_t  IsSelected(TObject *object);
     virtual void    Print(const Option_t *option = "") const;
 
-  protected:
-  
+  private:
+
+    void Initialize();
+
+    Bool_t            fInitialized;      // a mono-usage flag which initializes the ESD pid object
     Bool_t            fRejectUnmatched;  //  decide if non TOF matched tracks pass the cut or not
     EPARTYPE          fRefType;          //  particle type for which PID is checked   
     Double_t          fRefMass;          //  reference mass used for computations
