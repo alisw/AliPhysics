@@ -283,7 +283,7 @@ void AliITSOnlineSPDfoAnalyzer::Process()
       fNh[quality][hs][chipid]->Fill(dacvalues);       
     } 
 
-    if(dacvalues) delete dacvalues;
+    if(dacvalues) delete [] dacvalues;
   } 
 }
 //---------------------------------------------
