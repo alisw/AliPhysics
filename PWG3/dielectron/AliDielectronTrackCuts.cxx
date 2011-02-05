@@ -29,14 +29,17 @@ Detailed description
 
 #include "AliDielectronTrackCuts.h"
 #include "AliVTrack.h"
+#include "AliESDtrack.h"
 
 ClassImp(AliDielectronTrackCuts)
 
 AliDielectronTrackCuts::AliDielectronTrackCuts() :
   AliAnalysisCuts(),
   fV0DaughterCut(0),
+  fNegateV0DauterCut(kFALSE),
   fRequireITSRefit(kFALSE),
-  fRequireTPCRefit(kFALSE)
+  fRequireTPCRefit(kFALSE),
+  fTPCNclRobustCut(-1)
 {
   //
   // Default Constructor
@@ -51,8 +54,10 @@ AliDielectronTrackCuts::AliDielectronTrackCuts() :
 AliDielectronTrackCuts::AliDielectronTrackCuts(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
   fV0DaughterCut(0),
+  fNegateV0DauterCut(kFALSE),
   fRequireITSRefit(kFALSE),
-  fRequireTPCRefit(kFALSE)
+  fRequireTPCRefit(kFALSE),
+  fTPCNclRobustCut(-1)
 {
   //
   // Named Constructor
@@ -84,7 +89,9 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
   
   Bool_t accept=kTRUE;
   if (fV0DaughterCut) {
-    accept*=track->TestBit(BIT(fV0DaughterCut));
+    Bool_t isV0=track->TestBit(BIT(fV0DaughterCut));
+    if (fNegateV0DauterCut) isV0=!isV0;
+    accept*=isV0;
   }
 
   for (Int_t i=0;i<3;++i){
@@ -95,18 +102,26 @@ Bool_t AliDielectronTrackCuts::IsSelected(TObject* track)
 
   if (fRequireITSRefit) accept*=(vtrack->GetStatus()&kITSrefit)>0;
   if (fRequireTPCRefit) accept*=(vtrack->GetStatus()&kTPCrefit)>0;
-  
+
+  if (fTPCNclRobustCut>0){
+    AliESDtrack *tr=dynamic_cast<AliESDtrack*>(track);
+    if (tr){
+      Int_t nclr=TMath::Nint(tr->GetTPCClusterInfo(2,1));
+      accept*=(nclr>fTPCNclRobustCut);
+    }
+  }
   return accept;
 }
 
 //______________________________________________
-void AliDielectronTrackCuts::SetV0DaughterCut(AliPID::EParticleType type)
+void AliDielectronTrackCuts::SetV0DaughterCut(AliPID::EParticleType type, Bool_t negate/*=kFALSE*/)
 {
   //
   // Set V0 Daughter cut bit
   //
   const Int_t bitMap[5] = {14, -1, 15, -1, 16}; // convert the AliPID to bit positions
   fV0DaughterCut=bitMap[type];
+  fNegateV0DauterCut=negate;
 }
 
 //____________________________________________________________________

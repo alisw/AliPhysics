@@ -102,7 +102,8 @@ AliDielectron::AliDielectron() :
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
   fDebugTree(0x0),
-  fPreFilterUnlikeOnly(kFALSE)
+  fPreFilterUnlikeOnly(kFALSE),
+  fHasMC(kFALSE)
 {
   //
   // Default constructor
@@ -127,7 +128,8 @@ AliDielectron::AliDielectron(const char* name, const char* title) :
   fCfManagerPair(0x0),
   fTrackRotator(0x0),
   fDebugTree(0x0),
-  fPreFilterUnlikeOnly(kFALSE)
+  fPreFilterUnlikeOnly(kFALSE),
+  fHasMC(kFALSE)
 {
   //
   // Named constructor
@@ -152,6 +154,9 @@ void AliDielectron::Init()
   //
   // Initialise objects
   //
+
+  if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
+  
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
   if (fTrackRotator)  fTrackRotator->SetTrackArrays(&fTracks[0],&fTracks[1]);
   if (fDebugTree) fDebugTree->SetDielectron(this);

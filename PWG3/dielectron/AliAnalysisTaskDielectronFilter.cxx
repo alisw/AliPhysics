@@ -45,7 +45,8 @@ AliAnalysisTaskSE(),
 fDielectron(0),
 fSelectPhysics(kTRUE),
 fTriggerMask(AliVEvent::kMB),
-fEventStat(0x0)
+fEventStat(0x0),
+fStoreLikeSign(kFALSE)
 {
   //
   // Constructor
@@ -58,7 +59,8 @@ AliAnalysisTaskSE(name),
 fDielectron(0),
 fSelectPhysics(kTRUE),
 fTriggerMask(AliVEvent::kMB),
-fEventStat(0x0)
+fEventStat(0x0),
+fStoreLikeSign(kFALSE)
 {
   //
   // Constructor
@@ -169,7 +171,11 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   
   fDielectron->Process(InputEvent());
   
-  if(fDielectron->HasCandidates()){
+  Bool_t hasCand = kFALSE;
+  if(fStoreLikeSign) hasCand = (fDielectron->HasCandidates() || fDielectron->HasCandidatesLikeSign());
+  else hasCand = (fDielectron->HasCandidates());
+  
+  if(hasCand){
     AliAODHandler *aodH=(AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
     AliAODEvent *aod = aodH->GetAOD();
     

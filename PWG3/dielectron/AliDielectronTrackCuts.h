@@ -40,11 +40,13 @@ public:
 
   virtual ~AliDielectronTrackCuts();
 
-  void SetV0DaughterCut(AliPID::EParticleType type);
+  void SetV0DaughterCut(AliPID::EParticleType type, Bool_t negate=kFALSE);
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   
   void SetRequireITSRefit(Bool_t req) { fRequireITSRefit=req; }
   void SetRequireTPCRefit(Bool_t req) { fRequireTPCRefit=req; }
+
+  void SetTPCNclFRobust(Int_t cut) { fTPCNclRobustCut=cut; }
   
   Int_t GetV0DaughterCut() const { return fV0DaughterCut; }
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
@@ -62,10 +64,13 @@ private:
   AliDielectronTrackCuts &operator=(const AliDielectronTrackCuts &c);
 
   Int_t fV0DaughterCut;                                // Bit for V0 daughter selection
+  Bool_t fNegateV0DauterCut;                           // If to negate the V0 daughter cut
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
   Bool_t fRequireITSRefit;                             // require ITS refit
   Bool_t fRequireTPCRefit;                             // require TPC refit
+
+  Int_t fTPCNclRobustCut;                            // TPC Ncl cut, Robust
   
   Bool_t CheckITSClusterRequirement(ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2) const;
   

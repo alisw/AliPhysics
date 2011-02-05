@@ -63,7 +63,8 @@ void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
   
   //Pt cut
   AliDielectronVarCuts *pt = new AliDielectronVarCuts("Pt>.5+60<dEdx<100","Pt>.6 && 60<dEdx<100");
-  pt->AddCut(AliDielectronVarManager::kPt,.6,1e30);
+  // pt > 0.7GeV
+  pt->AddCut(AliDielectronVarManager::kPt,.7,1e30);
   pt->AddCut(AliDielectronVarManager::kTPCsignal,60.,100.);
 
   if (isAOD){
@@ -74,8 +75,15 @@ void SetupTrackCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
 //     pt->AddCut(AliDielectronVarManager::kImpactParXY,-1.,1.);
 //     pt->AddCut(AliDielectronVarManager::kImpactParZ,-3.,3.);
   }
-  
   diele->GetTrackFilter().AddCuts(pt);
+
+  // PID cuts ---------------------------------------------------
+  AliDielectronPID *pid = new AliDielectronPID("PID","TPC nSigma |e|<3. + |Pi|>3 + |P|>3");
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.,3.,0,0,kTRUE);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-3.,3.,0,0,kTRUE);
+  
+  diele->GetTrackFilter().AddCuts(pid);
 }
 
 //______________________________________________________________________________________
@@ -84,12 +92,13 @@ void SetupPairCutsDieleFilter(AliDielectron *diele, Bool_t isAOD)
   //
   // Setup the pair cuts
   //
-  
-  
   //Invarian mass selection
   AliDielectronVarCuts *invMassCut=new AliDielectronVarCuts("InvMass","2<M<4");
-  invMassCut->AddCut(AliDielectronVarManager::kM,2.,1e30);
-//   invMassCut->AddCut(AliDielectronVarManager::kPairType,1.);
+  // Minv > 1.8
+  invMassCut->AddCut(AliDielectronVarManager::kM,1.8,1e30);
+//invMassCut->AddCut(AliDielectronVarManager::kPairType,1.);
+  // ptJpsi > 1GeV
+  invMassCut->AddCut(AliDielectronVarManager::kPt,1.,1e30);
   diele->GetPairFilter().AddCuts(invMassCut);
 
 }
