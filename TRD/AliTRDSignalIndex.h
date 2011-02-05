@@ -138,6 +138,9 @@ Bool_t AliTRDSignalIndex::NextRCIndex(Int_t &row, Int_t &col)
   // Returns next used RC combination
   //
 
+  if (!IsAllocated())
+    return kFALSE;
+
   if(fSortedIndex[fPositionRC].rc>-1){
     row = fCurrRow = fSortedIndex[fPositionRC].s.row;
     col = fCurrCol = fSortedIndex[fPositionRC].s.col;
