@@ -409,12 +409,41 @@ f.Draw("same")
 
 
 /*
+//
+// Default
+//
+c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+c->SetAlias("pidSig","cutE&&cutPi&&cutP");
 
+c->SetAlias("LegEta","abs(Leg1_Eta)<0.9&&abs(Leg2_Eta)<0.9");
+c->SetAlias("LegNcl","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
+c->SetAlias("Rap","abs(Y)<0.9");
+c->SetAlias("QA","LegNcl&&LegEta&&Rap&&LegPt");
+
+c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1");
+
+c->SetAlias("cut","PairType==1&&QA&&pidSig");
+
+c->Draw("M>>hM(125,0.,5.)","cut","e");
+
+
+
+
+//---------------------
 
 c->SetAlias("cut","PairType==1")
 
 
 c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
+
+
+c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
+c->SetAlias("LegPt","Leg1_Pt>1&&Leg2_Pt>1");
+
+
 
 //--------PID
 //-Param dEdx
@@ -428,7 +457,7 @@ c->SetAlias("cutPspecial","(abs(Leg1_TPC_nSigma_Protons)>3||(abs(Leg1_TPC_nSigma
 c->SetAlias("cutE","abs(Leg1_TPC_nSigma_Electrons)<3&&abs(Leg2_TPC_nSigma_Electrons)<3");
 // c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
 c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.&&(Leg2_TPC_nSigma_Protons)>3.3");
 c->SetAlias("pidSig","cutE&&cutPi&&cutP");
 //-- Pi param
 // c->SetAlias("eleParam","Leg1_TPC_nSigma_Electrons<5&&Leg2_TPC_nSigma_Electrons<5&&Leg1_TPC_nSigma_Electrons>-2.65*exp(-0.9*Leg1_P_InnerParam)&&Leg2_TPC_nSigma_Electrons>-8*exp(-0.6*Leg2_P_InnerParam)");
@@ -446,33 +475,167 @@ c->SetAlias("spdFirst","(Leg1_ITS_clusterMap&1)==1 && (Leg2_ITS_clusterMap&1)==1
 c->SetAlias("LegNclDiffIter1","abs(Leg1_NclsTPC-Leg1_NclsTPCiter1)<10&&abs(Leg2_NclsTPC-Leg2_NclsTPCiter1)<10")
 c->SetAlias("LegNclPID","(Leg1_NclsTPC-Leg1_TPCsignalN)<20&&(Leg2_NclsTPC-Leg2_TPCsignalN)<20")
 
+c->SetAlias("LegNcl","Leg1_NFclsTPCrobust&&Leg2_NFclsTPCrobust");
+c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegPt");
+
 c->SetAlias("cut","PairType==1&&QA&&cutPipardEdx&&cutPspecial")
 c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegPt")
 
-c->SetMarkerStyle(20);
+c->SetMarkerStyle(22);
 c->SetMarkerSize(.8);
+
+//-------- nsigma
+
 c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
 
-// c->SetAlias("nCls","Leg1_NclsTPC>90&&Leg2_NclsTPC>90");
-c->Draw("M>>hM(125,0,5)","cut","e");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
+
+c->Draw("M>>hM(301,-.01,6.01)","cut","e");
+c->GetHistogram()->GetXaxis()->SetRangeUser(2,4);
+
+//--------
 
 c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
-// c->SetAlias("cut","PairType==1&&nCls&&pidParam&&LegEta&&Rap")
-// c->SetAlias("cut","PairType==1&&QA&&pidSig&&LegNclPID")
-// c->SetAlias("nCls","Leg1_NclsTPC>140&&Leg2_NclsTPC>140");
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
-c->Draw("M>>hM2(50,2,4)","cut","esame");
 
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.5&&(Leg2_TPC_nSigma_Protons)>3.5");
+
+c->Draw("M>>hM2(301,-.01,6.01)","cut","esame");
+
+//--------
 
 c->SetMarkerColor(kGreen);
 c->SetLineColor(kGreen);
-// c->SetAlias("cut","PairType==1&&QA&&pidSig")
-// c->SetAlias("LegNcl","Leg1_NclsTPC>120&&Leg2_NclsTPC>120");
-// c->SetAlias("nCls","Leg1_NclsTPC>150&&Leg2_NclsTPC>150");
+
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>4&&abs(Leg2_TPC_nSigma_Pions)>4");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.5&&(Leg2_TPC_nSigma_Protons)>3.5");
+
+c->Draw("M>>hM3(301,-.01,6.01)","cut","esame");
+
+//--------
+
+c->SetMarkerColor(kMagenta);
+c->SetLineColor(kMagenta);
+
 c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
-c->Draw("M>>hM3(50,2,4)","cut","esame");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>4&&(Leg2_TPC_nSigma_Protons)>4");
+
+c->Draw("M>>hM4(301,-.01,6.01)","cut","esame");
+
+
+
+
+
+//
+//-------- rapidity
+//
+
+c->SetMarkerColor(kBlack);
+c->SetLineColor(kBlack);
+
+c->Draw("M>>hM(301,-.01,6.01)","cut&&Y<=0","e");
+
+//--------
+
+c->SetMarkerColor(kBlue);
+c->SetLineColor(kBlue);
+
+c->Draw("M>>hM2(301,-.01,6.01)","cut&&Y>0","esame");
+
+
+
+
+
+c->SetAlias("cutE","Leg1_TPC_nSigma_Electrons>-1 && Leg2_TPC_nSigma_Electrons>-1");
+c->SetAlias("LegPt","Leg1_Pt>1.2&&Leg2_Pt>1.2");
+
+c->SetAlias("cut","PairType==1&&QA&&pidSig");
+
+
+//-------- binning
+
+c->SetMarkerColor(kBlack);
+c->SetLineColor(kBlack);
+
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3.5");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3.5");
+
+c->Draw("M>>hM(301,-.015,6.005)","cut","e");
+
+TGraphErrors gr0;
+TH1 *h=c->GetHistogram();
+
+gr0->SetLineColor(h->GetLineColor());
+gr0->SetMarkerColor(h->GetMarkerColor());
+for (Int_t i=0;i<h->GetNbinsX();++i){
+ gr0.SetPoint(i,h->GetXaxis()->GetBinCenter(i+1),h->GetBinContent(i+1));
+//  gr0.SetPointError(i,h->GetXaxis()->GetBinWidth(i+1)/2,h->GetBinError(i+1));
+ gr0.SetPointError(i,0,h->GetBinError(i+1));
+}
+
+//--------
+
+c->SetMarkerColor(kBlue);
+c->SetLineColor(kBlue);
+
+c->Draw("M>>hM2(301,-.01,6.01)","cut","egoff");
+
+TGraphErrors gr1;
+TH1 *h=c->GetHistogram();
+
+gr1->SetLineColor(h->GetLineColor());
+gr1->SetMarkerColor(h->GetMarkerColor());
+for (Int_t i=0;i<h->GetNbinsX();++i){
+ gr1.SetPoint(i,h->GetXaxis()->GetBinCenter(i+1),h->GetBinContent(i+1));
+//  gr1.SetPointError(i,h->GetXaxis()->GetBinWidth(i+1)/2,h->GetBinError(i+1));
+ gr1.SetPointError(i,0,h->GetBinError(i+1));
+}
+
+//--------
+
+c->SetMarkerColor(kGreen);
+c->SetLineColor(kGreen);
+
+c->Draw("M>>hM3(301,-.005,6.015)","cut","egoff");
+c->GetHistogram()->GetXaxis()->SetRangeUser(2.,4);
+
+TGraphErrors gr2;
+TH1 *h=c->GetHistogram();
+
+gr2->SetLineColor(h->GetLineColor());
+gr2->SetMarkerColor(h->GetMarkerColor());
+for (Int_t i=0;i<h->GetNbinsX();++i){
+ gr2.SetPoint(i,h->GetXaxis()->GetBinCenter(i+1),h->GetBinContent(i+1));
+//  gr2.SetPointError(i,h->GetXaxis()->GetBinWidth(i+1)/2,h->GetBinError(i+1));
+ gr2.SetPointError(i,0,h->GetBinError(i+1));
+}
+
+//--------
+
+c->SetMarkerColor(kMagenta);
+c->SetLineColor(kMagenta);
+
+c->Draw("M>>hM4(301,-.0,6.02)","cut","egoff");
+
+TGraphErrors gr3;
+TH1 *h=c->GetHistogram();
+
+gr3->SetLineColor(h->GetLineColor());
+gr3->SetMarkerColor(h->GetMarkerColor());
+for (Int_t i=0;i<h->GetNbinsX();++i){
+ gr3.SetPoint(i,h->GetXaxis()->GetBinCenter(i+1),h->GetBinContent(i+1));
+//  gr3.SetPointError(i,h->GetXaxis()->GetBinWidth(i+1)/2,h->GetBinError(i+1));
+ gr3.SetPointError(i,0,h->GetBinError(i+1));
+}
+
+gr0->Draw("ap");
+gr0->GetHistogram()->GetXaxis()->SetRangeUser(2.,4);
+gr1->Draw("p");
+gr2->Draw("p");
+gr3->Draw("p");
 
 
 

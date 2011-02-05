@@ -80,6 +80,7 @@ public:
     kNclsTPCiter1,           // number of clusters assigned in the TPC after first iteration
     kNFclsTPC,               // number of findable clusters in the TPC
     kNFclsTPCr,              // number of findable clusters in the TPC with more robust definition
+    kNFclsTPCrFrac,          // number of found/findable clusters in the TPC with more robust definition
     kTPCsignalN,             // number of points used for dEdx
     kTPCchi2Cl,              // chi2/cl in TPC
     kTrackStatus,            // track status bits
@@ -99,6 +100,7 @@ public:
 
     kNumberOfDaughters,      // number of daughters
     kHaveSameMother,         // check that particles have the same mother (MC)
+    kIsJpsiPrimary,          // check if the particle is primary (MC)
     kITSsignal,		     // ITS dE/dx signal
     kITSsignalSSD1,	     // SSD1 dE/dx signal
     kITSsignalSSD2,	     // SSD2 dE/dx signal
@@ -276,6 +278,7 @@ inline void AliDielectronVarManager::FillVarESDtrack(const AliESDtrack *particle
   values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNclsIter1(); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kNFclsTPC]      = particle->GetTPCNclsF();
   values[AliDielectronVarManager::kNFclsTPCr]     = particle->GetTPCClusterInfo(2,1);
+  values[AliDielectronVarManager::kNFclsTPCrFrac] = particle->GetTPCClusterInfo(2);
   values[AliDielectronVarManager::kTPCsignalN]    = particle->GetTPCsignalN();
   values[AliDielectronVarManager::kNclsTRD]       = particle->GetNcls(2); // TODO: get rid of the plain numbers
   values[AliDielectronVarManager::kTRDntracklets] = particle->GetTRDntracklets(); // TODO: GetTRDtracklets/GetTRDntracklets?
@@ -375,7 +378,8 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
   values[AliDielectronVarManager::kNclsTPC]       = particle->GetTPCNcls();
   values[AliDielectronVarManager::kNclsTPCiter1]  = particle->GetTPCNcls(); // not really available in AOD
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
-  values[AliDielectronVarManager::kNFclsTPCr]      = 0;
+  values[AliDielectronVarManager::kNFclsTPCr]     = 0;
+  values[AliDielectronVarManager::kNFclsTPCrFrac] = 0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
@@ -444,7 +448,8 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   values[AliDielectronVarManager::kNclsTPC]       = 0;
   values[AliDielectronVarManager::kNclsTPCiter1]  = 0; 
   values[AliDielectronVarManager::kNFclsTPC]      = 0;
-  values[AliDielectronVarManager::kNFclsTPCr]      = 0;
+  values[AliDielectronVarManager::kNFclsTPCr]     = 0;
+  values[AliDielectronVarManager::kNFclsTPCrFrac] = 0;
   values[AliDielectronVarManager::kNclsTRD]       = 0;
   values[AliDielectronVarManager::kTRDntracklets] = 0;
   values[AliDielectronVarManager::kTRDpidQuality] = 0;
@@ -478,7 +483,7 @@ inline void AliDielectronVarManager::FillVarMCParticle(const AliMCParticle *part
   AliMCParticle *mother = mc->GetMCTrackMother(particle);
   if (mother) values[AliDielectronVarManager::kPdgCodeMother] = mother->PdgCode();
 
-
+  values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
 }
 
@@ -525,6 +530,7 @@ inline void AliDielectronVarManager::FillVarAODMCParticle(const AliAODMCParticle
 
   AliVParticle *mother = mc->GetMCTrackMother(particle);
   if (mother) values[AliDielectronVarManager::kPdgCodeMother] = mother->PdgCode();
+  values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(particle);
 
   values[AliDielectronVarManager::kNumberOfDaughters]=mc->NumberOfDaughters(particle);
 }
@@ -572,6 +578,7 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
   
   if (mc->HasMC()){
   Bool_t samemother =  mc->HaveSameMother(pair);
+  values[AliDielectronVarManager::kIsJpsiPrimary] = mc->IsJpsiPrimary(pair);
   values[AliDielectronVarManager::kHaveSameMother] = samemother ;
   }//if (mc->HasMC())
 
@@ -777,3 +784,4 @@ inline void AliDielectronVarManager::FillValues(const TParticle *particle, Doubl
 }*/
 
 #endif
+

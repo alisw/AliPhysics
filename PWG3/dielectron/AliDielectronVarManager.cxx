@@ -48,6 +48,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   "NclsTPCiter1",
   "NFclsTPC",
   "NFclsTPCrobust",
+  "NFclsTPCrobustFraction",
   "TPCsignalN",
   "TPCchi2PerCluster",
   "TrackStatus",
@@ -66,6 +67,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
 
   "NumberOfDaughters",
   "HaveSameMother",
+  "IsJpsiPrimary",
   "ITS_signal",
   "SSD1_signal",
   "SSD2_signal",
@@ -153,4 +155,3 @@ AliDielectronVarManager::~AliDielectronVarManager()
   // Default destructor
   //
 }
-

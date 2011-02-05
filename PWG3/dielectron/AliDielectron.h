@@ -76,7 +76,10 @@ public:
   const THashList * GetHistogramList() const { return fHistos?fHistos->GetHistogramList():0x0; }
 
   Bool_t HasCandidates() const { return GetPairArray(1)?GetPairArray(1)->GetEntriesFast()>0:0; }
-
+  Bool_t HasCandidatesLikeSign() const {
+    return (GetPairArray(0)&&GetPairArray(2)) ? (GetPairArray(0)->GetEntriesFast()>0 || GetPairArray(2)->GetEntriesFast()>0) : 0;
+  }
+  
   void SetCFManagerPair(AliDielectronCF * const cf) { fCfManagerPair=cf; }
   AliDielectronCF* GetCFManagerPair() const { return fCfManagerPair; }
 
@@ -84,6 +87,9 @@ public:
 
   void SetTrackRotator(AliDielectronTrackRotator * const rot) { fTrackRotator=rot; }
   AliDielectronTrackRotator* GetTrackRotator() const { return fTrackRotator; }
+
+  void SetHasMC(Bool_t hasMC) { fHasMC = hasMC; }
+  Bool_t GetHasMC() const     { return fHasMC;  }
   
   void SetDebugTree(AliDielectronDebugTree * const tree) { fDebugTree=tree; }
   
@@ -125,7 +131,7 @@ private:
   AliDielectronDebugTree *fDebugTree;  // Debug tree output
 
   Bool_t fPreFilterUnlikeOnly;  //Apply PreFilter either in +- or to ++/--/+- individually
-
+  Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
   
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);

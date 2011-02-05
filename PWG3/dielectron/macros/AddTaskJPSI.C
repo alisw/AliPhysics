@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJPSI(const char* config=""){
+AliAnalysisTask *AddTaskJPSI(Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -27,8 +27,15 @@ AliAnalysisTask *AddTaskJPSI(const char* config=""){
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
     AliDielectron *jpsi=ConfigJpsi2ee(i,isAOD);
+    if (isAOD) jpsi->SetHasMC(hasMC_aod);
     if (jpsi) task->AddDielectron(jpsi);
   }
+
+  //Add event filter
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  eventCuts->SetVertexZ(-10.,10.);
   
   //----------------------
   //create data containers
