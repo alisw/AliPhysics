@@ -119,14 +119,13 @@ Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
     return fNhitsM;
 }
 //___________________________________________________________________________
-Double_t AliITSmodule::PathLength(Int_t index,AliITShit *itsHit1,
+Double_t AliITSmodule::PathLength(AliITShit *itsHit1,
 				  AliITShit *itsHit2) {
   // path lenght
    Float_t  x1g,y1g,z1g;   
    Float_t  x2g,y2g,z2g;
    Double_t s;
 
-   index = 0;
    itsHit1->GetPositionG(x1g,y1g,z1g);
    itsHit2->GetPositionG(x2g,y2g,z2g);
 
@@ -136,8 +135,7 @@ Double_t AliITSmodule::PathLength(Int_t index,AliITShit *itsHit1,
    return s;
 }
 //___________________________________________________________________________
-void AliITSmodule::PathLength(Int_t index,
-			      Float_t x,Float_t y,Float_t z,
+void AliITSmodule::PathLength(Float_t x,Float_t y,Float_t z,
 			      Int_t status,Int_t &nseg,
 			      Float_t &x1,Float_t &y1,Float_t &z1,
 			      Float_t &dx1,Float_t &dy1,Float_t &dz1,
@@ -145,7 +143,6 @@ void AliITSmodule::PathLength(Int_t index,
   // path length
     static Float_t x0,y0,z0;
 
-    index = 0;
     if ((status&0x0002)!=0){ // entering
 	x0 = x;
 	y0 = y;

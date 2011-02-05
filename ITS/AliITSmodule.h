@@ -109,13 +109,13 @@ class AliITSmodule:public TObject{
 		      Float_t &x,Float_t &y,Float_t &z) const;
     void MedianHitL(Int_t,AliITShit *,AliITShit *,Float_t &,Float_t &,
 		    Float_t &){};
-    Double_t PathLength(Int_t index, AliITShit *itsHit1, AliITShit *itsHit2);
+    Double_t PathLength(AliITShit *itsHit1, AliITShit *itsHit2);
     // returns both the track and hit index numbers for the given hit. Hits
     // are kept on file according to their track index and hit index numbers.
     void MedianHit(Int_t index, Float_t xg,Float_t yg,Float_t zg,
                    Int_t status,Float_t &xMg, Float_t &yMg, Float_t &zMg,
 	       	    	           Int_t &flag);
-    void PathLength(Int_t index,Float_t x,Float_t y,Float_t z,Int_t status,
+    void PathLength(Float_t x,Float_t y,Float_t z,Int_t status,
                     Int_t &nseg,Float_t &x1,Float_t &y1,Float_t &z1,
 		    Float_t &dx1,Float_t &dy1, Float_t &dz1,Int_t &flag) const;
     Bool_t LineSegmentL(Int_t hindex,Double_t &a,Double_t &b, 
