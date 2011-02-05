@@ -213,10 +213,10 @@ set(EXPORTFILES)
 add_custom_target(alilibs-static)
 add_custom_target(include-headers)
 add_custom_target(DA-all)
-#  if(RULECHECKER_FOUND)
+if(RULECHECKER_FOUND)
   add_custom_target(check-all)
   add_dependencies(check-all ${FACTFILE})
-#  endif(RULECHECKER_FOUND)
+endif(RULECHECKER_FOUND)
 add_custom_target(par-all)
 add_custom_target(test-par-all)
 
@@ -229,9 +229,9 @@ foreach(MODULE ${MODDIRS})
   add_custom_target(${MODULE}-check-all)
   add_custom_target(${MODULE}-par-all)
   add_custom_target(test-${MODULE}-par-all)
-#  if(RULECHECKER_FOUND)
-  add_dependencies(check-all "${MODULE}-check-all")
-#  endif(RULECHECKER_FOUND)
+  if(RULECHECKER_FOUND)
+    add_dependencies(check-all "${MODULE}-check-all")
+  endif(RULECHECKER_FOUND)
   add_custom_target(${MODULE}-all-static)
   add_dependencies(alilibs-static "${MODULE}-static")
   add_subdirectory(${MODULE})
@@ -241,12 +241,12 @@ if(DATE_FOUND AND AMORE_FOUND)
   include (CMakeDA)
 endif(DATE_FOUND AND AMORE_FOUND)
 
-#if(RULECHECKER_FOUND)
+if(RULECHECKER_FOUND)
     add_custom_command( OUTPUT ${FACTFILE}
                         COMMAND ${JAVA_RUNTIME} -jar ${FACTEXTRACTOR_JAR} ${CMAKE_BINARY_DIR} ${CMAKE_BINARY_DIR}
 			DEPENDS ${_factfile_deps}
                         WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-#endif(RULECHECKER_FOUND)
+endif(RULECHECKER_FOUND)
 
 #--------------------------------------------------------------------------------#
 # Additional Targets                                                             #
