@@ -148,7 +148,7 @@ void AliDielectronSignalExt::ProcessLS(TObjArray* const arrhist)
     fHistBackground->SetBinContent(ibin, background);
     fHistBackground->SetBinError(ibin, ebackground);
   }
-  //scale background histogram to match integral of the data histogram between fScaleMin and fScaleMax
+  //scale histograms to match integral between fScaleMin and fScaleMax
   if (fScaleMax>fScaleMin) fScaleFactor=ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
 
   //subract background

@@ -49,7 +49,8 @@ public:
   UInt_t GetTriggerMask() const { return fTriggerMask; }
   
   void SetDielectron(AliDielectron * const die) { fDielectron = die; }
-  
+
+  void SetStoreLikeSignCandidates(Bool_t storeLS) { fStoreLikeSign = storeLS; }
 private:
   
   AliDielectron *fDielectron;             // J/psi framework object
@@ -58,6 +59,7 @@ private:
   UInt_t fTriggerMask;               // Event trigger mask
 
   TH1D *fEventStat;                  //! Histogram with event statistics
+  Bool_t fStoreLikeSign;        // flag to store like-sign candidates
   
   AliAnalysisTaskDielectronFilter(const AliAnalysisTaskDielectronFilter &c);
   AliAnalysisTaskDielectronFilter& operator= (const AliAnalysisTaskDielectronFilter &c);

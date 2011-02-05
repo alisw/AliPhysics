@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJPSIFilter(){
+AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kTRUE, Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -13,11 +13,14 @@ AliAnalysisTask *AddTaskJPSIFilter(){
   }
 
   //Do we have an MC handler?
-  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
+  Bool_t hasMC=(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)||hasMC_aod;
   
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeFilter.C");
+  AliDielectron *jpsi=ConfigJpsi2eeFilter(isAOD);
+  
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
@@ -35,15 +38,15 @@ AliAnalysisTask *AddTaskJPSIFilter(){
     //aodHandler->SetNeedsMCParticlesBranchReplication();
     aodHandler->SetNeedsDimuonsBranchReplication();
     if(hasMC) aodHandler->SetNeedsMCParticlesBranchReplication();
+    jpsi->SetHasMC(hasMC);
   }
   
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
   
-  gROOT->LoadMacro("$ALICE_ROOT/PWG3/dielectron/macros/ConfigJpsi2eeFilter.C");
-  AliDielectron *jpsi=ConfigJpsi2eeFilter(isAOD);
   if (!hasMC) task->UsePhysicsSelection();
   task->SetDielectron(jpsi);
+  if(storeLS) task->SetStoreLikeSignCandidates(storeLS);
   mgr->AddTask(task);
 
   //----------------------
