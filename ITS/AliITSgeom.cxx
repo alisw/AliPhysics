@@ -599,6 +599,7 @@ void AliITSgeom::PrintGeom(ostream *wb)const{
   Int_t i;
 
     wb->setf(ios::scientific);
+    streamsize stsiz = wb->precision();
     *wb << fTrans << " ";
     *wb << fNmodules << " ";
     *wb << fNlayers << " ";
@@ -607,6 +608,7 @@ void AliITSgeom::PrintGeom(ostream *wb)const{
     for(i=0;i<fNmodules;i++) {
         *wb <<setprecision(16) << *(GetGeomMatrix(i)) << "\n";
     } // end for i
+    *wb << setprecision (stsiz);
     return;
 }
 //______________________________________________________________________

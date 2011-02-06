@@ -491,6 +491,7 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 					&trs,primaryVertex[2],pflag);
 	  Int_t nextLay=theLay+seedStep;
 	  Bool_t goon=kTRUE;
+	  if(nextLay<0 || nextLay == 6) goon = kFALSE;
 	  while(goon){
 	    kk++;
 	    nClusLay[kk] = SearchClusters(nextLay,fPhiWin[nloop],fLambdaWin[nloop],

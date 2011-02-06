@@ -42,6 +42,7 @@ $Id$
 #include <TBRIK.h>
 #include <TXTRU.h>
 
+#include "AliLog.h"
 #include "AliITSgeomMatrix.h"
 
 ClassImp(AliITSgeomMatrix)
@@ -915,7 +916,7 @@ void AliITSgeomMatrix::Read(istream *is){
     // Return:
     //    none.
     Int_t i,j;
-
+    const Int_t kMxVal=10000;
     *is >> fDetectorIndex;
     for(i=0;i<3;i++) *is >> fid[i];
 //    for(i=0;i<3;i++) *is >> frot[i]; // Redundant with fm[][].
@@ -924,6 +925,10 @@ void AliITSgeomMatrix::Read(istream *is){
     while(is->peek()==' ')is->get(); // skip white spaces
     if(isprint(is->peek())){ // old format did not have path.
 	*is >> j; // string length
+	if(j>kMxVal){
+	  AliError(Form("j> %d",kMxVal));
+	  return;
+	}
 	fPath.Resize(j);
 	for(i=0;i<j;i++) {*is >> fPath[i];}
     } // end if
