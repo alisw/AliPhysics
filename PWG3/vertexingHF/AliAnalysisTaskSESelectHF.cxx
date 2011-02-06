@@ -125,7 +125,7 @@ void AliAnalysisTaskSESelectHF::UserExec(Option_t */*option*/)
       // load D0 candidates                                                   
       inputArrayD0toKpi=(TClonesArray*)aodFromExt->GetList()->FindObject("D0toKpi");
     }
-  } else {
+  } else if(aodIn) {
     // load D0 candidates                                                   
     inputArrayD0toKpi=(TClonesArray*)aodIn->GetList()->FindObject("D0toKpi");
   }

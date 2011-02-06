@@ -580,12 +580,12 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       AliAODEvent* aodFromExt = ext->GetAOD();
       inputArray=(TClonesArray*)aodFromExt->GetList()->FindObject(bname.Data());
     }
-  } else {
+  } else if(aod) {
     inputArray=(TClonesArray*)aod->GetList()->FindObject(bname.Data());
   }
 
 
-  if(!inputArray) {
+  if(!inputArray || !aod) {
     printf("AliAnalysisTaskSED0Mass::UserExec: input branch not found!\n");
     return;
   }

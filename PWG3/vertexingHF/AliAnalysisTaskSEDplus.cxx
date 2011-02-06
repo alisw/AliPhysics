@@ -781,7 +781,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       arrayLikeSign=(TClonesArray*)aodFromExt->GetList()->FindObject("LikeSign3Prong");
     }
-  } else {
+  } else if(aod) {
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign3Prong");
   }

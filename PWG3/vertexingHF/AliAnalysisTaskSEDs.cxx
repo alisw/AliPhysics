@@ -411,7 +411,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
       AliAODEvent *aodFromExt = ext->GetAOD();
       array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
     }
-  } else {
+  } else if(aod) {
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
   }
 

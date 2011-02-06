@@ -310,7 +310,6 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
    
-    if(!returnvalue) return 0;
   }
 
   if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedPID(d);

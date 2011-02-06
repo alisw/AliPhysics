@@ -237,7 +237,7 @@ void AliAnalysisTaskSEBkgLikeSignD0::UserExec(Option_t */*option*/)
       // load like sign candidates
       arrayLikeSign=(TClonesArray*)aodFromExt->GetList()->FindObject("LikeSign2Prong");
     }
-  } else {
+  } else if(aod) {
     // load D0 candidates                                                   
     arrayD0toKpi=(TClonesArray*)aod->GetList()->FindObject("D0toKpi");
     // load like sign candidates

@@ -7,6 +7,9 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   // Origin: A.Dainese
   //
 
+  TStopwatch t;
+  t.Start();
+
   Bool_t useParFiles=kFALSE;
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
@@ -58,53 +61,24 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     (TClonesArray*)aod->GetList()->FindObject("CascadesHF"); 
     
 
-  Double_t cutsD0[9]=
-  // cutsD0[0] = inv. mass half width [GeV]
-  // cutsD0[1] = dca [cm]
-  // cutsD0[2] = cosThetaStar
-  // cutsD0[3] = pTK [GeV/c]
-  // cutsD0[4] = pTPi [GeV/c]
-  // cutsD0[5] = d0K [cm]   upper limit!
-  // cutsD0[6] = d0Pi [cm]  upper limit!
-  // cutsD0[7] = d0d0 [cm^2]
-  // cutsD0[8] = cosThetaPoint
-                     {1000.,
-		      100000.,
-		      1.1,
-		      0.,
-		      0.,
-		      100000.,
-		      100000.,
-		      100000000.,
-		      -1.1}; 
-  Double_t cutsDstar[5]=
-    // (to be passed to AliAODRecoCascadeHF::SelectDstar())
-    // 0 = inv. mass half width of D* [GeV]
-    // 1 = half width of (M_Kpipi-M_Kpi) [GeV]
-    // 2 = PtMin of pi_s [GeV/c]
-    // 3 = PtMax of pi_s [GeV/c]
-    // 4 = theta, angle between the trace of pi_s and D0 decay plane [rad]
-                     {999999.,
-		      999999.,
-		      0.1, 
-		      1.0, 
-		      0.5};
-
-  Double_t cutsLctoV0[9]=// cuts on Lambdac candidates to V0+bachelor
-                        // (to be passed to AliAODRecoDecayHF3Prong::SelectLctoV0())
-                        // 0 = inv. mass half width in K0s hypothesis [GeV]   
-                        // 1 = inv. mass half width in Lambda hypothesis [GeV]   
-                        // 2 = inv. mass V0 in K0s hypothesis half width [GeV]   
-                        // 3 = inv. mass V0 in Lambda hypothesis half width [GeV]   
-                        // 4 = pT min Bachelor track [GeV/c]
-                        // 5 = pT min V0-Positive track [GeV/c]
-                        // 6 = pT min V0-Negative track [GeV/c]
-                        // 7 = dca cut on the V0 (cm)
-                        // 8 = dca cut on the cascade (cm)
-    {2.0,2.0,1.0,1.0,0.0,0.0,0.0,1000.,1000.};
 
   Int_t nTotHF=0,nTotD0toKpi=0,nTotDstar=0,nTot3Prong=0,nTotCasc=0;
   AliAODVertex *vtx1=0;
+
+  AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
+  cutsD0toKpi->SetStandardCutsPP2010();
+  cutsD0toKpi->SetRemoveDaughtersFromPrim(kFALSE);
+
+  AliRDHFCutsDStartoKpipi *cutsDStar = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  cutsDStar->SetStandardCutsPP2010();
+
+  AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
+  cutsDplustoKpipi->SetStandardCutsPP2010();
+  cutsDplustoKpipi->SetRemoveDaughtersFromPrim(kFALSE);
+  
+  Int_t nTot3ProngSele=0;
+  Int_t nTotD0toKpiSele=0;
+  Int_t nTotDStarSele=0;
 
   // loop over events
   Int_t nEvents = aodTree->GetEntries();
@@ -122,13 +96,14 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     vtx1 = (AliAODVertex*)aod->GetPrimaryVertex();
     vtx1->Print();
 
+    /*
     // make trkIDtoEntry register (temporary)
     Int_t trkIDtoEntry[100000];
     for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
       AliAODTrack *track = aod->GetTrack(it);
       trkIDtoEntry[track->GetID()]=it;
     }
-    
+    */
 
     // Fix references to daughter tracks
     //AliAnalysisVertexingHF *fixer = new AliAnalysisVertexingHF();
@@ -147,11 +122,18 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     for (Int_t iD0toKpi = 0; iD0toKpi < nD0toKpi; iD0toKpi++) {
       AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)arrayD0toKpi->UncheckedAt(iD0toKpi);
 
+      d->SetOwnPrimaryVtx(vtx1);
+
+      /*
 	// get daughter AOD tracks
 	AliAODTrack *trk0 = (AliAODTrack*)d->GetDaughter(0);
 	AliAODTrack *trk1 = (AliAODTrack*)d->GetDaughter(1);
 
 	if(trk0->GetStatus()) printf("ok %d\n",iD0toKpi);
+      */
+      printf("D0 %d\n",iD0toKpi);
+      if(cutsD0toKpi->IsSelected(d,AliRDHFCuts::kAll)) {printf("D0 %d passed\n",iD0toKpi); nTotD0toKpiSele++;}
+
     }
 
 
@@ -160,50 +142,30 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
     nTotDstar += nDstar;
     cout<<"Number of D*->D0pi: "<<nDstar<<endl;
     
-  AliRDHFCutsDStartoKpipi *cuts = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
 
-
- AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
- //esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-  //default
- esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  //esdTrackCuts->SetRequireITSRefit(kTRUE);
-  //esdTrackCuts->SetMinNClustersTPC(70);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-              AliESDtrackCuts::kAny);
- // default is kBoth, otherwise kAny
-  esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
-
- // soft pion pre-selections
-  AliESDtrackCuts* esdSoftPicuts=new AliESDtrackCuts();
-  //esdSoftPicuts->SetRequireSigmaToVertex(kFALSE);
-  //default
-  //esdSoftPicuts->SetRequireTPCRefit(kFALSE);
-  //esdSoftPicuts->SetRequireITSRefit(kFALSE);
-  //esdSoftPicuts->SetMinNClustersITS(4); // default is 5
-  //esdSoftPicuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-  //                  AliESDtrackCuts::kAny); //test d0 asimmetry
-  //esdSoftPicuts->SetPtRange(0.0,15.0); 
-
-  cuts->AddTrackCuts(esdTrackCuts);
-  cuts->AddTrackCutsSoftPi(esdSoftPicuts);
-  Float_t cutsArrayDStartoKpipi[14]={0.15,0.07.,0.85,0.8,0.8,0.06.,0.06.,0.001,0.6,0.15, 0.03, 0.2, 5, 0.5}; // first 9 for D0 from D*, last 5 for D*
-  cuts->SetCuts(14,cutsArrayDStartoKpipi);
-
+  
     for (Int_t iDstar = 0; iDstar < nDstar; iDstar++) {
       AliAODRecoCascadeHF *c = (AliAODRecoCascadeHF*)arrayDstar->UncheckedAt(iDstar);
-
-      if(cuts->IsSelected(c,AliRDHFCuts::kTracks)) printf("passed\n");
+      printf("D* %d\n",iDstar);
+      if(cutsDStar->IsSelected(c,AliRDHFCuts::kCandidate)) {printf("D* %d passed\n",iDstar); nTotDStarSele++;}
 
     }
 
-    
+  
+
     // count 3prong candidates
     Int_t n3Prong = array3Prong->GetEntriesFast();
     nTot3Prong += n3Prong;
     cout<<"Number of Charm->3Prong: "<<n3Prong<<endl;
-    
+
+    for (Int_t i3p = 0; i3p < n3Prong; i3p++) {
+      AliAODRecoDecayHF3Prong *ccc = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3p);
+      printf("3p %d\n",i3p);
+      //if(cutsDplustoKpipi->IsSelected(ccc,AliRDHFCuts::kCandidate)) {printf("3p %d passed\n",i3p); nTot3ProngSele++;}
+
+    }
+
+    /*
     // loop over HF vertices
     Int_t nVtxsHF = arrayVerticesHF->GetEntriesFast();
     nTotHF += nVtxsHF;
@@ -221,15 +183,16 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
       nTotCasc+=nCasc;
       cout << "Number of Cascades: "<<nCasc<<endl;
     }
-    
+    */
   }
   
   printf("\n Total HF vertices: %d\n",nTotHF);
-  printf("\n Total D0->Kpi: %d\n",nTotD0toKpi);
-  printf("\n Total D*->D0pi: %d\n",nTotDstar);
-  printf("\n Total Charm->3Prong: %d\n",nTot3Prong);
+  printf("\n Total D0->Kpi: %d; selected %d\n",nTotD0toKpi,nTotD0toKpiSele);
+  printf("\n Total D*->D0pi: %d; selected %d\n",nTotDstar,nTotDStarSele);
+  printf("\n Total Charm->3Prong: %d; selected %d\n",nTot3Prong,nTot3ProngSele);
   if (arrayCascades) printf("\n Total Cascades: %d\n",nTotCasc);
 
+  /*
   TCanvas *c1 = new TCanvas("c1","c1",0,0,800,700);
   c1->Divide(2,2);
   c1->cd(1);
@@ -243,6 +206,10 @@ void ReadAODVertexingHF(const char *aodFileName="AliAOD.root",
   c1->cd(4);
   hDeltaMassDstar->SetFillColor(3);
   hDeltaMassDstar->Draw();
+  */
+
+  t.Stop();
+  t.Print();
 
   return;
 }

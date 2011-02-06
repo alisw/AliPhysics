@@ -404,7 +404,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	break; 
       }
     }
-  } else {
+  } else if(aod) {
     switch(fDecChannel){
     case 0:
       arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
@@ -426,7 +426,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       break; 
     }
   }
-  if(!arrayProng) {
+  if(!aod || !arrayProng) {
     AliError("AliAnalysisTaskSESignificance::UserExec:Branch not found!\n");
     return;
   }
@@ -442,8 +442,8 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
     
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
-      AliWarning("AliAnalysisTaskSESignificance::UserExec:MC particles branch not found!\n");
-      //    return;
+      AliError("AliAnalysisTaskSESignificance::UserExec:MC particles branch not found!\n");
+      return;
     }
     
     // load MC header
@@ -586,7 +586,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
       for(Int_t ivals=0;ivals<nVals;ivals++){
 	if(addresses[ivals]>=((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetNTotCells()){
 	  if (fDebug>1) printf("Overflow!!\n");
-	  delete addresses;
+	  delete [] addresses;
 	  return;
 	}
 
@@ -617,6 +617,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	}
 	
       }
+      delete [] addresses;
     }// end if selected
     
   }

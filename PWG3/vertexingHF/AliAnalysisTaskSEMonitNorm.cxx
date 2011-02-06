@@ -154,7 +154,11 @@ void AliAnalysisTaskSEMonitNorm::UserExec(Option_t *)
     return;
   }
   AliESDEvent* esdE = (AliESDEvent*) InputEvent();
-  
+  if (!esdE) {
+    Printf("ERROR: fESD not available");
+    return;
+  }
+
   // Select PHYSICS events (type=7, for data) and MC events (type=0)
   // fCheckEventType is kFALSE if fReadMC is kTRUE, hence check is skipped
   if(esdE->GetEventType()!=7 ) return;
