@@ -173,7 +173,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   TIter controlIter(ControlArray);
   FitControl *controller;
   while (controller=(FitControl*)controlIter.Next()) { 
-    controller->CalcBinLimits(10);
+    controller->CalcBinLimits(20); //This BinsPerGeV argument should be calculated from the data
     //Had to introduce this Nint fn otherwise got inconsistencies after type implicit conversion
     //    BinLo=TMath::Nint(1.+BinPtEdges[N]*20.); //cout << "BinLo: " << BinLo << ", " << 1+BinPtEdges[N]*20. << endl;
     //    BinHi=TMath::Nint(BinPtEdges[N+1]*20.); //cout << "BinHi: " << BinHi << ", " << BinPtEdges[N+1]*20. << endl;
@@ -183,7 +183,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     sprintf(id,"Mass%d",N);
     cout << "Mass histo:" << N << " Firstbin: " << BinLo << " Last bin:" << BinHi << " " << controller->PtLower() << "-" << controller->PtUpper() << " GeV" << endl; 
     //cout << "About to create mass projection " << N << endl;
-    hMassSlice[N] = PtMass->ProjectionY(id,BinLo,BinHi);
+    hMassSlice[N] = PtMass->ProjectionX(id,BinLo,BinHi);
     //cout << "Mass projection " << N << " created." << endl;
    sprintf(title,"%s Mass, %.2f < p_{t} < %.2f",partName,controller->PtLower(),controller->PtUpper());
     hMassSlice[N]->SetTitle(title);
