@@ -195,15 +195,10 @@ void AliAnalysisTaskSELambdac::Init()
   if(fDebug > 1) printf("AnalysisTaskSELambdac::Init() \n");
 
   fListCuts=new TList();
-  AliRDHFCutsLctopKpi *production = new AliRDHFCutsLctopKpi();
-    production=fRDCutsProduction;
 
-  AliRDHFCutsLctopKpi *analysis = new AliRDHFCutsLctopKpi();
-  analysis=fRDCutsAnalysis;
-
-   fListCuts->Add(analysis);
-   fListCuts->Add(production);
-   PostData(2,fListCuts);
+  fListCuts->Add(new AliRDHFCutsLctopKpi(*fRDCutsAnalysis));
+  fListCuts->Add(new AliRDHFCutsLctopKpi(*fRDCutsProduction));
+  PostData(2,fListCuts);
   return;
 }
 
@@ -494,12 +489,12 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
       array3Prong=(TClonesArray*)aodFromExt->GetList()->FindObject("Charm3Prong");
       arrayLikeSign=(TClonesArray*)aodFromExt->GetList()->FindObject("LikeSign3Prong");
     }
-  } else {
+  } else if(aod) {
     array3Prong=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
     arrayLikeSign=(TClonesArray*)aod->GetList()->FindObject("LikeSign3Prong");
   }
 
-  if(!array3Prong) {
+  if(!array3Prong || !aod) {
     printf("AliAnalysisTaskSELambdac::UserExec: Charm3Prong branch not found!\n");
     return;
   }

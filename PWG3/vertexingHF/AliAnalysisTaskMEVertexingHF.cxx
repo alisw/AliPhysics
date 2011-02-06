@@ -199,7 +199,8 @@ void AliAnalysisTaskMEVertexingHF::UserExec(Option_t *)
     return;
   }
   Int_t contribCopy=nContributors[0];
-  AliVVertex* newVertex=new AliESDVertex(vtxPos,vtxSigma,chi2,contribCopy);
+  Double_t vtxCov[6]={vtxSigma[0]*vtxSigma[0],0,vtxSigma[1]*vtxSigma[1],0,0,vtxSigma[2]*vtxSigma[2]};
+  AliVVertex* newVertex=new AliESDVertex(vtxPos,vtxCov,chi2,contribCopy);
   newVertex->SetTitle(primTitleFirst.Data());
   fMixedEvent->SetPrimaryVertex(newVertex);
 
