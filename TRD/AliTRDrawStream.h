@@ -209,7 +209,7 @@ class AliTRDrawStream : public TObject
   AliTRDdigitsParam   *fDigitsParam;            // pointer to the parameters belonging to the digits
 
   TTree *fErrors;                               // tree containing the occured error codes
-  class AliTRDrawStreamError { 
+  class AliTRDrawStreamError : public TObject {
   public: 
     AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1); 
     virtual ~AliTRDrawStreamError() {}
