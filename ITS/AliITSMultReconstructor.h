@@ -150,7 +150,9 @@ public:
   Bool_t IsRecoDone()                          const {return fRecoDone;}
   void  SetCreateClustersCopy(Bool_t v=kTRUE)        {fCreateClustersCopy=v;}
   //
-  Float_t* GetClustersArray(Int_t lr)          const {return (Float_t*) (lr==0) ? fClustersLay[0]:fClustersLay[1];}
+  //  Float_t* GetClustersArray(Int_t lr)          const {return (Float_t*) (lr==0) ? fClustersLay[0]:fClustersLay[1];}
+  Float_t* GetClustersArray(Int_t lr)          const {if(lr==0){return fClustersLay[0];} 
+                                                      else {return fClustersLay[1];}}
   Int_t*   GetPartnersOfL2()                   const {return (Int_t*)fPartners;}
   Float_t* GetMinDistsOfL2()                   const {return (Float_t*)fMinDists;}
   Double_t GetDPhiShift()                      const {return fDPhiShift;}

@@ -155,10 +155,9 @@ void AliITSMapA2::FlagHit(Int_t iz, Int_t ix){
                 -1000.*TMath::Abs((Int_t)(fHitMapD[CheckedIndex(iz, ix)])+1.);
 }
 //______________________________________________________________________
-TObject* AliITSMapA2::GetHit(Int_t i, Int_t dummy) const {
+TObject* AliITSMapA2::GetHit(Int_t i, Int_t /* dummy */) const {
   //return a pointer to the 1D histogram
 
-    dummy = 0; // added to remove unused variable warning.
     if (fObjects) {
 	return fObjects->UncheckedAt(i);
     } else return NULL;

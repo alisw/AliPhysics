@@ -57,7 +57,7 @@ class AliITSSimuParam : public TObject {
 
 
   void SetSPDCouplingOption(const char *opt) {fSPDCouplOpt=opt;}
-  void GetSPDCouplingOption(char *opt) const {strcpy(opt,fSPDCouplOpt.Data());}
+  void GetSPDCouplingOption(char *opt) const {strncpy(opt,fSPDCouplOpt.Data(),fSPDCouplOpt.Sizeof());}
 
   void SetSPDCouplingParam(Double_t col, Double_t row)
         {fSPDCouplCol = col; fSPDCouplRow = row;}

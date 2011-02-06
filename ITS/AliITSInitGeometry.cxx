@@ -1061,8 +1061,7 @@ Bool_t AliITSInitGeometry::WriteVersionString(Char_t *str,Int_t length,
         cvsdate[i] = cvslikedate[6+i]; else cvsdate[i] = 0;
     for(i=0;i<length;i++) str[i] = 0; // zero it out for now.
     i = (Int_t)maj;
-    sprintf(str,"Major Version= %d Minor Version= %d Revision: %s Date: %s",
-            i,min,cvsrevision,cvsdate);
+    snprintf(str,length-1,"Major Version= %d Minor Version= %d Revision: %s Date: %s",i,min,cvsrevision,cvsdate);
     /* this gives compilation warnings on some compilers: descriptor zu
     if(GetDebug()>1)printf("AliITSInitGeometry::WriteVersionString: "
                        "n=%d str=%s revision[%zu] date[%zu]\n",
@@ -1098,8 +1097,8 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
                        "str=%s length=%d\n",
                        str,length);
     if(n<35) return kFALSE; // not enough space for numbers
-    m = sscanf(str,"Major Version= %d  Minor Version= %d Revision: %s "
-               "Date: %s %s",&i,&min,cvsRevision,cvsDate,cvsTime);
+    m = sscanf(str,"Major Version= %d  Minor Version= %d Revision: %9s "
+               "Date: %10s %8s",&i,&min,cvsRevision,cvsDate,cvsTime);
     ok = m==5;
     if(!ok) return !ok;
     m = sscanf(cvsDate,"%d/%d/%d",&year,&month,&day);

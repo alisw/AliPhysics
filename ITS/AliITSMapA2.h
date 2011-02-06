@@ -52,7 +52,7 @@ class AliITSMapA2 : public AliITSMapA1{
     virtual Int_t  GetHitIndex(Int_t iz, Int_t ix) const {
 	return CheckedIndex(iz, ix);};
     // Get object (1D histogram)
-    virtual TObject *GetHit(Int_t iz, Int_t dummy) const;
+    virtual TObject *GetHit(Int_t iz, Int_t /* dummy */) const;
     // Test hit status
     virtual FlagType TestHit(Int_t iz, Int_t ix);
     // Get signal using two dim. index

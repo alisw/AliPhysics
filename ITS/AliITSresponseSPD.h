@@ -18,7 +18,7 @@ class AliITSresponseSPD :  public AliITSresponse {
     virtual void SetCouplingOption(const char *opt) {   // Options: "old" or "new"
         fCouplOpt=opt;}
     virtual void CouplingOption(char *opt) const {
-        strcpy(opt,fCouplOpt.Data());}
+      strncpy(opt,fCouplOpt.Data(),fCouplOpt.Sizeof());}
     virtual  void   SetSigmaDiffusionAsymmetry(Double_t ecc)
         {fEccDiff=ecc;}   
     virtual  void   GetSigmaDiffusionAsymmetry(Double_t &ecc) const 

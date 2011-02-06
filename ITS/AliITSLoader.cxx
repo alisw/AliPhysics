@@ -207,7 +207,7 @@ void AliITSLoader::SetupDigits(TObjArray *digPerDet,Int_t n,
     TClonesArray *cl = 0;
     TTree *td = 0;
     TBranch *br = 0;
-    Char_t branch[13];
+    Char_t branch[14];
     const Char_t *det[3] = {"SPD","SDD","SSD"};
 
     if(!digPerDet){
@@ -228,8 +228,8 @@ void AliITSLoader::SetupDigits(TObjArray *digPerDet,Int_t n,
     for(i=0;i<n;i++){
         if(digPerDet->At(i)==0){ // set up TClones Array
             digPerDet->AddAt(new TClonesArray(digclass[i],1000),i);
-            if(n==3) sprintf(branch,"ITSDigits%s",det[i]);
-            else     sprintf(branch,"ITSDigits%d",i+1);
+            if(n==3) snprintf(branch,13,"ITSDigits%s",det[i]);
+            else     snprintf(branch,13,"ITSDigits%d",i+1);
             br = td->GetBranch(branch);
             br->SetAddress(&((*digPerDet)[i]));
             continue; // do next one.

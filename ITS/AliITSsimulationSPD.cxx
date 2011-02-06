@@ -838,7 +838,7 @@ void AliITSsimulationSPD::CreateHistograms(){
    fSPDname="spd_";
    for(Int_t i=0;i<GetNPixelsZ();i++) {
        Char_t pixelz[4];
-       sprintf(pixelz,"%d",i);
+       snprintf(pixelz,3,"%d",i);
        fSPDname.Append(pixelz);
        fHis->AddAt(new TH1F(fSPDname.Data(),"SPD maps",
                             GetNPixelsX(),0.,(Double_t)GetNPixelsX()),i);
