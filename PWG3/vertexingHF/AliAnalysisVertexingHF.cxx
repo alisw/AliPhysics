@@ -205,7 +205,7 @@ AliAnalysisVertexingHF::~AliAnalysisVertexingHF() {
   if(fCutsLctoV0) { delete fCutsLctoV0; fCutsLctoV0=0; }
   if(fCutsD0toKpipipi) { delete fCutsD0toKpipipi; fCutsD0toKpipipi=0; }
   if(fCutsDStartoKpipi) { delete fCutsDStartoKpipi; fCutsDStartoKpipi=0; }
-  if(fAODMap) { delete fAODMap; fAODMap=0; }
+  if(fAODMap) { delete [] fAODMap; fAODMap=0; }
   if(fMassCalc2) { delete fMassCalc2; fMassCalc2=0; }
   if(fMassCalc3) { delete fMassCalc3; fMassCalc3=0; }
   if(fMassCalc4) { delete fMassCalc4; fMassCalc4=0; }
@@ -2250,8 +2250,8 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   AliAODv0 *aodV0 = new AliAODv0(vertexV0,dcaV0Daughters,dcaV0ToPrimVertex,pmom,nmom,dcaV0DaughterToPrimVertex);
   aodV0->SetOnFlyStatus(esdV0->GetOnFlyStatus());
 
-  if(trackesdV0) {delete trackesdV0; trackesdV0=NULL;}
-  if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
+  delete trackesdV0;
+  delete primVertexAOD;
 
   return aodV0;
 }

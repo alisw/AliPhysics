@@ -258,16 +258,16 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
   // Daughter tracks selection
   // 
   if(!fTrackCuts) return kTRUE;
-
+ 
   Int_t ndaughters = d->GetNDaughters();
   AliAODVertex *vAOD = d->GetPrimaryVtx();
   Double_t pos[3],cov[6];
   vAOD->GetXYZ(pos);
   vAOD->GetCovarianceMatrix(cov);
   const AliESDVertex vESD(pos,cov,100.,100);
-
+  
   Bool_t retval=kTRUE;
-
+  
   for(Int_t idg=0; idg<ndaughters; idg++) {
     AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(idg);
     if(!dgTrack) {retval = kFALSE; continue;}
@@ -276,7 +276,7 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
 
     if(!IsDaughterSelected(dgTrack,&vESD,fTrackCuts)) retval = kFALSE;
   }
-
+  
   return retval;
 }
 //---------------------------------------------------------------------------

@@ -384,7 +384,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	break; 
       }
     }
-  } else {
+  } else if(aod) {
     switch(fDecayChannel){
     case 0:
       arrayProng=(TClonesArray*)aod->GetList()->FindObject("Charm3Prong");
@@ -419,6 +419,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     fNEntries->Fill(2);
   }
   
+  if(!aod) return;
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;

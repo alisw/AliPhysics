@@ -163,7 +163,7 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
       // load D*+ candidates                                                   
       inputArrayDstar = (TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
     }
-  } else {
+  } else if(aod) {
     // load HF vertices                
     inputArrayVertices = (TClonesArray*)aod->GetList()->FindObject("VerticesHF");
     // load D0->Kpi candidates                                                 

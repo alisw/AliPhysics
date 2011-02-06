@@ -1301,13 +1301,16 @@ void  AliHFMassFitter::GetFitPars(Float_t *vector) const {
 void AliHFMassFitter::IntS(Float_t *valuewitherror) const {
 
   //gives the integral of signal obtained from fit parameters
-  if(!valuewitherror)valuewitherror=new Float_t[2];
+  if(!valuewitherror) {
+    printf("AliHFMassFitter::IntS: got a null pointer\n");
+    return;
+  }
 
   Int_t index=fParsSize/2 - 3;
   valuewitherror[0]=fFitPars[index];
   index=fParsSize - 3;
   valuewitherror[1]=fFitPars[index];
-  }
+}
 
 
 //_________________________________________________________________________
