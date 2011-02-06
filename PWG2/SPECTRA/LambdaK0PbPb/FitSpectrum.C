@@ -11,6 +11,9 @@ void FitSpectrum(const char* filename, const char * listName = "clambdak0Histo_0
 
   char* histName = 0;
   switch (iparticle) {
+  case 0:
+    histName = "h2PtVsMassK0";
+    break;
   case 1:
     histName = "h2PtVsMassLambda";
     break;
@@ -25,7 +28,8 @@ void FitSpectrum(const char* filename, const char * listName = "clambdak0Histo_0
 
   TString suffixFull = histName;
   if(strlen(suffix)) suffixFull = suffixFull + "_" + suffix;
-  MultYields2((TH3F*)h2,iparticle,0,suffixFull); // FIXME: modify MultYields2 to handle 1D histos
+  //MultYields3((TH3F*)h2,iparticle,0,suffixFull); // FIXME: modify MultYields2 to handle 1D histos
+  MultYields2(h2,iparticle,0,suffixFull); // FIXME: modify MultYields2 to handle 1D histos
 
   
 }
