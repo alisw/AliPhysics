@@ -261,7 +261,10 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     if(fUseMCInfo){
     //MC array need for maching
       mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+      if (!mcArray) {
+	AliError("Could not find Monte-Carlo in AOD");
+	return;
+      }
       // find associated MC particle for D* ->D0toKpi
       Int_t mcLabel = dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
       if(mcLabel>=0) isDStar = 1;

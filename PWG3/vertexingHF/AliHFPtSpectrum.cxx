@@ -561,6 +561,8 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
   // protect against null denominator
   if (deltaY==0. || fLuminosity[0]==0. || fTrigEfficiency[0]==0. || branchingRatioC==0.) {
     AliError(" Hey you ! Why luminosity or trigger-efficiency or the c-BR or delta_y are set to zero ?! ");
+    delete [] limits;
+    delete [] binwidths;
     return ;
   }
 
@@ -638,6 +640,8 @@ void AliHFPtSpectrum::ComputeHFPtSpectrum(Double_t deltaY, Double_t branchingRat
     }
     
   }
+  delete [] binwidths;
+  delete [] limits;
 
 }
 
@@ -1014,6 +1018,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectionFc(){
     }
 
   }
+  delete [] binwidths;
+  delete [] limits;
 
 }
 
@@ -1122,6 +1128,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumFc(){
     }
 
   }
+  delete [] binwidths;
+  delete [] limits;
   
 }
 
@@ -1279,6 +1287,8 @@ void AliHFPtSpectrum::CalculateFeedDownCorrectedSpectrumNb(Double_t deltaY, Doub
     }
 
   }
+  delete [] binwidths;
+  delete [] limits;
   
 }
 
