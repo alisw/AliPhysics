@@ -106,7 +106,7 @@ void AliITSOnlineSPDfo::SetFile(TString inputfile)
  } else {
    fFile = TFile::Open(inputfile.Data());
    if(!fFile) {
-     Info("AliITSOnlineSPDfo::SetFile",Form(" %s  not existing.... The scan info are not available....crash is expected \n",inputfile.Data()));
+     Info("AliITSOnlineSPDfo::SetFile"," %s  not existing.... The scan info are not available....crash is expected \n",inputfile.Data());
      return;
     } else {
      fInfo = (AliITSOnlineSPDfoInfo *)fFile->Get("generalinfo");
