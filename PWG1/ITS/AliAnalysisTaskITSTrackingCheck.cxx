@@ -271,6 +271,7 @@ fESDtrackCutsTPC(0),
 fESDtrackCutsITSTPC(0)
 {
   // Constructor
+  for(Int_t i=0; i<11; i++) fCountsPerPtBin[i]=0;
 }
 
 //________________________________________________________________________
