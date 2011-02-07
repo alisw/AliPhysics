@@ -1647,7 +1647,7 @@ AliCluster *AliITStrackerUpgrade::GetCluster(Int_t index) const {
   //--------------------------------------------------------------------
   Int_t l=(index & 0xf0000000) >> 28;
   Int_t c=(index & 0x0fffffff) >> 0;
-  AliInfo(Form("index %i  cluster index %i layer %i", index,c,l));
+  AliDebug(2,Form("index %i  cluster index %i layer %i", index,c,l));
   return fLayers[l]->GetCluster(c);
 }
 //______________________________________________________________________________

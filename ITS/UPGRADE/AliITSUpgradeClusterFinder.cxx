@@ -24,7 +24,7 @@
 
 #include "AliITSUpgradeClusterFinder.h"
 #include "AliITSsegmentationUpgrade.h"
-#include "AliITSRecPoint.h"
+#include "AliITSRecPointU.h"
 #include "AliITSDigitUpgrade.h"
 #include "AliITSRawStreamSPD.h"
 #include "AliLog.h"
@@ -56,7 +56,8 @@ AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() :
   //
   
   fChargeArray = new TObjArray();
-  fRecPoints = new TClonesArray("AliITSRecPoint",3000);
+  fChargeArray->SetOwner(kTRUE);
+  fRecPoints = new TClonesArray("AliITSRecPointU",3000);
   fTmpLabel[0]=-5;
   fTmpLabel[1]=-5;
   fTmpLabel[2]=-5;
@@ -240,6 +241,7 @@ void AliITSUpgradeClusterFinder::NewModule() {
   
   fNhitsLeft=0;
   memset(fHits,0,999*999*sizeof(Bool_t));
+  fChargeArray->Clear();
 }
 //___________________________________________________________________________________
 Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t Layer, UShort_t charge) {
@@ -769,7 +771,7 @@ void AliITSUpgradeClusterFinder::MakeRecPointBranch(TTree *treeR){
   // Creating the branch (see AliITSUpgradeReconstructor::Reconstruct)
   //
 
-  if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+  if(!fRecPoints)fRecPoints = new TClonesArray("AliITSRecPointU",1000);
   if (treeR) {
     TBranch *branch = treeR->GetBranch("ITSRecPoints");
     if (branch) return ;
@@ -782,7 +784,7 @@ void AliITSUpgradeClusterFinder::SetRecPointTreeAddress(TTree *treeR){
   // Addressing the branch (see AliITSUpgradeReconstructor::Reconstruct)
   //
   if(!treeR) return;
-  if(!fRecPoints) fRecPoints = new TClonesArray("AliITSRecPoint",1000);
+  if(!fRecPoints) fRecPoints = new TClonesArray("AliITSRecPointU",1000);
 
   TBranch *branch;
   branch = treeR->GetBranch("ITSRecPoints");
@@ -797,7 +799,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
   // the clusterization is performed here
   //
   AliITSsegmentationUpgrade *segmentation = new AliITSsegmentationUpgrade(); 
-  AliITSRecPoint  recpnt;
+  AliITSRecPointU  recpnt;
   Int_t nClusters =0;
   TClonesArray &lrecp = *fRecPoints;
 
@@ -834,7 +836,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       xzl2[1] = zPixC2*(segmentation->GetCellSizeZ(ilayer))+0.5*(segmentation->GetCellSizeZ(ilayer))-(segmentation->GetHalfLength(ilayer));
       check2 = segmentation->DetToGlobal(ilayer,xzl2[0], xzl2[1],xcheck2,ycheck2,zcheck2);
       recpnt.SetType(GetClusterType(ilayer,nClu ));
-      // recpnt.SetLocalCoord(xzl2[0],xzl2[1]); //temporary solution (no LocalToTrack Matrix)
+      recpnt.SetLocalCoord(xzl2[0],xzl2[1]); //temporary solution (no LocalToTrack Matrix)
       //from global to tracking system coordinate
       // global coordinate -> local coordinate getting alpha angle of the recpoint
       Float_t xclg = xcheck2;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
@@ -867,7 +869,7 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
       segmentation->GetSegmentation(ilayer,xsize, zsize);
       recpnt.SetSigmaY2(xsize/TMath::Sqrt(12)*xsize/TMath::Sqrt(12));
       recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
-      new(lrecp[nClusters++]) AliITSRecPoint(recpnt);
+      new(lrecp[nClusters++]) AliITSRecPointU(recpnt);
       //Int_t idx = fRecPoints->GetEntries();
       AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
     }//cluster list entries

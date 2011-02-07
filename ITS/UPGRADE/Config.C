@@ -264,51 +264,11 @@ void Config()
   if (iITS)
     {
       //=================== ITS parameters ============================
-
-      Int_t  nlayers =6;
-      TArrayD xsize(nlayers);
-      TArrayD zsize(nlayers);
-      TArrayD spess(nlayers);
-      TArrayD radii(nlayers);
-       
-      TArrayD spessCu(nlayers);
-      TArrayD radiiCu(nlayers);
-      TArrayS copper(nlayers);
-      TArrayD halfLengths(nlayers);
-
-      Bool_t bp=kFALSE;
-      Double_t radiusBP = 2.9;
-      Double_t widthBP = 0.08;
-      Double_t halflengthBP = 80.;
-
-      for(Int_t i=0; i<nlayers; i++){
-	Double_t xsz[6]={31.18*1e-04,41.6*1e-04,131.6*1e-04,131.6*1e-04,69.3*1e-04,69.3*1e-04};
-	Double_t zsz[6]={416*1e-04,416*1e-04,97*1e-04,97*1e-04,2875*1e-04,2875*1e-04};
-	Double_t Lhalf[6]={80.,80.,80.,80.,80.,80.};
-	Int_t npixHalf[6];
-	npixHalf[i]=(Int_t)(Lhalf[i]/zsz[i]); 
-	Double_t HalfL[6];
-	HalfL[i]=npixHalf[i]*zsz[i];
-	Double_t r[6]={4.,7.6,14.9,23.8,39.1,43.6};
-	radii.AddAt(r[i],i);
-	Int_t npixR[6];
-	npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
-	Double_t xszInt[6];
-	xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
-	xsize.AddAt(xszInt[i],i);
-	zsize.AddAt(zsz[i],i);
-	Double_t thick[6]={75.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04};
-
-	radiiCu.AddAt(r[i]+thick[i],i);
-	halfLengths.AddAt(HalfL[i],i);
-	spess.AddAt(thick[i],i);
-	spessCu.AddAt(0.015,i);//micron
-	Int_t c[6]={1,1,1,1,1,1};
-	copper.AddAt(c[i],i);
-      }
-      AliITSupgrade *ITS  = new AliITSupgrade("ITS","ITS upgrade",spess,radii,halfLengths,radiiCu,spessCu,copper,bp,radiusBP, widthBP, halflengthBP );
-     
-      ITS->SetFullSegmentation(xsize,zsize);
+      Bool_t isUpgrade = kTRUE;
+      AliITS *ITS = 0x0;
+      if(isUpgrade) ITS  = new AliITSupgrade("ITS","ITS Upgrade");
+      else ITS = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+    
     }
 
 

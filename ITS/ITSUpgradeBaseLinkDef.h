@@ -11,4 +11,5 @@
 // ITS upgrade classes 
 #pragma link C++ class  AliITSDigitUpgrade+;
 #pragma link C++ class  AliITSsegmentationUpgrade+;
+#pragma link C++ class  AliITSRecPointU+;
 #endif
