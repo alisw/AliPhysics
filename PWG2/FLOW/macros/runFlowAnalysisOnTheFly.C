@@ -16,7 +16,7 @@ Bool_t LYZ1PROD = kTRUE;
 Bool_t LYZ2SUM  = kFALSE;
 Bool_t LYZ2PROD = kFALSE;
 Bool_t LYZEP    = kFALSE;
-Bool_t MH       = kTRUE; // mixed harmonics 
+Bool_t MH       = kFALSE; // mixed harmonics 
 Bool_t NL       = kFALSE; // nested loops
 Bool_t MCEP_AH  = kFALSE; // MCEP in another harmonic 
 //--------------------------------------------------------------------------------------
@@ -122,6 +122,9 @@ Bool_t bConstantV2IsSampledFromGauss = kTRUE;
  // V1:
  Double_t dV1RP = 0.0; // directed flow of RPs 
  Double_t dV1SpreadRP = 0.0; // directed flow spread of RPs
+ // V3:
+ Double_t dV3RP = 0.0; // triangular flow of RPs
+ Double_t dV3SpreadRP = 0.0; // triangular flow spread of RP
  // V4:
  Double_t dV4RP = 0.0; // harmonic V4 of RPs (to be improved: name needed) 
  Double_t dV4SpreadRP = 0.0; // harmonic V4's spread of RPs (to be improved: name needed)
@@ -511,6 +514,12 @@ int runFlowAnalysisOnTheFly(Int_t nEvts=1000, Int_t mode=mLocal)
      eventMakerOnTheFly->SetV2vsEtaSpread(dV2vsEtaSpread);      
     }
    }  
+ // V3:
+ if(!bUseGlauberModel)
+ {
+  eventMakerOnTheFly->SetV3RP(dV3RP);
+  eventMakerOnTheFly->SetV3SpreadRP(dV3SpreadRP);  
+ }    
  // V4:
  if(!(bPtDependentHarmonicV4 || bEtaDependentHarmonicV4))
  {
