@@ -28,29 +28,30 @@
 // (see AddFilteredAOD method)
 //
 
+#include "AliAnalysisTaskESDMuonFilter.h"
+
+#include "AliAODDimuon.h"
+#include "AliAODEvent.h"
+#include "AliAODHandler.h"
+#include "AliAODMCParticle.h"
+#include "AliAODMuonReplicator.h"
+#include "AliAODVertex.h"
+#include "AliAnalysisFilter.h"
+#include "AliAnalysisManager.h"
+#include "AliCodeTimer.h"
+#include "AliESDEvent.h"
+#include "AliESDInputHandler.h"
+#include "AliESDMuonTrack.h"
+#include "AliESDVertex.h"
+#include "AliESDtrack.h"
+#include "AliLog.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMultiplicity.h"
+#include "AliStack.h"
 #include <TChain.h>
 #include <TFile.h>
 #include <TParticle.h>
-
-#include "AliAnalysisTaskESDMuonFilter.h"
-#include "AliAnalysisManager.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliAODHandler.h"
-#include "AliAnalysisFilter.h"
-#include "AliESDtrack.h"
-#include "AliESDMuonTrack.h"
-#include "AliESDVertex.h"
-#include "AliMultiplicity.h"
-#include "AliLog.h"
-#include "AliStack.h"
-#include "AliMCEvent.h"
-#include "AliMCEventHandler.h"
-#include "AliAODMCParticle.h"
-#include "AliAODDimuon.h"
-#include "AliAODMuonReplicator.h"
-#include "AliAODVertex.h"
 
 ClassImp(AliAnalysisTaskESDMuonFilter)
 ClassImp(AliAnalysisNonMuonTrackCuts)
@@ -169,21 +170,13 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
   
   if ( fOnlyMuon ) 
   {    
-    ext->FilterBranch("cascades",0x0);
-    ext->FilterBranch("v0s",0x0);
-    ext->FilterBranch("kinks",0x0);
-    ext->FilterBranch("jets",0x0);
-    ext->FilterBranch("emcalCells",0x0);
-    ext->FilterBranch("phosCells",0x0);
-    ext->FilterBranch("caloClusters",0x0);
-    ext->FilterBranch("fmdClusters",0x0);
-    ext->FilterBranch("pmdClusters",0x0);
-    ext->FilterBranch("tracklets",0x0);
-    
     AliAODBranchReplicator* murep = new AliAODMuonReplicator("MuonReplicator",
                                                              "remove non muon tracks and non primary or pileup vertices",
                                                              new AliAnalysisNonMuonTrackCuts,
                                                              new AliAnalysisNonPrimaryVertices);
+    
+    ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
+    
     ext->FilterBranch("tracks",murep);    
     ext->FilterBranch("vertices",murep);  
     ext->FilterBranch("dimuons",murep);
@@ -214,6 +207,9 @@ void AliAnalysisTaskESDMuonFilter::UserExec(Option_t */*option*/)
 void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD() 
 {
   // ESD Muon Filter analysis task executed for each event
+  
+  AliCodeTimerAuto("",0);
+  
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   
   // Fetch Stack for debuggging if available 

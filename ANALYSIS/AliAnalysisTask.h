@@ -125,7 +125,7 @@ public:
   Bool_t                    IsUsed() const   {return TObject::TestBit(kTaskUsed);}
   Bool_t                    IsZombie() const {return TObject::TestBit(kTaskZombie);}
   Bool_t                    HasBranches() const {return !fBranchNames.IsNull();}
-  void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
+  virtual void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
   void                      SetBranches(const char *names) {fBranchNames = names;}
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}

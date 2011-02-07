@@ -554,7 +554,6 @@ Bool_t AliAnalysisTask::CheckCircularDeps()
 void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
 {
 // Print task info.
-   AliAnalysisTask *thistask = (AliAnalysisTask*)this;
    TString opt(option);
    opt.ToLower();
    Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
@@ -565,7 +564,7 @@ void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
    if (!dep || (dep && IsChecked())) {
       printf("______________________________________________________________________________\n");
       printf("%s\n", Form("%stask: %s  ACTIVE=%i POST_LOOP=%i", ind.Data(), GetName(),IsActive(),IsPostEventLoop()));
-      if (dep) thistask->SetChecked(kFALSE);
+      if (dep) const_cast<AliAnalysisTask*>(this)->SetChecked(kFALSE);
       else {
          for (islot=0; islot<fNinputs; islot++) {
             printf("%s", Form("%s   INPUT #%i: %s <- ",ind.Data(),islot, GetInputType(islot)->GetName()));

@@ -1402,7 +1402,7 @@ void AliAnalysisManager::AddBranches(const char *branches)
          fRequestedBranches += obj->GetName();
       }
    }
-   if (arr) delete arr;
+  delete arr;
 }   
 
 //______________________________________________________________________________
@@ -1425,6 +1425,7 @@ void AliAnalysisManager::CheckBranches(Bool_t load)
       fTable.Add(br);
       if (load && br->GetReadEntry()!=GetCurrentEntry()) br->GetEntry(GetCurrentEntry());
    }
+  delete arr;
 }
 
 //______________________________________________________________________________
@@ -1442,8 +1443,22 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next()))
       task->PrintTask(option);
+  
    if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) 
       printf("Requested input branches:\n%s\n", fRequestedBranches.Data());
+  
+  TString sopt(option);
+  sopt.ToUpper();
+  
+  if (sopt.Contains("ALL"))
+  {
+    if ( fOutputEventHandler )
+    {
+      cout << TString('_',78) << endl;
+      cout << "OutputEventHandler:" << endl;
+      fOutputEventHandler->Print("   ");
+    }
+  }
 }
 
 //______________________________________________________________________________

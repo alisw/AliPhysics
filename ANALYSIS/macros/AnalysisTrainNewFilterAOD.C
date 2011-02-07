@@ -38,9 +38,9 @@ TString     proof_outdir       = "";
 // ### Settings that make sense when using the Alien plugin
 //==============================================================================
 Int_t       runOnData          = 1;       // Set to 1 if processing real data
-Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
+Int_t       iCollision         = 1;       // 0=pp, 1=Pb-Pb
 Bool_t      usePLUGIN          = kTRUE;   // do not change
-Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
+Bool_t      useProductionMode  = kFALSE;   // use the plugin in production mode
 // Usage of par files ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
 // To refresh par files, remove the ones in the workdir, then do "make <target.par>" in 
@@ -48,7 +48,7 @@ Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 Bool_t      usePAR             = kFALSE;  // use par files for extra libs
 Bool_t      useCPAR            = kFALSE;  // use par files for common libs
 TString     root_version       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     aliroot_version    = "v4-21-13-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     aliroot_version    = "v4-21-14-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 // Change production base directory here (test mode)
 TString     alien_datadir      = "/alice/data/2010/LHC10h";
                // Work directory in GRID (DON'T CHANGE)
@@ -110,13 +110,14 @@ Bool_t      saveProofToAlien    = kFALSE; // save proof outputs in AliEn
 Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 1;      // ESD to AOD filter (barrel + muon tracks)
-Int_t       iMUONcopyAOD       = 0;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iMUONcopyAOD       = 1;      // Task that copies only muon events in a separate AOD (PWG3)
+Int_t       iMakeDimuonAOD     = 0;      // AliAOD.Dimuons.root
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4)
 Int_t       iJETANdelta        = 0;      // Jet delta AODs
 Int_t       iPWG4partcorr      = 0;      // Gamma-hadron correlations task (PWG4)
 Int_t       iPWG4gammaconv     = 0;      // Gamma conversion analysis (PWG4)
 Int_t       iPWG4omega3pi      = 0;      // Omega to 3 pi analysis (PWG4)
-Int_t       iPWG3vertexing     = 1;      // Vertexing HF task (PWG3)
+Int_t       iPWG3vertexing     = 0;//1      // Vertexing HF task (PWG3)
 Int_t       iPWG3hfe           = 0;      // Electrons analysis (PWG3)
 Int_t       iPWG3JPSIfilter    = 0;      // JPSI filtering (PWG3)
 Int_t       iPWG3JPSI          = 0;      // JPSI analysis (PWG3)
@@ -384,10 +385,13 @@ void AddAnalysisTasks()
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
-         mgr->RegisterExtraFile("AliAOD.Dimuons.root");
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kTRUE, usePhysicsSelection, kFALSE, AliESDpid::kTOF_T0, kTRUE);
+        if ( iMakeDimuonAOD )
+        {
+          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+        }
+        AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE,(iMakeDimuonAOD==1), usePhysicsSelection, kFALSE, AliESDpid::kTOF_T0, kTRUE);
       } else {
-         AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection,kFALSE, AliESDpid::kTOF_T0, kTRUE);
+        AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, usePhysicsSelection,kFALSE, AliESDpid::kTOF_T0, kTRUE);
       }   
    }   
 
@@ -693,7 +697,9 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("AnalysisTrainNew.C::StartAnalysis", "Cannot create the chain");
             return;
          }   
-         mgr->StartAnalysis(mode, chain);
+       mgr->SetNSysInfo(1);
+       mgr->StartAnalysis(mode, chain);
+       AliCodeTimer::Instance()->Print();
          return;
       case 1:
          if (!proof_dataset.Length()) {

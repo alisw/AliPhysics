@@ -722,6 +722,7 @@ fObjectList(0x0)
     TObject::SetBit(kFilteredAOD);
     printf("####### Added AOD filter %s\n", name);
   } else printf("####### Added AOD extension %s\n", name);
+  KeepUnspecifiedBranches();
 }   
 
 //______________________________________________________________________________
@@ -750,32 +751,57 @@ void AliAODExtension::AddBranch(const char* cname, void* addobj)
 //       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
 //       return;
 //    }   
+
   AliCodeTimerAuto(GetName(),0);
 
-    if (!fAODEvent) {
-       char type[20];
-       gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
-       Init(type);
+  if (!fAODEvent) {
+    char type[20];
+    gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
+    Init(type);
+  }
+  TDirectory *owd = gDirectory;
+  if (fFileE) {
+    fFileE->cd();
+  }
+  char** apointer = (char**) addobj;
+  TObject* obj = (TObject*) *apointer;
+  
+  fAODEvent->AddObject(obj);
+  
+  TString bname(obj->GetName());
+  
+  if (!fTreeE->FindBranch(bname.Data())) 
+  {
+    Bool_t acceptAdd(kTRUE);
+    
+    if ( TestBit(kDropUnspecifiedBranches) )
+    {
+      // check that this branch is in our list of specified ones...
+      // otherwise do not add it !
+      TIter next(fRepFiMap);
+      TObjString* p;
+      
+      acceptAdd=kFALSE;
+      
+      while ( ( p = static_cast<TObjString*>(next()) ) && !acceptAdd )
+      {
+        if ( p->String() == bname ) acceptAdd=kTRUE;
+      }
     }
-    TDirectory *owd = gDirectory;
-    if (fFileE) {
-      fFileE->cd();
-    }
-    char** apointer = (char**) addobj;
-    TObject* obj = (TObject*) *apointer;
-
-    fAODEvent->AddObject(obj);
- 
-    const Int_t kSplitlevel = 99; // default value in TTree::Branch()
-    const Int_t kBufsize = 32000; // default value in TTree::Branch()
-
-    if (!fTreeE->FindBranch(obj->GetName())) {
+    
+    if ( acceptAdd ) 
+    {
       // Do the same as if we book via 
       // TTree::Branch(TCollection*)
-      fTreeE->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
-		     kBufsize, kSplitlevel - 1);
+
+      const Int_t kSplitlevel = 99; // default value in TTree::Branch()
+      const Int_t kBufsize = 32000; // default value in TTree::Branch()
+            
+      fTreeE->Bronch(bname.Data(), cname, fAODEvent->GetList()->GetObjectRef(obj),
+                     kBufsize, kSplitlevel - 1);
     }
-    owd->cd();
+  }
+  owd->cd();
 }
 
 //______________________________________________________________________________
@@ -838,7 +864,17 @@ Bool_t AliAODExtension::Init(Option_t *option)
   
   while ( ( o = next() ) )
   {
-    if ( fRepFiMap )
+    Bool_t mustKeep(kFALSE);
+    
+    TString test(o->ClassName());
+    test.ToUpper();
+    if (test.Contains("HEADER"))
+    {
+      // do not allow to drop header branch
+      mustKeep=kTRUE;
+    }
+    
+    if ( fRepFiMap && !mustKeep )
     {
       TObject* specified = fRepFiMap->FindObject(o->GetName());
       if (specified)
@@ -868,14 +904,20 @@ Bool_t AliAODExtension::Init(Option_t *option)
       }
       else
       {
-        fObjectList->Add(o);
+        if ( !TestBit(kDropUnspecifiedBranches) ) 
+        {
+          // object o will be transmitted to the output AOD, unchanged
+          fObjectList->Add(o);
+        }
       }
     } 
     else
     {
-      // no replicator / filter map created, so works as before, i.e. 
-      // assume we copy everything.
-      fObjectList->Add(o);
+      if ( mustKeep || !TestBit(kDropUnspecifiedBranches) )
+      {
+        // object o will be transmitted to the output AOD, unchanged
+        fObjectList->Add(o);
+      }
     }
   }
 
@@ -884,7 +926,24 @@ Bool_t AliAODExtension::Init(Option_t *option)
   while ( ( o = next() ) )
   {
     TObject* out = fObjectList->FindObject(o->GetName());
-    AliInfo(Form("OBJECT IN %20s %p -> OUT %p %s",o->GetName(),o,out,((out!=o && out) ? "REPLICATED":"-")));
+    
+    TString status;
+    
+    if ( out != o && out ) 
+    {
+      status = "REPLICATED";      
+    }
+    else if ( out ) 
+    {
+      status = "COPIED AS IS";      
+    }
+    else 
+    {
+      status = "DROPPED";          
+    }
+    
+    AliInfo(Form("OBJECT IN %20s %p -> OUT %p %s",
+                 o->GetName(),o,out,status.Data()));
   }
 
   if (fEnableReferences) fTreeE->BranchRef();
@@ -902,7 +961,14 @@ void AliAODExtension::Print(Option_t* opt) const
   // Print info about this extension
   
   cout << opt << Form("AliAODExtension - %s - %s",GetName(),GetTitle()) << endl;
-  cout << opt << opt << Form("References are %s enabled",fEnableReferences ? "" : "not") << endl;
+  if ( !fEnableReferences ) 
+  {
+    cout << opt << opt << "References are disabled ! Hope you know what you are doing !" << endl;
+  }
+  if ( TestBit(kDropUnspecifiedBranches) )
+  {
+    cout << opt << opt << "All branches not explicitely specified will be dropped" << endl;
+  }
   
   TIter next(fRepFiMap);
   TObjString* s;
@@ -918,10 +984,11 @@ void AliAODExtension::Print(Option_t* opt) const
       skipped += ' ';
     }
   }
-  
+
+    
   if ( skipped.Length() )
   {
-    cout << opt << opt << "Branches that will be skipped altogether : " << skipped.Data() << endl;
+    cout << opt << opt << "Specified branches that will be skipped altogether : " << skipped.Data() << endl;
   }
   
   next.Reset();

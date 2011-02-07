@@ -143,7 +143,8 @@ class AliAODExtension : public TNamed {
 public:
 
 enum EAliAODExtensionFlags {
-   kFilteredAOD      = BIT(14)
+   kFilteredAOD      = BIT(14),
+   kDropUnspecifiedBranches = BIT(15)
 };
     
   AliAODExtension();
@@ -166,6 +167,12 @@ enum EAliAODExtensionFlags {
 
   void Print(Option_t* opt="") const;
   
+  // Branches not specified in any FilterBranch call will be dropped by default
+  void DropUnspecifiedBranches() { TObject::SetBit(kDropUnspecifiedBranches); }
+    
+  // Branches not specified in any FilterBranch call will be kept by default
+  void KeepUnspecifiedBranches() { TObject::ResetBit(kDropUnspecifiedBranches); }
+    
   void FilterBranch(const char* branchName, AliAODBranchReplicator* replicator=0x0);
 
   /* Use DisableReferences if and only if the output AOD contains no TRef or TRefArray,
