@@ -144,8 +144,6 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
 void AliT0QADataMakerRec::StartOfDetectorCycle()
 {
   //Detector specific actions at start of cycle
-  for (Int_t i=0; i<500; i++)
-    if(GetRawsData(i)) GetRawsData(i)->Reset();
 
 }
  
