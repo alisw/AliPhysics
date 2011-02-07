@@ -290,7 +290,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
       high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
       }
-   
+  Float_t lowAmpThreshold =  GetRecoParam()->GetLow(200);  
+  Float_t highAmpThreshold =  GetRecoParam()->GetHigh(200);  
   Double32_t besttimeA=9999999;
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
@@ -437,7 +438,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1 )
+	 if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold  && adc[ipmt]<highAmpThreshold)
 	   {
 	     if(time[ipmt]<besttimeC){
 		  besttimeC=time[ipmt]; //timeC
@@ -447,7 +448,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1)
+	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold)
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
