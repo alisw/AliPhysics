@@ -2359,7 +2359,7 @@ void AliAnalysisManager::AddStatisticsMsg(const char *line)
 }
 
 //______________________________________________________________________________
-void AliAnalysisManager::WriteStatisticsMsg(Int_t nevents)
+void AliAnalysisManager::WriteStatisticsMsg(Int_t)
 {
 // If fStatistics is present, write the file in the format ninput_nprocessed_nfailed_naccepted.stat
    static Bool_t done = kFALSE;
