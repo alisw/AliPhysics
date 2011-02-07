@@ -42,11 +42,11 @@ AliFemtoModelCorrFctn::AliFemtoModelCorrFctn(const char *title, Int_t aNbins, Do
 {
   // Normal constructor
   char buf[100];
-  sprintf(buf, "NumTrue%s", title);
+  snprintf(buf , 100,  "NumTrue%s", title);
   fNumeratorTrue = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  sprintf(buf, "NumFake%s", title);
+  snprintf(buf , 100,  "NumFake%s", title);
   fNumeratorFake = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  sprintf(buf, "Den%s", title);
+  snprintf(buf , 100,  "Den%s", title);
   fDenominator = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
   fNumeratorTrue->Sumw2();
