@@ -35,6 +35,7 @@ class AliFlowEventSimpleMakerOnTheFly {
   Int_t DetermineMultiplicity(); // determine multiplicity for current event
   virtual void DetermineV1(); // determine flow harmonics v1 for current event (if v1 is not pt or eta dependent)
   virtual void DetermineV2(); // determine flow harmonics v2 for current event (if v2 is not pt or eta dependent)
+  virtual void DetermineV3(); // determine flow harmonics v3 for current event (if v3 is not pt or eta dependent)
   virtual void DetermineV4(); // determine flow harmonics v4 for current event (if v4 is not pt or eta dependent)
   Int_t GlauberModel(); // determine multiplicity and flow harmonics for current event from Glauber moder
   AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI);  // create an event on the fly
@@ -105,6 +106,12 @@ class AliFlowEventSimpleMakerOnTheFly {
   
   void SetMaxV2RP(Double_t dMaxV2RP) {this->fMaxV2RP = dMaxV2RP;}
   Double_t GetMaxV2RP() const {return this->fMaxV2RP;} 
+  
+  void SetV3RP(Double_t dV3RP) {this->fV3RP = dV3RP;}
+  Double_t GetV3RP() const {return this->fV3RP;} 
+  
+  void SetV3SpreadRP(Double_t dV3SpreadRP) {this->fV3SpreadRP = dV3SpreadRP;}
+  Double_t GetV3SpreadRP() const {return this->fV3SpreadRP;} 
   
   void SetV4RP(Double_t dV4RP) {this->fV4RP = dV4RP;}
   Double_t GetV4RP() const {return this->fV4RP;} 
@@ -206,7 +213,9 @@ class AliFlowEventSimpleMakerOnTheFly {
   Double_t  fV2SpreadRP;             // elliptic flow spread of RPs (if sampled from Gaussian)
   Double_t  fMinV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
   Double_t  fMaxV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
-  
+
+  Double_t  fV3RP;                   // harmonic V3 of RPs
+  Double_t  fV3SpreadRP;             // harmonic V3's spread of RPs  
   Double_t  fV4RP;                   // harmonic V4 of RPs
   Double_t  fV4SpreadRP;             // harmonic V4's spread of RPs
   // (pt,eta) dependent harmonic V1:
