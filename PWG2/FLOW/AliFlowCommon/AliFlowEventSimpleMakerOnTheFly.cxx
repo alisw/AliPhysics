@@ -59,6 +59,8 @@ AliFlowEventSimpleMakerOnTheFly::AliFlowEventSimpleMakerOnTheFly(UInt_t iseed):
   fV2SpreadRP(0.), 
   fMinV2RP(0.),
   fMaxV2RP(0.),
+  fV3RP(0.), 
+  fV3SpreadRP(0.),   
   fV4RP(0.), 
   fV4SpreadRP(0.), 
   fV1vsPtEtaMax(0.),
@@ -128,10 +130,11 @@ void AliFlowEventSimpleMakerOnTheFly::Init()
  Double_t dPhiMin = 0.; // to be improved (move this to the body of contstructor?)
  Double_t dPhiMax = TMath::TwoPi(); // to be improved (move this to the body of contstructor?)
   
- fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x-[2])+2.*[1]*TMath::Cos(2*(x-[2]))+2.*[3]*TMath::Cos(4*(x-[2]))",dPhiMin,dPhiMax);
+ fPhiDistribution = new TF1("fPhiDistribution","1+2.*[0]*TMath::Cos(x-[2])+2.*[1]*TMath::Cos(2*(x-[2]))+2.*[4]*TMath::Cos(3*(x-[2]))+2.*[3]*TMath::Cos(4*(x-[2]))",dPhiMin,dPhiMax);
  fPhiDistribution->SetParName(0,"directed flow");
  fPhiDistribution->SetParName(1,"elliptic flow"); 
  fPhiDistribution->SetParName(2,"Reaction Plane");
+ fPhiDistribution->SetParName(4,"triangular flow");
  fPhiDistribution->SetParName(3,"harmonic 4"); // to be improved (name)
 
 }
@@ -171,6 +174,18 @@ void AliFlowEventSimpleMakerOnTheFly::DetermineV1()
  fPhiDistribution->SetParameter(0,dNewV1RP);
   
 } // end of void AliFlowEventSimpleMakerOnTheFly::DetermineV1()
+
+//========================================================================
+
+void AliFlowEventSimpleMakerOnTheFly::DetermineV3()
+{
+ // Determine flow harmonics V3 for current event (if V3 is not pt or eta dependent).
+ 
+ Double_t dNewV3RP = fV3RP;
+ if(fV3SpreadRP>0.0) dNewV3RP = fMyTRandom3->Gaus(fV3RP,fV3SpreadRP);
+ fPhiDistribution->SetParameter(4,dNewV3RP);
+
+} // end of void AliFlowEventSimpleMakerOnTheFly::DetermineV3()
   
 //========================================================================
 
@@ -219,19 +234,22 @@ Int_t AliFlowEventSimpleMakerOnTheFly::GlauberModel()
  Int_t multiplicity = 0;
  Double_t v1 = 0.;
  Double_t v2 = 0.;
+ Double_t v3 = 0.;
  Double_t v4 = 0.;
  
- // Determine multiplicity, v1, v2 and v4 from Glauber model:
+ // Determine multiplicity, v1, v2, v3 and v4 from Glauber model:
   
  // multiplicity = ... 
  // v1 = ...
  // v2 = ...
+ // v3 = ...
  // v4 = ...
  
  // Set obtained values as parameters in relevant distributions:
  fPtSpectra->SetParameter(0,multiplicity);
  fPhiDistribution->SetParameter(0,v1);
  fPhiDistribution->SetParameter(1,v2);
+ fPhiDistribution->SetParameter(4,v3); 
  fPhiDistribution->SetParameter(3,v4);
  
  return multiplicity;
@@ -251,6 +269,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
    multiplicityRP = DetermineMultiplicity(); 
    if(!(fPtDependentHarmonicV1||fEtaDependentHarmonicV1)) {DetermineV1();}
    if(!(fPtDependentHarmonicV2||fEtaDependentHarmonicV2)) {DetermineV2();}
+   DetermineV3(); // to be improved - add also pt and eta dependence for v3
    if(!(fPtDependentHarmonicV4||fEtaDependentHarmonicV4)) {DetermineV4();}
   } else
     {
@@ -297,6 +316,7 @@ AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlow
   
   Double_t dTmpV1 = 0.;
   Double_t dTmpV2 = 0.;
+  //Double_t dTmpV3 = 0.;
   Double_t dTmpV4 = 0.;
   Bool_t bUniformAcceptance = kTRUE;
   Double_t Pi = TMath::Pi();
