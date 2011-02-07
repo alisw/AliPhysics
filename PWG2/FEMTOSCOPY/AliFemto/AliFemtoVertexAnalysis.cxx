@@ -172,13 +172,13 @@ AliFemtoString AliFemtoVertexAnalysis::Report()
   cout << "AliFemtoVertexAnalysis - constructing Report..."<<endl;
   char ctemp[200];
   AliFemtoString temp = "-----------\nHbt AliFemtoVertexAnalysis Report:\n";
-  sprintf(ctemp,"Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
+  snprintf(ctemp , 200, "Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
   temp += ctemp;
-  sprintf(ctemp,"Events underflowing: %d\n",fUnderFlow);
+  snprintf(ctemp , 200, "Events underflowing: %d\n",fUnderFlow);
   temp += ctemp;
-  sprintf(ctemp,"Events overflowing: %d\n",fOverFlow);
+  snprintf(ctemp , 200, "Events overflowing: %d\n",fOverFlow);
   temp += ctemp;
-  sprintf(ctemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
+  snprintf(ctemp , 200, "Now adding AliFemtoSimpleAnalysis(base) Report\n");
   temp += ctemp;
   temp += AliFemtoSimpleAnalysis::Report();
   AliFemtoString returnThis=temp;

@@ -89,8 +89,8 @@ AliFemtoKTPairCut::~AliFemtoKTPairCut(){
 AliFemtoString AliFemtoKTPairCut::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoKT Pair Cut \n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with kT in range %f , %f",fKTMin,fKTMax);
-  sprintf(ctemp,"Accept pair with angle in range %f , %f",fPhiMin,fPhiMax);
+  snprintf(ctemp , 100, "Accept pair with kT in range %f , %f",fKTMin,fKTMax);
+  snprintf(ctemp , 100, "Accept pair with angle in range %f , %f",fPhiMin,fPhiMax);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}
@@ -149,7 +149,7 @@ bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair)
 
   if (!temp) return temp;
 
-  if ((fPtMin > 0.0) && (fPtMax<1000.0)) {
+  if ((fPtMin > 0.0) || (fPtMax<1000.0)) {
     double px1 = pair->Track1()->Track()->P().x();
     double py1 = pair->Track1()->Track()->P().y();
 

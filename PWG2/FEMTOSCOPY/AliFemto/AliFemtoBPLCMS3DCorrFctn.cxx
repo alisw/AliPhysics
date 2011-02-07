@@ -58,23 +58,23 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 
   // set up numerator
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up uncorrected denominator
   char tTitDenUncoul[100] = "DenNoCoul";
-  strcat(tTitDenUncoul,title);
+  strncat(tTitDenUncoul,title, 100);
   //  fUncorrectedDenominator = new TH3D(tTitDenUncoul,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ratio
   char tTitRat[100] = "Rat";
-  strcat(tTitRat,title);
+  strncat(tTitRat,title, 100);
   fRatio = new TH3D(tTitRat,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up ave qInv
   char tTitQinv[100] = "Qinv";
-  strcat(tTitQinv,title);
+  strncat(tTitQinv,title, 100);
   fQinvHisto = new TH3D(tTitQinv,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
   // to enable error bar calculation...
@@ -87,13 +87,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 //   // they are filled only if a AliFemtoSmear object is plugged in
 //   // here comes the "idea" numerator and denominator and ratio...
 //   char tTitNumID[100] = "IDNum";
-//   strcat(tTitNumID,title);
+//   strncat(tTitNumID,title, 100);
 //   fIDNumHisto = new TH3D(tTitNumID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   char tTitDenID[100] = "IDDen";
-//   strcat(tTitDenID,title);
+//   strncat(tTitDenID,title, 100);
 //   fIDDenHisto = new TH3D(tTitDenID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   char tTitRatID[100] = "IDRat";
-//   strcat(tTitRatID,title);
+//   strncat(tTitRatID,title, 100);
 //   fIDRatHisto = new TH3D(tTitRatID,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
 //   fIDNumHisto->Sumw2();
@@ -103,13 +103,13 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 //   //
 //   // here comes the "smeared" numerator and denominator...
 //   char tTitNumSM[100] = "SMNum";
-//   strcat(tTitNumSM,title);
+//   strncat(tTitNumSM,title, 100);
 //   fSMNumHisto = new TH3D(tTitNumSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   char tTitDenSM[100] = "SMDen";
-//   strcat(tTitDenSM,title);
+//   strncat(tTitDenSM,title, 100);
 //   fSMDenHisto = new TH3D(tTitDenSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   char tTitRatSM[100] = "SMRat";
-//   strcat(tTitRatSM,title);
+//   strncat(tTitRatSM,title, 100);
 //   fSMRatHisto = new TH3D(tTitRatSM,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   //
 //   fSMNumHisto->Sumw2();
@@ -118,12 +118,12 @@ AliFemtoBPLCMS3DCorrFctn::AliFemtoBPLCMS3DCorrFctn(char* title, const int& nbins
 //   //
 //   // here comes the correction factor (which is just ratio of ideal ratio to smeared ratio)
 //   char tTitCorrection[100] = "CorrectionFactor";
-//   strcat(tTitCorrection,title);
+//   strncat(tTitCorrection,title, 100);
 //   fCorrectionHisto = new TH3D(tTitCorrection,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);  
 //   fCorrectionHisto->Sumw2();
 //   // here comes the fully corrected correlation function
 //   char tTitCorrCF[100] = "CorrectedCF";
-//   strcat(tTitCorrCF,title);
+//   strncat(tTitCorrCF,title, 100);
 //   fCorrCFHisto = new TH3D(tTitCorrCF,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 //   fCorrCFHisto->Sumw2();
 
@@ -320,37 +320,37 @@ AliFemtoString AliFemtoBPLCMS3DCorrFctn::Report(){
   // Construct the report
   string stemp = "LCMS Frame Bertsch-Pratt 3D Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in ratio:\t%E\n",fRatio->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in ratio:\t%E\n",fRatio->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Normalization region in Qinv was:\t%E\t%E\n",fQinvNormLo,fQinvNormHi);
+  snprintf(ctemp , 100, "Normalization region in Qinv was:\t%E\t%E\n",fQinvNormLo,fQinvNormHi);
   stemp += ctemp;
-  sprintf(ctemp,"Number of pairs in Normalization region was:\n");
+  snprintf(ctemp , 100, "Number of pairs in Normalization region was:\n");
   stemp += ctemp;
-  sprintf(ctemp,"In numerator:\t%lu\t In denominator:\t%lu\n",fNumRealsNorm,fNumMixedNorm);
+  snprintf(ctemp , 100, "In numerator:\t%lu\t In denominator:\t%lu\n",fNumRealsNorm,fNumMixedNorm);
   stemp += ctemp;
   /*  if (fCorrection)
       {
       float radius = fCorrection->GetRadius();
-      sprintf(ctemp,"Coulomb correction used radius of\t%E\n",radius);
+      snprintf(ctemp , 100, "Coulomb correction used radius of\t%E\n",radius);
       }
       else
       {
-      sprintf(ctemp,"No Coulomb Correction applied to this CorrFctn\n");
+      snprintf(ctemp , 100, "No Coulomb Correction applied to this CorrFctn\n");
       }
       stemp += ctemp;
   */
 
   if (fPairCut){
-    sprintf(ctemp,"Here is the PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
     stemp += ctemp;
     stemp += fPairCut->Report();
   }
   else{
-    sprintf(ctemp,"No PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
     stemp += ctemp;
   }
 

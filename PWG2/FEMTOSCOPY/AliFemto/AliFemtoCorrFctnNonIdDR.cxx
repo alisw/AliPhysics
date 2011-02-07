@@ -187,9 +187,9 @@ AliFemtoString AliFemtoCorrFctnNonIdDR::Report(){
   // construct report
   string stemp = "Non-identical particles Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerators:\t%E\n",fNumOutP->GetEntries()+fNumOutN->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerators:\t%E\n",fNumOutP->GetEntries()+fNumOutN->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominators:\t%E\n",fDenOutP->GetEntries()+fDenOutN->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominators:\t%E\n",fDenOutP->GetEntries()+fDenOutN->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

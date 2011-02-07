@@ -24,11 +24,11 @@ ClassImp(AliFemtoCorrFctn3DSpherical)
 {
   // set up numerator
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
 
   // to enable error bar calculation...
@@ -98,18 +98,18 @@ AliFemtoString AliFemtoCorrFctn3DSpherical::Report(){
   // Construct the report
   string stemp = "PRF Frame Spherical 3D Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
   stemp += ctemp;
 
   if (fPairCut){
-    sprintf(ctemp,"Here is the PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
     stemp += ctemp;
     stemp += fPairCut->Report();
   }
   else{
-    sprintf(ctemp,"No PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
     stemp += ctemp;
   }
 
