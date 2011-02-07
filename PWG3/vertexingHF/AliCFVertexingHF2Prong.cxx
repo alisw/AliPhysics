@@ -111,6 +111,7 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	Int_t daughter1 = fmcPartCandidate->GetDaughter(1);
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0));
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1));
+	if(!mcPartDaughter0 || !mcPartDaughter1) return bGenValues;
 
 	// getting vertex from daughters
 	mcPartDaughter0->XvYvZv(vtx2daughter0);  // cm
