@@ -68,16 +68,20 @@ int AliHLTAnalysisInitSystem( unsigned long version, AliHLTAnalysisEnvironment* 
   gComponentHandler->AnnounceVersion();
 
   if (version!=ALIHLT_DATA_TYPES_VERSION && externalEnv->fLoggingFunc) {
-    char message[100];
-    sprintf(message, "interface definition does not match: internal %d - external %lu", ALIHLT_DATA_TYPES_VERSION, version);
+    const int messagelength=100;
+    char message[messagelength+1];
+    message[messagelength]=0;
+    snprintf(message, messagelength, "interface definition does not match: internal %d - external %lu", ALIHLT_DATA_TYPES_VERSION, version);
     externalEnv->fLoggingFunc(externalEnv->fParam, kHLTLogWarning, "AliHLTAnalysisInitSystem", "interface version", message);
   }
 
   gRunDesc.fRunNo=runNo;
   if (runType && strlen(runType)>0) {
-    gRunType=new char[strlen(runType)+1];
+    int runtypelength=strlen(runType);
+    gRunType=new char[runtypelength+1];
     if (gRunType) {
-      strcpy(gRunType, runType);
+      gRunType[runtypelength]=0;
+      strncpy(gRunType, runType, runtypelength);
     }
   }
 
