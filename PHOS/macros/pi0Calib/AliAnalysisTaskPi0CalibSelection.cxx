@@ -108,7 +108,7 @@ void AliAnalysisTaskPi0CalibSelection::UserExec(Option_t* /* option */)
   //Analysis per event.
   
   AliVEvent* event = InputEvent();
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
+  AliESDEvent* esd = static_cast<AliESDEvent*>(event) ;
 
   Double_t v[3] ; //vertex ;
   esd->GetVertex()->GetXYZ(v) ;

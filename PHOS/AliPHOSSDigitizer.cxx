@@ -151,7 +151,7 @@ AliPHOSSDigitizer::~AliPHOSSDigitizer() {
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   if(rl){
     AliPHOSLoader * phosLoader = 
-      dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+      static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
     if(phosLoader)
       phosLoader->CleanSDigitizer() ;
   }
@@ -169,7 +169,7 @@ void AliPHOSSDigitizer::Init()
   if (!rl)
     rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
 
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   phosLoader->PostSDigitizer(this);
   phosLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
 }
@@ -215,17 +215,14 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
   }
 */
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-
-  if(!phosLoader) 
-    AliFatal("phosLoader is null pointer!!") ; 
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   
   //switch off reloading of this task while getting event
   if (!fInit) { // to prevent overwrite existing file
     AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
     return ;
   }
-
+  
   if (fLastEvent == -1) 
     fLastEvent = rl->GetNumberOfEvents() - 1 ;
   else 
@@ -257,9 +254,7 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     //Now make SDigits from hits, for PHOS it is the same, so just copy    
     for ( i = 0 ; i < hits->GetEntries() ; i++ ) {
       
-      AliPHOSHit * hit = dynamic_cast<AliPHOSHit *>(hits->At(i)) ;
-      if(!hit) AliFatal("Wrong conversion to AliPHOSHit gives a null pointer!");
-      
+      AliPHOSHit * hit = static_cast<AliPHOSHit *>(hits->At(i)) ;
       // Assign primary number only if contribution is significant
       
       if( hit->GetEnergy() > fPrimThreshold)
@@ -278,15 +273,12 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
 
     fSDigitsInRun += nSdigits ;  
     sdigits->Expand(nSdigits) ;
-
-    for (i = 0 ; i < nSdigits ; i++) { 
-      
-      AliPHOSDigit * digit = dynamic_cast<AliPHOSDigit *>(sdigits->At(i)) ;
-      if(!digit) AliFatal("Wrong dynamic cast to AliPHOSDigit gives a null pointer!");
-      
+    
+    for (i = 0 ; i < nSdigits ; i++) {       
+      AliPHOSDigit * digit = static_cast<AliPHOSDigit *>(sdigits->At(i)) ;
       digit->SetIndexInList(i) ;     
     }
-
+    
 //    // make Quality Assurance data
 //
 //    if (GetQADataMaker()->IsCycleDone() ) {
@@ -403,7 +395,7 @@ void AliPHOSSDigitizer::PrintSDigits(Option_t * option)
     Int_t maxEmc = geom->GetNModules() * geom->GetNCristalsInModule() ;
     Int_t index ;
     for (index = 0 ; index < sdigits->GetEntriesFast(); index++) {
-      digit = dynamic_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
+      digit = static_cast<AliPHOSDigit *>( sdigits->At(index) ) ;
       if(digit->GetId() > maxEmc){
 	printf("\n%6d  %8d    %4d      %2d :",
 		digit->GetId(), digit->GetAmp(), digit->GetIndexInList(), digit->GetNprimary()) ;  
@@ -421,10 +413,7 @@ void AliPHOSSDigitizer::Unload() const
 {
   // Unloads the objects from the folder
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-
-  if(!phosLoader)
-    AliFatal("Wrong dynamic cast from AliRunLoader to AliPHOSLoader gives a null pointer!");
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   
   phosLoader->UnloadHits() ; 
   phosLoader->UnloadSDigits() ; 
