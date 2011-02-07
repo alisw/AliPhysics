@@ -257,7 +257,7 @@ Double_t AliITSPidParams::GetLandauGausNormPdgCode(Double_t dedx, Int_t pdgCode,
   Double_t fland;
   Double_t sum = 0.0;
   Double_t xlow,xupp;
-  Double_t step;
+  Double_t step = 0.;
   Double_t i;
   
   // MP shift correction
