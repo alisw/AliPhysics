@@ -274,6 +274,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     nofTracks=fEvent->GetNumberOfTracks();
 
   int realnofTracks=0;   // number of track which we use in a analysis
+  int tracksPrim=0;     
 
   for (int i=0;i<nofTracks;i++)
     {
@@ -397,6 +398,8 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 	// No additional information exists
 	// Read in the normal AliAODTracks 
 	const AliAODTrack *aodtrack=fEvent->GetTrack(i); // getting the AODtrack directly
+
+	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
 // 	if (!aodtrack->TestFilterBit(fFilterBit))
 // 	  continue;
@@ -521,6 +524,10 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
 
   tEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+  tEvent->SetNormalizedMult(tracksPrim);
+
+  AliCentrality *cent = fEvent->GetCentrality();
+  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
 
   if (mcP) delete [] motherids;
 
@@ -566,24 +573,33 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
 	    	
   // Flags
   tFemtoTrack->SetTrackId(tAodTrack->GetID());
-  tFemtoTrack->SetFlags(1);
+  tFemtoTrack->SetFlags(tAodTrack->GetFlags());
   tFemtoTrack->SetLabel(tAodTrack->GetLabel());
 		
   // Track quality information 
   float covmat[6];
-  tAodTrack->GetCovMatrix(covmat);
-  tFemtoTrack->SetImpactD(covmat[0]);
-  tFemtoTrack->SetImpactZ(covmat[2]);
-  tFemtoTrack->SetCdd(covmat[3]);
-  tFemtoTrack->SetCdz(covmat[4]);
-  tFemtoTrack->SetCzz(covmat[5]);
-  // This information is only available in the ESD
-  // We put in fake values or reasonable estimates
+  tAodTrack->GetCovMatrix(covmat);  
+
+//   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
+//     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
+//   else
+//     tFemtoTrack->SetImpactD(0.0);
+//   tFemtoTrack->SetImpactD(tAodTrack->DCA());
+    
+//   tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
+  tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv() - fV1[0], tAodTrack->Yv() - fV1[1]));
+  tFemtoTrack->SetImpactZ(tAodTrack->Zv() - fV1[2]);
+
+  //  cout << fV1[0] << " " << tAodTrack->XAtDCA() << " " << tAodTrack->Xv() << endl;
+
+  tFemtoTrack->SetCdd(covmat[0]);
+  tFemtoTrack->SetCdz(covmat[1]);
+  tFemtoTrack->SetCzz(covmat[2]);
   tFemtoTrack->SetITSchi2(tAodTrack->Chi2perNDF());    
-  tFemtoTrack->SetITSncls(1);     
+  tFemtoTrack->SetITSncls(tAodTrack->GetITSNcls());     
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
-  tFemtoTrack->SetTPCncls(1);       
-  tFemtoTrack->SetTPCnclsF(1);      
+  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());       
+  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());      
   tFemtoTrack->SetTPCsignalN(1); 
   tFemtoTrack->SetTPCsignalS(1); 
 
@@ -600,13 +616,16 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
   }
   else {
     // If not use dummy values
-    tFemtoTrack->SetTPCClusterMap(fAllTrue);
-    tFemtoTrack->SetTPCSharedMap(fAllFalse);
+    tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
+    tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
     
     double xtpc[3] = {0,0,0};
     tFemtoTrack->SetNominalTPCEntrancePoint(xtpc);
     tFemtoTrack->SetNominalTPCExitPoint(xtpc);
   }
+
+  //  cout << "Track has " << TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv()) << "  " << tAodTrack->Zv() << "  " << tAodTrack->GetTPCNcls() << endl;
+
 
   int indexes[3];
   for (int ik=0; ik<3; ik++) {
