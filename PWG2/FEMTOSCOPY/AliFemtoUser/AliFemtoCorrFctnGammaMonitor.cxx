@@ -27,20 +27,20 @@ AliFemtoCorrFctnGammaMonitor::AliFemtoCorrFctnGammaMonitor(char* title, const in
 {
   // set up numerator
   char tTitNumD[100] = "NumPMinvTheta";
-  strcat(tTitNumD,title);
+  strncat(tTitNumD,title, 100);
   fNumPMinvDTheta = new TH2D(tTitNumD,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
   // set up denominator
   char tTitDenD[100] = "DenPMinvTheta";
-  strcat(tTitDenD,title);
+  strncat(tTitDenD,title, 100);
   fDenPMinvDTheta = new TH2D(tTitDenD,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
 
   // set up numerator
   char tTitNumR[100] = "NumNMinvTheta";
-  strcat(tTitNumR,title);
+  strncat(tTitNumR,title, 100);
   fNumNMinvDTheta = new TH2D(tTitNumR,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
   // set up denominator
   char tTitDenR[100] = "DenNMinvTheta";
-  strcat(tTitDenR,title);
+  strncat(tTitDenR,title, 100);
   fDenNMinvDTheta = new TH2D(tTitDenR,title,aMinvBins,0.0,0.2,aDThetaBins,0.0,0.2);
 
   // to enable error bar calculation...
@@ -131,9 +131,9 @@ AliFemtoString AliFemtoCorrFctnGammaMonitor::Report(){
   // create report
   string stemp = "Gamma Monitor Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumPMinvDTheta->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumPMinvDTheta->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenPMinvDTheta->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenPMinvDTheta->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

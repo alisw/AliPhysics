@@ -116,7 +116,7 @@ bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoShareQualityPairCut::Report(){
   // Prepare the report from the execution
   string stemp = "AliFemtoShareQuality Pair Cut - remove shared and split pairs\n";  char ctemp[100];
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}

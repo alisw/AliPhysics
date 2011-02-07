@@ -39,29 +39,29 @@ AliFemtoQinvCorrFctn(title, nbins, QinvLo, QinvHi),
 
   // set up emcic histograms
   /*char tTitESum[100] = "ESumReal";
-  strcat(tTitESum,title);
+  strncat(tTitESum,title, 100);
   fESumReal = new TH1D(tTitESum,title,nbins,QinvLo,QinvHi);
   char tTitEMult[100] = "EMultReal";
-  strcat(tTitEMult,title);
+  strncat(tTitEMult,title, 100);
   fEMultReal = new TH1D(tTitEMult,title,nbins,QinvLo,QinvHi);
   char tTitPt[100] = "PtMultReal";
-  strcat(tTitPt,title);
+  strncat(tTitPt,title, 100);
   fPtMultReal = new TH1D(tTitPt,title,nbins,QinvLo,QinvHi);
   char tTitPz[100] = "PzMultReal";
-  strcat(tTitPz,title);
+  strncat(tTitPz,title, 100);
   fPzMultReal = new TH1D(tTitPz,title,nbins,QinvLo,QinvHi);*/
  
   char tTitESum2[100] = "ESumMix";
-  strcat(tTitESum2,title);
+  strncat(tTitESum2,title, 100);
   fESumMix = new TH1D(tTitESum2,title,nbins,QinvLo,QinvHi);
   char tTitEMult2[100] = "EMultMix";
-  strcat(tTitEMult2,title);
+  strncat(tTitEMult2,title, 100);
   fEMultMix = new TH1D(tTitEMult2,title,nbins,QinvLo,QinvHi);
   char tTitPt2[100] = "PtMultMix";
-  strcat(tTitPt2,title);
+  strncat(tTitPt2,title, 100);
   fPtMultMix = new TH1D(tTitPt2,title,nbins,QinvLo,QinvHi);
   char tTitPz2[100] = "PzMultMix";
-  strcat(tTitPz2,title);
+  strncat(tTitPz2,title, 100);
   fPzMultMix = new TH1D(tTitPz2,title,nbins,QinvLo,QinvHi);
 
 
@@ -224,7 +224,7 @@ void AliFemtoQinvCorrFctnEMCIC::Write(){
 TList* AliFemtoQinvCorrFctnEMCIC::GetOutputList()
 {
   // Prepare the list of objects to be written to the output
-  TList *tOutputList = new TList();
+  TList *tOutputList;
   tOutputList = (TList*)AliFemtoQinvCorrFctn::GetOutputList();
   cout << "Getting list from Qinv CF emicic" << endl;
   /*tOutputList->Add(fESumReal);

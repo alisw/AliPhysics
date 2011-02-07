@@ -36,56 +36,56 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
 {
   // set up numerator
   char tTitNumD[100] = "NumDPhiDEta";
-  strcat(tTitNumD,title);
+  strncat(tTitNumD,title, 100);
   fDPhiDEtaNumerator = new TH2D(tTitNumD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
   // set up denominator
   char tTitDenD[100] = "DenDPhiDEta";
-  strcat(tTitDenD,title);
+  strncat(tTitDenD,title, 100);
   fDPhiDEtaDenominator = new TH2D(tTitDenD,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
   // set up numerator
   char tTitNumR[100] = "NumDPhiDEtaCol";
-  strcat(tTitNumR,title);
+  strncat(tTitNumR,title, 100);
   fDPhiDEtaColNumerator = new TH2D(tTitNumR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
   // set up denominator
   char tTitDenR[100] = "DenDPhiDEtaCol";
-  strcat(tTitDenR,title);
+  strncat(tTitDenR,title, 100);
   fDPhiDEtaColDenominator = new TH2D(tTitDenR,title,aPhiBins,-0.5*TMath::Pi(),1.5*TMath::Pi(),aEtaBins,-2.0,2.0);
 
   // set up numerator
   char tTitNumDPhi[100] = "NumDPhi";
-  strcat(tTitNumDPhi,title);
+  strncat(tTitNumDPhi,title, 100);
   fDPhiNumerator = new TH1D(tTitNumDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
   // set up denominator
   char tTitDenDPhi[100] = "DenDPhi";
-  strcat(tTitDenDPhi,title);
+  strncat(tTitDenDPhi,title, 100);
   fDPhiDenominator = new TH1D(tTitDenDPhi,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi());
 
   // set up numerator
   char tTitNumDCos[100] = "NumDCos";
-  strcat(tTitNumDCos,title);
+  strncat(tTitNumDCos,title, 100);
   fDCosNumerator = new TH1D(tTitNumDCos,title,aPhiBins*2,-1.0,1.0);
   // set up denominator
   char tTitDenDCos[100] = "DenDCos";
-  strcat(tTitDenDCos,title);
+  strncat(tTitDenDCos,title, 100);
   fDCosDenominator = new TH1D(tTitDenDCos,title,aPhiBins*2,-1.0,1.0);
 
   // set up numerator
   char tTitNumDPhiPt[100] = "NumDPhiPt";
-  strcat(tTitNumDPhiPt,title);
+  strncat(tTitNumDPhiPt,title, 100);
   fDPhiPtNumerator = new TH2D(tTitNumDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
   // set up denominator
   char tTitDenDPhiPt[100] = "DenDPhiPt";
-  strcat(tTitDenDPhiPt,title);
+  strncat(tTitDenDPhiPt,title, 100);
   fDPhiPtDenominator = new TH2D(tTitDenDPhiPt,title,aPhiBins*2,-0.5*TMath::Pi(),1.5*TMath::Pi(), 30, 0.0, 3.0);
 
   // set up numerator
   char tTitNumDCosPt[100] = "NumDCosPt";
-  strcat(tTitNumDCosPt,title);
+  strncat(tTitNumDCosPt,title, 100);
   fDCosPtNumerator = new TH2D(tTitNumDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
   // set up denominator
   char tTitDenDCosPt[100] = "DenDCosPt";
-  strcat(tTitDenDCosPt,title);
+  strncat(tTitDenDCosPt,title, 100);
   fDCosPtDenominator = new TH2D(tTitDenDCosPt,title,aPhiBins*2,-1.0,1.0, 30, 0.0, 3.0);
 
   // to enable error bar calculation...
@@ -272,9 +272,9 @@ AliFemtoString AliFemtoCorrFctnDEtaDPhi::Report(){
   // create report
   string stemp = "TPC Ncls Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fDPhiDEtaNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fDPhiDEtaNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

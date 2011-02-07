@@ -23,11 +23,11 @@ AliFemtoCorrFctnTPCNcls::AliFemtoCorrFctnTPCNcls(char* title, const int& nbins, 
 {
   // set up numerator
   char tTitNum[100] = "NumNclsTPCMin";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNclsTPCMinNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,159,0.5,159.5);
   // set up denominator
   char tTitDen[100] = "DenNclsTPCMin";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fNclsTPCMinDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,159,0.5,159.5);
 
   // to enable error bar calculation...
@@ -88,9 +88,9 @@ AliFemtoString AliFemtoCorrFctnTPCNcls::Report(){
   // create report
   string stemp = "TPC Ncls Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNclsTPCMinNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNclsTPCMinNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fNclsTPCMinDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fNclsTPCMinDenominator->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

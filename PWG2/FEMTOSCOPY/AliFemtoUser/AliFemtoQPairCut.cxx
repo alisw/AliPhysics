@@ -97,7 +97,7 @@ AliFemtoString AliFemtoQPairCut::Report()
   // Prepare a report
   string stemp = "AliFemtoQ Pair Cut \n";
   char ctemp[100];
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;

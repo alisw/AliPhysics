@@ -58,37 +58,37 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
   Double_t shiftPhi=TMath::Pi()/nphibins;
   // set up numerator
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,
 			  -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Added histograms to calculate EMCICs , Nicolas Bock 19.01.2010
   //Setup EnergyTotalReal
   /*char tTitNum1[100] = "ESumReal";
-  strcat(tTitNum1,title);
+  strncat(tTitNum1,title, 100);
   fEnergyTotalReal = new TH3D(tTitNum1,title,nqbins,QLo,QHi,nphibins,
 			      -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
  
   //Setup EnergyMultReal
   char tTitNum2[100] = "EMultReal";
-  strcat(tTitNum2,title);
+  strncat(tTitNum2,title, 100);
   fEnergyMultReal = new TH3D(tTitNum2,title,nqbins,QLo,QHi,nphibins,
 			     -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup Pz MultReal
   char tTitNum3[100] = "PzMultReal";
-  strcat(tTitNum3,title);
+  strncat(tTitNum3,title, 100);
   fPzMultReal = new TH3D(tTitNum3,title,nqbins,QLo,QHi,nphibins,
 			 -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Setup Pt MultReal
   char tTitNum4[100] = "PtMultReal";
-  strcat(tTitNum4,title);
+  strncat(tTitNum4,title, 100);
   fPtMultReal = new TH3D(tTitNum4,title,nqbins,QLo,QHi,nphibins,
 			 -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   */ 
@@ -96,25 +96,25 @@ AliFemtoCorrFctn3DSphericalEMCIC::AliFemtoCorrFctn3DSphericalEMCIC(char* title, 
 
   //Setup EnergyTotalMix
   char tTitNum5[100] = "ESumMix";
-  strcat(tTitNum5,title);
+  strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nqbins,QLo,QHi,nphibins,
 			     -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup EnergyMultMix
   char tTitNum6[100] = "EMultMix";
-  strcat(tTitNum6,title);
+  strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nqbins,QLo,QHi,nphibins,
 			    -TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
   
   //Setup Pz MultMix
   char tTitNum7[100] = "PzMultMix";
-  strcat(tTitNum7,title);
+  strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,ncthetabins,-1.0,1.0);
 
   //Setup Pt MultMix
   char tTitNum8[100] = "PtMultMix";
-  strcat(tTitNum8,title);
+  strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nqbins,QLo,QHi,nphibins,
 			-TMath::Pi()-shiftPhi,TMath::Pi()-shiftPhi,
 			ncthetabins,-1.0,1.0);
@@ -250,18 +250,18 @@ AliFemtoString AliFemtoCorrFctn3DSphericalEMCIC::Report(){
   // Construct the report
   string stemp = "PRF Frame SphericalEMCIC 3D Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
   stemp += ctemp;
 
   if (fPairCut){
-    sprintf(ctemp,"Here is the PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
     stemp += ctemp;
     stemp += fPairCut->Report();
   }
   else{
-    sprintf(ctemp,"No PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
     stemp += ctemp;
   }
 

@@ -91,7 +91,7 @@ AliFemtoString AliFemtoPairCutAntiGamma::Report(){
   string stemp = "AliFemtoPairCutAntiGamma Pair Cut - remove pairs possibly coming from Gamma conversions\n";  
   char ctemp[100];
   stemp += ctemp;
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}
