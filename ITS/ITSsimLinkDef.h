@@ -35,8 +35,6 @@
 #pragma link C++ class  AliITSsimulationFastPoints+;
 #pragma link C++ class  AliITSSimuParam+;
 #pragma link C++ class  AliITSDetTypeSim+;
-#pragma link C++ class  AliITSstatistics+;
-#pragma link C++ class  AliITSstatistics2+;
 // These streamers must be formatted according to the raw data fromat
 
 //        #pragma link C++ class  AliITSHNode+;

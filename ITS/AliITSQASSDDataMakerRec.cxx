@@ -632,7 +632,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 						      500,500+fgkSSDLADDERSLAYER5);  
     fHistSSDOccupancyThresholdLayer5->GetZaxis()->SetRangeUser(3.0,10.0);
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDOccupancyThresholdLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDOccupancyThresholdLayer5->SetStats(kFALSE);
@@ -647,7 +647,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 						      600,600+fgkSSDLADDERSLAYER6);
     fHistSSDOccupancyThresholdLayer6->GetZaxis()->SetRangeUser(3.0,10.0);
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDOccupancyThresholdLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDOccupancyThresholdLayer6->SetStats(kFALSE);
@@ -664,7 +664,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 						    500,500+fgkSSDLADDERSLAYER5);  
     fHistSSDAverageOccupancyLayer5->GetZaxis()->SetRangeUser(0.0,5.0);
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER5 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDAverageOccupancyLayer5->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDAverageOccupancyLayer5->SetStats(kFALSE);
@@ -679,7 +679,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 						    600,600+fgkSSDLADDERSLAYER6);
     fHistSSDAverageOccupancyLayer6->GetZaxis()->SetRangeUser(0.0,5.0);
     for(Int_t iBin = 1; iBin < fgkSSDMODULESPERLADDERLAYER6 + 1; iBin++){
-      sprintf(fLabel,"%d",iBin);
+      snprintf(fLabel,2,"%d",iBin);
       fHistSSDAverageOccupancyLayer6->GetXaxis()->SetBinLabel(iBin,fLabel);
     }
     fHistSSDAverageOccupancyLayer6->SetStats(kFALSE);
