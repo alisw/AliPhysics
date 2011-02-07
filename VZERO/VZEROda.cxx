@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
 	   if (rawStream->Next()) {	
            for(Int_t i=0; i<64; i++) {
 	   	Int_t nFlag = 0;
-		for(Int_t j=13; j <= 20; j++) {  // Check flags on clock range used for pedestal calculation
+		for(Int_t j=kClockMin; j <= kClockMax; j++) {  // Check flags on clock range used for pedestal calculation
 		   if((rawStream->GetBBFlag(i,j)) || (rawStream->GetBGFlag(i,j))) nFlag++; 
 		}
 		if(nFlag == 0){       // Fill 64*2 pedestal histograms  - 2 integrators -
