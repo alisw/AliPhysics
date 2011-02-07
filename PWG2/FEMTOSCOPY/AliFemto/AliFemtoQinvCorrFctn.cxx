@@ -23,20 +23,20 @@ AliFemtoQinvCorrFctn::AliFemtoQinvCorrFctn(char* title, const int& nbins, const 
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH1D(tTitNum,title,nbins,QinvLo,QinvHi);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH1D(tTitDen,title,nbins,QinvLo,QinvHi);
   // set up ratio
   //title = "Ratio Qinv (MeV/c)";
   char tTitRat[100] = "Rat";
-  strcat(tTitRat,title);
+  strncat(tTitRat,title, 100);
   fRatio = new TH1D(tTitRat,title,nbins,QinvLo,QinvHi);
   char tTitkT[100] = "kTDep";
-  strcat(tTitkT,title);
+  strncat(tTitkT,title, 100);
   fkTMonitor = new TH1D(tTitkT,title,200,0.0,2.0);
   // this next bit is unfortunately needed so that we can have many histos of same "title"
   // it is neccessary if we typedef TH1D to TH1d (which we do)
@@ -110,11 +110,11 @@ AliFemtoString AliFemtoQinvCorrFctn::Report(){
   // construct report
   string stemp = "Qinv Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in ratio:\t%E\n",fRatio->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in ratio:\t%E\n",fRatio->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

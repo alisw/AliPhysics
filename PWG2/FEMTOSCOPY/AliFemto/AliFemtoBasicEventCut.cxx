@@ -60,11 +60,11 @@ AliFemtoString AliFemtoBasicEventCut::Report(){
   // Prepare report
   string stemp;
   char ctemp[100];
-  sprintf(ctemp,"\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
+  snprintf(ctemp , 100, "\nMultiplicity:\t %d-%d",fEventMult[0],fEventMult[1]);
   stemp = ctemp;
-  sprintf(ctemp,"\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
+  snprintf(ctemp , 100, "\nVertex Z-position:\t %E-%E",fVertZPos[0],fVertZPos[1]);
   stemp += ctemp;
-  sprintf(ctemp,"\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
+  snprintf(ctemp , 100, "\nNumber of events which passed:\t%ld  Number which failed:\t%ld",fNEventsPassed,fNEventsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;

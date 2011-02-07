@@ -168,7 +168,7 @@ AliFemtoString AliFemtoManager::Report(){
   // EventReader
   stemp = fEventReader->Report();
   // EventWriters
-  sprintf(ctemp,"\nAliFemtoManager Reporting %u EventWriters\n",(unsigned int) fEventWriterCollection->size());
+  snprintf(ctemp , 100, "\nAliFemtoManager Reporting %u EventWriters\n",(unsigned int) fEventWriterCollection->size());
   stemp += ctemp;
   AliFemtoEventWriterIterator tEventWriterIter;
   AliFemtoEventWriter* currentEventWriter;
@@ -178,7 +178,7 @@ AliFemtoString AliFemtoManager::Report(){
     stemp+=currentEventWriter->Report();
   }
   // Analyses
-  sprintf(ctemp,"\nAliFemtoManager Reporting %u Analyses\n",(unsigned int) fAnalysisCollection->size());
+  snprintf(ctemp , 100, "\nAliFemtoManager Reporting %u Analyses\n",(unsigned int) fAnalysisCollection->size());
   stemp += ctemp;
   AliFemtoSimpleAnalysisIterator tAnalysisIter;
   AliFemtoAnalysis* currentAnalysis;

@@ -85,7 +85,7 @@ AliFemtoString AliFemtoDummyPairCut::Report(){
   // prepare a report from the execution
   string stemp = "AliFemtoDummy Pair Cut - total dummy-- always returns true\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;

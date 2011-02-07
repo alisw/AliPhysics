@@ -68,13 +68,13 @@ AliFemtoString AliFemtoLikeSignAnalysis::Report()
   char tCtemp[200];
   cout << "AliFemtoLikeSignAnalysis - constructing Report..."<<endl;
   AliFemtoString temp = "-----------\nHbt Analysis Report:\n";
-  sprintf(tCtemp,"Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
+  snprintf(tCtemp , 200, "Events are mixed in %d bins in the range %E cm to %E cm.\n",fVertexBins,fVertexZ[0],fVertexZ[1]);
   temp += tCtemp;
-  sprintf(tCtemp,"Events underflowing: %d\n",fUnderFlow);
+  snprintf(tCtemp , 200, "Events underflowing: %d\n",fUnderFlow);
   temp += tCtemp;
-  sprintf(tCtemp,"Events overflowing: %d\n",fOverFlow);
+  snprintf(tCtemp , 200, "Events overflowing: %d\n",fOverFlow);
   temp += tCtemp;
-  sprintf(tCtemp,"Now adding AliFemtoSimpleAnalysis(base) Report\n");
+  snprintf(tCtemp , 200, "Now adding AliFemtoSimpleAnalysis(base) Report\n");
   temp += tCtemp; 
   temp += "Adding AliFemtoSimpleAnalysis(base) Report now:\n";
   temp += AliFemtoSimpleAnalysis::Report();

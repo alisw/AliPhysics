@@ -114,36 +114,36 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky() :
   fNumProcessPair=new int[fLLMax+1];
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
-  strcpy( fLLName[1],"neutron neutron");
-  strcpy( fLLName[2],"proton proton");
-  strcpy( fLLName[3],"neutron proton");
-  strcpy( fLLName[4],"alpha alpha");
-  strcpy( fLLName[5],"pi+ pi-");
-  strcpy( fLLName[6],"pi0 pi0");
-  strcpy( fLLName[7],"pi+ pi+");
-  strcpy( fLLName[8],"neutron deuteron");
-  strcpy( fLLName[9],"proton deuteron");
-  strcpy( fLLName[10],"pi+ K-");
-  strcpy( fLLName[11],"pi+ K+");
-  strcpy( fLLName[12],"pi+ proton");
-  strcpy( fLLName[13],"pi- proton");
-  strcpy( fLLName[14],"K+ K-");
-  strcpy( fLLName[15],"K+ K+");
-  strcpy( fLLName[16],"K+ proton");
-  strcpy( fLLName[17],"K- proton");
-  strcpy( fLLName[18],"deuteron deuteron");
-  strcpy( fLLName[19],"deuton alpha");
-  strcpy( fLLName[20],"triton triton");
-  strcpy( fLLName[21],"triton alpha");
-  strcpy( fLLName[22],"K0 K0");
-  strcpy( fLLName[23],"K0 K0b");
-  strcpy( fLLName[24],"deuteron triton");
-  strcpy( fLLName[25],"proton triton");
-  strcpy( fLLName[26],"proton alpha");
-  strcpy( fLLName[27],"proton lambda");
-  strcpy( fLLName[28],"neutron lambda");
-  strcpy( fLLName[29],"Lambda lambda");// gael 21May02
-  strcpy( fLLName[30],"Proton Anti-proton");// gael 21May02
+  strncpy( fLLName[1],"neutron neutron",40);
+  strncpy( fLLName[2],"proton proton",40);
+  strncpy( fLLName[3],"neutron proton",40);
+  strncpy( fLLName[4],"alpha alpha",40);
+  strncpy( fLLName[5],"pi+ pi-",40);
+  strncpy( fLLName[6],"pi0 pi0",40);
+  strncpy( fLLName[7],"pi+ pi+",40);
+  strncpy( fLLName[8],"neutron deuteron",40);
+  strncpy( fLLName[9],"proton deuteron",40);
+  strncpy( fLLName[10],"pi+ K-",40);
+  strncpy( fLLName[11],"pi+ K+",40);
+  strncpy( fLLName[12],"pi+ proton",40);
+  strncpy( fLLName[13],"pi- proton",40);
+  strncpy( fLLName[14],"K+ K-",40);
+  strncpy( fLLName[15],"K+ K+",40);
+  strncpy( fLLName[16],"K+ proton",40);
+  strncpy( fLLName[17],"K- proton",40);
+  strncpy( fLLName[18],"deuteron deuteron",40);
+  strncpy( fLLName[19],"deuton alpha",40);
+  strncpy( fLLName[20],"triton triton",40);
+  strncpy( fLLName[21],"triton alpha",40);
+  strncpy( fLLName[22],"K0 K0",40);
+  strncpy( fLLName[23],"K0 K0b",40);
+  strncpy( fLLName[24],"deuteron triton",40);
+  strncpy( fLLName[25],"proton triton",40);
+  strncpy( fLLName[26],"proton alpha",40);
+  strncpy( fLLName[27],"proton lambda",40);
+  strncpy( fLLName[28],"neutron lambda",40);
+  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
+  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
   FsiInit();
   FsiNucl();
 }
@@ -182,36 +182,36 @@ AliFemtoModelWeightGeneratorLednicky::AliFemtoModelWeightGeneratorLednicky(const
   fNumProcessPair=new int[fLLMax+1];
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
-  strcpy( fLLName[1],"neutron neutron");
-  strcpy( fLLName[2],"proton proton");
-  strcpy( fLLName[3],"neutron proton");
-  strcpy( fLLName[4],"alpha alpha");
-  strcpy( fLLName[5],"pi+ pi-");
-  strcpy( fLLName[6],"pi0 pi0");
-  strcpy( fLLName[7],"pi+ pi+");
-  strcpy( fLLName[8],"neutron deuteron");
-  strcpy( fLLName[9],"proton deuteron");
-  strcpy( fLLName[10],"pi+ K-");
-  strcpy( fLLName[11],"pi+ K+");
-  strcpy( fLLName[12],"pi+ proton");
-  strcpy( fLLName[13],"pi- proton");
-  strcpy( fLLName[14],"K+ K-");
-  strcpy( fLLName[15],"K+ K+");
-  strcpy( fLLName[16],"K+ proton");
-  strcpy( fLLName[17],"K- proton");
-  strcpy( fLLName[18],"deuteron deuteron");
-  strcpy( fLLName[19],"deuton alpha");
-  strcpy( fLLName[20],"triton triton");
-  strcpy( fLLName[21],"triton alpha");
-  strcpy( fLLName[22],"K0 K0");
-  strcpy( fLLName[23],"K0 K0b");
-  strcpy( fLLName[24],"deuteron triton");
-  strcpy( fLLName[25],"proton triton");
-  strcpy( fLLName[26],"proton alpha");
-  strcpy( fLLName[27],"proton lambda");
-  strcpy( fLLName[28],"neutron lambda");
-  strcpy( fLLName[29],"Lambda lambda");// gael 21May02
-  strcpy( fLLName[30],"Proton Anti-proton");// gael 21May02
+  strncpy( fLLName[1],"neutron neutron",40);
+  strncpy( fLLName[2],"proton proton",40);
+  strncpy( fLLName[3],"neutron proton",40);
+  strncpy( fLLName[4],"alpha alpha",40);
+  strncpy( fLLName[5],"pi+ pi-",40);
+  strncpy( fLLName[6],"pi0 pi0",40);
+  strncpy( fLLName[7],"pi+ pi+",40);
+  strncpy( fLLName[8],"neutron deuteron",40);
+  strncpy( fLLName[9],"proton deuteron",40);
+  strncpy( fLLName[10],"pi+ K-",40);
+  strncpy( fLLName[11],"pi+ K+",40);
+  strncpy( fLLName[12],"pi+ proton",40);
+  strncpy( fLLName[13],"pi- proton",40);
+  strncpy( fLLName[14],"K+ K-",40);
+  strncpy( fLLName[15],"K+ K+",40);
+  strncpy( fLLName[16],"K+ proton",40);
+  strncpy( fLLName[17],"K- proton",40);
+  strncpy( fLLName[18],"deuteron deuteron",40);
+  strncpy( fLLName[19],"deuton alpha",40);
+  strncpy( fLLName[20],"triton triton",40);
+  strncpy( fLLName[21],"triton alpha",40);
+  strncpy( fLLName[22],"K0 K0",40);
+  strncpy( fLLName[23],"K0 K0b",40);
+  strncpy( fLLName[24],"deuteron triton",40);
+  strncpy( fLLName[25],"proton triton",40);
+  strncpy( fLLName[26],"proton alpha",40);
+  strncpy( fLLName[27],"proton lambda",40);
+  strncpy( fLLName[28],"neutron lambda",40);
+  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
+  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
   FsiInit();
   FsiNucl();
 }
@@ -246,36 +246,36 @@ AliFemtoModelWeightGeneratorLednicky& AliFemtoModelWeightGeneratorLednicky::oper
   fNumProcessPair=new int[fLLMax+1];
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
-  strcpy( fLLName[1],"neutron neutron");
-  strcpy( fLLName[2],"proton proton");
-  strcpy( fLLName[3],"neutron proton");
-  strcpy( fLLName[4],"alpha alpha");
-  strcpy( fLLName[5],"pi+ pi-");
-  strcpy( fLLName[6],"pi0 pi0");
-  strcpy( fLLName[7],"pi+ pi+");
-  strcpy( fLLName[8],"neutron deuteron");
-  strcpy( fLLName[9],"proton deuteron");
-  strcpy( fLLName[10],"pi+ K-");
-  strcpy( fLLName[11],"pi+ K+");
-  strcpy( fLLName[12],"pi+ proton");
-  strcpy( fLLName[13],"pi- proton");
-  strcpy( fLLName[14],"K+ K-");
-  strcpy( fLLName[15],"K+ K+");
-  strcpy( fLLName[16],"K+ proton");
-  strcpy( fLLName[17],"K- proton");
-  strcpy( fLLName[18],"deuteron deuteron");
-  strcpy( fLLName[19],"deuton alpha");
-  strcpy( fLLName[20],"triton triton");
-  strcpy( fLLName[21],"triton alpha");
-  strcpy( fLLName[22],"K0 K0");
-  strcpy( fLLName[23],"K0 K0b");
-  strcpy( fLLName[24],"deuteron triton");
-  strcpy( fLLName[25],"proton triton");
-  strcpy( fLLName[26],"proton alpha");
-  strcpy( fLLName[27],"proton lambda");
-  strcpy( fLLName[28],"neutron lambda");
-  strcpy( fLLName[29],"Lambda lambda");// gael 21May02
-  strcpy( fLLName[30],"Proton Anti-proton");// gael 21May02
+  strncpy( fLLName[1],"neutron neutron",40);
+  strncpy( fLLName[2],"proton proton",40);
+  strncpy( fLLName[3],"neutron proton",40);
+  strncpy( fLLName[4],"alpha alpha",40);
+  strncpy( fLLName[5],"pi+ pi-",40);
+  strncpy( fLLName[6],"pi0 pi0",40);
+  strncpy( fLLName[7],"pi+ pi+",40);
+  strncpy( fLLName[8],"neutron deuteron",40);
+  strncpy( fLLName[9],"proton deuteron",40);
+  strncpy( fLLName[10],"pi+ K-",40);
+  strncpy( fLLName[11],"pi+ K+",40);
+  strncpy( fLLName[12],"pi+ proton",40);
+  strncpy( fLLName[13],"pi- proton",40);
+  strncpy( fLLName[14],"K+ K-",40);
+  strncpy( fLLName[15],"K+ K+",40);
+  strncpy( fLLName[16],"K+ proton",40);
+  strncpy( fLLName[17],"K- proton",40);
+  strncpy( fLLName[18],"deuteron deuteron",40);
+  strncpy( fLLName[19],"deuton alpha",40);
+  strncpy( fLLName[20],"triton triton",40);
+  strncpy( fLLName[21],"triton alpha",40);
+  strncpy( fLLName[22],"K0 K0",40);
+  strncpy( fLLName[23],"K0 K0b",40);
+  strncpy( fLLName[24],"deuteron triton",40);
+  strncpy( fLLName[25],"proton triton",40);
+  strncpy( fLLName[26],"proton alpha",40);
+  strncpy( fLLName[27],"proton lambda",40);
+  strncpy( fLLName[28],"neutron lambda",40);
+  strncpy( fLLName[29],"Lambda lambda",40);// gael 21May02
+  strncpy( fLLName[30],"Proton Anti-proton",40);// gael 21May02
   FsiInit();
   FsiNucl();
   

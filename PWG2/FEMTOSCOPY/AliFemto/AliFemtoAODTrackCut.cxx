@@ -235,15 +235,15 @@ AliFemtoString AliFemtoAODTrackCut::Report()
   // Prepare report from the execution
   string tStemp;
   char tCtemp[100];
-  sprintf(tCtemp,"Particle mass:\t%E\n",this->Mass());
+  snprintf(tCtemp , 100, "Particle mass:\t%E\n",this->Mass());
   tStemp=tCtemp;
-  sprintf(tCtemp,"Particle charge:\t%d\n",fCharge);
+  snprintf(tCtemp , 100, "Particle charge:\t%d\n",fCharge);
   tStemp+=tCtemp;
-  sprintf(tCtemp,"Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
+  snprintf(tCtemp , 100, "Particle pT:\t%E - %E\n",fPt[0],fPt[1]);
   tStemp+=tCtemp;
-  sprintf(tCtemp,"Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
+  snprintf(tCtemp , 100, "Particle rapidity:\t%E - %E\n",fRapidity[0],fRapidity[1]);
   tStemp+=tCtemp;
-  sprintf(tCtemp,"Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
+  snprintf(tCtemp , 100, "Number of tracks which passed:\t%ld  Number which failed:\t%ld\n",fNTracksPassed,fNTracksFailed);
   tStemp += tCtemp;
   AliFemtoString returnThis = tStemp;
   return returnThis;
