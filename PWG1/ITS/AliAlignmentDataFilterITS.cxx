@@ -402,15 +402,11 @@ void AliAlignmentDataFilterITS::FilterCosmic(const AliESDEvent *esd)
   TObjString* cdbEntry=0;
   TString cdbEntryString;
   while((cdbEntry =(TObjString*)(iter2.Next()))) {
-    cdbEntryString = cdbEntry->GetString();
-    if(cdbEntryString.Contains("ITS/Align/Data")) {
-      itsaligndata = new TObjString(*cdbEntry);
-      itsaligndata->SetString(itsaligndata->GetString());
-    }
-    if(cdbEntryString.Contains("ITS/Calib/RespSDD")) {
-      itscalibrespsdd = new TObjString(*cdbEntry);
-      itscalibrespsdd->SetString(itscalibrespsdd->GetString());
-    }
+  cdbEntryString = cdbEntry->GetString();
+  if(cdbEntryString.Contains("ITS/Align/Data")) 
+    itsaligndata = new TObjString(*cdbEntry);
+  if(cdbEntryString.Contains("ITS/Calib/RespSDD")) 
+    itscalibrespsdd = new TObjString(*cdbEntry);
   }	 
 
 
@@ -763,15 +759,11 @@ void AliAlignmentDataFilterITS::FilterCollision(const AliESDEvent *esd)
   TObjString* cdbEntry=0;
   TString cdbEntryString;
   while((cdbEntry =(TObjString*)(iter2.Next()))) {
-    cdbEntryString = cdbEntry->GetString();
-    if(cdbEntryString.Contains("ITS/Align/Data")) {
-      itsaligndata = new TObjString(*cdbEntry);
-      itsaligndata->SetString(itsaligndata->GetString());
-    }
-    if(cdbEntryString.Contains("ITS/Calib/RespSDD")) {
-      itscalibrespsdd = new TObjString(*cdbEntry);
-      itscalibrespsdd->SetString(itscalibrespsdd->GetString());
-    }
+  cdbEntryString = cdbEntry->GetString();
+  if(cdbEntryString.Contains("ITS/Align/Data")) 
+    itsaligndata = new TObjString(*cdbEntry);
+  if(cdbEntryString.Contains("ITS/Calib/RespSDD")) 
+    itscalibrespsdd = new TObjString(*cdbEntry);
   }	 
 
   Int_t ntracks = esd->GetNumberOfTracks();
