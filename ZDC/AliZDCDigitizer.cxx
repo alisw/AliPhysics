@@ -152,6 +152,8 @@ Bool_t AliZDCDigitizer::Init()
 
   if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0){
     //PTM gains rescaled to beam energy for p-p
+    // New correction coefficients for PMT gains needed
+    // to reproduce experimental spectra (from Grazia Jul 2010)
     if(fBeamEnergy != 0){
       for(Int_t j = 0; j < 5; j++){
           fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
@@ -168,15 +170,16 @@ Bool_t AliZDCDigitizer::Init()
   else if((beamType.CompareTo("A-A")) == 0){
     // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
     // rescaled for Pb-Pb @ 1.38+1.38 A TeV ***************
-    // New correction coefficients for PMT gains needed
-    // to reproduce experimental spectra (from Grazia Jul 2010)
+    // Values corrected after 2010 Pb-Pb data taking (7/2/2011 - Ch.)
+    // Experimental data compared to EMD simulation for single nucleon peaks:
+    // ZN gains must be divided by 4, ZP gains by 10!
     Float_t scalGainFactor = fBeamEnergy/2760.;
     for(Int_t j = 0; j < 5; j++){
-       fPMGain[0][j] = 50000./scalGainFactor; 	         
-       fPMGain[1][j] = 100000./scalGainFactor; 	         
-       fPMGain[2][j] = 100000./scalGainFactor; 	         
-       fPMGain[3][j] = 50000./scalGainFactor; 	         
-       fPMGain[4][j] = 100000./scalGainFactor;    
+       fPMGain[0][j] = 50000./(4*scalGainFactor);   // ZNC	         
+       fPMGain[1][j] = 100000./(10*scalGainFactor); // ZPC       
+       fPMGain[2][j] = 100000./scalGainFactor; 	    // ZEM
+       fPMGain[3][j] = 50000./(4*scalGainFactor);   // ZNA	         
+       fPMGain[4][j] = 100000./(10*scalGainFactor); // ZPA    
     }
     AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
