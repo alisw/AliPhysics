@@ -1862,7 +1862,7 @@ void AliITSTPArrayFit::BuildMaterialLUT(Int_t ntri)
     for (int i=ntri;i--;) {
       //
       if (active) {
-	int ssID = sID -1 - AliGeomManager::LayerSize(actLrID)*gRandom->Rndm();
+	int ssID = sID -1 - (int)(AliGeomManager::LayerSize(actLrID)*gRandom->Rndm());
 	pg1[0] = pg2[0] = (gRandom->Rndm()-0.5)*tpars[0] + shift; // local X
 	pg2[0] -= 2*shift;
 	pg1[1] = tpars[2];
