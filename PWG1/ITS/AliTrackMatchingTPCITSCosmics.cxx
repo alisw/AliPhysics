@@ -181,10 +181,6 @@ void AliTrackMatchingTPCITSCosmics::Exec(Option_t */*option*/)
   Bool_t hltTrigg=kFALSE;
   if(fReadHLTESD) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if(!esdH) {
-      printf("AliTrackMatchingTPCITSCosmics::Exec(): no ESD \n");
-      return;
-    } 
     AliESDEvent *hltESD = esdH->GetHLTEvent();
     if(!hltESD) {
       printf("AliTrackMatchingTPCITSCosmics::Exec(): no HLT ESD \n");
