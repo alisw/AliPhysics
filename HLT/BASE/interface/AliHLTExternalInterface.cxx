@@ -180,7 +180,6 @@ int AliHLTAnalysisProcessEvent( AliHLTComponentHandle handle, const AliHLTCompon
   // process one event
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
-  if (!comp) return ENXIO;
   int ret=comp->ProcessEvent( *evtData, blocks, *trigData, outputPtr, *size, *outputBlockCnt, *outputBlocks, *edd );
 
   // internally, return values <0 are errors, >=0 are success with some
@@ -197,7 +196,6 @@ int AliHLTAnalysisGetOutputDataType( AliHLTComponentHandle handle, AliHLTCompone
   // get output data type of a component
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
-  if (!comp) return ENXIO;
   *dataType = comp->GetOutputDataType();
   return 0;
 }
@@ -207,7 +205,6 @@ int AliHLTAnalysisGetOutputSize( AliHLTComponentHandle handle, unsigned long* co
   // get output data size of a component
   if ( !handle ) return EINVAL;
   AliHLTComponent* comp = reinterpret_cast<AliHLTComponent*>( handle );
-  if (!comp) return ENXIO;
   // TODO: extend component interface
   if (constBlockBase) *constBlockBase=0;
   comp->GetOutputDataSize( *constEventBase, *inputBlockMultiplier );
@@ -274,11 +271,7 @@ int AliHLTSystemSetOptions(AliHLTSystem* pInstance, const char* options)
   int iResult=0;
   if (pInstance) {
     AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
-    if (pSystem) {
-      iResult=pSystem->ScanOptions(options);
-    } else {
-      iResult=-EFAULT;
-    }
+    iResult=pSystem->ScanOptions(options);
   } else {
     iResult=-EINVAL;
   }
@@ -291,11 +284,7 @@ int AliHLTSystemProcessHLTOUT(AliHLTSystem* pInstance, AliHLTOUT* pHLTOUT, AliES
   int iResult=0;
   if (pInstance) {
     AliHLTSystem* pSystem=reinterpret_cast<AliHLTSystem*>(pInstance);
-    if (pSystem) {
-      iResult=pSystem->ProcessHLTOUT(pHLTOUT, esd);
-    } else {
-      iResult=-EFAULT;
-    }
+    iResult=pSystem->ProcessHLTOUT(pHLTOUT, esd);
   } else {
     iResult=-EINVAL;
   }
