@@ -35,30 +35,31 @@ void makeInputAliAnalysisTaskSED0Mass(){
 					 AliESDtrackCuts::kAny); 
  // default is kBoth, otherwise kAny
   esdTrackCuts->SetMinDCAToVertexXY(0.);
-  esdTrackCuts->SetPtRange(0.3,1.e10);
+  esdTrackCuts->SetPtRange(0.8,1.e10);
 
 
   RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
 
   const Int_t nvars=9;
 
-  const Int_t nptbins=11;
+  const Int_t nptbins=13;
   Float_t* ptbins;
   ptbins=new Float_t[nptbins+1];
   ptbins[0]=0.;
-  ptbins[1]=1.;
-  ptbins[2]=2.;
-  ptbins[3]=3.;
-  ptbins[4]=4.;
-  ptbins[5]=5.;
-  ptbins[6]=6.;
-  ptbins[7]=8.;
-  ptbins[8]=12.;
-  ptbins[9]=16.;
-  ptbins[10]=20.;
-  ptbins[11]=24.;
-  //ptbins[12]=99999.;
-  
+  ptbins[1]=0.5;
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=8.;
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=9999.;
+
   RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
   
 
@@ -80,125 +81,56 @@ void makeInputAliAnalysisTaskSED0Mass(){
     //     printf("    d0d0  [cm^2] < %f\n",fD0toKpiCuts[7]);
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
-  /*
-  //setting PPR cut values
-  rdcutsvalPPR[0][0]=0.7;
-  rdcutsvalPPR[1][0]=0.04;
-  rdcutsvalPPR[2][0]=0.8;
-  rdcutsvalPPR[3][0]=0.5;
-  rdcutsvalPPR[4][0]=0.5;
-  rdcutsvalPPR[5][0]=0.05;
-  rdcutsvalPPR[6][0]=0.05;
-  rdcutsvalPPR[7][0]=-0.0002;
-  rdcutsvalPPR[8][0]=0.5;
 
-  rdcutsvalPPR[0][1]=rdcutsvalPPR[0][2]=0.7;
-  rdcutsvalPPR[1][1]=rdcutsvalPPR[1][2]=0.02;
-  rdcutsvalPPR[2][1]=rdcutsvalPPR[2][2]=0.8;
-  rdcutsvalPPR[3][1]=rdcutsvalPPR[3][2]=0.7;
-  rdcutsvalPPR[4][1]=rdcutsvalPPR[4][2]=0.7;
-  rdcutsvalPPR[5][1]=rdcutsvalPPR[5][2]=0.05;
-  rdcutsvalPPR[6][1]=rdcutsvalPPR[6][2]=0.05;
-  rdcutsvalPPR[7][1]=rdcutsvalPPR[7][2]=-0.0002;
-  rdcutsvalPPR[8][1]=rdcutsvalPPR[8][2]=0.6;
+  Double_t arrcuts[9]={0.3,0.03,0.8,0.8,0.8,0.1,0.1,-0.0004,0.9};
 
-  rdcutsvalPPR[0][3]=0.7;
-  rdcutsvalPPR[1][3]=0.02;
-  rdcutsvalPPR[2][3]=0.8;
-  rdcutsvalPPR[3][3]=0.7;
-  rdcutsvalPPR[4][3]=0.7;
-  rdcutsvalPPR[5][3]=0.05;
-  rdcutsvalPPR[6][3]=0.05;
-  rdcutsvalPPR[7][3]=-0.0001;
-  rdcutsvalPPR[8][3]=0.8;
-
-  rdcutsvalPPR[0][4]=0.7;
-  rdcutsvalPPR[1][4]=0.02;
-  rdcutsvalPPR[2][4]=0.8;
-  rdcutsvalPPR[3][4]=0.7;
-  rdcutsvalPPR[4][4]=0.7;
-  rdcutsvalPPR[5][4]=0.05;
-  rdcutsvalPPR[6][4]=0.05;
-  rdcutsvalPPR[7][4]=-0.00005;
-  rdcutsvalPPR[8][4]=0.8;
-  */
-  Double_t arrcuts[9]={0.2,0.03,0.8,0.3,0.3,0.1,0.1,-0.0004,0.7};
-  //cout<<"here"<<endl;
   //setting my cut values
+  //0-0.5 GeV
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][0]=arrcuts[ic];
 
-  //0-1 GeV
-  rdcutsvalmine[0][0]=arrcuts[0];
-  rdcutsvalmine[1][0]=arrcuts[1];
-  rdcutsvalmine[2][0]=arrcuts[2];
-  rdcutsvalmine[3][0]=arrcuts[3];
-  rdcutsvalmine[4][0]=arrcuts[4];
-  rdcutsvalmine[5][0]=arrcuts[5];
-  rdcutsvalmine[6][0]=arrcuts[6];
-  rdcutsvalmine[7][0]=arrcuts[7];
-  rdcutsvalmine[8][0]=arrcuts[8];
+  //0.5-1 GeV/c
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][1]=arrcuts[ic];
 
-  //1-2 GeV
-  arrcuts[1]=0.02; arrcuts[3]=arrcuts[4]=0.4; arrcuts[7]=-0.00032; arrcuts[8]=0.8;
-  rdcutsvalmine[0][1]=arrcuts[0];
-  rdcutsvalmine[1][1]=arrcuts[1];
-  rdcutsvalmine[2][1]=arrcuts[2];
-  rdcutsvalmine[3][1]=arrcuts[3];
-  rdcutsvalmine[4][1]=arrcuts[4];
-  rdcutsvalmine[5][1]=arrcuts[5];
-  rdcutsvalmine[6][1]=arrcuts[6];
-  rdcutsvalmine[7][1]=arrcuts[7];
-  rdcutsvalmine[8][1]=arrcuts[8];
+  //1-2 GeV 
+  arrcuts[1]=0.025;  arrcuts[7]=-0.0003;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][2]=arrcuts[ic];
 
   //2-3 GeV
-  arrcuts[3]=arrcuts[4]=0.7; arrcuts[7]=-0.00026;
-  rdcutsvalmine[0][2]=arrcuts[0];
-  rdcutsvalmine[1][2]=arrcuts[1];
-  rdcutsvalmine[2][2]=arrcuts[2];
-  rdcutsvalmine[3][2]=arrcuts[3];
-  rdcutsvalmine[4][2]=arrcuts[4];
-  rdcutsvalmine[5][2]=arrcuts[5];
-  rdcutsvalmine[6][2]=arrcuts[6];
-  rdcutsvalmine[7][2]=arrcuts[7];
-  rdcutsvalmine[8][2]=arrcuts[8];
+  arrcuts[7]=-0.00026;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][3]=arrcuts[ic];
 
+  //3-4 GeV
+  arrcuts[7]=-0.00015; arrcuts[8]=0.85;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][4]=arrcuts[ic];
 
-  //3-4 GeV - 4-5 GeV 
-  arrcuts[7]=-0.00015;
-  rdcutsvalmine[0][3]=rdcutsvalmine[0][4]=arrcuts[0];
-  rdcutsvalmine[1][3]=rdcutsvalmine[1][4]=arrcuts[1];
-  rdcutsvalmine[2][3]=rdcutsvalmine[2][4]=arrcuts[2];
-  rdcutsvalmine[3][3]=rdcutsvalmine[3][4]=arrcuts[3];
-  rdcutsvalmine[4][3]=rdcutsvalmine[4][4]=arrcuts[4];
-  rdcutsvalmine[5][3]=rdcutsvalmine[5][4]=arrcuts[5];
-  rdcutsvalmine[6][3]=rdcutsvalmine[6][4]=arrcuts[6];
-  rdcutsvalmine[7][3]=rdcutsvalmine[7][4]=arrcuts[7];
-  rdcutsvalmine[8][3]=rdcutsvalmine[8][4]=arrcuts[8];
+  //4-5 GeV 
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][5]=arrcuts[ic];
 
+  //5-6 GeV
+  arrcuts[7]=-0.0001; arrcuts[8]=0.85;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][6]=arrcuts[ic];
 
-  //5-6 GeV - 6-8 GeV - 8-12 GeV - 12-16 GeV
-  arrcuts[1]=0.015;  arrcuts[7]=-0.0001;
+  //6-8 GeV
+  arrcuts[2]=1.;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][7]=arrcuts[ic];
 
-  rdcutsvalmine[0][5]=rdcutsvalmine[0][6]=rdcutsvalmine[0][7]=rdcutsvalmine[0][8]=arrcuts[0];
-  rdcutsvalmine[1][5]=rdcutsvalmine[1][6]=rdcutsvalmine[1][7]=rdcutsvalmine[1][8]=arrcuts[1];
-  rdcutsvalmine[2][5]=rdcutsvalmine[2][6]=rdcutsvalmine[2][7]=rdcutsvalmine[2][8]=arrcuts[2];
-  rdcutsvalmine[3][5]=rdcutsvalmine[3][6]=rdcutsvalmine[3][7]=rdcutsvalmine[3][8]=arrcuts[3];
-  rdcutsvalmine[4][5]=rdcutsvalmine[4][6]=rdcutsvalmine[4][7]=rdcutsvalmine[4][8]=arrcuts[4];
-  rdcutsvalmine[5][5]=rdcutsvalmine[5][6]=rdcutsvalmine[5][7]=rdcutsvalmine[5][8]=arrcuts[5];
-  rdcutsvalmine[6][5]=rdcutsvalmine[6][6]=rdcutsvalmine[6][7]=rdcutsvalmine[6][8]=arrcuts[6];
-  rdcutsvalmine[7][5]=rdcutsvalmine[7][6]=rdcutsvalmine[7][7]=rdcutsvalmine[7][8]=arrcuts[7];
-  rdcutsvalmine[8][5]=rdcutsvalmine[8][6]=rdcutsvalmine[8][7]=rdcutsvalmine[8][8]=arrcuts[8];
+  //8-12 GeV
+  arrcuts[8]=0.8;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][8]=arrcuts[ic];
 
-  //16-20 GeV - 20-24 GeV --to be optimized
-  arrcuts[7]=0.0001; arrcuts[8]=0.7;
-  rdcutsvalmine[0][9]=rdcutsvalmine[0][10]=arrcuts[0];
-  rdcutsvalmine[1][9]=rdcutsvalmine[1][10]=arrcuts[1];
-  rdcutsvalmine[2][9]=rdcutsvalmine[2][10]=arrcuts[2];
-  rdcutsvalmine[3][9]=rdcutsvalmine[3][10]=arrcuts[3];
-  rdcutsvalmine[4][9]=rdcutsvalmine[4][10]=arrcuts[4];
-  rdcutsvalmine[5][9]=rdcutsvalmine[5][10]=arrcuts[5];
-  rdcutsvalmine[6][9]=rdcutsvalmine[6][10]=arrcuts[6];
-  rdcutsvalmine[7][9]=rdcutsvalmine[7][10]=arrcuts[7];
-  rdcutsvalmine[8][9]=rdcutsvalmine[8][10]=arrcuts[8];
+  //12-16 GeV
+  arrcuts[1]=0.03;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][9]=arrcuts[ic];
+
+  //16-20 GeV
+  arrcuts[1]=0.035;
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][10]=arrcuts[ic];
+
+  //20-24 GeV
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][11]=arrcuts[ic];
+
+  //24-9999 GeV
+  for(Int_t ic=0;ic<nvars;ic++) rdcutsvalmine[ic][12]=arrcuts[ic];
 
   RDHFD0toKpi->SetCuts(nvars,nptbins,rdcutsvalmine);
 
@@ -227,12 +159,27 @@ void makeInputAliAnalysisTaskSED0Mass(){
 
   RDHFD0toKpi->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
 
-  //activate pileup rejection
-  RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+  //activate pileup rejection (for pp)
+  //RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+  //Do not recalculate the vertex
+  RDHFD0toKpi->SetRemoveDaughtersFromPrim(kFALSE); //activate for pp
+
+  TString cent="";
+  //centrality selection (Pb-Pb)
+  Float_t minc=20,maxc=80;
+  RDHFD0toKpi->SetMinCentrality(minc);
+  RDHFD0toKpi->SetMaxCentrality(maxc);
+  cent=Form("%.0f%.0f",minc,maxc);
+  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
+
+  //temporary
+  RDHFD0toKpi->SetFixRefs();
 
   cout<<"This is the odject I'm going to save:"<<endl;
   RDHFD0toKpi->PrintAll();
-  TFile* fout=new TFile("D0toKpiCutsStdpileup.root","recreate");   //set this!! 
+  TFile* fout=new TFile(Form("D0toKpiCuts%s%s%sRecVtx%sPileupRej.root", RDHFD0toKpi->GetUseCentrality()==0 ? "pp" : "PbPb",cent.Data(),RDHFD0toKpi->GetIsPrimaryWithoutDaughters() ? "" : "No",RDHFD0toKpi->GetOptPileUp() ? "" : "No"),"recreate");   //set this!! 
+
   fout->cd();
   RDHFD0toKpi->Write();
   fout->Close();
@@ -258,13 +205,13 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.1,1.e10);
+  esdTrackCuts->SetPtRange(0.8,1.e10);
   
   RDHFD0toKpi->AddTrackCuts(esdTrackCuts);
 
   const Int_t nvars=9;
 
-  const Int_t nptbins=14; //change this when adding pt bins!
+  const Int_t nptbins=13; //change this when adding pt bins!
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
   ptbins[1]=0.5;
@@ -275,15 +222,13 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   ptbins[6]=5.;
   ptbins[7]=6.;
   ptbins[8]=8.;
-  ptbins[9]=10.;
-  ptbins[10]=12.;
-  ptbins[11]=14.;
-  ptbins[12]=16.;
-  ptbins[13]=24.;
-  ptbins[14]=9999.;
-  
+  ptbins[9]=12.;
+  ptbins[10]=16.;
+  ptbins[11]=20.;
+  ptbins[12]=24.;
+  ptbins[13]=9999.;
+
   RDHFD0toKpi->SetPtBins(nptbins+1,ptbins);
-  
 
   Float_t** rdcutsvalmine;
   rdcutsvalmine=new Float_t*[nvars];
@@ -304,29 +249,20 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
     //     printf("    cosThetaPoint    > %f\n",fD0toKpiCuts[8]);
 
 
-  
-  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.2,400.*1E-4,0.7,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.8},/* pt<0.5*/
-  						  {0.2,400.*1E-4,0.7,0.3,0.3,1000.*1E-4,1000.*1E-4,-0.00005,0.8},/* 0.5<pt<1*/ 
-  						  {0.2,400.*1E-4,0.7,0.4,0.4,1000.*1E-4,1000.*1E-4,-0.00005,0.8},/* 1<pt<2 */
-  						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 2<pt<3 */
-  						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 3<pt<4 */
-  						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 4<pt<5 */
-  						  {0.2,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 5<pt<6 */
-  						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 6<pt<8 */
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 8<pt<10 */ 
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*10<pt<12*/
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*12<pt<14*/
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*14<pt<16*/
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*16<pt<24*/
-						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.00005,0.6}}; /*pt>24*/
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 0<pt<0.5 */
+  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 0.5<pt<1 */
+  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 1<pt<2 */
+  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,-0.00005,0.7},/* 2<pt<3 */
+  						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 3<pt<4 */
+						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6},/* 4<pt<5 */ 
+						  {0.3,400.*1E-4,0.8,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*5<pt<6*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*6<pt<8*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*8<pt<12*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*12<pt<16*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*16<pt<20*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}, /*20<pt<24*/
+						  {0.3,400.*1E-4,1.,0.8,0.8,1000.*1E-4,1000.*1E-4,0.00005,0.6}}; /*pt>24*/
 
-  // Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.6},/* 6<pt<8 */
-  // 						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.6},/* 8<pt<12 */ 
-  // 						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.6}, /*12<pt<16*/
-  // 						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.6}, /*16<pt<24*/
-  // 						  {0.3,400.*1E-4,0.7,0.7,0.7,1000.*1E-4,1000.*1E-4,0.0002,0.6}};/*pt>24 */ 
-
-  
   //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
   Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
   for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
@@ -413,17 +349,17 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   // tighterval[0][4]=100e-4;
   // tighterval[1][4]=-0.0006;
   // tighterval[2][4]=0.95;
-  tighterval[0][4]=-0.00065;
+  tighterval[0][4]=-0.00027;
   tighterval[1][4]=1.;
  
   // tighterval[0][5]=0.01;
   //  tighterval[0][5]=100e-4;
-  tighterval[0][5]=-0.00065;
+  tighterval[0][5]=-0.00027;
   tighterval[1][5]=1.;
  
   // tighterval[0][6]=0.01;
   //  tighterval[0][6]=100e-4;
-  tighterval[0][6]=-0.00065;
+  tighterval[0][6]=-0.00027;
   tighterval[1][6]=1.;
 
   // tighterval[0][6]=0.01;
@@ -450,9 +386,6 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   tighterval[0][12]=-0.00027;
   tighterval[1][12]=1.;
 
-  tighterval[0][13]=-0.00027;
-  tighterval[1][13]=1.;
-
   TString name=""; 
   Int_t arrdim=dim*nptbins;
   cout<<"Will save "<<arrdim<<" TParameter<float>"<<endl;
@@ -464,12 +397,13 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
       new(max[jpt*dim+ival])TParameter<float>(name.Data(),tighterval[ival][jpt]);
     }
   }
+
   Bool_t flagPID=kTRUE;
   RDHFD0toKpi->SetUsePID(flagPID);
+
   RDHFD0toKpi->PrintAll();
   printf("Use PID? %s\n",flagPID ? "yes" : "no");
 
-  
   //pid settings
   AliAODPidHF* pidObj=new AliAODPidHF();
   //pidObj->SetName("pid4D0");
@@ -490,11 +424,24 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
 
   RDHFD0toKpi->SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
   
-  //activate pileup rejection
-  RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+  //activate pileup rejection (for pp)
+  //RDHFD0toKpi->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
 
+  //Do not recalculate the vertex
+  RDHFD0toKpi->SetRemoveDaughtersFromPrim(kFALSE); //activate for pp
 
-  TFile* fout=new TFile("cuts4SignifMaxim.root","recreate");   //set this!! 
+  TString cent="";
+  //centrality selection (Pb-Pb)
+  Float_t minc=20,maxc=80;
+  RDHFD0toKpi->SetMinCentrality(minc);
+  RDHFD0toKpi->SetMaxCentrality(maxc);
+  cent=Form("%.0f%.0f",minc,maxc);
+  RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M); //kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid
+
+  //temporary
+  RDHFD0toKpi->SetFixRefs();
+
+  TFile* fout=new TFile(Form("cuts4SignifMaxim%s%s%sRecVtx%sPileupRej.root", RDHFD0toKpi->GetUseCentrality()==0 ? "pp" : "PbPb",cent.Data(),RDHFD0toKpi->GetIsPrimaryWithoutDaughters() ? "" : "No",RDHFD0toKpi->GetOptPileUp() ? "" : "No"),"recreate");   //set this!! 
 
   fout->cd();
   RDHFD0toKpi->Write();
