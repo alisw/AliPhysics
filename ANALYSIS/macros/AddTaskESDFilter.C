@@ -41,8 +41,12 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //===========================================================================   
    // Barrel tracks filter
    AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
-   mgr->AddTask(esdfilter);
    esdfilter->SetTimeZeroType(tofTimeZeroType);
+   esdfilter->DisableCascades();
+   esdfilter->DisableKinks();
+  
+   mgr->AddTask(esdfilter);
+  
    // Muons
    AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
    mgr->AddTask(esdmuonfilter);
