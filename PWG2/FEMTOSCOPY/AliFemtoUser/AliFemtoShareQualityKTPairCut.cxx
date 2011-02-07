@@ -72,9 +72,9 @@ bool AliFemtoShareQualityKTPairCut::Pass(const AliFemtoPair* pair){
 AliFemtoString AliFemtoShareQualityKTPairCut::Report(){
   // Prepare a report from execution
   string stemp = "AliFemtoShareQuality Pair Cut - remove shared and split pairs\n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with kT in range %f , %f",fKTMin,fKTMax);
+  snprintf(ctemp , 100, "Accept pair with kT in range %f , %f",fKTMin,fKTMax);
   stemp += ctemp;
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}

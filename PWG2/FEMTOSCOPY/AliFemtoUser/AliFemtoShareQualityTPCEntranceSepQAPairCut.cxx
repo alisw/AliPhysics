@@ -89,9 +89,9 @@ bool AliFemtoShareQualityTPCEntranceSepQAPairCut::Pass(const AliFemtoPair* pair)
 AliFemtoString AliFemtoShareQualityTPCEntranceSepQAPairCut::Report(){
   // Prepare a report from the execution
   string stemp = "AliFemtoShareQualityTPCEntranceSep Pair Cut - remove shared and split pairs and pairs with small separation at the entrance to the TPC\n";  char ctemp[100];
-  sprintf(ctemp,"Accept pair with TPC entrance separation more that %f",fDTPCMin);
+  snprintf(ctemp , 100, "Accept pair with TPC entrance separation more that %f",fDTPCMin);
   stemp += ctemp;
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp , 100, "Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}

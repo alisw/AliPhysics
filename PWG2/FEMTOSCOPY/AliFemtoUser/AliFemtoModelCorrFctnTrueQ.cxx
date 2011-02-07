@@ -23,9 +23,9 @@ AliFemtoModelCorrFctnTrueQ::AliFemtoModelCorrFctnTrueQ():
   // default constructor
   char buf[100];
   char title[100] = "CFTrueQ";
-  sprintf(buf, "%sNum", title);
+  snprintf(buf , 100,  "%sNum", title);
   fTrueNum = new TH1D(buf,buf,100,0.0,0.4);
-  sprintf(buf, "%sDen", title);
+  snprintf(buf , 100,  "%sDen", title);
   fTrueDen = new TH1D(buf,buf,100,0.0,0.4);
 
   fTrueNum->Sumw2();
@@ -39,9 +39,9 @@ AliFemtoModelCorrFctnTrueQ::AliFemtoModelCorrFctnTrueQ(const char *title, Int_t 
 {
   // basic constructor
   char buf[100];
-  sprintf(buf, "%sTrueQNum", title);
+  snprintf(buf , 100,  "%sTrueQNum", title);
   fTrueNum = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
-  sprintf(buf, "%sTrueQDen", title);
+  snprintf(buf , 100,  "%sTrueQDen", title);
   fTrueDen = new TH1D(buf,buf,aNbins,aQinvLo,aQinvHi);
 
   fTrueNum->Sumw2();

@@ -28,15 +28,15 @@ AliFemtoModelCorrFctn3DSpherical::AliFemtoModelCorrFctn3DSpherical(char* title, 
 {
   // set up numerator
   char tTitNum[100] = "NumTrue";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fTrueNumeratorSph = new TH3D(tTitNum,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up numerator
   char tTitNumF[100] = "NumFake";
-  strcat(tTitNumF,title);
+  strncat(tTitNumF,title, 100);
   fFakeNumeratorSph = new TH3D(tTitNumF,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominatorSph = new TH3D(tTitDen,title,nqbins,QLo,QHi,nphibins,-TMath::Pi(),TMath::Pi(),ncthetabins,-1.0,1.0);
 
   // to enable error bar calculation...
@@ -114,18 +114,18 @@ AliFemtoString AliFemtoModelCorrFctn3DSpherical::Report(){
   // Construct the report
   string stemp = "PRF Frame Spherical 3D Model Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fTrueNumeratorSph->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fTrueNumeratorSph->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominatorSph->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominatorSph->GetEntries());
   stemp += ctemp;
 
   if (fPairCut){
-    sprintf(ctemp,"Here is the PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "Here is the PairCut specific to this CorrFctn\n");
     stemp += ctemp;
     stemp += fPairCut->Report();
   }
   else{
-    sprintf(ctemp,"No PairCut specific to this CorrFctn\n");
+    snprintf(ctemp , 100, "No PairCut specific to this CorrFctn\n");
     stemp += ctemp;
   }
 

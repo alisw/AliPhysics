@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///                                                                          ///
-/// AliFemtoModelCorrFctnSource - the class for correlation function which   ///
+/// alifemtomodelcorrfctnsource - the class for correlation function which   ///
 /// uses the model framework and weight generation and saves the generated   ///
 /// emission source                                                          ///
 /// Authors: Adam Kisiel, kisiel@mps.ohio-state.edu                          ///
@@ -31,20 +31,20 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource():
   // default constructor
   char buf[100];
   char title[100] = "CFSource";
-  sprintf(buf, "%sOut", title);
+  snprintf(buf , 100,  "%sOut", title);
   fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sSide", title);
+  snprintf(buf , 100,  "%sSide", title);
   fHistRSide = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sLong", title);
+  snprintf(buf , 100,  "%sLong", title);
   fHistRLong = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sInv", title);
+  snprintf(buf , 100,  "%sInv", title);
   fHistRStar = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sdNdR", title);
+  snprintf(buf , 100,  "%sdNdR", title);
   fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
 
-  sprintf(buf, "%sNWS", title);
+  snprintf(buf , 100,  "%sNWS", title);
   fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
-  sprintf(buf, "%sDWS", title);
+  snprintf(buf , 100,  "%sDWS", title);
   fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
 
   fHistROut->Sumw2();
@@ -67,20 +67,20 @@ AliFemtoModelCorrFctnSource::AliFemtoModelCorrFctnSource(const char *title, Int_
 {
   // basic constructor
   char buf[100];
-  sprintf(buf, "%sOut", title);
+  snprintf(buf , 100,  "%sOut", title);
   fHistROut = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sSide", title);
+  snprintf(buf , 100,  "%sSide", title);
   fHistRSide = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sLong", title);
+  snprintf(buf , 100,  "%sLong", title);
   fHistRLong = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sInv", title);
+  snprintf(buf , 100,  "%sInv", title);
   fHistRStar = new TH1D(buf,buf,100,-50.0,50.0);
-  sprintf(buf, "%sdNdR", title);
+  snprintf(buf , 100,  "%sdNdR", title);
   fHistdNdR = new TH1D(buf,buf,100,-50.0,50.0);
 
-  sprintf(buf, "%sNWS", title);
+  snprintf(buf , 100,  "%sNWS", title);
   fHistNumWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
-  sprintf(buf, "%sDWS", title);
+  snprintf(buf , 100,  "%sDWS", title);
   fHistDenWS = new TH2D(buf,buf,50,0.0,0.5,100,0.0,2.0);
 
   fHistROut->Sumw2();
