@@ -316,12 +316,12 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserExec(Option_t *)
 
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
 		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
-		if (mcPart->GetPdgCode() == 4) cquarks++; 
-		if (mcPart->GetPdgCode() == -4) cquarks++; 
 		if (!mcPart) {
 			AliWarning("Particle not found in tree, skipping"); 
 			continue;
 		} 
+		if (mcPart->GetPdgCode() == 4) cquarks++; 
+		if (mcPart->GetPdgCode() == -4) cquarks++; 
 		
 		// check the MC-level cuts
 
@@ -1490,6 +1490,7 @@ Int_t AliCFHeavyFlavourTaskMultiVarMultiStep::CheckOrigin(AliAODMCParticle* mcPa
 		istep++;
 		AliDebug(2,Form("mother at step %d = %d", istep, mother));
 		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(mcArray->At(mother));
+		if(!mcGranma) break;
 		pdgGranma = mcGranma->GetPdgCode();
 		AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
 		Int_t abspdgGranma = TMath::Abs(pdgGranma);
