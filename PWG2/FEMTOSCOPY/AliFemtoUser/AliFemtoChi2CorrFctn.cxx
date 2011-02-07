@@ -31,20 +31,20 @@ AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const 
 {
   // set up numerator
   char tTitNum[100] = "NumChi2ITSSUM";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fChi2ITSSUMNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
   char tTitDen[100] = "DenChi2ITSSUM";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fChi2ITSSUMDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // set up numerator
   char tTit2Num[100] = "NumChi2TPCSUM";
-  strcat(tTit2Num,title);
+  strncat(tTit2Num,title, 100);
   fChi2TPCSUMNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
   char tTit2Den[100] = "DenChi2TPCSUM";
-  strcat(tTit2Den,title);
+  strncat(tTit2Den,title, 100);
   fChi2TPCSUMDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // to enable error bar calculation...
@@ -54,24 +54,24 @@ AliFemtoChi2CorrFctn::AliFemtoChi2CorrFctn(char* title, const int& nbins, const 
   fChi2TPCSUMNumerator->Sumw2();
   fChi2TPCSUMDenominator->Sumw2();
   // set up numerator
-  sprintf(tTitNum,"%s%s","NumChi2ITSONE",title);
+  snprintf(tTitNum , 100, "%s%s","NumChi2ITSONE",title);
   fChi2ITSONENumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
-  sprintf(tTitDen,"%s%s", "DenChi2ITSONE", title);
+  snprintf(tTitDen , 100, "%s%s", "DenChi2ITSONE", title);
   fChi2ITSONEDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // set up numerator
-  sprintf(tTit2Num,"%s%s","NumChi2TPCONE",title);
+  snprintf(tTit2Num , 100, "%s%s","NumChi2TPCONE",title);
   fChi2TPCONENumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
-  sprintf(tTit2Den,"%s%s", "DenChi2TPCONE", title);
+  snprintf(tTit2Den , 100, "%s%s", "DenChi2TPCONE", title);
   fChi2TPCONEDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // set up numerator
-  sprintf(tTit2Num,"%s%s","NumSigmaToVertex",title);
+  snprintf(tTit2Num , 100, "%s%s","NumSigmaToVertex",title);
   fSigmaToVertexNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
   // set up denominator
-  sprintf(tTit2Den,"%s%s", "DenSigmaToVertex", title);
+  snprintf(tTit2Den , 100, "%s%s", "DenSigmaToVertex", title);
   fSigmaToVertexDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,200,0.0,6.0);
 
   // to enable error bar calculation...
@@ -199,9 +199,9 @@ AliFemtoString AliFemtoChi2CorrFctn::Report(){
   // create report
   string stemp = "ITS and TPC quality Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fChi2ITSSUMNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fChi2ITSSUMNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fChi2ITSSUMDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fChi2ITSSUMDenominator->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;

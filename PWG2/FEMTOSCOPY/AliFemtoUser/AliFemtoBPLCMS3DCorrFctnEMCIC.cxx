@@ -69,51 +69,51 @@ AliFemtoCorrFctn(),
   
   // set up numerator
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
 
   //Setup EnergyTotalReal
   /*char tTitNum1[100] = "ESumReal";
-  strcat(tTitNum1,title);
+  strncat(tTitNum1,title, 100);
   fEnergyTotalReal = new TH3D(tTitNum1,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup EnergyMultReal
   char tTitNum2[100] = "EMultReal";
-  strcat(tTitNum2,title);
+  strncat(tTitNum2,title, 100);
   fEnergyMultReal = new TH3D(tTitNum2,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pz MultReal
   char tTitNum3[100] = "PzMultReal";
-  strcat(tTitNum3,title);
+  strncat(tTitNum3,title, 100);
   fPzMultReal = new TH3D(tTitNum3,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pt MultReal
   char tTitNum4[100] = "PtMultReal";
-  strcat(tTitNum4,title);
+  strncat(tTitNum4,title, 100);
   fPtMultReal = new TH3D(tTitNum4,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);  */
   
   //Setup EnergyTotalMix
   char tTitNum5[100] = "ESumMix";
-  strcat(tTitNum5,title);
+  strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup EnergyMultMix
   char tTitNum6[100] = "EMultMix";
-  strcat(tTitNum6,title);
+  strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pz MultMix
   char tTitNum7[100] = "PzMultMix";
-  strcat(tTitNum7,title);
+  strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   
   //Setup Pt MultMix
   char tTitNum8[100] = "PtMultMix";
-  strcat(tTitNum8,title);
+  strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // To enable error bar calculation
   
@@ -146,51 +146,51 @@ AliFemtoCorrFctn(),
   
   // set up numerator
   char tTitNum[100] = "Num";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fNumerator = new TH3D(tTitNum,title,nbins,qBins,nbins,qBins,nbins,qBins);
   // set up denominator
   char tTitDen[100] = "Den";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator = new TH3D(tTitDen,title,nbins,qBins,nbins,qBins,nbins,qBins);
 
   //Setup EnergyTotalReal
   /*char tTitNum1[100] = "ESumReal";
-  strcat(tTitNum1,title);
+  strncat(tTitNum1,title, 100);
   fEnergyTotalReal = new TH3D(tTitNum1,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup EnergyMultReal
   char tTitNum2[100] = "EMultReal";
-  strcat(tTitNum2,title);
+  strncat(tTitNum2,title, 100);
   fEnergyMultReal = new TH3D(tTitNum2,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pz MultReal
   char tTitNum3[100] = "PzMultReal";
-  strcat(tTitNum3,title);
+  strncat(tTitNum3,title, 100);
   fPzMultReal = new TH3D(tTitNum3,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pt MultReal
   char tTitNum4[100] = "PtMultReal";
-  strcat(tTitNum4,title);
+  strncat(tTitNum4,title, 100);
   fPtMultReal = new TH3D(tTitNum4,title,nbins,qBins,nbins,qBins,nbins,qBins);  */
   
   //Setup EnergyTotalMix
   char tTitNum5[100] = "ESumMix";
-  strcat(tTitNum5,title);
+  strncat(tTitNum5,title, 100);
   fEnergyTotalMix = new TH3D(tTitNum5,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup EnergyMultMix
   char tTitNum6[100] = "EMultMix";
-  strcat(tTitNum6,title);
+  strncat(tTitNum6,title, 100);
   fEnergyMultMix = new TH3D(tTitNum6,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pz MultMix
   char tTitNum7[100] = "PzMultMix";
-  strcat(tTitNum7,title);
+  strncat(tTitNum7,title, 100);
   fPzMultMix = new TH3D(tTitNum7,title,nbins,qBins,nbins,qBins,nbins,qBins);
   
   //Setup Pt MultMix
   char tTitNum8[100] = "PtMultMix";
-  strcat(tTitNum8,title);
+  strncat(tTitNum8,title, 100);
   fPtMultMix = new TH3D(tTitNum8,title,nbins,qBins,nbins,qBins,nbins,qBins);
   // To enable error bar calculation
   

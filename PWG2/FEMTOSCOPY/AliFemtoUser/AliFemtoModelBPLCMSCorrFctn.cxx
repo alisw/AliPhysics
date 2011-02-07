@@ -30,19 +30,19 @@ AliFemtoModelBPLCMSCorrFctn::AliFemtoModelBPLCMSCorrFctn(char* title, const int&
 {
   // set up true numerator
   char tTitNumT[100] = "Num3DTrue";
-  strcat(tTitNumT,title);
+  strncat(tTitNumT,title, 100);
   fNumerator3DTrue = new TH3D(tTitNumT,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up fake numerator
   char tTitNumF[100] = "Num3DFake";
-  strcat(tTitNumF,title);
+  strncat(tTitNumF,title, 100);
   fNumerator3DFake = new TH3D(tTitNumF,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up denominator
   char tTitDen[100] = "Den3D";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fDenominator3D = new TH3D(tTitDen,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
   // set up ave qInv
   char tTitQinv[100] = "Qinv";
-  strcat(tTitQinv,title);
+  strncat(tTitQinv,title, 100);
   fQinvHisto = new TH3D(tTitQinv,title,nbins,QLo,QHi,nbins,QLo,QHi,nbins,QLo,QHi);
 
   // to enable error bar calculation...
@@ -132,18 +132,18 @@ AliFemtoString AliFemtoModelBPLCMSCorrFctn::Report(){
   // Prepare a report from the execution
   string stemp = "LCMS Frame Bertsch-Pratt 3D Model Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fNumeratorTrue->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fNumeratorTrue->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fDenominator->GetEntries());
   stemp += ctemp;
   /*  if (fCorrection)
       {
       float radius = fCorrection->GetRadius();
-      sprintf(ctemp,"Coulomb correction used radius of\t%E\n",radius);
+      snprintf(ctemp , 100, "Coulomb correction used radius of\t%E\n",radius);
       }
       else
       {
-      sprintf(ctemp,"No Coulomb Correction applied to this CorrFctn\n");
+      snprintf(ctemp , 100, "No Coulomb Correction applied to this CorrFctn\n");
       }
       stemp += ctemp;
   */

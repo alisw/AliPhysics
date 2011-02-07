@@ -95,13 +95,13 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
   
   char bufname[200];
   for (int ihist=0; ihist<fMaxJM; ihist++) {
-    sprintf(bufname, "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     fnumsreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    sprintf(bufname, "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     fnumsimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    sprintf(bufname, "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     fdensreal[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
-    sprintf(bufname, "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     fdensimag[ihist] = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
     fnumsreal[ihist]->Sumw2();
@@ -110,10 +110,10 @@ AliFemtoCorrFctnDirectYlm::AliFemtoCorrFctnDirectYlm(const char *name, int maxl,
     fdensimag[ihist]->Sumw2();
   }
 
-  sprintf(bufname, "BinCountNum%s", name);
+  snprintf(bufname , 200,  "BinCountNum%s", name);
   fbinctn = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
-  sprintf(bufname, "BinCountDen%s", name);
+  snprintf(bufname , 200,  "BinCountDen%s", name);
   fbinctd = new TH1D(bufname, bufname, ibin, vmin, vmax);
 
   fYlmBuffer = (complex<double> *) malloc(sizeof(complex<double>) * fMaxJM);
@@ -712,29 +712,29 @@ void AliFemtoCorrFctnDirectYlm::ReadFromFile(TFile *infile, const char *name, in
 
   char bufname[200];
   for (int ihist=0; ihist<fMaxJM; ihist++) {
-    sprintf(bufname, "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "NumReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     if (fnumsreal[ihist]) delete fnumsreal[ihist];
     fnumsreal[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
 
-    sprintf(bufname, "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "NumImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     if (fnumsimag[ihist]) delete fnumsimag[ihist];
     fnumsimag[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
 
-    sprintf(bufname, "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "DenReYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     if (fdensreal[ihist]) delete fdensreal[ihist];
     fdensreal[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
 
-    sprintf(bufname, "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
+    snprintf(bufname , 200,  "DenImYlm%i%i%s", felsi[ihist], femsi[ihist]<0 ? felsi[ihist]-femsi[ihist] : femsi[ihist], name);
     if (fdensimag[ihist]) delete fdensimag[ihist];
     fdensimag[ihist] = new TH1D(*((TH1D *) infile->Get(bufname)));
   }
 
   if (fcovnum) delete fcovnum;
-  sprintf(bufname, "covNum%s", name);
+  snprintf(bufname , 200,  "covNum%s", name);
   fcovnum = new TH3D (*((TH3D *) infile->Get(bufname)));
 
   if (fcovden) delete fcovden;
-  sprintf(bufname, "CovDen%s", name);
+  snprintf(bufname , 200,  "CovDen%s", name);
   fcovden = new TH3D (*((TH3D *) infile->Get(bufname)));
 
   if ((fcovnum) && (fcovden)) {
@@ -851,7 +851,7 @@ void AliFemtoCorrFctnDirectYlm::PackCovariances()
 {
   // Migrate the covariance matrix into a 3D histogram for storage
   char bufname[200];
-  sprintf(bufname, "CovNum%s", fnumsreal[0]->GetName()+10);
+  snprintf(bufname , 200,  "CovNum%s", fnumsreal[0]->GetName()+10);
 
   //  if (fcovnum) delete fcovnum;
   if (!fcovnum) 
@@ -865,7 +865,7 @@ void AliFemtoCorrFctnDirectYlm::PackCovariances()
       for (int ilmp=0; ilmp<GetMaxJM()*2; ilmp++)
 	fcovnum->SetBinContent(ibin, ilmz+1, ilmp+1, fcovmnum[GetBin(ibin-1, ilmz/2, ilmz%2, ilmp/2, ilmp%2)]);
 
-  sprintf(bufname, "CovDen%s", fnumsreal[0]->GetName()+10);
+  snprintf(bufname , 100,  "CovDen%s", fnumsreal[0]->GetName()+10);
 
   //  if (fcovden) delete fcovden;
   if (!fcovden)

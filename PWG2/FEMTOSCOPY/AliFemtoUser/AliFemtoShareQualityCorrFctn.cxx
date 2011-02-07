@@ -27,21 +27,21 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
   // set up numerator
   //  title = "Num Qinv (MeV/c)";
   char tTitNum[100] = "NumShare";
-  strcat(tTitNum,title);
+  strncat(tTitNum,title, 100);
   fShareNumerator = new TH2D(tTitNum,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
   char tTitDen[100] = "DenShare";
-  strcat(tTitDen,title);
+  strncat(tTitDen,title, 100);
   fShareDenominator = new TH2D(tTitDen,title,nbins,QinvLo,QinvHi,100,0.0,1.00001);
 
   char tTit2Num[100] = "NumQuality";
-  strcat(tTit2Num,title);
+  strncat(tTit2Num,title, 100);
   fQualityNumerator = new TH2D(tTit2Num,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
   char tTit2Den[100] = "DenQuality";
-  strcat(tTit2Den,title);
+  strncat(tTit2Den,title, 100);
   fQualityDenominator = new TH2D(tTit2Den,title,nbins,QinvLo,QinvHi,150,-0.500001,1.000001);
   // set up ratio
   //title = "Ratio Qinv (MeV/c)";
@@ -52,12 +52,12 @@ AliFemtoShareQualityCorrFctn::AliFemtoShareQualityCorrFctn(char* title, const in
   //mRatio->SetDirectory(0);
 
   char tTit3Num[100] = "NumTPCSep";
-  strcat(tTit3Num,title);
+  strncat(tTit3Num,title, 100);
   fTPCSepNumerator = new TH2D(tTit3Num,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
   // set up denominator
   //title = "Den Qinv (MeV/c)";
   char tTit3Den[100] = "DenTPCSep";
-  strcat(tTit3Den,title);
+  strncat(tTit3Den,title, 100);
   fTPCSepDenominator = new TH2D(tTit3Den,title,nbins,QinvLo,QinvHi,150,0.0,100.0);
 
   // to enable error bar calculation...
@@ -156,9 +156,9 @@ AliFemtoString AliFemtoShareQualityCorrFctn::Report(){
   // create report
   string stemp = "Qinv Correlation Function Report:\n";
   char ctemp[100];
-  sprintf(ctemp,"Number of entries in numerator:\t%E\n",fShareNumerator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in numerator:\t%E\n",fShareNumerator->GetEntries());
   stemp += ctemp;
-  sprintf(ctemp,"Number of entries in denominator:\t%E\n",fShareDenominator->GetEntries());
+  snprintf(ctemp , 100, "Number of entries in denominator:\t%E\n",fShareDenominator->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;
