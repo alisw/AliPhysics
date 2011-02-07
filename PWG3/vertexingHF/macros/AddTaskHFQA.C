@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root"){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="D0toKpiCuts.root",Bool_t readMC=kFALSE){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -18,7 +18,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliRDHFCuts *analysiscuts=0x0;
 
-  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",inname="input",suffix="",cutsobjname="";
+  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",inname="input",suffix="",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
 
@@ -27,7 +27,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="AnalysisCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDplustoKpipi();
-      analysiscuts->SetStandardCutsPP2010();
+      analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dplus";
@@ -36,7 +36,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="D0toKpiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
-      analysiscuts->SetStandardCutsPP2010();
+      analysiscuts->SetStandardCutsPbPb2010();
     }
     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
     suffix="D0";
@@ -84,14 +84,27 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out2name+=suffix;
   out3name+=suffix;
   out4name=cutsobjname;
+  out5name+=suffix;
+  out6name+=suffix;
 
   if(!analysiscuts && filecutsname!="none"){
     cout<<"Specific AliRDHFCuts not found"<<endl;
     return;
   }
+
+  centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
+  inname+=centr;
+  out1name+=centr;
+  out2name+=centr;
+  out3name+=centr;
+  out4name+=centr;
+  out5name+=centr;
+  out6name+=centr;
+
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
 
+  taskQA->SetReadMC(readMC);
   mgr->AddTask(taskQA);
 
   //
@@ -110,6 +123,12 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(out4name,AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
   mgr->ConnectOutput(taskQA,4,coutput4);
+
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
+  mgr->ConnectOutput(taskQA,5,coutput5);
+
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
+  mgr->ConnectOutput(taskQA,6,coutput6);
 
  return taskQA;
 }

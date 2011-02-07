@@ -37,7 +37,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   //setters
-
+  void SetReadMC(Bool_t mcflag){fReadMC=mcflag;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -50,10 +50,14 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  TH1F*  fNEntries;         //! histogram with number of events on output slot 1
  TList* fOutputPID;        //! list sent on output slot 2
  TList* fOutputTrack;      //! list sent on output slot 3
+ TList* fOutputCounters;   //! list sent on output slot 5
+ TList* fOutputCheckCentrality;   //! list sent on output slot 6
  DecChannel fDecayChannel; //identify the decay channel
  AliRDHFCuts* fCuts;       // object containing cuts
+ AliRDHFCuts::ECentrality fEstimator; //2nd estimator for centrality
+ Bool_t fReadMC;           // flag to read MC
 
- ClassDef(AliAnalysisTaskSEHFQA,1); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ ClassDef(AliAnalysisTaskSEHFQA,3); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 
