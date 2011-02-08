@@ -194,7 +194,8 @@ TString     kLocalXMLDataset   = ""; // Change local xml dataset for local inter
 TString     kLocalDataList   = "local_deltaaod.txt"; // Change local xml dataset for local interactive analysis
 // == local process variables
 
-TString kPluginMode;
+TString kPluginMode = "";
+TString kAnalysisMode = "";
 
 
 // Temporaries.
@@ -214,7 +215,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 // are taken from there but may be altered by CheckModuleFlags.
 
   // these flag may be needed by the config file
-  kPluginMode = plugin_mode;
+  kPluginMode   = plugin_mode;
+  kAnalysisMode = analysis_mode;
   
   if (strlen(config_file) && !LoadConfig(config_file)) return;
   if(iTotal>0)kGridMaxRunsFromList = iTotal; // overwrites the settings from config file
@@ -570,6 +572,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        taskCl->SetNRandomCones(10);
+       taskCl->SetNSkipLeadingRan(2);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
        if(kDeltaAODJetName.Length()==0&&kFilterAOD){
 	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40.);
@@ -1046,7 +1049,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
-       /*
+       
        dest = Form("%s/%s/%s_merge_final.jdl",alien_workdir.Data(),gridhandler->GetGridOutputDir(),kTrainName.Data());
        if(AliAnalysisAlien::FileExists(dest.Data())){
 	 Printf("%s exist on grid removing...",dest.Data());
@@ -1054,7 +1057,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        }
        Printf("%s copy ...",dest.Data());
        TFile::Cp(Form("file:%s_merge.jdl",kTrainName.Data()),Form("alien://%s",dest.Data()));
-       */
+
 
        /*
        dest = Form("%s/rootfiles/STEER/LQ1dRef_v1.root",gGrid->GetHomeDirectory());
