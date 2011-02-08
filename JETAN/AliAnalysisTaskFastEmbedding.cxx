@@ -361,7 +361,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
        Bool_t useEntry = kFALSE;
        while(!useEntry){  // protection need, if no event fulfills requierment
-          if(fEntry>nEvents){
+          if(fEntry>=nEvents){
               fEntry=0;
               if(!fAODPathArray){
                  AliDebug(AliLog::kDebug, "Last event in AOD reached, start from entry 0 again.");
@@ -373,6 +373,14 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
                  rc = OpenAODfile();
                  if(rc<0) return;
+
+		 // new file => we must use the new jet array
+		 if(fJetBranch.Length()) aodJets = dynamic_cast<TClonesArray*>(fAODevent->FindListObject(fJetBranch.Data()));
+		 else                    aodJets = fAODevent->GetJets();
+		 if(!aodJets){
+		   AliError("Could not find jets in AOD. Check jet branch when indicated.");
+		   return;
+		 }
               }
           }
     
@@ -609,6 +617,8 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
 Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
 
     TDirectory *owd = gDirectory;
+    if (fAODfile)
+      fAODfile->Close();
     fAODfile = TFile::Open(fAODPath.Data());
     owd->cd();
     if(!fAODfile){
@@ -623,6 +633,7 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
        return -1;
     }
 
+    delete fAODevent;
     fAODevent = new AliAODEvent();
     fAODevent->ReadFromTree(fAODtree);
     if(!fAODevent){
