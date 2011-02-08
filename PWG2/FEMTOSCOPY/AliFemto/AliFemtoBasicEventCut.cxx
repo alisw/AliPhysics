@@ -37,7 +37,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event){
   // Pass events if they fall within the multiplicity and z-vertex
   // position range. Fail otherwise
   //  int mult =  event->NumberOfTracks();
-  int mult =  event->UncorrectedNumberOfPrimaries();
+  int mult = (int) event->UncorrectedNumberOfPrimaries();
   double vertexZPos = event->PrimVertPos().z();
 //   cout << "AliFemtoBasicEventCut:: mult:       " << fEventMult[0] << " < " << mult << " < " << fEventMult[1] << endl;
 //   cout << "AliFemtoBasicEventCut:: VertexZPos: " << fVertZPos[0] << " < " << vertexZPos << " < " << fVertZPos[1] << endl;
