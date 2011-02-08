@@ -2790,7 +2790,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 5:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.0;
-    kGCUseCorrectedTPCClsInfo=0;
+    kGCUseCorrectedTPCClsInfo=1;
     break;
   case 6:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.7;
@@ -2802,6 +2802,10 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 8:
     kGCminClsTPCCutToF= 0.35;
+    kGCUseCorrectedTPCClsInfo=1;
+    break;
+  case 9:
+    kGCminClsTPCCutToF= 0.6;
     kGCUseCorrectedTPCClsInfo=1;
     break;
   default:
