@@ -243,7 +243,7 @@ public:
   
   void SwitchOnV0ANDSelection()  {fDoV0ANDEventSelection = kTRUE  ; }
   void SwitchOffV0ANDSelection() {fDoV0ANDEventSelection = kFALSE ; }
-  Bool_t IsV0ANDEventSelectionDone() { return fDoEventSelection  ; } 
+  Bool_t IsV0ANDEventSelectionDone() { return fDoV0ANDEventSelection  ; } 
 
   //Centrality
   virtual AliCentrality* GetCentrality() const {return 0x0;} //Actual method to recover the pointer is in the ESD/AODReader
@@ -345,6 +345,7 @@ public:
   TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
   Float_t          fZvtxCut ;	           // Cut on vertex position  
   Bool_t           fDoEventSelection;    // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
+  Bool_t           fDoV0ANDEventSelection; // Select events depending on V0, fDoEventSelection should be on
   AliTriggerAnalysis* fTriggerAnalysis;  // Access to trigger selection algorithm for V0AND calculation
   
   //Centrality
