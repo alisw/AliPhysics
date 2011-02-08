@@ -472,8 +472,8 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
           Int_t specProtonProj  = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
           Int_t specNeutronTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
           Int_t specProtonTarg  = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-	  fNpartTargMC = 208.-(specNeutronTarg+specProtonTarg);
-	  fNpartProjMC = 208.-(specNeutronProj+specProtonProj);
+	  fNpartTargMC = (Int_t)(208.-(specNeutronTarg+specProtonTarg));
+	  fNpartProjMC = (Int_t)(208.-(specNeutronProj+specProtonProj));
 	  fNNColl   = ((AliGenHijingEventHeader*) genHeader)->NN();
 	  fNNwColl  = ((AliGenHijingEventHeader*) genHeader)->NNw();
 	  fNwNColl  = ((AliGenHijingEventHeader*) genHeader)->NwN();
