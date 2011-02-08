@@ -33,7 +33,7 @@ class TH3F;
 class TProfile;
 class TRandom3;
 class TRefArray;
-
+class TClonesArray;
 
 class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 {
@@ -146,6 +146,13 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Double_t fGhostArea;
     Int_t fActiveAreaRepeats;
     Double_t fGhostEtamax;
+
+    TClonesArray  *fTCAJetsOut; //! TCA of output jets
+    TClonesArray  *fTCAJetsOutRan; //! TCA of output jets in randomized event
+    TClonesArray  *fTCARandomConesOut; //! TCA of output jets in randomized event
+    TClonesArray  *fTCARandomConesOutRan; //! TCA of output jets in randomized event
+    AliAODJetEventBackground *fAODJetBackgroundOut; //! jet background to be written out
+
     TRandom3*     fRandom;   //! random number generator
     TProfile*     fh1Xsec;   //! pythia cross section and trials
     TH1F*         fh1Trials; //! trials are added
@@ -219,7 +226,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 13) 
+    ClassDef(AliAnalysisTaskJetCluster, 14) 
 };
  
 #endif

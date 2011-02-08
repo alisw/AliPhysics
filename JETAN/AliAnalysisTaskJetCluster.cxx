@@ -70,6 +70,17 @@ ClassImp(AliAnalysisTaskJetCluster)
 AliAnalysisTaskJetCluster::~AliAnalysisTaskJetCluster(){
   delete fRef;
   delete fRandom;
+
+  if(fTCAJetsOut)fTCAJetsOut->Delete();
+  delete fTCAJetsOut;
+  if(fTCAJetsOutRan)fTCAJetsOutRan->Delete();
+  delete fTCAJetsOutRan;
+  if(fTCARandomConesOut)fTCARandomConesOut->Delete();
+  delete fTCARandomConesOut;
+  if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
+  delete fTCARandomConesOutRan;
+  if(fAODJetBackgroundOut)fAODJetBackgroundOut->Reset();
+  delete fAODJetBackgroundOut;
 }
 
 AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
@@ -104,6 +115,11 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fGhostArea(0.01),
   fActiveAreaRepeats(1),
   fGhostEtamax(1.5),
+  fTCAJetsOut(0x0),
+  fTCAJetsOutRan(0x0),
+  fTCARandomConesOut(0x0),
+  fTCARandomConesOutRan(0x0),
+  fAODJetBackgroundOut(0x0),
   fRandom(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -206,6 +222,11 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fGhostArea(0.01),
   fActiveAreaRepeats(1),
   fGhostEtamax(1.5),
+  fTCAJetsOut(0x0),
+  fTCAJetsOutRan(0x0),
+  fTCARandomConesOut(0x0),
+  fTCARandomConesOutRan(0x0),
+  fAODJetBackgroundOut(0x0),
   fRandom(0),
   fh1Xsec(0x0),
   fh1Trials(0x0),
@@ -311,20 +332,20 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       //  -> cleared in the UserExec....
       // here we can also have the case that the brnaches are written to a separate file
 
-      TClonesArray *tca = new TClonesArray("AliAODJet", 0);
-      tca->SetName(fNonStdBranch.Data());
-      AddAODBranch("TClonesArray",&tca,fNonStdFile.Data());
+      fTCAJetsOut = new TClonesArray("AliAODJet", 0);
+      fTCAJetsOut->SetName(fNonStdBranch.Data());
+      AddAODBranch("TClonesArray",&fTCAJetsOut,fNonStdFile.Data());
 
    
-      TClonesArray *tcaran = new TClonesArray("AliAODJet", 0);
-      tcaran->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
-      AddAODBranch("TClonesArray",&tcaran,fNonStdFile.Data());
+      fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
+      fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
+      AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
 
       if(fUseBackgroundCalc){
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
-	  AliAODJetEventBackground* evBkg = new AliAODJetEventBackground();
-	  evBkg->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
-	  AddAODBranch("AliAODJetEventBackground",&evBkg,fNonStdFile.Data());  
+	  fAODJetBackgroundOut = new AliAODJetEventBackground();
+	  fAODJetBackgroundOut->SetName(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()));
+	  AddAODBranch("AliAODJetEventBackground",&fAODJetBackgroundOut,fNonStdFile.Data());  
 	}
       }
       // create the branch for the random cones with the same R 
@@ -332,16 +353,16 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 
       if(fNRandomCones>0){
 	if(!AODEvent()->FindListObject(cName.Data())){
-	  TClonesArray *tcaC = new TClonesArray("AliAODJet", 0);
-	  tcaC->SetName(cName.Data());
-	  AddAODBranch("TClonesArray",&tcaC,fNonStdFile.Data());
+	  fTCARandomConesOut = new TClonesArray("AliAODJet", 0);
+	  fTCARandomConesOut->SetName(cName.Data());
+	  AddAODBranch("TClonesArray",&fTCARandomConesOut,fNonStdFile.Data());
 	}
 	// create the branch with the random for the random cones on the random event
 	cName = Form("%sRandomCone_random",fNonStdBranch.Data());
 	if(!AODEvent()->FindListObject(cName.Data())){
-	  TClonesArray *tcaCran = new TClonesArray("AliAODJet", 0);
-	  tcaCran->SetName(cName.Data());
-	  AddAODBranch("TClonesArray",&tcaCran,fNonStdFile.Data());
+	  fTCARandomConesOutRan = new TClonesArray("AliAODJet", 0);
+	  fTCARandomConesOutRan->SetName(cName.Data());
+	  AddAODBranch("TClonesArray",&fTCARandomConesOutRan,fNonStdFile.Data());
 	}
       }
     
@@ -350,30 +371,15 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	// case that we have an AOD extension we need to fetch the jets from the extended output
 	// we identify the extension aod event by looking for the branchname
 	AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-	
-	TObjArray* extArray = (aodH?aodH->GetExtensions():0);
-	if (extArray) {
-	  TIter next(extArray);
-	  while ((fAODExtension=(AliAODExtension*)next())){
-	    TObject *obj = fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data());
-	    if(fDebug>10){
-	      Printf("%s:%d Dumping..",(char*)__FILE__,__LINE__);
-	      if(fAODExtension->GetAOD())fAODExtension->GetAOD()->Dump();
-	    }
-	    if(obj){
-	      if(fDebug>1)Printf("AODExtension found for %s",fNonStdBranch.Data());
-	      break;
-	    }
-	    fAODExtension = 0;
-	  }
-	}
+	// case that we have an AOD extension we need can fetch the background maybe from the extended output                                                                  
+	fAODExtension = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
       }
     }
 
 
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
-
+  
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -555,7 +561,7 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
     fHistList->Add(fh1Z);
     fHistList->Add(fh1ZSelect);
     fHistList->Add(fh1ZPhySel);
-    if(fNRandomCones&&fUseBackgroundCalc){
+    if(fNRandomCones>0&&fUseBackgroundCalc){
       for(int i = 0;i<3;i++){
 	fHistList->Add(fh1BiARandomCones[i]);
 	fHistList->Add(fh1BiARandomConesRan[i]);
@@ -633,44 +639,17 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
 
   // handle and reset the output jet branch 
-  // only need this once
-  TClonesArray* jarray = 0;  
-  TClonesArray* jarrayran = 0;  
-  TClonesArray* rConeArray = 0;  
-  TClonesArray* rConeArrayRan = 0;  
-  AliAODJetEventBackground*  evBkg = 0;
-  if(fNonStdBranch.Length()!=0) {
-    if(AODEvent())jarray = (TClonesArray*)(AODEvent()->FindListObject(fNonStdBranch.Data()));
-    if(!jarray)jarray = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(fNonStdBranch.Data()));
-    if(jarray)jarray->Delete();    // this is our responsibility, clear before filling again
-    if(AODEvent())jarrayran = (TClonesArray*)(AODEvent()->FindListObject(Form("%s_%s",fNonStdBranch.Data(),"random")));
-    if(!jarrayran)jarrayran = (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",fNonStdBranch.Data(),"random")));
-    if(jarrayran)jarrayran->Delete();    // this is our responsibility, clear before filling again
-  
-    if(fUseBackgroundCalc){
-      if(AODEvent())evBkg = (AliAODJetEventBackground*)(AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-      if(!evBkg)  evBkg = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data())));
-      if(evBkg)evBkg->Reset(); 
-    }
 
-    if(fNRandomCones>0){
-      TString cName = Form("%sRandomCone",fNonStdBranch.Data());
-      if(AODEvent())rConeArray = (TClonesArray*)(AODEvent()->FindListObject(cName.Data()));
-      if(!rConeArray)rConeArray =  (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(cName.Data()));
-      if(rConeArray)rConeArray->Delete();
-
-      cName = Form("%sRandomCone_random",fNonStdBranch.Data());
-      if(AODEvent())rConeArrayRan = (TClonesArray*)(AODEvent()->FindListObject(cName.Data()));
-      if(!rConeArrayRan)rConeArrayRan =  (TClonesArray*)(fAODExtension->GetAOD()->FindListObject(cName.Data()));
-      if(rConeArrayRan)rConeArrayRan->Delete();
-    }
-  }
+  if(fTCAJetsOut)fTCAJetsOut->Delete();
+  if(fTCAJetsOutRan)fTCAJetsOutRan->Delete();
+  if(fTCARandomConesOut)fTCARandomConesOut->Delete();
+  if(fTCARandomConesOutRan)fTCARandomConesOutRan->Delete();
+  if(fAODJetBackgroundOut)fAODJetBackgroundOut->Reset();
 
   AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(AODEvent()->FindListObject(fBackgroundBranch.Data()));
-   if(!externalBackground)externalBackground = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
-   if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());
+    if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
   }
   //
   // Execute analysis for current event
@@ -798,7 +777,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     }
 
     // fill the tref array, only needed when we write out jets
-    if(jarray){
+    if(fTCAJetsOut){
       if(i == 0){
 	fRef->Delete(); // make sure to delete before placement new...
 	new(fRef) TRefArray(TProcessID::GetProcessWithUID(vp));
@@ -911,8 +890,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       nAodOutTracks = 0;
       Float_t tmpPt = tmpRec.Pt();  
       
-      if(tmpPt>fJetOutputMinPt&&jarray){// cut on the non-background subtracted...
-	aodOutJet =  new ((*jarray)[nAodOutJets++]) AliAODJet(tmpRec);
+      if(tmpPt>fJetOutputMinPt&&fTCAJetsOut){// cut on the non-background subtracted...
+	aodOutJet =  new ((*fTCAJetsOut)[nAodOutJets++]) AliAODJet(tmpRec);
 	Double_t area1 = clustSeq.area(sortedJets[j]);
 	aodOutJet->SetEffArea(area1,0);
         fastjet::PseudoJet vecarea=clustSeq.area_4vector(sortedJets[j]);  
@@ -941,130 +920,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
       fh2NConstPt->Fill(tmpPt,constituents.size());
       // loop over constiutents and fill spectrum
-      
-      // Add the jet information and the track references to the output AOD
-            
-
-      if(fNRandomCones>0){       
-	// create a random jet within the acceptance
-	Double_t etaMax = 0.8 - fRparam;
-	Int_t nCone = 0;
-	Int_t nConeRan = 0;
-	Double_t pTC = 1; // small number
-	for(int ir = 0;ir < fNRandomCones;ir++){
-	  Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
-	  Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
-	  // massless jet
-	  Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-	  Double_t pZC = pTC/TMath::Tan(thetaC);
-	  Double_t pXC = pTC * TMath::Cos(phiC);
-	  Double_t pYC = pTC * TMath::Sin(phiC);
-	  Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-	  AliAODJet tmpRecC (pXC,pYC,pZC, pC); 
-	  bool skip = false;
-	  for(int jj = 0; jj < TMath::Min(nRec,2);jj++){// test for overlap with leading jets
-	    AliAODJet jet (sortedJets[jj].px(), sortedJets[jj].py(), sortedJets[jj].pz(), sortedJets[jj].E());
-	    if(jet.DeltaR(& tmpRecC)<2.*fRparam+0.2){
-	      skip = true;
-	      break;
-	    }
-	  }
-	  // test for overlap with previous cones to avoid double counting
-	  for(int iic = 0;iic<ir;iic++){
-	    AliAODJet *iicone = (AliAODJet*)rConeArray->At(iic);
-	    if(iicone){
-	      if(iicone->DeltaR(&tmpRecC)<2.*fRparam){
-		skip = true;
-		break;
-	      }
-	    }
-	  }
-	  if(skip)continue;
-	  tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
-	  if(rConeArrayRan)new ((*rConeArrayRan)[nConeRan++]) AliAODJet(tmpRecC);
-	  if(rConeArray)new ((*rConeArray)[nCone++]) AliAODJet(tmpRecC);
-	}// random cones
-
-
-	// loop over the reconstructed particles and add up the pT in the random cones
-	// maybe better to loop over randomized particles not in the real jets...
-	// but this by definition brings dow average energy in the whole  event
-	AliAODJet vTmpRanR(1,0,0,1);
-	for(int i = 0; i < recParticles.GetEntries(); i++){
-	  AliVParticle *vp = (AliVParticle*)recParticles.At(i);
-	  if(rConeArray){
-	    for(int ir = 0;ir < fNRandomCones;ir++){
-	      AliAODJet *jC = (AliAODJet*)rConeArray->At(ir);  
-	      if(jC&&jC->DeltaR(vp)<fRparam){
-		jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
-	      }
-	    }  
-	  }// add up energy in cone
-      
-	  // the randomized input changes eta and phi, but keeps the p_T
-	  if(i>=fNSkipLeadingRan){// eventually skip the leading particles
-	    Double_t pTR = vp->Pt();
-	    Double_t etaR = 1.8 * fRandom->Rndm() - 0.9;
-	    Double_t phiR = 2.* TMath::Pi() * fRandom->Rndm();
-	    
-	    Double_t thetaR = 2.*TMath::ATan(TMath::Exp(-etaR));  
-	    Double_t pZR = pTR/TMath::Tan(thetaR);
-	
-	    Double_t pXR = pTR * TMath::Cos(phiR);
-	    Double_t pYR = pTR * TMath::Sin(phiR);
-	    Double_t pR  = TMath::Sqrt(pTR*pTR+pZR*pZR); 
-	    vTmpRanR.SetPxPyPzE(pXR,pYR,pZR,pR);
-	    if(rConeArrayRan){
-	      for(int ir = 0;ir < fNRandomCones;ir++){
-		AliAODJet *jC = (AliAODJet*)rConeArrayRan->At(ir);  
-		if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
-		  jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
-		}
-	      }  
-	    }
-	  }
-	}// loop over recparticles
     
-	Float_t jetArea = fRparam*fRparam*TMath::Pi();
-	for(int ir = 0;ir < fNRandomCones;ir++){
-	  // rescale the momntum vectors for the random cones
-	  if(!rConeArray)continue;
-	  AliAODJet *rC = (AliAODJet*)rConeArray->At(ir);
-	  if(rC){
-	    Double_t etaC = rC->Eta();
-	    Double_t phiC = rC->Phi();
-	    // massless jet, unit vector
-	    pTC = rC->ChargedBgEnergy();
-	    if(pTC<=0)pTC = 0.1; // for almost empty events
-	    Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-	    Double_t pZC = pTC/TMath::Tan(thetaC);
-	    Double_t pXC = pTC * TMath::Cos(phiC);
-	    Double_t pYC = pTC * TMath::Sin(phiC);
-	    Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-	    rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
-	    rC->SetBgEnergy(0,0);
-	    rC->SetEffArea(jetArea,0);
-	  }
-	  rC = (AliAODJet*)rConeArrayRan->At(ir);
-	  // same wit random
-	  if(rC){
-	    Double_t etaC = rC->Eta();
-	    Double_t phiC = rC->Phi();
-	    // massless jet, unit vector
-	    pTC = rC->ChargedBgEnergy();
-	    if(pTC<=0)pTC = 0.1;// for almost empty events
-	    Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
-	    Double_t pZC = pTC/TMath::Tan(thetaC);
-	    Double_t pXC = pTC * TMath::Cos(phiC);
-	    Double_t pYC = pTC * TMath::Sin(phiC);
-	    Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
-	    rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
-	    rC->SetBgEnergy(0,0);
-	    rC->SetEffArea(jetArea,0);
-	  }
-	}
-      }// if(fUseBackgroundCalc
-     
      for(unsigned int ic = 0; ic < constituents.size();ic++){
        AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
        fh1PtJetConstRec->Fill(part->Pt());
@@ -1099,13 +955,147 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        fh2JetsLeadingPhiPtWC[cenClass]->Fill(dPhi,pt,tmpPt);
      }
      fh2JetsLeadingPhiPtW->Fill(dPhi,pt,tmpPt);
-    }
+    }// loop over reconstructed jets
    delete recIter;
+
+
+
+   // Add the random cones...
+   if(fNRandomCones>0&&fTCARandomConesOut){       
+     // create a random jet within the acceptance
+     Double_t etaMax = 0.8 - fRparam;
+     Int_t nCone = 0;
+     Int_t nConeRan = 0;
+     Double_t pTC = 1; // small number
+     for(int ir = 0;ir < fNRandomCones;ir++){
+       Double_t etaC = etaMax*2.*(fRandom->Rndm()-0.5); // +- etamax
+       Double_t phiC = fRandom->Rndm()*2.*TMath::Pi(); // 0 - 2pi
+       // massless jet
+       Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+       Double_t pZC = pTC/TMath::Tan(thetaC);
+       Double_t pXC = pTC * TMath::Cos(phiC);
+       Double_t pYC = pTC * TMath::Sin(phiC);
+       Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+       AliAODJet tmpRecC (pXC,pYC,pZC, pC); 
+       bool skip = false;
+       for(int jj = 0; jj < TMath::Min(nRec,2);jj++){// test for overlap with leading jets
+	 AliAODJet jet (sortedJets[jj].px(), sortedJets[jj].py(), sortedJets[jj].pz(), sortedJets[jj].E());
+	 if(jet.DeltaR(& tmpRecC)<2.*fRparam+0.2){
+	   skip = true;
+	   break;
+	 }
+       }
+       // test for overlap with previous cones to avoid double counting
+       for(int iic = 0;iic<ir;iic++){
+	 AliAODJet *iicone = (AliAODJet*)fTCARandomConesOut->At(iic);
+	 if(iicone){
+	   if(iicone->DeltaR(&tmpRecC)<2.*fRparam){
+	     skip = true;
+	     break;
+	   }
+	 }
+       }
+       if(skip)continue;
+       tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
+       AliAODJet *rCone = 0;
+       AliAODJet *rConeRan = 0;
+       if(fTCARandomConesOut)rConeRan = new ((*fTCARandomConesOut)[nConeRan++]) AliAODJet(tmpRecC);
+       if(fTCARandomConesOutRan)rCone = new ((*fTCARandomConesOutRan)[nCone++]) AliAODJet(tmpRecC);
+     }// loop over random cones creation
+
+  
+     // loop over the reconstructed particles and add up the pT in the random cones
+     // maybe better to loop over randomized particles not in the real jets...
+     // but this by definition brings dow average energy in the whole  event
+     AliAODJet vTmpRanR(1,0,0,1);
+     for(int i = 0; i < recParticles.GetEntries(); i++){
+       AliVParticle *vp = (AliVParticle*)recParticles.At(i);
+       if(fTCARandomConesOut){
+	 for(int ir = 0;ir < fNRandomCones;ir++){
+	   AliAODJet *jC = (AliAODJet*)fTCARandomConesOut->At(ir);  
+	   if(jC&&jC->DeltaR(vp)<fRparam){
+	     jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
+	   }
+	 }  
+       }// add up energy in cone
+      
+       // the randomized input changes eta and phi, but keeps the p_T
+       if(i>=fNSkipLeadingRan){// eventually skip the leading particles
+	 Double_t pTR = vp->Pt();
+	 Double_t etaR = 1.8 * fRandom->Rndm() - 0.9;
+	 Double_t phiR = 2.* TMath::Pi() * fRandom->Rndm();
+	 
+	 Double_t thetaR = 2.*TMath::ATan(TMath::Exp(-etaR));  
+	 Double_t pZR = pTR/TMath::Tan(thetaR);
+	 
+	 Double_t pXR = pTR * TMath::Cos(phiR);
+	 Double_t pYR = pTR * TMath::Sin(phiR);
+	 Double_t pR  = TMath::Sqrt(pTR*pTR+pZR*pZR); 
+	 vTmpRanR.SetPxPyPzE(pXR,pYR,pZR,pR);
+	 if(fTCARandomConesOutRan){
+	   for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
+	     AliAODJet *jC = (AliAODJet*)fTCARandomConesOutRan->At(ir);  
+	     if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
+	       jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
+	     }
+	   }  
+	 }
+       }
+     }// loop over recparticles
+    
+     Float_t jetArea = fRparam*fRparam*TMath::Pi();
+     if(fTCARandomConesOut){
+       for(int ir = 0;ir < fTCARandomConesOut->GetEntriesFast();ir++){
+	 // rescale the momntum vectors for the random cones
+	 
+	 AliAODJet *rC = (AliAODJet*)fTCARandomConesOut->At(ir);
+	 if(rC){
+	   Double_t etaC = rC->Eta();
+	   Double_t phiC = rC->Phi();
+	   // massless jet, unit vector
+	   pTC = rC->ChargedBgEnergy();
+	   if(pTC<=0)pTC = 0.1; // for almost empty events
+	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+	   Double_t pZC = pTC/TMath::Tan(thetaC);
+	   Double_t pXC = pTC * TMath::Cos(phiC);
+	   Double_t pYC = pTC * TMath::Sin(phiC);
+	   Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+	   rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
+	   rC->SetBgEnergy(0,0);
+	   rC->SetEffArea(jetArea,0);
+	 }
+       }
+     }
+     if(!fTCARandomConesOutRan){
+       for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
+	 AliAODJet* rC = (AliAODJet*)fTCARandomConesOutRan->At(ir);
+	 // same wit random
+	 if(rC){
+	   Double_t etaC = rC->Eta();
+	   Double_t phiC = rC->Phi();
+	   // massless jet, unit vector
+	   pTC = rC->ChargedBgEnergy();
+	   if(pTC<=0)pTC = 0.1;// for almost empty events
+	   Double_t thetaC = 2.*TMath::ATan(TMath::Exp(-etaC));  
+	   Double_t pZC = pTC/TMath::Tan(thetaC);
+	   Double_t pXC = pTC * TMath::Cos(phiC);
+	   Double_t pYC = pTC * TMath::Sin(phiC);
+	   Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
+	   rC->SetPxPyPzE(pXC,pYC,pZC, pC); 
+	   rC->SetBgEnergy(0,0);
+	   rC->SetEffArea(jetArea,0);
+	 }
+       }
+     }
+   }// if(fNRandomCones
   
    //background estimates:all bckg jets(0) & wo the 2 hardest(1)
  
 
-   if(evBkg){
+
+
+
+   if(fAODJetBackgroundOut){
      vector<fastjet::PseudoJet> jets2=sortedJets;
      if(jets2.size()>2) jets2.erase(jets2.begin(),jets2.begin()+2); 
      Double_t bkg1=0;
@@ -1116,13 +1106,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      Double_t meanarea2=0.;
 
      clustSeq.get_median_rho_and_sigma(jets2, range, true, bkg1, sigma1, meanarea1, true);
-     evBkg->SetBackground(0,bkg1,sigma1,meanarea1);
+     fAODJetBackgroundOut->SetBackground(0,bkg1,sigma1,meanarea1);
 
      //     fh1BiARandomCones[0]->Fill(omCone-(bkg1*areaRandomCone));    
      //  fh1BiARandomConesRan[0]->Fill(ptRandomConeRan-(bkg1*areaRandomCone));    
      
      clustSeq.get_median_rho_and_sigma(jets2, range, false, bkg2, sigma2, meanarea2, true);
-     evBkg->SetBackground(1,bkg2,sigma2,meanarea2);
+     fAODJetBackgroundOut->SetBackground(1,bkg2,sigma2,meanarea2);
      //  fh1BiARandomCones[1]->Fill(ptRandomCone-(bkg2*areaRandomCone));    
      //   fh1BiARandomConesRan[1]->Fill(ptRandomConeRan-(bkg2*areaRandomCone));    
 
@@ -1255,8 +1245,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2PtNchNRan->Fill(nCh,tmpPt,constituents.size());
 
 
-     if(tmpPt>fJetOutputMinPt&&jarrayran){
-       aodOutJetRan =  new ((*jarrayran)[nAodOutJetsRan++]) AliAODJet(tmpRec);
+     if(tmpPt>fJetOutputMinPt&&fTCAJetsOutRan){
+       aodOutJetRan =  new ((*fTCAJetsOutRan)[nAodOutJetsRan++]) AliAODJet(tmpRec);
        Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
        
        aodOutJetRan->SetEffArea(arearan,0);
@@ -1293,12 +1283,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     }  
 
      
-    if(evBkg){
+    if(fAODJetBackgroundOut){
      Double_t bkg3=0.;
      Double_t sigma3=0.;
      Double_t meanarea3=0.;
      clustSeqRan.get_median_rho_and_sigma(sortedJetsRan ,range, false, bkg3, sigma3, meanarea3, true);
-     evBkg->SetBackground(2,bkg3,sigma3,meanarea3);
+     fAODJetBackgroundOut->SetBackground(2,bkg3,sigma3,meanarea3);
      //     float areaRandomCone = rRandomCone2 *TMath::Pi();         
      /*
      fh1BiARandomCones[2]->Fill(ptRandomCone-(bkg3*areaRandomCone));    
@@ -1325,9 +1315,9 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
    */
    float rho = 0;
    if(externalBackground)rho = externalBackground->GetBackground(2);
-   if(jarray){
-     for(int i = 0;i < jarray->GetEntriesFast();i++){
-       AliAODJet *jet = (AliAODJet*)jarray->At(i);
+   if(fTCAJetsOut){
+     for(int i = 0;i < fTCAJetsOut->GetEntriesFast();i++){
+       AliAODJet *jet = (AliAODJet*)fTCAJetsOut->At(i);
        Float_t ptSub = jet->Pt() - rho *jet->EffectiveAreaCharged();
        if(ptSub>=minPt){
 	 select = true;
