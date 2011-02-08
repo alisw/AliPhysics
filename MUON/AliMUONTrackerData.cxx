@@ -436,9 +436,9 @@ fNofEventsPerDDL(0x0)
   
   for ( Int_t chamberId = 0; chamberId < AliMUONConstants::NCh(); ++chamberId ) 
   {
-    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
+//    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
 
-    // FIXME : update the chamber value !
+    // FIXME : update the chamber value ?
     
     AliMpDEIterator deit;
   
