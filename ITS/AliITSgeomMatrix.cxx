@@ -925,7 +925,7 @@ void AliITSgeomMatrix::Read(istream *is){
     while(is->peek()==' ')is->get(); // skip white spaces
     if(isprint(is->peek())){ // old format did not have path.
 	*is >> j; // string length
-	if(j>kMxVal){
+	if(j>kMxVal || j<0){
 	  AliError(Form("j> %d",kMxVal));
 	  return;
 	}
