@@ -313,10 +313,15 @@ public:
   
   TH1F * fhNClusters; //! Number of clusters
 	
-  TH2F * fhClusterTimeEnergy;   //! Cluster Time vs Energy 
-  TH1F * fhCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells
-  TH1F * fhCellIdCellLargeTimeSpread;      //! Cells with large time respect to max (diff > 100 ns)
+  TH2F * fhClusterTimeEnergy;               //! Cluster Time vs Energy 
+  TH1F * fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
+  TH1F * fhCellIdCellLargeTimeSpread;       //! Cells with large time respect to max (diff > 100 ns)
 	
+  TH2F * fhBadClusterMaxCellTimeEnergy;     //! Time Max cell of bad cluster
+  TH2F * fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
+  TH2F * fhClusterMaxCellTimeEnergy;        //! Time of Max cell
+  TH2F * fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
+  
   TH2F * fhRNCells ; //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F * fhXNCells ; //! X (cm) cluster distribution vs N cells in cluster
   TH2F * fhYNCells ; //! Y (cm) cluster distribution vs N cells in cluster

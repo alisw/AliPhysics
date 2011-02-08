@@ -81,7 +81,8 @@ fh2E(0),fh2Pt(0),fh2Phi(0),fh2Eta(0),
 fhLambda(0), fhDispersion(0), 
 fhIM(0), fhIMCellCut(0),fhAsym(0), 
 fhNCellsPerCluster(0),fhNCellsPerClusterMIP(0), fhNCellsPerClusterMIPCharged(0), fhNClusters(0), 
-fhClusterTimeEnergy(0),fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0),
+fhClusterTimeEnergy(0),fhCellTimeSpreadRespectToCellMax(0),fhCellIdCellLargeTimeSpread(0), 
+fhBadClusterMaxCellTimeEnergy(0), fhBadClusterMaxCellCloseCellRatio(0),fhClusterMaxCellTimeEnergy(0), fhClusterMaxCellCloseCellRatio(0), 
 fhRNCells(0),fhXNCells(0),fhYNCells(0),fhZNCells(0),
 fhRE(0),     fhXE(0),     fhYE(0),     fhZE(0),    fhXYZ(0),
 fhRCellE(0), fhXCellE(0), fhYCellE(0), fhZCellE(0),fhXYZCell(0),
@@ -225,7 +226,30 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterTimeEnergy->SetXTitle("E (GeV) ");
   fhClusterTimeEnergy->SetYTitle("TOF (ns)");
   outputContainer->Add(fhClusterTimeEnergy);
+    
+  fhClusterMaxCellCloseCellRatio  = new TH2F ("hClusterMaxCellCloseCell","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
+                                          nptbins,ptmin,ptmax, 100,0,1.); 
+  fhClusterMaxCellCloseCellRatio->SetXTitle("E_{cluster} (GeV) ");
+  fhClusterMaxCellCloseCellRatio->SetYTitle("ratio");
+  outputContainer->Add(fhClusterMaxCellCloseCellRatio);
   
+  fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCell","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
+                                             nptbins,ptmin,ptmax, 100,0,1.); 
+  fhBadClusterMaxCellCloseCellRatio->SetXTitle("E_{cluster} (GeV) ");
+  fhBadClusterMaxCellCloseCellRatio->SetYTitle("ratio");
+  outputContainer->Add(fhBadClusterMaxCellCloseCellRatio);
+  
+  fhClusterMaxCellTimeEnergy  = new TH2F ("hClusterMaxCellTimeEnergy","energy vs TOF of maximum constributing cell, reconstructed clusters",
+                                          nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+  fhClusterMaxCellTimeEnergy->SetXTitle("E_{cluster} (GeV) ");
+  fhClusterMaxCellTimeEnergy->SetYTitle("TOF (ns)");
+  outputContainer->Add(fhClusterMaxCellTimeEnergy);
+  
+  fhBadClusterMaxCellTimeEnergy  = new TH2F ("hBadClusterMaxCellTimeEnergy","energy vs TOF of maximum constributing cell, reconstructed clusters",
+                                             nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+  fhBadClusterMaxCellTimeEnergy->SetXTitle("E_{cluster} (GeV) ");
+  fhBadClusterMaxCellTimeEnergy->SetYTitle("TOF (ns)");
+  outputContainer->Add(fhBadClusterMaxCellTimeEnergy);    
   
   //Shower shape
   fhLambda  = new TH3F ("hLambda","#lambda_{0}^{2} vs #lambda_{1}^{2} vs energy, reconstructed clusters",
@@ -491,7 +515,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhCellIdCellLargeTimeSpread= new TH1F ("hCellIdCellLargeTimeSpread","", colmax*rowmax*fNModules,0,colmax*rowmax*fNModules); 
     fhCellIdCellLargeTimeSpread->SetXTitle("Absolute Cell Id");
     outputContainer->Add(fhCellIdCellLargeTimeSpread);
-    
+
     fhTime  = new TH1F ("hTime","Cell Time",ntimebins,timemin,timemax); 
     fhTime->SetXTitle("Cell Time (ns)");
     outputContainer->Add(fhTime);
@@ -1525,7 +1549,41 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         } 
         
       }// cluster cell loop
-      
+      //Bad clusters histograms
+      Float_t minNCells = 1+mom.E()/3;//-x*x*0.0033
+      if(nCaloCellsPerCluster < minNCells) {
+        if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+          fhBadClusterMaxCellTimeEnergy->Fill(mom.E(),tmax);
+        else 
+          fhBadClusterMaxCellTimeEnergy->Fill(mom.E(),tof);
+        //printf("bad tof : %2.3f\n",tof);
+
+        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+          //	printf("Index %d\n",ipos);
+          if(ipos!=imax){
+            absId  = indexList[ipos]; 
+            Float_t frac = cell->GetCellAmplitude(absId)/emax;
+            //printf("bad frac : %2.3f, e %2.2f, ncells %d, min %2.1f\n",frac,mom.E(),nCaloCellsPerCluster,minNCells);
+            fhBadClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
+          }
+        }
+      }//Bad cluster
+      else{
+        if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
+          fhClusterMaxCellTimeEnergy->Fill(mom.E(),tmax);
+        else 
+          fhClusterMaxCellTimeEnergy->Fill(mom.E(),tof);
+        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+          //	printf("Index %d\n",ipos);
+          if(ipos!=imax){
+            absId  = indexList[ipos]; 
+            Float_t frac = cell->GetCellAmplitude(absId)/emax;
+            //printf("good frac : %2.3f\n",frac);
+            fhClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
+          }
+        }
+      }//good cluster
+          
       // check time of cells respect to max energy cell
       if(nCaloCellsPerCluster > 1 &&  GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
         for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
@@ -1778,8 +1836,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     
     if     (fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ncells ++ ;
     else if(fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin)  ncells ++ ;
-    else  
-      printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());    
+    //else  
+    //  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());    
     }//nmodules
   }//cell loop
   if(ncells > 0 )fhNCells->Fill(ncells) ; //fill the cells after the cut 
