@@ -171,5 +171,4 @@ class AliAnalysisTaskSPDdNdEta : public AliAnalysisTaskSE {
   
   ClassDef(AliAnalysisTaskSPDdNdEta, 5);  
 };
-
 #endif
