@@ -401,8 +401,8 @@ void AliTRDonlineTrackletQA::Exec(const Option_t * /* option */)
 	}
 	
 	// now search for tracklets belonging to this track reference
-	Int_t nTrackletsPerRef = 0;
-	Int_t defl = 0.;
+	Int_t nTrackletsPerRef(0);
+	Int_t defl(0);
 	for (Int_t iTracklet = 0; iTracklet < fTrackletsSim->GetEntries(); iTracklet++) {
 	  trkl = (AliTRDtrackletMCM*) (*fTrackletsSim)[iTracklet];
 	  // they must have the same label
