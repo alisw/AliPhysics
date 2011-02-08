@@ -97,22 +97,22 @@ public:
    UChar_t GetComptXY() const {return  fEOS & 1;}
 
             /// Return XY1
-   UShort_t GetXY1(Int_t n) const {return  (n % 2 == 0) ?
+   UShort_t GetXY1(Int_t n) const {return  (n % 2 == 1) ?
        (fScaler[TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
             /// Return XY2
-   UShort_t GetXY2(Int_t n) const {return  (n % 2 == 0) ?
+   UShort_t GetXY2(Int_t n) const {return  (n % 2 == 1) ?
        (fScaler[8 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
             /// Return XY3
-   UShort_t GetXY3(Int_t n) const {return  (n % 2 == 0) ?
+   UShort_t GetXY3(Int_t n) const {return  (n % 2 == 1) ?
        (fScaler[8*2 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8*2 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 
             /// Return XY4
-   UShort_t GetXY4(Int_t n) const {return  (n % 2 == 0) ?
+   UShort_t GetXY4(Int_t n) const {return  (n % 2 == 1) ?
        (fScaler[8*3 + TMath::Nint(Float_t(n/2))] &  0xFFFF) : 
        (fScaler[8*3 + TMath::Nint(Float_t(n/2))] >> 16) &  0xFFFF;}
 

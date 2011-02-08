@@ -690,7 +690,7 @@ public:
 	static UShort_t GetLocalXY1(const AliMUONLocalScalarsStruct* scalars, UInt_t n)
 	{
 		assert(scalars != NULL and n < 16);
-		return  (n % 2 == 0) ? (scalars->fScaler[(n/2)] & 0xFFFF)
+		return  (n % 2 == 1) ? (scalars->fScaler[(n/2)] & 0xFFFF)
 		                     : ((scalars->fScaler[(n/2)] >> 16) &  0xFFFF);
 	}
 	
@@ -698,7 +698,7 @@ public:
 	static UShort_t GetLocalXY2(const AliMUONLocalScalarsStruct* scalars, UInt_t n)
 	{
 		assert(scalars != NULL and n < 16);
-		return  (n % 2 == 0) ? (scalars->fScaler[8 + (n/2)] & 0xFFFF)
+		return  (n % 2 == 1) ? (scalars->fScaler[8 + (n/2)] & 0xFFFF)
 		                     : ((scalars->fScaler[8 + (n/2)] >> 16) &  0xFFFF);
 	}
 	
@@ -706,7 +706,7 @@ public:
 	static UShort_t GetLocalXY3(const AliMUONLocalScalarsStruct* scalars, UInt_t n)
 	{
 		assert(scalars != NULL and n < 16);
-		return  (n % 2 == 0) ? (scalars->fScaler[8*2 + (n/2)] & 0xFFFF)
+		return  (n % 2 == 1) ? (scalars->fScaler[8*2 + (n/2)] & 0xFFFF)
 		                     : ((scalars->fScaler[8*2 + (n/2)] >> 16) &  0xFFFF);
 	}
 	
@@ -714,7 +714,7 @@ public:
 	static UShort_t GetLocalXY4(const AliMUONLocalScalarsStruct* scalars, UInt_t n)
 	{
 		assert(scalars != NULL and n < 16);
-		return  (n % 2 == 0) ? (scalars->fScaler[8*3 + (n/2)] & 0xFFFF)
+		return  (n % 2 == 1) ? (scalars->fScaler[8*3 + (n/2)] & 0xFFFF)
 		                     : ((scalars->fScaler[8*3 + (n/2)] >> 16) &  0xFFFF);
 	}
 	

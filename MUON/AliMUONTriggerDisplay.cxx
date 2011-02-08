@@ -292,6 +292,8 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
       sign = -1.;
     }
     yOffsetLine = (Float_t)(line - 4) * 2. * yWidthSlat;
+	  
+    Int_t nLocations = 1;
 
     for(Int_t cath=0; cath<AliMpConstants::NofCathodes(); cath++){
       // Loop on cathodes: 
@@ -299,13 +301,13 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
       // board info is read only from cathode 0
 
       // loop over strips
-      for (Int_t iStrip = 0; iStrip < 16; ++iStrip) {
+      for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
 	// get pad from electronics
 
 	Int_t offset = 0;
 	if (cath && localBoard->GetSwitch(AliMpLocalBoard::kZeroAllYLSB)) offset = -8;
 
-	AliMpPad pad = seg[cath]->PadByLocation(iBoard,iStrip+offset,kFALSE);
+	AliMpPad pad = seg[cath]->PadByLocation(iBoard,ibitxy+offset,kFALSE);
 
 	if (!pad.IsValid()) continue;
 
@@ -314,6 +316,8 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
 	xcPad = sign * (pad.GetPositionX() + xOffsetLine);
 	if(line==4) xcPad += 0.75 * sign * xWidthCol;
 	ycPad = pad.GetPositionY() + yOffsetLine;
+	nLocations = pad.GetNofLocations();
+	Int_t iStrip = pad.GetLocalBoardChannel(0);
 
 	if(cath==iCath){
 	  x1 = xcPad - xWidth + kShiftX;
@@ -333,13 +337,14 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
 	}
 
 	if(cath==0){
-	  if(iStrip+offset==0) {
+	  if(iStrip==0) {
 	    x1b = xcPad - xWidth + kShiftEl;
 	    y1b = ycPad - yWidth + kShiftEl;
 	  }
 	  x2b = xcPad + xWidth - kShiftEl;
 	  y2b = ycPad + yWidth - kShiftEl;
 	}
+
       } // loop on strips
 
       // if iCath==0 strip info and board info are both filled -> break!
@@ -356,7 +361,7 @@ Bool_t AliMUONTriggerDisplay::InitOrDisplayTriggerInfo(TObject* inputObject, TH2
       AddSortedPoint(y2b, yAxisBoard, kResetValue);
     }
     else if(displayType==kDisplayBoards) 
-      FillBins(inputObject, displayHisto, iBoard, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
+      FillBins(inputObject, displayHisto, iBoard, -nLocations, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
     else if(displayType==kDisplaySlats) 
       FillBins(inputObject, displayHisto, slat, -1, x1b, x2b, y1b, y2b, kShiftEl, kShiftEl, displayOpt);
   } // loop on local boards
@@ -497,6 +502,13 @@ void AliMUONTriggerDisplay::FillBins(TObject* inputObject, TH2* displayHisto,
                              // x2 = x_c + xHalfWidth - kShiftX
                              // x1 = x_c - xHalfWidth + kShiftX
                              // so x2 - x1 + 2*kShiftX returns the element width.
+	  
+	  // If iElement2 is less than 0, then its meaning is the 
+	  // number of boards covered by one strip
+	  // the area has therefore to be multiplied accordingly
+	  // This fixes the problem when filling the trigger rate per boards in non-bending plane
+	  // which is overestimated since the segmentation is always given by the bending-plane
+	  if ( iElement2 < 0 ) elementArea *= -(Double_t)iElement2;
 
   }
 

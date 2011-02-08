@@ -61,6 +61,9 @@ ClassImp(AliMUONTriggerQADataMakerRec)
 #include "AliMUONGlobalTrigger.h"
 #include "AliMUONGlobalCrateConfig.h"
 #include "AliMUONQAIndices.h"
+#include "AliMpPad.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
 
 namespace
 {
@@ -499,13 +502,6 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     //}
 
     AliMUONDigitStoreV2R digitStore;
-
-    AliMUONDigitStoreV2R digitStoreAll;
-    TArrayS xyPatternAll[2];
-    for(Int_t icath=0; icath<AliMpConstants::NofCathodes(); icath++){
-      xyPatternAll[icath].Set(AliMpConstants::NofTriggerChambers());
-      xyPatternAll[icath].Reset(1);
-    }
     
     AliMUONTriggerStoreV1 recoTriggerStore;
 
@@ -525,6 +521,7 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     const AliMUONRawStreamTriggerHP::AliLocalStruct*     localStruct = 0x0;
 
     Int_t nDeadLocal = 0, nDeadRegional = 0, nDeadGlobal = 0, nNoisyStrips = 0;
+    Int_t nFiredStrips = 0, nStripsTot = 0;
 
     // When a crate is not present, the loop on boards is not performed
     // This should allow to correctly count the local boards
@@ -633,8 +630,6 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  localStruct->GetXPattern(xyPattern[0]);
 	  localStruct->GetYPattern(xyPattern[1]);
 	  fDigitMaker->TriggerDigits(loCircuit, xyPattern, digitStore);
-	  if ( fillScalerHistos ) // Compute total number of strips
-	    fDigitMaker->TriggerDigits(loCircuit, xyPatternAll, digitStoreAll);
 
 	  //Get electronic Decisions from data
 
@@ -653,6 +648,10 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	  // loop over strips
 	  if ( fillScalerHistos ) {
 	    Int_t cathode = localStruct->GetComptXY()%2;
+      
+      Int_t offset = 0;
+      if (cathode && localBoard->GetSwitch(AliMpLocalBoard::kZeroAllYLSB)) offset = -8;
+
 	    for (Int_t ibitxy = 0; ibitxy < 16; ++ibitxy) {
 	      if (ibitxy==0){
 		AliDebug(AliQAv1::GetQADebugLevel(),"Filling trigger scalers");
@@ -664,15 +663,34 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		localStruct->GetXY3(ibitxy),
 		localStruct->GetXY4(ibitxy)
 	      };
+        
+        
 
-	      for(Int_t ich=0; ich<AliMpConstants::NofTriggerChambers(); ich++){
-		if ( scalerVal[ich] > 0 )
-		  ((TH2F*)GetRawsData(AliMUONQAIndices::kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + ich))
-		    ->Fill(loCircuit, ibitxy, 2*(Float_t)scalerVal[ich]);
+        for(Int_t ich=0; ich<AliMpConstants::NofTriggerChambers(); ich++){
+          // getDetElemId
+          Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromLocalBoard(loCircuit, ich);
+					
+          const AliMpVSegmentation* seg = AliMpSegmentation::Instance()->GetMpSegmentation(detElemId, AliMp::GetCathodType(cathode));
+					
+					
+          Int_t istrip = ibitxy + offset;
+					
+          AliMpPad pad = seg->PadByLocation(loCircuit,istrip,kFALSE);
+          if (!pad.IsValid()) continue;
+          nStripsTot++;
+          
+          // UShort_t pattern = (UShort_t)xyPattern[cathode].At(ich); 
+          // if ((pattern >> ibitxy) & 0x1) nFiredStrips++;
+          
+          if ( scalerVal[ich] > 0 ) {
+            ((TH2F*)GetRawsData(AliMUONQAIndices::kTriggerScalers + AliMpConstants::NofTriggerChambers()*cathode + ich))
+              ->Fill(loCircuit, istrip, 2*(Float_t)scalerVal[ich]);
+            nFiredStrips++;
+          }
 
-		if ( scalerVal[ich] >= maxNcounts )
-		  nNoisyStrips++;
-	      } // loop on chamber
+          if ( scalerVal[ich] >= maxNcounts )
+            nNoisyStrips++;
+        } // loop on chamber
 	    } // loop on strips
 	  } // scaler event
 	} // iLocal
@@ -698,10 +716,10 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     GetRawsData(AliMUONQAIndices::kTriggerRawNAnalyzedEvents)->Fill(1.);
 
     nDeadLocal += AliMUONConstants::NTriggerCircuit() - countNotifiedBoards;
-    Int_t nStripsTot = digitStoreAll.GetSize();
     if ( nStripsTot > 0 ) { // The value is != 0 only for scaler events
+      AliDebug(AliQAv1::GetQADebugLevel(), Form("nStripsFired %i  nStripsTot %i", nFiredStrips, nStripsTot));
       Float_t fraction[AliMUONQAIndices::kNtrigCalibSummaryBins] = {
-	((Float_t)(nStripsTot - digitStore.GetSize())) / ((Float_t)nStripsTot),
+	((Float_t)(nStripsTot - nFiredStrips)) / ((Float_t)nStripsTot),
 	//(Float_t)nDeadLocal / ((Float_t)countNotifiedBoards),
 	(Float_t)nDeadLocal / ((Float_t)AliMUONConstants::NTriggerCircuit()),
 	(Float_t)nDeadRegional / 16.,
