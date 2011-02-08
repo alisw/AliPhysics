@@ -159,7 +159,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
     AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
        
-    ClassDef(AliITSDetTypeSim,12) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,14) // ITS Simulation structure
  
 };
 
