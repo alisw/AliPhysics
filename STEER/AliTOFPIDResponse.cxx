@@ -138,3 +138,13 @@ Float_t AliTOFPIDResponse::GetStartTimeRes(Float_t mom) const {
   return GetT0binRes(ibin);
 
 }
+//_________________________________________________________________________
+Int_t AliTOFPIDResponse::GetStartTimeMask(Float_t mom) const {
+  //
+  // Returns event_time mask
+  //
+
+  Int_t ibin = GetMomBin(mom);
+  return GetT0binMask(ibin);
+
+}

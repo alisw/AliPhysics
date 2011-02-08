@@ -33,7 +33,7 @@ public:
 
   void     SetT0event(Float_t *t0event){for(Int_t i=0;i < fNmomBins;i++) fT0event[i] = t0event[i];};
   void     SetT0resolution(Float_t *t0resolution){for(Int_t i=0;i < fNmomBins;i++) fT0resolution[i] = t0resolution[i];};
-  void     ResetT0info(){ for(Int_t i=0;i < fNmomBins;i++){ fT0event[i] = 0.0; fT0resolution[i] = 0.0;} };
+  void     ResetT0info(){ for(Int_t i=0;i < fNmomBins;i++){ fT0event[i] = 0.0; fT0resolution[i] = 0.0; fMaskT0[i] = 0;} };
   void     SetMomBoundary();
   Int_t    GetMomBin(Float_t p) const;
   Int_t    GetNmomBins(){return fNmomBins;};
@@ -41,12 +41,15 @@ public:
   Float_t  GetMaxMom(Int_t ibin)const {if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin+1]; else return 0.0;};
   void     SetT0bin(Int_t ibin,Float_t t0bin){if(ibin >=0 && ibin <= fNmomBins) fT0event[ibin] = t0bin;};
   void     SetT0binRes(Int_t ibin,Float_t t0binRes){if(ibin >=0 && ibin <= fNmomBins) fT0resolution[ibin] = t0binRes;};
+  void     SetT0binMask(Int_t ibin,Int_t t0binMask){if(ibin >=0 && ibin <= fNmomBins) fMaskT0[ibin] = t0binMask;};
   Float_t  GetT0bin(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0event[ibin]; else return 0.0;};
   Float_t  GetT0binRes(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0resolution[ibin]; else return 0.0;};
+  Int_t    GetT0binMask(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fMaskT0[ibin]; else return 0;};
 
   // Get Start Time for a track
   Float_t  GetStartTime(Float_t mom) const;
   Float_t  GetStartTimeRes(Float_t mom) const;
+  Int_t    GetStartTimeMask(Float_t mom) const;
 
  private:
   Double_t fSigma;        // intrinsic TOF resolution
@@ -61,8 +64,9 @@ public:
   Float_t fT0event[fNmomBins];    // t0 (best, T0, T0-TOF, ...) of the event as a function of p 
   Float_t fT0resolution[fNmomBins]; // t0 (best, T0, T0-TOF, ...) resolution as a function of p 
   Float_t fPCutMin[fNmomBins+1]; // min values for p bins
-  
-  ClassDef(AliTOFPIDResponse,2)   // TOF PID class
+  Int_t fMaskT0[fNmomBins]; // mask withthe T0 used (0x1=T0-TOF,0x2=T0A,0x3=TOC) for p bins
+
+  ClassDef(AliTOFPIDResponse,3)   // TOF PID class
 };
 
 #endif
