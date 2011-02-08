@@ -37,7 +37,7 @@
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliVEvent.h"
+#include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliVTrack.h"
 #include "AliVParticle.h"
@@ -45,6 +45,7 @@
 #include "AliESDtrack.h"
 #include "AliEMCALRecoUtils.h"
 #include "AliESDtrackCuts.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -58,7 +59,7 @@ ClassImp(AliCaloTrackReader)
     fEMCALCells(0x0), fPHOSCells(0x0),
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
-    fFillEMCALCells(0),fFillPHOSCells(0), 
+    fFillEMCALCells(0),fFillPHOSCells(0),  fRemoveSuspiciousClusters(kFALSE),
 //    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 //    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
@@ -69,9 +70,9 @@ ClassImp(AliCaloTrackReader)
     fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
     fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
-    fEMCALClustersListName(""),fZvtxCut(0.),
-    fCentralityClass("V0M"),fCentralityOpt(10)
-
+    fEMCALClustersListName(""),fZvtxCut(0.), 
+    fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
+    fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10)
 {
   //Ctor
   
@@ -124,7 +125,8 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete [] fVertex ;
 	}
 
-  if(fESDtrackCuts)   delete fESDtrackCuts;
+  if(fESDtrackCuts)    delete fESDtrackCuts;
+  if(fTriggerAnalysis) delete fTriggerAnalysis;
   
 //  Pointers not owned, done by the analysis frame
 //  if(fInputEvent)  delete fInputEvent ;
@@ -441,18 +443,74 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
 //    
 //  }
 	
+  //Fill Vertex array
+  FillVertexArray();
+  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
+  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;  
+  
+  //------------------------------------------------------
+  //Event rejection depending on vertex, pileup, v0and
+  //------------------------------------------------------
+  if(fDoEventSelection){
+    if(!fCaloFilterPatch){
+      //Do not analyze events with pileup
+      Bool_t bPileup = fInputEvent->IsPileupFromSPD(3, 0.8, 3., 2., 5.); //Default values, if not it does not compile
+      //Bool_t bPileup = event->IsPileupFromSPD(); 
+      if(bPileup) return kFALSE;
+      
+      if(fDoV0ANDEventSelection){
+        Bool_t bV0AND = kTRUE; 
+        if(dynamic_cast<AliESDEvent*> (fInputEvent)) 
+          bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(dynamic_cast<AliESDEvent*> (fInputEvent), AliTriggerAnalysis::kV0AND);
+        //else bV0AND = //FIXME FOR AODs
+        if(!bV0AND) return kFALSE;
+      }
+      
+      if(!CheckForPrimaryVertex()) return kFALSE;
+    }//CaloFilter patch
+    else{ 
+      if(fInputEvent->GetNumberOfCaloClusters() > 0) {
+        AliVCluster * calo = fInputEvent->GetCaloCluster(0);
+        if(calo->GetNLabels() == 4){
+          Int_t * selection = calo->GetLabels();
+          Bool_t bPileup = selection[0];
+          if(bPileup) return kFALSE;
+          
+          Bool_t bGoodV = selection[1]; 
+          if(!bGoodV) return kFALSE;
+          
+          if(fDoV0ANDEventSelection){
+            Bool_t bV0AND = selection[2]; 
+            if(!bV0AND) return kFALSE;
+          }
+          
+          fTrackMult = selection[3];
+          if(fTrackMult == 0) return kFALSE;
+        } else {
+          //First filtered AODs, track multiplicity stored there.  
+          fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
+          if(fTrackMult == 0) return kFALSE;          
+        }
+      }//at least one cluster
+      else {
+        printf("AliCaloTrackReader::FillInputEvent() - No clusters in event\n");
+        //Remove events with  vertex (0,0,0), bad vertex reconstruction
+        if(TMath::Abs(fVertex[0][0]) < 1.e-6 && TMath::Abs(fVertex[0][1]) < 1.e-6 && TMath::Abs(fVertex[0][2]) < 1.e-6) return kFALSE;
+        
+        //First filtered AODs, track multiplicity stored there.  
+        fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
+        if(fTrackMult == 0) return kFALSE;
+      }// no cluster
+    }// CaloFileter patch
+  }// Event selection
+  //------------------------------------------------------
+
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   //If we need a centrality bin, we select only those events in the corresponding bin.
   if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100){
     Int_t cen = GetEventCentrality();
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
   }
-  
-  //Fill Vertex array
-  
-  FillVertexArray();
-  //Reject events with Z vertex too large, only for SE analysis, if not, cut on the analysis code
-  if(!GetMixedEvent() && TMath::Abs(fVertex[0][2]) > fZvtxCut) return kFALSE;  
   
   //Fill the arrays with cluster/tracks/cells data
    if(fFillEMCALCells) 
@@ -463,14 +521,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
   if(fFillCTS){   
     FillInputCTS();
     //Accept events with at least one track
-    if(fTrackMult == 0) return kFALSE;
-  }
-  
-  //In case of data produced with calo filter, some information stored in non usual places
-  if(IsCaloFilterPatchOn()){
-    fTrackMult = (Int_t) ((AliAODHeader*)fInputEvent->GetHeader())->GetCentrality();
-    //printf("Track multiplicity %d \n",fTrackMult);
-    if(fTrackMult == 0) return kFALSE;
+    if(fTrackMult == 0 && fDoEventSelection) return kFALSE;
   }
   
   if(fFillEMCAL) 
@@ -719,6 +770,20 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     return;
   if(!GetCaloUtils()->CheckCellFiducialRegion(clus, (AliVCaloCells*)fInputEvent->GetEMCALCells(), fInputEvent, vindex)) 
     return;
+  
+  //Remove suspicious clusters
+  if(fRemoveSuspiciousClusters){
+    Int_t ncells      = clus->GetNCells();
+    Float_t energy    = clus->E();
+    Float_t minNCells = 1+energy/3;//-x*x*0.0033
+    if(ncells < minNCells) {
+      //if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Remove cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
+      return;
+    }
+//    else {
+//      if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Keep cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
+//    }
+  }
   
   TLorentzVector momentum ;
   
@@ -971,4 +1036,37 @@ Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const {
   }
   
 }
+
+//____________________________________________________________________________
+Bool_t AliCaloTrackReader::CheckForPrimaryVertex(){
+  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
+  //Only for ESDs ...
+  AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
+ 
+  if(event){
+    if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+      return kTRUE;
+    }
+    
+    if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
+      // SPD vertex
+      if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+        //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+        return kTRUE;
+        
+      }
+      if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+        //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
+        return kFALSE;
+      }
+    }
+    return kFALSE;
+    //  return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  }
+  
+  return kTRUE;
+  
+}
+
+
 

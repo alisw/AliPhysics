@@ -37,6 +37,7 @@ class AliAODMCHeader;
 #include "AliCalorimeterUtils.h"
 class AliESDtrackCuts;
 class AliCentrality;
+class AliTriggerAnalysis;
 
 class AliCaloTrackReader : public TObject {
 
@@ -209,10 +210,12 @@ public:
   AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
   void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }
   
+  //Vertex methods
   virtual void GetVertex(Double_t v[3]) const ;
   virtual Double_t* GetVertex(const Int_t evtIndex) const {return fVertex[evtIndex];}
   virtual void GetVertex(Double_t vertex[3], const Int_t evtIndex) const ;
   virtual void FillVertexArray();
+  virtual Bool_t CheckForPrimaryVertex();
  // virtual void       GetSecondInputAODVertex(Double_t *) const {;}
   virtual Float_t GetZvertexCut() const {return fZvtxCut ;} //cut on vertex position  
   virtual void SetZvertexCut(Float_t zcut=10.){fZvtxCut=zcut ;} //cut on vertex position
@@ -221,6 +224,10 @@ public:
   void SwitchOffWriteDeltaAOD() {fWriteOutputDeltaAOD = kFALSE ; }
   Bool_t WriteDeltaAODToFile() const {return fWriteOutputDeltaAOD ; } 
   
+  void SwitchOnSuspiciousClustersRemoval()  {fRemoveSuspiciousClusters = kTRUE ;  }
+  void SwitchOffSuspiciousClustersRemoval() {fRemoveSuspiciousClusters = kFALSE ; }
+  Bool_t IsSuspiciousClustersRemovalOn() const {return fRemoveSuspiciousClusters ; } 
+
   virtual void FillInputVZERO(){;}
   Int_t GetV0Signal(Int_t i) const { return fV0ADC[i];}
   Int_t GetV0Multiplicity(Int_t i)   const { return fV0Mul[i];}
@@ -229,6 +236,15 @@ public:
   void SwitchOffCaloFilterPatch() {fCaloFilterPatch = kFALSE ; }
   Bool_t IsCaloFilterPatchOn()    {if(fDataType == kAOD) { return fCaloFilterPatch ; } 
                                    else                  { return kFALSE ; } }
+  
+  void SwitchOnEventSelection()  {fDoEventSelection = kTRUE  ; }
+  void SwitchOffEventSelection() {fDoEventSelection = kFALSE ; }
+  Bool_t IsEventSelectionDone()  { return fDoEventSelection  ; } 
+  
+  void SwitchOnV0ANDSelection()  {fDoV0ANDEventSelection = kTRUE  ; }
+  void SwitchOffV0ANDSelection() {fDoV0ANDEventSelection = kFALSE ; }
+  Bool_t IsV0ANDEventSelectionDone() { return fDoEventSelection  ; } 
+
   //Centrality
   virtual AliCentrality* GetCentrality() const {return 0x0;} //Actual method to recover the pointer is in the ESD/AODReader
   void SetCentralityClass(TString name)    { fCentralityClass   = name       ;}
@@ -288,7 +304,8 @@ public:
   Bool_t           fFillPHOS;       // use data from PHOS
   Bool_t           fFillEMCALCells; // use data from EMCAL
   Bool_t           fFillPHOSCells;  // use data from PHOS
-
+  Bool_t           fRemoveSuspiciousClusters; //Remove high energy clusters with low number of cells
+  
 //  TTree *        fSecondInputAODTree;    // Tree with second input AOD, for mixing analysis.	
 //  AliAODEvent*   fSecondInputAODEvent;   //! pointer to second input AOD event.
 //  TString        fSecondInputFileName;   // File with AOD data to mix with normal stream of data.
@@ -327,13 +344,15 @@ public:
   Bool_t           fCaloFilterPatch;    // CaloFilter patch
   TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
   Float_t          fZvtxCut ;	           // Cut on vertex position  
+  Bool_t           fDoEventSelection;    // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
+  AliTriggerAnalysis* fTriggerAnalysis;  // Access to trigger selection algorithm for V0AND calculation
   
   //Centrality
   TString          fCentralityClass;    // Name of selected centrality class     
   Int_t            fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];   // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,23)
+  ClassDef(AliCaloTrackReader,24)
 } ;
 
 
