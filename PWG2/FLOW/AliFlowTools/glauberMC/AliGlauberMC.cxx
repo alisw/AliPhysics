@@ -94,6 +94,24 @@ AliGlauberMC::AliGlauberMC(Option_t* NA, Option_t* NB, Double_t xsect) :
   fMeanr4Sin4Phi(0),
   fMeanr5Cos5Phi(0),
   fMeanr5Sin5Phi(0),
+  fMeanr2Coll(0),
+  fMeanr3Coll(0),
+  fMeanr4Coll(0),
+  fMeanr5Coll(0),
+  fMeanr2Cos2PhiColl(0),
+  fMeanr2Sin2PhiColl(0),
+  fMeanr2Cos3PhiColl(0),
+  fMeanr2Sin3PhiColl(0),
+  fMeanr2Cos4PhiColl(0),
+  fMeanr2Sin4PhiColl(0),
+  fMeanr2Cos5PhiColl(0),
+  fMeanr2Sin5PhiColl(0),
+  fMeanr3Cos3PhiColl(0),
+  fMeanr3Sin3PhiColl(0),
+  fMeanr4Cos4PhiColl(0),
+  fMeanr4Sin4PhiColl(0),
+  fMeanr5Cos5PhiColl(0),
+  fMeanr5Sin5PhiColl(0),
   fSx2(0.),
   fSy2(0.),
   fSxy(0.),
@@ -184,6 +202,24 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
   fMeanr4Sin4Phi(in.fMeanr4Sin4Phi),
   fMeanr5Cos5Phi(in.fMeanr5Cos5Phi),
   fMeanr5Sin5Phi(in.fMeanr5Sin5Phi),
+  fMeanr2Coll(in.fMeanr2Coll),
+  fMeanr3Coll(in.fMeanr3Coll),
+  fMeanr4Coll(in.fMeanr4Coll),
+  fMeanr5Coll(in.fMeanr5Coll),
+  fMeanr2Cos2PhiColl(in.fMeanr2Cos2PhiColl),
+  fMeanr2Sin2PhiColl(in.fMeanr2Sin2PhiColl),
+  fMeanr2Cos3PhiColl(in.fMeanr2Cos3PhiColl),
+  fMeanr2Sin3PhiColl(in.fMeanr2Sin3PhiColl),
+  fMeanr2Cos4PhiColl(in.fMeanr2Cos4PhiColl),
+  fMeanr2Sin4PhiColl(in.fMeanr2Sin4PhiColl),
+  fMeanr2Cos5PhiColl(in.fMeanr2Cos5PhiColl),
+  fMeanr2Sin5PhiColl(in.fMeanr2Sin5PhiColl),
+  fMeanr3Cos3PhiColl(in.fMeanr3Cos3PhiColl),
+  fMeanr3Sin3PhiColl(in.fMeanr3Sin3PhiColl),
+  fMeanr4Cos4PhiColl(in.fMeanr4Cos4PhiColl),
+  fMeanr4Sin4PhiColl(in.fMeanr4Sin4PhiColl),
+  fMeanr5Cos5PhiColl(in.fMeanr5Cos5PhiColl),
+  fMeanr5Sin5PhiColl(in.fMeanr5Sin5PhiColl),
   fSx2(in.fSx2),
   fSy2(in.fSy2),
   fSxy(in.fSxy),
@@ -227,6 +263,10 @@ AliGlauberMC& AliGlauberMC::operator=(const AliGlauberMC& in)
   fMeanX2Coll=in.fMeanX2Coll;
   fMeanY2Coll=in.fMeanY2Coll;
   fMeanXYColl=in.fMeanXYColl;
+  fMeanr2Coll=in.fMeanr2Coll;
+  fMeanr3Coll=in.fMeanr3Coll;
+  fMeanr4Coll=in.fMeanr4Coll;
+  fMeanr5Coll=in.fMeanr5Coll;
   fMeanXSystem=in.fMeanXSystem;
   fMeanYSystem=in.fMeanYSystem;
   fMeanXA=in.fMeanXA;  
@@ -259,6 +299,20 @@ AliGlauberMC& AliGlauberMC::operator=(const AliGlauberMC& in)
   fMeanr4Sin4Phi=in.fMeanr4Sin4Phi;
   fMeanr5Cos5Phi=in.fMeanr5Cos5Phi;
   fMeanr5Sin5Phi=in.fMeanr5Sin5Phi;
+  fMeanr2Cos2PhiColl=in.fMeanr2Cos2PhiColl;
+  fMeanr2Sin2PhiColl=in.fMeanr2Sin2PhiColl;
+  fMeanr2Cos3PhiColl=in.fMeanr2Cos3PhiColl;
+  fMeanr2Sin3PhiColl=in.fMeanr2Sin3PhiColl;
+  fMeanr2Cos4PhiColl=in.fMeanr2Cos4PhiColl;
+  fMeanr2Sin4PhiColl=in.fMeanr2Sin4PhiColl;
+  fMeanr2Cos5PhiColl=in.fMeanr2Cos5PhiColl;
+  fMeanr2Sin5PhiColl=in.fMeanr2Sin5PhiColl;
+  fMeanr3Cos3PhiColl=in.fMeanr3Cos3PhiColl;
+  fMeanr3Sin3PhiColl=in.fMeanr3Sin3PhiColl;
+  fMeanr4Cos4PhiColl=in.fMeanr4Cos4PhiColl;
+  fMeanr4Sin4PhiColl=in.fMeanr4Sin4PhiColl;
+  fMeanr5Cos5PhiColl=in.fMeanr5Cos5PhiColl;
+  fMeanr5Sin5PhiColl=in.fMeanr5Sin5PhiColl;
   fSx2=in.fSx2;      
   fSy2=in.fSy2;      
   fSxy=in.fSxy;      
@@ -357,7 +411,24 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   fMeanr4Sin4Phi=0.;
   fMeanr5Cos5Phi=0.;
   fMeanr5Sin5Phi=0.;
-
+  fMeanr2Coll=0.;
+  fMeanr3Coll=0.;
+  fMeanr4Coll=0.;
+  fMeanr5Coll=0.;
+  fMeanr2Cos2PhiColl=0.;
+  fMeanr2Sin2PhiColl=0.;
+  fMeanr2Cos3PhiColl=0.;
+  fMeanr2Sin3PhiColl=0.;
+  fMeanr2Cos4PhiColl=0.;
+  fMeanr2Sin4PhiColl=0.;
+  fMeanr2Cos5PhiColl=0.;
+  fMeanr2Sin5PhiColl=0.;
+  fMeanr3Cos3PhiColl=0.;
+  fMeanr3Sin3PhiColl=0.;
+  fMeanr4Cos4PhiColl=0.;
+  fMeanr4Sin4PhiColl=0.;
+  fMeanr5Cos5PhiColl=0.;
+  fMeanr5Sin5PhiColl=0.;
   
   for (Int_t i = 0; i<fAN; i++)
     {
@@ -453,6 +524,9 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 	  fMeanXYColl += xB*yB*ncoll*ncoll;
 	  fNcoll += nucleonB->GetNColl();
 	  fMeanr2 += r2B;
+	  fMeanr3 += r3B;
+	  fMeanr4 += r4B;
+	  fMeanr5 += r5B;
 	  fMeanr2Cos2Phi += r2B*cos2PhiB;
 	  fMeanr2Sin2Phi += r2B*sin2PhiB;
 	  fMeanr2Cos3Phi += r2B*cos3PhiB;
@@ -467,6 +541,24 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
 	  fMeanr4Sin4Phi += r4B*sin4PhiB;
 	  fMeanr5Cos5Phi += r5B*cos5PhiB;
 	  fMeanr5Sin5Phi += r5B*sin5PhiB;
+	  fMeanr2Coll += r2B*ncoll*ncoll;
+	  fMeanr3Coll += r3B*ncoll*ncoll;
+	  fMeanr4Coll += r4B*ncoll*ncoll;
+	  fMeanr5Coll += r5B*ncoll*ncoll;
+	  fMeanr2Cos2PhiColl += r2B*cos2PhiB*ncoll*ncoll;
+	  fMeanr2Sin2PhiColl += r2B*sin2PhiB*ncoll*ncoll;
+	  fMeanr2Cos3PhiColl += r2B*cos3PhiB*ncoll*ncoll;
+	  fMeanr2Sin3PhiColl += r2B*sin3PhiB*ncoll*ncoll;
+	  fMeanr2Cos4PhiColl += r2B*cos4PhiB*ncoll*ncoll;
+	  fMeanr2Sin4PhiColl += r2B*sin4PhiB*ncoll*ncoll;
+	  fMeanr2Cos5PhiColl += r2B*cos5PhiB*ncoll*ncoll;
+	  fMeanr2Sin5PhiColl += r2B*sin5PhiB*ncoll*ncoll;
+	  fMeanr3Cos3PhiColl += r3B*cos3PhiB*ncoll*ncoll;
+	  fMeanr3Sin3PhiColl += r3B*sin3PhiB*ncoll*ncoll;
+	  fMeanr4Cos4PhiColl += r4B*cos4PhiB*ncoll*ncoll;
+	  fMeanr4Sin4PhiColl += r4B*sin4PhiB*ncoll*ncoll;
+	  fMeanr5Cos5PhiColl += r5B*cos5PhiB*ncoll*ncoll;
+	  fMeanr5Sin5PhiColl += r5B*sin5PhiB*ncoll*ncoll;
 	}
     }
   
@@ -478,6 +570,9 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanY2 /= fNpart;
       fMeanXY /= fNpart;
       fMeanr2 /= fNpart;
+      fMeanr3 /= fNpart;
+      fMeanr4 /= fNpart;
+      fMeanr5 /= fNpart;
       fMeanr2Cos2Phi /= fNpart;
       fMeanr2Sin2Phi /= fNpart;
       fMeanr2Cos3Phi /= fNpart;
@@ -501,6 +596,9 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanY2 = 0;
       fMeanXY = 0;
       fMeanr2 = 0;
+      fMeanr3 = 0;
+      fMeanr4 = 0;
+      fMeanr5 = 0;
       fMeanr2Cos2Phi = 0;
       fMeanr2Sin2Phi = 0;
       fMeanr2Cos3Phi = 0;
@@ -524,6 +622,24 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanX2Coll /= fNcoll;
       fMeanY2Coll /= fNcoll;
       fMeanXYColl /= fNcoll;
+      fMeanr2Coll /= fNcoll;
+      fMeanr3Coll /= fNcoll;
+      fMeanr4Coll /= fNcoll;
+      fMeanr5Coll /= fNcoll;
+      fMeanr2Cos2PhiColl /= fNcoll;
+      fMeanr2Sin2PhiColl /= fNcoll;
+      fMeanr2Cos3PhiColl /= fNcoll;
+      fMeanr2Sin3PhiColl /= fNcoll;
+      fMeanr2Cos4PhiColl /= fNcoll;
+      fMeanr2Sin4PhiColl /= fNcoll;
+      fMeanr2Cos5PhiColl /= fNcoll;
+      fMeanr2Sin5PhiColl /= fNcoll;
+      fMeanr3Cos3PhiColl /= fNcoll;
+      fMeanr3Sin3PhiColl /= fNcoll;
+      fMeanr4Cos4PhiColl /= fNcoll;
+      fMeanr4Sin4PhiColl /= fNcoll;
+      fMeanr5Cos5PhiColl /= fNcoll;
+      fMeanr5Sin5PhiColl /= fNcoll;
     }
   else
     {
@@ -532,8 +648,21 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanX2Coll = 0;
       fMeanY2Coll = 0;
       fMeanXYColl = 0;
+      fMeanr2Cos2PhiColl =0;
+      fMeanr2Sin2PhiColl =0;
+      fMeanr2Cos3PhiColl =0;
+      fMeanr2Sin3PhiColl =0;
+      fMeanr2Cos4PhiColl =0;
+      fMeanr2Sin4PhiColl =0;
+      fMeanr2Cos5PhiColl =0;
+      fMeanr2Sin5PhiColl =0;
+      fMeanr3Cos3PhiColl =0;
+      fMeanr3Sin3PhiColl =0;
+      fMeanr4Cos4PhiColl =0;
+      fMeanr4Sin4PhiColl =0;
+      fMeanr5Cos5PhiColl =0;
+      fMeanr5Sin5PhiColl =0;
     }
-  
   if(fAN+fBN>0)
     {
       fMeanXSystem /= (fAN + fBN);
@@ -565,25 +694,18 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
       fMeanXB = 0;
       fMeanYB = 0;
     }
- 
-  //fEcc = Math::Sqrt(fMeanr2Cos2Phi*fMeanr2Cos2Phi+fMeanr2Sin2Phi*fMeanr2Sin2Phi)/fMeanr2;
+  
   fSx2=fMeanX2-(fMeanXParts*fMeanXParts);
   fSy2=fMeanY2-(fMeanYParts*fMeanYParts);
   fSxy=fMeanXY-fMeanXParts*fMeanYParts;
- 
   fSx2Coll=fMeanX2Coll-(fMeanXColl*fMeanXColl);
   fSy2Coll=fMeanY2Coll-(fMeanYColl*fMeanYColl);
   fSxyColl=fMeanXYColl-fMeanXColl*fMeanYColl;
-  //fPsi3 = (TMath::Atan2(fMeanr2Sin3Phi,fMeanr2Cos3Phi)+3.1415926)/3.;
-  //printf("e:%.5f\n",TMath::Sqrt(fMeanr2Cos2Phi*fMeanr2Cos2Phi+fMeanr2Sin2Phi*fMeanr2Sin2Phi)/fMeanr2);
   fBMC = bgen;
-
   fTotalEvents++;
   if (fNpart>0) fEvents++;
-
   if (fNpart==0) return kFALSE;
   if (fNpart > fMaxNpartFound) fMaxNpartFound = fNpart;
-
 
   return kTRUE;
 }
@@ -638,6 +760,7 @@ TObjArray *AliGlauberMC::GetNucleons()
     }
   return allnucleons;
 }
+
 //______________________________________________________________________________
 Double_t AliGlauberMC::NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean)
 {
@@ -651,6 +774,7 @@ Double_t AliGlauberMC::NegativeBinomialDistribution(Int_t x, Int_t k, Double_t n
     *TMath::Power(((nmean/Double_t(k))/(1+nmean/Double_t(k))),Double_t(x))
     *(1/(TMath::Power((1+nmean/Double_t(k)),Double_t(k))));
 }
+
 //______________________________________________________________________________
 Int_t AliGlauberMC::NegativeBinomialRandom(Int_t k, Double_t nmean) const
 {
@@ -664,6 +788,7 @@ Int_t AliGlauberMC::NegativeBinomialRandom(Int_t k, Double_t nmean) const
     }
   Double_t r = gRandom->Uniform(0,1);
   return TMath::BinarySearch(fMaxPlot,array,r)+2;
+
 }
 //______________________________________________________________________________
 Int_t AliGlauberMC::DoubleNegativeBinomialRandom( Int_t k,
@@ -849,18 +974,15 @@ Bool_t AliGlauberMC::NextEvent(Double_t bgen)
   }
   return succes;
 }
-
 //______________________________________________________________________________
-
 Double_t AliGlauberMC::GetEpsilon2Part() const
 {
   //get participant eccentricity of participants
   if (fNpart<2) return 0.0;
   return (TMath::Sqrt(fMeanr2Cos2Phi*fMeanr2Cos2Phi+fMeanr2Sin2Phi*fMeanr2Sin2Phi)/fMeanr2);
+  //return (TMath::Sqrt((fSy2-fSx2)*(fSy2-fSx2)+4*fSxy*fSxy)/(fSy2+fSx2));
 }
-
 //______________________________________________________________________________
-
 Double_t AliGlauberMC::GetEpsilon3Part() const
 {
   //get participant eccentricity of participants
@@ -868,9 +990,7 @@ Double_t AliGlauberMC::GetEpsilon3Part() const
   return (TMath::Sqrt(fMeanr2Cos3Phi*fMeanr2Cos3Phi+fMeanr2Sin3Phi*fMeanr2Sin3Phi)/fMeanr2);
   //return (TMath::Sqrt(fMeanr3Cos3Phi*fMeanr3Cos3Phi+fMeanr3Sin3Phi*fMeanr3Sin3Phi)/fMeanr3);
 }
-
 //______________________________________________________________________________
-
 Double_t AliGlauberMC::GetEpsilon4Part() const
 {
   //get participant eccentricity of participants
@@ -880,7 +1000,6 @@ Double_t AliGlauberMC::GetEpsilon4Part() const
 }
 
 //______________________________________________________________________________
-
 Double_t AliGlauberMC::GetEpsilon5Part() const
 {
   //get participant eccentricity of participants
@@ -888,8 +1007,43 @@ Double_t AliGlauberMC::GetEpsilon5Part() const
   return (TMath::Sqrt(fMeanr2Cos5Phi*fMeanr2Cos5Phi+fMeanr2Sin5Phi*fMeanr2Sin5Phi)/fMeanr2);
   //return (TMath::Sqrt(fMeanr5Cos5Phi*fMeanr5Cos5Phi+fMeanr5Sin5Phi*fMeanr5Sin5Phi)/fMeanr5);
 }
-//______________________________________________________________________________
 
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEpsilon2Coll() const
+{
+  //get epsilon2 of binary collisions
+  if (fNcoll<2) return 0.0;
+  return (TMath::Sqrt(fMeanr2Cos2PhiColl*fMeanr2Cos2PhiColl+fMeanr2Sin2PhiColl*fMeanr2Sin2PhiColl)/fMeanr2Coll);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEpsilon3Coll() const
+{
+  //get epsilon3 of binary collisions 
+  if (fNcoll<2) return 0.0;
+  return (TMath::Sqrt(fMeanr2Cos3PhiColl*fMeanr2Cos3PhiColl+fMeanr2Sin3PhiColl*fMeanr2Sin3PhiColl)/fMeanr2Coll);
+  //return (TMath::Sqrt(fMeanr3Cos3PhiColl*fMeanr3Cos3PhiColl+fMeanr3Sin3PhiColl*fMeanr3Sin3PhiColl)/fMeanr3Coll);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEpsilon4Coll() const
+{
+   //get epsilon4 of binary collisions
+  if (fNcoll<2) return 0.0;
+  return (TMath::Sqrt(fMeanr2Cos4PhiColl*fMeanr2Cos4PhiColl+fMeanr2Sin4PhiColl*fMeanr2Sin4PhiColl)/fMeanr2Coll);
+  //return (TMath::Sqrt(fMeanr4Cos4PhiColl*fMeanr4Cos4PhiColl+fMeanr4Sin4PhiColl*fMeanr4Sin4PhiColl)/fMeanr4Coll);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetEpsilon5Coll() const
+{
+  //get epsilon5 of binary collisions
+  if (fNcoll<2) return 0.0;
+  return (TMath::Sqrt(fMeanr2Cos5PhiColl*fMeanr2Cos5PhiColl+fMeanr2Sin5PhiColl*fMeanr2Sin5PhiColl)/fMeanr2Coll);
+  //return (TMath::Sqrt(fMeanr5Cos5PhiColl*fMeanr5Cos5PhiColl+fMeanr5Sin5PhiColl*fMeanr5Sin5PhiColl)/fMeanr5Coll);
+}
+
+//______________________________________________________________________________
 void AliGlauberMC::Run(Int_t nevents)
 {
   //example run
@@ -899,7 +1053,7 @@ void AliGlauberMC::Run(Int_t nevents)
   if (fnt == 0)
   {
     fnt = new TNtuple(name,title,
-                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:VarEPartColl:dNdEta:dNdEtaGBW:dNdEtaNBD:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5");
+                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:VarEPartColl:dNdEta:dNdEtaGBW:dNdEtaNBD:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll");
     fnt->SetDirectory(0);
   }
   Int_t q = 0;
@@ -915,7 +1069,7 @@ void AliGlauberMC::Run(Int_t nevents)
       
       q++;
       //Float_t v[27];
-      Float_t v[31];
+      Float_t v[35];
       v[0]  = GetNpart();
       v[1]  = GetNcoll();
       v[2]  = fBMC;
@@ -963,13 +1117,16 @@ void AliGlauberMC::Run(Int_t nevents)
       Float_t mytAA=-999;
       if (GetNcoll()>0) mytAA=GetNcoll()/fXSect;
       v[26]=mytAA;    
-      //_____________epsilon2,3_______
+      //_____________epsilon2,3,4,4_______
       v[27] = GetEpsilon2Part();
       v[28] = GetEpsilon3Part();
       v[29] = GetEpsilon4Part();
       v[30] = GetEpsilon5Part();
+      v[31] = GetEpsilon2Coll();
+      v[32] = GetEpsilon3Coll();
+      v[33] = GetEpsilon4Coll();
+      v[34] = GetEpsilon5Coll();
       //always at the end
-
       fnt->Fill(v);  
 
       if ((i%100)==0) std::cout << "Generating Event # " << i << "... \r" << flush;
