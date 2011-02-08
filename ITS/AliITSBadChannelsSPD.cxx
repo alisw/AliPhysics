@@ -212,7 +212,9 @@ TObjArray* AliITSBadChannelsSPD::CreateModuleObjArray(Int_t module) const
       while (i < kSize)
 	{
 	  // Create and add the current channel
-	  AliITSChannelSPD *channel = new AliITSChannelSPD(fBadChannelsArray[position++], fBadChannelsArray[position++]);
+	  Int_t p1 = position++;
+	  Int_t p2 = position++;
+	  AliITSChannelSPD *channel = new AliITSChannelSPD(fBadChannelsArray[p1], fBadChannelsArray[p2]);
 	  moduleArray->Add(channel);
 
 	  // Go to next bad channel

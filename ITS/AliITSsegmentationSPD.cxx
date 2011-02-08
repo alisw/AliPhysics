@@ -74,10 +74,9 @@ Float_t AliITSsegmentationSPD::ZFromCol300(Int_t col) const {
   return z;
 }
 //_____________________________________________________________________________
-Float_t AliITSsegmentationSPD::ZpitchFromCol300(Int_t col) const {
+Float_t AliITSsegmentationSPD::Zpitch300() const {
   // returns Z pixel pitch for 300 micron pixels.
 
-    col = 0; // done to remove unused variable warning.
     return 300.0;
 }
 //_____________________________________________________________________________
@@ -235,6 +234,8 @@ AliITSsegmentationSPD::AliITSsegmentationSPD(const AliITSsegmentationSPD &source
     AliITSsegmentation(source),
 fNpx(0),
 fNpz(0){
+  for(Int_t i=0; i<256; i++)fCellSizeX[i]=0.;
+  for(Int_t i=0; i<280; i++)fCellSizeZ[i]=0.;
   // copy constructor
   source.Copy(*this);
 }
@@ -260,7 +261,7 @@ void AliITSsegmentationSPD::Init300(){
     fNpx = 256; // The number of X pixel Cell same as in fCellSizeX array size
     fNpz = 279; // The number of Z pixel Cell same as in fCellSizeZ array size
     for(i=0;i<fNpx;i++) fCellSizeX[i] = 50.0; // microns all the same
-    for(i=0;i<280;i++) fCellSizeZ[i] = ZpitchFromCol300(i); // microns
+    for(i=0;i<280;i++) fCellSizeZ[i] = Zpitch300(); // microns
 //    for(i=fNpz;i<280;i++) fCellSizeZ[i] = 0.0; // zero out rest of array
     fDx = 0;
     for(i=0;i<fNpx;i++) fDx += fCellSizeX[i];

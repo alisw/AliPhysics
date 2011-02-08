@@ -88,7 +88,7 @@ public AliITSsegmentation {
 
     Float_t ColFromZ300(Float_t z) const;
     Float_t ZFromCol300(Int_t col) const;
-    Float_t ZpitchFromCol300(Int_t col) const;
+    Float_t Zpitch300() const;
     Float_t ColFromZ(Float_t z) const;
     Float_t ZFromCol(Int_t col) const;
     Float_t ZpitchFromCol(Int_t col) const;
