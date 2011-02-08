@@ -56,6 +56,10 @@ public:
    Double_t     GetEpsilon3Part()      const;
    Double_t     GetEpsilon4Part()      const;
    Double_t     GetEpsilon5Part()      const;
+   Double_t     GetEpsilon2Coll()      const;
+   Double_t     GetEpsilon3Coll()      const;
+   Double_t     GetEpsilon4Coll()      const;
+   Double_t     GetEpsilon5Coll()      const;
    Double_t     GetEccentricityPartColl()  const;
    Double_t     GetB()               const {return fBMC;}
    Double_t     GetBMin()            const {return fBMin;}
@@ -110,7 +114,6 @@ private:
    TNtuple*     fnt;             //Ntuple for results (created, but not deleted)
    Double_t     fMeanX2;         //<x^2> of wounded nucleons
    Double_t     fMeanY2;         //<y^2> of wounded nucleons
-  
    Double_t     fMeanXY;         //<xy> of wounded nucleons
    Double_t     fMeanXParts;     //<x> of wounded nucleons
    Double_t     fMeanYParts;     //<y> of wounded nucleons
@@ -124,8 +127,7 @@ private:
    Double_t     fMeanXA;        //<x> of nucleons in nucleus A
    Double_t     fMeanYA;        //<x> of nucleons in nucleus A
    Double_t     fMeanXB;        //<x> of nucleons in nucleus B
-   Double_t     fMeanYB;        //<x> of nucleons in nucleus B
-  
+   Double_t     fMeanYB;        //<x> of nucleons in nucleus B 
    Double_t     fBMC;           //Impact parameter (b)
    Int_t        fEvents;         //Number of events with at least one collision
    Int_t        fTotalEvents;    //All events within selected impact parameter range
@@ -156,8 +158,24 @@ private:
    Double_t     fMeanr4Sin4Phi;   //------<r^4*sin4phi> of wounded nucleons
    Double_t     fMeanr5Cos5Phi;   //------<r^5*cos5phi> of wounded nucleons
    Double_t     fMeanr5Sin5Phi;   //------<r^5*sin5phi> of wounded nucleons
-   //Double_t     fMeanr2Cos2PP;   //------<r^2*cos2phi> of wounded nucleons
-   //Double_t     fMeanr2Sin2PP;   //------<r^2*sin2phi> of wounded nucleons
+   Double_t     fMeanr2Coll;         //----------<r^2> of wounded nucleons
+   Double_t     fMeanr3Coll;         //----------<r^3> of wounded nucleons
+   Double_t     fMeanr4Coll;         //----------<r^4> of wounded nucleons
+   Double_t     fMeanr5Coll;         //----------<r^5> of wounded nucleons
+   Double_t     fMeanr2Cos2PhiColl;   //------<r^2*cos2phi> 
+   Double_t     fMeanr2Sin2PhiColl;   //------<r^2*sin2phi> 
+   Double_t     fMeanr2Cos3PhiColl;   //------<r^2*cos3phi> 
+   Double_t     fMeanr2Sin3PhiColl;   //------<r^2*sin3phi> 
+   Double_t     fMeanr2Cos4PhiColl;   //------<r^2*cos4phi> 
+   Double_t     fMeanr2Sin4PhiColl;   //------<r^2*sin4phi> 
+   Double_t     fMeanr2Cos5PhiColl;   //------<r^2*cos5phi> 
+   Double_t     fMeanr2Sin5PhiColl;   //------<r^2*sin5phi> 
+   Double_t     fMeanr3Cos3PhiColl;   //------<r^3*cos3phi> 
+   Double_t     fMeanr3Sin3PhiColl;   //------<r^3*sin3phi> 
+   Double_t     fMeanr4Cos4PhiColl;   //------<r^4*cos4phi> 
+   Double_t     fMeanr4Sin4PhiColl;   //------<r^4*sin4phi> 
+   Double_t     fMeanr5Cos5PhiColl;   //------<r^5*cos5phi> 
+   Double_t     fMeanr5Sin5PhiColl;   //------<r^5*sin5phi> 
    //Double_t     fPsi2;
    Double_t     fSx2;            //Variance of x of wounded nucleons
    Double_t     fSy2;            //Variance of y of wounded nucleons
