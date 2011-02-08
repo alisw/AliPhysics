@@ -276,11 +276,12 @@ Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
 
   if (h->FindBin(x[0]) > h->GetNbinsX()) return 0;
 
-  static TH1 * oldptr = 0;
-  TSpline3 * spl = 0;
-  if (h!=oldptr) {
-    spl  = new TSpline3(h);
-  }
+  // static TH1 * oldptr = 0;
+  // static TSpline3 * spl = 0;
+  // if (h!=oldptr) {
+  // FIXME: recheck static pointers
+  TSpline3 * spl  = new TSpline3(h);
+    //  }
   double value = spl->Eval(x[0]);
   delete spl;
 
