@@ -117,7 +117,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  fMinMult(0.),  
  fMaxMult(10000.), 
  fPropagateErrorAlsoFromNIT(kFALSE), 
-  fCalculateCumulantsVsM(kFALSE),
+ fCalculateCumulantsVsM(kFALSE),
  fMinimumBiasReferenceFlow(kTRUE), 
  fForgetAboutCovariances(kFALSE), 
  fStorePhiDistributionForOneEvent(kFALSE),
@@ -321,8 +321,8 @@ void AliFlowAnalysisWithQCumulants::Make(AliFlowEventSimple* anEvent)
     } 
       
     // integrated flow: 
-    // calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}], m = 1,2,3,4, for this event:
-    for(Int_t m=0;m<4;m++)
+    // calculate Re[Q_{m*n,k}] and Im[Q_{m*n,k}], m = 1,2,3,4,5,6 for this event:
+    for(Int_t m=0;m<6;m++)
     {
      for(Int_t k=0;k<9;k++)
      {
@@ -1519,8 +1519,8 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
 
  // b) Book event-by-event quantities:
  // Re[Q_{m*n,k}], Im[Q_{m*n,k}] and S_{p,k}^M: 
- fReQ  = new TMatrixD(4,9);
- fImQ  = new TMatrixD(4,9);
+ fReQ  = new TMatrixD(6,9);
+ fImQ  = new TMatrixD(6,9);
  fSMpk = new TMatrixD(8,9);
  // average correlations <2>, <4>, <6> and <8> for single event (bining is the same as in fIntFlowCorrelationsPro and fIntFlowCorrelationsHist):
  TString intFlowCorrelationsEBEName = "fIntFlowCorrelationsEBE";
@@ -1533,7 +1533,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // average all correlations for single event (bining is the same as in fIntFlowCorrelationsAllPro and fIntFlowCorrelationsAllHist):
  TString intFlowCorrelationsAllEBEName = "fIntFlowCorrelationsAllEBE";
  intFlowCorrelationsAllEBEName += fAnalysisLabel->Data();
- fIntFlowCorrelationsAllEBE = new TH1D(intFlowCorrelationsAllEBEName.Data(),intFlowCorrelationsAllEBEName.Data(),32,0,32);
+ fIntFlowCorrelationsAllEBE = new TH1D(intFlowCorrelationsAllEBEName.Data(),intFlowCorrelationsAllEBEName.Data(),34,0,34);
  // average correction terms for non-uniform acceptance for single event 
  // (binning is the same as in fIntFlowCorrectionTermsForNUAPro[2] and fIntFlowCorrectionTermsForNUAHist[2]):
  TString fIntFlowCorrectionTermsForNUAEBEName = "fIntFlowCorrectionTermsForNUAEBE";
@@ -1628,7 +1628,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // averaged all correlations for all events (with wrong errors!):
  TString intFlowCorrelationsAllProName = "fIntFlowCorrelationsAllPro";
  intFlowCorrelationsAllProName += fAnalysisLabel->Data();
- fIntFlowCorrelationsAllPro = new TProfile(intFlowCorrelationsAllProName.Data(),"Average correlations for all events",32,0,32,"s");
+ fIntFlowCorrelationsAllPro = new TProfile(intFlowCorrelationsAllProName.Data(),"Average correlations for all events",34,0,34,"s");
  fIntFlowCorrelationsAllPro->SetTickLength(-0.01,"Y");
  fIntFlowCorrelationsAllPro->SetMarkerStyle(25);
  fIntFlowCorrelationsAllPro->SetLabelSize(0.03);
@@ -1665,6 +1665,9 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  (fIntFlowCorrelationsAllPro->GetXaxis())->SetBinLabel(29,"<<7>>_{2n,n,n|n,n,n,n}");
  // 8-p correlations:
  (fIntFlowCorrelationsAllPro->GetXaxis())->SetBinLabel(31,"<<8>>_{n,n,n,n|n,n,n,n}");
+ // EXTRA correlations:
+ (fIntFlowCorrelationsAllPro->GetXaxis())->SetBinLabel(33,"<<4>>_{4n,2n|3n,3n}");
+ (fIntFlowCorrelationsAllPro->GetXaxis())->SetBinLabel(34,"<<5>>_{2n,2n,2n|3n,3n}");
  fIntFlowProfiles->Add(fIntFlowCorrelationsAllPro);
  // when particle weights are used some extra correlations appear:
  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights) 
@@ -1807,7 +1810,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForIntegratedFlow()
  // average all correlations for all events (with correct errors!):
  TString intFlowCorrelationsAllHistName = "fIntFlowCorrelationsAllHist";
  intFlowCorrelationsAllHistName += fAnalysisLabel->Data();
- fIntFlowCorrelationsAllHist = new TH1D(intFlowCorrelationsAllHistName.Data(),"Average correlations for all events",32,0,32);
+ fIntFlowCorrelationsAllHist = new TH1D(intFlowCorrelationsAllHistName.Data(),"Average correlations for all events",34,0,34);
  fIntFlowCorrelationsAllHist->SetTickLength(-0.01,"Y");
  fIntFlowCorrelationsAllHist->SetMarkerStyle(25);
  fIntFlowCorrelationsAllHist->SetLabelSize(0.03);
@@ -2268,7 +2271,7 @@ void AliFlowAnalysisWithQCumulants::BookEverythingForNestedLoops()
   // correlations:
   TString intFlowDirectCorrelationsName = "fIntFlowDirectCorrelations";
   intFlowDirectCorrelationsName += fAnalysisLabel->Data();
-  fIntFlowDirectCorrelations = new TProfile(intFlowDirectCorrelationsName.Data(),"Multiparticle correlations calculated with nested loops (for int. flow)",32,0,32,"s");
+  fIntFlowDirectCorrelations = new TProfile(intFlowDirectCorrelationsName.Data(),"Multiparticle correlations calculated with nested loops (for int. flow)",34,0,34,"s");
   fNestedLoopsList->Add(fIntFlowDirectCorrelations);
   if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
   {
@@ -2351,10 +2354,14 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  Double_t dReQ2n = (*fReQ)(1,0);
  Double_t dReQ3n = (*fReQ)(2,0);
  Double_t dReQ4n = (*fReQ)(3,0);
+ //Double_t dReQ5n = (*fReQ)(4,0);
+ Double_t dReQ6n = (*fReQ)(5,0);
  Double_t dImQ1n = (*fImQ)(0,0);
  Double_t dImQ2n = (*fImQ)(1,0);
  Double_t dImQ3n = (*fImQ)(2,0);
  Double_t dImQ4n = (*fImQ)(3,0);
+ //Double_t dImQ5n = (*fImQ)(4,0);
+ Double_t dImQ6n = (*fImQ)(5,0);
   
  // real and imaginary parts of some expressions involving various combinations of Q-vectors evaluated in harmonics n, 2n, 3n and 4n:
  // (these expression appear in the Eqs. for the multi-particle correlations bellow)
@@ -2498,8 +2505,9 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  //                                        **** multi-particle correlations: ****
  //                                        **************************************
  //
- // Remark 1: multi-particle correlations calculated with non-weighted Q-vectors are stored in 1D profile fQCorrelations[0]. // to be improved (wrong profiles)
- // Remark 2: binning of fQCorrelations[0] is organized as follows: // to be improved (wrong profiles)
+ // Remark 1: All multi-particle correlations calculated with non-weighted Q-vectors are stored in 1D profile fIntFlowCorrelationsAllPro;
+ // Remark 2: There is a special profile fIntFlowCorrelationsPro holding results ONLY for same harmonic's <<2>>, <<4>>, <<6>> and <<8>>;  
+ // Remark 3: Binning of fIntFlowCorrelationsAllPro is organized as follows:
  // --------------------------------------------------------------------------------------------------------------------
  //  1st bin: <2>_{1n|1n} = two1n1n = cos(n*(phi1-phi2))>
  //  2nd bin: <2>_{2n|2n} = two2n2n = cos(2n*(phi1-phi2))>
@@ -2532,6 +2540,9 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
  // 29th bin: <7>_{2n,1n,1n|1n,1n,1n,1n} = seven2n1n1n1n1n1n1n =  <cos(n*(2.*phi1+phi2+phi3-phi4-phi5-phi6-phi7))>
  // 30th bin:           ----  EMPTY ----
  // 31st bin: <8>_{1n,1n,1n,1n|1n,1n,1n,1n} = eight1n1n1n1n1n1n1n1n = <cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
+ // 32nd bin:           ----  EMPTY ----
+ // 33rd bin: <4>_{4n,2n|3n,3n}= four4n2n3n3n = <cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4))>
+ // 34th bin: <5>_{2n,2n,2n|3n,3n} = five2n2n2n3n3n = <cos(n*(2.*phi1+2.*phi2+2.*phi3-3.*phi4-3.*phi5))> 
  // --------------------------------------------------------------------------------------------------------------------
     
  // 2-particle:
@@ -2962,6 +2973,85 @@ void AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
   // distribution of <cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
   //f8pDistribution->Fill(eight1n1n1n1n1n1n1n1n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.)*(dMult-5.)*(dMult-6.)*(dMult-7.));
  } // end of if(dMult>7) 
+ 
+ // EXTRA:
+
+ // 33rd bin: <4>_{4n,2n|3n,3n}= four4n2n3n3n = <cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4))>
+ // 34th bin: <5>_{2n,2n,2n|3n,3n} = five2n2n2n3n3n = <cos(n*(2.*phi1+2.*phi2+2.*phi3-3.*phi4-3.*phi5))> 
+ 
+ // 4-particle:
+ Double_t four4n2n3n3n = 0.; // <cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4))>
+ Double_t reQ4nQ2nQ3nstarQ3nstar = (dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                                 + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n;
+ Double_t three1n2n3n = three3n2n1n;
+ // <3>_{6n|3n,3n}:
+ Double_t reQ6nQ3nstarQ3nstar = pow(dReQ3n,2.)*dReQ6n + 2.*dReQ3n*dImQ3n*dImQ6n - pow(dImQ3n,2.)*dReQ6n; 
+ Double_t three6n3n3n = 0.;
+ if(dMult>2.)
+ {
+  three6n3n3n = (reQ6nQ3nstarQ3nstar-2.*(pow(dReQ3n,2.)+pow(dImQ3n,2.))
+              - (pow(dReQ6n,2.)+pow(dImQ6n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.));          
+ }
+ 
+ // <3>_{4n,2n|6n}:
+ Double_t reQ6nQ4nstarQ2nstar = dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+                              + dImQ6n*dImQ4n*dReQ2n;
+ Double_t three4n2n6n = 0.;
+ if(dMult>2.)
+ {
+  three4n2n6n = (reQ6nQ4nstarQ2nstar-(pow(dReQ6n,2.)+pow(dImQ6n,2.))
+              - (pow(dReQ4n,2.)+pow(dImQ4n,2.))
+              - (pow(dReQ2n,2.)+pow(dImQ2n,2.))+2.*dMult)
+              / (dMult*(dMult-1.)*(dMult-2.)); 
+ }
+ Double_t two6n6n = 0.;
+ if(dMult>1.)
+ {
+  two6n6n = (pow(dReQ6n,2.)+pow(dImQ6n,2.)-dMult)/(dMult*(dMult-1.)); 
+ }
+ if(dMult>3.)
+ {
+  four4n2n3n3n = reQ4nQ2nQ3nstarQ3nstar/(dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               - (2.*three1n2n3n+three6n3n3n+2.*three4n3n1n+three4n2n6n)/(dMult-3.)
+               - (2.*two3n3n+two2n2n+two4n4n+two6n6n+2.*two1n1n)/((dMult-2.)*(dMult-3.)) 
+               - 1./((dMult-1.)*(dMult-2.)*(dMult-3.));
+  fIntFlowCorrelationsAllPro->Fill(32.5,four4n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.));
+ } // end of if(dMult>3)
+ 
+ // 5-particle:
+ Double_t five2n2n2n3n3n = 0.; // <cos(n*(2.*phi1+2.*phi2+2.*phi3-3.*phi4-3.*phi5))>
+ Double_t reQ2nQ2nQ2nQ3nstarQ3nstar = pow(dReQ2n,3.)*pow(dReQ3n,2.) 
+                                    - 3.*dReQ2n*pow(dReQ3n,2.)*pow(dImQ2n,2.) + 6.*pow(dReQ2n,2.)*dReQ3n*dImQ2n*dImQ3n 
+                                    - 2.*dReQ3n*pow(dImQ2n,3.)*dImQ3n - pow(dReQ2n,3.)*pow(dImQ3n,2.) + 3.*dReQ2n*pow(dImQ2n,2.)*pow(dImQ3n,2.);
+ //Double_t reQ2nQ2nQ2nQ3nstarQ3nstar = (pow(dReQ2n,3.)-3.*dReQ2n*dImQ2n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+ //                                   + 2.*dReQ3n*dImQ3n*(3.*dReQ2n*dReQ2n*dImQ2n-pow(dImQ3n,3.));
+ Double_t four2n2n1n3n = four3n1n2n2n;
+ // <4>_{2n,2n,2n|6n}:
+ Double_t reQ6nQ2nstarQ2nstarQ2nstar = dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                                     + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3);
+ Double_t four2n2n2n6n = 0.;
+ if(dMult>3.)
+ {
+  four2n2n2n6n = (reQ6nQ2nstarQ2nstarQ2nstar-3.*reQ6nQ4nstarQ2nstar-3.*reQ4nQ2nstarQ2nstar)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.))
+               + (2.*(pow(dReQ6n,2.)+pow(dImQ6n,2.))+3.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+               + 6.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))-6.*dMult)
+               / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)); 
+ }
+ Double_t three2n2n4n = three4n2n2n;
+ Double_t three4n1n3n = three4n3n1n;                       
+ 
+ if(dMult>4.)
+ {
+  five2n2n2n3n3n = reQ2nQ2nQ2nQ3nstarQ3nstar
+                 / (dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.))
+                 - (6.*four2n2n1n3n+3.*four4n2n3n3n+1.*four2n2n2n6n)/(dMult-4.)
+                 - (3.*three2n2n4n+6.*three1n2n3n+1.*three6n3n3n+3.*three4n2n6n+6.*three2n1n1n+6.*three4n1n3n)/((dMult-3.)*(dMult-4.))
+                 - (2.*two3n3n+3.*two2n2n+1.*two6n6n+6.*two1n1n+3.*two4n4n)/((dMult-2.)*(dMult-3.)*(dMult-4.))
+                 - 1./((dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  fIntFlowCorrelationsAllPro->Fill(33.5,five2n2n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+ } // end of if(dMult>4)
  
 } // end of AliFlowAnalysisWithQCumulants::CalculateIntFlowCorrelations()
 
@@ -10379,7 +10469,10 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(A
  // 29th bin: <7>_{2n,1n,1n|1n,1n,1n,1n} = seven2n1n1n1n1n1n1n =  <cos(n*(2.*phi1+phi2+phi3-phi4-phi5-phi6-phi7))>
  // 30th bin:           ----  EMPTY ----
  // 31st bin: <8>_{1n,1n,1n,1n|1n,1n,1n,1n} = eight1n1n1n1n1n1n1n1n = <cos(n*(phi1+phi2+phi3+phi4-phi5-phi6-phi7-phi8))>
- 
+ // 32nd bin:           ----  EMPTY ----
+ // 33rd bin: <4>_{4n,2n|3n,3n}= four4n2n3n3n = <cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4))>
+ // 34th bin: <5>_{2n,2n,2n|3n,3n} = five2n2n2n3n3n = <cos(n*(2.*phi1+2.*phi2+2.*phi3-3.*phi4-3.*phi5))> 
+  
  Int_t nPrim = anEvent->NumberOfTracks(); 
  AliFlowTrackSimple *aftsTrack = NULL; 
  Double_t phi1=0., phi2=0., phi3=0., phi4=0., phi5=0., phi6=0., phi7=0., phi8=0.; 
@@ -10489,6 +10582,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(A
       fIntFlowDirectCorrelations->Fill(14.,cos(3.*n*phi1+n*phi2-3.*n*phi3-n*phi4),1.);      // <4>_{3n,n|3n,n}   
       fIntFlowDirectCorrelations->Fill(15.,cos(3.*n*phi1+n*phi2-2.*n*phi3-2.*n*phi4),1.);   // <4>_{3n,n|2n,2n}
       fIntFlowDirectCorrelations->Fill(16.,cos(4.*n*phi1-2.*n*phi2-n*phi3-n*phi4),1.);      // <4>_{4n|2n,n,n}     
+      fIntFlowDirectCorrelations->Fill(32.,cos(n*(4.*phi1+2.*phi2-3.*phi3-3.*phi4)),1.);    // <4>_{4n,2n|3n,3n}      
      } // end of for(Int_t i4=0;i4<nPrim;i4++) 
     } // end of for(Int_t i3=0;i3<nPrim;i3++)
    } // end of for(Int_t i2=0;i2<nPrim;i2++)
@@ -10533,6 +10627,7 @@ void AliFlowAnalysisWithQCumulants::EvaluateIntFlowCorrelationsWithNestedLoops(A
        fIntFlowDirectCorrelations->Fill(19.,cos(2.*n*phi1+2.*n*phi2-2.*n*phi3-n*phi4-n*phi5),1.); //<5>_{2n,2n|2n,n,n}
        fIntFlowDirectCorrelations->Fill(20.,cos(3.*n*phi1+n*phi2-2.*n*phi3-n*phi4-n*phi5),1.);    //<5>_{3n,n|2n,n,n}
        fIntFlowDirectCorrelations->Fill(21.,cos(4.*n*phi1-n*phi2-n*phi3-n*phi4-n*phi5),1.);       //<5>_{4n|n,n,n,n}
+       fIntFlowDirectCorrelations->Fill(33.,cos(2.*n*phi1+2.*n*phi2+2.*n*phi3-3.*n*phi4-3.*n*phi5),1.);       
       } // end of for(Int_t i5=0;i5<nPrim;i5++)
      } // end of for(Int_t i4=0;i4<nPrim;i4++)  
     } // end of for(Int_t i3=0;i3<nPrim;i3++)
@@ -10739,7 +10834,7 @@ void AliFlowAnalysisWithQCumulants::CrossCheckIntFlowCorrelations()
  cout<<endl;
  cout<<endl;
 
- Int_t ciMax = 32; // to be improved (removed eventually when I calculate 6th and 8th order with particle weights)
+ Int_t ciMax = 34; // to be improved (removed eventually when I calculate 6th and 8th order with particle weights)
  
  if(fUsePhiWeights||fUsePtWeights||fUseEtaWeights)
  {
