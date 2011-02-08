@@ -47,7 +47,7 @@ class AliKFParticle :public AliKFParticleBase
 
   //* Construction of mother particle by its 2-3-4 daughters
 
-  AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2 );
+  AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, Bool_t gamma = kFALSE );
 
   AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, 
 		 const AliKFParticle &d3 );
@@ -340,16 +340,6 @@ class AliKFParticle :public AliKFParticleBase
 inline void AliKFParticle::SetField( Double_t Bz )
 { 
   fgBz = Bz;
-}
-
-
-inline AliKFParticle::AliKFParticle( const AliKFParticle &d1, 
-				     const AliKFParticle &d2 )
-{
-  AliKFParticle mother;
-  mother+= d1;
-  mother+= d2;
-  *this = mother;
 }
 
 inline AliKFParticle::AliKFParticle( const AliKFParticle &d1, 

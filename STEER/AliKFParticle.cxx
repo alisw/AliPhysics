@@ -26,6 +26,17 @@ ClassImp(AliKFParticle)
 
 Double_t AliKFParticle::fgBz = -5.;  //* Bz compoment of the magnetic field
 
+AliKFParticle::AliKFParticle( const AliKFParticle &d1, const AliKFParticle &d2, Bool_t gamma )
+{
+  if (!gamma) {
+    AliKFParticle mother;
+    mother+= d1;
+    mother+= d2;
+    *this = mother;
+  } else
+    ConstructGamma(d1, d2);
+}
+
 void AliKFParticle::Create( const Double_t Param[], const Double_t Cov[], Int_t Charge, Int_t PID )
 {
   // Constructor from "cartesian" track, PID hypothesis should be provided
