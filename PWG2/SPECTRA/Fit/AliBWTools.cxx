@@ -387,9 +387,9 @@ void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapola
   //
   Printf("AliBWTools::GetMeanDataAndExtrapolation: WARNING from data only");
   Float_t minData    = GetLowestNotEmptyBinEdge (hData);
-  Float_t minDataBin = GetLowestNotEmptyBin     (hData);
+  Int_t minDataBin   = GetLowestNotEmptyBin     (hData);
   Float_t maxData    = GetHighestNotEmptyBinEdge(hData);
-  Float_t maxDataBin = GetHighestNotEmptyBin    (hData);
+  Int_t maxDataBin   = GetHighestNotEmptyBin    (hData);
   Double_t integral  = 0; 
   mean      = 0;
   error     = 0; 
