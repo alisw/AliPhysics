@@ -10,7 +10,7 @@
 //
 //  origin: PHOBOS experiment
 //  alification: Mikolaj Krzewicki, Nikhef, mikolaj.krzewicki@cern.ch
-//
+//  update:      You Zhou, Nikhef, yzhou@nikhef.nl :)
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliGlauberNucleus.h"
@@ -52,6 +52,10 @@ public:
    Double_t     GetEccentricity()    const;
    Double_t     GetEccentricityColl()      const;
    Double_t     GetEccentricityPart()      const;
+   Double_t     GetEpsilon2Part()      const;
+   Double_t     GetEpsilon3Part()      const;
+   Double_t     GetEpsilon4Part()      const;
+   Double_t     GetEpsilon5Part()      const;
    Double_t     GetEccentricityPartColl()  const;
    Double_t     GetB()               const {return fBMC;}
    Double_t     GetBMin()            const {return fBMin;}
@@ -106,6 +110,7 @@ private:
    TNtuple*     fnt;             //Ntuple for results (created, but not deleted)
    Double_t     fMeanX2;         //<x^2> of wounded nucleons
    Double_t     fMeanY2;         //<y^2> of wounded nucleons
+  
    Double_t     fMeanXY;         //<xy> of wounded nucleons
    Double_t     fMeanXParts;     //<x> of wounded nucleons
    Double_t     fMeanYParts;     //<y> of wounded nucleons
@@ -120,6 +125,7 @@ private:
    Double_t     fMeanYA;        //<x> of nucleons in nucleus A
    Double_t     fMeanXB;        //<x> of nucleons in nucleus B
    Double_t     fMeanYB;        //<x> of nucleons in nucleus B
+  
    Double_t     fBMC;           //Impact parameter (b)
    Int_t        fEvents;         //Number of events with at least one collision
    Int_t        fTotalEvents;    //All events within selected impact parameter range
@@ -132,6 +138,27 @@ private:
    Int_t        fMaxNpartFound;  //Largest value of Npart obtained
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event
    Int_t        fNcoll;          //Number of binary collisions in current event
+   Double_t     fMeanr2;         //----------<r^2> of wounded nucleons
+   Double_t     fMeanr3;         //----------<r^3> of wounded nucleons
+   Double_t     fMeanr4;         //----------<r^4> of wounded nucleons
+   Double_t     fMeanr5;         //----------<r^5> of wounded nucleons
+   Double_t     fMeanr2Cos2Phi;   //------<r^2*cos2phi> of wounded nucleons
+   Double_t     fMeanr2Sin2Phi;   //------<r^2*sin2phi> of wounded nucleons
+   Double_t     fMeanr2Cos3Phi;   //------<r^2*cos3phi> of wounded nucleons
+   Double_t     fMeanr2Sin3Phi;   //------<r^2*sin3phi> of wounded nucleons
+   Double_t     fMeanr2Cos4Phi;   //------<r^2*cos4phi> of wounded nucleons
+   Double_t     fMeanr2Sin4Phi;   //------<r^2*sin4phi> of wounded nucleons
+   Double_t     fMeanr2Cos5Phi;   //------<r^2*cos5phi> of wounded nucleons
+   Double_t     fMeanr2Sin5Phi;   //------<r^2*sin5phi> of wounded nucleons
+   Double_t     fMeanr3Cos3Phi;   //------<r^3*cos3phi> of wounded nucleons
+   Double_t     fMeanr3Sin3Phi;   //------<r^3*sin3phi> of wounded nucleons
+   Double_t     fMeanr4Cos4Phi;   //------<r^4*cos4phi> of wounded nucleons
+   Double_t     fMeanr4Sin4Phi;   //------<r^4*sin4phi> of wounded nucleons
+   Double_t     fMeanr5Cos5Phi;   //------<r^5*cos5phi> of wounded nucleons
+   Double_t     fMeanr5Sin5Phi;   //------<r^5*sin5phi> of wounded nucleons
+   //Double_t     fMeanr2Cos2PP;   //------<r^2*cos2phi> of wounded nucleons
+   //Double_t     fMeanr2Sin2PP;   //------<r^2*sin2phi> of wounded nucleons
+   //Double_t     fPsi2;
    Double_t     fSx2;            //Variance of x of wounded nucleons
    Double_t     fSy2;            //Variance of y of wounded nucleons
    Double_t     fSxy;            //Covariance of x and y of wounded nucleons
