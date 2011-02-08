@@ -462,6 +462,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	arrayProng=(TClonesArray*)aodFromExt->GetList()->FindObject("Dstar");
 	pdg=413;
 	if(fReadMC){
+	  pdgdaughters =new Int_t[3];
 	  pdgdaughters[1]=211;//pi
 	  pdgdaughters[0]=321;//K
 	  pdgdaughters[2]=211;//pi (soft?)
@@ -579,6 +580,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!mcArray) {
       printf("AliAnalysisTaskSEHFQA::UserExec: MC particles branch not found!\n");
+      delete [] pdgdaughters;
       return;
     }
     
@@ -586,13 +588,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     mcHeader = (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
     if(!mcHeader) {
       printf("AliAnalysisTaskSEHFQA::UserExec: MC header branch not found!\n");
+      delete [] pdgdaughters;
       return;
     }
   }
-  if(!aod) return;
+  if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {    delete [] pdgdaughters;return;}
 
   // count event
   fNEntries->Fill(0); 
@@ -612,6 +615,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!fCuts->IsEventSelected(aod)) {
     // rejected for pileup
     if(fCuts->GetWhyRejection()==1) fNEntries->Fill(1);
+    delete [] pdgdaughters;
     return;
   }
 
@@ -818,6 +822,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       } //end loop on tracks in the candidate
     } //end loop on candidates  
   }
+
+  delete [] pdgdaughters;
   PostData(1,fNEntries);
   PostData(2,fOutputPID);
   PostData(3,fOutputTrack);
