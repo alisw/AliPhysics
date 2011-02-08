@@ -298,7 +298,10 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
   
     mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     //loop on the MC event - some basic MC info on D*, D0 and soft pion
-    if (!mcArray) AliError("Could not find Monte-Carlo in AOD");
+    if(!mcArray) {
+      printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particles branch not found!\n");
+      return;
+    }
     
     for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
       AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
@@ -329,9 +332,18 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 	AliDebug(2, Form("daughter0 = %d and daughter1 = %d",daughter0,daughter1));
 	AliAODMCParticle* mcPartDaughter0 = 0;
 	AliAODMCParticle* mcPartDaughter1 = 0;
+
 	mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
+	if(!mcPartDaughter0) {
+	  printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particle daugter 0 not found!\n");
+	  return;
+	}
 	mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
-	
+	if(!mcPartDaughter1) {
+	  printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particle daugter 1 not found!\n");
+	  return;
+	}
+
 	Double_t eta0 = mcPartDaughter0->Eta();
 	Double_t eta1 = mcPartDaughter1->Eta();
 	Double_t y0   = mcPartDaughter0->Y();
@@ -500,6 +512,10 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 
 	  if(fUseMCInfo){
 	    mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	    if(!mcArray) {
+	      printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particles not found!\n");
+	      return;
+	    }
 	    mcLabel = vtx->MatchToMC(421, mcArray,2,pdgDgD0toKpi) ;   //MC D0
 	    // matching to MC D*
 	    if(mcLabel !=-1 && pLabel!=-1 && nJets ==1) { // count only once in case of multijets
