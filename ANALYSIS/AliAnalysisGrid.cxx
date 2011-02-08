@@ -45,7 +45,7 @@ AliAnalysisGrid &AliAnalysisGrid::operator=(const AliAnalysisGrid& other)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisGrid::CreateToken(const char *username)
+Bool_t AliAnalysisGrid::CreateToken(const char *)
 {
 // Check if a valid token exists - if not create one
    ::Warning("AliAnalysisGrid::CreateToken()", "**** !!!! Obsolete method. Please remove the line calling this in your plugin configuration !!!! ****\n");

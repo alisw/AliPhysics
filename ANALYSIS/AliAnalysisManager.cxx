@@ -2268,7 +2268,7 @@ void AliAnalysisManager::ProgressBar(const char *opname, Long64_t current, Long6
      Int_t full   = Int_t(ocurrent > 0 ? 
 			  time * (float(osize)/ocurrent) + .5 : 
 			  99*3600+59*60+59); 
-     Int_t remain = full - time;
+     Int_t remain = Int_t(full - time);
      Int_t rsec   = remain % 60;
      Int_t rmin   = (remain / 60) % 60;
      Int_t rhour  = (remain / 60 / 60);
