@@ -613,7 +613,7 @@ TFolder* AliConfig::BuildEventFolder(const char* name,const char* title)
   TFolder *configuration = eventfolder->AddFolder(fgkConfigurationFolderName, "Run configuration");
   configuration->AddFolder(fgkFieldFolderName, "Magnetic field maps");
   configuration->AddFolder(fgkGeneratorsFolderName,"list of generator objects");
-  configuration->AddFolder(fgkVirtualMCFolderName,"the Virtual MC");
+  //PH configuration->AddFolder(fgkVirtualMCFolderName,"the Virtual MC");
 
   eventfolder->AddFolder(fgkHeaderFolderName,"MonteCarlo event header");
 
