@@ -358,6 +358,8 @@ Bool_t kGCplotESDTrueCombinatorialContaminationPt = kTRUE;
 Bool_t kGCplotESDTrueCombinatorialElecContaminationPt = kTRUE;
 Bool_t kGCplotESDTrueHadronicContaminationPt  = kTRUE;
 
+
+Bool_t kGCplotESDTrueBackground              = kTRUE;
 Bool_t kGCplotESDTrueConvGammaEnergy         = kFALSE;
 Bool_t kGCplotESDTrueConvGammaPt             = kTRUE;
 Bool_t kGCplotESDTrueConvGammaEta            = kTRUE;
@@ -388,6 +390,7 @@ Bool_t kGCplotESDTrueConvGammaMCPtEta        = kTRUE;
 Bool_t kGCplotESDTrueConversionMCZR          = kFALSE;
 Bool_t kGCplotESDTrueConversionMCXY          = kFALSE;
 
+Bool_t kGCplotESDNoCutAllV0Pt                = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaEnergy         = kFALSE;
 Bool_t kGCplotESDNoCutConvGammaPt             = kTRUE;
 Bool_t kGCplotESDNoCutConvGammaEta            = kTRUE;
@@ -1967,6 +1970,25 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDTrueCombinatorialElecContaminationPt == kTRUE){ histograms->AddHistogram("ESD_TrueConvCombinatorialElec_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDTrueHadronicContaminationPt == kTRUE){ histograms->AddHistogram("ESD_TrueConvHadronicBck_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
+
+    if(kGCplotESDTrueBackground){
+       histograms->AddHistogram("ESD_TrueConvCombinatorialDaughter_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,kGCnXBinsPt,kGCfirstXBinPt , kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvHadronicBckDaughter_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,kGCnXBinsPt,kGCfirstXBinPt , kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPiDaughter_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,kGCnXBinsPt,kGCfirstXBinPt , kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPiPDaughter_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt,kGCnXBinsPt,kGCfirstXBinPt , kGClastXBinPt, "", "");
+
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPi_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPi_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPiP_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialPiP_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialElecPi_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvCombinatorialElecPi_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+       histograms->AddHistogram("ESD_TrueConvMeson_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvMeson_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+       histograms->AddHistogram("ESD_TrueConvLambda_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");
+       histograms->AddHistogram("ESD_TrueConvLambda_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
+    }
+
     histograms->AddHistogram("ESD_TrueConvDalitzPi0_SinglePos_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
     histograms->AddHistogram("ESD_TrueConvDalitzPi0_SingleNeg_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
     histograms->AddHistogram("ESD_TrueConvDalitzPi0_SinglePos_kFirst_R" ,"" , kGCnXBinsR, kGCfirstXBinR, kGClastXBinR, "", "");
@@ -2010,7 +2032,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDTrueConversionMCXY == kTRUE){ histograms->AddHistogram("ESD_TrueConversion_MC_XY" ,"" , kGCnXBinsXY, kGCfirstXBinXY, kGClastXBinXY, kGCnYBinsXY, kGCfirstYBinXY, kGClastYBinXY, "", "");}
 		
 		
-		
+    if(kGCplotESDNoCutAllV0Pt == kTRUE){ histograms->AddHistogram("ESD_NoCutAllV0_Pt" ,"" , kGCnXBinsPt,kGCfirstXBinPt , kGClastXBinPt, "", "");}		
     if(kGCplotESDNoCutConvGammaEnergy == kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_Energy" ,"" , kGCnXBinsEnergy, kGCfirstXBinEnergy, kGClastXBinEnergy, "", "");}
     if(kGCplotESDNoCutConvGammaPt == kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
     if(kGCplotESDNoCutConvGammaEta == kTRUE){ histograms->AddHistogram("ESD_NoCutConvGamma_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}

@@ -717,6 +717,7 @@ void AliAnalysisTaskGammaConversion::CheckMesonProcessTypeEventQuality(Int_t evt
     }	
 
     if(TMath::Abs(rapidity) > fV0Reader->GetRapidityMesonCut() ) continue; 
+    if(fV0Reader->GetIsHeavyIon()) continue;
 
     if(evtQ==1){
       switch(GetProcessType(fGCMCEvent)){
@@ -1304,21 +1305,23 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 	  fHistograms->FillHistogram("MC_Pi0_GammaDaughter_OpeningAngle", GetMCOpeningAngle(daughter0,daughter1));
 	  fHistograms->FillHistogram("MC_Pi0_XY", particle->Vx(), particle->Vy());//only fill from one daughter to avoid multiple filling
 	  if(TMath::Abs(particle->Eta())<0.9)fHistograms->FillHistogram("MC_Pi0_Pt_Fiducial", particle->Pt());
+	  
+	  if(!fV0Reader->GetIsHeavyIon()) {
 
-	  switch(GetProcessType(fGCMCEvent)){
-	  case  kProcSD:
-	    fHistograms->FillHistogram("MC_SD_EvtQ3_Pi0_Pt", particle->Pt());
-	    break;
-	  case  kProcDD:
-	    fHistograms->FillHistogram("MC_DD_EvtQ3_Pi0_Pt", particle->Pt());
-	    break;
-	  case  kProcND:
-	    fHistograms->FillHistogram("MC_ND_EvtQ3_Pi0_Pt", particle->Pt());
-	    break;
-	  default:
-	    AliError("Unknown Process");
-	  }
-			
+	    switch(GetProcessType(fGCMCEvent)){
+	    case  kProcSD:
+	      fHistograms->FillHistogram("MC_SD_EvtQ3_Pi0_Pt", particle->Pt());
+	      break;
+	    case  kProcDD:
+	      fHistograms->FillHistogram("MC_DD_EvtQ3_Pi0_Pt", particle->Pt());
+	      break;
+	    case  kProcND:
+	      fHistograms->FillHistogram("MC_ND_EvtQ3_Pi0_Pt", particle->Pt());
+	      break;
+	    default:
+	      AliError("Unknown Process");
+	    }
+	  }	
 	  if(gammaEtaCut && gammaRCut){
 	    //	  if(TMath::Abs(daughter0->Eta()) <= fV0Reader->GetEtaCut() && TMath::Abs(daughter1->Eta()) <= fV0Reader->GetEtaCut() ){
 	    fHistograms->FillHistogram("MC_Pi0_Pt_Eta_withinAcceptance", particle->Pt(),particle->Eta());
@@ -1509,6 +1512,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
     if((TMath::Abs(fV0Reader->GetZ())*fV0Reader->GetLineCutZRSlope())-fV0Reader->GetLineCutZValue() > fV0Reader->GetXYRadius() ){ // cuts out regions where we do not reconstruct
       continue; 
     }
+
+    fHistograms->FillHistogram("ESD_NoCutAllV0_Pt", fV0Reader->GetMotherCandidatePt());
+    
     if(fDoMCTruth){
 			
       if(fV0Reader->HasSameMCMother() == kFALSE){
@@ -1779,31 +1785,59 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		
     //----------------------------------- checking for "real" conversions (MC match) --------------------------------------
     if(fDoMCTruth){
-      TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
-      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
-			
-      if(fV0Reader->HasSameMCMother() == kFALSE){
-	fHistograms->FillHistogram("ESD_TrueConvCombinatorial_R", fV0Reader->GetXYRadius());
-	fHistograms->FillHistogram("ESD_TrueConvCombinatorial_Pt", fV0Reader->GetMotherCandidatePt());
-	if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
-	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_R", fV0Reader->GetXYRadius());
-	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_Pt", fV0Reader->GetMotherCandidatePt());
-	}
-	continue;
-      }
-      // Moved up to check true electron background
-      //      TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
-      //      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+       TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+       TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+       
+       if(fV0Reader->HasSameMCMother() == kFALSE){
+	  fHistograms->FillHistogram("ESD_TrueConvCombinatorial_R", fV0Reader->GetXYRadius());
+	  fHistograms->FillHistogram("ESD_TrueConvCombinatorial_Pt", fV0Reader->GetMotherCandidatePt());
+	  fHistograms->FillHistogram("ESD_TrueConvCombinatorialDaughter_Pt", negativeMC->Pt(),positiveMC->Pt());
+	  if(TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==11){
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElec_Pt", fV0Reader->GetMotherCandidatePt());
+	  }
+	  if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPi_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPi_Pt", fV0Reader->GetMotherCandidatePt());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPiDaughter_Pt", negativeMC->Pt(),positiveMC->Pt());
+	  }
+	  if((TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==2211) ||
+	     (TMath::Abs(negativeMC->GetPdgCode())==2212 && TMath::Abs(positiveMC->GetPdgCode())==211)){
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPiP_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPiP_Pt", fV0Reader->GetMotherCandidatePt());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialPiPDaughter_Pt", negativeMC->Pt(),positiveMC->Pt());
+	  }
+	  if((TMath::Abs(negativeMC->GetPdgCode())==11 && TMath::Abs(positiveMC->GetPdgCode())==211) ||
+	     (TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==11)){
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElecPi_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElecPi_Pt", fV0Reader->GetMotherCandidatePt());
+	  }
+	  continue;
+       }
+       // Moved up to check true electron background
+       //      TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
+       //      TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
+       
+       if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
+	  fHistograms->FillHistogram("ESD_TrueConvHadronicBck_R", fV0Reader->GetXYRadius());
+	  fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Pt", fV0Reader->GetMotherCandidatePt());
+	  fHistograms->FillHistogram("ESD_TrueConvHadronicBckDaughter_Pt", negativeMC->Pt(),positiveMC->Pt());
+	  if((TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==2211) ||
+	     (TMath::Abs(negativeMC->GetPdgCode())==2212 && TMath::Abs(positiveMC->GetPdgCode())==211)){
+	     fHistograms->FillHistogram("ESD_TrueConvLambda_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvLambda_Pt", fV0Reader->GetMotherCandidatePt());
+	  }
+	  if(TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==211){
+	     fHistograms->FillHistogram("ESD_TrueConvMeson_R", fV0Reader->GetXYRadius());
+	     fHistograms->FillHistogram("ESD_TrueConvMeson_Pt", fV0Reader->GetMotherCandidatePt());
+	  }
+	  continue;
+       }
+       
 
-      if(TMath::Abs(negativeMC->GetPdgCode())!=11 || TMath::Abs(positiveMC->GetPdgCode())!=11){
-	fHistograms->FillHistogram("ESD_TrueConvHadronicBck_R", fV0Reader->GetXYRadius());
-	fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Pt", fV0Reader->GetMotherCandidatePt());
-	continue;
-      }
-
-      if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
-	continue;
-      }
+       if(negativeMC->GetPdgCode()==positiveMC->GetPdgCode()){
+	  continue;
+       }
 
       UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus(); 
       UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
