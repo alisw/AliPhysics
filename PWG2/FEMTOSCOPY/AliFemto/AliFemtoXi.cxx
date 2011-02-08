@@ -26,8 +26,8 @@ AliFemtoXi::AliFemtoXi():
   fPtXi(0), fPtotXi(0), fPtBac(0), fPtotBac(0),
   fKeyBac(0)
 {
-  fTopologyMapBachelor[0] = 0.0;
-  fTopologyMapBachelor[1] = 0.0;
+  fTopologyMapBachelor[0] = 0;
+  fTopologyMapBachelor[1] = 0;
 }
 // -----------------------------------------------------------------------
 void AliFemtoXi::UpdateXi(){
