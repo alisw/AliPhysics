@@ -96,7 +96,7 @@ void AliZDCFragment::GenerateIMF()
    // Coefficients of polynomial for fluctuations on average number of alphas
    const Float_t  kParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
    // Coefficients of function for Pb nucleus skin
-   const Float_t  kParamSkinPb[2]={0.93,11.05};
+   //const Float_t  kParamSkinPb[2]={0.93,11.05};
    
    // Thickness of nuclear surface
    const Float_t  kNuclearThick = 0.52;
