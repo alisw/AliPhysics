@@ -180,13 +180,15 @@ void AliTOFTenderSupply::ProcessEvent()
     if(event->GetT0TOF(1) == 0) event->SetT0TOF(1, 99999.);
     if(event->GetT0TOF(2) == 0) event->SetT0TOF(2, 99999.);
 
-    event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
-    event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
-    event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);      
-
-    if(event->GetT0TOF(0) > 9000000) event->SetT0TOF(0, 9999999.);
-    if(event->GetT0TOF(1) > 90000) event->SetT0TOF(1, 99999.);
-    if(event->GetT0TOF(2) > 90000) event->SetT0TOF(2, 99999.);
+    if(! fIsMC){
+      event->SetT0TOF(0,event->GetT0TOF(0) - fT0shift[0]);
+      event->SetT0TOF(1,event->GetT0TOF(1) - fT0shift[1]);
+      event->SetT0TOF(2,event->GetT0TOF(2) - fT0shift[2]);
+      
+      if(event->GetT0TOF(0) > 9000000) event->SetT0TOF(0, 9999999.);
+      if(event->GetT0TOF(1) > 90000) event->SetT0TOF(1, 99999.);
+      if(event->GetT0TOF(2) > 90000) event->SetT0TOF(2, 99999.);
+    }
   }
   
   //Calculate event time zero
