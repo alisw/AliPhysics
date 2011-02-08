@@ -527,10 +527,12 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(5);
 
-  if(fRDCuts->IsEventSelected(aod)) fHistNEvents->Fill(1);
-  else{
+  if(fRDCuts->IsEventSelected(aod)) {
+    fHistNEvents->Fill(1);
+  }else{
     if(fRDCuts->GetWhyRejection()==1) // rejected for pileup
       fHistNEvents->Fill(4);
+    delete [] pdgdaughters;
     return;
   }
   
@@ -587,6 +589,7 @@ void AliAnalysisTaskSESignificance::UserExec(Option_t */*option*/)
 	if(addresses[ivals]>=((AliMultiDimVector*)fCutList->FindObject(mdvname.Data()))->GetNTotCells()){
 	  if (fDebug>1) printf("Overflow!!\n");
 	  delete [] addresses;
+	  delete [] pdgdaughters;
 	  return;
 	}
 

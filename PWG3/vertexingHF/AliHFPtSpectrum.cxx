@@ -672,7 +672,8 @@ TH1D * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, cons
 
   TH1D * hEfficiency = new TH1D(name," acceptance #times efficiency",nbins,limits);
   
-  Double_t sumSimu[nbins], sumReco[nbins];
+  Double_t *sumSimu=new Double_t[nbins];
+  Double_t *sumReco=new Double_t[nbins];
   for (Int_t ibin=0; ibin<nbins; ibin++){
     sumSimu[ibin]=0.;  sumReco[ibin]=0.;
   }
@@ -706,6 +707,9 @@ TH1D * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, cons
     hEfficiency->SetBinContent(ibinrec+1,eff);
     hEfficiency->SetBinError(ibinrec+1,erreff);
   }
+
+  delete [] sumSimu;
+  delete [] sumReco;
 
   return (TH1D*)hEfficiency;
 }
