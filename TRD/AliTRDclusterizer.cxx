@@ -894,8 +894,10 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   // Gives back the padStatus and the signals of the center pad and the two neighbouring pads.
   //
 
+  Float_t tmp(0.), kMaxShortVal(32767.); // protect against data overflow due to wrong gain calibration
   Float_t gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col,Max.row);
-  Signals[1] = (Short_t)((fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) / gain + 0.5f);
+  tmp = (fDigits->GetData(Max.row, Max.col, Max.time) - fBaseline) / gain + 0.5f;
+  Signals[1] = (Short_t)TMath::Min(tmp, kMaxShortVal);
   if(Signals[1] <= fMaxThresh) return kFALSE;
 
   if(Max.col < 1 || Max.col + 1 >= fColMax) return kFALSE;
@@ -912,11 +914,13 @@ Bool_t AliTRDclusterizer::IsMaximum(const MaxStruct &Max, UChar_t &padStatus, Sh
   Short_t signal(0);
   if((signal = fDigits->GetData(Max.row, Max.col-1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col-1,Max.row);
-    Signals[0] = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    tmp = (signal - fBaseline) / gain + 0.5f;
+    Signals[0] = (Short_t)TMath::Min(tmp, kMaxShortVal);
   } else Signals[0] = 0;
   if((signal = fDigits->GetData(Max.row, Max.col+1, Max.time))){
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(Max.col+1,Max.row);
-    Signals[2] = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    tmp = (signal - fBaseline) / gain + 0.5f;
+    Signals[2] = (Short_t)TMath::Min(tmp, kMaxShortVal);
   } else Signals[2] = 0;
 
   if(!(status[0] | status[1] | status[2])) {//all pads are good
@@ -1042,7 +1046,8 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
 // Calculate number of pads/cluster and
 // ADC signals at position 0, 1, 5 and 6
 
-  Float_t gain(1.); Short_t signal(0.);
+  Float_t tmp(0.), kMaxShortVal(32767.); // protect against data overflow due to wrong gain calibration
+  Float_t gain(1.); Short_t signal(0);
   // Store the amplitudes of the pads in the cluster for later analysis
   // and check whether one of these pads is masked in the database
   signals[3]=Max.signals[1];
@@ -1051,7 +1056,8 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
   while((jpad = Max.col-ipad)){
     if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
-    signal = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    tmp = (signal - fBaseline) / gain + 0.5f;
+    signal = (Short_t)TMath::Min(tmp, kMaxShortVal);
     if(signal<fSigThresh) break; // signal under threshold
     nPadCount++;
     if(ipad<=3) signals[3 - ipad] = signal;
@@ -1062,7 +1068,8 @@ void AliTRDclusterizer::CalcAdditionalInfo(const MaxStruct &Max, Short_t *const 
   while((jpad = Max.col+ipad)<fColMax){
     if(!(signal = fDigits->GetData(Max.row, jpad, Max.time))) break; // empty digit !
     gain = fCalGainFactorDetValue * fCalGainFactorROC->GetValue(jpad, Max.row);
-    signal = (Short_t)((signal - fBaseline) / gain + 0.5f);
+    tmp = (signal - fBaseline) / gain + 0.5f;
+    signal = (Short_t)TMath::Min(tmp, kMaxShortVal);
     if(signal<fSigThresh) break; // signal under threshold
     nPadCount++;
     if(ipad<=3) signals[3 + ipad] = signal;
@@ -1239,13 +1246,15 @@ void AliTRDclusterizer::TailCancelation(const AliTRDrecoParam* const recoParam)
   // Applies the tail cancelation
   //
 
+  Int_t nexp = recoParam->GetTCnexp();
+  if(!nexp) return;
+  
   Int_t iRow  = 0;
   Int_t iCol  = 0;
   Int_t iTime = 0;
 
   TTreeSRedirector *fDebugStream = fReconstructor->GetDebugStream(AliTRDrecoParam::kClusterizer);
   Bool_t debugStreaming = recoParam->GetStreamLevel(AliTRDrecoParam::kClusterizer) > 7 && fReconstructor->IsDebugStreaming();
-  Int_t nexp = recoParam->GetTCnexp();
   while(fIndexes->NextRCIndex(iRow, iCol))
     {
       // if corrupted then don't make the tail cancallation
