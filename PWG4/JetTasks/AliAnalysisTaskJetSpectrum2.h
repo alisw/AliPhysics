@@ -82,7 +82,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     enum {kTrackUndef = 0, kTrackAOD, kTrackKineAll,kTrackKineCharged, kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
     enum {kAnaMC =  0x1, kAnaMCESD = 0x2};
     enum {kMaxJets = 4};
-    enum {kJetRec = 0, kJetGen, kJetTypes}; //
+    enum {kJetRec = 0, kJetGen, kJetRecFull, kJetGenFull, kJetTypes}; //
     enum {kMaxCorrelation =  3};
     
     // 
@@ -155,41 +155,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtHardNoW;  //! Pt har of the event without weigt       
     TH1F*         fh1PtHardTrials;  //! Number of trials 
     TH1F*         fh1ZVtx;          //! z-vtx distribution
-    TH1F*         fh1NGenJets;      //! nr of gen jets
-    TH1F*         fh1NRecJets;      //! nr of rec jets
-    TH1F*         fh1PtTrackRec;    //! track pt
-    TH1F*         fh1SumPtTrackRec; //! sum over all track pT    
-    TH1F*         fh1SumPtTrackAreaRec; //! sum over all track pT    
-    TH1F*         fh1TmpRho;            //! just temporary histo for calculation
-
-
-    TH1F*         fh1PtRecIn[kMaxJets];  //! Jet pt for all this info is also in the THNsparse      
-    TH1F*         fh1PtGenIn[kMaxJets];  //! Jet pt with corellated generated jet    
-
-    TH1F*         fh1PtJetsRecIn;  //! Jet pt for all jets
-    TH1F*         fh1PtJetsGenIn;  //! Jet pt for all jets
-    TH1F*         fh1PtJetsLeadingRecIn;  //! Jet pt for all jets
-    TH1F*         fh1PtTracksRecIn;  //! track pt for all tracks
-    TH1F*         fh1PtTracksLeadingRecIn;  //! track pt for all tracks
-    TH1F*         fh1PtTracksGenIn;  //! track pt for all tracks
-    
-
-    TH2F*         fh2NRecJetsPt;            //! Number of found jets above threshold
-    TH2F*         fh2NRecTracksPt;          //! Number of found tracks above threshold
-    TH2F*         fh2NGenJetsPt;            //! Number of found jets above threshold
-    TH2F*         fh2NGenTracksPt;          //! Number of found tracks above threshold
+    TH1F*         fh1TmpRho;            //! just temporary histo for calculation    
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
-    TH2F*         fh2RhoPtRec[kMaxJets];    //! jet shape variable rho
-    TH2F*         fh2PsiPtRec[kMaxJets];    //! jet shape variable psi
-    TH2F*         fh2RhoPtGen[kMaxJets];    //! 
-    TH2F*         fh2PsiPtGen[kMaxJets];    //!
-    TH2F*         fh2FragRec[kMaxJets];     //! fragmentation function
-    TH2F*         fh2FragLnRec[kMaxJets];   //! fragmetation in xi
-    TH2F*         fh2FragGen[kMaxJets];     //! fragmentation function
-    TH2F*         fh2FragLnGen[kMaxJets];   //! fragmetation in xi
-
-
 
     // Jet histos second go
 
@@ -202,7 +170,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtTracksLeadingIn[kJetTypes];  //! track pt for all tracks
     
     TH2F*         fh2NJetsPt[kJetTypes];    //! Number of found jets above threshold
-    TH2F*         fh2NTracksPt[kJetTypes];  //! Number of found jets above threshold
+    TH2F*         fh2NTracksPt[kJetTypes];  //! Number of tracks above threshold
     TH2F*         fh2LeadingJetPtJetPhi[kJetTypes];     //! Phi distribution of accepted leading jets 
     TH2F*         fh2LeadingTrackPtTrackPhi[kJetTypes]; //! phi distribution of accepted leading tracks
     TH2F*         fh2RhoPt[kJetTypes][kMaxJets];     //! jet shape variable rho
@@ -219,35 +187,10 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*   fh2DijetPt2vsPt1[kJetTypes];        //! dijet pt2 vs pt1
     TH2F*   fh2DijetDifvsSum[kJetTypes];        //! dijet dif vs sum
 
-    //background histos
-
-    TH1F*         fh1Bkg1; //! background estimate, all jets
-    TH1F*         fh1Bkg2; //! background estimate, wo 2 hardest jet 
-    TH1F*         fh1Bkg3; //! background estimate, random jets
-    TH1F*         fh1Sigma1; //! background fluctuations, all jets
-    TH1F*         fh1Sigma2; //! background fluctuations, wo hardest jet
-    TH1F*         fh1Sigma3; //! background fluctuations,random jets
-    TH1F*         fh1Area1; //! average background jet area, all jets 
-    TH1F*         fh1Area2; //! average background jet area, wo 2 hardest jet 
-    TH1F*         fh1Area3; //! average background jet area, random jets
-    TH1F*         fh1Ptjet; //! rec jet spectrum
-    TH1F*         fh1Ptjetsub1;//! subtracted jet spectrum (Bkg1) 
-    TH1F*         fh1Ptjetsub2; //! subtracted jet spectrum (Bkg2)
-    TH1F*         fh1Ptjetsub3; //! subtracted jet spectrum (Bkg3)
-    TH1F*         fh1Ptjethardest; //! rec hardest jet spectrum
-    TH1F*         fh1Ptjetsubhardest1;//! subtracted hardest jet spectrum (Bkg1)
-    TH1F*         fh1Ptjetsubhardest2;//! subtracted hardest jet spectrum (Bkg2)
-    TH1F*         fh1Ptjetsubhardest3;//! subtracted hardest jet spectrum (Bkg3)
-    TH2F*         fh2Rhovspthardest1;//! rho vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh2Rhovspthardest2;//! rho vs hardest subtracted jet pt (Bkg2)
-    TH2F*         fh2Rhovspthardest3;//! rho vs hardest subtracted jet pt (Bkg3)
-    TH2F*         fh2Errorvspthardest1;//! relative error vs hardest subtracted jet pt (Bkg1)
-    TH2F*         fh2Errorvspthardest2;//! relative error vs hardest subtracted jet pt (Bkg2)
-    TH2F*         fh2Errorvspthardest3;//! relative error vs hardest subtracted jet pt (Bkg3)    
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 11) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 12) // Analysis task for standard jet analysis
 };
  
 #endif
