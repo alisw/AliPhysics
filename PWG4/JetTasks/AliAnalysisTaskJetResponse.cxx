@@ -46,10 +46,15 @@ AliAnalysisTaskJetResponse::AliAnalysisTaskJetResponse() :
   fHistEvtSelection(0x0),
   fHistPtLeadingJet(new TH1F*[fkNbranches]),
   fHistEtaPhiLeadingJet(new TH2F*[fkNbranches]),
+  fHistEtaPhiLeadingJetCut(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaDeltaPhiLeadingJet(0x0),
+  fHistDeltaEtaEtaLeadingJet(new TH2F*[fkEvtClasses]),
+  fHistDeltaPtEtaLeadingJet(new TH2F*[fkEvtClasses]),
   fHistPtPtExtra(0x0),
   fHistPtResponse(new TH2F*[fkEvtClasses]),
-  fHistPtSmearing(new TH2F*[fkEvtClasses])
+  fHistPtSmearing(new TH2F*[fkEvtClasses]),
+  fHistdR(new TH2F*[fkEvtClasses]),
+  fHistArea(new TH2F*[fkEvtClasses])
 {
   // default Constructor
 
@@ -82,10 +87,15 @@ AliAnalysisTaskJetResponse::AliAnalysisTaskJetResponse(const char *name) :
   fHistEvtSelection(0x0),
   fHistPtLeadingJet(new TH1F*[fkNbranches]),
   fHistEtaPhiLeadingJet(new TH2F*[fkNbranches]),
+  fHistEtaPhiLeadingJetCut(new TH2F*[fkEvtClasses]),
   fHistDeltaEtaDeltaPhiLeadingJet(0x0),
+  fHistDeltaEtaEtaLeadingJet(new TH2F*[fkEvtClasses]),
+  fHistDeltaPtEtaLeadingJet(new TH2F*[fkEvtClasses]),
   fHistPtPtExtra(0x0),
   fHistPtResponse(new TH2F*[fkEvtClasses]),
-  fHistPtSmearing(new TH2F*[fkEvtClasses])
+  fHistPtSmearing(new TH2F*[fkEvtClasses]),
+  fHistdR(new TH2F*[fkEvtClasses]),
+  fHistArea(new TH2F*[fkEvtClasses])
 {
   // Constructor
 
@@ -155,6 +165,18 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
 					  300, 0., 300., 300, 0., 300.);
     fHistPtSmearing[iEvtClass] = new TH2F(Form("pt_smearing%i",iEvtClass), Form("pt_smearing%i;p_{T} (GeV/c);p_{T} (GeV/c)",iEvtClass),
 					  200, -50., 150., 300, 0., 300.);
+    fHistdR[iEvtClass] = new TH2F(Form("hist_dR%i",iEvtClass), "", 200, -50.,150., 200, -1.,1.);
+    fHistArea[iEvtClass] = new TH2F(Form("hist_Area%i",iEvtClass), "", 200, -50.,150., 100, 0.,1.);
+
+    fHistEtaPhiLeadingJetCut[iEvtClass] = new TH2F(Form("fHistEtaPhiLeadingJetCut%i", iEvtClass),
+					      Form("#eta - #phi of leading jet from event class %i;#eta;#phi", iEvtClass),
+					      100, -2., 2., 100, 0., 2*TMath::Pi());
+    fHistDeltaEtaEtaLeadingJet[iEvtClass] = new TH2F(Form("fHistDeltaEtaEtaLeadingJet%i", iEvtClass),
+                                                Form("#eta - #Delta#eta of leading jet from event class %i;#eta;#Delta#eta", iEvtClass),
+                                                100, -1., 1., 100, -.5, .5);
+    fHistDeltaPtEtaLeadingJet[iEvtClass] = new TH2F(Form("fHistDeltaPtEtaLeadingJet%i", iEvtClass),
+                                                Form("#eta - #Delta#eta of leading jet from event class %i;#eta;#Delta#p_{T}", iEvtClass),
+                                                100, -1., 1., 200, -50., 150);
   }
 
   OpenFile(1);
@@ -169,6 +191,11 @@ void AliAnalysisTaskJetResponse::UserCreateOutputObjects()
   for (Int_t iEvtClass =0; iEvtClass < fkEvtClasses; iEvtClass++) {
     fOutputList->Add(fHistPtResponse[iEvtClass]);
     fOutputList->Add(fHistPtSmearing[iEvtClass]);
+    fOutputList->Add(fHistdR[iEvtClass]);
+    fOutputList->Add(fHistArea[iEvtClass]);
+    fOutputList->Add(fHistEtaPhiLeadingJetCut[iEvtClass]);
+    fOutputList->Add(fHistDeltaEtaEtaLeadingJet[iEvtClass]);
+    fOutputList->Add(fHistDeltaPtEtaLeadingJet[iEvtClass]);
   }
 }
 
@@ -239,8 +266,8 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
 
 
   TClonesArray *aodJets[2];
-  aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data()));
-  aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data()));
+  aodJets[0] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[0].Data())); // in general: embedded jet
+  aodJets[1] = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fJetBranchName[1].Data())); // in general: embedded jet + UE
   AliAODJet *leadingJet[2] = { 0x0, 0x0 };
 
   for (Int_t iJetType = 0; iJetType < 2; iJetType++) {
@@ -261,6 +288,15 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
 
   // check if leading jets are close in eta-phi and compare their Pt
   if (leadingJet[0] && leadingJet[1]) {
+    Float_t deltaEta = leadingJet[0]->Eta() - leadingJet[1]->Eta();
+    Float_t deltaPhi = TVector2::Phi_mpi_pi(leadingJet[0]->Phi() - leadingJet[1]->Phi());
+
+    if (eventClass > -1 && eventClass < fkEvtClasses){
+
+       if(leadingJet[1]->Eta()<fJetEtaMax && leadingJet[1]->Eta()>fJetEtaMin){
+          fHistEtaPhiLeadingJetCut[eventClass]->Fill(leadingJet[1]->Eta(), leadingJet[1]->Phi());
+       }
+    }
 
     // leading jets in "jet" acceptance
     if(leadingJet[0]->Eta()>fJetEtaMax || leadingJet[0]->Eta()<fJetEtaMin ||
@@ -269,21 +305,31 @@ void AliAnalysisTaskJetResponse::UserExec(Option_t *)
     }
     else{
        // check association of jets
-       Float_t deltaEta = leadingJet[0]->Eta() - leadingJet[1]->Eta();
-       Float_t deltaPhi = leadingJet[0]->Phi() - leadingJet[1]->Phi();
        fHistDeltaEtaDeltaPhiLeadingJet->Fill(deltaEta, deltaPhi);
 
        if (TMath::Abs(deltaEta) > fJetDeltaEta || (TMath::Pi() - TMath::Abs(TMath::Abs(deltaPhi) - TMath::Pi())) > fJetDeltaPhi)
           printf("leading jets two far apart\n");
        else {
-          fHistPtLeadingJet[0]->Fill(leadingJet[0]->Pt());
-          fHistPtLeadingJet[1]->Fill(leadingJet[1]->Pt());
+          Float_t pt0 = leadingJet[0]->Pt();
+          Float_t pt1 = leadingJet[1]->Pt();
+          Float_t dPt = pt1-pt0;
+          Float_t jetarea = leadingJet[1]->EffectiveAreaCharged();
 
-          fHistPtPtExtra->Fill(leadingJet[0]->Pt(), leadingJet[1]->Pt());
+          fHistPtLeadingJet[0]->Fill(pt0);
+          fHistPtLeadingJet[1]->Fill(pt1);
+
+          fHistPtPtExtra->Fill(pt0, pt1);
 
           if (eventClass > -1 && eventClass < fkEvtClasses){
-	      fHistPtResponse[eventClass]->Fill(leadingJet[1]->Pt(), leadingJet[0]->Pt());
-              fHistPtSmearing[eventClass]->Fill(leadingJet[1]->Pt()-leadingJet[0]->Pt(), leadingJet[0]->Pt());
+	      fHistPtResponse[eventClass]->Fill(pt1, pt0);
+              fHistPtSmearing[eventClass]->Fill(dPt, pt0);
+
+              Float_t dR = TMath::Sqrt(deltaEta*deltaEta+deltaPhi*deltaPhi);
+              fHistdR[eventClass]->Fill(dPt, dR);
+              fHistArea[eventClass]->Fill(dPt, jetarea);
+
+              fHistDeltaEtaEtaLeadingJet[eventClass]->Fill(leadingJet[0]->Eta(), deltaEta);
+              fHistDeltaPtEtaLeadingJet[eventClass]->Fill(leadingJet[0]->Eta(), dPt);
           }
        }
     }

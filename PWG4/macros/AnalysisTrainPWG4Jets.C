@@ -445,7 +445,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      AliAnalysisTaskFastEmbedding *taskEmbedding = 0;
      if(kFastEmbAODList.Length()) taskEmbedding = AddTaskFastEmbedding(kFastEmbAODList, 1);
      else                         taskEmbedding = AddTaskFastEmbedding(kFastEmbeddingAOD, 0);
-     //taskEmbedding->SetJetBranch("jets");
+     taskEmbedding->SetJetBranch("jetsAOD_UA104_B0_Filter00256_Cut01000");
+     // taskEmbedding->SetEvtSelecMode(AliAnalysisTaskFastEmbedding::kEventsAll);
+     // taskEmbedding->SetDebugLevel(10);
    }
 
     // Jet analysis

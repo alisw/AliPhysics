@@ -77,10 +77,15 @@ class AliAnalysisTaskJetResponse : public AliAnalysisTaskSE {
   TH1F *fHistEvtSelection;                   //! event selection statistic
   TH1F **fHistPtLeadingJet;                  //! pt of leading jet
   TH2F **fHistEtaPhiLeadingJet;              //! eta-phi of leading jet
+  TH2F **fHistEtaPhiLeadingJetCut;           //! eta-phi of leading jet in eta acceptace per event class
   TH2F  *fHistDeltaEtaDeltaPhiLeadingJet;    //! delta eta vs. delta phi of leading jets
+  TH2F **fHistDeltaEtaEtaLeadingJet;         //! delta eta vs. eta of leading jet per event class
+  TH2F **fHistDeltaPtEtaLeadingJet;          //! delta eta vs. eta of leading jet per event class
   TH2F  *fHistPtPtExtra;                     //! jet pt response
   TH2F **fHistPtResponse;                    //! histograms per event class
-  TH2F **fHistPtSmearing;                    //! histograms per event class
+  TH2F **fHistPtSmearing;                    //! emb-jet pt vs (emb+UE - emb) pt
+  TH2F **fHistdR;                            //! shift dR of jets vs (emb+UE - emb) pt
+  TH2F **fHistArea;                          //! area of jets vs (emb+UE - emb) pt
 
   AliAnalysisTaskJetResponse(const AliAnalysisTaskJetResponse&); // not implemented
   AliAnalysisTaskJetResponse& operator=(const AliAnalysisTaskJetResponse&); // not implemented
