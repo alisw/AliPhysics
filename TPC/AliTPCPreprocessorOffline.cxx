@@ -377,6 +377,10 @@ TGraphErrors* AliTPCPreprocessorOffline::FilterGraphMedianAbs(TGraphErrors * gra
   }
   TGraphErrors *graphOut=0;
   if (npoints>1) graphOut= new TGraphErrors(npoints,outx,outy,errx,erry); 
+  delete []outx;
+  delete []outy;
+  delete []errx;
+  delete []erry;
   return graphOut;
 }
 
@@ -413,16 +417,17 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       if (!graph) {
 	printf("Graph =%s filtered out\n", name.Data());
 	continue;
+      }      
+      if (graph){
+	graph->SetMarkerStyle(i%8+20);
+	graph->SetMarkerColor(i%7);
+	graph->GetXaxis()->SetTitle("Time");
+	graph->GetYaxis()->SetTitle("v_{dcor}");
+	graph->SetName(graphName);
+	graph->SetTitle(graphName);
+	printf("Graph %d\t=\t%s\n", i, graphName.Data());
+	vdriftArray->Add(graph);
       }
-      //
-      graph->SetMarkerStyle(i%8+20);
-      graph->SetMarkerColor(i%7);
-      graph->GetXaxis()->SetTitle("Time");
-      graph->GetYaxis()->SetTitle("v_{dcor}");
-      graph->SetName(graphName);
-      graph->SetTitle(graphName);
-      printf("Graph %d\t=\t%s\n", i, graphName.Data());
-      vdriftArray->Add(graph);
     }
   }
 }
@@ -703,7 +708,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     //picArray->AddLast(pad);
   }
 
-  if (itstpcP&&itstpcM){
+  if (itstpcP&&itstpcM&&itstpcB){
     pad = new TCanvas("ITSTPC","ITSTPC");
     itstpcP->Draw("alp");
     SetPadStyle(pad,mx0,mx1,my0,my1);    
@@ -720,7 +725,7 @@ void AliTPCPreprocessorOffline::MakeDefaultPlots(TObjArray * const arr, TObjArra
     //picArray->AddLast(pad);
   }
 
-  if (itstpcB&&laserA){
+  if (itstpcB&&laserA&&itstpcP&&itstpcM){
     pad = new TCanvas("ITSTPC_LASER","ITSTPC_LASER");
     SetPadStyle(pad,mx0,mx1,my0,my1);    
     laserA->Draw("alp");
@@ -1009,13 +1014,14 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
       for(Int_t i=0; i < fGraphCosmic->GetN(); i++) {
  	fGraphCosmic->GetY()[i] *= FPtoMIPratio;	
       }
+    
+      fGraphCosmic->Draw("lp");
+      grfFitCosmic->SetLineColor(2);
+      grfFitCosmic->Draw("lu");
+      fGainArray->AddLast(gainHistoCosmic);
+      //fGainArray->AddLast(canvasCosmic->Clone());
+      delete canvasCosmic;    
     }
-    fGraphCosmic->Draw("lp");
-    grfFitCosmic->SetLineColor(2);
-    grfFitCosmic->Draw("lu");
-    fGainArray->AddLast(gainHistoCosmic);
-    //fGainArray->AddLast(canvasCosmic->Clone());
-    delete canvasCosmic;    
   }
   if (fFitMIP) {
     TCanvas * canvasMIP = new TCanvas("gain MIP", "time dependent gain QA histogram MIP");

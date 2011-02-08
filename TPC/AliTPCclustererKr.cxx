@@ -617,7 +617,8 @@ Int_t AliTPCclustererKr::FinderIOold(AliRawReader* rawReader)
   // Krypton cluster finder for the TPC raw data
   //
   // fParam must be defined before
-  
+  if (!rawReader) return 1;
+
   if(rawReader)fRawData=kTRUE; //set flag to data
   
   if (!fOutput) {
