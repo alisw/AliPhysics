@@ -249,8 +249,17 @@ void AliCFTaskForDStarAnalysis::UserExec(Option_t *)
       
       //D0
       AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter0));
+      if (!mcPartDaughter0) {
+	AliError("Could not find Monte-Carlo in AOD");
+	return;
+      }
+  
       // Soft Pion
       AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughter1));
+      if (!mcPartDaughter1) {
+	AliError("Could not find Monte-Carlo in AOD");
+	return;
+      }
       
       // Acceptance variables for the soft pion
       Double_t eta1 = mcPartDaughter1->Eta();
