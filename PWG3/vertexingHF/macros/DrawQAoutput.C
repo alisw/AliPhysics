@@ -10,6 +10,8 @@
 #include <TLegend.h>
 #include <TPaveText.h>
 #include <TStyle.h>
+#include <TClass.h>
+#include <AliCounterCollection.h>
 
 //read the file and take list and stat
 
@@ -90,67 +92,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./")
   hstat->Draw("htext0");
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
 
-  /*
-  TCanvas* citscls=new TCanvas("citscls","ITS clusters");
-  citscls->SetGridy();
-  TCanvas* cspdcls=new TCanvas("cspdcls","SPD clusters");
-  cspdcls->SetGridy();
-  TCanvas* cngoodtr=new TCanvas("cngoodtr","Good tracks per event");
-  TCanvas* cptgoodtr=new TCanvas("cptgoodtr","Pt distribution good tracks");
-  TCanvas* cd0=new TCanvas("cd0","Impact parameter distribution (track selected)");
 
-
-
-  TString hname="hnClsITS";
-  TH1F* hnClsITS=(TH1F*)list->FindObject(hname);
-  if(!hnClsITS){
-    cout<<hname<<" not found"<<endl;
-  }else{
-    citscls->cd();
-    hnClsITS->Draw();
-    citscls->SaveAs(Form("%s%s.png",hname.Data(),textleg.Data()));
-  }
-
-  hname="hnClsSPD";
-  TH1F* hnClsSPD=(TH1F*)list->FindObject(hname);
-  if(!hnClsSPD){
-    cout<<hname<<" not found"<<endl;
-  }else{
-    cspdcls->cd();
-    hnClsSPD->Draw();
-    cspdcls->SaveAs(Form("%s%s.png",hname.Data(),textleg.Data()));
-  }
-
-  hname="hdistrGoodTr";
-  TH1F* hngoodtr=(TH1F*)list->FindObject(hname);
-  if(!hngoodtr){
-    cout<<hname<<" not found"<<endl;
-  }else{
-    cngoodtr->cd();
-    hngoodtr->Draw();
-    cngoodtr->SaveAs(Form("%s%s.png",hname.Data(),textleg.Data()));
-  }
-
-  hname="hptGoodTr";
-  TH1F* hptgoodtr=(TH1F*)list->FindObject(hname);
-  if(!hptgoodtr){
-    cout<<hname<<" not found"<<endl;
-  }else{
-    cptgoodtr->cd();
-    hptgoodtr->Draw();
-    cptgoodtr->SaveAs(Form("%s%s.png",hname.Data(),textleg.Data()));
-  }
-
-  hname="hd0";
-  TH1F* hd0=(TH1F*)list->FindObject(hname);
-  if(!hd0){
-    cout<<hname<<" not found"<<endl;
-  }else{
-    cd0->cd();
-    hd0->Draw();
-    cd0->SaveAs(Form("%s%s.png",hname.Data(),textleg.Data()));
-  }
-  */
 }
 
 //draw "pid related" histograms (list "outputPID")
@@ -173,6 +115,70 @@ void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
   }
 
   for(Int_t i=0;i<list->GetEntries();i++){
+    TClass* objtype=list->At(i)->IsA();
+    TString tpname=objtype->GetName();
+
+    if(tpname=="TH1F"){
+      TH1F* h=(TH1F*)list->At(i);
+
+      if(!h){
+	cout<<"Histogram "<<i<<" not found"<<endl;
+	continue;
+      }
+      //h->Scale(1./h->Integral("width"));
+      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      c->SetLogz();
+      c->cd();
+      h->Draw();
+    
+      //write
+      c->SaveAs(Form("%s.png",h->GetName()));
+      TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
+      fout->cd();
+      c->Write();
+    }
+  
+    if(tpname=="TH2F"){
+      TH2F* h=(TH2F*)list->At(i);
+      
+      if(!h){
+	cout<<"Histogram "<<i<<" not found"<<endl;
+	continue;
+      }
+      h->Scale(1./h->Integral("width"));
+      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      c->SetLogz();
+      c->cd();
+      
+      h->Draw("colz");
+      //write
+      c->SaveAs(Form("%s.png",h->GetName()));
+      TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
+      fout->cd();
+      c->Write();
+    }
+  }
+}
+
+void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path="./"){
+  gStyle->SetCanvasColor(0);
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetStatColor(0);
+  gStyle->SetPalette(1);
+
+  TString listname="outputCentrCheck";
+
+  TList* list;
+  TH1F * hstat;
+
+  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  if(!isRead) return;
+  if(!list || !hstat){
+    cout<<":-( null pointers..."<<endl;
+    return;
+  }
+  
+  for(Int_t i=0;i<list->GetEntries();i++){
     TH1F* h=(TH1F*)list->At(i);
     if(!h){
       cout<<"Histogram "<<i<<" not found"<<endl;
@@ -180,8 +186,70 @@ void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
     }
     TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
     c->cd();
-    if(i<3)h->Draw();
-    else h->Draw("colz");
+    c->SetGrid();
+    h->Draw();
+    c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
+  }
+  
+  TCanvas* cst=new TCanvas("cst","Stat");
+  cst->SetGridy();
+  cst->cd();
+  hstat->Draw("htext0");
+  cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
+  
+  listname="countersCentrality";
+
+  isRead=ReadFile(list,hstat,listname,partname,path);
+  if(!isRead) return;
+  if(!list || !hstat){
+    cout<<":-( null pointers..."<<endl;
+    return;
+  }
+  for(Int_t i=0;i<list->GetEntries();i++){
+    AliCounterCollection* coll=(AliCounterCollection*)list->At(i);
+    
+    coll->SortRubric("run");//sort by run number
+    //coll->PrintKeyWords();
+    Int_t ncentr=10;//check this
+    TH1F* h020=0x0;
+    TH1F* h2080=0x0;
+    TCanvas *ccent=new TCanvas(Form("ccent%s",coll->GetName()),Form("Centrality vs Run (%s)",coll->GetName()),1400,800);
+    ccent->Divide(5,3);
+
+    for(Int_t ic=0;ic<ncentr;ic++){
+
+      TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+      h->SetName(Form("h%d%d",i,ic));
+      if(ic>=0 && ic<=1){ //0-20
+	if(!h020) {
+	  h020=(TH1F*)h->Clone(Form("h020%s",coll->GetName()));
+	  h020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
+	}
+	else h020->Add(h);
+      }
+      if(ic>=2 && ic<=7){ //20-80
+	if(!h2080) {
+	  h2080=(TH1F*)h->Clone(Form("h2080%s",coll->GetName()));
+	  h2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
+	}
+	else h2080->Add(h);
+      }
+
+      ccent->cd(ic+1);
+      h->DrawClone();
+      // ccent->cd(1);
+      // h->SetLineColor(ic+1);
+      // if(ic==0)h->DrawClone();
+      // else h->DrawClone("sames");
+    }
+
+    ccent->cd(ncentr+1);
+    h020->DrawClone();
+
+    ccent->cd(ncentr+2);
+    h2080->DrawClone();
+
+    ccent->SaveAs(Form("%s%s.png",ccent->GetName(),textleg.Data()));
   }
 
 }

@@ -27,7 +27,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="AnalysisCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsDplustoKpipi();
-      analysiscuts->SetStandardCutsPbPb2010();
+      analysiscuts->SetStandardCutsPP2010();
     }
     else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(cutsobjname);
     suffix="Dplus";
@@ -36,7 +36,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     cutsobjname="D0toKpiCuts";
     if(stdcuts) {
       analysiscuts = new AliRDHFCutsD0toKpi();
-      analysiscuts->SetStandardCutsPbPb2010();
+      analysiscuts->SetStandardCutsPP2010();
     }
     else analysiscuts = (AliRDHFCutsD0toKpi*)filecuts->Get(cutsobjname);
     suffix="D0";

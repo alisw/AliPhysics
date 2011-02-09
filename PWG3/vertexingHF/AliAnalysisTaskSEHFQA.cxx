@@ -306,7 +306,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fOutputPID->Add(hTOFsigPid3sigPion);
   fOutputPID->Add(hTOFsigPid3sigKaon);
   fOutputPID->Add(hTOFsigPid3sigProton);
- fOutputPID->Add(hTPCsigvsp);
+  fOutputPID->Add(hTPCsigvsp);
   fOutputPID->Add(hTPCsigvspAC);
   fOutputPID->Add(hTPCsigmaK);
   fOutputPID->Add(hTPCsigmaPion);
@@ -385,6 +385,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hNtrackletsOut);
     fOutputCheckCentrality->Add(hMultIn);
     fOutputCheckCentrality->Add(hMultOut);
+
+    PostData(6,fOutputCheckCentrality);
+  
   } else{
     hname="hNtracklets";
     TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
@@ -401,7 +404,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   PostData(3,fOutputTrack);
   PostData(4,fCuts);
   PostData(5,fOutputCounters);
-  PostData(6,fOutputCheckCentrality);
 }
 
 //___________________________________________________________________________
@@ -417,7 +419,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   PostData(3,fOutputTrack);
   PostData(4,fCuts);
   PostData(5,fOutputCounters);
-  PostData(6,fOutputCheckCentrality);
+  if(fCuts->GetUseCentrality()) PostData(6,fOutputCheckCentrality);
 
   TClonesArray *arrayProng =0;
   Int_t pdg=0;
@@ -595,7 +597,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {    delete [] pdgdaughters;return;}
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   // count event
   fNEntries->Fill(0); 
@@ -610,34 +612,42 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNEntries->Fill(5);
 
-
+  Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE;
   //select event
   if(!fCuts->IsEventSelected(aod)) {
-    // rejected for pileup
-    if(fCuts->GetWhyRejection()==1) fNEntries->Fill(1);
-    delete [] pdgdaughters;
-    return;
+    evSelected=kFALSE;
+    if(fCuts->GetWhyRejection()==1) fNEntries->Fill(1); // rejected for pileup
+    if(fCuts->GetWhyRejection()==2) evSelbyCentrality=kFALSE; //rejected by centrality
+  }
+  if(evSelected || (!evSelected && !evSelbyCentrality)){ //events selected or not selected because of vtx
+    if(fCuts->GetUseCentrality()){
+      Int_t runNumber = aod->GetRunNumber();
+      Int_t stdCent = (Int_t)(fCuts->GetCentrality(aod)+0.5);
+      Int_t secondCent = (Int_t)(fCuts->GetCentrality(aod,fEstimator)+0.5);
+      Int_t mincent=stdCent-stdCent%10;
+      ((AliCounterCollection*)fOutputCounters->FindObject("stdEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
+      mincent=secondCent-secondCent%10;
+      ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
+
+      if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
+	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsOut"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+      }else{
+	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsIn"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+      }
+
+      PostData(6,fOutputCheckCentrality);
+
+    } else{
+      ((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+      ((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+    }
   }
 
-  if(fCuts->GetUseCentrality()){
-    Int_t runNumber = aod->GetRunNumber();
-    Int_t stdCent = (Int_t)(fCuts->GetCentrality(aod)+0.5);
-    Int_t secondCent = (Int_t)(fCuts->GetCentrality(aod,fEstimator)+0.5);
-    Int_t mincent=stdCent-stdCent%10;
-    ((AliCounterCollection*)fOutputCounters->FindObject("stdEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
-    mincent=secondCent-secondCent%10;
-    ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
-
-    if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
-      ((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsOut"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-      ((TH1F*)fOutputCheckCentrality->FindObject("hMultOut"))->Fill(aod->GetHeader()->GetRefMultiplicity());
-    }else{
-      ((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsIn"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-      ((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(aod->GetHeader()->GetRefMultiplicity());
-    }
-  } else{
-    ((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
-    ((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+  if(!evSelected) {
+    delete [] pdgdaughters;
+    return; //discard all events not selected (vtx and/or centrality)
   }
 
   Int_t ntracks=0;
@@ -720,7 +730,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       //if (pidHF->IsKaonRaw(track, "TOF"))
       ((TH2F*)fOutputPID->FindObject("hTPCsigmaK"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kKaon));
       //if (pidHF->IsPionRaw(track, "TOF"))
-	  ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
+      ((TH2F*)fOutputPID->FindObject("hTPCsigmaPion"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kPion));
       //if (pidHF->IsProtonRaw(track,"TOF"))
       ((TH2F*)fOutputPID->FindObject("hTPCsigmaProton"))->Fill(TPCp,tpcres->GetNumberOfSigmas(TPCp,TPCsignal,track->GetTPCNcls(),AliPID::kProton));
       delete tpcres;
@@ -829,7 +839,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   PostData(3,fOutputTrack);
   PostData(4,fCuts);
   PostData(5,fOutputCounters);
-  PostData(6,fOutputCheckCentrality);
+  //Post data 6 done in case of centrality on
+
 }
 
 //____________________________________________________________________________
