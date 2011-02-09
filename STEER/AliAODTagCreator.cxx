@@ -284,7 +284,7 @@ void AliAODTagCreator::CreateTag(TChain* chain, const char *type) {
     ftag->Close();
 }
 
-void AliAODTagCreator::CreateTags(const char* type)
+void AliAODTagCreator::CreateTags(const char* /*type*/)
 {
     // Event loop for tag creation
     TString fturl;
