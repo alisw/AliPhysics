@@ -81,7 +81,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHEventsTrVtx(o.fHEventsTrVtx), 
     fHTriggers(o.fHTriggers),
     fHType(o.fHType),
-    fLowFluxCut(o.fMaxVzErr),
+    fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
     fEnergy(o.fEnergy),

@@ -101,6 +101,7 @@ public:
    * 
    */
   virtual ~CentralMultTask();
+  void SetUseTracklets(Bool_t use) { fUseTracklets = use; }
   /** 
    * Initialise on master - does nothing
    * 
@@ -149,6 +150,7 @@ protected:
   AliESDtrackCuts fDCAwSPD;   // DCA for traks with SPD hits
   AliESDtrackCuts fDCAwoSPD;  // DCA for traks without SPD hits
   AliESDtrackCuts fIsPrimary; // Primary particle 
+  Bool_t          fUseTracklets; // Whether to count tracklets or not 
   Bool_t          fDebug;     // Debug flag
 
   ClassDef(CentralMultTask,1); // Determine multiplicity in central area
@@ -179,14 +181,15 @@ inline CentralMultTask::CentralMultTask()
     fNEventsTr(0),
     fNEventsVtx(0),
     fOutput(0),
+    fUseTracklets(false),
     fDebug(false)
 {}
 
 //____________________________________________________________________
-inline CentralMultTask::CentralMultTask(const char* name,
-				 Double_t maxEta,
-				 Double_t maxVtx)
-  : AliAnalysisTaskSE(name), 
+inline CentralMultTask::CentralMultTask(const char* /* name */,
+					Double_t maxEta,
+					Double_t maxVtx)
+  : AliAnalysisTaskSE("Central"), 
     fHist(0),
     fAll(0),
     fGlobal(0),
@@ -195,10 +198,12 @@ inline CentralMultTask::CentralMultTask(const char* name,
     fNEventsTr(0),
     fNEventsVtx(0),
     fOutput(0),
+    fUseTracklets(true),
     fDebug(false)
 {
+  Int_t nBins = 40;
   fHist = new TH2D("Central", "d^{2}N_{ch}/d#etad#phi in central region",
-		   80, -maxEta, maxEta, 20, 0, 2*TMath::Pi());
+		   nBins, -maxEta, maxEta, 20, 0, 2*TMath::Pi());
   fHist->SetDirectory(0);
   fHist->SetXTitle("#eta");
   fHist->SetYTitle("#phi [radians]");
@@ -206,7 +211,7 @@ inline CentralMultTask::CentralMultTask(const char* name,
   fHist->SetStats(0);
   fHist->Sumw2();
 
-  fAll = new TH1D("all", "Central region", 80, -maxEta, maxEta);
+  fAll = new TH1D("all", "Central region", nBins, -maxEta, maxEta);
   fAll->SetDirectory(0);
   fAll->SetXTitle("#eta");
   fAll->SetYTitle("dN_{ch}/d#eta");
@@ -462,52 +467,43 @@ CentralMultTask::UserExec(Option_t *)
     Double_t eta = track->Eta();
     Double_t phi = track->Phi();
     // check tracks with ITS part
-    if (track->IsOn(AliESDtrack::kITSin) && 
-	!track->IsOn(AliESDtrack::kITSpureSA)) { 
-      // track has ITS part but is not an ITS_SA -> TPC+ITS
-      if (track->IsOn(AliESDtrack::kTPCin)) {  
-	// Global track, has ITS and TPC contributions
-	if (fQGlo.AcceptTrack(track)) { // good TPCITS track
-	  if (fDCAwSPD.AcceptTrack(track) || 
-	      fDCAwoSPD.AcceptTrack(track)) {
-	    fGlobal->Fill(eta);
-	    fAll->Fill(eta);
-	    total++;
-	  }
-	  else 
-	    // large DCA -> secondary, don't count either track not
-	    // associated tracklet
-	    track->SetBit(kSecBit); 
-	}
-	else 
-	  // bad quality, don't count the track, but may count
-	  // tracklet if associated
-	  track->SetBit(kRejBit); 
-      } // if (track->IsOn(AliESDtrack::kTPCin))
-      // ITS complimentary
-      else if (fQITS.AcceptTrack(track)) { 
-	// good ITS complimentary track
-	if (fDCAwSPD.AcceptTrack(track) || 
-	    fDCAwoSPD.AcceptTrack(track)) {
+    if (track->IsOn(AliESDtrack::kITSin)) {
+
+      // Check ITS pure stand-alone - and if it is, reject it 
+      if (track->IsOn(AliESDtrack::kITSpureSA)) {
+	track->SetBit(kRejBit);
+	continue;
+      }
+
+      // Check DCA - if not close enough reject it as secondary 
+      if (!fDCAwSPD.AcceptTrack(track) && 
+	  !fDCAwoSPD.AcceptTrack(track)) {
+	track->SetBit(kSecBit); 
+	continue;
+      }
+
+      // Check if this is an ITS complementary - no TPC in
+      if (!track->IsOn(AliESDtrack::kTPCin)) { 
+	if (fQITS.AcceptTrack(track)) { // Check ITS quality 
 	  fITS->Fill(eta);
 	  fAll->Fill(eta);
-	  total++;
 	}
 	else 
-	  // large DCA -> secondary, don't count either track not
-	  // associated tracklet
-	  track->SetBit(kSecBit); 
-      } // else if (fQITS.AcceptTrack(track))
-      else 
-	// bad quality, don't count the track, but may count tracklet
-	// if associated
-	track->SetBit(kRejBit); 
+	  track->SetBit(kRejBit);
+      }
+      else { // Not ITS SA or TPC+ITS
+	if (fQGlo.AcceptTrack(track)) { // Check ITS quality 
+	  fGlobal->Fill(eta);
+	  fAll->Fill(eta);
+	}
+	else 
+	  track->SetBit(kRejBit);
+      }
       if (track->IsOn(kSecBit) || track->IsOn(kRejBit)) continue;
 
       // fill d2n/detadphi
       fHist->Fill(eta, phi);
-    } /* track->IsOn(AliESDtrack::kITSin) && 
-       * !track->IsOn(AliESDtrack::kITSpureSA) */
+    }
   }
   
   // Get multiplicity from SPD tracklets 
@@ -520,25 +516,24 @@ CentralMultTask::UserExec(Option_t *)
     AliESDtrack* tr1 = id1>=0 ? esd->GetTrack(id1) : 0;
     AliESDtrack* tr2 = id2>=0 ? esd->GetTrack(id2) : 0;
     //
-    if ((tr1 && tr1->TestBit(kSecBit)) || 
-	(tr2 && tr2->TestBit(kSecBit))) 
-      // reject as secondary
-      continue; 
-    if ((tr1 && !tr1->TestBit(kRejBit)) || 
-	(tr2 && !tr2->TestBit(kRejBit))) 
-      // already accounted for
+    if ((tr1 && tr1->TestBit(kSecBit))  || // Flagged as secondary
+	(tr2 && tr2->TestBit(kSecBit))  || // Flagged as secondary
+	(tr1 && !tr1->TestBit(kRejBit)) || // already accounted for
+	(tr2 && !tr2->TestBit(kRejBit)))   // already accounted for 
       continue; 
     ++total;
     Double_t eta = spdmult->GetEta(i);
     Double_t phi = spdmult->GetPhi(i);
     
-    // Incremetn d2n/detadphi from an SPD tracklet 
-    fHist->Fill(eta, phi);
+    // Increment d2n/detadphi from an SPD tracklet 
+    if (fUseTracklets) {
+      fHist->Fill(eta, phi);
+      fAll->Fill(eta);
+      total++;
+    }
     fTracklets->Fill(eta);
-    fAll->Fill(eta);
   }
-  if (fDebug)
-    AliInfo(Form("A total of %d tracks", total));
+  if (fDebug) AliInfo(Form("A total of %d tracks", total));
 
   // NEW HISTO should be filled before this point, as PostData puts the
   // information for this iteration of the UserExec in the container
@@ -579,7 +574,7 @@ CentralMultTask::Terminate(Option_t *)
   tracklets->Scale(1. / nTriggers, "width");
 
   THStack* stack = new THStack("components", "Components");
-  stack->Add(tracklets);
+  if (fUseTracklets) stack->Add(tracklets);
   stack->Add(global);
   stack->Add(its);
 

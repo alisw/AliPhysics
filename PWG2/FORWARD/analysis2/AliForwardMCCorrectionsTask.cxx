@@ -554,8 +554,8 @@ AliForwardMCCorrectionsTask::UserExec(Option_t*)
 	continue;
 
       // Get the detector coordinates 
-      UShort_t d, s, t;
-      Char_t r;
+      UShort_t d = 0, s = 0, t = 0;
+      Char_t r = '\0';
       // AliFMDStripIndex::Unpack(trackRef->UserId(), d, r, s, t);
       
       // Check if mother (?) is charged and that we haven't dealt with it 
@@ -786,8 +786,8 @@ AliForwardMCCorrectionsTask::Terminate(Option_t*)
     list->Add(vl);
 
     // Get event counts 
-    Int_t nEventsAll   = eventsAll->GetBinContent(v);
-    Int_t nEventsTr    = eventsTr->GetBinContent(v);
+    Int_t nEventsAll   = Int_t(eventsAll->GetBinContent(v));
+    Int_t nEventsTr    = Int_t(eventsTr->GetBinContent(v));
     // Int_t nEventsVtx   = eventsVtx->GetBinContent(v);
     // Int_t nEventsTrVtx = eventsTrVtx->GetBinContent(v);
 
