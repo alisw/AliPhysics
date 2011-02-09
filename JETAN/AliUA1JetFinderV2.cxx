@@ -371,11 +371,11 @@ void AliUA1JetFinderV2::FindJets()
     etCell[i]    = 0.;
     etaCell[i]   = 0.;
     phiCell[i]   = 0.;
-    flagCell[i]  = 0.;
+    flagCell[i]  = 0;
     etCell2[i]   = 0.;
     etaCell2[i]  = 0.;
     phiCell2[i]  = 0.;
-    flagCell2[i] = 0.;
+    flagCell2[i] = 0;
   }
   // Information extracted from fUnitArray
   // Load input vectors and calculate total energy in array
@@ -780,7 +780,7 @@ void AliUA1JetFinderV2::RunAlgoritm(Int_t nIn, Float_t* etCell, Float_t* const e
   Float_t etaAlgoJet[30]    = {0.};
   Float_t phiAlgoJet[30]    = {0.};
   Float_t etAlgoJet[30]     = {0.};
-  Int_t   ncellsAlgoJet[30] = {0.};
+  Int_t   ncellsAlgoJet[30] = {0};
 
   // Run algorithm//
 

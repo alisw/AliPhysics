@@ -94,9 +94,6 @@ void AliFastJetInput::FillInput(){
   Int_t debug  = header->GetDebug();     // debug option
   Int_t fOpt   = fReader->GetReaderHeader()->GetDetector();
 
-  // check if we are reading AOD jets
-  Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
-  
   // RUN ALGORITHM  
   // read input particles -----------------------------
   vector<fastjet::PseudoJet> inputParticles;
