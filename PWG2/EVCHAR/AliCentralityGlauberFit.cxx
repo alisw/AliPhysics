@@ -382,11 +382,11 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t ef
     else if (fAncestor == 3) n = TMath::Nint((1-alpha) * fNpart/2 + alpha * fNcoll);
     Int_t ntot=0;
     if (fFastFit == 1) {
-      ntot = n*hSample->GetRandom(); // NBD
+      ntot = (Int_t)(n*hSample->GetRandom()); // NBD
     }
     else if (fFastFit == 2) {
       Double_t sigma = k*TMath::Sqrt(n*mu);    
-      ntot = gRandom->Gaus(n*mu,sigma); // Gaussian
+      ntot = (Int_t)(gRandom->Gaus(n*mu,sigma)); // Gaussian
     }
     else {
       for(Int_t j = 0; j<n; ++j) 
