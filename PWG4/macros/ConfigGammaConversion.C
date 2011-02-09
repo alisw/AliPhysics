@@ -950,6 +950,9 @@ Double_t kGCPIDMinPPionRejectionLowP=0.5;
 
 Bool_t kGCdoQtGammaSelection=kTRUE;
 Double_t kGCQtMax=100.;
+Bool_t kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+Double_t kGCHighPtQtMax=100.;		   // RRnew
+Double_t kGCPtBorderForQt=100.;	  	   // RRnew
 
 
 
@@ -1498,7 +1501,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetPIDMinPProtonRejectionLowP(kGCPIDMinPProtonRejectionLowP);
   v0Reader->SetPIDMinPPionRejectionLowP(kGCPIDMinPPionRejectionLowP);
   v0Reader->SetDoQtGammaSelection(kGCdoQtGammaSelection);
+  v0Reader->SetDoHighPtQtGammaSelection(kGCdoHighPtQtGammaSelection); // RRnew
   v0Reader->SetQtMax(kGCQtMax);
+  v0Reader->SetHighPtQtMax(kGCHighPtQtMax); // RRnew
+  v0Reader->SetPtBorderForQt(kGCPtBorderForQt); // RRnew
   kGCNEventsForBGCalculation= kGCnumberOfRotationEventsForBG;
   cout<< "number of Events used for mixing::"<<kGCNEventsForBGCalculation<<endl;
   v0Reader->SetNEventsForBG(kGCNEventsForBGCalculation);
@@ -2421,7 +2427,7 @@ histograms->AddHistogram("ESD_TruePi0_InvMass_vs_Pt_alpha" ,"Invariant Mass vs P
       if(kGCplotMCPi0Eta == kTRUE){ histograms->AddHistogram("MC_Pi0_Eta" ,"" , kGCnXBinsEta, kGCfirstXBinEta, kGClastXBinEta, "", "");}	
       if(kGCplotMCPi0Rapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Rapid" ,"" , kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}	
       if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");}
-	if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid_allDaughters" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");} // OWN primary Pi0 debug
+	if(kGCplotMCPi0PtvsRapid == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt_vs_Rapid_allDaughters" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, kGCnXBinsRapid, kGCfirstXBinRapid, kGClastXBinRapid, "", "");} // RR primary Pi0 debug
       if(kGCplotMCPi0Phi == kTRUE){ histograms->AddHistogram("MC_Pi0_Phi" ,"" , kGCnXBinsPhi, kGCfirstXBinPhi, kGClastXBinPhi, "", "");}
       if(kGCplotMCPi0Pt == kTRUE){ histograms->AddHistogram("MC_Pi0_Pt" ,"" , kGCnXBinsPt, kGCfirstXBinPt, kGClastXBinPt, "", "");}
 
@@ -2703,7 +2709,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 5:  // 0.3 GeV
     kGCPIDMinPnSigmaAbovePionLine=0.3;
     break;
-  case 6:  // 0.3 GeV
+  case 6:  // 0.25 GeV     // RRnew label was wrong in comment
     kGCPIDMinPnSigmaAbovePionLine=0.25;
     break;
   case 7:  // 0.4 GeV
@@ -2790,7 +2796,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     break;
   case 5:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.0;
-    kGCUseCorrectedTPCClsInfo=1;
+    kGCUseCorrectedTPCClsInfo=1; // RRnew use corrected info / no cut applied
     break;
   case 6:  // 0% of findable clusters
     kGCminClsTPCCutToF= 0.7;
@@ -2896,22 +2902,46 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   switch(QtMaxCut){
   case 0: //
     kGCQtMax=1.;
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
     break;
   case 1:
     kGCQtMax=0.1;
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
     break;
   case 2:
     kGCQtMax=0.07;
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
     break;
   case 3:
     kGCQtMax=0.05;
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
     break;
   case 4:
     kGCQtMax=0.03;
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
     break;
-  case 5: // OWN try to improve (get rid of) low InvMass peak in PbPb
+  case 5: // RR try to improve (get rid of) low InvMass peak in PbPb
     kGCQtMax=0.02;
-    break; // end OWN ///////////////////////////////////////////////
+    kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
+    kGCHighPtQtMax=100.;	        // RRnew
+    kGCPtBorderForQt=100.;	        // RRnew
+    break; // end RR ///////////////////////////////////////////////
+  case 6:  // RRnew start: pT dependent qT cut
+    kGCQtMax=0.02;
+    kGCdoHighPtQtGammaSelection=kTRUE;
+    kGCHighPtQtMax=0.06;
+    kGCPtBorderForQt=2.5;
+    break; // RRnew end ////////////////////////////////////////////
   default:
     return iResult;
   }
@@ -3145,6 +3175,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   case 2:
     kGCUseCentrality=2; //    GetCentralityClass10("CL1")
     break;
+  case 3://////////////// RRnew start //////////////////////////////////////////////////////////////////////////////////////////////////////
+    kGCUseCentrality=3;//    GetCentralityClass10("V0M") but with merged bins: see AliAnalysisTaskGammaConversion.cxx
+    break;
+  case 4:
+    kGCUseCentrality=4;//    GetCentralityClass10("CL1") but with merged bins: see AliAnalysisTaskGammaConversion.cxx
+    break;/////////////// RRnew end ////////////////////////////////////////////////////////////////////////////////////////////////////////
    default:
     return iResult;
   }
