@@ -394,9 +394,9 @@ AliForwardMCMultiplicityTask::Terminate(Option_t*)
   list->Add(norm);
 
   fEnergyFitter.Fit(list);
-  fSharingFilter.ScaleHistograms(list,hEventsTr->Integral());
-  fDensityCalculator.ScaleHistograms(list,hEventsTrVtx->Integral());
-  fCorrections.ScaleHistograms(list,hEventsTrVtx->Integral());
+  fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
+  fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
+  fCorrections.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
 }
 
 
