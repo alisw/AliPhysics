@@ -196,8 +196,13 @@ void AliCFVertexingHF::SetMCCandidateParam(Int_t label)
 	// setting the parameters (candidate and n. daughters)
 	//	
 	
-	fmcPartCandidate = dynamic_cast <AliAODMCParticle*> (fmcArray->At(label));
-	fNDaughters = fmcPartCandidate->GetNDaughters();
+        fmcPartCandidate = dynamic_cast <AliAODMCParticle*> (fmcArray->At(label));
+	if (fmcPartCandidate){
+	  fNDaughters = fmcPartCandidate->GetNDaughters();
+	}
+	else {
+	  AliError(Form("Dynamic cast failed, fNdaughters will remain set to %d",fNDaughters));
+	}
 	return;
 }
 
@@ -209,9 +214,11 @@ Int_t AliCFVertexingHF::MCcquarkCounting(AliAODMCParticle* mcPart) const
 	// 
 
 	Int_t cquarks = 0;
-	if (mcPart->GetPdgCode() == 4) cquarks++; 
-	if (mcPart->GetPdgCode() == -4) cquarks++; 
-	if (!mcPart) {
+	if (mcPart) {
+	  if (mcPart->GetPdgCode() == 4) cquarks++; 
+	  if (mcPart->GetPdgCode() == -4) cquarks++; 
+	}
+	else {
 		AliWarning("Particle not found in tree, skipping\n"); 
 		return cquarks;
 	} 
@@ -264,17 +271,23 @@ Int_t AliCFVertexingHF::CheckOrigin() const
 		istep++;
 		AliDebug(2,Form("mother at step %d = %d", istep, mother));
 		AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother));
-		pdgGranma = mcGranma->GetPdgCode();
-		AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
-		abspdgGranma = TMath::Abs(pdgGranma);
-		if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
-			if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
-			
-			else{
-				break;
+		if (mcGranma){
+			pdgGranma = mcGranma->GetPdgCode();
+			AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+			abspdgGranma = TMath::Abs(pdgGranma);
+			if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)) {
+				if (!fKeepDfromB) return -9999; //skip particle if come from a B meson.
+				
+				else{
+					break;
+				}
 			}
+			mother = mcGranma->GetMother();
 		}
-		mother = mcGranma->GetMother();
+		else {
+			AliError("Failed casting the mother particle!");
+			break;
+		}
 	}
 	if (!((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000))){
 		if (fKeepDfromBOnly) return -999;
@@ -683,7 +696,15 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 	if (label1 - label0 == fProngs-1){
 		for (Int_t iProng = 0; iProng<fProngs; iProng++){
 			mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(label0+iProng));    
-			fLabelArray[iProng] =  mcPartDaughter->GetLabel();
+			if (mcPartDaughter){
+				fLabelArray[iProng] =  mcPartDaughter->GetLabel();
+			}
+			else{
+				AliError("Failed casting the daughter particle, returning a NULL label array");
+				delete [] fLabelArray; 
+				fLabelArray = 0x0;  
+				return bLabelArray;
+			}
 		}
 
 	}
@@ -696,8 +717,16 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDau));
 			Int_t pdgCode=TMath::Abs(part->GetPdgCode());
 			if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
-				fLabelArray[foundDaughters] = part->GetLabel();
-				foundDaughters++;
+				if (part) {
+					fLabelArray[foundDaughters] = part->GetLabel();
+					foundDaughters++;
+				}
+				else{
+					AliError("Error while casting particle! returning a NULL array");
+					delete [] fLabelArray; 
+					fLabelArray = 0x0;  
+					return bLabelArray;
+				}
 			}
 			else{
 				Int_t nDauRes=part->GetNDaughters();
@@ -710,8 +739,16 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 				for(Int_t iDauRes=0; iDauRes<nDauRes; iDauRes++){
 					Int_t iLabelDauRes = labelFirstDauRes+iDauRes;
 					AliAODMCParticle* dauRes = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDauRes));
-					fLabelArray[foundDaughters] = dauRes->GetLabel();
-					foundDaughters++;
+					if (dauRes){
+						fLabelArray[foundDaughters] = dauRes->GetLabel();
+						foundDaughters++;
+					}
+					else{
+						AliError("Error while casting resonant daughter! returning a NULL array");
+						delete [] fLabelArray; 
+						fLabelArray = 0x0;  
+						return bLabelArray;
+					}
 				}
 			}
 		}
