@@ -40,7 +40,7 @@ AliGenReaderEcalHijing::AliGenReaderEcalHijing():
 {
   // Default constructor
   for (Int_t i = 0; i < 10000; i++) {
-    fKhij[i]  = 0.;     
+    fKhij[i]  = 0;     
     fPxhij[i] = 0.;    
     fPyhij[i] = 0.;    
     fPzhij[i] = 0.;
@@ -59,7 +59,7 @@ AliGenReaderEcalHijing::AliGenReaderEcalHijing(const AliGenReaderEcalHijing &rea
 {
     // Copy constructor
   for (Int_t i = 0; i < 10000; i++) {
-    fKhij[i]  = 0.;     
+    fKhij[i]  = 0;     
     fPxhij[i] = 0.;    
     fPyhij[i] = 0.;    
     fPzhij[i] = 0.;
