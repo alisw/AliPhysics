@@ -56,7 +56,7 @@ AliESDZDC::AliESDZDC() :
   for(Int_t i=0; i<32; i++){
     fVMEScaler[i]=0;
     for(Int_t y=0; y<4; y++){
-      fZDCTDCData[i][y]=0.;
+      fZDCTDCData[i][y]=0;
       fZDCTDCCorrected[i][y]=0.;
     }
   }
@@ -194,7 +194,7 @@ void AliESDZDC::Reset()
   for(Int_t i=0; i<32; i++){
      fVMEScaler[i] = 0;
      for(Int_t y=0; y<4; y++){
-        fZDCTDCData[i][y] = 0.;
+        fZDCTDCData[i][y] = 0;
         fZDCTDCCorrected[i][y] = 0.;
      }
   }
