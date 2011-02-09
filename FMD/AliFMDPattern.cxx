@@ -291,7 +291,8 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
     fTotal(.2, .35, "Total:   "), 
     fFMD1Area(0),
     fFMD2Area(0),
-    fFMD3Area(0)
+    fFMD3Area(0),
+    fPhysicsSelection(0)
 {
   // Constructor. 
   // 

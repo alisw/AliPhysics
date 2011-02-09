@@ -97,7 +97,8 @@ namespace {
       : fDead(dead), fMin(min), fMax(max), fCount(0)
     {}
     MakeDead(const MakeDead& other) 
-      : fDead(other.fDead), fMin(other.fMin), fMax(other.fMax), 
+      : AliFMDMap::ForOne(other),
+        fDead(other.fDead), fMin(other.fMin), fMax(other.fMax), 
 	fCount(other.fCount)
     {}
     MakeDead& operator=(const MakeDead& other) 

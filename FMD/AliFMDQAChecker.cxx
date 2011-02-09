@@ -165,7 +165,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 				AliQAv1::GetImageFileFormat()), "ps") ; 
     fImage[specie]->Clear(); 
 
-    Int_t nx = (nImages + .5) / 2;
+    Int_t nx = int(nImages + .5) / 2;
     Int_t ny = 2;
     fImage[specie]->Divide(nx, ny, 0, 0);
     
