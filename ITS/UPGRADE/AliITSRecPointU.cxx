@@ -20,7 +20,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 
 #include <AliITSRecPointU.h>
-
+ClassImp(AliITSRecPointU)
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU():
     AliITSRecPoint()

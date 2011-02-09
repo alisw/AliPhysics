@@ -28,22 +28,15 @@
 #include "AliITSUpgradeReconstructor.h" //class header
 #include "AliITSDetTypeRec.h"
 #include "AliITS.h"              //Reconstruct() 
-#include "AliCDBEntry.h"           //ctor
-#include "AliCDBManager.h"         //ctor
 #include "AliESDEvent.h"           //FillEsd()
 #include "AliRawReader.h"          //Reconstruct() for raw digits
 #include "AliRun.h"
 #include "AliLog.h"                //
 #include "AliITSRawStream.h"     //ConvertDigits()
-#include "AliRunLoader.h" 
-#include "AliDataLoader.h"
-#include "AliITSLoader.h"
 #include "AliITSsegmentationUpgrade.h"
 #include "AliITSUpgradeClusterFinder.h"
 #include "AliITStrackerUpgrade.h"
-#include "AliStack.h"
-#include "TFile.h"
-#include "TNtupleD.h"
+#include "AliITStrackerU.h"
 ClassImp(AliITSUpgradeReconstructor)
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -150,9 +143,11 @@ void AliITSUpgradeReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersT
 AliTracker* AliITSUpgradeReconstructor::CreateTracker() const
 {
   //
-  // create the ITSUpgrade tracker
-  //
+  // Create the ITSUpgrade tracker switching betqween the general case and the StandAlone case. 
+  // AliITStrackerUpgrade is used only for SA tracks.
+  // 
 
+  if(GetRecoParam()->GetTrackerSAOnly()){
   AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade();
   if(GetRecoParam()->GetTrackerSAOnly()) trackUp->SetSAFlag(kTRUE);
   if(trackUp->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
@@ -165,5 +160,9 @@ AliTracker* AliITSUpgradeReconstructor::CreateTracker() const
   }
   trackUp->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
   return trackUp;
+  } else {
+  AliITStrackerU *t = new AliITStrackerU();
+  return t;
+  }
 }
 //_______________________________________________________________________

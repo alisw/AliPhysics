@@ -37,7 +37,7 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
 {
  public:
   AliITSupgrade();                                                              //default ctor
-  AliITSupgrade(const char *name, const char *title, Bool_t isBeamPipe=kTRUE);  //ctor for standard ITS 
+  AliITSupgrade(const char *name, const char *title, Bool_t isBeamPipe=kFALSE);  //ctor for standard ITS 
   AliITSupgrade(const char *name, const char *title, TArrayD widths, TArrayD radii,TArrayD halfLengths, TArrayD radiiCu, TArrayD widthsCu, TArrayS copper,Bool_t bp, Double_t radiusBP, Double_t widthPB, Double_t halfLengthsBP);  //ctor
   virtual       ~AliITSupgrade();                                       //dtor
   Int_t IsVersion() const {return 110;}// same as ITSv11Hybrid to comply with the AliITSInitGeom cases

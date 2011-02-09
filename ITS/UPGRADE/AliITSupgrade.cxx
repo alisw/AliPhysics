@@ -87,10 +87,11 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   // Default values are used in order to simulate the standard ITS material budget (see The ALICE Collaboration et al 2008 JINST 3 S08002 - Figure 3.2).
   // The cell segmentation is chosen to achieve the tracking resolution as described in Table 3.2 of The ALICE Collaboration et al 2008 JINST 3 S08002,
   // apart from SPD0 where the 9 um value is considered : resolution*sqrt(12)
+  // Cilinder lenghts are chosen according to Table 1 of the Alignment paper : http://iopscience.iop.org/1748-0221/5/03/P03003
 
   Double_t xsz[6]={31.18*1e-04,41.6*1e-04,131.6*1e-04,131.6*1e-04,69.3*1e-04,69.3*1e-04};
   Double_t zsz[6]={416*1e-04,416*1e-04,97*1e-04,97*1e-04,2875*1e-04,2875*1e-04};
-  Double_t Lhalf[6]={80.,80.,80.,80.,80.,80.};
+  Double_t Lhalf[6]={14.1,14.1,22.2,29.7,43.1,48.9};
   Double_t r[6]={4.,7.6,14.9,23.8,39.1,43.6};
   Double_t thick[6]={75.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04};
 
@@ -564,9 +565,9 @@ void AliITSupgrade::PrintSummary()
 
   if(!fSegmentation) fSegmentation= new AliITSsegmentationUpgrade();
   printf(" %10s %10s %10s %10s %10s %10s %10s %10s\n","Name","R [cm]","x/X0 [%]","Phi res[um]","Z res[um]","X segm[um]","Y segm[um]","widths [um]");
-
-   printf(" Beampipe   %10.3f %10f %10s %10s %10s %10s %10.1f\n", fRadiusBP, 100.*fWidthBP/beX0,"-","-","-","-",fWidthBP*1.e+4); 
-  //else printf("     -------  No Beam Pipe Upgrade ---------------- \n");
+  
+   if(fBeampipe) printf(" Beampipe   %10.3f %10f %10s %10s %10s %10s %10.1f\n", fRadiusBP, 100.*fWidthBP/beX0,"-","-","-","-",fWidthBP*1.e+4); 
+   else printf(" * No Beam Pipe Upgrade  \n");
   for(Int_t i=0; i< fNlayers; i++){
     printf(" Si Layer %1i %10.3f %10f %10.2f %10.2f %10.2f %10.2f %10.1f\n",i, fRadii.At(i), 100.*fWidths.At(i)/siX0, (fSegmentation->GetCellSizeX(i) *1.e+4)/TMath::Sqrt(12.), (fSegmentation->GetCellSizeZ(i)*1.e+4)/TMath::Sqrt(12.),fSegmentation->GetCellSizeX(i) *1.e+4, fSegmentation->GetCellSizeZ(i)*1.e+4,fWidths.At(i)*1.e+4);
     printf(" Cu Layer   %10.3f %10f %10s %10s %10s %10s %10.1f\n", fRadiiCu.At(i), 100.*fWidthsCu.At(i)/cuX0,"-","-","-","-",fWidthsCu.At(i)*1.e+4);
