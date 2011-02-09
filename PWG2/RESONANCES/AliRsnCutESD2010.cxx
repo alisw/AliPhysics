@@ -19,9 +19,6 @@
 #include <Riostream.h>
 
 #include "AliESDpid.h"
-#include "AliTOFT0maker.h"
-#include "AliTOFcalib.h"
-#include "AliCDBManager.h"
 #include "AliITSPIDResponse.h"
 
 #include "AliRsnEvent.h"
