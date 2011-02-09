@@ -117,7 +117,10 @@ AliV0Reader::AliV0Reader() :
   fPIDMinPProtonRejectionLowP(0),
   fPIDMinPPionRejectionLowP(0),
   fDoQtGammaSelection(kFALSE),
+  fDoHighPtQtGammaSelection(kFALSE), // RRnew
   fQtMax(100.),
+  fHighPtQtMax(100.), // RRnew
+  fPtBorderForQt(100.), // RRnew
   fXVertexCut(0.),
   fYVertexCut(0.),
   fZVertexCut(0.),
@@ -215,7 +218,10 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fPIDMinPProtonRejectionLowP(original.fPIDMinPProtonRejectionLowP),
   fPIDMinPPionRejectionLowP(original.fPIDMinPPionRejectionLowP),
   fDoQtGammaSelection(original.fDoQtGammaSelection),
+  fDoHighPtQtGammaSelection(original.fDoHighPtQtGammaSelection), // RRnew
   fQtMax(original.fQtMax),
+  fHighPtQtMax(original.fHighPtQtMax), // RRnew
+  fPtBorderForQt(original.fPtBorderForQt), // RRnew
   fXVertexCut(original.fXVertexCut),
   fYVertexCut(original.fYVertexCut),
   fZVertexCut(original.fZVertexCut),
@@ -430,6 +436,8 @@ Int_t AliV0Reader::GetNumberOfContributorsVtx(){
   }
 
   if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()<1) {
+    //    return 0;
+    //-AM test pi0s without SPD only vertex
     if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
       return fESDEvent->GetPrimaryVertexSPD()->GetNContributors();
 
@@ -451,6 +459,8 @@ Bool_t AliV0Reader::CheckForPrimaryVertex(){
   if(fESDEvent->GetPrimaryVertexTracks()->GetNContributors()<1) {
   // SPD vertex
     if(fESDEvent->GetPrimaryVertexSPD()->GetNContributors()>0) {
+      // return 0;
+      //-AM test pi0s without SPD only vertex
       //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
       return 1;
 
@@ -749,15 +759,38 @@ Bool_t AliV0Reader::NextV0(){
 
 
     // Gamma selection based on QT from Armenteros
-    if(fDoQtGammaSelection == kTRUE){
-      if(armenterosQtAlfa[0]>fQtMax){
-	if(fHistograms != NULL){
-	  fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+    if(fDoQtGammaSelection == kTRUE){ // RRnew start : apply different qT-cut above/below
+	if(fDoHighPtQtGammaSelection){
+		if(GetMotherCandidatePt() < fPtBorderForQt){
+			if(armenterosQtAlfa[0]>fQtMax){
+				if(fHistograms != NULL){
+	  			fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+				}
+				fCurrentV0IndexNumber++;
+				continue;
+			}
+		}
+		else{
+			if(armenterosQtAlfa[0]>fHighPtQtMax)  {
+				if(fHistograms != NULL){
+	  			fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+				}
+				fCurrentV0IndexNumber++;
+				continue;
+			}
+		}
+		
 	}
-	fCurrentV0IndexNumber++;
-	continue;
-      }
-    }
+	else{
+      		if(armenterosQtAlfa[0]>fQtMax){
+			if(fHistograms != NULL){
+	  		fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+			}
+			fCurrentV0IndexNumber++;
+			continue;
+      		}
+	}
+    }   // RRnew end
 
     //checks if we have a prim vertex
     //if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
