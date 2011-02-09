@@ -74,6 +74,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
+  fBranchNames="ESD:EMCALCells.";
 }
 
 //________________________________________________________________________
@@ -91,6 +92,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
+  fBranchNames="ESD:EMCALCells.";
 }
 
 //________________________________________________________________________
@@ -129,7 +131,7 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
   fOutputAODBranch->SetName(fOutputAODBranchName);
   AddAODBranch("TClonesArray", &fOutputAODBranch);
-  printf("AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects() - Create Branch: %s \n",fOutputAODBranchName.Data());
+  Info("UserCreateOutputObjects","Create Branch: %s",fOutputAODBranchName.Data());
 }
 
 //________________________________________________________________________
@@ -138,20 +140,19 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Main loop
   // Called for each event
   
-  //printf("___ Event __ %d __\n",(Int_t)Entry());
-  
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
   
   AliVEvent * event = InputEvent();
   if (!event) {
-    printf("AliAnalysisTaskEMCALClusterize::UserExec() - ERROR: event not available\n");
+    Error("UserExec","Event not available");
     return;
   }
   
   //Magic line to write events to AOD file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
-  
+  LoadBranches();
+
   //-------------------------------------------------------------------------------------
   //Set the geometry matrix, for the first event, skip the rest
   //-------------------------------------------------------------------------------------
@@ -167,17 +168,18 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       }//SM loop
     }//Load matrices
     else if(!gGeoManager){
-      printf("AliAnalysisTaskEMCALClusterize::UserExec() - Get geo matrices from data\n");
+      Info("UserExec","Get geo matrices from data");
       //Still not implemented in AOD, just a workaround to be able to work at least with ESDs	
       if(!strcmp(event->GetName(),"AliAODEvent")) {
         if(DebugLevel() > 1) 
-          printf("AliAnalysisTaskCaloFilter Use ideal geometry, values geometry matrix not kept in AODs.\n");
+          Warning("UserExec","Use ideal geometry, values geometry matrix not kept in AODs.");
       }//AOD
       else {	
-        if(DebugLevel() > 1) printf("AliAnalysisTaskEMCALClusterize Load Misaligned matrices. \n");
+        if(DebugLevel() > 1) 
+          Info("UserExec","AliAnalysisTaskEMCALClusterize Load Misaligned matrices.");
         AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
         if(!esd) {
-          printf("AliAnalysisTaskCaloFilter::UserExec() - This event does not contain ESDs?");
+          Error("UserExec","This event does not contain ESDs?");
           return;
         }
         for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
@@ -203,7 +205,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     {
       AliVCluster *clus = event->GetCaloCluster(i);
       if(clus->IsEMCAL()){        
-        //printf("Org Cluster %d, E %f \n",i, clus->E());
+        //printf("Org Cluster %d, E %f\n",i, clus->E());
         AliESDCaloCluster * esdCluster = dynamic_cast<AliESDCaloCluster*> (clus);
         AliAODCaloCluster * aodCluster = dynamic_cast<AliAODCaloCluster*> (clus);
         if     (esdCluster){
@@ -212,7 +214,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         else if(aodCluster){
           fCaloClusterArr->Add( new AliAODCaloCluster(*aodCluster) );   
         }//AOD
-        else printf("AliAnalysisTaskEMCALClusterize::UserExec() - Wrong CaloCluster type? \n");
+        else 
+          Warning("UserExec()"," - Wrong CaloCluster type?");
         nClustersOrg++;
       }
     }
@@ -272,7 +275,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     //Do the clusterization
     //-------------------------------------------------------------------------------------        
     TTree *clustersTree = new TTree("clustertree","clustertree");
-    
+
     fClusterizer->SetInput(digitsTree);
     fClusterizer->SetOutput(clustersTree);
     fClusterizer->Digits2Clusters("");
@@ -297,7 +300,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 
     clustersTree->Delete("all");
     digitsTree  ->Delete("all");
-    
   }
   
   //-------------------------------------------------------------------------------------
@@ -305,25 +307,24 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //-------------------------------------------------------------------------------------
   
   Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntries();
-  //printf("New clusters %d\n",kNumberOfCaloClusters);
-  //if(nClustersOrg!=kNumberOfCaloClusters) printf("Different number: Org %d, New %d\n",nClustersOrg,kNumberOfCaloClusters);
+  //Info("UserExec","New clusters %d",kNumberOfCaloClusters);
+  //if(nClustersOrg!=kNumberOfCaloClusters) Info("UserExec","Different number: Org %d, New %d\n",nClustersOrg,kNumberOfCaloClusters);
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++){
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
-    //if(Entry()==0)printf("newCluster E %f\n", newCluster->E());
+    //if(Entry()==0) Info("UserExec","newCluster E %f\n", newCluster->E());
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
   }
   
   //---CLEAN UP-----
   fCaloClusterArr->Delete(); // Do not Clear(), it leaks, why?
-  
- }      
-
+}      
 
 //_____________________________________________________________________
 Bool_t AliAnalysisTaskEMCALClusterize::UserNotify()
 {
   //Access to OCDB stuff
-  if(DebugLevel() > 1 )printf(" AliAnalysisTaskEMCALClusterize::UserNotify() - Begin \n");
+  if(DebugLevel() > 1 )
+    Info("UserNotify()"," Begin");
   AliVEvent * event = InputEvent();
   if (event)
   {
@@ -365,15 +366,13 @@ Bool_t AliAnalysisTaskEMCALClusterize::UserNotify()
     
     //      cout << "[i] Change of run number: " << fAOD->GetRunNumber() << endl;
     InitClusterization();
-    
   }
   else
   {
-    printf(" AliAnalysisTaskEMCALClusterize::UserNotify() - Event not available!!! \n");
+    Warning("UserNotify","Event not available!!!");
   }
 
   return kTRUE;
-  
 }
 
 //________________________________________________________________________________________
@@ -389,9 +388,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN)
       fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
     else{
-      printf("AliAnalysisTaskEMCALClusterize::InitClusterization() - Clusterizer < %d > not available",
-             fRecParam->GetClusterizerFlag());
-      abort();
+      AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
     }
     
     //Now set the parameters
@@ -421,12 +418,12 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
             
     }// to unfold
     
-    
   }else{
     //Now init the unfolding afterburner 
     fUnfolder =  new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut());
  }
 }
+
 //________________________________________________________________________________________
 void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr, TObjArray *recPoints, TObjArray *clusArray)
 {
@@ -484,10 +481,5 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetM20(elipAxis[1]*elipAxis[1]) ;
 
     clusArray->Add(clus);
-
   } // recPoints loop
-  
 }
-
-
-
