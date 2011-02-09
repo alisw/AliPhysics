@@ -68,7 +68,9 @@ fMinDzPileup(0.6),
 fUseCentrality(0),
 fMinCentrality(0.),
 fMaxCentrality(100.),
-fFixRefs(kFALSE)
+fFixRefs(kFALSE),
+fIsSelectedCuts(0),
+fIsSelectedPID(0)
 {
   //
   // Default Constructor
@@ -104,7 +106,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fUseCentrality(source.fUseCentrality),
   fMinCentrality(source.fMinCentrality),
   fMaxCentrality(source.fMaxCentrality),
-  fFixRefs(source.fFixRefs)
+  fFixRefs(source.fFixRefs),
+  fIsSelectedCuts(source.fIsSelectedCuts),
+  fIsSelectedPID(source.fIsSelectedPID)
 {
   //
   // Copy constructor
@@ -150,6 +154,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMinCentrality=source.fMinCentrality;
   fMaxCentrality=source.fMaxCentrality;
   fFixRefs=source.fFixRefs;
+  fIsSelectedCuts=source.fIsSelectedCuts;
+  fIsSelectedPID=source.fIsSelectedPID;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -177,6 +183,27 @@ AliRDHFCuts::~AliRDHFCuts() {
     delete fPidHF;
     fPidHF=0;
   }
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
+  //
+  // Centrality selection
+  //
+  
+  if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){    
+    AliWarning("Centrality estimator not valid");    
+    return 3;  
+  }else{    
+    Float_t centvalue=GetCentrality((AliAODEvent*)event);          
+    if (centvalue<0.){      
+      return 0;    
+    }else{      
+      if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
+	return 2;      
+      }    
+    } 
+  }  
+  return 0;
 }
 //---------------------------------------------------------------------------
 Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
@@ -229,26 +256,13 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   //centrality selection
-  if (!(fUseCentrality==kCentOff)){  
-    if(fUseCentrality<kCentOff||fUseCentrality>=kCentInvalid){
-      AliWarning("Centrality estimator not valid");
-      fWhyRejection=3;
-      return kFALSE;
-    }else{
-      Float_t centvalue=GetCentrality((AliAODEvent*)event);      if (centvalue<0.){
-	if (fWhyRejection==3) return kFALSE;
-	else return kTRUE;
-      }
-      else{
-	
-	if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
-	  fWhyRejection=2; 
-	  return kFALSE; 
-	}
-      }
+  if (fUseCentrality!=kCentOff) {  
+    Int_t rejection=IsEventSelectedInCentrality(event);    
+    if(rejection>1){      
+      fWhyRejection=rejection;      
+      return kFALSE;    
     }
   }
-
 
   return kTRUE;
 }
