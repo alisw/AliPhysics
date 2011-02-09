@@ -137,8 +137,8 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
       pair->Init(GetName(), list);
 
       // add a counter for used/unused events for each pair
-      TH1I *hPairUsed = new TH1I(Form("%s_%s_USED", GetName(), pair->GetName()), "Used events for pair", 2, 0, 2);
-      list->Add(hPairUsed);
+      //TH1I *hPairUsed = new TH1I(Form("%s_%s_USED", GetName(), pair->GetName()), "Used events for pair", 2, 0, 2);
+      //list->Add(hPairUsed);
    }
 
    fList = list;
@@ -233,11 +233,11 @@ void AliRsnAnalysisManager::ProcessAllPairs()
    // update all count histograms counters
    next.Reset();
    if (!fList) return;
-   while ((pair = (AliRsnPair*)next())) {
-      TH1I *hist = (TH1I*)fList->FindObject(Form("_%s_USED", pair->GetName()));
-      if (!hist) continue;
-      if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
-   }
+   //while ((pair = (AliRsnPair*)next())) {
+   //   TH1I *hist = (TH1I*)fList->FindObject(Form("_%s_USED", pair->GetName()));
+   //   if (!hist) continue;
+   //   if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
+   //}
 
    AliDebug(AliLog::kDebug + 2, "->");
 }
