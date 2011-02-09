@@ -28,36 +28,35 @@
 
 class AliRsnCut;
 
-class AliRsnCutManager : public TNamed
-{
-  public:
+class AliRsnCutManager : public TNamed {
+public:
 
-    AliRsnCutManager();
-    AliRsnCutManager(const char *name, const char* title = "");
-    AliRsnCutManager(const AliRsnCutManager &cut);
-    AliRsnCutManager& operator=(const AliRsnCutManager& cut);
-    ~AliRsnCutManager();
-    
-    AliRsnCutSet*  GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
-    AliRsnCutSet*  GetDaughter1Cuts()      {return &fDaughterCuts1;}
-    AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
-    AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
-    
-    Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
-    Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts1.IsSelected(daughter);}
-    Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
-    Bool_t         PassMotherCuts(AliRsnMother *mother)             {return fMotherCuts.IsSelected(mother);}
-    Bool_t         PassSpecificDaughterCuts(Bool_t first, AliRsnDaughter *daughter)
-                     {if (first) return PassDaughter1Cuts(daughter); else return PassDaughter2Cuts(daughter);}
+   AliRsnCutManager();
+   AliRsnCutManager(const char *name, const char* title = "");
+   AliRsnCutManager(const AliRsnCutManager &cut);
+   AliRsnCutManager& operator=(const AliRsnCutManager& cut);
+   ~AliRsnCutManager();
 
-  private:
+   AliRsnCutSet*  GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
+   AliRsnCutSet*  GetDaughter1Cuts()      {return &fDaughterCuts1;}
+   AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
+   AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
 
-    AliRsnCutSet  fDaughterCutsCommon; // single-track cuts common to both daughters
-    AliRsnCutSet  fDaughterCuts1;      // single-track cuts for only first daughter
-    AliRsnCutSet  fDaughterCuts2;      // single-track cuts for only second daughter
-    AliRsnCutSet  fMotherCuts;         // mother cuts (on relations between daughters)
+   Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
+   Bool_t         PassDaughter1Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts1.IsSelected(daughter);}
+   Bool_t         PassDaughter2Cuts(AliRsnDaughter *daughter)      {return fDaughterCuts2.IsSelected(daughter);}
+   Bool_t         PassMotherCuts(AliRsnMother *mother)             {return fMotherCuts.IsSelected(mother);}
+   Bool_t         PassSpecificDaughterCuts(Bool_t first, AliRsnDaughter *daughter)
+   {if (first) return PassDaughter1Cuts(daughter); else return PassDaughter2Cuts(daughter);}
 
-    ClassDef(AliRsnCutManager, 2)      // dictionary
+private:
+
+   AliRsnCutSet  fDaughterCutsCommon; // single-track cuts common to both daughters
+   AliRsnCutSet  fDaughterCuts1;      // single-track cuts for only first daughter
+   AliRsnCutSet  fDaughterCuts2;      // single-track cuts for only second daughter
+   AliRsnCutSet  fMotherCuts;         // mother cuts (on relations between daughters)
+
+   ClassDef(AliRsnCutManager, 2)      // dictionary
 };
 
 #endif

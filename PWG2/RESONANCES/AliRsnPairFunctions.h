@@ -22,25 +22,24 @@ class AliRsnCutSet;
 class AliRsnFunction;
 class AliRsnValue;
 
-class AliRsnPairFunctions : public AliRsnPair
-{
-  public:
+class AliRsnPairFunctions : public AliRsnPair {
+public:
 
-    AliRsnPairFunctions(const char *name = "default", AliRsnPairDef *def = 0);
-    AliRsnPairFunctions(const AliRsnPairFunctions &copy);
-    AliRsnPairFunctions& operator=(const AliRsnPairFunctions&);
-    ~AliRsnPairFunctions();
+   AliRsnPairFunctions(const char *name = "default", AliRsnPairDef *def = 0);
+   AliRsnPairFunctions(const AliRsnPairFunctions &copy);
+   AliRsnPairFunctions& operator=(const AliRsnPairFunctions&);
+   ~AliRsnPairFunctions();
 
-    void         AddFunction(AliRsnFunction*const fcn);
-    TList*       GenerateHistograms(const char *prefix = "", TList *list = 0);
-    virtual void Compute();
-    virtual void Init(const char *prefix, TList *list);
+   void         AddFunction(AliRsnFunction*const fcn);
+   TList*       GenerateHistograms(const char *prefix = "", TList *list = 0);
+   virtual void Compute();
+   virtual void Init(const char *prefix, TList *list);
 
-  protected:
+protected:
 
-    TClonesArray   fFunctions;    // a list of functions which generate histograms
+   TClonesArray   fFunctions;    // a list of functions which generate histograms
 
-    ClassDef(AliRsnPairFunctions, 2)
+   ClassDef(AliRsnPairFunctions, 2)
 };
 
 #endif

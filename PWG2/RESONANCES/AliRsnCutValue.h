@@ -1,7 +1,7 @@
 //
 // *** Class AliRsnCutValue ***
 //
-// This cut implementation can be used to cut generically on 
+// This cut implementation can be used to cut generically on
 // any value which can be computed from AliRsnValue class.
 // Since that value is implemented always as a Double_t one,
 // then this cut operates only with the Double_t data members
@@ -23,30 +23,29 @@
 
 class AliRsnPairDef;
 
-class AliRsnCutValue : public AliRsnCut
-{
-  public:
+class AliRsnCutValue : public AliRsnCut {
+public:
 
-    AliRsnCutValue();
-    AliRsnCutValue(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd = 0x0);
-    AliRsnCutValue(const AliRsnCutValue& copy);
-    AliRsnCutValue& operator=(const AliRsnCutValue& copy);
-    virtual ~AliRsnCutValue() { }
+   AliRsnCutValue();
+   AliRsnCutValue(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd = 0x0);
+   AliRsnCutValue(const AliRsnCutValue& copy);
+   AliRsnCutValue& operator=(const AliRsnCutValue& copy);
+   virtual ~AliRsnCutValue() { }
 
-    void           SetPairDef(AliRsnPairDef *pd) {fPairDef = pd;}
-    AliRsnPairDef* GetPairDef()  {return fPairDef;}
-    Double_t       GetValue()    {return fValue.GetComputedValue();}
-    AliRsnValue*   GetValueObj() {return &fValue;}
-    
-    virtual Bool_t IsSelected(TObject *object);
-    virtual void   Print(const Option_t *option = "") const;
+   void           SetPairDef(AliRsnPairDef *pd) {fPairDef = pd;}
+   AliRsnPairDef* GetPairDef()  {return fPairDef;}
+   Double_t       GetValue()    {return fValue.GetComputedValue();}
+   AliRsnValue*   GetValueObj() {return &fValue;}
 
-  protected:
-  
-    AliRsnValue    fValue;
-    AliRsnPairDef *fPairDef;
+   virtual Bool_t IsSelected(TObject *object);
+   virtual void   Print(const Option_t *option = "") const;
 
-    ClassDef(AliRsnCutValue, 1)
+protected:
+
+   AliRsnValue    fValue;
+   AliRsnPairDef *fPairDef;
+
+   ClassDef(AliRsnCutValue, 1)
 };
 
 #endif

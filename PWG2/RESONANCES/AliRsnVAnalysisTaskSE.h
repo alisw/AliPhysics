@@ -22,59 +22,58 @@ class AliESDEvent;
 class AliAODEvent;
 class AliMCEvent;
 
-class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE
-{
-  public:
-  
-    AliRsnVAnalysisTaskSE(const char *name = "AliRsnVAnalysisTaskSE", Bool_t mcOnly = kFALSE);
-    AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy);
-    AliRsnVAnalysisTaskSE& operator= (const AliRsnVAnalysisTaskSE& /*copy*/) { return *this; }
-    virtual ~AliRsnVAnalysisTaskSE() {/* Does nothing*/;}
+class AliRsnVAnalysisTaskSE : public AliAnalysisTaskSE {
+public:
 
-    // basic interface methods
-    virtual void    LocalInit();
-    virtual Bool_t  UserNotify();
-    virtual void    ConnectInputData(Option_t *opt);
-    virtual void    UserCreateOutputObjects();
-    virtual void    UserExec(Option_t* opt);
-    virtual void    Terminate(Option_t* opt);
+   AliRsnVAnalysisTaskSE(const char *name = "AliRsnVAnalysisTaskSE", Bool_t mcOnly = kFALSE);
+   AliRsnVAnalysisTaskSE(const AliRsnVAnalysisTaskSE& copy);
+   AliRsnVAnalysisTaskSE& operator= (const AliRsnVAnalysisTaskSE& /*copy*/) { return *this; }
+   virtual ~AliRsnVAnalysisTaskSE() {/* Does nothing*/;}
 
-    // customized methods (to be implemented in derived classes)
-    virtual void    RsnUserCreateOutputObjects();
-    virtual void    RsnUserExec(Option_t*);
-    virtual void    RsnTerminate(Option_t*);
+   // basic interface methods
+   virtual void    LocalInit();
+   virtual Bool_t  UserNotify();
+   virtual void    ConnectInputData(Option_t *opt);
+   virtual void    UserCreateOutputObjects();
+   virtual void    UserExec(Option_t* opt);
+   virtual void    Terminate(Option_t* opt);
 
-    // event pre-processing functions
-    virtual Bool_t  EventProcess();
+   // customized methods (to be implemented in derived classes)
+   virtual void    RsnUserCreateOutputObjects();
+   virtual void    RsnUserExec(Option_t*);
+   virtual void    RsnTerminate(Option_t*);
 
-    // getters
-    AliRsnEvent*           GetRsnEvent() {return &fRsnEvent;}
-    AliRsnVATProcessInfo*  GetInfo()     {return &fTaskInfo;}
+   // event pre-processing functions
+   virtual Bool_t  EventProcess();
 
-    // setters
-    void SetMCOnly(Bool_t mcOnly = kTRUE)                           {fMCOnly = mcOnly;}
-    void SetLogType(AliLog::EType_t type, const char *classes = "") {fLogType = type; fLogClassesString = classes;}
-    void SetPrintInfoNumber(const Long64_t &num = 100)              {fTaskInfo.SetPrintInfoNumber(num);}
+   // getters
+   AliRsnEvent*           GetRsnEvent() {return &fRsnEvent;}
+   AliRsnVATProcessInfo*  GetInfo()     {return &fTaskInfo;}
 
-  protected:
+   // setters
+   void SetMCOnly(Bool_t mcOnly = kTRUE)                           {fMCOnly = mcOnly;}
+   void SetLogType(AliLog::EType_t type, const char *classes = "") {fLogType = type; fLogClassesString = classes;}
+   void SetPrintInfoNumber(const Long64_t &num = 100)              {fTaskInfo.SetPrintInfoNumber(num);}
 
-    AliLog::EType_t         fLogType;          //  log type
-    TString                 fLogClassesString; //  all classes string divided with ":"
+protected:
 
-    AliESDEvent            *fESDEvent;         //  ESD event
-    AliMCEvent             *fMCEvent;          //  MC event
-    AliAODEvent            *fAODEventIn;       //  AOD event from input
-    AliAODEvent            *fAODEventOut;      //  AOD event from output from previous taks
+   AliLog::EType_t         fLogType;          //  log type
+   TString                 fLogClassesString; //  all classes string divided with ":"
 
-    Bool_t                  fMCOnly;           //  use only MC information
-    AliRsnEvent             fRsnEvent;         //  interface to event for RSN package
+   AliESDEvent            *fESDEvent;         //  ESD event
+   AliMCEvent             *fMCEvent;          //  MC event
+   AliAODEvent            *fAODEventIn;       //  AOD event from input
+   AliAODEvent            *fAODEventOut;      //  AOD event from output from previous taks
 
-    TList                  *fInfoList;         //! output list for informations
-    AliRsnVATProcessInfo    fTaskInfo;         //  task info
+   Bool_t                  fMCOnly;           //  use only MC information
+   AliRsnEvent             fRsnEvent;         //  interface to event for RSN package
 
-    void                    SetDebugForAllClasses();
+   TList                  *fInfoList;         //! output list for informations
+   AliRsnVATProcessInfo    fTaskInfo;         //  task info
 
-    ClassDef(AliRsnVAnalysisTaskSE, 1)
+   void                    SetDebugForAllClasses();
+
+   ClassDef(AliRsnVAnalysisTaskSE, 1)
 };
 
 #endif

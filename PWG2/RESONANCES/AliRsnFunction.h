@@ -35,49 +35,48 @@ class AliRsnValue;
 class AliRsnMother;
 class AliRsnPairDef;
 
-class AliRsnFunction : public TObject
-{
+class AliRsnFunction : public TObject {
 
-  public:
+public:
 
-    AliRsnFunction(Bool_t useTH1 = kTRUE);
-    AliRsnFunction(const AliRsnFunction &copy);
-    virtual ~AliRsnFunction() { delete fH1; delete fHSparse; }
-    const AliRsnFunction& operator=(const AliRsnFunction &copy);
+   AliRsnFunction(Bool_t useTH1 = kTRUE);
+   AliRsnFunction(const AliRsnFunction &copy);
+   virtual ~AliRsnFunction() { delete fH1; delete fHSparse; }
+   const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
-    void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
-    void                 SetPair(AliRsnMother * const pair) {fPair = pair;}
+   void                 SetPairDef(AliRsnPairDef * const def) {fPairDef = def;}
+   void                 SetPair(AliRsnMother * const pair) {fPair = pair;}
 
-    AliRsnPairDef*       GetPairDef() const {return fPairDef;}
-    AliRsnMother*        GetPair() const {return fPair;}
-    AliRsnEvent*         GetEvent() const {return fEvent;}
-    virtual const char*  GetName() const;
+   AliRsnPairDef*       GetPairDef() const {return fPairDef;}
+   AliRsnMother*        GetPair() const {return fPair;}
+   AliRsnEvent*         GetEvent() const {return fEvent;}
+   virtual const char*  GetName() const;
 
-    Bool_t               IsUsingTH1() {return fUseTH1;}
-    void                 UseTH1() {fUseTH1 = kTRUE;}
-    void                 UseSparse() {fUseTH1 = kFALSE;}
-    Bool_t               AddAxis(AliRsnValue* const axis);
-    Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
-    TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
-    THnSparseF*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
+   Bool_t               IsUsingTH1() {return fUseTH1;}
+   void                 UseTH1() {fUseTH1 = kTRUE;}
+   void                 UseSparse() {fUseTH1 = kFALSE;}
+   Bool_t               AddAxis(AliRsnValue* const axis);
+   Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
+   TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
+   THnSparseF*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
 
-    Bool_t               Fill();
+   Bool_t               Fill();
 
-  protected:
+protected:
 
-    AliRsnPairDef      *fPairDef;     // reference to used pair definition
-    TClonesArray        fAxisList;    // list of axis
+   AliRsnPairDef      *fPairDef;     // reference to used pair definition
+   TClonesArray        fAxisList;    // list of axis
 
-    AliRsnMother       *fPair;        // processed pair
-    AliRsnEvent        *fEvent;       // processed event
+   AliRsnMother       *fPair;        // processed pair
+   AliRsnEvent        *fEvent;       // processed event
 
-    Bool_t              fUseTH1;      // use TH1 or not?
-    Int_t               fSize;        // number of dim of output histogram
-    TH1                *fH1;          // output histogram (standard type)
-    THnSparseF         *fHSparse;     // output histogram (sparse type)
+   Bool_t              fUseTH1;      // use TH1 or not?
+   Int_t               fSize;        // number of dim of output histogram
+   TH1                *fH1;          // output histogram (standard type)
+   THnSparseF         *fHSparse;     // output histogram (sparse type)
 
-    // ROOT dictionary
-    ClassDef(AliRsnFunction, 3)
+   // ROOT dictionary
+   ClassDef(AliRsnFunction, 3)
 };
 
 #endif

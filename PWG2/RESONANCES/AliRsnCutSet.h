@@ -23,52 +23,51 @@ class AliRsnExpression;
 class AliRsnPairParticle;
 class AliRsnEvent;
 
-class AliRsnCutSet : public AliRsnTarget
-{
-  public:
+class AliRsnCutSet : public AliRsnTarget {
+public:
 
-    AliRsnCutSet();
-    AliRsnCutSet(const char *name, RSNTARGET target);
-    AliRsnCutSet(const AliRsnCutSet &copy);
-    AliRsnCutSet& operator=(const AliRsnCutSet& copy);
-    ~AliRsnCutSet();
+   AliRsnCutSet();
+   AliRsnCutSet(const char *name, RSNTARGET target);
+   AliRsnCutSet(const AliRsnCutSet &copy);
+   AliRsnCutSet& operator=(const AliRsnCutSet& copy);
+   ~AliRsnCutSet();
 
-    void      AddCut(AliRsnCut* cut);
+   void      AddCut(AliRsnCut* cut);
 
-    void      ShowCuts() const;
-    Int_t     GetIndexByCutName(TString s);
-    Bool_t    Passed();
-    Bool_t    IsValidScheme();
-    TString   ShowCutScheme();
-    Int_t     TestExpression(TString opt="short");
-    void      PrintSetInfo();
+   void      ShowCuts() const;
+   Int_t     GetIndexByCutName(TString s);
+   Bool_t    Passed();
+   Bool_t    IsValidScheme();
+   TString   ShowCutScheme();
+   Int_t     TestExpression(TString opt = "short");
+   void      PrintSetInfo();
 
-    Bool_t    IsSelected(TObject *object);
+   Bool_t    IsSelected(TObject *object);
 
-    void SetBoolValue(Bool_t theValue,Int_t index) { fBoolValues[index] = theValue; }
-    Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
+   void SetBoolValue(Bool_t theValue, Int_t index) { fBoolValues[index] = theValue; }
+   Bool_t GetBoolValue(Int_t index) const { return fBoolValues[index]; }
 
-    void SetCutScheme(const char *theValue);
-    TString GetCutScheme() const { return fCutScheme; }
+   void SetCutScheme(const char *theValue);
+   TString GetCutScheme() const { return fCutScheme; }
 
-    void SetCutSchemeIndexed(TString theValue);
-    TString   GetCutSchemeIndexed();
+   void SetCutSchemeIndexed(TString theValue);
+   TString   GetCutSchemeIndexed();
 
-    TObjArray *GetCuts() { return &fCuts; }
+   TObjArray *GetCuts() { return &fCuts; }
 
-  private:
+private:
 
-    TObjArray     fCuts;                  // array of cuts
-    Int_t         fNumOfCuts;             // number of cuts
-    TString       fCutScheme;             // cut scheme
-    TString       fCutSchemeIndexed;      // cut scheme indexed
+   TObjArray     fCuts;                  // array of cuts
+   Int_t         fNumOfCuts;             // number of cuts
+   TString       fCutScheme;             // cut scheme
+   TString       fCutSchemeIndexed;      // cut scheme indexed
 
-    Bool_t       *fBoolValues;            //[fNumOfCuts]
-    Bool_t        fIsScheme;              // is scheme
+   Bool_t       *fBoolValues;            //[fNumOfCuts]
+   Bool_t        fIsScheme;              // is scheme
 
-    AliRsnExpression  *fExpression;       // pointer to AliRsnExpression
+   AliRsnExpression  *fExpression;       // pointer to AliRsnExpression
 
-    ClassDef(AliRsnCutSet,1)    // ROOT dictionary
+   ClassDef(AliRsnCutSet, 1)   // ROOT dictionary
 };
 
 #endif

@@ -35,7 +35,6 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutValue.cxx 
            RESONANCES/AliRsnCutPrimaryVertex.cxx 
            RESONANCES/AliRsnCutESD2010.cxx 
-           RESONANCES/AliRsnCutAOD2010.cxx 
            RESONANCES/AliRsnCutTrackQuality.cxx 
            RESONANCES/AliRsnCutPID.cxx 
            RESONANCES/AliRsnCutPIDITS.cxx 
@@ -52,12 +51,8 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnAnalysisManager.cxx 
            RESONANCES/AliRsnVATProcessInfo.cxx 
            RESONANCES/AliRsnVAnalysisTaskSE.cxx 
-           RESONANCES/AliRsnVAnalysisTaskME.cxx 
            RESONANCES/AliRsnAnalysisSE.cxx 
-           RESONANCES/AliRsnAnalysisME.cxx 
            RESONANCES/AliRsnAnalysisEffSE.cxx 
-           RESONANCES/AliRsnAnalysisPhiKK.cxx 
-           RESONANCES/AliRsnAnalysisKStarKpi.cxx 
            RESONANCES/AliRsnVAnalysisTask.cxx 
            RESONANCES/AliRsnAnalysisTask.cxx 
            RESONANCES/AliRsnMonitorTrack.cxx 

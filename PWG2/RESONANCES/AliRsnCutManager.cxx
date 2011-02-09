@@ -26,11 +26,11 @@ ClassImp(AliRsnCutManager)
 
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager() :
-  TNamed("defaultName", "defaultTitle"),
-  fDaughterCutsCommon("defaultCommon", AliRsnTarget::kDaughter),
-  fDaughterCuts1("defaultD1", AliRsnTarget::kDaughter),
-  fDaughterCuts2("defaultD2", AliRsnTarget::kDaughter),
-  fMotherCuts("defaultPair", AliRsnTarget::kMother)
+   TNamed("defaultName", "defaultTitle"),
+   fDaughterCutsCommon("defaultCommon", AliRsnTarget::kDaughter),
+   fDaughterCuts1("defaultD1", AliRsnTarget::kDaughter),
+   fDaughterCuts2("defaultD2", AliRsnTarget::kDaughter),
+   fMotherCuts("defaultPair", AliRsnTarget::kMother)
 {
 //
 // Constructor without arguments.
@@ -39,11 +39,11 @@ AliRsnCutManager::AliRsnCutManager() :
 
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager(const char *name, const char *title) :
-  TNamed(name, title),
-  fDaughterCutsCommon(Form("common_%s", name), AliRsnTarget::kDaughter),
-  fDaughterCuts1(Form("d1_%s", name), AliRsnTarget::kDaughter),
-  fDaughterCuts2(Form("d2_%s", name), AliRsnTarget::kDaughter),
-  fMotherCuts(Form("pair_%s", name), AliRsnTarget::kMother)
+   TNamed(name, title),
+   fDaughterCutsCommon(Form("common_%s", name), AliRsnTarget::kDaughter),
+   fDaughterCuts1(Form("d1_%s", name), AliRsnTarget::kDaughter),
+   fDaughterCuts2(Form("d2_%s", name), AliRsnTarget::kDaughter),
+   fMotherCuts(Form("pair_%s", name), AliRsnTarget::kMother)
 {
 //
 // Constructor with name and title.
@@ -52,11 +52,11 @@ AliRsnCutManager::AliRsnCutManager(const char *name, const char *title) :
 
 //_____________________________________________________________________________
 AliRsnCutManager::AliRsnCutManager(const AliRsnCutManager &cut) :
-  TNamed(cut),
-  fDaughterCutsCommon(cut.fDaughterCutsCommon),
-  fDaughterCuts1(cut.fDaughterCuts1),
-  fDaughterCuts2(cut.fDaughterCuts2),
-  fMotherCuts(cut.fMotherCuts)
+   TNamed(cut),
+   fDaughterCutsCommon(cut.fDaughterCutsCommon),
+   fDaughterCuts1(cut.fDaughterCuts1),
+   fDaughterCuts2(cut.fDaughterCuts2),
+   fMotherCuts(cut.fMotherCuts)
 {
 //
 // Constructor with name and title.
@@ -70,15 +70,15 @@ AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
 // Assign operator
 //
 
-  SetName(cut.GetName());
-  SetTitle(cut.GetTitle());
-  
-  fDaughterCuts2 = cut.fDaughterCuts2;
-  fDaughterCuts1 = cut.fDaughterCuts1;
-  fDaughterCutsCommon = cut.fDaughterCutsCommon;
-  fMotherCuts = cut.fMotherCuts;
-  
-  return (*this);
+   SetName(cut.GetName());
+   SetTitle(cut.GetTitle());
+
+   fDaughterCuts2 = cut.fDaughterCuts2;
+   fDaughterCuts1 = cut.fDaughterCuts1;
+   fDaughterCutsCommon = cut.fDaughterCutsCommon;
+   fMotherCuts = cut.fMotherCuts;
+
+   return (*this);
 }
 
 //_____________________________________________________________________________
