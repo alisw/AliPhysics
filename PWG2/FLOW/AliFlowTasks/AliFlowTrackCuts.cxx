@@ -656,6 +656,7 @@ void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
 void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
 {
   //handle esd track
+  AliExternalTrackParam* ip=NULL;
   switch (fParamType)
   {
     case kGlobal:
@@ -669,6 +670,9 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
         fTrackLabel=-1;
         return;
       }
+      ip = const_cast<AliExternalTrackParam*>(fTPCtrack.GetInnerParam());
+      if (!ip) { ip = new AliExternalTrackParam(*(track->GetInnerParam())); }
+      else { *ip = *(track->GetInnerParam()); }
       fTrack = &fTPCtrack;
       //recalculate the label and mc particle, they may differ as TPClabel != global label
       fTrackLabel = (fFakesAreOK)?TMath::Abs(fTrack->GetLabel()):fTrack->GetLabel();
