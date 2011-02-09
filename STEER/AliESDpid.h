@@ -23,7 +23,7 @@ class AliESDEvent;
 
 class AliESDpid {
 public:
-  AliESDpid(): fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(), fTOFResponse(), fTRDResponse(){;}
+  AliESDpid(Bool_t forMC=kFALSE): fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(forMC), fTOFResponse(), fTRDResponse(){;}
   virtual ~AliESDpid() {}
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
   void MakeTPCPID(AliESDtrack *track) const;
