@@ -741,10 +741,13 @@ class AliV0Reader : public TObject {
    *Set if we want to use Gamma Selection based on Qt from Armenteros
    */
   void SetDoQtGammaSelection(Bool_t doQtGammaSelection){fDoQtGammaSelection=doQtGammaSelection;}
+  void SetDoHighPtQtGammaSelection(Bool_t doHighPtQtGammaSelection){fDoHighPtQtGammaSelection=doHighPtQtGammaSelection;} // RRnew
   /*
    * Sets the MaxQtCut value.
    */
   void SetQtMax(Double_t qtMax){fQtMax=qtMax;}
+  void SetHighPtQtMax(Double_t qtMaxHighPt){fHighPtQtMax=qtMaxHighPt;} // RRnew
+  void SetPtBorderForQt(Double_t ptBorderForQt){fPtBorderForQt=ptBorderForQt;} // RRnew
 
   /*
    * Updates the V0 information of the current V0.
@@ -930,7 +933,10 @@ class AliV0Reader : public TObject {
   Double_t fPIDMinPProtonRejectionLowP; // Momentum limit to apply proton rejection
   Double_t fPIDMinPPionRejectionLowP; // Momentum limit to apply proton rejection
   Bool_t   fDoQtGammaSelection; // Select gammas using qtMax
+  Bool_t   fDoHighPtQtGammaSelection; // RRnew Select gammas using qtMax for high pT
   Double_t fQtMax; // Maximum Qt from Armenteros to select Gammas
+  Double_t fHighPtQtMax; // RRnew Maximum Qt for High pT from Armenteros to select Gammas
+  Double_t fPtBorderForQt; // RRnew 
   Double_t fXVertexCut; //vertex cut
   Double_t fYVertexCut; //vertex cut
   Double_t fZVertexCut; // vertexcut
@@ -971,7 +977,7 @@ class AliV0Reader : public TObject {
   Int_t fIsHeavyIon; // flag
   Bool_t fUseCorrectedTPCClsInfo;
 
-  ClassDef(AliV0Reader,18)
+  ClassDef(AliV0Reader,19) // RRnew
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
