@@ -136,20 +136,20 @@ AliRsnAnalysisPhi7TeV& AliRsnAnalysisPhi7TeV::operator=(const AliRsnAnalysisPhi7
   fMaxVz   = copy.fMaxVz;
   fMaxITSband = copy.fMaxITSband;
   fMaxITSmom  = copy.fMaxITSmom;
-  
+
   fTPCpLimit  = copy.fTPCpLimit;
   fMinTPCband = copy.fMinTPCband;
   fMaxTPCband = copy.fMaxTPCband;
-  
+
   fESDtrackCutsTPC = copy.fESDtrackCutsTPC;
   fESDtrackCutsITS = copy.fESDtrackCutsITS;
-  
+
   fTOFcalibrateESD = copy.fTOFcalibrateESD;
   fTOFcorrectTExp = copy.fTOFcorrectTExp;
   fTOFuseT0 = copy.fTOFuseT0;
   fTOFtuneMC = copy.fTOFtuneMC;
   fTOFresolution = copy.fTOFresolution;
-  
+
   SetUseMC(copy.fUseMC);
 
   return (*this);
@@ -171,7 +171,7 @@ void AliRsnAnalysisPhi7TeV::SetUseMC(Bool_t isMC)
 //
 
   fUseMC = isMC;
-  
+
   if (isMC)
   {
     SetTPCpar(2.15898 / 50.0, 1.75295E1, 3.40030E-9, 1.96178, 3.91720);
@@ -192,7 +192,7 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
 //
 // Create the output data container
 //
-  
+
   // initialize random
   //gRandom->SetSeed(0);
 
@@ -219,7 +219,7 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
     fLikeMM = (TH3F*)tmp->Clone("hMM");
     fTrues  = (TH3F*)tmp->Clone("hTR");
   }
-  
+
   fHEvents->GetXaxis()->SetBinLabel(1, "Good vertex with tracks");
   fHEvents->GetXaxis()->SetBinLabel(2, "Good vertex with SPD");
   fHEvents->GetXaxis()->SetBinLabel(3, "Far vertex with tracks");
@@ -238,9 +238,9 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   fOutList->Add(fLikePP);
   fOutList->Add(fLikeMM);
   fOutList->Add(fTrues);
-  
+
   // setup RSN-related objects
-  
+
   fRsnCuts.SetMC       (fUseMC);
   fRsnCuts.SetCheckITS (fCheckITS);
   fRsnCuts.SetCheckTPC (fCheckTPC);
@@ -254,10 +254,10 @@ void AliRsnAnalysisPhi7TeV::UserCreateOutputObjects()
   fRsnCuts.SetTPCrange(fMinTPCband, fMaxTPCband);
   fRsnCuts.SetTPCpar(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
   //fRsnCuts.SetTOFcalibrateESD(fTOFcalibrateESD);
-  fRsnCuts.SetTOFcorrectTExp (fTOFcorrectTExp);
-  fRsnCuts.SetTOFuseT0       (fTOFuseT0);
-  fRsnCuts.SetTOFtuneMC      (fTOFtuneMC);
-  fRsnCuts.SetTOFresolution  (fTOFresolution);
+  //fRsnCuts.SetTOFcorrectTExp (fTOFcorrectTExp);
+  //fRsnCuts.SetTOFuseT0       (fTOFuseT0);
+  //fRsnCuts.SetTOFtuneMC      (fTOFtuneMC);
+  //fRsnCuts.SetTOFresolution  (fTOFresolution);
   fRsnCuts.SetTOFrange       (fMinTOF, fMaxTOF);
   fRsnCuts.GetCutsTPC()->Copy(fESDtrackCutsTPC);
   fRsnCuts.GetCutsITS()->Copy(fESDtrackCutsITS);
@@ -278,17 +278,17 @@ void AliRsnAnalysisPhi7TeV::UserExec(Option_t *)
   // retrieve ESD event and related stack (if available)
   AliESDEvent *esd   = dynamic_cast<AliESDEvent*>(fInputEvent);
   AliStack    *stack = (fMCEvent ? fMCEvent->Stack() : 0x0);
-  
+
   // check the event
   Int_t eval = EventEval(esd);
   fHEvents->Fill(eval);
-  
+
   // if the event is good for analysis, process it
   if (eval == kGoodTracksPrimaryVertex || eval == kGoodSPDPrimaryVertex)
   {
     ProcessESD(esd, stack);
   }
-  
+
   // update histogram container
   PostData(1, fOutList);
 }
@@ -311,11 +311,11 @@ Int_t AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent *esd)
 
   static Int_t evNum = 0;
   evNum++;
-  
+
   // reject empty events
   Int_t ntracks = esd->GetNumberOfTracks();
   if (!ntracks) return kEmptyEvent;
-  
+
   // get the best primary vertex:
   // first try the one with tracks
   const AliESDVertex *vTrk  = esd->GetPrimaryVertexTracks();
@@ -334,7 +334,7 @@ Int_t AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent *esd)
     fVertexX[0]->Fill(vTrk->GetXv());
     fVertexY[0]->Fill(vTrk->GetYv());
     fVertexZ[0]->Fill(vTrk->GetZv());
-    
+
     // check VZ position
     if (vzTrk <= fMaxVz)
       return kGoodTracksPrimaryVertex;
@@ -347,7 +347,7 @@ Int_t AliRsnAnalysisPhi7TeV::EventEval(AliESDEvent *esd)
     fVertexX[1]->Fill(vSPD->GetXv());
     fVertexY[1]->Fill(vSPD->GetYv());
     fVertexZ[1]->Fill(vSPD->GetZv());
-    
+
     // check VZ position
     if (vzSPD <= fMaxVz)
       return kGoodSPDPrimaryVertex;
@@ -369,15 +369,15 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
   static Int_t lastRun = -1;
   static Int_t evnum = 0;
   evnum++;
-  
+
   // get current run
   Int_t run = esd->GetRunNumber();
-  
+
   // if absent, initialize ESD pid response
   if (!fESDpid)
   {
     AliITSPIDResponse itsresponse(fUseMC);
-    
+
     fESDpid = new AliESDpid;
     fESDpid->GetTPCResponse().SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
     fESDpid->GetITSResponse() = itsresponse;
@@ -390,17 +390,17 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     AliInfo(Form("*** CHANGING RUN NUMBER: PREVIOUS = %d --> CURRENT = %d ***", lastRun, run));
     AliInfo("============================================================================================");
     lastRun = run;
-  
+
     AliCDBManager::Instance()->SetDefaultStorage("raw://");
     AliCDBManager::Instance()->SetRun(lastRun);
-    
+
     if (fTOFmaker) delete fTOFmaker;
     if (fTOFcalib) delete fTOFcalib;
-    
+
     fTOFcalib = new AliTOFcalib();
     if (fTOFcorrectTExp) fTOFcalib->SetCorrectTExp(kTRUE);
     fTOFcalib->Init();
-    
+
     fTOFmaker = new AliTOFT0maker(fESDpid, fTOFcalib);
     fTOFmaker->SetTimeResolution(fTOFresolution);
   }
@@ -413,13 +413,13 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     fTOFmaker->ApplyT0TOF(esd);
     fESDpid->MakePID(esd, kFALSE, 0.);
   }
-  
+
   // RSN event
   AliRsnEvent event;
   event.SetRef(esd);
   event.SetRefMC(fMCEvent);
   //fRsnCuts.ProcessEvent(esd);
-  
+
   // loop on all tracks
   Int_t           i1, i2, label, pdg, ntracks = esd->GetNumberOfTracks();
   Bool_t          okTrack;
@@ -430,13 +430,13 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
   AliMCParticle  *p1 = 0x0, *p2 = 0x0;
   AliESDtrack    *t1 = 0x0, *t2 = 0x0;
   TLorentzVector  v1, v2, vsum, vref;
-  
+
   // external loop (T1)
   for (i1 = 0; i1 < ntracks; i1++)
   {
     t1 = esd->GetTrack(i1);
     if (!t1) continue;
-    
+
     // setup RSN
     fDaughter.SetRef(t1);
     if (stack)
@@ -446,19 +446,19 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     }
     fDaughter.SetMass(kmass);
     v1.SetXYZM(t1->Px(), t1->Py(), t1->Pz(), kmass);
-    
+
     // check track
     okTrack = OkTrack(t1, AliPID::kKaon);
-    
+
     // internal loop (T2)
     for (i2 = i1+1; i2 < ntracks; i2++)
     {
       t2 = esd->GetTrack(i2);
       if (!t2) continue;
-      
+
       // check track
       if (!OkTrack(t2, AliPID::kKaon)) continue;
-        
+
       // if unlike pair, check if it is true
       pdg = 0;
       if ((t1->Charge() == t2->Charge()) && p1 && p2)
@@ -515,11 +515,11 @@ Bool_t AliRsnAnalysisPhi7TeV::OkQuality(AliESDtrack *track)
 // If tracks of any type are not flagged to be used, they are rejected anyway.
 //
 
-  if (IsITSTPC(track)) 
+  if (IsITSTPC(track))
     return fESDtrackCutsTPC.IsSelected(track);
   else if (IsITSSA (track))
   {
-    if (fAddITSSA) 
+    if (fAddITSSA)
       return fESDtrackCutsITS.IsSelected(track);
     else
       return kFALSE;
@@ -537,7 +537,7 @@ Bool_t AliRsnAnalysisPhi7TeV::OkITSPID (AliESDtrack *track, AliPID::EParticleTyp
 
   // reject not ITS standalone tracks
   if (!IsITSSA(track)) return kFALSE;
-  
+
   // count PID layers and reject if they are too few
   Int_t   k, nITSpidLayers = 0;
   UChar_t itsCluMap = track->GetITSClusterMap();
@@ -547,7 +547,7 @@ Bool_t AliRsnAnalysisPhi7TeV::OkITSPID (AliESDtrack *track, AliPID::EParticleTyp
     AliDebug(AliLog::kDebug+2, "Rejecting track with too few ITS pid layers");
     return kFALSE;
   }
-  
+
   // check the track type (ITS+TPC or ITS standalone)
   // and reject it if it is of none of the allowed types
   Bool_t isSA = kFALSE;
@@ -558,18 +558,18 @@ Bool_t AliRsnAnalysisPhi7TeV::OkITSPID (AliESDtrack *track, AliPID::EParticleTyp
     AliWarning("Track is neither ITS+TPC nor ITS standalone");
     return kFALSE;
   }
-  
+
   // create the PID response object and compute nsigma
   AliITSPIDResponse &itsrsp = fESDpid->GetITSResponse();
   Double_t mom    = track->P();
   Double_t nSigma = itsrsp.GetNumberOfSigmas(mom, track->GetITSsignal(), pid, nITSpidLayers, isSA);
-  
+
   // evaluate the cut
   Bool_t ok = (TMath::Abs(nSigma) <= fMaxITSband);
-  
+
   // debug message
   AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", nSigma, fMaxITSband, (ok ? "passed" : "failed")));
-  
+
   // outcome
   return ok;
 }
@@ -588,19 +588,19 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTPCPID (AliESDtrack *track, AliPID::EParticleTyp
   // setup TPC PID response
   AliTPCPIDResponse &tpcrsp = fESDpid->GetTPCResponse();
   tpcrsp.SetBetheBlochParameters(fTPCpar[0],fTPCpar[1],fTPCpar[2],fTPCpar[3],fTPCpar[4]);
-  
+
   // get momentum and number of sigmas and choose the reference band
   Double_t mom       = track->GetInnerParam()->P();
   Double_t nSigma    = tpcrsp.GetNumberOfSigmas(mom, track->GetTPCsignal(), track->GetTPCsignalN(), pid);
   Double_t maxNSigma = fMaxTPCband;
   if (mom < fTPCpLimit) maxNSigma = fMinTPCband;
-  
+
   // evaluate the cut
   Bool_t ok = (TMath::Abs(nSigma) <= maxNSigma);
-  
+
   // debug message
   AliDebug(AliLog::kDebug + 2, Form("TPC nsigma = %f -- max = %f -- cut %s", nSigma, maxNSigma, (ok ? "passed" : "failed")));
-  
+
   // outcome
   return ok;
 }
@@ -614,10 +614,10 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTOFPID (AliESDtrack *track, AliPID::EParticleTyp
 
   // reject not TOF-matched tracks
   if (!MatchTOF(track)) return kFALSE;
-  
+
   // setup TOF PID response
   AliTOFPIDResponse &tofrsp = fESDpid->GetTOFResponse();
-  
+
   // get info for computation
   Double_t momentum = track->P();
   Double_t time     = track->GetTOFsignal();
@@ -629,14 +629,14 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTOFPID (AliESDtrack *track, AliPID::EParticleTyp
   Double_t timeDiff = time - timeint[(Int_t)pid];
   Double_t sigmaRef = tofrsp.GetExpectedSigma(momentum, timeint[(Int_t)pid], AliPID::ParticleMass(pid));
   Double_t nSigma   = timeDiff / sigmaRef;
-  
+
   // evaluate the cut
   Bool_t ok = (nSigma >= fMinTOF && nSigma <= fMaxTOF);
-  
+
   // debug message
   AliDebug(AliLog::kDebug + 2, Form("TOF nsigma = %f -- range = %f - %f -- cut %s", nSigma, fMinTOF, fMaxTOF, (ok ? "passed" : "failed")));
   //if (print) cout << Form("**PHI** TOF nsigma = %f -- range = %f - %f -- cut %s", nSigma, fMinTOF, fMaxTOF, (ok ? "passed" : "failed")) << endl;
-  
+
   // outcome
   return ok;
 }
@@ -657,27 +657,27 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTrack(AliESDtrack *track, AliPID::EParticleType 
     //printf("[PHI] Track %4d: REJECTED\n", i);
     return kFALSE;
   }
-  
+
   // ITS PID can be checked always
   // if PID is not required, the flag is sed as
-  // if the cut was alsways passed 
+  // if the cut was alsways passed
   okITS = OkITSPID(track, AliPID::kKaon);
   if (!fCheckITS) okITS = kTRUE;
-  
+
   // TPC PID can be checked only for TPC+ITS tracks
   // if PID is not required, the flag is sed as
   // if the cut was alsways passed
   okTPC = kFALSE;
   if (IsITSTPC(track)) okTPC = OkTPCPID(track, AliPID::kKaon);
   if (!fCheckTPC) okTPC = kTRUE;
-  
+
   // TOF PID can be checked only if TOF is matched
   // if PID is not required, the flag is sed as
   // if the cut was alsways passed
   okTOF = kFALSE;
   if (IsITSTPC(track) && MatchTOF(track)) okTOF = OkTOFPID(track, AliPID::kKaon);
   if (!fCheckTOF) okTOF = kTRUE;
-  
+
   // now combine all outcomes according to the different possibilities:
   // -- ITS standalone:
   //    --> only ITS PID, always
@@ -715,7 +715,7 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTrack(AliESDtrack *track, AliPID::EParticleType 
       return kFALSE;
     }
   }
-  
+
   // this point is reached only if function didn't exit before due to somecheck not passed
   return kTRUE;
 }

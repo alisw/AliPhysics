@@ -20,8 +20,6 @@
 #include "AliRsnCut.h"
 
 class AliESDpid;
-class AliTOFT0maker;
-class AliTOFcalib;
 
 class AliRsnCutESD2010 : public AliRsnCut {
 public:
@@ -58,15 +56,6 @@ public:
    {fTPCpar[0] = p0; fTPCpar[1] = p1; fTPCpar[2] = p2; fTPCpar[3] = p3; fTPCpar[4] = p4;}
 
    void             SetTOFrange(Double_t v1, Double_t v2) {fMinTOF = v1; fMaxTOF = v2;}
-   void                 SetOCDBDefaultStorage(TString s = "raw://") { fOCDBDefaultStorage = s;}
-
-   virtual void     ProcessEvent(AliESDEvent *esd);
-
-   //static void      SetTOFcalibrateESD(Bool_t yn)  {fgTOFcalibrateESD = yn;}
-   static void      SetTOFcorrectTExp(Bool_t yn)  {fgTOFcorrectTExp  = yn;}
-   static void      SetTOFuseT0(Bool_t yn)  {fgTOFuseT0        = yn;}
-   static void      SetTOFtuneMC(Bool_t yn)  {fgTOFtuneMC       = yn;}
-   static void      SetTOFresolution(Double_t r) {fgTOFresolution   = r;}
 
 protected:
 
@@ -99,18 +88,6 @@ protected:
    AliESDtrackCuts         fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
    Double_t                fMinTOF;           //  range for TOF PID (min)
    Double_t                fMaxTOF;           //  range for TOF PID (max)
-
-   TString                 fOCDBDefaultStorage;// default storage for OCDB (raw://)
-
-   //static Bool_t           fgTOFcalibrateESD; //! TOF settings
-   static Bool_t           fgTOFcorrectTExp;  //! TOF settings
-   static Bool_t           fgTOFuseT0;        //! TOF settings
-   static Bool_t           fgTOFtuneMC;       //! TOF settings
-   static Double_t         fgTOFresolution;   //! TOF settings
-   static AliTOFT0maker   *fgTOFmaker;        //! TOF time0 computator
-   static AliTOFcalib     *fgTOFcalib;        //! TOF calibration
-   static Int_t            fgLastRun;         //! last run number
-   static Int_t            fgLastEventID;     //! ID of last event processed
 
    ClassDef(AliRsnCutESD2010, 1)
 };
