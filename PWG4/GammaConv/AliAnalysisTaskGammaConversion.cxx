@@ -608,6 +608,67 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	  return;
 	}
       }
+
+////////////////////////////////////// RRnew start /////////////////////////////////////////////////////
+      if(fUseCentrality==3){
+	centralityC = esdCentrality->GetCentralityClass10("V0M");
+	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;		
+	}
+	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+      }
+
+      if(fUseCentrality==4){
+	centralityC = esdCentrality->GetCentralityClass10("CL1");
+	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;		
+	}
+	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
+	  eventQuality=7;
+	  fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+	  return;
+	}
+      }
+////////////////////////////////////// RRnew end ///////////////////////////////////////////////////////
+
     }
   }
   eventQuality=3;
@@ -979,7 +1040,8 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
       }		
       if(particle->GetMother(0) < 0 || //Phojet p+p -> Direct Photons have no mother
 	 ((particle->GetMother(0) > -1) && 
-	  (TMath::Abs(fStack->Particle(particle->GetMother(0))->GetPdgCode()) < 10)) //Pythia p+p -> Direct Photons have quarks as mother
+	  ((TMath::Abs(fStack->Particle(particle->GetMother(0))->GetPdgCode()) < 10)|| 
+	  (TMath::Abs(fStack->Particle(particle->GetMother(0))->GetPdgCode()) ==21) )) //Pythia p+p -> Direct Photons have quarksor gluons as mother
 	 ){   // direct gamma
 	fHistograms->FillHistogram("MC_allDirectGamma_Energy",particle->Energy());
 	fHistograms->FillHistogram("MC_allDirectGamma_Pt", particle->Pt());
@@ -1182,13 +1244,13 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
     // the motherparticle had already to pass the R and the eta cut, but no line cut.
     // the line cut is just valid for the conversions!
 
-    // OWN primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////////
+    // RR primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////////
     if (particle->GetPdgCode()==111){
       if( TMath::Abs(rapidity) < fV0Reader->GetRapidityMesonCut() ){
 	fHistograms->FillHistogram("MC_Pi0_Pt_vs_Rapid_allDaughters", particle->Pt(),rapidity);
       }
     }
-    // end OWN primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////
+    // end RR primary Pi0 debug ////////////////////////////////////////////////////////////////////////////////////////
 		
     if(particle->GetNDaughters() == 2){
 			
