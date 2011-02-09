@@ -120,7 +120,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     Int_t nHist = list[specie]->GetEntriesFast();
     for(Int_t i= 0; i< nHist; i++) {
       hist = static_cast<TH1F*>(list[specie]->At(i));
-      if (hist->TestBit(AliQAv1::GetImageBit())) {
+      if (hist && hist->TestBit(AliQAv1::GetImageBit())) {
         nImages++; 
 	max = TMath::Max(max, hist->GetMaximum());
 	min = TMath::Min(min, hist->GetMinimum());
@@ -175,7 +175,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     Int_t j     = 0;
     for (Int_t i = 0; i < nHist; i++) { 
       hist = static_cast<TH1F*>(list[specie]->At(i));
-      if (!hist->TestBit(AliQAv1::GetImageBit())) continue;
+      if (!(hist && hist->TestBit(AliQAv1::GetImageBit()))) continue;
       
       TVirtualPad* pad = fImage[specie]->cd(++j);
       pad->SetLogy();
