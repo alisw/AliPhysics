@@ -466,8 +466,8 @@ void AliGenUHKM::Generate()
   ((AliGenHijingEventHeader*) header)->SetImpactParameter(b);
   ((AliGenHijingEventHeader*) header)->SetTotalEnergy(0.0);
   ((AliGenHijingEventHeader*) header)->SetHardScatters(0);
-  ((AliGenHijingEventHeader*) header)->SetParticipants(npart, 0);
-  ((AliGenHijingEventHeader*) header)->SetCollisions(nbin, 0, 0, 0);
+  ((AliGenHijingEventHeader*) header)->SetParticipants(Int_t(npart), 0);
+  ((AliGenHijingEventHeader*) header)->SetCollisions(Int_t(nbin), 0, 0, 0);
   ((AliGenHijingEventHeader*) header)->SetSpectators(0, 0, 0, 0);
   ((AliGenHijingEventHeader*) header)->SetReactionPlaneAngle(0);//evrot);
 
