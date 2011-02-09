@@ -27,6 +27,8 @@
 #include <AliVEventHandler.h>
 #else
 class TArrayI;
+class TChain;
+class AliAnalysisManager;
 #endif
 
 //====================================================================
@@ -53,9 +55,10 @@ struct TrainSetup
   /** 
    * Constructor
    * 
-   * @param name Name of analysis 
+    * @param name Name of analysis 
    */
-  TrainSetup(const char* name) 
+  TrainSetup(const char* name, UShort_t year=0, UShort_t month=0, 
+	     UShort_t day=0, UShort_t hour=0, UShort_t min=0) 
     : fName(name),
       fRootVersion("v5-27-06b"),
       fAliRootVersion("v4-21-13-AN"),
@@ -67,8 +70,30 @@ struct TrainSetup
       fListOfPARs(),
       fListOfSources(),
       fListOfLibraries(),
-      fNReplica(4)
-  {}
+      fListOfExtras(),
+      fNReplica(4),
+      fESDPass(3),
+      fEscapedName(name)
+  {
+    char  c[] = { ' ', '/', '@', 0 };
+    char* p   = c;
+    while (*p) { 
+      fEscapedName.ReplaceAll(Form("%c", *p), "_");
+      p++;
+    }
+
+    if (year == 0 || month == 0 || day == 0) {
+      TDatime now;
+      year  = now.GetYear();
+      month = now.GetMonth();
+      day   = now.GetDay();
+      hour  = now.GetHour();
+      min   = now.GetMinute();
+    }
+    fEscapedName.Append(Form("_%04d%02d%02d_%02d%02d", 
+			     year, month, day, hour, min));
+
+  }
 
   //__________________________________________________________________
   /** 
@@ -181,7 +206,11 @@ struct TrainSetup
   void SetDataSet(const char* d)        { fDataSet = d; }
   void SetXML(const char* x)            { fXML = x; }
   void SetNReplica(Int_t n)             { fNReplica = n; }
-  void AddSource(const char* src) { fListOfSources.Add(new TObjString(src)); }
+  void AddSource(const char* src, bool addToExtra=true) 
+  { 
+    fListOfSources.Add(new TObjString(src)); 
+    if (addToExtra) AddExtraFile(src); // Source code isn't copied!
+  }
   void AddLibrary(const char* lib) { fListOfLibraries.Add(new TObjString(lib));}
   void AddRun(Int_t run) 
   {
@@ -202,6 +231,10 @@ struct TrainSetup
       if (file.bad()) break;
     }
     file.close();
+  }
+  void AddExtraFile(const char* file)
+  {
+    fListOfExtras.Add(new TObjString(file));
   }
   //__________________________________________________________________
   /** 
@@ -271,7 +304,9 @@ protected:
       fListOfPARs(),
       fListOfSources(),
       fListOfLibraries(),
-      fNReplica(o.fNReplica)
+      fListOfExtras(),
+      fNReplica(o.fNReplica),
+      fESDPass(o.fESDPass)
   {
     TObject* obj = 0;
     TIter nextPar(&o.fListOfPARs);
@@ -280,6 +315,8 @@ protected:
     while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
     TIter nextLib(&o.fListOfLibraries);
     while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
+    TIter nextExa(&o.fListOfExtras);
+    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
   }
   //__________________________________________________________________
   TrainSetup& operator=(const TrainSetup& o)
@@ -292,6 +329,7 @@ protected:
     fDataSet		= o.fDataSet;	
     fXML		= o.fXML;	
     fNReplica		= o.fNReplica;	
+    fESDPass            = o.fESDPass;
     fRunNumbers         = o.fRunNumbers;
     TObject* obj = 0;
     TIter nextPar(&o.fListOfPARs);
@@ -300,6 +338,8 @@ protected:
     while ((obj = nextSrc())) fListOfSources.Add(obj->Clone());
     TIter nextLib(&o.fListOfLibraries);
     while ((obj = nextLib())) fListOfLibraries.Add(obj->Clone());
+    TIter nextExa(&o.fListOfExtras);
+    while ((obj = nextExa())) fListOfExtras.Add(obj->Clone());
 
     return *this;
   }
@@ -320,6 +360,23 @@ protected:
     if (mode == kProof) usePar    = true;
 
     if (!Connect(mode)) return;
+
+    TString cwd = gSystem->WorkingDirectory();
+    TString nam = EscapedName();
+    if (!gSystem->AccessPathName(nam.Data())) {
+      Error("Exec", "File/directory %s already exists", nam.Data());
+      return;
+    }
+    if (gSystem->MakeDirectory(nam.Data())) {
+      Error("Exec", "Failed to make directory %s", nam.Data());
+      return;
+    }
+    if (!gSystem->ChangeDirectory(nam.Data())) { 
+      Error("Exec", "Failed to change directory to %s", nam.Data());
+      return;
+    }
+    Info("Exec", "Made subdirectory %s, and cd'ed there", nam.Data());
+      
     if (!LoadCommonLibraries(mode, usePar)) return;
     
     // --- Create analysis manager -----------------------------------
@@ -359,12 +416,24 @@ protected:
     Print();
 
     // --- Initialise the train --------------------------------------
-    if (!mgr->InitAnalysis()) 
+    if (!mgr->InitAnalysis())  {
+      gSystem->ChangeDirectory(cwd.Data());
       Fatal("Run","Failed initialise train");
-    
+    }
+
     // --- Show status -----------------------------------------------
     mgr->PrintStatus();
-    
+
+    StartAnalysis(mgr, mode, chain, nEvents);
+
+    gSystem->ChangeDirectory(cwd.Data());
+  }
+
+  void StartAnalysis(AliAnalysisManager* mgr, 
+		     EMode mode, 
+		     TChain* chain,
+		     Int_t nEvents)
+  {
     // --- Run the analysis ------------------------------------------
     switch (mode) { 
     case kLocal: 
@@ -386,16 +455,9 @@ protected:
     }
   }
   //__________________________________________________________________
-  TString EscapedName() const 
+  const TString& EscapedName() const 
   {
-    TString name(fName);
-    char  c[] = { ' ', '/', '@', 0 };
-    char* p   = c;
-    while (*p) { 
-      name.ReplaceAll(Form("%c", *p), "_");
-      p++;
-    }
-    return name;
+    return fEscapedName;
   }
   //__________________________________________________________________
   /** 
@@ -440,7 +502,7 @@ protected:
 
     // Data search patterns 
     plugin->SetRunPrefix("000");
-    plugin->SetDataPattern("*ESDs/pass3/*/*ESDs.root");
+    plugin->SetDataPattern(Form("*ESDs/pass%d/*/*ESDs.root", fESDPass));
 
     // Add the run numbers 
     for (Int_t i = 0; i < fRunNumbers.fN; i++) {
@@ -451,11 +513,7 @@ protected:
     // Set the working directory to be the trains name (with special
     // characters replaced by '_' and the date appended), and also set
     // the output directory (relative to working directory)
-    TString wd(name);
-    TDatime now;
-    wd.Append(Form("_%04d%02d%02d_%02d%02d", now.GetYear(), now.GetMonth(), 
-		   now.GetDay(), now.GetHour(), now.GetMinute()));
-    plugin->SetGridWorkingDir(wd.Data());
+    plugin->SetGridWorkingDir(name.Data());
     plugin->SetGridOutputDir("output");
 
     // Enable configured PARs 
@@ -466,23 +524,11 @@ protected:
     
     // Add sources that need to be compiled on the workers using
     // AcLIC. 
-    TString addSources;
-    TIter nextSrc(&fListOfSources); 
-    TObject* srcName;
-    while ((srcName = nextSrc())) {
-      addSources.Append(srcName->GetName());
-      addSources.Append(" ");
-    }
+    TString addSources = SetupSources();
     if (!addSources.IsNull()) plugin->SetAnalysisSource(addSources.Data());
 
     // Add binary libraries that should be uploaded to the workers 
-    TString addLibs;
-    TIter nextLib(&fListOfLibraries); 
-    TObject* libName;
-    while ((libName = nextLib())) {
-      addLibs.Append(libName->GetName());
-      addLibs.Append(" ");
-    }
+    TString addLibs = SetupLibraries();
     if (!addLibs.IsNull()) plugin->SetAdditionalLibs(addLibs.Data());
     
     // Disable default outputs 
@@ -560,7 +606,7 @@ protected:
     plugin->SetPrice(1);
 
     // Set whether to merge via JDL 
-    plugin->SetMergeViaJDL(false);
+    plugin->SetMergeViaJDL(true);
     
     // Fast read otion 
     plugin->SetFastReadOption(false);
@@ -768,15 +814,20 @@ protected:
       break;
     case kProof: 
       ret = gProof->UploadPackage(what);
-      if (ret < 0)  {
-	ret = gProof->UploadPackage(gSystem
-				    ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
-							  what)));
-	if (ret < 0) {
-	  Error("LoadLibrary", 
-		"Could not find module %s.par in current directory nor "
-		"in $ALICE_ROOT", module.Data());
-	  return false;
+      if (ret < 0)  {	
+	  ret = gProof->UploadPackage(gSystem->ExpandPathName(Form("../%s.par",
+								   what)));
+	if (ret < 0) {	
+	  ret = 
+	    gProof->UploadPackage(gSystem
+				  ->ExpandPathName(Form("$ALICE_ROOT/%s.par", 
+							what)));
+	  if (ret < 0) {
+	    Error("LoadLibrary", 
+		  "Could not find module %s.par in current directory nor "
+		  "in $ALICE_ROOT", module.Data());
+	    return false;
+	  }
 	}
       }
       ret = gProof->EnablePackage(what);
@@ -796,16 +847,20 @@ protected:
     
     TString parFile(Form("%s.par", what));
     if (gSystem->AccessPathName(parFile.Data())) { 
-      // If not found 
-      TString aliParFile = 
-	gSystem->ExpandPathName(Form("$(ALICE_ROOT)/%s.par", what));
-      if (gSystem->AccessPathName(aliParFile.Data())) { 
-	Error("SetupPAR", "PAR file %s not found in current directory or "
-	      "$(ALICE_ROOT)", what);
-	return false;
+      if (gSystem->AccessPathName(Form("../%s.par", what))) { 
+	// If not found 
+	TString aliParFile = 
+	  gSystem->ExpandPathName(Form("$(ALICE_ROOT)/%s.par", what));
+	if (gSystem->AccessPathName(aliParFile.Data())) { 
+	  Error("SetupPAR", "PAR file %s not found in current directory or "
+		"$(ALICE_ROOT)", what);
+	  return false;
+	}
+	// Copy to current directory 
+	TFile::Cp(aliParFile, parFile);
       }
-      // Copy to current directory 
-      TFile::Cp(aliParFile, parFile);
+      else 
+	gSystem->Exec(Form("ln -s ../%s.par .", what));
     }
     
     // Extract archive 
@@ -838,7 +893,66 @@ protected:
 
     return true;
   }
-
+  //__________________________________________________________________
+  TString SetupExtras()
+  {
+    TString ret;
+    TIter next(&fListOfExtras);
+    TObjString* obj = 0;
+    while ((obj = static_cast<TObjString*>(next()))) {
+      TString path = gSystem->ExpandPathName(obj->GetName());
+      if (!path.BeginsWith("/")) 
+	// If not an absolute path, prepend to up-one
+	path = Form("../%s", path.Data());
+      if (gSystem->AccessPathName(path.Data())) { 
+	// File not accessible 
+	Warning("SetupExtras", "File %s not accessible", path.Data());
+	continue;
+      }
+      ret.Append(Form("%s ", gSystem->BaseName(obj->GetName())));
+      gSystem->Exec(Form("ln -s %s .", path.Data()));
+    }
+    ret = ret.Strip();
+    return ret;
+  }
+  //__________________________________________________________________
+  TString SetupSources()
+  {
+    TString nam = EscapedName();
+    TString ret;
+    TIter next(&fListOfSources); 
+    TObject* src;
+    while ((src = next())) {
+      TString path = gSystem->ExpandPathName(src->GetName());
+      if (!path.BeginsWith("/")) 
+	// If not an absolute path, prepend to up-one
+	path = Form("../%s", path.Data());
+      if (gSystem->AccessPathName(path.Data())) { 
+	// File not accessible 
+	Warning("SetupSources", "File %s not accessible", path.Data());
+	continue;
+      }
+      ret.Append(Form("%s ", gSystem->BaseName(src->GetName())));
+      gSystem->Exec(Form("ln -s %s .", path.Data()));
+    }
+    ret = ret.Strip();
+    return ret;
+  }
+  //__________________________________________________________________
+  TString SetupLibraries()
+  {
+    TString ret;
+    TIter next(&fListOfLibraries); 
+    TObject* lib;
+    while ((lib = next())) {
+      ret.Append(lib->GetName());
+      ret.Append(" ");
+    }
+    // Also add extra files to this variable 
+    ret.Append(SetupExtras());
+    ret = ret.Strip();
+    return ret;
+  }
   //__________________________________________________________________
   /** 
    * Scan directory @a dir (possibly recursive) for tree files to add
@@ -852,7 +966,7 @@ protected:
    * @return true if any files where added 
    */
   Bool_t ScanDirectory(TSystemDirectory* dir, TChain* chain, 
-		     EType type, bool recursive)
+		       EType type, bool recursive)
   {
     TString fnPattern;
     switch (type) { 
@@ -957,7 +1071,9 @@ protected:
     case kLocal:
       if (fXML.IsNull()) {
 	chain = new TChain(treeName.Data());
-	TSystemDirectory d(fDataDir.Data(), fDataDir.Data());
+	TString dir(fDataDir);
+	if (!dir.BeginsWith("/")) dir = Form("../%s", dir.Data());
+	TSystemDirectory d(dir.Data(), dir.Data());
 	if (!ScanDirectory(&d, chain, type, true)) { 
 	  delete chain;
 	  chain = 0;
@@ -986,18 +1102,27 @@ protected:
   TArrayI fRunNumbers;       // List of run number 
   TList   fListOfPARs;       // List of PAR files to use 
   TList   fListOfSources;    // List of sources to upload and AcLIC
-  TList   fListOfLibraries;  // List of binary libraries to upload
-  Int_t   fNReplica;         // Storage replication 
+  TList   fListOfLibraries;  // List of libraries to load
+  TList   fListOfExtras;     // List of extra files to upload
+  Int_t   fNReplica;         // Storage replication
+  Int_t   fESDPass;
+  TString fEscapedName;
 };
 
 //====================================================================
 class ForwardPass1 : public TrainSetup
 {
 public:
-  ForwardPass1(UShort_t sys=0, 
-	       UShort_t sNN=0, 
-	       Short_t  field=0) 
-    : TrainSetup("Forward d2Ndetadphi pass1"),
+  ForwardPass1(UShort_t sys   = 0, 
+	       UShort_t sNN   = 0, 
+	       Short_t  field = 0, 
+	       UShort_t year  = 0, 
+	       UShort_t month = 0, 
+	       UShort_t day   = 0, 
+	       UShort_t hour  = 0, 
+	       UShort_t min   = 0) 
+    : TrainSetup("Forward d2Ndetadphi pass1",
+		 year, month, day, hour, min),
       fSys(sys), 
       fSNN(sNN), 
       fField(field)

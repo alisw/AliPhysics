@@ -49,7 +49,7 @@ AliFMDCorrELossFit::ELossFit::ELossFit()
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
   : fN(f.GetNpar() > AliForwardUtil::ELossFitter::kN ? 
-       f.GetParameter(AliForwardUtil::ELossFitter::kN) : 
+       Int_t(f.GetParameter(AliForwardUtil::ELossFitter::kN)) : 
        1),
     fNu(f.GetNDF()),
     fChi2(f.GetChisquare()),
