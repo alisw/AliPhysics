@@ -1,7 +1,7 @@
 //
 // *** Class AliRsnCutValue ***
 //
-// This cut implementation can be used to cut generically on 
+// This cut implementation can be used to cut generically on
 // any value which can be computed from AliRsnValue class.
 // Since that value is implemented always as a Double_t one,
 // then this cut operates only with the Double_t data members
@@ -26,23 +26,23 @@ ClassImp(AliRsnCutValue)
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue() :
-  AliRsnCut(),
-  fValue(),
-  fPairDef(0x0)
+   AliRsnCut(),
+   fValue(),
+   fPairDef(0x0)
 {
 //
 // Default constructor.
 //
 
-  SetTargetType(fValue.GetTargetType());
+   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue
 (const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd) :
-  AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
-  fValue(Form("val_%s", name), type),
-  fPairDef(pd)
+   AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
+   fValue(Form("val_%s", name), type),
+   fPairDef(pd)
 {
 //
 // Main constructor.
@@ -50,21 +50,21 @@ AliRsnCutValue::AliRsnCutValue
 // which determines also the type of target to be expected
 //
 
-  SetTargetType(fValue.GetTargetType());
+   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
-  AliRsnCut(copy),
-  fValue(copy.fValue),
-  fPairDef(copy.fPairDef)
+   AliRsnCut(copy),
+   fValue(copy.fValue),
+   fPairDef(copy.fPairDef)
 {
 //
 // Copy constructor.
 // Does not duplicate memory allocation.
 //
 
-  SetTargetType(fValue.GetTargetType());
+   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
@@ -75,13 +75,13 @@ AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 // Does not duplicate memory allocation.
 //
 
-  AliRsnCut::operator=(copy);
-  
-  fValue   = copy.fValue;
-  fPairDef = copy.fPairDef;
-  SetTargetType(fValue.GetTargetType());
-  
-  return (*this);
+   AliRsnCut::operator=(copy);
+
+   fValue   = copy.fValue;
+   fPairDef = copy.fPairDef;
+   SetTargetType(fValue.GetTargetType());
+
+   return (*this);
 }
 
 //_________________________________________________________________________________________________
@@ -92,23 +92,22 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
 // Calls the AliRsnValue::Eval() method and then checks its output.
 //
 
-  // make sure that target of this object matches that
-  // of the inserted value object
-  SetTargetType(fValue.GetTargetType());
-  
-  // try to compute values
-  Bool_t success = fValue.Eval(object);
-  
-  // check success
-  if (!success)
-  {
-    AliWarning(Form("[%s] Failed to compute value", GetName()));
-    return kFALSE;
-  }
-  
-  // check in range
-  fCutValueD = fValue.GetComputedValue();
-  return OkRangeD();
+   // make sure that target of this object matches that
+   // of the inserted value object
+   SetTargetType(fValue.GetTargetType());
+
+   // try to compute values
+   Bool_t success = fValue.Eval(object);
+
+   // check success
+   if (!success) {
+      AliWarning(Form("[%s] Failed to compute value", GetName()));
+      return kFALSE;
+   }
+
+   // check in range
+   fCutValueD = fValue.GetComputedValue();
+   return OkRangeD();
 }
 
 //_________________________________________________________________________________________________
@@ -118,7 +117,7 @@ void AliRsnCutValue::Print(const Option_t *) const
 // Print information on this cut
 //
 
-  AliInfo(Form("Cut name   : %s", GetName()));
-  AliInfo(Form("Cut value  : %s", fValue.GetValueTypeName()));
-  AliInfo(Form("Cut range  : %f - %f", fMinD, fMaxD));
+   AliInfo(Form("Cut name   : %s", GetName()));
+   AliInfo(Form("Cut value  : %s", fValue.GetValueTypeName()));
+   AliInfo(Form("Cut range  : %f - %f", fMinD, fMaxD));
 }

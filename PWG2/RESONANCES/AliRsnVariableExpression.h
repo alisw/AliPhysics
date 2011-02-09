@@ -12,15 +12,14 @@
 
 #include "AliRsnExpression.h"
 
-class AliRsnVariableExpression: public AliRsnExpression
-{
-  public:
-    AliRsnVariableExpression(TString a) : AliRsnExpression() { fVname = a;  };
-    ~AliRsnVariableExpression() {}
-    virtual Bool_t    Value(TObjArray& pgm);
-    virtual TString    Unparse() const { return fVname; }
+class AliRsnVariableExpression: public AliRsnExpression {
+public:
+   AliRsnVariableExpression(TString a) : AliRsnExpression() { fVname = a;  };
+   ~AliRsnVariableExpression() {}
+   virtual Bool_t    Value(TObjArray& pgm);
+   virtual TString    Unparse() const { return fVname; }
 
-    ClassDef(AliRsnVariableExpression, 1);    // Class to define a variable expression
+   ClassDef(AliRsnVariableExpression, 1);    // Class to define a variable expression
 };
 
 #endif
