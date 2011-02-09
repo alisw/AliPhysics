@@ -72,7 +72,8 @@ namespace {
     }
   private:
     Printer(const Printer& p) 
-      : fFormat(p.fFormat), 
+      : AliFMDMap::ForOne(p),
+	fFormat(p.fFormat), 
 	fOldD(p.fOldD), 
 	fOldR(p.fOldR), 
 	fOldS(p.fOldS) 
