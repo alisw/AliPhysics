@@ -519,7 +519,7 @@ AliEveFMDLoader::SummarizeModule(TEveElement* module)
    */
   int min  = fMultPalette.GetMinVal();
   int max  = fMultPalette.GetMaxVal();
-  int cidx = sum/10 * (max-min) + min;
+  int cidx = int(sum/10 * (max-min) + min);
   UChar_t pix[3];
   fMultPalette.ColorFromValue(cidx, pix, false);
   module->SetMainColorRGB(pix[0], pix[1], pix[2]);
