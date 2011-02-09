@@ -12,7 +12,6 @@
 #pragma link C++ class AliRsnCutValue+;
 #pragma link C++ class AliRsnCutPrimaryVertex+;
 #pragma link C++ class AliRsnCutESD2010+;
-#pragma link C++ class AliRsnCutAOD2010+;
 #pragma link C++ class AliRsnCutTrackQuality+;
 #pragma link C++ class AliRsnCutPID+;
 #pragma link C++ class AliRsnCutPIDITS+;
@@ -33,13 +32,9 @@
 
 #pragma link C++ class AliRsnVATProcessInfo+;
 #pragma link C++ class AliRsnVAnalysisTaskSE+;
-#pragma link C++ class AliRsnVAnalysisTaskME+;
 
 #pragma link C++ class AliRsnAnalysisSE+;
-#pragma link C++ class AliRsnAnalysisME+;
 #pragma link C++ class AliRsnAnalysisEffSE+;
-#pragma link C++ class AliRsnAnalysisPhiKK+;
-#pragma link C++ class AliRsnAnalysisKStarKpi+;
 
 #pragma link C++ class AliRsnVAnalysisTask+;
 #pragma link C++ class AliRsnAnalysisTask+;

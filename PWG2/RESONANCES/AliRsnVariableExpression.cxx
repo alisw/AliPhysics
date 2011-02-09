@@ -19,9 +19,9 @@ Bool_t AliRsnVariableExpression::Value(TObjArray& /*pgm*/)
 {
 
 //   Int_t indexx = fgCutSet->GetIndexByCutName ( fVname.Data() );
-  AliDebug(AliLog::kDebug,Form("Vname %s",fVname.Data()));
+   AliDebug(AliLog::kDebug, Form("Vname %s", fVname.Data()));
 //   return fgCutSet->GetBoolValue ( indexx );
 
-  return fgCutSet->GetBoolValue(fVname.Atoi());
+   return fgCutSet->GetBoolValue(fVname.Atoi());
 }
 

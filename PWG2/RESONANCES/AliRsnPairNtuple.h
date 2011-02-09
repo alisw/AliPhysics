@@ -15,26 +15,25 @@
 class TList;
 class TNtuple;
 
-class AliRsnPairNtuple : public AliRsnPair
-{
-  public:
+class AliRsnPairNtuple : public AliRsnPair {
+public:
 
-    AliRsnPairNtuple(const char *name = "default", AliRsnPairDef *def = 0);
-    AliRsnPairNtuple(const AliRsnPairNtuple &copy);
-    AliRsnPairNtuple& operator=(const AliRsnPairNtuple&);
-    ~AliRsnPairNtuple();
+   AliRsnPairNtuple(const char *name = "default", AliRsnPairDef *def = 0);
+   AliRsnPairNtuple(const AliRsnPairNtuple &copy);
+   AliRsnPairNtuple& operator=(const AliRsnPairNtuple&);
+   ~AliRsnPairNtuple();
 
-    Bool_t       AddValue(AliRsnValue*const val);
-    void         GenerateNtuple(const char *prefix = "", TList *list = 0);
-    virtual void Compute();
-    virtual void Init(const char *prefix, TList *list);
+   Bool_t       AddValue(AliRsnValue*const val);
+   void         GenerateNtuple(const char *prefix = "", TList *list = 0);
+   virtual void Compute();
+   virtual void Init(const char *prefix, TList *list);
 
-  private:
+private:
 
-    TClonesArray  fValues;  // single values computed from analyzed objects
-    TNtuple      *fNtuple;  // ntuple computed with values
+   TClonesArray  fValues;  // single values computed from analyzed objects
+   TNtuple      *fNtuple;  // ntuple computed with values
 
-    ClassDef(AliRsnPairNtuple, 2)
+   ClassDef(AliRsnPairNtuple, 2)
 };
 
 #endif

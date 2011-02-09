@@ -20,66 +20,65 @@
 class AliESDtrack;
 class AliAODTrack;
 
-class AliRsnCutTrackQuality : public AliRsnCut
-{
-  public:
+class AliRsnCutTrackQuality : public AliRsnCut {
+public:
 
-    AliRsnCutTrackQuality(const char *name = "AliRsncutTrackQuality");
-    AliRsnCutTrackQuality(const AliRsnCutTrackQuality& copy);
-    AliRsnCutTrackQuality& operator=(const AliRsnCutTrackQuality& copy);
-    virtual ~AliRsnCutTrackQuality() { }
+   AliRsnCutTrackQuality(const char *name = "AliRsncutTrackQuality");
+   AliRsnCutTrackQuality(const AliRsnCutTrackQuality& copy);
+   AliRsnCutTrackQuality& operator=(const AliRsnCutTrackQuality& copy);
+   virtual ~AliRsnCutTrackQuality() { }
 
-    void      DisableAll();
-    
-    void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
-    void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
-    void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
-    void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
-                                                        
-    void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARfixed = kFALSE;}
-    void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
-    void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
-    void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
-                                                        
-    void      SetSPDminNClusters(Int_t value)           {fSPDminNClusters = value;}
-    void      SetITSminNClusters(Int_t value)           {fITSminNClusters = value;}
-    void      SetITSmaxChi2(Double_t value)             {fITSmaxChi2 = value;}
-                                                        
-    void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
-    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
-    
-    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
-    
-    virtual Bool_t IsSelected(TObject *obj);
-    virtual void   Print(const Option_t *option = "") const;
+   void      DisableAll();
 
-  protected:
-  
-    Bool_t     CheckESD(AliESDtrack *track);
-    Bool_t     CheckAOD(AliAODTrack *track);
-  
-    ULong_t    fFlagsOn;                // status flags which must be ON (used AliESDtrack ones, connected with '|')
-    ULong_t    fFlagsOff;               // status flags which must be OFF (used AliESDtrack ones, connected with '|')
-    Double_t   fPt[2];                  // pt range
-    Double_t   fEta[2];                 // eta range
-    Bool_t     fRejectKinkDaughters;    // switch to kTRUE if daughters of kinks must be rejected
-                                        
-    Bool_t     fDCARfixed;              // flag to switch between fixed and pt-dependent DCA cut
-    TString    fDCARptFormula;          // expression to compute transverse DCA sigma w.r. to pt
-    Double_t   fDCARmax;                // maximum value for transverse DCA
-                                        
-    Bool_t     fDCAZfixed;              // flag to switch between fixed and pt-dependent DCA cut
-    TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
-    Double_t   fDCAZmax;                // maximum value for longitudinal DCA
-                                        
-    Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
-    Int_t      fITSminNClusters;        // minimum number of required clusters in ITS
-    Double_t   fITSmaxChi2;             // maximum chi2 / number of clusters in ITS
-                                        
-    Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
-    Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
-    
-    ClassDef(AliRsnCutTrackQuality, 1)
+   void      AddStatusFlag(ULong_t f, Bool_t on)       {if (on) fFlagsOn = fFlagsOn | f; else fFlagsOff = fFlagsOff | f;}
+   void      SetStatusFlags(ULong_t f, Bool_t on)      {if (on) fFlagsOn = f; else fFlagsOff = f;}
+   void      SetPtRange(Double_t a, Double_t b)        {fPt[0] = TMath::Min(a, b); fPt[1] = TMath::Max(a, b);}
+   void      SetEtaRange(Double_t a, Double_t b)       {fEta[0] = TMath::Min(a, b); fEta[1] = TMath::Max(a, b);}
+
+   void      SetDCARPtFormula(const char *formula)     {fDCARptFormula = formula; fDCARfixed = kFALSE;}
+   void      SetDCARmax(Double_t value)                {fDCARmax = value; fDCARptFormula = ""; fDCARfixed = kTRUE;}
+   void      SetDCAZPtFormula(const char *formula)     {fDCAZptFormula = formula; fDCAZfixed = kFALSE;}
+   void      SetDCAZmax(Double_t value)                {fDCAZmax = value; fDCAZptFormula = ""; fDCAZfixed = kTRUE;}
+
+   void      SetSPDminNClusters(Int_t value)           {fSPDminNClusters = value;}
+   void      SetITSminNClusters(Int_t value)           {fITSminNClusters = value;}
+   void      SetITSmaxChi2(Double_t value)             {fITSmaxChi2 = value;}
+
+   void      SetTPCminNClusters(Int_t value)           {fTPCminNClusters = value;}
+   void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
+
+   void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
+
+   virtual Bool_t IsSelected(TObject *obj);
+   virtual void   Print(const Option_t *option = "") const;
+
+protected:
+
+   Bool_t     CheckESD(AliESDtrack *track);
+   Bool_t     CheckAOD(AliAODTrack *track);
+
+   ULong_t    fFlagsOn;                // status flags which must be ON (used AliESDtrack ones, connected with '|')
+   ULong_t    fFlagsOff;               // status flags which must be OFF (used AliESDtrack ones, connected with '|')
+   Double_t   fPt[2];                  // pt range
+   Double_t   fEta[2];                 // eta range
+   Bool_t     fRejectKinkDaughters;    // switch to kTRUE if daughters of kinks must be rejected
+
+   Bool_t     fDCARfixed;              // flag to switch between fixed and pt-dependent DCA cut
+   TString    fDCARptFormula;          // expression to compute transverse DCA sigma w.r. to pt
+   Double_t   fDCARmax;                // maximum value for transverse DCA
+
+   Bool_t     fDCAZfixed;              // flag to switch between fixed and pt-dependent DCA cut
+   TString    fDCAZptFormula;          // expression to compute longitudinal DCA sigma w.r. to pt
+   Double_t   fDCAZmax;                // maximum value for longitudinal DCA
+
+   Int_t      fSPDminNClusters;        // minimum number of required clusters in SPD
+   Int_t      fITSminNClusters;        // minimum number of required clusters in ITS
+   Double_t   fITSmaxChi2;             // maximum chi2 / number of clusters in ITS
+
+   Int_t      fTPCminNClusters;        // minimum number of required clusters in TPC
+   Double_t   fTPCmaxChi2;             // maximum chi2 / number of clusters in TPC
+
+   ClassDef(AliRsnCutTrackQuality, 1)
 };
 
 #endif

@@ -20,13 +20,13 @@ ClassImp(AliRsnDaughter)
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter() :
-  fOK(kFALSE),
-  fLabel(-1),
-  fMotherPDG(0),
-  fPrec(0.0, 0.0, 0.0, 0.0),
-  fPsim(0.0, 0.0, 0.0, 0.0),
-  fRef(0x0),
-  fRefMC(0x0)
+   fOK(kFALSE),
+   fLabel(-1),
+   fMotherPDG(0),
+   fPrec(0.0, 0.0, 0.0, 0.0),
+   fPsim(0.0, 0.0, 0.0, 0.0),
+   fRef(0x0),
+   fRefMC(0x0)
 {
 //
 // Default constructor.
@@ -35,14 +35,14 @@ AliRsnDaughter::AliRsnDaughter() :
 
 //_____________________________________________________________________________
 AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
-  TObject(copy),
-  fOK(copy.fOK),
-  fLabel(copy.fLabel),
-  fMotherPDG(copy.fMotherPDG),
-  fPrec(copy.fPrec),
-  fPsim(copy.fPsim),
-  fRef(copy.fRef),
-  fRefMC(copy.fRefMC)
+   TObject(copy),
+   fOK(copy.fOK),
+   fLabel(copy.fLabel),
+   fMotherPDG(copy.fMotherPDG),
+   fPrec(copy.fPrec),
+   fPsim(copy.fPsim),
+   fRef(copy.fRef),
+   fRefMC(copy.fRefMC)
 {
 //
 // Copy constructor.
@@ -60,15 +60,15 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 // statement, but from just referencing something in the data source.
 //
 
-  fOK        = copy.fOK;
-  fLabel     = copy.fLabel;
-  fMotherPDG = copy.fMotherPDG;
-  fPrec      = copy.fPrec;
-  fPsim      = copy.fPsim;
-  fRef       = copy.fRef;
-  fRefMC     = copy.fRefMC;
+   fOK        = copy.fOK;
+   fLabel     = copy.fLabel;
+   fMotherPDG = copy.fMotherPDG;
+   fPrec      = copy.fPrec;
+   fPsim      = copy.fPsim;
+   fRef       = copy.fRef;
+   fRefMC     = copy.fRefMC;
 
-  return (*this);
+   return (*this);
 }
 
 //_____________________________________________________________________________
@@ -80,14 +80,14 @@ void AliRsnDaughter::Reset()
 // for analysis unless initialized properly.
 //
 
-  fOK        = kFALSE;
-  fLabel     = -1;
-  fMotherPDG = 0;
-  fRef       = 0x0;
-  fRefMC     = 0x0;
-  
-  fPrec.SetXYZM(0.0, 0.0, 0.0, 0.0);
-  fPsim.SetXYZM(0.0, 0.0, 0.0, 0.0);
+   fOK        = kFALSE;
+   fLabel     = -1;
+   fMotherPDG = 0;
+   fRef       = 0x0;
+   fRefMC     = 0x0;
+
+   fPrec.SetXYZM(0.0, 0.0, 0.0, 0.0);
+   fPsim.SetXYZM(0.0, 0.0, 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
@@ -98,19 +98,19 @@ Int_t AliRsnDaughter::GetPDG(Bool_t abs)
 // If argument is kTRUE, returns its absolute value.
 //
 
-  Int_t pdg = 0;
+   Int_t pdg = 0;
 
-  // ESD
-  AliMCParticle *esd = GetRefMCESD();
-  if (esd) pdg = esd->Particle()->GetPdgCode();
-  
-  // AOD
-  AliAODMCParticle *aod = GetRefMCAOD();
-  if (aod) pdg = aod->GetPdgCode();
-  
-  // abs value if required
-  if (abs) pdg = TMath::Abs(pdg);
-  return pdg;
+   // ESD
+   AliMCParticle *esd = GetRefMCESD();
+   if (esd) pdg = esd->Particle()->GetPdgCode();
+
+   // AOD
+   AliAODMCParticle *aod = GetRefMCAOD();
+   if (aod) pdg = aod->GetPdgCode();
+
+   // abs value if required
+   if (abs) pdg = TMath::Abs(pdg);
+   return pdg;
 }
 
 //_____________________________________________________________________________
@@ -122,34 +122,34 @@ Int_t AliRsnDaughter::GetID()
 // In case of V0s, since this method is unsuccessful, return the label.
 //
 
-  // ESD tracks
-  AliESDtrack *esd = GetRefESDtrack();
-  if (esd) return esd->GetID();
+   // ESD tracks
+   AliESDtrack *esd = GetRefESDtrack();
+   if (esd) return esd->GetID();
 
-  // AOD tracks
-  AliAODTrack *aod = GetRefAODtrack();
-  if (aod) return aod->GetID();
+   // AOD tracks
+   AliAODTrack *aod = GetRefAODtrack();
+   if (aod) return aod->GetID();
 
-  // whatever else
-  return GetLabel();
+   // whatever else
+   return GetLabel();
 }
 
 //_____________________________________________________________________________
 Bool_t AliRsnDaughter::HasFlag(ULong_t flag)
 {
 //
-// Checks that the 'status' flag of the source object has one or 
+// Checks that the 'status' flag of the source object has one or
 // a combination of status flags specified in argument.
 // Works only with track-like objects, irrespectively if they
 // are ESD or AOD tracks, since it refers to their AliVTrack base class.
 //
 
-  AliVTrack *track  = dynamic_cast<AliVTrack*>(fRef);
-  if (!track) return kFALSE;
-  
-  ULong_t status = (ULong_t)track->GetStatus();
-  
-  return ((status & flag) != 0);
+   AliVTrack *track  = dynamic_cast<AliVTrack*>(fRef);
+   if (!track) return kFALSE;
+
+   ULong_t status = (ULong_t)track->GetStatus();
+
+   return ((status & flag) != 0);
 }
 
 //_____________________________________________________________________________
@@ -164,12 +164,12 @@ Bool_t AliRsnDaughter::SetMass(Double_t mass)
 // a meaningful positive number, and the pointers are properly initialized.
 //
 
-  if (mass < 0.) return kFALSE;
-  
-  if (fRef)   fPrec.SetXYZM(fRef  ->Px(), fRef  ->Py(), fRef  ->Pz(), mass);
-  if (fRefMC) fPsim.SetXYZM(fRefMC->Px(), fRefMC->Py(), fRefMC->Pz(), mass);
-  
-  return kTRUE;
+   if (mass < 0.) return kFALSE;
+
+   if (fRef)   fPrec.SetXYZM(fRef  ->Px(), fRef  ->Py(), fRef  ->Pz(), mass);
+   if (fRefMC) fPsim.SetXYZM(fRefMC->Px(), fRefMC->Py(), fRefMC->Pz(), mass);
+
+   return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -182,18 +182,15 @@ Bool_t AliRsnDaughter::IsKinkDaughter()
 // this is done here in order to have a unique outcome.
 //
 
-  AliESDtrack *etrack = GetRefESDtrack();
-  AliAODTrack *atrack = GetRefAODtrack();
-  
-  if (etrack)
-  {
-    return (etrack->GetKinkIndex(0) > 0);
-  }
-  else if (atrack)
-  {
-    AliAODVertex *vertex = atrack->GetProdVertex();
-    if (vertex) if (vertex->GetType() == AliAODVertex::kKink) return kTRUE;
-  }
-  
-  return kFALSE;
+   AliESDtrack *etrack = GetRefESDtrack();
+   AliAODTrack *atrack = GetRefAODtrack();
+
+   if (etrack) {
+      return (etrack->GetKinkIndex(0) > 0);
+   } else if (atrack) {
+      AliAODVertex *vertex = atrack->GetProdVertex();
+      if (vertex) if (vertex->GetType() == AliAODVertex::kKink) return kTRUE;
+   }
+
+   return kFALSE;
 }
