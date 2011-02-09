@@ -103,7 +103,7 @@ public:
    virtual Int_t NHEP()                   const;
    virtual Int_t ISTHEP(Int_t i)          const;
    virtual Int_t IDHEP(Int_t i)           const;
-   virtual Int_t PHEP(Int_t i, Int_t j)   const;
+   virtual Double_t PHEP(Int_t i, Int_t j)   const;
    
       
 	   
