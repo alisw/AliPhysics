@@ -88,8 +88,6 @@ void AliSISConeJetFinder::FindJets()
   Int_t debug  = header->GetDebug();     // debug option
   Int_t fOpt    = fReader->GetReaderHeader()->GetDetector();
 
-  // Check if we are reading AOD jets
-  Bool_t fromAod = !strcmp(fReader->ClassName(),"AliJetAODReader");
 
 //******************************** SISCONE PLUGIN CONFIGURATION
 // Here we look for SISCone parameters in the header and we define our plugin.  
