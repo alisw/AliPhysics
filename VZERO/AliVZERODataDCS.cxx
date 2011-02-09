@@ -140,14 +140,15 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     	Float_t variation = 0.0;
 
     	while((aValue = (AliDCSValue*) iterarray.Next())) {
-   			values[iValue] = aValue->GetFloat();
 			UInt_t currentTime = aValue->GetTimeStamp();
+			if(currentTime>fDaqEndTime) break;
+
+   			values[iValue] = aValue->GetFloat();
    			times[iValue] = (Double_t) (currentTime);
 			
 			if(iValue>0) {
 				if(values[iValue-1]>0.) variation = TMath::Abs(values[iValue]-values[iValue-1])/values[iValue-1];
-				if(currentTime>fDaqEndTime && variation>0.10) continue;
-				if(variation > 0.10) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
+				if(variation > 0.01) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
 			printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
