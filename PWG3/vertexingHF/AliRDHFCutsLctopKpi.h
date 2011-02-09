@@ -35,7 +35,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   }
 
   virtual void SetStandardCutsPP2010();
-  virtual void SetStandardCutsPbPb2010(){return SetStandardCutsPP2010();}
+  virtual void SetStandardCutsPbPb2010();
 
   void SetRecoKF() {fRecoKF=kTRUE;}
   Bool_t GetRecoKF() {return fRecoKF;}
@@ -61,7 +61,8 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   AliAODPidHF *fPidObjpion;
   Bool_t fRecoKF;
 
-  ClassDef(AliRDHFCutsLctopKpi,2);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,3);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif
+

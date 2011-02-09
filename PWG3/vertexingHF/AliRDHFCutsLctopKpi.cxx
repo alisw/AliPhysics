@@ -46,9 +46,9 @@ fRecoKF(kFALSE)
   Int_t nvars=12;
   SetNVars(nvars);
   TString varNames[12]={"inv. mass [GeV]",
-			"pTP [GeV/c]",
+			"pTK [GeV/c]",
 			"pTPi [GeV/c]",
-			"d0P [cm]   lower limit!",
+			"d0K [cm]   lower limit!",
 			"d0Pi [cm]  lower limit!",
 			"dist12 (cm)",
 			"sigmavert (cm)",
@@ -514,7 +514,112 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
 
  return;
 }
+//------------------
+void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
 
+ SetName("LctopKpiProdCuts");
+ SetTitle("Production cuts for Lc analysis");
+
+ AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+
+ esdTrackCuts->SetRequireTPCRefit(kTRUE);
+ esdTrackCuts->SetMinNClustersTPC(70);
+ esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                          AliESDtrackCuts::kAny);
+ esdTrackCuts->SetRequireITSRefit(kTRUE);
+ esdTrackCuts->SetMinNClustersITS(4);
+ esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+ esdTrackCuts->SetEtaRange(-0.8,0.8);
+ esdTrackCuts->SetMaxDCAToVertexXY(1.);
+ esdTrackCuts->SetMaxDCAToVertexZ(1.);
+ esdTrackCuts->SetPtRange(0.8,1.e10);
+ AddTrackCuts(esdTrackCuts);
+
+ const Int_t nptbins=4;
+ const Int_t nvars=12;
+ Float_t* ptbins;
+ ptbins=new Float_t[nptbins+1];
+ 
+ ptbins[0]=0.;
+ ptbins[1]=2.;
+ ptbins[2]=3.;
+ ptbins[3]=4.;
+ ptbins[4]=9999.;
+
+ SetGlobalIndex(nvars,nptbins);
+ SetPtBins(nptbins+1,ptbins);
+
+ Float_t** prodcutsval;
+ prodcutsval=new Float_t*[nvars];
+ for(Int_t iv=0;iv<nvars;iv++){
+  prodcutsval[iv]=new Float_t[nptbins];
+ }
+
+ for(Int_t ipt=0;ipt<nptbins;ipt++){
+  prodcutsval[0][ipt]=0.13;
+  prodcutsval[1][ipt]=0.5;
+  prodcutsval[2][ipt]=0.6;
+  prodcutsval[3][ipt]=0.;
+  prodcutsval[4][ipt]=0.;
+  prodcutsval[5][ipt]=0.01;
+  prodcutsval[6][ipt]=0.04;
+  prodcutsval[7][ipt]=0.006;
+  prodcutsval[8][ipt]=0.8;
+  prodcutsval[9][ipt]=0.3;
+  prodcutsval[10][ipt]=0.;
+  prodcutsval[11][ipt]=0.05;
+ }
+ SetCuts(nvars,nptbins,prodcutsval);
+
+ AliAODPidHF* pidObjK=new AliAODPidHF();
+ Double_t sigmasK[5]={3.,1.,1.,3.,2.};
+ pidObjK->SetSigma(sigmasK);
+ pidObjK->SetAsym(kTRUE);
+ pidObjK->SetMatch(1);
+ pidObjK->SetTPC(kTRUE);
+ pidObjK->SetTOF(kTRUE);
+ pidObjK->SetITS(kTRUE);
+ Double_t plimK[2]={0.5,0.8};
+ pidObjK->SetPLimit(plimK,2);
+
+ SetPidHF(pidObjK);
+
+ AliAODPidHF* pidObjpi=new AliAODPidHF();
+ pidObjpi->SetTPC(kTRUE);
+ Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
+ pidObjpi->SetSigma(sigmaspi);
+ SetPidpion(pidObjpi);
+
+ AliAODPidHF* pidObjp=new AliAODPidHF();
+ Double_t sigmasp[5]={3.,1.,1.,3.,2.};
+ pidObjp->SetSigma(sigmasp);
+ pidObjp->SetAsym(kTRUE);
+ pidObjp->SetMatch(1);
+ pidObjp->SetTPC(kTRUE);
+ pidObjp->SetTOF(kTRUE);
+ pidObjp->SetITS(kTRUE);
+ Double_t plimp[2]={1.,2.};
+ pidObjp->SetPLimit(plimp,2);
+
+ SetPidprot(pidObjp);
+
+ SetUsePID(kTRUE);
+
+ PrintAll();
+
+ for(Int_t iiv=0;iiv<nvars;iiv++){
+  delete [] prodcutsval[iiv];
+ }
+ delete [] prodcutsval;
+ prodcutsval=NULL;
+ delete [] ptbins;
+ ptbins=NULL;
+
+ delete pidObjp;
+ pidObjp=NULL;
+
+ return;
+}
 //------------------
 Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const{
 
@@ -539,3 +644,4 @@ Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs
  d->SetSecondaryVtx(vertexAOD);
  return kTRUE;
 }
+
