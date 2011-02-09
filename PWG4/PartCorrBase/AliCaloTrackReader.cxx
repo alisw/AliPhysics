@@ -31,9 +31,9 @@
 
 // --- ROOT system ---
 #include "TFile.h"
+#include "TRandom3.h"
 
 //---- ANALYSIS system ----
-#include "AliCaloTrackReader.h"
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -43,9 +43,12 @@
 #include "AliVParticle.h"
 #include "AliMixedEvent.h"
 #include "AliESDtrack.h"
-#include "AliEMCALRecoUtils.h"
 #include "AliESDtrackCuts.h"
 #include "AliTriggerAnalysis.h"
+
+//---- PartCorr/EMCAL ---
+#include "AliEMCALRecoUtils.h"
+#include "AliCaloTrackReader.h"
 
 ClassImp(AliCaloTrackReader)
   
@@ -59,7 +62,8 @@ ClassImp(AliCaloTrackReader)
     fEMCALCells(0x0), fPHOSCells(0x0),
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
-    fFillEMCALCells(0),fFillPHOSCells(0),  fRemoveSuspiciousClusters(kFALSE),
+    fFillEMCALCells(0),fFillPHOSCells(0),  
+    fRemoveSuspiciousClusters(kFALSE), fSmearClusterEnergy(kFALSE), fRandom(),
 //    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
 //    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
@@ -73,6 +77,7 @@ ClassImp(AliCaloTrackReader)
     fEMCALClustersListName(""),fZvtxCut(0.), 
     fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),
     fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10)
+   
 {
   //Ctor
   
@@ -165,9 +170,9 @@ Bool_t AliCaloTrackReader::ComparePtHardAndJetPt(){
       //Compare jet pT and pt Hard
       //if(fDebug > 1) printf("AliMCAnalysisUtils:: %d pycell jet pT %f\n",ijet, jet->Pt());
       if(jet->Pt() > fPtHardAndJetPtFactor * ptHard) {
-	printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
-	       nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
-	return kFALSE;
+        printf("AliMCAnalysisUtils::PythiaEventHeader: Njets: %d, pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n",
+               nTriggerJets, ptHard, jet->Pt(), fPtHardAndJetPtFactor);
+        return kFALSE;
       }
     }
     if(jet) delete jet; 
@@ -335,6 +340,12 @@ void AliCaloTrackReader::InitParameters()
   //Centrality
   fCentralityBin[0]=fCentralityBin[1]=-1;
   
+  //Cluster smearing
+  fSmearClusterEnergy   = kFALSE;
+  fSmearClusterParam[0] = 0.07; // * sqrt E term
+  fSmearClusterParam[1] = 0.02; // * E term
+  fSmearClusterParam[2] = 0.00; // constant
+  
 }
 
 //________________________________________________________________
@@ -493,7 +504,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
         }
       }//at least one cluster
       else {
-        printf("AliCaloTrackReader::FillInputEvent() - No clusters in event\n");
+        //printf("AliCaloTrackReader::FillInputEvent() - No clusters in event\n");
         //Remove events with  vertex (0,0,0), bad vertex reconstruction
         if(TMath::Abs(fVertex[0][0]) < 1.e-6 && TMath::Abs(fVertex[0][1]) < 1.e-6 && TMath::Abs(fVertex[0][2]) < 1.e-6) return kFALSE;
         
@@ -785,6 +796,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
 //    }
   }
   
+  
   TLorentzVector momentum ;
   
   clus->GetMomentum(momentum, fVertex[vindex]);      
@@ -827,6 +839,14 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
       GetCaloUtils()->CorrectClusterEnergy(clus) ;
       //printf("Linearity Corrected Energy %f\n",clus->E());  
     }          
+    
+    //In case of MC analysis, to match resolution/calibration in real data
+    if(fSmearClusterEnergy){
+      Float_t energy    = clus->E();
+      Float_t rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0]*TMath::Sqrt(energy)+fSmearClusterParam[1]*energy+fSmearClusterParam[0]);
+      clus->SetE(rdmEnergy);
+      if(fDebug > 2) printf("\t Energy %f, smeared %f\n", energy, clus->E());
+    }
     
     if (fMixedEvent) 
       clus->SetID(iclus) ; 
