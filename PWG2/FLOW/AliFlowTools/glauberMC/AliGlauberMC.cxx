@@ -375,8 +375,8 @@ Bool_t AliGlauberMC::CalcResults(Double_t bgen)
   // calc results for the given event
   //return true if we have participants
   
-  fNpart=0.;
-  fNcoll=0.;
+  fNpart=0;
+  fNcoll=0;
   fMeanX2=0.;
   fMeanY2=0.;
   fMeanXY=0.;
