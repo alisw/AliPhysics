@@ -215,7 +215,11 @@ void AliCFTaskVertexingHF::Init()
 	
 	if (fDebug>1) printf("AliCFTaskVertexingHF::Init()");
 	AliRDHFCuts *copyfCuts = 0x0;
-	
+	if (!fCuts){
+		AliFatal("No cuts defined - Exiting...");
+		return;
+	}
+
 	switch (fDecayChannel){
 	case 2:{
 		copyfCuts = new AliRDHFCutsD0toKpi(*(dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts)));
@@ -265,10 +269,15 @@ void AliCFTaskVertexingHF::Init()
 	}  
 	
 	const char* nameoutput=GetOutputSlot(4)->GetContainer()->GetName();
-	copyfCuts->SetName(nameoutput);
-	
-	//Post the data
-	PostData(4, copyfCuts);
+	if (copyfCuts){
+		copyfCuts->SetName(nameoutput);
+		
+		//Post the data
+		PostData(4, copyfCuts);
+	}
+	else{
+		AliFatal("Failing initializing AliRDHFCuts object - Exiting...");
+	}	
 	
 	return;
 }
@@ -426,6 +435,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	default:
 		break;
 	}
+	if (!cfVtxHF){
+		AliError("No AliCFVertexingHF initialized");
+		return;
+	}
 	
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
@@ -438,7 +451,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
 		
 		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
-		
+		if (!mcPart){
+			AliError("Failed casting particle from MC array!, Skipping particle");
+			continue;
+		}
 		// check the MC-level cuts, must be the desidered particle
 		if (!fCFManager->CheckParticleCuts(0, mcPart)) continue;  // 0 stands for MC level
 		
