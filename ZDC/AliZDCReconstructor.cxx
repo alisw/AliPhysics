@@ -386,7 +386,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
   Int_t tdcData[32][4];	
   for(Int_t k=0; k<32; k++){
     scalerData[k]=0;
-    for(Int_t i=0; i<4; i++) tdcData[k][i]=0.;
+    for(Int_t i=0; i<4; i++) tdcData[k][i]=0;
   }
   
   
