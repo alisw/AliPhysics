@@ -97,6 +97,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetMaxCentrality() const {return fMaxCentrality;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
+  Int_t  IsEventSelectedInCentrality(AliVEvent *event);
   Bool_t IsEventSelected(AliVEvent *event);
   Bool_t AreDaughtersSelected(AliAODRecoDecayHF *rd) const;
   Bool_t IsDaughterSelected(AliAODTrack *track,const AliESDVertex *primary,AliESDtrackCuts *cuts) const;
@@ -117,6 +118,9 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
   void MakeTable()const;
+
+  Int_t GetIsSelectedCuts() const {return fIsSelectedCuts;}
+  Int_t GetIsSelectedPID() const  {return fIsSelectedPID;}
 
  protected:
 
@@ -161,8 +165,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMinCentrality; // minimum centrality for selected events
   Float_t fMaxCentrality; // maximum centrality for selected events
   Bool_t  fFixRefs;       // fix the daughter track references 
+  Int_t  fIsSelectedCuts; // outcome of cuts selection
+  Int_t  fIsSelectedPID;  // outcome of PID selection
 
-  ClassDef(AliRDHFCuts,9);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,10);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
