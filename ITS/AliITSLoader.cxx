@@ -245,8 +245,8 @@ void AliITSLoader::SetupDigits(TObjArray *digPerDet,Int_t n,
                   "derived from AliITSdigit",i,digPerDet->At(i));
         } // end if
         cl->Clear();
-        if(n==3) sprintf(branch,"ITSDigits%s",det[i]);
-        else     sprintf(branch,"ITSDigits%d",i+1);
+        if(n==3) snprintf(branch,13,"ITSDigits%s",det[i]);
+        else     snprintf(branch,13,"ITSDigits%d",i+1);
         br = td->GetBranch(branch);
         br->SetAddress(&((*digPerDet)[i]));
         continue;

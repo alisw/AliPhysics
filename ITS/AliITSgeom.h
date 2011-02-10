@@ -733,7 +733,7 @@ class AliITSgeom : public TObject {
     void PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const;
     // This function prints out this class in a single stream. This steam
     // can be read by ReadGeom.
-    void PrintGeom(ostream *out)const;
+    // (Coverity warnings)    void PrintGeom(ostream *out)const;
 
     //Conversion from det. local coordinates to local ("V2") coordinates
     //used for tracking

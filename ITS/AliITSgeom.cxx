@@ -587,6 +587,7 @@ void AliITSgeom::PrintData(FILE *fp,Int_t lay,Int_t lad,Int_t det)const{
     fprintf(fp,"        dfr= %e %e %e\n",m[2][0],m[2][1],m[2][2]);
     return;
 }
+/*
 //______________________________________________________________________
 void AliITSgeom::PrintGeom(ostream *wb)const{
     //     Stream out an object of class AliITSgeom to standard output.
@@ -611,6 +612,7 @@ void AliITSgeom::PrintGeom(ostream *wb)const{
     *wb << setprecision (stsiz);
     return;
 }
+*/
 //______________________________________________________________________
 //     The following routines modify the transformation of "this"
 // geometry transformations in a number of different ways.

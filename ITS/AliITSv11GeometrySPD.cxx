@@ -1743,9 +1743,8 @@ TGeoCompositeShape* AliITSv11GeometrySPD::CreateGroundingFoilShape
     Double_t holeY = 0.5*(width - holeWidth) - widthMin;
 
     // create a shape for the holes (common)
-    TGeoBBox *shHole = 0;
-    shHole = new TGeoBBox(Form("ITSSPD%sGfoilHole", type),0.5*holeLength,
-                          0.5*holeWidth, thickness);
+    new TGeoBBox(Form("ITSSPD%sGfoilHole", type),0.5*holeLength,
+                       0.5*holeWidth, thickness);
 
     // insert the holes in the XTRU shape:
     // starting from the first value of X, they are simply
@@ -3693,14 +3692,18 @@ void AliITSv11GeometrySPD::ReadAscii(istream* is)
     //
     Int_t i,j,k,n;
     Double_t gapLadder,GapHalfStave;
-
+    const Int_t kLimits = 100;
     *is>>gapLadder>>GapHalfStave>>n;
     if(n!=6){
-        Warning("ReadAscii","fAddStave Array !=6 n=%d",n);
+      AliError(Form("fAddStave Array !=6 n=%d",n));
         return;
     } // end if
     for(i=0;i<n;i++) *is>>fAddStave[i];
     *is>>n;
+    if(n<0 || n> kLimits){
+      AliError("Anomalous value for parameter n");
+      return;
+    } 
     fSPDsectorX0.Set(n);
     fSPDsectorY0.Set(n);
     fSPDsectorX1.Set(n);
