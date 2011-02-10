@@ -894,6 +894,8 @@ void AliTOFv6T0::MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const
   // are filled with volumes: FTOB and FTOC (MRPC containers),
   //
 
+  const Int_t kSize=16;
+
   Int_t idrotm[1];
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
@@ -905,8 +907,9 @@ void AliTOFv6T0::MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const
   // Positioning of fibre glass modules (FTOA, FTOB and FTOC)
   for(Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++){
     if(fTOFSectors[isec]==-1)continue;
-    char name[16];
-    sprintf(name, "BTOF%d",isec);
+
+    char name[kSize];
+    snprintf(name, kSize, "BTOF%d",isec);
     if (fTOFHoles && (isec==13 || isec==14 || isec==15)) {
       //xcoor = 0.;
       ycoor = (zlenA*0.5 + fgkInterCentrModBorder1)*0.5;
@@ -935,6 +938,8 @@ void AliTOFv6T0::MakeCoversInBTOFvolumes() const
   // (to separate MRPC strips from FEA cards)
   //
 
+  const Int_t kSize=16;
+
   Int_t idrotm[1];
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
@@ -945,12 +950,12 @@ void AliTOFv6T0::MakeCoversInBTOFvolumes() const
   ycoor = 0.;
   zcoor = fgkModuleCoverThickness*0.5;
 
-  char name[16];
+  char name[kSize];
 
   // Positioning of module covers (FPEA, FPEB)
   for(Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
     if(fTOFSectors[isec]==-1)continue;
-    sprintf(name, "BTOF%d",isec);
+    snprintf(name, kSize, "BTOF%d",isec);
     if (fTOFHoles && (isec==13 || isec==14 || isec==15))
       gMC->Gspos("FPEB", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     else
@@ -969,6 +974,8 @@ void AliTOFv6T0::MakeBackInBTOFvolumes(Float_t ytof) const
   // filled with volumes FAIB (FEA cards and services container).
   //
 
+  const Int_t kSize=16;
+
   Int_t idrotm[1];
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
@@ -979,12 +986,12 @@ void AliTOFv6T0::MakeBackInBTOFvolumes(Float_t ytof) const
   ycoor = 0.;
   zcoor = fgkModuleCoverThickness + (ytof*0.5 - fgkModuleCoverThickness)*0.5;
 
-  char name[16];
+  char name[kSize];
 
   // Positioning of FEA cards and services containers (FAIA, FAIC and FAIB)
   for(Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
     if(fTOFSectors[isec]==-1)continue;
-    sprintf(name, "BTOF%d",isec);
+    snprintf(name, kSize, "BTOF%d",isec);
     if (fgkFEAwithMasks[isec])
       gMC->Gspos("FAIA", 0, name, xcoor, ycoor, zcoor, idrotm[0], "ONLY");
     else {
@@ -1924,6 +1931,8 @@ void AliTOFv6T0::DrawModule() const
   // Draw a shaded view of the Time Of Flight version 5
   //
 
+  const Int_t kSize=16;
+
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
 
@@ -1953,13 +1962,13 @@ void AliTOFv6T0::DrawModule() const
   gMC->Gsatt("B067","seen",-1); // all B067 sub-levels skipped   -
   gMC->Gsatt("B072","seen",-1); // all B072 sub-levels skipped   -
 
-  char name[16];
+  char name[kSize];
   for (Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
-    sprintf(name, "BREF%d",isec);
+    snprintf(name, kSize, "BREF%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BREF%d sub-levels skipped   -
-    sprintf(name, "BTRD%d",isec);
+    snprintf(name, kSize, "BTRD%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BTRD%d sub-levels skipped   -
-    sprintf(name, "BTOF%d",isec);
+    snprintf(name, kSize, "BTOF%d",isec);
     gMC->Gsatt(name,"seen",-2);  // all BTOF%d sub-levels skipped   -
   }
 
@@ -1981,6 +1990,8 @@ void AliTOFv6T0::DrawDetectorModules() const
   // Draw a shaded view of the TOF detector SuperModules version 5
   //
  
+  const Int_t kSize=16;
+
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
 
@@ -2010,13 +2021,13 @@ void AliTOFv6T0::DrawDetectorModules() const
   gMC->Gsatt("B067","seen",-1); // all B067 sub-levels skipped   -
   gMC->Gsatt("B072","seen",-1); // all B072 sub-levels skipped   -
 
-  char name[16];
+  char name[kSize];
   for (Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
-    sprintf(name, "BREF%d",isec);
+    snprintf(name, kSize, "BREF%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BREF%d sub-levels skipped   -
-    sprintf(name, "BTRD%d",isec);
+    snprintf(name, kSize, "BTRD%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BTRD%d sub-levels skipped   -
-    sprintf(name, "BTOF%d",isec);
+    snprintf(name, kSize, "BTOF%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BTOF%d sub-levels skipped   -
   }
 
@@ -2053,6 +2064,8 @@ void AliTOFv6T0::DrawDetectorStrips() const
   // Draw a shaded view of the TOF strips for version 5
   //
 
+  const Int_t kSize=16;
+
   // Set everything unseen
   gMC->Gsatt("*", "seen", -1);
 
@@ -2082,13 +2095,13 @@ void AliTOFv6T0::DrawDetectorStrips() const
   gMC->Gsatt("B056","seen", 0);  // B056 does not has sub-levels  -
   gMC->Gsatt("B072","seen",-1); // all B072 sub-levels skipped   -
 
-  char name[16];
+  char name[kSize];
   for (Int_t isec=0; isec<fTOFGeometry->NSectors(); isec++) {
-    sprintf(name, "BREF%d",isec);
+    snprintf(name, kSize, "BREF%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BREF%d sub-levels skipped   -
-    sprintf(name, "BTRD%d",isec);
+    snprintf(name, kSize, "BTRD%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BTRD%d sub-levels skipped   -
-    sprintf(name, "BTOF%d",isec);
+    snprintf(name, kSize, "BTOF%d",isec);
     gMC->Gsatt(name,"seen", 0);  // all BTOF%d sub-levels skipped   -
   }
 
