@@ -28,7 +28,6 @@
 #pragma link C++ class  AliTRDtrackingChamber+;
 #pragma link C++ class  AliTRDchamberTimeBin+;
 
-#pragma link C++ class  AliTRDqaBlackEvents+;
 #pragma link C++ class  AliTRDQADataMakerRec+;
 #pragma link C++ class  AliTRDqaBuildReference+;
 
