@@ -135,17 +135,17 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
   }
 
 
-  TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));  
+  //TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));  
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
     
-    AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
-    if(photon) {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
+    AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
+    if(aodO) {
+      AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
     } else {
       
       AliAODConversionParticle * convParticle = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
       if (convParticle) {
-        AliAODPWG4ParticleCorrelation * photon = AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
+        AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
       } else {
 	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
 	continue;
@@ -160,30 +160,30 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
 Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC, AliAODMCHeader * mcHeader) {
 
 
-  for (int imc = 0; imc < arrayMC->GetEntriesFast(); imc++) {
-  //for (int imc = 0; imc < 20; imc++) {
+  // for (int imc = 0; imc < arrayMC->GetEntriesFast(); imc++) {
+  // //for (int imc = 0; imc < 20; imc++) {
 
     
     
-    AliAODMCParticle * mParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
-    //    cout << mParticle->GetPdgCode() << " " <<mParticle->GetStatus() << endl;
+  //   AliAODMCParticle * mParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
+  //   //    cout << mParticle->GetPdgCode() << " " <<mParticle->GetStatus() << endl;
 
    
-    //if( mParticle->GetPdgCode() == 34) cout<< "BALLE"<<endl;// && mParticle->GetMother() < 10) {
+  //   //if( mParticle->GetPdgCode() == 34) cout<< "BALLE"<<endl;// && mParticle->GetMother() < 10) {
 
-    if( mParticle->GetPdgCode() == 22 ) { //&& mParticle->GetMother() < 10) {
-      AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetMother()));
-      //if (TMath::Abs(mother->GetPdgCode()) < 22 && TMath::Abs(mother->GetPdgCode()) != 11) cout  <<"KKKKKKKKK"<< mother->GetPdgCode() <<endl;
+  //   if( mParticle->GetPdgCode() == 22 ) { //&& mParticle->GetMother() < 10) {
+  //     //AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetMother()));
+  //     //if (TMath::Abs(mother->GetPdgCode()) < 22 && TMath::Abs(mother->GetPdgCode()) != 11) cout  <<"KKKKKKKKK"<< mother->GetPdgCode() <<endl;
 	
-      for (int id = 0; id < mParticle->GetNDaughters(); id++) {
-  	int idaughter = mParticle->GetDaughter(id);
-  	if(idaughter>0 && idaughter < arrayMC->GetEntriesFast()) {
-  	  AliAODMCParticle * dmParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetDaughter(id)));
-  	  //cout  << dmParticle->GetPdgCode() << endl; 
-  	}
-      }
-    }
-  }
+  //     for (int id = 0; id < mParticle->GetNDaughters(); id++) {
+  // 	int idaughter = mParticle->GetDaughter(id);
+  // 	if(idaughter>0 && idaughter < arrayMC->GetEntriesFast()) {
+  // 	  AliAODMCParticle * dmParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetDaughter(id)));
+  // 	  cout  << dmParticle->GetPdgCode() << endl; 
+  // 	}
+  //     }
+  //   }
+  // }
 
 
 
@@ -258,8 +258,8 @@ Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * 
 
 
 
-	Int_t parentId = mother->GetMother();
-	AliAODMCParticle * gp = dynamic_cast<AliAODMCParticle*>(arrayMC->At(parentId));
+	//Int_t parentId = mother->GetMother();
+	//AliAODMCParticle * gp = dynamic_cast<AliAODMCParticle*>(arrayMC->At(parentId));
 
 
 	
