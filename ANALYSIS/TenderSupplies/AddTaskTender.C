@@ -16,7 +16,8 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   //========= Add tender to the ANALYSIS manager and set default storage =====
   AliTender *tender=new AliTender("AnalysisTender");
   tender->SetCheckEventSelection(checkEvtSelection);
-  tender->SetDefaultCDBStorage("raw://");
+//  tender->SetDefaultCDBStorage("raw://");
+  tender->SetDefaultCDBStorage("alien://?Folder=/alice/data/2010/OCDB");
   mgr->AddTask(tender);
   if (checkEvtSelection) {
      if (mgr->GetTasks()->First() != (TObject*)tender) {
