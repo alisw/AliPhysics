@@ -86,17 +86,15 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
 
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
-  //for (Int_t i=binfirst; i<binlast+1; i++)
-  //{
-  //  Float_t lowCentralityBinEdge = centralityArray[i];
-  //  Float_t highCentralityBinEdge = centralityArray[i+1];
-  //  Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
-  //  AddTaskFlowCentrality( lowCentralityBinEdge,
-  //                         highCentralityBinEdge,
-  //                         commonOutputFileName );
-  //} // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
-
-  AddTaskFlowCentrality();
+  for (Int_t i=binfirst; i<binlast+1; i++)
+  {
+    Float_t lowCentralityBinEdge = centralityArray[i];
+    Float_t highCentralityBinEdge = centralityArray[i+1];
+    Printf("\nWagon for centrality bin %i: %.0f-%.0f",i,lowCentralityBinEdge,highCentralityBinEdge);
+    AddTaskFlowCentrality( lowCentralityBinEdge,
+                           highCentralityBinEdge,
+                           commonOutputFileName );
+  } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
