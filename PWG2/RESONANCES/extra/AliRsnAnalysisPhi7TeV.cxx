@@ -448,7 +448,7 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
     v1.SetXYZM(t1->Px(), t1->Py(), t1->Pz(), kmass);
 
     // check track
-    okTrack = OkTrack(t1, AliPID::kKaon);
+    okTrack = OkTrack(t1);
 
     // internal loop (T2)
     for (i2 = i1+1; i2 < ntracks; i2++)
@@ -457,7 +457,7 @@ void AliRsnAnalysisPhi7TeV::ProcessESD
       if (!t2) continue;
 
       // check track
-      if (!OkTrack(t2, AliPID::kKaon)) continue;
+      if (!OkTrack(t2)) continue;
 
       // if unlike pair, check if it is true
       pdg = 0;
@@ -642,7 +642,7 @@ Bool_t AliRsnAnalysisPhi7TeV::OkTOFPID (AliESDtrack *track, AliPID::EParticleTyp
 }
 
 //______________________________________________________________________________
-Bool_t AliRsnAnalysisPhi7TeV::OkTrack(AliESDtrack *track, AliPID::EParticleType pid)
+Bool_t AliRsnAnalysisPhi7TeV::OkTrack(AliESDtrack *track)
 {
 //
 // Global track cut check
