@@ -292,10 +292,11 @@ Double_t AliAODRecoDecay::CosThetaStar(Int_t ip,UInt_t pdgvtx,UInt_t pdgprong0,U
   massp[0] = TDatabasePDG::Instance()->GetParticle(pdgprong0)->Mass();
   massp[1] = TDatabasePDG::Instance()->GetParticle(pdgprong1)->Mass();
 
-  Double_t pStar = TMath::Sqrt(TMath::Power(massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1],2.)-4.*massp[0]*massp[0]*massp[1]*massp[1])/(2.*massvtx);
+  Double_t pStar = TMath::Sqrt((massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])*(massvtx*massvtx-massp[0]*massp[0]-massp[1]*massp[1])-4.*massp[0]*massp[0]*massp[1]*massp[1])/(2.*massvtx);
 
-  Double_t beta = P()/E(pdgvtx);
-  Double_t gamma = E(pdgvtx)/massvtx;
+  Double_t e=E(pdgvtx);
+  Double_t beta = P()/e;
+  Double_t gamma = e/massvtx;
 
   Double_t cts = (QlProng(ip)/gamma-beta*TMath::Sqrt(pStar*pStar+massp[ip]*massp[ip]))/pStar;
 
@@ -311,22 +312,22 @@ Double_t AliAODRecoDecay::Ct(UInt_t pdg,Double_t point[3]) const
   return DecayLength(point)*mass/P();
 }
 //---------------------------------------------------------------------------
-Double_t AliAODRecoDecay::E(UInt_t pdg) const 
+Double_t AliAODRecoDecay::E2(UInt_t pdg) const 
 {
   //
   // Energy
   //
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
-  return TMath::Sqrt(mass*mass+P()*P());
+  return mass*mass+P2();
 }
 //---------------------------------------------------------------------------
-Double_t AliAODRecoDecay::EProng(Int_t ip,UInt_t pdg) const 
+Double_t AliAODRecoDecay::E2Prong(Int_t ip,UInt_t pdg) const 
 {
   //
   // Energy of ip-th prong 
   //
   Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
-  return TMath::Sqrt(mass*mass+PProng(ip)*PProng(ip));
+  return mass*mass+P2Prong(ip);
 }
 //--------------------------------------------------------------------------
 Bool_t AliAODRecoDecay::GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
@@ -475,7 +476,7 @@ Double_t AliAODRecoDecay::ImpParXY(Double_t point[3]) const
   return (cross.Z()>0. ? absImpPar : -absImpPar);
 }
 //----------------------------------------------------------------------------
-Double_t AliAODRecoDecay::InvMass(Int_t npdg,UInt_t *pdg) const 
+Double_t AliAODRecoDecay::InvMass2(Int_t npdg,UInt_t *pdg) const 
 {
   //
   // Invariant mass for prongs mass hypotheses in pdg array
@@ -490,9 +491,29 @@ Double_t AliAODRecoDecay::InvMass(Int_t npdg,UInt_t *pdg) const
     energysum += EProng(i,pdg[i]);
   }
 
-  Double_t mass = TMath::Sqrt(energysum*energysum-P()*P());
+  Double_t mass2 = energysum*energysum-P2();
 
-  return mass;
+  return mass2;
+}
+//----------------------------------------------------------------------------
+Bool_t AliAODRecoDecay::PassInvMassCut(Int_t pdgMom,Int_t npdgDg,UInt_t *pdgDg,Double_t cut) const {
+  //
+  // Apply mass cut
+  //
+
+  Double_t invmass2=InvMass2(npdgDg,pdgDg);
+  Double_t massMom=TDatabasePDG::Instance()->GetParticle(pdgMom)->Mass();
+  Double_t massMom2 = massMom*massMom;
+  Double_t cut2= cut*cut;
+
+
+  if(invmass2 > massMom2) {
+    if(invmass2 < cut2 + massMom2 + 2.*cut*massMom) return kTRUE;
+  } else {
+    if(invmass2 > cut2 + massMom2 - 2.*cut*massMom) return kTRUE;
+  }
+
+   return kFALSE;
 }
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,

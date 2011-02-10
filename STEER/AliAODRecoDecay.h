@@ -98,8 +98,9 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t Yv() const { return GetSecVtxY(); }
   Double_t Zv() const { return GetSecVtxZ(); }
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
-  Double_t E(UInt_t pdg) const;
-  Double_t Y(UInt_t pdg) const {return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));}
+  Double_t E2(UInt_t pdg) const;
+  Double_t E(UInt_t pdg) const {return TMath::Sqrt(E2(pdg));}
+  Double_t Y(UInt_t pdg) const {Double_t e=E(pdg); return 0.5*TMath::Log((e+Pz())/(e-Pz()+1.e-13));}
   Double_t DecayLength2(Double_t point[3]) const;
   Double_t DecayLength(Double_t point[3]) const {return TMath::Sqrt(DecayLength2(point));}
   Double_t DecayLength2(AliAODVertex *vtx1) const
@@ -128,9 +129,11 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t CosPointingAngleXY(Double_t point[3]) const;
   Double_t CosPointingAngleXY(AliAODVertex *vtx1) const;
   Double_t CosThetaStar(Int_t ip,UInt_t pdgvtx,UInt_t pdgprong0,UInt_t pdgprong1) const;
-  Double_t InvMass(Int_t npdg,UInt_t *pdg) const;
+  Double_t InvMass2(Int_t npdg,UInt_t *pdg) const;
+  Double_t InvMass(Int_t npdg,UInt_t *pdg) const {return TMath::Sqrt(InvMass2(npdg,pdg));}
   Double_t ImpParXY(Double_t point[3]) const;
   Double_t ImpParXY(AliAODVertex *vtx1) const;
+  Bool_t   PassInvMassCut(Int_t pdgMom,Int_t npdgDg,UInt_t *pdgDg,Double_t cut) const;
 
   // prongs
   Int_t    GetNProngs() const {return fNProngs;}
@@ -146,14 +149,16 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t PzProng(Int_t ip) const {return fPz[ip];}
   Double_t PtProng(Int_t ip) const {return TMath::Sqrt(Pt2Prong(ip));}
   Double_t Pt2Prong(Int_t ip) const; 
-  Double_t PProng(Int_t ip) const;
+  Double_t PProng(Int_t ip) const {return TMath::Sqrt(P2Prong(ip));}
+  Double_t P2Prong(Int_t ip) const; 
   Double_t PhiProng(Int_t ip) const 
     {return TMath::ATan2(PyProng(ip),PxProng(ip));}
     Double_t ThetaProng(Int_t ip) const 
       {return 0.5*TMath::Pi()-TMath::ATan(PzProng(ip)/(PtProng(ip)+1.e-13));}
   Double_t EtaProng(Int_t ip) const 
     {return -TMath::Log(TMath::Tan(0.5*ThetaProng(ip)));}
-  Double_t EProng(Int_t ip,UInt_t pdg) const;
+  Double_t E2Prong(Int_t ip,UInt_t pdg) const;
+  Double_t EProng(Int_t ip,UInt_t pdg) const {return TMath::Sqrt(E2Prong(ip,pdg));}
   Double_t YProng(Int_t ip,UInt_t pdg) const 
     {return 0.5*TMath::Log((EProng(ip,pdg)+PzProng(ip))/(EProng(ip,pdg)-PzProng(ip)+1.e-13));}
   Double_t Alpha() const;             // for Armenteros-Podolanski plot (V0's)
@@ -310,9 +315,9 @@ inline Double_t AliAODRecoDecay::Pt2Prong(Int_t ip) const
   return PxProng(ip)*PxProng(ip)+PyProng(ip)*PyProng(ip);
 }
 
-inline Double_t AliAODRecoDecay::PProng(Int_t ip) const 
+inline Double_t AliAODRecoDecay::P2Prong(Int_t ip) const 
 {
-  return TMath::Sqrt(PtProng(ip)*PtProng(ip)+PzProng(ip)*PzProng(ip));
+  return Pt2Prong(ip)+PzProng(ip)*PzProng(ip);
 }
 
 inline Double_t AliAODRecoDecay::QlProngFlightLine(Int_t ip,AliAODVertex *vtx1) const
