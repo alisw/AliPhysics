@@ -47,6 +47,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetCutOnDistr(Bool_t cutondistr=kFALSE){fCutOnDistr=cutondistr;}
   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;}
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
+  void SetFillVarHists(Bool_t flag) {fFillVarHists=flag;}
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
@@ -56,9 +57,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
 
   AliAnalysisTaskSED0Mass(const AliAnalysisTaskSED0Mass &source);
   AliAnalysisTaskSED0Mass& operator=(const AliAnalysisTaskSED0Mass& source); 
-  void     FillMassHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
+  void     FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
   void     FillVarHists(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi *cuts, TList *listout);
-  AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d);
+  AliAODVertex* GetPrimaryVtxSkipped(AliAODEvent *aodev);
 
   TList    *fOutputMass;          //! list send on output slot 1
   TList    *fDistr;               //! list send on output slot 2
@@ -72,8 +73,11 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Int_t     fNPtBins;             //  number of pt bins
   Double_t  fLsNormalization;     //  normalization
   Int_t     fFillOnlyD0D0bar;     // flag to fill mass histogram with D0/D0bar only (0 = fill with both, 1 = fill with D0 only, 2 = fill with D0bar only)
+  TObjArray fDaughterTracks;      // keeps the daughter tracks
+  Int_t     fIsSelectedCandidate; // selection outcome
+  Bool_t    fFillVarHists;        // flag to enable filling variable histos
 
-  ClassDef(AliAnalysisTaskSED0Mass,11); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSED0Mass,13); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

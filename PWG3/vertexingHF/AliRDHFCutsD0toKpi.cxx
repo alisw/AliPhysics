@@ -198,6 +198,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   // Apply selection
   //
   
+  fIsSelectedCuts=0;
+  fIsSelectedPID=0;
+
   if(!fCutsRD){
     cout<<"Cut matrice not inizialized. Exit..."<<endl;
     return 0;
@@ -219,34 +222,13 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
 
-    // go to selection with Kalman vertexing, if requested
-    if(fUseKF) {
-      returnvalueCuts = IsSelectedKF(d,aod);
-    } else {
+    if(!fUseKF) {
 
       //recalculate vertex w/o daughters
       AliAODVertex *origownvtx=0x0;
       AliAODVertex *recvtx=0x0;
-      
       if(fRemoveDaughtersFromPrimary) {
-	if(!aod) {
-	  AliError("Can not remove daughters from vertex without AOD event");
-	  return 0;
-	}   
-	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-	recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
-	if(!recvtx){
-	  AliDebug(2,"Removal of daughter tracks failed");
-	  //recvtx=d->GetPrimaryVtx();
-	  if(origownvtx){
-	    delete origownvtx;
-	    origownvtx=NULL;
-	  }
-	  return 0;
-	}
-	//set recalculed primary vertex
-	d->SetOwnPrimaryVtx(recvtx);
-	delete recvtx; recvtx=NULL;
+	if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
       }
       
       
@@ -256,45 +238,43 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       
       Int_t ptbin=PtBin(pt);
       if (ptbin==-1) {
-	if(origownvtx){
-	  d->SetOwnPrimaryVtx(origownvtx);
-	  delete origownvtx;
-	  origownvtx=NULL;
-	}
-	else d->UnsetOwnPrimaryVtx();
+	CleanOwnPrimaryVtx(d,origownvtx);
 	return 0;
       }
+
       Double_t mD0,mD0bar,ctsD0,ctsD0bar;
       okD0=1; okD0bar=1;
       
       Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+      d->InvMassD0(mD0,mD0bar);
+      if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
+      if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)])  okD0bar = 0;
+      if(!okD0 && !okD0bar)  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+      if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+    
+      if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
       if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
       if(d->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
-      if(!okD0 && !okD0bar) returnvalueCuts=0;
+      if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
       
       if(TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)] || 
 	 TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)]) okD0 = 0;
       if(TMath::Abs(d->Getd0Prong(0)) > fCutsRD[GetGlobalIndex(6,ptbin)] ||
 	 TMath::Abs(d->Getd0Prong(1)) > fCutsRD[GetGlobalIndex(5,ptbin)]) okD0bar = 0;
-      if(!okD0 && !okD0bar)  returnvalueCuts=0;
+      if(!okD0 && !okD0bar)  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
-      if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)])  returnvalueCuts=0;
+      if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
-      d->InvMassD0(mD0,mD0bar);
-      if(TMath::Abs(mD0-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0 = 0;
-      if(TMath::Abs(mD0bar-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)])  okD0bar = 0;
-      if(!okD0 && !okD0bar)  returnvalueCuts=0;
     
       d->CosThetaStarD0(ctsD0,ctsD0bar);
       if(TMath::Abs(ctsD0) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0 = 0; 
       if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
-      if(!okD0 && !okD0bar)   returnvalueCuts=0;
+      if(!okD0 && !okD0bar)   {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
     
-      if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)])  returnvalueCuts=0;
-    
-      if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  returnvalueCuts=0;
       
       if (returnvalueCuts!=0) {
 	if (okD0) returnvalueCuts=1; //cuts passed as D0
@@ -305,20 +285,17 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       // call special cuts
       Int_t special=1;
       if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
-      if(!special) returnvalueCuts=0;
+      if(!special) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
 
       // unset recalculated primary vertex when not needed any more
-      if(origownvtx) {
-	d->SetOwnPrimaryVtx(origownvtx);
-	delete origownvtx;
-	origownvtx=NULL;
-      } else if(fRemoveDaughtersFromPrimary) {
-	d->UnsetOwnPrimaryVtx();
-	AliDebug(3,"delete new vertex\n");
-      }
+      CleanOwnPrimaryVtx(d,origownvtx);
 
-    } // if(fUseKF)
+    } else {
+      // go to selection with Kalman vertexing, if requested
+      returnvalueCuts = IsSelectedKF(d,aod);
+    }
 
+    fIsSelectedCuts=returnvalueCuts;
     if(!returnvalueCuts) return 0;
   }
 
@@ -328,6 +305,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
      selectionLevel==AliRDHFCuts::kCandidate ||
      selectionLevel==AliRDHFCuts::kPID) {
     returnvaluePID = IsSelectedPID(d);
+    fIsSelectedPID=returnvaluePID;
     if(!returnvaluePID) return 0;
   }
 
