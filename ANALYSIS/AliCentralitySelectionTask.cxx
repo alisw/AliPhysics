@@ -504,23 +504,35 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliCentralitySelectionTask::ReadCentralityHistos(TString fCentfilename) 
 {
-  //  Read centrality histograms
-  TDirectory *owd = gDirectory;
-  // Check if the file is present
-  TString path = gSystem->ExpandPathName(fCentfilename.Data());
-  if (gSystem->AccessPathName(path)) {
-     AliError(Form("File %s does not exist", path.Data()));
-     return;
-  }
-  fFile  = TFile::Open(fCentfilename);
-  owd->cd();
-  fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
-  fHtempFMD  = (TH1F*) (fFile->Get("hmultFMD_percentile"));
-  fHtempTRK  = (TH1F*) (fFile->Get("hNtracks_percentile"));
-  fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
-  fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
-  fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
-  owd->cd();
+    //  Read centrality histograms
+    TDirectory *owd = gDirectory;
+    // Check if the file is present
+    TString path = gSystem->ExpandPathName(fCentfilename.Data());
+    if (gSystem->AccessPathName(path)) {
+	AliError(Form("File %s does not exist", path.Data()));
+	return;
+    }
+    fFile  = TFile::Open(fCentfilename);
+    owd->cd();
+    fHtempV0M  = (TH1F*) (fFile->Get("hmultV0_percentile"));
+    if (!fHtempV0M) 
+	AliWarning(Form("Calibration for V0M does not exist in %s", path.Data()));
+    fHtempFMD  = (TH1F*) (fFile->Get("hmultFMD_percentile"));
+    if (!fHtempFMD) 
+	AliWarning(Form("Calibration for FMD does not exist in %s", path.Data()));
+    fHtempTRK  = (TH1F*) (fFile->Get("hNtracks_percentile"));
+    if (!fHtempTRK) 
+	AliWarning(Form("Calibration for TRK does not exist in %s", path.Data()));
+    fHtempTKL  = (TH1F*) (fFile->Get("hNtracklets_percentile"));
+    if (!fHtempTKL) 
+	AliWarning(Form("Calibration for TKL does not exist in %s", path.Data()));
+    fHtempCL0  = (TH1F*) (fFile->Get("hNclusters0_percentile"));
+    if (!fHtempCL0) 
+	AliWarning(Form("Calibration for CL0 does not exist in %s", path.Data()));
+    fHtempCL1  = (TH1F*) (fFile->Get("hNclusters1_percentile"));
+    if (!fHtempCL1) 
+	AliWarning(Form("Calibration for CL1 does not exist in %s", path.Data()));
+    owd->cd();
 }  
 
 //________________________________________________________________________
@@ -533,11 +545,18 @@ void AliCentralitySelectionTask::ReadCentralityHistos2(TString fCentfilename2)
      AliError(Form("File %s does not exist", path.Data()));
      return;
   }   
+
   fFile2  = TFile::Open(fCentfilename2);
   owd->cd();
   fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
+  if (!fHtempV0MvsFMD) 
+      AliWarning(Form("Calibration for V0MvsFMD does not exist in %s", path.Data()));
   fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
+  if (!fHtempTKLvsV0M) 
+      AliWarning(Form("Calibration for TKLvsV0M does not exist in %s", path.Data()));
   fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
+  if (!fHtempZEMvsZDC) 
+      AliWarning(Form("Calibration for ZEMvsZDC does not exist in %s", path.Data()));
   owd->cd();
 }
 
