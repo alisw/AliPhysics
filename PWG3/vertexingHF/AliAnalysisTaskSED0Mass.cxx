@@ -67,9 +67,10 @@ fUsePid4Distr(0),
 fCounter(0),
 fNPtBins(1),
 fLsNormalization(1.),
-fFillOnlyD0D0bar(0)
-
-
+fFillOnlyD0D0bar(0),
+fDaughterTracks(),
+fIsSelectedCandidate(0),
+fFillVarHists(kTRUE)
 {
   // Default constructor
 }
@@ -88,8 +89,10 @@ fUsePid4Distr(0),
 fCounter(0),
 fNPtBins(1),
 fLsNormalization(1.),
-fFillOnlyD0D0bar(0)
-
+fFillOnlyD0D0bar(0),
+fDaughterTracks(),
+fIsSelectedCandidate(0),
+fFillVarHists(kTRUE)
 {
   // Default constructor
 
@@ -654,43 +657,40 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     //cout<<"inside the loop"<<endl;
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
 
-    //check daughters
-    if(!(d->GetDaughter(0) || d->GetDaughter(1))) {
-      AliDebug(1,"at least one daughter not found!");
-      fNentries->Fill(5);
-      continue;
-    }
 
-    // Bool_t unsetvtx=kFALSE;
-    // if(!d->GetOwnPrimaryVtx()) {
-    //   d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-    //   unsetvtx=kTRUE;
-    // }
+    Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()) {
+      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      unsetvtx=kTRUE;
+    }
   
     
-    //check reco daughter in acceptance
-    /*
-    Double_t eta0=d->EtaProng(0);
-    Double_t eta1=d->EtaProng(1);
-    */
     if ( fCuts->IsInFiducialAcceptance(d->Pt(),d->Y(421)) ) {
-      //if( TMath::Abs(eta0)<0.9 && TMath::Abs(eta1)<0.9 ){
-       //apply cuts on tracks
       nSelectedloose++;
-      Int_t isSelected = fCuts->IsSelected(d,AliRDHFCuts::kTracks);
-      if(((AliAODTrack*)d->GetDaughter(0))->GetTPCNcls() < 70 || ((AliAODTrack*)d->GetDaughter(1))->GetTPCNcls() < 70) isSelected=kFALSE;
-      if (!isSelected) continue;
-      nSelectedtight++;
+      nSelectedtight++;      
       fNentries->Fill(6);       
-      if(fDebug>2) cout<<"tracks selected"<<endl;
-
       Int_t ptbin=fCuts->PtBin(d->Pt());
       if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
-      FillVarHists(aod,d,mcArray,fCuts,fDistr);
-      FillMassHists(aod,d,mcArray,fCuts,fOutputMass);
+      fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod); //selected
+      if(fFillVarHists) {
+	if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
+	  fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
+	  fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(1),1);
+	  //check daughters
+	  if(!fDaughterTracks.UncheckedAt(0) || !fDaughterTracks.UncheckedAt(1)) {
+	    AliDebug(1,"at least one daughter not found!");
+	    fNentries->Fill(5);
+	    fDaughterTracks.Clear();
+	    continue;
+	  }
+	}
+	FillVarHists(aod,d,mcArray,fCuts,fDistr);
+      }
+      FillMassHists(d,mcArray,fCuts,fOutputMass);
     }
   
-    //if(unsetvtx) d->UnsetOwnPrimaryVtx();
+    fDaughterTracks.Clear();
+    if(unsetvtx) d->UnsetOwnPrimaryVtx();
   } //end for prongs
   fCounter->StoreCandidates(aod,nSelectedloose,kTRUE);  
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
@@ -708,6 +708,22 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   // function used in UserExec to fill variable histograms:
   //
 
+
+  Int_t pdgDgD0toKpi[2]={321,211};
+  Int_t lab=-9999;
+  if(fReadMC) lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
+  //Double_t pt = d->Pt(); //mother pt
+  Int_t isSelectedPID=cuts->IsSelectedPID(part); //0 rejected,1 D0,2 Dobar, 3 both
+  if (isSelectedPID==0)fNentries->Fill(7);
+  if (isSelectedPID==1)fNentries->Fill(8);
+  if (isSelectedPID==2)fNentries->Fill(9);
+  if (isSelectedPID==3)fNentries->Fill(10);
+    //fNentries->Fill(8+isSelectedPID);
+
+  if(fCutOnDistr && !fIsSelectedCandidate) return;
+  //printf("\nif no cuts or cuts passed\n");
+
+
   //add distr here
   UInt_t pdgs[2];
     
@@ -719,29 +735,6 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   pdgs[0]=321;
   Double_t minvD0bar = part->InvMassD0bar();
   //cout<<"inside mass cut"<<endl;
-
-  Int_t pdgDgD0toKpi[2]={321,211};
-  Int_t lab=-9999;
-  if(fReadMC) lab=part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
-  //Double_t pt = d->Pt(); //mother pt
-  Int_t isSelected=3;
-  Int_t isSelectedPID=99;
-
-  //isSelectedPID = cuts->IsSelected(part,AliRDHFCuts::kPID); //0 rejected,1 D0,2 Dobar, 3 both
-  isSelectedPID = cuts->IsSelectedPID(part); //0 rejected,1 D0,2 Dobar, 3 both
-  if (isSelectedPID==0)fNentries->Fill(7);
-  if (isSelectedPID==1)fNentries->Fill(8);
-  if (isSelectedPID==2)fNentries->Fill(9);
-  if (isSelectedPID==3)fNentries->Fill(10);
-    //fNentries->Fill(8+isSelectedPID);
-
-  if(fCutOnDistr){
-    isSelected = cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod); //cuts with variables recalculated with new vertex (w/o daughters)
-    if (!isSelected){
-      //cout<<"Not Selected"<<endl;
-      return;
-    }
-  }
 
   Double_t invmasscut=0.03;
 
@@ -755,17 +748,19 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   Double_t decl[2]={-99,-99};
   Bool_t recalcvtx=kFALSE;
 
+
+
   if(fCuts->GetIsPrimaryWithoutDaughters()){
     recalcvtx=kTRUE;
     //recalculate vertex
     AliAODVertex *vtxProp=0x0;
-    vtxProp=GetPrimaryVtxSkipped(aod,part);
+    vtxProp=GetPrimaryVtxSkipped(aod);
     if(vtxProp) {
       part->SetOwnPrimaryVtx(vtxProp);
       //Bool_t unsetvtx=kTRUE;
       //Calculate d0 for daughter tracks with Vtx Skipped
-      AliESDtrack *esdtrack1=new AliESDtrack((AliVTrack*)part->GetDaughter(0));
-      AliESDtrack *esdtrack2=new AliESDtrack((AliVTrack*)part->GetDaughter(1));
+      AliESDtrack *esdtrack1=new AliESDtrack((AliVTrack*)fDaughterTracks.UncheckedAt(0));
+      AliESDtrack *esdtrack2=new AliESDtrack((AliVTrack*)fDaughterTracks.UncheckedAt(1));
       esdtrack1->PropagateToDCA(vtxProp,aod->GetMagneticField(),1.,dz1,covar1);
       esdtrack2->PropagateToDCA(vtxProp,aod->GetMagneticField(),1.,dz2,covar2);
       delete vtxProp; vtxProp=NULL;
@@ -782,17 +777,22 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   
   }
 
+  Double_t cosThetaStarD0 = 99;
+  Double_t cosThetaStarD0bar = 99;
+  Double_t cosPointingAngle = 99;
+  Double_t normalizedDecayLength = -1;
+  Double_t decayLength = -1;
+  Double_t ptProng[2]={-99,-99};
 
-  if(!fCutOnDistr || (fCutOnDistr && isSelected)){ //if no cuts or cuts passed 
-    //printf("\nif no cuts or cuts passed\n");
+  
 
     //disable the PID
     if(!fUsePid4Distr) isSelectedPID=0;
     if((lab>=0 && fReadMC) || (!fReadMC && isSelectedPID)){ //signal (from MC or PID)
    
       //check pdg of the prongs
-      AliAODTrack *prong0=(AliAODTrack*)part->GetDaughter(0);
-      AliAODTrack *prong1=(AliAODTrack*)part->GetDaughter(1);
+      AliAODTrack *prong0=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
+      AliAODTrack *prong1=(AliAODTrack*)fDaughterTracks.UncheckedAt(1);
       if(!prong0 || !prong1) {
 	return;
       }
@@ -822,14 +822,14 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
       // if ((TMath::Abs(pdgProng[0]) == 211 && TMath::Abs(pdgProng[1]) == 321)
       //     || (isSelectedPID==1 || isSelectedPID==3)){
-      // 	((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(0));
-      // 	((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(1));
+      // 	((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[0]);
+      // 	((TH1F*)listout->FindObject(fillthisK))->Fill(ptProng[1]);
       // }
 
       // if ((TMath::Abs(pdgProng[0]) == 321 && TMath::Abs(pdgProng[1]) == 211)
       //     || (isSelectedPID==2 || isSelectedPID==3)){
-      // 	((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(0));
-      // 	((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(1));
+      // 	((TH1F*)listout->FindObject(fillthisK))->Fill(ptProng[0]);
+      // 	((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[1]);
       // }
       
       //no mass cut ditributions: mass
@@ -847,10 +847,17 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
       //apply cut on invariant mass on the pair
       if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
+
+	cosThetaStarD0 = part->CosThetaStarD0();
+	cosThetaStarD0bar = part->CosThetaStarD0bar();
+	cosPointingAngle = part->CosPointingAngle();
+	normalizedDecayLength = part->NormalizedDecayLength();
+	decayLength = part->DecayLength();
+	ptProng[0]=part->PtProng(0); ptProng[1]=part->PtProng(1);
 	
 	if(fArray==1) cout<<"LS signal: ERROR"<<endl;
 	for (Int_t iprong=0; iprong<2; iprong++){
-	  AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(iprong);
+	  AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(iprong);
 	  if (fReadMC) labprong[iprong]=prong->GetLabel();
 	  
 	  //cout<<"prong name = "<<prong->GetName()<<" label = "<<prong->GetLabel()<<endl;
@@ -867,7 +874,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    
 	    fillthispi="hptpiS_";
 	    fillthispi+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthispi))->Fill(part->PtProng(iprong));
+	    ((TH1F*)listout->FindObject(fillthispi))->Fill(ptProng[iprong]);
 	    fillthispi="hd0piS_";
 	    fillthispi+=ptbin;
 	    ((TH1F*)listout->FindObject(fillthispi))->Fill(part->Getd0Prong(iprong));
@@ -885,7 +892,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    
 	    fillthisK="hptKS_";
 	    fillthisK+=ptbin;
-	    ((TH1F*)listout->FindObject(fillthisK))->Fill(part->PtProng(iprong));
+	    ((TH1F*)listout->FindObject(fillthisK))->Fill(ptProng[iprong]);
 	    fillthisK="hd0KS_";
 	    fillthisK+=ptbin;
 	    ((TH1F*)listout->FindObject(fillthisK))->Fill(part->Getd0Prong(iprong));
@@ -898,7 +905,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	  fillthis="hcosthpointd0S_";
 	  fillthis+=ptbin;	  
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Getd0Prong(iprong));
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,part->Getd0Prong(iprong));
 
 	} //end loop on prongs
 
@@ -908,18 +915,18 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	fillthis="hcosthetapointS_";
 	fillthis+=ptbin;	  
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle());
+	((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle);
 
 	fillthis="hcosthpointd0d0S_";
 	fillthis+=ptbin;	  
-	((TH2F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Prodd0d0());
+	((TH2F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,part->Prodd0d0());
 	  
 	fillthis="hcosthetastarS_";
 	fillthis+=ptbin;
-	if ((fReadMC && ((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)) ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	if ((fReadMC && ((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)) ((TH1F*)listout->FindObject(fillthis))->Fill(cosThetaStarD0);
 	else {
-	  if (fReadMC || isSelectedPID>1)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());
-	  if(isSelectedPID==1 || isSelectedPID==3)((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
+	  if (fReadMC || isSelectedPID>1)((TH1F*)listout->FindObject(fillthis))->Fill(cosThetaStarD0bar);
+	  if(isSelectedPID==1 || isSelectedPID==3)((TH1F*)listout->FindObject(fillthis))->Fill(cosThetaStarD0);
 	}
 	fillthis="hd0d0S_";
 	fillthis+=ptbin;
@@ -933,11 +940,11 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	fillthis="hdeclS_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->DecayLength());
+	((TH1F*)listout->FindObject(fillthis))->Fill(decayLength);
 
 	fillthis="hnormdeclS_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->NormalizedDecayLength());
+	((TH1F*)listout->FindObject(fillthis))->Fill(normalizedDecayLength);
 
 	if(recalcvtx) {
 	  fillthis="hdeclvS_";
@@ -958,24 +965,31 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
       fillthis="hMassB_";
       fillthis+=ptbin;
       
-      if (!fCutOnDistr || (fCutOnDistr && (isSelected==1 || isSelected==3))) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
-      if (!fCutOnDistr || (fCutOnDistr && isSelected>1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
+      if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
+      if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
 
       // fillthis="hptB1prongnoMcut_";
       // fillthis+=ptbin;
       
-      // ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));
+      // ((TH1F*)listout->FindObject(fillthis))->Fill(ptProng[0]);
       
       // fillthis="hptB2prongsnoMcut_";
       // fillthis+=ptbin;
-      // ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));
-      // ((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(1));
+      // ((TH1F*)listout->FindObject(fillthis))->Fill(ptProng[0]);
+      // ((TH1F*)listout->FindObject(fillthis))->Fill(ptProng[1]);
 
       //apply cut on invariant mass on the pair
       if(TMath::Abs(minvD0-mPDG)<invmasscut || TMath::Abs(minvD0bar-mPDG)<invmasscut){
 
+	cosThetaStarD0 = part->CosThetaStarD0();
+	cosThetaStarD0bar = part->CosThetaStarD0bar();
+	cosPointingAngle = part->CosPointingAngle();
+	normalizedDecayLength = part->NormalizedDecayLength();
+	decayLength = part->DecayLength();
+	ptProng[0]=part->PtProng(0); ptProng[1]=part->PtProng(1);
 
-	AliAODTrack *prongg=(AliAODTrack*)part->GetDaughter(0);
+
+	AliAODTrack *prongg=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
 	if(!prongg) {
 	  if(fDebug>2) cout<<"No daughter found";
 	  return;
@@ -995,8 +1009,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	//normalise pt distr to half afterwards
 	fillthis="hptB_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(0));
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->PtProng(1));
+	((TH1F*)listout->FindObject(fillthis))->Fill(ptProng[0]);
+	((TH1F*)listout->FindObject(fillthis))->Fill(ptProng[1]);
 
 	fillthis="hd0p0B_";
 	fillthis+=ptbin;
@@ -1014,7 +1028,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  Double_t factor[2]={1,1};
 
 	  for(Int_t iprong=0;iprong<2;iprong++){
-	    AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(iprong);
+	    AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(iprong);
 	    lab=prong->GetLabel();
 	    if(lab>=0){
 	      AliAODMCParticle* mcprong=(AliAODMCParticle*)arrMC->At(lab);
@@ -1031,7 +1045,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	    fillthis+=ptbin;
 	  
 	    if(TMath::Abs(pdgMother[iprong])==310 || TMath::Abs(pdgMother[iprong])==130 || TMath::Abs(pdgMother[iprong])==321){ //K^0_S, K^0_L, K^+-
-	      if(part->PtProng(iprong)<=1)factor[iprong]=1./.7;
+	      if(ptProng[iprong]<=1)factor[iprong]=1./.7;
 	      else factor[iprong]=1./.6;
 	      fNentries->Fill(11);
 	    }
@@ -1064,7 +1078,7 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	  }
 	  fillthis="hcosthetapointmoresB_";
 	  fillthis+=ptbin;
-	  ((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),factor[0]*factor[1]);
+	  ((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,factor[0]*factor[1]);
 	}
 
 	if(recalcvtx){
@@ -1083,8 +1097,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	fillthis="hcosthpointd0B_";
 	fillthis+=ptbin;	  
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Getd0Prong(0));
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Getd0Prong(1));
+	((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,part->Getd0Prong(0));
+	((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,part->Getd0Prong(1));
 
 
 	fillthis="hdcaB_";
@@ -1093,8 +1107,8 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	fillthis="hcosthetastarB_";
 	fillthis+=ptbin;
-	if (!fCutOnDistr || (fCutOnDistr && (isSelected==1 || isSelected==3)))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0());
-	if (!fCutOnDistr || (fCutOnDistr && isSelected>1))((TH1F*)listout->FindObject(fillthis))->Fill(part->CosThetaStarD0bar());	
+	if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3)))((TH1F*)listout->FindObject(fillthis))->Fill(cosThetaStarD0);
+	if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1))((TH1F*)listout->FindObject(fillthis))->Fill(cosThetaStarD0bar);	
 
 	fillthis="hd0d0B_";
 	fillthis+=ptbin;
@@ -1108,19 +1122,19 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
 	fillthis="hcosthetapointB_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle());
+	((TH1F*)listout->FindObject(fillthis))->Fill(cosPointingAngle);
 
 	fillthis="hcosthpointd0d0B_";
 	fillthis+=ptbin;
-	((TH2F*)listout->FindObject(fillthis))->Fill(part->CosPointingAngle(),part->Prodd0d0());
+	((TH2F*)listout->FindObject(fillthis))->Fill(cosPointingAngle,part->Prodd0d0());
 
 	fillthis="hdeclB_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->DecayLength());
+	((TH1F*)listout->FindObject(fillthis))->Fill(decayLength);
 
 	fillthis="hnormdeclB_";
 	fillthis+=ptbin;
-	((TH1F*)listout->FindObject(fillthis))->Fill(part->NormalizedDecayLength());
+	((TH1F*)listout->FindObject(fillthis))->Fill(normalizedDecayLength);
 
 	if(recalcvtx) {
 
@@ -1135,12 +1149,12 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 	}
       }//mass cut	
     }//else (background)
-  }
+  
   return;
 }
 //____________________________________________________________________________
 
-void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
+void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
   // function used in UserExec to fill mass histograms:
   //
@@ -1148,13 +1162,11 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
 
   //  Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
-  Int_t isSelected=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod); //selected
-
-  //cout<<"is selected = "<<isSelected<<endl;
+  //cout<<"is selected = "<<fIsSelectedCandidate<<endl;
 
   //cout<<"check cuts = "<<endl;
   //cuts->PrintAll();
-  if (!isSelected){
+  if (!fIsSelectedCandidate){
     //cout<<"Not Selected"<<endl;
     //cout<<"Rejected because "<<cuts->GetWhy()<<endl;
     return;
@@ -1167,7 +1179,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
   //printf("SELECTED\n");
   Int_t ptbin=cuts->PtBin(part->Pt());
 
-  AliAODTrack *prong=(AliAODTrack*)part->GetDaughter(0);
+  AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
   if(!prong) {
     AliDebug(2,"No daughter found");
     return;
@@ -1203,7 +1215,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
   //count true D0 selected by cuts
   if (fReadMC && labD0>=0) fNentries->Fill(2);
 
-  if ((isSelected==1 || isSelected==3) && fFillOnlyD0D0bar<2) { //D0
+  if ((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2) { //D0
     fillthis="histMass_";
     fillthis+=ptbin;
     //cout<<"Filling "<<fillthis<<endl;
@@ -1239,7 +1251,7 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
     }
       
   }
-  if (isSelected>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) { //D0bar
+  if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) { //D0bar
     fillthis="histMass_";
     fillthis+=ptbin;
     //printf("Fill mass with D0bar");
@@ -1277,18 +1289,18 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODEvent* aod,AliAODRecoDecayHF2P
 }
 
 //__________________________________________________________________________
-AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev,AliAODRecoDecayHF2Prong *d){
+AliAODVertex* AliAnalysisTaskSED0Mass::GetPrimaryVtxSkipped(AliAODEvent *aodev){
   //Calculate the primary vertex w/o the daughter tracks of the candidate
   
   Int_t skipped[2];
   Int_t nTrksToSkip=2;
-  AliAODTrack *dgTrack = (AliAODTrack*)d->GetDaughter(0);
+  AliAODTrack *dgTrack = (AliAODTrack*)fDaughterTracks.UncheckedAt(0);
   if(!dgTrack){
     AliDebug(2,"no daughter found!");
     return 0x0;
   }
   skipped[0]=dgTrack->GetID();
-  dgTrack = (AliAODTrack*)d->GetDaughter(1);
+  dgTrack = (AliAODTrack*)fDaughterTracks.UncheckedAt(1);
   if(!dgTrack){
     AliDebug(2,"no daughter found!");
     return 0x0;
