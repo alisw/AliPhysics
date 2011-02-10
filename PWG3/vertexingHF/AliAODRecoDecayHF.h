@@ -52,6 +52,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 
 
   // kinematics & topology
+  Double_t DecayLength2() const 
+    { return AliAODRecoDecay::DecayLength2(GetPrimaryVtx());}
   Double_t DecayLength() const 
     { return AliAODRecoDecay::DecayLength(GetPrimaryVtx());}
   Double_t DecayLengthError() const 
