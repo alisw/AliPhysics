@@ -303,6 +303,10 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   // Apply selection, returns 3 if accepted, 0 if not accepted
   //
 
+
+  fIsSelectedCuts=0;
+  fIsSelectedPID=0;
+
   if(!fCutsRD){
     cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
@@ -344,33 +348,48 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     Double_t mDplusPDG = TDatabasePDG::Instance()->GetParticle(411)->Mass();
     Double_t mDplus=d->InvMassDplus();
     if(TMath::Abs(mDplus-mDplusPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    //    if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
-    if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Kaon
-    if(TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Pion1
-    if(TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Pion2
-
-    
 
     //2track cuts
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+    Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
     if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
     
     //sec vert
     if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    
-    if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    
-    if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
-    
+
     //DCA
     for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+    if(d->Pt2Prong(1) < fCutsRD[GetGlobalIndex(1,ptbin)]*fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Kaon
+
+    if(d->Pt2Prong(0) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Pion1
+
+    if(d->Pt2Prong(2) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}//Pion2
+
+    
+
+
+    
+    
+    if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && d->Pt2Prong(2)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+
+
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
+
+    
+
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,origownvtx);
     
+    fIsSelectedCuts=returnvalueCuts;
+
     if(!returnvalueCuts) return 0;
   }
   
@@ -378,6 +397,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
      selectionLevel==AliRDHFCuts::kCandidate ||     
      selectionLevel==AliRDHFCuts::kPID) {
     returnvaluePID = IsSelectedPID(d);
+    fIsSelectedPID=returnvaluePID;
   }
   if(returnvaluePID==0)return 0;
 
