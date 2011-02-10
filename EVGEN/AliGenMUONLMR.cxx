@@ -10,7 +10,8 @@
 
 ClassImp(AliGenMUONLMR)
 
-AliGenMUONLMR::AliGenMUONLMR () : AliGenMC(), fNMuMin(2), fGenSingleProc(-1) { 
+
+AliGenMUONLMR::AliGenMUONLMR () : AliGenMC(), fNMuMin(2), fGenSingleProc(-1), fCosTheta(0), fRhoLineShape(0), fHMultMu(0), fHNProc(0) { 
   //
   // default constructor 
   //
@@ -120,11 +121,11 @@ AliGenMUONLMR::AliGenMUONLMR () : AliGenMC(), fNMuMin(2), fGenSingleProc(-1) {
     }
     Double_t delta   = md3 * md3 / (mres * mres);
     Double_t epsilon = mumass * mumass / (mres * mres);
-    Int_t nbins = fDalitz[index]->GetNbinsX();
-    Double_t xmin = fDalitz[index]->GetXaxis()->GetXmin(); 
+    Int_t nbins0 = fDalitz[index]->GetNbinsX();
+    Double_t xmin0 = fDalitz[index]->GetXaxis()->GetXmin(); 
     Double_t deltax =  fDalitz[index]->GetBinWidth(1);
-    Double_t xd = xmin - deltax/2.; 
-    for (Int_t ibin = 0; ibin< nbins; ibin++) { 
+    Double_t xd = xmin0 - deltax/2.; 
+    for (Int_t ibin = 0; ibin< nbins0; ibin++) { 
       Double_t dalval = 0; 
       xd += deltax; 
       if (xd > 4. *epsilon) { 
@@ -625,7 +626,7 @@ Double_t AliGenMUONLMR::FormFactor(Double_t q2, Int_t decay){
 
 //____________________________________________________________
 
-Double_t AliGenMUONLMR::RhoLineShapeNew(Double_t *x, Double_t *para){
+Double_t AliGenMUONLMR::RhoLineShapeNew(Double_t *x, Double_t* /*para*/){
   //new parameterization implemented by Hiroyuki Sako (GSI)
   Double_t mass = *x;
   double r, GammaTot;
