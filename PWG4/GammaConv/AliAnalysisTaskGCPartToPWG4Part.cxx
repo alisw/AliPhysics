@@ -27,6 +27,8 @@
 
 #include "AliMCAnalysisUtils.h"
 
+
+#include "AliAODMCHeader.h"
 // Gamma - jet correlation analysis task
 // Authors: Svein Lindal
 
@@ -107,11 +109,12 @@ void AliAnalysisTaskGCPartToPWG4Part::UserExec(Option_t *)
   
 
   ProcessConvGamma(aodEvent);
-    
+
 
   //PostData(1, fOutputList);
         
 }
+
 
 
 
@@ -130,31 +133,92 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
     AliError(Form("No branch by name %s found in file %s", fAODBranchName.Data(), fDeltaAODFileName.Data()));
     return;
   }
+
+
+
+  // AliAODMCHeader * mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->FindListObject("mcHeader"));
+
   
   TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
   
-  for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
+for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
     //AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
     
     
     //if(!photon) {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
-      if (!aodO) {
+      // AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
+      // if (!aodO) {
 
-	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
-	continue;
-      }
+      // 	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
+      // 	continue;
+      // }
+ 
+    AliAODConversionParticle * convParticle = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
+    if (!convParticle) {
       
-      AliAODPWG4ParticleCorrelation * photon = AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
-      Int_t tag = CheckTag(photon, tracks, arrayMC);
-      if(tag > 0 ) photon->SetTag(tag);
+      AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
+      continue;
+    }
+    
+  
+    AliAODPWG4ParticleCorrelation * photon = AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
+      //Int_t tag = CheckTag(photon, tracks, arrayMC, mcHeader);
+      //if(tag > 0 ) photon->SetTag(tag);
      
   }
+
+   
 }
 
+/////____________________________________________________________________________________
+// void AliAnalysisTaskGCPartToPWG4Part::FillMCHistograms(AliAODPWG4ParticleCorrelation * recParticle, AliAODMCParticle * mcParticle) {
 
+  
+
+
+// }
 //////_________________________________________________________________________________________
-Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC) {
+Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC, AliAODMCHeader * mcHeader) {
+
+
+
+
+
+  for (int imc = 0; imc < arrayMC->GetEntriesFast(); imc++) {
+  //for (int imc = 0; imc < 20; imc++) {
+
+    
+    
+    AliAODMCParticle * mParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(imc));
+    //    cout << mParticle->GetPdgCode() << " " <<mParticle->GetStatus() << endl;
+
+   
+    //if( mParticle->GetPdgCode() == 34) cout<< "BALLE"<<endl;// && mParticle->GetMother() < 10) {
+
+    if( mParticle->GetPdgCode() == 22 ) { //&& mParticle->GetMother() < 10) {
+      AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetMother()));
+      //if (TMath::Abs(mother->GetPdgCode()) < 22 && TMath::Abs(mother->GetPdgCode()) != 11) cout  <<"KKKKKKKKK"<< mother->GetPdgCode() <<endl;
+	
+      for (int id = 0; id < mParticle->GetNDaughters(); id++) {
+  	int idaughter = mParticle->GetDaughter(id);
+  	if(idaughter>0 && idaughter < arrayMC->GetEntriesFast()) {
+  	  AliAODMCParticle * dmParticle = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mParticle->GetDaughter(id)));
+  	  //cout  << dmParticle->GetPdgCode() << endl; 
+  	}
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
 
   Int_t tag = 0;
 
@@ -188,35 +252,64 @@ Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * 
     AliAODMCParticle * mcPart2 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(track2->GetLabel()));
     
     if (mcPart1 && mcPart2) {
-      
-      //if(mcPart1)
-      // cout << mcPart1->GetMother()<< " " <<mcPart2->GetMother() << endl;
-      //cout << mcPart1->GetPdgCode()<< " " << mcPart2->GetPdgCode() << endl;
-      
-      if(mcPart1->GetMother() == mcPart2->GetMother()) {
-	//cout << mcPart1->GetMother()->GetLabel();
-	
-	Int_t motherIndex = mcPart1->GetMother();
-	AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherIndex));
-	// cout << "yeay  " <<  mother->GetPdgCode() << endl;
-	//  cout << mother->IsPrimary();
-	
-	
-	tag = fAnaUtils->CheckOriginInAOD(&motherIndex, 1, arrayMC);
-	
-	if(fAnaUtils->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt)) {
-	  cout << tag << endl;
-	  cout << "prim : " << mother->IsPrimary();
-	  cout << " " << mother->GetLabel() << endl;
-	} 
 
-	if(! mother->IsPrimary()) {
-	  //AliAODMCParticle * gp = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother->GetMother()));
-	  //cout << gp->GetPdgCode()  << endl;
-	} else if (motherIndex < 10) {
-	  cout << "MI: " << motherIndex << endl;
+      if(mcPart1->GetMother() == mcPart2->GetMother()) {
+	
+	AliAODMCParticle * photon = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcPart1->GetMother()));
+	Int_t motherIndex = photon->GetMother();
+	tag= fAnaUtils->CheckOriginInAOD(&motherIndex, 1, arrayMC);
+
+	AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherIndex));
+	
+
+	if (photon->GetPdgCode() == 22 ) {
+
+	  if (TMath::Abs(mother->GetPdgCode()) < 22 && TMath::Abs(mother->GetPdgCode()) != 11) {
+	    
+	    fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
+	    fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
+	    
+	    cout  <<"KKKKKKKKK "<< mother->GetPdgCode() << " " << mother->GetStatus() << " mi " << motherIndex << " daught: " << mother->GetNDaughters() << endl;
+	    cout << photon->GetStatus() << " " << photon->Pt() << " headerpt:" << mcHeader->GetPtHard() << " " <<mcPart1->GetMother() << endl;
+	    
+	  }
+	} else {
+	  cout << "FAKE "<< photon->PdgCode() << " " << photon->Pt() << " " <<  photon->GetStatus() << endl;
 	}
 
+
+	
+
+
+
+	Int_t parentId = mother->GetMother();
+	AliAODMCParticle * gp = dynamic_cast<AliAODMCParticle*>(arrayMC->At(parentId));
+
+
+	
+
+	if(! mother->IsPrimary()) {
+	  //cout << mother->GetPdgCode() << " " << mother->GetStatus() <<endl;
+	  //	  cout << "other one? " << mother->PdgCode() << " " << gp->PdgCode() << " " << gp->GetStatus() << endl;
+	  //	cout << "yeay3  " <<  mother->GetPdgCode() << endl;
+ 
+	} else { //if (mother->IsPhysicalPrimary() ){
+	  
+	  
+	  if(mother->GetStatus() < 10) {
+	    //cout << "yeay4  " <<  mother->GetPdgCode() << endl;
+ 	    // cout << "pion? " << gp->PdgCode() << " " << gp->GetStatus() << endl;
+	    //cout << "???" << mother->PdgCode() << " " << mother->GetStatus() << " " << gp->PdgCode() << " " << gp->GetStatus() << endl;
+	  } else {
+	    //cout << "yeay5  " <<  mother->GetPdgCode() << endl;
+	    //cout << "other? " << mother->PdgCode() << " " << mother->GetStatus() << " " << gp->PdgCode() << " " << gp->GetStatus() << endl;
+	  }
+	  
+	  
+	  // } else {
+	  //   cout << "MI: " << mother->GetPdgCode() << " " << mother->GetStatus() <<endl;
+	}
+	
       }
     }
   }
