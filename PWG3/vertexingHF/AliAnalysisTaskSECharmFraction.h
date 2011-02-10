@@ -10,7 +10,7 @@
 // using the charm hadron impact parameter to the primary vertex
 //
 //
-// Author: Andrea Rossi andrea.rossi@ts.infn.it
+// Author: Andrea Rossi andrea.rossi@pd.infn.it
 //*************************************************************************
 
 class TH1F;
@@ -59,6 +59,8 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   Int_t SetStandardCuts(Double_t pt,Double_t invMassCut);
   Int_t SetStandardCuts(Float_t *&ptbinlimits);
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
+  void SetAnalysisLevel(Int_t level){fFastAnalysis=level;}
+  Int_t GetAnalysisLevel(){return fFastAnalysis;}
   AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
   AliAODRecoDecayHF* ConstructFakeTrueSecVtx(const AliAODMCParticle *b1,const AliAODMCParticle *b2,const AliAODMCParticle *mum,Double_t *primaryVtxTrue);
   void SetUseMC(Bool_t useMC){fUseMC=useMC;}
@@ -95,11 +97,12 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   //  Int_t SetCuts(AliAnalysisTaskSECharmFraction *alchfr,Double_t pt,Double_t invMassCut);
   
  private:
-  Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBand,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue);
+  Bool_t FillHistos(AliAODRecoDecayHF2Prong *d,TList *&list,Int_t ptbin,Int_t okD0,Int_t okD0bar,Double_t invMassD0,Double_t invMassD0bar,Bool_t isPeakD0,Bool_t isPeakD0bar,Bool_t isSideBandD0,Bool_t isSideBandD0bar,Double_t massmumtrue,AliAODRecoDecayHF *aodDMC,Double_t *vtxTrue);
   void FillHistoMCproperties(TClonesArray *arrayMC);
 
   AliRDHFCutsD0toKpi *fCutsLoose;        // Loose cuts object
   AliRDHFCutsD0toKpi *fCutsTight;      // Vertexer heavy flavour
+  Int_t fFastAnalysis;                  // Level of analysis speed: default is 1, switch it to 2 to fill the THnSparse
   Bool_t  fReadMC;                          // Flag To switch on/off access to MC 
   Bool_t  fsplitMassD0D0bar;                // Flag to use two shistos for D0 and D0bar invariant masses
   Bool_t  fLikeSign;                        // Flag to analyse Like Sign array
