@@ -125,6 +125,8 @@ class AliFlowAnalysisWithNestedLoops
   Bool_t GetEvaluateNestedLoopsForMH() const {return this->fEvaluateNestedLoopsForMH;};
   void Set3pCorrelatorPro(TProfile* const s3pPro) {this->f3pCorrelatorPro = s3pPro;};
   TProfile* Get3pCorrelatorPro() const {return this->f3pCorrelatorPro;};  
+  void Set5pCorrelatorPro(TProfile* const s3pPro) {this->f5pCorrelatorPro = s3pPro;};
+  TProfile* Get5pCorrelatorPro() const {return this->f5pCorrelatorPro;};   
   void Set3pCorrelatorVsPtSumDiffDirectPro(TProfile* const s3pcvpsdd, Int_t const sd) {this->f3pCorrelatorVsPtSumDiffDirectPro[sd] = s3pcvpsdd;};
   TProfile* Get3pCorrelatorVsPtSumDiffDirectPro(Int_t sd) const {return this->f3pCorrelatorVsPtSumDiffDirectPro[sd];};
   
@@ -174,7 +176,8 @@ class AliFlowAnalysisWithNestedLoops
   // 5.) Debugging and cross-checking MH:
   TList *fListMH; // list holding objects relevant for debugging and cross-checking of MH class
   Bool_t fEvaluateNestedLoopsForMH; // evaluate nested loops for mixed harmonics
-  TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[phi1+phi2-2phi3]>>  
+  TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>  
+  TProfile *f5pCorrelatorPro; // 5-p correlator <<cos[n(2phi1+2phi2+2phi3-3phi4-3phi5)]>>  
   TProfile *f3pCorrelatorVsPtSumDiffDirectPro[2]; // differential 3-p correlator cos[n(2phi1-psi2-psi3)] vs [(p1+p2)/2,|p1-p2|]
   
   ClassDef(AliFlowAnalysisWithNestedLoops, 0);
