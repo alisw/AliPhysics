@@ -85,7 +85,8 @@ fListQC(NULL),
 fEvaluateNestedLoopsForQC(kFALSE),
 fListMH(NULL),
 fEvaluateNestedLoopsForMH(kFALSE),
-f3pCorrelatorPro(NULL) 
+f3pCorrelatorPro(NULL),
+f5pCorrelatorPro(NULL) 
 {
  // Constructor. 
  
@@ -317,6 +318,12 @@ void AliFlowAnalysisWithNestedLoops::GetPointersForMH()
  if(p3pCorrelatorPro)
  {
   this->Set3pCorrelatorPro(p3pCorrelatorPro);  
+ } 
+ TString s5pCorrelatorProName = "f5pCorrelatorPro";
+ TProfile *p5pCorrelatorPro = dynamic_cast<TProfile*>(listMH->FindObject(s5pCorrelatorProName.Data()));
+ if(p5pCorrelatorPro)
+ {
+  this->Set5pCorrelatorPro(p5pCorrelatorPro);  
  } 
  if(!fEvaluateDifferential3pCorrelator){return;} 
  TString psdFlag[2] = {"PtSum","PtDiff"};
@@ -626,6 +633,13 @@ void AliFlowAnalysisWithNestedLoops::CheckPointersForMH(TString where)
    cout<<endl;
    exit(0); 
   }
+  if(!f5pCorrelatorPro)
+  {
+   cout<<endl;
+   cout<<" WARNING (NL): f5pCorrelatorPro is NULL in Make() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }  
   if(!fEvaluateDifferential3pCorrelator){return;}
   for(Int_t sd=0;sd<2;sd++)
   {
@@ -645,6 +659,13 @@ void AliFlowAnalysisWithNestedLoops::CheckPointersForMH(TString where)
   {
    cout<<endl;
    cout<<" WARNING (NL): f3pCorrelatorPro is NULL in Finish() !!!!"<<endl;
+   cout<<endl;
+   exit(0); 
+  }
+  if(!f5pCorrelatorPro)
+  {
+   cout<<endl;
+   cout<<" WARNING (NL): f5pCorrelatorPro is NULL in Finish() !!!!"<<endl;
    cout<<endl;
    exit(0); 
   }
@@ -689,6 +710,7 @@ void AliFlowAnalysisWithNestedLoops::BookEverythingForMH()
  
  if(fEvaluateNestedLoopsForMH)
  {  
+  // 3-p:
   TString s3pCorrelatorProName = "f3pCorrelatorPro";
   f3pCorrelatorPro = new TProfile(s3pCorrelatorProName.Data(),"",1,0,1);
   f3pCorrelatorPro->SetStats(kFALSE);
@@ -702,7 +724,20 @@ void AliFlowAnalysisWithNestedLoops::BookEverythingForMH()
      f3pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT",fHarmonic));
     }
   fListMH->Add(f3pCorrelatorPro);  
-  
+  // 5-p:
+  TString s5pCorrelatorProName = "f5pCorrelatorPro";
+  f5pCorrelatorPro = new TProfile(s5pCorrelatorProName.Data(),"",1,0,1);
+  f5pCorrelatorPro->SetStats(kFALSE);
+  f5pCorrelatorPro->GetXaxis()->SetLabelOffset(0.01);
+  f5pCorrelatorPro->GetXaxis()->SetLabelSize(0.05);
+  if(fHarmonic == 1)
+  {
+   f5pCorrelatorPro->GetXaxis()->SetBinLabel(1,"#LT#LTcos(2#phi_{1}+2#phi_{2}+2#phi_{3}-3#phi_{4}-3#phi_{5})#GT#GT");
+  } else
+    {
+     f5pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(2#phi_{1}+2#phi_{2}+2#phi_{3}-3#phi_{4}-3#phi_{5})]#GT#GT",fHarmonic));
+    }  
+  fListMH->Add(f5pCorrelatorPro);     
   if(fEvaluateDifferential3pCorrelator)
   {
    TString psdFlag[2] = {"PtSum","PtDiff"};
@@ -776,7 +811,7 @@ void AliFlowAnalysisWithNestedLoops::EvaluateNestedLoopsForMH(AliFlowEventSimple
  Int_t nPrim = anEvent->NumberOfTracks(); 
  Int_t nRP = anEvent->GetEventNSelTracksRP(); 
  AliFlowTrackSimple *aftsTrack = NULL;
- Double_t phi1=0.,phi2=0.,phi3=0.; // azimuthal angles of RPs
+ Double_t phi1=0.,phi2=0.,phi3=0.,phi4=0.,phi5=0.; // azimuthal angles of RPs
  Double_t psi1=0.,psi2=0.; // azimuthal angles of POIs
  Int_t charge1=0,charge2=0; // charge of POIs
  Double_t pt1=0.,pt2=0.; // transverse momenta of POIs
@@ -807,6 +842,46 @@ void AliFlowAnalysisWithNestedLoops::EvaluateNestedLoopsForMH(AliFlowEventSimple
    } // end of for(Int_t i2=0;i2<nPrim;i2++)  
   } // end of for(Int_t i1=0;i1<nPrim;i1++)
  }
+ 
+ // Evaluting correlator cos[n(2*phi1+2*phi2+2*phi3-3*phi4-3*phi5)] with five nested loops: 
+ if(nRP>=5)
+ {
+  for(Int_t i1=0;i1<nPrim;i1++)
+  {
+   aftsTrack=anEvent->GetTrack(i1);
+   if(!(aftsTrack->InRPSelection())) continue;  
+   phi1=aftsTrack->Phi();
+   for(Int_t i2=0;i2<nPrim;i2++)
+   {
+    if(i2==i1)continue;
+    aftsTrack=anEvent->GetTrack(i2);
+    if(!(aftsTrack->InRPSelection())) continue;
+    phi2=aftsTrack->Phi();
+    for(Int_t i3=0;i3<nPrim;i3++)
+    {
+     if(i3==i1||i3==i2)continue;
+     aftsTrack=anEvent->GetTrack(i3);
+     if(!(aftsTrack->InRPSelection())) continue;
+     phi3=aftsTrack->Phi();
+     for(Int_t i4=0;i4<nPrim;i4++)
+     {
+      if(i4==i1||i4==i2||i4==i3)continue;
+      aftsTrack=anEvent->GetTrack(i4);
+      if(!(aftsTrack->InRPSelection())) continue;
+      phi4=aftsTrack->Phi();
+      for(Int_t i5=0;i5<nPrim;i5++)
+      {
+       if(i5==i1||i5==i2||i5==i3||i5==i4)continue;
+       aftsTrack=anEvent->GetTrack(i5);
+       if(!(aftsTrack->InRPSelection())) continue;
+       phi5=aftsTrack->Phi();
+       f5pCorrelatorPro->Fill(0.5,cos(2.*n*phi1+2.*n*phi2+2.*n*phi3-3.*n*phi4-3.*n*phi5),1.);
+      } // end of for(Int_t i5=0;i5<nPrim;i5++)
+     } // end of for(Int_t i4=0;i4<nPrim;i4++)  
+    } // end of for(Int_t i3=0;i3<nPrim;i3++)
+   } // end of for(Int_t i2=0;i2<nPrim;i2++)
+  } // end of for(Int_t i1=0;i1<nPrim;i1++)
+ } // end of if(nPrim>=5) 
 
  // Evaluting correlator cos[n(psi1+psi2-2*phi3)] with three nested loops:
  if(!fEvaluateDifferential3pCorrelator){return;}
@@ -851,8 +926,8 @@ void AliFlowAnalysisWithNestedLoops::PrintOnTheScreen()
  // Print on the screen.
  
  cout<<endl;
- cout<<"****************************************************"<<endl;
- cout<<"****************************************************"<<endl;
+ cout<<"********************************************************************"<<endl;
+ cout<<"********************************************************************"<<endl;
  cout<<"                  Nested Loops                 "<<endl; 
  cout<<endl;
  
@@ -867,9 +942,11 @@ void AliFlowAnalysisWithNestedLoops::PrintOnTheScreen()
   if(fHarmonic != 1)
   {
    cout<<"   cos["<<fHarmonic<<"(phi1+phi2-2phi3)] = "<<f3pCorrelatorPro->GetBinContent(1)<<" +/- " <<f3pCorrelatorPro->GetBinError(1)<<endl;
+   cout<<"   cos["<<fHarmonic<<"(2phi1+2phi2+2phi3-3phi4-3phi5)] = "<<f5pCorrelatorPro->GetBinContent(1)<<" +/- " <<f5pCorrelatorPro->GetBinError(1)<<endl;
   } else
     {
      cout<<"   cos(phi1+phi2-2phi3) = "<<f3pCorrelatorPro->GetBinContent(1)<<" +/- " <<f3pCorrelatorPro->GetBinError(1)<<endl;
+     cout<<"   cos[(2phi1+2phi2+2phi3-3phi4-3phi5)] = "<<f5pCorrelatorPro->GetBinContent(1)<<" +/- " <<f5pCorrelatorPro->GetBinError(1)<<endl; 
     }  
   if(fEvaluateDifferential3pCorrelator)
   {
@@ -889,8 +966,8 @@ void AliFlowAnalysisWithNestedLoops::PrintOnTheScreen()
   cout<<"  Not evaluated."<<endl;
  }
  cout<<endl;
- cout<<"****************************************************"<<endl;
- cout<<"****************************************************"<<endl;
+ cout<<"********************************************************************"<<endl;
+ cout<<"********************************************************************"<<endl;
  cout<<endl;
  
 } // end of void AliFlowAnalysisWithNestedLoops::PrintOnTheScreen()

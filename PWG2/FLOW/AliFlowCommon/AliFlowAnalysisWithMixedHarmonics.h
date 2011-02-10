@@ -65,6 +65,7 @@ class AliFlowAnalysisWithMixedHarmonics
   virtual void Make(AliFlowEventSimple *anEvent);
   virtual void CheckPointersUsedInMake();
   virtual void Calculate3pCorrelator();
+  virtual void Calculate5pCorrelator();
   virtual void CalculateNonIsotropicTerms();
   virtual void CalculateDifferential3pCorrelator(Double_t &gIntegratedValue);
 						 
@@ -143,6 +144,8 @@ class AliFlowAnalysisWithMixedHarmonics
   TList* GetProfileList() const {return this->fProfileList;}  
   void Set3pCorrelatorPro(TProfile* const s3pPro) {this->f3pCorrelatorPro = s3pPro;};
   TProfile* Get3pCorrelatorPro() const {return this->f3pCorrelatorPro;};
+  void Set5pCorrelatorPro(TProfile* const s5pPro) {this->f5pCorrelatorPro = s5pPro;};
+  TProfile* Get5pCorrelatorPro() const {return this->f5pCorrelatorPro;};
   void SetNonIsotropicTermsPro(TProfile* const nitPro) {this->fNonIsotropicTermsPro = nitPro;};
   TProfile* GetNonIsotropicTermsPro() const {return this->fNonIsotropicTermsPro;};
   void Set3pCorrelatorVsMPro(TProfile* const s3pVsMPro) {this->f3pCorrelatorVsMPro = s3pVsMPro;};
@@ -238,6 +241,7 @@ class AliFlowAnalysisWithMixedHarmonics
   // 4.) Profiles:
   TList *fProfileList; // list holding all all-event profiles 
   TProfile *f3pCorrelatorPro; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> (not corrected for detector effects)
+  TProfile *f5pCorrelatorPro; // 5-p correlator <<cos[n*(2.*phi1+2.*phi2+2.*phi3-3.*phi4-3.*phi5)]>> (not corrected for detector effects)
   TProfile *fNonIsotropicTermsPro; // non-isotropic terms in the decomposition of 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>
   TProfile *f3pCorrelatorVsMPro; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs multiplicity
   TProfile *f3pPOICorrelatorVsM; // 3-p correlator <<cos[n(psi1+psi2-2phi3)]>> vs multiplicity

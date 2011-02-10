@@ -91,6 +91,7 @@ fImQnk(NULL),
 fSpk(NULL),
 fProfileList(NULL),
 f3pCorrelatorPro(NULL),
+f5pCorrelatorPro(NULL),
 fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
@@ -235,8 +236,8 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
     {
      wEta = fEtaWeights->GetBinContent(1+(Int_t)(TMath::Floor((dEta-fEtaMin)/fEtaBinWidth))); 
     } 
-    // Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m <= n and k = 0,1,2,3) for this event:
-    for(Int_t m=0;m<2;m++) // needs only Q-vectors in harmonincs n and 2n
+    // Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m = 1,2,3,4,5,6 and k = 0,1,2,3) for this event:
+    for(Int_t m=0;m<6;m++) 
     {
      for(Int_t k=0;k<4;k++) // to be improved (what is the maximum k that I need?)
      {
@@ -336,7 +337,11 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  {
   this->Calculate3pCorrelator();
   this->CalculateNonIsotropicTerms();                          
- }             
+  if(anEvent->GetEventNSelTracksRP() >= 5) 
+  {
+   this->Calculate5pCorrelator();
+  } // end of if(anEvent->GetEventNSelTracksRP() >= 5) 
+ } // end of if(anEvent->GetEventNSelTracksRP() >= 3)             
                  
  // f) Calculate differential 3-p azimuthal correlator cos[n(psi1+psi2-2*phi3)] in terms of Q_{2n} and p_{n}:
  if(fEvaluateDifferential3pCorrelator && anEvent->GetEventNSelTracksRP() >= 1)
@@ -514,6 +519,13 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
  TProfile *g2pCorrelatorSinPsiSum = dynamic_cast<TProfile *>(profileList->FindObject("f2pCorrelatorSinPsiSum"));
  if(g2pCorrelatorSinPsiSum)
    this->Set2pCorrelatorSinPsiSum(g2pCorrelatorSinPsiSum);
+   
+ TString s5pCorrelatorProName = "f5pCorrelatorPro";
+ TProfile *p5pCorrelatorPro = dynamic_cast<TProfile*>(profileList->FindObject(s5pCorrelatorProName.Data()));
+ if(p5pCorrelatorPro)
+ {
+  this->Set5pCorrelatorPro(p5pCorrelatorPro);  
+ }
   
 } // end of void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
 
@@ -689,12 +701,10 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllEventByEventQuantities()
 {
  // Book all event-by-event quantitites.
  
- Int_t n = fHarmonic;
- 
- // Q_{n,k} and S{p,k}:
- fReQnk = new TMatrixD(2*n,9); // to be improved(bound on k)
- fImQnk = new TMatrixD(2*n,9); // to be improved(bound on k)
- fSpk = new TMatrixD(4,4); // to be improved(bound on p and k)
+  // Q_{n,k} and S{p,k}:
+ fReQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
+ fImQnk = new TMatrixD(6,9); // to be improved (check bound on k!)
+ fSpk = new TMatrixD(4,4); // to be improved (check bound on p and k!)
  
  // p_n vs [(p1+p2)/2,|p1-p2|]
  if(!fEvaluateDifferential3pCorrelator){return;} 
@@ -744,7 +754,8 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
  // b) Non-isotropic terms in the decomposition of <<cos[n(phi1+phi2-2phi3)]>>;
  // c) 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> corrected for detector effects;
- // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>.
+ // d) Histogram which quantifies bias coming from detector inefficiencies to 3-p correlator <<cos[n(phi1+phi2-2phi3)]>>;
+ // e) 5-p correlator <<cos[n*(2phi1+2phi2+2phi3-3phi4-3phi5)]>> for all events (not corrected for detector effects - not supported yet).
 
  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects);
  TString s3pCorrelatorProName = "f3pCorrelatorPro";
@@ -821,6 +832,21 @@ void AliFlowAnalysisWithMixedHarmonics::BookDefault()
     fDetectorBiasHist->GetXaxis()->SetBinLabel(1,Form("#frac{corrected}{measured} #LT#LTcos[%i(#phi_{1}+#phi_{2}-2#phi_{3})]#GT#GT",fHarmonic));  
    }  
  fResultsList->Add(fDetectorBiasHist);
+ 
+ // e) 5-p correlator <<cos[n*(2phi1+2phi2+2phi3-3phi4-3phi5)]>> for all events (not corrected for detector effects - not supported yet):
+ TString s5pCorrelatorProName = "f5pCorrelatorPro";
+ f5pCorrelatorPro = new TProfile(s5pCorrelatorProName.Data(),"",1,0,1);
+ f5pCorrelatorPro->SetStats(kFALSE);
+ f5pCorrelatorPro->GetXaxis()->SetLabelOffset(0.01);
+ f5pCorrelatorPro->GetXaxis()->SetLabelSize(0.05);
+ if(fHarmonic == 1)
+ {
+  f5pCorrelatorPro->GetXaxis()->SetBinLabel(1,"#LT#LTcos(2#phi_{1}+2#phi_{2}+2#phi_{3}-3#phi_{4}-3#phi_{5})#GT#GT");
+ } else
+   {
+    f5pCorrelatorPro->GetXaxis()->SetBinLabel(1,Form("#LT#LTcos[%i(2#phi_{1}+2#phi_{2}+2#phi_{3}-3#phi_{4}-3#phi_{5})]#GT#GT",fHarmonic));
+   }
+ fProfileList->Add(f5pCorrelatorPro);
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookDefault()     
       
@@ -1184,6 +1210,13 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0); 
  }
+ if(!f5pCorrelatorPro)
+ {
+  cout<<endl;
+  cout<<" WARNING (MH): f5pCorrelatorPro is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0); 
+ }
  if(!fNonIsotropicTermsPro)
  {                        
   cout<<endl;
@@ -1212,32 +1245,8 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
   cout<<endl;
   exit(0);
  }
-
- if(!f2pCorrelatorCosPsiDiff) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorCosPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorSinPsiDiff) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorSinPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
-
+ 
+ // Differential correlators:
  if(!fEvaluateDifferential3pCorrelator){return;}
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1290,6 +1299,31 @@ for(Int_t fs=0;fs<2;fs++)
    }
   } // end of for(Int_t fs=0;fs<2;fs++)
  } // end of for(Int_t sd=0;sd<2;sd++)
+ 
+ if(!f2pCorrelatorCosPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInMake() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
                                                                                                                                                                                                                                                                                                                                    
 } // end of AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInMake()
 
@@ -1349,31 +1383,6 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   exit(0);
  }
 
- if(!f2pCorrelatorCosPsiDiff) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorCosPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorSinPsiDiff) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
- if(!f2pCorrelatorSinPsiSum) {
-  cout<<endl;
-  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
-  cout<<endl;
-  exit(0);
- }
-
  if(!f3pCorrelatorHist)
  {                        
   cout<<endl;
@@ -1397,6 +1406,8 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
   exit(0);
  } 
  */  
+ 
+ // Differential correlators:
  if(!fEvaluateDifferential3pCorrelator){return;} 
  for(Int_t sd=0;sd<2;sd++)
  {
@@ -1414,6 +1425,31 @@ void AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
    cout<<endl;
    exit(0);   
   } 
+ }
+
+ if(!f2pCorrelatorCosPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorCosPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorCosPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiDiff) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiDiff is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
+ }
+ if(!f2pCorrelatorSinPsiSum) {
+  cout<<endl;
+  cout<<" WARNING (MH): f2pCorrelatorSinPsiSum is NULL in CheckPointersUsedInFinish() !!!!"<<endl;
+  cout<<endl;
+  exit(0);
  }
 
 } // end of AliFlowAnalysisWithMixedHarmonics::CheckPointersUsedInFinish()
@@ -1440,9 +1476,12 @@ void AliFlowAnalysisWithMixedHarmonics::PrintOnTheScreen()
  // <<cos[n*(psi1+psi2-2phi3)]>>:
  Double_t d3pCorrelatorPoi = 0.;
  Double_t d3pCorrelatorPoiError = 0.;
- GetCorrelatorAndError(f3pCorrelatorVsPtSumDiffPro[0],
+ if(fEvaluateDifferential3pCorrelator)
+ {
+  GetCorrelatorAndError(f3pCorrelatorVsPtSumDiffPro[0],
 		       d3pCorrelatorPoi,
 		       d3pCorrelatorPoiError);
+ }		       
  cout<<endl;
  cout<<"*******************************************************"<<endl;
  cout<<"*******************************************************"<<endl;
@@ -1654,6 +1693,79 @@ void AliFlowAnalysisWithMixedHarmonics::Calculate3pCorrelator()
  } // end of if(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)
  
 } // end of void AliFlowAnalysisWithMixedHarmonics::Calculate3pCorrelator() 
+
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::Calculate5pCorrelator()
+{
+ // Calculate 5-p azimuthal correlator cos[n(2phi1+2phi2+2phi3-3phi4-3phi5)] in terms of Q_{n,k} and S_{p,k}.
+ 
+ // a) Calculate 5-p correlator without using particle weights;
+ // b) Calculate 5-p correlator with using particle weights.
+
+ // a) Calculate 5-p correlator without using particle weights: 
+ if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights))
+ {
+  // Multiplicity (number of RPs):
+  Double_t dMult = (*fSpk)(0,0);
+  // Real and imaginary parts of non-weighted Q-vectors (Q_{n,0}) evaluated in harmonics n,2n,...,6n: 
+  Double_t dReQ1n = (*fReQnk)(0,0);
+  Double_t dReQ2n = (*fReQnk)(1,0);
+  Double_t dReQ3n = (*fReQnk)(2,0);
+  Double_t dReQ4n = (*fReQnk)(3,0);
+  //Double_t dReQ5n = (*fReQnk)(4,0); // not needed
+  Double_t dReQ6n = (*fReQnk)(5,0);
+  Double_t dImQ1n = (*fImQnk)(0,0);
+  Double_t dImQ2n = (*fImQnk)(1,0);
+  Double_t dImQ3n = (*fImQnk)(2,0);
+  Double_t dImQ4n = (*fImQnk)(3,0);
+  //Double_t dImQ5n = (*fImQnk)(4,0); // not needed
+  Double_t dImQ6n = (*fImQnk)(5,0);
+  
+  // 5-particle azimuthal correlator:
+  Double_t five2n2n2n3n3n = 0.; // <cos[n(2phi1+2phi2+2phi3-3phi4-3phi5)]>
+  Double_t reQ2nQ2nQ2nQ3nstarQ3nstar = pow(dReQ2n,3.)*pow(dReQ3n,2.) 
+                                     - 3.*dReQ2n*pow(dReQ3n,2.)*pow(dImQ2n,2.)
+                                     + 6.*pow(dReQ2n,2.)*dReQ3n*dImQ2n*dImQ3n 
+                                     - 2.*dReQ3n*pow(dImQ2n,3.)*dImQ3n-pow(dReQ2n,3.)*pow(dImQ3n,2.) 
+                                     + 3.*dReQ2n*pow(dImQ2n,2.)*pow(dImQ3n,2.);
+  Double_t reQ2nQ2nQ2nQ6nstar = dReQ6n*pow(dReQ2n,3)-3.*dReQ2n*dReQ6n*pow(dImQ2n,2)
+                               + 3.*dImQ2n*dImQ6n*pow(dReQ2n,2)-dImQ6n*pow(dImQ2n,3); 
+  Double_t reQ4nQ2nQ3nstarQ3nstar = (dReQ4n*dReQ2n-dImQ4n*dImQ2n)*(dReQ3n*dReQ3n-dImQ3n*dImQ3n)
+                                  + 2.*(dReQ4n*dImQ2n+dImQ4n*dReQ2n)*dReQ3n*dImQ3n;
+  Double_t reQ2nQ2nQ1nstarQ3nstar = (pow(dReQ2n,2.)-pow(dImQ2n,2.))*(dReQ3n*dReQ1n-dImQ3n*dImQ1n) 
+                                  + 2.*dReQ2n*dImQ2n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n);                            
+  Double_t reQ6nQ3nstarQ3nstar = pow(dReQ3n,2.)*dReQ6n + 2.*dReQ3n*dImQ3n*dImQ6n 
+                               - pow(dImQ3n,2.)*dReQ6n; 
+  Double_t reQ4nQ2nQ6nstar = dReQ6n*dReQ4n*dReQ2n-dReQ6n*dImQ4n*dImQ2n+dImQ6n*dReQ4n*dImQ2n
+                           + dImQ6n*dImQ4n*dReQ2n;
+  Double_t reQ4nQ1nstarQ3nstar = dReQ4n*(dReQ3n*dReQ1n-dImQ3n*dImQ1n)+dImQ4n*(dReQ3n*dImQ1n+dImQ3n*dReQ1n); 
+  Double_t reQ2nQ2nQ4nstar = pow(dReQ2n,2.)*dReQ4n+2.*dReQ2n*dImQ2n*dImQ4n-pow(dImQ2n,2.)*dReQ4n;                       
+  Double_t reQ2nQ1nQ3nstar = dReQ3n*dReQ2n*dReQ1n-dReQ3n*dImQ2n*dImQ1n+dImQ3n*dReQ2n*dImQ1n
+                           + dImQ3n*dImQ2n*dReQ1n;
+  Double_t reQ2nQ1nstarQ1nstar = pow(dReQ1n,2.)*dReQ2n + 2.*dReQ1n*dImQ1n*dImQ2n - pow(dImQ1n,2.)*dReQ2n; 
+  // Analytic expression for 5-particle azimuthal correlator:                                   
+  five2n2n2n3n3n = (reQ2nQ2nQ2nQ3nstarQ3nstar-reQ2nQ2nQ2nQ6nstar-3.*reQ4nQ2nQ3nstarQ3nstar 
+                 - 6.*reQ2nQ2nQ1nstarQ3nstar+2.*reQ6nQ3nstarQ3nstar+3.*reQ4nQ2nQ6nstar
+                 + 6.*reQ4nQ1nstarQ3nstar+6.*reQ2nQ2nQ4nstar
+                 + 12.*reQ2nQ1nQ3nstar+6.*reQ2nQ1nstarQ1nstar
+                 - 2.*((pow(dReQ6n,2.)+pow(dImQ6n,2.)) 
+                 + 3.*(pow(dReQ4n,2.)+pow(dImQ4n,2.))
+                 + 6.*(pow(dReQ3n,2.)+pow(dImQ3n,2.)) 
+                 + 9.*(pow(dReQ2n,2.)+pow(dImQ2n,2.))
+                 + 6.*(pow(dReQ1n,2.)+pow(dImQ1n,2.))-12.*dMult))
+                 /(dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+  // Fill all-events profile:                       
+  f5pCorrelatorPro->Fill(0.5,five2n2n2n3n3n,dMult*(dMult-1.)*(dMult-2.)*(dMult-3.)*(dMult-4.));
+ } // end of if(!(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)) 
+
+ // b) Calculate 5-p correlator with using particle weights: 
+ if(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)
+ {
+  // ...
+ } // end of if(fUsePhiWeights || fUsePtWeights || fUseEtaWeights)
+ 
+} // end of void AliFlowAnalysisWithMixedHarmonics::Calculate5pCorrelator() 
 
 //================================================================================================================
 
