@@ -93,6 +93,8 @@ AliTOFtracker::AliTOFtracker():
  { 
   //AliTOFtracker main Ctor
    
+   for (Int_t ii=0; ii<kMaxCluster; ii++) fClusters[ii]=0x0;
+
    // Gettimg the geometry 
    fGeom= new AliTOFGeometry();
 
@@ -136,6 +138,11 @@ AliTOFtracker::~AliTOFtracker() {
     fTOFtrackPoints->Delete();
     delete fTOFtrackPoints;
     fTOFtrackPoints=0x0;
+  }
+
+  if (fClusters) {
+    for (Int_t ii=0; ii<kMaxCluster; ii++)
+      if (fClusters[ii]) fClusters[ii]->Delete();
   }
 
 }
@@ -317,7 +324,8 @@ Int_t AliTOFtracker::PropagateBack(AliESDEvent * const event) {
   // fPid->MakePID(event,timeZero);
 
   fSeeds->Clear();
-  fTracks->Delete();
+  //fTracks->Delete();
+  fTracks->Clear();
   return 0;
   
 }
@@ -632,6 +640,11 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       }
     } // loop on found TOF track points
 
+    if (idclus==-1) {
+      AliDebug(1,Form("Reconstructed track %d doesn't match any TOF cluster", iseed));
+      delete trackTOFin;
+      continue;
+    }
 
     AliTOFcluster *c=fClusters[idclus];
 

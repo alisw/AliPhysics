@@ -156,6 +156,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliTOFcalib *calib):
 // Constructor
 //
 
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=0x0;
+
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   if (validity.CompareTo("valid")==0) {
     AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
@@ -185,6 +187,8 @@ AliTOFClusterFinder::AliTOFClusterFinder(AliRunLoader* runLoader, AliTOFcalib *c
 // Constructor
 //
 
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=0x0;
+
   TString validity = (TString)fTOFcalib->GetOfflineValidity();
   if (validity.CompareTo("valid")==0) {
     AliInfo(Form(" validity = %s - Using offline calibration parameters",validity.Data()));
@@ -210,6 +214,9 @@ AliTOFClusterFinder::AliTOFClusterFinder(const AliTOFClusterFinder &source) :
   fTOFRawStream(source.fTOFRawStream)
 {
   // copy constructor
+
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=source.fTofClusters[ii];
+
 }
 
 //------------------------------------------------------------------------
@@ -227,6 +234,8 @@ AliTOFClusterFinder& AliTOFClusterFinder::operator=(const AliTOFClusterFinder &s
   fDecoderVersion=source.fDecoderVersion;
   fTOFcalib=source.fTOFcalib;
   fTOFRawStream=source.fTOFRawStream;
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=source.fTofClusters[ii];
+
   return *this;
 
 }

@@ -80,7 +80,9 @@ AliTOFtrackerV1::AliTOFtrackerV1():
   fHRecSigYVsPWin(0x0),
   fHRecSigZVsPWin(0x0)
  { 
-  //AliTOFtrackerV1 main Ctor
+   //AliTOFtrackerV1 main Ctor
+
+   for (Int_t ii=0; ii<kMaxCluster; ii++) fClusters[ii]=0x0;
 
    InitCheckHists();
 
@@ -117,6 +119,13 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
     delete fSeeds;
     fSeeds=0x0;
   }
+
+
+  if (fClusters) {
+    for (Int_t ii=0; ii<kMaxCluster; ii++)
+      if (fClusters[ii]) fClusters[ii]->Delete();
+  }
+
 }
 //_____________________________________________________________________________
 void AliTOFtrackerV1::GetPidSettings(AliESDpid *esdPID) {

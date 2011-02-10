@@ -84,6 +84,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 // Constructor
 //
 
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=0x0;
+
   if (AliTOFReconstructor::GetRecoParam()) {
     fkRecoParam = AliTOFReconstructor::GetRecoParam();
     fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
@@ -123,6 +125,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 // Constructor
 //
 
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=0x0;
+
   if (AliTOFReconstructor::GetRecoParam()) {
     fkRecoParam = AliTOFReconstructor::GetRecoParam();
     fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
@@ -160,6 +164,8 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source
 {
   // copy constructor
 
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=source.fTofClusters[ii];
+
   if (AliTOFReconstructor::GetRecoParam()) {
     fkRecoParam = AliTOFReconstructor::GetRecoParam();
     fMaxDeltaTime = fkRecoParam->GetMaxDeltaTime();
@@ -178,6 +184,7 @@ AliTOFClusterFinderV1& AliTOFClusterFinderV1::operator=(const AliTOFClusterFinde
     return *this;
 
   TObject::operator=(source);
+  for (Int_t ii=0; ii<kTofMaxCluster; ii++) fTofClusters[ii]=source.fTofClusters[ii];
   fDigits=source.fDigits;
   fRecPoints=source.fRecPoints;
   fVerbose=source.fVerbose;
@@ -242,8 +249,10 @@ void AliTOFClusterFinderV1::Digits2RecPoints(TTree* digitsTree, TTree* clusterTr
   fDigits->Clear();
   TClonesArray &aDigits = *fDigits;
 
-  if (digitsTree == 0x0)
+  if (digitsTree == 0x0) {
     AliFatal("Can not get TreeD for TOF");
+    return;
+  }
 
   TBranch *branch = digitsTree->GetBranch("TOF");
   if (!branch) {
@@ -659,8 +668,8 @@ void AliTOFClusterFinderV1::FillRecPoint()
 
   Int_t detectorIndex[5];
   for (jj=0; jj<5; jj++) detectorIndex[jj] = -1;
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = -1;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = -1;
   Int_t trackLabels[3];
   for (jj=0; jj<3; jj++) trackLabels[jj] = -1;
   Int_t digitIndex = -1;
@@ -683,6 +692,8 @@ void AliTOFClusterFinderV1::FillRecPoint()
     parTOF[2] = fTofClusters[ii]->GetADC(); // ADC=TOT
     parTOF[3] = fTofClusters[ii]->GetTDCND(); // TDCND
     parTOF[4] = fTofClusters[ii]->GetTDCRAW();//RAW
+    parTOF[5] = 0;
+    parTOF[6] = 0;
     status = fTofClusters[ii]->GetStatus();
 
     posClus[0] = fTofClusters[ii]->GetX();
@@ -759,8 +770,8 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
 
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
 
   Bool_t status = kTRUE; //assume all sim channels ok in the beginning...
 
@@ -806,6 +817,8 @@ void AliTOFClusterFinderV1::FindOnePadClusterPerStrip(Int_t nSector,
 	parTOF[2] = Int_t(digitInteresting->GetAdc());
 	parTOF[3] = Int_t(digitInteresting->GetTdcND());
 	parTOF[4] = Int_t(digitInteresting->GetTdc());
+	parTOF[5] = 0;
+	parTOF[6] = 0;
 
 	volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
 	//volIdClus = GetClusterVolIndex(det);
@@ -880,8 +893,8 @@ void AliTOFClusterFinderV1::FindClustersWithoutTOT(Int_t nSector,
   Double_t covClus[6];
   for (jj=0; jj<6; jj++) covClus[jj] = 0.;
 
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
 
   Bool_t status = kTRUE; //assume all sim channels ok in the beginning...
   Int_t tracks[kMaxNumberOfTracksPerDigit];
@@ -927,6 +940,8 @@ void AliTOFClusterFinderV1::FindClustersWithoutTOT(Int_t nSector,
 	parTOF[2] = Int_t(digitInteresting->GetAdc());
 	parTOF[3] = Int_t(digitInteresting->GetTdcND());
 	parTOF[4] = Int_t(digitInteresting->GetTdc());
+	parTOF[5] = 0;
+	parTOF[6] = 0;
 
 	volIdClus = fTOFGeometry->GetAliSensVolIndex(det[0],det[1],det[2]);
 	//volIdClus = GetClusterVolIndex(det);
@@ -1034,8 +1049,8 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
   Int_t iPadX = -1;
   Int_t iPadZ = -1;
 
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
   Double_t posClus[3];
   for (jj=0; jj<3; jj++) posClus[jj] = 0.;
   Int_t det[5];
@@ -1325,6 +1340,7 @@ void AliTOFClusterFinderV1::FindClusters34(Int_t nSector,
 		for (jj=0; jj<3; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 		GetClusterPars(/*check,*/ 3, indDet, interestingWeight, posClus, covClus);
 		for (jj=0; jj<3; jj++) delete [] indDet[jj];
+		delete [] indDet;
 
 		// To fill the track index array
 		dummyCounter=-1;
@@ -1499,8 +1515,8 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
   Int_t iPadZ = -1;
 
   Bool_t check = kFALSE;
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
   Double_t posClus[3];
   for (jj=0; jj<3; jj++) posClus[jj] = 0.;
   Int_t det[5];
@@ -1759,6 +1775,7 @@ void AliTOFClusterFinderV1::FindClusters23(Int_t nSector,
 	    for (jj=0; jj<2; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 	    GetClusterPars(/*check,*/ 2, indDet, interestingWeight, posClus, covClus);
 	    for (jj=0; jj<2; jj++) delete [] indDet[jj];
+	    delete [] indDet;
 
 	    // To fill the track index array
 	    dummyCounter=-1;
@@ -1905,8 +1922,8 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
   Int_t iPadZ = -1;
 
   Bool_t check = kFALSE;
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
   Double_t posClus[3];
   for (jj=0; jj<3; jj++) posClus[jj] = 0.;
   Int_t det[5];
@@ -2166,6 +2183,7 @@ void AliTOFClusterFinderV1::FindClusters24(Int_t nSector,
 	    for (jj=0; jj<2; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 	    GetClusterPars(/*check,*/ 2, indDet, interestingWeight, posClus, covClus);
 	    for (jj=0; jj<2; jj++) delete [] indDet[jj];
+	    delete [] indDet;
 
 	    // To fill the track index array
 	    dummyCounter=-1;
@@ -2322,8 +2340,8 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
   Int_t iPadZ = -1;
 
   Bool_t check = kFALSE;
-  Int_t parTOF[5];
-  for (jj=0; jj<5; jj++) parTOF[jj] = 0;
+  Int_t parTOF[7];
+  for (jj=0; jj<7; jj++) parTOF[jj] = 0;
   Double_t posClus[3];
   for (jj=0; jj<3; jj++) posClus[jj] = 0.;
   Int_t det[5];
@@ -2615,6 +2633,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 	      GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 	      for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
+	      delete [] indDet;
 
 	      // To fill the track index array
 	      dummyCounter=-1;
@@ -2779,6 +2798,8 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 		  for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 		  GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 		  for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
+		  delete [] indDet;
+
 
 		  // To fill the track index array
 		  dummyCounter=-1;
@@ -2993,6 +3014,7 @@ void AliTOFClusterFinderV1::FindClustersPerStrip(Int_t nSector,
 	      for (jj=0; jj<interestingCounter+1; jj++) indDet[jj][4] = padsCluster[2*jj+1+3];
 	      GetClusterPars(/*check,*/ interestingCounter+1, indDet, interestingWeight, posClus, covClus);
 	      for (jj=0; jj<interestingCounter+1; jj++) delete [] indDet[jj];
+	      delete [] indDet;
 
 	      // To fill the track index array
 	      dummyCounter=-1;
@@ -3645,8 +3667,10 @@ void AliTOFClusterFinderV1::Digits2RecPoints(Int_t iEvent)
   AliLoader *localTOFLoader = (AliLoader*)fRunLoader->GetLoader("TOFLoader");
 
   TTree * localTreeD = (TTree*)localTOFLoader->TreeD();
-  if (localTreeD == 0x0)
+  if (localTreeD == 0x0) {
     AliFatal("Can not get TreeD");
+    return;
+  }
 
   TBranch *branch = localTreeD->GetBranch("TOF");
   if (!branch) {
@@ -3778,5 +3802,7 @@ void AliTOFClusterFinderV1::AverageCalculations(Int_t number, Float_t *interesti
   parTOF[2] = Int_t(adcAverage);
   parTOF[3] = Int_t(tofAverage);//tofND
   parTOF[4] = Int_t(tofAverage);//tofRAW
+  parTOF[5] = 0;
+  parTOF[6] = 0;
 
 }

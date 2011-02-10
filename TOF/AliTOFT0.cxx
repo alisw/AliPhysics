@@ -299,9 +299,9 @@ void AliTOFT0::Exec(Option_t *option)
       gAlice->GetMCApp()->ResetHits();
       hitTree->GetEvent(track);
 
-      AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
+      //AliMC *mcApplication = (AliMC*)gAlice->GetMCApp();
 
-      particle = mcApplication->Particle(track);
+      //particle = mcApplication->Particle(track);
       Int_t nhits = tofHits->GetEntriesFast();
 
       for (Int_t hit = 0; hit < nhits; hit++)
@@ -493,7 +493,9 @@ void AliTOFT0::Exec(Option_t *option)
   delete c3; c3=0;
 
   // generating output filename only if not previously specified using SetTZeroFile
-  char outFileName[70];
+
+  const Int_t kSize = 70;
+  char outFileName[kSize];
   strcpy(outFileName,"ht010tr120ps"); // global time resolution has to be converted from Int_t to char
                                       // in order to have in the output filename this parameter
   strcat(outFileName,fHeadersFile);

@@ -1,5 +1,5 @@
 CheckActiveChannels(const Char_t *);
-CheckActiveChannels(Int_t);
+CheckActiveChannels(Int_t nrun=-1);
 CheckActiveChannelsFromCDBEntry(AliCDBEntry *);
 
 //____________________________________________________________________
@@ -15,14 +15,17 @@ CheckActiveChannels(const Char_t *fileName)
 
 //____________________________________________________________________
 
-CheckActiveChannels(Int_t run)
+CheckActiveChannels(Int_t nrun)
 {
 
   TGrid *alien = TGrid::Connect("alien://");
   if (!alien || !alien->IsConnected()) return;
   AliCDBManager *cdbm = AliCDBManager::Instance();
   cdbm->SetDefaultStorage("raw://");
-  cdbm->SetRun(80015);
+  if (nrun==-1)
+    cdbm->SetRun(80015);
+  else
+    cdbm->SetRun(nrun);
   AliCDBEntry *cdbe = cdbm->Get("TOF/Calib/Status");
   CheckActiveChannelsFromCDBEntry(cdbe);
 
@@ -41,7 +44,7 @@ CheckActiveChannelsFromCDBEntry(AliCDBEntry *cdbe)
   Bool_t hw_ok, pulser_ok, noise_ok;
   for (Int_t i = 0; i <  array->GetSize(); i++) {
     hw_ok = array->GetHWStatus(i) & AliTOFChannelOnlineStatusArray::kTOFHWOk;
-    pulser_ok = array->GetPulserStatus(i) & AliTOFChannelOnlineStatusArray::kTOFPulserOk;
+    pulser_ok = !(array->GetPulserStatus(i) & AliTOFChannelOnlineStatusArray::kTOFPulserBad);
     noise_ok = array->GetNoiseStatus(i) & AliTOFChannelOnlineStatusArray::kTOFNoiseOk;
     hStatus_hw_ok->SetBinContent(i + 1, hw_ok);
     hStatus_pulser_ok->SetBinContent(i + 1, pulser_ok);

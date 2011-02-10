@@ -150,8 +150,10 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   AliTOF * tof = (AliTOF *) gAlice->GetDetector("TOF") ;
 
   //Make branches
-  char branchname[20];
-  sprintf (branchname, "%s", tof->GetName ());
+
+  const Int_t kSize = 20;
+  char branchname[kSize];
+  snprintf(branchname,kSize,"%s", tof->GetName ());
  
   AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
   if (outrl == 0x0)

@@ -526,14 +526,17 @@ void AliTOFGeometry::GetVolumePath(const Int_t * const ind, Char_t *path ) {
   // This function returns the colume path of a given pad 
   //--------------------------------------------------------------------
   Int_t sector = ind[0];
-  Char_t  string1[100];
-  Char_t  string2[100];
-  Char_t  string3[100];
+
+  const Int_t kSize = 100;
+
+  Char_t  string1[kSize];
+  Char_t  string2[kSize];
+  Char_t  string3[kSize];
   
   Int_t icopy=-1;
   icopy=sector;
  
-  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
+  snprintf(string1,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
   
   Int_t iplate=ind[1];
   Int_t istrip=ind[2];
@@ -543,16 +546,16 @@ void AliTOFGeometry::GetVolumePath(const Int_t * const ind, Char_t *path ) {
   if( iplate==3) icopy=istrip+NStripC()+NStripB()+NStripA(); 
   if( iplate==4) icopy=istrip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
-  sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
+  snprintf(string2,kSize,"FTOA_0/FLTA_0/FSTR_%i",icopy);
   if(fHoles && (sector==13 || sector==14 || sector==15)){
-    if(iplate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
-    if(iplate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
+    if(iplate<2)  snprintf(string2,kSize,"FTOB_0/FLTB_0/FSTR_%i",icopy);
+    if(iplate>2)  snprintf(string2,kSize,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
  
   Int_t padz = ind[3]+1; 
   Int_t padx = ind[4]+1;
-  sprintf(string3,"FPCB_1/FSEN_1/FSEZ_%i/FPAD_%i",padz,padx);
-  sprintf(path,"%s/%s/%s",string1,string2,string3); 
+  snprintf(string3,kSize,"FPCB_1/FSEN_1/FSEZ_%i/FPAD_%i",padz,padx);
+  snprintf(path,2*kSize,"%s/%s/%s",string1,string2,string3); 
 
 }
 //_____________________________________________________________________________
@@ -561,12 +564,14 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Char_t *path ){
   // This function returns the colume path of a given sector 
   //--------------------------------------------------------------------
 
-  Char_t string[100];
+  const Int_t kSize = 200;
+
+  Char_t string[kSize];
 
   Int_t icopy = sector;
 
-  sprintf(string,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
-  sprintf(path,"%s",string);
+  snprintf(string,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
+  snprintf(path,kSize,"%s",string);
 
 }
 //_____________________________________________________________________________
@@ -575,13 +580,15 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_
   // This function returns the colume path of a given strip 
   //--------------------------------------------------------------------
 
-  Char_t string1[100];
-  Char_t string2[100];
-  Char_t string3[100];
+  const Int_t kSize = 200;
+
+  Char_t string1[kSize];
+  Char_t string2[kSize];
+  Char_t string3[kSize];
   
   Int_t icopy = sector;
 
-  sprintf(string1,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
+  snprintf(string1,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
   
   if(plate==0) icopy=strip; 
   if(plate==1) icopy=strip+NStripC(); 
@@ -589,14 +596,14 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_
   if(plate==3) icopy=strip+NStripC()+NStripB()+NStripA(); 
   if(plate==4) icopy=strip+NStripC()+2*NStripB()+NStripA(); 
   icopy++;
-  sprintf(string2,"FTOA_0/FLTA_0/FSTR_%i",icopy);
+  snprintf(string2,kSize,"FTOA_0/FLTA_0/FSTR_%i",icopy);
   if(fHoles && (sector==13 || sector==14 || sector==15)){
-    if(plate<2)  sprintf(string2,"FTOB_0/FLTB_0/FSTR_%i",icopy);
-    if(plate>2)  sprintf(string2,"FTOC_0/FLTC_0/FSTR_%i",icopy);
+    if(plate<2)  snprintf(string2,kSize,"FTOB_0/FLTB_0/FSTR_%i",icopy);
+    if(plate>2)  snprintf(string2,kSize,"FTOC_0/FLTC_0/FSTR_%i",icopy);
   }
 
-  sprintf(string3,"FPCB_1/FSEN_1");
-  sprintf(path,"%s/%s/%s",string1,string2,string3); 
+  snprintf(string3,kSize,"FPCB_1/FSEN_1");
+  snprintf(path,2*kSize,"%s/%s/%s",string1,string2,string3); 
 
 }
 //_____________________________________________________________________________
@@ -1112,7 +1119,7 @@ Float_t AliTOFGeometry::GetX(const Int_t * const det) const
   Translation(posLocal,step);
 
   // FSTR reference frame -> FTOA/B/C = FLTA/B/C reference frame
-  Double_t angles[6];
+  Double_t angles[6] = {0.,0.,0.,0.,0.,0.};
   if      (GetAngles(iplate,istrip) >0.) {
     angles[0] = 90.;
     angles[1] =  0.;
@@ -1224,7 +1231,7 @@ Float_t AliTOFGeometry::GetY(const Int_t * const det) const
 
   // FSTR reference frame -> FTOA/B/C = FLTA/B/C reference frame
 
-  Double_t angles[6];
+  Double_t angles[6] = {0.,0.,0.,0.,0.,0.};
   if      (GetAngles(iplate,istrip) >0.) {
     angles[0] = 90.;
     angles[1] =  0.;
@@ -1321,7 +1328,7 @@ Float_t AliTOFGeometry::GetZ(const Int_t * const det) const
   Translation(posLocal,step);
 
   // FSTR reference frame -> FTOA/B/C = FLTA/B/C reference frame
-  Double_t angles[6];
+  Double_t angles[6] = {0.,0.,0.,0.,0.,0.};
   if      (GetAngles(iplate,istrip) >0.) {
     angles[0] = 90.;
     angles[1] =  0.;

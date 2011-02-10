@@ -62,6 +62,10 @@ AliTOFLvHvDataPoints::AliTOFLvHvDataPoints():
 {
   // main constructor 
 
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fLVDataPoints[ii]= 0x0;
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fHVDataPoints[ii]= 0x0;
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fMap[ii]= 0x0;
+
 }
 
 //---------------------------------------------------------------
@@ -84,6 +88,10 @@ AliTOFLvHvDataPoints::AliTOFLvHvDataPoints(Int_t nRun, UInt_t startTime, UInt_t 
 {
 
   // constructor with arguments
+
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fLVDataPoints[ii]= 0x0;
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fHVDataPoints[ii]= 0x0;
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fMap[ii]= 0x0;
 
   AliInfo(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s \n\tStartTime DCS Query %s \n\tEndTime DCS Query %s", nRun,
 	       TTimeStamp(startTime).AsString(),
@@ -124,6 +132,15 @@ AliTOFLvHvDataPoints::AliTOFLvHvDataPoints(const AliTOFLvHvDataPoints & data):
     for(int j=0;j<kNplates;j++)
       fAliasNamesXHVmap[i][j]=data.fAliasNamesXHVmap[i][j];
  
+
+  if (fLVDataPoints)
+    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fLVDataPoints[ii]) fLVDataPoints[ii]->Delete();
+  if (fHVDataPoints)
+    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fHVDataPoints[ii]) fHVDataPoints[ii]->Delete();
+  if (fMap)
+    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fMap[ii]) fMap[ii]->Delete();
+
+
 }
 //---------------------------------------------------------------
 
@@ -877,17 +894,19 @@ void AliTOFLvHvDataPoints::DrawHVandLVMap(Int_t index)
   // Draw HV+LV map labelled as index
   //
 
+  const Int_t kSize = 100;
+
   if(!fIsProcessed) return;
 
   if (index>=fNumberOfHVandLVmaps) return;
 
   AliTOFDCSmaps *mappa=(AliTOFDCSmaps*)GetHVandLVmap(index);
 
-  char title[100];
-  if (index==0) sprintf(title,"HVandLV map at time %d (%dst map)",mappa->GetTime(),index+1);
-  else if (index==1) sprintf(title,"HVandLV map at time %d (%dnd map)",mappa->GetTime(),index+1);
-  else if (index==2) sprintf(title,"HVandLV map at time %d (%drd map)",mappa->GetTime(),index+1);
-  else if (index>=3) sprintf(title,"HVandLV map at time %d (%dth map)",mappa->GetTime(),index+1);
+  char title[kSize];
+  if (index==0) snprintf(title,kSize,"HVandLV map at time %d (%dst map)",mappa->GetTime(),index+1);
+  else if (index==1) snprintf(title,kSize,"HVandLV map at time %d (%dnd map)",mappa->GetTime(),index+1);
+  else if (index==2) snprintf(title,kSize,"HVandLV map at time %d (%drd map)",mappa->GetTime(),index+1);
+  else if (index>=3) snprintf(title,kSize,"HVandLV map at time %d (%dth map)",mappa->GetTime(),index+1);
   fHisto->Delete();
   fHisto = new TH1C("histo","",kNpads,-0.5,kNpads-0.5);
   //fHisto->Clear();
@@ -907,17 +926,19 @@ void AliTOFLvHvDataPoints::DrawLVMap(Int_t index)
   // Draw LV map labelled as index
   //
 
+  const Int_t kSize = 100;
+
   if(!fIsProcessed) return;
 
   if (index>=fNumberOfLVdataPoints) return;
 
   AliTOFDCSmaps *mappa=(AliTOFDCSmaps*)GetLVmap(index);
 
-  char title[100];
-  if (index==0) sprintf(title,"LV map at time %d (%dst map)",mappa->GetTime(),index+1);
-  else if (index==1) sprintf(title,"LV map at time %d (%dnd map)",mappa->GetTime(),index+1);
-  else if (index==2) sprintf(title,"LV map at time %d (%drd map)",mappa->GetTime(),index+1);
-  else if (index>=3) sprintf(title,"LV map at time %d (%dth map)",mappa->GetTime(),index+1);
+  char title[kSize];
+  if (index==0) snprintf(title,kSize,"LV map at time %d (%dst map)",mappa->GetTime(),index+1);
+  else if (index==1) snprintf(title,kSize,"LV map at time %d (%dnd map)",mappa->GetTime(),index+1);
+  else if (index==2) snprintf(title,kSize,"LV map at time %d (%drd map)",mappa->GetTime(),index+1);
+  else if (index>=3) snprintf(title,kSize,"LV map at time %d (%dth map)",mappa->GetTime(),index+1);
   fHisto->Delete();
   fHisto = new TH1C("histo","",kNpads,-0.5,kNpads-0.5);
   //fHisto->Clear();
@@ -937,17 +958,19 @@ void AliTOFLvHvDataPoints::DrawHVMap(Int_t index)
   // Draw HV map labelled as index
   //
 
+  const Int_t kSize = 100;
+
   if(!fIsProcessed) return;
 
   if (index>=fNumberOfHVdataPoints) return;
 
   AliTOFDCSmaps *mappa=(AliTOFDCSmaps*)GetHVmap(index);
 
-  char title[100];
-  if (index==0) sprintf(title,"HV map at time %d (%dst map)",mappa->GetTime(),index+1);
-  else if (index==1) sprintf(title,"HV map at time %d (%dnd map)",mappa->GetTime(),index+1);
-  else if (index==2) sprintf(title,"HV map at time %d (%drd map)",mappa->GetTime(),index+1);
-  else if (index>=3) sprintf(title,"HV map at time %d (%dth map)",mappa->GetTime(),index+1);
+  char title[kSize];
+  if (index==0) snprintf(title,kSize,"HV map at time %d (%dst map)",mappa->GetTime(),index+1);
+  else if (index==1) snprintf(title,kSize,"HV map at time %d (%dnd map)",mappa->GetTime(),index+1);
+  else if (index==2) snprintf(title,kSize,"HV map at time %d (%drd map)",mappa->GetTime(),index+1);
+  else if (index>=3) snprintf(title,kSize,"HV map at time %d (%dth map)",mappa->GetTime(),index+1);
   fHisto->Delete();
   fHisto = new TH1C("histo","",kNpads,-0.5,kNpads-0.5);
   //fHisto->Clear();

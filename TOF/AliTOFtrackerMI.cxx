@@ -70,6 +70,8 @@ AliTOFtrackerMI::AliTOFtrackerMI():
  { 
   //AliTOFtrackerMI main Ctor
 
+   for (Int_t ii=0; ii<kMaxCluster; ii++) fClusters[ii]=0x0;
+
    fDy=AliTOFGeometry::XPad(); 
    fDz=AliTOFGeometry::ZPad(); 
    fDebugStreamer = new TTreeSRedirector("TOFdebug.root");   
@@ -96,6 +98,12 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
     delete fSeeds;
     fSeeds=0x0;
   }
+
+  if (fClusters) {
+    for (Int_t ii=0; ii<kMaxCluster; ii++)
+      if (fClusters[ii]) fClusters[ii]->Delete();
+  }
+
 }
 //_____________________________________________________________________________
 void AliTOFtrackerMI::GetPidSettings(AliESDpid *esdPID) {
@@ -297,7 +305,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   Float_t       mintimedist[kNclusterMax];
   Float_t       likelihood[kNclusterMax];
   Float_t       length[kNclusterMax];
-  Double_t      tpcpid[5];
+  Double_t      tpcpid[AliPID::kSPECIES];
   dist3D[0][0]=1;
   
   for (Int_t i=0; i<fNseedsTOF; i++) {
@@ -311,10 +319,10 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
     //
     t->GetTPCpid(tpcpid);
     Double_t sumpid=0;
-    for (Int_t ipid=0;ipid<5;ipid++){
+    for (Int_t ipid=0;ipid<AliPID::kSPECIES;ipid++){
       sumpid+=tpcpid[ipid];
     }
-    for (Int_t ipid=0;ipid<5;ipid++){
+    for (Int_t ipid=0;ipid<AliPID::kSPECIES;ipid++){
       if (sumpid>0) tpcpid[ipid]/=sumpid;
       else{
 	tpcpid[ipid]=0.2;
