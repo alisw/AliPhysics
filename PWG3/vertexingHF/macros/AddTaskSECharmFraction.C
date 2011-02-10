@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -64,6 +64,7 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
   hfTask->SetAnalyzeLikeSign(likesign);
   hfTask->SetUsePID(usepid);
   hfTask->SetStandardMassSelection();
+  hfTask->SetAnalysisLevel(analysLevel);
   // hfTask->SignalInvMassCut(0.27);
 
   /*  ############### HERE THE POSSIBILITY TO SWITCH ON/OFF THE TLISTS AND MC SELECTION WILL BE SET #########à
