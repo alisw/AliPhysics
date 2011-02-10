@@ -553,7 +553,7 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
   // loop on daughter labels
   for(i=0; i<ndg; i++) {
     labMom[i]=-1;
-    lab = dgLabels[i];
+    lab = TMath::Abs(dgLabels[i]);
     if(lab<0) {
       printf("daughter with negative label %d\n",lab);
       return -1;
