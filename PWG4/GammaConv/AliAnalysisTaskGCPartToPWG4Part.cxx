@@ -135,53 +135,29 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
   }
 
 
-
-  // AliAODMCHeader * mcHeader = dynamic_cast<AliAODMCHeader*>(aodEvent->FindListObject("mcHeader"));
-
-  
-  TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-  
-for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    //AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
+  TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));  
+  for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
     
-    
-    //if(!photon) {
-      // AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
-      // if (!aodO) {
-
-      // 	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
-      // 	continue;
-      // }
- 
-    AliAODConversionParticle * convParticle = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
-    if (!convParticle) {
+    AliAODPWG4Particle * photon = dynamic_cast<AliAODPWG4Particle*>(convGamma->At(iPhot));
+    if(photon) {
+      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
+    } else {
       
-      AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
-      continue;
+      AliAODConversionParticle * convParticle = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
+      if (convParticle) {
+        AliAODPWG4ParticleCorrelation * photon = AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
+      } else {
+	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
+	continue;
+      }
     }
-    
-  
-    AliAODPWG4ParticleCorrelation * photon = AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
-      //Int_t tag = CheckTag(photon, tracks, arrayMC, mcHeader);
-      //if(tag > 0 ) photon->SetTag(tag);
-     
   }
 
-   
 }
 
-/////____________________________________________________________________________________
-// void AliAnalysisTaskGCPartToPWG4Part::FillMCHistograms(AliAODPWG4ParticleCorrelation * recParticle, AliAODMCParticle * mcParticle) {
 
-  
-
-
-// }
 //////_________________________________________________________________________________________
 Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC, AliAODMCHeader * mcHeader) {
-
-
-
 
 
   for (int imc = 0; imc < arrayMC->GetEntriesFast(); imc++) {
