@@ -70,7 +70,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE(),
   fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi),
   fCuts(0x0),
   fEstimator(AliRDHFCuts::kCentTRK),
-  fReadMC(kFALSE)
+  fReadMC(kFALSE),
+  fSimpleMode(kFALSE)
 {
   //default constructor
 }
@@ -86,7 +87,8 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fDecayChannel(ch),
   fCuts(0x0),
   fEstimator(AliRDHFCuts::kCentTRK),
-  fReadMC(kFALSE)
+  fReadMC(kFALSE),
+  fSimpleMode(kFALSE)
 {
   //constructor
 
@@ -566,7 +568,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       break; 
     }
   }
-  Bool_t isSimpleMode=kFALSE;
+  Bool_t isSimpleMode=fSimpleMode;
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only trak related histograms\n");
     isSimpleMode=kTRUE;

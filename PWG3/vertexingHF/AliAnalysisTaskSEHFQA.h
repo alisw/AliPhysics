@@ -38,6 +38,7 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
 
   //setters
   void SetReadMC(Bool_t mcflag){fReadMC=mcflag;}
+  void SetSimpleMode(Bool_t flag){fSimpleMode=flag;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
@@ -56,8 +57,8 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  AliRDHFCuts* fCuts;       // object containing cuts
  AliRDHFCuts::ECentrality fEstimator; //2nd estimator for centrality
  Bool_t fReadMC;           // flag to read MC
-
- ClassDef(AliAnalysisTaskSEHFQA,3); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ Bool_t fSimpleMode;       // if true, don't do candidates (much faster in PbPb) 
+ ClassDef(AliAnalysisTaskSEHFQA,4); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 

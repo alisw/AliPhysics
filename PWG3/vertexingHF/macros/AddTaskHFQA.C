@@ -105,6 +105,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
 
   taskQA->SetReadMC(readMC);
+  taskQA->SetSimpleMode(kFALSE); // set to kTRUE to go faster in PbPb
   mgr->AddTask(taskQA);
 
   //
