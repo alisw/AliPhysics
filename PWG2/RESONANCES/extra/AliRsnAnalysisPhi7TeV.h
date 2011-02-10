@@ -84,7 +84,7 @@ class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
     Bool_t           OkITSPID (AliESDtrack *track, AliPID::EParticleType pid);
     Bool_t           OkTPCPID (AliESDtrack *track, AliPID::EParticleType pid);
     Bool_t           OkTOFPID (AliESDtrack *track, AliPID::EParticleType pid);
-    Bool_t           OkTrack  (AliESDtrack *track, AliPID::EParticleType pid);
+    Bool_t           OkTrack  (AliESDtrack *track);
 
   private:
 

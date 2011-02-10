@@ -176,7 +176,7 @@ Long64_t AliRsnVATProcessInfo::GetNumerOfEventsProcessed()
 // returns number of events from histogram
 //
 
-   if (fHistUsedEvents) return fHistUsedEvents->Integral();
+   if (fHistUsedEvents) return (Long64_t)fHistUsedEvents->Integral();
    return 0;
 }
 
