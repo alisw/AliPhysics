@@ -38,18 +38,16 @@ class AliITSUpgradeReconstructor: public AliReconstructor
 
   virtual void  Reconstruct(TTree* digitsTree, TTree* clustersTree) const; 
   virtual void  Reconstruct(AliRawReader * /*rawdata*/, TTree* /*clustersTree*/) const {AliInfo("Not implemented");} 
-  enum {kNLayers=6};
 
   static const AliITSRecoParam* GetRecoParam() { return dynamic_cast<const AliITSRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 
  private:
   AliITSUpgradeReconstructor(const AliITSUpgradeReconstructor&);              //Not implemented
   AliITSUpgradeReconstructor &operator=(const AliITSUpgradeReconstructor&);   //Not implemented
-  TObjArray    *fDigits;     
+  TObjArray  *fDigits;     
+  Int_t      fNlayers;
 
-
-  //TString fmemberToWriteLater;
-  //  
+ 
   ClassDef(AliITSUpgradeReconstructor, 1)        // class for the ITS reconstruction
     };
 

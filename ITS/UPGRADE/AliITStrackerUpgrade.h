@@ -36,6 +36,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
  public:
 
   AliITStrackerUpgrade();
+  AliITStrackerUpgrade(Int_t nLay);
   AliITStrackerUpgrade(const AliITStrackerUpgrade& tracker);
   AliITStrackerUpgrade& operator=(const AliITStrackerUpgrade& source);
   virtual ~AliITStrackerUpgrade();  
@@ -56,8 +57,8 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   void SetOutwardFinding() {fInwardFlag=kFALSE;}
   void SetInwardFinding() {fInwardFlag=kTRUE;}
   void SetOuterStartLayer(Int_t osl = 0) {
-    if(osl>(fNLayer-2)) AliWarning("Minimum Number of layers is 2. OuterStartLayer set to Nlayers-2");
-    fOuterStartLayer = TMath::Min(fNLayer-2,osl);
+    if(osl>(fNLayers-2)) AliWarning("Minimum Number of layers is 2. OuterStartLayer set to Nlayers-2");
+    fOuterStartLayer = TMath::Min(fNLayers-2,osl);
   }
   Int_t GetOuterStartLayer() const {return fOuterStartLayer;}
   void SetInnerStartLayer(Int_t isl = 5) {
@@ -75,6 +76,8 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   void SetMinimumChargeSDDSSD(Float_t minq=0.){fMinQ=minq;}
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
+  void SetNlayers(Int_t nlay) {fNLayers = nlay;}
+  
  protected:
 
   //Initialization
@@ -119,7 +122,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
                        Float_t tgl,Float_t tgphitr,
                        Float_t &ny,Float_t &nz);
   static const Int_t fgMaxNLayer = 8; //max number of layers in ITSUpgrade
-  Int_t fNLayer;//number of layer in ITSUpgrade
+  Int_t fNLayers;//number of layer in ITSUpgrade
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Bool_t fITSStandAlone; //Tracking is performed in the ITS alone if kTRUE
   Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature

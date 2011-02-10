@@ -23,33 +23,52 @@
 ////////////////////////////////////////////////////////
 
 #include "AliITStrackU.h"
-
+#include "AliITSsegmentationUpgrade.cxx"
 
 ClassImp(AliITStrackU)
 
 //_____________________________________
 AliITStrackU:: AliITStrackU() : AliITStrackMI(),
-fNU(0)
+fNU(0),
+fNLayers(0)
 {
 // Default constructor  
   SetNumberOfClusters(0);
   SetNumberOfClustersU(0);
   ResetIndexU();
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++){ 
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){ 
     SetNumberOfMarked(nlay,0);
   }
   ResetMarked();
 }
-
+//_____________________________________
+AliITStrackU:: AliITStrackU(Int_t nlay) : AliITStrackMI(),
+fNU(0),
+fNLayers(nlay)
+{
+// Constructor
+  SetNumberOfClusters(0);
+  SetNumberOfClustersU(0);
+  ResetIndexU();
+  for(Int_t nl=0;nl<fNLayers;nl++){
+    SetNumberOfMarked(nl,0);
+  }
+  ResetMarked();
+}
 
 //___________________________________________________
 AliITStrackU::AliITStrackU(const AliITStrackMI& t) : 
 AliITStrackMI(t),
-fNU(0){
+fNU(0),
+fNLayers(0)
+{
+//
 // Copy a V2 track into a U track
+// -> to be checked
+
   SetNumberOfClustersU(0);
   ResetIndexU();
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++){ 
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){ 
     SetNumberOfMarked(nlay,0);
   }
   ResetMarked();
@@ -58,32 +77,34 @@ fNU(0){
 //___________________________________________________
 AliITStrackU::AliITStrackU(const AliITStrackU& t) : 
 AliITStrackMI(t),
-fNU(t.fNU){
+fNU(t.fNU),
+fNLayers(t.fNLayers)
+{
+//
 // Copy constructor
-
+// to be checked
 
   ResetIndexU();
   ResetMarked();
   Int_t number = t.GetNumberOfClustersU();
   SetNumberOfClustersU(number);
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++){
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){
     SetNumberOfMarked(nlay,t.GetNumberOfMarked(nlay));
   }
   for(Int_t i=0;i<number;i++){
     fSain[i]=t.fSain[i];
   }
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++){
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){
     for(Int_t i=0;i<t.GetNumberOfMarked(nlay);i++){
       fCluMark[nlay][i]=t.fCluMark[nlay][i];
     }
   }
 }
 //____________________________________________________
-AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ):
-fNU(0) 
+AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab, Int_t nlay ):
+fNU(0), fNLayers(nlay)
 {
   // standard constructor. Used for ITSUpgrade standalone tracking
-
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
 
@@ -130,13 +151,13 @@ fNU(0)
                                                                               
   Set(radius,alpha,sP,sC);
 
-  for(Int_t i=0; i<AliITSsegmentationUpgrade::GetNLayers(); i++) fIndex[i] = 0;  // to be set explicitely
+  for(Int_t i=0; i<fNLayers; i++) fIndex[i] = 0;  // to be set explicitely
 
   for(Int_t i=0; i<4; i++) fdEdxSample[i] = 0; 
 
   SetNumberOfClusters(0);
   SetNumberOfClustersU(0);
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++) SetNumberOfMarked(nlay,0);
+  for(Int_t nlay=0;nlay<fNLayers;nlay++) SetNumberOfMarked(nlay,0);
   ResetIndexU();
   ResetMarked();
   SetChi2(0);
@@ -178,7 +199,7 @@ void AliITStrackU::AddClusterMark(Int_t layer, Int_t clnumb) {
 void AliITStrackU::AddClusterV2(Int_t layer,Int_t clnumb) {
   // add one clusters to the list (maximum number=6)
   Int_t presnum = GetNumberOfClusters();
-  if(presnum>=AliITSsegmentationUpgrade::GetNLayers()){
+  if(presnum>=fNLayers){
     Warning("AddClusterV2","Maximum number of clusters already reached. Nothing is done\n");
     return;
    }    
@@ -192,7 +213,7 @@ void AliITStrackU::AddClusterV2(Int_t layer,Int_t clnumb) {
 void AliITStrackU::ResetMarked(){
 
   //Reset array of marked clusters
-  for(Int_t nlay=0;nlay<AliITSsegmentationUpgrade::GetNLayers();nlay++){
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){
     for(Int_t k=0; k<kMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
   }
 }

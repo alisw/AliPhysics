@@ -42,14 +42,20 @@ ClassImp(AliITSUpgradeReconstructor)
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   AliITSUpgradeReconstructor::AliITSUpgradeReconstructor():
     AliReconstructor(), 
-    fDigits(0x0)
+    fDigits(0x0),
+    fNlayers(0)
 {
   //
   //ctor
   //
-  fDigits = new TObjArray(kNLayers);
+  
+  AliITSsegmentationUpgrade *s = new AliITSsegmentationUpgrade();
+  fNlayers = s->GetNLayers();
+  delete s;
+  
+  fDigits = new TObjArray(fNlayers);
   fDigits->SetOwner(kTRUE);
-  for(Int_t iLay =0; iLay<kNLayers; iLay++) fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade",5000),iLay);
+  for(Int_t iLay =0; iLay<fNlayers; iLay++) fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade",5000),iLay);
   AliInfo("    ************* Using the upgrade reconstructor! ****** ");
 
 
@@ -123,7 +129,7 @@ void AliITSUpgradeReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersT
   //
   // Clustering
   //
-  for(Int_t iLay=0;iLay<kNLayers;iLay++) {
+  for(Int_t iLay=0;iLay<fNlayers;iLay++) {
     digitsTree->SetBranchAddress(Form("Layer%d",iLay),&(*fDigits)[iLay]);
   }
  
@@ -134,7 +140,7 @@ void AliITSUpgradeReconstructor::Reconstruct(TTree* digitsTree, TTree* clustersT
   clf->DigitsToRecPoints(fDigits);     //cluster finder
   clustersTree->Fill();                //fill tree for current event
   delete clf;
-  for(Int_t iLay=0;iLay<kNLayers;iLay++){
+  for(Int_t iLay=0;iLay<fNlayers;iLay++){
     fDigits->At(iLay)->Clear();
   }
 
@@ -148,7 +154,7 @@ AliTracker* AliITSUpgradeReconstructor::CreateTracker() const
   // 
 
   if(GetRecoParam()->GetTrackerSAOnly()){
-  AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade();
+  AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade(fNlayers);
   if(GetRecoParam()->GetTrackerSAOnly()) trackUp->SetSAFlag(kTRUE);
   if(trackUp->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
   if(GetRecoParam()->GetInwardFindingSA()){

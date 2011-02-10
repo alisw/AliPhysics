@@ -10,7 +10,6 @@
 //           cristina.terrevoli@ba.infn.it            //                                                    
 ////////////////////////////////////////////////////////
 
-#include "AliITSsegmentationUpgrade.h"
 #include "AliITStrackMI.h"
 
 class AliITStrackU : public AliITStrackMI {
@@ -19,11 +18,12 @@ class AliITStrackU : public AliITStrackMI {
  public:
 
   AliITStrackU();
+  AliITStrackU(Int_t nlay);
   AliITStrackU(const AliITStrackMI& t);
   AliITStrackU(const AliITStrackU& t);
   AliITStrackU(Double_t alpha, Double_t radius,
                 Double_t Ycoor, Double_t Zcoor, Double_t phi, 
-                Double_t tanlambda, Double_t curv, Int_t lab);
+                Double_t tanlambda, Double_t curv, Int_t lab, Int_t nlay);
 
   Int_t GetClusterIndexU(Int_t i) const {return fSain[i];}
   Int_t GetClusterMark(Int_t layer,Int_t i) const {return fCluMark[layer][i];}
@@ -49,8 +49,10 @@ class AliITStrackU : public AliITStrackMI {
   void ResetMarked(); 
 
   static const Int_t fgMaxNLayer = 8; //max number of layers in ITSUpgrade
-  UInt_t  fSain[kMaxNumberOfClusters];   // cluster index (Stand Alone Upgrade)
   Int_t fNU;          // number of clusters Stand Alone Upgrade 
+  Int_t fNLayers;    // number of layers
+
+  UInt_t  fSain[kMaxNumberOfClusters];   // cluster index (Stand Alone Upgrade)
 
   Int_t fCluMark[fgMaxNLayer][kMaxNumberOfClustersL]; //indices for cluster used
   Int_t fNM[fgMaxNLayer]; //number of marked clusters
