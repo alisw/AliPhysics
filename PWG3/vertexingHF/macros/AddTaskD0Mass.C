@@ -118,6 +118,14 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     return;
   }
 
+  TString centr=Form("%.0f%.0f",RDHFD0toKpi->GetMinCentrality(),RDHFD0toKpi->GetMaxCentrality());
+  out1name+=centr;
+  out2name+=centr;
+  out3name+=centr;
+  out4name+=centr;
+  out5name+=centr;
+  inname+=centr;
+
   // Aanalysis task    
   TString taskname="MassAndDistrAnalysis";
   if (flag==0)taskname.Prepend("D0");
@@ -130,7 +138,6 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetUsePid4Distr(kFALSE);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetFillVarHists(kTRUE); // set to FALSE to go faster in PbPb
-
 
   mgr->AddTask(massD0Task);
   
