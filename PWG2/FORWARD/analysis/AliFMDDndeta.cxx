@@ -1098,7 +1098,7 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
   
   TH1F* hMirror = new TH1F("hMirror","mirrored",sumMult->GetNbinsX(),sumMult->GetXaxis()->GetXmin(),sumMult->GetXaxis()->GetXmax());
   
-  for(Int_t i=0.5*sumMult->GetNbinsX(); i<=sumMult->GetNbinsX(); i++) {
+  for(Int_t i= (Int_t)0.5*sumMult->GetNbinsX(); i<=sumMult->GetNbinsX(); i++) {
     Float_t eta   = sumMult->GetBinCenter(i);
     Float_t value = sumMult->GetBinContent(i);
     Float_t error = sumMult->GetBinError(i);
@@ -1266,11 +1266,11 @@ void AliFMDDndeta::DrawDndeta(Analysis what, Int_t rebin, Bool_t realdata, TStri
     hRatioMultPythia = (TH1F*)sumMult->Clone("hRatioMultPythia");
     hRatioMultUA5    = (TH1F*)sumMult->Clone("hRatioMultUA5");
     if(ratio > 1) {
-      hRatioMultPythia->Rebin(ratio);
+      hRatioMultPythia->Rebin((Int_t)ratio);
       hRatioMultPythia->Scale(1/ratio);
     }
     if(ratio < 1 && hPythiaMB) {
-      hPythiaMB->Rebin(1/ratio);
+      hPythiaMB->Rebin((Int_t)(1/ratio));
       hPythiaMB->Scale(ratio);
     }
     
