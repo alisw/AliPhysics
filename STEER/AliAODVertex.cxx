@@ -484,7 +484,7 @@ Double_t AliAODVertex::RotatedCovMatrixZZ(Double_t phi, Double_t theta) const
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::DistanceToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::Distance2ToVertex(AliAODVertex *vtx) const
 {
   // distance in 3D to another AliAODVertex
 
@@ -492,22 +492,22 @@ Double_t AliAODVertex::DistanceToVertex(AliAODVertex *vtx) const
   Double_t dy = GetY()-vtx->GetY();
   Double_t dz = GetZ()-vtx->GetZ();
 
-  return TMath::Sqrt(dx*dx+dy*dy+dz*dz);
+  return dx*dx+dy*dy+dz*dz;
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::DistanceXYToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::DistanceXY2ToVertex(AliAODVertex *vtx) const
 {
   // distance in XY to another AliAODVertex
 
   Double_t dx = GetX()-vtx->GetX();
   Double_t dy = GetY()-vtx->GetY();
 
-  return TMath::Sqrt(dx*dx+dy*dy);
+  return dx*dx+dy*dy;
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::ErrorDistanceToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::Error2DistanceToVertex(AliAODVertex *vtx) const
 {
   // error on the distance in 3D to another AliAODVertex
 
@@ -518,11 +518,11 @@ Double_t AliAODVertex::ErrorDistanceToVertex(AliAODVertex *vtx) const
   // error2 due to vtx vertex
   Double_t error2vtx = vtx->RotatedCovMatrixXX(phi,theta);
 
-  return TMath::Sqrt(error2+error2vtx);
+  return error2+error2vtx;
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::ErrorDistanceXYToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::Error2DistanceXYToVertex(AliAODVertex *vtx) const
 {
   // error on the distance in XY to another AliAODVertex
 
@@ -533,7 +533,7 @@ Double_t AliAODVertex::ErrorDistanceXYToVertex(AliAODVertex *vtx) const
   // error2 due to vtx vertex
   Double_t error2vtx = vtx->RotatedCovMatrixXX(phi);
 
-  return TMath::Sqrt(error2+error2vtx);
+  return error2+error2vtx;
 }
 
 //______________________________________________________________________________

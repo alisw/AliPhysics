@@ -208,17 +208,17 @@ Double_t AliAODRecoDecay::Alpha() const
   return 1.-2./(1.+QlProng(0)/QlProng(1));
 }
 //----------------------------------------------------------------------------
-Double_t AliAODRecoDecay::DecayLength(Double_t point[3]) const 
+Double_t AliAODRecoDecay::DecayLength2(Double_t point[3]) const 
 {
   //
   // Decay length assuming it is produced at "point" [cm]
   //
-  return TMath::Sqrt((point[0]-GetSecVtxX())
-		    *(point[0]-GetSecVtxX())
-		    +(point[1]-GetSecVtxY())
-		    *(point[1]-GetSecVtxY())
-		    +(point[2]-GetSecVtxZ())
-		    *(point[2]-GetSecVtxZ()));  
+  return (point[0]-GetSecVtxX())
+    *(point[0]-GetSecVtxX())
+    +(point[1]-GetSecVtxY())
+    *(point[1]-GetSecVtxY())
+    +(point[2]-GetSecVtxZ())
+    *(point[2]-GetSecVtxZ());  
 }
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::DecayLengthXY(Double_t point[3]) const 
@@ -242,9 +242,15 @@ Double_t AliAODRecoDecay::CosPointingAngle(Double_t point[3]) const
 		 GetSecVtxY()-point[1],
 		 GetSecVtxZ()-point[2]);
 
-  Double_t pta = mom.Angle(fline);
-
-  return TMath::Cos(pta); 
+  Double_t ptot2 = mom.Mag2()*fline.Mag2();
+  if(ptot2 <= 0) {
+    return 0.0;
+  } else {
+    Double_t cos = mom.Dot(fline)/TMath::Sqrt(ptot2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
 }
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::CosPointingAngleXY(Double_t point[3]) const 
@@ -258,9 +264,15 @@ Double_t AliAODRecoDecay::CosPointingAngleXY(Double_t point[3]) const
 		   GetSecVtxY()-point[1],
 		   0.);
 
-  Double_t ptaXY = momXY.Angle(flineXY);
-
-  return TMath::Cos(ptaXY); 
+  Double_t ptot2 = momXY.Mag2()*flineXY.Mag2();
+  if(ptot2 <= 0) {
+    return 0.0;
+  } else {
+    Double_t cos = momXY.Dot(flineXY)/TMath::Sqrt(ptot2);
+    if(cos >  1.0) cos =  1.0;
+    if(cos < -1.0) cos = -1.0;
+    return cos;
+  }
 }
 //----------------------------------------------------------------------------
 Double_t AliAODRecoDecay::CosThetaStar(Int_t ip,UInt_t pdgvtx,UInt_t pdgprong0,UInt_t pdgprong1) const 

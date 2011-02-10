@@ -85,8 +85,10 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t Px() const; 
   Double_t Py() const;
   Double_t Pz() const;
-  Double_t P() const {return TMath::Sqrt(Px()*Px()+Py()*Py()+Pz()*Pz());}
-  Double_t Pt() const {return TMath::Sqrt(Px()*Px()+Py()*Py());}
+  Double_t P2() const {return Px()*Px()+Py()*Py()+Pz()*Pz();}
+  Double_t Pt2() const {return Px()*Px()+Py()*Py();}
+  Double_t P() const {return TMath::Sqrt(Pt2());}
+  Double_t Pt() const {return TMath::Sqrt(P2());}
   Double_t OneOverPt() const {return (Pt() ? 1./Pt() : 0.);}
   Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
   Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px());}
@@ -98,13 +100,20 @@ class AliAODRecoDecay : public AliVTrack {
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
   Double_t E(UInt_t pdg) const;
   Double_t Y(UInt_t pdg) const {return 0.5*TMath::Log((E(pdg)+Pz())/(E(pdg)-Pz()+1.e-13));}
-  Double_t DecayLength(Double_t point[3]) const;
+  Double_t DecayLength2(Double_t point[3]) const;
+  Double_t DecayLength(Double_t point[3]) const {return TMath::Sqrt(DecayLength2(point));}
+  Double_t DecayLength2(AliAODVertex *vtx1) const
+  {return GetSecondaryVtx()->Distance2ToVertex(vtx1);}
   Double_t DecayLength(AliAODVertex *vtx1) const
-  {return GetSecondaryVtx()->DistanceToVertex(vtx1);}
+    {return TMath::Sqrt(DecayLength2(vtx1));}
+  Double_t DecayLengthError2(AliAODVertex *vtx1) const
+    {return GetSecondaryVtx()->Error2DistanceToVertex(vtx1);}
   Double_t DecayLengthError(AliAODVertex *vtx1) const
-    {return GetSecondaryVtx()->ErrorDistanceToVertex(vtx1);}
+    {return TMath::Sqrt(DecayLengthError2(vtx1));}
+  Double_t NormalizedDecayLength2(AliAODVertex *vtx1) const 
+    {return DecayLength2(vtx1)/DecayLengthError2(vtx1);}
   Double_t NormalizedDecayLength(AliAODVertex *vtx1) const 
-    {return DecayLength(vtx1)/DecayLengthError(vtx1);}
+  {return TMath::Sqrt(NormalizedDecayLength2(vtx1));}
   Double_t DecayLengthXY(Double_t point[3]) const;
   Double_t DecayLengthXY(AliAODVertex *vtx1) const
     {return GetSecondaryVtx()->DistanceXYToVertex(vtx1);}
@@ -135,7 +144,8 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t PxProng(Int_t ip) const {return fPx[ip];}
   Double_t PyProng(Int_t ip) const {return fPy[ip];}
   Double_t PzProng(Int_t ip) const {return fPz[ip];}
-  Double_t PtProng(Int_t ip) const; 
+  Double_t PtProng(Int_t ip) const {return TMath::Sqrt(Pt2Prong(ip));}
+  Double_t Pt2Prong(Int_t ip) const; 
   Double_t PProng(Int_t ip) const;
   Double_t PhiProng(Int_t ip) const 
     {return TMath::ATan2(PyProng(ip),PxProng(ip));}
@@ -295,9 +305,9 @@ inline Double_t AliAODRecoDecay::ImpParXY(AliAODVertex *vtx1) const
   return ImpParXY(v);
 }
 
-inline Double_t AliAODRecoDecay::PtProng(Int_t ip) const 
+inline Double_t AliAODRecoDecay::Pt2Prong(Int_t ip) const 
 {
-  return TMath::Sqrt(PxProng(ip)*PxProng(ip)+PyProng(ip)*PyProng(ip));
+  return PxProng(ip)*PxProng(ip)+PyProng(ip)*PyProng(ip);
 }
 
 inline Double_t AliAODRecoDecay::PProng(Int_t ip) const 
