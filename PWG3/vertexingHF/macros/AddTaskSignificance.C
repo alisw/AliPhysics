@@ -62,7 +62,10 @@ AliAnalysisTaskSESignificance *AddTaskSignificance(TString filename="cuts4Signif
     cout<<"Specific AliRDHFCuts not found"<<endl;
     return;
   }
-  
+
+  TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
+  suffix+=centr;
+
   const Int_t nptbins=analysiscuts->GetNPtBins();
   Float_t* ptbins=analysiscuts->GetPtBinLimits();
 
