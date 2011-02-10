@@ -129,6 +129,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetCutOnDistr(cutOnDistr);
   massD0Task->SetUsePid4Distr(kFALSE);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
+  massD0Task->SetFillVarHists(kTRUE); // set to FALSE to go faster in PbPb
+
 
   mgr->AddTask(massD0Task);
   
