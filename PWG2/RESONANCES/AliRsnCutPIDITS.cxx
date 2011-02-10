@@ -127,12 +127,6 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
    AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
    AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
 
-   // check momentum
-   if (mom < fMomMin || mom > fMomMax) {
-      AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
-      return (!fRejectOutside);
-   }
-
    // count number of PID layers...
    if (esdTrack) {
       UChar_t itsCluMap = esdTrack->GetITSClusterMap();
@@ -156,8 +150,21 @@ Bool_t AliRsnCutPIDITS::IsSelected(TObject *object)
    else
       fCutValueD = fAODpid.NumberOfSigmasITS(aodTrack, fRefType);
 
-   // use default cut checking method
-   return OkRangeD();
+   // use AliRsnCut default method to check cut
+   Bool_t cutCheck = OkRangeD();
+
+   // now check the momentum:
+   // -- if it stays inside the accepted range, track just checked
+   //    with respect to the nsigma band
+   // -- if it stays outside the accepted range and 'fRejectOutside' is kTRUE,
+   //    track is always rejected, while if 'fRejectOutside' is kFALSE,
+   //    track is accepted if it stays inside the nsigma band
+   if ((mom >= fMomMin && mom <= fMomMax))
+      return cutCheck;
+   else {
+      AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
+      return ((!fRejectOutside) && cutCheck);
+   }
 }
 
 //_________________________________________________________________________________________________

@@ -113,8 +113,7 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
    AliESDtrack *esdTrack = fDaughter->GetRefESDtrack();
    AliAODTrack *aodTrack = fDaughter->GetRefAODtrack();
 
-   // get inner momentum and check it w.r. to allowed range:
-   // all tracks outside it will pass the cut or not, depending on 'fRejectOutside'
+   // get inner momentum, needed for BB computation
    if (esdTrack)
       mom = esdTrack->GetInnerParam()->P();
    else if (aodTrack)
@@ -122,10 +121,6 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
    else {
       AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
       return kFALSE;
-   }
-   if ((mom < fMomMin || mom > fMomMax)) {
-      AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
-      return (!fRejectOutside);
    }
 
    // assign PID nsigmas to default cut check value
@@ -136,7 +131,20 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
       fCutValueD = fAODpid.NumberOfSigmasTPC(aodTrack, fRefType);
 
    // use AliRsnCut default method to check cut
-   return OkRangeD();
+   Bool_t cutCheck = OkRangeD();
+
+   // now check the momentum:
+   // -- if it stays inside the accepted range, track just checked
+   //    with respect to the nsigma band
+   // -- if it stays outside the accepted range and 'fRejectOutside' is kTRUE,
+   //    track is always rejected, while if 'fRejectOutside' is kFALSE,
+   //    track is accepted if it stays inside the nsigma band
+   if ((mom >= fMomMin && mom <= fMomMax))
+      return cutCheck;
+   else {
+      AliDebug(AliLog::kDebug + 2, Form("Track momentum = %.5f, outside allowed range", mom));
+      return ((!fRejectOutside) && cutCheck);
+   }
 }
 
 //_________________________________________________________________________________________________
