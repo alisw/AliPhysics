@@ -1118,7 +1118,7 @@ Int_t    AliFMDAnaParameters::GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char
 Int_t    AliFMDAnaParameters::GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring)
 {
   Int_t ringNumber = (ring == 'I' ? 0 : 1);
-  return fEtaLowBinLimits.GetBinContent(det,ringNumber,vtxbin);
+  return (Int_t)fEtaLowBinLimits.GetBinContent(det,ringNumber,vtxbin);
 
 }
 
@@ -1126,7 +1126,7 @@ Int_t    AliFMDAnaParameters::GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, C
 Int_t    AliFMDAnaParameters::GetLastEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring)
 {
   Int_t ringNumber = (ring == 'I' ? 0 : 1);
-  return fEtaHighBinLimits.GetBinContent(det,ringNumber,vtxbin);
+  return (Int_t)fEtaHighBinLimits.GetBinContent(det,ringNumber,vtxbin);
   
 }
 //____________________________________________________________________
