@@ -33,7 +33,7 @@ public:
   void SetUseDatabase(Bool_t useDatabase) { fUseDatabase = useDatabase;}
   
   void SetResponseFunction(AliPID::EParticleType type, TObject * const o) { fResponseFunctions.AddAt(o,(Int_t)type); }
-  const TObject * const GetResponseFunction(AliPID::EParticleType type) { return fResponseFunctions.At((Int_t)type); }
+  const TObject * GetResponseFunction(AliPID::EParticleType type) { return fResponseFunctions.At((Int_t)type); }
   
   Double_t GetExpectedSignal(const Float_t mom,
                      AliPID::EParticleType n=AliPID::kKaon) const;
