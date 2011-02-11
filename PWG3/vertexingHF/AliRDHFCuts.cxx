@@ -568,6 +568,7 @@ Int_t AliRDHFCuts::PtBin(Double_t pt) const {
   //give the pt bin where the pt lies.
   //
   Int_t ptbin=-1;
+  if(pt<fPtBinLimits[0])return ptbin;
   for (Int_t i=0;i<fnPtBins;i++){
     if(pt<fPtBinLimits[i+1]) {
       ptbin=i;
