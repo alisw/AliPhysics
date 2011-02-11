@@ -324,6 +324,9 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   Int_t returnvaluePID=3;
   Int_t returnvalueCuts=3;
 
+  Double_t pt=d->Pt();
+  if(pt<fMinPtCand) return 0;
+  if(pt>fMaxPtCand) return 0;
 
   
   // selection on candidate
@@ -337,8 +340,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
     }
 
-    Double_t pt=d->Pt();
-    
+
     Int_t ptbin=PtBin(pt);
     if (ptbin==-1) {
       CleanOwnPrimaryVtx(d,origownvtx);

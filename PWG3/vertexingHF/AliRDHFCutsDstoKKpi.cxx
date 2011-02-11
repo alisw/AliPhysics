@@ -335,7 +335,10 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     cout<<"AliAODRecoDecayHF3Prong null"<<endl;
     return 0;
   }
-
+ 
+  Double_t pt=d->Pt();
+  if(pt<fMinPtCand) return 0;
+  if(pt>fMaxPtCand) return 0;
 
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
