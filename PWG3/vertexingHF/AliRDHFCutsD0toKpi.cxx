@@ -197,7 +197,8 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
   //
   // Apply selection
   //
-  
+ 
+
   fIsSelectedCuts=0;
   fIsSelectedPID=0;
 
@@ -213,6 +214,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
     return 0;
   }
 
+  Double_t ptD=d->Pt();
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
  
   // returnvalue: 0 not sel, 1 only D0, 2 only D0bar, 3 both
   Int_t returnvaluePID=3;

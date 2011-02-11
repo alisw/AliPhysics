@@ -18,11 +18,15 @@ AliAnalysisTaskSELambdac *AddTaskLambdac(TString *finname,Bool_t storeNtuple,Boo
   if(stdcuts) prodcuts->SetStandardCutsPP2010();
   else   prodcuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiProdCuts");
   prodcuts->SetName("LctopKpiProdCuts");
+  prodcuts->SetMinPtCandidate(-1.);
+  prodcuts->SetMaxPtCandidate(10000.);
 
   AliRDHFCutsLctopKpi *analysiscuts = new AliRDHFCutsLctopKpi();
   if(stdcuts) analysiscuts->SetStandardCutsPP2010();
   else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
   analysiscuts->SetName("LctopKpiAnalysisCuts");
+  analysiscuts->SetMinPtCandidate(-1.);
+  analysiscuts->SetMaxPtCandidate(10000.);
 
   // Aanalysis task                                                                                                                     
   AliAnalysisTaskSELambdac *lambdacTask = new AliAnalysisTaskSELambdac("LambdacAnalysis",storeNtuple,analysiscuts,prodcuts);

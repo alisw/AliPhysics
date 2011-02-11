@@ -237,6 +237,8 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
   Int_t returnvalue=3;
   Int_t returnvaluePID=3;
 
+  if(d->Pt()<fMinPtCand) return 0;
+  if(d->Pt()>fMaxPtCand) return 0;
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -353,6 +355,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
        iskaon1=kTRUE;
       if(fPidHF->MakeRawPid(track,2)>=1) iskaon1=kFALSE;
       }
+      if(!iskaon1) return 0;
      
      }else{
      //pion or proton
@@ -373,6 +376,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
       if(isProton>=1) isproton0=kTRUE;
 
      }
+      if(!ispion0 && !isproton0) return 0;
      if(i==2) {
       if(isPion<0) ispion2=kFALSE;
       if(isProton>=1) isproton2=kTRUE;
