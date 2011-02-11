@@ -138,7 +138,7 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
     gSystem->Exec(Form("echo %s >> %s", filename.c_str(), lPURGE));
     iline++;
   }
-  Int_t nBatches(TMath::Ceil(Double_t(iline)/nBatch));
+  Int_t nBatches=Int_t(TMath::Ceil(Double_t(iline)/nBatch));
   Info("MergeProd()", Form("Merge %d files in %d batches.", iline, nBatches));
 
   Int_t first(0);

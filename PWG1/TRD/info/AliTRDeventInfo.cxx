@@ -18,7 +18,7 @@ AliTRDeventInfo::AliTRDeventInfo():
   TObject()
   ,fHeader(0x0)
   ,fRun(0x0)
-  ,fCentrality(-1.)
+  ,fCentrality(-1)
 {
   //
   // Default Constructor
@@ -30,7 +30,7 @@ AliTRDeventInfo::AliTRDeventInfo(AliESDHeader *header, AliESDRun *run):
   TObject()
   ,fHeader(header)
   ,fRun(run)
-  ,fCentrality(-1.)
+  ,fCentrality(-1)
 {
   //
   // Constructor with Arguments
