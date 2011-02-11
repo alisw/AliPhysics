@@ -696,7 +696,7 @@ void AliHLTComponent::DataType2Text( const AliHLTComponentDataType& type, char o
   // see header file for function documentation
   memset( output, 0, kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2 );
   strncat( output, type.fOrigin, kAliHLTComponentDataTypefOriginSize );
-  strcat( output, ":" );
+  strncat( output, ":", 1 );
   strncat( output, type.fID, kAliHLTComponentDataTypefIDsize );
 }
 
@@ -1702,9 +1702,13 @@ int AliHLTComponent::CreateEventDoneData(AliHLTComponentEventDoneData edd)
     fEventDoneData = newEDD;
     fEventDoneDataSize = newSize;
   }
-  else {
+  else if (fEventDoneData) {
     memcpy( reinterpret_cast<AliHLTUInt8_t*>(fEventDoneData->fData)+fEventDoneData->fDataSize, edd.fData, edd.fDataSize );
     fEventDoneData->fDataSize += edd.fDataSize;
+  }
+  else {
+    HLTError("internal mismatch, fEventDoneData=%d but buffer is NULL", fEventDoneDataSize);
+    iResult=-EFAULT;
   }
   return iResult;
 }
