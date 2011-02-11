@@ -254,10 +254,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
 
       if(d->Prodd0d0() > fCutsRD[GetGlobalIndex(7,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
     
-      if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
-      if(d->PtProng(1) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(0) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
-      if(d->PtProng(0) < fCutsRD[GetGlobalIndex(3,ptbin)] || d->PtProng(1) < fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
+      if(d->Pt2Prong(1) < fCutsRD[GetGlobalIndex(3,ptbin)]*fCutsRD[GetGlobalIndex(3,ptbin)] || d->Pt2Prong(0) < fCutsRD[GetGlobalIndex(4,ptbin)]*fCutsRD[GetGlobalIndex(4,ptbin)]) okD0 = 0;
+      if(d->Pt2Prong(0) < fCutsRD[GetGlobalIndex(3,ptbin)]*fCutsRD[GetGlobalIndex(3,ptbin)] || d->Pt2Prong(1) < fCutsRD[GetGlobalIndex(4,ptbin)]*fCutsRD[GetGlobalIndex(4,ptbin)]) okD0bar = 0;
       if(!okD0 && !okD0bar) {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
       
@@ -275,6 +274,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       if(TMath::Abs(ctsD0bar) > fCutsRD[GetGlobalIndex(2,ptbin)]) okD0bar = 0;
       if(!okD0 && !okD0bar)   {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
     
+      if(d->CosPointingAngle() < fCutsRD[GetGlobalIndex(8,ptbin)])  {CleanOwnPrimaryVtx(d,origownvtx); return 0;}
       
       if (returnvalueCuts!=0) {
 	if (okD0) returnvalueCuts=1; //cuts passed as D0
@@ -1017,8 +1017,8 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedSpecialCuts(AliAODRecoDecayHF *d) const
   for(Int_t i=0;i<2/*prongs*/;i++){
     if(TMath::Abs(d->Normalizedd0Prong(i))<normd0Cut) return 0; //normd0Cut not passed
   }
-  if(d->DecayLength()<decLengthCut)  return 0; //decLengthCut not passed
-  if(d->NormalizedDecayLength()<normDecLengthCut)  return 0; //decLengthCut not passed
+  if(d->DecayLength2()<decLengthCut*decLengthCut)  return 0; //decLengthCut not passed
+  if(d->NormalizedDecayLength2()<normDecLengthCut*normDecLengthCut)  return 0; //decLengthCut not passed
     
 
   return returnvalue;
