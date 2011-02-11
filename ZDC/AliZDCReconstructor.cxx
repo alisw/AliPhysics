@@ -123,9 +123,9 @@ void AliZDCReconstructor::Init()
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase"); 
   if (!entry) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phaseLHC = (AliLHCClockPhase*)entry->GetObject();
-  // 4/2/2011 According to A. Di Mauro BEAM 2 measurement is more reliable 
-  // than BEAM1 and therefore laso than the average of the 2
-  fMeanPhase = phaseLHC->GetMeanPhaseB2();
+  // 4/2/2011 According to A. Di Mauro BEAM1 measurement is more reliable 
+  // than BEAM2 and therefore also than the average of the 2
+  fMeanPhase = phaseLHC->GetMeanPhaseB1();
     
   if(fIsCalibrationMB==kFALSE)  
     printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
