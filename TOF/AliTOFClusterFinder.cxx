@@ -284,10 +284,10 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent)
   fRunLoader->GetEvent(iEvent);
 
   fTreeD = fTOFLoader->TreeD();
-  if (fTreeD == 0x0)
-    {
-      AliFatal("AliTOFClusterFinder: Can not get TreeD");
-    }
+  if (fTreeD == 0x0) {
+    AliFatal("AliTOFClusterFinder: Can not get TreeD");
+    return;
+  }
 
   fDigits->Clear();
   fTreeD->GetBranch("TOF")->SetAutoDelete(kFALSE);
@@ -380,10 +380,10 @@ void AliTOFClusterFinder::Digits2RecPoints(TTree* digitsTree, TTree* clusterTree
 
   Int_t inholes = 0;
 
-  if (digitsTree == 0x0)
-    {
-      AliFatal("AliTOFClusterFinder: Can not get TreeD");
-    }
+  if (digitsTree == 0x0) {
+    AliFatal("AliTOFClusterFinder: Can not get TreeD");
+    return;
+  }
 
   fDigits->Clear();
   digitsTree->GetBranch("TOF")->SetAutoDelete(kFALSE);

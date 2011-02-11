@@ -506,7 +506,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if (trackTOFin->AliExternalTrackParam::GetPredictedChi2(p,cov2) > maxChi2)continue;
 
       clind[nc] = k;      
-      Char_t path[100];
+      Char_t path[200];
       Int_t ind[5];
       ind[0]=c->GetDetInd(0);
       ind[1]=c->GetDetInd(1);

@@ -1016,7 +1016,9 @@ void AliTOFTrigger::LoadActiveMask(){
          printf("AliTOFTrigger (WARNING): probably CDB first instance - number of run set to 0\n");
 	}
     }
+
     AliCDBEntry *cdbe = cdb->Get("TRIGGER/TOF/TriggerMask");
+    if(!cdbe) return;
     fTOFTrigMask= (AliTOFTriggerMask *)cdbe->GetObject();
     
 //     UInt_t maskArray[kNLTM];

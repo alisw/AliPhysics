@@ -221,19 +221,21 @@ void AliTOF::CreateTOFFolders()
   TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
   aliceT->Add(aliceRe);
 
-  char * tempo = new char[80] ;
+  const Int_t kSize=80;
+  //char * tempo = new char[80] ;
+  char tempo[kSize];
 
   // creates the TOF Digitizer and adds it to alice main (S)Digitizer task
-  sprintf(tempo, "%sDigitizers container",GetName() ) ;
+  snprintf(tempo,kSize, "%sDigitizers container",GetName() ) ;
   fDTask = new TTask(GetName(), tempo);
   aliceDi->Add(fDTask) ;
 
   // creates the TOF reconstructioner and adds it to alice main Reconstructioner task
-  sprintf(tempo, "%sReconstructioner container",GetName() ) ;
+  snprintf(tempo,kSize, "%sReconstructioner container",GetName() ) ;
   fReTask = new TTask(GetName(), tempo);
   aliceRe->Add(fReTask) ;
 
-  delete [] tempo ;
+  //delete [] tempo ;
  
   // creates the TOF geometry  folder
   geomF->AddFolder("TOF", "Geometry for TOF") ;
@@ -518,8 +520,9 @@ void AliTOF::MakeBranch(Option_t* option)
   AliDetector::MakeBranch(option);
 
   Int_t buffersize = 4000;
-  Char_t branchname[10];
-  sprintf(branchname,"%s",GetName());
+  const Int_t kSize=10;
+  Char_t branchname[kSize];
+  snprintf(branchname,kSize,"%s",GetName());
   
   const char *oD = strstr(option,"D");
   const char *oS = strstr(option,"S");

@@ -185,9 +185,11 @@ void AliTOFAlignment::Smear(Float_t * const tr, Float_t * const rot)
   //  Int_t iIndex=1; //dummy volume index
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
   Int_t i;
+
+  const Int_t kSize=100;
+  Char_t  path[kSize];
   for (i = 0; i<nSMTOF ; i++) {
-    Char_t  path[100];
-    sprintf(path,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
+    snprintf(path,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
 
     dx = (rnd->Gaus(0.,1.))*tr[0];
     dy = (rnd->Gaus(0.,1.))*tr[1];
@@ -218,11 +220,13 @@ void AliTOFAlignment::Align(Float_t * const tr, Float_t * const rot)
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t iIndex=0; //dummy volume index
   UShort_t dvoluid = AliGeomManager::LayerToVolUID(iLayer,iIndex); //dummy volume identity 
+
+  const Int_t kSize=100;
+  Char_t  path[kSize];
   Int_t i;
   for (i = 0; i<nSMTOF ; i++) {
 
-    Char_t  path[100];
-    sprintf(path,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
+    snprintf(path,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",i,i);
     dx = tr[0];
     dy = tr[1];
     dz = tr[2];
@@ -242,8 +246,9 @@ void AliTOFAlignment::WriteParOnCDB(const Char_t *sel, Int_t minrun, Int_t maxru
   //Write Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   const Char_t *sel1 = "AlignPar" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
+  const Int_t kSize=100;
+  Char_t  out[kSize];
+  snprintf(out,kSize,"%s/%s",sel,sel1); 
   AliCDBId idTOFAlign(out,minrun,maxrun);
   AliCDBMetaData *mdTOFAlign = new AliCDBMetaData();
   mdTOFAlign->SetResponsible("TOF");
@@ -256,8 +261,10 @@ void AliTOFAlignment::ReadParFromCDB(const Char_t *sel, Int_t nrun)
   //Read Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
   const Char_t *sel1 = "AlignPar" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
+  const Int_t kSize=100;
+  Char_t  out[kSize];
+
+  snprintf(out,kSize,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
   if (!entry) { 
     AliError(Form("Failed to get entry: %s",out));
@@ -274,8 +281,9 @@ void AliTOFAlignment::WriteSimParOnCDB(const Char_t *sel, Int_t minrun, Int_t ma
   //Write Sim Align Par on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   const Char_t *sel1 = "AlignSimPar" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
+  const Int_t kSize=100;
+  Char_t  out[kSize];
+  snprintf(out,kSize,"%s/%s",sel,sel1); 
   AliCDBId idTOFAlign(out,minrun,maxrun);
   AliCDBMetaData *mdTOFAlign = new AliCDBMetaData();
   mdTOFAlign->SetResponsible("TOF");
@@ -287,9 +295,14 @@ void AliTOFAlignment::ReadSimParFromCDB(const Char_t *sel, Int_t nrun){
   //Read Sim Align Par from CDB
   AliCDBManager *man = AliCDBManager::Instance();
   const Char_t *sel1 = "AlignSimPar" ;
-  Char_t  out[100];
-  sprintf(out,"%s/%s",sel,sel1); 
+  const Int_t kSize=100;
+  Char_t  out[kSize];
+  snprintf(out,kSize,"%s/%s",sel,sel1); 
   AliCDBEntry *entry = man->Get(out,nrun);
+  if (!entry) { 
+    AliError(Form("Failed to get entry: %s",out));
+    return; 
+  }
   fTOFAlignObjArray=(TObjArray*)entry->GetObject();
   fNTOFAlignObj=fTOFAlignObjArray->GetEntries();
   AliInfo(Form("Number of Alignable Volumes from CDB: %d",fNTOFAlignObj));
@@ -351,7 +364,8 @@ void AliTOFAlignment::BuildGeomForSurvey()
 
   // position all this stuff in the global ALICE frame
 
-  char name[16];
+  const Int_t kSize=100;
+  char name[kSize];
   Double_t smX = 0.;
   Double_t smY = 0.;
   Double_t smZ = 0.;
@@ -359,7 +373,7 @@ void AliTOFAlignment::BuildGeomForSurvey()
   for (Int_t iSM = 0; iSM < 18; iSM++) {
     Int_t mod = iSM + 13;
     if (mod > 17) mod -= 18;
-    sprintf(name, "BTOF%d",mod);
+    snprintf(name,kSize, "BTOF%d",mod);
     trd1[iSM] = new TGeoVolume(name,strd1);
     Float_t phi  = iSM * 20.;
     Float_t phi2 = 270 + phi;
@@ -392,7 +406,7 @@ void AliTOFAlignment::BuildGeomForSurvey()
   
   for (Int_t iSM = 0; iSM < 18; iSM++) {
 
-    sprintf(name, "TOP_1/BTOF%d_1", iSM);
+    snprintf(name,kSize, "TOP_1/BTOF%d_1", iSM);
     printf("\n\n*****************  TOF SuperModule:  %s ****************** \n",name);
     TGeoPhysicalNode* pn3 = fTOFmgr->MakePhysicalNode(name);
     fTOFMatrixId[iSM] = pn3->GetMatrix(); //save "ideal" global matrix
@@ -414,9 +428,11 @@ void AliTOFAlignment::InsertMisAlignment(Float_t * const mis)
   Double_t lC[3]={fgkXFM, fgkYFM ,fgkZFM};
   Double_t lD[3]={-fgkXFM, fgkYFM ,fgkZFM};
 
+  const Int_t kSize=16;
+  char name[kSize];
+
   for(Int_t iSM=0;iSM<18;iSM++){
-     char name[16];
-     sprintf(name, "TOP_1/BTOF%d_1", iSM);
+    snprintf(name,kSize, "TOP_1/BTOF%d_1", iSM);
      fTOFmgr->cd(name);
      printf("\n\n******Misaligning TOF SuperModule ************** %s \n",name);
 

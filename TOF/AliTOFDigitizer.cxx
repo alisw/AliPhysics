@@ -346,6 +346,7 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
 
   if(!tofBranch){
     AliFatal(Form("TOF branch not found for input %d",inputFile));
+    return;
   }
   
   tofBranch->SetAddress(&sdigitsDummyContainer);           

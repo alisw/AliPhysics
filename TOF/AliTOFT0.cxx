@@ -496,9 +496,9 @@ void AliTOFT0::Exec(Option_t *option)
 
   const Int_t kSize = 70;
   char outFileName[kSize];
-  strcpy(outFileName,"ht010tr120ps"); // global time resolution has to be converted from Int_t to char
+  strncpy(outFileName,"ht010tr120ps",kSize); // global time resolution has to be converted from Int_t to char
                                       // in order to have in the output filename this parameter
-  strcat(outFileName,fHeadersFile);
+  strncat(outFileName,fHeadersFile,kSize);
 
   if(fT0File.IsNull()) fT0File=outFileName;
 

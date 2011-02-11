@@ -564,14 +564,14 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Char_t *path ){
   // This function returns the colume path of a given sector 
   //--------------------------------------------------------------------
 
-  const Int_t kSize = 200;
+  const Int_t kSize = 100;
 
   Char_t string[kSize];
 
   Int_t icopy = sector;
 
   snprintf(string,kSize,"/ALIC_1/B077_1/BSEGMO%i_1/BTOF%i_1",icopy,icopy);
-  snprintf(path,kSize,"%s",string);
+  snprintf(path,2*kSize,"%s",string);
 
 }
 //_____________________________________________________________________________
@@ -580,7 +580,7 @@ void AliTOFGeometry::GetVolumePath(Int_t sector, Int_t plate, Int_t strip, Char_
   // This function returns the colume path of a given strip 
   //--------------------------------------------------------------------
 
-  const Int_t kSize = 200;
+  const Int_t kSize = 100;
 
   Char_t string1[kSize];
   Char_t string2[kSize];
@@ -613,8 +613,8 @@ void AliTOFGeometry::GetPos(Int_t *det, Float_t *pos)
 // Returns space point coor (x,y,z) (cm)  for Detector 
 // Indices  (iSect,iPlate,iStrip,iPadX,iPadZ) 
 //
-  Char_t path[100];
-  GetVolumePath(det,path );
+  Char_t path[200];
+  GetVolumePath(det,path);
   if (!gGeoManager) {
     printf("ERROR: no TGeo\n");
   }
@@ -1403,7 +1403,7 @@ void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t coord[4][3])
   if (!gGeoManager) printf("ERROR: no TGeo\n");
 
   // ALICE -> TOF Sector
-  Char_t path1[100]="";
+  Char_t path1[200];
   GetVolumePath(vol[0],path1);
   gGeoManager->cd(path1);
   TGeoHMatrix aliceToSector;
@@ -1413,7 +1413,7 @@ void AliTOFGeometry::DetToSectorRF(Int_t vol[5], Double_t coord[4][3])
   //TGeoHMatrix sectorToALICE = aliceToSector.Inverse();
 
   // ALICE -> TOF Pad
-  Char_t path2[100]="";
+  Char_t path2[200];
   GetVolumePath(vol,path2);
   gGeoManager->cd(path2);
   TGeoHMatrix aliceToPad;
@@ -2136,7 +2136,7 @@ void AliTOFGeometry::PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT)
   l2t.MasterToLocal(padCentreL,padCentreT);
 
 
-  Char_t path[100];
+  Char_t path[200];
   // pad centre coordinates in its ref. frame
   Double_t padCentreL2[3] = {0., 0., 0.};
   // pad centre coordinates in the ALICE global ref. frame
@@ -2148,7 +2148,7 @@ void AliTOFGeometry::PadRF2TrackingRF(Float_t *ctrackPos, Float_t *differenceT)
   l2g.MasterToLocal(padCentreL2,padCentreG);
 
 
-  Char_t path2[100];
+  Char_t path2[200];
   // strip centre coordinates in its ref. frame
   Double_t stripCentreL[3] = {0., 0., 0.};
   // strip centre coordinates in the ALICE global ref. frame

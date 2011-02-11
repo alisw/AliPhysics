@@ -172,7 +172,8 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
 
   fTOFdigitArray = * (TClonesArray**) branch->GetAddress();
 
-  char fileName[15];
+  const Int_t kDimension=15;
+  char fileName[kDimension];
   AliFstream* outfile;      // logical name of the output file 
 
   //AliRawDataHeader header;
@@ -197,7 +198,7 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   //loop over TOF DDL files
   for (nDDL=0; nDDL<AliDAQ::NumberOfDdls("TOF"); nDDL++) {
 
-    strcpy(fileName,AliDAQ::DdlFileName("TOF",nDDL)); //The name of the output file
+    strncpy(fileName,AliDAQ::DdlFileName("TOF",nDDL),kDimension); //The name of the output file
 
     outfile = new AliFstream(fileName);
     //iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);

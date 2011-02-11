@@ -242,7 +242,7 @@ Long64_t AliTOFArray::Merge(TCollection *list){
 	Int_t count = 0; // object counter
 	while ((tofArray=(AliTOFArray*)next())) {
 		//		printf("Count = %d \n",count);
-		if (!tofArray) continue;
+		//if (!tofArray) continue; // dead_code x coverity
 		if (tofArray->GetSize() != fSize){
 			printf("Merging with current entry in list not possible, AliTOFArray in the list has size different from the current one\n");
 			continue;

@@ -632,6 +632,11 @@ Bool_t AliTOFRawStream::Next()
   }
 
   fDDL  = fRawReader->GetDDLID();
+  if (fDDL==-1) {
+    fRawReader->AddMajorErrorLog(kDDLdataReading);
+    AliWarning("Error when load DDL. Go to next DDL");
+    return kFALSE;
+  }
 
   fWordType = GetField(data,WORD_TYPE_MASK,WORD_TYPE_POSITION);
 
