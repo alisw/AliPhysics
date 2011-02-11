@@ -99,10 +99,8 @@ AliTOFtrackerMI::~AliTOFtrackerMI(){
     fSeeds=0x0;
   }
 
-  if (fClusters) {
-    for (Int_t ii=0; ii<kMaxCluster; ii++)
-      if (fClusters[ii]) fClusters[ii]->Delete();
-  }
+  for (Int_t ii=0; ii<kMaxCluster; ii++)
+    if (fClusters[ii]) fClusters[ii]->Delete();
 
 }
 //_____________________________________________________________________________
@@ -284,7 +282,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
   const Float_t kMaxQualityD = 1.;  // max delta quality if cluster used
   const Float_t kForbiddenR  = 0.1; // minimal PID according TPC
 
-  static const Double_t kMasses[]={
+  static const Double_t kMasses[6]={
     0.000511, 0.105658, 0.139570, 0.493677, 0.938272, 1.875613
   };
   
@@ -441,7 +439,8 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
       Double_t tof2=AliTOFGeometry::TdcBinWidth()*cluster->GetTDC()+kTofOffset; // in ps
       // Float_t tgamma = TMath::Sqrt(cluster->GetR()*cluster->GetR()+cluster->GetZ()*cluster->GetZ())/0.03;  //time for "primary" gamma
       //if (trackTOFin->GetPt()<0.7 && TMath::Abs(tgamma-tof2)<350) continue;  // gamma conversion candidate - TEMPORARY
-      for(Int_t j=0;j<=5;j++ && 5<AliPID::kSPECIES){
+      for(Int_t j=0;j<=5;j++){
+	
 	Double_t mass=kMasses[j];
 	times[nfound][j]+=distances[4]/3e-2*TMath::Sqrt(mom*mom+mass*mass)/mom;   // add time distance
 	if ( TMath::Abs(times[nfound][j]-tof2)<mintimedist[nfound] && tpcpid[j]>kForbiddenR){

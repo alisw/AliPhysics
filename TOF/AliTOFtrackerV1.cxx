@@ -121,10 +121,8 @@ AliTOFtrackerV1::~AliTOFtrackerV1() {
   }
 
 
-  if (fClusters) {
-    for (Int_t ii=0; ii<kMaxCluster; ii++)
-      if (fClusters[ii]) fClusters[ii]->Delete();
-  }
+  for (Int_t ii=0; ii<kMaxCluster; ii++)
+    if (fClusters[ii]) fClusters[ii]->Delete();
 
 }
 //_____________________________________________________________________________

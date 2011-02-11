@@ -131,15 +131,10 @@ AliTOFLvHvDataPoints::AliTOFLvHvDataPoints(const AliTOFLvHvDataPoints & data):
   for(int i=0;i<kNsectors;i++)
     for(int j=0;j<kNplates;j++)
       fAliasNamesXHVmap[i][j]=data.fAliasNamesXHVmap[i][j];
- 
 
-  if (fLVDataPoints)
-    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fLVDataPoints[ii]) fLVDataPoints[ii]->Delete();
-  if (fHVDataPoints)
-    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fHVDataPoints[ii]) fHVDataPoints[ii]->Delete();
-  if (fMap)
-    for (Int_t ii=0; ii<kNmaxDataPoints; ii++) if (fMap[ii]) fMap[ii]->Delete();
-
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fLVDataPoints[ii]= data.fLVDataPoints[ii];
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fHVDataPoints[ii]= data.fLVDataPoints[ii];
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fMap[ii]= data.fMap[ii];
 
 }
 //---------------------------------------------------------------
@@ -176,6 +171,10 @@ AliTOFLvHvDataPoints& AliTOFLvHvDataPoints:: operator=(const AliTOFLvHvDataPoint
 
   fNSecondsBeforeEOR=data.fNSecondsBeforeEOR;
 
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fLVDataPoints[ii]= data.fLVDataPoints[ii];
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fHVDataPoints[ii]= data.fLVDataPoints[ii];
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++) fMap[ii]= data.fMap[ii];
+
   return *this;
 }
 //---------------------------------------------------------------
@@ -185,6 +184,13 @@ AliTOFLvHvDataPoints::~AliTOFLvHvDataPoints() {
 
   delete fStartingLVmap;
   delete fStartingHVmap;
+
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++)
+    if (fLVDataPoints[ii]) fLVDataPoints[ii]->Delete();
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++)
+    if (fHVDataPoints[ii]) fHVDataPoints[ii]->Delete();
+  for (Int_t ii=0; ii<kNmaxDataPoints; ii++)
+    if (fMap[ii]) fMap[ii]->Delete();
 
 }
 
