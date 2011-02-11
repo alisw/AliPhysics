@@ -166,6 +166,10 @@ void makeInputAliAnalysisTaskSELctopKpi(){
   if(pidflag) cout<<"PID is used"<<endl;
   else cout<<"PID is not used"<<endl;
 
+  RDHFLctopKpiProd->SetMinPtCandidate(-1.);
+  RDHFLctopKpiAn->SetMinPtCandidate(-1.);
+  RDHFLctopKpiProd->SetMaxPtCandidate(10000.);
+  RDHFLctopKpiAn->SetMaxPtCandidate(10000.);
   cout<<"This is the object I'm going to save:"<<endl;
   RDHFLctopKpiProd->PrintAll();
   RDHFLctopKpiAn->PrintAll();
