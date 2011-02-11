@@ -946,7 +946,7 @@ void AliTRDclusterResolution::ProcessCharge()
   TF1 fm("fm", "[0]+[1]*sin(x*[2])", -.45,.45);
   fm.SetParameter(0, 0.); fm.SetParameter(1, 1.e-2); fm.FixParameter(2, TMath::TwoPi());
   fm.SetParNames("#deltay", "#pm#delta", "2*#pi");
-  h3s->GetXaxis()->SetRange(tmin, tmax);
+  h3s->GetXaxis()->SetRangeUser(tmin, tmax);
   if(!AliTRDresolution::Process((TH2*)h3s->Project3D("zy"), g))return;
   g[0]->Fit(&fm, "QR");
   if(fCanvas){
@@ -1135,7 +1135,7 @@ Bool_t AliTRDclusterResolution::ProcessNormalTracks()
   TF1 fg("fg", "gaus", -.5, .5); fg.FixParameter(1, 0.);
   TF1 fs("fs", "[0]*[0]*exp(-1*(x/[1])**2)+[2]", -.5, .5);
   fs.SetParNames("<#sigma^{max}(q,prf)>_{q}", "#sigma(pw)", "D_{T}^{2}*<x>");
-  h3r->GetXaxis()->SetRange(tmin, tmax);
+  h3r->GetXaxis()->SetRangeUser(tmin, tmax);
   if(!AliTRDresolution::Process((TH2*)h3r->Project3D("zy"), g, 200)) return kFALSE;
   for(Int_t ip(0); ip<g[1]->GetN(); ip++){
     g[1]->GetPoint(ip, x, y); ex = g[1]->GetErrorX(ip); ey = g[1]->GetErrorY(ip);
