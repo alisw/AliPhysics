@@ -60,6 +60,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
     { return AliAODRecoDecay::DecayLengthError(GetPrimaryVtx());}
   Double_t NormalizedDecayLength() const 
     { return AliAODRecoDecay::NormalizedDecayLength(GetPrimaryVtx());}
+  Double_t NormalizedDecayLength2() const 
+    { return AliAODRecoDecay::NormalizedDecayLength2(GetPrimaryVtx());}
   Double_t DecayLengthXY() const 
     { return AliAODRecoDecay::DecayLengthXY(GetPrimaryVtx());}
   Double_t DecayLengthXYError() const 
