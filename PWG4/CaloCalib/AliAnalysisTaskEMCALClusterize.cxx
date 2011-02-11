@@ -66,6 +66,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kTRUE)
+  , fRun(-1)
   
   {
   //ctor
@@ -74,7 +75,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
-  fBranchNames="ESD:EMCALCells.";
+  fBranchNames="ESD:AliESDHeader.,EMCALCells.";
 }
 
 //________________________________________________________________________
@@ -85,6 +86,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kFALSE)
+  , fRun(-1)
 {
   // Constructor
   for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = 0 ;
@@ -92,7 +94,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
-  fBranchNames="ESD:EMCALCells.";
+  fBranchNames="ESD:AliESDHeader.,EMCALCells.";
 }
 
 //________________________________________________________________________
@@ -116,9 +118,7 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   }
 
   if(fClusterizer) {delete fClusterizer;}
-  if(fGeom)        {delete fGeom;       }
   if(fUnfolder)    {delete fUnfolder;   }
-
 }
 
 //-------------------------------------------------------------------
@@ -152,6 +152,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Magic line to write events to AOD file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
   LoadBranches();
+  
+  AccessOCDB();
 
   //-------------------------------------------------------------------------------------
   //Set the geometry matrix, for the first event, skip the rest
@@ -320,58 +322,62 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
 }      
 
 //_____________________________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::UserNotify()
+Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
 {
   //Access to OCDB stuff
-  if(DebugLevel() > 1 )
-    Info("UserNotify()"," Begin");
+
   AliVEvent * event = InputEvent();
-  if (event)
+  if (!event)
   {
-    fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(fOCDBpath.Data());
-    cdb->SetRun(event->GetRunNumber());
-    //
-    // EMCAL from RAW OCDB
-    if (fOCDBpath.Contains("alien:"))
-    {
-      cdb->SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
-      cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","alien://Folder=/alice/data/2010/OCDB");
-    }
-    TString path = cdb->GetDefaultStorage()->GetBaseFolder();
-    
-    // init parameters:
-    //Get calibration parameters	
-    if(!fCalibData)
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-	    AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
-      if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
-    }
-    
-    if(!fCalibData)
-      AliFatal("Calibration parameters not found in CDB!");
-    
-    //Get calibration parameters	
-    if(!fPedestalData)
-    {
-      AliCDBEntry *entry = (AliCDBEntry*) 
-	    AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
-      if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
-    }
-    
-    if(!fPedestalData)
-      AliFatal("Dead map not found in CDB!");
-    
-    //      cout << "[i] Change of run number: " << fAOD->GetRunNumber() << endl;
-    InitClusterization();
-  }
-  else
-  {
-    Warning("UserNotify","Event not available!!!");
+    Warning("AccessODCD","Event not available!!!");
+    return kFALSE;
   }
 
+  if (event->GetRunNumber()==fRun)
+    return kTRUE;
+  fRun = event->GetRunNumber();
+
+  if(DebugLevel() > 1 )
+    Info("AccessODCD()"," Begin");
+
+  fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+  AliCDBManager *cdb = AliCDBManager::Instance();
+  if (fOCDBpath.Length())
+    cdb->SetDefaultStorage(fOCDBpath.Data());
+  cdb->SetRun(event->GetRunNumber());
+  //
+  // EMCAL from RAW OCDB
+  if (fOCDBpath.Contains("alien:"))
+  {
+    cdb->SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
+    cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","alien://Folder=/alice/data/2010/OCDB");
+  }
+  TString path = cdb->GetDefaultStorage()->GetBaseFolder();
+    
+  // init parameters:
+  //Get calibration parameters	
+  if(!fCalibData)
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+    if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
+  }
+  
+  if(!fCalibData)
+    AliFatal("Calibration parameters not found in CDB!");
+    
+  //Get calibration parameters	
+  if(!fPedestalData)
+  {
+    AliCDBEntry *entry = (AliCDBEntry*) 
+      AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+    if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
+  }
+    
+  if(!fPedestalData)
+    AliFatal("Dead map not found in CDB!");
+
+  InitClusterization();
   return kTRUE;
 }
 
@@ -380,48 +386,52 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
 {
   //Select clusterization/unfolding algorithm and set all the needed parameters
   
-  if(!fJustUnfold){
-    
-    //First init the clusterizer
-    if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
-      fClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData, fPedestalData);
-    else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN)
-      fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
-    else{
-      AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
-    }
-    
-    //Now set the parameters
-    fClusterizer->SetECAClusteringThreshold( fRecParam->GetClusteringThreshold() );
-    fClusterizer->SetECALogWeight          ( fRecParam->GetW0()                  );
-    fClusterizer->SetMinECut               ( fRecParam->GetMinECut()             );    
-    fClusterizer->SetUnfolding             ( fRecParam->GetUnfold()              );
-    fClusterizer->SetECALocalMaxCut        ( fRecParam->GetLocMaxCut()           );
-    fClusterizer->SetTimeCut               ( fRecParam->GetTimeCut()             );
-    fClusterizer->SetTimeMin               ( fRecParam->GetTimeMin()             );
-    fClusterizer->SetTimeMax               ( fRecParam->GetTimeMax()             );
-    fClusterizer->SetInputCalibrated       ( kTRUE                               );
-    
-    //In case of unfolding after clusterization is requested, set the corresponding parameters
-    if(fRecParam->GetUnfold()){
-      
-      Int_t i=0;
-      for (i = 0; i < 8; i++) {
-        fClusterizer->SetSSPars(i, fRecParam->GetSSPars(i));
-      }//end of loop over parameters
-      for (i = 0; i < 3; i++) {
-        fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
-        fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
-      }//end of loop over parameters
-      
-      fClusterizer->InitClusterUnfolding();
-            
-    }// to unfold
-    
-  }else{
-    //Now init the unfolding afterburner 
+  if (fJustUnfold){
+    // init the unfolding afterburner 
+    delete fUnfolder;
     fUnfolder =  new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut());
+    return;
  }
+
+  //First init the clusterizer
+  delete fClusterizer;
+  if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
+    fClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData, fPedestalData);
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) 
+    fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
+  else if(fRecParam->GetClusterizerFlag() > AliEMCALRecParam::kClusterizerNxN) {
+   AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
+   clusterizer->SetNRowDiff(2);
+   clusterizer->SetNColDiff(2);
+   fClusterizer = clusterizer;
+  } else{
+    AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
+  }
+    
+  //Now set the parameters
+  fClusterizer->SetECAClusteringThreshold( fRecParam->GetClusteringThreshold() );
+  fClusterizer->SetECALogWeight          ( fRecParam->GetW0()                  );
+  fClusterizer->SetMinECut               ( fRecParam->GetMinECut()             );    
+  fClusterizer->SetUnfolding             ( fRecParam->GetUnfold()              );
+  fClusterizer->SetECALocalMaxCut        ( fRecParam->GetLocMaxCut()           );
+  fClusterizer->SetTimeCut               ( fRecParam->GetTimeCut()             );
+  fClusterizer->SetTimeMin               ( fRecParam->GetTimeMin()             );
+  fClusterizer->SetTimeMax               ( fRecParam->GetTimeMax()             );
+  fClusterizer->SetInputCalibrated       ( kTRUE                               );
+    
+  //In case of unfolding after clusterization is requested, set the corresponding parameters
+  if(fRecParam->GetUnfold()){
+    Int_t i=0;
+    for (i = 0; i < 8; i++) {
+      fClusterizer->SetSSPars(i, fRecParam->GetSSPars(i));
+    }//end of loop over parameters
+    for (i = 0; i < 3; i++) {
+      fClusterizer->SetPar5  (i, fRecParam->GetPar5(i));
+      fClusterizer->SetPar6  (i, fRecParam->GetPar6(i));
+    }//end of loop over parameters
+    
+    fClusterizer->InitClusterUnfolding();
+  }// to unfold
 }
 
 //________________________________________________________________________________________
@@ -473,13 +483,13 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetCellsAmplitudeFraction(ratios);
     clus->SetDispersion(recPoint->GetDispersion());
     clus->SetChi2(-1); //not yet implemented
-    clus->SetTOF(recPoint->GetTime()) ; //time-of-fligh
+    clus->SetTOF(recPoint->GetTime()) ; //time-of-flight
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
     Float_t elipAxis[2];
     recPoint->GetElipsAxis(elipAxis);
     clus->SetM02(elipAxis[0]*elipAxis[0]) ;
     clus->SetM20(elipAxis[1]*elipAxis[1]) ;
-
+    clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
     clusArray->Add(clus);
   } // recPoints loop
 }
