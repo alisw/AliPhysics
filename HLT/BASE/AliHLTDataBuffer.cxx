@@ -135,7 +135,7 @@ int AliHLTDataBuffer::FindMatchingDataBlocks(const AliHLTComponent* pConsumer, A
   return iResult;
 }
 
-int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
+int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* /*pConsumer*/,
 					       vector<AliHLTDataBuffer::AliHLTDataSegment>& tgtList)
 {
   // see header file for function documentation
@@ -149,29 +149,6 @@ int AliHLTDataBuffer::FindMatchingDataSegments(const AliHLTComponent* pConsumer,
   // add all forwarded blocks
   tgtList.insert(tgtList.begin(), fForwardedSegments.begin(), fForwardedSegments.end());
   iResult=tgtList.size();
-  return iResult;
-  
-  // NOTE: the remaining code is disabled
-  // to be deleted at cleanup
-  if (pConsumer) {
-    AliHLTComponentDataTypeList dtlist;
-    ((AliHLTComponent*)pConsumer)->GetInputDataTypes(dtlist);
-    AliHLTDataSegmentList::iterator segment=fSegments.begin();
-    while (segment!=fSegments.end()) {
-      AliHLTComponentDataTypeList::iterator type=dtlist.begin();
-      while (type!=dtlist.end()) {
-	if ((*segment).fDataType==(*type)) {
-	  tgtList.push_back(*segment);
-	  iResult++;
-	  break;
-	}
-	type++;
-      }
-      segment++;
-    }
-  } else {
-    iResult=-EINVAL;
-  }
   return iResult;
 }
 
