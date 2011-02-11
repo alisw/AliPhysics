@@ -30,7 +30,7 @@
 #include "AliESDVZERO.h"
 
 //______________________________________________________________________________
-Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr)
+Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Float_t *v0multChCorr, Float_t *v0multChCorrResc)
 {
   // Correct V0 non-linearity, prepare a version rescaled to SPD2 corr.
   // Please describe better parameters...
@@ -116,6 +116,7 @@ Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Floa
   Float_t multCorr = 0;
   Float_t multCorr2 = 0;
   Float_t multChCorr[64];
+  Float_t multChCorrResc[64];
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   for(Int_t i = 0; i < 64; ++i) {
     Double_t b = (esdV0->GetMultiplicity(i)*par1[i]-par0[i]);
@@ -123,11 +124,14 @@ Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Floa
     Double_t n = (s<0) ? -b : (-b + TMath::Sqrt(s));
     multChCorr[i] = 2.*esdV0->GetMultiplicity(i)/n*par0[i];
     multCorr += multChCorr[i];
-    multCorr2 += (multChCorr[i]/par0[i]/64.);
+    multChCorrResc[i] = multChCorr[i]/par0[i]/64.;
+    multCorr2 += multChCorrResc[i];
   }
   v0CorrResc =  multCorr2;
   if (v0multChCorr)
     for(Int_t i = 0; i < 64; ++i) v0multChCorr[i] = multChCorr[i];
+  if (v0multChCorrResc)
+    for(Int_t i = 0; i < 64; ++i) v0multChCorrResc[i] = multChCorrResc[i];
 
   return multCorr;
 }
