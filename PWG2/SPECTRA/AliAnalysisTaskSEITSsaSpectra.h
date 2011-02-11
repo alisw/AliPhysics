@@ -55,7 +55,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fNSigmaDCAxy=nsxy;
     fNSigmaDCAz=nsz; 
   }
-  void SetMultBin(Int_t LowBin=0,Int_t UpBin=9999){
+  void SetMultBin(Int_t LowBin=-1,Int_t UpBin=-1){
     fLowMult=LowBin;
     fUpMult=UpBin;
   }
