@@ -32,6 +32,9 @@ public:
   void SetDeltaAODFileName(TString string) { fDeltaAODFileName = string;}
   void SetGammaBranchName(TString string) { fAODBranchName = string; }
  
+
+  void SetDebugLevel(Int_t debugLevel) { fDebugLevel = debugLevel; }
+  Int_t GetDebugLevel() const { return fDebugLevel; }
   
  private:
 
@@ -56,6 +59,8 @@ public:
   TClonesArray * fAODPWG4Particles;
 
   AliMCAnalysisUtils * fAnaUtils;
+
+  Int_t fDebugLevel;
 
 
   AliAnalysisTaskGCPartToPWG4Part(const AliAnalysisTaskGCPartToPWG4Part&); // not implemented

@@ -43,7 +43,8 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part()
   fDeltaAODFileName(""),
   fAODBranchName("GammaConv_gamma"),
   fAODPWG4Particles(NULL),
-  fAnaUtils(NULL)
+  fAnaUtils(NULL),
+  fDebugLevel(0)
 {
   // Dummy Constructor
 }
@@ -69,7 +70,8 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
   fDeltaAODFileName(""),
   fAODBranchName("GammaConv_gamma"),
   fAODPWG4Particles(NULL),
-  fAnaUtils(NULL)
+  fAnaUtils(NULL),
+  fDebugLevel(0)
 {
   // Constructor
   DefineInput(0, TChain::Class());
@@ -95,7 +97,7 @@ void AliAnalysisTaskGCPartToPWG4Part::UserCreateOutputObjects() {
 void AliAnalysisTaskGCPartToPWG4Part::UserExec(Option_t *) 
 {
   
-  //AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 
   //Clear stuff for new event
   CleanUp();
@@ -137,20 +139,26 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
 
   //TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));  
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    
+
+    AliAODPWG4ParticleCorrelation * photon = NULL;
     AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
-    if(aodO) {
-      AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
-    } else {
-      
+    if(aodO) {  
+      photon = AddToAOD(aodO, fAODPWG4Particles, "ConvGamma");
+    } else {   
       AliAODConversionParticle * convParticle = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
       if (convParticle) {
-        AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
+	photon = AddToAOD(convParticle, fAODPWG4Particles, "ConvGamma");
+      
       } else {
 	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
 	continue;
       }
     }
+    
+    if(photon && fDebugLevel > 2) {
+      printf("Added conversion photon number %d, pt: %f \n", iPhot, photon->Pt());
+    }
+
   }
 
 }
