@@ -80,7 +80,7 @@ class AliTRDalignment : public TObject {
 
   void WriteAscii(const char * const filename) const;                    // store data on ascii file
   void WriteRoot(const char * const filename);                           // store data on root file
-  void WriteDB(const char * const filename, int run0, int run1);         // store data on a local DB-like file
+  void WriteDB(const char * const fina, int r0, int r1, int v, int s);   // store data on a local DB-like file
   void WriteDB(char * const db, const char * const pa, int r0, int r1);  // store data on DB file
   void WriteGeo(char *filename);                                         // apply misalignment and store geometry 
 

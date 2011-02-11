@@ -1036,7 +1036,7 @@ void AliTRDalignment::WriteRoot(const char * const filename)
 }
 
 //_____________________________________________________________________________
-void AliTRDalignment::WriteDB(const char * const filename, int run0, int run1) 
+void AliTRDalignment::WriteDB(const char * const filename, int run0, int run1, int ver, int subver) 
 {
   //
   // dumping on a DB-like file
@@ -1049,7 +1049,9 @@ void AliTRDalignment::WriteDB(const char * const filename, int run0, int run1)
   AliCDBMetaData *md = new AliCDBMetaData();
   md->SetResponsible("Dariusz Miskowiec");
   md->SetComment(fComment.GetString().Data());
-  AliCDBEntry    *e  = new AliCDBEntry(ar, id, md);
+  AliCDBEntry *e  = new AliCDBEntry(ar, id, md);
+  e->SetVersion(ver);
+  e->SetSubVersion(subver);
   TFile fi(filename,"RECREATE");
   if (fi.IsOpen()) {
     e->Write();
