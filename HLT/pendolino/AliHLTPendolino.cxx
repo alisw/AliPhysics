@@ -456,7 +456,7 @@ Bool_t AliHLTPendolino::IncludeAliCDBEntryInList(const TString& entryPath) {
 
 void AliHLTPendolino::Log(const char* detector, const char* message) {
 	// logging function
-	fpLogger->log(detector, message);
+        if (fpLogger) fpLogger->log(detector, message);
 	// refer data to a Pendolino Logger, which can take care of it
 }
 

@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTPredictionProcessorInterface.cxx
-    @author Sebastian Bablok
-    @date   
-    @brief  
-*/
+/// @file   AliHLTPredictionProcessorInterface.cxx
+/// @author Sebastian Bablok
+/// @date   
+/// @brief  
+///
 
 #include "AliHLTPredictionProcessorInterface.h"
 #include "AliHLTPendolino.h"
@@ -76,6 +76,7 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
   TPair* pair = dynamic_cast<TPair*>(object);
   if (pair && pair->Value()) {
     TObjArray* valueSet = dynamic_cast<TObjArray*>(pair->Value());
+    if (valueSet) {
     Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
     if(nentriesDCS>=0 && valueSet->At(nentriesDCS)){
       AliDCSValue *val = dynamic_cast<AliDCSValue *>(valueSet->At(nentriesDCS));
@@ -83,6 +84,7 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
 	*value=val->GetFloat();
 	return kTRUE;
       }
+    }
     }
   }
   return kFALSE;
@@ -99,6 +101,7 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
   TPair* pair = dynamic_cast<TPair*>(object);
   if (pair && pair->Value()) {
     TObjArray* valueSet = dynamic_cast<TObjArray*>(pair->Value());
+    if (valueSet) {
     Int_t nentriesDCS = valueSet->GetEntriesFast() - 1;
     if(nentriesDCS>=0 && valueSet->At(nentriesDCS)){
       AliDCSValue *val = dynamic_cast<AliDCSValue *>(valueSet->At(nentriesDCS));
@@ -106,6 +109,7 @@ Bool_t AliHLTPredictionProcessorInterface::GetSensorValue(TMap* dcsAliasMap,
 	*value=val->GetBool();
 	return kTRUE;
       }
+    }
     }
   }
   return kFALSE;

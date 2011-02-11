@@ -199,9 +199,16 @@ UInt_t AliHLTPredictionProcessorGRP::Process(TMap* dcsAliasMap)
     // TODO: correct energy has to be extracted somewhere
     grpObj=new AliGRPObject;
     float cmsEnergy=14000;
-    grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
-    grpObj->SetBeamType("p-p");
+    if (grpObj) {
+      grpObj->SetBeamEnergy(cmsEnergy/0.120); // LHC convention
+      grpObj->SetBeamType("p-p");
+    }
   }
+  if (!grpObj) {
+    Log(" *** Failed to generate GRP object");
+    return 7; // the return value needs to be checked
+  }
+
   grpObj->SetL3Current(l3Current,(AliGRPObject::Stats)0);
   grpObj->SetDipoleCurrent(dipoleCurrent,(AliGRPObject::Stats)0);  
   grpObj->SetL3Polarity(l3Polarity);  
