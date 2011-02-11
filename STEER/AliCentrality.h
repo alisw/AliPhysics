@@ -6,7 +6,7 @@
  * See cxx source for full Copyright notice                               */
 
 //*****************************************************
-//   Class AliCentralitySelectionTask
+//   Class AliCentrality
 //   author: Alberica Toia
 //*****************************************************
 
@@ -22,6 +22,7 @@ class AliCentrality : public TNamed
   AliCentrality& operator=(const AliCentrality& cnt);   /// assignment operator
 
   /// set centrality result
+  void SetQuality(Int_t quality) {fQuality = quality;} 
   void SetCentralityV0M(Float_t cent) {fCentralityV0M = cent;} 
   void SetCentralityFMD(Float_t cent) {fCentralityFMD = cent;}
   void SetCentralityTRK(Float_t cent) {fCentralityTRK = cent;}
@@ -38,7 +39,15 @@ class AliCentrality : public TNamed
   Int_t   GetCentralityClass5(const char *method);
   Bool_t  IsEventInCentralityClass(Float_t a, Float_t b, const char *method);
 
+  Float_t GetCentralityPercentileUnchecked(const char *method);
+  Int_t   GetCentralityClass10Unchecked(const char *method);
+  Int_t   GetCentralityClass5Unchecked(const char *method);
+  Bool_t  IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *method);
+
+  Int_t GetQuality();
+
  private:
+  Int_t   fQuality; // Quality of centrality determination
   Float_t fCentralityV0M;   // Centrality from V0
   Float_t fCentralityFMD;   // Centrality from FMD
   Float_t fCentralityTRK;   // Centrality from tracks
