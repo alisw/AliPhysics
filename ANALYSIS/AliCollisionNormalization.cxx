@@ -353,7 +353,9 @@ Double_t AliCollisionNormalization::ComputeNint() {
       Double_t alpha = (Double_t) hVzData->GetBinContent(i) / allEventsWithVertex;
       Double_t events = alpha * triggeredEventsWith0Mult;
       
-      if (histVzMCRec->GetBinContent(i,1) == 0)
+      // if (histVzMCRec->GetBinContent(i,1) == 0)
+      //   continue;
+      if (!eTrigVtx_projx->GetBinContent(i) || !eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1))
         continue;
 
       Double_t fZ = eTrigVtx_projx->Integral(0, eTrigVtx_projx->GetNbinsX()+1) / eTrigVtx_projx->GetBinContent(i) *
@@ -366,7 +368,7 @@ Double_t AliCollisionNormalization::ComputeNint() {
       events *= correction;
 
       if (fVerbose > 1) Printf("  Bin %d, alpha is %.2f%%, fZ is %.3f, number of events with 0 mult.: %.2f (MC comparison: %.2f)", i, alpha * 100., fZ, events, 
-			       histVzMCRec->GetBinContent(i,1));
+			       histVzMCTrg->GetBinContent(i,1));
       correctedEvents->SetBinContent(i, 1, events);
     }
 
@@ -385,8 +387,8 @@ Double_t AliCollisionNormalization::ComputeNint() {
 							  2,correctedEvents->GetNbinsX()+1),
 				allEventsZrange));
   if(fVerbose > 1) {    
-    Int_t nbin = histVzMCRec->GetNbinsX();
-    AliInfo(Form("Efficiency in the zero bin: %3.3f", histVzMCRec->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1) ));
+    Int_t nbin = histVzMCTrg->GetNbinsX();
+    AliInfo(Form("Trigger Efficiency in the zero bin: %3.3f", histVzMCTrg->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1) ));
   }
   
 
