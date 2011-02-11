@@ -209,7 +209,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
   static const Double_t fgkLadderHeight;          // including bottom beam
   static const Double_t fgkLadderSegBoxDW;        // To include hybrids in box
   static const Double_t fgkLadderSegBoxDH;        // To include hybrids in box
-  static const Double_t fgkLadderSegBoxDHCorr;    // To include hybrids in box
+  //  static const Double_t fgkLadderSegBoxDHCorr;    // To include hybrids in box
 
   static const Double_t fgkLadderBeamRadius;      // carbon fiber beam radius
   static const Double_t fgkLadderLa;              // parameters defining

@@ -58,7 +58,6 @@ const Double_t AliITSv11GeometrySDD::fgkLadderWidth       = 50.0*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderHeight      = 30.0*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDW    =  7.5*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDH    =  7.1*fgkmm;
-const Double_t AliITSv11GeometrySDD::fgkLadderSegBoxDHCorr=  2.1*fgkmm;
 
 const Double_t AliITSv11GeometrySDD::fgkLadderBeamRadius  =  0.6*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderLa          =  3.*fgkmm;
@@ -161,9 +160,9 @@ const Double_t AliITSv11GeometrySDD::fgkHybFLUpperLength  = 59.878*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAlDZ    = 11.183*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybFLUpperAldx    =  2.307*fgkmm;
 
-const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorLen   = 12.000*fgkmm;
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorLen   = 10.000*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorWid   =  1.490*fgkcm; //???
-const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorAng   = 40.0;
+const Double_t AliITSv11GeometrySDD::fgkHybCC2SensorAng   = 30.0;
 
 const Double_t AliITSv11GeometrySDD::fgkmu = 1*fgkmicron; // 1*fgkmicron; // can be increase for checking thin objects
 const Double_t AliITSv11GeometrySDD::fgkHybridThBridgeThick =  0.25*fgkmm;               // ???
@@ -727,7 +726,7 @@ void AliITSv11GeometrySDD::SetParameters() {
   // Define display colors and the non constant geometry parameters
   //
 
-  Double_t detLadderDist = 8*fgkmm; 
+  Double_t detLadderDist = 8.4*fgkmm; 
 
   fLay3LadderUnderSegDH = detLadderDist - (fgkWaHVcableAlThick+fgkWaHVcablePolyThick);
   fLay4LadderUnderSegDH = detLadderDist - (fgkWaHVcableAlThick+fgkWaHVcablePolyThick);
@@ -2355,22 +2354,26 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
 
   //**************************************************** CC to sensors:
   // (alas, we cannot use GeomCableFlat here because section is not constant)
-    Double_t xcc[6],ycc[6];
+    Double_t xcc[8],ycc[8];
     xcc[0] = -0.5*ccLayer1.GetWidth();
     ycc[0] =  0;
     xcc[1] =  0.5*ccLayer1.GetWidth();
     ycc[1] =  0;
     xcc[2] = xcc[1];
-    ycc[2] = -fgkHybCC2SensorLen;
-    xcc[3] = xcc[2] - fgkHybCC2SensorWid;
+    ycc[2] = -fgkHybCC2SensorLen*0.8;
+    xcc[3] = xcc[2] + 0.1*fgkHybCC2SensorWid;
     ycc[3] = ycc[2];
     xcc[4] = xcc[3];
-    ycc[4] = 0.8*ycc[3];
-    xcc[5] = xcc[0];
-    ycc[5] = 0.2*ycc[3];
+    ycc[4] = -fgkHybCC2SensorLen;
+    xcc[5] = xcc[4] - fgkHybCC2SensorWid;
+    ycc[5] = ycc[4];
+    xcc[6] = xcc[5];
+    ycc[6] = 0.8*ycc[5];
+    xcc[7] = xcc[0];
+    ycc[7] = 0.2*ycc[5];
 
     TGeoXtru* ccToSensPoliSh = new TGeoXtru(2);
-    ccToSensPoliSh->DefinePolygon(6, xcc, ycc);
+    ccToSensPoliSh->DefinePolygon(8, xcc, ycc);
     ccToSensPoliSh->DefineSection(0, 0.);
     ccToSensPoliSh->DefineSection(1, ccLayer1.GetThickness());
 
@@ -2379,7 +2382,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateHybrid(Int_t iLRSide) {
     ccToSensPoliVol->SetLineColor(fColorPolyhamide);
 
     TGeoXtru* ccToSensAlSh = new TGeoXtru(2);
-    ccToSensAlSh->DefinePolygon(6, xcc, ycc);
+    ccToSensAlSh->DefinePolygon(8, xcc, ycc);
     ccToSensAlSh->DefineSection(0, 0.);
     ccToSensAlSh->DefineSection(1, fgkHybAlCCThick);
 
@@ -2566,25 +2569,26 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   TGeoXtru *segBox = new TGeoXtru(2);
   segBox->SetName("ITSsddSegBox");
 
-  Double_t xseg[8],yseg[8];
-  xseg[0] = -(fgkLadderWidth/2+fgkPinSuppWidth+fgkLadderSegBoxDW);
-  yseg[0] =  fgkLadderHeight/2+fgkLadderSegBoxDH/2;
-  xseg[1] =  xseg[0];
-  yseg[1] = -yseg[0];
-  xseg[2] = -xseg[1];
-  yseg[2] =  yseg[1];
-  xseg[3] =  xseg[2];
-  yseg[3] =  yseg[0];
-  xseg[4] =  0.35*xseg[3];
-  yseg[4] =  yseg[3];
-  xseg[5] =  xseg[4];
-  yseg[5] =  yseg[4] + fgkLadderSegBoxDHCorr;
-  xseg[6] = -xseg[4];
-  yseg[6] =  yseg[5];
-  xseg[7] =  xseg[6];
-  yseg[7] =  yseg[0];
+  Double_t xseg[12],yseg[12];
+  xseg[ 0] = -(fgkLadderWidth/2+fgkPinSuppWidth+fgkLadderSegBoxDW);
+  yseg[ 0] =  fgkLadderHeight/2+fgkLadderSegBoxDH/2;
+  xseg[ 1] =  xseg[0];
+  yseg[ 1] = -yseg[0];
+  xseg[ 2] =  0.87*xseg[1];
+  yseg[ 2] =  yseg[1];
+  xseg[ 3] =  0.82*xseg[1];
+  yseg[ 3] = -yseg[0] - 0.82*fgkHybCC2SensorLen;
+  xseg[ 4] =  0.78*xseg[1];
+  yseg[ 4] =  yseg[3];
+  xseg[ 5] =  0.83*xseg[1];
+  yseg[ 5] =  yseg[1];
 
-  segBox->DefinePolygon(8, xseg, yseg);
+  for (Int_t j=0; j<6; j++) {
+    xseg[6+j] = -xseg[5-j];
+    yseg[6+j] =  yseg[5-j];
+  }
+
+  segBox->DefinePolygon(12, xseg, yseg);
   segBox->DefineSection(0,-segmentLength/2);
   segBox->DefineSection(1, segmentLength/2);
 
@@ -2798,7 +2802,7 @@ TGeoVolume* AliITSv11GeometrySDD::CreateLadderSegment(Int_t iLay, Int_t iSeg) {
   //*************************
   // the 2 hybrids :
   //*************************
-  Double_t hybDy = ((TGeoBBox*)fHybrid->GetShape())->GetDY();
+  Double_t hybDy = ((TGeoXtru*)fHybrid->GetShape())->GetY(2);
   Double_t distAxeToHybridCenter = fgkBTBaxisAtoBase+hybDy;
   
   Double_t hybrVolX = ( distAxeToHybridCenter*CosD(fgkHybridAngle) 
