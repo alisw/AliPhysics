@@ -389,9 +389,9 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
       TObject* idobj=NULL;
       if (propsFolder) idobj=propsFolder->FindObject(HLTSTAT_ENTRY_PROPS_IDOBJ_NAME);
       assert(idobj);
-      AliHLTUInt32_t crcid=idobj->GetUniqueID();
-      TString idstr; idstr.Form("0x%08x", crcid);
       if (idobj) {
+	AliHLTUInt32_t crcid=idobj->GetUniqueID();
+	TString idstr; idstr.Form("0x%08x", crcid);
 	for (vector<TFolder*>::iterator consumer=publisher+1;
 	     consumer!=newFolders.end(); consumer++) {
 	  HLTDebug("   checking %s", (*consumer)->GetName());
@@ -693,7 +693,7 @@ int AliHLTCompStatCollector::RemoveRecurrence(TFolder* pRoot) const
       TFolder* token=NULL;
       while ((obj=tokens.Next())!=NULL && (token=dynamic_cast<TFolder*>(obj))!=NULL) {
 	if (name.CompareTo(token->GetName())==0) continue;
-	if ((obj=token->FindObjectAny(name))!=NULL) {
+	if (token->FindObjectAny(name)!=NULL) {
 	  listRemove.push_back(entry);
 	  HLTDebug("found recurrence in %s", token->GetName());
 	  break;

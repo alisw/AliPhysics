@@ -230,18 +230,18 @@ int AliHLTMonitoringRelay::AliHLTMonitoringItem::SetData(void* pBuffer, int size
   if (!fData) {
     fData=new TArrayC(size, reinterpret_cast<const Char_t*>(pBuffer));
   }
+  if (!fData) {
+    return -ENOMEM;
+  }
+
   if (fData->GetSize()<size) {
     fData->Set(size, reinterpret_cast<const Char_t*>(pBuffer));
   } else {
     memcpy(fData->GetArray(), pBuffer, size);
   }
 
-  if (fData) {
-    fDataSize=size;
-    return 0;
-  }
-  return -ENOMEM;
-
+  fDataSize=size;
+  return 0;
 }
 
 
