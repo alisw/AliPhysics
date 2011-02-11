@@ -70,7 +70,9 @@ fMinCentrality(0.),
 fMaxCentrality(100.),
 fFixRefs(kFALSE),
 fIsSelectedCuts(0),
-fIsSelectedPID(0)
+fIsSelectedPID(0),
+fMinPtCand(-1.),
+fMaxPtCand(100000.)
 {
   //
   // Default Constructor
@@ -108,7 +110,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxCentrality(source.fMaxCentrality),
   fFixRefs(source.fFixRefs),
   fIsSelectedCuts(source.fIsSelectedCuts),
-  fIsSelectedPID(source.fIsSelectedPID)
+  fIsSelectedPID(source.fIsSelectedPID),
+  fMinPtCand(source.fMinPtCand),
+  fMaxPtCand(source.fMaxPtCand)
 {
   //
   // Copy constructor
@@ -156,6 +160,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fFixRefs=source.fFixRefs;
   fIsSelectedCuts=source.fIsSelectedCuts;
   fIsSelectedPID=source.fIsSelectedPID;
+  fMinPtCand=source.fMinPtCand;
+  fMaxPtCand=source.fMaxPtCand;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);

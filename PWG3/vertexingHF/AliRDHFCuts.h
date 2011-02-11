@@ -62,6 +62,8 @@ class AliRDHFCuts : public AliAnalysisCuts
     fPidHF=new AliAODPidHF(*pidObj);
   }
   void SetRemoveDaughtersFromPrim(Bool_t removeDaughtersPrim) {fRemoveDaughtersFromPrimary=removeDaughtersPrim;}
+  void SetMinPtCandidate(Double_t ptCand=-1.) {fMinPtCand=ptCand; return;}
+  void SetMaxPtCandidate(Double_t ptCand=1000.) {fMaxPtCand=ptCand; return;}
   void SetOptPileup(Int_t opt=0){
     // see enum below
     fOptPileup=opt;
@@ -95,6 +97,8 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t GetUseCentrality() const {return fUseCentrality;}
   Float_t GetMinCentrality() const {return fMinCentrality;}
   Float_t GetMaxCentrality() const {return fMaxCentrality;}
+  Double_t GetMinPtCandidate() const {return fMinPtCand;}
+  Double_t GetMaxPtCandidate() const {return fMaxPtCand;}
   Bool_t IsSelected(TObject *obj) {return IsSelected(obj,AliRDHFCuts::kAll);}
   Bool_t IsSelected(TList *list) {if(!list) return kTRUE; return kFALSE;}
   Int_t  IsEventSelectedInCentrality(AliVEvent *event);
@@ -167,8 +171,10 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  fFixRefs;       // fix the daughter track references 
   Int_t  fIsSelectedCuts; // outcome of cuts selection
   Int_t  fIsSelectedPID;  // outcome of PID selection
+  Double_t fMinPtCand; // minimum pt of the candidate
+  Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,10);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,11);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
