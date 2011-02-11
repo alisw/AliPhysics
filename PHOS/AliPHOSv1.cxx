@@ -134,7 +134,7 @@ void AliPHOSv1::AddHit(Int_t shunt, Int_t primary, Int_t Id, Float_t * hits)
   newHit = new AliPHOSHit(shunt, primary, Id, hits) ;
 
   for ( hitCounter = fNhits-1 ; hitCounter >= 0 && !deja ; hitCounter-- ) {
-    curHit = dynamic_cast<AliPHOSHit*>((*fHits)[hitCounter]) ;
+    curHit = static_cast<AliPHOSHit*>((*fHits)[hitCounter]) ;
     if(curHit->GetPrimary() != primary) break ; 
            // We add hits with the same primary, while GEANT treats primaries succesively 
     if( *curHit == *newHit ) {
@@ -237,11 +237,11 @@ void AliPHOSv1::StepManager(void)
     
     ndigits = fCPVDigits.GetEntriesFast();
     for (idigit=0; idigit<ndigits-1; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit1 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
+      AliPHOSCPVDigit  *cpvDigit1 = static_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
       Float_t x1 = cpvDigit1->GetXpad() ;
       Float_t z1 = cpvDigit1->GetYpad() ;
       for (Int_t jdigit=idigit+1; jdigit<ndigits; jdigit++) {
-	AliPHOSCPVDigit  *cpvDigit2 = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(jdigit));
+	AliPHOSCPVDigit  *cpvDigit2 = static_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(jdigit));
 	Float_t x2 = cpvDigit2->GetXpad() ;
 	Float_t z2 = cpvDigit2->GetYpad() ;
 	if (x1==x2 && z1==z2) {
@@ -257,7 +257,7 @@ void AliPHOSv1::StepManager(void)
     
     ndigits = fCPVDigits.GetEntriesFast();
     for (idigit=0; idigit<ndigits; idigit++) {
-      AliPHOSCPVDigit  *cpvDigit = dynamic_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
+      AliPHOSCPVDigit  *cpvDigit = static_cast<AliPHOSCPVDigit*>(fCPVDigits.UncheckedAt(idigit));
       relid[0] = moduleNumber + 1 ;                             // CPV (or PHOS) module number
       relid[1] =-1 ;                                            // means CPV
       relid[2] = cpvDigit->GetXpad() ;                          // column number of a pad

@@ -230,14 +230,14 @@ void  AliPHOSTrackSegmentMakerv1::FillOneModule()
   //First EMC clusters
   Int_t totalEmc = fEMCRecPoints->GetEntriesFast() ;
   for(fEmcFirst = fEmcLast; (fEmcLast < totalEmc) &&  
-	((dynamic_cast<AliPHOSRecPoint *>(fEMCRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
+	((static_cast<AliPHOSRecPoint *>(fEMCRecPoints->At(fEmcLast)))->GetPHOSMod() == fModule ); 
       fEmcLast ++)  ;
   
   //Now CPV clusters
   Int_t totalCpv = fCPVRecPoints->GetEntriesFast() ;
 
     for(fCpvFirst = fCpvLast; (fCpvLast < totalCpv) && 
-         ((dynamic_cast<AliPHOSRecPoint *>(fCPVRecPoints->At(fCpvLast)))->GetPHOSMod() == fModule ); 
+         ((static_cast<AliPHOSRecPoint *>(fCPVRecPoints->At(fCpvLast)))->GetPHOSMod() == fModule ); 
        fCpvLast ++) ;
       
 }
@@ -392,11 +392,12 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
       
   }
     
-  if(trackindex>=0)
+  if(trackindex>=0) {
     AliDebug(1,Form("\t\tBest match for (xClu,zClu,eClu)=(%.3f,%.3f,%.3f): iTrack=%d, dR=%.3f",
 		    locClu.X(),locClu.Z(),emcClu->GetEnergy(),
 		    trackindex,TMath::Sqrt(dx*dx+dz*dz)));	  
-  return;
+    return;
+  }
   
   Float_t distance2Track = fRtpc ; 
   
@@ -577,8 +578,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
          Float_t dx,dz ;
          linkUp->GetXZ(dx,dz) ;
 	 new ((* fTrackSegments)[fNTrackSegments]) 
-	   AliPHOSTrackSegment(dynamic_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(linkUp->GetEmc())) , 
-			       dynamic_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(linkUp->GetCpv())) , 
+	   AliPHOSTrackSegment(static_cast<AliPHOSEmcRecPoint *>(fEMCRecPoints->At(linkUp->GetEmc())) , 
+			       static_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(linkUp->GetCpv())) , 
 			       linkUp->GetTrack(),dx,dz) ;
 	 
        (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);

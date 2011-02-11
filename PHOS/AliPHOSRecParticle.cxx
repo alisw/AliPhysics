@@ -99,9 +99,9 @@ Int_t AliPHOSRecParticle::GetNPrimariesToRecParticles() const
   // Get the number of primaries at the origine of the RecParticle
   Int_t rv = 0 ;
   AliRunLoader* rl = AliRunLoader::Instance() ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-  Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-  dynamic_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  Int_t emcRPindex = static_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+  static_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(rv) ; 
   return rv ; 
 }
 
@@ -111,7 +111,7 @@ const TParticle * AliPHOSRecParticle::GetPrimary() const
   // Get the primary particle at the origine of the RecParticle and 
   // which has deposited the largest energy in SDigits
   AliRunLoader* rl = AliRunLoader::Instance() ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   rl->GetEvent(rl->GetEventNumber()) ;
   rl->LoadKinematics("READ");
   rl->LoadSDigits("READ");
@@ -166,7 +166,7 @@ Int_t AliPHOSRecParticle::GetPrimaryIndex() const
 
 
   AliRunLoader* rl = AliRunLoader::Instance() ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   rl->GetEvent(rl->GetEventNumber()) ;
   rl->LoadHits("READ");
   rl->LoadDigits("READ");
@@ -276,10 +276,10 @@ const TParticle * AliPHOSRecParticle::GetPrimary(Int_t index) const
   else { 
     Int_t dummy ; 
     AliRunLoader* rl = AliRunLoader::Instance() ;
-    AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+    AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
-    Int_t emcRPindex = dynamic_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
-    Int_t primaryindex = dynamic_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
+    Int_t emcRPindex = static_cast<AliPHOSTrackSegment*>(phosLoader->TrackSegments()->At(GetPHOSTSIndex()))->GetEmcIndex();
+    Int_t primaryindex = static_cast<AliPHOSEmcRecPoint*>(phosLoader->EmcRecPoints()->At(emcRPindex))->GetPrimaries(dummy)[index] ; 
     return rl->Stack()->Particle(primaryindex) ;
    } 
   //  return 0 ; 

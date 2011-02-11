@@ -249,7 +249,7 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   //########################################
 
   for (Int_t recpart = 0 ; recpart < nOfRecParticles ; recpart++) {
-    AliPHOSRecParticle  *rp    = dynamic_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
+    AliPHOSRecParticle  *rp    = static_cast<AliPHOSRecParticle*>(recParticles->At(recpart));
     if (Debug()) 
       rp->Print();
     // Get track segment and EMC rec.point associated with this rec.particle

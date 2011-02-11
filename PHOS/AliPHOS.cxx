@@ -391,7 +391,7 @@ void AliPHOS::Digits2Raw()
     AliError("Energy digitization should be OFF if use Digits2Raw") ;
   }
 
-  AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ; 
+  AliPHOSLoader * loader = static_cast<AliPHOSLoader*>(fLoader) ; 
 
   // get the digits
   loader->LoadDigits();
@@ -449,7 +449,7 @@ void AliPHOS::Digits2Raw()
 
   // loop over digits (assume ordered digits)
   for (Int_t iDigit = 0; iDigit < digits->GetEntries(); iDigit++) {
-    AliPHOSDigit* digit = dynamic_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
+    AliPHOSDigit* digit = static_cast<AliPHOSDigit *>(digits->At(iDigit)) ;
 
     // Skip small energy below treshold
     if (digit->GetEnergy() < kThreshold) 
@@ -596,7 +596,7 @@ void AliPHOS::SetTreeAddress()
 Bool_t AliPHOS::Raw2SDigits(AliRawReader* rawReader) 	 
 { 	 
 	  	 
-  AliPHOSLoader * loader = dynamic_cast<AliPHOSLoader*>(fLoader) ; 	 
+  AliPHOSLoader * loader = static_cast<AliPHOSLoader*>(fLoader) ; 	 
 	  	 
   TTree * tree = 0 ; 	 
   tree = loader->TreeS() ; 	 

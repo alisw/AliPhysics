@@ -402,7 +402,7 @@ Int_t AliPHOSLoader::ReadHits()
     hitref = HitsRef();
   }
 
-  TClonesArray* hits = dynamic_cast<TClonesArray*>(*hitref);
+  TClonesArray* hits = static_cast<TClonesArray*>(*hitref);
 
   TTree* treeh = TreeH();
   
@@ -471,7 +471,7 @@ Int_t AliPHOSLoader::ReadSDigits()
     return 0;
   }
     
-  branch->SetAddress(SDigitsRef());
+  branch->SetAddress(sdref);
   branch->GetEntry(0);
   return 0;
 }
@@ -587,13 +587,17 @@ Int_t AliPHOSLoader::ReadRecPoints()
    }
 
   Int_t ii ; 
-  Int_t maxemc = emca->GetEntries() ; 
-  for ( ii= 0 ; ii < maxemc ; ii++ ) 
-    EmcRecPoints()->Add(emca->At(ii)) ;
- 
-  Int_t maxcpv = cpva->GetEntries() ;
-  for ( ii= 0 ; ii < maxcpv ; ii++ )
-    CpvRecPoints()->Add(cpva->At(ii)) ; 
+  if (emca != 0) {
+    Int_t maxemc = emca->GetEntries() ; 
+    for ( ii= 0 ; ii < maxemc ; ii++ ) 
+      EmcRecPoints()->Add(emca->At(ii)) ;
+  }
+
+  if (cpva != 0) {
+    Int_t maxcpv = cpva->GetEntries() ;
+    for ( ii= 0 ; ii < maxcpv ; ii++ )
+      CpvRecPoints()->Add(cpva->At(ii)) ; 
+  }
 
   return retval;
 }

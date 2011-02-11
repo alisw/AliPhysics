@@ -65,9 +65,9 @@ ClassImp(AliPHOSvImpacts)
 
 //____________________________________________________________________________
 AliPHOSvImpacts::AliPHOSvImpacts():
-  fEMCImpacts(0),
-  fCPVImpacts(0),
-  fPPSDImpacts(0)
+  fEMCImpacts(new TList),
+  fCPVImpacts(new TList),
+  fPPSDImpacts(new TList)
 {
   // ctor
 }
@@ -186,12 +186,12 @@ void AliPHOSvImpacts::ResetHits()
 
   Int_t i;
   for (i=0; i<GetGeometry()->GetNModules(); i++) {
-    (dynamic_cast<TClonesArray*>(fEMCImpacts->At(i))) -> Clear();
+    (static_cast<TClonesArray*>(fEMCImpacts->At(i))) -> Clear();
     fNEMCImpacts[i] = 0 ;
   }
 
   for (i=0; i<GetGeometry()->GetNModules(); i++) {
-    (dynamic_cast<TClonesArray*>(fCPVImpacts->At(i))) -> Clear();
+    (static_cast<TClonesArray*>(fCPVImpacts->At(i))) -> Clear();
     fNCPVImpacts[i] = 0 ;
   }
   

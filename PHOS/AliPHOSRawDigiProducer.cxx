@@ -270,7 +270,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
       if (caloFlag == AliCaloRawStreamV3::kLowGain) {
 	new((*tmpDigLG)[ilgDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
 	if (sigLength>0 && fADCValuesLG!=0)
-	  dynamic_cast<AliPHOSDigit*>(tmpDigLG->At(ilgDigit))->SetALTROSamplesLG(sigLength,fADCValuesLG);
+	  static_cast<AliPHOSDigit*>(tmpDigLG->At(ilgDigit))->SetALTROSamplesLG(sigLength,fADCValuesLG);
 	ilgDigit++ ; 
       }
       else if (caloFlag == AliCaloRawStreamV3::kHighGain) {
@@ -280,7 +280,7 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
 	else
 	  new((*digits)[iDigit]) AliPHOSDigit(-1,absId,(Float_t)energy,(Float_t)time);
 	if (sigLength>0 && fADCValuesHG!=0)
-	  dynamic_cast<AliPHOSDigit*>(digits->At(iDigit))->SetALTROSamplesHG(sigLength,fADCValuesHG);
+	  static_cast<AliPHOSDigit*>(digits->At(iDigit))->SetALTROSamplesHG(sigLength,fADCValuesHG);
 	iDigit++;
       }
     } // End of NextChannel()

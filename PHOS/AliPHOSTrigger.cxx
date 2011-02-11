@@ -246,8 +246,8 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       Int_t itru  = (row-1) + (col-1)*fNTRUPhi + (relid[0]-1)*fNTRU ;
 
       //Fill TRU matrix with crystal values
-      TMatrixD * amptrus   = dynamic_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
-      TMatrixD * timeRtrus = dynamic_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
+      TMatrixD * amptrus   = static_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
+      TMatrixD * timeRtrus = static_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
 
       //Calculate row and column of the crystal inside the TRU with number itru
       Int_t irow = (relid[2]-1) - (row-1) *  fNCrystalsPhi;	
@@ -257,7 +257,7 @@ void AliPHOSTrigger::FillTRU(const TClonesArray * digits, const AliPHOSGeometry 
       (*timeRtrus)(irow,icol) = timeR ;
 
       //####################MODULE MATRIX ##################
-      TMatrixD * ampmods   = dynamic_cast<TMatrixD *>(fAmpmods->At(relid[0]-1)) ;
+      TMatrixD * ampmods   = static_cast<TMatrixD *>(fAmpmods->At(relid[0]-1)) ;
       (*ampmods)(relid[2]-1,relid[3]-1)   = amp ;
     }
   }
@@ -305,13 +305,13 @@ Bool_t AliPHOSTrigger::IsPatchIsolated(Int_t iPatchType, const Int_t imod, const
   Int_t rowborder = 0;
 
   if(fIsolateInModule){
-    ampmatrix = dynamic_cast<TMatrixD *>(fAmpmods->At(imod)) ;
+    ampmatrix = static_cast<TMatrixD *>(fAmpmods->At(imod)) ;
     rowborder = fNCrystalsPhi*fNTRUPhi;
     colborder = fNCrystalsZ*fNTRUZ;
     AliDebug(2,"Isolate trigger in Module");
   }
   else{
-    ampmatrix = dynamic_cast<TMatrixD *>(fAmptrus->At(itru)) ;
+    ampmatrix = static_cast<TMatrixD *>(fAmptrus->At(itru)) ;
     rowborder = fNCrystalsPhi;
     colborder = fNCrystalsZ;
     AliDebug(2,"Isolate trigger in TRU");
@@ -392,8 +392,8 @@ void AliPHOSTrigger::MakeSlidingCell(const Int_t imod, TMatrixD &ampmax2, TMatri
     
   //Loop over all TRUS in a module
   for(Int_t itru = 0 + imod  * fNTRU ; itru < (imod+1)*fNTRU ; itru++){
-    TMatrixD * amptru   = dynamic_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
-    TMatrixD * timeRtru = dynamic_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
+    TMatrixD * amptru   = static_cast<TMatrixD *>(fAmptrus  ->At(itru)) ;
+    TMatrixD * timeRtru = static_cast<TMatrixD *>(fTimeRtrus->At(itru)) ;
     Int_t mtru = itru-imod*fNTRU ; //Number of TRU in Module
     
     //Sliding 2x2, add 2x2 amplitudes (NOT OVERLAP)
@@ -666,7 +666,7 @@ void AliPHOSTrigger::DoIt()
   // does the trigger job
 
   AliRunLoader* rl = AliRunLoader::Instance() ;
-  AliPHOSLoader * phosLoader = dynamic_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
+  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
   
   // Get PHOS Geometry object
   AliPHOSGeometry *geom;
