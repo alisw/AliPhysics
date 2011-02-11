@@ -58,6 +58,6 @@ class AliCentrality : public TNamed
   Float_t fCentralityTKLvsV0M;   // Centrality from tracklets vs V0
   Float_t fCentralityZEMvsZDC;   // Centrality from ZEM vs ZDC
 
-  ClassDef(AliCentrality, 1)
+  ClassDef(AliCentrality, 2)
 };
 #endif //ALICENTRALITY_H
