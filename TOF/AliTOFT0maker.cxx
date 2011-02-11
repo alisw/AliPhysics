@@ -81,6 +81,9 @@ AliTOFT0maker::AliTOFT0maker():
   fCalculated[2] = 0;
   fCalculated[3] = 0;
 
+  fT0cur[0]=0.;
+  fT0cur[1]=0.;
+
   if(AliPID::ParticleMass(0) == 0) new AliPID();
 
   fPIDesd = new AliESDpid();
@@ -113,6 +116,9 @@ AliTOFT0maker::AliTOFT0maker(AliESDpid *externalPID, AliTOFcalib *tofCalib):
   fCalculated[1] = 0;
   fCalculated[2] = 0;
   fCalculated[3] = 0;
+
+  fT0cur[0]=0.;
+  fT0cur[1]=0.;
 
   if(AliPID::ParticleMass(0) == 0) new AliPID();
 
