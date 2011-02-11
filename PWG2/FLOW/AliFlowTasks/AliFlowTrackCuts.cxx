@@ -958,7 +958,9 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
     return kFALSE;
   }
 
-  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(track->GetP(), fAliPID);
+  const AliExternalTrackParam* tpcparam = track->GetInnerParam(); //tpc only params at the inner wall
+  if (!tpcparam) return kFALSE;
+  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
   Float_t sigTPC = track->GetTPCsignal();
   Float_t s = (sigTPC-sigExp)/sigExp;
   Double_t pt = track->Pt();
