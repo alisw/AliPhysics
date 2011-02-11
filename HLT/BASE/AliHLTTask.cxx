@@ -413,8 +413,8 @@ int AliHLTTask::StartRun()
 	      if ((iResult=fpDataBuffer->SetConsumer(pTgtTask->GetComponent()))>=0) {
 	      }
 	    } else {
-	      break;
 	      iResult=-EFAULT;
+	      break;
 	    }
 	    lnk=lnk->Next();
 	  }
