@@ -104,8 +104,6 @@ void  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
 //________________________________________________________________
 void AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
 {
-  // compute online equalized time
-  Float_t mean[4], sigma[4];
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {

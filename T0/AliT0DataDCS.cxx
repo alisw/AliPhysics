@@ -507,9 +507,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0MPDcentA +=  aValue->GetFloat();
+                      t0MPDcentA +=  Int_t(aValue->GetFloat());
                     }
-                    fMPDcentA = t0MPDcentA /((Float_t) aliasEntr[j]);
+                    fMPDcentA =Int_t( t0MPDcentA /((Float_t) aliasEntr[j]) );
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
                   {
