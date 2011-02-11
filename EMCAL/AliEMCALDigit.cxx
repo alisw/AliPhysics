@@ -60,8 +60,8 @@ AliDigitNew(),
   fTimeR(0.),
   fChi2(0.),
   fNDF(0),
-  fDigitType(kUnknown)
-
+  fDigitType(kUnknown),
+  fAmpCalib(-1)
 {
   // default ctor 
 
@@ -102,7 +102,8 @@ AliEMCALDigit::AliEMCALDigit(Int_t primary, Int_t iparent, Int_t id, Float_t dig
     fTimeR(time),
     fChi2(chi2),
     fNDF(ndf),
-    fDigitType(type)
+    fDigitType(type),
+    fAmpCalib(-1)
 {  
   // ctor with all data 
 
@@ -165,7 +166,8 @@ AliEMCALDigit::AliEMCALDigit(const AliEMCALDigit & digit)
     fTimeR(digit.fTimeR), 
     fChi2(digit.fChi2), 
     fNDF(digit.fNDF),
-    fDigitType(digit.fDigitType)
+    fDigitType(digit.fDigitType),
+    fAmpCalib(digit.fAmpCalib)
 {
   // copy ctor
   // data memebrs of the base class (AliNewDigit)

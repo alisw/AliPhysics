@@ -68,7 +68,7 @@ class AliEMCALDigit : public AliDigitNew {
   void    SetNDF(Int_t ndf)         { fNDF       = ndf  ;}
   void    SetType(Int_t t)          { fDigitType = t    ;}
   void    ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
-	
+
   //Raw time sample
   //ALTRO
   Int_t   GetNALTROSamplesLG() const {if(fDigitType==kLG)return fNSamples; else return 0;}
@@ -83,6 +83,9 @@ class AliEMCALDigit : public AliDigitNew {
   void SetALTROSamplesHG (const Int_t nSamplesHG, Int_t *samplesHG);
   void SetALTROSamplesLG (const Int_t nSamplesLG, Int_t *samplesLG);
   void SetFALTROSamples  (const Int_t nSamples,   Int_t *samples) { if(fDigitType==kTrigger) SetALTROSamplesLG(nSamples, samples);} 
+
+  void    SetCalibAmp(Float_t amp)  { fAmpCalib = amp; }
+  Double_t GetCalibAmp()   const    { return fAmpCalib; }
 
   void Print(const Option_t* /*opt*/) const;
 	
@@ -111,9 +114,9 @@ class AliEMCALDigit : public AliDigitNew {
   Int_t   fNDF;         // Fit Number of Degrees of Freedom
 	
   Int_t fDigitType;     // This is a trigger digit(0), HG (1) or LG (3)
-	
-  ClassDef(AliEMCALDigit,5)   // Digit in EMCAL 
+  Float_t fAmpCalib;    //!Calibrated energy
 
+  ClassDef(AliEMCALDigit,6)   // Digit in EMCAL 
 } ;
 
 #endif //  ALIEMCALDIGIT_H

@@ -67,14 +67,14 @@ ClassImp(AliEMCALClusterizerNxN)
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN()
-  : AliEMCALClusterizer()
+: AliEMCALClusterizer(), fNRowDiff(1), fNColDiff(1)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
-  : AliEMCALClusterizer(geometry)
+  : AliEMCALClusterizer(geometry), fNRowDiff(1), fNColDiff(1)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
@@ -84,19 +84,16 @@ AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped)
-: AliEMCALClusterizer(geometry, calib, caloped)
+: AliEMCALClusterizer(geometry, calib, caloped), fNRowDiff(1), fNColDiff(1)
 {
-	// ctor, geometry and calibration are initialized elsewhere.
-				
+  // ctor, geometry and calibration are initialized elsewhere.
 }
 
-
 //____________________________________________________________________________
-  AliEMCALClusterizerNxN::~AliEMCALClusterizerNxN()
+AliEMCALClusterizerNxN::~AliEMCALClusterizerNxN()
 {
   // dtor
 }
-
 
 //____________________________________________________________________________
 void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
@@ -210,7 +207,7 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
   coldiff = TMath::Abs(ieta1 - ieta2) ;  
   
   // neighbours +-1 in col and row
-  if ( TMath::Abs(coldiff) < 2 && TMath::Abs(rowdiff) < 2)
+  if ( TMath::Abs(coldiff) <= fNColDiff && TMath::Abs(rowdiff) <= fNRowDiff)
     {
       
       AliDebug(9, Form("AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
@@ -230,20 +227,20 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
 //____________________________________________________________________________
 void AliEMCALClusterizerNxN::MakeClusters()
 {
-  // Steering method to construct the clusters stored in a list of Reconstructed Points
-  // A cluster is defined as a list of neighbour digits
-  // Mar 03, 2007 by PAI
+  // Make clusters
   
-  if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
+  if (fGeom==0) 
+    AliFatal("Did not get geometry from EMCALLoader");
   
   fRecPoints->Clear();
   
   // Set up TObjArray with pointers to digits to work on 
-  //TObjArray *digitsC = new TObjArray();
   TObjArray digitsC;
   TIter nextdigit(fDigitsArr);
   AliEMCALDigit *digit = 0;
   while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
+    Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+    digit->SetCalibAmp(dEnergyCalibrated);
     digitsC.AddLast(digit);
   }
   
@@ -260,31 +257,27 @@ void AliEMCALClusterizerNxN::MakeClusters()
     Float_t dMaxEnergyDigit = -1;
     AliEMCALDigit *pMaxEnergyDigit = 0;
     nextdigitC.Reset();
-    while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
+    while ( (digit = static_cast<AliEMCALDigit *>(nextdigitC())) ) 
     { // scan over the list of digitsC
-      Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
-      //AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
-      
-      //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
+      Float_t dEnergyCalibrated = digit->GetCalibAmp();
+
       if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
-	    {
-	      if (dEnergyCalibrated > dMaxEnergyDigit)
+      {
+        if (dEnergyCalibrated > dMaxEnergyDigit) 
         {
           dMaxEnergyDigit = dEnergyCalibrated;
           iMaxEnergyDigit = digit->GetId();
           pMaxEnergyDigit = digit;
         }
-	    }
+      }
     }
-    
     if (iMaxEnergyDigit < 0 || digitsC.GetEntries() <= 0) 
     {
       bDone = kTRUE;
       continue;
     }
     
-    AliDebug (2, Form("Max digit found: %1.2f AbsId: %d", dMaxEnergyDigit, iMaxEnergyDigit));
-    AliDebug(5, Form("Max Digit ENERGY: %1.5f", dMaxEnergyDigit));
+    AliDebug (2, Form("Max digit found: %1.5f AbsId: %d", dMaxEnergyDigit, iMaxEnergyDigit));
     
     // keep the candidate digits in a list
     TList clusterDigitList;
@@ -293,34 +286,33 @@ void AliEMCALClusterizerNxN::MakeClusters()
     
     Double_t clusterCandidateEnergy = dMaxEnergyDigit;
     
-    // now loop over the resto of the digits and cluster into NxN cluster 
+    // now loop over the rest of the digits and cluster into NxN cluster 
     // we do not actually cluster yet: we keep them in the list clusterDigitList
     nextdigitC.Reset();
     while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
     { // scan over the list of digitsC
       if (digit == pMaxEnergyDigit) continue;
-      Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+      Float_t dEnergyCalibrated = digit->GetCalibAmp();
       AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
-      //if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fECAClusteringThreshold  )
       if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0  )
-	    {
-	      Float_t time = pMaxEnergyDigit->GetTime(); //Time or TimeR?
-	      if(TMath::Abs(time - digit->GetTime()) > fTimeCut ) continue; //Time or TimeR?
-	      Bool_t shared = kFALSE; //cluster shared by 2 SuperModules?
-	      if (AreNeighbours(pMaxEnergyDigit, digit, shared) == 1) // call (digit,digitN) in THAT order !!!!! 
+      {
+        Float_t time = pMaxEnergyDigit->GetTime(); //Time or TimeR?
+        if(TMath::Abs(time - digit->GetTime()) > fTimeCut ) continue; //Time or TimeR?
+        Bool_t shared = kFALSE; //cluster shared by 2 SuperModules?
+        if (AreNeighbours(pMaxEnergyDigit, digit, shared) == 1) // call (digit,digitN) in THAT order !!!!! 
         {      
           clusterDigitList.AddLast(digit) ;
           clusterCandidateEnergy += dEnergyCalibrated;
         }
-	    }
+      }
     }// loop over the next digits
     
     // start a cluster here only if a cluster energy is larger than clustering threshold
-    //if (clusterCandidateEnergy > 0.1)
     AliDebug(5, Form("Clusterization threshold is %f MeV", fECAClusteringThreshold));
     if (clusterCandidateEnergy > fECAClusteringThreshold)
     {
-      if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
+      if(fNumberOfECAClusters >= fRecPoints->GetSize()) 
+        fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
       
       AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
       fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
@@ -332,9 +324,8 @@ void AliEMCALClusterizerNxN::MakeClusters()
         AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
         for (Int_t idig = 0; idig < clusterDigitList.GetEntries(); idig++)
         {
-          
           digit = (AliEMCALDigit*)clusterDigitList.At(idig);
-          Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
+          Float_t dEnergyCalibrated = digit->GetCalibAmp();
           AliDebug(5, Form(" Adding digit %d", digit->GetId()));
           // note: this way the sharing info is lost!
           recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE) ; //Time or TimeR?
@@ -352,8 +343,6 @@ void AliEMCALClusterizerNxN::MakeClusters()
     
     AliDebug (2, Form("Number of digits left: %d", digitsC.GetEntries()));      
   } // while ! done 
-  
-  //delete digitsC ; //nope we use an object
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }

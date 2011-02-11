@@ -37,6 +37,11 @@ public:
 
   virtual const char * Version() const { return "clu-NxN" ; }  
   
+  void SetNRowDiff(Int_t nd) { fNRowDiff = nd; }
+  void SetNColDiff(Int_t nd) { fNColDiff = nd; }
+  Int_t GetNRowDiff() const { return fNRowDiff; } 
+  Int_t GetNColDiff() const { return fNColDiff; } 
+
 protected:
 
   virtual void   MakeClusters();            
@@ -45,8 +50,10 @@ private:
   AliEMCALClusterizerNxN(const AliEMCALClusterizerNxN &); //copy ctor
   AliEMCALClusterizerNxN & operator = (const AliEMCALClusterizerNxN &);
 
-   ClassDef(AliEMCALClusterizerNxN,2)   // Clusterizer implementation version 1
+  Int_t  fNRowDiff;  //how many neighbors to consider along row (phi)
+  Int_t  fNColDiff;  //how many neighbors to consider along col (eta)
 
+  ClassDef(AliEMCALClusterizerNxN,3)   // Clusterizer implementation version 1
 };
 
 #endif // AliEMCALCLUSTERIZERNXN_H
