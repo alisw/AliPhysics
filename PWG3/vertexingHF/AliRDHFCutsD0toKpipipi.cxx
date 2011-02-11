@@ -185,6 +185,9 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
+  Double_t ptD=d->Pt();
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
 
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
