@@ -306,6 +306,30 @@ void AliTOFQADataMakerRec::InitRaws()
     fLineSMid[sm]->SetLineWidth(2);
   }
   
+  h5->GetListOfFunctions()->Add(fLineExpTimeMin);
+  h5->GetListOfFunctions()->Add(fLineExpTimeMax);
+  h10->GetListOfFunctions()->Add(fLineExpTotMin);
+  h10->GetListOfFunctions()->Add(fLineExpTotMax);
+  
+  for (Int_t sm=0;sm<17;sm++){
+    h16->GetListOfFunctions()->Add(fLineSMid[sm]);
+    h17->GetListOfFunctions()->Add(fLineSMid[sm]);
+  }
+  
+  
+  TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");	
+  phosHoleBox->SetFillStyle(0);
+  phosHoleBox->SetFillColor(kWhite);
+  phosHoleBox->SetLineColor(kMagenta);
+  phosHoleBox->SetLineWidth(2);
+  phosHoleBox->AddText("PHOS");	
+  h16->GetListOfFunctions()->Add(phosHoleBox);
+  h17->GetListOfFunctions()->Add(phosHoleBox);
+
+  // h0->SetDrawOption("logy");
+  // h5->SetDrawOption("logy");
+  // h10->SetDrawOption("logy");
+
   Add2RawsList(h0,   0, !expert,  image, !saveCorr) ;
   Add2RawsList(h1,   1,  expert,  !image, !saveCorr) ;
   Add2RawsList(h2,   2,  expert,  !image, !saveCorr) ;
@@ -616,7 +640,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     //printf("Counters for noisy, enabled and good channels in TOF  TRMs read from OCDB.\n");
     fIsSOC=kFALSE;
   }
-  
+    
   //enable options for DQM shifter
   EnableDqmShifterOpt(kTRUE);
 }
@@ -826,26 +850,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  
 	  GetRawsData(5)->GetYaxis()->SetRangeUser(0.1, yTimeMax);
 	GetRawsData(10)->GetYaxis()->SetRangeUser(0.1, yTotMax);
-	GetRawsData(5)->GetListOfFunctions()->Add(fLineExpTimeMin);
-	GetRawsData(5)->GetListOfFunctions()->Add(fLineExpTimeMax);
-	GetRawsData(10)->GetListOfFunctions()->Add(fLineExpTotMin);
-	GetRawsData(10)->GetListOfFunctions()->Add(fLineExpTotMax);
 	
-	for (Int_t sm=0;sm<17;sm++){
-	  GetRawsData(16)->GetListOfFunctions()->Add(fLineSMid[sm]);
-	  GetRawsData(17)->GetListOfFunctions()->Add(fLineSMid[sm]);
-	}
-	
-	//TBox *phosHoleBox=new TBox(13,38,16,53);	
-	TPaveText *phosHoleBox=new TPaveText(13,38,16,53,"b");	
-	phosHoleBox->SetFillStyle(0);
-	phosHoleBox->SetFillColor(kWhite);
-	phosHoleBox->SetLineColor(kMagenta);
-	phosHoleBox->SetLineWidth(2);
-	phosHoleBox->AddText("PHOS");	
-	GetRawsData(16)->GetListOfFunctions()->Add(phosHoleBox);
-	GetRawsData(17)->GetListOfFunctions()->Add(phosHoleBox);
-	
+
 	//make up for all histos 
 	for(Int_t j=0;j<5;j++){
 	  GetRawsData(j)->SetMarkerColor(kBlue);
@@ -869,7 +875,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	GetRawsData(16)->SetOption("colz");
 	GetRawsData(17)->SetOption("colz");
 	GetRawsData(18)->SetOption("colz"); 
-	// GetRawsData(0)->SetDrawOption("logy");
       }
     }//END ENABLE DQM SHIFTER OPT
   } //end for
