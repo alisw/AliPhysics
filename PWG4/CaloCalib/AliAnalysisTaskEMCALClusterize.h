@@ -32,7 +32,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
  public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
-  virtual Bool_t UserNotify();
+  Bool_t         AccessOCDB();
 
   void           SetOCDBPath(const char *path)                  { fOCDBpath = path             ; }
   
@@ -84,7 +84,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   TString                fOutputAODBranchName;  // New of output AOD branch
   Bool_t                 fFillAODFile;      // Fill the output AOD file with the new clusters, 
                                             // if not they will be only available for the event they were generated
-
+ Int_t                   fRun;              //!run number
   ClassDef(AliAnalysisTaskEMCALClusterize, 1);
 };
 
