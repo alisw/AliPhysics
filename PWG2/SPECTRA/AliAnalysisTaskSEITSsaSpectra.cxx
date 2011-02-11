@@ -505,11 +505,22 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   esdTrackCutsMult->SetPtRange(0.15, 1e10);
   
   Int_t multiplicity = esdTrackCutsMult->CountAcceptedTracks(fESD);
-  if(multiplicity < fLowMult || multiplicity > fUpMult)return;
+  
+  if(fLowMult>-1)
+    {
+      if(multiplicity<fLowMult)
+	return;
+    }
+  if(fUpMult>-1)
+    {
+      if(multiplicity>fUpMult)
+	return;
+    }
+  
   Printf("Multiplicity of the event: %i\n",multiplicity);
   
   fHistMult->Fill(multiplicity);
-
+  
   //variables
   Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
