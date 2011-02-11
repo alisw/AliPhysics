@@ -61,7 +61,7 @@ AliEveTrack::AliEveTrack(AliESDtrack* t, TEveTrackPropagator* prop) :
   Double_t ep = t->GetP(), mc = t->GetMass();
   fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
   // fPdg = 0; // ??? Use PID ?
-  fCharge= t->GetSign();
+  fCharge = (Double_t) t->GetSign();
   
   fLabel = t->GetLabel();
   fIndex = t->GetID();

@@ -291,6 +291,6 @@ void AliEveEventSelectorWindow::DoSetMultiplicityRange()
 {
   //Set the multiplicity range
   
-  fPSelector->SetMultiplicityLow(fPEntryMultLow->GetNumber());
-  fPSelector->SetMultiplicityHigh(fPEntryMultHigh->GetNumber());
+  fPSelector->SetMultiplicityLow ((Int_t) fPEntryMultLow->GetNumber());
+  fPSelector->SetMultiplicityHigh((Int_t) fPEntryMultHigh->GetNumber());
 }
