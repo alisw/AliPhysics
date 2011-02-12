@@ -1144,16 +1144,17 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
   }
-    //
-    // extract time-dependent correction for pressure and temperature variations
-    //
-    UInt_t runNumber = 1;
-    Float_t corrTimeGain = 1;
-    TObjArray * timeGainSplines = 0x0;
-    //
-    AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-    const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
-    if (trans) {
+  //
+  // extract time-dependent correction for pressure and temperature variations
+  //
+  UInt_t runNumber = 1;
+  Float_t corrTimeGain = 1;
+  TObjArray * timeGainSplines = 0x0;
+  TGraphErrors * grPadEqual = 0x0;
+  //
+  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+  if (trans) {
       runNumber = trans->GetCurrentRunNumber();
       //AliTPCcalibDB::Instance()->SetRun(runNumber);
       timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
@@ -1163,11 +1164,14 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 	AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
 	if (fitMIP) {
 	  corrTimeGain =  AliTPCcalibDButil::EvalGraphConst(fitMIP, time); /*fitMIP->Eval(time);*/
-      } else {
+	} else {
 	  if (fitFPcosmic) corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitFPcosmic, time); /*fitFPcosmic->Eval(time); */
 	}
+	//
+	if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
+	if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
       }
-    }   
+  }   
   
   const Float_t kClusterShapeCut = 1.5; // IMPPRTANT TO DO: move value to AliTPCRecoParam
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
@@ -1259,12 +1263,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     // pad region equalization outside of cluster param
     //
     Float_t gainEqualPadRegion = 1;
-    if (timeGainSplines) { //1 - max charge  or 0- total charge in cluster 
-      TGraphErrors * grPadEqual = 0x0;
-      if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
-      if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
-      if (grPadEqual) gainEqualPadRegion = grPadEqual->Eval(ipad);
-    }
+    if (grPadEqual) gainEqualPadRegion = grPadEqual->Eval(ipad);
     //
     amp[ncl]=charge;
     amp[ncl]/=gainGG;
