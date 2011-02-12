@@ -1,11 +1,7 @@
 enum anaModes {mLocal,mPROOF,mGrid};
 //mLocal: Analyze locally files in your computer using aliroot
-//mLocalPAR: Analyze locally files in your computer using root + PAR files
 //mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
-//       (Remark: When using this mode set also Bool_t bUseParFiles = kFALSE; in CreateAlienHandler.C)
-//mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
-//          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
 
 // CENTRALITY DEFINITION
 //Int_t binfirst = 4;  //where do we start numbering bins
@@ -22,8 +18,6 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 //void runFlowTaskCentralityTrain(Int_t mode=mLocal, Int_t nEvents = 10,
 //Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
 
-//void runFlowTaskCentralityTrain(Int_t mode = mGridPAR, Int_t nEvents = 50000000,
-//		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0)
 void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
                                  Bool_t useFlowParFiles = kFALSE,
                                  Bool_t DATA = kTRUE,
@@ -40,13 +34,8 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   // Load needed libraries:
   LoadLibraries(mode,useFlowParFiles);
 
-  // Create and configure the AliEn plug-in:
-  if(mode == mGrid)
-  {
-    gROOT->LoadMacro("CreateAlienHandler.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandler();
-    if(!alienHandler) return;
-  }
+  // Create analysis manager:
+  AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
 
   // Chains:
   if(mode == mLocal)
@@ -55,11 +44,12 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
     //TChain* chain = CreateAODChain(dataDir, nEvents, offset);
   }
 
-  // Create analysis manager:
-  AliAnalysisManager *mgr = new AliAnalysisManager("FlowAnalysisManager");
   // Connect plug-in to the analysis manager:
   if(mode == mGrid)
   {
+    gROOT->LoadMacro("CreateAlienHandler.C");
+    AliAnalysisGrid *alienHandler = CreateAlienHandler(useFlowParFiles);
+    if(!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }
 
