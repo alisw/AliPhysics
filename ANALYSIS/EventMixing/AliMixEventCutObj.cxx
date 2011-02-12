@@ -133,9 +133,11 @@ Int_t AliMixEventCutObj::GetBinNumber(Float_t num) const
    // Returns -1 in case of out of range
    //
    Int_t binNum = 0;
-   for (Float_t i = fCutMin; i <= fCutMax - fCutSmallVal; i += fCutStep) {
+   for (Float_t iCurrent = fCutMin; iCurrent < fCutMax; iCurrent += fCutStep) {
       binNum++;
-      if ((num >= i) && (num <= i + fCutStep - fCutSmallVal)) return binNum;
+      if ((num >= iCurrent) && (num <= iCurrent + fCutStep - fCutSmallVal)) {
+         return binNum;
+      }
    }
    return -1;
 }

@@ -9,6 +9,7 @@
 //
 
 #include <TList.h>
+#include <TObjString.h>
 
 #include "AliAnalysisManager.h"
 
@@ -16,6 +17,7 @@
 #include "AliAnalysisTaskMixInfo.h"
 #include "AliMixInfo.h"
 #include "AliMixEventPool.h"
+
 
 ClassImp(AliAnalysisTaskMixInfo)
 
@@ -189,11 +191,9 @@ void AliAnalysisTaskMixInfo::InitMixInfo()
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
    if (inEvHMain) {
-      //         AliMixEventInputHandler *mixEH = dynamic_cast<AliMixEventInputHandler *>(inEvHMain->MixingHandler());
       AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
       if (mixEH) {
          fMixInfo = new AliMixInfo("mixInfo", "Mix title");
-//             if(fMixInfo) fMixInfo->SetOutputList(fOutputList);
          AliMixEventPool *evPool = mixEH->GetEventPool();
          if (!evPool) {
             //             TList *list = new TList;
