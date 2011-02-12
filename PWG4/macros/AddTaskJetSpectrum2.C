@@ -1,51 +1,51 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Bool_t kBackground=kTRUE,Int_t iFillCorrBkg = 0,Int_t iCl = 0);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Int_t iCl = 0);
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,Bool_t kBackground = kTRUE,char* back = ""){
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
 
   TString cBack = back;
 
   AliAnalysisTaskJetSpectrum2 *js = 0;
   if(kUseAODMC){
     if(iFlag&(1<<0)){ // UA104
-      js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-      js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jets","jetsAODMC_UA104",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
+      js = AddTaskJetSpectrum2("jets","jetsAODMC2_UA104",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
     }
     if(iFlag&(1<<1)){ // ANTIKT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag,  iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","jetsAODMC2_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag,  iEventSelectionMask);
       // cross check MC only background subtration
-      js = AddTaskJetSpectrum2("jetsAODMC2_FASTJET04","jetsAODMC_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag,  iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAODMC2_FASTJET04","jetsAODMC_FASTJET04",cBack.Data(),filterMask,iPhysicsSelectionFlag,  iEventSelectionMask);
     }
     if(iFlag&(1<<2)){ // KT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask,kBackground);
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC_FASTKT04",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","jetsAODMC2_FASTKT04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
     }
     if(iFlag&(1<<3)){ // SISCONE 04
-      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","jetsAODMC_SISCONE04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
-      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","jetsAODMC2_SISCONE04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground);
+      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","jetsAODMC_SISCONE04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
+      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","jetsAODMC2_SISCONE04",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
     }
     // here can go other radii
   }
   else { // only the data ... no MC
     if(iFlag&(1<<0)){ // UA104
-      js = AddTaskJetSpectrum2("jets","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
+      js = AddTaskJetSpectrum2("jets","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,1);
     }
     if(iFlag&(1<<1)){ // ANTIKT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTJET04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
     }
     if(iFlag&(1<<2)){ // KT 04
-      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask,kBackground,1);
+      js = AddTaskJetSpectrum2("jetsAOD_FASTKT04","",cBack.Data(),filterMask,iPhysicsSelectionFlag,iEventSelectionMask);
     }
     if(iFlag&(1<<3)){ // SISCONE 04
-      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask,kBackground,1);
+      js = AddTaskJetSpectrum2("jetsAOD_SISCONE04","",cBack.Data(),filterMask,iPhysicsSelectionFlag, iEventSelectionMask);
     }
   }
   return js;
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* bBkg,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Bool_t kBackground,Int_t iFillCorrBkg,Int_t iCl)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* bBkg,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Int_t iCl)
 {
   // Creates a jet fider task, configures it and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -69,19 +69,11 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
   typeGen.ToUpper();
   typeRec.ToUpper();
   
-   TString bBkgName = bBkg;
-   if(kBackground&&bBkgName.Length()==0){
-     // default
-     if(typeRec.Contains("AODMC2"))bBkgName = "jeteventbackground_clustersAODMC2_KT06";
-     else bBkgName = "jeteventbackground_clustersAOD_KT06";
-   }
 
    // Create the task and configure it.
    //===========================================================================
 
-   if(iFillCorrBkg)bGen = Form("SubBkg%d",iFillCorrBkg);   
    AliAnalysisTaskJetSpectrum2* pwg4spec = new  AliAnalysisTaskJetSpectrum2(Form("JetSpectrum2%s-%s_%010d_Class%02d",bRec,bGen,iEventSelectionMask,iCl));
-   pwg4spec->SetFillCorrBkg(iFillCorrBkg);
    if(iCl)pwg4spec->SetEventClass(iCl);
 
    // add the filter mask for non default jets branches
@@ -89,23 +81,18 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
    cAdd += Form("_Filter%05d",filterMask);
 
    
-   if(iFillCorrBkg)pwg4spec->SetBranchGen("");  
-   else {
-     pwg4spec->SetBranchGen(bGen); 
-     //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
-   }
+
+   pwg4spec->SetBranchGen(bGen); 
+   //  if(typeGen.Contains("JETSAOD")&&!typeGen.Contains("MC"))pwg4spec->SetBranchGen(Form("%s%s",bGen,cAdd.Data())); 
+
    pwg4spec->SetBranchRec(bRec); 
    // if(typeRec.Contains("JETSAOD")&&!typeRec.Contains("MC"))     pwg4spec->SetBranchRec(Form("%s%s",bRec,cAdd.Data())); 
-
-   if(bBkgName.Length()>0)pwg4spec->SetBranchBkg(bBkgName.Data());
 
 
    pwg4spec->SetFilterMask(filterMask); 
    pwg4spec->SetUseGlobalSelection(kTRUE); 
    pwg4spec->SetMinJetPt(5.);
    pwg4spec->SetJetEtaWindow(0.4);
-   pwg4spec->SetBkgSubtraction(kBackground);
-
 
    if(type == "AOD"){
      // Assume all jet are produced already
