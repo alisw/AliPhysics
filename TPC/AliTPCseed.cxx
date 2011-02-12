@@ -22,6 +22,7 @@
 //      Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
 //-----------------------------------------------------------------
 #include "TClonesArray.h"
+#include "TGraphErrors.h"
 #include "AliTPCseed.h"
 #include "AliTPCReconstructor.h"
 #include "AliTPCClusterParam.h"
@@ -1103,7 +1104,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   return mean;
 }
 
-Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal){
+Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal, Int_t rowThres){
  
   //
   // calculates dedx using the cluster
@@ -1116,6 +1117,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   // returnVal - 0 return mean
   //           - 1 return RMS
   //           - 2 return number of clusters
+  //
+  // rowThres  - number of rows before and after given pad row to check for clusters below threshold
   //           
   // normalization parametrization taken from AliTPCClusterParam
   //
@@ -1129,27 +1132,73 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t amp[160];
   Int_t   indexes[160];
   Int_t   ncl=0;
+  Int_t   nclBelowThr = 0; // counts number of clusters below threshold
   //
   //
   Float_t gainGG      = 1;  // gas gain factor -always enabled
   Float_t gainPad     = 1;  // gain map  - used always
   Float_t corrPos     = 1;  // local position correction - if posNorm enabled
-
   //   
   //
   //
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
   }
-
+    //
+    // extract time-dependent correction for pressure and temperature variations
+    //
+    UInt_t runNumber = 1;
+    Float_t corrTimeGain = 1;
+    TObjArray * timeGainSplines = 0x0;
+    //
+    AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+    const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+    if (trans) {
+      runNumber = trans->GetCurrentRunNumber();
+      //AliTPCcalibDB::Instance()->SetRun(runNumber);
+      timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
+      if (timeGainSplines && recoParam->GetUseGainCorrectionTime()>0) {
+	UInt_t time = trans->GetCurrentTimeStamp();
+	AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
+	AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
+	if (fitMIP) {
+	  corrTimeGain =  AliTPCcalibDButil::EvalGraphConst(fitMIP, time); /*fitMIP->Eval(time);*/
+      } else {
+	  if (fitFPcosmic) corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitFPcosmic, time); /*fitFPcosmic->Eval(time); */
+	}
+      }
+    }   
+  
+  const Float_t kClusterShapeCut = 1.5; // IMPPRTANT TO DO: move value to AliTPCRecoParam
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
   const Float_t kedgey =3.;
   //
   //
   for (Int_t irow=i1; irow<i2; irow++){
     AliTPCclusterMI* cluster = GetClusterPointer(irow);
-    if (!cluster) continue;
+    if (!cluster) {
+      Bool_t isClBefore = kFALSE;
+      Bool_t isClAfter  = kFALSE;
+      for(Int_t ithres = 1; ithres <= rowThres; ithres++) {
+	AliTPCclusterMI * clusterBefore = GetClusterPointer(irow - ithres);
+	if (clusterBefore) isClBefore = kTRUE;
+	AliTPCclusterMI * clusterAfter  = GetClusterPointer(irow + ithres);
+	if (clusterAfter) isClAfter = kTRUE;
+      }
+      if (isClBefore && isClAfter) nclBelowThr++;
+      continue;
+    }
+    //
+    //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
+    //
+    AliTPCTrackerPoint * point = GetTrackPoint(irow);
+    if (point==0) continue;    
+    Float_t rsigmay = TMath::Sqrt(point->GetSigmaY());
+    if (rsigmay > kClusterShapeCut) continue;
+    //
+    if (cluster->IsUsed(11)) continue; // remove shared clusters for PbPb
+    //
     Float_t charge= (type%2)? cluster->GetMax():cluster->GetQ();
     Int_t  ipad= 0;
     if (irow>=row0) ipad=1;
@@ -1169,14 +1218,12 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       } else {         // OROC
 	factor = roc->GetValue(irow - row0, TMath::Nint(cluster->GetPad()));
       }
-      if (factor>0.5) gainPad=factor;
+      if (factor>0.3) gainPad=factor;
     }
-    
     //
     // Do position normalization - relative distance to 
     // center of pad- time bin
     
-    AliTPCTrackerPoint * point = GetTrackPoint(irow);
     Float_t              ty = TMath::Abs(point->GetAngleY());
     Float_t              tz = TMath::Abs(point->GetAngleZ()*TMath::Sqrt(1+ty*ty));
     Float_t yres0 = parcl->GetRMS0(0,ipad,0,0)/param->GetPadPitchWidth(cluster->GetDetector());
@@ -1208,54 +1255,54 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       corrPos*=(1+parcl->GetQnormCorr(ipad, type+2,2)*tz*tz);
       //
     }
-
+    //
+    // pad region equalization outside of cluster param
+    //
+    Float_t gainEqualPadRegion = 1;
+    if (timeGainSplines) { //1 - max charge  or 0- total charge in cluster 
+      TGraphErrors * grPadEqual = 0x0;
+      if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
+      if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
+      if (grPadEqual) gainEqualPadRegion = grPadEqual->Eval(ipad);
+    }
     //
     amp[ncl]=charge;
     amp[ncl]/=gainGG;
     amp[ncl]/=gainPad;
     amp[ncl]/=corrPos;
+    amp[ncl]/=gainEqualPadRegion;
     //
     ncl++;
   }
 
   if (type>3) return ncl; 
   TMath::Sort(ncl,amp, indexes, kFALSE);
-
+  //
   if (ncl<10) return 0;
-  
+  //
+  Double_t * ampWithBelow = new Double_t[ncl + nclBelowThr];
+  for(Int_t iCl = 0; iCl < ncl + nclBelowThr; iCl++) {
+    if (iCl < nclBelowThr) {
+      ampWithBelow[iCl] = amp[indexes[0]];
+    } else {
+      ampWithBelow[iCl] = amp[indexes[iCl - nclBelowThr]];
+    }
+  }
+  //printf("DEBUG: %i shit %f", nclBelowThr, amp[indexes[0]]);
+  //
   Float_t suma=0;
   Float_t suma2=0;  
   Float_t sumn=0;
-  Int_t icl0=TMath::Nint(ncl*low);
-  Int_t icl1=TMath::Nint(ncl*up);
+  Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low);
+  Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up);
   for (Int_t icl=icl0; icl<icl1;icl++){
-    suma+=amp[indexes[icl]];
-    suma2+=amp[indexes[icl]]*amp[indexes[icl]];
+    suma+=ampWithBelow[icl];
+    suma2+=ampWithBelow[icl]*ampWithBelow[icl];
     sumn++;
   }
   Float_t mean =suma/sumn;
   Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
   //
-  // do time-dependent correction for pressure and temperature variations
-  UInt_t runNumber = 1;
-  Float_t corrTimeGain = 1;
-  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
-  if (trans && recoParam->GetUseGainCorrectionTime()>0) {
-    runNumber = trans->GetCurrentRunNumber();
-    //AliTPCcalibDB::Instance()->SetRun(runNumber);
-    TObjArray * timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
-    if (timeGainSplines) {
-      UInt_t time = trans->GetCurrentTimeStamp();
-      AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
-      AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
-      if (fitMIP) {
-	corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitMIP, time);/*fitMIP->Eval(time);*/
-      } else {
-	if (fitFPcosmic) corrTimeGain = AliTPCcalibDButil::EvalGraphConst(fitFPcosmic, time);/*fitFPcosmic->Eval(time);*/
-      }
-    }
-  }
   mean /= corrTimeGain;
   rms /= corrTimeGain;
   //
