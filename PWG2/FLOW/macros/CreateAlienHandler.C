@@ -1,11 +1,8 @@
-AliAnalysisGrid* CreateAlienHandler() {
+AliAnalysisGrid* CreateAlienHandler(Bool_t bUseParFiles=kFALSE) {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init 
   // then source /tmp/gclient_env_$UID in the current shell.
   AliAnalysisAlien *plugin = new AliAnalysisAlien();
-  
-  // Set if you want to use par files on Grid:
-  Bool_t bUseParFiles = kTRUE;
   
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
   //plugin->SetRunMode("test");
