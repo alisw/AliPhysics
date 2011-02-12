@@ -489,7 +489,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     recPoint->GetElipsAxis(elipAxis);
     clus->SetM02(elipAxis[0]*elipAxis[0]) ;
     clus->SetM20(elipAxis[1]*elipAxis[1]) ;
-    clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
+    clus->SetDistToBadChannel(recPoint->GetDistanceToBadTower()); 
     clusArray->Add(clus);
   } // recPoints loop
 }
