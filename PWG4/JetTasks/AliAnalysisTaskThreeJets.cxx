@@ -36,6 +36,7 @@
 #include <TMatrixDSym.h>
 #include <TMatrixDSymEigen.h>
 #include <TProfile.h>
+#include <TRandom.h>
 
 #include "AliAnalysisTaskThreeJets.h"
 #include "AliAnalysisManager.h"
@@ -680,7 +681,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
     Double_t pTrackMCAll[kTracks];
     TLorentzVector vTrackMC[kTracks];
     TVector3 pTrackMCBoost[kTracks];
-    Double_t eventShapes[4];
+    Double_t eventShapes[4] = {0,};
     
     Int_t nAccTr = 0;
     Int_t nInJet[kMaxJets];
@@ -777,10 +778,10 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
 	  AliAnalysisHelperJetTasks::GetEventShapes(n01MC, pTrackMC, nAllTracksMC, eventShapes);
 	  // 	}
 	  if(eventShapes[0] < 2/TMath::Pi()){
-	    Double_t eventShapesTest[4];
+	    Double_t eventShapesTest[4] = {0,};
 	    TVector3 n01Test;
 	    Int_t rnd_max = nAllTracksMC;
-	    Int_t k = (rand()%rnd_max)+3;
+	    Int_t k = (Int_t)(gRandom->Rndm()*rnd_max)+3;
 	    while(TMath::Abs(pTrackMC[k].X()) < 10e-5 && TMath::Abs(pTrackMC[k].Y()) < 10e-5){
 	      k--;
 	    }
@@ -969,7 +970,7 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
   Double_t * eTracks = new Double_t[kTracks];
   Double_t pTracks[kTracks];
   Int_t * idxTracks = new Int_t[kTracks];
-  Double_t eventShapesRec[4];
+  Double_t eventShapesRec[4] = {0,};
   Int_t jetMult[kMaxJets];
   //  TLorentzVector vTracksAll[kTracks];
   //  Double_t pTracksAll[kTracks];
@@ -1054,10 +1055,10 @@ void AliAnalysisTaskThreeJets::UserExec(Option_t * )
       AliAnalysisHelperJetTasks::GetEventShapes(n01, pTrack, nTracksALL, eventShapesRec);
       // 	}
       if(eventShapesRec[0] < 2/TMath::Pi()){
-	Double_t eventShapesTest[4];
+	Double_t eventShapesTest[4] = {0,};
 	TVector3 n01Test;
 	Int_t rnd_max = nTracksALL;
-	Int_t k = (rand()%rnd_max)+3;
+	Int_t k = (Int_t)(gRandom->Rndm()*rnd_max)+3;
 	while(TMath::Abs(pTrack[k].X()) < 10e-5 && TMath::Abs(pTrack[k].Y()) < 10e-5){
 	  k--;
 	}

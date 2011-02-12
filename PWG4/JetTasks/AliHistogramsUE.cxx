@@ -972,15 +972,15 @@ TObjArray*  AliHistogramsUE::GetHistosForPlotting(TString data, TString branches
 	
 	TObjArray *arr=new TObjArray;
 
-	TH1F *hjets[20];		// accepted leading jets
-        TH1F *hnjets[20];          // number of accepted jets
-	TH2F *hetaphi[20];         // delta-phi particle-jet correlation
-	TH2F *hptfull[20];         // particle pT all regions vs. jet pT 
-	TH2F *hpttransv[20];       // particle pT transv. regions vs. jet pT 
-	TH1F *hmax[20];    	// sum pT in MAX region
-        TH1F *hmin[20];    	// sum pT in MIN region
-        TH1F *hmultmax[20];	// multiplicity in MAX region
-        TH1F *hmultmin[20];       // multiplicity in MIN region
+	TH1F *hjets[20]     = {0,};	  // accepted leading jets
+        TH1F *hnjets[20]    = {0,};       // number of accepted jets
+	TH2F *hetaphi[20]   = {0,};       // delta-phi particle-jet correlation
+	TH2F *hptfull[20]   = {0,};       // particle pT all regions vs. jet pT 
+	TH2F *hpttransv[20] = {0,};       // particle pT transv. regions vs. jet pT 
+	TH1F *hmax[20]      = {0,};    	  // sum pT in MAX region
+        TH1F *hmin[20]      = {0,};       // sum pT in MIN region
+        TH1F *hmultmax[20]  = {0,};	  // multiplicity in MAX region
+        TH1F *hmultmin[20]  = {0,};       // multiplicity in MIN region
 
 	for (Int_t i =0; i<br; i++){
 
@@ -1110,8 +1110,8 @@ void AliHistogramsUE::PlotBranchesUE(TString file, TString branches, Double_t mi
   TObject *o=0;
   Int_t br=0;
   while ( (o=next()) ){
-	br++;
-        }
+    br++;
+  }
   
 
   //Canvas
@@ -1119,15 +1119,15 @@ void AliHistogramsUE::PlotBranchesUE(TString file, TString branches, Double_t mi
  
   //Histograms 
   TObjArray *arrH=GetHistosForPlotting(file.Data(),branches.Data());
-  TH1F *hnjets[20];
-  TH1F *hjets[20];
-  TH1F *hmax[20];
-  TH1F *hmin[20];
-  TH1F *hmultmax[20];
-  TH1F *hmultmin[20];
-  TH2F *hetaphi[20];
-  TH2F *hptfull[20];
-  TH2F *hpttransv[20];
+  TH1F *hnjets[20] = {0,};
+  TH1F *hjets[20]  = {0,};
+  TH1F *hmax[20]   = {0,};
+  TH1F *hmin[20]   = {0,};
+  TH1F *hmultmax[20]  = {0,};
+  TH1F *hmultmin[20]  = {0,};
+  TH2F *hetaphi[20]   = {0,};
+  TH2F *hptfull[20]   = {0,};
+  TH2F *hpttransv[20] = {0,};
 
   for (Int_t i= 0; i<br; i++){
 	hnjets[i]=((TH1F*)arrH->At(9*i));
