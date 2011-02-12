@@ -83,8 +83,8 @@ Bool_t      kIsPbPb             = kFALSE;  // Pb+Pb
 Int_t       iJETAN             = 1;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets, 3 wrtie both
 Int_t       iJETSUBTRACT        = 1;      // Jet background subtration
 TString     kDefaultJetBranch     = "";      // is currently set when filled (iJETAN or clusters) or from config macro 
-TString     kDefaultJetBackgroundBranch     = "";      // is currently set when filled (jet clsuters  
-TString     kDefaultJetBackgroundBranch_extra     = "";      // is currently set when filled (jet clsuters  
+TString     kDefaultJetBackgroundBranch            = "";      // is currently set when filled (jet clsuters  
+TString     kDefaultJetBackgroundBranch_extra     = "";      // is currently set when filled (jet clsuters) 
 TString     kJetSubtractBranches     = "";      // is currently set when filled (jet clsuters  
 TString     kJetSubtractBranches_extra     = "";      // is currently set when filled (jet clsuters  
 
@@ -570,11 +570,10 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskCl->SetGhostEtamax(0.9);
        } 
 
-       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,0,1,kDeltaAODJetName.Data(),0.15);
+       taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"ANTIKT",0.4,2,1,kDeltaAODJetName.Data(),0.15);
        taskCl->SetCentralityCut(fCenLo,fCenUp);
        if(kIsPbPb)taskCl->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());
        taskCl->SetNRandomCones(10);
-       taskCl->SetNSkipLeadingRan(2);
        kDefaultJetBranch = taskCl->GetJetOutputBranch();
        if(kDeltaAODJetName.Length()==0&&kFilterAOD){
 	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40.);
@@ -629,40 +628,41 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      }
    }
 
+
    if(iJETSUBTRACT){
-      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetBackgroundSubtract.C");
-      AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
-      if(kJetSubtractBranches.Length()){
+     gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetBackgroundSubtract.C");
+     AliAnalysisTaskJetBackgroundSubtract *taskSubtract = 0;
+     if(kJetSubtractBranches.Length()){
 
-	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,3,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data()); 
-	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,3,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
+       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data()); 
+       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
 
-	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,2,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
-
-	//	taskSubtract->SetDebugLevel(3);
-
-	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
-
-	if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())&&kIsPbPb){
-	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
-	}
-      }
-      if(kJetSubtractBranches_extra.Length()){
-	taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
-	taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
-	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
-        //taskSubtract->SetDebugLevel(3);
-	if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
-	if(kJetSubtractBranches_extra.Contains(kDefaultJetBranch.Data())){
-	  kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
-	}
-      }
-      if (!taskSubtract) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetBackgroundSubtrac cannot run for this train conditions - EXCLUDED");     
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,2,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
+       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+       
+       //	taskSubtract->SetDebugLevel(3);
+       
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data());
+       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch.Data());	 	taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+       
+       if(kJetSubtractBranches.Contains(kDefaultJetBranch.Data())&&kIsPbPb){
+	 kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
+       }
+     }
+     if(kJetSubtractBranches_extra.Length()){
+       taskSubtract = AddTaskJetBackgroundSubtract(kJetSubtractBranches_extra,1,kJetSubtractMask1.Data(),kJetSubtractMask2.Data(),"extra");
+       taskSubtract->SetBackgroundBranch(kDefaultJetBackgroundBranch_extra.Data());
+       taskSubtract->SelectCollisionCandidates(iPhysicsSelectionFlag);
+       //taskSubtract->SetDebugLevel(3);
+       if(kDeltaAODJetName.Length()>0)taskSubtract->SetNonStdOutputFile(kDeltaAODJetName.Data());
+       if(kJetSubtractBranches_extra.Contains(kDefaultJetBranch.Data())){
+	 kDefaultJetBranch.ReplaceAll(taskSubtract->GetToReplace(),Form(taskSubtract->GetReplacementMask(),taskSubtract->GetSubtractionMethod()));
+       }
+     }
+     if (!taskSubtract) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetBackgroundSubtrac cannot run for this train conditions - EXCLUDED");     
    }
 
    if (iDIJETAN) {
@@ -718,7 +718,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      }
    }
 
-   if(iPWG4JetSpectrum){
+if(iPWG4JetSpectrum){
      gROOT->LoadMacro("$ALICE_ROOT_SRC/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      if(iPWG4JetSpectrum&1){
@@ -728,7 +728,13 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
 	   //	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),kJetSubtractMask1.Data());
 	   tmp.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask1.Data(),0));
-	   taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),tmp.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+
+	   TString bkgClusters = kDefaultJetBackgroundBranch.Data(); 
+	   bkgClusters.ReplaceAll(Form("%s_",AliAODJetEventBackground::StdBranchName()),"");
+	   taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),tmp.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,i);
+	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
+
 	   //	   taskjetSpectrum->SetDebugLevel(3);
 	   //	   taskjetSpectrum->SetMinJetPt(10);
 	   taskjetSpectrum->SetTrackEtaWindow(0.8);
@@ -739,7 +745,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   // check the old subtracted vs. the new subtracted
 	   TString tmp2(kDefaultJetBranch.Data());
 	   tmp2.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask2.Data(),2));
-	   taskjetSpectrum = AddTaskJetSpectrum2(tmp2.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	   taskjetSpectrum = AddTaskJetSpectrum2(tmp2.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,i);
+	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	   //	   taskjetSpectrum->SetDebugLevel(3);
 	   //	   taskjetSpectrum->SetMinJetPt(10);
 	   taskjetSpectrum->SetTrackEtaWindow(0.8);
@@ -750,19 +758,23 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	   TString tmp3(kDefaultJetBranch.Data());
 	   tmp3.ReplaceAll(Form(kJetSubtractMask2.Data(),1),Form(kJetSubtractMask2.Data(),3));
 
-	   taskjetSpectrum = AddTaskJetSpectrum2(tmp3.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	   taskjetSpectrum = AddTaskJetSpectrum2(tmp3.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,i);
 	   //	   taskjetSpectrum->SetDebugLevel(3);
 	   //	   taskjetSpectrum->SetMinJetPt(10);
+	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	   taskjetSpectrum->SetTrackEtaWindow(0.8);
 	   taskjetSpectrum->SetJetEtaWindow(0.4);
 	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
 
 
-	   taskjetSpectrum = AddTaskJetSpectrum2(Form("jetsAOD_UA104_B2_Filter%05d_Cut01000",kHighPtFilterMask),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
+	   taskjetSpectrum = AddTaskJetSpectrum2(Form("jetsAOD_UA104_B2_Filter%05d_Cut01000",kHighPtFilterMask),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,i);
 	   //	   taskjetSpectrum->SetDebugLevel(3);
 	   //	   taskjetSpectrum->SetMinJetPt(10);
 	   taskjetSpectrum->SetTrackEtaWindow(0.8);
 	   taskjetSpectrum->SetJetEtaWindow(0.4);
+	   taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	   taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	   if(iAODanalysis)SetAODInput(taskjetSpectrum);
 
 	 }
@@ -778,6 +790,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 //	   taskjetSpectrum->SetMinJetPt(10);
 	 taskjetSpectrum->SetTrackEtaWindow(0.8);
 	 taskjetSpectrum->SetJetEtaWindow(0.4);
+	 taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	 taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	 if(iAODanalysis)SetAODInput(taskjetSpectrum);
 	 
 
@@ -786,7 +800,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskjetSpectrum = AddTaskJetSpectrum2(tmp2.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
 	 //	 taskjetSpectrum->SetDebugLevel(3);
 	 //	   taskjetSpectrum->SetMinJetPt(10);
-	 taskjetSpectrum->SetTrackEtaWindow(0.8);
+	 taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	 taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
+x	 taskjetSpectrum->SetTrackEtaWindow(0.8);
 	 taskjetSpectrum->SetJetEtaWindow(0.4);
 
 	 // check the old subtracted vs. the new subtracted
@@ -795,6 +811,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 	 taskjetSpectrum = AddTaskJetSpectrum2(tmp3.Data(),kDefaultJetBranch.Data(),"",kHighPtFilterMask,AliVEvent::kMB,0,kFALSE,0,i);
 	 //	 taskjetSpectrum->SetDebugLevel(3);
 	 //	   taskjetSpectrum->SetMinJetPt(10);
+	 taskjetSpectrum->SetBranchBkgRec(bkgClusters.Data());
+	 taskjetSpectrum->SetBranchBkgGen(bkgClusters.Data());
 	 taskjetSpectrum->SetTrackEtaWindow(0.8);
 	 taskjetSpectrum->SetJetEtaWindow(0.4);
 	 if(iAODanalysis)SetAODInput(taskjetSpectrum);
@@ -1674,11 +1692,13 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
 	       TString line;
 	       ifstream in;
 	       in.open(kLocalDataList.Data());
+	       Int_t ic = 0;
 	       while (in.good()) {
 		 in >> line;
 		 if (line.Length() == 0) continue;
-		 // cout << " line = " << line << endl;
+		 Printf("%d adding %s",ic,line.Data());
 		 chain->Add(line.Data());
+		 ic++;
 	       }       
             } else {
                // Interactive AOD
