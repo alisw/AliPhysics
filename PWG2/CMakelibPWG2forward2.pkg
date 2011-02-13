@@ -51,12 +51,16 @@ set ( SRCS
     FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
     FORWARD/analysis2/AliForwarddNdetaTask.cxx
     FORWARD/analysis2/AliForwardUtil.cxx
+    FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+    FORWARD/analysis2/AliAODCentralMult.cxx
+    FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
+    FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
-set ( EINCLUDE  ANALYSIS )
+set ( EINCLUDE  ANALYSIS)
 
 set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
              FORWARD/analysis2/AliForwardUtil.h )
