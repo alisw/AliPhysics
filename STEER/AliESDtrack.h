@@ -190,6 +190,9 @@ public:
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
   UChar_t GetITSSharedMap() const {return fITSSharedMap;}
+  void    SetITSSharedFlag(int lr) {fITSSharedMap |= 0x1<<lr;}
+  Bool_t  GetITSFakeFlag()   const {return (fITSSharedMap&BIT(7))!=0;}
+  void    SetITSFakeFlag(Bool_t v=kTRUE)  {if (v) fITSSharedMap|=BIT(7); else fITSSharedMap&=~BIT(7);}  
   void    SetITSSharedMap(UChar_t map) {fITSSharedMap=map;}
   void    SetITSModuleIndex(Int_t ilayer,Int_t idx) {fITSModule[ilayer]=idx;}
   Int_t   GetITSModuleIndex(Int_t ilayer) const {return fITSModule[ilayer];}
