@@ -8,6 +8,7 @@
  * @param pattern    Pattern that the file name must contain
  * @param recursive  Whether to scan recursively 
  */
+
 void
 ScanDirectory(TSystemDirectory* dir, TChain* chain, 
 	      const char* pattern, bool recursive)
@@ -30,7 +31,7 @@ ScanDirectory(TSystemDirectory* dir, TChain* chain,
     // Check if this is a directory 
     if (file->IsDirectory()) { 
       if (recursive) 
-	ScanDirectory(static_cast<TSystemDirectory*>(file),chain,recursive);
+	ScanDirectory(static_cast<TSystemDirectory*>(file),chain,pattern,recursive);
       continue;
     }
     
