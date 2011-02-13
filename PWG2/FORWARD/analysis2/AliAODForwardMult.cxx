@@ -88,6 +88,29 @@ AliAODForwardMult::Clear(Option_t* option)
   fIpZ      = fgkInvalidIpZ;
 }
 //____________________________________________________________________
+void
+AliAODForwardMult::SetSNN(UShort_t snn)
+{
+  // set the center of mass energy per nucleon pair (GeV). 
+  // This is stored in bin (0,0) of the histogram 
+  // 
+  // Parameters: 
+  //   sNN   Center of mass energy per nuclean 
+  fHist.SetBinContent(0,0,snn);
+}
+//____________________________________________________________________
+void
+AliAODForwardMult::SetSystem(UShort_t sys)
+{
+  // set the center of mass energy per nucleon pair (GeV). 
+  // This is stored in bin (N+1,0) of the histogram 
+  // 
+  // Parameters: 
+  //   sys   Collision system number 
+  fHist.SetBinContent(fHist.GetNbinsX()+1,0,sys);
+}
+
+//____________________________________________________________________
 Bool_t
 AliAODForwardMult::HasIpZ() const
 {
@@ -97,6 +120,30 @@ AliAODForwardMult::HasIpZ() const
   //   true if the z coordinate of the interaction point is valid 
   // 
   return TMath::Abs(fIpZ - fgkInvalidIpZ) > 1;
+}
+
+//____________________________________________________________________
+UShort_t
+AliAODForwardMult::GetSNN() const
+{
+  // set the center of mass energy per nucleon pair (GeV). 
+  // This is stored in bin (0,0) of the histogram 
+  // 
+  // Parameters: 
+  //   sNN   Center of mass energy per nuclean 
+  return fHist.GetBinContent(0,0);
+}
+
+//____________________________________________________________________
+UShort_t
+AliAODForwardMult::GetSystem() const
+{
+  // set the center of mass energy per nucleon pair (GeV). 
+  // This is stored in bin (N+1,0) of the histogram 
+  // 
+  // Parameters: 
+  //   sNN   Center of mass energy per nuclean 
+  return fHist.GetBinContent(fHist.GetNbinsX()+1,0);
 }
 
 //____________________________________________________________________

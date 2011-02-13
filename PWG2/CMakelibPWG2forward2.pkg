@@ -49,6 +49,7 @@ set ( SRCS
     FORWARD/analysis2/AliForwardMultiplicityTask.cxx
     FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
     FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
+    FORWARD/analysis2/AliForwarddNdetaTask.cxx
     FORWARD/analysis2/AliForwardUtil.cxx
 )
 
@@ -57,9 +58,31 @@ set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
 
 set ( EINCLUDE  ANALYSIS )
 
-set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h )
+set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h 
+             FORWARD/analysis2/AliForwardUtil.h )
 
 set ( DHDR  PWG2forward2LinkDef.h)
+
+# --------------------------------------------------------------------
+# Extra targets 
+#
+add_custom_command( OUTPUT FORWARD/doc/doc.pdf 
+                    COMMAND pdflatex doc
+		    COMMAND pdflatex doc
+		    COMMAND pdflatex doc
+		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
+		    COMMAND mv doc.pdf ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/
+		    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc
+		    MAIN_DEPENDENCY FORWARD/doc/doc.tex )
+
+add_custom_command( OUTPUT FORWARD/doc/html/index.html 
+		    COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc
+                    COMMAND sed -e 's,\\\(INPUT\\|EXAMPLE_PATH\\\) *= ../analysis2,\\1 = ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/analysis2,' -e 's,OUTPUT_DIRECTORY *=.*,OUTPUT_DIRECTORY = FORWARD/doc/,' < ${CMAKE_CURRENT_SOURCE_DIR}/FORWARD/doc/Doxyfile > ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
+		    COMMAND doxygen ${CMAKE_CURRENT_BINARY_DIR}/FORWARD/doc/Doxyfile
+		    DEPENDS ${SRCS} ${HDRS} )
+
+add_custom_target( PWG2forward-doc DEPENDS FORWARD/doc/doc.pdf )
+add_custom_target( PWG2forward-doxy DEPENDS FORWARD/doc/html/index.html )
 
 # --------------------------------------------------------------------
 # Extra installation targets 
@@ -75,8 +98,10 @@ install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
                 FORWARD/analysis2/AddTaskFMD.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
-                FORWARD/analysis2/AnalyseAOD.C
+		FORWARD/analysis2/AddTaskForwarddNdeta.C
+		FORWARD/analysis2/DrawdNdeta.C
                 FORWARD/analysis2/MakeAOD.C
+		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
                 FORWARD/analysis2/OtherData.C
                 FORWARD/analysis2/Pass1.C

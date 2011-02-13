@@ -20,60 +20,16 @@
  * @ingroup pwg2_forward_scripts
  */
 void
-Pass2(const char* file=".", 
+Pass2(const char* aoddir=".", 
+      Int_t       nEvents=-1,
       const char* triggers="INEL", 
-      Int_t       energy=900, 
       Double_t    vzMin=-10, 
-      Double_t    vzMax=10, 
-      Int_t       rebin=5, 
-      const char* title="",
-      bool        hhd=true,
-      bool        comp=true)
+      Double_t    vzMax=10,
+      Int_t       proof=0)
 {
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C"); 
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AnalyseAOD.C","+g"); 
-  
-  Int_t trgMask; 
-  TString     trgs(triggers);
-  trgs.ToUpper();
-  TObjString* trg;
-  TIter       next(trgs.Tokenize(" ,|"));
-  while ((trg = static_cast<TObjString*>(next()))) { 
-    TString s(trg->GetString());
-    if      (s.IsNull()) continue;
-    if      (s.CompareTo("INEL")  == 0) trgMask = AliAODForwardMult::kInel;
-    else if (s.CompareTo("INEL>0")== 0) trgMask = AliAODForwardMult::kInelGt0;
-    else if (s.CompareTo("NSD")   == 0) trgMask = AliAODForwardMult::kNSD;
-    else 
-      Warning("Pass2", "Unknown trigger %s", s.Data());
-  }
-  if (trgMask == 0) {
-    trgMask = 1;
-    trgs.Append("INEL");
-  }
-  TString tit(title);
-  tit.ReplaceAll("@", " ");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/MakedNdeta.C"); 
 
-  printf("--------------------------------------\n"
-         "Settings for this:\n"
-         "  Input AOD:    %s\n" 
-         "  Vertex range: %+4.1f -> %+4.1f cm\n" 
-	 "  Rebinning:    %d\n"
-	 "  Trigger mask: 0x%02x (%s)\n"
-	 "  Energy:       %dGeV\n"
-	 "  Title:        %s\n"
-	 "  HHD comp.:    %s\n"
-	 "  Other comp.:  %s\n"
-         "--------------------------------------\n",
-	 file, vzMin, vzMax, rebin, trgMask, trgs.Data(), energy, tit.Data(),
-	 hhd ? "yes" : "no", comp ? "yes" : "no");
-  
-  AnalyseAOD dr;
-  TStopwatch t;
-  t.Start();
-  dr.Run(file, vzMin, vzMax, rebin, trgMask, energy, tit.Data(), hhd, comp);
-  t.Stop();
-  t.Print();  
+  MakedNdeta(aoddir, nEvents, triggers, vzMin, vzMax, proof);
 }
 //
 // EOF

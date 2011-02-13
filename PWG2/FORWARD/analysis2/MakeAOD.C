@@ -35,8 +35,8 @@ void MakeAOD(const char* esddir,
   }
   
   // --- Our data chain ----------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeESDChain.C");
-  TChain* chain = MakeESDChain(esddir,true);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/MakeChain.C");
+  TChain* chain = MakeChain("ESD", esddir,true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
@@ -105,8 +105,8 @@ void MakeAOD(const char* esddir,
 
 
   // Central multiplicity
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","");
-  AddTaskCentralMult();
+  // Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","");
+  // AddTaskCentralMult();
 #endif
 
   // FMD 
