@@ -27,6 +27,100 @@ public:
   }
   ClassDef(AliAnalysisLevyPtModified, 1);
 };
+class AliAnalysisLevyPtModifiedBaryonEnhanced{
+public:
+  virtual ~AliAnalysisLevyPtModifiedBaryonEnhanced(){;};
+  
+
+  Double_t Evaluate(Double_t *pt, Double_t *par)
+  {
+    Double_t ldNdy  = par[0];
+    Double_t l2pi   = 2*TMath::Pi();
+    Double_t lTemp = par[1];
+    Double_t lPower = par[2];
+    Double_t lMass  = par[3];
+    Double_t A = par[4];
+    Double_t lMassEt  = par[3];//only used for calculating Et
+    Double_t lBary0 = par[6];
+    Double_t lBary1 = par[7];
+    Double_t lBary2 = par[8];
+    Double_t lBary3 = par[9];
+    Double_t lBary4 = par[10];
+    Double_t lBary5 = par[11];
+    //this is the Et we would calculate if we had identified the particle as having a mass lMassEt
+    Double_t Et = TMath::Sqrt(pt[0]*pt[0]+lMassEt*lMassEt)+A*lMassEt;
+    
+    Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
+    Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
+    //this is the baryon enhancement factor
+    Double_t baryonEnhancement = lBary0*pow(pt[0],lBary1)*exp(-pow(pt[0]/lBary2,lBary3))/(lBary4+lBary5*pt[0]);
+    if(baryonEnhancement<1.0) baryonEnhancement = 1.0;
+    //This is the density of particles times the Et weight
+    return ldNdy *Et* baryonEnhancement*pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);  }
+  ClassDef(AliAnalysisLevyPtModifiedBaryonEnhanced, 1);
+};
+
+class AliAnalysisLevyPtModifiedStrangeness{
+public:
+  virtual ~AliAnalysisLevyPtModifiedStrangeness(){;};
+  
+
+  Double_t Evaluate(Double_t *pt, Double_t *par)
+  {
+    Double_t ldNdy  = par[0];
+    Double_t l2pi   = 2*TMath::Pi();
+    Double_t lTemp = par[1];
+    Double_t lPower = par[2];
+    Double_t lMass  = par[3];
+    Double_t A = par[4];
+    Double_t lMassEt  = par[3];//only used for calculating Et
+    //this is the Et we would calculate if we had identified the particle as having a mass lMassEt
+    Double_t Et = TMath::Sqrt(pt[0]*pt[0]+lMassEt*lMassEt)+A*lMassEt;
+    
+    Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
+    Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
+    Double_t strangeness = (0.4333333*pt[0]-0.0666666)/(0.2333333333*pt[0]-0.01666666);
+    if(strangeness<1.0 || pt[0]<0.1) strangeness = 1.0;
+    //This is the density of particles times the Et weight
+    return ldNdy *strangeness* Et* pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);
+  }
+  ClassDef(AliAnalysisLevyPtModifiedStrangeness, 1);
+};
+class AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced{
+public:
+  virtual ~AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced(){;};
+  
+
+  Double_t Evaluate(Double_t *pt, Double_t *par)
+  {
+    Double_t ldNdy  = par[0];
+    Double_t l2pi   = 2*TMath::Pi();
+    Double_t lTemp = par[1];
+    Double_t lPower = par[2];
+    Double_t lMass  = par[3];
+    Double_t A = par[4];
+    Double_t lMassEt  = par[3];//only used for calculating Et
+    Double_t lBary0 = par[6];
+    Double_t lBary1 = par[7];
+    Double_t lBary2 = par[8];
+    Double_t lBary3 = par[9];
+    Double_t lBary4 = par[10];
+    Double_t lBary5 = par[11];
+    //this is the Et we would calculate if we had identified the particle as having a mass lMassEt
+    Double_t Et = TMath::Sqrt(pt[0]*pt[0]+lMassEt*lMassEt)+A*lMassEt;
+    
+    Double_t lBigCoef = ((lPower-1)*(lPower-2)) / (l2pi*lPower*lTemp*(lPower*lTemp+lMass*(lPower-2)));
+    Double_t lInPower = 1 + (TMath::Sqrt(pt[0]*pt[0]+lMass*lMass)-lMass) / (lPower*lTemp);
+    //this is the baryon enhancement factor
+    Double_t baryonEnhancement = lBary0*pow(pt[0],lBary1)*exp(-pow(pt[0]/lBary2,lBary3))/(lBary4+lBary5*pt[0]);
+    if(baryonEnhancement<1.0) baryonEnhancement = 1.0;
+    Double_t strangeness = (0.4333333*pt[0]-0.0666666)/(0.2333333333*pt[0]-0.01666666);
+    if(strangeness<1.0 || pt[0]<0.1) strangeness = 1.0;
+    //This is the density of particles times the Et weight
+    return ldNdy *Et*strangeness* baryonEnhancement*pt[0] * lBigCoef * TMath::Power(lInPower,(-1)*lPower);  }
+  ClassDef(AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced, 1);
+};
+
 
 void CorrNeutralLevyFit(bool hadronic = false){
 
@@ -83,6 +177,9 @@ void CorrNeutralLevyFit(bool hadronic = false){
   fKaon->SetParameter(4,0);//A=0 for kaons
   float integralKaon = fKaon->Integral(0,50);
   float integralErrKaon = integralKaon*0.03/0.366;
+  fKaonStrange = new TF1("fKaonStrange",function, &AliAnalysisLevyPtModifiedStrangeness::Evaluate,0,50,5,"AliAnalysisLevyPtModifiedStrangeness","Evaluate");
+  for(int i=0; i<5;i++){fKaonStrange->SetParameter(i,fKaon->GetParameter(i));}
+  float integralKaonStrange = fKaonStrange->Integral(0,50);
   float myerrorKaonT = 0.0;
   float myerrorKaonn = 0.0;
   float tmpKaon;
@@ -106,6 +203,7 @@ void CorrNeutralLevyFit(bool hadronic = false){
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrKaon = TMath::Sqrt(TMath::Power(integralErrKaon,2)+TMath::Power(myerrorKaonT,2)+TMath::Power(myerrorKaonn,2));
   cout<<"Kaon Et = "<<integralKaon<<"$\\pm$"<<integralErrKaon<<endl;
+  cout<<"Kaon Et Strange = "<<integralKaonStrange<<endl;
 
 // particle          & $\frac{dN}{dy}$    & T (GeV)           & n               & $\frac{dE_T}{dy}$& a &\ET \\ \hline
 // $p + \bar{p}$     &  0.157 $\pm$ 0.012 & 0.196 $\pm$ 0.009 & 8.6 $\pm$ 1.1   &                  &   &     \\
@@ -115,6 +213,16 @@ void CorrNeutralLevyFit(bool hadronic = false){
   fProton->SetParameter(2,8.6);//n
   fProton->SetParameter(3,0.938272);//mass
   fProton->SetParameter(4,-1);//A=0 for protons
+  fProtonEnhanced = new TF1("fProtonEnhanced",function, &AliAnalysisLevyPtModifiedBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedBaryonEnhanced","Evaluate");
+  for(int i=0;i<6;i++){fProtonEnhanced->SetParameter(i,fProton->GetParameter(i));}//set all of the spectra parameters to their normal values
+  //and now set the baryon enhancement parameters
+  fProtonEnhanced->SetParameter(6,0.900878*1.2);
+  fProtonEnhanced->SetParameter(7,1.38882);
+  fProtonEnhanced->SetParameter(8,2.6361);
+  fProtonEnhanced->SetParameter(9,1.37751);
+  fProtonEnhanced->SetParameter(10,0.5);
+  fProtonEnhanced->SetParameter(11,-0.03);
+  float integralProtonEnhanced = fProtonEnhanced->Integral(0,50);
   float integralProton = fProton->Integral(0,50);
   float integralErrProton = integralProton*0.012/0.157;
   float myerrorProtonT = 0.0;
@@ -143,11 +251,29 @@ void CorrNeutralLevyFit(bool hadronic = false){
 
 
 
+
+
   //Antiprotons...
+  fProton->SetParameter(0,0.157/2.0);//dN/dy
+  fProton->SetParameter(1,0.196);//T
+  fProton->SetParameter(2,8.6);//n
+  fProton->SetParameter(3,0.938272);//mass
   fProton->SetParameter(2,n);//n
   fProton->SetParameter(4,1);//A=0 for protons
   float integralAntiProton = fProton->Integral(0,50);
   float integralErrAntiProton = integralAntiProton*0.012/0.157;
+  fAntiProtonEnhanced = new TF1("fAntiProtonEnhanced",function, &AliAnalysisLevyPtModifiedBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedBaryonEnhanced","Evaluate");
+  for(int i=0;i<6;i++){fAntiProtonEnhanced->SetParameter(i,fProton->GetParameter(i));}//set all of the spectra parameters to their normal values
+  fAntiProtonEnhanced->SetParameter(2,n);//n
+  fAntiProtonEnhanced->SetParameter(4,1);//A=0 for protons
+  //and now set the baryon enhancement parameters
+  fAntiProtonEnhanced->SetParameter(6,0.900878*1.2);
+  fAntiProtonEnhanced->SetParameter(7,1.38882);
+  fAntiProtonEnhanced->SetParameter(8,2.6361);
+  fAntiProtonEnhanced->SetParameter(9,1.37751);
+  fAntiProtonEnhanced->SetParameter(10,0.5);
+  fAntiProtonEnhanced->SetParameter(11,-0.03);
+  float integralAntiProtonEnhanced = fAntiProtonEnhanced->Integral(0,50);
   float myerrorAntiProtonT = 0.0;
   float myerrorAntiProtonn = 0.0;
   float tmpAntiProton;
@@ -171,6 +297,11 @@ void CorrNeutralLevyFit(bool hadronic = false){
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrAntiProton = TMath::Sqrt(TMath::Power(integralErrAntiProton,2)+TMath::Power(myerrorAntiProtonT,2)+TMath::Power(myerrorAntiProtonn,2));
   cout<<"AntiProton Et = "<<integralAntiProton<<"$\\pm$"<<integralErrAntiProton<<endl;
+  cout<<"AntiProton enhanced "<<integralAntiProtonEnhanced<<", "<<integralAntiProton/integralAntiProtonEnhanced*100.0<<endl;
+  cout<<"Proton enhanced "<<integralProtonEnhanced<<", "<<integralProton/integralProtonEnhanced*100.0<<endl;
+  cout<<"Proton and antiproton enhanced "<< (integralProtonEnhanced+integralAntiProtonEnhanced) <<", "
+      << (integralProtonEnhanced+integralAntiProtonEnhanced) / (integralProton+integralAntiProton)*100.0 
+      <<endl;
 
 
 // particle          & $\frac{dN}{dy}$    & T (GeV)           & n               & $\frac{dE_T}{dy}$& a &\ET \\ \hline
@@ -183,6 +314,9 @@ void CorrNeutralLevyFit(bool hadronic = false){
   fK0S->SetParameter(4,0);//A=0 for kaons
   float integralK0S = fK0S->Integral(0,50);
   float integralErrK0S = integralK0S*0.006/0.184;
+  fK0Strange = new TF1("fK0Strange",function, &AliAnalysisLevyPtModifiedStrangeness::Evaluate,0,50,5,"AliAnalysisLevyPtModifiedStrangeness","Evaluate");
+  for(int i=0; i<5;i++){fK0Strange->SetParameter(i,fK0S->GetParameter(i));}
+  float integralK0SStrange = fK0Strange->Integral(0,50);
   float myerrorK0ST = 0.0;
   float myerrorK0Sn = 0.0;
   float tmpK0S;
@@ -206,6 +340,7 @@ void CorrNeutralLevyFit(bool hadronic = false){
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrK0S = TMath::Sqrt(TMath::Power(integralErrK0S,2)+TMath::Power(myerrorK0ST,2)+TMath::Power(myerrorK0Sn,2));
   cout<<"K0S Et = "<<integralK0S<<"$\\pm$"<<integralErrK0S<<endl;
+  cout<<"K0S Et Strange = "<<integralK0SStrange<<endl;
 
 // particle          & $\frac{dN}{dy}$    & T (GeV)           & n               & $\frac{dE_T}{dy}$& a &\ET \\ \hline
 // \lam              &0.048 $\pm$ 0.004   & 0.229 $\pm$ 0.015 & 10.8 $\pm$ 2.0  &                  &   &     \\
@@ -217,6 +352,37 @@ void CorrNeutralLevyFit(bool hadronic = false){
   fLambda->SetParameter(4,0);//A=0 for kaons
   float integralLambda = fLambda->Integral(0,50);
   float integralErrLambda = integralLambda*0.004/0.048;
+  fLambdaEnhanced = new TF1("fLambdaEnhanced",function, &AliAnalysisLevyPtModifiedBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedBaryonEnhanced","Evaluate");
+  for(int i=0;i<6;i++){fLambdaEnhanced->SetParameter(i,fLambda->GetParameter(i));}//set all of the spectra parameters to their normal values
+  //and now set the baryon enhancement parameters
+  fLambdaEnhanced->SetParameter(6,0.900878);
+  fLambdaEnhanced->SetParameter(7,1.38882);
+  fLambdaEnhanced->SetParameter(8,2.6361);
+  fLambdaEnhanced->SetParameter(9,1.37751);
+  fLambdaEnhanced->SetParameter(10,0.5);
+  fLambdaEnhanced->SetParameter(11,-0.03);
+  float integralLambdaEnhanced = fLambdaEnhanced->Integral(0,50);
+//   fLambdaEnhanced->Draw();
+//   return;
+  fLambdaStrange = new TF1("fLambdaStrange",function, &AliAnalysisLevyPtModifiedStrangeness::Evaluate,0,50,5,"AliAnalysisLevyPtModifiedStrangeness","Evaluate");
+  for(int i=0; i<5;i++){fLambdaStrange->SetParameter(i,fLambda->GetParameter(i));}
+  //for(int i=0;i<12;i++){cout<<"Lambda a"<<i<<" "<<fLambdaStrange->GetParameter(i)<<" b"<<i<<" "<<fLambda->GetParameter(i)<<endl;}
+  float integralLambdaStrange = fLambdaStrange->Integral(0,50);
+  //cout<<"test "<<integralLambdaStrange<<endl;
+  fLambdaStrangeEnhanced = new TF1("fLambdaStrangeEnhanced",function, &AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced","Evaluate");
+  for(int i=0; i<12;i++){fLambdaStrangeEnhanced->SetParameter(i,fLambdaEnhanced->GetParameter(i));}
+//   //and now set the baryon enhancement parameters
+//   fLambdaStrangeEnhanced->SetParameter(6,0.900878);
+//   fLambdaStrangeEnhanced->SetParameter(7,1.38882);
+//   fLambdaStrangeEnhanced->SetParameter(8,2.6361);
+//   fLambdaStrangeEnhanced->SetParameter(9,1.37751);
+//   fLambdaStrangeEnhanced->SetParameter(10,0.5);
+//   fLambdaStrangeEnhanced->SetParameter(11,-0.03);
+  //for(int i=0;i<12;i++){cout<<"a"<<i<<" "<<fLambdaStrangeEnhanced->GetParameter(i)<<" b"<<i<<" "<<fLambdaEnhanced->GetParameter(i)<<" c"<<i<<" "<<fLambda->GetParameter(i)<<endl;}
+  float integralLambdaStrangeEnhanced = fLambdaStrangeEnhanced->Integral(0,50);
+  cout<<"Lambda enhanced "<<integralLambdaEnhanced<<", ";
+  if(integralLambdaEnhanced>0.0) cout<<integralLambda/integralLambdaEnhanced*100.0;
+  cout<<endl;
   float myerrorLambdaT = 0.0;
   float myerrorLambdan = 0.0;
   float tmpLambda;
@@ -240,6 +406,8 @@ void CorrNeutralLevyFit(bool hadronic = false){
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrLambda = TMath::Sqrt(TMath::Power(integralErrLambda,2)+TMath::Power(myerrorLambdaT,2)+TMath::Power(myerrorLambdan,2));
   cout<<"Lambda Et = "<<integralLambda<<"$\\pm$"<<integralErrLambda<<endl;
+  cout<<"Lambda Et Strange = "<<integralLambdaStrange<<endl;
+  cout<<"Lambda Et Strange Enhanced = "<<integralLambdaStrangeEnhanced<<endl;
 
 
 // particle          & $\frac{dN}{dy}$    & T (GeV)           & n               & $\frac{dE_T}{dy}$& a &\ET \\ \hline
@@ -252,6 +420,25 @@ void CorrNeutralLevyFit(bool hadronic = false){
   fAntiLambda->SetParameter(4,0);//A=0 for kaons
   float integralAntiLambda = fAntiLambda->Integral(0,50);
   float integralErrAntiLambda = integralAntiLambda*0.005/0.047;
+  fAntiLambdaEnhanced = new TF1("fAntiLambdaEnhanced",function, &AliAnalysisLevyPtModifiedBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedBaryonEnhanced","Evaluate");
+  for(int i=0;i<6;i++){fAntiLambdaEnhanced->SetParameter(i,fAntiLambda->GetParameter(i));}//set all of the spectra parameters to their normal values
+  //and now set the baryon enhancement parameters
+  fAntiLambdaEnhanced->SetParameter(6,0.900878*1.2);
+  fAntiLambdaEnhanced->SetParameter(7,1.38882);
+  fAntiLambdaEnhanced->SetParameter(8,2.6361);
+  fAntiLambdaEnhanced->SetParameter(9,1.37751);
+  fAntiLambdaEnhanced->SetParameter(10,0.5);
+  fAntiLambdaEnhanced->SetParameter(11,-0.03);
+  float integralAntiLambdaEnhanced = fAntiLambdaEnhanced->Integral(0,50);
+  cout<<"AntiLambda enhanced "<<integralAntiLambdaEnhanced<<", "<<integralAntiLambda/integralAntiLambdaEnhanced*100.0<<endl;
+  fAntiLambdaStrange = new TF1("fAntiLambdaStrange",function, &AliAnalysisLevyPtModifiedStrangeness::Evaluate,0,50,5,"AliAnalysisLevyPtModifiedStrangeness","Evaluate");
+  for(int i=0; i<5;i++){fAntiLambdaStrange->SetParameter(i,fAntiLambda->GetParameter(i));}
+  float integralAntiLambdaStrange = fAntiLambdaStrange->Integral(0,50);
+
+  fAntiLambdaStrangeEnhanced = new TF1("fAntiLambdaStrangeEnhanced",function, &AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced::Evaluate,0,50,12,"AliAnalysisLevyPtModifiedStrangenessBaryonEnhanced","Evaluate");
+  for(int i=0; i<12;i++){fAntiLambdaStrangeEnhanced->SetParameter(i,fAntiLambdaEnhanced->GetParameter(i));}
+  float integralAntiLambdaStrangeEnhanced = fAntiLambdaStrangeEnhanced->Integral(0,50);
+
   float myerrorAntiLambdaT = 0.0;
   float myerrorAntiLambdan = 0.0;
   float tmpAntiLambda;
@@ -275,6 +462,8 @@ void CorrNeutralLevyFit(bool hadronic = false){
   //This isn't strictly correct because the errors on the parameters should be correlated but it's close
   integralErrAntiLambda = TMath::Sqrt(TMath::Power(integralErrAntiLambda,2)+TMath::Power(myerrorAntiLambdaT,2)+TMath::Power(myerrorAntiLambdan,2));
   cout<<"AntiLambda Et = "<<integralAntiLambda<<"$\\pm$"<<integralErrAntiLambda<<endl;
+  cout<<"AntiLambda Et Strange = "<<integralAntiLambdaStrange<<endl;
+  cout<<"AntiLambda Et Strange Enhanced = "<<integralAntiLambdaStrangeEnhanced<<endl;
 
   //now we apply various assumptions
   float integralK0L = integralK0S;
@@ -286,6 +475,25 @@ void CorrNeutralLevyFit(bool hadronic = false){
   float measuredEt = integralPion+integralKaon+1.0*integralProton+1.0*integralAntiProton;
   float fneutral = measuredEt/totalEt;
   cout<<"fneutral = "<<fneutral<<endl;
+
+  float totalEtEnhanced = (1.0+factor)*integralPion+integralKaon+2.0*integralProtonEnhanced+2.0*integralAntiProtonEnhanced+2.0*integralK0S+integralLambdaEnhanced+integralAntiLambdaEnhanced;
+  float measuredEtEnhanced = integralPion+integralKaon+1.0*integralProtonEnhanced+1.0*integralAntiProtonEnhanced;
+  float fneutralEnhanced = measuredEtEnhanced/totalEtEnhanced;
+  cout<<"fneutralEnhanced = "<<fneutralEnhanced<<endl;
+
+
+  float totalEtStrange = (1.0+factor)*integralPion+integralKaonStrange+2.0*integralProton+2.0*integralAntiProton+2.0*integralK0SStrange+integralLambdaStrange+integralAntiLambdaStrange;
+  float measuredEtStrange = integralPion+integralKaonStrange+1.0*integralProton+1.0*integralAntiProton;
+  float fneutralStrange = measuredEtStrange/totalEtStrange;
+  cout<<"fneutralStrange = "<<fneutralStrange<<endl;
+
+
+
+  float totalEtStrangeEnhanced = (1.0+factor)*integralPion+integralKaonStrange+2.0*integralProtonEnhanced+2.0*integralAntiProtonEnhanced+2.0*integralK0SStrange+integralLambdaStrangeEnhanced+integralAntiLambdaStrangeEnhanced;
+  float measuredEtStrangeEnhanced = integralPion+integralKaonStrange+1.0*integralProtonEnhanced+1.0*integralAntiProtonEnhanced;
+  float fneutralStrangeEnhanced = measuredEtStrangeEnhanced/totalEtStrangeEnhanced;
+  cout<<"fneutralStrangeEnhanced = "<<fneutralStrangeEnhanced<<endl;
+
   //this is from ugly derivative taking for error propagation
   //form 1:  pions, kaons, protons
   //for f=(xa+A)/(ya+B)
@@ -317,5 +525,12 @@ void CorrNeutralLevyFit(bool hadronic = false){
   cout<<"fneutral = "<<fneutral<<"$\\pm$"<<totalErr<<endl;
   cout<<"1/fneutral = "<<1.0/fneutral<<"$\\pm$"<<1.0/fneutral*totalErr/fneutral<<endl;
   cout<<"Percentage error "<<totalErr/fneutral*100.0<<endl;
+
+  float fneutralPb = (fneutralStrangeEnhanced+fneutral)/2.0;
+  float fneutralPbErr = TMath::Sqrt( TMath::Power((fneutralStrangeEnhanced-fneutral)/2.0,2.0) + TMath::Power(totalErr,2.0));
+  cout<<"fneutral strange enhanced "<<fneutralPb<<"$\\pm$"<<fneutralPbErr<<endl;
+    cout<<"1/fneutral strange enhanced = "<<1.0/fneutralPb<<"$\\pm$"<<1.0/fneutralPb*fneutralPbErr/fneutralPb<<endl;
+  cout<<"Percentage error "<<fneutralPbErr/fneutralPb*100.0<<endl;
+
 }
 
