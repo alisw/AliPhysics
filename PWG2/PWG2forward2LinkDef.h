@@ -63,6 +63,11 @@
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
 
+#pragma link C++ class AliCentralMultiplicityTask+;
+#pragma link C++ class AliAODCentralMult+;
+#pragma link C++ class AliCentralCorrSecondaryMap+;
+#pragma link C++ class AliCentralCorrAcceptance+;
+
 #else
 # error Not for compilation 
 #endif
