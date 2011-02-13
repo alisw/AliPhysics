@@ -99,6 +99,7 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 
 # Install other scripts
 install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
+  		FORWARD/analysis2/AddTaskCentral.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
                 FORWARD/analysis2/AddTaskFMD.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
@@ -120,6 +121,8 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 		    FORWARD/corrections/SecondaryMap
 		    FORWARD/corrections/VertexBias
 		    FORWARD/corrections/Acceptance
+		    FORWARD/corrections/CentralAcceptance
+		    FORWARD/corrections/CentralSecMap
           DESTINATION PWG2/FORWARD/corrections 
 	  PATTERN ".svn" EXCLUDE)
 
