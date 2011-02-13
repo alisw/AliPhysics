@@ -113,6 +113,14 @@ strips, as well as the $\eta$ coverage is given in
   \end{center}
 \end{table}
 
+The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
+E/\Delta E_{mip}$ for each of the 51,200 strips.  This is determined
+in the reconstruction pass.  The scaling to $\Delta E_{mip}$ is done
+using calibration factors extracted in designated pulser runs.  In
+these runs, the front-end electronics is pulsed with an increasing
+known pulse size, and the conversion factor from ADC counts to $\Delta
+E_{mip}$  is determined \cite{cholm:2009}.  
+
 The \SPD{} is used for determination of the position of the primary
 interaction point.
 
@@ -180,7 +188,7 @@ The first thing to do, is to inspect the event for triggers.  A number
 of trigger bits, like \INEL{}, \INELONE{}, \NSD{}, and so on is then
 propagated to the \AOD{} output.  
 
-Just after the sharing filter (described below) but before any more
+Just after the sharing filter (described below) but before any further
 processing, the vertex information is queried.  If there is no vertex
 information, or if the vertex $z$ coordinate is outside the
 pre--defined range, then no further processing of that event takes place. 
@@ -188,14 +196,11 @@ pre--defined range, then no further processing of that event takes place.
 \subsection{Sharing filter}
 \label{sec:sub:sharing_filter}
 
-The \FMD{} \ESD{} object contains the scaled energy deposited $\Delta
-E/\Delta E_{mip}$ for each of the 51,200 strips.  
-
 A particle originating from the vertex can, because of its incident
 angle on the \FMD{} sensors traverse more than one strip (see
 \figref{fig:share_fraction}).  This means that the energy loss of the
 particle is distributed over 1 or more strips.  The signal in each
-strip should therefore possibly be merged with it's neighboring strip
+strip should therefore possibly be merged with its neighboring strip
 signals to properly reconstruct the energy loss of a single particle.
 
 \begin{figure}[htbp]
@@ -373,9 +378,9 @@ density in pre--defined $\etaphi$ bins.
 \subsubsection{Inclusive number of charged particles} 
 \label{sec:sub:sub:eloss_fits}
 
-The number charged particles in a strip is calculated using multiple
-Landau-like distributions fitted to the energy loss spectrum at a given
-$\eta$ value.
+The number charged particles in a strip $\mult[,t]$ is calculated
+using multiple Landau-like distributions fitted to the energy loss
+spectrum of all strips in a given at a given $\eta$ bin.
 \begin{align}
   \Delta_{i,mp} &= i (\Delta_{1,mp}+ \xi_1 \log(i))\nonumber\\
   \xi_i         &= i\xi_1\nonumber\\
@@ -404,16 +409,28 @@ F_j(x;C,\Delta_{mp},\xi,\sigma,\mathbf{a}) = C
 \sum_{i=1}^{j} a_i F(x;\Delta_{i,mp},\xi_{i},\sigma_i) 
 $$
 for increasing $j$ to the energy loss spectra in separate $\eta$ bins.
-The fit procedure is stopped when the reduced $\chi^2$ exceeds a
-certain threshold, or when the weight $a_j$ is smaller than some
-number (typically $10^{-5}$).  Examples of the result of these fits are
-given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}. 
+The fit procedure is stopped when one for $j+1$ 
+\begin{itemize}
+\item the reduced $\chi^2$ exceeds a certain threshold, or
+\item the relative error $\delta p/p$ of any parameter of the fit
+  exceeds a certain threshold, or 
+\item when the weight $a_j+1$ is smaller than some number (typically
+  $10^{-5}$). 
+\end{itemize}
+$N_{max}$ is then set to $j$.  Examples of the result of these fits
+are given in \figref{fig:eloss_fits} in Appendix~\ref{app:eloss_fits}.
 
 \subsubsection{Azimuthal Acceptance}
 
 Before the signal $\mult[,t]$ can be added to the $\etaphi$
 bin in one of the 5 per--ring histograms, it needs to be corrected for
 the $\varphi$ acceptance of the strip.
+
+The sensors of the \FMD{} are not perfect arc--segments --- the two
+top corners are cut off to allow the largest possible sensor on a 6''
+Si-wafer.   This means, however, that the strips in these outer
+regions do not fully cover $2\pi$ in azimuth, and there is therefore a
+need to correct for this limited acceptance.  
 
 The acceptance correction is only applicable where the strip length
 does not cover the full sector.  This is the case for the outer strips
@@ -426,6 +443,10 @@ then simply
 where $l_t$ is the strip length in radians at constant $r$, and
 $\Delta\varphi$ is $2\pi$ divided by the number of sectors in the
 ring (20 for inner type rings, and 40 for outer type rings). 
+
+Note, that this correction is a hardware--related correction, and does
+not depend on the properties of the collision (e.g., primary vertex
+location). 
 
 The final $\etaphi$ content of the 5 output vertex dependent,
 per--ring histograms of the inclusive charged particle density is then
@@ -480,6 +501,14 @@ charged particles labelled as primaries \emph{at the time of the
 number of primaries within the $\etaphi$ bin at the collision
 point --- not at the \FMD{}.
 
+$\SecMap$ is varies from $\approx 1.5$ for the most forward bins to
+$\approx 3$ for the more central bins.  For pp, different event
+generators were used and found to give compatible results within
+3--5\%.   For pp, at least some millions of events must be
+accumulated to reach satisfactory statistics.  For Pb--Pb where the
+general hit density is larger, reasonable statistics can be achieved
+with less data.  
+
 \subsubsection{Acceptance due to dead channels}
 
 Some of the strips in the \FMD{} have been marked up as \emph{dead},
@@ -533,7 +562,9 @@ large corrections associated with it.
 It then loops over the bins in the defined $\eta$ range and sums the
 contributions from each of the 5 histograms.  In the $\eta$ ranges
 where two rings overlap, the collector calculates the average and adds
-the errors in quadrature.
+the errors in quadrature\footnote{While not explicitly checked, it was
+  found that the histograms agrees within error bars in the
+  overlapping region}.
 
 The output vertex dependent histogram of the primary
 charged particle density is then given by
@@ -647,10 +678,12 @@ plots.
 \begin{figure}[hbp]
   \centering
   \includegraphics[keepaspectratio,width=\textwidth]{%
-    dndeta_0900GeV_m10-p10cm_rb05_inel}
+    dndeta_pp_0900GeV_INEL_m10p10cm}
   \caption{$\dndeta$ for pp for \INEL{} events at $\sqrt{s}=\GeV{900}$,
-    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5.  Comparisons
-    to other measurements shown where applicable}
+    $\cm{-10}\le v_z\le\cm{10}$, rebinned by a factor 5.  Middle panel
+    shows the ratio of ALICE data to UA5, and the bottom panel shows
+    the ratio of the right (positive) side to the left (negative) side
+    of the forward $\dndeta$.}
   \label{fig:1}
 \end{figure} 
 
@@ -738,6 +771,15 @@ plots.
     Note, that this has a value of $\Nsel$ for $(\eta)$ bins where we
     have full coverage\\ 
     \hline 
+    $X_t$ & Value $X$ for strip number $t$ (0-511 for inner rings,
+    0-255 for outer rings)\\ 
+    $X_r$ & Value $X$ for ring $r$ (where rings are \FMD{1i},
+    \FMD{2i}, \FMD{2o}, \FMD{3o}, and \FMD{3i} in decreasing $\eta$
+    coverage).\\ 
+    $X_v$ & Value $X$ for vertex bin $v$ (typically 10 bins from -10cm
+    to +10cm)\\ 
+    $X_i$ & Value $X$ for event $i$\\
+    \hline
   \end{tabular}
   \caption{Nomenclature used in this document}
   \label{tab:nomenclature}
@@ -831,6 +873,8 @@ void Analyse()
     the most probable energy loss $\Delta_{mp}$, 4\textsuperscript{th}
     shows the width parameter $\xi$ of the Landau, and the
     5\textsuperscript{th} is the Gaussian width $\sigma$.
+    $\Delta_{mp}$, $\xi$, and $\sigma$ have units of $\Delta E/\Delta
+    E_{mip}$. 
     \newline
     On the right: The top panel shows the maximum number of
     multi--particle signals that where fitted, and the 4 bottom panels
@@ -854,12 +898,13 @@ void Analyse()
   S.~Hancock, F.~James, J.~Movchet {\it et al.},
   ``Energy Loss Distributions For Single Particles And Several
   Particles In A Thin Silicon Absorber,'' Nucl.\ Instrum.\ Meth.\
-  \textbf{B1} (1984)  16. 
+  \textbf{B1} (1984)  16, \url{http://cdsweb.cern.ch/record/147286/files/cer-000058451.pdf}.
 \bibitem{phyrev:a28:615} 
 %% \bibitem{Hancock:1983fp}
   S.~Hancock, F.~James, J.~Movchet {\it et al.}, ``Energy Loss And
   Energy Straggling Of Protons And Pions In The Momentum Range
-  0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615.
+  0.7-gev/c To 115-gev/c,'' Phys.\ Rev.\ \textbf{A28} (1983) 615,
+  \url{http://cdsweb.cern.ch/record/145395/files/PhysRevA.28.615.pdf}. 
 \end{thebibliography}
 \end{document}
 
