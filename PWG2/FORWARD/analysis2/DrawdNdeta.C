@@ -119,6 +119,15 @@ struct dNdetaDrawer
     fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
     fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
     fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
+    
+    if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
+    if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
+    if (!fSysString)  fSysString  = new TNamed("sys", "unknown");
+    if (!fVtxAxis) { 
+      fVtxAxis    = new TAxis(1,0,0);
+      fVtxAxis->SetName("vtxAxis");
+      fVtxAxis->SetTitle("v_{z} range unspecified");
+    }
 
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
     if (sums) 
@@ -360,6 +369,23 @@ struct dNdetaDrawer
 
     PlotLeftRight(leftright, amax, y3, y2);
     c->cd();
+
+    
+    Int_t   vMin = fVtxAxis->GetXmin();
+    Int_t   vMax = fVtxAxis->GetXmax();    
+    TString trg(fTrigString->GetTitle());
+    Int_t   nev  = fTriggers->GetBinContent(fTriggers->GetNbinsX());
+    trg          = trg.Strip(TString::kBoth);
+    TString base(Form("dndeta_%s_%s_%s_%c%02d%c%02dcm_%09dev",
+		      fSysString->GetTitle(), 
+		      fSNNString->GetTitle(), 
+		      trg.Data(),
+		      vMin < 0 ? 'm' : 'p',  TMath::Abs(vMin),
+		      vMax < 0 ? 'm' : 'p',  TMath::Abs(vMax),
+		      nev));
+    c->SaveAs(Form("%s.png",  base.Data()));
+    c->SaveAs(Form("%s.root", base.Data()));
+    c->SaveAs(Form("%s.C",    base.Data()));
   }
   //__________________________________________________________________
   void PlotResults(THStack* results, TMultiGraph* others, 
@@ -414,15 +440,14 @@ struct dNdetaDrawer
 
     // Put a nice label in the plot
     TString     eS;
-    UShort_t    snn = (fSNNString ? fSNNString->GetUniqueID() : 0);
-    const char* sys = (fSysString ? fSysString->GetTitle() : "?");
+    UShort_t    snn = fSNNString->GetUniqueID();
+    const char* sys = fSysString->GetTitle();
     if (snn > 1000) eS = Form("%4.2fTeV", float(snn)/1000);
     else            eS = Form("%3dGeV", snn);
     TLatex* tt = new TLatex(.93, .93, Form("%s #sqrt{s}=%s, %s", 
 					   sys, 
 					   eS.Data(), 
-					   fTrigString ? 
-					   fTrigString->GetTitle() : "?"));
+					   fTrigString->GetTitle()));
     tt->SetNDC();
     tt->SetTextFont(132);
     tt->SetTextAlign(33);
@@ -460,7 +485,7 @@ struct dNdetaDrawer
     pt->Draw();
 
     if (!gSystem->AccessPathName("ALICE.png")) { 
-      TPad* logo = new TPad("logo", "logo", .12, .7, .32, .90, 0, 0, 0);
+      TPad* logo = new TPad("logo", "logo", .12, .65, .25, .85, 0, 0, 0);
       logo->SetFillStyle(0);
       logo->Draw();
       logo->cd();
@@ -1095,7 +1120,7 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 
 	   Int_t       flags=0xf,
-	   const char* title=""
+	   const char* title="",
 	   UShort_t    rebin=5, 
 	   Bool_t      cutEdges=false)
 {

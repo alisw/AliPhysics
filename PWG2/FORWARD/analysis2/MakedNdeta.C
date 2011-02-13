@@ -68,7 +68,7 @@ void MakedNdeta(const char* aoddir=".",
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
   if (mgr->GetDebugLevel() < 1 && !proof) 
-    mgr->SetUseProgressBar(kTRUE);
+    mgr->SetUseProgressBar(kTRUE,100);
 
   // Run the train 
   t.Start();
