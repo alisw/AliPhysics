@@ -517,8 +517,8 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   if (fCutMC && !PassesMCcuts()) pass=kFALSE;
 
   //the case of ESD or AOD
-  if (esdTrack) PassesESDcuts(esdTrack);
-  if (aodTrack) PassesAODcuts(aodTrack);
+  if (esdTrack) { if (!PassesESDcuts(esdTrack)) { pass=kFALSE; } }
+  if (aodTrack) { if (!PassesAODcuts(aodTrack)) { pass=kFALSE; } }
 
   //true by default, if we didn't set any cuts
   return pass;
