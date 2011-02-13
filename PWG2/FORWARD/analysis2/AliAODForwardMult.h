@@ -206,6 +206,22 @@ public:
    */
   void SetIpZ(Float_t ipZ) { fIpZ = ipZ; } // Set Ip's Z coordinate
   /** 
+   * Set the center of mass energy per nucleon-pair.  This is stored 
+   * in the (0,0) of the histogram 
+   * 
+   * @param sNN Center of mass energy per nucleon pair (GeV)
+   */
+  void SetSNN(UShort_t sNN); 
+  /** 
+   * Get the collision system number
+   * - 0: Unknown 
+   * - 1: pp
+   * - 2: PbPb
+   * 
+   * @param sys Collision system number
+   */
+  void SetSystem(UShort_t sys);
+  /** 
    * Set the z coordinate of the interaction point
    * 
    * @return Interaction point z coordinate
@@ -217,6 +233,21 @@ public:
    * @return True if we have a valid interaction point z coordinate
    */
   Bool_t HasIpZ() const;
+  /** 
+   * Get the center of mass energy per nucleon pair (GeV)
+   * 
+   * @return Center of mass energy per nucleon pair (GeV)
+   */
+  UShort_t GetSNN() const;
+  /** 
+   * Get the collision system number
+   * - 0: Unknown 
+   * - 1: pp
+   * - 2: PbPb
+   * 
+   * @return Collision system number
+   */
+  UShort_t GetSystem() const;
   /** 
    * Check if the z coordinate of the interaction point is within the
    * given limits.  Note that the convention used corresponds to the

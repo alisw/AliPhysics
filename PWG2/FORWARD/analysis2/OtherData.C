@@ -96,10 +96,23 @@ TGraphAsymmErrors* UA5Nsd(Bool_t mirrored=false)
 		   0.07, 0.07, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.13 };
   const int np = 20;
   double xm[np]; 
-  for (int i = 0; i < np; i++) xm[i] = -x[i];
+  double exmm[np];
+  double expm[np];
+  double ym[np];
+  double eymm[np];
+  double eypm[np];
+  for (int i = 0; i < np; i++) {
+    int j = np-1-i;
+    xm[i]   = -x[j];
+    exmm[i] = exm[j];
+    expm[i] = exp[j];
+    ym[i]   = y[j];
+    eymm[i] = eym[j];
+    eypm[i] = eyp[j];
+  }
 
-  TGraphAsymmErrors* g  = new TGraphAsymmErrors(19,x, y,exm,exp,eym,eyp);
-  TGraphAsymmErrors* gm = new TGraphAsymmErrors(19,xm,y,exm,exp,eym,eyp);
+  TGraphAsymmErrors* g  = new TGraphAsymmErrors(19,x, y, exm, exp, eym, eyp);
+  TGraphAsymmErrors* gm = new TGraphAsymmErrors(19,xm,ym,exmm,expm,eymm,eypm);
   SetGraphAttributes(g,  NSDStyle, UA5Color,"ua5_nsd",         "UA5 NSD");
   SetGraphAttributes(gm, NSDStyle+MirrorOff, UA5Color,"ua5_nsd_mirrored",
 		     "UA5 NSD (mirrored)");
@@ -136,9 +149,22 @@ TGraphAsymmErrors* UA5Inel(Bool_t mirrored=false)
 		   0.07, 0.07, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.13 };
   const int np = 19;
   double xm[np]; 
-  for (int i = 0; i < np; i++) xm[i] = -x[i];
-  TGraphAsymmErrors* g  = new TGraphAsymmErrors(np,x, y,exm,exp,eym,eyp);
-  TGraphAsymmErrors* gm = new TGraphAsymmErrors(np,xm,y,exm,exp,eym,eyp);
+  double exmm[np];
+  double expm[np];
+  double ym[np];
+  double eymm[np];
+  double eypm[np];
+  for (int i = 0; i < np; i++) {
+    int j = np-1-i;
+    xm[i]   = -x[j];
+    exmm[i] = exm[j];
+    expm[i] = exp[j];
+    ym[i]   = y[j];
+    eymm[i] = eym[j];
+    eypm[i] = eyp[j];
+  }
+  TGraphAsymmErrors* g  = new TGraphAsymmErrors(np,x, y, exm, exp, eym, eyp);
+  TGraphAsymmErrors* gm = new TGraphAsymmErrors(np,xm,ym,exmm,expm,eymm,eypm);
 
   SetGraphAttributes(g,  INELStyle, UA5Color, "ua5_inel", "UA5 INEL");
   SetGraphAttributes(gm, INELStyle+MirrorOff, UA5Color, "ua5_inel_mirrored", 
@@ -570,7 +596,7 @@ TGraphAsymmErrors* CMSNsd7000()
  * @ingroup pwg2_forward_otherdata
  */
 TMultiGraph* 
-GetData(Int_t energy, Int_t type)
+GetData(Int_t energy, Int_t type, bool aliceOnly=false)
 {
   TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d", energy, type),"");
   TString tn;
@@ -579,16 +605,16 @@ GetData(Int_t energy, Int_t type)
     en.Append(" #sqrt{s}=900GeV");
     if (type & 0x1) { 
       tn.Append(" INEL");
-      mp->Add(UA5Inel(false));
-      mp->Add(UA5Inel(true));
+      if (!aliceOnly) mp->Add(UA5Inel(false));
+      if (!aliceOnly) mp->Add(UA5Inel(true));
       mp->Add(AliceCentralInel900());
     }      
     if (type & 0x4) { 
       tn.Append(" NSD");
-      mp->Add(UA5Nsd(false));
-      mp->Add(UA5Nsd(true));
+      if (!aliceOnly) mp->Add(UA5Nsd(false));
+      if (!aliceOnly) mp->Add(UA5Nsd(true));
       mp->Add(AliceCentralNsd900());
-      mp->Add(CMSNsd900());
+      if (!aliceOnly) mp->Add(CMSNsd900());
     }
     if (type & 0x2) { 
       tn.Append(" INEL>0");
@@ -604,7 +630,7 @@ GetData(Int_t energy, Int_t type)
     if (type & 0x4) { 
       tn.Append(" NSD");
       mp->Add(AliceCentralNsd2360());
-      mp->Add(CMSNsd2360());
+      if (!aliceOnly) mp->Add(CMSNsd2360());
     }
     if (type & 0x1) { 
       tn.Append(" INEL>0");
@@ -618,7 +644,7 @@ GetData(Int_t energy, Int_t type)
     }
     if (type & 0x4) { 
       tn.Append(" NSD");
-      mp->Add(CMSNsd7000());
+      if (!aliceOnly) mp->Add(CMSNsd7000());
     }
     if (type & 0x1) { 
       tn.Append(" INEL>0");
@@ -645,9 +671,9 @@ GetData(Int_t energy, Int_t type)
  * @ingroup pwg2_forward_otherdata
  */
 void
-OtherData(Int_t energy=900, Int_t type=0x1)
+OtherData(Int_t energy=900, Int_t type=0x1, bool aliceOnly=false)
 {
-  TMultiGraph* mp = GetData(energy, type);
+  TMultiGraph* mp = GetData(energy, type, aliceOnly);
   if (!mp) return;
 
   gStyle->SetTitleX(0.1);

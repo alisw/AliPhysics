@@ -231,6 +231,8 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
+  fAODFMD.SetSNN(fEventInspector.GetEnergy());
+  fAODFMD.SetSystem(fEventInspector.GetCollisionSystem());
   MarkEventForStore();
 
   if (found & AliFMDEventInspector::kNoSPD)      return;

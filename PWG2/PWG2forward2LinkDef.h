@@ -61,6 +61,7 @@
 // Note: custom streamer to ensure singleton consistency!
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
+#pragma link C++ class AliForwarddNdetaTask+;
 
 #else
 # error Not for compilation 

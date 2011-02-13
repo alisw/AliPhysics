@@ -31,18 +31,13 @@ Options:
 	-n,--events N		Number of events           ($nev)
 	-1,--pass1 		Run only pass 1, no draw   ($nodraw)
 	-2,--pass2		Run only pass 2, just draw ($noanal)
-	-r,--rebin N		Rebin by N                 ($rebin)
 	-v,--vz-min CM          Minimum value of vz        ($vzmin)
 	-V,--vz-max CM          Maximum value of vz        ($vzmax)
 	-t,--trigger TYPE       Select trigger TYPE        ($type)
-	-e,--energy CMS         Center of mass energy      ($cms)
 	-b,--batch              Do batch processing        ($batch)
 	-P,--proof NWORKERS	Run in PROOF(Lite) mode    ($proof)
 	-M,--mc			Run over MC data           ($mc)
-	-S,--title STRING       Set the title string       ($tit)
 	-g,--gdb		Run in GDB mode    	   ($gdb)
-	-H,--hhd		Do comparison to HHD	   ($hhd)
-	-O,--other		Do comparison to other	   ($comp)
 	-E,--eloss		Run energy loss script     
 
 TYPE is a comma or space separated list of 
@@ -71,13 +66,8 @@ while test $# -gt 0 ; do
 	-P|--proof)          proof=$2	      ; shift ;; 
 	-M|--mc)             mc=`toggle $mc`   ;; 
 	-g|--gdb)            gdb=`toggle $gdb`   ;; 
-	-H|--hhd)            hhd=`toggle $hhd`   ;; 
-	-O|--other)          comp=`toggle $comp`   ;; 
-	-r|--rebin)          rebin=$2         ; shift ;; 
 	-v|--vz-min)         vzmin=$2         ; shift ;; 
 	-V|--vz-max)         vzmax=$2         ; shift ;; 
-	-e|--energy)         cms=$2           ; shift ;;
-	-S|--title)          tit="$2"         ; shift ;;
 	-E|--eloss)          pass1=MakeELossFits.C ; 
 	                     output=forward_eloss.root ;
 			     nodraw=1 ;;
@@ -119,9 +109,7 @@ if test $noanal -lt 1 ; then
 	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc\)
     fi
     fail=$?
-    rm -f event_stat.root \
-	EventStat_temp.root \
-	outputs_valid \
+    rm -f outputs_valid \
 	`printf %09d.stat $nev` 
     if  test $fail -gt 0  ; then 
         echo "Return value $fail not 0" ; exit $fail 
@@ -138,8 +126,8 @@ fi
 if test $nodraw -lt 1 ; then
     rm -f result.root 
     tit=`echo $tit | tr ' ' '@'` 
-    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\".\",\"$type\",$cms,$vzmin,$vzmax,$rebin,$hhd,$comp\)"
-    aliroot ${opts} ${ana}/Pass2.C\(\".\",\"$type\",$cms,$vzmin,$vzmax,$rebin,\"$tit\",$hhd,$comp\)
+    echo "Running aliroot ${opts} ${opts1} ${ana}/Pass2.C\(\".\",$nev,\"$type\",$vzmin,$vzmax,$proof\)"
+    aliroot ${opts} ${ana}/Pass2.C\(\".\",$nev,\"$type\",$vzmin,$vzmax,$proof\)
 fi
 
 
