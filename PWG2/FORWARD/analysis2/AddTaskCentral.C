@@ -13,7 +13,7 @@
  * 
  * @ingroup pwg2_forward_scripts
  */
-AliAnalysisTask* AddTaskCentral()
+AliAnalysisTask* AddTaskCentral(UShort_t sys=1, UShort_t sNN=900, Short_t field=5)
 {
   gSystem->Load("libPWG2forward2");
 
@@ -25,7 +25,7 @@ AliAnalysisTask* AddTaskCentral()
 
   // --- Make the task and add it to the manager ---------------------
   AliCentralMultiplicityTask* task = new AliCentralMultiplicityTask("Central");
-  task->InitManager(1,900,5);
+  task->InitManager(sys, sNN, field);
   mgr->AddTask(task);
   
   // --- Make the output container and connect it --------------------
