@@ -13,6 +13,7 @@
 #include "AliAODTrack.h"
 
 #include <TROOT.h>
+#include <TMath.h>
 
 //______________________________________________________________________________
 // Full description of AliEveTrack
@@ -61,7 +62,7 @@ AliEveTrack::AliEveTrack(AliESDtrack* t, TEveTrackPropagator* prop) :
   Double_t ep = t->GetP(), mc = t->GetMass();
   fBeta = ep/TMath::Sqrt(ep*ep + mc*mc);
   // fPdg = 0; // ??? Use PID ?
-  fCharge = (Double_t) t->GetSign();
+  fCharge = TMath::Nint(t->GetSign());
   
   fLabel = t->GetLabel();
   fIndex = t->GetID();
