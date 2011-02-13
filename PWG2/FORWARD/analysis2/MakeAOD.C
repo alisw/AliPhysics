@@ -96,11 +96,8 @@ void MakeAOD(const char* esddir,
 #if 1
   // Centrality 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
-  // gDebug = 10;
   Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","");
-  // gDebug = 10;
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","");
-  // gDebug = 0;
+  // Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","");
   AddTaskCopyHeader();
 
 
@@ -113,6 +110,9 @@ void MakeAOD(const char* esddir,
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   AddTaskFMD(mc);
 
+  // Central 
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentral.C");
+  AddTaskCentral();
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
