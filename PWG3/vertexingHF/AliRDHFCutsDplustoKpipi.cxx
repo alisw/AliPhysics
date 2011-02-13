@@ -392,7 +392,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     
     fIsSelectedCuts=returnvalueCuts;
 
-    if(!returnvalueCuts) return 0;
+    //if(!returnvalueCuts) return 0; // returnvalueCuts cannot be 0 here
   }
   
   if(selectionLevel==AliRDHFCuts::kAll || 
