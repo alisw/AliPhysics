@@ -6515,7 +6515,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
       str.Append(namehist.Data());
       str.Append("_pt");
       str+=ptbin;
-      ((TH1F*)list->FindObject(str.Data()))->Fill(d->Eta());
+      //((TH1F*)list->FindObject(str.Data()))->Fill(d->Eta());
       
       // OTHER NEW ADDITIONAL HISTOS
       
@@ -6817,7 +6817,7 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	nD0all++;  
 	if(mcPart->GetMother()<0)continue;
 	AliAODMCParticle* mcD0Parent = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcPart->GetMother()));
-	if(mcD0Parent==0x0)continue;
+	if(!mcD0Parent)continue;
 	Bool_t notfound=kFALSE,bMeson=kFALSE,bBaryon=kFALSE;
 	//CheckOrigin
 	while(TMath::Abs(mcD0Parent->GetPdgCode())!=4&&TMath::Abs(mcD0Parent->GetPdgCode())!=5){
@@ -6834,6 +6834,10 @@ Bool_t AliAnalysisTaskSECharmFraction::FillHistos(AliAODRecoDecayHF2Prong *d,TLi
 	    break;
 	  }
 	  mcD0Parent=dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcD0Parent->GetMother()));
+	  if(!mcD0Parent){
+	    notfound=kTRUE;
+	    break;
+	  }
 	}
 	if(notfound)continue;
 	if(TMath::Abs(mcD0Parent->GetPdgCode())==4)continue;//D0 from c quarks already counted

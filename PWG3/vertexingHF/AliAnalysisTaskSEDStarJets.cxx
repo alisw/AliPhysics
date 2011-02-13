@@ -374,6 +374,7 @@ void AliAnalysisTaskSEDStarJets::UserExec(Option_t *)
 	
 	if (!mcD0PartDaughter0 || !mcD0PartDaughter1) {
 	  AliWarning("At least one Daughter Particle not found in tree, but it should be, this check was already done..."); 
+	  return;
 	}
 	
 	// D0 daughters - needed for acceptance
