@@ -147,6 +147,7 @@ public:
   Bool_t      IsUniformBMap()                     const  {return fESDRun?fESDRun->TestBit(AliESDRun::kUniformBMap):kFALSE;}
   //
   Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
+  void      SetT0spread(Float_t *t)               const  {if(fESDRun) fESDRun->SetT0spread(t);} 
   // HEADER
   AliESDHeader* GetHeader() const {return fHeader;}
 
