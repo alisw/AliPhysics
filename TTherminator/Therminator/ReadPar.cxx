@@ -30,6 +30,7 @@
 #include <fstream>
 #include <sstream>
 #include <iosfwd>
+#include <stdlib.h>
 
 ReadPar::ReadPar()
 {
@@ -40,6 +41,12 @@ ReadPar::ReadPar(const char *aFName)
 {
   fname = strdup(aFName);
   readFile(aFName);
+}
+
+ReadPar::~ReadPar()
+{
+  if (fname)
+    free(fname);
 }
 
 int ReadPar::readFile(const char *aFName) throw (int)
