@@ -25,6 +25,7 @@
 // *
 
 #include "AliTOFRunParams.h"
+#include "TGraph.h"
 
 ClassImp(AliTOFRunParams)
 
@@ -36,7 +37,11 @@ AliTOFRunParams::AliTOFRunParams() :
   fTimestamp(NULL),
   fT0(NULL),
   fTOFResolution(NULL),
-  fT0Spread(NULL)
+  fT0Spread(NULL),
+  fNRuns(0),
+  fRunNb(NULL),
+  fRunFirstPoint(NULL),
+  fRunLastPoint(NULL)
 {
   /*
    * default constructor
@@ -45,13 +50,17 @@ AliTOFRunParams::AliTOFRunParams() :
 
 //_________________________________________________________
 
-AliTOFRunParams::AliTOFRunParams(Int_t nPoints) :
+AliTOFRunParams::AliTOFRunParams(Int_t nPoints, Int_t nRuns) :
   TObject(),
   fNPoints(nPoints),
   fTimestamp(new UInt_t[nPoints]),
   fT0(new Float_t[nPoints]),
   fTOFResolution(new Float_t[nPoints]),
-  fT0Spread(new Float_t[nPoints])
+  fT0Spread(new Float_t[nPoints]),
+  fNRuns(nRuns),
+  fRunNb(new UInt_t[nRuns]),
+  fRunFirstPoint(new UInt_t[nRuns]),
+  fRunLastPoint(new UInt_t[nRuns])
 {
   /*
    * standard constructor
@@ -70,6 +79,9 @@ AliTOFRunParams::~AliTOFRunParams()
   if (fT0) delete [] fT0;
   if (fTOFResolution) delete [] fTOFResolution;
   if (fT0Spread) delete [] fT0Spread;
+  if (fRunNb) delete [] fRunNb;
+  if (fRunFirstPoint) delete [] fRunFirstPoint;
+  if (fRunLastPoint) delete [] fRunLastPoint;
 }
 
 //_________________________________________________________
@@ -80,7 +92,11 @@ AliTOFRunParams::AliTOFRunParams(const AliTOFRunParams &source) :
   fTimestamp(new UInt_t[source.fNPoints]),
   fT0(new Float_t[source.fNPoints]),
   fTOFResolution(new Float_t[source.fNPoints]),
-  fT0Spread(new Float_t[source.fNPoints])
+  fT0Spread(new Float_t[source.fNPoints]),
+  fNRuns(source.fNRuns),
+  fRunNb(new UInt_t[source.fNRuns]),
+  fRunFirstPoint(new UInt_t[source.fNRuns]),
+  fRunLastPoint(new UInt_t[source.fNRuns])
 {
   /*
    * copy constructor
@@ -91,6 +107,12 @@ AliTOFRunParams::AliTOFRunParams(const AliTOFRunParams &source) :
     fT0[i] = source.fT0[i];
     fTOFResolution[i] = source.fTOFResolution[i];
     fT0Spread[i] = source.fT0Spread[i];
+  }
+
+  for (Int_t i = 0; i < fNRuns; i++) {
+    fRunNb[i] = source.fRunNb[i];
+    fRunFirstPoint[i] = source.fRunFirstPoint[i];
+    fRunLastPoint[i] = source.fRunLastPoint[i];
   }
   
 }
@@ -124,6 +146,22 @@ AliTOFRunParams::operator=(const AliTOFRunParams &source)
     fT0[i] = source.fT0[i];
     fTOFResolution[i] = source.fTOFResolution[i];
     fT0Spread[i] = source.fT0Spread[i];
+  }
+
+  if (fNRuns != source.fNRuns) {
+    if (fRunNb) delete [] fRunNb;
+    if (fRunFirstPoint) delete [] fRunFirstPoint;
+    if (fRunLastPoint) delete [] fRunLastPoint;
+    fNRuns = source.fNRuns;
+    fRunNb = new UInt_t[source.fNRuns];
+    fRunFirstPoint = new UInt_t[source.fNRuns];
+    fRunLastPoint = new UInt_t[source.fNRuns];
+  }
+
+  for (Int_t i = 0; i < fNRuns; i++) {
+    fRunNb[i] = source.fRunNb[i];
+    fRunFirstPoint[i] = source.fRunFirstPoint[i];
+    fRunLastPoint[i] = source.fRunLastPoint[i];
   }
 
   return *this;
@@ -222,3 +260,81 @@ AliTOFRunParams::EvalT0Spread(UInt_t timestamp)
   return spread;
 }
 
+//_________________________________________________________
+
+Float_t
+AliTOFRunParams::Average(Float_t *data, Int_t first, Int_t last)
+{
+  /*
+   * average
+   */
+
+  if (first < 0) first = 0;
+  if (last >= fNPoints) last = fNPoints - 1;
+  Float_t value = 0.;
+  Int_t npt = 0;
+  for (Int_t i = first; i <= last; i++) {
+    value += data[i];
+    npt++;
+  }
+  value /= npt;
+  return value;
+
+}
+
+//_________________________________________________________
+
+Float_t
+AliTOFRunParams::Average(Float_t *data, UInt_t runNb)
+{
+  /*
+   * average
+   */
+
+  /* critical cases:
+     1. no measurement -> 0.
+     2. no runNb structure -> average over all points
+     3. runNb not found -> average over all points
+  */
+  if (fNPoints <= 0 || !fT0 || !fTimestamp) return 0.;
+  if (fNRuns <= 0 || !fRunNb || !fRunFirstPoint || !fRunLastPoint) return Average(data, 0, fNPoints - 1);
+
+
+  /* search for runNb */
+  UInt_t runPoint = 0;
+  Bool_t gotRunNb = kFALSE;
+  for (Int_t irun = 0; irun < fNRuns; irun++) {
+    if (fRunNb[irun] == runNb) {
+      runPoint = irun;
+      gotRunNb = kTRUE;
+      break;
+    }
+  }
+  if (!gotRunNb) return Average(data, 0, fNPoints - 1);
+
+  /* average between first and last run points */
+  UInt_t firstPoint = fRunFirstPoint[runPoint];
+  UInt_t lastPoint = fRunLastPoint[runPoint];
+  return Average(data, firstPoint, lastPoint);
+
+}
+
+//_________________________________________________________
+
+TGraph *
+AliTOFRunParams::DrawGraph(Float_t *data, Option_t* option)
+{
+  /*
+   * draw
+   */
+
+  if (fNPoints == 0 || !data || !fTimestamp) return NULL;
+
+  Float_t ts[1000000];
+  for (Int_t i = 0; i < fNPoints; i++)
+    ts[i] = fTimestamp[i];
+
+  TGraph *graph = new TGraph(fNPoints, ts, data);
+  graph->Draw(option);
+  return graph;
+}
