@@ -31,6 +31,8 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  T0simLinkDef.h)
 
+set ( EINCLUDE RAW )
+
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
 				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lT0base -lSTEER -lCDB -lSTEERBase -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom)

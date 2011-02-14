@@ -16,14 +16,14 @@ set(IRST_INSTALLDIR $ENV{IRST_INSTALLDIR})
 if(NOT IRST_INSTALLDIR)
   if(ALICE)
     message(STATUS "Setting IRST_INSTALLDIR to ${ALICE}/local/ALICENewRuleChecker")
-    set(IRST_INSTALLDIR ${ALICE_ROOT}/cmakelocal/ALICENewRuleChecker)
+    set(IRST_INSTALLDIR ${ALICE}/local/ALICENewRuleChecker)
   endif(ALICE)
 endif(NOT IRST_INSTALLDIR)
 
 if(IRST_INSTALLDIR)
-  find_file(RULECHECKER_JAR NAMES NewRuleChecker.jar PATHS ${IRST_INSTALLDIR}/NewRuleChecker ${ALICE_ROOT}/cmake/RuleChecker)
-  find_file(RULECHECKER_RULES NAMES CodingConventions.xml PATHS ${IRST_INSTALLDIR}/NewRuleChecker/config ${ALICE_ROOT}/cmake/RuleChecker)
-  find_file(FACTEXTRACTOR_JAR NAME FactExtractor.jar PATHS ${IRST_INSTALLDIR}/FactExtractor ${ALICE_ROOT}/cmake/RuleChecker)
+  find_file(RULECHECKER_JAR NAMES NewRuleChecker.jar PATHS ${IRST_INSTALLDIR}/NewRuleChecker NO_DEFAULT_PATH)
+  find_file(RULECHECKER_RULES NAMES CodingConventions.xml PATHS ${IRST_INSTALLDIR}/NewRuleChecker/config NO_DEFAULT_PATH)
+  find_file(FACTEXTRACTOR_JAR NAMES FactExtractor.jar PATHS ${IRST_INSTALLDIR}/FactExtractor NO_DEFAULT_PATH)
   if(RULECHECKER_JAR AND RULECHECKER_RULES AND RULECHECKER_SRCML AND JAVA_RUNTIME)
     set(RULECHECKER_FOUND TRUE)
     message(STATUS "RuleChecker jar : ${RULECHECKER_JAR}")
@@ -31,22 +31,27 @@ if(IRST_INSTALLDIR)
     message(STATUS "RuleChecker factextractor : ${FACTEXTRACTOR_JAR}")
     message(STATUS "RuleChecker found on the system")
 
+    if(NOT EXISTS ${CMAKE_BINARY_DIR}/check-hxml-touchfile)
+      file(WRITE ${CMAKE_BINARY_DIR}/check-hxml-touchfile "Dummy dependency for factfile")
+    endif(NOT EXISTS ${CMAKE_BINARY_DIR}/check-hxml-touchfile)
     set(FACTFILE ${CMAKE_BINARY_DIR}/factFile.xml)
     set(_factfile_deps)
 
     file(GLOB_RECURSE _root_headers  ${ROOTSYS}/include/*.h)
     foreach(_root_header ${_root_headers})
-      string (REGEX REPLACE "${ROOTSYS}/include/" "" _rel_root_header ${_root_header})
-      string (REGEX REPLACE "h$" "h.xml" _rel_root_hxml ${_rel_root_header})
-      get_filename_component(_rel_root_header_path ${_rel_root_hxml} PATH)
-      set(_root_hxml roothxml/${_rel_root_hxml})
-      if(NOT EXISTS roothxml/${_rel_root_header_path})
-	file(MAKE_DIRECTORY roothxml/${_rel_root_header_path})
-      endif(NOT EXISTS roothxml/${_rel_root_header_path})
-      list(APPEND _factfile_deps ${_root_hxml})
-      add_custom_command(OUTPUT  ${_root_hxml}
-                         COMMAND ${RULECHECKER_SRCML} ${_root_header} ${_root_hxml}
-                         DEPENDS ${_root_header})
+      if(NOT _root_header MATCHES ".*G__ci.h")
+	string (REGEX REPLACE "${ROOTSYS}/include/" "" _rel_root_header ${_root_header})
+	string (REGEX REPLACE "h$" "h.xml" _rel_root_hxml ${_rel_root_header})
+	get_filename_component(_rel_root_header_path ${_rel_root_hxml} PATH)
+	set(_root_hxml ${CMAKE_BINARY_DIR}/roothxml/${_rel_root_hxml})
+	if(NOT EXISTS ${CMAKE_BINARY_DIR}/roothxml/${_rel_root_header_path})
+	  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/roothxml/${_rel_root_header_path})
+	endif(NOT EXISTS ${CMAKE_BINARY_DIR}/roothxml/${_rel_root_header_path})
+	list(APPEND _factfile_deps ${_root_hxml})
+	add_custom_command(OUTPUT  ${_root_hxml}
+                           COMMAND ${RULECHECKER_SRCML} ${_root_header} ${_root_hxml}
+                           DEPENDS ${_root_header})
+      endif(NOT _root_header MATCHES ".*G__ci.h")
     endforeach(_root_header ${_root_headers})
   else()
     message(STATUS "RuleChecker not found on this system")
@@ -58,46 +63,62 @@ endif(IRST_INSTALLDIR)
 macro(ALICE_CheckModule)
   if(RULECHECKER_FOUND)
     set(CHECKDIR ${CMAKE_BINARY_DIR}/${MODULE}/check)
-    set(violFiles)
 
-    foreach(_srcfile ${SRCS})
-      string (REGEX REPLACE "cxx$" "h" _header ${_srcfile})
-      get_filename_component(_srcname ${_srcfile} NAME)
-      string (REGEX REPLACE "cxx$" "viol" _viol ${_srcname})
-      string (REGEX REPLACE "cxx$" "cxx.xml" _srcxml ${_srcname})
-      string (REGEX REPLACE "cxx$" "h.xml" _hxml ${_srcname})
-      string (REGEX REPLACE ".cxx$" "" _class ${_srcname})
-      set(_depends ${_srcfile})
+    file(GLOB_RECURSE _headers  ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+    file(GLOB_RECURSE _sources_tmp  ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx)
+    list(APPEND _sources_tmp ${_headers})
+    foreach(_srcfile ${_sources_tmp})
+      string(REPLACE ".h"   "" _srcfile_tmp ${_srcfile})
+      string(REPLACE ".cxx" "" _srcfile ${_srcfile_tmp})
+      list(APPEND _sources ${_srcfile})
+    endforeach(_srcfile ${_sources_tmp})
+    list(REMOVE_DUPLICATES _sources)
+    list(SORT _sources)
 
-      if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_header})
-        list(APPEND _depends ${_header})
-	list(APPEND _factfile_deps ${_hxml})
-        add_custom_command( OUTPUT ${_viol}
-                          COMMAND ${RULECHECKER_SRCML} ${_srcfile} ${CHECKDIR}/${_srcxml}
-                          COMMAND ${RULECHECKER_SRCML} ${_header} ${CHECKDIR}/${_hxml}
-                          COMMAND ${JAVA_RUNTIME} -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcxml} ${CHECKDIR}/${_hxml} ${FACTFILE} ${RULECHECKER_RULES} > ${CHECKDIR}/viols/${_viol}
-                          DEPENDS ${_depends}
-                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-        list(APPEND violFiles ${_viol})
-      else()
-        add_custom_command( OUTPUT ${_viol}
-                          COMMAND ${RULECHECKER_SRCML} ${_srcfile} ${CHECKDIR}/${_srcxml}
-                          COMMAND ${JAVA_RUNTIME} -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcxml} ${CHECKDIR}/${_hxml} ${FACTFILE} ${RULECHECKER_RULES} > ${CHECKDIR}/viols/${_viol}
-                          DEPENDS ${_depends}
-                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-        list(APPEND violFiles ${_viol})
-      endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${_header})
-      if(CLASSCHECK STREQUAL "YES")
-        add_custom_target(${MODULE}-${_class}-check DEPENDS ${_viol})
-      endif(CLASSCHECK STREQUAL "YES")
-    endforeach(_srcfile ${SRCS})
-    if(violFiles)
-      add_custom_target(${PACKAGE}-check DEPENDS ${FACTFILE} ${violFiles})
-#      add_dependencies(${PACKAGE}-check ${FACTFILE} ${violFiles})
-      add_dependencies(${MODULE}-check-all ${PACKAGE}-check)
-    endif(violFiles)
-    add_custom_command(TARGET clean
-                       COMMAND ${CMAKE_COMMAND} -E remove_directory ${CHECKDIR})
+    set(_violfiles)
+    set(_module_factfile_deps)
+    foreach(_srcfile ${_sources})
+      if(NOT _srcfile MATCHES "^.*LinkDef$" AND NOT _srcfile MATCHES ".*PYTHIA8/pythia8.*")
+	set(_violdeps)
+	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _srcfile_short ${_srcfile})
+	set(_viol ${CHECKDIR}/${_srcfile_short}.viol)
+	get_filename_component(_viol_path ${_viol} PATH)
+	list(APPEND _violfiles ${_viol})
+	if(EXISTS ${_srcfile}.h)
+	  add_custom_command(OUTPUT ${CHECKDIR}/${_srcfile_short}.h.xml
+	                     COMMAND ${CMAKE_COMMAND} -E make_directory ${_viol_path}
+                             COMMAND ${RULECHECKER_SRCML} ${_srcfile}.h ${CHECKDIR}/${_srcfile_short}.h.xml
+			     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/check-hxml-touchfile
+			     DEPENDS ${_srcfile}.h)
+	  list(APPEND _violdeps ${CHECKDIR}/${_srcfile_short}.h.xml)
+	  list(APPEND _module_factfile_deps ${CHECKDIR}/${_srcfile_short}.h.xml)
+	endif(EXISTS ${_srcfile}.h)
+	if(EXISTS ${_srcfile}.cxx)
+	  add_custom_command(OUTPUT ${CHECKDIR}/${_srcfile_short}.cxx.xml
+	                     COMMAND ${CMAKE_COMMAND} -E make_directory ${_viol_path}
+                             COMMAND ${RULECHECKER_SRCML} ${_srcfile}.cxx ${CHECKDIR}/${_srcfile_short}.cxx.xml
+			     DEPENDS ${_srcfile}.cxx)
+	  list(APPEND _violdeps ${CHECKDIR}/${_srcfile_short}.cxx.xml)
+	endif(EXISTS ${_srcfile}.cxx)
+	add_custom_command( OUTPUT ${_viol}
+                            COMMAND ${JAVA_RUNTIME} -Xmx1024M -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcfile_short}.cxx.xml ${CHECKDIR}/${_srcfile_short}.h.xml ${FACTFILE} ${RULECHECKER_RULES} > ${_viol}
+                            DEPENDS ${_violdeps}
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      endif(NOT _srcfile MATCHES "^.*LinkDef$" AND NOT _srcfile MATCHES ".*PYTHIA8/pythia8.*")
+    endforeach(_srcfile ${_sources})
+
+
+    if(_violfiles)
+      add_custom_target(${MODULE}-check DEPENDS ${_violfiles})
+      add_dependencies(${MODULE}-check factfile)
+      add_dependencies(check-all ${MODULE}-check)
+
+      if(_module_factfile_deps)
+	add_custom_target(${MODULE}-hxml DEPENDS ${_module_factfile_deps})
+	add_dependencies(check-hxml ${MODULE}-hxml)
+      endif(_module_factfile_deps)
+    endif(_violfiles)
+
 
   endif(RULECHECKER_FOUND)
 endmacro(ALICE_CheckModule)

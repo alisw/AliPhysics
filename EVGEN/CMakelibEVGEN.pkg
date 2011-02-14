@@ -33,7 +33,7 @@ set ( DHDR EVGENLinkDef.h)
 
 set ( EXPORT AliDecayer.h AliGenMC.h AliGenCocktailAfterBurner.h AliGenCocktail.h AliOmegaDalitz.h)
 
-set ( EINCLUDE FASTSIM THijing PYTHIA6)
+set ( EINCLUDE FASTSIM THijing PYTHIA6 LHAPDF)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	

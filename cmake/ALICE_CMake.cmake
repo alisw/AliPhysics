@@ -320,7 +320,6 @@ macro(ALICE_BuildPackage)
   set(${MODULE}LIBS "${PMLIBS}" PARENT_SCOPE)
   set(${MODULE}INC "${EINCLUDE}" PARENT_SCOPE)
   list(APPEND INCLUDEFILES ${PEXPORTDEST})
-  ALICE_CopyHeaders()
   if(WITHDICT)  
     ALICE_SetPackageVariable(PDS "DS" "G__${PACKAGE}.cxx" "G__${PACKAGE}.cxx")
     ALICE_GenerateDictionary()
@@ -336,8 +335,8 @@ macro(ALICE_BuildPackage)
       ALICE_BuildExecutable()
     endif(lib)
   endif(PS OR PCS OR PFS)
+  ALICE_CopyHeaders()
   ALICE_BuildPAR()
-  ALICE_CheckModule()
 
 endmacro(ALICE_BuildPackage)
 
@@ -367,7 +366,7 @@ macro(ALICE_BuildModule)
                 ARCHIVE DESTINATION bin/tgt_${ALICE_TARGET})
       endif(NOT EXCLUDEPACKAGE)
   endforeach(PACKAGEFILE)
-
+  ALICE_CheckModule()
 endmacro(ALICE_BuildModule)
 
 macro(ALICE_GenerateDictionary)
@@ -459,6 +458,8 @@ macro(ALICE_BuildLibrary)
     set_property(TARGET ${PACKAGE} PROPERTY EXCLUDE_FROM_ALL TRUE)
   endif(NOT RESULT STREQUAL "-1")
 
+  set_target_properties(${PACKAGE} PROPERTIES INSTALL_NAME_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+
 endmacro(ALICE_BuildLibrary)
 
 macro(ALICE_BuildExecutable)
@@ -476,10 +477,9 @@ macro(ALICE_BuildExecutable)
   separate_arguments(PBLIBS)
   separate_arguments(PELIBS)
   separate_arguments(SHLIB)
-
+  
   ALICE_Format(PELIBSDIR "-L" "" "${PELIBSDIR}")
   ALICE_CheckLibraries(PBLIBS "${PBLIBS}")
-#  ALICE_CheckLibraries(PELIBS "${PELIBS}")
 
   ALICE_CorrectPaths(EINCLUDE "${EINCLUDE}")
   ALICE_CorrectPaths(PINC "${PINC}")
@@ -552,15 +552,19 @@ endmacro(ALICE_BuildExecutable)
 
 macro(ALICE_CopyHeaders)
   
-  if(NOT EXPORT )
-    set(HEADERS)
-  else()
+  if(EXPORT )
     set(HEADERS ${EXPORT})
-  endif(NOT EXPORT)
-  foreach(header ${HEADERS})
-      configure_file(${header} ${PEXPORTDEST} COPYONLY)
+    set(_headersdep)
+    foreach(header ${HEADERS})
+      add_custom_command(OUTPUT ${PEXPORTDEST}/${header}
+                         COMMAND ${CMAKE_COMMAND} -E copy ${ALICE_ROOT}/${MODULE}/${header} ${PEXPORTDEST}/${header}
+			 DEPENDS ${ALICE_ROOT}/${MODULE}/${header})
+      list(APPEND _headersdep ${PEXPORTDEST}/${header})
       install(FILES ${header} DESTINATION include)
-  endforeach(header)
+    endforeach(header)
+    add_custom_target(${PACKAGE}-headers DEPENDS ${_headersdep})
+    add_dependencies(${PACKAGE} ${PACKAGE}-headers)
+  endif(EXPORT)
 
 endmacro(ALICE_CopyHeaders)
 

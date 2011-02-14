@@ -33,6 +33,8 @@ set ( EHDr  AliT0CalibLatency.h)
 
 set ( DHDR  T0baseLinkDef.h)
 
+set ( EINCLUDE RAW )
+
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
 				set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lSTEERBase -lRAWDatasim -lRAWDatarec -lRAWDatabase -L${ROOTLIBDIR} -lGeom -lSpectrum)

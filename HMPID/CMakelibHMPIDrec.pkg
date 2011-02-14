@@ -29,6 +29,8 @@ set ( SRCS   AliHMPIDReconstructor.cxx AliHMPIDtrack.cxx AliHMPIDTracker.cxx Ali
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
+set ( EINCLUDE RAW )
+
 set ( DHDR  HMPIDrecLinkDef.h)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
