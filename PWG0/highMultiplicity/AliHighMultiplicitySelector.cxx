@@ -485,6 +485,9 @@ void AliHighMultiplicitySelector::ReadHistograms(const char* filename)
   fChipsFired  = dynamic_cast<TH2F*> (file->Get("fChipsFired"));
   fClusterZL1  = dynamic_cast<TH1F*> (file->Get("fClusterZL1"));
   fClusterZL2  = dynamic_cast<TH1F*> (file->Get("fClusterZL2"));
+  
+  if (!fPrimaryL1 || !fPrimaryL2 || !fChipsFired || !fClusterZL1 || !fClusterZL2)
+    return;
 
   #define MULT   1001, -0.5, 1000.5
   #define BINNING_LAYER1 401, -0.5, 400.5
@@ -1117,7 +1120,7 @@ void AliHighMultiplicitySelector::Contamination()
       Double_t windowsPerSecond = 1.0 / windowSize;
 
       TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
-      Float_t* triggerEff = new Float_t[max];
+      Float_t* triggerEff = new Float_t[max*2];
       for (Int_t mult = 0; mult < max; mult++)
         triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
 
@@ -1277,7 +1280,7 @@ void AliHighMultiplicitySelector::Contamination2()
       Int_t cut = cuts[currentCut];
 
       TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
-      Float_t* triggerEff = new Float_t[max];
+      Float_t* triggerEff = new Float_t[max*2];
       for (Int_t mult = 0; mult < max; mult++)
         triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
 
@@ -1406,7 +1409,7 @@ void AliHighMultiplicitySelector::Contamination3()
           Printf("Cut at %d", cut);
   
           TH1* triggerEffHist = (TH1*) GetTriggerEfficiency(fMvsL, cut)->Clone("triggerEff");
-          Float_t* triggerEff = new Float_t[max];
+          Float_t* triggerEff = new Float_t[max*2];
           for (Int_t mult = 0; mult < max; mult++)
             triggerEff[mult] = triggerEffHist->GetBinContent(mult+1);
     
@@ -1869,7 +1872,7 @@ TGraph* AliHighMultiplicitySelector::IntFractRate()
     return 0;
 
   TH1* xSection;
-  xSection = dynamic_cast<TH1*> (gFile->Get("xSection2Ex"));
+  xSection = static_cast<TH1*> (gFile->Get("xSection2Ex"));
 
   TGraph* result = new TGraph;
 

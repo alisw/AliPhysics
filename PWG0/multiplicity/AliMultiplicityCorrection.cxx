@@ -1015,7 +1015,7 @@ void AliMultiplicityCorrection::DrawHistograms()
   for (Int_t i = 0; i < kCorrHists; ++i)
   {
     canvas3->cd(i+1);
-    TH3* hist = dynamic_cast<TH3*> (fCorrelation[i]->Clone());
+    TH3* hist = static_cast<TH3*> (fCorrelation[i]->Clone());
     for (Int_t y=1; y<=hist->GetYaxis()->GetNbins(); ++y)
     {
       for (Int_t z=1; z<=hist->GetZaxis()->GetNbins(); ++z)
@@ -1196,7 +1196,7 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
     // plot (MC - Unfolded) / error (MC)
     canvas1->cd(3);
 
-    TH1* diffMCUnfolded2 = dynamic_cast<TH1*> (proj->Clone("diffMCUnfolded2"));
+    TH1* diffMCUnfolded2 = static_cast<TH1*> (proj->Clone("diffMCUnfolded2"));
     diffMCUnfolded2->Add(esdCorrected, -1);
 
     Int_t ndfQual[kQualityRegions];
@@ -1841,8 +1841,8 @@ void AliMultiplicityCorrection::ApplyLaszloMethod(Int_t inputRange, Bool_t fullP
 
   Float_t regPar = 0;
 
-  Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
-  Int_t mcTarget = ((fullPhaseSpace == kFALSE) ? inputRange : 4);
+  Int_t correlationID = inputRange; // + ((fullPhaseSpace == kFALSE) ? 0 : 4);
+  Int_t mcTarget = inputRange; //((fullPhaseSpace == kFALSE) ? inputRange : 4);
 
   SetupCurrentHists(inputRange, fullPhaseSpace, eventType);
   //normalize ESD
@@ -1963,8 +1963,8 @@ void AliMultiplicityCorrection::ApplyGaussianMethod(Int_t inputRange, Bool_t ful
   // correct spectrum using a simple Gaussian approach, that is model-dependent
   //
 
-  Int_t correlationID = inputRange + ((fullPhaseSpace == kFALSE) ? 0 : 4);
-  Int_t mcTarget = ((fullPhaseSpace == kFALSE) ? inputRange : 4);
+  Int_t correlationID = inputRange; // + ((fullPhaseSpace == kFALSE) ? 0 : 4);
+  Int_t mcTarget = inputRange; //((fullPhaseSpace == kFALSE) ? inputRange : 4);
 
   SetupCurrentHists(inputRange, fullPhaseSpace, kTrVtx);
   //normalize ESD
@@ -2140,7 +2140,7 @@ TH2F* AliMultiplicityCorrection::CalculateMultiplicityESD(TH1* inputMC, Int_t co
     }
   }
 
-  TH2F* target = dynamic_cast<TH2F*> (fMultiplicityESD[0]->Clone(Form("%s_measured", inputMC->GetName())));
+  TH2F* target = static_cast<TH2F*> (fMultiplicityESD[0]->Clone(Form("%s_measured", inputMC->GetName())));
   target->Reset();
 
   for (Int_t meas=1; meas<=corr->GetNbinsY(); ++meas)
