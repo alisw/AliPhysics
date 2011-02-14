@@ -50,7 +50,7 @@ public:
   Bool_t Propagate(Double_t xr) { return Propagate(GetAlpha(),xr); }
   Bool_t MeanBudgetToPrimVertex(Double_t xyz[3], Double_t step, Double_t &d) const;
   Bool_t Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]);
-
+  Bool_t ImproveKalman(Double_t xyz[3],Double_t ers[3], const Double_t* xlMS, const Double_t* x2X0MS, Int_t nMS);
   void SetdEdx(Double_t dedx) {fdEdx=dedx;}
   void SetSampledEdx(Float_t q, Int_t i);
   Float_t GetSampledEdx(Int_t i) const {return fdEdxSample[i];}

@@ -45,7 +45,9 @@ fExpQ(40),
 fChi22(0),
 fdEdxMismatch(0),
 fConstrain(kFALSE),
+fWinner(0),
 fGoldV0(kFALSE)
+
 {
   //constructor
     for(Int_t i=0; i<AliITSgeomTGeo::GetNLayers(); i++) fClIndex[i]=-1;
@@ -66,6 +68,7 @@ fExpQ(40),
 fChi22(0),
 fdEdxMismatch(0),
 fConstrain(kFALSE),
+fWinner(0),
 fGoldV0(kFALSE) {
   //------------------------------------------------------------------
   // Conversion ESD track -> ITS track.
@@ -88,6 +91,7 @@ fExpQ(t.fExpQ),
 fChi22(t.fChi22),
 fdEdxMismatch(t.fdEdxMismatch),
 fConstrain(t.fConstrain),
+fWinner(t.fWinner),
 fGoldV0(t.fGoldV0) {
   //------------------------------------------------------------------
   //Copy constructor
@@ -183,6 +187,7 @@ Bool_t AliITStrackMI::IsGoldPrimary()
   if (!fConstrain) return kFALSE;                // 
   if (fNDeadZone+fNDeadZone<5.5) isGold =  kFALSE; // short track
   //
+  if (fChi2MIP[0]*fChi2MIP[3]>2) isGold = kFALSE; // RS: cut on chi2*interpolated_chi2
   if (fChi2/Float_t(fN)>2.){
     if (fChi2MIP[0]+fNUsed>3.5) isGold = kFALSE;    
   }

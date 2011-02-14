@@ -123,8 +123,14 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetSPDVertexerPileupAlgoZ(){fVtxr3DPileupAlgo=0;}
   void SetSPDVertexerPileupAlgo3DTwoSteps(){fVtxr3DPileupAlgo=1;}
   void SetSPDVertexerPileupAlgo3DOneShot(){fVtxr3DPileupAlgo=2;}
-  
-
+  //
+  Bool_t   GetSelectBestMIP03()                 const {return fSelectBestMIP03;}
+  Bool_t   GetFlagFakes()                       const {return fFlagFakes;}
+  Bool_t   GetUseImproveKalman()                const {return fUseImproveKalman;}
+  void     SetSelectBestMIP03(Bool_t v=kTRUE)         {fSelectBestMIP03 = v;}
+  void     SetFlagFakes(Bool_t v=kTRUE)               {fFlagFakes = v;}
+  void     SetUseImproveKalman(Bool_t v=kTRUE)        {fUseImproveKalman = v;}
+  //
   Float_t  GetVertexer3DWideFiducialRegionZ() const {return fVtxr3DZCutWide;}
   Float_t  GetVertexer3DWideFiducialRegionR() const {return fVtxr3DRCutWide;}
   Float_t  GetVertexer3DNarrowFiducialRegionZ() const {return fVtxr3DZCutNarrow;}
@@ -634,6 +640,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fSAUseAllClusters; // do not skip clusters used by MI (same track twice in AliESDEvent!)
   Int_t fMaxSPDcontrForSAToUseAllClusters; // maximum nContr of SPD vertex for which trackerSA will reuse all ITS clusters
 
+  Bool_t fSelectBestMIP03;          // (MI) Multiply norm chi2 by interpolated one in hypthesis analysis
+  Bool_t fFlagFakes;                // (MI) preform shared cluster analysis and flag candidates for fakes
+  Bool_t fUseImproveKalman;         // (MI) Use ImproveKalman version of AliITSTrackV2 instead of Improve
+
   Bool_t fFindV0s;  // flag to enable V0 finder (MI)
   Bool_t fStoreLikeSignV0s; // flag to store like-sign V0s (MI)
 
@@ -728,7 +738,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,36) // ITS reco parameters
+  ClassDef(AliITSRecoParam,37) // ITS reco parameters
 };
 
 #endif

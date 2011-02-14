@@ -97,7 +97,10 @@ public:
   void SetChi22(Float_t c) {fChi22=c;}
   Float_t GetDeadZoneProbability(Int_t ilayer) const {return fDeadZoneProbability[ilayer];}
   void SetDeadZoneProbability(Int_t ilayer,Float_t d) {fDeadZoneProbability[ilayer]=d;}
-
+  //
+  AliITStrackMI*  GetWinner()        const {return fWinner;}
+  void   SetWinner(AliITStrackMI* p)       {fWinner = p;}
+  //
   Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t covyz=0.) const;
   Bool_t IsGoldPrimary();
 protected:
@@ -125,8 +128,13 @@ protected:
   Float_t fdEdxMismatch;    
   Bool_t fConstrain;        //indication of the vertex constrain
   Int_t  fClIndex[6];       //cluster Index
+  AliITStrackMI* fWinner;   //! pointer on winner candidate
   Bool_t fGoldV0;           //corresponding gold V0 found
-  ClassDef(AliITStrackMI,3)   //ITS reconstructed track
+  //
+ private:
+  AliITStrackMI &operator=(const AliITStrackMI &tr);
+
+  ClassDef(AliITStrackMI,4)   //ITS reconstructed track
 };
 
 #endif

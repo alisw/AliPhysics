@@ -27,7 +27,7 @@ class AliPlaneEff;
 #include "AliITStrackMI.h"
 #include "AliITSRecPoint.h"
 #include "AliTracker.h"
-
+#include "AliRefArray.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -71,7 +71,12 @@ public:
   static Int_t CorrectForTPCtoITSDeadZoneMaterial(AliITStrackMI *t);
   void  SetForceSkippingOfLayer();
   Int_t ForceSkippingOfLayer(Int_t l) const { return fForceSkippingOfLayer[l]; }
-
+  //
+  // methods for debugging (RS) >>
+  Int_t FindClusterOfTrack(int label, int lr, int* store) const;
+  Int_t GetPattern(const AliITStrackMI* track, char* patt);
+  // methods for debugging (RS) <<
+  //
   class AliITSdetector { 
   public:
     AliITSdetector():fR(0),fRmisal(0),fPhi(0),fSinPhi(0),fCosPhi(0),fYmin(0),fYmax(0),fZmin(0),fZmax(0),fIsBad(kFALSE),fNChips(0),fChipIsBad(0) {}
@@ -144,6 +149,7 @@ public:
     Int_t GetAccepted() const {return fAccepted;}    
     Int_t GetClusterTracks(Int_t i, Int_t j) const {return fClusterTracks[i][j];}
     void SetClusterTracks(Int_t i, Int_t j, Int_t c) {fClusterTracks[i][j]=c;}
+    Int_t FindClusterForLabel(Int_t label, Int_t *store); //RS
   protected:
     AliITSlayer(const AliITSlayer& layer);
     AliITSlayer & operator=(const AliITSlayer& layer){
@@ -213,13 +219,16 @@ public:
   Int_t GetNearestLayer(const Double_t *xr) const;  //get nearest upper layer close to the point xr
   void SetCurrentEsdTrack(Int_t i) {fCurrentEsdTrack=i;}
   void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
-
+  //
+  void   FlagFakes(TObjArray &itsTracks);
+  //
 protected:
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;
     
   void CookLabel(AliKalmanTrack *t,Float_t wrong) const;
   void CookLabel(AliITStrackMI *t,Float_t wrong) const;
   Double_t GetEffectiveThickness();
+  Int_t    GetEffectiveThicknessLbyL(Double_t* xMS, Double_t* x2x0MS);
   void ResetBestTrack() {
      fBestTrack.~AliITStrackMI();
      new(&fBestTrack) AliITStrackMI(fTrackToFollow);
@@ -290,6 +299,9 @@ protected:
   TString fTrackingPhase;                // current tracking phase
   Int_t fUseTGeo;                        // use TGeo to get material budget
   Int_t   fNtracks;                      // number of tracks to prolong
+  Bool_t  fFlagFakes;                    // request fakes flagging
+  Bool_t  fSelectBestMIP03;              // use Chi2MIP[0]*Chi2MIP[3] in hypothesis analysis instead of Chi2MIP[0]
+  Bool_t  fUseImproveKalman;             // use Kalman version of Improve
   Float_t fxOverX0Pipe;                  // material budget
   Float_t fxTimesRhoPipe;                // material budget
   Float_t fxOverX0Shield[2];             // material budget
@@ -306,6 +318,7 @@ protected:
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
+  //
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);

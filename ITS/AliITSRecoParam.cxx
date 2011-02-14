@@ -156,6 +156,9 @@ fMinClusterChargeSA(0.),
 fSAOnePointTracks(kFALSE),
 fSAUseAllClusters(kFALSE),
 fMaxSPDcontrForSAToUseAllClusters(1e6),
+fSelectBestMIP03(kFALSE),
+fFlagFakes(kFALSE),
+fUseImproveKalman(kFALSE),
 fFindV0s(kTRUE),
 fStoreLikeSignV0s(kFALSE),
 fUseUnfoldingInClusterFinderSPD(kFALSE),
@@ -440,7 +443,11 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fTrackleterPhiWindow = 0.06;
   param->fTrackleterNStdDev = 25.;
   param->fScaleDTBySin2T = kTRUE;
-
+  //
+  param->fSelectBestMIP03 = kTRUE;
+  param->fFlagFakes       = kTRUE;
+  param->fUseImproveKalman= kFALSE;
+  //
   return param;
 }
 //_____________________________________________________________________________

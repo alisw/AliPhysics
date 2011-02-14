@@ -28,6 +28,7 @@
 #include "AliITSReconstructor.h"
 #include "AliITStrackV2.h"
 #include "AliTracker.h"
+#include "AliLog.h"
 
 const Int_t AliITStrackV2::fgkWARN = 5;
 
@@ -299,12 +300,16 @@ Bool_t AliITStrackV2::Invariant() const {
   if(!fCheckInvariant) return kTRUE;
 
   Int_t n=GetNumberOfClusters();
-
+  static Float_t bz = GetBz();
   // take into account the misalignment error
   Float_t maxMisalErrY2=0,maxMisalErrZ2=0;
+  //RS
+  const AliITSRecoParam* recopar = AliITSReconstructor::GetRecoParam();
+  if (!recopar) recopar = AliITSRecoParam::GetHighFluxParam();
+
   for (Int_t lay=0; lay<AliITSgeomTGeo::kNLayers; lay++) {
-    maxMisalErrY2 = TMath::Max(maxMisalErrY2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(lay,GetBz()));
-    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorZ(lay,GetBz()));
+    maxMisalErrY2 = TMath::Max(maxMisalErrY2,recopar->GetClusterMisalErrorY(lay,bz));
+    maxMisalErrZ2 = TMath::Max(maxMisalErrZ2,recopar->GetClusterMisalErrorZ(lay,bz));
   }
   maxMisalErrY2 *= maxMisalErrY2;
   maxMisalErrZ2 *= maxMisalErrZ2;
@@ -591,3 +596,177 @@ GetLocalXat(Double_t r,Double_t &xloc) const {
   return kTRUE;
 }
 
+//____________________________________________________________________________
+Bool_t AliITStrackV2::ImproveKalman(Double_t xyz[3],Double_t ers[3], const Double_t* xlMS, const Double_t* x2X0MS, Int_t nMS)
+{
+  // Substitute the state of the track (p_{k|k},C_{k|k}) at the k-th measumerent by its
+  // smoothed value from the k-th measurement + measurement at the vertex.
+  // Account for the MS on nMS layers at x-postions xlMS with x/x0 = x2X0MS
+  // p_{k|kv} = p_{k|k} + C_{k|k}*D^Tr_{k+1} B^{-1}_{k+1} ( vtx - D_{k+1}*p_{k|k})
+  // C_{k|kv} = C_{k|k}*( I - D^Tr_{k+1} B^{-1}_{k+1} D_{k+1} C^Tr_{k|k})
+  // 
+  // where D_{k} = H_{k} F_{k} with H being the matrix converting the tracks parameters
+  // to measurements m_{k} = H_{k} p_{k} and F_{k} the matrix propagating the track between the
+  // the point k-1 and k:  p_{k|k-1} = F_{k} p_{k-1|k-1}
+  //
+  // B_{k+1} = V_{k+1} + H_{k+1} C_{k+1|k} H^Tr_{k+1} with V_{k+1} being the error of the measurment
+  // at point k+1 (i.e. vertex), and C_{k+1|k} - error matrix extrapolated from k-th measurement to
+  // k+1 (vtx) and accounting for the MS inbetween
+  //
+  // H = {{1,0,0,0,0},{0,1,0,0,0}}
+  //
+  double covc[15], *cori = (double*) GetCovariance(),par[5] = {GetY(),GetZ(),GetSnp(),GetTgl(),GetSigned1Pt()},
+    &c00=cori[0],
+    &c01=cori[1],&c11=cori[2],
+    &c02=cori[3],&c12=cori[4],&c22=cori[5],
+    &c03=cori[6],&c13=cori[7],&c23=cori[8],&c33=cori[9],
+    &c04=cori[10],&c14=cori[11],&c24=cori[12],&c34=cori[13],&c44=cori[14],
+    // for smoothed cov matrix 
+    &cov00=covc[0],
+    &cov01=covc[1],&cov11=covc[2],
+    &cov02=covc[3],&cov12=covc[4],&cov22=covc[5],
+    &cov03=covc[6],&cov13=covc[7],&cov23=covc[8],&cov33=covc[9],
+    &cov04=covc[10],&cov14=covc[11],&cov24=covc[12],&cov34=covc[13],&cov44=covc[14];
+  //
+  double x = GetX(), alpha = GetAlpha();
+  // vertex in the track frame
+  double cs=TMath::Cos(alpha), sn=TMath::Sin(alpha);
+  double xv = xyz[0]*cs + xyz[1]*sn, yv =-xyz[0]*sn + xyz[1]*cs, zv = xyz[2];
+  double dx = xv - GetX();
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
+  //
+  double cnv=GetBz()*kB2C, x2r=cnv*par[4]*dx, f1=par[2], f2=f1+x2r;
+  if (TMath::Abs(f1) >= kAlmost1 || TMath::Abs(f2) >= kAlmost1) {
+    AliInfo(Form("Fail: %+e %+e",f1,f2));
+    return kFALSE;
+  }
+  double r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2)), dx2r=dx/(r1+r2);
+  // elements of matrix F_{k+1} (1s on diagonal)
+  double f02 = 2*dx2r, f04 = cnv*dx*dx2r, f13/*, f24 = cnv*dx*/;
+  if (TMath::Abs(x2r)<0.05) f13 = dx*r2+f2*(f1+f2)*dx2r; // see AliExternalTrackParam::PropagateTo
+  else {
+    double dy2dx = (f1+f2)/(r1+r2);
+    f13 = 2*TMath::ASin(0.5*TMath::Sqrt(1+dy2dx*dy2dx)*x2r)/(cnv*par[4]);
+  }  
+  // elements of matrix D_{k+1} = H_{k+1} * F_{k+1}
+  // double d00 = 1., d11 = 1.;
+  double &d02 = f02,  &d04 = f04, &d13 = f13;
+  //
+  // elements of matrix DC = D_{k+1}*C_{kk}^T
+  double dc00 = c00+c02*d02+c04*d04,   dc10 = c01+c03*d13;
+  double dc01 = c01+c12*d02+c14*d04,   dc11 = c11+c13*d13;
+  double dc02 = c02+c22*d02+c24*d04,   dc12 = c12+c23*d13;
+  double dc03 = c03+c23*d02+c34*d04,   dc13 = c13+c33*d13;
+  double dc04 = c04+c24*d02+c44*d04,   dc14 = c14+c34*d13;
+  //
+  // difference between the vertex and the the track extrapolated to vertex
+  yv -= par[0] + par[2]*d02 + par[4]*d04;
+  zv -= par[1] + par[3]*d13;
+  //
+  // y,z part of the cov.matrix extrapolated to vtx (w/o MS contribution)
+  // C_{k+1,k} = H F_{k+1} C_{k,k} F^Tr_{k+1} H^Tr = D C D^Tr
+  double cv00 = dc00+dc02*d02+dc04*d04, cv01 = dc01+dc03*d13, cv11 = dc11+dc13*d13;
+  //
+  // add MS contribution layer by layer
+  double xCurr = x;
+  double p2Curr = par[2];
+  //
+  // precalculated factors of MS contribution matrix:
+  double ms22t = (1. + par[3]*par[3]);
+  double ms33t = ms22t*ms22t;
+  double p34 = par[3]*par[4];
+  double ms34t = p34*ms22t;
+  double ms44t = p34*p34;
+  //
+  double p2=(1.+ par[3]*par[3])/(par[4]*par[4]);
+  double beta2 = p2/(p2+GetMass()*GetMass());
+  double theta2t = 14.1*14.1/(beta2*p2*1e6) * (1. + par[3]*par[3]);
+  //
+  // account for the MS in the layers between the last measurement and the vertex
+  for (int il=0;il<nMS;il++) {
+    double dfx = xlMS[il] - xCurr;
+    xCurr = xlMS[il];
+    p2Curr += dfx*cnv*par[4];   // p2 at the scattering layer
+    double dxL=xv - xCurr;    // distance from scatering layer to vtx
+    double x2rL=cnv*par[4]*dxL, f1L=p2Curr, f2L=f1L+x2rL;
+    if (TMath::Abs(f1L) >= kAlmost1 || TMath::Abs(f2L) >= kAlmost1) {
+      AliInfo(Form("FailMS at step %d of %d: dfx:%e dxL:%e %e %e",il,nMS,dfx,dxL,f1L,f2L));
+      return kFALSE;
+    }
+    double r1L=TMath::Sqrt((1.-f1L)*(1.+f1L)), r2L=TMath::Sqrt((1.-f2L)*(1.+f2L)), dx2rL=dxL/(r1L+r2L);
+    // elements of matrix for propagation from scatering layer to vertex
+    double f02L = 2*dx2rL, f04L = cnv*dxL*dx2rL, f13L/*, f24L = cnv*dxL*/;
+    if (TMath::Abs(x2rL)<0.05) f13L = dxL*r2L+f2L*(f1L+f2L)*dx2rL; // see AliExternalTrackParam::PropagateTo
+    else {
+      double dy2dxL = (f1L+f2L)/(r1L+r2L);
+      f13L = 2*TMath::ASin(0.5*TMath::Sqrt(1+dy2dxL*dy2dxL)*x2rL)/(cnv*par[4]);
+    }
+    // MS contribution matrix:
+    double theta2 = theta2t*TMath::Abs(x2X0MS[il]);
+    double ms22 = theta2*(1.-p2Curr)*(1.+p2Curr)*ms22t;
+    double ms33 = theta2*ms33t;
+    double ms34 = theta2*ms34t;
+    double ms44 = theta2*ms44t;
+    //
+    // add  H F MS F^Tr H^Tr to cv
+    cv00 += f02L*f02L*ms22 + f04L*f04L*ms44;
+    cv01 += f04L*f13L*ms34;
+    cv11 += f13L*f13L*ms33;
+  }
+  //
+  // inverse of matrix B
+  double b11 = ers[1]*ers[1] + cv00;
+  double b00 = ers[2]*ers[2] + cv11;
+  double det = b11*b00 - cv01*cv01;
+  if (TMath::Abs(det)<kAlmost0) {
+    AliInfo(Form("Fail on det %e: %e %e %e",det,cv00,cv11,cv01));
+    return kFALSE;
+  }
+  det = 1./det;
+  b00 *= det; b11 *= det; 
+  double b01 = -cv01*det;
+  //
+  // elements of matrix DC^Tr * B^-1
+  double dcb00 = b00*dc00+b01*dc10, dcb01 = b01*dc00+b11*dc10;
+  double dcb10 = b00*dc01+b01*dc11, dcb11 = b01*dc01+b11*dc11;
+  double dcb20 = b00*dc02+b01*dc12, dcb21 = b01*dc02+b11*dc12;
+  double dcb30 = b00*dc03+b01*dc13, dcb31 = b01*dc03+b11*dc13;
+  double dcb40 = b00*dc04+b01*dc14, dcb41 = b01*dc04+b11*dc14;
+  //
+  // p_{k|k+1} = p_{k|k} +  C_{k|k}*D^Tr_{k+1} B^{-1}_{k+1} ( vtx - D_{k+1}*p_{k|k})
+  par[0] += dcb00*yv + dcb01*zv;
+  par[1] += dcb10*yv + dcb11*zv;
+  par[2] += dcb20*yv + dcb21*zv;
+  par[3] += dcb30*yv + dcb31*zv;
+  par[4] += dcb40*yv + dcb41*zv;
+  //
+  // C_{k|kv} = C_{k|k} - C_{k|k} D^Tr_{k+1} B^{-1}_{k+1} D_{k+1} C^Tr_{k|k})
+  //
+  cov00 = c00 - (dc00*dcb00 + dc10*dcb01);
+  cov01 = c01 - (dc01*dcb00 + dc11*dcb01);
+  cov02 = c02 - (dc02*dcb00 + dc12*dcb01);
+  cov03 = c03 - (dc03*dcb00 + dc13*dcb01);
+  cov04 = c04 - (dc04*dcb00 + dc14*dcb01);
+  //
+  cov11 = c11 - (dc01*dcb10 + dc11*dcb11);
+  cov12 = c12 - (dc02*dcb10 + dc12*dcb11);
+  cov13 = c13 - (dc03*dcb10 + dc13*dcb11);
+  cov14 = c14 - (dc04*dcb10 + dc14*dcb11);
+  //
+  cov22 = c22 - (dc02*dcb20 + dc12*dcb21);
+  cov23 = c23 - (dc03*dcb20 + dc13*dcb21);
+  cov24 = c24 - (dc04*dcb20 + dc14*dcb21);
+  //
+  cov33 = c33 - (dc03*dcb30 + dc13*dcb31);
+  cov34 = c34 - (dc04*dcb30 + dc14*dcb31);
+  //
+  cov44 = c44 - (dc04*dcb40 + dc14*dcb41);
+  //
+  Set(x,alpha,par,covc);
+  if (!Invariant()) {
+    AliInfo(Form("Fail on Invariant, X=%e",GetX()));
+    return kFALSE;
+  }
+  return kTRUE;
+  //
+}
