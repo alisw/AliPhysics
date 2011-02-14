@@ -46,9 +46,9 @@ ClassImp(AliHLTJETConeJetCandidate)
 
 //##################################################################################
   AliHLTJETConeJetCandidate::AliHLTJETConeJetCandidate() :
-    fSeedCellIdx(0.),
-    fSeedEtaIdx(0.),
-    fSeedPhiIdx(0.),
+    fSeedCellIdx(0),
+    fSeedEtaIdx(0),
+    fSeedPhiIdx(0),
     fSeedEta(0.),
     fSeedPhi(0.),
     fSeedPt(0.),
