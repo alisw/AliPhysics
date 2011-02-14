@@ -111,8 +111,8 @@ int Parser::GetParticleNumber(int i)
 void Parser::ReadInput()
 {
   int j,tPartIter=0,l,tIter2, tIter; //variables
-  char str[50];
-  char str1[20];
+  char str[200];
+  char str1[200];
   double spin1,spin2,value;
 
   //////  START OF "TABLES.M" /////////
@@ -342,6 +342,11 @@ void Parser::ReadInput()
 	    tRatio *= atof(tBRatio)/atof(tBRatio+2);
 	  else
 	    tRatio *= atof(tBRatio);
+
+	  delete tFather;
+	  delete tDaughter1;
+	  delete tDaughter2;
+	  delete tBRatio;
 	}
 
       //THREE-BODY DECAYS
@@ -449,6 +454,8 @@ void Parser::ReadInput()
 	  // 	    (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
 	  // 	  }
 	  (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
+
+	  delete newChannel;
 	}
       
       if(str[0] == 's' && str[1] == 'e' && str[2] == '3')
@@ -637,6 +644,8 @@ void Parser::ReadShare()
 		    mDB->GetParticleType(tDaughter3)->GetMass()
 		    < mDB->GetParticleType(tFather)->GetMass())
 		  (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
+
+		delete newChannel;
 		
 		tRatio=tBRatio;
 		PRINT_DEBUG_2(tBRatio << '\t' << tRatio);

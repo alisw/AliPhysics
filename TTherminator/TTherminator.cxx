@@ -204,6 +204,8 @@ void        TTherminator::Initialize(){
 	}
       in.close();
     }
+
+  delete tParser;
 }
 
 void        TTherminator::GenerateEvent()
