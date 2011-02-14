@@ -157,7 +157,7 @@ Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char 
     if ((method.CompareTo("ZEMvsZDC")==0) && (fCentralityZEMvsZDC >=a && fCentralityZEMvsZDC < b)) return kTRUE;
     else return kFALSE;
   } else {
-    return -1;
+    return kFALSE;
   }
 }
 
