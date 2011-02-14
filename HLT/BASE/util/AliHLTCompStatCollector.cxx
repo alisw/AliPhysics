@@ -23,6 +23,7 @@
 ///
 
 #include "AliHLTCompStatCollector.h"
+#include "AliHLTErrorGuard.h"
 #include "TFile.h"
 #include "TStopwatch.h"
 #include "TH1F.h"
@@ -366,6 +367,9 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 
     if (fpStatTree==NULL && !fInstances.empty()) {
       iResult=AllocateStatTree(fInstances.size());
+      if (!fpStatTree || iResult<0) {
+	ALIHLTERRORGUARD(1, "failed to allocate tree for statistics collection, error %d", iResult);
+      }
     }
   }
 
@@ -442,7 +446,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
   int totalOutputSize=0;
   if (iResult>0 && eventType) {
     fNofSets=fPosition;
-    fpStatTree->Fill();
+    if (fpStatTree) fpStatTree->Fill();
 
     // init the timer for the next cycle
     if (!fpTimer)  fpTimer=new TStopwatch;
@@ -457,7 +461,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
 
     // publish objects to component output
     if ((fMode&kPublishObjects)!=0) {
-      if (!bEmbeddedTree) {
+      if (!bEmbeddedTree && fpStatTree) {
 	iResult=PushBack(fpStatTree, kAliHLTDataTypeTTree|kAliHLTDataOriginOut);
 	totalOutputSize+=GetLastObjectSize();
       }
@@ -469,7 +473,7 @@ int AliHLTCompStatCollector::DoEvent( const AliHLTComponentEventData& /*evtData*
     if ((fMode&kSaveObjects)!=0 && fFile!=NULL) {
       HLTDebug("saving objects to file %s", fFileName.c_str());
       fFile->cd();
-      if (!bEmbeddedTree) {
+      if (!bEmbeddedTree && fpStatTree) {
 	fpStatTree->Write("", TObject::kOverwrite);
       }
       fpFolder->Write("", TObject::kOverwrite);
