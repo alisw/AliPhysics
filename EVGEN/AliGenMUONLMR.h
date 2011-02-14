@@ -26,6 +26,10 @@ class AliGenMUONLMR : public AliGenMC {
   virtual void SetScaleMultiplicity(Int_t ipart, Double_t scale) { fScaleMult[ipart] = scale; } 
   static Double_t RhoLineShapeNew(Double_t *, Double_t *); 
   virtual void FinishRun(); 
+ private:
+  AliGenMUONLMR(const AliGenMUONLMR &lmr);
+  AliGenMUONLMR & operator=(const AliGenMUONLMR & rhs);
+
  private: 
   static const Int_t fgkNpart = 7; // number of particles to be generated 
   Int_t fNMuMin;                   // min. number of muons to accept the event for writing
