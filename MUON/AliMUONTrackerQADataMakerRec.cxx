@@ -1618,7 +1618,6 @@ TObjArray* AliMUONTrackerQADataMakerRec::GetArray(TObjArray*& array, Bool_t crea
     if ( create ) 
     {
       array = new TObjArray(AliRecoParam::kNSpecies);
-      array->SetOwner(kTRUE);
     }
   }
   
