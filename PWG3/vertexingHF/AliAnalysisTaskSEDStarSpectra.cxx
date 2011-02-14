@@ -250,6 +250,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     // D* candidates and D0 from D*
     AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)arrayDStartoD0pi->At(iDStartoD0pi);
+    if(!dstarD0pi->GetSecondaryVtx()) continue;
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
     
