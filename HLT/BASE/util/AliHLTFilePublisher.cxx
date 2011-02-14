@@ -1,25 +1,26 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///*                                                                        *
+///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+///*                  for The ALICE HLT Project.                            *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          *
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-/** @file   AliHLTFilePublisher.cxx
-    @author Matthias Richter
-    @date   
-    @brief  HLT file publisher component implementation. */
+/// @file   AliHLTFilePublisher.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  HLT file publisher component implementation. */
+///
 
 // see header file for class documentation
 // or
@@ -32,8 +33,8 @@ using namespace std;
 #endif
 
 #include "AliHLTFilePublisher.h"
+#include "AliHLTErrorGuard.h"
 #include "AliLog.h"
-//#include <TObjString.h>
 #include <TMath.h>
 #include <TFile.h>
 
@@ -377,7 +378,16 @@ int AliHLTFilePublisher::GetEvent( const AliHLTComponentEventData& /*evtData*/,
       TObjLink *flnk=files.FirstLink();
       int iTotalSize=0;
       while (flnk && iResult>=0) {
+	if (!flnk->GetObject())  {
+	  ALIHLTERRORGUARD(5, "internal mismatch in Root list iterator");
+	  continue;
+	}
 	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	if (!pFileDesc)  {
+	  ALIHLTERRORGUARD(5, "internal mismatch, invalid object type for dynamic_cast");
+	  continue;
+	}
+
 	if (not fOpenFilesAtStart) pFileDesc->OpenFile();
 	TFile* pFile=NULL;
 	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {

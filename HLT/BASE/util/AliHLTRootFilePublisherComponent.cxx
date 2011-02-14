@@ -1,36 +1,34 @@
 // $Id$
 
-/**************************************************************************
- * This file is property of and copyright by the ALICE HLT Project        * 
- * ALICE Experiment at CERN, All rights reserved.                         *
- *                                                                        *
- * Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
- *                  for The ALICE HLT Project.                            *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
+///**************************************************************************
+///* This file is property of and copyright by the ALICE HLT Project        * 
+///* ALICE Experiment at CERN, All rights reserved.                         *
+///*                                                                        *
+///* Primary Authors: Matthias Richter <Matthias.Richter@ift.uib.no>        *
+///*                  for The ALICE HLT Project.                            *
+///*                                                                        *
+///* Permission to use, copy, modify and distribute this software and its   *
+///* documentation strictly for non-commercial purposes is hereby granted   *
+///* without fee, provided that the above copyright notice appears in all   *
+///* copies and that both the copyright notice and this permission notice   *
+///* appear in the supporting documentation. The authors make no claims     *
+///* about the suitability of this software for any purpose. It is          *
+///* provided "as is" without express or implied warranty.                  *
+///**************************************************************************
 
-/** @file   AliHLTRootFilePublisherComponent.cxx
-    @author Matthias Richter, Jochen Thaeder
-    @date   
-    @brief  HLT file publisher component implementation. */
+/// @file   AliHLTRootFilePublisherComponent.cxx
+/// @author Matthias Richter, Jochen Thaeder
+/// @date   
+/// @brief  HLT file publisher component implementation.
+///
 
 #include "AliHLTRootFilePublisherComponent.h"
-//#include <TObjString.h>
-//#include <TMath.h>
-//#include <TFile.h>
+#include "AliHLTErrorGuard.h"
 
 #include "TList.h"
 #include "TTree.h"
 #include "TKey.h"
 #include "TFile.h"
-
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTRootFilePublisherComponent)
@@ -156,8 +154,15 @@ Int_t AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData
       TObjLink *flnk=files.FirstLink();
 
       while (flnk && iResult>=0) {
-
+	if (!flnk->GetObject())  {
+	  ALIHLTERRORGUARD(5, "internal mismatch in Root list iterator");
+	  continue;
+	}
 	FileDesc* pFileDesc=dynamic_cast<FileDesc*>(flnk->GetObject());
+	if (!pFileDesc)  {
+	  ALIHLTERRORGUARD(5, "internal mismatch, invalid object type for dynamic_cast");
+	  continue;
+	}
 
 	if (not fOpenFilesAtStart) pFileDesc->OpenFile();
 	TFile* pFile=NULL;
@@ -165,7 +170,15 @@ Int_t AliHLTRootFilePublisherComponent::GetEvent( const AliHLTComponentEventData
 	if (pFileDesc && (pFile=*pFileDesc)!=NULL) {
 
 	  for ( Int_t i = 0; i < pFile->GetListOfKeys()->GetEntries(); i++  ){
+	    if (pFile->GetListOfKeys()==NULL || pFile->GetListOfKeys()->At(i)==NULL) {
+	      ALIHLTERRORGUARD(5, "internal mismatch in Root key list");
+	      continue;
+	    }
 	    TKey * key= dynamic_cast<TKey*>( pFile->GetListOfKeys()->At(i) );
+	    if (!key) {
+	      ALIHLTERRORGUARD(5, "internal mismatch, object not of type TKey");
+	      continue;
+	    }
 
 	    if ( fObjectName != "" ) {
 	      if ( !( ((TString) key->GetName()).CompareTo(fObjectName) ) )
