@@ -174,7 +174,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		  fTotEtAcc += et;
                 }
             }
-            else if (TMath::Abs( pdg->Charge() - fCuts->GetMonteCarloNeutralParticle())<1e-3 )
+            else if (TMath::Abs( pdg->Charge() - fCuts->GetMonteCarloNeutralParticle())>1e-3 )
             {
 	       fChargedMultiplicity++;
 	       fTotChargedEt += et;
