@@ -246,7 +246,7 @@ void AliMultiplicityTask::Exec(Option_t*)
   static AliTriggerAnalysis* triggerAnalysis = 0;
   if (!triggerAnalysis)
   {
-    AliPhysicsSelection* physicsSelection = dynamic_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
+    AliPhysicsSelection* physicsSelection = static_cast<AliPhysicsSelection*> (inputHandler->GetEventSelection());
     triggerAnalysis = physicsSelection->GetTriggerAnalysis();
   }
   if (eventTriggered)
