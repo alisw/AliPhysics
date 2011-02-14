@@ -466,19 +466,19 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       //const Int_t binBeginTPC[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
       //const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, -1, 14, 10, 8, 7, 6, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1};
 
+      const Int_t binBeginSPD[maxBins1] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
+      const Int_t binBeginTPC[maxBins1] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
+      const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1};
       if (fAnalysisMode & AliPWG0Helper::kSPD)
       {
-	const Int_t binBeginSPD[maxBins1] = {19, 18, 17, 15, 14, 12, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
         binBegin = binBeginSPD;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPC)
       {
-        const Int_t binBeginTPC[maxBins1] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1};
         binBegin = binBeginTPC;
       }
       else if (fAnalysisMode & AliPWG0Helper::kTPCITS)
       {
-        const Int_t binBeginTPCITS[maxBins] = {-1, -1, -1, -1, -1, -1, 4, 4, 4, 4, 4, 4, 4, 4, -1, -1, -1, -1, -1, -1};
         binBegin = binBeginTPCITS;
       }
 
@@ -697,11 +697,11 @@ void dNdEtaAnalysis::LoadHistograms(const Char_t* dir)
 
   fPtDist = dynamic_cast<TH1F*> (gDirectory->Get(fPtDist->GetName()));
 
-  if (dynamic_cast<TNamed*> (gDirectory->Get("fTag")))
-    fTag = (dynamic_cast<TNamed*> (gDirectory->Get("fTag")))->GetTitle();
+  if (static_cast<TNamed*> (gDirectory->Get("fTag")))
+    fTag = (static_cast<TNamed*> (gDirectory->Get("fTag")))->GetTitle();
 
-  if (dynamic_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))
-    fAnalysisMode = (AliPWG0Helper::AnalysisMode) (dynamic_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))->GetVal();
+  if (static_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))
+    fAnalysisMode = (AliPWG0Helper::AnalysisMode) (static_cast<TParameter<Int_t>*> (gDirectory->Get("fAnalysisMode")))->GetVal();
 
   gDirectory->cd("../");
 }
