@@ -216,6 +216,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutVertex(0)
 {
   // Default constructor
+  fLowRunN  = 137161;
+  fHighRunN = 139173;
   AliInfo("Centrality Selection enabled.");
   DefineOutput(1, TList::Class());
   for (Int_t i=0; i<(fHighRunN-fLowRunN); i++) {
