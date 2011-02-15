@@ -705,6 +705,12 @@ AliPWG0Helper::MCProcessType AliPWG0Helper::GetEventProcessType(AliESDEvent* esd
   if (diffTreatment == kMCFlags)
     return mcProcessType;
     
+  if (!esd)
+  {
+    Printf("ERROR: AliPWG0Helper::GetEventProcessType: diffTreatment != kMCFlags and esd == 0");
+    return kInvalidProcess;
+  }
+    
   Float_t cms = esd->GetESDRun()->GetBeamEnergy();
   if (esd->GetESDRun()->IsBeamEnergyIsSqrtSHalfGeV())
     cms *= 2;
