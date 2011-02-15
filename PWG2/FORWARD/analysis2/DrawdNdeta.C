@@ -18,8 +18,15 @@
 #include <TLatex.h>
 #include <TImage.h>
 
+/**
+ * Class to draw dN/deta results 
+ * 
+ */
 struct dNdetaDrawer 
 {
+  /**
+   * POD of data for range zooming 
+   */
   struct RangeParam 
   {
     TAxis*       fMasterAxis; // Master axis 
@@ -29,6 +36,10 @@ struct dNdetaDrawer
     TVirtualPad* fSlave2Pad;  // Second slave pad 
   };
   //__________________________________________________________________
+  /** 
+   * Constructor 
+   * 
+   */
   dNdetaDrawer()
     : fShowOthers(false),	// Bool_t 
       fShowAlice(false),        // Bool_t
@@ -61,17 +72,133 @@ struct dNdetaDrawer
     fRangeParam->fSlave2Axis = 0;
     fRangeParam->fSlave2Pad  = 0;
   }
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Set parameters 
+   */
+  /** 
+   * Show other (UA5, CMS, ...) data 
+   * 
+   * @param x Whether to show or not 
+   */
   void SetShowOthers(Bool_t x)    { fShowOthers = x; }
-  void SetShowAlice(Bool_t x)     { fShowAlice = x; }
-  void SetShowRatios(Bool_t x)    { fShowRatios = x; }
-  void SetShowLeftRight(Bool_t x) { fShowLeftRight = x; }
-  void SetRebin(UShort_t x)       { fRebin = x; }
-  void SetCutEdges(Bool_t x)      { fCutEdges = x; }
-  void SetTitle(TString x)        { fTitle = x; }
-  void SetHHDFile(const char* fn) { fHHDFile = fn; }
-
   //__________________________________________________________________
-  void Run(const char* filename) 
+  /** 
+   * Show ALICE published data 
+   * 
+   * @param x Wheter to show or not 
+   */
+  void SetShowAlice(Bool_t x)     { fShowAlice = x; }
+  //__________________________________________________________________
+  /** 
+   * Whether to show ratios or not.  If there's nothing to compare to,
+   * the ratio panel will be implicitly disabled
+   * 
+   * @param x Whether to show or not 
+   */
+  void SetShowRatios(Bool_t x)    { fShowRatios = x; }
+  //__________________________________________________________________
+  /** 
+   * 
+   * Whether to show the left/right asymmetry 
+   *
+   * @param x To show or not 
+   */
+  void SetShowLeftRight(Bool_t x) { fShowLeftRight = x; }
+  //__________________________________________________________________
+  /** 
+   * Set the rebinning factor 
+   * 
+   * @param x Rebinning factor (must be a divisor in the number of bins) 
+   */
+  void SetRebin(UShort_t x)       { fRebin = x; }
+  //__________________________________________________________________
+  /** 
+   * Wheter to cut away the edges 
+   * 
+   * @param x Whether or not to cut away edges 
+   */
+  void SetCutEdges(Bool_t x)      { fCutEdges = x; }
+  //__________________________________________________________________
+  /** 
+   * Set the title of the plot
+   * 
+   * @param x Title
+   */
+  void SetTitle(TString x)        { fTitle = x; }
+  //__________________________________________________________________
+  /** 
+   * Set the file name of the file containing the HHD results
+   * 
+   * @param fn File name 
+   */
+  void SetHHDFile(const char* fn) { fHHDFile = fn; }
+  /* @} */
+  //==================================================================  
+  /** 
+   * @{ 
+   * @name Override settings from input 
+   */
+  /** 
+   * Override setting from file 
+   * 
+   * @param sNN Center of mass energy per nucleon pair (GeV)
+   */
+  void SetSNN(UShort_t sNN) 
+  {
+    fSNNSTring = new TNamed("sNN", Form("%04dGeV", sNN));
+    fSNNString->SetUniqueID(sNN);
+  }
+  //__________________________________________________________________
+  /** 
+   * Set the collision system 
+   * - 1: pp 
+   * - 2: PbPb
+   * 
+   * @param sys collision system
+   */
+  void SetSys(UShort_t sys)
+  {
+    fSNNString = new TNamed("sys", (sys == 1 ? "pp" : 
+				    sys == 2 ? "PbPb" : "unknown"));
+    fSNNString->SetUniqueID(sys);
+  }
+  //__________________________________________________________________
+  /** 
+   * Set the vertex range in centimeters 
+   * 
+   * @param vzMin Min @f$ v_z@f$
+   * @param vzMax Max @f$ v_z@f$
+   */
+  void SetVertexRange(Double_t vzMin, Double_t vzMax) 
+  {
+    fVtxAxis = new TAxis(10, vzMin, vzMax);
+    fVtxAxis->SetName("vtxAxis");
+    fVtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", vzMin, vzMax));
+  }
+  //__________________________________________________________________
+  void SetTrigger(UShort_t trig)
+  {
+    fTrigString = new TNamed("trigString", (trig & 0x1 ? "INEL" : 
+					    trig & 0x2 ? "INEL>0" : 
+					    trig & 0x4 ? "NSD" : 
+					    "unknown"));
+    fTrigString->SetUniqueID(trig);
+  }
+
+
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Main steering functions 
+   */
+  /** 
+   * Run the code to produce the final result. 
+   * 
+   * @param filename  File containing the data 
+   */
+  void Run(const char* filename="forward_dndeta.C") 
   {
     if (!Open(filename)) return;
 
@@ -96,6 +223,13 @@ struct dNdetaDrawer
   }
     
   //__________________________________________________________________
+  /** 
+   * Open input file, and find data 
+   * 
+   * @param filename File name
+   * 
+   * @return true on success 
+   */
   Bool_t Open(const char* filename)
   {
     TFile* file = TFile::Open(filename, "READ");
@@ -115,10 +249,14 @@ struct dNdetaDrawer
     fTruth     = GetResult(results, "dndetaTruth");
     fCentral   = GetResult(results, "dndetaCentral");
 
-    fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
-    fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
-    fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
-    fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
+    if (!fTrigString) 
+      fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
+    if (!fSNNString) 
+      fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
+    if (!fSysString) 
+      fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
+    if (!fVtxAxis)
+      fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
     
     if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
     if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
@@ -145,62 +283,13 @@ struct dNdetaDrawer
     return true;
   }
   //__________________________________________________________________
-  TH1* GetResult(TList* list, const char* name) const 
-  {
-    if (!list) return 0;
-    
-    TH1* ret = static_cast<TH1*>(list->FindObject(name));
-    if (!ret) 
-      Warning("GetResult", "Histogram %s not found", name);
-    
-    return ret;
-  }
-  //__________________________________________________________________
   /** 
-   * Get the result from previous analysis code 
+   * Make a histogram stack of results 
    * 
-   * @param fn  File to open 
-   * @param nsd Whether this is NSD
+   * @param max On return, the maximum value in the stack 
    * 
-   * @return null or result of previous analysis code 
+   * @return Newly allocated stack
    */
-  TH1* GetHHD() 
-  {
-    if (fHHDFile.IsNull()) return 0;
-    const char* fn = fHHDFile.Data();
-    Bool_t nsd = (fTrigString ? fTrigString->GetUniqueID() & 0x4 : false);
-    TDirectory* savdir = gDirectory;
-    if (gSystem->AccessPathName(fn)) { 
-      Warning("GetHHD", "Output of HHD analysis (%s) not available", fn);
-      return 0;
-    }
-    TFile* file = TFile::Open(fn, "READ");
-    if (!file) { 
-      Warning("GetHHD", "couldn't open HHD file %s", fn);
-      return 0;
-    }
-    TString hist(Form("dNdeta_dNdeta%s", (nsd ? "NSD" : "")));
-    TH1* h = static_cast<TH1*>(file->Get(hist.Data()));
-    if (!h) { 
-      Warning("GetHHD", "Couldn't find HHD histogram %s in %s", 
-	      hist.Data(), fn);
-      file->Close();
-      savdir->cd();
-      return 0;
-    }
-    TH1* r = static_cast<TH1*>(h->Clone("dndeta_hhd"));
-    r->SetTitle("ALICE Forward (HHD)");
-    r->SetFillStyle(0);
-    r->SetFillColor(0);
-    r->SetMarkerStyle(21);
-    r->SetMarkerColor(kPink+1);
-    r->SetDirectory(0);
-
-    file->Close();
-    savdir->cd();
-    return r;
-  }
-  //__________________________________________________________________
   THStack* StackResults(Double_t& max)
   {
     THStack* stack = new THStack("results", "Stack of Results");
@@ -212,6 +301,13 @@ struct dNdetaDrawer
     return stack;
   }
   //__________________________________________________________________
+  /** 
+   * Make a histogram stack of results 
+   * 
+   * @param max On return, the maximum value in the stack 
+   * 
+   * @return Newly allocated stack
+   */
   TMultiGraph* StackOther(Double_t& max) const
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/OtherData.C");
@@ -241,6 +337,13 @@ struct dNdetaDrawer
     return other;
   }
   //__________________________________________________________________
+  /** 
+   * Make a histogram stack of ratios of results to other data
+   * 
+   * @param max On return, the maximum value in the stack 
+   * 
+   * @return Newly allocated stack
+   */
   THStack* StackRatios(TMultiGraph* others, Double_t& max) 
   {
     THStack* ratios = new THStack("ratios", "Ratios");
@@ -291,6 +394,13 @@ struct dNdetaDrawer
     return ratios;
   }
   //__________________________________________________________________
+  /** 
+   * Make a histogram stack of the left-right asymmetry 
+   * 
+   * @param max On return, the maximum value in the stack 
+   * 
+   * @return Newly allocated stack
+   */
   THStack* StackLeftRight(Double_t& max)
   {
     THStack* ret = new THStack("leftright", "Left-right asymmetry");
@@ -306,26 +416,17 @@ struct dNdetaDrawer
     return ret;
   }
   //__________________________________________________________________
-  TAxis* FindXAxis(TVirtualPad* p, const char* name)
-  {
-    TObject* o = p->GetListOfPrimitives()->FindObject(name);
-    if (!o) { 
-      Warning("FindXAxis", "%s not found in pad", name);
-      return 0;
-    }
-    THStack* stack = dynamic_cast<THStack*>(o);
-    if (!stack) { 
-      Warning("FindXAxis", "%s is not a THStack", name);
-      return 0;
-    }
-    if (!stack->GetHistogram()) { 
-      Warning("FindXAxis", "%s has no histogram", name);
-      return 0;
-    }
-    TAxis* ret = stack->GetHistogram()->GetXaxis();
-    return ret;
-  }
-  //__________________________________________________________________
+  /** 
+   * Plot the results
+   * 
+   * @param results    Results
+   * @param others     Other data
+   * @param max        Max value 
+   * @param ratios     Stack of ratios (optional)
+   * @param rmax       Maximum diviation from 1 of ratios 
+   * @param leftright  Stack of left-right asymmetry (optional)	 
+   * @param amax       Maximum diviation from 1 of asymmetries 
+   */
   void Plot(THStack*     results,    
 	    TMultiGraph* others, 
 	    Double_t     max, 
@@ -388,6 +489,14 @@ struct dNdetaDrawer
     c->SaveAs(Form("%s.C",    base.Data()));
   }
   //__________________________________________________________________
+  /** 
+   * Plot the results
+   *    
+   * @param results   Results
+   * @param others    Other data
+   * @param max       Maximum 
+   * @param yd        Bottom position of pad 
+   */
   void PlotResults(THStack* results, TMultiGraph* others, 
 		   Double_t max, Double_t yd) 
   {
@@ -496,6 +605,14 @@ struct dNdetaDrawer
     p1->cd();
   }
   //__________________________________________________________________
+  /** 
+   * Plot the ratios 
+   * 
+   * @param ratios  Ratios to plot (if any)
+   * @param max     Maximum diviation from 1 
+   * @param y1      Lower y coordinate of pad
+   * @param y2      Upper y coordinate of pad
+   */
   void PlotRatios(THStack* ratios, Double_t max, Double_t y1, Double_t y2) 
   {
     if (!ratios) return;
@@ -557,6 +674,14 @@ struct dNdetaDrawer
     }
   }
   //__________________________________________________________________
+  /** 
+   * Plot the asymmetries
+   * 
+   * @param ratios  Asymmetries to plot (if any)
+   * @param max     Maximum diviation from 1 
+   * @param y1      Lower y coordinate of pad
+   * @param y2      Upper y coordinate of pad
+   */
   void PlotLeftRight(THStack* leftright, Double_t max, 
 		     Double_t y1, Double_t y2) 
   {
@@ -637,48 +762,85 @@ struct dNdetaDrawer
       fRangeParam->fSlave2Pad  = p3;
     }
   }
-
-  //__________________________________________________________________
-  /**
-   * Fix the apperance of the axis in a stack
-   *
-   * @param stack  stack of histogram
-   * @param s      Scaling factor
-   * @param ytitle Y axis title
-   * @param force  Whether to draw the stack first or not
-   * @param ynDiv  Divisions on Y axis
+  /** @} */
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Data utility functions 
    */
-  void FixAxis(THStack* stack, Double_t s, const char* ytitle,
-               Int_t ynDiv=210, Bool_t force=true)
+  /** 
+   * Get a result from the passed list
+   * 
+   * @param list List to search 
+   * @param name Object name to search for 
+   * 
+   * @return 
+   */
+  TH1* GetResult(TList* list, const char* name) const 
   {
-    if (force) stack->Draw("nostack e1");
-
-    TH1* h = stack->GetHistogram();
-    if (!h) return;
-
-    h->SetXTitle("#eta");
-    h->SetYTitle(ytitle);
-    TAxis* xa = h->GetXaxis();
-    TAxis* ya = h->GetYaxis();
-    if (xa) {
-      xa->SetTitle("#eta");
-      // xa->SetTicks("+-");
-      xa->SetTitleSize(s*xa->GetTitleSize());
-      xa->SetLabelSize(s*xa->GetLabelSize());
-      xa->SetTickLength(s*xa->GetTickLength());
-    }
-    if (ya) {
-      ya->SetTitle(ytitle);
-      ya->SetDecimals();
-      // ya->SetTicks("+-");
-      ya->SetNdivisions(ynDiv);
-      ya->SetTitleSize(s*ya->GetTitleSize());
-      ya->SetTitleOffset(ya->GetTitleOffset()/s);
-      ya->SetLabelSize(s*ya->GetLabelSize());
-    }
+    if (!list) return 0;
+    
+    TH1* ret = static_cast<TH1*>(list->FindObject(name));
+    if (!ret) 
+      Warning("GetResult", "Histogram %s not found", name);
+    
+    return ret;
   }
-
   //__________________________________________________________________
+  /** 
+   * Get the result from previous analysis code 
+   * 
+   * @param fn  File to open 
+   * @param nsd Whether this is NSD
+   * 
+   * @return null or result of previous analysis code 
+   */
+  TH1* GetHHD() 
+  {
+    if (fHHDFile.IsNull()) return 0;
+    const char* fn = fHHDFile.Data();
+    Bool_t nsd = (fTrigString ? fTrigString->GetUniqueID() & 0x4 : false);
+    TDirectory* savdir = gDirectory;
+    if (gSystem->AccessPathName(fn)) { 
+      Warning("GetHHD", "Output of HHD analysis (%s) not available", fn);
+      return 0;
+    }
+    TFile* file = TFile::Open(fn, "READ");
+    if (!file) { 
+      Warning("GetHHD", "couldn't open HHD file %s", fn);
+      return 0;
+    }
+    TString hist(Form("dNdeta_dNdeta%s", (nsd ? "NSD" : "")));
+    TH1* h = static_cast<TH1*>(file->Get(hist.Data()));
+    if (!h) { 
+      Warning("GetHHD", "Couldn't find HHD histogram %s in %s", 
+	      hist.Data(), fn);
+      file->Close();
+      savdir->cd();
+      return 0;
+    }
+    TH1* r = static_cast<TH1*>(h->Clone("dndeta_hhd"));
+    r->SetTitle("ALICE Forward (HHD)");
+    r->SetFillStyle(0);
+    r->SetFillColor(0);
+    r->SetMarkerStyle(21);
+    r->SetMarkerColor(kPink+1);
+    r->SetDirectory(0);
+
+    file->Close();
+    savdir->cd();
+    return r;
+  }
+  //__________________________________________________________________
+  /** 
+   * Add a histogram to the stack after possibly rebinning it  
+   * 
+   * @param stack   Stack to add to 
+   * @param hist    histogram
+   * @param option  Draw options 
+   * 
+   * @return Maximum of histogram 
+   */
   Double_t AddHistogram(THStack* stack, TH1* hist, Option_t* option) const 
   {
     // Check if we have input 
@@ -691,6 +853,16 @@ struct dNdetaDrawer
     return hist->GetMaximum();
   }
   //__________________________________________________________________
+  /** 
+   * Add a histogram to the stack after possibly rebinning it  
+   * 
+   * @param stack   Stack to add to 
+   * @param hist    histogram
+   * @param option  Draw options 
+   * @param sym     On return, the data symmetriced (added to stack)
+   * 
+   * @return Maximum of histogram 
+   */
   Double_t AddHistogram(THStack* stack, TH1* hist, Option_t* option, 
 			TH1*& sym) const 
   {
@@ -824,6 +996,105 @@ struct dNdetaDrawer
     return s;
   }
   //__________________________________________________________________
+  /** 
+   * Calculate the left-right asymmetry of input histogram 
+   * 
+   * @param h   Input histogram
+   * @param max On return, the maximum distance from 1 of the histogram
+   * 
+   * @return Asymmetry 
+   */
+  TH1* Asymmetry(TH1* h, Double_t& max)
+  {
+    if (!h) return 0;
+
+    TH1* ret = static_cast<TH1*>(h->Clone(Form("%s_leftright", h->GetName())));
+    // Int_t    oBins = h->GetNbinsX();
+    // Double_t high  = h->GetXaxis()->GetXmax();
+    // Double_t low   = h->GetXaxis()->GetXmin();
+    // Double_t dBin  = (high - low) / oBins;
+    // Int_t    tBins = Int_t(2*high/dBin+.5);
+    // ret->SetBins(tBins, -high, high);
+    ret->Reset();
+    ret->SetTitle(Form("%s (+/-)", h->GetTitle()));
+    ret->SetYTitle("Right/Left");
+    Int_t nBins = h->GetNbinsX();
+    for (Int_t i = 1; i <= nBins; i++) { 
+      Double_t x = h->GetBinCenter(i);
+      if (x > 0) break;
+      
+      Double_t c1 = h->GetBinContent(i);
+      Double_t e1 = h->GetBinError(i);
+      if (c1 <= 0) continue; 
+      
+      Int_t    j  = h->FindBin(-x);
+      if (j <= 0 || j > nBins) continue;
+
+      Double_t c2 = h->GetBinContent(j);
+      Double_t e2 = h->GetBinError(j);
+
+      Double_t c12 = c1*c1;
+      Double_t e   = TMath::Sqrt((e2*e2*c1*c1+e1*e1*c2*c2)/(c12*c12));
+      
+      Int_t    k   = ret->FindBin(x);
+      ret->SetBinContent(k, c2/c1);
+      ret->SetBinError(k, e);
+    }
+    max = TMath::Max(max, RatioMax(ret));
+
+    return ret;
+  }
+  //__________________________________________________________________
+  /** 
+   * Transform a graph into a histogram 
+   * 
+   * @param g 
+   * 
+   * @return 
+   */
+  TH1* Graph2Hist(const TGraphAsymmErrors* g) const
+  {
+    Int_t    nBins = g->GetN();
+    TArrayF  bins(nBins+1);
+    Double_t dx = 0;
+    for (Int_t i = 0; i < nBins; i++) { 
+      Double_t x   = g->GetX()[i];
+      Double_t exl = g->GetEXlow()[i];
+      Double_t exh = g->GetEXhigh()[i];
+      bins.fArray[i]   = x-exl;
+      bins.fArray[i+1] = x+exh;
+      Double_t dxi = exh+exl;
+      if (i == 0) dx  = dxi;
+      else if (dxi != dx) dx = 0;
+    }
+    TString name(g->GetName());
+    TString title(g->GetTitle());
+    TH1D* h = 0;
+    if (dx != 0) {
+      h = new TH1D(name.Data(), title.Data(), nBins, bins[0], bins[nBins]);
+    }
+    else {
+      h = new TH1D(name.Data(), title.Data(), nBins, bins.fArray);
+    }
+    h->SetMarkerStyle(g->GetMarkerStyle());
+    h->SetMarkerColor(g->GetMarkerColor());
+    h->SetMarkerSize(g->GetMarkerSize());
+    
+    return h;
+  }
+  /* @} */
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Ratio utility functions 
+   */
+  /** 
+   * Get the maximum diviation from 1 in the passed ratio
+   * 
+   * @param h Ratio histogram
+   * 
+   * @return Max diviation from 1 
+   */
   Double_t RatioMax(TH1* h) const
   {
     Int_t    nBins = h->GetNbinsX();
@@ -958,105 +1229,107 @@ struct dNdetaDrawer
     }
     max = TMath::Max(RatioMax(h), max);
     return h;
-  }
-
-  //__________________________________________________________________
-  TH1* Graph2Hist(const TGraphAsymmErrors* g) const
+  }  
+  /* @} */
+  //==================================================================
+  /** 
+   * @{ 
+   * @name Graphics utility functions 
+   */
+  /** 
+   * Find an X axis in a pad 
+   * 
+   * @param p     Pad
+   * @param name  Histogram to find axis for 
+   * 
+   * @return Found axis or null
+   */
+  TAxis* FindXAxis(TVirtualPad* p, const char* name)
   {
-    Int_t    nBins = g->GetN();
-    TArrayF  bins(nBins+1);
-    Double_t dx = 0;
-    for (Int_t i = 0; i < nBins; i++) { 
-      Double_t x   = g->GetX()[i];
-      Double_t exl = g->GetEXlow()[i];
-      Double_t exh = g->GetEXhigh()[i];
-      bins.fArray[i]   = x-exl;
-      bins.fArray[i+1] = x+exh;
-      Double_t dxi = exh+exl;
-      if (i == 0) dx  = dxi;
-      else if (dxi != dx) dx = 0;
+    TObject* o = p->GetListOfPrimitives()->FindObject(name);
+    if (!o) { 
+      Warning("FindXAxis", "%s not found in pad", name);
+      return 0;
     }
-    TString name(g->GetName());
-    TString title(g->GetTitle());
-    TH1D* h = 0;
-    if (dx != 0) {
-      h = new TH1D(name.Data(), title.Data(), nBins, bins[0], bins[nBins]);
+    THStack* stack = dynamic_cast<THStack*>(o);
+    if (!stack) { 
+      Warning("FindXAxis", "%s is not a THStack", name);
+      return 0;
     }
-    else {
-      h = new TH1D(name.Data(), title.Data(), nBins, bins.fArray);
+    if (!stack->GetHistogram()) { 
+      Warning("FindXAxis", "%s has no histogram", name);
+      return 0;
     }
-    h->SetMarkerStyle(g->GetMarkerStyle());
-    h->SetMarkerColor(g->GetMarkerColor());
-    h->SetMarkerSize(g->GetMarkerSize());
-    
-    return h;
-  }
-  //__________________________________________________________________
-  TH1* Asymmetry(TH1* h, Double_t& max)
-  {
-    if (!h) return 0;
-
-    TH1* ret = static_cast<TH1*>(h->Clone(Form("%s_leftright", h->GetName())));
-    // Int_t    oBins = h->GetNbinsX();
-    // Double_t high  = h->GetXaxis()->GetXmax();
-    // Double_t low   = h->GetXaxis()->GetXmin();
-    // Double_t dBin  = (high - low) / oBins;
-    // Int_t    tBins = Int_t(2*high/dBin+.5);
-    // ret->SetBins(tBins, -high, high);
-    ret->Reset();
-    ret->SetTitle(Form("%s (+/-)", h->GetTitle()));
-    ret->SetYTitle("Right/Left");
-    Int_t nBins = h->GetNbinsX();
-    for (Int_t i = 1; i <= nBins; i++) { 
-      Double_t x = h->GetBinCenter(i);
-      if (x > 0) break;
-      
-      Double_t c1 = h->GetBinContent(i);
-      Double_t e1 = h->GetBinError(i);
-      if (c1 <= 0) continue; 
-      
-      Int_t    j  = h->FindBin(-x);
-      if (j <= 0 || j > nBins) continue;
-
-      Double_t c2 = h->GetBinContent(j);
-      Double_t e2 = h->GetBinError(j);
-
-      Double_t c12 = c1*c1;
-      Double_t e   = TMath::Sqrt((e2*e2*c1*c1+e1*e1*c2*c2)/(c12*c12));
-      
-      Int_t    k   = ret->FindBin(x);
-      ret->SetBinContent(k, c2/c1);
-      ret->SetBinError(k, e);
-    }
-    max = TMath::Max(max, RatioMax(ret));
-
+    TAxis* ret = stack->GetHistogram()->GetXaxis();
     return ret;
   }
 
+  //__________________________________________________________________
+  /**
+   * Fix the apperance of the axis in a stack
+   *
+   * @param stack  stack of histogram
+   * @param s      Scaling factor
+   * @param ytitle Y axis title
+   * @param force  Whether to draw the stack first or not
+   * @param ynDiv  Divisions on Y axis
+   */
+  void FixAxis(THStack* stack, Double_t s, const char* ytitle,
+               Int_t ynDiv=210, Bool_t force=true)
+  {
+    if (force) stack->Draw("nostack e1");
+
+    TH1* h = stack->GetHistogram();
+    if (!h) return;
+
+    h->SetXTitle("#eta");
+    h->SetYTitle(ytitle);
+    TAxis* xa = h->GetXaxis();
+    TAxis* ya = h->GetYaxis();
+    if (xa) {
+      xa->SetTitle("#eta");
+      // xa->SetTicks("+-");
+      xa->SetTitleSize(s*xa->GetTitleSize());
+      xa->SetLabelSize(s*xa->GetLabelSize());
+      xa->SetTickLength(s*xa->GetTickLength());
+    }
+    if (ya) {
+      ya->SetTitle(ytitle);
+      ya->SetDecimals();
+      // ya->SetTicks("+-");
+      ya->SetNdivisions(ynDiv);
+      ya->SetTitleSize(s*ya->GetTitleSize());
+      ya->SetTitleOffset(ya->GetTitleOffset()/s);
+      ya->SetLabelSize(s*ya->GetLabelSize());
+    }
+  }
+  /* @} */
+
+
 
   //__________________________________________________________________
-  Bool_t      fShowOthers; 
-  Bool_t      fShowAlice; 
-  Bool_t      fShowRatios; 
-  Bool_t      fShowLeftRight;
-  UShort_t    fRebin;
-  Bool_t      fCutEdges;
-  TString     fTitle;
-  TString     fHHDFile;
-  TNamed*     fTrigString;
-  TNamed*     fSNNString;
-  TNamed*     fSysString;
-  TAxis*      fVtxAxis;
-  TH1*        fForward;
-  TH1*        fForwardMC;
-  TH1*        fForwardHHD;
-  TH1*        fTruth;
-  TH1*        fCentral;
-  TH1*        fForwardSym;
-  TH1*        fForwardMCSym;
-  TH1*        fForwardHHDSym;
-  TH1*        fTriggers;
-  RangeParam* fRangeParam;
+  Bool_t      fShowOthers;   // Show other data
+  Bool_t      fShowAlice;    // Show ALICE published data
+  Bool_t      fShowRatios;   // Show ratios 
+  Bool_t      fShowLeftRight;// Show asymmetry 
+  UShort_t    fRebin;        // Rebinning factor 
+  Bool_t      fCutEdges;     // Whether to cut edges
+  TString     fTitle;        // Title on plot
+  TString     fHHDFile;      // File name of old results
+  TNamed*     fTrigString;   // Trigger string (read, or set)
+  TNamed*     fSNNString;    // Energy string (read, or set)
+  TNamed*     fSysString;    // Collision system string (read or set)
+  TAxis*      fVtxAxis;      // Vertex cuts (read or set)
+  TH1*        fForward;      // Results
+  TH1*        fForwardMC;    // MC results
+  TH1*        fForwardHHD;   // Old results
+  TH1*        fTruth;        // MC truth
+  TH1*        fCentral;      // Central region data
+  TH1*        fForwardSym;   // Symmetric extension
+  TH1*        fForwardMCSym; // Symmetric extension
+  TH1*        fForwardHHDSym;// Symmetric extension
+  TH1*        fTriggers;     // Number of triggers
+  RangeParam* fRangeParam;   // Parameter object for range zoom 
   
 };
 
@@ -1133,5 +1406,15 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetShowAlice(flags & 0x2);
   d.SetShowRatios(flags & 0x4);
   d.SetShowLeftRight(flags & 0x8);
+  // Do the below if your input data does not contain these settings 
+  // d.SetSNN(900);            // Collision energy per nucleon pair (GeV)
+  // d.SetSys(1);              // Collision system (1:pp, 2:PbPB)
+  // d.SetTrigger(1);          // Collision trigger (1:INEL, 2:INEL>0, 4:NSD)
+  // d.SetVertexRange(-10,10); // Collision vertex range (cm)
   d.Run(filename);
 }
+//____________________________________________________________________
+//
+// EOF
+//
+
