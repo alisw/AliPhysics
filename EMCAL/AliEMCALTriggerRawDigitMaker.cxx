@@ -274,7 +274,7 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 void AliEMCALTriggerRawDigitMaker::PostProcess()
 {	
 	//
-	printf("-----Calling AliEMCALTriggerRawDigitMaker::PostProcess()\n");
+        AliDebug(2,"Start post processing the raw digit maker");
 	Int_t idx;
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
