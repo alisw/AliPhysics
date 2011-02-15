@@ -53,6 +53,7 @@ AliTPCCalibGlobalMisalignment::AliTPCCalibGlobalMisalignment()
     fQuadrantRQ1(0),  //OROC long   pads -delta ly+ - ly - rotation
     fQuadrantRQ2(0),  //OROC long   pads -rotation
     fMatrixGlobal(0), // global Alignment common
+    fMatrixGlobalDelta(0), // global Alignment Delta A side-c side
     fArraySector(0)   // fArraySector
 {
   //
@@ -70,6 +71,7 @@ AliTPCCalibGlobalMisalignment::~AliTPCCalibGlobalMisalignment() {
   delete fQuadrantQ2;   //OROC long   pads -shift
   delete fQuadrantRQ1;  //OROC long   pads -delta ly+ - ly - rotation
   delete fQuadrantRQ2;  //OROC long   pads -rotation
+  delete fMatrixGlobal; // global matrix
   delete fMatrixGlobal; // global matrix
   delete fArraySector;  // sector matrices
 }
@@ -98,6 +100,16 @@ void AliTPCCalibGlobalMisalignment::SetAlignGlobal(const TGeoMatrix * matrixGlob
   if (fMatrixGlobal) delete fMatrixGlobal;
   fMatrixGlobal=0;
   if (matrixGlobal) fMatrixGlobal = new TGeoHMatrix(*matrixGlobal);
+}
+
+void AliTPCCalibGlobalMisalignment::SetAlignGlobalDelta(const TGeoMatrix * matrixGlobalDelta){
+  //
+  // Set global misalignment
+  // Object is OWNER 
+  // 
+  if (fMatrixGlobalDelta) delete fMatrixGlobalDelta;
+  fMatrixGlobalDelta=0;
+  if (matrixGlobalDelta) fMatrixGlobalDelta = new TGeoHMatrix(*matrixGlobalDelta);
 }
 
 void AliTPCCalibGlobalMisalignment::SetAlignSectors(const TObjArray *arraySector){
@@ -137,7 +149,8 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   //  
   static AliTPCROC *tpcRoc =AliTPCROC::Instance();  
   Double_t xref  = ( tpcRoc->GetPadRowRadii(0,0)+tpcRoc->GetPadRowRadii(36,tpcRoc->GetNRows(36)-1))*0.5;
-    
+  Double_t xquadrant  = tpcRoc->GetPadRowRadii(36,53); // row 53 from uli
+  Double_t xIO  = ( tpcRoc->GetPadRowRadii(0,tpcRoc->GetNRows(0)-1)+tpcRoc->GetPadRowRadii(36,0))*0.5;
   Double_t r=0, phi=0;
   r   = TMath::Sqrt( x[0]*x[0] + x[1]*x[1] );
   phi = TMath::ATan2(x[1],x[0]);
@@ -162,8 +175,8 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
   Double_t posQG[3]={x[0],x[1],x[2]};
   {
     Double_t dly=0;
-    Bool_t isQ0 = TMath::Abs(pos[0]-161)<28;
-    Bool_t isQ1 = (pos[0]>189);
+    Bool_t isQ0 = (pos[0]<xquadrant)&&(pos[0]>xIO);
+    Bool_t isQ1 = (pos[0]>xquadrant);
     Double_t  sign = (pos[1]>0)? 1.: -1.;
     if (isQ0){
       if (fQuadrantQ0)  dly+=sign*(*fQuadrantQ0)[isec%36];  // shift in cm
@@ -213,6 +226,16 @@ void AliTPCCalibGlobalMisalignment::GetCorrection(const Float_t x[],const Short_
     dx[0]+=pposC[0]-ppos[0];
     dx[1]+=pposC[1]-ppos[1];
     dx[2]+=pposC[2]-ppos[2];
+  }
+  if (fMatrixGlobalDelta){
+    // apply global alignment matrix A-C Side side
+    Double_t ppos[3]={x[0],x[1],x[2]};
+    Double_t pposC[3]={x[0],x[1],x[2]};
+    fMatrixGlobalDelta->LocalToMaster(ppos,pposC);
+    Double_t ssign=(roc%36<18) ? 1.:-1.;
+    dx[0]+=ssign*(pposC[0]-ppos[0]);
+    dx[1]+=ssign*(pposC[1]-ppos[1]);
+    dx[2]+=ssign*(pposC[2]-ppos[2]);
   }
 
   if (fArraySector){

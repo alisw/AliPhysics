@@ -128,6 +128,7 @@
 #include "AliDCSSensorArray.h"
 #include "AliDCSSensor.h"
 #include "AliGRPObject.h"
+#include "AliTPCROC.h"
 
 using namespace std;
 
@@ -151,6 +152,8 @@ AliTPCcalibLaser::AliTPCcalibLaser():
   fSignals(336),
   //
   fHisLaser(0),      //  N dim histogram of laser
+  fHisLaserPad(0),      //  N dim histogram of laser
+  fHisLaserTime(0),      //  N dim histogram of laser
   fHisNclIn(0),      //->Number of clusters inner
   fHisNclOut(0),     //->Number of clusters outer
   fHisNclIO(0),      //->Number of cluster inner outer
@@ -260,6 +263,9 @@ AliTPCcalibLaser::AliTPCcalibLaser(const Text_t *name, const Text_t *title, Bool
   //
   //
   fHisLaser(0),      //  N dim histogram of laser
+  fHisLaserPad(0),      //  N dim histogram of laser
+  fHisLaserTime(0),      //  N dim histogram of laser
+
   fHisNclIn(0),      //->Number of clusters inner
   fHisNclOut(0),     //->Number of clusters outer
   fHisNclIO(0),      //->Number of cluster inner outer
@@ -373,6 +379,9 @@ AliTPCcalibLaser::AliTPCcalibLaser(const AliTPCcalibLaser& calibLaser):
   //
   //
   fHisLaser(0),      //  N dim histogram of laser
+  fHisLaserPad(0),      //  N dim histogram of laser
+  fHisLaserTime(0),      //  N dim histogram of laser
+
   fHisNclIn(new TH2F(*(calibLaser.fHisNclIn))),      //->Number of clusters inner
   fHisNclOut(new TH2F(*(calibLaser.fHisNclOut))),     //->Number of clusters outer
   fHisNclIO(new TH2F(*(calibLaser.fHisNclIO))),      //->Number of cluster inner outer
@@ -484,6 +493,9 @@ AliTPCcalibLaser::~AliTPCcalibLaser() {
   //
   if ( fHisNclIn){
     delete fHisLaser;      //->
+    delete fHisLaserPad;      //->
+    delete fHisLaserTime;      //->
+
     delete fHisNclIn;      //->Number of clusters inner
     delete fHisNclOut;     //->Number of clusters outer
     delete fHisNclIO;      //->Number of cluster inner outer
@@ -713,6 +725,8 @@ void AliTPCcalibLaser::MakeDistHisto(Int_t id){
     xhis[11]= TMath::Sqrt(TMath::Abs(track->GetTPCsignal()));
     // }
     fHisLaser->Fill(xhis);
+    //
+    
 }
 
 void AliTPCcalibLaser::FitDriftV(){
@@ -2252,6 +2266,28 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
       }
       
   }
+  //
+  // Fill raw THnSparses
+  //
+  for (Int_t irow=0;irow<159;irow++) {
+    AliTPCclusterMI *c=track->GetClusterPointer(irow);
+    if (!c) continue;
+    if (c->GetMax()>800) continue; // saturation cut
+    //if (TMath::Sqrt(TMath::Abs(c->GetSigmaY2()))>1) continue; // saturation cut
+    //
+    Double_t deltaY=c->GetY()-(*ltrp->GetVecLY())[irow];
+    Double_t deltaZ=c->GetZ()-(*ltrp->GetVecLZ())[irow];
+    //TString axisName[6]={"Delta","bin", "rms shape", "Q", "row","trackID"}
+    Double_t xyz[6]={0, 0, 0,TMath::Sqrt(c->GetMax()),irow,id};
+    xyz[0]=deltaY;
+    xyz[1]=c->GetPad();
+    xyz[2]=TMath::Sqrt(TMath::Abs(c->GetSigmaY2()));
+    fHisLaserPad->Fill(xyz);
+    xyz[0]=deltaZ;
+    xyz[1]=c->GetTimeBin();
+    xyz[2]=TMath::Sqrt(TMath::Abs(c->GetSigmaZ2()));
+    fHisLaserTime->Fill(xyz);
+  }
 }
 
 
@@ -2682,8 +2718,8 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
       
       for(Int_t bin = 1; bin<=159; bin++) {
 	
-	if(yprof->GetBinEntries(bin)<10&&
-	   zprof->GetBinEntries(bin)<10) {
+	if(yprof->GetBinEntries(bin)<5&&
+	   zprof->GetBinEntries(bin)<5) {
 	  continue;	
 	}
 	
@@ -2715,6 +2751,22 @@ void AliTPCcalibLaser::DumpMeanInfo(Int_t run){
 	vecX[bin-1] = x;
 	vecDY[bin-1] = yprof->GetBinContent(bin);
 	vecDZ[bin-1] = zprof->GetBinContent(bin);
+	if (bin>0&&bin<159){
+	  //
+	  //truncated mean - skip first and the last  pad row
+	  //
+	  Int_t firstBin=TMath::Max(bin-5,0);
+	  Int_t lastBin =TMath::Min(bin+5,158);
+	  histAbsY->GetXaxis()->SetRangeUser(firstBin,lastBin);
+	  histAbsY->GetYaxis()->SetRangeUser(-2,2);
+	  vecEy[bin-1]=histAbsY->GetRMS(2);
+	  vecDY[bin-1]=histAbsY->GetMean(2);
+	  histAbsY->GetXaxis()->SetRangeUser(firstBin+2,lastBin-2);//use+-2 bins
+	  histAbsY->GetYaxis()->SetRangeUser(vecDY[bin-1]-4*vecEy[bin-1],vecDY[bin-1]+4*vecEy[bin-1]);
+	  if (yprof->GetBinEntries(bin-1)>0) vecEy[bin-1]=histAbsY->GetRMS(2)/TMath::Sqrt(yprof->GetBinEntries(bin-1));
+	  vecDY[bin-1]=histAbsY->GetMean(2);
+	}
+
 	if(!isOuter) { // inner	  
 	  vecPhi[bin-1]=lasTanPhiLocIn;
 	  // Calculate local y from residual and database
@@ -3223,8 +3275,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fDeltaZ histograms
       hm = (TH1F*)cal->fDeltaZ.At(id);
       h  = (TH1F*)fDeltaZ.At(id);
-      if (!h) {
-	h=new TH1F(Form("hisdz%d",id),Form("hisdz%d",id),1000,-10,10);
+      if (!h &&hm &&hm->GetEntries()>0) {
+	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fDeltaZ.AddAt(h,id);
       }
@@ -3232,8 +3284,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fP3 histograms
       hm = (TH1F*)cal->fDeltaP3.At(id);
       h  = (TH1F*)fDeltaP3.At(id);
-      if (!h) {
-	h=new TH1F(Form("hisPar3v%d",id),Form("hisPar3v%d",id),400,-0.06,0.06);
+      if (!h&&hm &&hm->GetEntries()>0) {
+	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fDeltaP3.AddAt(h,id);
       }
@@ -3241,8 +3293,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fP4 histograms
       hm = (TH1F*)cal->fDeltaP4.At(id);
       h  = (TH1F*)fDeltaP4.At(id);
-      if (!h) {
-	h=new TH1F(Form("hisPar4v%d",id),Form("hisPar4v%d",id),200,-0.06,0.06);
+      if (!h &&hm &&hm->GetEntries()>0) {
+	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fDeltaP4.AddAt(h,id);
       }
@@ -3252,8 +3304,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fDeltaPhi histograms
       hm = (TH1F*)cal->fDeltaPhi.At(id);
       h  = (TH1F*)fDeltaPhi.At(id);
-      if (!h) {
-	h= new TH1F(Form("hisdphi%d",id),Form("hisdphi%d",id),1000,-1,1);
+      if (!h &&hm &&hm->GetEntries()>0) {
+	h= (TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fDeltaPhi.AddAt(h,id);
       }
@@ -3261,8 +3313,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fDeltaPhiP histograms
       hm = (TH1F*)cal->fDeltaPhiP.At(id);
       h  = (TH1F*)fDeltaPhiP.At(id);
-      if (!h) {
-	h=new TH1F(Form("hisdphiP%d",id),Form("hisdphiP%d",id),1000,-0.01,0.01);
+      if (!h&&hm &&hm->GetEntries()>0) {
+	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fDeltaPhiP.AddAt(h,id);
       }
@@ -3270,8 +3322,8 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       // merge fSignals histograms
       hm = (TH1F*)cal->fSignals.At(id);
       h  = (TH1F*)fSignals.At(id);
-      if (!h) {
-	h=new TH1F(Form("hisSignal%d",id),Form("hisSignal%d",id),100,0,300);
+      if (!h&&hm &&hm->GetEntries()>0) {
+	h=(TH1F*)hm->Clone();
 	h->SetDirectory(0);
 	fSignals.AddAt(h,id);
       }
@@ -3299,10 +3351,11 @@ Long64_t AliTPCcalibLaser::Merge(TCollection *li) {
       h2m = (TH2F*)cal->fDeltaYresAbs.At(id);
       h2  = (TH2F*)fDeltaYresAbs.At(id);
       if (h2m&&h2) h2->Add(h2m);
-
+      if (h2m&&!h2) { h2=(TH2F*)h2m->Clone(); h2->SetDirectory(0); fDeltaYresAbs.AddAt(h2,id);}
       h2m = (TH2F*)cal->fDeltaZresAbs.At(id);
       h2  = (TH2F*)fDeltaZresAbs.At(id);
       if (h2m&&h2) h2->Add(h2m);
+      if (h2m&&!h2) { h2=(TH2F*)h2m->Clone(); h2->SetDirectory(0); fDeltaZresAbs.AddAt(h2,id);}
       // merge ProfileY histograms - 3
       //h2m = (TH2F*)cal->fDeltaYres3.At(id);
       //h2  = (TH2F*)fDeltaYres3.At(id);
@@ -3617,6 +3670,32 @@ void   AliTPCcalibLaser::MakeFitHistos(){
     fHisLaser->GetAxis(iaxis)->SetName(nameLaser[iaxis]);
     fHisLaser->GetAxis(iaxis)->SetTitle(titleLaser[iaxis]);
   }
+  //
+  //                  Delta       Time bin
+  //                              Pad        SigmaShape      Q charge  pad row  trackID
+  Int_t   binsRow[6]={200,        10000,           20,            30,     159,  336};
+  Double_t axisMin[6]={-1,             0,           0,            1,     0  ,    0};
+  Double_t axisMax[6]={ 1,          1000,           1,           30,     159,  336};
+  TString axisName[6]={"Delta","bin", "rms shape", "sqrt(Q)", "row","trackID"};
+
+  binsRow[1]=2000;
+  axisMin[1]=0;
+  axisMax[1]=200;
+  fHisLaserPad = new THnSparseS("laserPad","#Delta_{Laser}", 6, binsRow,axisMin, axisMax);  
+  //
+  binsRow[0]=1000;
+  axisMin[0]=-20;
+  axisMax[0]=20;
+  binsRow[1]=10000;
+  axisMin[1]=0;
+  axisMax[1]=1000;
+  //
+  fHisLaserTime= new THnSparseS("laserTime","#Delta_{Laser}", 6, binsRow,axisMin, axisMax);
+  //
+  for (Int_t iaxis=0; iaxis<6; iaxis++){
+    fHisLaserPad->GetAxis(iaxis)->SetName(axisName[iaxis]);
+    fHisLaserTime->GetAxis(iaxis)->SetTitle(axisName[iaxis]);
+  }
 }
 
 void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
@@ -3625,9 +3704,14 @@ void AliTPCcalibLaser::MergeFitHistos(AliTPCcalibLaser * laser){
   //
   // Only first histogram is checked - all other should be the same
   if (fHisLaser &&laser->fHisLaser) fHisLaser->Add(laser->fHisLaser);
-
-  if (!laser->fHisNclIn) return;  // empty histograms
+  if (fHisLaserPad &&laser->fHisLaserPad) fHisLaserPad->Add(laser->fHisLaserPad);
+  if (!fHisLaserPad &&laser->fHisLaserPad) fHisLaserPad=(THnSparseS*)laser->fHisLaserPad->Clone();
+  if (fHisLaserTime &&laser->fHisLaserTime) fHisLaserTime->Add(laser->fHisLaserTime);
+  if (!fHisLaserTime &&laser->fHisLaserTime) fHisLaserTime=(THnSparseS*)laser->fHisLaserTime->Clone();
+  
+  if (!laser->fHisNclIn) laser->MakeFitHistos();  // empty histograms
   if (!fHisNclIn) MakeFitHistos();
+  if (fHisNclIn->GetEntries()<1) MakeFitHistos();
   //
   fHisNclIn->Add(laser->fHisNclIn  );      //->Number of clusters inner
   fHisNclOut->Add(laser->fHisNclOut  );     //->Number of clusters outer
@@ -4034,246 +4118,506 @@ void AliTPCcalibLaser::SetBeamParameters(TVectorD& meanOffset,
 }
 
 
-  /*
-    TFile f("vscan.root");
-   */  
+
+void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
+  //
+  //
+  //input="TPCLaserObjects.root"
+  //
+  // 0. OBJ: TAxis     Delta
+  // 1. OBJ: TAxis     bin
+  // 2. OBJ: TAxis     rms shape
+  // 3. OBJ: TAxis     sqrt(Q)
+  // 4. OBJ: TAxis     row
+  // 5. OBJ: TAxis     trackID
+
+  const Double_t kSigma=4.;
+  TFile f(finput);
+  AliTPCcalibLaser *laserTPC = (AliTPCcalibLaser*) f.Get("laserTPC");
+  THnSparse * hisPadInput   = laserTPC->fHisLaserPad;
+  THnSparse * hisTimeInput = laserTPC->fHisLaserTime;
+  TTreeSRedirector *pcstream= new TTreeSRedirector("hisLasers.root");
+  TVectorD meanY(159), sigmaY(159);
+  TVectorD meanZ(159), sigmaZ(159);
+  TVectorD meanPad(159), sigmaPad(159);
+  TVectorD meanTime(159), sigmaTime(159);
+  TVectorD meanDPad(159), sigmaDPad(159);
+  TVectorD meanDTime(159), sigmaDTime(159);
+  TVectorD meandEdx(159), sigmadEdx(159);
+  TVectorD meanSTime(159), sigmaSTime(159);
+  TVectorD meanSPad(159), sigmaSPad(159);
+  TVectorD entries(159);
+  //
+  Int_t indexes[10]={0,1,2,3,4,5,6};
+  TH1 *his=0;
+  AliTPCLaserTrack::LoadTracks();
+  //
+  for (Int_t id=0; id<336; id++){ // llop over laser beams 
+    printf("id=\t%d\n",id);
+    //
+    AliTPCLaserTrack *ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    //
+    hisPadInput->GetAxis(5)->SetRange(id+1,id+1);
+    hisTimeInput->GetAxis(5)->SetRange(id+1,id+1);
+    //
+    his=hisTimeInput->Projection(3);
+    Int_t firstBindEdx=his->FindFirstBinAbove(0);
+    Int_t lastBindEdx=his->FindLastBinAbove(0);
+    hisPadInput->GetAxis(3)->SetRange(firstBindEdx, lastBindEdx);
+    hisTimeInput->GetAxis(3)->SetRange(firstBindEdx, lastBindEdx);
+    delete his;
+    //
+    his=hisTimeInput->Projection(1);
+    Int_t firstBinTime=his->FindFirstBinAbove(0);
+    Int_t lastBinTime=his->FindLastBinAbove(0);
+    //hisTimeInput->GetAxis(1)->SetRange(firstBinTime, lastBinTime);
+    delete his;
+    //
+    //
+    his=hisTimeInput->Projection(2);
+    Int_t firstBinZ=his->FindFirstBinAbove(0);
+    Int_t lastBinZ=his->FindLastBinAbove(0);
+    //hisTimeInput->GetAxis(2)->SetRange(firstBinZ, lastBinZ);
+    delete his;
+    //
+    his=hisPadInput->Projection(2);
+    Int_t firstBinY=his->FindFirstBinAbove(0);
+    Int_t lastBinY=his->FindLastBinAbove(0);
+    //hisPadInput->GetAxis(2)->SetRange(firstBinY, lastBinY);
+    delete his;
+    //
+    //
+    //
+    THnSparse *hisPad0  = hisPadInput->Projection(5,indexes);
+    THnSparse *hisTime0 = hisTimeInput->Projection(5,indexes);
+    //
+    //    
+    for (Int_t irow=0; irow<159; irow++){
+      entries[irow]=0;
+      if ((*(ltrp->GetVecSec()))[irow] <0) continue;
+      if ((*(ltrp->GetVecLX()))[irow] <80) continue;
+
+      hisPad0->GetAxis(4)->SetRange(irow+1,irow+1);
+      hisTime0->GetAxis(4)->SetRange(irow+1,irow+1);
+      //THnSparse *hisPad  = hisPad0->Projection(4,indexes);
+      //THnSparse *hisTime = hisTime0->Projection(4,indexes);
+      THnSparse *hisPad  = hisPad0;
+      THnSparse *hisTime = hisTime0;
+      //
+      // Get mean value of QA variables
+      //
+      // dEdx
+      his=hisTime->Projection(3);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meandEdx[irow] =his->GetMean();
+      sigmadEdx[irow]=his->GetRMS();
+      Int_t bindedx0= his->FindBin(meandEdx[irow]-kSigma*sigmadEdx[irow]);
+      Int_t bindedx1= his->FindBin(meandEdx[irow]+kSigma*sigmadEdx[irow]);
+      //      hisPad->GetAxis(3)->SetRange(bindedx0,bindedx1);
+      //hisTime->GetAxis(3)->SetRange(bindedx0,bindedx1 );
+      delete his;
+      //
+      // sigma Time
+      //
+      his=hisTime->Projection(2);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()-kSigma*his->GetRMS());
+      meanSTime[irow] =his->GetMean();
+      sigmaSTime[irow]=his->GetRMS();
+      Int_t binSTime0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
+      Int_t binSTime1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
+      //      hisTime->GetAxis(2)->SetRange(binSTime0, binSTime1);
+      delete his;
+      //
+      // sigma Pad
+      his=hisPad->Projection(2);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meanSPad[irow] =his->GetMean();
+      sigmaSPad[irow]=his->GetRMS();   
+      Int_t binSPad0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
+      Int_t binSPad1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
+      //      hisPad->GetAxis(2)->SetRange(binSPad0, binSPad1);
+      delete his;
+      //
+      // apply selection on QA variables
+      //
+      //
+      //
+      // Y
+      his=hisPad->Projection(0);
+      entries[irow]=his->GetEntries();
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meanY[irow] =his->GetMean();
+      sigmaY[irow]=his->GetRMS();
+      delete his;
+      // Z
+      his=hisTime->Projection(0);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meanZ[irow] =his->GetMean();
+      sigmaZ[irow]=his->GetRMS();
+      delete his;
+      // Pad
+      his=hisPad->Projection(1);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meanPad[irow] =his->GetMean();
+      meanDPad[irow] =his->GetMean()-Int_t(his->GetMean());
+      sigmaPad[irow]=his->GetRMS();
+      delete his;
+      // Time
+      his=hisTime->Projection(1);
+      his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
+      meanTime[irow]  = his->GetMean();
+      meanDTime[irow] = his->GetMean()-Int_t(his->GetMean());
+      sigmaTime[irow]=his->GetRMS();
+      delete his;
+      //
+      //delete hisTime;
+      //delete hisPad;
+    }
+    //
+    //
+    //
+    (*pcstream)<<"laserClusters"<<
+      "id="<<id<<      
+      "run="<<run<<
+      "LTr.="<<ltrp<<
+      //
+      "entries.="<<&entries<<
+      "my.="<<&meanY<<           //mean delta y
+      "rmsy.="<<&sigmaY<<        //rms deltay
+      "mz.="<<&meanZ<<           //mean deltaz
+      "rmsz.="<<&sigmaZ<<        //rms z
+      //
+      "mPad.="<<&meanPad<<       // mean pad
+      "mDPad.="<<&meanDPad<<     // mead dpad
+      "rmsPad.="<<&sigmaPad<<    // rms pad
+      "mTime.="<<&meanTime<<     
+      "mDTime.="<<&meanTime<<
+      "rmsTime.="<<&sigmaTime<<
+      //
+      "mdEdx.="<<&meandEdx<<      //mean dedx
+      "rmsdEdx.="<<&sigmadEdx<<   //rms dedx
+      "mSPad.="<<&meanSPad<<      //mean sigma pad
+      "rmsSPad.="<<&sigmaSPad<<   //rms sigma pad
+      "mSTime.="<<&meanSTime<<    //mean sigma time
+      "rmsSTime.="<<&sigmaSTime<<
+      "\n";
+    //
+    delete hisPad0;
+    delete hisTime0;
+  }
+  delete pcstream;
 
   /*
-    pad binning effect
-   chain->Draw("Cl[].fPad-int(Cl[].fPad)",cutA+cutCl+"Cl[].fZ>0&&Cl[].fPad>1","",10000);
-   //
-   chain->Draw("Cl[].fY-TrYpol1.fElements:Cl[].fPad-int(Cl[].fPad)",cutA+cutCl+"Cl[].fZ>0&&Cl[].fPad>1","prof",10000);
-   //
-
-chain->Draw("Cl.fY-TrYpol1.fElements-AliTPCClusterParam::SPosCorrection(0,1,Cl[].fPad,Cl[].fTimeBin,Cl[].fZ,Cl[].fSigmaY2,Cl[].fSigmaZ2,Cl[].fMax):Cl[].fPad-int(Cl[].fPad)",cutA+cutCl+"Cl[].fZ>0&&Cl[].fPad>1","prof",10000);
- 
-
-chain->Draw("Cl[].fZ-TrZpol1.fElements-0*AliTPCClusterParam::SPosCorrection(1,1,Cl[].fPad,Cl[].fTimeBin,Cl[].fZ,Cl[].fSigmaY2,Cl[].fSigmaZ2,Cl[].fMax):Cl[].fTimeBin-int(Cl[].fTimeBin)",cutA+cutCl+"Cl[].fZ>0","prof",10000)
-
+    
   */
-
-
-
-
-  
-  /*
-  // check edge effects
-  chain->Draw("Cl.fY-TrYpol1.fElements:Cl.fY/Cl.fX",""+cutA+cutCl,"prof",10000)  
-  //
-  chain->Draw("Cl.fY-TrYpol2.fElements:Cl.fPad-int(Cl.fPad)","Cl.fZ>0"+cutA+cutCl+cutE,"prof",100000)
-  
-  chain->Draw("Cl.fY-TrYpol2.fElements:Cl.fPad-int(Cl.fPad)","Cl.fX>80&&Cl.fZ>0&&Cl.fDetector>35"+cutA+cutCl+cutE,"prof",100000)
-
-
-
-  chainFit->Draw("yInOut.fElements[4]:LTr.fP[2]","LTr.fP[1]<0"+cutA,"prof",1000);
-  chainFit->Draw("yPol2In.fElements[2]*90*90/4.:LTr.fP[2]","nclO>40&&LTr.fP[1]<0"+cutA+cutD,"prof")
-
-*/
-
-
-
-
-
-  /*
-    Edge y effect 
-    
-    dedge = sign(Cl.fY)*(Cl.fX*tan(pi/18)-abs(Cl.fY))
-    
-    
-    chain->Draw("sign(Cl.fY)*(Cl.fY-TrYpol1.fElements):pi/18-abs(Cl.fY/Cl.fX)>>hisYdphi(100,0,0.03)",""+cutA+cutCl,"prof",10000)
-    
-    chain->Draw("sign(Cl.fY)*(Cl.fY-TrYpol1.fElements):Cl.fX*(pi/18-abs(Cl.fY/Cl.fX))>>hisYdy(100,0,5)",""+cutA+cutCl,"prof",10000)
-    
-    
-    
-    
-    
-    chain->Draw("sign(Cl.fY)*(Cl.fY-TrYpol1.fElements):Cl.fX*(pi/18-abs(Cl.fY/Cl.fX))>>hisYdyIROC(100,0,5)","Cl.fDetector<36"+cutA+cutCl,"prof",100000)
-    
-    chain->Draw("sign(Cl.fY)*(Cl.fY-TrYpol1.fElements):Cl.fX*(pi/18-abs(Cl.fY/Cl.fX))>>hisYdyOROC(100,0,5)","Cl.fDetector>36"+cutA+cutCl,"prof",100000)
-    
-    
-    
-    chain->Draw("Cl.fY-TrYpol1.fElements:sign(Cl.fY)*(Cl.fX*tan(pi/18)-abs(Cl.fY))>>his(100,-5,5)",""+cutA+cutCl,"prof",100000)
-    
-    chain->Draw("Cl.fY-TrYpol1.fElements:sign(Cl.fY)*(Cl.fX*tan(pi/18)-abs(Cl.fY))>>hisdyInner(100,-5,5)","Cl.fDetector<36"+cutA+cutCl,"prof",100000)
-    
-    
-    
-*/
-
-
-/*
-
-chainFit->Draw("yPol2Out.fElements[2]*90*90/4.:LTr.fP[2]","nclO>40&&LTr.fP[1]<0"+cutA+cutDY,"prof")
-
-chainFit->Draw("yPol2In.fElements[2]*64*64/4.:LTr.fP[2]","nclI>20&&LTr.fP[1]<0"+cutA+cutDY,"prof")
-
-
-
-chainFit->Draw("LTr.fId","nclI>10",100000)
-
-chainFit->Draw("yPol2In.fElements[2]:LTr.fId>>his(350,0,350,100,-0.002,0.002)","nclI>20","")
-
-chainFit->Draw("yPol2In.fElements[2]:LTr.fId>>hisPy2In0(350,0,350,100,-0.002,0.002)","nclI>20","");
-
-TH2 * phisPy2In = (TH2*) gROOT->FindObject("hisPy2In0")
-
-*/
-
-
-
-
-
-
-/*
- gSystem->Load("libSTAT.so")
- TStatToolkit toolkit;
- Double_t chi2;
- TVectorD fitParam;
- TMatrixD covMatrix;
- Int_t npoints;
- 
- TCut cutA("entries>2&&pphi2<3&&abs(gphiP1-pphiP0)<0.003&&abs(gz1)<6");
-
-
-TString fstring="";
-//
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz++";                               //1
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*LTr.fP[2]++";                     //2
-fstring+="(abs(LTr.fP[1]/250)^1-1)*bz++";                               //3
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*LTr.fP[2]++";                       //4 
-//
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))++"            //5
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"  //6
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))++"              //7
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*sin(atan2(lx1,lx0))*LTr.fP[2]++"    //8
-//   
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))++"            //9
-fstring+="(abs(LTr.fP[1]/250)^3-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"  //10
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))++"              //11
-fstring+="(abs(LTr.fP[1]/250)-1)*bz*cos(atan2(lx1,lx0))*LTr.fP[2]++"    //12
-
-
-
-
- TString *strq0 = toolkit.FitPlane(treeT,"gphi1-pphi0",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
-
- treeT->SetAlias("fit",strq0->Data());
- 
-
- TString *strqP = toolkit.FitPlane(treeT,"1000*(gphiP1-pphiP0)",fstring->Data(), "fSide==1"+cutA, chi2,npoints,fitParam,covMatrix);
-
- treeT->SetAlias("fitP",strqP->Data());
-
-
- TString *strqDrift = toolkit.FitPlane(treeT,"gz1","LTr.fP[1]++(1-2*(fSide==1))++lx1", cutA, chi2,npoints,fitParam,covMatrix);
- treeT->SetAlias("fitD",strqDrift->Data());
-
-
-treeT->Draw("fit:LTr.fP[1]","abs(bz+0.4)<0.05"+cutA,""); 
-{
-for (Int_t i=0; i<6;i++){
-treeT->SetLineColor(i+2);
-treeT->SetMarkerSize(1);
-treeT->SetMarkerStyle(22+i);
-treeT->SetMarkerColor(i+2);
-
-treeT->Draw("fit:LTr.fP[1]",Form("abs(bz+0.4)<0.05&fRod==%d",i)+cutA,"same"); 
 }
-} 
- */
- 
 
+void AliTPCcalibLaser::FitLaserClusters(Int_t run){
+  //
+  //
+  //input="TPCLaserObjects.root"
+  //Algorithm:
+  //   1. Select cluster candidates, remove outlyers
+  //             edge clusters
+  //             clusters with atypical spread (e.g due track overlaps)
+  //             small amount of entries clusters (absolute minimal cut + raltive -to mean cut) 
+  //   2. Fit the tracklets -per sector - in pad and time coordinate frame
+  //             Remove outlyers
+  //             Store info distance of track to pad, time center
+  //             Fit the correction for distance to the center (sin,cos)
+  //   3. Do local fit
+  const Double_t kEpsilon=0.000001;
+  const Int_t     kMinClusters=20;
+  const Double_t kEdgeCut=3;
+  const Double_t kDistCut=1.5;                 // cut distance to the ideal track
+  const Double_t kDistCutFit=0.5;              
+  const Double_t kDistCutFitPad=0.25;
+  const Double_t kDistCutFitTime=0.25;
+  const Int_t kSmoothRow=5.;
+  TFile f("hisLasers.root");  // Input file
+  TTree * treeInput=(TTree*)f.Get("laserClusters"); 
+  TTreeSRedirector *pcstream=new TTreeSRedirector("fitLasers.root");
+  TVectorD *vecN=0;
+  TVectorD *vecMY=0;
+  TVectorD *vecMZ=0;
+  TVectorD *vecPad=0;
+  TVectorD *vecTime=0;
+  TVectorD *vecSY=0;
+  TVectorD *vecSZ=0;
+  TVectorD *meandEdx=0;
+  TVectorD  isOK(159);
+  TVectorD  fitPad(159);
+  TVectorD  fitTime(159);
+  TVectorD  fitPadLocal(159);
+  TVectorD  fitTimeLocal(159);
+  TVectorD  fitDPad(159);
+  TVectorD  fitDTime(159);
+  TVectorD  fitIPad(159);
+  TVectorD  fitITime(159);
+  Double_t  chi2PadIROC=0;
+  Double_t  chi2PadOROC=0;
+  //
+  treeInput->SetBranchAddress("my.",&vecMY);
+  treeInput->SetBranchAddress("mz.",&vecMZ);
+  treeInput->SetBranchAddress("mPad.",&vecPad);
+  treeInput->SetBranchAddress("mTime.",&vecTime);
+  treeInput->SetBranchAddress("rmsy.",&vecSY);
+  treeInput->SetBranchAddress("rmsz.",&vecSZ);
+  treeInput->SetBranchAddress("entries.",&vecN);
+  treeInput->SetBranchAddress("mdEdx.",&meandEdx);
 
-/*
-  TTree * tree = (TTree*)f.Get("FitModels");
-
-  TEventList listLFit0("listLFit0","listLFit0");
-  TEventList listLFit1("listLFit1","listLFit1");
-  tree->Draw(">>listLFit0","seed.fdEdx<200&&seed.fdEdx>40");
-  tree->SetEventList(&listLFit0);
+  AliTPCLaserTrack::LoadTracks();
+  //
+  //
+  TVectorD fitPadIROC(3),     fitPadOROC(3);
+  TVectorD fitPadIROCSin(3),  fitPadOROCSin(3);
+  TVectorD fitTimeIROC(3),    fitTimeOROC(3);
+  TVectorD fitTimeIROCSin(3), fitTimeOROCSin(3);
+  //
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Double_t refX=roc->GetPadRowRadii(0,roc->GetNRows(0)-1);
   
-
-
-
-  gSystem->Load("libSTAT.so")
-  TStatToolkit toolkit;
-  Double_t chi2;
-  TVectorD fitParam;
-  TMatrixD covMatrix;
-  Int_t npoints;
-
-  chain->SetAlias("dp","((Cl.fPad-int(Cl.fPad))*pi)");
-  chain->SetAlias("dt","((Cl.fTimeBin-int(Cl.fTimeBin))*pi)");
-
-
-  TString fstring="";  
-  fstring+="cos(dp)++";
-  fstring+="sin(dp)++";
-  fstring+="cos(dt)++";
-  fstring+="sin(dt)++";
-  
-  TString *str = toolkit.FitPlane(chain,"Cl.fZ-TrZInOut.fElements",fstring->Data(), "Cl.fDetector>35", chi2,npoints,fitParam,covMatrix,-1,0,200);
-
-
-
-*/
-
-
-
-/*
-  Edge effects
   //
-  //
-  //
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool;
-  TChain * chainTrack = tool.MakeChain("laser.txt","Track",0,10200);
-  chainTrack->Lookup();
-  chainTrack->SetProof(kTRUE);
-
-  TChain * chain = tool.MakeChain("laser.txt","Residuals",0,10200);
-  chain->Lookup();
-  TChain * chainFit = tool.MakeChain("laser.txt","FitModels",0,10200);
-  chainFit->Lookup();
-  chainFit->SetProof(kTRUE);
-  chain->SetProof(kTRUE);
-  //
-  // Fit cuts
-  //
-  TCut cutChi2YOut("sqrt(chi2y2Out*dEdx)<10");
-  TCut cutChi2ZOut("sqrt(chi2z2Out*dEdx)<10");
-  TCut cutChi2YIn("sqrt(chi2y2In*dEdx)<10");
-  TCut cutChi2ZIn("sqrt(chi2z2In*dEdx)<10");
-  //
-  TCut cutdEdx("sqrt(dEdx)<30&&sqrt(dEdx)>3");
-  TCut cutDY("abs(yPol2In.fElements[2]*nclO*nclO/4.)<3")
-  TCut cutN("nclO>20&&nclI>20");
-  TCut cutA = cutChi2YOut+cutChi2ZOut+cutChi2YIn+cutChi2ZIn+cutN+cutdEdx;
-  //
-  // Cluster cuts
-  //
-  TCut cutClY("abs(Cl.fY-TrYpol2.fElements)<0.2");
-  TCut cutClZ("abs(Cl.fZ-TrZpol2.fElements)<0.4");
-  TCut cutClX("abs(Cl.fX)>10");
-  TCut cutE("abs(Cl.fY/Cl.fX)<0.14");
-  TCut cutCl=cutClY+cutClZ+cutClX;
-
-
-  // check edge effects
-  chain->Draw("Cl.fY-TrYpol1.fElements:Cl.fY/Cl.fX",""+cutA+cutCl,"prof",10000)  
-  //
-  chain->Draw("Cl.fY-TrYpol2.fElements:Cl.fPad-int(Cl.fPad)","Cl.fZ>0"+cutA+cutCl+cutE,"prof",100000)
-  
-  chain->Draw("Cl.fY-TrYpol2.fElements:Cl.fPad-int(Cl.fPad)","Cl.fX>80&&Cl.fZ>0&&Cl.fDetector>35"+cutA+cutCl+cutE,"prof",100000)
-
-
-
-  chainFit->Draw("yInOut.fElements[4]:LTr.fP[2]","LTr.fP[1]<0"+cutA,"prof",1000);
-  chainFit->Draw("yPol2In.fElements[2]*90*90/4.:LTr.fP[2]","nclO>40&&LTr.fP[1]<0"+cutA+cutD,"prof")
-
-*/
-
+  for (Int_t id=0; id<336; id++){
+    //
+    treeInput->GetEntry(id);
+    AliTPCLaserTrack *ltrp =(AliTPCLaserTrack*)AliTPCLaserTrack::GetTracks()->UncheckedAt(id);
+    Int_t medianEntries = TMath::Nint(TMath::Median(159,vecN->GetMatrixArray()));
+    Double_t medianRMSY = TMath::Median(159,vecSY->GetMatrixArray());
+    Double_t rmsRMSY    = TMath::RMS(159,vecSY->GetMatrixArray());
+    Double_t medianRMSZ = TMath::Median(159,vecSZ->GetMatrixArray());
+    Double_t rmsRMSZ    = TMath::RMS(159,vecSZ->GetMatrixArray());
+    Double_t mdEdx      = TMath::Median(159,meandEdx->GetMatrixArray());
+    Int_t sectorInner= TMath::Nint(ltrp->GetVecSec()->GetMatrixArray()[63/2]);
+    Int_t sectorOuter= TMath::Nint(ltrp->GetVecSec()->GetMatrixArray()[64+96/2]);
+    TLinearFitter fitterY(2,"pol1");
+    TLinearFitter fitterZ(2,"pol1");
+    TLinearFitter fitterPad(2,"pol1");
+    TLinearFitter fitterTime(2,"pol1");
+    TLinearFitter fitterPadSin(2,"hyp1");
+    TLinearFitter fitterTimeSin(3,"hyp2");    
+    //
+    //
+    for (UInt_t irow=0; irow<159; irow++){
+      fitPad[irow]=0; fitIPad[irow]=0; fitDPad[irow]=0;
+      fitTime[irow]=0; fitITime[irow]=0; fitDTime[irow]=0;
+      Double_t sign=(ltrp->GetZ()>0) ? 1.:-1.;
+      isOK[irow]=kFALSE;    
+      fitPad[irow]=0;
+      fitTime[irow]=0;
+      Int_t sector=(irow<roc->GetNRows(0))? sectorInner:sectorOuter;      
+      Int_t npads=(irow<roc->GetNRows(0))? roc->GetNPads(sector,irow):roc->GetNPads(sector,irow-roc->GetNRows(0));
+      (*vecPad)[irow]-=npads*0.5;	
+      //
+      if ((irow<roc->GetNRows(0)) &&TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorInner)>0.1) continue;
+      if ((irow>=roc->GetNRows(0)) &&TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorOuter)>0.1) continue;
+      //
+      if (TMath::Abs((*vecMY)[irow])<kEpsilon) continue;   //not determined position
+      if (TMath::Abs((*vecMZ)[irow])<kEpsilon) continue;   //not determined position
+      if (TMath::Abs((*vecPad)[irow])<kEpsilon) continue;   //not determined position
+      if (TMath::Abs((*vecTime)[irow])<kEpsilon) continue;   //not determined position
+      if ((*vecN)[irow]<0.5*medianEntries) continue;       //small amount of clusters
+      if ((*vecSY)[irow]>medianRMSY+3*rmsRMSY) continue;   //big sigma
+      if ((*vecSZ)[irow]>medianRMSZ+3*rmsRMSZ) continue;   //big sigma
+      Double_t dEdge= TMath::Abs((*(ltrp->GetVecLY()))[irow])-(*(ltrp->GetVecLX()))[irow]*TMath::Tan(TMath::Pi()/18.); //edge cut
+      if (TMath::Abs(dEdge)<kEdgeCut) continue;
+      if (irow<roc->GetNRows(0)){
+	if (TMath::Abs(((*ltrp->GetVecLY())[irow])-sign*(*vecPad)[irow]*0.4)>kDistCut) continue;
+      }
+      if (irow>roc->GetNRows(0)){
+	if (TMath::Abs(((*ltrp->GetVecLY())[irow])-sign*(*vecPad)[irow]*0.6)>kDistCut) continue;
+      }
+      
+      isOK[irow]=kTRUE;     
+    }
+    //
+    //fit OROC - get delta pad and delta time 
+    //
+    fitterPad.ClearPoints();
+    fitterTime.ClearPoints();    
+    fitterPadSin.ClearPoints();
+    fitterTimeSin.ClearPoints();    
+    {for (Int_t irow=2; irow<157; irow++){
+	if (isOK[irow]<0.5) continue;	
+	if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorOuter)>0.1) continue;
+	if (TMath::Abs(ltrp->GetVecLX()->GetMatrixArray()[irow])<80) continue;
+	Double_t y=(*vecPad)[irow];
+	Double_t z=(*vecTime)[irow];
+	Double_t x=ltrp->GetVecLX()->GetMatrixArray()[irow]-refX;
+	fitterPad.AddPoint(&x,y);
+	fitterTime.AddPoint(&x,z);
+      }}
+    chi2PadOROC=0;
+    if (fitterPad.GetNpoints()>kMinClusters&&fitterTime.GetNpoints()>kMinClusters){
+      fitterPad.Eval();
+      fitterTime.Eval();
+      chi2PadOROC=TMath::Sqrt(fitterPad.GetChisquare()/fitterPad.GetNpoints());
+      for (Int_t irow=2; irow<157; irow++){
+	if (isOK[irow]<0.5) continue;	
+	if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorOuter)>0.1) continue;
+	if (TMath::Abs(ltrp->GetVecLX()->GetMatrixArray()[irow])<80) continue;
+	Double_t y=(*vecPad)[irow];
+	Double_t z=(*vecTime)[irow];
+	Double_t x=ltrp->GetVecLX()->GetMatrixArray()[irow]-refX;
+	Double_t fitP=fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x;
+	Double_t fitT=fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x;
+	fitPad[irow]=fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x;
+	fitTime[irow]=fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x;
+	fitDPad[irow]=y-(fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x);
+	fitDTime[irow]=z-(fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x);
+	fitIPad[irow]=fitP-TMath::Nint(fitP-0.5);
+	fitITime[irow]=fitT-TMath::Nint(fitT-0.5);
+	if (fitDPad[irow]>kDistCutFit) isOK[irow]=kFALSE;
+	if (fitDTime[irow]>kDistCutFit) isOK[irow]=kFALSE;
+	if (isOK[irow]>0){
+	  Double_t xxxPad[2]={TMath::Sin(2*TMath::Pi()*fitIPad[irow])};
+	  Double_t xxxTime[3]={TMath::Sin(2*TMath::Pi()*fitITime[irow]),
+			       TMath::Cos(2*TMath::Pi()*fitITime[irow])};
+	  fitterPadSin.AddPoint(xxxPad,fitDPad[irow]);
+	  fitterTimeSin.AddPoint(xxxTime,fitDTime[irow]);
+	}
+      }
+      fitterPadSin.Eval();
+      fitterTimeSin.Eval();
+      fitterPadSin.FixParameter(0,0);
+      fitterTimeSin.FixParameter(0,0);
+      fitterPadSin.Eval();
+      fitterTimeSin.Eval();
+      //
+      fitterPad.GetParameters(fitPadOROC);
+      fitterTime.GetParameters(fitTimeOROC);
+      fitterPadSin.GetParameters(fitPadOROCSin);
+      fitterTimeSin.GetParameters(fitTimeOROCSin);
+    }
+    //
+    //
+    //fit IROC
+    //
+    fitterPad.ClearPoints();
+    fitterTime.ClearPoints();    
+    fitterPadSin.ClearPoints();
+    fitterTimeSin.ClearPoints();    
+    for (Int_t irow=2; irow<157; irow++){
+      if (isOK[irow]<0.5) continue;	
+      if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorInner)>0.1) continue;
+      if (TMath::Abs(ltrp->GetVecLX()->GetMatrixArray()[irow])<80) continue;
+      Double_t y=(*vecPad)[irow];
+      Double_t z=(*vecTime)[irow];
+      Double_t x=ltrp->GetVecLX()->GetMatrixArray()[irow]-refX;
+      fitterPad.AddPoint(&x,y);
+      fitterTime.AddPoint(&x,z);
+    }
+    chi2PadIROC=0;
+    if (fitterPad.GetNpoints()>kMinClusters&&fitterTime.GetNpoints()>kMinClusters){
+      fitterPad.Eval();
+      fitterTime.Eval();
+      chi2PadIROC=TMath::Sqrt(fitterPad.GetChisquare()/fitterPad.GetNpoints());
+      for (Int_t irow=2; irow<157; irow++){
+	if (isOK[irow]<0.5) continue;	
+	if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sectorInner)>0.1) continue;
+	if (TMath::Abs(ltrp->GetVecLX()->GetMatrixArray()[irow])<80) continue;
+	Double_t y=(*vecPad)[irow];
+	Double_t z=(*vecTime)[irow];
+	Double_t x=ltrp->GetVecLX()->GetMatrixArray()[irow]-refX;
+	Double_t fitP=fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x;
+	Double_t fitT=fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x;
+	fitPad[irow]=fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x;
+	fitTime[irow]=fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x;
+	fitDPad[irow]=y-(fitterPad.GetParameter(0)+fitterPad.GetParameter(1)*x);
+	fitDTime[irow]=z-(fitterTime.GetParameter(0)+fitterTime.GetParameter(1)*x);
+	fitIPad[irow]=fitP-TMath::Nint(fitP-0.5);
+	fitITime[irow]=fitT-TMath::Nint(fitT-0.5);
+	if (fitDPad[irow]>kDistCutFit) isOK[irow]=kFALSE;
+	if (fitDTime[irow]>kDistCutFit) isOK[irow]=kFALSE;
+	if (isOK[irow]>0.5){
+	  Double_t xxxPad[3]={TMath::Sin(2*TMath::Pi()*fitIPad[irow]),
+			 TMath::Cos(2*TMath::Pi()*fitIPad[irow])};
+	  Double_t xxxTime[3]={TMath::Sin(2*TMath::Pi()*fitITime[irow]),
+			 TMath::Cos(2*TMath::Pi()*fitITime[irow])};
+	  fitterPadSin.AddPoint(xxxPad,fitDPad[irow]);
+	  fitterTimeSin.AddPoint(xxxTime,fitDTime[irow]);
+	}
+      }
+      fitterPadSin.Eval();
+      fitterTimeSin.Eval();
+      fitterPadSin.FixParameter(0,0);
+      fitterTimeSin.FixParameter(0,0);
+      fitterPadSin.Eval();
+      fitterTimeSin.Eval();
+      fitterPad.GetParameters(fitPadIROC);
+      fitterTime.GetParameters(fitTimeIROC);
+      fitterPadSin.GetParameters(fitPadIROCSin);
+      fitterTimeSin.GetParameters(fitTimeIROCSin);
+    }
+    for (Int_t irow=0; irow<159; irow++){
+      if (TMath::Abs(fitDPad[irow])<kEpsilon)  isOK[irow]=kFALSE;
+      if (TMath::Abs(fitDTime[irow])<kEpsilon) isOK[irow]=kFALSE;
+      if (TMath::Abs(fitDPad[irow])>kDistCutFitPad)  isOK[irow]=kFALSE;
+      if (TMath::Abs(fitDTime[irow])>kDistCutFitTime) isOK[irow]=kFALSE;
+    }
+    for (Int_t irow=kSmoothRow/2; irow<159-kSmoothRow/2; irow++){
+      fitPadLocal[irow]=0;
+      fitTimeLocal[irow]=0;
+      if (isOK[irow]<0.5) continue;     
+      Int_t sector=(irow<roc->GetNRows(0))? sectorInner:sectorOuter;
+      if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sector)>0.1) continue;
+      //
+      TLinearFitter fitterPadLocal(2,"pol1");
+      TLinearFitter fitterTimeLocal(2,"pol1");
+      Double_t xref=ltrp->GetVecLX()->GetMatrixArray()[irow];
+      for (Int_t delta=-kSmoothRow; delta<=kSmoothRow; delta++){
+	Int_t jrow=irow+delta;
+	if (jrow<0) jrow=0;
+	if (jrow>159) jrow=159;	
+	if (isOK[jrow]<0.5) continue;	
+	if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[jrow]-sector)>0.1) continue;
+      	Double_t y=(*vecPad)[jrow];
+	Double_t z=(*vecTime)[jrow];
+	Double_t x=ltrp->GetVecLX()->GetMatrixArray()[jrow]-xref;
+	fitterPadLocal.AddPoint(&x,y);
+	fitterTimeLocal.AddPoint(&x,z);
+      }      
+      if (fitterPadLocal.GetNpoints()<kSmoothRow) continue;
+      fitterPadLocal.Eval();
+      fitterTimeLocal.Eval();
+      fitPadLocal[irow]=fitterPadLocal.GetParameter(0);
+      fitTimeLocal[irow]=fitterTimeLocal.GetParameter(0);
+    }
+    //
+    //
+    (*pcstream)<<"fit"<<
+      "run="<<run<<
+      "id="<<id<<
+      "chi2PadIROC="<<chi2PadIROC<<
+      "chi2PadOROC="<<chi2PadOROC<<
+      "mdEdx="<<mdEdx<<
+      "LTr.="<<ltrp<<
+      "isOK.="<<&isOK<<
+      // mean measured-ideal values
+      "mY.="<<vecMY<<
+      "mZ.="<<vecMZ<<
+      // local coordinate fit
+      "mPad.="<<vecPad<<
+      "mTime.="<<vecTime<<
+      "fitPad.="<<&fitPad<<
+      "fitTime.="<<&fitTime<<
+      "fitPadLocal.="<<&fitPadLocal<<
+      "fitTimeLocal.="<<&fitTimeLocal<<
+      "fitDPad.="<<&fitDPad<<
+      "fitDTime.="<<&fitDTime<<
+      "fitIPad.="<<&fitIPad<<
+      "fitITime.="<<&fitITime<<         
+      //
+      "fitPadIROC.="<<&fitPadIROC<<           // pad fit linear IROC
+      "fitPadIROCSin.="<<&fitPadIROCSin<<     // pad fit linear+ pad correction
+      "fitPadOROC.="<<&fitPadOROC<<
+      "fitPadOROCSin.="<<&fitPadOROCSin<<
+      //
+      "fitTimeIROC.="<<&fitTimeIROC<<
+      "fitTimeIROCSin.="<<&fitTimeIROCSin<<
+      "fitTimeOROC.="<<&fitTimeOROC<<
+      "fitTimeOROCSin.="<<&fitTimeOROCSin<<
+      "\n";    
+  }  
+  delete pcstream;
+}

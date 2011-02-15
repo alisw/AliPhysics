@@ -958,6 +958,8 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
       if (TMath::Abs(parLine1[2])<0.8 &&TMath::Abs(parLine1[2])<0.8 ){ //angular cut
 	FillHisto(parLine1,parLine2,s1,s2);  
 	ProcessAlign(parLine1,parLine2,s1,s2);
+	FillHisto((AliExternalTrackParam*)&tp1,(AliExternalTrackParam*)&tp2,s1,s2);
+	FillHisto((AliExternalTrackParam*)&tp2,(AliExternalTrackParam*)&tp1,s2,s1);
 	//UpdateKalman(s1,s2,par1, cov1, par2, cov2); - OBSOLETE to be removed - 50 % of time here
       }
     }
@@ -1671,7 +1673,11 @@ void AliTPCcalibAlign::MakeResidualHistos(){
   // 4 - local   kz
   // 
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
-  binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
+  if (TMath::Abs(AliTracker::GetBz())<0.01){
+    binsTrack[0]=60;       xminTrack[0]=-1.2;        xmaxTrack[0]=1.2; 
+  }else{
+    binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
+  }
   //
   axisName[1]="sector";   axisTitle[1]="Sector Number"; 
   binsTrack[1]=180;       xminTrack[1]=0;        xmaxTrack[1]=18; 
@@ -1712,7 +1718,8 @@ void AliTPCcalibAlign::MakeResidualHistosTracklet(){
   // 3 - local   ky
   // 4 - local   kz
   // 5 - sector  1
-  // 5 - sector  0
+  // 6 - sector  0
+  // 7 - z position  0
 
   axisName[0]="delta";   axisTitle[0]="#Delta (cm)"; 
   binsTrack[0]=60;       xminTrack[0]=-0.6;        xmaxTrack[0]=0.6; 
@@ -1734,21 +1741,27 @@ void AliTPCcalibAlign::MakeResidualHistosTracklet(){
   //
   axisName[6]="is0";      axisTitle[6]="is0"; 
   binsTrack[6]=72;       xminTrack[6]=0;        xmaxTrack[6]=72;
+  //
+  axisName[7]="z";        axisTitle[7]="z(cm)"; 
+  binsTrack[7]=12;        xminTrack[7]=-240;        xmaxTrack[7]=240;
+  //
+  axisName[8]="IsPrimary";        axisTitle[8]="Is Primary"; 
+  binsTrack[8]=2;        xminTrack[8]=-0.1;        xmaxTrack[8]=1.1;
  
   //
-  xminTrack[0]=-0.3;        xmaxTrack[0]=0.3; 
-  fTrackletDelta[0] = new THnSparseF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0]=-0.25;        xmaxTrack[0]=0.25; 
+  fTrackletDelta[0] = new THnSparseF("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0]=-0.5;        xmaxTrack[0]=0.5; 
-  fTrackletDelta[1] = new THnSparseF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 7, binsTrack,xminTrack, xmaxTrack);
+  fTrackletDelta[1] = new THnSparseF("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0]=-0.005;        xmaxTrack[0]=0.005; 
-  fTrackletDelta[2] = new THnSparseF("#Delta_{kY}","#Delta_{kY}", 7, binsTrack,xminTrack, xmaxTrack);
-  xminTrack[0]=-0.005;        xmaxTrack[0]=0.005; 
-  fTrackletDelta[3] = new THnSparseF("#Delta_{kZ}","#Delta_{kZ}", 7, binsTrack,xminTrack, xmaxTrack);
+  fTrackletDelta[2] = new THnSparseF("#Delta_{kY}","#Delta_{kY}", 9, binsTrack,xminTrack, xmaxTrack);
+  xminTrack[0]=-0.008;        xmaxTrack[0]=0.008; 
+  fTrackletDelta[3] = new THnSparseF("#Delta_{kZ}","#Delta_{kZ}", 9, binsTrack,xminTrack, xmaxTrack);
   //
   //
   //
   for (Int_t ivar=0;ivar<4;ivar++){
-    for (Int_t ivar2=0;ivar2<7;ivar2++){
+    for (Int_t ivar2=0;ivar2<9;ivar2++){
       fTrackletDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
       fTrackletDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
     }
@@ -1796,6 +1809,7 @@ void AliTPCcalibAlign::FillHisto(AliExternalTrackParam *tp1,
   //
   // Fill residual histograms
   // Track2-Track1
+  if (s2<s1) return;//
   const Double_t kEpsilon=0.001;
   Double_t x[8]={0,0,0,0,0,0,0,0};
   AliExternalTrackParam p1(*tp1);
@@ -1815,7 +1829,11 @@ void AliTPCcalibAlign::FillHisto(AliExternalTrackParam *tp1,
   x[4]=0.5*(p1.GetTgl()+p2.GetTgl());  // mean tgl
   x[5]=s2;
   x[6]=s1;
-  
+  x[7]=0.5*(p1.GetZ()+p2.GetZ());
+  // is primary ?
+  Int_t  isPrimary = (TMath::Abs(p1.GetTgl()-p1.GetZ()/p1.GetX())<0.1) ? 1:0;
+  x[8]= isPrimary;
+  //
   x[0]=p2.GetY()-p1.GetY();
   fTrackletDelta[0]->Fill(x);
   x[0]=p2.GetZ()-p1.GetZ();
@@ -2217,15 +2235,43 @@ void AliTPCcalibAlign::Add(AliTPCcalibAlign * align){
   if (!fClusterDelta[0]) MakeResidualHistos();
 
   for (Int_t i=0; i<2; i++){
-    if (align->fClusterDelta[i]) fClusterDelta[i]->Add(align->fClusterDelta[i]);
+    if (align->fClusterDelta[i]){
+      fClusterDelta[i]->Add(align->fClusterDelta[i]);
+  //     align->fClusterDelta[i]->GetAxis(0)->SetRangeUser(-0.87,0.87);
+//       align->fClusterDelta[i]->GetAxis(3)->SetRangeUser(-0.87,0.87);
+//       fClusterDelta[i]->GetAxis(0)->SetRangeUser(-0.87,0.87);
+//       fClusterDelta[i]->GetAxis(3)->SetRangeUser(-0.87,0.87);
+//       Int_t idim[4]={0,1,2,3};
+//       THnSparse *htemp=align->fClusterDelta[i]->Projection(4,idim);
+//       THnSparse *htemp1=fClusterDelta[i]->Projection(4,idim);      
+//       htemp1->Add(htemp);
+//       delete fClusterDelta[i];
+//       fClusterDelta[i]=htemp1;      
+//       delete htemp;
+    }
   }
-
+  
   for (Int_t i=0; i<4; i++){
     if (!fTrackletDelta[i] && align->fTrackletDelta[i]) {
       fTrackletDelta[i]= (THnSparse*)(align->fTrackletDelta[i]->Clone());
       continue;
     }
-    if (align->fTrackletDelta[i]) fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
+    if (align->fTrackletDelta[i]) {
+      fTrackletDelta[i]->Add(align->fTrackletDelta[i]);
+      //
+   //    align->fTrackletDelta[i]->GetAxis(3)->SetRangeUser(-0.36,0.36);
+//       align->fTrackletDelta[i]->GetAxis(4)->SetRangeUser(-0.87,0.87);
+//       fTrackletDelta[i]->GetAxis(3)->SetRangeUser(-0.36,0.36);
+//       fTrackletDelta[i]->GetAxis(4)->SetRangeUser(-0.87,0.87);
+//       //
+//       Int_t idim[9]={0,1,2,3,4,5,6,7,8};
+//       THnSparse *htemp=align->fTrackletDelta[i]->Projection(9,idim);
+//       THnSparse *htemp1=fTrackletDelta[i]->Projection(9,idim);
+//       htemp1->Add(htemp);
+//       delete fTrackletDelta[i];
+//       fTrackletDelta[i]=htemp1;
+//       delete htemp;
+    }
   }
 
 }
@@ -2638,9 +2684,8 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   //
   // 1. Apply selection
   // 2. Refit the track - in-out
-  //                    - update the cluster delta in upper part
   // 3. Refit the track - out-in
-  //                    - update the cluster delta histo lower part
+  // 4. Combine In and Out track - - fil cluster residuals
   //
   const Double_t kPtCut=1.0;    // pt
   const Double_t kSnpCut=0.2; // snp cut
@@ -2648,6 +2693,10 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   const Double_t kVertexCut=1;
   const Double_t kMaxDist=0.5; // max distance between tracks and cluster
   const Double_t kEdgeCut = 2.5;
+  const Double_t kDelta2=0.2*0.2;  // initial increase in covar matrix
+  const Double_t kSigma=0.3;       // error increase towards edges of TPC 
+  const Double_t kSkipBoundary=7.5;  // skip track updates in the boundary IFC,OFC, IO
+  //
   if (!fCurrentTrack) return;
   if (!fCurrentFriendTrack) return;
   Float_t vertexXY=0,vertexZ=0;
@@ -2658,12 +2707,31 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
   if (seed->GetNumberOfClusters()<kNclCut) return;
   if (TMath::Abs(seed->GetSnp())>kSnpCut) return; 
   if (!fClusterDelta[0])  MakeResidualHistos();
-
+  //
+  AliExternalTrackParam fitIn[160];
+  AliExternalTrackParam fitOut[160];
+  AliTPCROC * roc = AliTPCROC::Instance();
+  Double_t xmiddle   = ( roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
+  Double_t xDiff     = ( -roc->GetPadRowRadii(0,0)+roc->GetPadRowRadii(36,roc->GetNRows(36)-1))*0.5;
+  Double_t xIFC      = ( roc->GetPadRowRadii(0,0));
+  Double_t xOFC      = ( roc->GetPadRowRadii(36,roc->GetNRows(36)-1));
+  //
   Int_t detector=-1;
   //
   //
   AliExternalTrackParam trackIn  = *(fCurrentTrack->GetInnerParam());
   AliExternalTrackParam trackOut = *(fCurrentFriendTrack->GetTPCOut());
+  trackIn.ResetCovariance(10);
+  trackOut.ResetCovariance(10);
+  Double_t *covarIn = (Double_t*)trackIn.GetCovariance();
+  Double_t *covarOut = (Double_t*)trackOut.GetCovariance();
+  covarIn[0]+=kDelta2; covarIn[2]+=kDelta2; 
+  covarIn[5]+=kDelta2/(100.*100.); covarIn[9]=kDelta2/(100.*100.);
+  covarIn[14]+=kDelta2/(5.*5.);
+  covarOut[0]+=kDelta2; covarOut[2]+=kDelta2; 
+  covarOut[5]+=kDelta2/(100.*100.); covarOut[9]=kDelta2/(100.*100.);
+  covarOut[14]+=kDelta2/(5.*5.);
+  //
   static Double_t mass =    TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  
   Int_t ncl=0;
@@ -2677,7 +2745,6 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     ncl++;
   }
   if (ncl<kNclCut) return;
-
   Int_t nclIn=0,nclOut=0;
   Double_t xyz[3];
   //
@@ -2690,48 +2757,41 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     if (detector<0) detector=cl->GetDetector()%36;
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackOut.GetAlpha();    
+    if (cl->GetDetector()%36!=detector) continue;
     if (TMath::Abs(dalpha)>0.01){
       if (!trackOut.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
     }
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};    
-    Double_t cov[3]={0.01,0.,0.01}; 
-    AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
+    Double_t cov[3]={0.1,0.,0.1}; 
     Double_t dedge =  cl->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(trackOut.GetY());
-    cov[0]+=1./(irow+1.); // bigger error at boundary
-    cov[0]+=1./(160.-irow); // bigger error at boundary
-    cov[2]+=1./(irow+1.); // bigger error at boundary
-    cov[2]+=1./(160.-irow); // bigger error at boundary
-    cov[0]+=0.5/dedge;       // bigger error close to the boundary
-    cov[2]+=0.5/dedge;       // bigger error close to the boundary
+    Double_t dmiddle = TMath::Abs(cl->GetX()-xmiddle)/xDiff;
+    dmiddle*=dmiddle;
+    //
+    cov[0]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[0]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[2]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[2]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[0]+=kSigma/dedge;      // bigger error close to the boundary
+    cov[2]+=kSigma/dedge;      // bigger error close to the boundary
     cov[0]*=cov[0];
     cov[2]*=cov[2];
-    if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,1.,kFALSE)) continue;
-    
+    if (!AliTracker::PropagateTrackToBxByBz(&trackOut, r[0],mass,1.,kFALSE)) continue;    
     if (TMath::Abs(dedge)<kEdgeCut) continue;
-
+    //
+    Bool_t doUpdate=kTRUE;
+    if (TMath::Abs(cl->GetX()-xIFC)<kSkipBoundary) doUpdate=kFALSE;
+    if (TMath::Abs(cl->GetX()-xOFC)<kSkipBoundary) doUpdate=kFALSE;
+    if (TMath::Abs(cl->GetX()-fXIO)<kSkipBoundary) doUpdate=kFALSE;
+    //
     if (TMath::Abs(cl->GetY()-trackOut.GetY())<kMaxDist){
       nclOut++;
-      trackOut.Update(&r[1],cov);
+      if (doUpdate) trackOut.Update(&r[1],cov);
     }
-    if (nclOut<kNclCut/2) continue;
-    if (cl->GetDetector()%36!=detector) continue;
-    //
-    // fill residual histogram
-    //
-    Double_t resVector[5]; 
-    trackOut.GetXYZ(xyz);
-    resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
-    if (resVector[1]<0) resVector[1]+=18;
-    resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
-    resVector[3]= cl->GetZ()/resVector[2];
-    //
-    resVector[0]= cl->GetY()-trackOut.GetY();
-    fClusterDelta[0]->Fill(resVector);
-    resVector[0]= cl->GetZ()-trackOut.GetZ();
-    fClusterDelta[1]->Fill(resVector);
+    fitOut[irow]=trackOut;
   }
+  
   //
-  // Refit in - store residual maps
+  // Refit In - store residual maps
   //
   for (Int_t irow=159; irow>=0; irow--){
     AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
@@ -2740,47 +2800,62 @@ void AliTPCcalibAlign::UpdateClusterDeltaField(const AliTPCseed * seed){
     if (detector<0) detector=cl->GetDetector()%36;
     Int_t sector = cl->GetDetector();
     Float_t dalpha = TMath::DegToRad()*(sector%18*20.+10.)-trackIn.GetAlpha();    
+    if (cl->GetDetector()%36!=detector) continue;
     if (TMath::Abs(dalpha)>0.01){
       if (!trackIn.Rotate(TMath::DegToRad()*(sector%18*20.+10.))) break;
     }
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};    
-    Double_t cov[3]={0.01,0.,0.01}; 
-    AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
+    Double_t cov[3]={0.1,0.,0.1}; 
     Double_t dedge =  cl->GetX()*TMath::Tan(TMath::Pi()/18.)-TMath::Abs(trackIn.GetY());
-    cov[0]+=1./(irow+1.); // bigger error at boundary
-    cov[0]+=1./(160.-irow); // bigger error at boundary
-    cov[2]+=1./(irow+1.); // bigger error at boundary
-    cov[2]+=1./(160.-irow); // bigger error at boundary
-    cov[0]+=0.5/dedge;       // bigger error close to the boundary +-
-    cov[2]+=0.5/dedge;       // bigger error close to the boundary +-
+    Double_t dmiddle = TMath::Abs(cl->GetX()-xmiddle)/xDiff;
+    dmiddle*=dmiddle;
+    //
+    cov[0]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[0]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[2]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[2]+=kSigma*dmiddle;     // bigger error at boundary
+    cov[0]+=kSigma/dedge;      // bigger error close to the boundary
+    cov[2]+=kSigma/dedge;      // bigger error close to the boundary
     cov[0]*=cov[0];
     cov[2]*=cov[2];
-    if (!AliTracker::PropagateTrackToBxByBz(&trackIn, r[0],mass,1.,kFALSE)) continue;
+    if (!AliTracker::PropagateTrackToBxByBz(&trackIn, r[0],mass,1.,kFALSE)) continue;    
     if (TMath::Abs(dedge)<kEdgeCut) continue;
-
-
+    Bool_t doUpdate=kTRUE;
+    if (TMath::Abs(cl->GetX()-xIFC)<kSkipBoundary) doUpdate=kFALSE;
+    if (TMath::Abs(cl->GetX()-xOFC)<kSkipBoundary) doUpdate=kFALSE;
+    if (TMath::Abs(cl->GetX()-fXIO)<kSkipBoundary) doUpdate=kFALSE;
     if (TMath::Abs(cl->GetY()-trackIn.GetY())<kMaxDist){
       nclIn++;
-      trackIn.Update(&r[1],cov);
+      if (doUpdate) trackIn.Update(&r[1],cov);
     }
-    if (nclIn<kNclCut/2) continue;
-    if (cl->GetDetector()%36!=detector) continue;
+    fitIn[irow]=trackIn;
+  }
+  //
+  //
+  for (Int_t irow=159; irow>=0; irow--){
     //
-    // fill residual histogram
+    // Update kalman - +- direction
+    // Store cluster residuals
+    AliTPCclusterMI *cl=seed->GetClusterPointer(irow);
+    if (!cl) continue;
+    if (cl->GetX()<80) continue;
+    if (detector<0) detector=cl->GetDetector()%36;
+    if (cl->GetDetector()%36!=detector) continue;
+    AliExternalTrackParam trackSmooth = fitIn[irow];
+    AliTrackerBase::UpdateTrack(trackSmooth, fitOut[irow]);
     //
     Double_t resVector[5]; 
-    trackIn.GetXYZ(xyz);
+    trackSmooth.GetXYZ(xyz);
     resVector[1]= 9.*TMath::ATan2(xyz[1],xyz[0])/TMath::Pi();
     if (resVector[1]<0) resVector[1]+=18;
     resVector[2]= TMath::Sqrt(cl->GetX()*cl->GetX()+cl->GetY()*cl->GetY());
     resVector[3]= cl->GetZ()/resVector[2];
     //
-    resVector[0]= cl->GetY()-trackIn.GetY();
+    resVector[0]= cl->GetY()-trackSmooth.GetY();
     fClusterDelta[0]->Fill(resVector);
-    resVector[0]= cl->GetZ()-trackIn.GetZ();
+    resVector[0]= cl->GetZ()-trackSmooth.GetZ();
     fClusterDelta[1]->Fill(resVector);
   }
-
 
 }
 
@@ -2792,7 +2867,7 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
   //
   if (TMath::Abs(AliTracker::GetBz())>0.5) return;
   if (!fClusterDelta[0])  MakeResidualHistos();
-  const Int_t kMinClusterF=40;
+  //  const Int_t kMinClusterF=40;
   const Int_t kMinClusterFit=10;
   const Int_t kMinClusterQ=10;
   //
@@ -2842,12 +2917,12 @@ void  AliTPCcalibAlign::UpdateAlignSector(const AliTPCseed * track,Int_t isec){
       }
       if (TMath::Abs(x[0])<10){
 	fyf.AddPoint(x,c->GetY(),0.1); //use only middle rows+-10cm
+	fzf.AddPoint(x,c->GetZ(),0.1);            
       }
-      fzf.AddPoint(x,c->GetZ(),0.1);      
     }
     nf = fyf.GetNpoints();
     if (fyf.GetNpoints()<kMinClusterFit) return;   // not enough points - skip 
-    if (fzf.GetNpoints()<kMinClusterF) return;   // not enough points - skip 
+    if (fzf.GetNpoints()<kMinClusterFit) return;   // not enough points - skip 
     fyf.Eval(); 
     fyf.GetParameters(pyf); 
     fyf.GetErrors(peyf);

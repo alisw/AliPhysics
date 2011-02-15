@@ -37,6 +37,8 @@ public:
   virtual void     Process(AliESDEvent *event);
   Int_t   GetNtracks(){return fNtracks;}
   virtual void Analyze();
+  static void        DumpLaser(const char *finput, Int_t run);
+  static void        FitLaserClusters(Int_t run);
   virtual Long64_t Merge(TCollection *li);
   virtual void DumpMeanInfo(Int_t run=-1);
   static  void DumpScanInfo(TTree * tree, const char * cutUser="entries>300&&(gz2<0.15&&gphi2<0.1&&gp42<0.02&&abs(gp41)<0.03)");
@@ -94,6 +96,9 @@ public:
   // Refit residuals histogram
   //
   THnSparseS     *fHisLaser;      //  N dim histogram of laser 
+  THnSparseS     *fHisLaserPad;   //  N dim histogram of laser 
+  THnSparseS     *fHisLaserTime;   //  N dim histogram of laser 
+  //
   TH2F           *fHisNclIn;      //->Number of clusters inner
   TH2F           *fHisNclOut;     //->Number of clusters outer
   TH2F           *fHisNclIO;      //->Number of cluster inner outer
@@ -178,7 +183,7 @@ public:
   Double_t       fFixedFitCside1;   // Fixed drift v constant 1 - C side
   //
 private:
-  ClassDef(AliTPCcalibLaser,5)
+  ClassDef(AliTPCcalibLaser,6)
 };
 
 

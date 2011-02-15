@@ -53,8 +53,10 @@ public:
   // Alignment manipulation using TGeoMatrix
   
   void SetAlignGlobal(const TGeoMatrix * matrixGlobal);
+  void SetAlignGlobalDelta(const TGeoMatrix * matrixGlobalDelta);
   void SetAlignSectors(const TObjArray *arraySector);
   TGeoMatrix* GetAlignGlobal() const  {return fMatrixGlobal;}
+  TGeoMatrix* GetAlignGlobalDelta() const  {return fMatrixGlobalDelta;}
   TObjArray * GetAlignSectors() const {return fArraySector;}
   //
   static AliTPCCalibGlobalMisalignment*  CreateOCDBAlign();
@@ -87,11 +89,12 @@ private:
   // Global alignment - use native ROOT representation
   //
   TGeoMatrix * fMatrixGlobal; // global Alignment common
+  TGeoMatrix * fMatrixGlobalDelta; // global Alignment common A side-C side
   TObjArray   * fArraySector; //  local Alignmnet Sector
   //
   AliTPCCalibGlobalMisalignment& operator=(const AliTPCCalibGlobalMisalignment&);
   AliTPCCalibGlobalMisalignment(const AliTPCCalibGlobalMisalignment&);
-  ClassDef(AliTPCCalibGlobalMisalignment,2);
+  ClassDef(AliTPCCalibGlobalMisalignment,3);
 };
 
 #endif

@@ -181,6 +181,13 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
   //
   // 0 - Setup transform object
   //
+  const Double_t kxIFC = 83.;   // position of IFC
+  const Double_t kxOFC = 250.;  // position of OFC
+  const Double_t kaFC = 1.;    // amplitude 
+  const Double_t ktFC = 5.0;    // slope of error 
+  //cov[0]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+  //cov[2]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+
   static Int_t streamCounter=0;
   streamCounter++;
   AliESDfriendTrack *friendTrack = fCurrentFriendTrack;
@@ -314,6 +321,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
     cov[0]*=cov[0];
     cov[2]*=cov[2];
+    cov[0]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+    cov[2]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
     trackIn.GetXYZ(xyz);
     //    Double_t bz = AliTracker::GetBz(xyz);
 
@@ -353,6 +362,8 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     AliTPCseed::GetError(cl, &trackOut,cov[0],cov[2]);
     cov[0]*=cov[0];
     cov[2]*=cov[2];
+    cov[0]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+    cov[2]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
     trackOut.GetXYZ(xyz);
     //Double_t bz = AliTracker::GetBz(xyz);
     //    if (!trackOut.PropagateTo(r[0],bz)) continue;
@@ -391,6 +402,9 @@ Bool_t  AliTPCcalibCalib::RefitTrack(AliESDtrack * track, AliTPCseed *seed, Floa
     AliTPCseed::GetError(cl, &trackIn,cov[0],cov[2]);
     cov[0]*=cov[0];
     cov[2]*=cov[2];
+    cov[0]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+    cov[2]+= kaFC*(TMath::Exp(-TMath::Abs(cl->GetX()-kxIFC)/ktFC)+TMath::Exp(-TMath::Abs(cl->GetX()-kxOFC)/ktFC));
+
     trackIn.GetXYZ(xyz);
     //Double_t bz = AliTracker::GetBz(xyz);
 

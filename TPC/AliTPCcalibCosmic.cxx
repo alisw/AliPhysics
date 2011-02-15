@@ -1,3 +1,5 @@
+
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -75,15 +77,20 @@
 #include "AliTracker.h"
 #include "AliMagF.h"
 #include "AliTPCCalROC.h"
-
+#include "AliTPCParam.h"
 #include "AliLog.h"
 
 #include "AliTPCcalibCosmic.h"
 #include "TTreeStream.h"
 #include "AliTPCTracklet.h"
 //#include "AliESDcosmic.h"
-
-
+#include "AliRecoParam.h"
+#include "AliMultiplicity.h"
+#include "AliTPCTransform.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCseed.h"
+#include "AliGRPObject.h"
+#include "AliTPCCorrection.h"
 ClassImp(AliTPCcalibCosmic)
 
 
@@ -99,7 +106,8 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fCutMaxD(5),        // maximal distance in rfi ditection
    fCutMaxDz(40),      // maximal distance in z ditection
    fCutTheta(0.03),    // maximal distan theta
-   fCutMinDir(-0.99)   // direction vector products
+   fCutMinDir(-0.99),   // direction vector products
+   fCosmicTree(0)      // tree with cosmic data
 {  
   AliInfo("Default Constructor");    
   for (Int_t ihis=0; ihis<6;ihis++){
@@ -125,7 +133,8 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
    fCutMaxD(5),        // maximal distance in rfi ditection 
    fCutMaxDz(40),      // maximal distance in z ditection
    fCutTheta(0.03),    // maximal distan theta
-   fCutMinDir(-0.99)   // direction vector products
+   fCutMinDir(-0.99),  // direction vector products
+   fCosmicTree(0)      // tree with cosmic data
 {  
   SetName(name);
   SetTitle(title);
@@ -180,10 +189,11 @@ void AliTPCcalibCosmic::Init(){
   // 6 - P4 - 1/pt mean
   // 7 - pt - pt mean
   // 8 - alpha
-
-  Double_t xminTrack[9], xmaxTrack[9];
-  Int_t binsTrack[9];
-  TString axisName[9];
+  // 9 - is corss indicator
+  Int_t ndim=10;
+  Double_t xminTrack[10], xmaxTrack[10];
+  Int_t binsTrack[10];
+  TString axisName[10];
   //
   binsTrack[0] =100;
   axisName[0]  ="#Delta";
@@ -212,50 +222,54 @@ void AliTPCcalibCosmic::Init(){
   xminTrack[6] =-2; xmaxTrack[6]=2;  // 
   axisName[6]  ="1/pt (1/GeV)";
   //
-  binsTrack[7] =40;
-  xminTrack[7] =0.2; xmaxTrack[7]=50;  // 
+  binsTrack[7] =50;
+  xminTrack[7] =1; xmaxTrack[7]=1000;  // 
   axisName[7]  ="pt (GeV)";
   //
   binsTrack[8] =18;
   xminTrack[8] =0; xmaxTrack[8]=TMath::Pi();  // 
   axisName[8]  ="alpha";
   //
+  binsTrack[9] =3;
+  xminTrack[9] =-0.1; xmaxTrack[9]=2.1;  // 
+  axisName[9]  ="cross";
+  //
   // delta y
   xminTrack[0] =-1; xmaxTrack[0]=1;  // 
-  fHistoDelta[0] = new THnSparseS("#Delta_{Y} (cm)","#Delta_{Y} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[0] = new THnSparseS("#Delta_{Y} (cm)","#Delta_{Y} (cm)", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[0] = new THnSparseS("#Delta_{Y} (unit)","#Delta_{Y} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[0] = new THnSparseS("#Delta_{Y} (unit)","#Delta_{Y} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   //
   // delta z
   xminTrack[0] =-1; xmaxTrack[0]=1;  // 
-  fHistoDelta[1] = new THnSparseS("#Delta_{Z} (cm)","#Delta_{Z} (cm)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[1] = new THnSparseS("#Delta_{Z} (cm)","#Delta_{Z} (cm)", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[1] = new THnSparseS("#Delta_{Z} (unit)","#Delta_{Z} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[1] = new THnSparseS("#Delta_{Z} (unit)","#Delta_{Z} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   //
   // delta P2
   xminTrack[0] =-10; xmaxTrack[0]=10;  // 
-  fHistoDelta[2] = new THnSparseS("#Delta_{#phi} (mrad)","#Delta_{#phi} (mrad)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[2] = new THnSparseS("#Delta_{#phi} (mrad)","#Delta_{#phi} (mrad)", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[2] = new THnSparseS("#Delta_{#phi} (unit)","#Delta_{#phi} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[2] = new THnSparseS("#Delta_{#phi} (unit)","#Delta_{#phi} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   //
   // delta P3
   xminTrack[0] =-10; xmaxTrack[0]=10;  // 
-  fHistoDelta[3] = new THnSparseS("#Delta_{#theta} (mrad)","#Delta_{#theta} (mrad)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[3] = new THnSparseS("#Delta_{#theta} (mrad)","#Delta_{#theta} (mrad)", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[3] = new THnSparseS("#Delta_{#theta} (unit)","#Delta_{#theta} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[3] = new THnSparseS("#Delta_{#theta} (unit)","#Delta_{#theta} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   //
   // delta P4
   xminTrack[0] =-0.2; xmaxTrack[0]=0.2;  // 
-  fHistoDelta[4] = new THnSparseS("#Delta_{1/pt} (1/GeV)","#Delta_{1/pt} (1/GeV)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[4] = new THnSparseS("#Delta_{1/pt} (1/GeV)","#Delta_{1/pt} (1/GeV)", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[4] = new THnSparseS("#Delta_{1/pt} (unit)","#Delta_{1/pt} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[4] = new THnSparseS("#Delta_{1/pt} (unit)","#Delta_{1/pt} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   
   //
   // delta Pt
   xminTrack[0] =-0.5; xmaxTrack[0]=0.5;  // 
-  fHistoDelta[5] = new THnSparseS("#Delta_{pt}/p_{t}","#Delta_{pt}/p_{t}", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoDelta[5] = new THnSparseS("#Delta_{pt}/p_{t}","#Delta_{pt}/p_{t}", ndim, binsTrack,xminTrack, xmaxTrack);
   xminTrack[0] =-5; xmaxTrack[0]=5;  // 
-  fHistoPull[5] = new THnSparseS("#Delta_{pt}/p_{t} (unit)","#Delta_{pt}/p_{t} (unit)", 9, binsTrack,xminTrack, xmaxTrack);
+  fHistoPull[5] = new THnSparseS("#Delta_{pt}/p_{t} (unit)","#Delta_{pt}/p_{t} (unit)", ndim, binsTrack,xminTrack, xmaxTrack);
   //
 
   for (Int_t idedx=0;idedx<4;idedx++){
@@ -265,16 +279,16 @@ void AliTPCcalibCosmic::Init(){
 
     fHistodEdxMax[idedx] = new THnSparseS(Form("dEdx_{MaxUp}/dEdx_{MaxDown}_Pad%d",idedx),
 					  Form("dEdx_{MaxUp}/dEdx_{MaxDown}_Pad%d",idedx), 
-					  9, binsTrack,xminTrack, xmaxTrack);
+					  ndim, binsTrack,xminTrack, xmaxTrack);
     fHistodEdxTot[idedx] = new THnSparseS(Form("dEdx_{TotUp}/dEdx_{TotDown}_Pad%d",idedx),
 					  Form("dEdx_{TotUp}/dEdx_{TotDown}_Pad%d",idedx), 
-					  9, binsTrack,xminTrack, xmaxTrack);
+					  ndim, binsTrack,xminTrack, xmaxTrack);
   }
   
 
 
   for (Int_t ivar=0;ivar<6;ivar++){
-    for (Int_t ivar2=0;ivar2<9;ivar2++){      
+    for (Int_t ivar2=0;ivar2<ndim;ivar2++){      
       fHistoDelta[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
       fHistoDelta[ivar]->GetAxis(ivar2)->SetTitle(axisName[ivar2].Data());
       fHistoPull[ivar]->GetAxis(ivar2)->SetName(axisName[ivar2].Data());
@@ -314,6 +328,13 @@ void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
       fHistodEdxTot[ivar]->Add(cosmic->fHistodEdxTot[ivar]);
     }
   }
+  if (cosmic->fCosmicTree){
+    if (!fCosmicTree) {
+      fCosmicTree = new TTree("pairs","pairs");
+      fCosmicTree->SetDirectory(0);
+    }
+    AliTPCcalibCosmic::AddTree(fCosmicTree,cosmic->fCosmicTree);
+  }
 }
 
 
@@ -333,24 +354,34 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
    return;
   }
    
+  //
+  //Int_t isOK=kTRUE;
+  // COSMIC not signed properly
+  //  UInt_t specie = event->GetEventSpecie();  // select only cosmic events
+  //if (specie==AliRecoParam::kCosmic || specie==AliRecoParam::kCalib) {
+  //  isOK = kTRUE;
+  //}
+  //if (!isOK) return;
+  // Work around
+  FindCosmicPairs(event);
+  return;
+  const AliMultiplicity *multiplicity = event->GetMultiplicity();
+  Int_t ntracklets = multiplicity->GetNumberOfTracklets();
+  if (ntracklets>6) return; // filter out "normal" event with high multiplicity
+  const TString &trigger = event->GetFiredTriggerClasses();
+  if (trigger.Contains("C0OB0")==0) return;
+
 
   FindPairs(event); // nearly everything takes place in find pairs...
 
   if (GetDebugLevel()>20) printf("Hallo world: Im here and processing an event\n");
   Int_t ntracks=event->GetNumberOfTracks(); 
   fHistNTracks->Fill(ntracks);
-  if (ntracks==0) return;
- //  AliESDcosmic cosmicESD;    
-//   TTreeSRedirector * cstream =  GetDebugStreamer();
-//   cosmicESD.SetDebugStreamer(cstream);
-//   cosmicESD.ProcessEvent(event);
-//   if (cstream) cosmicESD.DumpToTree();
-      
   
 }
 
 
-void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam */*inner1*/, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined ){
+void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam */*inner1*/, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined , Int_t cross){
   //
   // par0,par1       - parameter of tracks at DCA 0
   // inner0,inner1   - parameter of tracks at the TPC entrance
@@ -360,9 +391,8 @@ void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, 
   Int_t kMinCldEdx =20;
   Int_t ncl0 = seed0->GetNumberOfClusters();
   Int_t ncl1 = seed1->GetNumberOfClusters();
-
   const Double_t kpullCut    = 10;
-  Double_t x[9];
+  Double_t x[10];
   Double_t xyz0[3];
   Double_t xyz1[3];
   par0->GetXYZ(xyz0);
@@ -380,6 +410,7 @@ void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, 
   x[6] = param0Combined->GetSigned1Pt();
   x[7] = param0Combined->Pt();
   x[8] = alpha;
+  x[9] = cross;
   // deltas
   Double_t delta[6];
   Double_t sigma[6];
@@ -406,8 +437,8 @@ void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, 
   //
 
   if (isOK) for (Int_t ivar=0;ivar<6;ivar++){
-    x[0]= delta[ivar]/TMath::Sqrt(2);
-    if (ivar==2 || ivar ==3) x[0]*=1000;
+    x[0]= delta[ivar];    // Modifiation 10.10 use not normalized deltas
+    if (ivar==2 || ivar ==3) x[0]*=1000;  // angles in radian
     fHistoDelta[ivar]->Fill(x);
     if (sigma[ivar]>0){
       x[0]= delta[ivar]/sigma[ivar];
@@ -651,13 +682,17 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
       Bool_t isPair = IsPair(&param0,&param1);
       //
       if (isPair) FillAcordeHist(track0);
+      if (isPair &&param0.Pt()>1) {
+	const TString &trigger = event->GetFiredTriggerClasses(); 
+	UInt_t specie = event->GetEventSpecie();
+	printf("COSMIC ?\t%s\t%d\t%f\t%f\n", trigger.Data(),specie, param0.GetZ(), param1.GetZ()); 
+      }
       //
       // combined track params 
       //
       AliExternalTrackParam *par0U=MakeCombinedTrack(&param0,&param1);
       AliExternalTrackParam *par1U=MakeCombinedTrack(&param1,&param0);
-
-
+      
       //
       if (fStreamLevel>0){
 	TTreeSRedirector * cstream =  GetDebugStreamer();
@@ -673,7 +708,10 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	//
 	//
 	//
-	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1,par0U);
+	Int_t cross =0;  // 0 no cross, 2 cross on both sides
+	if (isCrossI) cross+=1; 
+	if (isCrossO) cross+=1; 
+	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1,par0U, cross);
 	MaterialBudgetDump(&param0, &param1, ip0, ip1, seed0, seed1,par0U,par1U);
 	if (cstream) {
 	  (*cstream) << "Track0" <<
@@ -1027,4 +1065,597 @@ void AliTPCcalibCosmic::UpdateTrack(AliExternalTrackParam &track1, const AliExte
 
 
 
+void AliTPCcalibCosmic::FindCosmicPairs(AliESDEvent * event){
+  //
+  // find cosmic pairs trigger by random trigger
+  //
+  //
+  AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+  AliESDVertex *vertexTPC =  (AliESDVertex *)event->GetPrimaryVertexTPC(); 
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(event->FindListObject("AliESDfriend"));
+  const Double_t kMinPt=1;
+  const Double_t kMinPtMax=0.8;
+  const Double_t kMinNcl=50;
+  const Double_t kMaxDelta[5]={2,600,0.02,0.02,0.1};
+  Int_t ntracks=event->GetNumberOfTracks(); 
+  Float_t dcaTPC[2]={0,0};
+  Float_t covTPC[3]={0,0,0};
 
+  UInt_t specie = event->GetEventSpecie();  // skip laser events
+  if (specie==AliRecoParam::kCalib) return;
+  
+
+
+  for (Int_t itrack0=0;itrack0<ntracks;itrack0++) {
+    AliESDtrack *track0 = event->GetTrack(itrack0);
+    if (!track0) continue;
+    if (!track0->IsOn(AliESDtrack::kTPCrefit)) continue;
+
+    if (TMath::Abs(AliTracker::GetBz())>1&&track0->Pt()<kMinPt) continue;
+    if (track0->GetTPCncls()<kMinNcl) continue;
+    if (TMath::Abs(track0->GetY())<kMaxDelta[0]) continue; 
+    if (track0->GetKinkIndex(0)>0) continue;
+    const Double_t * par0=track0->GetParameter(); //track param at rhe DCA
+    //rm primaries
+    //
+    //track0->GetImpactParametersTPC(dcaTPC,covTPC);
+    //if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
+    //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
+    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
+    for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
+      AliESDtrack *track1 = event->GetTrack(itrack1);
+      if (!track1) continue;  
+      if (!track1->IsOn(AliESDtrack::kTPCrefit)) continue;
+      if (track1->GetKinkIndex(0)>0) continue;
+      if (TMath::Abs(AliTracker::GetBz())>1&&track1->Pt()<kMinPt) continue;
+      if (track1->GetTPCncls()<kMinNcl) continue;
+      if (TMath::Abs(AliTracker::GetBz())>1&&TMath::Max(track1->Pt(), track0->Pt())<kMinPtMax) continue;
+      if (TMath::Abs(track1->GetY())<kMaxDelta[0]) continue;
+      //track1->GetImpactParametersTPC(dcaTPC,covTPC);
+      //      if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
+      //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
+      //
+      const Double_t* par1=track1->GetParameter(); //track param at rhe DCA
+      //
+      Bool_t isPair=kTRUE;
+      for (Int_t ipar=0; ipar<5; ipar++){
+	if (ipar==4&&TMath::Abs(AliTracker::GetBz())<1) continue; // 1/pt not defined for B field off
+	if (TMath::Abs(TMath::Abs(par0[ipar])-TMath::Abs(par1[ipar]))>kMaxDelta[ipar]) isPair=kFALSE;
+      }
+      if (!isPair) continue;
+      if (TMath::Abs(TMath::Abs(track0->GetAlpha()-track1->GetAlpha())-TMath::Pi())>kMaxDelta[2]) isPair=kFALSE;
+      //delta with correct sign
+      /*
+	TCut cut0="abs(t1.fP[0]+t0.fP[0])<2"
+	TCut cut3="abs(t1.fP[3]+t0.fP[3])<0.02"
+	TCut cut4="abs(t1.fP[4]+t0.fP[4])<0.2"
+      */
+      if  (TMath::Abs(par0[0]+par1[0])>kMaxDelta[0]) isPair=kFALSE; //delta y   opposite sign
+      if  (TMath::Abs(par0[3]+par1[3])>kMaxDelta[3]) isPair=kFALSE; //delta tgl opposite sign
+      if  (TMath::Abs(AliTracker::GetBz())>1 && TMath::Abs(par0[4]+par1[4])>kMaxDelta[4]) isPair=kFALSE; //delta 1/pt opposite sign
+      if (!isPair) continue;
+      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
+      //
+      //       
+      TTreeSRedirector * pcstream =  GetDebugStreamer();
+      Int_t ntracksSPD = vertexSPD->GetNContributors();
+      Int_t ntracksTPC = vertexTPC->GetNContributors();
+      //
+      AliESDfriendTrack *friendTrack0 = esdFriend->GetTrack(itrack0);
+      if (!friendTrack0) continue;
+      AliESDfriendTrack *friendTrack1 = esdFriend->GetTrack(itrack1);
+      if (!friendTrack1) continue;
+      TObject *calibObject;
+      AliTPCseed *seed0 = 0;   
+      AliTPCseed *seed1 = 0;
+      //
+      for (Int_t l=0;(calibObject=friendTrack0->GetCalibObject(l));++l) {
+	if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
+      }
+      for (Int_t l=0;(calibObject=friendTrack1->GetCalibObject(l));++l) {
+	if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
+      }
+      //
+      if (pcstream){
+	(*pcstream)<<"pairs"<<
+	  "run="<<fRun<<              //  run number
+	  "event="<<fEvent<<          //  event number
+	  "time="<<fTime<<            //  time stamp of event
+	  "trigger="<<fTrigger<<      //  trigger
+	  "triggerClass="<<&fTriggerClass<<      //  trigger
+	  "mag="<<fMagF<<             //  magnetic field
+	  //
+	  "nSPD="<<ntracksSPD<<
+	  "nTPC="<<ntracksTPC<<
+	  "vSPD.="<<vertexSPD<<         //primary vertex -SPD
+	  "vTPC.="<<vertexTPC<<         //primary vertex -TPC
+	  "t0.="<<track0<<              //track0
+	  "t1.="<<track1<<              //track1
+ 	  "ft0.="<<friendTrack0<<       //track0
+ 	  "ft1.="<<friendTrack1<<       //track1
+ 	  "s0.="<<seed0<<               //track0
+ 	  "s1.="<<seed1<<               //track1
+	  "\n";      
+      }
+      if (!fCosmicTree) {
+	fCosmicTree = new TTree("pairs","pairs");
+	fCosmicTree->SetDirectory(0);
+      }
+      if (fCosmicTree->GetEntries()==0){
+	//
+	fCosmicTree->SetDirectory(0);
+	fCosmicTree->Branch("t0.",&track0);
+	fCosmicTree->Branch("t1.",&track1);
+	fCosmicTree->Branch("ft0.",&friendTrack0);
+	fCosmicTree->Branch("ft1.",&friendTrack1);
+      }else{
+	fCosmicTree->SetBranchAddress("t0.",&track0);	
+	fCosmicTree->SetBranchAddress("t1.",&track1);
+	fCosmicTree->SetBranchAddress("ft0.",&friendTrack0);	
+	fCosmicTree->SetBranchAddress("ft1.",&friendTrack1);
+      }
+      fCosmicTree->Fill();
+    }
+  }
+}
+
+
+void  AliTPCcalibCosmic::Terminate(){
+  //
+  // copy the cosmic tree to memory resident tree
+  //
+  static Int_t counter=0;
+  printf("AliTPCcalibCosmic::Terminate\t%d\n",counter);
+  counter++;
+  AliTPCcalibBase::Terminate();
+}
+
+
+void AliTPCcalibCosmic::AddTree(TTree* treeOutput, TTree * treeInput){
+  //
+  // Add the content of tree: 
+  // Notice automatic copy of tree in ROOT does not work for such complicated tree
+  //  
+  AliESDtrack *track0=new AliESDtrack;
+  AliESDtrack *track1=new AliESDtrack;
+  AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
+  AliESDfriendTrack *ftrack1=new AliESDfriendTrack;
+  treeInput->SetBranchAddress("t0.",&track0);	
+  treeInput->SetBranchAddress("t1.",&track1);
+  treeInput->SetBranchAddress("ft0.",&ftrack0);	
+  treeInput->SetBranchAddress("ft1.",&ftrack1);
+  if (treeOutput->GetEntries()==0){
+    //
+    treeOutput->SetDirectory(0);
+    treeOutput->Branch("t0.",&track0);
+    treeOutput->Branch("t1.",&track1);
+    treeOutput->Branch("ft0.",&ftrack0);
+    treeOutput->Branch("ft1.",&ftrack1);
+  }else{
+     treeOutput->SetBranchAddress("t0.",&track0);	
+     treeOutput->SetBranchAddress("t1.",&track1);
+     treeOutput->SetBranchAddress("ft0.",&ftrack0);	
+     treeOutput->SetBranchAddress("ft1.",&ftrack1);
+  }
+  Int_t entries= treeInput->GetEntries();
+  for (Int_t i=0; i<entries; i++){
+    treeInput->GetEntry(i);
+    treeOutput->Fill();
+  }
+}
+
+
+
+void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstream, const TObjArray * corrArray, Int_t step, Int_t run){
+  //
+  // Make fit tree
+  // refit the tracks with original points + corrected points for each correction
+  // Input:
+  //   treeInput - tree with cosmic tracks
+  //   pcstream  - debug output
+
+  // Algorithm:
+  // Loop over pair of cosmic tracks:
+  //   1. Find trigger offset between cosmic event and "physic" trigger
+  //   2. Refit tracks with current transformation
+  //   3. Refit tracks using additional "primitive" distortion on top
+  // Best correction estimated as linear combination of corrections 
+  // minimizing the observed distortions
+  // Observed distortions - matching in the y,z, snp, theta and 1/pt
+  //
+  const Double_t kResetCov=20.;
+  const Double_t kMaxDelta[5]={1,40,0.03,0.01,0.2};
+  const Double_t kSigma=2.;    
+  const Double_t kMaxTime=1050;
+  const Double_t kMaxSnp=0.8;
+  Int_t ncorr=corrArray->GetEntries();
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+  AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
+  Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd()); 
+  transform->SetCurrentRun(run);
+  transform->SetCurrentTimeStamp(time);
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=kSigma*kSigma;
+  covar[2]=kSigma*kSigma;
+  covar[5]=kSigma*kSigma/Float_t(150*150);
+  covar[9]=kSigma*kSigma/Float_t(150*150);
+  covar[14]=0.2*0.2;
+  Double_t *distortions = new Double_t[ncorr+1];
+
+  AliESDtrack *track0=new AliESDtrack;
+  AliESDtrack *track1=new AliESDtrack;
+  AliESDfriendTrack *ftrack0=new AliESDfriendTrack;
+  AliESDfriendTrack *ftrack1=new AliESDfriendTrack;
+  treeInput->SetBranchAddress("t0.",&track0);	
+  treeInput->SetBranchAddress("t1.",&track1);
+  treeInput->SetBranchAddress("ft0.",&ftrack0);	
+  treeInput->SetBranchAddress("ft1.",&ftrack1);
+  Int_t entries= treeInput->GetEntries();
+  for (Int_t i=0; i<entries; i+=step){    
+    treeInput->GetEntry(i);
+    if (i%20==0) printf("%d\n",i);
+    if (!ftrack0->GetTPCOut()) continue;
+    if (!ftrack1->GetTPCOut()) continue;
+    AliTPCseed *seed0=0;
+    AliTPCseed *seed1=0;
+    TObject *calibObject;
+    for (Int_t l=0;(calibObject=ftrack0->GetCalibObject(l));++l) {
+      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    for (Int_t l=0;(calibObject=ftrack1->GetCalibObject(l));++l) {
+      if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    if (!seed0) continue;
+    if (!seed1) continue;
+    if (TMath::Abs(seed0->GetSnp())>kMaxSnp) continue;
+    if (TMath::Abs(seed1->GetSnp())>kMaxSnp) continue;
+    //
+    //
+    Int_t nclA0=0, nclC0=0;     // number of clusters
+    Int_t nclA1=0, nclC1=0;     // number of clusters
+    Int_t ncl0=0,ncl1=0;
+    Double_t rmin0=300, rmax0=-300;  // variables to estimate the time0 - trigger offset
+    Double_t rmin1=300, rmax1=-300;
+    Double_t tmin0=2000, tmax0=-2000;
+    Double_t tmin1=2000, tmax1=-2000;
+    //
+    //
+    // calculate trigger offset usig "missing clusters"
+    for (Int_t irow=0; irow<159; irow++){
+      AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
+      if (cluster0 &&cluster0->GetX()>10){
+	if (cluster0->GetX()<rmin0) { rmin0=cluster0->GetX(); tmin0=cluster0->GetTimeBin();}
+	if (cluster0->GetX()>rmax0) { rmax0=cluster0->GetX(); tmax0=cluster0->GetTimeBin();}
+	ncl0++;
+	if (cluster0->GetDetector()%36<18) nclA0++;
+	if (cluster0->GetDetector()%36>=18) nclC0++;
+      }  
+      AliTPCclusterMI *cluster1=seed1->GetClusterPointer(irow);
+      if (cluster1&&cluster1->GetX()>10){
+	if (cluster1->GetX()<rmin1) { rmin1=cluster1->GetX();  tmin1=cluster1->GetTimeBin();}
+	if (cluster1->GetX()>rmax1) { rmax1=cluster1->GetX(); tmax1=cluster1->GetTimeBin();}
+	ncl1++;
+	if (cluster1->GetDetector()%36<18) nclA1++;
+	if (cluster1->GetDetector()%36>=18) nclC1++;
+      }
+    }
+    Int_t cosmicType=0;  // types of cosmic topology
+    if ((nclA0>nclC0) && (nclA1>nclC1)) cosmicType=0; // AA side
+    if ((nclA0<nclC0) && (nclA1<nclC1)) cosmicType=1; // CC side
+    if ((nclA0>nclC0) && (nclA1<nclC1)) cosmicType=2; // AC side
+    if ((nclA0<nclC0) && (nclA1>nclC1)) cosmicType=3; // CA side
+    //if ((nclA0>nclC0) && (nclA1<nclC1)) cosmicType=6; // AC side out of time
+    //if ((nclA0>nclC0) && (nclA1<nclC1)) cosmicType=7; // CA side out of time
+    //
+    Double_t deltaTime = 0;   // correction for trigger not in time - equalizing the time arival
+    if ((cosmicType>1)&&TMath::Abs(track1->GetZ()-track0->GetZ())>4){
+      cosmicType+=4;
+      deltaTime=0.5*(track1->GetZ()-track0->GetZ())/param->GetZWidth();
+      if (nclA0>nclC0) deltaTime*=-1; // if A side track
+    }
+    //
+    TVectorD vectorDT(8);
+    Int_t crossCounter=0;
+    Double_t deltaTimeCross = AliTPCcalibCosmic::GetDeltaTime(rmin0, rmax0, rmin1, rmax1, tmin0, tmax0, tmin1, tmax1, TMath::Abs(track0->GetY()),vectorDT);
+    Bool_t isOKTrigger=kTRUE;
+    for (Int_t ic=0; ic<6;ic++) {
+      if (TMath::Abs(vectorDT[ic])>0) {
+	if (vectorDT[ic]+vectorDT[6]<0) isOKTrigger=kFALSE;
+	if (vectorDT[ic]+vectorDT[7]>kMaxTime) isOKTrigger=kFALSE;
+	if (isOKTrigger){
+	  crossCounter++; 
+	}
+      }
+    }
+    Double_t deltaTimeCluster=deltaTime;
+    if ((cosmicType==0 || cosmicType==1) && crossCounter>0){
+      deltaTimeCluster=deltaTimeCross;
+      cosmicType+=8;
+    }
+    if (nclA0*nclC0>0 || nclA1*nclC1>0) cosmicType+=16;  // mixed A side C side - bad for visualization
+    //
+    // Apply current transformation
+    //
+    //
+    for (Int_t irow=0; irow<159; irow++){
+      AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
+      if (cluster0 &&cluster0->GetX()>10){
+	Double_t x0[3]={cluster0->GetRow(),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
+	Int_t index0[1]={cluster0->GetDetector()};
+	transform->Transform(x0,index0,0,1);  
+	cluster0->SetX(x0[0]);
+	cluster0->SetY(x0[1]);
+	cluster0->SetZ(x0[2]);
+	//
+      }
+      AliTPCclusterMI *cluster1=seed1->GetClusterPointer(irow);
+      if (cluster1&&cluster1->GetX()>10){
+	Double_t x1[3]={cluster1->GetRow(),cluster1->GetPad(),cluster1->GetTimeBin()+deltaTimeCluster};
+	Int_t index1[1]={cluster1->GetDetector()};
+	transform->Transform(x1,index1,0,1);  
+	cluster1->SetX(x1[0]);
+	cluster1->SetY(x1[1]);
+	cluster1->SetZ(x1[2]);
+      }
+    }
+    //
+    //
+    Double_t alpha=track0->GetAlpha();   // rotation frame
+    Double_t cos = TMath::Cos(alpha);
+    Double_t sin = TMath::Sin(alpha);
+    Double_t mass =  TDatabasePDG::Instance()->GetParticle("mu+")->Mass();
+    AliExternalTrackParam  btrack0=*(ftrack0->GetTPCOut());
+    AliExternalTrackParam  btrack1=*(ftrack1->GetTPCOut());
+    btrack0.Rotate(alpha);
+    btrack1.Rotate(alpha);
+    // change the sign for track 1
+    Double_t* par1=(Double_t*)btrack0.GetParameter();
+    par1[3]*=-1;
+    par1[4]*=-1;
+    btrack0.AddCovariance(covar);
+    btrack1.AddCovariance(covar);
+    btrack0.ResetCovariance(kResetCov);
+    btrack1.ResetCovariance(kResetCov);
+    Bool_t isOK=kTRUE;
+    Bool_t isOKT=kTRUE;
+    TObjArray tracks0(ncorr+1);
+    TObjArray tracks1(ncorr+1);
+    //    
+    Double_t dEdx0Tot=seed0->CookdEdxAnalytical(0.02,0.6,kTRUE);
+    Double_t dEdx1Tot=seed1->CookdEdxAnalytical(0.02,0.6,kTRUE);
+    Double_t dEdx0Max=seed0->CookdEdxAnalytical(0.02,0.6,kFALSE);
+    Double_t dEdx1Max=seed1->CookdEdxAnalytical(0.02,0.6,kFALSE);
+    //if (TMath::Abs((dEdx0Max+1)/(dEdx0Tot+1)-1.)>0.1) isOK=kFALSE;
+    //if (TMath::Abs((dEdx1Max+1)/(dEdx1Tot+1)-1.)>0.1) isOK=kFALSE;
+    ncl0=0; ncl1=0;
+    for (Int_t icorr=-1; icorr<ncorr; icorr++){
+      AliExternalTrackParam  rtrack0=btrack0;
+      AliExternalTrackParam  rtrack1=btrack1;
+      AliTPCCorrection *corr = 0;
+      if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
+      //
+      for (Int_t irow=159; irow>0; irow--){ 
+	AliTPCclusterMI *cluster=seed0->GetClusterPointer(irow);
+	if (!cluster) continue;
+	if (!isOKT) break;
+	Double_t rD[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+	transform->RotatedGlobal2Global(cluster->GetDetector()%36,rD);  // transform to global
+	Float_t  r[3]={rD[0],rD[1],rD[2]};
+	if (corr){
+	  corr->DistortPoint(r, cluster->GetDetector());
+	}
+	//
+	Double_t cov[3]={0.01,0.,0.01}; 
+	Double_t lx =cos*r[0]+sin*r[1];      
+	Double_t ly =-sin*r[0]+cos*r[1];
+	rD[1]=ly; rD[0]=lx; rD[2]=r[2];  //transform to track local
+	if (!AliTracker::PropagateTrackToBxByBz(&rtrack0, lx,mass,1.,kFALSE)) isOKT=kFALSE;;
+	if (!rtrack0.Update(&rD[1],cov)) isOKT =kFALSE;
+	if (icorr<0) ncl0++;
+      }
+      //
+      for (Int_t irow=159; irow>0; irow--){ 
+	AliTPCclusterMI *cluster=seed1->GetClusterPointer(irow);
+	if (!cluster) continue;
+	if (!isOKT) break;
+	Double_t rD[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+	transform->RotatedGlobal2Global(cluster->GetDetector()%36,rD);
+	Float_t  r[3]={rD[0],rD[1],rD[2]};
+	if (corr){
+	  corr->DistortPoint(r, cluster->GetDetector());
+	}
+	//
+	Double_t cov[3]={0.01,0.,0.01}; 
+	Double_t lx =cos*r[0]+sin*r[1];      
+	Double_t ly =-sin*r[0]+cos*r[1];
+	rD[1]=ly; rD[0]=lx; rD[2]=r[2];
+	if (!AliTracker::PropagateTrackToBxByBz(&rtrack1, lx,mass,1.,kFALSE)) isOKT=kFALSE;
+	if (!rtrack1.Update(&rD[1],cov)) isOKT=kFALSE;
+	if (icorr<0) ncl1++;
+      }
+      if (!AliTracker::PropagateTrackToBxByBz(&rtrack0, 0,mass,10.,kFALSE)) isOKT=kFALSE;
+      if (!AliTracker::PropagateTrackToBxByBz(&rtrack1, 0,mass,10.,kFALSE)) isOKT=kFALSE;
+      if (!AliTracker::PropagateTrackToBxByBz(&rtrack0, 0,mass,1.,kFALSE))  isOKT=kFALSE;
+      if (!AliTracker::PropagateTrackToBxByBz(&rtrack1, 0,mass,1.,kFALSE))  isOKT=kFALSE;
+      const Double_t *param0=rtrack0.GetParameter();
+      const Double_t *param1=rtrack1.GetParameter();
+      for (Int_t ipar=0; ipar<4; ipar++){
+	if (TMath::Abs(param1[ipar]-param0[ipar])>kMaxDelta[ipar]) isOK=kFALSE;
+      }
+      tracks0.AddAt(rtrack0.Clone(), icorr+1);
+      tracks1.AddAt(rtrack1.Clone(), icorr+1);
+      AliExternalTrackParam out0=*(ftrack0->GetTPCOut());
+      AliExternalTrackParam out1=*(ftrack1->GetTPCOut());
+      Int_t nentries=TMath::Min(ncl0,ncl1);
+
+      if (icorr<0) {
+	(*pcstream)<<"cosmic"<<
+	  "isOK="<<isOK<<              // correct all propagation update and also residuals
+	  "isOKT="<<isOKT<<            // correct all propagation update
+	  "isOKTrigger="<<isOKTrigger<< // correct? estimate of trigger offset
+	  "id="<<cosmicType<<
+	  //
+	  //
+	  "cross="<<crossCounter<<
+	  "vDT.="<<&vectorDT<<
+	  //
+	  "dTime="<<deltaTime<<        // delta time using the A-c side cross
+	  "dTimeCross="<<deltaTimeCross<< // delta time using missing clusters
+	  //
+	  "dEdx0Max="<<dEdx0Max<<
+	  "dEdx0Tot="<<dEdx0Tot<<
+	  "dEdx1Max="<<dEdx1Max<<
+	  "dEdx1Tot="<<dEdx1Tot<<
+	  //
+	  "track0.="<<track0<<         // original track 0
+	  "track1.="<<track1<<         // original track 1
+	  "out0.="<<&out0<<             // outer track  0
+	  "out1.="<<&out1<<             // outer track  1
+	  "rtrack0.="<<&rtrack0<<      // refitted track with current transform
+	  "rtrack1.="<<&rtrack1<<     //	  
+	  "ncl0="<<ncl0<<
+	  "ncl1="<<ncl1<<
+	  "entries="<<nentries<<       // number of clusters
+	  "\n";
+      }
+    }
+    //
+
+    if (isOK){        
+      Int_t nentries=TMath::Min(ncl0,ncl1);    
+      for (Int_t ipar=0; ipar<5; ipar++){
+	for (Int_t icorr=-1; icorr<ncorr; icorr++){
+	  AliTPCCorrection *corr = 0;
+	  if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
+	  //
+	  AliExternalTrackParam *param0=(AliExternalTrackParam *) tracks0.At(icorr+1);
+	  AliExternalTrackParam *param1=(AliExternalTrackParam *) tracks1.At(icorr+1);
+	  distortions[icorr+1]=param1->GetParameter()[ipar]-param0->GetParameter()[ipar];
+	  if (icorr>=0){
+	    distortions[icorr+1]-=distortions[0];
+	  }
+	  //
+	  if (icorr<0){
+	    Double_t bz=AliTrackerBase::GetBz();
+	    Double_t gxyz[3];
+	    param0->GetXYZ(gxyz);
+	    Int_t dtype=20;
+	    Double_t theta=param0->GetParameter()[3];
+	    Double_t phi = alpha;
+	    Double_t snp = track0->GetInnerParam()->GetSnp();
+	    Double_t mean= distortions[0];
+	    Int_t index = param0->GetIndex(ipar,ipar);
+	    Double_t rms=TMath::Sqrt(param1->GetCovariance()[index]+param1->GetCovariance()[index]);
+	    if (crossCounter<1) rms*=1;
+	    Double_t sector=9*phi/TMath::Pi();
+	    Double_t dsec   = sector-TMath::Nint(sector+0.5);
+	    Double_t gx=gxyz[0],gy=gxyz[1],gz=gxyz[2];
+	    Double_t refX=TMath::Sqrt(gx*gx+gy*gy);
+	    Double_t dRrec=0;
+	    //	    Double_t pt=(param0->GetSigned1Pt()+param1->GetSigned1Pt())*0.5;
+	    Double_t pt=(param0->GetSigned1Pt()+param1->GetSigned1Pt())*0.5;
+
+	    (*pcstream)<<"fit"<<  // dump valus for fit
+	      "run="<<run<<       //run number
+	      "bz="<<bz<<         // magnetic filed used
+	      "dtype="<<dtype<<   // detector match type 20
+	      "ptype="<<ipar<<   // parameter type
+	      "theta="<<theta<<   // theta
+	      "phi="<<phi<<       // phi 
+	      "snp="<<snp<<       // snp
+	      "mean="<<mean<<     // mean dist value
+	      "rms="<<rms<<       // rms
+	      "sector="<<sector<<
+	      "dsec="<<dsec<<
+	      //
+	      "refX="<<refX<<      // reference radius
+	      "gx="<<gx<<         // global position
+	      "gy="<<gy<<         // global position
+	      "gz="<<gz<<         // global position
+	      "dRrec="<<dRrec<<      // delta Radius in reconstruction
+	      "pt="<<pt<<            //1/pt
+	      "id="<<cosmicType<<     //type of the cosmic used      
+	      "entries="<<nentries;// number of entries in bin
+	    (*pcstream)<<"cosmicDebug"<<
+	      "p0.="<<param0<<    // dump distorted track 0
+	      "p1.="<<param1;    // dump distorted track 1
+	  }
+	  if (icorr>=0){
+	    (*pcstream)<<"fit"<<
+	      Form("%s=",corr->GetName())<<distortions[icorr+1];    // dump correction value
+	    (*pcstream)<<"cosmicDebug"<<
+	      Form("%s=",corr->GetName())<<distortions[icorr+1]<<    // dump correction value
+	      Form("%sp0.=",corr->GetName())<<param0<<    // dump distorted track 0
+	      Form("%sp1.=",corr->GetName())<<param1;    // dump distorted track 1
+	  }
+	} //loop corrections      
+	(*pcstream)<<"fit"<<"isOK="<<isOK<<"\n";
+	(*pcstream)<<"cosmicDebug"<<"isOK="<<isOK<<"\n";
+      } //loop over parameters
+    } // dump results
+  }//loop tracks
+}
+
+
+
+Double_t AliTPCcalibCosmic::GetDeltaTime(Double_t rmin0, Double_t rmax0, Double_t rmin1, Double_t rmax1, Double_t tmin0, Double_t tmax0, Double_t tmin1, Double_t tmax1, Double_t dcaR, TVectorD &vectorDT)
+{
+  //
+  // Estimate trigger offset between random cosmic event and "physics" trigger
+  // Efficiency about 50 % of cases:
+  // Cases:
+  // 0. Tracks crossing A side and C side - no match in z - 30 % of cases
+  // 1. Track only on one side and  dissapear at small or at high radiuses - 50 % of cases
+  //    1.a) rmax<Rc    && tmax<Tcmax && tmax>tmin    => deltaT=Tcmax-tmax 
+  //    1.b) rmin>Rcmin && tmin<Tcmax && tmin>tmax    => deltaT=Tcmax-tmin  
+  //                      // case the z matching gives proper time
+  //    1.c) rmax<Rc    && tmax>Tcmin && tmax<tmin    => deltaT=-tmax
+  //
+  // check algorithm:
+  //    TCut cutStop = "(min(rmax0,rmax1)<235||abs(rmin0-rmin1)>10)"; // tracks not registered for full time
+
+  // Combinations:
+  // 0-1 - forbidden
+  // 0-2 - forbidden
+  // 0-3 - occur - wrong correlation
+  // 1-2 - occur - wrong correlation
+  // 1-3 - forbidden
+  // 2-3 - occur - small number of outlyers -20%
+  // Frequency:
+  //   0 - 106
+  //   1 - 265
+  //   2 - 206
+  //   3 - 367
+  //
+  const Double_t kMaxRCut=235;  // max radius
+  const Double_t kMinRCut=TMath::Max(dcaR,90.);  // min radius
+  const Double_t kMaxDCut=30;   // max distance for minimal radius
+  const Double_t kMinTime=110;
+  const Double_t kMaxTime=950;  
+  Double_t deltaT=0;
+  Int_t counter=0;
+  vectorDT[6]=TMath::Min(TMath::Min(tmin0,tmin1),TMath::Min(tmax0,tmax1));
+  vectorDT[7]=TMath::Max(TMath::Max(tmin0,tmin1),TMath::Max(tmax0,tmax1));
+  if (TMath::Min(rmax0,rmax1)<kMaxRCut){
+    // max cross - deltaT>0
+    if (rmax0<kMaxRCut && tmax0 <kMaxTime && tmax0>tmin0) vectorDT[0]=kMaxTime-tmax0; // disapear at CE
+    if (rmax1<kMaxRCut && tmax1 <kMaxTime && tmax1>tmin1) vectorDT[1]=kMaxTime-tmax1; // disapear at CE
+    // min cross - deltaT<0 - OK they are correlated
+    if (rmax0<kMaxRCut && tmax0 >kMinTime && tmax0<tmin0) vectorDT[2]=-tmax0;         // disapear at ROC
+    if (rmax1<kMaxRCut && tmax1 >kMinTime && tmax1<tmin1) vectorDT[3]=-tmax1;         // disapear at ROC
+  }  
+  if (rmin0> kMinRCut+kMaxDCut && tmin0 <kMaxTime && tmin0>tmax0) vectorDT[4]=kMaxTime-tmin0;
+  if (rmin1> kMinRCut+kMaxDCut && tmin1 <kMaxTime && tmin1>tmax1) vectorDT[5]=kMaxTime-tmin1;
+  Bool_t isOK=kTRUE;
+  for (Int_t i=0; i<6;i++) {
+    if (TMath::Abs(vectorDT[i])>0) {
+      counter++; 
+      if (vectorDT[i]+vectorDT[6]<0) isOK=kFALSE;
+      if (vectorDT[i]+vectorDT[7]>kMaxTime) isOK=kFALSE;
+      if (isOK) deltaT=vectorDT[i];
+    }
+  }
+  return deltaT;  
+}
