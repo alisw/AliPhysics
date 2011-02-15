@@ -67,6 +67,7 @@
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentralCorrAcceptance+;
+#pragma link C++ class AliCentraldNdetaTask+;
 
 #else
 # error Not for compilation 
