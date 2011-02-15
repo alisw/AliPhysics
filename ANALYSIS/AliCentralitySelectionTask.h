@@ -131,7 +131,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;        //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 3); 
+  ClassDef(AliCentralitySelectionTask, 4); 
 };
 
 #endif
