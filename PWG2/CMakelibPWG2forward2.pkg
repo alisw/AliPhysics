@@ -106,7 +106,6 @@ install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
                 FORWARD/analysis2/AddTaskFMD.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
-		FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
                 FORWARD/analysis2/MakeAOD.C
 		FORWARD/analysis2/MakedNdeta.C
