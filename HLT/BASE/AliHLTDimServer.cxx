@@ -108,12 +108,14 @@ TObjArray* AliHLTDimServer::CreateServiceGroup(enum AliHLTDimServer::AliHLTDimSe
 	char* name=(char*)malloc(namelen);
 	char* format=(char*)malloc(namelen);
 	if (name && format) {
+	  memset(name, 0, namelen);
+	  memset(format, 0, namelen);
 	  const char* key=strchr(basename, '%');
 	  strncpy(format, basename, namelen-1);
 	  if (key && key[1]!=0) {
 	    int iPos=(key-basename)+1;
 	    if (key[1]=='d') {
-	      snprintf(format+iPos, namelen-1-iPos, "0*d"); // additional 3 chars
+	      snprintf(format+iPos, namelen-iPos, "0*d"); // additional 3 chars
 	      iPos+=3;
 	    } else {
 	      *(format+iPos++)='%';
@@ -121,10 +123,10 @@ TObjArray* AliHLTDimServer::CreateServiceGroup(enum AliHLTDimServer::AliHLTDimSe
 	    }
 	    strncpy(format+iPos, &key[2], namelen-1-iPos);
 	  } else {
-	    snprintf(format+strlen(basename), namelen-1-strlen(basename), "_%%0*d"); // additional 5 chars
+	    snprintf(format+strlen(basename), namelen-strlen(basename), "_%%0*d"); // additional 5 chars
 	  }
 	  for (i=0; i<count && iResult>=0; i++) {
-	    snprintf(name, namelen-1, format, digits, i);
+	    snprintf(name, namelen, format, digits, i);
 	    AliHLTDimService* service=new AliHLTDimService(type, name);
 	    iResult=RegisterService(service);
 	  }
