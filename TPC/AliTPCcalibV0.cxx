@@ -190,7 +190,6 @@ void  AliTPCcalibV0::DumpToTree(AliESDEvent *esd){
   Int_t nV0s  = fESD->GetNumberOfV0s();
   const Int_t kMinCluster=110;
   const Double_t kDownscale=0.01;
-  const Float_t kMinR    =0;
   const Float_t kMinPt   =1.0;
   const Float_t kMinMinPt   =0.7;
   AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
@@ -602,9 +601,9 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
   Int_t ncorr=0;
   if (corrArray) ncorr = corrArray->GetEntries();
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
-  AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
-  Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd());
+ //  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+//   AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
+//   Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd());
   //
   //
   //  
@@ -631,7 +630,6 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
       }
     }    
     //
-    Double_t xref=134;
     AliExternalTrackParam* paramInner=0;
     AliExternalTrackParam* paramOuter=0;
     AliExternalTrackParam* paramIO=0;
@@ -700,7 +698,6 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
   //
   
   //Connect input
-  const Int_t kMinNcl=120;
   TFile f("TPCV0Objects.root");
   AliTPCcalibV0 *v0TPC = (AliTPCcalibV0*) f.Get("v0TPC");
   TTree * treeInput = v0TPC->GetV0Tree();
@@ -729,17 +726,14 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
   Int_t ncorr=0;
   if (corrArray) ncorr = corrArray->GetEntries();
   AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
-  AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
-  Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd());
   Double_t massK0= pdg.GetParticle("K0")->Mass();
   Double_t massLambda= pdg.GetParticle("Lambda0")->Mass();
   Double_t massPion=pdg.GetParticle("pi+")->Mass();
   Double_t massProton=pdg.GetParticle("proton")->Mass();
-  Double_t pdgPion=pdg.GetParticle("pi+")->PdgCode();
-  Double_t pdgProton=pdg.GetParticle("proton")->PdgCode();
-  Double_t mass0=0;
-  Double_t mass1=0;
+  Int_t pdgPion=pdg.GetParticle("pi+")->PdgCode();
+  Int_t pdgProton=pdg.GetParticle("proton")->PdgCode();
+  Double_t rmass0=0;
+  Double_t rmass1=0;
   Double_t massV0=0;
   Int_t    pdg0=0;
   Int_t    pdg1=0;
@@ -757,12 +751,12 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
     if (TMath::Abs(v0->GetEffMass(4,2)-massLambda)<0.01) {isLambda=1; v0Type=2;} //select Lambda   
     if (TMath::Abs(v0->GetEffMass(2,4)-massLambda)<0.01) {isAntiLambda=1;v0Type=3;} //select Anti Lambda
     if (isK0+isLambda+isAntiLambda!=1) continue;
-    mass0=massPion;
-    mass1=massPion;
+    rmass0=massPion;
+    rmass1=massPion;
     pdg0=pdgPion;
     pdg1=pdgPion;
-    if (isLambda) {mass0=massProton; pdg0=pdgProton;}
-    if (isAntiLambda) {mass1=massProton; pdg1=pdgProton;}
+    if (isLambda) {rmass0=massProton; pdg0=pdgProton;}
+    if (isAntiLambda) {rmass1=massProton; pdg1=pdgProton;}
     massV0=massK0;
     if (isK0==0) massV0=massLambda;
     //
@@ -806,10 +800,10 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
       AliTPCCorrection *corr =0;
       if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
       //
-      AliExternalTrackParam * trackInner0 = RefitTrack(seed0, corr,160,85,mass0);      
-      AliExternalTrackParam * trackIO0    = RefitTrack(seed0, corr,245,85,mass0);      
-      AliExternalTrackParam * trackInner1 = RefitTrack(seed1, corr,160,85,mass1);      
-      AliExternalTrackParam * trackIO1    = RefitTrack(seed1, corr,245,85,mass1);      
+      AliExternalTrackParam * trackInner0 = RefitTrack(seed0, corr,160,85,rmass0);      
+      AliExternalTrackParam * trackIO0    = RefitTrack(seed0, corr,245,85,rmass0);      
+      AliExternalTrackParam * trackInner1 = RefitTrack(seed1, corr,160,85,rmass1);      
+      AliExternalTrackParam * trackIO1    = RefitTrack(seed1, corr,245,85,rmass1);      
       if (!trackInner0) isOK=kFALSE;
       if (!trackInner1) isOK=kFALSE;
       if (!trackIO0)    isOK=kFALSE;
@@ -820,14 +814,14 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
 	if (!trackIO0->Rotate(alpha)) isOK=kFALSE;
 	if (!trackIO1->Rotate(alpha)) isOK=kFALSE;
 	//
-	if (!AliTracker::PropagateTrackToBxByBz(trackInner0, radius, mass0, 1, kFALSE)) isOK=kFALSE; 
-	if (!AliTracker::PropagateTrackToBxByBz(trackInner1, radius, mass1, 1, kFALSE)) isOK=kFALSE; 
-	if (!AliTracker::PropagateTrackToBxByBz(trackIO0, radius, mass0, 1, kFALSE)) isOK=kFALSE; 
-	if (!AliTracker::PropagateTrackToBxByBz(trackIO1, radius, mass1, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackInner0, radius, rmass0, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackInner1, radius, rmass1, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackIO0, radius, rmass0, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackIO1, radius, rmass1, 1, kFALSE)) isOK=kFALSE; 
 	if (!isOK) continue;
 	arrayT0.AddAt(trackIO0->Clone(),icorr+1);
 	arrayT1.AddAt(trackIO1->Clone(),icorr+1);
-	Int_t charge=(trackIO0->GetSign());
+	Int_t charge=TMath::Nint(trackIO0->GetSign());
 	AliKFParticle pin0( *trackInner0,  pdg0*charge);
 	AliKFParticle pin1( *trackInner1, -pdg1*charge);
 	AliKFParticle pio0( *trackIO0,  pdg0*charge);
@@ -858,7 +852,7 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
     Int_t dtype=30;  // id for V0
     Int_t ptype=5;   // id for invariant mass
     //    Int_t id=TMath::Nint(100.*(param0->Pt()-param1->Pt())/(param0->Pt()+param1->Pt()));      // K0s V0 asymetry
-    Int_t id=1000.*(param0->Pt()-param1->Pt());      // K0s V0 asymetry
+    Int_t id=Int_t(1000.*(param0->Pt()-param1->Pt()));      // K0s V0 asymetry
     Double_t gx,gy,gz, px,py,pz;
     Double_t pt = v0->Pt();
     v0->GetXYZ(gx,gy,gz);
@@ -904,7 +898,7 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
     for (Int_t icorr=0; icorr<ncorr; icorr++){
       AliTPCCorrection *corr =0;
       if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
-      AliKFParticle* pin= (AliKFParticle*)arrayV0in.At(icorr+1);
+      //      AliKFParticle* pin= (AliKFParticle*)arrayV0in.At(icorr+1);
       AliKFParticle* pio= (AliKFParticle*)arrayV0io.At(icorr+1);
       AliExternalTrackParam *par0=(AliExternalTrackParam *)arrayT0.At(icorr+1);
       AliExternalTrackParam *par1=(AliExternalTrackParam *)arrayT1.At(icorr+1);
