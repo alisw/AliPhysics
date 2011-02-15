@@ -46,8 +46,21 @@ void MakeGRPRecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMult
   {
     AliGRPRecoParam * param = AliGRPRecoParam::GetHighFluxParam();
     param->SetEventSpecie(AliRecoParam::kHighMult);
-    param->SetVertexerTracksConstraintITS(kFALSE);
-    param->SetVertexerTracksConstraintTPC(kFALSE);
+    param->SetVertexerTracksConstraintITS(kTRUE);
+    Double_t cutsITS[12]={0.1,
+                          0.1,
+			  0.5,
+			  4, // minimum 4 clusters (default was 5)
+                          1,
+                          3.,
+                          100.,
+                          1000.,
+                          3.,
+                          30.,
+                          1,
+                          1}; // faster finder algo for Iteration 0
+    param->SetVertexerTracksCutsITS(12,cutsITS);
+    param->SetVertexerTracksConstraintTPC(kTRUE);
     recoParamArray->AddLast(param);
   }
 
