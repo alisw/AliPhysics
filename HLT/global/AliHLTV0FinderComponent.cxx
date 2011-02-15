@@ -115,7 +115,7 @@ AliHLTComponent* AliHLTV0FinderComponent::Spawn()
 }
 
 //________________________________________________________________________
-int AliHLTV0FinderComponent::DoInit(int /*argc*/, const char** /*argv*/)
+int AliHLTV0FinderComponent::DoInit(int argc, const char** argv)
 {
   //1. Default parameters.
   fDaughterPrimDeviation = fgDaughterPrimDeviation;
@@ -126,9 +126,6 @@ int AliHLTV0FinderComponent::DoInit(int /*argc*/, const char** /*argv*/)
   fNegPID = 211;
   fGammaFinder = false;
 
-  //Part with OCDB and command line arguments is commented
-  //until OCDB is updated.
-/*
   //2. Parameters from OCDB.
   TString cdbPath("HLT/ConfigHLT/");
   cdbPath += GetComponentID();
@@ -141,8 +138,7 @@ int AliHLTV0FinderComponent::DoInit(int /*argc*/, const char** /*argv*/)
   if (argc)
     res = ConfigureFromArgumentString(argc, argv);
 
-  return res;*/
-  return 0;
+  return res;
 }
 
 //________________________________________________________________________
@@ -269,21 +265,21 @@ bool AliHLTV0FinderComponent::ReadTracks()
   //The logic, how vertex finder reads input tracks,
   //is taken from the original global vertexer.
   //First, try to read tracks from ESD event.
-  ReadESDTracks();
+  ReadESDTracks(fPosPID, fNegPID);
   if (fTrackInfos.size()) {
     FindPrimaryDeviations();
     return true;
   }
 
   //No good esd tracks, try:
-  ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginITS);
+  ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginITS, fPosPID, fNegPID);
   if (fTrackInfos.size()) {
     FindPrimaryDeviations();
     return true;
   }
 
   //If no good its tracks, try:
-  ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC);
+  ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC, fPosPID, fNegPID);
   if (fTrackInfos.size()) {
     FindPrimaryDeviations();
     return true;

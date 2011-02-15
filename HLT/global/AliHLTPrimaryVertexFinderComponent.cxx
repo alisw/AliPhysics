@@ -183,13 +183,15 @@ int AliHLTPrimaryVertexFinderComponent::DoEvent(const AliHLTComponentEventData& 
   //The logic, how vertex finder reads input tracks,
   //is taken from the original global vertexer.
   //First, try to read tracks from ESD event.
-  ReadESDTracks();
+  //Both positive and negative PID are 211 ("default").
+  //Other hypotesis are not possible here.
+  ReadESDTracks(211, 211);
   //If no good esd tracks or no esd at all:
   if (!fTrackInfos.size())
-    ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginITS);
+    ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginITS, 211, 211);
   //If no good its tracks:
   if (!fTrackInfos.size())
-    ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC);
+    ReadHLTTracks(kAliHLTDataTypeTrack | kAliHLTDataOriginTPC, 211, 211);
 
   if (!fTrackInfos.size()) {
     HLTWarning("No input tracks found");

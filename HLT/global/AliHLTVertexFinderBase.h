@@ -104,13 +104,14 @@ protected:
   //tracks are appended to the end.
   //A user (derived class)
   //has to clear it, if needed.
-  void ReadESDTracks();
+  void ReadESDTracks(int posPID, int negPID);
+  void ReadESDTracks(AliESDEvent* esd, int posPID, int negPID);
   //Read HLT tracks produced by ITS
   //or TPC (somewhere else?).
   //IMPORTANT: fTrackInfos is not
   //cleared here before filling,
   //tracks are appended to the end.
-  void ReadHLTTracks(const AliHLTComponentDataType& blockType);
+  void ReadHLTTracks(const AliHLTComponentDataType& blockType, int posPID, int negPID);
 
 public:
   //Produce output for ESD collector from primary and v0 finders' outputs.

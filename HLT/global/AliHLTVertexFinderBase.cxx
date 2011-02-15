@@ -62,7 +62,7 @@ bool AliHLTVertexFinderBase::AliHLTTrackInfo::IsKFFinite()const
 }
 
 //_________________________________________________________________
-void AliHLTVertexFinderBase::ReadESDTracks()
+void AliHLTVertexFinderBase::ReadESDTracks(int posPID, int negPID)
 {
   //Try to read input tracks from AliESDEvent.
   //Use esd track's index as "track id" (fID).
@@ -76,37 +76,48 @@ void AliHLTVertexFinderBase::ReadESDTracks()
     if (!esd)//From original code. Not sure, if this is possible at all.
       continue;
 
-    esd->GetStdContent();
-
-    const int nTracks = esd->GetNumberOfTracks();
-    if (nTracks)
-      fTrackInfos.reserve(nTracks + fTrackInfos.size());
-
-    for (int i = 0; i < nTracks; ++i) {
-      AliESDtrack* pTrack = esd->GetTrack(i);
-      //This checks of track parameters are
-      //from the original global vertexer.
-      if (!pTrack)
-        continue;
-      if (pTrack->GetKinkIndex(0) > 0)
-        continue;
-      if (!(pTrack->GetStatus() & AliESDtrack::kTPCin))
-        continue;
-
-      //i: track id, 211: pid, false: not used in primary, 0.: prim. deviation.
-      AliHLTTrackInfo newTrackInfo(i, *pTrack, 211, false, 0.);
-      if (!newTrackInfo.IsKFFinite())
-        continue;
-
-      fTrackInfos.push_back(newTrackInfo);
-    }
+    ReadESDTracks(esd, negPID, posPID);
     //Only one esd event is taken.
     break;
   }
 }
 
+//_________________________________________________________________
+void AliHLTVertexFinderBase::ReadESDTracks(AliESDEvent* esd, int posPID, int negPID)
+{
+  //Try to read input tracks from AliESDEvent.
+  //Use esd track's index as "track id" (fID).
+  //IMPORTANT: fTrackInfos is _NOT_ cleared here,
+  //must be done externally (if you need to).
+  esd->GetStdContent();
+
+  const int nTracks = esd->GetNumberOfTracks();
+  if (nTracks)
+    fTrackInfos.reserve(nTracks + fTrackInfos.size());
+
+  for (int i = 0; i < nTracks; ++i) {
+    AliESDtrack* pTrack = esd->GetTrack(i);
+    //This checks of track parameters are
+    //from the original global vertexer.
+    if (!pTrack)
+      continue;
+    if (pTrack->GetKinkIndex(0) > 0)
+      continue;
+    if (!(pTrack->GetStatus() & AliESDtrack::kTPCin))
+      continue;
+
+    //i: track id, 211: pid, false: not used in primary, 0.: prim. deviation.
+    AliHLTTrackInfo newTrackInfo(i, *pTrack, pTrack->Charge() > 0 ? posPID : negPID, false, 0.);
+    if (!newTrackInfo.IsKFFinite())
+      continue;
+
+    fTrackInfos.push_back(newTrackInfo);
+  }
+}
+
 //________________________________________________________________________
-void AliHLTVertexFinderBase::ReadHLTTracks(const AliHLTComponentDataType& blockType)
+void AliHLTVertexFinderBase::ReadHLTTracks(const AliHLTComponentDataType& blockType,
+                                           int posPID, int negPID)
 {
   //Read HLT tracks as input.
   //IMPORTANT: fTrackInfos is _NOT_ cleared here,
@@ -126,7 +137,8 @@ void AliHLTVertexFinderBase::ReadHLTTracks(const AliHLTComponentDataType& blockT
       //and to AliKFParitcle then, to be changed later.
       AliHLTGlobalBarrelTrack tmpTrk(*hltTrk);
 
-      AliHLTTrackInfo newTrackInfo(hltTrk->fTrackID, tmpTrk, 211, false, 0.);
+      AliHLTTrackInfo newTrackInfo(hltTrk->fTrackID, tmpTrk,
+                                   tmpTrk.Charge() > 0 ? posPID : negPID, false, 0.);
       if (!newTrackInfo.IsKFFinite())
         continue;
 
