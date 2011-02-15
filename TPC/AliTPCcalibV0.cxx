@@ -335,8 +335,8 @@ void AliTPCcalibV0::AddTree(TTree * treeInput){
     }
     //
     treeInput->GetEntry(i);
-    ftrack0->GetCalibContainer()->SetOwner(kTRUE);
-    ftrack1->GetCalibContainer()->SetOwner(kTRUE);
+    //ftrack0->GetCalibContainer()->SetOwner(kTRUE);
+    //ftrack1->GetCalibContainer()->SetOwner(kTRUE);
     Bool_t isOK=kTRUE;
     if (v0->GetOnFlyStatus()==kFALSE) isOK=kFALSE;
     if (track0->GetTPCncls()<100) isOK=kFALSE;
