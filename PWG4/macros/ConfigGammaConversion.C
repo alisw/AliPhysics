@@ -1607,7 +1607,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   if(kGCWriteAOD){
     gammaconversion->SetForceAOD(kGCForceAOD);
     gammaconversion->SetOutputAODClassName("AliAODConversionParticle");
-    //gammaconversion->SetOutputAODClassName("AliGammaConversionAODObject");
+    gammaconversion->SetAODBranchName(Form("GammaConv_%s", kGCAnalysisCutSelectionId.Data()));
 
     if( kGCrunOnTrain ) {
       
