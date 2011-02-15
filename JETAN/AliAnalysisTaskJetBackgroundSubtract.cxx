@@ -222,7 +222,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
       continue;
     }
     newName.ReplaceAll(fReplaceString1.Data(),Form(fReplaceString2.Data(),fSubtraction));
-    TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",iJB),Form(";%s p_{T}; %s p_{T}",oldName.Data(),newName.Data()),200,0,200.,200,0.,200.);
+    TH2F *hTmp = new TH2F(Form("h2PtInPtOut_%d",iJB),Form(";%s p_{T}; %s p_{T}",oldName.Data(),newName.Data()),200,0,200.,400,-200.,200.);
     fHistList->Add(hTmp);
   }
 
@@ -406,8 +406,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
-	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -424,8 +424,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	  Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
-	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	  bAdd = false;// RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -442,8 +442,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	if(fDebug>2){	Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
-	  bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
-	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),ptSub);
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -462,8 +462,8 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	 if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
        
 	   // optionally rescale it and keep??
-	   bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
-	   if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),0.1);
+	   bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	   if(h2PtInOut)h2PtInOut->Fill(jet->Pt(),jet->Pt()-backgroundv.Pt());
 	 }
 	 else{
 	   bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
