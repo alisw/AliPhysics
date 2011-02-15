@@ -17,6 +17,7 @@
 #pragma link C++ class AliRsnCutPIDITS+;
 #pragma link C++ class AliRsnCutPIDTPC+;
 #pragma link C++ class AliRsnCutPIDTOF+;
+#pragma link C++ class AliRsnCutMomentumComparison+;
 
 #pragma link C++ class AliRsnCutSet+;
 #pragma link C++ class AliRsnExpression+;
