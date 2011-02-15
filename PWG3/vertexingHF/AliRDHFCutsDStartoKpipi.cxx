@@ -248,6 +248,10 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
   
+  Double_t ptD=d->Pt();
+  if(ptD<fMinPtCand) return 0;
+  if(ptD>fMaxPtCand) return 0;
+
   AliAODRecoDecayHF2Prong* dd = (AliAODRecoDecayHF2Prong*)d->Get2Prong();  
   if(!dd){
     cout<<"AliAODRecoDecayHF2Prong null"<<endl;
