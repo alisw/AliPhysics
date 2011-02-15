@@ -272,7 +272,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
   fData->ResetErrorsOnCorrections();
   fData->Multiply();
   
-  if (correctionType >= AlidNdEtaCorrection::kVertexReco)
+  if (correction && correctionType >= AlidNdEtaCorrection::kVertexReco)
   {
     // There are no events with vertex that have 0 multiplicity, therefore
     //   populate bin with 0 multiplicity with the following idea:
@@ -386,7 +386,7 @@ void dNdEtaAnalysis::Finish(AlidNdEtaCorrection* correction, Float_t ptCut, Alid
       dataHist->GetYaxis()->SetRange(dataHist->GetYaxis()->FindBin(-0.8), dataHist->GetYaxis()->FindBin(0.8));
       Float_t etaWidth = 1.6;
 
-      TH1D* ptHist = dynamic_cast<TH1D*> (dataHist->Project3D("ze"));
+      TH1D* ptHist = static_cast<TH1D*> (dataHist->Project3D("ze"));
 
       for (Int_t i=1; i<=fPtDist->GetNbinsX(); ++i)
       {

@@ -1365,7 +1365,7 @@ void AlidNdEtaTask::Terminate(Option_t *)
       fFiredChips->Draw("COLZ");
     }
 
-    if (fPartEta[0])
+    if (fPartEta[0] && fPartEta[1] && fPartEta[2] && fEvents && fMultVtx && fMult)
     {
       Int_t events1 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(-9.9), fEvents->GetXaxis()->FindBin(-0.001));
       Int_t events2 = (Int_t) fEvents->Integral(fEvents->GetXaxis()->FindBin(0.001), fEvents->GetXaxis()->FindBin(9.9));
