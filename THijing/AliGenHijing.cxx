@@ -45,7 +45,7 @@ AliGenHijing::AliGenHijing()
      fKeep(0),
      fQuench(1),
      fShadowing(1),
-     fDecaysOff(1),
+     fDecaysOff(3),
      fTrigger(0),     
      fEvaluate(0),
      fSelectAll(0),
@@ -90,7 +90,7 @@ AliGenHijing::AliGenHijing(Int_t npart)
      fKeep(0),
      fQuench(1),
      fShadowing(1),
-     fDecaysOff(1),
+     fDecaysOff(3),
      fTrigger(0),     
      fEvaluate(0),
      fSelectAll(0),
@@ -438,6 +438,7 @@ void AliGenHijing::EvaluateCrossSections()
 
     printf("\n Projectile Radius (fm): %f \n",fHijing->GetHIPR1(34));
     printf("\n Target     Radius (fm): %f \n",fHijing->GetHIPR1(35));    
+    printf("\n Inelastic and total cross section (mb) %f %f \n",fHijing->GetHINT1(12), fHijing->GetHINT1(13));    
     Int_t i;
     Float_t oldvalue= 0.;
 
