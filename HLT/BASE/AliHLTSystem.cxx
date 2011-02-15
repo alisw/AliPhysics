@@ -32,6 +32,7 @@ using namespace std;
 #include "AliHLTComponent.h"
 #include "AliHLTConfiguration.h"
 #include "AliHLTConfigurationHandler.h"
+#include "AliHLTOnlineConfiguration.h"
 #include "AliHLTTask.h"
 #include "AliHLTModuleAgent.h"
 #include "AliHLTOfflineInterface.h"
@@ -1184,13 +1185,34 @@ int AliHLTSystem::ScanOptions(const char* options)
 	} else if (token.Contains("config=")) {
 	  TString param=token.ReplaceAll("config=", "");
 	  Int_t error=0;
-	  gROOT->Macro(param.Data(), &error);
-	  if (error==0) {
-	    SetStatusFlags(kConfigurationLoaded);
+	  if (token.EndsWith(".xml", TString::kIgnoreCase)) {
+	    Int_t filesize = 0;
+	    AliHLTOnlineConfiguration conf;
+	    filesize = conf.LoadConfiguration(param.Data());
+	    if (filesize <= 0) {
+	      HLTError("can not load config \'%s\'", param.Data());
+	      iResult=-EBADF;
+	    } else {
+	      error = conf.Parse();
+	      if (error==0) {
+		fChains = conf.GetDefaultChains();
+		libs = conf.GetComponentLibraries();
+		libs += " ";
+		SetStatusFlags(kConfigurationLoaded);
+	      } else {
+		HLTError("can not parse config \'%s\'", param.Data());
+		iResult=-EBADF;
+	      }
+	    }
 	  } else {
-	    HLTError("can not execute macro \'%s\'", param.Data());
-	    iResult=-EBADF;
-	  }
+	    gROOT->Macro(param.Data(), &error);
+	    if (error==0) {
+	      SetStatusFlags(kConfigurationLoaded);
+	    } else {
+	      HLTError("can not execute macro \'%s\'", param.Data());
+	      iResult=-EBADF;
+	    }
+	  }	
 	} else if (token.Contains("chains=")) {
 	  TString param=token.ReplaceAll("chains=", "");
 	  fChains=param.ReplaceAll(",", " ");
