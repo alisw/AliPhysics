@@ -26,6 +26,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ECentrality {kCentOff,kCentV0M,kCentTRK,kCentTKL,kCentCL1,kCentInvalid};
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
+  enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
 
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
@@ -54,7 +55,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetCuts(Int_t nVars,Int_t nPtBins,Float_t** cutsRD);
   void SetCuts(Int_t glIndex, Float_t* cutsRDGlob);
   void AddTrackCuts(const AliESDtrackCuts *cuts) 
-         {fTrackCuts=new AliESDtrackCuts(*cuts); return;}
+          {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*cuts); return;}
   void SetUsePID(Bool_t flag=kTRUE) {fUsePID=flag; return;}
   void SetUseCentrality(Int_t flag=1);    // see enum below
   void SetPidHF(AliAODPidHF* pidObj) {

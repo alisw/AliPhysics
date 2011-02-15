@@ -41,7 +41,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF() :
   fEventPrimaryVtx(),
   fListOfCuts(),
   fd0err(0x0), 
-  fProngID(0x0) 
+  fProngID(0x0),
+  fSelectionMap(0)
 {
   //
   // Default Constructor
@@ -56,7 +57,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fEventPrimaryVtx(),
   fListOfCuts(),
   fd0err(0x0),
-  fProngID(0x0) 
+  fProngID(0x0),
+  fSelectionMap(0)
 {
   //
   // Constructor with AliAODVertex for decay vertex
@@ -72,7 +74,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(AliAODVertex *vtx2,Int_t nprongs,Short_t ch
   fEventPrimaryVtx(),
   fListOfCuts(),
   fd0err(0x0),
-  fProngID(0x0) 
+  fProngID(0x0),
+  fSelectionMap(0)
 {
   //
   // Constructor with AliAODVertex for decay vertex and without prongs momenta
@@ -90,7 +93,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(Double_t vtx1[3],Double_t vtx2[3],
   fEventPrimaryVtx(),
   fListOfCuts(),
   fd0err(0x0),
-  fProngID(0x0) 
+  fProngID(0x0), 
+  fSelectionMap(0)
 {
   //
   // Constructor that can used for a "MC" object
@@ -109,7 +113,8 @@ AliAODRecoDecayHF::AliAODRecoDecayHF(const AliAODRecoDecayHF &source) :
   fEventPrimaryVtx(source.fEventPrimaryVtx),
   fListOfCuts(source.fListOfCuts),
   fd0err(0x0),
-  fProngID(0x0)
+  fProngID(0x0),
+  fSelectionMap(source.fSelectionMap)
 {
   //
   // Copy constructor
@@ -137,6 +142,7 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
 
   fEventPrimaryVtx = source.fEventPrimaryVtx;
   fListOfCuts = source.fListOfCuts;
+  fSelectionMap = source.fSelectionMap;
 
   if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
 
