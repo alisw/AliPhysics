@@ -97,7 +97,8 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fNSkipLeadingRan(0),
   fNRandomCones(0),
   fAvgTrials(1),
-  fExternalWeight(1),    
+  fExternalWeight(1),
+  fTrackEtaWindow(0.9),    
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
@@ -205,6 +206,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fNRandomCones(0),
   fAvgTrials(1),
   fExternalWeight(1),    
+  fTrackEtaWindow(0.9),    
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(1),
@@ -449,9 +451,9 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
   fh1PtJetsLeadingRecInRan = new TH1F("fh1PtJetsLeadingRecInRan","Rec jets P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtJetConstRec = new TH1F("fh1PtJetsConstRec","Rec jets constituents P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
   fh1PtJetConstLeadingRec = new TH1F("fh1PtJetsConstLeadingRec","Rec jets constituents P_T;p_{T} (GeV/c)",nBinPt,binLimitsPt);
-  fh1PtTracksRecIn  = new TH1F("fh1PtTracksRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
-  fh1PtTracksLeadingRecIn  = new TH1F("fh1PtTracksLeadingRecIn","Rec tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
-  fh1PtTracksGenIn  = new TH1F("fh1PtTracksGenIn","gen tracks P_T #eta < 0.9;p_{T} (GeV/c)",nBinPt,binLimitsPt);
+  fh1PtTracksRecIn  = new TH1F("fh1PtTracksRecIn",Form("Rec tracks P_T #eta < %1.2f;p_{T} (GeV/c)",fTrackEtaWindow),nBinPt,binLimitsPt);
+  fh1PtTracksLeadingRecIn  = new TH1F("fh1PtTracksLeadingRecIn",Form("Rec tracks P_T #eta < %1.2f ;p_{T} (GeV/c)",fTrackEtaWindow),nBinPt,binLimitsPt);
+  fh1PtTracksGenIn  = new TH1F("fh1PtTracksGenIn",Form("gen tracks P_T #eta < %1.2f ;p_{T} (GeV/c)",fTrackEtaWindow),nBinPt,binLimitsPt);
   fh1Nch = new TH1F("fh1Nch","charged multiplicity; N_{ch}",nChMax,-0.5,nChMax-0.5);
 
   fh1Centrality = new TH1F("fh1Centrality",";cent (%)",111,-0.5,110.5);
@@ -760,7 +762,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
     // the randomized input changes eta and phi, but keeps the p_T
     if(i>=fNSkipLeadingRan){// eventually skip the leading particles
       Double_t pT = vp->Pt();
-      Double_t eta = 1.8 * fRandom->Rndm() - 0.9;
+      Double_t eta = 2.*fTrackEtaWindow * fRandom->Rndm() - fTrackEtaWindow;
       Double_t phi = 2.* TMath::Pi() * fRandom->Rndm();
       
       Double_t theta = 2.*TMath::ATan(TMath::Exp(-eta));  
@@ -1020,7 +1022,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        // the randomized input changes eta and phi, but keeps the p_T
        if(i>=fNSkipLeadingRan){// eventually skip the leading particles
 	 Double_t pTR = vp->Pt();
-	 Double_t etaR = 1.8 * fRandom->Rndm() - 0.9;
+	 Double_t etaR = 2.*fTrackEtaWindow* fRandom->Rndm() - fTrackEtaWindow;
 	 Double_t phiR = 2.* TMath::Pi() * fRandom->Rndm();
 	 
 	 Double_t thetaR = 2.*TMath::ATan(TMath::Exp(-etaR));  
@@ -1360,7 +1362,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
       for(int it = 0;it < aod->GetNumberOfTracks();++it){
 	AliAODTrack *tr = aod->GetTrack(it);
 	if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
-	if(TMath::Abs(tr->Eta())>0.9)continue;
+	if(TMath::Abs(tr->Eta())>fTrackEtaWindow)continue;
 	if(tr->Pt()<fTrackPtCut)continue;
 	list->Add(tr);
 	iCount++;
@@ -1430,7 +1432,7 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  list->Add(part);
 	}
 	else {
-	  if(TMath::Abs(part->Eta())>0.9)continue;
+	  if(TMath::Abs(part->Eta())>fTrackEtaWindow)continue;
 	  list->Add(part);
 	}
 	iCount++;

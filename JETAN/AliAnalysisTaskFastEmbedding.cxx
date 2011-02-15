@@ -636,11 +636,6 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
     delete fAODevent;
     fAODevent = new AliAODEvent();
     fAODevent->ReadFromTree(fAODtree);
-    if(!fAODevent){
-       AliError("AOD event not found.");
-       return -1;
-    }
-
     return 1;
 }
 

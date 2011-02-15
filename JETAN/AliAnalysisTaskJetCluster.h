@@ -55,6 +55,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetAODTrackInput(Bool_t b){fUseAODTrackInput = b;}
     virtual void SetAODMCInput(Bool_t b){fUseAODMCInput = b;}
     virtual void SetRecEtaWindow(Float_t f){fRecEtaWindow = f;}
+    virtual void SetTrackEtaWindow(Float_t f){fTrackEtaWindow = f;}
     virtual void SetTrackTypeGen(Int_t i){fTrackTypeGen = i;}
     virtual void SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
     virtual void SetTrackPtCut(Float_t x){fTrackPtCut = x;}
@@ -125,6 +126,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Int_t         fNRandomCones;          // number of generated random cones
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
+    Float_t       fTrackEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
