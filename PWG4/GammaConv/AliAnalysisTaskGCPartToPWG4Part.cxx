@@ -25,8 +25,6 @@
 
 #include "AliAODMCParticle.h"
 
-#include "AliMCAnalysisUtils.h"
-
 
 #include "AliAODMCHeader.h"
 // Gamma - jet correlation analysis task
@@ -43,8 +41,7 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part()
   fDeltaAODFileName(""),
   fAODBranchName("GammaConv_gamma"),
   fAODPWG4Particles(NULL),
-  fAnaUtils(NULL),
-  fDebugLevel(0)
+   fDebugLevel(0)
 {
   // Dummy Constructor
 }
@@ -56,9 +53,6 @@ AliAnalysisTaskGCPartToPWG4Part::~AliAnalysisTaskGCPartToPWG4Part() {
     fAODPWG4Particles = NULL;
   delete fAODPWG4Particles;
 
-  if(fAnaUtils)
-    delete fAnaUtils;
-  fAnaUtils = NULL;
 
 }
 
@@ -70,7 +64,6 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
   fDeltaAODFileName(""),
   fAODBranchName("GammaConv_gamma"),
   fAODPWG4Particles(NULL),
-  fAnaUtils(NULL),
   fDebugLevel(0)
 {
   // Constructor
@@ -80,7 +73,6 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class());
 
-  fAnaUtils = new AliMCAnalysisUtils();
 }
 
 
@@ -241,7 +233,7 @@ Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * 
 	
 	AliAODMCParticle * photon = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcPart1->GetMother()));
 	Int_t motherIndex = photon->GetMother();
-	tag= fAnaUtils->CheckOriginInAOD(&motherIndex, 1, arrayMC);
+	//tag= fAnaUtils->CheckOriginInAOD(&motherIndex, 1, arrayMC);
 
 	AliAODMCParticle * mother = dynamic_cast<AliAODMCParticle*>(arrayMC->At(motherIndex));
 	
@@ -250,8 +242,8 @@ Int_t AliAnalysisTaskGCPartToPWG4Part::CheckTag(AliAODPWG4ParticleCorrelation * 
 
 	  if (TMath::Abs(mother->GetPdgCode()) < 22 && TMath::Abs(mother->GetPdgCode()) != 11) {
 	    
-	    fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
-	    fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
+	    //fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPhoton);
+	    //fAnaUtils->SetTagBit(tag, AliMCAnalysisUtils::kMCPrompt);
 	    
 	    cout  <<"KKKKKKKKK "<< mother->GetPdgCode() << " " << mother->GetStatus() << " mi " << motherIndex << " daught: " << mother->GetNDaughters() << endl;
 	    cout << photon->GetStatus() << " " << photon->Pt() << " headerpt:" << mcHeader->GetPtHard() << " " <<mcPart1->GetMother() << endl;
