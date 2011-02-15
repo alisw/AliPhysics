@@ -364,7 +364,7 @@ void AliEveTOFSector::SetTrans()
   TEveTrans& t = RefMainTrans();
 
   //Int_t det[5] = {fSector, -1, -1, -1, -1};
-  Char_t path[100];
+  Char_t path[200];
 
   Int_t localSector = fSector;
   if (!fAutoTrans) localSector = 4;

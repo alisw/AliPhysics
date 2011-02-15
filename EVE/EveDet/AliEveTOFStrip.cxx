@@ -223,7 +223,7 @@ void AliEveTOFStrip::SetTrans()
   //
 
   //Int_t det[5] = {fSector, fPlate, fStrip, -1, -1};
-  Char_t path[100];
+  Char_t path[200];
   //fTOFgeometry->GetVolumePath(det,path);
   fTOFgeometry->GetVolumePath(fSector, fPlate, fStrip, path);
 
