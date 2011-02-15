@@ -118,7 +118,7 @@ void AliRsnPairFunctions::Init(const char *prefix, TList *list)
    AliRsnFunction *fcn = 0;
    for (i = 0; i < fFunctions.GetEntries(); i++) {
       fcn = (AliRsnFunction*)fFunctions.At(i);
-      hName += prefix;
+      hName  = prefix;
       hName += '_';
       hName += GetName();
       hName += '_';
