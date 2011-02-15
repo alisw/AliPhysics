@@ -42,6 +42,7 @@ AliAODInputHandler::AliAODInputHandler() :
     fMCEvent(new AliMCEvent()),
     fFriends(new TList()),
     fMergeEvents(kFALSE),
+    fFriendsConnected(kFALSE),
     fFileToMerge(0),
     fTreeToMerge(0),
     fAODEventToMerge(0),
@@ -58,6 +59,7 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   fMCEvent(new AliMCEvent()),
   fFriends(new TList()),
   fMergeEvents(kFALSE),
+  fFriendsConnected(kFALSE),
   fFileToMerge(0),
   fTreeToMerge(0),
   fAODEventToMerge(0),
@@ -86,47 +88,22 @@ AliAODInputHandler::~AliAODInputHandler()
 Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 {
     // Initialisation necessary for each new tree
-  if (!fMergeEvents) {
     fTree = tree;
-    TIter next(fFriends);
-    TNamed* obj;
-	
     if (!fTree) return kFALSE;
     fTree->GetEntries();
-//    fTree->GetEntry(0);
-    TString aodTreeFName,aodFriendTreeFName;
-    TTree *ttree = fTree->GetTree();
-    if (!ttree) ttree = fTree;
-    aodTreeFName = ttree->GetCurrentFile()->GetName();
+    ConnectFriends();
 
-    while((obj = (TNamed*)next())) {
-      aodFriendTreeFName = aodTreeFName;
-      aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
-      aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
-      ttree->AddFriend("aodTree", aodFriendTreeFName.Data());
-    }
-  } else {
-  // Friends have to be merged
-    TNamed* filename = (TNamed*) (fFriends->At(0));
-    fFileToMerge = new TFile(filename->GetName());
-	 if (fFileToMerge) {
-      fFileToMerge->GetObject("aodTree", fTreeToMerge);
-	   if (!fAODEventToMerge) fAODEventToMerge = new AliAODEvent();
-	   fAODEventToMerge->ReadFromTree(fTreeToMerge);
-    }
-  }
-
-  SwitchOffBranches();
-  SwitchOnBranches();
+    SwitchOffBranches();
+    SwitchOnBranches();
     
-  // Get pointer to AOD event
-  if (!fEvent) fEvent = new AliAODEvent();
-
-  fEvent->ReadFromTree(fTree);
-  
-  if (fMixingHandler) fMixingHandler->Init(tree, opt);
-
-  return kTRUE;
+    // Get pointer to AOD event
+    if (!fEvent) fEvent = new AliAODEvent();
+    
+    fEvent->ReadFromTree(fTree);
+    
+    if (fMixingHandler) fMixingHandler->Init(tree, opt);
+    
+    return kTRUE;
 }
 
 //______________________________________________________________________________
@@ -149,6 +126,12 @@ Bool_t AliAODInputHandler::Notify(const char* path)
 {
   // Notifaction of directory change
   if (fMixingHandler) fMixingHandler->Notify(path);
+  if (!fFriendsConnected) {
+      ConnectFriends();
+      fEvent->ReadFromTree(fTree, "reconnect");
+  }
+  fFriendsConnected = kFALSE;
+    
   TTree *ttree = fTree->GetTree();
   if (!ttree) ttree = fTree;
   TString statFname(gSystem->DirName(ttree->GetCurrentFile()->GetName()));
@@ -216,3 +199,34 @@ TObject *AliAODInputHandler::GetStatistics(Option_t *option) const
    if (opt=="BIN0") return fHistStatistics[1];
    return fHistStatistics[0];
 }   
+
+void AliAODInputHandler::ConnectFriends()
+{
+    // Connect the friend trees 
+    if (!fMergeEvents) {
+	TIter next(fFriends);
+	TNamed* obj;
+	TString aodTreeFName,aodFriendTreeFName;
+	TTree *ttree = fTree->GetTree();
+	if (!ttree) ttree = fTree;
+	aodTreeFName = ttree->GetCurrentFile()->GetName();
+	
+	while((obj = (TNamed*)next())) {
+	    aodFriendTreeFName = aodTreeFName;
+	    aodFriendTreeFName.ReplaceAll("AliAOD.root",obj->GetName());
+	    aodFriendTreeFName.ReplaceAll("AliAODs.root",obj->GetName());
+	    ttree->AddFriend("aodTree", aodFriendTreeFName.Data());
+	}
+    } else {
+	// Friends have to be merged
+	TNamed* filename = (TNamed*) (fFriends->At(0));
+	fFileToMerge = new TFile(filename->GetName());
+	if (fFileToMerge) {
+	    fFileToMerge->GetObject("aodTree", fTreeToMerge);
+	    if (!fAODEventToMerge) fAODEventToMerge = new AliAODEvent();
+	    fAODEventToMerge->ReadFromTree(fTreeToMerge);
+	}
+    }
+    fFriendsConnected = kTRUE;
+}
+

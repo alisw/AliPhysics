@@ -42,6 +42,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODEvent*         GetEventToMerge() {return fAODEventToMerge;}
     void                 SetMergeOffset(Int_t ioff) {fMergeOffset = ioff;}
  private:
+    void ConnectFriends();
     AliAODInputHandler(const AliAODInputHandler& handler);             
     AliAODInputHandler& operator=(const AliAODInputHandler& handler);  
  private:
@@ -50,6 +51,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     TList          *fFriends; //  List of friend trees 
 // Support for merged events
     Bool_t          fMergeEvents;     // Flag for event merging
+    Bool_t          fFriendsConnected;// Friends are connected
     TFile          *fFileToMerge;     //! File for merging
     TTree          *fTreeToMerge;     //! Tree for merging
     AliAODEvent    *fAODEventToMerge; //! Event for merging
