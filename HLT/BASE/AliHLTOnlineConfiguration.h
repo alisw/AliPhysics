@@ -57,6 +57,12 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
   
   /// parse the xml buffer
   int Parse();
+  
+  /// get default chains (sources of HLTOutFormatter)
+  const char* GetDefaultChains() const {return fDefaultChains.Data();}
+  
+  /// get component libraries
+  const char* GetComponentLibraries();
 
   /// overloaded from TObject, print info
   virtual void        Print(const char* options) const;
@@ -92,6 +98,8 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
   UInt_t fXMLSize;
   /// list of parsed configuration entries
   TList fConfEntryList;
+  /// default chains (sources of HLTOutFormatter)
+  TString fDefaultChains;
   
   /**
    * Parse XML configuration.
@@ -107,15 +115,17 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    * Parse XML configuration entry.
    * @param node       XML root node of entry
    * @param id         online component ID
+   * @param type       online component type
    * @return
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */
-  int ParseEntry(TXMLNode* node, const char* id);
+  int ParseEntry(TXMLNode* node, const char* id, const char* type);
   
   /**
    * Parse standard component configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -123,11 +133,13 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseStandardComponent(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseStandardComponent(const char* id, const char* type, const char* cmd,
+    TString& sources, TString& nodes);
   
   /**
    * Parse RORCPublisher configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -135,11 +147,13 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseRORCPublisher(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseRORCPublisher(const char* id, const char* type, const char* cmd,
+    TString& sources, TString& nodes);
 
   /**
    * Parse TCPDumpSubscriber configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -147,11 +161,13 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseTCPDumpSubscriber(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseTCPDumpSubscriber(const char* id, const char* type, const char* cmd,
+    TString& sources, TString& nodes);
 
   /**
    * Parse Relay configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -159,11 +175,13 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseRelay(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseRelay(const char* id, const char* type, const char* cmd,
+    TString& sources, TString& nodes);
 
   /**
    * Parse HLTOutFormatter configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -171,11 +189,13 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseHLTOutFormatter(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseHLTOutFormatter(const char* id, const char* type, const char* cmd,
+    TString& sources, TString& nodes);
 
   /**
    * Parse HLTOutWriterSubscriber configuration.
    * @param id         online component ID
+   * @param type       online component type
    * @param cmd        online command
    * @param sources    component sources
    * @param nodes      online computing nodes
@@ -183,7 +203,8 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
    *   -EINVAL if parsing error
    *   0 if entry was successfully parsed
    */  
-  int ParseHLTOutWriterSubscriber(const char* id, const char* cmd, TString& sources, TString& nodes);
+  int ParseHLTOutWriterSubscriber(const char* id, const char* type,
+    const char* cmd, TString& sources, TString& nodes);
 
   ClassDef(AliHLTOnlineConfiguration, 1); // description of HLT online configuration
 };
