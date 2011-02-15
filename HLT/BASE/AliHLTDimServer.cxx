@@ -101,27 +101,30 @@ TObjArray* AliHLTDimServer::CreateServiceGroup(enum AliHLTDimServer::AliHLTDimSe
       while ((i/=10)>0) digits++;
       if (digits<9) {
 	log.LoggingVarargs(kHLTLogDebug, "AliHLTDimServer", "CreateServiceGroup" , __FILE__ , __LINE__ , "basename=%s count=%d digits=%d\n", basename, count, digits);
-	int namelen=strlen(basename)+2+digits;
+	// length of name is at max strlen(basename) + 1 '_' + digits + 1 terminating zero
+	// length of format is independent of number of digits
+	// at max we need strlen(basename) + 5 chars + 1 terminating zero
+	int namelen=strlen(basename)+5+digits;
 	char* name=(char*)malloc(namelen);
-	char* format=(char*)malloc(namelen); // this has actually only indirect to do with namelen but its appropriate 
+	char* format=(char*)malloc(namelen);
 	if (name && format) {
 	  const char* key=strchr(basename, '%');
-	  strcpy(format, basename);
-	  if (key) {
+	  strncpy(format, basename, namelen-1);
+	  if (key && key[1]!=0) {
 	    int iPos=(key-basename)+1;
 	    if (key[1]=='d') {
-	      sprintf(format+iPos, "0*d");
+	      snprintf(format+iPos, namelen-1-iPos, "0*d"); // additional 3 chars
 	      iPos+=3;
 	    } else {
 	      *(format+iPos++)='%';
 	      *(format+iPos++)=key[1];
 	    }
-	    strcpy(format+iPos, &key[2]);
+	    strncpy(format+iPos, &key[2], namelen-1-iPos);
 	  } else {
-	    sprintf(format+strlen(basename), "_%%0*d");
+	    snprintf(format+strlen(basename), namelen-1-strlen(basename), "_%%0*d"); // additional 5 chars
 	  }
 	  for (i=0; i<count && iResult>=0; i++) {
-	    sprintf(name, format, digits, i);
+	    snprintf(name, namelen-1, format, digits, i);
 	    AliHLTDimService* service=new AliHLTDimService(type, name);
 	    iResult=RegisterService(service);
 	  }
