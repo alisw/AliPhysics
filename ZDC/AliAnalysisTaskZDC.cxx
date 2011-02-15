@@ -76,7 +76,8 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC():
     fhZNCemd(0x0),	   
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
-    fhPMCZNAemd(0x0) 
+    fhPMCZNAemd(0x0),
+    fDebunch(0x0)
 {   
    // Default constructor
 }   
@@ -102,7 +103,8 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const char *name):
     fhZNCemd(0x0),	   
     fhZNAemd(0x0),
     fhPMCZNCemd(0x0), 
-    fhPMCZNAemd(0x0) 
+    fhPMCZNAemd(0x0),
+    fDebunch(0x0) 
 {  
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -142,7 +144,8 @@ AliAnalysisTaskZDC::AliAnalysisTaskZDC(const AliAnalysisTaskZDC& ana):
   fhZNCemd(ana.fhZNCemd),	 
   fhZNAemd(ana.fhZNAemd),
   fhPMCZNCemd(ana.fhPMCZNCemd), 
-  fhPMCZNAemd(ana.fhPMCZNAemd)
+  fhPMCZNAemd(ana.fhPMCZNAemd),
+  fDebunch(ana.fDebunch)
 {
   //
   // Copy Constructor	
@@ -210,7 +213,10 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fhPMCZNCemd = new TH1F("fhPMCZNCemd","ZNC PMC lg",100, 10., 500.);   
   fOutput->Add(fhPMCZNCemd);      
   fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",100, 10., 500.);   
-  fOutput->Add(fhPMCZNAemd);      
+  fOutput->Add(fhPMCZNAemd);     
+  
+  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-100,-40);
+  fOutput->Add(fDebunch);     
     
   PostData(1, fOutput);
 }
@@ -310,6 +316,10 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     fhZNAemd->Fill(znalg);	 
     fhPMCZNCemd->Fill(towZNCLG[0]);   
     fhPMCZNAemd->Fill(towZNALG[0]);   
+    
+    Float_t tdcC = esdZDC->GetZDCTDCCorrected(10,0)-esdZDC->GetZDCTDCCorrected(15,0);
+    Float_t tdcA = esdZDC->GetZDCTDCCorrected(12,0)-esdZDC->GetZDCTDCCorrected(10,0);
+    fDebunch->Fill(tdcC-tdcA, tdC+tdcA);
   
     PostData(1, fOutput);
   

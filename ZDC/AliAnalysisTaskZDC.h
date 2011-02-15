@@ -60,6 +60,7 @@ class AliAnalysisTaskZDC : public AliAnalysisTaskSE {
   TH1F    *fhZNAemd;	     	//! ZNA sum gain chain
   TH1F    *fhPMCZNCemd;      	//! ZNC PMC low gain chain
   TH1F    *fhPMCZNAemd;      	//! ZNA PMC low gain chain
+  TH2F    *fDebunch;            //! TDC sum vs. diff
   
  
   ClassDef(AliAnalysisTaskZDC,1); 
