@@ -58,8 +58,6 @@ public:
   TString     fAODBranchName;
   TClonesArray * fAODPWG4Particles;
 
-  AliMCAnalysisUtils * fAnaUtils;
-
   Int_t fDebugLevel;
 
 
