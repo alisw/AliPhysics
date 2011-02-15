@@ -33,11 +33,13 @@ public:
 
   // functions to correct a space point
           void CorrectPoint (      Float_t x[],const Short_t roc);
+          void CorrectPointLocal(Float_t x[],const Short_t roc);
           void CorrectPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
 
   // functions to distort a space point
           void DistortPoint (      Float_t x[],const Short_t roc);
+          void DistortPointLocal(Float_t x[],const Short_t roc);
           void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
   virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
 
@@ -65,7 +67,9 @@ public:
   virtual void SetOmegaTauT1T2(Float_t omegaTau,Float_t t1,Float_t t2);
   AliExternalTrackParam * FitDistortedTrack(AliExternalTrackParam & trackIn, Double_t refX, Int_t dir,TTreeSRedirector *pcstream);
   void StoreInOCDB(Int_t startRun, Int_t endRun, const char *comment=0);
-  static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Bool_t debug=0);
+  static void MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Int_t offset=0, Bool_t debug=0);
+  static void MakeSectorDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step=1, Int_t offset=0, Bool_t debug=0);
+  static void MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrArray, Int_t itype);
   static void MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype);
 
   void FastSimDistortedVertex(Double_t orgVertex[3], Int_t nTracks, AliESDVertex &aV, AliESDVertex &avOrg, AliESDVertex &cV, AliESDVertex &cvOrg, TTreeSRedirector * const pcstream, Double_t etaCuts);

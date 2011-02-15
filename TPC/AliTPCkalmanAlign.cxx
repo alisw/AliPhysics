@@ -969,3 +969,111 @@ void AliTPCkalmanAlign::MakeAliasCE(TTree * chain){
   chain->SetAlias("La","(ly.fElements/lx.fElements/0.155)");
   chain->SetAlias("deltaT","(CETmean.fElements-PulserTmean.fElements)");
 }
+
+
+
+
+void AliTPCkalmanAlign::Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &vecXk, TMatrixD &covXk){
+  //
+  // Update parameters and covariance - with one measurement
+  //
+  const Int_t knMeas=1;
+  Int_t knElem=vecXk.GetNrows();
+ 
+  TMatrixD mat1(knElem,knElem);            // update covariance matrix
+  TMatrixD matHk(1,knElem);        // vector to mesurement
+  TMatrixD vecYk(knMeas,1);        // Innovation or measurement residual
+  TMatrixD matHkT(knElem,knMeas);  // helper matrix Hk transpose
+  TMatrixD matSk(knMeas,knMeas);   // Innovation (or residual) covariance
+  TMatrixD matKk(knElem,knMeas);   // Optimal Kalman gain
+  TMatrixD covXk2(knElem,knElem);  // helper matrix
+  TMatrixD covXk3(knElem,knElem);  // helper matrix
+  TMatrixD vecZk(1,1);
+  TMatrixD measR(1,1);
+  vecZk(0,0)=delta;
+  measR(0,0)=sigma*sigma;
+  //
+  // reset matHk
+  for (Int_t iel=0;iel<knElem;iel++) 
+    for (Int_t ip=0;ip<knMeas;ip++) matHk(ip,iel)=0; 
+  //mat1
+  for (Int_t iel=0;iel<knElem;iel++) {
+    for (Int_t jel=0;jel<knElem;jel++) mat1(iel,jel)=0;
+    mat1(iel,iel)=1;
+  }
+  //
+  matHk(0, s1)=1;
+  vecYk = vecZk-matHk*vecXk;               // Innovation or measurement residual
+  matHkT=matHk.T(); matHk.T();
+  matSk = (matHk*(covXk*matHkT))+measR;    // Innovation (or residual) covariance
+  matSk.Invert();
+  matKk = (covXk*matHkT)*matSk;            //  Optimal Kalman gain
+  vecXk += matKk*vecYk;                    //  updated vector 
+  covXk2= (mat1-(matKk*matHk));
+  covXk3 =  covXk2*covXk;          
+  covXk = covXk3;  
+  Int_t nrows=covXk3.GetNrows();
+  
+  for (Int_t irow=0; irow<nrows; irow++)
+    for (Int_t icol=0; icol<nrows; icol++){
+      // rounding problems - make matrix again symteric
+      covXk(irow,icol)=(covXk3(irow,icol)+covXk3(icol,irow))*0.5; 
+    }
+}
+
+
+void   AliTPCkalmanAlign::Update1D(TString &input, TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma){
+  //
+  //  Update Parameters
+  //  input  - variable name description
+  //  filter - filter string 
+  //  param  - parameter vector
+  //  covar  - covariance
+  //  mean   - value to set
+  //  sigma  - sigma of measurement 
+  TObjArray *array0= input.Tokenize("++");
+  TObjArray *array1= filter.Tokenize("++");
+  TMatrixD paramM(param.GetNrows(),1);
+  for (Int_t i=0; i<array0->GetEntries(); i++){paramM(i,0)=param(i);}
+
+  for (Int_t i=0; i<array0->GetEntries(); i++){
+    Bool_t isOK=kTRUE;
+    TString str(array0->At(i)->GetName());
+    for (Int_t j=0; j<array1->GetEntries(); j++){
+      if (str.Contains(array1->At(j)->GetName())==0) isOK=kFALSE;
+    }
+    if (isOK) {
+      AliTPCkalmanAlign::Update1D(mean, sigma, i, paramM, covar);
+    }
+  }
+  for (Int_t i=0; i<array0->GetEntries(); i++){
+    param(i)=paramM(i,0);
+  }
+}
+
+
+TString  AliTPCkalmanAlign::FilterFit(TString &input, TString filter, TVectorD &param, TMatrixD & covar){
+  //
+  //
+  //
+  TObjArray *array0= input.Tokenize("++");
+  TObjArray *array1= filter.Tokenize("++");
+  //TString *presult=new TString("(0");
+  TString result="(0.0";
+  for (Int_t i=0; i<array0->GetEntries(); i++){
+    Bool_t isOK=kTRUE;
+    TString str(array0->At(i)->GetName());
+    for (Int_t j=0; j<array1->GetEntries(); j++){
+      if (str.Contains(array1->At(j)->GetName())==0) isOK=kFALSE;
+    }
+    if (isOK) {
+      result+="+"+str;
+      result+=Form("*(%f)",param[i+1]);
+      printf("%f\t%f\t%s\n",param[i+1], TMath::Sqrt(covar(i+1,i+1)),str.Data());
+    }
+  }
+  result+="-0.)";
+  return result;
+}
+
+

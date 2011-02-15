@@ -21,6 +21,8 @@ class AliESDv0;
 class TArrayI;
 class TTree;
 class AliStack;
+class  AliExternalTrackParam;
+class  AliTPCCorrection;
 
 class AliTPCcalibV0 : public AliTPCcalibBase {
 public :
@@ -28,47 +30,53 @@ public :
    // List of branches
 
   AliTPCcalibV0();
+  AliTPCcalibV0(const Text_t *name, const Text_t *title);
   virtual ~AliTPCcalibV0();
   virtual void     Process(AliESDEvent *event) {return ProcessESD(event,0);}
-
+  Long64_t Merge(TCollection *const li);
+  void AddTree(TTree * treeInput);
+  void AddTreeHPT(TTree * treeInput);
+  static AliExternalTrackParam * RefitTrack(AliTPCseed *seed, AliTPCCorrection * corr, Double_t xstart, Double_t xstop, Double_t mass);
+  static void MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut, Int_t run);
+  static void MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, Int_t run);
   //
   //
   //
   void ProcessESD(AliESDEvent *esd, AliStack *stack=0);
+  void DumpToTree(AliESDEvent *esd);
+  void DumpToTreeHPT(AliESDEvent *esd);
+  TTree * GetV0Tree(){return fV0Tree;}
+  TTree * GetHPTTree(){return fHPTTree;}
+  //  
   void MakeMC();
   void MakeV0s();
   void ProcessV0(Int_t ftype);
   void ProcessPI0();
-  TH2F * GetHistograms();
   void BinLogX(TH2F * h);
   //
   //
   //  
   static AliKFParticle * Fit(AliKFVertex & primVtx, AliESDv0 *v0, Int_t PDG1, Int_t PDG2);
-  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
-  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
 
 protected:
 private:
 
-   AliTPCcalibV0(const AliTPCcalibV0&); // Not implemented
-   AliTPCcalibV0& operator=(const AliTPCcalibV0&); // Not implemented
-
-
-   AliStack       *fStack;        // pointer to kinematic tree        
-   AliESDEvent    *fESD;              //! current ED to proccess - NOT OWNER
-   TDatabasePDG   *fPdg;              // particle database
-   TObjArray      *fParticles;         // array of selected MC particles
-   TObjArray      *fV0s;               // array of V0s
-   TObjArray      *fGammas;           // gamma conversion candidates
-   //
-   TArrayI        *fV0type;            // array of types for V0s       
-   TH2F           *fTPCdEdx;              // dEdx spectra
-   TH2F           *fTPCdEdxPi;            // dEdx spectra - pion anti-pion
-   TH2F           *fTPCdEdxEl;            // dEdx spectra - electroen -positrons from gamma
-   TH2F           *fTPCdEdxP;             // dEdx spectra - proton antiproton - lambda -  antilambda
-   //       
-   ClassDef(AliTPCcalibV0,1);
+  AliTPCcalibV0(const AliTPCcalibV0&); // Not implemented
+  AliTPCcalibV0& operator=(const AliTPCcalibV0&); // Not implemented
+  TTree          *fV0Tree;      // tree with full V0 information
+  TTree          *fHPTTree;      // tree with high mometa tracks - full calib info
+  //
+  AliStack       *fStack;        // pointer to kinematic tree        
+  AliESDEvent    *fESD;              //! current ED to proccess - NOT OWNER
+  TDatabasePDG   *fPdg;              //! particle database
+  TObjArray      *fParticles;         // array of selected MC particles
+  TObjArray      *fV0s;               // array of V0s
+  TObjArray      *fGammas;           // gamma conversion candidates
+  //
+  void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
+  void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}  
+  //       
+  ClassDef(AliTPCcalibV0,3);
 };
 
 

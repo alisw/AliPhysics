@@ -38,6 +38,12 @@
 #include "TCint.h"
 #include "AliTPCcalibV0.h"
 #include "AliV0.h"
+#include "TRandom.h"
+#include "TTreeStream.h"
+#include "AliTPCcalibDB.h"
+#include "AliTPCCorrection.h"
+#include "AliGRPObject.h"
+#include "AliTPCTransform.h"
 
 
 
@@ -48,33 +54,40 @@ ClassImp(AliTPCcalibV0)
 
 AliTPCcalibV0::AliTPCcalibV0() : 
    AliTPCcalibBase(),
+   fV0Tree(0),
+   fHPTTree(0),
    fStack(0),
    fESD(0),
    fPdg(0),
    fParticles(0),
    fV0s(0),
-   fGammas(0),
-   fV0type(0),
-   fTPCdEdx(0),
-   fTPCdEdxPi(0),
-   fTPCdEdxEl(0),
-   fTPCdEdxP(0)
+   fGammas(0)
+{
+  
+}   
+AliTPCcalibV0::AliTPCcalibV0(const Text_t *name, const Text_t *title):
+   AliTPCcalibBase(),
+   fV0Tree(0),
+   fHPTTree(0),
+   fStack(0),
+   fESD(0),
+   fPdg(0),
+   fParticles(0),
+   fV0s(0),
+   fGammas(0)
 {
   fPdg = new TDatabasePDG;       
   // create output histograms
-  fTPCdEdx   = new TH2F("TPCdEdX",  "dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);
-  BinLogX(fTPCdEdx); 
-  fTPCdEdxPi = new TH2F("TPCdEdXPi","dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);
-  fTPCdEdxEl = new TH2F("TPCdEdXEl","dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);  
-  fTPCdEdxP  = new TH2F("TPCdEdXP", "dE/dX; BetaGamma; TPC signal (a.u.)", 1000, 0.1, 10000, 300, 0, 300);        
-  
-  
+  SetName(name);
+  SetTitle(title);
 }   
 
 AliTPCcalibV0::~AliTPCcalibV0(){
   //
   //
   //
+  delete fV0Tree;
+  delete fHPTTree;
 }
 
 
@@ -87,6 +100,11 @@ void  AliTPCcalibV0::ProcessESD(AliESDEvent *esd, AliStack *stack){
   //
   fESD = esd;
   AliKFParticle::SetField(esd->GetMagneticField());
+  if (TMath::Abs(AliTracker::GetBz())<1) return;  
+  DumpToTree(esd);
+  DumpToTreeHPT(esd);
+  return;
+  //
   MakeV0s();
   if (stack) {
     fStack = stack;
@@ -95,6 +113,304 @@ void  AliTPCcalibV0::ProcessESD(AliESDEvent *esd, AliStack *stack){
     fStack =0;
   }
 }
+
+void  AliTPCcalibV0::DumpToTreeHPT(AliESDEvent *esd){
+  //
+  // Dump V0s fith full firend information to the 
+  // 
+  if (TMath::Abs(AliTracker::GetBz())<1) return;
+  const Int_t kMinCluster=110;
+  const Float_t kMinPt   =3.;
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+    Printf("ERROR: esdFriend not available");
+    return;
+  }
+  //
+  Int_t ntracks=esd->GetNumberOfTracks();
+  for (Int_t i=0;i<ntracks;++i) {
+    Bool_t isOK=kFALSE;
+    AliESDtrack *track = esd->GetTrack(i);
+    if (track->GetTPCncls()<kMinCluster) continue;
+    AliESDfriendTrack *friendTrack = esdFriend->GetTrack(i);
+    if (!friendTrack) continue;
+    if (TMath::Abs(AliTracker::GetBz())>1){ // cut on momenta if measured
+      if (track->Pt()>kMinPt) isOK=kTRUE;
+    }
+    if (TMath::Abs(AliTracker::GetBz())<1){  // require primary track for the B field OFF data
+      Bool_t isAccepted=kTRUE;
+      if (!track->IsOn(AliESDtrack::kITSrefit)) isAccepted=kFALSE;
+      if (!track->IsOn(AliESDtrack::kTPCrefit)) isAccepted=kFALSE;
+      if (!track->IsOn(AliESDtrack::kTOFout))   isAccepted=kFALSE;
+      Float_t dvertex[2],cvertex[3]; 
+      track->GetImpactParametersTPC(dvertex,cvertex);
+      if (TMath::Abs(dvertex[0]/TMath::Sqrt(cvertex[0]+0.01))>20) isAccepted=kFALSE;
+      if (TMath::Abs(dvertex[1]/TMath::Sqrt(TMath::Abs(cvertex[2]+0.01)))>20) isAccepted=kFALSE;
+      track->GetImpactParameters(dvertex,cvertex);
+      if (TMath::Abs(dvertex[0]/TMath::Sqrt(cvertex[0]+0.01))>10) isAccepted=kFALSE;
+      if (TMath::Abs(dvertex[1]/TMath::Sqrt(TMath::Abs(cvertex[2]+0.01)))>10) isAccepted=kFALSE;
+      if (!isAccepted) isOK=kFALSE;
+    }
+    
+    if (!isOK) continue;
+    //
+
+    TObject *calibObject;
+    AliTPCseed *seed = 0;
+    for (Int_t l=0;(calibObject=friendTrack->GetCalibObject(l));++l) {
+      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    if (!seed) continue;
+      if (!fHPTTree) {
+      fHPTTree = new TTree("HPT","HPT");
+      fHPTTree->SetDirectory(0);
+    }
+    if (fHPTTree->GetEntries()==0){
+      //
+      fHPTTree->SetDirectory(0);
+      fHPTTree->Branch("t.",&track);
+      fHPTTree->Branch("ft.",&friendTrack);
+      fHPTTree->Branch("s.",&seed);
+    }else{
+      fHPTTree->SetBranchAddress("t.",&track);
+      fHPTTree->SetBranchAddress("ft.",&friendTrack);
+      fHPTTree->SetBranchAddress("s.",&seed);
+    }
+    fHPTTree->Fill();
+    //
+  }
+}
+
+
+
+void  AliTPCcalibV0::DumpToTree(AliESDEvent *esd){
+  //
+  // Dump V0s fith full firend information to the 
+  // 
+  Int_t nV0s  = fESD->GetNumberOfV0s();
+  const Int_t kMinCluster=110;
+  const Double_t kDownscale=0.01;
+  const Float_t kMinR    =0;
+  const Float_t kMinPt   =1.0;
+  const Float_t kMinMinPt   =0.7;
+  AliESDfriend *esdFriend=static_cast<AliESDfriend*>(esd->FindListObject("AliESDfriend"));
+  if (!esdFriend) {
+    Printf("ERROR: esdFriend not available");
+    return;
+  }
+  //
+  
+  for (Int_t ivertex=0; ivertex<nV0s; ivertex++){
+    Bool_t isOK=kFALSE;
+    AliESDv0 * v0 = (AliESDv0*) esd->GetV0(ivertex);
+    AliESDtrack * track0 = fESD->GetTrack(v0->GetIndex(0)); // negative track
+    AliESDtrack * track1 = fESD->GetTrack(v0->GetIndex(1)); // positive track 
+    if (track0->GetTPCNcls()<kMinCluster) continue;
+    if (track0->GetKinkIndex(0)>0) continue;    
+    if (track1->GetTPCNcls()<kMinCluster) continue;
+    if (track1->GetKinkIndex(0)>0) continue;
+    if (v0->GetOnFlyStatus()==kFALSE) continue;
+    //
+    if (TMath::Min(track0->Pt(),track1->Pt())<kMinMinPt) continue;
+    //
+    //
+    if (TMath::Max(track0->Pt(),track1->Pt())>kMinPt) isOK=kTRUE;
+    if (gRandom->Rndm()<kDownscale) isOK=kTRUE;  
+    if (!isOK) continue;
+    //
+    AliESDfriendTrack *ftrack0 = esdFriend->GetTrack(v0->GetIndex(0));
+    if (!ftrack0) continue;
+    AliESDfriendTrack *ftrack1 = esdFriend->GetTrack(v0->GetIndex(1));
+    if (!ftrack1) continue;
+    //
+    TObject *calibObject;
+    AliTPCseed *seed0 = 0;
+    AliTPCseed *seed1 = 0;
+    for (Int_t l=0;(calibObject=ftrack0->GetCalibObject(l));++l) {
+      if ((seed0=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    for (Int_t l=0;(calibObject=ftrack1->GetCalibObject(l));++l) {
+      if ((seed1=dynamic_cast<AliTPCseed*>(calibObject))) break;
+    }
+    if (!seed0) continue;
+    if (!seed1) continue;
+    AliExternalTrackParam * paramIn0 = (AliExternalTrackParam *)track0->GetInnerParam();
+    AliExternalTrackParam * paramIn1 = (AliExternalTrackParam *)track1->GetInnerParam();
+    if (!paramIn0) continue;
+    if (!paramIn1) continue;
+    //
+    //
+    if (!fV0Tree) {
+      fV0Tree = new TTree("V0s","V0s");
+      fV0Tree->SetDirectory(0);
+    }
+    if (fV0Tree->GetEntries()==0){
+      //
+      fV0Tree->SetDirectory(0);
+      fV0Tree->Branch("v0.",&v0);
+      fV0Tree->Branch("t0.",&track0);
+      fV0Tree->Branch("t1.",&track1);
+      fV0Tree->Branch("ft0.",&ftrack0);
+      fV0Tree->Branch("ft1.",&ftrack1);
+      fV0Tree->Branch("s0.",&seed0);
+      fV0Tree->Branch("s1.",&seed1);
+    }else{
+      fV0Tree->SetBranchAddress("v0.",&v0);
+      fV0Tree->SetBranchAddress("t0.",&track0);
+      fV0Tree->SetBranchAddress("t1.",&track1);
+      fV0Tree->SetBranchAddress("ft0.",&ftrack0);
+      fV0Tree->SetBranchAddress("ft1.",&ftrack1);
+      fV0Tree->SetBranchAddress("s0.",&seed0);
+      fV0Tree->SetBranchAddress("s1.",&seed1);
+    }
+    fV0Tree->Fill();
+  }
+}
+
+
+Long64_t AliTPCcalibV0::Merge(TCollection *const li) {
+
+  TIterator* iter = li->MakeIterator();
+  AliTPCcalibV0* cal = 0;
+
+  while ((cal = (AliTPCcalibV0*)iter->Next())) {
+    if (cal->fV0Tree){
+      if (!fV0Tree) {
+	fV0Tree = new TTree("V0s","V0s");
+	fV0Tree->SetDirectory(0);
+      }
+      if (cal->fV0Tree->GetEntries()>0) AliTPCcalibV0::AddTree(cal->fV0Tree);
+      if (cal->fHPTTree->GetEntries()>0) AliTPCcalibV0::AddTreeHPT(cal->fHPTTree);
+    }    
+  }
+  return 0;
+}
+
+
+void AliTPCcalibV0::AddTree(TTree * treeInput){
+  //
+  // Add the content of tree: 
+  // Notice automatic copy of tree in ROOT does not work for such complicated tree
+  //  
+  AliESDv0 * v0 = new AliESDv0;
+  Double_t kMinPt=0.8;
+  AliESDtrack * track0 = 0; // negative track
+  AliESDtrack * track1 = 0; // positive track 
+  AliESDfriendTrack *ftrack0 = 0;
+  AliESDfriendTrack *ftrack1 = 0;
+  AliTPCseed *seed0 = 0;
+  AliTPCseed *seed1 = 0;
+  treeInput->SetBranchStatus("ft0.",kFALSE);
+  treeInput->SetBranchStatus("ft1.",kFALSE);
+  TDatabasePDG pdg;
+  Double_t massK0= pdg.GetParticle("K0")->Mass();
+  Double_t massLambda= pdg.GetParticle("Lambda0")->Mass();
+
+  Int_t entries= treeInput->GetEntries();
+  for (Int_t i=0; i<entries; i++){
+    treeInput->SetBranchAddress("v0.",&v0);
+    treeInput->SetBranchAddress("t0.",&track0);
+    treeInput->SetBranchAddress("t1.",&track1);
+    treeInput->SetBranchAddress("ft0.",&ftrack0);
+    treeInput->SetBranchAddress("ft1.",&ftrack1);
+    treeInput->SetBranchAddress("s0.",&seed0);
+    treeInput->SetBranchAddress("s1.",&seed1);
+    if (fV0Tree->GetEntries()==0){
+      fV0Tree->SetDirectory(0);
+      fV0Tree->Branch("v0.",&v0);
+      fV0Tree->Branch("t0.",&track0);
+      fV0Tree->Branch("t1.",&track1);
+      fV0Tree->Branch("ft0.",&ftrack0);
+      fV0Tree->Branch("ft1.",&ftrack1);
+      fV0Tree->Branch("s0.",&seed0);
+      fV0Tree->Branch("s1.",&seed1);
+    }else{
+      fV0Tree->SetBranchAddress("v0.",&v0);
+      fV0Tree->SetBranchAddress("t0.",&track0);
+      fV0Tree->SetBranchAddress("t1.",&track1);
+      fV0Tree->SetBranchAddress("ft0.",&ftrack0);
+      fV0Tree->SetBranchAddress("ft1.",&ftrack1);
+      fV0Tree->SetBranchAddress("s0.",&seed0);
+      fV0Tree->SetBranchAddress("s1.",&seed1);
+    }
+    //
+    treeInput->GetEntry(i);
+    ftrack0->GetCalibContainer()->SetOwner(kTRUE);
+    ftrack1->GetCalibContainer()->SetOwner(kTRUE);
+    Bool_t isOK=kTRUE;
+    if (v0->GetOnFlyStatus()==kFALSE) isOK=kFALSE;
+    if (track0->GetTPCncls()<100) isOK=kFALSE;
+    if (track1->GetTPCncls()<100) isOK=kFALSE;    
+    if (TMath::Min(seed0->Pt(),seed1->Pt())<kMinPt) isOK=kFALSE;
+    if (TMath::Min(track0->Pt(),track1->Pt())<kMinPt) isOK=kFALSE;
+    Bool_t isV0=kFALSE;    
+    if (TMath::Abs(v0->GetEffMass(2,2)-massK0)<0.05)     isV0=kTRUE;
+    if (TMath::Abs(v0->GetEffMass(4,2)-massLambda)<0.05) isV0=kTRUE; 
+    if (TMath::Abs(v0->GetEffMass(2,4)-massLambda)<0.05) isV0=kTRUE;
+    if (TMath::Abs(v0->GetEffMass(0,0))<0.02) isV0=kFALSE; //reject electrons
+    if (!isV0) isOK=kFALSE;
+    if (isOK) fV0Tree->Fill();
+    delete v0;
+    delete track0;
+    delete track1;
+    delete ftrack0;
+    delete ftrack1;
+    delete seed0;
+    delete seed1;
+    v0=0;
+    track0=0;
+    track1=0;
+    ftrack0=0;
+    ftrack1=0;
+    seed0=0;
+    seed1=0;
+  }
+}
+
+void AliTPCcalibV0::AddTreeHPT(TTree * treeInput){
+  //
+  // Add the content of tree: 
+  // Notice automatic copy of tree in ROOT does not work for such complicated tree
+  //  
+  AliESDtrack *track = 0;
+  AliESDfriendTrack *friendTrack = 0;
+  AliTPCseed *seed = 0;
+  if (!treeInput) return;
+  if (treeInput->GetEntries()==0) return;
+  //
+  Int_t entries= treeInput->GetEntries();  
+  //
+  for (Int_t i=0; i<entries; i++){
+    track=0;
+    friendTrack=0;
+    seed=0;
+    //
+    treeInput->SetBranchAddress("t.",&track);
+    treeInput->SetBranchAddress("ft.",&friendTrack);
+    treeInput->SetBranchAddress("s.",&seed);
+    treeInput->GetEntry(i);
+    //
+    if (fHPTTree->GetEntries()==0){
+      fHPTTree->SetDirectory(0);
+      fHPTTree->Branch("t.",&track);
+      fHPTTree->Branch("ft.",&friendTrack);
+      fHPTTree->Branch("s.",&seed);
+    }else{
+      fHPTTree->SetBranchAddress("t.",&track);
+      fHPTTree->SetBranchAddress("ft.",&friendTrack);
+      fHPTTree->SetBranchAddress("s.",&seed);
+    }    
+    Bool_t isOK=kTRUE;
+    if (!track->IsOn(AliESDtrack::kITSrefit)) isOK=kFALSE;
+    if (!track->IsOn(AliESDtrack::kTOFout)) isOK=kFALSE;
+    if (isOK) fHPTTree->Fill();
+    //
+    delete track;
+    delete friendTrack;
+    delete seed;
+  }
+}
+
 
 void AliTPCcalibV0::MakeMC(){
   //
@@ -257,11 +573,430 @@ void AliTPCcalibV0::MakeMC(){
   }
 }
 
+void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut, Int_t run){
+  //
+  // Make a fit tree
+  //
+  // 0. Loop over selected tracks
+  // 1. Loop over all transformation - refit the track with and without the
+  //    transformtation
+  // 2. Dump the matching paramaeters to the debugStremer
+  //
+  
+  //Connect input
+  const Int_t kMinNcl=120;
+  TFile f("TPCV0Objects.root");
+  AliTPCcalibV0 *v0TPC = (AliTPCcalibV0*) f.Get("v0TPC");
+  TTree * treeInput = v0TPC->GetHPTTree();
+  TTreeSRedirector *pcstream = new TTreeSRedirector("fitHPT.root");
+  AliESDtrack *track = 0;
+  AliESDfriendTrack *friendTrack = 0;
+  AliTPCseed *seed = 0;
+  if (!treeInput) return;
+  if (treeInput->GetEntries()==0) return;
+  //
+  treeInput->SetBranchAddress("t.",&track);
+  treeInput->SetBranchAddress("ft.",&friendTrack);
+  treeInput->SetBranchAddress("s.",&seed);
+  //
+  Int_t ncorr=0;
+  if (corrArray) ncorr = corrArray->GetEntries();
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+  AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
+  Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd());
+  //
+  //
+  //  
+  Int_t ntracks= treeInput->GetEntries();
+  for (Int_t itrack=0; itrack<ntracks; itrack++){
+    treeInput->GetEntry(itrack);
+    if (!track) continue;
+    if (seed->Pt()<ptCut) continue;
+    if (track->Pt()<ptCut) continue;
+    if (track->GetTPCncls()<kMinNcl) continue;
+    //
+    // Reapply transformation
+    //
+    for (Int_t irow=0; irow<159; irow++){
+      AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
+      if (cluster &&cluster->GetX()>10){
+        Double_t x0[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+        Int_t index0[1]={cluster->GetDetector()};
+        transform->Transform(x0,index0,0,1);
+        cluster->SetX(x0[0]);
+        cluster->SetY(x0[1]);
+        cluster->SetZ(x0[2]);
+        //
+      }
+    }    
+    //
+    Double_t xref=134;
+    AliExternalTrackParam* paramInner=0;
+    AliExternalTrackParam* paramOuter=0;
+    AliExternalTrackParam* paramIO=0;
+    Bool_t isOK=kTRUE;
+    for (Int_t icorr=-1; icorr<ncorr; icorr++){
+      //
+      AliTPCCorrection *corr = 0;
+      if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
+      AliExternalTrackParam * trackInner = RefitTrack(seed, corr,85,134,0.1);      
+      AliExternalTrackParam * trackIO = RefitTrack(seed, corr,245,85,0.1);      
+      AliExternalTrackParam * trackOuter = RefitTrack(seed, corr,245,134,0.1 ); 
+      if (trackInner&&trackOuter&&trackIO){
+	trackOuter->Rotate(trackInner->GetAlpha());
+	trackOuter->PropagateTo(trackInner->GetX(),AliTracker::GetBz());
+	if (icorr<0) {
+	  paramInner=trackInner;
+	  paramOuter=trackOuter;
+	  paramIO=trackIO;
+	  paramIO->Rotate(seed->GetAlpha());
+	  paramIO->PropagateTo(seed->GetX(),AliTracker::GetBz());
+	}
+      }else{
+	isOK=kFALSE;
+      }
+      
+    }
+    if (paramOuter&& paramInner) {
+      //      Bool_t isOK=kTRUE;
+      if (paramInner->GetSigmaY2()>0.01) isOK&=kFALSE;
+      if (paramOuter->GetSigmaY2()>0.01) isOK&=kFALSE;
+      if (paramInner->GetSigmaZ2()>0.01) isOK&=kFALSE;
+      if (paramOuter->GetSigmaZ2()>0.01) isOK&=kFALSE;      
+      (*pcstream)<<"fit"<<
+	"s.="<<seed<<
+	"io.="<<paramIO<<
+	"pIn.="<<paramInner<<
+	"pOut.="<<paramOuter;      
+    }
+    //
+  }
+  delete pcstream;
+  /*
+    .x ~/rootlogon.C
+    Int_t run=117112;
+    .x ../ConfigCalibTrain.C(run)
+    .L ../AddTaskTPCCalib.C
+    ConfigOCDB(run)
+    TFile fexb("../../RegisterCorrectionExB.root");
+    AliTPCComposedCorrection *cc=  (AliTPCComposedCorrection*) fexb.Get("ComposedExB");
+    cc->Init();
+    cc->Print("DA"); // Print used correction classes
+    TObjArray *array = cc->GetCorrections()
+    AliTPCcalibV0::MakeFitTreeTrack(array,2,run);
+   
+   */
+}
+
+void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, Int_t run){
+  //
+  // Make a fit tree
+  //
+  // 0. Loop over selected tracks
+  // 1. Loop over all transformation - refit the track with and without the
+  //    transformtation
+  // 2. Dump the matching paramaeters to the debugStremer
+  //
+  
+  //Connect input
+  const Int_t kMinNcl=120;
+  TFile f("TPCV0Objects.root");
+  AliTPCcalibV0 *v0TPC = (AliTPCcalibV0*) f.Get("v0TPC");
+  TTree * treeInput = v0TPC->GetV0Tree();
+  TTreeSRedirector *pcstream = new TTreeSRedirector("fitV0.root");
+  AliESDv0 *v0 = 0;
+  AliESDtrack *track0 = 0;
+  AliESDfriendTrack *friendTrack0 = 0;
+  AliTPCseed *seed0 = 0;
+  AliTPCseed *s0 = 0;
+  AliESDtrack *track1 = 0;
+  AliESDfriendTrack *friendTrack1 = 0;
+  AliTPCseed *s1 = 0;
+  AliTPCseed *seed1 = 0;
+  if (!treeInput) return;
+  if (treeInput->GetEntries()==0) return;
+  //
+  treeInput->SetBranchAddress("v0.",&v0);
+  treeInput->SetBranchAddress("t0.",&track0);
+  treeInput->SetBranchAddress("ft0.",&friendTrack0);
+  treeInput->SetBranchAddress("s0.",&s0);
+  treeInput->SetBranchAddress("t1.",&track1);
+  treeInput->SetBranchAddress("ft1.",&friendTrack1);
+  treeInput->SetBranchAddress("s1.",&s1);
+  //
+  TDatabasePDG pdg;
+  Int_t ncorr=0;
+  if (corrArray) ncorr = corrArray->GetEntries();
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+  AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
+  Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd());
+  Double_t massK0= pdg.GetParticle("K0")->Mass();
+  Double_t massLambda= pdg.GetParticle("Lambda0")->Mass();
+  Double_t massPion=pdg.GetParticle("pi+")->Mass();
+  Double_t massProton=pdg.GetParticle("proton")->Mass();
+  Double_t pdgPion=pdg.GetParticle("pi+")->PdgCode();
+  Double_t pdgProton=pdg.GetParticle("proton")->PdgCode();
+  Double_t mass0=0;
+  Double_t mass1=0;
+  Double_t massV0=0;
+  Int_t    pdg0=0;
+  Int_t    pdg1=0;
+  //
+  //
+  //  
+  Int_t nv0s= treeInput->GetEntries();
+  for (Int_t iv0=0; iv0<nv0s; iv0++){
+    Int_t  v0Type=0;
+    Int_t isK0=0;
+    Int_t isLambda=0;
+    Int_t isAntiLambda=0;
+    treeInput->GetEntry(iv0);
+    if (TMath::Abs(v0->GetEffMass(2,2)-massK0)<0.03) {isK0=1; v0Type=1;} //select K0s    
+    if (TMath::Abs(v0->GetEffMass(4,2)-massLambda)<0.01) {isLambda=1; v0Type=2;} //select Lambda   
+    if (TMath::Abs(v0->GetEffMass(2,4)-massLambda)<0.01) {isAntiLambda=1;v0Type=3;} //select Anti Lambda
+    if (isK0+isLambda+isAntiLambda!=1) continue;
+    mass0=massPion;
+    mass1=massPion;
+    pdg0=pdgPion;
+    pdg1=pdgPion;
+    if (isLambda) {mass0=massProton; pdg0=pdgProton;}
+    if (isAntiLambda) {mass1=massProton; pdg1=pdgProton;}
+    massV0=massK0;
+    if (isK0==0) massV0=massLambda;
+    //
+    if (!s0) continue;
+    seed0=(s0->GetSign()>0)?s0:s1;
+    seed1=(s0->GetSign()>0)?s1:s0;
+    if (seed0->GetZ()*seed1->GetZ()<0) continue; //remove membrane crossed tracks
+    if (seed0->Pt()<ptCut) continue;
+    if (seed1->Pt()<ptCut) continue;
+    //
+    // Reapply transformation
+    //
+    for  (Int_t itype=0; itype<2; itype++){
+      AliTPCseed * seed = (itype==0) ? seed0: seed1;      
+      for (Int_t irow=0; irow<159; irow++){
+	AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
+	if (cluster &&cluster->GetX()>10){
+	  Double_t x0[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+	  Int_t index0[1]={cluster->GetDetector()};
+	  transform->Transform(x0,index0,0,1);
+	  cluster->SetX(x0[0]);
+	  cluster->SetY(x0[1]);
+	  cluster->SetZ(x0[2]);
+	  //
+	}
+      }
+    }   
+    Bool_t isOK=kTRUE;
+    Double_t radius = v0->GetRr();
+    Double_t xyz[3];
+    v0->GetXYZ(xyz[0],xyz[1],xyz[2]);
+    Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
+    TObjArray arrayV0in(ncorr+1);
+    TObjArray arrayV0io(ncorr+1);
+    TObjArray arrayT0(ncorr+1);
+    TObjArray arrayT1(ncorr+1);
+    arrayV0in.SetOwner(kTRUE);
+    arrayV0io.SetOwner(kTRUE);
+    //
+    for (Int_t icorr=-1; icorr<ncorr; icorr++){
+      AliTPCCorrection *corr =0;
+      if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
+      //
+      AliExternalTrackParam * trackInner0 = RefitTrack(seed0, corr,160,85,mass0);      
+      AliExternalTrackParam * trackIO0    = RefitTrack(seed0, corr,245,85,mass0);      
+      AliExternalTrackParam * trackInner1 = RefitTrack(seed1, corr,160,85,mass1);      
+      AliExternalTrackParam * trackIO1    = RefitTrack(seed1, corr,245,85,mass1);      
+      if (!trackInner0) isOK=kFALSE;
+      if (!trackInner1) isOK=kFALSE;
+      if (!trackIO0)    isOK=kFALSE;
+      if (!trackIO1)    isOK=kFALSE;
+      if (isOK){
+	if (!trackInner0->Rotate(alpha)) isOK=kFALSE;
+	if (!trackInner1->Rotate(alpha)) isOK=kFALSE;
+	if (!trackIO0->Rotate(alpha)) isOK=kFALSE;
+	if (!trackIO1->Rotate(alpha)) isOK=kFALSE;
+	//
+	if (!AliTracker::PropagateTrackToBxByBz(trackInner0, radius, mass0, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackInner1, radius, mass1, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackIO0, radius, mass0, 1, kFALSE)) isOK=kFALSE; 
+	if (!AliTracker::PropagateTrackToBxByBz(trackIO1, radius, mass1, 1, kFALSE)) isOK=kFALSE; 
+	if (!isOK) continue;
+	arrayT0.AddAt(trackIO0->Clone(),icorr+1);
+	arrayT1.AddAt(trackIO1->Clone(),icorr+1);
+	Int_t charge=(trackIO0->GetSign());
+	AliKFParticle pin0( *trackInner0,  pdg0*charge);
+	AliKFParticle pin1( *trackInner1, -pdg1*charge);
+	AliKFParticle pio0( *trackIO0,  pdg0*charge);
+	AliKFParticle pio1( *trackIO1, -pdg1*charge);
+	AliKFParticle v0in;
+	AliKFParticle v0io;
+	v0in+=pin0;
+	v0in+=pin1;
+	v0io+=pio0;
+	v0io+=pio1;
+	arrayV0in.AddAt(v0in.Clone(),icorr+1);
+	arrayV0io.AddAt(v0io.Clone(),icorr+1);
+      }
+    }
+    if (!isOK) continue;
+    //
+    //AliKFParticle* pin0= (AliKFParticle*)arrayV0in.At(0);
+    AliKFParticle* pio0= (AliKFParticle*)arrayV0io.At(0);
+    AliExternalTrackParam *param0=(AliExternalTrackParam *)arrayT0.At(0);
+    AliExternalTrackParam *param1=(AliExternalTrackParam *)arrayT1.At(0);
+    Double_t mass0=0, mass0E=0; 
+    pio0->GetMass( mass0,mass0E);
+    //
+    Double_t mean=mass0-massV0;
+    if (TMath::Abs(mean)>0.05) continue;
+    Double_t mass[10000];
+    //
+    Int_t dtype=30;  // id for V0
+    Int_t ptype=5;   // id for invariant mass
+    //    Int_t id=TMath::Nint(100.*(param0->Pt()-param1->Pt())/(param0->Pt()+param1->Pt()));      // K0s V0 asymetry
+    Int_t id=1000.*(param0->Pt()-param1->Pt());      // K0s V0 asymetry
+    Double_t gx,gy,gz, px,py,pz;
+    Double_t pt = v0->Pt();
+    v0->GetXYZ(gx,gy,gz);
+    v0->GetPxPyPz(px,py,pz);
+    Double_t theta=pz/TMath::Sqrt(px*px+py*py);
+    Double_t phi=TMath::ATan2(py,px);
+    Double_t snp=0.5*(seed0->GetSnp()+seed1->GetSnp());
+    Double_t sector=9*phi/TMath::Pi();
+    Double_t dsec=sector-TMath::Nint(sector);
+    Double_t refX=TMath::Sqrt(gx*gx+gy*gy);
+    //Int_t nentries=v0Type;
+    Double_t bz=AliTracker::GetBz();
+    Double_t dRrec=0;
+    (*pcstream)<<"fitDebug"<< 
+      "id="<<id<<
+      "v0.="<<v0<<
+      "mean="<<mean<<
+      "rms="<<mass0E<<
+      "pio0.="<<pio0<<
+      "p0.="<<param0<<
+      "p1.="<<param1;
+    (*pcstream)<<"fit"<<  // dump valus for fit
+      "run="<<run<<       //run number
+      "bz="<<bz<<         // magnetic filed used
+      "dtype="<<dtype<<   // detector match type 30
+      "ptype="<<ptype<<   // parameter type
+      "theta="<<theta<<   // theta
+      "phi="<<phi<<       // phi 
+      "snp="<<snp<<       // snp
+      "mean="<<mean<<     // mean dist value
+      "rms="<<mass0E<<       // rms
+      "sector="<<sector<<
+      "dsec="<<dsec<<
+      //
+      "refX="<<refX<<      // reference radius
+      "gx="<<gx<<         // global position
+      "gy="<<gy<<         // global position
+      "gz="<<gz<<         // global position
+      "dRrec="<<dRrec<<      // delta Radius in reconstruction
+      "pt="<<pt<<         // pt of the particle
+      "id="<<id<<     //delta of the momenta      
+      "entries="<<v0Type;//  type of the V0
+    for (Int_t icorr=0; icorr<ncorr; icorr++){
+      AliTPCCorrection *corr =0;
+      if (icorr>=0) corr = (AliTPCCorrection*)corrArray->At(icorr);
+      AliKFParticle* pin= (AliKFParticle*)arrayV0in.At(icorr+1);
+      AliKFParticle* pio= (AliKFParticle*)arrayV0io.At(icorr+1);
+      AliExternalTrackParam *par0=(AliExternalTrackParam *)arrayT0.At(icorr+1);
+      AliExternalTrackParam *par1=(AliExternalTrackParam *)arrayT1.At(icorr+1);
+      Double_t massE=0; 
+      pio->GetMass( mass[icorr],massE);
+      mass[icorr]-=mass0;
+      (*pcstream)<<"fit"<< 
+	Form("%s=",corr->GetName())<<mass[icorr];
+      (*pcstream)<<"fitDebug"<< 
+	Form("%s=",corr->GetName())<<mass[icorr]<<
+	Form("%sp0.=",corr->GetName())<<par0<<
+	Form("%sp1=",corr->GetName())<<par1;
+    }
+    (*pcstream)<<"fit"<< "isOK="<<isOK<<"\n";        
+    (*pcstream)<<"fitDebug"<< "isOK="<<isOK<<"\n";        
+  }
+  delete pcstream;
+}
+
+AliExternalTrackParam * AliTPCcalibV0::RefitTrack(AliTPCseed *seed, AliTPCCorrection * corr, Double_t xstart, Double_t xstop, Double_t mass){
+  //
+  // Refit the track:
+  //    seed   - tpc track with cluster
+  //    corr   - distrotion/correction class  - apllied to the points
+  //    xstart - radius to start propagate/update
+  //    xstop  - radius to stop propagate/update
+  // 
+  const Double_t kResetCov=20.;
+  const Double_t kSigma=5.;
+  Double_t covar[15];
+  for (Int_t i=0;i<15;i++) covar[i]=0;
+  covar[0]=kSigma*kSigma;
+  covar[2]=kSigma*kSigma;
+  covar[5]=kSigma*kSigma/Float_t(150*150);
+  covar[9]=kSigma*kSigma/Float_t(150*150);
+  covar[14]=1*1;
+  // 
+  AliExternalTrackParam *refit  = new AliExternalTrackParam(*seed);
+  refit->PropagateTo(xstart, AliTracker::GetBz());
+  refit->AddCovariance(covar);
+  refit->ResetCovariance(kResetCov);
+  Double_t xmin = TMath::Min(xstart,xstop);
+  Double_t xmax = TMath::Max(xstart,xstop);
+  Int_t ncl=0;
+  //
+  Bool_t isOK=kTRUE;
+  for (Int_t index0=0; index0<159; index0++){
+    Int_t irow= (xstart<xstop)? index0:159-index0;
+    AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);  //cluster in local system
+    if (!cluster) continue;
+    if (cluster->GetX()<xmin) continue;
+    if (cluster->GetX()>xmax) continue;
+    Double_t alpha = TMath::Pi()*(cluster->GetDetector()+0.5)/9.;
+    if (!refit->Rotate(alpha)) isOK=kFALSE;
+    Double_t x     = cluster->GetX();
+    Double_t y     = cluster->GetY();
+    Double_t z     = cluster->GetZ();
+    if (corr){      
+      Float_t xyz[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};  // original position
+      corr->DistortPointLocal(xyz,cluster->GetDetector());
+      x=xyz[0];
+      y=xyz[1];
+      z=xyz[2];
+    }
+    if (!AliTracker::PropagateTrackToBxByBz(refit, x,mass,1.,kFALSE)) isOK=kFALSE;
+    if (!isOK) continue;
+    Double_t cov[3]={0.01,0.,0.01};
+    Double_t yz[2]={y,z};
+    if (!refit->Update(yz,cov)) isOK=kFALSE;    
+    ncl++;
+  }
+  if (!AliTracker::PropagateTrackToBxByBz(refit, xstop, mass,1.,kTRUE)) isOK=kFALSE;
+  //  
+  if (!isOK) {
+    delete refit;
+    return 0;
+  }  
+  return refit;
+}
+
+
+
+
+
+//
+// Obsolete part
+//
 
 
 void AliTPCcalibV0::MakeV0s(){
   //
-  //
+  // 
   //
   const Int_t kMinCluster=40;
   const Float_t kMinR    =0;
@@ -333,166 +1068,12 @@ void AliTPCcalibV0::MakeV0s(){
 
 
 
-// void AliTPCcalibV0::ProcessV0(Int_t ftype){
-//   //
-//   //
-//   const Double_t ktimeK0     = 2.684;
-//   const Double_t ktimeLambda = 7.89; 
-  
-  
-//   if (! fGammas) fGammas = new TObjArray(10);
-//   fGammas->Clear();
-//   Int_t nV0s  = fV0s->GetEntries();
-//   if (nV0s==0) return;
-//   AliKFVertex primVtx(*(fESD->GetPrimaryVertex()));
-//   //
-//   for (Int_t ivertex=0; ivertex<nV0s; ivertex++){
-//     AliESDv0 * v0 = (AliESDv0*)fV0s->At(ivertex);
-//     AliESDtrack * trackN = fESD->GetTrack(v0->GetIndex(0));
-//     AliESDtrack * trackP = fESD->GetTrack(v0->GetIndex(1));
-//     // 
-//     // 
-//     //
-//     AliKFParticle *v0K0       = Fit(primVtx,v0,211,211);
-//     AliKFParticle *v0Gamma    = Fit(primVtx,v0,11,-11);
-//     AliKFParticle *v0Lambda42 = Fit(primVtx,v0,2212,211);
-//     AliKFParticle *v0Lambda24 = Fit(primVtx,v0,211,2212);
-//     //Set production vertex
-//     v0K0->SetProductionVertex( primVtx );
-//     v0Gamma->SetProductionVertex( primVtx );
-//     v0Lambda42->SetProductionVertex( primVtx );
-//     v0Lambda24->SetProductionVertex( primVtx );
-//     Double_t massK0, massGamma, massLambda42,massLambda24, massSigma;
-//     v0K0->GetMass( massK0,massSigma);
-//     v0Gamma->GetMass( massGamma,massSigma);
-//     v0Lambda42->GetMass( massLambda42,massSigma);
-//     v0Lambda24->GetMass( massLambda24,massSigma);
-//     Float_t chi2K0       = v0K0->GetChi2()/v0K0->GetNDF();
-//     Float_t chi2Gamma    = v0Gamma->GetChi2()/v0Gamma->GetNDF();
-//     Float_t chi2Lambda42 = v0Lambda42->GetChi2()/v0Lambda42->GetNDF();
-//     Float_t chi2Lambda24 = v0Lambda24->GetChi2()/v0Lambda24->GetNDF();
-//     //
-//     // Mass Contrained params
-//     //
-//     AliKFParticle *v0K0C       = Fit(primVtx,v0,211,211);
-//     AliKFParticle *v0GammaC    = Fit(primVtx,v0,11,-11);
-//     AliKFParticle *v0Lambda42C = Fit(primVtx,v0,2212,211);
-//     AliKFParticle *v0Lambda24C = Fit(primVtx,v0,211,2212);
-//     //   
-//     v0K0C->SetProductionVertex( primVtx );
-//     v0GammaC->SetProductionVertex( primVtx );
-//     v0Lambda42C->SetProductionVertex( primVtx );
-//     v0Lambda24C->SetProductionVertex( primVtx );
-
-//     v0K0C->SetMassConstraint(fPdg->GetParticle(310)->Mass());
-//     v0GammaC->SetMassConstraint(0);
-//     v0Lambda42C->SetMassConstraint(fPdg->GetParticle(3122)->Mass());
-//     v0Lambda24C->SetMassConstraint(fPdg->GetParticle(-3122)->Mass());
-//     //    
-//     Double_t timeK0, sigmaTimeK0;  
-//     Double_t timeLambda42, sigmaTimeLambda42;  
-//     Double_t timeLambda24, sigmaTimeLambda24;  
-//     v0K0C->GetLifeTime(timeK0, sigmaTimeK0);
-//     //v0K0Gamma->GetLifeTime(timeK0, sigmaTimeK0);
-//     v0Lambda42C->GetLifeTime(timeLambda42, sigmaTimeLambda42);
-//     v0Lambda24C->GetLifeTime(timeLambda24, sigmaTimeLambda24);
-    
-
-//     //
-//     Float_t chi2K0C       = v0K0C->GetChi2()/v0K0C->GetNDF();
-//     if (chi2K0C<0) chi2K0C=100;
-//     Float_t chi2GammaC    = v0GammaC->GetChi2()/v0GammaC->GetNDF();
-//     if (chi2GammaC<0) chi2GammaC=100;
-//     Float_t chi2Lambda42C = v0Lambda42C->GetChi2()/v0Lambda42C->GetNDF();
-//     if (chi2Lambda42C<0) chi2Lambda42C=100;
-//     Float_t chi2Lambda24C = v0Lambda24C->GetChi2()/v0Lambda24C->GetNDF();
-//     if (chi2Lambda24C<0) chi2Lambda24C=100;
-//     //
-//     Float_t  minChi2C=99;
-//     Int_t   type   =-1;
-//     if (chi2K0C<minChi2C) { minChi2C= chi2K0C; type=0;}
-//     if (chi2GammaC<minChi2C) { minChi2C= chi2GammaC; type=1;}
-//     if (chi2Lambda42C<minChi2C) { minChi2C= chi2Lambda42C; type=2;}
-//     if (chi2Lambda24C<minChi2C) { minChi2C= chi2Lambda24C; type=3;}
-//     Float_t  minChi2=99;
-//     Int_t   type0   =-1;
-//     if (chi2K0<minChi2) { minChi2= chi2K0; type0=0;}
-//     if (chi2Gamma<minChi2) { minChi2= chi2Gamma; type0=1;}
-//     if (chi2Lambda42<minChi2) { minChi2= chi2Lambda42; type0=2;}
-//     if (chi2Lambda24<minChi2) { minChi2= chi2Lambda24; type0=3;}
-//     Float_t betaGammaP  = trackN->GetP()/fPdg->GetParticle(-2212)->Mass(); 
-//     Float_t betaGammaPi = trackN->GetP()/fPdg->GetParticle(-211)->Mass();
-//     Float_t betaGammaEl = trackN->GetP()/fPdg->GetParticle(11)->Mass();
-//     Float_t dedxTeorP = BetheBlochAleph(betaGammaP);
-//     Float_t dedxTeorPi = BetheBlochAleph(betaGammaPi);;
-//     Float_t dedxTeorEl = BetheBlochAleph(betaGammaEl);;
-//     //
-//     //
-//     if (minChi2>50) continue;
-//     (*fDebugStream)<<"V0"<<
-//       "ftype="<<ftype<<
-//       "v0.="<<v0<<
-//       "trackN.="<<trackN<<
-//       "trackP.="<<trackP<<
-//       //
-//       "dedxTeorP="<<dedxTeorP<<
-//       "dedxTeorPi="<<dedxTeorPi<<
-//       "dedxTeorEl="<<dedxTeorEl<<
-//       //
-//       "type="<<type<<
-//       "chi2C="<<minChi2C<<
-//       "v0K0.="<<v0K0<<
-//       "v0Gamma.="<<v0Gamma<<
-//       "v0Lambda42.="<<v0Lambda42<<
-//       "v0Lambda24.="<<v0Lambda24<<
-//       //
-//       "chi20K0.="<<chi2K0<<
-//       "chi2Gamma.="<<chi2Gamma<<
-//       "chi2Lambda42.="<<chi2Lambda42<<
-//       "chi2Lambda24.="<<chi2Lambda24<<
-//       //
-//       "chi20K0c.="<<chi2K0C<<
-//       "chi2Gammac.="<<chi2GammaC<<
-//       "chi2Lambda42c.="<<chi2Lambda42C<<
-//       "chi2Lambda24c.="<<chi2Lambda24C<<
-//       //
-//       "v0K0C.="<<v0K0C<<
-//       "v0GammaC.="<<v0GammaC<<
-//       "v0Lambda42C.="<<v0Lambda42C<<
-//       "v0Lambda24C.="<<v0Lambda24C<<
-//       //
-//       "massK0="<<massK0<<
-//       "massGamma="<<massGamma<<
-//       "massLambda42="<<massLambda42<<
-//       "massLambda24="<<massLambda24<<
-//       //
-//       "timeK0="<<timeK0<<
-//       "timeLambda42="<<timeLambda42<<
-//       "timeLambda24="<<timeLambda24<<
-//       "\n";
-//     if (type==1) fGammas->AddLast(v0); 
-//     //
-//     //
-//     //
-//     delete v0K0;
-//     delete v0Gamma;
-//     delete v0Lambda42;
-//     delete v0Lambda24;    
-//     delete v0K0C;
-//     delete v0GammaC;
-//     delete v0Lambda42C;
-//     delete v0Lambda24C;    
-//   }
-//   ProcessPI0(); 
-// }
-
-
 
 
 void AliTPCcalibV0::ProcessV0(Int_t ftype){
   //
-  //
-  
+  // Obsolete
+  //  
   if (! fGammas) fGammas = new TObjArray(10);
   fGammas->Clear();
   Int_t nV0s  = fV0s->GetEntries();
@@ -613,10 +1194,6 @@ void AliTPCcalibV0::ProcessV0(Int_t ftype){
      if (chi2Lambda42C < 10*minChi2C) numCand++;
      if (chi2Lambda24C < 10*minChi2C) numCand++;
      //
-     if (numCand < 2) {
-      if (paramInNeg->GetP() > 0.4) fTPCdEdx->Fill(betaGamma0, trackN->GetTPCsignal());
-      if (paramInPos->GetP() > 0.4) fTPCdEdx->Fill(betaGamma1, trackP->GetTPCsignal());
-     }    
     }
     
     //
@@ -748,13 +1325,6 @@ AliKFParticle * AliTPCcalibV0::Fit(AliKFVertex & /*primVtx*/, AliESDv0 *v0, Int_
   *(V0)+=p1;
   *(V0)+=p2;
   return V0;  
-}
-
-TH2F * AliTPCcalibV0::GetHistograms() {
-  //
-  //
-  //
- return fTPCdEdx;
 }
 
 

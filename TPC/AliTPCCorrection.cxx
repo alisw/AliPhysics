@@ -207,6 +207,41 @@ void AliTPCCorrection::DistortPoint(Float_t x[],const Short_t roc) {
   for (Int_t j=0;j<3;++j) x[j]+=dx[j];
 }
 
+void AliTPCCorrection::DistortPointLocal(Float_t x[],const Short_t roc) {
+  //
+  // Distorts the initial coordinates x (cartesian coordinates)
+  // according to the given effect (inherited classes)
+  // roc represents the TPC read out chamber (offline numbering convention)
+  //
+  Float_t gxyz[3]={0,0,0};
+  Double_t alpha = TMath::Pi()*(roc%18+0.5)/18;
+  Double_t ca=TMath::Cos(alpha), sa= TMath::Sin(alpha);
+  gxyz[0]=  ca*x[0]+sa*x[1];
+  gxyz[1]= -sa*x[0]+ca*x[1];
+  gxyz[2]= x[2];
+  DistortPoint(gxyz,roc);
+  x[0]=  ca*gxyz[0]-sa*gxyz[1];
+  x[1]= +sa*gxyz[0]+ca*gxyz[1];
+  x[2]= gxyz[2];
+}
+void AliTPCCorrection::CorrectPointLocal(Float_t x[],const Short_t roc) {
+  //
+  // Distorts the initial coordinates x (cartesian coordinates)
+  // according to the given effect (inherited classes)
+  // roc represents the TPC read out chamber (offline numbering convention)
+  //
+  Float_t gxyz[3]={0,0,0};
+  Double_t alpha = TMath::Pi()*(roc%18+0.5)/18;
+  Double_t ca=TMath::Cos(alpha), sa= TMath::Sin(alpha);
+  gxyz[0]=  ca*x[0]+sa*x[1];
+  gxyz[1]= -sa*x[0]+ca*x[1];
+  gxyz[2]= x[2];
+  CorrectPoint(gxyz,roc);
+  x[0]=  ca*gxyz[0]-sa*gxyz[1];
+  x[1]=  sa*gxyz[0]+ca*gxyz[1];
+  x[2]=  gxyz[2];
+}
+
 void AliTPCCorrection::DistortPoint(const Float_t x[],const Short_t roc,Float_t xp[]) {
   //
   // Distorts the initial coordinates x (cartesian coordinates) and stores the new 
@@ -1345,6 +1380,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   const Double_t kSigmaZ=0.1;
   const Double_t kMaxR=500;
   const Double_t kMaxZ=500;
+  
   const Double_t kMaxZ0=220;
   const Double_t kZcut=3;
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
@@ -1368,7 +1404,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     xyz[1]+=gRandom->Gaus(0,0.000005);
     xyz[2]+=gRandom->Gaus(0,0.000005);
     if (TMath::Abs(track.GetZ())>kMaxZ0) continue;
-    if (TMath::Abs(track.GetX())>kMaxR) break;
+    if (TMath::Abs(track.GetX())<kRTPC0) continue;
+    if (TMath::Abs(track.GetX())>kRTPC1) continue;
     AliTrackPoint pIn0;                               // space point          
     AliTrackPoint pIn1;
     Int_t sector= (xyz[2]>0)? 0:18;
@@ -1408,7 +1445,11 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointArray0.GetPoint(point1,npoints-21);
     pointArray0.GetPoint(point2,npoints-11);
     pointArray0.GetPoint(point3,npoints-1);
-  }  
+  } 
+  if ((TMath::Abs(point1.GetX()-point3.GetX())+TMath::Abs(point1.GetY()-point3.GetY()))<10){
+    printf("fit points not properly initialized\n");
+    return 0;
+  }
   track0 = AliTrackerBase::MakeSeed(point1, point2, point3);
   track1 = AliTrackerBase::MakeSeed(point1, point2, point3);
   track0->ResetCovariance(10);
@@ -1426,6 +1467,8 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointArray1.GetPoint(pIn1,ipoint);
     AliTrackPoint prot0 = pIn0.Rotate(track0->GetAlpha());   // rotate to the local frame - non distoted  point
     AliTrackPoint prot1 = pIn1.Rotate(track1->GetAlpha());   // rotate to the local frame -     distorted point
+    if (TMath::Abs(prot0.GetX())<kRTPC0) continue;
+    if (TMath::Abs(prot0.GetX())>kRTPC1) continue;
     //
     if (!AliTrackerBase::PropagateTrackTo(track0,prot0.GetX(),kMass,5,kFALSE,kMaxSnp)) break;
     if (!AliTrackerBase::PropagateTrackTo(track1,prot0.GetX(),kMass,5,kFALSE,kMaxSnp)) break;
@@ -1545,7 +1588,7 @@ TTree* AliTPCCorrection::CreateDistortionTree(Double_t step){
 
 
 
-void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step, Bool_t debug ){
+void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step, Int_t offset, Bool_t debug ){
   //
   // Make a fit tree:
   // For each partial correction (specified in array) and given track topology (phi, theta, snp, refX)
@@ -1571,9 +1614,11 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   //
   const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   //  const Double_t kB2C=-0.299792458e-3;
-  const Int_t kMinEntries=10; 
+  const Int_t kMinEntries=20; 
   Double_t phi,theta, snp, mean,rms, entries,sector,dsec;
-  Float_t refX;
+  Float_t refX;  
+  Int_t run;
+  tinput->SetBranchAddress("run",&run);
   tinput->SetBranchAddress("theta",&theta);
   tinput->SetBranchAddress("phi", &phi);
   tinput->SetBranchAddress("snp",&snp);
@@ -1583,7 +1628,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   tinput->SetBranchAddress("sector",&sector);
   tinput->SetBranchAddress("dsec",&dsec);
   tinput->SetBranchAddress("refX",&refX);
-  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("distortion%d_%d.root",dtype,ptype));
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("distortion%d_%d_%d.root",dtype,ptype,offset));
   //
   Int_t nentries=tinput->GetEntries();
   Int_t ncorr=corrArray->GetEntries();
@@ -1598,7 +1643,7 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
   if (dtype==3) { dir=1;}
   if (dtype==4) { dir=-1;}
   //
-  for (Int_t ientry=0; ientry<nentries; ientry+=step){
+  for (Int_t ientry=offset; ientry<nentries; ientry+=step){
     tinput->GetEntry(ientry);
     if (TMath::Abs(snp)>kMaxSnp) continue;
     tPar[0]=0;
@@ -1631,9 +1676,12 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
     Double_t xyz[3];
     track.GetXYZ(xyz);
     Int_t id=0;
+    Double_t pt=1./tPar[4];
     Double_t dRrec=0; // dummy value - needed for points - e.g for laser
     //if (ptype==4 &&bz<0) mean*=-1;  // interpret as curvature -- COMMENTED out - in lookup signed 1/pt used
+    Double_t refXD=refX;
     (*pcstream)<<"fit"<<
+      "run="<<run<<       // run number
       "bz="<<bz<<         // magnetic filed used
       "dtype="<<dtype<<   // detector match type
       "ptype="<<ptype<<   // parameter type
@@ -1644,15 +1692,18 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
       "rms="<<rms<<       // rms
       "sector="<<sector<<
       "dsec="<<dsec<<
-      "refX="<<refX<<         // referece X
+      "refX="<<refXD<<         // referece X as double
       "gx="<<xyz[0]<<         // global position at reference
       "gy="<<xyz[1]<<         // global position at reference
       "gz="<<xyz[2]<<         // global position at reference	
       "dRrec="<<dRrec<<      // delta Radius in reconstruction
+      "pt="<<pt<<            // pt
       "id="<<id<<             // track id
       "entries="<<entries;// number of entries in bin
     //
     Bool_t isOK=kTRUE;
+    if (entries<kMinEntries) isOK=kFALSE;
+    //
     if (dtype!=4) for (Int_t icorr=0; icorr<ncorr; icorr++) {
       AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
       corrections[icorr]=0;
@@ -1680,11 +1731,8 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	}
 	//if (ptype==4 &&bz<0) corrections[icorr]*=-1;  // interpret as curvature - commented out
       }      
-      Double_t dRdummy=0;
       (*pcstream)<<"fit"<<
-	Form("%s=",corr->GetName())<<corrections[icorr]<<   // dump correction value
-	Form("dR%s=",corr->GetName())<<dRdummy;   // dump dummy correction value not needed for tracks 
-                                                  // for points it is neccessary
+	Form("%s=",corr->GetName())<<corrections[icorr];   // dump correction value
     }
   
     if (dtype==4) for (Int_t icorr=0; icorr<ncorr; icorr++) {
@@ -1694,8 +1742,8 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
       AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
       corrections[icorr]=0;
       if (entries>kMinEntries){
-	AliExternalTrackParam trackIn0(refX,phi,tPar,cov);
-	AliExternalTrackParam trackIn1(refX,phi,tPar,cov);
+	AliExternalTrackParam trackIn0(refX,phi,tPar,cov); //Outer - direction to vertex
+	AliExternalTrackParam trackIn1(refX,phi,tPar,cov); //Inner - direction magnet 
 	AliExternalTrackParam *trackOut0 = 0;
 	AliExternalTrackParam *trackOut1 = 0;
 	//
@@ -1718,8 +1766,18 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	  //
 	  corrections[icorr] = (trackOut0->GetParameter()[ptype]-trackIn0.GetParameter()[ptype]);
 	  corrections[icorr]-= (trackOut1->GetParameter()[ptype]-trackIn1.GetParameter()[ptype]);
+	  if (isOK)
+	    if ((TMath::Abs(trackOut0->GetX()-trackOut1->GetX())>0.1)||
+		(TMath::Abs(trackOut0->GetX()-trackIn1.GetX())>0.1)||
+		(TMath::Abs(trackOut0->GetAlpha()-trackOut1->GetAlpha())>0.00001)||
+		(TMath::Abs(trackOut0->GetAlpha()-trackIn1.GetAlpha())>0.00001)||
+		(TMath::Abs(trackIn0.GetTgl()-trackIn1.GetTgl())>0.0001)||
+		(TMath::Abs(trackIn0.GetSnp()-trackIn1.GetSnp())>0.0001)
+		){
+	      isOK=kFALSE;
+	    }	  	  
 	  delete trackOut0;      
-	  delete trackOut1;      
+	  delete trackOut1;    	  
 	}else{
 	  corrections[icorr]=0;
 	  isOK=kFALSE;
@@ -1727,11 +1785,8 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 	//
 	//if (ptype==4 &&bz<0) corrections[icorr]*=-1;  // interpret as curvature - commented out no in lookup
       }      
-      Double_t dRdummy=0;
       (*pcstream)<<"fit"<<
-	Form("%s=",corr->GetName())<<corrections[icorr]<<   // dump correction value
-	Form("dR%s=",corr->GetName())<<dRdummy;   // dump dummy correction value not needed for tracks 
-                                                  // for points it is neccessary
+	Form("%s=",corr->GetName())<<corrections[icorr];   // dump correction value
     }
     //
     (*pcstream)<<"fit"<<"isOK="<<isOK<<"\n";
@@ -1743,13 +1798,189 @@ void AliTPCCorrection::MakeTrackDistortionTree(TTree *tinput, Int_t dtype, Int_t
 
 
 
-void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype){
+void AliTPCCorrection::MakeSectorDistortionTree(TTree *tinput, Int_t dtype, Int_t ptype, const TObjArray * corrArray, Int_t step, Int_t offset, Bool_t debug ){
+  //
+  // Make a fit tree:
+  // For each partial correction (specified in array) and given track topology (phi, theta, snp, refX)
+  // calculates partial distortions
+  // Partial distortion is stored in the resulting tree
+  // Output is storred in the file distortion_<dettype>_<partype>.root
+  // Partial  distortion is stored with the name given by correction name
+  //
+  //
+  // Parameters of function:
+  // input     - input tree
+  // dtype     - distortion type 10 - IROC-OROC 
+  // ppype     - parameter type
+  // corrArray - array with partial corrections
+  // step      - skipe entries  - if 1 all entries processed - it is slow
+  // debug     0 if debug on also space points dumped - it is slow
+
+  const Double_t kMaxSnp = 0.8;  
+  const Int_t kMinEntries=200; 
+  //  AliTPCROC *tpcRoc =AliTPCROC::Instance();  
+  //
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
+  //  const Double_t kB2C=-0.299792458e-3;
+  Double_t phi,theta, snp, mean,rms, entries,sector,dsec,globalZ;
+  Int_t isec1, isec0;
+  Double_t refXD;
+  Float_t refX;
+  Int_t run;
+  tinput->SetBranchAddress("run",&run);
+  tinput->SetBranchAddress("theta",&theta);
+  tinput->SetBranchAddress("phi", &phi);
+  tinput->SetBranchAddress("snp",&snp);
+  tinput->SetBranchAddress("mean",&mean);
+  tinput->SetBranchAddress("rms",&rms);
+  tinput->SetBranchAddress("entries",&entries);
+  tinput->SetBranchAddress("sector",&sector);
+  tinput->SetBranchAddress("dsec",&dsec);
+  tinput->SetBranchAddress("refX",&refXD);
+  tinput->SetBranchAddress("z",&globalZ);
+  tinput->SetBranchAddress("isec0",&isec0);
+  tinput->SetBranchAddress("isec1",&isec1);
+  TTreeSRedirector *pcstream = new TTreeSRedirector(Form("distortionSector%d_%d_%d.root",dtype,ptype,offset));
+  //
+  Int_t nentries=tinput->GetEntries();
+  Int_t ncorr=corrArray->GetEntries();
+  Double_t corrections[100]={0}; //
+  Double_t tPar[5];
+  Double_t cov[15]={0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+  Int_t dir=0;
+  //
+  for (Int_t ientry=offset; ientry<nentries; ientry+=step){
+    tinput->GetEntry(ientry);
+    refX=refXD;
+    Int_t id=-1;
+    if (TMath::Abs(TMath::Abs(isec0%18)-TMath::Abs(isec1%18))==0) id=1;  // IROC-OROC - opposite side
+    if (TMath::Abs(TMath::Abs(isec0%36)-TMath::Abs(isec1%36))==0) id=2;  // IROC-OROC - same side
+    if (dtype==10  && id==-1) continue;
+    //
+    dir=-1;
+    tPar[0]=0;
+    tPar[1]=globalZ;
+    tPar[2]=snp;
+    tPar[3]=theta;
+    tPar[4]=(gRandom->Rndm()-0.1)*0.2;  //
+    Double_t pt=1./tPar[4];
+    //
+    printf("%f\t%f\t%f\t%f\t%f\t%f\n",entries, sector,theta,snp, mean,rms);
+    Double_t bz=AliTrackerBase::GetBz();
+    AliExternalTrackParam track(refX,phi,tPar,cov);    
+    Double_t xyz[3],xyzIn[3],xyzOut[3];
+    track.GetXYZ(xyz);
+    track.GetXYZAt(85,bz,xyzIn);    
+    track.GetXYZAt(245,bz,xyzOut);    
+    Double_t phiIn  = TMath::ATan2(xyzIn[1],xyzIn[0]);
+    Double_t phiOut = TMath::ATan2(xyzOut[1],xyzOut[0]);
+    Double_t phiRef = TMath::ATan2(xyz[1],xyz[0]);
+    Int_t sectorRef = TMath::Nint(9.*phiRef/TMath::Pi()-0.5);
+    Int_t sectorIn  = TMath::Nint(9.*phiIn/TMath::Pi()-0.5);
+    Int_t sectorOut = TMath::Nint(9.*phiOut/TMath::Pi()-0.5);
+    //
+    Bool_t isOK=kTRUE; 
+    if (sectorIn!=sectorOut) isOK=kFALSE;  // requironment - cluster in the same sector
+    if (sectorIn!=sectorRef) isOK=kFALSE;  // requironment - cluster in the same sector
+    if (entries<kMinEntries/(1+TMath::Abs(globalZ/100.))) isOK=kFALSE;  // requironment - minimal amount of tracks in bin
+    // Do downscale
+    if (TMath::Abs(theta)>1) isOK=kFALSE;
+    //
+    Double_t dRrec=0; // dummy value - needed for points - e.g for laser
+    //
+    (*pcstream)<<"fit"<<
+      "run="<<run<<       //run
+      "bz="<<bz<<         // magnetic filed used
+      "dtype="<<dtype<<   // detector match type
+      "ptype="<<ptype<<   // parameter type
+      "theta="<<theta<<   // theta
+      "phi="<<phi<<       // phi 
+      "snp="<<snp<<       // snp
+      "mean="<<mean<<     // mean dist value
+      "rms="<<rms<<       // rms
+      "sector="<<sector<<
+      "dsec="<<dsec<<
+      "refX="<<refXD<<         // referece X
+      "gx="<<xyz[0]<<         // global position at reference
+      "gy="<<xyz[1]<<         // global position at reference
+      "gz="<<xyz[2]<<         // global position at reference	
+      "dRrec="<<dRrec<<      // delta Radius in reconstruction
+      "pt="<<pt<<      //pt
+      "id="<<id<<             // track id
+      "entries="<<entries;// number of entries in bin
+    //
+    AliExternalTrackParam *trackOut0 = 0;
+    AliExternalTrackParam *trackOut1 = 0;
+    AliExternalTrackParam *ptrackIn0 = 0;
+    AliExternalTrackParam *ptrackIn1 = 0;
+
+    for (Int_t icorr=0; icorr<ncorr; icorr++) {
+      //
+      // special case of the TPC tracks crossing the CE
+      //
+      AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
+      corrections[icorr]=0;
+      if (entries>kMinEntries &&isOK){
+	AliExternalTrackParam trackIn0(refX,phi,tPar,cov);
+	AliExternalTrackParam trackIn1(refX,phi,tPar,cov);
+	ptrackIn1=&trackIn0;
+	ptrackIn0=&trackIn1;
+	//
+	if (debug)  trackOut0=corr->FitDistortedTrack(trackIn0, refX, dir,pcstream);
+	if (!debug) trackOut0=corr->FitDistortedTrack(trackIn0, refX, dir,0);
+	if (debug)  trackOut1=corr->FitDistortedTrack(trackIn1, refX, -dir,pcstream);
+	if (!debug) trackOut1=corr->FitDistortedTrack(trackIn1, refX, -dir,0);
+	//
+	if (trackOut0 && trackOut1){
+	  //
+	  if (!AliTrackerBase::PropagateTrackTo(&trackIn0,refX,kMass,1,kTRUE,kMaxSnp))  isOK=kFALSE;
+	  if (!AliTrackerBase::PropagateTrackTo(&trackIn0,refX,kMass,1,kFALSE,kMaxSnp)) isOK=kFALSE;
+	  // rotate all tracks to the same frame
+	  if (!trackOut0->Rotate(trackIn0.GetAlpha())) isOK=kFALSE;
+	  if (!trackIn1.Rotate(trackIn0.GetAlpha()))  isOK=kFALSE;
+	  if (!trackOut1->Rotate(trackIn0.GetAlpha())) isOK=kFALSE;	  
+	  //
+	  if (!AliTrackerBase::PropagateTrackTo(trackOut0,refX,kMass,1,kFALSE,kMaxSnp)) isOK=kFALSE;
+	  if (!AliTrackerBase::PropagateTrackTo(&trackIn1,refX,kMass,1,kFALSE,kMaxSnp)) isOK=kFALSE;
+	  if (!AliTrackerBase::PropagateTrackTo(trackOut1,refX,kMass,1,kFALSE,kMaxSnp)) isOK=kFALSE;
+	  //
+	  corrections[icorr] = (trackOut0->GetParameter()[ptype]-trackIn0.GetParameter()[ptype]);
+	  corrections[icorr]-= (trackOut1->GetParameter()[ptype]-trackIn1.GetParameter()[ptype]);
+	  (*pcstream)<<"fitDebug"<< // just to debug the correction
+	    "mean="<<mean<<
+	    "pIn0.="<<ptrackIn0<<
+	    "pIn1.="<<ptrackIn1<<
+	    "pOut0.="<<trackOut0<<
+	    "pOut1.="<<trackOut1<<
+	    "refX="<<refXD<<
+	    "\n";
+	  delete trackOut0;      
+	  delete trackOut1;      
+	}else{
+	  corrections[icorr]=0;
+	  isOK=kFALSE;
+	}
+      }      
+      (*pcstream)<<"fit"<<
+	Form("%s=",corr->GetName())<<corrections[icorr];   // dump correction value
+    }
+    //
+    (*pcstream)<<"fit"<<"isOK="<<isOK<<"\n";
+  }
+  delete pcstream;
+}
+
+
+
+void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrArray, Int_t itype){
   //
   // Make a laser fit tree for global minimization
   //
   const Double_t cutErrY=0.1;
   const Double_t cutErrZ=0.1;
   const Double_t kEpsilon=0.00000001;
+  const Double_t kMaxDist=1.;  // max distance - space correction
+  const Double_t kMaxRMS=0.05;  // max distance -between point and local mean
   TVectorD *vecdY=0;
   TVectorD *vecdZ=0;
   TVectorD *veceY=0;
@@ -1773,92 +2004,163 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
     }
     TVectorD * delta= (itype==0)? vecdY:vecdZ;
     TVectorD * err= (itype==0)? veceY:veceZ;
-    
-    for (Int_t irow=0; irow<159; irow++){
-      Int_t nentries = 1000;
-      if (veceY->GetMatrixArray()[irow]>cutErrY||veceZ->GetMatrixArray()[irow]>cutErrZ) nentries=0;
-      if (veceY->GetMatrixArray()[irow]<kEpsilon||veceZ->GetMatrixArray()[irow]<kEpsilon) nentries=0;
-      Int_t dtype=5;
-      Double_t phi   =(*ltr->GetVecPhi())[irow];
-      Double_t theta =ltr->GetTgl();
-      Double_t mean=delta->GetMatrixArray()[irow];
-      Double_t gx=0,gy=0,gz=0;
-      Double_t snp = (*ltr->GetVecP2())[irow];
-      Double_t rms = 0.1+err->GetMatrixArray()[irow];
-      gx = (*ltr->GetVecGX())[irow];
-      gy = (*ltr->GetVecGY())[irow];
-      gz = (*ltr->GetVecGZ())[irow];
-      Int_t bundle= ltr->GetBundle();
-      Double_t dRrec=0;
-      //
-      // get delta R used in reconstruction
-      AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
-      AliTPCCorrection * correction = calib->GetTPCComposedCorrection(AliTrackerBase::GetBz());
-      //      const AliTPCRecoParam * recoParam = calib->GetTransform()->GetCurrentRecoParam();
-      //Double_t xyz0[3]={gx,gy,gz};
-      Double_t oldR=TMath::Sqrt(gx*gx+gy*gy);
-      Double_t fphi = TMath::ATan2(gy,gx);      
-      Double_t fsector = 9.*fphi/TMath::Pi();
-      if (fsector<0) fsector+=18;
-      Double_t dsec = fsector-Int_t(fsector)-0.5;
-      Double_t refX=0;
-      //
-      if (1 && oldR>1) {
-	Float_t xyz1[3]={gx,gy,gz};
-	Int_t sector=(gz>0)?0:18;
-	correction->CorrectPoint(xyz1, sector);
-	refX=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
-	dRrec=oldR-refX;
-      } 
-
-      (*pcstream)<<"fit"<<
-	"bz="<<bz<<         // magnetic filed used
-	"dtype="<<dtype<<   // detector match type
-	"ptype="<<itype<<   // parameter type
-	"theta="<<theta<<   // theta
-	"phi="<<phi<<       // phi 
-	"snp="<<snp<<       // snp
-	"mean="<<mean<<     // mean dist value
-	"rms="<<rms<<       // rms
-	"sector="<<fsector<<
-	"dsec="<<dsec<<
-	//
-	"refX="<<refX<<      // reference radius
-	"gx="<<gx<<         // global position
-	"gy="<<gy<<         // global position
-	"gz="<<gz<<         // global position
-	"dRrec="<<dRrec<<      // delta Radius in reconstruction
-	"id="<<bundle<<     //bundle	
-	"entries="<<nentries;// number of entries in bin
-      //
-      //    
-      Double_t ky = TMath::Tan(TMath::ASin(snp));
-      Int_t ncorr = corrArray->GetEntries();
-      Double_t r0   = TMath::Sqrt(gx*gx+gy*gy);
-      Double_t phi0 = TMath::ATan2(gy,gx);
-      Double_t distortions[1000]={0};
-      Double_t distortionsR[1000]={0};
-      for (Int_t icorr=0; icorr<ncorr; icorr++) {
-	AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
-	Float_t distPoint[3]={gx,gy,gz}; 
-	Int_t sector= (gz>0)? 0:18;
-	if (r0>80){
-	  corr->DistortPoint(distPoint, sector);
-	}
-	// Double_t value=distPoint[2]-gz;
-	if (itype==0 && r0>1){
-	  Double_t r1   = TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
-	  Double_t phi1 = TMath::ATan2(distPoint[1],distPoint[0]);
-	  Double_t drphi= r0*(phi1-phi0);
-	  Double_t dr   = r1-r0;
-	  distortions[icorr]  = drphi-ky*dr;
-	  distortionsR[icorr] = dr;
-	}
-	(*pcstream)<<"fit"<<
-	  Form("%s=",corr->GetName())<<distortions[icorr]<<    // dump correction value
-	  Form("dR%s=",corr->GetName())<<distortionsR[icorr];   // dump correction R  value
+    TLinearFitter  fitter(2,"pol1");
+    for (Int_t iter=0; iter<2; iter++){
+      Double_t kfit0=0, kfit1=0;
+      Int_t npoints=fitter.GetNpoints();
+      if (npoints>80){
+	fitter.Eval();
+	kfit0=fitter.GetParameter(0);
+	kfit1=fitter.GetParameter(1);
       }
-      (*pcstream)<<"fit"<<"\n";
+      for (Int_t irow=0; irow<159; irow++){
+	Bool_t isOK=kTRUE;
+	Int_t isOKF=0;
+	Int_t nentries = 1000;
+	if (veceY->GetMatrixArray()[irow]>cutErrY||veceZ->GetMatrixArray()[irow]>cutErrZ) nentries=0;
+	if (veceY->GetMatrixArray()[irow]<kEpsilon||veceZ->GetMatrixArray()[irow]<kEpsilon) nentries=0;
+	Int_t dtype=5;
+	Double_t array[10];
+	Int_t first3=TMath::Max(irow-3,0);
+	Int_t last3 =TMath::Min(irow+3,159);
+	Int_t counter=0;
+	if ((*ltr->GetVecSec())[irow]>=0 && err) {
+	  for (Int_t jrow=first3; jrow<=last3; jrow++){
+	    if ((*ltr->GetVecSec())[irow]!= (*ltr->GetVecSec())[jrow]) continue;
+	    if ((*err)[jrow]<kEpsilon) continue;
+	    array[counter]=(*delta)[jrow];
+	    counter++;
+	  }
+	}    
+	Double_t rms3  = 0;
+	Double_t mean3 = 0;
+	if (counter>2){
+	  rms3  = TMath::RMS(counter,array);
+	  mean3  = TMath::Mean(counter,array);
+	}else{
+	  isOK=kFALSE;
+	}
+	Double_t phi   =(*ltr->GetVecPhi())[irow];
+	Double_t theta =ltr->GetTgl();
+	Double_t mean=delta->GetMatrixArray()[irow];
+	Double_t gx=0,gy=0,gz=0;
+	Double_t snp = (*ltr->GetVecP2())[irow];
+	Double_t dRrec=0;
+	//      Double_t rms = err->GetMatrixArray()[irow];
+	//
+	gx = (*ltr->GetVecGX())[irow];
+	gy = (*ltr->GetVecGY())[irow];
+	gz = (*ltr->GetVecGZ())[irow];
+	//
+	// get delta R used in reconstruction
+	AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
+	AliTPCCorrection * correction = calib->GetTPCComposedCorrection(AliTrackerBase::GetBz());
+	//      const AliTPCRecoParam * recoParam = calib->GetTransform()->GetCurrentRecoParam();
+	//Double_t xyz0[3]={gx,gy,gz};
+	Double_t oldR=TMath::Sqrt(gx*gx+gy*gy);
+	Double_t fphi = TMath::ATan2(gy,gx);      
+	Double_t fsector = 9.*fphi/TMath::Pi();
+	if (fsector<0) fsector+=18;
+	Double_t dsec = fsector-Int_t(fsector)-0.5;
+	Double_t refX=0;
+	Int_t id= ltr->GetId();
+	Double_t pt=0;
+	//
+	if (1 && oldR>1) {
+	  Float_t xyz1[3]={gx,gy,gz};
+	  Int_t sector=(gz>0)?0:18;
+	  correction->CorrectPoint(xyz1, sector);
+	  refX=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
+	  dRrec=oldR-refX;
+	} 
+	if (TMath::Abs(rms3)>kMaxRMS) isOK=kFALSE;
+	if (TMath::Abs(mean-mean3)>kMaxRMS) isOK=kFALSE;
+	if (counter<4) isOK=kFALSE;	
+	if (npoints<90) isOK=kFALSE;	
+	if (isOK){
+	  fitter.AddPoint(&refX,mean);
+	}
+	Double_t deltaF=kfit0+kfit1*refX;
+	if (iter==1){
+	  (*pcstream)<<"fitFull"<<  // dumpe also intermediate results
+	    "bz="<<bz<<         // magnetic filed used
+	    "dtype="<<dtype<<   // detector match type
+	    "ptype="<<itype<<   // parameter type
+	    "theta="<<theta<<   // theta
+	    "phi="<<phi<<       // phi 
+	    "snp="<<snp<<       // snp
+	    "mean="<<mean3<<     // mean dist value
+	    "rms="<<rms3<<       // rms
+	    "deltaF="<<deltaF<<
+	    "npoints="<<npoints<<  //number of points
+	    "mean3="<<mean3<<     // mean dist value
+	    "rms3="<<rms3<<       // rms
+	    "counter="<<counter<<
+	    "sector="<<fsector<<
+	    "dsec="<<dsec<<
+	    //
+	    "refX="<<refX<<      // reference radius
+	    "gx="<<gx<<         // global position
+	    "gy="<<gy<<         // global position
+	    "gz="<<gz<<         // global position
+	    "dRrec="<<dRrec<<      // delta Radius in reconstruction
+	    "id="<<id<<     //bundle	
+	    "entries="<<nentries<<// number of entries in bin
+	    "\n";
+	}
+	if (iter==1) (*pcstream)<<"fit"<<  // dump valus for fit
+	  "bz="<<bz<<         // magnetic filed used
+	  "dtype="<<dtype<<   // detector match type
+	  "ptype="<<itype<<   // parameter type
+	  "theta="<<theta<<   // theta
+	  "phi="<<phi<<       // phi 
+	  "snp="<<snp<<       // snp
+	  "mean="<<mean3<<     // mean dist value
+	  "rms="<<rms3<<       // rms
+	  "sector="<<fsector<<
+	  "dsec="<<dsec<<
+	  //
+	  "refX="<<refX<<      // reference radius
+	  "gx="<<gx<<         // global position
+	  "gy="<<gy<<         // global position
+	  "gz="<<gz<<         // global position
+	  "dRrec="<<dRrec<<      // delta Radius in reconstruction
+	  "pt="<<pt<<           //pt
+	  "id="<<id<<     //bundle	
+	  "entries="<<nentries;// number of entries in bin
+	//
+	//    
+	Double_t ky = TMath::Tan(TMath::ASin(snp));
+	Int_t ncorr = corrArray->GetEntries();
+	Double_t r0   = TMath::Sqrt(gx*gx+gy*gy);
+	Double_t phi0 = TMath::ATan2(gy,gx);
+	Double_t distortions[1000]={0};
+	Double_t distortionsR[1000]={0};
+	if (iter==1){
+	  for (Int_t icorr=0; icorr<ncorr; icorr++) {
+	    AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
+	    Float_t distPoint[3]={gx,gy,gz}; 
+	    Int_t sector= (gz>0)? 0:18;
+	    if (r0>80){
+	      corr->DistortPoint(distPoint, sector);
+	    }
+	    // Double_t value=distPoint[2]-gz;
+	    if (itype==0 && r0>1){
+	      Double_t r1   = TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
+	      Double_t phi1 = TMath::ATan2(distPoint[1],distPoint[0]);
+	      Double_t drphi= r0*(phi1-phi0);
+	      Double_t dr   = r1-r0;
+	      distortions[icorr]  = drphi-ky*dr;
+	      distortionsR[icorr] = dr;
+	    }
+	    if (TMath::Abs(distortions[icorr])>kMaxDist) {isOKF=icorr+1; isOK=kFALSE; }
+	    if (TMath::Abs(distortionsR[icorr])>kMaxDist) {isOKF=icorr+1; isOK=kFALSE;}
+	    (*pcstream)<<"fit"<<
+	      Form("%s=",corr->GetName())<<distortions[icorr];    // dump correction value
+	  }
+	  (*pcstream)<<"fit"<<"isOK="<<isOK<<"\n";
+	}
+      }
     }
   }
   delete pcstream;
@@ -2456,4 +2758,185 @@ Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int
   if (axisType==1) return (phi1-phi0)*r0;
   if (axisType==2) return distPoint[2]-gz;
   return phi1-phi0;
+}
+
+
+
+
+
+void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype){
+  //
+  // Make a laser fit tree for global minimization
+  //  
+  AliTPCcalibDB*  calib=AliTPCcalibDB::Instance();  
+  AliTPCCorrection * correction = calib->GetTPCComposedCorrection();  
+  if (!correction) correction = calib->GetTPCComposedCorrection(AliTrackerBase::GetBz());  
+  correction->AddVisualCorrection(correction,0);  //register correction
+
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+  //
+  const Double_t cutErrY=0.05;
+  const Double_t kSigmaCut=4;
+  //  const Double_t cutErrZ=0.03;
+  const Double_t kEpsilon=0.00000001;
+  const Double_t kMaxDist=1.;  // max distance - space correction
+  TVectorD *vecdY=0;
+  TVectorD *vecdZ=0;
+  TVectorD *veceY=0;
+  TVectorD *veceZ=0;
+  AliTPCLaserTrack *ltr=0;
+  AliTPCLaserTrack::LoadTracks();
+  tree->SetBranchAddress("dY.",&vecdY);
+  tree->SetBranchAddress("dZ.",&vecdZ);
+  tree->SetBranchAddress("eY.",&veceY);
+  tree->SetBranchAddress("eZ.",&veceZ);
+  tree->SetBranchAddress("LTr.",&ltr);
+  Int_t entries= tree->GetEntries();
+  TTreeSRedirector *pcstream= new TTreeSRedirector("distortionLaser_0.root");
+  Double_t bz=AliTrackerBase::GetBz();
+  // 
+  Double_t globalXYZ[3];
+  Double_t globalXYZCorr[3];
+  for (Int_t ientry=0; ientry<entries; ientry++){
+    tree->GetEntry(ientry);
+    if (!ltr->GetVecGX()){
+      ltr->UpdatePoints();
+    }
+    //
+    TVectorD fit10(5);
+    TVectorD fit5(5);
+    printf("Entry\t%d\n",ientry);
+    for (Int_t irow0=0; irow0<158; irow0+=1){
+      //       
+      TLinearFitter fitter10(4,"hyp3");
+      TLinearFitter fitter5(2,"hyp1");
+      Int_t sector= (Int_t)(*ltr->GetVecSec())[irow0];
+      if (sector<0) continue;
+      //if (TMath::Abs(vecdY->GetMatrixArray()[irow0])<kEpsilon) continue;
+
+      Double_t refX= (*ltr->GetVecLX())[irow0];
+      Int_t firstRow1 = TMath::Max(irow0-10,0);
+      Int_t lastRow1  = TMath::Min(irow0+10,158);
+      Double_t padWidth=(irow0<64)?0.4:0.6;
+      // make long range fit
+      for (Int_t irow1=firstRow1; irow1<=lastRow1; irow1++){
+	if (TMath::Abs((*ltr->GetVecSec())[irow1]-sector)>kEpsilon) continue;
+	if (veceY->GetMatrixArray()[irow1]>cutErrY) continue;
+	if (TMath::Abs(vecdY->GetMatrixArray()[irow1])<kEpsilon) continue;
+	Double_t idealX= (*ltr->GetVecLX())[irow1];
+	Double_t idealY= (*ltr->GetVecLY())[irow1];
+	Double_t idealZ= (*ltr->GetVecLZ())[irow1];
+	Double_t gx= (*ltr->GetVecGX())[irow1];
+	Double_t gy= (*ltr->GetVecGY())[irow1];
+	Double_t gz= (*ltr->GetVecGZ())[irow1];
+	Double_t measY=(*vecdY)[irow1]+idealY;
+	Double_t deltaR = GetCorrXYZ(gx, gy, gz, 0,0);
+	// deltaR = R distorted -R ideal
+	Double_t xxx[4]={idealX+deltaR-refX,TMath::Cos(idealY/padWidth), TMath::Sin(idealY/padWidth)};
+	fitter10.AddPoint(xxx,measY,1);
+      }
+      Bool_t isOK=kTRUE;
+      Double_t rms10=0;//TMath::Sqrt(fitter10.GetChisquare()/(fitter10.GetNpoints()-4));
+      Double_t mean10  =0;//   fitter10.GetParameter(0);
+      Double_t slope10  =0;//   fitter10.GetParameter(0);
+      Double_t cosPart10  = 0;//  fitter10.GetParameter(2);
+      Double_t sinPart10   =0;//  fitter10.GetParameter(3); 
+
+      if (fitter10.GetNpoints()>10){
+	fitter10.Eval();
+	rms10=TMath::Sqrt(fitter10.GetChisquare()/(fitter10.GetNpoints()-4));
+	mean10      =   fitter10.GetParameter(0);
+	slope10     =   fitter10.GetParameter(1);
+	cosPart10   =   fitter10.GetParameter(2);
+	sinPart10   =  fitter10.GetParameter(3); 
+	//
+	// make short range fit
+	//
+	for (Int_t irow1=firstRow1+5; irow1<=lastRow1-5; irow1++){
+	  if (TMath::Abs((*ltr->GetVecSec())[irow1]-sector)>kEpsilon) continue;
+	  if (veceY->GetMatrixArray()[irow1]>cutErrY) continue;
+	  if (TMath::Abs(vecdY->GetMatrixArray()[irow1])<kEpsilon) continue;
+	  Double_t idealX= (*ltr->GetVecLX())[irow1];
+	  Double_t idealY= (*ltr->GetVecLY())[irow1];
+	  Double_t idealZ= (*ltr->GetVecLZ())[irow1];
+	  Double_t gx= (*ltr->GetVecGX())[irow1];
+	  Double_t gy= (*ltr->GetVecGY())[irow1];
+	  Double_t gz= (*ltr->GetVecGZ())[irow1];
+	  Double_t measY=(*vecdY)[irow1]+idealY;
+	  Double_t deltaR = GetCorrXYZ(gx, gy, gz, 0,0);
+	  // deltaR = R distorted -R ideal 
+	  Double_t expY= mean10+slope10*(idealX+deltaR-refX);
+	  if (TMath::Abs(measY-expY)>kSigmaCut*rms10) continue;
+	  //
+	  Double_t corr=cosPart10*TMath::Cos(idealY/padWidth)+sinPart10*TMath::Sin(idealY/padWidth);
+	  Double_t xxx[4]={idealX+deltaR-refX,TMath::Cos(idealY/padWidth), TMath::Sin(idealY/padWidth)};
+	  fitter5.AddPoint(xxx,measY-corr,1);
+	}     
+      }else{
+	isOK=kFALSE;
+      }
+      if (fitter5.GetNpoints()<8) isOK=kFALSE;
+
+      Double_t rms5=0;//TMath::Sqrt(fitter5.GetChisquare()/(fitter5.GetNpoints()-4));
+      Double_t offset5  =0;//  fitter5.GetParameter(0);
+      Double_t slope5   =0;//  fitter5.GetParameter(0); 
+      if (isOK){
+	fitter5.Eval();
+	rms5=TMath::Sqrt(fitter5.GetChisquare()/(fitter5.GetNpoints()-4));
+	offset5  =  fitter5.GetParameter(0);
+	slope5   =  fitter5.GetParameter(0); 
+      }
+      //
+      Double_t dtype=5;
+      Double_t ptype=0;
+      Double_t phi   =(*ltr->GetVecPhi())[irow0];
+      Double_t theta =ltr->GetTgl();
+      Double_t mean=(vecdY)->GetMatrixArray()[irow0];
+      Double_t gx=0,gy=0,gz=0;
+      Double_t snp = (*ltr->GetVecP2())[irow0];
+      Int_t bundle= ltr->GetBundle();
+      Int_t id= ltr->GetId();
+      //      Double_t rms = err->GetMatrixArray()[irow];
+      //
+      gx = (*ltr->GetVecGX())[irow0];
+      gy = (*ltr->GetVecGY())[irow0];
+      gz = (*ltr->GetVecGZ())[irow0];
+      Double_t dRrec = GetCorrXYZ(gx, gy, gz, 0,0);
+      fitter10.GetParameters(fit10);
+      fitter5.GetParameters(fit5);      
+      Double_t idealY= (*ltr->GetVecLY())[irow0];
+      Double_t measY=(*vecdY)[irow0]+idealY;
+      Double_t corr=cosPart10*TMath::Cos(idealY/padWidth)+sinPart10*TMath::Sin(idealY/padWidth);
+      if (TMath::Max(rms5,rms10)>0.06) isOK=kFALSE;
+      //
+      (*pcstream)<<"fitFull"<<  // dumpe also intermediate results
+	"bz="<<bz<<         // magnetic filed used
+	"dtype="<<dtype<<   // detector match type
+	"ptype="<<ptype<<   // parameter type
+	"theta="<<theta<<   // theta
+	"phi="<<phi<<       // phi 
+	"snp="<<snp<<       // snp
+	"sector="<<sector<<
+	"bundle="<<bundle<<
+// 	//	"dsec="<<dsec<<
+	"refX="<<refX<<      // reference radius
+	"gx="<<gx<<         // global position
+	"gy="<<gy<<         // global position
+	"gz="<<gz<<         // global position
+	"dRrec="<<dRrec<<      // delta Radius in reconstruction
+ 	"id="<<id<<     //bundle
+	"rms10="<<rms10<<
+	"rms5="<<rms5<<
+	"fit10.="<<&fit10<<
+	"fit5.="<<&fit5<<
+	"measY="<<measY<<
+	"mean="<<mean<<
+	"idealY="<<idealY<<
+	"corr="<<corr<<
+	"isOK="<<isOK<<
+	"\n";
+    }
+  }
+  delete pcstream;
 }

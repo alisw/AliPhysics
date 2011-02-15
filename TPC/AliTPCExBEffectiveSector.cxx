@@ -190,7 +190,7 @@ void AliTPCExBEffectiveSector::Print(const Option_t* option) const {
   }    
 }
 
-void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char *sname){
+void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char *sname, Int_t ptype, Int_t dtype){
   //
   // Make cluster residual map from the n-dimensional histogram
   // hisInput supposed to have given format:
@@ -201,7 +201,7 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
   Int_t nbins1=hisInput->GetAxis(1)->GetNbins();
   Int_t nbins2=hisInput->GetAxis(2)->GetNbins();
   Int_t nbins3=hisInput->GetAxis(3)->GetNbins();
-
+  TF1 *fgaus=0;
   TH3F * hisResMap3D = 
     new TH3F("his3D","his3D",
 	     nbins1,hisInput->GetAxis(1)->GetXmin(), hisInput->GetAxis(1)->GetXmax(),
@@ -314,13 +314,36 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
 	hisResMap3D->SetBinContent(ibin1,ibin2,ibin3, mean);
 	Double_t phi=TMath::Pi()*sector/9;
 	if (phi>TMath::Pi()) phi+=TMath::Pi();
+	Double_t meanG=0;
+	Double_t rmsG=0;
+	if (entries>50){
+	  if (!fgaus) {	    
+	    his->Fit("gaus","Q","goff");
+	    fgaus= (TF1*)((his->GetListOfFunctions()->FindObject("gaus"))->Clone());
+	    fgaus->SetName("gausk");
+	  }
+	  if (fgaus) his->Fit(fgaus,"Q","goff");
+	  if (fgaus){
+	    meanG=fgaus->GetParameter(1);
+	    rmsG=fgaus->GetParameter(2);
+	  }
+	}
+	Double_t dsec=sector-Int_t(sector)-0.5;
+	Double_t snp=dsec*TMath::Pi()/9.;
 	(*pcstream)<<"delta"<<
+	  "ptype="<<ptype<<
+	  "dtype="<<dtype<<
 	  "sector="<<sector<<
+	  "dsec="<<dsec<<
+	  "snp="<<snp<<
 	  "phi="<<phi<<
 	  "localX="<<localX<<
 	  "kZ="<<kZ<<
+	  "theta="<<kZ<<
 	  "mean="<<mean<<
 	  "rms="<<rms<<
+	  "meanG="<<meanG<<
+	  "rmsG="<<rmsG<<
 	  "entries="<<entries<<
 	  "meanA="<<meanA<<
 	  "rmsA="<<rmsA<<

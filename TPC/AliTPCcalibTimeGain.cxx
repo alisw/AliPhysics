@@ -164,6 +164,7 @@ TGaxis *axis = new TGaxis(xmax,ymin,xmax,ymax,ymin,ymax,50510,"+L");
 #include "AliTracker.h"
 #include "AliMagF.h"
 #include "AliTPCCalROC.h"
+#include "AliESDv0.h"
 
 #include "AliLog.h"
 
@@ -234,12 +235,12 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   Double_t deltaTime = EndTime - StartTime;
   
   
-  // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data), meanDriftlength, momenta (only filled if enough space is available), run number
+  // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 - proton points at higher dE/dx), meanDriftlength, momenta (only filled if enough space is available), run number, eta
   Int_t timeBins = TMath::Nint(deltaTime/deltaIntegrationTimeGain);
-  Int_t binsGainTime[6]    = {150,  timeBins,    2,  25, 200, 10000000};
-  Double_t xminGainTime[6] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5};
-  Double_t xmaxGainTime[6] = {  8,   EndTime,  2.5, 250,  50, 9999999.5};
-  fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number;dEdx",6,binsGainTime,xminGainTime,xmaxGainTime);
+  Int_t binsGainTime[7]    = {150,  timeBins,    4,  25, 200, 10000000, 20};
+  Double_t xminGainTime[7] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5,  -1};
+  Double_t xmaxGainTime[7] = {  8,   EndTime,  4.5, 250,  50, 9999999.5, 1};
+  fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number, eta;dEdx",7,binsGainTime,xminGainTime,xmaxGainTime);
   BinLogX(fHistGainTime, 4);
   //
   fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,8);
@@ -373,7 +374,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
   //
   // track loop
   //
-  for (Int_t i=0;i<ntracks;++i) {
+  for (Int_t i=0;i<ntracks;++i) { // begin track loop
 
     AliESDtrack *track = event->GetTrack(i);
     if (!track) continue;
@@ -392,8 +393,16 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
     if (nclsDeDx < 60) continue;     
-    if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
-    if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
+    //if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
+    //if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
+    if (TMath::Abs(trackIn->Eta()) > 1) continue;
+    UInt_t status = track->GetStatus();
+    if ((status&AliESDtrack::kTPCrefit)==0) continue;
+    if (track->GetNcls(0) < 3) continue; // ITS clusters
+    Float_t dca[2], cov[3];
+    track->GetImpactParameters(dca,cov);
+    if (dca[0] > 7 || dca[0] < 0.000001) continue; // cut in xy
+    Double_t eta = trackIn->Eta();
     
     // Get seeds
     TObject *calibObject;
@@ -402,17 +411,68 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
     }    
 
-    if (seed) { 
-      if (fLowMemoryConsumption) {
-	if (meanP > 0.5 || meanP < 0.4) continue;
-	meanP = 0.45; // set all momenta to one in order to save memory
-      }
+    if (seed) {
+      Int_t particleCase = 0;
+      if (meanP > 0.5  || meanP < 0.4)  particleCase = 2; // MIP pions
+      if (meanP > 0.56 || meanP < 0.57) particleCase = 3; // protons 1
+      if (meanP > 0.64 || meanP < 0.66) particleCase = 4; // protons 2
+      //
+      if (fLowMemoryConsumption && particleCase == 0) continue;
+      //
       Double_t tpcSignal = GetTPCdEdx(seed);
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
-      //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[6] = {tpcSignal,time,2,meanDrift,meanP,runNumber};
+      //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
+      Double_t vec[7] = {tpcSignal,time,particleCase,meanDrift,meanP,runNumber, eta};
       fHistGainTime->Fill(vec);
+    }
+    
+  } // end track loop
+  //
+  // V0 loop -- in beam events the cosmic part of the histogram is filled with GammaConversions
+  //
+  for(Int_t iv0 = 0; iv0 < event->GetNumberOfV0s(); iv0++) {
+    AliESDv0 * v0 = event->GetV0(iv0);
+    if (!v0->GetOnFlyStatus()) continue;
+    if (v0->GetEffMass(0,0) > 0.02) continue; // select low inv. mass
+    Double_t xyz[3];
+    v0->GetXYZ(xyz[0], xyz[1], xyz[2]);
+    if (TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]) < 3 || TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]) > 30) continue;
+    //
+    // "loop over daughters" 
+    //
+    for(Int_t idaughter = 0; idaughter < 2; idaughter++) { // daughter loop
+      Int_t index = idaughter == 0 ? v0->GetPindex() : v0->GetNindex();
+      AliESDtrack * trackP = event->GetTrack(index);
+      AliESDfriendTrack *friendTrackP = esdFriend->GetTrack(index);
+      if (!friendTrackP) continue;
+      const AliExternalTrackParam * trackPIn = trackP->GetInnerParam();
+      const AliExternalTrackParam * trackPOut = friendTrackP->GetTPCOut();
+      if (!trackPIn) continue;
+      if (!trackPOut) continue;
+      // calculate necessary track parameters
+      Double_t meanP = trackPIn->GetP();
+      Double_t meanDrift = 250 - 0.5*TMath::Abs(trackPIn->GetZ() + trackPOut->GetZ());
+      Int_t nclsDeDx = trackP->GetTPCNcls();
+      // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
+      if (nclsDeDx < 60) continue;     
+      if (TMath::Abs(trackPIn->GetTgl()) > 1) continue;
+      //
+      TObject *calibObject;
+      AliTPCseed *seed = 0;
+      for (Int_t l=0;(calibObject=friendTrackP->GetCalibObject(l));++l) {
+      if ((seed=dynamic_cast<AliTPCseed*>(calibObject))) break;
+      }    
+      if (seed) { 
+	if (fLowMemoryConsumption) {
+	  if (meanP > 0.5 || meanP < 0.4) continue;
+	  meanP = 0.45; // set all momenta to one in order to save memory
+      }
+	Double_t tpcSignal = GetTPCdEdx(seed);
+	//dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
+	Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
+	fHistGainTime->Fill(vec);
+      }
     }
     
   }

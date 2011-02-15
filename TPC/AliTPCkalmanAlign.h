@@ -6,6 +6,7 @@
 
 #include "TNamed.h"
 #include "TMatrixD.h"
+#include "TString.h"
 class TTreeSRedirector;
 class TObjArray;
 class AliTPCcalibAlign;
@@ -24,6 +25,11 @@ public:
   void UpdateOCDBTime0( AliTPCCalPad  *pad, Int_t ustartRun, Int_t uendRun,  const char* storagePath );
   static void UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, Int_t s2, TMatrixD &param, TMatrixD &covar);
   static void UpdateAlign1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
+  //
+  static void Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
+  static void Update1D(TString &input, TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma);
+  static TString  FilterFit(TString &input, TString filter, TVectorD &param, TMatrixD & covar);
+  //
   static void BookAlign1D(TMatrixD &param, TMatrixD &covar, Double_t sigma, Double_t mean);
   void DumpOldAlignment(TTreeSRedirector *pcstream);
   void MakeNewAlignment(Bool_t add,TTreeSRedirector *pcstream=0);

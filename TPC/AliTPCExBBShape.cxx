@@ -154,3 +154,28 @@ void AliTPCExBBShape::Print(Option_t* option) const {
     printf(" - C1: %1.4f, C2: %1.4f \n",fC1,fC2);
   }    
 }
+
+Double_t AliTPCExBBShape::GetBFieldXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType){
+  //
+  // return B field at given x,y,z
+  // 
+  AliMagF* field = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
+  if (!field) return 0;
+  Double_t xyz[3]={gx,gy,gz};
+  Double_t bxyz[3]={0};
+  field->Field(xyz,bxyz);
+  //
+  Double_t r=TMath::Sqrt(gx*gx+gy*gy);
+  Double_t b=TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  if (axisType==0) {
+    return (xyz[0]*bxyz[1]-xyz[1]*bxyz[0])/(bxyz[2]*r);
+  }
+  if (axisType==1){
+    return (xyz[0]*bxyz[0]+xyz[1]*bxyz[1])/(bxyz[2]*r);
+  }
+  if (axisType==2) return bxyz[2];
+  if (axisType==3) return bxyz[0];
+  if (axisType==4) return bxyz[1];
+  if (axisType==5) return bxyz[2];
+  return bxyz[2];
+}

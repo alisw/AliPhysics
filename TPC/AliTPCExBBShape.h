@@ -65,6 +65,7 @@ public:
   void GetBxAndByOverBz(const Float_t x[],const Short_t roc,Float_t BxByOverBz[]);
 
   virtual void Print(Option_t* option="") const;
+  static Double_t GetBFieldXYZ(Double_t gx, Double_t gy, Double_t gz, Int_t axisType);
 
 private:
   Float_t fC1; // coefficient C1          (compare Jim Thomas's notes for definitions)
