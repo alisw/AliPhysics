@@ -18,6 +18,7 @@ class AliESDEvent;
 class AliAODEvent;
 class AliAODExtension;
 class AliAODJet;
+class AliVParticle;
 class AliAODJetEventBackground;
 class AliGenPythiaEventHeader;
 class AliCFManager;
@@ -109,6 +110,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 
     Bool_t  JetSelected(AliAODJet *jet);
     Int_t MultFromJetRefs(TClonesArray *jets);
+    AliVParticle *LeadingTrackFromJetRefs(AliAODJet* jet);
+    AliVParticle *LeadingTrackInCone(AliAODJet* jet,TList *list,Float_t r = 0.4);
+
 
     AliJetHeader *fJetHeaderRec;//! The jet header that can be fetched from the userinfo
     AliJetHeader *fJetHeaderGen;//! The jet header that can fetched from the userinfo
@@ -185,7 +189,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*         fh2AreaPt[kJetTypes][kMaxJets+1];       //! area distribution 
     TH2F*         fh2EtaArea[kJetTypes][kMaxJets+1];       //! area vs eta distribution 
     TH2F*         fh2PhiEta[kJetTypes][kMaxJets+1];      //! eta phi distribution of jet      
-
+    TH2F*         fh2LTrackPtJetPt[kJetTypes][kMaxJets+1];       //! leading track within the jet vs jet pt 
 
     TH1F*   fh1DijetMinv[kJetTypes];            //! dijet inv mass
     TH2F*   fh2DijetDeltaPhiPt[kJetTypes];      //! dijet delta phi vs pt
@@ -196,7 +200,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 12) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 13) // Analysis task for standard jet analysis
 };
  
 #endif
