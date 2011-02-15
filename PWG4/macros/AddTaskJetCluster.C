@@ -2,6 +2,7 @@
 
 Int_t kBackgroundMode = 0;
 Float_t kPtTrackCut = 0.15;
+Float_t kTrackEtaCut = 0.8;
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag){
    AliAnalysisTaskJetCluster *js = 0;
@@ -87,42 +88,32 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
 
    if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
+     pwg4spec->SetTrackPtCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AODMC2")){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
+     pwg4spec->SetTrackPtCut(5);
    }
    else if (typeRec.Contains("AODMC")){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
+     pwg4spec->SetTrackPtCut(5);
    }
    else if (typeRec.Contains("AODextraonly")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackPtCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AODextra")) {
      cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackPtCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AOD")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackPtCut(kTrackEtaCut);
    }
-
-
-   if(typeGen.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
-   }
-   else if (typeGen.Contains("AODMC2")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
-   }
-   else if (typeGen.Contains("AODMC")){
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAODMCAll);
-   }
-   else if (typeGen.Contains("AOD")) {
-     pwg4spec->SetTrackTypeGen(AliAnalysisTaskJetCluster::kTrackAOD);
-   }
-
-
 
    pwg4spec->SetRparam(radius);
 
