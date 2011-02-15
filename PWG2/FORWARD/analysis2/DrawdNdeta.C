@@ -247,8 +247,14 @@ struct dNdetaDrawer
     fForward   = GetResult(results, "dndetaForward");
     fForwardMC = GetResult(results, "dndetaForwardMC");
     fTruth     = GetResult(results, "dndetaTruth");
-    fCentral   = GetResult(results, "dndetaCentral");
 
+    TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
+    if (!clusters) 
+      Warning("Open", "Couldn't find list CentralResults");
+    else {
+      fCentral   = GetResult(clusters, "dndetaCentral");
+      fCentral->SetMarkerColor(kGreen+1);
+    }
     if (!fTrigString) 
       fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
     if (!fSNNString) 

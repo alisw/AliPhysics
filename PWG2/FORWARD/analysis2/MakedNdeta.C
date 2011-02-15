@@ -52,9 +52,14 @@ void MakedNdeta(const char* aoddir=".",
   mgr->SetInputEventHandler(aodInputHandler);      
        
   // --- Add tasks ---------------------------------------------------
-  // Centrality 
+  // Forward 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwarddNdeta.C");
-  AddTaskForwarddNdeta(trig, vzMin, vzMax);
+  AddTaskForwarddNdeta(trig, vzMin, vzMax)
+;
+  // Central
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentraldNdeta.C");
+  AddTaskCentraldNdeta(trig, vzMin, vzMax);
+
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
