@@ -494,12 +494,12 @@ void AnalysisTrainPWG4(const char *analysis_mode="local",
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetSpectrum2.C");
      AliAnalysisTaskJetSpectrum2 *taskjetSpectrum = 0;
      if(iPWG4JetSpectrum&1){
-       taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,kTRUE,1,0);
+       taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,0);
        if(kIsPbPb){
-	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,kTRUE,1,1);
-	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,kTRUE,1,2);
-	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,kTRUE,1,3);
-	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,kTRUE,1,4);
+	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,1);
+	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,2);
+	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,3);
+	 taskjetSpectrum = AddTaskJetSpectrum2(kDefaultJetBranch.Data(),"",kDefaultJetBackgroundBranch.Data(),kHighPtFilterMask,AliVEvent::kMB,0,4);
        }
      }
      if (!taskjetSpectrum) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetSpectrum2 cannot run for this train conditions - EXCLUDED");
