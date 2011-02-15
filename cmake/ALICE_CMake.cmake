@@ -557,8 +557,8 @@ macro(ALICE_CopyHeaders)
     set(_headersdep)
     foreach(header ${HEADERS})
       add_custom_command(OUTPUT ${PEXPORTDEST}/${header}
-                         COMMAND ${CMAKE_COMMAND} -E copy ${ALICE_ROOT}/${MODULE}/${header} ${PEXPORTDEST}/${header}
-			 DEPENDS ${ALICE_ROOT}/${MODULE}/${header})
+                         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/${MODULE}/${header} ${PEXPORTDEST}/${header}
+			 DEPENDS ${CMAKE_SOURCE_DIR}/${MODULE}/${header})
       list(APPEND _headersdep ${PEXPORTDEST}/${header})
       install(FILES ${header} DESTINATION include)
     endforeach(header)
@@ -586,7 +586,6 @@ endmacro(ALICE_GenerateLinkDef)
 
 macro(ALICE_BuildPAR)
   
-  # if(EXISTS ${ALICE_ROOT}/${MODULE}/PROOF-INF.${PACKAGE})
   if(EXISTS ${CMAKE_SOURCE_DIR}/${MODULE}/PROOF-INF.${PACKAGE})
     set(PARSRCS)
     foreach(file ${SRCS} ${HDRS} ${FSRCS} ${DHDR})

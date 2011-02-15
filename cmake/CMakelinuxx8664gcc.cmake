@@ -1,3 +1,5 @@
+# -*- mode: cmake -*-
+
 #--------------------------------------------------------------------------------#
 # Linuxx8664gcc CMake System configuration file for the AliRoot Build System     #
 #                                                                                # 

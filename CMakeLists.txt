@@ -215,6 +215,7 @@ add_custom_target(include-headers ALL)
 add_custom_target(DA-all)
 add_custom_target(check-all) 
 add_custom_target(check-hxml)
+add_custom_target(smell-all) 
 add_custom_target(par-all)
 add_custom_target(test-par-all)
 

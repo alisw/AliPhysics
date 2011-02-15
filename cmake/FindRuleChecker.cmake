@@ -24,11 +24,13 @@ if(IRST_INSTALLDIR)
   find_file(RULECHECKER_JAR NAMES NewRuleChecker.jar PATHS ${IRST_INSTALLDIR}/NewRuleChecker NO_DEFAULT_PATH)
   find_file(RULECHECKER_RULES NAMES CodingConventions.xml PATHS ${IRST_INSTALLDIR}/NewRuleChecker/config NO_DEFAULT_PATH)
   find_file(FACTEXTRACTOR_JAR NAMES FactExtractor.jar PATHS ${IRST_INSTALLDIR}/FactExtractor NO_DEFAULT_PATH)
-  if(RULECHECKER_JAR AND RULECHECKER_RULES AND RULECHECKER_SRCML AND JAVA_RUNTIME)
+  find_file(SMELLDETECTOR_JAR NAMES SmellDetector.jar PATHS ${IRST_INSTALLDIR} NO_DEFAULT_PATH)
+  if(RULECHECKER_JAR AND RULECHECKER_RULES AND RULECHECKER_SRCML AND JAVA_RUNTIME AND SMELLDETECTOR_JAR)
     set(RULECHECKER_FOUND TRUE)
-    message(STATUS "RuleChecker jar : ${RULECHECKER_JAR}")
-    message(STATUS "RuleChecker rules : ${RULECHECKER_RULES}")
+    message(STATUS "RuleChecker jar :           ${RULECHECKER_JAR}")
+    message(STATUS "RuleChecker rules :         ${RULECHECKER_RULES}")
     message(STATUS "RuleChecker factextractor : ${FACTEXTRACTOR_JAR}")
+    message(STATUS "RuleChecker smelldetector : ${SMELLDETECTOR_JAR}")
     message(STATUS "RuleChecker found on the system")
 
     if(NOT EXISTS ${CMAKE_BINARY_DIR}/check-hxml-touchfile)
@@ -55,7 +57,7 @@ if(IRST_INSTALLDIR)
     endforeach(_root_header ${_root_headers})
   else()
     message(STATUS "RuleChecker not found on this system")
-  endif(RULECHECKER_JAR AND RULECHECKER_RULES AND RULECHECKER_SRCML AND JAVA_RUNTIME)
+  endif(RULECHECKER_JAR AND RULECHECKER_RULES AND RULECHECKER_SRCML AND JAVA_RUNTIME AND SMELLDETECTOR_JAR)
 else()
   message(STATUS "RuleChecker not found on this system")
 endif(IRST_INSTALLDIR)
@@ -76,14 +78,17 @@ macro(ALICE_CheckModule)
     list(SORT _sources)
 
     set(_violfiles)
+    set(_smellfiles)
     set(_module_factfile_deps)
     foreach(_srcfile ${_sources})
       if(NOT _srcfile MATCHES "^.*LinkDef$" AND NOT _srcfile MATCHES ".*PYTHIA8/pythia8.*")
 	set(_violdeps)
 	string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/" "" _srcfile_short ${_srcfile})
 	set(_viol ${CHECKDIR}/${_srcfile_short}.viol)
+	set(_smell ${CHECKDIR}/${_srcfile_short}.smell)
 	get_filename_component(_viol_path ${_viol} PATH)
 	list(APPEND _violfiles ${_viol})
+	list(APPEND _smellfiles ${_smell})
 	if(EXISTS ${_srcfile}.h)
 	  add_custom_command(OUTPUT ${CHECKDIR}/${_srcfile_short}.h.xml
 	                     COMMAND ${CMAKE_COMMAND} -E make_directory ${_viol_path}
@@ -104,14 +109,20 @@ macro(ALICE_CheckModule)
                             COMMAND ${JAVA_RUNTIME} -Xmx1024M -jar ${RULECHECKER_JAR} ${CHECKDIR}/${_srcfile_short}.cxx.xml ${CHECKDIR}/${_srcfile_short}.h.xml ${FACTFILE} ${RULECHECKER_RULES} > ${_viol}
                             DEPENDS ${_violdeps}
                             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+	add_custom_command( OUTPUT ${_smell}
+                            COMMAND ${JAVA_RUNTIME} -Xmx1024M -jar ${SMELLDETECTOR_JAR} ${CHECKDIR}/${_srcfile_short}.cxx.xml ${CHECKDIR}/${_srcfile_short}.h.xml > ${_smell}
+                            DEPENDS ${_violdeps}
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
       endif(NOT _srcfile MATCHES "^.*LinkDef$" AND NOT _srcfile MATCHES ".*PYTHIA8/pythia8.*")
     endforeach(_srcfile ${_sources})
-
 
     if(_violfiles)
       add_custom_target(${MODULE}-check DEPENDS ${_violfiles})
       add_dependencies(${MODULE}-check factfile)
       add_dependencies(check-all ${MODULE}-check)
+
+      add_custom_target(${MODULE}-smell DEPENDS ${_smellfiles})
+      add_dependencies(smell-all ${MODULE}-smell)
 
       if(_module_factfile_deps)
 	add_custom_target(${MODULE}-hxml DEPENDS ${_module_factfile_deps})
