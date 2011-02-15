@@ -463,7 +463,7 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * const pos) 
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, const Float_t * const pos, Float_t *dist3d) const
+Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * const pos, Float_t *dist3d) const
 {
   //
   // Returns true if space point with coor pos (x,y,z) [cm] falls inside
@@ -483,7 +483,7 @@ Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, const Float_t * const pos
   // from ALICE global reference system
   // towards TOF pad reference system
   Double_t posl[3] = {0., 0., 0.};
-  mat.MasterToLocal(posg,posl);
+  mat->MasterToLocal(posg,posl);
 
   Float_t xr = posl[0];
   Float_t yr = posl[1];
@@ -505,7 +505,7 @@ Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix mat, const Float_t * const pos
     Double_t padg[3] = {0., 0., 0.};
     // from TOF pad local reference system
     // towards ALICE global reference system
-    TGeoHMatrix inverse = mat.Inverse();
+    TGeoHMatrix inverse = mat->Inverse();
     inverse.MasterToLocal(padl,padg);
 
     // returns the 3d distance

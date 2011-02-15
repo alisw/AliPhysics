@@ -261,7 +261,8 @@ AliTOFClusterFinder::~AliTOFClusterFinder()
       fRecPoints=0;
     }
 
-  if (fTofClusters || fNumberOfTofClusters) {
+  //if (fTofClusters || fNumberOfTofClusters) {
+  if (fNumberOfTofClusters) {
     for (Int_t ii=0; ii<fNumberOfTofClusters; ii++)
       if (fTofClusters[ii]) fTofClusters[ii]->Delete();
     fNumberOfTofClusters=0;
@@ -793,6 +794,10 @@ void AliTOFClusterFinder::Raw2Digits(Int_t iEvent, AliRawReader *rawReader)
     fTOFLoader->MakeTree("D");
     fTreeD = fTOFLoader->TreeD();
     }
+  else {
+    AliFatal("Can not get TreeD");
+    return;
+  }
 
   Int_t bufsize = 32000;
   fDigits->Clear();

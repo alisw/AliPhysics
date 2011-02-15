@@ -572,7 +572,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Float_t dist3d[3];
       accept = kFALSE;
       for (Int_t i=0; i<nc; i++) {
-        isInside = fGeom->IsInsideThePad(global[i],ctrackPos,dist3d);
+        isInside = fGeom->IsInsideThePad((TGeoHMatrix*)(&global[i]),ctrackPos,dist3d);
 
         if ( mLastStep ) {
           Float_t yLoc = dist3d[1];

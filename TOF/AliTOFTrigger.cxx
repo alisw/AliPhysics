@@ -78,8 +78,10 @@ ClassImp(AliTOFTrigger)
     fTOFTrigMask(0)
 {
   //main ctor
+  for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i] = kFALSE;
+
   for (Int_t i=0;i<kNLTM;i++){
-  fLTMarray[i] = kFALSE;  //*******************************************************************************************************
+
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -124,8 +126,8 @@ AliTOFTrigger::AliTOFTrigger(Int_t HighMultTh, Int_t ppMBTh, Int_t MultiMuonTh, 
   fTOFTrigMask(0)
 {
   //ctor with thresholds for triggers
+  for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i] = kFALSE;
   for (Int_t i=0;i<kNLTM;i++){
-  fLTMarray[i] = kFALSE;  //*******************************************************************************************************
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -171,8 +173,8 @@ AliTOFTrigger::AliTOFTrigger(const AliTOFTrigger & tr):
   fTOFTrigMask(0)
 {
   //copy ctor
+  for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i] = kFALSE;
   for (Int_t i=0;i<kNLTM;i++){
-  fLTMarray[i] = tr.fLTMarray[i]; 
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=tr.fLTMmatrix[i][j];
     }
@@ -442,8 +444,8 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
   //
 
   //initialization
+  for (Int_t i=0;i<kNCTTM;i++) fLTMarray[i]= kFALSE;
   for (Int_t i=0;i<kNLTM;i++){
-  fLTMarray[i]= kFALSE;
     for (Int_t j=0;j<kNLTMchannels;j++){
       fLTMmatrix[i][j]=kFALSE;
     }
@@ -466,10 +468,10 @@ void AliTOFTrigger::CreateLTMMatrixFromDigits() {
 
   tofLoader->LoadDigits("read");
   TTree *treeD = tofLoader->TreeD();
-  if (treeD == 0x0)
-    {
-      AliFatal("AliTOFTrigger: Can not get TreeD");
-    }
+  if (treeD == 0x0) {
+    AliFatal("AliTOFTrigger: Can not get TreeD");
+    return;
+  }
 
   TBranch *branch = treeD->GetBranch("TOF");
   if (!branch) {

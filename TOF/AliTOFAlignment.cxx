@@ -131,6 +131,10 @@ AliTOFAlignment::AliTOFAlignment():
    for(Int_t i=0; i<72; i++)
     for (Int_t j=0; j<6; j++)
       fCombFMData[i][j]=0;
+
+   for(Int_t i=0; i<18;i++)
+     fTOFMatrixId[i]=0;
+
 }
 //_____________________________________________________________________________
 AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
@@ -148,6 +152,10 @@ AliTOFAlignment::AliTOFAlignment(const AliTOFAlignment &t):
   for(Int_t i=0; i<72; i++)
     for (Int_t j=0; j<6; j++)
       fCombFMData[i][j]=t.fCombFMData[i][j]; 
+
+  for(Int_t i=0; i<18;i++)
+    fTOFMatrixId[i]=t.fTOFMatrixId[i];
+
 }
 //_____________________________________________________________________________
 AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){ 
@@ -160,6 +168,9 @@ AliTOFAlignment& AliTOFAlignment::operator=(const AliTOFAlignment &t){
   fNTOFAlignObj=t.fNTOFAlignObj;
   fTOFmgr=t.fTOFmgr;
   fTOFAlignObjArray=t.fTOFAlignObjArray;
+  for(Int_t i=0; i<18;i++)
+    fTOFMatrixId[i]=t.fTOFMatrixId[i];
+
   return *this;
 
 }

@@ -226,7 +226,8 @@ AliTOFClusterFinderV1::~AliTOFClusterFinderV1()
 
   delete fTOFdigits;
 
-  if (fTofClusters || fNumberOfTofClusters) {
+  //if (fTofClusters || fNumberOfTofClusters) {
+  if (fNumberOfTofClusters) {
     for (Int_t ii=0; ii<fNumberOfTofClusters; ii++)
       if (fTofClusters[ii]) fTofClusters[ii]->Delete();
     fNumberOfTofClusters = 0;
