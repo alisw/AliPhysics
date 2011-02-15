@@ -57,6 +57,7 @@ public:
   TH2F* CreateHistoOfZAlignment(Int_t side, Int_t nx=250, Int_t ny=250);
 
   virtual void Print(const Option_t* option="") const;
+  TMatrixD *GetMatrix() const {return fdzDataLinFit;}  // Linear fits of dz survey points (each sector=72) (z0,slopeX,slopeY)         
 
 protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);

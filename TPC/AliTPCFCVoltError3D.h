@@ -36,23 +36,23 @@ public:
   // Set rod shift in Voltage equivalents (40V ~ 1mm)
   // rod numbers: 0-17 (IFC), 18-35 (OFC)
   // note: strips move accordingly
-  void SetRodVoltShiftA(Int_t rod, Float_t voltOffset) {fRodVoltShiftA[rod]=voltOffset; fInitLookUp=kFALSE;}
-  void SetRodVoltShiftC(Int_t rod, Float_t voltOffset) {fRodVoltShiftC[rod]=voltOffset; fInitLookUp=kFALSE;}
+  void SetRodVoltShiftA(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fRodVoltShiftA[rod]=voltOffset; fInitLookUp=doInit;}
+  void SetRodVoltShiftC(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fRodVoltShiftC[rod]=voltOffset; fInitLookUp=doInit;}
   Float_t GetRodVoltShiftA(Int_t i) const {return fRodVoltShiftA[i];}// 0-17: IFC, 18-35; OFC
   Float_t GetRodVoltShiftC(Int_t i) const {return fRodVoltShiftC[i];}// 0-17: IFC, 18-35; OFC
 
   // Set rotated clip (just at High Voltage RODs) in Voltage equivalents (40V ~ 1mm)
   // rod number: 0 (IFC), 1 (OFC)
-  void SetRotatedClipVoltA(Int_t rod, Float_t voltOffset) {fRotatedClipVoltA[rod]=voltOffset; fInitLookUp=kFALSE;}
-  void SetRotatedClipVoltC(Int_t rod, Float_t voltOffset) {fRotatedClipVoltC[rod]=voltOffset; fInitLookUp=kFALSE;}
+  void SetRotatedClipVoltA(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fRotatedClipVoltA[rod]=voltOffset; fInitLookUp=doInit;}
+  void SetRotatedClipVoltC(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fRotatedClipVoltC[rod]=voltOffset; fInitLookUp=doInit;}
   Float_t GetRotatedClipVoltA(Int_t i) const {return fRotatedClipVoltA[i];}// (0,1):(IFC,OFC)
   Float_t GetRotatedClipVoltC(Int_t i) const {return fRotatedClipVoltC[i];}// (0,1):(IFC,OFC)
 
   // Set rod shift in Voltage equivalents (40V ~ 1mm)
   // rod numbers: 0-17 (OFC)
   // note: strips DO NOT move, only the copper rods do ...
-  void SetCopperRodShiftA(Int_t rod, Float_t voltOffset) {fCopperRodShiftA[rod]=voltOffset; fInitLookUp=kFALSE;}
-  void SetCopperRodShiftC(Int_t rod, Float_t voltOffset) {fCopperRodShiftC[rod]=voltOffset; fInitLookUp=kFALSE;}
+  void SetCopperRodShiftA(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fCopperRodShiftA[rod]=voltOffset; fInitLookUp=doInit;}
+  void SetCopperRodShiftC(Int_t rod, Float_t voltOffset, Bool_t doInit=kTRUE) {fCopperRodShiftC[rod]=voltOffset; fInitLookUp=doInit;}
   Float_t GetCopperRodShiftA(Int_t i) const {return fCopperRodShiftA[i];}// 0-17: IFC, 18-35; OFC
   Float_t GetCopperRodShiftC(Int_t i) const {return fCopperRodShiftC[i];}// 0-17: IFC, 18-35; OFC
 

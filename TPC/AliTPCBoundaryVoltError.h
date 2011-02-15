@@ -68,7 +68,7 @@ private:
   enum {kColumns=257}; // grid size in r direction used in the poisson relaxation // ( 2**m + 1 ) eg. 65, 129, 257 etc.
   enum {kIterations=100}; // Number of iterations within the poisson relaxation 
 
-  ClassDef(AliTPCBoundaryVoltError,0); 
+  ClassDef(AliTPCBoundaryVoltError,1); 
 };
 
 #endif
