@@ -1384,15 +1384,15 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
     chains=fChains;
     HLTImportant("custom reconstruction chain: %s", chains.Data());
   } else {
-    AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
-    while ((pAgent || fChains.Length()>0) && iResult>=0) {
+    for (AliHLTModuleAgent* pAgent=AliHLTModuleAgent::GetFirstAgent();
+	 pAgent && iResult>=0;
+	 pAgent=AliHLTModuleAgent::GetNextAgent()) {
       const char* agentchains=pAgent->GetReconstructionChains(rawReader, runloader);
       if (agentchains) {
 	if (!chains.IsNull()) chains+=" ";
 	chains+=agentchains;
 	HLTInfo("reconstruction chains for agent %s (%p): %s", pAgent->GetName(), pAgent, agentchains);
       }
-      pAgent=AliHLTModuleAgent::GetNextAgent();
     }
   }
 
