@@ -1,5 +1,5 @@
 //====================================================================
-#include "AliForwarddNdetaTask.h"
+#include "AliCentraldNdetaTask.h"
 #include <TMath.h>
 #include <TH2D.h>
 #include <TH1D.h>
@@ -10,17 +10,14 @@
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
 #include "AliForwardUtil.h"
-#include <AliAODForwardMult.h>
+#include "AliAODForwardMult.h"
+#include <AliAODCentralMult.h>
 
 //____________________________________________________________________
-AliForwarddNdetaTask::AliForwarddNdetaTask()
+AliCentraldNdetaTask::AliCentraldNdetaTask()
   : AliAnalysisTaskSE(), 
-    fSumForward(0),	//  Sum of histograms 
-    fSumForwardMC(0),	//  Sum of MC histograms (if any)
-    fSumPrimary(0),	//  Sum of primary histograms
-    fSumCentral(0),	//  Sum of central histograms
-    fCentral(0),	// Cache of central histogram
-    fPrimary(0),	// Cache of primary histogram
+    fSumCentral(0),	//  Sum of histograms 
+    fSumCentralMC(0),	//  Sum of MC histograms (if any)
     fSums(0),		// Container of sums 
     fOutput(0),		// Container of outputs 
     fTriggers(0),	// Histogram of triggers 
@@ -28,20 +25,14 @@ AliForwarddNdetaTask::AliForwarddNdetaTask()
     fVtxMax(0),		// Maximum v_z
     fTriggerMask(0),    // Trigger mask 
     fRebin(0),       	// Rebinning factor 
-    fCutEdges(false),
-    fSNNString(0),
-    fSysString(0)
+    fCutEdges(false)
 {}
 
 //____________________________________________________________________
-AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
-  : AliAnalysisTaskSE("Forward"), 
-    fSumForward(0),	//  Sum of histograms 
-    fSumForwardMC(0),	//  Sum of MC histograms (if any)
-    fSumPrimary(0),	//  Sum of primary histograms
-    fSumCentral(0),	//  Sum of central histograms
-    fCentral(0),	// Cache of central histogram
-    fPrimary(0),	// Cache of primary histogram
+AliCentraldNdetaTask::AliCentraldNdetaTask(const char* /* name */)
+  : AliAnalysisTaskSE("Central"), 
+    fSumCentral(0),	//  Sum of histograms 
+    fSumCentralMC(0),	//  Sum of MC histograms (if any)
     fSums(0),		// Container of sums 
     fOutput(0),		// Container of outputs 
     fTriggers(0),	// Histogram of triggers 
@@ -49,9 +40,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
     fVtxMax(10),	// Maximum v_z
     fTriggerMask(AliAODForwardMult::kInel), 
     fRebin(5),		// Rebinning factor 
-    fCutEdges(false),
-    fSNNString(0),
-    fSysString(0)
+    fCutEdges(false)
 {
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
@@ -59,28 +48,22 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
 }
 
 //____________________________________________________________________
-AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
+AliCentraldNdetaTask::AliCentraldNdetaTask(const AliCentraldNdetaTask& o)
   : AliAnalysisTaskSE(o), 
-    fSumForward(o.fSumForward),	   // Sum of histograms 
-    fSumForwardMC(o.fSumForwardMC),// Sum of MC histograms (if any)
-    fSumPrimary(o.fSumPrimary),	   // Sum of primary histograms
-    fSumCentral(o.fSumCentral),	   // Sum of central histograms
-    fCentral(o.fCentral),          // Cache of central histogram
-    fPrimary(o.fPrimary),          // Cache of primary histogram
-    fSums(o.fSums),		   // Container of sums 
-    fOutput(o.fOutput),		   // Container of outputs 
-    fTriggers(o.fTriggers),	   // Histogram of triggers 
-    fVtxMin(o.fVtxMin),		   // Minimum v_z
-    fVtxMax(o.fVtxMax),		   // Maximum v_z
-    fTriggerMask(o.fTriggerMask),  // Trigger mask 
-    fRebin(o.fRebin),		   // Rebinning factor 
-    fCutEdges(o.fCutEdges),	   // Whether to cut edges when rebinning
-    fSNNString(o.fSNNString),	   //  
-    fSysString(o.fSysString)	   //  
+    fSumCentral(o.fSumCentral),	// TH2D* -  Sum of histograms 
+    fSumCentralMC(o.fSumCentralMC),// TH2D* -  Sum of MC histograms (if any)
+    fSums(o.fSums),		// TList* - Container of sums 
+    fOutput(o.fOutput),		// TList* - Container of outputs 
+    fTriggers(o.fTriggers),	// TH1D* - Histogram of triggers 
+    fVtxMin(o.fVtxMin),		// Double_t - Minimum v_z
+    fVtxMax(o.fVtxMax),		// Double_t - Maximum v_z
+    fTriggerMask(o.fTriggerMask),// Int_t - Trigger mask 
+    fRebin(o.fRebin),		// Int_t - Rebinning factor 
+    fCutEdges(o.fCutEdges)	// Bool_t - Whether to cut edges when rebinning
 {}
 
 //____________________________________________________________________
-AliForwarddNdetaTask::~AliForwarddNdetaTask()
+AliCentraldNdetaTask::~AliCentraldNdetaTask()
 {
   if (fSums) { 
     fSums->Delete();
@@ -92,13 +75,11 @@ AliForwarddNdetaTask::~AliForwarddNdetaTask()
     delete fOutputs;
     fOutputs = 0;
   }
-  if (fCentral)    delete fCentral;
-  if (fPrimary)    delete fPrimary;
 }
 
 //________________________________________________________________________
 void 
-AliForwarddNdetaTask::SetTriggerMask(const char* mask)
+AliCentraldNdetaTask::SetTriggerMask(const char* mask)
 {
   UShort_t    trgMask = 0;
   TString     trgs(mask);
@@ -120,7 +101,7 @@ AliForwarddNdetaTask::SetTriggerMask(const char* mask)
 
 //________________________________________________________________________
 void 
-AliForwarddNdetaTask::UserCreateOutputObjects()
+AliCentraldNdetaTask::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once (on the worker node)
@@ -152,11 +133,6 @@ AliForwarddNdetaTask::UserCreateOutputObjects()
   fTriggers->SetStats(0);
   fSums->Add(fTriggers);
 
-  fSNNString = new TNamed("sNN", "");
-  fSysString = new TNamed("sys", "");
-  fSums->Add(fSNNString);
-  fSums->Add(fSysString);
-
   // Check that we have an AOD input handler 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODInputHandler* ah = 
@@ -169,7 +145,7 @@ AliForwarddNdetaTask::UserCreateOutputObjects()
 
 //____________________________________________________________________
 TH2D*
-AliForwarddNdetaTask::CloneHist(TH2D* in, const char* name) 
+AliCentraldNdetaTask::CloneHist(TH2D* in, const char* name) 
 {
   if (!in) return 0;
   TH2D* ret = static_cast<TH2D*>(in->Clone(name));
@@ -182,7 +158,7 @@ AliForwarddNdetaTask::CloneHist(TH2D* in, const char* name)
 
 //____________________________________________________________________
 void 
-AliForwarddNdetaTask::UserExec(Option_t *) 
+AliCentraldNdetaTask::UserExec(Option_t *) 
 {
   // Main loop
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -192,44 +168,26 @@ AliForwarddNdetaTask::UserExec(Option_t *)
   }  
 
   // Get objects from the event structure 
+  TObject* oCentral   = aod->FindListObject("CentralClusters");
+  TObject* oCentralMC = aod->FindListObject("CentralClustersMC");
   TObject* oForward   = aod->FindListObject("Forward");
-  TObject* oForwardMC = aod->FindListObject("ForwardMC");
-  TObject* oPrimary   = aod->FindListObject("primary");
-  TObject* oCentral   = aod->FindListObject("Central");
 
-  // We should have a forward object at least 
-  if (!oForward) { 
-    AliWarning("No Forward object found AOD");
+  // We should have a central object at least 
+  if (!oCentral) { 
+    AliWarning("No Central object found AOD");
     return;
   }
 
   // Cast to good types 
+  AliAODCentralMult* central   = static_cast<AliAODCentralMult*>(oCentral);
+  AliAODCentralMult* centralMC = static_cast<AliAODCentralMult*>(oCentralMC);
   AliAODForwardMult* forward   = static_cast<AliAODForwardMult*>(oForward);
-  AliAODForwardMult* forwardMC = static_cast<AliAODForwardMult*>(oForwardMC);
-  TH2D*              primary   = static_cast<TH2D*>(oPrimary);
-  TH2D*              central   = static_cast<TH2D*>(oCentral);
-
-  static bool first = true;
-  if (first) { 
-    UShort_t sNN = forward->GetSNN();
-    UShort_t sys = forward->GetSystem();
-    fSNNString->SetTitle(AliForwardUtil::CenterOfMassEnergyString(sNN));
-    fSNNString->SetUniqueID(sNN);
-    fSysString->SetTitle(AliForwardUtil::CollisionSystemString(sys));
-    fSysString->SetUniqueID(sys);
-    first = false;
-  }
-
-  // Create our sum histograms 
-  if (!fSumForward) fSumForward = CloneHist(&forward->GetHistogram(),"forward");
-  if (!fSumForwardMC && forwardMC) 
-    fSumForwardMC = CloneHist(&forwardMC->GetHistogram(),"forwardMC");
-  if (!fSumPrimary && primary) fSumPrimary = CloneHist(primary, "primary");
-  if (!fSumCentral && central) fSumCentral = CloneHist(central, "central");
-
-  // Add contribtion from MC 
-  if (primary) fSumPrimary->Add(primary);
   
+  // Create our sum histograms 
+  if (!fSumCentral) fSumCentral =CloneHist(&central->GetHistogram(),"central");
+  if (!fSumCentralMC && centralMC) 
+    fSumCentralMC = CloneHist(&centralMC->GetHistogram(),"centralMC");
+
   // Count event 
   fTriggers->AddBinContent(kAll);
   if (forward->IsTriggerBits(AliAODForwardMult::kB)) 
@@ -256,17 +214,15 @@ AliForwarddNdetaTask::UserExec(Option_t *)
   fTriggers->AddBinContent(kAccepted);
 
   // Add contribution 
-  fSumForward->Add(&(forward->GetHistogram()));
-  if (fSumForwardMC) fSumForwardMC->Add(&(forwardMC->GetHistogram()));
-  if (fSumPrimary)   fSumPrimary->Add(primary);
-  if (fSumCentral)   fSumCentral->Add(central);
+  fSumCentral->Add(&(central->GetHistogram()));
+  if (fSumCentralMC) fSumCentralMC->Add(&(centralMC->GetHistogram()));
 
   PostData(1, fSums);
 }
 
 //________________________________________________________________________
 void 
-AliForwarddNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker,
+AliCentraldNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker,
 					  const char* title, const char* ytitle)
 {
   h->SetTitle(title);
@@ -287,7 +243,7 @@ AliForwarddNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker
   
 //________________________________________________________________________
 void 
-AliForwarddNdetaTask::Terminate(Option_t *) 
+AliCentraldNdetaTask::Terminate(Option_t *) 
 {
   // Draw result to screen, or perform fitting, normalizations Called
   // once at the end of the query
@@ -304,20 +260,16 @@ AliForwarddNdetaTask::Terminate(Option_t *)
     fOutput->SetOwner();
   }
 
-  fSumForward     = static_cast<TH2D*>(fSums->FindObject("forward"));
-  fSumForwardMC   = static_cast<TH2D*>(fSums->FindObject("forwardMC"));
-  fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("primary"));
   fSumCentral     = static_cast<TH2D*>(fSums->FindObject("central"));
+  fSumCentralMC   = static_cast<TH2D*>(fSums->FindObject("centralMC"));
   fTriggers       = static_cast<TH1D*>(fSums->FindObject("triggers"));
-  fSNNString      = static_cast<TNamed*>(fSums->FindObject("sNN"));
-  fSysString      = static_cast<TNamed*>(fSums->FindObject("sys"));
 
   if (!fTriggers) { 
     AliError("Couldn't find histogram 'triggers' in list");
     return;
   }
-  if (!fSumForward) { 
-    AliError("Couldn't find histogram 'forward' in list");
+  if (!fSumCentral) { 
+    AliError("Couldn't find histogram 'central' in list");
     return;
   }
 
@@ -350,82 +302,50 @@ AliForwarddNdetaTask::Terminate(Option_t *)
 	       nB, nA+nC, nA, nC, nE, nGood, vtxEff));
   
   // Get acceptance normalisation from underflow bins 
-  TH1D* normForward   = fSumForward->ProjectionX("normForward", 0, 1, "");
+  TH1D* normCentral   = fSumCentral->ProjectionX("normCentral", 0, 1, "");
   // Project onto eta axis - _ignoring_underflow_bins_!
-  TH1D* dndetaForward = fSumForward->ProjectionX("dndetaForward", 1, -1, "e");
+  TH1D* dndetaCentral = fSumCentral->ProjectionX("dndetaCentral", 1, -1, "e");
   // Normalize to the acceptance 
-  dndetaForward->Divide(normForward);
+  dndetaCentral->Divide(normCentral);
   // Scale by the vertex efficiency 
-  dndetaForward->Scale(vtxEff, "width");
+  dndetaCentral->Scale(vtxEff, "width");
 
-  SetHistogramAttributes(dndetaForward, kRed+1, 20, "ALICE Forward");
-  SetHistogramAttributes(normForward, kRed+1, 20, "ALICE Forward", "Normalisation");
+  SetHistogramAttributes(dndetaCentral, kRed+1, 20, "ALICE Central");
+  SetHistogramAttributes(normCentral, kRed+1, 20, "ALICE Central", 
+			 "Normalisation");
 
   fOutput->Add(fTriggers->Clone());
-  fOutput->Add(fSNNString->Clone());
-  fOutput->Add(fSysString->Clone());
-  fOutput->Add(dndetaForward);
-  fOutput->Add(normForward);
-  fOutput->Add(Rebin(dndetaForward));
+  fOutput->Add(dndetaCentral);
+  fOutput->Add(normCentral);
+  fOutput->Add(Rebin(dndetaCentral));
 
-  if (fSumForwardMC) { 
+  if (fSumCentralMC) { 
     // Get acceptance normalisation from underflow bins 
-    TH1D* normForwardMC   = fSumForwardMC->ProjectionX("normForwardMC", 0, 1, "");
+    TH1D* normCentralMC   = 
+      fSumCentralMC->ProjectionX("normCentralMC", 0, 1, "");
     // Project onto eta axis - _ignoring_underflow_bins_!
-    TH1D* dndetaForwardMC = fSumForwardMC->ProjectionX("dndetaForwardMC", 1, -1, "e");
+    TH1D* dndetaCentralMC = 
+      fSumCentralMC->ProjectionX("dndetaCentralMC", 1, -1, "e");
     // Normalize to the acceptance 
-    dndetaForwardMC->Divide(normForwardMC);
+    dndetaCentralMC->Divide(normCentralMC);
     // Scale by the vertex efficiency 
-    dndetaForwardMC->Scale(vtxEff, "width");
+    dndetaCentralMC->Scale(vtxEff, "width");
 
-    SetHistogramAttributes(dndetaForwardMC, kRed+3, 21, "ALICE Forward (MC)");
-    SetHistogramAttributes(normForwardMC, kRed+3, 21, "ALICE Forward (MC)", 
+    SetHistogramAttributes(dndetaCentralMC, kRed+3, 21, "ALICE Central (MC)");
+    SetHistogramAttributes(normCentralMC, kRed+3, 21, "ALICE Central (MC)", 
 			   "Normalisation");
 
-    fOutput->Add(dndetaForwardMC);
-    fOutput->Add(normForwardMC);
-    fOutput->Add(Rebin(dndetaForwardMC));
+    fOutput->Add(dndetaCentralMC);
+    fOutput->Add(normCentralMC);
+    fOutput->Add(Rebin(dndetaCentralMC));
   }
-
-  if (fSumPrimary) { 
-    TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",-1,-1,"e");
-    dndetaTruth->Scale(1./nAll, "width");
-
-    SetHistogramAttributes(dndetaTruth, kGray+3, 22, "Monte-Carlo truth");
-
-    fOutput->Add(dndetaTruth);
-    fOutput->Add(Rebin(dndetaTruth));
-  }
-  if (fSumCentral) { 
-    TH1D* dndetaCentral = fSumCentral->ProjectionX("dndetaCentral",-1,-1,"e");
-    dndetaCentral->Scale(1./nGood, "width");
-
-    SetHistogramAttributes(dndetaCentral, kGray+3, 22, "ALICE Central - track(let)s");
-
-    dndetaCentral->GetXaxis()->SetRangeUser(-1,1);
-    fOutput->Add(dndetaCentral);
-    fOutput->Add(Rebin(dndetaCentral));
-  }
-
-  TNamed* trigString = 
-    new TNamed("trigString", AliAODForwardMult::GetTriggerString(fTriggerMask));
-  trigString->SetUniqueID(fTriggerMask);
-  fOutput->Add(trigString);
-
-  TAxis* vtxAxis = new TAxis(1,fVtxMin,fVtxMax);
-  vtxAxis->SetName("vtxAxis");
-  vtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin,fVtxMax));
-  fOutput->Add(vtxAxis);
-
-  // If only there was a away to get sqrt{s_NN} and beam type 
-  
 
   PostData(2, fOutput);
 }
 
 //________________________________________________________________________
 TH1D*
-AliForwarddNdetaTask::Rebin(const TH1D* h) const
+AliCentraldNdetaTask::Rebin(const TH1D* h) const
 {
   if (fRebin <= 1) return 0;
 
