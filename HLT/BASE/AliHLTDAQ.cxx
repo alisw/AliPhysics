@@ -257,9 +257,11 @@ string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
   if (detectorID < 0)
     return result;
   Int_t TPCID = DetectorID("TPC");
-  char* strtmp = new char[11];
+  const int strtmplength=11;
+  char strtmp[strtmplength];
+  memset(strtmp, 0, strtmplength);
   if (detectorID != TPCID) {
-    sprintf(strtmp, "0x%08x", 0x1 << ddlIndex);
+    snprintf(strtmp, strtmplength, "0x%08x", 0x1 << ddlIndex);
     result = strtmp;
   }
   else { // TPC
@@ -272,7 +274,7 @@ string AliHLTDAQ::HLTSpecificationFromDdlID(Int_t ddlID)
       partition = (ddlID % 4) + 2;
       slice = (ddlID - 840) / 4;
     }
-    sprintf(strtmp, "0x%02x%02x%02x%02x", slice, slice, partition, partition);
+    snprintf(strtmp, strtmplength, "0x%02x%02x%02x%02x", slice, slice, partition, partition);
     result = strtmp;
   }
   return result;
