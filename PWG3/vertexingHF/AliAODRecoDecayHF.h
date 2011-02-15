@@ -109,6 +109,11 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   // misalign
   void Misalign(TString misal="null");
 
+  // selection map
+  void    SetSelectionBit(Int_t i) {SETBIT(fSelectionMap,i); return;}
+  Bool_t  HasSelectionBit(Int_t i) const {return TESTBIT(fSelectionMap,i);}
+  ULong_t GetSelectionMap() const {return fSelectionMap;}
+
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
@@ -116,8 +121,9 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   TRef          fListOfCuts;  // ref to the list of analysis cuts
   Double_t     *fd0err;  //[fNProngs] error on prongs rphi impact param [cm]
   UShort_t     *fProngID;  //[fNProngs] track ID of daughters
+  ULong_t       fSelectionMap; // used to store outcome of selection in AliAnalysisVertexingHF
 
-  ClassDef(AliAODRecoDecayHF,4)  // base class for AOD reconstructed heavy-flavour decays
+  ClassDef(AliAODRecoDecayHF,5)  // base class for AOD reconstructed heavy-flavour decays
 };
 
 inline void AliAODRecoDecayHF::SetProngIDs(Int_t nIDs,UShort_t *id) 

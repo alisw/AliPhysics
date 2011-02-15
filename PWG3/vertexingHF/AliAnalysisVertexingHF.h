@@ -22,6 +22,7 @@ class AliAODRecoDecayHF3Prong;
 class AliAODRecoDecayHF4Prong;
 class AliAODRecoCascadeHF;
 class AliAnalysisFilter;
+class AliRDHFCuts;
 class AliRDHFCutsD0toKpi;
 class AliRDHFCutsJpsitoee;
 class AliRDHFCutsDplustoKpipi;
@@ -211,6 +212,8 @@ class AliAnalysisVertexingHF : public TNamed {
 				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
+
+  void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd);
 
   AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0, 
 				  TObjArray *twoTrackArrayV0);

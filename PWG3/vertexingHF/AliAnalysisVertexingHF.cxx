@@ -690,6 +690,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    v2Prong->SetParent(rd);
 	    AddRefs(v2Prong,rd,event,twoTrackArray1);
 	  }
+	  // Set selection bit for PID
+	  if(okD0) SetSelectionBitForPID(fCutsD0toKpi,rd);
 	}
 	// D* candidates
 	if(fDstar && okD0fromDstar && !isLikeSign2Prong) {
@@ -762,6 +764,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 		v2Prong->SetParent(rd);
 		AddRefs(v2Prong,rd,event,twoTrackArray1);
 		okD0=kTRUE; // this is done to add it only once
+		// Set selection bit for PID
+	        SetSelectionBitForPID(fCutsD0toKpi,rd);
 	      }
 	      // add the vertex and the cascade to the AOD
 	      AliAODVertex *vCasc = new(verticesHFRef[iVerticesHF++])AliAODVertex(*vertexCasc); 
@@ -771,6 +775,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      if(!fInputAOD) vCasc->AddDaughter(rd); // just to fill ref #0 
 	      AddRefs(vCasc,rc,event,twoTrackArrayCasc);
 	      vCasc->AddDaughter(rd); // add the D0 (in ref #1)
+	      // Set selection bit for PID
+	      SetSelectionBitForPID(fCutsDStartoKpipi,rc);
 	    }
 	    twoTrackArrayCasc->Clear();
 	    trackPi=0; 
@@ -891,6 +897,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      v3Prong->SetParent(rd);
 	      AddRefs(v3Prong,rd,event,threeTrackArray);
 	    }
+	    // Set selection bit for PID
+	    SetSelectionBitForPID(fCutsDplustoKpipi,rd);
+	    SetSelectionBitForPID(fCutsDstoKKpi,rd);
+	    SetSelectionBitForPID(fCutsLctopKpi,rd);
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
 	  if(secVert3PrAOD) {delete secVert3PrAOD; secVert3PrAOD=NULL;} 
@@ -1076,6 +1086,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      v3Prong->SetParent(rd);
 	      AddRefs(v3Prong,rd,event,threeTrackArray);
 	    }
+	    // Set selection bit for PID
+	    SetSelectionBitForPID(fCutsDplustoKpipi,rd);
+	    SetSelectionBitForPID(fCutsDstoKKpi,rd);
+	    SetSelectionBitForPID(fCutsLctopKpi,rd);
 	  }
 	  if(io3Prong) {delete io3Prong; io3Prong=NULL;} 
 	  if(secVert3PrAOD) {delete secVert3PrAOD; secVert3PrAOD=NULL;}
@@ -1316,6 +1330,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   // select D*->D0pi
   if(fDstar) {
     okDstar = (Bool_t)fCutsDStartoKpipi->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
+    if(okDstar) theCascade->SetSelectionBit(AliRDHFCuts::kDstarCuts);
   }
   tmpCascade->GetSecondaryVtx()->RemoveDaughters();
   tmpCascade->UnsetOwnPrimaryVtx(); 
@@ -1325,6 +1340,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   }
   if(primVertexAOD) {delete primVertexAOD; primVertexAOD=NULL;}
   //---
+
   
   return theCascade;
 }
@@ -1444,13 +1460,21 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
  
   if(postrack->Charge()!=0 && negtrack->Charge()!=0) { // don't apply these cuts if it's a Dstar 
     // select D0->Kpi
-    if(fD0toKpi)   okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+    if(fD0toKpi)   {
+      okD0 = (Bool_t)fCutsD0toKpi->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+      if(okD0) the2Prong->SetSelectionBit(AliRDHFCuts::kD0toKpiCuts);
+    }
     //if(fDebug && fD0toKpi) printf("   %d\n",(Int_t)okD0);
     // select J/psi from B
-    if(fJPSItoEle)   okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+    if(fJPSItoEle)   {
+      okJPSI = (Bool_t)fCutsJpsitoee->IsSelected(the2Prong,AliRDHFCuts::kCandidate);
+    }
     //if(fDebug && fJPSItoEle) printf("   %d\n",(Int_t)okJPSI);
     // select D0->Kpi from Dstar
-    if(fDstar)   okD0fromDstar = (Bool_t)fCutsDStartoKpipi->IsD0FromDStarSelected(the2Prong->Pt(),the2Prong,AliRDHFCuts::kCandidate);
+    if(fDstar)   {
+      okD0fromDstar = (Bool_t)fCutsDStartoKpipi->IsD0FromDStarSelected(the2Prong->Pt(),the2Prong,AliRDHFCuts::kCandidate);
+      if(okD0fromDstar) the2Prong->SetSelectionBit(AliRDHFCuts::kD0fromDstarCuts);
+    }
     //if(fDebug && fDstar) printf("   %d\n",(Int_t)okD0fromDstar);
   }
 
@@ -1550,10 +1574,18 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   if(f3Prong) {
     ok3Prong = kFALSE;
     
-    if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
-    if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
-    if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) ok3Prong = kTRUE;
-    
+    if(fCutsDplustoKpipi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+      ok3Prong = kTRUE;
+      the3Prong->SetSelectionBit(AliRDHFCuts::kDplusCuts);
+    }
+    if(fCutsDstoKKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+      ok3Prong = kTRUE;
+      the3Prong->SetSelectionBit(AliRDHFCuts::kDsCuts);
+    }
+    if(fCutsLctopKpi->IsSelected(the3Prong,AliRDHFCuts::kCandidate)) {
+      ok3Prong = kTRUE;
+      the3Prong->SetSelectionBit(AliRDHFCuts::kLcCuts);
+    } 
   }
   //if(fDebug) printf("ok3Prong: %d\n",(Int_t)ok3Prong);
 
@@ -2166,6 +2198,20 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
   if(indices) { delete [] indices; indices=NULL; }
 
 
+  return;
+}
+//-----------------------------------------------------------------------------
+void AliAnalysisVertexingHF::SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd) {
+  //
+  // Set the selection bit for PID
+  //
+  if(cuts->GetPidHF()) {
+    Bool_t usepid=cuts->GetIsUsePID();
+    cuts->SetUsePID(kTRUE);
+    if(cuts->IsSelectedPID(rd))
+      rd->SetSelectionBit(AliRDHFCuts::kDstarPID);
+    cuts->SetUsePID(usepid);
+  }
   return;
 }
 //-----------------------------------------------------------------------------
