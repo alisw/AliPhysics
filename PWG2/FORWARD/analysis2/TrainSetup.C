@@ -363,14 +363,23 @@ protected:
 
     TString cwd = gSystem->WorkingDirectory();
     TString nam = EscapedName();
-    if (!gSystem->AccessPathName(nam.Data())) {
-      Error("Exec", "File/directory %s already exists", nam.Data());
-      return;
+    if (oper != kTerminate) { 
+      if (!gSystem->AccessPathName(nam.Data())) {
+	Error("Exec", "File/directory %s already exists", nam.Data());
+	return;
+      }
+      if (gSystem->MakeDirectory(nam.Data())) {
+	Error("Exec", "Failed to make directory %s", nam.Data());
+	return;
+      }
     }
-    if (gSystem->MakeDirectory(nam.Data())) {
-      Error("Exec", "Failed to make directory %s", nam.Data());
-      return;
+    else {
+      if (gSystem->AccessPathName(nam.Data())) {
+	Error("Exec", "File/directory %s does not exists", nam.Data());
+	return;
+      }
     }
+      
     if (!gSystem->ChangeDirectory(nam.Data())) { 
       Error("Exec", "Failed to change directory to %s", nam.Data());
       return;
@@ -1141,7 +1150,6 @@ public:
   }
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
-    // --- Forward multiplicity ---------------------------------------
     AliAnalysisManager::SetCommonFileName("forward.root");
     LoadLibrary("PWG2forward2", mode, par, true);
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
@@ -1154,10 +1162,60 @@ private:
   Short_t  fField;
 };
 //====================================================================
+class ForwardPass2 : public TrainSetup
+{
+public:
+  ForwardPass2(const char* trig="INEL", 
+	       Double_t    vzMin=-10, 
+	       Double_t    vzMax=10, 
+	       UShort_t    year  = 0, 
+	       UShort_t    month = 0, 
+	       UShort_t    day   = 0, 
+	       UShort_t    hour  = 0, 
+	       UShort_t    min   = 0) 
+    : TrainSetup("Forward d2Ndetadphi pass2",
+		 year, month, day, hour, min),
+      fTrig(trig), 
+      fVzMin(vzMin), 
+      fVzMax(vzMax)
+  {}
+  void Run(const char* mode, const char* oper, 
+	   Int_t nEvents=-1, Bool_t mc=false)
+  {
+    EMode eMode = ParseMode(mode);
+    EOper eOper = ParseOperation(oper);
+    
+    Run(eMode, eOper, nEvents, mc);
+  }
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false)
+  {
+    Exec(kESD, mode, oper, nEvents, mc, true);
+  }
+  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+  {
+    AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
+    LoadLibrary("PWG2forward2", mode, par, true);
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwarddNdeta.C");
+    gROOT->ProcessLine(Form("AddTaskForwarddNdeta(\"%s\",%f,%f)",
+			    fTrig.Data(), fVzMin, fVzMax));
+  }
+private:
+  TString fTrig;
+  Double_t fVzMin;
+  Double_t fVzMax;
+};
+//====================================================================
 class ForwardELoss : public TrainSetup
 {
 public:
-  ForwardELoss() : TrainSetup("Forward energy loss") {}
+  ForwardELoss(UShort_t year  = 0, 
+	       UShort_t month = 0, 
+	       UShort_t day   = 0, 
+	       UShort_t hour  = 0, 
+	       UShort_t min   = 0) 
+    : TrainSetup("Forward energy loss",
+		 year, month, day, hour, min) 
+  {}
   void Run(const char* mode, const char* oper, 
 	   Int_t nEvents=-1, Bool_t mc=false)
   {
