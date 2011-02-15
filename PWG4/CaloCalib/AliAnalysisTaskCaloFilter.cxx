@@ -356,7 +356,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       printf("Original residuals : dZ %f, dR %f\n ",dZ, dR);
     //--------------------------------------------------------------
     //If EMCAL and corrections done, get the new matching parameters, do not copy noisy clusters
-    if(cluster->IsEMCAL() && fCorrect){
+    if(cluster->IsEMCAL() && fCorrect && bESD){
       if(DebugLevel() > 2)
         printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
@@ -366,11 +366,14 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       //      }
       
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
-      if(DebugLevel() > 2){
-        if(cluster->IsEMCAL()) printf("EMCAL Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
-      if(cluster->IsPHOS())  printf("PHOS  Corrected Residuals : dZ %f, dR %f\n ",dZ, dR);
-      }
+      cluster->SetTrackDistance(dR,dZ);
     }
+    
+    if(DebugLevel() > 2){
+      if(cluster->IsEMCAL()) printf("EMCAL Track-Cluster Residuals : dZ %f, dR %f\n ",dZ, dR);
+      if(cluster->IsPHOS())  printf("PHOS  Track-Cluster Residuals : dZ %f, dR %f\n ",dZ, dR);
+    }
+    
     //--------------------------------------------------------------
 
     //Now fill AODs
