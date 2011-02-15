@@ -1,10 +1,10 @@
 //
-// Task to analyse the AOD for for dN/deta in the forward regions 
+// Task to analyse the AOD for for dN/deta in the central regions 
 //
-#ifndef ALIFORWARDDNDETATASK_H
-#define ALIFORWARDDNDETATASK_H
+#ifndef ALICENTRALDNDETATASK_H
+#define ALICENTRALDNDETATASK_H
 #include <AliAnalysisTaskSE.h>
-//#include <AliAODForwardMult.h>
+// #include <AliAODCentralMult.h>
 class TList;
 class TH2D;
 class TH1D;
@@ -12,21 +12,21 @@ class TH1D;
 /**
  * Task to determine the 
  */
-class AliForwarddNdetaTask : public AliAnalysisTaskSE
+class AliCentraldNdetaTask : public AliAnalysisTaskSE
 {
 public:
   /** 
    * Constructor 
    * 
    */
-  AliForwarddNdetaTask();
+  AliCentraldNdetaTask();
   /** 
    * Constructor
    * 
    * @param name    Name of task 
    * @param maxVtx  Set @f$v_z@f$ range
    */
-  AliForwarddNdetaTask(const char* name);
+  AliCentraldNdetaTask(const char* name);
   
   void SetVertexRange(Double_t min, Double_t max) { fVtxMin=min; fVtxMax=max; }
   void SetRebinning(Int_t rebin) { fRebin = rebin; }
@@ -36,7 +36,7 @@ public:
    * Destructor
    * 
    */
-  virtual ~AliForwarddNdetaTask();
+  virtual ~AliCentraldNdetaTask();
   /** 
    * Initialise on master - does nothing
    * 
@@ -63,8 +63,8 @@ public:
    */
   virtual void Terminate(Option_t* option);
 protected:
-  AliForwarddNdetaTask(const AliForwarddNdetaTask&);
-  AliForwarddNdetaTask& operator=(const AliForwarddNdetaTask&) { return *this; }
+  AliCentraldNdetaTask(const AliCentraldNdetaTask&);
+  AliCentraldNdetaTask& operator=(const AliCentraldNdetaTask&) { return *this; }
   /** 
    * Clone a 2D histogram
    * 
@@ -108,12 +108,8 @@ protected:
     kAccepted   = 9 
   };
 
-  TH2D*           fSumForward;    //  Sum of histograms 
-  TH2D*           fSumForwardMC;  //  Sum of MC histograms (if any)
-  TH2D*           fSumPrimary;    //  Sum of primary histograms
-  TH2D*           fSumCentral;    //  Sum of central histograms
-  TH2D*           fCentral;       //! Cache of central histogram
-  TH2D*           fPrimary;       //! Cache of primary histogram
+  TH2D*           fSumCentral;    //  Sum of histograms 
+  TH2D*           fSumCentralMC;  //  Sum of MC histograms (if any)
 
   TList*          fSums;          // Container of sums 
   TList*          fOutput;        // Container of outputs 
@@ -125,10 +121,8 @@ protected:
   Int_t           fTriggerMask;   // Trigger mask 
   Int_t           fRebin;         // Rebinning factor 
   Bool_t          fCutEdges;      // Whether to cut edges when rebinning
-  TNamed*         fSNNString;     // 
-  TNamed*         fSysString;     // 
 
-  ClassDef(AliForwarddNdetaTask,1); // Determine multiplicity in central area
+  ClassDef(AliCentraldNdetaTask,1); // Determine multiplicity in central area
 };
 
 #endif
