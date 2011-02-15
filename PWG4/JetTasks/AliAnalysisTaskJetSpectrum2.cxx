@@ -134,7 +134,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
       fh2AreaPt[ij][i] = 0;
       fh2EtaArea[ij][i] = 0;
       fh2PhiEta[ij][i] = 0; 
-      
+      fh2LTrackPtJetPt[ij][i] = 0;
       fh1PtIn[ij][i] = 0;
       fh2RhoPt[ij][i] = 0;
       fh2PsiPt[ij][i] = 0;
@@ -220,7 +220,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
       fh2AreaPt[ij][i] = 0;
       fh2EtaArea[ij][i] = 0;
       fh2PhiEta[ij][i] = 0; 
-
+      fh2LTrackPtJetPt[ij][i] = 0;
       fh1PtIn[ij][i] = 0;
       fh2RhoPt[ij][i] = 0;
       fh2PsiPt[ij][i] = 0;
@@ -288,6 +288,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
     if(ftrials>=nEntries && nEntries>0.)fAvgTrials = ftrials/nEntries;
   }  
 
+  if(fDebug)Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
 
   return kTRUE;
 }
@@ -451,6 +452,12 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 	fh2PhiEta[ij][i] =  new TH2F(Form("fh2PhiEta%s_j%d",cAdd.Data(),i),Form("phi vs eta %s ;phi;p_{T};",cAdd.Data()),
 				     nBinPhi,binLimitsPhi,20,-1.,1.);
 	fHistList->Add(fh2PhiEta[ij][i]);
+
+	fh2LTrackPtJetPt[ij][i] = new TH2F(Form("fh2LTrackPtJetPt%s_j%d",cAdd.Data(),i),
+					   Form("pt of leadin track within a jet vs jet %s;p_{T,lead in jet};p_{T.jet};",
+						cAdd.Data()),
+					   200,0.,200.,nBinPt,binLimitsPt);
+	fHistList->Add(fh2LTrackPtJetPt[ij][i]);
       }
 
 
@@ -790,6 +797,8 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       if(ij<kMaxJets)fh1PtIn[iType][ij]->Fill(ptJet);
       fh1PtIn[iType][kMaxJets]->Fill(ptJet);
       // fill leading jets...
+      AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
+      //      AliVParticle *leadTrack = LeadingTrackInCone(jet,&particlesList);
       if(ptJet>10){
 	if(ij<kMaxJets){
 	  fh2PhiEta[iType][ij]->Fill(phiJet,etaJet);
@@ -803,9 +812,11 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       if(ij<kMaxJets){
 	fh2PhiPt[iType][ij]->Fill(phiJet,ptJet);
 	fh2EtaPt[iType][ij]->Fill(etaJet,ptJet);
+	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
       }
       fh2PhiPt[iType][kMaxJets]->Fill(phiJet,ptJet);
       fh2EtaPt[iType][kMaxJets]->Fill(etaJet,ptJet);
+      if(leadTrack)fh2LTrackPtJetPt[iType][kMaxJets]->Fill(leadTrack->Pt(),ptJet);
 
       if(particlesList.GetSize()&&ij<kMaxJets){
 	// Particles... correlated with jets...
@@ -1299,4 +1310,40 @@ Int_t AliAnalysisTaskJetSpectrum2::MultFromJetRefs(TClonesArray* jets){
   }
   return refMult;
 
+}
+
+
+AliVParticle *AliAnalysisTaskJetSpectrum2::LeadingTrackFromJetRefs(AliAODJet* jet){
+  if(!jet)return 0;
+  TRefArray *refs = jet->GetRefTracks();
+  if(!refs) return 0;
+  AliVParticle *leading = 0;
+  Float_t fMaxPt = 0;
+  for(int i = 0;i<refs->GetEntries();i++){
+    AliVParticle *tmp = dynamic_cast<AliVParticle*>(refs->At(i));
+    if(!tmp)continue;
+    if(tmp->Pt()>fMaxPt){
+      leading = tmp;
+      fMaxPt = tmp->Pt();
+    }
+  }
+  return leading;
+}
+
+
+AliVParticle *AliAnalysisTaskJetSpectrum2::LeadingTrackInCone(AliAODJet* jet,TList *list,Float_t r){
+  if(!jet)return 0;
+  if(!list) return 0;
+  AliVParticle *leading = 0;
+  Float_t fMaxPt = 0;
+  for(int i = 0;i<list->GetEntries();i++){
+    AliVParticle *tmp = (AliVParticle*)(list->At(i));
+    if(!tmp)continue;
+    if(jet->DeltaR(tmp)>r)continue;
+    if(tmp->Pt()>fMaxPt){
+      leading = tmp;
+      fMaxPt = tmp->Pt();
+    }
+  }
+  return leading;
 }
