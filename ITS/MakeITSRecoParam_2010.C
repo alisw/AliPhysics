@@ -116,6 +116,9 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetClusterMisalErrorZBOn(0.0050,0.0050,0.0050,0.0050,0.1000,0.1000); // [cm]
     //----
 
+    //Vertexer Z
+    itsRecoParam->SetVertexerZ();
+
 
     // tracklets
     itsRecoParam->SetTrackleterPhiWindowL2(0.07);
@@ -132,7 +135,7 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
 
     // SDD configuration 
-    itsRecoParam->SetUseSDDCorrectionMaps(kTRUE); 
+    itsRecoParam->SetUseSDDCorrectionMaps(kFALSE); 
     itsRecoParam->SetUseSDDClusterSizeSelection(kTRUE);
     itsRecoParam->SetMinClusterChargeSDD(30.);
     itsRecoParam->SetUseUnfoldingInClusterFinderSDD(kFALSE);
