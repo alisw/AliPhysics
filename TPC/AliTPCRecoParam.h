@@ -57,6 +57,11 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void SetMinMaxCutSigma(Float_t th)       {   fMinMaxCutSigma=th; }
   void SetMinLeftRightCutSigma(Float_t th) {   fMinLeftRightCutSigma=th;}  // minimal amplitude left right - PRF
   void SetMinUpDownCutSigma(Float_t th)    {   fMinUpDownCutSigma=th;}  // minimal amplitude up-down - TRF 
+  void  SetUseTotCharge(Bool_t flag) {fUseTotCharge = flag;}
+  void  SetCtgRange(Double_t ctgRange) {fCtgRange = ctgRange;}
+  void  SetUseMultiplicityCorrectionDedx(Bool_t flag) {fUseMultiplicityCorrectionDedx = flag;}
+  void  SetUseAlignmentTime(Bool_t flag) {fUseAlignmentTime = flag;}
+
   //
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   Int_t    GetSeedGapPrim()        const  { return fSeedGapPrim;} 
@@ -97,13 +102,13 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t GetUseDriftCorrectionGY() const {return fUseDriftCorrectionGY;}
   Int_t GetUseGainCorrectionTime() const {return fUseGainCorrectionTime;}
   Int_t GetUseExBCorrection() const {return fUseExBCorrection;}
+  Bool_t GetUseMultiplicityCorrectionDedx() const {return fUseMultiplicityCorrectionDedx;}
+  Bool_t GetUseAlignmentTime() const {return fUseAlignmentTime;}
   //
   Bool_t   GetUseTotCharge() const {return fUseTotCharge;}          // switch use total or max charge
   Float_t  GetMinFraction() const {return fMinFraction;}           // truncated mean - lower threshold
   Float_t  GetMaxFraction() const {return fMaxFaction;}            // truncated mean - upper threshold
-  //
-  void     SetUseTotCharge(Bool_t useTotCharge) {fUseTotCharge=useTotCharge; }
-  //
+
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
 
   //
@@ -166,6 +171,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Int_t fUseDriftCorrectionGY;   // use drif correction global y
   Int_t fUseGainCorrectionTime;  // use gain correction time
   Int_t fUseExBCorrection;       // use ExB correction
+  Bool_t fUseMultiplicityCorrectionDedx; // use Dedx multiplicity correction
+  Bool_t fUseAlignmentTime;              // use time dependent alignment correction
   //
   // dEdx switches
   //

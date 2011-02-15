@@ -98,6 +98,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fUseDriftCorrectionGY(1),   // use drif correction global y
   fUseGainCorrectionTime(0),  // use gain correction time
   fUseExBCorrection(1),  // use ExB correction
+  fUseMultiplicityCorrectionDedx(kTRUE), // use Dedx multiplicity correction
+  fUseAlignmentTime(kTRUE),              // use time dependent alignment correction
   //
   fUseTotCharge(kTRUE),          // switch use total or max charge
   fMinFraction(0.01),           // truncated mean - lower threshold

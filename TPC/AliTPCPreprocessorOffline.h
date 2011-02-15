@@ -14,6 +14,7 @@
 class TObjArray;
 class AliTPCcalibTime;
 class AliTPCcalibTimeGain;
+class AliTPCcalibGainMult;
 class AliTPCROC;
 class AliTPCParam;
 class TPad;
@@ -46,6 +47,7 @@ public:
   void MakeQAPlot(Float_t  FPtoMIPratio);
   Bool_t AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit = 500, Float_t FPtoMIPratio = 1.43); 
   Bool_t AnalyzeAttachment(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesFit = 2000);
+  Bool_t AnalyzePadRegionGain();
   Bool_t ValidateTimeGain(Double_t minGain=2.0, Double_t maxGain = 3.0);
   //
   // QA drawing part
@@ -81,6 +83,7 @@ private:
   TObjArray    * fGainArray;               // array to be stored in the OCDB
   AliTPCcalibTimeGain * fGainMIP;          // calibration component for MIP
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
+  AliTPCcalibGainMult * fGainMult;         // calibration component for pad region gain equalization and multiplicity dependence
   
   Bool_t fSwitchOnValidation;  // flag to switch on validation of OCDB parameters
 

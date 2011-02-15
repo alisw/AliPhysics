@@ -72,6 +72,7 @@
 #include "AliRelAlignerKalman.h"
 #include "AliTPCParamSR.h"
 #include "AliTPCcalibTimeGain.h"
+#include "AliTPCcalibGainMult.h"
 #include "AliSplineFit.h"
 #include "AliTPCPreprocessorOffline.h"
 
@@ -96,6 +97,7 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fGainArray(new TObjArray),               // array to be stored in the OCDB
   fGainMIP(0),          // calibration component for MIP
   fGainCosmic(0),       // calibration component for cosmic
+  fGainMult(0),
   fSwitchOnValidation(kFALSE) // flag to switch on validation of OCDB parameters
 {
   //
@@ -417,16 +419,17 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       if (!graph) {
 	printf("Graph =%s filtered out\n", name.Data());
 	continue;
-      }      
+      }
+      //
       if (graph){
-	graph->SetMarkerStyle(i%8+20);
-	graph->SetMarkerColor(i%7);
-	graph->GetXaxis()->SetTitle("Time");
-	graph->GetYaxis()->SetTitle("v_{dcor}");
-	graph->SetName(graphName);
-	graph->SetTitle(graphName);
-	printf("Graph %d\t=\t%s\n", i, graphName.Data());
-	vdriftArray->Add(graph);
+        graph->SetMarkerStyle(i%8+20);
+        graph->SetMarkerColor(i%7);
+        graph->GetXaxis()->SetTitle("Time");
+        graph->GetYaxis()->SetTitle("v_{dcor}");
+        graph->SetName(graphName);
+        graph->SetTitle(graphName);
+        printf("Graph %d\t=\t%s\n", i, graphName.Data());
+        vdriftArray->Add(graph);
       }
     }
   }
@@ -792,7 +795,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   //
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
   AnalyzeAttachment(startRunNumber,endRunNumber);
-
+  AnalyzePadRegionGain();
   //
   // 3. Make control plots
   //
@@ -821,9 +824,11 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
   if (array){
     fGainMIP    = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGain");
     fGainCosmic = ( AliTPCcalibTimeGain *)array->FindObject("calibTimeGainCosmic");
+    fGainMult   = ( AliTPCcalibGainMult *)array->FindObject("calibGainMult");
   }else{
     fGainMIP    = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGain");
     fGainCosmic = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGainCosmic");
+    fGainMult   = ( AliTPCcalibGainMult *)fcalib.Get("calibGainMult");
   }
   TH1 * hisT=0;
   Int_t firstBinA =0, lastBinA=0;
@@ -973,6 +978,48 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeAttachment(Int_t startRunNumber, Int_t 
 }
 
 
+Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
+  //
+  // Analyze gain for different pad regions - produce the calibration graphs 0,1,2
+  //
+  if (fGainMult) 
+  {
+    TH2D * histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,2);
+    TH2D * histQtot = (TH2D*) fGainMult->GetHistPadEqual()->Projection(1,2);
+    //
+    TObjArray arr;
+    histQmax->FitSlicesY(0,0,-1,0,"QNR",&arr);
+    Double_t xMax[3] = {0,1,2};
+    Double_t yMax[3]    = {((TH1D*)arr.At(1))->GetBinContent(1),
+			   ((TH1D*)arr.At(1))->GetBinContent(2),
+			   ((TH1D*)arr.At(1))->GetBinContent(3)};
+    Double_t yMaxErr[3] = {((TH1D*)arr.At(1))->GetBinError(1),
+			   ((TH1D*)arr.At(1))->GetBinError(2),
+			   ((TH1D*)arr.At(1))->GetBinError(3)};
+    TGraphErrors * fitPadRegionQmax = new TGraphErrors(3, xMax, yMax, 0, yMaxErr);
+    //
+    histQtot->FitSlicesY(0,0,-1,0,"QNR",&arr);
+    Double_t xTot[3] = {0,1,2};
+    Double_t yTot[3]    = {((TH1D*)arr.At(1))->GetBinContent(1),
+			   ((TH1D*)arr.At(1))->GetBinContent(2),
+			   ((TH1D*)arr.At(1))->GetBinContent(3)};
+    Double_t yTotErr[3] = {((TH1D*)arr.At(1))->GetBinError(1),
+			   ((TH1D*)arr.At(1))->GetBinError(2),
+			   ((TH1D*)arr.At(1))->GetBinError(3)};
+    TGraphErrors * fitPadRegionQtot = new TGraphErrors(3, xTot, yTot, 0, yTotErr);
+    //
+    fitPadRegionQtot->SetName("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");// set proper names according to naming convention
+    fitPadRegionQmax->SetName("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");// set proper names according to naming convention
+    //
+    fGainArray->AddLast(fitPadRegionQtot);
+    fGainArray->AddLast(fitPadRegionQmax);
+    return kTRUE;
+  } 
+  return kFALSE;
+
+}
+
+
 void AliTPCPreprocessorOffline::UpdateOCDBGain(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
   //
   // Update OCDB entry
@@ -1014,14 +1061,13 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
       for(Int_t i=0; i < fGraphCosmic->GetN(); i++) {
  	fGraphCosmic->GetY()[i] *= FPtoMIPratio;	
       }
-    
-      fGraphCosmic->Draw("lp");
-      grfFitCosmic->SetLineColor(2);
-      grfFitCosmic->Draw("lu");
-      fGainArray->AddLast(gainHistoCosmic);
-      //fGainArray->AddLast(canvasCosmic->Clone());
-      delete canvasCosmic;    
     }
+    fGraphCosmic->Draw("lp");
+    grfFitCosmic->SetLineColor(2);
+    grfFitCosmic->Draw("lu");
+    fGainArray->AddLast(gainHistoCosmic);
+    //fGainArray->AddLast(canvasCosmic->Clone());
+    delete canvasCosmic;    
   }
   if (fFitMIP) {
     TCanvas * canvasMIP = new TCanvas("gain MIP", "time dependent gain QA histogram MIP");

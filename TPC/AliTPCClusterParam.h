@@ -37,7 +37,8 @@ class AliTPCClusterParam : public TObject {
   void FitRMS(TTree * tree);
   void SetQnorm(Int_t ipad, Int_t itype,  const TVectorD *const norm); 
   void SetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType, Float_t val); 
-  Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const; 
+  Double_t  GetQnormCorr(Int_t ipad, Int_t itype, Int_t corrType) const;
+  TMatrixD *GetQnormCorrMatrix(){return fQNormCorr;};
   void ResetQnormCorr(); 
   //
   // Charge parameterization
