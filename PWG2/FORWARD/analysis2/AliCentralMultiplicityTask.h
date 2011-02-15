@@ -74,7 +74,7 @@ public:
       fAODCentral(),
       fManager()
   {
-    DefineOutput(1, TList::Class());
+    
   }
   /** 
    * Copy constructor 
@@ -88,7 +88,7 @@ public:
       fAODCentral(o.fAODCentral),
       fManager(o.fManager)
   {
-    DefineOutput(1, TList::Class());
+    
   }
   /** 
    * Assignment operator 
@@ -103,9 +103,6 @@ public:
     fList       = o.fList;
     fAODCentral = o.fAODCentral;
     fManager    = o.fManager;
-    
-    
-    DefineOutput(1, TList::Class());
     
     return *this;
   }
