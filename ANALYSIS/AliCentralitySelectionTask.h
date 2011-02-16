@@ -63,10 +63,10 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Int_t    fLowRunN;            // first run  
   Int_t    fHighRunN;           // last run
   Bool_t   fUseScaling;
-  Float_t V0MScaleFactor[2012]; // number of runs in PbPb 2010
-  Float_t SPDScaleFactor[2012]; // number of runs in PbPb 2010
-  Float_t TPCScaleFactor[2012]; // number of runs in PbPb 2010
-  Float_t V0MScaleFactorMC[2012]; // number of runs in PbPb 2010
+  Float_t V0MScaleFactor[2667]; // number of runs in PbPb 2010
+  Float_t SPDScaleFactor[2667]; // number of runs in PbPb 2010
+  Float_t TPCScaleFactor[2667]; // number of runs in PbPb 2010
+  Float_t V0MScaleFactorMC[2667]; // number of runs in PbPb 2010
 
   AliESDtrackCuts* fTrackCuts;  //! optional track cuts
 
