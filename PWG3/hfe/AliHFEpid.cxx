@@ -45,7 +45,6 @@
 #include "AliHFEpidTPC.h"
 #include "AliHFEpidTRD.h"
 #include "AliHFEpidTOF.h"
-#include "AliHFEpidEMCAL.h"
 #include "AliHFEpidMC.h"
 #include "AliHFEvarManager.h"
 
@@ -98,7 +97,6 @@ AliHFEpid::AliHFEpid(const Char_t *name):
   fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPCPID");
   fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRDPID");
   fDetectorPID[kTOFpid] = new AliHFEpidTOF("TOFPID");
-  fDetectorPID[kEMCALpid] = new AliHFEpidEMCAL("EMCALPID");
 
 }
 
