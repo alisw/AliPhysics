@@ -206,7 +206,7 @@ TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   THnSparseF *hSignal = dynamic_cast<THnSparseF *>(fHistos->Get("tofnSigma"));
   if(!hSignal) return NULL;
   hSignal->GetAxis(3)->SetRange(istep + 1, istep + 1);
-  if(species > 0 && species < AliPID::kSPECIES)
+  if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
   TH2 *hTmp = hSignal->Projection(2,1);
   TString hname = Form("hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 

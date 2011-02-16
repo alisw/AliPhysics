@@ -53,11 +53,13 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fEvent(NULL),
   fCutCorrelation(0),
   fRequirements(0),
-  fTPCiter1(kFALSE),
   fMinNClustersTPC(0),
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
   fPixelITS(0),
+  fTOFpid(kFALSE),
+  fTPCclusterDef(0),
+  fTPCclusterRatioDef(0),
   fCheck(kFALSE),
   fQAlist(0x0) ,
   fDebugLevel(0)
@@ -74,11 +76,13 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fEvent(c.fEvent),
   fCutCorrelation(c.fCutCorrelation),
   fRequirements(c.fRequirements),
-  fTPCiter1(c.fTPCiter1),
   fMinNClustersTPC(c.fMinNClustersTPC),
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
   fPixelITS(c.fPixelITS),
+  fTOFpid(c.fTOFpid),
+  fTPCclusterDef(c.fTPCclusterDef),
+  fTPCclusterRatioDef(c.fTPCclusterRatioDef),
   fCheck(c.fCheck),
   fQAlist(0x0),
   fDebugLevel(0)
@@ -105,11 +109,13 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fEvent = c.fEvent;
     fCutCorrelation = c.fCutCorrelation;
     fRequirements = c.fRequirements;
-    fTPCiter1 = c.fTPCiter1;
     fClusterRatioTPC = c.fClusterRatioTPC;
     fMinNClustersTPC = c.fMinNClustersTPC;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
     fPixelITS = c.fPixelITS;
+    fTPCclusterDef = c.fTPCclusterDef;
+    fTPCclusterRatioDef = c.fTPCclusterRatioDef;
+    fTOFpid = c.fTOFpid;
     fCheck = c.fCheck;
     fDebugLevel = c.fDebugLevel;
     memcpy(fImpactParamCut, c.fImpactParamCut, sizeof(Float_t) * 4);
@@ -173,18 +179,19 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   ULong64_t survivedCut = 0;	// Bitmap for cuts which are passed by the track, later to be compared with fRequirements
   if(IsQAOn()) FillQAhistosRec(track, kBeforeCuts);
   // Apply cuts
-  Float_t impactR, impactZ, ratioTPC;
+  Float_t impactR, impactZ;
   Double_t hfeimpactR, hfeimpactnsigmaR;
   Double_t hfeimpactRcut, hfeimpactnsigmaRcut;
+  Bool_t tofstep = kTRUE;
   GetImpactParameters(track, impactR, impactZ);
   if(TESTBIT(fRequirements, kMinHFEImpactParamR) || TESTBIT(fRequirements, kMinHFEImpactParamNsigmaR)){
     // Protection for PbPb
     GetHFEImpactParameterCuts(track, hfeimpactRcut, hfeimpactnsigmaRcut);
     GetHFEImpactParameters(track, hfeimpactR, hfeimpactnsigmaR);
   }
-  UInt_t nTPCf = GetTPCfindableClusters(track, fTPCiter1), nclsTPC = GetTPCncls(track, fTPCiter1);
+  UInt_t nclsTPC = GetTPCncls(track);
   // printf("Check TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
-  ratioTPC = nTPCf > 0. ? static_cast<Float_t>(nclsTPC)/static_cast<Float_t>(nTPCf) : 1.;
+  Double_t ratioTPC = GetTPCclusterRatio(track);
   UChar_t trdTracklets;
   trdTracklets = GetTRDnTrackletsPID(track);
   UChar_t itsPixel = track->GetITSClusterMap();
@@ -273,7 +280,13 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
     }
     AliDebug(1, Form("Survived Cut: %s\n", TESTBIT(survivedCut, kPixelITS) ? "YES" : "NO"));
   }
-  if(fRequirements == survivedCut){
+  if(fTOFpid){
+    // cut on TOF pid
+    tofstep = kFALSE;
+    if(track->GetStatus() & AliESDtrack::kTOFpid) tofstep = kTRUE;
+  
+  }
+  if(fRequirements == survivedCut && tofstep){
     //
     // Track selected
     //
@@ -306,14 +319,13 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
   const Int_t kNhistos = 6;
   Float_t impactR, impactZ;
   GetImpactParameters(track, impactR, impactZ);
-  Int_t nTPCf = GetTPCfindableClusters(track, fTPCiter1), nclsTPC = GetTPCncls(track, fTPCiter1);
   TH1 *htmp = NULL;
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(0 + when * kNhistos)))) htmp->Fill(impactR);
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(1 + when * kNhistos)))) htmp->Fill(impactZ);
   // printf("TPC findable clusters: %d, found Clusters: %d\n", track->GetTPCNclsF(), track->GetTPCNcls());
-  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(2 + when * kNhistos)))) htmp->Fill(nTPCf > 0. ? static_cast<Float_t>(nclsTPC)/static_cast<Float_t>(nTPCf) : 1.);
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(2 + when * kNhistos)))) htmp->Fill(GetTPCclusterRatio(track));
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(3 + when * kNhistos)))) htmp->Fill(GetTRDnTrackletsPID(track));
-  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(4 + when * kNhistos)))) htmp->Fill(nclsTPC);
+  if((htmp = dynamic_cast<TH1F *>(fQAlist->At(4 + when * kNhistos)))) htmp->Fill(GetTPCncls(track));
   UChar_t itsPixel = track->GetITSClusterMap();
   TH1 *pixelHist = dynamic_cast<TH1F *>(fQAlist->At(5 + when * kNhistos));
   //Int_t firstEntry = pixelHist->GetXaxis()->GetFirst();
@@ -388,7 +400,7 @@ void AliHFEextraCuts::AddQAHistograms(TList *qaList){
     fQAlist->AddAt(histo1D, 1 + icond * kNhistos);
     histo1D->GetXaxis()->SetTitle("Impact Parameter");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
-    qaList->AddAt((histo1D = new TH1F(Form("%s_tpcClr%s",GetName(),cutstr[icond].Data()), "Cluster Ratio TPC", 10, 0, 1)), 2 + icond * kNhistos);
+    qaList->AddAt((histo1D = new TH1F(Form("%s_tpcClr%s",GetName(),cutstr[icond].Data()), "Cluster Ratio TPC", 100, 0, 1)), 2 + icond * kNhistos);
     fQAlist->AddAt(histo1D, 2 + icond * kNhistos);
     histo1D->GetXaxis()->SetTitle("Cluster Ratio TPC");
     histo1D->GetYaxis()->SetTitle("Number of Tracks");
@@ -483,43 +495,65 @@ Int_t AliHFEextraCuts::GetITSstatus(AliVTrack *track, Int_t layer){
 }
 
 //______________________________________________________
-Int_t AliHFEextraCuts::GetTPCfindableClusters(AliVTrack *track, Bool_t iter1){
+UInt_t AliHFEextraCuts::GetTPCncls(AliVTrack *track){
 	//
 	// Get Number of findable clusters in the TPC
 	//
-  AliDebug(1, Form("Using TPC clusters from iteration 1: %s", iter1 ? "Yes" : "No"));
-	Int_t nClusters = 159; // in case no Information available consider all clusters findable
-	if(!TString(track->IsA()->GetName()).CompareTo("AliESDtrack")){
-    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
-		if(esdtrack) nClusters = esdtrack->GetTPCNclsF();
-  }
-	return nClusters;
-}
-
-//______________________________________________________
-Int_t AliHFEextraCuts::GetTPCncls(AliVTrack *track, Bool_t iter1){
-	//
-	// Get Number of findable clusters in the TPC
-	//
-  AliDebug(1, Form("Using TPC clusters from iteration 1: %s", iter1 ? "Yes" : "No"));
 	Int_t nClusters = 0; // in case no Information available consider all clusters findable
 	TString type = track->IsA()->GetName();
 	if(!type.CompareTo("AliESDtrack")){
     AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
     if(esdtrack){ // coverity
-      if(iter1)
+      if(TESTBIT(fTPCclusterDef, kFoundIter1)){
 		    nClusters = esdtrack->GetTPCNclsIter1();
-      else
+        AliDebug(2, ("Using def kFoundIter1"));
+      } else if(TESTBIT(fTPCclusterDef, kCrossedRows)){
+        AliDebug(2, ("Using def kCrossedRows"));
+        nClusters = static_cast<UInt_t>(esdtrack->GetTPCClusterInfo(2,1));
+      } else{
+        AliDebug(2, ("Using def kFound"));
 		    nClusters = esdtrack->GetTPCNcls();
+      }
     }
   }
 	else if(!type.CompareTo("AliAODTrack")){
 		AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
-	  const TBits &tpcmap = aodtrack->GetTPCClusterMap();
-	  for(UInt_t ibit = 0; ibit < tpcmap.GetNbits(); ibit++)
-		  if(tpcmap.TestBitNumber(ibit)) nClusters++;
+    if(aodtrack){
+	    const TBits &tpcmap = aodtrack->GetTPCClusterMap();
+	    for(UInt_t ibit = 0; ibit < tpcmap.GetNbits(); ibit++)
+		    if(tpcmap.TestBitNumber(ibit)) nClusters++;
+    }
 	}
 	return nClusters;
+}
+
+//______________________________________________________
+Double_t AliHFEextraCuts::GetTPCclusterRatio(AliVTrack *track){
+  //
+  // Get Ratio of found / findable clusters for different definitions
+  // Only implemented for ESD tracks
+  //
+  Double_t clusterRatio = 1.; // in case no Information available consider all clusters findable
+  TString type = track->IsA()->GetName();
+  if(!type.CompareTo("AliESDtrack")){
+    AliESDtrack *esdtrack = dynamic_cast<AliESDtrack *>(track);
+    if(esdtrack){ // coverity
+      if(TESTBIT(fTPCclusterRatioDef, kCROverFindable)){
+        AliDebug(2, "Using ratio def kCROverFindable");
+        clusterRatio = esdtrack->GetTPCNclsF() ? esdtrack->GetTPCClusterInfo(2,1)/static_cast<Double_t>(esdtrack->GetTPCNclsF()) : 1.; // crossed rows/findable
+      } else if(TESTBIT(fTPCclusterRatioDef, kFoundOverCR)){
+        AliDebug(2, "Using ratio def kFoundOverCR");
+        clusterRatio = esdtrack->GetTPCClusterInfo(2,0); // found/crossed rows
+      } else if(TESTBIT(fTPCclusterRatioDef, kFoundOverFindableIter1)){
+        AliDebug(2, "Using ratio def kFoundOverFindableIter1");
+        clusterRatio = esdtrack->GetTPCNclsFIter1() ? static_cast<Double_t>(esdtrack->GetTPCNclsIter1())/static_cast<Double_t>(esdtrack->GetTPCNclsFIter1()) : 1.; // crossed
+      } else {
+        AliDebug(2, "Using ratio def kFoundOverFindable");
+        clusterRatio = esdtrack->GetTPCNclsF() ? static_cast<Double_t>(esdtrack->GetTPCNcls())/static_cast<Double_t>(esdtrack->GetTPCNclsF()) : 1.; // found/findable
+      }
+    }
+  }
+  return clusterRatio;
 }
 
 //______________________________________________________
@@ -581,7 +615,7 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
     // Case AOD track: take different constructor
     esdtrack = new AliESDtrack(track);
   }
-  if(esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dca, cov)){
+  if(esdtrack && esdtrack->PropagateToDCA(vtxESDSkip, fEvent->GetMagneticField(), kBeampiperadius, dca, cov)){
     // protection
     dcaxy = dca[0];
     if(cov[0]) dcansigmaxy = dcaxy/TMath::Sqrt(cov[0]);

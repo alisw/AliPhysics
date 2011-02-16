@@ -78,7 +78,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa():
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
-  fThresholds(NULL)
+  fThresholds(NULL),
+  fShowMessage(kFALSE)
 {
   //
   // Default Constructor
@@ -93,7 +94,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa(const Char_t *name):
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
-  fThresholds(NULL)
+  fThresholds(NULL),
+  fShowMessage(kFALSE)
 {
   //
   // Main Constructor
@@ -108,7 +110,8 @@ AliHFEtrdPIDqa::AliHFEtrdPIDqa(const AliHFEtrdPIDqa &ref):
   fPionEfficiencies(NULL),
   fProtonEfficiencies(NULL),
   fKaonEfficiencies(NULL),
-  fThresholds(NULL)
+  fThresholds(NULL),
+  fShowMessage(kFALSE)
 {
   //
   // Copy constructor
@@ -471,9 +474,11 @@ void AliHFEtrdPIDqa::FinishAnalysis(){
   }
 
   for(Int_t itr = 4; itr <= 6; itr++){
-    printf("========================================\n");
-    printf("Analysing %d trackltes\n", itr);
-    printf("========================================\n");
+    if(fShowMessage){
+      printf("========================================\n");
+      printf("Analysing %d trackltes\n", itr);
+      printf("========================================\n");
+    }
     AnalyseNTracklets(itr);
   }
 }
@@ -504,9 +509,11 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
     return;
   }
 
-  printf("========================================\n");
-  printf("Calculating threshold parameters\n");
-  printf("========================================\n");
+    if(fShowMessage){
+    printf("========================================\n");
+    printf("Calculating threshold parameters\n");
+    printf("========================================\n");
+  }
 
   TList *outlist = new TList;
   outlist->SetName("thresholdTRD");
@@ -516,9 +523,11 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
   TList *lHistos = NULL, *lFormulas = NULL;
   for(Int_t itracklet = 4; itracklet <= 6; itracklet++){
   
-    printf("-------------------------------\n");
-    printf("Processing %d tracklets\n", itracklet);
-    printf("-------------------------------\n");
+    if(fShowMessage){
+      printf("-------------------------------\n");
+      printf("Processing %d tracklets\n", itracklet);
+      printf("-------------------------------\n");
+    }
 
     lHistos = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", itracklet)));
     if(!lHistos){
@@ -531,9 +540,11 @@ void AliHFEtrdPIDqa::SaveThresholdParameters(const Char_t *name){
     
     for(Int_t ieff = 0; ieff <  kNElectronEffs; ieff++){
       
-      printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
-      printf("Processing Electron Efficiency %f\n", fgkElectronEff[ieff]);
-      printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+      if(fShowMessage){
+        printf("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+        printf("Processing Electron Efficiency %f\n", fgkElectronEff[ieff]);
+        printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+      }
 
       threshhist = dynamic_cast<TGraph *>(lHistos->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
       if(!threshhist) continue;
@@ -600,9 +611,12 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
   Int_t threshbin = 0;
   Double_t noElEff[2]; // value and error
   for(Int_t ieff = 0; ieff < kNElectronEffs; ieff++){
-    printf("-----------------------------------------\n");
-    printf("Doing Electron Efficiency %f\n", fgkElectronEff[ieff]);
-    printf("-----------------------------------------\n");
+    
+    if(fShowMessage){
+      printf("-----------------------------------------\n");
+      printf("Doing Electron Efficiency %f\n", fgkElectronEff[ieff]);
+      printf("-----------------------------------------\n");
+    }
     effPi = new TGraphErrors(likeElectron->GetXaxis()->GetNbins());
     effPi->SetName(Form("eff%d", static_cast<Int_t >(fgkElectronEff[ieff] * 100)));
     effPr = new TGraphErrors(likeElectron->GetXaxis()->GetNbins());
@@ -693,7 +707,7 @@ Bool_t AliHFEtrdPIDqa::CalculateEfficiency(TH1 * const input, Int_t threshbin, D
 }
 
 //__________________________________________________________________
-void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Bool_t doFit){
+void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax, Bool_t doFit){
   //
   // Draw efficiencies and threshold as function of p
   //
@@ -736,9 +750,14 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Bool_t doFit){
     tr->GetXaxis()->SetTitle("p / GeV/c");
     tr->GetYaxis()->SetTitle("Efficiency");
     // Axis Range
-    pi->GetYaxis()->SetRangeUser(0., 1.);
-    pr->GetYaxis()->SetRangeUser(0., 1.);
-    tr->GetYaxis()->SetRangeUser(0., 1.);
+    pi->GetYaxis()->SetRangeUser(1e-3, 1.);
+    pr->GetYaxis()->SetRangeUser(1e-3, 1.);
+    tr->GetYaxis()->SetRangeUser(1e-3, 1.);
+    if(pmin > 0 && pmax > 0.){
+      pi->GetXaxis()->SetRangeUser(pmin, pmax);
+      pr->GetXaxis()->SetRangeUser(pmin, pmax);
+      tr->GetXaxis()->SetRangeUser(pmin, pmax);
+    }
     // Marker
     pi->SetMarkerColor(kRed);
     pi->SetMarkerStyle(20);
@@ -801,3 +820,31 @@ void AliHFEtrdPIDqa::ClearLists(){
     fThresholds = NULL;
   }
 }
+
+//__________________________________________________________________
+Double_t AliHFEtrdPIDqa::EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p){
+  TList *graphs = dynamic_cast<TList *>(fPionEfficiencies->FindObject(Form("%dTracklets", ntls)));
+  if(!graphs) return -1.;
+  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  if(!measurement) return -1.;
+  return measurement->Eval(p);
+}
+
+//__________________________________________________________________
+Double_t AliHFEtrdPIDqa::EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p){
+  TList *graphs = dynamic_cast<TList *>(fProtonEfficiencies->FindObject(Form("%dTracklets", ntls)));
+  if(!graphs) return -1.;
+  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  if(!measurement) return -1.;
+  return measurement->Eval(p);
+}
+
+//__________________________________________________________________
+Double_t AliHFEtrdPIDqa::EvalThreshold(Int_t ntls, Int_t eEff, Double_t p){
+  TList *graphs = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", ntls)));
+  if(!graphs) return -1.;
+  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  if(!measurement) return -1.;
+  return measurement->Eval(p);
+}
+

@@ -13,8 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 //
-// Task for PID QA
-// Using AliHFEpidQA and AliHFEMCpidQA
+// Task for perfomance studies of V0 selection code
 // More information can be found in the source file
 //
 #ifndef ALIANALYSISTASKCHECKV0TENDERII_H
@@ -59,6 +58,7 @@ class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
   void ProcessDaughters(AliESDv0 * const v0);
   void ProcessV0sMC(AliESDv0 * const v0);
   void ProcessDaughtersMC(AliESDv0 * const v0);
+  void ProcessBackground(AliESDv0 * const v0);
 
  private:
   AliAnalysisTaskCheckV0tenderII(const AliAnalysisTaskCheckV0tenderII &ref);
@@ -69,14 +69,16 @@ class AliAnalysisTaskCheckV0tenderII : public AliAnalysisTaskSE{
 
   Int_t   PDGtoPIDv0(Int_t pdgV0) const;
   Int_t   PDGtoPID(Int_t pdg) const;  
-
+  
+  void    ResetPDGcodes();
+  
   TList              *fOutput;        //! Container for output histos
   AliHFEcollection   *fColl;          //! collection of Data output
   AliHFEcollection   *fCollMC;        //! collection of MC output
   AliESDv0KineCuts   *fV0cuts;        //! standalone V0 selection class
   AliKFVertex        *fPrimaryVertex; //! primary vertex of the current event
 
-  Int_t               fpdgV0;  // PDG code of teh reconstructed V0
+  Int_t               fpdgV0;  // PDG code of the reconstructed V0
   Int_t               fpdgP;   // PDG code of the positive daughter (sign corrected)
   Int_t               fpdgN;   // PDG code of the negative daughter (sign coreccted)
   

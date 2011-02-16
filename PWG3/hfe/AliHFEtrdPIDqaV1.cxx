@@ -29,10 +29,12 @@
 //
 
 #include <TAxis.h>
+#include <TBrowser.h>
 #include <TH2.h>
 #include <THnSparse.h>
 #include <TString.h>
 
+#include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
 
@@ -110,6 +112,53 @@ Long64_t AliHFEtrdPIDqaV1::Merge(TCollection *coll){
   return count + 1;
 }
 
+//_________________________________________________________
+void AliHFEtrdPIDqaV1::Browse(TBrowser *b){
+  //
+  // Browse the PID QA
+  //
+  if(b){
+    if(fHistos){
+      b->Add(fHistos, fHistos->GetName());
+
+      // Make Projections of the dE/dx Spectra and add them to a new Folder
+      TString specnames[4] = {"All", "Electrons", "Pions", "Protons"};
+      Int_t specind[4] = {-1, AliPID::kElectron, AliPID::kPion, AliPID::kProton};
+      TList *listTM = new TList;
+      listTM->SetOwner();
+      TList *listLike = new TList;
+      listLike->SetOwner();
+      TList *listCharge = new TList;
+      listCharge->SetOwner();
+      TList *listTPCnsigma = new TList;
+      listTPCnsigma->SetOwner();
+
+      TH2 *hptr = NULL; 
+      for(Int_t ispec = 0; ispec < 4; ispec++){
+        for(Int_t istep = 0; istep < 2; istep++){
+          hptr = MakeTRDspectrumTM(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTRDtm%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listTM->Add(hptr);
+          hptr = MakeTRDlikelihoodDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTRDlike%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listLike->Add(hptr);
+          hptr = MakeTRDchargeDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTRDcharge%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listCharge->Add(hptr);
+          hptr = MakeTPCspectrumNsigma(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
+          hptr->SetName(Form("hTPCspectrum%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+          listTPCnsigma->Add(hptr);
+        }
+      }
+      
+      b->Add(listTM, "Projections Truncated Mean");
+      b->Add(listLike, "Projections Likelihood distribution");
+      b->Add(listCharge, "Projections Tracklet Charge");
+      b->Add(listTPCnsigma, "Projections TPC spectra");
+    }
+  }
+}
+
 //____________________________________________________________
 void AliHFEtrdPIDqaV1::Initialize(){
   //
@@ -149,6 +198,13 @@ void AliHFEtrdPIDqaV1::Initialize(){
   Double_t maxTRDcharge[4] = {kMaxPID, kMaxP, 100000., 2.};
   fHistos->CreateTHnSparse("hTRDcharge", "Total TRD charge; species; p [GeV/c]; TRD charge [a.u.]; selection step", 4, nBinsTRDcharge, minTRDcharge, maxTRDcharge);
   fHistos->Sumw2("hTRDcharge");
+  // Monitoring of the TRD truncated mean according to version 1
+  const Int_t kTRDtmBins = 1000;
+  Int_t nBinsTRDtm[4] = {kPIDbins, kPbins, kTRDtmBins, kSteps};
+  Double_t minTRDtm[4] = {kMinPID, kMinP, 0., 0.};
+  Double_t maxTRDtm[4] = {kMaxPID, kMaxP, 20000., 2.};
+  fHistos->CreateTHnSparse("hTRDtruncatedMean", "TRD truncated Mean; species; p [GeV/c]; TRD signal [a.u.]; selection step", 4, nBinsTRDtm, minTRDtm, maxTRDtm);
+  fHistos->Sumw2("hTRDcharge");
 }
 
 //____________________________________________________________
@@ -158,6 +214,7 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   //
   AliDebug(1, Form("QA started for TRD PID for step %d", (Int_t)step));
   Int_t species = track->GetAbInitioPID();
+  if(species >= AliPID::kSPECIES) species = -1;
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
 
   AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
@@ -173,11 +230,14 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   container[2] = trdpid->GetElectronLikelihood(track->GetRecTrack(), anatype);
   fHistos->Fill("hTRDlikelihood", container);
 
+  if(track->IsESDanalysis()){
+    container[2] = trdpid->GetTRDSignalV1(dynamic_cast<const AliESDtrack *>(track->GetRecTrack()));
+    fHistos->Fill("hTRDtruncatedMean", container);
+  }
   for(UInt_t ily = 0; ily < 6; ily++){
     container[2] = trdpid->GetChargeLayer(track->GetRecTrack(), ily, anatype);
     fHistos->Fill("hTRDcharge", container);
   }
- if(species >= AliPID::kSPECIES) species = -1;
 }
 
 //_________________________________________________________
@@ -185,7 +245,6 @@ TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t
   //
   // Get the TPC control histogram for the TRD selection step (either before or after PID)
   //
-  printf("histos :%p\n", fHistos);
   THnSparseF *histo = dynamic_cast<THnSparseF *>(fHistos->Get("hTPCsigma"));
   if(!histo){
     AliError("QA histogram monitoring TPC nSigma not available");
@@ -204,6 +263,38 @@ TH2 *AliHFEtrdPIDqaV1::MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t
   TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
   TString histname = Form("hSigmaTPC%s%s", specID.Data(), stepname.Data());
   TString histtitle = Form("TPC Sigma for %s %s PID", speciesname.Data(), stepname.Data());
+  hSpec->SetName(histname.Data());
+  hSpec->SetTitle(histtitle.Data());
+
+  // Unset range on the original histogram
+  histo->GetAxis(0)->SetRange(0, histo->GetAxis(0)->GetNbins());
+  histo->GetAxis(2)->SetRange(0, histo->GetAxis(2)->GetNbins());
+  return hSpec; 
+}
+
+//_________________________________________________________
+TH2 *AliHFEtrdPIDqaV1::MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species){
+  //
+  // Get the TPC control histogram for the TRD selection step (either before or after PID)
+  //
+  THnSparseF *histo = dynamic_cast<THnSparseF *>(fHistos->Get("hTRDtruncatedMean"));
+  if(!histo){
+    AliError("QA histogram monitoring TPC nSigma not available");
+    return NULL;
+  }
+  if(species > -1 && species < AliPID::kSPECIES){
+    // cut on species (if available)
+    histo->GetAxis(0)->SetRange(species + 2, species + 2); // undef + underflow
+  }
+  histo->GetAxis(3)->SetRange(step + 1, step + 1); 
+
+  TH2 *hSpec = histo->Projection(2, 1);
+  // construct title and name
+  TString stepname = step == AliHFEdetPIDqa::kBeforePID ? "before" : "after";
+  TString speciesname = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "all Particles";
+  TString specID = species > -1 && species < AliPID::kSPECIES ? AliPID::ParticleName(species) : "unid";
+  TString histname = Form("hTMTRD%s%s", specID.Data(), stepname.Data());
+  TString histtitle = Form("TRD Truncated Mean for %s %s PID", speciesname.Data(), stepname.Data());
   hSpec->SetName(histname.Data());
   hSpec->SetTitle(histtitle.Data());
 

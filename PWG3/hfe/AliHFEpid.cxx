@@ -45,6 +45,7 @@
 #include "AliHFEpidTPC.h"
 #include "AliHFEpidTRD.h"
 #include "AliHFEpidTOF.h"
+#include "AliHFEpidEMCAL.h"
 #include "AliHFEpidMC.h"
 #include "AliHFEvarManager.h"
 
@@ -57,6 +58,7 @@ const Char_t* AliHFEpid::fgkDetectorName[AliHFEpid::kNdetectorPID + 1] = {
   "TPCPID",
   "TRDPID",
   "TOFPID",
+  "EMCALPID",
   "UndefinedPID"
 };
 
@@ -96,6 +98,7 @@ AliHFEpid::AliHFEpid(const Char_t *name):
   fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPCPID");
   fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRDPID");
   fDetectorPID[kTOFpid] = new AliHFEpidTOF("TOFPID");
+  fDetectorPID[kEMCALpid] = new AliHFEpidEMCAL("EMCALPID");
 
 }
 
@@ -191,6 +194,7 @@ void AliHFEpid::AddDetector(TString detector, UInt_t position){
   else if(!detector.CompareTo("TPC")) detectorID = kTPCpid;
   else if(!detector.CompareTo("TRD")) detectorID = kTRDpid;
   else if(!detector.CompareTo("TOF")) detectorID = kTOFpid;
+  else if(!detector.CompareTo("EMCAL")) detectorID = kEMCALpid;
   else AliError("Detector not available");
 
   if(detectorID == kUndefined) return;
@@ -244,14 +248,14 @@ Bool_t AliHFEpid::IsSelected(AliHFEpidObject *track, AliHFEcontainer *cont, cons
         AliDebug(2, Form("MC Information available, Filling container %s", mccontname.Data()));
         if(fVarManager->IsSignalTrack()) {
           fVarManager->FillContainerStepname(cont, mccontname.Data(), SortedDetectorName(idet), kTRUE);
-	  if(cont->GetCorrelationMatrix("correlationstepafterTOF")){
-	    TString tstept("TOFPID"); 
-	    if(!tstept.CompareTo(SortedDetectorName(idet))) {
-	      fVarManager->FillCorrelationMatrix(cont->GetCorrelationMatrix("correlationstepafterTOF"));
-	      //printf("Step %s\n",(const char*) SortedDetectorName(idet));
-	    }
-	  }
-	}
+	        if(cont->GetCorrelationMatrix("correlationstepafterTOF")){
+	          TString tstept("TOFPID"); 
+	          if(!tstept.CompareTo(SortedDetectorName(idet))) {
+	            fVarManager->FillCorrelationMatrix(cont->GetCorrelationMatrix("correlationstepafterTOF"));
+	            //printf("Step %s\n",(const char*) SortedDetectorName(idet));
+	          }
+	        }
+	      }
       }
       // The PID will NOT fill the double counting information
     }
@@ -304,33 +308,38 @@ void AliHFEpid::ConfigureTPCrejectionSimple(){
 }
 
 //____________________________________________________________
-void AliHFEpid::ConfigureTPCrejection(){
+void AliHFEpid::ConfigureTPCrejection(const char *lowerCutParam, Double_t *params){
   //
-  // Combined TPC-TOF PID, combination is discribed in the funtion MakePidTpcTof
+  // Combined TPC-TOF PID
+  // if no function parameterizaion is given, then the default one (exponential) is chosen
   //
-  if(HasMCData()) printf("Configuring TPC for MC\n");
+  if(HasMCData()) AliInfo("Configuring TPC for MC\n");
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fDetectorPID[kTPCpid]);
   AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fDetectorPID[kTOFpid]);
   if(tofpid) tofpid->SetTOFnSigma(3);
 
   //TF1 *upperCut = new TF1("upperCut", "[0] * TMath::Exp([1]*x)", 0, 20);
   TF1 *upperCut = new TF1("upperCut", "[0]", 0, 20); // Use constant upper cut
-  TF1 *lowerCut = new TF1("lowerCut", "[0] * TMath::Exp([1]*x) + [2]", 0, 20);
+  TF1 *lowerCut = new TF1("lowerCut", lowerCutParam == NULL ? "[0] * TMath::Exp([1]*x) + [2]": lowerCutParam, 0, 20);
   upperCut->SetParameter(0, 3.);
   //upperCut->SetParameter(0, 2.7);
   //upperCut->SetParameter(1, -0.4357);
+  if(params){
+    for(Int_t ipar = 0; ipar < lowerCut->GetNpar(); ipar++) lowerCut->SetParameter(ipar, params[ipar]);
+  } else {
+    // Set default parameterization
+    if(HasMCData()) lowerCut->SetParameter(0, -2.5);
+    else lowerCut->SetParameter(0, -3.71769);
+    //else lowerCut->SetParameter(0, -3.7);
 
-  if(HasMCData()) lowerCut->SetParameter(0, -2.5);
-  else lowerCut->SetParameter(0, -3.71769);
-  //else lowerCut->SetParameter(0, -3.7);
+    lowerCut->SetParameter(1, -0.40263);
+    //lowerCut->SetParameter(1, -0.8);
 
-  lowerCut->SetParameter(1, -0.40263);
-  //lowerCut->SetParameter(1, -0.8);
-
-  if(HasMCData()) lowerCut->SetParameter(2, -2.2);
-  else lowerCut->SetParameter(2, 0.267857);
-  //else lowerCut->SetParameter(2, -0.35);
-
+    if(HasMCData()) lowerCut->SetParameter(2, -2.2);
+    else lowerCut->SetParameter(2, 0.267857);
+    //else lowerCut->SetParameter(2, -0.35);
+  }
+  
   if(tpcpid){
     tpcpid->SetTPCnSigma(2);
     tpcpid->SetUpperSigmaCut(upperCut);

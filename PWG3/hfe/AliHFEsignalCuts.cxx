@@ -287,36 +287,37 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
 	// Return PDG code of a particle itself
 	//
 	
-        if(!fMC){
-          AliDebug(1, "No MC Event Available\n");
-          return 0;
-        }
-        if(!fMCQA){
-          AliDebug(1, "No MCQA Available\n");
-          return 0;
-        }
-        if(!track){
-          AliDebug(1, "Track not Available\n");
-          return 0;
-        }
+  if(!fMC){
+    AliDebug(1, "No MC Event Available\n");
+    return 0;
+  }
+  if(!fMCQA){
+    AliDebug(1, "No MCQA Available\n");
+    return 0;
+  }
+  if(!track){
+    AliDebug(1, "Track not Available\n");
+    return 0;
+  }
 
-        TString sourcetype = track->IsA()->GetName();
-        const AliVParticle *mctrack = NULL;
-        TParticle *mcpart = NULL;
-        if(!sourcetype.CompareTo("AliESDtrack") || !sourcetype.CompareTo("AliAODTrack")){
-                mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
-        } else  mctrack = track;
-        if(!mctrack) return 0;
+  TString sourcetype = track->IsA()->GetName();
+  const AliVParticle *mctrack = NULL;
+  TParticle *mcpart = NULL;
+  if(!sourcetype.CompareTo("AliESDtrack") || !sourcetype.CompareTo("AliAODTrack")){
+    mctrack = fMC->GetTrack(TMath::Abs(track->GetLabel()));
+  } else  mctrack = track;
+  if(!mctrack) return 0;
 
-        TString mctype = mctrack->IsA()->GetName();
-        Int_t eSource = 0;
-        if(!mctype.CompareTo("AliMCParticle")){
-                const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
-                mcpart = esdmc->Particle();
-	        eSource=fMCQA->GetElecSource(mcpart);
-        } else {
-                return -1;
-        }
-          
-        return eSource;
+  TString mctype = mctrack->IsA()->GetName();
+  Int_t eSource = 0;
+  if(!mctype.CompareTo("AliMCParticle")){
+    const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
+    if(esdmc){
+      mcpart = esdmc->Particle();
+      eSource=fMCQA->GetElecSource(mcpart);
+    }
+  } else {
+    return -1;
+  }
+  return eSource;
 }	

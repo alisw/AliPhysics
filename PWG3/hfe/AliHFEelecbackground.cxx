@@ -2243,310 +2243,6 @@ void AliHFEelecbackground::Plot() const
   cinvmass2D->cd(12);
   if(invmassSplittedTrackosproj2D) invmassSplittedTrackosproj2D->Draw("lego");
 
-
-  ////////////////////////
-  // Cut efficiencies
-  ////////////////////////
-
-  THnSparseF *hsSparseMCe = dynamic_cast<THnSparseF *>(fList->FindObject("CutPassedMC"));
-  
-  if(hsSparseMCe) {
-
-    // init histos
-    TAxis *axissources = hsSparseMCe->GetAxis(2);
-    Int_t  nbsources = axissources->GetNbins(); 
-    TAxis *axiscuts = hsSparseMCe->GetAxis(1);
-    Int_t  nbcuts = axiscuts->GetNbins(); 
-    TH1D **histopassedcuts = new TH1D*[nbsources*nbcuts];  
-    Double_t *nbEntriesCuts = new Double_t[nbsources*nbcuts]; 
-
-    //printf("Number of cuts %d\n",nbcuts);
-
-    // canvas
-    TCanvas * chsSparseMCeeff =new TCanvas("hsSparseMCeeffDebug","hsSparseMCeeffDebug",800,800);
-    chsSparseMCeeff->Divide(3,1);
- 
-    // histos
-    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
-      hsSparseMCe->GetAxis(2)->SetRange(sourceid+1,sourceid+1);  
-      for(Int_t cut = 0; cut < nbcuts; cut++){
-	hsSparseMCe->GetAxis(1)->SetRange(cut+1,cut+1); 
-	histopassedcuts[sourceid*nbcuts+cut] = hsSparseMCe->Projection(0);
-     	hsSparseMCe->GetAxis(1)->SetRange(1,hsSparseMCe->GetAxis(1)->GetNbins()); 
-      }
-      hsSparseMCe->GetAxis(2)->SetRange(1,hsSparseMCe->GetAxis(2)->GetNbins());  
-    }
-
-    // calcul efficiencies
-    ///////////////////////
-    // histos
-    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
-      // Next is compared to the partner tracked
-      for(Int_t cut = 2; cut < nbcuts; cut++){
-	nbEntriesCuts[sourceid*nbcuts+cut] = histopassedcuts[sourceid*nbcuts+cut]->GetEntries();
-	if(histopassedcuts[sourceid*nbcuts+1]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+cut]->Divide(histopassedcuts[sourceid*nbcuts+1]);
-      }
-      // First one is if the partner is tracked.
-      nbEntriesCuts[sourceid*nbcuts+1] = histopassedcuts[sourceid*nbcuts+1]->GetEntries();
-      if(histopassedcuts[sourceid*nbcuts]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+1]->Divide(histopassedcuts[sourceid*nbcuts]);
-      // First one is input
-      nbEntriesCuts[sourceid*nbcuts] = histopassedcuts[sourceid*nbcuts]->GetEntries();
-    }
-    
-    /////////////
-    // ratios
-    ////////////
-    for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
-      for(Int_t cut = 1; cut < nbcuts; cut++){
-	if(nbEntriesCuts[sourceid*nbcuts] > 0.0) nbEntriesCuts[sourceid*nbcuts+cut] = nbEntriesCuts[sourceid*nbcuts+cut]/nbEntriesCuts[sourceid*nbcuts]; 
-      }
-    }
-    TH1F *ratioHistoEntriesGamma = new TH1F("ratioHistoEntriesGamma","", nbcuts-1, 0.0, nbcuts-1.0);
-    TH1F *ratioHistoEntriesPi0 = new TH1F("ratioHistoEntriesPi0","", nbcuts-1, 0.0, nbcuts-1.0);
-    TH1F *ratioHistoEntriesC = new TH1F("ratioHistoEntriesC","", nbcuts-1, 0.0, nbcuts-1.0);
-    for(Int_t k = 1; k < nbcuts; k++){
-      ratioHistoEntriesGamma->SetBinContent(k,nbEntriesCuts[nbcuts+k]);
-      ratioHistoEntriesPi0->SetBinContent(k,nbEntriesCuts[2*nbcuts+k]);
-      ratioHistoEntriesC->SetBinContent(k,nbEntriesCuts[4*nbcuts+k]);
-    }     
-    //
-    TAxis *xAxisGamma = ratioHistoEntriesGamma->GetXaxis();
-    xAxisGamma->SetBinLabel(1,"Partner tracked");
-    xAxisGamma->SetBinLabel(2,"Opposite sign");
-    xAxisGamma->SetBinLabel(3,"Single Track Cut");
-    xAxisGamma->SetBinLabel(4,"Shared Clusters");
-    xAxisGamma->SetBinLabel(5,"PID");
-    xAxisGamma->SetBinLabel(6,"DCA");
-    xAxisGamma->SetBinLabel(7,"Chi^{2}/Ndf");
-    xAxisGamma->SetBinLabel(8,"Opening angle");
-    xAxisGamma->SetBinLabel(9,"Invariant mass");
-    //
-    TAxis *xAxisPi0 = ratioHistoEntriesPi0->GetXaxis();
-    xAxisPi0->SetBinLabel(1,"Partner tracked");
-    xAxisPi0->SetBinLabel(2,"Opposite sign");
-    xAxisPi0->SetBinLabel(3,"Single Track Cut");
-    xAxisPi0->SetBinLabel(4,"Shared Clusters");
-    xAxisPi0->SetBinLabel(5,"PID");
-    xAxisPi0->SetBinLabel(6,"DCA");
-    xAxisPi0->SetBinLabel(7,"Chi^{2}/Ndf");
-    xAxisPi0->SetBinLabel(8,"Opening angle");
-    xAxisPi0->SetBinLabel(9,"Invariant mass");
-    //
-    TAxis *xAxisC = ratioHistoEntriesC->GetXaxis();
-    xAxisC->SetBinLabel(1,"Partner tracked");
-    xAxisC->SetBinLabel(2,"Opposite sign");
-    xAxisC->SetBinLabel(3,"Single Track Cut");
-    xAxisC->SetBinLabel(4,"Shared Clusters");
-    xAxisC->SetBinLabel(5,"PID");
-    xAxisC->SetBinLabel(6,"DCA");
-    xAxisC->SetBinLabel(7,"Chi^{2}/Ndf");
-    xAxisC->SetBinLabel(8,"Opening angle");
-    xAxisC->SetBinLabel(9,"Invariant mass");
-    //
-    TCanvas * cRatioHistoEntries =new TCanvas("cRatioHistoEntries","cRatioHistoEntries",800,800);
-    cRatioHistoEntries->cd(1);
-    ratioHistoEntriesGamma->SetStats(0);
-    ratioHistoEntriesGamma->Draw();
-    ratioHistoEntriesPi0->SetStats(0);
-    ratioHistoEntriesPi0->Draw("same");
-    ratioHistoEntriesC->SetStats(0);
-    //ratioHistoEntriesC->Draw("same");
-    TLegend *legEntries = new TLegend(0.4,0.6,0.89,0.89);
-    legEntries->AddEntry(ratioHistoEntriesGamma,"#gamma","l");
-    legEntries->AddEntry(ratioHistoEntriesPi0,"#pi^{0}","l");
-    //legEntries->AddEntry(ratioHistoEntriesC,"c","p");
-    legEntries->Draw("same"); 
-
-    ////////////////////
-    // plot Debug
-    ///////////////////
-    Int_t source = 1;
-    chsSparseMCeeff->cd(1);
-    histopassedcuts[source*nbcuts+0]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+1]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+2]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+3]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+4]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+5]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+6]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+7]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+8]->SetTitle("#gamma");
-    histopassedcuts[source*nbcuts+9]->SetTitle("#gamma");
-    //histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+1]->SetStats(0);
-    histopassedcuts[source*nbcuts+2]->SetStats(0);
-    histopassedcuts[source*nbcuts+3]->SetStats(0);
-    histopassedcuts[source*nbcuts+4]->SetStats(0);
-    histopassedcuts[source*nbcuts+5]->SetStats(0);
-    histopassedcuts[source*nbcuts+6]->SetStats(0);
-    histopassedcuts[source*nbcuts+7]->SetStats(0);
-    histopassedcuts[source*nbcuts+8]->SetStats(0);
-    histopassedcuts[source*nbcuts+9]->SetStats(0);
-    //histopassedcuts[source*nbcuts+0]->Draw();
-    //histopassedcuts[source*nbcuts+1]->Draw("");
-    histopassedcuts[source*nbcuts+2]->Draw();
-    histopassedcuts[source*nbcuts+3]->Draw("same");
-    //histopassedcuts[source*nbcuts+4]->Draw("same");
-    histopassedcuts[source*nbcuts+5]->Draw("same");
-    histopassedcuts[source*nbcuts+6]->Draw("same");
-    //histopassedcuts[source*nbcuts+7]->Draw("same");
-    histopassedcuts[source*nbcuts+8]->Draw("same");
-    histopassedcuts[source*nbcuts+9]->Draw("same");
-    TLegend *legb = new TLegend(0.4,0.6,0.89,0.89);
-    //legb->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
-    //legb->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
-    //legb->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
-    //legb->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
-    legb->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
-    legb->Draw("same");
-
-    source = 2;
-    chsSparseMCeeff->cd(2);
-    histopassedcuts[source*nbcuts+0]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+1]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+2]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+3]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+4]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+5]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+6]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+7]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+8]->SetTitle("#pi^{0}");
-    histopassedcuts[source*nbcuts+9]->SetTitle("#pi^{0}");
-    //histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+1]->SetStats(0);
-    histopassedcuts[source*nbcuts+2]->SetStats(0);
-    histopassedcuts[source*nbcuts+3]->SetStats(0);
-    histopassedcuts[source*nbcuts+4]->SetStats(0);
-    histopassedcuts[source*nbcuts+5]->SetStats(0);
-    histopassedcuts[source*nbcuts+6]->SetStats(0);
-    histopassedcuts[source*nbcuts+7]->SetStats(0);
-    histopassedcuts[source*nbcuts+8]->SetStats(0);
-    histopassedcuts[source*nbcuts+9]->SetStats(0);
-    //histopassedcuts[source*nbcuts+0]->Draw();
-    //histopassedcuts[source*nbcuts+1]->Draw();
-    histopassedcuts[source*nbcuts+2]->Draw();
-    histopassedcuts[source*nbcuts+3]->Draw("same");
-    //histopassedcuts[source*nbcuts+4]->Draw("same");
-    histopassedcuts[source*nbcuts+5]->Draw("same");
-    histopassedcuts[source*nbcuts+6]->Draw("same");
-    //histopassedcuts[source*nbcuts+7]->Draw("same");
-    histopassedcuts[source*nbcuts+8]->Draw("same");
-    histopassedcuts[source*nbcuts+9]->Draw("same");
-    TLegend *legc = new TLegend(0.4,0.6,0.89,0.89);
-    //legc->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
-    //legc->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
-    //legc->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
-    //legc->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
-    legc->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
-    legc->Draw("same");
-
-    source = 4;
-    chsSparseMCeeff->cd(3);
-    histopassedcuts[source*nbcuts+0]->SetTitle("C");
-    histopassedcuts[source*nbcuts+1]->SetTitle("C");
-    histopassedcuts[source*nbcuts+2]->SetTitle("C");
-    histopassedcuts[source*nbcuts+3]->SetTitle("C");
-    histopassedcuts[source*nbcuts+4]->SetTitle("C");
-    histopassedcuts[source*nbcuts+5]->SetTitle("C");
-    histopassedcuts[source*nbcuts+6]->SetTitle("C");
-    histopassedcuts[source*nbcuts+7]->SetTitle("C");
-    histopassedcuts[source*nbcuts+8]->SetTitle("C");
-    histopassedcuts[source*nbcuts+9]->SetTitle("C");
-    //histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+1]->SetStats(0);
-    histopassedcuts[source*nbcuts+2]->SetStats(0);
-    histopassedcuts[source*nbcuts+3]->SetStats(0);
-    histopassedcuts[source*nbcuts+4]->SetStats(0);
-    histopassedcuts[source*nbcuts+5]->SetStats(0);
-    histopassedcuts[source*nbcuts+6]->SetStats(0);
-    histopassedcuts[source*nbcuts+7]->SetStats(0);
-    histopassedcuts[source*nbcuts+8]->SetStats(0);
-    histopassedcuts[source*nbcuts+9]->SetStats(0);
-    //histopassedcuts[source*nbcuts+0]->Draw();
-    //histopassedcuts[source*nbcuts+1]->Draw();
-    histopassedcuts[source*nbcuts+2]->Draw();
-    histopassedcuts[source*nbcuts+3]->Draw("same");
-    //histopassedcuts[source*nbcuts+4]->Draw("same");
-    histopassedcuts[source*nbcuts+5]->Draw("same");
-    histopassedcuts[source*nbcuts+6]->Draw("same");
-    //histopassedcuts[source*nbcuts+7]->Draw("same");
-    histopassedcuts[source*nbcuts+8]->Draw("same");
-    histopassedcuts[source*nbcuts+9]->Draw("same");
-    TLegend *lege = new TLegend(0.4,0.6,0.89,0.89);
-    //lege->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
-    //lege->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
-    //lege->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
-    //lege->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
-    lege->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
-    lege->Draw("same");
-
-    //////////////////////
-    // Input
-    //////////////////////
-
-    TCanvas * chsSparseMCein =new TCanvas("hsSparseMCeinput","hsSparseMCeinput",800,800);
-    chsSparseMCein->cd(1);
-    Double_t nbGamma = 0.0;
-    source = 1;
-    nbGamma = histopassedcuts[source*nbcuts+0]->GetEntries();
-    histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+0]->Draw();
-    TLegend *leginput = new TLegend(0.4,0.6,0.89,0.89);
-    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#gamma","p");
-    Double_t nbPi0 = 0.0;
-    source = 2;
-    nbPi0 = histopassedcuts[source*nbcuts+0]->GetEntries();
-    histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+0]->Draw("same");
-    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#pi^{0}","p");
-    Double_t nbEta = 0.0;
-    source = 3;
-    nbEta = histopassedcuts[source*nbcuts+0]->GetEntries();
-    histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+0]->Draw("same");
-    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#eta","p");
-    Double_t nbC = 0.0;
-    source = 4;
-    nbC = histopassedcuts[source*nbcuts+0]->GetEntries();
-    histopassedcuts[source*nbcuts+0]->SetStats(0);
-    histopassedcuts[source*nbcuts+0]->Draw("same");
-    leginput->AddEntry(histopassedcuts[source*nbcuts+0],"c","p");
-    leginput->Draw("same");
-
-    //printf("Gamma %f, pi^{0} %f and #eta %f, c %f\n",nbGamma,nbPi0,nbEta,nbC);
-
-    //////////////////////
-    // Tracked
-    //////////////////////
-
-    TCanvas * cTracked = new TCanvas("cTracked","cTracked",800,800);
-    cTracked->cd(1);
-    source = 1;
-    histopassedcuts[source*nbcuts+1]->Draw();
-    TLegend *legTracked = new TLegend(0.4,0.6,0.89,0.89);
-    legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#gamma","p");
-    source = 2;
-    histopassedcuts[source*nbcuts+1]->Draw("same");
-    legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#pi^{0}","p");
-    legTracked->Draw("same");
-  
-  }
-
   /////////////////////////////////////
   // Data Radius and chi2Ndf if AliKF
   ////////////////////////////////////
@@ -2792,8 +2488,321 @@ void AliHFEelecbackground::Plot() const
     legITS5->Draw("same");
 
   
-  }  
+  }
 
+  ////////////////////////
+  // Cut efficiencies
+  ////////////////////////
+  
+  THnSparseF *hsSparseMCe = dynamic_cast<THnSparseF *>(fList->FindObject("CutPassedMC"));
+  if(!hsSparseMCe) return;
+
+  // init histos
+  TAxis *axissources = hsSparseMCe->GetAxis(2);
+  Int_t  nbsources = axissources->GetNbins(); 
+  TAxis *axiscuts = hsSparseMCe->GetAxis(1);
+  Int_t  nbcuts = axiscuts->GetNbins(); 
+  TH1D **histopassedcuts = new TH1D*[nbsources*nbcuts];  
+  Double_t *nbEntriesCuts = new Double_t[nbsources*nbcuts]; 
+  for(Int_t k =0; k < nbsources*nbcuts; k++){
+    nbEntriesCuts[k] = 0.0;
+    histopassedcuts[k] = 0x0;
+  }
+  
+  //printf("Number of cuts %d\n",nbcuts);
+  
+  // canvas
+  TCanvas * chsSparseMCeeff =new TCanvas("hsSparseMCeeffDebug","hsSparseMCeeffDebug",800,800);
+  chsSparseMCeeff->Divide(3,1);
+  
+  // histos
+  for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+    hsSparseMCe->GetAxis(2)->SetRange(sourceid+1,sourceid+1);  
+    for(Int_t cut = 0; cut < nbcuts; cut++){
+      hsSparseMCe->GetAxis(1)->SetRange(cut+1,cut+1); 
+      histopassedcuts[sourceid*nbcuts+cut] = hsSparseMCe->Projection(0);
+      hsSparseMCe->GetAxis(1)->SetRange(1,hsSparseMCe->GetAxis(1)->GetNbins()); 
+    }
+    hsSparseMCe->GetAxis(2)->SetRange(1,hsSparseMCe->GetAxis(2)->GetNbins());  
+  }
+  
+  // calcul efficiencies
+  
+  // histos
+  for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+    // Next is compared to the partner tracked
+    for(Int_t cut = 2; cut < nbcuts; cut++){
+      nbEntriesCuts[sourceid*nbcuts+cut] = histopassedcuts[sourceid*nbcuts+cut]->GetEntries();
+      if(histopassedcuts[sourceid*nbcuts+1]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+cut]->Divide(histopassedcuts[sourceid*nbcuts+1]);
+    }
+    // First one is if the partner is tracked.
+    nbEntriesCuts[sourceid*nbcuts+1] = histopassedcuts[sourceid*nbcuts+1]->GetEntries();
+    if(histopassedcuts[sourceid*nbcuts]->GetEntries() > 0.0) histopassedcuts[sourceid*nbcuts+1]->Divide(histopassedcuts[sourceid*nbcuts]);
+    // First one is input
+    nbEntriesCuts[sourceid*nbcuts] = histopassedcuts[sourceid*nbcuts]->GetEntries();
+  }
+  
+  // ratios
+  for(Int_t sourceid = 0; sourceid < nbsources; sourceid++) {
+    for(Int_t cut = 1; cut < nbcuts; cut++){
+      if(nbEntriesCuts[sourceid*nbcuts] > 0.0) nbEntriesCuts[sourceid*nbcuts+cut] = nbEntriesCuts[sourceid*nbcuts+cut]/nbEntriesCuts[sourceid*nbcuts]; 
+    }
+  }
+  TH1F *ratioHistoEntriesGamma = new TH1F("ratioHistoEntriesGamma","", nbcuts-1, 0.0, nbcuts-1.0);
+  TH1F *ratioHistoEntriesPi0 = new TH1F("ratioHistoEntriesPi0","", nbcuts-1, 0.0, nbcuts-1.0);
+  TH1F *ratioHistoEntriesC = new TH1F("ratioHistoEntriesC","", nbcuts-1, 0.0, nbcuts-1.0);
+  for(Int_t k = 1; k < nbcuts; k++){
+    if((nbcuts+k) < (nbsources*nbcuts)) ratioHistoEntriesGamma->SetBinContent(k,nbEntriesCuts[nbcuts+k]);
+    if((2*nbcuts+k) < (nbsources*nbcuts)) ratioHistoEntriesPi0->SetBinContent(k,nbEntriesCuts[2*nbcuts+k]);
+    if((4*nbcuts+k) < (nbsources*nbcuts)) ratioHistoEntriesC->SetBinContent(k,nbEntriesCuts[4*nbcuts+k]);
+  }     
+  //
+  TAxis *xAxisGamma = ratioHistoEntriesGamma->GetXaxis();
+  xAxisGamma->SetBinLabel(1,"Partner tracked");
+  xAxisGamma->SetBinLabel(2,"Opposite sign");
+  xAxisGamma->SetBinLabel(3,"Single Track Cut");
+  xAxisGamma->SetBinLabel(4,"Shared Clusters");
+  xAxisGamma->SetBinLabel(5,"PID");
+  xAxisGamma->SetBinLabel(6,"DCA");
+  xAxisGamma->SetBinLabel(7,"Chi^{2}/Ndf");
+  xAxisGamma->SetBinLabel(8,"Opening angle");
+  xAxisGamma->SetBinLabel(9,"Invariant mass");
+  //
+  TAxis *xAxisPi0 = ratioHistoEntriesPi0->GetXaxis();
+  xAxisPi0->SetBinLabel(1,"Partner tracked");
+  xAxisPi0->SetBinLabel(2,"Opposite sign");
+  xAxisPi0->SetBinLabel(3,"Single Track Cut");
+  xAxisPi0->SetBinLabel(4,"Shared Clusters");
+  xAxisPi0->SetBinLabel(5,"PID");
+  xAxisPi0->SetBinLabel(6,"DCA");
+  xAxisPi0->SetBinLabel(7,"Chi^{2}/Ndf");
+  xAxisPi0->SetBinLabel(8,"Opening angle");
+  xAxisPi0->SetBinLabel(9,"Invariant mass");
+  //
+  TAxis *xAxisC = ratioHistoEntriesC->GetXaxis();
+  xAxisC->SetBinLabel(1,"Partner tracked");
+  xAxisC->SetBinLabel(2,"Opposite sign");
+  xAxisC->SetBinLabel(3,"Single Track Cut");
+  xAxisC->SetBinLabel(4,"Shared Clusters");
+  xAxisC->SetBinLabel(5,"PID");
+  xAxisC->SetBinLabel(6,"DCA");
+  xAxisC->SetBinLabel(7,"Chi^{2}/Ndf");
+  xAxisC->SetBinLabel(8,"Opening angle");
+  xAxisC->SetBinLabel(9,"Invariant mass");
+  //
+  TCanvas * cRatioHistoEntries =new TCanvas("cRatioHistoEntries","cRatioHistoEntries",800,800);
+  cRatioHistoEntries->cd(1);
+  ratioHistoEntriesGamma->SetStats(0);
+  ratioHistoEntriesGamma->Draw();
+  ratioHistoEntriesPi0->SetStats(0);
+  ratioHistoEntriesPi0->Draw("same");
+  ratioHistoEntriesC->SetStats(0);
+  //ratioHistoEntriesC->Draw("same");
+  TLegend *legEntries = new TLegend(0.4,0.6,0.89,0.89);
+  legEntries->AddEntry(ratioHistoEntriesGamma,"#gamma","l");
+  legEntries->AddEntry(ratioHistoEntriesPi0,"#pi^{0}","l");
+  //legEntries->AddEntry(ratioHistoEntriesC,"c","p");
+  legEntries->Draw("same"); 
+  
+  // plot Debug
+  Int_t source = 1;
+  chsSparseMCeeff->cd(1);
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  histopassedcuts[source*nbcuts+0]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+1]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+2]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+3]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+4]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+5]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+6]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+7]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+8]->SetTitle("#gamma");
+  histopassedcuts[source*nbcuts+9]->SetTitle("#gamma");
+  //histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+1]->SetStats(0);
+  histopassedcuts[source*nbcuts+2]->SetStats(0);
+  histopassedcuts[source*nbcuts+3]->SetStats(0);
+  histopassedcuts[source*nbcuts+4]->SetStats(0);
+  histopassedcuts[source*nbcuts+5]->SetStats(0);
+  histopassedcuts[source*nbcuts+6]->SetStats(0);
+  histopassedcuts[source*nbcuts+7]->SetStats(0);
+  histopassedcuts[source*nbcuts+8]->SetStats(0);
+  histopassedcuts[source*nbcuts+9]->SetStats(0);
+  //histopassedcuts[source*nbcuts+0]->Draw();
+  //histopassedcuts[source*nbcuts+1]->Draw("");
+  histopassedcuts[source*nbcuts+2]->Draw();
+  histopassedcuts[source*nbcuts+3]->Draw("same");
+  //histopassedcuts[source*nbcuts+4]->Draw("same");
+  histopassedcuts[source*nbcuts+5]->Draw("same");
+  histopassedcuts[source*nbcuts+6]->Draw("same");
+  //histopassedcuts[source*nbcuts+7]->Draw("same");
+  histopassedcuts[source*nbcuts+8]->Draw("same");
+  histopassedcuts[source*nbcuts+9]->Draw("same");
+  TLegend *legb = new TLegend(0.4,0.6,0.89,0.89);
+  //legb->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+  //legb->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+  //legb->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+  //legb->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+  legb->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+  legb->Draw("same");
+  
+  source = 2;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  chsSparseMCeeff->cd(2);
+  histopassedcuts[source*nbcuts+0]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+1]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+2]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+3]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+4]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+5]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+6]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+7]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+8]->SetTitle("#pi^{0}");
+  histopassedcuts[source*nbcuts+9]->SetTitle("#pi^{0}");
+  //histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+1]->SetStats(0);
+  histopassedcuts[source*nbcuts+2]->SetStats(0);
+  histopassedcuts[source*nbcuts+3]->SetStats(0);
+  histopassedcuts[source*nbcuts+4]->SetStats(0);
+  histopassedcuts[source*nbcuts+5]->SetStats(0);
+  histopassedcuts[source*nbcuts+6]->SetStats(0);
+  histopassedcuts[source*nbcuts+7]->SetStats(0);
+  histopassedcuts[source*nbcuts+8]->SetStats(0);
+  histopassedcuts[source*nbcuts+9]->SetStats(0);
+  //histopassedcuts[source*nbcuts+0]->Draw();
+  //histopassedcuts[source*nbcuts+1]->Draw();
+  histopassedcuts[source*nbcuts+2]->Draw();
+  histopassedcuts[source*nbcuts+3]->Draw("same");
+  //histopassedcuts[source*nbcuts+4]->Draw("same");
+  histopassedcuts[source*nbcuts+5]->Draw("same");
+  histopassedcuts[source*nbcuts+6]->Draw("same");
+  //histopassedcuts[source*nbcuts+7]->Draw("same");
+  histopassedcuts[source*nbcuts+8]->Draw("same");
+  histopassedcuts[source*nbcuts+9]->Draw("same");
+  TLegend *legc = new TLegend(0.4,0.6,0.89,0.89);
+  //legc->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+  //legc->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+  //legc->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+  //legc->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+  legc->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+  legc->Draw("same");
+  
+  source = 4;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  chsSparseMCeeff->cd(3);
+  histopassedcuts[source*nbcuts+0]->SetTitle("C");
+  histopassedcuts[source*nbcuts+1]->SetTitle("C");
+  histopassedcuts[source*nbcuts+2]->SetTitle("C");
+  histopassedcuts[source*nbcuts+3]->SetTitle("C");
+  histopassedcuts[source*nbcuts+4]->SetTitle("C");
+  histopassedcuts[source*nbcuts+5]->SetTitle("C");
+  histopassedcuts[source*nbcuts+6]->SetTitle("C");
+  histopassedcuts[source*nbcuts+7]->SetTitle("C");
+  histopassedcuts[source*nbcuts+8]->SetTitle("C");
+  histopassedcuts[source*nbcuts+9]->SetTitle("C");
+  //histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+1]->SetStats(0);
+  histopassedcuts[source*nbcuts+2]->SetStats(0);
+  histopassedcuts[source*nbcuts+3]->SetStats(0);
+  histopassedcuts[source*nbcuts+4]->SetStats(0);
+  histopassedcuts[source*nbcuts+5]->SetStats(0);
+  histopassedcuts[source*nbcuts+6]->SetStats(0);
+  histopassedcuts[source*nbcuts+7]->SetStats(0);
+  histopassedcuts[source*nbcuts+8]->SetStats(0);
+  histopassedcuts[source*nbcuts+9]->SetStats(0);
+  //histopassedcuts[source*nbcuts+0]->Draw();
+  //histopassedcuts[source*nbcuts+1]->Draw();
+  histopassedcuts[source*nbcuts+2]->Draw();
+  histopassedcuts[source*nbcuts+3]->Draw("same");
+  //histopassedcuts[source*nbcuts+4]->Draw("same");
+  histopassedcuts[source*nbcuts+5]->Draw("same");
+  histopassedcuts[source*nbcuts+6]->Draw("same");
+  //histopassedcuts[source*nbcuts+7]->Draw("same");
+  histopassedcuts[source*nbcuts+8]->Draw("same");
+  histopassedcuts[source*nbcuts+9]->Draw("same");
+  TLegend *lege = new TLegend(0.4,0.6,0.89,0.89);
+  //lege->AddEntry(histopassedcuts[source*nbcuts+0],"all","p");
+  //lege->AddEntry(histopassedcuts[source*nbcuts+1],"Partner tracked","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+2],"Opposite sign","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+3],"SingleTrackPart","p");
+  //lege->AddEntry(histopassedcuts[source*nbcuts+4],"SharedCluster","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+5],"PID","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+6],"DCA","p");
+  //lege->AddEntry(histopassedcuts[source*nbcuts+7],"Chi2Ndf","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+8],"OpeningAngle","p");
+  lege->AddEntry(histopassedcuts[source*nbcuts+9],"InvMass","p");
+  lege->Draw("same");
+  
+  //////////////////////
+  // Input
+  //////////////////////
+  
+  TCanvas * chsSparseMCein =new TCanvas("hsSparseMCeinput","hsSparseMCeinput",800,800);
+  chsSparseMCein->cd(1);
+  Double_t nbGamma = 0.0;
+  source = 1;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  nbGamma = histopassedcuts[source*nbcuts+0]->GetEntries();
+  histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+0]->Draw();
+  TLegend *leginput = new TLegend(0.4,0.6,0.89,0.89);
+  leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#gamma","p");
+  Double_t nbPi0 = 0.0;
+  source = 2;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  nbPi0 = histopassedcuts[source*nbcuts+0]->GetEntries();
+  histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+0]->Draw("same");
+  leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#pi^{0}","p");
+  Double_t nbEta = 0.0;
+  source = 3;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  nbEta = histopassedcuts[source*nbcuts+0]->GetEntries();
+  histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+0]->Draw("same");
+  leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#eta","p");
+  Double_t nbC = 0.0;
+  source = 4;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  nbC = histopassedcuts[source*nbcuts+0]->GetEntries();
+  histopassedcuts[source*nbcuts+0]->SetStats(0);
+  histopassedcuts[source*nbcuts+0]->Draw("same");
+  leginput->AddEntry(histopassedcuts[source*nbcuts+0],"c","p");
+  leginput->Draw("same");
+  
+  //printf("Gamma %f, pi^{0} %f and #eta %f, c %f\n",nbGamma,nbPi0,nbEta,nbC);
+  
+  //////////////////////
+  // Tracked
+  //////////////////////
+  
+  TCanvas * cTracked = new TCanvas("cTracked","cTracked",800,800);
+  cTracked->cd(1);
+  source = 1;
+  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) return;
+  histopassedcuts[source*nbcuts+1]->Draw();
+  TLegend *legTracked = new TLegend(0.4,0.6,0.89,0.89);
+  legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#gamma","p");
+  source = 2;
+  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) return;
+  histopassedcuts[source*nbcuts+1]->Draw("same");
+  legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#pi^{0}","p");
+  legTracked->Draw("same");
+  
+  
 }
 //_____________________________________________________________________________
 Double_t AliHFEelecbackground::BetheBlochElectronITS(const Double_t *x, const Double_t * /*par*/) 

@@ -1696,7 +1696,7 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
 
   (dynamic_cast<TH1F *>(fSecVtxList->At(step)))->Fill(track->Pt()); // electrons tagged
 
-  if(HasMCData()){
+  if(HasMCData() && fMCQA){
     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return;
     mcpart = mctrack->Particle();
 
