@@ -415,8 +415,6 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  Float_t chi2 = 0;
 	  Int_t ndf = 0;
 
-	  AliDebug(1,Form("trunk lms? %d, %d\n", fFittingAlgorithm, Algo::kLMS));
-
 	  if ( fFittingAlgorithm == Algo::kFastFit || fFittingAlgorithm == Algo::kNeuralNet || 
 	       fFittingAlgorithm == Algo::kLMS || fFittingAlgorithm == Algo::kPeakFinder || 
 	       fFittingAlgorithm == Algo::kCrude) {
@@ -933,7 +931,7 @@ void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)
 		return;
 	}
 	//Initialize the requested algorithm
-	  AliDebug(1,Form("trunk INIT lms? %d, %d\n", fFittingAlgorithm, Algo::kLMS));
+  AliDebug(1,Form("Fitting algorithm : %d\n", fFittingAlgorithm));
 
 	if(fitAlgo != fFittingAlgorithm || !fRawAnalyzer) {
 		//printf("**** Init Algorithm , number %d ****\n",fitAlgo);
