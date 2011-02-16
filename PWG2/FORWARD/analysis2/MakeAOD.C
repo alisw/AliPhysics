@@ -31,7 +31,10 @@ void MakeAOD(const char* esddir,
   // --- Check for proof mode, and possibly upload pars --------------
   if (proof> 0) { 
     gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadPars.C");
-    LoadPars(proof);
+    if (!LoadPars(proof)) { 
+      Error("MakeAOD", "Failed to load PARs");
+      return;
+    }
   }
   
   // --- Our data chain ----------------------------------------------
@@ -95,15 +98,11 @@ void MakeAOD(const char* esddir,
 
 #if 1
   // Centrality 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
-  Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","");
-  // Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/AliESDCentrality.C","");
-  AddTaskCopyHeader();
-
-
-  // Central multiplicity
-  // Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentralMult.C","");
-  // AddTaskCentralMult();
+  if (!proof) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
+    Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","");
+    AddTaskCopyHeader();
+  }
 #endif
 
   // FMD 
@@ -130,7 +129,8 @@ void MakeAOD(const char* esddir,
 
   // Run the train 
   t.Start();
-  Printf("=== RUNNING ANALYSIS ==================================");
+  Printf("=== RUNNING ANALYSIS on %9d events ==========================",
+	 nEvents);
   mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();

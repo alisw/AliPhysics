@@ -10,7 +10,7 @@
 #include <AliAODHandler.h>
 #include <AliAODInputHandler.h>
 #include "AliForwardUtil.h"
-#include <AliAODForwardMult.h>
+#include "AliAODForwardMult.h"
 
 //____________________________________________________________________
 AliForwarddNdetaTask::AliForwarddNdetaTask()
