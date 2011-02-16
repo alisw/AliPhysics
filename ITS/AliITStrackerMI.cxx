@@ -5196,7 +5196,7 @@ Int_t AliITStrackerMI::FindClusterOfTrack(int label, int lr, int* store) const /
 Int_t AliITStrackerMI::GetPattern(const AliITStrackMI* track, char* patt)
 {
   // creates pattarn of hits marking fake/corrects by f/c. Used for debugging (RS) 
-  strcpy(patt,"......      "); patt[6] = 0;
+  strncpy(patt,"......",6); 
   int tpcLabel = 0;
   if (track->GetESDtrack()) tpcLabel = track->GetESDtrack()->GetTPCLabel();
   //
