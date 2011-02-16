@@ -76,8 +76,8 @@ namespace CaloConstants
 
   namespace FitAlgorithm
   {
-    enum fitAlgorithm { kLMS = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
-			kLogFit = 5, kStandard = 6,  kNONE = 7}; // possible return values
+    enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
+			kLogFit = 5, kLMS = 6,  kNONE = 7}; // possible return values
   }
 
   namespace ReturnCodes

@@ -414,7 +414,9 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 	  Bool_t fitDone = kFALSE;
 	  Float_t chi2 = 0;
 	  Int_t ndf = 0;
-	  
+
+	  AliDebug(1,Form("trunk lms? %d, %d\n", fFittingAlgorithm, Algo::kLMS));
+
 	  if ( fFittingAlgorithm == Algo::kFastFit || fFittingAlgorithm == Algo::kNeuralNet || 
 	       fFittingAlgorithm == Algo::kLMS || fFittingAlgorithm == Algo::kPeakFinder || 
 	       fFittingAlgorithm == Algo::kCrude) {
@@ -576,18 +578,18 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
 
     //Check if only LG existed, remove if so
     if (digit->GetType() == AliEMCALDigit::kLGnoHG) {
-      AliDebug(1,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
+      AliDebug(10,Form("Remove digit with id %d, LGnoHG",digit->GetId()));
       digitsArr->Remove(digit);
     }
     //Check if time is too large or too small, remove if so
     else if(fTimeMin > digit->GetTime() || fTimeMax < digit->GetTime()) {
       digitsArr->Remove(digit);
-      AliDebug(1,Form("Remove digit with id %d, Bad Time %e",digit->GetId(), digit->GetTime()));
+      AliDebug(10,Form("Remove digit with id %d, Bad Time %e",digit->GetId(), digit->GetTime()));
     }
     // Check if Chi2 is undefined
     else if (0 > digit->GetChi2()) {
       digitsArr->Remove(digit);
-      AliDebug(1,Form("Remove digit with id %d, Bad Chi2 %e",digit->GetId(), digit->GetChi2()));
+      AliDebug(10,Form("Remove digit with id %d, Bad Chi2 %e",digit->GetId(), digit->GetChi2()));
     }
     //Good digit, just reassign the index of the digit in case there was a previous removal
     else {
@@ -931,6 +933,8 @@ void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)
 		return;
 	}
 	//Initialize the requested algorithm
+	  AliDebug(1,Form("trunk INIT lms? %d, %d\n", fFittingAlgorithm, Algo::kLMS));
+
 	if(fitAlgo != fFittingAlgorithm || !fRawAnalyzer) {
 		//printf("**** Init Algorithm , number %d ****\n",fitAlgo);
 		
@@ -953,8 +957,8 @@ void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)
 			fRawAnalyzer = new AliCaloRawAnalyzerCrude();
 		}
 		else {
-		  //			fRawAnalyzer = new AliCaloRawAnalyzer();
-		  fRawAnalyzer = 0;
+		  fRawAnalyzer = new AliCaloRawAnalyzer();
+		  //fRawAnalyzer = 0;
 		}
 	}
 	

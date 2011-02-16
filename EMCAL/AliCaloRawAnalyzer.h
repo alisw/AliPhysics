@@ -34,15 +34,15 @@
 //using  CaloConstants::ReturnCodes;
 
 class AliCaloBunchInfo;
-class AliCaloFitResults;
+#include "AliCaloFitResults.h"
 
 class  AliCaloRawAnalyzer : public TObject
 {
  public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
-  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-				      const UInt_t altrocfg1,  const UInt_t altrocfg2 ) = 0;
+  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &/*bunchvector*/, 
+				      const UInt_t /*altrocfg1*/,  const UInt_t /*altrocfg2*/ ) {return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid);}
   //enum fitAlgorithm {kCrude, kPeakFinder, kLMS, kFastFit, kNeuralNet, kNONE};
   void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
   void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
