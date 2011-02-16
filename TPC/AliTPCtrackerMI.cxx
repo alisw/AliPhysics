@@ -113,6 +113,7 @@
 #include <TFile.h>
 #include <TObjArray.h>
 #include <TTree.h>
+#include <TGraphErrors.h>
 #include "AliLog.h"
 #include "AliComplexCluster.h"
 #include "AliESDEvent.h"
@@ -137,6 +138,7 @@
 #include "AliTrackPointArray.h"
 #include "TRandom.h"
 #include "AliTPCcalibDB.h"
+#include "AliTPCcalibDButil.h"
 #include "AliTPCTransform.h"
 #include "AliTPCClusterParam.h"
 
@@ -2662,6 +2664,18 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   if (!event) return 0;
   const Int_t kMaxFriendTracks=2000;
   fEvent = event;
+  // extract correction object for multiplicity dependence of dEdx
+  TObjArray * gainCalibArray = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(event->GetRunNumber());
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+  TGraphErrors * graphMultDependenceDeDx = 0x0;
+  if (recoParam->GetUseMultiplicityCorrectionDedx()) {
+    if (recoParam->GetUseTotCharge()) {
+      graphMultDependenceDeDx = (TGraphErrors *) gainCalibArray->FindObject("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+    } else {
+      graphMultDependenceDeDx = (TGraphErrors *) gainCalibArray->FindObject("TGRAPHERRORS_MEANQMAX_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+    }
+  }
+  //
   ReadSeeds(event,2);
   fIteration=2;
   //PrepareForProlongation(fSeeds,1);
@@ -2728,6 +2742,12 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       Int_t   ndedx = seed->GetNCDEDX(0);
       Float_t sdedx = seed->GetSDEDX(0);
       Float_t dedx  = seed->GetdEdx();
+      // apply mutliplicity dependent dEdx correction if available
+      if (graphMultDependenceDeDx) {
+	Int_t nContribut  = event->GetPrimaryVertexTPC()->GetNContributors();
+	Double_t corrGain =  AliTPCcalibDButil::EvalGraphConst(graphMultDependenceDeDx, nContribut);
+	dedx /= corrGain;
+      }
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       //
       // add seed to the esd track in Calib level

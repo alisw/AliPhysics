@@ -36,8 +36,10 @@
   // default storage ""- data stored at current working directory 
  
   e.g.
-  AliTPCPreprocessorOffline process;
-  process.CalibTimeGain("CalibObjects.root",114000,121040,0);
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libTPCcalib");
+  AliTPCPreprocessorOffline proces;
+  proces.CalibTimeGain("TPCMultObjects.root",114000,140040,0);
   TFile oo("OCDB/TPC/Calib/TimeGain/Run114000_121040_v0_s0.root")
   TObjArray * arr = AliCDBEntry->GetObject()
   arr->At(4)->Draw("alp")
@@ -796,6 +798,7 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeGain(startRunNumber,endRunNumber, 1000,1.43);
   AnalyzeAttachment(startRunNumber,endRunNumber);
   AnalyzePadRegionGain();
+  AnalyzeGainMultiplicity();
   //
   // 3. Make control plots
   //
@@ -1016,6 +1019,72 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
     return kTRUE;
   } 
   return kFALSE;
+
+}
+
+
+Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
+  //
+  // Analyze gain as a function of multiplicity and produce calibration graphs
+  //
+  if (!fGainMult) return kFALSE;
+  fGainMult->GetHistGainMult()->GetAxis(3)->SetRangeUser(3,3);
+  TH2D * histMultMax = fGainMult->GetHistGainMult()->Projection(0,4);
+  TH2D * histMultTot = fGainMult->GetHistGainMult()->Projection(1,4);
+  histMultMax->RebinX(4);
+  histMultTot->RebinX(4);
+  //
+  TObjArray arrMax;
+  TObjArray arrTot;
+  histMultMax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
+  histMultTot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  //
+  TH1D * meanMax = (TH1D*)arrMax.At(1);
+  TH1D * meanTot = (TH1D*)arrTot.At(1);
+  Float_t meanMult = histMultMax->GetMean();
+  meanMax->Scale(1./meanMax->GetBinContent(meanMax->FindBin(meanMult)));
+  meanTot->Scale(1./meanTot->GetBinContent(meanTot->FindBin(meanMult)));
+  Float_t xMultMax[50];
+  Float_t yMultMax[50];
+  Float_t yMultErrMax[50];
+  Float_t xMultTot[50];
+  Float_t yMultTot[50];
+  Float_t yMultErrTot[50];
+  //
+  Int_t nCountMax = 0;
+  for(Int_t iBin = 1; iBin < meanMax->GetXaxis()->GetNbins(); iBin++) {
+    Float_t yValMax = meanMax->GetBinContent(iBin);
+    if (yValMax < 0.01) continue;
+    if (meanMax->GetBinError(iBin)/yValMax > 0.01) continue;
+    xMultMax[nCountMax] = meanMax->GetXaxis()->GetBinCenter(iBin);
+    yMultMax[nCountMax] = yValMax;
+    yMultErrMax[nCountMax] = meanMax->GetBinError(iBin);
+    nCountMax++;
+  }
+  //
+  if (nCountMax < 10) return kFALSE;
+  TGraphErrors * fitMultMax = new TGraphErrors(nCountMax, xMultMax, yMultMax, 0, yMultErrMax);
+  fitMultMax->SetName("TGRAPHERRORS_MEANQMAX_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+  //
+  Int_t nCountTot = 0;
+  for(Int_t iBin = 1; iBin < meanTot->GetXaxis()->GetNbins(); iBin++) {
+    Float_t yValTot = meanTot->GetBinContent(iBin);
+    if (yValTot < 0.1) continue;
+    if (meanTot->GetBinError(iBin)/yValTot > 0.1) continue;
+    xMultTot[nCountTot] = meanTot->GetXaxis()->GetBinCenter(iBin);
+    yMultTot[nCountTot] = yValTot;
+    yMultErrTot[nCountTot] = meanTot->GetBinError(iBin);
+    nCountTot++;
+  }
+  //
+  if (nCountTot < 10) return kFALSE;
+  TGraphErrors *  fitMultTot = new TGraphErrors(nCountTot, xMultTot, yMultTot, 0, yMultErrTot);
+  fitMultTot->SetName("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
+  //
+  fGainArray->AddLast(fitMultMax);
+  fGainArray->AddLast(fitMultTot);
+  //
+  return kTRUE;
 
 }
 

@@ -1154,6 +1154,9 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+  //
+  if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;
+  //
   if (trans) {
       runNumber = trans->GetCurrentRunNumber();
       //AliTPCcalibDB::Instance()->SetRun(runNumber);

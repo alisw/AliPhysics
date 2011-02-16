@@ -61,7 +61,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void  SetCtgRange(Double_t ctgRange) {fCtgRange = ctgRange;}
   void  SetUseMultiplicityCorrectionDedx(Bool_t flag) {fUseMultiplicityCorrectionDedx = flag;}
   void  SetUseAlignmentTime(Bool_t flag) {fUseAlignmentTime = flag;}
-
+  void  SetNeighborRowsDedx(Int_t nRows) {fNeighborRowsDedx = nRows;}
   //
   Int_t    GetLastSeedRowSec()       const  { return fLastSeedRowSec;} 
   Int_t    GetSeedGapPrim()        const  { return fSeedGapPrim;} 
@@ -108,6 +108,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetUseTotCharge() const {return fUseTotCharge;}          // switch use total or max charge
   Float_t  GetMinFraction() const {return fMinFraction;}           // truncated mean - lower threshold
   Float_t  GetMaxFraction() const {return fMaxFaction;}            // truncated mean - upper threshold
+  Int_t    GetNeighborRowsDedx() const {return fNeighborRowsDedx;} 
 
   Bool_t   GetUseTOFCorrection() {return fUseTOFCorrection;}
 
@@ -179,6 +180,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   fUseTotCharge;          // switch use total or max charge
   Float_t fMinFraction;           // truncated mean - lower threshold
   Float_t fMaxFaction;            // truncated mean - upper threshold
+  Int_t   fNeighborRowsDedx;      // number of neighboring rows to identify cluster below thres in dEdx calculation 0 -> switch off
 
   Bool_t fUseTOFCorrection;  // switch - kTRUE use TOF correction kFALSE - do not use
   //
