@@ -32,6 +32,8 @@ void ShowResponseSDD(TString filename="$ALICE_ROOT/OCDB/ITS/Calib/RespSDD/Run0_9
   TH1F* hTimeZero=new TH1F("hTimeZero","",260,239.5,499.5);
   TH1F* hVdriftCorrLeft=new TH1F("hVdriftCorrLeft","",260,239.5,499.5);
   TH1F* hVdriftCorrRight=new TH1F("hVdriftCorrRight","",260,239.5,499.5);
+  TH1F* hdistVdriftCorrLeft=new TH1F("hdistVdriftCorrLeft","",100,-0.2,0.2);
+  TH1F* hdistVdriftCorrRight=new TH1F("hdistVdriftCorrRight","",100,-0.2,0.2);
   TH1F* hADCtokeV=new TH1F("hADCtokeV","",260,239.5,499.5);
   Float_t averTz=0.;
   Float_t averCv0=0.;
@@ -42,9 +44,11 @@ void ShowResponseSDD(TString filename="$ALICE_ROOT/OCDB/ITS/Calib/RespSDD/Run0_9
     Float_t cv0=r->GetDeltaVDrift(iMod,kFALSE);
     Float_t cv1=r->GetDeltaVDrift(iMod,kTRUE);
     Float_t ak=r->GetADCtokeV(iMod);
-    hTimeZero->SetBinContent(iMod-240+1,tz);
+    hTimeZero->SetBinContent(iMod-240+1,tz);    
     hVdriftCorrLeft->SetBinContent(iMod-240+1,cv0);
     hVdriftCorrRight->SetBinContent(iMod-240+1,cv1);
+    hdistVdriftCorrLeft->Fill(cv0);
+    hdistVdriftCorrRight->Fill(cv1);
     hADCtokeV->SetBinContent(iMod-240+1,ak);
     averTz+=tz;
     averCv0+=cv0;
@@ -75,7 +79,7 @@ void ShowResponseSDD(TString filename="$ALICE_ROOT/OCDB/ITS/Calib/RespSDD/Run0_9
     hVdriftCorrLeft->SetMinimum(-1.2*scale);
   }
 
-  gStyle->SetOptStat(0);
+  //  gStyle->SetOptStat(0);
 
   printf("Charge vs. Time correction factor = %f\n",r->GetChargevsTime());
 
@@ -102,6 +106,13 @@ void ShowResponseSDD(TString filename="$ALICE_ROOT/OCDB/ITS/Calib/RespSDD/Run0_9
   tc1->SetTextColor(4);
   tc1->Draw();
   c2->Modified();
+
+  TCanvas* c2b=new TCanvas("c2b","Vdrift Corr");
+  hdistVdriftCorrLeft->Draw(); 
+  hdistVdriftCorrRight->SetLineColor(2);
+  hdistVdriftCorrRight->Draw("SAMES");
+  hdistVdriftCorrLeft->GetXaxis()->SetTitle("Vdrift correction (#mum/ns)");
+  c2b->Modified();
 
   TCanvas* c3=new TCanvas("c3","ADC calib");
   hADCtokeV->Draw("P");

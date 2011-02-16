@@ -39,6 +39,7 @@ void TrendQAtrainSDD(TString period,
   Int_t year=0;
   if(period.Contains("LHC09")) year=2009;
   else if(period.Contains("LHC10")) year=2010;
+  else if(period.Contains("LHC11")) year=2011;
 
   TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain1.Data());
 

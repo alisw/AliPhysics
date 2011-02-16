@@ -21,7 +21,7 @@
 // created from PEDESTAL and PULSER runs vs. Time
 // Origin: F. Prino (prino@to.infn.it)
 
-void PlotCalibSDDVsTime(Int_t year=2010, Int_t firstRun=77677, 
+void PlotCalibSDDVsTime(Int_t year=2011, Int_t firstRun=142600, 
 			Int_t lastRun=999999999){
 
   gStyle->SetOptTitle(0);

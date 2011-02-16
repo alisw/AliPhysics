@@ -29,7 +29,7 @@
 
 void FillErrors(Float_t errSpeed[260]);
 
-void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840, 
+void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600, 
 			     Int_t lastRun=999999999,
 			     Int_t anode=128){
   TGrid::Connect("alien:",0,0,"t");
@@ -60,6 +60,11 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   }
   Float_t Edrift=(1800-45)/291/0.012;  
   Int_t nrun,nrun2,nv,ns;
+  Float_t timeZero;
+  if(year==2009) timeZero=1247762992;
+  else if(year==2010) timeZero=1262300400;
+  else timeZero=1293861600;
+
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
     Char_t directory[100];
@@ -115,9 +120,6 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
       
       UInt_t timest=vdriftarr->GetTimestamp(0);
       if(timest==0) continue;
-      Float_t timeZero;
-      if(year==2009) timeZero=1247762992;
-      else timeZero=1262300400;
       if(timest<timeZero) continue;
       timeday=float(timest-timeZero)/60./60./24.;
       Float_t mob=vdrift*1.E5/Edrift;  
@@ -187,9 +189,11 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2010, Int_t firstRun=62840,
   gvdrvstime[mod1]->SetMaximum(6.75);
   Char_t title[100];
   if(year==2009){
-  sprintf(title,"Time (days since July 16th 2009)");
+    sprintf(title,"Time (days since July 16th 2009)");
   }else if (year==2010){
-  sprintf(title,"Time (days since January 1st 2010)");
+    sprintf(title,"Time (days since January 1st 2010)");
+  }else{
+    sprintf(title,"Time (days since January 1st 2011)");
   }
   gvdrvstime[mod1]->GetXaxis()->SetTitle(title);
   gvdrvstime[mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
