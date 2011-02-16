@@ -240,10 +240,10 @@ void AliCFAcceptanceCuts::DefineHistograms() {
     fhCutCorrelation->GetYaxis()->SetBinLabel(k,fhCutStatistics->GetXaxis()->GetBinLabel(k));
   }
 
-  Char_t str[256];
+  Char_t str[5];
   for (int i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
     fhQA[kCutHitsITS] [i] = new TH1F(Form("%s_HitsITS%s"  ,GetName(),str),"",10,0,10);
     fhQA[kCutHitsTPC] [i] = new TH1F(Form("%s_HitsTPC%s"  ,GetName(),str),"",5,0,5);
     fhQA[kCutHitsTRD] [i] = new TH1F(Form("%s_HitsTRD%s"  ,GetName(),str),"",20,0,20);
@@ -260,6 +260,10 @@ void AliCFAcceptanceCuts::FillHistograms(TObject* obj, Bool_t afterCuts)
   // fill the QA histograms
   //
   AliMCParticle* part = dynamic_cast<AliMCParticle *>(obj);
+  if (!part) {
+    AliError("casting failed");
+    return;
+  }
 
   Int_t nHitsITS=0, nHitsTPC=0, nHitsTRD=0, nHitsTOF=0, nHitsMUON=0 ;
   for (Int_t iTrackRef=0; iTrackRef<part->GetNumberOfTrackReferences(); iTrackRef++) {

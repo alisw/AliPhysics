@@ -235,8 +235,9 @@ Bool_t AliCFEventGenCuts::IsMBProcType(AliMCEvent *ev, PrType iproc){
       if ( process==94)
 	return kTRUE;
     }
+  default: return kFALSE;
   }
-
+  
   return kFALSE;     
 }
  //____________________________________________________________________________
