@@ -46,9 +46,9 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kHvarTrigClass,  ///< Trigger classes
     kHvarIsGoodVtx,  ///< IP vertex correctly reconstructed
     kHvarMotherType, ///< Mother type (MC only)
-    kHvarP,          ///< Total momentum
+    kHvarCentrality, ///< Centrality class
     kNvars           ///< THnSparse dimensions
-  };  
+  };
 
   enum {
     kStepReconstructed,  ///< Reconstructed tracks
@@ -84,7 +84,9 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
 
   // Histograms for MC
   enum {
-    kHistoCheckVzMC,    ///< Check vertex distribution
+    kHistoCheckVzMC,    ///< Check vertex distribution for all vertex
+    kHistoCheckVzHasVtxMC, ///< Check vertex distribution for reco vertex
+    kHistoCheckVzNoPileupMC, ///< Check vertex distribution for non-pileup vtx
     kNsummaryHistosMC   ///< Summary histograms for MC
   };
 
@@ -103,7 +105,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kNtrackSources  ///< Total number of track sources
   };
 
-  // Trees
+  // Tree
   enum {
     kVarPx, ///< Px at vertex
     kVarPy, ///< Py at vertex
@@ -131,6 +133,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kVarIPVx, ///< IP x position
     kVarIPVy, ///< IP y position
     kVarIPVz, ///< IP z position
+    kVarCentrality, ///< Event centrality
     kNvarFloat
   };
 
@@ -163,7 +166,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kNvarUInt
   };
   
-  // Trees MC
+  // Tree MC
   enum {
     kVarPxMC, ///< Px from Kine
     kVarPyMC, ///< Py from Kine
@@ -174,11 +177,24 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
     kVarVxMC, ///< Particle production x vertex from Kine
     kVarVyMC, ///< Particle production y vertex from Kine
     kVarVzMC, ///< Particle production z vertex from Kine
+    kVarMotherPxMC, ///< Mother px from Kine
+    kVarMotherPyMC, ///< Mother py from Kine
+    kVarMotherPzMC, ///< Mother pz from Kine
+    kVarMotherEtaMC,  ///< Mother eta from Kine
+    kVarMotherRapidityMC, ///< Mother rapidity from Kine
+    kVarMotherVxMC, ///< Mother production x vertex from Kine
+    kVarMotherVyMC, ///< Mother production y vertex from Kine
+    kVarMotherVzMC, ///< Mother production z vertex from Kine
+    // Global event info
+    kVarIPVxMC, ///< IP x position
+    kVarIPVyMC, ///< IP y position
+    kVarIPVzMC, ///< IP z position
     kNvarFloatMC
   };
 
   enum {
     kVarPdg, ///< PDG
+    kVarMotherPdg, ///< Mother PDG
     kVarMotherType, ///< Mother type
     kNvarIntMC
   };
@@ -212,6 +228,7 @@ class AliAnalysisTaskSingleMu : public AliAnalysisTaskSE {
   Float_t* fVarFloatMC; //!< MC parameters float
   Int_t* fVarIntMC; //!< MC parameters int
   TMap* fAuxObjects; //!< Map of vertex distribution per run
+  TString fDebugString; //!< Debug string
 
   ClassDef(AliAnalysisTaskSingleMu, 2); // Single muon analysis
 };
