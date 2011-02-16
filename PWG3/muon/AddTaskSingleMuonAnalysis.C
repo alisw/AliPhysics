@@ -63,8 +63,9 @@ AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t applyPhysicsSelection=
 
 
    // Create the task, add it to the manager and configure it.
-   //===========================================================================   
-   AliAnalysisTaskSingleMu *singleMuonAnalysisTask = new AliAnalysisTaskSingleMu("SingleMuonAnalysisTask", fillNtupleScaleDown, keepAll);
+   //===========================================================================
+   TString taskName =  ( applyPhysicsSelection ) ? "SingleMuonAnalysisTask" : "SingleMuonAnalysisTaskNoPS";
+   AliAnalysisTaskSingleMu *singleMuonAnalysisTask = new AliAnalysisTaskSingleMu(taskName.Data(), fillNtupleScaleDown, keepAll);
    mgr->AddTask(singleMuonAnalysisTask);
    if ( applyPhysicsSelection ) 
      singleMuonAnalysisTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);

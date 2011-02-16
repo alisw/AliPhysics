@@ -50,8 +50,6 @@
 #include "TMCProcess.h"
 
 // STEER includes
-#include "AliLog.h"
-
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
@@ -65,6 +63,7 @@
 #include "AliESDMuonTrack.h"
 
 #include "AliMultiplicity.h"
+#include "AliCentrality.h"
 
 // ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -105,7 +104,8 @@ AliAnalysisTaskSingleMu::AliAnalysisTaskSingleMu(const char *name, Int_t fillTre
   fVarUInt(0),
   fVarFloatMC(0),
   fVarIntMC(0),
-  fAuxObjects(new TMap())
+  fAuxObjects(new TMap()),
+  fDebugString("")
 {
   //
   /// Constructor.
@@ -269,9 +269,9 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Double_t motherTypeMin = -0.5, motherTypeMax = (Double_t)kNtrackSources - 0.5;
   TString motherType("MotherType"), motherTypeTitle("motherType"), motherTypeUnits("");
 
-  Int_t nPBins = 100;
-  Double_t pMin = 0., pMax = 400.;
-  TString pName("P"), pTitle("p"), pUnits("GeV/c");
+  Int_t nCentralityBins = 10;
+  Double_t centralityMin = 0., centralityMax = 100.;
+  TString centralityName("Centrality"), centralityTitle("centrality"), centralityUnits("%");
 
   TString trigName[kNtrigCuts];
   trigName[kNoMatchTrig] = "NoMatch";
@@ -285,7 +285,7 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   srcName[kPrimaryMu]   = "Decay";
   srcName[kSecondaryMu] = "Secondary";
   srcName[kRecoHadron]  = "Hadrons";
-  srcName[kUnknownPart] = "Unknown";
+  srcName[kUnknownPart] = "Unidentified";
 
   TH1F* histo1D = 0x0;
   TH2F* histo2D = 0x0;
@@ -293,11 +293,11 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Int_t histoIndex = 0;
 
   // Multi-dimensional histo
-  Int_t nbins[kNvars] = {nPtBins, nRapidityBins, nPhiBins, nDcaBins, nVzBins, nThetaAbsEndBins, nChargeBins, nMatchTrigBins, nTrigClassBins, nGoodVtxBins, nMotherTypeBins, nPBins};
-  Double_t xmin[kNvars] = {ptMin, rapidityMin, phiMin, dcaMin, vzMin, thetaAbsEndMin, chargeMin, matchTrigMin, trigClassMin, goodVtxMin, motherTypeMin, pMin};
-  Double_t xmax[kNvars] = {ptMax, rapidityMax, phiMax, dcaMax, vzMax, thetaAbsEndMax, chargeMax, matchTrigMax, trigClassMax, goodVtxMax, motherTypeMax, pMax};
-  TString axisTitle[kNvars] = {ptTitle, rapidityTitle, phiTitle, dcaTitle, vzTitle, thetaAbsEndTitle, chargeTitle, matchTrigTitle, trigClassTitle, goodVtxTitle, motherTypeTitle, pTitle};
-  TString axisUnits[kNvars] = {ptUnits, rapidityUnits, phiUnits, dcaUnits, vzUnits, thetaAbsEndUnits, chargeUnits, matchTrigUnits, trigClassUnits, goodVtxUnits, motherTypeUnits, pUnits};
+  Int_t nbins[kNvars] = {nPtBins, nRapidityBins, nPhiBins, nDcaBins, nVzBins, nThetaAbsEndBins, nChargeBins, nMatchTrigBins, nTrigClassBins, nGoodVtxBins, nMotherTypeBins, nCentralityBins};
+  Double_t xmin[kNvars] = {ptMin, rapidityMin, phiMin, dcaMin, vzMin, thetaAbsEndMin, chargeMin, matchTrigMin, trigClassMin, goodVtxMin, motherTypeMin, centralityMin};
+  Double_t xmax[kNvars] = {ptMax, rapidityMax, phiMax, dcaMax, vzMax, thetaAbsEndMax, chargeMax, matchTrigMax, trigClassMax, goodVtxMax, motherTypeMax, centralityMax};
+  TString axisTitle[kNvars] = {ptTitle, rapidityTitle, phiTitle, dcaTitle, vzTitle, thetaAbsEndTitle, chargeTitle, matchTrigTitle, trigClassTitle, goodVtxTitle, motherTypeTitle, centralityTitle};
+  TString axisUnits[kNvars] = {ptUnits, rapidityUnits, phiUnits, dcaUnits, vzUnits, thetaAbsEndUnits, chargeUnits, matchTrigUnits, trigClassUnits, goodVtxUnits, motherTypeUnits, centralityUnits};
 
   //TString stepTitle[kNsteps] = {"reconstructed", "in acceptance", "generated", "in acceptance (MC)"};
   TString stepTitle[kNsteps] = {"reconstructed", "generated"};
@@ -436,17 +436,24 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   }
 
   // MC histos summary
-  histoName = "histoCheckVz";
-  histoTitle = "Check IP Vz distribution";
-  histo2D = new TH2F(histoName.Data(), histoTitle.Data(),
-		     nVzBins, vzMin, vzMax,
-		     nVzBins, vzMin, vzMax);
-  histoTitle = Form("%s (%s)", vzTitle.Data(), vzUnits.Data());
-  histo2D->GetXaxis()->SetTitle(histoTitle.Data());
-  histoTitle = Form("%s MC (%s)", vzTitle.Data(), vzUnits.Data());
-  histo2D->GetYaxis()->SetTitle(histoTitle.Data());
-  histoIndex = GetHistoIndex(kHistoCheckVzMC);
-  fHistoListMC->AddAt(histo2D, histoIndex);
+  Int_t hCheckVzIndex[3] = {kHistoCheckVzMC, kHistoCheckVzHasVtxMC, kHistoCheckVzNoPileupMC};
+  TString hCheckVzName[3] = {"histoCheckVz", "histoCheckVzHasVtx", "histoCheckVzIsPileup"};
+  TString hCheckVzTitle[3] = {"", " w/ vertex contributors", "w/ pileup SPD"};
+
+  for ( Int_t ihisto=0; ihisto<3; ihisto++ ) {
+    histoName = hCheckVzName[ihisto];
+    histoTitle = Form("Check IP Vz distribution %s", hCheckVzTitle[ihisto].Data());
+
+    histo2D = new TH2F(histoName.Data(), histoTitle.Data(),
+		       nVzBins, vzMin, vzMax,
+		       nVzBins, vzMin, vzMax);
+    histoTitle = Form("%s (%s)", vzTitle.Data(), vzUnits.Data());
+    histo2D->GetXaxis()->SetTitle(histoTitle.Data());
+    histoTitle = Form("%s MC (%s)", vzTitle.Data(), vzUnits.Data());
+    histo2D->GetYaxis()->SetTitle(histoTitle.Data());
+    histoIndex = GetHistoIndex(hCheckVzIndex[ihisto]);
+    fHistoListMC->AddAt(histo2D, histoIndex);
+  }
 
   // MC histos
   for (Int_t itrig=0; itrig < kNtrigCuts; itrig++) {
@@ -468,12 +475,18 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
 				       "XUncorrected", "YUncorrected", "ZUncorrected",
 				       "XatDCA", "YatDCA", "DCA",
 				       "Eta", "Rapidity", "Charge", "RAtAbsEnd",
-				       "IPVx", "IPVy", "IPVz"};
+				       "IPVx", "IPVy", "IPVz", "Centrality"};
     TString leavesInt[kNvarInt] = {"MatchTrig", "IsMuon", "IsGhost", "LoCircuit", "PassPhysicsSelection", "NVtxContrib", "NspdTracklets", "IsPileupVertex"};
     TString leavesChar[kNvarChar] = {"FiredTrigClass"};
     TString leavesUInt[kNvarUInt] = {"BunchCrossNum", "OrbitNum", "PeriodNum", "RunNum"};
-    TString leavesFloatMC[kNvarFloatMC] = {"PxMC", "PyMC", "PzMC", "PtMC", "EtaMC", "RapidityMC", "VxMC", "VyMC", "VzMC"};
-    TString leavesIntMC[kNvarIntMC] = {"Pdg", "MotherType"};
+    TString leavesFloatMC[kNvarFloatMC] = {"PxMC", "PyMC", "PzMC", "PtMC",
+					   "EtaMC", "RapidityMC",
+					   "VxMC", "VyMC", "VzMC",
+					   "MotherPxMC", "MotherPyMC", "MotherPzMC",
+					   "MotherEtaMC", "MotherRapidityMC",
+					   "MotherVxMC", "MotherVyMC", "MotherVzMC",
+					   "IPVxMC", "IPVyMC", "IPVzMC"};
+    TString leavesIntMC[kNvarIntMC] = {"Pdg", "MotherPdg", "MotherType"};
 
     TString treeName = GetOutputSlot(5)->GetContainer()->GetName();
     Bool_t hasMC = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
@@ -552,13 +565,16 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   if ( fMCEvent ) {
     // Add the MB name (which is not there in simulation)
     // CAVEAT: to be checked if we perform beam-gas simulations
-    //if ( ! firedTrigClasses.Contains("MB") ) printf("fired class %s\n", firedTrigClasses.Data()); // REMEMBER TO CUT
     if ( ! firedTrigClasses.Contains("CINT") && ! firedTrigClasses.Contains("MB") ) {
     TString trigName = ((TObjString*)fTriggerClasses->At(0))->GetString();
     firedTrigClasses.Prepend(Form("%s ", trigName.Data()));
     }
   }
   */
+
+  Double_t centralityValue = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+  // Avoid filling overflow bin when centrality is exactly 100.
+  Double_t centralityForContainer = TMath::Min(centralityValue, 99.999);
 
   fVarFloat[kVarIPVz] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetZ() : aodEvent->GetPrimaryVertex()->GetZ();
   fVarInt[kVarNVtxContrib] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetNContributors() : aodEvent->GetPrimaryVertex()->GetNContributors();
@@ -568,11 +584,12 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   fVarUInt[kVarRunNumber] = ( esdEvent ) ? esdEvent->GetRunNumber() : aodEvent->GetRunNumber();
 
   Int_t isGoodVtxBin = ( fVarInt[kVarNVtxContrib] >= fkNvtxContribCut );
-  if ( fVarInt[kVarIsPileup] > 0 )
+  if ( isGoodVtxBin && fVarInt[kVarIsPileup] > 0 )
     isGoodVtxBin = 2;
 
   if ( fillCurrentEventTree ){
     strncpy(fVarChar[kVarTrigMask], firedTrigClasses.Data(),255);
+    fVarFloat[kVarCentrality] = centralityValue;
 
     fVarInt[kVarPassPhysicsSelection] = ( esdEvent ) ? ((AliESDInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected() : ((AliAODInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();
 
@@ -588,6 +605,8 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
       fVarFloat[kVarIPVy] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetY() : aodEvent->GetPrimaryVertex()->GetY();
   }
 
+  firedTrigClasses.Append(" ANY");
+
   // Object declaration
   AliMCParticle* mcPart = 0x0;
   AliVParticle* track = 0x0;
@@ -602,11 +621,22 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     fCFManager->SetMCEventInfo (fMCEvent);
     Int_t nMCtracks = fMCEvent->GetNumberOfTracks();
     if ( nMCtracks > 0 ) {
-      containerInput[kHvarVz] = fMCEvent->Stack()->Particle(0)->Vz();
+      fVarFloatMC[kVarIPVxMC] = fMCEvent->Stack()->Particle(0)->Vx();
+      fVarFloatMC[kVarIPVyMC] = fMCEvent->Stack()->Particle(0)->Vy();
+      fVarFloatMC[kVarIPVzMC] = fMCEvent->Stack()->Particle(0)->Vz();
+      containerInput[kHvarVz] = fVarFloatMC[kVarIPVzMC];
       containerInput[kHvarIsGoodVtx] = 1;
+      containerInput[kHvarCentrality] = centralityForContainer;
       histoIndex = GetHistoIndex(kHistoCheckVzMC);
-      ((TH2F*)fHistoListMC->At(histoIndex))->Fill(fVarFloat[kVarIPVz], fMCEvent->Stack()->Particle(0)->Vz());
-
+      ((TH2F*)fHistoListMC->At(histoIndex))->Fill(fVarFloat[kVarIPVz], fVarFloatMC[kVarIPVzMC]);
+      if ( isGoodVtxBin >= 1 ) {
+	histoIndex = GetHistoIndex(kHistoCheckVzHasVtxMC);
+	((TH2F*)fHistoListMC->At(histoIndex))->Fill(fVarFloat[kVarIPVz], fVarFloatMC[kVarIPVzMC]);
+      }
+      if ( isGoodVtxBin == 1 ) {
+	histoIndex = GetHistoIndex(kHistoCheckVzNoPileupMC);
+	((TH2F*)fHistoListMC->At(histoIndex))->Fill(fVarFloat[kVarIPVz], fVarFloatMC[kVarIPVzMC]);
+      }
     }
 
     for (Int_t ipart=0; ipart<nMCtracks; ipart++) {
@@ -626,7 +656,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
       containerInput[kHvarCharge] = mcPart->Charge()/3.;
       containerInput[kHvarMatchTrig] = 1.;
       containerInput[kHvarMotherType] = (Double_t)RecoTrackMother(mcPart);
-      containerInput[kHvarP] = mcPart->P();
+      //containerInput[kHvarP] = mcPart->P();
 
       for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
 	TString trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
@@ -636,6 +666,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepGeneratedMC);
 	// if ( fCFManager->CheckParticleCuts(kStepAcceptanceMC,mcPart) ) fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptanceMC);
       } // loop on trigger classes
+      if ( fDebug >= 2 ) printf("AliAnalysisTaskSingleMu: Pure MC. %s. Set mother %i\n", fDebugString.Data(), (Int_t)containerInput[kHvarMotherType]);
     } // loop on MC particles
   } // is MC
 
@@ -726,18 +757,8 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 
       trackLabel = track->GetLabel();
 
-      AliMCParticle* matchedMCTrack = 0x0;
-
-      Int_t nMCtracks = fMCEvent->GetNumberOfTracks();
-      for(Int_t imctrack=0; imctrack<nMCtracks; imctrack++){
-	mcPart = (AliMCParticle*)fMCEvent->GetTrack(imctrack);
-	if ( trackLabel == mcPart->GetLabel() ) {
-	  matchedMCTrack = mcPart;
-	  break;
-	}
-      } // loop on MC tracks
-
-      if ( matchedMCTrack ) {
+      if ( trackLabel >= 0 ) {
+	AliMCParticle* matchedMCTrack = (AliMCParticle*)fMCEvent->GetTrack(trackLabel);
 	fVarIntMC[kVarMotherType] = RecoTrackMother(matchedMCTrack);
 	fVarFloatMC[kVarPtMC] = matchedMCTrack->Pt();
 	FillTriggerHistos(kHistoPtResolutionMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt] - fVarFloatMC[kVarPtMC]);
@@ -751,9 +772,23 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 	  fVarFloatMC[kVarVyMC] = matchedMCTrack->Yv();
 	  fVarFloatMC[kVarVzMC] = matchedMCTrack->Zv();
 	  fVarIntMC[kVarPdg] = matchedMCTrack->PdgCode();
+
+	  Int_t imother = matchedMCTrack->GetMother();
+	  if ( imother >= 0 ) {
+	    AliMCParticle* motherTrack = (AliMCParticle*)fMCEvent->GetTrack(imother);
+	    fVarFloatMC[kVarMotherPxMC] = motherTrack->Px();
+	    fVarFloatMC[kVarMotherPyMC] = motherTrack->Py();
+	    fVarFloatMC[kVarMotherPzMC] = motherTrack->Pz();
+	    fVarFloatMC[kVarMotherEtaMC] = motherTrack->Eta();
+	    fVarFloatMC[kVarMotherRapidityMC] = motherTrack->Y();
+	    fVarFloatMC[kVarMotherVxMC] = motherTrack->Xv();
+	    fVarFloatMC[kVarMotherVyMC] = motherTrack->Yv();
+	    fVarFloatMC[kVarMotherVzMC] = motherTrack->Zv();
+	    fVarIntMC[kVarMotherPdg] = motherTrack->PdgCode();
+	  }
 	}
       }
-      AliDebug(1, Form("Found mother %i", fVarIntMC[kVarMotherType]));
+      if ( fDebug >= 1 ) printf("AliAnalysisTaskSingleMu: Reco track. %s. Set mother %i\n", fDebugString.Data(), fVarIntMC[kVarMotherType]);
     } // if use MC
 
     containerInput[kHvarPt]  = fVarFloat[kVarPt];
@@ -767,7 +802,8 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     containerInput[kHvarMatchTrig] = (Double_t)fVarInt[kVarMatchTrig];
     containerInput[kHvarIsGoodVtx] = (Double_t)isGoodVtxBin;
     containerInput[kHvarMotherType] = (Double_t)fVarIntMC[kVarMotherType];
-    containerInput[kHvarP] = track->P();
+    containerInput[kHvarCentrality] = centralityForContainer;
+    //containerInput[kHvarP] = track->P();
 
     histoIndex = GetHistoIndex(kHistoNmuonsPerRun);
     for ( Int_t itrig=0; itrig<fTriggerClasses->GetEntries(); itrig++ ) {
@@ -845,7 +881,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     TCanvas *c1_SingleMu = new TCanvas(currName.Data(),"Vz vs Pt",10,10,310,310);
     c1_SingleMu->SetFillColor(10); c1_SingleMu->SetHighLightColor(10);
     c1_SingleMu->SetLeftMargin(0.15); c1_SingleMu->SetBottomMargin(0.15);
-    TH2* histo = dynamic_cast<TH2*>(container->Project(kHvarPt,kHvarVz,kStepReconstructed));
+    TH2* histo = dynamic_cast<TH2*>(container->Project(kStepReconstructed,kHvarPt,kHvarVz));
     currName = GetName();
     currName.Prepend("hPtVz_");
     histo->SetName(currName.Data());
@@ -875,7 +911,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   for(Int_t itrig = 0; itrig < nTrigs; itrig++){
     Int_t currIndex = GetHistoIndex(histoIndex, trigToFill[itrig], motherType);
     className = histoList->At(currIndex)->ClassName();
-    AliDebug(3, Form("matchTrig %i  Fill %s", matchTrig, histoList->At(currIndex)->GetName()));
+    if ( fDebug >= 3 ) printf("AliAnalysisTaskSingleMu: matchTrig %i  Fill %s\n", matchTrig, histoList->At(currIndex)->GetName());
     if (className.Contains("1"))
       ((TH1F*)histoList->At(currIndex))->Fill(var1);
     else if (className.Contains("2"))
@@ -896,41 +932,91 @@ Int_t AliAnalysisTaskSingleMu::RecoTrackMother(AliMCParticle* mcParticle)
 
   Int_t recoPdg = mcParticle->PdgCode();
 
+  fDebugString = Form("History: %i", recoPdg);
+
   // Track is not a muon
   if ( TMath::Abs(recoPdg) != 13 ) return kRecoHadron;
 
   Int_t imother = mcParticle->GetMother();
 
-  Bool_t isFirstMotherHF = kFALSE;
-  Int_t step = 0;
+  //Int_t baseFlv[2] = {4,5};
+  //Int_t mType[2] = {kCharmMu, kBeautyMu};
+  Int_t den[3] = {100, 1000, 1};
 
+  //Bool_t isFirstMotherHF = kFALSE;
+  //Int_t step = 0;
+  Int_t motherType = kPrimaryMu;
   while ( imother >= 0 ) {
     TParticle* part = ((AliMCParticle*)fMCEvent->GetTrack(imother))->Particle();
 
-    if ( part->GetUniqueID() == kPHadronic ) 
-      return kSecondaryMu;
+    fDebugString += Form(" <- %s (%s)", part->GetName(), TMCProcessName[part->GetUniqueID()]);
 
     Int_t absPdg = TMath::Abs(part->GetPdgCode());
+    //step++;
 
-    step++;
-    if ( step == 1 ) // only for first mother
-      isFirstMotherHF = ( ( absPdg >= 400  && absPdg < 600 ) || 
-			  ( absPdg >= 4000 && absPdg < 6000 ) );
-      
-    if ( absPdg < 4 )
-      return kPrimaryMu;
-
-    if ( isFirstMotherHF) {
-      if ( absPdg == 4 )
-	return kCharmMu;
-      else if ( absPdg == 5 )
-	return kBeautyMu;
-    }
+    if ( imother < fMCEvent->GetNumberOfPrimaries() ) {
+      /*
+      // Hadronic processes are not possible for "primary" =>
+      // either is decay or HF
+      if ( absPdg > 100 && absPdg < 400 ) {
+	// it is decay mu
+	motherType = kPrimaryMu;
+	break; // particle loop
+      }
+      else if ( step == 1 || isFirstMotherHF ){
+	// Check if it is HF muon
+	// avoid the case when the HF was not the first mother
+	// (the mu is produced by a decain chain => decay mu)
+	Bool_t foundHF = kFALSE;
+	for ( Int_t idec=0; idec<3; idec++ ) {
+	  for ( Int_t ihf=0; ihf<2; ihf++ ) {
+	    if ( ( absPdg/den[idec] ) != baseFlv[ihf] ) continue;
+	    motherType = mType[ihf];
+	    foundHF = kTRUE;
+	    break;
+	  } // loop on hf
+	  if ( foundHF ) {
+	    if ( step == 1 ) isFirstMotherHF = kTRUE;
+	    break; // break loop on pdg code
+	    // but continue the global loop to find higher mass HF
+	  }
+	} // loop on pdg codes
+	if ( ! foundHF ) {
+	  motherType = kPrimaryMu;
+	  break;
+	}
+	else if ( absPdg < 10 ) {
+	  // found HF quark: break particle loop
+	  break;
+	}
+      } // potential HF code
+      */
+      for ( Int_t idec=0; idec<3; idec++ ) {
+	Int_t flv = absPdg/den[idec];
+	if ( flv > 0 && flv < 4 ) return kPrimaryMu;
+	else if ( flv == 0 || flv > 5 ) continue;
+	else {
+	  motherType = ( flv == 4 ) ? kCharmMu : kBeautyMu;
+	  break; // break loop on pdg code
+	  // but continue the global loop to find higher mass HF
+	}
+      } // loop on pdg code
+      if ( absPdg < 10 ) break; // particle loop
+    } // is primary
+    else {
+      // If hadronic process => secondary
+      if ( part->GetUniqueID() == kPHadronic ) {
+	//motherType = kSecondaryMu;
+	//break; // particle loop
+	return kSecondaryMu;
+      }
+    } // is secondary
 
     imother = part->GetFirstMother();
-  }
 
-  return kPrimaryMu;
+  } // loop on mothers
+
+  return motherType;
 }
 
 //________________________________________________________________________
@@ -995,13 +1081,15 @@ void AliAnalysisTaskSingleMu::Reset(Bool_t keepGlobal)
     }
   }
   if ( fMCEvent ){
-    for(Int_t ivar=0; ivar<kNvarFloatMC; ivar++){
+    lastVarFloat = ( keepGlobal ) ? kVarIPVxMC : kNvarFloatMC;
+    for(Int_t ivar=0; ivar<lastVarFloat; ivar++){
       fVarFloatMC[ivar] = 0.;
     }
     for(Int_t ivar=0; ivar<kNvarIntMC; ivar++){
-      fVarIntMC[ivar] = -1;
+      fVarIntMC[ivar] = 0;
     }
-  }  
+    fVarIntMC[kVarMotherType] = -1;
+  }
 }
 
 //________________________________________________________________________
