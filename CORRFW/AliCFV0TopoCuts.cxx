@@ -101,15 +101,16 @@ Bool_t AliCFV0TopoCuts::IsSelected(TObject *obj) {
   // in case the V0 is accepted
   //
 
-  if (!obj) return kFALSE ;
 
-  TString className(obj->ClassName());
+  AliCFPair* pair = dynamic_cast<AliCFPair*>(obj);
+  if (!pair) return kFALSE ;
+
+  TString className(pair->ClassName());
   if (className.CompareTo("AliCFPair") != 0) {
     Error("IsSelected","obj must point to an AliCFPair !");
     return kFALSE ;
   }
 
-  AliCFPair    * pair        = dynamic_cast<AliCFPair*>(obj);
   AliESDv0     * esdV0       = pair->GetESDV0();
   AliAODv0     * aodV0       = pair->GetAODV0();
   AliVParticle * negDaughter = pair->GetNeg();
