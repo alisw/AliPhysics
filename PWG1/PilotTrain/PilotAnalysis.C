@@ -6,7 +6,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
 // Collision type: 0 = p-p   1 = Pb-Pb
 Int_t  iCollisionType = 1;
-Int_t runNumbers[5] = {139504};
+Int_t runNumbers[5] = {137844};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
@@ -27,12 +27,13 @@ Bool_t doImpParRes    = 1;
 Bool_t doMUON         = 1;
 Bool_t doTOF          = 1;
 Bool_t doHMPID        = 1;
+Bool_t doZDC          = 1;
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
 
 TString     train_name         = "QA";      // QA local folder name
-TString     train_tag          = "PbPb";        // Train special tag appended to 
+TString     train_tag          = "_Pb-Pb_";        // Train special tag appended to 
                                             // visible name. ("sim", "pp", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
@@ -40,8 +41,8 @@ TString     job_comment        = "PWG1 QA train "; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
-TString     root_version       = "v5-27-06b";
-TString     aliroot_version    = "v4-21-13-AN";
+TString     root_version       = "v5-27-06c";
+TString     aliroot_version    = "v4-21-15-AN";
                // Production directory - change as needed for test mode
 TString     grid_datadir       = "/alice/data/2010/LHC10h";
                // Work directory in GRID (DON'T CHANGE)
@@ -101,6 +102,7 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   doSSDdEdx       = " << doSSDdEdx << ";" << endl;
   out << "   doTPC           = " << doTPC << ";" << endl;
   out << "   doTRD           = " << doTRD << ";" << endl;
+  out << "   doZDC           = " << doZDC << ";" << endl;
   out << "   doImpParRes     = " << doImpParRes << ";" << endl;
   out << "   doMUON          = " << doMUON << ";" << endl;
   out << "   doTOF           = " << doTOF << ";" << endl;
@@ -295,6 +297,13 @@ void AddAnalysisTasks()
   }
 
   //
+  // ZDC (Chiara Oppedisano) 
+  //
+  if(doZDC) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/ZDC/AddTaskZDCQA.C");
+     AliAnalysisTaskSE *taskZDC = AddTaskZDCQA();
+  }   
+  //
   // Calorimetry (Gustavo Conesa)
   //
 
@@ -382,7 +391,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->AddDataFile(data_collection);
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(5);
+   plugin->SetNtestFiles(10);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetMergeDirName(mergeDirName);
 //   plugin->SetOneStageMerging(kTRUE);
