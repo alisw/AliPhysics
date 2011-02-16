@@ -40,6 +40,34 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   DefineOutput(1, TList::Class());
 }
 //____________________________________________________________________
+AliCentralMultiplicityTask::AliCentralMultiplicityTask() 
+  : AliAnalysisTaskSE(),
+    fData(0),
+    fList(0),
+    fAODCentral(),
+    fManager()
+{
+}
+//____________________________________________________________________
+AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
+  : AliAnalysisTaskSE(o),
+    fData(o.fData),
+    fList(o.fList),
+    fAODCentral(o.fAODCentral),
+    fManager(o.fManager)
+{
+}
+//____________________________________________________________________
+AliCentralMultiplicityTask&
+AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
+{
+  fData       = o.fData;
+  fList       = o.fList;
+  fAODCentral = o.fAODCentral;
+  fManager    = o.fManager;
+  return *this;
+}
+//____________________________________________________________________
 void AliCentralMultiplicityTask::UserCreateOutputObjects() 
 {
 

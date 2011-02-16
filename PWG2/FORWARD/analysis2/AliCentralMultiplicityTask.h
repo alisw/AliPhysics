@@ -65,30 +65,17 @@ public:
    */
   AliCentralMultiplicityTask(const char* name); 
   /** 
-   * Constructor
+   * Constructor 
+   *
+   * Reserved for ROOT's I/O system - do not use
    */
-  AliCentralMultiplicityTask() 
-    : AliAnalysisTaskSE(),
-      fData(0),
-      fList(0),
-      fAODCentral(),
-      fManager()
-  {
-  }
+  AliCentralMultiplicityTask();
   /** 
    * Copy constructor 
    * 
    * @param o Object to copy from 
    */
-  AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
-    : AliAnalysisTaskSE(o),
-      fData(o.fData),
-      fList(o.fList),
-      fAODCentral(o.fAODCentral),
-      fManager(o.fManager)
-  {
-    DefineOutput(1, TList::Class());
-  }
+  AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o);
   /** 
    * Assignment operator 
    * 
@@ -96,18 +83,7 @@ public:
    * 
    * @return Reference to this object 
    */
-  AliCentralMultiplicityTask& operator=(const AliCentralMultiplicityTask& o)
-  {
-    fData       = o.fData;
-    fList       = o.fList;
-    fAODCentral = o.fAODCentral;
-    fManager    = o.fManager;
-    
-    
-    DefineOutput(1, TList::Class());
-    
-    return *this;
-  }
+  AliCentralMultiplicityTask& operator=(const AliCentralMultiplicityTask& o);
   /** 
    * Create output objects 
    * 
@@ -125,20 +101,6 @@ public:
    * @param option Not used 
    */
   virtual void Terminate(Option_t* option);
-  /** 
-   * @} 
-   */
-  /** 
-   * Init the task and the manager  
-   * 
-   * @param option Not used
-   */
-  void InitManager(UShort_t sys, 
-		   UShort_t  sNN,
-		   Short_t   field) {fManager.Init(sys, sNN, field);}
-  /** 
-   * @} 
-   */
   /** 
    * Print information 
    * 
