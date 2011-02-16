@@ -40,7 +40,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
     Float_t multV0C=esdV0->GetMTotV0C();
     multV0 = multV0A+multV0C;
     
-    if (fIsMC) multV0 = 0.85871 * multV0; // FIXME: still valid?
+    if (fIsMC) multV0 = 0.85871 * multV0; // FIXME: still valid? DEPRECATED
     if (multV0 < fMultMin) return kFALSE;
     if (multV0 > fMultMax) return kFALSE;
     //    cout << "ok" << endl;
@@ -56,7 +56,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
     //    cout << "ok" << endl;
 
   }
- else if(fIsMC || fUseMultRange) {
+ else if(fUseMultRange) {
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }
@@ -69,6 +69,7 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
   } else {
 
    AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality(); // FIXME: change to alicentrality?
+   if(fIsMC) centrality->SetMCInput();
     if(!centrality && !fUseMultRange) {
       AliFatal("Centrality object not available"); 
     }
