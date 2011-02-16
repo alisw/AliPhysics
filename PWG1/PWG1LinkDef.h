@@ -129,6 +129,8 @@
 // Centrality classes
 #pragma link C++ class  AliMultiplicityCorrelations+;
 #pragma link C++ class  AliAnalysisTaskHIMultCorr+;
+// ZDC
+#pragma link C++ class  AliAnalysisTaskZDC+;
 
 
 #endif
