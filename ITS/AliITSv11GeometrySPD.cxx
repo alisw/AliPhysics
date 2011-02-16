@@ -592,6 +592,7 @@ void AliITSv11GeometrySPD::CarbonFiberSector(TGeoVolume *moth, Int_t sect,
     const Int_t ksecDipIndex[ksecNCoolingTubeDips] = {2, 5, 8, 11, 14, 17};
     Double_t secAngleStart[ksecNRadii];
     Double_t secAngleEnd[ksecNRadii];
+    for(Int_t i = 0; i < ksecNRadii; i++)secAngleEnd[i] = 0.;
     Double_t secAngleStart2[ksecNRadii];
     Double_t secAngleEnd2[ksecNRadii];
     Double_t secAngleTurbo[ksecNCoolingTubeDips] = {0., 0., 0., 0., 0., 0.0};
