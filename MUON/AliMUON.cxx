@@ -544,10 +544,15 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
         for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); ++i)
         {
           recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));
-          if (recoParam->IsDefault()) break;
+          if (recoParam && recoParam->IsDefault()) break;
           recoParam = 0x0;
         }        
       }      
+    }
+    
+    if (!recoParam)
+    {
+      AliFatal("Cannot work without recoparams !");
     }
     
     TString calibMode = recoParam->GetCalibrationMode();
