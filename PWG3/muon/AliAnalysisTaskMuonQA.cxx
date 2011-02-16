@@ -271,7 +271,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fTrackCounters->AddRubric("run", 1000000);
   fTrackCounters->AddRubric("selected", "yes/no");
   fTrackCounters->AddRubric("triggerRO", "good/bad");
-  fTrackCounters->AddRubric("v0mult", "low/high/any");
+  fTrackCounters->AddRubric("v0mult", "low/int/high/any");
   fTrackCounters->AddRubric("charge", "pos/neg/any");
   fTrackCounters->AddRubric("pt", "low/high/any");
   fTrackCounters->AddRubric("acc", "in/out");
@@ -284,7 +284,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fEventCounters->AddRubric("run", 1000000);
   fEventCounters->AddRubric("selected", "yes/no");
   fEventCounters->AddRubric("triggerRO", "good/bad");
-  fEventCounters->AddRubric("v0mult", "low/high/any");
+  fEventCounters->AddRubric("v0mult", "low/int/high/any");
   fEventCounters->Init();
   
   // Post data at least once per task to ensure data synchronisation (required for merging)
@@ -323,8 +323,10 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   TList listV0MultKey;
   listV0MultKey.SetOwner();
   listV0MultKey.AddLast(new TObjString("v0mult:any"));
-  if (v0Mult > 559. && v0Mult < 1165.) listV0MultKey.AddLast(new TObjString("v0mult:low")); // 60-80%
-  else if (v0Mult > 12191. && v0Mult < 20633.) listV0MultKey.AddLast(new TObjString("v0mult:high")); // 0-10%
+  //if (v0Mult > 239. && v0Mult < 559.) listV0MultKey.AddLast(new TObjString("v0mult:low"));
+  if (v0Mult >= 239. && v0Mult < 1165.) listV0MultKey.AddLast(new TObjString("v0mult:low"));
+  else if (v0Mult >= 1165. && v0Mult < 12191.) listV0MultKey.AddLast(new TObjString("v0mult:int"));
+  else if (v0Mult >= 12191. && v0Mult < 20633.) listV0MultKey.AddLast(new TObjString("v0mult:high"));
   TIter nextV0MultKey(&listV0MultKey);
   
   // first loop over tracks to check for trigger readout problem
