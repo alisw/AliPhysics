@@ -63,7 +63,7 @@
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliTriggerScalersESD.h"
-#include "AliLog.h"
+#include "AliCentrality.h"
 
 // ANALYSIS includes
 #include "AliAnalysisTaskSE.h"
@@ -89,21 +89,40 @@ ClassImp(AliAnalysisTaskPileup)
 
 
 //________________________________________________________________________
+AliAnalysisTaskPileup::AliAnalysisTaskPileup() :
+AliAnalysisTaskSE(),
+  fEventCounters(0x0),
+  fHistoEventsList(0x0),
+  fTriggerClasses(0x0),
+  fTriggerClassIndex(0x0),
+  fIsInitCDB(0),
+  fCentralityClasses(0x0)
+#if defined(READOCDB)
+  , fTriggerRunScalers(0x0),
+  fStorageList(0x0)
+#endif
+
+{
+  /// Default Constructor
+}
+
+
+//________________________________________________________________________
 AliAnalysisTaskPileup::AliAnalysisTaskPileup(const char *name) :
   AliAnalysisTaskSE(name),
   fEventCounters(0x0),
   fHistoEventsList(0x0),
   fTriggerClasses(0x0),
-  fTriggerClassIndex(new TArrayI(50))
+  fTriggerClassIndex(0x0),
+  fIsInitCDB(0),
+  fCentralityClasses(0x0)
 #if defined(READOCDB)
   , fTriggerRunScalers(0x0),
-  fDefaultStorage(new TString())
+  fStorageList(0x0)
 #endif
 
 {
   /// Constructor
-
-  fTriggerClassIndex->Reset(-1);
 
   DefineOutput(1,AliCounterCollection::Class());
   DefineOutput(2,TObjArray::Class());
@@ -125,7 +144,7 @@ AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
 
 #if defined(READOCDB)
   delete fTriggerRunScalers;
-  delete fDefaultStorage;
+  delete fStorageList;
 #endif
 
 }
@@ -137,54 +156,70 @@ void AliAnalysisTaskPileup::NotifyRun()
   /// Notify run
 
 #if defined(READOCDB)
+  fStorageList->Compress();
   if ( ! AliCDBManager::Instance()->GetDefaultStorage() ) {
-    AliCDBManager::Instance()->SetDefaultStorage(fDefaultStorage->Data());
+    for ( Int_t ientry=0; ientry<fStorageList->GetEntries(); ientry++ ) {
+      TObjString* calibStr = (TObjString*)fStorageList->At(ientry);
+      ientry++;
+      TObjString* dbStr = (TObjString*)fStorageList->At(ientry);
+      TString calibName = calibStr->GetString();
+      if ( ! calibName.CompareTo("default") ) {
+	AliCDBManager::Instance()->SetDefaultStorage(dbStr->GetName());
+      }
+      else {
+	AliCDBManager::Instance()->SetSpecificStorage(calibStr->GetName(), dbStr->GetName());
+      }
+    }
   }
+
+  // Default storage was not correclty set: nothing done
+  if ( ! AliCDBManager::Instance()->GetDefaultStorage() ) return;
 
   AliCDBManager::Instance()->SetRun(InputEvent()->GetRunNumber());
 
   AliCDBEntry *entry = 0x0;
   entry = AliCDBManager::Instance()->Get("GRP/CTP/Config");
-  if ( entry ) {
-    AliTriggerConfiguration* trigConf = (AliTriggerConfiguration*)entry->GetObject();
-    const TObjArray& classesArray = trigConf->GetClasses();
-    Int_t nclasses = classesArray.GetEntriesFast();
+  if ( ! entry ) return;
+  AliTriggerConfiguration* trigConf = (AliTriggerConfiguration*)entry->GetObject();
+  const TObjArray& classesArray = trigConf->GetClasses();
+  Int_t nclasses = classesArray.GetEntriesFast();
 
-    if ( fTriggerClasses ) delete fTriggerClasses;
+  if ( fTriggerClasses ) delete fTriggerClasses;
 
-    fTriggerClasses = new TObjArray(nclasses);
-    fTriggerClasses->SetOwner();
+  fTriggerClasses = new TObjArray(nclasses);
+  fTriggerClasses->SetOwner();
 
-    Int_t currActive = -1;
-    for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
-      AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
-      if (trclass && trclass->GetMask()>0) {
-	currActive++;
-	Int_t currPos = currActive;
+  Int_t currActive = -1;
+  for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+    if (trclass && trclass->GetMask()>0) {
+      currActive++;
+      Int_t currPos = currActive;
 
-	// Store the CBEAMB class at the first position
-	TString trigName = trclass->GetName();
-	if ( ( trigName.Contains("CBEAMB") ||  trigName.Contains("CTRUE") ) && ! trigName.Contains("WU") )
-	  currPos = 0;
-	else if ( ! fTriggerClasses->At(0) )
-	  currPos++;
+      // Store the CBEAMB class at the first position
+      TString trigName = trclass->GetName();
+      if ( ( trigName.Contains("CBEAMB") ||  trigName.Contains("CTRUE") ) && ! trigName.Contains("WU") )
+	currPos = 0;
+      else if ( ! fTriggerClasses->At(0) )
+	currPos++;
 
-	Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
-	TObjString* objString = new TObjString(trigName.Data());
-	fTriggerClasses->AddAtAndExpand(objString, currPos);
-	(*fTriggerClassIndex)[currPos] = trindex;
-	AliDebug(3, Form("Current class %s  index %i  position %i", trigName.Data(), trindex, currPos));
-      } // is class active
-    } // loop on trigger classes
-  } // if entry
+      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
+      TObjString* objString = new TObjString(trigName.Data());
+      fTriggerClasses->AddAtAndExpand(objString, currPos);
+      (*fTriggerClassIndex)[currPos] = trindex;
+      if ( fDebug >= 3 ) printf("AliAnalysisTaskPileup: Current class %s  index %i  position %i\n", trigName.Data(), trindex, currPos);
+    } // is class active
+  } // loop on trigger classes
 
   entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
-  if (entry) {    
-       AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
-       fTriggerRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
-       entry->SetOwner(0);
-       if (fTriggerRunScalers->CorrectScalersOverflow() == 0) AliInfo("32bit Trigger counters corrected for overflow");
-  }
+  if ( ! entry ) return;
+  AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
+  fTriggerRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
+  entry->SetOwner(0);
+  if (fTriggerRunScalers->CorrectScalersOverflow() == 0) AliInfo("32bit Trigger counters corrected for overflow");
+
+  fIsInitCDB = kTRUE;
+
 #endif
 
 }
@@ -194,6 +229,20 @@ void AliAnalysisTaskPileup::NotifyRun()
 void AliAnalysisTaskPileup::UserCreateOutputObjects()
 {
   /// Create histograms and counters
+
+  fTriggerClassIndex = new TArrayI(50);
+  fTriggerClassIndex->Reset(-1);
+
+  fCentralityClasses = new TAxis(20, 0., 100.);
+
+  TString centralityClassesStr = "", currClass = "";
+  for ( Int_t ibin=1; ibin<=fCentralityClasses->GetNbins(); ibin++ ){
+    if ( ! centralityClassesStr.IsNull() )
+      centralityClassesStr.Append("/");
+    currClass = Form("%.0f-%.0f",fCentralityClasses->GetBinLowEdge(ibin),fCentralityClasses->GetBinUpEdge(ibin));
+    centralityClassesStr += currClass;
+    fCentralityClasses->SetBinLabel(ibin, currClass.Data());
+  }
   
   // The framework has problems if the name of the object
   // and the one of container differ
@@ -206,6 +255,7 @@ void AliAnalysisTaskPileup::UserCreateOutputObjects()
   fEventCounters->AddRubric("trigger", 1000000);
   fEventCounters->AddRubric("vtxSelection", "any/hasVtxContrib/nonPileupSPD");
   fEventCounters->AddRubric("selected", "yes/no");
+  fEventCounters->AddRubric("centrality", centralityClassesStr.Data());
   fEventCounters->Init(kTRUE);
 
   // Post data at least once per task to ensure data synchronisation (required for merging)
@@ -233,20 +283,27 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
   Bool_t isPhysicsSelected = (fInputHandler && fInputHandler->IsEventSelected());
   TString selected = ( isPhysicsSelected ) ? "yes" : "no";
 
-#if defined(READOCDB)
-
   TString firedTrigClasses = ( esdEvent ) ? esdEvent->GetFiredTriggerClasses() : aodEvent->GetFiredTriggerClasses();
 
-  if ( firedTrigClasses.IsNull() ) return; // Reject non-physics events
+  if ( ! fIsInitCDB ) {
+    delete fTriggerClasses;
+    fTriggerClasses = firedTrigClasses.Tokenize(" ");
+    fTriggerClasses->SetOwner();
+  }
 
-  AliDebug(2, Form("\nEvent %lli\n", Entry()));
+#if defined(READOCDB)
 
-  Int_t nPoints = fTriggerRunScalers->GetScalersRecordsESD()->GetEntriesFast();
+  //if ( firedTrigClasses.IsNull() ) return; // Reject non-physics events
 
-  // Add protection for MC (no scalers there!)
+  if ( fDebug >= 2 ) printf("\nAliAnalysisTaskPileup: Event %lli\n", Entry());
+
+  // If scalers is not correctly loaded, the task becomes a mere event counter
+  Int_t nPoints = ( fTriggerRunScalers ) ? fTriggerRunScalers->GetScalersRecordsESD()->GetEntriesFast() : 0;
+
   AliTriggerScalersRecordESD* trigScalerRecords1 = 0x0;
   AliTriggerScalersRecordESD* trigScalerRecords2 = 0x0;
   if ( nPoints > 1 ) {
+    // Add protection for MC (no scalers there!)
 
     AliTimeStamp timeStamp(InputEvent()->GetOrbitNumber(), InputEvent()->GetPeriodNumber(), InputEvent()->GetBunchCrossNumber());
     Int_t position = fTriggerRunScalers->FindNearestScalersRecord(&timeStamp);
@@ -256,7 +313,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
     } 
     if ( position == 0 ) position++; // Don't trust the first one
     else if ( position + 1 >= nPoints ) position--;
-    AliDebug(2, Form("position %i\n", position));
+    if ( fDebug >= 2 ) printf("AliAnalysisTaskPileup: position %i\n", position);
     trigScalerRecords1 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(position);
 
     // Sometimes scalers are filled very close to each others
@@ -264,7 +321,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
     for ( Int_t ipos=position+1; ipos<nPoints; ipos++ ) {
       trigScalerRecords2 = (AliTriggerScalersRecordESD*)fTriggerRunScalers->GetScalersRecordsESD()->At(ipos);
       Double_t deltaTime = (Double_t)( trigScalerRecords2->GetTimeStamp()->GetSeconds() - trigScalerRecords1->GetTimeStamp()->GetSeconds() );
-      AliDebug(2, Form("Pos %i  TimeStamp %u - %u = %.0f\n", ipos, trigScalerRecords2->GetTimeStamp()->GetSeconds(), trigScalerRecords1->GetTimeStamp()->GetSeconds(), deltaTime));
+      if ( fDebug >= 2 ) printf("AliAnalysisTaskPileup: Pos %i  TimeStamp %u - %u = %.0f\n", ipos, trigScalerRecords2->GetTimeStamp()->GetSeconds(), trigScalerRecords1->GetTimeStamp()->GetSeconds(), deltaTime);
 
       if ( deltaTime > 1 )
 	break;
@@ -279,6 +336,12 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
   Int_t nVtxContrib = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetNContributors() : aodEvent->GetPrimaryVertex()->GetNContributors();
   Bool_t isPileupSPD = ( esdEvent ) ? esdEvent->IsPileupFromSPD(3,0.8) : aodEvent->IsPileupFromSPD(3,0.8);
 
+  Double_t centralityClass = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
+  // If percentile is exactly 100. the bin chosen is in overflow
+  // fix it by setting 99.999 instead of 100.
+  if ( centralityClass >= 100. ) centralityClass = 99.999;
+  Int_t centralityBin = fCentralityClasses->FindBin(centralityClass);
+
   TString vtxSelKey[3] = {"any","hasVtxContrib","nonPileupSPD"};
   Bool_t fillSel[3] = {kTRUE, ( nVtxContrib > 0 ), ( ( nVtxContrib > 0 ) && ( ! isPileupSPD ) )};
 
@@ -287,9 +350,15 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
   TString trigName = "";
   TString eventType = "";
 
-  Int_t nTriggerClasses = fTriggerClasses->GetEntries();
+  // Get entries counts the number of entries != 0
+  // However the position 0 can be empty in MC (it is reserved to CBEAMB)
+  // In this case with GetEntries the last entry is lost
+  // Use GetEntriesFast instead
+  Int_t nTriggerClasses = fTriggerClasses->GetEntriesFast();
   Int_t classIndex = -1;
+#if defined(READOCDB)
   Double_t deltaScalersBeam = 0., deltaScalers = 0.;
+#endif
   Bool_t isFiredOnce = kFALSE;
   for (Int_t itrig=0; itrig<nTriggerClasses+1; itrig++) {
 
@@ -299,12 +368,17 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 
     if ( itrig < nTriggerClasses ) {
 
-      // Check if current mask contains trigger
-      classIndex = (*fTriggerClassIndex)[itrig];
-      if ( classIndex < 0 ) continue; // Protection for MC (where BEAMB not present
+      if ( fIsInitCDB ) {
+	// Check if current mask contains trigger
+	classIndex = (*fTriggerClassIndex)[itrig];
+	if ( classIndex < 0 ) continue; // Protection for MC (where BEAMB not present
+	trigMask = ( 1ull << classIndex );
+	isClassFired = ( trigMask & InputEvent()->GetTriggerMask() );
+      }
+      else
+	isClassFired = kTRUE;
+
       trigName = ((TObjString*)fTriggerClasses->At(itrig))->GetString();
-      trigMask = ( 1ull << classIndex );
-      isClassFired = ( trigMask & InputEvent()->GetTriggerMask() );
 
 #if defined(READOCDB)
       if ( trigScalerRecords2 && ( isClassFired || itrig == 0 ) ) {
@@ -317,7 +391,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 	  deltaScalersBeam = deltaScalers;
 	else if ( isClassFired ) {
 	  correctFactorL0 = GetL0Correction(deltaScalers, deltaScalersBeam);
-	  AliDebug(2, Form("Scalers: %s %.0f  %s %.0f -> CF %f\n", fTriggerClasses->At(itrig)->GetName(), deltaScalers, fTriggerClasses->At(0)->GetName(), deltaScalersBeam, correctFactorL0));
+	  if ( fDebug >= 2 ) printf("AliAnalysisTaskPileup: Scalers: %s %.0f  %s %.0f -> CF %f\n", fTriggerClasses->At(itrig)->GetName(), deltaScalers, fTriggerClasses->At(0)->GetName(), deltaScalersBeam, correctFactorL0);
 	}
       }
 #endif
@@ -334,24 +408,23 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
     //const AliTriggerScalersESD* trigScaler = trigScalerRecords->GetTriggerScalersForClass(classIndex+1); // REMEMBER TO CUT
     //if ( classIndex > 1 ) printf("Index: trigger %i  scaler %i\n", classIndex+1, trigScaler->GetClassIndex()); // REMEMBER TO CUT
 
-    AliDebug(2, Form("Fired trig %s\n", trigName.Data()));
+    if ( fDebug >= 2 ) printf("AliAnalysisTaskPileup: Fired trig %s\n", trigName.Data());
 
     for ( Int_t ievType=0; ievType<2; ievType++ ){
       switch ( ievType ) {
-#if defined(READOCDB)
       case kHeventsCorrectL0:
 	correctFactor = correctFactorL0;
 	eventType = "correctedL0";
 	break;
-#endif
       default:
 	correctFactor = 1.;
 	eventType = "any";
+	break;
       }
 
       for ( Int_t isel=0; isel<3; isel++ ) {
 	if ( ! fillSel[isel] ) continue;
-	fEventCounters->Count(Form("event:%s/trigger:%s/vtxSelection:%s/selected:%s",eventType.Data(),trigName.Data(), vtxSelKey[isel].Data(), selected.Data()),correctFactor);
+	fEventCounters->Count(Form("event:%s/trigger:%s/vtxSelection:%s/selected:%s/centrality:%s",eventType.Data(),trigName.Data(), vtxSelKey[isel].Data(), selected.Data(),fCentralityClasses->GetBinLabel(centralityBin)),correctFactor);
       } // loop on vertex selection
     } // loop on event type
   } // loop on trigger classes
@@ -390,33 +463,42 @@ void AliAnalysisTaskPileup::Terminate(Option_t *)
   TString physName[kNphysSel] = {"", "PhysSel"};
   TString physTitle[kNphysSel] = {"", "w/ physics selection"};
 
+  TString typeName[2] = {"", "Centrality"};
+
   Int_t currHisto = -1;
   TString currName = "";
-  for ( Int_t isel=0; isel<kNphysSel; isel++ ) {
-    for ( Int_t iev=0; iev<kNevtTypes; iev++ ) {
-      currName = Form("%s/%s", evtSel[iev].Data(), physSel[isel].Data());
-      histo = fEventCounters->Get("trigger","vtxSelection",currName.Data());
-      if ( ! histo ) continue;
-      currHisto++;
-      currName = Form("hEvents%s%s", evtName[iev].Data(), physName[isel].Data());
-      histo->SetName(currName.Data());
-      currName = Form("%s %s", evtTitle[iev].Data(), physTitle[isel].Data());
-      histo->SetTitle(currName.Data());
-      fHistoEventsList->AddAtAndExpand(histo, currHisto);
-    } // loop on event type
-    TH2D* num = (TH2D*)fHistoEventsList->At(currHisto);
-    TH2D* den = (TH2D*)fHistoEventsList->At(currHisto-1);
-    if ( ! num || ! den ) continue;
-    currName = Form("hPileupL0%s_%s", physName[isel].Data(), GetName());
-    TH2D* histoPileupL0 = (TH2D*)num->Clone(currName.Data());
-    histoPileupL0->Divide(den);
-    currName = Form("c%i_%s", isel, GetName());
-    TCanvas *can = new TCanvas(currName.Data(),"Pileup",10,10,310,310);
-    can->SetFillColor(10); can->SetHighLightColor(10);
-    can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);
-    histoPileupL0->DrawCopy("text");
-    delete histoPileupL0;
-  } // loop on physics selection
+  for ( Int_t itype=0; itype<2; itype++ ) {
+    for ( Int_t isel=0; isel<kNphysSel; isel++ ) {
+      for ( Int_t iev=0; iev<kNevtTypes; iev++ ) {
+	currName = Form("%s/%s", evtSel[iev].Data(), physSel[isel].Data());
+	if ( itype == 0 )
+	  histo = fEventCounters->Get("trigger","vtxSelection",currName.Data());
+	else {
+	  currName.Append("/vtxSelection:any");
+	  histo = fEventCounters->Get("trigger","centrality",currName.Data());
+	}
+	if ( ! histo ) continue;
+	currHisto++;
+	currName = Form("hEvents%s%s%s", typeName[itype].Data(), evtName[iev].Data(), physName[isel].Data());
+	histo->SetName(currName.Data());
+	currName = Form("%s %s", evtTitle[iev].Data(), physTitle[isel].Data());
+	histo->SetTitle(currName.Data());
+	fHistoEventsList->AddAtAndExpand(histo, currHisto);
+      } // loop on event type
+      TH2D* num = (TH2D*)fHistoEventsList->At(currHisto);
+      TH2D* den = (TH2D*)fHistoEventsList->At(currHisto-1);
+      if ( ! num || ! den ) continue;
+      currName = Form("hPileupL0%s%s_%s", typeName[itype].Data(), physName[isel].Data(), GetName());
+      TH2D* histoPileupL0 = (TH2D*)num->Clone(currName.Data());
+      histoPileupL0->Divide(den);
+      currName.ReplaceAll("hPileupL0","canPileupL0");
+      TCanvas *can = new TCanvas(currName.Data(),"Pileup",10,10,310,310);
+      can->SetFillColor(10); can->SetHighLightColor(10);
+      can->SetLeftMargin(0.15); can->SetBottomMargin(0.15);
+      histoPileupL0->DrawCopy("text");
+      delete histoPileupL0;
+    } // loop on physics selection
+  } // loop on histo type
 
   PostData(2, fHistoEventsList);
 }
@@ -440,4 +522,30 @@ Double_t AliAnalysisTaskPileup::GetL0Correction(Double_t nCINT1B, Double_t nCBEA
   return mu / ( 1. - TMath::Exp(-mu) );
 
 }
- 
+
+//________________________________________________________________________
+void AliAnalysisTaskPileup::SetDefaultStorage(TString dbString)
+{
+  /// Set default storage
+  SetSpecificStorage("default", dbString);
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPileup::SetSpecificStorage(TString calibType, TString dbString)
+{
+  /// Set specific storage
+#if defined(READOCDB)
+  if ( ! fStorageList ) {
+    fStorageList = new TObjArray(5);
+    fStorageList->SetOwner();
+  }
+  fStorageList->AddLast(new TObjString(calibType));
+  fStorageList->AddLast(new TObjString(dbString));
+#else
+  calibType = "";
+  dbString  = "";
+  AliWarning(Form("Class was not compiled to run on OCDB. Command will not have effect"));
+#endif
+}
+

@@ -25,7 +25,8 @@ class AliTriggerRunScalers;
 class AliAnalysisTaskPileup : public AliAnalysisTaskSE {
 public:
   
-  AliAnalysisTaskPileup(const char *name = "AliAnalysisTaskPileup");
+  AliAnalysisTaskPileup();
+  AliAnalysisTaskPileup(const char *name);
   virtual ~AliAnalysisTaskPileup();
   
   virtual void   UserCreateOutputObjects();
@@ -33,9 +34,8 @@ public:
   virtual void   Terminate(Option_t *);
   virtual void   NotifyRun();
 
-#ifdef READOCDB
-  void SetDefaultStorage(TString defaultStorage) { (*fDefaultStorage) = defaultStorage; }
-#endif
+  void SetDefaultStorage(TString dbString);
+  void SetSpecificStorage(TString calibType, TString dbString);
   
 private:
   
@@ -58,9 +58,12 @@ private:
   TObjArray* fTriggerClasses; //!< full trigger class name
   TArrayI* fTriggerClassIndex;  //!< Trigger classes mask
 
+  Bool_t fIsInitCDB; //!< Flag telling if CDB is used
+  TAxis* fCentralityClasses; //!< Centrality classes
+
 #ifdef READOCDB
   AliTriggerRunScalers* fTriggerRunScalers; //!< Trigger scalers from OCDB
-  TString* fDefaultStorage; ///< Default storage
+  TObjArray* fStorageList; /// List of storages
 #endif
   
   ClassDef(AliAnalysisTaskPileup, 1);
