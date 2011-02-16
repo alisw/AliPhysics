@@ -24,6 +24,7 @@
 #include "AliMultiplicity.h"
 #include <TROOT.h>
 #include <TFile.h>
+#include <TError.h>
 #include <iostream>
 #include <iomanip>
 
@@ -39,7 +40,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   DefineOutput(1, TList::Class());
 }
 //____________________________________________________________________
-void AliCentralMultiplicityTask::UserCreateOutputObjects() {
+void AliCentralMultiplicityTask::UserCreateOutputObjects() 
+{
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
@@ -55,7 +57,8 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects() {
   
 }
 //____________________________________________________________________
-void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) {
+void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) 
+{
   
   AliESDInputHandler* eventHandler = 
     dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()
@@ -76,9 +79,10 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) {
   vertex->GetXYZ(vertexXYZ);
   if(TMath::Abs(vertexXYZ[2]) > 10) return;
   
-  Double_t delta = 2 ;
+  Double_t delta           = 2 ;
   Double_t vertexBinDouble = (vertexXYZ[2] + 10) / delta;
-  Int_t vtxbin = (Int_t)vertexBinDouble +1 ; //HHD: The vtxbins are 1-10, not 0-9
+  //HHD: The vtxbins are 1-10, not 0-9
+  Int_t    vtxbin          = Int_t(vertexBinDouble + 1) ; 
   
   // Make sure AOD is filled
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
@@ -95,17 +99,16 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) {
   
   const AliMultiplicity* spdmult = esd->GetMultiplicity();
   //Filling clusters in layer 1 used for tracklets...
-  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++) {
+  for(Int_t j = 0; j< spdmult->GetNumberOfTracklets();j++)
     aodHist->Fill(spdmult->GetEta(j),spdmult->GetPhi(j));
-  }
+
   //...and then the unused ones in layer 1 
-  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) {
+  for(Int_t j = 0; j< spdmult->GetNumberOfSingleClusters();j++) 
     aodHist->Fill(-TMath::Log(TMath::Tan(spdmult->GetThetaSingle(j)/2.)),
-		   spdmult->GetPhiSingle(j));
-  }
+		  spdmult->GetPhiSingle(j));
+  
   
   // Corrections
-  
   TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
   
@@ -123,32 +126,29 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) {
       
       Float_t aodnew   = aodvalue / acccor ;
       aodHist->SetBinContent(nx,ny, aodnew);
-      Float_t error = aodnew*TMath::Sqrt(TMath::Power(aodHist->GetBinError(nx,ny)/aodvalue,2) +
-					 TMath::Power(hAcceptance->GetBinError(nx)/acccor,2) );
+      Float_t aodErr   = aodHist->GetBinError(nx,ny);
+      Float_t accErr   = hAcceptance->GetBinError(nx);
+      Float_t error    = aodnew *TMath::Sqrt(TMath::Power(aodErr/aodvalue,2) +
+					     TMath::Power(accErr/acccor,2) );
       aodHist->SetBinError(nx,ny,error);
       
     }
     //Filling underflow bin if we eta bin is in range
     if(etabinSeen) aodHist->SetBinContent(nx,0, 1.);
-    
   }  
 
   PostData(1,fList);
-  
 }
 //____________________________________________________________________
-void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/) {
-
-
-
+void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/) 
+{
 }
 //____________________________________________________________________
 void
 AliCentralMultiplicityTask::Print(Option_t* /*option*/) const
 {
-   
 }
-//____________________________________________________________________
+//====================================================================
 AliCentralMultiplicityTask::Manager::Manager() :
   fAcceptancePath("$ALICE_ROOT/PWG2/FORWARD/corrections/CentralAcceptance"),
   fSecMapPath("$ALICE_ROOT/PWG2/FORWARD/corrections/CentralSecMap"),
@@ -161,22 +161,56 @@ AliCentralMultiplicityTask::Manager::Manager() :
 
 }
 //____________________________________________________________________
-const char* AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
-							     UShort_t  sys, 
-							     UShort_t  sNN,
-							     Short_t   field) {
-  
-  TString fname = "";
+AliCentralMultiplicityTask::Manager::Manager(const Manager& o) 
+  :fAcceptancePath(o.fAcceptancePath),
+   fSecMapPath(o.fSecMapPath),
+   fAcceptance(o.fAcceptance),
+   fSecmap(o.fSecmap),
+   fAcceptanceName(o.fAcceptanceName),
+   fSecMapName(o.fSecMapName) 
+{}
+//____________________________________________________________________
+AliCentralMultiplicityTask::Manager&
+AliCentralMultiplicityTask::Manager::operator=(const Manager& o)
+{
+  fAcceptancePath = o.fAcceptancePath;
+  fSecMapPath     = o.fSecMapPath;
+  fAcceptance     = o.fAcceptance;
+  fSecmap         = o.fSecmap;
+  fAcceptanceName = o.fAcceptanceName;
+  fSecMapName     = o.fSecMapName;
+  return *this;
+}
+
+//____________________________________________________________________
+const char* 
+AliCentralMultiplicityTask::Manager::GetFullFileName(UShort_t what, 
+						     UShort_t sys, 
+						     UShort_t sNN,  
+						     Short_t  field) const
+{
+  return Form("%s/%s",
+	      what == 0 ? GetSecMapPath() : GetAcceptancePath(), 
+	      GetFileName(what, sys, sNN, field));
+}
+
+//____________________________________________________________________
+const char* 
+AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
+						 UShort_t  sys, 
+						 UShort_t  sNN,
+						 Short_t   field) const
+{
+  // Must be static - otherwise the data may disappear on return from
+  // this member function
+  static TString fname = "";
   
   switch(what) {
-  case 0:
-    fname.Append(fSecMapName.Data());
-    break;
-  case 1: 
-    fname.Append(fAcceptanceName.Data());
-    break;
+  case 0:  fname.Append(fSecMapName.Data());     break;
+  case 1:  fname.Append(fAcceptanceName.Data()); break;
   default:
-    printf("Invalid indentifier for central object, must be 0 or 1!");
+    ::Error("GetFileName", 
+	    "Invalid indentifier %d for central object, must be 0 or 1!", what);
     break;
   }
   fname.Append(Form("_%s_%04dGeV_%c%1dkG.root", 
@@ -184,25 +218,50 @@ const char* AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
 		    sNN, (field < 0 ? 'm' : 'p'), TMath::Abs(field)));
   
   return fname.Data();
-  
+}
+
+//____________________________________________________________________
+TH2D* 
+AliCentralMultiplicityTask::Manager::GetSecMapCorrection(UShort_t vtxbin) const
+{
+  if (!fSecmap) { 
+    ::Warning("GetSecMapCorrection","No secondary map defined");
+    return 0;
+  }
+  return fSecmap->GetCorrection(vtxbin);
 }
 //____________________________________________________________________
-void AliCentralMultiplicityTask::Manager::Init( UShort_t  sys, 
-						UShort_t  sNN,
-						Short_t   field) {
-  
+TH1D* 
+AliCentralMultiplicityTask::Manager::GetAcceptanceCorrection(UShort_t vtxbin) 
+  const 
+{
+  if (!fAcceptance) { 
+    ::Warning("GetAcceptanceCorrection","No acceptance map defined");
+    return 0;
+  }
+  return fAcceptance->GetCorrection(vtxbin);
+}
+
+//____________________________________________________________________
+void 
+AliCentralMultiplicityTask::Manager::Init(UShort_t  sys, 
+					  UShort_t  sNN,
+					  Short_t   field) 
+{
   TFile fsec(GetFullFileName(0,sys,sNN,field));
-  fSecmap = dynamic_cast<AliCentralCorrSecondaryMap*>(fsec.Get(fSecMapName.Data()));  
+  fSecmap = 
+    dynamic_cast<AliCentralCorrSecondaryMap*>(fsec.Get(fSecMapName.Data()));  
   if(!fSecmap) {
-    printf("no central Secondary Map found!") ;
+    ::Error("Init", "no central Secondary Map found!") ;
     return;
   }
   TFile facc(GetFullFileName(1,sys,sNN,field));
-  fAcceptance = dynamic_cast<AliCentralCorrAcceptance*>(facc.Get(fAcceptanceName.Data()));
-if(!fAcceptance) {
-  printf("no central Acceptance found!") ;
-  return;
- }
+  fAcceptance = 
+    dynamic_cast<AliCentralCorrAcceptance*>(facc.Get(fAcceptanceName.Data()));
+  if(!fAcceptance) {
+    ::Error("Init", "no central Acceptance found!") ;
+    return;
+  }
 
 }
 //

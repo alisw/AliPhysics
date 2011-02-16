@@ -11,7 +11,7 @@
 #include <AliAODInputHandler.h>
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
-#include <AliAODCentralMult.h>
+#include "AliAODCentralMult.h"
 
 //____________________________________________________________________
 AliCentraldNdetaTask::AliCentraldNdetaTask()
