@@ -294,7 +294,7 @@ AliFMDCorrector::Print(Option_t* /* option */) const
             << ind << " Use vertex bias:        " << fUseVertexBias << "\n"
             << ind << " Use acceptance:         " << fUseAcceptance << "\n"
             << ind << " Use merging efficiency: " << fUseMergingEfficiency
-            << std::endl;
+            << std::noboolalpha << std::endl;
 }
 
 //====================================================================
