@@ -488,7 +488,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   return kTRUE;
 }
 
-void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
+void AliITStrackV2::CookdEdx(Double_t /*low*/, Double_t /*up*/) {
   //-----------------------------------------------------------------
   // This function calculates dE/dX within the "low" and "up" cuts.
   // Origin: Boris Batyunya, JINR, Boris.Batiounia@cern.ch 
@@ -522,15 +522,13 @@ void AliITStrackV2::CookdEdx(Double_t low, Double_t up) {
   } while (swap);
 
 
-  Double_t nl=low*nc, nu =up*nc;
-  Float_t sumamp = 0;
-  Float_t sumweight =0;
+  Double_t sumamp=0,sumweight=0;
+  Double_t weight[4]={1.,1.,0.,0.};
+  if(nc==3) weight[1]=0.5;
+  else if(nc<3) weight[1]=0.;
   for (Int_t i=0; i<nc; i++) {
-    Float_t weight =1;
-    if (i<nl+0.1)     weight = TMath::Max(1.-(nl-i),0.);
-    if (i>nu-1)     weight = TMath::Max(nu-i,0.);
-    sumamp+= dedx[i]*weight;
-    sumweight+=weight;
+    sumamp+= dedx[i]*weight[i];
+    sumweight+=weight[i];
   }
   SetdEdx(sumamp/sumweight);
 }
