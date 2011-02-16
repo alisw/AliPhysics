@@ -249,7 +249,7 @@ AliCentraldNdetaTask::Terminate(Option_t *)
   // once at the end of the query
         
   fSums = dynamic_cast<TList*> (GetOutputData(1));
-  if(!fOutput) {
+  if(!fSums) {
     AliError("Could not retrieve TList fSums"); 
     return; 
   }

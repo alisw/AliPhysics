@@ -55,6 +55,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   //    name Name of task 
   //
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -72,6 +73,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
   //    o Object to copy from 
   //
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
 }
 
 //____________________________________________________________________
@@ -241,6 +243,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
     return;
   }
   
+#if 0
   // Get our histograms from the container 
   TH1I* hEventsTr    = 0;//static_cast<TH1I*>(list->FindObject("nEventsTr"));
   TH1I* hEventsTrVtx = 0;//static_cast<TH1I*>(list->FindObject("nEventsTrVtx"));
@@ -253,30 +256,15 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
     list->ls();
     return;
   }
+#endif
   AliInfo("Fitting energy loss spectra");
   fEnergyFitter.Fit(list);
 
-  // Investigate output slot 
-  AliAnalysisDataSlot* oslot = GetOutputSlot(1);
-  if (oslot) { 
-    AliAnalysisDataContainer* ocont = oslot->GetContainer();
-    if (ocont) { 
-      TFile* ofile = ocont->GetFile();
-      if (ofile) {
-	AliInfo(Form("Output file %s opened with option %s (%s)", 
-		     ofile->GetName(), ofile->GetOption(), 
-		     ofile->IsWritable() ? "read-write" : "read-only"));
-	ofile->Flush();
-      }
-      else 
-	AliWarning("No output file associated with data container");
-    }
-    else 
-      AliWarning("No container associated with slot 1");
-  }
-  else 
-    AliWarning("Slot number 1 not defined");
-  
+  // Make a deep copy and post that as output 2 
+  TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
+						      list->GetName())));
+  PostData(2, list2);
+#if 0
   // Temporary code to save output to a file - should be disabled once 
   // the plugin stuff works 
   list->ls();
@@ -286,6 +274,7 @@ AliFMDEnergyFitterTask::Terminate(Option_t*)
   tmp->Write();
   tmp->Close();
   savdir->cd();
+#endif 
 }
 
 //____________________________________________________________________
