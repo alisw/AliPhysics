@@ -147,7 +147,7 @@ struct dNdetaDrawer
    */
   void SetSNN(UShort_t sNN) 
   {
-    fSNNSTring = new TNamed("sNN", Form("%04dGeV", sNN));
+    fSNNString = new TNamed("sNN", Form("%04dGeV", sNN));
     fSNNString->SetUniqueID(sNN);
   }
   //__________________________________________________________________
