@@ -152,17 +152,22 @@ void AliHFEefficiency::UserExec(Option_t *){
   // Event Loop
   // Filter track, fill Efficiency container
   //
+  AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fInputEvent);
+  if(!esdevent){
+    AliError("ESD Event required");
+    return;
+  }
   fEfficiency->NewEvent();
   fFilter->SetRecEvent(fInputEvent);
   if(fMCEvent){
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if(!mcH->InitOk()) return;
-    if(!mcH->TreeK()) return;
-    if(!mcH->TreeTR()) return;
+    if(mcH &&(!mcH->InitOk())) return;
+    if(mcH &&(!mcH->TreeK())) return;
+    if(mcH &&(!mcH->TreeTR())) return;
     fFilter->SetMC(fMCEvent);
     FilterMC();
   }
-  fFilter->FilterTracks(dynamic_cast<AliESDEvent *>(fInputEvent));
+  fFilter->FilterTracks(esdevent);
   TObjArray *tracks = fFilter->GetFilteredTracks();
   TIterator *iter = tracks->MakeIterator();
   fOutput->Fill("hNtracks", tracks->GetEntriesFast());
@@ -217,6 +222,7 @@ void AliHFEefficiency::FilterMC(){
   AliMCParticle *track = NULL;
   for(Int_t itrack = 0; itrack < fMCEvent->GetNumberOfTracks(); itrack++){
     track = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(itrack));
+    if(!track) continue;
     if(!fMCcut->IsSelected(track)) continue;
     cont[0] = track->Pt();
     cont[1] = track->Eta();

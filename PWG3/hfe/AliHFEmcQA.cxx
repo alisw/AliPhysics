@@ -185,13 +185,12 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   Double_t* binEdges[1];
   binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
   
-  
   TString hname; 
   if(kquark == kOthers){
     for (Int_t iqType = 0; iqType < 4; iqType++ ){
        hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-       fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
-       //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
+       //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]); //mj to compare with FONLL
+       fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.25,30.25);
        hname = hnopt+"Y_"+kqTypeLabel[iqType];
        fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
        hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -206,8 +205,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
      hname = hnopt+"PdgCode_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fPdgCode = new TH1F(hname,hname,20001,-10000.5,10000.5);
      hname = hnopt+"Pt_"+kqTypeLabel[iqType];
-     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
-     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",500,0,50);
+     //fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
+     fHist[iq][iqType][icut].fPt = new TH1F(hname,hname+";p_{T} (GeV/c)",60,0.25,30.25); // mj to compare with FONLL
      hname = hnopt+"Y_"+kqTypeLabel[iqType];
      fHist[iq][iqType][icut].fY = new TH1F(hname,hname,150,-7.5,7.5);
      hname = hnopt+"Eta_"+kqTypeLabel[iqType];
@@ -218,7 +217,7 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
 
   if (icut == 0){ 
     hname = hnopt+"Nq_"+kqTypeLabel[kQuark];
-    fHistComm[iq][icut].fNq = new TH1F(hname,hname,10,-0.5,9.5);
+    fHistComm[iq][icut].fNq = new TH1F(hname,hname,50,-0.5,49.5);
     hname = hnopt+"ProcessID_"+kqTypeLabel[kQuark];
     fHistComm[iq][icut].fProcessID = new TH1F(hname,hname,21,-10.5,10.5);
   }

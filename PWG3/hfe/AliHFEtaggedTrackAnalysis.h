@@ -41,17 +41,20 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     
     void InitContainer();
     void ProcessTrack(AliVParticle *track, Int_t abinitioPID);
-
+        
     AliHFEcontainer *GetContainer() const { return fContainer; }
     AliHFEpidQAmanager *GetPIDqa() const { return fPIDqa; }
     TList * GetPIDQA() const;
     TList * GetCutQA() const;
     AliHFEcollection * GetQAcollection() const { return fQAhistos; }
     Bool_t  GetClean() const { return fClean; }; 
+    Double_t GetMagneticField() const { return fMagneticField; };
 
     void SetCuts(AliHFEcuts *cuts);
     void SetPID(AliHFEpid *pid);
     void SetClean(Bool_t clean) { fClean = clean; };
+    void SetMagneticField(Double_t magneticField) { fMagneticField = magneticField; };
+    void SetVariablesTRD(Bool_t variablesTRD) { fVariablesTRD = variablesTRD; };
 
   private:
     enum{
@@ -66,6 +69,8 @@ class AliHFEtaggedTrackAnalysis : public TObject{
     AliCFManager        *fCFM;          // CF Manager used for the track filtering
     AliHFEcollection    *fQAhistos;     // QA histos
     Bool_t               fClean;        // Clean
+    Double_t            fMagneticField; // Magnetic field
+    Bool_t              fVariablesTRD;  //  Use phi angle at the first plane of the TRD 
     
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };

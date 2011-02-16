@@ -20,6 +20,8 @@
 //   Matus Kalisky <matus.kalisky@cern.ch>
 //
 
+#include <sstream>
+
 #include <TH1F.h>
 #include <TList.h>
 
@@ -72,8 +74,8 @@ AliAnalysisTaskCheckV0tender::~AliAnalysisTaskCheckV0tender(){
   //
 
   if (fOutput) delete fOutput;
-  if (fColl) delete fColl;
-  if (fCollMC) delete fCollMC;
+  //if (fColl) delete fColl;
+  //if (fCollMC) delete fCollMC;
   if (fEvents) delete fEvents;
 }
 //__________________________________________________________
@@ -198,8 +200,8 @@ void AliAnalysisTaskCheckV0tender::ProcessV0s(){
   // the V0s tagged by the V0 tender
   //
 
-  const char * type[4] = {"Gamma", "K0", "Lambda", "ALambda"};
-  char name[256] = "";
+  const TString type[4] = {"Gamma", "K0", "Lambda", "ALambda"};
+  TString name;
 
   Int_t nV0s = fInputEvent->GetNumberOfV0s();
   for(Int_t i=0; i<nV0s; ++i){
@@ -207,13 +209,15 @@ void AliAnalysisTaskCheckV0tender::ProcessV0s(){
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     Int_t pid = GetTenderPidV0(esdV0);
-    if(pid < 0) continue;
+    //if(pid < 0) continue;
+    pid = 2;
     fColl->Fill("h_NumberOf_V0s", pid);
-    sprintf(name, "h_%s_pt", type[pid]);
     Float_t pT = esdV0->Pt();
+    name = "h_" + type[pid] + "_pt";
     fColl->Fill(name, pT);
-    Float_t mass = MassV0(esdV0, pid);
-    sprintf(name, "h_%s_mass", type[pid]);
+    Float_t mass = MassV0(esdV0, pid);    
+    name = "h_" + type[pid] + "_mass";
+    //printf(" -D: name: %s \n", name.Data());
     fColl->Fill(name, mass);
   }
 
@@ -224,8 +228,8 @@ void AliAnalysisTaskCheckV0tender::ProcessDaughters(){
   // produce some check plots for V0 tender tagged single tracks
   //
 
-  const char * type[3] = {"Electron", "Pion", "Proton"};
-  char name[256] = "";
+  const TString type[3] = {"Electron", "Pion", "Proton"};
+  TString name;
 
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
   for(Int_t i=0; i<nTracks; ++i){
@@ -235,7 +239,7 @@ void AliAnalysisTaskCheckV0tender::ProcessDaughters(){
     if(pid < 0) continue;
     fColl->Fill("h_NumberOfDaughters", pid*1.0);
     Float_t pT = track->Pt();
-    sprintf(name, "h_%s_pt", type[pid]);
+    name = "h_" + type[pid] + "_pt";
     fColl->Fill(name, pT);
     
   }
@@ -247,8 +251,8 @@ void AliAnalysisTaskCheckV0tender::ProcessV0sMC(){
   // 
 
   const Int_t pid2pdg[4] = {22, 310, 3122, -3122};
-  const char * type[4] = {"Gamma", "K0", "Lambda", "ALambda"};
-  char name[256] = "";
+  const TString type[4] = {"Gamma", "K0", "Lambda", "ALambda"};
+  TString name;
   Int_t nV0s = fInputEvent->GetNumberOfV0s();
 
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
@@ -296,13 +300,13 @@ void AliAnalysisTaskCheckV0tender::ProcessV0sMC(){
     Int_t pdg = m->PdgCode();
     if((lPm == lNm) && (pdg == pid2pdg[pid])) id = kTRUE;
 
-    if(id) sprintf(name, "h_%s_pt_S", type[pid]);
-    else sprintf(name, "h_%s_pt_B", type[pid]);
+    if(id) name = "h_" + type[pid] + "_pt_S"; 
+    else name = "h_" + type[pid] + "_pt_B"; 
     Float_t pT = esdV0->Pt();
     fCollMC->Fill(name, pT);
 
-    if(id) sprintf(name, "h_%s_mass_S", type[pid]);
-    else sprintf(name, "h_%s_mass_B", type[pid]);
+    if(id) name = "h_" + type[pid] + "_mass_S";
+    else name = "h_" + type[pid] + "_mass_B";
     Float_t mass = MassV0(esdV0, pid);
     fCollMC->Fill(name, mass);
 
@@ -318,8 +322,8 @@ void AliAnalysisTaskCheckV0tender::ProcessDaughtersMC(){
   //
 
   const Int_t pid2pdg [3] = {11, 211, 2212};
-  const char * type[3] = {"Electron", "Pion", "Proton"};
-  char name[256] = "";
+  const TString type[3] = {"Electron", "Pion", "Proton"};
+  TString name;
 
 
   Int_t nTracks = fInputEvent->GetNumberOfTracks();
@@ -337,8 +341,8 @@ void AliAnalysisTaskCheckV0tender::ProcessDaughtersMC(){
     if(!mcp) continue;
     Int_t pdg = TMath::Abs(mcp->PdgCode());
     if(pdg == pid2pdg[pid]) id = kTRUE;
-    if(id) sprintf(name, "h_%s_pt_S", type[pid]);
-    else sprintf(name, "h_%s_pt_B", type[pid]);
+    if(id) name = "h_" + type[pid] + "_pt_S";
+    else name = "h_" + type[pid] + "_pt_B";
     fCollMC->Fill(name, pT);
   }
 }

@@ -68,11 +68,16 @@ class AliHFEtrdPIDqa : public TNamed{
 
     void Init();
     void FinishAnalysis();
+    void ShowMessages() { fShowMessage = kTRUE; }
     void StoreResults(const Char_t *filename = "HFEtrdPIDqa.root");
     void SaveThresholdParameters(const Char_t * filename = "TRD.Thresholds.root");
 
-    void DrawTracklet(Int_t tracklet, Bool_t doFit = kFALSE);
+    void DrawTracklet(Int_t tracklet, Double_t pmin = 0., Double_t pmax = 0., Bool_t doFit = kFALSE);
     void ClearLists();
+
+    Double_t EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p);
+    Double_t EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p);
+    Double_t EvalThreshold(Int_t ntls, Int_t eEff, Double_t p);
 
     //---------------------------------------------------
     // Getters for Histograms
@@ -153,6 +158,8 @@ class AliHFEtrdPIDqa : public TNamed{
     TList *fKaonEfficiencies;     //! List for Kaon efficiencies
 
     TList *fThresholds;           //! List for Threshold Graphs
+
+    Bool_t fShowMessage;         // Display debug messages
   
   ClassDef(AliHFEtrdPIDqa, 3)     // QA class for TRD PID 
 };

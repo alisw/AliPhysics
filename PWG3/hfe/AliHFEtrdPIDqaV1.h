@@ -28,6 +28,7 @@ class AliESDtrack;
 class AliAODTrack;
 class AliHFEcollection;
 class AliHFEpidObject;
+class TBrowser;
 class TCollection;
 
 class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
@@ -37,12 +38,15 @@ class AliHFEtrdPIDqaV1 : public AliHFEdetPIDqa{
     AliHFEtrdPIDqaV1(const AliHFEtrdPIDqaV1 &c);
     AliHFEtrdPIDqaV1 &operator=(const AliHFEtrdPIDqaV1 &o);
     ~AliHFEtrdPIDqaV1(){}
+    virtual Long64_t Merge(TCollection *coll);
+    virtual void Browse(TBrowser *b);
+    virtual Bool_t IsFolder() const { return kTRUE; };
 
     virtual void Initialize();
-    virtual Long64_t Merge(TCollection *coll);
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
 
     TH2 *MakeTPCspectrumNsigma(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
+    TH2 *MakeTRDspectrumTM(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH2 *MakeTRDlikelihoodDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
     TH2 *MakeTRDchargeDistribution(AliHFEdetPIDqa::EStep_t step, Int_t species = -1);
   protected:

@@ -123,7 +123,7 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 
   AliHFEpidObject::AnalysisType_t anaType = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
-  if(!(vtrack && vtrack->GetStatus() & AliESDtrack::kTOFpid)) return 0;
+  if(!(vtrack && (vtrack->GetStatus() & AliESDtrack::kTOFpid) && !(vtrack->GetStatus() & AliESDtrack::kTOFmismatch))) return 0;
   AliDebug(2, "Track Has TOF PID");
 
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kBeforePID);

@@ -137,12 +137,8 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
   this->~AliHFEcontainer(); // cleanup old object before creating the new onwe
   TNamed::operator=(ref);
   fContainers = new THashList();
+  fCorrelationMatrices = NULL;
   fNVars = ref.fNVars;
-  AliCFContainer *ctmp = NULL;
-  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
-    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
-    fContainers->Add(new AliCFContainer(*ctmp));
-  }
   if(fNVars){
     fVariables = new TObjArray(fNVars);
     AliHFEvarInfo *vtmp = NULL;
@@ -151,7 +147,17 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
       if(vtmp) fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
     }
   } else {
+    // No varible defined, do not try to copy anything
     fVariables = NULL;
+    return *this;
+  }
+
+  // Reference contains content, try copying also the containers and the correlation matrices
+  fContainers = new THashList();
+  AliCFContainer *ctmp = NULL;
+  for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
+    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
+    if(ctmp) fContainers->Add(new AliCFContainer(*ctmp));
   }
   // Copy also correlation matrices
   if(ref.fCorrelationMatrices){

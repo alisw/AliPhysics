@@ -127,8 +127,12 @@ class AliHFEcuts : public TNamed{
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
     inline void SetSigmaToVertex(Double_t sig);
-    void SetTPCiter1(Bool_t iter1) { fTPCiter1 = iter1; }
-    void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};    
+    void SetTPCmodes(AliHFEextraCuts::ETPCclusterDef_t clusterDef, AliHFEextraCuts::ETPCclrDef_t ratioDef) {
+      fTPCclusterDef= clusterDef;
+      fTPCratioDef = ratioDef;
+    }
+    void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
+    void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};    
     
     inline void CreateStandardCuts();
     
@@ -174,7 +178,8 @@ class AliHFEcuts : public TNamed{
     static const Char_t* fgkUndefined;                        // Name for undefined (overflow)
   
     ULong64_t fRequirements;  	  // Bitmap for requirements
-    Bool_t fTPCiter1;             // TPC iter1
+    AliHFEextraCuts::ETPCclusterDef_t fTPCclusterDef;       // TPC cluster definition
+    AliHFEextraCuts::ETPCclrDef_t fTPCratioDef;             // TPC cluster ratio Definition
     Double_t fDCAtoVtx[2];	      // DCA to Vertex
     Double_t fProdVtx[4];	        // Production Vertex
     Double_t fPtRange[2];	        // pt range
@@ -187,6 +192,7 @@ class AliHFEcuts : public TNamed{
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
     Double_t fSigmaToVtx;	        // Sigma To Vertex
     Double_t fVertexRangeZ;             // Vertex Range reconstructed
+    Bool_t   fTOFPIDStep;               // TOF matching step efficiency
 
     
     TList *fHistQA;		            //! QA Histograms

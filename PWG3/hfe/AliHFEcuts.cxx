@@ -103,7 +103,8 @@ const Char_t * AliHFEcuts::fgkUndefined = "Undefined";
 AliHFEcuts::AliHFEcuts():
   TNamed(),
   fRequirements(0),
-  fTPCiter1(kFALSE),
+  fTPCclusterDef(AliHFEextraCuts::kFound),
+  fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
   fMinClustersTPC(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
@@ -113,6 +114,7 @@ AliHFEcuts::AliHFEcuts():
   fMinClusterRatioTPC(0.),
   fSigmaToVtx(0.),
   fVertexRangeZ(20.),
+  fTOFPIDStep(kFALSE),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -126,7 +128,8 @@ AliHFEcuts::AliHFEcuts():
 AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   TNamed(name, title),
   fRequirements(0),
-  fTPCiter1(kFALSE),
+  fTPCclusterDef(AliHFEextraCuts::kFound),
+  fTPCratioDef(AliHFEextraCuts::kFoundOverFindable),
   fMinClustersTPC(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
@@ -136,6 +139,7 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
   fMinClusterRatioTPC(0.),
   fSigmaToVtx(0.),
   fVertexRangeZ(20.),
+  fTOFPIDStep(kFALSE),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -152,7 +156,8 @@ AliHFEcuts::AliHFEcuts(const Char_t *name, const Char_t *title):
 AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   TNamed(c),
   fRequirements(c.fRequirements),
-  fTPCiter1(c.fTPCiter1),
+  fTPCclusterDef(c.fTPCclusterDef),
+  fTPCratioDef(c.fTPCratioDef),
   fMinClustersTPC(0),
   fMinClustersITS(0),
   fMinTrackletsTRD(0),
@@ -162,6 +167,7 @@ AliHFEcuts::AliHFEcuts(const AliHFEcuts &c):
   fMinClusterRatioTPC(0),
   fSigmaToVtx(0),
   fVertexRangeZ(20.),
+  fTOFPIDStep(kFALSE),
   fHistQA(0x0),
   fCutList(0x0),
   fDebugLevel(0)
@@ -189,7 +195,8 @@ void AliHFEcuts::Copy(TObject &c) const {
   AliHFEcuts &target = dynamic_cast<AliHFEcuts &>(c);
 
   target.fRequirements = fRequirements;
-  target.fTPCiter1 = fTPCiter1;
+  target.fTPCclusterDef = fTPCclusterDef;
+  target.fTPCratioDef = fTPCratioDef;
   target.fMinClustersTPC = fMinClustersTPC;
   target.fMinClustersITS = fMinClustersITS;
   target.fMinTrackletsTRD = fMinTrackletsTRD;
@@ -199,6 +206,7 @@ void AliHFEcuts::Copy(TObject &c) const {
   target.fMinClusterRatioTPC = fMinClusterRatioTPC;
   target.fSigmaToVtx = fSigmaToVtx;
   target.fVertexRangeZ = fVertexRangeZ;
+  target.fTOFPIDStep = fTOFPIDStep;
   target.fDebugLevel = 0;
 
   memcpy(target.fProdVtx, fProdVtx, sizeof(Double_t) * 4);
@@ -463,16 +471,11 @@ void AliHFEcuts::SetRecKineITSTPCCutList(){
   //trackQuality->SetMaxCovDiagonalElements(2., 2., 0.5, 0.5, 2); 
 
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTPC","Extra cuts from the HFE group");
-  if(fMinClusterRatioTPC > 0.) hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC);
   hfecuts->SetDebugLevel(fDebugLevel);
 
   // Set the cut in the TPC number of clusters
-  if(fTPCiter1){
-    hfecuts->SetMinNClustersTPC(fMinClustersTPC);
-    hfecuts->SetTPCIter1(kTRUE);
-  }
-  else
-    trackQuality->SetMinNClusterTPC(fMinClustersTPC);
+  hfecuts->SetMinNClustersTPC(fMinClustersTPC, fTPCclusterDef);
+  hfecuts->SetClusterRatioTPC(fMinClusterRatioTPC, fTPCratioDef);
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"fCutsKineRec", (Char_t *)"REC Kine Cuts");
   kineCuts->SetPtRange(fPtRange[0], fPtRange[1]);
@@ -550,6 +553,7 @@ void AliHFEcuts::SetHFElectronTRDCuts(){
   AliDebug(2, "Called\n");
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("fCutsHFElectronGroupTRD","Extra cuts from the HFE group");
   if(fMinTrackletsTRD > 0.) hfecuts->SetMinTrackletsTRD(fMinTrackletsTRD);
+  if(fTOFPIDStep) hfecuts->SetTOFPID(kTRUE);
   if(IsQAOn()) hfecuts->SetQAOn(fHistQA);
   hfecuts->SetDebugLevel(fDebugLevel);
   

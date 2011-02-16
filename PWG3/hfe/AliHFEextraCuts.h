@@ -39,6 +39,17 @@ class AliHFEextraCuts : public AliCFCutBase{
       kNone = 3,
       kAny = 4
     } ITSPixel_t;
+    typedef enum{
+      kFound = 0,
+      kFoundIter1 = 1,
+      kCrossedRows = 2
+    } ETPCclusterDef_t;
+    typedef enum{
+      kFoundOverFindable = 0,
+      kFoundOverFindableIter1 = 1,
+      kFoundOverCR = 2,
+      kCROverFindable = 3
+    } ETPCclrDef_t;
     AliHFEextraCuts(const Char_t *name, const Char_t *title);
     AliHFEextraCuts(const AliHFEextraCuts &c);
     AliHFEextraCuts &operator=(const AliHFEextraCuts &c);
@@ -48,7 +59,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     virtual Bool_t IsSelected(TList *) { return kTRUE; };
     virtual void SetRecEventInfo(const TObject *event);
 
-    inline void SetClusterRatioTPC(Double_t ratio);
+    inline void SetClusterRatioTPC(Double_t ratio, ETPCclrDef_t def);
     inline void SetRequireITSpixel(ITSPixel_t pixel);
     inline void SetMinImpactParamR(Double_t impactParam);
     inline void SetMaxImpactParamR(Double_t impactParam);
@@ -57,8 +68,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinHFEImpactParamR();
     inline void SetMinHFEImpactParamNsigmaR();
     inline void SetMinTrackletsTRD(Int_t minTracklets);
-    inline void SetMinNClustersTPC(Int_t minclusters);
-    void SetTPCIter1(Bool_t tpcIter1) { fTPCiter1 = tpcIter1; }
+    inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
+    void SetTOFPID(Bool_t tofPid) { fTOFpid = tofPid;}
 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
     Bool_t GetCheckITSstatus() const { return fCheck; };
@@ -79,8 +90,8 @@ class AliHFEextraCuts : public AliCFCutBase{
     // Getter Functions for ESD/AOD compatible mode
     Int_t GetTRDnTrackletsPID(AliVTrack *track);
     Int_t GetITSstatus(AliVTrack *track, Int_t layer);
-    Int_t GetTPCfindableClusters(AliVTrack *track, Bool_t iter1 = kFALSE);
-    Int_t GetTPCncls(AliVTrack *track, Bool_t iter1 = kFALSE);
+    UInt_t GetTPCncls(AliVTrack *track);
+    Double_t GetTPCclusterRatio(AliVTrack *track);
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
     void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
@@ -106,15 +117,17 @@ class AliHFEextraCuts : public AliCFCutBase{
       kBeforeCuts =0,
       kAfterCuts = 1
     };
-    AliVEvent *fEvent;            //! working event
-    ULong64_t fCutCorrelation;		// Cut Correlation
-    ULong64_t fRequirements;		// Cut Requirements
-    Bool_t fTPCiter1;           // Tracking iteration from which the number of clusters is taken
-    Float_t fImpactParamCut[4];		// Impact Parmameter Cut
-    UInt_t fMinNClustersTPC;      // Minimum TPC clusters cut
-    Float_t fClusterRatioTPC;		// Ratio of findable vs. found clusters in TPC
-    UChar_t fMinTrackletsTRD;		// Min. Number of Tracklets inside TRD
-    UChar_t fPixelITS;			// Cut on ITS Pixels
+    AliVEvent *fEvent;                //! working event
+    ULong64_t fCutCorrelation;		    // Cut Correlation
+    ULong64_t fRequirements;		      // Cut Requirements
+    Float_t fImpactParamCut[4];		    // Impact Parmameter Cut
+    UInt_t fMinNClustersTPC;          // Minimum TPC clusters cut
+    Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
+    UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
+    UChar_t fPixelITS;                // Cut on ITS Pixels
+    Bool_t  fTOFpid;                  // TOF pid
+    UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
+    UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms
@@ -124,8 +137,9 @@ class AliHFEextraCuts : public AliCFCutBase{
 };
 
 //__________________________________________________________
-void AliHFEextraCuts::SetClusterRatioTPC(Double_t ratio) {
+void AliHFEextraCuts::SetClusterRatioTPC(Double_t ratio, ETPCclrDef_t def) {
   SETBIT(fRequirements, kClusterRatioTPC);
+  SETBIT(fTPCclusterRatioDef, def);
   fClusterRatioTPC = ratio; 
 }
 
@@ -176,8 +190,9 @@ void AliHFEextraCuts::SetMinTrackletsTRD(Int_t minTracklets){
 }
 
 //__________________________________________________________
-void AliHFEextraCuts::SetMinNClustersTPC(Int_t minClusters){
+void AliHFEextraCuts::SetMinNClustersTPC(Int_t minClusters, ETPCclusterDef_t tpcdef){
   SETBIT(fRequirements, kMinNClustersTPC);
+  SETBIT(fTPCclusterDef, tpcdef);
   fMinNClustersTPC = minClusters;
 }
 #endif
