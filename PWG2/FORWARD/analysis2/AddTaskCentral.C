@@ -13,7 +13,8 @@
  * 
  * @ingroup pwg2_forward_scripts
  */
-AliAnalysisTask* AddTaskCentral(UShort_t sys=1, UShort_t sNN=900, Short_t field=5)
+AliAnalysisTask* AddTaskCentral(UShort_t sys=1, UShort_t sNN=900, 
+				Short_t field=5)
 {
   gSystem->Load("libPWG2forward2");
 
