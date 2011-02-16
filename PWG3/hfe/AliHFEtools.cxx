@@ -257,10 +257,10 @@ Int_t AliHFEtools::GetPdg(const AliVParticle *track){
   Int_t pdg = 0;
   if(!TString(track->IsA()->GetName()).CompareTo("AliMCParticle")){
     const AliMCParticle *mctrack = dynamic_cast<const AliMCParticle *>(track);
-    pdg = mctrack->Particle()->GetPdgCode();
+    pdg = mctrack ? mctrack->Particle()->GetPdgCode() : 0;
   } else if(!TString(track->IsA()->GetName()).CompareTo("AliAODMCParticle")){
     const AliAODMCParticle *aodmctrack = dynamic_cast<const AliAODMCParticle *>(track);
-    pdg = aodmctrack->GetPdgCode();
+    pdg = aodmctrack ? aodmctrack->GetPdgCode() : 0;
   }
   return pdg;
 }

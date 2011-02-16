@@ -92,8 +92,8 @@ Bool_t  AliHFEV0pidMC::Process(TObjArray * const particles, Int_t type){
   // process the selected V0 daughter tracks
   //
   
-  Char_t hname[256] = "";
-  const Char_t *typeName[5] = {"Electron", "PionK0", "PionL", "Kaon", "Proton"};
+  TString hname;
+  const TString typeName[5] = {"Electron", "PionK0", "PionL", "Kaon", "Proton"};
   const Int_t  typePID[5] = {0, 2, 2, 3, 4};
 
   if(!fMC) return kFALSE;
@@ -131,18 +131,18 @@ Bool_t  AliHFEV0pidMC::Process(TObjArray * const particles, Int_t type){
     //Int_t pdgM = mcpM->PdgCode();
 
     // all candidates
-    sprintf(hname, "h_%s", typeName[type]);
+    hname = "h_" + typeName[type];
     fColl->Fill(hname, p);
     Int_t pidD = PDGtoPIDdaughter(pdgD);
     
     // all misidentified candidates
-    sprintf(hname, "h_mis_%s", typeName[type]);
+    hname = "h_mis_" + typeName[type];
     if(typePID[type] != pidD){
       fColl->Fill(hname, p);
     }
 
     // for every particle fill detailed information about the missidentified particles
-    sprintf(hname, "h_tag_%s", typeName[type]);       
+    hname = "h_tag_" + typeName[type];
     Int_t aliPID = PDGtoAliPID(pdgD);
     fColl->Fill(hname, aliPID, p);
     

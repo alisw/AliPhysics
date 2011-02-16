@@ -280,7 +280,7 @@ void AliHFEtrackFilter::FilterTracks(AliESDEvent * const event){
     goodTrack = kTRUE;
     for(Int_t icut = 0; icut < nStep; icut++){
       cutStep = dynamic_cast<AliHFEcutStep *>(fCutSteps->UncheckedAt(icut));
-      if(!cutStep->IsSelected(track)){
+      if(cutStep && (!cutStep->IsSelected(track))){
         // track cut away
         goodTrack = kFALSE;
         break;
@@ -391,7 +391,7 @@ AliHFEcutStep *AliHFEtrackFilter::MakeCutStepRecKineITSTPC(){
   fCutStep->AddCut(trackQuality);
 
   AliHFEextraCuts *hfecuts = new AliHFEextraCuts("HFETPC","Extra cuts from the HFE group");
-  hfecuts->SetClusterRatioTPC(0.6);
+  hfecuts->SetClusterRatioTPC(0.6, AliHFEextraCuts::kFoundOverCR);
   fCutStep->AddCut(hfecuts);
   
   AliCFTrackKineCuts *kineCuts = new AliCFTrackKineCuts((Char_t *)"RecKine", (Char_t *)"REC Kine Cuts");

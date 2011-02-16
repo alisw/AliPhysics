@@ -103,6 +103,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE():
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(kFALSE)
+  , fVariablesTRDTaggedTrack(kFALSE)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -143,6 +144,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(kFALSE)
+  , fVariablesTRDTaggedTrack(kFALSE)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -189,6 +191,7 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
   , fCleanTaggedTrack(ref.fCleanTaggedTrack)
+  , fVariablesTRDTaggedTrack(ref.fVariablesTRDTaggedTrack)
   , fCutspreselect(NULL)
   , fSecVtx(NULL)
   , fElecBackGround(NULL)
@@ -243,6 +246,7 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fCuts = fCuts;
   target.fTaggedTrackCuts = fTaggedTrackCuts;
   target.fCleanTaggedTrack = fCleanTaggedTrack;
+  target.fVariablesTRDTaggedTrack = fVariablesTRDTaggedTrack;
   target.fCutspreselect = fCutspreselect;
   target.fSecVtx = fSecVtx;
   target.fElecBackGround = fElecBackGround;
@@ -324,6 +328,16 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("chi2TRD","#chi2 per TRD cluster", 20, 0, 20);
   fQACollection->CreateTH1F("mccharge", "MC Charge", 200, -100, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
+  // Temporary histograms for TPC number of clusters for all signal tracks (MC true electrons) and for selected tracks (Markus Fasel)
+  fQACollection->CreateTH2F("TPCclusters2_1_Signal", "TPCclusterInfo for findable clusters for 2 neighbors for signal tracks", 30, 0.1, 10., 162, 0., 161.);
+  fQACollection->CreateTH2F("TPCclusters2_0_Signal", "TPCclusterInfo for the ratio for 2 neighbors for signal tracks", 30, 0.1, 10., 100, 0., 1.);
+  fQACollection->CreateTH2F("TPCclusters2_1_Selected", "TPCclusterInfo for findable clusters for 2 neighbors for selected tracks", 30, 0.1, 10., 162, 0., 161.);
+  fQACollection->CreateTH2F("TPCclusters2_0_Selected", "TPCclusterInfo for the ratio for 2 neighbors for selected tracks", 30, 0.1, 10., 110, 0., 1.1);
+  fQACollection->BinLogAxis("TPCclusters2_1_Signal", 0); 
+  fQACollection->BinLogAxis("TPCclusters2_0_Signal", 0);
+  fQACollection->BinLogAxis("TPCclusters2_1_Selected", 0); 
+  fQACollection->BinLogAxis("TPCclusters2_0_Selected", 0);
+
   InitPIDperformanceQA();
   InitContaminationQA();
   fQA->Add(fQACollection->GetList());
@@ -406,7 +420,10 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fTaggedTrackAnalysis = new AliHFEtaggedTrackAnalysis;
     fTaggedTrackAnalysis->SetCuts(fTaggedTrackCuts);
     fTaggedTrackAnalysis->SetClean(fCleanTaggedTrack);
+    if(fPIDqa->HasHighResolutionHistos()) 
+      fTaggedTrackAnalysis->GetPIDqa()->SetHighResolutionHistos();
     fTaggedTrackAnalysis->SetPID(fPID);
+    fTaggedTrackAnalysis->SetVariablesTRD(fVariablesTRDTaggedTrack);
     fTaggedTrackAnalysis->InitContainer();
     fOutput->Add(fTaggedTrackAnalysis->GetContainer());
     fQA->Add(fTaggedTrackAnalysis->GetPIDQA());
@@ -484,7 +501,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     }
     fPID->SetESDpid(workingPID);
     if(fPIDpreselect) fPIDpreselect->SetESDpid(workingPID);
-
+    
     ProcessESD();
   }
   // Done!!!
@@ -588,11 +605,10 @@ void AliAnalysisTaskHFE::ProcessMC(){
         fMCQA->SetGenEventHeader(fMCEvent->GenEventHeader());
         fMCQA->Init();
 
-        Int_t nMCTracks = fMCEvent->Stack()->GetNtrack();
-
         // loop over all tracks for decayed electrons
-        for (Int_t igen = 0; igen < nMCTracks; igen++){
+        for (Int_t igen = 0; igen < fMCEvent->GetNumberOfTracks(); igen++){
           TParticle* mcpart = fMCEvent->Stack()->Particle(igen);
+	  if(!mcpart) continue;
           fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kCharm);
           fMCQA->GetQuarkKine(mcpart, igen, AliHFEmcQA::kBeauty);
           fMCQA->GetHadronKine(mcpart, AliHFEmcQA::kCharm);
@@ -647,6 +663,9 @@ void AliAnalysisTaskHFE::ProcessESD(){
     AliError("ESD Event required for ESD Analysis")
     return;
   }
+
+  // Set magnetic field if V0 task on
+  if(fTaggedTrackAnalysis) fTaggedTrackAnalysis->SetMagneticField(fESD->GetMagneticField());
 
   // Do event Normalization
   Double_t eventContainer[3];
@@ -761,6 +780,12 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(signal) {
       fVarManager->FillContainer(fContainer, "recTrackContReco", AliHFEcuts::kStepRecNoCut, kFALSE);
       fVarManager->FillContainer(fContainer, "recTrackContMC", AliHFEcuts::kStepRecNoCut, kTRUE);
+      if((track->GetStatus() & AliESDtrack::kTPCout) 
+          && (TMath::Abs(track->Eta()) < 0.8) 
+          && (track->GetKinkIndex(0) == 0)){
+        fQACollection->Fill("TPCclusters2_1_Signal", track->Pt(), track->GetTPCClusterInfo(2,1));
+        fQACollection->Fill("TPCclusters2_0_Signal", track->Pt(), track->GetTPCNclsF() > 0 ?  track->GetTPCClusterInfo(2,1)/track->GetTPCNclsF() : 0.);
+      }
     }
 
     // RecKine: ITSTPC cuts  
@@ -776,6 +801,7 @@ void AliAnalysisTaskHFE::ProcessESD(){
 
     
     // RecPrim
+    if(track->GetKinkIndex(0) != 0) continue; // Quick and dirty fix to reject both kink mothers and daughters
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
 
     // HFEcuts: ITS layers cuts
@@ -819,6 +845,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     fPID->SetVarManager(fVarManager);
     if(!fPID->IsSelected(&hfetrack, fContainer, "recTrackCont", fPIDqa)) continue;
     nElectronCandidates++;
+    fQACollection->Fill("TPCclusters2_1_Selected", track->Pt(), track->GetTPCClusterInfo(2,1));
+    fQACollection->Fill("TPCclusters2_0_Selected", track->Pt(), track->GetTPCClusterInfo(2,0));
 
     // Fill Histogram for Hadronic Background
     if(HasMCData()){
@@ -830,8 +858,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if(signal) {
       // Apply weight for background contamination
       if(fBackGroundFactorsFunction) {
-	Double_t weightBackGround = fBackGroundFactorsFunction->Eval(TMath::Abs(track->P()));
-	if(weightBackGround < 0.0) weightBackGround = 0.0;
+	      Double_t weightBackGround = fBackGroundFactorsFunction->Eval(TMath::Abs(track->P()));
+	      if(weightBackGround < 0.0) weightBackGround = 0.0;
         else if(weightBackGround > 1.0) weightBackGround = 1.0;
         // weightBackGround as special weight
         fVarManager->FillContainer(fContainer, "hadronicBackground", 1, kFALSE, weightBackGround);

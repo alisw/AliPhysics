@@ -405,7 +405,7 @@ void AliHFEpidQA::FillIllumination(const TObjArray * const tracks, Int_t species
   while((o = trackIter())){
     if(!TString(o->IsA()->GetName()).CompareTo("AliESDtrack")){
       // work on local copy in order to not spoil others
-      esdtrack = new AliESDtrack(*(dynamic_cast<AliESDtrack *>(o)));
+      esdtrack = new AliESDtrack(*(static_cast<AliESDtrack *>(o)));  
       if(!esdtrack) continue;
     } else if(!TString(o->IsA()->GetName()).CompareTo("AliAODrack")){
       // Bad hack: Fill ESD track with AOD information
@@ -464,20 +464,20 @@ void AliHFEpidQA::MakePurity(const TObjArray *tracks, Int_t species){
   if(!fMC) return;
   AliDebug(3, Form("Doing Purity checks for species %d", species));
   Int_t pdg = GetPDG(species);
-  Char_t hname[256];
+  TString hname;
 
   switch(species){
   case  AliHFEV0cuts::kRecoElectron:
-    sprintf(hname, "purityElectron");
+    hname = "purityElectron";
     break;
   case  AliHFEV0cuts::kRecoPionK0:
-    sprintf(hname, "purityPionK0");
+    hname = "purityPionK0";
     break;
   case  AliHFEV0cuts::kRecoPionL:
-    sprintf(hname, "purityPionL");
+    hname = "purityPionL";
     break;
   case  AliHFEV0cuts::kRecoProton:
-    sprintf(hname, "purityProton");
+    hname = "purityProton";
     break;
   default:  // non investigated species
     AliDebug(3, "Species not investigated");
@@ -526,21 +526,21 @@ void AliHFEpidQA::FillElectronLikelihoods(const TObjArray * const particles, Int
   // pion and proton efficiency and the thresholds
   //
   Long_t status = 0;
-  const Char_t *detname[4] = {"ITS", "TPC", "TRD", "TOF"};
-  Char_t specname[256];
+  const TString detname[4] = {"ITS", "TPC", "TRD", "TOF"};
+  TString specname;
 
   switch(species){
   case  AliHFEV0cuts::kRecoElectron:
-    sprintf(specname, "Electron");
+    specname = "Electron";
     break;
   case  AliHFEV0cuts::kRecoPionK0:
-    sprintf(specname, "PionK0");
+    specname = "PionK0";
     break;
   case  AliHFEV0cuts::kRecoPionL:
-    sprintf(specname, "PionL");
+    specname = "PionL";
     break;
   case  AliHFEV0cuts::kRecoProton:
-    sprintf(specname, "Proton");
+    specname = "Proton";
     break;
   default:
     AliDebug(2, Form("Species %d not investigated", species));
@@ -582,9 +582,10 @@ void AliHFEpidQA::FillElectronLikelihoods(const TObjArray * const particles, Int
       quantities[0] = pTPC;
       Bool_t detFlagSet = kFALSE;
       for(Int_t idet = 0; idet < 4; idet++){
-        Char_t histname[256], histnameMC[256];
-        sprintf(histname, "h%s_El_like_%s", detname[idet], specname);
-        sprintf(histnameMC, "h%s_El_like_MC_%s", detname[idet], specname);
+        TString histname, histnameMC;
+	histname = "h" + detname[idet] = "_El_like_" + specname;
+	histnameMC = "h" + detname[idet] = "_El_like_MC_" + specname;
+
         switch(idet){
           case kITS:  esdTrack->GetITSpid(pidProbs);
                       detFlagSet = status & AliESDtrack::kITSpid;
@@ -619,11 +620,9 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
   //
   // Fill the PID response of different detectors to V0 daughter particles
   //
-  Char_t hname[256] = "";
-  Char_t hname2[256] = "";
-  Char_t hname3[256] = "";
+  TString hname, hname2, hname3;
    
-  const Char_t *typeName[5] = {"Electron", "PionK0", "PionL", "Kaon", "Proton"};
+  const TString typeName[5] = {"Electron", "PionK0", "PionL", "Kaon", "Proton"};
   const Int_t typePID[5] = {0, 2, 2, 3, 4};
 
   // PID THnSparse
@@ -704,7 +703,7 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	esdTrack->GetITSdEdxSamples(dEdxSamples);
 	Int_t nSamples = 0;
 	Double_t dEdxSum = 0.;
-	sprintf(hname, "hITS_dEdx_%s", typeName[species]);
+	hname = "hITS_dEdx_" + typeName[species];
 	for(Int_t i=0; i<4; ++i){
 	  if(dEdxSamples[i] > 0){
 	    nSamples++;
@@ -716,20 +715,19 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	fOutput->Fill("hITS_dEdx_nSamples", nSamples);
 
 	Double_t signal = esdTrack->GetITSsignal();
-	sprintf(hname, "hITS_Signal_%s", typeName[species]);
+	hname = "hITS_Signal_" + typeName[species];
 	fOutput->Fill(hname, p, signal);
 	data[4] = signal;
 	
 	// ITS number of signas
 	Double_t nsigma = fESDpid->NumberOfSigmasITS(esdTrack,(AliPID::EParticleType)typePID[species]);
-	sprintf(hname, "hITS_nSigma_%s",  typeName[species]);
+	hname = "hITS_nSigma_" + typeName[species];
 	fOutput->Fill(hname, p, nsigma);
-	
 	// ITS PID response
 	Double_t itsPID[5] = {-1, -1, -1, -1, -1};
 	esdTrack->GetITSpid(itsPID);
 	Int_t ix = GetMaxPID(itsPID);
-	sprintf(hname, "hITS_PID_p_%s", typeName[species]);
+	hname = "hITS_PID_" + typeName[species];
 	fOutput->Fill(hname, p, ix);
       }//.. kITSpid
       
@@ -744,18 +742,18 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	Double_t p = esdTrack->GetInnerParam() ? esdTrack->GetInnerParam()->P() : esdTrack->P();
 	// TPC dEdx
 	Double_t dEdx = esdTrack->GetTPCsignal();
-	sprintf(hname, "hTPC_dEdx_%s", typeName[species]);
+	hname = "hTPC_dEdx_" + typeName[species];
 	fOutput->Fill(hname, p, dEdx);
 	data[6] = dEdx;
 	
 	//TPC number of sigmas
 	Double_t nsigma = fESDpid->NumberOfSigmasTPC(esdTrack,(AliPID::EParticleType)typePID[species]);
-	sprintf(hname, "hTPC_nSigma_%s",  typeName[species]);
+	hname = "hTPC_nSigma_" + typeName[species];
 	fOutput->Fill(hname, p, nsigma);
 	data[7] = nsigma;
 
 	// TPC PID response
-	sprintf(hname, "hTPC_PID_p_%s", typeName[species]);
+	hname = "hTPC_PID_p_" + typeName[species];
 	Double_t tpcPID[5] = {-1, -1, -1, -1, -1};
 	esdTrack->GetTPCpid(tpcPID);
 	Int_t ix = GetMaxPID(tpcPID);
@@ -771,26 +769,26 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	
 	// TRD number of tracklets
 	Int_t ntrk = esdTrack->GetTRDntrackletsPID();
-	sprintf(hname, "hTRD_trk_%s", typeName[species]);
+	hname = "hTRD_trk_" + typeName[species];
 	fOutput->Fill(hname, p, ntrk);
 	data[8] = ntrk;
 
 	// TRD PID response
-	sprintf(hname, "hTRD_PID_p_%s", typeName[species]);
+	hname = "hTRD_PID_p_" + typeName[species];
 	Double_t trdPID[5] = {-1., -1., -1., -1., -1};
 	esdTrack->GetTRDpid(trdPID);
 	Int_t ix = GetMaxPID(trdPID);
 	fOutput->Fill(hname, p, ix);
 	// TRD n clusters
 	Int_t ncls = esdTrack->GetTRDncls();
-	sprintf(hname, "hTRD_cls_%s", typeName[species]);
+	hname = "hTRD_cls_" + typeName[species];
 	fOutput->Fill(hname, p, ncls);
 	data[9] = ncls;
 
 	// TRD - per tracklet - dEdx per, likelihood
-      	sprintf(hname, "hTRD_Nslc_%s", typeName[species]);
-	sprintf(hname2, "hTRD_slc_%s", typeName[species]);
-	sprintf(hname3, "hTRD_dEdx_%s", typeName[species]);
+	hname = "hTRD_Nslc_" + typeName[species];
+	hname2 = "hTRD_slc_" + typeName[species];
+	hname3 = "hTRD_dEdx_" + typeName[species];
 	Int_t nSlices = esdTrack->GetNumberOfTRDslices();
 	Double_t sumTot = 0.;
 	Int_t not0Tot = 0;
@@ -842,20 +840,20 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	Double_t t0 = fESDpid->GetTOFResponse().GetStartTime(esdTrack->P());
 
 	//TOF beta
-	sprintf(hname, "hTOF_beta_%s", typeName[species]);
+	hname = "hTOF_beta_" + typeName[species];
 	Float_t beta = TOFbeta(esdTrack);	
 	fOutput->Fill(hname, p, beta);
 	fOutput->Fill("hTOF_beta_all", p, beta);
 	// TOF nSigma
 	Double_t nsigma = fESDpid->NumberOfSigmasTOF(esdTrack,(AliPID::EParticleType)typePID[species], t0);
-	sprintf(hname, "hTOF_nSigma_%s",  typeName[species]);
+	hname = "hTOF_nSigma_" + typeName[species];
 	fOutput->Fill(hname, p, nsigma);
 	if(beta > 0.97 && beta < 1.03){
 	  data[11] = 1;
 	}
 	
 	// TOF PID response
-	sprintf(hname, "hTOF_PID_p_%s", typeName[species]);
+	hname = "hTOF_PID_p_" + typeName[species];
 	Double_t tofPID[5] = {-1., -1., -1., -1., -1};
 	esdTrack->GetTOFpid(tofPID);
 	Int_t ix = GetMaxPID(tofPID);
@@ -1037,7 +1035,6 @@ TObjArray * AliHFEpidQA::MakeCleanListElectrons(const TObjArray *electrons) cons
   if((esd = dynamic_cast<AliESDEvent *>(fEvent))){
     AliESDtrack *track = NULL, *partnerTrack = NULL;
     while((hfetrack = dynamic_cast<AliHFEV0info *>(candidates()))){
-      if(!hfetrack) continue;
       track = dynamic_cast<AliESDtrack *>(hfetrack->GetTrack());
       if(!track) continue;
       partnerTrack = esd->GetTrack(hfetrack->GetPartnerID());

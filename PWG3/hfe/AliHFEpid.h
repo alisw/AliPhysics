@@ -53,7 +53,8 @@ class AliHFEpid : public TNamed{
       kTPCpid = 3,
       kTRDpid = 4,
       kTOFpid = 5,
-      kNdetectorPID = 6
+      kEMCALpid = 6,
+      kNdetectorPID = 7
     };
     AliHFEpid();
     AliHFEpid(const Char_t *name);
@@ -85,7 +86,7 @@ class AliHFEpid : public TNamed{
     //-----Configure PID detectors with predefined stettings------
     void ConfigureTPCasymmetric(Double_t pmin = 0.1, Double_t pmax = 20., Double_t sigmamin = -0.2, Double_t sigmamax = 5.);
     void ConfigureTPCrejectionSimple();
-    void ConfigureTPCrejection();
+    void ConfigureTPCrejection(const char *lowerCutParam = NULL, Double_t *params = NULL);
     void ConfigureTPCstrategyParis();
     //------------------------------------------------------------
 
