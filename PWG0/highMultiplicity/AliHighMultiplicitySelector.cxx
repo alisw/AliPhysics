@@ -1518,7 +1518,7 @@ void AliHighMultiplicitySelector::Contamination_Reach()
   TFile* contFile = TFile::Open("contamination3.root");
 
   // for comparison: how many MB events can one take at the same time
-  Int_t mbEvents = 2e6 * 500;
+  Int_t mbEvents = 2000000 * 500;
 
   for (Int_t mc=0; mc<6; mc++)
   {
