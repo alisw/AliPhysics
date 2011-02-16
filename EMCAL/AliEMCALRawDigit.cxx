@@ -87,7 +87,7 @@ void AliEMCALRawDigit::SetTimeSamples(const Int_t timeSamples[], const Int_t nSa
 	//
 	if (fSamples) 
 	{
-		AliWarning("Samples already filled: delete first!");
+		AliDebug(1,"Samples already filled: delete first!");
 		fNSamples = 0;
 		delete [] fSamples;
 	}
@@ -103,7 +103,7 @@ Bool_t AliEMCALRawDigit::GetMaximum(Int_t& amplitude, Int_t& time) const
 	//
 	if (!fNSamples)
 	{
-		AliError("Digit has no time sample");
+		AliDebug(1,"Digit has no time sample");
 		return kFALSE;
 	}
 		
