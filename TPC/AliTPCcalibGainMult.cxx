@@ -282,7 +282,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"
       Float_t meanMax = (1/3.)*(signalArrayMax[0] + signalArrayMax[1] + signalArrayMax[2]);
-      Float_t meanTot = (1/3.)*(signalArrayTot[0] + signalArrayTot[1] + signalArrayTot[2]);
+      Float_t meanTot = (1/3.)*(signalArrayTot[0] + signalArrayTot[1] + signalArrayTot[2]); 
+      if (meanMax || meanTot < 1e-5) continue;
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
 	Double_t vecPadEqual[6] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift, track->OneOverPt()};
 	fHistPadEqual->Fill(vecPadEqual);
