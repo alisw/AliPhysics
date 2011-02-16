@@ -64,6 +64,7 @@
 #pragma link C++ class AliForwarddNdetaTask+;
 
 #pragma link C++ class AliCentralMultiplicityTask+;
+#pragma link C++ class AliCentralMultiplicityTask::Manager+;
 #pragma link C++ class AliAODCentralMult+;
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentralCorrAcceptance+;
