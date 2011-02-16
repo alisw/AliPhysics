@@ -74,14 +74,13 @@ Bool_t AliCFPairPidCut::IsSelected(TObject* obj) {
   // loops over decisions of single cuts and returns if the track is accepted
   //
 
-  if (!obj) return kFALSE ;
-  TString className(obj->ClassName());
+  AliCFPair* pair = dynamic_cast<AliCFPair*>(obj);
+  if (!pair) return kFALSE ;
+  TString className(pair->ClassName());
   if (className.CompareTo("AliCFPair") != 0) {
     Error("IsSelected","obj must point to a AliCFPair !");
     return kFALSE ;
   }
-
-  AliCFPair* pair = dynamic_cast<AliCFPair*>(obj);
 
   AliVParticle* tneg = pair->GetNeg();
   AliVParticle* tpos = pair->GetPos();

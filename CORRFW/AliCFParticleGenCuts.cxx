@@ -455,11 +455,25 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
   Double32_t decayRxy=0.;
 
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fMCInfo);
+  
+  if (!aod) {
+    AliError("AOD event casting failed");
+    return;
+  }
+  
   TClonesArray* mcArray = dynamic_cast<TClonesArray*>(aod->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (!mcArray) {
+    AliError("array casting failed");
+    return;
+  }
   AliAODMCParticle* daughter = 0x0 ;
 
   if (mcPart->GetDaughter(0)>0) {
     daughter = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
+    if (!daughter) {
+      AliError("daughter casting failed");
+      return;
+    }
 
     decayVx=(Double32_t)daughter->Xv();
     decayVy=(Double32_t)daughter->Yv();
@@ -660,10 +674,10 @@ void AliCFParticleGenCuts::DefineHistograms() {
     fhCutCorrelation->GetYaxis()->SetBinLabel(k,fhCutStatistics->GetXaxis()->GetBinLabel(k));
   }
 
-  Char_t str[256];
+  Char_t str[5];
   for (int i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
     fhQA[kCutCharge]      [i] = new TH1F(Form("%s_charge%s"      ,GetName(),str),"",2,0,2);
     fhQA[kCutPrimSec]     [i] = new TH1F(Form("%s_primSec%s"     ,GetName(),str),"",2,0,2);
     fhQA[kCutPDGCode]     [i] = new TH1F(Form("%s_pdgCode%s"     ,GetName(),str),"",2,0,2);

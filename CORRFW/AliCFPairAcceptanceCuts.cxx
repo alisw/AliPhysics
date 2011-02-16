@@ -122,14 +122,16 @@ void AliCFPairAcceptanceCuts::SelectionBitMap(TObject* obj)
 
   for (UInt_t i=0; i<kNCuts; i++) fBitmap->SetBitNumber(i,kFALSE);
 
-  if (!obj) return;
-  TString className(obj->ClassName());
+  AliMCParticle* mcpart = dynamic_cast<AliMCParticle*>(obj) ;
+
+  if (!mcpart) return;
+  TString className(mcpart->ClassName());
   if (className.CompareTo("AliMCParticle") != 0) {
     AliError("obj must point to an AliMCParticle !");
     return ;
   }
 
-  TParticle* part = (dynamic_cast<AliMCParticle*>(obj))->Particle() ;
+  TParticle* part = mcpart->Particle() ;
   if (!part || part->GetNDaughters() !=2) return ;
 
   Int_t lab0 = part->GetDaughter(0);

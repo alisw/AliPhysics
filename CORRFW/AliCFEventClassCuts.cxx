@@ -334,10 +334,10 @@ void AliCFEventClassCuts::TriggerBitMap(AliVEvent* ev, TBits *bitmapT ) {
   }  
   
   // book QA histograms
-  Char_t str[256];
+  Char_t str[5];
   for (Int_t i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
 
     fhQA[kTrigger][i]	= new  TH1F(Form("%s_TriggerBits%s",GetName(),str),	                "",23,-0.5,22.5);
     fhQA[kZDCEnergyN1][i]	= new  TH1F(Form("%s_ZDC_Energy_N1%s",GetName(),str),		"",800,-500,7500);
