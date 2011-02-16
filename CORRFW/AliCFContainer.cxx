@@ -78,7 +78,11 @@ AliCFContainer::~AliCFContainer()
   //
   // destructor
   //
-  if (fGrid) delete [] fGrid;
+  if (fGrid) {
+    for ( Int_t istep=0; istep<fNStep; istep++ ) 
+      delete fGrid[istep];
+  }
+  delete [] fGrid;
 }
 //____________________________________________________________________
 AliCFContainer &AliCFContainer::operator=(const AliCFContainer &c)
@@ -195,6 +199,7 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nSteps, const Int_t* steps,
   for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,grids[iStep]);
 
   delete [] bins;
+  for (Int_t iVar=0; iVar<nVars; iVar++) delete axis[iVar];
   delete [] axis ;
   return out;
 }
@@ -212,11 +217,11 @@ Long64_t AliCFContainer::Merge(TCollection* list)
   if (list->IsEmpty())
     return 1;
 
-  TIterator* iter = list->MakeIterator();
+  TIter iter(list);
   TObject* obj;
   
   Int_t count = 0;
-  while ((obj = iter->Next())) {
+  while ((obj = iter())) {
     AliCFContainer* entry = dynamic_cast<AliCFContainer*> (obj);
     if (entry == 0) 
       continue;
