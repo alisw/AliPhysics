@@ -26,7 +26,7 @@ AliAnalysisTask* AddTaskCentral(UShort_t sys=1, UShort_t sNN=900,
 
   // --- Make the task and add it to the manager ---------------------
   AliCentralMultiplicityTask* task = new AliCentralMultiplicityTask("Central");
-  task->InitManager(sys, sNN, field);
+  task->GetManager().Init(sys, sNN, field);
   mgr->AddTask(task);
   
   // --- Make the output container and connect it --------------------
@@ -40,3 +40,6 @@ AliAnalysisTask* AddTaskCentral(UShort_t sys=1, UShort_t sNN=900,
   
   return task;
 }
+//
+// EOF
+//
