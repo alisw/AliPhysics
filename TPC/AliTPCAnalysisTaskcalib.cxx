@@ -132,7 +132,10 @@ void AliTPCAnalysisTaskcalib::CreateOutputObjects() {
   //
   //
   //OpenFile(0, "RECREATE");
+
+  PostData(0,fCalibJobs);
 }
+
 void AliTPCAnalysisTaskcalib::Terminate(Option_t */*option*/) {
   //
   // Terminate
