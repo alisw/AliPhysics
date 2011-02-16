@@ -122,6 +122,8 @@ AliAnalysisTaskSE(),
   fHOutMultTKL(0),
   fHOutMultCL0(0),
   fHOutMultCL1(0),
+  fHOutMultV0MvsZDN(0),
+  fHOutMultZEMvsZDN(0),
   fHOutMultV0MvsZDC(0),
   fHOutMultZEMvsZDC(0),
   fHOutMultV0MvsCL1(0),
@@ -202,6 +204,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultTKL(0),
   fHOutMultCL0(0),
   fHOutMultCL1(0),
+  fHOutMultV0MvsZDN(0),
+  fHOutMultZEMvsZDN(0),
   fHOutMultV0MvsZDC(0),
   fHOutMultZEMvsZDC(0),
   fHOutMultV0MvsCL1(0),
@@ -293,6 +297,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultTKL(ana.fHOutMultTKL),
   fHOutMultCL0(ana.fHOutMultCL0),
   fHOutMultCL1(ana.fHOutMultCL1),
+  fHOutMultV0MvsZDN(ana.fHOutMultV0MvsZDN),
+  fHOutMultZEMvsZDN(ana.fHOutMultZEMvsZDN),
   fHOutMultV0MvsZDC(ana.fHOutMultV0MvsZDC),
   fHOutMultZEMvsZDC(ana.fHOutMultZEMvsZDC),
   fHOutMultV0MvsCL1(ana.fHOutMultV0MvsCL1),
@@ -344,8 +350,10 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
   fHOutMultCL0 = new TH1F("fHOutMultCL0","fHOutMultCL0; Multiplicity SPD inner",7000,0,7000);
   fHOutMultCL1 = new TH1F("fHOutMultCL1","fHOutMultCL1; Multiplicity SPD outer",7000,0,7000);
-  fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,25000,500,0,6000);
-  fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,2500,500,0,6000);
+  fHOutMultV0MvsZDN = new TH2F("fHOutMultV0MvsZDN","fHOutMultV0MvsZDN; Multiplicity V0; Energy ZDC-N",500,0,25000,500,0,180000);
+  fHOutMultZEMvsZDN = new TH2F("fHOutMultZEMvsZDN","fHOutMultZEMvsZDN; Energy ZEM; Energy ZDC-N",500,0,2500,500,0,180000);
+  fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,25000,500,0,200000);
+  fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,2500,500,0,200000);
   fHOutMultV0MvsCL1 = new TH2F("fHOutMultV0MvsCL1","fHOutMultV0MvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
   fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
   fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
@@ -377,6 +385,8 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutMultTKL); 
   fOutputList->Add(  fHOutMultCL0); 
   fOutputList->Add(  fHOutMultCL1); 
+  fOutputList->Add(  fHOutMultV0MvsZDN);
+  fOutputList->Add(  fHOutMultZEMvsZDN);
   fOutputList->Add(  fHOutMultV0MvsZDC);
   fOutputList->Add(  fHOutMultZEMvsZDC);
   fOutputList->Add(  fHOutMultV0MvsCL1);
@@ -514,10 +524,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     
     // ***** ZDC info
     AliESDZDC *esdZDC = esd->GetESDZDC();
-    zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy())/8.;
-    zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy())/8.;
-    znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy())/8.;
-    zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy())/8.;
+    zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
+    zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
+    znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
+    zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
     zem1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0))/8.;
     zem2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1))/8.;
     
@@ -592,6 +602,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   fHOutQuality->Fill(fQuality);
   fHOutVertex->Fill(zvtx);
 
+  fHOutMultV0MvsZDN->Fill(v0Corr,(zncEnergy+znaEnergy));
+  fHOutMultZEMvsZDN->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy));
   fHOutMultV0MvsZDC->Fill(v0Corr,(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
   fHOutMultZEMvsZDC->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
   fHOutMultV0MvsCL1->Fill(v0Corr,spdCorr);
