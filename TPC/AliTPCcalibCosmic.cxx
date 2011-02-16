@@ -1078,8 +1078,8 @@ void AliTPCcalibCosmic::FindCosmicPairs(AliESDEvent * event){
   const Double_t kMinNcl=50;
   const Double_t kMaxDelta[5]={2,600,0.02,0.02,0.1};
   Int_t ntracks=event->GetNumberOfTracks(); 
-  Float_t dcaTPC[2]={0,0};
-  Float_t covTPC[3]={0,0,0};
+  //  Float_t dcaTPC[2]={0,0};
+  // Float_t covTPC[3]={0,0,0};
 
   UInt_t specie = event->GetEventSpecie();  // skip laser events
   if (specie==AliRecoParam::kCalib) return;
@@ -1101,7 +1101,7 @@ void AliTPCcalibCosmic::FindCosmicPairs(AliESDEvent * event){
     //track0->GetImpactParametersTPC(dcaTPC,covTPC);
     //if (TMath::Abs(dcaTPC[0])<kMaxDelta[0]) continue;
     //if (TMath::Abs(dcaTPC[1])<kMaxDelta[0]*2) continue;
-    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
+    //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
     for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
       AliESDtrack *track1 = event->GetTrack(itrack1);
       if (!track1) continue;  
@@ -1134,7 +1134,7 @@ void AliTPCcalibCosmic::FindCosmicPairs(AliESDEvent * event){
       if  (TMath::Abs(par0[3]+par1[3])>kMaxDelta[3]) isPair=kFALSE; //delta tgl opposite sign
       if  (TMath::Abs(AliTracker::GetBz())>1 && TMath::Abs(par0[4]+par1[4])>kMaxDelta[4]) isPair=kFALSE; //delta 1/pt opposite sign
       if (!isPair) continue;
-      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
+      //      const AliExternalTrackParam * trackIn1 = track1->GetInnerParam();      
       //
       //       
       TTreeSRedirector * pcstream =  GetDebugStreamer();
@@ -1274,7 +1274,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
   AliGRPObject*  grp = AliTPCcalibDB::Instance()->GetGRP(run);
   Double_t time=0.5*(grp->GetTimeStart() +grp->GetTimeEnd()); 
   transform->SetCurrentRun(run);
-  transform->SetCurrentTimeStamp(time);
+  transform->SetCurrentTimeStamp(TMath::Nint(time));
   Double_t covar[15];
   for (Int_t i=0;i<15;i++) covar[i]=0;
   covar[0]=kSigma*kSigma;

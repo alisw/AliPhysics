@@ -4168,21 +4168,21 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
     delete his;
     //
     his=hisTimeInput->Projection(1);
-    Int_t firstBinTime=his->FindFirstBinAbove(0);
-    Int_t lastBinTime=his->FindLastBinAbove(0);
+    //    Int_t firstBinTime=his->FindFirstBinAbove(0);
+    //Int_t lastBinTime=his->FindLastBinAbove(0);
     //hisTimeInput->GetAxis(1)->SetRange(firstBinTime, lastBinTime);
     delete his;
     //
     //
     his=hisTimeInput->Projection(2);
-    Int_t firstBinZ=his->FindFirstBinAbove(0);
-    Int_t lastBinZ=his->FindLastBinAbove(0);
+    //Int_t firstBinZ=his->FindFirstBinAbove(0);
+    //Int_t lastBinZ=his->FindLastBinAbove(0);
     //hisTimeInput->GetAxis(2)->SetRange(firstBinZ, lastBinZ);
     delete his;
     //
     his=hisPadInput->Projection(2);
-    Int_t firstBinY=his->FindFirstBinAbove(0);
-    Int_t lastBinY=his->FindLastBinAbove(0);
+    //    Int_t firstBinY=his->FindFirstBinAbove(0);
+    //Int_t lastBinY=his->FindLastBinAbove(0);
     //hisPadInput->GetAxis(2)->SetRange(firstBinY, lastBinY);
     delete his;
     //
@@ -4211,8 +4211,8 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
       his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
       meandEdx[irow] =his->GetMean();
       sigmadEdx[irow]=his->GetRMS();
-      Int_t bindedx0= his->FindBin(meandEdx[irow]-kSigma*sigmadEdx[irow]);
-      Int_t bindedx1= his->FindBin(meandEdx[irow]+kSigma*sigmadEdx[irow]);
+      //      Int_t bindedx0= his->FindBin(meandEdx[irow]-kSigma*sigmadEdx[irow]);
+      //Int_t bindedx1= his->FindBin(meandEdx[irow]+kSigma*sigmadEdx[irow]);
       //      hisPad->GetAxis(3)->SetRange(bindedx0,bindedx1);
       //hisTime->GetAxis(3)->SetRange(bindedx0,bindedx1 );
       delete his;
@@ -4223,8 +4223,8 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
       his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()-kSigma*his->GetRMS());
       meanSTime[irow] =his->GetMean();
       sigmaSTime[irow]=his->GetRMS();
-      Int_t binSTime0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
-      Int_t binSTime1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
+      //Int_t binSTime0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
+      //Int_t binSTime1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
       //      hisTime->GetAxis(2)->SetRange(binSTime0, binSTime1);
       delete his;
       //
@@ -4233,8 +4233,8 @@ void AliTPCcalibLaser::DumpLaser(const char *finput, Int_t run){
       his->GetXaxis()->SetRangeUser(his->GetMean()-kSigma*his->GetRMS(), his->GetMean()+kSigma*his->GetRMS());
       meanSPad[irow] =his->GetMean();
       sigmaSPad[irow]=his->GetRMS();   
-      Int_t binSPad0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
-      Int_t binSPad1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
+      //      Int_t binSPad0= his->FindBin(his->GetMean()-kSigma*his->GetRMS());
+      //Int_t binSPad1= his->FindBin(his->GetMean()+kSigma*his->GetRMS());
       //      hisPad->GetAxis(2)->SetRange(binSPad0, binSPad1);
       delete his;
       //
@@ -4333,7 +4333,7 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
   const Double_t kDistCutFit=0.5;              
   const Double_t kDistCutFitPad=0.25;
   const Double_t kDistCutFitTime=0.25;
-  const Int_t kSmoothRow=5.;
+  const Int_t kSmoothRow=5;
   TFile f("hisLasers.root");  // Input file
   TTree * treeInput=(TTree*)f.Get("laserClusters"); 
   TTreeSRedirector *pcstream=new TTreeSRedirector("fitLasers.root");
@@ -4559,7 +4559,7 @@ void AliTPCcalibLaser::FitLaserClusters(Int_t run){
       fitPadLocal[irow]=0;
       fitTimeLocal[irow]=0;
       if (isOK[irow]<0.5) continue;     
-      Int_t sector=(irow<roc->GetNRows(0))? sectorInner:sectorOuter;
+      Int_t sector=(irow<Int_t(roc->GetNRows(0)))? sectorInner:sectorOuter;
       if (TMath::Abs(ltrp->GetVecSec()->GetMatrixArray()[irow]-sector)>0.1) continue;
       //
       TLinearFitter fitterPadLocal(2,"pol1");
