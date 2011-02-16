@@ -413,22 +413,16 @@ void AliMUONPedestal::MakeControlHistos()
   fHistoFileName=Form("%s.root",fPrefixDA.Data());
   histoFile = new TFile(fHistoFileName,"RECREATE","MUON Tracking pedestals");
 
-  Char_t name[255];
-  Char_t title[255];
-  sprintf(name,"pedmean_allch");
-  sprintf(title,"Pedestal mean all channels");
   Int_t nx = ADCMax()+1;
   Int_t xmin = 0;
   Int_t xmax = ADCMax(); 
-  pedMeanHisto = new TH1F(name,title,nx,xmin,xmax);
+  pedMeanHisto = new TH1F("pedmean_allch","Pedestal mean all channels",nx,xmin,xmax);
   pedMeanHisto->SetDirectory(histoFile);
 
-  sprintf(name,"pedsigma_allch");
-  sprintf(title,"Pedestal sigma all channels");
   nx = 201;
   xmin = 0;
   xmax = 200; 
-  pedSigmaHisto = new TH1F(name,title,nx,xmin,xmax);
+  pedSigmaHisto = new TH1F("pedsigma_allch","Pedestal sigma all channels",nx,xmin,xmax);
   pedSigmaHisto->SetDirectory(histoFile);
 
   tree = new TTree("t","Pedestal tree");
