@@ -419,10 +419,10 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
   TMath::Sort(nfit0, qseed, maxSeed, kTRUE); // in decreasing order
     
   Double_t step[3]={0.01,0.002,0.02}, fmin, chi2o = 9999, chi2n;
-  Double_t *gin = 0, func0, func1, param[8], step0[8];
+  Double_t *gin = 0, func0, func1, param[8]={0}, step0[8]={0};
   Double_t param0[2][8]={{0},{0}}, deriv[2][8]={{0},{0}}; 
-  Double_t shift[8], stepMax, derMax, parmin[8], parmax[8], func2[2], shift0;
-  Double_t delta[8], scMax, dder[8], estim, shiftSave = 0;
+  Double_t shift[8]={0}, stepMax, derMax, parmin[8]={0}, parmax[8]={0}, func2[2]={0}, shift0;
+  Double_t delta[8]={0}, scMax, dder[8], estim, shiftSave = 0;
   Int_t min, max, nCall = 0, nLoop, idMax = 0, iestMax = 0, nFail;
   Double_t rad, dist[3] = {0};
     
