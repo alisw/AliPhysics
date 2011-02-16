@@ -26,6 +26,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisCuts.h"
 #include "AliAnalysisDataSlot.h"
+#include "AliAnalysisDataContainer.h"
 
 #include "AliESDEvent.h"
 #include "AliESDfriend.h"
@@ -156,6 +157,18 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
     return *this;
 }
 
+//______________________________________________________________________________
+Bool_t AliAnalysisTaskSE::CheckPostData() const
+{
+// Checks if data was posted to all outputs defined by the task. If task does
+// not have output slots this returns always kTRUE.
+   AliAnalysisDataContainer *coutput;
+   for (Int_t islot=1; islot<fNoutputs; islot++) {
+      coutput = GetOutputSlot(islot)->GetContainer();
+      if (!coutput->GetData()) return kFALSE;
+   }
+   return kTRUE;
+}
 
 void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 {

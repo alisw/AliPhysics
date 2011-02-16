@@ -40,7 +40,7 @@ TString     proof_outdir       = "";
 Int_t       runOnData          = 1;       // Set to 1 if processing real data
 Int_t       iCollision         = 1;       // 0=pp, 1=Pb-Pb
 Bool_t      usePLUGIN          = kTRUE;   // do not change
-Bool_t      useProductionMode  = kFALSE;   // use the plugin in production mode
+Bool_t      useProductionMode  = kTRUE;   // use the plugin in production mode
 // Usage of par files ONLY in grid mode and ONLY if the code is not available
 // in the deployed AliRoot versions. Par file search path: local dir, if not there $ALICE_ROOT.
 // To refresh par files, remove the ones in the workdir, then do "make <target.par>" in 
@@ -1278,7 +1278,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
          if (run_numbers[i]==0) break;
          plugin->AddRunNumber(run_numbers[i]);
       }   
-   }   
+   }
 // Define alien work directory where all files will be copied. Relative to alien $HOME.
    plugin->SetGridWorkingDir(grid_workdir);
 // Declare alien output directory. Relative to working directory.

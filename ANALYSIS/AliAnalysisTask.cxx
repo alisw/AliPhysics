@@ -255,6 +255,19 @@ void AliAnalysisTask::CheckNotify(Bool_t init)
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisTask::CheckPostData() const
+{
+// Checks if data was posted to all outputs defined by the task. If task does
+// not have output slots this returns always kTRUE.
+   AliAnalysisDataContainer *coutput;
+   for (Int_t islot=0; islot<fNoutputs; islot++) {
+      coutput = GetOutputSlot(islot)->GetContainer();
+      if (!coutput->GetData()) return kFALSE;
+   }
+   return kTRUE;
+}
+
+//______________________________________________________________________________
 Bool_t AliAnalysisTask::ConnectInput(Int_t islot, AliAnalysisDataContainer *cont)
 {
 // Connect an input slot to a data container.

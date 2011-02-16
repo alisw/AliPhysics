@@ -165,6 +165,7 @@ enum EAliAnalysisFlags {
    void                 AddBranches(const char *branches);
    void                 AddStatisticsTask(UInt_t offlineMask=0);
    void                 CheckBranches(Bool_t load=kFALSE);
+   Bool_t               CheckTasks() const;
    void                 CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted);
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}

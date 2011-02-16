@@ -136,6 +136,8 @@ Bool_t AliAnalysisSelector::Notify()
 Bool_t AliAnalysisSelector::Process(Long64_t entry)
 {
 // Event loop.
+   static Int_t count = 0;
+   count++;
    if (fAnalysis->GetDebugLevel() > 1) {
       cout << "->AliAnalysisSelector::Process()" << endl;
    }
