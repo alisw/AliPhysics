@@ -111,7 +111,9 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   // Corrections
   TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
-  
+  if (!hSecMap)     AliFatal("No secondary map!");
+  if (!hAcceptance) AliFatal("No acceptance!");
+    
   aodHist->Divide(hSecMap);
   
   for(Int_t nx = 1; nx <= aodHist->GetNbinsX(); nx++) {
@@ -205,6 +207,7 @@ AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
   // this member function
   static TString fname = "";
   
+  fname = "";
   switch(what) {
   case 0:  fname.Append(fSecMapName.Data());     break;
   case 1:  fname.Append(fAcceptanceName.Data()); break;
