@@ -1060,13 +1060,13 @@ void AliMultiplicityCorrection::DrawComparison(const char* name, Int_t inputRang
   for (Int_t i=5; i<=mcHist->GetNbinsX(); ++i)
   {
     if (mcHist->GetBinContent(i) > 0)
-      mcMax = mcHist->GetXaxis()->GetBinCenter(i) + 2;
+      mcMax = (Int_t) mcHist->GetXaxis()->GetBinCenter(i) + 2;
   }
   if (mcMax == 0)
   {
     for (Int_t i=5; i<=fMultiplicityESDCorrected[esdCorrId]->GetNbinsX(); ++i)
       if (fMultiplicityESDCorrected[esdCorrId]->GetBinContent(i) > 1)
-        mcMax = fMultiplicityESDCorrected[esdCorrId]->GetXaxis()->GetBinCenter(i) + 2;
+        mcMax = (Int_t) fMultiplicityESDCorrected[esdCorrId]->GetXaxis()->GetBinCenter(i) + 2;
   }  
   Printf("AliMultiplicityCorrection::DrawComparison: MC bin limit is %d", mcMax);
   // calculate residual
@@ -2190,7 +2190,7 @@ void AliMultiplicityCorrection::SetGenMeasFromFunc(const TF1* inputMC, Int_t id)
     
   TH1* mcRnd = fMultiplicityVtx[id]->ProjectionY("mcRnd");
   mcRnd->Reset();
-  mcRnd->FillRandom(tmp, tmp->Integral());
+  mcRnd->FillRandom(tmp, (Int_t) tmp->Integral());
   
   //new TCanvas; tmp->Draw();
   //new TCanvas; mcRnd->Draw();
@@ -2214,7 +2214,7 @@ void AliMultiplicityCorrection::SetGenMeasFromFunc(const TF1* inputMC, Int_t id)
   fMultiplicityESD[id]->Reset();
   
   TH1* measRnd = fMultiplicityESD[id]->ProjectionY("measRnd");
-  measRnd->FillRandom(funcMeasured, tmp->Integral());
+  measRnd->FillRandom(funcMeasured, (Int_t) tmp->Integral());
   
   //new TCanvas; measRnd->Draw();
   
