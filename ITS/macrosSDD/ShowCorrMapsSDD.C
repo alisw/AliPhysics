@@ -10,6 +10,7 @@
 #include <TObjArray.h>
 #include "AliCDBEntry.h"
 #include "AliITSCorrMapSDD.h"
+#include "AliITSMapSDD.h"
 #endif
 
 
@@ -31,6 +32,15 @@ void ShowCorrMapsSDD(TString filname="alien:///alice/data/2010/OCDB/ITS/Calib/Ma
   TString psnm0 = "mapsSDD.ps[";
   TString psnm1 = "mapsSDD.ps";
   TString psnm2 = "mapsSDD.ps]";
+  Bool_t oldMapFormat=kFALSE;
+  TObject* objmap=(TObject*)maptSDD->At(0);
+  TString cname(objmap->ClassName());
+  if(cname.CompareTo("AliITSMapSDD")==0){ 
+    oldMapFormat=kTRUE;
+    printf("SDD Maps converted to new format\n");
+  }
+ 
+
   TCanvas * c3=new TCanvas("c3","Layer 3",1200,900);
   c3->Print(psnm0.Data());
   gStyle->SetPalette(1);
@@ -48,8 +58,18 @@ void ShowCorrMapsSDD(TString filname="alien:///alice/data/2010/OCDB/ITS/Calib/Ma
     }
     Int_t index0=i*2;
     Int_t index1=i*2+1;
-    AliITSCorrMapSDD* map0=(AliITSCorrMapSDD*)maptSDD->At(index0);
-    AliITSCorrMapSDD* map1=(AliITSCorrMapSDD*)maptSDD->At(index1);
+    AliITSCorrMapSDD* map0 = 0;
+    AliITSCorrMapSDD* map1 = 0;
+    if(oldMapFormat){ 
+      AliITSMapSDD* oldmap0=(AliITSMapSDD*)maptSDD->At(index0);
+      AliITSMapSDD* oldmap1=(AliITSMapSDD*)maptSDD->At(index1);
+      map0=oldmap0->ConvertToNewFormat();
+      map1=oldmap1->ConvertToNewFormat();
+    }else{
+      map0=(AliITSCorrMapSDD*)maptSDD->At(index0);
+      map1=(AliITSCorrMapSDD*)maptSDD->At(index1);
+    }
+
     printf("Module %s Entries in map %dx%d\n",map0->GetName(),map0->GetNBinsAnode(),map0->GetNBinsDrift());
     if(map0->GetNBinsAnode()==1){
       TH1F* hp0=map0->GetMapProfile();
@@ -98,8 +118,17 @@ void ShowCorrMapsSDD(TString filname="alien:///alice/data/2010/OCDB/ITS/Calib/Ma
     }
     Int_t index0=i*2;
     Int_t index1=i*2+1;
-    AliITSCorrMapSDD* map0=(AliITSCorrMapSDD*)maptSDD->At(index0);
-    AliITSCorrMapSDD* map1=(AliITSCorrMapSDD*)maptSDD->At(index1);
+    AliITSCorrMapSDD* map0 = 0;
+    AliITSCorrMapSDD* map1 = 0;
+    if(oldMapFormat){ 
+      AliITSMapSDD* oldmap0=(AliITSMapSDD*)maptSDD->At(index0);
+      AliITSMapSDD* oldmap1=(AliITSMapSDD*)maptSDD->At(index1);
+      map0=oldmap0->ConvertToNewFormat();
+      map1=oldmap1->ConvertToNewFormat();
+    }else{
+      map0=(AliITSCorrMapSDD*)maptSDD->At(index0);
+      map1=(AliITSCorrMapSDD*)maptSDD->At(index1);
+    }
     printf("Module %d Entries in map %dx%d\n",i,map0->GetNBinsAnode(),map0->GetNBinsDrift());
     if(map0->GetNBinsAnode()==1){
       TH1F* hp0=map0->GetMapProfile();
