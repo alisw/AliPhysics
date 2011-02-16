@@ -74,7 +74,6 @@ public:
       fAODCentral(),
       fManager()
   {
-    
   }
   /** 
    * Copy constructor 
@@ -88,7 +87,7 @@ public:
       fAODCentral(o.fAODCentral),
       fManager(o.fManager)
   {
-    
+    DefineOutput(1, TList::Class());
   }
   /** 
    * Assignment operator 
@@ -103,6 +102,9 @@ public:
     fList       = o.fList;
     fAODCentral = o.fAODCentral;
     fManager    = o.fManager;
+    
+    
+    DefineOutput(1, TList::Class());
     
     return *this;
   }
@@ -143,102 +145,155 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
-  /** 
-   * Set Path for acceptance 
+
+  //__________________________________________________________________
+  /**
+   * Manager of corrections 
+   *
+   * This is a small class to fetch corrections for secondaries and
+   * dead channels.
    * 
-   * @param path
    */
-  void          SetAcceptancePath(const char* path) {fManager.SetAcceptancePath(path); }
-  /** 
-   * Set Path for Secondary Map 
-   * 
-   * @param path
-   */
-  
-  void          SetSecMapPath(const char* path) {fManager.SetSecMapPath(path); }
-  
-  char*         GetFullFileName(UShort_t  what ,
-				UShort_t  sys, 
-				UShort_t  sNN,
-				Short_t   field) {return fManager.GetFullFileName(what ,sys, sNN, field); }
-  
-  const char*   GetAcceptanceName() {return fManager.GetAcceptanceName(); }
-  const char*   GetSecMapName() {return fManager.GetSecMapName(); }
-  
-  
-  class Manager {
-    
-    // This is a small class to fetch corrections for secondaries and dead
-    // channels.
-    
-  public:
-    Manager();
-    Manager(const Manager& o) :
-      fAcceptancePath(o.fAcceptancePath),
-      fSecMapPath(o.fSecMapPath),
-      fAcceptance(o.fAcceptance),
-      fSecmap(o.fSecmap),
-      fAcceptanceName(o.fAcceptanceName),
-      fSecMapName(o.fSecMapName) {}
-    
-  /** 
-   * Assignment operator 
-   * 
-   * @param o Object to assign from 
-   * 
-   * @return Reference to this object 
-   */
-  Manager& operator=(const Manager& o)
+  class Manager 
   {
-    fAcceptancePath = o.fAcceptancePath;
-    fSecMapPath     = o.fSecMapPath;
-    fAcceptance     = o.fAcceptance;
-    fSecmap         = o.fSecmap;
-    fAcceptanceName = o.fAcceptanceName;
-    fSecMapName     = o.fSecMapName;
-    return *this;
-  }
-
-    void          Init(UShort_t  sys, 
-		       UShort_t  sNN,
-		       Short_t   field);
-    const char*   GetAcceptancePath() {return fAcceptancePath.Data(); }
-    const char*   GetSecMapPath() {return fSecMapPath.Data(); }
-    void          SetAcceptancePath(const char* path) {fAcceptancePath=path; }
-    void          SetSecMapPath(const char* path) {fSecMapPath=path; }
-    char*         GetFullFileName(UShort_t  what ,
-				  UShort_t  sys, 
-				  UShort_t  sNN,
-				  Short_t   field) {return Form("%s/%s",
-what == 0 ? GetSecMapPath() : GetAcceptancePath(), GetFileName(what, sys, sNN, field));}
-    const char*   GetAcceptanceName() {return fAcceptanceName.Data(); }
-    const char*   GetSecMapName() {return fSecMapName.Data(); }
+  public:
+    /** 
+     * Constructor
+     * 
+     */
+    Manager();
+    /** 
+     * Copy constructor 
+     * 
+     * @param o 
+     */
+    Manager(const Manager& o);
+    /** 
+     * Destructor
+     */
+    virtual ~Manager() {}
+    /** 
+     * Assignment operator 
+     * 
+     * @param o Object to assign from 
+     * 
+     * @return Reference to this object 
+     */
+    Manager& operator=(const Manager& o);
     
-    TH2D* GetSecMapCorrection(UShort_t vtxbin) {return fSecmap->GetCorrection(vtxbin);}
-    TH1D* GetAcceptanceCorrection(UShort_t vtxbin) {return fAcceptance->GetCorrection(vtxbin);}
+    /** 
+     * Initialize 
+     * 
+     * @param sys    Collision system (1: pp, 2: PbPb)
+     * @param sNN    Center of mass energy per nucleon pair [GeV]
+     * @param field  Magnetic field [kG]
+     */
+    void Init(UShort_t sys, UShort_t sNN, Short_t field);
+    /** 
+     * Get the acceptance path
+     * 
+     * @return 
+     */
+    const char* GetAcceptancePath() const {return fAcceptancePath.Data(); }
+    /** 
+     * Get the secondary path 
+     * 
+     * @return 
+     */
+    const char* GetSecMapPath() const {return fSecMapPath.Data(); }
+    /** 
+     * Set the path to the acceptance maps 
+     * 
+     * @param path PAth to object file 
+     */
+    void SetAcceptancePath(const char* path) {fAcceptancePath=path; }
+    /** 
+     * Set the path to the secondary maps 
+     * 
+     * @param path Path to object files 
+     */
+    void  SetSecMapPath(const char* path) {fSecMapPath=path; }
+    /** 
+     * Get full path name to object file 
+     * 
+     * @param what   What to get 
+     * @param sys    Collision system
+     * @param sNN    Center of mass energy 
+     * @param field  Magnetic field 
+     * 
+     * @return 
+     */
+    const char* GetFullFileName(UShort_t what, UShort_t sys, UShort_t sNN, 
+				Short_t  field) const;
+    /** 
+     * Get the acceptance object name 
+     * 
+     * @return 
+     */
+    const char* GetAcceptanceName() const {return fAcceptanceName.Data(); }
+    /** 
+     * Get the secondary object name 
+     * 
+     * @return 
+     */
+    const char* GetSecMapName() const {return fSecMapName.Data(); }
     
+    /** 
+     * Get the secondary map
+     * 
+     * @param vtxbin 
+     * 
+     * @return 
+     */
+    TH2D* GetSecMapCorrection(UShort_t vtxbin) const;
+    /** 
+     * Get the acceptance correction 
+     * 
+     * @param vtxbin 
+     * 
+     * @return 
+     */
+    TH1D* GetAcceptanceCorrection(UShort_t vtxbin) const;
   private:
+    /** 
+     * Get the full path name 
+     * 
+     * @param what   What to get
+     * @param sys    Collision system
+     * @param sNN    Center of mass energy 
+     * @param field  Magnetic field 
+     * 
+     * @return 
+     */
+    const char* GetFileName(UShort_t what, UShort_t sys, UShort_t sNN,
+			    Short_t field) const;
     
     
-    const char*   GetFileName(UShort_t  what ,
-			      UShort_t  sys, 
-			      UShort_t  sNN,
-			      Short_t   field);
-    
-    
-    TString fAcceptancePath;
-    TString fSecMapPath;
-    AliCentralCorrAcceptance* fAcceptance;
-    AliCentralCorrSecondaryMap*     fSecmap;
-    TString fAcceptanceName;
-    TString fSecMapName;
+    TString                     fAcceptancePath; // Path to acceptance 
+    TString                     fSecMapPath;     // Path to secondary map
+    AliCentralCorrAcceptance*   fAcceptance;     // Acceptance 
+    AliCentralCorrSecondaryMap* fSecmap;         // Secindary map
+    TString                     fAcceptanceName; // Acceptance name
+    TString                     fSecMapName;     // Secindary name
 
+    ClassDef(Manager,1); // Manager of data 
   };
 
+  /** 
+   * Get a reference to the manager 
+   * 
+   * @return Reference to corrections manager 
+   */
+  Manager& GetManager() { return fManager; }
+  /** 
+   * Get a reference to the manager 
+   * 
+   * @return Reference to corrections manager 
+   */
+  const Manager& GetManager() const { return fManager; }
+
+
 protected: 
- 
- 
-private:
   
   TH2D*                  fData;          //sum histogram if needed
   TList*                 fList;          //Output List for diagnostics
