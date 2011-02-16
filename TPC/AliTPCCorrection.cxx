@@ -2764,7 +2764,7 @@ Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int
 
 
 
-void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray, Int_t itype){
+void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray */*corrArray*/, Int_t /*itype*/){
   //
   // Make a laser fit tree for global minimization
   //  
@@ -2773,14 +2773,14 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
   if (!correction) correction = calib->GetTPCComposedCorrection(AliTrackerBase::GetBz());  
   correction->AddVisualCorrection(correction,0);  //register correction
 
-  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
+  //  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  //AliTPCParam     *param     = AliTPCcalibDB::Instance()->GetParameters();
   //
   const Double_t cutErrY=0.05;
   const Double_t kSigmaCut=4;
   //  const Double_t cutErrZ=0.03;
   const Double_t kEpsilon=0.00000001;
-  const Double_t kMaxDist=1.;  // max distance - space correction
+  //  const Double_t kMaxDist=1.;  // max distance - space correction
   TVectorD *vecdY=0;
   TVectorD *vecdZ=0;
   TVectorD *veceY=0;
@@ -2796,8 +2796,8 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
   TTreeSRedirector *pcstream= new TTreeSRedirector("distortionLaser_0.root");
   Double_t bz=AliTrackerBase::GetBz();
   // 
-  Double_t globalXYZ[3];
-  Double_t globalXYZCorr[3];
+  //  Double_t globalXYZ[3];
+  //Double_t globalXYZCorr[3];
   for (Int_t ientry=0; ientry<entries; ientry++){
     tree->GetEntry(ientry);
     if (!ltr->GetVecGX()){
@@ -2826,7 +2826,7 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
 	if (TMath::Abs(vecdY->GetMatrixArray()[irow1])<kEpsilon) continue;
 	Double_t idealX= (*ltr->GetVecLX())[irow1];
 	Double_t idealY= (*ltr->GetVecLY())[irow1];
-	Double_t idealZ= (*ltr->GetVecLZ())[irow1];
+	//	Double_t idealZ= (*ltr->GetVecLZ())[irow1];
 	Double_t gx= (*ltr->GetVecGX())[irow1];
 	Double_t gy= (*ltr->GetVecGY())[irow1];
 	Double_t gz= (*ltr->GetVecGZ())[irow1];
@@ -2859,7 +2859,7 @@ void AliTPCCorrection::MakeLaserDistortionTree(TTree* tree, TObjArray *corrArray
 	  if (TMath::Abs(vecdY->GetMatrixArray()[irow1])<kEpsilon) continue;
 	  Double_t idealX= (*ltr->GetVecLX())[irow1];
 	  Double_t idealY= (*ltr->GetVecLY())[irow1];
-	  Double_t idealZ= (*ltr->GetVecLZ())[irow1];
+	  //	  Double_t idealZ= (*ltr->GetVecLZ())[irow1];
 	  Double_t gx= (*ltr->GetVecGX())[irow1];
 	  Double_t gy= (*ltr->GetVecGY())[irow1];
 	  Double_t gz= (*ltr->GetVecGZ())[irow1];
