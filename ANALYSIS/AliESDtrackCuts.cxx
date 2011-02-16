@@ -697,6 +697,29 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPr
 }
 
 //____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks - pp 2010
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  esdTrackCuts->SetRequireITSPureStandAlone(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetMinNClustersITS(4);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxChi2PerClusterITS(2.5);
+
+  if(selPrimaries) {
+    // 7*(0.0033+0.0045/pt^1.3)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0231+0.0315/pt^1.3");
+  }
+  if(useForPid){
+    esdTrackCuts->SetRequireITSPid(kTRUE);
+  }
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks
@@ -720,6 +743,29 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2009(Bool_t selPrimar
   return esdTrackCuts;
 }
 
+//____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSSATrackCuts2010(Bool_t selPrimaries, Bool_t useForPid)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS pure SA tracks --pp 2010
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+  esdTrackCuts->SetRequireITSStandAlone(kTRUE);
+  esdTrackCuts->SetRequireITSPureStandAlone(kFALSE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE); 
+  esdTrackCuts->SetMinNClustersITS(4);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxChi2PerClusterITS(2.5);
+
+  if(selPrimaries) {
+    // 7*(0.0033+0.0045/pt^1.3)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0231+0.0315/pt^1.3");
+  }
+  if(useForPid){
+    esdTrackCuts->SetRequireITSPid(kTRUE);
+  }
+  return esdTrackCuts;
+}
 
 //____________________________________________________________________
 Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly)

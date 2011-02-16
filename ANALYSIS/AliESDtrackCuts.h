@@ -58,11 +58,14 @@ public:
   static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
   
   // Standard cut definitions
-  static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
-  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
-  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE);
-  static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
-  static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
+   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
+   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE);
+   static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+   static AliESDtrackCuts* GetStandardITSSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
+ 
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;
