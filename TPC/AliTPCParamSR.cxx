@@ -252,7 +252,7 @@ void AliTPCParamSR::XYZtoCRXYZ(Float_t *xyz,
   //if option=2  X           relative to pad row calculate sector
   //if option=3  X           relative            use input sector
   //!!!!!!!!! WE start to calculate rows from row = 0
-  Int_t index[2];
+  Int_t index[3];
   Bool_t rel = ( (option&2)!=0);  
 
   //option 0 and 2  means that we don't have information about sector

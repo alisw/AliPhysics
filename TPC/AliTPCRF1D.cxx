@@ -99,6 +99,7 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
   fcharge = new Float_t[fNRF];
   if (step>0) fDSTEPM1=1./step;
   else fDSTEPM1 = 1./fgRFDSTEP;
+  for(Int_t i=0;i<5;i++) funParam[i]=0.;
 }
 
 AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
@@ -126,6 +127,7 @@ AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
   TString s(fGRF->GetName());
   s+="0";
   fGRF->SetName(s.Data());
+  for(Int_t i=0;i<5;i++) funParam[i]=0.;
 }
 
 AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)

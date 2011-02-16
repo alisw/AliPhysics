@@ -49,6 +49,14 @@ AliTPCpolyTrack::AliTPCpolyTrack()
    fNPoints(0)
 {
   Reset();
+  //
+  for(Int_t i=0;i<200;i++){
+    fX[i]=0.;
+    fY[i]=0.;
+    fSY[i]=0.;
+    fZ[i]=0.;
+    fSZ[i]=0.;
+  }
 }
 
 void   AliTPCpolyTrack::Reset()

@@ -157,6 +157,11 @@ AliTPCTempHitInfoV2::AliTPCTempHitInfoV2()
   fStackIndex = 0;
   //  fInfoIndex  = 0;
   fParamIndex = 0;
+  for(Int_t i=0;i<3*kStackSize;i++) fPositionStack[i]=0.;
+  for(Int_t i=0;i<kStackSize;i++){
+    fQStack[i]=0;
+    fTimeStack[i]=0.;
+  }
 }
 
 

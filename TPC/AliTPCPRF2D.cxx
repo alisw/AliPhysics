@@ -134,6 +134,11 @@ AliTPCPRF2D::AliTPCPRF2D()
   //default constructor for response function object
 
   fNPRF =fgkNPRF ;
+  for(Int_t i=0;i<5;i++){
+        funParam[i]=0.;
+        fType[i]=0;
+  }
+  
 
   //chewron default values   
   SetPad(0.8,0.8);
