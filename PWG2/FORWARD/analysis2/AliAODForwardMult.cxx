@@ -131,7 +131,7 @@ AliAODForwardMult::GetSNN() const
   // 
   // Parameters: 
   //   sNN   Center of mass energy per nuclean 
-  return fHist.GetBinContent(0,0);
+  return UShort_t(fHist.GetBinContent(0,0));
 }
 
 //____________________________________________________________________
@@ -143,7 +143,7 @@ AliAODForwardMult::GetSystem() const
   // 
   // Parameters: 
   //   sNN   Center of mass energy per nuclean 
-  return fHist.GetBinContent(fHist.GetNbinsX()+1,0);
+  return UShort_t(fHist.GetBinContent(fHist.GetNbinsX()+1,0));
 }
 
 //____________________________________________________________________
@@ -194,9 +194,18 @@ AliAODForwardMult::Print(Option_t* option) const
   // Parameters: 
   //  option   Passed to TH1::Print 
   fHist.Print(option);
+  UShort_t sys = GetSystem();
+  TString  str = "unknown";
+  switch (sys) { 
+  case 1:  str = "pp"; break;
+  case 2:  str = "PbPb"; break;
+  }
   std::cout << "Ipz:      " << fIpZ << "cm " << (HasIpZ() ? "" : "in") 
 	    << "valid\n"
-	    << "Triggers: " << GetTriggerString(fTriggers) << std::endl;
+	    << "Triggers: " << GetTriggerString(fTriggers) 
+	    << "sNN:      " << GetSNN() << "GeV\n" 
+	    << "System:   " << str 
+	    << std::endl;
 }
 
 //____________________________________________________________________
