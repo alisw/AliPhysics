@@ -88,31 +88,34 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
 
    if(typeRec.Contains("AODMC2b")){// work down from the top AODMC2b -> AODMC2 -> AODMC -> AOD
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCChargedAcceptance);
-     pwg4spec->SetTrackPtCut(kTrackEtaCut);
+     pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackEtaCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AODMC2")){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCCharged);
-     pwg4spec->SetTrackPtCut(5);
+     pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackEtaCut(5);
    }
    else if (typeRec.Contains("AODMC")){
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODMCAll);
-     pwg4spec->SetTrackPtCut(5);
+     pwg4spec->SetTrackPtCut(kPtTrackCut);
+     pwg4spec->SetTrackEtaCut(5);
    }
    else if (typeRec.Contains("AODextraonly")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextraonly);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
-     pwg4spec->SetTrackPtCut(kTrackEtaCut);
+     pwg4spec->SetTrackEtaCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AODextra")) {
      cout << "AliAnalysisTaskJetCluster::kTrackAODextra: " << AliAnalysisTaskJetCluster::kTrackAODextra << endl;
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAODextra);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
-     pwg4spec->SetTrackPtCut(kTrackEtaCut);
+     pwg4spec->SetTrackEtaCut(kTrackEtaCut);
    }
    else if (typeRec.Contains("AOD")) {
      pwg4spec->SetTrackTypeRec(AliAnalysisTaskJetCluster::kTrackAOD);
      pwg4spec->SetTrackPtCut(kPtTrackCut);
-     pwg4spec->SetTrackPtCut(kTrackEtaCut);
+     pwg4spec->SetTrackEtaCut(kTrackEtaCut);
    }
 
    pwg4spec->SetRparam(radius);
