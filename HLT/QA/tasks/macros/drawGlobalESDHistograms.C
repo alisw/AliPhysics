@@ -16,6 +16,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  gROOT->SetStyle("Plain");
  gStyle->SetPalette(1);
  gStyle->SetOptStat(10);
+ gStyle->SetTitleX(gStyle->GetPadLeftMargin());
 
  TFile *f1 = TFile::Open(filename); 
  if(!f1 || f1->IsZombie()) {
@@ -37,7 +38,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  TH1F *h1 = l1->FindObject("fNcluster_hlt");
  TH1F *h2 = l1->FindObject("fNcluster_off"); 
  h1->SetTitle("cluster distribution");
- h1->GetXaxis()->SetTitle("# of clusters per track");
+ h1->GetXaxis()->SetTitle("TPC clusters per track");
  h2->SetLineColor(2);
  if(h1->GetMaximum() >= h2->GetMaximum())  h2->SetMaximum(1.1*h1->GetMaximum());
  else h1->SetMaximum(1.1*h2->GetMaximum());
@@ -84,6 +85,7 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
  TH1F *h11 = l1->FindObject("fEta_hlt");
  TH1F *h12 = l1->FindObject("fEta_off"); 
  h11->SetTitle("pseudorapidity");
+ h11->GetXaxis()->SetTitle("#eta");
  h12->SetLineColor(2);
  if(h11->GetMaximum() > h12->GetMaximum()) h12->SetMaximum(1.1*h11->GetMaximum());
  else h11->SetMaximum(1.1*h12->GetMaximum());
@@ -91,24 +93,24 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 
  TH1F *h13 = l1->FindObject("fXvertex_hlt");
  TH1F *h14 = l1->FindObject("fXvertex_off"); 
- h13->GetXaxis()->SetTitle("X (cm)");
- h13->SetTitle("X of primary vertex");
+ h13->GetXaxis()->SetTitle("x (cm)");
+ h13->SetTitle("x of primary vertex");
  h14->SetLineColor(2);
  if(h13->GetMaximum() > h14->GetMaximum()) h14->SetMaximum(1.1*h13->GetMaximum());
  else h13->SetMaximum(1.1*h14->GetMaximum());
 
  TH1F *h15 = l1->FindObject("fYvertex_hlt");
  TH1F *h16 = l1->FindObject("fYvertex_off"); 
- h15->GetXaxis()->SetTitle("Y (cm)");
- h15->SetTitle("Y of primary vertex");
+ h15->GetXaxis()->SetTitle("y (cm)");
+ h15->SetTitle("y of primary vertex");
  h16->SetLineColor(2);
  if(h15->GetMaximum() > h16->GetMaximum()) h16->SetMaximum(1.1*h15->GetMaximum());
  else h15->SetMaximum(1.1*h16->GetMaximum());
 
  TH1F *h17 = l1->FindObject("fZvertex_hlt");
  TH1F *h18 = l1->FindObject("fZvertex_off"); 
- h17->GetXaxis()->SetTitle("Z (cm)");
- h17->SetTitle("Z of primary vertex");
+ h17->GetXaxis()->SetTitle("z (cm)");
+ h17->SetTitle("z of primary vertex");
  h18->SetLineColor(2);
  if(h17->GetMaximum() > h18->GetMaximum()) h18->SetMaximum(1.1*h17->GetMaximum());
  else h17->SetMaximum(1.1*h18->GetMaximum());
@@ -332,5 +334,4 @@ void drawGlobalESDHistograms(const char* filename="HLT-OFFLINE-GLOBAL-comparison
 //======================
 
  c1->SaveAs("HLT-offline.png");  
-
 }
