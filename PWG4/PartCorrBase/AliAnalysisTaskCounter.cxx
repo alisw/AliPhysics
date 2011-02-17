@@ -316,6 +316,8 @@ Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex(){
   //It only works for ESDs
   
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
+  if(!event) return 0;
+  
   if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
     return 1;
   }

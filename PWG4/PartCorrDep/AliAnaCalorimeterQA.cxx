@@ -1233,15 +1233,12 @@ Int_t AliAnaCalorimeterQA::GetNewRebinForRePlotting(TH1D* histo, const Float_t n
 void AliAnaCalorimeterQA::Init()
 { 
   //Check if the data or settings are ok
-  if(fCalorimeter != "PHOS" && fCalorimeter !="EMCAL"){
-    printf("AliAnaCalorimeterQA::Init() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data());
-    abort();
-  }	
   
-  if(GetReader()->GetDataType()== AliCaloTrackReader::kMC){
-    printf("AliAnaCalorimeterQA::Init() - Analysis of reconstructed data, MC reader not aplicable\n");
-    abort();
-  }	
+  if(fCalorimeter != "PHOS" && fCalorimeter !="EMCAL")
+    AliFatal(Form("Wrong calorimeter name <%s>", fCalorimeter.Data()));
+
+  if(GetReader()->GetDataType()== AliCaloTrackReader::kMC)
+    AliFatal("Analysis of reconstructed data, MC reader not aplicable");
   
 }
 
@@ -1331,10 +1328,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   if(IsDataMC()){
     if(GetReader()->ReadStack()){
       
-      if(!GetMCStack()) {
-        printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Stack not available, is the MC handler called? STOP\n");
-        abort();
-      }
+      if(!GetMCStack()) 
+        AliFatal("Stack not available, is the MC handler called?\n");
+        
       //Fill some pure MC histograms, only primaries.
       for(Int_t i=0 ; i<GetMCStack()->GetNprimary(); i++){//Only primary particles, for all MC transport put GetNtrack()
         TParticle *primary = GetMCStack()->Particle(i) ;
@@ -1346,10 +1342,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     }
     else if(GetReader()->ReadAODMCParticles()){
       
-      if(!GetReader()->GetAODMCParticles(0)) 	{
-        printf("AliAnaPhoton::MakeAnalysisFillHistograms() -  AODMCParticles not available!\n");
-        abort();
-      }
+      if(!GetReader()->GetAODMCParticles(0)) 	
+        AliFatal("AODMCParticles not available!");
+      
       //Fill some pure MC histograms, only primaries.
       for(Int_t i=0 ; i < (GetReader()->GetAODMCParticles(0))->GetEntriesFast(); i++){
         AliAODMCParticle *aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(i) ;
@@ -1684,10 +1679,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   else		              
     cell = GetEMCALCells();
   
-  if(!cell) {
-    printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - STOP: No %s CELLS available for analysis\n",fCalorimeter.Data());
-    abort();
-  }
+  if(!cell) 
+    AliFatal(Form("No %s CELLS available for analysis",fCalorimeter.Data()));
   
   if(GetDebug() > 0) 
     printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
@@ -1712,7 +1705,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           }
         }
       }
-      else return;
+      else {
+        delete [] nCellsInModule;
+        return;
+      }
 
       //Get Recalibration factor if set
       if (GetCaloUtils()->IsRecalibrationOn()) {
@@ -2008,10 +2004,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     }
     else if(GetReader()->ReadAODMCParticles() && !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCUnknown)){//it MC AOD and known tag
       //Get the list of MC particles
-      if(!GetReader()->GetAODMCParticles(0)) 	{
-        printf("AliAnaCalorimeterQA::ClusterHistograms() -  MCParticles not available!\n");
-        abort();
-      }		
+      if(!GetReader()->GetAODMCParticles(0)) 
+        AliFatal("MCParticles not available!");
       
       aodprimary = (AliAODMCParticle*) (GetReader()->GetAODMCParticles(0))->At(label);
       iMother = label;
