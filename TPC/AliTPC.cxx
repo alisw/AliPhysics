@@ -1537,13 +1537,10 @@ void AliTPC::Hits2DigitsSector(Int_t isec)
 
   Stat_t ntracks = tH->GetEntries();
 
-
-
-    TObjArray **row=0x0;
-    
     Int_t nrows =fTPCParam->GetNRow(isec);
 
-    row= new TObjArray* [nrows+2]; // 2 extra rows for cross talk
+    TObjArray **row=new TObjArray* [nrows+2]; // 2 extra rows for cross talk
+    for(Int_t j=0;j<nrows+2;j++) row[j]=0;
     
     MakeSector(isec,nrows,tH,ntracks,row);
 

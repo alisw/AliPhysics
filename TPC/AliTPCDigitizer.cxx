@@ -406,12 +406,12 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   for (Int_t i=0; i<nInputs;i++)
     masks[i]= fManager->GetMask(i);
 
-  //AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
-  AliSimDigits ** digarr =0x0;
-  digarr = new AliSimDigits*[nInputs];
+  AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
+  for(Int_t ii=0;ii<nInputs;ii++) digarr[ii]=0;
+
   for (Int_t i1=0;i1<nInputs; i1++)
    {
-    digarr[i1]=0;
+     //digarr[i1]=0;
     //    intree[i1]
     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i1));
     gime = rl->GetLoader("TPCLoader");
