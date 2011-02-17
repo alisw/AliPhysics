@@ -452,7 +452,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          AliVParticle  *ref = leadingPart.GetRef();
          fComputedValue = ref->Phi() - mother->Sum().Phi();
          //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
-         while (fComputedValue >= TMath::Pi()) fComputedValue -= 2 * TMath::Pi();
+         while (fComputedValue >= 1.5 * TMath::Pi()) fComputedValue -= 2 * TMath::Pi();
          while (fComputedValue < -0.5 * TMath::Pi()) fComputedValue += 2 * TMath::Pi();
          //Printf("%g", fComputedValue);
       }
