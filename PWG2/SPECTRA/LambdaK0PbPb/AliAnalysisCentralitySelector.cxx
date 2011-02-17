@@ -69,7 +69,6 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
   } else {
 
    AliCentrality *centrality = (AliCentrality*) aEsd->GetCentrality(); // FIXME: change to alicentrality?
-   if(fIsMC) centrality->SetMCInput();
     if(!centrality && !fUseMultRange) {
       AliFatal("Centrality object not available"); 
     }
