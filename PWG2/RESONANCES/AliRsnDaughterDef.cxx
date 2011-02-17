@@ -137,10 +137,17 @@ Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked, Bool_t truePI
    // otherwise no specific charge requirement was done
    Bool_t chargeMatch = kTRUE;
    switch (fCharge) {
-      case '+': chargeMatch = checked->IsPos();
-      case '-': chargeMatch = checked->IsNeg();
-      case '0': chargeMatch = checked->IsNeutral();
-      default : chargeMatch = kTRUE;
+      case '+':
+         chargeMatch = checked->IsPos();
+         break;
+      case '-': 
+         chargeMatch = checked->IsNeg();
+         break;
+      case '0': 
+         chargeMatch = checked->IsNeutral();
+         break;
+      default : 
+         chargeMatch = kTRUE;
    }
    
    // object type matching
