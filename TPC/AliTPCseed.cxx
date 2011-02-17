@@ -1183,7 +1183,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   for (Int_t irow=i1; irow<i2; irow++){
     AliTPCclusterMI* cluster = GetClusterPointer(irow);
-    if (!cluster) {
+    if (!cluster && irow > 1 && irow < 157) {
       Bool_t isClBefore = kFALSE;
       Bool_t isClAfter  = kFALSE;
       for(Int_t ithres = 1; ithres <= rowThres; ithres++) {
@@ -1193,8 +1193,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 	if (clusterAfter) isClAfter = kTRUE;
       }
       if (isClBefore && isClAfter) nclBelowThr++;
-      continue;
     }
+    if (!cluster) continue;
     //
     //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
