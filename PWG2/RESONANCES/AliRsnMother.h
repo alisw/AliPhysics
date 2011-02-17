@@ -13,12 +13,7 @@
 #ifndef ALIRSNMOTHER_H
 #define ALIRSNMOTHER_H
 
-#include <TLorentzVector.h>
-
-#include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
-
-class AliRsnPairDef;
 
 class AliRsnMother : public TObject {
 public:
@@ -28,13 +23,14 @@ public:
    AliRsnMother& operator=(const AliRsnMother &obj);
    virtual ~AliRsnMother();
 
-   TLorentzVector&   Sum()   {return fSum;}
-   TLorentzVector&   SumMC() {return fSumMC;}
+   Bool_t            IsUsingMC()                        const {return fUseMC;}
+   AliRsnDaughter*   GetDaughter(const Int_t &index)    const {if (index == 0 || index == 1) return fDaughter[index]; return 0x0;}
+   AliRsnDaughter&   GetDaughterRef(const Int_t &index) const {if (index < 1) return (*fDaughter[1]); return (*fDaughter[0]);}
+   TLorentzVector&   Sum()                                    {return fSum;}
+   TLorentzVector&   SumMC()                                  {return fSumMC;}
+   
    Double_t          AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE) const {return fSum.Angle(track.P(mc).Vect());}
    Double_t          CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
-
-   AliRsnDaughter*   GetDaughter(const Int_t &index) const {if (index == 0 || index == 1) return fDaughter[index]; return 0x0;}
-   AliRsnDaughter&   GetDaughterRef(const Int_t &index) const {if (index == 1) return (*fDaughter[1]); return (*fDaughter[0]);}
 
    Bool_t            IsLabelEqual() const {return abs(fDaughter[0]->GetLabel()) == abs(fDaughter[1]->GetLabel());}
    Bool_t            IsIndexEqual() const {return (fDaughter[0]->GetID() == fDaughter[1]->GetID());}
@@ -45,7 +41,6 @@ public:
    void              ResetPair();
    void              PrintInfo(const Option_t *option = "ALL") const;
    Bool_t            CheckPair() const;
-   Bool_t            MatchesDef(AliRsnPairDef *pairDef);
 
 private:
 
