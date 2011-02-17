@@ -514,6 +514,11 @@ void AliFlowAnalysisWithNestedLoops::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("phi_weights"))
   {
    fPhiWeights = dynamic_cast<TH1F*>(fWeightsList->FindObject("phi_weights"));
+   if (!fPhiWeights) 
+   {
+     printf("WARNING: no phi weights object, bye!\n");
+     exit(0);
+   }
    if(TMath::Abs(fPhiWeights->GetBinWidth(1)-fPhiBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
@@ -533,6 +538,11 @@ void AliFlowAnalysisWithNestedLoops::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("pt_weights"))
   {
    fPtWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("pt_weights"));
+   if (!fPtWeights)
+   {
+     printf("WARNING: no pt weights object, bye!\n");
+     exit(0);
+   }
    if(TMath::Abs(fPtWeights->GetBinWidth(1)-fPtBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
@@ -552,6 +562,11 @@ void AliFlowAnalysisWithNestedLoops::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("eta_weights"))
   {
    fEtaWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("eta_weights"));
+   if (!fEtaWeights)
+   {
+     printf("WARNING: no eta weights object, bye!\n");
+     exit(0);
+   }
    if(TMath::Abs(fEtaWeights->GetBinWidth(1)-fEtaBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
