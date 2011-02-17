@@ -76,6 +76,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   // Centrality
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+  if(isMC) taskCentrality->SetMCInput();
 
   AliAnalysisCentralitySelector * centrSelector = new AliAnalysisCentralitySelector();
   centrSelector->SetIsMC(isMC);
