@@ -37,11 +37,13 @@ class AliCaloCalibSignal : public TObject {
   
   AliCaloCalibSignal(kDetType detectorType = kPhos); //ctor
   virtual ~AliCaloCalibSignal(); //dtor
-
-  // copy ctor, and '=' operator, are not fully tested/debugged yet
-  AliCaloCalibSignal(const AliCaloCalibSignal &sig); // copy ctor
-  AliCaloCalibSignal& operator = (const  AliCaloCalibSignal &source); //!
   
+private:
+  //Just declare them, avoid compilation warning
+  AliCaloCalibSignal(const AliCaloCalibSignal & /*sig*/); // copy ctor
+  AliCaloCalibSignal& operator = (const  AliCaloCalibSignal &/*source*/); // assing operator
+  
+public:
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp); // added header for time info

@@ -133,56 +133,56 @@ void AliCaloCalibSignal::DeleteTrees()
 
 // copy ctor
 //_____________________________________________________________________
-AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
-  TObject(sig),
-  fDetType(sig.GetDetectorType()),
-  fColumns(sig.GetColumns()),
-  fRows(sig.GetRows()),
-  fLEDRefs(sig.GetLEDRefs()),
-  fModules(sig.GetModules()),
-  fCaloString(sig.GetCaloString()),
-  fMapping(), //! note that we are not copying the map info
-  fRunNumber(sig.GetRunNumber()),
-  fStartTime(sig.GetStartTime()),
-  fAmpCut(sig.GetAmpCut()),
-  fReqFractionAboveAmpCutVal(sig.GetReqFractionAboveAmpCutVal()),
-  fReqFractionAboveAmp(sig.GetReqFractionAboveAmp()),
-  fAmpCutLEDRef(sig.GetAmpCutLEDRef()),
-  fReqLEDRefAboveAmpCutVal(sig.GetReqLEDRefAboveAmpCutVal()),
-  fHour(sig.GetHour()),
-  fLatestHour(sig.GetLatestHour()),
-  fUseAverage(sig.GetUseAverage()),
-  fSecInAverage(sig.GetSecInAverage()),
-  fNEvents(sig.GetNEvents()),
-  fNAcceptedEvents(sig.GetNAcceptedEvents()),
-  fTreeAmpVsTime(),
-  fTreeAvgAmpVsTime(),
-  fTreeLEDAmpVsTime(),
-  fTreeLEDAvgAmpVsTime()
-{
-  // also the TTree contents
-  AddInfo(&sig);
-  for (Int_t i = 0; i<fgkMaxTowers; i++) {
-      fNHighGain[i] = sig.fNHighGain[i];
-      fNLowGain[i]  = sig.fNLowGain[i]; 
-  }
-  for (Int_t i = 0; i<(2*fgkMaxRefs); i++) {
-    fNRef[i] = sig.fNRef[i]; 
-  }
-  
-  
-}
-
+//AliCaloCalibSignal::AliCaloCalibSignal(const AliCaloCalibSignal &sig) :
+//  TObject(sig),
+//  fDetType(sig.GetDetectorType()),
+//  fColumns(sig.GetColumns()),
+//  fRows(sig.GetRows()),
+//  fLEDRefs(sig.GetLEDRefs()),
+//  fModules(sig.GetModules()),
+//  fCaloString(sig.GetCaloString()),
+//  fMapping(), //! note that we are not copying the map info
+//  fRunNumber(sig.GetRunNumber()),
+//  fStartTime(sig.GetStartTime()),
+//  fAmpCut(sig.GetAmpCut()),
+//  fReqFractionAboveAmpCutVal(sig.GetReqFractionAboveAmpCutVal()),
+//  fReqFractionAboveAmp(sig.GetReqFractionAboveAmp()),
+//  fAmpCutLEDRef(sig.GetAmpCutLEDRef()),
+//  fReqLEDRefAboveAmpCutVal(sig.GetReqLEDRefAboveAmpCutVal()),
+//  fHour(sig.GetHour()),
+//  fLatestHour(sig.GetLatestHour()),
+//  fUseAverage(sig.GetUseAverage()),
+//  fSecInAverage(sig.GetSecInAverage()),
+//  fNEvents(sig.GetNEvents()),
+//  fNAcceptedEvents(sig.GetNAcceptedEvents()),
+//  fTreeAmpVsTime(),
+//  fTreeAvgAmpVsTime(),
+//  fTreeLEDAmpVsTime(),
+//  fTreeLEDAvgAmpVsTime()
+//{
+//  // also the TTree contents
+//  AddInfo(&sig);
+//  for (Int_t i = 0; i<fgkMaxTowers; i++) {
+//      fNHighGain[i] = sig.fNHighGain[i];
+//      fNLowGain[i]  = sig.fNLowGain[i]; 
+//  }
+//  for (Int_t i = 0; i<(2*fgkMaxRefs); i++) {
+//    fNRef[i] = sig.fNRef[i]; 
+//  }
+//  
+//  
+//}
+//
 // assignment operator; use copy ctor to make life easy..
 //_____________________________________________________________________
-AliCaloCalibSignal& AliCaloCalibSignal::operator = (const AliCaloCalibSignal &source)
-{
-  // assignment operator; use copy ctor
-  if (&source == this) return *this;
-
-  new (this) AliCaloCalibSignal(source);
-  return *this;
-}
+//AliCaloCalibSignal& AliCaloCalibSignal::operator = (const AliCaloCalibSignal &source)
+//{
+//  // assignment operator; use copy ctor
+//  if (&source == this) return *this;
+//
+//  new (this) AliCaloCalibSignal(source);
+//  return *this;
+//}
 
 //_____________________________________________________________________
 void AliCaloCalibSignal::CreateTrees()
