@@ -97,10 +97,14 @@ void AliRsnAnalysisTask::RsnUserExec(Option_t*)
 //
    if (IsMixing()) return;
 
-   if (fMCOnly)
+   if (fMCOnly) {
+      fRsnAnalysisManager.ProcessAllMonitorsMC();
       fRsnAnalysisManager.ProcessAllPairsMC();
-   else
+   }
+   else {
+      fRsnAnalysisManager.ProcessAllMonitors();
       fRsnAnalysisManager.ProcessAllPairs();
+   }
 
    PostData(2, fOutList);
 }

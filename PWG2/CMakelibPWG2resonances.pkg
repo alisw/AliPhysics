@@ -27,6 +27,7 @@
 
 set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnMother.cxx 
+           RESONANCES/AliRsnDaughterDef.cxx
            RESONANCES/AliRsnPairDef.cxx 
            RESONANCES/AliRsnEvent.cxx 
            RESONANCES/AliRsnTarget.cxx 
@@ -46,6 +47,9 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnVariableExpression.cxx 
            RESONANCES/AliRsnCutManager.cxx 
            RESONANCES/AliRsnFunction.cxx 
+           RESONANCES/AliRsnMonitor.cxx
+           RESONANCES/AliRsnMonitorFunctions.cxx
+           RESONANCES/AliRsnMonitorNtuple.cxx
            RESONANCES/AliRsnPair.cxx 
            RESONANCES/AliRsnPairFunctions.cxx 
            RESONANCES/AliRsnPairNtuple.cxx 

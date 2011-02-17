@@ -23,17 +23,22 @@ public:
    AliRsnMonitor(const AliRsnMonitor &copy);
    AliRsnMonitor& operator=(const AliRsnMonitor&);
    ~AliRsnMonitor();
-
-   void    SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
-   void    Print(Option_t *option = "") const;
-
-   AliRsnCutSet*      GetCuts() {return &fCuts;}
-   AliRsnDaughter*    GetDaughter() {return &fDaughter;}
-   AliRsnDaughterDef* GetDaughterDef() {return fDaughterDef;}
+   
+   // getters
+   Bool_t             IsOnlyTrue()   const {return fOnlyTrue;}
+   Int_t              GetCount()     const {return fCount;}
+   AliRsnDaughterDef* GetDaughterDef()     {return fDaughterDef;}
+   AliRsnCutSet*      GetCuts()            {return &fCuts;}
+   AliRsnDaughter*    GetDaughter()        {return &fDaughter;}
+   
+   // setters (not for all members)
+   void               SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
+   void               SetCount(Int_t count)                {fCount = count;}
+   void               ResetCount()                         {fCount = 0;}
+   
+   // methods
    Bool_t             Fill(AliRsnDaughter *d);
-   Int_t              GetCount() const {return fCount;}
-   void               ResetCount() {fCount = 0;}
-
+   virtual void       Print(Option_t *option = "") const;
    virtual void       Compute();
    virtual void       Init(const char *prefix, TList *list);
 

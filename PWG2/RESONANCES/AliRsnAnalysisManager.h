@@ -25,6 +25,7 @@
 
 class AliRsnEvent;
 class AliRsnPair;
+class AliRsnMonitor;
 
 class AliRsnAnalysisManager : public TNamed {
 public:
@@ -35,18 +36,22 @@ public:
    virtual ~AliRsnAnalysisManager() { }
 
    virtual void   Add(AliRsnPair *pair);
+   virtual void   Add(AliRsnMonitor *monitor);
    virtual void   PrintArray() const;
    virtual void   Print(Option_t *option = "") const;
 
    void           InitAllPairs(TList*list);
    void           ProcessAllPairs();
    void           ProcessAllPairsMC();
+   void           ProcessAllMonitors();
+   void           ProcessAllMonitorsMC();
    AliRsnCutSet*  GetGlobalTrackCuts() {return &fGlobalTrackCuts;}
 
 private:
 
    TList        *fList;             // container for output histograms (external object)
    TObjArray     fPairs;            // collection of pair objects for the different outputs
+   TObjArray     fMonitors;         // collection of pair objects for the different outputs
    AliRsnCutSet  fGlobalTrackCuts;  // a set of cuts which are applied to all tracks for all analysis
 
    ClassDef(AliRsnAnalysisManager, 1)
