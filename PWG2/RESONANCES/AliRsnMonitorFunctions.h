@@ -17,7 +17,7 @@ class AliRsnFunction;
 class AliRsnMonitorFunctions : public AliRsnMonitor {
 public:
 
-   AliRsnMonitorFunctions(const char *name = "default");
+   AliRsnMonitorFunctions(const char *name = "default", AliRsnDaughterDef *def = 0);
    AliRsnMonitorFunctions(const AliRsnMonitorFunctions &copy);
    AliRsnMonitorFunctions& operator=(const AliRsnMonitorFunctions&);
    ~AliRsnMonitorFunctions();

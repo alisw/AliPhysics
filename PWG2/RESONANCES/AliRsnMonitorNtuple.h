@@ -18,7 +18,7 @@ class TNtuple;
 class AliRsnMonitorNtuple : public AliRsnMonitor {
 public:
 
-   AliRsnMonitorNtuple(const char *name = "default");
+   AliRsnMonitorNtuple(const char *name = "default", AliRsnDaughterDef *def = 0);
    AliRsnMonitorNtuple(const AliRsnMonitorNtuple &copy);
    AliRsnMonitorNtuple& operator=(const AliRsnMonitorNtuple&);
    ~AliRsnMonitorNtuple();

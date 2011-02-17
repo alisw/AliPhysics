@@ -27,8 +27,8 @@
 ClassImp(AliRsnMonitorFunctions)
 
 //_____________________________________________________________________________
-AliRsnMonitorFunctions::AliRsnMonitorFunctions(const char *name) :
-   AliRsnMonitor(name),
+AliRsnMonitorFunctions::AliRsnMonitorFunctions(const char *name, AliRsnDaughterDef *def) :
+   AliRsnMonitor(name, def),
    fFunctions("AliRsnFunction", 0)
 {
 //

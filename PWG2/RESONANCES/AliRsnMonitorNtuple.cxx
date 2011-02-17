@@ -28,8 +28,8 @@
 ClassImp(AliRsnMonitorNtuple)
 
 //_____________________________________________________________________________
-AliRsnMonitorNtuple::AliRsnMonitorNtuple(const char *name) :
-   AliRsnMonitor(name),
+AliRsnMonitorNtuple::AliRsnMonitorNtuple(const char *name, AliRsnDaughterDef *def) :
+   AliRsnMonitor(name, def),
    fValues("AliRsnValue", 0),
    fNtuple(0x0)
 {
