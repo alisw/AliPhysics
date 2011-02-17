@@ -136,21 +136,22 @@ void AliAnalysisTaskLeeYangZeros::Terminate(Option_t *)
 {
   // Called once at the end of the query
   
-  AliFlowAnalysisWithLeeYangZeros* fLyzTerm = new AliFlowAnalysisWithLeeYangZeros() ;
-  fLyzTerm -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
-  fLyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
+  AliFlowAnalysisWithLeeYangZeros* lyzTerm = new AliFlowAnalysisWithLeeYangZeros() ;
+  lyzTerm -> SetFirstRun(GetFirstRunLYZ());   //set first run true or false
+  lyzTerm -> SetUseSum(GetUseSumLYZ());       //set use sum true or false
    
   fListHistos = (TList*)GetOutputData(1);
   
   if(fListHistos) 
   {
-   fLyzTerm -> GetOutputHistograms(fListHistos);
-   fLyzTerm -> Finish();
+   lyzTerm -> GetOutputHistograms(fListHistos);
+   lyzTerm -> Finish();
 	PostData(1,fListHistos);
   } else 
     {
      cout << "histogram list pointer in Lee-Yang Zeros is empty in AliAnalysisTaskLYZ::Terminate ()" << endl;
     } 
-
+  
+  delete lyzTerm;
   
 }
