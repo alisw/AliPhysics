@@ -534,6 +534,10 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
       // first try
       for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
 	AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)+iDaughter));
+	if (!daug) {
+	  AliError("daughter: casting failed");
+	  continue;
+	}
 	if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
       }
       if (!goodDecay) {

@@ -404,6 +404,10 @@ void AliCFTrackIsPrimaryCuts::GetDCA(AliESDtrack* esdTrack)
 	if (!fEvt) return;
 	AliESDEvent * evt = 0x0 ; 
 	evt = dynamic_cast<AliESDEvent*>(fEvt);
+	if (!evt) {
+	  AliError("event not found");
+	  return;
+	}
 	const AliESDVertex *vtx = evt->GetVertex();
 	const Double_t Bz = evt->GetMagneticField();
 	AliExternalTrackParam *cParam = 0;
@@ -460,9 +464,10 @@ void AliCFTrackIsPrimaryCuts::GetDCA(AliAODTrack* aodTrack)
     return;
   }
 
-  if (!fEvt) return;
   AliAODEvent * evt = 0x0;
   evt = dynamic_cast<AliAODEvent*>(fEvt);
+  if (!evt) return;
+
   // primary vertex is the "best": tracks, SPD or TPC vertex
   AliAODVertex * primaryVertex = evt->GetVertex(0);
   // dca = track postion - primary vertex position
@@ -521,7 +526,7 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
     AliError("object must derived from AliVParticle !");
     return;
   }
-
+  
   Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
   Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
 
@@ -820,8 +825,6 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   //
   // fill the QA histograms
   //
-
-  if (!obj) return;
 
   Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
   Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
