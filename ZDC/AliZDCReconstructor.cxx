@@ -1373,6 +1373,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   fESDZDC->SetZDCTDCData(tdcValues);
   fESDZDC->SetZDCTDCCorrected(tdcCorrected);
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, kTRUE);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kEnergyCalibratedSignal, kTRUE);
   
   if(esd) esd->SetZDCData(fESDZDC);
 }

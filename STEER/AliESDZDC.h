@@ -19,7 +19,8 @@ class AliESDZDC: public TObject {
 public:
  
   enum {
-    kCorrectedTDCFilled = BIT(14)
+    kCorrectedTDCFilled = BIT(14),
+    kEnergyCalibratedSignal = BIT(15)
   };
  
   AliESDZDC();
