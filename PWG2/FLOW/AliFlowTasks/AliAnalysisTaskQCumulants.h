@@ -48,8 +48,10 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetApplyCorrectionForNUAVsM() const {return this->fApplyCorrectionForNUAVsM;};      
   void SetPropagateErrorAlsoFromNIT(Bool_t const peafNIT) {this->fPropagateErrorAlsoFromNIT = peafNIT;};
   Bool_t GetPropagateErrorAlsoFromNIT() const {return this->fPropagateErrorAlsoFromNIT;};  
-  void SetCalculate2DFlow(Bool_t const calculate2DFlow) {this->fCalculate2DFlow = calculate2DFlow;};
-  Bool_t GetCalculate2DFlow() const {return this->fCalculate2DFlow;};
+  void SetCalculateDiffFlow(Bool_t const calculateDiffFlow) {this->fCalculateDiffFlow = calculateDiffFlow;};
+  Bool_t GetCalculateDiffFlow() const {return this->fCalculateDiffFlow;};
+  void SetCalculate2DDiffFlow(Bool_t const calculate2DDiffFlow) {this->fCalculate2DDiffFlow = calculate2DDiffFlow;};
+  Bool_t GetCalculate2DDiffFlow() const {return this->fCalculate2DDiffFlow;};
   void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
   Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
@@ -93,7 +95,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fApplyCorrectionForNUA;         // apply correction for non-uniform acceptance 
   Bool_t fApplyCorrectionForNUAVsM;      // apply correction for non-uniform acceptance versus M    
   Bool_t fPropagateErrorAlsoFromNIT;     // propagate error by taking into account also non-isotrpic terms  
-  Bool_t fCalculate2DFlow;               // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
+  Bool_t fCalculateDiffFlow;             // calculate differential flow in pt or eta
+  Bool_t fCalculate2DDiffFlow;           // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
   Bool_t fStoreDistributions;            // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
   Bool_t fMinimumBiasReferenceFlow;      // store as reference flow in AliFlowCommonHistResults the minimum bias result (kFALSE by default)     
