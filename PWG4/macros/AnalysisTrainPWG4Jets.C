@@ -522,7 +522,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    }
 
    if(iPWG4Cluster){
-     gROOT->LoadMacro("$ALICE_ROOTC/PWG4/macros/AddTaskJetCluster.C");
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetCluster.C");
      AliAnalysisTaskJetCluster *taskCl = 0;
      Float_t fCenUp = 0;
      Float_t fCenLo = 0;
