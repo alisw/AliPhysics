@@ -603,10 +603,10 @@ void AliCFTrackKineCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t xmi
 
 
   // book QA histograms
-  Char_t str[256];
+  Char_t str[5];
   for (Int_t i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
   
     fhQA[kCutP][i]	= new  TH1F(Form("%s_momentum%s",GetName(),str),	"",fhNBinsMomentum-1,fhBinLimMomentum);
     fhQA[kCutPt][i]	= new  TH1F(Form("%s_transverse_momentum%s",GetName(),str),"",fhNBinsPt-1,fhBinLimPt);
