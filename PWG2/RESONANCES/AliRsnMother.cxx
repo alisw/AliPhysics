@@ -9,8 +9,10 @@
 // authors: Martin Vala (martin.vala@cern.ch)
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
+
 #include <Riostream.h>
 #include <TVector3.h>
+
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliRsnDaughter.h"
@@ -158,14 +160,14 @@ void AliRsnMother::ResetPair()
 Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
 {
    TLorentzVector mother    = (useMC ? fSumMC : fSum);
-   TLorentzVector daughter0 = (first ? fDaughter[0]->P() : fDaughter[1]->P());
-   TLorentzVector daughter1 = (first ? fDaughter[1]->P() : fDaughter[0]->P());
+   TLorentzVector daughter0 = (first ? fDaughter[0]->P(useMC) : fDaughter[1]->P(useMC));
+   TLorentzVector daughter1 = (first ? fDaughter[1]->P(useMC) : fDaughter[0]->P(useMC));
    TVector3 momentumM(mother.Vect());
    TVector3 normal(mother.Y() / momentumM.Mag(), -mother.X() / momentumM.Mag(), 0.0);
 
    // Computes first the invariant mass of the mother
-   Double_t mass0            = fDaughter[0]->P().M();
-   Double_t mass1            = fDaughter[1]->P().M();
+   Double_t mass0            = fDaughter[0]->P(useMC).M();
+   Double_t mass1            = fDaughter[1]->P(useMC).M();
    Double_t p0               = daughter0.Vect().Mag();
    Double_t p1               = daughter1.Vect().Mag();
    Double_t E0               = TMath::Sqrt(mass0 * mass0 + p0 * p0);
@@ -226,43 +228,4 @@ Bool_t AliRsnMother::CheckPair() const
    }
 
    return kTRUE;
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnMother::MatchesDef(AliRsnPairDef *def)
-{
-//
-// Checks if the daughters, in any order, do match a given decay channel,
-// using the specified identification method, which can be the 'true' one
-// or the 'realistic' one only.
-//
-
-   if (!def) return kFALSE;
-   if (!fDaughter[0]->GetRefMC()) return kFALSE;
-   if (!fDaughter[1]->GetRefMC()) return kFALSE;
-
-   Bool_t decayMatch = kFALSE;
-   Int_t  pdg[2], ref[2];
-   pdg[0] = fDaughter[0]->GetPDG();
-   pdg[1] = fDaughter[1]->GetPDG();
-   ref[0] = TMath::Abs(AliPID::ParticleCode(def->GetPID(0)));
-   ref[1] = TMath::Abs(AliPID::ParticleCode(def->GetPID(1)));
-
-   // check #1:
-   // if first member of pairDef has same sign as first member of this,
-   // daughter[0] perfect PID must match first member of pairDef
-   // daughter[1] perfect PID must march second member of pairDef
-   if (fDaughter[0]->IsSign(def->GetCharge(0)) && fDaughter[1]->IsSign(def->GetCharge(1))) {
-      decayMatch = (pdg[0] == ref[0] && pdg[1] == ref[1]);
-   }
-
-   // check #2:
-   // if first member of pairDef has same sign as second member of this,
-   // daughter[0] perfect PID must match second member of pairDef
-   // daughter[1] perfect PID must march first member of pairDef
-   if (fDaughter[1]->IsSign(def->GetCharge(0)) && fDaughter[0]->IsSign(def->GetCharge(1))) {
-      decayMatch = (pdg[0] == ref[1] && pdg[1] == ref[0]);
-   }
-
-   return (decayMatch && (CommonMother() == def->GetMotherPDG()));
 }
