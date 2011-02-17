@@ -992,7 +992,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   if (fDebug) cout<<"AliFlowAnalysisWithScalarProduct::Finish()"<<endl;
   
   // access harmonic:
-  if(fCommonHistsSP && fCommonHistsSP->GetHarmonic())
+  if(fCommonHistsSP->GetHarmonic())
   {
    fHarmonic = (Int_t)(fCommonHistsSP->GetHarmonic())->GetBinContent(1); 
   }
