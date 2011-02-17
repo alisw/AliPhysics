@@ -46,6 +46,8 @@ public:
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
   void     Process(AliTPCseed *track){return AliTPCcalibBase::Process(track);}
   //
+  void     MakeLookup(THnSparse * hist, Char_t * outputFile);
+  //
   void     UpdateGainMap();
   void     UpdateClusterParam();
 
