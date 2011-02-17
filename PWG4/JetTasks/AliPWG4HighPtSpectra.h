@@ -33,6 +33,7 @@ class TList;
 //class AliCFManager;
 class AliESDtrackCuts;
 class AliESDEvent;
+class AliESDVertex;
 class AliMCEvent;
 class AliStack;
 class AliGenPythiaEventHeader;
@@ -71,6 +72,9 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   void     SetCFManagerNeg(const AliCFManager* io2) {fCFManagerNeg = io2;}   // global correction manager 
   const AliCFManager * GetCFManagerNeg() const {return fCFManagerNeg;}            // get corr manager
   
+  //if fTrackType=0 (GlobalStandard and TPConly)
+  //if fTrackType=0 (GlobalITSrefit and TPConly constrained)
+  void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   //AliESDtrackCuts setters
   void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
   void SetCutsTPConly(AliESDtrackCuts* trackCuts) {fTrackCutsTPConly = trackCuts;}
@@ -91,6 +95,10 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   AliMCEvent  *fMC;       //! MC event object
   AliStack    *fStack;    //! stack object
 
+  const AliESDVertex   *fVtx;     //! vertex object
+
+
+  Int_t   fTrackType;     // Type of track to be used in analysis
   //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
   AliESDtrackCuts *fTrackCutsTPConly;    // trackCuts applied to TPConly tracks

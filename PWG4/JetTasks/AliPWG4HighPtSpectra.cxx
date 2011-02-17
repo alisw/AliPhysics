@@ -71,6 +71,8 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fESD(0x0),
   fMC(0x0),
   fStack(0x0),
+  fVtx(0x0),
+  fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsTPConly(0x0),
   fAvgTrials(1),
@@ -96,6 +98,8 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fESD(0x0),
   fMC(0x0),
   fStack(0x0),
+  fVtx(0x0),
+  fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsTPConly(0x0),
   fAvgTrials(1),
@@ -204,30 +208,36 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
   }
 
   //Check if vertex is reconstructed
-  const AliESDVertex *vtx = fESD->GetPrimaryVertex();
+  fVtx = fESD->GetPrimaryVertexSPD();
+
+  if(!fVtx) {
+    fNEventReject->Fill("noVTX",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
+  if(!fVtx->GetStatus()) {
+    fNEventReject->Fill("VtxStatus",1);
+    selectEvent = kFALSE;
+    return selectEvent;
+  }
+
   // Need vertex cut
-  TString vtxName(vtx->GetName());
-  if(vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
-    // SPD vertex
-    vtx = fESD->GetPrimaryVertexSPD();
-    if(vtx->GetNContributors()<2) {
-      vtx = 0x0;
-      fNEventReject->Fill("noVTX",1);
-      selectEvent = kFALSE;
-      return selectEvent;
-    }
+  //  TString vtxName(fVtx->GetName());
+  if(fVtx->GetNContributors()<2) {
+    fNEventReject->Fill("NCont<2",1);
+    selectEvent = kFALSE;
+    return selectEvent;
   }
 
   //Check if z-vertex < 10 cm
   double primVtx[3];
-  vtx->GetXYZ(primVtx);
+  fVtx->GetXYZ(primVtx);
   if(TMath::Sqrt(primVtx[0]*primVtx[0] + primVtx[1]*primVtx[1])>1. || TMath::Abs(primVtx[2]>10.)){
     fNEventReject->Fill("ZVTX>10",1);
     selectEvent = kFALSE;
     return selectEvent;
   }
-  
-  AliDebug(2,Form("Vertex title %s, status %d, nCont %d\n",vtx->GetTitle(), vtx->GetStatus(), vtx->GetNContributors()));
 
   return selectEvent;
 
@@ -307,7 +317,31 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       AliESDtrack* track = fESD->GetTrack(iTrack);
       if(!(AliExternalTrackParam *)track->GetTPCInnerParam()) continue;
       AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
+      //fTrackType==1 use constrained TPConly track
+      AliESDtrack* trackTPCESD = fTrackCutsTPConly->GetTPCOnlyTrack(fESD, track->GetID());
+      if(fTrackType==1) {
+	if(!trackTPCESD) {
+	  delete trackTPCESD;
+	  continue;
+	}
+	AliExternalTrackParam exParam;
+	Bool_t relate = trackTPCESD->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	if( !relate ) {
+	  delete track;
+	  continue;
+	}
+	trackTPCESD->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+
+
+      }
+      if(!trackTPCESD) {
+	delete trackTPCESD;
+	continue;
+      }
+
+
       if(!track || !trackTPC) continue;
+
 
       //fill the container
       containerInputRec[0] = track->Pt();
@@ -315,11 +349,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputRec[2] = track->Eta();
     
       //Store TPC Inner Params for TPConly tracks
-      containerInputTPConly[0] = trackTPC->Pt();
-      containerInputTPConly[1] = trackTPC->Phi();
-      containerInputTPConly[2] = trackTPC->Eta();
+      containerInputTPConly[0] = trackTPCESD->Pt();
+      containerInputTPConly[1] = trackTPCESD->Phi();
+      containerInputTPConly[2] = trackTPCESD->Eta();
 
-      AliESDtrack* trackTPCESD = fTrackCutsTPConly->GetTPCOnlyTrack(fESD, iTrack);
       if(trackTPCESD) {
 	if (fTrackCutsTPConly->AcceptTrack(trackTPCESD)) {
 	  if(trackTPC->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
