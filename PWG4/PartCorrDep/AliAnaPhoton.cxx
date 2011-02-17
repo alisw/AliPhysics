@@ -743,8 +743,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Cluster selection
     //--------------------------------------
     if(GetDebug() > 2) 
-      printf("AliAnaPhoton::MakeAnalysisFillAOD() Current Event %d; Current File Name : %s, Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), 
-         mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+      printf("AliAnaPhoton::MakeAnalysisFillAOD() Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
+             GetReader()->GetEventNumber(),
+             mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
  
     //.......................................
     //If too small or big pt, skip it
@@ -790,7 +791,8 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
     
     if(GetDebug() > 0) 
-      printf("AliAnaPhoton::MakeAnalysisFillAOD() Current Event %d; Current File Name : %s, After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",GetReader()->GetEventNumber(),(GetReader()->GetCurrentFileName()).Data(), 
+      printf("AliAnaPhoton::MakeAnalysisFillAOD() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
+             GetReader()->GetEventNumber(), 
              mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
     
     

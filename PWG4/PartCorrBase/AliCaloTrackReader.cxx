@@ -55,7 +55,8 @@ ClassImp(AliCaloTrackReader)
   
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
-    TObject(), fEventNumber(-1), fCurrentFileName(""),fDataType(0), fDebug(0), 
+    TObject(), fEventNumber(-1), //fCurrentFileName(""),
+    fDataType(0), fDebug(0), 
     fFiducialCut(0x0), fCheckFidCut(kFALSE), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0), fAODBranchList(new TList ),
     fAODCTS(new TObjArray()), fAODEMCAL(new TObjArray()), fAODPHOS(new TObjArray()),
@@ -389,11 +390,11 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
 } 
 
 //___________________________________________________
-Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * currentFileName) {
+Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*currentFileName*/) {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
 
   fEventNumber = iEntry;
-  fCurrentFileName = TString(currentFileName);
+  //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent) {
 	  if(fDebug >= 0) printf("AliCaloTrackReader::FillInputEvent() - Input event not available, skip event analysis\n");
 	  return kFALSE;
