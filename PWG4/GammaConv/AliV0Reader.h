@@ -421,7 +421,12 @@ class AliV0Reader : public TObject {
    * Gets the Number of the TPC clusters of the positive track.
    */
   Int_t GetPositiveTracknTPCClusters() const{return fCurrentPositiveESDTrack->GetNcls(1);}
-	
+
+  /*
+   * Get the TOFsignal for negative/positive track. RRnewTOF
+   */
+  Double_t GetNegativeTrackTOFsignal() const{return fCurrentNegativeESDTrack->GetTOFsignal();}
+  Double_t GetPositiveTrackTOFsignal() const{return fCurrentPositiveESDTrack->GetTOFsignal();}	
 
   /*
    * Gets the Number of the TPC findable clusters of the negative track.
@@ -652,11 +657,13 @@ class AliV0Reader : public TObject {
    * Sets the PIDnSigmaAboveElectron cut value for the tracks.
    */
   void SetPIDnSigmaAboveElectronLine(Double_t nSigmaAbove){fPIDnSigmaAboveElectronLine=nSigmaAbove;}
+  void SetTofPIDnSigmaAboveElectronLine(Double_t nTofSigmaAbove){fTofPIDnSigmaAboveElectronLine=nTofSigmaAbove;} // RRnewTOF
 	
   /*
    * Sets the PIDnSigmaBelowElectron cut value for the tracks.
    */
   void SetPIDnSigmaBelowElectronLine(Double_t nSigmaBelow){fPIDnSigmaBelowElectronLine=nSigmaBelow;}
+  void SetTofPIDnSigmaBelowElectronLine(Double_t nTofSigmaBelow){fTofPIDnSigmaBelowElectronLine=nTofSigmaBelow;} // RRnewTOF
 	
   /*
    * Sets the PIDnSigmaAbovePion cut value for the tracks.
@@ -693,6 +700,7 @@ class AliV0Reader : public TObject {
    */
 
   void SetDodEdxSigmaCut( Bool_t dodEdxSigmaCut){fDodEdxSigmaCut=dodEdxSigmaCut;}
+  void SetDoTOFsigmaCut( Bool_t doTOFsigmaCut){fDoTOFsigmaCut=doTOFsigmaCut;} //RRnewTOF
 
   /*
    * Sets the flag to enable/disable the cut dedx N sigma for Kaon Rejection at low p 
@@ -918,8 +926,11 @@ class AliV0Reader : public TObject {
   Double_t fPIDProbabilityCutNegativeParticle; //pid cut
   Double_t fPIDProbabilityCutPositiveParticle; //pid cut
   Bool_t   fDodEdxSigmaCut; // flag to use the dEdxCut based on sigmas
+  Bool_t   fDoTOFsigmaCut; // flag to use TOF pid cut RRnewTOF
   Double_t fPIDnSigmaAboveElectronLine; // sigma cut
   Double_t fPIDnSigmaBelowElectronLine; // sigma cut
+  Double_t fTofPIDnSigmaAboveElectronLine; // sigma cut RRnewTOF
+  Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF 
   Double_t fPIDnSigmaAbovePionLine;     // sigma cut
   Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
   Double_t fPIDMaxPnSigmaAbovePionLine; // sigma cut
@@ -977,7 +988,7 @@ class AliV0Reader : public TObject {
   Int_t fIsHeavyIon; // flag
   Bool_t fUseCorrectedTPCClsInfo;
 
-  ClassDef(AliV0Reader,19) // RRnew
+  ClassDef(AliV0Reader,20) // RRnew
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
