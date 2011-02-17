@@ -16,24 +16,11 @@
 ClassImp(AliRsnDaughterDef)
 
 //_____________________________________________________________________________
-AliRsnDaughterDef::AliRsnDaughterDef() : 
-   fMass(0.0),
-   fCharge(0),
-   fPID(AliPID::kUnknown),
-   fDaughterType(AliRsnDaughter::kNoType)
-{
-//
-// Default constructor.
-// Initializes the data members to default (meaningless) values.
-//
-}
-
-//_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef
 (AliPID::EParticleType type, Char_t sign) :
    fMass(0.0),
-   fCharge(0),
-   fPID(AliPID::kUnknown),
+   fCharge(sign),
+   fPID(type),
    fDaughterType(AliRsnDaughter::kNoType)
 {
 //
@@ -83,23 +70,24 @@ Bool_t AliRsnDaughterDef::SetDaughter(AliPID::EParticleType type, Char_t charge)
 
    AliPID pid;
 
-   if (charge != '+' && charge != '-' && charge != '0') {
-      AliError(Form("Character '%c' not recognized as charge sign", charge));
-      return kFALSE;
-   }
-   if (type < 0 && type > (Int_t)AliPID::kSPECIESN) {
-      AliError("Type index out of enumeration range");
-      return kFALSE;
-   }
-
+   // charge and type come from arguments
    fCharge = charge;
    fPID    = type;
-   fMass   = pid.ParticleMass(type);
-   if ((Int_t)type < AliPID::kSPECIES) fDaughterType = AliRsnDaughter::kTrack;
+   
+   // mass is assigned by AliPID, if possible
+   fMass = 0.0;
+   if ((Int_t)type >= 0 && (Int_t)type < AliPID::kSPECIESN)
+      fMass = pid.ParticleMass(type);
+   
+   // object type is determined by type itself
+   if ((Int_t)type >= 0 && (Int_t)type < AliPID::kSPECIES) 
+      fDaughterType = AliRsnDaughter::kTrack;
    else if (type == AliPID::kKaon0) {
       fDaughterType = AliRsnDaughter::kV0;
       fCharge = '0';
-   } else return kFALSE;
+   }
+   else
+      fDaughterType = AliRsnDaughter::kNoType;
 
    return kTRUE;
 }
@@ -113,9 +101,28 @@ Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked, Bool_t truePI
 // check also that the particle species is correct.
 //
 
-   if (checked->RefType() != fDaughterType) return kFALSE;
-   if (checked->ChargeChar() != fCharge) return kFALSE;
-   if (truePID && checked->GetRef()) if (TMath::Abs(checked->GetPDG()) != AliPID::ParticleCode(fPID)) return kFALSE;
-
-   return kTRUE;
+   // charge matching:
+   // if charge was set to '+', '-' or '0'
+   // the checked daughter charge must match that defined in the settings
+   // otherwise no specific charge requirement was done
+   Bool_t chargeMatch = kTRUE;
+   switch (fCharge) {
+      case '+': chargeMatch = checked->IsPos();
+      case '-': chargeMatch = checked->IsNeg();
+      case '0': chargeMatch = checked->IsNeutral();
+      default : chargeMatch = kTRUE;
+   }
+   
+   // object type matching
+   Bool_t objMatch = kTRUE;
+   if (fDaughterType != AliRsnDaughter::kNoType)
+      objMatch = (checked->RefType() == fDaughterType);
+      
+   // particle type matching (only if MC is available and second arg is true)
+   Bool_t pidMatch = kTRUE;
+   if (truePID && fPID != AliPID::kUnknown && checked->GetRefMC())
+      pidMatch = (AliPID::ParticleCode(fPID) == checked->GetPDG());
+      
+   // return the AND of all
+   return (chargeMatch && objMatch && pidMatch);
 }
