@@ -212,11 +212,11 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
 }
 
 //____________________________________________________________________________
-Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * currentFileName){
+Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*currentFileName*/){
   //Fill the event counter and input lists that are needed, called by the analysis maker.
   
   fEventNumber     = iEntry;
-  fCurrentFileName = TString(currentFileName);
+  //fCurrentFileName = TString(currentFileName);
   fTrackMult       = 0;
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {

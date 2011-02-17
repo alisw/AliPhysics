@@ -70,7 +70,7 @@ public:
   virtual void    SetDataType(Int_t data )   { fDataType = data       ; }
 
   virtual Int_t   GetEventNumber()     const {return fEventNumber     ; }
-  virtual TString GetCurrentFileName() const {return fCurrentFileName ; }
+  //virtual TString GetCurrentFileName() const {return fCurrentFileName ; }
 	
   TString         GetTaskName()        const {return fTaskName        ; }
   void            SetTaskName(TString name)  {fTaskName = name        ; }
@@ -316,7 +316,7 @@ public:
   
  protected:
   Int_t	           fEventNumber;    // Event number
-  TString          fCurrentFileName;// Current file name under analysis
+  //TString          fCurrentFileName;// Current file name under analysis
   Int_t            fDataType ;      // Select MC:Kinematics, Data:ESD/AOD, MCData:Both
   Int_t            fDebug;          // Debugging level
   AliFiducialCut * fFiducialCut;    //! Acceptance cuts
@@ -398,7 +398,7 @@ public:
   Int_t            fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];   // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,25)
+  ClassDef(AliCaloTrackReader,26)
 } ;
 
 
