@@ -108,6 +108,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAliPID(AliPID::kPion)
 {
   //io constructor 
+  for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
   SetPriors(); //init arrays
 }
 
@@ -172,6 +173,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
                                                     5.04114e-11,
                                                     2.12543e+00,
                                                     4.88663e+00 );
+  for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
   SetPriors(); //init arrays
 }
 
@@ -232,6 +234,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   if (that.fAliESDtrackCuts) fAliESDtrackCuts = new AliESDtrackCuts(*(that.fAliESDtrackCuts));
+  memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
   SetPriors(); //init arrays
 }
 
@@ -292,6 +295,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fTPCTOFpidCrossOverPt=that.fTPCTOFpidCrossOverPt;
 
   fAliPID=that.fAliPID;
+  memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
   return *this;
 }

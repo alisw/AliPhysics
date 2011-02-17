@@ -24,6 +24,7 @@ AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE
   TOFtender->SetTOFres(tofres);
   TOFtender->SetApplyT0(applyT0);
   TOFtender->SetCorrectExpTimes(corrExpTimes);
+  //TOFtender->SetTheorExpTimes(kTRUE);
   tender->AddSupply(TOFtender);
   
     //            define output containers, please use 'username'_'somename'

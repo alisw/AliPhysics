@@ -27,10 +27,9 @@
 #include "AliInputEventHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
-#include "TH1F.h"
 #include "TH2F.h"
+#include "TProfile.h"
 #include "TMath.h"
-#include "TH3F.h"
 #include "AliVEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliPID.h"
@@ -98,8 +97,14 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fTOFsignalKExpPvsP(NULL),
   fTOFsignalPExpPivsP(NULL),
   fTOFsignalPExpKvsP(NULL),
+  fTOFsignalBeta(NULL),
+  fTOFsignalPiBeta(NULL),
+  fTOFsignalKBeta(NULL),
+  fTOFsignalPBeta(NULL),
   fPvsPt(NULL),
-  fOuputList(NULL)
+  fMeanPvsP(NULL),
+  fMeanPtvsPt(NULL),
+  fOutputList(NULL)
 {
   //def ctor
 }
@@ -163,8 +168,14 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fTOFsignalKExpPvsP(NULL),
   fTOFsignalPExpPivsP(NULL),
   fTOFsignalPExpKvsP(NULL),
+  fTOFsignalBeta(NULL),
+  fTOFsignalPiBeta(NULL),
+  fTOFsignalKBeta(NULL),
+  fTOFsignalPBeta(NULL),
   fPvsPt(NULL),
-  fOuputList(NULL)
+  fMeanPvsP(NULL),
+  fMeanPtvsPt(NULL),
+  fOutputList(NULL)
 {
   //Constructor
   fESDpid=new AliESDpid();
@@ -189,9 +200,9 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
 void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 {
   //UserCreateOutputObject
-  if (fOuputList) fOuputList->Delete();
-  delete fOuputList;
-  fOuputList=new TList();
+  if (fOutputList) fOutputList->Delete();
+  delete fOutputList;
+  fOutputList=new TList();
 
   const  Int_t ndec=2;
   Int_t startvalue=-1;
@@ -208,11 +219,11 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
 
   fITSsignal=new TH2F("fITSsignal","fITSsignal;dEdx;p[GeV/c]",ndec*npredec,tabx,900,0,900);
-  fOuputList->Add(fITSsignal);
+  fOutputList->Add(fITSsignal);
   fTPCsignal=new TH2F("fTPCsignal","fTPCsignal;dEdx;p[GeV/c]",ndec*npredec,tabx,900,0,900);
-  fOuputList->Add(fTPCsignal);
+  fOutputList->Add(fTPCsignal);
   fTOFsignal=new TH2F("fTOFsignal","fTOFsignal;t-t_{#pi};p[GeV/c]",ndec*npredec,tabx,1200,-2000,10000);
-  fOuputList->Add(fTOFsignal);
+  fOutputList->Add(fTOFsignal);
 
   Int_t kPtBins=60;
   Double_t binsPtDummy[kPtBins+1];
@@ -239,23 +250,23 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fITSsignalpi=new TH2F("fITSsignalpi",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for pi+
   fTPCsignalpi=new TH2F("fTPCsignalpi",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for pi+
   fTOFsignalpi=new TH2F("fTOFsignalpi",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for pi+
-  fOuputList->Add(fITSsignalpi);
-  fOuputList->Add(fTPCsignalpi);
-  fOuputList->Add(fTOFsignalpi);
+  fOutputList->Add(fITSsignalpi);
+  fOutputList->Add(fTPCsignalpi);
+  fOutputList->Add(fTOFsignalpi);
 
   fITSsignalK=new TH2F("fITSsignalK",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for K+
   fTPCsignalK=new TH2F("fTPCsignalK",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for K+
   fTOFsignalK=new TH2F("fTOFsignalK",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for K+
-  fOuputList->Add(fITSsignalK);
-  fOuputList->Add(fTPCsignalK);
-  fOuputList->Add(fTOFsignalK);
+  fOutputList->Add(fITSsignalK);
+  fOutputList->Add(fTPCsignalK);
+  fOutputList->Add(fTOFsignalK);
 
   fITSsignalp=new TH2F("fITSsignalp",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for p
   fTPCsignalp=new TH2F("fTPCsignalp",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for p
   fTOFsignalp=new TH2F("fTOFsignalp",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for p
-  fOuputList->Add(fITSsignalp);
-  fOuputList->Add(fTPCsignalp);
-  fOuputList->Add(fTOFsignalp);
+  fOutputList->Add(fITSsignalp);
+  fOutputList->Add(fTPCsignalp);
+  fOutputList->Add(fTOFsignalp);
 
   fTOFsignalPiExpKvsPt=new TH2F("fTOFsignalPiExpKvsPt",";pt[GeV/c];expected signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPiExpPvsPt=new TH2F("fTOFsignalPiExpPvsPt",";pt[GeV/c];expected signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt
@@ -263,34 +274,34 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fTOFsignalKExpPvsPt=new TH2F("fTOFsignalKExpPvsPt",";pt[GeV/c];expected signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPExpPivsPt=new TH2F("fTOFsignalPExpPivsPt",";pt[GeV/c];expected signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPExpKvsPt=new TH2F("fTOFsignalPExpKvsPt",";pt[GeV/c];expected signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt
-  fOuputList->Add(fTOFsignalPiExpKvsPt);
-  fOuputList->Add(fTOFsignalPiExpPvsPt);
-  fOuputList->Add(fTOFsignalKExpPivsPt);
-  fOuputList->Add(fTOFsignalKExpPvsPt);
-  fOuputList->Add(fTOFsignalPExpPivsPt);
-  fOuputList->Add(fTOFsignalPExpKvsPt);
+  fOutputList->Add(fTOFsignalPiExpKvsPt);
+  fOutputList->Add(fTOFsignalPiExpPvsPt);
+  fOutputList->Add(fTOFsignalKExpPivsPt);
+  fOutputList->Add(fTOFsignalKExpPvsPt);
+  fOutputList->Add(fTOFsignalPExpPivsPt);
+  fOutputList->Add(fTOFsignalPExpKvsPt);
 
   //p
   fITSsignalpip=new TH2F("fITSsignalpip",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//ITS PID signal as function of p for pi+
   fTPCsignalpip=new TH2F("fTPCsignalpip",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//TPC PID signal as function of p for pi+
   fTOFsignalpip=new TH2F("fTOFsignalpip",";p[GeV/c];signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of p for pi+
-  fOuputList->Add(fITSsignalpip);
-  fOuputList->Add(fTPCsignalpip);
-  fOuputList->Add(fTOFsignalpip);
+  fOutputList->Add(fITSsignalpip);
+  fOutputList->Add(fTPCsignalpip);
+  fOutputList->Add(fTOFsignalpip);
 
   fITSsignalKp=new TH2F("fITSsignalKp",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//ITS PID signal as function of p for K+
   fTPCsignalKp=new TH2F("fTPCsignalKp",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//TPC PID signal as function of p for K+
   fTOFsignalKp=new TH2F("fTOFsignalKp",";p[GeV/c];signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of p for K+
-  fOuputList->Add(fITSsignalKp);
-  fOuputList->Add(fTPCsignalKp);
-  fOuputList->Add(fTOFsignalKp);
+  fOutputList->Add(fITSsignalKp);
+  fOutputList->Add(fTPCsignalKp);
+  fOutputList->Add(fTOFsignalKp);
 
   fITSsignalpp=new TH2F("fITSsignalpp",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//ITS PID signal as function of p for p
   fTPCsignalpp=new TH2F("fTPCsignalpp",";p[GeV/c];signal",kPBins,binsPDummy,600,-4,4);//TPC PID signal as function of p for p
   fTOFsignalpp=new TH2F("fTOFsignalpp",";p[GeV/c];signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of p for p
-  fOuputList->Add(fITSsignalpp);
-  fOuputList->Add(fTPCsignalpp);
-  fOuputList->Add(fTOFsignalpp);
+  fOutputList->Add(fITSsignalpp);
+  fOutputList->Add(fTPCsignalpp);
+  fOutputList->Add(fTOFsignalpp);
 
   fTOFsignalPiExpKvsP=new TH2F("fTOFsignalPiExpKvsP",";p[GeV/c];expected signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPiExpPvsP=new TH2F("fTOFsignalPiExpPvsP",";p[GeV/c];expected signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of pt
@@ -298,62 +309,76 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fTOFsignalKExpPvsP=new TH2F("fTOFsignalKExpPvsP",";p[GeV/c];expected signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPExpPivsP=new TH2F("fTOFsignalPExpPivsP",";p[GeV/c];expected signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of pt
   fTOFsignalPExpKvsP=new TH2F("fTOFsignalPExpKvsP",";p[GeV/c];expected signal",kPBins,binsPDummy,1000,-8000,8000);//TOF PID signal as function of pt
-  fOuputList->Add(fTOFsignalPiExpKvsP);
-  fOuputList->Add(fTOFsignalPiExpPvsP);
-  fOuputList->Add(fTOFsignalKExpPivsP);
-  fOuputList->Add(fTOFsignalKExpPvsP);
-  fOuputList->Add(fTOFsignalPExpPivsP);
-  fOuputList->Add(fTOFsignalPExpKvsP);
+  fOutputList->Add(fTOFsignalPiExpKvsP);
+  fOutputList->Add(fTOFsignalPiExpPvsP);
+  fOutputList->Add(fTOFsignalKExpPivsP);
+  fOutputList->Add(fTOFsignalKExpPvsP);
+  fOutputList->Add(fTOFsignalPExpPivsP);
+  fOutputList->Add(fTOFsignalPExpKvsP);
+
+  fTOFsignalBeta=new TH2F("fTOFsignalBeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.2, 1.1);//
+  fTOFsignalPiBeta=new TH2F("fTOFsignalPiBeta",";p[GeV/c];#beta-#beta_{#pi}",kPBins,binsPDummy,1000, -1.0, 1.0);//
+  fTOFsignalKBeta=new TH2F("fTOFsignalKBeta",";p[GeV/c];#beta-#beta_{K}",kPBins,binsPDummy,1000, -1.0, 1.0);//
+  fTOFsignalPBeta=new TH2F("fTOFsignalPBeta",";p[GeV/c];#beta-#beta_{p}",kPBins,binsPDummy,1000, -1.0, 1.0);//
+  fOutputList->Add(fTOFsignalBeta);
+  fOutputList->Add(fTOFsignalPiBeta);
+  fOutputList->Add(fTOFsignalKBeta);
+  fOutputList->Add(fTOFsignalPBeta);
 
   if(fMC)
   {
     fITSsignalpiMC=new TH2F("fITSsignalpiMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for pi+
     fTPCsignalpiMC=new TH2F("fTPCsignalpiMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for pi+
     fTOFsignalpiMC=new TH2F("fTOFsignalpiMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for pi+
-    fOuputList->Add(fITSsignalpiMC);
-    fOuputList->Add(fTPCsignalpiMC);
-    fOuputList->Add(fTOFsignalpiMC);
+    fOutputList->Add(fITSsignalpiMC);
+    fOutputList->Add(fTPCsignalpiMC);
+    fOutputList->Add(fTOFsignalpiMC);
 
     fITSsignalKMC=new TH2F("fITSsignalKMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for K+
     fTPCsignalKMC=new TH2F("fTPCsignalKMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for K+
     fTOFsignalKMC=new TH2F("fTOFsignalKMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for K+
-    fOuputList->Add(fITSsignalKMC);
-    fOuputList->Add(fTPCsignalKMC);
-    fOuputList->Add(fTOFsignalKMC);
+    fOutputList->Add(fITSsignalKMC);
+    fOutputList->Add(fTPCsignalKMC);
+    fOutputList->Add(fTOFsignalKMC);
 
     fITSsignalpMC=new TH2F("fITSsignalpMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for p
     fTPCsignalpMC=new TH2F("fTPCsignalpMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for p
     fTOFsignalpMC=new TH2F("fTOFsignalpMC",";pt[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for p
-    fOuputList->Add(fITSsignalpMC);
-    fOuputList->Add(fTPCsignalpMC);
-    fOuputList->Add(fTOFsignalpMC);
+    fOutputList->Add(fITSsignalpMC);
+    fOutputList->Add(fTPCsignalpMC);
+    fOutputList->Add(fTOFsignalpMC);
 
     fITSsignalpiMCp=new TH2F("fITSsignalpiMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for pi+
     fTPCsignalpiMCp=new TH2F("fTPCsignalpiMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for pi+
     fTOFsignalpiMCp=new TH2F("fTOFsignalpiMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for pi+
-    fOuputList->Add(fITSsignalpiMCp);
-    fOuputList->Add(fTPCsignalpiMCp);
-    fOuputList->Add(fTOFsignalpiMCp);
+    fOutputList->Add(fITSsignalpiMCp);
+    fOutputList->Add(fTPCsignalpiMCp);
+    fOutputList->Add(fTOFsignalpiMCp);
 
     fITSsignalKMCp=new TH2F("fITSsignalKMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for K+
     fTPCsignalKMCp=new TH2F("fTPCsignalKMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for K+
     fTOFsignalKMCp=new TH2F("fTOFsignalKMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for K+
-    fOuputList->Add(fITSsignalKMCp);
-    fOuputList->Add(fTPCsignalKMCp);
-    fOuputList->Add(fTOFsignalKMCp);
+    fOutputList->Add(fITSsignalKMCp);
+    fOutputList->Add(fTPCsignalKMCp);
+    fOutputList->Add(fTOFsignalKMCp);
 
     fITSsignalpMCp=new TH2F("fITSsignalpMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//ITS PID signal as function of pt for p
     fTPCsignalpMCp=new TH2F("fTPCsignalpMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,600,-4,4);//TPC PID signal as function of pt for p
     fTOFsignalpMCp=new TH2F("fTOFsignalpMCp",";p[GeV/c];signal",kPtBins,binsPtDummy,1000,-8000,8000);//TOF PID signal as function of pt for p
-    fOuputList->Add(fITSsignalpMCp);
-    fOuputList->Add(fTPCsignalpMCp);
-    fOuputList->Add(fTOFsignalpMCp);
+    fOutputList->Add(fITSsignalpMCp);
+    fOutputList->Add(fTPCsignalpMCp);
+    fOutputList->Add(fTOFsignalpMCp);
   }
 
   fPvsPt=new TH2F("fPvsPt","p vs p_{t}",kPBins,binsPDummy,kPtBins,binsPtDummy);
-  fOuputList->Add(fPvsPt);
+  fOutputList->Add(fPvsPt);
 
-  PostData(1,  fOuputList);
+  fMeanPvsP = new TProfile("fMeanPvsP","Mean P vs P",kPBins,binsPDummy);
+  fMeanPtvsPt = new TProfile("fMeanPtvsPt","Mean Pt vs Pt",kPtBins,binsPtDummy);
+  fOutputList->Add(fMeanPvsP);
+  fOutputList->Add(fMeanPtvsPt);
+
+  PostData(1,  fOutputList);
 }
 
 //________________________________________________________________________
@@ -365,7 +390,7 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   if(!fCuts || !fEventCuts)
   {
     Printf("No CUTS Defined.........\n");
-    PostData(1,  fOuputList);
+    PostData(1,  fOutputList);
     return;
   }
 
@@ -407,6 +432,8 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     Double_t p=trackESD->GetP();
     Double_t pt=trackESD->Pt();
     fPvsPt->Fill(p,pt);
+    fMeanPvsP->Fill(p,p);
+    fMeanPtvsPt->Fill(pt,pt);
 
     pidITS(trackESD,pdgcode);
     pidTPC(trackESD,pdgcode);
@@ -414,7 +441,7 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   }
 
   // Post output data.
-  PostData(1,  fOuputList);
+  PostData(1,  fOutputList);
 }
 
 //________________________________________________________________________
@@ -541,20 +568,37 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* t, Int_t pdgcode)
 
   if (!goodtrack) return;
 
+  const Float_t c = 2.99792457999999984e-02;
   Float_t pt=t->Pt();
   Float_t p=t->GetP();
+  Float_t L = t->GetIntegratedLength();
   Float_t fT0track=fESDpid->GetTOFResponse().GetStartTime(p);
-  Float_t fTimeTOF=t->GetTOFsignal()- fT0track;
+  Float_t timeTOF=t->GetTOFsignal()- fT0track;
 
+  //calculate beta for the track
+  Float_t beta = L/timeTOF/c;
+  
   //2=pion 3=kaon 4=protons
   Double_t inttimes[5]= {-1.0,-1.0,-1.0,-1.0,-1.0};
   t->GetIntegratedTimes(inttimes);
-  fTOFsignal->Fill(p,fTimeTOF-inttimes[2]);
+  Float_t betaHypothesis[5] = {0.0,0.0,0.0,0.0,0.0};
+  for (Int_t i=0;i<5;i++)
+  {
+    betaHypothesis[i] = L/inttimes[i]/c;
+  }
+
+  fTOFsignal->Fill(p,timeTOF-inttimes[2]);
+
+  //beta part
+  fTOFsignalBeta->Fill(p,beta);
+  fTOFsignalPiBeta->Fill(p,beta-betaHypothesis[2]);
+  fTOFsignalKBeta->Fill(p,beta-betaHypothesis[3]);
+  fTOFsignalPBeta->Fill(p,beta-betaHypothesis[4]);
 
   //P part
-  fTOFsignalpip->Fill(p,fTimeTOF-inttimes[2]);
-  fTOFsignalKp->Fill(p,fTimeTOF-inttimes[3]);
-  fTOFsignalpp->Fill(p,fTimeTOF-inttimes[4]);
+  fTOFsignalpip->Fill(p,timeTOF-inttimes[2]);
+  fTOFsignalKp->Fill(p,timeTOF-inttimes[3]);
+  fTOFsignalpp->Fill(p,timeTOF-inttimes[4]);
 
   fTOFsignalPiExpKvsPt->Fill(pt,-inttimes[2]+inttimes[3]);
   fTOFsignalPiExpPvsPt->Fill(pt,-inttimes[2]+inttimes[4]);
@@ -566,17 +610,17 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* t, Int_t pdgcode)
   if(fMC)
   {
     if(TMath::Abs(pdgcode)==211)
-      fTOFsignalpiMCp->Fill(p,fTimeTOF-inttimes[2]);
+      fTOFsignalpiMCp->Fill(p,timeTOF-inttimes[2]);
     else if(TMath::Abs(pdgcode)==321)
-      fTOFsignalKMCp->Fill(p,fTimeTOF-inttimes[3]);
+      fTOFsignalKMCp->Fill(p,timeTOF-inttimes[3]);
     else if (TMath::Abs(pdgcode)==2212)
-      fTOFsignalpMCp->Fill(p,fTimeTOF-inttimes[4]);
+      fTOFsignalpMCp->Fill(p,timeTOF-inttimes[4]);
   }
 
   //Pt part
-  fTOFsignalpi->Fill(pt,fTimeTOF-inttimes[2]);
-  fTOFsignalK->Fill(pt,fTimeTOF-inttimes[3]);
-  fTOFsignalp->Fill(pt,fTimeTOF-inttimes[4]);
+  fTOFsignalpi->Fill(pt,timeTOF-inttimes[2]);
+  fTOFsignalK->Fill(pt,timeTOF-inttimes[3]);
+  fTOFsignalp->Fill(pt,timeTOF-inttimes[4]);
 
   fTOFsignalPiExpKvsP->Fill(p,-inttimes[2]+inttimes[3]);
   fTOFsignalPiExpPvsP->Fill(p,-inttimes[2]+inttimes[4]);
@@ -588,13 +632,17 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* t, Int_t pdgcode)
   if(fMC)
   {
     if(TMath::Abs(pdgcode)==211)
-      fTOFsignalpiMC->Fill(pt,fTimeTOF-inttimes[2]);
+      fTOFsignalpiMC->Fill(pt,timeTOF-inttimes[2]);
     else if(TMath::Abs(pdgcode)==321)
-      fTOFsignalKMC->Fill(pt,fTimeTOF-inttimes[3]);
+      fTOFsignalKMC->Fill(pt,timeTOF-inttimes[3]);
     else if (TMath::Abs(pdgcode)==2212)
-      fTOFsignalpMC->Fill(pt,fTimeTOF-inttimes[4]);
+      fTOFsignalpMC->Fill(pt,timeTOF-inttimes[4]);
   }
 }
 
-
-
+Float_t AliAnalysisTaskPIDflowQA::Beta(Float_t m, Float_t p) 
+{
+  //get theoretical beta
+  return TMath::Sqrt(1. / (1. + m * m / (p * p)));
+}
+ 
