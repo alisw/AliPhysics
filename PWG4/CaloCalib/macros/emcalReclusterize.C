@@ -121,7 +121,7 @@ void emcalReclusterize(Int_t mode=mLocal)
     params->SetMinECut(0.01);  //10 MeV    
     params->SetUnfold(kFALSE);
     params->SetW0(4.5);
-    params->SetTimeCut(-1);///Open this cut for AODs
+    params->SetTimeCut(1e6);///Open this cut for AODs
     params->SetTimeMin(-1);//Open this cut for AODs
     params->SetTimeMax(1e6);//Open this cut for AODs
 
