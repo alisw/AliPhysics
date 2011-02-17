@@ -28,7 +28,7 @@
 
 set ( CLASS_HDRS  AliHLTEMCALDefinitions.h AliHLTEMCALRawAnalyzerComponent.h AliHLTEMCALMapper.h AliHLTEMCALRawAnalyzerCrudeComponent.h AliHLTEMCALRawAnalyzerLMSComponent.h AliHLTEMCALRawAnalyzerPeakFinderComponent.h AliHLTEMCALRawAnalyzerFastFitComponent.h AliHLTEMCALRawAnalyzerNNComponent.h AliHLTEMCALConstants.h AliHLTEMCALDigitMakerComponent.h AliHLTEMCALClusterizerComponent.h AliHLTEMCALGeometry.h AliHLTEMCALRecoParamHandler.h)
 
-string(REPLACE ".cxx" ".h" MODULE_SRCS "${CLASS_HDRS}")
+string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
 set ( MODULE_HDRS  	${CLASS_HDRS})
 
