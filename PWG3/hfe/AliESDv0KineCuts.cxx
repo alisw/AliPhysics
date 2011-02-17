@@ -19,7 +19,7 @@
  *
  * Description: This class allows with purely kinematical cuts
  * to select clean samples of electrons, pions and protons from the
- * V0 online finder ESD V0 candidates for PID and dectero resonse
+ * V0 online finder ESD V0 candidates for PID and dectector resonse
  * studies.
  */
 
@@ -29,6 +29,7 @@
 #include "AliESDv0.h"
 #include "AliESDtrack.h"
 #include "AliESDEvent.h"
+#include "AliVEvent.h"
 #include "AliLog.h"
 #include "AliKFParticle.h"
 #include "AliVTrack.h"
@@ -40,31 +41,45 @@ ClassImp(AliESDv0KineCuts)
 
 //____________________________________________________________________
 AliESDv0KineCuts::AliESDv0KineCuts() :
-  fV0(0x0)
-  , fEvent(0x0)
+  fEvent(0x0)
   , fPrimaryVertex(0x0)
-  , fGcutChi2NDF(0)
-  , fGcutInvMass(0)
-  , fK0cutChi2NDF(0)
-  , fLcutChi2NDF(0)
+  , fType(0)
+  , fMode(0)
+  , fTPCNcls(1)
+  , fTPCrefit(kTRUE)
+  , fTPCchi2perCls(4.0)
+  , fTPCclsRatio(0.6)
+  , fNoKinks(kTRUE)
+  , fGcutChi2NDF(10)
+  , fGcutInvMass(0.05)
+  , fK0cutChi2NDF(10)
+  , fLcutChi2NDF(10)
 {
   //
   // Default constructor
   //
 
+  // default single track cuts
+  fTPCNcls = 1;                // minimal number of the TPC clusters
+  fTPCrefit = kTRUE;           // TPC refit
+  fTPCchi2perCls = 4.0;        // chi2 per TPC cluster
+  fTPCclsRatio = 0.6;          // minimal foun/findable TPC cluster ratio
+  fNoKinks = kTRUE;            // kinks - no [kTRUE] or do not care [kFalse]
+
+
   // default gamma cuts values
-  fGcutChi2NDF = 40;           // Chi2NF cut value for the AliKFparticle gamma
+  fGcutChi2NDF = 10;           // Chi2NF cut value for the AliKFparticle gamma
   fGcutCosPoint[0] = 0;        // cos of the pointing angle [min, max]
   fGcutCosPoint[1] = 0.02;     // cos of the pointing angle [min, max]
   fGcutDCA[0] = 0.;            // DCA between the daughter tracks [min, max]
   fGcutDCA[1] = 0.25;          // DCA between the daughter tracks [min, max]
-  fGcutVertexR[0] = 8.;        // radius of the conversion point [min, max]
+  fGcutVertexR[0] = 3.;        // radius of the conversion point [min, max]
   fGcutVertexR[1] = 90.;       // radius of the conversion point [min, max]
   fGcutPsiPair[0] = 0.;        // value of the psi pair cut [min, max]
   fGcutPsiPair[1] = 0.05;      // value of the psi pair cut [min, max]
   fGcutInvMass = 0.05;         // upper value on the gamma invariant mass
-
-  fK0cutChi2NDF = 40;          // Chi2NF cut value for the AliKFparticle K0
+  // default K0 cuts
+  fK0cutChi2NDF = 10;          // Chi2NF cut value for the AliKFparticle K0
   fK0cutCosPoint[0] = 0.;      // cos of the pointing angle [min, max]
   fK0cutCosPoint[1] = 0.02;    // cos of the pointing angle [min, max]
   fK0cutDCA[0] = 0.;           // DCA between the daughter tracks [min, max]
@@ -74,7 +89,7 @@ AliESDv0KineCuts::AliESDv0KineCuts() :
   fK0cutInvMass[0] = 0.486;    // invariant mass window
   fK0cutInvMass[1] = 0.508;    // invariant mass window
   // Lambda & anti-Lambda cut values
-  fLcutChi2NDF = 40;           // Chi2NF cut value for the AliKFparticle K0
+  fLcutChi2NDF = 10;           // Chi2NF cut value for the AliKFparticle K0
   fLcutCosPoint[0] = 0.;       // cos of the pointing angle [min, max]
   fLcutCosPoint[1] = 0.02;     // cos of the pointing angle [min, max]
   fLcutDCA[0] = 0.;            // DCA between the daughter tracks [min, max]
@@ -83,7 +98,7 @@ AliESDv0KineCuts::AliESDv0KineCuts() :
   fLcutVertexR[1] = 40.0;      // radius of the decay point [min, max]
   fLcutInvMass[0] = 1.11;      // invariant mass window
   fLcutInvMass[1] = 1.12;      // invariant mass window
-  
+    
 }
 //____________________________________________________________________
 AliESDv0KineCuts::~AliESDv0KineCuts(){
@@ -91,15 +106,24 @@ AliESDv0KineCuts::~AliESDv0KineCuts(){
   // Destructor
   //
 
-  if (fV0) delete fV0;
 
 }
 //____________________________________________________________________
 AliESDv0KineCuts::AliESDv0KineCuts(const AliESDv0KineCuts &ref):
   TObject(ref)
-  , fV0(0x0)
   , fEvent(0x0)
   , fPrimaryVertex(0x0)
+  , fType(0)
+  , fMode(0)
+  , fTPCNcls(1)
+  , fTPCrefit(kTRUE)
+  , fTPCchi2perCls(4.0)
+  , fTPCclsRatio(0.6)
+  , fNoKinks(kTRUE)
+  , fGcutChi2NDF(10)
+  , fGcutInvMass(0.05)
+  , fK0cutChi2NDF(10)
+  , fLcutChi2NDF(10)
 {
   //
   // Copy operator
@@ -125,10 +149,34 @@ void AliESDv0KineCuts::Copy(TObject &ref) const {
   TObject::Copy(ref);
 
   AliESDv0KineCuts &target = dynamic_cast<AliESDv0KineCuts &>(ref);
-  if(fV0)
-    target.fV0 = dynamic_cast<AliESDv0 *>(fV0->Clone());
-  else
-    target.fV0 = NULL;
+
+  // default single track cuts
+  target.fTPCNcls = fTPCNcls;
+  target.fTPCrefit = fTPCrefit;
+  target.fTPCchi2perCls = fTPCchi2perCls;
+  target.fTPCclsRatio = fTPCclsRatio;
+  target.fNoKinks = fNoKinks;
+
+
+  // default gamma cuts values
+  target.fGcutChi2NDF = fGcutChi2NDF;
+  memcpy(target.fGcutCosPoint, fGcutCosPoint, sizeof(Float_t) * 2);
+  memcpy(target.fGcutDCA, fGcutDCA, sizeof(Float_t) * 2); 
+  memcpy(target.fGcutVertexR, fGcutVertexR, sizeof(Float_t) * 2);
+  memcpy(target.fGcutPsiPair, fGcutPsiPair, sizeof(Float_t) * 2);
+  target.fGcutInvMass = fGcutInvMass;
+  // default K0 cuts
+  target.fK0cutChi2NDF = fK0cutChi2NDF;
+  memcpy(target.fK0cutCosPoint, fK0cutCosPoint, sizeof(Float_t) * 2);
+  memcpy(target.fK0cutDCA, fK0cutDCA, sizeof(Float_t) * 2);
+  memcpy(target.fK0cutVertexR, fK0cutVertexR, sizeof(Float_t) * 2);
+  memcpy(target.fK0cutInvMass, fK0cutInvMass, sizeof(Float_t) * 2);
+  // Lambda & anti-Lambda cut values
+  target.fLcutChi2NDF = fLcutChi2NDF;
+  memcpy(target.fLcutCosPoint, fLcutCosPoint, sizeof(Float_t) * 2);
+  memcpy(target.fLcutDCA, fLcutDCA, sizeof(Float_t) * 2);
+  memcpy(target.fLcutVertexR, fLcutVertexR, sizeof(Float_t) * 2);
+  memcpy(target.fLcutInvMass, fLcutInvMass, sizeof(Float_t) * 2);
   
 }
 //____________________________________________________________________
@@ -187,6 +235,9 @@ Int_t  AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
   //
   // Make a preselection (exclusive) of the V0 cadidates based on
   // Armenteros plot
+  // the armenteros cut values are currently fixed and user is not able to set them via
+  // set funcions. The reason is that these cuts are optimized and furneter changes should 
+  // not be necessary. To prove otherwise please study in detail before changing the values
   //
  
   Float_t ap[2] = {-1., -1.};
@@ -215,13 +266,18 @@ Int_t  AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
   const Float_t cutAPL[3] = {0.107, -0.69, 0.5};  // parameters fir curved QT cut
 
 
+  if(kPurity == fMode){
   // Check for Gamma candidates
-  if(qt < cutQTG){
-    if( (TMath::Abs(alpha) < cutAlphaG) ) return kGamma;
+    if(qt < cutQTG){
+      if( (TMath::Abs(alpha) < cutAlphaG) ) return kGamma;
+    }
+    // additional region - should help high pT gammas
+    if(qt < cutQTG2){
+      if( (TMath::Abs(alpha) > cutAlphaG2[0]) &&  (TMath::Abs(alpha) < cutAlphaG2[1]) ) return kGamma;
+    }
   }
-  // additional region - should help high pT gammas
-  if(qt < cutQTG2){
-    if( (TMath::Abs(alpha) > cutAlphaG2[0]) &&  (TMath::Abs(alpha) < cutAlphaG2[1]) ) return kGamma;
+  if(kEffGamma == fMode){
+    if(qt < cutQTG) return kGamma;
   }
 
   
@@ -682,29 +738,6 @@ Bool_t AliESDv0KineCuts::CheckSigns(AliESDv0* const v0){
   
   return correct;
 }
-//____________________________________________________________________
-void   AliESDv0KineCuts::SetEvent(AliESDEvent* const event){
-  //
-  // direct setter of ESD event
-  //
-  if(!event){
-    AliErrorClass("Invalid input event pointer");
-    return;
-  }
-  fEvent = event;
-}
-//____________________________________________________________________
-void   AliESDv0KineCuts::SetEvent(AliVEvent* const event){
-  //
-  // Set the current working ESD event
-  //
-  if(!event){
-    AliErrorClass("Invalid input event pointer");
-    return;
-  }
-  
-  SetEvent(dynamic_cast<AliESDEvent*>(event));
-}
 //________________________________________________________________
 Double_t AliESDv0KineCuts::PsiPair(AliESDv0* const v0) {
   //
@@ -891,4 +924,111 @@ AliKFParticle *AliESDv0KineCuts::CreateMotherParticle(const AliVTrack* const pda
   // Source: Sergey Gorbunov
 
   return m;
+}
+//____________________________________________________________________
+void  AliESDv0KineCuts::SetEvent(AliESDEvent* const event){
+  //
+  // direct setter of ESD event
+  //
+  fEvent = event;
+  if(!fEvent){
+    AliErrorClass("Invalid input event pointer");
+    return;
+  }
+
+}
+//____________________________________________________________________
+void  AliESDv0KineCuts::SetEvent(AliVEvent* const event){
+  //
+  // direct setter of ESD event
+  //
+  if(event)
+    fEvent = static_cast<AliESDEvent*>(event);
+  if(!fEvent){
+    AliErrorClass("Invalid input event pointer");
+    return;
+  }
+
+}
+//________________________________________________________________
+void AliESDv0KineCuts::SetPrimaryVertex(AliKFVertex* const v){
+  //
+  // set the primary vertex of the event
+  //
+  fPrimaryVertex = v;
+  if(!fPrimaryVertex){
+    AliErrorClass("Failed to initialize the primary vertex");
+    return;
+  }
+}
+//___________________________________________________________________
+void AliESDv0KineCuts::SetMode(Int_t mode, Int_t type){
+  //
+  // this function allows the user to select (prior running the 'ProcessV0' function)
+  // to select different approaches to V0 selection - the 'mode'
+  // - and -
+  // different systems (pp, PbPb) - 'type' 
+  //
+  // To see the cut values for different modes please refer to the
+  // function SetCuts()
+  //
+  // Important notice: based on the parameters particular sets of cuts will
+  // be activated for teh V0 selection. If some additional changes to single
+  // cuts are needed please us the SetXXXcut function (see the header file)
+  // 
+
+  switch(mode){
+  case kPurity:
+    fMode = kPurity;  // used to obtain highest purity possible - the efficiency may be low
+  case kEffGamma:
+    fMode = kEffGamma; // used to obtain highes efficiency possible - the purity may be worse
+  default:
+    AliError("V0 selection mode not recognozed, setting 'kPurity'");
+    fMode = kPurity;
+  }
+
+  switch(type){
+  case kPP:
+    fType = kPP;  // cuts optimized for low multiplicity 
+  case kPbPb:
+    fType = kPbPb;  // cuts optimized for high multiplicity
+  }
+  
+  // setup the cut values for selected mode & type
+  SetCuts();
+
+}
+//___________________________________________________________________
+void AliESDv0KineCuts::SetMode(Int_t mode, const char* type){
+  //
+  // overloaded function - please see above
+  // 
+  
+  Int_t t = -1;
+
+  if(!strcmp("pp", type)) t = kPP;
+  else if(!(strcmp("PbPb", type))) t = kPbPb;
+  else{
+    AliError("data type not recognized, setting 'pp'");
+    t = kPP;    
+  }
+
+  SetMode(mode, t);
+
+}
+//___________________________________________________________________
+void AliESDv0KineCuts::SetCuts(){
+  //
+  // this funciton sets the default cut values based on the selected
+  // fMode and fType.
+  // please note that only the cuts that have different values than the default
+  // cuts are updated here
+  //
+  
+  // last update: 14/02/2011
+  // as a very preliminary  - the only change to default cuts is to apply
+  // less restricting gamma conversion selection in PreselectV0() function
+  
+
+  
 }
