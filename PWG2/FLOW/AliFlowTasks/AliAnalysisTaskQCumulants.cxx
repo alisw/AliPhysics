@@ -47,7 +47,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
  fPropagateErrorAlsoFromNIT(kFALSE),
- fCalculate2DFlow(kFALSE),
+ fCalculateDiffFlow(kTRUE),
+ fCalculate2DDiffFlow(kFALSE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE), 
  fMinimumBiasReferenceFlow(kTRUE), 
@@ -99,7 +100,8 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fApplyCorrectionForNUA(kFALSE), 
  fApplyCorrectionForNUAVsM(kFALSE), 
  fPropagateErrorAlsoFromNIT(kFALSE),
- fCalculate2DFlow(kFALSE),
+ fCalculateDiffFlow(kFALSE),
+ fCalculate2DDiffFlow(kFALSE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
  fMinimumBiasReferenceFlow(kFALSE), 
@@ -142,7 +144,8 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
  fQC->SetApplyCorrectionForNUAVsM(fApplyCorrectionForNUAVsM);
  fQC->SetPropagateErrorAlsoFromNIT(fPropagateErrorAlsoFromNIT);
- fQC->SetCalculate2DFlow(fCalculate2DFlow);
+ fQC->SetCalculateDiffFlow(fCalculateDiffFlow);
+ fQC->SetCalculate2DDiffFlow(fCalculate2DDiffFlow);
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetMinimumBiasReferenceFlow(fMinimumBiasReferenceFlow); 
