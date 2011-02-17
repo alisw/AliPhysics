@@ -38,11 +38,16 @@ class AliMuonsHFHeader : public TNamed {
   Double_t Vt()               const { return TMath::Sqrt(fVtx[0]*fVtx[0] + fVtx[1]*fVtx[1]); }
   Int_t VtxContrsN()          const { return fVtxContrsN; }
   TString FiredTriggerClass() const { return fFiredTriggerClass; }
-  Double_t Centrality()       const { return fCentrality; }
-
-  void SetEvent(AliVVertex *vertex);
-  void SetFiredTriggerClass(TString trigger);
+  Float_t Centrality()        const { return fCentrality; }
+  UInt_t SelectionMask()      const { return fSelMask; }
+  Bool_t IsMB()               const { return fIsMB; }
+  Bool_t IsMU()               const { return fIsMU; }
   Bool_t IsSelected();
+
+  void SetSelectionMask(UInt_t mask) { fSelMask=mask; }
+  void SetVertex(AliVVertex *vertex);
+  void SetFiredTriggerClass(TString trigger);
+  void SetCentrality(Float_t centr) { fCentrality=centr; }
 
   void CreateHistograms(TList *list);
   void FillHistosEvnH(TList *list);
@@ -52,7 +57,7 @@ class AliMuonsHFHeader : public TNamed {
   static const char* StdBranchName()             { return fgkStdBranchName.Data();          }
   static void SetAnaMode(Int_t anaMode=0)        { fgAnaMode=anaMode;                       }
   static void SetIsMC(Int_t isMC=kFALSE)         { fgIsMC   =isMC;                          }
-  static void SetSelectionCuts(Double_t cuts[3]) { for (Int_t i=3; i--;) fgCuts[i]=cuts[i]; }
+  static void SetSelectionCuts(Double_t cuts[5]) { for (Int_t i=5; i--;) fgCuts[i]=cuts[i]; }
 
  private :
 
@@ -63,20 +68,23 @@ class AliMuonsHFHeader : public TNamed {
   static const TString fgkStdBranchName;  // Standard branch name
   static Int_t  fgAnaMode;                // analysis mode
   static Bool_t fgIsMC;                   // flag to use MC
-  static Double_t fgCuts[3];  // 0, low limit of num. of vtx contributors
+  static Double_t fgCuts[5];  // 0, low limit of num. of vtx contributors
                               // 1, up limit of vz
                               // 2, up limit of vt
+                              // 3, centrality max
+                              // 4, centrality min
 
-  Bool_t fIsMB;  // is min. bias triggered event (for real data)
-  Bool_t fIsMU;  // is MUON triggered event (for real data)
+  UInt_t fSelMask; // mask of physics selection
+  Bool_t fIsMB;    // is min. bias triggered event (for real data)
+  Bool_t fIsMU;    // is MUON triggered event (for real data)
   Double_t fVtx[3];   // position of vtx
   Int_t fVtxContrsN;  // num. of contributors of vtx rec
 
   TString fFiredTriggerClass; // trigger class
 
-  Double_t fCentrality;  // event centrality class
+  Float_t fCentrality;  // event centrality class
 
-  ClassDef(AliMuonsHFHeader, 3)
+  ClassDef(AliMuonsHFHeader, 5)
 };
 
 #endif

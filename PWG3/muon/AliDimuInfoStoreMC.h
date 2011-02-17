@@ -50,7 +50,7 @@ class AliDimuInfoStoreMC : public AliDimuInfoStoreRD {
                   // = 4, Resonance
                   // = 5, UnCorr bkg
 
-  ClassDef(AliDimuInfoStoreMC, 1);
+  ClassDef(AliDimuInfoStoreMC, 5);
 };
 
 #endif
