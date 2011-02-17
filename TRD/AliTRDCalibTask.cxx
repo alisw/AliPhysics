@@ -408,6 +408,8 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   delete [] binLimLogPt;
   delete [] binLimPt;
 
+  PostData(1,fListHist);
+
   //cout << "AliTRDCalibTask::UserCreateOutputObjects() OUT" << endl;
 
 }
