@@ -30,7 +30,9 @@ class TObject;
 ClassImp(AliMuonInfoStoreRD)
 
 const TString AliMuonInfoStoreRD::fgkStdBranchName("MuonRD");
-Double_t      AliMuonInfoStoreRD::fgCuts[12] = {-999999., 999999.,
+Double_t      AliMuonInfoStoreRD::fgCuts[16] = {-999999., 999999.,
+                                                -999999., 999999.,
+                                                -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
@@ -182,22 +184,28 @@ Bool_t AliMuonInfoStoreRD::IsSelected()
   // select muon tracks according to the selection cuts
 
   Double_t p = Momentum().Mag();
-  if (p<AliMuonInfoStoreRD::fgCuts[0] || p>AliMuonInfoStoreRD::fgCuts[1])             return kFALSE;
+  if (p<AliMuonInfoStoreRD::fgCuts[0] || p>AliMuonInfoStoreRD::fgCuts[1])               return kFALSE;
 
   Double_t pt = Momentum().Pt();
-  if (pt<AliMuonInfoStoreRD::fgCuts[2] || pt>AliMuonInfoStoreRD::fgCuts[3])           return kFALSE;
+  if (pt<AliMuonInfoStoreRD::fgCuts[2] || pt>AliMuonInfoStoreRD::fgCuts[3])             return kFALSE;
 
   Double_t eta = Momentum().Eta();
-  if (eta<AliMuonInfoStoreRD::fgCuts[4] || eta>AliMuonInfoStoreRD::fgCuts[5])         return kFALSE;
+  if (eta<AliMuonInfoStoreRD::fgCuts[4] || eta>AliMuonInfoStoreRD::fgCuts[5])           return kFALSE;
 
   Double_t dca = this->DCA();
-  if (dca<AliMuonInfoStoreRD::fgCuts[6] || dca>AliMuonInfoStoreRD::fgCuts[7])         return kFALSE;
+  if (dca<AliMuonInfoStoreRD::fgCuts[6] || dca>AliMuonInfoStoreRD::fgCuts[7])           return kFALSE;
 
   Int_t trigger = this->MatchTrigger();
-  if (trigger<AliMuonInfoStoreRD::fgCuts[8] || trigger>AliMuonInfoStoreRD::fgCuts[9]) return kFALSE;
+  if (trigger<AliMuonInfoStoreRD::fgCuts[8] || trigger>AliMuonInfoStoreRD::fgCuts[9])   return kFALSE;
 
   Double_t theta = 180.*(1.-TMath::ATan(this->RabsEnd()/505.)/TMath::Pi());
-  if (theta<AliMuonInfoStoreRD::fgCuts[10] || theta>AliMuonInfoStoreRD::fgCuts[11])   return kFALSE;
+  if (theta<AliMuonInfoStoreRD::fgCuts[10] || theta>AliMuonInfoStoreRD::fgCuts[11])     return kFALSE;
+
+  Double_t chi2Trk = this->Chi2Tracker();
+  if (chi2Trk<AliMuonInfoStoreRD::fgCuts[12] || chi2Trk>AliMuonInfoStoreRD::fgCuts[13]) return kFALSE;
+
+  Double_t chi2Trg = this->Chi2Trigger();
+  if (chi2Trg<AliMuonInfoStoreRD::fgCuts[14] || chi2Trg>AliMuonInfoStoreRD::fgCuts[15]) return kFALSE;
 
   return kTRUE;
 }

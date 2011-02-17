@@ -31,15 +31,19 @@
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliESDHeader.h"
+#include "AliAODHeader.h"
 #include "AliESDMuonTrack.h"
 #include "AliAODTrack.h"
+#include "AliCentrality.h"
 #include "AliMuonsHFHeader.h"
 #include "AliMuonInfoStoreRD.h"
 #include "AliMuonInfoStoreMC.h"
 #include "AliDimuInfoStoreRD.h"
 #include "AliDimuInfoStoreMC.h"
-#include "AliAnalysisTaskSEMuonsHF.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
+#include "AliAnalysisTaskSEMuonsHF.h"
 
 ClassImp(AliAnalysisTaskSEMuonsHF)
 
@@ -154,24 +158,29 @@ void AliAnalysisTaskSEMuonsHF::UserExec(Option_t *)
     } else { AliError("MC event not found. Nothing done!"); return; }
   }
 
-  if (fIsOutputTree) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-  fHeader->SetEvent(((AliVVertex*)InputEvent()->GetPrimaryVertex()));
-  fHeader->FillHistosEvnH(fListOutput);
-
   Int_t ntrks = 0;
   AliAODEvent *aod = 0;
   AliESDEvent *esd = 0;
   if (((TString)InputEvent()->IsA()->GetName())=="AliAODEvent") {
     aod = dynamic_cast<AliAODEvent*>(InputEvent());
     if (!aod) { AliError("AOD event not found. Nothing done!"); return; }
+    if (!fIsMC && (aod->GetHeader()->GetEventType()!=7)) return;
     ntrks = aod->GetNTracks();
     fHeader->SetFiredTriggerClass(aod->GetFiredTriggerClasses());
   } else {
     esd = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!esd) { AliError("ESD event not found. Nothing done!"); return; }
+    if (!fIsMC && (esd->GetHeader()->GetEventType()!=7)) return;
     ntrks = esd->GetNumberOfMuonTracks();
     fHeader->SetFiredTriggerClass(esd->GetFiredTriggerClasses());
+    AliCentrality *cent = esd->GetCentrality();
+    fHeader->SetCentrality(cent->GetCentralityPercentile("V0M"));  // Just for ESD
   }
+
+  if (fIsOutputTree) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  if (fInputHandler && fInputHandler->GetEventSelection()) fHeader->SetSelectionMask(fInputHandler->IsEventSelected());
+  fHeader->SetVertex(((AliVVertex*)InputEvent()->GetPrimaryVertex()));
+  fHeader->FillHistosEvnH(fListOutput);
 
   fMuonClArr->Delete();
   TClonesArray &muonRef = *fMuonClArr;
