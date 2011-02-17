@@ -114,6 +114,8 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
   Bool_t  HasSelectionBit(Int_t i) const {return TESTBIT(fSelectionMap,i);}
   ULong_t GetSelectionMap() const {return fSelectionMap;}
 
+  Int_t   NumberOfFakeDaughters() const;
+
  protected:
 
   AliAODVertex *fOwnPrimaryVtx; // primary vertex for this candidate
@@ -180,6 +182,28 @@ inline Bool_t AliAODRecoDecayHF::DaughterHasPointOnITSLayer(Int_t dg,Int_t l) co
   if(!t) return kFALSE;
 
   return TESTBIT(t->GetITSClusterMap(),l);
+}
+
+inline Int_t AliAODRecoDecayHF::NumberOfFakeDaughters() const 
+{
+  // Count number of daughters with negative label
+
+  Int_t nfakes=0;
+  for(Int_t i=0; i<GetNDaughters(); i++) {
+    AliAODTrack *track=(AliAODTrack*)GetDaughter(i);
+
+    if(track->Charge()==0) { // this is a two prong decay
+      AliAODRecoDecay *rd=(AliAODRecoDecay*)GetDaughter(i);
+      for(Int_t j=0; j<rd->GetNDaughters(); j++) {
+	AliAODTrack *track2=(AliAODTrack*)GetDaughter(j);
+	if(track2->GetLabel()<0) nfakes++;
+      }
+      continue;
+    }
+
+    if(track->GetLabel()<0) nfakes++;
+  }
+  return nfakes;
 }
 
 #endif
