@@ -546,14 +546,16 @@ void AliAnalyseUE::FindMaxMinRegions(TVector3 *jetVect, Int_t conePosition, Int_
     else {
 	partMC = dynamic_cast<AliAODMCParticle*>(tca->At(ipart)); 
         part = partMC;
-        charge = partMC->Charge();
+	if(!partMC)return;
+	charge = partMC->Charge();
 	pt = partMC->Pt();
         eta = partMC->Eta();
 	pdgcode = partMC->GetPdgCode();
         suffix.Append("MC"); 
-	} 
+    } 
 
-      
+    if(!part)return; 
+
     if (fDebug > 1) AliInfo(Form(" ==== AOD track = %d pt = %f charge = %d \n ",ipart,part->Pt(),part->Charge()));
     
     // track selection
@@ -1320,6 +1322,7 @@ TObjArray*  AliAnalyseUE::SortChargedParticlesMC()
 
   for (Int_t ipart=0; ipart<nTracks; ++ipart) {
         AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(ipart));	
+	if(!part)continue;
   	if(!part->IsPhysicalPrimary())continue;
         if( part->Pt() < fTrackPtCut ) continue;
   	if(!part->Charge()) continue;
@@ -1415,8 +1418,10 @@ Bool_t AliAnalyseUE::TrackSelectedEfficiency(AliAODTrack* part)const{
   Int_t label = part->GetLabel();
   TClonesArray *tca=0;
   tca = dynamic_cast<TClonesArray*>(fkAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca)return kFALSE;
   //TParticle *partMC = fStack->ParticleFromTreeK(label);
   AliAODMCParticle *partMC=dynamic_cast<AliAODMCParticle*>(tca->At(TMath::Abs(label)));
+  if(!partMC)return kFALSE;
   if (!partMC->IsPhysicalPrimary())return kFALSE;
   //charge = ((TParticlePDG*)partMC->GetPDG())->Charge();
   charge = partMC->Charge();  

@@ -3254,15 +3254,15 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     if(fQAMode&1){
       for(Int_t it=0; it<nRecPart; ++it){
 	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRec->At(it));
-	fQATrackHistosRec->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+	if(part)fQATrackHistosRec->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
       }
       for(Int_t it=0; it<nRecPartCuts; ++it){
 	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(it));
-	fQATrackHistosRecCuts->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+	if(part)fQATrackHistosRecCuts->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
       }
       for(Int_t it=0; it<nGenPart; ++it){
 	AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksGen->At(it));
-	fQATrackHistosGen->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
+	if(part)fQATrackHistosGen->FillTrackQA( part->Eta(), TVector2::Phi_0_2pi(part->Phi()), part->Pt());
       }
     }
 
@@ -3271,7 +3271,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     if(fQAMode&2){
       for(Int_t ij=0; ij<nRecJets; ++ij){
 	AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRec->At(ij));
-	fQAJetHistosRec->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
+	if(jet)fQAJetHistosRec->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
       }
     }
   }

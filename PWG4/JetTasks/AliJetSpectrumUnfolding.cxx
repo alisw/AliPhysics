@@ -194,9 +194,13 @@ Bool_t AliJetSpectrumUnfolding::LoadHistograms(const Char_t* dir)
   oldHistograms.SetOwner(1);
 
   if (fGenSpectrum)  oldHistograms.Add(fGenSpectrum);
+  else return kFALSE;
   if (fRecSpectrum)  oldHistograms.Add(fRecSpectrum);
+  else return kFALSE;
   if (fUnfSpectrum)  oldHistograms.Add(fUnfSpectrum);
+  else return kFALSE;
   if (fCorrelation)  oldHistograms.Add(fCorrelation);
+  else return kFALSE;
 
   // load new histograms
   fGenSpectrum = dynamic_cast<TH2F*> (gDirectory->Get(fGenSpectrum->GetName()));
@@ -1137,6 +1141,8 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* const inputGen)
   }
 
   TH2F* target = dynamic_cast<TH2F*> (fRecSpectrum->Clone(Form("reconstructed_%s", inputGen->GetName())));
+  if(!targer)return 0;
+
   target->Reset();
 
   for (Int_t me=1; me<=fgkNBINSE; ++me)
