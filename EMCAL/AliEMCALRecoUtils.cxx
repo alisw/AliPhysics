@@ -335,7 +335,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
       //Double_t fNonLinearityParams[2] = -0.03632;
       //Double_t fNonLinearityParams[3] = 0.1798;
       //Double_t fNonLinearityParams[4] = -0.522;
-       energy /= (fNonLinearityParams[0]*exp(-fNonLinearityParams[1]/energy))+
+       energy *= (fNonLinearityParams[0]*exp(-fNonLinearityParams[1]/energy))+
                   ((fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())*
                     exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3]))));
       break;
