@@ -122,11 +122,10 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
 
   //Magic line to write events to file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-    
-  Bool_t bAOD = kFALSE;
-  if(!strcmp(event->GetName(),"AliAODEvent")) bAOD=kTRUE;
-  Bool_t bESD = kFALSE;
-  if(!strcmp(event->GetName(),"AliESDEvent")) bESD=kTRUE;
+   
+  // cast event, depending on input we will have to use one or the other type of event
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);  
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   
   //-------------------------------------------
   //Event selection parameters
@@ -138,7 +137,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   Int_t  trackMult    = 0;
   Bool_t bV0AND       = kFALSE;
   Bool_t bGoodVertex  = kFALSE;
-  if(bESD){
+  if(esdevent){
     //Get track multiplicity
     Int_t nTracks   = InputEvent()->GetNumberOfTracks() ;
     for (Int_t itrack =  0; itrack <  nTracks; itrack++) {////////////// track loop
@@ -148,8 +147,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       if(TMath::Abs(track->Eta())< fTrackMultEtaCut) trackMult++;
     }  
     //V0AND?   
-    
-    bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(dynamic_cast<AliESDEvent*> (event), AliTriggerAnalysis::kV0AND);
+    bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
     //if(!bV0AND) return kFALSE;
     //Well reconstructed vertex
     bGoodVertex = CheckForPrimaryVertex();
@@ -179,8 +177,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   
   header->SetRunNumber(event->GetRunNumber());
   header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
-  if(bESD)
-    header->SetFiredTriggerClasses(((AliESDEvent*)event)->GetFiredTriggerClasses());
+  if(esdevent)
+    header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
   header->SetTriggerMask(event->GetTriggerMask()); 
   header->SetTriggerCluster(event->GetTriggerCluster());
   
@@ -202,8 +200,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   Float_t diamxy[2]={event->GetDiamondX(),event->GetDiamondY()};
   Float_t diamcov[3]; event->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
-  if(bESD){
-    header->SetDiamondZ(((AliESDEvent*)event)->GetDiamondZ(),((AliESDEvent*)event)->GetSigma2DiamondZ());
+  if(esdevent){
+    header->SetDiamondZ(esdevent->GetDiamondZ(),esdevent->GetSigma2DiamondZ());
   }
   //
   //
@@ -220,13 +218,13 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   // after the loops on the composite objects (V0, cascades, kinks)
   event->GetPrimaryVertex()->GetXYZ(pos);
   Float_t chi = 0;
-  if      (bESD){
-    ((AliESDEvent*)event)->GetPrimaryVertex()->GetCovMatrix(covVtx);
-    chi = ((AliESDEvent*)event)->GetPrimaryVertex()->GetChi2toNDF();
+  if      (esdevent){
+    esdevent->GetPrimaryVertex()->GetCovMatrix(covVtx);
+    chi = esdevent->GetPrimaryVertex()->GetChi2toNDF();
   }
-  else if (bAOD){
-    ((AliAODEvent*)event)->GetPrimaryVertex()->GetCovMatrix(covVtx);
-    chi = ((AliAODEvent*)event)->GetPrimaryVertex()->GetChi2perNDF();//Different from ESD?
+  else if (aodevent){
+    aodevent->GetPrimaryVertex()->GetCovMatrix(covVtx);
+    chi = aodevent->GetPrimaryVertex()->GetChi2perNDF();//Different from ESD?
   }
   
   AliAODVertex * primary = new(vertices[jVertices++])
@@ -356,7 +354,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       printf("Original residuals : dZ %f, dR %f\n ",dZ, dR);
     //--------------------------------------------------------------
     //If EMCAL and corrections done, get the new matching parameters, do not copy noisy clusters
-    if(cluster->IsEMCAL() && fCorrect && bESD){
+    if(cluster->IsEMCAL() && fCorrect && esdevent){
       if(DebugLevel() > 2)
         printf("Check cluster %d for bad channels and close to border\n",cluster->GetID());
       if(fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo,cluster->GetCellsAbsId(), cluster->GetNCells())) continue;	
@@ -413,7 +411,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     //Matched tracks, just to know if there was any match, the track pointer is useless.
     //Temporary trick, FIXME
-    if(bESD){
+    if(esdevent){
       if(TMath::Abs(dR) < 990 && TMath::Abs(dZ) < 990) { //Default value in PHOS 999, in EMCAL 1024, why?
         if(DebugLevel() > 2) 
           printf("*** Cluster Track-Matched *** dR %f, dZ %f\n",caloCluster->GetEmcCpvDistance(),caloCluster->Chi2());

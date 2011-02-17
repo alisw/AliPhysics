@@ -1727,8 +1727,8 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
   if(!fhReMod)    fhReMod     = new TH2D*[fNModules]   ;	
   if(!fhReDiffMod)fhReDiffMod = new TH2D*[fNModules+1] ;	
-  if(!fhMiMod)    fhReMod     = new TH2D*[fNModules]   ;	
-  if(!fhMiDiffMod)fhReDiffMod = new TH2D*[fNModules+1] ;	
+  if(!fhMiMod)    fhMiMod     = new TH2D*[fNModules]   ;	
+  if(!fhMiDiffMod)fhMiDiffMod = new TH2D*[fNModules+1] ;	
   
   fhReConv  = (TH2D*) outputList->At(index++);
   fhMiConv  = (TH2D*) outputList->At(index++);
