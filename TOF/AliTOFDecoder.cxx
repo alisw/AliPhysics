@@ -76,6 +76,10 @@ AliTOFDecoder::AliTOFDecoder() :
   fSpiderCurrentTDC(-1)
 {
   //default constructor
+
+  for (Int_t chan=0;chan<N_CHANNEL;chan++)
+    fSpiderLeadingFlag[chan] = kFALSE;
+
 }
 
 //_________________________________________________________________
@@ -100,6 +104,10 @@ AliTOFDecoder::AliTOFDecoder(AliTOFHitDataBuffer *DataBuffer, AliTOFHitDataBuffe
   fSpiderCurrentTDC(-1)
 {
   //another constructor
+
+  for (Int_t chan=0;chan<N_CHANNEL;chan++)
+    fSpiderLeadingFlag[chan] = kFALSE;
+
 }
 
 //_________________________________________________________________
@@ -124,6 +132,9 @@ AliTOFDecoder::AliTOFDecoder(const AliTOFDecoder &source) :
   fSpiderCurrentTDC(source.fSpiderCurrentTDC)
 {
   //copy constructor
+
+  for (Int_t chan=0;chan<N_CHANNEL;chan++)
+    fSpiderLeadingFlag[chan] = source.fSpiderLeadingFlag[chan];
   
 }
 
@@ -154,6 +165,9 @@ AliTOFDecoder::operator = (const AliTOFDecoder &source)
   fSpiderCurrentSlotID = source.fSpiderCurrentSlotID;
   fSpiderCurrentChain = source.fSpiderCurrentChain;
   fSpiderCurrentTDC = source.fSpiderCurrentTDC;
+  for (Int_t chan=0;chan<N_CHANNEL;chan++)
+    fSpiderLeadingFlag[chan] = source.fSpiderLeadingFlag[chan];
+  
   return *this;
 }
 
@@ -931,7 +945,8 @@ void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRaw
  Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
  AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
  if (!cdh)
-     AliWarning("CDH not valid: deltaBunchID not reliable ");
+   AliWarning("CDH not valid: deltaBunchID not reliable ");
+
  AliInfo("Printing raw data stack for current equipment\n");
  AliInfo("  wordN  -  Hex Word "); 
  //loop over raw data

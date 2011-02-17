@@ -263,7 +263,7 @@ Bool_t AliTOFLvHvDataPoints::MergeMaps() {
 	       fNumberOfHVdataPoints, fNumberOfLVdataPoints, fNumberOfHVandLVmaps));
 
 
-  Int_t *controller = new Int_t[fNumberOfHVandLVmaps];
+  Int_t *controller = new Int_t[sizeof(Int_t)*fNumberOfHVandLVmaps]; // fix for coverity
   for (Int_t ii=0; ii<fNumberOfHVandLVmaps; ii++) controller[ii]=-1;
   TMath::Sort(fNumberOfHVandLVmaps,timeMaps,controller,kFALSE); // increasing order
 
