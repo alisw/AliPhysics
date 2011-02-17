@@ -56,20 +56,20 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
  private:
 
   AliAnalysisTaskSESignificance(const AliAnalysisTaskSESignificance &source);
-  AliAnalysisTaskSESignificance& operator=(const AliAnalysisTaskSESignificance& source); 
+  AliAnalysisTaskSESignificance& operator=(const AliAnalysisTaskSESignificance& source);
+  void SetPDGCodes();
   Int_t GetHistoIndex(Int_t iPtBin) const { return iPtBin*3;}
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
 
-  void CalculateInvMasses(AliAODRecoDecayHF* d,Double_t* &masses,Int_t& nmasses);
 
-  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
-  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses, Int_t isSel);
-  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
-  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
-  void FillD04p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
-  void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Double_t* masses,Int_t isSel);
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
+  void FillDs(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillD04p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index,Int_t isSel);
+  void FillLambdac(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t index, Int_t isSel);
 
 
   enum {kMaxPtBins=5};
@@ -92,11 +92,17 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   Bool_t fReadMC;    //flag for access to MC
   FeedDownEnum fBFeedDown; //flag to search for D from B decays
   Int_t fDecChannel; //decay channel identifier
-  Int_t fSelectionlevel;//selection level: kALL,kTracks,kCandidate
+  Int_t fPDGmother;  // PDG code of D meson
+  Int_t fNProngs;         // number of prong of the decay channel  
+  Int_t fPDGdaughters[4]; // PDG codes of daughters
+  TString fBranchName;    // AOD branch name for channel
+  Int_t fSelectionlevel;  //selection level: kALL,kTracks,kCandidate
+  Int_t   fNVars;         // number of selection variables
+  Float_t fVars[kMaxCutVar];       // array with values of cut variables
   Int_t fNBins;  //number of bins in the mass histograms
   Int_t fPartOrAndAntiPart;  //fill histograms with particle only (+1), antiparticle only (-1), both (0)
 
-  ClassDef(AliAnalysisTaskSESignificance,2); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSESignificance,3); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
