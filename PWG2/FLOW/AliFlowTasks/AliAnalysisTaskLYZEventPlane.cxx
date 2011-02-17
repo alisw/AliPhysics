@@ -133,17 +133,18 @@ void AliAnalysisTaskLYZEventPlane::UserExec(Option_t *)
 void AliAnalysisTaskLYZEventPlane::Terminate(Option_t *) 
 {
   // Called once at the end of the query
-  AliFlowAnalysisWithLYZEventPlane* fLyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
+  AliFlowAnalysisWithLYZEventPlane* lyzTerm = new AliFlowAnalysisWithLYZEventPlane() ;
   fListHistos = (TList*)GetOutputData(1);
   //cout << "histogram list in Terminate" << endl;
    if (fListHistos) {
-      fLyzTerm -> GetOutputHistograms(fListHistos);
-      fLyzTerm -> Finish();
+      lyzTerm -> GetOutputHistograms(fListHistos);
+      lyzTerm -> Finish();
       PostData(1,fListHistos);
       //fListHistos->Print(); 
   } else { cout << "histogram list pointer is empty" << endl;}
 
   //cout<<".....finished LYZ EventPlane"<<endl;  
+   delete lyzTerm;
 }
 
 
