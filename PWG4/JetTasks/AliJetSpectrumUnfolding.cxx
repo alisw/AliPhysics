@@ -1141,7 +1141,7 @@ TH2F* AliJetSpectrumUnfolding::CalculateRecSpectrum(TH2* const inputGen)
   }
 
   TH2F* target = dynamic_cast<TH2F*> (fRecSpectrum->Clone(Form("reconstructed_%s", inputGen->GetName())));
-  if(!targer)return 0;
+  if(!target)return 0;
 
   target->Reset();
 

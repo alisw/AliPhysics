@@ -933,9 +933,9 @@ void AliPWG4HighPtQATPConly::Exec(Option_t *) {
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
 
     AliESDtrack *track = fESD->GetTrack(iTrack);
-    if(!track || !trackTPC) continue;
+    if(!track) continue;
     AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
-
+    if(!trackTPC) continue;
     const AliESDfriendTrack* constfriendtrack = 0x0;
     if(fESDfriend && fESDfriend->TestSkipBit()==kFALSE) constfriendtrack = track->GetFriendTrack();
  
