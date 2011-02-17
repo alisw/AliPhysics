@@ -444,7 +444,10 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          int ID2 = (mother->GetDaughter(1))->GetID();
          //int leadingID = event->SelectLeadingParticle(0);
          Int_t leadingID = event->GetLeadingParticleID();
-         if (leadingID == ID1 || leadingID == ID2) return kFALSE;
+         if (leadingID == ID1 || leadingID == ID2) {
+            fComputedValue = -99.;
+            return kFALSE;
+         }
          AliRsnDaughter leadingPart = event->GetDaughter(leadingID);
          AliVParticle  *ref = leadingPart.GetRef();
          fComputedValue = ref->Phi() - mother->Sum().Phi();
