@@ -15,22 +15,52 @@
 
 ClassImp(AliRsnDaughterDef)
 
+
 //_____________________________________________________________________________
-AliRsnDaughterDef::AliRsnDaughterDef
-(AliPID::EParticleType type, Char_t sign) :
+AliRsnDaughterDef::AliRsnDaughterDef() :
+   fMass(0.0),
+   fCharge(0),
+   fPID(AliPID::kUnknown),
+   fDaughterType(AliRsnDaughter::kNoType)
+{
+//
+// Constructor.
+// This version of constructor leaves all undefined,
+// and all daughters will be accepted.
+//
+}
+
+//_____________________________________________________________________________
+AliRsnDaughterDef::AliRsnDaughterDef(AliPID::EParticleType type, Char_t sign) :
    fMass(0.0),
    fCharge(sign),
    fPID(type),
    fDaughterType(AliRsnDaughter::kNoType)
 {
 //
-// Constructor with arguments.
-// This constructor allows to define all the working parameters.
+// Constructor.
+// This version of constructor initializes the PID type
+// and the charge (optional, leave its default to include both),
+// and calls 'SetDaughter()' to assign the object type accordingly.
 //
 
    SetDaughter(type, sign);
 }
 
+//_____________________________________________________________________________
+AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t sign) :
+   fMass(0.0),
+   fCharge(sign),
+   fPID(AliPID::kUnknown),
+   fDaughterType(refType)
+{
+//
+// Constructor.
+// This version of constructor initialized the object type
+// and the charge (optiona, leave its defaul to include both),
+// and sets the PID type undefined.
+//
+}
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
