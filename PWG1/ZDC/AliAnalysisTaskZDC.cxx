@@ -264,7 +264,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
       return;
     }
 
-    if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())){
+    /*if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())){
       Float_t bMC = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
       Int_t specNeutronProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
       Int_t specProtonProj  = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
@@ -272,7 +272,7 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
       Int_t specProtonTarg  = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
       Int_t npartTargMC = 208-(specNeutronTarg+specProtonTarg);
       Int_t npartProjMC = 208-(specNeutronProj+specProtonProj);
-    }  
+    }*/  
 
   }
   // ****************************************************
