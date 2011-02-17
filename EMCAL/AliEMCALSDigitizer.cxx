@@ -325,13 +325,19 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
               if(curSDigit != 0){
                 for(Int_t check= 0; check < nSdigits ; check++) {
                   sdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(check)) ;
-                  
-                  if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
-                    *sdigit = *sdigit + *curSDigit;
-                    newsdigit = kFALSE;
-                  }
-                }
-              }
+                  if(sdigit){
+                    if( sdigit->GetId() == curSDigit->GetId()) { // Are we in the same ECAL tower ?              
+                      *sdigit = *sdigit + *curSDigit;
+                      newsdigit = kFALSE;
+                    }
+                  }// sdigit exists
+                  else {
+                    AliWarning("Sdigit do not exist");
+                    newsdigit = kFALSE;  
+                  }// sdigit does not exist
+                }//sdigit loop
+              }// currsdigit exists
+              
               if (newsdigit) {
                 new((*sdigits)[nSdigits])  AliEMCALDigit(*curSDigit);
                 nSdigits++ ;  

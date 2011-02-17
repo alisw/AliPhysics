@@ -23,9 +23,9 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 #include "AliEMCALTriggerBoard.h"
 #include "AliEMCALTriggerPatch.h"
+#include "AliLog.h"
 
 #include <TClonesArray.h>
-
 #include <iostream>
 #include <cstdlib>
 
@@ -108,8 +108,15 @@ AliEMCALTriggerBoard::~AliEMCALTriggerBoard()
 //_______________
 void AliEMCALTriggerBoard::ZeroRegion()
 {
-	//
-	for (Int_t i=0;i<int(fRegionSize->X());i++) for (Int_t j=0;j<int(fRegionSize->Y());j++) fRegion[i][j] = 0;
+	// Initilize fRegion
+  
+  if(fRegion){
+    for (Int_t i=0;i<int(fRegionSize->X());i++) for (Int_t j=0;j<int(fRegionSize->Y());j++) fRegion[i][j] = 0;
+  }
+  else {
+    AliFatal("fRegion was not previously initialized");
+  }
+
 }
 
 //_______________
