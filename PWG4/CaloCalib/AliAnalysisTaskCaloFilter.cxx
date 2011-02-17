@@ -485,24 +485,26 @@ Bool_t AliAnalysisTaskCaloFilter::CheckForPrimaryVertex(){
   //It only works for ESDs
   
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
+  if(!event) return kFALSE;
+  
   if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
-    return 1;
+    return kTRUE;
   }
   
   if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
     // SPD vertex
     if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
       //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 1;
+      return kTRUE;
       
     }
     if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
       //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 0;
+      return kFALSE;
     }
   }
-  return 0;
-  //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  return kFALSE;
+
 }
 
 
