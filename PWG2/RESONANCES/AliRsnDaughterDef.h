@@ -20,8 +20,7 @@
 class AliRsnDaughterDef : public TObject {
 public:
 
-   AliRsnDaughterDef();
-   AliRsnDaughterDef(AliPID::EParticleType type, Char_t sign);
+   AliRsnDaughterDef(AliPID::EParticleType type = AliPID::kUnknown, Char_t sign = 0);
    AliRsnDaughterDef(const AliRsnDaughterDef &copy);
    const AliRsnDaughterDef& operator= (const AliRsnDaughterDef &copy);
    virtual ~AliRsnDaughterDef() { }
@@ -36,6 +35,7 @@ public:
 
    // setters
    Bool_t SetDaughter(AliPID::EParticleType pid, Char_t charge);
+   void   SetDaughterType(AliRsnDaughter::ERefType type) {fDaughterType = type;}
    
    // checker
    Bool_t MatchesDaughter(AliRsnDaughter *daughter, Bool_t truePID = kFALSE);
