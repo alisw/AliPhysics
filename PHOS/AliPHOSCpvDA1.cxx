@@ -82,7 +82,7 @@ AliPHOSCpvDA1::AliPHOSCpvDA1(const AliPHOSCpvDA1& da) : TNamed(da),
   for(Int_t iX=0; iX<128; iX++) {
     for(Int_t iZ=0; iZ<56; iZ++) {
 
-      sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
+      snprintf(hname,128,"%d_%d_%d",fMod,iX,iZ);
       hist1 = (TH1F*)da.fHistoFile->Get(hname);
       if(hist1) fCharge[iX][iZ] = new TH1F(*hist1);
       else
@@ -158,8 +158,8 @@ void AliPHOSCpvDA1::FillHistograms(Float_t e[128][56])
       if(fCharge[iX][iZ]) 
 	fCharge[iX][iZ]->Fill(e[iX][iZ]);
       else {
-	sprintf(hname,"%d_%d_%d",fMod,iX,iZ);
-	sprintf(htitl,"Charge deposited on the pad %d_%d_%d",fMod,iX,iZ);
+	snprintf(hname,128,"%d_%d_%d",fMod,iX,iZ);
+	snprintf(htitl,128,"Charge deposited on the pad %d_%d_%d",fMod,iX,iZ);
 	fCharge[iX][iZ] = new TH1F(hname,htitl,1024,0.,1024.);
 	fCharge[iX][iZ]->Fill(e[iX][iZ]);
       }

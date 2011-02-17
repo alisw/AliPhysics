@@ -539,7 +539,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForModule(Int_t mod)const {
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
     char path[255] ;
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
+    snprintf(path,255,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1",mod) ;
     //    sprintf(path,"/ALIC_1/PHOS_%d",relid[0]) ;
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
@@ -566,7 +566,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForStrip(Int_t mod, Int_t strip)co
   //If GeoManager exists, take matrixes from it
   if(gGeoManager){
     char path[255] ;
-    sprintf(path,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
+    snprintf(path,255,"/ALIC_1/PHOS_%d/PEMC_1/PCOL_1/PTIO_1/PCOR_1/PAGA_1/PTII_1/PSTR_%d",mod,strip) ;
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
       return 0 ;
@@ -593,8 +593,7 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForCPV(Int_t mod)const {
   if(gGeoManager){ 
     char path[255] ;
     //now apply possible shifts and rotations
-    TString spath = "/ALIC_1/PHOS_%d/PCPV_1";
-    snprintf(path,spath.Length(),spath.Data(),mod) ;
+    snprintf(path,255,"/ALIC_1/PHOS_%d/PCPV_1",mod) ;
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
       return 0 ;
@@ -621,9 +620,8 @@ const TGeoHMatrix * AliPHOSGeoUtils::GetMatrixForPHOS(Int_t mod)const {
   if(gGeoManager){
 
     char path[255] ;
-    TString spath = "/ALIC_1/PHOS_%d";
-    snprintf(path,spath.Length(),spath.Data(),mod) ;
-
+    snprintf(path,255,"/ALIC_1/PHOS_%d",mod) ;
+    
     if (!gGeoManager->cd(path)){
       AliWarning(Form("Geo manager can not find path %s \n",path));
       return 0 ;

@@ -424,28 +424,28 @@ void AliPHOSPIDv0::PrintRecParticles(Option_t * option)
       Text_t particle[100];
       switch(rp->GetType()) {
       case  AliPHOSFastRecParticle::kNEUTRALEMFAST:
-	strcpy( particle, "NEUTRAL EM FAST");
+	strncpy( particle, "NEUTRAL EM FAST",100);
 	break;
       case  AliPHOSFastRecParticle::kNEUTRALHAFAST:
-	strcpy(particle, "NEUTRAL HA FAST");
+	strncpy(particle, "NEUTRAL HA FAST",100);
 	break;
       case  AliPHOSFastRecParticle::kNEUTRALEMSLOW:
-	strcpy(particle, "NEUTRAL EM SLOW");
+	strncpy(particle, "NEUTRAL EM SLOW",100);
 	break ;
       case  AliPHOSFastRecParticle::kNEUTRALHASLOW: 
-	strcpy(particle, "NEUTRAL HA SLOW");
+	strncpy(particle, "NEUTRAL HA SLOW",100);
 	break ;
       case  AliPHOSFastRecParticle::kCHARGEDEMFAST:
-	strcpy(particle, "CHARGED EM FAST") ;
+	strncpy(particle, "CHARGED EM FAST",100);
 	break ;
       case  AliPHOSFastRecParticle::kCHARGEDHAFAST:
-	strcpy(particle, "CHARGED HA FAST") ;
+	strncpy(particle, "CHARGED HA FAST",100);
 	break ;	
       case  AliPHOSFastRecParticle::kCHARGEDEMSLOW:
-	strcpy(particle, "CHARGEDEMSLOW") ;
+	strncpy(particle, "CHARGEDEMSLOW",100);
 	break ;
       case  AliPHOSFastRecParticle::kCHARGEDHASLOW:
-	strcpy(particle, "CHARGED HA SLOW") ;
+	strncpy(particle, "CHARGED HA SLOW",100);
 	break ; 
       }
       

@@ -198,8 +198,8 @@ Float_t AliPHOSPreprocessor::HG2LG(Int_t mod, Int_t X, Int_t Z, TFile* f)
   //Calculates High gain to Low gain ratio 
   //for crystal at the position (X,Z) in the PHOS module mod.
   
-  char hname[128];
-  sprintf(hname,"%d_%d_%d",mod,X,Z);
+  char hname[128]; TString shname = "%d_%d_%d"; 
+  snprintf(hname,shname.Length(),shname.Data(),mod,X,Z);
 
   TH1F* h1 = (TH1F*)f->Get(hname);
   if(!h1) return 16.;
@@ -573,12 +573,14 @@ Bool_t AliPHOSPreprocessor::DoCalibrateEmc(Int_t system, TList* list, const AliP
     Double_t refMean=hRef->GetMean();
     
     // Calculates relative calibration coefficients for all non-zero channels
+
+    TString shnam = "%d_%d_%d_1";
     
     for(Int_t mod=0; mod<nMod; mod++) {
       for(Int_t col=0; col<nCol; col++) {
 	for(Int_t row=0; row<nRow; row++) {
 	  
-	  sprintf(hnam,"%d_%d_%d_1",mod,row,col); // high gain!
+	  snprintf(hnam,shnam.Length(),shnam.Data(),mod,row,col); // high gain!
 	  h2 = (TH2F*)f.Get(hnam);
 	  
 	  //TODO: dead channels exclusion!

@@ -203,8 +203,8 @@ void AliPHOSDA2::FillQualityHistograms(Float_t quality[64][56][2])
 	if(fHQuality[iX][iZ][iGain]) 
 	  fHQuality[iX][iZ][iGain]->Fill(quality[iX][iZ][iGain]);
 	else {
-	  sprintf(hname,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
-	  sprintf(htitl,"Quality for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
+	  snprintf(hname,128,"%d_%d_%d_%d",fMod,iX,iZ,iGain);
+	  snprintf(htitl,128,"Quality for crystal %d_%d_%d and gain %d",fMod,iX,iZ,iGain);
 	  fHQuality[iX][iZ][iGain] = new TH1F(hname,htitl,100,1.e-6,10.);
 	  fHQuality[iX][iZ][iGain]->Fill(quality[iX][iZ][iGain]);
 	}
@@ -234,14 +234,14 @@ void AliPHOSDA2::UpdateHistoFile()
   if(fMaps[0]) 
     fMaps[0]->Reset();
   else {
-    sprintf(titl,"Quality map for Low gain");
+    snprintf(titl,128,"Quality map for Low gain");
     fMaps[0] = new TH2F("gmaplow",  titl, 64,0.,64.,56,0.,56.);
   }
 
   if(fMaps[1]) 
     fMaps[1]->Reset();
   else {
-    sprintf(titl,"Quality map for High gain");
+    snprintf(titl,128,"Quality map for High gain");
     fMaps[1] = new TH2F("gmaphigh", titl, 64,0.,64.,56,0.,56.);
   }
     

@@ -145,7 +145,7 @@ UInt_t AliPHOSCpvPreprocessor::Process(TMap* /*valueSet*/)
       for(Int_t mod=0; mod<nMod; mod++) {
 	for(Int_t col=0; col<nCol; col++) {
 	  for(Int_t row=0; row<nRow; row++) {
-	    sprintf(hnam,"%d_%d_%d",mod,row,col); // mod_X_Z
+	    snprintf(hnam,80,"%d_%d_%d",mod,row,col); // mod_X_Z
 	    histo = (TH1F*)f.Get(hnam);
 	    //TODO: dead channels exclusion!
 	    if(histo) {

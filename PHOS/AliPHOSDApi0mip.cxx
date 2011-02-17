@@ -174,9 +174,9 @@ bool AliPHOSDApi0mip::CreateTree(){
     return false;
   }
   fTFile->cd();
-  char hname[1024], htitle[1024];
-  sprintf(hname,"trevt_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"Calibration for Module:%d Iteration:%d",fMod,fIterId);
+  char hname[100], htitle[100];
+  snprintf(hname,100,"trevt_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"Calibration for Module:%d Iteration:%d",fMod,fIterId);
   fTTree = new TTree(hname,htitle);
   fTTree->Branch("AliPHOSDATreeEvent","AliPHOSDATreeEvent",&fEvent);
   fCreateTree = true;
@@ -186,10 +186,10 @@ bool AliPHOSDApi0mip::CreateTree(){
 bool AliPHOSDApi0mip::CreateHist(){
   // Create histogram routine called by the constructor only.
 
-  char hname[1024], htitle[1024];
+  char hname[100], htitle[100];
 
-  sprintf(hname,"h1_time_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"Time : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h1_time_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"Time : Mod:%d Iter:%d",fMod,fIterId);
   fH1Time = (TH1I*) gDirectory->Get(hname);
   if( fH1Time>0 ){
     std::cout<<" AliPHOSDApi0mip:Warning!! Output object already exist : "<<fH1Time->GetName()<<std::endl;
@@ -197,30 +197,30 @@ bool AliPHOSDApi0mip::CreateHist(){
   }
   fH1Time = new TH1I(hname,htitle,2,0,2);
 
-  sprintf(hname,"h1_digitnum_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"Number of Digits : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h1_digitnum_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"Number of Digits : Mod:%d Iter:%d",fMod,fIterId);
   fH1DigitNum = new TH1F(hname,htitle,100,0,100);
 
-  sprintf(hname,"h1_clusternum_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"Number of Clusters : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h1_clusternum_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"Number of Clusters : Mod:%d Iter:%d",fMod,fIterId);
   fH1ClusterNum = new TH1F(hname,htitle,100,0,100);
 
-  sprintf(hname,"h2_pi0digitid_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"PHOS pi0 mass vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h2_pi0digitid_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"PHOS pi0 mass vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
   fH2Pi0DigitId = new TH2F(hname,htitle,17920,0,17920,120,0,0.3);
       
-  sprintf(hname,"h2_mipdigitid_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"PHOS MIP vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h2_mipdigitid_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"PHOS MIP vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
   fH2MipDigitId = new TH2F(hname,htitle,17920,0,17920,100,0-0.0025,0.5-0.0025);
   //fH2MipDigitId = new TH2F(hname,htitle,17920,0,17920,50,0.5,1.5);
 
-  sprintf(hname,"h2_enedigitid_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"PHOS MIP vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h2_enedigitid_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"PHOS MIP vs Digit Id : Mod:%d Iter:%d",fMod,fIterId);
   //fH2EneDigitId = new TH2F(hname,htitle,17920,0,17920,100,0-0.0025,0.5-0.0025);
   fH2EneDigitId = new TH2F(hname,htitle,17920,0,17920,50,0,5.0);
 
-  sprintf(hname,"h3_pi0asympt_mod%d_iter%d",fMod,fIterId);
-  sprintf(htitle,"PHOS pi0 mass vs pT vs Asym : Mod:%d Iter:%d",fMod,fIterId);
+  snprintf(hname,100,"h3_pi0asympt_mod%d_iter%d",fMod,fIterId);
+  snprintf(htitle,100,"PHOS pi0 mass vs pT vs Asym : Mod:%d Iter:%d",fMod,fIterId);
   fH3Pi0AsymPt = new TH3F(hname,htitle,20,0,1,20,0,10,200,0,1);
 
   fCreateHist = true;
