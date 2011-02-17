@@ -471,8 +471,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * curre
       
       if(fDoV0ANDEventSelection){
         Bool_t bV0AND = kTRUE; 
-        if(dynamic_cast<AliESDEvent*> (fInputEvent)) 
-          bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(dynamic_cast<AliESDEvent*> (fInputEvent), AliTriggerAnalysis::kV0AND);
+        AliESDEvent* esd = dynamic_cast<AliESDEvent*> (fInputEvent);
+        if(esd) 
+          bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND);
         //else bV0AND = //FIXME FOR AODs
         if(!bV0AND) return kFALSE;
       }
@@ -1061,30 +1062,28 @@ Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const {
 Bool_t AliCaloTrackReader::CheckForPrimaryVertex(){
   //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
   //Only for ESDs ...
+  
   AliESDEvent * event = dynamic_cast<AliESDEvent*> (fInputEvent);
- 
-  if(event){
-    if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
-      return kTRUE;
-    }
-    
-    if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
-      // SPD vertex
-      if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
-        //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-        return kTRUE;
-        
-      }
-      if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
-        //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
-        return kFALSE;
-      }
-    }
-    return kFALSE;
-    //  return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  if(!event) return kFALSE;
+  
+  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) {
+    return kTRUE;
   }
   
-  return kTRUE;
+  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) {
+    // SPD vertex
+    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) {
+      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
+      return kTRUE;
+      
+    }
+    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) {
+      //      cout<<"bad vertex type::"<< event->GetPrimaryVertex()->GetName() << endl;
+      return kFALSE;
+    }
+  }
+  
+  return kFALSE;  
   
 }
 
