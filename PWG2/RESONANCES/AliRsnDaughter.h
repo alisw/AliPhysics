@@ -1,12 +1,12 @@
 //
 // Class AliRsnDaughter
 //
-// Interface to candidate daughters of a resonance (tracks or V0s).
-// It contains two pointers to two AliVParticle-derived objects.
+// Interface to candidate daughters of a resonance (tracks).
+// Points to the source of information, which is generally an AliVParticle-derived object
+// and contains few internal data-members to store "on fly" some important information
 // for the computations required during resonance analysis.
-// ---
-// Since the package revision, this object is not supposed to be stacked in memory
-// but created "on fly" during analysis and used just for computations, as an interface.
+// It contains a TLorentzVector data-member which, provided that a meaningful mass was assigned,
+// eases a lot the computation of invariant masses from summing up several of these objects.
 //
 // authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //          M. Vala (martin.vala@cern.ch)
@@ -17,11 +17,11 @@
 
 #include <TLorentzVector.h>
 
+#include "AliVTrack.h"
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
 #include "AliMCParticle.h"
-
 #include "AliAODTrack.h"
 #include "AliAODv0.h"
 #include "AliAODcascade.h"
@@ -42,25 +42,27 @@ public:
    AliRsnDaughter();
    AliRsnDaughter(const AliRsnDaughter &copy);
    AliRsnDaughter& operator= (const AliRsnDaughter& copy);
-   virtual ~AliRsnDaughter() { /*nothing*/ }
+   virtual ~AliRsnDaughter() { /*empty, since pointers must not be deleted*/ }
 
    // basic getters (for data members)
-   Bool_t          IsOK() const {return fOK;}
-   Int_t           GetLabel() const {return fLabel;}
+   Bool_t          IsOK()         const {return fOK;}
+   Int_t           GetLabel()     const {return fLabel;}
    Int_t           GetMotherPDG() const {return fMotherPDG;}
-   TLorentzVector& Prec() {return fPrec;}
-   TLorentzVector& Psim() {return fPsim;}
-   TLorentzVector& P(Bool_t mc = kFALSE) {return (mc ? fPsim : fPrec);}
-   AliVParticle*   GetRef() {return fRef;}
-   AliVParticle*   GetRefMC() {return fRefMC;}
+   Int_t           GetRsnID()     const {return fRsnID;}
+   TLorentzVector& Prec()               {return fPrec;}
+   TLorentzVector& Psim()               {return fPsim;}
+   TLorentzVector& P(Bool_t mc)         {return (mc ? fPsim : fPrec);}
+   AliVParticle*   GetRef()             {return fRef;}
+   AliVParticle*   GetRefMC()           {return fRefMC;}
 
    // basic setters (for data members)
-   void    SetBad() {fOK = kFALSE;}
-   void    SetGood() {fOK = kTRUE;}
-   void    SetLabel(Int_t label) {fLabel = label;}
+   void    SetBad()                  {fOK = kFALSE;}
+   void    SetGood()                 {fOK = kTRUE;}
+   void    SetLabel(Int_t label)     {fLabel = label;}
+   void    SetRsnID(Int_t id)        {fRsnID = id;}
    void    SetMotherPDG(Int_t value) {fMotherPDG = value;}
-   void    SetRef(AliVParticle *p) {fRef = p;}
-   void    SetRefMC(AliVParticle *p = 0x0) {fRefMC = p;}
+   void    SetRef(AliVParticle *p);
+   void    SetRefMC(AliVParticle *p);
 
    // charge checkers
    Bool_t  IsPos()             const {return (fRef->Charge() > 0);}
@@ -79,6 +81,7 @@ public:
    Bool_t   IsKinkDaughter();
 
    // getters which automatically convert refs into allowed types
+   AliVTrack*        GetRefVtrack()     {return dynamic_cast<AliVTrack*>(fRef);}
    AliESDtrack*      GetRefESDtrack()   {return dynamic_cast<AliESDtrack*>(fRef);}
    AliESDv0*         GetRefESDv0()      {return dynamic_cast<AliESDv0*>(fRef);}
    AliESDcascade*    GetRefESDcascade() {return dynamic_cast<AliESDcascade*>(fRef);}
@@ -90,19 +93,20 @@ public:
    AliAODMCParticle* GetRefMCAOD()      {return dynamic_cast<AliAODMCParticle*>(fRefMC);}
 
    // check the input type
-   Bool_t    IsMC()       {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
-   Bool_t    IsAOD()      {if (GetRefAODtrack() || GetRefAODv0()) return kTRUE; return kFALSE;}
-   Bool_t    IsESD()      {if (GetRefESDtrack() || GetRefESDv0()) return kTRUE; return kFALSE;}
-   Bool_t    IsTrack()    {if (GetRefESDtrack() || GetRefAODtrack() || GetRefMCtrack()) return kTRUE; return kFALSE;}
-   Bool_t    IsV0()       {if (GetRefESDv0() || GetRefAODv0()) return kTRUE; return kFALSE;}
-   Bool_t    IsCascade()  {if (GetRefESDcascade() || GetRefAODcascade()) return kTRUE; return kFALSE;}
-   ERefType  RefType()    {if (IsTrack()) return kTrack; if (IsV0()) return kV0; if (IsCascade()) return kCascade; return kNoType;}
+   Bool_t    IsMC()      {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
+   Bool_t    IsAOD()     {if (GetRefAODtrack() || GetRefAODv0()) return kTRUE; return kFALSE;}
+   Bool_t    IsESD()     {if (GetRefESDtrack() || GetRefESDv0()) return kTRUE; return kFALSE;}
+   Bool_t    IsTrack()   {if (GetRefESDtrack() || GetRefAODtrack() || GetRefMCtrack()) return kTRUE; return kFALSE;}
+   Bool_t    IsV0()      {if (GetRefESDv0() || GetRefAODv0()) return kTRUE; return kFALSE;}
+   Bool_t    IsCascade() {if (GetRefESDcascade() || GetRefAODcascade()) return kTRUE; return kFALSE;}
+   ERefType  RefType()   {if (IsTrack()) return kTrack; if (IsV0()) return kV0; if (IsCascade()) return kCascade; return kNoType;}
 
 private:
 
    Bool_t         fOK;          // internal utility flag which is kFALSE when this object should not be used
    Int_t          fLabel;       // GEANT label of corresponding MC
    Int_t          fMotherPDG;   // PDG code of mother (makes sense only if fRefMC is defined)
+   Int_t          fRsnID;       // id in rsn manager cout
 
    TLorentzVector fPrec;        // 4-vector filled with track info from default ref (if present)
    TLorentzVector fPsim;        // 4-vector filled with track info from MC ref (if present)
@@ -110,7 +114,7 @@ private:
    AliVParticle  *fRef;         // reference to reconstructed track in ESD/AOD
    AliVParticle  *fRefMC;       // reference to corresponding MC particle
 
-   ClassDef(AliRsnDaughter, 8)
+   ClassDef(AliRsnDaughter, 9)
 };
 
 #endif
