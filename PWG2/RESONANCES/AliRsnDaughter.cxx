@@ -5,7 +5,7 @@
 // Points to the source of information, which is generally an AliVParticle-derived object
 // and contains few internal data-members to store "on fly" some important information
 // for the computations required during resonance analysis.
-// It contains a useful TLorentzVector data-member which, provided that a meaningful mass was assigned,
+// It contains a TLorentzVector data-member which, provided that a meaningful mass was assigned,
 // eases a lot the computation of invariant masses from summing up several of these objects.
 //
 // authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
@@ -14,6 +14,7 @@
 
 #include <TParticle.h>
 #include "AliAODVertex.h"
+
 #include "AliRsnDaughter.h"
 
 ClassImp(AliRsnDaughter)
@@ -23,6 +24,7 @@ AliRsnDaughter::AliRsnDaughter() :
    fOK(kFALSE),
    fLabel(-1),
    fMotherPDG(0),
+   fRsnID(-1),
    fPrec(0.0, 0.0, 0.0, 0.0),
    fPsim(0.0, 0.0, 0.0, 0.0),
    fRef(0x0),
@@ -30,6 +32,8 @@ AliRsnDaughter::AliRsnDaughter() :
 {
 //
 // Default constructor.
+// Initializes all data members to the same values
+// Which will be given by Reset() method.
 //
 }
 
@@ -39,6 +43,7 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
    fOK(copy.fOK),
    fLabel(copy.fLabel),
    fMotherPDG(copy.fMotherPDG),
+   fRsnID(copy.fRsnID),
    fPrec(copy.fPrec),
    fPsim(copy.fPsim),
    fRef(copy.fRef),
@@ -63,12 +68,41 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
    fOK        = copy.fOK;
    fLabel     = copy.fLabel;
    fMotherPDG = copy.fMotherPDG;
+   fRsnID     = copy.fRsnID;
    fPrec      = copy.fPrec;
    fPsim      = copy.fPsim;
    fRef       = copy.fRef;
    fRefMC     = copy.fRefMC;
 
    return (*this);
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::SetRef(AliVParticle *p)
+{
+//
+// Set the pointer to reference VParticle
+// and copies its momentum in the 4-vector.
+// Mass is assigned by SetMass().
+//
+
+   fRef = p;
+   if (p) fPrec.SetXYZT(p->Px(), p->Py(), p->Pz(), 0.0);
+   else   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
+}
+
+//_____________________________________________________________________________
+void AliRsnDaughter::SetRefMC(AliVParticle *p)
+{
+//
+// Set the pointer to reference MonteCarlo VParticle
+// and copies its momentum in the 4-vector.
+// Mass is assigned by SetMass().
+//
+
+   fRefMC = p;
+   if (p) fPsim.SetXYZT(p->Px(), p->Py(), p->Pz(), 0.0);
+   else   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
 }
 
 //_____________________________________________________________________________
@@ -82,13 +116,13 @@ void AliRsnDaughter::Reset()
 
    fOK        = kFALSE;
    fLabel     = -1;
-   fMotherPDG = 0;
-   fRef       = 0x0;
-   fRefMC     = 0x0;
+   fMotherPDG =  0;
+   fRsnID     = -1;
 
-   fPrec.SetXYZM(0.0, 0.0, 0.0, 0.0);
-   fPsim.SetXYZM(0.0, 0.0, 0.0, 0.0);
+   SetRef(NULL);
+   SetRefMC(NULL);
 }
+
 
 //_____________________________________________________________________________
 Int_t AliRsnDaughter::GetPDG(Bool_t abs)
@@ -119,7 +153,7 @@ Int_t AliRsnDaughter::GetID()
 //
 // Return reference index, using the "GetID" method
 // of the possible source object.
-// In case of V0s, since this method is unsuccessful, return the label.
+// When this method is unsuccessful (e.g.: V0s), return the label.
 //
 
    // ESD tracks
@@ -140,11 +174,10 @@ Bool_t AliRsnDaughter::HasFlag(ULong_t flag)
 //
 // Checks that the 'status' flag of the source object has one or
 // a combination of status flags specified in argument.
-// Works only with track-like objects, irrespectively if they
-// are ESD or AOD tracks, since it refers to their AliVTrack base class.
+// Works only with objects inheriting from AliVTrack base class.
 //
 
-   AliVTrack *track  = dynamic_cast<AliVTrack*>(fRef);
+   AliVTrack *track  = GetRefVtrack();
    if (!track) return kFALSE;
 
    ULong_t status = (ULong_t)track->GetStatus();
@@ -157,11 +190,9 @@ Bool_t AliRsnDaughter::SetMass(Double_t mass)
 {
 //
 // Assign a mass hypothesis to the track.
-// This causes the 4-momentum data members to be initialized
+// This causes the 4-momentum data members to be re-initialized
 // using the momenta of referenced tracks/v0s and this mass.
 // This step is fundamental for the following of the analysis.
-// Of course, this operation is successful only if the mass is
-// a meaningful positive number, and the pointers are properly initialized.
 //
 
    if (mass < 0.) return kFALSE;

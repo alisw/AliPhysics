@@ -14,12 +14,12 @@
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
 
+#include "AliVEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliRsnDaughter.h"
 
-class AliVEvent;
 class AliRsnCutPID;
 class AliESDtrackCuts;
 
@@ -32,7 +32,7 @@ public:
    virtual ~AliRsnEvent();
 
    // basic setters/getters
-   void       SetRef(AliVEvent *ref)     {fRef = ref;}
+   void       SetRef(AliVEvent *ref)       {fRef = ref;}
    void       SetRefMC(AliVEvent *refmc)   {fRefMC = refmc;}
    void       SetLeadingIndex(Int_t i)     {fLeading = i;}
    void       SetLocalID(Int_t i)          {fLocalID = i;}

@@ -338,7 +338,7 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID)
    for (i = 0, count = 0; i < nTracks; i++) {
       AliRsnDaughter track = GetDaughter(i);
       if (cutPID) if (!cutPID->IsSelected(&track)) continue;
-      pmean += track.P().Mag();
+      pmean += track.Prec().Mag();
       count++;
    }
 
@@ -369,7 +369,7 @@ Bool_t AliRsnEvent::GetAngleDistr
       AliRsnDaughter trk = GetDaughter(i);
       if (trk.GetID() == leading.GetID()) continue;
 
-      angle = leading.P().Angle(trk.P().Vect());
+      angle = leading.Prec().Angle(trk.Prec().Vect());
 
       angleMean += angle;
       angle2Mean += angle * angle;
