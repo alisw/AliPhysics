@@ -168,8 +168,8 @@ AliGRPRecoParam *AliGRPRecoParam::GetHighFluxParam()
   param->fVertexerV0Chi2max = 33.;
   param->fVertexerV0DNmin   = 0.1;
   param->fVertexerV0DPmin   = 0.1;
-  param->fVertexerV0DCAmax  = 0.05;
-  param->fVertexerV0CPAmin  = 0.99;
+  param->fVertexerV0DCAmax  = 1.0;
+  param->fVertexerV0CPAmin  = 0.998;
   param->fVertexerV0Rmin    = 0.9;
   param->fVertexerV0Rmax    = 100.;
 
@@ -177,9 +177,9 @@ AliGRPRecoParam *AliGRPRecoParam::GetHighFluxParam()
   param->fVertexerCascadeChi2max  = 33.; 
   param->fVertexerCascadeDV0min   = 0.05;  
   param->fVertexerCascadeMassWin  = 0.008; 
-  param->fVertexerCascadeDBachMin = 0.035;
-  param->fVertexerCascadeDCAmax   = 0.1;  
-  param->fVertexerCascadeCPAmin   = 0.9985;  
+  param->fVertexerCascadeDBachMin = 0.030;
+  param->fVertexerCascadeDCAmax   = 0.3;  
+  param->fVertexerCascadeCPAmin   = 0.999;  
   param->fVertexerCascadeRmin     = 0.9;    
   param->fVertexerCascadeRmax     = 100.;    
 
