@@ -35,12 +35,14 @@
 ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
-AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
+AliRsnFunction::AliRsnFunction(Bool_t single, Bool_t useTH1) :
    TObject(),
    fPairDef(0x0),
    fAxisList("AliRsnValue", 0),
    fPair(0x0),
    fEvent(0x0),
+   fDaughter(0x0),
+   fSingle(single),
    fUseTH1(useTH1),
    fSize(0),
    fH1(0x0),
@@ -58,6 +60,8 @@ AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
    fAxisList(copy.fAxisList),
    fPair(copy.fPair),
    fEvent(copy.fEvent),
+   fDaughter(copy.fDaughter),
+   fSingle(copy.fSingle),
    fUseTH1(copy.fUseTH1),
    fSize(copy.fSize),
    fH1(0x0),
@@ -78,6 +82,8 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
    fPairDef = copy.fPairDef;
    fPair = copy.fPair;
    fEvent = copy.fEvent;
+   fDaughter = copy.fDaughter;
+   fSingle = copy.fSingle;
    fUseTH1 = copy.fUseTH1;
    fSize = copy.fSize;
 
@@ -117,7 +123,9 @@ Bool_t AliRsnFunction::AddAxis(AliRsnValue *const axis)
 //
 // Try to add a new axis to this function.
 // The operation succeeds only if the related value object
-// has a target amon those allowed here (AliRsnMother, AliRsnEvent),
+// has a target compatible with the function type:
+// -- 'single'     functions, for tracks/events: AliRsnDaughter or AliRsnEvent
+// -- 'not single' functions, for pairs/events : AliRsnMother or AliRsnEvent
 // otherwise the axis is not added.
 //
 // If more than 3 axes are added, switch to THnSparseF output.
@@ -125,8 +133,12 @@ Bool_t AliRsnFunction::AddAxis(AliRsnValue *const axis)
 //
 
    RSNTARGET target = axis->GetTargetType();
-   if (target != AliRsnTarget::kMother && target != AliRsnTarget::kEvent) {
-      AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", axis->GetName(), axis->GetTargetTypeName()));
+   if (target == AliRsnTarget::kDaughter && !fSingle) {
+      AliError("An axis with 'AliRsnDaughter' target is not allowed in a non-single function");
+      return kFALSE;
+   }
+   if (target == AliRsnTarget::kMother && fSingle) {
+      AliError("An axis with 'AliRsnMother' target is not allowed in a single function");
       return kFALSE;
    }
 
@@ -271,11 +283,26 @@ Bool_t AliRsnFunction::Fill()
       if (!fcnAxis) continue;
       switch (fcnAxis->GetTargetType()) {
          case AliRsnTarget::kMother:
-            fcnAxis->SetSupportObject(fPairDef);
-            computeOK = fcnAxis->Eval(fPair);
+            if (!fSingle) {
+               fcnAxis->SetSupportObject(fPairDef);
+               computeOK = fcnAxis->Eval(fPair);
+            }
+            else {
+               AliError(Form("Allowed targets are daughters and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
+               computeOK = kFALSE;
+            }
             break;
          case AliRsnTarget::kEvent:
             computeOK = fcnAxis->Eval(fEvent);
+            break;
+         case AliRsnTarget::kDaughter:
+            if (fSingle) {
+               computeOK = fcnAxis->Eval(fDaughter);
+            }
+            else {
+               AliError(Form("Allowed targets are daughters and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
+               computeOK = kFALSE;
+            }
             break;
          default:
             AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));

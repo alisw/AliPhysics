@@ -14,14 +14,16 @@
 
 #include "AliPID.h"
 #include "AliRsnDaughter.h"
+#include "AliRsnDaughterDef.h"
 
-class AliRsnDaughter;
+class AliRsnMother;
 
 class AliRsnPairDef : public TObject {
 public:
 
    AliRsnPairDef();
-   AliRsnPairDef(AliPID::EParticleType type1, Char_t sign1, AliPID::EParticleType type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
+   AliRsnPairDef(EPARTYPE type1, Char_t sign1, EPARTYPE type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
+   AliRsnPairDef(AliRsnDaughterDef def1, AliRsnDaughterDef def2);
    AliRsnPairDef(const AliRsnPairDef &copy);
    const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
    virtual ~AliRsnPairDef() { }
@@ -29,33 +31,46 @@ public:
    // getters
    Int_t                    GetMotherPDG()  const {return fMotherPDG;}
    Double_t                 GetMotherMass() const {return fMotherMass;}
-   Double_t                 GetMass(Int_t i) const {if (i >= 0 && i < 2) return fMass[i]; else return 0.0;}
-   Char_t                   GetCharge(Int_t i) const {if (i >= 0 && i < 2) return fCharge[i]; else return 0;}
-   Short_t                  GetChargeShort(Int_t i) const {if (GetCharge(i) == '+') return 1; else if (GetCharge(i) == '-') return -1; else return 0;}
-   AliPID::EParticleType    GetPID(Int_t i) const {if (i >= 0 && i < 2) return fPID[i]; else return AliPID::kUnknown;}
-   AliRsnDaughter::ERefType GetDaughterType(Int_t i) {if (i >= 0 && i < 2) return fDaughterType[i]; else return AliRsnDaughter::kNoType;}
-   const char*              GetPairName() const;
+   const char*              GetPairName()   const;
+   
+   AliRsnDaughterDef*       GetDef1()                {return &fDef1;}
+   Double_t                 GetMass1()         const {return fDef1.GetMass();}
+   Char_t                   GetCharge1()       const {return fDef1.GetCharge();}
+   Short_t                  GetChargeShort1()  const {return fDef1.GetChargeShort();}
+   AliPID::EParticleType    GetPID1()          const {return fDef1.GetPID();}
+   AliRsnDaughter::ERefType GetDaughterType1() const {return fDef1.GetDaughterType();}
+   
+   AliRsnDaughterDef*       GetDef2()                {return &fDef2;}
+   Double_t                 GetMass2()         const {return fDef2.GetMass();}
+   Char_t                   GetCharge2()       const {return fDef2.GetCharge();}
+   Short_t                  GetChargeShort2()  const {return fDef2.GetChargeShort();}
+   AliPID::EParticleType    GetPID2()          const {return fDef2.GetPID();}
+   AliRsnDaughter::ERefType GetDaughterType2() const {return fDef2.GetDaughterType();}
+   
+   AliRsnDaughterDef*       GetDef(Int_t i)                {if (i<1) return GetDef1(); else return GetDef2();}
+   Double_t                 GetMass(Int_t i)         const {if (i<1) return GetMass1(); else return GetMass2();}
+   Char_t                   GetCharge(Int_t i)       const {if (i<1) return GetCharge1(); else return GetCharge2();}
+   Short_t                  GetChargeShort(Int_t i)  const {if (i<1) return GetChargeShort1(); else return GetChargeShort2();}
+   AliPID::EParticleType    GetPID(Int_t i)          const {if (i<1) return GetPID1(); else return GetPID2();}
+   AliRsnDaughter::ERefType GetDaughterType(Int_t i) const {if (i<1) return GetDaughterType1(); else return GetDaughterType2();}
 
    // setters
-   void   SetMotherPDG(Int_t pdg) {fMotherPDG = pdg;}
-   void   SetMotherMass(Double_t mass) {fMotherMass = mass;}
-   Bool_t SetDaughter(Int_t i, AliPID::EParticleType pid, Char_t charge = 0);
-   Bool_t SetDaughters(AliPID::EParticleType type1, Char_t sign1, AliPID::EParticleType type2, Char_t sign2);
+   void   SetMotherPDG(Int_t pdg)                           {fMotherPDG = pdg;}
+   void   SetMotherMass(Double_t mass)                      {fMotherMass = mass;}
+   Bool_t SetDef1(AliPID::EParticleType pid, Char_t charge) {return fDef1.SetDaughter(pid, charge);}
+   Bool_t SetDef2(AliPID::EParticleType pid, Char_t charge) {return fDef2.SetDaughter(pid, charge);}
+   Bool_t SetDefs(AliPID::EParticleType pid1, Char_t ch1, AliPID::EParticleType pid2, Char_t ch2) {return (SetDef1(pid1, ch1) && SetDef2(pid2, ch2));}
 
-   // pair information methods
-   Bool_t IsLikeSign() const {return (fCharge[0] == fCharge[1]);}
-   Bool_t HasEqualPID() const {return (fPID[0] == fPID[1]);}
+   // checkers
+   Bool_t IsLikeSign()  const {return (GetCharge1() == GetCharge2());}
+   Bool_t HasEqualPID() const {return (GetPID1() == GetPID2());}
 
 private:
 
-   // pair parameters
-   Double_t                  fMotherMass;      // nominal mass of true mother
-   Int_t                     fMotherPDG;       // PDG code of true mother (if known)
-
-   Double_t                  fMass[2];         // mass of particles
-   Char_t                    fCharge[2];       // charge of particles
-   AliPID::EParticleType     fPID[2];          // PID of particles
-   AliRsnDaughter::ERefType  fDaughterType[2]; // object type (track/V0)
+   Double_t          fMotherMass;  // nominal mass of true mother
+   Int_t             fMotherPDG;   // PDG code of true mother (if known)
+   AliRsnDaughterDef fDef1;        // definitions for daughter #1 (see class)
+   AliRsnDaughterDef fDef2;        // definitions for daughter #2 (see class)
 
    // ROOT dictionary
    ClassDef(AliRsnPairDef, 1)

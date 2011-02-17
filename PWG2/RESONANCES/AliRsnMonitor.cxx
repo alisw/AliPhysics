@@ -93,17 +93,19 @@ Bool_t AliRsnMonitor::Fill(AliRsnDaughter *daughter)
 
    AliDebug(AliLog::kDebug + 2, "<-");
    
-   // assign mass
-   daughter->SetMass(fDaughterDef->GetMass());
-   
-   // if needed, check PID, type, charge
+   // check match with prototype
+   // include check on true PID if required
    if (!fDaughterDef->MatchesDaughter(daughter, fOnlyTrue)) return kFALSE;
+   
+   // if matching is successful
+   // update track data member and assigh default mass
+   fDaughter = *daughter;
+   daughter->SetMass(fDaughterDef->GetMass());
 
    // check the cuts
    if (!fCuts.IsSelected(daughter)) return kFALSE;
    
-   // if track is accepted, copy do data member and increment counter
-   fDaughter = *daughter;
+   // if track is accepted increment counter   
    ++fCount;
 
    return kTRUE;

@@ -36,9 +36,6 @@ AliRsnPairNtuple::AliRsnPairNtuple(const char *name, AliRsnPairDef *def) :
 //
 // Default constructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -50,9 +47,6 @@ AliRsnPairNtuple::AliRsnPairNtuple(const AliRsnPairNtuple& copy) :
 //
 // Default constructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -77,9 +71,6 @@ AliRsnPairNtuple::~AliRsnPairNtuple()
 //
 // Destructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -110,7 +101,6 @@ void AliRsnPairNtuple::Compute()
             computeOK = value->Eval(AliRsnTarget::GetCurrentEvent());
             break;
          default:
-            AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", value->GetName(), value->GetTargetTypeName()));
             computeOK = kFALSE;
       }
       if (computeOK) values[i] = ((Float_t)value->GetComputedValue());
@@ -132,8 +122,6 @@ void AliRsnPairNtuple::Init(const char *prefix, TList *list)
 // All generated histograms are stored into the output TList.
 //
 
-   AliDebug(AliLog::kDebug + 2, "<-");
-
    TString nameList("");
 
    Int_t        i, n = fValues.GetEntries();
@@ -147,12 +135,10 @@ void AliRsnPairNtuple::Init(const char *prefix, TList *list)
    if (fNtuple) delete fNtuple;
    fNtuple = new TNtuple(Form("%sntp%s", prefix, GetName()), "", nameList.Data());
    if (list) list->Add(fNtuple);
-
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnPairNtuple::AddValue(AliRsnValue *const val)
+Bool_t AliRsnPairNtuple::AddValue(AliRsnValue* const val)
 {
 //
 // Adds a new computing function.
@@ -165,7 +151,7 @@ Bool_t AliRsnPairNtuple::AddValue(AliRsnValue *const val)
    }
 
    Int_t size = fValues.GetEntries();
-   new(fValues[size]) AliRsnValue(*val);
+   new (fValues[size]) AliRsnValue(*val);
 
    return kTRUE;
 }
