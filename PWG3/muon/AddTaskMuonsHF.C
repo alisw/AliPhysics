@@ -1,4 +1,4 @@
-AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_t isTree=kFALSE)
+AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_t isTree=kFALSE, Bool_t isSel)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -26,29 +26,43 @@ AliAnalysisTaskSEMuonsHF* AddTaskMuonsHF(Int_t mode=0, Bool_t isMC=kFALSE, Bool_
   }
 
   // set cuts for events or muons selection
-  Double_t cutsEvsH[3] ={      0.5,   // low limit of Ncontrs
+  Double_t cutsEvsH[5] ={-999999.0,   // low limit of Ncontrs
                           999999.0,   // up limit of |vz|
-                          999999.0};  // up limit of vt
-  Double_t cutsMuon[12]={-999999.0,   //   0, min of 3-momentum
-                          999999.0,   //   1, max of 3-momnentum
-                         -999999.0,   //   2, PtMin
-                          999999.0,   //   3, PtMax
-                              -4.0,   //   4, EtaMin
-                              -2.5,   //   5, EtaMax
-                         -999999.0,   //   6, DCAmin
-                          999999.0,   //   7, DCAmax
-                               1.5,   //   8, for trigger
-                               3.5,   //   9, for trigger
-                             171.0,   //  10, ThetaAbsEndMin
-                             178.0 };  // 11, ThetaAbsEndMax
+                          999999.0,   // up limit of vt
+                         -999999.0,   // centrality min
+                          999999.0};  // centrality max
+  Double_t cutsMuon[16]={-999999.0,   //  0, min of 3-momentum
+                          999999.0,   //  1, max of 3-momnentum
+                         -999999.0,   //  2, PtMin
+                          999999.0,   //  3, PtMax
+                         -999999.0,   //  4, EtaMin
+                          999999.0,   //  5, EtaMax
+                         -999999.0,   //  6, DCAmin
+                          999999.0,   //  7, DCAmax
+                         -999999.0,   //  8, for trigger
+                          999999.0,   //  9, for trigger
+                         -999999.0,   // 10, ThetaAbsEndMin
+                          999999.0,   // 11, ThetaAbsEndMax
+                         -999999.0,   // 12, chi2 tracker Min
+                          999999.0,   // 13, chi2 tracker Max
+                         -999999.0,   // 14, chi2 trigger Min
+                          999999.0};  // 15, chi2 trigger Max
+  Double_t cutsDimu[16]={-999999.0, 999999.0,  // single muon cuts used for dimuon selection
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0,
+                         -999999.0, 999999.0};
   AliAnalysisTaskSEMuonsHF *taskMuonsHF = new AliAnalysisTaskSEMuonsHF("MuonsHF Analysis Task");
   taskMuonsHF->SetAnaMode(mode);
   taskMuonsHF->SetUseMC(isMC);
   taskMuonsHF->SetIsOutputTree(isTree);
   taskMuonsHF->SetEvsHCuts(cutsEvsH);
   taskMuonsHF->SetMuonCuts(cutsMuon);
-  taskMuonsHF->SetDimuCuts(cutsMuon);
-  taskMuonsHF->SelectCollisionCandidates();
+  taskMuonsHF->SetDimuCuts(cutsDimu);
+  if (isSel) taskMuonsHF->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);
   mgr->AddTask(taskMuonsHF);
 
   mgr->ConnectInput(taskMuonsHF, 0, mgr->GetCommonInputContainer());

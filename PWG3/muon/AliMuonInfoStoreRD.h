@@ -33,17 +33,17 @@ class AliMuonInfoStoreRD : public TObject {
   void XYZAtDCA(Double_t dca[3]) const { for (Int_t i=3; i--;) dca[i]=fDCA[i]; }
   Double_t DCA() const  { return TMath::Sqrt(fDCA[0]*fDCA[0]+fDCA[1]*fDCA[1]); }
 
-  Short_t  Charge()           const { return fCharge;           }
-  Int_t    MatchTrigger()     const { return fMatchTrigger;     }
-  Double_t Chi2FitMomentum()  const { return fChi2FitMomentum;  }
-  Double_t Chi2MatchTrigger() const { return fChi2MatchTrigger; }
-  Double_t RabsEnd()          const { return fRabsEnd;          }
+  Short_t  Charge()       const { return fCharge;           }
+  Int_t    MatchTrigger() const { return fMatchTrigger;     }
+  Double_t Chi2Tracker()  const { return fChi2FitMomentum;  }
+  Double_t Chi2Trigger()  const { return fChi2MatchTrigger; }
+  Double_t RabsEnd()      const { return fRabsEnd;          }
 
   Bool_t IsSelected();
 
-  static const char* StdBranchName()                  { return fgkStdBranchName.Data(); }
-  static void SelectionCust(Double_t cuts[12])  { for (Int_t i=12; i--;) cuts[i]=fgCuts[i]; }
-  static void SetSelectionCuts(Double_t cuts[12]) { for (Int_t i=12; i--;) fgCuts[i]=cuts[i]; }
+  static const char* StdBranchName()              { return fgkStdBranchName.Data(); }
+  static void SelectionCust(Double_t cuts[16])    { for (Int_t i=16; i--;) cuts[i]=fgCuts[i]; }
+  static void SetSelectionCuts(Double_t cuts[16]) { for (Int_t i=16; i--;) fgCuts[i]=cuts[i]; }
 
  private:
 
@@ -60,7 +60,7 @@ class AliMuonInfoStoreRD : public TObject {
   void SetRabsEnd(Double_t rAbsEnd)        { fRabsEnd          = rAbsEnd; }
 
   static const TString fgkStdBranchName;  // Standard branch name
-  static Double_t fgCuts[12];  // 0, min of 3-momentum
+  static Double_t fgCuts[16];  // 0, min of 3-momentum
                                // 1, max of 3-momentum
                                // 2, pt_Min
                                // 3, pt_Max
@@ -72,6 +72,10 @@ class AliMuonInfoStoreRD : public TObject {
                                // 9, about trigger matching
                                //10, rAbs_Min
                                //11, rAbs_Max
+                               //12, chi2Tracker Min
+                               //13, chi2Tracker Max
+                               //14, chi2Trigger Min
+                               //15, chi2Trigger Max
 
   TVector3 fMomentum;       // momentum corrected w vtx
 
@@ -82,7 +86,7 @@ class AliMuonInfoStoreRD : public TObject {
   Double_t fChi2MatchTrigger;  // chi2 of trigger matching
   Double_t fRabsEnd;  // position at the end of front absorber
 
-  ClassDef(AliMuonInfoStoreRD, 4);
+  ClassDef(AliMuonInfoStoreRD, 5);
 };
 
 #endif

@@ -30,7 +30,9 @@
 ClassImp(AliDimuInfoStoreRD)
 
 const TString AliDimuInfoStoreRD::fgkStdBranchName("DimuRD");
-Double_t      AliDimuInfoStoreRD::fgCutd[12] = {-999999., 999999.,
+Double_t      AliDimuInfoStoreRD::fgCutd[16] = {-999999., 999999.,
+                                                -999999., 999999.,
+                                                -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
                                                 -999999., 999999.,
@@ -130,7 +132,7 @@ Bool_t AliDimuInfoStoreRD::IsSelected()
 {
   // select dimuon candidates according to the corresponding two muon tracks cuts
 
-  Double_t cutsOld[12];
+  Double_t cutsOld[16];
   AliMuonInfoStoreRD::SelectionCust(cutsOld);
   AliMuonInfoStoreRD::SetSelectionCuts(AliDimuInfoStoreRD::fgCutd);
   AliMuonInfoStoreRD *trk0 = (AliMuonInfoStoreRD*)fMuonRef[0].GetObject();

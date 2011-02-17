@@ -88,7 +88,7 @@ class AliMuonInfoStoreMC : public AliMuonInfoStoreRD {
 
   Double_t fWeight;  // for PbPb collisoions
 
-  ClassDef(AliMuonInfoStoreMC, 3);
+  ClassDef(AliMuonInfoStoreMC, 5);
 };
 
 #endif
