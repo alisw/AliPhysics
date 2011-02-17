@@ -180,7 +180,8 @@ Bool_t showMC=kTRUE;
 Bool_t showE735=kTRUE;
 Bool_t useSecCorrFromDCA=kTRUE;
 Bool_t flagPreliminary=kFALSE; // Add "preliminary" flag and logo to the plots
-Bool_t doPrint = 0;
+Bool_t doPrint = 1;
+Bool_t applyEtaCutCorrection=kTRUE; // Fixes a bug in the ITSsa analysis
 TString printFormats = "C,eps,root"; // format in which canvases will be printed, if PrintCanvas is called (not all prints are based on printcanvas at the moment). This is a comma separated list.
 
 
@@ -638,16 +639,18 @@ void LoadSpectra() {
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
 	}
-	if(ipart == kProton && (ibin==9 || ibin==10)){
+	//	if(ipart == kProton && (ibin==9 || ibin==10)){ // FIXME
+	if(ipart == kProton && (ibin==9)){
 	  printf("Kill bin %d (%f - %f GeV/c)for ITS protons\n",ibin,hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin),hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin)+hSpectra[kITS][ipart][icharge]->GetBinWidth(ibin));
 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
 	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
 	}
-	if(ipart == kKaon && ibin==7){
-	  printf("Kill bin %d (%f - %f GeV/c)for ITS kaons\n",ibin,hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin),hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin)+hSpectra[kITS][ipart][icharge]->GetBinWidth(ibin));
-	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
-	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
-	}
+	// FIXME: uncomment?
+	// if(ipart == kKaon && ibin==7){
+	//   printf("Kill bin %d (%f - %f GeV/c)for ITS kaons\n",ibin,hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin),hSpectra[kITS][ipart][icharge]->GetBinLowEdge(ibin)+hSpectra[kITS][ipart][icharge]->GetBinWidth(ibin));
+	//   hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
+	//   hSpectra[kITS][ipart][icharge]->SetBinError  (ibin,0);
+	// }
 	
 // 	if ((ipart == kKaon && ibin >= 12) || (ipart == kProton && ibin >= 20)) {
 // 	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin,0);
@@ -667,6 +670,29 @@ void LoadSpectra() {
     fseccorr->Close();
   }
 
+  // Correct for the eta bug (see mails around 30/01/2011)
+  if(applyEtaCutCorrection) {
+    TH1F * hCorrectionITSsaEtaCut[kNPart][kNCharge] = {0};
+    f= TFile::Open("./Files/ITSsaEtaCutCorr.root");
+    hCorrectionITSsaEtaCut[kPion  ][kPos] = (TH1F*) f->Get("ITSsaPos0");
+    hCorrectionITSsaEtaCut[kKaon  ][kPos] = (TH1F*) f->Get("ITSsaPos1");
+    hCorrectionITSsaEtaCut[kProton][kPos] = (TH1F*) f->Get("ITSsaPos2");
+    hCorrectionITSsaEtaCut[kPion  ][kNeg] = (TH1F*) f->Get("ITSsaNeg0");
+    hCorrectionITSsaEtaCut[kKaon  ][kNeg] = (TH1F*) f->Get("ITSsaNeg1");
+    hCorrectionITSsaEtaCut[kProton][kNeg] = (TH1F*) f->Get("ITSsaNeg2");
+    for(Int_t ipart = 0; ipart < kNPart; ipart++){
+      for(Int_t icharge = 0; icharge < kNCharge; icharge++){
+	Int_t nbin = hSpectra[kITS][ipart][icharge]->GetNbinsX();
+	for(Int_t ibin = 0; ibin < nbin; ibin++){
+	  Int_t content = hSpectra[kITS][ipart][icharge]->GetBinContent(ibin) * hCorrectionITSsaEtaCut[ipart][icharge]->GetBinContent(ibin);
+	  Int_t error   = hSpectra[kITS][ipart][icharge]->GetBinError(ibin) * hCorrectionITSsaEtaCut[ipart][icharge]->GetBinContent(ibin);
+	  hSpectra[kITS][ipart][icharge]->SetBinContent(ibin, content);
+	  hSpectra[kITS][ipart][icharge]->SetBinError  (ibin, error);
+	}
+      }    
+    }
+  }
+    
   // Load ITS sa systematics, only pt dependent ones
   //  f = TFile::Open("./Files/ITSsa-systematics_20100930.root");
   f = TFile::Open("./Files/ITSsa-systematics-20101014.root");
@@ -1871,7 +1897,8 @@ void DrawRatios() {
   htmp->Add((TH1F*) fPhenix->Get("PiMinusPHNX"));
   hPPiRatioPhenix = AliBWTools::DivideHistosDifferentBins(hPPiRatioPhenix,htmp);
   hPPiRatioPhenix->SetMarkerStyle(24);
-
+  hPPiRatioPhenix->SetBinContent(14,0);
+  hPPiRatioPhenix->SetBinError(14,0);
   // Draw
 //   TH2F * hempty = new TH2F(TString("hempty"),"hempty",100,0.,1.5, 100, 0.001,1.8);
 //   hempty->SetXTitle("p_{t} (GeV/c)");
