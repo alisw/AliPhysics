@@ -270,9 +270,14 @@ void AliPWG4CosmicCandidates::UserExec(Option_t *)
   }
 
   const AliVVertex *vtx = fInputEvent->GetPrimaryVertex();
-  // Need vertex cut
+  if(!vtx){
+    PostData(1, fHistListCosmics);
+    return;
+  }
+
+// Need vertex cut
   TString vtxName(vtx->GetName());
-  if(!vtx || vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
+  if( vtx->GetNContributors() < 2 || (vtxName.Contains("TPCVertex")) ) {
     // Post output data
     PostData(1, fHistListCosmics);
     return;
