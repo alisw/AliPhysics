@@ -387,6 +387,10 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   if (!fESD) return;
 
+  //do the calibration bit
+  fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0); // to use T0-TOF 
+  fESDpid->MakePID(fESD,kFALSE);
+
   if(!fCuts || !fEventCuts)
   {
     Printf("No CUTS Defined.........\n");
