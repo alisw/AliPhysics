@@ -102,8 +102,11 @@ AliV0Reader::AliV0Reader() :
   fPIDProbabilityCutNegativeParticle(0),
   fPIDProbabilityCutPositiveParticle(0),
   fDodEdxSigmaCut(kFALSE),
+  fDoTOFsigmaCut(kFALSE), // RRnewTOF
   fPIDnSigmaAboveElectronLine(100),
   fPIDnSigmaBelowElectronLine(-100),
+  fTofPIDnSigmaAboveElectronLine(100), // RRnewTOF
+  fTofPIDnSigmaBelowElectronLine(-100), // RRnewTOF
   fPIDnSigmaAbovePionLine(-100), 
   fPIDMinPnSigmaAbovePionLine(100), 
   fPIDMaxPnSigmaAbovePionLine(100), 
@@ -203,8 +206,11 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fPIDProbabilityCutNegativeParticle(original.fPIDProbabilityCutNegativeParticle),
   fPIDProbabilityCutPositiveParticle(original.fPIDProbabilityCutPositiveParticle),
   fDodEdxSigmaCut(original.fDodEdxSigmaCut),
+  fDoTOFsigmaCut(original.fDoTOFsigmaCut), // RRnewTOF
   fPIDnSigmaAboveElectronLine(original.fPIDnSigmaAboveElectronLine),
   fPIDnSigmaBelowElectronLine(original.fPIDnSigmaBelowElectronLine),
+  fTofPIDnSigmaAboveElectronLine(original.fTofPIDnSigmaAboveElectronLine), // RRnewTOF
+  fTofPIDnSigmaBelowElectronLine(original.fTofPIDnSigmaBelowElectronLine), // RRnewTOF
   fPIDnSigmaAbovePionLine(original.fPIDnSigmaAbovePionLine), 
   fPIDMinPnSigmaAbovePionLine(original.fPIDMinPnSigmaAbovePionLine), 
   fPIDMaxPnSigmaAbovePionLine(original.fPIDMaxPnSigmaAbovePionLine), 
@@ -756,6 +762,29 @@ Bool_t AliV0Reader::NextV0(){
 	}
       }
     }
+
+
+    if( fDoTOFsigmaCut == kTRUE ){ // RRnewTOF start ///////////////////////////////////////////////////////////////////////////// 
+      Bool_t PosTrackNotTOFelec = kFALSE;
+      Bool_t NegTrackNotTOFelec = kFALSE;
+      Double_t t0pos = fgESDpid->GetTOFResponse().GetStartTime(fCurrentPositiveESDTrack->P());
+      Double_t t0neg = fgESDpid->GetTOFResponse().GetStartTime(fCurrentNegativeESDTrack->P());
+      Double_t fnSigmaPos = fgESDpid->NumberOfSigmasTOF(fCurrentPositiveESDTrack, AliPID::kElectron, t0pos);
+      Double_t fnSigmaNeg = fgESDpid->NumberOfSigmasTOF(fCurrentNegativeESDTrack, AliPID::kElectron, t0neg);
+      if( fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTOFpid ){
+	if( (fnSigmaPos>fTofPIDnSigmaAboveElectronLine) || (fnSigmaPos<fTofPIDnSigmaBelowElectronLine) ) PosTrackNotTOFelec = kTRUE;
+      }
+      if( fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTOFpid ){
+	if( (fnSigmaNeg>fTofPIDnSigmaAboveElectronLine) || (fnSigmaNeg<fTofPIDnSigmaBelowElectronLine) ) NegTrackNotTOFelec = kTRUE;	
+      }
+      if( (PosTrackNotTOFelec==kTRUE) || (NegTrackNotTOFelec==kTRUE) ){
+	if(fHistograms != NULL){
+	  fHistograms->FillHistogram("ESD_CutTOFsigmaElec_InvMass",GetMotherCandidateMass());
+	}
+	fCurrentV0IndexNumber++;
+	continue;
+      }
+    } /////////////////////////////// RRnewTOF end ///////////////////////////////////////////////////////////////////////////////
 
 
     // Gamma selection based on QT from Armenteros

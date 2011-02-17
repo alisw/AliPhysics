@@ -1576,6 +1576,28 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
     }
 
     fHistograms->FillHistogram("ESD_NoCutAllV0_Pt", fV0Reader->GetMotherCandidatePt());
+
+// RRnewTOF start ///////////////////////////////////////////////
+    UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus();
+    UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
+
+    Double_t t0pos = fV0Reader->GetESDpid()->GetTOFResponse().GetStartTime(fV0Reader->GetPositiveTrackP());
+    Double_t t0neg = fV0Reader->GetESDpid()->GetTOFResponse().GetStartTime(fV0Reader->GetNegativeTrackP());
+
+    Double_t timesPos[5];
+    fV0Reader->GetPositiveESDTrack()->GetIntegratedTimes(timesPos);
+    Double_t timesNeg[5];
+    fV0Reader->GetNegativeESDTrack()->GetIntegratedTimes(timesNeg);
+
+    Double_t TOFsignalPos =  fV0Reader->GetPositiveTrackTOFsignal();
+    Double_t TOFsignalNeg =  fV0Reader->GetNegativeTrackTOFsignal();
+
+    Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
+    Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
+
+    if(statusPos & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_NoCutConvGamma_EandP_P_dT", fV0Reader->GetPositiveTrackP(), dTpos);
+    if(statusNeg & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_NoCutConvGamma_EandP_P_dT", fV0Reader->GetNegativeTrackP(), dTneg);
+// RRnewTOF end /////////////////////////////////////////////////
     
     if(fDoMCTruth){
 			
@@ -1736,7 +1758,28 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
     fHistograms->FillHistogram("ESD_ConvGamma_P_AsymmetryP",fV0Reader->GetMotherCandidateP(),fV0Reader->GetPositiveTrackP()/fV0Reader->GetMotherCandidateP());
     fHistograms->FillHistogram("ESD_ConvGamma_E_dEdxP",fV0Reader->GetNegativeTrackP(),fV0Reader->GetNegativeTrackTPCdEdx());
     fHistograms->FillHistogram("ESD_ConvGamma_P_dEdxP",fV0Reader->GetPositiveTrackP(),fV0Reader->GetPositiveTrackTPCdEdx());
-    
+
+    UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus(); //moved up here from below RRnewTOF
+    UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
+// RRnewTOF start ///////////////////////////////////////////////
+   Double_t t0pos = fV0Reader->GetESDpid()->GetTOFResponse().GetStartTime(fV0Reader->GetPositiveTrackP());
+   Double_t t0neg = fV0Reader->GetESDpid()->GetTOFResponse().GetStartTime(fV0Reader->GetNegativeTrackP());
+
+   Double_t timesPos[5];
+   fV0Reader->GetPositiveESDTrack()->GetIntegratedTimes(timesPos);
+   Double_t timesNeg[5];
+   fV0Reader->GetNegativeESDTrack()->GetIntegratedTimes(timesNeg);
+
+   Double_t TOFsignalPos =  fV0Reader->GetPositiveTrackTOFsignal();
+   Double_t TOFsignalNeg =  fV0Reader->GetNegativeTrackTOFsignal();
+
+   Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
+   Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
+
+   if(statusPos & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_ConvGamma_EandP_P_dT", fV0Reader->GetPositiveTrackP(), dTpos);
+   if(statusNeg & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_ConvGamma_EandP_P_dT", fV0Reader->GetNegativeTrackP(), dTneg);
+// RRnewTOF end /////////////////////////////////////////////////
+
     Double_t negPID=0;
     Double_t posPID=0;
     fV0Reader->GetPIDProbability(negPID,posPID);
@@ -1874,6 +1917,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElecPi_R", fV0Reader->GetXYRadius());
 	     fHistograms->FillHistogram("ESD_TrueConvCombinatorialElecPi_Pt", fV0Reader->GetMotherCandidatePt());
 	  }
+	  if( (statusPos & AliESDtrack::kTOFpid) && ( TMath::Abs(positiveMC->GetPdgCode()) != 11 ) )
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorial_DaughtersNotElec_P_dT", fV0Reader->GetPositiveTrackP(), dTpos);//RRnewTOF
+          if( (statusNeg & AliESDtrack::kTOFpid) && ( TMath::Abs(negativeMC->GetPdgCode()) != 11 ) )
+	     fHistograms->FillHistogram("ESD_TrueConvCombinatorial_DaughtersNotElec_P_dT", fV0Reader->GetNegativeTrackP(), dTneg);//RRnewTOF
 	  continue;
        }
        // Moved up to check true electron background
@@ -1884,6 +1931,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	  fHistograms->FillHistogram("ESD_TrueConvHadronicBck_R", fV0Reader->GetXYRadius());
 	  fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Pt", fV0Reader->GetMotherCandidatePt());
 	  fHistograms->FillHistogram("ESD_TrueConvHadronicBckDaughter_Pt", negativeMC->Pt(),positiveMC->Pt());
+          if(statusPos & AliESDtrack::kTOFpid)
+	      fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Daughters_P_dT", fV0Reader->GetPositiveTrackP(), dTpos);//RRnewTOF
+          if(statusNeg & AliESDtrack::kTOFpid)
+	      fHistograms->FillHistogram("ESD_TrueConvHadronicBck_Daughters_P_dT", fV0Reader->GetNegativeTrackP(), dTneg);//RRnewTOF
 	  if((TMath::Abs(negativeMC->GetPdgCode())==211 && TMath::Abs(positiveMC->GetPdgCode())==2211) ||
 	     (TMath::Abs(negativeMC->GetPdgCode())==2212 && TMath::Abs(positiveMC->GetPdgCode())==211)){
 	     fHistograms->FillHistogram("ESD_TrueConvLambda_R", fV0Reader->GetXYRadius());
@@ -1901,8 +1952,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	  continue;
        }
 
-      UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus(); 
-      UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
+      //UInt_t statusPos = fV0Reader->GetPositiveESDTrack()->GetStatus(); moved higher
+      //UInt_t statusNeg = fV0Reader->GetNegativeESDTrack()->GetStatus(); 
       UChar_t itsPixelPos = fV0Reader->GetPositiveESDTrack()->GetITSClusterMap();
       UChar_t itsPixelNeg = fV0Reader->GetNegativeESDTrack()->GetITSClusterMap();
 
@@ -1948,6 +1999,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 	  containerInput[2] = fV0Reader->GetMotherCandidateMass();
 	  fCFManager->GetParticleContainer()->Fill(containerInput,kStepTrueGamma); // for CF 
 	}
+
+// RRnewTOF start ///////////////////////////////////////////////
+        if(statusPos & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_TrueConvGamma_EandP_P_dT", fV0Reader->GetPositiveTrackP(), dTpos);
+        if(statusNeg & AliESDtrack::kTOFpid) fHistograms->FillHistogram("ESD_TrueConvGamma_EandP_P_dT", fV0Reader->GetNegativeTrackP(), dTneg);
+// RRnewTOF end /////////////////////////////////////////////////
 
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
 	fHistograms->FillHistogram("ESD_TrueConvGamma_Energy", fV0Reader->GetMotherCandidateEnergy());
