@@ -34,9 +34,6 @@ AliRsnPairFunctions::AliRsnPairFunctions(const char *name, AliRsnPairDef *def) :
 //
 // Default constructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -47,9 +44,6 @@ AliRsnPairFunctions::AliRsnPairFunctions(const AliRsnPairFunctions& copy) :
 //
 // Default constructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -72,9 +66,6 @@ AliRsnPairFunctions::~AliRsnPairFunctions()
 //
 // Destructor
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -86,8 +77,6 @@ void AliRsnPairFunctions::Compute()
 // and then fill the list of required values using it.
 //
 
-   AliDebug(AliLog::kDebug + 2, "<-");
-
    TObjArrayIter   nextFcn(&fFunctions);
    AliRsnFunction *fcn = 0x0;
 
@@ -96,8 +85,6 @@ void AliRsnPairFunctions::Compute()
       fcn->SetPair(&fMother);
       fcn->Fill();
    }
-
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -110,8 +97,6 @@ void AliRsnPairFunctions::Init(const char *prefix, TList *list)
 //
 // All generated histograms are stored into the output TList.
 //
-
-   AliDebug(AliLog::kDebug + 2, "<-");
 
    Int_t  i;
    TString hName("");
@@ -126,8 +111,6 @@ void AliRsnPairFunctions::Init(const char *prefix, TList *list)
       if (fcn->IsUsingTH1()) list->Add(fcn->CreateHistogram(hName.Data(), ""));
       else list->Add(fcn->CreateHistogramSparse(hName.Data(), ""));
    }
-
-   AliDebug(AliLog::kDebug + 2, "->");
 }
 
 //_____________________________________________________________________________
@@ -137,11 +120,7 @@ void AliRsnPairFunctions::AddFunction(AliRsnFunction *const fcn)
 // Adds a new computing function
 //
 
-   AliDebug(AliLog::kDebug + 2, "<-");
-
-   fFunctions.Print();
    Int_t size = fFunctions.GetEntries();
-   new(fFunctions[size]) AliRsnFunction(*fcn);
-
-   AliDebug(AliLog::kDebug + 2, "->");
+   new (fFunctions[size]) AliRsnFunction(*fcn);
+   fFunctions.Print();
 }

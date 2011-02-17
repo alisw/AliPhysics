@@ -27,6 +27,7 @@ public:
       kTrackP,             // single track total momentum
       kTrackPt,            // single track transverse momentum
       kTrackEta,           // single track pseudo-rapidity
+      kTrackY,             // single track rapidity
       kPairP1,             // total momentum of 1st daughter of a pair
       kPairP2,             // total momentum of 2nd daughter of a pair
       kPairP1t,            // total momentum of 1st daughter of a pair

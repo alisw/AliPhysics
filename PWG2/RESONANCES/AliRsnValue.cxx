@@ -13,6 +13,7 @@
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
 #include "AliRsnPairDef.h"
+#include "AliRsnDaughterDef.h"
 
 #include "AliRsnValue.h"
 
@@ -204,6 +205,7 @@ const char* AliRsnValue::GetValueTypeName() const
       case kTrackP:             return "SingleTrackPtot";
       case kTrackPt:            return "SingleTrackPt";
       case kTrackEta:           return "SingleTrackEta";
+      case kTrackY:             return "SingleTrackRapidity";
       case kPairP1:             return "PairPtotDaughter1";
       case kPairP2:             return "PairPtotDaughter2";
       case kPairP1t:            return "PairPtDaughter1";
@@ -246,6 +248,7 @@ void AliRsnValue::AssignTarget()
       case kTrackP:
       case kTrackPt:
       case kTrackEta:
+      case kTrackY:
          SetTargetType(AliRsnTarget::kDaughter); // end of track-related values
          break;
          // pair related values
@@ -344,8 +347,9 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
    }
 
    // cast the support object to the types which could be needed
-   AliESDtrackCuts *esdCuts = dynamic_cast<AliESDtrackCuts*>(fSupportObject);
-   AliRsnPairDef   *pairDef = dynamic_cast<AliRsnPairDef*>(fSupportObject);
+   AliESDtrackCuts   *esdCuts     = dynamic_cast<AliESDtrackCuts*>(fSupportObject);
+   AliRsnPairDef     *pairDef     = dynamic_cast<AliRsnPairDef*>(fSupportObject);
+   AliRsnDaughterDef *daughterDef = dynamic_cast<AliRsnDaughterDef*>(fSupportObject);
 
    // compute value depending on type
    switch (fValueType) {
@@ -357,6 +361,19 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          break;
       case kTrackEta:
          fComputedValue = useMC ? pSim.Eta() : pRec.Eta();
+         break;
+      case kTrackY:
+         // for this computation, replace the computed mass with the default mass
+         // for doing this, an initialized daughterDef is required to get the mass
+         if (!daughterDef) {
+            AliError(Form("[%s] Required a correctly initialized DaughterDef to compute this value", GetName()));
+            fComputedValue = 1E+10;
+            return kFALSE;
+         } else {
+            pRec.SetXYZM(pRec.X(), pRec.Y(), pRec.Z(), daughterDef->GetMass());
+            pSim.SetXYZM(pSim.X(), pSim.Y(), pSim.Z(), daughterDef->GetMass());
+            fComputedValue = useMC ? pSim.Rapidity() : pRec.Rapidity();
+         }
          break;
       case kPairP1:
          fComputedValue = useMC ? pSim0.Mag() : pRec0.Mag();

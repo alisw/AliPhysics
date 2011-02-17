@@ -2,6 +2,7 @@
 
 #pragma link C++ class AliRsnDaughter+;
 #pragma link C++ class AliRsnMother+;
+#pragma link C++ class AliRsnDaughterDef+;
 #pragma link C++ class AliRsnPairDef+;
 #pragma link C++ class AliRsnEvent+;
 
@@ -25,6 +26,9 @@
 #pragma link C++ class AliRsnCutManager+;
 
 #pragma link C++ class AliRsnFunction+;
+#pragma link C++ class AliRsnMonitor+;
+#pragma link C++ class AliRsnMonitorFunctions+;
+#pragma link C++ class AliRsnMonitorNtuple+;
 #pragma link C++ class AliRsnPair+;
 #pragma link C++ class AliRsnPairFunctions+;
 #pragma link C++ class AliRsnPairNtuple+;
