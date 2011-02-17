@@ -172,8 +172,8 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
 
   fTOFdigitArray = * (TClonesArray**) branch->GetAddress();
 
-  const Int_t kDimension=100;
-  char fileName[kDimension];
+  const Int_t kDimension=16;
+  char fileName[kDimension-1];
   AliFstream* outfile;      // logical name of the output file 
 
   //AliRawDataHeader header;
