@@ -2668,7 +2668,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   TObjArray * gainCalibArray = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(event->GetRunNumber());
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   TGraphErrors * graphMultDependenceDeDx = 0x0;
-  if (recoParam->GetUseMultiplicityCorrectionDedx()) {
+  if (recoParam->GetUseMultiplicityCorrectionDedx() && gainCalibArray) {
     if (recoParam->GetUseTotCharge()) {
       graphMultDependenceDeDx = (TGraphErrors *) gainCalibArray->FindObject("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
     } else {
