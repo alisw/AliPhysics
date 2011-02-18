@@ -855,6 +855,6 @@ Int_t AliAnalysisTaskDisplacedElectrons::AliLabelContainer::Next() {
   // Mimic iterator
   //
   if(fCurrent > fLast) return -1; 
-  *fCurrent++;
+  fCurrent++;
   return *fCurrent;
 }
