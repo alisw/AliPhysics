@@ -46,13 +46,42 @@ int main(int argc, char **argv)
       return 0;
     }
 
-    const char *dbHost = "aldaqdb";
-    Int_t dbPort = 3306;
-    const char *dbName = "LOGBOOK";
-    const char *user = "logbook";
-    const char *password = "alice";
+    TString dbHost = gSystem->Getenv("ONLINERECO_DB_HOST");
+    if (dbHost.IsNull())
+    {
+      printf("ERROR: ONLINERECO_DB_HOST is not set. Exiting...");
+      return 0;
+    }
 
-    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%d/%s", dbHost, dbPort, dbName), user, password);
+    TString dbPort = gSystem->Getenv("ONLINERECO_DB_PORT");
+    if (dbPort.IsNull())
+    {
+      printf("ERROR: ONLINERECO_DB_PORT is not set. Exiting...");
+      return 0;
+    }
+
+    TString dbName = gSystem->Getenv("ONLINERECO_DB_NAME");
+    if (dbName.IsNull())
+    {
+      printf("ERROR: ONLINERECO_DB_NAME is not set. Exiting...");
+      return 0;
+    }
+
+    TString user = gSystem->Getenv("ONLINERECO_DB_USER");
+    if (user.IsNull())
+    {
+      printf("ERROR: ONLINERECO_DB_USER is not set. Exiting...");
+      return 0;
+    }
+
+    TString password = gSystem->Getenv("ONLINERECO_DB_PASSWORD");
+    if (password.IsNull())
+    {
+      printf("ERROR: ONLINERECO_DB_PASSWORD is not set. Exiting...");
+      return 0;
+    }
+
+    TSQLServer* server = TSQLServer::Connect(Form("mysql://%s:%s/%s", dbHost.Data(), dbPort.Data(), dbName.Data()), user.Data(), password.Data());
     if (!server) {
       printf("ERROR: Could not connect to DAQ Logbook");
       return 0;
