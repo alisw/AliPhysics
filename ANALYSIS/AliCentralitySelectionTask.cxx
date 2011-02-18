@@ -747,7 +747,7 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
 //________________________________________________________________________
 Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent)
 {
-  TF1 *V0MSPDfun = new TF1("V0MSPDfun","-0.143789+ 0.288874*x",0,25000);
+  Float_t val= -0.143789 + 0.288874 * v0;
   Float_t SPDsigma[100]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
 			 160.84, 159.33, 154.453, 151.644, 148.337, 145.215, 142.353, 
 			 139.351, 136, 133.838, 129.885, 127.36, 125.032, 122.21, 120.3, 
@@ -763,7 +763,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 			 15.7185, 15.3006, 14.7432, 14.4174, 14.0805, 13.7638, 13.7638, 
 			 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 18.0803};
 
-  if ( TMath::Abs(spd-V0MSPDfun->Eval(v0)) > fOutliersCut*SPDsigma[cent] ) 
+  if ( TMath::Abs(spd-val) > fOutliersCut*SPDsigma[cent] ) 
     return kTRUE;
   else 
     return kFALSE;
@@ -772,7 +772,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 //________________________________________________________________________
 Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent)
 {
-  TF1 *V0MTPCfun = new TF1("V0MTPCfun","-0.540691+0.128358*x",0,25000);
+  Float_t val = -0.540691 + 0.128358 * v0;
   Float_t TPCsigma[100]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
 			 78.0616, 77.2167, 75.0021, 73.9957, 72.0926, 71.0442, 69.8395, 
 			 68.1169, 66.6676, 66.0038, 64.2284, 63.3845, 61.7439, 60.642, 
@@ -788,7 +788,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 			 8.67375, 8.43029, 8.34818, 8.33484, 8.40709, 8.3974, 8.32814, 
 			 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 12.351};
 
-  if ( TMath::Abs(tracks-V0MTPCfun->Eval(v0)) > fOutliersCut*TPCsigma[cent] ) 
+  if ( TMath::Abs(tracks-val) > fOutliersCut*TPCsigma[cent] ) 
     return kTRUE;
   else 
     return kFALSE;
@@ -797,10 +797,9 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 //________________________________________________________________________
 Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0)
 {
-  TF1 *fun1 = new TF1("fun1","6350-0.26*x",0,25000);
-  TF1 *fun2 = new TF1("fun2","5580",0,25000);
-
-  if ( (zdc > fun1->Eval(v0)) || (zdc > fun2->Eval(v0)) )
+  Float_t val1 = 6350. - 0.26 * v0;
+  Float_t val2 = 5580.;
+  if ((zdc >  val1) || (zdc > val2)) 
     return kTRUE;
   else 
     return kFALSE;
