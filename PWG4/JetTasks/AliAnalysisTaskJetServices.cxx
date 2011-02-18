@@ -191,6 +191,8 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
 
   OpenFile(1);
   if(!fHistList)fHistList = new TList();
+  fHistList->SetOwner();
+  PostData(1, fHistList); // post data in any case once
 
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
@@ -269,11 +271,9 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
      fgAODHeader = new AliAODHeader;
      AddAODBranch("AliAODHeader",&fgAODHeader,fNonStdFile.Data());
      if (fDebug > 1) AliInfo("Replicating primary vertices");
-
      fgAODVertices = new TClonesArray("AliAODVertex",3);
      fgAODVertices->SetName("vertices");
      AddAODBranch("TClonesArray",&fgAODVertices,fNonStdFile.Data());
-
   }
 }
 
@@ -404,6 +404,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
     esdVtxIn = IsVertexIn(vtxESD);
     if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
       Float_t cent = aod->GetHeader()->GetCentrality();
+      if(fDebug)Printf("%s:%d Centrality %3.3f vtxin %d",(char*)__FILE__,__LINE__,cent,esdVtxIn);
       if(cent<=80&&esdVtxIn){
 	aodH->SetFillAOD(kTRUE);
       }
@@ -557,7 +558,6 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
         AliAODVertex(pos, covVtx, vtxAOD->GetChi2perNDF(), NULL, -1, AliAODVertex::kPrimary);
       vtx->SetName(vtxAOD->GetName());
       vtx->SetTitle(vtxAOD->GetTitle());
-
       TString vtitle = vtxAOD->GetTitle();
       vtx->SetNContributors(vtxAOD->GetNContributors());
 

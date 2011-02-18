@@ -1,5 +1,5 @@
 // **************************************
-// Task used for the correction of determiantion of reconstructed jet spectra
+//  used for the correction of determiantion of reconstructed jet spectra
 // Compares input (gen) and output (rec) jets   
 // *******************************************
 
@@ -302,6 +302,8 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   if (fDebug > 1) printf("AnalysisTaskJetSpectrum2::UserCreateOutputObjects() \n");
   OpenFile(1);
   if(!fHistList)fHistList = new TList(); 
+  PostData(1, fHistList); // post data in any case once
+
   fHistList->SetOwner(kTRUE);
   Bool_t oldStatus = TH1::AddDirectoryStatus(); 
   TH1::AddDirectory(kFALSE);
