@@ -153,6 +153,8 @@ AliAnalysisTaskMCParticleFilter& AliAnalysisTaskMCParticleFilter::operator=(cons
 void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 {
   // Create the output container
+  PostData(1,fHistList);
+
     if (OutputTree()&&fTrackFilterMother) 
 	OutputTree()->GetUserInfo()->Add(fTrackFilterMother);
 
