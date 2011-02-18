@@ -37,14 +37,14 @@ public:
   void     SetMomBoundary();
   Int_t    GetMomBin(Float_t p) const;
   Int_t    GetNmomBins(){return fNmomBins;};
-  Float_t  GetMinMom(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin]; else return 0.0;};
-  Float_t  GetMaxMom(Int_t ibin)const {if(ibin >=0 && ibin <= fNmomBins) return fPCutMin[ibin+1]; else return 0.0;};
-  void     SetT0bin(Int_t ibin,Float_t t0bin){if(ibin >=0 && ibin <= fNmomBins) fT0event[ibin] = t0bin;};
-  void     SetT0binRes(Int_t ibin,Float_t t0binRes){if(ibin >=0 && ibin <= fNmomBins) fT0resolution[ibin] = t0binRes;};
-  void     SetT0binMask(Int_t ibin,Int_t t0binMask){if(ibin >=0 && ibin <= fNmomBins) fMaskT0[ibin] = t0binMask;};
-  Float_t  GetT0bin(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0event[ibin]; else return 0.0;};
-  Float_t  GetT0binRes(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fT0resolution[ibin]; else return 0.0;};
-  Int_t    GetT0binMask(Int_t ibin) const {if(ibin >=0 && ibin <= fNmomBins) return fMaskT0[ibin]; else return 0;};
+  Float_t  GetMinMom(Int_t ibin) const {if(ibin >=0 && ibin < fNmomBins) return fPCutMin[ibin]; else return 0.0;}; // overrun static array - coverity
+  Float_t  GetMaxMom(Int_t ibin) const {if(ibin >=0 && ibin < fNmomBins) return fPCutMin[ibin+1]; else return 0.0;}; // overrun static array - coverity
+  void     SetT0bin(Int_t ibin,Float_t t0bin){if(ibin >=0 && ibin < fNmomBins) fT0event[ibin] = t0bin;}; // overrun static array - coverity
+  void     SetT0binRes(Int_t ibin,Float_t t0binRes){if(ibin >=0 && ibin < fNmomBins) fT0resolution[ibin] = t0binRes;}; // overrun static array - coverity
+  void     SetT0binMask(Int_t ibin,Int_t t0binMask){if(ibin >=0 && ibin < fNmomBins) fMaskT0[ibin] = t0binMask;}; // overrun static array - coverity
+  Float_t  GetT0bin(Int_t ibin) const {if(ibin >=0 && ibin < fNmomBins) return fT0event[ibin]; else return 0.0;}; // overrun static array - coverity
+  Float_t  GetT0binRes(Int_t ibin) const {if(ibin >=0 && ibin < fNmomBins) return fT0resolution[ibin]; else return 0.0;}; // overrun static array - coverity
+  Int_t    GetT0binMask(Int_t ibin) const {if(ibin >=0 && ibin < fNmomBins) return fMaskT0[ibin]; else return 0;}; // overrun static array - coverity
 
   // Get Start Time for a track
   Float_t  GetStartTime(Float_t mom) const;
