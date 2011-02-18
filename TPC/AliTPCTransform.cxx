@@ -156,6 +156,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   if (!time0TPC){
     AliFatal("Time unisochronity missing");
   }
+  AliTPCCorrection * correctionDelta = calib->GetTPCComposedCorrectionDelta(); 
 
   if (!param){
     AliFatal("Parameters missing");
@@ -163,8 +164,8 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
 
   Double_t xx[3];
   //  Apply Time0 correction - Pad by pad fluctuation
-  //
-  x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
+  //  
+  if (!calib->HasAlignmentOCDB()) x[2]-=time0TPC->GetCalROC(sector)->GetValue(row,pad);
   //
   // Tranform from pad - time coordinate system to the rotated global (tracking) system
   //
@@ -199,6 +200,13 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     xx[0]=distPoint[0];
     xx[1]=distPoint[1];
     xx[2]=distPoint[2];
+    if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
+      Float_t distPointDelta[3]={xx[0],xx[1],xx[2]};
+      correction->CorrectPoint(distPointDelta, sector);
+      xx[0]=distPointDelta[0];
+      xx[1]=distPointDelta[1];
+      xx[2]=distPointDelta[2];
+    }
   } 
 
 

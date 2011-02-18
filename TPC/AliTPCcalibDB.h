@@ -69,6 +69,8 @@ class AliTPCcalibDB : public TObject
   TObjArray * GetTPCComposedCorrectionArray() const { return fComposedCorrectionArray;}
   void          SetTPCComposedCorrection(AliTPCCorrection *compCorr) { fComposedCorrection=compCorr;}
   AliTPCCorrection * GetTPCComposedCorrection(Float_t field) const;
+  AliTPCCorrection * GetTPCComposedCorrectionDelta() const;
+  Bool_t      HasAlignmentOCDB() const { return fBHasAlignmentOCDB;}
 
   AliTPCCalPad* GetPadNoise() const {return fPadNoise;}
   AliTPCCalPad* GetPedestals() const{return fPedestals;}
@@ -215,6 +217,7 @@ protected:
   TObjArray      fDriftCorrectionArray;                //! array of drift correction
 
   TArrayI        fRunList;							//! run list - indicates try to get the run param
+  Bool_t         fBHasAlignmentOCDB;                // Flag - alignment from the Transformation class
   //
   static AliTPCcalibDB* fgInstance;  // singleton control
   static Bool_t       fgTerminated;  // termination control 

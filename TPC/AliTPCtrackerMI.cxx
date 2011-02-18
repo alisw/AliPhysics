@@ -1356,7 +1356,8 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   //
   //
   //
-  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  AliTPCcalibDB * calibDB = AliTPCcalibDB::Instance();
+  AliTPCTransform *transform = calibDB->GetTransform() ;
   if (!transform) {
     AliFatal("Tranformations not in calibDB");
     return;
@@ -1392,22 +1393,23 @@ void   AliTPCtrackerMI::Transform(AliTPCclusterMI * cluster){
   cluster->SetY(x[1]);
   cluster->SetZ(x[2]);
   // The old stuff:
-
   //
   // 
   //
   //if (!fkParam->IsGeoRead()) fkParam->ReadGeoMatrices();
-  TGeoHMatrix  *mat = fkParam->GetClusterMatrix(cluster->GetDetector());
-  //TGeoHMatrix  mat;
-  Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
-  Double_t posC[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
-  if (mat) mat->LocalToMaster(pos,posC);
-  else{
-    // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
+  if (AliTPCReconstructor::GetRecoParam()->GetUseSectorAlignment() && (!calibDB->HasAlignmentOCDB())){
+    TGeoHMatrix  *mat = fkParam->GetClusterMatrix(cluster->GetDetector());
+    //TGeoHMatrix  mat;
+    Double_t pos[3]= {cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+    Double_t posC[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
+    if (mat) mat->LocalToMaster(pos,posC);
+    else{
+      // chack Loading of Geo matrices from GeoManager - TEMPORARY FIX
+    }
+    cluster->SetX(posC[0]);
+    cluster->SetY(posC[1]);
+    cluster->SetZ(posC[2]);
   }
-  cluster->SetX(posC[0]);
-  cluster->SetY(posC[1]);
-  cluster->SetZ(posC[2]);
 }
 
 //_____________________________________________________________________________

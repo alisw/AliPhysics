@@ -125,6 +125,7 @@ class AliTPCCalDet;
 #include "AliTPCCalibRaw.h"
 #include "AliTPCParam.h"
 #include "AliTPCCorrection.h"
+#include "AliTPCComposedCorrection.h"
 #include "AliTPCPreprocessorOnline.h"
 
 
@@ -202,6 +203,7 @@ AliTPCcalibDB::AliTPCcalibDB():
   fVdriftArray(100000),                 //! array of v drift interfaces
   fDriftCorrectionArray(100000),  //! array of drift correction
   fRunList(100000),              //! run list - indicates try to get the run param 
+  fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
   fCTPTimeParams(0)
 {
@@ -245,6 +247,7 @@ AliTPCcalibDB::AliTPCcalibDB(const AliTPCcalibDB& ):
   fVdriftArray(0),         //! array of v drift interfaces
   fDriftCorrectionArray(0), //! array of v drift corrections
   fRunList(0),              //! run list - indicates try to get the run param 
+  fBHasAlignmentOCDB(kFALSE),    // Flag  - has the alignment on the composed correction ?
   fDButil(0),
   fCTPTimeParams(0)
 {
@@ -466,14 +469,20 @@ void AliTPCcalibDB::Update(){
     fComposedCorrectionArray=dynamic_cast<TObjArray*>(entry->GetObject());
     if (fComposedCorrectionArray){
       for (Int_t i=0; i<fComposedCorrectionArray->GetEntries(); i++){
-	AliTPCCorrection* composedCorrection= dynamic_cast<AliTPCCorrection*>(fComposedCorrectionArray->At(i));
-	if (composedCorrection) composedCorrection->Init();
+	AliTPCComposedCorrection* composedCorrection= dynamic_cast<AliTPCComposedCorrection*>(fComposedCorrectionArray->At(i));
+	if (composedCorrection) {
+	  composedCorrection->Init();
+	  if (composedCorrection->GetCorrections()){
+	    if (composedCorrection->GetCorrections()->FindObject("FitAlignTPC")){
+	      fBHasAlignmentOCDB=kTRUE;
+	    }
+	  }
+	}
       }
-    }
+    }  
   }else{
     AliError("TPC - Missing calibration entry-  TPC/Calib/Correction")
-  }  
-
+  }    
   //
   if (!fTransform) {
     fTransform=new AliTPCTransform(); 
@@ -975,7 +984,13 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
   //
   entry = AliCDBManager::Instance()->Get("TPC/Calib/TimeDrift",run);
   if (entry)  {
-    fDriftCorrectionArray.AddAt(entry->GetObject(),run);
+    TObjArray * timeArray = (TObjArray*)entry->GetObject();    
+    fDriftCorrectionArray.AddAt(entry->GetObject(),run);  
+    AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
+    if (correctionTime && fComposedCorrectionArray){
+      correctionTime->Init();
+      fComposedCorrectionArray->AddAt(correctionTime,4); //add time dependent correction to the list of available corrections
+    }
   }else{
     AliFatal("TPC - Missing calibration entry TimeDrift")
   }
@@ -1977,11 +1992,27 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMapp
 AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrection(Float_t field) const{
   //
   // GetComposed correction for given field setting
-  //
+  // If not specific correction for field used return correction for all field
+  //        - Complication needed to gaurantee OCDB back compatibility 
+  //        - Not neeeded for the new space point correction 
   if (!fComposedCorrectionArray) return 0;
-  if (field>0.1) return (AliTPCCorrection *)fComposedCorrectionArray->At(1);
-  if (field<-0.1) return (AliTPCCorrection *)fComposedCorrectionArray->At(2);
+  if (field>0.1 && fComposedCorrectionArray->At(1)) {   
+    return (AliTPCCorrection *)fComposedCorrectionArray->At(1);
+  }
+  if (field<-0.1 &&fComposedCorrectionArray->At(2)) {
+    return (AliTPCCorrection *)fComposedCorrectionArray->At(2);
+  }
   return (AliTPCCorrection *)fComposedCorrectionArray->At(0);
   
+}
+
+
+AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
+  //
+  // GetComposedCorrection delta
+  // Delta is time dependent - taken form the CalibTime OCDB entry
+  //
+  if (!fComposedCorrectionArray) return 0;
+  return (AliTPCCorrection *)fComposedCorrectionArray->At(4);  //
 }
 
