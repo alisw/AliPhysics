@@ -431,9 +431,9 @@ void AliGenAmpt::EvaluateCrossSections()
 
   Int_t i;
   Float_t oldvalue= 0.;
-  Float_t* b   = new Float_t[kMax];
-  Float_t* si1 = new Float_t[kMax];    
-  Float_t* si2 = new Float_t[kMax];    
+  Float_t* b   = new Float_t[kMax]; memset(b,0,kMax*sizeof(Float_t));
+  Float_t* si1 = new Float_t[kMax]; memset(si1,0,kMax*sizeof(Float_t));
+  Float_t* si2 = new Float_t[kMax]; memset(si2,0,kMax*sizeof(Float_t));
   for (i = 0; i < kMax; i++) {
     Float_t xb  = bMin+i*kdib;
     Float_t ov=fAmpt->Profile(xb);
