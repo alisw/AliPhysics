@@ -33,6 +33,7 @@
 #include "AliAODDimuon.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliAODExtension.h"
 #include "AliAODMCParticle.h"
 #include "AliAODMuonReplicator.h"
 #include "AliAODVertex.h"
@@ -99,24 +100,26 @@ Bool_t AliAnalysisNonPrimaryVertices::IsSelected(TObject* obj)
   
 }
 
-AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon, Bool_t keepAllEvents):
+AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon, Bool_t keepAllEvents, Int_t mcMode):
   AliAnalysisTaskSE(),
   fTrackFilter(0x0),
   fEnableMuonAOD(kFALSE),
   fEnableDimuonAOD(kFALSE),
   fOnlyMuon(onlyMuon),
-  fKeepAllEvents(keepAllEvents)
+  fKeepAllEvents(keepAllEvents),
+  fMCMode(mcMode)
 {
   // Default constructor
 }
 
-AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name, Bool_t onlyMuon, Bool_t keepAllEvents):
+AliAnalysisTaskESDMuonFilter::AliAnalysisTaskESDMuonFilter(const char* name, Bool_t onlyMuon, Bool_t keepAllEvents, Int_t mcMode):
   AliAnalysisTaskSE(name),
   fTrackFilter(0x0),
   fEnableMuonAOD(kFALSE),
   fEnableDimuonAOD(kFALSE),
   fOnlyMuon(onlyMuon),
-  fKeepAllEvents(keepAllEvents)
+  fKeepAllEvents(keepAllEvents),
+  fMCMode(mcMode)
 {
   // Constructor
 }
@@ -154,6 +157,11 @@ void AliAnalysisTaskESDMuonFilter::PrintTask(Option_t *option, Int_t indent) con
   {
     cout << spaces.Data() << "Keep only events with at least one muon" << endl;
   }
+  
+  if ( fMCMode > 0 ) 
+  {
+    cout << spaces.Data() << "Assuming work on MC data (i.e. will transmit MC branches)" << endl;
+  }
 }
 
 //______________________________________________________________________________
@@ -170,16 +178,29 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
   
   if ( fOnlyMuon ) 
   {    
-    AliAODBranchReplicator* murep = new AliAODMuonReplicator("MuonReplicator",
-                                                             "remove non muon tracks and non primary or pileup vertices",
-                                                             new AliAnalysisNonMuonTrackCuts,
-                                                             new AliAnalysisNonPrimaryVertices);
+    
+    AliAODMuonReplicator* murep = new AliAODMuonReplicator("MuonReplicator",
+                                                           "remove non muon tracks and non primary or pileup vertices",
+                                                           new AliAnalysisNonMuonTrackCuts,
+                                                           new AliAnalysisNonPrimaryVertices,
+                                                           fMCMode);
     
     ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
     
     ext->FilterBranch("tracks",murep);    
     ext->FilterBranch("vertices",murep);  
     ext->FilterBranch("dimuons",murep);
+
+    if ( fMCMode > 0 ) 
+    {
+      // MC branches will be copied (if present), as they are, but only
+      // for events with at least one muon. 
+      // For events w/o muon, mcparticles array will be empty and mcheader will be dummy
+      // (e.g. strlen(GetGeneratorName())==0)
+      
+      ext->FilterBranch("mcparticles",murep);
+      ext->FilterBranch("mcHeader",murep);
+    }
   }  
 }
 

@@ -10,6 +10,9 @@
 #ifndef ALIDAODBRANCHREPLICATOR_H
 #  include "AliAODBranchReplicator.h"
 #endif
+#ifndef ROOT_TExMap
+#  include "TExMap.h"
+#endif
 
 //
 // Implementation of a branch replicator 
@@ -19,19 +22,29 @@
 
 class AliAnalysisCuts;
 class TClonesArray;
+class AliAODMCHeader;
 
 class AliAODMuonReplicator : public AliAODBranchReplicator
 {
 public:
+  
   AliAODMuonReplicator(const char* name="AliAODMuonReplicator", 
                        const char* title="Branch Replicator for muon related branches",
                        AliAnalysisCuts* trackCut=0x0,
-                       AliAnalysisCuts* vertexCut=0x0);
+                       AliAnalysisCuts* vertexCut=0x0,
+                       Int_t mcMode=0);
   virtual ~AliAODMuonReplicator();
   
   virtual TList* GetList() const;
   
   virtual void ReplicateAndFilter(const AliAODEvent& source);
+  
+private:
+  void FilterMC(const AliAODEvent& source);
+  void SelectParticle(Int_t i);
+  Bool_t IsParticleSelected(Int_t i);
+  void CreateLabelMap(const AliAODEvent& source);
+  Int_t GetNewLabel(Int_t i);
   
 private:
   AliAnalysisCuts* fTrackCut; // decides which tracks to keep
@@ -41,11 +54,17 @@ private:
   mutable TClonesArray* fDimuons; //! internal array of dimuons
   mutable TList* fList; //! internal list of managed objects (fVertices and fTracks)
   
+  mutable TClonesArray* fMCParticles; //! internal array of MC particles
+  mutable AliAODMCHeader* fMCHeader; //! internal array of MC header
+  Int_t fMCMode; // MC filtering switch (0=none=no mc information,1=normal=simple copy,>=2=aggressive=filter out)
+  TExMap fLabelMap; //! for MC label remapping (in case of aggressive filtering)
+  TExMap fParticleSelected; //! List of selected MC particles
+
 private:
   AliAODMuonReplicator(const AliAODMuonReplicator&);
   AliAODMuonReplicator& operator=(const AliAODMuonReplicator&);
   
-  ClassDef(AliAODMuonReplicator,2) // Branch replicator for ESD to muon AOD.
+  ClassDef(AliAODMuonReplicator,3) // Branch replicator for ESD to muon AOD.
 };
 
 #endif
