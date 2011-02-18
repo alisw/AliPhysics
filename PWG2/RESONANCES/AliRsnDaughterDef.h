@@ -33,7 +33,7 @@ public:
    Short_t                  GetChargeShort()  const {if (fCharge == '+') return 1; else if (fCharge == '-') return -1; else return 0;}
    AliPID::EParticleType    GetPID()          const {return fPID;}
    AliRsnDaughter::ERefType GetDaughterType() const {return fDaughterType;}
-   const char*              GetName()         const {return Form("%s%c", AliPID::ParticleShortName(fPID), fCharge);}
+   virtual const char*      GetName()         const {return Form("%s%c", AliPID::ParticleShortName(fPID), fCharge);}
 
    // setters
    Bool_t SetDaughter(AliPID::EParticleType pid, Char_t charge);
@@ -41,6 +41,7 @@ public:
    
    // checker
    Bool_t MatchesDaughter(AliRsnDaughter *daughter, Bool_t truePID = kFALSE);
+   Bool_t MatchesPID(Int_t pdgCode, Short_t charge)  {return ((AliPID::ParticleCode(fPID) == pdgCode) && charge == GetChargeShort());}
 
 private:
 

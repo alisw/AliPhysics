@@ -60,6 +60,9 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnAnalysisEffSE.cxx 
            RESONANCES/AliRsnVAnalysisTask.cxx 
            RESONANCES/AliRsnAnalysisTask.cxx 
+           RESONANCES/AliRsnAnalysisTaskEff.cxx 
+           RESONANCES/AliRsnAnalysisTaskEffMonitor.cxx 
+           RESONANCES/AliRsnAnalysisTaskEffPair.cxx 
            RESONANCES/AliRsnMonitorTrack.cxx 
            RESONANCES/AliRsnAnalysisMonitorTask.cxx )
 

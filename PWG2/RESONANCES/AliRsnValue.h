@@ -28,6 +28,12 @@ public:
       kTrackPt,            // single track transverse momentum
       kTrackEta,           // single track pseudo-rapidity
       kTrackY,             // single track rapidity
+      kTrackITSsignal,     // single track ITS signal
+      kTrackTPCsignal,     // single track TPC signal
+      kTrackTOFsignal,     // single track TOF signal
+      kTrackLength,        // single track integrated length
+      kTrackValues,        // --- limitator for track values ---------------------------------------
+      
       kPairP1,             // total momentum of 1st daughter of a pair
       kPairP2,             // total momentum of 2nd daughter of a pair
       kPairP1t,            // total momentum of 1st daughter of a pair
@@ -49,12 +55,13 @@ public:
       kPairCosThetaStar,   // polarization angle
       kPairQInv,           // invariant relative momentum of the two daughters
       kPairAngleToLeading, // angle between the pair momentum and that of the event leading particle
+      kPairValues,         // --- limitator for pair values ----------------------------------------
+      
       kEventLeadingPt,     // transverse momentum of the event leading particle
       kEventMult,          // multiplicity computed as the number of tracks
       kEventMultESDCuts,   // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
       kEventVz,            // Z position of event primary vertex
-
-      kValueTypes          // last value is used to have a meaningless enum value for initializations
+      kValueTypes          // --- last value (used to have a meaningless enum value) ---------------
    };
 
    AliRsnValue();
@@ -81,7 +88,6 @@ public:
    void        Set(EValueType type, Int_t n, Double_t min, Double_t max)       {fValueType = type; AssignTarget(); SetBins(n, min, max);}
    void        Set(EValueType type, Int_t n, Double_t *array)                  {fValueType = type; AssignTarget(); SetBins(n, array);}
    void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {fValueType = type; AssignTarget(); SetBins(min, max, step);}
-
 
    virtual Bool_t  Eval(TObject *object, Bool_t useMC = kFALSE);
    virtual void    Print(Option_t *option = "") const;

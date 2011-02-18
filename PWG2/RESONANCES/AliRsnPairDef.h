@@ -32,6 +32,7 @@ public:
    Int_t                    GetMotherPDG()  const {return fMotherPDG;}
    Double_t                 GetMotherMass() const {return fMotherMass;}
    const char*              GetPairName()   const;
+   virtual const char*	    GetName()       const {return GetPairName();}
    
    AliRsnDaughterDef*       GetDef1()                {return &fDef1;}
    Double_t                 GetMass1()         const {return fDef1.GetMass();}

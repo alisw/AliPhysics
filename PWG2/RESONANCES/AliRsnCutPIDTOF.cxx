@@ -90,7 +90,7 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // reject always non-track objects
-   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   AliVTrack *vtrack = fDaughter->GetRefVtrack();
    if (!vtrack) {
       AliDebug(AliLog::kDebug + 2, Form("Impossible to process an object of type '%s'. Cut applicable only to ESD/AOD tracks", fDaughter->GetRef()->ClassName()));
       return kFALSE;

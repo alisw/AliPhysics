@@ -157,7 +157,7 @@ Bool_t AliRsnCutTrackQuality::IsSelected(TObject *object)
    // as a convention, if a the collection of 'on' flags is '0x0', it
    // is assumed that no flags are required, and this check is skipped;
    // for the collection of 'off' flags this is not needed
-   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   AliVTrack *vtrack = fDaughter->GetRefVtrack();
    if (!vtrack) {
       AliDebug(AliLog::kDebug + 2, Form("This object is not either an ESD nor AOD track, it is an %s", fDaughter->GetRef()->ClassName()));
       return kFALSE;
