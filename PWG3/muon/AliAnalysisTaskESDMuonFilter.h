@@ -18,7 +18,6 @@
 #endif
 
 class AliAnalysisFilter;
-class AliStack;
 
 class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
 {
@@ -45,7 +44,6 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
  private:
     AliAnalysisTaskESDMuonFilter(const AliAnalysisTaskESDMuonFilter&);
     AliAnalysisTaskESDMuonFilter& operator=(const AliAnalysisTaskESDMuonFilter&);
-    void PrintMCInfo(AliStack *pStack,Int_t label); // for debugging
   void AddFilteredAOD(const char* aodfilename, const char* title);
 
   AliAnalysisFilter* fTrackFilter; //  Track Filter

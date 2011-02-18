@@ -49,7 +49,6 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMultiplicity.h"
-#include "AliStack.h"
 #include <TChain.h>
 #include <TFile.h>
 #include <TParticle.h>
@@ -232,14 +231,13 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   AliCodeTimerAuto("",0);
   
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
-  
-  // Fetch Stack for debuggging if available 
-  AliStack *pStack = 0;
-  AliMCEventHandler *mcH = 0;
-  if(MCEvent()){
-    pStack = MCEvent()->Stack();
-    mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
+  if (!esd) 
+  {
+    AliError("Could not get input ESD event");
+    return;    
   }
+  
+  AliMCEventHandler *mcH = static_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
     
   // Define arrays for muons
   Double_t pos[3];
@@ -260,7 +258,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Read primary vertex from AOD event 
   AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
-  if(fDebug)primary->Print();
+  if (fDebug && primary) primary->Print();
   
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
@@ -279,6 +277,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   Int_t nDimuons=0;
   Int_t jDimuons=0;
   Int_t nMuonTrack[100];
+  UChar_t itsClusMap(0);
   
   for(int imuon=0;imuon<100;imuon++) nMuonTrack[imuon]=0;
   
@@ -288,7 +287,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     
     if (!esdMuTrack->ContainTrackerData()) continue;
     
-    UInt_t selectInfo = 0;
+    UInt_t selectInfo(0);
+    
     // Track selection
     if (fTrackFilter) {
      	selectInfo = fTrackFilter->IsSelected(esdMuTrack);
@@ -305,7 +305,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     pos[1] = esdMuTrack->GetBendingCoor(); 
     pos[2] = esdMuTrack->GetZ();
     
-    if(mcH)mcH->SelectParticle(esdMuTrack->GetLabel());
+    if (mcH) mcH->SelectParticle(esdMuTrack->GetLabel()); // to insure that particle's ancestors will be in output MC branches
     
     aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuTrack->GetUniqueID(), // ID
                                                   esdMuTrack->GetLabel(), // label
@@ -315,7 +315,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   kFALSE, // isDCA
                                                   0x0, // covariance matrix
                                                   esdMuTrack->Charge(), // charge
-                                                  0, // ITSClusterMap
+                                                  itsClusMap, // ITSClusterMap
                                                   pid, // pid
                                                   primary, // primary vertex
                                                   kFALSE, // used for vertex fit?
@@ -369,18 +369,18 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   header->SetNumberOfMuons(nMuons);
   header->SetNumberOfDimuons(nDimuons);
   
-  if ( fEnableMuonAOD && ( (nMuons>0) || fKeepAllEvents ) )
+  AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+  
+  if ( handler && fEnableMuonAOD && ( (nMuons>0) || fKeepAllEvents ) )
   {
-    AliAODExtension *extMuons = dynamic_cast<AliAODHandler*>
-    ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Muons.root");
-    extMuons->SelectEvent();
+    AliAODExtension *extMuons = handler->GetFilteredAOD("AliAOD.Muons.root");
+    if ( extMuons ) extMuons->SelectEvent();
   }
   
-  if ( fEnableDimuonAOD && ( (nMuons>1) || fKeepAllEvents )  )
+  if ( handler && fEnableDimuonAOD && ( (nMuons>1) || fKeepAllEvents )  )
   {
-    AliAODExtension *extDimuons = dynamic_cast<AliAODHandler*>
-    ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler())->GetFilteredAOD("AliAOD.Dimuons.root");
-    extDimuons->SelectEvent();
+    AliAODExtension *extDimuons = handler->GetFilteredAOD("AliAOD.Dimuons.root");
+    if ( extDimuons ) extDimuons->SelectEvent();
   }
   
 }
@@ -390,26 +390,4 @@ void AliAnalysisTaskESDMuonFilter::Terminate(Option_t */*option*/)
   // Terminate analysis
   //
   if (fDebug > 1) printf("AnalysisESDfilter: Terminate() \n");
-}
-
-void  AliAnalysisTaskESDMuonFilter::PrintMCInfo(AliStack *pStack,Int_t label)
-{
-  // print mc info
-  if(!pStack)return;
-  label = TMath::Abs(label);
-  TParticle *part = pStack->Particle(label);
-  Printf("########################");
-  Printf("%s:%d %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,label,part->GetUniqueID(),part->GetPdgCode(),part->P());
-  part->Print();
-  TParticle* mother = part;
-  Int_t imo = part->GetFirstMother();
-  Int_t nprim = pStack->GetNprimary();
-  //  while((imo >= nprim) && (mother->GetUniqueID() == 4)) {
-  while((imo >= nprim)) {
-    mother =  pStack->Particle(imo);
-    Printf("Mother %s:%d Label %d UniqueID %d PDG %d P %3.3f",(char*)__FILE__,__LINE__,imo,mother->GetUniqueID(),mother->GetPdgCode(),mother->P());
-    mother->Print();
-    imo =  mother->GetFirstMother();
-  }
-  Printf("########################");
 }
