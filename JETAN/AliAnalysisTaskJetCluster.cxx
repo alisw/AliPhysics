@@ -333,16 +333,17 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       // Create a new branch for jets...
       //  -> cleared in the UserExec....
       // here we can also have the case that the brnaches are written to a separate file
-
+      
       fTCAJetsOut = new TClonesArray("AliAODJet", 0);
       fTCAJetsOut->SetName(fNonStdBranch.Data());
       AddAODBranch("TClonesArray",&fTCAJetsOut,fNonStdFile.Data());
-
+      
    
+      
       fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
       fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
       AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
-
+      
       if(fUseBackgroundCalc){
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	  fAODJetBackgroundOut = new AliAODJetEventBackground();
@@ -896,13 +897,12 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       
       if(tmpPt>fJetOutputMinPt&&fTCAJetsOut){// cut on the non-background subtracted...
 	aodOutJet =  new ((*fTCAJetsOut)[nAodOutJets++]) AliAODJet(tmpRec);
+	aodOutJet->GetRefTracks()->Clear();
 	Double_t area1 = clustSeq.area(sortedJets[j]);
 	aodOutJet->SetEffArea(area1,0);
         fastjet::PseudoJet vecarea=clustSeq.area_4vector(sortedJets[j]);  
         vecareab.SetPxPyPzE(vecarea.px(),vecarea.py(),vecarea.pz(),vecarea.e());     
 	aodOutJet->SetVectorAreaCharged(&vecareab);
-
-
       }
 
 
@@ -924,16 +924,16 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
       fh2PtNchN->Fill(nCh,tmpPt,constituents.size());
       fh2NConstPt->Fill(tmpPt,constituents.size());
       // loop over constiutents and fill spectrum
-    
-     for(unsigned int ic = 0; ic < constituents.size();ic++){
-       AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
-       fh1PtJetConstRec->Fill(part->Pt());
-       if(aodOutJet){
-	 aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
-       }
-       if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
-     }
-     
+   
+      for(unsigned int ic = 0; ic < constituents.size();ic++){
+	AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
+	fh1PtJetConstRec->Fill(part->Pt());
+	if(aodOutJet){
+	  aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
+	}
+	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
+      }
+      
      // correlation
      Float_t tmpPhi =  tmpRec.Phi();
      Float_t tmpEta =  tmpRec.Eta();
@@ -1250,27 +1250,13 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
      if(tmpPt>fJetOutputMinPt&&fTCAJetsOutRan){
        aodOutJetRan =  new ((*fTCAJetsOutRan)[nAodOutJetsRan++]) AliAODJet(tmpRec);
        Double_t arearan=clustSeqRan.area(sortedJetsRan[j]);
-       
+       aodOutJetRan->GetRefTracks()->Clear();
        aodOutJetRan->SetEffArea(arearan,0);
        fastjet::PseudoJet vecarearan=clustSeqRan.area_4vector(sortedJetsRan[j]);  
        vecarearanb.SetPxPyPzE(vecarearan.px(),vecarearan.py(),vecarearan.pz(),vecarearan.e());
        aodOutJetRan->SetVectorAreaCharged(&vecarearanb);
 
      }
-
-
-
-     
-     for(unsigned int ic = 0; ic < constituents.size();ic++){
-       // AliVParticle *part = (AliVParticle*)recParticles.At(constituents[ic].user_index());
-       // fh1PtJetConstRec->Fill(part->Pt());
-       if(aodOutJetRan){
-	 aodOutJetRan->AddTrack(fRef->At(constituents[ic].user_index()));
-       }
-     }
-      
-
-
 
       // correlation
       Float_t tmpPhi =  tmpRec.Phi();
