@@ -381,7 +381,8 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
-  
+  PostData(1, fHistList); // post data in any case once
+
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -651,6 +652,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
   AliAODJetEventBackground* externalBackground = 0;
   if(!externalBackground&&fBackgroundBranch.Length()){
     externalBackground =  (AliAODJetEventBackground*)(AODEvent()->FindListObject(fBackgroundBranch.Data()));
+    if((!externalBackground)&&fAODExtension)externalBackground = (AliAODJetEventBackground*)(fAODExtension->GetAOD()->FindListObject(fBackgroundBranch.Data()));
     if(!externalBackground)Printf("%s:%d Background branch not found %s",(char*)__FILE__,__LINE__,fBackgroundBranch.Data());;
   }
   //
