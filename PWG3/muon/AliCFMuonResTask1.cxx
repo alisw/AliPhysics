@@ -157,8 +157,6 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     AliMCParticle *mcPart  = (AliMCParticle*) fMCEvent->GetTrack(ipart);
  
     TParticle *part = mcPart->Particle(); 
-    TParticle *part0 = mcPart->Particle();
-    TParticle *part1 = mcPart->Particle();
  
     // Selection of the resonance
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartGenCuts,mcPart)) continue;
@@ -174,14 +172,14 @@ void AliCFMuonResTask1::UserExec(Option_t *)
     // Decays kinematics
 
     Int_t p0 = part->GetDaughter(0);
-    part0 = stack->Particle(p0); 
+    TParticle *part0 = stack->Particle(p0); 
    // selection of the rapidity for first muon
     AliMCParticle *mcpart0 = new AliMCParticle(part0);
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcpart0)) continue;
     Int_t pdg0 = part0->GetPdgCode();
 
     Int_t p1 = part->GetDaughter(1);
-    part1 = stack->Particle(p1);
+    TParticle *part1 = stack->Particle(p1);
    // selection of the rapidity for second muon
     AliMCParticle *mcpart1 = new AliMCParticle(part1);
     if (!fCFManager->CheckParticleCuts(AliCFManager::kPartAccCuts,mcpart1)) continue;
