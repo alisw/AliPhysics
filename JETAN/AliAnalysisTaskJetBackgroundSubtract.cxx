@@ -493,26 +493,15 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
          if(i==0){fh2ShiftEtaLeading->Fill(jet->Eta(),newJet->Eta());
 	   fh2ShiftPhiLeading->Fill(jet->Phi(),newJet->Phi());}}
 
-
+	// set the references 
 	newJet->GetRefTracks()->Clear();
+	TRefArray *refs = jet->GetRefTracks();
+	for(Int_t ir=0;ir<refs->GetEntriesFast();ir++){
+	  AliVParticle *vp = dynamic_cast<AliVParticle*>(refs->At(ir));
+	  if(vp)newJet->AddTrack(vp);
+	}
       }
-
-
-
-
-
-
     }
-
-
-
-    // subtract the background
-    
-
-    // remove jets??
-
-    // sort jets...
-
   }
   PostData(1, fHistList);
 }
