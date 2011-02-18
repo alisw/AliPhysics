@@ -69,6 +69,9 @@ class AliInputEventHandler : public AliVEventHandler {
     {fMixingHandler = mixing;}
     AliInputEventHandler* MixingHandler()
     {return fMixingHandler;}
+    // Parent Handler
+    void SetParentHandler(AliInputEventHandler* parent) {fParentHandler = parent;}
+    AliInputEventHandler* ParentHandler() {return fParentHandler;}
 
  protected:
     void SwitchOffBranches() const;
@@ -83,8 +86,9 @@ class AliInputEventHandler : public AliVEventHandler {
     Bool_t          fNewEvent;     //  New event flag 
     AliVCuts*       fEventCuts;    //  Cuts on the event level
     UInt_t          fIsSelectedResult; //  Selection result
-    AliInputEventHandler* fMixingHandler; // Optionla plugin for mixing 
-    ClassDef(AliInputEventHandler, 5);
+    AliInputEventHandler* fMixingHandler; // Optionla plugin for mixing
+    AliInputEventHandler* fParentHandler; // optional pointer to parent handlers (used in AliMultiInputEventHandler)
+    ClassDef(AliInputEventHandler, 6);
 };
 
 #endif

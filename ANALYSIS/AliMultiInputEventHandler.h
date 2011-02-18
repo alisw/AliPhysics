@@ -29,7 +29,7 @@ public:
    virtual Bool_t  FinishEvent();
    virtual Bool_t  Notify();
    virtual Bool_t  Notify(const char *path);
-
+   virtual UInt_t  IsEventSelected();
    // add input handler
    virtual void                AddInputEventHandler(AliVEventHandler*inHandler);
    AliVEventHandler           *InputEventHandler(const Int_t index);

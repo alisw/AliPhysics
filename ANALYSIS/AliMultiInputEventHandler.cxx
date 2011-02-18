@@ -104,6 +104,9 @@ Bool_t AliMultiInputEventHandler::Init(TTree *tree, Option_t *opt)
    AliInputEventHandler *eh = 0;
    TObjArrayIter next(&fInputHandlers);
    while ((eh = (AliInputEventHandler *) next())) {
+      // using mixing input hadnler from Base class
+      // for me fParentHandler would be better name
+      eh->SetParentHandler(this);
       eh->Init(tree, fAnalysisType);
    }
    AliDebug(AliLog::kDebug + 5, Form("->"));
@@ -245,4 +248,17 @@ Option_t *AliMultiInputEventHandler::GetDataType() const
 {
    // Returns handled data type.
    return gCurrentMultiDataType;
+}
+
+//______________________________________________________________________________
+UInt_t  AliMultiInputEventHandler::IsEventSelected() 
+{
+  // returns if event is selected
+  
+  AliInputEventHandler *firstIH = dynamic_cast<AliInputEventHandler*> (GetFirstInputEventHandler());
+  if (firstIH) {
+    return firstIH->IsEventSelected();
+  }
+  
+  return fIsSelectedResult;
 }
