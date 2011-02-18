@@ -736,13 +736,13 @@ Bool_t AliZDCRawStream::Next()
 	     break;
 	   } 
 	}
-	if(foundMapEntry==kFALSE){
+	if(foundMapEntry==kFALSE && fEvType==7){
 	  AliWarning(Form(" No valid entry in ADC mapping for raw data %d ADCmod. %d ch. %d\n",
 	      fPosition,fADCModule,fADCChannel));
 	}
 
 	// Final checks
-	if(foundMapEntry==kTRUE){
+	if(foundMapEntry==kTRUE && fEvType==7){
 	  if(fSector[0]<1 || fSector[0]>5){
             AliWarning(Form(" No valid detector assignment: %d",fSector[0]));
             fRawReader->AddMajorErrorLog(kInvalidSector);
