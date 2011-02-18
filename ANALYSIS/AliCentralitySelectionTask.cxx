@@ -314,6 +314,13 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutVertex(ana.fHOutVertex)
 {
   // Copy Constructor	
+    for (Int_t i=0; i<(fHighRunN-fLowRunN); i++) {
+	V0MScaleFactor[i]=0.0;
+	SPDScaleFactor[i]=0.0;
+	TPCScaleFactor[i]=0.0;
+	V0MScaleFactorMC[i]=0.0;
+    }
+
 }
  
 //________________________________________________________________________
@@ -574,8 +581,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   
   if(fHtempV0MvsFMD) fCentV0MvsFMD = fHtempV0MvsFMD->GetBinContent(fHtempV0MvsFMD->FindBin((multV0A+multV0C)));
   if(fHtempTKLvsV0M) fCentTKLvsV0M = fHtempTKLvsV0M->GetBinContent(fHtempTKLvsV0M->FindBin(nTracklets));
-  if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin((zem1Energy+zem2Energy)/1000.));
-
+  if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin(zem1Energy+zem2Energy,zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
 
   // ***** Cleaning
   fQuality=0;
@@ -692,7 +698,7 @@ void AliCentralitySelectionTask::ReadCentralityHistos2(TString fCentfilename2)
   owd->cd();
   fHtempV0MvsFMD =  (TH1F*) (fFile2->Get("hmultV0vsmultFMD_all_percentile"));
   fHtempTKLvsV0M  = (TH1F*) (fFile2->Get("hNtrackletsvsmultV0_all_percentile"));
-  fHtempZEMvsZDC  = (TH1F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
+  fHtempZEMvsZDC  = (TH2F*) (fFile2->Get("hEzemvsEzdc_all_percentile"));
 
   if (!fHtempV0MvsFMD) AliWarning(Form("Calibration for V0MvsFMD does not exist in %s", path.Data()));
   if (!fHtempTKLvsV0M) AliWarning(Form("Calibration for TKLvsV0M does not exist in %s", path.Data()));
