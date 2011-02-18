@@ -422,7 +422,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Float_t  zpaEnergy = 0.;          //  ZPA Energy
   Float_t  zem1Energy = 0.;         //  ZEM1 Energy
   Float_t  zem2Energy = 0.;         //  ZEM2 Energy
-  
+  Bool_t   zdcEnergyCal = kFALSE;   // if zdc is calibrated (in pass2)
+
   Int_t    nTracks = 0;             //  no. tracks
   Int_t    nTracklets = 0;          //  no. tracklets
   Int_t    nClusters[6] = {0};      //  no. clusters on 6 ITS layers
@@ -524,13 +525,21 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     
     // ***** ZDC info
     AliESDZDC *esdZDC = esd->GetESDZDC();
-    zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
-    zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
-    znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
-    zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
+    zdcEnergyCal = esdZDC->AliESDZDC::TestBit(AliESDZDC::kEnergyCalibratedSignal);
+    if (zdcEnergyCal) {      
+      zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
+      zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
+      znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
+      zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
+    } else {
+      zncEnergy = (Float_t) (esdZDC->GetZDCN1Energy())/8.;
+      zpcEnergy = (Float_t) (esdZDC->GetZDCP1Energy())/8.;
+      znaEnergy = (Float_t) (esdZDC->GetZDCN2Energy())/8.;
+      zpaEnergy = (Float_t) (esdZDC->GetZDCP2Energy())/8.;
+    }
     zem1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0))/8.;
     zem2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1))/8.;
-    
+  
   }   
   else if(fAnalysisInput.CompareTo("AOD")==0){
     //AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
@@ -578,13 +587,12 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   // ***** outliers
   // **** V0 vs SPD
-  printf("AnalysisCentralitySelectionTask::centrality is %f\n",fCentV0M);
-
   if (IsOutlierV0MSPD(spdCorr, v0Corr, int(fCentV0M))) fQuality  += 2;
   // ***** V0 vs TPC
   if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
   // ***** V0 vs ZDC
-  if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr)) fQuality  += 8;
+  if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) && 
+      (zdcEnergyCal=kFALSE)) fQuality  += 8;
 
   if (esdCent) {
       esdCent->SetQuality(fQuality);
