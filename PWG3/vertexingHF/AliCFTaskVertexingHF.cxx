@@ -437,6 +437,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	}
 	if (!cfVtxHF){
 		AliError("No AliCFVertexingHF initialized");
+  	        delete[] containerInput;
+	        delete[] containerInputMC;
 		return;
 	}
 	
@@ -698,9 +700,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	fHistEventsProcessed->Fill(0);
 
 	delete[] containerInput;
-	containerInput = 0x0;
 	delete[] containerInputMC;
-	containerInputMC = 0x0;
 	delete cfVtxHF;
 
 }
