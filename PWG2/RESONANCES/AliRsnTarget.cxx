@@ -30,54 +30,33 @@ Bool_t AliRsnTarget::TargetOK(TObject *object)
 // This method compares the target type stored as data member
 // with the type of the object passed as argument, and returns
 // kTRUE or kFALSE depending if they match or not.
+// This check is done by comparing the object class type with
+// one of the allowed types
 //
 
    // fails by default if a NULL pointer is passed
-   if (!object) {
-      AliError("Object is NULL");
-      return kFALSE;
+   if (!object) return kFALSE;
+   
+   // reset local pointers and then initialize
+   // only the right one by static cast, if found
+   fDaughter = 0x0;
+   fMother   = 0x0;
+   fEvent    = 0x0;
+   if (object->IsA() == AliRsnDaughter::Class() && fTargetType == kDaughter) {
+      fDaughter = static_cast<AliRsnDaughter*>(object);
+      return kTRUE;
    }
-
-   // checks if the object is correct by dynamic casting
-   switch (fTargetType) {
-      case kDaughter:
-         fDaughter = dynamic_cast<AliRsnDaughter*>(object);
-         fMother   = 0x0;
-         fEvent    = 0x0;
-         if (fDaughter)
-            return kTRUE;
-         else {
-            AliError(Form("[%s] Target mismatch: expected 'AliRsnDaughter', passed '%s'", GetName(), object->ClassName()));
-            Print();
-            return kFALSE;
-         }
-      case kMother:
-         fDaughter = 0x0;
-         fMother   = dynamic_cast<AliRsnMother*>(object);
-         fEvent    = 0x0;
-         if (fMother)
-            return kTRUE;
-         else {
-            AliError(Form("[%s] Target mismatch: expected 'AliRsnMother', passed '%s'", GetName(), object->ClassName()));
-            Print();
-            return kFALSE;
-         }
-      case kEvent:
-         fDaughter = 0x0;
-         fMother   = 0x0;
-         fEvent    = dynamic_cast<AliRsnEvent*>(object);
-         if (fEvent)
-            return kTRUE;
-         else {
-            AliError(Form("[%s] Target mismatch: expected 'AliRsnEvent', passed '%s'", GetName(), object->ClassName()));
-            Print();
-            return kFALSE;
-         }
-      default:
-         fDaughter = 0x0;
-         fMother   = 0x0;
-         fEvent    = 0x0;
-         return kFALSE;
+   else if (object->IsA() == AliRsnMother::Class() && fTargetType == kMother) {
+      fMother = static_cast<AliRsnMother*>(object);
+      return kTRUE;
+   }
+   else if (object->IsA() == AliRsnEvent::Class() && fTargetType == kEvent) {
+      fEvent = static_cast<AliRsnEvent*>(object);
+      return kTRUE;
+   }
+   else {
+      AliError(Form("[%s] Target mismatch: expected '%s', passed '%s'", GetName(), GetTargetTypeName(), object->ClassName()));
+      return kFALSE;
    }
 }
 

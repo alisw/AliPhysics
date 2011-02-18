@@ -45,11 +45,13 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
 // Cut checker
 //
 
+   // coherence check
+   // which also fills data member objects
+   if (!TargetOK(object)) return kFALSE;
+
    // retrieve ESD event
-   AliRsnEvent *rsn = dynamic_cast<AliRsnEvent*>(object);
-   if (!rsn) return kFALSE;
-   AliESDEvent *esd = rsn->GetRefESD();
-   AliAODEvent *aod = rsn->GetRefAOD();
+   AliESDEvent *esd = fEvent->GetRefESD();
+   AliAODEvent *aod = fEvent->GetRefAOD();
 
    if (esd) {
       // pile-up check

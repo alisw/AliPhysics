@@ -8,7 +8,11 @@
 //
 
 #include <Riostream.h>
+
 #include "AliESDtrackCuts.h"
+#include "AliESDpid.h"
+#include "AliAODPid.h"
+
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMother.h"
@@ -206,6 +210,10 @@ const char* AliRsnValue::GetValueTypeName() const
       case kTrackPt:            return "SingleTrackPt";
       case kTrackEta:           return "SingleTrackEta";
       case kTrackY:             return "SingleTrackRapidity";
+      case kTrackITSsignal:     return "SingleTrackITSsignal";
+      case kTrackTPCsignal:     return "SingleTrackTPCsignal";
+      case kTrackTOFsignal:     return "SingleTrackTOFsignal";
+      case kTrackLength:        return "SingleTrackLength";
       case kPairP1:             return "PairPtotDaughter1";
       case kPairP2:             return "PairPtotDaughter2";
       case kPairP1t:            return "PairPtDaughter1";
@@ -243,49 +251,12 @@ void AliRsnValue::AssignTarget()
 // in the computation, depending on its type chosen in the enum.
 //
 
-   switch (fValueType) {
-         // track related values
-      case kTrackP:
-      case kTrackPt:
-      case kTrackEta:
-      case kTrackY:
-         SetTargetType(AliRsnTarget::kDaughter); // end of track-related values
-         break;
-         // pair related values
-      case kPairP1:
-      case kPairP2:
-      case kPairP1t:
-      case kPairP2t:
-      case kPairP1z:
-      case kPairP2z:
-      case kPairInvMass:
-      case kPairInvMassMC:
-      case kPairInvMassRes:
-      case kPairPt:
-      case kPairPz:
-      case kPairEta:
-      case kPairMt:
-      case kPairY:
-      case kPairPhi:
-      case kPairPhiMC:
-      case kPairPtRatio:
-      case kPairDipAngle:
-      case kPairCosThetaStar:
-      case kPairQInv:
-      case kPairAngleToLeading:
-         SetTargetType(AliRsnTarget::kMother); // end of pair-related values
-         break;
-         // event related values
-      case kEventLeadingPt:
-      case kEventMult:
-      case kEventMultESDCuts:
-      case kEventVz:
-         SetTargetType(AliRsnTarget::kEvent); // end of event-related values
-         break;
-         // undefined value
-      default:
-         SetTargetType(AliRsnTarget::kTargetTypes); // undefined targets
-   }
+   if (fValueType < kTrackValues)
+      SetTargetType(AliRsnTarget::kDaughter);
+   else if (fValueType < kPairValues)
+      SetTargetType(AliRsnTarget::kMother);
+   else
+      SetTargetType(AliRsnTarget::kEvent); // end of event-related values
 }
 
 //_____________________________________________________________________________
@@ -299,9 +270,25 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
 // and the values must be taken with GetValue().
 //
 
+   // coherence check 
+   // (which also casts object to AliRsnTarget data members)
+   if (!TargetOK(object)) return kFALSE;
+   if (IsAllNull()) {
+      AliError("TargetOK passed but all pointers are NULL");
+      return kFALSE;
+   }
+
    // cast the input to the allowed types
-   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
-   AliRsnMother   *mother   = dynamic_cast<AliRsnMother*>(object);
+   AliRsnDaughter *daughter = fDaughter;
+   AliRsnMother   *mother   = fMother;
+   AliESDtrack    *esdt     = 0x0;
+   AliAODTrack    *aodt     = 0x0;
+   
+   // conditional initializations
+   if (daughter) {
+      esdt = daughter->GetRefESDtrack();
+      aodt = daughter->GetRefAODtrack();
+   }
 
    // common variables
    TLorentzVector pRec;   // 4-momentum for single track or pair sum (reco)
@@ -314,30 +301,20 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
    // check that the input object is the correct class type
    switch (fTargetType) {
       case AliRsnTarget::kDaughter:
-         if (daughter) {
-            pRec = daughter->Psim();
-            pSim = daughter->Prec();
-         } else {
-            AliError(Form("[%s] expected: AliRsnDaughter, passed: [%s]", GetName(), object->ClassName()));
-            return kFALSE;
-         }
+         pRec = daughter->Psim();
+         pSim = daughter->Prec();
          break;
       case AliRsnTarget::kMother:
-         if (mother) {
-            pRec  = mother->Sum();
-            pSim  = mother->SumMC();
-            pRec0 = mother->GetDaughter(0)->Prec();
-            pRec1 = mother->GetDaughter(1)->Prec();
-            pSim0 = mother->GetDaughter(0)->Psim();
-            pSim1 = mother->GetDaughter(1)->Psim();
-         } else {
-            AliError(Form("[%s] expected: AliRsnMother, passed: [%s]", GetName(), object->ClassName()));
-            return kFALSE;
-         }
+         pRec  = mother->Sum();
+         pSim  = mother->SumMC();
+         pRec0 = mother->GetDaughter(0)->Prec();
+         pRec1 = mother->GetDaughter(1)->Prec();
+         pSim0 = mother->GetDaughter(0)->Psim();
+         pSim1 = mother->GetDaughter(1)->Psim();
          break;
       case AliRsnTarget::kEvent:
          if (!AliRsnTarget::GetCurrentEvent()) {
-            AliError(Form("[%s] expected: AliRsnEvent, passed: [%s]", GetName(), object->ClassName()));
+            AliError(Form("[%s] current event not initialized", GetName()));
             return kFALSE;
          }
          break;
@@ -347,9 +324,14 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
    }
 
    // cast the support object to the types which could be needed
-   AliESDtrackCuts   *esdCuts     = dynamic_cast<AliESDtrackCuts*>(fSupportObject);
-   AliRsnPairDef     *pairDef     = dynamic_cast<AliRsnPairDef*>(fSupportObject);
-   AliRsnDaughterDef *daughterDef = dynamic_cast<AliRsnDaughterDef*>(fSupportObject);
+   AliESDtrackCuts   *esdCuts     = 0x0;
+   AliRsnPairDef     *pairDef     = 0x0;
+   AliRsnDaughterDef *daughterDef = 0x0;
+   AliESDpid         *esdPID      = 0x0;
+   if (fSupportObject->InheritsFrom(AliESDtrackCuts  ::Class())) esdCuts     = static_cast<AliESDtrackCuts*>(fSupportObject);
+   if (fSupportObject->InheritsFrom(AliRsnPairDef    ::Class())) pairDef     = static_cast<AliRsnPairDef*>(fSupportObject);
+   if (fSupportObject->InheritsFrom(AliRsnDaughterDef::Class())) daughterDef = static_cast<AliRsnDaughterDef*>(fSupportObject);
+   if (fSupportObject->InheritsFrom(AliESDpid        ::Class())) esdPID      = dynamic_cast<AliESDpid*>(fSupportObject);
 
    // compute value depending on type
    switch (fValueType) {
@@ -373,6 +355,76 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
             pRec.SetXYZM(pRec.X(), pRec.Y(), pRec.Z(), daughterDef->GetMass());
             pSim.SetXYZM(pSim.X(), pSim.Y(), pSim.Z(), daughterDef->GetMass());
             fComputedValue = useMC ? pSim.Rapidity() : pRec.Rapidity();
+         }
+         break;
+      case kTrackITSsignal:
+         if (esdt) {
+            fComputedValue = esdt->GetITSsignal();
+         }
+         else if (aodt) {
+            AliAODPid *pidObj = aodt->GetDetPid();
+            if (pidObj) 
+               fComputedValue = pidObj->GetITSsignal();
+            else {
+               fComputedValue = 1E+10;
+               return kFALSE;
+            }
+         }
+         else {
+            fComputedValue = 1E+10;
+            return kFALSE;
+         }
+         break;
+      case kTrackTPCsignal:
+         if (esdt) {
+            fComputedValue = esdt->GetTPCsignal();
+         }
+         else if (aodt) {
+            AliAODPid *pidObj = aodt->GetDetPid();
+            if (pidObj) 
+               fComputedValue = pidObj->GetTPCsignal();
+            else {
+               fComputedValue = 1E+10;
+               return kFALSE;
+            }
+         }
+         else {
+            fComputedValue = 1E+10;
+            return kFALSE;
+         }
+         break;
+      case kTrackTOFsignal:
+         if (esdt) {
+            if (!esdPID) {
+               AliError(Form("[%s] Required a correctly initialized ESDpid to compute this value with ESDs", GetName()));
+               fComputedValue = 1E+10;
+               return kFALSE;
+            }
+            else
+               fComputedValue = (esdt->GetTOFsignal() - esdPID->GetTOFResponse().GetStartTime(esdt->P()));
+         }
+         else if (aodt) {
+            AliAODPid *pidObj = aodt->GetDetPid();
+            if (pidObj) 
+               fComputedValue = pidObj->GetTOFsignal();
+            else {
+               fComputedValue = 1E+10;
+               return kFALSE;
+            }
+         }
+         else {
+            fComputedValue = 1E+10;
+            return kFALSE;
+         }
+         break;
+      case kTrackLength:
+         if (esdt) {
+            fComputedValue = esdt->GetIntegratedLength();
+         }
+         else {
+            AliError(Form("[%s] Length information not available in AODs", GetName()));
+            fComputedValue = 1E+10;
+            return kFALSE;
          }
          break;
       case kPairP1:

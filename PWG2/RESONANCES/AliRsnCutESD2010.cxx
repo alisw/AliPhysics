@@ -145,9 +145,8 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *object)
 //
 
    // coherence check: require an ESD track
-   AliRsnDaughter *daughter = dynamic_cast<AliRsnDaughter*>(object);
-   if (!daughter) return kFALSE;
-   AliESDtrack *track = daughter->GetRefESDtrack();
+   if (!TargetOK(object)) return kFALSE;
+   AliESDtrack *track = fDaughter->GetRefESDtrack();
    if (!track) return kFALSE;
 
    // if no reference event, skip
