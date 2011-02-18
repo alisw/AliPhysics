@@ -17,6 +17,9 @@
 #include "AliAnalysisTaskSE.h"
 #endif
 
+// #ifndef ALIESDINPUTHANDLER_H
+// #include "AliESDInputHandler.h"
+// #endif
 class AliCDBManager;
 class AliESDEvent;
 class AliESDInputHandler;
@@ -58,6 +61,7 @@ public:
   Bool_t                    RunChanged() const {return fRunChanged;}
   // Configuration
   void                      SetDefaultCDBStorage(const char *dbString="local://$ALICE_ROOT/OCDB");
+  void SetESDhandler(AliESDInputHandler*esdH) {fESDhandler = esdH;}
 
   // Run control
   virtual void              ConnectInputData(Option_t *option = "");

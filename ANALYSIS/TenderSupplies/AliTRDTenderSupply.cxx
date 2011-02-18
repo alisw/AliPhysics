@@ -168,7 +168,10 @@ void AliTRDTenderSupply::SetChamberGain(){
   //
   
   //find previous entry from the UserInfo
-  TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
+  //   TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
+  AliAnalysisManager*mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisTaskSE *task = (AliAnalysisTaskSE*)mgr->GetTasks()->First();
+  TTree *tree=((TChain*)task->GetInputData(0))->GetTree();
   if (!tree) {
   AliError("Tree not found in ESDhandler");
     return;

@@ -209,7 +209,10 @@ void AliTPCTenderSupply::SetSplines()
   //
   //find previous entry from the UserInfo
   //
-  TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
+//   TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
+  AliAnalysisManager*mgr = AliAnalysisManager::GetAnalysisManager();
+  AliAnalysisTaskSE *task = (AliAnalysisTaskSE*)mgr->GetTasks()->First();
+  TTree *tree=((TChain*)task->GetInputData(0))->GetTree();
   if (!tree) {
     AliError("Tree not found in ESDhandler");
     return;
@@ -340,7 +343,10 @@ void AliTPCTenderSupply::SetParametrisation()
   }
 
   //Get the current file to check the reconstruction pass (UGLY, but not stored in ESD... )
-  TFile *file=((TChain*)fTender->GetInputData(0))->GetCurrentFile();
+  AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*> (fTender->GetESDhandler());
+  if (!esdIH) return;
+  TTree *tree= (TTree*)esdIH->GetTree();
+  TFile *file= (TFile*) tree->GetCurrentFile();
   if (!file) {
     AliError("File not found, not changing parametrisation");
     return;

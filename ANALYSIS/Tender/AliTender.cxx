@@ -90,8 +90,12 @@ void AliTender::ConnectInputData(Option_t* option)
 {
 // Connect the input data, create CDB manager.
   if (fDebug > 1) Printf("AliTender::ConnectInputData()\n");
-  AliAnalysisTaskSE::ConnectInputData(option);
-  fESDhandler = dynamic_cast<AliESDInputHandler *>(fInputHandler);
+  
+  if (!fESDhandler) { 
+    AliAnalysisTaskSE::ConnectInputData(option);
+    fESDhandler = dynamic_cast<AliESDInputHandler *>(fInputHandler);
+  }
+  
   if (fESDhandler) {
      fESD = fESDhandler->GetEvent();
   } else {
@@ -126,7 +130,7 @@ void AliTender::UserCreateOutputObjects()
 }
 
 //______________________________________________________________________________
-void AliTender::UserExec(Option_t* /*option*/)
+void AliTender::UserExec(Option_t* option)
 {
 //
 // Execute all supplied analysis of one event. Notify run change via RunChanged().
@@ -154,7 +158,9 @@ void AliTender::UserExec(Option_t* /*option*/)
 
   // Lock CDB
   fCDBkey = fCDB->SetLock(kTRUE, fCDBkey);
-  PostData(1, fESD);
+  
+  TString opt = option;
+  if (!opt.Contains("NoPost")) PostData(1, fESD);
 }
 
 //______________________________________________________________________________
