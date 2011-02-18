@@ -308,6 +308,13 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                   if (particleSpecies == 3 && (TMath::Abs(pdgCode)==211 || TMath::Abs(pdgCode)==321 || TMath::Abs(pdgCode)==2212))
                           return 0;
                 }
+                else
+                {
+                  // if mother not found, accept particle only in case of particleSpecies == 3. To include it in all or no sample is no solution
+                  Printf("WARNING: No mother found for particle %d", part->GetLabel());
+                  if (particleSpecies != 3)
+                    return 0;
+                }
         }
   
   }else if (obj->InheritsFrom("TObjArray")){ // list of AliVParticle
@@ -506,6 +513,8 @@ TObjArray*  AliAnalyseLeadingTrackUE::SortRegions(const AliVParticle* leading, T
 //____________________________________________________________________
 Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
 {
+  if (!obj) // MC
+    return kFALSE;
 
   //Use AliPhysicsSelection to select good events
   if( !obj->InheritsFrom("AliAODInputHandler") ) { // not needed for AOD input 
@@ -515,7 +524,6 @@ Bool_t  AliAnalyseLeadingTrackUE::TriggerSelection(const TObject* obj)
   // TODO for AOD input trigger bit needs to be checked too (is stored in the AOD)
 
   return kTRUE;
-
 }
 
 //____________________________________________________________________
