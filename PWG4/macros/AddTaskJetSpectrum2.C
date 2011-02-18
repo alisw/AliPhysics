@@ -1,4 +1,4 @@
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* bBkg="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Int_t iCl = 0);
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec = "jets",const char* bGen = "jetsAODMC_UA104",const char* nonStdFile="",UInt_t filterMask = 32, Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iEventSelectionMask = 0,Int_t iCl = 0);
 
 
 AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Bool_t kUseAODMC = kFALSE,Int_t iPhysicsSelectionFlag = AliVEvent::kMB,UInt_t iFlag = 0xfffffff, UInt_t iEventSelectionMask = 0,char* back = ""){
@@ -45,7 +45,7 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2Delta(UInt_t filterMask = 32,Boo
 }
 
 
-AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* bBkg,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Int_t iCl)
+AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bGen ,const char* nonStdFile,UInt_t filterMask,Int_t iPhysicsSelectionFlag,UInt_t iEventSelectionMask,Int_t iCl)
 {
   // Creates a jet fider task, configures it and adds it to the analysis manager.
   // Get the pointer to the existing analysis manager via the static access method.
@@ -137,6 +137,9 @@ AliAnalysisTaskJetSpectrum2 *AddTaskJetSpectrum2(const char* bRec,const char* bG
 
    //   pwg4spec->SetDebugLevel(10);
 
+
+   // to fetch the AOD from the AOD extension ouput 
+   if(strlen(nonStdFile))pwg4spec->SetNonStdFile(nonStdFile);
    mgr->AddTask(pwg4spec);
      
    // Create ONLY the output containers for the data produced by the task.
