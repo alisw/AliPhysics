@@ -2666,9 +2666,17 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   fEvent = event;
   // extract correction object for multiplicity dependence of dEdx
   TObjArray * gainCalibArray = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(event->GetRunNumber());
+
+  AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform() ;
+  if (!transform) {
+    AliFatal("Tranformations not in RefitInward");
+    return 0;
+  }
+  transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
+
   TGraphErrors * graphMultDependenceDeDx = 0x0;
-  if (recoParam->GetUseMultiplicityCorrectionDedx() && gainCalibArray) {
+  if (recoParam && recoParam->GetUseMultiplicityCorrectionDedx() && gainCalibArray) {
     if (recoParam->GetUseTotCharge()) {
       graphMultDependenceDeDx = (TGraphErrors *) gainCalibArray->FindObject("TGRAPHERRORS_MEANQTOT_MULTIPLICITYDEPENDENCE_BEAM_ALL");
     } else {
@@ -5847,6 +5855,7 @@ Int_t AliTPCtrackerMI::ReadSeeds(const TFile *inp) {
 Int_t AliTPCtrackerMI::Clusters2Tracks (AliESDEvent *const esd)
 {
   //
+  
   if (fSeeds) DeleteSeeds();
   fEvent = esd;
   Clusters2Tracks();
