@@ -107,7 +107,7 @@ AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a)
   fLengthMax=a.GetLengthMax();
   fInstanceNumber=fgCounter++;
   Char_t name[100];
-  sprintf(name,"hhistoqw_%d",fInstanceNumber);
+  snprintf(name,100, "hhistoqw_%d",fInstanceNumber);
   fHisto = new TH1F(name,"",fgkBins,0.,fgkMaxBin);
   for(Int_t bin=1;bin<=fgkBins;bin++) 
       fHisto->SetBinContent(bin,0.);
@@ -157,7 +157,7 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   fMultSoft=kTRUE;
   
   Char_t fname[1024];
-  sprintf(fname,"%s",gSystem->ExpandPathName(contall));
+  snprintf(fname,1024, "%s",gSystem->ExpandPathName(contall));
   //PH  ifstream fincont(fname);
   fstream fincont(fname,ios::in);
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -193,7 +193,7 @@ Int_t AliQuenchingWeights::InitMult(const Char_t *contall,const Char_t *discall)
   }
   fincont.close();
 
-  sprintf(fname,"%s",gSystem->ExpandPathName(discall));
+  snprintf(fname,1024, "%s",gSystem->ExpandPathName(discall));
   //PH  ifstream findisc(fname); 
   fstream findisc(fname,ios::in); 
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -503,7 +503,7 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   fMultSoft=kFALSE;
   
   Char_t fname[1024];
-  sprintf(fname,"%s",gSystem->ExpandPathName(contall));
+  snprintf(fname, 1024, "%s",gSystem->ExpandPathName(contall));
   //PH  ifstream fincont(fname);
   fstream fincont(fname,ios::in);
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -546,7 +546,7 @@ Int_t AliQuenchingWeights::InitSingleHard(const Char_t *contall,const Char_t *di
   }
   fincont.close();
 
-  sprintf(fname,"%s",gSystem->ExpandPathName(discall));
+  snprintf(fname, 1024, "%s",gSystem->ExpandPathName(discall));
   //PH  ifstream findisc(fname); 
   fstream findisc(fname,ios::in); 
 #if defined(__HP_aCC) || defined(__DECCXX)
@@ -1220,16 +1220,16 @@ Int_t AliQuenchingWeights::SampleEnergyLoss()
   Char_t meddesc[100];
   if(fMultSoft) {
     medvalue=(Int_t)(fQTransport*1000.);
-    sprintf(meddesc,"MS");
+    snprintf(meddesc, 100, "MS");
   } else {
     medvalue=(Int_t)(fMu*1000.);
-    sprintf(meddesc,"SH");
+    snprintf(meddesc, 100, "SH");
   }
 
   for(Int_t ipart=1;ipart<=2;ipart++){
     for(Int_t l=1;l<=4*fLengthMax;l++){
       Char_t hname[100];
-      sprintf(hname,"hDisc-ContQW_%s_%d_%d_%d_%d",meddesc,fInstanceNumber,ipart,medvalue,l);
+      snprintf(hname, 100, "hDisc-ContQW_%s_%d_%d_%d_%d",meddesc,fInstanceNumber,ipart,medvalue,l);
       Double_t len=l/4.;
       Double_t wc = CalcWC(len);
       fHistos[ipart-1][l-1] = new TH1F(hname,hname,fgkBins,0.,fgkMaxBin*wc);
@@ -1345,14 +1345,14 @@ TH1F* AliQuenchingWeights::ComputeQWHisto(Int_t ipart,Double_t medval,Double_t l
   Char_t meddesc[100];
   if(fMultSoft) {
     wc=CalcWC(medval,length);
-    sprintf(meddesc,"MS");
+    snprintf(meddesc, 100, "MS");
   } else {
     wc=CalcWCbar(medval,length);
-    sprintf(meddesc,"SH");
+    snprintf(meddesc, 100, "SH");
   }
 
   Char_t hname[100];
-  sprintf(hname,"hContQWHisto_%s_%d_%d_%d",meddesc,ipart,
+  snprintf(hname, 100, "hContQWHisto_%s_%d_%d_%d",meddesc,ipart,
                 (Int_t)(medval*1000.),(Int_t)length);
 
   TH1F *hist = new TH1F("hist",hname,fgkBins,0.,fgkMaxBin*wc);
@@ -1390,14 +1390,14 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t medval,Double_t 
   Char_t meddesc[100];
   if(fMultSoft) {
     wc=CalcWC(medval,length);
-    sprintf(meddesc,"MS");
+    snprintf(meddesc, 100, "MS");
   } else {
     wc=CalcWCbar(medval,length);
-    sprintf(meddesc,"SH");
+    snprintf(meddesc, 100, "SH");
   }
 
   Char_t hname[100];
-  sprintf(hname,"hContQWHistox_%s_%d_%d_%d",meddesc,ipart,
+  snprintf(hname, 100, "hContQWHistox_%s_%d_%d_%d",meddesc,ipart,
                 (Int_t)(medval*1000.),(Int_t)length);
 
   TH1F *histx = new TH1F("histx",hname,fgkBins,0.,fgkMaxBin);
@@ -1433,13 +1433,13 @@ TH1F* AliQuenchingWeights::ComputeQWHistoX(Int_t ipart,Double_t r) const
 
   Char_t meddesc[100];
   if(fMultSoft) {
-    sprintf(meddesc,"MS");
+    snprintf(meddesc, 100, "MS");
   } else {
-    sprintf(meddesc,"SH");
+    snprintf(meddesc, 100, "SH");
   }
 
   Char_t hname[100];
-  sprintf(hname,"hQWHistox_%s_%d_%.2f",meddesc,ipart,r);
+  snprintf(hname, 100, "hQWHistox_%s_%d_%.2f",meddesc,ipart,r);
   TH1F *histx = new TH1F("histx",hname,fgkBins,0.,fgkMaxBin);
   histx->SetXTitle("x = #Delta E/#omega_{c}");
   if(fMultSoft)
@@ -1495,11 +1495,11 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,Double_
   Char_t name[100];
   Char_t hname[100];
   if(ipart==1){
-    sprintf(name,"Energy Loss Distribution - Quarks;E_{loss} (GeV);#"); 
-    sprintf(hname,"hLossQuarks"); 
+    snprintf(name, 100, "Energy Loss Distribution - Quarks;E_{loss} (GeV);#"); 
+    snprintf(hname,100, "hLossQuarks"); 
   } else {
-    sprintf(name,"Energy Loss Distribution - Gluons;E_{loss} (GeV);#"); 
-    sprintf(hname,"hLossGluons"); 
+    snprintf(name, 100, "Energy Loss Distribution - Gluons;E_{loss} (GeV);#"); 
+    snprintf(hname, 100, "hLossGluons"); 
   }
 
   TH1F *h = new TH1F(hname,name,250,0,250);
@@ -1532,11 +1532,11 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t medval,TH1F *h
   Char_t name[100];
   Char_t hname[100];
   if(ipart==1){
-    sprintf(name,"Energy Loss Distribution - Quarks;E_{loss} (GeV);#"); 
-    sprintf(hname,"hLossQuarks"); 
+    snprintf(name, 100, "Energy Loss Distribution - Quarks;E_{loss} (GeV);#"); 
+    snprintf(hname,100, "hLossQuarks"); 
   } else {
-    sprintf(name,"Energy Loss Distribution - Gluons;E_{loss} (GeV);#"); 
-    sprintf(hname,"hLossGluons"); 
+    snprintf(name,100, "Energy Loss Distribution - Gluons;E_{loss} (GeV);#"); 
+    snprintf(hname, 100, "hLossGluons"); 
   }
 
   TH1F *h = new TH1F(hname,name,250,0,250);
@@ -1559,7 +1559,7 @@ TH1F* AliQuenchingWeights::ComputeELossHisto(Int_t ipart,Double_t r) const
   if(!dummy) return 0;
 
   Char_t hname[100];
-  sprintf(hname,"hELossHistox_%d_%.2f",ipart,r);
+  snprintf(hname, 100, "hELossHistox_%d_%.2f",ipart,r);
   TH1F *histx = new TH1F("histxr",hname,fgkBins,0.,fgkMaxBin);
   for(Int_t i=0;i<100000;i++){
     //if(i % 1000 == 0) cout << "." << flush;
@@ -1675,7 +1675,7 @@ void AliQuenchingWeights::PlotDiscreteWeights(Double_t len,Double_t qm) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"L = %.1f fm",len);
+  snprintf(label, 100, "L = %.1f fm",len);
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark projectile","l");
   l1a->AddEntry(gg,"gluon projectile","l");
@@ -1694,20 +1694,20 @@ void AliQuenchingWeights::PlotContWeights(Int_t itype,Double_t ell) const
   Char_t name[1024];
   if(fMultSoft) {
     if(itype==1)
-      sprintf(title,"Cont. Weight for Multiple Scattering - Quarks");
+      snprintf(title, 1024, "Cont. Weight for Multiple Scattering - Quarks");
     else if(itype==2)
-      sprintf(title,"Cont. Weight for Multiple Scattering - Gluons");
+      snprintf(title, 1024, "Cont. Weight for Multiple Scattering - Gluons");
     else return;
     medvals[0]=4;medvals[1]=1;medvals[2]=0.5;
-    sprintf(name,"ccont-ms-%d",itype);
+    snprintf(name, 1024, "ccont-ms-%d",itype);
   } else {
     if(itype==1)
-      sprintf(title,"Cont. Weight for Single Hard Scattering - Quarks");
+      snprintf(title, 1024, "Cont. Weight for Single Hard Scattering - Quarks");
     else if(itype==2)
-      sprintf(title,"Cont. Weight for Single Hard Scattering - Gluons");
+      snprintf(title, 1024, "Cont. Weight for Single Hard Scattering - Gluons");
     else return;
     medvals[0]=2;medvals[1]=1;medvals[2]=0.5;
-    sprintf(name,"ccont-ms-%d",itype);
+    snprintf(name, 1024, "ccont-ms-%d",itype);
   }
 
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
@@ -1731,21 +1731,21 @@ void AliQuenchingWeights::PlotContWeights(Int_t itype,Double_t ell) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"L = %.1f fm",ell);
+  snprintf(label, 100, "L = %.1f fm",ell);
   l1a->AddEntry(h1,label,"");
   if(fMultSoft) {
-    sprintf(label,"#hat{q} = %.1f GeV^{2}/fm",medvals[0]);
+    snprintf(label, 100, "#hat{q} = %.1f GeV^{2}/fm",medvals[0]);
     l1a->AddEntry(h1,label,"pl");
-    sprintf(label,"#hat{q} = %.1f GeV^{2}/fm",medvals[1]);
+    snprintf(label, 100, "#hat{q} = %.1f GeV^{2}/fm",medvals[1]);
     l1a->AddEntry(h2,label,"pl");
-    sprintf(label,"#hat{q} = %.1f GeV^{2}/fm",medvals[2]);
-    l1a->AddEntry(h3,label,"pl");
+    snprintf(label, 100, "#hat{q} = %.1f GeV^{2}/fm",medvals[2]);
+    l1a->AddEntry(h3, label,"pl");
   } else {
-    sprintf(label,"#mu = %.1f GeV",medvals[0]);
+    snprintf(label, 100, "#mu = %.1f GeV",medvals[0]);
     l1a->AddEntry(h1,label,"pl");
-    sprintf(label,"#mu = %.1f GeV",medvals[1]);
+    snprintf(label, 100, "#mu = %.1f GeV",medvals[1]);
     l1a->AddEntry(h2,label,"pl");
-    sprintf(label,"#mu = %.1f GeV",medvals[2]);
+    snprintf(label, 100, "#mu = %.1f GeV",medvals[2]);
     l1a->AddEntry(h3,label,"pl");
   }
   l1a->Draw();
@@ -1762,18 +1762,18 @@ void AliQuenchingWeights::PlotContWeightsVsL(Int_t itype,Double_t medval) const
   Char_t name[1024];
   if(fMultSoft) {
     if(itype==1)
-      sprintf(title,"Cont. Weight for Multiple Scattering - Quarks");
+      snprintf(title,1024, "Cont. Weight for Multiple Scattering - Quarks");
     else if(itype==2)
-      sprintf(title,"Cont. Weight for Multiple Scattering - Gluons");
+      snprintf(title,1024, "Cont. Weight for Multiple Scattering - Gluons");
     else return;
-    sprintf(name,"ccont2-ms-%d",itype);
+    snprintf(name,1024, "ccont2-ms-%d",itype);
   } else {
     if(itype==1)
-      sprintf(title,"Cont. Weight for Single Hard Scattering - Quarks");
+      snprintf(title, 1024, "Cont. Weight for Single Hard Scattering - Quarks");
     else if(itype==2)
-      sprintf(title,"Cont. Weight for Single Hard Scattering - Gluons");
+      snprintf(title, 1024, "Cont. Weight for Single Hard Scattering - Gluons");
     else return;
-    sprintf(name,"ccont2-sh-%d",itype);
+    snprintf(name, 1024, "ccont2-sh-%d",itype);
   }
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
   c->cd();
@@ -1797,9 +1797,9 @@ void AliQuenchingWeights::PlotContWeightsVsL(Int_t itype,Double_t medval) const
   l1a->SetBorderSize(0);
   Char_t label[100];
   if(fMultSoft)
-    sprintf(label,"#hat{q} = %.1f GeV^{2}/fm",medval);
+    snprintf(label, 100, "#hat{q} = %.1f GeV^{2}/fm",medval);
   else
-    sprintf(label,"#mu = %.1f GeV",medval);
+    snprintf(label, 100, "#mu = %.1f GeV",medval);
 
   l1a->AddEntry(h1,label,"");
   l1a->AddEntry(h1,"L = 8 fm","pl");
@@ -1823,11 +1823,11 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t qm,Double_t e) cons
   Char_t title[1024];
   Char_t name[1024];
   if(fMultSoft){ 
-    sprintf(title,"Average Energy Loss for Multiple Scattering");
-    sprintf(name,"cavgelossms");
+    snprintf(title, 1024, "Average Energy Loss for Multiple Scattering");
+    snprintf(name, 1024, "cavgelossms");
   } else {
-    sprintf(title,"Average Energy Loss for Single Hard Scattering");
-    sprintf(name,"cavgelosssh");
+    snprintf(title, 1024, "Average Energy Loss for Single Hard Scattering");
+    snprintf(name, 1024, "cavgelosssh");
   }
 
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
@@ -1880,7 +1880,7 @@ void AliQuenchingWeights::PlotAvgELoss(Double_t len,Double_t qm,Double_t e) cons
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"L = %.1f fm",len);
+  snprintf(label, 100, "L = %.1f fm",len);
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark projectile","pl");
   l1a->AddEntry(gg,"gluon projectile","pl");
@@ -1903,11 +1903,11 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
   Char_t title[1024];
   Char_t name[1024];
   if(fMultSoft){ 
-    sprintf(title,"Average Energy Loss for Multiple Scattering");
-    sprintf(name,"cavgelossms2");
+    snprintf(title, 1024, "Average Energy Loss for Multiple Scattering");
+    snprintf(name, 1024, "cavgelossms2");
   } else {
-    sprintf(title,"Average Energy Loss for Single Hard Scattering");
-    sprintf(name,"cavgelosssh2");
+    snprintf(title, 1024, "Average Energy Loss for Single Hard Scattering");
+    snprintf(name, 1024, "cavgelosssh2");
   }
 
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
@@ -1959,7 +1959,7 @@ void AliQuenchingWeights::PlotAvgELoss(TH1F *hEll,Double_t e) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"<L> = %.2f fm",hEll->GetMean());
+  snprintf(label, 100, "<L> = %.2f fm",hEll->GetMean());
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark","pl");
   l1a->AddEntry(gg,"gluon","pl");
@@ -1982,12 +1982,12 @@ void AliQuenchingWeights::PlotAvgELossVsL(Double_t e)  const
   Char_t name[1024];
   Float_t medval;
   if(fMultSoft){ 
-    sprintf(title,"Average Energy Loss for Multiple Scattering");
-    sprintf(name,"cavgelosslms");
+    snprintf(title, 1024, "Average Energy Loss for Multiple Scattering");
+    snprintf(name, 1024,  "cavgelosslms");
     medval=fQTransport;
   } else {
-    sprintf(title,"Average Energy Loss for Single Hard Scattering");
-    sprintf(name,"cavgelosslsh");
+    snprintf(title, 1024, "Average Energy Loss for Single Hard Scattering");
+    snprintf(name, 1024,  "cavgelosslsh");
     medval=fMu;
   }
 
@@ -2038,9 +2038,9 @@ void AliQuenchingWeights::PlotAvgELossVsL(Double_t e)  const
   l1a->SetBorderSize(0);
   Char_t label[100];
   if(fMultSoft) 
-    sprintf(label,"#hat{q} = %.2f GeV^{2}/fm",medval);
+    snprintf(label, 100, "#hat{q} = %.2f GeV^{2}/fm",medval);
   else
-    sprintf(label,"#mu = %.2f GeV",medval);
+    snprintf(label, 100, "#mu = %.2f GeV",medval);
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark","pl");
   l1a->AddEntry(gg,"gluon","pl");
@@ -2067,11 +2067,11 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,Double_t len) const
   Char_t title[1024];
   Char_t name[1024];
   if(fMultSoft){
-    sprintf(title,"Relative Energy Loss for Multiple Scattering");
-    sprintf(name,"cavgelossvsptms");
+    snprintf(title, 1024, "Relative Energy Loss for Multiple Scattering");
+    snprintf(name, 1024, "cavgelossvsptms");
   } else {
-    sprintf(title,"Relative Energy Loss for Single Hard Scattering");
-    sprintf(name,"cavgelossvsptsh");
+    snprintf(title, 1024, "Relative Energy Loss for Single Hard Scattering");
+    snprintf(name, 1024, "cavgelossvsptsh");
   }
 
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
@@ -2108,7 +2108,7 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,Double_t len) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"L = %.1f fm",len);
+  snprintf(label, 100, "L = %.1f fm",len);
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark","pl");
   l1a->AddEntry(gg,"gluon","pl");
@@ -2130,11 +2130,11 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const
   Char_t title[1024];
   Char_t name[1024];
   if(fMultSoft){
-    sprintf(title,"Relative Energy Loss for Multiple Scattering");
-    sprintf(name,"cavgelossvsptms2");
+    snprintf(title, 1024, "Relative Energy Loss for Multiple Scattering");
+    snprintf(name,  1024, "cavgelossvsptms2");
   } else {
-    sprintf(title,"Relative Energy Loss for Single Hard Scattering");
-    sprintf(name,"cavgelossvsptsh2");
+    snprintf(title, 1024, "Relative Energy Loss for Single Hard Scattering");
+    snprintf(name,  1024, "cavgelossvsptsh2");
   }
   TCanvas *c = new TCanvas(name,title,0,0,500,400);
   c->cd();
@@ -2170,7 +2170,7 @@ void AliQuenchingWeights::PlotAvgELossVsPt(Double_t medval,TH1F *hEll) const
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
   Char_t label[100];
-  sprintf(label,"<L> = %.2f fm",hEll->GetMean());
+  snprintf(label, 100, "<L> = %.2f fm",hEll->GetMean());
   l1a->AddEntry(gq,label,"");
   l1a->AddEntry(gq,"quark","pl");
   l1a->AddEntry(gg,"gluon","pl");
