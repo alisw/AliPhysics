@@ -48,7 +48,7 @@ ClassImp(AliITSUpgradeReconstructor)
   //
   //ctor
   //
-  
+
   AliITSsegmentationUpgrade *s = new AliITSsegmentationUpgrade();
   fNlayers = s->GetNLayers();
   delete s;
@@ -93,8 +93,8 @@ void AliITSUpgradeReconstructor::SetTreeAddressD(TTree* const treeD){
   Int_t i;
   char branchname[30];
   if(!treeD) return;
-  if (fDigits == 0x0) fDigits = new TObjArray(6);
-  for (i=0; i<6; i++) {
+  if (fDigits == 0x0) fDigits = new TObjArray(fNlayers);
+  for (i=0; i<fNlayers; i++) {
     if(!(fDigits->At(i))) {
       fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade",1000),i);
     }
@@ -113,7 +113,7 @@ void AliITSUpgradeReconstructor::ResetDigits(){
   // Reset number of digits and the digits array for the ITS detector.
 
   if(!fDigits) return;
-  for(Int_t i=0;i<6;i++){
+  for(Int_t i=0;i<fNlayers;i++){
     ResetDigits(i);
   }
 }
@@ -154,21 +154,21 @@ AliTracker* AliITSUpgradeReconstructor::CreateTracker() const
   // 
 
   if(GetRecoParam()->GetTrackerSAOnly()){
-  AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade(fNlayers);
-  if(GetRecoParam()->GetTrackerSAOnly()) trackUp->SetSAFlag(kTRUE);
-  if(trackUp->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
-  if(GetRecoParam()->GetInwardFindingSA()){
-    trackUp->SetInwardFinding();
-    trackUp->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
-  }else{
-    trackUp->SetOutwardFinding();
-    trackUp->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
-  }
-  trackUp->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
-  return trackUp;
+    AliITStrackerUpgrade *trackUp = new AliITStrackerUpgrade(fNlayers);
+    if(GetRecoParam()->GetTrackerSAOnly()) trackUp->SetSAFlag(kTRUE);
+    if(trackUp->GetSAFlag())AliDebug(1,"Tracking Performed in ITS only\n");
+    if(GetRecoParam()->GetInwardFindingSA()){
+      trackUp->SetInwardFinding();
+      trackUp->SetInnerStartLayer(GetRecoParam()->GetInnerStartLayerSA());
+    }else{
+      trackUp->SetOutwardFinding();
+      trackUp->SetOuterStartLayer(GetRecoParam()->GetOuterStartLayerSA());
+    }
+    trackUp->SetMinNPoints(GetRecoParam()->GetMinNPointsSA());
+    return trackUp;
   } else {
-  AliITStrackerU *t = new AliITStrackerU();
-  return t;
+    AliITStrackerU *t = new AliITStrackerU();
+    return t;
   }
 }
 //_______________________________________________________________________

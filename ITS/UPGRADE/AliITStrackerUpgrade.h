@@ -5,7 +5,7 @@
 
 #include "AliITStrackerMI.h"
 #include "AliITSlayerUpgrade.h"
-#include "AliITStrackMI.h"
+#include "AliITStrackU.h"
 
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -40,11 +40,11 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   AliITStrackerUpgrade(const AliITStrackerUpgrade& tracker);
   AliITStrackerUpgrade& operator=(const AliITStrackerUpgrade& source);
   virtual ~AliITStrackerUpgrade();  
- virtual Int_t Clusters2Tracks(AliESDEvent *event);  
- Int_t FindTracks(AliESDEvent* event,Bool_t useAllClusters=kFALSE);
+  virtual Int_t Clusters2Tracks(AliESDEvent *event);  
+  Int_t FindTracks(AliESDEvent* event,Bool_t useAllClusters=kFALSE);
   Int_t PropagateBack(AliESDEvent *event);
-  Int_t CorrectForPipeMaterial(AliITStrackMI *t, TString direction="inward");  
-  Int_t RefitInward(AliESDEvent *event);//{return 0;}
+  Int_t CorrectForPipeMaterial(AliITStrackU *t, TString direction="inward");  
+  Int_t RefitInward(AliESDEvent *event);
   AliCluster *GetCluster(Int_t index) const;
 
   AliITStrackV2* FitTrack(AliITStrackU* tr,Double_t* primaryVertex,Bool_t onePoint=kFALSE);
@@ -77,25 +77,32 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
 
   void SetNlayers(Int_t nlay) {fNLayers = nlay;}
-  
+
  protected:
 
   //Initialization
   void Init();
   void  CreateLayers(Int_t iEvent);
   void ResetForFinding();
+  void ResetTrackToFollow(const AliITStrackU &t) {
+    fTrackToFollow.~AliITStrackU();
+    Bool_t trackMI = kTRUE;
+    new(&fTrackToFollow) AliITStrackU(t,trackMI);
+  }
+
+
   void UpdatePoints();
   Bool_t SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex);
   static Double_t Curvature(Double_t x1,Double_t y1,Double_t x2,Double_t y2,
-                     Double_t x3,Double_t y3);
+			    Double_t x3,Double_t y3);
 
   Double_t ChoosePoint(Double_t p1, Double_t p2, Double_t pp); 
 
   static Int_t   FindIntersection(Float_t a1, Float_t b1, Float_t c1, Float_t c2, 
-                           Float_t& x1,Float_t& y1, Float_t& x2, Float_t& y2);
+				  Float_t& x1,Float_t& y1, Float_t& x2, Float_t& y2);
   static Int_t   FindEquation(Float_t x1, Float_t y1, Float_t x2, Float_t y2, 
-                       Float_t x3, Float_t y3,Float_t& a, Float_t& b, 
-                       Float_t& c);
+			      Float_t x3, Float_t y3,Float_t& a, Float_t& b, 
+			      Float_t& c);
  
   Int_t FindLabel(AliITStrackV2* track) const;
  
@@ -106,11 +113,11 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   void GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz);
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
   void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
-  Bool_t RefitAtBase(Double_t x, AliITStrackMI *track,
-                 const Int_t *clusters);
-  Int_t UpdateMI(AliITStrackMI* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
- Int_t CorrectForLayerMaterial(AliITStrackMI *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
-  Double_t GetPredictedChi2MI(AliITStrackMI* track, const AliITSRecPoint *cluster,Int_t layer);
+  Bool_t RefitAtBase(Double_t x, AliITStrackU *track,
+		     const Int_t *clusters);
+  Int_t UpdateMI(AliITStrackU* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
+  Int_t CorrectForLayerMaterial(AliITStrackU *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
+  Double_t GetPredictedChi2MI(AliITStrackU* track, const AliITSRecPoint *cluster,Int_t layer);
   static Int_t GetError(Int_t layer,const AliITSRecPoint*cl,
                         Float_t tgl,Float_t tgphitr,Float_t expQ,
                         Float_t &erry,Float_t &errz,Float_t &covyz,
@@ -147,6 +154,8 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   Int_t fInnerStartLayer;     // Inward search for tracks with <6 points: inner layer to start from
   Int_t fMinNPoints;        // minimum number of clusters for a track
   Float_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
+  AliITStrackU fTrackToFollow;          
+
   AliITSlayerUpgrade** fLayers;
   AliITSsegmentationUpgrade *fSegmentation;
 
@@ -154,7 +163,7 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   TClonesArray** fCluCoord; //! array with cluster info
 
   ClassDef(AliITStrackerUpgrade,2)
-};
+    };
 
 #endif
 

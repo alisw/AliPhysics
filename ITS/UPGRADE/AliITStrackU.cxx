@@ -22,74 +22,82 @@
 //           cristina.terrevoli@ba.infn.it            //                                                    
 ////////////////////////////////////////////////////////
 
+#include "AliESDtrack.h"
 #include "AliITStrackU.h"
 #include "AliITSsegmentationUpgrade.cxx"
 
 ClassImp(AliITStrackU)
 
 //_____________________________________
-AliITStrackU:: AliITStrackU() : AliITStrackMI(),
-fNU(0),
-fNLayers(0)
+  AliITStrackU:: AliITStrackU() : AliITStrackV2(),
+				  fNLayers(0),
+				  fNU(0),
+				  fExpQ(40)
 {
-// Default constructor  
+  // Default constructor  
   SetNumberOfClusters(0);
   SetNumberOfClustersU(0);
   ResetIndexU();
+  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
   for(Int_t nlay=0;nlay<fNLayers;nlay++){ 
+    fClIndex[nlay]=-1; 
+    fNy[nlay]=0; fNz[nlay]=0; fNormQ[nlay]=0; fNormChi2[nlay]=1000;
     SetNumberOfMarked(nlay,0);
   }
   ResetMarked();
 }
 //_____________________________________
-AliITStrackU:: AliITStrackU(Int_t nlay) : AliITStrackMI(),
-fNU(0),
-fNLayers(nlay)
+AliITStrackU:: AliITStrackU(Int_t nlay) : AliITStrackV2(),
+					  fNLayers(nlay),
+					  fNU(0),
+					  fExpQ(40)
 {
-// Constructor
+  // Constructor
   SetNumberOfClusters(0);
   SetNumberOfClustersU(0);
   ResetIndexU();
+  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
   for(Int_t nl=0;nl<fNLayers;nl++){
+    fClIndex[nl]=-1;
+    fNy[nl]=0; fNz[nl]=0; fNormQ[nl]=0; fNormChi2[nl]=1000;
     SetNumberOfMarked(nl,0);
   }
   ResetMarked();
 }
 
-//___________________________________________________
-AliITStrackU::AliITStrackU(const AliITStrackMI& t) : 
-AliITStrackMI(t),
-fNU(0),
-fNLayers(0)
+//_____________________________________________________
+AliITStrackU::AliITStrackU(AliESDtrack& t,Bool_t c):
+  AliITStrackV2(t,c),
+  fNLayers(0),
+  fNU(0),
+  fExpQ(40)
 {
-//
-// Copy a V2 track into a U track
-// -> to be checked
+  //------------------------------------------------------------------
+  // Copy a V2 track into a U track
+  // -> to be checked
+  //------------------------------------------------------------------
+  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0; }
 
-  SetNumberOfClustersU(0);
-  ResetIndexU();
-  for(Int_t nlay=0;nlay<fNLayers;nlay++){ 
-    SetNumberOfMarked(nlay,0);
+  for(Int_t nlay=0;nlay<fNLayers;nlay++){
+    fClIndex[nlay]=-1; fNy[nlay]=0; fNz[nlay]=0; fNormQ[nlay]=0; fNormChi2[nlay]=1000;  
   }
-  ResetMarked();
-
 }
 //___________________________________________________
-AliITStrackU::AliITStrackU(const AliITStrackU& t) : 
-AliITStrackMI(t),
-fNU(t.fNU),
-fNLayers(t.fNLayers)
+
+AliITStrackU::AliITStrackU(const AliITStrackU& t, Bool_t trackMI) : 
+  AliITStrackV2(t),
+  fNLayers(t.fNLayers),
+  fNU(t.fNU),
+  fExpQ(t.fExpQ)
 {
-//
-// Copy constructor
-// to be checked
+  // Copy constructor
 
   ResetIndexU();
   ResetMarked();
   Int_t number = t.GetNumberOfClustersU();
   SetNumberOfClustersU(number);
-  for(Int_t nlay=0;nlay<fNLayers;nlay++){
-    SetNumberOfMarked(nlay,t.GetNumberOfMarked(nlay));
+  for(Int_t lay=0;lay<fNLayers;lay++){
+    SetNumberOfMarked(lay,t.GetNumberOfMarked(lay));
   }
   for(Int_t i=0;i<number;i++){
     fSain[i]=t.fSain[i];
@@ -98,26 +106,46 @@ fNLayers(t.fNLayers)
     for(Int_t i=0;i<t.GetNumberOfMarked(nlay);i++){
       fCluMark[nlay][i]=t.fCluMark[nlay][i];
     }
+    fClIndex[nlay]= t.fClIndex[nlay]; fNy[nlay]=t.fNy[nlay]; fNz[nlay]=t.fNz[nlay]; fNormQ[nlay]=t.fNormQ[nlay]; fNormChi2[nlay] = t.fNormChi2[nlay];
+  } 
+  
+  //  for(Int_t i=0; i<12; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i];
+  // fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; }
+
+  if(trackMI){
+    fLab = t.fLab;
+    fFakeRatio = t.fFakeRatio;
+    for(Int_t i=0; i<fNLayers; i++) {
+      fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];
+    }
+    for(Int_t i=0; i<12; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i];
+      fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; }
   }
+
 }
+
 //____________________________________________________
 AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab, Int_t nlay ):
-fNU(0), fNLayers(nlay)
+  fNLayers(nlay),
+  fNU(0), 
+  fExpQ(40)
 {
+  
+  for(Int_t i=0; i<fNLayers; i++) { fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; }
   // standard constructor. Used for ITSUpgrade standalone tracking
+
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
+  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
 
   if (alpha<0) alpha+=TMath::TwoPi();
   else if (alpha>=TMath::TwoPi()) alpha-=TMath::TwoPi();
-  Init(alpha,radius,Ycoor,Zcoor,phi,tanlambda,curv,lab);
+  Init(alpha,radius,Ycoor,Zcoor,phi,tanlambda,curv,lab/*,nlay*/);
 }
 //____________________________________________________
-  void AliITStrackU::Init(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab ){
-    // initialize parameters
-
+void AliITStrackU::Init(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab/*, Int_t nlay*/){
+  // initialize parameters
   fdEdx = 0;
-
   Double_t conv=GetBz()*kB2C;
   Double_t sC[] = {0.000009, // 0.000009
                    0.,
@@ -157,7 +185,7 @@ fNU(0), fNLayers(nlay)
 
   SetNumberOfClusters(0);
   SetNumberOfClustersU(0);
-  for(Int_t nlay=0;nlay<fNLayers;nlay++) SetNumberOfMarked(nlay,0);
+  for(Int_t nl=0;nl<fNLayers;nl++) SetNumberOfMarked(nl,0);
   ResetIndexU();
   ResetMarked();
   SetChi2(0);
@@ -184,7 +212,7 @@ void AliITStrackU::AddClusterU(Int_t layer, Int_t clnumb) {
 void AliITStrackU::AddClusterMark(Int_t layer, Int_t clnumb) {
   // add one clusters to the list (maximum number=kMaxNumberOfClusters)
   Int_t presnum = GetNumberOfMarked(layer);
-    //printf("presnum=%d\n",presnum);
+  //printf("presnum=%d\n",presnum);
   if(presnum>=kMaxNumberOfClustersL){
     Warning("AddClusterMark","Maximum number of clusters already reached. Nothing is done\n");
     return;
@@ -202,7 +230,7 @@ void AliITStrackU::AddClusterV2(Int_t layer,Int_t clnumb) {
   if(presnum>=fNLayers){
     Warning("AddClusterV2","Maximum number of clusters already reached. Nothing is done\n");
     return;
-   }    
+  }    
 
   fIndex[presnum] = (layer<<28)+clnumb;  
   presnum++;
@@ -217,4 +245,31 @@ void AliITStrackU::ResetMarked(){
     for(Int_t k=0; k<kMaxNumberOfClustersL; k++) fCluMark[nlay][k]=0;
   }
 }
+//_____________________________________________________________
+Double_t AliITStrackU::GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t covyz) const
+{
+  //-----------------------------------------------------------------
+  // This function calculates a predicted chi2 increment.
+  //-----------------------------------------------------------------
+  Double_t p[2]={cy, cz};
+  Double_t cov[3]={cerry*cerry, covyz, cerrz*cerrz};
+  return AliExternalTrackParam::GetPredictedChi2(p,cov);
+}
 
+//____________________________________________________________________________
+Bool_t AliITStrackU::UpdateMI(const AliCluster *c, Double_t chi2, Int_t index) {
+  //------------------------------------------------------------------
+  //This function updates track parameters
+  //------------------------------------------------------------------
+  Double_t dy=c->GetY() - GetY(), dz=c->GetZ() - GetZ();
+  Int_t layer = (index & 0xf0000000) >> 28;
+  fDy[layer] = dy;
+  fDz[layer] = dz;
+  fSigmaY[layer] = TMath::Sqrt(c->GetSigmaY2()+GetSigmaY2());
+  fSigmaZ[layer] = TMath::Sqrt(c->GetSigmaZ2()+GetSigmaZ2());
+  fSigmaYZ[layer] = c->GetSigmaYZ()+GetSigmaZY();
+
+
+  return Update(c,chi2,index);
+}
+ 

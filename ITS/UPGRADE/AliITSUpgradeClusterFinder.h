@@ -101,6 +101,8 @@ class AliITSUpgradeClusterFinder :public TObject{
   AliITSUpgradeClusterList fClusterList[8]; // cluster container
   TObjArray *fChargeArray;  // charge identifier
   TClonesArray *fRecPoints; // used to fill treeR
+  
+  Int_t fNlayers;//number of layer in ITSUpgrade
 
   AliITSUpgradeClusterFinder(const AliITSUpgradeClusterFinder &source); // copy constructor
   // assignment operator
