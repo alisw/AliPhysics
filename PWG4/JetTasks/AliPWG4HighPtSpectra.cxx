@@ -315,32 +315,34 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     {   
       if(!fESD->GetTrack(iTrack) ) continue;
       AliESDtrack* track = fESD->GetTrack(iTrack);
-      if(!(AliExternalTrackParam *)track->GetTPCInnerParam()) continue;
-      AliExternalTrackParam *trackTPC = (AliExternalTrackParam *)track->GetTPCInnerParam();
-      //fTrackType==1 use constrained TPConly track
-      AliESDtrack* trackTPCESD = fTrackCutsTPConly->GetTPCOnlyTrack(fESD, track->GetID());
-      if(fTrackType==1) {
+      AliESDtrack* trackTPCESD = fESD->GetTrack(iTrack);
+      if(fTrackType==0)
+	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
+      else if(fTrackType==1) {
+	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
 	if(!trackTPCESD) {
 	  delete trackTPCESD;
 	  continue;
 	}
-	AliExternalTrackParam exParam;
-	Bool_t relate = trackTPCESD->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
-	if( !relate ) {
-	  delete track;
-	  continue;
-	}
-	trackTPCESD->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
-
-
+      AliExternalTrackParam exParam;
+      Bool_t relate = trackTPCESD->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+      if( !relate ) {
+	delete trackTPCESD;
+	continue;
       }
+      trackTPCESD->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+      }
+      else
+	trackTPCESD = track;
+    
       if(!trackTPCESD) {
 	delete trackTPCESD;
 	continue;
       }
-
-
-      if(!track || !trackTPC) continue;
+      if(!track) {
+	delete trackTPCESD;
+	continue;
+      }
 
 
       //fill the container
@@ -355,14 +357,17 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
       if(trackTPCESD) {
 	if (fTrackCutsTPConly->AcceptTrack(trackTPCESD)) {
-	  if(trackTPC->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
-	  if(trackTPC->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+	  if(trackTPCESD->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
+	  if(trackTPCESD->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
 
 	  //Only fill the MC containers if MC information is available
 	  if(fMC) {
 	    Int_t label = TMath::Abs(track->GetLabel());
 	    TParticle *particle = fStack->Particle(label) ;
-	    if(!particle) continue;
+	    if(!particle) {
+	      delete trackTPCESD;
+	      continue;
+	    }
 	    
 	    containerInputTPConlyMC[0] = particle->Pt();      
 	    containerInputTPConlyMC[1] = particle->Phi();      
@@ -391,8 +396,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	if(fMC) {
 	  Int_t label = TMath::Abs(track->GetLabel());
 	  TParticle *particle = fStack->Particle(label) ;
-	  if(!particle) continue;
-
+	  if(!particle) {
+	    delete trackTPCESD;
+	    continue;
+	  }
 	  containerInputRecMC[0] = particle->Pt();      
 	  containerInputRecMC[1] = particle->Phi();      
 	  containerInputRecMC[2] = particle->Eta();  
