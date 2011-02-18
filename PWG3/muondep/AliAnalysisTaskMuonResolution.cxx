@@ -215,8 +215,10 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     fResiduals->AddAtAndExpand(h2, kResidualPerChClusterOut+ia);
     
     h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -maxRes, maxRes);
+    for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterIn+ia);
     h2 = new TH2F(Form("hResidual%sPerHalfCh_ClusterOut",axes[ia]), Form("cluster-track residual-%s distribution per half chamber (cluster not attached to the track);half chamber ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, -2.*maxRes, 2.*maxRes);
+    for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kResidualPerHalfChClusterOut+ia);
     
     h2 = new TH2F(Form("hResidual%sPerDE_ClusterIn",axes[ia]), Form("cluster-track residual-%s distribution per DE (cluster not attached to the track);DE ID;#Delta_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, -maxRes, maxRes);
@@ -229,6 +231,7 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     h2 = new TH2F(Form("hTrackRes%sPerCh",axes[ia]), Form("track #sigma_{%s} per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, 0., maxRes);
     fResiduals->AddAtAndExpand(h2, kTrackResPerCh+ia);
     h2 = new TH2F(Form("hTrackRes%sPerHalfCh",axes[ia]), Form("track #sigma_{%s} per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, 0., maxRes);
+    for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kTrackResPerHalfCh+ia);
     h2 = new TH2F(Form("hTrackRes%sPerDE",axes[ia]), Form("track #sigma_{%s} per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, 0., maxRes);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
@@ -237,6 +240,7 @@ void AliAnalysisTaskMuonResolution::UserCreateOutputObjects()
     h2 = new TH2F(Form("hMCS%sPerCh",axes[ia]), Form("MCS %s-dispersion of extrapolated track per Ch;chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 10, 0.5, 10.5, nBins, 0., 0.2);
     fResiduals->AddAtAndExpand(h2, kMCSPerCh+ia);
     h2 = new TH2F(Form("hMCS%sPerHalfCh",axes[ia]), Form("MCS %s-dispersion of extrapolated track per half Ch;half chamber ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), 20, 0.5, 20.5, nBins, 0., 0.2);
+    for (Int_t i = 0; i < 10; i++) { h2->GetXaxis()->SetBinLabel(2*i+1, Form("%d-I",i+1)); h2->GetXaxis()->SetBinLabel(2*i+2, Form("%d-O",i+1)); }
     fResiduals->AddAtAndExpand(h2, kMCSPerHalfCh+ia);
     h2 = new TH2F(Form("hMCS%sPerDE",axes[ia]), Form("MCS %s-dispersion of extrapolated track per DE;DE ID;#sigma_{%s} (cm)",axes[ia],axes[ia]), fNDE, 0.5, fNDE+0.5, nBins, 0., 0.2);
     for (Int_t i = 1; i <= fNDE; i++) h2->GetXaxis()->SetBinLabel(i, Form("%d",fDEIds[i]));
@@ -458,11 +462,10 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
 	  Double_t dZWithPrevious = (previousTrackParam) ? TMath::Abs(previousTrackParam->GetClusterPtr()->GetZ() - cluster->GetZ()) : FLT_MAX;
 	  Int_t previousChId = (previousTrackParam) ? previousTrackParam->GetClusterPtr()->GetChamberId() : -1;
 	  Double_t dZWithNext = (nextTrackParam) ? TMath::Abs(nextTrackParam->GetClusterPtr()->GetZ() - cluster->GetZ()) : FLT_MAX;
-	  AliMUONTrackParam* startingTrackParam = 0x0;
-	  if ((fExtrapMode == 0 && dZWithPrevious < dZWithNext) ||
+	  AliMUONTrackParam* startingTrackParam = (nextTrackParam) ? nextTrackParam : previousTrackParam;
+	  if ((fExtrapMode == 0 && previousTrackParam && dZWithPrevious < dZWithNext) ||
 	      (fExtrapMode == 1 && previousTrackParam && !(chId/2 == 2 && previousChId/2 == 1) &&
 	       !(chId/2 == 3 && previousChId/2 == 2))) startingTrackParam = previousTrackParam;
-	  else startingTrackParam = nextTrackParam;
 	  
 	  // reset current parameters
 	  currentTrackParam.SetParameters(startingTrackParam->GetParameters());
@@ -972,8 +975,22 @@ void AliAnalysisTaskMuonResolution::Terminate(Option_t *)
       
     }
     
-    // set graph labels
-    TAxis* xAxis = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->GetXaxis();
+    // set half-chamber graph labels
+    TAxis* xAxis = ((TH2F*)fResiduals->UncheckedAt(kResidualPerHalfChClusterIn+ia))->GetXaxis();
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia))->GetXaxis()->Set(20, 0.5, 20.5);
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia))->GetXaxis()->Set(20, 0.5, 20.5);
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerHalfChSigma+ia))->GetXaxis()->Set(20, 0.5, 20.5);
+    ((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerHalfCh+ia))->GetXaxis()->Set(20, 0.5, 20.5);
+    for (Int_t i = 1; i <= 20; i++) {
+      const char* label = xAxis->GetBinLabel(i);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterIn+ia))->GetXaxis()->SetBinLabel(i, label);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerHalfChMeanClusterOut+ia))->GetXaxis()->SetBinLabel(i, label);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerHalfChSigma+ia))->GetXaxis()->SetBinLabel(i, label);
+      ((TGraphErrors*)fChamberRes->UncheckedAt(kClusterResPerHalfCh+ia))->GetXaxis()->SetBinLabel(i, label);
+    }
+    
+    // set DE graph labels
+    xAxis = ((TH2F*)fResiduals->UncheckedAt(kResidualPerDEClusterOut+ia))->GetXaxis();
     ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterIn+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     ((TGraphErrors*)fChamberRes->UncheckedAt(kResidualPerDEMeanClusterOut+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
     ((TGraphErrors*)fChamberRes->UncheckedAt(kCombinedResidualPerDESigma+ia))->GetXaxis()->Set(fNDE, 0.5, fNDE+0.5);
