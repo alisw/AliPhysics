@@ -210,7 +210,9 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
     
     if ( stationType != AliMp::kStationTrigger )
     {
-      ApplyResponseToTrackerDigit(*digit,kAddNoise);
+      Bool_t addNoise = kAddNoise;
+      if (digit->IsConverted()) addNoise = kFALSE; // No need to add extra noise to a converted real digit
+      ApplyResponseToTrackerDigit(*digit,addNoise);
     }
 
     if ( digit->ADC() > 0  || digit->Charge() > 0 )

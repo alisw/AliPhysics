@@ -573,7 +573,6 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
   while ( ( sdigit = static_cast<AliMUONDigit*>(next()) ) )
   {
     sdigit->Calibrated(kFALSE);
-    sdigit->ChargeInFC();
   }
   
   treeS->Fill();

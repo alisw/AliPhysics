@@ -60,6 +60,8 @@ AliMUONDigitStoreV2S::AddConcreteDigit(TClonesArray& a,
     AliMUONDigit d(digit.DetElemId(),digit.ManuId(),digit.ManuChannel(),digit.Cathode());
     d.SetCharge(digit.Charge());
     d.SetADC(digit.ADC());
+    d.SetPadXY(digit.PadX(),digit.PadY());
+    d.ChargeInFC();
     d.Converted();
     return new(a[index]) AliMUONDigit(d);
   }
