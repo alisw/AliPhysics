@@ -92,7 +92,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F    *fHtempCL1;           // histogram with centrality vs multiplicity using clusters in layer 0
   TH1F    *fHtempV0MvsFMD;           // histogram with centrality vs multiplicity using V0 vs FMD   
   TH1F    *fHtempTKLvsV0M;           // histogram with centrality vs multiplicity using tracklets vs V0
-  TH1F    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
+  TH2F    *fHtempZEMvsZDC;           // histogram with centrality vs multiplicity using ZEM vs ZDC 
 
   TList   *fOutputList; // output list
   
@@ -133,7 +133,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;        //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 5); 
+  ClassDef(AliCentralitySelectionTask, 6); 
 };
 
 #endif
