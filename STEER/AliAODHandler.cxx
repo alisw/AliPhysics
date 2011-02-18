@@ -112,16 +112,19 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
 AliAODHandler::~AliAODHandler() 
 {
  // Destructor.
-  if (fAODEvent) delete fAODEvent;
-  if(fFileA){
+  
+  delete fAODEvent;
+
+  if (fFileA)
+  {
     // is already handled in TerminateIO
     fFileA->Close();
     delete fFileA;
     fTreeA = 0;
   }
-  if (fTreeA) delete fTreeA;
-  if (fExtensions) {fExtensions->Delete(); delete fExtensions;}
-  if (fFilters)    {fFilters->Delete();    delete fFilters;}
+  delete fTreeA;
+  delete fExtensions;
+  delete fFilters;
 }
 
 //______________________________________________________________________________
@@ -167,8 +170,9 @@ Bool_t AliAODHandler::Init(Option_t* opt)
      while ((filteredAOD=(AliAODExtension*)nextf())) {
         filteredAOD->SetEvent(fAODEvent);
         filteredAOD->Init(option);
-     }   
+     }
   }   
+  
   return kTRUE;
 }
 
@@ -425,6 +429,7 @@ void AliAODHandler::StoreMCParticles(){
 Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
+  
   if(fFillAOD && fFillAODRun && fAODEvent){
       fAODEvent->MakeEntriesReferencable();
       fTreeA->BranchRef();
@@ -432,27 +437,34 @@ Bool_t AliAODHandler::FinishEvent()
   }
 
   if (fFillAOD && fFillAODRun) {      
-      if (fExtensions) {
-	  TIter next(fExtensions);
-	  AliAODExtension *ext;
-	  while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
-      }
-      if (fFilters) {   
-	  TIter nextf(fFilters);
-	  AliAODExtension *ext;
-	  while ((ext=(AliAODExtension*)nextf())) {
+    if (fExtensions) {
+      TIter next(fExtensions);
+      AliAODExtension *ext;
+      while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
+    }
+    if (fFilters) {   
+      TIter nextf(fFilters);
+      AliAODExtension *ext;
+      while ((ext=(AliAODExtension*)nextf())) {
 	      ext->FinishEvent();
-	  }  
-      }       
+      }  
+    }       
   }  
-  if (fIsStandard) fAODEvent->ResetStd();
-  if (fAODEvent) {
-    TClonesArray *mcarray = (TClonesArray*)fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()); 
+  
+  if (fIsStandard) 
+  {
+    fAODEvent->ResetStd();    
+  }
+  
+  if (fAODEvent) 
+  {
+    TClonesArray *mcarray = static_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if(mcarray) mcarray->Delete();
     
-    AliAODMCHeader *mcHeader = (AliAODMCHeader*)fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()); 
+    AliAODMCHeader *mcHeader = static_cast<AliAODMCHeader*>(fAODEvent->FindListObject(AliAODMCHeader::StdBranchName()));
     if(mcHeader) mcHeader->Reset();
   }
+  
   // Reset AOD replication flag
   fAODIsReplicated = kFALSE;
   return kTRUE;
@@ -463,11 +475,20 @@ Bool_t AliAODHandler::Terminate()
 {
   // Terminate 
   AddAODtoTreeUserInfo();
-  if (fExtensions) {
-    TIter next(fExtensions);
-    AliAODExtension *ext;
-    while ((ext=(AliAODExtension*)next())) ext->GetTree()->GetUserInfo()->Add(ext->GetAOD());
-  }  
+  
+  TIter nextF(fFilters);
+  AliAODExtension *ext;
+  while ((ext=static_cast<AliAODExtension*>(nextF())))
+  {
+    ext->AddAODtoTreeUserInfo();
+  }
+
+  TIter nextE(fExtensions);
+  while ((ext=static_cast<AliAODExtension*>(nextE())))
+  {
+    ext->AddAODtoTreeUserInfo();
+  }
+  
   return kTRUE;
 }
 
@@ -483,16 +504,20 @@ Bool_t AliAODHandler::TerminateIO()
     // When closing the file, the tree is also deleted.
     fTreeA = 0;
   }
-  if (fExtensions) {
-    TIter next(fExtensions);
-    AliAODExtension *ext;
-    while ((ext=(AliAODExtension*)next())) ext->TerminateIO();
+  
+  TIter nextF(fFilters);
+  AliAODExtension *ext;
+  while ((ext=static_cast<AliAODExtension*>(nextF())))
+  {
+    ext->TerminateIO();
   }  
-  if (fFilters) {
-    TIter nextf(fFilters);
-    AliAODExtension *ext;
-    while ((ext=(AliAODExtension*)nextf())) ext->TerminateIO();
+
+  TIter nextE(fExtensions);
+  while ((ext=static_cast<AliAODExtension*>(nextE())))
+  {
+    ext->TerminateIO();
   }  
+  
   return kTRUE;
 }
 
@@ -525,93 +550,100 @@ void AliAODHandler::AddAODtoTreeUserInfo()
 //______________________________________________________________________________
 void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filename)
 {
-    // Add a new branch to the aod. Added optional filename parameter if the
-    // branch should be written to a separate file.
-    if (strlen(filename)) {
-       AliAODExtension *ext = AddExtension(filename);
-       ext->AddBranch(cname, addobj);
-       return;
-    } else {
-       // Add branch to all filters
-      if (fFilters) {
-         TIter next(fFilters);
-         AliAODExtension *ext;
-         while ((ext=(AliAODExtension*)next())) ext->AddBranch(cname, addobj);
-      }
-    }
-    TDirectory *owd = gDirectory;
-    if (fFileA) {
-      fFileA->cd();
-    }
-    char** apointer = (char**) addobj;
-    TObject* obj = (TObject*) *apointer;
+  // Add a new branch to the aod. Added optional filename parameter if the
+  // branch should be written to a separate file.
+  
+  if (strlen(filename)) 
+  {
+    AliAODExtension *ext = AddExtension(filename);
+    ext->AddBranch(cname, addobj);
+    return;
+  } 
+  
+  // Add branch to all filters
+  // Add branch to all filters
+  if (fFilters) {
+    TIter next(fFilters);
+    AliAODExtension *ext;
+    while ((ext=(AliAODExtension*)next())) ext->AddBranch(cname, addobj);
+  }
+  
+  TDirectory *owd = gDirectory;
+  if (fFileA) 
+  {
+    fFileA->cd();
+  }
 
-    fAODEvent->AddObject(obj);
- 
-    const Int_t kSplitlevel = 99; // default value in TTree::Branch()
-    const Int_t kBufsize = 32000; // default value in TTree::Branch()
-
-    if (!fTreeA->FindBranch(obj->GetName())) {
-      // Do the same as if we book via 
-      // TTree::Branch(TCollection*)
-      
-      fTreeA->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
-		     kBufsize, kSplitlevel - 1);
-    }
-    owd->cd();
+  char** apointer = (char**) addobj;
+  TObject* obj = (TObject*) *apointer;
+  
+  fAODEvent->AddObject(obj);
+  
+  const Int_t kSplitlevel = 99; // default value in TTree::Branch()
+  const Int_t kBufsize = 32000; // default value in TTree::Branch()
+  
+  if (!fTreeA->FindBranch(obj->GetName())) 
+  {
+    // Do the same as if we book via 
+    // TTree::Branch(TCollection*)
+    
+    fTreeA->Bronch(obj->GetName(), cname, fAODEvent->GetList()->GetObjectRef(obj),
+                   kBufsize, kSplitlevel - 1);
+  }
+  owd->cd();
 }
 
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title)
 {
-// Add an AOD extension with some branches in a different file.
+  // Add an AOD extension with some branches in a different file.
   
-   TString fname(filename);
-   if (!fname.EndsWith(".root")) fname += ".root";
-   if (!fExtensions) {
-      fExtensions = new TObjArray();
-      fExtensions->SetOwner();
-   }   
-   AliAODExtension *ext = (AliAODExtension*)fExtensions->FindObject(fname);
-   if (!ext) {
-      ext = new AliAODExtension(fname, title);
-      fExtensions->Add(ext);
-   }   
-   return ext;
+  TString fname(filename);
+  if (!fname.EndsWith(".root")) fname += ".root";
+  if (!fExtensions) {
+    fExtensions = new TObjArray();
+    fExtensions->SetOwner();
+  }   
+  AliAODExtension *ext = (AliAODExtension*)fExtensions->FindObject(fname);
+  if (!ext) {
+    ext = new AliAODExtension(fname, title);
+    fExtensions->Add(ext);
+  }   
+  return ext;
 }
 
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::GetExtension(const char *filename) const
 {
-// Getter for AOD extensions via file name.
-   if (!fExtensions) return NULL;
-   return (AliAODExtension*)fExtensions->FindObject(filename);
+  // Getter for AOD extensions via file name.
+  if (!fExtensions) return NULL;
+  return (AliAODExtension*)fExtensions->FindObject(filename);
 }   
 
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char *filtername)
 {
-// Add an AOD extension that can write only AOD events that pass a user filter.
-   if (!fFilters) {
-      fFilters = new TObjArray();
-      fFilters->SetOwner();
-   } 
-   AliAODExtension *filter = (AliAODExtension*)fFilters->FindObject(filename);
-   if (!filter) {
-      filter = new AliAODExtension(filename, filtername, kTRUE);
-      fFilters->Add(filter);
-   }
-   return filter;
+  // Add an AOD extension that can write only AOD events that pass a user filter.
+  if (!fFilters) {
+    fFilters = new TObjArray();
+    fFilters->SetOwner();
+  } 
+  AliAODExtension *filter = (AliAODExtension*)fFilters->FindObject(filename);
+  if (!filter) {
+    filter = new AliAODExtension(filename, filtername, kTRUE);
+    fFilters->Add(filter);
+  }
+  return filter;
 }      
 
 //______________________________________________________________________________
 AliAODExtension *AliAODHandler::GetFilteredAOD(const char *filename) const
 {
-// Getter for AOD filters via file name.
-   if (!fFilters) return NULL;
-   return (AliAODExtension*)fFilters->FindObject(filename);
+  // Getter for AOD filters via file name.
+  if (!fFilters) return NULL;
+  return (AliAODExtension*)fFilters->FindObject(filename);
 }   
-   
+
 //______________________________________________________________________________
 void AliAODHandler::SetOutputFileName(const char* fname)
 {
@@ -629,25 +661,35 @@ const char *AliAODHandler::GetOutputFileName()
 //______________________________________________________________________________
 const char *AliAODHandler::GetExtraOutputs() const
 {
-// Get extra outputs as a string separated by commas.
-   static TString eoutputs;
-   eoutputs = "";
-   TObject *obj;
-   if (fExtensions) {
-      TIter next1(fExtensions);
-      while ((obj=next1())) {
-         if (!eoutputs.IsNull()) eoutputs += ",";
-         eoutputs += obj->GetName();
-      }
-   }
-   if (fFilters) {
-      TIter next2(fFilters);
-      while ((obj=next2())) {
-         if (!eoutputs.IsNull()) eoutputs += ",";
-         eoutputs += obj->GetName();
-      }
-   }
-   return eoutputs.Data();
+  // Get extra outputs as a string separated by commas.
+  static TString eoutputs;
+  eoutputs = "";
+  TObject *obj;
+  if (fExtensions) {
+    TIter next1(fExtensions);
+    while ((obj=next1())) {
+      if (!eoutputs.IsNull()) eoutputs += ",";
+      eoutputs += obj->GetName();
+    }
+  }
+  if (fFilters) {
+    TIter next2(fFilters);
+    while ((obj=next2())) {
+      if (!eoutputs.IsNull()) eoutputs += ",";
+      eoutputs += obj->GetName();
+    }
+  }
+  return eoutputs.Data();
+}
+
+//______________________________________________________________________________
+Bool_t AliAODHandler::HasExtensions() const
+{
+  // Whether or not we manage extensions
+  
+  if ( fExtensions && fExtensions->GetEntries()>0 ) return kTRUE;
+  
+  return kFALSE;
 }
 
 //______________________________________________________________________________
@@ -686,386 +728,3 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
 
 }
 
-ClassImp(AliAODExtension)
-
-//-------------------------------------------------------------------------
-//     Support class for AOD extensions. This is created by the user analysis
-//     that requires a separate file for some AOD branches. The name of the 
-//     AliAODExtension object is the file name where the AOD branches will be
-//     stored.
-//-------------------------------------------------------------------------
-
-//______________________________________________________________________________
-AliAODExtension::AliAODExtension() : TNamed(), 
-fAODEvent(0), fTreeE(0), fFileE(0), fNtotal(0), fNpassed(0), 
-fSelected(kFALSE), fRepFiMap(0x0), fRepFiList(0x0), fEnableReferences(kTRUE), fObjectList(0x0)
-{
-  // default ctor
-}
-
-//______________________________________________________________________________
-AliAODExtension::AliAODExtension(const char* name, const char* title, Bool_t isfilter)
-                :TNamed(name,title), 
-                 fAODEvent(0), 
-                 fTreeE(0), 
-                 fFileE(0), 
-                 fNtotal(0), 
-                 fNpassed(0),
-                 fSelected(kFALSE),
-fRepFiMap(0x0),
-fRepFiList(0x0),
-fEnableReferences(kTRUE),
-fObjectList(0x0)
-{
-// Constructor.
-  if (isfilter) {
-    TObject::SetBit(kFilteredAOD);
-    printf("####### Added AOD filter %s\n", name);
-  } else printf("####### Added AOD extension %s\n", name);
-  KeepUnspecifiedBranches();
-}   
-
-//______________________________________________________________________________
-AliAODExtension::~AliAODExtension()
-{
-// Destructor.
-  if(fFileE){
-    // is already handled in TerminateIO
-    fFileE->Close();
-    delete fFileE;
-    fTreeE = 0;
-    fAODEvent = 0;
-  }
-  if (fTreeE) delete fTreeE;
-  if (fRepFiMap) fRepFiMap->DeleteAll();
-  delete fRepFiMap; // the map is owner
-  delete fRepFiList; // the list is not
-  delete fObjectList; // not owner
-}
-
-//______________________________________________________________________________
-void AliAODExtension::AddBranch(const char* cname, void* addobj)
-{
-    // Add a new branch to the aod 
-//    if (IsFilteredAOD()) {
-//       Error("AddBranch", "Not allowed to add branched to filtered AOD's.");
-//       return;
-//    }   
-
-  AliCodeTimerAuto(GetName(),0);
-
-  if (!fAODEvent) {
-    char type[20];
-    gROOT->ProcessLine(Form("TString s_tmp; AliAnalysisManager::GetAnalysisManager()->GetAnalysisTypeString(s_tmp); sprintf((char*)%p, \"%%s\", s_tmp.Data());", type));
-    Init(type);
-  }
-  TDirectory *owd = gDirectory;
-  if (fFileE) {
-    fFileE->cd();
-  }
-  char** apointer = (char**) addobj;
-  TObject* obj = (TObject*) *apointer;
-  
-  fAODEvent->AddObject(obj);
-  
-  TString bname(obj->GetName());
-  
-  if (!fTreeE->FindBranch(bname.Data())) 
-  {
-    Bool_t acceptAdd(kTRUE);
-    
-    if ( TestBit(kDropUnspecifiedBranches) )
-    {
-      // check that this branch is in our list of specified ones...
-      // otherwise do not add it !
-      TIter next(fRepFiMap);
-      TObjString* p;
-      
-      acceptAdd=kFALSE;
-      
-      while ( ( p = static_cast<TObjString*>(next()) ) && !acceptAdd )
-      {
-        if ( p->String() == bname ) acceptAdd=kTRUE;
-      }
-    }
-    
-    if ( acceptAdd ) 
-    {
-      // Do the same as if we book via 
-      // TTree::Branch(TCollection*)
-
-      const Int_t kSplitlevel = 99; // default value in TTree::Branch()
-      const Int_t kBufsize = 32000; // default value in TTree::Branch()
-            
-      fTreeE->Bronch(bname.Data(), cname, fAODEvent->GetList()->GetObjectRef(obj),
-                     kBufsize, kSplitlevel - 1);
-    }
-  }
-  owd->cd();
-}
-
-//______________________________________________________________________________
-Bool_t AliAODExtension::FinishEvent()
-{
-// Fill current event.
-  fNtotal++;
-  if (!IsFilteredAOD()) {
-    fAODEvent->MakeEntriesReferencable();
-    fTreeE->Fill();
-    return kTRUE;
-  }  
-  // Filtered AOD. Fill only if event is selected.
-  if (!fSelected) return kTRUE;
-
-  TIter next(fRepFiList);
-  
-  AliAODBranchReplicator* repfi;
-
-  while ( ( repfi = static_cast<AliAODBranchReplicator*>(next()) ) )
-  {
-    repfi->ReplicateAndFilter(*fAODEvent);
-  }
-  fNpassed++;
-  fTreeE->Fill();
-  fSelected = kFALSE; // so that next event will not be selected unless demanded
-  return kTRUE;
-}  
-
-//______________________________________________________________________________
-Bool_t AliAODExtension::Init(Option_t *option)
-{
-// Initialize IO.
-  AliCodeTimerAuto(GetName(),0);
-  
-  if(!fAODEvent) 
-  {
-    fAODEvent = new AliAODEvent();    
-  }
-  
-  TDirectory *owd = gDirectory;
-  TString opt(option);
-  opt.ToLower();
-  if (opt.Contains("proof")) {
-    // proof
-    // Merging via files. Need to access analysis manager via interpreter.
-    gROOT->ProcessLine(Form("AliAnalysisDataContainer *c_common_out = AliAnalysisManager::GetAnalysisManager()->GetCommonOutputContainer();"));
-    gROOT->ProcessLine(Form("AliAnalysisManager::GetAnalysisManager()->OpenProofFile(c_common_out, \"RECREATE\", \"%s\");", fName.Data()));
-    fFileE = gFile;
-  } else {
-    fFileE = new TFile(GetName(), "RECREATE");
-  }  
-  fTreeE = new TTree("aodTree", "AliAOD tree");
-  
-  delete fObjectList;
-  fObjectList = new TList;
-  fObjectList->SetOwner(kFALSE); // be explicit we're not the owner...
-  TIter next(fAODEvent->GetList());
-  TObject* o;
-  
-  while ( ( o = next() ) )
-  {
-    Bool_t mustKeep(kFALSE);
-    
-    TString test(o->ClassName());
-    test.ToUpper();
-    if (test.Contains("HEADER"))
-    {
-      // do not allow to drop header branch
-      mustKeep=kTRUE;
-    }
-    
-    if ( fRepFiMap && !mustKeep )
-    {
-      TObject* specified = fRepFiMap->FindObject(o->GetName());
-      if (specified)
-      {
-        AliAODBranchReplicator* repfi = dynamic_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(o->GetName()));
-        if ( repfi ) 
-        {        
-          TList* replicatedList = repfi->GetList();
-          if (replicatedList)
-          {
-            AliAODEvent::AssignIDtoCollection(replicatedList);
-            TIter nextRep(replicatedList);
-            TObject* objRep;
-            while ( ( objRep = nextRep() ) )
-            {
-              if (!fObjectList->FindObject(objRep))
-              {
-                fObjectList->Add(objRep);
-              }
-            }
-          }
-          else
-          {
-            AliError(Form("replicatedList from %s is null !",repfi->GetName()));
-          }
-        }
-      }
-      else
-      {
-        if ( !TestBit(kDropUnspecifiedBranches) ) 
-        {
-          // object o will be transmitted to the output AOD, unchanged
-          fObjectList->Add(o);
-        }
-      }
-    } 
-    else
-    {
-      if ( mustKeep || !TestBit(kDropUnspecifiedBranches) )
-      {
-        // object o will be transmitted to the output AOD, unchanged
-        fObjectList->Add(o);
-      }
-    }
-  }
-
-  next.Reset();
-  
-  while ( ( o = next() ) )
-  {
-    TObject* out = fObjectList->FindObject(o->GetName());
-    
-    TString status;
-    
-    if ( out != o && out ) 
-    {
-      status = "REPLICATED";      
-    }
-    else if ( out ) 
-    {
-      status = "COPIED AS IS";      
-    }
-    else 
-    {
-      status = "DROPPED";          
-    }
-    
-    AliInfo(Form("OBJECT IN %20s %p -> OUT %p %s",
-                 o->GetName(),o,out,status.Data()));
-  }
-
-  if (fEnableReferences) fTreeE->BranchRef();
-
-  fTreeE->Branch(fObjectList);
-    
-  owd->cd();
-  
-  return kTRUE;
-}
-
-//______________________________________________________________________________
-void AliAODExtension::Print(Option_t* opt) const
-{
-  // Print info about this extension
-  
-  cout << opt << Form("AliAODExtension - %s - %s",GetName(),GetTitle()) << endl;
-  if ( !fEnableReferences ) 
-  {
-    cout << opt << opt << "References are disabled ! Hope you know what you are doing !" << endl;
-  }
-  if ( TestBit(kDropUnspecifiedBranches) )
-  {
-    cout << opt << opt << "All branches not explicitely specified will be dropped" << endl;
-  }
-  
-  TIter next(fRepFiMap);
-  TObjString* s;
-  
-  TString skipped;
-  
-  while ( ( s = static_cast<TObjString*>(next()) ) )
-  {
-    AliAODBranchReplicator* br = static_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(s->String().Data()));
-    if ( !br ) 
-    {
-      skipped += s->String();
-      skipped += ' ';
-    }
-  }
-
-    
-  if ( skipped.Length() )
-  {
-    cout << opt << opt << "Specified branches that will be skipped altogether : " << skipped.Data() << endl;
-  }
-  
-  next.Reset();
-  
-  while ( ( s = static_cast<TObjString*>(next()) ) )
-  {
-    AliAODBranchReplicator* br = static_cast<AliAODBranchReplicator*>(fRepFiMap->GetValue(s->String().Data()));
-    
-    if (br)
-    {
-      cout << opt << opt << "Branch " << s->String() 
-      << " will be filtered by class " << br->ClassName() << endl;
-    }
-  }
-}
-
-//______________________________________________________________________________
-void AliAODExtension::SetEvent(AliAODEvent *event)
-{
-// Connects to an external event
-   if (!IsFilteredAOD()) {
-      Error("SetEvent", "Not allowed to set external event for filtered AOD's");   
-      return;
-   }
-   // Use the copy constructor or assignment operator to synchronize with external event.
-//   AliAODEvent &other = *event;
-//   if (!fAODEvent)     fAODEvent = new AliAODEvent(other);
-//   else if (fSelected) *fAODEvent = other;
-   fAODEvent = event;
-}
-   
-//______________________________________________________________________________
-Bool_t AliAODExtension::TerminateIO()
-{
-  // Terminate IO
-  if (TObject::TestBit(kFilteredAOD))
-    printf("AOD Filter %s: events processed: %d   passed: %d\n", GetName(), fNtotal, fNpassed);
-  else
-    printf("AOD extension %s: events processed: %d\n", GetName(), fNtotal);
-  if (fFileE) {
-    fFileE->Write();
-    fFileE->Close();
-    delete fFileE;
-    fFileE = 0;
-    fTreeE = 0;
-    fAODEvent = 0;
-  }
-  return kTRUE;
-}
-
-//______________________________________________________________________________
-void AliAODExtension::FilterBranch(const char* branchName, AliAODBranchReplicator* repfi)
-{
-  // Specify a filter/replicator for a given branch
-  //
-  // If repfi=0x0, this will disable the branch (in the output) completely.
-  //
-  // repfi is adopted by this class, i.e. user should not delete it.
-  //
-  // WARNING : branch name must be exact.
-  //
-  // See also the documentation for AliAODBranchReplicator class.
-  //
-  
-  if (!fRepFiMap)
-  {
-    fRepFiMap = new TMap;
-    fRepFiMap->SetOwnerKeyValue(kTRUE,kTRUE);
-    fRepFiList = new TList;
-    fRepFiList->SetOwner(kFALSE);
-  }
-  
-  fRepFiMap->Add(new TObjString(branchName),repfi);
-  
-  if (repfi && !fRepFiList->FindObject(repfi))
-  {
-    // insure we get unique and non-null replicators in this list
-    fRepFiList->Add(repfi);
-  }
-}

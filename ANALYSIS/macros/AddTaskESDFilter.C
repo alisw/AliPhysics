@@ -48,7 +48,10 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    mgr->AddTask(esdfilter);
   
    // Muons
-   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
+   Bool_t onlyMuon=kTRUE;
+   Bool_t keepAllEvents=kTRUE;
+   Int_t mcMode=(useKineFilter ? 2 : 0); // use 1 instead of 2 to get all MC information instead of just ancestors of mu tracks
+   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter",onlyMuon,keepAllEvents,mcMode);
    mgr->AddTask(esdmuonfilter);
    if(usePhysicsSelection){
      esdfilter->SelectCollisionCandidates(AliVEvent::kAny);

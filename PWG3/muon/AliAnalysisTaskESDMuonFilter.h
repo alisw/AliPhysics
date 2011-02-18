@@ -23,8 +23,8 @@ class AliStack;
 class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
 {
  public:
-    AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE);
-    AliAnalysisTaskESDMuonFilter(const char* name, Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE);
+    AliAnalysisTaskESDMuonFilter(Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE, Int_t mcMode=0);
+    AliAnalysisTaskESDMuonFilter(const char* name, Bool_t onlyMuon=kTRUE, Bool_t keepAllEvents=kTRUE, Int_t mcMode=0);
     virtual ~AliAnalysisTaskESDMuonFilter() {;}
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -53,8 +53,9 @@ class AliAnalysisTaskESDMuonFilter : public AliAnalysisTaskSE
   Bool_t fEnableDimuonAOD; // flag for enabling Dimuon AOD production
   Bool_t fOnlyMuon; // flag for disabling branches irrelevant for (most) muon analyses
   Bool_t fKeepAllEvents; // keep even events where there's no muons (to get e.g. unbiased vertex distribution)
+  Int_t  fMCMode; // whether and how we're filtering MC data
   
-  ClassDef(AliAnalysisTaskESDMuonFilter, 3); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDMuonFilter, 5); // Analysis task for standard ESD filtering
 };
  
 class AliAnalysisNonMuonTrackCuts : public AliAnalysisCuts

@@ -233,7 +233,10 @@ void AliAODEvent::AddObject(TObject* obj)
   // Please be aware that in order to increase performance you should
   // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
   
-  fAODObjects->AddLast(obj);
+  if ( !fAODObjects->FindObject(obj) ) 
+  {
+    fAODObjects->AddLast(obj);
+  }
 }
 
 //______________________________________________________________________________
@@ -547,9 +550,10 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
       // copy constructor does not work...
     fAODObjects = (TList*)(aodEvent->GetList()->Clone());
     fAODObjects->SetOwner(kTRUE);
-    if(fAODObjects->GetEntries()<kAODListN){
-      printf("%s %d AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d \n",
-             (char*)__FILE__,__LINE__,fAODObjects->GetEntries(),kAODListN);
+    if(fAODObjects->GetEntries()<kAODListN)
+    {
+      AliWarning(Form("AliAODEvent::ReadFromTree() TList contains less than the standard contents %d < %d"
+                      " That might be fine though (at least for filtered AODs)",fAODObjects->GetEntries(),kAODListN));
     }
       //
       // Let's find out whether we have friends
