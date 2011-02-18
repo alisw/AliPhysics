@@ -101,7 +101,7 @@ Bool_t AliRsnCutPIDTPC::IsSelected(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // reject not TPC tracks
-   AliVTrack *vtrack = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   AliVTrack *vtrack = fDaughter->GetRefVtrack();
    if (!vtrack) return kFALSE;
    if (!IsTPC(vtrack)) {
       AliDebug(AliLog::kDebug + 2, "Track is not found in TPC");

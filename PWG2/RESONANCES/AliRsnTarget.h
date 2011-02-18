@@ -35,6 +35,7 @@ public:
    AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; fDaughter = 0x0; fMother = 0x0; fEvent = 0x0; return (*this); }
    virtual ~AliRsnTarget() { /*nothing*/ }
 
+   Bool_t           IsAllNull()                       {return (!fDaughter && !fMother && !fEvent);}
    Bool_t           IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
    ETargetType      GetTargetType() const             {return fTargetType;}
    Char_t           GetTargetTypeChar() const;

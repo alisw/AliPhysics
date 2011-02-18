@@ -43,6 +43,9 @@
 
 #pragma link C++ class AliRsnVAnalysisTask+;
 #pragma link C++ class AliRsnAnalysisTask+;
+#pragma link C++ class AliRsnAnalysisTaskEff+;
+#pragma link C++ class AliRsnAnalysisTaskEffMonitor+;
+#pragma link C++ class AliRsnAnalysisTaskEffPair+;
 
 #pragma link C++ class AliRsnMonitorTrack+;
 #pragma link C++ class AliRsnAnalysisMonitorTask+;

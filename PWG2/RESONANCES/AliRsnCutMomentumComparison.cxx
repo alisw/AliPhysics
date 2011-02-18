@@ -64,17 +64,13 @@ Bool_t AliRsnCutMomentumComparison::IsSelected(TObject *object)
 //
 
    // convert the object into the unique correct type
-   if (!TargetOK(object)) {
-      AliError(Form("[%s]: this cut works only with AliRsnMother objects", GetName()));
-      return kTRUE;
-   }
+   if (!TargetOK(object)) return kFALSE;
 
    // compare momenta
-   AliRsnMother *mother = dynamic_cast<AliRsnMother*>(object);
-   Double_t p1  = mother->GetDaughter(0)->GetRef()->P();
-   Double_t p2  = mother->GetDaughter(1)->GetRef()->P();
-   Double_t pt1 = mother->GetDaughter(0)->GetRef()->Pt();
-   Double_t pt2 = mother->GetDaughter(1)->GetRef()->Pt();
+   Double_t p1  = fMother->GetDaughter(0)->GetRef()->P();
+   Double_t p2  = fMother->GetDaughter(1)->GetRef()->P();
+   Double_t pt1 = fMother->GetDaughter(0)->GetRef()->Pt();
+   Double_t pt2 = fMother->GetDaughter(1)->GetRef()->Pt();
    
    switch (fMode)
    {
