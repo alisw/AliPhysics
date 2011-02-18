@@ -206,8 +206,8 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectra%d",trackType), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectra%d",trackType), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectra%d",trackType), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *cout_cuts0 = mgr->CreateContainer(Form("qa_trackCuts%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  AliAnalysisDataContainer *cout_cuts1 = mgr->CreateContainer(Form("qa_trackCutsTPConly%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  AliAnalysisDataContainer *cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCuts%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  AliAnalysisDataContainer *cout_cuts1 = mgr->CreateContainer(Form("qa_SpectraTrackCutsTPConly%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
 
   mgr->AddTask(taskPWG4HighPtSpectra);
 
