@@ -106,6 +106,10 @@ Bool_t AliRsnPair::Fill
    if (!fPairDef->GetDef1()->MatchesDaughter(daughter1, fOnlyTrue && fCheckDecay)) return kFALSE;
    if (!fPairDef->GetDef2()->MatchesDaughter(daughter2, fOnlyTrue && fCheckDecay)) return kFALSE;
    
+   // if matching is successful
+   // compute 4-momenta of daughters and mother
+   fMother.SetDaughters(daughter1, fPairDef->GetMass1(), daughter2, fPairDef->GetMass2());
+   
    // if required a true pair, check this here and eventually return a fail message
    // this is done using the method AliRsnMother::CommonMother with 2 arguments
    // passed by reference, where the real GEANT label of the particle is stored
@@ -116,10 +120,6 @@ Bool_t AliRsnPair::Fill
       if (m0 < 0 || m1 < 0) return kFALSE;
       if (common != fPairDef->GetMotherPDG()) return kFALSE;
    }
-   
-   // if matching is successful
-   // compute 4-momenta of daughters and mother
-   fMother.SetDaughters(daughter1, fPairDef->GetMass1(), daughter2, fPairDef->GetMass2());
    
    // point to first event as reference
    // and checks the pair cuts,
