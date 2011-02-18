@@ -39,6 +39,19 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    //===========================================================================   
    // Barrel tracks filter
    AliAnalysisTaskESDfilter *esdfilter = new AliAnalysisTaskESDfilter("ESD Filter");
+
+   // Make the AOD a little bit lighter and filtering faster
+   
+   esdfilter->DisableCascades();
+   //   esdfilter->DisableV0s();
+   esdfilter->DisableKinks();
+   //   esdfilter->DisableTracks();
+   esdfilter->DisablePmdClusters();
+   //   esdfilter->DisableCaloClusters();
+   //   esdfilter->DisableCells(); 
+   esdfilter->DisableTracklets();
+
+
    mgr->AddTask(esdfilter);
    // Muons
    //   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
