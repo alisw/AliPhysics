@@ -168,6 +168,9 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   // Connect the AOD
 
   if (fDebug > 1) printf("AnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects() \n");
+
+
+
   if(fNonStdFile.Length()!=0){
     
     // case that we have an AOD extension we need to fetch the jets from the extended output
@@ -211,6 +214,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
 
   if(!fHistList)fHistList = new TList();
   fHistList->SetOwner();
+  PostData(1, fHistList); // post data in any case once
 
   for(int iJB = 0;iJB<fJBArray->GetEntries();iJB++){
     TObjString *ostr = (TObjString*)fJBArray->At(iJB);
