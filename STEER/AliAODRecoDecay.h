@@ -87,8 +87,8 @@ class AliAODRecoDecay : public AliVTrack {
   Double_t Pz() const;
   Double_t P2() const {return Px()*Px()+Py()*Py()+Pz()*Pz();}
   Double_t Pt2() const {return Px()*Px()+Py()*Py();}
-  Double_t P() const {return TMath::Sqrt(Pt2());}
-  Double_t Pt() const {return TMath::Sqrt(P2());}
+  Double_t P() const {return TMath::Sqrt(P2());}
+  Double_t Pt() const {return TMath::Sqrt(Pt2());}
   Double_t OneOverPt() const {return (Pt() ? 1./Pt() : 0.);}
   Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
   Double_t Phi() const {return TMath::Pi()+TMath::ATan2(-Py(),-Px());}
@@ -400,4 +400,5 @@ inline void AliAODRecoDecay::GetPIDProng(Int_t ip,Double_t *pid) const
 
 
 #endif
+
 
