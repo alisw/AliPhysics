@@ -470,9 +470,42 @@ Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc)
 {
   // Retrieve GRP entry for given run from aldaqdb.
 
-  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, "aldaqdb", 0, "LOGBOOK", "logbook", "alice",
-							    Form("local://%s",gSystem->pwd()),
-							    gdc);
+  TString dbHost = gSystem->Getenv("ONLINERECO_DB_HOST");
+  if (dbHost.IsNull())
+  {
+    dbHost = "aldaqdb";
+  }
+
+  TString dbPort = gSystem->Getenv("ONLINERECO_DB_PORT");
+  if (dbPort.IsNull())
+  {
+    dbPort = "0";
+  }
+
+  TString dbName = gSystem->Getenv("ONLINERECO_DB_NAME");
+  if (dbName.IsNull())
+  {
+    dbName = "LOGBOOK";
+  }
+
+  TString user = gSystem->Getenv("ONLINERECO_DB_USER");
+  if (user.IsNull())
+  {
+    user = "logbook";
+  }
+
+  TString password = gSystem->Getenv("ONLINERECO_DB_PASSWORD");
+  if (password.IsNull())
+  {
+    password = "alice";
+  }
+
+  Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, dbHost.Data(),
+							dbPort.Atoi(), dbName.Data(),
+							user.Data(), password.Data(),
+							Form("local://%s",gSystem->pwd()),
+							gdc);
+
   if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
   else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
   else if(ret<0) Error("Retrieve","Error code while retrieving GRP parameters returned: %d",ret);
