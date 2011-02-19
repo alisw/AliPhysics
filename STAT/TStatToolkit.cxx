@@ -279,7 +279,7 @@ void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t v
   }
 }
 
-Double_t  TStatToolkit::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Float_t xmin, Float_t xmax, Bool_t verbose){
+Double_t  TStatToolkit::FitGaus(TH1F* his, TVectorD *param, TMatrixD */*matrix*/, Float_t xmin, Float_t xmax, Bool_t verbose){
   //
   //  Fit histogram with gaussian function
   //  
@@ -357,7 +357,7 @@ Double_t  TStatToolkit::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Fl
   Double_t chi2 = fitter.GetChisquare()/Float_t(npoints);
   //fitter.GetParameters();
   if (!param)  param  = new TVectorD(3);
-  if (!matrix) matrix = new TMatrixD(3,3);
+  // if (!matrix) matrix = new TMatrixD(3,3); // Covariance matrix to be implemented
   (*param)[1] = par[1]/(-2.*par[2]);
   (*param)[2] = 1./TMath::Sqrt(TMath::Abs(-2.*par[2]));
   (*param)[0] = TMath::Exp(par[0]+ par[1]* (*param)[1] +  par[2]*(*param)[1]*(*param)[1]);
@@ -375,7 +375,7 @@ Double_t  TStatToolkit::FitGaus(TH1F* his, TVectorD *param, TMatrixD *matrix, Fl
   return chi2;
 }
 
-Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, TMatrixD *matrix, Bool_t verbose){
+Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, TVectorD *param, TMatrixD */*matrix*/, Bool_t verbose){
   //
   //  Fit histogram with gaussian function
   //  
@@ -473,7 +473,7 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
       if (TMath::Abs(par[2])<kTol) return -4;
 
       if (!param)  param  = new TVectorD(3);
-      if (!matrix) matrix = new TMatrixD(3,3);  // !!!!might be a memory leek. use dummy matrix pointer to call this function!
+      //if (!matrix) matrix = new TMatrixD(3,3);  // !!!!might be a memory leek. use dummy matrix pointer to call this function! // Covariance matrix to be implemented
 
       (*param)[1] = par[1]/(-2.*par[2]);
       (*param)[2] = 1./TMath::Sqrt(TMath::Abs(-2.*par[2]));
@@ -666,7 +666,7 @@ TGraph2D * TStatToolkit::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t
     for (Int_t iy=0; iy<nbiny;iy++){
       Float_t xcenter = xaxis->GetBinCenter(ix); 
       Float_t ycenter = yaxis->GetBinCenter(iy); 
-      sprintf(name,"%s_%d_%d",his->GetName(), ix,iy);
+      snprintf(name,1000,"%s_%d_%d",his->GetName(), ix,iy);
       TH1 *projection = his->ProjectionZ(name,ix-delta0,ix+delta0,iy-delta1,iy+delta1);
       Float_t stat= 0;
       if (type==0) stat = projection->GetMean();
@@ -708,7 +708,7 @@ TGraph * TStatToolkit::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
   for (Int_t ix=0; ix<nbinx;ix++){
     Float_t xcenter = xaxis->GetBinCenter(ix); 
     //    Float_t ycenter = yaxis->GetBinCenter(iy); 
-    sprintf(name,"%s_%d",his->GetName(), ix);
+    snprintf(name,1000,"%s_%d",his->GetName(), ix);
     TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
     Float_t stat= 0;
     if (type==0) stat = projection->GetMean();
@@ -804,7 +804,6 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
-   chi2 = chi2;
    npoints = entries;
 //    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
    
@@ -825,6 +824,198 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    
 
 
+   delete formulaTokens;
+   delete fitter;
+   delete[] values;
+   return preturnFormula;
+}
+
+TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints, TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac, Int_t start, Int_t stop,Double_t constrain){
+   //
+   // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
+   // returns chi2, fitParam and covMatrix
+   // returns TString with fitted formula
+   //
+
+   TString formulaStr(formula); 
+   TString drawStr(drawCommand);
+   TString cutStr(cuts);
+   TString ferr("1");
+
+   TString strVal(drawCommand);
+   if (strVal.Contains(":")){
+     TObjArray* valTokens = strVal.Tokenize(":");
+     drawStr = valTokens->At(0)->GetName();
+     ferr       = valTokens->At(1)->GetName();     
+   }
+
+      
+   formulaStr.ReplaceAll("++", "~");
+   TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
+   Int_t dim = formulaTokens->GetEntriesFast();
+   
+   fitParam.ResizeTo(dim);
+   covMatrix.ResizeTo(dim,dim);
+   
+   TLinearFitter* fitter = new TLinearFitter(dim+1, Form("hyp%d",dim));
+   fitter->StoreData(kTRUE);   
+   fitter->ClearPoints();
+   
+   Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t **values = new Double_t*[dim+1] ; 
+   //
+   entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t *errors = new Double_t[entries];
+   memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
+   
+   for (Int_t i = 0; i < dim + 1; i++){
+      Int_t centries = 0;
+      if (i < dim) centries = tree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
+      else  centries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
+      
+      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      values[i] = new Double_t[entries];
+      memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
+   }
+   
+   // add points to the fitter
+   for (Int_t i = 0; i < entries; i++){
+      Double_t x[1000];
+      for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
+      fitter->AddPoint(x, values[dim][i], errors[i]);
+   }
+   if (constrain>0){
+     for (Int_t i = 0; i < dim; i++){
+       Double_t x[1000];
+       for (Int_t j=0; j<dim;j++) if (i!=j) x[j]=0;
+       x[i]=1.;
+       fitter->AddPoint(x, 0, constrain);
+     }
+   }
+
+
+   fitter->Eval();
+   if (frac>0.5 && frac<1){
+     fitter->EvalRobust(frac);   
+   }
+   fitter->GetParameters(fitParam);
+   fitter->GetCovarianceMatrix(covMatrix);
+   chi2 = fitter->GetChisquare();
+   npoints = entries;
+//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+//    for (Int_t iparam = 0; iparam < dim; iparam++) {
+//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
+//      if (iparam < dim-1) returnFormula.Append("+");
+//    }
+//    returnFormula.Append(" )");
+   
+   TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+   for (Int_t iparam = 0; iparam < dim; iparam++) {
+     returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]));
+     if (iparam < dim-1) returnFormula.Append("+");
+   }
+   returnFormula.Append(" )");
+   
+   
+
+
+   delete formulaTokens;
+   delete fitter;
+   delete[] values;
+   return preturnFormula;
+}
+
+
+
+TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints, TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac, Int_t start, Int_t stop){
+   //
+   // fit an arbitrary function, specified by formula into the data, specified by drawCommand and cuts
+   // returns chi2, fitParam and covMatrix
+   // returns TString with fitted formula
+   //
+
+   TString formulaStr(formula); 
+   TString drawStr(drawCommand);
+   TString cutStr(cuts);
+   TString ferr("1");
+
+   TString strVal(drawCommand);
+   if (strVal.Contains(":")){
+     TObjArray* valTokens = strVal.Tokenize(":");
+     drawStr = valTokens->At(0)->GetName();
+     ferr       = valTokens->At(1)->GetName();     
+   }
+
+      
+   formulaStr.ReplaceAll("++", "~");
+   TObjArray* formulaTokens = formulaStr.Tokenize("~"); 
+   Int_t dim = formulaTokens->GetEntriesFast();
+   
+   fitParam.ResizeTo(dim);
+   covMatrix.ResizeTo(dim,dim);
+   TString fitString="x0";
+   for (Int_t i=1; i<dim; i++) fitString+=Form("++x%d",i);     
+   TLinearFitter* fitter = new TLinearFitter(dim, fitString.Data());
+   fitter->StoreData(kTRUE);   
+   fitter->ClearPoints();
+   
+   Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t **values = new Double_t*[dim+1] ; 
+   //
+   entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
+   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   Double_t *errors = new Double_t[entries];
+   memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
+   
+   for (Int_t i = 0; i < dim + 1; i++){
+      Int_t centries = 0;
+      if (i < dim) centries = tree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
+      else  centries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
+      
+      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      values[i] = new Double_t[entries];
+      memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
+   }
+   
+   // add points to the fitter
+   for (Int_t i = 0; i < entries; i++){
+      Double_t x[1000];
+      for (Int_t j=0; j<dim;j++) x[j]=values[j][i];
+      fitter->AddPoint(x, values[dim][i], errors[i]);
+   }
+
+   fitter->Eval();
+   if (frac>0.5 && frac<1){
+     fitter->EvalRobust(frac);
+   }
+   fitter->GetParameters(fitParam);
+   fitter->GetCovarianceMatrix(covMatrix);
+   chi2 = fitter->GetChisquare();
+   npoints = entries;
+//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
+   
+//    for (Int_t iparam = 0; iparam < dim; iparam++) {
+//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
+//      if (iparam < dim-1) returnFormula.Append("+");
+//    }
+//    returnFormula.Append(" )");
+   
+   TString *preturnFormula = new TString("("), &returnFormula = *preturnFormula; 
+   
+   for (Int_t iparam = 0; iparam < dim; iparam++) {
+     returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam]));
+     if (iparam < dim-1) returnFormula.Append("+");
+   }
+   returnFormula.Append(" )");
+   
+   
+   
+   
    delete formulaTokens;
    delete fitter;
    delete[] values;
