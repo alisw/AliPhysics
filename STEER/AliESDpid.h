@@ -21,7 +21,7 @@
 
 class AliESDEvent;
 
-class AliESDpid {
+class AliESDpid: public TObject {
 public:
   AliESDpid(Bool_t forMC=kFALSE): fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(forMC), fTOFResponse(), fTRDResponse(){;}
   virtual ~AliESDpid() {}
