@@ -26,7 +26,7 @@
 #include <TFile.h>
 #include <TParticle.h>
 #include <TClonesArray.h>
-#include <TRefArray.h>
+//#include <TRefArray.h>
 #include <TList.h>
 #include <TArrayF.h>
 
@@ -128,7 +128,7 @@ void AliMCEvent::ConnectTreeK (TTree* tree)
 	if (fNparticles>0) fMCParticleMap->Expand(fNparticles);
     }
     else
-	fMCParticleMap = new TRefArray(fNparticles);
+	fMCParticleMap = new TObjArray(fNparticles);
 }
 
 void AliMCEvent::ConnectTreeTR (TTree* tree)
@@ -534,8 +534,7 @@ AliVParticle* AliMCEvent::GetTrack(Int_t i) const
 	    } // loop over track references for entry i
 	} // if TreeTR available
 	Int_t nentries = fMCParticles->GetEntriesFast();
-	new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
-	mcParticle = dynamic_cast<AliMCParticle*>((*fMCParticles)[nentries]);
+	mcParticle = new ((*fMCParticles)[nentries]) AliMCParticle(particle, rarray, i);
 	fMCParticleMap->AddAt(mcParticle, i);
 	if (mcParticle) {
 	    TParticle* part = mcParticle->Particle();
@@ -675,6 +674,7 @@ void AliMCEvent::InitEvent()
 	}
     }
 }
+
 void AliMCEvent::PreReadAll()                              
 {
     // Preread the MC information
@@ -689,10 +689,7 @@ void AliMCEvent::PreReadAll()
     {
 	GetTrack(i);
     }
-    
-    
 }
-
 
 const AliVVertex * AliMCEvent::GetPrimaryVertex() const 
 {

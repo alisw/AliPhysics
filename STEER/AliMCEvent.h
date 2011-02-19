@@ -144,7 +144,7 @@ private:
     // Stanndard implementation for ESD production
     AliStack         *fStack;            // Current pointer to stack
     TClonesArray     *fMCParticles;      // Pointer to list of particles
-    TRefArray        *fMCParticleMap;    // Map of MC Particles
+    TObjArray        *fMCParticleMap;    // Map of MC Particles
     AliHeader        *fHeader;           // Current pointer to header
     TClonesArray     *fTRBuffer;         // Track reference buffer    
     TClonesArray     *fTrackReferences;  // Array of track references
