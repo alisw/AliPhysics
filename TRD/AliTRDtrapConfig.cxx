@@ -26,6 +26,7 @@
 #include "AliTRDgeometry.h"
 #include "AliTRDfeeParam.h"
 #include "AliTRDtrapConfig.h"
+#include "AliTRDtrapConfigHandler.h"
 
 #include <fstream>
 #include <iostream>
@@ -544,7 +545,8 @@ AliTRDtrapConfig* AliTRDtrapConfig::Instance()
 
   if (!fgInstance) {
     fgInstance = new AliTRDtrapConfig();
-    fgInstance->LoadConfig();
+    AliTRDtrapConfigHandler cfgHandler;
+    cfgHandler.LoadConfig();
   }
 
   return fgInstance;
@@ -996,86 +998,6 @@ UInt_t AliTRDtrapConfig::GetDmemUnsigned(Int_t addr, Int_t det, Int_t rob, Int_t
    }
    
    return 0;
-}
-
-
-Bool_t AliTRDtrapConfig::LoadConfig()
-{
-  // load a set of TRAP register values (configuration)
-  // here a default set is implemented for testing
-  // for a detailed description of the registers see the TRAP manual
-
-  // HC header configuration bits
-  SetTrapReg(kC15CPUA, 0x2102); // zs, deh
-
-  // no. of timebins
-  SetTrapReg(kC13CPUA, 24); 
-
-  // pedestal filter
-  SetTrapReg(kFPNP, 4*10);
-  SetTrapReg(kFPTC, 0);
-  SetTrapReg(kFPBY, 0); // bypassed!
-  
-  // gain filter
-  for (Int_t adc = 0; adc < 20; adc++) {
-    SetTrapReg(TrapReg_t(kFGA0+adc), 40);
-    SetTrapReg(TrapReg_t(kFGF0+adc), 15);
-  }
-  SetTrapReg(kFGTA, 20);
-  SetTrapReg(kFGTB, 2060);
-  SetTrapReg(kFGBY, 0);  // bypassed!
-
-  // tail cancellation
-  SetTrapReg(kFTAL, 267);
-  SetTrapReg(kFTLL, 356);
-  SetTrapReg(kFTLS, 387);
-  SetTrapReg(kFTBY, 0);
-
-  // tracklet calculation
-  SetTrapReg(kTPQS0, 5);
-  SetTrapReg(kTPQE0, 10);
-  SetTrapReg(kTPQS1, 11);
-  SetTrapReg(kTPQE1, 20);
-  SetTrapReg(kTPFS, 5);
-  SetTrapReg(kTPFE, 20);
-  SetTrapReg(kTPVBY, 0);
-  SetTrapReg(kTPVT, 10);
-  SetTrapReg(kTPHT, 150);
-  SetTrapReg(kTPFP, 40);
-  SetTrapReg(kTPCL, 1);
-  SetTrapReg(kTPCT, 10);
-
-  // ndrift (+ 5 binary digits)
-  SetDmem(0xc025, 20 << 5);
-  // deflection + tilt correction
-  SetDmem(0xc022, 0); 
-  // deflection range table
-  for (Int_t iTrklCh = 0; iTrklCh < 18; iTrklCh++) {
-    SetDmem(0xc030 + 2 * iTrklCh, -64); // min. deflection
-    SetDmem(0xc031 + 2 * iTrklCh,  63); // max. deflection
-  }
-  
-  // hit position LUT
-  const UShort_t lutPos[128] = {
-    0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  8,  8,  9,  9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
-    16, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 26, 26, 26, 26,
-    27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26,
-    26, 26, 26, 25, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 18, 17, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  7};
-  for (Int_t iCOG = 0; iCOG < 128; iCOG++)
-    SetTrapReg((TrapReg_t) (kTPL00 + iCOG), lutPos[iCOG]);
-
-  // event buffer
-  SetTrapReg(kEBSF, 1);  // 0: store filtered; 1: store unfiltered
-  // zs applied to data stored in event buffer (sel. by EBSF)
-  SetTrapReg(kEBIS, 15 << 2); // single indicator threshold (plus two digits)
-  SetTrapReg(kEBIT, 30 << 2); // sum indicator threshold (plus two digits)
-  SetTrapReg(kEBIL, 0xf0);   // lookup table
-  SetTrapReg(kEBIN, 0);      // neighbour sensitivity
-
-  // raw data
-  SetTrapReg(kNES, (0x0000 << 16) | 0x1000);
-
-  return kTRUE;
 }
 
 

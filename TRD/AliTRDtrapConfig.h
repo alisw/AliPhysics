@@ -499,8 +499,6 @@ class AliTRDtrapConfig : public TObject
   void GetPIDscale(Double_t scale[2]) {scale[0] = fScaleQ0; scale[1]=fScaleQ1;}  // The two scaling factors are not available in the TRAP but needed by the DCS board
 
   // configuration handling
-  Bool_t LoadConfig();
-
   Bool_t ReadPackedConfig(Int_t det, UInt_t *data, Int_t size);
 
   Bool_t AddValues(UInt_t det, UInt_t cmd, UInt_t extali, Int_t addr, UInt_t data);

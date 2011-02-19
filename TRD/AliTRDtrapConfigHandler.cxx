@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,53 +21,37 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-
-
 #include "AliTRDtrapConfigHandler.h"
 
 #include <iostream>
 #include <iomanip>
 
-#include "AliTRDpadPlane.h"
-#include "AliTRDtrapConfig.h"
-#include "AliTRDcalibDB.h"
-#include "AliTRDCommonParam.h"
 #include "AliLog.h"
 
-#include "AliTRDarrayDictionary.h"
-
-#include "AliMagF.h"
-#include "TGeoGlobalMagField.h"
-#include "AliMagWrapCheb.h"
+#include "AliTRDtrapConfig.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDcalibDB.h"
 
 #include "TMath.h"
 #include "TGeoMatrix.h"
+#include "TGraph.h"
 
 using namespace std;
 
 ClassImp(AliTRDtrapConfigHandler)
 
-
 AliTRDtrapConfigHandler::AliTRDtrapConfigHandler() :
-     fGeo(NULL)
+     ltuParam()
      , fDet(0)
-     , fBField(0)
-     , fOmegaTau(1)
-     , fPtMin(0)
-     , fNTimebins(0)
-     , fScaleQ0(1)
-     , fScaleQ1(1)
-     , fPidTracklengthCorr(kFALSE)
-     , fTiltCorr(kTRUE)
+     , fRestrictiveMask((0x3ffff << 11) | (0x1f << 6) | 0x3f)
 {
-   fGeo = new AliTRDgeometry;
+
 }
 
 
 AliTRDtrapConfigHandler::~AliTRDtrapConfigHandler()
 {
-   delete fGeo;
+
 }
 
 void AliTRDtrapConfigHandler::ResetMCMs()
@@ -82,6 +65,121 @@ void AliTRDtrapConfigHandler::ResetMCMs()
    cfg->ResetDmem();
 }
 
+
+Int_t AliTRDtrapConfigHandler::LoadConfig()
+{
+  // load a default configuration which is suitable for simulation
+  // for a detailed description of the registers see the TRAP manual
+  // if you want to resimulate tracklets on real data use the appropriate config instead
+
+  AliTRDtrapConfig *cfg = AliTRDtrapConfig::Instance();
+
+  // HC header configuration bits
+  cfg->SetTrapReg(AliTRDtrapConfig::kC15CPUA, 0x2102); // zs, deh
+
+  // no. of timebins
+  cfg->SetTrapReg(AliTRDtrapConfig::kC13CPUA, 24);
+
+  // pedestal filter
+  cfg->SetTrapReg(AliTRDtrapConfig::kFPNP, 4*10);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFPTC, 0);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFPBY, 0); // bypassed!
+
+  // gain filter
+  for (Int_t adc = 0; adc < 20; adc++) {
+    cfg->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGA0+adc), 40);
+    cfg->SetTrapReg(AliTRDtrapConfig::TrapReg_t(AliTRDtrapConfig::kFGF0+adc), 15);
+  }
+  cfg->SetTrapReg(AliTRDtrapConfig::kFGTA, 20);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFGTB, 2060);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFGBY, 0);  // bypassed!
+
+  // tail cancellation
+  cfg->SetTrapReg(AliTRDtrapConfig::kFTAL, 200);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFTLL, 0);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFTLS, 200);
+  cfg->SetTrapReg(AliTRDtrapConfig::kFTBY, 0);
+
+  // tracklet calculation
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPQS0, 5);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPQE0, 10);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPQS1, 11);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPQE1, 20);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPFS, 5);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPFE, 20);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPVBY, 0);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPVT, 10);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPHT, 150);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPFP, 40);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPCL, 1);
+  cfg->SetTrapReg(AliTRDtrapConfig::kTPCT, 10);
+
+  // ndrift (+ 5 binary digits)
+  ltuParam.SetNtimebins(20 << 5);
+  ConfigureNTimebins();
+
+  // deflection + tilt correction
+  ltuParam.SetRawOmegaTau(0.16133);
+  ConfigureDyCorr();
+
+  // deflection range table
+  ltuParam.SetRawPtMin(0.1);
+  ConfigureDRange();
+
+  // hit position LUT
+  // reset values
+  const UShort_t lutPos[128] = {
+    0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7,  8,  8,  9,  9, 10, 10, 11, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15,
+    16, 16, 16, 17, 17, 18, 18, 19, 19, 19, 20, 20, 20, 21, 21, 22, 22, 22, 23, 23, 23, 24, 24, 24, 24, 25, 25, 25, 26, 26, 26, 26,
+    27, 27, 27, 27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26,
+    26, 26, 26, 25, 25, 25, 24, 24, 23, 23, 22, 22, 21, 21, 20, 20, 19, 18, 18, 17, 17, 16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  7};
+  for (Int_t iCOG = 0; iCOG < 128; iCOG++)
+    cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iCOG), lutPos[iCOG]);
+
+  // now calculate it from PRF
+  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
+
+  Double_t padResponse[3]; // pad response left, central, right
+  Double_t padResponseR[3]; // pad response left, central, right
+  Double_t padResponseL[3]; // pad response left, central, right
+
+  for (Int_t iBin = 0; iBin < 128; iBin++)
+    cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), 0, 0, 0, 0);
+
+  for (Int_t iLayer = 0; iLayer < 6; iLayer++) {
+    TGraph gr(128);
+    for (Int_t iBin = 0; iBin < 256*0.5; iBin++) {
+      cal->PadResponse(1., iBin*1./256.,    iLayer, padResponse);
+      cal->PadResponse(1., iBin*1./256.-1., iLayer, padResponseR);
+      cal->PadResponse(1., iBin*1./256.+1., iLayer, padResponseL);
+      gr.SetPoint(iBin, (0.5 * (padResponseR[1] - padResponseL[1])/padResponse[1] * 256), iBin);
+    }
+    for (Int_t iBin = 0; iBin < 128; iBin++) {
+      Int_t corr = gr.Eval(iBin) - iBin;
+      if (corr < 0)
+        corr = 0;
+      else if (corr > 31)
+        corr = 31;
+      for (Int_t iStack = 0; iStack < 540/6; iStack++) {
+        cfg->SetTrapReg((AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kTPL00 + iBin), corr, 6*iStack + iLayer);
+      }
+    }
+  }
+
+  // event buffer
+  cfg->SetTrapReg(AliTRDtrapConfig::kEBSF, 1);  // 0: store filtered; 1: store unfiltered
+
+  // zs applied to data stored in event buffer (sel. by EBSF)
+  cfg->SetTrapReg(AliTRDtrapConfig::kEBIS, 15 << 2); // single indicator threshold (plus two digits)
+  cfg->SetTrapReg(AliTRDtrapConfig::kEBIT, 30 << 2); // sum indicator threshold (plus two digits)
+  cfg->SetTrapReg(AliTRDtrapConfig::kEBIL, 0xf0);   // lookup table
+  cfg->SetTrapReg(AliTRDtrapConfig::kEBIN, 0);      // neighbour sensitivity
+
+  // raw data
+  cfg->SetTrapReg(AliTRDtrapConfig::kNES, (0x0000 << 16) | 0x1000);
+
+  return 0;
+}
 
 Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
 {
@@ -113,6 +211,13 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
    UInt_t cmd;
    Int_t extali, addr, data;
 
+   // reset restrictive mask
+   fRestrictiveMask = (0x3ffff << 11) | (0x1f << 6) | 0x3f;
+   Int_t sec   = AliTRDgeometry::GetSector(fDet);
+   Int_t stack = AliTRDgeometry::GetStack(fDet);
+   Int_t layer = AliTRDgeometry::GetLayer(fDet);
+   UInt_t rocpos = (1 << (sec+11)) | (1 << (stack+6)) | (1 << layer);
+
    while(infile.good()) {
       cmd=999;
       extali=-1;
@@ -122,8 +227,12 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
       //      std::cout << "no: " << no << ", cmd " << cmd << ", extali " << extali << ", addr " << addr << ", data " << data <<  endl;
 
       if(cmd!=999 && extali!=-1 && addr != -1 && data!= -1 && extali!=-1) {
-	 if(cmd==fgkScsnCmdWrite)
+	if(cmd==fgkScsnCmdWrite) {
+	  if ((fRestrictiveMask & rocpos) == rocpos)
 	    cfg->AddValues(det, cmd, extali, addr, data);
+	}
+	 else if(cmd == fgkScsnCmdRestr)
+	   fRestrictiveMask = data;
 	 else if(cmd == fgkScsnLTUparam)
 	    ProcessLTUparam(extali, addr, data);
 	 else
@@ -154,7 +263,6 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename, Int_t det)
 }
 
 
-
 void AliTRDtrapConfigHandler::ProcessLTUparam(Int_t dest, Int_t addr, UInt_t data)
 {
    //
@@ -174,15 +282,15 @@ void AliTRDtrapConfigHandler::ProcessLTUparam(Int_t dest, Int_t addr, UInt_t dat
    case 1: // set variables
       switch (addr) {
 
-      case 0: fPtMin =  float(data) / 1000.; break; // pt_min in GeV/c (*1000)
-      case 1: fBField = float(data) / 1000. ; break; // B in T (*1000)
-      case 2: fOmegaTau = float(data) / 1.0E6  ; break; // omega*tau
-      case 3: fNTimebins = data; break;
+      case 0: ltuParam.SetPtMin(data); break; // pt_min in GeV/c (*1000)
+      case 1: ltuParam.SetMagField(data); break; // B in T (*1000)
+      case 2: ltuParam.SetOmegaTau(data); break; // omega*tau
+      case 3: ltuParam.SetNtimebins(data); break;
 	// ntimbins: drift time (for 3 cm) in timebins (5 add. bin. digits)
-      case 4: fScaleQ0 = data; break;
-      case 5: fScaleQ1 = data; break;
-      case 6: fPidTracklengthCorr = (bool) data; break;
-      case 7: fTiltCorr = (bool) data; break;
+      case 4: ltuParam.SetScaleQ0(data); break;
+      case 5: ltuParam.SetScaleQ1(data); break;
+      case 6: ltuParam.SetLengthCorrectionEnable(data); break;
+      case 7: ltuParam.SetTiltCorrectionEnable(data); break;
       }
       break;
 
@@ -198,7 +306,7 @@ void AliTRDtrapConfigHandler::ConfigureNTimebins()
    //
    // Set timebins in the drift region
    //
-   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, 127, AliTRDtrapConfig::fgkDmemAddrNdrift, fNTimebins);
+  AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, 127, AliTRDtrapConfig::fgkDmemAddrNdrift, ltuParam.GetNtimebins());
 }
 
 
@@ -211,41 +319,15 @@ void AliTRDtrapConfigHandler::ConfigureDyCorr()
    //  This correction is in units of padwidth / (256*32)
    //
 
-   Int_t nRobs;
-   if(fGeo->GetStack(fDet) == 2)
-      nRobs=6;
-   else
-      nRobs=8;
+  Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
 
-   Double_t dyLorentz = - fOmegaTau * fGeo->CdrHght();    // CdrHght: Height of the drift region
-   Double_t globalPos[3];
-   Double_t tiltingAngle = fGeo->GetPadPlane(fDet)->GetTiltingAngle();
-   Double_t scalePad = 256. * 32.;
-   Int_t dyCorrInt=0;
-
-    for (Int_t r = 0; r < nRobs; r++) {
-	for (Int_t m = 0; m < 16; m++) {
-	   if(GetPadPosNonRot(r, m, 9, globalPos)==0) {
-	      double dyTilt = ( fGeo->CdrHght() *  TMath::Tan(tiltingAngle * TMath::DegToRad()) * globalPos[2]/globalPos[0]);
-
-	      double dyCorr;
-	      if(fTiltCorr==kTRUE)
-		 dyCorr = dyLorentz + dyTilt;
-	      else
-		 dyCorr = dyTilt;
-
-
-	      dyCorrInt =  TMath::Nint(dyCorr * scalePad /  fGeo->GetPadPlane(fDet)->GetWidthIPad());  // The correction is in units of 1/256 of the
-	                                                                                               // pad width, including 5 binary digits
-	   }
-	   else {
-	      AliError("No transformation matrix available");
-	      dyCorrInt=0;
-	   }
-	   Int_t dest =  1<<10 | r<<7 | m;
-	   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, AliTRDtrapConfig::fgkDmemAddrDeflCorr, dyCorrInt);
-	}
+  for (Int_t r = 0; r < nRobs; r++) {
+    for (Int_t m = 0; m < 16; m++) {
+      Int_t dest =  1<<10 | r<<7 | m;
+      Int_t dyCorrInt = ltuParam.GetDyCorrection(fDet, r, m);
+      AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, AliTRDtrapConfig::fgkDmemAddrDeflCorr, dyCorrInt);
     }
+  }
 }
 
 
@@ -261,72 +343,23 @@ void AliTRDtrapConfigHandler::ConfigureDRange()
    // deflection (-64..63) is used
    //
 
-   static const int x=0;
-   static const int y=1;
-   static const Double_t dyBin = 140e-6;
+  Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
 
-   Int_t dyMinInt=fgkDyMinCut;
-   Int_t dyMaxInt=fgkDyMaxCut;
-   Double_t mcmPos[3];
-
-   Int_t nRobs=-1;
-   if(fGeo->GetStack(fDet) == 2)
-      nRobs=6;
-   else
-      nRobs=8;
+  Int_t dyMinInt;
+  Int_t dyMaxInt;
 
    for (Int_t r = 0; r < nRobs; r++) {
       for (Int_t m = 0; m < 16; m++) {
 	 for (Int_t c = 0; c < 18; c++) {
 
-	    if(fPtMin<0.1) {
-	       dyMinInt=fgkDyMinCut;
-	       dyMaxInt=fgkDyMaxCut;
-	    }
-	    else {
-	       if(GetPadPosNonRot(r, m, c, mcmPos)==0) {
-		  Double_t radius = fPtMin/(0.3*fBField);
-
-		  double vertexPos[2] = {0,0};
-
-		  Double_t distanceX = (vertexPos[x]-mcmPos[x]) / 100.; // cm -> m
-		  Double_t distanceY = (vertexPos[y]-mcmPos[y]) / 100.; // cm -> m
-
-		  Double_t maxDeflTemp = (TMath::Sqrt( Square(distanceX) + Square(distanceY)) / 2) / radius;
-		  Double_t localPhi = TMath::ATan2(distanceY, distanceX);
-
-		  Double_t maxDeflAngle=0;
-		  if(maxDeflTemp < 1. ) {
-		     maxDeflAngle = TMath::ASin(maxDeflTemp);
-		     Double_t dyMin = fGeo->CdrHght()/100. * TMath::Tan(localPhi - maxDeflAngle);  // CdrHght: Height of the drift region in cm
-		     Double_t dyMax = fGeo->CdrHght()/100. * TMath::Tan(localPhi + maxDeflAngle);
-
-		     dyMinInt = Int_t (dyMin / dyBin);
-		     dyMaxInt = Int_t (dyMax / dyBin);
-
-		     if(dyMinInt < fgkDyMinCut)
-			dyMinInt = fgkDyMinCut;
-		     if(dyMaxInt > fgkDyMaxCut)
-			dyMaxInt = fgkDyMaxCut;
-		  }
-		  else {
-		     dyMinInt = fgkDyMinCut;
-		     dyMaxInt = fgkDyMaxCut;
-		  }
-
-// 		  cout << "maxdefl: " << maxDeflAngle << ", localPhi " << localPhi << endl;
-// 		  cout << "r " << r << ", m" << m << ", c " << c << ", min angle: " << localPhi-maxDeflAngle << ", max: " << localPhi+maxDeflAngle
-// 		       << ", min int: " << dyMinInt << ", max int: " << dyMaxInt << endl;
-	       }
-	       else {
-		  AliError("No geometry model loaded\n");
-	       }
-	    }
-
-	    Int_t dest =  1<<10 | r<<7 | m;
- 	    Int_t lutAddr = AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 2*c;
-	    AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
-	    AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
+	   // cout << "maxdefl: " << maxDeflAngle << ", localPhi " << localPhi << endl;
+	   // cout << "r " << r << ", m" << m << ", c " << c << ", min angle: " << localPhi-maxDeflAngle << ", max: " << localPhi+maxDeflAngle
+	   // 	<< ", min int: " << dyMinInt << ", max int: " << dyMaxInt << endl;
+	   Int_t dest =  1<<10 | r<<7 | m;
+	   Int_t lutAddr = AliTRDtrapConfig::fgkDmemAddrDeflCutStart + 2*c;
+	   ltuParam.GetDyRange(fDet, r, m, c, dyMinInt, dyMaxInt);
+	   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+0, dyMinInt);
+	   AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, lutAddr+1, dyMaxInt);
 	 }
       }
    }
@@ -338,7 +371,6 @@ void AliTRDtrapConfigHandler::PrintGeoTest()
    // Prints some information about the geometry. Only for debugging
    //
 
-   Double_t mcmPos[3];
    int sm=0;
    //   for(int sm=0; sm<6; sm++) {
    for(int stack=0; stack<5; stack++) {
@@ -348,9 +380,10 @@ void AliTRDtrapConfigHandler::PrintGeoTest()
 	 for (Int_t r = 0; r < 6; r++) {
 	    for (Int_t m = 0; m < 16; m++) {
 	       for (Int_t c = 7; c < 8; c++) {
-		  GetPadPosNonRot(r, m, c, mcmPos);
-		  cout << stack << ";" << layer << ";" << r << ";" << m
-		       << ";" << mcmPos[0] << ";" << mcmPos[1] << ";" << mcmPos[2] << endl;
+		 cout << stack << ";" << layer << ";" << r << ";" << m
+		      << ";" << ltuParam.GetX(fDet, r, m)
+		      << ";" << ltuParam.GetLocalY(fDet, r, m, c)
+		      << ";" << ltuParam.GetLocalZ(fDet, r, m) << endl;
 	       }
 	    }
 	 }
@@ -358,7 +391,6 @@ void AliTRDtrapConfigHandler::PrintGeoTest()
    }
    // }
 }
-
 
 
 void AliTRDtrapConfigHandler::ConfigurePIDcorr()
@@ -374,127 +406,14 @@ void AliTRDtrapConfigHandler::ConfigurePIDcorr()
    UInt_t cor0;
    UInt_t cor1;
 
-   Double_t globalPos[3];
-
-   Int_t nRobs=-1;
-   if(fGeo->GetStack(fDet) == 2)
-      nRobs=6;
-   else
-      nRobs=8;
+   Int_t nRobs = AliTRDgeometry::GetStack(fDet) == 2 ? 6 : 8;
 
    for (Int_t r=0; r<nRobs; r++) {
       for(Int_t m=0; m<16; m++) {
-
-	 if(GetPadPosNonRot(r, m, 9, globalPos)==0) {
-	    Double_t elongation = TMath::Abs(TMath::Sqrt(globalPos[0]*globalPos[0] + globalPos[1]*globalPos[1] + globalPos[2]*globalPos[2]) / globalPos[0]);
-
-	    if(fPidTracklengthCorr==kFALSE) {
-	       cor0 = fScaleQ0;
-	       cor1 = fScaleQ1;
-	    }
-	    else {
-	       cor0 = Int_t ((1.0*fScaleQ0* (1/elongation) ));
-	       cor1 = Int_t ((1.0*fScaleQ1* (1/elongation) ));
-	    }
-
-	    Int_t dest =  1<<10 | r<<7 | m;
-	    AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
-	    AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
-	 }
-	 else {
-	    AliError("No transformation matrix available");
-	 }
-      }
-   }
-}
-
-
-
-Int_t AliTRDtrapConfigHandler::GetPadPosNonRot(Int_t rob, Int_t mcm, Int_t channel, Double_t trackCoor[3])
-{
-   //
-   // Calcutate the gobal coordinates for an mcm channel in the supermodule at position -0.5
-   //
-
-   Int_t stack = fGeo->GetStack(fDet);
-   Int_t layer = fGeo->GetLayer(fDet);
-
-   AliTRDpadPlane *plane = fGeo->GetPadPlane(layer, stack);
-   if(plane==NULL) {
-      AliError(Form("stack %i, layer %i, det %i", stack, layer, fDet));
-      return 1;
-   }
-
-   Double_t locYZ[2];
-   Double_t loc[3];
-
-   Double_t radialPos = fGeo->AnodePos()-0.83; //
-   //   Double_t radialPos = 300.65 + 12.60 * layer; // cm // taken from libTRD/geometry/geometry.cc, probably not the final value
-
-   GetLocalPadPos(plane, rob, mcm, channel, locYZ);
-
-   loc[0] = radialPos;
-   loc[1] = locYZ[0];
-   loc[2] = locYZ[1];
-
-   //transform from loc[3] - coordinates of the pad
-   // Go to tracking coordinates
-
-   TGeoHMatrix *fMatrix  = fGeo->GetClusterMatrix(fDet);
-   if(fMatrix==NULL) {
-      AliError(Form("stack %i, layer %i, det %i", stack, layer, fDet));
-      return 2;
-   }
-   fMatrix->LocalToMaster(loc, trackCoor);
-   return 0;
-}
-
-
-void AliTRDtrapConfigHandler::GetLocalPadPos(AliTRDpadPlane *plane, Int_t rob, Int_t mcm, Int_t channel, Double_t result[2])
-{
-   //
-   // calculate the local coordinates for an mcm channel
-   //
-
-   Double_t localY, localZ;
-
-    Int_t padCol;
-    if(rob%2 == 0) //side a
-       padCol  = (mcm % fgkMCMperROBCol) * fgkPadsPerMCM + channel;
-    else
-       padCol  = (mcm % fgkMCMperROBCol) * fgkPadsPerMCM + (plane->GetNcols()/2) + channel;
-
-    Int_t padRow = ((Int_t) floor(rob/2.0)) * fgkMCMperROBRow + ((Int_t) floor(mcm/4));
-
-    if(padCol<0 || padCol>= plane->GetNcols())
-       AliError(Form("Invalid pad col: %i\n", padCol));
-
-    if(padRow<0 || padRow>= plane->GetNrows())
-       AliError(Form("Invalid pad row: %i\n", padRow));
-
-    if(padCol+1 == plane->GetNcols()) // last pad
-       localY = plane->GetColPos(padCol) + (plane->GetColEnd()-plane->GetColPos(padCol))/2;
-    else
-       localY = plane->GetColPos(padCol) + (plane->GetColPos(padCol+1)-plane->GetColPos(padCol))/2;
-
-    if(padRow+1 == plane->GetNrows())
-       localZ = plane->GetRowPosROC(padRow) + (plane->GetRowEndROC() - plane->GetRowPosROC(padRow))/2;
-    else
-       localZ = plane->GetRowPosROC(padRow) + (plane->GetRowPosROC(padRow+1) - plane->GetRowPosROC(padRow))/2;
-
-    //    std::cout << "pad col " << padCol << ", pad row " << padRow << std::endl;
-    //    std::cout << "pos y (col) " << localY << ", pos z (row) " << localZ << std::endl;
-
-    result[0]=localY;
-    result[1]=localZ;
-}
-
-
-Double_t AliTRDtrapConfigHandler::Square(Double_t val)
-{
-   //
-   // calculate the square of the argument
-   //
-
-   return val*val;
+	 Int_t dest =  1<<10 | r<<7 | m;
+	 ltuParam.GetCorrectionFactors(fDet, r, m, 0, cor0, cor1);
+	 AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
+	 AliTRDtrapConfig::Instance()->AddValues(fDet, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
+    }
+  }
 }
