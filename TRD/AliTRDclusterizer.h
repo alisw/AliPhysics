@@ -49,6 +49,7 @@ class AliTRDclusterizer : public TNamed
     ,kLUT    = BIT(18)  //  using look up table for cluster's r-phi position
     ,kGAUS   = BIT(19)  //  using gauss approx. for cluster's r-phi position
     ,knewDM  = BIT(20)  //  was the digitsmanger created by raw2clusters?
+    ,kTracksOwner = BIT(21) //  toggle GTU track ownership
   };
 
   struct MaxStruct
@@ -86,7 +87,7 @@ class AliTRDclusterizer : public TNamed
   void     ResetRecPoints();
   virtual TClonesArray    *RecPoints();
   virtual TClonesArray    *TrackletsArray();
-  Bool_t   WriteTracklets(Int_t det);
+  virtual TClonesArray    *TracksArray();
 
   Bool_t   Raw2Clusters(AliRawReader *rawReader);
   Bool_t   Raw2ClustersChamber(AliRawReader *rawReader);
@@ -105,6 +106,7 @@ class AliTRDclusterizer : public TNamed
   Bool_t           IsClustersOwner() const {return TestBit(kClOwner);}
   virtual void     SetClustersOwner(Bool_t own=kTRUE) {SetBit(kClOwner, own); if(!own) {fRecPoints = 0x0; fNoOfClusters=0;} }
   void             SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
+  void             SetTracksOwner(Bool_t own=kTRUE) {SetBit(kTracksOwner, own); if(!own) {fTracks = 0x0; } }
   void             SetSkipTransform(Bool_t b=kTRUE) {SetBit(kSkipTrafo, b); }
 
 protected:
@@ -123,7 +125,6 @@ protected:
   void             CreateCluster(const MaxStruct &Max); 
 
   virtual void     AddClusterToArray(AliTRDcluster* cluster);
-  virtual void     AddTrackletsToArray();
 
 private:
   inline void      CalcAdditionalInfo(const MaxStruct &Max, Short_t *const signals, Int_t &nPadCount);
@@ -134,12 +135,15 @@ protected:
   TTree               *fClusterTree;         //! Tree with the cluster
   TClonesArray        *fRecPoints;           //! Array of clusters
   TClonesArray        *fTracklets;           //! Array of online tracklets
+  TClonesArray        *fTracks;              //! Array of GTU tracks
 
   TTree               *fTrackletTree;        //! Tree for tracklets
 
   AliTRDdigitsManager *fDigitsManager;       //! TRD digits manager
 
   UInt_t              **fTrackletContainer;  //! tracklet container
+					     // legacy code to avoid breakint AliHLTTRDClusterizer
+					     // but it's useless
 
   Int_t                fRawVersion;          //  Expected raw version of the data - default is 2
 

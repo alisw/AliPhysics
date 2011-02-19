@@ -61,6 +61,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDReconstructor *const rec)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTracklets(NULL)
+  ,fTracks(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
@@ -119,6 +120,7 @@ AliTRDclusterizer::AliTRDclusterizer(const Text_t *name
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTracklets(NULL)
+  ,fTracks(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(new AliTRDdigitsManager())
   ,fTrackletContainer(NULL)
@@ -170,6 +172,7 @@ AliTRDclusterizer::AliTRDclusterizer(const AliTRDclusterizer &c)
   ,fClusterTree(NULL)
   ,fRecPoints(NULL)
   ,fTracklets(NULL)
+  ,fTracks(NULL)
   ,fTrackletTree(NULL)
   ,fDigitsManager(NULL)
   ,fTrackletContainer(NULL)
@@ -226,16 +229,14 @@ AliTRDclusterizer::~AliTRDclusterizer()
     delete fTracklets;
   }
 
+  if (fTracks){
+    fTracks->Delete();
+    delete fTracks;
+  }
+
   if (fDigitsManager) {
     delete fDigitsManager;
     fDigitsManager = NULL;
-  }
-
-  if (fTrackletContainer){
-    delete [] fTrackletContainer[0];
-    delete [] fTrackletContainer[1];
-    delete [] fTrackletContainer;
-    fTrackletContainer = NULL;
   }
 
   if (fTransform){
@@ -277,7 +278,6 @@ void AliTRDclusterizer::Copy(TObject &c) const
   ((AliTRDclusterizer &) c).fRecPoints     = NULL;  
   ((AliTRDclusterizer &) c).fTrackletTree  = NULL;
   ((AliTRDclusterizer &) c).fDigitsManager = NULL;
-  ((AliTRDclusterizer &) c).fTrackletContainer = NULL;
   ((AliTRDclusterizer &) c).fRawVersion    = fRawVersion;
   ((AliTRDclusterizer &) c).fTransform     = NULL;
   ((AliTRDclusterizer &) c).fDigits      = NULL;
@@ -436,48 +436,6 @@ Bool_t AliTRDclusterizer::WriteClusters(Int_t det)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDclusterizer::WriteTracklets(Int_t det)
-{
-  //
-  // Write the raw data tracklets into seperate file
-  //
-
-  UInt_t **leaves = new UInt_t *[2];
-  for (Int_t i=0; i<2 ;i++){
-    leaves[i] = new UInt_t[258];
-    leaves[i][0] = det; // det
-    leaves[i][1] = i;   // side
-    memcpy(leaves[i]+2, fTrackletContainer[i], sizeof(UInt_t) * 256);
-  }
-
-  if (!fTrackletTree){
-    AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets");
-    dl->MakeTree();
-    fTrackletTree = dl->Tree();
-  }
-
-  TBranch *trkbranch = fTrackletTree->GetBranch("trkbranch");
-  if (!trkbranch) {
-    trkbranch = fTrackletTree->Branch("trkbranch",leaves[0],"det/i:side/i:tracklets[256]/i");
-  }
-
-  for (Int_t i=0; i<2; i++){
-    if (leaves[i][2]>0) {
-      trkbranch->SetAddress(leaves[i]);
-      fTrackletTree->Fill();
-    }
-  }
-
-//  AliDataLoader *dl = fRunLoader->GetLoader("TRDLoader")->GetDataLoader("tracklets"); //jkl: wrong here
-//  dl->WriteData("OVERWRITE"); //jkl: wrong here
-  //dl->Unload();
-  delete [] leaves;
-
-  return kTRUE;
-
-}
-
-//_____________________________________________________________________________
 Bool_t AliTRDclusterizer::ReadDigits()
 {
   //
@@ -624,39 +582,28 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
       trklTreeLoader->MakeTree();
   }
 
-  // tracklet container for raw tracklet writing
-  if (!fTrackletContainer && ( fReconstructor->IsWritingTracklets() || fReconstructor->IsProcessingTracklets() )) {
-    // maximum tracklets for one HC
-    const Int_t kTrackletChmb=256;
-    fTrackletContainer = new UInt_t *[2];
-    fTrackletContainer[0] = new UInt_t[kTrackletChmb]; 
-    fTrackletContainer[1] = new UInt_t[kTrackletChmb]; 
-    memset(fTrackletContainer[0], 0, kTrackletChmb*sizeof(UInt_t)); //jkl
-    memset(fTrackletContainer[1], 0, kTrackletChmb*sizeof(UInt_t)); //jkl
-  }
-
   if(!fRawStream)
     fRawStream = new AliTRDrawStream(rawReader);
   else
     fRawStream->SetReader(rawReader);
 
   if(fReconstructor->IsHLT()){
-    ((AliTRDrawStream*)fRawStream)->DisableErrorStorage();
+    fRawStream->DisableErrorStorage();
   }
 
-  AliDebug(1,Form("Stream version: %s", fRawStream->IsA()->GetName()));
-  
+  // register tracklet array for output
+  if (fReconstructor->IsProcessingTracklets())
+    fRawStream->SetTrackletArray(TrackletsArray());
+  fRawStream->SetTrackArray(TracksArray());
+
   UInt_t det = 0;
-  while ((det = fRawStream->NextChamber(fDigitsManager,fTrackletContainer)) < AliTRDgeometry::kNdet){
+  while ((det = fRawStream->NextChamber(fDigitsManager)) < AliTRDgeometry::kNdet){
     if (fDigitsManager->GetIndexes(det)->HasEntry()){
       MakeClusters(det);
       fDigitsManager->ClearArrays(det);
     }
-    
-    if (!fReconstructor->IsWritingTracklets()) continue;
-    if (*(fTrackletContainer[0]) > 0 || *(fTrackletContainer[1]) > 0) WriteTracklets(det);
   }
-  
+
   if (fReconstructor->IsWritingTracklets()) {
     if (AliDataLoader *trklLoader = AliRunLoader::Instance()->GetLoader("TRDLoader")->GetDataLoader("tracklets")) {
       if (trklLoader) {
@@ -665,13 +612,6 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
 	trklLoader->UnloadAll();
       }
     }
-  }
-
-  if (fTrackletContainer){
-    delete [] fTrackletContainer[0];
-    delete [] fTrackletContainer[1];
-    delete [] fTrackletContainer;
-    fTrackletContainer = NULL;
   }
 
   if(fReconstructor->IsWritingClusters()) WriteClusters(-1);
@@ -795,9 +735,6 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   Int_t    iGeoModule = istack + AliTRDgeometry::Nstack() * isector;
   fVolid      = AliGeomManager::LayerToVolUID(iGeoLayer,iGeoModule); 
 
-  if(fReconstructor->IsProcessingTracklets() && fTrackletContainer)
-    AddTrackletsToArray();
-
   fColMax    = fDigits->GetNcol();
   fTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins(det);
 
@@ -880,7 +817,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
       << "NCorrupted=" << nCorrupted
       << "\n";
   }
-  if (TestBit(kLabels)) AddLabels();
+  // if (TestBit(kLabels)) AddLabels();
 
   return kTRUE;
 
@@ -1090,27 +1027,6 @@ void AliTRDclusterizer::AddClusterToArray(AliTRDcluster* cluster)
   Int_t n = RecPoints()->GetEntriesFast();
   if(n!=fNoOfClusters)AliError(Form("fNoOfClusters != RecPoints()->GetEntriesFast %i != %i \n", fNoOfClusters, n));
   new((*RecPoints())[n]) AliTRDcluster(*cluster);
-}
-
-//_____________________________________________________________________________
-void AliTRDclusterizer::AddTrackletsToArray()
-{
-  //
-  // Add the online tracklets of this chamber to the array
-  //
-
-  UInt_t* trackletword;
-  for(Int_t side=0; side<2; side++)
-    {
-      Int_t trkl=0;
-      trackletword=fTrackletContainer[side];
-      while(trackletword[trkl]>0){
-	Int_t n = TrackletsArray()->GetEntriesFast();
-	AliTRDtrackletWord tmp(trackletword[trkl]);
-	new((*TrackletsArray())[n]) AliTRDcluster(&tmp,fDet,fVolid);
-	trkl++;
-      }
-    }
 }
 
 //_____________________________________________________________________________
@@ -1373,11 +1289,11 @@ TClonesArray *AliTRDclusterizer::RecPoints()
 TClonesArray *AliTRDclusterizer::TrackletsArray() 
 {
   //
-  // Returns the list of rec points
+  // Returns the array of on-line tracklets
   //
 
   if (!fTracklets && fReconstructor->IsProcessingTracklets()) {
-    fTracklets = new TClonesArray("AliTRDcluster", 2*MAXTRACKLETSPERHC);
+    fTracklets = new TClonesArray("AliTRDtrackletWord", 2*MAXTRACKLETSPERHC);
     //SetClustersOwner(kTRUE);
     //AliTRDReconstructor::SetTracklets(0x0);
   }
@@ -1385,3 +1301,13 @@ TClonesArray *AliTRDclusterizer::TrackletsArray()
 
 }
 
+//_____________________________________________________________________________
+TClonesArray* AliTRDclusterizer::TracksArray()
+{
+  // return array of GTU tracks (create TClonesArray if necessary)
+
+  if (!fTracks) {
+    fTracks = new TClonesArray("AliESDTrdTrack",100);
+  }
+  return fTracks;
+}
