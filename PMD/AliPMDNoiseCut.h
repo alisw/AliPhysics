@@ -16,7 +16,7 @@ class AliPMDNoiseCut: public TNamed
   AliPMDNoiseCut& operator= (const AliPMDNoiseCut &noisecut);
   virtual ~AliPMDNoiseCut();
 
-  Int_t GetNoiseCut(Int_t imod) const {return fNoiseCut[imod];}
+  Float_t GetNoiseCut(Int_t imod) const {return fNoiseCut[imod];}
 
   void  SetNoiseCut(Int_t imod, Float_t cut) {fNoiseCut[imod] = cut;}
 
@@ -27,6 +27,6 @@ class AliPMDNoiseCut: public TNamed
   Float_t fNoiseCut[48];
 
 
-  ClassDef(AliPMDNoiseCut,1) // calibration class for gainfactors
+  ClassDef(AliPMDNoiseCut,2) // calibration class for gainfactors
 };
 #endif

@@ -393,9 +393,9 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
 
   Int_t *phentry = new Int_t [nentry];
   Int_t *hadentry = new Int_t [nentry];
-  Int_t *trenergy = 0x0;
   Int_t *trpid    = 0x0;
   Int_t *sortcoord = 0x0;
+  Float_t *trenergy = 0x0;
 
   Int_t ngtrack = 0;
   Int_t nhtrack = 0;
@@ -431,10 +431,9 @@ void AliPMDtracker::AssignTrPidToCluster(Int_t nentry, Int_t *itra,
       // find out which track deposits maximum energy and
       // assign that track number and track pid
 
-      trenergy  = new Int_t [nghadtrack];
+      trenergy  = new Float_t [nghadtrack];
       trpid     = new Int_t [nghadtrack];
-      // the dimension of sortcoord is doubled
-      sortcoord = new Int_t [2*nghadtrack];
+      sortcoord = new Int_t [nghadtrack];
       for (Int_t i = 0; i < ngtrack; i++)
 	{
 	  trenergy[i] = 0.;

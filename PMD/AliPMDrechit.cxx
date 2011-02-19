@@ -31,7 +31,7 @@ AliPMDrechit::AliPMDrechit():
   fYcell(0),
   fTrcell(0),
   fPidcell(0),
-  fAdccell(0)
+  fAdccell(0.)
 {
   // Standard constructor
 }
@@ -52,7 +52,7 @@ AliPMDrechit::AliPMDrechit(AliPMDrechit *pmdrechit):
   fYcell(0),
   fTrcell(0),
   fPidcell(0),
-  fAdccell(0)
+  fAdccell(0.)
 {
   *this = *pmdrechit;
 }

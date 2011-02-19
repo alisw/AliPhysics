@@ -37,9 +37,9 @@ class AliPMDrechit : public TObject
   Int_t   fYcell;         // y-position of the cell
   Int_t   fTrcell;        // track no of the cell
   Int_t   fPidcell;       // track pid of the cell
-  Int_t   fAdccell;       // cell Adc
+  Float_t fAdccell;       // cell Adc
   
-  ClassDef(AliPMDrechit,4) // To keep cell hit information
+  ClassDef(AliPMDrechit,5) // To keep cell hit information
 };
 
 #endif
