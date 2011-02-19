@@ -14,6 +14,7 @@
 #include "TObject.h"
 
 class TTree;
+class TClonesArray;
 
 class AliRunLoader;
 
@@ -39,7 +40,11 @@ class AliTRDrawData : public TObject {
   virtual Bool_t       Digits2Raw(TTree *digits, const TTree *tracks = NULL);
 
   virtual AliTRDdigitsManager *Raw2Digits(AliRawReader *rawReader);
-  Bool_t WriteTracklets(Int_t det);
+
+  virtual TClonesArray    *TrackletsArray();
+  virtual TClonesArray    *TracksArray();
+  void                    SetTrackletsOwner(TClonesArray *trkl = 0x0) { fTracklets = trkl; } // set to own the given array
+  void                    SetTracksOwner(TClonesArray *trk = 0x0) { fTracks = trk; } // set to own the given array
 
  protected:
 
@@ -56,8 +61,10 @@ class AliTRDrawData : public TObject {
   AliTRDgeometry      *fGeo;            //! Geometry
   AliTRDfeeParam      *fFee;            //! Fee Parameters
   Int_t                fNumberOfDDLs;   //  Number of DDLs
-  TTree               *fTrackletTree;        //! Tree for tracklets
-  UInt_t              **fTrackletContainer;  //! tracklet container
+  TTree               *fTrackletTree;   //! Tree for tracklets
+
+  TClonesArray        *fTracklets;      //! Array of online tracklets
+  TClonesArray        *fTracks;         //! Array of GTU tracks
 
  private:
 
@@ -71,7 +78,7 @@ class AliTRDrawData : public TObject {
   AliTRDmcmSim      *fMcmSim;         //! MCM simulation for raw data output
   AliTRDdigitsParam *fDigitsParam;    // Digits parameter
 
-  ClassDef(AliTRDrawData,7)             //  TRD raw data class
+  ClassDef(AliTRDrawData,8)             //  TRD raw data class
 
 };
 #endif
