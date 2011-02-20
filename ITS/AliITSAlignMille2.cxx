@@ -211,6 +211,8 @@ AliITSAlignMille2::AliITSAlignMille2(const Char_t *configFilename,TList *userInf
   fDiamondPointID(-1),
   fDiamondModID(-1),
   fCheckDiamondPoint(kDiamondCheckIfPrompt),
+  fFixCurvIfConstraned(kTRUE),
+  fCurvFitWasConstrained(kFALSE),
   fConvAlgMatOld(100)
 {
   /// main constructor that takes input from configuration file
@@ -2447,6 +2449,7 @@ Int_t AliITSAlignMille2::ProcessTrack(const AliTrackPointArray *track, Double_t 
   // finally send local equations to millepede
   SetLocalEquations(md,nloceq);
   fMillepede->SaveRecordData(); // RRR
+  fCurvFitWasConstrained = kFALSE; // restore default
   //
   return 0;
 }
@@ -2955,6 +2958,9 @@ Int_t AliITSAlignMille2::AddLocalEquationTPA(Mille2Data &m)
   TGeoHMatrix *tempHMat = GetSensorCurrMatrixSID(fCurrentSensID);// fCurrentModule->GetSensitiveVolumeMatrix(fCluster.GetVolumeID());
   //
   fTPAFitter->GetDResDParams(&fDerivativeLoc[0][0], curpoint);    // resid. derivatives over the track parameters 
+  if (fCurvFitWasConstrained && fFixCurvIfConstraned && !IsZero(fBField)) 
+    for (int i=3;i--;) fDerivativeLoc[AliITSTPArrayFit::kR0][i] = 0; //Fix curvarute
+  //
   for (Int_t i=fNLocal; i--;) tempHMat->MasterToLocalVect(fDerivativeLoc[i],m.fDerLoc[i]); 
   //
   int status = 0;
@@ -3111,6 +3117,12 @@ void AliITSAlignMille2::SetLocalEquations(const Mille2Data *marr, Int_t neq)
   /// Set local equations with data stored in m
   /// return 0 if success
   //
+  Bool_t locPatt[kNLocal] = {0}; // pattern of lacal eq's to account
+  for (int i=fNLocal; i--;) {
+    if (locPatt[i]) continue; // already set
+    for (Int_t j=0; j<neq; j++) for (int ic=3;ic--;) if (!IsZero(marr[j].fDerLoc[i][ic])) locPatt[i]=kTRUE;
+  }
+  //
   for (Int_t j=0; j<neq; j++) {
     //
     const Mille2Data &m = marr[j];
@@ -3120,8 +3132,8 @@ void AliITSAlignMille2::SetLocalEquations(const Mille2Data *marr, Int_t neq)
       // for the diamond point (if any) the Y residual is accounted
       if (ic==kY && !fUseLocalYErr && !(m.fModuleID[0]==fDiamondModID)) continue;
       AliDebug(2,Form("setting local equation %c with fMeas=%.6f  and fSigma=%.6f",fgkXYZ[ic],m.fMeas[ic], m.fSigma[ic]));      
-      Int_t nzero = 0;
-      for (int i=fNLocal; i--;) nzero += SetLocalDerivative(i,m.fDerLoc[i][ic] );
+      Int_t nzero = 0, naddl = 0;
+      for (int i=0;i<=fNLocal;i++) if (locPatt[i]) nzero += SetLocalDerivative(naddl++,m.fDerLoc[i][ic] );
       if (nzero==fNLocal) { 
 	AliInfo(Form("Skipping %c residual due to the zero derivatives!",fgkXYZ[ic])); 
 	continue; 
@@ -4325,6 +4337,7 @@ void AliITSAlignMille2::ConstrainHelixFitPT(Int_t q,Double_t pt,Double_t pterr)
   fConstrCharge = q==0 ? q:TMath::Sign(1,q);
   fConstrPT = pt;
   fConstrPTErr = pterr;
+  fCurvFitWasConstrained = kTRUE;
 }
 
 //________________________________________________________________________________________________________
@@ -4338,10 +4351,12 @@ void AliITSAlignMille2::ConstrainHelixFitCurv(Int_t q,Double_t crv,Double_t crve
   if (crv<0 || IsZero(crv)) {
     fConstrPT    = -1;
     fConstrPTErr = -1;
+    fCurvFitWasConstrained = kFALSE;
   }
   else {
     fConstrPT    = TMath::Abs(1./crv*fBField*kCQConv);
     fConstrPTErr = crverr>1e-10 ? TMath::Abs(fConstrPT/crv*crverr) : 0.;
+    fCurvFitWasConstrained = kTRUE;
   }
 }
 
@@ -4948,3 +4963,4 @@ AliAlignObjParams* AliITSAlignMille2::ConvFindDelta(const TClonesArray* arrDelta
   }
   return delta;
 }
+

@@ -132,6 +132,8 @@ class AliITSAlignMille2: public TObject
   Int_t     ProcessTrack(const AliTrackPointArray *track, Double_t wgh=1.0);
   Int_t     FitTrack();
   Int_t     CheckCurrentTrack();
+  Bool_t    GetFixCurvIfConstraned()        const                       {return fFixCurvIfConstraned;}
+  void      SetFixCurvIfConstraned(Bool_t v=kTRUE)                      {fFixCurvIfConstraned = v;}
   //
   // methods for point unbiasing (via scaling its inverted cov.matrix)
   Bool_t    IsCovIScaleTouched()                     const {return TestBit(kCovIScaleBit);}
@@ -511,6 +513,9 @@ class AliITSAlignMille2: public TObject
   Int_t         fDiamondModID;                     //id of the fake diamond module
   Int_t         fCheckDiamondPoint;                // kDiamondIgnore: ignore in this event, kDiamondCheckIfPrompt: verify if track is prompt, kDiamondUse: use w/o verification
   Float_t       fCovIScale[kMaxPoints];            //optional scaling for inv.cov matrix (debiasing). MANAGED BY THE USER EXTERNALLY
+  //
+  Bool_t        fFixCurvIfConstraned;              //when fit curv. was constrained, don't pass it as a free param to MP2
+  Bool_t        fCurvFitWasConstrained;            //flag that the last fit had constrained curvature
   //
   TObjArray     fConvAlgMatOld;                    //array to keep matrices of alignables for deltas conversion
   //
