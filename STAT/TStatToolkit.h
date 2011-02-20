@@ -44,16 +44,21 @@ class TStatToolkit : public TObject
   //
   static TString* FitPlane(TTree * tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints,  TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac=-1, Int_t start=0, Int_t stop=10000000, Bool_t fix0=kFALSE);
   static TString* FitPlaneFixed(TTree * tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints,  TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac=-1, Int_t start=0, Int_t stop=10000000);
-
-
+  //
+  //Linear fitter helper function
+  //
   static TString* FitPlaneConstrain(TTree * tree, const char* drawCommand, const char* formula, const char* cuts, Double_t & chi2, Int_t &npoints,  TVectorD &fitParam, TMatrixD &covMatrix, Float_t frac=-1, Int_t start=0, Int_t stop=10000000, Double_t constrain=-1);
-
+  static Int_t GetFitIndex(TString fString, TString subString);
+ static TString FilterFit(TString &input, TString filter, TVectorD &vec, TMatrixD &covar);
+ static void Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
+  static void   Constrain1D(TString &input, TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma);
+  static TString  MakeFitString(TString &input, TVectorD &param, TMatrixD & covar);
 
   //
   // TestFunctions:
   //
  static  void TestGausFit(Int_t nhistos=5000);
-    
+
  ClassDef(TStatToolkit,0) // Various mathematical tools for physics analysis - which are not included in ROOT TMath
  
 };
