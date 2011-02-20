@@ -76,6 +76,13 @@
 #include "AliTPCcalibTimeGain.h"
 #include "AliTPCcalibGainMult.h"
 #include "AliSplineFit.h"
+#include "AliTPCComposedCorrection.h"
+#include "AliTPCExBTwist.h"
+#include "AliTPCCalibGlobalMisalignment.h"
+#include "TStatToolkit.h"
+#include "TChain.h"
+#include "TCut.h"
+#include "AliTrackerBase.h"
 #include "AliTPCPreprocessorOffline.h"
 
 
@@ -100,6 +107,7 @@ AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
   fGainMIP(0),          // calibration component for MIP
   fGainCosmic(0),       // calibration component for cosmic
   fGainMult(0),
+  fAlignTree(0),        // alignment tree
   fSwitchOnValidation(kFALSE) // flag to switch on validation of OCDB parameters
 {
   //
@@ -207,7 +215,15 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
     Printf("TPC time drift OCDB parameters out of range!");
     return;
   }
-
+  //
+  //4.b make alignment
+  //
+  MakeFitTime();
+  TFile * ftime= TFile::Open("fitITSVertex.root");
+  if (ftime){
+    TObject * alignmentTime=ftime->Get("FitCorrectionTime");
+    if (alignmentTime) fVdriftArray->AddLast(alignmentTime);
+  }
   //
   //
   // 5. update of OCDB
@@ -1157,6 +1173,322 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
     delete canvasMIP;    
   }  
 }
+
+void AliTPCPreprocessorOffline::MakeFitTime(){
+  //
+  // mak aligment fit - store results in the file
+  //
+  const Int_t kMinEntries=1000;
+  MakeChainTime();
+  MakePrimitivesTime();
+  if (!fAlignTree) return;
+  if (fAlignTree->GetEntries()<kMinEntries) return;
+  fAlignTree->SetAlias("ptype","type");
+  fAlignTree->SetAlias("hasITS","(1+0)");
+  fAlignTree->SetAlias("dITS","1-2*(refX<40)");
+  fAlignTree->SetAlias("isITS","refX>10");
+  fAlignTree->SetAlias("isVertex","refX<10");
+  // 
+  Int_t  npointsMax=30000000;
+  TStatToolkit toolkit;
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD param;
+  TMatrixD covar;
+
+  TString fstringFast="";
+  fstringFast+="FExBTwistX++";
+  fstringFast+="FExBTwistY++";
+  fstringFast+="FAlignRot0D++";
+  fstringFast+="FAlignTrans0D++";
+  fstringFast+="FAlignTrans1D++";
+  //
+  fstringFast+="hasITS*FAlignTrans0++";
+  fstringFast+="hasITS*FAlignTrans1++";
+  fstringFast+="hasITS*FAlignRot0++";
+  fstringFast+="hasITS*FAlignRot1++";
+  fstringFast+="hasITS*FAlignRot2++";
+  //
+  fstringFast+="dITS*FAlignTrans0++";
+  fstringFast+="dITS*FAlignTrans1++";
+  fstringFast+="dITS*FAlignRot0++";
+  fstringFast+="dITS*FAlignRot1++";
+  fstringFast+="dITS*FAlignRot2++";
+  
+  TCut cutFit="entries>10&&abs(mean)>0.00001";
+  fAlignTree->SetAlias("err","rms");
+
+  TString *strDeltaITS = TStatToolkit::FitPlaneConstrain(fAlignTree,"mean:err", fstringFast.Data(),cutFit, chi2,npoints,param,covar,-1,0, npointsMax, 1);
+  strDeltaITS->Tokenize("++")->Print();
+  fAlignTree->SetAlias("fitYFast",strDeltaITS->Data());
+  // 
+  TVectorD paramC= param;
+  TMatrixD covarC= covar;
+  TStatToolkit::Constrain1D(fstringFast,"Trans0D",paramC,covarC,0, 0.1);
+  TStatToolkit::Constrain1D(fstringFast,"Trans1D",paramC,covarC,0, 0.1);
+  TStatToolkit::Constrain1D(fstringFast,"TwistX",paramC,covarC,0, 0.1);
+  TStatToolkit::Constrain1D(fstringFast,"TwistY",paramC,covarC,0, 0.1);
+  TString strFitConst=TStatToolkit::MakeFitString(fstringFast, paramC,covar);
+  fAlignTree->SetAlias("fitYFastC",strFitConst.Data());
+  CreateAlignTime(fstringFast,paramC);
+
+
+}
+
+
+void AliTPCPreprocessorOffline::MakeChainTime(){
+  //
+  TFile f("TPCTimeObjects.root");
+  //  const char *cdtype[7]={"ITS","TRD","Vertex","TOF","TPC","TPC0","TPC1"};
+  //const char *cptype[5]={"dy","dz","dsnp","dtheta","d1pt"}; 
+  const char * hname[5]={"dy","dz","dsnp","dtheta","d1pt"};
+  Int_t run=0;
+  AliTPCcalibTime  *calibTime= (AliTPCcalibTime*) f.Get("calibTime");
+  if (!calibTime) return;
+  TTreeSRedirector *pcstream = new TTreeSRedirector("meanITSVertex.root");
+  Int_t ihis=0;
+  THnSparse *his = calibTime->GetResHistoTPCITS(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+  }
+  ihis=2;
+  his = calibTime->GetResHistoTPCITS(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+  }
+  ihis=0;
+  his = calibTime->GetResHistoTPCvertex(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+  }
+  ihis=2;
+  his = calibTime->GetResHistoTPCvertex(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+
+  }
+  delete pcstream;
+}
+
+
+Double_t AliTPCPreprocessorOffline::EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype){
+  //
+  //
+  //
+  Double_t sector = 9*phi/TMath::Pi();
+  if (sector<0) sector+=18;
+  Double_t y85=AliTPCCorrection::GetCorrSector(sector,85,theta,1,corr);
+  Double_t y245=AliTPCCorrection::GetCorrSector(sector,245,theta,1,corr);
+  if (ptype==0) return y85+(y245-y85)*(refX-85.)/(245.-85.);
+  if (ptype==2) return (y245-y85)/(245.-85.);
+  return 0;
+}
+
+
+
+void AliTPCPreprocessorOffline::MakePrimitivesTime(){
+  //
+  // Create primitive transformation to fit
+  //
+  fAlignTree=new TChain("fit","fit");
+  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdy");
+  fAlignTree->AddFile("meanITSVertex.root",10000000,"ITSdsnp");
+  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdy");
+  fAlignTree->AddFile("meanITSVertex.root",10000000,"Vertexdsnp");
+  // 
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  Double_t bzField=AliTrackerBase::GetBz(); 
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wtP = -10.0 * (bzField) * vdrift /  ezField ; 
+  AliTPCExBTwist *fitExBTwistX= new  AliTPCExBTwist;
+  AliTPCExBTwist *fitExBTwistY= new  AliTPCExBTwist;
+  AliTPCCalibGlobalMisalignment *trans0   =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *trans1   =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *trans0D  =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *trans1D  =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *rot0     =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *rot1     =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *rot2     =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *rot3     =new  AliTPCCalibGlobalMisalignment;
+  //
+  //
+  fitExBTwistX->SetXTwist(0.001);
+  fitExBTwistX->SetOmegaTauT1T2(wtP,1,1);  
+  //
+  fitExBTwistY->SetYTwist(0.001);
+  fitExBTwistY->SetOmegaTauT1T2(wtP,1,1);  
+  //
+  TGeoHMatrix *matrixRot = new TGeoHMatrix; 
+  TGeoHMatrix *matrixX = new TGeoHMatrix; 
+  TGeoHMatrix *matrixY = new TGeoHMatrix; 
+  matrixX->SetDx(0.1);
+  matrixY->SetDy(0.1);
+  Double_t rotAngles0[9]={0};
+  Double_t rotAngles1[9]={0};
+  Double_t rotAngles2[9]={0};
+  //
+  Double_t rotAngles3[9]={0};
+
+  rotAngles0[0]=1; rotAngles0[4]=1; rotAngles0[8]=1;
+  rotAngles1[0]=1; rotAngles1[4]=1; rotAngles1[8]=1;
+  rotAngles2[0]=1; rotAngles2[4]=1; rotAngles2[8]=1;
+  rotAngles3[0]=1; rotAngles3[4]=1; rotAngles3[8]=1;
+
+  rotAngles0[1]=-0.001;rotAngles0[3]=0.001;
+  rotAngles1[5]=-0.001;rotAngles1[7]=0.001;
+  rotAngles2[2]=0.001;rotAngles2[6]=-0.001;
+  rotAngles3[1]=0.001;rotAngles3[3]=-0.001;
+  matrixRot->SetRotation(rotAngles0);
+  rot0->SetAlignGlobal(matrixRot);
+  matrixRot->SetRotation(rotAngles1);
+  rot1->SetAlignGlobal(matrixRot);
+  matrixRot->SetRotation(rotAngles2);
+  rot2->SetAlignGlobal(matrixRot); 
+  matrixRot->SetRotation(rotAngles3);
+  rot3->SetAlignGlobalDelta(matrixRot); 
+  //
+  trans0->SetAlignGlobal(matrixX);
+  trans1->SetAlignGlobal(matrixY);
+  trans0D->SetAlignGlobalDelta(matrixX);
+  trans1D->SetAlignGlobalDelta(matrixY);
+  fitExBTwistX->Init();
+  fitExBTwistY->Init();
+  //
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(fitExBTwistX->Clone()),100);
+  fitExBTwistY->AddVisualCorrection((AliTPCExBTwist*)(fitExBTwistY->Clone()),101);
+  //
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(rot0->Clone()),102);
+  fitExBTwistY->AddVisualCorrection((AliTPCExBTwist*)(rot1->Clone()),103);
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(rot2->Clone()),104);
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(rot3->Clone()),105);
+
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(trans0->Clone()),106);
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(trans1->Clone()),107);
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(trans0D->Clone()),108);
+  fitExBTwistX->AddVisualCorrection((AliTPCExBTwist*)(trans1D->Clone()),109);
+  //
+  fAlignTree->SetAlias("FExBTwistX", "AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,100,ptype)+0");
+  fAlignTree->SetAlias("FExBTwistY","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,101,ptype)+0");
+  fAlignTree->SetAlias("FAlignRot0","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,102,ptype)+0");
+  fAlignTree->SetAlias("FAlignRot0D","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,105,ptype)+0");
+  fAlignTree->SetAlias("FAlignRot1","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,103,ptype)+0");
+  fAlignTree->SetAlias("FAlignRot2","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,104,ptype)+0");
+  fAlignTree->SetAlias("FAlignTrans0","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,106,ptype)+0");
+  fAlignTree->SetAlias("FAlignTrans1","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,107,ptype)+0");
+  fAlignTree->SetAlias("FAlignTrans0D","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,108,ptype)+0");
+  fAlignTree->SetAlias("FAlignTrans1D","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,109,ptype)+0");
+  //
+  // test fast function
+  //
+//   fAlignTree->Draw("FExBTwistX:ExBTwistX","isITS&&ptype==0&&abs(snp)<0.05","");
+//   fAlignTree->Draw("FExBTwistY:ExBTwistY","isITS&&ptype==0&&abs(snp)<0.05","");
+//   fAlignTree->Draw("FAlignRot0:alignRot0","isITS&&ptype==0&&abs(snp)<0.05","");
+//   fAlignTree->Draw("FAlignRot1:alignRot1","isITS&&ptype==0&&abs(snp)<0.05","");
+//   fAlignTree->Draw("FAlignRot2:alignRot2","isITS&&ptype==0&&abs(snp)<0.05","");
+//   //
+//   fAlignTree->Draw("FAlignTrans0:alignTrans0","isITS&&ptype==0&&abs(snp)<0.05","");
+//   fAlignTree->Draw("FAlignTrans1:alignTrans1","isITS&&ptype==0&&abs(snp)<0.05","");
+
+} 
+
+
+void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC){
+  //
+  //
+  //
+  //
+  TGeoHMatrix *matrixDelta     = new TGeoHMatrix; 
+  TGeoHMatrix *matrixGlobal    = new TGeoHMatrix; 
+  Double_t rAngles[9];
+  Int_t index=0;
+  //
+  index=TStatToolkit::GetFitIndex(fstring,"FAlignTrans0D");
+  if (index>=0) matrixDelta->SetDx(paramC[index+1]*0.1);
+  index=TStatToolkit::GetFitIndex(fstring,"FAlignTrans1D");
+  if (index>=0) matrixDelta->SetDy(paramC[index+1]*0.1);
+  rAngles[0]=1; rAngles[4]=1; rAngles[8]=1;
+  index=TStatToolkit::GetFitIndex(fstring,"FAlignRot0D");
+  rAngles[1]=-paramC[index+1]*0.001; rAngles[3]=paramC[index+1]*0.001;
+  rAngles[5]=0; rAngles[7] =0;
+  rAngles[2]=0; rAngles[6] =0;
+  matrixDelta->SetRotation(rAngles);
+  //
+  //
+  //
+  index=TStatToolkit::GetFitIndex(fstring,"hasITS*FAlignTrans0");
+  if (index>=0) matrixGlobal->SetDx(paramC[index+1]*0.1);
+  index=TStatToolkit::GetFitIndex(fstring,"hasITS*FAlignTrans1");
+  if (index>=0) matrixGlobal->SetDy(paramC[index+1]*0.1);
+  rAngles[0]=1; rAngles[4]=1; rAngles[8]=1;
+  index=TStatToolkit::GetFitIndex(fstring,"hasITS*FAlignRot0");
+  rAngles[1]=-paramC[index+1]*0.001; rAngles[3]=paramC[index+1]*0.001;
+  index=TStatToolkit::GetFitIndex(fstring,"hasITS*FAlignRot1");  
+  rAngles[5]=-paramC[index+1]*0.001; rAngles[7]=paramC[index+1]*0.001;
+  index=TStatToolkit::GetFitIndex(fstring,"hasITS*FAlignRot2");  
+  rAngles[2]=paramC[index+1]*0.001; rAngles[6] =-paramC[index+1]*0.001;
+  matrixGlobal->SetRotation(rAngles);
+  //
+  AliTPCCalibGlobalMisalignment *fitAlignTime  =new  AliTPCCalibGlobalMisalignment;
+  fitAlignTime  =new  AliTPCCalibGlobalMisalignment;
+  fitAlignTime->SetName("FitAlignTime");
+  fitAlignTime->SetTitle("FitAlignTime");
+  fitAlignTime->SetAlignGlobalDelta(matrixDelta);
+  fitAlignTime->SetAlignGlobal(matrixGlobal);
+  //
+  AliTPCExBTwist * fitExBTwist= new  AliTPCExBTwist;
+  Int_t indexX=TStatToolkit::GetFitIndex(fstring,"ExBTwistX");
+  Int_t indexY=TStatToolkit::GetFitIndex(fstring,"ExBTwistY");  
+  fitExBTwist->SetXTwist(0.001*paramC[indexX+1]);  // 1 mrad twist in x
+  fitExBTwist->SetYTwist(0.001*paramC[indexY+1]);  // 1 mrad twist in x
+  fitExBTwist->SetName("FitExBTwistTime");
+  fitExBTwist->SetTitle("FitExBTwistTime"); 
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  Double_t bzField=AliTrackerBase::GetBz();
+  Double_t vdrift = param->GetDriftV()/1000000.; // [cm/us]   // From dataBase: to be updated: per second (ideally)
+
+  Double_t ezField = 400; // [V/cm]   // to be updated: never (hopefully)
+  Double_t wt = -10.0 * (bzField) * vdrift /  ezField ; 
+  //
+  fitExBTwist->SetOmegaTauT1T2(wt,1,1);  
+  fitExBTwist->Init();  
+
+  AliTPCComposedCorrection *corrTime =  new AliTPCComposedCorrection;
+  TObjArray *arr = new TObjArray;
+  corrTime->SetCorrections(arr);
+  
+  corrTime->GetCorrections()->Add(fitExBTwist);
+  corrTime->GetCorrections()->Add(fitAlignTime);
+  corrTime->SetName("FitCorrectionTime");
+  corrTime->SetTitle("FitCorrectionTime");
+
+  fitExBTwist->AddVisualCorrection((AliTPCExBTwist*)(fitExBTwist->Clone()),1001);
+  fitAlignTime->AddVisualCorrection((AliTPCExBTwist*)(fitAlignTime->Clone()),1002);
+  fitAlignTime->AddVisualCorrection((AliTPCExBTwist*)(corrTime->Clone()),1003);
+  
+  
+  fAlignTree->SetAlias("ExBTwistTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1001,ptype)+0");
+  fAlignTree->SetAlias("AlignTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1002,ptype)+0");
+  fAlignTree->SetAlias("FitCorrectionTime","AliTPCPreprocessorOffline::EvalAt(phi,refX,theta,1003,ptype)+0");
+
+
+  TFile *f = new TFile("fitITSVertex.root","update");
+  corrTime->Write("FitCorrectionTime");
+  f->Close();
+}
+
 
 
 

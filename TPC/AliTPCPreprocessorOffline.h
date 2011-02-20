@@ -51,10 +51,20 @@ public:
   Bool_t AnalyzeGainMultiplicity();
   Bool_t ValidateTimeGain(Double_t minGain=2.0, Double_t maxGain = 3.0);
   //
+  // Alignment time part
+  //
+  void  MakeChainTime();
+  void  MakePrimitivesTime();
+  void  CreateAlignTime(TString fstring, TVectorD paramC);  
+  void  MakeFitTime();
+  static Double_t EvalAt(Double_t phi, Double_t refX, Double_t theta, Int_t corr, Int_t ptype);
+
+  //
   // QA drawing part
   //
   static void SetPadStyle(TPad *pad, Float_t mx0, Float_t mx1, Float_t my0, Float_t my1);
   static void PrintArray(TObjArray *array);
+  TChain *GetAlignTree(){return fAlignTree;}
   //
   // graph filtering part
   //
@@ -85,7 +95,9 @@ private:
   AliTPCcalibTimeGain * fGainMIP;          // calibration component for MIP
   AliTPCcalibTimeGain * fGainCosmic;       // calibration component for cosmic
   AliTPCcalibGainMult * fGainMult;         // calibration component for pad region gain equalization and multiplicity dependence
-  
+
+  TChain   *fAlignTree;        //alignment tree
+  //
   Bool_t fSwitchOnValidation;  // flag to switch on validation of OCDB parameters
 
 private:
