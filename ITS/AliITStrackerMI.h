@@ -74,7 +74,7 @@ public:
   //
   // methods for debugging (RS) >>
   Int_t FindClusterOfTrack(int label, int lr, int* store) const;
-  Int_t GetPattern(const AliITStrackMI* track, char* patt);
+  //  Int_t GetPattern(const AliITStrackMI* track, char* patt);
   // methods for debugging (RS) <<
   //
   class AliITSdetector { 

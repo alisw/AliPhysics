@@ -5193,6 +5193,7 @@ Int_t AliITStrackerMI::FindClusterOfTrack(int label, int lr, int* store) const /
   return fgLayers[lr].FindClusterForLabel(label,store);
 }
 
+/*
 Int_t AliITStrackerMI::GetPattern(const AliITStrackMI* track, char* patt)
 {
   // creates pattarn of hits marking fake/corrects by f/c. Used for debugging (RS) 
@@ -5212,7 +5213,7 @@ Int_t AliITStrackerMI::GetPattern(const AliITStrackMI* track, char* patt)
   }
   return nwrong;
 }
-
+*/
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::AliITSlayer::FindClusterForLabel(Int_t label, Int_t *store) { //RS
   //--------------------------------------------------------------------
