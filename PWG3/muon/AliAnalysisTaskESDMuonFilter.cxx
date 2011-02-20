@@ -338,7 +338,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     if (esdMuTrack->Charge() > 0) nPosTracks++;
     else nNegTracks++;
     
-    nMuonTrack[nMuons]= jTracks-1.;
+    nMuonTrack[nMuons]= jTracks-1;
     ++nMuons;
   }
   
