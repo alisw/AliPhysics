@@ -50,7 +50,8 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
   fClustersArray(NULL),
   fName(name), 
   fPadTitles(NULL),
-  fInvMassCanvas(NULL)
+  fInvMassCanvas(NULL),
+  fClusterReader(NULL)
 {
   // Constructor.
 
@@ -63,6 +64,10 @@ AliHLTEveCalo::AliHLTEveCalo(Int_t nm, TString name) :
   }
 
   fClustersArray = new TRefArray();
+  fClusterReader = new AliHLTCaloClusterReader();
+
+
+
 
 }
 
@@ -81,6 +86,11 @@ AliHLTEveCalo::~AliHLTEveCalo()
   if(fPadTitles)
     delete [] fPadTitles;
   fPadTitles = NULL;
+
+
+  if(fClusterReader)
+    delete fClusterReader;
+  fClusterReader = NULL;
 
 }
 
@@ -175,17 +185,16 @@ void AliHLTEveCalo::ProcessClusters(AliHLTHOMERBlockDesc* block) {
   //See header file for documentation
 
   AliHLTCaloClusterHeaderStruct *dh = reinterpret_cast<AliHLTCaloClusterHeaderStruct*> (block->GetData());
-  AliHLTCaloClusterReader * clusterReader = new AliHLTCaloClusterReader();
-  clusterReader->SetMemory(dh);  
+  fClusterReader->SetMemory(dh);  
 
   AliHLTCaloClusterDataStruct * ds;
 
-  while( (ds = clusterReader->NextCluster()) ){
+  while( (ds = fClusterReader->NextCluster()) ){
      AddClusters(ds->fGlobalPos, ds->fModule, ds->fEnergy);
   }
 
-  AliHLTCaloDigitDataStruct *dg = clusterReader->GetDigits();
-  UInt_t nDigits = clusterReader->GetNDigits();;
+  AliHLTCaloDigitDataStruct *dg = fClusterReader->GetDigits();
+  UInt_t nDigits = fClusterReader->GetNDigits();;
   for(UInt_t i = 0; i < nDigits; i++, dg++) {
     AddDigits(dg->fX, dg->fZ, dg->fModule, dg->fEnergy);
   }

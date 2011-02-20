@@ -13,6 +13,7 @@
 #include "AliHLTEveBase.h"
 #include "TString.h"
 
+class AliHLTCaloClusterReader;
 class AliESDEvent;
 class AliESDCaloCluster;
 class TRefArray;
@@ -102,11 +103,9 @@ private:
   void DrawInvMassHistogram(TH1F * histo);
 
   TString fName;  //PHOS or EMCAL
- 
   TString * fPadTitles;
-
-
   TCanvas * fInvMassCanvas;
+  AliHLTCaloClusterReader * fClusterReader;
 
 
   ClassDef(AliHLTEveCalo, 0);
