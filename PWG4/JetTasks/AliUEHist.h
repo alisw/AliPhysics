@@ -9,6 +9,7 @@
 // encapsulate histogram and corrections for one underlying event histogram
 
 #include "TObject.h"
+#include "TString.h"
 
 class AliCFContainer;
 class TH1;
@@ -44,11 +45,12 @@ class AliUEHist : public TObject
   
   void CopyReconstructedData(AliUEHist* from);
   
-  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Bool_t twoD = kFALSE);
+  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0);
+  TH1* GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiMin, Float_t phiMax, Float_t etaMin, Float_t etaMax, Bool_t skipPhiNormalization = kFALSE);
   
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
-  TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = -1);
+  TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = -1, Int_t weighting = 0);
   
   TH1D* GetTrackingEfficiency(Int_t axis);
   TH2D* GetTrackingEfficiency();
@@ -67,7 +69,7 @@ class AliUEHist : public TObject
   void Correct(AliUEHist* corrections);
   void CorrectTracks(CFStep step1, CFStep step2, TH1* trackCorrection, Int_t var1, Int_t var2 = -1);
   void CorrectTracks(CFStep step1, CFStep step2, Int_t region, TH1* trackCorrection, Int_t var1, Int_t var2 = -1);
-  void CorrectEvents(CFStep step1, CFStep step2, TH1D* eventCorrection, Int_t var);
+  void CorrectEvents(CFStep step1, CFStep step2, TH1* eventCorrection, Int_t var);
   
   void SetCombineMinMax(Bool_t flag) { fCombineMinMax = flag; }
   
@@ -88,6 +90,8 @@ class AliUEHist : public TObject
   virtual void Copy(TObject& c) const;
 
   virtual Long64_t Merge(TCollection* list);
+  void Scale(Double_t factor);
+  void Reset();
   
 protected:
   void SetStepNames(AliCFContainer* container);
@@ -108,7 +112,9 @@ protected:
   
   AliCFContainer* fCache;             //! cache variable for GetTrackEfficiency
   
-  ClassDef(AliUEHist, 3) // underlying event histogram container
+  TString fHistogramType;             // what is stored in this histogram
+  
+  ClassDef(AliUEHist, 4) // underlying event histogram container
 };
 
 #endif
