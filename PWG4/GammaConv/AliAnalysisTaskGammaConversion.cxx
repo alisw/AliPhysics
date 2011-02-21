@@ -418,9 +418,9 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
     AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
   }
 
-  if(fV0Reader == NULL){
+  //  if(fV0Reader == NULL){ // coverty does not permit this test
     // Write warning here cuts and so on are default if this ever happens
-  }
+  //  }
 
   if (fMCEvent ) {
     // To avoid crashes due to unzip errors. Sometimes the trees are not there.
@@ -3650,8 +3650,10 @@ void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
       }
 			
       AliKFParticle twoGammaCandidate(*twoGammaDecayCandidateDaughter0,*twoGammaDecayCandidateDaughter1);
-      fHistograms->FillHistogram("ESD_RecalculateGG_InvMass",twoGammaCandidate.GetMass());		
-      fHistograms->FillHistogram("ESD_RecalculateGG_InvMass_vs_Pt",twoGammaCandidate.GetMass(),twoGammaCandidate.GetPt());		
+      if(fHistograms != NULL){
+	fHistograms->FillHistogram("ESD_RecalculateGG_InvMass",twoGammaCandidate.GetMass());		
+	fHistograms->FillHistogram("ESD_RecalculateGG_InvMass_vs_Pt",twoGammaCandidate.GetMass(),twoGammaCandidate.GetPt());		
+      }
    }
  }
 }
@@ -4543,8 +4545,9 @@ Int_t AliAnalysisTaskGammaConversion::GetProcessType(const AliMCEvent * mcEvt) {
   // Determine if the event was generated with pythia or phojet and return the process type
 
   // Check if mcEvt is fine
-  if (!mcEvt) {
+  if (!mcEvt) { // coverty does not allow this, the check is done elsewhere
     AliFatal("NULL mc event");
+    return -1;
   } 
 
   // Determine if it was a pythia or phojet header, and return the correct process type
@@ -4553,6 +4556,7 @@ Int_t AliAnalysisTaskGammaConversion::GetProcessType(const AliMCEvent * mcEvt) {
   AliGenEventHeader * htmp = mcEvt->GenEventHeader();
   if(!htmp) {
     AliFatal("Cannot Get MC Header!!");
+    return -1;
   }
   if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
     headPy =  (AliGenPythiaEventHeader*) htmp;
