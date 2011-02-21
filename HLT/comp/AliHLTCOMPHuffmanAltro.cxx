@@ -657,6 +657,12 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* AliHLTCOMPHuffmanAltro::
 
       // create new tree element from last two entries in orderedarray
      AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct;
+     // error if temptree = NULL
+     if (temptree == NULL)
+       {
+	 HLTError("Error! Allocation of Huffman binary tree failed");
+	 return NULL;
+       };
 
       // initialise the new element:
       temptree->fleafcontents.famplitude = TIMEBINS; //internal nodes mustn't be confused with real amplitudes (from 0 to bitsize)!
@@ -777,6 +783,12 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* AliHLTCOMPHuffmanAltro::
  
   // create new tree element from last two entries
  AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* temptree = new AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct;
+  // error if temptree = NULL
+  if (temptree == NULL)
+    {
+      HLTError("Error! Pointer to root of Huffman binary tree = NULL");
+      return NULL;
+    };
   
   // initialise the new element:
   temptree->fleafcontents.famplitude = TIMEBINS; //internal nodes mustn't be confused with real event names (from 0 to TIMEBINS)!
@@ -813,12 +825,6 @@ AliHLTCOMPHuffmanData::AliHLTCOMPHuffmanTreeDataStruct* AliHLTCOMPHuffmanAltro::
   // validation test
   // cout << "  final abundance of tree root (DEC) =  " << temptree->fleafcontents.fabundance << endl;
   
-  // error if temptree = NULL
-  if (temptree == NULL)
-    {
-      HLTError("Error! Pointer to root of Huffman binary tree = NULL");
-    };
-
   return temptree;
 }
 
@@ -836,6 +842,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
       Int_t tempstructsize = (Int_t) ceil((double) TIMEBINS/64); // maximal codelength: TIMEBINS
       
       AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct* tempstruct = new AliHLTCOMPHuffmanCodeData::AliHLTCOMPHuffmanCodeStruct[tempstructsize];
+      if (!tempstruct) return -1;
 
       for(Int_t jj = 0; jj < tempstructsize; jj++)
 	{
@@ -904,6 +911,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 
 		      HLTError("Error! Valid codelength for datum (DEC) %d is larger than 64 bits, which is not usual for normal input data", finder->fleafcontents.famplitude);
 
+		      delete[] tempstruct;  
 		      return 1;
 		    }
 		  
@@ -959,6 +967,7 @@ Int_t AliHLTCOMPHuffmanAltro::HuffmanCode(AliHLTCOMPHuffmanData::AliHLTCOMPHuffm
 
 		      HLTError("Error! Valid codelength for current encoding process becomes larger than 64 bits, which is not usual for normal input data");
 
+		      delete[] tempstruct;  
 		      return 1;
 		    }
 
@@ -1424,6 +1433,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // initialise last valid bit position and trailer array
   AliHLTUInt32_t lastvalidbitpos = 0;
   AliHLTUInt64_t* trailer = new AliHLTUInt64_t[fNrcuTrailerwords];
+  if (!trailer) return -1;
 
   // validation test
   // cout << "last bit (DEC) =  " << lastbit << endl;
@@ -1651,6 +1661,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
 
 	  HLTError("Error! Valid codelength for current decoding is larger than 64 bits, error in recognising the correct code");
 
+	  delete [] trailer;
 	  return 1;
 
 	}
@@ -1753,6 +1764,7 @@ Int_t AliHLTCOMPHuffmanAltro::EntropyDecompression()
   // (bitpsoutwd%8)?1:0 = determine whether one more byte has to be used for "left over" bits
   fOutputDataSize = (Int_t) ((idxoutwd << 3) + (bitpsoutwd >> 3) + ((bitpsoutwd & 0x7) ? 1 : 0) );
   
+  delete [] trailer;
   // error and abort when output data size smaller than input data size (impossible when decompressing)
   if(fOutputDataSize < fInputDataSize)
     {
@@ -1773,6 +1785,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
   // see heaeder file for class documentation
   // create result array with TIMEBINS entries according to their abundance in the input data:
   UInt_t* histogrammarray = new UInt_t[TIMEBINS];
+  if (!histogrammarray) return -1;
 
   // initialise histrogramm:
   for(UInt_t jj = 0; jj < TIMEBINS; jj++)
@@ -1807,6 +1820,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
     {
       HLTError("Error! Input data size (bytes) %i cannot be divided into 32 bit words", fInputDataSize);
 
+      delete [] histogrammarray;
       return 1;
     };
   
@@ -1815,6 +1829,7 @@ Int_t AliHLTCOMPHuffmanAltro::CalcEntropy()
     {
       HLTError("Error! Input data without trailer and header words (bytes) %i cannot be divided into 10 bit words", fInputDataSize);
 
+      delete [] histogrammarray;
       return 1;
     };
 

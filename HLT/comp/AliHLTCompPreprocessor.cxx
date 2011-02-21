@@ -129,9 +129,9 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 
       if(objstr == 0) // should not happen?! 
 	{
-	  char logging[1000];
-	  sprintf(logging, "Error in Huffmanlist, no DDL at position %d", ii);
-	  Log(logging);
+	  TString logging;
+	  logging.Form("Error in Huffmanlist, no DDL at position %d", ii);
+	  Log(logging.Data());
 	  continue;
 	}
 
@@ -148,9 +148,9 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
       // if current huffman table file does not contain a table, return an error
       if ( currenthuffmanfile->Get("HuffmanData") == NULL)
 	{
-	  char logging[1000];
-	  sprintf(logging,"Local file %s does not contain a Huffman code table.", fileName.Data());
-	  Log(logging);
+	  TString logging;
+	  logging.Form("Local file %s does not contain a Huffman code table.", fileName.Data());
+	  Log(logging.Data());
 	  //retVal = 1; // retVal must be zero to give other functions a chance to read their data
 	  retVal = 0;
 	}
