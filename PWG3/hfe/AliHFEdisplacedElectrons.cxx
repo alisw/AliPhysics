@@ -464,7 +464,7 @@ void AliHFEdisplacedElectrons::FillMcOutput(AliESDEvent *const fESD, AliMCEvent*
     var[7] = mcStatus;  // internal status
 
 
-    (dynamic_cast<THnSparseF *>(fDeOutputList->At(kMcElectron)))->Fill(var);
+    (static_cast<THnSparseF *>(fDeOutputList->At(kMcElectron)))->Fill(var);
 }
 
 
@@ -593,7 +593,7 @@ void AliHFEdisplacedElectrons::FillEsdOutput(AliESDEvent * const fESDEvent, AliE
   var[7] = mcR;
   var[8] = mcStatus;
   
-  (dynamic_cast<THnSparseF *>(fDeOutputList->At(kEsdElectron)))->Fill(var);
+  (static_cast<THnSparseF *>(fDeOutputList->At(kEsdElectron)))->Fill(var);
   
 }
 
@@ -684,7 +684,7 @@ void AliHFEdisplacedElectrons::FillDataOutput(AliESDEvent * const fESDEvent, Ali
   varData[4] = eta; //eta
   varData[5] = phi; // phi
   
-  (dynamic_cast<THnSparseF *>(fDeOutputList->At(kDataElectron)))->Fill(varData);
+  (static_cast<THnSparseF *>(fDeOutputList->At(kDataElectron)))->Fill(varData);
 
 }
 

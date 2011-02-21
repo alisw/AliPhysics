@@ -209,8 +209,7 @@ void AliAnalysisTaskCheckV0tender::ProcessV0s(){
     if(!esdV0) continue;
     if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
     Int_t pid = GetTenderPidV0(esdV0);
-    //if(pid < 0) continue;
-    pid = 2;
+    if(pid < 0) continue;
     fColl->Fill("h_NumberOf_V0s", pid);
     Float_t pT = esdV0->Pt();
     name = "h_" + type[pid] + "_pt";

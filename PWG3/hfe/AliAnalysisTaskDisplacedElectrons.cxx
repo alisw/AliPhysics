@@ -196,7 +196,6 @@ AliAnalysisTaskDisplacedElectrons::~AliAnalysisTaskDisplacedElectrons(){
   if(fDePID) delete fDePID;
   if(fDeCFM) delete fDeCFM;
   if(fDisplacedElectrons) delete fDisplacedElectrons;  
-  return;
   if(fDeNEvents) delete fDeNEvents;
   if(fElectronsMcPt) delete fElectronsMcPt;
   if(fElectronsEsdPt) delete fElectronsEsdPt;

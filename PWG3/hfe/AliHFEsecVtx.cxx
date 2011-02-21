@@ -1702,27 +1702,27 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
 
     Int_t esource=fMCQA->GetElecSource(mcpart);
     if(esource==1) {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))->Fill(mcpart->Pt()); //charm
     }
     else if(esource==2 || esource==3) {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))->Fill(mcpart->Pt()); //beauty
     }
     else if(esource==4) {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))->Fill(mcpart->Pt()); //conversion
     }
     else if(esource==7) {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))->Fill(mcpart->Pt()); //contamination
     }
     else if(!(esource<0)) {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))->Fill(mcpart->Pt()); //e backgrounds
     }
     else {
-      if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))) return;
+      //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))) return;
       (dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))->Fill(mcpart->Pt()); //something else?
     }
   }
