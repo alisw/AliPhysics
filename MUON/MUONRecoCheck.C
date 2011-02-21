@@ -28,7 +28,7 @@
 // ROOT includes
 #include <Riostream.h>
 #include "TMath.h"
-#include "TClonesArray.h"
+#include "TObjArray.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"

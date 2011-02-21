@@ -14,7 +14,7 @@
 /// Reconstructed track in ALICE dimuon spectrometer
 ////////////////////////////////////////////////////
 
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TMatrixD.h>
 
 class AliMUONVCluster;
@@ -32,7 +32,7 @@ class AliMUONTrack : public TObject
 
   void Reset();
   
-  TClonesArray* GetTrackParamAtCluster() const;
+  TObjArray*    GetTrackParamAtCluster() const;
   void          AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, AliMUONVCluster &cluster, Bool_t copy = kFALSE); 
   void          RemoveTrackParamAtCluster(AliMUONTrackParam *trackParam);
   Bool_t        UpdateTrackParamAtCluster();
@@ -149,7 +149,7 @@ class AliMUONTrack : public TObject
   
   static const Double_t fgkMaxChi2; ///< maximum chi2 above which the track can be considered as abnormal
   
-  mutable TClonesArray* fTrackParamAtCluster; ///< Track parameters at cluster
+  mutable TObjArray* fTrackParamAtCluster; ///< Track parameters at cluster
   
   Bool_t   fFitWithVertex;   //!< kTRUE if using the vertex to constrain the fit, kFALSE if not
   Double_t fVertexErrXY2[2]; //!< Vertex resolution square used during the tracking procedure if required
@@ -187,7 +187,7 @@ class AliMUONTrack : public TObject
   void   ComputeMCSCovariances(TMatrixD& mcsCovariances) const;
   
   
-  ClassDef(AliMUONTrack, 9) // Reconstructed track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTrack, 10) // Reconstructed track in ALICE dimuon spectrometer
 };
 	
 #endif

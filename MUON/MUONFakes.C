@@ -5,7 +5,7 @@
 #include <TCanvas.h>
 #include <Riostream.h>
 #include <TROOT.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TArrayI.h>
 
 // STEER includes

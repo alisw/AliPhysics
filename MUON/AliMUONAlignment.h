@@ -16,6 +16,7 @@
 
 class TGeoCombiTrans;
 class TClonesArray;
+class TObjArray;
 class AliMillepede;
 class AliMUONGeometryTransformer;
 class AliMUONTrack;
@@ -114,10 +115,10 @@ public:
 
   AliMillepede *fMillepede; ///< Detector independent alignment class
   
-  TClonesArray *fTrackParamAtCluster; ///< Array of track parameters 
-  AliMUONTrack *fTrack;               ///< AliMUONTrack 
-  AliMUONVCluster *fCluster;          ///< AliMUONVCluster
-  AliMUONTrackParam *fTrackParam;     ///< Track parameters 
+  TObjArray *fTrackParamAtCluster; ///< Array of track parameters 
+  AliMUONTrack *fTrack;            ///< AliMUONTrack 
+  AliMUONVCluster *fCluster;       ///< AliMUONVCluster
+  AliMUONTrackParam *fTrackParam;  ///< Track parameters 
 
   Int_t fNGlobal;  ///< Number of global parameters
   Int_t fNLocal;   ///< Number of local parameters
@@ -199,7 +200,7 @@ public:
   static Int_t fgNDetElemCh[10]; ///< Number of detection elements per chamber
   static Int_t fgSNDetElemCh[10];///< Sum of detection elements up to this chamber (inc)
 
-ClassDef(AliMUONAlignment, 1) //Class for alignment of muon spectrometer
+ClassDef(AliMUONAlignment, 2) //Class for alignment of muon spectrometer
 };
 
 #endif

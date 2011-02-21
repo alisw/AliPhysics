@@ -16,7 +16,7 @@ class AliMUONTrack;
 class AliMUONVCluster;
 class AliMUONGeometryTransformer;
 class TList;
-class TClonesArray;
+class TObjArray;
 
 class AliCheckMuonDetEltResponse : public TObject
 {
@@ -74,7 +74,7 @@ private:
   Int_t fTrackFilter[10];        //!<To select track for the efficiency calculation.
   Int_t fNbrUsableTracks;        //!<Number of usable tracks (matches trigger and contains traker data, plus a trigger condition for cosmic)
 
-  TClonesArray     * fTrackParams;  //!<Array of track param
+  TObjArray        * fTrackParams;  //!<Array of track param
   AliMUONTrackParam* fTrackParam;   //!<Current track param
   AliMUONVCluster  * fCluster;      //!<Current cluster
 

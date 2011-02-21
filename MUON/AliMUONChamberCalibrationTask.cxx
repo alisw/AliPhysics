@@ -25,7 +25,7 @@
 
 #include <TBranch.h>
 #include <TChain.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TFile.h>
 #include <TMath.h>
 #include <TRandom.h>

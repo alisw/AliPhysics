@@ -45,6 +45,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TMatrixD.h>
+#include <TClonesArray.h>
 
 // Functions to be minimized with Minuit
 void TrackChi2(Int_t &nParam, Double_t *gradient, Double_t &chi2, Double_t *param, Int_t flag);

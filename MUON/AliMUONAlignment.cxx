@@ -45,6 +45,7 @@
 
 #include "TMath.h"
 #include "TMatrixDSym.h"
+#include "TClonesArray.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONAlignment)

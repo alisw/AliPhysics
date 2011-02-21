@@ -26,7 +26,7 @@
 #include <AliMUONESDInterface.h>
 #include <AliMUONVCluster.h>
 
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TGeoGlobalMagField.h>
 #include <TParticle.h>
 #include <TParticlePDG.h>
@@ -138,7 +138,7 @@ void AliEveMUONTrack::PrintMUONTrackInfo()
   Int_t nparam;
   Float_t pt, bc, nbc, zc;
   AliMUONTrackParam *mtp;
-  TClonesArray *trackParamAtCluster;
+  TObjArray *trackParamAtCluster;
 
   if (!fTrack) {
     cout << "   ! no reconstructed track ..." << endl;
@@ -517,7 +517,7 @@ void AliEveMUONTrack::MakeMUONTrack(AliMUONTrack *mtrack)
   }
   
   Int_t nTrackHits = mtrack->GetNClusters();
-  TClonesArray* trackParamAtCluster = mtrack->GetTrackParamAtCluster();
+  TObjArray* trackParamAtCluster = mtrack->GetTrackParamAtCluster();
   for (Int_t iHit = 0; iHit < nTrackHits; iHit++){
 
     trackParam = (AliMUONTrackParam*) trackParamAtCluster->At(iHit);
@@ -768,7 +768,7 @@ void AliEveMUONTrack::Propagate(Float_t *xr, Float_t *yr, Float_t *zr, Int_t i1,
   Double_t zMax = 0.0;
   Int_t  charge =   0;
   AliMUONTrackParam *trackParam = 0;
-  TClonesArray *trackParamAtCluster = 0;
+  TObjArray *trackParamAtCluster = 0;
 
   if (i2 == 9999) {
     zMax = zr[i1]+1.5*step;

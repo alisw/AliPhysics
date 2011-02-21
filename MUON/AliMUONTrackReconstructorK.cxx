@@ -46,6 +46,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TMatrixD.h>
+#include <TClonesArray.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackReconstructorK) // Class implementation in ROOT context

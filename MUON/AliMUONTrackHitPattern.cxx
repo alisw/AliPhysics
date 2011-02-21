@@ -61,7 +61,7 @@
 
 #include <Riostream.h>
 #include <TArrayS.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TMath.h>
 #include <TMatrixD.h>
 #include <TROOT.h>

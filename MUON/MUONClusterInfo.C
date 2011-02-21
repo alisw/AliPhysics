@@ -24,7 +24,7 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include <TStopwatch.h>
 #include <TFile.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 #include <TTree.h>
 #include <TString.h>
 #include <Riostream.h>
