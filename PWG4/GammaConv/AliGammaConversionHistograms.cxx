@@ -291,9 +291,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fMappingContainer->SetOwner(kTRUE);
 	  fMappingContainer->SetName("Mapping histograms");
 	}
-	if(fMappingContainer != NULL){
-	  fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("Background")){// means it should be put in the background folder
 	if(fBackgroundContainer == NULL){
@@ -301,9 +299,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fBackgroundContainer->SetOwner(kTRUE);
 	  fBackgroundContainer->SetName("Background histograms");
 	}
-	if(fBackgroundContainer != NULL){
-	  fBackgroundContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fBackgroundContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("Debug")){// means it should be put in the debug folder
 	if(fDebugContainer == NULL){
@@ -311,9 +307,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fDebugContainer->SetOwner(kTRUE);
 	  fDebugContainer->SetName("Debug histograms");
 	}
-	if(fDebugContainer != NULL){
-	  fDebugContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fDebugContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("Resolution")){// means it should be put in the resolution folder
 	if(fResolutionContainer == NULL){
@@ -321,9 +315,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fResolutionContainer->SetOwner(kTRUE);
 	  fResolutionContainer->SetName("Resolution histograms");
 	}
-	if(fResolutionContainer != NULL){
-	  fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("TrueConv")){// means it should be put in the true conv folder
 	if(fMatchContainer == NULL){
@@ -331,9 +323,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fMatchContainer->SetOwner(kTRUE);
 	  fMatchContainer->SetName("True conversion histograms");
 	}
-	if(fMatchContainer != NULL){
-	  fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("ESD")){// means it should be put in the ESD folder
 	if(fESDContainer == NULL){
@@ -341,9 +331,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fESDContainer->SetOwner(kTRUE);
 	  fESDContainer->SetName("ESD histograms");
 	}
-	if(fESDContainer != NULL){
-	  fESDContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fESDContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("MC")){// means it should be put in the MC folder
 	if(fMCContainer == NULL){
@@ -351,9 +339,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fMCContainer->SetOwner(kTRUE);
 	  fMCContainer->SetName("MC histograms");
 	}
-	if(fMCContainer != NULL){
-	  fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       else if(histogramString.Contains("Table")){// means it should be put in the Table Folder
 	if(fTableContainer == NULL){
@@ -361,9 +347,7 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	   fTableContainer->SetOwner(kTRUE);
 	   fTableContainer->SetName("Tables");
 	}
-	if(fTableContainer != NULL){
-	   fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }			
       else{
 	if(fOtherContainer == NULL){
@@ -371,12 +355,11 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	  fOtherContainer->SetOwner(kTRUE);
 	  fOtherContainer->SetName("Other histograms");
 	}
-	if(fOtherContainer != NULL){
-	  fOtherContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-	}
+	fOtherContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
       }
       histogramName = NULL;
     } // end while
+
     if(fMappingContainer != NULL){
       fOutputContainer->Add(fMappingContainer);
     }
