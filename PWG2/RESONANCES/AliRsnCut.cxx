@@ -13,10 +13,6 @@
 //          Martin Vala (martin.vala@cern.ch)
 //
 
-#include "AliRsnDaughter.h"
-#include "AliRsnMother.h"
-#include "AliRsnEvent.h"
-
 #include "AliRsnCut.h"
 
 ClassImp(AliRsnCut)
@@ -106,6 +102,7 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
    fMaxD      = copy.fMaxD;
    fCutValueI = copy.fCutValueI;
    fCutValueD = copy.fCutValueD;
+   fCutResult = copy.fCutResult;
 
    return (*this);
 }
@@ -128,20 +125,20 @@ Bool_t AliRsnCut::IsSelected(TObject* /*object*/)
 Bool_t AliRsnCut::OkValueI()
 {
 //
-// This method is used when the cut consists in comparing the cut value
-// with a reference integer value to which it must be equal.
+// This method is used to compare a value with a reference.
+// In the case of integers, the equality must be exact.
 //
 
    // eval result
    fCutResult = (fCutValueI == fMinI);
 
    // print debug message
-   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
+   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
    AliDebug(AliLog::kDebug + 2, Form("Cut value    : %d", fMinI));
    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ================================");
+   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ====================================================");
 
    return fCutResult;
 }
@@ -150,20 +147,20 @@ Bool_t AliRsnCut::OkValueI()
 Bool_t AliRsnCut::OkValueD()
 {
 //
-// This method is used when the cut consists in comparing the cut value
-// with a reference double value to which it must be equal (or at least, almost).
+// This method is used to compare a value with a reference.
+// In the case of doubles, the equality consists in being very close.
 //
 
    // eval result
-   fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
+   fCutResult = (TMath::Abs(fCutValueD - fMinD) < fgkVerySmall);
 
    // print debug message
-   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
+   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG =======================================================");
    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
    AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
    AliDebug(AliLog::kDebug + 2, Form("Cut value    : %f", fMinD));
    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ================================");
+   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ===================================================");
 
    return fCutResult;
 }
@@ -172,21 +169,19 @@ Bool_t AliRsnCut::OkValueD()
 Bool_t AliRsnCut::OkRangeI()
 {
 //
-// This method is used when the cut consists in an allowed range
-// where the cut value must be included to pass the cut.
-// Then, the cut result is kTRUE if the cut value is inside this range.
+// This method is used to compare a value with an integer range.
 //
 
    // eval result
    fCutResult = ((fCutValueI >= fMinI) && (fCutValueI <= fMaxI));
 
    // print debug message
-   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
+   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
    AliDebug(AliLog::kDebug + 2, Form("Checked value: %d", fCutValueI));
    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %d , %d", fMinI, fMaxI));
    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ================================");
+   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ====================================================");
 
    return fCutResult;
 }
@@ -195,21 +190,19 @@ Bool_t AliRsnCut::OkRangeI()
 Bool_t AliRsnCut::OkRangeD()
 {
 //
-// This method is used when the cut consists in an allowed range
-// where the cut value must be included to pass the cut.
-// Then, the cut result is kTRUE if the cut value is inside this range.
+// This method is used to compare a value with a double-float range.
 //
 
    // eval result
    fCutResult = ((fCutValueD >= fMinD) && (fCutValueD <= fMaxD));
 
    // print debug message
-   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ====================================");
+   AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG ========================================================");
    AliDebug(AliLog::kDebug + 2, Form("Cut name     : %s", GetName()));
    AliDebug(AliLog::kDebug + 2, Form("Checked value: %f", fCutValueD));
    AliDebug(AliLog::kDebug + 2, Form("Cut range    : %f , %f", fMinD, fMaxD));
    AliDebug(AliLog::kDebug + 2, Form("Cut result   : %s", (fCutResult ? "PASSED" : "NOT PASSED")));
-   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ================================");
+   AliDebug(AliLog::kDebug + 2, "=== END CUT DEBUG ====================================================");
 
    return fCutResult;
 }
