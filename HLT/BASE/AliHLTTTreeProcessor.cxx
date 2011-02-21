@@ -198,12 +198,12 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   bool bDoPublishing=false;
   const int cycleResetInterval=1000;
   if (fpEventTimer && fpCycleTimer) {
-    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
-    fillingtime=fpEventTimer->RealTime()*fgkTimeScale;
+    averageEventTime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    fillingtime=int(fpEventTimer->RealTime()*fgkTimeScale);
     publishtime=fillingtime;
     fpEventTimer->Start(kFALSE);
     fpCycleTimer->Stop();
-    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/((GetEventCount()%cycleResetInterval)+1);
+    averageCycleTime=AliHLTUInt32_t(fpCycleTimer->RealTime()*fgkTimeScale)/((GetEventCount()%cycleResetInterval)+1);
     // adapt processing to 3/4 of the max time
     bDoFilling=4*averageEventTime<3*fMaxEventTime ||
       (averageEventTime<fCycleTimeFactor*averageCycleTime && fpCycleTimer->RealTime()>fIgnoreCycleTime);
@@ -228,7 +228,7 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
   }
   if (fpEventTimer) {
     fpEventTimer->Stop();
-    fillingtime=fpEventTimer->RealTime()*fgkTimeScale-fillingtime;
+    fillingtime=int(fpEventTimer->RealTime()*fgkTimeScale)-fillingtime;
     if (fillingtime<0) fillingtime=0;
     fpEventTimer->Start(kFALSE);
   }
@@ -271,11 +271,11 @@ int AliHLTTTreeProcessor::DoEvent(const AliHLTComponentEventData& evtData, AliHL
 
   if (fpEventTimer) {
     fpEventTimer->Stop();
-    publishtime=fpEventTimer->RealTime()*fgkTimeScale-publishtime;
+    publishtime=int(fpEventTimer->RealTime()*fgkTimeScale)-publishtime;
     if (publishtime>fillingtime) publishtime-=fillingtime;
     else publishtime=0;
 
-    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    averageEventTime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
 
     // info output once every 5 seconds
     static UInt_t lastTime=0;
