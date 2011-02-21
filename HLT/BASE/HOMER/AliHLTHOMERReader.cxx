@@ -662,13 +662,15 @@ int AliHLTHOMERReader::AddDataSource( const char* hostname, unsigned short port,
 	return ret;
 	}
 
-    char* tmpchar = new char[ strlen( hostname )+1 ];
+    unsigned hostnamelen=strlen( hostname );
+    char* tmpchar = new char[ hostnamelen+1 ];
     if ( !tmpchar )
 	{
 	close( source.fTCPConnection );
 	return ENOMEM;
 	}
-    strcpy( tmpchar, hostname );
+    strncpy( tmpchar, hostname, hostnamelen );
+    tmpchar[hostnamelen]=0;
     source.fHostname = tmpchar;
 
     source.fType = kTCP;
@@ -1250,10 +1252,12 @@ int AliHLTHOMERReader::ParseSourceData( DataSource& source )
 	    struct in_addr tmpA;
 	    tmpA.s_addr = (homer_uint32)( ((homer_uint64*)descr)[ kProducerNode_64b_Offset ] );
 	    char* addr = inet_ntoa( tmpA );
-	    char* tmpchar = new char[ strlen(addr)+1 ];
+	    unsigned straddrlen=strlen(addr);
+	    char* tmpchar = new char[ straddrlen+1 ];
 	    if ( !tmpchar )
 		return ENOMEM;
-	    strcpy( tmpchar, addr );
+	    strncpy( tmpchar, addr, straddrlen );
+	    tmpchar[straddrlen]=0;
 	    fBlocks[fBlockCnt].fOriginatingNodeID = tmpchar;
 	    descrOffset += descrLen;
 	    }
@@ -1270,7 +1274,11 @@ int AliHLTHOMERReader::ReAllocBlocks( unsigned long newCnt )
     if ( !newBlocks )
 	return ENOMEM;
     unsigned long cpCnt = (newCnt > fMaxBlockCnt) ? fMaxBlockCnt : newCnt;
+    if ( fBlocks ) {
     memcpy( newBlocks, fBlocks, cpCnt*sizeof(DataBlock) );
+    } else {
+      fMaxBlockCnt=0;
+    }
     if ( newCnt > fMaxBlockCnt )
 	memset( newBlocks+fMaxBlockCnt, 0, (newCnt-fMaxBlockCnt)*sizeof(DataBlock) );
     if ( fBlocks )
