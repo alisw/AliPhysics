@@ -51,7 +51,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fEventCount(0),
   fEventCountDifferential(0),
   fVertexContributors(0),
-  fCentralityDistribution(0)
+  fCentralityDistribution(0),
+  fSelectCharge(0)
 {
   // Constructor
   //
@@ -77,9 +78,19 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  fCorrelationpT  = new TH2F("fCorrelationpT", ";p_{T,lead} (MC);p_{T,lead} (RECO)", 200, 0, 50, 200, 0, 50);
-  fCorrelationEta = new TH2F("fCorrelationEta", ";#eta_{T,lead} (MC);#eta_{T,lead} (RECO)", 200, -1, 1, 200, -1, 1);
-  fCorrelationPhi = new TH2F("fCorrelationPhi", ";#phi_{T,lead} (MC);#phi_{T,lead} (RECO)", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
+  if (!histogramsStr.Contains("4"))
+  {
+    fCorrelationpT  = new TH2F("fCorrelationpT", ";p_{T,lead} (MC);p_{T,lead} (RECO)", 200, 0, 50, 200, 0, 50);
+    fCorrelationEta = new TH2F("fCorrelationEta", ";#eta_{T,lead} (MC);#eta_{T,lead} (RECO)", 200, -1, 1, 200, -1, 1);
+    fCorrelationPhi = new TH2F("fCorrelationPhi", ";#phi_{T,lead} (MC);#phi_{T,lead} (RECO)", 200, 0, TMath::TwoPi(), 200, 0, TMath::TwoPi());
+  }
+  else
+  {
+    fCorrelationpT  = new TH2F("fCorrelationpT", ";Centrality;p_{T,lead} (RECO)", 100, 0, 100.001, 200, 0, 50);
+    fCorrelationEta = new TH2F("fCorrelationEta", ";Centrality;#eta_{T,lead} (RECO)", 100, 0, 100.001, 200, -1, 1);
+    fCorrelationPhi = new TH2F("fCorrelationPhi", ";Centrality;#phi_{T,lead} (RECO)", 100, 0, 100.001, 200, 0, TMath::TwoPi());
+  }
+  
   fCorrelationR =   new TH2F("fCorrelationR", ";R;p_{T,lead} (MC)", 200, 0, 2, 200, 0, 50);
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #phi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
@@ -96,7 +107,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   
   fVertexContributors = new TH1F("fVertexContributors", ";contributors;count", 100, -0.5, 99.5);
   
-  fCentralityDistribution = new TH1F("fCentralityDistribution", ";;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetBinLowEdge(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetBinUpEdge(fNumberDensityPhi->GetEventHist()->GetNBins(1)));
+  fCentralityDistribution = new TH1F("fCentralityDistribution", ";;count", fNumberDensityPhi->GetEventHist()->GetNBins(1), fNumberDensityPhi->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray());
   
   TH1::AddDirectory(oldStatus);
 }
@@ -116,7 +127,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fEventCount(0),
   fEventCountDifferential(0),
   fVertexContributors(0),
-  fCentralityDistribution(0)
+  fCentralityDistribution(0),
+  fSelectCharge(0)
 {
   //
   // AliUEHistograms copy constructor
@@ -348,7 +360,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed)
+void AliUEHistograms::FillCorrelations(Int_t eventType, Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed, Float_t weight, Bool_t firstTime)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -366,6 +378,14 @@ void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEH
       if (mixed)
         jMax = mixed->GetEntries();
         
+      if (!mixed)
+      {
+        // QA
+        fCorrelationpT->Fill(centrality, triggerParticle->Pt());
+        fCorrelationEta->Fill(centrality, triggerParticle->Eta());
+        fCorrelationPhi->Fill(centrality, triggerParticle->Phi());
+      }
+        
       for (Int_t j=0; j<jMax; j++)
       {
         if (!mixed && i == j)
@@ -376,6 +396,20 @@ void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEH
           particle = (AliVParticle*) particles->At(j);
         else
           particle = (AliVParticle*) mixed->At(j);
+        
+        if (particle->Pt() > triggerParticle->Pt())
+          continue;
+          
+        if (fSelectCharge > 0)
+        {
+          // skip like sign
+          if (fSelectCharge == 1 && particle->Charge() * triggerParticle->Charge() > 0)
+            continue;
+            
+          // skip unlike sign
+          if (fSelectCharge == 2 && particle->Charge() * triggerParticle->Charge() < 0)
+            continue;
+        }
         
         Double_t vars[5];
         vars[0] = triggerParticle->Eta() - particle->Eta();
@@ -388,17 +422,20 @@ void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEH
         if (vars[4] < -0.5 * TMath::Pi())
           vars[4] += TMath::TwoPi();
     
-        // fill all in toward region and no not use the other regions
-        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step);
-      }    
+        // fill all in toward region and do not use the other regions
+        fNumberDensityPhi->GetTrackHist(AliUEHist::kToward)->Fill(vars, step, weight);
+      }
  
-      // once per trigger particle
-      Double_t vars[2];
-      vars[0] = triggerParticle->Pt();
-      vars[1] = centrality;
-      fNumberDensityPhi->GetEventHist()->Fill(vars, step);
+      if (firstTime)
+      {
+        // once per trigger particle
+        Double_t vars[2];
+        vars[0] = triggerParticle->Pt();
+        vars[1] = centrality;
+        fNumberDensityPhi->GetEventHist()->Fill(vars, step);
     
-      fEventCountDifferential->Fill(triggerParticle->Pt(), step, eventType);
+        fEventCountDifferential->Fill(triggerParticle->Pt(), step, eventType);
+      }
     }
   }
   
@@ -407,7 +444,7 @@ void AliUEHistograms::FillCorrelations(Int_t eventType, Int_t centrality, AliUEH
 }
   
 //____________________________________________________________________
-void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType)
+void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality)
 {
   // fills the tracking efficiency objects
   //
@@ -427,10 +464,11 @@ void AliUEHistograms::FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim,
     for (Int_t i=0; i<list->GetEntries(); i++)
     {
       AliVParticle* particle = (AliVParticle*) list->At(i);
-      Double_t vars[3];
+      Double_t vars[4];
       vars[0] = particle->Eta();
       vars[1] = particle->Pt();
       vars[2] = particleType;
+      vars[3] = centrality;
       
       for (Int_t j=0; j<fgkUEHists; j++)
         if (GetUEHist(j))
@@ -555,6 +593,8 @@ void AliUEHistograms::Copy(TObject& c) const
 
   if (fCentralityDistribution)
     target.fCentralityDistribution = dynamic_cast<TH1F*> (fCentralityDistribution->Clone());
+    
+  target.fSelectCharge = fSelectCharge;
 }
 
 //____________________________________________________________________
@@ -648,3 +688,35 @@ void AliUEHistograms::ExtendTrackingEfficiency()
       GetUEHist(i)->ExtendTrackingEfficiency();
 }
 
+void AliUEHistograms::Scale(Double_t factor)
+{
+  // scales all contained histograms by the given factor
+  
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->Scale(factor);
+      
+  TList list;
+  list.Add(fCorrelationpT);
+  list.Add(fCorrelationEta);
+  list.Add(fCorrelationPhi);
+  list.Add(fCorrelationR);
+  list.Add(fCorrelationLeading2Phi);
+  list.Add(fCorrelationMultiplicity);
+  list.Add(fEventCount);
+  list.Add(fEventCountDifferential);
+  list.Add(fVertexContributors);
+  list.Add(fCentralityDistribution);
+  
+  for (Int_t i=0; i<list.GetEntries(); i++)
+    ((TH1*) list.At(i))->Scale(factor);
+}
+
+void AliUEHistograms::Reset()
+{
+  // delegates to AliUEHists
+
+  for (Int_t i=0; i<fgkUEHists; i++)
+    if (GetUEHist(i))
+      GetUEHist(i)->Reset();
+}

@@ -26,10 +26,10 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Int_t eventType, Int_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0);
+  void FillCorrelations(Int_t eventType, Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
-  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType);
+  void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
   
   void CopyReconstructedData(AliUEHistograms* from);
   
@@ -57,14 +57,17 @@ class AliUEHistograms : public TNamed
   void SetPtRange(Float_t ptMin, Float_t ptMax);
   void SetContaminationEnhancement(TH1F* hist);
   void SetCombineMinMax(Bool_t flag);
+  void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   
   void ExtendTrackingEfficiency();
+  void Reset();
 
   AliUEHistograms(const AliUEHistograms &c);
   AliUEHistograms& operator=(const AliUEHistograms& c);
   virtual void Copy(TObject& c) const;
 
   virtual Long64_t Merge(TCollection* list);
+  void Scale(Double_t factor);
   
 protected:
   void FillRegion(AliUEHist::Region region, AliUEHist::CFStep step, AliVParticle* leading, TList* list, Int_t multiplicity);
@@ -89,7 +92,9 @@ protected:
   TH1F* fVertexContributors;    // number of contributors to the vertex
   TH1F* fCentralityDistribution; // distribution of the variable used for centrality selection
   
-  ClassDef(AliUEHistograms, 3)  // underlying event histogram container
+  Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
+  
+  ClassDef(AliUEHistograms, 4)  // underlying event histogram container
 };
 
 #endif
