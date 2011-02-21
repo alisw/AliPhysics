@@ -162,7 +162,6 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
     // loop on (kept) muon tracks to find their ancestors
     TIter nextMT(fTracks);
     AliAODTrack* mt;
-    int outLabel(0);
     
     while ( ( mt = static_cast<AliAODTrack*>(nextMT()) ) )
     {
