@@ -23,9 +23,8 @@ public:
    AliRsnMother& operator=(const AliRsnMother &obj);
    virtual ~AliRsnMother();
 
-   Bool_t            IsUsingMC()                        const {return fUseMC;}
-   AliRsnDaughter*   GetDaughter(const Int_t &index)    const {if (index == 0 || index == 1) return fDaughter[index]; return 0x0;}
-   AliRsnDaughter&   GetDaughterRef(const Int_t &index) const {if (index < 1) return (*fDaughter[1]); return (*fDaughter[0]);}
+   AliRsnDaughter*   GetDaughter(const Int_t &index)    const {if (index < 1) return   fDaughter[0] ; return   fDaughter[1] ;}
+   AliRsnDaughter&   GetDaughterRef(const Int_t &index) const {if (index < 1) return (*fDaughter[0]); return (*fDaughter[1]);}
    TLorentzVector&   Sum()                                    {return fSum;}
    TLorentzVector&   SumMC()                                  {return fSumMC;}
    
@@ -40,11 +39,10 @@ public:
    void              SetDaughters(AliRsnDaughter * const daughter1, Double_t mass1, AliRsnDaughter * const daughter2, Double_t mass2);
    void              ResetPair();
    void              PrintInfo(const Option_t *option = "ALL") const;
-   Bool_t            CheckPair() const;
+   Bool_t            CheckPair(Bool_t checkMC = kFALSE) const;
 
 private:
 
-   Bool_t           fUseMC;            // choose if momenta are taken from ESD/AOD or MC
    AliRsnDaughter  *fDaughter[2];      // elements of the pair
    TLorentzVector   fSum;              // sum computed from the two daughters
    TLorentzVector   fSumMC;            // sum computed from the two daughters
