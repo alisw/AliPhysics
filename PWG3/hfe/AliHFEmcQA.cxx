@@ -142,6 +142,26 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   CreateHistograms(AliHFEmcQA::kBeauty,5,"mcqa_secvtxcut_");    // create histograms for beauty
   CreateHistograms(AliHFEmcQA::kOthers,5,"mcqa_secvtxcut_");    // create histograms for beauty
  
+// check D spectra
+  TString kDspecies[7];
+  kDspecies[0]="411";
+  kDspecies[1]="421";
+  kDspecies[2]="431";
+  kDspecies[3]="4122";
+  kDspecies[4]="4132";
+  kDspecies[5]="4232";
+  kDspecies[6]="4332";
+
+  // bin size is chosen to consider ALICE D measurement
+  Double_t xbins[13]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,8.0,12,16,20,50};
+  Double_t ybins[10]={-7.5,-1.0,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,7.5};
+  TString hname;
+  for (Int_t iDmeson=0; iDmeson<7; iDmeson++){
+     hname = "Dmeson"+kDspecies[iDmeson];
+     fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",12,xbins,9,ybins);
+     if(fQAhistos) fQAhistos->Add(fhD[iDmeson]);
+  }
+
 }
   
 //__________________________________________
@@ -525,6 +545,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
               fHist[iq][kHadron][0].fY->Fill(AliHFEtools::GetRapidity(partCopy));
               fHist[iq][kHadron][0].fEta->Fill(partCopy->Eta());
 
+              if(iq==0) fhD[i]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
             }
          }
     } // end of if
@@ -653,12 +674,28 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
          for (Int_t i=0; i<fNparents; i++){
             if (abs(maPdgcodeCopy)==fParentSelect[iq][i]){
 
+//mj weighting to consider measured spectra!!!
+              Double_t mpt=partMotherCopy->Pt();
+              Double_t wfactor=(703.681*mpt/TMath::Power((1+TMath::Power(mpt/1.73926,2)),2.34821))/(368.608*mpt/TMath::Power((1+TMath::Power(mpt/2.74868,2)),2.34225));
               // fill electron kinematics
-              fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
-              fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
-              fHist[iq][kElectron][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
-              fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());  
+              if(iq==0){
+                fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode(),wfactor);
+                fHist[iq][kElectron2nd][icut].fPt->Fill(mcpart->Pt(),wfactor);
+                fHist[iq][kElectron2nd][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart),wfactor);
+                fHist[iq][kElectron2nd][icut].fEta->Fill(mcpart->Eta(),wfactor);  
 
+                fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+                fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
+                fHist[iq][kElectron][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
+                fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());  
+              } 
+              else{
+                fHist[iq][kElectron][icut].fPdgCode->Fill(mcpart->GetPdgCode());
+                fHist[iq][kElectron][icut].fPt->Fill(mcpart->Pt());
+                fHist[iq][kElectron][icut].fY->Fill(AliHFEtools::GetRapidity(mcpart));
+                fHist[iq][kElectron][icut].fEta->Fill(mcpart->Eta());  
+              }
+//--------------
               // fill mother hadron kinematics
               fHist[iq][keHadron][icut].fPdgCode->Fill(maPdgcodeCopy); 
               fHist[iq][keHadron][icut].fPt->Fill(partMotherCopy->Pt());

@@ -181,6 +181,8 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
   // store the pointers in the TObjArray
   //
   
+
+
   Int_t nGamma = 0, nK0s = 0, nLambda = 0, nPhi = 0;
   fInputEvent = inputEvent;
   fNtracks = fInputEvent->GetNumberOfTracks();
@@ -190,7 +192,13 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
   fV0cuts->SetInputEvent(fInputEvent);
   fV0cuts->SetPrimaryVertex(fPrimaryVertex);
   if(fMCEvent) fV0cuts->SetMCEvent(fMCEvent);
+  Int_t check[fNtracks];
+  memset(check, 0, sizeof(Int_t)*fNtracks);
   Int_t v0status = 0;
+
+  //BenchmarkV0finder();
+
+
   for(Int_t iv0 = 0; iv0 < fInputEvent->GetNumberOfV0s(); iv0++){
     if(!TString(fInputEvent->IsA()->GetName()).CompareTo("AliESDEvent")){
       // case ESD
@@ -215,7 +223,6 @@ void AliHFEV0pid::Process(AliVEvent * const inputEvent){
     case AliHFEV0cuts::kRecoLambda: nLambda++; break;
     };
   }
-
 
   AliDebug(1, Form("Number of gammas  : %d", nGamma));
   AliDebug(1, Form("Number of K0s     : %d", nK0s));
@@ -246,6 +253,7 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
 
   if(fMCEvent != NULL) fMCon = kTRUE;
   //printf("-D: fMCEvent %x, fMCon: %i\n", fMCEvent, fMCon);
+
 
   Int_t dMC[2] = {-1, -1};
   Int_t idMC = AliHFEV0cuts::kUndef; 
@@ -702,6 +710,24 @@ Int_t AliHFEV0pid::IdentifyV0(TObject *esdV0, Int_t d[2]){
     
   return AliHFEV0cuts::kUndef;
 
+}
+//____________________________________________________________
+void AliHFEV0pid::BenchmarkV0finder(){
+  //
+  // produce histograms for all findable V0s that are
+  // were selected byt the (oline) V0 finder and can
+  // be used to estimate the efficiency of teh V0 cuts
+  //
+
+  for(Int_t iv0 = 0; iv0 < fInputEvent->GetNumberOfV0s(); iv0++){
+    AliESDv0 *esdV0 = (static_cast<AliESDEvent *>(fInputEvent))->GetV0(iv0);
+    if(!esdV0) continue;
+    if(!esdV0->GetOnFlyStatus()) continue; // Take only V0s from the On-the-fly v0 finder
+    // indetify the V0 candidate
+    Int_t idV0 = AliHFEV0cuts::kUndef;
+    Int_t idD[2] = {-1, -1};
+    idV0 = IdentifyV0(esdV0, idD);
+  }
 }
 //____________________________________________________________
 void   AliHFEV0pid::ArmenterosPlotMC(AliESDv0 * const v0, Int_t idMC){

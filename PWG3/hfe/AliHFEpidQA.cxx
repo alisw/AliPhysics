@@ -583,8 +583,8 @@ void AliHFEpidQA::FillElectronLikelihoods(const TObjArray * const particles, Int
       Bool_t detFlagSet = kFALSE;
       for(Int_t idet = 0; idet < 4; idet++){
         TString histname, histnameMC;
-	histname = "h" + detname[idet] = "_El_like_" + specname;
-	histnameMC = "h" + detname[idet] = "_El_like_MC_" + specname;
+	histname = "h" + detname[idet] + "_El_like_" + specname;
+	histnameMC = "h" + detname[idet] + "_El_like_MC_" + specname;
 
         switch(idet){
           case kITS:  esdTrack->GetITSpid(pidProbs);
@@ -727,7 +727,7 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	Double_t itsPID[5] = {-1, -1, -1, -1, -1};
 	esdTrack->GetITSpid(itsPID);
 	Int_t ix = GetMaxPID(itsPID);
-	hname = "hITS_PID_" + typeName[species];
+	hname = "hITS_PID_p_" + typeName[species];
 	fOutput->Fill(hname, p, ix);
       }//.. kITSpid
       
