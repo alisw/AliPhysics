@@ -1116,12 +1116,8 @@ Bool_t AliV0Reader::UpdateV0Information(){
   if(fMotherCandidateLorentzVector != NULL){
     delete fMotherCandidateLorentzVector;
   }
-  if(fUseKFParticle){
-    fMotherCandidateLorentzVector = new TLorentzVector(*fNegativeTrackLorentzVector + *fPositiveTrackLorentzVector);
-  }
-  else if(fUseESDTrack){
-    fMotherCandidateLorentzVector = new TLorentzVector(*fNegativeTrackLorentzVector + *fPositiveTrackLorentzVector);
-  }
+
+  fMotherCandidateLorentzVector = new TLorentzVector(*fNegativeTrackLorentzVector + *fPositiveTrackLorentzVector);
 	
   if(fPositiveTrackPID==-11 && fNegativeTrackPID==11){
     fMotherCandidateLorentzVector->SetXYZM(fMotherCandidateLorentzVector->Px() ,fMotherCandidateLorentzVector->Py(),fMotherCandidateLorentzVector->Pz(),0.); 
@@ -1289,11 +1285,12 @@ Bool_t AliV0Reader::CheckPIDProbability(Double_t negProbCut, Double_t posProbCut
     //fESDEvent->GetTrack(fCurrentV0->GetPindex());
   //-AM for switchtracks==true the above is a bug
 
-  negTrack->GetTPCpid(negProbArray);
-  posTrack->GetTPCpid(posProbArray);
-	
-  //  if(negProbArray != NULL && posProbArray != NULL){ // this is not allowed anymore for some reason(RC19)
   if(negProbArray && posProbArray){
+
+    negTrack->GetTPCpid(negProbArray);
+    posTrack->GetTPCpid(posProbArray);
+    
+    //  if(negProbArray != NULL && posProbArray != NULL){ // this is not allowed anymore for some reason(RC19)
     if(negProbArray[GetSpeciesIndex(-1)]>=negProbCut && posProbArray[GetSpeciesIndex(1)]>=posProbCut){
       iResult=kTRUE;
     }
@@ -1318,18 +1315,18 @@ void AliV0Reader::GetPIDProbability(Double_t &negPIDProb,Double_t & posPIDProb){
   AliESDtrack* negTrack  = GetNegativeESDTrack();
   AliESDtrack* posTrack  = GetPositiveESDTrack();
 
-
-  negTrack->GetTPCpid(negProbArray);
-  posTrack->GetTPCpid(posProbArray);
-	
-  //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
   if(negProbArray && posProbArray){
+    negTrack->GetTPCpid(negProbArray);
+    posTrack->GetTPCpid(posProbArray);
+    
+    //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
     negPIDProb = negProbArray[GetSpeciesIndex(-1)];
     posPIDProb = posProbArray[GetSpeciesIndex(1)];
   }
   delete [] posProbArray;
   delete [] negProbArray;
 }
+
 void AliV0Reader::GetPIDProbabilityMuonPion(Double_t &negPIDProb,Double_t & posPIDProb){
   // see header file for documentation
 
@@ -1344,11 +1341,12 @@ void AliV0Reader::GetPIDProbabilityMuonPion(Double_t &negPIDProb,Double_t & posP
   AliESDtrack* negTrack  = GetNegativeESDTrack();
   AliESDtrack* posTrack  = GetPositiveESDTrack();
 
-  negTrack->GetTPCpid(negProbArray);
-  posTrack->GetTPCpid(posProbArray);
-	
-  //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
   if(negProbArray && posProbArray){
+    negTrack->GetTPCpid(negProbArray);
+    posTrack->GetTPCpid(posProbArray);
+    
+    //  if(negProbArray!=NULL && posProbArray!=NULL){ // this is not allowed anymore for some reason(RC19)
+
     negPIDProb = negProbArray[1]+negProbArray[2];
     posPIDProb = posProbArray[1]+posProbArray[2];
   }

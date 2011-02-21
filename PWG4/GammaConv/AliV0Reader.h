@@ -195,7 +195,7 @@ class AliV0Reader : public TObject {
   /*
    *Get the PID of the MC mother particle
    */
-  Int_t GetMotherMCParticlePDGCode() const{if(fMotherMCParticle != NULL){ cout<<"MCParticle exists"<<endl;} return fMotherMCParticle->GetPdgCode();}
+  Int_t GetMotherMCParticlePDGCode() const{return fMotherMCParticle->GetPdgCode();}
 	
   /*
    *Get the MC stack 
