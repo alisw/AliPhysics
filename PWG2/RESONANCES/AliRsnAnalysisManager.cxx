@@ -1,19 +1,18 @@
 //
 // Class AliRsnAnalysisManager
 //
-// This is the uppermost level of analysis objects collection.
-// It contains a list of pair managers, which all will process
-// a pool of events passed to this object, and fill their histograms.
+// This is the uppermost level in the analysis task and is buil as a separate object
+// since up to this level, the execution of the analysis is not directly related to
+// the real analysis task structure.
 //
-// The utility of this object is to define a unique implementation
-// of the whole processing, which can then be included in the different
-// designs of AnalysisTask provided for SE and ME analysis.
+// This object collects all computations whic must be done and processes all of them
+// by means of a unique single- or double-loop on all tracks in each event or pair
+// of events (in case of mixing), by passing all candidate pairs to all computation
+// objects, where each of the latters will process all pairs of tracks which satisfy
+// their requirements.
 //
-// The base architecture is still AliRsnVManager, but in this case
-// all the objects in the list will be AliRsnPairManager's.
-//
-// author     : M. Vala       [martin.vala@cern.ch]
-// revised by : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
+// authors : M. Vala       [martin.vala@cern.ch]
+//         : A. Pulvirenti [alberto.pulvirenti@ct.infn.it]
 //
 
 #include <TH1.h>
@@ -37,6 +36,7 @@ ClassImp(AliRsnAnalysisManager)
 //_____________________________________________________________________________
 AliRsnAnalysisManager::AliRsnAnalysisManager(const char*name) :
    TNamed(name, ""),
+   fAddUsageHist(kFALSE),
    fList(0x0),
    fPairs(0),
    fMonitors(0),
@@ -50,6 +50,7 @@ AliRsnAnalysisManager::AliRsnAnalysisManager(const char*name) :
 //_____________________________________________________________________________
 AliRsnAnalysisManager::AliRsnAnalysisManager(const AliRsnAnalysisManager& copy) :
    TNamed(copy),
+   fAddUsageHist(copy.fAddUsageHist),
    fList(copy.fList),
    fPairs(copy.fPairs),
    fMonitors(copy.fMonitors),
@@ -69,6 +70,7 @@ AliRsnAnalysisManager& AliRsnAnalysisManager::operator=(const AliRsnAnalysisMana
 
    TNamed::operator=(copy);
 
+   fAddUsageHist = copy.fAddUsageHist;
    fList = copy.fList;
    fPairs = copy.fPairs;
    fMonitors = copy.fMonitors;
@@ -165,8 +167,10 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
       pair->Init(GetName(), list);
 
       // add a counter for used/unused events for each pair
-      TH1I *hPairUsed = new TH1I(Form("%s_%s_USED", GetName(), pair->GetName()), "Used events for pair", 2, 0, 2);
-      list->Add(hPairUsed);
+      if (fAddUsageHist) {
+         TH1I *hPairUsed = new TH1I(Form("%s_%s_USED", GetName(), pair->GetName()), "Used events for pair", 2, 0, 2);
+         list->Add(hPairUsed);
+      }
    }
    
    // monitors
@@ -213,17 +217,20 @@ void AliRsnAnalysisManager::ProcessAllPairs()
    Int_t          i0, i1, i, start, index0, index1;
    AliRsnDaughter daughter0, daughter1;
    AliRsnPair    *pair = 0x0;
-   TObjArrayIter  next(&fPairs);
+   AliRsnMonitor *monitor = 0x0;
+   TObjArrayIter  nextPair(&fPairs);
+   TObjArrayIter  nextMonitor(&fMonitors);
    AliRsnDaughter::ERefType type0, type1;
 
    // reset all counters which tell us
    // how many entries were added now
-   while ((pair = (AliRsnPair*)next())) {
+   while ((pair = (AliRsnPair*)nextPair())) {
       pair->ResetCount();
    }
 
    // external loop
    for (i0 = 0; i0 < nTot[0]; i0++) {
+      
       // assign first track
       if (!ev0->ConvertAbsoluteIndex(i0, index0, type0)) continue;
       ev0->SetDaughter(daughter0, index0, type0);
@@ -231,6 +238,10 @@ void AliRsnAnalysisManager::ProcessAllPairs()
 
       // check global cuts
       if (!fGlobalTrackCuts.IsSelected(&daughter0)) continue;
+      
+      // process all monitors, which need only one track
+      nextMonitor.Reset();
+      while ((monitor = (AliRsnMonitor*)nextMonitor())) if (monitor->Fill(&daughter0)) monitor->Compute();
 
       // define start depending if we are processing one or two events
       start = (AliRsnEvent::SameEvent() ? i0 + 1 : 0);
@@ -247,9 +258,9 @@ void AliRsnAnalysisManager::ProcessAllPairs()
          if (!fGlobalTrackCuts.IsSelected(&daughter1)) continue;
 
          // loop over all pairs and make computations
-         next.Reset();
+         nextPair.Reset();
          i = 0;
-         while ((pair = (AliRsnPair*)next())) {
+         while ((pair = (AliRsnPair*)nextPair())) {
             
             // debug message
             AliDebug(AliLog::kDebug + 1, Form("ProcessAllPairs of the AnalysisManager(%s) [%d] ...", pair->GetName(), i++));
@@ -265,62 +276,13 @@ void AliRsnAnalysisManager::ProcessAllPairs()
    }
 
    // update all count histograms counters
-   next.Reset();
-   if (!fList) return;
-   while ((pair = (AliRsnPair*)next())) {
-      TH1I *hist = (TH1I*)fList->FindObject(Form("%s_%s_USED", GetName(), pair->GetName()));
-      if (!hist) continue;
-      if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
-   }
-
-   AliDebug(AliLog::kDebug + 2, "->");
-}
-
-//_____________________________________________________________________________
-void AliRsnAnalysisManager::ProcessAllMonitors()
-{
-//
-// Process one or two events for all pair managers.
-//
-
-   static Int_t evnum = 0;
-   evnum++;
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-
-   // skip if the global event pointers are NULL
-   if (!AliRsnEvent::IsCurrentEvent1()) return;
-
-   // for better readability, reference two pointers to the current events
-   AliRsnEvent *ev0 = AliRsnEvent::GetCurrentEvent1();
-
-   // count total number of candidates per event
-   // (sum of tracks, V0s and cascades)
-   Int_t nTot = AliRsnEvent::GetCurrentEvent1()->GetAbsoluteSum();
-
-   // variables
-   Int_t          i0, i, index0;
-   AliRsnDaughter daughter;
-   AliRsnMonitor *monitor = 0x0;
-   AliRsnDaughter::ERefType type0;
-   TObjArrayIter  next(&fMonitors);
-
-   // reset all counters which tell us
-   // how many entries were added now
-   while ((monitor = (AliRsnMonitor*)next())) {
-      monitor->ResetCount();
-   }
-
-   // external loop
-   for (i0 = 0; i0 < nTot; i0++) {
-      // assign track
-      if (!ev0->ConvertAbsoluteIndex(i0, index0, type0)) continue;
-      ev0->SetDaughter(daughter, index0, type0);
-      i = 0;
-      next.Reset();
-      while ((monitor = (AliRsnMonitor*)next())) {
-         AliDebug(AliLog::kDebug + 1, Form("ProcessAllPairs of the AnalysisManager(%s) [%d] ...", monitor->GetName(), i++));
-         if (monitor->Fill(&daughter)) monitor->Compute();
+   if (fAddUsageHist) {
+      nextPair.Reset();
+      if (!fList) return;
+      while ((pair = (AliRsnPair*)nextPair())) {
+         TH1I *hist = (TH1I*)fList->FindObject(Form("%s_%s_USED", GetName(), pair->GetName()));
+         if (!hist) continue;
+         if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
       }
    }
 
@@ -356,10 +318,12 @@ void AliRsnAnalysisManager::ProcessAllPairsMC()
    Bool_t         filled;
    AliRsnDaughter daughter0, daughter1;
    AliRsnPair    *pair = 0x0;
-   TObjArrayIter  next(&fPairs);
+   AliRsnMonitor *monitor = 0x0;
+   TObjArrayIter  nextPair(&fPairs);
+   TObjArrayIter  nextMonitor(&fMonitors);
 
    // reset all counters
-   while ((pair = (AliRsnPair*)next())) {
+   while ((pair = (AliRsnPair*)nextPair())) {
       pair->ResetCount();
    }
 
@@ -369,6 +333,10 @@ void AliRsnAnalysisManager::ProcessAllPairsMC()
 
       // assign first track
       ev0->SetDaughterMC(daughter0, i0);
+      
+      // loop over all pairs and make computations
+      nextMonitor.Reset();
+      while ((monitor = (AliRsnMonitor*)nextMonitor())) if (monitor->Fill(&daughter0)) monitor->Compute();
 
       // define start depending if we are processing one or two events
       start = (AliRsnEvent::SameEvent() ? i0 + 1 : 0);
@@ -385,9 +353,9 @@ void AliRsnAnalysisManager::ProcessAllPairsMC()
          ev1->SetDaughterMC(daughter1, i1);
 
          // loop over all pairs and make computations
-         next.Reset();
+         nextPair.Reset();
          i = 0;
-         while ((pair = (AliRsnPair*)next())) {
+         while ((pair = (AliRsnPair*)nextPair())) {
             AliDebug(AliLog::kDebug + 1, Form("ProcessAllPairs of the AnalysisManager(%s) [%d] ...", pair->GetName(), i++));
 
             // if the pair is a like-sign, skip the case when i1 < i0,
@@ -404,70 +372,15 @@ void AliRsnAnalysisManager::ProcessAllPairsMC()
    }
 
    // update all count histograms counters
-   next.Reset();
-   if (!fList) return;
-   while ((pair = (AliRsnPair*)next())) {
-      TH1I *hist = (TH1I*)fList->FindObject(Form("%s_%s_USED", GetName(), pair->GetName()));
-      if (!hist) continue;
-      if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
-   }
-
-   AliDebug(AliLog::kDebug + 2, "->");
-}
-
-
-//_____________________________________________________________________________
-void AliRsnAnalysisManager::ProcessAllMonitorsMC()
-{
-//
-// Process one or two events for all pair managers.
-//
-
-   AliDebug(AliLog::kDebug + 2, "<-");
-
-   // skip if the global event pointers are NULL
-   if (!AliRsnEvent::IsCurrentEvent1()) return;
-
-   // for better readability, reference two pointers to the current events
-   AliRsnEvent *ev0 = AliRsnEvent::GetCurrentEvent1();
-
-   // this time the number of tracks comes from MC
-   Int_t nTracks = ev0->GetRefMC()->GetNumberOfTracks();
-
-   // external loop
-   // joins the loop on tracks and v0s, by looping the indexes from 0
-   // to the sum of them, and checking what to take depending of its value
-   Int_t          i0, i;
-   Bool_t         filled;
-   AliRsnDaughter daughter;
-   AliRsnMonitor *monitor = 0x0;
-   TObjArrayIter  next(&fPairs);
-
-   // reset all counters
-   while ((monitor = (AliRsnMonitor*)next())) {
-      monitor->ResetCount();
-   }
-
-   for (i0 = 0; i0 < nTracks; i0++) {
-      // skip not physical primaries
-      if (!ev0->GetRefMCESD()->Stack()->IsPhysicalPrimary(i0)) continue;
-
-      // assign first track
-      ev0->SetDaughterMC(daughter, i0);
-
-      // loop over all pairs and make computations
-      next.Reset();
-      i = 0;
-      while ((monitor = (AliRsnMonitor*)next())) {
-         AliDebug(AliLog::kDebug + 1, Form("ProcessAllPairs of the AnalysisManager(%s) [%d] ...", monitor->GetName(), i++));
-
-         // process the two tracks
-         filled = monitor->Fill(&daughter);
-         if (!filled) continue;
-         monitor->Compute();
+   if (fAddUsageHist) {
+      nextPair.Reset();
+      if (!fList) return;
+      while ((pair = (AliRsnPair*)nextPair())) {
+         TH1I *hist = (TH1I*)fList->FindObject(Form("%s_%s_USED", GetName(), pair->GetName()));
+         if (!hist) continue;
+         if (pair->GetCount() > 0) hist->Fill(1); else hist->Fill(0);
       }
    }
-   
+
    AliDebug(AliLog::kDebug + 2, "->");
 }
-
