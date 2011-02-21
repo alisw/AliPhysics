@@ -24,44 +24,44 @@ public:
    // this enumeration lists all available computations
    // any user feedback proposing new ones is welcome
    enum EValueType {
-      kTrackP,             // single track total momentum
-      kTrackPt,            // single track transverse momentum
-      kTrackEta,           // single track pseudo-rapidity
-      kTrackY,             // single track rapidity
-      kTrackITSsignal,     // single track ITS signal
-      kTrackTPCsignal,     // single track TPC signal
-      kTrackTOFsignal,     // single track TOF signal
-      kTrackLength,        // single track integrated length
-      kTrackValues,        // --- limitator for track values ---------------------------------------
-      
-      kPairP1,             // total momentum of 1st daughter of a pair
-      kPairP2,             // total momentum of 2nd daughter of a pair
-      kPairP1t,            // total momentum of 1st daughter of a pair
-      kPairP2t,            // total momentum of 2nd daughter of a pair
-      kPairP1z,            // total momentum of 1st daughter of a pair
-      kPairP2z,            // total momentum of 2nd daughter of a pair
-      kPairInvMass,        // pair invariant mass (with reconstructed momenta)
-      kPairInvMassMC,      // pair invariant mass (with MC momenta)
-      kPairInvMassRes,     // pair invariant mass resolution
-      kPairPt,             // pair transverse momentum
-      kPairPz,             // pair longitudinal momentum
-      kPairEta,            // pair pseudo-rapidity
-      kPairMt,             // pair transverse mass (need a reference mass)
-      kPairY,              // pair rapidity (need a reference mass)
-      kPairPhi,            // pair azimuthal angle (with reconstructed momenta)
-      kPairPhiMC,          // pair azimuthal angle (with MC momenta)
-      kPairPtRatio,        // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
-      kPairDipAngle,       // inverse cosine of the angle between daughter vector momenta
-      kPairCosThetaStar,   // polarization angle
-      kPairQInv,           // invariant relative momentum of the two daughters
-      kPairAngleToLeading, // angle between the pair momentum and that of the event leading particle
-      kPairValues,         // --- limitator for pair values ----------------------------------------
-      
-      kEventLeadingPt,     // transverse momentum of the event leading particle
-      kEventMult,          // multiplicity computed as the number of tracks
-      kEventMultESDCuts,   // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
-      kEventVz,            // Z position of event primary vertex
-      kValueTypes          // --- last value (used to have a meaningless enum value) ---------------
+      kTrackP,               // single track total momentum
+      kTrackPt,              // single track transverse momentum
+      kTrackEta,             // single track pseudo-rapidity
+      kTrackY,               // single track rapidity
+      kTrackITSsignal,       // single track ITS signal
+      kTrackTPCsignal,       // single track TPC signal
+      kTrackTOFsignal,       // single track TOF signal
+      kTrackLength,          // single track integrated length
+      kTrackValues,          // --- limitator for track values ---------------------------------------
+                             
+      kPairP1,               // total momentum of 1st daughter of a pair
+      kPairP2,               // total momentum of 2nd daughter of a pair
+      kPairP1t,              // total momentum of 1st daughter of a pair
+      kPairP2t,              // total momentum of 2nd daughter of a pair
+      kPairP1z,              // total momentum of 1st daughter of a pair
+      kPairP2z,              // total momentum of 2nd daughter of a pair
+      kPairInvMass,          // pair invariant mass (with reconstructed momenta)
+      kPairInvMassMC,        // pair invariant mass (with MC momenta)
+      kPairInvMassRes,       // pair invariant mass resolution
+      kPairPt,               // pair transverse momentum
+      kPairPz,               // pair longitudinal momentum
+      kPairEta,              // pair pseudo-rapidity
+      kPairMt,               // pair transverse mass (need a reference mass)
+      kPairY,                // pair rapidity (need a reference mass)
+      kPairPhi,              // pair azimuthal angle (with reconstructed momenta)
+      kPairPhiMC,            // pair azimuthal angle (with MC momenta)
+      kPairPtRatio,          // ratio |pt1 - pt2|/(pt1 + pt2) of daughter transverse momenta
+      kPairDipAngle,         // inverse cosine of the angle between daughter vector momenta
+      kPairCosThetaStar,     // polarization angle
+      kPairQInv,             // invariant relative momentum of the two daughters
+      kPairAngleToLeading,   // angle between the pair momentum and that of the event leading particle
+      kPairValues,           // --- limitator for pair values ----------------------------------------
+                             
+      kEventLeadingPt,       // transverse momentum of the event leading particle
+      kEventMult,            // multiplicity computed as the number of tracks
+      kEventMultESDCuts,     // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
+      kEventVz,              // Z position of event primary vertex
+      kValueTypes            // --- last value (used to have a meaningless enum value) ---------------
    };
 
    AliRsnValue();
@@ -89,8 +89,9 @@ public:
    void        Set(EValueType type, Int_t n, Double_t *array)                  {fValueType = type; AssignTarget(); SetBins(n, array);}
    void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {fValueType = type; AssignTarget(); SetBins(min, max, step);}
 
-   virtual Bool_t  Eval(TObject *object, Bool_t useMC = kFALSE);
-   virtual void    Print(Option_t *option = "") const;
+   virtual Bool_t    Eval(TObject *object, Bool_t useMC = kFALSE);
+   virtual void      Print(Option_t *option = "") const;
+   static  RSNTARGET TargetType(EValueType type);
 
 protected:
 
