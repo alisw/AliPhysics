@@ -186,13 +186,13 @@ int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponen
 
   AliHLTUInt32_t proctime=0;
   if (fpEventTimer) {
-    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
-    proctime=fpEventTimer->RealTime()*fgkTimeScale;
+    averageEventTime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    proctime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale);
     fpEventTimer->Start(kFALSE);
   }
   if (fpCycleTimer) {
     fpCycleTimer->Stop();
-    averageCycleTime=(fpCycleTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    averageCycleTime=AliHLTUInt32_t(fpCycleTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
   }
 
   // scale down the event processing according to the required rate
@@ -233,8 +233,8 @@ int AliHLTRootSchemaEvolutionComponent::ProcessCalibration( const AliHLTComponen
 
   if (fpEventTimer) {
     fpEventTimer->Stop();
-    proctime=fpEventTimer->RealTime()*fgkTimeScale-proctime;
-    averageEventTime=(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
+    proctime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale)-proctime;
+    averageEventTime=AliHLTUInt32_t(fpEventTimer->RealTime()*fgkTimeScale)/(GetEventCount()+1);
 
     // info output once every 2 seconds
     static UInt_t lastTime=0;
@@ -567,7 +567,7 @@ TObject* AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Extract(const 
   TObject* pObj=msg.ReadObject(objclass);
   if (!(fIsObject=(pObj!=NULL))) return NULL;
   sw.Stop();
-  AliHLTUInt32_t usec=sw.RealTime()*fgkTimeScale;
+  AliHLTUInt32_t usec=AliHLTUInt32_t(sw.RealTime()*fgkTimeScale);
   fNofExtractions++;
   fExtractionTimeUsec+=usec;
   TTimeStamp ts;
@@ -583,7 +583,7 @@ int AliHLTRootSchemaEvolutionComponent::AliHLTDataBlockItem::Stream(TObject* obj
   sw.Start();
   msg.WriteObject(obj);
 
-  AliHLTUInt32_t usec=sw.RealTime()*fgkTimeScale;
+  AliHLTUInt32_t usec=AliHLTUInt32_t(sw.RealTime()*fgkTimeScale);
   fNofStreamings++;
   fStreamingTimeUsec+=usec;
   TTimeStamp ts;
