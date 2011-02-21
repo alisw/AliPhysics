@@ -245,7 +245,9 @@ void AliPWG4CosmicCandidates::UserCreateOutputObjects()
   fRisolTheta = new TH2F("fRisolTheta","fRisolTheta",100,0.,10.,fgkNThetaBins,kMinTheta,kMaxTheta);
   fHistListCosmics->Add(fRisolTheta);
 
-  TH1::AddDirectory(oldStatus);   
+  TH1::AddDirectory(oldStatus); 
+
+  PostData(1, fHistListCosmics);  
 
   if(binsDCAR) delete [] binsDCAR;
   if(binsDCAZ) delete [] binsDCAZ;

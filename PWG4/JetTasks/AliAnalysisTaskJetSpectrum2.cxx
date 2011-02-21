@@ -702,8 +702,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   Int_t recMult1 = recParticles.GetEntries();
   Int_t genMult1 = genParticles.GetEntries();
 
-  Int_t recMult2 = MultFromJetRefs(aodBackRecJets);
-  Int_t genMult2 = MultFromJetRefs(aodBackGenJets);
+  Int_t recMult2 = MultFromJetRefs(aodRecJets);
+  Int_t genMult2 = MultFromJetRefs(aodGenJets);
 
   fh2MultRec->Fill(recMult1,recMult2);
   fh2MultGen->Fill(genMult1,genMult2);

@@ -628,6 +628,10 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
 
   TH1::AddDirectory(oldStatus);   
 
+  PostData(0,fHistList);
+  PostData(1,fCFManagerPos->GetParticleContainer());
+  PostData(2,fCFManagerNeg->GetParticleContainer());
+
 }
 
 #endif

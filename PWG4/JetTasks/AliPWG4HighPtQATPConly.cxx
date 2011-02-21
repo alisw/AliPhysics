@@ -816,6 +816,10 @@ void AliPWG4HighPtQATPConly::CreateOutputObjects() {
 
   TH1::AddDirectory(oldStatus);   
 
+  PostData(0, fHistList);
+  PostData(1, fHistListTPC);
+  PostData(2, fHistListITS);
+
   if(binsPhi) delete [] binsPhi;
   if(binsChi2PerClus) delete [] binsChi2PerClus;
   if(binsPt) delete [] binsPt;
