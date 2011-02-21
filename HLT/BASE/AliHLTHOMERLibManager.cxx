@@ -195,17 +195,6 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
   if (iResult>0 && *library!=NULL) {
     // print compile info
     typedef void (*CompileInfo)( char*& date, char*& time);
-    CompileInfo fctInfo=(CompileInfo)gSystem->DynFindSymbol(*library, "CompileInfo");
-    if (fctInfo) {
-      char* date=0;
-      char* time=0;
-      (*fctInfo)(date, time);
-      if (!date) {date=new Char_t[8]; strcpy(date,"unknown");}
-      if (!time) {time=new Char_t[8]; strcpy(time,"unknown");}
-      //HLTInfo("%s build on %s (%s)", *library, date, time);
-    } else {
-      //HLTInfo("no build info available for %s", *library);
-    }
 
     fFctCreateReaderFromTCPPort=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORT);
     fFctCreateReaderFromTCPPorts=(void (*)())gSystem->DynFindSymbol(*library, ALIHLTHOMERREADER_CREATE_FROM_TCPPORTS);

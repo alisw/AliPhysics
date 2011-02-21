@@ -148,7 +148,7 @@ private:
   //============ Block Handling ====================
 
   /** Get pointer to block list in event buffer */
-  TList* GetBlockListEventBuffer( Int_t idx );
+  TList* GetBlockListEventBuffer( );
     
   /** Get Number of blocks in current event */
   ULong_t GetNBlks() { return fNBlks; }

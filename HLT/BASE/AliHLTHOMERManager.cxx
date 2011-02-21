@@ -278,11 +278,16 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   // -- Create the Readoutlist
   UShort_t* sourcePorts = new UShort_t [fSourceList->GetEntries()];
   const Char_t ** sourceHostnames = new const Char_t* [fSourceList->GetEntries()];
+  for(Int_t i = 0; i < fSourceList->GetEntries(); i++) {
+   sourceHostnames[i] = "";
+  }
   UInt_t sourceCount = 0;
 
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
     HLTError(Form("No sources selected, aborting."));
+
+    delete [] sourceHostnames;
     return -2;
   }
 
@@ -730,7 +735,7 @@ void AliHLTHOMERManager::AddToBlockList() {
 }
 
 //__________________________________________________________________________________
-TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
+TList* AliHLTHOMERManager::GetBlockListEventBuffer() {
   // see header file for class documentation
 
   if(fBlockList)
@@ -738,10 +743,6 @@ TList* AliHLTHOMERManager::GetBlockListEventBuffer( Int_t idx ) {
   else 
     return NULL;
 
-  if ( idx == -1 )
-    return NULL;
- 
-  return reinterpret_cast<TList*>((*fEventBuffer)[idx]);
 
 }
 
