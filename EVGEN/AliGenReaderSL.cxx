@@ -27,6 +27,7 @@
 
 #include "AliGenReaderSL.h"
 #include "AliRun.h"
+#include "AliStack.h"
 
 
 ClassImp(AliGenReaderSL)
@@ -88,26 +89,28 @@ Int_t AliGenReaderSL::NextEvent()
     //
     Float_t eGamma1, eGamma2; 
     eGamma2 = 0.;
-  
+    Int_t nb;
     // Event line 
-    fscanf(fFile,"%6s %d %d %d ",linelabel, &i1, &ntrk, &i2);
+    nb = fscanf(fFile,"%6s %d %d %d ",linelabel, &i1, &ntrk, &i2);
+    if (nb == 0) return (0);
     fNParticles = ntrk;
     //printf("Event line: %s i1 = %5d ntrk = %5d i2 = %5d \n", linelabel, i1, ntrk, i2);
 
     // Gamma line
     if (fFormat == 1) {
-	fscanf(fFile, "%14s %f  ",linelabel, &eGamma1); 
+	nb = fscanf(fFile, "%14s %f  ",linelabel, &eGamma1); 
     } else if (fFormat == 2) {
-	fscanf(fFile, "%14s %f %f ",linelabel, &eGamma1, &eGamma2); 
+	nb = fscanf(fFile, "%14s %f %f ",linelabel, &eGamma1, &eGamma2); 
     }
-  
+    if (nb == 0) return (0);
 //    printf("Gamma line: %s Egamma1 = %13.3f Egamma2 = %13.3f \n", linelabel, eGamma1, eGamma2); 
 
     // Vertex line 
-    fscanf(fFile, "%7s %lf %lf %lf %lf %d %d %d %d",
+    nb = fscanf(fFile, "%7s %lf %lf %lf %lf %d %d %d %d",
 	   linelabel, &x1, &x2, &x3, &x4, &i1, &i2, &i3, &nvtx);
 //    printf("Vertex line: %s (x = %13.3f, y =  %13.3f, z =  %13.3f, t =  %13.3f) i1 = %5d i2 = %5d i3 = %5d nvtx = %5d \n", 
 //	   linelabel, x1, x2, x3, x4, i1, i2, i3, nvtx);
+    if (nb == 0) return (0);
     if(ntrk != nvtx) printf("ERROR: ntrk = %5d  nvtx = %5d \n", ntrk, nvtx);
     
     return (fNParticles);
@@ -121,11 +124,11 @@ TParticle* AliGenReaderSL::NextParticle()
     Float_t px, py, pz;
     Int_t pdg;
     static TParticle particle;
-
+    Int_t nb;
     if (fFormat == 0) {
 	Int_t ievent;
 	Int_t ipart;
-	fscanf(fFile, "%d %d %d %f %f %f ", &ievent, &ipart, &pdg, &px, &py, &pz); 
+	nb = fscanf(fFile, "%d %d %d %f %f %f ", &ievent, &ipart, &pdg, &px, &py, &pz); 
 //	printf("%5d %5d %5d %13.3f %13.3f %13.3f \n", ievent, ipart, pdg, px, py, pz);
 	
 	if (pdg == 8) pdg =  211;
@@ -137,16 +140,19 @@ TParticle* AliGenReaderSL::NextParticle()
 	int i2 = 0;
 	int i3 = 0;
 	int i4 = 0;
-	fscanf(fFile,"%6s %d %f %f %f %d %d %d %d",
+	nb = fscanf(fFile,"%6s %d %f %f %f %d %d %d %d",
 	       tracklabel, &i1, &px, &py, &pz, &i2, &i3, &i4, &pdg);
 //	printf("Particle %5d %13.3f %13.3f %13.3f \n",  pdg, px, py, pz);
     }
-	
+    if (nb == 0) return (0x0);
+
     Double_t mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
     Float_t e = TMath::Sqrt(px * px + py * py + pz * pz + mass * mass);
     particle.SetMomentum(px, py, pz, e);
     particle.SetPdgCode(pdg);
-    
+    particle.SetFirstMother(-1);
+    particle.SetLastMother(-1);
+    particle.SetBit(kTransportBit);
     return &particle;
 }
 
