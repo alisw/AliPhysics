@@ -95,10 +95,10 @@ Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ER
 // Returns kFALSE whenever the operation fails (out of range, NULL references).
 //
 
-   if (IsESD() && type == AliRsnDaughter::kTrack) return SetDaughterESDtrack(out, i);
-   if (IsAOD() && type == AliRsnDaughter::kTrack) return SetDaughterAODtrack(out, i);
-   if (IsESD() && type == AliRsnDaughter::kV0) return SetDaughterESDv0(out, i);
-   if (IsAOD() && type == AliRsnDaughter::kV0) return SetDaughterAODv0(out, i);
+   if (IsESD() && type == AliRsnDaughter::kTrack)   return SetDaughterESDtrack  (out, i);
+   if (IsAOD() && type == AliRsnDaughter::kTrack)   return SetDaughterAODtrack  (out, i);
+   if (IsESD() && type == AliRsnDaughter::kV0)      return SetDaughterESDv0     (out, i);
+   if (IsAOD() && type == AliRsnDaughter::kV0)      return SetDaughterAODv0     (out, i);
    if (IsESD() && type == AliRsnDaughter::kCascade) return SetDaughterESDcascade(out, i);
    if (IsAOD() && type == AliRsnDaughter::kCascade) return SetDaughterAODcascade(out, i);
 

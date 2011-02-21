@@ -6,8 +6,10 @@
 // must be overloaded by any specific cut implementation.
 //
 // This class provides some default instruments to check values
-// agains a reference or an allowed range, in order to permit
+// against a reference or an allowed range, in order to permit
 // a unique way to execute such kind of checks.
+// Moreover, if one checks values and ranges using default methods
+// a debug message can be printed on request.
 //
 // authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //          Martin Vala (martin.vala@cern.ch)
@@ -17,8 +19,6 @@
 #define ALIRSNCUT_H
 
 #include "AliRsnTarget.h"
-
-class AliRsnEvent;
 
 class AliRsnCut : public AliRsnTarget {
 public:
@@ -30,13 +30,13 @@ public:
    AliRsnCut& operator=(const AliRsnCut& copy);
    virtual ~AliRsnCut() { };
 
-   Int_t            GetMinI()                  {return fMinI;}
-   Int_t            GetMaxI()                  {return fMaxI;}
-   Double_t         GetMinD()                  {return fMinD;}
-   Double_t         GetMaxD()                  {return fMaxD;}
-   Int_t            GetCutValueI()             {return fCutValueI;}
-   Double_t         GetCutValueD()             {return fCutValueD;}
-   Bool_t           GetCutResult()             {return fCutResult;}
+   Int_t            GetMinI()        {return fMinI;}
+   Int_t            GetMaxI()        {return fMaxI;}
+   Double_t         GetMinD()        {return fMinD;}
+   Double_t         GetMaxD()        {return fMaxD;}
+   Int_t            GetCutValueI()   {return fCutValueI;}
+   Double_t         GetCutValueD()   {return fCutValueD;}
+   Bool_t           GetCutResult()   {return fCutResult;}
 
    void             SetRangeI(Int_t    min, Int_t    max) {fMinI = min; fMaxI = max;}
    void             SetRangeD(Double_t min, Double_t max) {fMinD = min; fMaxD = max;}

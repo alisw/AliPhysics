@@ -23,7 +23,6 @@ public:
 
    AliRsnPairDef();
    AliRsnPairDef(EPARTYPE type1, Char_t sign1, EPARTYPE type2, Char_t sign2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
-   AliRsnPairDef(AliRsnDaughterDef def1, AliRsnDaughterDef def2);
    AliRsnPairDef(const AliRsnPairDef &copy);
    const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
    virtual ~AliRsnPairDef() { }

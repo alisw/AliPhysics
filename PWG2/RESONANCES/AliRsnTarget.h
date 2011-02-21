@@ -8,6 +8,9 @@
 // operate on any of such objects, then this class helps in making sure
 // that the object being processed corresponds to what is expected.
 //
+// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          Martin Vala (martin.vala@cern.ch)
+//
 
 #ifndef ALIRSNTARGET_H
 #define ALIRSNTARGET_H
@@ -32,7 +35,7 @@ public:
    AliRsnTarget() : fTargetType(kTargetTypes), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
    AliRsnTarget(const char *name, ETargetType type) : TNamed(name, ""), fTargetType(type), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
-   AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; fDaughter = 0x0; fMother = 0x0; fEvent = 0x0; return (*this); }
+   AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
    virtual ~AliRsnTarget() { /*nothing*/ }
 
    Bool_t           IsAllNull()                       {return (!fDaughter && !fMother && !fEvent);}
@@ -40,11 +43,11 @@ public:
    ETargetType      GetTargetType() const             {return fTargetType;}
    Char_t           GetTargetTypeChar() const;
    const char*      GetTargetTypeName() const;
-   void             SetTargetType(ETargetType type)   {fTargetType = type;}
-   Bool_t           TargetOK(TObject *object);
    AliRsnDaughter*  GetTargetDaughter()               {return fDaughter;}
    AliRsnMother*    GetTargetMother()                 {return fMother;}
    AliRsnEvent*     GetTargetEvent()                  {return fEvent;}
+   void             SetTargetType(ETargetType type)   {fTargetType = type;}
+   Bool_t           TargetOK(TObject *object);
 
    static AliRsnEvent*  GetCurrentEvent()                   {return fgCurrentEvent;}
    static void          SetCurrentEvent(AliRsnEvent *event) {fgCurrentEvent = event;}
@@ -53,15 +56,14 @@ public:
 
 protected:
 
-   ETargetType         fTargetType;     //  target type selected for this object
-   static AliRsnEvent *fgCurrentEvent;  //! pointer to current event (useful in many cases)
+   ETargetType     fTargetType;  //  target type selected for this object
+   AliRsnDaughter *fDaughter;    //! internal pointer to which any checked object is cast if it matches expected type
+   AliRsnMother   *fMother;      //! internal pointer to which any checked object is cast if it matches expected type
+   AliRsnEvent    *fEvent;       //! internal pointer to which any checked object is cast if it matches expected type
 
-   AliRsnDaughter     *fDaughter;       //  utility pointer to target object (daughter)
-   AliRsnMother       *fMother;         //  utility pointer to target object (mother)
-   AliRsnEvent        *fEvent;          //  utility pointer to target object (event)
-
-   static const Double_t fgkVeryBig;    //  utility value for very large value
-   static const Double_t fgkVerySmall;  //  utility value for very small value
+   static AliRsnEvent    *fgCurrentEvent; //! pointer to current event (useful in many cases)
+   static const Double_t  fgkVeryBig;     //  utility value for very large value
+   static const Double_t  fgkVerySmall;   //  utility value for very small value
 
    // ROOT dictionary
    ClassDef(AliRsnTarget, 1)

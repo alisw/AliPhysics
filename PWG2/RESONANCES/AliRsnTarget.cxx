@@ -8,6 +8,9 @@
 // operate on any of such objects, then this class helps in making sure
 // that the object being processed corresponds to what is expected.
 //
+// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//          Martin Vala (martin.vala@cern.ch)
+//
 
 #include "AliLog.h"
 
@@ -18,20 +21,18 @@
 
 ClassImp(AliRsnTarget)
 
-AliRsnEvent* AliRsnTarget::fgCurrentEvent = 0x0;
-
-const Double_t AliRsnTarget::fgkVeryBig   = 1E+10;
-const Double_t AliRsnTarget::fgkVerySmall = 1E-10;
+AliRsnEvent*   AliRsnTarget::fgCurrentEvent = 0x0;
+const Double_t AliRsnTarget::fgkVeryBig     = 1E+10;
+const Double_t AliRsnTarget::fgkVerySmall   = 1E-10;
 
 //_____________________________________________________________________________
 Bool_t AliRsnTarget::TargetOK(TObject *object)
 {
 //
-// This method compares the target type stored as data member
-// with the type of the object passed as argument, and returns
-// kTRUE or kFALSE depending if they match or not.
-// This check is done by comparing the object class type with
-// one of the allowed types
+// This method doew two things:
+// 1) check if the object class matches the required target type
+// 2) if (1) is successful, set the built-in pointer data member
+//    in order to point to it, after being casted accordingly
 //
 
    // fails by default if a NULL pointer is passed
