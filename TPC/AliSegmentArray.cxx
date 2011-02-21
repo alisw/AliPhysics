@@ -255,7 +255,12 @@ void AliSegmentArray::MakeTree(char *file)
        delete fTree;
        fTree = new TTree("Segment Tree","Tree with segments");     
      }
-    else fTree->Reset();}
+    else fTree->Reset();
+  }
+  else {
+    cout << "Tree with segments does not exist"<<endl;
+    return;
+  }
 
   
   //PH  fBranch = fTree->Branch("Segment",psegment->IsA()->GetName(),&psegment,64000);
@@ -351,10 +356,11 @@ AliSegmentID *AliSegmentArray::LoadSegment(Int_t index)
   //PH  AliSegmentID *s = (AliSegmentID*)(*fSegment)[index];
   AliSegmentID *s = (AliSegmentID*)fSegment->At(index);
   if (s==0)  s=  NewSegment();
-  s->SetID(index);
-  //  new AliSegmentID(index);
+
   
   if (s!=0) {
+    s->SetID(index);
+    //  new AliSegmentID(index);
     Int_t treeIndex =(*fTreeIndex)[index];
     if (treeIndex<1) return 0;
     else treeIndex--;   //I don't like it Int table I have index shifted by 1		       

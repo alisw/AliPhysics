@@ -1210,24 +1210,18 @@ void AliTPC::SetDefaults(){
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
   AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
-  // if(param){
-//     AliInfo("You are using 2 pad-length geom hits with 3 pad-lenght geom digits...");
-//     delete param;
-//     param = new AliTPCParamSR();
-//   }
-//   else {
-//     param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60_150x60");
-//   }
+
   param = (AliTPCParamSR*)AliTPCcalibDB::Instance()->GetParameters();
+  if(!param){
+    AliFatal("No TPC parameters found");
+  }
   if (!param->IsGeoRead()){
       //
       // read transformation matrices for gGeoManager
       //
       param->ReadGeoMatrices();
     }
-  if(!param){
-    AliFatal("No TPC parameters found");
-  }
+
 
 
   AliTPCPRF2D    * prfinner   = new AliTPCPRF2D;

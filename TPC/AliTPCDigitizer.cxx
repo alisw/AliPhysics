@@ -417,13 +417,19 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     gime = rl->GetLoader("TPCLoader");
 
     TTree * treear =  gime->TreeS();
+    //
+    if (!treear) {      
+      cerr<<" TPC -  not existing input = \n"<<i1<<" "; 
+      delete [] masks;  
+      for(Int_t i=0; i<nInputs; i++) delete digarr[i];
+      delete [] digarr;
+      return;   
+    } 
+    //
     TBranch * br = treear->GetBranch("fSegmentID");
     if (br) br->GetFile()->cd();
-    if (!treear) {      
-      cerr<<" TPC -  not existing input = \n"<<i1<<" ";      
-    } 
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
-  }
+   }
   
   rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
   gime = rl->GetLoader("TPCLoader");
