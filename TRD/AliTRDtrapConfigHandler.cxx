@@ -155,7 +155,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig()
       gr.SetPoint(iBin, (0.5 * (padResponseR[1] - padResponseL[1])/padResponse[1] * 256), iBin);
     }
     for (Int_t iBin = 0; iBin < 128; iBin++) {
-      Int_t corr = gr.Eval(iBin) - iBin;
+      Int_t corr = (Int_t) (gr.Eval(iBin)) - iBin;
       if (corr < 0)
         corr = 0;
       else if (corr > 31)
