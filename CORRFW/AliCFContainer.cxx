@@ -187,10 +187,9 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nSteps, const Int_t* steps,
   for (Int_t iVar=0; iVar<nVars; iVar++) {
     Int_t nBins = bins[iVar];
     Double_t *array = new Double_t[nBins+1];
-    for (Int_t iBin=1; iBin<=nBins; iBin++) {
+    for (Int_t iBin=1; iBin<=nBins+1; iBin++) {
       array[iBin-1] = axis[iVar]->GetBinLowEdge(iBin);
     }
-    array[nBins] = axis[iVar]->GetBinUpEdge(nBins);
     out->SetBinLimits(iVar,array);
     delete [] array;
   }
@@ -199,7 +198,6 @@ AliCFContainer* AliCFContainer::MakeSlice(Int_t nSteps, const Int_t* steps,
   for (Int_t iStep=0; iStep<nSteps; iStep++) out->SetGrid(iStep,grids[iStep]);
 
   delete [] bins;
-  for (Int_t iVar=0; iVar<nVars; iVar++) delete axis[iVar];
   delete [] axis ;
   return out;
 }
