@@ -55,8 +55,10 @@ ClassImp(AliAnalysisTaskMCParticleFilter)
 
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter():
-AliAnalysisTaskSE(),
+  AliAnalysisTaskSE(),
   fTrackFilterMother(0x0),
+  fAODMcHeader(0x0),
+  fAODMcParticles(0x0),
   fHistList(0x0)
 {
   // Default constructor
@@ -116,6 +118,8 @@ Bool_t AliAnalysisTaskMCParticleFilter::Notify()
 AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const char* name):
     AliAnalysisTaskSE(name),
     fTrackFilterMother(0x0),
+    fAODMcHeader(0x0),
+    fAODMcParticles(0x0),
     fHistList(0x0)
 {
   // Default constructor
@@ -134,7 +138,14 @@ AliAnalysisTaskMCParticleFilter::AliAnalysisTaskMCParticleFilter(const AliAnalys
 //____________________________________________________________________
 AliAnalysisTaskMCParticleFilter::~AliAnalysisTaskMCParticleFilter()
 {
-  //  if( fTrackFilterMother ) delete fTrackFilterMother;
+
+  if(fAODMcHeader){
+    delete fAODMcHeader;
+  }
+  if(fAODMcParticles){
+    fAODMcParticles->Delete();
+    delete fAODMcParticles;
+  }
 }
 
 /*
@@ -168,16 +179,14 @@ void AliAnalysisTaskMCParticleFilter::UserCreateOutputObjects()
 
 
     // mcparticles
-    TClonesArray *tca = new TClonesArray("AliAODMCParticle", 0);
-    tca->SetName(AliAODMCParticle::StdBranchName());
-    AddAODBranch("TClonesArray",&tca);
+    fAODMcParticles = new TClonesArray("AliAODMCParticle", 0);
+    fAODMcParticles->SetName(AliAODMCParticle::StdBranchName());
+    AddAODBranch("TClonesArray",&fAODMcParticles);
 
     // MC header...
-    AliAODMCHeader *mcHeader = new AliAODMCHeader();
-    mcHeader->SetName(AliAODMCHeader::StdBranchName());
-    AddAODBranch("AliAODMCHeader",&mcHeader);    
-
-    
+    fAODMcHeader = new AliAODMCHeader();
+    fAODMcHeader->SetName(AliAODMCHeader::StdBranchName());
+    AddAODBranch("AliAODMCHeader",&fAODMcHeader);    
 
     AliMCEventHandler *mcH = (AliMCEventHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler()); 
     AliAODHandler *aodH = dynamic_cast<AliAODHandler*> ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
@@ -253,7 +262,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   Int_t nprim = mcE->GetNumberOfPrimaries();
   // TODO ADD MC VERTEX
 
-  AliAODMCHeader *aodMCHo = (AliAODMCHeader *) aod->FindListObject("mcHeader");
   // Get the proper MC Collision Geometry
   AliGenEventHeader* mcEH = mcE->GenEventHeader();
 
@@ -300,7 +308,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
 
   if (colG) {
-    aodMCHo->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
+    fAODMcHeader->SetReactionPlaneAngle(colG->ReactionPlaneAngle());
     AliInfo(Form("Found Collision Geometry. Got Reaction Plane %lf\n", colG->ReactionPlaneAngle()));
   }
 
