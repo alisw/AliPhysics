@@ -1,3 +1,5 @@
+# -*- mode: cmake -*-
+
 #--------------------------------------------------------------------------------#
 # Package File for                                                               #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -57,7 +59,7 @@ set ( CLIBCXXOPTS )
 set ( CLIBCOPT )
 set ( CLIBFOPT  ${CLIBDEFS})
 
-set ( CXXWARN  "-Wall -Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual -ansi")
+set ( CXXWARN  "-Wall -Wconversion-Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual -ansi")
 
 set ( CXXSTF  "-pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
 
