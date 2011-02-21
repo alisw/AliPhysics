@@ -202,7 +202,7 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
     xx[2]=distPoint[2];
     if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
       Float_t distPointDelta[3]={xx[0],xx[1],xx[2]};
-      correction->CorrectPoint(distPointDelta, sector);
+      correctionDelta->CorrectPoint(distPointDelta, sector);
       xx[0]=distPointDelta[0];
       xx[1]=distPointDelta[1];
       xx[2]=distPointDelta[2];
