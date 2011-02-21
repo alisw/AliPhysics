@@ -138,7 +138,7 @@ void AliTaskCDBconnect::CreateOutputObjects()
   if (cdb->IsDefaultStorageSet()) {
      AliError("AliTaskCDBconnect: CDB default storage already set!");
   } else {
-     cdb->SetDefaultStorage("alien://?Folder=/alice/data/2010/OCDB");
+     cdb->SetDefaultStorage("raw://");
   }   
   if (run && (run != fRun)) {
      fRunChanged = kTRUE;
