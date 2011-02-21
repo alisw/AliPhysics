@@ -1679,8 +1679,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   else		              
     cell = GetEMCALCells();
   
-  if(!cell) 
+  if(!cell){ 
     AliFatal(Form("No %s CELLS available for analysis",fCalorimeter.Data()));
+    return; // just to trick coverity
+  }
   
   if(GetDebug() > 0) 
     printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
