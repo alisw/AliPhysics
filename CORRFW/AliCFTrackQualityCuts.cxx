@@ -856,10 +856,10 @@ void AliCFTrackQualityCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_t 
 
 
   // book QA histograms
-  Char_t str[256];
+  Char_t str[5];
   for (Int_t i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
 
     fhQA[kCutClusterTPC][i]	= new TH1F(Form("%s_nClustersTPC%s",GetName(),str)     ,"",fhNBinsClusterTPC-1,fhBinLimClusterTPC);
     fhQA[kCutClusterITS][i]	= new TH1F(Form("%s_nClustersITS%s",GetName(),str)     ,"",fhNBinsClusterITS-1,fhBinLimClusterITS);

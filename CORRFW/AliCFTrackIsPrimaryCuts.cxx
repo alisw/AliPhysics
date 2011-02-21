@@ -527,13 +527,19 @@ void AliCFTrackIsPrimaryCuts::SelectionBitMap(TObject* obj)
     return;
   }
   
-  Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
-  Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
+  AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(obj);
+  AliAODTrack * aodTrack = dynamic_cast<AliAODTrack*>(obj);
 
-  AliESDtrack * esdTrack = 0x0 ;
-  AliAODTrack * aodTrack = 0x0 ; 
-  if (isESDTrack) esdTrack = dynamic_cast<AliESDtrack*>(obj);
-  if (isAODTrack) aodTrack = dynamic_cast<AliAODTrack*>(obj);
+  if (!(esdTrack || aodTrack)) {
+    AliError("object must be an ESDtrack or an AODtrack !");
+    return;
+  }
+
+  Bool_t isESDTrack = kFALSE;
+  Bool_t isAODTrack = kFALSE;
+
+  if (esdTrack) isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
+  if (aodTrack) isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
 
   // get the track to vertex parameter for ESD track
   if (isESDTrack) GetDCA(esdTrack);
