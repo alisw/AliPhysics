@@ -160,9 +160,9 @@ struct dNdetaDrawer
    */
   void SetSys(UShort_t sys)
   {
-    fSNNString = new TNamed("sys", (sys == 1 ? "pp" : 
+    fSysString = new TNamed("sys", (sys == 1 ? "pp" : 
 				    sys == 2 ? "PbPb" : "unknown"));
-    fSNNString->SetUniqueID(sys);
+    fSysString->SetUniqueID(sys);
   }
   //__________________________________________________________________
   /** 
@@ -247,13 +247,14 @@ struct dNdetaDrawer
     fForward   = GetResult(results, "dndetaForward");
     fForwardMC = GetResult(results, "dndetaForwardMC");
     fTruth     = GetResult(results, "dndetaTruth");
+    if (!fTruth) results->ls();
 
     TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
     if (!clusters) 
       Warning("Open", "Couldn't find list CentralResults");
     else {
       fCentral   = GetResult(clusters, "dndetaCentral");
-      fCentral->SetMarkerColor(kGreen+1);
+      if (fCentral) fCentral->SetMarkerColor(kGreen+1);
     }
     if (!fTrigString) 
       fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
@@ -272,6 +273,17 @@ struct dNdetaDrawer
       fVtxAxis->SetName("vtxAxis");
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
+
+    Info("Open", 
+	 "Initialized for\n"
+	 "   Trigger:    %s  (%d)\n"
+	 "   sqrt(sNN):  %s  (%dGeV)\n"
+	 "   System:     %s  (%d)\n"
+	 "   Vz range:   %s  (%f,%f)",
+	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
+	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
+	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
+	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
 
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
     if (sums) 
@@ -376,6 +388,13 @@ struct dNdetaDrawer
       if (ua5_1 && alice) ratios->Add(Ratio(alice, ua5_1, max));
       if (ua5_2 && alice) ratios->Add(Ratio(alice, ua5_2, max));
       if (cms   && alice) ratios->Add(Ratio(alice, cms,   max));
+    }
+
+    // Check if we have a primaries from MC 
+    if (fTruth) {
+      ratios->Add(Ratio(fForward,    fTruth, max));
+      ratios->Add(Ratio(fForwardSym, fTruth, max));
+      ratios->Add(Ratio(fCentral,    fTruth, max));
     }
 
     // If we have data from HHD's analysis, then do the ratio of 
@@ -1401,7 +1420,12 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   Int_t       flags=0xf,
 	   const char* title="",
 	   UShort_t    rebin=5, 
-	   Bool_t      cutEdges=false)
+	   Bool_t      cutEdges=false,
+	   UShort_t    sNN=0, 
+	   UShort_t    sys=0,
+	   UShort_t    trg=1,
+	   Float_t     vzMin=999, 
+	   Float_t     vzMax=-999)
 {
   dNdetaDrawer d;
   d.SetRebin(rebin);
@@ -1413,10 +1437,11 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetShowRatios(flags & 0x4);
   d.SetShowLeftRight(flags & 0x8);
   // Do the below if your input data does not contain these settings 
-  // d.SetSNN(900);            // Collision energy per nucleon pair (GeV)
-  // d.SetSys(1);              // Collision system (1:pp, 2:PbPB)
-  // d.SetTrigger(1);          // Collision trigger (1:INEL, 2:INEL>0, 4:NSD)
-  // d.SetVertexRange(-10,10); // Collision vertex range (cm)
+  if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
+  if (sys > 0) d.SetSys(sys);     // Collision system (1:pp, 2:PbPB)
+  if (trg > 0) d.SetTrigger(trg); // Collision trigger (1:INEL, 2:INEL>0, 4:NSD)
+  if (vzMin < 999 && vzMax > -999) 
+    d.SetVertexRange(vzMin,vzMax); // Collision vertex range (cm)
   d.Run(filename);
 }
 //____________________________________________________________________
