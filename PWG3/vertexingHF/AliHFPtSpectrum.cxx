@@ -696,7 +696,7 @@ TH1D * AliHFPtSpectrum::EstimateEfficiencyRecoBin(TH1D *hSimu, TH1D *hReco, cons
   // the efficiency is computed as reco/sim (in each bin)
   //  its uncertainty is err_eff = sqrt( eff*(1-eff) )/ sqrt( sim )
   Double_t eff=0., erreff=0.;
-  for (Int_t ibinrec=0; ibinrec<=nbins; ibinrec++) {
+  for (Int_t ibinrec=0; ibinrec<nbins; ibinrec++) {
     if (sumSimu[ibinrec]!= 0. && sumReco[ibinrec]!=0.) {
       eff = sumReco[ibinrec] / sumSimu[ibinrec] ;
       // protection in case eff > 1.0
