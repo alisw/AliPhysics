@@ -2168,7 +2168,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 
 
 
-void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * const pcstream, const char* hname, Int_t run, Float_t refX, Int_t type){
+void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * const pcstream, const char* hname, Int_t run, Float_t refX, Int_t type, Int_t integ){
   //
   // make a distortion map out ou fthe residual histogram
   // Results are written to the debug streamer - pcstream
@@ -2196,7 +2196,7 @@ void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * 
   Int_t last3 =his0->GetAxis(3)->GetLast();
   //
   for (Int_t ibin3=first3; ibin3<last3; ibin3+=1){   // axis 3 - local angle
-    his0->GetAxis(3)->SetRange(TMath::Max(ibin3-1,1),TMath::Min(ibin3+1,nbins3));
+    his0->GetAxis(3)->SetRange(TMath::Max(ibin3-integ,1),TMath::Min(ibin3+integ,nbins3));
     Double_t      x3= his0->GetAxis(3)->GetBinCenter(ibin3);
     THnSparse * his3= his0->Projection(3,idim);         //projected histogram according selection 3
     //
@@ -2205,7 +2205,7 @@ void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * 
     Int_t last2     = his3->GetAxis(2)->GetLast();
     //
     for (Int_t ibin2=first2; ibin2<last2; ibin2+=1){   // axis 2 - phi
-      his3->GetAxis(2)->SetRange(TMath::Max(ibin2-1,1),TMath::Min(ibin2+1,nbins2));
+      his3->GetAxis(2)->SetRange(TMath::Max(ibin2-integ,1),TMath::Min(ibin2+integ,nbins2));
       Double_t      x2= his3->GetAxis(2)->GetBinCenter(ibin2);
       THnSparse * his2= his3->Projection(2,idim);         //projected histogram according selection 2
       Int_t nbins1     = his2->GetAxis(1)->GetNbins();
