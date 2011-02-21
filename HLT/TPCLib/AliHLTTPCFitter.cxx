@@ -84,7 +84,8 @@ AliHLTTPCFitter::~AliHLTTPCFitter()
 void AliHLTTPCFitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
 {
   //load clusters
-  Char_t fname[256];
+  const Int_t fnamelen=256;
+  Char_t fname[fnamelen];
   AliHLTTPCMemHandler *clusterfile[36][6];
   for(Int_t s=0; s<=35; s++)
     {
@@ -99,7 +100,7 @@ void AliHLTTPCFitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
 	    delete fClusters[s][p];
 	  fClusters[s][p] = 0;
 	  clusterfile[s][p] = new AliHLTTPCMemHandler();
-	  sprintf(fname,"%s/points_%d_%d_%d.raw",path,event,s,patch);
+	  snprintf(fname,fnamelen,"%s/points_%d_%d_%d.raw",path,event,s,patch);
 	  if(!clusterfile[s][p]->SetBinaryInput(fname))
 	    {
 	      delete clusterfile[s][p];
@@ -191,6 +192,8 @@ Int_t AliHLTTPCFitter::FitCircle()
   //Moved to C by Pablo Yepes
   //Moved to AliROOT by ASV.
   //------------------------------------------------------------------
+
+  if (!fTrack) return -1;
   
   Double_t wsum  = 0.0 ;
   Double_t xav   = 0.0 ;
@@ -200,6 +203,11 @@ Int_t AliHLTTPCFitter::FitCircle()
   //     Loop over hits calculating average
   Double_t * fXYWeight = new Double_t[(fTrack->GetNHits())];
   UInt_t *hitnum = fTrack->GetHitNumbers();
+  if (!fXYWeight || !hitnum) {
+    if (fXYWeight) delete [] fXYWeight;
+    return -1;
+  }
+  memset(fXYWeight, 0, fTrack->GetNHits()*sizeof(Double_t));
   for(Int_t i=0; i<fTrack->GetNHits(); i++)
     {
       UInt_t id = hitnum[i];
@@ -435,6 +443,7 @@ Int_t AliHLTTPCFitter::FitCircle()
   if ( h11 == 0.0 || h22 == 0.0 ){
     LOG(AliHLTTPCLog::kError,"AliHLTTPCFitter::FitCircle","TrackFit")<<AliHLTTPCLog::kDec<<
       "Problems fitting circle"<<ENDLOG;
+    delete [] fXYWeight;
     return 1 ;
   }
   Double_t rootsq = (h14*h14)/(h11*h11) + 4.0*h34 ;
@@ -515,6 +524,9 @@ Int_t AliHLTTPCFitter::FitCircle()
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Int_t AliHLTTPCFitter::FitLine ( )
 {
+  // Fit Line in s-z plane
+  if (!fTrack) return -1;
+
   //
   //Initialization 
   //
@@ -532,6 +544,13 @@ Int_t AliHLTTPCFitter::FitLine ( )
   Double_t * fS = new Double_t[(fTrack->GetNHits())];
   Double_t *fZWeight = new Double_t[fTrack->GetNHits()];
   UInt_t *hitnum = fTrack->GetHitNumbers();
+  if (!fS || !fZWeight || !hitnum) {
+    if (fS) delete [] fS;
+    if (fZWeight) delete [] fZWeight;
+    return -1;
+  }
+  memset(fS, 0, fTrack->GetNHits()*sizeof(Double_t));
+  memset(fZWeight, 0, fTrack->GetNHits()*sizeof(Double_t));
   if (0)//fVertexConstraint==kTRUE)
     {
       UInt_t id = hitnum[0];
@@ -592,8 +611,11 @@ Int_t AliHLTTPCFitter::FitLine ( )
 	  dx = points[pos].fX -lastpoints[lastpos].fX;
 	  dy = points[pos].fY -lastpoints[lastpos].fY;
 	  dpsi = 0.5 * (Double_t)sqrt ( dx*dx + dy*dy ) / radius ;
-	  if(fabs(dpsi) > 1)
+	  if(fabs(dpsi) > 1) {
+	    delete [] fS;
+	    delete [] fZWeight;
 	    return 1;
+	  }
 	  fTrack->SetPsierr(dpsi);
 	  s = fS[i-1] - 2.0 * radius * (Double_t)asin ( dpsi ) ;
 	  fS[i]=s;
@@ -615,6 +637,8 @@ Int_t AliHLTTPCFitter::FitLine ( )
     { 
       chi2 = 99999.F ;
       //fTrack->SetChiSq2(chi2);
+      delete [] fS;
+      delete [] fZWeight;
       return 0 ;
     }
   
