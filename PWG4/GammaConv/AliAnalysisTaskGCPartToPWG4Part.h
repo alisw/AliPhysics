@@ -64,7 +64,7 @@ public:
   AliAnalysisTaskGCPartToPWG4Part(const AliAnalysisTaskGCPartToPWG4Part&); // not implemented
   AliAnalysisTaskGCPartToPWG4Part& operator=(const AliAnalysisTaskGCPartToPWG4Part&); // not implemented
 
-  Int_t CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC, AliAODMCHeader * mcHeader);
+  //Int_t CheckTag(AliAODPWG4ParticleCorrelation * particle, TClonesArray * tracks, TClonesArray * arrayMC, AliAODMCHeader * mcHeader);
   
   ClassDef(AliAnalysisTaskGCPartToPWG4Part, 1); // example of analysis
 };

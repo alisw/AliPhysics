@@ -460,11 +460,7 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEve
     return;
   }
 
-  Bool_t delP = kFALSE;
-
-
-
-
+ 
   TClonesArray * convGamma = dynamic_cast<TClonesArray*>(aodEvent->FindListObject("GammaConversionTask_900356200010031"));
   
 
@@ -490,15 +486,11 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEve
 	continue;
       }
       
-      //if(aodO->Pt() < GetMinPt()) continue;
-      AddToAOD(aodO, fPhotons, "ConvGamma");
-      
-      delP = kFALSE;
+      if(aodO->Pt() < GetMinPt()) continue;
+      photon = AddToAOD(aodO, fPhotons, "ConvGamma");
     } 
   
     if(photon) {
-
-
       Bool_t isolated = IsIsolated(photon, tracks, GetConeSize(), GetPtThreshold() );
       
       
@@ -507,7 +499,6 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEve
 
       fHistPt->Fill(photon->Pt());
       fHistPhotPhi->Fill(photon->Phi());
-      if (delP) delete photon;
     }
   }
 }
@@ -516,17 +507,23 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const AliAODEvent * const aodEve
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGammaJet::AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector) {
   new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(aodO->Px(), aodO->Py(), aodO->Pz(), aodO->E());
   AliAODPWG4ParticleCorrelation * photon = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
-  photon->SetTagged(aodO->IsTagged());
-  photon->SetTrackLabel(aodO->GetLabel1(), aodO->GetLabel2());
-  photon->SetDetector(detector);
+  if(photon) {
+    photon->SetTagged(aodO->IsTagged());
+    photon->SetTrackLabel(aodO->GetLabel1(), aodO->GetLabel2());
+    photon->SetDetector(detector);
+  }
+  
   return photon;
 }
 
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGammaJet::AddToAOD(AliAODConversionParticle * aodO, TClonesArray * branch, TString detector) {
   new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(aodO->Px(), aodO->Py(), aodO->Pz(), aodO->E());
   AliAODPWG4ParticleCorrelation * photon = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
-  photon->SetTrackLabel(aodO->GetLabel1(), aodO->GetLabel2());
-  photon->SetDetector(detector);
+  if(photon) {
+    photon->SetTrackLabel(aodO->GetLabel1(), aodO->GetLabel2());
+    photon->SetDetector(detector);
+  }
+
   return photon;
 }
 
