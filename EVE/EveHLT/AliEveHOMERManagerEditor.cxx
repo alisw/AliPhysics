@@ -98,7 +98,7 @@ void AliEveHOMERManagerEditor::NextEvent() {
 
 void AliEveHOMERManagerEditor::SetTriggerString(int id) {
 
-  if (id < 0 || id > 4) {
+  if (id < 0 || id > 3) {
     return;
   }
   

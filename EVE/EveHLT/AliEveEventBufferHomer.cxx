@@ -68,7 +68,7 @@ void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
 
 
   TList * listIn = dynamic_cast<TList*>(event);
-  if(!(listIn->GetSize() > 0)) {
+  if(!listIn || !(listIn->GetSize() > 0)) {
     cout  << "AliEveEventBufferHomer::AddToBuffer(): List Is empty, not added to buffer!"<<endl;
     return;
   }

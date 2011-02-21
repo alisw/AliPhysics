@@ -46,10 +46,11 @@ AliEveEventBufferOffline::AliEveEventBufferOffline(TString filename)  :
   }
 
   fTree = dynamic_cast<TTree *>(fFile->Get("HLTesdTree"));
-  cout << "File has " << fNEntries << "events" << endl;
-  fNEntries = fTree->GetEntries();
-  fEvent->ReadFromTree(fTree);
-  
+  if(fTree) {
+    fNEntries = fTree->GetEntries();
+    cout << "File has " << fNEntries << "events" << endl;
+    fEvent->ReadFromTree(fTree);
+  }
 }
 
 
