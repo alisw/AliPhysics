@@ -1606,6 +1606,13 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   delete[] fUsedTrack; fUsedTrack=0x0;
   delete[] fUsedV0; fUsedV0=0x0;
   delete[] fUsedKink; fUsedKink=0x0;
+
+  if ( fIsPidOwner){
+    delete fESDpid;
+    fESDpid = 0x0;
+  }
+
+
 }
 
 
