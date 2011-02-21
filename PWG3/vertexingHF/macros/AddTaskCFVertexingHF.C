@@ -25,6 +25,9 @@ const Double_t zmin = -15;
 const Double_t zmax = 15;
 const Int_t    minITSClusters = 5;
 
+const Float_t centmin = 0.;
+const Float_t centmax = 100.;
+
 //----------------------------------------------------
 
 AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root",Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2)
@@ -50,7 +53,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	}
 
 	TFile* fileCuts = new TFile(cutFile);
-	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCutsStandard");
+	AliRDHFCutsD0toKpi *cutsD0toKpi = (AliRDHFCutsD0toKpi*)fileCuts->Get("D0toKpiCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -90,12 +93,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	UInt_t ipointing  = 10;
 	UInt_t iphi  = 11;
 	UInt_t iz  = 12;
+	UInt_t icent = 13;
 
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
-	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
+	const Int_t nvar   = 14 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 
 	//Setting the bins: pt, ptPi, and ptK are considered seprately because for them you can either define the binning by hand, or using the cuts file
 
@@ -197,6 +201,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbin10  = 1050 ; //bins in cosPointingAngle
 	const Int_t nbin11  = 20 ; //bins in Phi
 	const Int_t nbin12  = 60 ; //bins in z vertex
+	const Int_t nbin13 = 10;  //bins in centrality
 
 	iBin[1]=nbin1;
 	iBin[2]=nbin2;
@@ -208,6 +213,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	iBin[10]=nbin10;
 	iBin[11]=nbin11;
 	iBin[12]=nbin12;
+	iBin[13]=nbin13;
 	
 	//arrays for lower bounds :
 	Double_t *binLim1=new Double_t[iBin[1]+1];
@@ -220,6 +226,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Double_t *binLim10=new Double_t[iBin[10]+1];
 	Double_t *binLim11=new Double_t[iBin[11]+1];
 	Double_t *binLim12=new Double_t[iBin[12]+1];
+	Double_t *binLim13=new Double_t[iBin[13]+1];
 
 	// y
 	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
@@ -251,6 +258,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	// z Primary Vertex
 	for(Int_t i=0; i<=nbin12; i++) {
 		binLim12[i]=(Double_t)zmin  + (zmax-zmin)  /nbin12*(Double_t)i ;
+	}
+
+	for(Int_t i=0; i<=nbin13; i++) {
+	  binLim13[i]=(Double_t)centmin  + (centmax-centmin)/nbin13 * (Double_t)i;
 	}
 
 	//one "container" for MC
@@ -293,6 +304,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	container -> SetBinLimits(iphi,binLim11);
 	printf("z\n");
 	container -> SetBinLimits(iz,binLim12);
+	printf("cent\n");
+	container -> SetBinLimits(icent,binLim13);
 	
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
@@ -303,7 +316,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
         container -> SetStepTitle(6, "RecoAcc");
 	container -> SetStepTitle(7, "RecoITSCluster");
 	container -> SetStepTitle(8, "RecoCuts");
-	container -> SetStepTitle(8, "RecoPID");
+	container -> SetStepTitle(9, "RecoPID");
 
         container -> SetVarTitle(ipt,"pt");
 	container -> SetVarTitle(iy,"y");
@@ -318,6 +331,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	container -> SetVarTitle(ipointing, "piointing");
 	container -> SetVarTitle(iphi, "phi");
 	container -> SetVarTitle(iz, "z");
+	container -> SetVarTitle(icent, "centrality");
 
 
 	//CREATE THE  CUTS -----------------------------------------------
@@ -396,6 +410,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetDecayChannel(2);
 	task->SetUseWeight(kFALSE);
 	task->SetSign(isSign);
+	task->SetCentralitySelection(kTRUE);
+
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
@@ -405,6 +421,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	Printf("Sign = %d",(Int_t)task->GetSign());
+	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
 	Printf("***************END CONTAINER SETTINGS *****************\n");
 
         //-----------------------------------------------------------//

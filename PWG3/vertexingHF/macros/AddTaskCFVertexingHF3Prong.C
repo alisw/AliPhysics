@@ -32,6 +32,9 @@ const Double_t zmin = -15;
 const Double_t zmax = 15;
 const Int_t    minITSClusters = 5;
 
+const Float_t centmin = 0.;
+const Float_t centmax = 100.;
+
 //----------------------------------------------------
 
 AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root",Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
@@ -104,12 +107,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	UInt_t id0K  = 9;
 	UInt_t id0pi2  = 10;
 	UInt_t iz  = 11;
+	UInt_t icent = 12;
 
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
-	const Int_t nvar   = 12 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
+	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 // 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
 // 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
 // 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
@@ -147,6 +151,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	const Int_t nbin9  = 100 ; //bins in d0K
 	const Int_t nbin10  = 100 ; //bins in d0pi2
 	const Int_t nbin11  = 60 ; //bins in z vertex
+	const Int_t nbin12 = 10; //bins in centrality
 	
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvar];
@@ -165,6 +170,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	iBin[9]=nbin9;
 	iBin[10]=nbin10;
 	iBin[11]=nbin11;
+	iBin[12]=nbin12;
 	
 	
 	//arrays for lower bounds :
@@ -180,7 +186,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	Double_t *binLim9=new Double_t[iBin[9]+1];
 	Double_t *binLim10=new Double_t[iBin[10]+1];
 	Double_t *binLim11=new Double_t[iBin[11]+1];
-	
+	Double_t *binLim12=new Double_t[iBin[12]+1];
 
 	// checking limits
 	/*
@@ -275,6 +281,11 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 		//		Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim12[i]));
 	}
 
+	for(Int_t i=0; i<=nbin12; i++) {
+	  binLim12[i]=(Double_t)centmin  + (centmax-centmin)/nbin12 * (Double_t)i;
+	}
+	
+
 	// debugging printings
 	//Info("AliCFHeavyFlavourTaskMultiVarMultiStep","Printing lower limits for bins in pt");
 	//for (Int_t i =0; i<= iBin[0]; i++){
@@ -327,6 +338,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	container -> SetBinLimits(id0pi2,binLim10);
 	printf("z \n");
 	container -> SetBinLimits(iz,binLim11);
+	printf("cent\n");
+	container -> SetBinLimits(icent,binLim12);
 	
 	
 	container -> SetStepTitle(0, "MCLimAcc");
@@ -352,6 +365,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
         container -> SetVarTitle(id0K, "d0K");
 	container -> SetVarTitle(id0pi2, "d0pi2");
 	container -> SetVarTitle(iz, "z");
+	container -> SetVarTitle(icent, "centrality");
 
 
 	//CREATE THE  CUTS -----------------------------------------------
@@ -430,6 +444,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetSign(isSign);
+	task->SetCentralitySelection(kTRUE);
+
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
@@ -439,7 +455,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	Printf("Sign = %d",(Int_t)task->GetSign());
-
+	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
         //-----------------------------------------------------------//

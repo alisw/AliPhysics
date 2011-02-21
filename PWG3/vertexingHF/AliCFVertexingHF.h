@@ -98,6 +98,8 @@ class AliCFVertexingHF : public TObject {
 	Int_t CheckReflexion(Char_t isSign);
 	Bool_t SetLabelArray();
 
+	void SetCentralityValue(Float_t centValue) {fCentValue = centValue;}
+
 	protected:
 	
 	TClonesArray      *fmcArray;               //mcArray candidate
@@ -117,7 +119,9 @@ class AliCFVertexingHF : public TObject {
 	Int_t fProngs;               // n. of prongs	
 	Int_t* fLabelArray;          //[fProngs]  array of labels
 
-	ClassDef(AliCFVertexingHF, 2);
+	Float_t fCentValue;         // centrality value
+
+	ClassDef(AliCFVertexingHF, 3);
 	
 };
 

@@ -115,15 +115,6 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
         //the D0
 	AliAODMCParticle* mcPartDaughterD0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0ds));
 	AliAODMCParticle* mcPartDaughterPis = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1ds));
-	if (!mcPartDaughterD0 || !mcPartDaughterPis){
-		if (!mcPartDaughterD0){
-			AliError("Error while casting the MC D0, returning FALSE");
-		} 
-		if (!mcPartDaughterD0){
-			AliError("Error while casting the MC soft pion, returning FALSE");
-		} 
-		return bGenValues;
-	}
 
 	Double_t vtx1[3] = {0,0,0};   // primary vertex		
 	Double_t vtx2daughter0[3] = {0,0,0};   // secondary vertex from daughter 0
@@ -136,16 +127,6 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0)); //D0
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1)); //pis
-
-	if (!mcPartDaughter0 || !mcPartDaughter1){
-		if (!mcPartDaughter0){
-			AliError("Error while casting the MC daughter 0, returning FALSE");
-		} 
-		if (!mcPartDaughter1){
-			AliError("Error while casting the MC daughter 1, returning FALSE");
-		} 
-		return bGenValues;
-	}
 
 	// getting vertex from daughters
 	mcPartDaughter0->XvYvZv(vtx2daughter0);  // cm
@@ -229,7 +210,7 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 	vectorMC[10] = 1.01;    // dummy value, meaningless in MC
 	vectorMC[11] = fmcPartCandidate->Phi(); 
 	vectorMC[12] = fzMCVertex;    // z of reconstructed of primary vertex
-       
+	vectorMC[13] = fCentValue; // reconstructed centrality
 
 	delete decay;
 	bGenValues = kTRUE;
@@ -297,6 +278,7 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   vectorReco[10] = cosPointingAngle;  // in micron
   vectorReco[11] = phi;  
   vectorReco[12] = fzPrimVertex;    // z of reconstructed of primary vertex
+  vectorReco[13] = fCentValue;
 
   bFillRecoValues = kTRUE;
 
