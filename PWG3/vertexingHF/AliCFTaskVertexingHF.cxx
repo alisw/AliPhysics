@@ -97,7 +97,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
-	fSign(2)
+	fSign(2),
+	fCentralitySelection(kTRUE)
 {
 	//
 	//Default ctor
@@ -129,7 +130,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fNvar(0),
 	fPartName(""),
 	fDauNames(""),
-	fSign(2)
+	fSign(2), 
+	fCentralitySelection(kTRUE)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -187,7 +189,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fNvar(c.fNvar),
 	fPartName(c.fPartName),
 	fDauNames(c.fDauNames),
-	fSign(c.fSign)
+	fSign(c.fSign),
+	fCentralitySelection(c.fCentralitySelection)
 {
 	//
 	// Copy Constructor
@@ -223,42 +226,42 @@ void AliCFTaskVertexingHF::Init()
 	switch (fDecayChannel){
 	case 2:{
 		copyfCuts = new AliRDHFCutsD0toKpi(*(dynamic_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="D0";
 		fDauNames="K+pi";
 		break;
 	}
 	case 21:{ 
 		copyfCuts = new AliRDHFCutsDStartoKpipi(*(dynamic_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="Dstar";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 31:{
 		copyfCuts = new AliRDHFCutsDplustoKpipi(*(dynamic_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
-		fNvar = 12;
+		fNvar = 13;
 		fPartName="Dplus";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 32:{
 		copyfCuts = new AliRDHFCutsLctopKpi(*(dynamic_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-		fNvar = 12;
+		fNvar = 13;
 		fPartName="Lambdac";
 		fDauNames="p+K+pi";
 		break;
 	}
 	case 33:{
 		copyfCuts = new AliRDHFCutsDstoKKpi(*(dynamic_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
-		fNvar = 12;
+		fNvar = 13;
 		fPartName="Ds";
 		fDauNames="K+K+pi";
 		break;
 	}
 	case 4:{
 		copyfCuts = new AliRDHFCutsD0toKpipipi(*(dynamic_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="D0";
 		fDauNames="K+pi+pi+pi";
 		break;
@@ -293,6 +296,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	PostData(2,fCFManager->GetParticleContainer()) ;
 	PostData(3,fCorrelation) ;
 	
+
 	AliESDtrackCuts* trackCuts = fCuts->GetTrackCuts();
 	
 	if (fFillFromGenerated){
@@ -449,32 +453,39 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetRecoPrimVertex(zPrimVertex);
 	cfVtxHF->SetMCPrimaryVertex(zMCVertex);
 	cfVtxHF->SetFillFromGenerated(fFillFromGenerated);
+	cfVtxHF->SetNVar(fNvar);
+
+	if (fCentralitySelection)
+	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) return;  
+	
+	Float_t centValue = fCuts->GetCentrality(aodEvent);
+	cfVtxHF->SetCentralityValue(centValue);  
 	
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
-		
-		AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
-		if (!mcPart){
-			AliError("Failed casting particle from MC array!, Skipping particle");
-			continue;
-		}
-		// check the MC-level cuts, must be the desidered particle
-		if (!fCFManager->CheckParticleCuts(0, mcPart)) continue;  // 0 stands for MC level
-		
-		cfVtxHF->SetMCCandidateParam(iPart);
-		cfVtxHF->SetNVar(fNvar);
-		//counting c quarks
-		cquarks += cfVtxHF->MCcquarkCounting(mcPart);
-		
-		if (!(cfVtxHF->SetLabelArray())){
-			AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
-			continue;
-		}		   
-
-		//check the candiate family at MC level
-		if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
-			AliDebug(2,Form("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel));
-			continue;
-		}
+	  AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
+	  if (!mcPart){
+	    AliError("Failed casting particle from MC array!, Skipping particle");
+	    continue;
+	  }
+	  // check the MC-level cuts, must be the desidered particle
+	  if (!fCFManager->CheckParticleCuts(0, mcPart)) {
+	    continue;  // 0 stands for MC level
+	  }	  
+	  cfVtxHF->SetMCCandidateParam(iPart);
+	 
+	  //counting c quarks
+	  cquarks += cfVtxHF->MCcquarkCounting(mcPart);
+	  
+	  if (!(cfVtxHF->SetLabelArray())){
+	    AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
+	    continue;
+	  }		   
+	  
+	  //check the candiate family at MC level
+	  if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
+	    AliDebug(2,Form("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel));
+	    continue;
+	  }
 		else{
 			AliDebug(2,Form("Check on the family OK!!! (decaychannel = %d)",fDecayChannel));
 		}
@@ -517,6 +528,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 						fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
 						AliDebug(3,"MC Refit cut passed and container filled\n");
 						icountRefit++;
+
+				      
 					}
 					else{
 						AliDebug(3,"MC Refit cut not passed\n");
