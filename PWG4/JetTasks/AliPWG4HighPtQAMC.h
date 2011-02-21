@@ -76,7 +76,7 @@ class AliPWG4HighPtQAMC: public AliAnalysisTask {
   AliESDtrackCuts *fTrackCuts;    // TrackCuts for global reconstructed vs MC comparison
   AliESDtrackCuts *fTrackCutsITS; // TrackCuts including ITSrefit
 
-  Int_t   fTrackType;             // 0: global track; 1:TPConly track
+  Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
 
   Float_t fPtMax;                 // Maximum pT for histograms
 
