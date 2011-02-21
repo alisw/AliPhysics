@@ -161,9 +161,14 @@ AliTPCcalibGainMult::~AliTPCcalibGainMult(){
   //
   //
   //
-  //delete fHistNTracks;            //  histogram showing number of ESD tracks per event
-  //delete fHistGainSector;         //  histogram showing the number of clusters per track
-  
+  delete fHistNTracks;            //  histogram showing number of ESD tracks per event
+  delete fHistClusterShape;       //  histogram to check the cluster shape
+  delete fHistQA;                 //  dE/dx histogram showing the final spectrum
+  //
+  delete fHistGainSector;   //  histogram which shows MIP peak for each of the 3x36 sectors (pad region)
+  delete fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
+  delete fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
+
 
 }
 

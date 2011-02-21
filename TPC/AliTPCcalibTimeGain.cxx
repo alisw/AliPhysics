@@ -413,9 +413,9 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     if (seed) {
       Int_t particleCase = 0;
-      if (meanP > 0.5  || meanP < 0.4)  particleCase = 2; // MIP pions
-      if (meanP > 0.56 || meanP < 0.57) particleCase = 3; // protons 1
-      if (meanP > 0.64 || meanP < 0.66) particleCase = 4; // protons 2
+      if (meanP < 0.5  && meanP > 0.4)  particleCase = 2; // MIP pions
+      if (meanP < 0.57 && meanP > 0.56) particleCase = 3; // protons 1
+      if (meanP < 0.66 && meanP > 0.65) particleCase = 4; // protons 2
       //
       if (fLowMemoryConsumption && particleCase == 0) continue;
       //

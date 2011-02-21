@@ -111,7 +111,7 @@ AliTPCcalibTime::AliTPCcalibTime()
    fCutMaxDz(25),      // maximal distance in rfi ditection
    fCutTheta(0.03),    // maximal distan theta
    fCutMinDir(-0.99),  // direction vector products
-   fCutTracks(100),
+   fCutTracks(2500),
    fArrayLaserA(0),      //laser  fit parameters C
    fArrayLaserC(0),      //laser  fit parameters A
    fArrayDz(0),          //NEW! Tmap of V drifts for different triggers
@@ -177,7 +177,7 @@ AliTPCcalibTime::AliTPCcalibTime(const Text_t *name, const Text_t *title, UInt_t
    fCutMaxDz(40),   // maximal distance in rfi ditection
    fCutTheta(5*0.004644),// maximal distan theta
    fCutMinDir(-0.99),    // direction vector products
-   fCutTracks(100),
+   fCutTracks(2500),
    fArrayLaserA(new TObjArray(1000)),      //laser  fit parameters C
    fArrayLaserC(new TObjArray(1000)),      //laser  fit parameters A
    fArrayDz(0),            //Tmap of V drifts for different triggers

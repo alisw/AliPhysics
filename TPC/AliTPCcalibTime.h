@@ -78,6 +78,12 @@ public:
   TObjArray * GetLaserArrayA() const { return fArrayLaserA;}
   TObjArray * GetLaserArrayC() const { return fArrayLaserC;}
 
+
+  void   SetCutTracks(Int_t maxTracks)  { fCutTracks = maxTracks; }  // set maximal number of tracks
+  Int_t  GetCutTracks() const { return fCutTracks; }    // retun maximal number of tracks
+
+
+
 protected:
   void ResetCurrent();                  // reset current values
   Int_t              fMemoryMode;       // 0 -do not fill THnSparse with residuals  1- fill only important QA THn 2 - Fill all THnsparse for calibration
