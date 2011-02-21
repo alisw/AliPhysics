@@ -54,7 +54,6 @@
 #pragma link C++ class AliFMDCorrVertexBias+;
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
 #pragma link C++ class AliAODForwardMult+;
-// #pragma link C++ typedef AliAODForwardMCMult;
 #pragma link C++ class AliForwardMultiplicityBase+;
 #pragma link C++ class AliForwardMultiplicityTask+;
 #pragma link C++ class AliForwardMCMultiplicityTask+;
@@ -62,6 +61,8 @@
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
+
+#pragma link C++ class AliBasedNdetaTask+;
 
 #pragma link C++ class AliCentralMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask::Manager+;
