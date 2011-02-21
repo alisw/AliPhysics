@@ -2522,7 +2522,7 @@ int ParseBuffer(
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	case kPairsDecisionDataBlock:
-		return DumpPairsDecisionBlock(buffer, bufferSize, continueParse);
+		subResult = DumpPairsDecisionBlock(buffer, bufferSize, continueParse);
 		if (subResult != EXIT_SUCCESS) result = subResult;
 		break;
 	default :
