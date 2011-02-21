@@ -337,6 +337,8 @@ int AliHLTITSAgent::CreateCFConfigurations(AliHLTConfigurationHandler* pHandler,
   int spec=0x1;
   int ddlno=0;
 
+  // this is a simple switch for experimenting with different configurations
+  // it's supposed to be false for normal compilation
   bool bOneCFperDDL=false;
   TString origin=idString; origin.ReplaceAll("ITS", "I");
   TString cfBase=idString; cfBase+="_CF";
