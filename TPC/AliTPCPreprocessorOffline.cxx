@@ -1084,7 +1084,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   Int_t nCountMax = 0;
   for(Int_t iBin = 1; iBin < meanMax->GetXaxis()->GetNbins(); iBin++) {
     Float_t yValMax = meanMax->GetBinContent(iBin);
-    if (yValMax < 0.01) continue;
+    if (yValMax < 0.7) continue;
+    if (yValMax > 1.3) continue;
     if (meanMax->GetBinError(iBin)/yValMax > 0.01) continue;
     xMultMax[nCountMax] = meanMax->GetXaxis()->GetBinCenter(iBin);
     yMultMax[nCountMax] = yValMax;
