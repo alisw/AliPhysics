@@ -132,7 +132,7 @@ void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
       h->Draw();
     
       //write
-      c->SaveAs(Form("%s.png",h->GetName()));
+      c->SaveAs(Form("%s%s.png",h->GetName(),textleg.Data()));
       TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
       fout->cd();
       c->Write();
@@ -177,25 +177,62 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     cout<<":-( null pointers..."<<endl;
     return;
   }
-  
-  for(Int_t i=0;i<list->GetEntries();i++){
-    TH1F* h=(TH1F*)list->At(i);
-    if(!h){
-      cout<<"Histogram "<<i<<" not found"<<endl;
-      continue;
-    }
-    TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
-    c->cd();
-    c->SetGrid();
-    h->Draw();
-    c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
-  }
-  
+
   TCanvas* cst=new TCanvas("cst","Stat");
   cst->SetGridy();
   cst->cd();
+  Int_t nevents=hstat->Integral(1,2);
   hstat->Draw("htext0");
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
+  Int_t nevents080=1;
+
+  for(Int_t i=0;i<list->GetEntries();i++){
+
+    TClass* objtype=list->At(i)->IsA();
+    TString tpname=objtype->GetName();
+
+    if(tpname=="TH1F"){
+
+      TH1F* h=(TH1F*)list->At(i);
+      if(!h){
+	cout<<"Histogram "<<i<<" not found"<<endl;
+	continue;
+      }
+      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+      pvtxt->SetBorderSize(0);
+      pvtxt->SetFillStyle(0);
+
+      c->cd();
+      c->SetGrid();
+      Int_t entries=h->Integral();
+      pvtxt->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
+      h->Draw();
+      pvtxt->Draw();
+      c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
+    }
+    if(tpname=="TH2F"){
+      TH2F* h=(TH2F*)list->At(i);
+      if(!h){
+	cout<<"Histogram "<<i<<" not found"<<endl;
+	continue;
+      }
+      TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
+      TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+      pvtxt->SetBorderSize(0);
+      pvtxt->SetFillStyle(0);
+
+      c->cd();
+      c->SetGrid();
+      Int_t entries=h->Integral();
+      pvtxt->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
+      h->Draw("colz");
+      c->SetLogz();
+      pvtxt->Draw();
+      c->SaveAs(Form("%s%s.png",c->GetName(),textleg.Data()));
+    }
+  }
+  
   
   listname="countersCentrality";
 
@@ -205,6 +242,13 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     cout<<":-( null pointers..."<<endl;
     return;
   }
+
+  TH1F* hallcntr=0x0;
+  cout<<"normalizing to 0-80% as a check"<<endl;
+
+  TCanvas *cvnocnt=new TCanvas("cvnocnt","No Centrality estimation",800,400);
+  cvnocnt->Divide(2,1);
+
   for(Int_t i=0;i<list->GetEntries();i++){
     AliCounterCollection* coll=(AliCounterCollection*)list->At(i);
     
@@ -213,13 +257,33 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     Int_t ncentr=10;//check this
     TH1F* h020=0x0;
     TH1F* h2080=0x0;
+    hallcntr=0x0; 
+
+    TH1F* hbad=(TH1F*)coll->Get("run",Form("centralityclass:-990_-980"));
+    cvnocnt->cd(i+1);
+    if(hbad) hbad->Draw();
+
     TCanvas *ccent=new TCanvas(Form("ccent%s",coll->GetName()),Form("Centrality vs Run (%s)",coll->GetName()),1400,800);
     ccent->Divide(5,3);
+
+    for(Int_t ic=0;ic<8/*ncentr*/;ic++){ //normalizing to 0-80% as a check
+
+      TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+      h->SetName(Form("h%d%d",i,ic));
+      if(!hallcntr) {
+	hallcntr=(TH1F*)h->Clone("hallcntr");
+	hallcntr->Sumw2();
+      }
+      else hallcntr->Add(h);
+      nevents080+=h->Integral();
+    }
 
     for(Int_t ic=0;ic<ncentr;ic++){
 
       TH1F* h=(TH1F*)coll->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
       h->SetName(Form("h%d%d",i,ic));
+      h->Sumw2();
+
       if(ic>=0 && ic<=1){ //0-20
 	if(!h020) {
 	  h020=(TH1F*)h->Clone(Form("h020%s",coll->GetName()));
@@ -235,7 +299,10 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 	else h2080->Add(h);
       }
 
+      h->Divide(hallcntr);
+
       ccent->cd(ic+1);
+      h->GetYaxis()->SetRangeUser(0.,0.15);
       h->DrawClone();
       // ccent->cd(1);
       // h->SetLineColor(ic+1);
@@ -244,12 +311,73 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     }
 
     ccent->cd(ncentr+1);
+    h020->Divide(hallcntr);
     h020->DrawClone();
+    TCanvas* cv020=new TCanvas(Form("cv020-%d",i),"0-20% vs run number");
+    cv020->cd();
+    h020->GetYaxis()->SetRangeUser(0.,1.);
+    h020->DrawClone();
+    cv020->SaveAs(Form("cv020-%d.png",i));
 
     ccent->cd(ncentr+2);
+    h2080->Divide(hallcntr);
     h2080->DrawClone();
+
+    TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number");
+    cv2080->cd();
+    h2080->GetYaxis()->SetRangeUser(0.,1.);
+    h2080->DrawClone();
+    cv2080->SaveAs(Form("cv2080-%d.png",i));
 
     ccent->SaveAs(Form("%s%s.png",ccent->GetName(),textleg.Data()));
   }
+
+}
+
+void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",Int_t nsteps=0,TString direction="X",TString path="./"){
+  gStyle->SetCanvasColor(0);
+  gStyle->SetTitleFillColor(0);
+  gStyle->SetStatColor(0);
+
+  TString listname="outputCentrCheck";
+
+  TList* list;
+  TH1F * hstat;
+
+  Bool_t isRead=ReadFile(list,hstat,listname,partname,path);
+  if(!isRead) return;
+  if(!list || !hstat){
+    cout<<":-( null pointers..."<<endl;
+    return;
+  }
+
+  TH2F* h2=(TH2F*)list->FindObject(h2dname);
+  if(!h2){
+    cout<<h2dname.Data()<<" not found"<<endl;
+    return;
+  }
+  Int_t kbins=1;
+  if(nsteps==0){
+    if(direction=="X") nsteps=h2->GetNbinsY();
+    if(direction=="Y") nsteps=h2->GetNbinsX();
+  }
+  else{
+    if(direction=="X") kbins=h2->GetNbinsY()/nsteps;
+    if(direction=="Y") kbins=h2->GetNbinsX()/nsteps;
+  }
+
+  TCanvas *cvpj=new TCanvas(Form("cvpj%s%s",direction.Data(),h2dname.Data()),Form("cvpj%s",direction.Data()),1000,800);
+  cvpj->Divide((Int_t)(nsteps/3)+1,3);
+  TFile* fout=new TFile(Form("proj%s%s.root",direction.Data(),h2dname.Data()), "recreate");
+  for(Int_t i=0;i<nsteps;i++){
+    TH1F* h=0x0;
+    if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),i+kbins,i+2*kbins);
+    if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),i+kbins,i+2*kbins);
+    cvpj->cd(i+1);
+    h->Draw();
+    fout->cd();
+    h->Write();
+  }
+  cvpj->SaveAs(Form("cvpj%s%s.png",direction.Data(),h2dname.Data()));
 
 }
