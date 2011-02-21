@@ -79,9 +79,8 @@ void AliAnalysisTaskSEVertexingHFTest()
   if(createAOD) {
     aodHandler->SetOutputFileName("AliAOD.root");
   } else {
-    aodHandler->SetFillAOD(kFALSE);
     aodHandler->SetOutputFileName(deltaAODfname);
-    aodHandler->SetCreateNonStandardAOD();
+    aodHandler->SetAODExtensionMode();
   }
   mgr->SetOutputEventHandler(aodHandler);
   mgr->RegisterExtraFile(deltaAODfname);  
