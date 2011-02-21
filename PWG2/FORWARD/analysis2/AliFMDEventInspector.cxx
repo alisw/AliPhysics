@@ -38,6 +38,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHEventsTrVtx(0),
     fHTriggers(0),
     fHType(0),
+    fHWords(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
@@ -58,6 +59,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHEventsTrVtx(0), 
     fHTriggers(0),
     fHType(0),
+    fHWords(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
@@ -81,6 +83,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHEventsTrVtx(o.fHEventsTrVtx), 
     fHTriggers(o.fHTriggers),
     fHType(o.fHType),
+    fHWords(o.fHWords),
     fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
@@ -107,6 +110,7 @@ AliFMDEventInspector::~AliFMDEventInspector()
   if (fHEventsTrVtx) delete fHEventsTrVtx;
   if (fHTriggers)    delete fHTriggers;  
   if (fHType)        delete fHType;
+  if (fHWords)       delete fHWords;
   if (fList)         delete fList;
 }
 //____________________________________________________________________
@@ -127,6 +131,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHEventsTrVtx      = o.fHEventsTrVtx;
   fHTriggers         = o.fHTriggers;
   fHType             = o.fHType;
+  fHWords            = o.fHWords;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
@@ -140,6 +145,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHEventsTrVtx) fList->Add(fHEventsTrVtx);
     if (fHTriggers)    fList->Add(fHTriggers);
     if (fHType)        fList->Add(fHType);
+    if (fHWords)       fList->Add(fHWords);
   }
   return *this;
 }
@@ -238,7 +244,15 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHType->GetXaxis()->SetBinLabel(1,"Low-flux");
   fHType->GetXaxis()->SetBinLabel(2,"High-flux");
   fList->Add(fHType);
-  
+
+
+  fHWords = new TH1I("words", "Trigger words seen", 1, 0, 0); 
+  fHWords->SetFillColor(kBlue+1);
+  fHWords->SetFillStyle(3001);
+  fHWords->SetStats(0);
+  fHWords->SetDirectory(0);
+  fHWords->SetBit(TH1::kCanRebin);
+  fList->Add(fHWords);
 }
 
 //____________________________________________________________________
@@ -410,6 +424,16 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
 
   // Get trigger stuff 
   TString trigStr = esd->GetFiredTriggerClasses();
+  // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
+  fHWords->Fill(trigStr.Data(), 1);
+#if 0
+  if (trigStr.Contains("MB1") || trigStr.Contains("MBBG3"))
+      triggers |= AliAOODForwardMult::kB;
+  if (trigStr.Contains("COTA")) 
+    triggers |= AliAODForwardMult::kA;
+  if (trigStr.Contains("COTC")) 
+    triggers |= AliAODForwardMult::kC;
+#endif
   if (trigStr.Contains("CBEAMB-ABCE-NOPF-ALL")) {
     triggers |= AliAODForwardMult::kEmpty;
     fHTriggers->Fill(kEmpty+.5);

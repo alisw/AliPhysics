@@ -105,7 +105,7 @@ void MakeELossFits(const char* esddir,
   // Least weight to use 
   AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 5;
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
