@@ -1289,7 +1289,7 @@ void AliHLTTPCTransform::Local2Global(Float_t *xyz,Int_t slice)
 
   xyz[0]=x0*fgCos[slice]-y0*fgSin[slice];
   xyz[1]=x0*fgSin[slice]+y0*fgCos[slice];
-  xyz[2]=xyz[2];//global z=local z
+  //xyz[2]=xyz[2];//global z=local z
 }
 
 void AliHLTTPCTransform::Local2GlobalAngle(Float_t *angle,Int_t slice)
@@ -1413,7 +1413,7 @@ void AliHLTTPCTransform::Local2Global(Float_t *xyz,Int_t sector,Int_t row)
                              
   xyz[0]=r*fgCos[slice]-xyz[1]*fgSin[slice];
   xyz[1]=r*fgSin[slice]+xyz[1]*fgCos[slice];
-  xyz[2]=xyz[2];//global z=local z
+  //xyz[2]=xyz[2];//global z=local z
 }
 
 void AliHLTTPCTransform::LocHLT2Global(Float_t *xyz,Int_t slice,Int_t slicerow)
@@ -1423,7 +1423,7 @@ void AliHLTTPCTransform::LocHLT2Global(Float_t *xyz,Int_t slice,Int_t slicerow)
                              
   xyz[0]=r*fgCos[slice]-xyz[1]*fgSin[slice];
   xyz[1]=r*fgSin[slice]+xyz[1]*fgCos[slice];
-  xyz[2]=xyz[2];//global z=local z
+  //xyz[2]=xyz[2];//global z=local z
 }
 
 void AliHLTTPCTransform::Global2Local(Float_t *xyz,Int_t sector)
