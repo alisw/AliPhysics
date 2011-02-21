@@ -571,7 +571,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	if(fReadMC){
 	  if(labDs>=0){
 	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
 	  Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
 	  //if(labDs>=0){
 	    if(pdgCode0==321) {	  
@@ -633,7 +633,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	if(fReadMC){
 	   if(labDs>=0) {	  
 	  Int_t labDau0=((AliAODTrack*)d->GetDaughter(0))->GetLabel();
-	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	  AliAODMCParticle* p=(AliAODMCParticle*)arrayMC->UncheckedAt(TMath::Abs(labDau0));
 	  Int_t pdgCode0=TMath::Abs(p->GetPdgCode());
 	  // if(labDs>=0) {	  
 	    if(pdgCode0==211) {	  
