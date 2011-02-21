@@ -106,12 +106,12 @@ int AliHLTITSClusterHistoComponent::DoInit( int argc, const char** argv ){
   if(fPlotCharge) fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);
   if(fPlotXYPhiEta){
      fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
-     Char_t name[50];
-     Char_t title[50];
+     TString name;
+     TString title;
      fPhieta = new TH2F*[6];
      for (Int_t iLay=0;iLay<6;iLay++){
-     	     sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
-     	     sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+     	     name.Form("Phi_vs_Eta_ITS_Layer%d",iLay+1);
+     	     title.Form("Phi vs Eta - ITS Layer %d",iLay+1);
      	     fPhieta[iLay]=new TH2F(name,title,60,-1.5,1.5,60,0.,2*TMath::Pi());
      	     fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
      	     fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
@@ -281,12 +281,12 @@ int AliHLTITSClusterHistoComponent::Configure(const char* arguments){
   if(!fCharge && fPlotCharge){fCharge = new TH1F("fCharge","Total Charge of clusters",2000,0,2000);}
   if(!fXY && fPlotXYPhiEta){
 	fXY = new TH2F("fXY","Global XY of ITS clusters",1600,-80,80,1600,-80,80);
-  	Char_t name[50];
-	Char_t title[50];
+  	TString name;
+	TString title;
 	fPhieta = new TH2F*[6];
 	for (Int_t iLay=0;iLay<6;iLay++) {
-		sprintf(name,"Phi_vs_Eta_ITS_Layer%d",iLay+1);
-		sprintf(title,"Phi vs Eta - ITS Layer %d",iLay+1);
+	        name.Form("Phi_vs_Eta_ITS_Layer%d",iLay+1);
+	        title.Form("Phi vs Eta - ITS Layer %d",iLay+1);
 		fPhieta[iLay]=new TH2F(name,title,30,-1.5,1.5,200,0.,2*TMath::Pi());
 		fPhieta[iLay]->GetXaxis()->SetTitle("Pseudorapidity");
 		fPhieta[iLay]->GetYaxis()->SetTitle("#varphi [rad]");
