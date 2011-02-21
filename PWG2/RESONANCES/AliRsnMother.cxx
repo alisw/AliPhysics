@@ -23,7 +23,6 @@ ClassImp(AliRsnMother)
 
 //_____________________________________________________________________________
 AliRsnMother::AliRsnMother() :
-   fUseMC(kFALSE),
    fSum(),
    fSumMC()
 {
@@ -39,7 +38,6 @@ AliRsnMother::AliRsnMother() :
 //_____________________________________________________________________________
 AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    TObject(obj),
-   fUseMC(obj.fUseMC),
    fSum(obj.fSum),
    fSumMC(obj.fSumMC)
 {
@@ -92,9 +90,9 @@ Int_t AliRsnMother::CommonMother(Int_t &m0, Int_t &m1) const
 // In the two arguments passed by reference, the mothers of the two daghters are stored
 //
 
-   // if MC info is not available, the pairs is not true by default
+   // if MC info is not available, the pair is not true by default
    if (!fDaughter[0]->GetRefMC() || !fDaughter[1]->GetRefMC()) {
-      AliInfo("Cannot know if the pairs is true or not because MC Info is not present");
+      AliWarning("Cannot know if the pairs is true or not because MC Info is not present");
       return 0;
    }
 
@@ -138,8 +136,8 @@ void AliRsnMother::SetDaughters
    fDaughter[0]->SetMass(mass0);
    fDaughter[1]->SetMass(mass1);
 
-   fSum   = fDaughter[0]->P(kFALSE) + fDaughter[1]->P(kFALSE);
-   fSumMC = fDaughter[0]->P(kTRUE)  + fDaughter[1]->P(kTRUE);
+   fSum   = fDaughter[0]->Prec() + fDaughter[1]->Prec();
+   fSumMC = fDaughter[0]->Psim() + fDaughter[1]->Psim();
 }
 
 //_____________________________________________________________________________
@@ -207,7 +205,7 @@ void AliRsnMother::PrintInfo(const Option_t * /*option*/) const
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnMother::CheckPair() const
+Bool_t AliRsnMother::CheckPair(Bool_t checkMC) const
 {
 //
 // Checks that the pair is well initialized:
@@ -220,7 +218,7 @@ Bool_t AliRsnMother::CheckPair() const
       return kFALSE;
    }
 
-   if (fUseMC) {
+   if (checkMC) {
       if (fDaughter[0]->GetRefMC() == 0x0 || fDaughter[1]->GetRefMC() == 0x0) {
          AliError("Required MC info but not all MC refs are available");
          return kFALSE;
