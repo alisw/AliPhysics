@@ -44,7 +44,7 @@
 //include ROOT:
 #include <TH2F.h>
 #include <TList.h>
-#include <TClonesArray.h>
+#include <TObjArray.h>
 
 /// \cond CLASSIMP
 ClassImp(AliCheckMuonDetEltResponse)
@@ -148,7 +148,6 @@ AliCheckMuonDetEltResponse::~AliCheckMuonDetEltResponse()
 
 {
 /// Destructor
-    delete fTrackParams;
 }
 
 
@@ -178,7 +177,6 @@ void AliCheckMuonDetEltResponse::TrackLoop()
   Int_t nTracks, iTrack;
 
   nTracks = (Int_t)fESD -> GetNumberOfMuonTracks();
-  fTrackParams = new TClonesArray();
   ///Begininig of the loop:
   //if (fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL"))
   {
