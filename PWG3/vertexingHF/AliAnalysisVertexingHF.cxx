@@ -422,8 +422,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   Int_t *evtNumber    = new Int_t[trkEntries];
   SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
     
-  //AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
-  printf(" Selected tracks: %d\n",nSeleTrks);
+  AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
     
   TObjArray *twoTrackArray1    = new TObjArray(2);
   TObjArray *twoTrackArray2    = new TObjArray(2);
