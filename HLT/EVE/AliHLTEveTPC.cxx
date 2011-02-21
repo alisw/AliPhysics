@@ -200,7 +200,8 @@ Int_t AliHLTEveTPC::ProcessClusters( AliHLTHOMERBlockDesc * block, TEvePointSet 
 
 
   cont->ElementChanged();
-  contCol->ElementChanged();
+
+  if(contCol) contCol->ElementChanged();
     
   return 0;  
 

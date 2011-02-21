@@ -150,7 +150,7 @@ void AliHLTEveHLT::UpdateElements() {
   if(fTrackLists) {
     for(Int_t il = 0; il < fNTrackBins; il++) {
       TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
-      trackList->ElementChanged();
+      if(trackList) trackList->ElementChanged();
     } 
   }
 
@@ -170,7 +170,7 @@ void AliHLTEveHLT::ResetElements(){
   if(fTrackLists) {
     for(Int_t il = 0; il < fNTrackBins; il++) {
       TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
-      trackList->DestroyElements();
+      if(trackList) trackList->DestroyElements();
     } 
   }
 
@@ -293,7 +293,7 @@ void AliHLTEveHLT::CreateVertexPointSet() {
 void AliHLTEveHLT::ProcessGlobalTrigger( AliHLTHOMERBlockDesc * block ) {
   //See header file for documentation
   AliHLTGlobalTriggerDecision * decision = dynamic_cast<AliHLTGlobalTriggerDecision*>(block->GetTObject());
-  decision->Print();
+  if(decision) decision->Print();
 
 }
 
@@ -363,8 +363,8 @@ void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
     fPointSetVertex->SetNextPoint(vertex[0], vertex[1], vertex[2]);
   }
   
-  SetUpTrackPropagator(dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild())->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
-
+  TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild());
+  if(trackList) SetUpTrackPropagator(trackList->GetPropagator(),-0.1*esd->GetMagneticField(), 520);
   for (Int_t iter = 0; iter < esd->GetNumberOfTracks(); ++iter) {
 
    AliESDtrack * esdTrack = dynamic_cast<AliESDtrack*>(esd->GetTrack(iter));
@@ -376,16 +376,19 @@ void AliHLTEveHLT::ProcessEsdEvent( AliESDEvent * esd ) {
   
   //BALLE hardcoded size
   for(Int_t il = 0; il < fNTrackBins; il++) {
-    TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
+    trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", il)));
     trackList->MakeTracks();
   } 
 }
 ///__________________________________________________________________________
 void AliHLTEveHLT::FillTrackList(AliESDtrack * esdTrack) {
   //See header file for documentation
-  AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild())));        
+  TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FirstChild());
+  if (!trackList) return;
+  
+  AliEveTrack* track = dynamic_cast<AliEveTrack*>(MakeEsdTrack(esdTrack, trackList));        
   Int_t bin = GetColorBin(esdTrack->Pt());
-  TEveTrackList * trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", bin)));
+  trackList = dynamic_cast<TEveTrackList*>(fTrackLists->FindChild(Form("Tracks_%d", bin)));
   if(trackList) {
     track->SetAttLineAttMarker(trackList);
     trackList->AddElement(track);
@@ -547,7 +550,6 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
       if( !t.TransportToX(x0+dxx, bz, .999 ) ){
 	ok = 0;
 	break;
-	continue;
       }
       AliExternalTrackParam tt;
       AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
