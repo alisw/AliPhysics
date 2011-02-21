@@ -80,6 +80,8 @@ class AliHFEV0pid : public TObject{
 
     Int_t IdentifyV0(TObject *v0, Int_t d[2]);
 
+    void  BenchmarkV0finder();
+
  private:
     class AliHFEV0pidTrackIndex{
     public:

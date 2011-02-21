@@ -157,6 +157,7 @@ class AliHFEmcQA: public TObject {
 
     AliHists fHist[3][7][6]; // struct of histograms to store kinematics of given particles
     AliHistsComm fHistComm[2][6]; // struct of additional histograms of given particles
+    TH2F *fhD[7]; // D meson pt,Y spectra
 
     TList *fQAhistos;           // Container for QA histos
     TParticle *fHeavyQuark[50]; //! store pointer of heavy flavour quark 

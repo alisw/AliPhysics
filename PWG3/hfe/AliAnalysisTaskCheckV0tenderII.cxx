@@ -244,7 +244,7 @@ void AliAnalysisTaskCheckV0tenderII::ProcessV0s(){
     ResetPDGcodes();
 
     // New standalone V0 selection software
-    if( ! (fV0cuts->ProcessV0(esdV0, fpdgV0, fpdgP, fpdgN)) ) return;
+    if( ! (fV0cuts->ProcessV0(esdV0, fpdgV0, fpdgP, fpdgN)) ) continue;
     
     Int_t pid = PDGtoPIDv0(fpdgV0);
     //printf(" -D: pdg: %i, pid: %i\n", fpdgV0, pid);
