@@ -179,6 +179,7 @@ void AliAnalysisTaskPtMothFromPtDaugh::UserExec(Option_t */*option*/)
         } //end of tracks loop
     PostData(2,fDecayKine);
     PostData(1,fList);
+    delete [] inf;
     return;
 }
 
