@@ -1661,17 +1661,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   //----------------------------------------------------------
   // CALOCELLS
   //----------------------------------------------------------
-	
-  Int_t *nCellsInModule = new Int_t[fNModules];
-  for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
-  Int_t icol     = -1;
-  Int_t irow     = -1;
-  Int_t iRCU     = -1;
-  Float_t amp    = 0.;
-  Float_t time   = 0.;
-  Int_t id       = -1;
-  Float_t recalF = 1.;
-  
+	  
   AliVCaloCells * cell = 0x0; 
   Int_t ncells = 0;
   if(fCalorimeter == "PHOS") 
@@ -1686,6 +1676,17 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   if(GetDebug() > 0) 
     printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - %s cell entries %d\n", fCalorimeter.Data(), cell->GetNumberOfCells());    
+  
+  //Init arrays and used variables
+  Int_t *nCellsInModule = new Int_t[fNModules];
+  for(Int_t imod = 0; imod < fNModules; imod++ ) nCellsInModule[imod] = 0;
+  Int_t icol     = -1;
+  Int_t irow     = -1;
+  Int_t iRCU     = -1;
+  Float_t amp    = 0.;
+  Float_t time   = 0.;
+  Int_t id       = -1;
+  Float_t recalF = 1.;  
   
   for (Int_t iCell = 0; iCell < cell->GetNumberOfCells(); iCell++) {      
     if(GetDebug() > 2)  
