@@ -989,6 +989,7 @@ void AliTPCcalibDB::UpdateRunInformations( Int_t run, Bool_t force){
     AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
     if (correctionTime && fComposedCorrectionArray){
       correctionTime->Init();
+      if (fComposedCorrectionArray->GetEntriesFast()<4) fComposedCorrectionArray->Expand(40);
       fComposedCorrectionArray->AddAt(correctionTime,4); //add time dependent correction to the list of available corrections
     }
   }else{
@@ -2013,6 +2014,17 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   // Delta is time dependent - taken form the CalibTime OCDB entry
   //
   if (!fComposedCorrectionArray) return 0;
+  if (fRun<0) return 0;
+  if (fDriftCorrectionArray.At(fRun)==0) return 0;
+  if (fComposedCorrectionArray->GetEntriesFast()<4) {
+    fComposedCorrectionArray->Expand(4);
+    TObjArray * timeArray =(TObjArray*)(fDriftCorrectionArray.At(fRun));
+     AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
+     if (correctionTime){
+       correctionTime->Init();
+       fComposedCorrectionArray->AddAt(correctionTime,4); //add time dependent c
+     }
+  }
   return (AliTPCCorrection *)fComposedCorrectionArray->At(4);  //
 }
 

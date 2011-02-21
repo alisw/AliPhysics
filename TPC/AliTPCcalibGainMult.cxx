@@ -352,8 +352,10 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
 }  
 
 
-void AliTPCcalibGainMult::MakeLookup(THnSparse * hist, Char_t * outputFile) {
-
+void AliTPCcalibGainMult::MakeLookup(THnSparse * /*hist*/, Char_t * /*outputFile*/) {
+  //
+  // Not  yet implemented
+  //
 }
 
 

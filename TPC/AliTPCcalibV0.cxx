@@ -572,7 +572,7 @@ void AliTPCcalibV0::MakeMC(){
   }
 }
 
-void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut, Int_t run){
+void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut, Int_t /*run*/){
   //
   // Make a fit tree
   //

@@ -166,7 +166,7 @@ Double_t AliTPCExBBShape::GetBFieldXYZ(Double_t gx, Double_t gy, Double_t gz, In
   field->Field(xyz,bxyz);
   //
   Double_t r=TMath::Sqrt(gx*gx+gy*gy);
-  Double_t b=TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
+  //  Double_t b=TMath::Sqrt(bxyz[0]*bxyz[0]+bxyz[1]*bxyz[1]);
   if (axisType==0) {
     return (xyz[0]*bxyz[1]-xyz[1]*bxyz[0])/(bxyz[2]*r);
   }
