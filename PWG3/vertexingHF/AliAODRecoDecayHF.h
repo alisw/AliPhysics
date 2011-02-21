@@ -83,6 +83,7 @@ class AliAODRecoDecayHF : public AliAODRecoDecay {
 
   // prongs
   Double_t Getd0errProng(Int_t ip) const {return fd0err[ip];}
+  void     Setd0errProngs(Int_t nprongs,Double_t *d0);
   Double_t Normalizedd0Prong(Int_t ip) const 
     {return Getd0Prong(ip)/Getd0errProng(ip);}
   
@@ -204,6 +205,22 @@ inline Int_t AliAODRecoDecayHF::NumberOfFakeDaughters() const
     if(track->GetLabel()<0) nfakes++;
   }
   return nfakes;
+}
+
+inline void AliAODRecoDecayHF::Setd0errProngs(Int_t nprongs,Double_t *d0err) 
+{
+  if(nprongs!=GetNProngs()) { 
+    printf("Wrong number of momenta, must be nProngs");
+    return;
+  }
+  if(!fd0) {
+    fd0err = new Double32_t[nprongs];
+  }
+  for(Int_t i=0;i<nprongs;i++) {
+    fd0err[i] = d0err[i]; 
+  }
+
+  return;
 }
 
 #endif
