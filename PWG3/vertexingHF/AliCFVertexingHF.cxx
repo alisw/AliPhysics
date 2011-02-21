@@ -50,7 +50,8 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fKeepDfromBOnly(kFALSE),
 	fmcLabel(0),
 	fProngs(-1),
-	fLabelArray(0x0)
+	fLabelArray(0x0), 
+	fCentValue(0.)
 {
 	//
 	// constructor
@@ -77,7 +78,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fKeepDfromBOnly(kFALSE),
 	fmcLabel(0),
 	fProngs(-1),
-	fLabelArray(0x0)
+	fLabelArray(0x0),
+	fCentValue(0.)
 {
 	//
 	// constructor with mcArray
@@ -98,8 +100,8 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	if (fRecoCandidate) fRecoCandidate = 0x0;
 	if (fmcPartCandidate) fmcPartCandidate = 0x0;
 	if (fLabelArray){
-		delete [] fLabelArray;
-		fLabelArray = 0x0;
+	  	delete [] fLabelArray;
+	  	fLabelArray = 0x0;
 	}	
 }
 
@@ -125,6 +127,7 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fKeepDfromBOnly = c.fKeepDfromBOnly;
 		fmcLabel = c.fmcLabel;
 		fProngs=c.fProngs;
+		fCentValue=c.fCentValue;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
 			for(Int_t iP=0; iP<fProngs; iP++)fLabelArray[iP]=c.fLabelArray[iP];
@@ -150,7 +153,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fKeepDfromBOnly (c.fKeepDfromBOnly),
 	fmcLabel(c.fmcLabel),
 	fProngs(c.fProngs),
-	fLabelArray(0x0)
+	fLabelArray(0x0),
+	fCentValue(c.fCentValue)
 {  
 	//
 	//copy constructor
@@ -245,8 +249,8 @@ Bool_t AliCFVertexingHF::CheckMCPartFamily(AliAODMCParticle */*mcPart*/, TClones
 	}	
 	
 	if (!CheckMCDaughters()) {
-		AliDebug(3, "CheckMCDaughters false");
-		return kFALSE;
+	  AliDebug(3, "CheckMCDaughters false");
+	  return kFALSE;
 	}
 	if (!CheckMCChannelDecay()) {
 		AliDebug(3,"CheckMCChannelDecay false");
@@ -362,8 +366,8 @@ Bool_t AliCFVertexingHF::FillRecoContainer(Double_t *containerInput)
 	Bool_t recoContainerFilled = kFALSE;
 	Double_t* vectorValues = new Double_t[fNVar];
 	Double_t* vectorReco = new Double_t[fNVar];  
-	
 	for (Int_t iVar = 0; iVar<fNVar; iVar++) {
+
 		vectorValues[iVar]= 9999.;
 		vectorReco[iVar]=9999.;
 	}
@@ -382,7 +386,7 @@ Bool_t AliCFVertexingHF::FillRecoContainer(Double_t *containerInput)
 		
 		if (GetRecoValuesFromCandidate(&vectorReco[0])){
 			for (Int_t iVar = 0; iVar<fNVar; iVar++){
-				containerInput[iVar] = vectorReco[iVar];
+			  containerInput[iVar] = vectorReco[iVar];
 			}
 			recoContainerFilled = kTRUE;		
 		}
@@ -468,20 +472,20 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 			if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
 			Bool_t foundTrack = kFALSE;
 			for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
-				AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],track->GetLabel()));
-				if (track->GetLabel() == temp[ilabel]) {
-					foundTrack = kTRUE;
-					temp[ilabel] = 0;
-					break;
-				}
+			  AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],TMath::Abs(track->GetLabel())));
+			  if (TMath::Abs(track->GetLabel()) == temp[ilabel]) {
+			    foundTrack = kTRUE;
+			    temp[ilabel] = 0;
+			    break;
+			  }
 			}
 			if (foundTrack){
-				foundDaughters++;
-				AliDebug(4,Form("daughter %d \n",foundDaughters));
-				if(trackCuts->GetRequireTPCRefit()){
-					if(track->GetStatus()&AliESDtrack::kTPCrefit) {
-						bRefitStep = kTRUE;
-					}
+			  foundDaughters++;
+			  AliDebug(4,Form("daughter %d \n",foundDaughters));
+			  if(trackCuts->GetRequireTPCRefit()){
+			    if(track->GetStatus()&AliESDtrack::kTPCrefit) {
+			      bRefitStep = kTRUE;
+			    }
 					else {
 						AliDebug(3, "Refit cut not passed , missing TPC refit\n");
 						delete [] temp;
@@ -701,8 +705,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			}
 			else{
 				AliError("Failed casting the daughter particle, returning a NULL label array");
-				delete [] fLabelArray; 
-				fLabelArray = 0x0;  
+				//delete [] fLabelArray; 
+				//fLabelArray = 0x0;  
 				return bLabelArray;
 			}
 		}
@@ -723,8 +727,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 				}
 				else{
 					AliError("Error while casting particle! returning a NULL array");
-					delete [] fLabelArray; 
-					fLabelArray = 0x0;  
+					//delete [] fLabelArray; 
+					//fLabelArray = 0x0;  
 					return bLabelArray;
 				}
 			}
@@ -745,8 +749,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 					}
 					else{
 						AliError("Error while casting resonant daughter! returning a NULL array");
-						delete [] fLabelArray; 
-						fLabelArray = 0x0;  
+						//delete [] fLabelArray; 
+						//fLabelArray = 0x0;  
 						return bLabelArray;
 					}
 				}

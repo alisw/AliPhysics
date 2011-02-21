@@ -190,6 +190,8 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	vectorMC[10] = 1.01;    // dummy value, meaningless in MC
 	vectorMC[11] = fmcPartCandidate->Phi(); 
 	vectorMC[12] = fzMCVertex;    // z of reconstructed of primary vertex
+	vectorMC[13] = fCentValue;   //reconstructed centrality 
+
 	delete decay;
 	bGenValues = kTRUE;
 	return bGenValues;
@@ -254,6 +256,8 @@ Bool_t AliCFVertexingHF2Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
 	vectorReco[10] = cosPointingAngle;  // in micron
 	vectorReco[11] = phi;  
 	vectorReco[12] = fzPrimVertex;    // z of reconstructed of primary vertex
+	vectorReco[13] = fCentValue; //reconstructed centrality 
+
 	bFillRecoValues = kTRUE;
 
 	return bFillRecoValues;

@@ -130,6 +130,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   // d0_2
   // d0_3
   // zPrimVert
+  // centrality
 
   Bool_t bGenValues = kFALSE;
 		
@@ -273,6 +274,8 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   vectorMC[9] = 0.;   // imppar1, dummy value, meaningless in MC, in micron
   vectorMC[10] = 0.;   // imppar2, dummy value, meaningless in MC, in micron
   vectorMC[11] = fzMCVertex;    // z of reconstructed of primary vertex
+  vectorMC[12] = fCentValue; // reconstructed centrality value 
+
 
   bGenValues = kTRUE;
   return bGenValues;
@@ -312,7 +315,7 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   Int_t nDauOS=0;
   for(Int_t iDau=0; iDau<3; iDau++){
     AliAODTrack *trk = (AliAODTrack*)decay3->GetDaughter(iDau);
-    Int_t label = trk->GetLabel();
+    Int_t label = TMath::Abs(trk->GetLabel());
     Short_t chargedau=trk->Charge();
     if(chargedau==charge){
       daughtSorted[tmpIndex]=label;
@@ -348,7 +351,9 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   vectorReco[9] = decay3->Getd0Prong(daughtSorted[1]);
   vectorReco[10] = decay3->Getd0Prong(daughtSorted[2]);
   vectorReco[11] = fzPrimVertex;    // z of reconstructed of primary vertex
-  
+  vectorReco[12] = fCentValue; //reconstructed centrality value
+
+
   bFillRecoValues = kTRUE;
   return bFillRecoValues;
 }
