@@ -548,8 +548,8 @@ void DrawRatios(void* correctedVoid, void* comparisonVoid, Int_t compareStep = -
 
   if (1 && compareUEHist == 2)
   {
-    for (Float_t ptLeadMin = 0.51; ptLeadMin < 10; ptLeadMin += 1.5)
-      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 0.48);      
+    for (Float_t ptLeadMin = 0.51; ptLeadMin < 10; ptLeadMin += 3)
+      DrawRatios(TString(Form("UE %d pT %f", compareUEHist, ptLeadMin)), corrected->GetUEHist(compareUEHist), comparison->GetUEHist(compareUEHist), compareStep, compareRegion, ptLeadMin, ptLeadMin + 1.48);      
     return;
   }
 
@@ -612,7 +612,8 @@ void correctMC(const char* fileNameCorrections, const char* fileNameESD = 0, Int
     testSample = (AliUEHistograms*) GetUEHistogram(fileNameESD);
       
   // copy to esd object
-  AliUEHistograms* esd = new AliUEHistograms;
+  AliUEHistograms* esd = (AliUEHistograms*) corr->Clone();
+  esd->Reset();
   esd->CopyReconstructedData(testSample);
   
   SetupRanges(corr);
