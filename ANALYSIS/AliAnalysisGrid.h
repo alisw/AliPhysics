@@ -41,7 +41,8 @@ enum EPluginBits {
    kClearPackages = BIT(3),
    kUseSubmitPolicy = BIT(4),
    kProofConnectGrid = BIT(5),
-   kOneStageMerging = BIT(6)
+   kOneStageMerging = BIT(6),
+   kUseMCchain = BIT(7)
 };
 
    AliAnalysisGrid() : TNamed(), fSpecialBits(0) {}
@@ -119,6 +120,8 @@ enum EPluginBits {
    void                SetUseSubmitPolicy(Bool_t flag=kTRUE) {SetSpecialBit(kUseSubmitPolicy,flag);}   
    Bool_t              IsOneStageMerging() const {return TestSpecialBit(kOneStageMerging);}
    void                SetOneStageMerging(Bool_t flag) {SetSpecialBit(kOneStageMerging,flag);}
+   Bool_t              IsUseMCchain() const {return TestSpecialBit(kUseMCchain);}
+   void                SetUseMCchain(Bool_t flag=kTRUE) {SetSpecialBit(kUseMCchain,flag);}
 
 // PROOF mode
    virtual void        SetProofCluster(const char *cluster)              = 0;

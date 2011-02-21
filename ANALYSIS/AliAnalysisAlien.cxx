@@ -3021,11 +3021,16 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       TString func = fAnalysisMacro;
       TString type = "ESD";
       TString comment = "// Analysis using ";
-      if (TObject::TestBit(AliAnalysisGrid::kUseESD)) comment += "ESD";
-      if (TObject::TestBit(AliAnalysisGrid::kUseAOD)) {
-         type = "AOD";
-         comment += "AOD";
-      }   
+      if (IsUseMCchain()) {
+         type = "MC";
+         comment += "MC";
+      } else {   
+         if (TObject::TestBit(AliAnalysisGrid::kUseESD)) comment += "ESD";
+         if (TObject::TestBit(AliAnalysisGrid::kUseAOD)) {
+            type = "AOD";
+            comment += "AOD";
+         }   
+      }
       if (type!="AOD" && fFriendChainName!="") {
          Error("WriteAnalysisMacro", "Friend chain can be attached only to AOD");
          return;
@@ -3267,9 +3272,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "// Create a chain using url's from xml file" << endl;
          out << "   TString filename;" << endl;
          out << "   Int_t run = 0;" << endl;
-         out << "   TString treename = type;" << endl;
-         out << "   treename.ToLower();" << endl;
-         out << "   treename += \"Tree\";" << endl;
+         if (IsUseMCchain()) {
+            out << "   TString treename = \"TE\";" << endl;
+         } else {   
+            out << "   TString treename = type;" << endl;
+            out << "   treename.ToLower();" << endl;
+            out << "   treename += \"Tree\";" << endl;
+         }   
          out << "   printf(\"***************************************\\n\");" << endl;
          out << "   printf(\"    Getting chain of trees %s\\n\", treename.Data());" << endl;
          out << "   printf(\"***************************************\\n\");" << endl;
