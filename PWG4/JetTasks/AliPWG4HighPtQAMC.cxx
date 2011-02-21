@@ -244,6 +244,7 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fNEventReject->Fill("noESD",0);
   fNEventReject->Fill("Trigger",0);
   fNEventReject->Fill("noMCEvent",0);
+  fNEventReject->Fill("noStack",0);
   fNEventReject->Fill("NTracks<2",0);
   fNEventReject->Fill("noVTX",0);
   fNEventReject->Fill("VtxStatus",0);
@@ -418,6 +419,9 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   
   TH1::AddDirectory(oldStatus); 
 
+  PostData(0, fHistList);
+  PostData(1, fHistListITS);
+
 }
 
 //________________________________________________________________________
@@ -458,9 +462,17 @@ Bool_t AliPWG4HighPtQAMC::SelectEvent() {
   if(fMC) {
     AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
     fStack = fMC->Stack();                //Particles Stack
-    AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
+    if(fStack) { 
+      AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
+    }
+    else {
+      AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
+      fNEventReject->Fill("noStack",1);
+      selectEvent = kFALSE;
+      return selectEvent;
+    }
   } else {
-    AliDebug(2,Form("ERROR: Could not retrieve MC eventHandler"));
+    AliDebug(2,Form("ERROR: Could not retrieve stack"));
     fNEventReject->Fill("noMCEvent",1);
     selectEvent = kFALSE;
     return selectEvent;
