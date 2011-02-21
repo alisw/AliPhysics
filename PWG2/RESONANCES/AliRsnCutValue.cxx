@@ -27,44 +27,36 @@ ClassImp(AliRsnCutValue)
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue() :
    AliRsnCut(),
-   fValue(),
-   fPairDef(0x0)
+   fValue()
 {
 //
 // Default constructor.
 //
-
-   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue
-(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max, AliRsnPairDef *pd) :
-   AliRsnCut(name, AliRsnTarget::kTargetTypes, min, max),
-   fValue(Form("val_%s", name), type),
-   fPairDef(pd)
+(const char *name, AliRsnValue::EValueType type, Double_t min, Double_t max) :
+   AliRsnCut(name, AliRsnValue::TargetType(type), min, max),
+   fValue(Form("val_%s", name), type)
 {
 //
 // Main constructor.
-// Recalls the setter for the value type of the AliRsnValue data member,
-// which determines also the type of target to be expected
+// Sets the AliRsnValue data member accordingly to arguments passed here.
+// NOTE: if the value needs a support object, it must be passed separately
+//       using the GetValueObje() of this class
 //
-
-   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
 AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
    AliRsnCut(copy),
-   fValue(copy.fValue),
-   fPairDef(copy.fPairDef)
+   fValue(copy.fValue)
 {
 //
 // Copy constructor.
 // Does not duplicate memory allocation.
 //
-
-   SetTargetType(fValue.GetTargetType());
 }
 
 //_________________________________________________________________________________________________
@@ -76,10 +68,7 @@ AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 //
 
    AliRsnCut::operator=(copy);
-
-   fValue   = copy.fValue;
-   fPairDef = copy.fPairDef;
-   SetTargetType(fValue.GetTargetType());
+   fValue = copy.fValue;
 
    return (*this);
 }
@@ -91,10 +80,6 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
 // Checks the cut.
 // Calls the AliRsnValue::Eval() method and then checks its output.
 //
-
-   // make sure that target of this object matches that
-   // of the inserted value object
-   SetTargetType(fValue.GetTargetType());
 
    // try to compute values
    Bool_t success = fValue.Eval(object);
