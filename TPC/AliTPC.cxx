@@ -774,14 +774,16 @@ void    AliTPC::SetActiveSectors(Int_t flag)
     return;
   }
   for (Int_t i=0;i<fTPCParam->GetNSector();i++) fActiveSectors[i]=kFALSE;
-  TBranch * branch=0;
+  //TBranch * branch=0;
   if (fLoader->TreeH() == 0x0)
    {
      AliFatal("Can not find TreeH in folder");
      return;
    }
-  if (fHitType>1) branch = fLoader->TreeH()->GetBranch("TPC2");
-  else branch = fLoader->TreeH()->GetBranch("TPC");
+  //if (fHitType>1) branch = fLoader->TreeH()->GetBranch("TPC2");
+  if (fHitType>1) fLoader->TreeH()->GetBranch("TPC2");
+  //else branch = fLoader->TreeH()->GetBranch("TPC");
+  else fLoader->TreeH()->GetBranch("TPC");
   Stat_t ntracks = fLoader->TreeH()->GetEntries();
   // loop over all hits
   AliDebug(1,Form("Got %d tracks", (Int_t) ntracks));
@@ -1209,9 +1211,9 @@ void AliTPC::SetDefaults(){
   //
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
-  AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
-
-  param = (AliTPCParamSR*)AliTPCcalibDB::Instance()->GetParameters();
+  //AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
+  gDirectory->Get("75x40_100x60");
+  AliTPCParamSR *param = (AliTPCParamSR*)AliTPCcalibDB::Instance()->GetParameters();
   if(!param){
     AliFatal("No TPC parameters found");
   }

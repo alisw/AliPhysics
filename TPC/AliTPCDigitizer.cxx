@@ -391,8 +391,8 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   ogime = orl->GetLoader("TPCLoader");
   
   rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
-  gime = rl->GetLoader("TPCLoader");
-  
+  //gime = rl->GetLoader("TPCLoader");
+  rl->GetLoader("TPCLoader");
   rl->LoadgAlice();
   AliRun* alirun = rl->GetAliRun();
   
@@ -402,6 +402,9 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   printf("noise %f \n",  param->GetNoise()*param->GetNoiseNormFac());
   //
   Int_t nInputs = fManager->GetNinputs();
+  // stupid protection...
+  if (nInputs <= 0) return;
+  //
   Int_t * masks = new Int_t[nInputs];
   for (Int_t i=0; i<nInputs;i++)
     masks[i]= fManager->GetMask(i);
