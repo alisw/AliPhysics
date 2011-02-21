@@ -54,6 +54,7 @@ AliAODHandler::AliAODHandler() :
     fIsStandard(kTRUE),
     fFillAOD(kTRUE),
     fFillAODRun(kTRUE),
+    fFillExtension(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -84,6 +85,7 @@ AliAODHandler::AliAODHandler(const char* name, const char* title):
     fIsStandard(kTRUE),
     fFillAOD(kTRUE),
     fFillAODRun(kTRUE),
+    fFillExtension(kTRUE),
     fNeedsHeaderReplication(kFALSE),
     fNeedsTracksBranchReplication(kFALSE),
     fNeedsVerticesBranchReplication(kFALSE),
@@ -436,7 +438,7 @@ Bool_t AliAODHandler::FinishEvent()
       FillTree();
   }
 
-  if (fFillAOD && fFillAODRun) {      
+  if ((fFillAOD && fFillAODRun) || fFillExtension) {
     if (fExtensions) {
       TIter next(fExtensions);
       AliAODExtension *ext;

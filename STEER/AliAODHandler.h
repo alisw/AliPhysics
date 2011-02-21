@@ -60,6 +60,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsMCParticlesBranchReplication  = kTRUE;}
     virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
     virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
+    virtual void         SetAODExtensionMode()                   {fIsStandard=kFALSE; fFillAOD=kFALSE; fFillAODRun=kFALSE; fFillExtension=kTRUE;}
     //
     AliAODEvent*         GetAOD()  {return fAODEvent;}
     virtual TTree*       GetTree() const {return fTreeA;}
@@ -109,6 +110,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fIsStandard;                         // Flag for standard aod creation
     Bool_t                   fFillAOD;                            // Flag for filling of the AOD tree at the end (all or nothing evt by evt)
     Bool_t                   fFillAODRun;                         // Flag for filling of the AOD tree at the end (run)
+    Bool_t                   fFillExtension;                      // Flag for filling or the delta AOD tree at the end
     Bool_t                   fNeedsHeaderReplication;             // Flag for header replication
     Bool_t                   fNeedsTracksBranchReplication;       // Flag for tracks replication
     Bool_t                   fNeedsVerticesBranchReplication;     // Flag for vertices replication
@@ -130,7 +132,7 @@ class AliAODHandler : public AliVEventHandler {
     TObjArray               *fExtensions;             //  List of extensions
     TObjArray               *fFilters;                //  List of filtered AOD's
 
-  ClassDef(AliAODHandler, 6)
+  ClassDef(AliAODHandler, 7)
 };
 
 #endif
