@@ -26,7 +26,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
  public:
     AliAnalysisTaskESDfilter();
     AliAnalysisTaskESDfilter(const char* name);
-    virtual ~AliAnalysisTaskESDfilter() {;}
+    virtual ~AliAnalysisTaskESDfilter();
     // Implementation of interface methods
     virtual void   UserCreateOutputObjects();
     virtual void   Init();

@@ -368,7 +368,11 @@ void AliAODHeader::RemoveQTheta()
 void AliAODHeader::Clear(Option_t* /*opt*/)
 {
   RemoveQTheta();
-  if (fCentralityP) delete fCentralityP;
+  if (fCentralityP){
+    delete fCentralityP;
+    fCentralityP = 0;
+    fCentrality = -999;
+  }
   return;
 }
 

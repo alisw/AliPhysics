@@ -139,7 +139,9 @@ fTimeZeroType(AliESDpid::kTOF_T0)
 {
   // Constructor
 }
-
+AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter(){
+  if(fIsPidOwner)delete fESDpid;
+}
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::UserCreateOutputObjects()
 {
@@ -258,7 +260,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
     
     header->SetEventNumberESDFile(esd.GetHeader()->GetEventNumberInFile());
     if(const_cast<AliESDEvent&>(esd).GetCentrality()){
-      header->SetCentrality(new AliCentrality(*(const_cast<AliESDEvent&>(esd).GetCentrality())));
+      header->SetCentrality(const_cast<AliESDEvent&>(esd).GetCentrality());
     }
     else{
       header->SetCentrality(0);
@@ -1549,8 +1551,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   //setting best TOF PID
   fESDpid = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetESDpid();
 
-  if ( fIsPidOwner) delete fESDpid;
-  
+  if ( fIsPidOwner){
+    delete fESDpid;
+    fESDpid = 0;
+  }
   if(!fESDpid)
   { //in case of no Tender attached 
     fESDpid = new AliESDpid;
