@@ -849,6 +849,10 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
     fGainCosmic = ( AliTPCcalibTimeGain *)fcalib.Get("calibTimeGainCosmic");
     fGainMult   = ( AliTPCcalibGainMult *)fcalib.Get("calibGainMult");
   }
+  if (!fGainMult){
+    TFile fcalibMult("TPCMultObjects.root");
+    fGainMult   = ( AliTPCcalibGainMult *)fcalibMult.Get("calibGainMult");
+  }
   TH1 * hisT=0;
   Int_t firstBinA =0, lastBinA=0;
 
@@ -1058,8 +1062,18 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   TH1D * meanMax = (TH1D*)arrMax.At(1);
   TH1D * meanTot = (TH1D*)arrTot.At(1);
   Float_t meanMult = histMultMax->GetMean();
-  meanMax->Scale(1./meanMax->GetBinContent(meanMax->FindBin(meanMult)));
-  meanTot->Scale(1./meanTot->GetBinContent(meanTot->FindBin(meanMult)));
+  if(meanMax->GetBinContent(meanMax->FindBin(meanMult))) {
+    meanMax->Scale(1./meanMax->GetBinContent(meanMax->FindBin(meanMult)));
+  }
+  else {
+   return kFALSE;
+  }
+  if(meanTot->GetBinContent(meanTot->FindBin(meanMult))) {
+    meanTot->Scale(1./meanTot->GetBinContent(meanTot->FindBin(meanMult)));
+  }
+  else {
+   return kFALSE;
+  }
   Float_t xMultMax[50];
   Float_t yMultMax[50];
   Float_t yMultErrMax[50];
