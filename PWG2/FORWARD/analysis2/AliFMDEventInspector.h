@@ -223,6 +223,7 @@ protected:
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
   TH1I*    fHTriggers;    //! Triggers
   TH1I*    fHType;        //! Type (low/high flux) of event
+  TH1I*    fHWords;       //! Trigger words 
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
