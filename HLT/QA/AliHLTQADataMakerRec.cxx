@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTQADataMakerRec.cxx
-    @author Matthias Richter
-    @date   2010-03-10
-    @brief  Steering class for the HLT offline QA
-*/
+/// @file   AliHLTQADataMakerRec.cxx
+/// @author Matthias Richter
+/// @date   2010-03-10
+/// @brief  Steering class for the HLT offline QA
+///
 #include "AliHLTQADataMakerRec.h"
 #include "AliHLTMisc.h"
 #include "AliHLTModuleAgent.h"
@@ -81,9 +81,10 @@ int AliHLTQADataMakerRec::LoadPlugins(const char* plugins)
     TIter next(tokens);
     TObject* obj=NULL;
     while ((obj=next())) {
-      if (obj->IsA()!=TObjString::Class()) continue;
+      TObjString* objstring=dynamic_cast<TObjString*>(obj);
+      if (!objstring) continue;
       AliHLTQADataMakerBase* plugin=AliHLTMisc::LoadInstance((AliHLTQADataMakerBase*)0,
-							     dynamic_cast<TObjString*>(obj)->GetString().Data());
+							     objstring->GetString().Data());
       if (!plugin) continue;
       AliInfo(Form("using HLT QA plugin %s", plugin->IsA()->GetName()));
       fPlugins.Add(plugin);
