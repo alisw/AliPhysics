@@ -83,15 +83,18 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
   fHistnames(), 
   fPercentXsec(0)
 {
-  // standard constructor
-  // glauber file
-  TFile *f = TFile::Open(filename);
-  fGlauntuple = (TNtuple*) f->Get("nt_Pb_Pb");
-  fGlauntuple->SetBranchAddress("Npart",&fNpart);
-  fGlauntuple->SetBranchAddress("Ncoll",&fNcoll);
-  fGlauntuple->SetBranchAddress("B",&fB);
-  fGlauntuple->SetBranchAddress("tAA",&fTaa);
-  
+  // Standard constructor.
+
+  TFile *f = 0;
+  if (filename) {  // glauber file
+    TFile::Open(filename);
+    fGlauntuple = (TNtuple*) f->Get("nt_Pb_Pb");
+    fGlauntuple->SetBranchAddress("Npart",&fNpart);
+    fGlauntuple->SetBranchAddress("Ncoll",&fNcoll);
+    fGlauntuple->SetBranchAddress("B",&fB);
+    fGlauntuple->SetBranchAddress("tAA",&fTaa);
+  }
+
   fNBD = new TF1 ("fNBD", AliCentralityGlauberFit::NBDFunc, 0, 100,2);
 }
 
@@ -138,6 +141,8 @@ void AliCentralityGlauberFit::SetGlauberParam(
 //--------------------------------------------------------------------------------------------------
 void AliCentralityGlauberFit::MakeFits() 
 {
+  // Make fits.
+
   TH1F *hDATA;
   TH1F *thistGlau; 
   TFile *inrootfile;
@@ -297,7 +302,7 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(Double_t alpha, Double_t mu, Dou
     gMinuit->GetParameter(2, k_min     , k_mine     );
     gMinuit->GetParameter(3, eff_min   , eff_mine   );
 
-    // PrInt_t some infos
+    // print some infos
     std::cout << "chi2 min is " << chi2min << ", " << alpha_min << ", "<< mu_min<< ", "  
               << k_min << ", " <<  eff_min << std::endl;
 
@@ -332,7 +337,7 @@ void AliCentralityGlauberFit::MakeFitsMinuitNBD(Double_t alpha, Double_t mu, Dou
 TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t eff, Double_t alpha, 
                                             TH1F *hDATA, Bool_t save) 
 {
-  // Get Glauber histogram
+  // Get Glauber histogram.
 
   eff=eff; // to avoid compiler warning
 
@@ -373,9 +378,16 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t ef
     ntuple = new TNtuple("gnt", "Glauber ntuple", "Npart:Ncoll:B:tAA:ntot");
   } 
 
-  Int_t nents = fGlauntuple->GetEntries(); 
+  Int_t nents = 0;
+  if (fGlauntuple)
+    nents = fGlauntuple->GetEntries(); 
   for (Int_t i=0;i<fNevents;++i) {
-    fGlauntuple->GetEntry(i % nents);
+    if (fGlauntuple)
+      fGlauntuple->GetEntry(i % nents);
+    else {
+      fNpart = 2;
+      fNcoll = 1;
+    }
     Int_t n=0;
     if (fAncestor == 1)      n = TMath::Nint(TMath::Power(fNpart,alpha));
     else if (fAncestor == 2) n = TMath::Nint(alpha * fNpart + (1-alpha) * fNcoll);
@@ -410,9 +422,8 @@ TH1F *AliCentralityGlauberFit::GlauberHisto(Double_t mu, Double_t k, Double_t ef
 //--------------------------------------------------------------------------------------------------
 Double_t AliCentralityGlauberFit::CalculateChi2(TH1F *hDATA, TH1F *thistGlau, Double_t eff) 
 {
-  // note that for different values of neff the mc distribution is identical, just re-scaled below
-  // normalize the two histogram
-  // scale MC up but leave data alone - that preserves error bars !!!!
+  // Note that for different values of neff the mc distribution is identical, just re-scaled below
+  // normalize the two histogram, scale MC up but leave data alone - that preserves error bars !!!!
   
   Int_t lowchibin =   hDATA->FindBin(fMultmin);
   Int_t highchibin =  hDATA->FindBin(fMultmax);
@@ -425,7 +436,7 @@ Double_t AliCentralityGlauberFit::CalculateChi2(TH1F *hDATA, TH1F *thistGlau, Do
   }
   thistGlau->Scale(scale);
 
-  // // calculate the chi2 between MC and real data over some range ????
+  // calculate the chi2 between MC and real data over some range ????
   if (fUseChi2) {
     Double_t chi2 = 0.0;
     for (Int_t i=lowchibin; i<=highchibin; i++) {
@@ -476,6 +487,7 @@ TH1F *AliCentralityGlauberFit::GetTriggerEfficiencyFunction(TH1F *hist1, TH1F *h
 Double_t AliCentralityGlauberFit::GetTriggerEfficiencyIntegral(TH1F *hist1, TH1F *hist2) 
 {
   // Get eff integral.
+
   fEffi = hist1->Integral()/hist2->Integral();
   return fEffi;
 }
@@ -483,6 +495,8 @@ Double_t AliCentralityGlauberFit::GetTriggerEfficiencyIntegral(TH1F *hist1, TH1F
 //--------------------------------------------------------------------------------------------------
 void AliCentralityGlauberFit::SaveHisto(TH1F *hist1, TH1F *hist2, TH1F *heffi, TFile *outrootfile) 
 {
+  // Save histograms.
+
   outrootfile->cd();
   hist1->Write();
   hist2->Write();
@@ -502,6 +516,8 @@ Double_t AliCentralityGlauberFit::NBD(Int_t n, Double_t mu, Double_t k)
 //--------------------------------------------------------------------------------------------------
 TH1F *AliCentralityGlauberFit::NBDhist(Double_t mu, Double_t k)
 {
+  // Interface for TH1F.
+
   TH1F *h = new TH1F("htemp","",100,-0.5,299.5);
   h->SetName(Form("nbd_%f_%f",mu,k));
   h->SetDirectory(0);
@@ -515,7 +531,8 @@ TH1F *AliCentralityGlauberFit::NBDhist(Double_t mu, Double_t k)
 //--------------------------------------------------------------------------------------------------
 void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag)
 {
-  // FCN for minuit
+  // FCN for minuit.
+
   Double_t alpha = par[0];
   Double_t mu    = par[1];
   Double_t k     = par[2];
@@ -536,7 +553,8 @@ void AliCentralityGlauberFit::MinuitFcnNBD(Int_t &npar, Double_t *gin, Double_t 
 //--------------------------------------------------------------------------------------------------
 Double_t AliCentralityGlauberFit::NBDFunc(Double_t *x, Double_t *par) 
 {
-  // TF1  interface
+  // TF1  interface.
+
   Double_t mu = par[0];
   Double_t k  = par[1];
   Double_t n  = x[0];
@@ -548,6 +566,8 @@ Double_t AliCentralityGlauberFit::NBDFunc(Double_t *x, Double_t *par)
 //--------------------------------------------------------------------------------------------------
 TH1F *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
 {
+  // Make ancestor histogram.
+
   TString hname(Form("fhAncestor_%.3f",alpha));
   if (fhAncestor) {
     if (hname.CompareTo(fhAncestor->GetName())==0)
