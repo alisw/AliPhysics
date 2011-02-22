@@ -426,11 +426,10 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   AliHLTFloat32_t *dEdxTPC = 0; 
   Int_t ndEdxTPC = 0;
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypedEdx|kAliHLTDataOriginTPC);
-       pBlock!=NULL; pBlock=GetNextInputBlock()) {
+       pBlock!=NULL; pBlock=NULL/*GetNextInputBlock() there is only one block*/) {
     fBenchmark.AddInput(pBlock->fSize);
     dEdxTPC = reinterpret_cast<AliHLTFloat32_t*>( pBlock->fPtr );
     ndEdxTPC = pBlock->fSize / (3*sizeof(AliHLTFloat32_t));
-    break;
   }
 
   // 2) convert the TPC tracks to ESD tracks
