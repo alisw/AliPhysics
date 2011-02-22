@@ -1,0 +1,168 @@
+// $Id$
+/**
+ * @file makeGlobalHistoConfigObject.C
+ * @brief Creation of Global Histo component configuration objects in OCDB
+ *
+ * <pre>
+ * Usage:
+ *  aliroot -b -q makeGlobalHistoConfigObject.C'("path", "key", "uri", runmin, runmax)'
+ * </pre>
+ *
+ * Create an OCDB entry with a TObjString containing param.
+ * Many HLT components understand configuration strings containing
+ * arguments and parameters just like the command line arguments.
+ * This macro facilitates the creation of an appropriate object
+ * from a parameter string.
+ * As another approach the TObjString parameters are stored in a TMap
+ * associated to a key. A TMap object is generated if 'key' is specified.
+ *
+ * Parameters: <br>
+ * - path           path of the entry within the OCDB (e.g. HLT/ConfigHLT/GlobalHisto)
+ * - uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   
+ * - runmin (opt)   default 0
+ * - runmax (opt)   default 999999999
+ * The parameters of the component configuration should be defined inside function makeString().
+ *
+ * Note: The configuration procedure of an HLT component is not
+ * restricted to that scheme. The implementation is up to the
+ * developer and more complex objects are possible.
+ *
+ * @author Kalliopi.Kanaki@ift.uib.no
+ * @ingroup alihlt_tutorial
+ */
+void makeGlobalHistoConfigObject(const char* path, 
+				 const char* key,
+				 //const char* param,
+				 const char* cdbUri,
+				 int runmin=0,
+				 int runmax=999999999,
+				 int runNo=0)
+{
+  AliCDBManager* man = AliCDBManager::Instance();
+  if (!man) {
+    cerr << "Cannot get AliCDBManager." << end;
+    exit;
+  }
+  TString storage;
+  if (!man->IsDefaultStorageSet()) {
+    if (cdbUri) {
+      storage=cdbUri;
+      if (storage.Contains("://")==0) {
+	storage="local://"; storage+=cdbUri;
+      }
+    } else {
+      storage="local://$ALICE_ROOT/OCDB";
+    }
+    man->SetDefaultStorage(storage);
+  } else {
+    storage = man->GetDefaultStorage()->GetURI();
+  }
+
+  TMap* pMap=NULL;
+
+  // load existing object and init TMap
+  AliCDBEntry* pExisting=NULL;
+  AliCDBStorage* pStorage=AliCDBManager::Instance()->GetDefaultStorage();
+  if (key && pStorage->GetLatestVersion(path, runNo)>=0) {
+    pExisting=pStorage->Get(path, runNo);
+    if (pExisting->GetObject()->IsA() == TMap::Class()) {
+      pMap=(TMap*)pExisting->GetObject()->Clone();
+    }
+  }  
+
+  if (key && !pMap) pMap=new TMap;
+
+  // here is the actual content of the configuration object
+  TObject* obj=new TObjString(makeString()); //KK
+  //TObject* obj=new TObjString(param); 
+  if (pMap) {
+    if (pMap->FindObject(key)) {
+      pMap->Remove(new TObjString(key));
+    }
+    pMap->Add(new TObjString(key), obj);
+    obj=pMap;
+  }
+
+  AliCDBPath cdbPath(path);
+  AliCDBId cdbId(cdbPath, runmin, runmax);
+  AliCDBMetaData* cdbMetaData=NULL;
+  if (pExisting) cdbMetaData=pExisting->GetMetaData();
+  else cdbMetaData=new AliCDBMetaData;
+  man->Put(obj, cdbId, cdbMetaData);
+}
+
+// void makeGlobalHistoConfigObject(const char* path
+//                                       ,//const char* param="",
+// 				      ,const char* cdbUri=NULL
+// 				      ,int runmin=0
+// 				      ,int runmax=999999999)
+// {
+//   //makeGlobalHistoConfigObject(path, NULL, param, cdbUri, runmin, runmax);
+//   makeGlobalHistoConfigObject(path, NULL, makeString(), cdbUri, runmin, runmax); //KK
+// }
+// 
+// void makeComponentConfigurationObject(const char* path, 
+// 				      int runNo,
+// 				      const char* key,
+// 				      const char* param)
+// {
+//   makeComponentConfigurationObject(path, key, param, NULL, 0, 999999999, runNo);
+// }
+
+void makeGlobalHistoConfigObject()
+{
+  cout << "===============================================================" << endl;
+  cout << "usage: aliroot -b -q -l makeGlobalHistoConfigObject.C'(\"path\", NULL, \"uri\", rangemin, rangemax)'" << endl << endl;
+  cout << "  path           path of the entry within the OCDB, e.g. HLT/ConfigHLT/GlobalHisto" << endl;
+  cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
+  cout << "  rangemin (opt) default 0" << endl;
+  cout << "  rangemax (opt) default 999999999" << endl;
+  cout << "  The parameters of the component configuration should be defined inside function makeString()." << endl;
+  cout << "===============================================================" << endl;
+}
+
+TString makeString(){
+  
+  TString s = "";
+  
+  s+="-histogram TrackPt -size 1000 -expression Track_pt -cut Track_Nclusters>0 ";
+  s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_Nclusters>0 ";
+  s+="-histogram TrackMultiplicity -size 1000 -expression trackcount -cut Track_Nclusters>0 ";
+  s+="-histogram TrackEta -size 1000 -expression Track_eta -cut Track_Nclusters>0 ";
+  s+="-histogram TrackNclusters(200,0,200) -size 1000 -expression Track_Nclusters -cut Track_Nclusters>0 ";
+  s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_Nclusters>0 ";
+  s+="-histogram TrackDCAr -size 1000 -expression Track_DCAr -cut Track_Nclusters>0 ";
+  s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_Nclusters>0 ";
+
+  s+="-histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz ";
+  s+="-histogram VertexX  -size 1000 -expression vertexX -cut nContributors>3 ";
+  s+="-histogram VertexY  -size 1000 -expression vertexY -cut nContributors>3 ";
+  s+="-histogram VertexZ  -size 1000 -expression vertexZ -cut nContributors>3 ";
+  s+="-histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 ";
+  s+="-histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 ";
+
+  //s+= "-histogram UPC -size 1500 -expression (px_1+px_2)*(px_1+px_2)+(py_1+py_2)*(py_1+py_2) -cut nClusters_1>50&&nClusters_2>50 ";
+  //s+= "-histogram pt1square -size 1500 -expression px_1*px_1+py_1*py_1 -cut nClusters_1>50 ";
+  //s+= "-histogram pt2 -size 1500 -expression TMath::Sqrt(px_2*px_2+py_2*py_2) -cut nClusters_2>50 ";
+
+  return s;
+}
+/*
+-histogram TrackPt -size 1000 -expression Track_pt -cut Track_Nclusters>0 
+-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_Nclusters>0 
+-histogram TrackMultiplicity -size 1000 -expression trackcount -cut Track_Nclusters>0 
+-histogram TrackEta -size 1000 -expression Track_eta -cut Track_Nclusters>0 
+-histogram TrackNclusters(200,0,200) -size 1000 -expression Track_Nclusters -cut Track_Nclusters>0 
+-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_Nclusters>0 
+-histogram TrackDCAr -size 1000 -expression Track_DCAr -cut Track_Nclusters>0 
+-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_Nclusters>0 
+
+-histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz 
+-histogram VertexX  -size 1000 -expression vertexX -cut nContributors>3 
+-histogram VertexY  -size 1000 -expression vertexY -cut nContributors>3 
+-histogram VertexZ  -size 1000 -expression vertexZ -cut nContributors>3 
+-histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 
+-histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 
+
+-histogram UPC -size 1000 -expression TMath::Sqrt((px_1+px_2)*(px_1+px_2)+(py_1+py_2)*(py_1+py_2)) -cut nClusters_1>50&&nClusters_2>50 
+*/
