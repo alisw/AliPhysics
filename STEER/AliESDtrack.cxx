@@ -970,6 +970,10 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fCdz = fCdzTPC;
   track.fCzz = fCzzTPC;
 
+  // copy the inner params
+  if(track.fIp) *track.fIp = *fIp;
+  else track.fIp = new AliExternalTrackParam(*fIp);
+
   // copy the TPCinner parameters
   if(track.fTPCInner) *track.fTPCInner = *fTPCInner;
   else track.fTPCInner = new AliExternalTrackParam(*fTPCInner);
@@ -979,7 +983,6 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fCdzTPC = fCdzTPC;
   track.fCzzTPC = fCzzTPC;
   track.fCchi2TPC = fCchi2TPC;
-
 
   // copy all other TPC specific parameters
 
