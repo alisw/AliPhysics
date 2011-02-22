@@ -421,13 +421,17 @@ void AliFlowAnalysisWithFittingQDistribution::GetOutputHistograms(TList *outputL
   
   // 2.) weights: 
   TList *weightsList = dynamic_cast<TList*>(outputListHistos->FindObject("Weights"));
-  if(weightsList) this->SetWeightsList(weightsList);
+  if(weightsList){this->SetWeightsList(weightsList);}
   Bool_t bUsePhiWeights = kFALSE;
   Bool_t bUsePtWeights = kFALSE;
   Bool_t bUseEtaWeights = kFALSE;
   TString fUseParticleWeightsName = "fUseParticleWeightsFQD";
   fUseParticleWeightsName += fAnalysisLabel->Data();
-  TProfile *useParticleWeights = dynamic_cast<TProfile*>(weightsList->FindObject(fUseParticleWeightsName.Data()));
+  TProfile *useParticleWeights = NULL; 
+  if(weightsList)
+  {
+   useParticleWeights = dynamic_cast<TProfile*>(weightsList->FindObject(fUseParticleWeightsName.Data()));
+  }
   if(useParticleWeights)
   {
    this->SetUseParticleWeights(useParticleWeights);  

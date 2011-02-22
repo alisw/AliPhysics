@@ -401,7 +401,11 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   cout<<"dV"<<fHarmonic<<"{MC} is       "<<dV<<" +- "<<dErrV<<endl;
   
   //RP:
-  TH1F* fHistPtRP = fCommonHists->GetHistPtRP(); 
+  TH1F* fHistPtRP = NULL;
+  if(fCommonHists)
+  {
+   fHistPtRP = fCommonHists->GetHistPtRP(); 
+  }
   Double_t dYieldPtRP = 0.;
   Double_t dVRP = 0.;
   Double_t dErrVRP = 0.;
