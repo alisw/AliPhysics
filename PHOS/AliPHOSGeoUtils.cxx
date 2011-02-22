@@ -650,20 +650,7 @@ void AliPHOSGeoUtils::SetMisalMatrix(const TGeoHMatrix * m, Int_t mod){
   if(m==NULL) //Matrix for non-existing modules? Remain zero, no need to re-set
     return ;
   fPHOSMatrix[mod]= new TGeoHMatrix(*m) ;
-
-  //If module does not exist, make sure all its matrices are zero
-  if(m==NULL){
-    fEMCMatrix[mod]=NULL ;
-    Int_t istrip=0 ;
-    for(Int_t irow = 0; irow < fGeometryEMCA->GetNStripX(); irow ++){
-      for(Int_t icol = 0; icol < fGeometryEMCA->GetNStripZ(); icol ++){
-        fStripMatrix[mod][istrip]=NULL ;
-      }
-    } 
-    fCPVMatrix[mod]=NULL ;
-    return ;
-  }
-
+  
   //Calculate maxtrices for PTII
   if(!fMisalArray)
     fMisalArray = new TClonesArray("TGeoHMatrix",1120+10) ;
