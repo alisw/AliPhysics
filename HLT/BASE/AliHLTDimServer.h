@@ -34,6 +34,7 @@ public:
   /// Data type identifiers for services.
   enum AliHLTDimServiceDataType{
     kDataTypeUnknown = 0, /// initializer
+    kDataTypeCustom,      /// Custom format maintained by the user.
     kDataTypeInt,         /// Integer type
     kDataTypeFloat,       /// Float type
     kDataTypeString,      /// String type
@@ -54,17 +55,66 @@ public:
   class AliHLTDimService : public TNamed {
   public:
     AliHLTDimService();
+    
+    /**
+     * Create a new service with a particular predefined type and name.
+     * \param type  The type of the service
+     * \param servicename  The name of the service.
+     */
     AliHLTDimService(AliHLTDimServiceDataType type, const char* servicename);
     
+    /**
+     * Create a new service with a particular custom type.
+     * \param type  The type of the service as a string.
+     *      The format parameter specifies the contents of the structure in the
+     *      form T:N[;T:N]*[;T] where T is the item type: (I)nteger, (C)arachter,
+     *      (L)ong, (S)hort, (F)loat, (D)ouble, X(tra long) and N is the number
+     *      of such items. The type alone at the end means all following items
+     *      are of the same type. Example: "I:3;F:2;C" means 3 Integers, 2 Floats
+     *      and Characters until the end. The format parameter is used for
+     *      communicating between different platforms.
+     * \param data  Points to a buffer maintained by the user which stores the
+     *      data to publish. This buffer must exist as long as the DIM service
+     *      is registered and active.
+     * \param size  The size of the data structure pointed to by data.
+     * \param servicename  The name of the service.
+     */
+    AliHLTDimService(const char* type, void* data, int size, const char* servicename);
+    
+    /**
+     * Updates the DIM data point for custom data structures.
+     * i.e. This method should be used if the service was created with:
+     * AliHLTDimService(const char* type, void* data, int size, const char* servicename)
+     */
+    void Update();
+    
+    /**
+     * Updates the DIM data point.
+     * This method should be used if the service was created with:
+     * AliHLTDimService(AliHLTDimServiceDataType type, const char* servicename)
+     * \param sp  The new data point to publish via DIM.
+     */
     void Update(const AliHLTDimServicePoint_t& sp);
+    
     AliHLTDimServiceDataType GetType() const {return fType;}
-    void* GetLocation() {return &fData.iVal;}
+    const char* GetTypeString() const { return fTypeString.Data(); }
+    void* GetLocation() {return fDataBuffer;}
     int GetId() const {return fId;}
     int SetId(int id) {fId=id;return id;}
+    void* GetDataBuffer() const { return fDataBuffer; }
+    int GetDataSize() const { return fDataSize; }
 
   private:
+          
+    // Do not allow copying of this class
+    AliHLTDimService(const AliHLTDimService&);
+    AliHLTDimService& operator = (const AliHLTDimService&);
+          
     AliHLTDimServicePoint_t fData; /// the data point
     AliHLTDimServiceDataType fType; /// type of this service
+    TString fTypeString;  /// The string representing the service type.
+    void* fDataBuffer;  /// Pointer to the data buffer.
+    int fDataSize;  /// The size of the data buffer.
     int fId; /// id of the service
   };
 

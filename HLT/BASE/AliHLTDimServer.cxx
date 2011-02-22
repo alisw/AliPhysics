@@ -153,7 +153,10 @@ AliHLTDimServer::AliHLTDimInterface* AliHLTDimServer::Interface()
   if (!fgpInterface) {
     fgpInterface=new AliHLTDimInterface;
     if (fgpInterface) {
-      fgpInterface->Init();
+      if (fgpInterface->Init() != 0) {
+        delete fgpInterface;
+        fgpInterface = NULL;
+      }
     }
   }
   return fgpInterface;
@@ -265,13 +268,11 @@ void* AliHLTDimServer::ServerLoop()
     void* buffer=pService->GetLocation();
     int size=0;
     switch (pService->GetType()) {
+    case kDataTypeCustom:
     case kDataTypeInt:
-      type="I";
-      size=sizeof(int);
-      break;
     case kDataTypeFloat:
-      type="F";
-      size=sizeof(float);
+      type=pService->GetTypeString();
+      size=pService->GetDataSize();
       break;
     case kDataTypeString:
       log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "ServerLoop" , __FILE__ , __LINE__ , "ignoring dim service %s: type 'string' not yet implemented", name.Data());
@@ -318,6 +319,9 @@ AliHLTDimServer::AliHLTDimService::AliHLTDimService()
   : TNamed()
   , fData()
   , fType(kDataTypeUnknown)
+  , fTypeString()
+  , fDataBuffer(NULL)
+  , fDataSize(0)
   , fId(-1)
 {
   // see header file for class documentation
@@ -327,13 +331,27 @@ AliHLTDimServer::AliHLTDimService::AliHLTDimService(enum AliHLTDimServiceDataTyp
   : TNamed(servicename, "AliHLTDimService")
   , fData()
   , fType(type)
+  , fTypeString()
+  , fDataBuffer(NULL)
+  , fDataSize(0)
   , fId(-1)
 {
   // see header file for class documentation
   AliHLTLogging log;
   switch (fType) {
-  case kDataTypeInt: break;
-  case kDataTypeFloat: break;
+  case kDataTypeCustom:
+    log.LoggingVarargs(kHLTLogError, "AliHLTDimServer", "AliHLTDimService" , __FILE__ , __LINE__ , "cannot use the kDataTypeCustom type with this method");
+    break;
+  case kDataTypeInt:
+    fTypeString="I";
+    fDataBuffer=&fData.iVal;
+    fDataSize=sizeof(int);
+    break;
+  case kDataTypeFloat:
+    fTypeString="F";
+    fDataBuffer=&fData.fVal;
+    fDataSize=sizeof(float);
+    break;
   case kDataTypeString:
     log.LoggingVarargs(kHLTLogError, "AliHLTDimServer", "AliHLTDimService" , __FILE__ , __LINE__ , "dim service type 'string' not yet implemented");
     break;
@@ -342,12 +360,43 @@ AliHLTDimServer::AliHLTDimService::AliHLTDimService(enum AliHLTDimServiceDataTyp
   };
 }
 
+AliHLTDimServer::AliHLTDimService::AliHLTDimService(const char* type, void* data, int size, const char* servicename)
+  : TNamed(servicename, "AliHLTDimService")
+  , fData()
+  , fType(kDataTypeCustom)
+  , fTypeString(type)
+  , fDataBuffer(data)
+  , fDataSize(size)
+  , fId(-1)
+{
+  // see header file for class documentation
+}
+
+void AliHLTDimServer::AliHLTDimService::Update()
+{
+  // see header file for class documentation
+  static bool bWarning=true;
+  AliHLTLogging log;
+  switch (fType) {
+  case kDataTypeCustom: break;
+  default:
+    if (bWarning) log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "Update" , __FILE__ , __LINE__ , "The service %s must be a custom type (kDataTypeCustom) to use this form of Update", GetName());
+    bWarning=false;
+  };
+
+  AliHLTDimServer::Interface()->DisUpdateService(fId);
+}
+
 void AliHLTDimServer::AliHLTDimService::Update(const AliHLTDimServicePoint_t& sp)
 {
   // see header file for class documentation
   static bool bWarning=true;
   AliHLTLogging log;
   switch (fType) {
+  case kDataTypeCustom:
+    if (bWarning) log.LoggingVarargs(kHLTLogError, "AliHLTDimServer::AliHLTDimService", "Update" , __FILE__ , __LINE__ , "Should not call this form of Update for custom type (kDataTypeCustom) service %s", GetName());
+    bWarning=false;
+    return;
   case kDataTypeInt: fData.iVal=sp.iVal; break;
   case kDataTypeFloat: fData.fVal=sp.fVal; break;
   case kDataTypeString:
