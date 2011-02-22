@@ -44,25 +44,7 @@ private:
 
   TH2F* fITSsignal; //!ITS signal as function of p
   TH2F* fTPCsignal; //!TPC signal as function of p
-  TH2F* fTOFsignal; //!TOF signal as function of  p 
-  TH2F* fITSsignalpi;//!ITS PID signal as function of pt for pi+
-  TH2F* fTPCsignalpi;//!TPC PID signal as function of pt for pi+
-  TH2F* fTOFsignalpi;//!TOF PID signal as function of pt for pi+
-  TH2F* fITSsignalK;//!ITS PID signal as function of pt for K+
-  TH2F* fTPCsignalK;//!TPC PID signal as function of pt for K+
-  TH2F* fTOFsignalK;//!TOF PID signal as function of pt for K+
-  TH2F* fITSsignalp;//!ITS PID signal as function of pt for p
-  TH2F* fTPCsignalp;//!TPC PID signal as function of pt for p
-  TH2F* fTOFsignalp;//!TOF PID signal as function of pt for p
-  TH2F* fITSsignalpiMC;//!ITS PID signal as function of pt for pi+
-  TH2F* fTPCsignalpiMC;//!TPC PID signal as function of pt for pi+
-  TH2F* fTOFsignalpiMC;//!TOF PID signal as function of pt for pi+
-  TH2F* fITSsignalKMC;//!ITS PID signal as function of pt for K+
-  TH2F* fTPCsignalKMC;//!TPC PID signal as function of pt for K+
-  TH2F* fTOFsignalKMC;//!TOF PID signal as function of pt for K+
-  TH2F* fITSsignalpMC;//!ITS PID signal as function of pt for p
-  TH2F* fTPCsignalpMC;//!TPC PID signal as function of pt for p
-  TH2F* fTOFsignalpMC;//!TOF PID signal as function of pt for p
+  TH2F* fTOFsignal; //!TOF signal as function of p 
   TH2F* fITSsignalpip;//!ITS PID signal as function of p for pi+
   TH2F* fTPCsignalpip;//!TPC PID signal as function of p for pi+
   TH2F* fTOFsignalpip;//!TOF PID signal as function of p for pi+
@@ -81,25 +63,12 @@ private:
   TH2F* fITSsignalpMCp;//!ITS PID signal as function of p for p
   TH2F* fTPCsignalpMCp;//!TPC PID signal as function of p for p
   TH2F* fTOFsignalpMCp;//!TOF PID signal as function of p for p
-  TH2F* fTOFsignalPiExpKvsPt;//!TOF expected signal
-  TH2F* fTOFsignalPiExpPvsPt;//!TOF expected signal
-  TH2F* fTOFsignalKExpPivsPt;//!TOF expected signal
-  TH2F* fTOFsignalKExpPvsPt;//!TOF expected signal
-  TH2F* fTOFsignalPExpPivsPt;//!TOF expected signal
-  TH2F* fTOFsignalPExpKvsPt;//!TOF expected signal
-  TH2F* fTOFsignalPiExpKvsP;//!TOF expected signal
-  TH2F* fTOFsignalPiExpPvsP;//!TOF expected signal
-  TH2F* fTOFsignalKExpPivsP;//!TOF expected signal
-  TH2F* fTOFsignalKExpPvsP;//!TOF expected signal
-  TH2F* fTOFsignalPExpPivsP;//!TOF expected signal
-  TH2F* fTOFsignalPExpKvsP;//!TOF expected signal
   TH2F* fTOFsignalBeta;//!vs beta
   TH2F* fTOFsignalPiBeta;//!vs beta
   TH2F* fTOFsignalKBeta;//!vs beta
   TH2F* fTOFsignalPBeta;//!vs beta
   TH2F* fPvsPt; //!P vs Pt yield
   TProfile* fMeanPvsP; //!mean p per bin
-  TProfile* fMeanPtvsPt; //!mean pt per bin
   TList* fOutputList;//!output list
 	
   AliAnalysisTaskPIDflowQA(const  AliAnalysisTaskPIDflowQA&); // not implemented
