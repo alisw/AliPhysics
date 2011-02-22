@@ -81,16 +81,16 @@ public:
    Bool_t   IsKinkDaughter();
 
    // getters which automatically convert refs into allowed types
-   AliVTrack*        GetRefVtrack()     {return dynamic_cast<AliVTrack*>(fRef);}
-   AliESDtrack*      GetRefESDtrack()   {return dynamic_cast<AliESDtrack*>(fRef);}
-   AliESDv0*         GetRefESDv0()      {return dynamic_cast<AliESDv0*>(fRef);}
-   AliESDcascade*    GetRefESDcascade() {return dynamic_cast<AliESDcascade*>(fRef);}
-   AliAODTrack*      GetRefAODtrack()   {return dynamic_cast<AliAODTrack*>(fRef);}
-   AliAODv0*         GetRefAODv0()      {return dynamic_cast<AliAODv0*>(fRef);}
-   AliAODcascade*    GetRefAODcascade() {return dynamic_cast<AliAODcascade*>(fRef);}
-   AliMCParticle*    GetRefMCtrack()    {return dynamic_cast<AliMCParticle*>(fRef);}
-   AliMCParticle*    GetRefMCESD()      {return dynamic_cast<AliMCParticle*>(fRefMC);}
-   AliAODMCParticle* GetRefMCAOD()      {return dynamic_cast<AliAODMCParticle*>(fRefMC);}
+   AliVTrack*        GetRefVtrack()     {if (classMatchRef  (AliVTrack       ::Class())) return static_cast<AliVTrack*>       (fRef)  ; return 0x0;}
+   AliESDtrack*      GetRefESDtrack()   {if (classMatchRef  (AliESDtrack     ::Class())) return static_cast<AliESDtrack*>     (fRef)  ; return 0x0;}
+   AliESDv0*         GetRefESDv0()      {if (classMatchRef  (AliESDv0        ::Class())) return static_cast<AliESDv0*>        (fRef)  ; return 0x0;}
+   AliESDcascade*    GetRefESDcascade() {if (classMatchRef  (AliESDcascade   ::Class())) return static_cast<AliESDcascade*>   (fRef)  ; return 0x0;}
+   AliAODTrack*      GetRefAODtrack()   {if (classMatchRef  (AliAODTrack     ::Class())) return static_cast<AliAODTrack*>     (fRef)  ; return 0x0;}
+   AliAODv0*         GetRefAODv0()      {if (classMatchRef  (AliAODv0        ::Class())) return static_cast<AliAODv0*>        (fRef)  ; return 0x0;}
+   AliAODcascade*    GetRefAODcascade() {if (classMatchRef  (AliAODcascade   ::Class())) return static_cast<AliAODcascade*>   (fRef)  ; return 0x0;}
+   AliMCParticle*    GetRefMCtrack()    {if (classMatchRef  (AliMCParticle   ::Class())) return static_cast<AliMCParticle*>   (fRef)  ; return 0x0;}
+   AliMCParticle*    GetRefMCESD()      {if (classMatchRefMC(AliMCParticle   ::Class())) return static_cast<AliMCParticle*>   (fRefMC); return 0x0;}
+   AliAODMCParticle* GetRefMCAOD()      {if (classMatchRefMC(AliAODMCParticle::Class())) return static_cast<AliAODMCParticle*>(fRefMC); return 0x0;}
 
    // check the input type
    Bool_t    IsMC()      {if (GetRefMCtrack()) return kTRUE; return kFALSE;}
@@ -102,6 +102,9 @@ public:
    ERefType  RefType()   {if (IsTrack()) return kTrack; if (IsV0()) return kV0; if (IsCascade()) return kCascade; return kNoType;}
 
 private:
+
+   Bool_t classMatchRef  (TClass *ref) {if (fRef  ) return (fRef  ->IsA() == ref); return kFALSE;}
+   Bool_t classMatchRefMC(TClass *ref) {if (fRefMC) return (fRefMC->IsA() == ref); return kFALSE;}
 
    Bool_t         fOK;          // internal utility flag which is kFALSE when this object should not be used
    Int_t          fLabel;       // GEANT label of corresponding MC
@@ -116,5 +119,7 @@ private:
 
    ClassDef(AliRsnDaughter, 9)
 };
+
+
 
 #endif

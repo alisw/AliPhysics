@@ -43,10 +43,10 @@ public:
    Int_t      GetLocalID() const           {return fLocalID;}
 
    // getters which convert into allowed input types
-   AliESDEvent* GetRefESD()   {if (fRef  ->IsA() == AliESDEvent::Class()) return static_cast<AliESDEvent*>(fRef)  ; else return 0x0;}
-   AliAODEvent* GetRefAOD()   {if (fRef  ->IsA() == AliAODEvent::Class()) return static_cast<AliAODEvent*>(fRef)  ; else return 0x0;}
-   AliMCEvent*  GetRefMCESD() {if (fRefMC->IsA() == AliMCEvent ::Class()) return static_cast<AliMCEvent*> (fRefMC); else return 0x0;}
-   AliAODEvent* GetRefMCAOD() {if (fRefMC->IsA() == AliAODEvent::Class()) return static_cast<AliAODEvent*>(fRefMC); else return 0x0;}
+   AliESDEvent* GetRefESD()   {if (classMatchRef  (AliESDEvent::Class())) return static_cast<AliESDEvent*>(fRef); return 0x0;}
+   AliAODEvent* GetRefAOD()   {if (classMatchRef  (AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRef); return 0x0;}
+   AliMCEvent*  GetRefMCESD() {if (classMatchRefMC(AliMCEvent ::Class())) return static_cast<AliMCEvent *>(fRef); return 0x0;}
+   AliAODEvent* GetRefMCAOD() {if (classMatchRefMC(AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRef); return 0x0;}
    Bool_t       IsESD()       {return (GetRefESD() != 0x0);}
    Bool_t       IsAOD()       {return (GetRefAOD() != 0x0);}
 
@@ -78,6 +78,9 @@ public:
    static Bool_t          SameEvent()                                        {if (fgRsnEvent1 == fgRsnEvent2) return kTRUE; return kFALSE;}
    
 private:
+
+   Bool_t classMatchRef  (TClass *ref) {if (fRef  ) return (fRef  ->IsA() == ref); return kFALSE;}
+   Bool_t classMatchRefMC(TClass *ref) {if (fRefMC) return (fRefMC->IsA() == ref); return kFALSE;}
 
    Bool_t SetDaughterESDtrack(AliRsnDaughter &target, Int_t index);
    Bool_t SetDaughterAODtrack(AliRsnDaughter &target, Int_t index);
