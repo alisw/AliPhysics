@@ -392,7 +392,7 @@ AliMUONTriggerIO::ReadConfig(const char* localFile,
 {
   /// Fill the various masks store from files
   
-  if ( !regionalFile || strlen(regionalFile)==0 ) 
+  if ( !regionalConfig || !regionalFile || strlen(regionalFile)==0 ) 
   {
     AliError("Must have a regional file name to proceeed");
     return kFALSE;

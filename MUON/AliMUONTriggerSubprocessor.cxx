@@ -154,6 +154,8 @@ AliMUONTriggerSubprocessor::Initialize(Int_t run, UInt_t startTime, UInt_t endTi
     return kFALSE;
   }
   
+  if ( regionalFile ) globalFile = kTRUE;
+
   if ( regionalFile ) fRegionalConfig = new AliMUONRegionalTriggerConfig();
   if ( localFile ) fLocalMasks = new AliMUON1DArray(AliMpConstants::TotalNofLocalBoards()+1);
   if ( globalFile )   fGlobalConfig   = new AliMUONGlobalCrateConfig();
