@@ -278,12 +278,18 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeDrift(Double_t maxVDriftCorr)
   Printf("ValidateTimeDrift..." );
 
   TGraphErrors* gr = (TGraphErrors*)fVdriftArray->FindObject("ALIGN_ITSB_TPC_DRIFTVD");
+  Printf("ALIGN_ITSB_TPC_DRIFTVD graph = %p",gr);
+
   if(!gr) return kFALSE;
-  if(gr->GetN()<1) return kFALSE;
+  if(gr->GetN()<1)  { 
+    Printf("ALIGN_ITSB_TPC_DRIFTVD number of points = %d",gr->GetN());
+    return kFALSE;
+  }
 
   // check whether drift velocity corrections in the range
   for(Int_t iPoint = 0; iPoint<gr->GetN(); iPoint++) 
   {
+    Printf("Y value from the graph: %f",TMath::Abs(gr->GetY()[iPoint]));
     if(TMath::Abs(gr->GetY()[iPoint]) > maxVDriftCorr)  
       return kFALSE;
   }
@@ -1100,7 +1106,8 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   Int_t nCountTot = 0;
   for(Int_t iBin = 1; iBin < meanTot->GetXaxis()->GetNbins(); iBin++) {
     Float_t yValTot = meanTot->GetBinContent(iBin);
-    if (yValTot < 0.1) continue;
+    if (yValTot < 0.7) continue;
+    if (yValTot > 1.3) continue;
     if (meanTot->GetBinError(iBin)/yValTot > 0.1) continue;
     xMultTot[nCountTot] = meanTot->GetXaxis()->GetBinCenter(iBin);
     yMultTot[nCountTot] = yValTot;
@@ -1253,7 +1260,7 @@ void AliTPCPreprocessorOffline::MakeFitTime(){
 
 void AliTPCPreprocessorOffline::MakeChainTime(){
   //
-  TFile f("TPCTimeObjects.root");
+  TFile f("CalibObjects.root");
   //  const char *cdtype[7]={"ITS","TRD","Vertex","TOF","TPC","TPC0","TPC1"};
   //const char *cptype[5]={"dy","dz","dsnp","dtheta","d1pt"}; 
   const char * hname[5]={"dy","dz","dsnp","dtheta","d1pt"};
