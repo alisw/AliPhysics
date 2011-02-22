@@ -220,9 +220,9 @@ private:
   /// track count, tree filling variable
   int fNofTracks; //!
   /// V0 count, tree filling variable
-  int fNofV0s; //!
+  //int fNofV0s; //!
   /// UPC pair count (=1), tree filling variable
-  int fNofUPCpairs; //!
+  //int fNofUPCpairs; //!
   /// contributors count, tree filling variable
   int fNofContributors; //!
  /// x coordinate of vertex
@@ -239,22 +239,22 @@ private:
   AliHLTGlobalHistoVariables<int> fTrackVariablesInt; //!
  
   /// filling arrays for V0 parameters
-  AliHLTGlobalHistoVariables<float> fV0Variables; //!
+  //AliHLTGlobalHistoVariables<float> fV0Variables; //!
  
   /// filling arrays for UPC parameters
-  AliHLTGlobalHistoVariables<float> fUPCVariables; //!
+  //AliHLTGlobalHistoVariables<float> fUPCVariables; //!
   
  
-  Double_t fGammaCuts[8];  // cuts for gammas
-  Double_t fKsCuts[8];     // cuts for Ks
-  Double_t fLambdaCuts[8]; // cuts for Lambdas
-  Double_t fAPCuts[8];     // cuts for Armenteros-Podolanski plot
-
-  Int_t fNEvents;  // n of processed events
-  Int_t fNGammas;  // n found total
-  Int_t fNKShorts; // n found total
-  Int_t fNLambdas; // n found total
-  Int_t fNPi0s;    // n found total
+//   Double_t fGammaCuts[8];  // cuts for gammas
+//   Double_t fKsCuts[8];     // cuts for Ks
+//   Double_t fLambdaCuts[8]; // cuts for Lambdas
+//   Double_t fAPCuts[8];     // cuts for Armenteros-Podolanski plot
+// 
+//   Int_t fNEvents;  // n of processed events
+//   Int_t fNGammas;  // n found total
+//   Int_t fNKShorts; // n found total
+//   Int_t fNLambdas; // n found total
+//   Int_t fNPi0s;    // n found total
 
   ClassDef(AliHLTGlobalHistoComponent, 0) // HLT Global Histogram component
 };
