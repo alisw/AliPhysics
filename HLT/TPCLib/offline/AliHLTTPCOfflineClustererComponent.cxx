@@ -170,7 +170,7 @@ int AliHLTTPCOfflineClustererComponent::DoInit( int argc, const char** argv )
   // Init clusterer
   fClusterer = new AliTPCclustererMI(fTPCGeomParam,fTPCRecoParam);
 #ifndef HAVE_NOT_TPCOFFLINE_REC
-  fClusterer->StoreInClonesArray(kTRUE); // output clusters stored in one TClonesArray
+  if (fClusterer) fClusterer->StoreInClonesArray(kTRUE); // output clusters stored in one TClonesArray
 #endif
 
   if (!fRawReader || !fClusterer || !fTPCRecoParam || !fTPCGeomParam) {
