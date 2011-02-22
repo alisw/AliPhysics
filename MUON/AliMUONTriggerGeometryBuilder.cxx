@@ -153,7 +153,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    par[0] = AliMUONConstants::Rmin(5+istation); 
 	    par[1] = AliMUONConstants::Rmax(5+istation);
 	    Char_t volName[6];
-	    sprintf(volName,"%s%d", "SC",11+icount);
+	    snprintf(volName,6,"%s%d", "SC",11+icount);
  	    gMC->Gsvolu(volName,"TUBE", idAir, par, 3);
  	    //SetVolume(10+icount, volName);
 //	    Float_t zpos =  AliMUONConstants::DefaultChamberZ(10+icount);
@@ -189,9 +189,9 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 		    tpar[0] = (kXMAX/2.) * zRatio;
 		    if (iline==5) tpar[0] = ((kXMAX-kXMED)/2.)*zRatio;
 		    if (icolumn==0) 
-			sprintf(volEnv[i],"S%dR%d",icount,iline);
+			snprintf(volEnv[i],5,"S%dR%d",icount,iline);
 		    else
-			sprintf(volEnv[i],"S%dL%d",icount,iline);
+			snprintf(volEnv[i],5,"S%dL%d",icount,iline);
 		    // gMC->Gsvolu(volEnv[i],"BOX",idAir,tpar,0); 
 		    i++;
 		}
@@ -200,12 +200,13 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 // chamber prototype
 	    tpar[0]= 0.;
 	    tpar[1]= 0.;
-	    tpar[2]= 0.;	    char volAlu[5];     // Alu 
+	    tpar[2]= 0.;	    
+            char volAlu[5];     // Alu 
 	    char volBak[5];     // Bakelite
 	    char volGaz[5];     // Gas streamer	    
-	    sprintf(volAlu,"SC%dA",icount+1);
-	    sprintf(volBak,"SB%dA",icount+1);
-	    sprintf(volGaz,"S%dG",icount+11);
+	    snprintf(volAlu,5,"SC%dA",icount+1);
+	    snprintf(volBak,5,"SB%dA",icount+1);
+	    snprintf(volGaz,5,"S%dG",icount+11);
 	    gMC->Gsvolu(volAlu,"BOX",idAlu1,tpar,0);         // Al
 	    gMC->Gsvolu(volBak,"BOX",idtmed[1107],tpar,0);   // Bakelite
 	    gMC->Gsvolu(volGaz,"BOX",idtmed[1106],tpar,0);   // Gas streamer
@@ -219,11 +220,11 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 // RPC supports (vertical)
 
             char volAluSupport[5],volAirSupport[5];
-	    sprintf(volAluSupport,"SAL%d",icount+1);
-	    sprintf(volAirSupport,"SAI%d",icount+1);
+	    snprintf(volAluSupport,5,"SAL%d",icount+1);
+	    snprintf(volAirSupport,5,"SAI%d",icount+1);
 	    char volEnvSupport[12][7];
 	    for(Int_t ii=0;ii<8;ii++){
-	      sprintf(volEnvSupport[ii],"SEA%dV%d",icount+1,ii);
+	      snprintf(volEnvSupport[ii],7,"SEA%dV%d",icount+1,ii);
 	    }
 	    tpar[0]= 0.;
 	    tpar[1]= 0.;
@@ -255,16 +256,16 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 
 // supports for cables
             char volAluSupportH[6],volAirSupportH[6];
-	    sprintf(volAluSupportH,"SALH%d",icount+1);
-	    sprintf(volAirSupportH,"SAIH%d",icount+1);
+	    snprintf(volAluSupportH,6,"SALH%d",icount+1);
+	    snprintf(volAirSupportH,6,"SAIH%d",icount+1);
 	    char volEnvSupportHA[6][8],volEnvSupportHBC[12][8],volEnvSupportHD[12][8],volEnvSupportHE[12][8],volEnvSupportHF[12][8];
             for(Int_t jj=0;jj<2;jj++){
 	      for(Int_t ii=0;ii<6;ii++){
-	        if(ii<3)sprintf(volEnvSupportHA[3*jj+ii],"SA%dHA%d",icount+1,3*jj+ii);
-	        sprintf(volEnvSupportHBC[6*jj+ii],"SA%dHB%d",icount+1,6*jj+ii);
-	        sprintf(volEnvSupportHD[6*jj+ii],"SA%dHD%d",icount+1,6*jj+ii);
-	        sprintf(volEnvSupportHE[6*jj+ii],"SA%dHE%d",icount+1,6*jj+ii);
-	        sprintf(volEnvSupportHF[6*jj+ii],"SA%dHF%d",icount+1,6*jj+ii);
+	        if(ii<3)snprintf(volEnvSupportHA[3*jj+ii],8,"SA%dHA%d",icount+1,3*jj+ii);
+	        snprintf(volEnvSupportHBC[6*jj+ii],8,"SA%dHB%d",icount+1,6*jj+ii);
+	        snprintf(volEnvSupportHD[6*jj+ii],8,"SA%dHD%d",icount+1,6*jj+ii);
+	        snprintf(volEnvSupportHE[6*jj+ii],8,"SA%dHE%d",icount+1,6*jj+ii);
+	        snprintf(volEnvSupportHF[6*jj+ii],8,"SA%dHF%d",icount+1,6*jj+ii);
 	      }
 	    }
 	    tpar[0]= 0.;
@@ -279,20 +280,20 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    
 // Angular supports for chambers
 	    char volAluAngSupport1V[6],volAluAngSupport1H[6];
-	    sprintf(volAluAngSupport1H,"SA1H%d",icount+1);
-	    sprintf(volAluAngSupport1V,"SA1V%d",icount+1);
+	    snprintf(volAluAngSupport1H,6,"SA1H%d",icount+1);
+	    snprintf(volAluAngSupport1V,6,"SA1V%d",icount+1);
 	    char volAluAngSupport2V[6],volAluAngSupport2H[6];
-	    sprintf(volAluAngSupport2H,"SA2H%d",icount+1);
-	    sprintf(volAluAngSupport2V,"SA2V%d",icount+1);
+	    snprintf(volAluAngSupport2H,6,"SA2H%d",icount+1);
+	    snprintf(volAluAngSupport2V,6,"SA2V%d",icount+1);
 	    char volAluAngSupport3V[6],volAluAngSupport3H[6];
-	    sprintf(volAluAngSupport3H,"SA3H%d",icount+1);
-	    sprintf(volAluAngSupport3V,"SA3V%d",icount+1);
+	    snprintf(volAluAngSupport3H,6,"SA3H%d",icount+1);
+	    snprintf(volAluAngSupport3V,6,"SA3V%d",icount+1);
 	    char volAluAngSupport4V[6],volAluAngSupport4H[6];
-	    sprintf(volAluAngSupport4H,"SA4H%d",icount+1);
-	    sprintf(volAluAngSupport4V,"SA4V%d",icount+1);
+	    snprintf(volAluAngSupport4H,6,"SA4H%d",icount+1);
+	    snprintf(volAluAngSupport4V,6,"SA4V%d",icount+1);
 	    char volAluAngSupportXV[6],volAluAngSupportXH[6];
-	    sprintf(volAluAngSupportXH,"SAXH%d",icount+1);
-	    sprintf(volAluAngSupportXV,"SAXV%d",icount+1);
+	    snprintf(volAluAngSupportXH,6,"SAXH%d",icount+1);
+	    snprintf(volAluAngSupportXV,6,"SAXV%d",icount+1);
 	    char volEnvSuppAng1HA[2][7],volEnvSuppAng1HBC[4][7],volEnvSuppAng1HD[4][7],volEnvSuppAng1HE[4][7],volEnvSuppAng1HF[4][7];
 	    char volEnvSuppAng1VA[2][7],volEnvSuppAng1VBC[4][7],volEnvSuppAng1VD[4][7],volEnvSuppAng1VE[4][7],volEnvSuppAng1VF[4][7];
 	    char volEnvSuppAng2HA[2][7],volEnvSuppAng2HBC[4][7],volEnvSuppAng2HD[4][7],volEnvSuppAng2HE[4][7],volEnvSuppAng2HF[4][7];
@@ -304,56 +305,56 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    char volEnvSuppAngXHA[2][7],volEnvSuppAngXHBC[4][7],volEnvSuppAngXHD[4][7],volEnvSuppAngXHE[4][7],volEnvSuppAngXHF[4][7];
 	    char volEnvSuppAngXVA[2][7],volEnvSuppAngXVBC[4][7],volEnvSuppAngXVD[4][7],volEnvSuppAngXVE[4][7],volEnvSuppAngXVF[4][7];
 	    for(Int_t ii=0;ii<4;ii++){
-	      if(ii<2)sprintf(volEnvSuppAng1HA[ii],"SH1%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1HBC[ii],"SH1%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1HD[ii],"SH1%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1HE[ii],"SH1%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1HF[ii],"SH1%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng1VA[ii],"SV1%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1VBC[ii],"SV1%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1VD[ii],"SV1%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1VE[ii],"SV1%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng1VF[ii],"SV1%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng2HA[ii],"SH2%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2HBC[ii],"SH2%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2HD[ii],"SH2%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2HE[ii],"SH2%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2HF[ii],"SH2%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng2VA[ii],"SV2%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2VBC[ii],"SV2%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2VD[ii],"SV2%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2VE[ii],"SV2%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng2VF[ii],"SV2%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng3HA[ii],"SH3%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3HBC[ii],"SH3%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3HD[ii],"SH3%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3HE[ii],"SH3%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3HF[ii],"SH3%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng3VA[ii],"SV3%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3VBC[ii],"SV3%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3VD[ii],"SV3%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3VE[ii],"SV3%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng3VF[ii],"SV3%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng4HA[ii],"SH4%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4HBC[ii],"SH4%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4HD[ii],"SH4%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4HE[ii],"SH4%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4HF[ii],"SH4%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAng4VA[ii],"SV4%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4VBC[ii],"SV4%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4VD[ii],"SV4%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4VE[ii],"SV4%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAng4VF[ii],"SV4%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAngXHA[ii],"SHX%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXHBC[ii],"SHX%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXHD[ii],"SHX%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXHE[ii],"SHX%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXHF[ii],"SHX%dF%d",icount+1,ii);
-	      if(ii<2)sprintf(volEnvSuppAngXVA[ii],"SVX%dA%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXVBC[ii],"SVX%dB%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXVD[ii],"SVX%dD%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXVE[ii],"SVX%dE%d",icount+1,ii);
-	      sprintf(volEnvSuppAngXVF[ii],"SVX%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng1HA[ii],7,"SH1%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1HBC[ii],7,"SH1%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1HD[ii],7,"SH1%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1HE[ii],7,"SH1%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1HF[ii],7,"SH1%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng1VA[ii],7,"SV1%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1VBC[ii],7,"SV1%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1VD[ii],7,"SV1%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1VE[ii],7,"SV1%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng1VF[ii],7,"SV1%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng2HA[ii],7,"SH2%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2HBC[ii],7,"SH2%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2HD[ii],7,"SH2%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2HE[ii],7,"SH2%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2HF[ii],7,"SH2%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng2VA[ii],7,"SV2%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2VBC[ii],7,"SV2%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2VD[ii],7,"SV2%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2VE[ii],7,"SV2%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng2VF[ii],7,"SV2%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng3HA[ii],7,"SH3%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3HBC[ii],7,"SH3%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3HD[ii],7,"SH3%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3HE[ii],7,"SH3%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3HF[ii],7,"SH3%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng3VA[ii],7,"SV3%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3VBC[ii],7,"SV3%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3VD[ii],7,"SV3%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3VE[ii],7,"SV3%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng3VF[ii],7,"SV3%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng4HA[ii],7,"SH4%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4HBC[ii],7,"SH4%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4HD[ii],7,"SH4%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4HE[ii],7,"SH4%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4HF[ii],7,"SH4%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAng4VA[ii],7,"SV4%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4VBC[ii],7,"SV4%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4VD[ii],7,"SV4%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4VE[ii],7,"SV4%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAng4VF[ii],7,"SV4%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAngXHA[ii],7,"SHX%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXHBC[ii],7,"SHX%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXHD[ii],7,"SHX%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXHE[ii],7,"SHX%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXHF[ii],7,"SHX%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvSuppAngXVA[ii],7,"SVX%dA%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXVBC[ii],7,"SVX%dB%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXVD[ii],7,"SVX%dD%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXVE[ii],7,"SVX%dE%d",icount+1,ii);
+	      snprintf(volEnvSuppAngXVF[ii],7,"SVX%dF%d",icount+1,ii);
 	    }
 	    tpar[0]= 0.;
 	    tpar[1]= 0.;
@@ -371,22 +372,22 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
 	    
 // gas pipes
 	    char volInoxGasPipe[7];
-	    sprintf(volInoxGasPipe,"SPINO%d",icount+1);
+	    snprintf(volInoxGasPipe,7,"SPINO%d",icount+1);
             char volEnvInoxGasPipe1A[2][7],volEnvInoxGasPipe1BC[4][8],volEnvInoxGasPipe1D[4][7],volEnvInoxGasPipe1E[4][7],volEnvInoxGasPipe1F[4][7];
             char volEnvInoxGasPipe2A[2][7],volEnvInoxGasPipe2BC[4][8],volEnvInoxGasPipe2D[4][7],volEnvInoxGasPipe2E[4][7],volEnvInoxGasPipe2F[4][7];
 	    for(Int_t ii=0;ii<4;ii++){
-	      if(ii<2)sprintf(volEnvInoxGasPipe1A[ii],"SP1%dA%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe1BC[ii],"SP1%dBC%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe1D[ii],"SP1%dD%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe1E[ii],"SP1%dE%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe1F[ii],"SP1%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvInoxGasPipe1A[ii],7,"SP1%dA%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe1BC[ii],8,"SP1%dBC%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe1D[ii],7,"SP1%dD%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe1E[ii],7,"SP1%dE%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe1F[ii],7,"SP1%dF%d",icount+1,ii);
 	    }
 	    for(Int_t ii=0;ii<4;ii++){
-	      if(ii<2)sprintf(volEnvInoxGasPipe2A[ii],"SP2%dA%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe2BC[ii],"SP2%dBC%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe2D[ii],"SP2%dD%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe2E[ii],"SP2%dE%d",icount+1,ii);
-	      sprintf(volEnvInoxGasPipe2F[ii],"SP2%dF%d",icount+1,ii);
+	      if(ii<2)snprintf(volEnvInoxGasPipe2A[ii],7,"SP2%dA%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe2BC[ii],8,"SP2%dBC%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe2D[ii],7,"SP2%dD%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe2E[ii],7,"SP2%dE%d",icount+1,ii);
+	      snprintf(volEnvInoxGasPipe2F[ii],7,"SP2%dF%d",icount+1,ii);
 	    }
 	    tpar[0]= 0.;
 	    tpar[1]= 0.;
