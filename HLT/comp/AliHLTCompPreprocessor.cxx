@@ -204,18 +204,18 @@ UInt_t AliHLTCompPreprocessor::GetHuffmanTables()
 		}
 	      else
 		{
-		  char logging[1000];
-		  sprintf(logging, "Read data specification %d from Huffman table too large to belong to TPC.", tablespec);
-		  Log(logging);
+		  TString logging;
+		  logging.Form( "Read data specification %d from Huffman table too large to belong to TPC.", tablespec);
+		  Log(logging.Data());
 		  // retVal = 1; // retVal must be zero to give other functions a chance to read their data
 		  retVal = 0;
 		}
 	    }
 	  else // error! 
 	    {
-	      char logging[1000];
-	      sprintf(logging, "Specified detector pattern %s does not define a valid detector.", detectororigin.Data());
-	      Log(logging);
+	      TString logging;
+	      logging.Form("Specified detector pattern %s does not define a valid detector.", detectororigin.Data());
+	      Log(logging.Data());
 	      retVal = 1; // retVal must be zero to give other functions a chance to read their data
 	      //retVal = 0;
 	    }
