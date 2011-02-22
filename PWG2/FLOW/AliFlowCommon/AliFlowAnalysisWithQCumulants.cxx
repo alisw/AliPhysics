@@ -5277,6 +5277,11 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
     } 
  } 
  
+ if(!yield2ndPt){return;}
+ if(!yield4thPt){return;}
+ if(!yield6thPt){return;}
+ if(!yield8thPt){return;} 
+
  Int_t nBinsPt = yield2ndPt->GetNbinsX();
  
  TH1D *flow2ndPt = NULL;
@@ -5289,6 +5294,11 @@ void AliFlowAnalysisWithQCumulants::CalculateFinalResultsForRPandPOIIntegratedFl
  flow4thPt = (TH1D*)fDiffFlow[t][0][1]->Clone();
  flow6thPt = (TH1D*)fDiffFlow[t][0][2]->Clone();
  flow8thPt = (TH1D*)fDiffFlow[t][0][3]->Clone(); 
+
+ if(!flow2ndPt){return;}
+ if(!flow4thPt){return;}
+ if(!flow6thPt){return;}
+ if(!flow8thPt){return;} 
    
  Double_t dvn2nd = 0., dvn4th = 0., dvn6th = 0., dvn8th = 0.; // differential flow
  Double_t dErrvn2nd = 0., dErrvn4th = 0., dErrvn6th = 0., dErrvn8th = 0.; // error on differential flow

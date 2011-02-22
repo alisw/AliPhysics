@@ -510,6 +510,12 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
 {
  // Fill generating function for reference flow for current event.
  
+ if(!anEvent)
+ {
+  printf(" WARNING (GFC): anEvent is NULL !!!!");
+  return;
+ }
+ 
  // Particle variables and weights:
  Double_t dPhi = 0.; // azimuthal angle in the laboratory frame
  Double_t dPt  = 0.; // transverse momentum
@@ -517,7 +523,7 @@ void AliFlowAnalysisWithCumulants::FillGeneratingFunctionForReferenceFlow(AliFlo
  Double_t wPhi = 1.; // phi weight
  Double_t wPt  = 1.; // pt weight
  Double_t wEta = 1.; // eta weight
-
+  
  Int_t nPrim = anEvent->NumberOfTracks(); // nPrim = total number of primary tracks, i.e. nPrim = nRP + nPOI, where:
                                           // nRP   = # of particles used to determine the reaction plane;
                                           // nPOI  = # of particles of interest for a detailed flow analysis.
