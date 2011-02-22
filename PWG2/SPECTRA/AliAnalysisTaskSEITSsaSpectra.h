@@ -21,7 +21,7 @@ class TH2F;
 class TRandom3;
 class AliESDEvent;
 class TNtuple;
-
+class AliESDtrackCuts;
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
@@ -63,7 +63,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fEtaRange=maxeta;
   }
 
-  void SetYear(Int_t year){fYear=year;}
+  void SetYear(Int_t year);
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}
   void SetSmearMC(Double_t smearp, Double_t smeardedx){
@@ -83,6 +83,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   enum {kNbins=22};
   
   AliESDEvent *fESD; //ESD object
+  AliESDtrackCuts *fesdTrackCutsMult;//cuts for multiplicity 
+  
+  
   TList *fOutput; //! tlist with output
   TH1F *fHistNEvents; //! histo with number of events
   TH1F *fHistMult; //! histo with multiplicity of the events
@@ -199,7 +202,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 3);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 4);
 };
 
 #endif

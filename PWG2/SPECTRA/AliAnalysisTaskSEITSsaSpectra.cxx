@@ -51,6 +51,7 @@ ClassImp(AliAnalysisTaskSEITSsaSpectra)
 AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
 AliAnalysisTaskSE("Task CFits"),
   fESD(0),
+  fesdTrackCutsMult(0),
   fOutput(0),
   fHistNEvents(0),
   fHistMult(0),
@@ -86,6 +87,21 @@ AliAnalysisTaskSE("Task CFits"),
   Double_t xbins[kNbins+1]={0.08,0.10,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.0};
   for(Int_t iBin=0; iBin<kNbins+1; iBin++) fPtBinLimits[iBin]=xbins[iBin];
   fRandGener=new TRandom3(0);
+  fesdTrackCutsMult = new AliESDtrackCuts;
+   // TPC  
+  fesdTrackCutsMult->SetMinNClustersTPC(70);
+  fesdTrackCutsMult->SetMaxChi2PerClusterTPC(4);
+  fesdTrackCutsMult->SetAcceptKinkDaughters(kFALSE);
+  fesdTrackCutsMult->SetRequireTPCRefit(kTRUE);
+  // ITS
+  fesdTrackCutsMult->SetRequireITSRefit(kTRUE);
+  fesdTrackCutsMult->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					     AliESDtrackCuts::kAny);
+  fesdTrackCutsMult->SetDCAToVertex2D(kFALSE);
+  fesdTrackCutsMult->SetRequireSigmaToVertex(kFALSE);
+  fesdTrackCutsMult->SetEtaRange(-0.8,+0.8);
+  fesdTrackCutsMult->SetPtRange(0.15, 1e10);					     
+  SetYear(2010);
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -139,6 +155,19 @@ Double_t AliAnalysisTaskSEITSsaSpectra::CookdEdx(Double_t *s) const {
   return sumamp/sumweight;
 }
 
+
+//________________________________________________________________________
+void AliAnalysisTaskSEITSsaSpectra::SetYear(Int_t year){
+  // Set year dependent quantities
+  fYear=year;
+  if(fYear==2009){
+    fesdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/TMath::Power(pt,0.9)");  //2009 standard cut
+    fesdTrackCutsMult->SetMaxDCAToVertexZ(20); //2009 standard cut
+  }else{
+    fesdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); //2010 standard cut
+    fesdTrackCutsMult->SetMaxDCAToVertexZ(2); //2010 standard cut
+  }
+}
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSEITSsaSpectra::DCAcut(Double_t impactXY, Double_t impactZ, Double_t pt, Bool_t optMC) const {
@@ -465,7 +494,10 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   fOutput->Add(fNtupleNSigma);
   fNtupleMC = new TNtuple("fNtupleMC","fNtupleMC","ptMC:pdgcode:signMC:etaMC:yMC:isph:evSel:run");
   fOutput->Add(fNtupleMC);
-  
+
+  // Post output data.
+  PostData(1,fOutput);
+
   Printf("end of CreateOutputObjects");
 }
 
@@ -482,29 +514,11 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   fHistNEvents->Fill(0);
 
   //selection on the event multiplicity
-  AliESDtrackCuts* esdTrackCutsMult = new AliESDtrackCuts;
-  // TPC  
-  esdTrackCutsMult->SetMinNClustersTPC(70);
-  esdTrackCutsMult->SetMaxChi2PerClusterTPC(4);
-  esdTrackCutsMult->SetAcceptKinkDaughters(kFALSE);
-  esdTrackCutsMult->SetRequireTPCRefit(kTRUE);
-  // ITS
-  esdTrackCutsMult->SetRequireITSRefit(kTRUE);
-  esdTrackCutsMult->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-					     AliESDtrackCuts::kAny);
-  if(fYear==2009){
-    esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/TMath::Power(pt,0.9)");  //2009 standard cut
-    esdTrackCutsMult->SetMaxDCAToVertexZ(20); //2009 standard cut
-  }else{
-    esdTrackCutsMult->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01"); //2010 standard cut
-    esdTrackCutsMult->SetMaxDCAToVertexZ(2); //2010 standard cut
-  }
-  esdTrackCutsMult->SetDCAToVertex2D(kFALSE);
-  esdTrackCutsMult->SetRequireSigmaToVertex(kFALSE);
-  esdTrackCutsMult->SetEtaRange(-0.8,+0.8);
-  esdTrackCutsMult->SetPtRange(0.15, 1e10);
   
-  Int_t multiplicity = esdTrackCutsMult->CountAcceptedTracks(fESD);
+ 
+
+  
+  Int_t multiplicity = fesdTrackCutsMult->CountAcceptedTracks(fESD);
   
   if(fLowMult>-1)
     {
