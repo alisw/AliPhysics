@@ -1302,6 +1302,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     suma2+=ampWithBelow[icl]*ampWithBelow[icl];
     sumn++;
   }
+  delete [] ampWithBelow;
   Float_t mean =suma/sumn;
   Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
   //
