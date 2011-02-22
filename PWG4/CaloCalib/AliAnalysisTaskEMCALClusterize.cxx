@@ -53,6 +53,7 @@
 #include "AliEMCALDigit.h"
 #include "AliCaloCalibPedestal.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALRecoUtils.h"
 
 #include "AliAnalysisTaskEMCALClusterize.h"
 
@@ -66,7 +67,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kTRUE)
-  , fRun(-1)
+  , fRun(-1),            fRecoUtils(0)
   
   {
   //ctor
@@ -75,7 +76,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
-  fBranchNames="ESD:AliESDHeader.,EMCALCells.";
+  fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
+  fRecoUtils       = new AliEMCALRecoUtils();
 }
 
 //________________________________________________________________________
@@ -86,7 +88,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kFALSE)
-  , fRun(-1)
+  , fRun(-1),            fRecoUtils(0)
 {
   // Constructor
   for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = 0 ;
@@ -94,7 +96,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(100);
   fRecParam        = new AliEMCALRecParam;
-  fBranchNames="ESD:AliESDHeader.,EMCALCells.";
+  fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
+  fRecoUtils       = new AliEMCALRecoUtils();
 }
 
 //________________________________________________________________________
@@ -117,8 +120,10 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
     delete fCaloClusterArr; 
   }
 
-  if(fClusterizer) {delete fClusterizer;}
-  if(fUnfolder)    {delete fUnfolder;   }
+  if(fClusterizer) delete fClusterizer;
+  if(fUnfolder)    delete fUnfolder;   
+  if(fRecoUtils)   delete fRecoUtils;
+
 }
 
 //-------------------------------------------------------------------
@@ -143,7 +148,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
   
-  AliVEvent * event = InputEvent();
+  AliVEvent   * event    = InputEvent();
+  AliESDEvent * esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
+
   if (!event) {
     Error("UserExec","Event not available");
     return;
@@ -304,6 +311,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     digitsTree  ->Delete("all");
   }
   
+  //Recalculate track-matching for the new clusters, only with ESDs
+  if(esdevent)fRecoUtils->FindMatches(esdevent,fCaloClusterArr);
+
+  
   //-------------------------------------------------------------------------------------
   //Put the new clusters in the AOD list
   //-------------------------------------------------------------------------------------
@@ -314,6 +325,16 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++){
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
     //if(Entry()==0) Info("UserExec","newCluster E %f\n", newCluster->E());
+    
+    //Add matched track, if any, only with ESDs
+    if(esdevent){
+      Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
+      if(trackIndex >= 0){
+        newCluster->AddTrackMatched(event->GetTrack(trackIndex));
+        if(DebugLevel() > 1) 
+          Info("UserExec","Matched Track index %d to new cluster %d \n",trackIndex,i);
+      }
+    }
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
   }
   
@@ -329,7 +350,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   AliVEvent * event = InputEvent();
   if (!event)
   {
-    Warning("AccessODCD","Event not available!!!");
+    Warning("AccessOCDB","Event not available!!!");
     return kFALSE;
   }
 
@@ -341,10 +362,18 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     Info("AccessODCD()"," Begin");
 
   fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+  
+  
   AliCDBManager *cdb = AliCDBManager::Instance();
-  if (fOCDBpath.Length())
+    
+
+  if (fOCDBpath.Length()){
     cdb->SetDefaultStorage(fOCDBpath.Data());
+    Info("AccessOCDB","Default storage %s",fOCDBpath.Data());
+  }
+  
   cdb->SetRun(event->GetRunNumber());
+
   //
   // EMCAL from RAW OCDB
   if (fOCDBpath.Contains("alien:"))
@@ -352,14 +381,17 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     cdb->SetSpecificStorage("EMCAL/Calib/Data","alien://Folder=/alice/data/2010/OCDB");
     cdb->SetSpecificStorage("EMCAL/Calib/Pedestals","alien://Folder=/alice/data/2010/OCDB");
   }
+
   TString path = cdb->GetDefaultStorage()->GetBaseFolder();
-    
+  
   // init parameters:
+  
   //Get calibration parameters	
   if(!fCalibData)
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
       AliCDBManager::Instance()->Get("EMCAL/Calib/Data");
+    
     if (entry) fCalibData =  (AliEMCALCalibData*) entry->GetObject();
   }
   
@@ -371,6 +403,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
       AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals");
+    
     if (entry) fPedestalData =  (AliCaloCalibPedestal*) entry->GetObject();
   }
     
@@ -378,6 +411,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
     AliFatal("Dead map not found in CDB!");
 
   InitClusterization();
+  
   return kTRUE;
 }
 

@@ -874,6 +874,10 @@ void AliCaloTrackReader::FillInputEMCAL() {
         }//EMCAL cluster
       }// cluster exists
     }// cluster loop
+    
+    //Recalculate track matching
+    if(fDataType==kESD)GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
+    
   }//Get the clusters from the input event
   else {
     TClonesArray * clusterList = dynamic_cast<TClonesArray*> (fOutputEvent->FindListObject(fEMCALClustersListName));
@@ -887,12 +891,14 @@ void AliCaloTrackReader::FillInputEMCAL() {
       //printf("E %f\n",clus->E());
       if (clus) FillInputEMCALAlgorithm(clus, iclus);
       else printf("AliCaloTrackReader::FillInputEMCAL() - Null cluster in list!\n");
+      
     }// cluster loop
+    
+    //Recalculate track matching, not necessary, already done in the reclusterization task
+    //GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent,clusterList);
+    
   }
-  
-  //Recalculate track matching
-  GetCaloUtils()->RecalculateClusterTrackMatching(fInputEvent);
-  
+    
   //fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();
   if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d\n",  fAODEMCAL->GetEntriesFast());//fAODEMCALNormalInputEntries);
   
