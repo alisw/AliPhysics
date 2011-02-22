@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-set(ROOTSYS $ENV{ROOTSYS})
+set(ROOTSYS $ENV{ROOTSYS} CACHE STRING "" FORCE)
 if(NOT ROOTSYS)
   message(FATAL_ERROR "Environment variable $ROOTSYS is not set !")
 else()
