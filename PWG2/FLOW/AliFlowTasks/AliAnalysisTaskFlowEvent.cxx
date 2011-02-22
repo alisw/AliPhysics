@@ -276,12 +276,12 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
     if(!FMDdata) {
       cout<<" No FMDdata "<<endl;
-      exit(2);
+      return;
     }
     histFMD = dynamic_cast<TH2F*>(FMDdata->FindObject("dNdetadphiHistogramTrVtx"));
     if (!histFMD) {
       cout<< "No histFMD"<<endl;
-      exit(2);
+      return;
     }
   }
 
@@ -309,7 +309,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   }
 
   // Make the FlowEvent for MC input
-  if (fAnalysisType == "MC")
+  else if (fAnalysisType == "MC")
   {
     // Process MC truth, therefore we receive the AliAnalysisManager and ask it for the AliMCEventHandler
     // This handler can return the current MC event
@@ -365,10 +365,10 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (fRPType == "Global") {
       flowEvent = new AliFlowEvent(myESD,fCFManager1,fCFManager2);
     }
-    if (fRPType == "TPCOnly") {
+    else if (fRPType == "TPCOnly") {
       flowEvent = new AliFlowEvent(myESD,fCFManager2,kFALSE);
     }
-    if (fRPType == "TPCHybrid") {
+    else if (fRPType == "TPCHybrid") {
       flowEvent = new AliFlowEvent(myESD,fCFManager2,kTRUE);
     }
     else if (fRPType == "Tracklet"){
@@ -427,6 +427,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     {
       flowEvent = new AliFlowEvent(myESD, mcEvent, AliFlowEvent::kMCkine, fCFManager1, fCFManager2 );
     }
+    if (!flowEvent) return;
     // if monte carlo event get reaction plane from monte carlo (depends on generator)
     if (mcEvent && mcEvent->GenEventHeader()) flowEvent->SetMCReactionPlaneAngle(mcEvent);
     //set reference multiplicity, TODO: maybe move it to the constructor?
@@ -477,6 +478,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       }
     }
   }
+
+  if (!flowEvent) return; //shuts up coverity
 
   //check final event cuts
   Int_t mult = flowEvent->NumberOfTracks();

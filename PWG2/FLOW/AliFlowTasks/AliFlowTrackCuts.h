@@ -37,7 +37,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   virtual ~AliFlowTrackCuts();
 
   static AliFlowTrackCuts* GetStandardTPCOnlyTrackCuts();
+  static AliFlowTrackCuts* GetStandardTPCOnlyTrackCuts2010();
+  static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
   static AliFlowTrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
+
+  Int_t Count(AliVEvent* event=NULL);
 
   enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
   enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt, kTrackWithPtFromFirstMother };
