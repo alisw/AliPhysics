@@ -78,7 +78,7 @@ class AliTOFHeader : public TObject {
 
  private:
 
-  ClassDef(AliTOFHeader,1)  // Class for TOF event times and so on
+  ClassDef(AliTOFHeader,2)  // Class for TOF event times and so on
 };
 
 #endif
