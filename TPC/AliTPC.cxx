@@ -1212,10 +1212,11 @@ void AliTPC::SetDefaults(){
   AliRunLoader* rl = (AliRunLoader*)fLoader->GetEventFolder()->FindObject(AliRunLoader::GetRunLoaderName());
   rl->CdGAFile();
   //AliTPCParamSR *param=(AliTPCParamSR*)gDirectory->Get("75x40_100x60");
-  gDirectory->Get("75x40_100x60");
+  //gDirectory->Get("75x40_100x60");
   AliTPCParamSR *param = (AliTPCParamSR*)AliTPCcalibDB::Instance()->GetParameters();
   if(!param){
     AliFatal("No TPC parameters found");
+    return;
   }
   if (!param->IsGeoRead()){
       //
