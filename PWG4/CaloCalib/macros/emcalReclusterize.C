@@ -93,26 +93,24 @@ void emcalReclusterize(Int_t mode=mLocal)
       }
     
     mgr->SetDebugLevel(1);
+
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
-    AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     
     // ESD physics selection task
     if(kInputData == "ESD" && kUsePhysSel){
       gROOT->LoadMacro("AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
-    
-    // Create containers for input/output
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
  
     AliAnalysisTaskEMCALClusterize * clusterize = new AliAnalysisTaskEMCALClusterize("EMCALClusterize");
     if(kUsePhysSel)clusterize->SelectCollisionCandidates();
-    //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
+    //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB"); // by default it is raw://
     clusterize->FillAODFile(kFALSE); // fill aod.root with clusters?, not really needed for analysis.
     clusterize->JustUnfold(kTRUE); // if TRUE, do just unfolding, do not recluster cells
     AliEMCALRecParam * params = clusterize->GetRecParam();

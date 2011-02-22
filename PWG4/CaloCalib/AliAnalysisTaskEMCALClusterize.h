@@ -16,6 +16,8 @@ class AliCaloCalibPedestal;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
 class AliEMCALRecParam;
+class AliEMCALRecoUtils;
+
 
 #include "AliAnalysisTaskSE.h"
 
@@ -38,7 +40,7 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   //Geometry methods
   void           SetGeometryName(TString &name)                 { fGeomName = name             ; }
-  TString        GeometryName() const                           { return fGeomName             ; }  
+  TString        GeometryName()                          const  { return fGeomName             ; }  
   void           SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
   void           SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; }
@@ -49,8 +51,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   //Algorithms settings
   void           JustUnfold(Bool_t yesno)                       { fJustUnfold          = yesno ; }
-  AliEMCALRecParam * GetRecParam()    const                     { return fRecParam             ; }
+  AliEMCALRecParam * GetRecParam()                       const  { return fRecParam             ; }
   void           InitClusterization();
+  
+  void SetEMCALRecoUtils(AliEMCALRecoUtils * ru)                { fRecoUtils           = ru    ; }
+  AliEMCALRecoUtils* GetRecoUtils()                      const  { return fRecoUtils            ; }
   
  private:
     
@@ -84,8 +89,12 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   TString                fOutputAODBranchName;  // New of output AOD branch
   Bool_t                 fFillAODFile;      // Fill the output AOD file with the new clusters, 
                                             // if not they will be only available for the event they were generated
- Int_t                   fRun;              //!run number
-  ClassDef(AliAnalysisTaskEMCALClusterize, 1);
+  Int_t                  fRun;              //!run number
+  
+  AliEMCALRecoUtils*     fRecoUtils;        // Access to factorized reconstruction algorithms
+  
+  
+  ClassDef(AliAnalysisTaskEMCALClusterize, 2);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
