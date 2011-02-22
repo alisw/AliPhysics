@@ -87,7 +87,7 @@ AliCentralityGlauberFit::AliCentralityGlauberFit(const char *filename) :
 
   TFile *f = 0;
   if (filename) {  // glauber file
-    TFile::Open(filename);
+    f = TFile::Open(filename);
     fGlauntuple = (TNtuple*) f->Get("nt_Pb_Pb");
     fGlauntuple->SetBranchAddress("Npart",&fNpart);
     fGlauntuple->SetBranchAddress("Ncoll",&fNcoll);
