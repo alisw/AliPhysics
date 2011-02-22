@@ -748,10 +748,75 @@ void AliAnalysisTaskSESignificance::FillD04p(AliAODRecoDecayHF* /*d*/,TClonesArr
 
 }
 
-void AliAnalysisTaskSESignificance::FillLambdac(AliAODRecoDecayHF* /*d*/,TClonesArray */*arrayMC*/,Int_t /*index*/,Int_t /*matchtoMC*/){
-  AliInfo("Lambdac channel not implemented\n");
+void AliAnalysisTaskSESignificance::FillLambdac(AliAODRecoDecayHF* d,TClonesArray* arrayMC,Int_t index,Int_t isSel){
 
- 
+  // Mass hypothesis
+  Double_t masses[2];
+  Int_t pdgdaughtersLc[3]={2212,321,211}; //p,K,pi
+  masses[0]=d->InvMass(fNProngs,(UInt_t*)pdgdaughtersLc);
+  Int_t pdgdaughtersLc2[3]={211,321,2212}; //pi,K,p
+  masses[1]=d->InvMass(fNProngs,(UInt_t*)pdgdaughtersLc2);
+
+
+  if(fPartOrAndAntiPart==0 || fPartOrAndAntiPart==d->GetCharge()) {
+    
+    // isSel=1 : p K pi ; isSel=2 : pi K p ;
+    if(isSel==1 || isSel==3) fMassHist[index]->Fill(masses[0]);
+    if(isSel>=2) fMassHist[index]->Fill(masses[1]);
+    
+    // Check the MC truth
+    if(fReadMC){
+
+      Int_t ispKpi = 0;
+      Int_t ispiKp = 0;
+      ispKpi = isSel&1;
+      ispiKp = isSel&2;
+      Int_t matchtoMC = -1;
+      //
+      Int_t pPDG = 2212; // p 
+      Int_t kPDG = 321;  // K
+      Int_t piPDG = 211; // pi
+      Int_t absPdgMom = 4122;
+      matchtoMC = d->MatchToMC(absPdgMom,arrayMC,fNProngs,pdgdaughtersLc);
+
+      if(matchtoMC>=0){
+
+	AliAODMCParticle *dMC = (AliAODMCParticle*)arrayMC->At(matchtoMC);
+	Int_t pdgMC = dMC->GetPdgCode();
+	if (TMath::Abs(pdgMC)!=absPdgMom) AliInfo("What's up, isn't it a lambdac ?!");
+	Int_t labDau0 = ((AliAODTrack*)d->GetDaughter(0))->GetLabel();
+	AliAODMCParticle* p0 = (AliAODMCParticle*)arrayMC->UncheckedAt(labDau0);
+	Int_t pdgCode0 = TMath::Abs(p0->GetPdgCode());
+	Int_t labDau1 = ((AliAODTrack*)d->GetDaughter(1))->GetLabel();
+	AliAODMCParticle* p1 = (AliAODMCParticle*)arrayMC->UncheckedAt(labDau1);
+	Int_t pdgCode1 = TMath::Abs(p1->GetPdgCode());
+	Int_t labDau2 = ((AliAODTrack*)d->GetDaughter(2))->GetLabel();
+	AliAODMCParticle* p2 = (AliAODMCParticle*)arrayMC->UncheckedAt(labDau2);
+	Int_t pdgCode2 = TMath::Abs(p2->GetPdgCode());
+
+	// Fill in the histograms in case of p K pi decays
+	if(ispKpi==1){
+	  if(pdgCode0==pPDG && pdgCode1==kPDG && pdgCode2==piPDG){
+	    fSigHist[index]->Fill(masses[0]);
+	  } else {
+	    fRflHist[index]->Fill(masses[0]);
+	  }
+	}
+	// Fill in the histograms in case of pi K p decays
+	if(ispiKp==2){
+	  if(pdgCode0==piPDG && pdgCode1==kPDG && pdgCode2==pPDG){
+	    fSigHist[index]->Fill(masses[1]);
+	  } else {
+	    fRflHist[index]->Fill(masses[1]);
+	  }
+	}
+      } else {
+	if(ispKpi==1) fBkgHist[index]->Fill(masses[0]);
+	if(ispiKp==2) fBkgHist[index]->Fill(masses[1]);
+      }
+    }
+  }
+
 
 }
 
