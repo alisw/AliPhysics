@@ -2250,7 +2250,7 @@ void   AliTPCCorrection::MakeDistortionMap(THnSparse * his0, TTreeSRedirector * 
 	  "dsec="<<dsec<<
 	  "\n";
 	delete hisDelta;
-	printf("%f\t%f\t%f\t%f\t%f\n",x3,x2,x1, entries,mean);
+	//printf("%f\t%f\t%f\t%f\t%f\n",x3,x2,x1, entries,mean);
       }
       delete his2;
     }
