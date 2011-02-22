@@ -219,11 +219,12 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       cout << "Init in CAF mode" << endl;
     
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+      Char_t* alienuser = gSystem->Getenv("alien_API_USER");
+      TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : “alice-caf.cern.ch”, workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-13-AN");
- 
+      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-16-AN");
+
 
       // Enable the needed package
       // FIXME: what if I don't want to use par files?
