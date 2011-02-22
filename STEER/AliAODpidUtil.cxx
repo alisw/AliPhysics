@@ -99,7 +99,7 @@ void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
   }
 
   if (mismatch)
-    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
 
 
   return;
@@ -216,7 +216,7 @@ void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Double_t *p) const
   }
 
   if (mismatch)
-    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
 
   return;
 }

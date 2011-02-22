@@ -98,7 +98,7 @@ void AliESDpid::MakeTPCPID(AliESDtrack *track) const
     }
 
     if (mismatch)
-       for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+       for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
 
     track->SetTPCpid(p);
 
@@ -232,7 +232,7 @@ void AliESDpid::MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const
   }
 
   if (mismatch)
-    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1/AliPID::kSPECIES;
+    for (Int_t j=0; j<AliPID::kSPECIES; j++) p[j]=1./AliPID::kSPECIES;
 
   track->SetTOFpid(p);
 
