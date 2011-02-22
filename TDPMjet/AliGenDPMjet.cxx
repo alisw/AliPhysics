@@ -171,9 +171,9 @@ void AliGenDPMjet::Generate()
 {
 // Generate one event
 
-  Float_t polar[3]    =   {0,0,0};
-  Float_t origin[3]   =   {0,0,0};
-  Float_t p[3];
+  Double_t polar[3]    =   {0,0,0};
+  Double_t origin[3]   =   {0,0,0};
+  Double_t p[4]        =   {0};
   Float_t tof;
 
 //  converts from mm/c to s
@@ -330,6 +330,7 @@ void AliGenDPMjet::Generate()
 	      p[0] = iparticle->Px();
 	      p[1] = iparticle->Py();
 	      p[2] = iparticle->Pz();
+	      p[3] = iparticle->Energy();
 	      origin[0] = fVertex[0]+iparticle->Vx()/10; // [cm]
 	      origin[1] = fVertex[1]+iparticle->Vy()/10; // [cm]
 	      origin[2] = fVertex[2]+iparticle->Vz()/10; // [cm]
@@ -347,7 +348,11 @@ void AliGenDPMjet::Generate()
 
 	      
 	      Bool_t tFlag = (fTrackIt && (ks == 1));
-	      PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
+	      PushTrack(tFlag, imo, kf, 
+			p[0], p[1], p[2], p[3], 
+			origin[0], origin[1], origin[2], tof,
+			polar[0], polar[1], polar[2],
+			kPNoProcess, nt, 1., ks);
 	      KeepTrack(nt);
 	      newPos[i] = nt;
 	  } // if selected
