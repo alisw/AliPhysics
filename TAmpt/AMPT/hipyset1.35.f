@@ -6091,7 +6091,7 @@ C...LUDATRA, with initial values for the random number generator.
       DATA MRLU/19780503,0,0,97,33,0/   
     
       END   
-      SUBROUTINE PYINIT(FRAME,BEAM,TARGET,WIN)  
+      SUBROUTINE PYINITA(FRAME,BEAM,TARGET,WIN)  
     
 C...Initializes the generation procedure; finds maxima of the   
 C...differential cross-sections to be used for weighting.   
@@ -6130,7 +6130,7 @@ C...Identify beam and target particles and initialize kinematics.
       CHFRAM=FRAME//' ' 
       CHBEAM=BEAM//' '  
       CHTARG=TARGET//' '    
-      CALL PYINKI(CHFRAM,CHBEAM,CHTARG,WIN) 
+      CALL PYINKIA(CHFRAM,CHBEAM,CHTARG,WIN) 
     
 C...Select partonic subprocesses to be included in the simulation.  
       IF(MSEL.NE.0) THEN    
@@ -6279,7 +6279,7 @@ C...Choose Lambda value to use in alpha-strong.
       ENDIF 
     
 C...Initialize widths and partial widths for resonances.    
-      CALL PYINRE   
+      CALL PYINREA   
     
 C...Reset variables for cross-section calculation.  
       DO 150 I=0,200    
@@ -6289,23 +6289,23 @@ C...Reset variables for cross-section calculation.
       VINT(108)=0.  
     
 C...Find parametrized total cross-sections. 
-      IF(MINT(43).EQ.4) CALL PYXTOT 
+      IF(MINT(43).EQ.4) CALL PYXTOTA 
     
 C...Maxima of differential cross-sections.  
-      IF(MSTP(121).LE.0) CALL PYMAXI    
+      IF(MSTP(121).LE.0) CALL PYMAXIA    
     
 C...Initialize possibility of overlayed events. 
       IF(MSTP(131).NE.0) CALL PYOVLY(1) 
     
 C...Initialize multiple interactions with variable impact parameter.    
       IF(MINT(43).EQ.4.AND.(MINT(45).NE.0.OR.MSTP(131).NE.0).AND.   
-     &MSTP(82).GE.2) CALL PYMULT(1) 
+     &MSTP(82).GE.2) CALL PYMULTA(1) 
 C      IF(MSTP(122).GE.1) WRITE(MSTU(11),1600)  
     
 C...Formats for initialization information. 
 clin 1000 FORMAT(///20X,'The Lund Monte Carlo - PYTHIA version ',I1,'.',I1/ 
 clin     &20X,'**  Last date of change:  ',I2,1X,A3,1X,I4,'  **'/)  
-clin 1100 FORMAT('1',18('*'),1X,'PYINIT: initialization of PYTHIA ',    
+clin 1100 FORMAT('1',18('*'),1X,'PYINITA: initialization of PYTHIA ',    
 clin     &'routines',1X,17('*'))    
  1200 FORMAT(1X,'Error: process number ',I3,' not meaningful for ',A6,  
      &'-',A6,' interactions.'/1X,'Execution stopped!')  
@@ -6315,7 +6315,7 @@ clin     &'routines',1X,17('*'))
      &1X,'Execution stopped!')  
  1500 FORMAT(1X,'Error: no subprocess switched on.'/    
      &1X,'Execution stopped.')  
-clin 1600 FORMAT(/1X,22('*'),1X,'PYINIT: initialization completed',1X,  
+clin 1600 FORMAT(/1X,22('*'),1X,'PYINITA: initialization completed',1X,  
 clin     &22('*'))  
     
       RETURN    
@@ -6366,7 +6366,7 @@ C...Generate variables of hard scattering.
       IF(IOVL.EQ.1) NGEN(0,2)=NGEN(0,2)+1   
       MINT(31)=0    
       MINT(51)=0    
-      CALL PYRAND   
+      CALL PYRANDA   
       ISUB=MINT(1)  
       IF(IOVL.EQ.1) THEN    
         NGEN(ISUB,2)=NGEN(ISUB,2)+1 
@@ -6402,24 +6402,24 @@ C...Store information on hard interaction.
       IF(ISUB.LE.90.OR.ISUB.GE.95) THEN 
 C...Hard scattering (including low-pT): 
 C...reconstruct kinematics and colour flow of hard scattering.  
-        CALL PYSCAT 
+        CALL PYSCATA 
         IF(MINT(51).EQ.1) GOTO 100  
     
 C...Showering of initial state partons (optional).  
         IPU1=MINT(84)+1 
         IPU2=MINT(84)+2 
         IF(MSTP(61).GE.1.AND.MINT(43).NE.1.AND.ISUB.NE.95)  
-     &  CALL PYSSPA(IPU1,IPU2)  
+     &  CALL PYSSPAA(IPU1,IPU2)  
         NSAV1=N 
     
 C...Multiple interactions.  
         IF(MSTP(81).GE.1.AND.MINT(43).EQ.4.AND.ISUB.NE.95)  
-     &  CALL PYMULT(6)  
+     &  CALL PYMULTA(6)  
         MINT(1)=ISUB    
         NSAV2=N 
     
 C...Hadron remnants and primordial kT.  
-        CALL PYREMN(IPU1,IPU2)  
+        CALL PYREMNA(IPU1,IPU2)  
         IF(MINT(51).EQ.1) GOTO 100  
         NSAV3=N 
     
@@ -6452,11 +6452,11 @@ C...Sum up transverse and longitudinal momenta.
         ENDIF   
     
 C...Decay of final state resonances.    
-        IF(MSTP(41).GE.1.AND.ISUB.NE.95) CALL PYRESD    
+        IF(MSTP(41).GE.1.AND.ISUB.NE.95) CALL PYRESDA    
     
       ELSE  
 C...Diffractive and elastic scattering. 
-        CALL PYDIFF 
+        CALL PYDIFFA 
         IF(IOVL.EQ.1) THEN  
           PARI(65)=2.*PARI(17)  
           PARI(66)=PARI(65) 
@@ -6612,14 +6612,14 @@ C...Information on overlayed events.
       ENDIF 
     
 C...Transform to the desired coordinate frame.  
-  200 CALL PYFRAM(MSTP(124))    
+  200 CALL PYFRAMA(MSTP(124))    
     
       RETURN    
       END   
     
 C*********************************************************************  
     
-      SUBROUTINE PYINKI(CHFRAM,CHBEAM,CHTARG,WIN)   
+      SUBROUTINE PYINKIA(CHFRAM,CHBEAM,CHTARG,WIN)   
     
 C...Identifies the two incoming particles and sets up kinematics,   
 C...including rotations and boosts to/from CM frame.    
@@ -6804,7 +6804,7 @@ clin 1700 FORMAT(1X,'I',15X,A8,3(2X,F10.3,1X),15X,'I')
     
 C*********************************************************************  
     
-      SUBROUTINE PYINRE 
+      SUBROUTINE PYINREA 
     
 C...Calculates full and effective widths of guage bosons, stores masses 
 C...and widths, rescales coefficients to be used for resonance  
@@ -6843,7 +6843,7 @@ C...Calculate full and effective widths of gauge bosons.
 C...W+/-:   
       WMAS=PMAS(24,1)   
       WFAC=AEM/(24.*XW)*WMAS    
-      CALL PYWIDT(24,WMAS,WDTP,WDTE)    
+      CALL PYWIDTA(24,WMAS,WDTP,WDTE)    
       WIDS(24,1)=((WDTE(0,1)+WDTE(0,2))*(WDTE(0,1)+WDTE(0,3))+  
      &(WDTE(0,1)+WDTE(0,2)+WDTE(0,1)+WDTE(0,3))*(WDTE(0,4)+WDTE(0,5))+  
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6856,7 +6856,7 @@ C...W+/-:
 C...H+/-:   
       HCMAS=PMAS(37,1)  
       HCFAC=AEM/(8.*XW)*(HCMAS/WMAS)**2*HCMAS   
-      CALL PYWIDT(37,HCMAS,WDTP,WDTE)   
+      CALL PYWIDTA(37,HCMAS,WDTP,WDTE)   
       WIDS(37,1)=((WDTE(0,1)+WDTE(0,2))*(WDTE(0,1)+WDTE(0,3))+  
      &(WDTE(0,1)+WDTE(0,2)+WDTE(0,1)+WDTE(0,3))*(WDTE(0,4)+WDTE(0,5))+  
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6869,7 +6869,7 @@ C...H+/-:
 C...Z0: 
       ZMAS=PMAS(23,1)   
       ZFAC=AEM/(48.*XW*(1.-XW))*ZMAS    
-      CALL PYWIDT(23,ZMAS,WDTP,WDTE)    
+      CALL PYWIDTA(23,ZMAS,WDTP,WDTE)    
       WIDS(23,1)=((WDTE(0,1)+WDTE(0,2))**2+ 
      &2.*(WDTE(0,1)+WDTE(0,2))*(WDTE(0,4)+WDTE(0,5))+   
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6882,7 +6882,7 @@ C...Z0:
 C...H0: 
       HMAS=PMAS(25,1)   
       HFAC=AEM/(8.*XW)*(HMAS/WMAS)**2*HMAS  
-      CALL PYWIDT(25,HMAS,WDTP,WDTE)    
+      CALL PYWIDTA(25,HMAS,WDTP,WDTE)    
       WIDS(25,1)=((WDTE(0,1)+WDTE(0,2))**2+ 
      &2.*(WDTE(0,1)+WDTE(0,2))*(WDTE(0,4)+WDTE(0,5))+   
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6895,7 +6895,7 @@ C...H0:
 C...Z'0:    
       ZPMAS=PMAS(32,1)  
       ZPFAC=AEM/(48.*XW*(1.-XW))*ZPMAS  
-      CALL PYWIDT(32,ZPMAS,WDTP,WDTE)   
+      CALL PYWIDTA(32,ZPMAS,WDTP,WDTE)   
       WIDS(32,1)=((WDTE(0,1)+WDTE(0,2)+WDTE(0,3))**2+   
      &2.*(WDTE(0,1)+WDTE(0,2))*(WDTE(0,4)+WDTE(0,5))+   
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6908,7 +6908,7 @@ C...Z'0:
 C...R:  
       RMAS=PMAS(40,1)   
       RFAC=0.08*RMAS/((MSTP(1)-1)*(1.+6.*(1.+ULALPS(RMAS**2)/PARU(1)))) 
-      CALL PYWIDT(40,RMAS,WDTP,WDTE)    
+      CALL PYWIDTA(40,RMAS,WDTP,WDTE)    
       WIDS(40,1)=((WDTE(0,1)+WDTE(0,2))*(WDTE(0,1)+WDTE(0,3))+  
      &(WDTE(0,1)+WDTE(0,2)+WDTE(0,1)+WDTE(0,3))*(WDTE(0,4)+WDTE(0,5))+  
      &2.*WDTE(0,4)*WDTE(0,5))/WDTP(0)**2    
@@ -6975,7 +6975,7 @@ C...Special cases in treatment of gamma*/Z0/Z'0: redefine process name.
     
 C*********************************************************************  
     
-      SUBROUTINE PYXTOT 
+      SUBROUTINE PYXTOTA 
     
 C...Parametrizes total, double diffractive, single diffractive and  
 C...elastic cross-sections for different energies and beams.    
@@ -7078,7 +7078,7 @@ C...Save cross-sections in common block PYPARA.
     
 C*********************************************************************  
     
-      SUBROUTINE PYMAXI 
+      SUBROUTINE PYMAXIA 
     
 C...Finds optimal set of coefficients for kinematical variable selection    
 C...and the maximum of the part of the differential cross-section used  
@@ -7215,34 +7215,34 @@ C...Reset coefficients of cross-section weighting.
     
 C...Find limits and select tau, y*, cos(theta-hat) and tau' values, 
 C...in grid of phase space points.  
-      CALL PYKLIM(1)    
+      CALL PYKLIMA(1)    
       NACC=0    
       DO 120 ITRY=1,NTRY    
       IF(MOD(ITRY-1,NPTS(2)*NPTS(3)*NPTS(4)).EQ.0) THEN 
         MTAU=1+(ITRY-1)/(NPTS(2)*NPTS(3)*NPTS(4))   
-        CALL PYKMAP(1,MTAU,0.5) 
-        IF(ISTSB.EQ.3.OR.ISTSB.EQ.4) CALL PYKLIM(4) 
+        CALL PYKMAPA(1,MTAU,0.5) 
+        IF(ISTSB.EQ.3.OR.ISTSB.EQ.4) CALL PYKLIMA(4) 
       ENDIF 
       IF((ISTSB.EQ.3.OR.ISTSB.EQ.4).AND.MOD(ITRY-1,NPTS(3)*NPTS(4)).    
      &EQ.0) THEN    
         MTAUP=1+MOD((ITRY-1)/(NPTS(3)*NPTS(4)),NPTS(2)) 
-        CALL PYKMAP(4,MTAUP,0.5)    
+        CALL PYKMAPA(4,MTAUP,0.5)    
       ENDIF 
-      IF(MOD(ITRY-1,NPTS(3)*NPTS(4)).EQ.0) CALL PYKLIM(2)   
+      IF(MOD(ITRY-1,NPTS(3)*NPTS(4)).EQ.0) CALL PYKLIMA(2)   
       IF(MOD(ITRY-1,NPTS(4)).EQ.0) THEN 
         MYST=1+MOD((ITRY-1)/NPTS(4),NPTS(3))    
-        CALL PYKMAP(2,MYST,0.5) 
-        CALL PYKLIM(3)  
+        CALL PYKMAPA(2,MYST,0.5) 
+        CALL PYKLIMA(3)  
       ENDIF 
       IF(ISTSB.EQ.2.OR.ISTSB.EQ.4) THEN 
         MCTH=1+MOD(ITRY-1,NPTS(4))  
-        CALL PYKMAP(3,MCTH,0.5) 
+        CALL PYKMAPA(3,MCTH,0.5) 
       ENDIF 
       IF(ISUB.EQ.96) VINT(25)=VINT(21)*(1.-VINT(23)**2) 
     
 C...Calculate and store cross-section.  
       MINT(51)=0    
-      CALL PYKLIM(0)    
+      CALL PYKLIMA(0)    
       IF(MINT(51).EQ.1) GOTO 120    
       NACC=NACC+1   
       MVARPT(NACC,1)=MTAU   
@@ -7251,7 +7251,7 @@ C...Calculate and store cross-section.
       MVARPT(NACC,4)=MCTH   
       DO 110 J=1,30 
   110 VINTPT(NACC,J)=VINT(10+J) 
-      CALL PYSIGH(NCHN,SIGS)    
+      CALL PYSIGHA(NCHN,SIGS)    
       SIGSPT(NACC)=SIGS 
       IF(SIGS.GT.SIGSAM) SIGSAM=SIGS    
       IF(MSTP(122).GE.2) WRITE(MSTU(11),1100) MTAU,MTAUP,MYST,MCTH, 
@@ -7408,7 +7408,7 @@ C...Find two most promising maxima among points previously determined.
       DO 290 IACC=1,NACC    
       DO 250 J=1,30 
   250 VINT(10+J)=VINTPT(IACC,J) 
-      CALL PYSIGH(NCHN,SIGS)    
+      CALL PYSIGHA(NCHN,SIGS)    
       IEQ=0 
       DO 260 IMV=1,NMAX 
   260 IF(ABS(SIGS-SIGSMX(IMV)).LT.1E-4*(SIGS+SIGSMX(IMV))) IEQ=IMV  
@@ -7500,27 +7500,27 @@ C...Define new point in parameter space.
 C...Convert to relevant variables and find derived new limits.  
       IF(IVAR.EQ.1) THEN    
         VTAU=VNEW   
-        CALL PYKMAP(1,MTAU,VTAU)    
-        IF(ISTSB.EQ.3.OR.ISTSB.EQ.4) CALL PYKLIM(4) 
+        CALL PYKMAPA(1,MTAU,VTAU)    
+        IF(ISTSB.EQ.3.OR.ISTSB.EQ.4) CALL PYKLIMA(4) 
       ENDIF 
       IF(IVAR.LE.2.AND.(ISTSB.EQ.3.OR.ISTSB.EQ.4)) THEN 
         IF(IVAR.EQ.2) VTAUP=VNEW    
-        CALL PYKMAP(4,MTAUP,VTAUP)  
+        CALL PYKMAPA(4,MTAUP,VTAUP)  
       ENDIF 
-      IF(IVAR.LE.2) CALL PYKLIM(2)  
+      IF(IVAR.LE.2) CALL PYKLIMA(2)  
       IF(IVAR.LE.3) THEN    
         IF(IVAR.EQ.3) VYST=VNEW 
-        CALL PYKMAP(2,MYST,VYST)    
-        CALL PYKLIM(3)  
+        CALL PYKMAPA(2,MYST,VYST)    
+        CALL PYKLIMA(3)  
       ENDIF 
       IF(ISTSB.EQ.2.OR.ISTSB.EQ.4) THEN 
         IF(IVAR.EQ.4) VCTH=VNEW 
-        CALL PYKMAP(3,MCTH,VCTH)    
+        CALL PYKMAPA(3,MCTH,VCTH)    
       ENDIF 
       IF(ISUB.EQ.96) VINT(25)=VINT(21)*(1.-VINT(23)**2) 
     
 C...Evaluate cross-section. Save new maximum. Final maximum.    
-      CALL PYSIGH(NCHN,SIGS)    
+      CALL PYSIGHA(NCHN,SIGS)    
       SIGSSM(INEW)=SIGS 
       IF(SIGS.GT.SIGSAM) SIGSAM=SIGS    
       IF(MSTP(122).GE.2) WRITE(MSTU(11),1700) IMAX,IVAR,MVAR,IMOV,  
@@ -7562,7 +7562,7 @@ C...Format statements for maximization results.
  1600 FORMAT(1X,'Maximum search for given coefficients'/2X,'MAX VAR ',  
      &'MOD MOV   VNEW',7X,'tau',7X,'y*',8X,'cth',7X,'tau''',7X,'sigma') 
  1700 FORMAT(1X,4I4,F8.4,F11.7,F9.3,F11.6,F11.7,1P,E12.4)   
- 1800 FORMAT(/1X,8('*'),1X,'PYMAXI: summary of differential ',  
+ 1800 FORMAT(/1X,8('*'),1X,'PYMAXIA: summary of differential ',  
      &'cross-section maximum search',1X,8('*')) 
  1900 FORMAT(/11X,58('=')/11X,'I',38X,'I',17X,'I'/11X,'I  ISUB  ',  
      &'Subprocess name',15X,'I  Maximum value  I'/11X,'I',38X,'I',  
@@ -7655,7 +7655,7 @@ C...Format statement for error message.
     
 C*********************************************************************  
     
-      SUBROUTINE PYRAND 
+      SUBROUTINE PYRANDA 
     
 C...Generates quantities characterizing the high-pT scattering at the   
 C...parton level according to the matrix elements. Chooses incoming,    
@@ -7685,7 +7685,7 @@ C...Initial values, specifically for (first) semihard interaction.
       MINT(18)=0    
       VINT(143)=1.  
       VINT(144)=1.  
-      IF(MSUB(95).EQ.1.OR.MINT(82).GE.2) CALL PYMULT(2) 
+      IF(MSUB(95).EQ.1.OR.MINT(82).GE.2) CALL PYMULTA(2) 
       ISUB=0    
   100 MINT(51)=0    
     
@@ -7830,7 +7830,7 @@ C...I0/I4*c4*1/(tau+tau_R') +
 C...I0/I5*c5*tau/((s*tau-m'^2)^2+(m'*Gamma')^2), and    
 C...c0 + c1 + c2 + c3 + c4 + c5 = 1 
       ELSEIF(ISET(ISUB).GE.1.AND.ISET(ISUB).LE.4) THEN  
-        CALL PYKLIM(1)  
+        CALL PYKLIMA(1)  
         IF(MINT(51).NE.0) GOTO 100  
         RTAU=RLU(0) 
         MTAU=1  
@@ -7841,31 +7841,31 @@ C...c0 + c1 + c2 + c3 + c4 + c5 = 1
      &  MTAU=5  
         IF(RTAU.GT.COEF(ISUB,1)+COEF(ISUB,2)+COEF(ISUB,3)+COEF(ISUB,4)+ 
      &  COEF(ISUB,5)) MTAU=6    
-        CALL PYKMAP(1,MTAU,RLU(0))  
+        CALL PYKMAPA(1,MTAU,RLU(0))  
     
 C...2 -> 3, 4 processes:    
 C...Choose tau' according to h4(tau,tau')/tau', where   
 C...h4(tau,tau') = c0 + I0/I1*c1*(1 - tau/tau')^3/tau', and 
 C...c0 + c1 = 1.    
         IF(ISET(ISUB).EQ.3.OR.ISET(ISUB).EQ.4) THEN 
-          CALL PYKLIM(4)    
+          CALL PYKLIMA(4)    
           IF(MINT(51).NE.0) GOTO 100    
           RTAUP=RLU(0)  
           MTAUP=1   
           IF(RTAUP.GT.COEF(ISUB,15)) MTAUP=2    
-          CALL PYKMAP(4,MTAUP,RLU(0))   
+          CALL PYKMAPA(4,MTAUP,RLU(0))   
         ENDIF   
     
 C...Choose y* according to h2(y*), where    
 C...h2(y*) = I0/I1*c1*(y*-y*min) + I0/I2*c2*(y*max-y*) +    
 C...I0/I3*c3*1/cosh(y*), I0 = y*max-y*min, and c1 + c2 + c3 = 1.    
-        CALL PYKLIM(2)  
+        CALL PYKLIMA(2)  
         IF(MINT(51).NE.0) GOTO 100  
         RYST=RLU(0) 
         MYST=1  
         IF(RYST.GT.COEF(ISUB,7)) MYST=2 
         IF(RYST.GT.COEF(ISUB,7)+COEF(ISUB,8)) MYST=3    
-        CALL PYKMAP(2,MYST,RLU(0))  
+        CALL PYKMAPA(2,MYST,RLU(0))  
     
 C...2 -> 2 processes:   
 C...Choose cos(theta-hat) (cth) according to h3(cth), where 
@@ -7873,7 +7873,7 @@ C...h3(cth) = c0 + I0/I1*c1*1/(A - cth) + I0/I2*c2*1/(A + cth) +
 C...I0/I3*c3*1/(A - cth)^2 + I0/I4*c4*1/(A + cth)^2,    
 C...A = 1 + 2*(m3*m4/sh)^2 (= 1 for massless products), 
 C...and c0 + c1 + c2 + c3 + c4 = 1. 
-        CALL PYKLIM(3)  
+        CALL PYKLIMA(3)  
         IF(MINT(51).NE.0) GOTO 100  
         IF(ISET(ISUB).EQ.2.OR.ISET(ISUB).EQ.4) THEN 
           RCTH=RLU(0)   
@@ -7883,12 +7883,12 @@ C...and c0 + c1 + c2 + c3 + c4 = 1.
           IF(RCTH.GT.COEF(ISUB,10)+COEF(ISUB,11)+COEF(ISUB,12)) MCTH=4  
           IF(RCTH.GT.COEF(ISUB,10)+COEF(ISUB,11)+COEF(ISUB,12)+ 
      &    COEF(ISUB,13)) MCTH=5 
-          CALL PYKMAP(3,MCTH,RLU(0))    
+          CALL PYKMAPA(3,MCTH,RLU(0))    
         ENDIF   
     
 C...Low-pT or multiple interactions (first semihard interaction).   
       ELSEIF(ISET(ISUB).EQ.5) THEN  
-        CALL PYMULT(3)  
+        CALL PYMULTA(3)  
         ISUB=MINT(1)    
       ENDIF 
     
@@ -7897,17 +7897,17 @@ C...Choose azimuthal angle.
     
 C...Check against user cuts on kinematics at parton level.  
       MINT(51)=0    
-      IF(ISUB.LE.90.OR.ISUB.GT.100) CALL PYKLIM(0)  
+      IF(ISUB.LE.90.OR.ISUB.GT.100) CALL PYKLIMA(0)  
       IF(MINT(51).NE.0) GOTO 100    
       IF(MINT(82).EQ.1.AND.MSTP(141).GE.1) THEN 
         MCUT=0  
         IF(MSUB(91)+MSUB(92)+MSUB(93)+MSUB(94)+MSUB(95).EQ.0)   
-     &  CALL PYKCUT(MCUT)   
+     &  CALL PYKCUTA(MCUT)   
         IF(MCUT.NE.0) GOTO 100  
       ENDIF 
     
 C...Calculate differential cross-section for different subprocesses.    
-      CALL PYSIGH(NCHN,SIGS)    
+      CALL PYSIGHA(NCHN,SIGS)    
     
 C...Calculations for Monte Carlo estimate of all cross-sections.    
       IF(MINT(82).EQ.1.AND.ISUB.LE.90.OR.ISUB.GE.96) THEN   
@@ -7919,7 +7919,7 @@ C...Calculations for Monte Carlo estimate of all cross-sections.
 C...Multiple interactions: store results of cross-section calculation.  
       IF(MINT(43).EQ.4.AND.MSTP(82).GE.3) THEN  
         VINT(153)=SIGS  
-        CALL PYMULT(4)  
+        CALL PYMULTA(4)  
       ENDIF 
     
 C...Weighting using estimate of maximum of differential cross-section.  
@@ -7967,7 +7967,7 @@ C...Multiple interactions: choose impact parameter.
       VINT(148)=1.  
       IF(MINT(43).EQ.4.AND.(ISUB.LE.90.OR.ISUB.GE.96).AND.MSTP(82).GE.3)    
      &THEN  
-        CALL PYMULT(5)  
+        CALL PYMULTA(5)  
         IF(VINT(150).LT.RLU(0)) GOTO 100    
       ENDIF 
       IF(MINT(82).EQ.1.AND.MSUB(95).EQ.1) THEN  
@@ -7992,8 +7992,8 @@ C...Choose flavour of reacting partons (and subprocess).
     
 C...Multiple interactions: choose qqbar preferentially at small pT. 
       ELSEIF(ISUB.EQ.96) THEN   
-        CALL PYSPLI(MINT(11),21,KFL1,KFLDUM)    
-        CALL PYSPLI(MINT(12),21,KFL2,KFLDUM)    
+        CALL PYSPLIA(MINT(11),21,KFL1,KFLDUM)    
+        CALL PYSPLIA(MINT(12),21,KFL2,KFLDUM)    
         MINT(1)=11  
         MINT(2)=1   
         IF(KFL1.EQ.KFL2.AND.RLU(0).LT.0.5) MINT(2)=2    
@@ -8036,7 +8036,7 @@ clin 1500 FORMAT(1X,'XSEC(',I3,',1) increased to',1P,E11.3)
     
 C*********************************************************************  
     
-      SUBROUTINE PYSCAT 
+      SUBROUTINE PYSCATA 
     
 C...Finds outgoing flavours and event type; sets up the kinematics  
 C...and colour flow of the hard scattering. 
@@ -8134,7 +8134,7 @@ C...Copy incoming partons to documentation lines.
     
 C...Choose new quark flavour for relevant annihilation graphs.  
       IF(ISUB.EQ.12.OR.ISUB.EQ.53) THEN 
-        CALL PYWIDT(21,SHR,WDTP,WDTE)   
+        CALL PYWIDTA(21,SHR,WDTP,WDTE)   
         RKFL=(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))*RLU(0) 
         DO 140 I=1,2*MSTP(1)    
         KFLQ=I  
@@ -9074,7 +9074,7 @@ C...Low-pT events: remove gluons used for string drawing purposes.
     
 C*********************************************************************  
     
-      SUBROUTINE PYSSPA(IPU1,IPU2)  
+      SUBROUTINE PYSSPAA(IPU1,IPU2)  
     
 C...Generates spacelike parton showers. 
       IMPLICIT DOUBLE PRECISION(D)  
@@ -9440,7 +9440,7 @@ C...Save quantities, loop back.
         IF(JT.EQ.2) IPU2=N  
       ENDIF 
       IF(N.GT.MSTU(4)-MSTU(32)-10) THEN 
-        CALL LUERRM(11,'(PYSSPA:) no more memory left in LUJETSA')   
+        CALL LUERRM(11,'(PYSSPAS:) no more memory left in LUJETSA')   
         IF(MSTU(21).GE.1) N=NS  
         IF(MSTU(21).GE.1) RETURN    
       ENDIF 
@@ -9480,7 +9480,7 @@ C...Store user information. Reset Lambda value.
     
 C*********************************************************************  
     
-      SUBROUTINE PYMULT(MMUL)   
+      SUBROUTINE PYMULTA(MMUL)   
     
 C...Initializes treatment of multiple interactions, selects kinematics  
 C...of hardest interaction if low-pT physics included in run, and   
@@ -9542,17 +9542,17 @@ C...Choose tau and y*. Calculate cos(theta-hat).
           TAU=XT2*(1.+TAN(RLU(0)*ATAN(SQRT(1./XT2-1.)))**2) 
         ENDIF   
         VINT(21)=TAU    
-        CALL PYKLIM(2)  
+        CALL PYKLIMA(2)  
         RYST=RLU(0) 
         MYST=1  
         IF(RYST.GT.COEF(ISUB,7)) MYST=2 
         IF(RYST.GT.COEF(ISUB,7)+COEF(ISUB,8)) MYST=3    
-        CALL PYKMAP(2,MYST,RLU(0))  
+        CALL PYKMAPA(2,MYST,RLU(0))  
         VINT(23)=SQRT(MAX(0.,1.-XT2/TAU))*(-1)**INT(1.5+RLU(0)) 
     
 C...Calculate differential cross-section.   
         VINT(71)=0.5*VINT(1)*SQRT(XT2)  
-        CALL PYSIGH(NCHN,SIGS)  
+        CALL PYSIGHA(NCHN,SIGS)  
   110   SIGM(IXT2)=SIGM(IXT2)+SIGS  
   120   SIGSUM=SIGSUM+SIGM(IXT2)    
         SIGSUM=SIGSUM/(20.*MSTP(83))    
@@ -9688,12 +9688,12 @@ C...Choose tau and y*. Calculate cos(theta-hat).
             TAU=XT2*(1.+TAN(RLU(0)*ATAN(SQRT(1./XT2-1.)))**2)   
           ENDIF 
           VINT(21)=TAU  
-          CALL PYKLIM(2)    
+          CALL PYKLIMA(2)    
           RYST=RLU(0)   
           MYST=1    
           IF(RYST.GT.COEF(ISUB,7)) MYST=2   
           IF(RYST.GT.COEF(ISUB,7)+COEF(ISUB,8)) MYST=3  
-          CALL PYKMAP(2,MYST,RLU(0))    
+          CALL PYKMAPA(2,MYST,RLU(0))    
           VINT(23)=SQRT(MAX(0.,1.-XT2/TAU))*(-1)**INT(1.5+RLU(0))   
         ENDIF   
         VINT(71)=0.5*VINT(1)*SQRT(VINT(25)) 
@@ -9815,12 +9815,12 @@ C...Choose tau and y*. Calculate cos(theta-hat).
           TAU=XT2*(1.+TAN(RLU(0)*ATAN(SQRT(1./XT2-1.)))**2) 
         ENDIF   
         VINT(21)=TAU    
-        CALL PYKLIM(2)  
+        CALL PYKLIMA(2)  
         RYST=RLU(0) 
         MYST=1  
         IF(RYST.GT.COEF(ISUB,7)) MYST=2 
         IF(RYST.GT.COEF(ISUB,7)+COEF(ISUB,8)) MYST=3    
-        CALL PYKMAP(2,MYST,RLU(0))  
+        CALL PYKMAPA(2,MYST,RLU(0))  
         VINT(23)=SQRT(MAX(0.,1.-XT2/TAU))*(-1)**INT(1.5+RLU(0)) 
     
 C...Check that x not used up. Accept or reject kinematical variables.   
@@ -9828,7 +9828,7 @@ C...Check that x not used up. Accept or reject kinematical variables.
         X2M=SQRT(TAU)*EXP(-VINT(22))    
         IF(VINT(143)-X1M.LT.0.01.OR.VINT(144)-X2M.LT.0.01) GOTO 180 
         VINT(71)=0.5*VINT(1)*SQRT(XT2)  
-        CALL PYSIGH(NCHN,SIGS)  
+        CALL PYSIGHA(NCHN,SIGS)  
         IF(SIGS.LT.XSEC(ISUB,1)*RLU(0)) GOTO 180    
     
 C...Reset K, P and V vectors. Select some variables.    
@@ -9922,7 +9922,7 @@ C...String drawing and colour flow for q-qbar pair.
 C...Update remaining energy; iterate.   
         N=N+2   
         IF(N.GT.MSTU(4)-MSTU(32)-10) THEN   
-          CALL LUERRM(11,'(PYMULT:) no more memory left in LUJETSA') 
+          CALL LUERRM(11,'(PYMULTA:) no more memory left in LUJETSA') 
           IF(MSTU(21).GE.1) RETURN  
         ENDIF   
         MINT(31)=MINT(31)+1 
@@ -9935,7 +9935,7 @@ C...Update remaining energy; iterate.
       ENDIF 
     
 C...Format statements for printout. 
- 1000 FORMAT(/1X,'****** PYMULT: initialization of multiple inter', 
+ 1000 FORMAT(/1X,'****** PYMULTA: initialization of multiple inter', 
      &'actions for MSTP(82) =',I2,' ******')    
  1100 FORMAT(8X,'pT0 =',F5.2,' GeV gives sigma(parton-parton) =',1P,    
      &E9.2,' mb: rejected') 
@@ -9947,7 +9947,7 @@ C...Format statements for printout.
     
 C*********************************************************************  
     
-      SUBROUTINE PYREMN(IPU1,IPU2)  
+      SUBROUTINE PYREMNA(IPU1,IPU2)  
     
 C...Adds on target remnants (one or two from each side) and 
 C...includes primordial kT. 
@@ -10161,7 +10161,7 @@ C...Subdivide remnant if necessary, store first parton.
       IF(JT.EQ.ILEP) GOTO 190   
       IF(JT.EQ.1) IPU=IPU1  
       IF(JT.EQ.2) IPU=IPU2  
-      CALL PYSPLI(MINT(10+JT),MINT(12+JT),KFLCH(JT),KFLSP(JT))  
+      CALL PYSPLIA(MINT(10+JT),MINT(12+JT),KFLCH(JT),KFLSP(JT))  
       I=I+1 
       IS(JT)=I  
       DO 150 J=1,5  
@@ -10292,7 +10292,7 @@ C...Leptoproduction events: boost colliding subsystem.
     
 C*********************************************************************  
     
-      SUBROUTINE PYRESD 
+      SUBROUTINE PYRESDA
     
 C...Allows resonances to decay (including parton showers for hadronic   
 C...channels).  
@@ -10370,7 +10370,7 @@ C...Loop over one/two resonances; reset decay rates.
       IF(KFA.LT.23.OR.KFA.GT.40) GOTO 140   
       IF(MDCY(KFA,1).NE.0) THEN 
         IF(ISUB.EQ.1.OR.ISUB.EQ.141) MINT(61)=1 
-        CALL PYWIDT(KFA,P(ID,5),WDTP,WDTE)  
+        CALL PYWIDTA(KFA,P(ID,5),WDTP,WDTE)  
         IF(KCHG(KFA,3).EQ.0) THEN   
           IPM=2 
         ELSE    
@@ -10804,7 +10804,7 @@ C...Check if new resonances were produced, loop back if needed.
     
 C*********************************************************************  
     
-      SUBROUTINE PYDIFF 
+      SUBROUTINE PYDIFFA 
     
 C...Handles diffractive and elastic scattering. 
       COMMON/LUJETSA/N,K(9000,5),P(9000,5),V(9000,5)
@@ -10866,7 +10866,7 @@ C...Diffracted particle: valence quark kicked out.
         K(N,1)=1    
         K(N-1,3)=I+2    
         K(N,3)=I+2  
-        CALL PYSPLI(K(I,2),21,K(N,2),K(N-1,2))  
+        CALL PYSPLIA(K(I,2),21,K(N,2),K(N-1,2))  
         P(N-1,5)=ULMASS(K(N-1,2))   
         P(N,5)=ULMASS(K(N,2))   
         SQLAM=(VINT(62+JT)-P(N-1,5)**2-P(N,5)**2)**2-   
@@ -10886,7 +10886,7 @@ C...Diffracted particle: gluon kicked out.
         K(N-2,3)=I+2    
         K(N-1,3)=I+2    
         K(N,3)=I+2  
-        CALL PYSPLI(K(I,2),21,K(N,2),K(N-2,2))  
+        CALL PYSPLIA(K(I,2),21,K(N,2),K(N-2,2))  
         K(N-1,2)=21 
         P(N-2,5)=ULMASS(K(N-2,2))   
         P(N-1,5)=0. 
@@ -10946,7 +10946,7 @@ C...Rotate outgoing partons/particles using cos(theta).
     
 C*********************************************************************  
     
-      SUBROUTINE PYFRAM(IFRAME) 
+      SUBROUTINE PYFRAMA(IFRAME) 
     
 C...Performs transformations between different coordinate frames.   
       COMMON/LUDAT1A/MSTU(200),PARU(200),MSTJ(200),PARJ(200) 
@@ -10978,7 +10978,7 @@ C...frame.
       ENDIF 
       MSTI(6)=MINT(6)   
     
- 1000 FORMAT(1X,'Error: illegal values in subroutine PYFRAM.',1X,   
+ 1000 FORMAT(1X,'Error: illegal values in subroutine PYFRAMA.',1X,   
      &'No transformation performed.'/1X,'IFRAME =',1X,I5,'; MINT(6) =', 
      &1X,I5)    
     
@@ -10987,7 +10987,7 @@ C...frame.
     
 C*********************************************************************  
     
-      SUBROUTINE PYWIDT(KFLR,RMAS,WDTP,WDTE)    
+      SUBROUTINE PYWIDTA(KFLR,RMAS,WDTP,WDTE)    
     
 C...Calculates full and partial widths of resonances.   
       COMMON/LUDAT1A/MSTU(200),PARU(200),MSTJ(200),PARJ(200) 
@@ -11639,7 +11639,7 @@ C...R -> l+ + l'-
     
 C***********************************************************************    
     
-      SUBROUTINE PYKLIM(ILIM)   
+      SUBROUTINE PYKLIMA(ILIM)   
     
 C...Checks generated variables against pre-set kinematical limits;  
 C...also calculates limits on variables used in generation. 
@@ -11913,7 +11913,7 @@ C...effective kinematical limits for tau, y*, cos(theta-hat).
     
 C*********************************************************************  
     
-      SUBROUTINE PYKMAP(IVAR,MVAR,VVAR) 
+      SUBROUTINE PYKMAPA(IVAR,MVAR,VVAR) 
     
 C...Maps a uniform distribution into a distribution of a kinematical    
 C...variable according to one of the possibilities allowed. It is   
@@ -12083,7 +12083,7 @@ C...Convert VVAR to tau' variable.
     
 C***********************************************************************    
     
-      SUBROUTINE PYSIGH(NCHN,SIGS)  
+      SUBROUTINE PYSIGHA(NCHN,SIGS)  
     
 C...Differential matrix elements for all included subprocesses. 
 C...Note that what is coded is (disregarding the COMFAC factor) 
@@ -12423,7 +12423,7 @@ C...A: 2 -> 1, tree diagrams.
       IF(ISUB.EQ.1) THEN    
 C...f + fb -> gamma*/Z0.    
         MINT(61)=2  
-        CALL PYWIDT(23,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(23,SQRT(SH),WDTP,WDTE)  
         FACZ=COMFAC*AEM**2*4./3.    
         DO 150 I=MINA,MAXA  
         IF(I.EQ.0.OR.KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 150    
@@ -12443,7 +12443,7 @@ C...f + fb -> gamma*/Z0.
     
       ELSEIF(ISUB.EQ.2) THEN    
 C...f + fb' -> W+/-.    
-        CALL PYWIDT(24,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(24,SQRT(SH),WDTP,WDTE)  
         FACW=COMFAC*(AEM/XW)**2*1./24*SH2/((SH-SQMW)**2+GMMW**2)    
         DO 170 I=MIN1,MAX1  
         IF(I.EQ.0.OR.KFAC(1,I).EQ.0) GOTO 170   
@@ -12466,7 +12466,7 @@ C...f + fb' -> W+/-.
     
       ELSEIF(ISUB.EQ.3) THEN    
 C...f + fb -> H0.   
-        CALL PYWIDT(25,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(25,SQRT(SH),WDTP,WDTE)  
         FACH=COMFAC*(AEM/XW)**2*1./48.*(SH/SQMW)**2*    
      &  SH2/((SH-SQMH)**2+GMMH**2)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))  
         DO 180 I=MINA,MAXA  
@@ -12484,7 +12484,7 @@ C...gamma + W+/- -> W+/-.
     
       ELSEIF(ISUB.EQ.5) THEN    
 C...Z0 + Z0 -> H0.  
-        CALL PYWIDT(25,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(25,SQRT(SH),WDTP,WDTE)  
         FACH=COMFAC*1./(128.*PARU(1)**2*16.*(1.-XW)**3)*(AEM/XW)**4*    
      &  (SH/SQMW)**2*SH2/((SH-SQMH)**2+GMMH**2)*    
      &  (WDTE(0,1)+WDTE(0,2)+WDTE(0,4)) 
@@ -12514,7 +12514,7 @@ C...W+ + W- -> Z0.
     
       ELSEIF(ISUB.EQ.8) THEN    
 C...W+ + W- -> H0.  
-        CALL PYWIDT(25,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(25,SQRT(SH),WDTP,WDTE)  
         FACH=COMFAC*1./(128*PARU(1)**2)*(AEM/XW)**4*(SH/SQMW)**2*   
      &  SH2/((SH-SQMH)**2+GMMH**2)*(WDTE(0,1)+WDTE(0,2)+WDTE(0,4))  
         DO 220 I=MIN1,MAX1  
@@ -12566,7 +12566,7 @@ C...f + f' -> f + f'.
     
       ELSEIF(ISUB.EQ.12) THEN   
 C...f + fb -> f' + fb' (q + qb -> q' + qb' only).   
-        CALL PYWIDT(21,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(21,SQRT(SH),WDTP,WDTE)  
         FACQQB=COMFAC*AS**2*4./9.*(TH2+UH2)/SH2*(WDTE(0,1)+WDTE(0,2)+   
      &  WDTE(0,3)+WDTE(0,4))    
         DO 250 I=MINA,MAXA  
@@ -12995,7 +12995,7 @@ C...f + H0 -> f + H0.
     
       ELSEIF(ISUB.EQ.53) THEN   
 C...g + g -> f + fb (g + g -> q + qb only). 
-        CALL PYWIDT(21,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(21,SQRT(SH),WDTP,WDTE)  
         FACQQ1=COMFAC*AS**2*1./6.*(UH/TH-(2.+MSTP(34)*1./4.)*UH2/SH2)*  
      &  (WDTE(0,1)+WDTE(0,2)+WDTE(0,3)+WDTE(0,4))*FACA  
         FACQQ2=COMFAC*AS**2*1./6.*(TH/UH-(2.+MSTP(34)*1./4.)*TH2/SH2)*  
@@ -13415,7 +13415,7 @@ C...Low-pT scattering.
     
       ELSEIF(ISUB.EQ.96) THEN   
 C...Multiple interactions: sum of QCD processes.    
-        CALL PYWIDT(21,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(21,SQRT(SH),WDTP,WDTE)  
     
 C...q + q' -> q + q'.   
         FACQQ1=COMFAC*AS**2*4./9.*(SH2+UH2)/TH2 
@@ -13533,7 +13533,7 @@ C...g + g -> gamma*/Z0.
     
       ELSEIF(ISUB.EQ.102) THEN  
 C...g + g -> H0.    
-        CALL PYWIDT(25,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(25,SQRT(SH),WDTP,WDTE)  
         ETARE=0.    
         ETAIM=0.    
         DO 690 I=1,2*MSTP(1)    
@@ -13653,30 +13653,30 @@ C'''Only t-quarks yet included
         BEUTS=BESTU 
         BETSU=BEUST 
         BESUT=BETUS 
-        W3STUR=PYI3AU(BESTU,EPSH,1)-PYI3AU(BESTU,EPSS,1)-   
-     &  PYI3AU(BESTU,EPSU,1)    
-        W3STUI=PYI3AU(BESTU,EPSH,2)-PYI3AU(BESTU,EPSS,2)-   
-     &  PYI3AU(BESTU,EPSU,2)    
-        W3SUTR=PYI3AU(BESUT,EPSH,1)-PYI3AU(BESUT,EPSS,1)-   
-     &  PYI3AU(BESUT,EPST,1)    
-        W3SUTI=PYI3AU(BESUT,EPSH,2)-PYI3AU(BESUT,EPSS,2)-   
-     &  PYI3AU(BESUT,EPST,2)    
-        W3TSUR=PYI3AU(BETSU,EPSH,1)-PYI3AU(BETSU,EPST,1)-   
-     &  PYI3AU(BETSU,EPSU,1)    
-        W3TSUI=PYI3AU(BETSU,EPSH,2)-PYI3AU(BETSU,EPST,2)-   
-     &  PYI3AU(BETSU,EPSU,2)    
-        W3TUSR=PYI3AU(BETUS,EPSH,1)-PYI3AU(BETUS,EPST,1)-   
-     &  PYI3AU(BETUS,EPSS,1)    
-        W3TUSI=PYI3AU(BETUS,EPSH,2)-PYI3AU(BETUS,EPST,2)-   
-     &  PYI3AU(BETUS,EPSS,2)    
-        W3USTR=PYI3AU(BEUST,EPSH,1)-PYI3AU(BEUST,EPSU,1)-   
-     &  PYI3AU(BEUST,EPST,1)    
-        W3USTI=PYI3AU(BEUST,EPSH,2)-PYI3AU(BEUST,EPSU,2)-   
-     &  PYI3AU(BEUST,EPST,2)    
-        W3UTSR=PYI3AU(BEUTS,EPSH,1)-PYI3AU(BEUTS,EPSU,1)-   
-     &  PYI3AU(BEUTS,EPSS,1)    
-        W3UTSI=PYI3AU(BEUTS,EPSH,2)-PYI3AU(BEUTS,EPSU,2)-   
-     &  PYI3AU(BEUTS,EPSS,2)    
+        W3STUR=PYI3AA(BESTU,EPSH,1)-PYI3AA(BESTU,EPSS,1)-   
+     &  PYI3AA(BESTU,EPSU,1)    
+        W3STUI=PYI3AA(BESTU,EPSH,2)-PYI3AA(BESTU,EPSS,2)-   
+     &  PYI3AA(BESTU,EPSU,2)    
+        W3SUTR=PYI3AA(BESUT,EPSH,1)-PYI3AA(BESUT,EPSS,1)-   
+     &  PYI3AA(BESUT,EPST,1)    
+        W3SUTI=PYI3AA(BESUT,EPSH,2)-PYI3AA(BESUT,EPSS,2)-   
+     &  PYI3AA(BESUT,EPST,2)    
+        W3TSUR=PYI3AA(BETSU,EPSH,1)-PYI3AA(BETSU,EPST,1)-   
+     &  PYI3AA(BETSU,EPSU,1)    
+        W3TSUI=PYI3AA(BETSU,EPSH,2)-PYI3AA(BETSU,EPST,2)-   
+     &  PYI3AA(BETSU,EPSU,2)    
+        W3TUSR=PYI3AA(BETUS,EPSH,1)-PYI3AA(BETUS,EPST,1)-   
+     &  PYI3AA(BETUS,EPSS,1)    
+        W3TUSI=PYI3AA(BETUS,EPSH,2)-PYI3AA(BETUS,EPST,2)-   
+     &  PYI3AA(BETUS,EPSS,2)    
+        W3USTR=PYI3AA(BEUST,EPSH,1)-PYI3AA(BEUST,EPSU,1)-   
+     &  PYI3AA(BEUST,EPST,1)    
+        W3USTI=PYI3AA(BEUST,EPSH,2)-PYI3AA(BEUST,EPSU,2)-   
+     &  PYI3AA(BEUST,EPST,2)    
+        W3UTSR=PYI3AA(BEUTS,EPSH,1)-PYI3AA(BEUTS,EPSU,1)-   
+     &  PYI3AA(BEUTS,EPSS,1)    
+        W3UTSI=PYI3AA(BEUTS,EPSH,2)-PYI3AA(BEUTS,EPSU,2)-   
+     &  PYI3AA(BEUTS,EPSS,2)    
         B2STUR=SQMQ/SQMH**2*(SH*(UH-SH)/(SH+UH)+2.*TH*UH*(UH+2.*SH)/    
      &  (SH+UH)**2*(PYW1AU(EPST,1)-PYW1AU(EPSH,1))+(SQMQ-SH/4.)*    
      &  (0.5*PYW2AU(EPSS,1)+0.5*PYW2AU(EPSH,1)-PYW2AU(EPST,1)+W3STUR)+  
@@ -13815,66 +13815,66 @@ C...g + g -> gamma + gamma.
           BESUT=BETUS   
           A0STUR=1.+(1.+2.*TH/SH)*PYW1AU(EPST,1)+(1.+2.*UH/SH)* 
      &    PYW1AU(EPSU,1)+0.5*((TH2+UH2)/SH2-EPSS)*(PYW2AU(EPST,1)+  
-     &    PYW2AU(EPSU,1))-0.25*EPST*(1.-0.5*EPSS)*(PYI3AU(BESUT,EPSS,1)+    
-     &    PYI3AU(BESUT,EPST,1))-0.25*EPSU*(1.-0.5*EPSS)*    
-     &    (PYI3AU(BESTU,EPSS,1)+PYI3AU(BESTU,EPSU,1))+  
+     &    PYW2AU(EPSU,1))-0.25*EPST*(1.-0.5*EPSS)*(PYI3AA(BESUT,EPSS,1)+    
+     &    PYI3AA(BESUT,EPST,1))-0.25*EPSU*(1.-0.5*EPSS)*    
+     &    (PYI3AA(BESTU,EPSS,1)+PYI3AA(BESTU,EPSU,1))+  
      &    0.25*(-2.*(TH2+UH2)/SH2+4.*EPSS+EPST+EPSU+0.5*EPST*EPSU)* 
-     &    (PYI3AU(BETSU,EPST,1)+PYI3AU(BETSU,EPSU,1))   
+     &    (PYI3AA(BETSU,EPST,1)+PYI3AA(BETSU,EPSU,1))   
           A0STUI=(1.+2.*TH/SH)*PYW1AU(EPST,2)+(1.+2.*UH/SH)*    
      &    PYW1AU(EPSU,2)+0.5*((TH2+UH2)/SH2-EPSS)*(PYW2AU(EPST,2)+  
-     &    PYW2AU(EPSU,2))-0.25*EPST*(1.-0.5*EPSS)*(PYI3AU(BESUT,EPSS,2)+    
-     &    PYI3AU(BESUT,EPST,2))-0.25*EPSU*(1.-0.5*EPSS)*    
-     &    (PYI3AU(BESTU,EPSS,2)+PYI3AU(BESTU,EPSU,2))+  
+     &    PYW2AU(EPSU,2))-0.25*EPST*(1.-0.5*EPSS)*(PYI3AA(BESUT,EPSS,2)+    
+     &    PYI3AA(BESUT,EPST,2))-0.25*EPSU*(1.-0.5*EPSS)*    
+     &    (PYI3AA(BESTU,EPSS,2)+PYI3AA(BESTU,EPSU,2))+  
      &    0.25*(-2.*(TH2+UH2)/SH2+4.*EPSS+EPST+EPSU+0.5*EPST*EPSU)* 
-     &    (PYI3AU(BETSU,EPST,2)+PYI3AU(BETSU,EPSU,2))   
+     &    (PYI3AA(BETSU,EPST,2)+PYI3AA(BETSU,EPSU,2))   
           A0TSUR=1.+(1.+2.*SH/TH)*PYW1AU(EPSS,1)+(1.+2.*UH/TH)* 
      &    PYW1AU(EPSU,1)+0.5*((SH2+UH2)/TH2-EPST)*(PYW2AU(EPSS,1)+  
-     &    PYW2AU(EPSU,1))-0.25*EPSS*(1.-0.5*EPST)*(PYI3AU(BETUS,EPST,1)+    
-     &    PYI3AU(BETUS,EPSS,1))-0.25*EPSU*(1.-0.5*EPST)*    
-     &    (PYI3AU(BETSU,EPST,1)+PYI3AU(BETSU,EPSU,1))+  
+     &    PYW2AU(EPSU,1))-0.25*EPSS*(1.-0.5*EPST)*(PYI3AA(BETUS,EPST,1)+    
+     &    PYI3AA(BETUS,EPSS,1))-0.25*EPSU*(1.-0.5*EPST)*    
+     &    (PYI3AA(BETSU,EPST,1)+PYI3AA(BETSU,EPSU,1))+  
      &    0.25*(-2.*(SH2+UH2)/TH2+4.*EPST+EPSS+EPSU+0.5*EPSS*EPSU)* 
-     &    (PYI3AU(BESTU,EPSS,1)+PYI3AU(BESTU,EPSU,1))   
+     &    (PYI3AA(BESTU,EPSS,1)+PYI3AA(BESTU,EPSU,1))   
           A0TSUI=(1.+2.*SH/TH)*PYW1AU(EPSS,2)+(1.+2.*UH/TH)*    
      &    PYW1AU(EPSU,2)+0.5*((SH2+UH2)/TH2-EPST)*(PYW2AU(EPSS,2)+  
-     &    PYW2AU(EPSU,2))-0.25*EPSS*(1.-0.5*EPST)*(PYI3AU(BETUS,EPST,2)+    
-     &    PYI3AU(BETUS,EPSS,2))-0.25*EPSU*(1.-0.5*EPST)*    
-     &    (PYI3AU(BETSU,EPST,2)+PYI3AU(BETSU,EPSU,2))+  
+     &    PYW2AU(EPSU,2))-0.25*EPSS*(1.-0.5*EPST)*(PYI3AA(BETUS,EPST,2)+    
+     &    PYI3AA(BETUS,EPSS,2))-0.25*EPSU*(1.-0.5*EPST)*    
+     &    (PYI3AA(BETSU,EPST,2)+PYI3AA(BETSU,EPSU,2))+  
      &    0.25*(-2.*(SH2+UH2)/TH2+4.*EPST+EPSS+EPSU+0.5*EPSS*EPSU)* 
-     &    (PYI3AU(BESTU,EPSS,2)+PYI3AU(BESTU,EPSU,2))   
+     &    (PYI3AA(BESTU,EPSS,2)+PYI3AA(BESTU,EPSU,2))   
           A0UTSR=1.+(1.+2.*TH/UH)*PYW1AU(EPST,1)+(1.+2.*SH/UH)* 
      &    PYW1AU(EPSS,1)+0.5*((TH2+SH2)/UH2-EPSU)*(PYW2AU(EPST,1)+  
-     &    PYW2AU(EPSS,1))-0.25*EPST*(1.-0.5*EPSU)*(PYI3AU(BEUST,EPSU,1)+    
-     &    PYI3AU(BEUST,EPST,1))-0.25*EPSS*(1.-0.5*EPSU)*    
-     &    (PYI3AU(BEUTS,EPSU,1)+PYI3AU(BEUTS,EPSS,1))+  
+     &    PYW2AU(EPSS,1))-0.25*EPST*(1.-0.5*EPSU)*(PYI3AA(BEUST,EPSU,1)+    
+     &    PYI3AA(BEUST,EPST,1))-0.25*EPSS*(1.-0.5*EPSU)*    
+     &    (PYI3AA(BEUTS,EPSU,1)+PYI3AA(BEUTS,EPSS,1))+  
      &    0.25*(-2.*(TH2+SH2)/UH2+4.*EPSU+EPST+EPSS+0.5*EPST*EPSS)* 
-     &    (PYI3AU(BETUS,EPST,1)+PYI3AU(BETUS,EPSS,1))   
+     &    (PYI3AA(BETUS,EPST,1)+PYI3AA(BETUS,EPSS,1))   
           A0UTSI=(1.+2.*TH/UH)*PYW1AU(EPST,2)+(1.+2.*SH/UH)*    
      &    PYW1AU(EPSS,2)+0.5*((TH2+SH2)/UH2-EPSU)*(PYW2AU(EPST,2)+  
-     &    PYW2AU(EPSS,2))-0.25*EPST*(1.-0.5*EPSU)*(PYI3AU(BEUST,EPSU,2)+    
-     &    PYI3AU(BEUST,EPST,2))-0.25*EPSS*(1.-0.5*EPSU)*    
-     &    (PYI3AU(BEUTS,EPSU,2)+PYI3AU(BEUTS,EPSS,2))+  
+     &    PYW2AU(EPSS,2))-0.25*EPST*(1.-0.5*EPSU)*(PYI3AA(BEUST,EPSU,2)+    
+     &    PYI3AA(BEUST,EPST,2))-0.25*EPSS*(1.-0.5*EPSU)*    
+     &    (PYI3AA(BEUTS,EPSU,2)+PYI3AA(BEUTS,EPSS,2))+  
      &    0.25*(-2.*(TH2+SH2)/UH2+4.*EPSU+EPST+EPSS+0.5*EPST*EPSS)* 
-     &    (PYI3AU(BETUS,EPST,2)+PYI3AU(BETUS,EPSS,2))   
+     &    (PYI3AA(BETUS,EPST,2)+PYI3AA(BETUS,EPSS,2))   
           A1STUR=-1.-0.25*(EPSS+EPST+EPSU)*(PYW2AU(EPSS,1)+ 
      &    PYW2AU(EPST,1)+PYW2AU(EPSU,1))+0.25*(EPSU+0.5*EPSS*EPST)* 
-     &    (PYI3AU(BESUT,EPSS,1)+PYI3AU(BESUT,EPST,1))+  
-     &    0.25*(EPST+0.5*EPSS*EPSU)*(PYI3AU(BESTU,EPSS,1)+  
-     &    PYI3AU(BESTU,EPSU,1))+0.25*(EPSS+0.5*EPST*EPSU)*  
-     &    (PYI3AU(BETSU,EPST,1)+PYI3AU(BETSU,EPSU,1))   
+     &    (PYI3AA(BESUT,EPSS,1)+PYI3AA(BESUT,EPST,1))+  
+     &    0.25*(EPST+0.5*EPSS*EPSU)*(PYI3AA(BESTU,EPSS,1)+  
+     &    PYI3AA(BESTU,EPSU,1))+0.25*(EPSS+0.5*EPST*EPSU)*  
+     &    (PYI3AA(BETSU,EPST,1)+PYI3AA(BETSU,EPSU,1))   
           A1STUI=-0.25*(EPSS+EPST+EPSU)*(PYW2AU(EPSS,2)+PYW2AU(EPST,2)+ 
      &    PYW2AU(EPSU,2))+0.25*(EPSU+0.5*EPSS*EPST)*    
-     &    (PYI3AU(BESUT,EPSS,2)+PYI3AU(BESUT,EPST,2))+  
-     &    0.25*(EPST+0.5*EPSS*EPSU)*(PYI3AU(BESTU,EPSS,2)+  
-     &    PYI3AU(BESTU,EPSU,2))+0.25*(EPSS+0.5*EPST*EPSU)*  
-     &    (PYI3AU(BETSU,EPST,2)+PYI3AU(BETSU,EPSU,2))   
-          A2STUR=-1.+0.125*EPSS*EPST*(PYI3AU(BESUT,EPSS,1)+ 
-     &    PYI3AU(BESUT,EPST,1))+0.125*EPSS*EPSU*(PYI3AU(BESTU,EPSS,1)+  
-     &    PYI3AU(BESTU,EPSU,1))+0.125*EPST*EPSU*(PYI3AU(BETSU,EPST,1)+  
-     &    PYI3AU(BETSU,EPSU,1)) 
-          A2STUI=0.125*EPSS*EPST*(PYI3AU(BESUT,EPSS,2)+ 
-     &    PYI3AU(BESUT,EPST,2))+0.125*EPSS*EPSU*(PYI3AU(BESTU,EPSS,2)+  
-     &    PYI3AU(BESTU,EPSU,2))+0.125*EPST*EPSU*(PYI3AU(BETSU,EPST,2)+  
-     &    PYI3AU(BETSU,EPSU,2)) 
+     &    (PYI3AA(BESUT,EPSS,2)+PYI3AA(BESUT,EPST,2))+  
+     &    0.25*(EPST+0.5*EPSS*EPSU)*(PYI3AA(BESTU,EPSS,2)+  
+     &    PYI3AA(BESTU,EPSU,2))+0.25*(EPSS+0.5*EPST*EPSU)*  
+     &    (PYI3AA(BETSU,EPST,2)+PYI3AA(BETSU,EPSU,2))   
+          A2STUR=-1.+0.125*EPSS*EPST*(PYI3AA(BESUT,EPSS,1)+ 
+     &    PYI3AA(BESUT,EPST,1))+0.125*EPSS*EPSU*(PYI3AA(BESTU,EPSS,1)+  
+     &    PYI3AA(BESTU,EPSU,1))+0.125*EPST*EPSU*(PYI3AA(BETSU,EPST,1)+  
+     &    PYI3AA(BETSU,EPSU,1)) 
+          A2STUI=0.125*EPSS*EPST*(PYI3AA(BESUT,EPSS,2)+ 
+     &    PYI3AA(BESUT,EPST,2))+0.125*EPSS*EPSU*(PYI3AA(BESTU,EPSS,2)+  
+     &    PYI3AA(BESTU,EPSU,2))+0.125*EPST*EPSU*(PYI3AA(BETSU,EPST,2)+  
+     &    PYI3AA(BETSU,EPSU,2)) 
         ENDIF   
         ASRE=ASRE+EI**2*(A0STUR+A0TSUR+A0UTSR+4.*A1STUR+A2STUR) 
         ASIM=ASIM+EI**2*(A0STUI+A0TSUI+A0UTSI+4.*A1STUI+A2STUI) 
@@ -13913,7 +13913,7 @@ C...H: 2 -> 1, tree diagrams, non-standard model processes.
       IF(ISUB.EQ.141) THEN  
 C...f + fb -> gamma*/Z0/Z'0.    
         MINT(61)=2  
-        CALL PYWIDT(32,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(32,SQRT(SH),WDTP,WDTE)  
         FACZP=COMFAC*AEM**2*4./9.   
         DO 800 I=MINA,MAXA  
         IF(I.EQ.0.OR.KFAC(1,I)*KFAC(2,-I).EQ.0) GOTO 800    
@@ -13938,7 +13938,7 @@ C...f + fb -> gamma*/Z0/Z'0.
     
       ELSEIF(ISUB.EQ.142) THEN  
 C...f + fb' -> H+/-.    
-        CALL PYWIDT(37,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(37,SQRT(SH),WDTP,WDTE)  
         FHC=COMFAC*(AEM/XW)**2*1./48.*(SH/SQMW)**2*SH2/ 
      &  ((SH-SQMHC)**2+GMMHC**2)    
 C'''No construction yet for leptons 
@@ -13981,7 +13981,7 @@ C'''No construction yet for leptons
     
       ELSEIF(ISUB.EQ.143) THEN  
 C...f + fb -> R.    
-        CALL PYWIDT(40,SQRT(SH),WDTP,WDTE)  
+        CALL PYWIDTA(40,SQRT(SH),WDTP,WDTE)  
         FACR=COMFAC*(AEM/XW)**2*1./9.*SH2/((SH-SQMR)**2+GMMR**2)    
         DO 860 I=MIN1,MAX1  
         IF(I.EQ.0.OR.KFAC(1,I).EQ.0) GOTO 860   
@@ -14398,8 +14398,8 @@ C...Expansion coefficients for charm quark sea distribution.
      3 -4.0990E-02, -1.0820E-01,  2.0360E+00,  5.2090E+00, -4.8400E-02/ 
 
 C...Euler's beta function, requires ordinary Gamma function 
-clin-10/25/02 get rid of argument usage mismatch in PYGAMM():
-c      EULBT(X,Y)=PYGAMM(X)*PYGAMM(Y)/PYGAMM(X+Y)
+clin-10/25/02 get rid of argument usage mismatch in PYGAMMA():
+c      EULBT(X,Y)=PYGAMMA(X)*PYGAMMA(Y)/PYGAMMA(X+Y)
     
       vx=0.
       bbr2=0.
@@ -14552,7 +14552,8 @@ C...Calculate structure functions.
 clin-10/25/02 evaluate EULBT(TS(1),TS(2)+1.):
 c          XQ(KFL)=X**TS(1)*(1.-X)**TS(2)*(1.+TS(3)*X)/(EULBT(TS(1),    
 c     &    TS(2)+1.)*(1.+TS(3)*TS(1)/(TS(1)+TS(2)+1.)))  
-           eulbt1=PYGAMM(TS(1))*PYGAMM(TS(2)+1.)/PYGAMM(TS(1)+TS(2)+1.)
+           eulbt1=PYGAMMA(TS(1))*PYGAMMA(TS(2)+1.)/
+     &     PYGAMMA(TS(1)+TS(2)+1.)
            XQ(KFL)=X**TS(1)*(1.-X)**TS(2)*(1.+TS(3)*X)/(EULBT1
      &          *(1.+TS(3)*TS(1)/(TS(1)+TS(2)+1.)))  
         ELSE    
@@ -14609,9 +14610,10 @@ C...Calculate structure functions.
      &  COW(3,IS,KFL,NSET)*SD**2    
         IF(KFL.EQ.1) THEN   
 
-clin-10/25/02 get rid of argument usage mismatch in PYGAMM():
+clin-10/25/02 get rid of argument usage mismatch in PYGAMMA():
 c          XQ(KFL)=X**TS(1)*(1.-X)**TS(2)/EULBT(TS(1),TS(2)+1.) 
-           eulbt2=PYGAMM(TS(1))*PYGAMM(TS(2)+1.)/PYGAMM(TS(1)+TS(2)+1.)
+           eulbt2=PYGAMMA(TS(1))
+     &     *PYGAMMA(TS(2)+1.)/PYGAMMA(TS(1)+TS(2)+1.)
            XQ(KFL)=X**TS(1)*(1.-X)**TS(2)/EULBT2
         ELSE    
           XQ(KFL)=TS(1)*X**TS(2)*(1.-X)**TS(3)*(1.+TS(4)*X+TS(5)*X**2)  
@@ -14694,7 +14696,7 @@ C...Formats for error printouts.
     
 C*********************************************************************  
     
-      SUBROUTINE PYSPLI(KF,KFLIN,KFLCH,KFLSP)   
+      SUBROUTINE PYSPLIA(KF,KFLIN,KFLCH,KFLSP)   
     
 C...In case of a hadron remnant which is more complicated than just a   
 C...quark or a diquark, split it into two (partons or hadron + parton). 
@@ -14778,7 +14780,7 @@ C...Add on correct sign for result.
     
 C*********************************************************************  
     
-      FUNCTION PYGAMM(X)    
+      FUNCTION PYGAMMA(X)    
     
 C...Gives ordinary Gamma function Gamma(x) for positive, real arguments;    
 C...see M. Abramowitz, I. A. Stegun: Handbook of Mathematical Functions 
@@ -14792,14 +14794,14 @@ clin     &-0.756704078,0.482199394,-0.193527818,0.035868343/
       NX=INT(X) 
       DX=X-NX   
     
-      PYGAMM=1. 
+      PYGAMMA=1. 
       DO 100 I=1,8  
-  100 PYGAMM=PYGAMM+B(I)*DX**I  
+  100 PYGAMMA=PYGAMMA+B(I)*DX**I  
       IF(X.LT.1.) THEN  
-        PYGAMM=PYGAMM/X 
+        PYGAMMA=PYGAMMA/X 
       ELSE  
         DO 110 IX=1,NX-1    
-  110   PYGAMM=(X-IX)*PYGAMM    
+  110   PYGAMMA=(X-IX)*PYGAMMA    
       ENDIF 
     
       RETURN    
@@ -14871,7 +14873,7 @@ C...FERMILAB-Pub-87/100-T, LBL-23504, June, 1987
     
 C***********************************************************************    
     
-      FUNCTION PYI3AU(BE,EPS,IREIM) 
+      FUNCTION PYI3AA(BE,EPS,IREIM) 
     
 C...Calculates real and imaginary parts of the auxiliary function I3;   
 C...see R. K. Ellis, I. Hinchliffe, M. Soldate and J. J. van der Bij,   
@@ -14885,14 +14887,14 @@ C...FERMILAB-Pub-87/100-T, LBL-23504, June, 1987
       IF(EPS.LT.1.) GA=0.5*(1.+SQRT(1.-EPS))    
     
       IF(EPS.LT.0.) THEN    
-        F3RE=PYSPEN((GA-1.)/(GA+BE-1.),0.,1)-PYSPEN(GA/(GA+BE-1.),0.,1)+    
-     &  PYSPEN((BE-GA)/BE,0.,1)-PYSPEN((BE-GA)/(BE-1.),0.,1)+   
+        F3RE=PYSPEA((GA-1.)/(GA+BE-1.),0.,1)-PYSPEA(GA/(GA+BE-1.),0.,1)+    
+     &  PYSPEA((BE-GA)/BE,0.,1)-PYSPEA((BE-GA)/(BE-1.),0.,1)+   
      &  (LOG(BE)**2-LOG(BE-1.)**2)/2.+LOG(GA)*LOG((GA+BE-1.)/BE)+   
      &  LOG(GA-1.)*LOG((BE-1.)/(GA+BE-1.))  
         F3IM=0. 
       ELSEIF(EPS.LT.1.) THEN    
-        F3RE=PYSPEN((GA-1.)/(GA+BE-1.),0.,1)-PYSPEN(GA/(GA+BE-1.),0.,1)+    
-     &  PYSPEN(GA/(GA-BE),0.,1)-PYSPEN((GA-1.)/(GA-BE),0.,1)+   
+        F3RE=PYSPEA((GA-1.)/(GA+BE-1.),0.,1)-PYSPEA(GA/(GA+BE-1.),0.,1)+    
+     &  PYSPEA(GA/(GA-BE),0.,1)-PYSPEA((GA-1.)/(GA-BE),0.,1)+   
      &  LOG(GA/(1.-GA))*LOG((GA+BE-1.)/(BE-GA)) 
         F3IM=-PARU(1)*LOG((GA+BE-1.)/(BE-GA))   
       ELSE  
@@ -14904,22 +14906,22 @@ C...FERMILAB-Pub-87/100-T, LBL-23504, June, 1987
         R=SQRT(RSQ) 
         THE=ACOS(RCTHE/R)   
         PHI=ACOS(RCPHI/R)   
-        F3RE=PYSPEN(RCTHE,RSTHE,1)+PYSPEN(RCTHE,-RSTHE,1)-  
-     &  PYSPEN(RCPHI,RSPHI,1)-PYSPEN(RCPHI,-RSPHI,1)+   
+        F3RE=PYSPEA(RCTHE,RSTHE,1)+PYSPEA(RCTHE,-RSTHE,1)-  
+     &  PYSPEA(RCPHI,RSPHI,1)-PYSPEA(RCPHI,-RSPHI,1)+   
      &  (PHI-THE)*(PHI+THE-PARU(1)) 
-        F3IM=PYSPEN(RCTHE,RSTHE,2)+PYSPEN(RCTHE,-RSTHE,2)-  
-     &  PYSPEN(RCPHI,RSPHI,2)-PYSPEN(RCPHI,-RSPHI,2)    
+        F3IM=PYSPEA(RCTHE,RSTHE,2)+PYSPEA(RCTHE,-RSTHE,2)-  
+     &  PYSPEA(RCPHI,RSPHI,2)-PYSPEA(RCPHI,-RSPHI,2)    
       ENDIF 
     
-      IF(IREIM.EQ.1) PYI3AU=2./(2.*BE-1.)*F3RE  
-      IF(IREIM.EQ.2) PYI3AU=2./(2.*BE-1.)*F3IM  
+      IF(IREIM.EQ.1) PYI3AA=2./(2.*BE-1.)*F3RE  
+      IF(IREIM.EQ.2) PYI3AA=2./(2.*BE-1.)*F3IM  
     
       RETURN    
       END   
     
 C***********************************************************************    
     
-      FUNCTION PYSPEN(XREIN,XIMIN,IREIM)    
+      FUNCTION PYSPEA(XREIN,XIMIN,IREIM)    
     
 C...Calculates real and imaginary part of Spence function; see  
 C...G. 't Hooft and M. Veltman, Nucl. Phys. B153 (1979) 365.    
@@ -14934,20 +14936,20 @@ C...G. 't Hooft and M. Veltman, Nucl. Phys. B153 (1979) 365.
      & 0.000000E+00,         7.575757E-02,         0.000000E+00,    
      &-2.531135E-01,         0.000000E+00,         1.166667E+00/    
     
-      pyspen=0.
+      pyspea=0.
 
       XRE=XREIN 
       XIM=XIMIN 
       IF(ABS(1.-XRE).LT.1.E-6.AND.ABS(XIM).LT.1.E-6) THEN   
-        IF(IREIM.EQ.1) PYSPEN=PARU(1)**2/6. 
-        IF(IREIM.EQ.2) PYSPEN=0.    
+        IF(IREIM.EQ.1) PYSPEA=PARU(1)**2/6. 
+        IF(IREIM.EQ.2) PYSPEA=0.    
         RETURN  
       ENDIF 
     
       XMOD=SQRT(XRE**2+XIM**2)  
       IF(XMOD.LT.1.E-6) THEN    
-        IF(IREIM.EQ.1) PYSPEN=0.    
-        IF(IREIM.EQ.2) PYSPEN=0.    
+        IF(IREIM.EQ.1) PYSPEA=0.    
+        IF(IREIM.EQ.2) PYSPEA=0.    
         RETURN  
       ENDIF 
     
@@ -14999,8 +15001,8 @@ C...G. 't Hooft and M. Veltman, Nucl. Phys. B153 (1979) 365.
       SPRE=SPRE+B(I)*TERMRE 
   100 SPIM=SPIM+B(I)*TERMIM 
     
-      IF(IREIM.EQ.1) PYSPEN=SP0RE+SGN*SPRE  
-      IF(IREIM.EQ.2) PYSPEN=SP0IM+SGN*SPIM  
+      IF(IREIM.EQ.1) PYSPEA=SP0RE+SGN*SPRE  
+      IF(IREIM.EQ.2) PYSPEA=SP0IM+SGN*SPIM  
     
       RETURN    
       END   
@@ -15276,7 +15278,7 @@ C...Character constants: name of processes.
     
 C*********************************************************************  
     
-      SUBROUTINE PYKCUT(MCUT)   
+      SUBROUTINE PYKCUTA(MCUT)   
     
 C...Dummy routine, which the user can replace in order to make cuts on  
 C...the kinematics on the parton level before the matrix elements are   

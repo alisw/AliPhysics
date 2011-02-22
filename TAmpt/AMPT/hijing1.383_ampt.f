@@ -4230,7 +4230,7 @@ C
 C       ******************indicate for initialization use when
 C                         structure functions are called in PYTHIA
 C
-        CALL PYINIT('CMS',BEAM,TARG,HINT1(1))
+        CALL PYINITA('CMS',BEAM,TARG,HINT1(1))
         MINT4=MINT(44)
         MINT5=MINT(45)
         MINT44(itype)=MINT(44)
