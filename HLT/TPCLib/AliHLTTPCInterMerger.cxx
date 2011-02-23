@@ -64,7 +64,7 @@ void AliHLTTPCInterMerger::SlowMerge(){
   AliHLTTPCTrack *tr[2];
   Bool_t merge = kTRUE;
   for(Int_t in=0;in<kNIn;in++)
-    tracks->GetCheckedTrack(in)->CalculateHelix();
+    if (tracks->GetCheckedTrack(in)) tracks->GetCheckedTrack(in)->CalculateHelix();
   while(merge){
     Int_t inmin=-1,outmin=-1;
     Double_t min=10;
@@ -105,8 +105,9 @@ void AliHLTTPCInterMerger::SlowMerge(){
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCInterMerger::SlowMerge","Result")
   <<AliHLTTPCLog::kDec<<"Merged Tracks: "<<tracks->GetNTracks()-kNIn<<ENDLOG;
 
-  char name[256];
-  sprintf(name,"ntuple_i_%d.root",fPatch);
+  const int namelen=256;
+  char name[namelen];
+  snprintf(name,namelen,"ntuple_i_%d.root",fPatch);
   WriteNtuple(name,ntuple);
 }
 

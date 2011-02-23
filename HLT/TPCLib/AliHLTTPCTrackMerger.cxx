@@ -144,10 +144,11 @@ void AliHLTTPCTrackMerger::SlowMerge(AliHLTTPCTrackArray *mergedtrack,AliHLTTPCT
   LOG(AliHLTTPCLog::kInformational,"AliHLTTPCTrackMerger::SlowMerge","Result")
   <<AliHLTTPCLog::kDec<<"Merged Tracks: "
   <<mergedtrack->GetNTracks()-kNMerged<<ENDLOG;
-  char name[256] = "ntuple_t.root";
+  const int namelen=256;
+  char name[namelen] = "ntuple_t.root";
   for(Int_t i=0;i<4;i++)
     if(tracksin==GetInTracks(i))
-      sprintf(name,"ntuple_t_%d.root",i);
+      snprintf(name,namelen,"ntuple_t_%d.root",i);
   WriteNtuple(name,ntuple);
 }
 

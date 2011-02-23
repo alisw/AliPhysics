@@ -235,8 +235,9 @@ void AliHLTTPCGlobalMerger::SlowMerge(const Char_t *path)
 	<<AliHLTTPCLog::kDec<<"Merged Tracks: "<<tout->GetNTracks()<<" at:"
 	<<angle<<ENDLOG;
     }
-  Char_t fname[1024];
-  sprintf(fname,"%s/merge_parameters.root",path);
+  const int namelen=1024;
+  Char_t fname[namelen];
+  snprintf(fname,namelen,"%s/merge_parameters.root",path);
   WriteNtuple(fname,ntuple);
 }
 
