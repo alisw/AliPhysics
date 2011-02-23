@@ -322,12 +322,12 @@ c     boost the reference frame up by beta (pznew=gam(pz+beta e)):
          write(6,*) '1',dbex,dbey,dbez,beta2,gam
       endif
 c
-      call lorenz(de1,dpx,dpy,dpz,-dbex,-dbey,-dbez)
+      call lorenza(de1,dpx,dpy,dpz,-dbex,-dbey,-dbez)
         ptwo(1,1)=sngl(pxnew)
         ptwo(1,2)=sngl(pynew)
         ptwo(1,3)=sngl(pznew)
         ptwo(1,4)=sngl(enenew)
-      call lorenz(de2,-dpx,-dpy,-dpz,-dbex,-dbey,-dbez)
+      call lorenza(de2,-dpx,-dpy,-dpz,-dbex,-dbey,-dbez)
         ptwo(2,1)=sngl(pxnew)
         ptwo(2,2)=sngl(pynew)
         ptwo(2,3)=sngl(pznew)
@@ -376,7 +376,7 @@ cc      SAVE /NOPREC/
       COMMON/HPARNT/HIPR1(100),IHPR2(50),HINT1(100),IHNT2(50)
 cc      SAVE /HPARNT/
 c     7/20/01: use double precision
-c     otherwise sometimes beta>1 and gamma diverge in lorenz():
+c     otherwise sometimes beta>1 and gamma diverge in lorenza():
       COMMON/SOFT/PXSGS(MAXSTR,3),PYSGS(MAXSTR,3),PZSGS(MAXSTR,3),
      &     PESGS(MAXSTR,3),PMSGS(MAXSTR,3),GXSGS(MAXSTR,3),
      &     GYSGS(MAXSTR,3),GZSGS(MAXSTR,3),FTSGS(MAXSTR,3),
@@ -997,7 +997,7 @@ c
                write(6,*) '2',bex,bey,bez,beta2,gam
             endif
 c
-            call lorenz(ftavg0,gxavg0,gyavg0,gzavg0,-bex,-bey,-bez)
+            call lorenza(ftavg0,gxavg0,gyavg0,gzavg0,-bex,-bey,-bez)
               GXAR(inatt)=sngl(pxnew)
               GYAR(inatt)=sngl(pynew)
               GZAR(inatt)=sngl(pznew)
@@ -1365,12 +1365,12 @@ c     boost the reference frame down by beta to get to the pair rest frame:
                write(6,*) '4b',bex,bey,bez,beta2,gam
             endif
 c
-            call lorenz(ftp(j),gxp(j),gyp(j),gzp(j),bex,bey,bez)
+            call lorenza(ftp(j),gxp(j),gyp(j),gzp(j),bex,bey,bez)
             gxp0(j)=pxnew
             gyp0(j)=pynew
             gzp0(j)=pznew
             ftp0(j)=enenew
-            call lorenz(pep(j),pxp(j),pyp(j),pzp(j),bex,bey,bez)
+            call lorenza(pep(j),pxp(j),pyp(j),pzp(j),bex,bey,bez)
             pxp0(j)=pxnew
             pyp0(j)=pynew
             pzp0(j)=pznew
@@ -1406,12 +1406,12 @@ c     for 3-body kinematics, used for baryons formation:
          endif
 c     boost the reference frame down by beta to get to the 3-parton rest frame:
          do 1002 j=1,3
-            call lorenz(ftp(j),gxp(j),gyp(j),gzp(j),bex,bey,bez)
+            call lorenza(ftp(j),gxp(j),gyp(j),gzp(j),bex,bey,bez)
             gxp0(j)=pxnew
             gyp0(j)=pynew
             gzp0(j)=pznew
             ftp0(j)=enenew
-            call lorenz(pep(j),pxp(j),pyp(j),pzp(j),bex,bey,bez)
+            call lorenza(pep(j),pxp(j),pyp(j),pzp(j),bex,bey,bez)
             pxp0(j)=pxnew
             pyp0(j)=pynew
             pzp0(j)=pznew
