@@ -29,6 +29,7 @@
 #include <TArrayI.h>
 #include <TFile.h>
 #include <TList.h>
+#include "TBrowser.h"
 
 ClassImp(AliOADBContainer);
 
@@ -178,7 +179,7 @@ void AliOADBContainer::UpdateObject(Int_t idx, TObject* obj, Int_t lower, Int_t 
 }
     
  
-void  AliOADBContainer::AddDefaultObject(TNamed* obj)
+void  AliOADBContainer::AddDefaultObject(TObject* obj)
 {
   // Add a default object
   fDefaultList->Add(obj);
@@ -307,3 +308,24 @@ Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper)
   }
   return (-1);
 }
+
+void AliOADBContainer::Browse(TBrowser *b)
+{
+   // Browse this object.
+   // If b=0, there is no Browse call TObject::Browse(0) instead.
+   //         This means TObject::Inspect() will be invoked indirectly
+
+
+  if (b) {
+    for (Int_t i = 0; i < fEntries; i++) {
+      b->Add(fArray->At(i),Form("%9.9d - %9.9d", fLowerLimits[i], fUpperLimits[i]));
+    }
+    TIter next(fDefaultList);
+    TObject* obj;
+    while((obj = next())) b->Add(obj);
+        
+  }     
+   else
+      TObject::Browse(b);
+}
+

@@ -30,7 +30,7 @@ class AliOADBContainer : public TNamed {
   void   AppendObject(TObject* obj, Int_t lower, Int_t upper);
   void   UpdateObject(Int_t index, TObject* obj, Int_t lower, Int_t upper);
   void   RemoveObject(Int_t index);
-  void   AddDefaultObject(TNamed* obj);
+  void   AddDefaultObject(TObject* obj);
   void   CleanDefaultList();
   TList* GetDefaultList() const {return fDefaultList;}
 // I/O  
@@ -46,6 +46,10 @@ class AliOADBContainer : public TNamed {
   {return(fDefaultList->FindObject(key));}
 // Debugging  
   void List();
+// Browsable
+  virtual Bool_t	IsFolder() const { return kTRUE; }
+  void Browse(TBrowser *b);
+
  private:
   Int_t HasOverlap(Int_t lower, Int_t upper);
   Int_t GetIndexForRun(Int_t run) const;
@@ -55,6 +59,8 @@ class AliOADBContainer : public TNamed {
   TArrayI                  fLowerLimits;   // lower limit of run range
   TArrayI                  fUpperLimits;   // upper limit of run range
   Int_t                    fEntries;       // Number of entries
+//  TString                  fRelPath;       // Relative path to object
+  
   ClassDef(AliOADBContainer, 1);
 };
 
