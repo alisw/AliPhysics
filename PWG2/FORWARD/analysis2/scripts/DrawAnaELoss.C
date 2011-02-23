@@ -395,7 +395,7 @@ void DrawEtaBins(const char* fname="AnalysisResults.root")
  * @ingroup pwg2_forward_analysis_scripts
  */
 void
-DrawAnaFits(const char* fname="forward_eloss.root")
+DrawAnaELoss(const char* fname="forward_eloss.root")
 {
   if (!CheckCanvas()) {
     Error("DrawFits", "No canvas");
