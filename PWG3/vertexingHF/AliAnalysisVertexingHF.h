@@ -213,7 +213,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   UChar_t *seleFlags,Int_t *evtNumber);
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
 
-  void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd);
+  void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
 
   AliAODv0* TransformESDv0toAODv0(AliESDv0 *esdv0, 
 				  TObjArray *twoTrackArrayV0);
