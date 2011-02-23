@@ -1,4 +1,4 @@
-# $Id: CMakelibAliHLTUtil.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTUtil                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,7 +26,35 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS   	AliHLTFilePublisher.h AliHLTFileWriter.h AliHLTMCEvent.h AliHLTJets.h AliHLTRootFilePublisherComponent.h AliHLTESDMCEventPublisherComponent.h AliHLTRootFileWriterComponent.h AliHLTRootFileStreamerComponent.h AliHLTRootSchemaEvolutionComponent.h AliHLTRecoParamComponent.h AliHLTLoaderPublisherComponent.h AliHLTRawReaderPublisherComponent.h AliHLTOUTPublisherComponent.h AliHLTEsdCollectorComponent.h AliHLTReadoutListDumpComponent.h AliHLTDataGenerator.h AliHLTBlockFilterComponent.h AliHLTMonitoringRelay.h AliHLTObjectCompressionComponent.h AliHLTCompStatCollector.h AliHLTGlobalBarrelTrack.h AliHLTAgentUtil.h AliHLTESDCaloClusterMaker.h AliHLTCaloClusterReader.h AliHLTComponentBenchmark.h AliHLTCorruptorComponent.h AliHLTESDTrackCuts.h)
+set ( CLASS_HDRS
+    AliHLTFilePublisher.h
+    AliHLTFileWriter.h
+    AliHLTMCEvent.h
+    AliHLTJets.h
+    AliHLTRootFilePublisherComponent.h
+    AliHLTESDMCEventPublisherComponent.h
+    AliHLTRootFileWriterComponent.h
+    AliHLTRootFileStreamerComponent.h
+    AliHLTRootSchemaEvolutionComponent.h
+    AliHLTRecoParamComponent.h
+    AliHLTLoaderPublisherComponent.h
+    AliHLTRawReaderPublisherComponent.h
+    AliHLTOUTPublisherComponent.h
+    AliHLTEsdCollectorComponent.h
+    AliHLTReadoutListDumpComponent.h
+    AliHLTDataGenerator.h
+    AliHLTBlockFilterComponent.h
+    AliHLTMonitoringRelay.h
+    AliHLTObjectCompressionComponent.h
+    AliHLTCompStatCollector.h
+    AliHLTGlobalBarrelTrack.h
+    AliHLTAgentUtil.h
+    AliHLTESDCaloClusterMaker.h
+    AliHLTCaloClusterReader.h
+    AliHLTComponentBenchmark.h
+    AliHLTCorruptorComponent.h
+    AliHLTESDTrackCuts.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -36,7 +64,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/BASE/util STEER RAW ANALYSIS)
 
-set ( LIBRARY_DEP  -lHLTbase -lSTEER -lSTEERBase -lRAWDatabase -lANALYSIS -lANALYSISalice)
+set ( ELIBS  "HLTbase STEER STEERBase RAWDatabase ANALYSIS ANALYSISalice")
 
 include ("CMakehlt.conf")
 

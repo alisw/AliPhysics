@@ -1,4 +1,4 @@
-# $Id: CMakelibAliHLTFMD.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTFMD                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -26,7 +26,10 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( CLASS_HDRS  AliHLTFMDReconstructionComponent.h AliHLTAgentFMD.h)
+set ( CLASS_HDRS
+    AliHLTFMDReconstructionComponent.h
+    AliHLTAgentFMD.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -36,7 +39,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/BASE HLT/FMD STEER RAW FMD)
 
-set ( LIBRARY_DEP   -lHLTbase -lAliHLTUtil -lRAWDatarec -lRAWDatabase -lESD -lSTEER -lSTEERBase -lFMDbase -lFMDrec -L${ROOTLIBDIR})
+set ( ELIBS   "HLTbase AliHLTUtil RAWDatarec RAWDatabase ESD STEER STEERBase FMDbase FMDrec")
 
 include ("CMakehlt.conf")
 

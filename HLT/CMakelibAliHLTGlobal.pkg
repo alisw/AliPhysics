@@ -1,4 +1,4 @@
-# $Id: CMakelibAliHLTGlobal.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for AliHLTGlobal                                                  #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -61,7 +61,9 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/global HLT/global/physics HLT/BASE HLT/BASE/util TPC RAW TRD STEER PHOS)
 
-set ( LIBRARY_DEP  -lHLTbase -lAliHLTUtil -lCDB -lESD -lSTEER -lSTEERBase -lTPCrec -lTPCcalib -lTPCbase -lRAWDatarec -lRAWDatabase -lTRDbase -L${ROOTLIBDIR} -lEG)
+set ( ELIBS  "HLTbase AliHLTUtil CDB ESD STEER STEERBase TPCrec TPCcalib TPCbase RAWDatarec RAWDatabase TRDbase -lEG")
+
+set ( ELIBSDIR  "${ROOTLIBDIR}" )
 
 include ("CMakehlt.conf")
 

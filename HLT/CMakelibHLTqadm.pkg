@@ -1,4 +1,4 @@
-# $Id: CMakelibHLTqadm.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTqadm                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -36,7 +36,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/QA HLT/BASE STEER)
 
-set ( LIBRARY_DEP  -lHLTbase -lCDB -lESD -lSTEERBase -lSTEER -lRAWDatarec -lRAWDatabase)
+set ( ELIBS  "HLTbase CDB ESD STEERBase STEER RAWDatarec RAWDatabase")
 
 include ("CMakehlt.conf")
 

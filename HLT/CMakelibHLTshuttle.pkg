@@ -1,4 +1,4 @@
-# $Id: CMakelibHLTshuttle.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTshuttle                                                    #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -28,7 +28,9 @@
 
 set ( LIBHLTSHUTTLE_VERSION  0)
 
-set ( CLASS_HDRS   	AliHLTPreprocessor.h)
+set ( CLASS_HDRS
+    AliHLTPreprocessor.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
@@ -38,7 +40,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/shuttle HLT/BASE STEER)
 
-set ( LIBRARY_DEP  -lHLTbase -lCDB)
+set ( ELIBS  "HLTbase CDB")
 
 include ("CMakehlt.conf")
 

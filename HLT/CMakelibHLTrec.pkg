@@ -1,4 +1,4 @@
-# $Id: CMakelibHLTrec.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTrec                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -28,7 +28,16 @@
 
 set ( LIBHLTREC_VERSION  3)
 
-set ( CLASS_HDRS   	AliHLTReconstructor.h AliRawReaderHLT.h AliHLTOUTHomerCollection.h AliHLTEsdManagerImplementation.h AliHLTDAQInterfaceImplementation.h AliHLTOUTDigitReader.h AliHLTMiscImplementation.h AliHLTOUTRawReader.h)
+set ( CLASS_HDRS
+    AliHLTReconstructor.h
+    AliRawReaderHLT.h
+    AliHLTOUTHomerCollection.h
+    AliHLTEsdManagerImplementation.h
+    AliHLTDAQInterfaceImplementation.h
+    AliHLTOUTDigitReader.h
+    AliHLTMiscImplementation.h
+    AliHLTOUTRawReader.h
+    )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
 set ( MODULE_SRCS  ${MODULE_SRCS}	AliHLTDynamicAliLog.cxx)
@@ -37,9 +46,9 @@ set ( MODULE_HDRS  	${CLASS_HDRS})
 
 set ( MODULE_DHDR )
 
-set ( EINCLUDE  HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW)
+set ( EINCLUDE  "HLT/rec HLT/BASE HLT/BASE/HOMER STEER RAW")
 
-set ( LIBRARY_DEP  -lHLTbase -lCDB -lESD -lSTEERBase -lSTEER -lRAWDatarec -lRAWDatabase)
+set ( ELIBS  "HLTbase CDB ESD STEERBase STEER RAWDatarec RAWDatabase")
 
 include ("CMakehlt.conf")
 

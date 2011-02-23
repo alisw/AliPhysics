@@ -1,4 +1,4 @@
-# $Id: CMakelibHLTsim.pkg 46803 2011-01-28 22:12:12Z richterm $
+# $Id$
 #--------------------------------------------------------------------------------#
 # Package File for HLTsim                                                        #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -28,7 +28,12 @@
 
 set ( LIBHLTSIM_VERSION  "1")
 
-set ( CLASS_HDRS  	AliHLTSimulation.h AliHLTAgentSim.h AliHLTOUTComponent.h)
+set ( CLASS_HDRS
+    AliHLTSimulation.h
+    AliHLTAgentSim.h
+    AliHLTOUTComponent.h
+    )
+
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 
 set ( MODULE_HDRS  	${CLASS_HDRS})
@@ -37,7 +42,7 @@ set ( MODULE_DHDR )
 
 set ( EINCLUDE  HLT/sim HLT/BASE HLT/BASE/HOMER STEER RAW)
 
-set ( LIBRARY_DEP  -lHLTbase -lSTEERbase -lCDB -lSTEER -lRAWDatarec -lRAWDatabase)
+set ( ELIBS  "HLTbase STEERBase CDB STEER RAWDatarec RAWDatabase")
 
 include ("CMakehlt.conf")
 
