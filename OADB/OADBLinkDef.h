@@ -10,4 +10,5 @@
  
 
 #pragma link C++ class AliOADBContainer+;
+#pragma link C++ class AliOADBCentrality+;
 #endif
