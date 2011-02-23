@@ -304,7 +304,9 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 	    fOutputAOD->GetStdContent();
 	}
     }
+    ConnectMultiHandler();
     UserCreateOutputObjects();
+    DisconnectMultiHandler();
 }
 
 void AliAnalysisTaskSE::Exec(Option_t* option)
