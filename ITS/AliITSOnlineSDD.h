@@ -11,6 +11,8 @@
 
 #include<TObject.h>
 
+class TH2F;
+
 class AliITSOnlineSDD : public TObject {
 
  public:
@@ -29,6 +31,8 @@ class AliITSOnlineSDD : public TObject {
   Int_t GetDetectorSide() const {return fSide;}
   Int_t GetFirstGoodTB() const {return fFirstGoodTB;}
   Int_t GetLastGoodTB() const {return fLastGoodTB;}
+
+  static TH2F* ApplyZeroSuppression(TH2F* hRaw, Float_t basl, Int_t tL, Int_t tH);
 
  protected:
   static const Int_t fgkNAnodes = 256; // number of anodes in each half-module
