@@ -9,7 +9,7 @@ batch=0
 gdb=0
 proof=0
 mc=0
-type=
+type=INEL
 cms=900
 hhd=1
 comp=1
@@ -19,10 +19,11 @@ dopass2=0
 dopass3=0
 pass1=MakeAOD.C
 pass2=MakedNdeta.C
-pass3=DrawdNdeta.C
+pass3=DrawdNdeta.C++g
 output1=forward.root
 output2=forward_dndeta.root
 gdb_script=$ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds
+max_rotate=10
 
 usage()
 {
@@ -34,8 +35,8 @@ Do Pass1 and Pass2 on ESD files in current directory.
 Options:
 	-h,--help		This help                  
 	-n,--events N		Number of events            ($nev)
-	-1,--pass1 		Run only pass 1, only AOD   ($dopass2)
-	-2,--pass2		Run only pass 2, only Hists ($dopass1)
+	-1,--pass1 		Run only pass 1, only AOD   ($dopass1)
+	-2,--pass2		Run only pass 2, only Hists ($dopass2)
 	-D,--draw		Draw results                ($dopass3)
 	-v,--vz-min CM          Minimum value of vz         ($vzmin)
 	-V,--vz-max CM          Maximum value of vz         ($vzmax)
@@ -59,6 +60,27 @@ EOF
 toggle()
 {
     echo $((($1+1)%2))
+}
+
+rotate() 
+{
+    fname=$1 
+    if test -f ${fname}.${max_rotate} ; then 
+	echo "Maximum number of rotations - $max_rotate - for $fname found" \
+	    > /dev/stderr 
+	exit 1
+    fi
+    let max=$max_rotate-1
+    for i in `seq $max -1 1` ; do 
+	if test ! -f ${fname}.${i} ; then continue ; fi 
+	let newn=$i+1
+	echo "Moving ${fname}.$i to ${fname}.$newn"
+	mv ${fname}.$i ${fname}.$newn
+    done
+    if test -f $fname ; then 
+	echo "Moving ${fname} to ${fname}.1"
+	mv $fname ${fname}.1 
+    fi
 }
 
 
@@ -106,7 +128,8 @@ if test $batch -gt 0 ; then
     echo "redir=$redir"
 fi 
 if test $dopass1 -gt 0 ; then 
-    rm -f ${output} AliAOD.root
+    rotate AliAOD.root
+    rotate ${output1}
 
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x ${gdb_script} --args"
@@ -131,13 +154,14 @@ if test $dopass1 -gt 0 ; then
 fi
 
 if test $dopass2 -gt 0 ; then
-    rm -f ${output2}
-    args="\(\".\",$nev,\"$type\",$vzmin,$vzmax,$proof\)"
+    rotate ${output2}
+
+    args=(\(\".\",$nev,\"$type\",$vzmin,$vzmax,$proof\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
-	args="\(\"${output1}\"\)"
+	args=(\(\"${output1}\"\))
     fi
-    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass2}.C${args}"
-    aliroot ${opts} ${ana}/${pass2}.C${args}
+    echo We are Running aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
+    aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
 
     fail=$? 
     if test $fail -gt 0 ; then 
@@ -151,14 +175,14 @@ fi
 
 if test $dopass3 -gt 0 ; then
     tit=`echo $tit | tr ' ' '@'` 
-    args="\(\"${output2}\"\)"
+    args=(\(\"${output2}\"\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
-	args="\(\"${output1}\"\)"
+	args=(\(\"${output1}\"\))
     fi
     
-    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass3}.C${args}"
-    aliroot ${opts} ${ana}/${pass3}.C${args}
-fi
+    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass3}${args}"
+    aliroot ${opts} ${ana}/${pass3}${args}
+fi				 
 
 
 #
