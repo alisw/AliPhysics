@@ -100,6 +100,7 @@
 #include <Riostream.h>
 #include <TFile.h>
 #include <TClass.h>
+#include <TCollection.h>
 #include <TTree.h>
 #include <TROOT.h>
 
@@ -260,13 +261,36 @@ Bool_t AliAnalysisTask::CheckPostData() const
 // Checks if data was posted to all outputs defined by the task. If task does
 // not have output slots this returns always kTRUE.
    AliAnalysisDataContainer *coutput;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    for (Int_t islot=0; islot<fNoutputs; islot++) {
       coutput = GetOutputSlot(islot)->GetContainer();
+      if (!mgr->GetOutputs()->FindObject(coutput)) continue;
       if (!coutput->GetData()) return kFALSE;
    }
+   CheckOwnership();
    return kTRUE;
 }
 
+//______________________________________________________________________________
+Bool_t AliAnalysisTask::CheckOwnership() const
+{
+// Check ownership of containers posted on output slots (1 level only)
+   TObject *outdata;
+   for (Int_t islot=0; islot<fNoutputs; islot++) {
+      outdata = GetOutputData(islot);
+      if (outdata && outdata->InheritsFrom(TCollection::Class())) {
+         TCollection *coll = (TCollection*)outdata;
+         if (!coll->IsOwner()) {
+            Error("CheckOwnership","####### IMPORTANT! ####### \n\n\n\
+                Task %s (%s) posts a container that is not owner at output #%d. This may apply for other embedded containers. \n\n\
+                ####### FIX YOUR CODE, THIS WILL PRODUCE A FATAL ERROR IN FUTURE! ##########", GetName(), ClassName(), islot);
+             return kFALSE;   
+         }
+      }
+   }
+   return kTRUE;
+}
+      
 //______________________________________________________________________________
 Bool_t AliAnalysisTask::ConnectInput(Int_t islot, AliAnalysisDataContainer *cont)
 {

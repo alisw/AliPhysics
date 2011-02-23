@@ -106,6 +106,7 @@ public:
   // Check if there are illegal circular dependencies
   Bool_t                    CheckCircularDeps();
   virtual Bool_t            CheckPostData() const;
+  virtual Bool_t            CheckOwnership() const;
   // Getters
   void                      GetBranches(const char *type, TString &result) const;
   Int_t                     GetNinputs() const  {return fNinputs;}
