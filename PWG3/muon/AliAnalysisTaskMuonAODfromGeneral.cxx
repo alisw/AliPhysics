@@ -133,9 +133,12 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   header->SetMuonMagFieldScale(-999.); // FIXME
   header->SetCentrality(0);            // FIXME
 
-  Int_t nVertices = 0;
   const AliAODVertex *vtx = fOrgAOD->GetPrimaryVertex();
-  if(vtx)nVertices = 1;
+  if ( !vtx) {
+    // CHECK Gines
+    AliError("Primary vertex is not defined");
+    return;
+  }  
 
   Int_t nDimuons=nMuTracks*(nMuTracks-1)/2;
   
@@ -157,8 +160,7 @@ void AliAnalysisTaskMuonAODfromGeneral::Exec(Option_t *) {
   static int ncal=0;
   static int numtracks=0;
   for (Int_t iTrack=0; iTrack<nMuTracks; iTrack++) {
-	AliAODTrack *aodTrack;
-	primary->AddDaughter( aodTrack=new(tracks[jTracks++])
+	primary->AddDaughter(new(tracks[jTracks++])
 	AliAODTrack((*(fOrgAOD->GetTrack(mutrNumb[iTrack])))));
         ncal++;
   }

@@ -112,11 +112,6 @@ void AliAnalysisTaskCreateMixedDimuons::UserCreateOutputObjects() {
 
 void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
 
-  if (!fInputAOD) {
-    Printf("ERROR: fInputAOD not available\n");
-    return;
-  }
-
   if (!fOutputUserAOD) {
     Printf("ERROR: fOutputUserAOD not available\n");
     return;
@@ -125,7 +120,17 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
   printf("Calling USER EXEC\n\n");
 
   for (Int_t iEv=0; iEv<fBufferSize; iEv++) {
+    if (!fInputAOD[iEv]) {
+      Printf("ERROR: fInputAOD[%d] not available\n",iEv);
+      continue;
+    }
+
     for (Int_t jEv=0; jEv<iEv; jEv++) {
+
+      if (!fInputAOD) {
+    Printf("ERROR: fInputAOD not available\n");
+    return;
+  }
 
       Int_t nTracksEv[2]  = {0};
       Int_t nFWMuonsEv[2] = {0};
