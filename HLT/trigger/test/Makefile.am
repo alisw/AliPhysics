@@ -21,9 +21,9 @@ testAliHLTTriggerCounters_SOURCES = testAliHLTTriggerCounters.C
 testTriggerCounterComponent_SOURCES	= testTriggerCounterComponent.C
 
 # linker flags
-LDADD_COMMON			= $(top_builddir)/BASE/libHLTbase.la \
-				  $(top_builddir)/MUON/libAliHLTMUON.la \
-				  $(top_builddir)/trigger/libAliHLTTrigger.la
+LDADD_COMMON			= -lHLTbase \
+				  -lAliHLTMUON \
+				  -lAliHLTTrigger
 LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

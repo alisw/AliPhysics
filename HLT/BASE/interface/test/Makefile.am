@@ -22,7 +22,7 @@ testAliHLTExternalInterface_SOURCES 	= testAliHLTExternalInterface.C \
 # in the subsequent library loads if libHLTbase is loaded dynamically.
 # Maybe an issue with the RTLD_NOW used in the dlopen from the
 # AliHLTComponentHandler
-testAliHLTExternalInterface_LDADD = $(top_builddir)/BASE/libHLTbase.la
+testAliHLTExternalInterface_LDADD = -lHLTbase
 testAliHLTExternalInterface_LDFLAGS  = -L@ROOTLIBDIR@ \
 				  	@ROOTLIBS@ \
 				  	@ALIROOT_LDFLAGS@ \

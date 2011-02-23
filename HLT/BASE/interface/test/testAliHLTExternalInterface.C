@@ -98,8 +98,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
   if ((iResult=CreateGRP()) < 0) return iResult;
 
-  string libraryPath=gBasePath;
-  libraryPath+="/";
+  string libraryPath="";
   libraryPath+=ALIHLTANALYSIS_INTERFACE_LIBRARY;
 
   void* libHandle=dlopen(libraryPath.c_str(), RTLD_NOW);
@@ -137,7 +136,7 @@ int main(int /*argc*/, const char** /*argv*/)
     return -1;
   }
 
-  if ((iResult=fctLoadLibrary("../../util/.libs/libAliHLTUtil.so"))<0) {
+  if ((iResult=fctLoadLibrary("libAliHLTUtil.so"))<0) {
     cerr << "error: AliHLTAnalysisLoadLibrary failed with " << iResult << endl;
     return iResult;
   }
@@ -145,9 +144,7 @@ int main(int /*argc*/, const char** /*argv*/)
 #ifdef HLT_MUON
   const char* module=NULL;
   module="MUON";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -157,9 +154,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_PHOS
   // module="PHOS";
-  // libraryPath="../../../";
-  // libraryPath+=module;
-  // libraryPath+="/.libs/libAliHLT";
+  // libraryPath="libAliHLT";
   // libraryPath+=module;
   // libraryPath+=".so";
   // if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -169,9 +164,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_TRD
   module="TRD";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -181,9 +174,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_TPC
   module="TPC";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="Lib/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -193,9 +184,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_ITS
   module="ITS";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -205,9 +194,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_TRIGGER
   module="Trigger";
-  libraryPath="../../../";
-  libraryPath+="trigger";
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -217,9 +204,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_COMP
   module="Comp";
-  libraryPath="../../../";
-  libraryPath+="comp";
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -229,9 +214,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_RCU
   module="RCU";
-  libraryPath="../../../";
-  libraryPath+=module;
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {
@@ -241,9 +224,7 @@ int main(int /*argc*/, const char** /*argv*/)
 
 #ifdef HLT_GLOBAL
   module="Global";
-  libraryPath="../../../";
-  libraryPath+="global";
-  libraryPath+="/.libs/libAliHLT";
+  libraryPath="libAliHLT";
   libraryPath+=module;
   libraryPath+=".so";
   if ((iResult=fctLoadLibrary(libraryPath.c_str()))<0) {

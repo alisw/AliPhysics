@@ -16,8 +16,8 @@ testAliHLTAltroGenerator_SOURCES= testAliHLTAltroGenerator.C
 
 
 # linker flags
-LDADD_COMMON		 	= $(top_builddir)/BASE/libHLTbase.la \
-				  $(top_builddir)/RCU/libAliHLTRCU.la
+LDADD_COMMON		 	= -lHLTbase \
+				  -lAliHLTRCU
 LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

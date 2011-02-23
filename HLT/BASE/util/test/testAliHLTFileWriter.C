@@ -203,12 +203,12 @@ int testAliHLTFileWriter()
 {
   int iResult=0;
   AliHLTComponentHandler chandler;
-  if ((iResult=chandler.LoadLibrary("../.libs/libAliHLTUtil.so"))<0) {
+  if ((iResult=chandler.LoadLibrary("libAliHLTUtil.so"))<0) {
     cerr << "failed: loading libAliHLTUtil" << endl;
     return iResult;
   }
 
-  if ((iResult=chandler.LoadLibrary("../../../rec/.libs/libHLTrec.so"))<0) {
+  if ((iResult=chandler.LoadLibrary("libHLTrec.so"))<0) {
     cerr << "failed: loading libHLTrec" << endl;
     return iResult;
   }

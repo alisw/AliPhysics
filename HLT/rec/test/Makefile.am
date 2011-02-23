@@ -17,8 +17,8 @@ testAliRawReader_SOURCES 	= testAliRawReader.C
 
 
 # linker flags
-LDADD_COMMON		 	= $(top_builddir)/BASE/libHLTbase.la \
-				  $(top_builddir)/rec/libHLTrec.la
+LDADD_COMMON		 	= -lHLTbase \
+				  -lHLTrec
 LDFLAGS_COMMON			= -L@ROOTLIBDIR@ \
 				  @ROOTLIBS@ \
 				  @ALIROOT_LDFLAGS@ \

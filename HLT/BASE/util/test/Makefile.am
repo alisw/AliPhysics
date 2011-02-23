@@ -11,13 +11,13 @@ check_PROGRAMS	= testAliHLTFileWriter \
 		  testAliHLTGlobalBarrelTrack
 
 testAliHLTFileWriter_SOURCES = testAliHLTFileWriter.C
-testAliHLTFileWriter_LDADD = $(top_builddir)/BASE/libHLTbase.la \
+testAliHLTFileWriter_LDADD = -lHLTbase \
 				    @ALIROOT_LDFLAGS@ \
 				    @ALIROOT_LIBS@
 
 testAliHLTGlobalBarrelTrack_SOURCES = testAliHLTGlobalBarrelTrack.C
-testAliHLTGlobalBarrelTrack_LDADD = $(top_builddir)/BASE/libHLTbase.la \
-				    $(top_builddir)/BASE/util/libAliHLTUtil.la \
+testAliHLTGlobalBarrelTrack_LDADD = -lHLTbase \
+				    -lAliHLTUtil \
 				    @ALIROOT_LDFLAGS@ \
 				    @ALIROOT_LIBS@
 

@@ -13,6 +13,6 @@ check_PROGRAMS	=
 ## template
 #
 #testAliHLTCalo_SOURCES = testAliHLTCaloSomething.cxx
-#testAliHLTCalo_LDADD = $(top_builddir)/CALO/libHLTCalo.la
+#testAliHLTCalo_LDADD = -lHLTCalo
 
 TESTS		= $(check_PROGRAMS)

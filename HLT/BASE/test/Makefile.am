@@ -18,43 +18,50 @@ check_PROGRAMS	= testAliHLTBlockDataCollection \
 # 		  testAliHLT_C_Component_WrapperInterface
 
 testAliHLTBlockDataCollection_SOURCES = testAliHLTBlockDataCollection.cxx
-testAliHLTBlockDataCollection_LDADD = $(top_builddir)/BASE/libHLTbase.la
+testAliHLTBlockDataCollection_LDFLAGS = @ALIROOT_LDFLAGS@ \
+				      -lHLTbase
 
 dtOperators_SOURCES = dtOperators.cxx
-dtOperators_LDADD = $(top_builddir)/BASE/libHLTbase.la
+dtOperators_LDFLAGS = 	@ALIROOT_LDFLAGS@ \
+			-lHLTbase
 
 # testAliHLT_C_Component_WrapperInterface_SOURCES = testAliHLT_C_Component_WrapperInterface.C
-# testAliHLT_C_Component_WrapperInterface_LDADD = $(top_builddir)/BASE/libHLTbase.la
+# testAliHLT_C_Component_WrapperInterface_LDFLAGS = @ALIROOT_LDFLAGS@ \
+						  -lHLTbase
 
 testDefaultDataTypes_SOURCES = testDefaultDataTypes.C
-testDefaultDataTypes_LDADD = $(top_builddir)/BASE/libHLTbase.la
+testDefaultDataTypes_LDFLAGS = @ALIROOT_LDFLAGS@ \
+			-lHLTbase
 
 testAliHLTComponent_SOURCES = testAliHLTComponent.C
-testAliHLTComponent_LDADD = $(top_builddir)/BASE/libHLTbase.la
+testAliHLTComponent_LDFLAGS = @ALIROOT_LDFLAGS@ \
+			    -lHLTbase
 
 testAliHLTCTPData_SOURCES = testAliHLTCTPData.C
-testAliHLTCTPData_LDADD = $(top_builddir)/BASE/libHLTbase.la \
-			  $(top_builddir)/rec/libHLTrec.la
+testAliHLTCTPData_LDFLAGS = @ALIROOT_LDFLAGS@ \
+			  -lHLTbase \
+			  -lHLTrec
 
 testAliHLTDataBuffer_SOURCES = testAliHLTDataBuffer.C
-testAliHLTDataBuffer_LDADD = $(top_builddir)/BASE/libHLTbase.la
+testAliHLTDataBuffer_LDFLAGS = @ALIROOT_LDFLAGS@ \
+			    -lHLTbase
 
 testAliHLTReadoutList_SOURCES = testAliHLTReadoutList.C
-testAliHLTReadoutList_LDADD = $(top_builddir)/BASE/libHLTbase.la \
+testAliHLTReadoutList_LDFLAGS = -lHLTbase \
 				-L@ROOTLIBDIR@ \
 				@ROOTLIBS@ \
 				@ALIROOT_LDFLAGS@ \
 				@ALIROOT_LIBS@
 
 testAliHLTScalars_SOURCES = testAliHLTScalars.C
-testAliHLTScalars_LDADD = $(top_builddir)/BASE/libHLTbase.la \
-				-L@ROOTLIBDIR@ \
-				@ROOTLIBS@ \
-				@ALIROOT_LDFLAGS@ \
-				@ALIROOT_LIBS@
+testAliHLTScalars_LDFLAGS = -lHLTbase \
+			  -L@ROOTLIBDIR@ \
+			  @ROOTLIBS@ \
+			  @ALIROOT_LDFLAGS@ \
+			  @ALIROOT_LIBS@
 
 testAliHLTEventDDLBackwardCompatibility_SOURCES = testAliHLTEventDDLBackwardCompatibility.C
-testAliHLTEventDDLBackwardCompatibility_LDADD = $(top_builddir)/BASE/libHLTbase.la \
+testAliHLTEventDDLBackwardCompatibility_LDFLAGS = -lHLTbase \
 				-L@ROOTLIBDIR@ \
 				@ROOTLIBS@ \
 				@ALIROOT_LDFLAGS@ \
