@@ -375,65 +375,88 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 {
   // deletes content of standard arrays and resets size 
   
-  fTracks->Delete();
-  if (trkArrSize > fTracks->GetSize()) 
-    fTracks->Expand(trkArrSize);
-
-  fVertices->Delete();
-  if (vtxArrSize > fVertices->GetSize()) 
-    fVertices->Expand(vtxArrSize);
-
-  fV0s->Delete();
-  if (v0ArrSize > fV0s->GetSize()) 
-    fV0s->Expand(v0ArrSize);
-  
-  fCascades->Delete();
-  if (cascadeArrSize > fCascades->GetSize()) 
-    fCascades->Expand(cascadeArrSize);
-  
-  fJets->Delete();
-  if (jetSize > fJets->GetSize())
-    fJets->Expand(jetSize);
-
-  fCaloClusters->Delete();
-  if (caloClusSize > fCaloClusters->GetSize()) 
-    fCaloClusters->Expand(caloClusSize);
-
-  fFmdClusters->Delete();
-  if (fmdClusSize > fFmdClusters->GetSize()) 
-    fFmdClusters->Expand(fmdClusSize);
-
-  fPmdClusters->Delete();
-  if (pmdClusSize > fPmdClusters->GetSize()) 
-    fPmdClusters->Expand(pmdClusSize);
-    
-  fDimuons->Delete();
-  if (dimuonArrSize > fDimuons->GetSize()) 
-    fDimuons->Expand(dimuonArrSize);
-
-  // Reset the tracklets
-  fTracklets->DeleteContainer();
-  fPhosCells->DeleteContainer();  
-  fEmcalCells->DeleteContainer();
-
+  if (fTracks) {
+    fTracks->Delete();
+    if (trkArrSize > fTracks->GetSize()) 
+      fTracks->Expand(trkArrSize);
+  }
+  if (fVertices) {
+    fVertices->Delete();
+    if (vtxArrSize > fVertices->GetSize()) 
+      fVertices->Expand(vtxArrSize);
+  }
+  if (fV0s) {
+    fV0s->Delete();
+    if (v0ArrSize > fV0s->GetSize()) 
+      fV0s->Expand(v0ArrSize);
+  }
+  if (fCascades) {
+    fCascades->Delete();
+    if (cascadeArrSize > fCascades->GetSize()) 
+      fCascades->Expand(cascadeArrSize);
+  }
+  if (fJets) {
+    fJets->Delete();
+    if (jetSize > fJets->GetSize())
+      fJets->Expand(jetSize);
+  }
+  if (fCaloClusters) {
+    fCaloClusters->Delete();
+    if (caloClusSize > fCaloClusters->GetSize()) 
+      fCaloClusters->Expand(caloClusSize);
+  }
+  if (fFmdClusters) {
+    fFmdClusters->Delete();
+    if (fmdClusSize > fFmdClusters->GetSize()) 
+      fFmdClusters->Expand(fmdClusSize);
+  }
+  if (fPmdClusters) {
+    fPmdClusters->Delete();
+    if (pmdClusSize > fPmdClusters->GetSize()) 
+      fPmdClusters->Expand(pmdClusSize);
+  }
+  if (fDimuons) {
+    fDimuons->Delete();
+    if (dimuonArrSize > fDimuons->GetSize()) 
+      fDimuons->Expand(dimuonArrSize);
+  }
+  if (fTracklets)
+    fTracklets->DeleteContainer();
+  if (fPhosCells)
+    fPhosCells->DeleteContainer();  
+  if (fEmcalCells)
+    fEmcalCells->DeleteContainer();
 }
 
 void AliAODEvent::ClearStd()
 {
   // clears the standard arrays
-  fHeader        ->Clear();
-  fTracks        ->Delete();
-  fVertices      ->Delete();
-  fV0s           ->Delete();
-  fCascades      ->Delete();
-  fTracklets     ->DeleteContainer();
-  fJets          ->Delete();
-  fEmcalCells    ->DeleteContainer();
-  fPhosCells     ->DeleteContainer();
-  fCaloClusters  ->Delete();
-  fFmdClusters   ->Clear();
-  fPmdClusters   ->Clear();
-  fDimuons       ->Clear();
+  if (fHeader)
+    fHeader        ->Clear();
+  if (fTracks)
+    fTracks        ->Delete();
+  if (fVertices)
+    fVertices      ->Delete();
+  if (fV0s)
+    fV0s           ->Delete();
+  if (fCascades)
+    fCascades      ->Delete();
+  if (fTracklets)
+    fTracklets     ->DeleteContainer();
+  if (fJets)
+    fJets          ->Delete();
+  if (fEmcalCells)
+    fEmcalCells    ->DeleteContainer();
+  if (fPhosCells)
+    fPhosCells     ->DeleteContainer();
+  if (fCaloClusters)
+    fCaloClusters  ->Delete();
+  if (fFmdClusters)
+    fFmdClusters   ->Clear();
+  if (fPmdClusters)
+    fPmdClusters   ->Clear();
+  if (fDimuons)
+    fDimuons       ->Clear();
 }
 
 //_________________________________________________________________
@@ -580,8 +603,6 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
         } // has userinfo  
       } // friend loop
     } // has friends	
-    
-    
       // set the branch addresses
     TIter next(fAODObjects);
     TNamed *el;
