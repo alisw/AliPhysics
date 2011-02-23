@@ -79,8 +79,6 @@ AliHLTAltroGenerator::~AliHLTAltroGenerator()
 int AliHLTAltroGenerator::Generate()
 {
   // see header file for class documentation
-  int iResult=0;
-
   if (!fpSimData) fpSimData=new TArrayS;
   if (!fpSimData) {
     return -ENOMEM;
@@ -176,10 +174,6 @@ int AliHLTAltroGenerator::Generate()
   }
 
   assert(fNof10BitWords%4==0);
-  if (iResult<0) {
-    fpSimData->Set(0);
-    return iResult;
-  }
   fpSimData->Set(dataPos);
   return GetDataSize();
 }
@@ -452,7 +446,7 @@ bool AliHLTAltroGenerator::NextChannel()
 {
   // see header file for class documentation
   bool haveData=false;
-  if (fpSimData && fChannelPositions.size()==0) return false;
+  if (!fpSimData || fChannelPositions.size()==0) return false;
   fpSimData->GetArray();
   if (fCurrentPosition==-1) {
     if (fDirection==kForwards) fCurrentPosition=0;
