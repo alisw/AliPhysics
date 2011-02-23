@@ -425,8 +425,8 @@ cc      SAVE /para5/
 cc      SAVE /prec1/
         common /prec5/ eta(MAXPTN), rap(MAXPTN), tau(MAXPTN)
 cc      SAVE /prec5/
-        common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+        common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
         common /rndm3/ iseedp
 cc      SAVE /rndm3/
         SAVE   
@@ -636,8 +636,8 @@ cc      SAVE /para6/
      &       PX0(MAXPTN), PY0(MAXPTN), PZ0(MAXPTN), E0(MAXPTN),
      &       XMASS0(MAXPTN), ITYP0(MAXPTN)
 cc      SAVE /prec1/
-        common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+        common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
         SAVE   
 
         external lorenz
@@ -1914,8 +1914,8 @@ cc      SAVE /aurec2/
 cc      SAVE /ilist1/
         common /ilist3/ size1, size2, size3, v1, v2, v3, size
 cc      SAVE /ilist3/
-        common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+        common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
         common /cprod/ xn1, xn2, xn3
 cc      SAVE /cprod/
         common /rndm2/ iff
@@ -6435,8 +6435,8 @@ c     add in a cut for beta2 to prevent gam to be nan (infinity)
 
       implicit double precision (a-h, o-z)
 
-      common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+      common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
       SAVE   
 
       beta2 = bex ** 2 + bey ** 2 + bez ** 2

@@ -274,8 +274,8 @@ c
         IMPLICIT DOUBLE PRECISION(D)  
         DOUBLE PRECISION  enenew, pxnew, pynew, pznew
         DOUBLE PRECISION  de0, beta2, gam
-        common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+        common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
         COMMON/HPARNT/HIPR1(100),IHPR2(50),HINT1(100),IHNT2(50)
 cc      SAVE /HPARNT/
         common /decom/ptwo(2,5)
@@ -680,8 +680,8 @@ cc      SAVE /anim/
 cc      SAVE /prtn23/
       common /nzpc/nattzp
 cc      SAVE /nzpc/
-      common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+      common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
       COMMON/LUDAT1A/MSTU(200),PARU(200),MSTJ(200),PARJ(200) 
 cc      SAVE /LUDAT1A/ 
 clin 4/19/2006
@@ -1342,8 +1342,8 @@ c
 cc      SAVE /loclco/
       common /prtn23/ gxp0(3),gyp0(3),gzp0(3),ft0fom
 cc      SAVE /prtn23/
-      common /lor/ enenew, pxnew, pynew, pznew
-cc      SAVE /lor/
+      common /lora/ enenew, pxnew, pynew, pznew
+cc      SAVE /lora/
       SAVE   
 c     for 2-body kinematics:
       if(icall.eq.2) then

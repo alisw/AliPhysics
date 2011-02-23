@@ -1899,7 +1899,7 @@ c                call a1decay(idecay,i1,nnn,iseed,rhomp)
                 IF(E(I1).GT.1.22)PNSTAR=0.6
                 IF(RANART(NSEED).LE.PNSTAR)THEN
 * (1) DECAY TO SINGLE PION+NUCLEON
-                   CALL DECAY(idecay,I1,NNN,ISEED,wid,nt)
+                   CALL DECAYA(idecay,I1,NNN,ISEED,wid,nt)
                 ELSE
 * (2) DECAY TO TWO PIONS + NUCLEON
                    CALL DECAY2(idecay,I1,NNN,ISEED,wid,nt)
@@ -1908,7 +1908,7 @@ c                call a1decay(idecay,i1,nnn,iseed,rhomp)
 c for N*(1535) decay
              elseif(iabs(LB1).eq.12.or.iabs(LB1).eq.13) then
                 NNN=NNN+1
-                CALL DECAY(idecay,I1,NNN,ISEED,wid,nt)
+                CALL DECAYA(idecay,I1,NNN,ISEED,wid,nt)
                 LDECAY=LDECAY+1
              endif
 c
@@ -9922,7 +9922,7 @@ c     BY USING OF BREIT-WIGNER FORMULA
 *         2. DETERMINE THE MOMENTUM AND COORDINATES OF NUCLEON AND PION
 *            AFTER THE DELTA OR N* DECAYING
 * DATE   : JAN. 24,1990, MODIFIED ON MAY 17, 1994 TO INCLUDE ETA 
-        SUBROUTINE DECAY(IRUN,I,NNN,ISEED,wid,nt)
+        SUBROUTINE DECAYA(IRUN,I,NNN,ISEED,wid,nt)
         PARAMETER (MAXSTR=150001,MAXR=1,
      1  AMN=0.939457,ETAM=0.5475,AMP=0.93828,AP1=0.13496,
      2  AP2=0.13957,AM0=1.232,PI=3.1415926)
@@ -10882,7 +10882,7 @@ cc      SAVE /PD/
 * for less energetic reactions, we assume the angular distribution
 * is isotropic.
 ***********************************
-       real function ang(srt,iseed)
+       real function anga(srt,iseed)
       COMMON/RNDF77/NSEED
 cc      SAVE /RNDF77/
       SAVE   
@@ -10912,7 +10912,7 @@ c      endif
        ELSE
        ang2=-(q/2.+sqrt((q/2.)**2+(p/3.)**3))**(1./3.)
        ENDIF
-       ANG=ANG1+ANG2
+       ANGA=ANG1+ANG2
        return
        end
 *--------------------------------------------------------------------------
