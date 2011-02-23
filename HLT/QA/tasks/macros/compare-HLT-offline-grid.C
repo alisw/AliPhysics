@@ -30,7 +30,8 @@ void compare_HLT_offline_grid(TString runNumber,
 			      const char* mode = "full", 
 			      const char* detectorTask="global",
 			      TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/",
-			      bool fUseHLTTrigger=kFALSE
+			      bool fUseHLTTrigger=kFALSE,
+			      Long64_t nEvents=1234567890
 			     )
 {
  
@@ -211,7 +212,7 @@ void compare_HLT_offline_grid(TString runNumber,
 
   if (!mgr->InitAnalysis()) return;
   mgr->PrintStatus();
-  mgr->StartAnalysis("grid");
+  mgr->StartAnalysis("grid", nEvents);
 
   timer.Stop();
   timer.Print();
