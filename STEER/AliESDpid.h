@@ -62,7 +62,7 @@ private:
   // AliHMPIDPIDResponse fHMPIDResponse;
   AliTRDPIDResponse fTRDResponse;
 
-  ClassDef(AliESDpid,5)  // PID calculation class
+  ClassDef(AliESDpid,6)  // PID calculation class
 };
 
 inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const {
