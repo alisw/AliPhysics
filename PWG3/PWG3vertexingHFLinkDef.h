@@ -50,6 +50,7 @@
 #pragma link C++ class AliNormalizationCounter+;
 #pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
+#pragma link C++ class AliAnalysisTaskSEImproveITS+;
 
 #endif
 
