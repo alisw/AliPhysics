@@ -254,6 +254,8 @@ void AliAnaVZEROQA::UserCreateOutputObjects()
   fListOfHistos->Add(fhVtxZBGA);
   fListOfHistos->Add(fhVtxXYBGC);
   fListOfHistos->Add(fhVtxZBGC);
+
+  PostData(1, fListOfHistos);
 }
 
 void AliAnaVZEROQA::UserExec(Option_t */*option*/)
