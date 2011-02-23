@@ -181,8 +181,8 @@ void AliAnalysisTaskMuonTreeBuilder::UserExec(Option_t *)
 
 
   fNumMuonTracks=0; 
-  fNumSPDTracklets=666.;
-  fNumContributors=666.;
+  fNumSPDTracklets=666;
+  fNumContributors=666;
   fNumDimuons=0;
   fIsSelected=kFALSE;
   fVertex[0]=666.; fVertex[1]=666.; fVertex[2]=666.;
@@ -198,7 +198,7 @@ void AliAnalysisTaskMuonTreeBuilder::UserExec(Option_t *)
     fy[i]=666.; 
     feta[i]=666.; 
     fphi[i]=666.;
-    fMatchTrig[i]=666.; 
+    fMatchTrig[i]=666; 
     fTrackChi2[i]=666.; 
     fMatchTrigChi2[i]=666.;
     fDCA[i]=666.;
