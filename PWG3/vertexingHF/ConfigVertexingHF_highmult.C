@@ -46,10 +46,12 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   trkFilterSoftPi->AddCuts(esdTrackCutsSoftPi);
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
   //--- set cuts for candidates selection
+  Int_t nptbins=2; Float_t ptlimits[2]={0.,1000000.};
   AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
   cutsD0toKpi->SetStandardCutsPbPb2010();
   cutsD0toKpi->SetUsePID(kFALSE);
   Float_t cutsArrayD0toKpi[9]={0.2,999999.,1.1,0.,0.,999999.,999999.,0.,0.5};
+  cutsD0toKpi->SetPtBins(nptbins,ptlimits);
   cutsD0toKpi->SetCuts(9,cutsArrayD0toKpi);
   cutsD0toKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsD0toKpi(cutsD0toKpi);
@@ -62,6 +64,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDplustoKpipi->SetStandardCutsPbPb2010();
   cutsDplustoKpipi->SetUsePID(kFALSE);
   Float_t cutsArrayDplustoKpipi[12]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.03,0.,0.85,0.,10000000000.};
+  cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDplustoKpipi->SetCuts(12,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
@@ -69,6 +72,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDstoKKpi->SetStandardCutsPbPb2010();
   cutsDstoKKpi->SetUsePID(kFALSE);
   Float_t cutsArrayDstoKKpi[14]={0.,999.,999.,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1};
+  cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
   cutsDstoKKpi->SetCuts(14,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
@@ -76,6 +80,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsLctopKpi->SetStandardCutsPbPb2010();
   cutsLctopKpi->SetUsePID(kFALSE);
   Float_t cutsArrayLctopKpi[12]={0.13,0.5,0.6,0.,0.,0.01,0.04,0.006,0.8,0.3,0.,0.05};
+  cutsLctopKpi->SetPtBins(nptbins,ptlimits);
   cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
@@ -88,6 +93,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDStartoKpipi->SetStandardCutsPbPb2010();
   cutsDStartoKpipi->SetUsePID(kFALSE);
   Float_t cutsArrayDStartoKpipi[14]={0.15,0.07,0.85,0.8,0.8,0.06,0.06,0.001,0.6, 0.15, 0.03, 0.2, 5, 0.5}; // first 9 for D0 from D*, last 5 for D*
+  cutsDStartoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDStartoKpipi->SetCuts(14,cutsArrayDStartoKpipi);
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
