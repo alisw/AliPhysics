@@ -112,7 +112,7 @@ foreach(detector ${ONLINEDETECTORS} )
 
   set(ALIROOTALIBS)
 
-  list(APPEND ALIROOTALIBS RAWDatabase-static RAWDatarec-static RAWDatasim-static STEERBase-static STEER-static CDB-static ESD-static STAT-static AOD-static )
+  list(APPEND ALIROOTALIBS RAWDatabase-static RAWDatarec-static RAWDatasim-static STEERBase-static STEER-static CDB-static ESD-static STAT-static AOD-static ANALYSIS-static ANALYSISalice-static )
 
   expand(ALIROOTALIBS2 "\${${DAMODULE}ALIBS}")
   expand(DAINCDIRS "\${${DAMODULE}INC}")
