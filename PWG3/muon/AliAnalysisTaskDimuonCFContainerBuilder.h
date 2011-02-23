@@ -42,7 +42,7 @@ class AliAnalysisTaskDimuonCFContainerBuilder : public AliAnalysisTaskSE {
   void   SetThetaSingMuLimits	(Double_t ThetaSingle[])  {fThetaSingMuCut[0]=ThetaSingle[0];fThetaSingMuCut[1]=ThetaSingle[1];}
   void   SetZprimVertLimits	(Double_t Zprimvtx[])     {fzPrimVertexSPD[0]=Zprimvtx[0];fzPrimVertexSPD[1]=Zprimvtx[1];}
   void	 SetCutonZvtxSPD	(Bool_t   cut=kFALSE)	  {fCutOnzVtxSPD=cut;}
-  void   SetNContributorsLimits	(Double_t NContr[])       {fNContributors[0]=NContr[0];fNContributors[1]=NContr[1];}
+  void   SetNContributorsLimits	(Int_t NContr[])       {fNContributors[0]=NContr[0];fNContributors[1]=NContr[1];}
   void	 SetCutonNContributors	(Bool_t   cut=kFALSE)	  {fCutOnNContributors=cut;}
   void	 SetDistinguishTrigClass(Bool_t   dist=kFALSE)	  {fDistinguishTrigClass=dist;}
   void   SetTrigClassMuonName	(TString name = "CMU")	  {fTrigClassMuon=name;}
