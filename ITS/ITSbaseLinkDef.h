@@ -94,5 +94,6 @@
 #pragma link C++ class AliITSSurveyToAlign+;
 #pragma link C++ class AliITSTriggerConditions+;
 #pragma link C++ class AliITSTriggerAlgorithmConditions+;
+#pragma link C++ class AliITSdEdxSamples+;
 
 #endif
