@@ -107,6 +107,12 @@ public:
    * @param option Not used
    */
   virtual void Print(Option_t* option="") const;
+  /** 
+   * Set whether to use the secondary corrections 
+   * 
+   * @param use Whether to use secondary corrections 
+   */
+  virtual void SetUseSecondary(Bool_t use) { fUseSecondary = use; }
 
   //__________________________________________________________________
   /**
@@ -261,6 +267,7 @@ protected:
   TList*                 fList;          //Output List for diagnostics
   AliAODCentralMult      fAODCentral;    // Output object
   Manager                fManager;       //Manager object for corrections
+  Bool_t                 fUseSecondary;   // Whether to secondary map
   ClassDef(AliCentralMultiplicityTask,1) // Forward multiplicity class
 };
 

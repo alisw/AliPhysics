@@ -34,7 +34,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fData(0),
     fList(0),
     fAODCentral(kFALSE),
-    fManager()
+    fManager(),
+    fUseSecondary(true)
 {
   
   DefineOutput(1, TList::Class());
@@ -45,7 +46,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fData(0),
     fList(0),
     fAODCentral(),
-    fManager()
+    fManager(),
+    fUseSecondary(true)
 {
 }
 //____________________________________________________________________
@@ -54,17 +56,19 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fData(o.fData),
     fList(o.fList),
     fAODCentral(o.fAODCentral),
-    fManager(o.fManager)
+    fManager(o.fManager),
+    fUseSecondary(o.fUseSecondary)
 {
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask&
 AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
 {
-  fData       = o.fData;
-  fList       = o.fList;
-  fAODCentral = o.fAODCentral;
-  fManager    = o.fManager;
+  fData         = o.fData;
+  fList         = o.fList;
+  fAODCentral   = o.fAODCentral;
+  fManager      = o.fManager;
+  fUseSecondary = o.fUseSecondary;
   return *this;
 }
 //____________________________________________________________________
@@ -137,29 +141,30 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   
   
   // Corrections
-  TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
+  TH2D* hSecMap     = 0;
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
-  if (!hSecMap)     AliFatal("No secondary map!");
-  if (!hAcceptance) AliFatal("No acceptance!");
+  if (fUseSecondary) hSecMap = fManager.GetSecMapCorrection(vtxbin);
+  if (fUseSecondary && !hSecMap)  AliFatal("No secondary map!");
+  if (!hAcceptance)               AliFatal("No acceptance!");
     
-  aodHist->Divide(hSecMap);
+  if (hSecMap) aodHist->Divide(hSecMap);
   
   for(Int_t nx = 1; nx <= aodHist->GetNbinsX(); nx++) {
-    Float_t acccor = hAcceptance->GetBinContent(nx);
+    Float_t accCor = hAcceptance->GetBinContent(nx);
     
     Bool_t etabinSeen = kFALSE;  
     for(Int_t ny = 1; ny <= aodHist->GetNbinsY(); ny++) {
-      Float_t aodvalue = aodHist->GetBinContent(nx,ny);
-      Float_t seccor = hSecMap->GetBinContent(nx,ny);
-      if(seccor > 0.5) etabinSeen = kTRUE;
-      if(aodvalue < 0.000001) { aodHist->SetBinContent(nx,ny, 0); continue; }
-      
-      Float_t aodnew   = aodvalue / acccor ;
-      aodHist->SetBinContent(nx,ny, aodnew);
+      Float_t aodValue = aodHist->GetBinContent(nx,ny);
+      Float_t secCor   = hSecMap->GetBinContent(nx,ny);
+      if (secCor > 0.5) etabinSeen = kTRUE;
+      if (aodValue < 0.000001) { aodHist->SetBinContent(nx,ny, 0); continue; }
+      if (accCor   < 0.000001) accCor = 1;
+      Float_t aodNew   = aodValue / accCor ;
+      aodHist->SetBinContent(nx,ny, aodNew);
       Float_t aodErr   = aodHist->GetBinError(nx,ny);
       Float_t accErr   = hAcceptance->GetBinError(nx);
-      Float_t error    = aodnew *TMath::Sqrt(TMath::Power(aodErr/aodvalue,2) +
-					     TMath::Power(accErr/acccor,2) );
+      Float_t error    = aodNew *TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
+					     TMath::Power(accErr/accCor,2) );
       aodHist->SetBinError(nx,ny,error);
       
     }
