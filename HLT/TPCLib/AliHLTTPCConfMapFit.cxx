@@ -486,8 +486,9 @@ Int_t AliHLTTPCConfMapFit::FitLine ( )
       // AliHLTTPCConfMapPoint *cHit = (AliHLTTPCConfMapPoint*)hits->At(hit_counter);
       AliHLTTPCConfMapPoint *cHit = (AliHLTTPCConfMapPoint*)fTrack->GetCurrentHit();
       // if ( GetCurrentHit() != GetFirstHit() ) 
-      if(cHit != fTrack->GetFirstHit())//  hits->First())
+      if(previousHit)//  hits->First())
 	{
+	  // this means cHit != fTrack->GetFirstHit()
 	  dx   = cHit->GetX() - previousHit->GetX() ;
 	  dy   = cHit->GetY() - previousHit->GetY() ;
 	  dpsi = 0.5 * (Double_t)sqrt ( dx*dx + dy*dy ) / radius ;
@@ -716,13 +717,19 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
     // change Double_t s = 0.; -> slength
     Double_t slength = 0.;
 
+    // Matthias 23.02.2011
+    // this looks like a bug: previousHit is initialized, not changed
+    // in the loop, but dereferenced for all but the first hit
+    // changing the condition and adding an assignment at the end
+    // of the loop
     AliHLTTPCConfMapPoint *previousHit = NULL;
   
     // - Loop over hits calculating length in xy-plane: s
     // - Loop over hits calculating average : sav
     for(fTrack->StartLoop(); fTrack->LoopDone(); fTrack->GetNextHit()) {
 	AliHLTTPCConfMapPoint *currentHit = (AliHLTTPCConfMapPoint*)fTrack->GetCurrentHit();
-	if(currentHit != fTrack->GetFirstHit()) {
+	if(previousHit) {
+	    // this means currentHit != fTrack->GetFirstHit()
 	    Double_t dx = currentHit->GetX() - previousHit->GetX() ;
 	    Double_t dy = currentHit->GetY() - previousHit->GetY() ;
 	    slength = previousHit->GetS() - (Double_t)sqrt ( dx*dx + dy*dy );
@@ -737,6 +744,10 @@ Int_t AliHLTTPCConfMapFit::FitLineSZ ( ){
 
 	S   += currentHit->GetZWeight();
 	Ss  += currentHit->GetZWeight() * currentHit->GetS();
+
+	// Matthias 23.02.2011
+	// adding missing assignment, otherwise previousHit stays NULL
+	previousHit=currentHit;
     }
 
     Double_t sav = (Double_t)Ss / S;
