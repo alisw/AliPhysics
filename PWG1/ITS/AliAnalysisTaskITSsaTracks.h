@@ -15,6 +15,7 @@
 //*************************************************************************
 
 class TList;
+class TNtuple;
 class TH1F;
 class TH2F;
 class TTree;
@@ -45,10 +46,10 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
     fMinSPDpts=minp;
   }
   void SetMinPointsForITSPid(Int_t minp=3){
-    fMinITSptsForPid=minp;
+    fMinPtsforPid=minp;
   }
-  void SetMinPointsForMatchToTPC(Int_t minp=6){
-    fMinITSptsForMatch=minp;
+  void SetITChi2Cut(Float_t maxchi2=2.5){
+    fMaxITSChi2Clu=maxchi2;
   }
 
   void SetPtBins(Int_t n, Double_t* lim);
@@ -64,6 +65,9 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
     fRequirePoint[1]=kTRUE;
   }
 
+  void SetFillNtuple(Bool_t fill=kTRUE){
+    fFillNtuple=fill;
+  }  
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
@@ -74,6 +78,7 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
 
  private:
   enum {kPion=0,kKaon,kProton,kNspecies};
+  enum {kTypeTPCITS=0, kTypeITSsa, kTypeITSpureSA, kNtrackTypes};
   enum {kMaxPtBins=40};
 
   AliAnalysisTaskITSsaTracks(const AliAnalysisTaskITSsaTracks &source);
@@ -82,28 +87,34 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TList*  fOutput;          //! list of output histos
   TH1F*   fHistNEvents;     //! histo with N of events  
 
+  
+  TH1F*   fHistPt[kNtrackTypes];          //! pt distr., no PID
+  TH1F*   fHistPtGood[kNtrackTypes];      //! pt distr. good tracks, no PID
+  TH1F*   fHistPtFake[kNtrackTypes];      //! pt distr. fake tracks, no PID
+
+  TH2F*   fHistEtaPhi[kNtrackTypes];      //! etaphi distr., no PID
+  TH2F*   fHistEtaPhiGood[kNtrackTypes];  //! etaphi distr. good tracks, no PID
+  TH2F*   fHistEtaPhiFake[kNtrackTypes];  //! etaphi distr. fake tracks, no PID
+
+  TH1F*   fHistChi2[kNtrackTypes];        //! chi2 distr., no PID
+  TH1F*   fHistChi2Good[kNtrackTypes];    //! chi2 distr., good tracks, no PID
+  TH1F*   fHistChi2Fake[kNtrackTypes];    //! chi2 distr., fake tracks, no PID
+
+  TH1F*   fHistNclu[kNtrackTypes];        //! ITS clu distr., no PID
+  TH1F*   fHistNcluGood[kNtrackTypes];    //! ITS clu distr., good tracks, no PID
+  TH1F*   fHistNcluFake[kNtrackTypes];    //! ITS clu distr., fake tracks, no PID
+
+  TH2F*   fHistdedxvsPt3cls[kNtrackTypes]; //! dedx vs. pt for tracks with 3 clus in SDD+SSD
+  TH2F*   fHistdedxvsPt4cls[kNtrackTypes]; //! dedx vs. pt for tracks with 4 clus in SDD+SSD
+
+
   TH1F*   fHistPtTPCITS[kNspecies];    //! pt distribution of TPC+ITS tracks
   TH1F*   fHistPtITSsa[kNspecies];     //! pt distribution of ITSsa tracks
   TH1F*   fHistPtITSpureSA[kNspecies]; //! pt distribution of ITS pure SA tracks
 
-  TH1F*   fHistPtTPCITSAll;     //! pt distribution of all TPC+ITS tracks 
-  TH1F*   fHistPtTPCITSGood;    //! pt distribution of good TPC+ITS tracks 
-  TH1F*   fHistPtTPCITSFake;    //! pt distribution of fake TPC+ITS tracks
-  TH1F*   fHistPtITSsaAll;      //! pt distribution of all ITSsa tracks
-  TH1F*   fHistPtITSsaGood;     //! pt distribution of good ITSsa tracks
-  TH1F*   fHistPtITSsaFake;     //! pt distribution of fake ITSsa tracks
-  TH1F*   fHistPtITSpureSAAll;  //! pt distribution of all ITS pure SA tracks
-  TH1F*   fHistPtITSpureSAGood; //! pt distribution of good ITS pure SA tracks
-  TH1F*   fHistPtITSpureSAFake; //! pt distribution of fake ITS pure SA tracks
-
   TH2F*   fHistEtaPhiTPCITS[kNspecies];    //! etaphi distr. of TPC+ITS tracks
   TH2F*   fHistEtaPhiITSsa[kNspecies];     //! etaphi distr. of ITSsa tracks
   TH2F*   fHistEtaPhiITSpureSA[kNspecies]; //! etaphi distr. of ITSpureSA tracks
-
-  TH2F*   fHistdedxvsPtITSpureSA3cls; //! dedx for ITSpureSA tracks vs. pt
-  TH2F*   fHistdedxvsPITSpureSA3cls; //! dedx for ITSpureSA tracks vs. p
-  TH2F*   fHistdedxvsPtITSpureSA4cls; //! dedx for ITSpureSA tracks vs. pt
-  TH2F*   fHistdedxvsPITSpureSA4cls; //! dedx for ITSpureSA tracks vs. p
 
   TH2F*   fHistNcluTPCITS[kNspecies];    //! n. of clusters for TPC+ITS tracks vs. pt
   TH2F*   fHistNcluITSsa[kNspecies];     //! n. of clusters for ITSsa tracks vs. pt
@@ -125,20 +136,24 @@ class AliAnalysisTaskITSsaTracks : public AliAnalysisTaskSE {
   TH2F*   fHistMCInvPtResid[kNspecies];    //! 1/pt residuals (MC) vs. pt
   TH2F*   fHistMCInvPtRelResid[kNspecies]; //! 1/pt relative residulas (MC) vs. pt
 
-  Int_t fNPtBins;                  // number of Pt bins
+  TH2F*   fHistMCPhiResid; //! phi residuals in pt bins
+  TH2F*   fHistPhiResid;   //! phi residuals in pt bins
+  TNtuple* fNtupleTracks;  //! output ntuple
+
+  Int_t   fNPtBins;                  // number of Pt bins
   Float_t fPtLimits[kMaxPtBins+1]; // Pt bin limits
-  Int_t   fMinITSpts;          // Minimum number of ITS points per track
-  Int_t   fMinSPDpts;          // Minimum number of SPD points per track
-  Int_t   fMinITSptsForPid;    // Minimum number of SDD+SSD points per track
-  Int_t   fMinITSptsForMatch;  // Minimum number of ITS points to macth to TPC
-  Int_t   fMinTPCpts;          // Minimum number of TPC points per track
+  Int_t   fMinITSpts;       // Minimum number of ITS points per track
+  Int_t   fMinSPDpts;       // Minimum number of SPD points per track
+  Int_t   fMinPtsforPid;    // Minimum number of SDD+SSD points per track
+  Int_t   fMinTPCpts;       // Minimum number of TPC points per track
+  Float_t fMaxITSChi2Clu;   // Maximum value of ITS chi2 per cluster
   Bool_t  fRequirePoint[6]; // require point in given layer
+  Bool_t  fFillNtuple;      // flag to control fill of ntuple  
   Bool_t  fReadMC;          // flag read/not-read MC truth info
   Bool_t  fUseMCId;         // flag use/not-use MC identity for PID
 
-  ClassDef(AliAnalysisTaskITSsaTracks,1);  
+  ClassDef(AliAnalysisTaskITSsaTracks,2);  
 };
 
 
 #endif
-
