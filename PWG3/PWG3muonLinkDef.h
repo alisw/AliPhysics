@@ -33,6 +33,6 @@
 #pragma link C++ class AliAnalysisTaskMuonTreeBuilder+;
 #pragma link C++ class AliAnalysisTaskMuonQA+;
 #pragma link C++ class AliHistogramCollection+;
-
+#pragma link C++ class AliHistogramCollectionIterator+;
 #endif
 
