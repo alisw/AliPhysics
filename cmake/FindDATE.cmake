@@ -3,7 +3,7 @@
 # Author: Johny Jose (johny.jose@cern.ch)
 #         Port of previous Makefile build to cmake
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
 find_program(DATE_CONFIG date-config)
 message(STATUS "Check for Date : ${DATE_CONFIG}")
