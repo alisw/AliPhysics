@@ -256,7 +256,9 @@ int AliHLTOnlineConfiguration::ParseStandardComponent(const char* id,
     char* compargs = 0;
     bool hasArgs = false;
     char* cmdcopy = new char[strlen(cmd)+1];
-    strcpy(cmdcopy, cmd);
+    if (!cmdcopy) return -ENOMEM;
+    cmdcopy[strlen(cmd)]=0;
+    strncpy(cmdcopy, cmd, strlen(cmd));
     strtok(cmdcopy, " -"); // Skip "AliRootWrapperSubscriber"
     char* strtmp = 0;
     while (((strtmp = strtok(0, " -")))) {
@@ -319,7 +321,7 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
       id, type);  
   }
   else {
-    const char compid[] = "RawReaderPublisher";
+    const char compid[] = "AliRawReaderPublisher";
     const char complib[] = "libAliHLTUtil.so";
     // Parse (and validate) component command
     int ddlID;
@@ -336,11 +338,11 @@ int AliHLTOnlineConfiguration::ParseRORCPublisher(const char* id,
       Int_t detectorID = AliHLTDAQ::DetectorIDFromDdlID(ddlID, ddlIndex);
       string HLTOrigin = AliHLTDAQ::HLTOrigin(detectorID);
       string HLTSpecification = AliHLTDAQ::HLTSpecificationFromDdlID(ddlID);
-      char compargs[100];
-      sprintf(compargs, "-minid %d -datatype 'DDL_RAW ' '%s' -dataspec %s",
+      TString compargs;
+      compargs.Form("-minid %d -datatype 'DDL_RAW ' '%s' -dataspec %s",
         ddlID, HLTOrigin.c_str(), HLTSpecification.c_str());
       AliHLTComponentConfiguration* entry = new AliHLTComponentConfiguration(id,
-        compid, sources.Data(), compargs);
+        compid, sources.Data(), compargs.Data());
       entry->SetOnlineCommand(cmd);
       entry->SetComponentLibrary(complib);
       entry->SetNodeNames(nodes.Data());
