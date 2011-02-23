@@ -9,7 +9,6 @@
 
 #include "TMath.h"
 
-#include "AliAnalysisTaskMuonAODCreation.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliAODEvent.h"
