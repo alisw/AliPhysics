@@ -92,6 +92,9 @@ void AliTOFTenderSupply::Init()
   //
   // Initialise TOF tender
   //
+  Printf("|******************************************************|");
+  Printf("|    Alice TOF Tender Initialisation                   |");
+
 
 
   //
@@ -116,15 +119,23 @@ void AliTOFTenderSupply::Init()
   //
   if (!fTOFCalib){
       fTOFCalib=new AliTOFcalib();
+      fTOFCalib->SetRemoveMeanT0(!(fIsMC));        // must be kFALSE on MC (default is kTRUE)
+      fTOFCalib->SetCalibrateTOFsignal(!(fIsMC));  // must be kFALSE on MC (no new calibration) (default is kTRUE)
       fTOFCalib->SetCorrectTExp(fCorrectExpTimes); // apply a fine tuning on the expected times at low momenta
-      if(fIsMC) fTOFCalib->SetCalibrateTOFsignal(kFALSE); // no new calibration
 //      fTOFCalib->Init();
   }
   if (!fTOFT0maker) {
       fTOFT0maker = new AliTOFT0maker(fESDpid,fTOFCalib);
       fTOFT0maker->SetTimeResolution(fTOFres); // set TOF resolution for the PID
-      printf("tof time res = %f\n",fTOFres);
   }
+  Printf("|    Settings:                                         |");
+  Printf("|    Correct Exp Times              :  %d               |",fCorrectExpTimes);
+  Printf("|    LHC10d patch                   :  %d               |",fLHC10dPatch);
+  Printf("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFres);
+  Printf("|    timeZero selection             :  %d               |",fTimeZeroType);
+  Printf("|******************************************************|");
+
+
 }
 
 //_____________________________________________________
@@ -140,9 +151,12 @@ void AliTOFTenderSupply::ProcessEvent()
 
   AliESDEvent *event=fTender->GetEvent();
   if (!event) return;
+
+  //  Printf("AliTOFTenderSupply: process event\n");
     
   //recalculate TOF signal
   if (fTender->RunChanged()){
+    Printf("AliTOFTenderSupply: INIT at run %d\n",fTender->GetRun());
     fTOFCalib->Init(fTender->GetRun());
     
     if(event->GetT0TOF()){ // read T0 detector correction from OCDB
