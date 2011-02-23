@@ -1483,7 +1483,7 @@ AliGenerator* GeneratorFactory(PprRun_t srun) {
       genHi->SetJetQuenching(0); // enable jet quenching
       genHi->SetShadowing(1);    // enable shadowing
       genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off
-      genHi->SetSpectators(1);   // track spectators 
+      genHi->SetSpectators(0);   // track spectators 
       gGener = genHi;
     }
     default: break;
