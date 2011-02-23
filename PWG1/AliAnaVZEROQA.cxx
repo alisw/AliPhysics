@@ -172,6 +172,7 @@ void AliAnaVZEROQA::UserCreateOutputObjects()
   AliInfo("AliAnaVZEROQA::UserCreateOutputObjects");
   // Create output container
   fListOfHistos = new TList();
+  fListOfHistos->SetOwner();
 
   fhAdcNoTimeA = CreateHisto1D("hAdcNoTimeA","ADC (no Leading Time) V0A",200,0,200,"ADC charge","Entries");
   fhAdcWithTimeA = CreateHisto1D("hAdcWithTimeA","ADC ( with Leading Time) V0A",200,0,200,"ADC charge","Entries");
