@@ -27,7 +27,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   // |d0|>100 micron for pt<2GeV, no cut above 2
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0100*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0050*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
   esdTrackCuts->SetPtRange(0.8,1.e10);
@@ -63,7 +63,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
   cutsDplustoKpipi->SetStandardCutsPbPb2010();
   cutsDplustoKpipi->SetUsePID(kFALSE);
-  Float_t cutsArrayDplustoKpipi[12]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.03,0.,0.85,0.,10000000000.};
+  Float_t cutsArrayDplustoKpipi[12]={0.2,0.8,0.8,0.,0.,0.01,0.06,0.05,1.,0.85,0.,10000000000.};
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDplustoKpipi->SetCuts(12,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
@@ -71,7 +71,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
   cutsDstoKKpi->SetStandardCutsPbPb2010();
   cutsDstoKKpi->SetUsePID(kFALSE);
-  Float_t cutsArrayDstoKKpi[14]={0.,999.,999.,0.,0.,0.005,0.06,0.,0.,0.7,0.,1000.,0.1,0.1};
+  Float_t cutsArrayDstoKKpi[14]={0.2,0.4,0.4,0.,0.,0.005,0.045,0.,0.,0.9,0.,100000.,0.035,0.05};
   cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
   cutsDstoKKpi->SetCuts(14,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
@@ -79,10 +79,11 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
   cutsLctopKpi->SetStandardCutsPbPb2010();
   cutsLctopKpi->SetUsePID(kFALSE);
-  Float_t cutsArrayLctopKpi[12]={0.13,0.5,0.6,0.,0.,0.01,0.04,0.006,0.8,0.3,0.,0.05};
+  Float_t cutsArrayLctopKpi[12]={0.13,0.9,1.,0.,0.,0.01,0.04,0.006,1.,0.5,0.,0.05};
   cutsLctopKpi->SetPtBins(nptbins,ptlimits);
   cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
+  cutsLctopKpi->SetMinPtCandidate(3.);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
   AliRDHFCutsD0toKpipipi *cutsD0toKpipipi = new AliRDHFCutsD0toKpipipi("CutsD0toKpipipi");
   Float_t cutsArrayD0toKpipipi[9]={0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.};
@@ -92,12 +93,67 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
   cutsDStartoKpipi->SetStandardCutsPbPb2010();
   cutsDStartoKpipi->SetUsePID(kFALSE);
-  Float_t cutsArrayDStartoKpipi[14]={0.15,0.07,0.85,0.8,0.8,0.06,0.06,0.001,0.6, 0.15, 0.03, 0.2, 5, 0.5}; // first 9 for D0 from D*, last 5 for D*
-  cutsDStartoKpipi->SetPtBins(nptbins,ptlimits);
-  cutsDStartoKpipi->SetCuts(14,cutsArrayDStartoKpipi);
+
+
+ // D* pt dependent cuts ------------------------------------------
+
+  AliRDHFCutsDStartoKpipi *cutsDStartoKpipi = new AliRDHFCutsDStartoKpipi("CutsDStartoKpipi");
+  
+  const Int_t nvars=14;
+  const Int_t nptbins=2;
+  
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=4.;
+  ptbins[2]=999.;
+  
+  cutsDStartoKpipi->SetPtBins(nptbins+1,ptbins);
+  
+  Float_t** rdcutsvalmine;
+  rdcutsvalmine=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++){
+    rdcutsvalmine[iv]=new Float_t[nptbins];
+  }
+  //0-4
+  rdcutsvalmine[0][0]=0.15;
+  rdcutsvalmine[1][0]=0.07;
+  rdcutsvalmine[2][0]=0.8;
+  rdcutsvalmine[3][0]=0.8;
+  rdcutsvalmine[4][0]=0.8;
+  rdcutsvalmine[5][0]=0.08;
+  rdcutsvalmine[6][0]=0.08;
+  rdcutsvalmine[7][0]=-0.00002;
+  rdcutsvalmine[8][0]=0.72;
+  rdcutsvalmine[9][0]=0.15;
+  rdcutsvalmine[10][0]=0.03;
+  rdcutsvalmine[11][0]=0.2;
+  rdcutsvalmine[12][0]=100.;
+  rdcutsvalmine[13][0]=0.5;
+  //4-999
+  rdcutsvalmine[0][1]=0.24;
+  rdcutsvalmine[1][1]=0.07;
+  rdcutsvalmine[2][1]=0.8;
+  rdcutsvalmine[3][1]=0.8;
+  rdcutsvalmine[4][1]=0.8;
+  rdcutsvalmine[5][1]=0.1;
+  rdcutsvalmine[6][1]=0.1;
+  rdcutsvalmine[7][1]=0.00001;
+  rdcutsvalmine[8][1]=0.72;
+  rdcutsvalmine[9][1]=0.15;
+  rdcutsvalmine[10][1]=0.03;
+  rdcutsvalmine[11][1]=0.2;
+  rdcutsvalmine[12][1]=100.;
+  rdcutsvalmine[13][1]=0.5;
+
+  cutsDStartoKpipi->SetCuts(nvars,nptbins,rdcutsvalmine);
+ 
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
+
+  //--------------------------------------------------------
+
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
   Float_t cutsArrayLctoV0[9]={4.0,4.0,2.0,2.0,0.0,0.0,0.0,1000.,1000.};
   cutsLctoV0->SetCuts(9,cutsArrayLctoV0);
