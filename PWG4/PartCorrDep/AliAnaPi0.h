@@ -52,9 +52,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void InitParameters();
 
   //Calorimeter options
-  TString GetCalorimeter()   const {return fCalorimeter ; }
-  void SetCalorimeter(TString & det)    {fCalorimeter = det ; }
-  void SetNumberOfModules(Int_t nmod) {fNModules = nmod;}
+  TString GetCalorimeter()        const { return fCalorimeter; }
+  void SetCalorimeter(TString & det)    { fCalorimeter = det ; }
+  void SetNumberOfModules(Int_t nmod)   { fNModules    = nmod; }
   
   //-------------------------------
   // EVENT Bin Methods
@@ -80,6 +80,18 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   
   void SwitchOnCellEBins()        {fUseAverCellEBins = kTRUE  ; }
   void SwitchOffCellEBins()       {fUseAverCellEBins = kFALSE ; }
+
+  void SwitchOnClusterEDenBins()     {fUseAverClusterEDenBins = kTRUE  ; }
+  void SwitchOffClusterEDenBins()    {fUseAverClusterEDenBins = kFALSE ; }
+  
+//  void SwitchOnClusterPairRBins()     {fUseAverClusterPairRBins = kTRUE  ; }
+//  void SwitchOffClusterPairRBins()    {fUseAverClusterPairRBins = kFALSE ; }
+//  
+//  void SwitchOnClusterPairRWeightBins() {fUseAverClusterPairRWeightBins = kTRUE  ; }
+//  void SwitchOffClusterPairRWeightBins(){fUseAverClusterPairRWeightBins = kFALSE ; }
+
+//  void SwitchOnEMaxBins()             {fUseEMaxBins = kTRUE  ; }
+//  void SwitchOffEMaxBins()            {fUseEMaxBins = kFALSE ; }
 
   //-------------------------------
 	//Opening angle pair selection
@@ -115,7 +127,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //-------------------------------------------
   //Cuts for multiple analysis, off by default
   //-------------------------------------------
-  void SwitchOnMultipleCutAnalysis()          {fMultiCutAna    = kTRUE;}
+  void SwitchOnMultipleCutAnalysis()          {fMultiCutAna    = kTRUE ;}
   void SwitchOffMultipleCutAnalysis()         {fMultiCutAna    = kFALSE;}
 
   void SetNPtCuts   (Int_t size)              {if(size <= 10)fNPtCuts    = size; }
@@ -171,14 +183,34 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Bool_t   fSameSM;              // Select only pairs in same SM;
   Bool_t   fUseTrackMultBins;    // Use track multiplicity and not centrality bins
   Bool_t   fUsePhotonMultBins;   // Use photon multiplicity and not centrality bins
-  Bool_t   fUseAverClusterEBins; // Use cluster average energy and not centrality bins
   Bool_t   fUseAverCellEBins;    // Use cell average energy and not centrality bins
+  Bool_t   fUseAverClusterEBins; // Use cluster average energy and not centrality bins
+  Bool_t   fUseAverClusterEDenBins; // Use cluster average energy density and not centrality bins
+//  Bool_t   fUseAverClusterPairRBins; // Use cluster average energy and not centrality bins
+//  Bool_t   fUseAverClusterPairRWeightBins; // Use cluster average energy and not centrality bins
+//  Bool_t   fUseEMaxBins;         // Use Emax bins
   Bool_t   fFillBadDistHisto;    // Do plots for different distances to bad channels
   
   //Histograms
   
+  //Event characterization
   TH1F* fhAverTotECluster;          //! Average number of clusters in SM
   TH1F* fhAverTotECell;             //! Average number of cells    in SM
+  TH2F* fhAverTotECellvsCluster;    //! Average number of cells    in SM
+  TH1F* fhEDensityCluster;          //! Deposited energy in event per cluster
+  TH1F* fhEDensityCell;             //! Deposited energy in event per cell vs cluster
+  TH2F* fhEDensityCellvsCluster;    //! Deposited energy in event per cell vs cluster
+//  TH1F* fhClusterPairDist;          //! Distance between clusters
+//  TH1F* fhClusterPairDistWeight;    //! Distance between clusters weighted by pair energy
+//  TH1F* fhAverClusterPairDist;      //! Average distance between cluster pairs
+//  TH1F* fhAverClusterPairDistWeight;//! Average distance between cluster pairs weighted with pair energy
+//  TH2F* fhAverClusterPairDistvsAverE;        //! Average distance between cluster pairs vs average cluster energy
+//  TH2F* fhAverClusterPairDistWeightvsAverE;  //! Average distance between cluster pairs weighted with pair energy vs average cluster energy
+//  TH2F* fhAverClusterPairDistvsN;            //! Average distance between cluster pairs vs number of clusters
+//  TH2F* fhAverClusterPairDistWeightvsN;      //! Average distance between cluster pairs weighted with pair energy vs number of clusters
+//  TH2F* fhMaxEvsClustMult;          //!
+//  TH2F* fhMaxEvsClustEDen;          //!
+
   
   TH2D ** fhReMod ;                 //![fNModules]   REAL  two-photon invariant mass distribution for different calorimeter modules.
   TH2D ** fhReDiffMod ;             //![fNModules+1] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
@@ -233,19 +265,19 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //Pi0 Acceptance
   TH1D * fhPrimPi0Pt ;              //! Spectrum of Primary 
   TH1D * fhPrimPi0AccPt ;           //! Spectrum of primary with accepted daughters 
-  TH1D * fhPrimPi0Y ;               //! Rapidity distribution of primary particles
-  TH1D * fhPrimPi0AccY ;            //! Rapidity distribution of primary with accepted daughters
-  TH1D * fhPrimPi0Phi ;             //! Azimutal distribution of primary particles
-  TH1D * fhPrimPi0AccPhi;           //! Azimutal distribution of primary with accepted daughters	
+  TH2D * fhPrimPi0Y ;               //! Rapidity distribution of primary particles  vs pT
+  TH2D * fhPrimPi0AccY ;            //! Rapidity distribution of primary with accepted daughters  vs pT
+  TH2D * fhPrimPi0Phi ;             //! Azimutal distribution of primary particles  vs pT
+  TH2D * fhPrimPi0AccPhi;           //! Azimutal distribution of primary with accepted daughters  vs pT
   TH2D * fhPrimPi0OpeningAngle ;    //! Opening angle of pair versus pair energy, primaries
   TH2D * fhPrimPi0CosOpeningAngle ; //! Cosinus of opening angle of pair version pair energy, primaries
   //Eta acceptance
   TH1D * fhPrimEtaPt ;              //! Spectrum of Primary 
   TH1D * fhPrimEtaAccPt ;           //! Spectrum of primary with accepted daughters 
-  TH1D * fhPrimEtaY ;               //! Rapidity distribution of primary particles
-  TH1D * fhPrimEtaAccY ;            //! Rapidity distribution of primary with accepted daughters
-  TH1D * fhPrimEtaPhi ;             //! Azimutal distribution of primary particles
-  TH1D * fhPrimEtaAccPhi;           //! Azimutal distribution of primary with accepted daughters	
+  TH2D * fhPrimEtaY ;               //! Rapidity distribution of primary particles vs pT
+  TH2D * fhPrimEtaAccY ;            //! Rapidity distribution of primary with accepted daughters  vs pT
+  TH2D * fhPrimEtaPhi ;             //! Azimutal distribution of primary particles  vs pT
+  TH2D * fhPrimEtaAccPhi;           //! Azimutal distribution of primary with accepted daughters	 vs pT
   
   //Pair origin
   //Array of histograms ordered as follows: 0-Photon, 1-electron, 2-pi0, 3-eta, 4-a-proton, 5-a-neutron, 6-stable particles, 
@@ -263,7 +295,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D ** fhMCEtaMassPtTrue;        //![fNPtCuts*fNAsymCuts*fNCellNCuts] Real eta pairs, reconstructed mass vs generated pt of original pair  
   TH2D ** fhMCEtaPtTruePtRec;       //![fNPtCuts*fNAsymCuts*fNCellNCuts] Real eta pairs, reconstructed pt vs generated pt of pair
 
-  ClassDef(AliAnaPi0,13)
+  ClassDef(AliAnaPi0,14)
 } ;
 
 

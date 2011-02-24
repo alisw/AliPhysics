@@ -60,12 +60,18 @@ fDoOwnMix(kFALSE),fNCentrBin(0),//fNZvertBin(0),fNrpBin(0),
 fNmaxMixEv(0), fCalorimeter(""),
 fNModules(12), fUseAngleCut(kFALSE), fUseAngleEDepCut(kFALSE),fAngleCut(0), fAngleMaxCut(7.),fEventsList(0x0), fMultiCutAna(kFALSE), fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),fNAsymCuts(0), fNCellNCuts(0),fNPIDBits(0),  fMakeInvPtPlots(kFALSE), fSameSM(kFALSE),
-fUseTrackMultBins(kFALSE),fUsePhotonMultBins(kFALSE),fUseAverClusterEBins(kFALSE),fUseAverCellEBins(kFALSE), fFillBadDistHisto(kFALSE),
-fhAverTotECluster(0),fhAverTotECell(0),
-fhReMod(0x0),   fhReDiffMod(0x0), fhMiMod(0x0),    fhMiDiffMod(0x0),
-fhReConv(0x0),   fhMiConv(0x0),   fhReConv2(0x0),  fhMiConv2(0x0),
-fhRe1(0x0),      fhMi1(0x0),      fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
-fhReInvPt1(0x0), fhMiInvPt1(0x0), fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
+fUseTrackMultBins(kFALSE),fUsePhotonMultBins(kFALSE),fUseAverCellEBins(kFALSE), fUseAverClusterEBins(kFALSE),
+fUseAverClusterEDenBins(0), //fUseAverClusterPairRBins(0), fUseAverClusterPairRWeightBins(0), fUseEMaxBins(0),
+fFillBadDistHisto(kFALSE),
+fhAverTotECluster(0), fhAverTotECell(0), fhAverTotECellvsCluster(0),
+fhEDensityCluster(0), fhEDensityCell(0), fhEDensityCellvsCluster(0),
+//fhClusterPairDist(0), fhClusterPairDistWeight(0),  fhAverClusterPairDist(0), fhAverClusterPairDistWeight(0),
+//fhAverClusterPairDistvsAverE(0), fhAverClusterPairDistWeightvsAverE(0),fhAverClusterPairDistvsN(0), fhAverClusterPairDistWeightvsN(0),
+//fhMaxEvsClustMult(0), fhMaxEvsClustEDen(0),
+fhReMod(0x0),    fhReDiffMod(0x0), fhMiMod(0x0),    fhMiDiffMod(0x0),
+fhReConv(0x0),   fhMiConv(0x0),    fhReConv2(0x0),  fhMiConv2(0x0),
+fhRe1(0x0),      fhMi1(0x0),       fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
+fhReInvPt1(0x0), fhMiInvPt1(0x0),  fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0), fhRePtNCellAsymCutsSM0(0x0), fhRePtNCellAsymCutsSM1(0x0), fhRePtNCellAsymCutsSM2(0x0), fhRePtNCellAsymCutsSM3(0x0), fhMiPtNCellAsymCuts(0x0),
 fhRePIDBits(0x0),fhRePtMult(0x0), fhRePtAsym(0x0), fhRePtAsymPi0(0x0),fhRePtAsymEta(0x0),  
 fhEvents(0x0), fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0), fhMixedOpeningAngle(0x0),fhMixedCosOpeningAngle(0x0),
@@ -266,25 +272,91 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   fhAverTotECell->SetXTitle("E_{cell, aver. SM} (GeV)");
   outputContainer->Add(fhAverTotECell) ;
   
+  fhAverTotECellvsCluster    = new TH2F("hAverTotECellvsCluster","hAverTotECellvsCluster",200,0,50,200,0,50) ;
+  fhAverTotECellvsCluster->SetYTitle("E_{cell, aver. SM} (GeV)");
+  fhAverTotECellvsCluster->SetXTitle("E_{cluster, aver. SM} (GeV)");
+  outputContainer->Add(fhAverTotECellvsCluster) ;
+  
+  fhEDensityCluster = new TH1F("hEDensityCluster","hEDensityCluster",200,0,50) ;
+  fhEDensityCluster->SetXTitle("#Sigma E_{cluster} / N_{cluster} (GeV)");
+  outputContainer->Add(fhEDensityCluster) ;
+  
+  fhEDensityCell    = new TH1F("hEDensityCell","hEDensityCell",200,0,50) ;
+  fhEDensityCell->SetXTitle("#Sigma E_{cell} / N_{cell} (GeV)");
+  outputContainer->Add(fhEDensityCell) ;
+  
+  fhEDensityCellvsCluster    = new TH2F("hEDensityCellvsCluster","hEDensityCellvsCluster",200,0,50,200,0,50) ;
+  fhEDensityCellvsCluster->SetYTitle("#Sigma E_{cell} / N_{cell} (GeV)");
+  fhEDensityCellvsCluster->SetXTitle("#Sigma E_{cluster} / N_{cluster} (GeV)");
+  outputContainer->Add(fhEDensityCellvsCluster) ;
+  
+//  fhClusterPairDist = new TH1F("hClusterPairDist","Distance between clusters",250,0,750) ;
+//  fhClusterPairDist->SetXTitle("#sqrt{(x_{1}-x_{2})^2+(z_{1}-z_{2})^2} (cm)");
+//  outputContainer->Add(fhClusterPairDist) ;
+//  
+//  fhClusterPairDistWeight = new TH1F("hClusterPairDistWeighted","Distance between clusters, weighted by pair energy",200,0,400) ;
+//  fhClusterPairDistWeight->SetXTitle("#sqrt{(x_{1}E_{1}-x_{2}E_{2})^{2}+(z_{1}E_{1}-z_{2}E_{2})^{2}}/ (E_{1}+E_{2}) (cm)");
+//  outputContainer->Add(fhClusterPairDistWeight) ;
+//   
+//  fhAverClusterPairDist = new TH1F("hAverClusterPairDist","Average distance between clusters",250,0,750) ;
+//  fhAverClusterPairDist->SetXTitle("#Sigma (#sqrt{(x_{1}-x_{2})^{2}+(z_{1}-z_{2})^{2}}) / N_{pairs} (cm)");
+//  outputContainer->Add(fhAverClusterPairDist) ;
+//  
+//  fhAverClusterPairDistWeight = new TH1F("hAverClusterPairDistWeighted","Average distance between clusters, weighted by pair energy",200,0,400) ;
+//  fhAverClusterPairDistWeight->SetXTitle("#Sigma (#sqrt{(x_{1}E_{1}-x_{2}E_{2})^{2}+(z_{1}E_{1}-z_{2}E_{2})^{2}}/ (E_{1}+E_{2})) / N_{pairs} (cm)");
+//  outputContainer->Add(fhAverClusterPairDistWeight) ;
+//  
+//  fhAverClusterPairDistvsAverE = new TH2F("hAverClusterPairDistvsAverE","Average distance between clusters",250,0,750,200,0,50) ;
+//  fhAverClusterPairDistvsAverE->SetXTitle("#Sigma (#sqrt{(x_{1}-x_{2})^{2}+(z_{1}-z_{2})^{2}}) / N_{pairs} (cm)");
+//  fhAverClusterPairDistvsAverE->SetYTitle("#Sigma E_{cluster} / N_{cluster} (GeV)");
+//  outputContainer->Add(fhAverClusterPairDistvsAverE) ;
+//  
+//  fhAverClusterPairDistWeightvsAverE = new TH2F("hAverClusterPairDistWeightedvsAverE","Average distance between clusters, weighted by pair energy",200,0,400,200,0,50) ;
+//  fhAverClusterPairDistWeightvsAverE->SetXTitle("#Sigma (#sqrt{(x_{1}E_{1}-x_{2}E_{2})^2+(z_{1}E_{1}-z_{2}E_{2})^2}/ (E_{1}+E_{2})) / N_{pairs} (cm/GeV)");
+//  fhAverClusterPairDistWeightvsAverE->SetYTitle("#Sigma E_{cluster} / N_{cluster} (GeV)");
+//  outputContainer->Add(fhAverClusterPairDistWeightvsAverE) ;
+  
+//  fhAverClusterPairDistvsN = new TH2F("hAverClusterPairDistvsN","Average distance between clusters",250,0,750,200,0,50) ;
+//  fhAverClusterPairDistvsN->SetXTitle("#Sigma (#sqrt{(x_{1}-x_{2})^{2}+(z_{1}-z_{2})^{2}}) / N_{pairs} (cm)");
+//  fhAverClusterPairDistvsN->SetYTitle("N_{cluster}");
+//  outputContainer->Add(fhAverClusterPairDistvsN) ;
+//  
+//  fhAverClusterPairDistWeightvsN = new TH2F("hAverClusterPairDistWeightedvsN","Average distance between clusters, weighted by pair energy",200,0,400,200,0,50) ;
+//  fhAverClusterPairDistWeightvsN->SetXTitle("#Sigma (#sqrt{(x_{1}E_{1}-x_{2}E_{2})^{2}+(z_{1}E_{1}-z_{2}E_{2})^{2}}/ (E_{1}+E_{2})) / N_{pairs} (cm)");
+//  fhAverClusterPairDistWeightvsN->SetYTitle("N_{cluster}");
+//  outputContainer->Add(fhAverClusterPairDistWeightvsN) ;
+  
+//  fhMaxEvsClustMult = new TH2F("hMaxEvsClustMult","",nptbins,ptmin,ptmax,50,0,50) ;
+//  fhMaxEvsClustMult->SetXTitle("E_{max}");
+//  fhMaxEvsClustMult->SetYTitle("N_{cluster}");
+//  outputContainer->Add(fhMaxEvsClustMult) ;
+//  
+//  fhMaxEvsClustEDen = new TH2F("hMaxEvsClustEDen","",nptbins,ptmin,ptmax,200,0,50) ;
+//  fhMaxEvsClustEDen->SetXTitle("E_{max}");
+//  fhMaxEvsClustEDen->SetYTitle("#Sigma E_{cluster} / N_{cluster} (GeV)");
+//  outputContainer->Add(fhMaxEvsClustEDen) ;
+  
   fhReConv = new TH2D("hReConv","Real Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
   fhReConv->SetXTitle("p_{T} (GeV/c)");
   fhReConv->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
   outputContainer->Add(fhReConv) ;
-  
-  fhMiConv = new TH2D("hMiConv","Mixed Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-  fhMiConv->SetXTitle("p_{T} (GeV/c)");
-  fhMiConv->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-  outputContainer->Add(fhMiConv) ;
   
   fhReConv2 = new TH2D("hReConv2","Real Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
   fhReConv2->SetXTitle("p_{T} (GeV/c)");
   fhReConv2->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
   outputContainer->Add(fhReConv2) ;
   
-  fhMiConv2 = new TH2D("hMiConv2","Mixed Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-  fhMiConv2->SetXTitle("p_{T} (GeV/c)");
-  fhMiConv2->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-  outputContainer->Add(fhMiConv2) ;
+  if(fDoOwnMix){
+    fhMiConv = new TH2D("hMiConv","Mixed Pair with one recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhMiConv->SetXTitle("p_{T} (GeV/c)");
+    fhMiConv->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhMiConv) ;
+  
+    fhMiConv2 = new TH2D("hMiConv2","Mixed Pair with 2 recombined conversion ",nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+    fhMiConv2->SetXTitle("p_{T} (GeV/c)");
+    fhMiConv2->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhMiConv2) ;
+  }
   
   for(Int_t ic=0; ic<fNCentrBin; ic++){
       for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
@@ -548,37 +620,57 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     //Pi0
     fhPrimPi0Pt     = new TH1D("hPrimPi0Pt","Primary pi0 pt",nptbins,ptmin,ptmax) ;
     fhPrimPi0AccPt  = new TH1D("hPrimPi0AccPt","Primary pi0 pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimPi0Pt   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0AccPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Pt) ;
     outputContainer->Add(fhPrimPi0AccPt) ;
     
-    fhPrimPi0Y      = new TH1D("hPrimPi0Rapidity","Rapidity of primary pi0",netabins,etamin,etamax) ; 
+    fhPrimPi0Y      = new TH2D("hPrimPi0Rapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax, netabins,etamin,etamax) ;
+    fhPrimPi0Y   ->SetYTitle("Rapidity");
+    fhPrimPi0Y   ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Y) ;
     
-    fhPrimPi0AccY   = new TH1D("hPrimPi0AccRapidity","Rapidity of primary pi0",netabins,etamin,etamax) ; 
+    fhPrimPi0AccY   = new TH2D("hPrimPi0AccRapidity","Rapidity of primary pi0",nptbins,ptmin,ptmax, netabins,etamin,etamax) ; 
+    fhPrimPi0AccY->SetYTitle("Rapidity");
+    fhPrimPi0AccY->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccY) ;
     
-    fhPrimPi0Phi    = new TH1D("hPrimPi0Phi","Azimithal of primary pi0",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimPi0Phi    = new TH2D("hPrimPi0Phi","Azimuthal of primary pi0",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimPi0Phi->SetYTitle("#phi (deg)");
+    fhPrimPi0Phi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0Phi) ;
     
-    fhPrimPi0AccPhi = new TH1D("hPrimPi0AccPhi","Azimithal of primary pi0 with accepted daughters",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimPi0AccPhi = new TH2D("hPrimPi0AccPhi","Azimuthal of primary pi0 with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimPi0AccPhi->SetYTitle("#phi (deg)");
+    fhPrimPi0AccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimPi0AccPhi) ;
     
     //Eta
     fhPrimEtaPt     = new TH1D("hPrimEtaPt","Primary eta pt",nptbins,ptmin,ptmax) ;
     fhPrimEtaAccPt  = new TH1D("hPrimEtaAccPt","Primary eta pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
+    fhPrimEtaPt   ->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaAccPt->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaPt) ;
     outputContainer->Add(fhPrimEtaAccPt) ;
     
-    fhPrimEtaY      = new TH1D("hPrimEtaRapidity","Rapidity of primary eta",netabins,etamin,etamax) ; 
+    fhPrimEtaY      = new TH2D("hPrimEtaRapidity","Rapidity of primary eta",nptbins,ptmin,ptmax,netabins,etamin,etamax) ; 
+    fhPrimEtaY->SetYTitle("Rapidity");
+    fhPrimEtaY->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaY) ;
     
-    fhPrimEtaAccY   = new TH1D("hPrimEtaAccRapidity","Rapidity of primary eta",netabins,etamin,etamax) ; 
+    fhPrimEtaAccY   = new TH2D("hPrimEtaAccRapidity","Rapidity of primary eta",nptbins,ptmin,ptmax, netabins,etamin,etamax) ; 
+    fhPrimEtaAccY->SetYTitle("Rapidity");
+    fhPrimEtaAccY->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaAccY) ;
     
-    fhPrimEtaPhi    = new TH1D("hPrimEtaPhi","Azimithal of primary eta",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaPhi    = new TH2D("hPrimEtaPhi","Azimuthal of primary eta",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaPhi->SetYTitle("#phi (deg)");
+    fhPrimEtaPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaPhi) ;
     
-    fhPrimEtaAccPhi = new TH1D("hPrimEtaAccPhi","Azimithal of primary eta with accepted daughters",nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaAccPhi = new TH2D("hPrimEtaAccPhi","Azimuthal of primary eta with accepted daughters",nptbins,ptmin,ptmax, nphibins,phimin*TMath::RadToDeg(),phimax*TMath::RadToDeg()) ; 
+    fhPrimEtaAccPhi->SetYTitle("#phi (deg)");
+    fhPrimEtaAccPhi->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhPrimEtaAccPhi) ;
         
     
@@ -605,14 +697,14 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMCOrgAsym[i]->SetYTitle("A");
       outputContainer->Add(fhMCOrgAsym[i]) ;
       
-      fhMCOrgDeltaEta[i] = new TH2D(Form("hMCOrgDeltaEta_%d",i),Form("mass vs pt, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
+      fhMCOrgDeltaEta[i] = new TH2D(Form("hMCOrgDeltaEta_%d",i),Form("#Delta #eta of pair vs pt, origin %d",i),nptbins,ptmin,ptmax,netabins,-1.4,1.4) ;
       fhMCOrgDeltaEta[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgDeltaEta[i]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+      fhMCOrgDeltaEta[i]->SetYTitle("#Delta #eta");
       outputContainer->Add(fhMCOrgDeltaEta[i]) ;
       
-      fhMCOrgDeltaPhi[i]= new TH2D(Form("hMCOrgDeltaPhi_%d",i),Form("asymmetry vs pt, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
+      fhMCOrgDeltaPhi[i]= new TH2D(Form("hMCOrgDeltaPhi_%d",i),Form("#Delta #phi of pair vs p_{T}, origin %d",i),nptbins,ptmin,ptmax,nphibins,-0.7,0.7) ;
       fhMCOrgDeltaPhi[i]->SetXTitle("p_{T} (GeV/c)");
-      fhMCOrgDeltaPhi[i]->SetYTitle("A");
+      fhMCOrgDeltaPhi[i]->SetYTitle("#Delta #phi (rad)");
       outputContainer->Add(fhMCOrgDeltaPhi[i]) ;
       
     }
@@ -843,15 +935,15 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             if(TMath::Abs(pi0Y) < 0.5){
               fhPrimPi0Pt->Fill(pi0Pt) ;
             }
-            fhPrimPi0Y  ->Fill(pi0Y) ;
-            fhPrimPi0Phi->Fill(phi) ;
+            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
+            fhPrimPi0Phi->Fill(pi0Pt, phi) ;
           }
           else if(pdg == 221){
             if(TMath::Abs(pi0Y) < 0.5){
               fhPrimEtaPt->Fill(pi0Pt) ;
             }
-            fhPrimEtaY  ->Fill(pi0Y) ;
-            fhPrimEtaPhi->Fill(phi) ;
+            fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
+            fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
@@ -887,8 +979,18 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               }	   
               else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
                 if(GetEMCALGeometry()){
-                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
+                  
+                  Int_t absID1=0;
+                  Int_t absID2=0;
+                  
+                  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(phot1->Eta(),phot1->Phi(),absID1);
+                  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(phot2->Eta(),phot2->Phi(),absID2);
+
+                  if( absID1 >= 0 && absID2 >= 0) 
                     inacceptance = kTRUE;
+                  
+//                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
+//                    inacceptance = kTRUE;
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
                 else{
@@ -900,22 +1002,22 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               
               if(inacceptance){
                 if(pdg==111){
-                  fhPrimPi0AccPt->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi->Fill(phi) ;
-                  fhPrimPi0AccY->Fill(pi0Y) ;
+                  fhPrimPi0AccPt ->Fill(pi0Pt) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
                   fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
                   fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                 }
                 else if(pdg==221){
-                  fhPrimEtaAccPt->Fill(pi0Pt) ;
-                  fhPrimEtaAccPhi->Fill(phi) ;
-                  fhPrimEtaAccY->Fill(pi0Y) ;
+                  fhPrimEtaAccPt ->Fill(pi0Pt) ;
+                  fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                 }
               }//Accepted
             }// 2 photons      
           }//Check daughters exist
-        }// Primary pi0
+        }// Primary pi0 or eta
       }//loop on primaries	
     }//stack exists and data is MC
   }//read stack
@@ -924,7 +1026,9 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
     if(mcparticles){
       Int_t nprim = mcparticles->GetEntriesFast();
-      for(Int_t i=0 ; i < nprim; i++){
+      for(Int_t i=0
+          ; i < nprim; i++)
+      {
         AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);        
         Int_t pdg = prim->GetPdgCode();
         if( pdg == 111 || pdg == 221){
@@ -937,15 +1041,15 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             if(TMath::Abs(pi0Y) < 0.5){
               fhPrimPi0Pt->Fill(pi0Pt) ;
             }
-            fhPrimPi0Y  ->Fill(pi0Y) ;
-            fhPrimPi0Phi->Fill(phi) ;
+            fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
+            fhPrimPi0Phi->Fill(pi0Pt, phi) ;
           }
           else if(pdg == 221){
             if(TMath::Abs(pi0Y) < 0.5){
               fhPrimEtaPt->Fill(pi0Pt) ;
             }
-            fhPrimEtaY  ->Fill(pi0Y) ;
-            fhPrimEtaPhi->Fill(phi) ;
+            fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
+            fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
@@ -955,9 +1059,6 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             AliAODMCParticle * phot1 = (AliAODMCParticle *) mcparticles->At(iphot1);   
             AliAODMCParticle * phot2 = (AliAODMCParticle *) mcparticles->At(iphot2);   
             if(phot1 && phot2 && phot1->GetPdgCode()==22 && phot2->GetPdgCode()==22){
-              //printf("2 photons: photon 1: pt %2.2f, phi %3.2f, eta %1.2f; photon 2: pt %2.2f, phi %3.2f, eta %1.2f\n",
-              //	phot1->Pt(), phot1->Phi()*180./3.1415, phot1->Eta(), phot2->Pt(), phot2->Phi()*180./3.1415, phot2->Eta());
-              
               TLorentzVector lv1, lv2;
               lv1.SetPxPyPzE(phot1->Px(),phot1->Py(),phot1->Pz(),phot1->E());
               lv2.SetPxPyPzE(phot2->Px(),phot2->Py(),phot2->Pz(),phot2->E());
@@ -984,22 +1085,35 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               }	   
               else if(fCalorimeter == "EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
                 if(GetEMCALGeometry()){
-                  TVector3 vtx(phot1->Xv(),phot1->Yv(),phot1->Zv());
-                  TVector3 vimpact(0,0,0);
+
                   Int_t absID1=0;
-                  
-                  GetEMCALGeometry()->ImpactOnEmcal(vtx,phot1->Theta(),phot1->Phi(),absID1,vimpact);
-                  TVector3 vtx2(phot2->Xv(),phot2->Yv(),phot2->Zv());
-                  TVector3 vimpact2(0,0,0);
                   Int_t absID2=0;
-                  GetEMCALGeometry()->ImpactOnEmcal(vtx2,phot2->Theta(),phot2->Phi(),absID2,vimpact2);
+
+                  //TVector3 vtx(phot1->Xv(),phot1->Yv(),phot1->Zv());
+                  //TVector3 vimpact(0,0,0);
+                  
+                  //GetEMCALGeometry()->ImpactOnEmcal(vtx,phot1->Theta(),phot1->Phi(),absID1,vimpact);
+                  //TVector3 vtx2(phot2->Xv(),phot2->Yv(),phot2->Zv());
+                  //TVector3 vimpact2(0,0,0);
+                  //GetEMCALGeometry()->ImpactOnEmcal(vtx2,phot2->Theta(),phot2->Phi(),absID2,vimpact2);
+                 
+                  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(phot1->Eta(),phot1->Phi(),absID1);
+                  GetEMCALGeometry()->GetAbsCellIdFromEtaPhi(phot2->Eta(),phot2->Phi(),absID2);
+
 //                  if(TMath::Abs(phot1->Eta()) < 0.7 && phot1->Phi() > 80*TMath::DegToRad() && phot1->Phi() < 120*TMath::DegToRad() ) 
-//                    printf("Phot1 accepted? %d\n",absID1);
+//                    printf("Phot1 ccepted? %d\n",absID1);
 //                  if(TMath::Abs(phot2->Eta()) < 0.7 && phot2->Phi() > 80*TMath::DegToRad() && phot2->Phi() < 120*TMath::DegToRad() ) 
 //                    printf("Phot2 accepted? %d\n",absID2);
 
                   if( absID1 >= 0 && absID2 >= 0) 
                     inacceptance = kTRUE;
+                  
+//                  if(pdg==111 && inacceptance) printf("2 photons: photon 1: absId %d, pt %2.2f, phi %3.2f, eta %1.2f; photon 2: absId %d, pt %2.2f, phi %3.2f, eta %1.2f\n",
+//                                                       absID1,phot1->Pt(), phot1->Phi()*TMath::RadToDeg(), phot1->Eta(),  
+//                                                       absID2,phot2->Pt(), phot2->Phi()*TMath::RadToDeg(), phot2->Eta());
+                  
+                  
+                  
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
                 else{
@@ -1011,22 +1125,23 @@ void AliAnaPi0::FillAcceptanceHistograms(){
               
               if(inacceptance){
                 if(pdg==111){
-                  fhPrimPi0AccPt->Fill(pi0Pt) ;
-                  fhPrimPi0AccPhi->Fill(phi) ;
-                  fhPrimPi0AccY->Fill(pi0Y) ;
+  //                printf("ACCEPTED pi0: pt %2.2f, phi %3.2f, eta %1.2f\n",pi0Pt,phi,pi0Y);
+                  fhPrimPi0AccPt ->Fill(pi0Pt) ;
+                  fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
                   Double_t angle  = lv1.Angle(lv2.Vect());
                   fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
                   fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
                 }
                 else if(pdg==221){
-                  fhPrimEtaAccPt->Fill(pi0Pt) ;
-                  fhPrimEtaAccPhi->Fill(phi) ;
-                  fhPrimEtaAccY->Fill(pi0Y) ;
+                  fhPrimEtaAccPt ->Fill(pi0Pt) ;
+                  fhPrimEtaAccPhi->Fill(pi0Pt, phi) ;
+                  fhPrimEtaAccY  ->Fill(pi0Pt, pi0Y) ;
                 }
               }//Accepted
             }// 2 photons      
           }//Check daughters exist
-        }// Primary pi0
+        }// Primary pi0 or eta
       }//loop on primaries	
     }//stack exists and data is MC
     
@@ -1108,7 +1223,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
                    ncell1 >= fCellNCuts[icell] && ncell2 >= fCellNCuts[icell]){ 
                   fhMCEtaMassPtRec [index]->Fill(pt,mass);
                   fhMCEtaMassPtTrue[index]->Fill(ancMomentum.Pt(),mass);
-                  if(mass < 0.17 && mass > 0.1) fhMCEtaPtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
+                  if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[index]->Fill(ancMomentum.Pt(),pt);
                 }//pass the different cuts
               }// pid bit cut loop
             }// icell loop
@@ -1116,7 +1231,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         } //Multi cut ana sim
         else {
           fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
-          if(mass < 0.17 && mass > 0.1) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
+          if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
         }
       }
       else if(ancPDG==-2212){//AProton
@@ -1205,7 +1320,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
   //In case of simulated data, fill acceptance histograms
   if(IsDataMC())FillAcceptanceHistograms();
-
+  if (GetReader()->GetEventNumber()%10000 == 0) 
+   printf("--- Event %d ---\n",GetReader()->GetEventNumber());
   //Init some variables
 //Int_t   iRun     = (GetReader()->GetInputEvent())->GetRunNumber() ;
   Int_t   nPhot    = GetInputAODBranch()->GetEntriesFast() ;
@@ -1213,37 +1329,105 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   Int_t   nCell    = 0;
   Float_t eClusTot = 0;
   Float_t eCellTot = 0;
+  Float_t eDenClus = 0;
+  Float_t eDenCell = 0;
+//  Int_t   ncomb    = 0;
+//  Float_t rtmp     = 0;
+//  Float_t rtmpw    = 0;
+//  Float_t rxz      = 0;
+//  Float_t rxzw     = 0;
+//  Float_t pos1[3];
+//  Float_t pos2[3];
+//  Float_t emax     = 0;
   
-  // Count the number of clusters and cells, in case multiplicity bins dependent on such numbers
-  // are requested
-  if(fCalorimeter=="EMCAL"){ 
-    nClus = GetAODEMCAL()  ->GetEntriesFast();
-    nCell = GetEMCALCells()->GetNumberOfCells();
-    for(Int_t icl=0; icl < nClus; icl++) eClusTot += ((AliVCluster*) GetAODEMCAL()->At(icl))->E();
-    for(Int_t jce=0; jce < nCell; jce++) eCellTot +=  GetEMCALCells()->GetAmplitude(jce);
-
-  }
-  else {                     
-    nClus = GetAODPHOS()  ->GetEntriesFast();
-    nCell = GetPHOSCells()->GetNumberOfCells();
-    for(Int_t icl=0; icl < nClus; icl++) eClusTot +=  ((AliVCluster*)GetAODPHOS()->At(icl))->E();
-    for(Int_t jce=0; jce < nCell; jce++) eCellTot +=  GetPHOSCells()->GetAmplitude(jce);
-  }
-
-  //Fill the average number of cells or clusters per SM
-  eClusTot /=fNModules;
-  eCellTot /=fNModules;
-  fhAverTotECluster->Fill(eClusTot);
-  fhAverTotECell   ->Fill(eCellTot);
-
   if(GetDebug() > 1) 
     printf("AliAnaPi0::MakeAnalysisFillHistograms() - Photon entries %d\n", nPhot);
 
   //If less than photon 2 entries in the list, skip this event
   if(nPhot < 2 ) return ; 
-  
+
+  // Count the number of clusters and cells, in case multiplicity bins dependent on such numbers
+  // are requested
+  if(fCalorimeter=="EMCAL"){ 
+    nClus = GetAODEMCAL()  ->GetEntriesFast();
+    nCell = GetEMCALCells()->GetNumberOfCells();
+    for(Int_t icl=0; icl < nClus; icl++) {
+      Float_t e1 = ((AliVCluster*)GetAODEMCAL()->At(icl))->E();
+      eClusTot +=  e1;
+//      if(e1 > emax) emax = e1;
+//      ((AliVCluster*)GetAODEMCAL()->At(icl))->GetPosition(pos1);
+//      for(Int_t icl2=icl+1; icl2 < nClus; icl2++) {
+//        Float_t e2 = ((AliVCluster*)GetAODEMCAL()->At(icl2))->E();
+//        ((AliVCluster*)GetAODEMCAL()->At(icl2))->GetPosition(pos2);
+//        rtmp  =  TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0]) + (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
+//        rtmpw =  TMath::Sqrt((pos1[0]*e1-pos2[0]*e2)*(pos1[0]*e1-pos2[0]*e2) + (pos1[2]*e1-pos2[2]*e2)*(pos1[2]*e1-pos2[2]*e2))/(e1+e2);
+//        rxz  += rtmp;  
+//        rxzw += rtmpw;
+//        ncomb++;
+//        fhClusterPairDist      ->Fill(rtmp);
+//        fhClusterPairDistWeight->Fill(rtmpw);
+//        //printf("Distance: %f; weighted  %f\n ",rtmp,rtmp/(e1+((AliVCluster*)GetAODEMCAL()->At(icl2))->E()));
+//
+//      }// second cluster loop
+    }// first cluster
+    
+    for(Int_t jce=0; jce < nCell; jce++) eCellTot +=  GetEMCALCells()->GetAmplitude(jce);
+  }
+  else {                     
+    nClus = GetAODPHOS()  ->GetEntriesFast();
+    nCell = GetPHOSCells()->GetNumberOfCells();
+    for(Int_t icl=0; icl < nClus; icl++) {
+      Float_t e1 = ((AliVCluster*)GetAODPHOS()->At(icl))->E();
+      eClusTot +=  e1;
+//      ((AliVCluster*)GetAODPHOS()->At(icl))->GetPosition(pos1);
+//      for(Int_t icl2=icl+1; icl2 < nClus; icl2++) {
+//        Float_t e2 = ((AliVCluster*)GetAODPHOS()->At(icl2))->E();
+//        ((AliVCluster*)GetAODPHOS()->At(icl2))->GetPosition(pos2);
+//        rtmp  = TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0]) + (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
+//        rtmpw =  TMath::Sqrt((pos1[0]*e1-pos2[0]*e2)*(pos1[0]*e1-pos2[0]*e2) + (pos1[2]*e1-pos2[2]*e2)*(pos1[2]*e1-pos2[2]*e2))/(e1+e2);
+//        rxz  += rtmp;  
+//        rxzw += rtmpw;
+//        ncomb++;
+//        fhClusterPairDist      ->Fill(rtmp);
+//        fhClusterPairDistWeight->Fill(rtmpw);
+//      }// second cluster loop
+    }// first cluster
+    for(Int_t jce=0; jce < nCell; jce++) eCellTot +=  GetPHOSCells()->GetAmplitude(jce);
+  }
   if(GetDebug() > 1) 
     printf("AliAnaPi0::MakeAnalysisFillHistograms() - # Clusters %d, sum cluster E per SM %f,# Cells %d, sum cell E per SM %f\n", nClus,eClusTot,nCell,eCellTot);
+
+  //Fill histograms with "energy density", ncell and nclust will be > 0 since there are at least 2 "photons"
+  eDenClus = eClusTot/nClus;
+  eDenCell = eCellTot/nCell;
+  fhEDensityCluster      ->Fill(eDenClus);
+  fhEDensityCell         ->Fill(eDenCell);
+  fhEDensityCellvsCluster->Fill(eDenClus, eDenCell);
+  //Fill the average number of cells or clusters per SM
+  eClusTot /=fNModules;
+  eCellTot /=fNModules;
+  fhAverTotECluster      ->Fill(eClusTot);
+  fhAverTotECell         ->Fill(eCellTot);
+  fhAverTotECellvsCluster->Fill(eClusTot, eCellTot);
+  //printf("Average Cluster: E %f, density %f;  Average Cell E %f, density  %f\n ",eClusTot,eDenClus,eCellTot,eDenCell);
+
+//  //Average weighted pair distance
+//  rxz  /= ncomb;                             
+//  rxzw /= ncomb;                             
+//
+//  fhAverClusterPairDist             ->Fill(rxz );
+//  fhAverClusterPairDistWeight       ->Fill(rxzw);
+//  fhAverClusterPairDistvsAverE      ->Fill(rxz ,eDenClus);
+//  fhAverClusterPairDistWeightvsAverE->Fill(rxzw,eDenClus);
+//  fhAverClusterPairDistvsN          ->Fill(rxz ,nClus);
+//  fhAverClusterPairDistWeightvsN    ->Fill(rxzw,nClus);
+//  
+//  //emax
+//  fhMaxEvsClustEDen->Fill(emax,eDenClus);
+//  fhMaxEvsClustMult->Fill(emax,nPhot);
+  
+  //printf("Average Distance: %f; weighted  %f\n ",rxz,rxzw);
+
   
   //Init variables
   Int_t module1         = -1;
@@ -1286,48 +1470,54 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       else if(fUsePhotonMultBins){ // Photon multiplicity bins
         //printf("photon  mult %d cluster mult %d\n",nPhot, nClus);
-        curCentrBin = (nClus-1)/3; 
-        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
-        //printf("photon mult bin %d\n",curCentrBin);        
+        curRPBin = nPhot-2; 
+        if(curRPBin > GetNRPBin() -1) curRPBin=GetNRPBin()-1;
+        //printf("photon mult bin %d\n",curRPBin);        
       }
-      else if(fUseAverClusterEBins){ // Cluster multiplicity bins
+      else if(fUseAverClusterEBins){ // Cluster average energy bins
         //Bins for pp, if needed can be done in a more general way
-        if     (eClusTot < 0.5 )curCentrBin = 0;
-        else if(eClusTot < 1.0) curCentrBin = 1;
-        else if(eClusTot < 1.5) curCentrBin = 2;
-        else if(eClusTot < 2.0) curCentrBin = 3;
-        else if(eClusTot < 3.0) curCentrBin = 4;
-        else if(eClusTot < 4.0) curCentrBin = 5;
-        else if(eClusTot < 5.0) curCentrBin = 6;
-        else if(eClusTot < 7.5) curCentrBin = 7;
-        else if(eClusTot < 10.) curCentrBin = 8;
-        else if(eClusTot < 15.) curCentrBin = 9;
-        else if(eClusTot < 20.) curCentrBin = 10;
+        curCentrBin = eClusTot/10 * fNCentrBin; 
         if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
         //printf("cluster E average %f, bin %d \n",eClusTot,curCentrBin);
       }
-      else if(fUseAverCellEBins){ // Cell multiplicity bins
+      else if(fUseAverCellEBins){ // Cell average energy bins
         //Bins for pp, if needed can be done in a more general way
-        if     (eCellTot < 0.5) curCentrBin = 0;
-        else if(eCellTot < 1.0) curCentrBin = 1;
-        else if(eCellTot < 1.5) curCentrBin = 2;
-        else if(eCellTot < 2.0) curCentrBin = 3;
-        else if(eCellTot < 3.0) curCentrBin = 4;
-        else if(eCellTot < 4.0) curCentrBin = 5;
-        else if(eCellTot < 5.0) curCentrBin = 6;
-        else if(eCellTot < 7.5) curCentrBin = 7;
-        else if(eCellTot < 10.) curCentrBin = 8;
-        else if(eCellTot < 15.) curCentrBin = 9;
-        else if(eCellTot < 20.) curCentrBin = 10; 
+        curCentrBin = eCellTot/10*fNCentrBin; 
         if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
         //printf("cell E average %f, bin %d \n",eCellTot,curCentrBin);
       }
+      else if(fUseAverClusterEDenBins){ // Energy density bins
+        //Bins for pp, if needed can be done in a more general way
+        curCentrBin = eDenClus/10*fNCentrBin; 
+        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+        //printf("cluster Eden average %f, bin %d \n",eDenClus,curCentrBin);
+      } 
+//      else if(fUseAverClusterPairRBins){ // Cluster average distance bins
+//        //Bins for pp, if needed can be done in a more general way
+//        curCentrBin = rxz/650*fNCentrBin; 
+//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        //printf("cluster pair R average %f, bin %d \n",rxz,curCentrBin);
+//      }
+//      else if(fUseAverClusterPairRWeightBins){ // Cluster average distance bins
+//        //Bins for pp, if needed can be done in a more general way
+//        curCentrBin = rxzw/350*fNCentrBin; 
+//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        //printf("cluster pair rW average %f, bin %d \n",rxzw,curCentrBin);
+//      }    
+//      else if(fUseEMaxBins){ // Cluster average distance bins
+//        //Bins for pp, if needed can be done in a more general way
+//        curCentrBin = emax/20*fNCentrBin; 
+//        if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
+//        //printf("cluster pair rW average %f, bin %d \n",rxzw,curCentrBin);
+//      }     
       else { //Event centrality
         curCentrBin = GetEventCentrality();
       }
 
-      //Get vertex z bin
+      //Reaction plane bin
       curRPBin    = 0 ;
+       
+      //Get vertex z bin
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       
       //Fill event bin info
@@ -1542,6 +1732,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   // Mixing
   //-------------------------------------------------------------
   if(fDoOwnMix){
+    //printf("Cen bin %d, RP bin %d, e aver %f, mult %d\n",curCentrBin,curRPBin, eClusTot, nPhot);
     //Recover events in with same characteristics as the current event
     TList * evMixList=fEventsList[curCentrBin*GetNZvertBin()*GetNRPBin()+curZvertBin*GetNRPBin()+curRPBin] ;
     Int_t nMixed = evMixList->GetSize() ;
@@ -1800,10 +1991,16 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(IsDataMC() || (GetReader()->GetDataType() == AliCaloTrackReader::kMC) ){
     fhPrimPi0Pt     = (TH1D*)  outputList->At(index++);
     fhPrimPi0AccPt  = (TH1D*)  outputList->At(index++);
-    fhPrimPi0Y      = (TH1D*)  outputList->At(index++);
-    fhPrimPi0AccY   = (TH1D*)  outputList->At(index++);
-    fhPrimPi0Phi    = (TH1D*)  outputList->At(index++);
-    fhPrimPi0AccPhi = (TH1D*)  outputList->At(index++);
+    fhPrimPi0Y      = (TH2D*)  outputList->At(index++);
+    fhPrimPi0AccY   = (TH2D*)  outputList->At(index++);
+    fhPrimPi0Phi    = (TH2D*)  outputList->At(index++);
+    fhPrimPi0AccPhi = (TH2D*)  outputList->At(index++);
+    fhPrimEtaPt     = (TH1D*)  outputList->At(index++);
+    fhPrimEtaAccPt  = (TH1D*)  outputList->At(index++);
+    fhPrimEtaY      = (TH2D*)  outputList->At(index++);
+    fhPrimEtaAccY   = (TH2D*)  outputList->At(index++);
+    fhPrimEtaPhi    = (TH2D*)  outputList->At(index++);
+    fhPrimEtaAccPhi = (TH2D*)  outputList->At(index++);
     for(Int_t i = 0; i<13; i++){
       fhMCOrgMass[i]     = (TH2D*)  outputList->At(index++);
       fhMCOrgAsym[i]     = (TH2D*)  outputList->At(index++);
