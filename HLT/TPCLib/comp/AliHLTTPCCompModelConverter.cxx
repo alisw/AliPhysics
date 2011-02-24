@@ -826,6 +826,8 @@ int AliHLTTPCCompModelConverter::GetRemainingClusters( AliHLTUInt8_t* const pTgt
 		{
 		HLTWarning( "Cannot write remaining clusters to output. Data size too large (exceeding %lu bytes)", (unsigned long)dataSize );
 		iResult=-ENOBUFS;
+		if(data)
+		  delete [] data;
 		break;
 		}
 	      if ( tempPt )
