@@ -198,7 +198,7 @@ void  AliITSChannelStatus::InitDefaults(){
   }
 }
 //______________________________________________________________________
-void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* deadSingleArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
+void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* /* deadSparseArrSPD */, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
 // fills bitmaps from arrays of AliITSCalibrationSXD objects
 
   // SPD modules
