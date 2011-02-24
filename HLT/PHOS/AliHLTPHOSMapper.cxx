@@ -73,6 +73,13 @@ AliHLTPHOSMapper::InitAltroMapping(const unsigned long specification)
     }
 
     AliCaloAltroMapping *map = dynamic_cast<AliCaloAltroMapping*>(maps->At(modId*fCaloConstants->GetNRCUSPERMODULE()));
+    
+    if(!map)
+    {
+        HLTError("Cannot retrieve ALTRO mappings!!");
+        fIsInitializedMapping = false;
+        return false;
+    }
 
     if ( modId != fModuleId )
     {

@@ -71,7 +71,7 @@ class AliHLTPHOSMonitorTriggerComponent: public AliHLTCaloProcessor
   }
   
   /** Assignment */
-  AliHLTPHOSMonitorTriggerComponent & operator = (const AliHLTPHOSMonitorTriggerComponent)
+  AliHLTPHOSMonitorTriggerComponent & operator = (const AliHLTPHOSMonitorTriggerComponent&)
   {
     //Assignment
     return *this; 

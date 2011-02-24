@@ -197,7 +197,7 @@ AliHLTPHOSMonitorTriggerComponent::CheckClusters(AliHLTCaloClusterHeaderStruct* 
 
   AliHLTCaloClusterDataStruct* clusterPtr = 0;
 
-  clusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>(clusterHeaderPtr + sizeof(AliHLTCaloClusterHeaderStruct));
+  clusterPtr = reinterpret_cast<AliHLTCaloClusterDataStruct*>((UChar_t*)(clusterHeaderPtr + 1));
       
   for(UInt_t n = 0; n < nClusters; n++)
     {

@@ -146,12 +146,15 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       {
 	 AliHLTPHOSMapper mapper;
 	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 {
-	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-	    {
-	       fDigitMakerPtr->SetBadChannel(x, z, fBadChannelMap->IsBadChannel(5-module, z+1, x+1));
-	    }
+	 if(module >= 0)
+	   {
+	     for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	       {
+		 for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+		   {
+		     fDigitMakerPtr->SetBadChannel(x, z, fBadChannelMap->IsBadChannel(5-module, z+1, x+1));
+		   }
+	       }
 	 }
 	 //delete fBadChannelMap;
 	 fBCMInitialised = true;
