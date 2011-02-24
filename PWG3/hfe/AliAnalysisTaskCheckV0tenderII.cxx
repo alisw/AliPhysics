@@ -483,8 +483,11 @@ void  AliAnalysisTaskCheckV0tenderII::ProcessBackground(AliESDv0 * const v0){
     ixM = PDGtoPIDv0(pdgM[0]) + 1;  
     if(ixM < 0) ixM = 5; 
   }
-  name = "h_" + type[PDGtoPIDv0(fpdgV0)] + "_Bg"; 
-  fCollMC->Fill(name, ixM, pt);
+  Int_t ix = PDGtoPIDv0(fpdgV0);
+  if(0 <= ix ){
+    name = "h_" + type[PDGtoPIDv0(fpdgV0)] + "_Bg"; 
+    fCollMC->Fill(name, ixM, pt);
+  }
   
   // now look at the daughter tracks
   
