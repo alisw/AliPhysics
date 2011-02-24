@@ -163,6 +163,7 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
         p->SetUniqueID(10);
     } else 
       p->SetUniqueID(999);
+    fParticles->Add(p);
   }
   return fParticles;
 }
