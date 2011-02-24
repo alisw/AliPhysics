@@ -13,7 +13,8 @@ class TList;
 
 class AliAnalysisTaskTrigChEff : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskTrigChEff(const char *name = "AliAnalysisTaskTrigChEff");
+  AliAnalysisTaskTrigChEff();
+  AliAnalysisTaskTrigChEff(const char *name);
   virtual ~AliAnalysisTaskTrigChEff();
 
   virtual void   UserCreateOutputObjects();
