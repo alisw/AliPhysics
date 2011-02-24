@@ -34,5 +34,6 @@
 #pragma link C++ class AliAnalysisTaskMuonQA+;
 #pragma link C++ class AliHistogramCollection+;
 #pragma link C++ class AliHistogramCollectionIterator+;
+#pragma link C++ class AliAnalysisTaskMuonCollisionMultiplicity+;
 #endif
 
