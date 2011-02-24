@@ -6323,7 +6323,7 @@ clin     &22('*'))
     
 C*********************************************************************  
     
-      SUBROUTINE PYTHIA 
+      SUBROUTINE PYTHIAA 
     
 C...Administers the generation of a high-pt event via calls to a number 
 C...of subroutines; also computes cross-sections.   

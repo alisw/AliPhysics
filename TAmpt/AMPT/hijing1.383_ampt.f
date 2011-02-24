@@ -3459,7 +3459,7 @@ C
 C        ********Scatter the valence quarks only once per NN 
 C       collision,
 C                afterwards only gluon can have hard scattering.
- 155        CALL PYTHIA
+ 155        CALL PYTHIAA
         JJ=MINT(31)
         IF(JJ.NE.1) GO TO 155
 C                *********one hard collision at a time
