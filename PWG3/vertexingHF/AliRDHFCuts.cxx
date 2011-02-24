@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /////////////////////////////////////////////////////////////
 //
 // Base class for cuts on AOD reconstructed heavy-flavour decay

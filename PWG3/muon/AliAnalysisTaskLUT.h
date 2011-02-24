@@ -1,3 +1,8 @@
+#ifndef ALIANALYSISTASKLUT_H
+#define ALIANALYSISTASKLUT_H
+
+/* $Id$ */ 
+
 //===================================================================
 //  Class AliAnalysisTaskLUT
 //
@@ -34,3 +39,4 @@ class AliAnalysisTaskLUT : public AliAnalysisTask {
   ClassDef(AliAnalysisTaskLUT, 0); // analysis task for extracting tracks used for LUT calculation
 };
 
+#endif

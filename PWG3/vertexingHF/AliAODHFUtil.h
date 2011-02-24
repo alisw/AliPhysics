@@ -2,7 +2,9 @@
 #define AliAODHFUtil_H
 
 /* Copyright(c) 1998-2011, ALICE Experiment at CERN, All rights reserved. *
- *  * See cxx source for full Copyright notice                            */
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */ 
 
 //***********************************************************
 // Class AliAODHFUtil

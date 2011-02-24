@@ -1,3 +1,6 @@
+#ifndef ALIHFEPIDITS_H
+#define ALIHFEPIDITS_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,12 +15,13 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // PID development class for ITS
 // does proton rejection via dE/dx
 // For more information see implementation file
-#ifndef ALIHFEPIDITS_H
-#define ALIHFEPIDITS_H
 
 #ifndef ALIHFEPIDBASE_H
 #include "AliHFEpidBase.h"

@@ -1,3 +1,6 @@
+#ifndef ALIHFEMCQA_H
+#define ALIHFEMCQA_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,6 +15,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // QA class of Heavy Flavor quark and fragmeted/decayed particles
 // -Check kinematics of Heavy Quarks/hadrons, and decayed leptons
@@ -22,9 +28,6 @@
 //    Number of produced heavy quark
 //    Number of produced hadron of given pdg code
 //
-
-#ifndef ALIHFEMCQA_H
-#define ALIHFEMCQA_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>

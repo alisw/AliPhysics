@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 // ROOT includes
 #include <TString.h>
 #include <TGeoManager.h>

@@ -1,6 +1,8 @@
 #ifndef AliAnalysisTaskFromStandardToMuonAOD_H
 #define  AliAnalysisTaskFromStandardToMuonAOD_H
 
+/* $Id$ */ 
+
 #include "AliAODEvent.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"

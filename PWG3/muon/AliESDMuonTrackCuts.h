@@ -1,3 +1,8 @@
+#ifndef ALIESDMUONTRACKCUTS_H
+#define ALIESDMUONTRACKCUTS_H
+
+/* $Id$ */ 
+
 //
 //  Class for handling of ESD Muon track cuts 
 //  (based on ANALYSIS/AliESDtrackCuts).
@@ -9,9 +14,6 @@
 //  object and returns an TObjArray (of AliESDMuonTracks) with the tracks
 //  in the ESD that survived the cuts.
 //
-
-#ifndef ALIESDMUONTRACKCUTS_H
-#define ALIESDMUONTRACKCUTS_H
 
 #include <TF1.h>
 #include <TH2.h>

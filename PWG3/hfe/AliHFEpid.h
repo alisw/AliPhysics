@@ -1,3 +1,6 @@
+#ifndef ALIHFEPID_H
+#define ALIHFEPID_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Steering class for electron identification
 // Combines detector PID objects
 // For more information please check the implementation file
 //
-#ifndef ALIHFEPID_H
-#define ALIHFEPID_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

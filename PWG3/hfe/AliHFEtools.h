@@ -1,3 +1,6 @@
+#ifndef ALIHFETOOLS_H
+#define ALIHFETOOLS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Toolkit containing various usefull things
 // Usable everywhere in the hfe software package
 // For more information see the cxx file
 //
-#ifndef ALIHFETOOLS_H
-#define ALIHFETOOLS_H
-
 #include <TObject.h>
 
 class TParticle;

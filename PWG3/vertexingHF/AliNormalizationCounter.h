@@ -1,3 +1,6 @@
+#ifndef ALINORMALIZATIONCOUNTER_H
+#define ALINORMALIZATIONCOUNTER_H
+
 /**************************************************************************
  * Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,6 +16,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */ 
+
 //*************************************************************************
 // Class AliNormalizationCounter
 // Class to store the informations relevant for the normalization in the 
@@ -21,9 +26,6 @@
 // D. Caffarri, davide.caffarri@pd.to.infn.it
 // with many thanks to P. Pillot
 /////////////////////////////////////////////////////////////
-
-#ifndef ALINORMALIZATIONCOUNTER_H
-#define ALINORMALIZATIONCOUNTER_H
 
 #include <TROOT.h>
 #include <TSystem.h>

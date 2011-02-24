@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------------------
 // Analysis task to compute muon/dimuon kinematic distributions
 // The output is a list of histograms.

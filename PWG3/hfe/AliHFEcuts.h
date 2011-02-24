@@ -1,3 +1,6 @@
+#ifndef ALIHFECUTS_H
+#define ALIHFECUTS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Cut container class for the ALICE HFE group
 // Serves also as interface to the correction Framework
 // Provides a set of standard cuts
 //
-#ifndef ALIHFECUTS_H
-#define ALIHFECUTS_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

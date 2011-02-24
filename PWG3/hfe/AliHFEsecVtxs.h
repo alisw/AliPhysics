@@ -1,3 +1,6 @@
+#ifndef ALIHFESECVTXS_H
+#define ALIHFESECVTXS_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,14 +15,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 //  Secondary vertexing container to store secondary vertex characteristics of 
 //  2 or 3 particle sec vertex
 //  from example, qusi-invariant mass, signed Lxy are stored
 //
-
-#ifndef ALIHFESECVTXS_H
-#define ALIHFESECVTXS_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>

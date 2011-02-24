@@ -1,3 +1,6 @@
+#ifndef ALIHFEPIDTPC_H
+#define ALIHFEPIDTPC_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class for TPC PID
 // Does electron selection based on dE/dx
 // For more information please check the implementation file
 //
-#ifndef ALIHFEPIDTPC_H
-#define ALIHFEPIDTPC_H
-
 #ifndef ALIHFEPIDBASE_H
 #include "AliHFEpidBase.h"
 #endif

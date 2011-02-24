@@ -1,5 +1,7 @@
 #ifndef AliAnalysisTaskMuonAODfromGeneral_H
-#define  AliAnalysisTaskMuonAODfromGeneral_H
+#define AliAnalysisTaskMuonAODfromGeneral_H
+
+/* $Id$ */ 
 
 /* 19 Nov 2007
    Class declaration for the specific muon AOD generation

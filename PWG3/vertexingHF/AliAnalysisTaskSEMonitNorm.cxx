@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //*************************************************************************
 // 
 // Class for monitoring of information used for open charm normalization

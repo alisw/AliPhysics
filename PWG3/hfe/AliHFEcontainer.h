@@ -1,3 +1,6 @@
+#ifndef ALIHFECONTAINER_H
+#define ALIHFECONTAINER_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // HFE correction framework container
 // Contains many single containers
 // Extra fuctionality like appending added
 //
-#ifndef ALIHFECONTAINER_H
-#define ALIHFECONTAINER_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

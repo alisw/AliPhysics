@@ -1,6 +1,8 @@
 #ifndef AliAnalysisTaskRecoCheck_cxx
 #define AliAnalysisTaskRecoCheck_cxx
 
+/* $Id$ */ 
+
 // analysis task for decoding reconstructed tracks and kinematics (AliMUONRecoCheck)
 // Authors: Bogdan Vulpescu
 

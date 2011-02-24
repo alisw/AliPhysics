@@ -1,6 +1,8 @@
 #ifndef ALIQUARKONIAEFFICIENCY_H
 #define ALIQUARKONIAEFFICIENCY_H
 
+/* $Id$ */ 
+
 //===================================================================
 //  Class AliQuarkoniaEfficiency                               
 //

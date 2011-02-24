@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 //
 // Task for Efficiency studies
 // Used for testing classes AliHFEcontainer and AliHFEfilter

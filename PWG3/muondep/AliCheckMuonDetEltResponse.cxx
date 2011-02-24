@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //Class to check the response of the detection elements of the  MUON tracking chambers 
 //in function of the position in the detection element.
 //Author:  Nicolas LE BRIS - SUBATECH Nantes

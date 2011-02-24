@@ -1,7 +1,9 @@
-#include "TClonesArray.h"
-
 #ifndef AliAODEventInfo_H
 #define AliAODEventInfo_H
+
+/* $Id$ */ 
+
+#include "TClonesArray.h"
 
 #include "AliAODEvent.h"
 

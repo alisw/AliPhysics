@@ -15,6 +15,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */ 
+
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
 // Author : C. Zampolli, CERN

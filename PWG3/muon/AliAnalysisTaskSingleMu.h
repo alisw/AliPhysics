@@ -1,10 +1,13 @@
+#ifndef ALIANALYSISTASKSINGLEMU_H
+#define ALIANALYSISTASKSINGLEMU_H
+
+/* $Id$ */ 
+
 /// \ingroup "PWG3muon"
 /// \class AliAnalysisTaskSingleMu
 /// \brief Analysis task for single muons in the spectrometer
 ///
 //  Author Diego Stocco
-#ifndef ALIANALYSISTASKSINGLEMU_H
-#define ALIANALYSISTASKSINGLEMU_H
 
 #include "AliAnalysisTaskSE.h"
 

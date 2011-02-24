@@ -13,6 +13,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //  Dielectron Pair class. Internally it makes use of AliKFParticle.     //

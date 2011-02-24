@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 //
 // Task fir checking the performance of the V0 tender
 // 

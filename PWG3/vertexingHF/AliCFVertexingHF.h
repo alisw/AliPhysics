@@ -1,7 +1,6 @@
 #ifndef ALICFVERTEXINGHF_H
 #define ALICFVERTEXINGHF_H
 
-
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -16,6 +15,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
 
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 

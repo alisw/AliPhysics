@@ -1,3 +1,6 @@
+#ifndef ALIANALYSISTASKCHECKV0TENDERII_H
+#define ALIANALYSISTASKCHECKV0TENDERII_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,13 +15,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Task for perfomance studies of V0 selection code
 // More information can be found in the source file
 //
-#ifndef ALIANALYSISTASKCHECKV0TENDERII_H
-#define ALIANALYSISTASKCHECKV0TENDERII_H
-
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
 #endif

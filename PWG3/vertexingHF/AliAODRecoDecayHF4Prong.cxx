@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /////////////////////////////////////////////////////////////
 //
 // Base class for AOD reconstructed heavy-flavour 4-prong decay

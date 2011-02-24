@@ -1,6 +1,8 @@
 #ifndef ALIHFEPIDESD_H
 #define ALIHFEPIDESD_H
 
+/* $Id$ */ 
+
 #ifndef ALIHFEPIDBASE_H
 #include "AliHFEpidBase.h"
 #endif

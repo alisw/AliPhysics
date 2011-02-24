@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //Class to calculate the intrinsic efficiency of the detection elements of the
 //MUON tracking chambers in function of the position in the detection element.
 //WOrk on ESD only
