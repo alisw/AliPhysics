@@ -130,7 +130,8 @@ void AliAnalysisTaskParticleCorrelationM::LocalInit()
 	
 	// Create cuts/param objects and publish to slot
 	fCuts = fAna->GetListOfAnalysisCuts();
-	
+  fCuts ->SetOwner(kTRUE);
+
 	// Post Data
 	PostData(2, fCuts);
 	
