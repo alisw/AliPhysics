@@ -431,7 +431,7 @@ int AliHLTOnlineConfiguration::ParseHLTOutWriterSubscriber(const char* id,
   return iResult;
 }
 
-const char* AliHLTOnlineConfiguration::GetComponentLibraries()
+TString AliHLTOnlineConfiguration::GetComponentLibraries()
 {
   /// get component libraries
   
@@ -445,7 +445,7 @@ const char* AliHLTOnlineConfiguration::GetComponentLibraries()
       if (!result.IsNull()) result+=" "; result+=complib;
     }
   }
-  return result.Data();
+  return result;
 }
 
 void AliHLTOnlineConfiguration::Print(const char* options) const

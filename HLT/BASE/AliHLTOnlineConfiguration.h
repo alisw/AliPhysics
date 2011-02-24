@@ -62,7 +62,7 @@ class AliHLTOnlineConfiguration : public TObject, public AliHLTLogging {
   const char* GetDefaultChains() const {return fDefaultChains.Data();}
   
   /// get component libraries
-  const char* GetComponentLibraries();
+  TString GetComponentLibraries();
 
   /// overloaded from TObject, print info
   virtual void        Print(const char* options) const;
