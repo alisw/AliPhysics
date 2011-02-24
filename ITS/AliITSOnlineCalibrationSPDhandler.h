@@ -71,12 +71,14 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  ReadNoisyModuleFromDB(UInt_t module, Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadDeadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
+  Bool_t  ReadSparseDeadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadNoisyFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadDeadFromDBasNoisy(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadDeadFromCalibObj(TObjArray* calObj);
   Bool_t  ReadNoisyFromCalibObj(TObjArray* calObj);
   Bool_t  WriteToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
+  Bool_t  WriteSparseDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WriteNoisyToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WritePITConditionsToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
@@ -86,6 +88,7 @@ class AliITSOnlineCalibrationSPDhandler {
 
   TArrayS GetSilentArray(UInt_t module, Bool_t treeSerial=kFALSE); // temporarily needed
   TArrayS GetDeadArray(UInt_t module, Bool_t treeSerial=kFALSE);
+  TArrayS GetSparseDeadArray(UInt_t module, Bool_t treeSerial=kFALSE);
   TArrayS GetNoisyArray(UInt_t module, Bool_t treeSerial=kFALSE);
 
   TArrayI GetDeadArrayOnline(UInt_t eq);
@@ -94,15 +97,20 @@ class AliITSOnlineCalibrationSPDhandler {
   void    PrintEqSummary();
   void    PrintSilent() const; // silent = dead or inactive
   void    PrintDead() const;
+  void    PrintSparseDead() const;
   void    PrintNoisy() const;
 
   Bool_t  SetDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
+  Bool_t  SetSparseDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  SetNoisyPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  SetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
+  Bool_t  SetSparseDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  SetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  UnSetDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
+  Bool_t  UnSetSparseDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  UnSetNoisyPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row);
   Bool_t  UnSetDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
+  Bool_t  UnSetSparseDeadPixelM(UInt_t module, UInt_t colM, UInt_t row);
   Bool_t  UnSetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t row);
 
   Bool_t SetInactiveChipInPITmask(UInt_t eq, UInt_t hs, UInt_t chip);
@@ -124,6 +132,7 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t  GetNrBad() const; // bad = silent or noisy
   UInt_t  GetNrSilent() const; // silent = dead or inactive
   UInt_t  GetNrDead() const;
+  UInt_t  GetNrSparseDead() const;
   UInt_t  GetDeadEqIdAt(UInt_t index) const;
   UInt_t  GetDeadHSAt(UInt_t index) const;
   UInt_t  GetDeadChipAt(UInt_t index) const;
@@ -140,6 +149,7 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t  GetNrBad(UInt_t module) const; // bad = silent or noisy
   UInt_t  GetNrSilent(UInt_t module) const; // silent = dead or inactive
   UInt_t  GetNrDead(UInt_t module) const;
+  UInt_t  GetNrSparseDead(UInt_t module) const;
   UInt_t  GetNrDeadSingle(UInt_t module) const;
   UInt_t  GetDeadEqIdAt(UInt_t module,UInt_t index) const;
   UInt_t  GetDeadHSAt(UInt_t module,UInt_t index) const;
@@ -157,6 +167,7 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t  GetNrBadEq(UInt_t eq) const; // bad = silent or noisy
   UInt_t  GetNrSilentEq(UInt_t eq) const; // silent = dead or inactive
   UInt_t  GetNrDeadEq(UInt_t eq) const;
+  UInt_t  GetNrSparseDeadEq(UInt_t eq) const;
   UInt_t  GetDeadEqIdAtEq(UInt_t eq, UInt_t index) const;
   UInt_t  GetDeadHSAtEq(UInt_t eq, UInt_t index) const;
   UInt_t  GetDeadChipAtEq(UInt_t eq, UInt_t index) const;
@@ -172,6 +183,7 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t  GetNrBadC(UInt_t eq, UInt_t hs, UInt_t chip) const; // bad = silent or noisy
   UInt_t  GetNrSilentC(UInt_t eq, UInt_t hs, UInt_t chip) const; // silent = dead or inactive
   UInt_t  GetNrDeadC(UInt_t eq, UInt_t hs, UInt_t chip) const;
+  UInt_t  GetNrSparseDeadC(UInt_t eq, UInt_t hs, UInt_t chip) const;
   UInt_t  GetDeadEqIdAtC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
   UInt_t  GetDeadHSAtC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
   UInt_t  GetDeadChipAtC(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t index) const;
@@ -231,8 +243,10 @@ class AliITSOnlineCalibrationSPDhandler {
  private:
   TString fFileLocation;              // location (dir) of files to read and write from
   AliITSIntMap* fDeadPixelMap[1200];  // lists of dead pixels for each chip
+  AliITSIntMap* fSparseDeadPixelMap[1200];  // lists of dead pixels for each chip (used to define sparse dead pixel on LHC period basis)
   AliITSIntMap* fNoisyPixelMap[1200]; // lists of noisy pixels for each chip
   UInt_t fNrDead[1200];               // nr of dead pixels for each chip
+  UInt_t fNrSparseDead[1200];         // nr of sparse dead pixels for each chip
   UInt_t fNrNoisy[1200];              // nr of noisy pixels for each chip
   Bool_t fActiveEq[20];               // active bit for each equipment
   Bool_t fActiveHS[20][6];            // active bit for each half-stave
@@ -281,9 +295,11 @@ class AliITSOnlineCalibrationSPDhandler {
   UInt_t   GetRowFromOffline(UInt_t module, UInt_t rowM) const;
 
   void     RecursiveInsertDead(AliITSCalibrationSPD* calibSPD, UInt_t module, Int_t lowInd, Int_t highInd);
+  void     RecursiveInsertSparseDead(AliITSCalibrationSPD* calibSPD, UInt_t module, Int_t lowInd, Int_t highInd);
   void     RecursiveInsertNoisy(AliITSCalibrationSPD* calibSPD, UInt_t module, Int_t lowInd, Int_t highInd);
 
   UInt_t   GetNrDeadC2(UInt_t gloChip) const;
+  UInt_t   GetNrSparseDeadC2(UInt_t gloChip) const;
   UInt_t   GetDeadEqIdAtC2(UInt_t gloChip, UInt_t index) const;
   UInt_t   GetDeadHSAtC2(UInt_t gloChip, UInt_t index) const;
   UInt_t   GetDeadChipAtC2(UInt_t gloChip, UInt_t index) const;
@@ -299,4 +315,3 @@ class AliITSOnlineCalibrationSPDhandler {
 };
 
 #endif
-

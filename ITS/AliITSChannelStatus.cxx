@@ -68,6 +68,11 @@ fSSDChannelStatus(0)
   TObjArray* deadArrSPD = (TObjArray*)spdEntryD->GetObject();
   if (!deadArrSPD) AliFatal("No object found in SPDDead file");
 
+  AliCDBEntry* spdEntrySparseD = cdb->Get("ITS/Calib/SPDSparseDead");
+  if (!spdEntrySparseD) AliFatal("Cannot get CDB entry for SPDSparseDead");
+  TObjArray* deadSparseArrSPD = (TObjArray*)spdEntrySparseD->GetObject();
+  if (!deadSparseArrSPD) AliFatal("No object found in SPDSparseDead file");
+  
   AliCDBEntry* spdEntryN = cdb->Get("ITS/Calib/SPDNoisy");
   if (!spdEntryN) AliFatal("Cannot get CDB entry for SPDNoisy");
   TObjArray* noisArrSPD = (TObjArray*)spdEntryN->GetObject();
@@ -89,7 +94,7 @@ fSSDChannelStatus(0)
   fSDDChannelStatus=new TBits(nSDDchan);
   UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
   fSSDChannelStatus=new TBits(nSSDchan);
-  InitFromOCDB(deadArrSPD,noisArrSPD,calArrSDD,calArrSSD);
+  InitFromOCDB(deadArrSPD,deadSparseArrSPD,noisArrSPD,calArrSDD,calArrSSD);
 }
 //______________________________________________________________________
 AliITSChannelStatus::AliITSChannelStatus(const AliITSDetTypeRec *dtrec):
@@ -124,6 +129,15 @@ fSSDChannelStatus(0)
       Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
       fSPDChannelStatus->SetBitNumber(index,kFALSE);      
     }
+    
+       // Mask SPD sparse dead pixels
+    AliITSCalibrationSPD* deadSparseSpd=(AliITSCalibrationSPD*)dtrec->GetSPDSparseDeadModel(imod);
+    for(Int_t ipix=0; ipix<deadSparseSpd->GetNrBad();ipix++){
+      deadSparseSpd->GetBadPixel(ipix,ix,iz);
+      Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
+      fSPDChannelStatus->SetBitNumber(index,kFALSE);      
+    }
+    
     // Mask SPD noisy pixels
     AliITSCalibrationSPD* noisspd=(AliITSCalibrationSPD*)dtrec->GetCalibrationModel(imod);
     for(Int_t ipix=0; ipix<noisspd->GetNrBad();ipix++){
@@ -184,7 +198,7 @@ void  AliITSChannelStatus::InitDefaults(){
   }
 }
 //______________________________________________________________________
-void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
+void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* deadSingleArrSPD, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
 // fills bitmaps from arrays of AliITSCalibrationSXD objects
 
   // SPD modules
@@ -201,6 +215,14 @@ void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* noisArr
     AliITSCalibrationSPD* deadspd=(AliITSCalibrationSPD*)deadArrSPD->At(imod);
     for(Int_t ipix=0; ipix<deadspd->GetNrBad();ipix++){
       deadspd->GetBadPixel(ipix,ix,iz);
+      Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
+      fSPDChannelStatus->SetBitNumber(index,kFALSE);      
+    }
+    
+    // Mask SPD sparse dead pixels
+    AliITSCalibrationSPD* deadSparseSpd=(AliITSCalibrationSPD*)deadArrSPD->At(imod);
+    for(Int_t ipix=0; ipix<deadSparseSpd->GetNrBad();ipix++){
+      deadSparseSpd->GetBadPixel(ipix,ix,iz);
       Int_t index=imod*kSPDNpxPerModule*kSPDNpzPerModule+ix*kSPDNpzPerModule+iz;
       fSPDChannelStatus->SetBitNumber(index,kFALSE);      
     }

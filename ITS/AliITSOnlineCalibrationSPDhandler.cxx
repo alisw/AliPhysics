@@ -38,11 +38,12 @@ AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler():
   // constructor
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
     fNrDead[gloChip]=0;
+    fNrSparseDead[gloChip]=0;
     fNrNoisy[gloChip]=0;
     fDeadPixelMap[gloChip] = new AliITSIntMap();
+    fSparseDeadPixelMap[gloChip] = new AliITSIntMap();
     fNoisyPixelMap[gloChip] = new AliITSIntMap();    
   }
-
   ActivateALL();
   UnSetDeadALL();
 }
@@ -54,12 +55,15 @@ AliITSOnlineCalibrationSPDhandler::AliITSOnlineCalibrationSPDhandler(const AliIT
   // copy constructor
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
     fNrDead[gloChip] = handle.fNrDead[gloChip];
+    fNrSparseDead[gloChip] = handle.fNrSparseDead[gloChip];
     fNrNoisy[gloChip] = handle.fNrNoisy[gloChip];
     fDeadPixelMap[gloChip] = handle.fDeadPixelMap[gloChip]->Clone();
+    fSparseDeadPixelMap[gloChip] = handle.fSparseDeadPixelMap[gloChip]->Clone();
     fNoisyPixelMap[gloChip] = handle.fNoisyPixelMap[gloChip]->Clone();
   }
   for (UInt_t eq=0; eq<20; eq++) {
     fActiveEq[eq] = handle.fActiveEq[eq];
+    fDeadEq[eq]=handle.fDeadEq[eq];
     for (UInt_t hs=0; hs<6; hs++) {
       fActiveHS[eq][hs] = handle.fActiveHS[eq][hs];
       for (UInt_t chip=0; chip<10; chip++) {
@@ -74,6 +78,7 @@ AliITSOnlineCalibrationSPDhandler::~AliITSOnlineCalibrationSPDhandler() {
   //  ClearMaps();
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
     delete fDeadPixelMap[gloChip];
+    delete fDeadPixelMap[gloChip];
     delete fNoisyPixelMap[gloChip];
   }
 }
@@ -84,12 +89,15 @@ AliITSOnlineCalibrationSPDhandler& AliITSOnlineCalibrationSPDhandler::operator=(
     this->ClearMaps();
     for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
       fNrDead[gloChip] = handle.fNrDead[gloChip];
+      fNrSparseDead[gloChip] = handle.fNrSparseDead[gloChip];
       fNrNoisy[gloChip] = handle.fNrNoisy[gloChip];
       fDeadPixelMap[gloChip] = handle.fDeadPixelMap[gloChip]->Clone();
+      fSparseDeadPixelMap[gloChip] = handle.fSparseDeadPixelMap[gloChip]->Clone();
       fNoisyPixelMap[gloChip] = handle.fNoisyPixelMap[gloChip]->Clone();
     }
     for (UInt_t eq=0; eq<20; eq++) {
       fActiveEq[eq] = handle.fActiveEq[eq];
+      fDeadEq[eq] = handle.fDeadEq[eq];
       for (UInt_t hs=0; hs<6; hs++) {
 	fActiveHS[eq][hs] = handle.fActiveHS[eq][hs];
 	for (UInt_t chip=0; chip<10; chip++) {
@@ -114,7 +122,9 @@ void AliITSOnlineCalibrationSPDhandler::ResetDead() {
   UnSetDeadALL();
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
     fNrDead[gloChip]=0;
+    fNrSparseDead[gloChip]=0;
     fDeadPixelMap[gloChip]->Clear();
+    fSparseDeadPixelMap[gloChip]->Clear();
   }
 }
 //____________________________________________________________________________________________
@@ -135,6 +145,9 @@ void AliITSOnlineCalibrationSPDhandler::ResetDeadForChip(UInt_t eq, UInt_t hs, U
       Int_t key = GetKey(eq,hs,chip,col,row);
       if (fDeadPixelMap[gloChip]->Remove(key)) {
 	fNrDead[gloChip]--;
+      }
+      if (fSparseDeadPixelMap[gloChip]->Remove(key)) {
+	fNrSparseDead[gloChip]--;
       }
     }
   }
@@ -695,6 +708,63 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDB(Int_t runNr, const Char
   return kTRUE;
 }
 //____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadSparseDeadFromDB(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
+  // reads dead pixels from DB for given runNr
+  // note that you may want to clear the list (if it is not empty) before reading
+  AliCDBManager* man = AliCDBManager::Instance();
+  TString storageSTR = Form("%s",storage);
+  if (storageSTR.CompareTo("default")==0) {
+    if(!man->IsDefaultStorageSet()) {
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    }
+  }
+  else {
+    storageSTR = Form("%s",storage);
+    man->SetDefaultStorage(storageSTR.Data());
+  }
+  AliCDBEntry *cdbEntry = man->Get("ITS/Calib/SPDSparseDead", runNr);
+  TObjArray* spdEntry;
+  if(cdbEntry) {
+    spdEntry = (TObjArray*)cdbEntry->GetObject();
+    if(!spdEntry) return kFALSE;
+  }
+  else {
+    Warning("AliITSOnlineCalibrationSPDhandler::ReadSparseDeadFromDB","Calibration for run %d not found in database.",runNr);
+    return kFALSE;
+  }
+  AliITSCalibrationSPD* calibSPD;
+  for (UInt_t module=0; module<240; module++) {
+    calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
+    UInt_t nrDead = calibSPD->GetNrBadSingle();
+    if (nrDead>0) {
+      if (!treeSerial) {
+        RecursiveInsertSparseDead(calibSPD,module,0,nrDead-1);
+      }
+
+      else {
+        for (UInt_t index=0; index<nrDead; index++) {
+          UInt_t colM = calibSPD->GetBadColAt(index);
+          UInt_t rowM = calibSPD->GetBadRowAt(index);
+          SetSparseDeadPixelM(module,colM,rowM);
+        }
+      }
+    }
+    for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
+      UInt_t eq,hs,chip,col,row;
+      AliITSRawStreamSPD::OfflineToOnline(module, chipIndex*32, 0, eq, hs, chip, col, row);
+      if (calibSPD->IsChipBad(chipIndex)) {
+        SetDeadChip(eq,hs,chip);
+      }
+      else {
+        SetDeadChip(eq,hs,chip,kFALSE);
+      }
+    }
+  }
+  spdEntry->SetOwner(kTRUE);
+  spdEntry->Clear();
+  return kTRUE;
+}
+//____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromDB(Int_t runNr, const Char_t *storage, Bool_t treeSerial) {
   // reads noisy pixels from DB for given runNr
   // note that you may want to clear the list (if it is not empty) before reading
@@ -883,6 +953,54 @@ Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDB(Int_t runNrStart, Int_t 
   return kTRUE;
 }
 //____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::WriteSparseDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
+  // writes dead pixels to DB for given runNrs
+  // overwrites any previous entries
+  AliCDBManager* man = AliCDBManager::Instance();
+  TString storageSTR = Form("%s",storage);
+  if (storageSTR.CompareTo("default")==0) {
+    if(!man->IsDefaultStorageSet()) {
+      man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+    }
+  }
+  else {
+    storageSTR = Form("%s",storage);
+    man->SetDefaultStorage(storageSTR.Data());
+  }
+  AliCDBMetaData* metaData = new AliCDBMetaData();
+  metaData->SetResponsible("Annalisa Mastroserio");
+  metaData->SetComment("Created by AliITSOnlineCalibrationSPDhandler.");
+  AliCDBId idCalSPD("ITS/Calib/SPDSparseDead",runNrStart,runNrEnd);
+  TObjArray* spdEntry = new TObjArray(240);
+  spdEntry->SetOwner(kTRUE);
+  for(UInt_t module=0; module<240; module++){
+    AliITSCalibrationSPD* calibSPD = new AliITSCalibrationSPD();
+    spdEntry->Add(calibSPD);
+  }
+  for(UInt_t module=0; module<240; module++){
+    AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*) spdEntry->At(module);
+    //printf(" AliITSOnlineCalibrationSPDhandler::WriteSparseDeadToDB :  nr Sparse dead in module %i - %i \n",module,GetNrSparseDead(module));
+    calibSPD->SetNrBadSingle( GetNrSparseDead(module) );
+    calibSPD->SetBadList( GetSparseDeadArray(module) );
+    for (UInt_t chipIndex=0; chipIndex<5; chipIndex++) {
+      UInt_t eq,hs,chip,col,row;
+      AliITSRawStreamSPD::OfflineToOnline(module, chipIndex*32, 0, eq, hs, chip, col, row);
+      if (IsSilentChip(eq,hs,chip)) {
+        calibSPD->SetChipBad(chipIndex);
+      }
+      else {
+        calibSPD->UnSetChipBad(chipIndex);
+      }
+    }
+  }
+  AliCDBEntry* cdbEntry = new AliCDBEntry((TObject*)spdEntry,idCalSPD,metaData);
+  man->Put(cdbEntry);
+  delete spdEntry;
+  delete cdbEntry;
+  delete metaData;
+  return kTRUE;
+}
+//____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::WriteDeadToDBasNoisy(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage) {
   // writes dead pixels to DB for given runNrs
   // overwrites any previous entries
@@ -974,6 +1092,15 @@ void AliITSOnlineCalibrationSPDhandler::RecursiveInsertDead(AliITSCalibrationSPD
   SetDeadPixelM(module,calibSPD->GetBadColAt(thisInd),calibSPD->GetBadRowAt(thisInd));
   RecursiveInsertDead(calibSPD,module,lowInd,thisInd-1);
   RecursiveInsertDead(calibSPD,module,thisInd+1,highInd);
+}
+//____________________________________________________________________________________________
+void AliITSOnlineCalibrationSPDhandler::RecursiveInsertSparseDead(AliITSCalibrationSPD* calibSPD, UInt_t module, Int_t lowInd, Int_t highInd) {
+  // inserts sparse dead pixels recursively, used when reading from db
+  if (lowInd>highInd) return;
+  Int_t thisInd = lowInd+(highInd-lowInd)/2;
+  SetSparseDeadPixelM(module,calibSPD->GetBadColAt(thisInd),calibSPD->GetBadRowAt(thisInd));
+  RecursiveInsertSparseDead(calibSPD,module,lowInd,thisInd-1);
+  RecursiveInsertSparseDead(calibSPD,module,thisInd+1,highInd);
 }
 //____________________________________________________________________________________________
 void AliITSOnlineCalibrationSPDhandler::RecursiveInsertNoisy(AliITSCalibrationSPD* calibSPD, UInt_t module, Int_t lowInd, Int_t highInd) {
@@ -1106,6 +1233,34 @@ TArrayS AliITSOnlineCalibrationSPDhandler::GetDeadArray(UInt_t module, Bool_t tr
   return returnArray;
 }
 //____________________________________________________________________________________________
+TArrayS AliITSOnlineCalibrationSPDhandler::GetSparseDeadArray(UInt_t module, Bool_t treeSerial) {
+  // get a TArrayS of the single dead pixels (format for the AliITSCalibrationSPD object)
+  TArrayS returnArray;
+
+  UInt_t eq = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  UInt_t size=GetNrSparseDead(module);
+  returnArray.Set(size*2);
+  UInt_t gloIndex=0;
+  for (UInt_t ch=0; ch<5; ch++) {
+    UInt_t chip = GetChipFromOffline(module,ch*32);
+    UInt_t gloChip = GetGloChip(eq,hs,chip);
+    if (treeSerial) fSparseDeadPixelMap[gloChip]->PrepareSerialize(); // for tree ordered values
+    else fSparseDeadPixelMap[gloChip]->PrepareSerializeOrdered(); // for key ordered values
+    if (!IsSilentChip(eq,hs,chip)) {
+      for (UInt_t index=0; index<fNrSparseDead[gloChip]; index++) {
+        Int_t key = fSparseDeadPixelMap[gloChip]->GetKeyIndex(index);
+        Int_t colM = GetColMFromKey(key);
+        Int_t rowM = GetRowMFromKey(key);
+        returnArray.AddAt(colM,gloIndex*2);
+        returnArray.AddAt(rowM,gloIndex*2+1);
+        gloIndex++;
+      }
+    }
+  }
+  return returnArray;
+}
+//____________________________________________________________________________________________
 TArrayS AliITSOnlineCalibrationSPDhandler::GetNoisyArray(UInt_t module, Bool_t treeSerial) {
   // get a TArrayS of the single noisy pixels (format for the AliITSCalibrationSPD object)
   TArrayS returnArray;
@@ -1193,7 +1348,7 @@ void AliITSOnlineCalibrationSPDhandler::PrintEqSummary() {
   printf("Eq summary:\n");
   printf("-----------\n");
   for (UInt_t eq=0; eq<20; eq++) {
-    printf("Eq %*d: %*d silent(dead+inactive) , %*d dead , %*d noisy\n",2,eq,6,GetNrSilentEq(eq),6,GetNrDeadEq(eq),6,GetNrNoisyEq(eq));
+    printf("Eq %*d: %*d silent(dead+inactive) , %*d dead , %*d sparse-dead %*d noisy\n",2,eq,6,GetNrSilentEq(eq),6,GetNrDeadEq(eq),6,GetNrSparseDeadEq(eq),6,GetNrNoisyEq(eq));
   }
 }
 //____________________________________________________________________________________________
@@ -1283,6 +1438,29 @@ void AliITSOnlineCalibrationSPDhandler::PrintDead() const {
   }
 }
 //____________________________________________________________________________________________
+void AliITSOnlineCalibrationSPDhandler::PrintSparseDead() const {
+  // print the single dead pixels to screen (disregards inactive eq,hs,chip)
+  printf("------------------------------------------------------\n");
+  printf("Sparse Dead Pixels: (eq,hs,chip,col,row  |  module,colM,rowM)\n");
+  printf("------------------------------------------------------\n");
+  for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
+    for (UInt_t index=0; index<fNrSparseDead[gloChip]; index++) {
+      Int_t key = fSparseDeadPixelMap[gloChip]->GetKeyIndex(index);
+      UInt_t eq = GetEqIdFromKey(key);
+      UInt_t hs = GetHSFromKey(key);
+      UInt_t chip = GetChipFromKey(key);
+      UInt_t col = GetColFromKey(key);
+      UInt_t row = GetRowFromKey(key);
+
+      UInt_t module = AliITSRawStreamSPD::GetOfflineModuleFromOnline(eq,hs,chip);
+      UInt_t colM = AliITSRawStreamSPD::GetOfflineColFromOnline(eq,hs,chip,col);
+      UInt_t rowM = AliITSRawStreamSPD::GetOfflineRowFromOnline(eq,hs,chip,row);
+
+      printf("%*d,%*d,%*d,%*d,%*d  |  %*d,%*d,%*d\n",2,eq,1,hs,1,chip,2,col,3,row,3,module,3,colM,3,rowM);
+    }
+  }
+}
+//____________________________________________________________________________________________
 void AliITSOnlineCalibrationSPDhandler::PrintNoisy() const {
   // print the dead pixels to screen
   printf("-------------------------------------------------------\n");
@@ -1327,6 +1505,28 @@ Bool_t AliITSOnlineCalibrationSPDhandler::SetDeadPixel(UInt_t eq, UInt_t hs, UIn
   return kFALSE;
 }
 //____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::SetSparseDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) {
+  // set a dead pixel, returns false if pixel is already dead
+  UInt_t gloChip = GetGloChip(eq,hs,chip);
+  if (gloChip>=1200) {
+    Error("AliITSOnlineCalibrationSPDhandler::SetSparseDeadPixel", "eq,hs,chip nrs (%d,%d,%d) out of bounds.",eq,hs,chip);
+    return kFALSE;
+  }
+  if (col>=32 && row>=256) {
+    Error("AliITSOnlineCalibrationSPDhandler::SetSparseDeadPixel", "col,row nrs (%d,%d) out of bounds.",col,row);
+    return kFALSE;
+  }
+  Int_t key = GetKey(eq,hs,chip,col,row);
+  // if noisy we dont want to add it...
+  if (fSparseDeadPixelMap[gloChip]->Find(key) != NULL) return kFALSE;
+  if (fSparseDeadPixelMap[gloChip]->Insert(key,gloChip)) {
+    fNrSparseDead[gloChip]++;
+    //printf(" AliITSOnlineCalibrationSPDhandler::SetSparseDeadPixel nSparse Dead : %i \n",fNrSparseDead[gloChip]);	
+    return kTRUE;
+  }
+  return kFALSE;
+}
+//____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::SetNoisyPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) {
   // set a noisy pixel, returns false if pixel is already noisy
   UInt_t gloChip = GetGloChip(eq,hs,chip);
@@ -1360,6 +1560,16 @@ Bool_t AliITSOnlineCalibrationSPDhandler::SetDeadPixelM(UInt_t module, UInt_t co
   return SetDeadPixel(eq,hs,chip,col,row);
 }
 //____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::SetSparseDeadPixelM(UInt_t module, UInt_t colM, UInt_t rowM) {
+  // set a dead pixel, returns false if pixel is already dead
+  UInt_t eq = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  UInt_t chip = GetChipFromOffline(module,colM);
+  UInt_t col = GetColFromOffline(module,colM);
+  UInt_t row = GetRowFromOffline(module,rowM);
+  return SetSparseDeadPixel(eq,hs,chip,col,row);
+}
+//____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::SetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t rowM) {
   // set a noisy pixel, returns false if pixel is already noisy
   UInt_t eq = GetEqIdFromOffline(module);
@@ -1380,6 +1590,21 @@ Bool_t AliITSOnlineCalibrationSPDhandler::UnSetDeadPixel(UInt_t eq, UInt_t hs, U
   Int_t key = GetKey(eq,hs,chip,col,row);
   if (fDeadPixelMap[gloChip]->Remove(key)) {
     fNrDead[gloChip]--;
+    return kTRUE;
+  }
+  return kFALSE;
+}
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetSparseDeadPixel(UInt_t eq, UInt_t hs, UInt_t chip, UInt_t col, UInt_t row) {
+  // unset a dead pixel, returns false if pixel is not dead
+  UInt_t gloChip = GetGloChip(eq,hs,chip);
+  if (gloChip>=1200) {
+    Error("AliITSOnlineCalibrationSPDhandler::UnSetSparseDeadPixel", "eq,hs,chip nrs (%d,%d,%d) out of bounds.",eq,hs,chip);
+    return kFALSE;
+  }
+  Int_t key = GetKey(eq,hs,chip,col,row);
+  if (fSparseDeadPixelMap[gloChip]->Remove(key)) {
+    fNrSparseDead[gloChip]--;
     return kTRUE;
   }
   return kFALSE;
@@ -1408,6 +1633,16 @@ Bool_t AliITSOnlineCalibrationSPDhandler::UnSetDeadPixelM(UInt_t module, UInt_t 
   UInt_t col = GetColFromOffline(module,colM);
   UInt_t row = GetRowFromOffline(module,rowM);
   return UnSetDeadPixel(eq,hs,chip,col,row);
+}
+//____________________________________________________________________________________________
+Bool_t AliITSOnlineCalibrationSPDhandler::UnSetSparseDeadPixelM(UInt_t module, UInt_t colM, UInt_t rowM) {
+  // unset a dead pixel, returns false if pixel is not dead
+  UInt_t eq = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  UInt_t chip = GetChipFromOffline(module,colM);
+  UInt_t col = GetColFromOffline(module,colM);
+  UInt_t row = GetRowFromOffline(module,rowM);
+  return UnSetSparseDeadPixel(eq,hs,chip,col,row);
 }
 //____________________________________________________________________________________________
 Bool_t AliITSOnlineCalibrationSPDhandler::UnSetNoisyPixelM(UInt_t module, UInt_t colM, UInt_t rowM) {
@@ -1591,6 +1826,15 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDead() const {
   return nrDead;
 }
 //____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSparseDead() const {
+  // returns the total nr of dead pixels
+  UInt_t nrSparseDead = 0;
+  for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
+    nrSparseDead+=fNrSparseDead[gloChip];
+  }
+  return nrSparseDead;
+}
+//____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisy() const {
   // returns the total nr of noisy pixels
   UInt_t nrNoisy = 0;
@@ -1760,6 +2004,22 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDead(UInt_t module) const {
   return nrDead;
 }
 //____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSparseDead(UInt_t module) const {
+  // returns the number of sparse dead pixels for a certain module
+  if (module>=240) {
+    Error("AliITSOnlineCalibrationSPDhandler::GetNrSparseDead", "module nr (%d) out of bounds.",module);
+    return 0;
+  }
+  UInt_t nrDead = 0;
+  UInt_t eq = GetEqIdFromOffline(module);
+  UInt_t hs = GetHSFromOffline(module);
+  for (UInt_t ch=0; ch<5; ch++) {
+    UInt_t gloChip = GetGloChip(eq,hs,GetChipFromOffline(module,ch*32));
+    nrDead+=fNrSparseDead[gloChip];
+  }
+  return nrDead;
+}
+//____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisy(UInt_t module) const {
   // returns the number of noisy pixels for a certain module
   if (module>=240) {
@@ -1904,6 +2164,17 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadEq(UInt_t eq) const {
   return returnval;
 }
 //____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSparseDeadEq(UInt_t eq) const {
+  // returns nr of dead for eq
+  UInt_t returnval=0;
+  for (UInt_t hs=0; hs<6; hs++) {
+    for (UInt_t chip=0; chip<10; chip++) {
+      returnval+=GetNrSparseDeadC(eq,hs,chip);
+    }
+  }
+  return returnval;
+}
+//____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyEq(UInt_t eq) const {
   // returns nr of noisy for eq
   UInt_t returnval=0;
@@ -2022,6 +2293,12 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadC(UInt_t eq, UInt_t hs, UInt_
   // returns nr of dead for chip
   UInt_t gloChip = GetGloChip(eq,hs,chip);
   return GetNrDeadC2(gloChip);
+}
+//____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSparseDeadC(UInt_t eq, UInt_t hs, UInt_t chip) const {
+  // returns nr of sparse dead for chip
+  UInt_t gloChip = GetGloChip(eq,hs,chip);
+  return GetNrSparseDeadC2(gloChip);
 }
 //____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyC(UInt_t eq, UInt_t hs, UInt_t chip) const {
@@ -2606,6 +2883,15 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadC2(UInt_t gloChip) const {
   return fNrDead[gloChip];
 }
 //____________________________________________________________________________________________
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSparseDeadC2(UInt_t gloChip) const {
+  // returns nr of dead pixels on this chip
+  if (gloChip>=1200) {
+    Error("AliITSOnlineCalibrationSPDhandler::GetNrSparseDeadC2", "global chip nr (%d) out of bounds.",gloChip);
+    return 0;
+  }
+  return fNrSparseDead[gloChip];
+}
+//____________________________________________________________________________________________
 UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyC2(UInt_t gloChip) const {
   // returns nr of noisy pixels on this chip
   if (gloChip>=1200) {
@@ -3094,5 +3380,4 @@ for(Int_t eq=0; eq<20; eq++){
 printf("n Chips OK %i : ACTIVE mismatch %i  - INACTIVE mismatch in %i \n",nOk,nMismatch,nMismatchInOther);
 
 }
-
 

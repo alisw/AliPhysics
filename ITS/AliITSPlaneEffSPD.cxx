@@ -426,6 +426,19 @@ if(cdbSPDDead) {
   AliError("GetDeadAndNoisyInChip: did not find Calib/SPDDead.");
   return;
 }
+// retrieve map of sparse dead Pixel 
+AliCDBEntry *cdbSPDSparseDead = man->Get("ITS/Calib/SPDSparseDead", fRunNumber);
+TObjArray* spdSparseDead;
+if(cdbSPDSparseDead) {
+  spdSparseDead = (TObjArray*)cdbSPDSparseDead->GetObject();
+  if(!spdSparseDead) 
+  {AliError("GetDeadAndNoisyInChip: SPDSparseDead not found in CDB");
+   return;}
+} else {
+  AliError("GetDeadAndNoisyInChip: did not find Calib/SPDSparseDead.");
+  return;
+}
+
 // retrieve map of noisy Pixel 
 AliCDBEntry *cdbSPDNoisy = man->Get("ITS/Calib/SPDNoisy", fRunNumber);
 TObjArray* spdNoisy;
@@ -445,6 +458,12 @@ UInt_t chip=GetChipFromKey(key);
 AliITSCalibrationSPD* calibSPD=(AliITSCalibrationSPD*) spdDead->At(mod);
 UInt_t nrDead = calibSPD->GetNrBad();
 for (UInt_t index=0; index<nrDead; index++) {
+  if(GetChipFromCol(calibSPD->GetBadColAt(index))==chip) nrDeadInChip++;
+}
+// add the number of sparse dead to the previous dead
+calibSPD=(AliITSCalibrationSPD*) spdSparseDead->At(mod);
+UInt_t nrSparseDead = calibSPD->GetNrBad();
+for (UInt_t index=0; index<nrSparseDead; index++) {
   if(GetChipFromCol(calibSPD->GetBadColAt(index))==chip) nrDeadInChip++;
 }
 calibSPD=(AliITSCalibrationSPD*) spdNoisy->At(mod);

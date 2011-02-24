@@ -74,6 +74,7 @@ AliITSOnlineSPDphys::AliITSOnlineSPDphys(const AliITSOnlineSPDphys& /*phys*/) :
   fPhysInfo(NULL),
   fFileName(".")
 {
+  for(Int_t i=0; i<6; i++) fHitArray[i]=0x0;
   printf("This object should not be copied!");
 }
 
@@ -295,3 +296,5 @@ UInt_t AliITSOnlineSPDphys::GetEqNr() const {
 UInt_t AliITSOnlineSPDphys::GetNrEvents() const {
   return fPhysInfo->GetNrEvents();
 }
+
+

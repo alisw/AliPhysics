@@ -83,6 +83,7 @@ fSegmentation(), // [NDet]
 fCalibration(),     // [NMod]
 fSSDCalibration(0),
 fSPDNoisy(0),
+fSPDSparseDead(0),
 fNSDigits(0),    //! number of SDigits
 fSDigits("AliITSpListItem",1000),   
 fNDigits(0),     //! number of Digits
@@ -155,6 +156,13 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
        fSPDNoisy = 0;
       }
     }
+    if(fSPDSparseDead){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+       fSPDSparseDead->Delete();
+       delete fSPDSparseDead;
+       fSPDSparseDead = 0;
+      }
+    }
     if(fSimuPar) delete fSimuPar;
     if(fRespSDD){
       if(!(AliCDBManager::Instance()->GetCacheFlag())){
@@ -181,6 +189,7 @@ fSegmentation(source.fSegmentation), // [NDet]
 fCalibration(source.fCalibration),     // [NMod]
 fSSDCalibration(source.fSSDCalibration),
 fSPDNoisy(source.fSPDNoisy),
+fSPDSparseDead(source.fSPDSparseDead),
 fNSDigits(source.fNSDigits),    //! number of SDigits
 fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
 fNDigits(source.fNDigits),     //! number of Digits
@@ -363,6 +372,19 @@ void AliITSDetTypeSim::SetSPDNoisyModel(Int_t iMod, AliITSCalibration *cal){
     fSPDNoisy = new TObjArray(fgkDefaultNModulesSPD);
     fSPDNoisy->SetOwner(kTRUE);
     fSPDNoisy->Clear();
+  }
+
+  if (fSPDNoisy->At(iMod) != 0)
+    delete (AliITSCalibration*) fSPDNoisy->At(iMod);
+  fSPDNoisy->AddAt(cal,iMod);
+}
+//_______________________________________________________________________
+void AliITSDetTypeSim::SetSPDSparseDeadModel(Int_t iMod, AliITSCalibration *cal){
+  //Set sparse dead pixel info for the SPD module iMod
+  if (fSPDSparseDead==0) {
+    fSPDSparseDead = new TObjArray(fgkDefaultNModulesSPD);
+    fSPDSparseDead->SetOwner(kTRUE);
+    fSPDSparseDead->Clear();
   }
 
   if (fSPDNoisy->At(iMod) != 0)

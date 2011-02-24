@@ -50,11 +50,13 @@ class AliITSDetTypeRec : public TObject {
     virtual void SetSegmentationModel(Int_t dettype, AliITSsegmentation *seg);
     virtual void SetCalibrationModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal);
+    virtual void SetSPDSparseDeadModel(Int_t iMod, AliITSCalibration *cal);
     virtual void SetReconstructionModel(Int_t dettype, AliITSClusterFinder *rec);
     virtual Bool_t GetCalibration();
     virtual AliITSsegmentation* GetSegmentationModel(Int_t dettype) const;
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
     virtual AliITSCalibration* GetSPDDeadModel(Int_t iMod) const;
+    virtual AliITSCalibration* GetSPDSparseDeadModel(Int_t iMod) const;
     virtual AliITSTriggerConditions* GetTriggerConditions() const;
     virtual AliITSClusterFinder* GetReconstructionModel(Int_t dettype) const;
     virtual AliITSDDLModuleMapSDD* GetDDLModuleMapSDD() const { return fDDLMapSDD;}
@@ -133,6 +135,7 @@ class AliITSDetTypeRec : public TObject {
     TObjArray    *fCalibration;   //! [NMod]
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDDead;       //! [fgkDefaultNModulesSPD]
+    TObjArray    *fSPDSparseDead;       //! [fgkDefaultNModulesSPD]
     AliITSTriggerConditions *fTriggerConditions; //! PIT conditions object
     TObjArray    *fDigits;        //! [NMod][NDigits]
     AliITSFOSignalsSPD *fFOSignals; //! Fast-Or signals (used when reconstructing from digits)
@@ -150,7 +153,7 @@ class AliITSDetTypeRec : public TObject {
 
     TBits fFastOrFiredMap;     //! Map of FastOr fired chips (after processing of raw signals)
 
-    ClassDef(AliITSDetTypeRec,19) // ITS Reconstruction structure
+    ClassDef(AliITSDetTypeRec,20) // ITS Reconstruction structure
 };
 
 #endif

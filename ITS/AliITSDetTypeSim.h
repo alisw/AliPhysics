@@ -59,7 +59,8 @@ class AliITSDetTypeSim : public TObject {
     virtual AliITSsegmentation* GetSegmentationModelByModule(Int_t module) const;
 
     virtual void SetCalibrationModel(Int_t iMod,AliITSCalibration *resp);
-   virtual void SetSPDNoisyModel(Int_t iMod, AliITSCalibration *cal);
+    virtual void SetSPDNoisyModel(Int_t iMod, AliITSCalibration *cal);
+    virtual void SetSPDSparseDeadModel(Int_t iMod, AliITSCalibration *cal);
 
     virtual AliITSCalibration* GetCalibrationModel(Int_t iMod) const;
     virtual AliITSCalibration* GetSPDNoisyModel(Int_t iMod) const;
@@ -144,6 +145,7 @@ class AliITSDetTypeSim : public TObject {
     TObjArray    *fCalibration;  //! [NMod]
     AliITSCalibrationSSD* fSSDCalibration;  //! SSD calibration object
     TObjArray    *fSPDNoisy;     //! [fgkDefaultNModulesSPD]
+    TObjArray    *fSPDSparseDead;//! [fgkDefaultNModulesSPD]
     Int_t         fNSDigits;     //! number of SDigits
     TClonesArray  fSDigits;      //! Summable digits
     Int_t*        fNDigits;      //! [NDet] number of Digits for det.
@@ -159,7 +161,7 @@ class AliITSDetTypeSim : public TObject {
     AliITSFOGeneratorSPD fFOGenerator; //! Fast-OR generator object
     AliITSTriggerConditions* fTriggerConditions; //! Trigger conditions 
        
-    ClassDef(AliITSDetTypeSim,14) // ITS Simulation structure
+    ClassDef(AliITSDetTypeSim,15) // ITS Simulation structure
  
 };
 

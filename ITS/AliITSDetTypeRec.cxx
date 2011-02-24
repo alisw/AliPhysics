@@ -76,6 +76,7 @@ fSegmentation(0),
 fCalibration(0),
 fSSDCalibration(0),
 fSPDDead(0),
+fSPDSparseDead(0),
 fTriggerConditions(0),
 fDigits(0),
 fFOSignals(0),
@@ -120,6 +121,7 @@ fSegmentation(rec.fSegmentation),
 fCalibration(rec.fCalibration),
 fSSDCalibration(rec.fSSDCalibration),
 fSPDDead(rec.fSPDDead),
+fSPDSparseDead(rec.fSPDSparseDead),
 fTriggerConditions(rec.fTriggerConditions),
 fDigits(rec.fDigits),
 fFOSignals(rec.fFOSignals),
@@ -180,6 +182,13 @@ AliITSDetTypeRec::~AliITSDetTypeRec(){
       fSPDDead->Delete();
       delete fSPDDead;
       fSPDDead = 0;
+    }
+  } 
+     if(fSPDSparseDead){
+    if(!(AliCDBManager::Instance()->GetCacheFlag())) {
+      fSPDSparseDead->Delete();
+      delete fSPDSparseDead;
+      fSPDSparseDead = 0;
     }
   } 
   if(fTriggerConditions){
@@ -277,6 +286,20 @@ void AliITSDetTypeRec::SetSPDDeadModel(Int_t iMod, AliITSCalibration *cal){
   fSPDDead->AddAt(cal,iMod);
 }
 //_______________________________________________________________________
+void AliITSDetTypeRec::SetSPDSparseDeadModel(Int_t iMod, AliITSCalibration *cal){
+
+  //Set dead pixel info for the SPD ACTIVE module iMod
+  if (fSPDSparseDead==0) {
+    fSPDSparseDead = new TObjArray(fgkDefaultNModulesSPD);
+    fSPDSparseDead->SetOwner(kTRUE);
+    fSPDSparseDead->Clear();
+  }
+
+  if (fSPDSparseDead->At(iMod) != 0)
+    delete (AliITSCalibration*) fSPDSparseDead->At(iMod);
+  fSPDSparseDead->AddAt(cal,iMod);
+}
+//_______________________________________________________________________
 AliITSCalibration* AliITSDetTypeRec::GetCalibrationModel(Int_t iMod) const {
   
   //Get calibration model for module type
@@ -305,6 +328,17 @@ AliITSCalibration* AliITSDetTypeRec::GetSPDDeadModel(Int_t iMod) const {
     return 0; 
   }  
   return (AliITSCalibration*)fSPDDead->At(iMod);
+}
+//_______________________________________________________________________
+AliITSCalibration* AliITSDetTypeRec::GetSPDSparseDeadModel(Int_t iMod) const {
+  
+  //Get SPD dead for module iMod
+  
+  if(fSPDSparseDead==0) {
+    AliWarning("fSPDSparseDead is 0!");
+    return 0; 
+  }  
+  return (AliITSCalibration*)fSPDSparseDead->At(iMod);
 }
 //_______________________________________________________________________
 AliITSTriggerConditions* AliITSDetTypeRec::GetTriggerConditions() const {
@@ -452,6 +486,7 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
  
   AliCDBEntry *noisySPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDNoisy");
   AliCDBEntry *deadSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDDead");
+  AliCDBEntry *deadSparseSPD = AliCDBManager::Instance()->Get("ITS/Calib/SPDSparseDead");
   AliCDBEntry *pitCond = AliCDBManager::Instance()->Get("TRIGGER/SPD/PITConditions");
   if(!noisySPD || !deadSPD || !pitCond ){
     AliFatal("SPD Calibration object retrieval failed! ");
@@ -466,6 +501,11 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
   if (!cacheStatus) deadSPD->SetObject(NULL);
   deadSPD->SetOwner(kTRUE);
 
+  TObjArray *calSparseDeadSPD = (TObjArray*) deadSparseSPD->GetObject();
+  if (!cacheStatus) deadSparseSPD->SetObject(NULL);
+  deadSparseSPD->SetOwner(kTRUE);
+
+  
   AliITSTriggerConditions *calPitCond = (AliITSTriggerConditions*) pitCond->GetObject();
   if (!cacheStatus) pitCond->SetObject(NULL);
   pitCond->SetOwner(kTRUE);
@@ -473,9 +513,10 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
   if(!cacheStatus){
     delete noisySPD;
     delete deadSPD;
+    delete deadSparseSPD;
     delete pitCond;
   }
-  if ((!calNoisySPD) || (!calDeadSPD) || (!calPitCond)){ 
+  if ((!calNoisySPD) || (!calDeadSPD) || (!calSparseDeadSPD) || (!calPitCond)){ 
     AliWarning("Can not get SPD calibration from calibration database !");
     return kFALSE;
   }
@@ -488,6 +529,8 @@ Bool_t AliITSDetTypeRec::GetCalibrationSPD(Bool_t cacheStatus) {
     SetCalibrationModel(i, cal);
     cal = (AliITSCalibration*) calDeadSPD->At(i);
     SetSPDDeadModel(i, cal);
+    cal = (AliITSCalibration*) calSparseDeadSPD->At(i);
+    SetSPDSparseDeadModel(i, cal);
   }
   fTriggerConditions = calPitCond;
 
