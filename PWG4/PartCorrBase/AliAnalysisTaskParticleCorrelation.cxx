@@ -113,7 +113,7 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - End\n");
  
   PostData(1,fOutputContainer);
-	
+
 }
 //_____________________________________________________
 void AliAnalysisTaskParticleCorrelation::LocalInit()
@@ -125,7 +125,7 @@ void AliAnalysisTaskParticleCorrelation::LocalInit()
 	
 	// Create cuts/param objects and publish to slot
 	fCuts = fAna->GetListOfAnalysisCuts();
-	
+	fCuts ->SetOwner(kTRUE);
 	// Post Data
 	PostData(2, fCuts);
 	
