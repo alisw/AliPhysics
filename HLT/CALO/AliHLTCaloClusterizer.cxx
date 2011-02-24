@@ -84,6 +84,8 @@ AliHLTCaloClusterizer::AliHLTCaloClusterizer(TString det):
 AliHLTCaloClusterizer::~AliHLTCaloClusterizer()
 {
     //See header file for documentation
+  delete [] fRecPointDataPtr;
+  delete [] fRecPointArray;
 }
 
 void
@@ -322,5 +324,5 @@ Int_t
 AliHLTCaloClusterizer::CompareDigitsByEnergy(const void *dig0, const void *dig1)
 {
     // See header file for documentation
-    return (*((AliHLTCaloDigitDataStruct**)(dig1)))->fEnergy - (*((AliHLTCaloDigitDataStruct**)(dig0)))->fEnergy;
+  return (float)((*((AliHLTCaloDigitDataStruct**)(dig1)))->fEnergy - (*((AliHLTCaloDigitDataStruct**)(dig0)))->fEnergy);
 }

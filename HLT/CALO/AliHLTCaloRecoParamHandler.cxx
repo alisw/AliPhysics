@@ -52,14 +52,17 @@ Int_t AliHLTCaloRecoParamHandler::GetParametersFromCDB()
       AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(fRecoParamPath/*,GetRunNo()*/);
       if (pEntry) 
 	{
+	    
 	    TObjArray *paramArray = dynamic_cast<TObjArray*>(pEntry->GetObject());
-	    fRecoParamPtr = dynamic_cast<AliDetectorRecoParam*>((paramArray)->At(0));
-	  
+	    if(paramArray)
+	      {
+		fRecoParamPtr = dynamic_cast<AliDetectorRecoParam*>((paramArray)->At(0));
+	      }
 	    if(!fRecoParamPtr)
-	    {
-	       HLTError("can not fetch object reconstruction parameters from \"%s\"", fRecoParamPath.GetPath().Data());
-	       return -1;
-	    }
+	      {
+		HLTError("can not fetch object reconstruction parameters from \"%s\"", fRecoParamPath.GetPath().Data());
+		return -1;
+	      }
 	}
       else
 	{

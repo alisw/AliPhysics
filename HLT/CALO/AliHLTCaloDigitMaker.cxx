@@ -99,6 +99,12 @@ AliHLTCaloDigitMaker::AliHLTCaloDigitMaker(TString det) :
 AliHLTCaloDigitMaker::~AliHLTCaloDigitMaker() 
 {
   //See header file for documentation
+  delete [] fHighGainFactors;
+  delete [] fLowGainFactors;
+  delete [] fBadChannelMask;  
+  delete [] fChannelBook;
+  delete fShmPtr;
+
 }
 
 Int_t

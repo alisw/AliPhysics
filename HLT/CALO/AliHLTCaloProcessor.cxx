@@ -81,37 +81,22 @@ AliHLTCaloProcessor::CheckFileLog(const char *origin,   const char *filename,  c
 
  
 void 
-AliHLTCaloProcessor::DoneWritingLog(const char *origin, const char *filename)
+AliHLTCaloProcessor::DoneWritingLog(const char */*origin*/, const char * /*filename*/)
 {
   //  char filepath[1024];
-  sprintf(fFilepath, "%s/%s", getenv("PWD"), filename);
-  Logging(kHLTLogInfo, origin , "finnished writing file" , "wrote file %s", fFilepath);
+  //  sprintf(fFilepath, "%s/%s", getenv("PWD"), filename);
+  //  Logging(kHLTLogInfo, origin , "finnished writing file" , "wrote file %s", fFilepath);
+
+  //  Logging(kHLTLogInfo, igin , "Don't use this function" , "Don't use this function", fFilepath);  
+  
 }
 
 
 void 
 AliHLTCaloProcessor::ScanRunNumberFromFile()
 {
-  char tmpDirectory[512];
-  char tmpFileName[512];
-  sprintf(tmpDirectory, "%s", getenv("HOME"));  
-
-  //TODO, remove hardcoded file path
- 
-  
-  sprintf(tmpFileName, "%s%s", tmpDirectory, "/hlt/rundir/runNumber.txt");
-  int tmp = 0;
-  if(CheckFileLog( __FILE__ , tmpFileName , "r")== true) 
-    { 
-      FILE *fp = fopen(tmpFileName, "r");
-      tmp = fscanf(fp, "%d", &fRunNumber);
-      fclose(fp);
-    }
-
-  
-
-
- }
+  printf("AliHLTCaloProcessor::ScanRunNumberFromFile: don't use this function");
+}
 
 const char*
 AliHLTCaloProcessor::IntToChar(int number)
