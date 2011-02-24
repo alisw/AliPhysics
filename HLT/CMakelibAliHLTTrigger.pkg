@@ -42,7 +42,6 @@ set ( CLASS_HDRS
     AliHLTEventSummaryProducerComponent.h
     AliHLTRunSummary.h
     AliHLTRunSummaryProducerComponent.h
-    AliHLTTriggerMonitoringComponent.h
     AliHLTTriggerCaloClusterEnergy.h
     AliHLTTriggerPhosClusterEnergy.h
     AliHLTTriggerEmcalClusterEnergy.h
