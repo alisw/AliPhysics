@@ -57,7 +57,7 @@ class AliAODInputHandler : public AliInputEventHandler {
     AliAODEvent    *fAODEventToMerge; //! Event for merging
     Int_t           fMergeOffset;     //! Event offset for merging
     TH2F*           fHistStatistics[2]; //! how many events are cut away why {all,bin 0}
-    ClassDef(AliAODInputHandler, 2);
+    ClassDef(AliAODInputHandler, 3);
 };
 
 #endif
