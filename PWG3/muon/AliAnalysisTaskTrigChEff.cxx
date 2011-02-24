@@ -45,6 +45,7 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
+#include "AliAnalysisManager.h"
 
 // ANALYSIS includes
 #include "AliAnalysisTaskSE.h"
@@ -54,22 +55,34 @@
 ClassImp(AliAnalysisTaskTrigChEff)
 
 //________________________________________________________________________
+AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff() :
+AliAnalysisTaskSE(), 
+fUseGhosts(kFALSE),
+fList(0)
+{
+  //
+  /// Default constructor
+}
+
+
+//________________________________________________________________________
 AliAnalysisTaskTrigChEff::AliAnalysisTaskTrigChEff(const char *name) :
   AliAnalysisTaskSE(name), 
   fUseGhosts(kFALSE),
   fList(0)
 {
   //
-  /// Constructor.
+  /// Constructor
   //
-  // Output slot #1 writes into a TObjArray container
+
   DefineOutput(1,  TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskTrigChEff::~AliAnalysisTaskTrigChEff()
 {
-  delete fList;
+  if ( ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() )
+    delete fList;
 }
 
 //_________________________________________________________________________
@@ -100,6 +113,7 @@ void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
 
   TString baseName, histoName, histoTitle;
   fList = new TList();
+  fList->SetOwner();
 
   TH1F* histo;
   TH2F* histo2D;
@@ -149,6 +163,8 @@ void AliAnalysisTaskTrigChEff::UserCreateOutputObjects() {
   histo2D->GetYaxis()->SetTitle(boardName);
   histoIndex = GetHistoIndex(kHcheckBoard);
   fList->AddAt(histo2D, histoIndex);
+  
+  PostData(1, fList);
 }
 
 //________________________________________________________________________
