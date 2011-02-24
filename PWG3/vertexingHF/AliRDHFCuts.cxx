@@ -310,8 +310,13 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
 
   // convert to ESD track here
   AliESDtrack esdTrack(track);
+  // set the TPC cluster info
+  esdTrack.SetTPCClusterMap(track->GetTPCClusterMap());
+  esdTrack.SetTPCSharedMap(track->GetTPCSharedMap());
+  esdTrack.SetTPCPointsF(track->GetTPCNclsF());
   // needed to calculate the impact parameters
   esdTrack.RelateToVertex(primary,0.,3.); 
+
   if(!cuts->IsSelected(&esdTrack)) retval = kFALSE;
  
   if(fOptPileup==kRejectTracksFromPileupVertex){
