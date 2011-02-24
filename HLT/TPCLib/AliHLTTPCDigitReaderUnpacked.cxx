@@ -134,6 +134,7 @@ int AliHLTTPCDigitReaderUnpacked::GetNextRowData(AliHLTTPCDigitRowData*& pRow) c
   AliHLTTPCDigitRowData* pCurrent=pRow;
   assert(pCurrent);
   pRow=NULL;
+  if (!pCurrent) return -EINVAL;
   Byte_t *tmp = (Byte_t*) pCurrent;
   Int_t size = sizeof(AliHLTTPCDigitRowData) + pCurrent->fNDigit*sizeof(AliHLTTPCDigitData);
   tmp += size;
