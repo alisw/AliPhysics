@@ -213,7 +213,10 @@ class AliAODTrack : public AliVTrack {
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
-  
+  void    SetTPCPointsF(UShort_t  findable){fTPCnclsF = findable;}
+
+  UShort_t GetTPCNclsF() const { return fTPCnclsF;}
+
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
@@ -303,6 +306,7 @@ class AliAODTrack : public AliVTrack {
 
   TBits         fTPCClusterMap;     // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   TBits         fTPCSharedMap;      // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
+  UShort_t      fTPCnclsF;          // findable clusters
 
   Short_t       fID;                // unique track ID, points back to the ESD track
 
@@ -313,7 +317,7 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 11);
+  ClassDef(AliAODTrack, 12);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

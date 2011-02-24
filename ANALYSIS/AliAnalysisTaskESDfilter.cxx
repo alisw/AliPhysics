@@ -449,6 +449,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
 	    aodTrack->SetTPCClusterMap(esdCascadeBach->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdCascadeBach->GetTPCSharedMap());
 	    aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadeBach));
+	    aodTrack->SetTPCPointsF(esdCascadeBach->GetTPCNclsF());
 	    fAODTrackRefs->AddAt(aodTrack,idxBachFromCascade);
 	    
 	    if (esdCascadeBach->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -532,6 +533,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
         aodTrack->SetTPCClusterMap(esdCascadePos->GetTPCClusterMap());
         aodTrack->SetTPCSharedMap (esdCascadePos->GetTPCSharedMap());
         aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadePos));
+	aodTrack->SetTPCPointsF(esdCascadePos->GetTPCNclsF());
         fAODTrackRefs->AddAt(aodTrack,idxPosFromV0Dghter);
         
         if (esdCascadePos->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -577,6 +579,7 @@ void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd)
         aodTrack->SetTPCClusterMap(esdCascadeNeg->GetTPCClusterMap());
         aodTrack->SetTPCSharedMap (esdCascadeNeg->GetTPCSharedMap());
         aodTrack->SetChi2perNDF(Chi2perNDF(esdCascadeNeg));
+	aodTrack->SetTPCPointsF(esdCascadeNeg->GetTPCNclsF());
         fAODTrackRefs->AddAt(aodTrack,idxNegFromV0Dghter);
         
         if (esdCascadeNeg->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -818,6 +821,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 	    aodTrack->SetTPCClusterMap(esdV0Pos->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdV0Pos->GetTPCSharedMap());
 	    aodTrack->SetChi2perNDF(Chi2perNDF(esdV0Pos));
+	    aodTrack->SetTPCPointsF(esdV0Pos->GetTPCNclsF());
 	    fAODTrackRefs->AddAt(aodTrack,posFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: pos track from original pt %.3f \n",aodTrack->Pt());
 	    if (esdV0Pos->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -861,6 +865,7 @@ void AliAnalysisTaskESDfilter::ConvertV0s(const AliESDEvent& esd)
 	    aodTrack->SetTPCClusterMap(esdV0Neg->GetTPCClusterMap());
 	    aodTrack->SetTPCSharedMap (esdV0Neg->GetTPCSharedMap());
 	    aodTrack->SetChi2perNDF(Chi2perNDF(esdV0Neg));
+	    aodTrack->SetTPCPointsF(esdV0Neg->GetTPCNclsF());
 	    
 	    fAODTrackRefs->AddAt(aodTrack,negFromV0);
 	    //	    if (fDebug > 0) printf("-------------------Bo: neg track from original pt %.3f \n",aodTrack->Pt());
@@ -993,7 +998,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
     aodTrack->SetChi2perNDF(Chi2perNDF(track));
     aodTrack->SetFlags(track->GetStatus());
-    
+    aodTrack->SetTPCPointsF(track->GetTPCNclsF());
+
     delete track;
   } // end of loop on tracks
   
@@ -1055,7 +1061,8 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
     aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
     aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack));
-    
+    aodTrack->SetTPCPointsF(esdTrack->GetTPCNclsF());
+
     fAODTrackRefs->AddAt(aodTrack, nTrack);
     
     
@@ -1307,7 +1314,8 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
             mother->SetTPCClusterMap(esdTrackM->GetTPCClusterMap());
             mother->SetTPCSharedMap (esdTrackM->GetTPCSharedMap());
             mother->SetChi2perNDF(Chi2perNDF(esdTrackM));
-            
+            mother->SetTPCPointsF(esdTrackM->GetTPCNclsF());
+
             fAODTrackRefs->AddAt(mother, imother);
             
             if (esdTrackM->GetSign() > 0) ++fNumberOfPositiveTracks;
@@ -1369,6 +1377,7 @@ void AliAnalysisTaskESDfilter::ConvertKinks(const AliESDEvent& esd)
                                                selectInfo);
             daughter->SetTPCClusterMap(esdTrackD->GetTPCClusterMap());
             daughter->SetTPCSharedMap (esdTrackD->GetTPCSharedMap());
+	    daughter->SetTPCPointsF(esdTrackD->GetTPCNclsF());
             fAODTrackRefs->AddAt(daughter, idaughter);
             
             if (esdTrackD->GetSign() > 0) ++fNumberOfPositiveTracks;
