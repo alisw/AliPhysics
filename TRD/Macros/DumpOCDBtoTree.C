@@ -32,7 +32,7 @@
   //                          gas composition)
   //    * getDCSInfo        - flag to switch on/off DCS information
   //    * getGRPInfo        - flag to switch on/off GRP information --> there will be no time information in the output tree
-  //    * storageURI           - path of the OCDB database (if it is on alien, be sure to have a valid/active token)
+  //    * storageURI        - path of the OCDB database (if it is on alien, be sure to have a valid/active token)
 
 
   #include <iostream>
@@ -442,7 +442,7 @@
     if(getDCSInfo) {
       TObjArray *objArrayCDB = 0;
       TObject* calDCSsor = 0x0;
-      YObject* calDCSeor = 0x0;
+      TObject* calDCSeor = 0x0;
       if((entry = GetCDBentry("TRD/Calib/DCS"))) objArrayCDB = (TObjArray*)entry->GetObject();
       if(objArrayCDB) {
         objArrayCDB->SetOwner(kTRUE);
@@ -476,7 +476,7 @@
 	  dcsFeeGlobalReadoutParam        = ((AliTRDCalDCS*)caldcs)->GetGlobalReadoutParam().Data();
 	  dcsFeeGlobalTestPattern         = ((AliTRDCalDCS*)caldcs)->GetGlobalTestPattern().Data();
 	  dcsFeeGlobalTrackletMode        = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletMode().Data();
-	  d csFeeGlobalTrackletDef        = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletDef().Data();
+	  dcsFeeGlobalTrackletDef         = ((AliTRDCalDCS*)caldcs)->GetGlobalTrackletDef().Data();
 	  dcsFeeGlobalTriggerSetup        = ((AliTRDCalDCS*)caldcs)->GetGlobalTriggerSetup().Data();
 	  dcsFeeGlobalAddOptions          = ((AliTRDCalDCS*)caldcs)->GetGlobalAddOptions().Data();
 	}
@@ -496,7 +496,7 @@
 	  dcsFeeGlobalReadoutParam        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalReadoutParam().Data();
 	  dcsFeeGlobalTestPattern         = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTestPattern().Data();
 	  dcsFeeGlobalTrackletMode        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletMode().Data();
-	  d csFeeGlobalTrackletDef        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletDef().Data();
+	  dcsFeeGlobalTrackletDef        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTrackletDef().Data();
 	  dcsFeeGlobalTriggerSetup        = ((AliTRDCalDCSv2*)caldcs)->GetGlobalTriggerSetup().Data();
 	  dcsFeeGlobalAddOptions          = ((AliTRDCalDCSv2*)caldcs)->GetGlobalAddOptions().Data();
 	}
@@ -1034,13 +1034,14 @@
   //__________________________________________________________________________________________
   AliCDBEntry* GetCDBentry(const Char_t *path, Bool_t owner)
   {
-  ::Info("GetCDBentry", Form("QUERY RUN [%d] for \"%s\".", currRun, path));
+  TString spath = path;
+  ::Info("GetCDBentry", Form("QUERY RUN [%d] for \"%s\".", currRun, spath.Data()));
   AliCDBEntry *entry(NULL);
-  storage->QueryCDB(currRun, path);
+  storage->QueryCDB(currRun, spath.Data());
   if(!storage->GetQueryCDBList()->GetEntries()){
-    ::Error("GetCDBentry", Form("Missing \"%s\" in run %d.", path, currRun));
+    ::Error("GetCDBentry", Form("Missing \"%s\" in run %d.", spath.Data(), currRun));
     return NULL;
-  } else entry = manager->Get(path);
+  } else entry = manager->Get(spath.Data());
   if(!entry) return NULL;
 
   entry->SetOwner(owner);
