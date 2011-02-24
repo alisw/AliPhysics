@@ -179,13 +179,15 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
   Double_t mom = pidObj->GetTPCmomentum();
   AliTPCPIDResponse tpcResponse;
   SetBetheBloch(tpcResponse); 
+  UShort_t nTPCClus=pidObj->GetTPCsignalN();
+  if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
 
   Int_t pid=-1;
   if(specie<0){  // from RawSignalPID : should return the particle specie to wich the de/dx is closer to the bethe-block curve -> performance to be checked
    Double_t nsigmaMax=fnSigma[0];
    for(Int_t ipart=0;ipart<5;ipart++){
     AliPID::EParticleType type=AliPID::EParticleType(ipart);
-    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,track->GetTPCNcls(),type));
+    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type));
     if((nsigma<nsigmaMax) && (nsigma<fnSigma[0])) {
      pid=ipart;
      nsigmaMax=nsigma;
@@ -193,7 +195,7 @@ Int_t AliAODPidHF::ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const{
    }
   }else{ // asks only for one particle specie
    AliPID::EParticleType type=AliPID::EParticleType(specie);
-    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,track->GetTPCNcls(),type));
+    Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type));
    if (nsigma>fnSigma[0]) {
     pid=-1; 
    }else{
@@ -449,11 +451,13 @@ Bool_t AliAODPidHF::TPCRawAsym(AliAODTrack* track,Int_t specie) const{
   AliAODPid *pidObj = track->GetDetPid();
   Double_t mom = pidObj->GetTPCmomentum();
   Double_t dedx=pidObj->GetTPCsignal();
+  UShort_t nTPCClus=pidObj->GetTPCsignalN();
+  if(nTPCClus==0) {nTPCClus=track->GetTPCNcls();}
   
   AliTPCPIDResponse tpcResponse;
   SetBetheBloch(tpcResponse); 
   AliPID::EParticleType type=AliPID::EParticleType(specie);
-  Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,track->GetTPCNcls(),type)); 
+  Double_t nsigma = TMath::Abs(tpcResponse.GetNumberOfSigmas(mom,dedx,nTPCClus,type)); 
 
   if(mom<fPLimit[0] && nsigma<fnSigma[0]) return kTRUE;
   if(mom<fPLimit[1] && mom>fPLimit[0] && nsigma<fnSigma[1]) return kTRUE;
