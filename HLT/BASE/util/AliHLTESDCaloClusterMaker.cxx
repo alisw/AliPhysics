@@ -50,7 +50,7 @@ AliHLTESDCaloClusterMaker::AliHLTESDCaloClusterMaker() :
 AliHLTESDCaloClusterMaker::~AliHLTESDCaloClusterMaker()
 {
   //See header file for documentation
-
+  delete fClusterReaderPtr;
 }
 
 Int_t 
