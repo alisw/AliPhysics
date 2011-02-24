@@ -49,6 +49,51 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   gGoodInjVsTime->SetName("gGoodInjVsTime");
   TGraph* gAverSpeedVsTime=new TGraph(0);
   gAverSpeedVsTime->SetName("gAverSpeedVsIime");
+
+  TGraph* gGoodInjVsRunL3=new TGraph(0);
+  gGoodInjVsRunL3->SetName("gGoodInjVsRunL3");
+  TGraph* gAverSpeedVsRunL3=new TGraph(0);
+  gAverSpeedVsRunL3->SetName("gAverSpeedVsRunL3");
+  TGraph* gGoodInjVsTimeL3=new TGraph(0);
+  gGoodInjVsTimeL3->SetName("gGoodInjVsTimeL3");
+  TGraph* gAverSpeedVsTimeL3=new TGraph(0);
+  gAverSpeedVsTimeL3->SetName("gAverSpeedVsIimeL3");
+
+  TGraph* gGoodInjVsRunL4=new TGraph(0);
+  gGoodInjVsRunL4->SetName("gGoodInjVsRunL4");
+  TGraph* gAverSpeedVsRunL4=new TGraph(0);
+  gAverSpeedVsRunL4->SetName("gAverSpeedVsRunL4");
+  TGraph* gGoodInjVsTimeL4=new TGraph(0);
+  gGoodInjVsTimeL4->SetName("gGoodInjVsTimeL4");
+  TGraph* gAverSpeedVsTimeL4=new TGraph(0);
+  gAverSpeedVsTimeL4->SetName("gAverSpeedVsIimeL4");
+
+  TGraph* gFracGoodInjVsRun=new TGraph(0);
+  gFracGoodInjVsRun->SetName("gFracGoodInjVsRun");
+  TGraph* gFracAverSpeedVsRun=new TGraph(0);
+  gFracAverSpeedVsRun->SetName("gFracAverSpeedVsRun");
+  TGraph* gFracGoodInjVsTime=new TGraph(0);
+  gFracGoodInjVsTime->SetName("gFracGoodInjVsTime");
+  TGraph* gFracAverSpeedVsTime=new TGraph(0);
+  gFracAverSpeedVsTime->SetName("gAverSpeedVsIime");
+
+  TGraph* gFracGoodInjVsRunL3=new TGraph(0);
+  gFracGoodInjVsRunL3->SetName("gFracGoodInjVsRunL3");
+  TGraph* gFracAverSpeedVsRunL3=new TGraph(0);
+  gFracAverSpeedVsRunL3->SetName("gFracAverSpeedVsRunL3");
+  TGraph* gFracGoodInjVsTimeL3=new TGraph(0);
+  gFracGoodInjVsTimeL3->SetName("gFracGoodInjVsTimeL3");
+  TGraph* gFracAverSpeedVsTimeL3=new TGraph(0);
+  gFracAverSpeedVsTimeL3->SetName("gFracAverSpeedVsIimeL3");
+
+  TGraph* gFracGoodInjVsRunL4=new TGraph(0);
+  gFracGoodInjVsRunL4->SetName("gFracGoodInjVsRunL4");
+  TGraph* gFracAverSpeedVsRunL4=new TGraph(0);
+  gFracAverSpeedVsRunL4->SetName("gFracAverSpeedVsRunL4");
+  TGraph* gFracGoodInjVsTimeL4=new TGraph(0);
+  gFracGoodInjVsTimeL4->SetName("gFracGoodInjVsTimeL4");
+  TGraph* gFracAverSpeedVsTimeL4=new TGraph(0);
+  gFracAverSpeedVsTimeL4->SetName("gFracAverSpeedVsIimeL4");
   
   for(Int_t iMod=0; iMod<260;iMod++){
     gvdrvstime[iMod]=new TGraphErrors(0);    
@@ -80,11 +125,32 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     sprintf(filnamalien,"alien://%s",filnam);
     printf("Open file: %s\n",filnam);
     TFile *f= TFile::Open(filnamalien);
+    if(f==0x0)continue;
     AliCDBEntry *ent=(AliCDBEntry*)f->Get("AliCDBEntry");
     TObjArray *drspSDD = (TObjArray *)ent->GetObject();
     
     Int_t iGoodInj=0;
     Int_t iAverSpeed=0;
+   
+    Int_t iGoodInjL3=0;
+    Int_t iAverSpeedL3=0;
+   
+    Int_t iGoodInjL4=0;
+    Int_t iAverSpeedL4=0;
+
+    Int_t totalgoodinj=520;
+    Int_t totalgoodinjL3=168;
+    Int_t totalgoodinjL4=352;
+
+    Float_t fracGoodInj=0.;
+    Float_t fracGoodInjL3=0.;
+    Float_t fracGoodInjL4=0.;
+
+    Float_t fracAverSpeed=0.;
+    Float_t fracAverSpeedL3=0.;
+    Float_t fracAverSpeedL4=0.;
+
+
     Float_t timeday=0;
     
     AliITSDriftSpeedArraySDD *vdriftarr;
@@ -104,10 +170,25 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
 	  
       Int_t statusInj0=vdriftarr0->GetInjectorStatus();
       Int_t statusInj1=vdriftarr1->GetInjectorStatus();
-      if(statusInj0>0) iGoodInj++;
-      else iAverSpeed++;
-      if(statusInj1>0) iGoodInj++;
-      else iAverSpeed++;
+      if(statusInj0>0){
+	iGoodInj++;
+	if(iMod<84)iGoodInjL3++;
+	else iGoodInjL4++;
+      }
+      else{ 
+	iAverSpeed++;
+	if(iMod<84)iAverSpeedL3++;
+	else iAverSpeedL4++;
+      }
+      if(statusInj1>0){ 
+	iGoodInj++;
+	if(iMod<84)iGoodInjL3++;
+	else iGoodInjL4++;
+      }else{
+	iAverSpeed++;
+	if(iMod<84)iAverSpeedL3++;
+	else iAverSpeedL4++;
+      }
 	  
       Int_t iAn=anode;
       if(anode>256) iAn=anode-256;
@@ -130,15 +211,60 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
       gvdrvstime[iMod]->SetPointError(npt,0,errSpeed[iMod]);
     }
     Int_t npt=gGoodInjVsRun->GetN();
+    fracGoodInj=(Float_t)iGoodInj/(Float_t)totalgoodinj;
+    fracGoodInjL3=(Float_t)iGoodInjL3/(Float_t)totalgoodinjL3;
+    fracGoodInjL4=(Float_t)iGoodInjL4/(Float_t)totalgoodinjL4;
+
+    fracAverSpeed   = (Float_t)iAverSpeed/(Float_t)totalgoodinj;
+    fracAverSpeedL3 = (Float_t)iAverSpeedL3/(Float_t)totalgoodinjL3;
+    fracAverSpeedL4 = (Float_t)iAverSpeedL4/(Float_t)totalgoodinjL4;
+
     gGoodInjVsRun->SetPoint(npt,(Float_t)nrun,iGoodInj);
     gAverSpeedVsRun->SetPoint(npt,(Float_t)nrun,iAverSpeed);
 	
+    gGoodInjVsRunL3->SetPoint(npt,(Float_t)nrun,iGoodInjL3);
+    gAverSpeedVsRunL3->SetPoint(npt,(Float_t)nrun,iAverSpeedL3);
+
+    gGoodInjVsRunL4->SetPoint(npt,(Float_t)nrun,iGoodInjL4);
+    gAverSpeedVsRunL4->SetPoint(npt,(Float_t)nrun,iAverSpeedL4);
+
+
+    gFracGoodInjVsRun->SetPoint(npt,(Float_t)nrun,(Double_t)fracGoodInj);
+    gFracAverSpeedVsRun->SetPoint(npt,(Float_t)nrun,(Double_t)fracAverSpeed);
+	
+    gFracGoodInjVsRunL3->SetPoint(npt,(Float_t)nrun,(Double_t)fracGoodInjL3);
+    gFracAverSpeedVsRunL3->SetPoint(npt,(Float_t)nrun,(Double_t)fracAverSpeedL3);
+
+    gFracGoodInjVsRunL4->SetPoint(npt,(Float_t)nrun,(Double_t)fracGoodInjL4);
+    gFracAverSpeedVsRunL4->SetPoint(npt,(Float_t)nrun,(Double_t)fracAverSpeedL4);
+
     npt=gGoodInjVsTime->GetN();
+
     gGoodInjVsTime->SetPoint(npt,timeday,iGoodInj);
     gAverSpeedVsTime->SetPoint(npt,timeday,iAverSpeed);
+
+    gGoodInjVsTimeL3->SetPoint(npt,timeday,iGoodInjL3);
+    gAverSpeedVsTimeL3->SetPoint(npt,timeday,iAverSpeedL3);
+
+    gGoodInjVsTimeL4->SetPoint(npt,timeday,iGoodInjL4);
+    gAverSpeedVsTimeL4->SetPoint(npt,timeday,iAverSpeedL4);
+
+
+    gFracGoodInjVsTime->SetPoint(npt,timeday,(Double_t)fracGoodInj);
+    gFracAverSpeedVsTime->SetPoint(npt,timeday,(Double_t)fracAverSpeed);
+
+    gFracGoodInjVsTimeL3->SetPoint(npt,timeday,(Double_t)fracGoodInjL3);
+    gFracAverSpeedVsTimeL3->SetPoint(npt,timeday,(Double_t)fracAverSpeedL3);
+
+    gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
+    gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
+
 	
     printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
     printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
+    printf("Number of half-modules with drift speed from injectors L3 = %d\n",iGoodInjL3);
+    printf("Number of half-modules with drift speed from injectors L4 = %d\n",iGoodInjL4);
+
     f->Close();
   }
 
@@ -307,19 +433,93 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   c4->SetGridx();
   c4->SetGridy();
   gGoodInjVsRun->SetMarkerStyle(20);
-  gGoodInjVsRun->SetMarkerColor(2);
+  gGoodInjVsRun->SetMinimum(50.);
+  gGoodInjVsRun->SetMaximum(370.);
+  gGoodInjVsRunL3->SetMarkerStyle(22);
+  gGoodInjVsRunL3->SetMarkerColor(2);
+  gGoodInjVsRunL3->SetLineColor(2);
+  gGoodInjVsRunL4->SetMarkerStyle(23);
+  gGoodInjVsRunL4->SetMarkerColor(4);
+  gGoodInjVsRunL4->SetLineColor(4);
+  gGoodInjVsRun->Draw("AP");
+  gGoodInjVsRunL3->Draw("PSAME");
+  gGoodInjVsRunL4->Draw("PSAME");
   gGoodInjVsRun->GetXaxis()->SetTitle("Run number");
   gGoodInjVsRun->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
-  gGoodInjVsRun->Draw("AP");
+  TLegend* leg2=new TLegend(0.6,0.3,0.89,0.5);
+  leg2->SetBorderSize(0);
+  leg2->SetFillColor(0);
+  leg2->SetFillStyle(0);
+  TLegendEntry* lent2=leg2->AddEntry(gGoodInjVsRun,"All","P");
+  lent2->SetTextColor(1);
+  lent2=leg2->AddEntry(gGoodInjVsRunL3,"Layer 3 ","P");
+  lent2->SetTextColor(2);
+  lent2=leg2->AddEntry(gGoodInjVsRunL4,"Layer 4","P");
+  lent2->SetTextColor(4);
+  leg2->Draw();
+
+
+  TCanvas* c4bis=new TCanvas("c4bis"," Frac GoodMod vs. run");
+  c4bis->SetGridx();
+  c4bis->SetGridy();
+  gFracGoodInjVsRun->SetMarkerStyle(20);
+  gFracGoodInjVsRun->SetMinimum(0.);
+  gFracGoodInjVsRun->SetMaximum(0.9);
+  gFracGoodInjVsRunL3->SetMarkerStyle(22);
+  gFracGoodInjVsRunL3->SetMarkerColor(2);
+  gFracGoodInjVsRunL3->SetLineColor(2);
+  gFracGoodInjVsRunL4->SetMarkerStyle(23);
+  gFracGoodInjVsRunL4->SetMarkerColor(4);
+  gFracGoodInjVsRunL4->SetLineColor(4);
+  gFracGoodInjVsRun->Draw("AP");
+  gFracGoodInjVsRunL3->Draw("PSAME");
+  gFracGoodInjVsRunL4->Draw("PSAME");
+  gFracGoodInjVsRun->GetXaxis()->SetTitle("Run number");
+  gFracGoodInjVsRun->GetYaxis()->SetTitle("Fraction of Half-modules with drift speed from injectors");
+  gFracGoodInjVsRun->GetYaxis()->SetTitleSize(0.03);
+  gFracGoodInjVsRun->GetYaxis()->SetTitleOffset(1.5);
+  leg2->Draw();
   
   TCanvas* c5=new TCanvas("c5","GoodMod vs. time");
   c5->SetGridx();
   c5->SetGridy();
   gGoodInjVsTime->SetMarkerStyle(20);
-  gGoodInjVsTime->SetMarkerColor(2);
+  gGoodInjVsTime->SetMinimum(50.);
+  gGoodInjVsTime->SetMaximum(370.);
+  gGoodInjVsTimeL3->SetMarkerStyle(22);
+  gGoodInjVsTimeL3->SetMarkerColor(2);
+  gGoodInjVsTimeL3->SetLineColor(2);
+  gGoodInjVsTimeL4->SetMarkerStyle(23);
+  gGoodInjVsTimeL4->SetMarkerColor(4);
+  gGoodInjVsTimeL4->SetLineColor(4);
+  gGoodInjVsTime->Draw("AP");
+  gGoodInjVsTimeL3->Draw("PSAME");
+  gGoodInjVsTimeL4->Draw("PSAME");
   gGoodInjVsTime->GetXaxis()->SetTitle(title);
   gGoodInjVsTime->GetYaxis()->SetTitle("Half-modules with drift speed from injectors");
-  gGoodInjVsTime->Draw("AP");
+  leg2->Draw();
+  
+  TCanvas* c5bis=new TCanvas("c5bis","Frac GoodMod vs. time");
+  c5bis->SetGridx();
+  c5bis->SetGridy();
+  gFracGoodInjVsTime->SetMarkerStyle(20);
+  gFracGoodInjVsTime->SetMinimum(0.);
+  gFracGoodInjVsTime->SetMaximum(0.9);
+  gFracGoodInjVsTimeL3->SetMarkerStyle(22);
+  gFracGoodInjVsTimeL3->SetMarkerColor(2);
+  gFracGoodInjVsTimeL3->SetLineColor(2);
+  gFracGoodInjVsTimeL4->SetMarkerStyle(23);
+  gFracGoodInjVsTimeL4->SetMarkerColor(4);
+  gFracGoodInjVsTimeL4->SetLineColor(4);
+  gFracGoodInjVsTime->Draw("AP");
+  gFracGoodInjVsTimeL3->Draw("PSAME");
+  gFracGoodInjVsTimeL4->Draw("PSAME");
+  gFracGoodInjVsTime->GetXaxis()->SetTitle(title);
+  gFracGoodInjVsTime->GetYaxis()->SetTitleSize(0.03);
+  gFracGoodInjVsTime->GetYaxis()->SetTitleOffset(1.5);
+  gFracGoodInjVsTime->GetYaxis()->SetTitle("Fraction of Half-modules with drift speed from injectors");
+  leg2->Draw();
+
 }
 
 void FillErrors(Float_t errSpeed[260]){
