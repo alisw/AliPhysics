@@ -205,7 +205,7 @@ void AliFMDBaseDA::Run(AliRawReader* reader)
   Bool_t sodread = kFALSE;
   
   for(Int_t i=0;i<3;i++) {
-    if (reader->NextEvent()) { 
+    if (!reader->NextEvent()) { 
       // Read Start-of-Run / Start-of-Files event
       AliWarning(Form("Failed to read the %d%s event",
 		      i+1, (i == 0 ? "st" : (i == 1 ? "nd" : "rd"))));
