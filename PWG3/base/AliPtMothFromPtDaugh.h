@@ -2,6 +2,9 @@
 #define ALIPTMOTHFROMPTDAUGH_H
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */ 
+
 ////////////////////////////////////////////////////////////////////////////
 //  Class to perform pt-spectra (and ptMin-spectra) extraction of mothers //
 //  particles starting from measured pt-spectra of daughters particles    //

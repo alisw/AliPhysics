@@ -1,3 +1,8 @@
+#ifndef ALIANALYSISTASKTRIGCHEFF_H
+#define ALIANALYSISTASKTRIGCHEFF_H
+
+/* $Id$ */ 
+
 /// \ingroup "PWG3muon"
 /// \class AliAnalysisTaskTrigChEff
 /// \brief Analysis task for trigger chamber efficiency determination
@@ -57,4 +62,6 @@ private:
 
   ClassDef(AliAnalysisTaskTrigChEff, 1); // Trigger chamber efficiency analysis
 };
+
+#endif
 

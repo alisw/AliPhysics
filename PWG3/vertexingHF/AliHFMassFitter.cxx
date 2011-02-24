@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /////////////////////////////////////////////////////////////
 //
 // AliHFMassFitter for the fit of invariant mass distribution

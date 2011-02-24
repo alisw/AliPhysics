@@ -1,3 +1,6 @@
+#ifndef ALIHFEPRIVTX_H
+#define ALIHFEPRIVTX_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,14 +15,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // QA class of primary vertex study for Heavy Flavor electrons
 // this has functionality to reject electrons from primary vertex
 // and check primary vertex characteristics
 //
-
-#ifndef ALIHFEPRIVTX_H
-#define ALIHFEPRIVTX_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>

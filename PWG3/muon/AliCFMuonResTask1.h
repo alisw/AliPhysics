@@ -1,3 +1,6 @@
+#ifndef ALICFMUONRESTASK1_H
+#define ALICFMUONRESTASK1_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,14 +16,13 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */ 
+
 //-----------------------------------------------------------------------
 // Author : R. Vernet, Consorzio Cometa - Catania (it)
 //-----------------------------------------------------------------------
 // Modification done by X. Lopez - LPC Clermont (fr)
 //-----------------------------------------------------------------------
-
-#ifndef ALICFMUONRESTASK1_H
-#define ALICFMUONRESTASK1_H
 
 #include "AliAnalysisTaskSE.h"
 

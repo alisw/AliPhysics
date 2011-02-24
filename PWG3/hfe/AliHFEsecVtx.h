@@ -1,3 +1,6 @@
+#ifndef ALIHFESECVTX_H
+#define ALIHFESECVTX_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,14 +15,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 //  Secondary vertexing construction Class
 //  Construct secondary vertex from Beauty hadron with electron and
 //  hadrons, then apply selection criteria
 //
-
-#ifndef ALIHFESECVTX_H
-#define ALIHFESECVTX_H
 
 #ifndef ROOT_TObject
 //#include <TObject.h>

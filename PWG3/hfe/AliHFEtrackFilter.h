@@ -1,3 +1,6 @@
+#ifndef ALIHFETRACKFILTER_H
+#define ALIHFETRACKFILTER_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Track filter class 
 // Apply cut steps to all tracks in one event and returns a list of
 // filtered tracks
 //
-#ifndef ALIHFETRACKFILTER_H
-#define ALIHFETRACKFILTER_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

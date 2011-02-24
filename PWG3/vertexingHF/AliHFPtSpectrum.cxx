@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //***********************************************************************
 // Class AliHFPtSpectrum
 // Base class for feed-down corrections on heavy-flavour decays

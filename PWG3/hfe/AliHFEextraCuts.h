@@ -1,3 +1,6 @@
+#ifndef ALIHFEEXTRACUTS_H
+#define ALIHFEEXTRACUTS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,13 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Extra Cuts from the ALICE HFE Group
 // Container for cuts which are currently not implemented by
 // the Correction Framework
 //
-#ifndef ALIHFEEXTRACUTS_H
-#define ALIHFEEXTRACUTS_H
 
 // #ifndef ALICFCUTBASE_H
 #include "AliCFCutBase.h"

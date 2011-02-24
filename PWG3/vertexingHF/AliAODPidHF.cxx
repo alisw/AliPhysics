@@ -14,6 +14,8 @@
  * provided "as is" without express or implied warranty.                  *
  * *************************************************************************/
 
+/* $Id$ */
+
 //***********************************************************
 // Class AliAODPidHF
 // class for PID with AliAODRecoDecayHF

@@ -1,3 +1,6 @@
+
+/* $Id$ */
+
 // AliAODEventInfo: a class for AODs for the MUON Arm of the ALICE Experiment
 // Author: P. Cortese, Universita' del Piemonte Orientale in Alessandria and
 // INFN of Torino - Italy

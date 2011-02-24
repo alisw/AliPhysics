@@ -1,10 +1,14 @@
+#ifndef ALIESDV0KINECUTS_H
+#define ALIESDV0KINECUTS_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+
+/* $Id$ */ 
+
 /*
  * plesae see source file for more details
  */
-#ifndef ALIESDV0KINECUTS_H
-#define ALIESDV0KINECUTS_H
 
 #include <TObject.h>
 

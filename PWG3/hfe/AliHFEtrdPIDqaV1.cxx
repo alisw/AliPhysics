@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 //
 // Class AliHFEtrdPIDqaV1
 // Monitoring TRD PID in the HFE PID montioring framework. The following

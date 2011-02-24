@@ -1,3 +1,6 @@
+#ifndef ALIHFEPIDBASE_H
+#define ALIHFEPIDBASE_H
+ 
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,13 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Base Class for Detector PID Objects
 // For more information see the implementation file
 //
-#ifndef ALIHFEPIDBASE_H
-#define ALIHFEPIDBASE_H
- 
+
  #ifndef ROOT_TNamed
  #include <TNamed.h>
  #endif

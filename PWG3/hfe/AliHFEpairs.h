@@ -1,3 +1,6 @@
+#ifndef ALIHFEPAIRS_H
+#define ALIHFEPAIRS_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -12,14 +15,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+/* $Id$ */ 
+
 //
 //  Container class to store pair characteristics
 //  for secondary vertex analysis
 //  from example, qusi-invariant mass, signed Lxy are stored
 //
-
-#ifndef ALIHFEPAIRS_H
-#define ALIHFEPAIRS_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>

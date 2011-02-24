@@ -13,6 +13,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+/* $Id$ */
+
 //
 // Generic Histogram container with support for groups and filling of groups by passing
 // a vector of data

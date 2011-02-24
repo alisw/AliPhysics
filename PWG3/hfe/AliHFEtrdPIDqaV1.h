@@ -1,3 +1,6 @@
+#ifndef ALIHFETRDPIDQAV1_H
+#define ALIHFETRDPIDQAV1_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class AliHFEtrdPIDqaV1
 // Monitoring TRD PID in the HFE PID montioring framework. 
 // More information can be found inside the implementation file
 //
-#ifndef ALIHFETRDPIDQAV1_H
-#define ALIHFETRDPIDQAV1_H
-
 #ifndef ALIHFEDETPIDQAV1_H
 #include "AliHFEdetPIDqa.h"
 #endif

@@ -1,3 +1,6 @@
+#ifndef ALIANALYSISTASKDISPLACEDELECTRONS_H
+#define ALIANALYSISTASKDISPLACEDELECTRONS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,6 +15,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Analysis task: 
 // study displaced electrons from beauty and charm 
@@ -24,9 +30,6 @@
 // 
 
 
-
-#ifndef ALIANALYSISTASKDISPLACEDELECTRONS_H
-#define ALIANALYSISTASKDISPLACEDELECTRONS_H
 
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"

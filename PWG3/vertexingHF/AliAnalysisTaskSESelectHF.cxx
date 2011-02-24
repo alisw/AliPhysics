@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 /////////////////////////////////////////////////////////////
 //
 // AliAnalysisTaskSE for the selection of heavy flavor

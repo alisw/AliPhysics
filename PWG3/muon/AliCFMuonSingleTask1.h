@@ -1,3 +1,6 @@
+#ifndef ALICFMUONSINGLETASK1_H
+#define ALICFMUONSINGLETASK1_H
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,12 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */ 
+
 //-----------------------------------------------------------------------
 // Author : X. Lopez - LPC Clermont (fr)
 //-----------------------------------------------------------------------
-
-#ifndef ALICFMUONSINGLETASK1_H
-#define ALICFMUONSINGLETASK1_H
 
 #include "AliAnalysisTaskSE.h"
 

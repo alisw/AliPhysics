@@ -1,3 +1,6 @@
+#ifndef ALIHFEV0CUTS_H
+#define ALIHFEV0CUTS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,13 +15,13 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class for the V0 cuts - tuned to obtain clean eletron, pion and proton samples.
 // NOT suitable for V0 analysis
 //
-#ifndef ALIHFEV0CUTS_H
-#define ALIHFEV0CUTS_H
-
 #include "AliHFEcollection.h"
 
 class TList;

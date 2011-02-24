@@ -1,3 +1,6 @@
+#ifndef ALIHFEPIDTRD_H
+#define ALIHFEPIDTRD_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // TRD PID Class
 // Does PID either on a x% electron efficiency basis or on dE/dx
 // For more information please check the implementation file
 //
-#ifndef ALIHFEPIDTRD_H
-#define ALIHFEPIDTRD_H
-
  #ifndef ALIHFEPIDBASE_H
  #include "AliHFEpidBase.h"
  #endif
