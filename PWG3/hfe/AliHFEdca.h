@@ -1,3 +1,6 @@
+#ifndef ALIHFEDCA_H
+#define ALIHFEDCA_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,6 +15,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class for checking impact parameter (DCA) study 
 // + study DCA in rphi (xy) and z
@@ -19,9 +25,6 @@
 // + handle both MC and data 
 // + add plugin for primary vertex 
 //
-
-#ifndef ALIHFEDCA_H
-#define ALIHFEDCA_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>

@@ -1,3 +1,6 @@
+#ifndef ALIHFEPOSTANALYSIS_H
+#define ALIHFEPOSTANALYSIS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Post analysis class
 // Creating results and draw pictures
 // Called in AliAnalysisTaskHFE::Terminate or in a macro
 //
-#ifndef ALIHFEPOSTANALYSIS_H
-#define ALIHFEPOSTANALYSIS_H
-
 #ifndef ROOT_THnSparse
 #include <THnSparse.h>
 #endif

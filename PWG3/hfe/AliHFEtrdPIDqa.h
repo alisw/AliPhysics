@@ -1,3 +1,6 @@
+#ifndef ALIHFETRDPIDQA_H
+#define ALIHFETRDPIDQA_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // QA class for TRD PID
 // Evaluate TRD PID using well identified reference tracks
 // For more information see implementation file
 //
-#ifndef ALIHFETRDPIDQA_H
-#define ALIHFETRDPIDQA_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

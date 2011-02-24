@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 ////////////////////////////////////////////////////////////////////////////
 //  Class to perform pt-spectra (and ptMin-spectra) extraction of mothers //
 //  particles starting from measured pt-spectra of daughter particles     //

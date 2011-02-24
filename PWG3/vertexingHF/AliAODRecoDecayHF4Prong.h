@@ -3,6 +3,8 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */ 
+
 //***********************************************************
 // Class AliAODRecoDecayHF4Prong
 // base class for AOD reconstructed 4-prong heavy-flavour decays

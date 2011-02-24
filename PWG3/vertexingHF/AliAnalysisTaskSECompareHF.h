@@ -4,6 +4,8 @@
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */ 
+
 //*************************************************************************
 // Class AliAnalysisTaskSECompareHF
 // AliAnalysisTaskSE for the comparison of heavy-flavour decay candidates

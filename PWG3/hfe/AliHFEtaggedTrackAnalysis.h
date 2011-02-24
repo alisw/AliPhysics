@@ -1,3 +1,6 @@
+#ifndef ALIHFETAGGEDTRACKANALYSIS_H
+#define ALIHFETAGGEDTRACKANALYSIS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,15 +15,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class AliHFEtaggedTrackAnalysis
 // Analyses tracks with an apriori PID information (i.e. using the daugther
 // tracks from well-identified decays of neutral charged particles).
 // More information can be found inside the implementation file.
 //
-#ifndef ALIHFETAGGEDTRACKANALYSIS_H
-#define ALIHFETAGGEDTRACKANALYSIS_H
-
 #ifndef ROOT_TObject
 #include <TObject.h>
 #endif

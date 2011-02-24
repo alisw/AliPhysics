@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //*************************************************************************
 // Class AliNormalizationCounter
 // Class to store the informations relevant for the normalization in the 

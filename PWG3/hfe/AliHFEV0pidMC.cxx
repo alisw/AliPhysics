@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 //
 // class to benchmark the V0 pid capabilties
 // runs over reconstructed V0 candidates and uses MC information for 

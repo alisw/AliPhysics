@@ -1,3 +1,6 @@
+#ifndef ALIHFEDISPLACEDELECTRONS_H
+#define ALIHFEDISPLACEDELECTRONS_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,6 +15,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class for electrons from beauty study
 // Counting electrons from beauty
@@ -21,9 +27,6 @@
 //  Hongyan Yang <hongyan@physi.uni-heidelberg.de>
 //  Carlo Bombonati <Carlo.Bombonati@cern.ch>
 // 
-
-#ifndef ALIHFEDISPLACEDELECTRONS_H
-#define ALIHFEDISPLACEDELECTRONS_H
 
 #ifndef ROOT_TObject
 #include <TObject.h>

@@ -4,6 +4,8 @@
 /* Copyright(c) 1998-2006, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
+/* $Id$ */ 
+
 //***********************************************************
 // Class AliMuonInfoStoreRD
 // class used to extract and store info of MC particle

@@ -1,3 +1,6 @@
+#ifndef ALIANALYSISTASKHFE_H
+#define ALIANALYSISTASKHFE_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,14 +15,14 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Task for Heavy Flavour Electron Analysis
 // Fills a single-inclusive electron pt-spectrum
 // For further information see implementation file
 //
-#ifndef ALIANALYSISTASKHFE_H
-#define ALIANALYSISTASKHFE_H
-
 #ifndef ALIANALYSISTASKSE_H
 #include "AliAnalysisTaskSE.h"
 #endif

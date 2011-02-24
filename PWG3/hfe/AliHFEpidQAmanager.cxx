@@ -12,6 +12,9 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */
+
 //
 // Class AliHFEpidQAmanager
 // Does steering of the PID QA. The PID QA manager is initialized according

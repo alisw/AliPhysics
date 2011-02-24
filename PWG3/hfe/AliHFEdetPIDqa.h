@@ -1,3 +1,6 @@
+#ifndef ALIHFEDETPIDQA_H
+#define ALIHFEDETPIDQA_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,15 +15,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class AliHFEdetPIDqa
 // Base class for detector PID QA describing the interface to the PID QA
 // manager, keeping also commom functionality
 // More information can be found inside the implementation file
 //
-#ifndef ALIHFEDETPIDQA_H
-#define ALIHFEDETPIDQA_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

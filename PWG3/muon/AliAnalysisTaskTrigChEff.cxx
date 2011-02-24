@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------------------
 /// \class AliAnalysisTaskSingleMu
 /// Analysis task for single muons in the spectrometer.

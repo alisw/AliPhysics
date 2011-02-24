@@ -1,6 +1,10 @@
+#ifndef ALIHFECOLLECTION_H
+#define ALIHFECOLLECTION_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice      
- */
+ * See cxx source for full Copyright notice                               */
+
+/* $Id$ */ 
 
 //                                                                      
 // Class for AliHFEcollection                                           
@@ -22,9 +26,6 @@
  * vesion: 1.0.1
  */
 
-
-#ifndef ALIHFECOLLECTION_H
-#define ALIHFECOLLECTION_H
 
 #ifndef ROOT_TNamed
 #include "TNamed.h"

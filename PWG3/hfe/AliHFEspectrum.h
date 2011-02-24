@@ -1,4 +1,7 @@
-        /**************************************************************************
+#ifndef ALIHFESPECTRUM_H
+#define ALIHFESPECTRUM_H
+
+/**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -12,15 +15,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class for spectrum correction
 // Subtraction of hadronic background, Unfolding of the data and
 // Renormalization done here
 // For more information see the implementation file
 //
-#ifndef ALIHFESPECTRUM_H
-#define ALIHFESPECTRUM_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif

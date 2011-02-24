@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+/* $Id$ */
+
 //-----------------------------------------------------------------------
 // Example of task (running locally, on AliEn and CAF),
 // which provides standard way of calculating acceptance and efficiency

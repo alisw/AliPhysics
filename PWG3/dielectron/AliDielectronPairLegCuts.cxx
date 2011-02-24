@@ -13,6 +13,8 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
+/* $Id$ */
+
 ///////////////////////////////////////////////////////////////////////////
 //   Cut class providing cuts for both legs in the AliDielectronPair     //
 //                                                                       //

@@ -1,3 +1,6 @@
+#ifndef ALIHFEVARMANAGER_H
+#define ALIHFEVARMANAGER_H
+
 /**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
@@ -12,15 +15,15 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
+
+/* $Id$ */ 
+
 //
 // Class AliHFEvarManager
 // Common place for definiton of variables to be filled into the 
 // correction framework container
 // More information can be found inside the implementation file
 //
-#ifndef ALIHFEVARMANAGER_H
-#define ALIHFEVARMANAGER_H
-
 #ifndef ROOT_TNamed
 #include <TNamed.h>
 #endif
