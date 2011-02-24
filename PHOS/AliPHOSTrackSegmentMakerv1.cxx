@@ -415,7 +415,7 @@ void  AliPHOSTrackSegmentMakerv1::GetDistanceInPHOSPlane(AliPHOSEmcRecPoint * em
   
   emcClu->GetLocalPosition(vecEmc) ;
   
-  Double_t xCPV,zCPV ; //EMC-projected coordinates of CPV cluster 
+  Double_t xCPV=0,zCPV=0 ; //EMC-projected coordinates of CPV cluster 
   TVector3 cpvGlobal; // Global position of the CPV recpoint
   fGeom->GetGlobalPHOS((AliPHOSRecPoint*)cpvClu,cpvGlobal);
   Double_t vtxCPV[3]={cpvGlobal.X(),cpvGlobal.Y(),cpvGlobal.Z()} ;

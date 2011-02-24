@@ -578,7 +578,7 @@ void AliPHOS::SetTreeAddress()
   // Links Hits in the Tree to Hits array
   TBranch *branch;
   char branchname[20];
-  sprintf(branchname,"%s",GetName());
+  snprintf(branchname,20,"%s",GetName());
   // Branch address for hit tree
     TTree *treeH = fLoader->TreeH();
   if (treeH) {

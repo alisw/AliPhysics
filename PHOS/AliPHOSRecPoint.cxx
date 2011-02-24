@@ -194,8 +194,8 @@ void AliPHOSRecPoint::ExecuteEvent(Int_t event, Int_t, Int_t)
       clustertext = new TPaveText(pos.X()-10,pos.Z()+10,pos.X()+50,pos.Z()+35,"") ;
       Text_t  line1[40] ;
       Text_t  line2[40] ;
-      sprintf(line1,"Energy=%1.2f GeV",GetEnergy()) ;
-      sprintf(line2,"%d Digits",GetDigitsMultiplicity()) ;
+      snprintf(line1,40,"Energy=%1.2f GeV",GetEnergy()) ;
+      snprintf(line2,40,"%d Digits",GetDigitsMultiplicity()) ;
       clustertext ->AddText(line1) ;
       clustertext ->AddText(line2) ;
       clustertext ->Draw("");

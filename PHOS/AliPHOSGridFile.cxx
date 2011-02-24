@@ -150,7 +150,7 @@ void AliPHOSGridFile::ListEvents() const
   // list the available events for the current path and run selected
 
   char path[80] ;
-  sprintf(path, "%s/%s-%s/%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data()) ;
+  snprintf(path,80,"%s/%s-%s/%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data()) ;
   AliInfo(Form("Searching %s", path)) ;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
   Grid_ResultHandle_t gr = fGrid->Find(path, "galice.root") ;
@@ -167,7 +167,7 @@ void AliPHOSGridFile::ListRuns() const
   // list the available runs for the current path selected
 
   char path[80] ;
-  sprintf(path, "%s/%s-%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data()) ;
+  snprintf(path,80,"%s/%s-%s/%s/%s", fRoot.Data(), fYear.Data(), fProd.Data(), fVers.Data(), fType.Data()) ;
   AliInfo(Form("Searching %s", path)) ;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)
   Grid_ResultHandle_t gr = fGrid->OpenDir(path) ;
@@ -184,7 +184,7 @@ Bool_t AliPHOSGridFile::SetYearProd(TString year, TString prod)
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s", year.Data(), prod.Data()) ;
+  snprintf(tempo,80,"/%s-%s", year.Data(), prod.Data()) ;
 
   TString path(fRoot) ;
   path += tempo ;
@@ -209,7 +209,7 @@ Bool_t AliPHOSGridFile::SetVers(TString vers)
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s/%s", fYear.Data(), fProd.Data(), vers.Data()) ;
+  snprintf(tempo,80,"/%s-%s/%s", fYear.Data(), fProd.Data(), vers.Data()) ;
   fVers = tempo ;
 
   TString path(fRoot) ;
@@ -234,7 +234,7 @@ Bool_t AliPHOSGridFile::SetType(TString type)
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), type.Data()) ;
+  snprintf(tempo,80,"/%s-%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), type.Data()) ;
 
   TString path(fRoot) ;
   path += tempo ;
@@ -258,7 +258,7 @@ Bool_t AliPHOSGridFile::SetPath(TString year, TString prod, TString vers, TStrin
   // set the year and verifies if the directory exists
   Bool_t rv = kFALSE ;
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s/%s/%s", year.Data(), prod.Data(), vers.Data(), type.Data()) ;
+  snprintf(tempo,80,"/%s-%s/%s/%s", year.Data(), prod.Data(), vers.Data(), type.Data()) ;
 
   TString path(fRoot) ;
   path += tempo ;
@@ -294,7 +294,7 @@ Bool_t AliPHOSGridFile::SetRun(Int_t run)
     srun.Prepend("0") ;
 
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s/%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), srun.Data()) ;
+  snprintf(tempo,80,"/%s-%s/%s/%s/%s", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), srun.Data()) ;
 
   TString path(fRoot) ;
   path += tempo ;
@@ -327,7 +327,7 @@ Bool_t AliPHOSGridFile::SetEvt(Int_t evt)
     sevt.Prepend("0") ;
 
   char tempo[80] ;
-  sprintf(tempo, "/%s-%s/%s/%s/%s/%s/", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data(), sevt.Data()) ;
+  snprintf(tempo,80,"/%s-%s/%s/%s/%s/%s/", fYear.Data(), fProd.Data(), fVers.Data(), fType.Data(), fRun.Data(), sevt.Data()) ;
   TString path(fRoot) ;
   path += tempo ;
 #if ROOT_VERSION_CODE < ROOT_VERSION(5,0,0)

@@ -279,7 +279,7 @@ Bool_t AliPHOSRawFitterv2::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       spectrum_1->SetRightMargin(0.05);
 
       char title[155] ;
-      sprintf(title,"Sample, mod=%d, x=%d, z=%d, Quality=%5.1f",fModule,fCellX,fCellZ,fQuality) ;
+      snprintf(title,155,"Sample, mod=%d, x=%d, z=%d, Quality=%5.1f",fModule,fCellX,fCellZ,fQuality) ;
       h->SetTitle(title) ;
 //      h->Fit(fffit,"","",0.,51.) ;
       h->Draw() ;

@@ -150,7 +150,7 @@ void AliPHOSv0::CreateGeometry()
   char im[5] ;
   Bool_t anyModuleCreated=0 ;
   for (Int_t iModule = 0; iModule < 5 ; iModule++ ) {
-    sprintf(im,"%d",iModule+1) ;
+    snprintf(im,5,"%d",iModule+1) ;
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
       continue ;
     anyModuleCreated=1 ;
@@ -736,7 +736,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   
   char im[5] ;
   for(Int_t iModule=1; iModule<=nModules; iModule++){
-    sprintf(im,"%d",iModule) ;
+    snprintf(im,5,"%d",iModule) ;
     modUID = AliGeomManager::LayerToVolUID(idPHOS1,modnum++);
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
       continue ;
@@ -774,7 +774,7 @@ void AliPHOSv0::AddAlignableVolumes() const
   for(Int_t iModule=1; iModule<=nModules; iModule++){
     if(strstr(GetTitle(),"noCPV"))
       continue ;
-    sprintf(im,"%d",iModule) ;
+    snprintf(im,5,"%d",iModule) ;
     modUID = AliGeomManager::LayerToVolUID(idPHOS2,modnum++);
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0)
       continue ;
@@ -848,7 +848,7 @@ void AliPHOSv0::AddAlignableVolumes() const
 
   for(Int_t module = 1; module <= nModules; ++module){
 
-    sprintf(im,"%d",module) ;
+    snprintf(im,5,"%d",module) ;
     if(strstr(GetTitle(),im)==0 && strcmp(GetTitle(),"IHEP")!=0 && strcmp(GetTitle(),"noCPV")!=0)
       continue ;
 
@@ -891,7 +891,7 @@ void AliPHOSv0::AddAlignableVolumes() const
          TGeoHMatrix *matTtoL = new TGeoHMatrix(matLtoT.Inverse());
  
          char phosPath[50] ;
-         sprintf(phosPath,"/ALIC_1/PHOS_%d",module) ;
+         snprintf(phosPath,50,"/ALIC_1/PHOS_%d",module) ;
          if (!gGeoManager->cd(phosPath)){
             AliFatal("Geo manager can not find path \n");
          }

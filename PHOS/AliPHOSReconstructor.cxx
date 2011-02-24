@@ -493,7 +493,7 @@ void AliPHOSReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
   char path[255] ;
   TGeoHMatrix * m ;
   for(Int_t mod=0; mod<5; mod++){
-    sprintf(path,"/ALIC_1/PHOS_%d",mod+1) ; //In Geometry modules numbered 1,2,.,5
+    snprintf(path,255,"/ALIC_1/PHOS_%d",mod+1) ; //In Geometry modules numbered 1,2,.,5
     if (gGeoManager->cd(path)){
       m = gGeoManager->GetCurrentMatrix() ;
       esd->SetPHOSMatrix(new TGeoHMatrix(*m),mod) ;
