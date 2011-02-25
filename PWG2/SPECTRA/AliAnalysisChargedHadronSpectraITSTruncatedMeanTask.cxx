@@ -52,7 +52,6 @@ fHistMydEPpositive(0),fHistMydETPCinPpositive(0),fHistMydETPCinPglobalpositive(0
 fHistMydEPnegative(0),fHistMydETPCinPnegative(0),fHistMydETPCinPglobalnegative(0),
 fHistL3dEP(0),fHistL4dEP(0),fHistL5dEP(0),fHistL6dEP(0),fHistL3dETPCinP(0),
  fHistL4dETPCinP(0),fHistL5dETPCinP(0),fHistL6dETPCinP(0),fHistwhichhasmin(0),fHistMysignalminusESD(0),
-fHistminsignalforPionP(0),fHistminsignalforKaonP(0),fHistminsignalforProtonP(0),
 fHistminsignalifPionP(0),fHistminsignalifKaonP(0),fHistminsignalifProtonP(0),fHistminsignalifAntiPionP(0),fHistminsignalifAntiKaonP(0),fHistminsignalifAntiProtonP(0),
 fDCAXYZforcleanPions(0),fDCAXYZforcleanAntiPions(0),fDCAXYZforcleanProtons(0),fDCAXYZforcleanAntiProtons(0),
 fDCAXYZOpenforcleanPions(0),fDCAXYZOpenforcleanAntiPions(0),fDCAXYZOpenforcleanProtons(0),fDCAXYZOpenforcleanAntiProtons(0),
@@ -89,7 +88,7 @@ fElectronsource(0),fAntiElectronsource(0),
 fMuonsource(0),fAntiMuonsource(0),
 fPionNTPCClusters(0),fAntiPionNTPCClusters(0),fKaonNTPCClusters(0),fAntiKaonNTPCClusters(0),fProtonNTPCClusters(0),fAntiProtonNTPCClusters(0),
 fPionchi2(0),fAntiPionchi2(0),fKaonchi2(0),fAntiKaonchi2(0),fProtonchi2(0),fAntiProtonchi2(0),
-fTracksCutmonitoring(0),fParticlesCutmonitoring(0),fVertexshift(0),fPtESDminusPtMCvPtESDafterallcuts(0),fPtESDminusPtMCvPtESDafterTPCcuts(0),
+fTracksCutmonitoring(0),fParticlesCutmonitoring(0),fVertexshift(0),fPtESDminusPtMCvPtESDafterallcuts(0),fPtESDminusPtMCvPtESDafterTPCcuts(0),fMulESDMulMCVz(0),
 fTPCPIDCUT(0), fESDpid(0),fPrimaryElectronsMother(0),
 flist(0)
 {
@@ -279,12 +278,6 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fHistMysignalminusESD=new TH1F("HistMysignalminus","HistMysignalminus;my-ESD;N",100,-0.2,0.2);
 	flist->Add(fHistMysignalminusESD);
 	
-	fHistminsignalforPionP=new TH2F("HistminsignalforPionP",";P[GeV/c];dE[in 300#mum]",kPtBins,binsPtDummy,ny,starty,ny*jump+starty);
-	flist->Add(fHistminsignalforPionP);
-	fHistminsignalforKaonP=new TH2F("HistminsignalforKaonP",";P[GeV/c];dE[in 300#mum]",kPtBins,binsPtDummy,ny,starty,ny*jump+starty);
-	flist->Add(fHistminsignalforKaonP);
-	fHistminsignalforProtonP=new TH2F("HistminsignalforProtonP",";P[GeV/c];dE[in 300#mum]",kPtBins,binsPtDummy,ny,starty,ny*jump+starty);
-	flist->Add(fHistminsignalforProtonP);
 	 
 	fHistminsignalifPionP=new TH2F("HistminsignalifPionP",";Pt[GeV/c];log(dE_real)-log(dE_fit)",kPtBins,binsPtDummy,ny,-4,4);
 	flist->Add(fHistminsignalifPionP);
@@ -730,6 +723,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(10,"antipionfake");
 	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(11,"antikaonfake");
 	fPtESDminusPtMCvPtESDafterTPCcuts->GetZaxis()->SetBinLabel(12,"antiprotonfake");
+	
+	
+	fMulESDMulMCVz=new TH3F("fMulESDMulMCVz",";NtracksESD;NparticlesMC;Vrt_z ",50,0,50,100,0,100,20,-10,10);
+	flist->Add(fMulESDMulMCVz);
 	PostData(1,  flist);
 	Printf("end of CreateOutputObjects with MC");
 }
@@ -774,7 +771,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	if(fMC)
 	{
 		AliMCEvent* mcEvent  = (AliMCEvent*) MCEvent();
-		Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
+		//Printf("MC particles: %d", mcEvent->GetNumberOfTracks());
 		stack = mcEvent->Stack();
 		mcXvertex=mcEvent->GetPrimaryVertex()->GetX();
 		mcYvertex=mcEvent->GetPrimaryVertex()->GetY();
@@ -788,11 +785,11 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	  UInt_t isSelected = 0;
 	 if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())))
 	  	isSelected=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	Printf("Mask_selection %u %u", isSelected,AliVEvent::kMB);  
+	//Printf("Mask_selection %u %u", isSelected,AliVEvent::kMB);  
         if(!(isSelected&AliVEvent::kMB))
         {
 		 isphysevent=0;
-		 Printf("No phys event.........\n");
+		// Printf("No phys event.........\n");
 	}	
 	else
 	{
@@ -823,7 +820,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			vertex = fESD->GetPrimaryVertexSPD();
 			if(vertex->GetNContributors()<1) 
 			{
-				Printf("No good  Vertex.........\n");
+				//Printf("No good  Vertex.........\n");
 				isgoodvertex=0;
 			}
 			else
@@ -845,7 +842,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		{	
 			if(TMath::Abs(vertex ->GetZ())>10.0)
 			{
-				Printf("No good  Z of Vertex.........\n");
+				//Printf("No good  Z of Vertex.........\n");
 				isvxerteinZ=0;
 			}
 			else
@@ -858,8 +855,16 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		if(TMath::Abs(vertex->GetX()-mcXvertex)>0.015||TMath::Abs(vertex->GetY()-mcYvertex)>0.015||TMath::Abs(vertex->GetZ()-mcZvertex)>0.15)
 			isvxerteinZ=0;	
 	}  
+	Int_t fMCmult=0;
 	if(stack)//Looping over MC information of all events
 	{
+		Float_t minpt=0.0;
+		Float_t maxpt=0.0;
+		Float_t mineta=0.0;
+		Float_t maxeta=0.0;
+		
+		fCutsMul->GetPtRange(minpt,maxpt);
+		fCutsMul->GetEtaRange(mineta,maxeta);
 		fHistStats->Fill(8);
 		if(TMath::Abs(mcZvertex)<10.0)
 			fHistStats->Fill(9);
@@ -871,13 +876,16 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			if(!particleMC)
 				continue;
 			Int_t pdgcodeMC = particleMC->GetPdgCode();
+			if(!(pdgcodeMC==211||pdgcodeMC==-211||pdgcodeMC==321||pdgcodeMC==-321||pdgcodeMC==2212||pdgcodeMC==-2212))	
+				continue;
+			if(particleMC->Pt()>minpt&&particleMC->Pt()<maxpt&&particleMC->Eta()>mineta&&particleMC->Eta()<maxeta)
+				fMCmult++;	
 			if (TMath::Abs(particleMC->Y())>fYCut)
 				continue;
 			if (particleMC->Pt()>2.0)
 				continue;
 			//Printf("%d aa",imc);			
-			if(!(pdgcodeMC==211||pdgcodeMC==-211||pdgcodeMC==321||pdgcodeMC==-321||pdgcodeMC==2212||pdgcodeMC==-2212))	
-				continue;
+			
 			if(pdgcodeMC==211)	
 				fHistminsignalifPionPMCPrimaryBeforeEventCuts->Fill(particleMC->Pt());
 			if(pdgcodeMC==-211)	
@@ -954,9 +962,9 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	
 	if(!(isphysevent&&isgoodvertex&&isvxerteinZ))
 	{
-		Printf("No Good event.........\n");
+		//Printf("No Good event.........\n");
 		PostData(1,  flist);
-		Printf("end of Exec");
+		//Printf("end of Exec");
 		return;
 	}
 	
@@ -966,16 +974,19 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	fHistXYVertexAfterCut->Fill(vertex ->GetX(),vertex ->GetY()); 
 	
 	if(fMC)
-		fVertexshift->Fill(vertex->GetX()-mcXvertex,vertex->GetY()-mcYvertex,vertex->GetZ()-mcZvertex);	
+	{
+		fVertexshift->Fill(vertex->GetX()-mcXvertex,vertex->GetY()-mcYvertex,vertex->GetZ()-mcZvertex);
+		fMulESDMulMCVz->Fill(refmultiplicity,fMCmult,vertex->GetZ());
+	}		
 	if(fCuts==0)
 	{
-		Printf("No CUTS Defined.........\n");
+		//Printf("No CUTS Defined.........\n");
 		PostData(1,  flist);
-		Printf("end of Exec");
+		//Printf("end of Exec");
 		return;
 	}
 	
-	Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
+	//Printf("There are %d tracks in this event", fESD->GetNumberOfTracks());
 	 Int_t nTracks=fESD->GetNumberOfTracks();
 	
 	Int_t mynumberoftracks=0;
@@ -1698,8 +1709,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	// Post output data.
 	Printf("Done..........\n");
 	PostData(1,  flist);
-	Printf("....................Done!\n");
-	Printf("end of Exec");
+	//Printf("....................Done!\n");
+	//Printf("end of Exec");
 }      
 
 //________________________________________________________________________
@@ -1857,3 +1868,18 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetCentralityCut(Float
 		fUpCentrality=up;
 	}
 }
+//_____________________________________________________________________________________________________________
+void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::SetMultiplicityCut(Int_t low, Int_t up)
+{
+	//mulyiplicty cut setter
+	if((!(up>low))&&low>=0&&up>=0)
+	{ 
+		fLowMultiplicity=-1;
+		fUpMultiplicity=-1;
+	}
+	else
+	{
+		fLowMultiplicity=low;
+		fUpMultiplicity=up;
+	}	
+}	
