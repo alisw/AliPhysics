@@ -457,6 +457,12 @@ AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
   // dummy copy constructor
   //------------------------------------------------------------------
   fOutput=t.fOutput;
+  for (Int_t irow=0; irow<200; irow++){
+    fXRow[irow]=0;
+    fYMax[irow]=0;
+    fPadLength[irow]=0;
+  }
+
 }
 AliTPCtrackerMI & AliTPCtrackerMI::operator=(const AliTPCtrackerMI& /*r*/)
 {
@@ -6401,7 +6407,7 @@ void AliTPCtrackerMI::PrepareForBackProlongation(TObjArray *const arr,Float_t fa
       Float_t angle2 = pt->GetAlpha();
       
       if (TMath::Abs(angle1-angle2)>0.001){
-	pt->Rotate(angle1-angle2);
+	if (!pt->Rotate(angle1-angle2)) return;
 	//angle2 = pt->GetAlpha();
 	//pt->fRelativeSector = pt->GetAlpha()/fInnerSec->GetAlpha();
 	//if (pt->GetAlpha()<0) 
@@ -6712,7 +6718,7 @@ Int_t AliTPCtrackerMI::CookLabel(AliTPCseed *const t, Float_t wrong,Int_t first,
      }
   }
   noc = current;
-  if (noc<5) return -1;
+  //if (noc<5) return -1;
   Int_t lab=123456789;
   for (i=0; i<noc; i++) {
     AliTPCclusterMI *c=clusters[i];
