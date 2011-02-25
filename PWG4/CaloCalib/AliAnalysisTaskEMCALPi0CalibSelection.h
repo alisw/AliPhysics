@@ -110,8 +110,9 @@ private:
   TH2F*   fHmgg;             //! two-cluster inv.mass vs pt of pair
   TH2F*   fHmggDifferentSM;  //! two-cluster inv.mass vs pt of pair, each cluster in different SM
   TH2F*   fHmggSM[AliEMCALGeoParams::fgkEMCALModules];       //! two-cluster inv.mass per SM
-  TH2F*   fHmggPairSM[AliEMCALGeoParams::fgkEMCALModules];   //! two-cluster inv.mass per Pair
-  
+  TH2F*   fHmggPairSameSectorSM[AliEMCALGeoParams::fgkEMCALModules/2];   //! two-cluster inv.mass per Pair
+  TH2F*   fHmggPairSameSideSM  [AliEMCALGeoParams::fgkEMCALModules-2];   //! two-cluster inv.mass per Pair
+
   TH2F*   fHOpeningAngle;             //! two-cluster opening angle vs pt of pair, with mass close to pi0
   TH2F*   fHOpeningAngleDifferentSM;  //! two-cluster opening angle vs pt of pair, each cluster in different SM, with mass close to pi0
   TH2F*   fHOpeningAngleSM[AliEMCALGeoParams::fgkEMCALModules];       //! two-cluster opening angle vs pt per SM,with mass close to pi0
