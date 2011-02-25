@@ -27,36 +27,38 @@
 #------------------------------------------------------------------------#
 
 set ( SRCS   
-    FORWARD/analysis2/AliAODForwardMult.cxx
-    FORWARD/analysis2/AliFMDCorrAcceptance.cxx
-    FORWARD/analysis2/AliFMDCorrDoubleHit.cxx
-    FORWARD/analysis2/AliFMDCorrELossFit.cxx 
-    FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx
-    FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx 
-    FORWARD/analysis2/AliFMDCorrVertexBias.cxx
-    FORWARD/analysis2/AliFMDCorrector.cxx 
-    FORWARD/analysis2/AliFMDDensityCalculator.cxx
-    FORWARD/analysis2/AliFMDEnergyFitter.cxx
-    FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
-    FORWARD/analysis2/AliFMDEventInspector.cxx
-    FORWARD/analysis2/AliFMDHistCollector.cxx
-    FORWARD/analysis2/AliFMDSharingFilter.cxx
-    FORWARD/analysis2/AliFMDMCCorrector.cxx
-    FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
-    FORWARD/analysis2/AliFMDMCSharingFilter.cxx
-    FORWARD/analysis2/AliForwardCorrectionManager.cxx
-    FORWARD/analysis2/AliForwardMultiplicityBase.cxx
-    FORWARD/analysis2/AliForwardMultiplicityTask.cxx
-    FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
-    FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
-    FORWARD/analysis2/AliForwarddNdetaTask.cxx
-    FORWARD/analysis2/AliForwardUtil.cxx
-    FORWARD/analysis2/AliCentralMultiplicityTask.cxx
-    FORWARD/analysis2/AliAODCentralMult.cxx
-    FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
-    FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
-    FORWARD/analysis2/AliCentraldNdetaTask.cxx
-    FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliAODForwardMult.cxx
+  FORWARD/analysis2/AliFMDCorrAcceptance.cxx
+  FORWARD/analysis2/AliFMDCorrDoubleHit.cxx
+  FORWARD/analysis2/AliFMDCorrELossFit.cxx 
+  FORWARD/analysis2/AliFMDCorrMergingEfficiency.cxx
+  FORWARD/analysis2/AliFMDCorrSecondaryMap.cxx 
+  FORWARD/analysis2/AliFMDCorrVertexBias.cxx
+  FORWARD/analysis2/AliFMDCorrector.cxx 
+  FORWARD/analysis2/AliFMDDensityCalculator.cxx
+  FORWARD/analysis2/AliFMDEnergyFitter.cxx
+  FORWARD/analysis2/AliFMDEnergyFitterTask.cxx 
+  FORWARD/analysis2/AliFMDEventInspector.cxx
+  FORWARD/analysis2/AliFMDHistCollector.cxx
+  FORWARD/analysis2/AliFMDSharingFilter.cxx
+  FORWARD/analysis2/AliFMDMCCorrector.cxx
+  FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
+  FORWARD/analysis2/AliFMDMCSharingFilter.cxx
+  FORWARD/analysis2/AliForwardCorrectionManager.cxx
+  FORWARD/analysis2/AliForwardMultiplicityBase.cxx
+  FORWARD/analysis2/AliForwardMultiplicityTask.cxx
+  FORWARD/analysis2/AliForwardMCMultiplicityTask.cxx 
+  FORWARD/analysis2/AliForwardMCCorrectionsTask.cxx
+  FORWARD/analysis2/AliForwarddNdetaTask.cxx
+  FORWARD/analysis2/AliForwardUtil.cxx
+  FORWARD/analysis2/AliCentralMultiplicityTask.cxx
+  FORWARD/analysis2/AliAODCentralMult.cxx
+  FORWARD/analysis2/AliCentralCorrSecondaryMap.cxx
+  FORWARD/analysis2/AliCentralCorrAcceptance.cxx 
+  FORWARD/analysis2/AliCentraldNdetaTask.cxx
+  FORWARD/analysis2/AliBasedNdetaTask.cxx
+  FORWARD/analysis2/AliForwardFlowBase.cxx
+  FORWARD/analysis2/AliForwardFlowTaskQC.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
