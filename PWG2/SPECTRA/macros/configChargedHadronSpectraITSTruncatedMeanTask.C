@@ -1,7 +1,7 @@
 AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* GetAliAnalysisChargedHadronSpectraITSTruncatedMeanTask(int usemc=0)
 {
 	
-	AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* task1 = new AliAnalysisChargedHadronSpectraITSTruncatedMeanTask("test1");
+	AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* task1 = new AliAnalysisChargedHadronSpectraITSTruncatedMeanTask("AliAnalysisChargedHadronSpectraITSTruncatedMeanTask");
 	AliESDtrackCuts*  cuts1 = new AliESDtrackCuts("cuts1","cuts1");
  	cuts1->SetRequireTPCRefit(kTRUE); // but only for pass4 or later, pass2 without requiring refit !!!!
 	cuts1->SetRequireITSRefit(kTRUE);
