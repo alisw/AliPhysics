@@ -76,10 +76,12 @@ fhRePtNCellAsymCuts(0x0), fhRePtNCellAsymCutsSM0(0x0), fhRePtNCellAsymCutsSM1(0x
 fhRePIDBits(0x0),fhRePtMult(0x0), fhRePtAsym(0x0), fhRePtAsymPi0(0x0),fhRePtAsymEta(0x0),  
 fhEvents(0x0), fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0), fhMixedOpeningAngle(0x0),fhMixedCosOpeningAngle(0x0),
 fhPrimPi0Pt(0x0), fhPrimPi0AccPt(0x0), fhPrimPi0Y(0x0), fhPrimPi0AccY(0x0), fhPrimPi0Phi(0x0), fhPrimPi0AccPhi(0x0),
-fhPrimPi0OpeningAngle(0x0),fhPrimPi0CosOpeningAngle(0x0),
+fhPrimPi0OpeningAngle(0x0), fhPrimPi0CosOpeningAngle(0x0),
 fhPrimEtaPt(0x0), fhPrimEtaAccPt(0x0), fhPrimEtaY(0x0), fhPrimEtaAccY(0x0), fhPrimEtaPhi(0x0), fhPrimEtaAccPhi(0x0),
+fhPrimPi0PtOrigin(0x0),  fhPrimEtaPtOrigin(0x0), 
 fhMCOrgMass(),fhMCOrgAsym(),  fhMCOrgDeltaEta(),fhMCOrgDeltaPhi(),
-fhMCPi0MassPtRec(), fhMCPi0MassPtTrue(), fhMCPi0PtTruePtRec(), fhMCEtaMassPtRec(), fhMCEtaMassPtTrue(), fhMCEtaPtTruePtRec()
+fhMCPi0MassPtRec(), fhMCPi0MassPtTrue(), fhMCPi0PtTruePtRec(), fhMCEtaMassPtRec(), fhMCEtaMassPtTrue(), fhMCEtaPtTruePtRec(),
+fhMCPi0PtOrigin(0x0),  fhMCEtaPtOrigin(0x0)
 {
 //Default Ctor
  InitParameters();
@@ -674,6 +676,64 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhPrimEtaAccPhi) ;
         
     
+    //Prim origin
+    //Pi0
+    fhPrimPi0PtOrigin     = new TH2D("hPrimPi0PtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+    fhPrimPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
+    fhPrimPi0PtOrigin->SetYTitle("Origin");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances ");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+    fhPrimPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+    outputContainer->Add(fhPrimPi0PtOrigin) ;
+    
+    fhMCPi0PtOrigin     = new TH2D("hMCPi0PtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+    fhMCPi0PtOrigin->SetXTitle("p_{T} (GeV/c)");
+    fhMCPi0PtOrigin->SetYTitle("Origin");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+    outputContainer->Add(fhMCPi0PtOrigin) ;    
+    
+    //Eta
+    fhPrimEtaPtOrigin     = new TH2D("hPrimEtaPtOrigin","Primary pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+    fhPrimEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
+    fhPrimEtaPtOrigin->SetYTitle("Origin");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+    fhPrimEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime ");
+
+    outputContainer->Add(fhPrimEtaPtOrigin) ;
+    
+    fhMCEtaPtOrigin     = new TH2D("hMCEtaPtOrigin","Reconstructed pair from generated pi0 pt vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+    fhMCEtaPtOrigin->SetXTitle("p_{T} (GeV/c)");
+    fhMCEtaPtOrigin->SetYTitle("Origin");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
+
+    outputContainer->Add(fhMCEtaPtOrigin) ;
+     
+    
     fhPrimPi0OpeningAngle  = new TH2D
     ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
     fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
@@ -945,6 +1005,36 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
             fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
+          
+          //Origin of meson
+          Int_t momindex  = prim->GetFirstMother();
+          TParticle* mother = stack->Particle(momindex);
+          Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
+          Int_t momstatus = mother->GetStatusCode();
+          if(pdg == 111){
+            if     (momstatus  == 21)fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
+            else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
+            else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
+            else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
+            else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
+            else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
+            else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+          }//pi0
+          else {
+            if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
+            else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
+            else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
+            else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
+            else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
+            else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+            //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+          }
+          
+          
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetFirstDaughter() ;
@@ -1026,10 +1116,12 @@ void AliAnaPi0::FillAcceptanceHistograms(){
     TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
     if(mcparticles){
       Int_t nprim = mcparticles->GetEntriesFast();
-      for(Int_t i=0
-          ; i < nprim; i++)
+      for(Int_t i=0; i < nprim; i++)
       {
-        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);        
+        AliAODMCParticle * prim = (AliAODMCParticle *) mcparticles->At(i);   
+        // Only generator particles
+        if( prim->GetStatus() == 0) break;
+
         Int_t pdg = prim->GetPdgCode();
         if( pdg == 111 || pdg == 221){
           Double_t pi0Pt = prim->Pt() ;
@@ -1051,6 +1143,35 @@ void AliAnaPi0::FillAcceptanceHistograms(){
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
             fhPrimEtaPhi->Fill(pi0Pt, phi) ;
           }
+          
+          //Origin of meson
+          Int_t momindex  = prim->GetMother();
+          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+          Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
+          Int_t momstatus = mother->GetStatus();
+            if(pdg == 111){
+              if     (momstatus  == 21) fhPrimPi0PtOrigin->Fill(pi0Pt,0.5);//parton
+              else if(mompdg     < 22 ) fhPrimPi0PtOrigin->Fill(pi0Pt,1.5);//quark
+              else if(mompdg     > 2100  && mompdg   < 2210) fhPrimPi0PtOrigin->Fill(pi0Pt,2.5);// resonances
+              else if(mompdg    == 221) fhPrimPi0PtOrigin->Fill(pi0Pt,8.5);//eta
+              else if(mompdg    == 331) fhPrimPi0PtOrigin->Fill(pi0Pt,9.5);//eta prime
+              else if(mompdg    == 213) fhPrimPi0PtOrigin->Fill(pi0Pt,4.5);//rho
+              else if(mompdg    == 223) fhPrimPi0PtOrigin->Fill(pi0Pt,5.5);//omega
+              else if(mompdg    >= 310   && mompdg    <= 323) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0S, k+-,k*
+              else if(mompdg    == 130) fhPrimPi0PtOrigin->Fill(pi0Pt,6.5);//k0L
+              else if(momstatus == 11 || momstatus  == 12 ) fhPrimPi0PtOrigin->Fill(pi0Pt,3.5);//resonances   
+              else                      fhPrimPi0PtOrigin->Fill(pi0Pt,7.5);//other?
+            }//pi0
+            else {
+              if     (momstatus == 21 ) fhPrimEtaPtOrigin->Fill(pi0Pt,0.5);//parton
+              else if(mompdg    < 22  ) fhPrimEtaPtOrigin->Fill(pi0Pt,1.5);//quark
+              else if(mompdg    > 2100  && mompdg   < 2210) fhPrimEtaPtOrigin->Fill(pi0Pt,2.5);//qq resonances
+              else if(mompdg    == 331) fhPrimEtaPtOrigin->Fill(pi0Pt,5.5);//eta prime
+              else if(momstatus == 11 || momstatus  == 12 ) fhPrimEtaPtOrigin->Fill(pi0Pt,3.5);//resonances
+              else fhPrimEtaPtOrigin->Fill(pi0Pt,4.5);//stable, conversions?
+              //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );          
+            }
+          
           //Check if both photons hit Calorimeter
           if(prim->GetNDaughters()!=2) return; //Only interested in 2 gamma decay
           Int_t iphot1=prim->GetDaughter(0) ;
@@ -1166,6 +1287,9 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
   Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(index1, index2, 
                                                               GetReader(), ancPDG, ancStatus,ancMomentum);
   
+  Int_t momindex  = -1;
+  Int_t mompdg    = -1;
+  Int_t momstatus = -1;
   if(GetDebug() > 1) printf("AliAnaPi0::FillMCVersusRecDataHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
                             ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
     
@@ -1205,7 +1329,39 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         }//Multi cut ana sim
         else {
           fhMCPi0MassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
-          if(mass < 0.17 && mass > 0.1) fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
+          if(mass < 0.17 && mass > 0.1) {
+            fhMCPi0PtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
+   
+            if(GetReader()->ReadStack()){	
+              TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+              momindex  = ancestor->GetFirstMother();
+              TParticle* mother = GetMCStack()->Particle(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatusCode();         
+            }
+            else {
+              TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+              AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+              momindex  = ancestor->GetMother();
+              AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+              mompdg    = TMath::Abs(mother->GetPdgCode());
+              momstatus = mother->GetStatus();  
+            }            
+            
+            if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
+            else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
+            else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
+            else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
+            else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
+            else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
+            else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
+            else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+            else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
+            else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances   
+            else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
+            
+          }//pi0 mass region
+          
         }
       }
       else if(ancPDG==221){//Eta
@@ -1232,7 +1388,31 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
         else {
           fhMCEtaMassPtTrue[0]->Fill(ancMomentum.Pt(),mass);
           if(mass < 0.65 && mass > 0.45) fhMCEtaPtTruePtRec[0]->Fill(ancMomentum.Pt(),pt); 
-        }
+          
+          if(GetReader()->ReadStack()){	
+            TParticle* ancestor = GetMCStack()->Particle(ancLabel);
+            momindex  = ancestor->GetFirstMother();
+            TParticle* mother = GetMCStack()->Particle(momindex);
+            mompdg    = TMath::Abs(mother->GetPdgCode());
+            momstatus = mother->GetStatusCode();         
+          }
+          else {
+            TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
+            AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
+            momindex  = ancestor->GetMother();
+            AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+            mompdg    = TMath::Abs(mother->GetPdgCode());
+            momstatus = mother->GetStatus();  
+          }          
+          
+          if     (momstatus == 21 ) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
+          else if(mompdg    < 22  ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
+          else if(mompdg    > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);//qq resonances
+          else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,5.5);//eta prime
+          else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
+          else fhMCEtaPtOrigin->Fill(pt,4.5);//stable, conversions?
+          //printf("Other Meson pdg %d, Mother %s, pdg %d, status %d\n",pdg, TDatabasePDG::Instance()->GetParticle(mompdg)->GetName(),mompdg, momstatus );  
+        }// eta mass region
       }
       else if(ancPDG==-2212){//AProton
         fhMCOrgMass[4]->Fill(pt,mass);
@@ -1320,8 +1500,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
   //In case of simulated data, fill acceptance histograms
   if(IsDataMC())FillAcceptanceHistograms();
-  if (GetReader()->GetEventNumber()%10000 == 0) 
-   printf("--- Event %d ---\n",GetReader()->GetEventNumber());
+  
+  //if (GetReader()->GetEventNumber()%10000 == 0) 
+  // printf("--- Event %d ---\n",GetReader()->GetEventNumber());
+  
   //Init some variables
 //Int_t   iRun     = (GetReader()->GetInputEvent())->GetRunNumber() ;
   Int_t   nPhot    = GetInputAODBranch()->GetEntriesFast() ;
@@ -1476,19 +1658,19 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       else if(fUseAverClusterEBins){ // Cluster average energy bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = eClusTot/10 * fNCentrBin; 
+        curCentrBin = (Int_t) eClusTot/10 * fNCentrBin; 
         if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
         //printf("cluster E average %f, bin %d \n",eClusTot,curCentrBin);
       }
       else if(fUseAverCellEBins){ // Cell average energy bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = eCellTot/10*fNCentrBin; 
+        curCentrBin = (Int_t) eCellTot/10*fNCentrBin; 
         if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
         //printf("cell E average %f, bin %d \n",eCellTot,curCentrBin);
       }
       else if(fUseAverClusterEDenBins){ // Energy density bins
         //Bins for pp, if needed can be done in a more general way
-        curCentrBin = eDenClus/10*fNCentrBin; 
+        curCentrBin = (Int_t) eDenClus/10*fNCentrBin; 
         if(curCentrBin > fNCentrBin-1) curCentrBin=fNCentrBin-1;
         //printf("cluster Eden average %f, bin %d \n",eDenClus,curCentrBin);
       } 
