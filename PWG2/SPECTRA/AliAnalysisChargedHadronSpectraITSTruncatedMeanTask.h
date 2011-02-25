@@ -40,7 +40,7 @@ class AliAnalysisChargedHadronSpectraITSTruncatedMeanTask : public AliAnalysisTa
    fESDpid->GetTPCResponse().SetBetheBlochParameters(2.15898e+00/50.,1.75295e+01,3.40030e-09,1.96178e+00,3.91720e+00);}
   void SetAliESDtrackCuts(AliESDtrackCuts* const cuts ){fCuts=cuts;/*flist->Add(fCuts);*/}
   void SetFunctionParam(Double_t* const par);
-   void SetMultiplicityCut(Int_t low, Int_t up){fLowMultiplicity=low;fUpMultiplicity=up;}
+   void SetMultiplicityCut(Int_t low, Int_t up);
   void SetCorrectSDD(){fCorrectSDD=kTRUE;}
    void SetCorrectSSD(){fCorrectSSD=kTRUE;}
   void SetYcut(Float_t value){fYCut=TMath::Abs(value);}
@@ -138,10 +138,7 @@ TH2F* fHistL6dETPCinP;//SSD2
 
 TH2F* fHistwhichhasmin;// ITS  layer with minimal charged
 TH1F* fHistMysignalminusESD;// My signal minus ESD
-//dE for n-sigma method
-TH2F* fHistminsignalforPionP; //pions
-TH2F* fHistminsignalforKaonP;//kaons
-TH2F* fHistminsignalforProtonP;//protons
+
 
 //log dE-logdEfit as function of  global p at p.v. for
 TH2F* fHistminsignalifPionP;//pions
@@ -388,6 +385,8 @@ TH3F* fVertexshift; //shift of the vertex due to reconstruction
 
 TH3F* fPtESDminusPtMCvPtESDafterallcuts;//ptESD -ptMC v ptESD after all cuts 
 TH3F* fPtESDminusPtMCvPtESDafterTPCcuts;//ptESD - ptMC v ptESD after TPC cuts (refit,chi2,nclus);
+
+TH3F* fMulESDMulMCVz;//Multiplicty ESD Multiplicty MC Vrt Z 
 
 
 
