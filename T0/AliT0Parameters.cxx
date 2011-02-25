@@ -171,33 +171,46 @@ void AliT0Parameters::InitIfOnline()
 // for switching to this one should write
   // AliT0RawReader myrawreader(rawReader);
 //	myrawreader.SetOnlineMode(kTRUE);
-
+  
   if (fIsInit) return;
-   //standart configuration (used for simulation)
-   //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
+  //standart configuration (used for simulation)
+  //Int_t trm=0; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   // configuration for test Jun07.
-   fgLookUp = new AliT0CalibData("T0");
-
+  fgLookUp = new AliT0CalibData("T0");
+  
   fNumberOfTRMs = 1;
- fgLookUp-> SetNumberOfTRMs(fNumberOfTRMs);
+  fgLookUp-> SetNumberOfTRMs(fNumberOfTRMs);
   Int_t trm=7; Int_t tdc=0; Int_t chain=0; Int_t channel=0;
   for (Int_t ik=0; ik<105; ik++)
-        {
-         AliT0LookUpKey * lookkey= new AliT0LookUpKey();
-         AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
-
-
-          lookvalue->SetTRM(trm);
-          lookvalue->SetTDC(tdc);
-          lookvalue->SetChain(chain);
-          lookvalue->SetChannel(channel);
-          lookkey->SetKey(ik);
-	  fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
-	  if (channel<6) channel +=2;
-	  else {channel = 0; tdc++;}
-	  if(ik==56) { tdc=0; channel=0; chain = 1;}
-
-       }
+    {
+      AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+      AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+      lookvalue->SetTRM(trm);
+      lookvalue->SetTDC(tdc);
+      lookvalue->SetChain(chain);
+      lookvalue->SetChannel(channel);
+      lookkey->SetKey(ik);
+      fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
+      if (channel<6) channel +=2;
+      else {channel = 0; tdc++;}
+      if(ik==56) { tdc=0; channel=0; chain = 1;}
+    }
+  //2 recent open channels
+  trm=7; tdc=14; channel=2; chain=0; 
+  for (Int_t ik=105; ik<107; ik++)
+    {
+      AliT0LookUpKey * lookkey= new AliT0LookUpKey();
+      AliT0LookUpValue * lookvalue= new AliT0LookUpValue();
+      
+      lookvalue->SetTRM(trm);
+      lookvalue->SetTDC(tdc);
+      lookvalue->SetChain(chain);
+      lookvalue->SetChannel(channel);
+      lookkey->SetKey(ik);
+      fgLookUp->GetMapLookup()->Add((TObject*)lookvalue,(TObject*)lookkey);	
+      if (channel<6) channel +=2;
+      else {channel = 0; tdc++;}
+    }
   
   fIsInit=kTRUE;
 }
