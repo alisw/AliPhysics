@@ -23,6 +23,7 @@ class AliGenAmpt : public AliGenMC
     AliGenAmpt(Int_t npart);
     virtual ~AliGenAmpt();
 
+    virtual void    SetDecay(Bool_t b)                {fDecay = b;}
     virtual TAmpt  *Ampt() { return fAmpt; }
     virtual void    Generate();
     virtual void    Init();
