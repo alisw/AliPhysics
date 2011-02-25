@@ -50,13 +50,13 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   AliAnalysisTaskSE(name),fEMCALGeo(0x0),//fCalibData(0x0), 
   fEmin(0.5), fEmax(15.), fAsyCut(1.),fMinNCells(2), fGroupNCells(0),
   fLogWeight(4.5), fSameSM(kFALSE), fOldAOD(kFALSE), fFilteredInput(kFALSE),
-  fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
+  fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_COMPLETEV1"), 
   fRecoUtils(new AliEMCALRecoUtils),
   fNbins(300), fMinBin(0.), fMaxBin(300.),fOutputContainer(0x0),
   fHmgg(0x0),           fHmggDifferentSM(0x0), 
   fHOpeningAngle(0x0),  fHOpeningAngleDifferentSM(0x0),  
   fHIncidentAngle(0x0), fHIncidentAngleDifferentSM(0x0),
-  fHAsymmetry(0x0),  fHAsymmetryDifferentSM(0x0),  
+  fHAsymmetry(0x0),     fHAsymmetryDifferentSM(0x0),  
   fhNEvents(0x0),fCuts(0x0),fLoadMatrices(0)
 {
   //Named constructor which should be used.
@@ -69,9 +69,14 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
     } 
   }
   
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules/2; iSMPair++) 
+    fHmggPairSameSideSM[iSMPair]                 = 0;
+    
+  for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules-2; iSMPair++) 
+    fHmggPairSameSectorSM[iSMPair]               = 0;
+  
   for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) {
     fHmggSM[iSM]                     = 0;
-    fHmggPairSM[iSM]                 = 0;
     fHOpeningAngleSM[iSM]            = 0;
     fHOpeningAnglePairSM[iSM]        = 0;
     fHAsymmetrySM[iSM]               = 0;
@@ -128,6 +133,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
 	fCuts->Add(new TObjString(onePar));
 	snprintf(onePar,buffersize, "EMCAL Geometry name: < %s >, Load Matrices? %d",fEMCALGeoName.Data(),fLoadMatrices) ;
 	fCuts->Add(new TObjString(onePar));
+
+	fCuts ->SetOwner(kTRUE);
 
 	// Post Data
 	PostData(2, fCuts);
@@ -240,7 +247,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fOutputContainer->Add(fHAsymmetryDifferentSM);
   
   
-  TString pairname[] = {"A side (0-2)", "C side (1-3)","Row 0 (0-1)", "Row 1 (2-3)"};
+  //TString pairname[] = {"A side (0-2)", "C side (1-3)","Row 0 (0-1)", "Row 1 (2-3)"};
   
   for(Int_t iSM = 0; iSM < nSM; iSM++) {
     
@@ -251,13 +258,23 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fHmggSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
     fOutputContainer->Add(fHmggSM[iSM]);
     
-    snprintf(hname,buffersize, "hmgg_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair: %s",pairname[iSM].Data());
-    fHmggPairSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
-    fHmggPairSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
-    fHmggPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
-    fOutputContainer->Add(fHmggPairSM[iSM]);
+    if(iSM < nSM/2){
+      snprintf(hname,buffersize, "hmgg_PairSameSectorSM%d",iSM);
+      snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair Sector: %d",iSM);
+      fHmggPairSameSectorSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+      fHmggPairSameSectorSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+      fHmggPairSameSectorSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHmggPairSameSectorSM[iSM]);
+    }
     
+    if(iSM < nSM-2){
+      snprintf(hname,buffersize, "hmgg_PairSameSideSM%d",iSM);
+      snprintf(htitl,buffersize, "Two-gamma inv. mass for SM pair Sector: %d",iSM);
+      fHmggPairSameSideSM[iSM] = new TH2F(hname,htitl,fNbins,fMinBin,fMaxBin,100,0,10);
+      fHmggPairSameSideSM[iSM]->SetXTitle("m_{#gamma #gamma} (MeV/c^{2})");
+      fHmggPairSameSideSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
+      fOutputContainer->Add(fHmggPairSameSideSM[iSM]);
+    }
     
     snprintf(hname, buffersize, "hopang_SM%d",iSM);
     snprintf(htitl, buffersize, "Opening angle for super mod %d",iSM);
@@ -267,7 +284,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fOutputContainer->Add(fHOpeningAngleSM[iSM]);
     
     snprintf(hname,buffersize, "hopang_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Opening angle for SM pair: %s",pairname[iSM].Data());
+    snprintf(htitl,buffersize, "Opening angle for SM pair: %d",iSM);
     fHOpeningAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,50.,100,0,10);
     fHOpeningAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma #gamma} (deg)");
     fHOpeningAnglePairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
@@ -281,21 +298,21 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
     fOutputContainer->Add(fHIncidentAngleSM[iSM]);
     
     snprintf(hname,buffersize, "hinang_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Incident angle for SM pair: %s",pairname[iSM].Data());
+    snprintf(htitl,buffersize, "Incident angle for SM pair: %d",iSM);
     fHIncidentAnglePairSM[iSM] = new TH2F(hname,htitl,100,0.,20.,100,0,10);
     fHIncidentAnglePairSM[iSM]->SetXTitle("#alpha_{#gamma - SM center} (deg)");
     fHIncidentAnglePairSM[iSM]->SetYTitle("p_{T #gamma} (GeV/c)");
     fOutputContainer->Add(fHIncidentAnglePairSM[iSM]);   
     
     snprintf(hname, buffersize, "hasym_SM%d",iSM);
-    snprintf(htitl, buffersize, "asymmetry for super mod %d",iSM);
+    snprintf(htitl, buffersize, "Asymmetry for super mod %d",iSM);
     fHAsymmetrySM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
     fHAsymmetrySM[iSM]->SetXTitle("a");
     fHAsymmetrySM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
     fOutputContainer->Add(fHAsymmetrySM[iSM]);
     
     snprintf(hname,buffersize, "hasym_PairSM%d",iSM);
-    snprintf(htitl,buffersize, "Asymmetry for SM pair: %s",pairname[iSM].Data());
+    snprintf(htitl,buffersize, "Asymmetry for SM pair: %d",iSM);
     fHAsymmetryPairSM[iSM] = new TH2F(hname,htitl,100,0.,1.,100,0,10);
     fHAsymmetryPairSM[iSM]->SetXTitle("a");
     fHAsymmetryPairSM[iSM]->SetYTitle("p_{T #gamma #gamma} (GeV/c)");
@@ -371,11 +388,12 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   //Int_t runNum = aod->GetRunNumber();
   //if(DebugLevel() > 1) printf("Run number: %d\n",runNum);
   
+  Int_t nSM = (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules();
   //Get the matrix with geometry information
   if(fhNEvents->GetEntries()==1){
     if(fLoadMatrices){
       printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - Load user defined geometry matrices\n");
-      for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+      for(Int_t mod=0; mod < nSM ; mod++){
         if(fMatrix[mod]){
           if(DebugLevel() > 1) 
             fMatrix[mod]->Print();
@@ -397,7 +415,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
           printf("AliAnalysisTaskEMCALPi0CalibSelection::UserExec() - This event does not contain ESDs?");
           return;
         }
-        for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+        for(Int_t mod=0; mod < nSM; mod++){
           //if(DebugLevel() > 1) 
             esd->GetEMCALMatrix(mod)->Print();
           if(esd->GetEMCALMatrix(mod)) fEMCALGeo->SetMisalMatrix(esd->GetEMCALMatrix(mod),mod) ;
@@ -482,8 +500,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c1->GetCellsAbsId(), c1->GetNCells())) continue;	
     
     Float_t e1i = c1->E();   // cluster energy before correction   
-    if(e1i < fEmin) continue;
-    else if(e1i > fEmax) continue;
+    if      (e1i < fEmin) continue;
+    else if (e1i > fEmax) continue;
     else if (c1->GetNCells() < fMinNCells) continue; 
     
     if(DebugLevel() > 2)
@@ -511,7 +529,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
       if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c2->GetCellsAbsId(), c2->GetNCells())) continue;	
       
       Float_t e2i = c2->E();
-      if(e2i < fEmin) continue;
+      if      (e2i < fEmin) continue;
       else if (e2i > fEmax) continue;
       else if (c2->GetNCells() < fMinNCells) continue; 
       
@@ -546,11 +564,18 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
           if(iSupMod1==iSupMod2) fHmggSM[iSupMod1]->Fill(invmass,p12.Pt()); 
           else                   fHmggDifferentSM ->Fill(invmass,p12.Pt());
           
-          if((iSupMod1==0 && iSupMod2==2) || (iSupMod1==2 && iSupMod2==0)) fHmggPairSM[0]->Fill(invmass,p12.Pt()); 
-          if((iSupMod1==1 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==1)) fHmggPairSM[1]->Fill(invmass,p12.Pt()); 
-          if((iSupMod1==0 && iSupMod2==1) || (iSupMod1==1 && iSupMod2==0)) fHmggPairSM[2]->Fill(invmass,p12.Pt()); 
-          if((iSupMod1==2 && iSupMod2==3) || (iSupMod1==3 && iSupMod2==2)) fHmggPairSM[3]->Fill(invmass,p12.Pt()); 
+          // Same sector
+          Int_t j=0;
+          for(Int_t i = 0; i < nSM/2; i++){
+            j=2*i;
+            if((iSupMod1==j && iSupMod2==j+1) || (iSupMod1==j+1 && iSupMod2==j)) fHmggPairSameSectorSM[i]->Fill(invmass,p12.Pt()); 
+          }
           
+          // Same side
+          for(Int_t i = 0; i < nSM-2; i++){
+            if((iSupMod1==i && iSupMod2==i+2) || (iSupMod1==i+2 && iSupMod2==i)) fHmggPairSameSideSM[i]->Fill(invmass,p12.Pt()); 
+          }
+
           if(invmass > 100. && invmass < 160.){//restrict to clusters really close to pi0 peak
             
             //Opening angle of 2 photons
