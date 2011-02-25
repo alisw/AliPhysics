@@ -140,8 +140,10 @@ void AliHFEtrdPIDqaV1::Browse(TBrowser *b){
       for(Int_t ispec = 0; ispec < 4; ispec++){
         for(Int_t istep = 0; istep < 2; istep++){
           hptr = MakeTRDspectrumTM(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
-          hptr->SetName(Form("hTRDtm%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
-          listTM->Add(hptr);
+          if(hptr){
+            hptr->SetName(Form("hTRDtm%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
+            listTM->Add(hptr);
+          }
           hptr = MakeTRDlikelihoodDistribution(static_cast<AliHFEdetPIDqa::EStep_t>(istep), specind[ispec]);
           hptr->SetName(Form("hTRDlike%s%s", specnames[ispec].Data(), istep == 0 ? "Before" : "After"));
           listLike->Add(hptr);
@@ -207,7 +209,7 @@ void AliHFEtrdPIDqaV1::Initialize(){
   Double_t minTRDtm[4] = {kMinPID, kMinP, 0., 0.};
   Double_t maxTRDtm[4] = {kMaxPID, kMaxP, 20000., 2.};
   fHistos->CreateTHnSparse("hTRDtruncatedMean", "TRD truncated Mean; species; p [GeV/c]; TRD signal [a.u.]; selection step", 4, nBinsTRDtm, minTRDtm, maxTRDtm);
-  fHistos->Sumw2("hTRDcharge");
+  fHistos->Sumw2("hTRDtruncatedMean");
 }
 
 //____________________________________________________________
