@@ -25,7 +25,7 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
     res->SetDebugLevel(0);
-    //if(itq==0) res->SetSegmentationLevel(1);
+    if(itq==0) res->SetSegmentationLevel(AliTRDresolution::kDetector);
     // use these settings if you know what you are doing !
     //res->SetTrackRefit(); 
     //res->SetPtThreshold(0.);

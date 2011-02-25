@@ -60,6 +60,11 @@ public:
     ,kTrkltToMC  = 5
     ,kNOutSlots  = 4
   };
+  enum ETRDresolutionSegmentation {
+     kSector    = 0
+    ,kStack
+    ,kDetector
+  };
 
   AliTRDresolution();
   AliTRDresolution(char* name);
@@ -114,7 +119,7 @@ private:
   AliTRDresolution& operator=(const AliTRDresolution&);
 
   void    AdjustF1(TH1 *h, TF1 *f);
-  TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE);
+  TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE, Float_t range=-1.);
   TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
   TObjArray*  BuildMonitorContainerTrack(const char* name);
   void    GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
