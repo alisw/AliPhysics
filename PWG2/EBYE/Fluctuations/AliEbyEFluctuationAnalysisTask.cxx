@@ -4,6 +4,8 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TParticle.h"
+#include "TObjArray.h"
+
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 
@@ -148,28 +150,29 @@ void AliEbyEFluctuationAnalysisTask::UserExec(Option_t *) {
 		    //centrality->GetCentralityPercentile(fCentralityEstimator.Data()),
 		    //nCentrality,fESD->GetNumberOfTracks());
 		    		    
-		    // Track loop to fill a pT spectrum
-		    for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-		      AliESDtrack* track = fESD->GetTrack(iTracks);
-		      if (!track) {
-			printf("ERROR: Could not receive track %d\n", iTracks);
-			continue;
-		      }
-		      
-		      //ESD track cuts
-		      if(fESDtrackCuts) {
-			AliESDtrack *tpcOnlyTrack = fESDtrackCuts->GetTPCOnlyTrack(fESD,iTracks);
-			if(!tpcOnlyTrack) continue;
+		    Int_t nAcceptedTracks = 0;
+		    TObjArray *gTrackArray = 0;
+		    if(fESDtrackCuts)
+                      gTrackArray = fESDtrackCuts->GetAcceptedTracks(fESD,kTRUE);
+                    if(gTrackArray) {
+                      nAcceptedTracks = gTrackArray->GetEntries();
+
+		      AliESDtrack* track = 0;
+		      // Track loop to fill a pT spectrum
+		      for (Int_t iTracks = 0; iTracks < nAcceptedTracks; iTracks++) {
+			track = dynamic_cast<AliESDtrack *>(gTrackArray->At(iTracks));
+			if (!track) {
+			  printf("ERROR: Could not receive track %d\n", iTracks);
+			  continue;
+			}
 			
-			if(!fESDtrackCuts->AcceptTrack(tpcOnlyTrack)) continue;
-			
-			Short_t gCharge = tpcOnlyTrack->Charge();
+			Short_t gCharge = track->Charge();
 			if(gCharge > 0) nPlus += 1;
 			if(gCharge < 0) nMinus += 1;
-		      }//ESD track cut object
-		    }//track loop
+		      }//track loop
+		    }//TObjArray valid object
 		    //if((nCentrality >= 1)&&(nCentrality <= 20)) {
-		      
+		    
 		    fHistCentrality->Fill(nCentrality);
 		    fHistNPlusNMinus[nCentrality-1]->Fill(nPlus,nMinus);
 		    fHistNMult[nCentrality-1]->Fill(nPlus+nMinus);
@@ -183,7 +186,7 @@ void AliEbyEFluctuationAnalysisTask::UserExec(Option_t *) {
       }//TPC analysis mode
       //}//physics selection
   }//ESD analysis level
-
+  
   //MC analysis
   if(fAnalysisType == "MC") {
     AliMCEvent* mcEvent = MCEvent();
