@@ -329,9 +329,6 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	    Double_t p1 = fAOD->GetDimuon(ii)->GetMu(0)->P();
 	    Double_t p2 = fAOD->GetDimuon(ii)->GetMu(1)->P();
 	    
-	    Double_t pDCA1 = p1*TMath::Sqrt(dcaX1*dcaX1 + dcaY1*dcaY1);
-	    Double_t pDCA2 = p2 * TMath::Sqrt(dcaX2*dcaX2 + dcaY2*dcaY2);
-	    
 	    Double_t p = fAOD->GetDimuon(ii)->P();
 	    Double_t pT = fAOD->GetDimuon(ii)->Pt();
 	    Double_t M = fAOD->GetDimuon(ii)->M();
@@ -402,7 +399,6 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 		// The pDCA is computed with the average of p and pUncor
 		Double_t pDCAX2 = (p2+pUncor2) * dcaX2/2.0;
 		Double_t pDCAY2 = (p2+pUncor2) * dcaY2/2.0;
-		Double_t pDCA2 = (p2+pUncor2) * TMath::Sqrt(dcaX2*dcaX2 + dcaY2*dcaY2) / 2.0;
 		
 		// To compute the p, pT and M of the dimuon, we need a TLorentz vector of the dimuon
 		Double_t E = fESD->GetMuonTrack(ii)->E() + fESD->GetMuonTrack(jj)->E();
