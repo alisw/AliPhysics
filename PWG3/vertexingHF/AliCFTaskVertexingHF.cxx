@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables
 // 6 Steps introduced: MC, MC Acc, Reco, Reco Acc, Reco Acc + ITS Cl, 
@@ -299,8 +297,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	PostData(3,fCorrelation) ;
 	
 
-	AliESDtrackCuts* trackCuts = fCuts->GetTrackCuts();
-	
 	if (fFillFromGenerated){
 		AliWarning("Flag to fill container with generated value ON ---> dca, d0pi, d0K, d0xd0, cosPointingAngle will be set as dummy!");
 	}
@@ -451,6 +447,20 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	Double_t zPrimVertex = aodVtx ->GetZ();
 	Double_t zMCVertex = mcHeader->GetVtxZ();
 	
+	AliESDtrackCuts** trackCuts = new AliESDtrackCuts*[cfVtxHF->GetNProngs()];
+	if (fDecayChannel == 21){
+		// for the D*, setting the third element of the array of the track cuts to those for the soft pion
+		for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs()-1; iProng++){
+			trackCuts[iProng]=fCuts->GetTrackCuts();
+		}
+		trackCuts[3] = fCuts->GetTrackCutsSoftPi();
+	}
+	else {
+		for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs(); iProng++){
+			trackCuts[iProng]=fCuts->GetTrackCuts();
+		}
+	}
+
 	//General settings: vertex, feed down and fill reco container with generated values.  			
 	cfVtxHF->SetRecoPrimVertex(zPrimVertex);
 	cfVtxHF->SetMCPrimaryVertex(zMCVertex);
@@ -482,7 +492,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	    AliDebug(2,Form("Impossible to set the label array (decaychannel = %d)",fDecayChannel));
 	    continue;
 	  }		   
-	  
+
 	  //check the candiate family at MC level
 	  if (!(cfVtxHF->CheckMCPartFamily(mcPart, mcArray))) {
 	    AliDebug(2,Form("Check on the family wrong!!! (decaychannel = %d)",fDecayChannel));
@@ -525,7 +535,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 					icountVertex++;
 					
 					//mc Refit requirement	
-					Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, trackCuts);
+					Bool_t mcRefitStep = cfVtxHF->MCRefitStep(aodEvent, &trackCuts[0]);
 					if (mcRefitStep){
 						fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
 						AliDebug(3,"MC Refit cut passed and container filled\n");
@@ -625,7 +635,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 				AliDebug(3,"Reco step  passed and container filled\n");
 			  			  
 				//Reco in the acceptance -- take care of UNFOLDING!!!!
-				Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(trackCuts);
+				Bool_t recoAcceptanceStep = cfVtxHF->RecoAcceptStep(&trackCuts[0]);
 				if (recoAcceptanceStep) {
 					fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoAcceptance, fWeight) ;
 					icountRecoAcc++; 
@@ -717,7 +727,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	delete[] containerInput;
 	delete[] containerInputMC;
 	delete cfVtxHF;
-
+       	if (trackCuts){
+	//	for (Int_t i=0; i<cfVtxHF->GetNProngs(); i++){
+	//		delete [] trackCuts[i];
+	//	}
+       	delete [] trackCuts;
+	}
 }
 
 //___________________________________________________________________________

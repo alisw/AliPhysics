@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and steps
 // For D* and other cascades
@@ -43,6 +41,16 @@ ClassImp(AliCFVertexingHFCascade)
   // standard constructor
 
   SetNProngs(3);
+  fPtAccCut=new Float_t[fProngs];
+  fEtaAccCut=new Float_t[fProngs];
+  // element 0 in the cut arrays corresponds to the soft pion!!!!!!!! Careful when setting the values...
+  fPtAccCut[0]=0.;
+  fEtaAccCut[0]=0.;
+  for(Int_t iP=1; iP<fProngs; iP++){
+	  fPtAccCut[iP]=0.1;
+	  fEtaAccCut[iP]=0.9;
+  }
+
 }
 
 
@@ -387,6 +395,81 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh
 
 }
 
+//___________________________________________________________
+
+void AliCFVertexingHFCascade::SetPtAccCut(Float_t* ptAccCut)
+{
+	//
+	// setting the pt cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	AliInfo("The 3rd element of the pt cut array will correspond to the cut applied to the soft pion - please check that it is correct");
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fPtAccCut[iP]=ptAccCut[iP];
+		}
+	}
+	return;
+}		
+
+
+
+//___________________________________________________________
+
+void AliCFVertexingHFCascade::SetEtaAccCut(Float_t* etaAccCut)
+{
+	//
+	// setting the eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	AliInfo("The 3rd element of the eta cut array will correspond to the cut applied to the soft pion - please check that it is correct");
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fEtaAccCut[iP]=etaAccCut[iP];
+		}
+	}
+	return;
+}	
+//___________________________________________________________
+
+void AliCFVertexingHFCascade::SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut)
+{
+	//
+	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	AliInfo("The 3rd element of the pt and cut array will correspond to the cut applied to the soft pion - please check that they are correct");
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fPtAccCut[iP]=ptAccCut[iP];
+			fEtaAccCut[iP]=etaAccCut[iP];
+		}
+	}
+	return;
+}		
+
+//___________________________________________________________
+
+void AliCFVertexingHFCascade::SetAccCut()
+{
+	//
+	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(2)); // should be the soft pion...  
+	if (TMath::Abs(fLabelArray[0]-fLabelArray[1] != 1) || TMath::Abs(fLabelArray[1]-fLabelArray[2] == 1) || TMath::Abs(fLabelArray[0]-fLabelArray[2] == 1) || TMath::Abs(mcPartDaughter->GetPdgCode())){
+		AliFatal("Apparently the soft pion is not in the third position, causing a crash!!");
+	}
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs-1; iP++){
+			fPtAccCut[iP]=0.1;
+			fEtaAccCut[iP]=0.9;
+		}
+		fPtAccCut[3]=0.;  // soft pion
+		fEtaAccCut[3]=0.9;  // soft pion
+	}
+	return;
+}		
 
 
 
