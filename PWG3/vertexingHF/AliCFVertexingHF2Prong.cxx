@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
 // Author : C. Zampolli, CERN
@@ -45,6 +43,13 @@ ClassImp(AliCFVertexingHF2Prong)
 	//
 
 	SetNProngs(2);
+	fPtAccCut=new Float_t[fProngs];
+	fEtaAccCut=new Float_t[fProngs];
+	for(Int_t iP=0; iP<fProngs; iP++){
+		fPtAccCut[iP]=0.1;
+		fEtaAccCut[iP]=0.9;
+	}
+
 }
 
 

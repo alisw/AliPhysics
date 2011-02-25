@@ -45,6 +45,14 @@ AliCFVertexingHF(),
  {
   // 
   SetNProngs(3);
+
+  fPtAccCut=new Float_t[fProngs];
+  fEtaAccCut=new Float_t[fProngs];
+  for(Int_t iP=0; iP<fProngs; iP++){
+	  fPtAccCut[iP]=0.1;
+	  fEtaAccCut[iP]=0.9;
+  }
+
 }
 //_________________________________________
 AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t originDselection, Int_t decay):
@@ -54,6 +62,12 @@ AliCFVertexingHF3Prong::AliCFVertexingHF3Prong(TClonesArray *mcArray, UShort_t o
 {
   //
   SetNProngs(3);
+  fPtAccCut=new Float_t[fProngs];
+  fEtaAccCut=new Float_t[fProngs];
+  for(Int_t iP=0; iP<fProngs; iP++){
+	  fPtAccCut[iP]=0.1;
+	  fEtaAccCut[iP]=0.9;
+  }
 }
 
 
@@ -455,4 +469,3 @@ Bool_t AliCFVertexingHF3Prong::CheckMCChannelDecay() const
   return checkCD;
   
 }
-

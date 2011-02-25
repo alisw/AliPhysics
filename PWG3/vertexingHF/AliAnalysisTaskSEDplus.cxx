@@ -847,7 +847,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   }
   
   Int_t n3Prong = array3Prong->GetEntriesFast();
-  if(fDebug>1) printf("Number of D+->Kpipi: %d\n",n3Prong);
+  printf("Number of D+->Kpipi: %d and of tracks: %d\n",n3Prong,aod->GetNumberOfTracks());
   
   
   Int_t nOS=0;
@@ -868,6 +868,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 
     if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)) {
 
+
       
 
       Int_t iPtBin = -1;
@@ -879,7 +880,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       
       Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
      
-     
+      
       Int_t labDp=-1;
       Float_t deltaPx=0.;
       Float_t deltaPy=0.;
@@ -1069,8 +1070,11 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	      }
 	    }	
 	  }
-	}
-      }  
+      
+	  }
+    
+    }
+      
     }
     if(unsetvtx) d->UnsetOwnPrimaryVtx();
   }

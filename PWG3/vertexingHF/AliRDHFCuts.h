@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2010, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //***********************************************************
 // Class AliRDHFCuts
 // base class for cuts on AOD reconstructed heavy-flavour decays
@@ -91,6 +89,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t GetCentrality(AliAODEvent* aodEvent, AliRDHFCuts::ECentrality estimator) const;
   Bool_t  *GetIsUpperCut() const {return fIsUpperCut;}
   AliESDtrackCuts *GetTrackCuts() const {return fTrackCuts;}
+  virtual AliESDtrackCuts *GetTrackCutsSoftPi() const {return 0;}
   virtual void GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) = 0;
   Int_t   GetGlobalIndex(Int_t iVar,Int_t iPtBin) const;
   void    GetVarPtIndex(Int_t iGlob, Int_t& iVar, Int_t& iPtBin) const;
