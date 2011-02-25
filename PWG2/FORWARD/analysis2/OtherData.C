@@ -94,7 +94,7 @@ TGraphAsymmErrors* UA5Nsd(Bool_t mirrored=false)
 		   0.07, 0.07, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.13 };
   double eyp[] = { 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 0.07, 
 		   0.07, 0.07, 0.07, 0.07, 0.08, 0.08, 0.09, 0.09, 0.1, 0.13 };
-  const int np = 20;
+  const int np = 19;
   double xm[np]; 
   double exmm[np];
   double expm[np];
