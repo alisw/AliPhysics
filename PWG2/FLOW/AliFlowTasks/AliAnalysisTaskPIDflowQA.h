@@ -14,6 +14,7 @@ class AliESDpid;
 class TGraph;
 class AliStack;
 class AliFlowEventCuts;
+class AliFlowTrackCuts;
 #include "AliAnalysisTaskSE.h"
 #include "AliESDpid.h"
 
@@ -69,6 +70,9 @@ private:
   TH2F* fTOFsignalPBeta;//!vs beta
   TH2F* fPvsPt; //!P vs Pt yield
   TProfile* fMeanPvsP; //!mean p per bin
+  TH2F* fTPCvsGlobalMult; //! correlation tpc only tracks vs global tracks
+  AliFlowTrackCuts* fStandardGlobalCuts; //! cuts
+  AliFlowTrackCuts* fStandardTPCCuts; //! cuts
   TList* fOutputList;//!output list
 	
   AliAnalysisTaskPIDflowQA(const  AliAnalysisTaskPIDflowQA&); // not implemented
