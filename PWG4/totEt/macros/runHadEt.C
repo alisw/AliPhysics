@@ -68,22 +68,28 @@ void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
   }
 
   bool isMc = true;
+  if(data) isMC = false;
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
 
-  AliCentralitySelectionTask *centTask = AddTaskCentrality();
   
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(isMc);
-  mgr->AddTask(physSelTask);
+  if(PbPb){
+   AliCentralitySelectionTask *centTask = AddTaskCentrality();
+   mgr->AddTask(centTask);
+  }
 
-  mgr->AddTask(centTask);
-  AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
-  mgr->AddTask(task2);
+  if(data){
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer,"event_stat.root");
+    mgr->ConnectInput(physSelTask,0,cinput1);
+    mgr->ConnectOutput(physSelTask,1,coutput1);
+  }
+
+
+    AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
+    mgr->AddTask(task2);
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
-  mgr->ConnectInput(physSelTask,0,cinput1);
-  mgr->ConnectOutput(physSelTask,1,coutput1);
   mgr->ConnectInput(task2,0,cinput1);
   mgr->ConnectOutput(task2,1,coutput2);
   
