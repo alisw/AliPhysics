@@ -261,18 +261,18 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   
   
   //Store all events
-  //MarkEventForStore();
+  MarkEventForStore();
   
   Bool_t isAccepted = true;
   if (found & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
- 
+  //MarkEventForStore();
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
   fMCAODFMD.SetTriggerBits(triggers);
 
   //All events should be stored - HHD
-  //MarkEventForStore();
+  //if (isAccepted) MarkEventForStore();
 
   if (found & AliFMDEventInspector::kNoSPD)     isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoFMD)     isAccepted = false; // return;
@@ -286,6 +286,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
 
   // We we do not want to use low flux specific code, we disable it here. 
   if (!fEnableLowFlux) lowFlux = false;
+  
+  
 
   // Get FMD data 
   AliESDFMD*  esdFMD  = esd->GetFMDData();
@@ -300,8 +302,9 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
     return;
   }
   if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
+  // HHD if (!isAccepted) return; // Exit on MC event w/o trigger, vertex, data
   
-  MarkEventForStore();
+  //MarkEventForStore();
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Do the energy stuff 
