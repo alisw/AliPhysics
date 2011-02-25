@@ -61,7 +61,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkTrackLikelihood(-15.)
   ,fNumberOfConfigs(3)
   ,fFlags(0)
-  ,fRawStreamVersion("REAL")
+  ,fRawStreamVersion("DEFAULT")
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
@@ -94,7 +94,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   memset(fPIDThreshold, 0, AliTRDCalPID::kNMom*sizeof(Double_t));
   memset(fStreamLevel, 0, kTRDreconstructionTasks * sizeof(Int_t));
 
-  SetPIDNeuralNetwork();
+  SetPIDmethod(AliTRDPIDResponse::kLQ1D);
   SetEightSlices();
   SetImproveTracklets();
   SetLUT();

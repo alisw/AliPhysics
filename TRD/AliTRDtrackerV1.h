@@ -217,6 +217,7 @@ private:
   Int_t                fSeedLayer[kMaxTracksStack];     //  Seed layer
   AliTRDchamberTimeBin *fSeedTB[kNSeedPlanes]; // seeding time bin planes
   Int_t                fSieveSeeding;                   //! Seeding iterator
+  Int_t                fEventInFile;                    //! event in file being tracked (debug purposes)
   
   static const Double_t fgkX0[kNPlanes];                // default values for the position of anode wire
   static Int_t         fgNTimeBins;                     // Timebins per plane in track prolongation 
@@ -224,7 +225,7 @@ private:
   static TLinearFitter *fgTiltedRiemanConstrained;      //  Fitter for the tilted Rieman fit with vertex constraint	
   static AliRieman     *fgRieman;                       //  Fitter for the untilted Rieman fit
   
-  ClassDef(AliTRDtrackerV1, 6)                          //  TRD tracker - tracklet based tracking
+  ClassDef(AliTRDtrackerV1, 7)                          //  TRD tracker - tracklet based tracking
 
 };
 #endif

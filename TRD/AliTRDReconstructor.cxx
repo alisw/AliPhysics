@@ -95,7 +95,7 @@ AliTRDReconstructor::AliTRDReconstructor()
   // write clusters [cw]
   SETFLG(fSteerParam, kWriteClusters);
   // track seeding (stand alone tracking) [sa]
-  SETFLG(fSteerParam, kSeeding);
+  //SETFLG(fSteerParam, kSeeding);
   // Cluster radial correction during reconstruction [cc]
   //SETFLG(fSteerParam, kClRadialCorr);
   memset(fDebugStream, 0, sizeof(TTreeSRedirector *) * AliTRDrecoParam::kTRDreconstructionTasks);

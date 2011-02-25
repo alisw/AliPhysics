@@ -587,9 +587,9 @@ Bool_t AliTRDclusterizer::Raw2ClustersChamber(AliRawReader *rawReader)
   else
     fRawStream->SetReader(rawReader);
 
-  if(fReconstructor->IsHLT()){
+  //if(fReconstructor->IsHLT()){
     fRawStream->DisableErrorStorage();
-  }
+  //}
 
   // register tracklet array for output
   if (fReconstructor->IsProcessingTracklets())
@@ -1185,13 +1185,77 @@ void AliTRDclusterizer::TailCancelation(const AliTRDrecoParam* const recoParam)
       }
       
       // Apply the tail cancelation via the digital filter
-      DeConvExp(fDigits->GetDataAddress(iRow,iCol),fTimeTotal,nexp);
-      
+      //DeConvExp(fDigits->GetDataAddress(iRow,iCol),fTimeTotal,nexp);
+      ApplyTCTM(fDigits->GetDataAddress(iRow,iCol),fTimeTotal,nexp);
     } // while irow icol
 
   return;
 
 }
+
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::ApplyTCTM(Short_t *const arr, const Int_t nTime, const Int_t nexp) 
+{
+  //
+  // Steer tail cancellation
+  //
+
+
+  switch(nexp) {
+  case 1:
+  case 2:
+    DeConvExp(arr,nTime,nexp);
+    break;
+  case -1:
+    ConvExp(arr,nTime);
+    break;
+  case -2:
+    DeConvExp(arr,nTime,1);
+    ConvExp(arr,nTime);
+    break;
+  default:
+    break;
+  }
+}
+
+
+//_____________________________________________________________________________
+void AliTRDclusterizer::ConvExp(Short_t *const arr, const Int_t nTime)
+{
+  //
+  // Tail maker
+  //
+
+  // Initialization (coefficient = alpha, rates = lambda)
+  Float_t slope = 1.0;
+  Float_t coeff = 0.5;
+  Float_t rate;
+
+  Double_t par[4];
+  fReconstructor->GetRecoParam()->GetTCParams(par);
+  slope = par[1];
+  coeff = par[3];  
+
+  Double_t dt = 0.1;
+
+  rate = TMath::Exp(-dt/(slope));
+   
+  Float_t reminder =  .0;
+  Float_t correction = 0.0;
+  Float_t result     = 0.0;
+
+  for (int i = nTime-1; i >= 0; i--) {
+
+    result = arr[i] + correction - fBaseline;    // No rescaling
+    arr[i] = (Short_t)(result + fBaseline + 0.5f);
+
+    correction = 0.0;
+    
+    correction += reminder = rate * (reminder + coeff * result);
+  }
+}
+
 
 //_____________________________________________________________________________
 void AliTRDclusterizer::DeConvExp(Short_t *const arr, const Int_t nTime, const Int_t nexp)

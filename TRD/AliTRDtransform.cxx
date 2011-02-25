@@ -37,8 +37,6 @@
 
 ClassImp(AliTRDtransform)
 
-AliTRDgeometry* AliTRDtransform::fgGeo = NULL;
-
 //_____________________________________________________________________________
 AliTRDtransform::AliTRDtransform()
   :TObject()
@@ -60,13 +58,6 @@ AliTRDtransform::AliTRDtransform()
   //
   // AliTRDtransform default constructor
   //
-
-  if(!fgGeo){
-    fgGeo = new AliTRDgeometry();
-    if (!fgGeo->CreateClusterMatrixArray()) {
-      AliError("Could not get transformation matrices\n");
-    }
-  }
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
@@ -106,13 +97,6 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   //
   // AliTRDtransform constructor for a given detector
   //
-
-  if(!fgGeo){
-    fgGeo = new AliTRDgeometry();
-    if (!fgGeo->CreateClusterMatrixArray()) {
-      AliError("Could not get transformation matrices\n");
-    }
-  }
 
   fParam             = AliTRDCommonParam::Instance();
   if (!fParam) {
@@ -225,6 +209,16 @@ void AliTRDtransform::Copy(TObject &t) const
 }
 
 //_____________________________________________________________________________
+AliTRDgeometry& AliTRDtransform::Geometry()
+{
+  static AliTRDgeometry g;
+  if (!g.CreateClusterMatrixArray()) {
+    AliErrorGeneral("AliTRDtransform::Geometry()", "Could not get transformation matrices\n");
+  }
+  return g;
+}
+
+//_____________________________________________________________________________
 void AliTRDtransform::SetDetector(Int_t det)
 {
   //
@@ -244,13 +238,13 @@ void AliTRDtransform::SetDetector(Int_t det)
   fCalT0DetValue     = fkCalT0Det->GetValue(det);
 
   // Shift needed to define Z-position relative to middle of chamber
-  Int_t layer        = fgGeo->GetLayer(det);
-  Int_t stack        = fgGeo->GetStack(det);
-  fPadPlane          = fgGeo->GetPadPlane(layer,stack);
+  Int_t layer        = Geometry().GetLayer(det);
+  Int_t stack        = Geometry().GetStack(det);
+  fPadPlane          = Geometry().GetPadPlane(layer,stack);
   fZShiftIdeal       = 0.5 * (fPadPlane->GetRow0() + fPadPlane->GetRowEnd());
 
   // Get the current transformation matrix
-  fMatrix            = fgGeo->GetClusterMatrix(det);
+  fMatrix            = Geometry().GetClusterMatrix(det);
 
 }
 

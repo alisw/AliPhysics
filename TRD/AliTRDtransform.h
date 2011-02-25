@@ -39,10 +39,9 @@ class AliTRDtransform : public TObject {
   virtual void     Recalibrate(AliTRDcluster *c, Bool_t setDet = kTRUE);
 
           void     SetDetector(Int_t det);
+  static  AliTRDgeometry& Geometry(); 
 
-protected:
-
-  static AliTRDgeometry *fgGeo;              //  TRD geometry
+  protected:
   Int_t               fDetector;            //  Detector number
 
   AliTRDCommonParam  *fParam;               //  TRD common parameters

@@ -123,7 +123,6 @@ public:
   void           SetKink(Bool_t k)        { SetBit(kKink, k);}
   void           SetPrimary(Bool_t k)     { SetBit(kPrimary, k);}
   void           SetNumberOfClusters();
-  UChar_t        SetNumberOfTrackletsPID(Bool_t recalc);
   void           SetOwner();
   void           SetPID(Short_t is, Double_t inPID){if (is >=0 && is < AliPID::kSPECIES) fPID[is]=inPID;};
   void           SetPIDquality(UChar_t /*inPIDquality*/) const {/*fPIDquality = inPIDquality*/;};

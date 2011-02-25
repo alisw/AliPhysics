@@ -14,8 +14,13 @@
 #ifndef ALIDETECTORRECOPARAM_H
 #include "AliDetectorRecoParam.h"
 #endif
+
 #ifndef ALITRDCALPID_H
 #include "Cal/AliTRDCalPID.h"
+#endif
+
+#ifndef ALITRDPIDRESPONSE_H
+#include "AliTRDPIDResponse.h"
 #endif
 
 class TString;
@@ -57,6 +62,7 @@ public:
   Double_t GetNSigmaClusters() const        { return fkNSigmaClusters; }
   Double_t GetFindableClusters() const      { return fkFindable; }
   inline Int_t    GetPIDLQslices() const;
+  inline AliTRDPIDResponse::ETRDPIDMethod GetPIDmethod() const;
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
@@ -109,6 +115,7 @@ public:
   void     SetLUT(Bool_t b=kTRUE)                             {if(b) SETBIT(fFlags, kLUT); else CLRBIT(fFlags, kLUT);}
   void     SetGAUS(Bool_t b=kTRUE)                            {if(b) SETBIT(fFlags, kGAUS); else CLRBIT(fFlags, kGAUS);}
   void     SetPIDNeuralNetwork(Bool_t b=kTRUE)                {if(b) SETBIT(fFlags, kSteerPID); else CLRBIT(fFlags, kSteerPID);}
+  inline void  SetPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method);
   void     SetPIDLQslices(Int_t s);
   void     SetTailCancelation(Bool_t b=kTRUE)                 {if(b) SETBIT(fFlags, kTailCancelation); else CLRBIT(fFlags, kTailCancelation);}
   void     SetXenon(Bool_t b = kTRUE)                         {if(b) CLRBIT(fFlags, kDriftGas); else SETBIT(fFlags, kDriftGas);}
@@ -177,7 +184,7 @@ private:
   // Reconstruction Options for TRD reconstruction
   Int_t     fStreamLevel[kTRDreconstructionTasks]; // Stream Level
   Long64_t  fFlags;                  // option Flags
-  
+
   // Raw Reader Params
   TString   fRawStreamVersion;       // Raw Reader version
 
@@ -251,6 +258,34 @@ inline Int_t AliTRDrecoParam::GetPIDLQslices() const
 {
   if(IsPIDNeuralNetwork()) return -1;
   return TESTBIT(fFlags, kLQ2D) ? 2 : 1;
+}
+
+//___________________________________________________
+inline AliTRDPIDResponse::ETRDPIDMethod AliTRDrecoParam::GetPIDmethod() const
+{
+  AliTRDPIDResponse::ETRDPIDMethod method = AliTRDPIDResponse::kLQ1D;
+  if(IsPIDNeuralNetwork()) method = AliTRDPIDResponse::kNN;
+  else if(TESTBIT(fFlags, kLQ2D)) method = AliTRDPIDResponse::kLQ2D;
+  return method;
+}
+
+//___________________________________________________
+inline void  AliTRDrecoParam::SetPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method)
+{
+  switch(method){
+  case AliTRDPIDResponse::kLQ2D:
+    CLRBIT(fFlags, kSteerPID); 
+    SETBIT(fFlags, kLQ2D);
+    break;
+  case AliTRDPIDResponse::kNN:
+    SETBIT(fFlags, kSteerPID); 
+    break;
+  case AliTRDPIDResponse::kLQ1D:
+  default:
+    CLRBIT(fFlags, kSteerPID); 
+    CLRBIT(fFlags, kLQ2D);
+    break;
+  }
 }
 
 #endif

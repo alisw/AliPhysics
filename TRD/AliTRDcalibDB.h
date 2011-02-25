@@ -19,9 +19,14 @@
 #include "AliTRDpidUtil.h"
 #endif
 
+#ifndef ALITRDPIDRESPONSE_H
+#include "AliTRDPIDResponse.h"
+#endif
+
 class AliCDBEntry;
 
 class AliTRDrecoParam;
+class AliTRDCalTrkAttach;
 class AliTRDCalPID;
 class AliTRDCalMonitoring;
 class AliTRDCalROC;
@@ -80,6 +85,7 @@ class AliTRDcalibDB : public TObject {
   Char_t                              GetPadStatus(Int_t det, Int_t col, Int_t row);
   AliTRDCalSingleChamberStatus       *GetPadStatusROC(Int_t det);
   AliTRDrecoParam*                    GetRecoParam(Int_t *eventtype);
+  AliTRDPIDResponse                  *GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod m);
 
   Char_t                              GetChamberStatus(Int_t det);
 
@@ -94,6 +100,7 @@ class AliTRDcalibDB : public TObject {
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
   const AliTRDCalPID                 *GetPIDObject(AliTRDpidUtil::ETRDPIDMethod m);
+  const AliTRDCalTrkAttach           *GetAttachObject();
 
   // Related functions, these depend on calibration data
          Int_t                        PadResponse(Double_t signal, Double_t dist
@@ -117,11 +124,13 @@ class AliTRDcalibDB : public TObject {
        , kIDSuperModulePos
        , kIDPIDNN
        , kIDPIDLQ
+       , kIDPIDLQ1D
        , kIDRecoParam
        , kIDMonitoringData
        , kIDChamberStatus
        , kIDPadStatus
        , kIDDCS
+       , kIDAttach
        , kCDBCacheSize };         // IDs of cached objects
 
   const TObject *GetCachedCDBObject(Int_t id);
@@ -146,6 +155,7 @@ class AliTRDcalibDB : public TObject {
   Float_t               fPRFhi;                     //  Higher boundary of the PRF
   Float_t               fPRFwid;                    //  Bin width of the sampled PRF
   Int_t                 fPRFpad;                    //  Distance to next pad in PRF
+  AliTRDPIDResponse    *fPIDResponse;               //  TRD PID Response function
   
  private:
 
@@ -154,7 +164,7 @@ class AliTRDcalibDB : public TObject {
   AliTRDcalibDB &operator=(const AliTRDcalibDB &c); 
   virtual ~AliTRDcalibDB();
 
-  ClassDef(AliTRDcalibDB, 4)                         //  Provides central access to the CDB
+  ClassDef(AliTRDcalibDB, 5)                         //  Provides central access to the CDB
 
 };
 

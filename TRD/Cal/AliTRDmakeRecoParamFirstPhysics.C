@@ -33,6 +33,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetNameTitle("Default", "TRD Default Reco Param");
   rec->SetNameTitle("LOW", "TRD Low Flux Reco Param");
   rec->SetRawStreamVersion("DEFAULT");
+  rec->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
   rec->SetXenon();
   rec->SetVertexConstrained();
   rec->SetSysCovMatrix(cov);
@@ -45,7 +46,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetNMeanClusters(12.89);
   rec->SetNSigmaClusters(2.095);
   rec->SetRoadzMultiplicator(3.);
-  rec->SetPtThreshold(100.);
+  rec->SetPtThreshold(0.2);//100.);
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
   rec->SetAsDefault();
 
@@ -53,6 +54,7 @@ TObjArray* CreateRecoParamObject()
   rec->SetEventSpecie(AliRecoParam::kHighMult);
   rec->SetNameTitle("HIGH", "TRD High Flux Reco Param");
   rec->SetRawStreamVersion("DEFAULT");
+  rec->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
   rec->SetXenon();
   rec->SetVertexConstrained();
   rec->SetSysCovMatrix(cov);
@@ -64,15 +66,16 @@ TObjArray* CreateRecoParamObject()
   rec->SetMaxPhi(2.7475);
   rec->SetNMeanClusters(12.89);
   rec->SetNSigmaClusters(2.095);
-  rec->SetPtThreshold(100.);
+  rec->SetPtThreshold(0.2);//100.);
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
  
   recos->AddLast(rec = AliTRDrecoParam::GetCosmicTestParam());
   rec->SetEventSpecie(AliRecoParam::kCosmic);
   rec->SetNameTitle("COSMIC", "TRD Cosmic Reco Param");
   rec->SetRawStreamVersion("DEFAULT");
+  rec->SetPIDmethod(AliTRDPIDResponse::kLQ1D);
   rec->SetXenon();
-//  rec->SetPtThreshold(100.);
+  rec->SetPtThreshold(0.2);
   rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
 
   recos->AddLast(rec = AliTRDrecoParam::GetCosmicTestParam());
@@ -80,8 +83,6 @@ TObjArray* CreateRecoParamObject()
   rec->SetNameTitle("CALIBRATION", "TRD Calibration Reco Param");
   rec->SetRawStreamVersion("DEFAULT");
   rec->SetXenon();
-//  rec->SetPtThreshold(100.);
-  rec->SetStreamLevel(AliTRDrecoParam::kTracker, 1);
 
   return recos;
 }

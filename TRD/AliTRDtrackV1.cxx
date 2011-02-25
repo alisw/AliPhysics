@@ -23,6 +23,7 @@
 #include "AliTRDcluster.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDReconstructor.h"
+#include "AliTRDPIDResponse.h"
 #include "AliTRDrecoParam.h"
 
 ClassImp(AliTRDtrackV1)
@@ -346,29 +347,31 @@ Bool_t AliTRDtrackV1::CookPID()
 //<img src="TRD/trackPID.gif">
 //End_Html
 //
-  
-  /*Reset the a priori probabilities*/
-  Double_t pid = 1. / AliPID::kSPECIES;
-  for(int ispec=0; ispec<AliPID::kSPECIES; ispec++) fPID[ispec] = pid;	
-
-  UChar_t fPIDquality = SetNumberOfTrackletsPID(kTRUE);
-  // no tracklet found for PID calculations
-  if(!fPIDquality) return kFALSE;
-  
-  // slot for PID calculation @ track level for bremsstrahlung TODO
-  
-  // normalize probabilities
-  Double_t probTotal = 0.0;
-  for (Int_t is = 0; is < AliPID::kSPECIES; is++) probTotal += fPID[is];
-  
-  
-  if (probTotal <= 0.0) {
-    AliWarning("The total probability over all species <= 0. This may be caused by some error in the reference data.");
+  const AliTRDPIDResponse *pidResponse = AliTRDcalibDB::Instance()->GetPIDResponse(fkReconstructor->GetRecoParam()->GetPIDmethod());
+  if(!pidResponse){
+    AliError("PID Response not available");
     return kFALSE;
   }
-  
-  for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++) fPID[iSpecies] /= probTotal;
-  
+  Int_t nslices = pidResponse->GetNumberOfSlices();
+  Double_t dEdx[kNplane * (Int_t)AliTRDPIDResponse::kNslicesNN];
+  Float_t trackletP[kNplane];
+  memset(dEdx, 0, sizeof(Double_t) * kNplane * (Int_t)AliTRDPIDResponse::kNslicesNN);
+  memset(trackletP, 0, sizeof(Float_t)*kNplane);
+  for(Int_t iseed = 0; iseed < kNplane; iseed++){
+    if(!fTracklet[iseed]) continue;
+    trackletP[iseed] = fTracklet[iseed]->GetMomentum();
+    if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
+      dEdx[iseed] = fTracklet[iseed]->GetdQdl();
+    } else {
+      fTracklet[iseed]->CookdEdx(nslices);
+      const Float_t *trackletdEdx = fTracklet[iseed]->GetdEdx();
+      for(Int_t islice = 0; islice < nslices; islice++){
+        dEdx[iseed*nslices + islice] = trackletdEdx[islice];
+      }
+      fTracklet[iseed]->SetPID();
+    }
+  }
+  pidResponse->GetResponse(nslices, dEdx, trackletP, fPID);
   return kTRUE;
 }
 
@@ -378,50 +381,13 @@ UChar_t AliTRDtrackV1::GetNumberOfTrackletsPID() const
 // Retrieve number of tracklets used for PID calculation. 
 
   UChar_t nPID = 0;
-  Float_t *prob = NULL;
   for(int ip=0; ip<kNplane; ip++){
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
     if(!fTracklet[ip]->IsOK()) continue;
-    if(!(prob = fTracklet[ip]->GetProbability(kFALSE))) continue;
-
-    Int_t nspec = 0; // quality check of tracklet dEdx
-    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-      if(prob[ispec] < 0.) continue;
-      nspec++;
-    }
-    if(!nspec) continue;
     
-    fTracklet[ip]->SetPID();
     nPID++;
   }
   return nPID;
-}
-
-//___________________________________________________________
-UChar_t AliTRDtrackV1::SetNumberOfTrackletsPID(Bool_t recalc)
-{
-// Retrieve number of tracklets used for PID calculation. // Recalculated PID at tracklet level by quering the PID DB.
-
-  UChar_t fPIDquality(0);
-  
-  // steer PID calculation @ tracklet level
-  Float_t *prob(NULL);
-  for(int ip=0; ip<kNplane; ip++){
-    if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
-    if(!fTracklet[ip]->IsOK()) continue;
-    if(!(prob = fTracklet[ip]->GetProbability(recalc))) return 0;
-
-    Int_t nspec = 0; // quality check of tracklet dEdx
-    for(int ispec=0; ispec<AliPID::kSPECIES; ispec++){
-      if(prob[ispec] < 0.) continue;
-      fPID[ispec] *= prob[ispec];
-      nspec++;
-    }
-    if(!nspec) continue;
-    
-    fPIDquality++;
-  }
-  return fPIDquality;
 }
 
 //_______________________________________________________________
@@ -889,7 +855,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // Update the TRD PID information in the ESD track
   //
 
-  Int_t nslices = fkReconstructor->GetRecoParam()->IsEightSlices() ? (Int_t)AliTRDpidUtil::kNNslices : (Int_t)AliTRDpidUtil::kLQslices;
+  Int_t nslices = AliTRDcalibDB::Instance()->GetPIDResponse(fkReconstructor->GetRecoParam()->GetPIDmethod())->GetNumberOfSlices();
   // number of tracklets used for PID calculation
   UChar_t nPID = GetNumberOfTrackletsPID();
   // number of tracklets attached to the track
@@ -904,9 +870,13 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
     if(!fTracklet[ip]->HasPID()) continue;
     const Float_t *dedx = fTracklet[ip]->GetdEdx();
-    for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js);
-    p = fTracklet[ip]->GetMomentum(&sp); spd = sp;
+    for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js+1);
+    p = fTracklet[ip]->GetMomentum(&sp); 
+    // 04.01.11 A.Bercuci
+    // store global dQdl per tracklet instead of momentum error
+    spd = sp;
     track->SetTRDmomentum(p, ip, &spd);
+    track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }
   // store PID probabilities
   track->SetTRDpid(fPID);

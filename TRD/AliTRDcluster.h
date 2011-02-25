@@ -17,6 +17,7 @@ class AliTRDtrackletWord;
 
 class AliTRDcluster : public AliCluster {
   friend class AliHLTTRDCluster;
+  friend class AliTRDtrackletOflHelper;
 
 public:
   enum ETRDclusterStatus { 
@@ -115,6 +116,8 @@ protected:
   Float_t fQ;              //  Amplitude 
   Float_t fCenter;         //  Center of the cluster relative to the pad 
 
+  inline void Update(Short_t adc[7]);
+
 private:
 
          Float_t   GetDYcog(const Double_t *const y1=0x0, const Double_t *const y2=0x0);
@@ -128,6 +131,15 @@ private:
   ClassDef(AliTRDcluster, 7)                 //  Cluster for the TRD
 
 };
+
+//___________________________________________________
+inline void AliTRDcluster::Update(Short_t adc[7]) 
+{
+  memcpy(fSignals, adc, 7*sizeof(Short_t));
+  fQ = Float_t(adc[2]+adc[3]+adc[4]);
+  if(IsRPhiMethod(AliTRDcluster::kLUT)) GetDYlut();
+  else GetDYcog();
+}
 
 //________________________________________________
 inline Bool_t AliTRDcluster::IsRPhiMethod(ETRDclusterStatus m) const

@@ -130,7 +130,7 @@ AliTRDresolution::AliTRDresolution()
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
-  ,fDyRange(1.5)
+  ,fDyRange(0.75)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -154,7 +154,7 @@ AliTRDresolution::AliTRDresolution(char* name)
   ,fIdxPlot(0)
   ,fIdxFrame(0)
   ,fPtThreshold(1.)
-  ,fDyRange(1.5)
+  ,fDyRange(0.75)
   ,fDBPDG(NULL)
   ,fGraphS(NULL)
   ,fGraphM(NULL)
@@ -242,6 +242,8 @@ Bool_t AliTRDresolution::Pulls(Double_t dyz[2], Double_t cov[3], Double_t tilt) 
 // Uses functionality defined by AliTRDseedV1.
 
   Double_t t2(tilt*tilt);
+  // exit door until a bug fix is found for AliTRDseedV1::GetCovSqrt
+  return kTRUE;
 
   // rotate along pad
   Double_t cc[3];
@@ -402,9 +404,9 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       y0   = par[1] + dydx * (x0 - par[0]);//param[1] + dydx * (x0 - param[0]);
       z0   = param[2] + dzdx * (x0 - param[0]);
     } else {
-      y0   = fTracklet->GetYref(0);
+      y0   = fTracklet->GetYfit(0);//fTracklet->GetYref(0);
       z0   = fTracklet->GetZref(0);
-      dydx = fTracklet->GetYref(1);
+      dydx = fTracklet->GetYfit(1);//fTracklet->GetYref(1);
       dzdx = fTracklet->GetZref(1);
     }
     /*printf("RC[%c] Primary[%c]\n"
@@ -430,7 +432,7 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
       // rotate along pad
       dy[1] = cost*(dy[0] - dz[0]*tilt);
       dz[1] = cost*(dz[0] + dy[0]*tilt);
-      if(pt>fPtThreshold && c->IsInChamber()) ((TH3S*)arr->At(0))->Fill(dydx, dy[1], sgm[fSegmentLevel]);
+      if(pt>fPtThreshold && c->IsInChamber()) ((TH3S*)arr->At(0))->Fill(fTracklet->GetYref(1), dy[0], sgm[fSegmentLevel]);
 
       // tilt rotation of covariance for clusters
       Double_t sy2(c->GetSigmaY2()), sz2(c->GetSigmaZ2());
@@ -535,7 +537,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     dy[1]= cost*(dy[0] - dz[0]*tilt);
     dz[1]= cost*(dz[0] + dy[0]*tilt);
     ((TH3S*)arr->At(0))->Fill(phi, dy[1], sgm[fSegmentLevel]+rc*fgkNresYsegm[fSegmentLevel]);
-    ((TH3S*)arr->At(2))->Fill(tht, dz[1], rc);
+    if(rc) ((TH2S*)arr->At(2))->Fill(tht, dz[1]);
 
     // compute covariance matrix
     fTracklet->GetCovAt(x, cov);
@@ -546,9 +548,12 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     ((TH3S*)arr->At(1))->Fill(sgm[fSegmentLevel], dyz[0], dyz[1]);
     ((TH3S*)arr->At(3))->Fill(tht, dyz[1], rc);
 
-    Double_t dphi((phi-fTracklet->GetYfit(1))/(1-phi*fTracklet->GetYfit(1)));
+    // calculate angular residuals and correct for tilt
+    Double_t phiTrklt = fTracklet->GetYfit(1);
+    phiTrklt += tilt*tht;
+    Double_t dphi((phi-phiTrklt)/(1-phi*phiTrklt));
     Double_t dtht((tht-fTracklet->GetZfit(1))/(1-tht*fTracklet->GetZfit(1)));
-    ((TH2I*)arr->At(4))->Fill(phi, TMath::ATan(dphi));
+    ((TH3S*)arr->At(4))->Fill(phi, TMath::ATan(dphi), sgm[fSegmentLevel]);
 
     if(DebugLevel()>=1){
       UChar_t err(fTracklet->GetErrorMsg());
@@ -610,7 +615,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     break;
   }
   if(!fTracklet || TMath::Abs(x-fTracklet->GetX())>1.e-3){
-    AliWarning("Tracklet did not match Track.");
+    AliDebug(1, "Tracklet did not match Track.");
     return NULL;
   }
   Int_t sgm[3];
@@ -785,7 +790,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
     break;
   }
   if(!fTracklet || TMath::Abs(x-fTracklet->GetX())>1.e-3){
-    AliWarning("Tracklet did not match Track position.");
+    AliDebug(1, "Tracklet did not match Track position.");
     return NULL;
   }
   Int_t sgm[3];
@@ -2273,7 +2278,7 @@ void AliTRDresolution::AdjustF1(TH1 *h, TF1 *f)
 }
 
 //________________________________________________________
-TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool_t expand)
+TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool_t expand, Float_t range)
 {
 // Build performance histograms for AliTRDcluster.vs TRD track or MC
 //  - y reziduals/pulls
@@ -2285,12 +2290,13 @@ TObjArray* AliTRDresolution::BuildMonitorContainerCluster(const char* name, Bool
   // tracklet resolution/pull in y direction
   snprintf(hname, 100, "%s_%s_Y", GetNameId(), name);
   snprintf(htitle, 300, "Y res for \"%s\" @ %s;tg(#phi);#Delta y [cm];%s", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
+  Float_t rr = range<0.?fDyRange:range;
   if(!(h = (TH3S*)gROOT->FindObject(hname))){
     Int_t nybins=fgkNresYsegm[fSegmentLevel];
     if(expand) nybins*=2;
     h = new TH3S(hname, htitle, 
                  48, -.48, .48,            // phi
-                 60, -fDyRange, fDyRange,  // dy
+                 60, -rr, rr,              // dy
                  nybins, -0.5, nybins-0.5);// segment
   } else h->Reset();
   arr->AddAt(h, 0);
@@ -2311,15 +2317,15 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Boo
 //  - y reziduals/pulls
 //  - z reziduals/pulls
 //  - phi reziduals
-  TObjArray *arr = BuildMonitorContainerCluster(name, expand); 
+  TObjArray *arr = BuildMonitorContainerCluster(name, expand, 0.05); 
   arr->Expand(5);
   TH1 *h(NULL); char hname[100], htitle[300];
 
   // tracklet resolution/pull in z direction
   snprintf(hname, 100, "%s_%s_Z", GetNameId(), name);
-  snprintf(htitle, 300, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm];row cross", GetNameId(), name);
-  if(!(h = (TH3S*)gROOT->FindObject(hname))){
-    h = new TH3S(hname, htitle, 50, -1., 1., 100, -1.5, 1.5, 2, -0.5, 1.5);
+  snprintf(htitle, 300, "Z res for \"%s\" @ %s;tg(#theta);#Delta z [cm]", GetNameId(), name);
+  if(!(h = (TH2S*)gROOT->FindObject(hname))){
+    h = new TH2S(hname, htitle, 50, -1., 1., 100, -.05, .05);
   } else h->Reset();
   arr->AddAt(h, 2);
   snprintf(hname, 100, "%s_%s_Zpull", GetNameId(), name);
@@ -2333,9 +2339,10 @@ TObjArray* AliTRDresolution::BuildMonitorContainerTracklet(const char* name, Boo
 
   // tracklet to track phi resolution
   snprintf(hname, 100, "%s_%s_PHI", GetNameId(), name);
-  snprintf(htitle, 300, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];entries", GetNameId(), name);
-  if(!(h = (TH2I*)gROOT->FindObject(hname))){
-    h = new TH2I(hname, htitle, 21, -.33, .33, 100, -.5, .5);
+  snprintf(htitle, 300, "#Phi res for \"%s\" @ %s;tg(#phi);#Delta #phi [rad];%s", GetNameId(), name, fgkResYsegmName[fSegmentLevel]);
+  Int_t nsgms=fgkNresYsegm[fSegmentLevel];
+  if(!(h = (TH3S*)gROOT->FindObject(hname))){
+    h = new TH3S(hname, htitle, 48, -.48, .48, 100, -.5, .5, nsgms, -0.5, nsgms-0.5);
   } else h->Reset();
   arr->AddAt(h, 4);
 

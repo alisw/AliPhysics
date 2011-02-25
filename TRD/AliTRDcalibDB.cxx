@@ -47,6 +47,7 @@
 #include "Cal/AliTRDCalChamberStatus.h"
 #include "Cal/AliTRDCalPadStatus.h"
 #include "Cal/AliTRDCalSingleChamberStatus.h"
+#include "Cal/AliTRDCalTrkAttach.h"
 
 ClassImp(AliTRDcalibDB)
 
@@ -102,6 +103,7 @@ AliTRDcalibDB::AliTRDcalibDB()
   ,fPRFhi(0)
   ,fPRFwid(0)
   ,fPRFpad(0)
+  ,fPIDResponse(NULL)
 {
   //
   // Default constructor
@@ -131,6 +133,7 @@ AliTRDcalibDB::AliTRDcalibDB(const AliTRDcalibDB &c)
   ,fPRFhi(0)
   ,fPRFwid(0)
   ,fPRFpad(0)
+  ,fPIDResponse(NULL)
 {
   //
   // Copy constructor (not that it make any sense for a singleton...)
@@ -172,6 +175,7 @@ AliTRDcalibDB::~AliTRDcalibDB()
     delete [] fPRFsmp;
     fPRFsmp = 0;
   }
+  if(fPIDResponse) delete fPIDResponse;
 
   Invalidate();
 
@@ -256,10 +260,15 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
     case kIDPIDLQ : 
       return CacheCDBEntry(kIDPIDLQ             ,"TRD/Calib/PIDLQ"); 
       break;
-    case kIDRecoParam : 
-      return CacheCDBEntry(kIDRecoParam             ,"TRD/Calib/RecoParam"); 
+    case kIDPIDLQ1D:
+      return CacheCDBEntry(kIDPIDLQ1D           ,"TRD/Calib/PIDLQ1D");
       break;
-
+    case kIDRecoParam : 
+      return CacheCDBEntry(kIDRecoParam         ,"TRD/Calib/RecoParam"); 
+      break;
+    case kIDAttach : 
+      return CacheCDBEntry(kIDAttach            ,"TRD/Calib/TrkAttach"); 
+      break;
   }
 
   return 0;
@@ -1147,6 +1156,27 @@ const AliTRDCalPID *AliTRDcalibDB::GetPIDObject(AliTRDpidUtil::ETRDPIDMethod met
   return 0x0;
 
 }
+
+//_____________________________________________________________________________
+AliTRDPIDResponse *AliTRDcalibDB::GetPIDResponse(AliTRDPIDResponse::ETRDPIDMethod method){
+  if(!fPIDResponse){
+    fPIDResponse = new AliTRDPIDResponse;
+    // Load Reference Histos from OCDB
+    fPIDResponse->SetPIDmethod(method);
+    fPIDResponse->Load(dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDPIDLQ1D)));
+  }
+  return fPIDResponse;
+}
+
+//_____________________________________________________________________________
+const AliTRDCalTrkAttach* AliTRDcalibDB::GetAttachObject()
+{
+  //
+  // Returns the object storing likelihood distributions for cluster to track attachment
+  //
+  return dynamic_cast<const AliTRDCalTrkAttach*>(GetCachedCDBObject(kIDAttach));
+}
+
 
 //_____________________________________________________________________________
 const AliTRDCalMonitoring *AliTRDcalibDB::GetMonitoringObject()

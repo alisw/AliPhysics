@@ -84,13 +84,14 @@ public:
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
 
-  Bool_t    AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t tilt = kFALSE);
+  Bool_t    AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t tilt = kFALSE, Bool_t ChgPlus=kTRUE, Int_t ev=-1);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      Calibrate();
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0);
+  Bool_t    FitRobust(Bool_t ChgPlus=kTRUE);
   Bool_t    Init(AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
@@ -108,7 +109,7 @@ public:
 
   Float_t   GetAnodeWireOffset(Float_t zt);
   Float_t   GetC(Int_t typ=0) const    { return fC[typ]; }
-  Float_t   GetCharge(Bool_t useOutliers=kFALSE);
+  Float_t   GetCharge(Bool_t useOutliers=kFALSE) const;
   Float_t   GetChi2() const          { return fChi2; }
   inline Float_t   GetChi2Z() const;
   inline Float_t   GetChi2Y() const;
@@ -121,6 +122,7 @@ public:
   UChar_t   GetErrorMsg() const      { return fErrorMsg;}
   Float_t   GetdX() const            { return fdX;}
   const Float_t*  GetdEdx() const    { return &fdEdx[0];}
+  Float_t   GetdQdl() const;
   Float_t   GetdQdl(Int_t ic, Float_t *dx=NULL) const;
   Float_t   GetdYdX() const          { return fYfit[1];}
   Float_t   GetdZdX() const          { return fZfit[1];}

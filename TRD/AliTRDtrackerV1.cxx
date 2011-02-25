@@ -86,6 +86,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   ,fTracks(NULL)
   ,fTracksESD(NULL)
   ,fSieveSeeding(0)
+  ,fEventInFile(-1)
 {
   //
   // Default constructor.
@@ -285,6 +286,7 @@ Int_t AliTRDtrackerV1::PropagateBack(AliESDEvent *event)
   
   Float_t *quality = NULL;
   Int_t   *index   = NULL;
+  fEventInFile  = event->GetEventNumberInFile();
   nSeeds   = event->GetNumberOfTracks();
   // Sort tracks according to quality 
   // (covariance in the yz plane)
@@ -877,12 +879,12 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliDebug(4, "Failed Tracklet Init");
         break;
       }
-      if(!ptrTracklet->AttachClusters(chamber, kTRUE)){
+      if(!ptrTracklet->AttachClusters(chamber, kTRUE, t.Charge()>0?kTRUE:kFALSE, fEventInFile)){
         t.SetStatus(AliTRDtrackV1::kNoAttach, ily);
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
           UChar_t status(t.GetStatusTRD(ily));
-          (*cstreamer)   << "FollowBackProlongation2"
+          (*cstreamer)   << "FollowBackProlongation4"
           <<"status="    << status
           <<"tracklet.=" << &trackletCp
           << "\n";
@@ -896,7 +898,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
           UChar_t status(t.GetStatusTRD(ily));
-          (*cstreamer)   << "FollowBackProlongation2"
+          (*cstreamer)   << "FollowBackProlongation4"
           <<"status="    << status
           <<"tracklet.=" << &trackletCp
           << "\n";
@@ -912,7 +914,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     // tilt correction options
     // 0 : no correction
     // 2 : pseudo tilt correction
-    if(!ptrTracklet->Fit(2)){
+    if(!ptrTracklet->FitRobust(t.Charge()>0?kTRUE:kFALSE)){
       t.SetStatus(AliTRDtrackV1::kNoFit, ily);
       AliDebug(4, "Failed Tracklet Fit");
       continue;
@@ -947,7 +949,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliTRDseedV1  trackletCp(*ptrTracklet);
         AliTRDtrackV1 trackCp(t);
         trackCp.SetOwner();
-        (*cstreamer) << "FollowBackProlongation1"
+        (*cstreamer) << "FollowBackProlongation3"
             << "status="      << status
             << "tracklet.="   << &trackletCp
             << "track.="      << &trackCp
@@ -965,7 +967,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
           AliTRDseedV1  trackletCp(*ptrTracklet);
           AliTRDtrackV1 trackCp(t);
           trackCp.SetOwner();
-          (*cstreamer) << "FollowBackProlongation1"
+          (*cstreamer) << "FollowBackProlongation3"
               << "status="      << status
               << "tracklet.="   << &trackletCp
               << "track.="      << &trackCp
@@ -1003,13 +1005,12 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   //printf("clusters[%d] chi2[%f] x[%f] status[%d ", n, t.GetChi2(), t.GetX(), t.GetStatusTRD());
   //for(int i=0; i<6; i++) printf("%d ", t.GetStatusTRD(i)); printf("]\n");
 
-  if(debugLevel > 1){
-    Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+  if(n && debugLevel > 1){
+    //Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
     AliTRDtrackV1 track(t);
     track.SetOwner();
-    (*cstreamer) << "FollowBackProlongation0"
-        << "EventNumber=" << eventNumber
-        << "ncl="         << n
+    (*cstreamer) << "FollowBackProlongation2"
+        << "EventNumber=" << fEventInFile
         << "track.="      << &track
         << "\n";
   }
