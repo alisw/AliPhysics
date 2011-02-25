@@ -436,7 +436,7 @@ void AliGenAmpt::Generate()
       if (selected) {
         nc++;
         pSelected[i] = 1;
-        if (1) printf("---> %d %d %d %s\n",i,nc,kf,iparticle->GetName());
+        if (0) printf("---> %d %d %d %s\n",i,nc,kf,iparticle->GetName());
       } // selected
     } // particle loop final state
 
