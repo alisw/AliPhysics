@@ -36,6 +36,7 @@
 #pragma link C++ class AliFMDSharingFilter+;
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDMCSharingFilter+;
+//#pragma link C++ class AliFMDMCSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDEnergyFitter+;
 #pragma link C++ class AliFMDEnergyFitter::RingHistos+;
 #pragma link C++ class AliFMDEnergyFitterTask+;
@@ -45,6 +46,7 @@
 #pragma link C++ class AliFMDCorrector+;
 #pragma link C++ class AliFMDCorrector::RingHistos+;
 #pragma link C++ class AliFMDMCCorrector+;
+//#pragma link C++ class AliFMDMCCorrections::RingHistos+;
 #pragma link C++ class AliFMDHistCollector+;
 #pragma link C++ class AliFMDCorrAcceptance+;
 #pragma link C++ class AliFMDCorrELossFit+;
@@ -61,7 +63,6 @@
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
-
 #pragma link C++ class AliBasedNdetaTask+;
 
 #pragma link C++ class AliCentralMultiplicityTask+;
@@ -70,6 +71,8 @@
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentralCorrAcceptance+;
 #pragma link C++ class AliCentraldNdetaTask+;
+#pragma link C++ class AliForwardFlowBase+;
+#pragma link C++ class AliForwardFlowTaskQC+;
 
 #else
 # error Not for compilation 
