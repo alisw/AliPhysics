@@ -167,6 +167,8 @@ AliFlowEventCuts::~AliFlowEventCuts()
 AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
 {
   //assignment
+  if (this==&that) return *this;
+
   fCutNumberOfTracks=that.fCutNumberOfTracks;
   fNumberOfTracksMax=that.fNumberOfTracksMax;
   fNumberOfTracksMin=that.fNumberOfTracksMin;
@@ -177,12 +179,14 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
   if (that.fMeanPtCuts) *fMeanPtCuts=*(that.fMeanPtCuts);
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
-  fPrimaryVertexXmin=that.fPrimaryVertexXmin;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
-  fPrimaryVertexYmin=that.fPrimaryVertexYmin;
+  fPrimaryVertexXmin=that.fPrimaryVertexXmin;
+  fCutPrimaryVertexY=that.fCutPrimaryVertexY;
   fPrimaryVertexYmax=that.fPrimaryVertexYmax;
-  fPrimaryVertexZmin=that.fPrimaryVertexZmin;
+  fPrimaryVertexYmin=that.fPrimaryVertexYmin;
+  fCutPrimaryVertexZ=that.fCutPrimaryVertexZ;
   fPrimaryVertexZmax=that.fPrimaryVertexZmax;
+  fPrimaryVertexZmin=that.fPrimaryVertexZmin;
   fCutNContributors=that.fCutNContributors;
   fNContributorsMax=that.fNContributorsMax;
   fNContributorsMin=that.fNContributorsMin;
@@ -194,6 +198,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCentralityPercentileMethod=that.fCentralityPercentileMethod;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
+  fCutZDCtiming=that.fCutZDCtiming;
   return *this;
 }
 

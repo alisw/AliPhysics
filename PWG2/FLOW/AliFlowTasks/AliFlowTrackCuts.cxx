@@ -242,6 +242,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
 AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 {
   //assignment
+  if (this==&that) return *this;
+
   AliFlowTrackSimpleCuts::operator=(that);
   if (that.fAliESDtrackCuts) *fAliESDtrackCuts=*(that.fAliESDtrackCuts);
   fQA=NULL;
@@ -290,6 +292,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fESDpid = that.fESDpid;
   fPIDsource = that.fPIDsource;
 
+  delete fTPCpidCuts;
+  delete fTOFpidCuts;
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
   fTPCTOFpidCrossOverPt=that.fTPCTOFpidCrossOverPt;
@@ -602,7 +606,7 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
 
-  Double_t pt = fTrack->Pt();
+  Double_t pt = track->Pt();
   if (fCutPID)
   {
     switch (fPIDsource)    
@@ -660,24 +664,19 @@ void AliFlowTrackCuts::HandleVParticle(AliVParticle* track)
 void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
 {
   //handle esd track
-  AliExternalTrackParam* ip=NULL;
-  Bool_t ok=kFALSE;
   switch (fParamType)
   {
     case kGlobal:
       fTrack = track;
       break;
     case kESD_TPConly:
-      ip = const_cast<AliExternalTrackParam*>(fTPCtrack.GetInnerParam());
-      ok = track->FillTPCOnlyTrack(fTPCtrack);
-      if (!ip || !ok)
+      if (!track->FillTPCOnlyTrack(fTPCtrack))
       {
         fTrack=NULL;
         fMCparticle=NULL;
         fTrackLabel=-1;
         return;
       }
-      *ip = *(track->GetInnerParam()); //TODO: remove when fIp gets copied in AliESDtrack::FillTPCOnlyTrack
       fTrack = &fTPCtrack;
       //recalculate the label and mc particle, they may differ as TPClabel != global label
       fTrackLabel = (fFakesAreOK)?TMath::Abs(fTrack->GetLabel()):fTrack->GetLabel();
@@ -718,7 +717,7 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
 {
   //get standard cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard Global flow cuts");
   cuts->SetParamType(kGlobal);
   cuts->SetPtRange(0.2,5.);
   cuts->SetEtaRange(-0.8,0.8);
@@ -739,7 +738,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010()
 {
   //get standard cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly flow cuts");
   cuts->SetParamType(kESD_TPConly);
   cuts->SetPtRange(0.2,5.);
   cuts->SetEtaRange(-0.8,0.8);
@@ -758,7 +757,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts()
 {
   //get standard cuts
-  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly cuts");
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard TPConly flow cuts");
   cuts->SetParamType(kESD_TPConly);
   cuts->SetPtRange(0.2,5.);
   cuts->SetEtaRange(-0.8,0.8);

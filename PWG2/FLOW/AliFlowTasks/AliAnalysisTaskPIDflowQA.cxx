@@ -35,6 +35,7 @@
 #include "AliPID.h"
 #include "AliCDBManager.h"
 #include "AliFlowEventCuts.h"
+#include "AliFlowTrackCuts.h"
 
 ClassImp( AliAnalysisTaskPIDflowQA)
 
@@ -73,6 +74,9 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fTOFsignalPBeta(NULL),
   fPvsPt(NULL),
   fMeanPvsP(NULL),
+  fTPCvsGlobalMult(NULL),
+  fStandardGlobalCuts(NULL),
+  fStandardTPCCuts(NULL),
   fOutputList(NULL)
 {
   //def ctor
@@ -113,6 +117,9 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fTOFsignalPBeta(NULL),
   fPvsPt(NULL),
   fMeanPvsP(NULL),
+  fTPCvsGlobalMult(NULL),
+  fStandardGlobalCuts(NULL),
+  fStandardTPCCuts(NULL),
   fOutputList(NULL)
 {
   //Constructor
@@ -244,6 +251,12 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   fMeanPvsP = new TProfile("fMeanPvsP","Mean P vs P;p [Gev/c];<p> [GeV/c]",kPBins,binsPDummy);
   fOutputList->Add(fMeanPvsP);
 
+  fTPCvsGlobalMult = new TH2F("fTPCvsGlobalMult","TPC only vs Global track multiplicity;global;TPC only",500,0,2500,500,0,3500);
+  fOutputList->Add(fTPCvsGlobalMult);
+
+  fStandardGlobalCuts = AliFlowTrackCuts::GetStandardGlobalTrackCuts2010();
+  fStandardTPCCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010();
+
   //fOutputList->Add(fESDpid);
 
   PostData(1,  fOutputList);
@@ -310,6 +323,11 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     pidTPC(trackESD,pdgcode);
     pidTOF(trackESD,pdgcode);
   }
+
+  //check the correlation between the global and TPConly number of tracks
+  fStandardGlobalCuts->SetEvent(fESD);
+  fStandardTPCCuts->SetEvent(fESD);
+  fTPCvsGlobalMult->Fill(fStandardGlobalCuts->Count(),fStandardTPCCuts->Count());
 
   // Post output data.
   PostData(1,  fOutputList);
