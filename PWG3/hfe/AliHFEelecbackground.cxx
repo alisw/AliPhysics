@@ -2610,8 +2610,16 @@ void AliHFEelecbackground::Plot() const
   // plot Debug
   Int_t source = 1;
   chsSparseMCeeff->cd(1);
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
-  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   histopassedcuts[source*nbcuts+0]->SetTitle("#gamma");
   histopassedcuts[source*nbcuts+1]->SetTitle("#gamma");
   histopassedcuts[source*nbcuts+2]->SetTitle("#gamma");
@@ -2656,8 +2664,16 @@ void AliHFEelecbackground::Plot() const
   legb->Draw("same");
   
   source = 2;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
-  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   chsSparseMCeeff->cd(2);
   histopassedcuts[source*nbcuts+0]->SetTitle("#pi^{0}");
   histopassedcuts[source*nbcuts+1]->SetTitle("#pi^{0}");
@@ -2703,8 +2719,16 @@ void AliHFEelecbackground::Plot() const
   legc->Draw("same");
   
   source = 4;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) return;
-  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || ((source*nbcuts+1)> (nbsources*nbcuts-1)) || ((source*nbcuts+2)> (nbsources*nbcuts-1)) || ((source*nbcuts+3)> (nbsources*nbcuts-1)) || ((source*nbcuts+4)> (nbsources*nbcuts-1)) || ((source*nbcuts+5)> (nbsources*nbcuts-1)) || ((source*nbcuts+6)> (nbsources*nbcuts-1)) || ((source*nbcuts+7)> (nbsources*nbcuts-1)) || ((source*nbcuts+8)> (nbsources*nbcuts-1)) || ((source*nbcuts+9)> (nbsources*nbcuts-1))) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
+  if((!histopassedcuts[source*nbcuts+0]) || (!histopassedcuts[source*nbcuts+1]) || (!histopassedcuts[source*nbcuts+2]) || (!histopassedcuts[source*nbcuts+3]) || (!histopassedcuts[source*nbcuts+4]) || (!histopassedcuts[source*nbcuts+5]) || (!histopassedcuts[source*nbcuts+6]) || (!histopassedcuts[source*nbcuts+7]) || (!histopassedcuts[source*nbcuts+8]) || (!histopassedcuts[source*nbcuts+9])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   chsSparseMCeeff->cd(3);
   histopassedcuts[source*nbcuts+0]->SetTitle("C");
   histopassedcuts[source*nbcuts+1]->SetTitle("C");
@@ -2757,7 +2781,11 @@ void AliHFEelecbackground::Plot() const
   chsSparseMCein->cd(1);
   Double_t nbGamma = 0.0;
   source = 1;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   nbGamma = histopassedcuts[source*nbcuts+0]->GetEntries();
   histopassedcuts[source*nbcuts+0]->SetStats(0);
   histopassedcuts[source*nbcuts+0]->Draw();
@@ -2765,21 +2793,33 @@ void AliHFEelecbackground::Plot() const
   leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#gamma","p");
   Double_t nbPi0 = 0.0;
   source = 2;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   nbPi0 = histopassedcuts[source*nbcuts+0]->GetEntries();
   histopassedcuts[source*nbcuts+0]->SetStats(0);
   histopassedcuts[source*nbcuts+0]->Draw("same");
   leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#pi^{0}","p");
   Double_t nbEta = 0.0;
   source = 3;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   nbEta = histopassedcuts[source*nbcuts+0]->GetEntries();
   histopassedcuts[source*nbcuts+0]->SetStats(0);
   histopassedcuts[source*nbcuts+0]->Draw("same");
   leginput->AddEntry(histopassedcuts[source*nbcuts+0],"#eta","p");
   Double_t nbC = 0.0;
   source = 4;
-  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) return;
+  if(((source*nbcuts+0)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+0])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   nbC = histopassedcuts[source*nbcuts+0]->GetEntries();
   histopassedcuts[source*nbcuts+0]->SetStats(0);
   histopassedcuts[source*nbcuts+0]->Draw("same");
@@ -2795,16 +2835,26 @@ void AliHFEelecbackground::Plot() const
   TCanvas * cTracked = new TCanvas("cTracked","cTracked",800,800);
   cTracked->cd(1);
   source = 1;
-  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) return;
+  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   histopassedcuts[source*nbcuts+1]->Draw();
   TLegend *legTracked = new TLegend(0.4,0.6,0.89,0.89);
   legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#gamma","p");
   source = 2;
-  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) return;
+  if(((source*nbcuts+1)> (nbsources*nbcuts-1)) || (!histopassedcuts[source*nbcuts+1])) {
+    delete [] histopassedcuts;
+    delete [] nbEntriesCuts;
+    return;
+  }
   histopassedcuts[source*nbcuts+1]->Draw("same");
   legTracked->AddEntry(histopassedcuts[source*nbcuts+1],"#pi^{0}","p");
   legTracked->Draw("same");
   
+  delete [] histopassedcuts;
+  delete [] nbEntriesCuts;
   
 }
 //_____________________________________________________________________________

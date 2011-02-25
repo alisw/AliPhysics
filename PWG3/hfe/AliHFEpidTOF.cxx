@@ -126,7 +126,7 @@ Int_t AliHFEpidTOF::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 
   AliHFEpidObject::AnalysisType_t anaType = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   const AliVTrack *vtrack = dynamic_cast<const AliVTrack *>(track->GetRecTrack());
-  if(!(vtrack && (vtrack->GetStatus() & AliESDtrack::kTOFpid) && !(vtrack->GetStatus() & AliESDtrack::kTOFmismatch))) return 0;
+  if(!(vtrack && (vtrack->GetStatus() & AliESDtrack::kTOFpid))) return 0;
   AliDebug(2, "Track Has TOF PID");
 
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTOFpid, AliHFEdetPIDqa::kBeforePID);
@@ -159,7 +159,7 @@ Double_t AliHFEpidTOF::NumberOfSigmas(const AliVParticle *track, AliPID::EPartic
   if(anaType == AliHFEpidObject::kESDanalysis){
     // ESD analysis
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    if(esdtrack && fESDpid) nSigmas = fESDpid->NumberOfSigmasTOF(esdtrack, species, fESDpid->GetTOFResponse().GetStartTime(track->P()));
+    if(esdtrack && fESDpid) nSigmas = fESDpid->NumberOfSigmasTOF(esdtrack, species, 0.);
   } else {
     const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
     if(aodtrack && fAODpid) nSigmas = fAODpid->NumberOfSigmasTOF(aodtrack, species);

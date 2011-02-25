@@ -848,7 +848,7 @@ void AliHFEpidQA::FillPIDresponse(const TObjArray * const particles, Int_t speci
 	fOutput->Fill(hname, p, beta);
 	fOutput->Fill("hTOF_beta_all", p, beta);
 	// TOF nSigma
-	Double_t nsigma = fESDpid->NumberOfSigmasTOF(esdTrack,(AliPID::EParticleType)typePID[species], t0);
+	Double_t nsigma = fESDpid->NumberOfSigmasTOF(esdTrack,(AliPID::EParticleType)typePID[species], 0.);
 	hname = "hTOF_nSigma_" + typeName[species];
 	fOutput->Fill(hname, p, nsigma);
 	if(beta > 0.97 && beta < 1.03){

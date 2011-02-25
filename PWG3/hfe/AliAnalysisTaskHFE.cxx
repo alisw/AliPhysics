@@ -336,10 +336,14 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH2F("TPCclusters2_0_Signal", "TPCclusterInfo for the ratio for 2 neighbors for signal tracks", 30, 0.1, 10., 100, 0., 1.);
   fQACollection->CreateTH2F("TPCclusters2_1_Selected", "TPCclusterInfo for findable clusters for 2 neighbors for selected tracks", 30, 0.1, 10., 162, 0., 161.);
   fQACollection->CreateTH2F("TPCclusters2_0_Selected", "TPCclusterInfo for the ratio for 2 neighbors for selected tracks", 30, 0.1, 10., 110, 0., 1.1);
+  fQACollection->CreateTH2F("TPCncls_Signal", "TPC Number of clusters for signal tracks", 30, 0.1, 10., 162, 0., 161.);
+  fQACollection->CreateTH2F("TPCclr_Signal", "TPC cluster ratio for signal tracks", 30, 0.1, 10., 110, 0., 1.1);
   fQACollection->BinLogAxis("TPCclusters2_1_Signal", 0); 
   fQACollection->BinLogAxis("TPCclusters2_0_Signal", 0);
   fQACollection->BinLogAxis("TPCclusters2_1_Selected", 0); 
   fQACollection->BinLogAxis("TPCclusters2_0_Selected", 0);
+  fQACollection->BinLogAxis("TPCncls_Signal", 0); 
+  fQACollection->BinLogAxis("TPCclr_Signal", 0);
 
   InitPIDperformanceQA();
   InitContaminationQA();
@@ -788,6 +792,8 @@ void AliAnalysisTaskHFE::ProcessESD(){
           && (track->GetKinkIndex(0) == 0)){
         fQACollection->Fill("TPCclusters2_1_Signal", track->Pt(), track->GetTPCClusterInfo(2,1));
         fQACollection->Fill("TPCclusters2_0_Signal", track->Pt(), track->GetTPCNclsF() > 0 ?  track->GetTPCClusterInfo(2,1)/track->GetTPCNclsF() : 0.);
+        fQACollection->Fill("TPCncls_Signal", track->Pt(), track->GetTPCNcls());
+        fQACollection->Fill("TPCclr_Signal", track->Pt(), track->GetTPCNclsF() > 0 ? static_cast<Double_t>(track->GetTPCNcls())/static_cast<Double_t>(track->GetTPCNclsF()) : 0.);
       }
     }
 
