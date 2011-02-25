@@ -157,6 +157,7 @@ public:
   void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter
   Bool_t IsChannelEnabled(Int_t index, Bool_t checkEfficiency = kTRUE); // is channel enabled
   Bool_t IsChannelEfficient(Int_t index); // is channel efficient
+  Double_t TuneForMC(AliESDEvent *event, Double_t resolution); // tune for MC
 
 private:
   Int_t fNChannels; // number of TOF channels

@@ -120,6 +120,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFResponseParams.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "TRandom.h"
 
 class TROOT;
 class TStyle;
@@ -161,6 +162,8 @@ AliTOFcalib::AliTOFcalib():
 { 
   //TOF Calibration Class ctor
   fNChannels = AliTOFGeometry::NSectors()*(2*(AliTOFGeometry::NStripC()+AliTOFGeometry::NStripB())+AliTOFGeometry::NStripA())*AliTOFGeometry::NpadZ()*AliTOFGeometry::NpadX();
+
+  gRandom->SetSeed(123456789);
 }
 //____________________________________________________________________________ 
 
@@ -225,6 +228,8 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   if (calib.fRunParams) fRunParams = new AliTOFRunParams(*calib.fRunParams);
   if (calib.fResponseParams) fResponseParams = new AliTOFResponseParams(*calib.fResponseParams);
   if (calib.fReadoutEfficiency) fReadoutEfficiency = new TH1F(*calib.fReadoutEfficiency);
+
+  gRandom->SetSeed(123456789);
 }
 
 //____________________________________________________________________________ 
@@ -2392,3 +2397,50 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
 
 }
 
+//----------------------------------------------------------------------------
+
+Double_t
+AliTOFcalib::TuneForMC(AliESDEvent *event, Double_t resolution)
+{
+  /*
+   * tune for MC
+   */
+
+  /* get vertex spread and define T0-spread */
+  Double_t diamond2 = TMath::Abs(event->GetSigma2DiamondZ());
+  Double_t t0spread = TMath::Sqrt(diamond2) / 2.99792457999999984e-02;
+  /* generate random startTime */
+  Double_t startTime = gRandom->Gaus(0., t0spread);
+  /* define extra smearing for resolution */
+  Double_t defaultResolution = 80.;
+  Double_t extraSmearing = 0.;
+  if (resolution > defaultResolution)
+    extraSmearing = TMath::Sqrt(resolution * resolution - defaultResolution * defaultResolution);
+
+  /* loop over tracks */
+  AliESDtrack *track = NULL;
+  Double_t time;
+  for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
+    /* get track */
+    track = event->GetTrack(itrk);
+    if (!track) continue;
+    /* check TOF match */
+    if (!track->IsOn(AliESDtrack::kTOFout)) continue;
+    /* check if channel is enabled */
+    if (!IsChannelEnabled(track->GetTOFCalChannel())) {
+      /* reset TOF status */
+      track->ResetStatus(AliESDtrack::kTOFin);
+      track->ResetStatus(AliESDtrack::kTOFout);
+      track->ResetStatus(AliESDtrack::kTOFmismatch);
+      track->ResetStatus(AliESDtrack::kTOFpid);
+    }
+    /* get original time and manipulate it */
+    time = track->GetTOFsignal();
+    time += startTime; /* add start time */
+    time += gRandom->Gaus(0., extraSmearing); /* extra smearing */
+    time -= 25.; /* remove 25 ps to center the signal */
+    track->SetTOFsignal(time);
+  }
+
+  return startTime;
+}
