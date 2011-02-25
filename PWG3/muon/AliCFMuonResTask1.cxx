@@ -273,6 +273,12 @@ void AliCFMuonResTask1::UserExec(Option_t *)
   AliESDEvent *fESD; 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
       (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  // CHECK
+  if ( ! esdH ) {
+    AliError("Cannot get input event handler");
+    return;
+  }      
+      
   fESD = esdH->GetEvent();
   Int_t mult1 = fESD->GetNumberOfMuonTracks() ;
 
@@ -575,6 +581,10 @@ void AliCFMuonResTask1::Terminate(Option_t *)
   // draw result of the Invariant mass MC and ESD
 
     AliCFContainer *cont = dynamic_cast<AliCFContainer*> (GetOutputData(2));   
+    if ( ! cont ) {
+      AliError("Cannot find container in file");
+      return;
+    }
 
     TH1D *kmass = cont->ShowProjection(5,0);
     TH1D *rmass = cont->ShowProjection(5,1);
