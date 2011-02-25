@@ -31,42 +31,65 @@
 class TObjArray;
 class AliVTrack;
 class AliTRDPIDResponse : public TObject {
-public:
- enum ETRDPIDResponseStatus {
-   kIsOwner = BIT(14)
- };
- enum ETRDPIDResponseDef {
-   kNlayer = 6
-  ,kNPBins = 6
- };
- AliTRDPIDResponse(const Char_t *filename = NULL);
- AliTRDPIDResponse(const AliTRDPIDResponse &ref);
- AliTRDPIDResponse& operator=(const AliTRDPIDResponse &);
- ~AliTRDPIDResponse();
+  public:
+    enum ETRDPIDResponseStatus {
+      kIsOwner = BIT(14),
+    };
+    enum ETRDPIDResponseDef {
+      kNlayer = 6
+      ,kNPBins = 6
+    };
+    enum ETRDPIDMethod {
+      kNN   = 0,
+      kLQ2D = 1,
+      kLQ1D = 2
+    };
+    enum ETRDNslices {
+      kNslicesLQ1D = 1,
+      kNslicesLQ2D = 2,
+      kNslicesNN = 7
+    };
+    AliTRDPIDResponse();
+    AliTRDPIDResponse(const AliTRDPIDResponse &ref);
+    AliTRDPIDResponse& operator=(const AliTRDPIDResponse &);
+    ~AliTRDPIDResponse();
+    
+    ETRDPIDMethod     GetPIDmethod() const { return fPIDmethod;}
+    Bool_t    GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
+    inline ETRDNslices  GetNumberOfSlices() const;
+    
+    Bool_t    IsOwner() const {return TestBit(kIsOwner);}
+    
+    void      SetOwner();
+    void      SetPIDmethod(ETRDPIDMethod m) {fPIDmethod=m;}
+    void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
 
- Int_t     GetPIDmethod() const { return fPIDmethod;}
- Bool_t    GetResponse(Int_t n, Double_t *dedx, Float_t *p, Double_t prob[AliPID::kSPECIES], Bool_t kNorm=kTRUE) const;
-
- Bool_t    IsOwner() const {return TestBit(kIsOwner);}
-
- void      SetOwner();
- void      SetPIDmethod(Int_t m) {fPIDmethod=m;}
- void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
-
-private:
- Bool_t    CookdEdx(Double_t *in, Double_t *out) const;
- Int_t     GetLowerMomentumBin(Double_t p) const;
- Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const;
- Bool_t    Load(const Char_t *filename = NULL);
-
- static const Double_t fgkPBins[kNPBins];
- TObjArray *fReferences; // Container for reference distributions
- Int_t     fMapRefHists[AliPID::kSPECIES][kNPBins];     
-                         // Map for the position of a given historgam in the container 
- Double_t  fGainNormalisationFactor;  // Gain normalisation factor
- UChar_t   fPIDmethod;   // PID method selector  
-
- ClassDef(AliTRDPIDResponse, 2)    // Tool for TRD PID
+    Bool_t    Load(const Char_t *filename = NULL);
+    Bool_t    Load(const TObjArray *histos);
+  
+  private:
+    Bool_t    CookdEdx(Int_t nSlice, Double_t *in, Double_t *out) const;
+    Int_t     GetLowerMomentumBin(Double_t p) const;
+    Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const;
+    
+    static const Double_t fgkPBins[kNPBins];
+    TObjArray *fReferences; // Container for reference distributions
+    Int_t     fMapRefHists[AliPID::kSPECIES][kNPBins];     
+                            // Map for the position of a given historgam in the container 
+    Double_t  fGainNormalisationFactor;  // Gain normalisation factor
+    ETRDPIDMethod   fPIDmethod;   // PID method selector  
+  
+  ClassDef(AliTRDPIDResponse, 3)    // Tool for TRD PID
 };
-#endif
 
+AliTRDPIDResponse::ETRDNslices AliTRDPIDResponse::GetNumberOfSlices() const {
+  // Get the current number of slices
+  ETRDNslices slices = kNslicesLQ1D;
+  switch(fPIDmethod){
+    case kLQ1D: slices = kNslicesLQ1D; break;
+    case kLQ2D: slices = kNslicesLQ2D; break;
+    case kNN:   slices = kNslicesNN; break;
+  };
+  return slices;
+}
+#endif
