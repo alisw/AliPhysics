@@ -161,8 +161,12 @@ void AliHFEtaggedTrackAnalysis::InitContainer(){
   fQAhistos = new AliHFEcollection("taggedTrackQA", "Special QA for the TaggedTrackAnalysis");
   fQAhistos->CreateTH2F("TPCclusters2_1", "TPCclusterInfo for findable clusters for 2 neighbors", 30, 0.1, 10., 162, 0., 161.);
   fQAhistos->CreateTH2F("TPCclusters2_0", "TPCclusterInfo for the ratio for 2 neighbors", 30, 0.1, 10., 110, 0., 1.1);
+  fQAhistos->CreateTH2F("TPCncls", "TPC number of clusters", 30, 0.1, 10., 162, 0., 161.);
+  fQAhistos->CreateTH2F("TPCclr", "TPC cluster ratio", 30, 0.1, 10., 110, 0., 1.1);
   fQAhistos->BinLogAxis("TPCclusters2_1", 0);   // pt axis in logarithmic binning
   fQAhistos->BinLogAxis("TPCclusters2_0", 0);   // pt axis in logarithmic binning
+  fQAhistos->BinLogAxis("TPCncls", 0);   // pt axis in logarithmic binning
+  fQAhistos->BinLogAxis("TPCclr", 0);   // pt axis in logarithmic binning
 }
 
 //____________________________________________________________
@@ -206,6 +210,8 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
     if((esdtrack->GetITSClusterMap() & (BIT(0) | BIT(1))) && (TMath::Abs(esdtrack->Eta()) < 0.8)){  // Only select quasi-primary tracks
       fQAhistos->Fill("TPCclusters2_1", track->Pt(), esdtrack->GetTPCClusterInfo(2,1));
       fQAhistos->Fill("TPCclusters2_0", track->Pt(), esdtrack->GetTPCNclsF() > 0 ? esdtrack->GetTPCClusterInfo(2,1)/esdtrack->GetTPCNclsF() : 0.);
+      fQAhistos->Fill("TPCncls", track->Pt(), esdtrack->GetTPCNcls());
+      fQAhistos->Fill("TPCclr", track->Pt(), esdtrack->GetTPCNclsF() > 0 ? static_cast<Double_t>(esdtrack->GetTPCNcls())/static_cast<Double_t>(esdtrack->GetTPCNclsF()) : 0.);
     }
    }
    

@@ -126,6 +126,7 @@ class AliHFEmcQA: public TObject {
       TH1F *fNq; // histogram to store number of quark
       TH1F *fProcessID; // histogram to store process id 
       TH2F *fePtRatio; // fraction of electron pT from D or B hadron
+      TH2F *fPtCorr; // pt correlation between e and direct D or B 
       TH2F *fDePtRatio; // fraction of D electron pT from B hadron 
       TH2F *feDistance; // distance between electron production point to mother particle 
       TH2F *fDeDistance; // distance between D electron production point to mother particle
@@ -134,6 +135,7 @@ class AliHFEmcQA: public TObject {
 			  : fNq()
 			  , fProcessID()
 			  , fePtRatio()
+			  , fPtCorr()
 			  , fDePtRatio()
 			  , feDistance()
 			  , fDeDistance()
@@ -144,6 +146,7 @@ class AliHFEmcQA: public TObject {
 			  : fNq(p.fNq)
 			  , fProcessID(p.fProcessID)
 			  , fePtRatio(p.fePtRatio)
+			  , fPtCorr(p.fPtCorr)
 			  , fDePtRatio(p.fDePtRatio)
 			  , feDistance(p.feDistance)
 			  , fDeDistance(p.fDeDistance)
@@ -160,7 +163,8 @@ class AliHFEmcQA: public TObject {
 
     AliHists fHist[3][7][6]; // struct of histograms to store kinematics of given particles
     AliHistsComm fHistComm[2][6]; // struct of additional histograms of given particles
-    TH2F *fhD[7]; // D meson pt,Y spectra
+    TH2F *fhD[9]; // D meson pt,Y spectra
+    TH1F *fhDLogbin[9]; // D meson pt w diff binning
 
     TList *fQAhistos;           // Container for QA histos
     TParticle *fHeavyQuark[50]; //! store pointer of heavy flavour quark 

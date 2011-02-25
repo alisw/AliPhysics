@@ -1697,7 +1697,7 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
   AliMCParticle *mctrack = NULL;
   TParticle* mcpart = NULL;
 
-  (dynamic_cast<TH1F *>(fSecVtxList->At(step)))->Fill(track->Pt()); // electrons tagged
+  (static_cast<TH1F *>(fSecVtxList->At(step)))->Fill(track->Pt()); // electrons tagged
 
   if(HasMCData() && fMCQA){
     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return;
@@ -1706,27 +1706,27 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
     Int_t esource=fMCQA->GetElecSource(mcpart);
     if(esource==1) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))->Fill(mcpart->Pt()); //charm
+      (static_cast<TH1F *>(fSecVtxList->At(step+1)))->Fill(mcpart->Pt()); //charm
     }
     else if(esource==2 || esource==3) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+2)))->Fill(mcpart->Pt()); //beauty
+      (static_cast<TH1F *>(fSecVtxList->At(step+2)))->Fill(mcpart->Pt()); //beauty
     }
     else if(esource==4) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+3)))->Fill(mcpart->Pt()); //conversion
+      (static_cast<TH1F *>(fSecVtxList->At(step+3)))->Fill(mcpart->Pt()); //conversion
     }
     else if(esource==7) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+5)))->Fill(mcpart->Pt()); //contamination
+      (static_cast<TH1F *>(fSecVtxList->At(step+5)))->Fill(mcpart->Pt()); //contamination
     }
     else if(!(esource<0)) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+4)))->Fill(mcpart->Pt()); //e backgrounds
+      (static_cast<TH1F *>(fSecVtxList->At(step+4)))->Fill(mcpart->Pt()); //e backgrounds
     }
     else {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))) return;
-      (dynamic_cast<TH1F *>(fSecVtxList->At(step+6)))->Fill(mcpart->Pt()); //something else?
+      (static_cast<TH1F *>(fSecVtxList->At(step+6)))->Fill(mcpart->Pt()); //something else?
     }
   }
 

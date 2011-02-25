@@ -146,7 +146,7 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   CreateHistograms(AliHFEmcQA::kOthers,5,"mcqa_secvtxcut_");    // create histograms for beauty
  
 // check D spectra
-  TString kDspecies[7];
+  TString kDspecies[9];
   kDspecies[0]="411";
   kDspecies[1]="421";
   kDspecies[2]="431";
@@ -154,15 +154,26 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
   kDspecies[4]="4132";
   kDspecies[5]="4232";
   kDspecies[6]="4332";
+  kDspecies[7]="413";
+  kDspecies[8]="423";
+
+  const Double_t kPtbound[2] = {0.1, 20.}; //bin taken for considering inclusive e analysis binning
+  Int_t iBin[1];
+  iBin[0] = 44; // bins in pt
+  Double_t* binEdges[1];
+  binEdges[0] =  AliHFEtools::MakeLogarithmicBinning(iBin[0], kPtbound[0], kPtbound[1]);
 
   // bin size is chosen to consider ALICE D measurement
   Double_t xbins[13]={0,0.5,1.0,2.0,3.0,4.0,5.0,6.0,8.0,12,16,20,50};
   Double_t ybins[10]={-7.5,-1.0,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,7.5};
   TString hname;
-  for (Int_t iDmeson=0; iDmeson<7; iDmeson++){
+  for (Int_t iDmeson=0; iDmeson<9; iDmeson++){
      hname = "Dmeson"+kDspecies[iDmeson];
      fhD[iDmeson] = new TH2F(hname,hname+";p_{T} (GeV/c)",12,xbins,9,ybins);
+     hname = "DmesonLogbin"+kDspecies[iDmeson];
+     fhDLogbin[iDmeson] = new TH1F(hname,hname+";p_{T} (GeV/c)",iBin[0],binEdges[0]);
      if(fQAhistos) fQAhistos->Add(fhD[iDmeson]);
+     if(fQAhistos) fQAhistos->Add(fhDLogbin[iDmeson]);
   }
 
 }
@@ -246,6 +257,8 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
   }
   hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
+  hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
+  fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";p_{T} (GeV/c);p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
   hname = hnopt+"eDistance_"+kqTypeLabel[kQuark];
@@ -548,9 +561,21 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
               fHist[iq][kHadron][0].fY->Fill(AliHFEtools::GetRapidity(partCopy));
               fHist[iq][kHadron][0].fEta->Fill(partCopy->Eta());
 
-              if(iq==0) fhD[i]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
+              if(iq==0) {
+               fhD[i]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
+               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[i]->Fill(partCopy->Pt());
+              }
             }
          }
+	 // I also want to store D* info to compare with D* measurement 
+	 if (abs(pdgcodeCopy)==413 && iq==0) { //D*+
+               fhD[7]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
+               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[7]->Fill(partCopy->Pt());
+	 }
+	 if (abs(pdgcodeCopy)==423 && iq==0) { //D*0
+               fhD[8]->Fill(partCopy->Pt(),AliHFEtools::GetRapidity(partCopy));
+               if(TMath::Abs(AliHFEtools::GetRapidity(partCopy))<0.5) fhDLogbin[8]->Fill(partCopy->Pt());
+	 }
     } // end of if
 }
 
@@ -679,7 +704,8 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 
 //mj weighting to consider measured spectra!!!
               Double_t mpt=partMotherCopy->Pt();
-              Double_t wfactor=(703.681*mpt/TMath::Power((1+TMath::Power(mpt/1.73926,2)),2.34821))/(368.608*mpt/TMath::Power((1+TMath::Power(mpt/2.74868,2)),2.34225));
+              Double_t wfactor=2*(703.681*mpt/TMath::Power((1+TMath::Power(mpt/1.73926,2)),2.34821))/(368.608*mpt/TMath::Power((1+TMath::Power(mpt/2.74868,2)),2.34225)); // 2* considering in pythia I used particle + antiparticle differently from the measurement
+              //Double_t wfactor=(703.681*mpt/TMath::Power((1+TMath::Power(mpt/1.73926,2)),2.34821))/(368.608*mpt/TMath::Power((1+TMath::Power(mpt/2.74868,2)),2.34225));
               // fill electron kinematics
               if(iq==0){
                 fHist[iq][kElectron2nd][icut].fPdgCode->Fill(mcpart->GetPdgCode(),wfactor);
@@ -705,8 +731,9 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
               fHist[iq][keHadron][icut].fY->Fill(AliHFEtools::GetRapidity(partMotherCopy));
               fHist[iq][keHadron][icut].fEta->Fill(partMotherCopy->Eta());
 
-              // ratio between pT of electron and pT of mother B hadron 
+              // ratio between pT of electron and pT of mother B or direct D hadron 
               if(partMotherCopy->Pt()) fHistComm[iq][icut].fePtRatio->Fill(partMotherCopy->Pt(),mcpart->Pt()/partMotherCopy->Pt());
+              fHistComm[iq][icut].fPtCorr->Fill(partMotherCopy->Pt(),mcpart->Pt());
 
               // distance between electron production point and primary vertex
               fHistComm[iq][icut].feDistance->Fill(partMotherCopy->Pt(),decayLxy);
@@ -1213,6 +1240,7 @@ void AliHFEmcQA::AliHistsComm::FillList(TList *l) const {
   if(fNq) l->Add(fNq);
   if(fProcessID) l->Add(fProcessID);
   if(fePtRatio) l->Add(fePtRatio);
+  if(fPtCorr) l->Add(fPtCorr);
   if(fDePtRatio) l->Add(fDePtRatio);
   if(feDistance) l->Add(feDistance);
   if(fDeDistance) l->Add(fDeDistance);
