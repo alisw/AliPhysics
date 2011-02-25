@@ -13,8 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
 // Author : C. Zampolli, CERN
@@ -53,7 +51,9 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fmcLabel(0),
 	fProngs(-1),
 	fLabelArray(0x0), 
-	fCentValue(0.)
+	fCentValue(0.),
+	fPtAccCut(0x0),
+	fEtaAccCut(0x0)
 {
 	//
 	// constructor
@@ -81,7 +81,9 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fmcLabel(0),
 	fProngs(-1),
 	fLabelArray(0x0),
-	fCentValue(0.)
+	fCentValue(0.),
+	fPtAccCut(0x0),
+	fEtaAccCut(0x0)
 {
 	//
 	// constructor with mcArray
@@ -104,6 +106,14 @@ AliCFVertexingHF::~AliCFVertexingHF()
 	if (fLabelArray){
 	  	delete [] fLabelArray;
 	  	fLabelArray = 0x0;
+	}	
+	if (fPtAccCut){
+	  	delete [] fPtAccCut;
+	  	fPtAccCut = 0x0;
+	}	
+	if (fEtaAccCut){
+	  	delete [] fEtaAccCut;
+	  	fEtaAccCut = 0x0;
 	}	
 }
 
@@ -132,7 +142,11 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fCentValue=c.fCentValue;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
-			for(Int_t iP=0; iP<fProngs; iP++)fLabelArray[iP]=c.fLabelArray[iP];
+			for(Int_t iP=0; iP<fProngs; iP++){
+				fLabelArray[iP]=c.fLabelArray[iP];
+				fPtAccCut[iP]=c.fPtAccCut[iP];
+				fEtaAccCut[iP]=c.fEtaAccCut[iP];
+			}
 		}
 	}
 	
@@ -156,7 +170,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fmcLabel(c.fmcLabel),
 	fProngs(c.fProngs),
 	fLabelArray(0x0),
-	fCentValue(c.fCentValue)
+	fCentValue(c.fCentValue),
+	fPtAccCut(0x0),
+	fEtaAccCut(0x0)
 {  
 	//
 	//copy constructor
@@ -164,6 +180,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	if (fProngs > 0){
 		fLabelArray = new Int_t[fProngs];
 		if (c.fLabelArray) memcpy(fLabelArray,c.fLabelArray,fProngs*sizeof(Int_t));
+		if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
+		if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
 	}
 }
 
@@ -432,8 +450,9 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 		Double_t pt = mcPartDaughter->Pt();
 		
 		//set values of eta and pt in the constructor.
-		if (TMath::Abs(eta) > 0.9 || pt < 0.1){
-			AliDebug(3,"At least one daughter has eta>0.9 or pt < 0.1 \n"); 
+		//		if (TMath::Abs(eta) > 0.9 || pt < 0.1){
+		if (TMath::Abs(eta) > fEtaAccCut[iProng] || pt < fPtAccCut[iProng]){
+			AliDebug(3,Form("At least one daughter has eta or pt outside the required range (|eta| = %f, pt = %f, should be |eta| < %f, pt > %f \n", TMath::Abs(eta), pt, fEtaAccCut[iProng], fPtAccCut[iProng])); 
 			return bMCAccStep;
 		}
 	}  
@@ -442,7 +461,7 @@ Bool_t AliCFVertexingHF::MCAcceptanceStep() const
 	
 }
  //_____________________________________________________
-Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *trackCuts) const
+Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **trackCuts) const
 {		
 	//
 	// check on the kTPCrefit and kITSrefit conditions of the daughters
@@ -467,52 +486,54 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *tra
 		temp[ilabel] = fLabelArray[ilabel];
 	}
 
-	if (trackCuts->GetRequireTPCRefit() || trackCuts->GetRequireITSRefit()){
+	//	if (trackCuts->GetRequireTPCRefit() || trackCuts->GetRequireITSRefit()){
 		
-		for(Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
-			AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
-			if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
-			Bool_t foundTrack = kFALSE;
-			for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
-			  AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],TMath::Abs(track->GetLabel())));
-			  if (TMath::Abs(track->GetLabel()) == temp[ilabel]) {
-			    foundTrack = kTRUE;
-			    temp[ilabel] = 0;
-			    break;
-			  }
-			}
-			if (foundTrack){
-			  foundDaughters++;
-			  AliDebug(4,Form("daughter %d \n",foundDaughters));
-			  if(trackCuts->GetRequireTPCRefit()){
-			    if(track->GetStatus()&AliESDtrack::kTPCrefit) {
-			      bRefitStep = kTRUE;
-			    }
-					else {
-						AliDebug(3, "Refit cut not passed , missing TPC refit\n");
-						delete [] temp;
-						temp = 0x0;
-						return kFALSE;
-					}
-				}
-				
-				if (trackCuts->GetRequireITSRefit()) {
-					if(track->GetStatus()&AliESDtrack::kITSrefit){
-						bRefitStep = kTRUE;
-					}
-					else {
-						AliDebug(3, "Refit cut not passed , missing ITS refit\n");
-						delete [] temp;
-						temp = 0x0;
-						return kFALSE;
-					}
-				}
-			}      	
-			if (foundDaughters == fProngs){				
+	for(Int_t iaod =0; iaod<aodEvent->GetNumberOfTracks(); iaod++){
+		AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iaod);
+		if(track->GetStatus()&AliESDtrack::kITSpureSA) continue;
+		Bool_t foundTrack = kFALSE;
+		Int_t prongindex;
+		for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
+			AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],TMath::Abs(track->GetLabel())));
+			if (TMath::Abs(track->GetLabel()) == temp[ilabel]) {
+				foundTrack = kTRUE;
+				temp[ilabel] = 0;
+				prongindex=ilabel;
 				break;
-			}			
-		}    
-	} 						
+			}
+		}
+		if (foundTrack){
+			foundDaughters++;
+			AliDebug(4,Form("daughter %d \n",foundDaughters));
+			if(trackCuts[prongindex]->GetRequireTPCRefit()){
+				if(track->GetStatus()&AliESDtrack::kTPCrefit) {
+					bRefitStep = kTRUE;
+				}
+				else {
+					AliDebug(3, "Refit cut not passed , missing TPC refit\n");
+					delete [] temp;
+					temp = 0x0;
+					return kFALSE;
+				}
+			}
+			
+			if (trackCuts[prongindex]->GetRequireITSRefit()) {
+				if(track->GetStatus()&AliESDtrack::kITSrefit){
+					bRefitStep = kTRUE;
+				}
+				else {
+					AliDebug(3, "Refit cut not passed , missing ITS refit\n");
+					delete [] temp;
+					temp = 0x0;
+					return kFALSE;
+				}
+			}
+		}      	
+		if (foundDaughters == fProngs){				
+			break;
+		}			
+	}    
+	//} 						
 	delete [] temp;
 	temp = 0x0;
 	if (foundDaughters== fProngs)  return bRefitStep;
@@ -587,7 +608,7 @@ Double_t AliCFVertexingHF::GetPtProng(Int_t iProng) const
 
 //____________________________________________________________________
 
-Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts *trackCuts) const
+Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts **trackCuts) const
 {
 	//
 	// reco Acceptance step
@@ -596,13 +617,13 @@ Bool_t AliCFVertexingHF::RecoAcceptStep(AliESDtrackCuts *trackCuts) const
 	Bool_t bRecoAccStep = kFALSE;
 	
 	Float_t etaCutMin, ptCutMin, etaCutMax, ptCutMax;
-	trackCuts->GetEtaRange(etaCutMin, etaCutMax);
-	trackCuts->GetPtRange(ptCutMin, ptCutMax);
 	
 	Float_t etaProng=0., ptProng=0.; 
 	
 	for (Int_t iProng =0; iProng<fProngs; iProng++){
 		
+		trackCuts[iProng]->GetEtaRange(etaCutMin, etaCutMax);
+		trackCuts[iProng]->GetPtRange(ptCutMin, ptCutMax);
 		etaProng = GetEtaProng(iProng);
 		ptProng = GetPtProng(iProng);
 		
@@ -707,8 +728,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 			}
 			else{
 				AliError("Failed casting the daughter particle, returning a NULL label array");
-				//delete [] fLabelArray; 
-				//fLabelArray = 0x0;  
+				delete [] fLabelArray; 
+				fLabelArray = 0x0;  
 				return bLabelArray;
 			}
 		}
@@ -729,8 +750,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 				}
 				else{
 					AliError("Error while casting particle! returning a NULL array");
-					//delete [] fLabelArray; 
-					//fLabelArray = 0x0;  
+					delete [] fLabelArray; 
+					fLabelArray = 0x0;  
 					return bLabelArray;
 				}
 			}
@@ -751,8 +772,8 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 					}
 					else{
 						AliError("Error while casting resonant daughter! returning a NULL array");
-						//delete [] fLabelArray; 
-						//fLabelArray = 0x0;  
+						delete [] fLabelArray; 
+						fLabelArray = 0x0;  
 						return bLabelArray;
 					}
 				}
@@ -770,6 +791,74 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 		fLabelArray = 0x0;  
 		return bLabelArray;
 	}
+	SetAccCut();   // setting the pt and eta acceptance cuts
 	bLabelArray = kTRUE;
 	return bLabelArray;
 }
+
+//___________________________________________________________
+
+void AliCFVertexingHF::SetPtAccCut(Float_t* ptAccCut)
+{
+	//
+	// setting the pt cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fPtAccCut[iP]=ptAccCut[iP];
+		}
+	}
+	return;
+}		
+
+
+
+//___________________________________________________________
+
+void AliCFVertexingHF::SetEtaAccCut(Float_t* etaAccCut)
+{
+	//
+	// setting the eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fEtaAccCut[iP]=etaAccCut[iP];
+		}
+	}
+	return;
+}	
+//___________________________________________________________
+
+void AliCFVertexingHF::SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut)
+{
+	//
+	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fPtAccCut[iP]=ptAccCut[iP];
+			fEtaAccCut[iP]=etaAccCut[iP];
+		}
+	}
+	return;
+}		
+
+//___________________________________________________________
+
+void AliCFVertexingHF::SetAccCut()
+{
+	//
+	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
+	//
+
+	if (fProngs>0){
+		for (Int_t iP=0; iP<fProngs; iP++){
+			fPtAccCut[iP]=0.1;
+			fEtaAccCut[iP]=0.9;
+		}
+	}
+	return;
+}		

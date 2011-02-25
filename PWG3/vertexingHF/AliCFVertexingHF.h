@@ -1,6 +1,7 @@
 #ifndef ALICFVERTEXINGHF_H
 #define ALICFVERTEXINGHF_H
 
+
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -15,8 +16,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */ 
 
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
@@ -80,7 +79,7 @@ class AliCFVertexingHF : public TObject {
 	Bool_t FillMCContainer(Double_t *containerInputMC); 
 	Bool_t FillRecoContainer(Double_t *containerInput); 
 	Bool_t MCAcceptanceStep() const;
-	Bool_t MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts *trackCuts) const;
+	Bool_t MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **trackCuts) const;
 	Bool_t RecoStep();
 
 	Double_t GetEtaProng(Int_t iProng) const;
@@ -89,17 +88,23 @@ class AliCFVertexingHF : public TObject {
 	Double_t GetPtCand() const {return fRecoCandidate->Pt();}
 	Double_t GetYCand() const {return fRecoCandidate->Y();}
 
-	Bool_t RecoAcceptStep(AliESDtrackCuts *trackCuts) const;
+	Bool_t RecoAcceptStep(AliESDtrackCuts **trackCuts) const;
 	
 	Bool_t FillUnfoldingMatrix(Double_t fill[4]) const;
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
+	const Int_t GetNProngs() const {return fProngs;}
 	void SetDselection(UShort_t originDselection); 
 	UShort_t GetDselection() {return fOriginDselection;}; 
 	Int_t CheckReflexion(Char_t isSign);
 	Bool_t SetLabelArray();
 
 	void SetCentralityValue(Float_t centValue) {fCentValue = centValue;}
+
+	virtual void SetPtAccCut(Float_t* ptAccCut);
+	virtual void SetEtaAccCut(Float_t* etaAccCut);
+	virtual void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
+	virtual void SetAccCut();
 
 	protected:
 	
@@ -121,8 +126,10 @@ class AliCFVertexingHF : public TObject {
 	Int_t* fLabelArray;          //[fProngs]  array of labels
 
 	Float_t fCentValue;         // centrality value
+	Float_t* fPtAccCut;         //[fProngs] array of pt cut values for the Acceptance (MC+Rec) steps 
+	Float_t* fEtaAccCut;          //[fProngs] array of eta (absolute value) cut values for the Acceptance (MC+Rec) steps 
 
-	ClassDef(AliCFVertexingHF, 3);
+	ClassDef(AliCFVertexingHF, 4);
 	
 };
 

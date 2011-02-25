@@ -1181,20 +1181,6 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //printf("SELECTED\n");
   Int_t ptbin=cuts->PtBin(part->Pt());
 
-  AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
-  if(!prong) {
-    AliDebug(2,"No daughter found");
-    return;
-  }
-  else{
-    // if(prong->Charge()==1) {
-    //   ((TH1F*)fDistr->FindObject("hpospair"))->Fill(fCuts->GetNPtBins()+ptbin);
-    //   //fTotPosPairs[ptbin]++;
-    // } else {
-    //   ((TH1F*)fDistr->FindObject("hnegpair"))->Fill(fCuts->GetNPtBins()+ptbin);
-    //   //fTotNegPairs[ptbin]++;
-    // }
-  }
  
   // for(Int_t it=0;it<2;it++){
  

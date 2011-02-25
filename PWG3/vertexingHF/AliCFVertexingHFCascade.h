@@ -16,8 +16,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */ 
-
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and steps
 // For D* and other cascades
@@ -52,6 +50,11 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   
   Bool_t SetRecoCandidateParam(AliAODRecoDecayHF *recoCand);
   Bool_t EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh, Double_t* VectorD0)const;
+
+  void SetPtAccCut(Float_t* ptAccCut);
+  void SetEtaAccCut(Float_t* etaAccCut);
+  void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
+  void SetAccCut();
 
  protected:
   
