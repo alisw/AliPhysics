@@ -14,8 +14,8 @@ AliAnalysisGrid* CreateAlienHandler() {
 
   // Set versions of used packages
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-06b");
-  plugin->SetAliROOTVersion("v4-21-12-AN");  
+  plugin->SetROOTVersion("v5-27-06d");
+  plugin->SetAliROOTVersion("v4-21-16-AN");  
   
   // Declare input data to be processed - can be done in two ways:
   // METHOD 1: Create automatically XML collections using alien 'find' command.
