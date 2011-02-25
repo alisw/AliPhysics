@@ -25,12 +25,14 @@
 #include <TLorentzVector.h>
 #include <TPDGCode.h>
 #include <TParticle.h>
-
+#include <TVirtualMC.h>
+#include <TParticlePDG.h>
 #include "AliGenHijingEventHeader.h"
 #define AliGenAmptEventHeader AliGenHijingEventHeader
 #include "AliAmptRndm.h"
 #include "AliLog.h"
 #include "AliRun.h"
+#include "AliDecayer.h"
 
 ClassImp(AliGenAmpt)
 
@@ -79,10 +81,11 @@ AliGenAmpt::AliGenAmpt()
     fAlpha(1./3),
     fStringA(0.5),
     fStringB(0.9),
-    fHeader(new AliGenAmptEventHeader("Ampt"))
+    fHeader(new AliGenAmptEventHeader("Ampt")),
+    fDecay(kTRUE)
 {
   // Constructor
-  fEnergyCMS = 5500.;
+  fEnergyCMS = 2760.;
   AliAmptRndm::SetAmptRandom(GetRandom());
 }
 
@@ -131,11 +134,12 @@ AliGenAmpt::AliGenAmpt(Int_t npart)
     fAlpha(1./3),
     fStringA(0.5),
     fStringB(0.9),
-    fHeader(new AliGenAmptEventHeader("Ampt"))
+    fHeader(new AliGenAmptEventHeader("Ampt")),
+    fDecay(kTRUE)
 {
-  // Default PbPb collisions at 5.5 TeV
+  // Default PbPb collisions at 2.76 TeV
 
-  fEnergyCMS = 5500.;
+  fEnergyCMS = 2760.;
   fName = "Ampt";
   fTitle= "Particle Generator using AMPT";
   AliAmptRndm::SetAmptRandom(GetRandom());
@@ -271,6 +275,87 @@ void AliGenAmpt::Generate()
       if (!CheckTrigger()) 
         continue;
     }
+
+    AliDecayer *decayer = 0;
+    if (gMC)
+      decayer = gMC->GetDecayer();
+
+    if (decayer&&fDecay) {
+      TClonesArray arr("TParticle",100);
+      Int_t np2 = np;
+      for (Int_t i = 0; i < np; i++) {
+        TParticle *iparticle = (TParticle *)fParticles.At(i);
+        if (!Stable(iparticle)) 
+          continue;
+        kf        = iparticle->GetPdgCode();
+        if (kf==92)
+          continue;
+        if (0) { // this turned out to be too cumbersome!
+          if (kf!=331&&kf!=3114&&kf!=3114&&kf!=411&&kf!=-4122&&kf!=-3324&&kf!=-3312&&kf!=-3114&&
+              kf!=-311&&kf!=3214&&kf!=-3214&&kf!=-433&&kf!=413&&kf!=3122&&kf!=-3122&&kf!=-413&&
+              kf!=-421&&kf!=-423&&kf!=3324&&kf!=-313&&kf!=213&&kf!=-213&&kf!=3314&&kf!=3222&&
+              kf!=-3222&&kf!=3224&&kf!=-3224&&kf!=-4212&&kf!=4212&&kf!=433&&kf!=423&&kf!=-3322&&
+              kf!=3322&&kf!=-3314)
+            continue; //decay eta',Sigma*+,Sigma*-,D+,Lambda_c-,Xi*0_bar,Xi-_bar,Sigma*-,
+                      //      K0_bar,Sigma*0,Sigma*0_bar,D*_s-,D*+,Lambda0,Lambda0_bar,D*-
+                      //      D0_bar,D*0_bar,Xi*0,K*0_bar,rho+,rho-,Xi*-,Sigma-,
+                      //      Sigma+,Sigma*+,Sigma*-,Sigma_c-,Sigma_c+,D*_s+,D*0,Xi0_bar
+                      //      Xi0,Xi*+
+        } else { // really only decay particles if there are not known to Geant3
+          if (gMC->IdFromPDG(kf)>0)
+            continue;
+        }
+        if (0) { // defining the particle for Geant3 leads to a floating point exception.
+          TParticlePDG *pdg = iparticle->GetPDG(1);
+          //pdg->Print(); printf("%s\n",pdg->ParticleClass());
+          TString ptype(pdg->ParticleClass());
+          TMCParticleType mctype(kPTUndefined);
+          if (ptype=="Baryon" || ptype=="Meson")
+            mctype = kPTHadron;
+          gMC->DefineParticle(pdg->PdgCode(), pdg->GetName(), mctype, pdg->Mass(), pdg->Charge(), pdg->Lifetime(),
+                              ptype,pdg->Width(), (Int_t)pdg->Spin(), (Int_t)pdg->Parity(), 0, 
+                              (Int_t)pdg->Isospin(), 0, 0, 0, 0, pdg->Stable());
+          gMC->SetUserDecay(pdg->PdgCode());
+          continue;
+        }
+
+        TLorentzVector pmom(iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy());
+        decayer->Decay(kf,&pmom);
+        decayer->ImportParticles(&arr);
+        Int_t ndecayed = arr.GetEntries();
+        if (ndecayed>1) {
+          if (np2+ndecayed>fParticles.GetSize())
+            fParticles.Expand(2*fParticles.GetSize());
+          //arr.Print();
+          iparticle->SetStatusCode(2);
+          iparticle->SetFirstDaughter(np2);
+          for (Int_t jj = 1; jj < ndecayed; jj++) {
+            TParticle *jp = (TParticle *)arr.At(jj);
+            if (jp->GetFirstMother()!=1)
+              continue;
+            TParticle *newp = new(fParticles[np2]) TParticle(jp->GetPdgCode(),
+                                                             1,
+                                                             i,
+                                                             -1,
+                                                             -1,
+                                                             -1,
+                                                             jp->Px(),jp->Py(),jp->Pz(),jp->Energy(),
+                                                             jp->Vx(),jp->Vy(),jp->Vz(),jp->T());
+            newp->SetUniqueID(999);
+            np2++;
+          }
+          iparticle->SetLastDaughter(np2-1);
+        }
+      }
+      np = fParticles.GetEntries();
+      if (np!=np2) {
+        AliError(Form("Something is fishy: %d %d\n", np,np2));
+      }
+    } else {
+      if (fDecay)
+        AliError("No decayer found, but fDecay==kTRUE!");
+    }
+
     if (fLHC) 
       Boost();
       
@@ -326,6 +411,8 @@ void AliGenAmpt::Generate()
         continue;
       Bool_t  selected             =  kTRUE;
       kf        = iparticle->GetPdgCode();
+      if (kf == 92) 
+        continue;
       ks        = iparticle->GetStatusCode();
       ksp       = iparticle->GetUniqueID();
 	  
@@ -349,6 +436,7 @@ void AliGenAmpt::Generate()
       if (selected) {
         nc++;
         pSelected[i] = 1;
+        if (1) printf("---> %d %d %d %s\n",i,nc,kf,iparticle->GetName());
       } // selected
     } // particle loop final state
 
@@ -523,16 +611,15 @@ Bool_t AliGenAmpt::SelectFlavor(Int_t pid)
   return res;
 }
 
-Bool_t AliGenAmpt::Stable(TParticle*  particle) const
+Bool_t AliGenAmpt::Stable(TParticle* particle) const
 {
   // Return true for a stable particle
 
-  if (particle->GetFirstDaughter() < 0 )
-  {
-    return kTRUE;
-  } else {
+  if (!particle)
     return kFALSE;
-  }
+  if (particle->GetFirstDaughter() < 0 )
+    return kTRUE;
+  return kFALSE;
 }
 
 void AliGenAmpt::MakeHeader()
