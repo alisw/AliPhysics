@@ -1408,7 +1408,7 @@ AliTPCCalPad *AliTPCcalibDButil::CreateCEOutlyerMap( Int_t & noutliersCE, AliTPC
     AliTPCCalROC *rocCETrms    = fCETrms->GetCalROC(iroc);
     Double_t trocMedian        = rocData->GetMedian();
     //
-    if (!rocData) {
+    if (!rocData || !rocCEQ || !rocCETrms) {
       noutliersCE+=AliTPCROC::Instance()->GetNChannels(iroc);
       rocOut->Add(1.);
       continue;
@@ -1515,7 +1515,10 @@ AliTPCCalPad *AliTPCcalibDButil::CreatePulserOutlyerMap(Int_t &noutliersPulser, 
       Float_t valTmean=rocData->GetValue(ichannel);
       Float_t valQmean=rocPulserQ->GetValue(ichannel);
       Float_t valTrms =rocPulserTrms->GetValue(ichannel);
+      Float_t valMasked =0;
+      if (rocMasked) valMasked = rocMasked->GetValue(ichannel);
       Int_t isOut=0;
+      if (valMasked>0.5) isOut=1;
       if (TMath::Abs(valTmean-rocMedianT)>cutTime) isOut=1;
       if (TMath::Abs(valQmean-rocMedianQ)>cutnRMSQ*rocRMSQ) isOut=1;
       if (TMath::Abs(valTrms-rocMedianTrms)>cutnRMSrms*rocRMSTrms) isOut=1;
@@ -1775,6 +1778,7 @@ Double_t  AliTPCcalibDButil::GetTriggerOffsetTPC(Int_t run, Int_t timeStamp, Dou
   }
   if (nused<kMinPoints &&deltaT<kMaxPeriod) return  AliTPCcalibDButil::GetTriggerOffsetTPC(run, timeStamp, deltaT*2,deltaTLaser);
   if (nused<kMinPoints) {
+    delete [] tdelta;
     printf("AliFatal: No time offset calibration available\n");
     return 0;
   }
@@ -2634,6 +2638,7 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
       continue;
     }
     TGraph* graphTS= FilterGraphMedian(graphTS0,cutSigma,medianY);    
+    if (!graphTS) continue;
     graphTS->Sort();
     AliTPCcalibDButil::SmoothGraph(graphTS,deltaT);      
     if (pcstream){
@@ -2648,7 +2653,6 @@ void AliTPCcalibDButil::FilterCE(Double_t deltaT, Double_t cutAbs, Double_t cutS
 	"\n";
     }
     delete graphTS0;
-    if (!graphTS) continue;
     arrT->AddAt(graphTS,i);
     delete graph;
   }
@@ -2798,7 +2802,11 @@ Double_t AliTPCcalibDButil::GetLaserTime0(Int_t run, Int_t timeStamp, Int_t delt
   //if (index1-index0 <kMinPoints) { index1+=kMinPoints; index0-=kMinPoints;}
   if (index0<0) index0=0;
   if (index1>=npoints-1) index1=npoints-1;
-  if (index1-index0<kMinPoints) return 0;
+  if (index1-index0<kMinPoints) {
+    delete [] ylaser;
+    delete [] xlaser;
+    return 0;
+  }
   //
   //Double_t median = TMath::Median(index1-index0, &(ylaser[index0]));
     Double_t mean = TMath::Mean(index1-index0, &(ylaser[index0]));
