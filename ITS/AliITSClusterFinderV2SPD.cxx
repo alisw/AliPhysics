@@ -147,6 +147,15 @@ Int_t AliITSClusterFinderV2SPD::ClustersSPD(AliBin* bins, TClonesArray* digits,T
       bins[index].SetQ(0);
       bins[index].SetMask(0xFFFFFFFE);
     }
+    AliITSCalibrationSPD *calSparse = (AliITSCalibrationSPD*) fDetTypeRec->GetSPDSparseDeadModel(iModule);
+    for(Int_t ipix = 0; ipix<calSparse->GetNrBad(); ipix++){
+      Int_t row, col;
+      calSparse->GetBadPixel(ipix,row,col);
+      Int_t index = (row+1) * nzbins + (col+1);
+      bins[index].SetQ(0);
+      bins[index].SetMask(0xFFFFFFFE);
+    }
+
   }
   
   Int_t nclu=0;
