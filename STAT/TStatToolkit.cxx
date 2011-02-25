@@ -184,7 +184,8 @@ Int_t TStatToolkit::Freq(Int_t n, const Int_t *inlist
 
   Int_t * sindexS = new Int_t[n];     // temp array for sorting
   Int_t * sindexF = new Int_t[2*n];   
-  for (Int_t i=0;i<n;i++) sindexF[i]=0;
+  for (Int_t i=0;i<n;i++) sindexS[i]=0;
+  for (Int_t i=0;i<2*n;i++) sindexF[i]=0;
   //
   TMath::Sort(n,inlist, sindexS, down);  
   Int_t last      = inlist[sindexS[0]];
@@ -771,7 +772,10 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    Double_t **values = new Double_t*[dim+1] ; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
-   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   if (entries == -1) {
+     delete []values;
+     return new TString("An ERROR has occured during fitting!");
+   }
    Double_t *errors = new Double_t[entries];
    memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
    
@@ -780,7 +784,11 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
       if (i < dim) centries = tree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
       else  centries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) {
+	delete []errors;
+	delete []values;
+	return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -804,15 +812,7 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
-   npoints = entries;
-//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
-   
-//    for (Int_t iparam = 0; iparam < dim; iparam++) {
-//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
-//      if (iparam < dim-1) returnFormula.Append("+");
-//    }
-//    returnFormula.Append(" )");
-   
+   npoints = entries;   
    TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
    
    for (Int_t iparam = 0; iparam < dim; iparam++) {
@@ -822,11 +822,13 @@ TString* TStatToolkit::FitPlane(TTree *tree, const char* drawCommand, const char
    returnFormula.Append(" )");
    
    
+   for (Int_t j=0; j<dim+1;j++) delete [] values[j];
 
 
    delete formulaTokens;
    delete fitter;
    delete[] values;
+   delete[] errors;
    return preturnFormula;
 }
 
@@ -866,7 +868,10 @@ TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, c
    Double_t **values = new Double_t*[dim+1] ; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
-   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   if (entries == -1) {
+     delete [] values;
+     return new TString("An ERROR has occured during fitting!");
+   }
    Double_t *errors = new Double_t[entries];
    memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
    
@@ -875,7 +880,11 @@ TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, c
       if (i < dim) centries = tree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
       else  centries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) {
+	delete []errors;
+	delete []values;
+	return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -904,13 +913,6 @@ TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, c
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
    npoints = entries;
-//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
-   
-//    for (Int_t iparam = 0; iparam < dim; iparam++) {
-//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
-//      if (iparam < dim-1) returnFormula.Append("+");
-//    }
-//    returnFormula.Append(" )");
    
    TString *preturnFormula = new TString(Form("( %f+",fitParam[0])), &returnFormula = *preturnFormula; 
    
@@ -920,12 +922,14 @@ TString* TStatToolkit::FitPlaneConstrain(TTree *tree, const char* drawCommand, c
    }
    returnFormula.Append(" )");
    
+   for (Int_t j=0; j<dim+1;j++) delete [] values[j];
    
 
 
    delete formulaTokens;
    delete fitter;
    delete[] values;
+   delete[] errors;
    return preturnFormula;
 }
 
@@ -968,7 +972,10 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
    Double_t **values = new Double_t*[dim+1] ; 
    //
    entries = tree->Draw(ferr.Data(), cutStr.Data(), "goff",  stop-start, start);
-   if (entries == -1) return new TString("An ERROR has occured during fitting!");
+   if (entries == -1) {
+     delete []values;
+     return new TString("An ERROR has occured during fitting!");
+   }
    Double_t *errors = new Double_t[entries];
    memcpy(errors,  tree->GetV1(), entries*sizeof(Double_t));
    
@@ -977,7 +984,11 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
       if (i < dim) centries = tree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff", stop-start,start);
       else  centries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff", stop-start,start);
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) {
+	delete []errors;
+	delete []values;
+	return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  tree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -997,13 +1008,6 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
    npoints = entries;
-//    TString *preturnFormula = new TString(Form("%f*(",fitParam[0])), &returnFormula = *preturnFormula; 
-   
-//    for (Int_t iparam = 0; iparam < dim; iparam++) {
-//      returnFormula.Append(Form("%s*(%f)",((TObjString*)formulaTokens->At(iparam))->GetName(),fitParam[iparam+1]/fitParam[0]));
-//      if (iparam < dim-1) returnFormula.Append("+");
-//    }
-//    returnFormula.Append(" )");
    
    TString *preturnFormula = new TString("("), &returnFormula = *preturnFormula; 
    
@@ -1014,11 +1018,12 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
    returnFormula.Append(" )");
    
    
-   
+   for (Int_t j=0; j<dim+1;j++) delete [] values[j];
    
    delete formulaTokens;
    delete fitter;
    delete[] values;
+   delete[] errors;
    return preturnFormula;
 }
 
