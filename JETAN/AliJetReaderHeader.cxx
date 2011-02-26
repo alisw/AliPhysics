@@ -44,7 +44,10 @@ AliJetReaderHeader::AliJetReaderHeader():
  fComment("No comment"),
  fDir(""),
  fBgDir(""),
- fPattern("")
+ fPattern(""),
+ fMatricesEMCAL("survey11"),
+ fGeomEMCAL("EMCAL_COMPLETEV1"),
+ fMyOADBfile("")
 {
   // Default constructor
 }
@@ -68,7 +71,10 @@ AliJetReaderHeader::AliJetReaderHeader(const char * name):
  fComment("No comment"),
  fDir(""),
  fBgDir(""),
- fPattern("")
+ fPattern(""),
+ fMatricesEMCAL("survey11"),
+ fGeomEMCAL("EMCAL_COMPLETEV1"),
+ fMyOADBfile("")
 {
   // Constructor
 }

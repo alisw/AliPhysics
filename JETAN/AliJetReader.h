@@ -18,6 +18,7 @@ class TChain;
 class TTask;
 class TClonesArray;
 class TRefArray;
+class AliEMCALGeoUtils;
 class AliJetReaderHeader;
 class AliESDEvent;
 class AliHeader;
@@ -25,6 +26,8 @@ class AliJetUnitArray;
 class AliJetHadronCorrection;
 class AliJet;
 class AliJetFillUnitArray;
+class AliOADBContainer;
+
 
 class AliJetReader : public TObject 
 {
@@ -68,11 +71,20 @@ class AliJetReader : public TObject
   virtual Bool_t GetGenJets(AliJet* /*genJets*/) {return kFALSE;}
   
   void ClearArray();
+  
+  virtual const TString GetJetanOADBPath()  {return fJetanOADBpath.Data();}
+  void SetJetanOADBPath(TString name) {fJetanOADBpath = name;}
  
+  virtual void SetDebug(Int_t debug = 0) {fDebug = debug;}
+  
  protected:
   AliJetReader(const AliJetReader& rJetReader);
   AliJetReader& operator = (const AliJetReader& rhsr);
+  Bool_t SetEMCALGeometry();
+  
 
+  TString                         fJetanOADBpath;          //! path to official OADB, to be set by the task
+  static AliEMCALGeoUtils         *fGeom;                  //! EMCAL Geometry 
   TChain                          *fChain;                 // chain for reconstructed tracks
   TChain                          *fTree;                  // tree for reconstructed tracks
   TClonesArray                    *fMomentumArray;         // array of particle momenta
@@ -95,7 +107,7 @@ class AliJetReader : public TObject
   Int_t                            fHCorrection;           //  Hadron correction flag 
   Int_t                            fECorrection;           //  Electron correction flag 
   Bool_t                           fEFlag;                 //  Electron correction flag 
-
+  Int_t                            fDebug;                //! Debug option
 
   ClassDef(AliJetReader,1)
 };

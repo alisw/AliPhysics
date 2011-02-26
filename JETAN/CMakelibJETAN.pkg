@@ -39,7 +39,7 @@ else()
   set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJET_ROOT)
 
-set ( EINCLUDE  ANALYSIS)
+set ( EINCLUDE  ANALYSIS  OADB)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	

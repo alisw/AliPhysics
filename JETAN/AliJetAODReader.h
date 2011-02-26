@@ -14,7 +14,7 @@
 #include "AliJetUnitArray.h"
 #include "AliJetGrid.h"
 class AliJetUnitArray;
-class AliJetDummyGeo;
+class AliEMCALGeoUtils;
 class AliJetHadronCorrection;
 class AliJetAODReaderHeader;
 class AliJetReaderHeader;
@@ -65,8 +65,6 @@ class AliJetAODReader : public AliJetReader
   TRefArray                  *fRef;    //! pointer to array of references to tracks
   Int_t                       fDebug;  // Debug option
   Int_t                       fOpt;    // Detector to be used for jet reconstruction
-  AliJetDummyGeo             *fGeom;             //! EMCAL Geometry
-
   AliJetHadronCorrection     *fHadCorr;          //! Pointer to Hadron Correction Object
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
   AliJetGrid                 *fEmcalGrid;        //! Pointer to grid object

@@ -20,6 +20,11 @@
 // is executed after the ESD filter task, in order to read its output
 //
 // Author: Davide Perrino <davide.perrino@cern.ch>
+//
+// **February 2011
+// implemented standard geometry (AliEMCALGeoUtils) instead of dummy one (AliJetDummyGeo)
+// moved geometry definition in AliJetReader
+// marco.bregant@subatech.in2p3.fr
 //------------------------------------------------------------------------- 
 
 
@@ -31,17 +36,19 @@
 #include <TFile.h>
 #include <TTask.h>
 #include <TGeoManager.h>
+#include <TGeoMatrix.h>
 
 #include "AliJetAODReader.h"
 #include "AliJetAODReaderHeader.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
-#include "AliJetDummyGeo.h"
+#include "AliEMCALGeoUtils.h"
 #include "AliJetAODFillUnitArrayTracks.h"
 #include "AliJetAODFillUnitArrayEMCalDigits.h"
 #include "AliJetHadronCorrectionv1.h"
 #include "AliJetUnitArray.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliJetAODReader)
 
@@ -51,7 +58,6 @@ AliJetAODReader::AliJetAODReader():
     fRef(new TRefArray),
     fDebug(0),
     fOpt(0),
-    fGeom(0),
     fHadCorr(0x0),
     fTpcGrid(0x0),
     fEmcalGrid(0x0),
@@ -472,9 +478,11 @@ void AliJetAODReader::CreateTasks(TChain* tree)
   fDZ = fReaderHeader->GetDZ();
   fTree = tree;
 
-  // Init EMCAL geometry and create UnitArray object
-  SetEMCALGeometry();
-  //  cout << "In create task" << endl;
+  // Init EMCAL geometry, if needed
+   if(fGeom == 0)
+	  SetEMCALGeometry();
+	else Info(" SetEMCALGeometry","was already done.. it's called just once !!");
+  // Init parameters
   InitParameters();
   InitUnitArray();
 
@@ -577,43 +585,14 @@ Bool_t AliJetAODReader::ExecTasks(Bool_t procid, TRefArray* refArray)
   return kTRUE;
 }
 
-//____________________________________________________________________________
-Bool_t AliJetAODReader::SetEMCALGeometry()
-{
-  // 
-  // Set the EMCal Geometry
-  //
-  
-  if (!fTree->GetFile()) 
-    return kFALSE;
 
-  TString geomFile(fTree->GetFile()->GetName());
-  geomFile.ReplaceAll("AliESDs", "geometry");
-  
-  // temporary workaround for PROOF bug #18505
-  geomFile.ReplaceAll("#geometry.root#geometry.root", "#geometry.root");
-  if(fDebug>1) printf("Current geometry file %s \n", geomFile.Data());
-
-  // Define EMCAL geometry to be able to read ESDs
-  fGeom = AliJetDummyGeo::GetInstance();
-  if (fGeom == 0)
-    fGeom = AliJetDummyGeo::GetInstance("EMCAL_COMPLETE","EMCAL");
-  
-  // To be setted to run some AliEMCALGeometry functions
-  TGeoManager::Import(geomFile);
-  fGeom->GetTransformationForSM();  
-  printf("\n EMCal Geometry set ! \n");
-  
-  return kTRUE;
-  
-}
 
 //____________________________________________________________________________
 void AliJetAODReader::InitParameters()
 {
   // Initialise parameters
   fOpt = fReaderHeader->GetDetector();
-  fNumUnits       = fGeom->GetNCells();      // Number of cells in EMCAL
+  fNumUnits       = fGeom->GetEMCGeometry()->GetNCells();      // Number of cells in EMCAL
   if(fDebug>1) printf("\n EMCal parameters initiated ! \n");
 }
 
@@ -650,31 +629,31 @@ void AliJetAODReader::InitUnitArray()
           // Define a grid of cell for the gaps between SM
           Double_t phimin0 = 0., phimin1 = 0., phimin2 = 0., phimin3 = 0., phimin4 = 0.;
           Double_t phimax0 = 0., phimax1 = 0., phimax2 = 0., phimax3 = 0., phimax4 = 0.;
-          fGeom->GetPhiBoundariesOfSMGap(0,phimin0,phimax0);
+          fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(0,phimin0,phimax0);
           fGrid0 = new AliJetGrid(0,95,phimin0,phimax0,-0.7,0.7); // 0.015 x 0.015
           fGrid0->SetGridType(0);
           fGrid0->SetMatrixIndexes();
           fGrid0->SetIndexIJ();
           n0 = fGrid0->GetNEntries();
-          fGeom->GetPhiBoundariesOfSMGap(1,phimin1,phimax1);
+          fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(1,phimin1,phimax1);
           fGrid1 = new AliJetGrid(0,95,phimin1,phimax1,-0.7,0.7); // 0.015 x 0.015
           fGrid1->SetGridType(0);
           fGrid1->SetMatrixIndexes();
           fGrid1->SetIndexIJ();
           n1 = fGrid1->GetNEntries();
-          fGeom->GetPhiBoundariesOfSMGap(2,phimin2,phimax2);
+          fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(2,phimin2,phimax2);
           fGrid2 = new AliJetGrid(0,95,phimin2,phimax2,-0.7,0.7); // 0.015 x 0.015
           fGrid2->SetGridType(0);
           fGrid2->SetMatrixIndexes();
           fGrid2->SetIndexIJ();
           n2 = fGrid2->GetNEntries();
-          fGeom->GetPhiBoundariesOfSMGap(3,phimin3,phimax3);
+          fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(3,phimin3,phimax3);
           fGrid3 = new AliJetGrid(0,95,phimin3,phimax3,-0.7,0.7); // 0.015 x 0.015
           fGrid3->SetGridType(0);
           fGrid3->SetMatrixIndexes();
           fGrid3->SetIndexIJ();
           n3 = fGrid3->GetNEntries();
-          fGeom->GetPhiBoundariesOfSMGap(4,phimin4,phimax4);
+          fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(4,phimin4,phimax4);
           fGrid4 = new AliJetGrid(0,95,phimin4,phimax4,-0.7,0.7); // 0.015 x 0.015
           fGrid4->SetGridType(0);
           fGrid4->SetMatrixIndexes();
