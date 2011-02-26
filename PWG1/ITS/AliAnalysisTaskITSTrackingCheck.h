@@ -59,6 +59,8 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistNclsITSSA; //! output hist
   TH1F         *fHistNclsITSSAInAcc; //! output hist
   TH1F         *fHistClusterMapITSMI; //! output hist
+  TH1F         *fHistClusterMapITSMIokA; //! output hist
+  TH1F         *fHistClusterMapITSMIokB; //! output hist
   TH1F         *fHistClusterMapITSMIok; //! output hist
   TH1F         *fHistClusterMapITSMIbad; //! output hist
   TH1F         *fHistClusterMapITSMIskipped; //! output hist
@@ -88,6 +90,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistClusterMapModuleITSMIokInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSMIbadInAcc; //! output hist
   TH1F         *fHistClusterMapModuleITSMInoclsInAcc; //! output hist
+  TH1F         *fHistNClustersMapModule; //! output hist
   TH1F         *fHistZatSPDouter0ok; //! output hist
   TH1F         *fHistZatSPDouter1ok; //! output hist
   TH1F         *fHistZatSPDouter2ok; //! output hist
@@ -101,14 +104,28 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH2F         *fHistxlocVSmodSDDok; //! output hist
   TH1F         *fHistxlocSDDall; //! output hist
   TH1F         *fHistzlocSDDall; //! output hist
+  TH1F         *fHistxlocSDDA; //! output hist
+  TH1F         *fHistxlocSDDB; //! output hist
+  TH1F         *fHistzlocSDDA; //! output hist
+  TH1F         *fHistzlocSDDB; //! output hist
   TH1F         *fHistPhiTPCInAcc; //! output hist
   TH1F         *fHistEtaTPCInAcc; //! output hist
+  TH1F         *fHistEtaTPCInAccA; //! output hist
+  TH1F         *fHistEtaTPCInAccB; //! output hist
+  TH1F         *fHistNclsTPCInAccA; //! output hist
+  TH1F         *fHistNclsTPCInAccB; //! output hist
+  TH1F         *fHistChi2PerClsTPCInAccA; //! output hist
+  TH1F         *fHistChi2PerClsTPCInAccB; //! output hist
+  TH1F         *fHistChi2PerClsITSInAccA; //! output hist
+  TH1F         *fHistChi2PerClsITSInAccB; //! output hist
   TH1F         *fHistPtTPC; //! output hist
   TH1F         *fHistPtTPCInAcc; //! output hist
   TH1F         *fHistPtTPCInAccMCtwoSPD; //! output hist
   TH1F         *fHistPtTPCInAccMConeSPD; //! output hist
   TH2F         *fHistdEdxVSPtTPCInAcc; //! output hist
   TH2F         *fHistdEdxVSPtITSTPCsel; //! output hist
+  TH2F         *fHistTPCclsVSPtTPCInAcc; //! output hist
+  TH2F         *fHistTPCclsVSPtITSMISPDInAcc; //! output hist
   TH2F         *fHistPtVSphiTPCInAcc; //! output hist
   TH1F         *fHistPtTPCInAccNoTRDout; //! output hist
   TH1F         *fHistPtTPCInAccNoTOFout; //! output hist
@@ -134,6 +151,12 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPtITSMI6InAcc; //! output hist
   TH1F         *fHistPtITSMISPDInAcc; //! output hist
   TH1F         *fHistPtITSMIoneSPDInAcc; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccShared; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccSharedSPD; //! output hist
+  TH1F         *fHistPtITSMISPD1InAccShared; //! output hist
+  TH1F         *fHistPtITSMISPD2InAccShared; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccSharedFake; //! output hist
+  TH1F         *fHistPtITSMIoneSPDInAccSharedSPDFake; //! output hist
   TH1F         *fHistPhiITSMI2InAcc; //! output hist
   TH1F         *fHistPhiITSMI3InAcc; //! output hist
   TH1F         *fHistPhiITSMI4InAcc; //! output hist
@@ -184,6 +207,10 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F         *fHistPhiITSMIokbadoutinz6InAcc; //! output hist
   TH1F         *fHistRProdVtxInAccP; //! output hist
   TH1F         *fHistRProdVtxInAccS; //! output hist
+  TH1F     *fHistd0rphiTPCInAccA; //! output hist
+  TH1F     *fHistd0rphiTPCInAccB; //! output hist
+  TH1F     *fHistd0zTPCInAccA; //! output hist
+  TH1F     *fHistd0zTPCInAccB; //! output hist
   TH1F     *fHistd0rphiTPCInAccP150200; //! output hist
   TH1F     *fHistd0rphiTPCInAccP500700; //! output hist
   TH1F     *fHistd0rphiTPCInAccP10001500; //! output hist
@@ -202,6 +229,10 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   TH1F     *fHistd0rphiITSMIoneSPDInAccP10001500; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccP25004000; //! output hist
   TH1F     *fHistd0rphiITSMIoneSPDInAccP40008000; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccA; //! output hist
+  TH1F     *fHistd0rphiITSMIoneSPDInAccB; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccA; //! output hist
+  TH1F     *fHistd0zITSMIoneSPDInAccB; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP150200; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP500700; //! output hist
   TH1F     *fHistd0zITSMIoneSPDInAccP10001500; //! output hist
@@ -264,6 +295,7 @@ class AliAnalysisTaskITSTrackingCheck : public AliAnalysisTaskSE
   Bool_t SelectPt(Double_t pt);
   Int_t MakeITSflag(AliESDtrack *track) const;
   Bool_t IsSelectedCentrality() const;
+  void FillNClustersModuleMap();
 
   ClassDef(AliAnalysisTaskITSTrackingCheck,12); // ITS tracks analysis
 };
