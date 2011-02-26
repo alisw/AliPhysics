@@ -157,6 +157,10 @@ Bool_t AliAnalysisTaskFilterFriend::UserSelectESDfriendForCurrentEvent()
 
 	
 	fESDInput = dynamic_cast<AliESDEvent*>(InputEvent()); // get the input ESD
+	if (!fESDInput){
+		AliError("No ESD Input, discarding event...");
+		return kFALSE;
+	}
 	if ((fESDInput->GetNumberOfTracks())%2 == 0) {
 		AliDebug(2,"******************Selecting event");
 		return kTRUE;
