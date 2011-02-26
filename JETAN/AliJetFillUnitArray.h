@@ -21,7 +21,7 @@
 
 #include "AliJetReaderHeader.h"
 #include "AliJetAODReaderHeader.h"
-#include "AliJetDummyGeo.h"
+#include "AliEMCALGeoUtils.h"
 #include "AliJetGrid.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -29,7 +29,7 @@
 
 class Riostream;
 
-class AliEMCALGeometry;
+class AliEMCALGeoUtils;
 class AliJetReader;
 class AliJetESDReader;
 
@@ -43,7 +43,7 @@ class AliJetFillUnitArray : public TTask
   
   // Setter
   virtual void SetReaderHeader(AliJetReaderHeader* const readerHeader) {fReaderHeader = readerHeader;}
-  virtual void SetGeom(AliJetDummyGeo* const geom)                     {fGeom = geom;}
+  virtual void SetGeom(AliEMCALGeoUtils* const geom)                     {fGeom = geom;}
   virtual void SetMomentumArray(TClonesArray* const momentumArray)     {fMomentumArray = momentumArray;}
   virtual void SetUnitArray(TClonesArray* const unitArray)             {fUnitArray = unitArray;}
   virtual void SetRefArray(TRefArray* const refArray)                  {fRefArray = refArray;}
@@ -104,7 +104,7 @@ class AliJetFillUnitArray : public TTask
   Bool_t                fProcId;          // Bool_t for TProcessID synchronization  
   AliJetGrid           *fTPCGrid;         // Define filled grid
   AliJetGrid           *fEMCalGrid;       // Define filled grid
-  AliJetDummyGeo       *fGeom;            // Define EMCal geometry
+  AliEMCALGeoUtils     *fGeom;            // Define EMCal geometry
 
   Int_t                 fNphi;            // number of points in the grid:   phi
   Int_t                 fNeta;            //               "                 eta

@@ -26,6 +26,10 @@ class AliJetReaderHeader : public TNamed
   virtual const char* GetDirectory()  {return fDir.Data();}
   virtual const char* GetBgDirectory(){return fBgDir.Data();}
   virtual const char* GetPattern() {return fPattern.Data();}
+  virtual const TString GetEMCALmatrices2bLoad() {return fMatricesEMCAL;}
+  virtual const TString GetEMCALgeo2bLoad() {return fGeomEMCAL;}
+  virtual const TString GetMyOADBfile() {return fMyOADBfile;} 
+  
   virtual Float_t     GetFiducialEtaMin() const {return fFiducialEtaMin;}
   virtual Float_t     GetFiducialEtaMax() const {return fFiducialEtaMax;} 
   virtual Float_t     GetFiducialPhiMin() const {return fFiducialPhiMin;}
@@ -46,6 +50,9 @@ class AliJetReaderHeader : public TNamed
   virtual void SetDirectory(const char* s)   {fDir=TString(s);}
   virtual void SetBgDirectory(const char* s, Int_t n = 1)
       {fBgDir=TString(s); fSignalPerBg = n;}
+  virtual void SetEMCALgeo2bLoad(const char* s)   {fGeomEMCAL=TString(s);} 
+  virtual void SetEMCALmatrices2bLoad(const char* s)   {fMatricesEMCAL=TString(s);}
+  virtual void SetMyOADBfile(const char* s)   {fMyOADBfile=TString(s);}
   virtual void SetFirstEvent(Int_t i=0) {fFirst=i;}
   virtual void SetLastEvent(Int_t i=-1) {fLast=i;}
   virtual void SetFiducialEta(Float_t etamin, Float_t etamax) 
@@ -75,8 +82,11 @@ class AliJetReaderHeader : public TNamed
   TString fDir;            // directory with input files for signal
   TString fBgDir;          // directory with input files for background
   TString fPattern;        // pattern to look for input files
+  TString fMatricesEMCAL;		// survey/matrices version for EMCAL
+  TString fGeomEMCAL;        // geometry version for EMCAL
+  TString fMyOADBfile;      //  private version of the OADB file with EMCAL matrices 
   
-  ClassDef(AliJetReaderHeader,2);
+  ClassDef(AliJetReaderHeader,3);
 };
  
 #endif

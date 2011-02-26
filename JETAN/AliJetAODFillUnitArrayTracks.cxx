@@ -111,7 +111,7 @@ AliJetAODFillUnitArrayTracks& AliJetAODFillUnitArrayTracks::operator=(const AliJ
 void AliJetAODFillUnitArrayTracks::InitParameters()
 {
   //  fHadCorr        = 0;     // For hadron correction
-  fNumUnits = fGeom->GetNCells();      // Number of towers in EMCAL
+  fNumUnits = fGeom->GetEMCGeometry()->GetNCells();      // Number of towers in EMCAL
 
   fTPCGrid->GetAccParam(fNphi,fNeta,fPhiMin, 
 			fPhiMax,fEtaMin,fEtaMax);
@@ -279,11 +279,11 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
 		{
 		  Double_t phimin0 = 0., phimin1 = 0., phimin2 = 0., phimin3 = 0., phimin4 = 0.;
 		  Double_t phimax0 = 0., phimax1 = 0., phimax2 = 0., phimax3 = 0., phimax4 = 0.;
-		  fGeom->GetPhiBoundariesOfSMGap(0,phimin0,phimax0);
-		  fGeom->GetPhiBoundariesOfSMGap(1,phimin1,phimax1);
-		  fGeom->GetPhiBoundariesOfSMGap(2,phimin2,phimax2);
-		  fGeom->GetPhiBoundariesOfSMGap(3,phimin3,phimax3);
-		  fGeom->GetPhiBoundariesOfSMGap(4,phimin4,phimax4);
+		  fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(0,phimin0,phimax0);
+		  fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(1,phimin1,phimax1);
+		  fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(2,phimin2,phimax2);
+		  fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(3,phimin3,phimax3);
+		  fGeom->GetEMCGeometry()->GetPhiBoundariesOfSMGap(4,phimin4,phimax4);
 		  Int_t n0 = fGrid0->GetNEntries();
 		  Int_t n1 = fGrid1->GetNEntries();
 		  Int_t n2 = fGrid2->GetNEntries();
@@ -706,16 +706,4 @@ void AliJetAODFillUnitArrayTracks::Exec(Option_t* const /*option*/)
   }  
   
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

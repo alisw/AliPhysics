@@ -21,7 +21,7 @@
 class TRefArray;
 class AliJetESDReaderHeader;
 class AliEMCALGeometry;
-class AliJetDummyGeo;
+class AliEMCALGeoUtils;
 class AliJetHadronCorrection;
 class AliJetUnitArray;
 class AliJetReaderHeader;
@@ -55,7 +55,6 @@ class AliJetESDReader : public AliJetReader
   void       SetFractionHadronicCorrection(Double_t val);
 
  protected:
-  AliJetDummyGeo             *fGeom;             //! EMCAL Geometry 
   AliJetHadronCorrection     *fHadCorr;          //! Pointer to Hadron Correction Object 
   AliJetGrid                 *fTpcGrid;          //! Pointer to grid object
   AliJetGrid                 *fEmcalGrid;        //! Pointer to grid object
@@ -80,7 +79,6 @@ class AliJetESDReader : public AliJetReader
   Int_t                       fNphi;             // Number of bins in phi of tpc grid
   TRefArray                  *fRefArray;         // array of digit position and energy
   Bool_t                      fProcId;           // Bool_t for TProcessID synchronization
-  Bool_t SetEMCALGeometry();
   void InitParameters();
   AliJetESDReader(const AliJetESDReader &det);
   AliJetESDReader &operator=(const AliJetESDReader &det);

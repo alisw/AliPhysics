@@ -218,6 +218,12 @@ void AliAnalysisTaskJets::Init()
   AliJetReaderHeader *header = (AliJetReaderHeader*)fJetFinder->GetReader()->GetReaderHeader();
   fOpt = header->GetDetector();
 
+// AODB path for Jetan Analysis... if not alread defined, use the standard one
+if ((!(((AliJetReader*) fJetFinder->GetReader())->GetJetanOADBPath()).Length())) {
+((AliJetReader*) fJetFinder->GetReader())->SetJetanOADBPath(AliAnalysisManager::GetOADBPath());
+}
+else Info( "Init"," OADBPath for Jetan was already defined (config file?) as %s",(char*)((fJetFinder->GetReader()->GetJetanOADBPath()).Data()));
+	
   // Initialise Jet Analysis
   if(fOpt == 0) fJetFinder->Init();
   else fJetFinder->InitTask(fChain); // V2
