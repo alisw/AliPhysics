@@ -135,7 +135,7 @@ Int_t AliMixEventCutObj::GetBinNumber(Float_t num) const
    Int_t binNum = 0;
    for (Float_t iCurrent = fCutMin; iCurrent < fCutMax; iCurrent += fCutStep) {
       binNum++;
-      if ((num >= iCurrent) && (num <= iCurrent + fCutStep - fCutSmallVal)) {
+      if ((num >= iCurrent) && (num < iCurrent + fCutStep - fCutSmallVal)) {
          return binNum;
       }
    }
@@ -148,49 +148,68 @@ Int_t AliMixEventCutObj::GetIndex(AliVEvent *ev)
    //
    // Finds bin (index) in current cut from event information.
    //
-   AliESDEvent *esd = dynamic_cast<AliESDEvent *>(ev);
-   if (esd) return GetIndex(esd);
-   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(ev);
-   if (aod) return GetIndex(aod);
-   return -1;
+   return GetBinNumber(GetValue(ev));
 }
 
 //_________________________________________________________________________________________________
-Int_t AliMixEventCutObj::GetIndex(AliESDEvent *ev)
+Double_t AliMixEventCutObj::GetValue(AliVEvent* ev)
 {
    //
-   // Finds bin (index) in current cut from ESD event information.
+   // Returns value from event
    //
+
+   AliESDEvent *esd = dynamic_cast<AliESDEvent *>(ev);
+   if (esd) return GetValue(esd);
+   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(ev);
+   if (aod) return GetValue(aod);
+
+   AliFatal("Event is not supported in Event Mixing cuts!!!!");
+   return -99999;
+}
+
+//_________________________________________________________________________________________________
+Double_t AliMixEventCutObj::GetValue(AliESDEvent* ev)
+{
+   //
+   // Returns value from esd event
+   //
+
    switch (fCutType) {
       case kMultiplicity:
-         return GetBinNumber((Float_t)ev->GetNumberOfTracks());
+         return (Double_t)ev->GetNumberOfTracks();
       case kZVertex:
-         return GetBinNumber(ev->GetVertex()->GetZ());
+         return ev->GetVertex()->GetZ();
       case kNumberV0s:
-         return GetBinNumber(ev->GetNumberOfV0s());
+         return ev->GetNumberOfV0s();
       case kNumberTracklets:
          const AliMultiplicity *multESD = ev->GetMultiplicity();
-         return GetBinNumber(multESD->GetNumberOfTracklets());
+         return multESD->GetNumberOfTracklets();
    }
-   return -1;
+
+   AliFatal("Mixing Cut TYPE is not supported");
+   return -99999;
+
 }
 
 //_________________________________________________________________________________________________
-Int_t AliMixEventCutObj::GetIndex(AliAODEvent *ev)
+Double_t AliMixEventCutObj::GetValue(AliAODEvent* ev)
 {
    //
-   // Finds bin (index) in current cut from AOD event information.
+   // Returns value from aod event
    //
    switch (fCutType) {
       case kMultiplicity:
-         return GetBinNumber((Float_t)ev->GetNumberOfTracks());
+         return (Double_t) ev->GetNumberOfTracks();
       case kZVertex:
-         return GetBinNumber(ev->GetVertex(0)->GetZ());
+         return ev->GetVertex(0)->GetZ();
       case kNumberV0s:
-         return GetBinNumber(ev->GetNumberOfV0s());
+         return ev->GetNumberOfV0s();
    }
-   return -1;
+
+   AliFatal("Mixing Cut TYPE is not supported");
+   return -99999;
 }
+
 //_________________________________________________________________________________________________
 const char *AliMixEventCutObj::GetCutName(Int_t index) const
 {
@@ -220,3 +239,13 @@ void AliMixEventCutObj::SetCurrentValueToIndex(Int_t index)
    //
    for (Int_t i = 0; i < index; i++) AddStep();
 }
+
+//_________________________________________________________________________________________________
+void AliMixEventCutObj::PrintValues(AliVEvent* main, AliVEvent* mix)
+{
+   //
+   // Prints values of both events for current type
+   //
+   AliInfo(Form("name=%s main=%f mix=%f", GetCutName(), GetValue(main), GetValue(mix)));
+}
+

@@ -15,6 +15,7 @@
 
 #include "AliAnalysisTaskSE.h"
 
+class AliMixInputEventHandler;
 class TList;
 class AliMixInfo;
 class AliAnalysisTaskMixInfo : public AliAnalysisTaskSE {
@@ -28,21 +29,27 @@ public:
    virtual void    UserExecMix(Option_t *option = "");
    virtual void    FinishTaskOutput();
 
+   void            InitInputHandlers();
    void            InitMixInfo();
    // sets log type to list of classes
    void            SetLogType(AliLog::EType_t type, TString allClasses = "");
    // sets correctly debug level to AliLog for all classes listed in fLogClassesString
    void            SetDebugForAllClasses();
 
+   void            PrintEventInfo();
+
 private:
 
-   TList       *fOutputList;     //! output list
-   AliMixInfo  *fMixInfo;        //!
+   AliMultiInputEventHandler  *fInputEHMain;       //! input multi handler
+   AliMixInputEventHandler    *fInputEHMix;        //! mix input handler
 
-   Long64_t    fCurrentEntryTmp; //! temporary current entry number
+   TList                      *fOutputList;        //! output list
+   AliMixInfo                 *fMixInfo;           //! mix info
 
-   AliLog::EType_t     fLogType;           // log type
-   TString             fLogClassesString;  // all classes string divided with ":"
+   Long64_t                    fCurrentEntryTmp;   //! temporary current entry number
+
+   AliLog::EType_t             fLogType;           // log type
+   TString                     fLogClassesString;  // all classes string divided with ":"
 
    AliAnalysisTaskMixInfo(const AliAnalysisTaskMixInfo &); // not implemented
    AliAnalysisTaskMixInfo &operator=(const AliAnalysisTaskMixInfo &); // not implemented

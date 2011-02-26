@@ -25,6 +25,7 @@ public:
 
    virtual void Print(const Option_t *) const;
    void PrintCurrentInterval();
+   void PrintValues(AliVEvent *main, AliVEvent* mix);
    void Reset();
    void AddStep();
 
@@ -37,8 +38,10 @@ public:
    Short_t     GetType() const { return fCutType; }
    Int_t       GetBinNumber(Float_t num) const;
    Int_t       GetIndex(AliVEvent *ev);
-   Int_t       GetIndex(AliESDEvent *ev);
-   Int_t       GetIndex(AliAODEvent *ev);
+   Double_t    GetValue(AliVEvent *ev);
+   Double_t    GetValue(AliESDEvent *ev);
+   Double_t    GetValue(AliAODEvent *ev);
+
    const char *GetCutName(Int_t index = -1) const;
 
    void        SetCurrentValueToIndex(Int_t index);

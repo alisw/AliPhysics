@@ -4,6 +4,12 @@
 // AliAnalysisTaskMixInfo is task
 // for mixing info
 //
+// Mixing info can be enabled by setting one of following lines in UserCreateOutput() in your task
+//       // prints mixing info
+//       AliLog::SetClassDebugLevel("AliAnalysisTaskMixInfo", AliLog::kDebug);
+//       // prints mixing info + event info for both (main and mixed) events
+//       AliLog::SetClassDebugLevel("AliAnalysisTaskMixInfo", AliLog::kDebug+1);
+//
 // authors:
 //          Martin Vala (martin.vala@cern.ch)
 //
@@ -17,6 +23,7 @@
 #include "AliAnalysisTaskMixInfo.h"
 #include "AliMixInfo.h"
 #include "AliMixEventPool.h"
+#include "AliMixEventCutObj.h"
 
 
 ClassImp(AliAnalysisTaskMixInfo)
@@ -24,6 +31,8 @@ ClassImp(AliAnalysisTaskMixInfo)
 //________________________________________________________________________
 AliAnalysisTaskMixInfo::AliAnalysisTaskMixInfo(const char *name)
    : AliAnalysisTaskSE(name),
+     fInputEHMain(0),
+     fInputEHMix(0),
      fOutputList(0),
      fMixInfo(0),
      fCurrentEntryTmp(-1),
@@ -54,22 +63,21 @@ void AliAnalysisTaskMixInfo::UserCreateOutputObjects()
    SetDebugForAllClasses();
    fOutputList = new TList();
    fOutputList->SetOwner(kTRUE);
-   if (!fMixInfo) InitMixInfo();
 
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
-      AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (mixEH) {
-         AliMixEventPool *evPool = mixEH->GetEventPool();
-         if (evPool) {
-            evPool->SetBufferSize(mixEH->BufferSize());
-            evPool->SetMixNumber(mixEH->MixNumber());
-            fMixInfo->SetEventPool(evPool);
-         }
+   // sets all Inuput Handler pointers
+   InitInputHandlers();
+
+   // inits mix info
+   InitMixInfo();
+
+   if (fInputEHMix) {
+      AliMixEventPool *evPool = fInputEHMix->GetEventPool();
+      if (evPool) {
+         evPool->SetBufferSize(fInputEHMix->BufferSize());
+         evPool->SetMixNumber(fInputEHMix->MixNumber());
+         fMixInfo->SetEventPool(evPool);
       }
    }
-
    if (fMixInfo) fOutputList->Add(fMixInfo);
 
    // Post output data.
@@ -81,23 +89,14 @@ void AliAnalysisTaskMixInfo::UserExec(Option_t *)
 {
    // Main loop
    // Called for each event
-//     if (fCurrentEntry != fCurrentEntryTmp) {
-//       fCurrentEntryTmp = fCurrentEntry;
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
-      AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (fMixInfo && mixEH) {
-         if (mixEH->BufferSize() > 1) {
-            if (mixEH->NumberMixedTimes() >= mixEH->BufferSize())
-               fMixInfo->FillHistogram(AliMixInfo::kMainEvents, mixEH->CurrentBinIndex());
-         } else {
-            fMixInfo->FillHistogram(AliMixInfo::kMainEvents, mixEH->CurrentBinIndex());
-         }
-
-//          if (mixEH->CurrentEntryMix() >= 0)
-         AliDebug(AliLog::kDebug + 1, Form("Main %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
+   if (fMixInfo && fInputEHMix) {
+      if (fInputEHMix->BufferSize() > 1) {
+         if (fInputEHMix->NumberMixedTimes() >= fInputEHMix->BufferSize())
+            fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
+      } else {
+         fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
       }
+      AliDebug(AliLog::kDebug, Form("Main %lld %d [%lld,%lld] %d", fInputEHMix->CurrentEntry(), fInputEHMix->CurrentBinIndex(), fInputEHMix->CurrentEntryMain(), fInputEHMix->CurrentEntryMix(), fInputEHMix->NumberMixed()));
    }
    // Post output data.
    PostData(1, fOutputList);
@@ -107,18 +106,19 @@ void AliAnalysisTaskMixInfo::UserExec(Option_t *)
 void AliAnalysisTaskMixInfo::UserExecMix(Option_t *)
 {
    // UserExecMix
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
-      AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (!mixEH) return;
-      if (fMixInfo) fMixInfo->FillHistogram(AliMixInfo::kMixedEvents, mixEH->CurrentBinIndex());
-      if (mixEH->CurrentEntryMix() < 0) {
-         AliError("Mix entry is -1 and it should not happen !!!!!");
-         return ;
-      }
-      AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
+
+   if (!fInputEHMix) return;
+
+   // fills bin index (even when it is -1, so we know out of range combinations)
+   if (fMixInfo) fMixInfo->FillHistogram(AliMixInfo::kMixedEvents, fInputEHMix->CurrentBinIndex());
+
+   // just test
+   if (fInputEHMix->CurrentEntryMix() < 0) {
+      AliError("Mix entry is -1 and it should not happen !!!!!");
+      return ;
    }
+   AliDebug(AliLog::kDebug, Form("Mixing %lld %d [%lld,%lld] %d", fInputEHMix->CurrentEntry(), fInputEHMix->CurrentBinIndex(), fInputEHMix->CurrentEntryMain(), fInputEHMix->CurrentEntryMix(), fInputEHMix->NumberMixed()));
+   if (AliLog::GetDebugLevel("", IsA()->GetName()) > AliLog::kDebug) PrintEventInfo();
    // Post output data.
    PostData(1, fOutputList);
 }
@@ -182,33 +182,57 @@ void AliAnalysisTaskMixInfo::SetDebugForAllClasses()
    AliDebug(AliLog::kDebug + 10, "->");
 }
 
-
+//_____________________________________________________________________________
 void AliAnalysisTaskMixInfo::InitMixInfo()
 {
    //
    // Init mixing info
    //
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
-      AliMixInputEventHandler *mixEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (mixEH) {
-         fMixInfo = new AliMixInfo("mixInfo", "Mix title");
-         AliMixEventPool *evPool = mixEH->GetEventPool();
-         if (!evPool) {
-            //             TList *list = new TList;
-            if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMainEvents, 1, 1, 2);
-            if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMixedEvents, 1, 1, 2);
-         } else {
-            if (evPool->NeedInit()) evPool->Init();
-            Int_t num = evPool->GetListOfEntryLists()->GetEntriesFast();
-            if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMainEvents, num, 1, num + 1);
-            if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMixedEvents, num, 1, num + 1);
-         }
+   if (fInputEHMix) {
+      fMixInfo = new AliMixInfo("mixInfo", "Mix title");
+      AliMixEventPool *evPool = fInputEHMix->GetEventPool();
+      if (!evPool) {
+         //             TList *list = new TList;
+         if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMainEvents, 1, 1, 2);
+         if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMixedEvents, 1, 1, 2);
       } else {
-         AliError("No mixEH");
+         if (evPool->NeedInit()) evPool->Init();
+         Int_t num = evPool->GetListOfEntryLists()->GetEntriesFast();
+         if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMainEvents, num, 1, num + 1);
+         if (fMixInfo) fMixInfo->CreateHistogram(AliMixInfo::kMixedEvents, num, 1, num + 1);
       }
-   } else {
-      AliError("No inEvHMain");
+   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskMixInfo::PrintEventInfo()
+{
+   //
+   // Prints event info for all event mxing cuts
+   //
+   if (fInputEHMix) {
+      TObjArrayIter next(fInputEHMix->GetEventPool()->GetListOfEventCuts());
+      AliMixEventCutObj *cut;
+      AliInputEventHandler *ihMain = fInputEHMain->GetFirstInputEventHandler();
+      AliMultiInputEventHandler *ihMultiMix = fInputEHMix->GetFirstMultiInputHandler();
+      AliInputEventHandler *ihMix = 0;
+      if (ihMultiMix) ihMix = ihMultiMix->GetFirstInputEventHandler();
+      if (!ihMix) return;
+      while ((cut = (AliMixEventCutObj *) next())) {
+         cut->PrintValues(ihMain->GetEvent(), ihMix->GetEvent());
+      }
+   }
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskMixInfo::InitInputHandlers()
+{
+   //
+   // Sets needed input handlers
+   //
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   fInputEHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
+   if (fInputEHMain) {
+      fInputEHMix = dynamic_cast<AliMixInputEventHandler *>(fInputEHMain->GetFirstMultiInputHandler());
    }
 }

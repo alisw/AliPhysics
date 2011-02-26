@@ -319,16 +319,12 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
 
    Int_t mixNum = 1;
    if (text) {
-
-
       if (mixInfo) {
-
          AliMixEventPool *evPool = (AliMixEventPool *) mixInfo->GetEventPool("mixEventPool");
          if (evPool) {
             mixNum = evPool->GetMixNumber();
             if (binX - 1 >= 0) {
                if (!evPool->SetCutValuesFromBinIndex(binX - 1)) return;
-
             }
             text->SetName("mixInfoText");
             text->SetTextAlign(12);
@@ -340,7 +336,6 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
             text->AddText(Form("BINCONTENT=%d", hist2DValue));
             TObjArray *eventCuts = evPool->GetListOfEventCuts();
             if (eventCuts) {
-
                TObjArrayIter next(eventCuts);
                AliMixEventCutObj *cut;
                while ((cut = (AliMixEventCutObj *) next())) {
@@ -348,9 +343,7 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
                   else text->AddText(Form("%s <Out of Range>", cut->GetCutName()));
                }
             }
-
          }
-
       }
       switch (hist2DValue) {
          case 1 :
