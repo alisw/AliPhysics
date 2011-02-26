@@ -51,6 +51,7 @@ AliT0CalibLaserData::AliT0CalibLaserData() : TObject(),
   
 {
 //
+for ( int i=0; i<30; i++ ) { fEntries[i] = NULL; fHistLimits[i] = 0.0;}
 }
 /*
 //________________________________________________________________
@@ -234,8 +235,8 @@ void AliT0CalibLaserData::ReadData()
   Int_t channels[106];
   
   TString names[106], type;
-  AliT0LookUpKey* lookkey= new AliT0LookUpKey();
-  AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
+  AliT0LookUpKey* lookkey;//= new AliT0LookUpKey();
+  AliT0LookUpValue*  lookvalue;//= new AliT0LookUpValue();
   AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   AliCDBManager::Instance()->SetRun(0);
   AliT0Parameters *fParam = AliT0Parameters::Instance();

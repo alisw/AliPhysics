@@ -91,8 +91,8 @@ uncertances
 
   fParam = AliT0Parameters::Instance();
   fParam->Init();
-  AliT0LookUpKey* lookkey= new AliT0LookUpKey();
-  AliT0LookUpValue*  lookvalue= new AliT0LookUpValue();
+  AliT0LookUpKey* lookkey;//= new AliT0LookUpKey();
+  AliT0LookUpValue*  lookvalue;//= new AliT0LookUpValue();
   TMap *lookup = fParam->GetMapLookup();
   TMapIter iter(lookup);
 
@@ -101,8 +101,8 @@ uncertances
       lookvalue = ( AliT0LookUpValue*) iter.Next();
       lookkey = (AliT0LookUpKey*) lookup->GetValue(lookvalue);
       fLookUp.Add(lookkey, lookvalue);
-      lookkey= new AliT0LookUpKey();
-      lookvalue= new AliT0LookUpValue();
+      //lookkey= new AliT0LookUpKey();
+      //lookvalue= new AliT0LookUpValue();
     }
     
 }

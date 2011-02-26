@@ -86,6 +86,14 @@ AliT0DataDCS::AliT0DataDCS():
   {
     fDRM[i]=0.;
   }
+  for ( Int_t i=0; i<kCFD; i++ )
+  {
+    fCFDtA[i] = 0;
+    fCFDtC[i] = 0;
+    fCFDwA[i] = 0;
+    fCFDwC[i] = 0;
+  }
+
 
 }
 //---------------------------------------------------------------
@@ -212,6 +220,13 @@ AliT0DataDCS::AliT0DataDCS(const AliT0DataDCS & data):
   for(Int_t i=0;i<kDRM;i++)
   {
     fDRM[i]=data.fDRM[i];
+  }
+  for ( Int_t i=0; i<kCFD; i++ )
+  {
+    fCFDtA[i] = data.fCFDtA[i];
+    fCFDtC[i] = data.fCFDtC[i];
+    fCFDwA[i] = data.fCFDwA[i];
+    fCFDwC[i] = data.fCFDwC[i];
   }
 }
 //---------------------------------------------------------------
@@ -507,9 +522,9 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
                       AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
-                      t0MPDcentA +=  Int_t(aValue->GetFloat());
+                      t0MPDcentA +=  aValue->GetFloat();
                     }
-                    fMPDcentA =Int_t( t0MPDcentA /((Float_t) aliasEntr[j]) );
+                    fMPDcentA = t0MPDcentA /((Float_t) aliasEntr[j]);
                   }
 		  else if (j < 2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM+kDRM+3*kAtten)
                   {

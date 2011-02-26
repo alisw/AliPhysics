@@ -39,7 +39,8 @@ ClassImp(AliT0TriggerParameters)
 
 {
   //
-
+  // for (Int_t i=0; i<sizeof(fThreshold)/sizeof(*fThreshold); i++) fThreshold[i] = 0;
+ for (Int_t i=0; i<24; i++) fThreshold[i] = 0;
 }
 //_____________________________________________________________________________
 

@@ -92,7 +92,6 @@ ClassImp(AliT0Reconstructor)
     AliT0CalibSeasonTimeShift *timeshift = (AliT0CalibSeasonTimeShift*)entry5->GetObject();
     fTimeMeanShift = timeshift->GetT0Means();
     fTimeSigmaShift  = timeshift->GetT0Sigmas();
-    //   timeshift->Print();
    }
   else
     AliWarning("Time Adjust is not found in OCDB !");
@@ -209,7 +208,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   
   for (Int_t ipmt=0; ipmt<12; ipmt++){
-    if(time[ipmt] > 1 && adc[ipmt]>0.1) {
+    if(time[ipmt] > 1 ) {
       if(time[ipmt]<besttimeC){
 	besttimeC=time[ipmt]; //timeC
 	pmtBestC=ipmt;
@@ -217,7 +216,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     }
   }
   for ( Int_t ipmt=12; ipmt<24; ipmt++){
-    if(time[ipmt] > 1 && adc[ipmt]>0.1) {
+    if(time[ipmt] > 1) {
       if(time[ipmt]<besttimeA) {
 	besttimeA=time[ipmt]; //timeA
         pmtBestA=ipmt;}
@@ -273,10 +272,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // reference amplitude and time ref. point from reco param
 
   Float_t refAmp = GetRecoParam()->GetRefAmp();
-  Int_t refPoint = 0;
+  //  Int_t refPoint = 0;
   //Bad channel
   Int_t badpmt = GetRecoParam()->GetRefPoint();
-  Int_t low[500], high[500];
+  cout<<" bad pmt "<<badpmt<<endl;
+  Int_t low[110], high[110];
 
   Int_t allData[110][5];
   
@@ -292,10 +292,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 
       low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
       high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
+      cout<<i0<<" "<<  low[i0]<<" "<< high[i0] <<endl;
       }
    
-  Float_t lowAmpThreshold =  GetRecoParam()->GetLow(200);  
-  Float_t highAmpThreshold =  GetRecoParam()->GetHigh(200);  
   Double32_t besttimeA=9999999;
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
@@ -330,8 +329,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
 	}
 	Int_t ref=0;
-	if (refPoint>0) 
-	  ref = allData[refPoint][0]-5000;
+	//	if (refPoint>0) 
+	//  ref = allData[refPoint][0]-5000;
 	
 	Float_t channelWidth = fParam->GetChannelWidth() ;  
 	
@@ -442,7 +441,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold)
+	 if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1 )
 	   {
 	     if(time[ipmt]<besttimeC){
 		  besttimeC=time[ipmt]; //timeC
@@ -452,7 +451,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold)
+	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1)
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
@@ -518,9 +517,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   ****************************************************/
   
   AliDebug(1,Form("Start FillESD T0"));
-
   pESD ->SetT0spread(fTimeSigmaShift);
  
+
   Float_t channelWidth = fParam->GetChannelWidth() ;  
   Float_t c = 0.0299792458; // cm/ps
   Float_t currentVertex=0, shift=0;
@@ -576,7 +575,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     if ( time[i] >1) {
       ampQTC[i] = frecpoints -> GetAmp(i);
       amp[i] = frecpoints -> AmpLED(i);
-      AliDebug(10,Form("T0: time %f  ampQTC %f ampLED %f \n", time[i], ampQTC[i], amp[i]));
+      AliDebug(1,Form("T0: time %f  ampQTC %f ampLED %f \n", time[i], ampQTC[i], amp[i]));
    }
   }
   Int_t trig= frecpoints ->GetT0Trig();
@@ -602,7 +601,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
     AliESDfriend *fr = (AliESDfriend*)pESD->FindListObject("AliESDfriend");
     if (fr) {
-      AliDebug(10, Form("Writing TZERO friend data to ESD tree"));
+      AliDebug(1, Form("Writing TZERO friend data to ESD tree"));
 
       //     if (ncont>2) {
 	tcorr = fESDTZEROfriend->GetT0timeCorr();
