@@ -124,6 +124,10 @@ set ( CLASS_HDRS
     comp/AliHLTTPCCompModelDeflaterComponent.h
     comp/AliHLTTPCCompModelInflater.h
     comp/AliHLTTPCCompModelInflaterComponent.h
+    AliHLTTPCEventStatistics.h
+    AliHLTTPCEventStatisticsProducerComponent.h
+    AliHLTTPCRunStatistics.h
+    AliHLTTPCRunStatisticsProducerComponent.h
     AliHLTTPCKryptonClusterFinder.h
     AliHLTTPCKryptonClusterFinderComponent.h
     AliHLTTPCClusterHistoComponent.h

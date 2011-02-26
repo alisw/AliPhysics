@@ -15,6 +15,10 @@
 #pragma link C++ class AliHLTTriggerITSMultiplicity+;
 #pragma link C++ class AliHLTTriggerBarrelGeomMultiplicity+;
 #pragma link C++ class AliHLTTriggerAgent+;
+#pragma link C++ class AliHLTEventSummary+;
+#pragma link C++ class AliHLTEventSummaryProducerComponent+;
+#pragma link C++ class AliHLTRunSummary+;
+#pragma link C++ class AliHLTRunSummaryProducerComponent+;
 #pragma link C++ class AliHLTTriggerCaloClusterEnergy+;
 #pragma link C++ class AliHLTTriggerPhosClusterEnergy+;
 #pragma link C++ class AliHLTTriggerEmcalClusterEnergy+;

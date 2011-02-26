@@ -36,6 +36,8 @@
 #include "TTree.h"
 
 // header files of library components
+#include "AliHLTEventSummaryProducerComponent.h"
+#include "AliHLTRunSummaryProducerComponent.h"
 #include "AliHLTTriggerBarrelMultiplicity.h"
 #include "AliHLTD0Trigger.h"
 #include "AliHLTTriggerITSMultiplicity.h"
