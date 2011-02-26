@@ -43,7 +43,7 @@ public:
    TObjArray  *GetListOfEntryLists() { return &fListOfEntryList; }
    TObjArray  *GetListOfEventCuts() { return &fListOfEventCuts; }
 
-   void        SetCutValuesFromBinIndex(Int_t index);
+   Bool_t      SetCutValuesFromBinIndex(Int_t index);
    void        SetBufferSize(Int_t buffer) { fBufferSize = buffer; }
    void        SetMixNumber(Int_t numMix) { fMixNumber = numMix; }
    Int_t       GetBufferSize() const { return fBufferSize; }

@@ -238,11 +238,12 @@ void AliMixEventPool::SearchIndexRecursive(Int_t num, Int_t *i, Int_t *d, Int_t 
 }
 
 //_________________________________________________________________________________________________
-void AliMixEventPool::SetCutValuesFromBinIndex(Int_t index)
+Bool_t AliMixEventPool::SetCutValuesFromBinIndex(Int_t index)
 {
    //
    // Sets cut value from bin index
    //
+
    Int_t numCuts = fListOfEventCuts.GetEntriesFast();
    Int_t *lenght = new Int_t[numCuts];
    Int_t *indexes = new Int_t[numCuts];
@@ -258,10 +259,10 @@ void AliMixEventPool::SetCutValuesFromBinIndex(Int_t index)
    }
 
    if (index < 0 || index >= timesNum) {
-      AliError(Form("index=%d is out of range !!!", index));
+//       AliError(Form("index=%d is out of range !!!", index));
       delete [] lenght;
       delete [] indexes;
-      return;
+      return kFALSE;
    }
 
    Long64_t indexNum = index;
@@ -285,4 +286,6 @@ void AliMixEventPool::SetCutValuesFromBinIndex(Int_t index)
 
    delete [] lenght;
    delete [] indexes;
+
+   return kTRUE;
 }
