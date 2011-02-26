@@ -70,10 +70,10 @@ AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(con
   }
   
   for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules/2; iSMPair++) 
-    fHmggPairSameSideSM[iSMPair]                 = 0;
+    fHmggPairSameSectorSM[iSMPair] = 0;
     
   for(Int_t iSMPair = 0; iSMPair < AliEMCALGeoParams::fgkEMCALModules-2; iSMPair++) 
-    fHmggPairSameSectorSM[iSMPair]               = 0;
+    fHmggPairSameSideSM[iSMPair]   = 0;
   
   for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM++) {
     fHmggSM[iSM]                     = 0;
