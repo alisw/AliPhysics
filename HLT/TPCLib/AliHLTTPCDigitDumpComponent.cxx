@@ -32,8 +32,6 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDigitReader.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
-#include "AliHLTTPCDigitReaderPacked.h"
-#include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCDefinitions.h"
 
@@ -43,7 +41,7 @@ ClassImp(AliHLTTPCDigitDumpComponent)
 AliHLTTPCDigitDumpComponent::AliHLTTPCDigitDumpComponent()
   :
   AliHLTFileWriter(),
-  fDigitReaderType(kDigitReaderDecoder),
+  fDigitReaderType(kDigitReader32Bit),
   fRcuTrailerSize(2),
   fUnsorted(true),
   fbBulkMode(true),
@@ -90,19 +88,6 @@ int AliHLTTPCDigitDumpComponent::InitWriter()
     HLTInfo("create DigitReaderUnpacked");
     fpReader=new AliHLTTPCDigitReaderUnpacked; 
     break;
-  case kDigitReaderPacked:
-    HLTInfo("create DigitReaderPacked");
-    fpReader=new AliHLTTPCDigitReaderPacked; 
-    if (fpReader && fRcuTrailerSize==1) {
-      fpReader->SetOldRCUFormat(true);
-    }
-    break;
-  case kDigitReaderRaw:
-    HLTWarning("DigitReaderRaw deprecated, falling back to DigitReaderDecoder");
-  case kDigitReaderDecoder:
-    HLTInfo("create DigitReaderDecoder");
-    fpReader=new AliHLTTPCDigitReaderDecoder();
-    break;
   case kDigitReader32Bit:
     HLTInfo("create DigitReader32Bit");
     fpReader=new AliHLTTPCDigitReader32Bit();
@@ -142,11 +127,14 @@ int AliHLTTPCDigitDumpComponent::ScanArgument(int argc, const char** argv)
       if (param.CompareTo("unpacked", TString::kIgnoreCase)==0) {
 	fDigitReaderType=kDigitReaderUnpacked;
       } else if (param.CompareTo("packed", TString::kIgnoreCase)==0) {
-	fDigitReaderType=kDigitReaderPacked;
+	HLTWarning("argument 'packed' is deprecated, falling back to DigitReader32Bit");
+	fDigitReaderType=kDigitReader32Bit;
       } else if (param.CompareTo("raw", TString::kIgnoreCase)==0) {
-	fDigitReaderType=kDigitReaderRaw;
+	HLTWarning("argument 'raw' is deprecated, falling back to DigitReader32Bit");
+	fDigitReaderType=kDigitReader32Bit;
       } else if (param.CompareTo("decoder", TString::kIgnoreCase)==0) {
-	fDigitReaderType=kDigitReaderDecoder;
+	HLTWarning("argument 'decoder' is deprecated, falling back to DigitReader32Bit");
+	fDigitReaderType=kDigitReader32Bit;
       } else if (param.CompareTo("32bit", TString::kIgnoreCase)==0) {
 	fDigitReaderType=kDigitReader32Bit;
       } else {

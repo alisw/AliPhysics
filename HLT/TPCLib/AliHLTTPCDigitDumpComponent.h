@@ -93,9 +93,6 @@ class AliHLTTPCDigitDumpComponent : public AliHLTFileWriter {
   enum {
     kDigitReaderInvalid,
     kDigitReaderUnpacked,
-    kDigitReaderPacked,
-    kDigitReaderRaw, // deprecated but kept for backward compatiobility of macros
-    kDigitReaderDecoder,
     kDigitReader32Bit
   };
 
