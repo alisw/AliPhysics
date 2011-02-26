@@ -1123,7 +1123,6 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
   if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
   if(!fEstimVtx) fEstimVtx = new TH1F("vtxRes","Resolution of vertex",1000,-5000.,5000);
 
-  PostData(34,fNentries);
 
   return;
 }
