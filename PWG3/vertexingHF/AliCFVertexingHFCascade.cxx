@@ -456,8 +456,9 @@ void AliCFVertexingHFCascade::SetAccCut()
 	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
 	//
 
-	AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(2)); // should be the soft pion...  
-	if (TMath::Abs(fLabelArray[0]-fLabelArray[1] != 1) || TMath::Abs(fLabelArray[1]-fLabelArray[2] == 1) || TMath::Abs(fLabelArray[0]-fLabelArray[2] == 1) || TMath::Abs(mcPartDaughter->GetPdgCode())){
+	AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2])); // should be the soft pion...  
+	if(!mcPartDaughter) return;
+	if (TMath::Abs(fLabelArray[0]-fLabelArray[1]) != 1 || TMath::Abs(fLabelArray[1]-fLabelArray[2]) == 1 || TMath::Abs(fLabelArray[0]-fLabelArray[2]) == 1 || TMath::Abs(mcPartDaughter->GetPdgCode())!= 211){
 		AliFatal("Apparently the soft pion is not in the third position, causing a crash!!");
 	}
 	if (fProngs>0){
