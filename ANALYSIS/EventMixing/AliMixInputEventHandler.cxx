@@ -104,22 +104,6 @@ Bool_t AliMixInputEventHandler::Init(TTree *tree, Option_t *opt)
       tree->LoadTree(0);
       fMixIntupHandlerInfoTmp = new AliMixInputHandlerInfo(tree->GetName());
    }
-   // moved to Notify
-//     // adds current file
-//     fMixIntupHandlerInfoTmp->AddTreeToChain(tree->GetTree());
-//     Int_t lastIndex = fMixIntupHandlerInfoTmp->GetChain()->GetListOfFiles()->GetEntries();
-//     TChainElement *che = (TChainElement *)fMixIntupHandlerInfoTmp->GetChain()->GetListOfFiles()->At(lastIndex - 1);
-//     AliMixInputHandlerInfo *mixIHI = 0;
-//     for(Int_t i = 0; i < fInputHandlers.GetEntries(); i++) {
-//       AliDebug(AliLog::kDebug+5, Form("fInputHandlers[%d]", i));
-//       mixIHI = new AliMixInputHandlerInfo(fMixIntupHandlerInfoTmp->GetName(), fMixIntupHandlerInfoTmp->GetTitle());
-//       mixIHI->PrepareEntry(che, -1, InputEventHandler(i),fAnalysisType);
-//       AliDebug(AliLog::kDebug+5, Form("chain[%d]->GetEntries() = %lld", i, mixIHI->GetChain()->GetEntries()));
-//       fMixTrees.Add(mixIHI);
-//     }
-//     AliDebug(AliLog::kDebug+5, Form("fEntryCounter=%lld", fEntryCounter));
-//     if(fEventPool && fEventPool->NeedInit())
-//       fEventPool->Init();
    AliDebug(AliLog::kDebug + 5, Form("->"));
    return kTRUE;
 }
@@ -189,8 +173,7 @@ Bool_t AliMixInputEventHandler::GetEntry()
    // All mixed events are set
    //
    AliDebug(AliLog::kDebug + 5, Form("<-"));
-   // if no event pool MixStd
-//     if (fEventPool && fEventPool->NeedInit()) fEventPool->Init();
+
    if (!fEventPool) {
       MixStd();
    }
@@ -223,6 +206,10 @@ Bool_t AliMixInputEventHandler::MixStd()
    if (mh) inEvHMain = dynamic_cast<AliInputEventHandler *>(mh->GetFirstInputEventHandler());
    else inEvHMain = dynamic_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
    if (!inEvHMain) return kFALSE;
+
+   // check for PhysSelection
+   if (!IsEventCurrentSelected()) return kFALSE;
+
    // return in case of 0 entry in full chain
    if (!fEntryCounter) {
       AliDebug(AliLog::kDebug + 3, Form("-> fEntryCounter == 0"));
@@ -281,6 +268,10 @@ Bool_t AliMixInputEventHandler::MixBuffer()
    if (mh) inEvHMain = dynamic_cast<AliInputEventHandler *>(mh->GetFirstInputEventHandler());
    else inEvHMain = dynamic_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
    if (!inEvHMain) return kFALSE;
+
+   // check for PhysSelection
+   if (!IsEventCurrentSelected()) return kFALSE;
+
    // find out zero chain entries
    Long64_t zeroChainEntries = fMixIntupHandlerInfoTmp->GetChain()->GetEntries() - inEvHMain->GetTree()->GetTree()->GetEntries();
    // fill entry
@@ -370,6 +361,10 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
    if (mh) inEvHMain = dynamic_cast<AliInputEventHandler *>(mh->GetFirstInputEventHandler());
    else inEvHMain = dynamic_cast<AliInputEventHandler *>(mgr->GetInputEventHandler());
    if (!inEvHMain) return kFALSE;
+
+   // check for PhysSelection
+   if (!IsEventCurrentSelected()) return kFALSE;
+
    // find out zero chain entries
    Long64_t zeroChainEntries = fMixIntupHandlerInfoTmp->GetChain()->GetEntries() - inEvHMain->GetTree()->GetTree()->GetEntries();
    // fill entry
@@ -521,4 +516,18 @@ void AliMixInputEventHandler::SetMixNumber(const Int_t mixNum)
       fBufferSize = 1;
    }
    fMixNumber = mixNum;
+}
+
+Bool_t AliMixInputEventHandler::IsEventCurrentSelected()
+{
+   AliDebug(AliLog::kDebug + 5, Form("<-"));
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   AliMultiInputEventHandler *mh = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
+   Bool_t isSelected = kTRUE;
+   if (fOfflineTriggerMask && mh->GetEventSelection()) {
+      isSelected = fOfflineTriggerMask & mh->IsEventSelected();
+   }
+   AliDebug(AliLog::kDebug + 1, Form("isSelected=%d", isSelected));
+   AliDebug(AliLog::kDebug + 5, Form("-> %d", isSelected));
+   return isSelected;
 }

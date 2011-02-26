@@ -13,6 +13,8 @@
 #include <TObjArray.h>
 #include <TArrayI.h>
 
+#include <AliVEvent.h>
+
 #include "AliMultiInputEventHandler.h"
 
 class TChain;
@@ -61,8 +63,8 @@ public:
    Long64_t                CurrentEntryMix() const { return fCurrentEntryMix; }
    Int_t                   NumberMixed() const { return fNumberMixed; }
 
-
-
+   void                    SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
+   Bool_t                  IsEventCurrentSelected();
 protected:
 
    TObjArray               fMixTrees;              // buffer of input handlers
@@ -84,6 +86,8 @@ private:
    Long64_t fCurrentEntryMix;    //! current mixed entry in chain of processed files
    Int_t    fCurrentBinIndex;    //! current bin index
 
+   UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
+
    virtual Bool_t          MixStd();
    virtual Bool_t          MixBuffer();
    virtual Bool_t          MixEventsMoreTimesWithOneEvent();
@@ -94,7 +98,7 @@ private:
    AliMixInputEventHandler(const AliMixInputEventHandler& handler);
    AliMixInputEventHandler &operator=(const AliMixInputEventHandler &handler);
 
-   ClassDef(AliMixInputEventHandler, 1)
+   ClassDef(AliMixInputEventHandler, 2)
 };
 
 #endif

@@ -425,7 +425,7 @@ void AliMixInfo::Add(AliMixInfo *mi)
    // adds AliMixInfo
    //
 
-   AliInfo(Form("Adding %p", mi));
+//    AliInfo(Form("Adding %p", mi));
    if (!mi) return;
    if (!fHistogramList) return;
    TH1I *hMain = GetHistogramByType(kMainEvents);

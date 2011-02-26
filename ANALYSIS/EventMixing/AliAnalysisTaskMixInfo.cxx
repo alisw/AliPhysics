@@ -95,8 +95,8 @@ void AliAnalysisTaskMixInfo::UserExec(Option_t *)
             fMixInfo->FillHistogram(AliMixInfo::kMainEvents, mixEH->CurrentBinIndex());
          }
 
-         if (mixEH->CurrentEntryMix() >= 0)
-            AliDebug(AliLog::kDebug + 1, Form("Main %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
+//          if (mixEH->CurrentEntryMix() >= 0)
+         AliDebug(AliLog::kDebug + 1, Form("Main %lld %d [%lld,%lld] %d", mixEH->CurrentEntry(), mixEH->CurrentBinIndex(), mixEH->CurrentEntryMain(), mixEH->CurrentEntryMix(), mixEH->NumberMixed()));
       }
    }
    // Post output data.
