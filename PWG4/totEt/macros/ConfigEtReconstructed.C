@@ -29,5 +29,7 @@ AliAnalysisEtReconstructed * ConfigEtReconstructed(){
     totEtReco->Init();
     return totEtReco;
   }
+  gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
+  gInterpreter->GenerateDictionary("std::pair<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;utility");
 }
 
