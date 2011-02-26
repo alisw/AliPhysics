@@ -38,10 +38,6 @@ set ( CLASS_HDRS
     AliHLTD0Candidate.h
     AliHLTTriggerITSMultiplicity.h
     AliHLTTriggerAgent.h
-    AliHLTEventSummary.h
-    AliHLTEventSummaryProducerComponent.h
-    AliHLTRunSummary.h
-    AliHLTRunSummaryProducerComponent.h
     AliHLTTriggerCaloClusterEnergy.h
     AliHLTTriggerPhosClusterEnergy.h
     AliHLTTriggerEmcalClusterEnergy.h
