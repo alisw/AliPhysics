@@ -598,7 +598,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 				error |= 2048;
 			}		
 		}
-		if (ltuarray) delete ltuarray;
+		delete ltuarray;
 	}
 
 	else {
@@ -1031,7 +1031,11 @@ UInt_t AliGRPPreprocessor::ProcessSPDMeanVertex()
 			AliInfo("The following sources produced files with the id VertexDiamond from SPD");
 			list->Print();
 			for (Int_t jj=0;jj<list->GetEntries();jj++){
-				TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
+				TObjString * str = dynamic_cast<TObjString*> (list->At(jj)); 
+				if (!str){
+					AliError(Form("Expecting a TObjString in the list for the %d-th source, but something else was found.",jj));
+					continue;
+				}
 				AliInfo(Form("found source %s", str->String().Data()));
 				TString fileNameRun = GetForeignFile("SPD", kDAQ, "VertexDiamond", str->GetName());
 				if (fileNameRun.Length()>0){
@@ -1710,10 +1714,6 @@ AliSplineFit* AliGRPPreprocessor::GetSplineFit(const TObjArray *array, const TSt
 	fit->InitKnots(gr,10,10,0.0);
 	fit->SplineFit(2);
 	fit->Cleanup();
-	if (!fit) {
-		AliWarning(Form("%s: no fit performed",stringID.Data()));
-		return NULL;
-	} 
 	return fit;
 }
 
@@ -1794,6 +1794,7 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 			AliError(Form("Error! Float value found in DCS map at %d-th entry is OUT OF RANGE: value = %6.5e",i,v->GetFloat()));
 			if (v->GetFloat() < fminFloat) AliInfo(Form("The value is smaller than %6.5e",fminFloat));
 			if (v->GetFloat() > fmaxFloat) AliInfo(Form("The value is greater than %6.5e",fmaxFloat));
+			delete [] parameters;
 			return NULL;
 		}
 		if(((Int_t)(v->GetTimeStamp()) >= (Int_t)GetStartTimeDCSQuery()) &&((Int_t)(v->GetTimeStamp()) <= (Int_t)GetEndTimeDCSQuery())) {
@@ -1973,6 +1974,15 @@ Float_t* AliGRPPreprocessor::ProcessFloatAll(const TObjArray* array)
 	else{
 			parameters[1] = AliGRPObject::GetInvalidFloat();
 	}
+
+	if (arrayValues){
+		delete [] arrayValues;
+	} 
+	if (arrayWeights){
+		delete [] arrayWeights;
+	} 
+	delete [] arrayValuesTruncMean;
+	delete [] arrayWeightsTruncMean;
 
 	AliInfo(Form("(weighted) mean = %f ",parameters[0]));
 	AliInfo(Form("(weighted) truncated mean = %f ",parameters[1]));
@@ -2164,6 +2174,8 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 			arrayValues[i-ientrySOR] = (Float_t)v->GetInt();
 		}
 		aDCSArrayMean = TMath::Mean(iCountsRun,arrayValues,arrayWeights);
+		delete [] arrayValues;
+		delete [] arrayWeights;
 	}
 	else if (iCountsRun == 1){
 		AliDCSValue* v = (AliDCSValue *)array->At(ientrySOR);
@@ -2179,6 +2191,8 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
 			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
 			aDCSArrayMean = TMath::Mean(2,arrayValues,arrayWeights);
+			delete [] arrayValues;
+			delete [] arrayWeights;
 		}
 		else{
 			AliError("Cannot calculate mean - only one value collected during the run, but no value before with which to calculate the statistical quantities");
@@ -2207,6 +2221,8 @@ Float_t AliGRPPreprocessor::ProcessInt(const TObjArray* array)
 			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
 			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
 			aDCSArrayMean = TMath::Mean(1,arrayValues,arrayWeights);
+			delete [] arrayValues;
+			delete [] arrayWeights;
 		}
 	}
 
@@ -2334,6 +2350,8 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
 			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
 			aDCSArrayMean = TMath::Mean(2,arrayValues,arrayWeights);
+			delete [] arrayValues;
+			delete [] arrayWeights;
 		}
 		else{
 			AliError("Cannot calculate mean - only one value collected during the run, but no value before with which to calculate the statistical quantities");
@@ -2362,6 +2380,8 @@ Float_t AliGRPPreprocessor::ProcessUInt(const TObjArray* array)
 			AliDebug(2,Form("value0 = %f, with weight = %f",arrayValues[0],arrayWeights[0])); 
 			AliDebug(2,Form("value1 = %f, with weight = %f",arrayValues[1],arrayWeights[1])); 
 			aDCSArrayMean = TMath::Mean(1,arrayValues,arrayWeights);
+			delete [] arrayValues;
+			delete [] arrayWeights;
 		}
 	}
 
@@ -2668,7 +2688,7 @@ Double_t AliGRPPreprocessor::CalculateMean(TObjArray* const array){
 	Int_t timeEnd = (Int_t)(timeEndString.Atoi());
 	timeStart = 1260646960;
 	timeEnd = 1260652740;
-	Double_t* parameters = new Double_t[5];
+	Double_t parameters[5];
 	parameters[0] = -1.;
 	parameters[1] = -1.;
 	parameters[2] = -1.;
@@ -2869,6 +2889,15 @@ Double_t AliGRPPreprocessor::CalculateMean(TObjArray* const array){
 	else{
 			parameters[1] = -1;
 	}
+
+	if (arrayValues){
+		delete [] arrayValues;
+	} 
+	if (arrayWeights){
+		delete [] arrayWeights;
+	} 
+	delete [] arrayValuesTruncMean;
+	delete [] arrayWeightsTruncMean;
 	
 	printf("(weighted) mean = %f \n",parameters[0]);
 	printf("(weighted) truncated mean = %f \n",parameters[1]);
