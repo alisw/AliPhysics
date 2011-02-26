@@ -35,8 +35,6 @@
 AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
-#include "AliHLTTPCRunStatisticsProducerComponent.h"
-#include "AliHLTTPCEventStatisticsProducerComponent.h"
 #include "AliHLTTPCCompModelInflaterComponent.h"
 #include "AliHLTTPCCompModelDeflaterComponent.h"
 #include "AliHLTTPCCompModelDeconverterComponent.h"
@@ -268,8 +266,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
 
-  pHandler->AddComponent(new AliHLTTPCRunStatisticsProducerComponent);
-  pHandler->AddComponent(new AliHLTTPCEventStatisticsProducerComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibCEComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibPulserComponent);
 //   pHandler->AddComponent(new AliHLTTPCCalibPedestalComponent);
