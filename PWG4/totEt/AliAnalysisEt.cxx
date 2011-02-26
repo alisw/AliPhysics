@@ -23,6 +23,16 @@
 using namespace std;
 ClassImp(AliAnalysisEt);
 
+/* Auxiliary Histogram variables */
+Int_t AliAnalysisEt::fgnumOfEtaBins = 16;
+Float_t AliAnalysisEt::fgEtaAxis[17]={-0.78, -0.7, -0.58, -0.46, -0.34, -0.22, -0.12, -0.06, -0.0, 0.06, 0.12, 0.22, 0.34, 0.46, 0.58, 0.7, 0.78};
+
+Int_t AliAnalysisEt::fgNumOfEBins = 78;
+Float_t AliAnalysisEt::fgEAxis[79]={0., 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
+									1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,5.5,6.,6.5,7.,7.5,8.,8.5,9.,9.5,10.,11.,
+									12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.,27.,28.,29.,30.,31.,
+									32.,33.,34.,35.,36.,37.,38.,39.,40.,41.,42.,43.,44.,45.,46.,47.,48.,49.,50.};
+
 
 AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fTotEt(0)
@@ -94,8 +104,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fTree(0)
 			       ,fTreeDeposit(0)
 			       ,fCentrality(0)
-{
-}
+{}
 
 AliAnalysisEt::~AliAnalysisEt()
 {//Destructor
@@ -175,7 +184,7 @@ void AliAnalysisEt::FillOutputList(TList *list)
     list->Add(fHistElectronEtAcc);
 
     list->Add(fHistTMDeltaR);
-
+	
     if (fCuts) {
       if (fCuts->GetHistMakeTree()) {
 	list->Add(fTree);
@@ -253,7 +262,8 @@ void AliAnalysisEt::CreateHistograms()
     fHistNeutralEtAcc->GetXaxis()->SetTitle("E_{T} (GeV/c^{2})");
     fHistNeutralEtAcc->GetYaxis()->SetTitle("dN/dE_{T} (c^{2}/GeV)");
     std::cout << histname << std::endl;
-    histname = "fHistMult" + fHistogramNameSuffix;
+
+	histname = "fHistMult" + fHistogramNameSuffix;
     fHistMult = new TH1F(histname.Data(), "Total Multiplicity", nbinsMult, minMult, maxMult);
     fHistMult->GetXaxis()->SetTitle("N");
     fHistMult->GetYaxis()->SetTitle("Multiplicity");
@@ -325,8 +335,32 @@ void AliAnalysisEt::CreateHistograms()
     //
     histname = "fHistTMDeltaR" + fHistogramNameSuffix;
     fHistTMDeltaR = new TH1F(histname.Data(), "#Delta R for calorimeter clusters", 200, 0, 50);
-
+	
 }
+
+TH2F* AliAnalysisEt::CreateEtaEHisto2D(TString name, TString title, TString ztitle)
+{     //creates a 2-d histogram in eta and E and adds it to the list of histograms to be saved
+	TString *histoname   = new TString();
+	TString *histotitle   = new TString();
+	TString *zaxistitle   = new TString();
+	
+	histoname->Append(name);
+	histotitle->Append(title);
+	zaxistitle->Append(ztitle);
+	
+	TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),fgNumOfEBins, fgEAxis, fgnumOfEtaBins, fgEtaAxis);
+	histo->SetYTitle("#eta");
+	histo->SetXTitle("E (GeV)");
+	histo->SetZTitle(zaxistitle->Data());
+	histo->Sumw2();
+	//fhistoList->Add(histo);
+	delete histoname;
+	delete histotitle;
+    delete zaxistitle;
+	
+	return histo; 
+}
+
 
 void AliAnalysisEt::CreateTrees()
 { // create tree..
