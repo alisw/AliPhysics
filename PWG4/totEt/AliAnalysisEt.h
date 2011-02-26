@@ -18,6 +18,7 @@ class TH2F;
 class TH1F;
 class AliVEvent;
 class TList;
+class TString;
 class AliESDtrackCuts;
 class Rtypes;
 class AliAnalysisEtCuts;
@@ -46,6 +47,7 @@ public:
     */
     virtual void CreateHistograms();
     virtual void CreateTrees();
+	TH2F* CreateEtaEHisto2D(TString name, TString title, TString ztitle);
     
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
@@ -198,10 +200,17 @@ protected:
     /* Correction plots */
     TH1F *fHistTMDeltaR; /* Track matching plots; Rec only for now */
 
+	/* Auxiliary Histogram variables */
+	static Float_t fgEtaAxis[17];//bins for eta axis of histograms
+    static Int_t fgnumOfEtaBins;//number of eta bins
+    static Float_t fgEAxis[79];//bins for pt axis of histograms
+    static Int_t fgNumOfEBins;//number of pt bins
+	
+	
     TTree *fTree; // optional TTree
     TTree *fTreeDeposit; // optional TTree for energy deposit measurements
 
-    /** Centrality object */
+   /** Centrality object */
     AliCentrality *fCentrality; //Centrality object
 
 private:
