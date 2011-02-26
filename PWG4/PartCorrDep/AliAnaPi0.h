@@ -213,9 +213,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
 
   
   TH2D ** fhReMod ;                 //![fNModules]   REAL  two-photon invariant mass distribution for different calorimeter modules.
-  TH2D ** fhReDiffMod ;             //![fNModules+1] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhReSameSideEMCALMod ;    //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhReSameSectorEMCALMod ;  //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhReDiffPHOSMod ;         //![fNModules]   REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
   TH2D ** fhMiMod ;                 //![fNModules]   MIXED two-photon invariant mass distribution for different calorimeter modules.
-  TH2D ** fhMiDiffMod ;             //![fNModules+1] MIXED two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhMiSameSideEMCALMod ;    //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhMiSameSectorEMCALMod ;  //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2D ** fhMiDiffPHOSMod ;         //![fNModules-1] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
   
   // Pairs with at least one cluster tagged as conversion
   TH2D * fhReConv ;                 //! REAL  two-photon invariant mass distribution one of the pair was 2 clusters with small mass 
@@ -302,7 +306,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhMCPi0PtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2D *  fhMCEtaPtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
-  ClassDef(AliAnaPi0,15)
+  ClassDef(AliAnaPi0,16)
 } ;
 
 

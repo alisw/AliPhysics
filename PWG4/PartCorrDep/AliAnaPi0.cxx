@@ -68,7 +68,8 @@ fhEDensityCluster(0), fhEDensityCell(0), fhEDensityCellvsCluster(0),
 //fhClusterPairDist(0), fhClusterPairDistWeight(0),  fhAverClusterPairDist(0), fhAverClusterPairDistWeight(0),
 //fhAverClusterPairDistvsAverE(0), fhAverClusterPairDistWeightvsAverE(0),fhAverClusterPairDistvsN(0), fhAverClusterPairDistWeightvsN(0),
 //fhMaxEvsClustMult(0), fhMaxEvsClustEDen(0),
-fhReMod(0x0),    fhReDiffMod(0x0), fhMiMod(0x0),    fhMiDiffMod(0x0),
+fhReMod(0x0),    fhReSameSideEMCALMod(0x0), fhReSameSectorEMCALMod(0x0), fhReDiffPHOSMod(0x0), 
+fhMiMod(0x0),    fhMiSameSideEMCALMod(0x0), fhMiSameSectorEMCALMod(0x0), fhMiDiffPHOSMod(0x0),
 fhReConv(0x0),   fhMiConv(0x0),    fhReConv2(0x0),  fhMiConv2(0x0),
 fhRe1(0x0),      fhMi1(0x0),       fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),      fhMi3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0),  fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
@@ -217,11 +218,20 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName(GetName()); 
 	
-  fhReMod     = new TH2D*[fNModules] ;
-  fhReDiffMod = new TH2D*[fNModules+3] ;
+  fhReMod                = new TH2D*[fNModules]   ;
+  fhMiMod                = new TH2D*[fNModules]   ;
+
+  if(fCalorimeter == "PHOS"){
+    fhReDiffPHOSMod        = new TH2D*[fNModules]   ;  
+    fhMiDiffPHOSMod        = new TH2D*[fNModules]   ;
+  }
+  else{
+    fhReSameSectorEMCALMod = new TH2D*[fNModules/2] ;
+    fhReSameSideEMCALMod   = new TH2D*[fNModules-2] ;  
+    fhMiSameSectorEMCALMod = new TH2D*[fNModules/2] ;
+    fhMiSameSideEMCALMod   = new TH2D*[fNModules-2] ;
+  }
   
-  fhMiMod     = new TH2D*[fNModules] ;
-  fhMiDiffMod = new TH2D*[fNModules+3] ;
   
   fhRe1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   fhMi1 = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
@@ -854,22 +864,7 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  TString * pairname = new TString[fNModules+3];
-  if(fCalorimeter=="EMCAL"){
-    pairname[0]="A side (0-2)"; 
-    pairname[1]="C side (1-3)";
-    pairname[2]="Sector 0 (0-1)"; 
-    pairname[3]="Sector 1 (2-3)";
-    pairname[4]="Cluster in different SM";
-    pairname[5]="SM 0 and SM3"; 
-    pairname[6]="SM 1 and SM2";    
-    for(Int_t i = 7 ; i < fNModules ; i++) pairname[i]="";}
-  if(fCalorimeter=="PHOS") {
-    pairname[0]="(0-1)"; 
-    pairname[1]="(0-2)";
-    pairname[2]="(1-2)";
-    for(Int_t i = 3 ; i < fNModules ; i++) pairname[i]="";}
-
+  TString pairnamePHOS[] = {"(0-1)","(0-2)","(1-2)","(0-3)","(0-4)","(1-3)","(1-4)","(2-3)","(2-4)","(3-4)"};
   for(Int_t imod=0; imod<fNModules; imod++){
     //Module dependent invariant mass
     snprintf(key, buffersize,"hReMod_%d",imod) ;
@@ -878,13 +873,32 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     fhReMod[imod]->SetXTitle("p_{T} (GeV/c)");
     fhReMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
     outputContainer->Add(fhReMod[imod]) ;
-
-    snprintf(key, buffersize,"hReDiffMod_%d",imod) ;
-    snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for Different Modules: %s",(pairname[imod]).Data()) ;
-    fhReDiffMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReDiffMod[imod]->SetXTitle("p_{T} (GeV/c)");
-    fhReDiffMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-    outputContainer->Add(fhReDiffMod[imod]) ;
+    if(fCalorimeter=="PHOS"){
+      snprintf(key, buffersize,"hReDiffPHOSMod_%d",imod) ;
+      snprintf(title, buffersize,"Real pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
+      fhReDiffPHOSMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+      fhReDiffPHOSMod[imod]->SetXTitle("p_{T} (GeV/c)");
+      fhReDiffPHOSMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+      outputContainer->Add(fhReDiffPHOSMod[imod]) ;
+    }
+    else{//EMCAL
+      if(imod<fNModules/2){
+        snprintf(key, buffersize,"hReSameSectorEMCAL_%d",imod) ;
+        snprintf(title, buffersize,"Real pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
+        fhReSameSectorEMCALMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhReSameSectorEMCALMod[imod]->SetXTitle("p_{T} (GeV/c)");
+        fhReSameSectorEMCALMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhReSameSectorEMCALMod[imod]) ;
+      }
+      if(imod<fNModules-2){
+        snprintf(key, buffersize,"hReSameSideEMCAL_%d",imod) ;
+        snprintf(title, buffersize,"Real pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
+        fhReSameSideEMCALMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhReSameSideEMCALMod[imod]->SetXTitle("p_{T} (GeV/c)");
+        fhReSameSideEMCALMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhReSameSideEMCALMod[imod]) ;
+      }
+    }//EMCAL
     
     if(fDoOwnMix){ 
       snprintf(key, buffersize,"hMiMod_%d",imod) ;
@@ -894,37 +908,35 @@ TList * AliAnaPi0::GetCreateOutputObjects()
       fhMiMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
       outputContainer->Add(fhMiMod[imod]) ;
       
-      snprintf(key, buffersize,"hMiDiffMod_%d",imod) ;
-      snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for Different Modules: %s",(pairname[imod]).Data()) ;
-      fhMiDiffMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiDiffMod[imod]->SetXTitle("p_{T} (GeV/c)");
-      fhMiDiffMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhMiDiffMod[imod]) ;
-    }
-    
+      if(fCalorimeter=="PHOS"){
+        snprintf(key, buffersize,"hMiDiffPHOSMod_%d",imod) ;
+        snprintf(title, buffersize,"Mixed pairs PHOS, clusters in different Modules: %s",(pairnamePHOS[imod]).Data()) ;
+        fhMiDiffPHOSMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+        fhMiDiffPHOSMod[imod]->SetXTitle("p_{T} (GeV/c)");
+        fhMiDiffPHOSMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+        outputContainer->Add(fhMiDiffPHOSMod[imod]) ;
+      }//PHOS
+      else{//EMCAL
+        if(imod<fNModules/2){
+          snprintf(key, buffersize,"hMiSameSectorEMCALMod_%d",imod) ;
+          snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same sector, SM(%d,%d)",imod*2,imod*2+1) ;
+          fhMiSameSectorEMCALMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhMiSameSectorEMCALMod[imod]->SetXTitle("p_{T} (GeV/c)");
+          fhMiSameSectorEMCALMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+          outputContainer->Add(fhMiSameSectorEMCALMod[imod]) ;
+        }
+        if(imod<fNModules-2){
+          snprintf(key, buffersize,"hMiSameSideEMCALMod_%d",imod) ;
+          snprintf(title, buffersize,"Mixed pairs EMCAL, clusters in same side SM(%d,%d)",imod, imod+2) ;
+          fhMiSameSideEMCALMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
+          fhMiSameSideEMCALMod[imod]->SetXTitle("p_{T} (GeV/c)");
+          fhMiSameSideEMCALMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+          outputContainer->Add(fhMiSameSideEMCALMod[imod]) ;
+        }
+      }//EMCAL      
+     }
   }
-  
-  for (Int_t imod=4; imod<7; imod++) {
-    
-    snprintf(key, buffersize,"hReDiffMod_%d",imod) ;
-    snprintf(title, buffersize,"Real m_{#gamma#gamma} distr. for Different Modules: %s",(pairname[imod]).Data()) ;
-    fhReDiffMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-    fhReDiffMod[imod]->SetXTitle("p_{T} (GeV/c)");
-    fhReDiffMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-    outputContainer->Add(fhReDiffMod[imod]) ;
-  
-    if(fDoOwnMix){ 
-      snprintf(key, buffersize,"hMiDiffMod_%d",imod) ;
-      snprintf(title, buffersize,"Mixed m_{#gamma#gamma} distr. for Different Modules: %s",(pairname[imod]).Data()) ;
-      fhMiDiffMod[imod]  = new TH2D(key,title,nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
-      fhMiDiffMod[imod]->SetXTitle("p_{T} (GeV/c)");
-      fhMiDiffMod[imod]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-      outputContainer->Add(fhMiDiffMod[imod]) ;
-    }
-  }
-  
-  delete [] pairname;
-  
+      
 //  for(Int_t i = 0; i < outputContainer->GetEntries() ; i++){
 //  
 //    printf("Histogram %d, name: %s\n ",i, outputContainer->At(i)->GetName());
@@ -1774,22 +1786,26 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       if(a < fAsymCuts[0]){
         if(module1==module2 && module1 >=0 && module1<fNModules)
           fhReMod[module1]->Fill(pt,m) ;
-        else  
-          fhReDiffMod[fNModules+2]->Fill(pt,m) ;
-        
+
         if(fCalorimeter=="EMCAL"){
-          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffMod[0]->Fill(pt,m) ; 
-          if((module1==1 && module2==3) || (module1==3 && module2==1)) fhReDiffMod[1]->Fill(pt,m) ; 
-          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffMod[2]->Fill(pt,m) ;
-          if((module1==2 && module2==3) || (module1==3 && module2==2)) fhReDiffMod[3]->Fill(pt,m) ;
-          if((module1==0 && module2==3) || (module1==3 && module2==0)) fhReDiffMod[4]->Fill(pt,m) ;
-          if((module1==2 && module2==1) || (module1==1 && module2==2)) fhReDiffMod[5]->Fill(pt,m) ;
-        }
-        else {
-          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffMod[0]->Fill(pt,m) ; 
-          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffMod[1]->Fill(pt,m) ; 
-          if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffMod[2]->Fill(pt,m) ;
-        }
+          
+          // Same sector
+          Int_t j=0;
+          for(Int_t i = 0; i < fNModules/2; i++){
+            j=2*i;
+            if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhReSameSectorEMCALMod[i]->Fill(pt,m) ;
+          }
+          
+          // Same side
+          for(Int_t i = 0; i < fNModules-2; i++){
+            if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhReSameSideEMCALMod[i]->Fill(pt,m); 
+          }
+        }//EMCAL
+        else {//PHOS
+          if((module1==0 && module2==1) || (module1==1 && module2==0)) fhReDiffPHOSMod[0]->Fill(pt,m) ; 
+          if((module1==0 && module2==2) || (module1==2 && module2==0)) fhReDiffPHOSMod[1]->Fill(pt,m) ; 
+          if((module1==1 && module2==2) || (module1==2 && module2==1)) fhReDiffPHOSMod[2]->Fill(pt,m) ;
+        }//PHOS
       }
       
       //In case we want only pairs in same (super) module, check their origin.
@@ -1975,23 +1991,28 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           if(a < fAsymCuts[0]){
             if(module1==module2 && module1 >=0 && module1<fNModules)
               fhMiMod[module1]->Fill(pt,m) ;
-            else  
-              fhMiDiffMod[fNModules+2]->Fill(pt,m) ;
-            
-            if(fCalorimeter=="EMCAL"){
-              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffMod[0]->Fill(pt,m) ; 
-              if((module1==1 && module2==3) || (module1==3 && module2==1)) fhMiDiffMod[1]->Fill(pt,m) ; 
-              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffMod[2]->Fill(pt,m) ;
-              if((module1==2 && module2==3) || (module1==3 && module2==2)) fhMiDiffMod[3]->Fill(pt,m) ; 
-              if((module1==0 && module2==3) || (module1==3 && module2==0)) fhMiDiffMod[4]->Fill(pt,m) ;
-              if((module1==2 && module2==1) || (module1==1 && module2==2)) fhMiDiffMod[5]->Fill(pt,m) ;
 
-            }
-            else {
-              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffMod[0]->Fill(pt,m) ; 
-              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffMod[1]->Fill(pt,m) ; 
-              if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffMod[2]->Fill(pt,m) ;
-            }
+            if(fCalorimeter=="EMCAL"){
+              
+              // Same sector
+              Int_t j=0;
+              for(Int_t i = 0; i < fNModules/2; i++){
+                j=2*i;
+                if((module1==j && module2==j+1) || (module1==j+1 && module2==j)) fhMiSameSectorEMCALMod[i]->Fill(pt,m) ;
+              }
+              
+              // Same side
+              for(Int_t i = 0; i < fNModules-2; i++){
+                if((module1==i && module2==i+2) || (module1==i+2 && module2==i)) fhMiSameSideEMCALMod[i]->Fill(pt,m); 
+              }
+            }//EMCAL
+            else {//PHOS
+              if((module1==0 && module2==1) || (module1==1 && module2==0)) fhMiDiffPHOSMod[0]->Fill(pt,m) ; 
+              if((module1==0 && module2==2) || (module1==2 && module2==0)) fhMiDiffPHOSMod[1]->Fill(pt,m) ; 
+              if((module1==1 && module2==2) || (module1==2 && module2==1)) fhMiDiffPHOSMod[2]->Fill(pt,m) ;
+            }//PHOS
+            
+            
           }
           
           Bool_t ok = kTRUE;
@@ -2099,10 +2120,14 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   if(!fhMiInvPt2) fhMiInvPt2  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;
   if(!fhMiInvPt3) fhMiInvPt3  = new TH2D*[fNCentrBin*fNPIDBits*fNAsymCuts] ;	
   if(!fhReMod)    fhReMod     = new TH2D*[fNModules]   ;	
-  if(!fhReDiffMod)fhReDiffMod = new TH2D*[fNModules+1] ;	
+  if(!fhReDiffPHOSMod)       fhReDiffPHOSMod        = new TH2D*[fNModules] ;	
+  if(!fhReSameSectorEMCALMod)fhReSameSectorEMCALMod = new TH2D*[fNModules/2] ;	
+  if(!fhReSameSideEMCALMod)  fhReSameSideEMCALMod   = new TH2D*[fNModules-2] ;	
   if(!fhMiMod)    fhMiMod     = new TH2D*[fNModules]   ;	
-  if(!fhMiDiffMod)fhMiDiffMod = new TH2D*[fNModules+1] ;	
-  
+  if(!fhMiDiffPHOSMod)       fhMiDiffPHOSMod        = new TH2D*[fNModules] ;	
+  if(!fhMiSameSectorEMCALMod)fhMiSameSectorEMCALMod = new TH2D*[fNModules/2] ;	
+  if(!fhMiSameSideEMCALMod)  fhMiSameSideEMCALMod   = new TH2D*[fNModules-2] ;	
+    
   fhReConv  = (TH2D*) outputList->At(index++);
   fhMiConv  = (TH2D*) outputList->At(index++);
   fhReConv2 = (TH2D*) outputList->At(index++);
@@ -2223,11 +2248,20 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
   }
   
   for(Int_t imod=0; imod < fNModules; imod++){
-    fhReMod[imod]     = (TH2D*) outputList->At(index++);
-    fhReDiffMod[imod] = (TH2D*) outputList->At(index++);
+    fhReMod[imod]                = (TH2D*) outputList->At(index++);
+    if(fCalorimeter=="EMCAL"){
+      if(imod < fNModules/2) fhReSameSectorEMCALMod[imod] = (TH2D*) outputList->At(index++);
+      if(imod < fNModules-2) fhReSameSideEMCALMod[imod]   = (TH2D*) outputList->At(index++);
+    }
+    else     fhReDiffPHOSMod[imod]        = (TH2D*) outputList->At(index++);
+
     if(fDoOwnMix){
-      fhMiMod[imod]     = (TH2D*) outputList->At(index++);
-      fhMiDiffMod[imod] = (TH2D*) outputList->At(index++);
+      fhMiMod[imod]         = (TH2D*) outputList->At(index++);
+      if(fCalorimeter=="EMCAL"){
+        if(imod < fNModules/2) fhMiSameSectorEMCALMod[imod] = (TH2D*) outputList->At(index++);
+        if(imod < fNModules-2) fhMiSameSideEMCALMod[imod]   = (TH2D*) outputList->At(index++);
+      }
+      else     fhMiDiffPHOSMod[imod]        = (TH2D*) outputList->At(index++);
     }
   }
   
