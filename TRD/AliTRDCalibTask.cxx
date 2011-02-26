@@ -594,6 +594,11 @@ void AliTRDCalibTask::UserExec(Option_t *)
     PostData(1, fListHist);
     return;
   }
+
+  if(fESDfriend->TestSkipBit()) {
+    PostData(1, fListHist);
+    return;
+  }
   
   //printf("has friends\n");
 
