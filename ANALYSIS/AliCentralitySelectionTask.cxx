@@ -143,7 +143,7 @@ AliAnalysisTaskSE(),
   fLowRunN =136851;
   fHighRunN=139517;
 
-  for (Int_t i=0; i<(fHighRunN-fLowRunN); i++) {
+  for (Int_t i=0; i < 2667; i++) {
     V0MScaleFactor[i]=0.0;
     SPDScaleFactor[i]=0.0;
     TPCScaleFactor[i]=0.0;
@@ -226,7 +226,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
 
   AliInfo("Centrality Selection enabled.");
   DefineOutput(1, TList::Class());
-  for (Int_t i=0; i<(fHighRunN-fLowRunN); i++) {
+  for (Int_t i=0; i<2667; i++) {
     V0MScaleFactor[i]=0.0;
     SPDScaleFactor[i]=0.0;
     TPCScaleFactor[i]=0.0;
@@ -314,7 +314,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutVertex(ana.fHOutVertex)
 {
   // Copy Constructor	
-    for (Int_t i=0; i<(fHighRunN-fLowRunN); i++) {
+    for (Int_t i=0; i<2667; i++) {
 	V0MScaleFactor[i]=0.0;
 	SPDScaleFactor[i]=0.0;
 	TPCScaleFactor[i]=0.0;
