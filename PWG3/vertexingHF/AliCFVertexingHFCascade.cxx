@@ -455,22 +455,67 @@ void AliCFVertexingHFCascade::SetAccCut()
 	//
 	// setting the pt and eta cut to be used in the Acceptance steps (MC+Reco)
 	//
+  
+  AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2]));  // should be the soft pion...  
+  if(!mcPartDaughter) return;
+  Int_t mother =  mcPartDaughter->GetMother();
+  AliAODMCParticle* mcMother = dynamic_cast<AliAODMCParticle*>(fmcArray->At(mother)); 
+  if(!mcMother) return;
 
-	AliAODMCParticle* mcPartDaughter = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2])); // should be the soft pion...  
-	if(!mcPartDaughter) return;
-	if (TMath::Abs(fLabelArray[0]-fLabelArray[1]) != 1 || TMath::Abs(fLabelArray[1]-fLabelArray[2]) == 1 || TMath::Abs(fLabelArray[0]-fLabelArray[2]) == 1 || TMath::Abs(mcPartDaughter->GetPdgCode())!= 211){
-		AliFatal("Apparently the soft pion is not in the third position, causing a crash!!");
-	}
-	if (fProngs>0){
-		for (Int_t iP=0; iP<fProngs-1; iP++){
-			fPtAccCut[iP]=0.1;
-			fEtaAccCut[iP]=0.9;
-		}
-		fPtAccCut[3]=0.;  // soft pion
-		fEtaAccCut[3]=0.9;  // soft pion
-	}
-	return;
+  if (TMath::Abs(mcPartDaughter->GetPdgCode())!= 211 || TMath::Abs(mcMother->GetPdgCode())!=413){
+    AliFatal("Apparently the soft pion is not in the third position, causing a crash!!");
+  }	         
+  if (fProngs>0){
+    for (Int_t iP=0; iP<fProngs-1; iP++){
+      fPtAccCut[iP]=0.1;
+      fEtaAccCut[iP]=0.9;
+    }
+    fPtAccCut[2]=0.06;  // soft pion
+    fEtaAccCut[2]=0.9;  // soft pion
+  }
+  return;
 }		
 
+//_____________________________________________________________
+Double_t AliCFVertexingHFCascade::GetEtaProng(Int_t iProng) const 
+{
+	//
+	// getting eta of the prong - overload the mother class method
+	//
 
+ if (fRecoCandidate){
+   
+   AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)fRecoCandidate;
 
+   Double_t etaProng =-9999;
+    if(iProng==0) etaProng =dstarD0pi->Get2Prong()->EtaProng(0);
+    if(iProng==1) etaProng =dstarD0pi->Get2Prong()->EtaProng(1);
+    if(iProng==2) etaProng =dstarD0pi->EtaProng(1);
+    
+    return etaProng;
+    
+  }
+  return 999999;    
+}
+//_____________________________________________________________
+Double_t AliCFVertexingHFCascade::GetPtProng(Int_t iProng) const 
+{
+	//
+	// getting pt of the prong
+	//
+  
+  if (fRecoCandidate){
+
+    AliAODRecoCascadeHF* dstarD0pi = (AliAODRecoCascadeHF*)fRecoCandidate;
+    Double_t ptProng= -9999;
+    if(iProng==0) ptProng =dstarD0pi->Get2Prong()->PtProng(0);
+    if(iProng==1) ptProng =dstarD0pi->Get2Prong()->PtProng(1);
+    if(iProng==2) ptProng =dstarD0pi->PtProng(1);
+    
+    //	Double_t ptProng = fRecoCandidate->PtProng(iProng);  
+    return ptProng;
+    
+  }
+  return 999999;  
+  
+}

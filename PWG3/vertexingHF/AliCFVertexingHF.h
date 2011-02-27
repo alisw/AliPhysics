@@ -82,8 +82,8 @@ class AliCFVertexingHF : public TObject {
 	Bool_t MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **trackCuts) const;
 	Bool_t RecoStep();
 
-	Double_t GetEtaProng(Int_t iProng) const;
-	Double_t GetPtProng(Int_t iProng) const;
+	virtual Double_t GetEtaProng(Int_t iProng) const;
+	virtual Double_t GetPtProng(Int_t iProng) const;
 
 	Double_t GetPtCand() const {return fRecoCandidate->Pt();}
 	Double_t GetYCand() const {return fRecoCandidate->Y();}
