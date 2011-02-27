@@ -312,7 +312,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  qtCh = gr1->Eval(qt);
 	  fADC0->AddAt(0,i);
 	  if(qtCh)
-	    fADC->AddAt(qtCh,i);
+	    fADC->AddAt(Int_t(qtCh),i);
 	  //	  sumMult += Int_t ((al*gain[i]/ph2Mip)*50) ;
 	  sumMult += Int_t (qtCh/sumMultCoeff)  ;
 	 
@@ -321,7 +321,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
 	  Float_t slew=fu->Eval(Float_t(qtCh));
 
 	  //	  trCFD=trCFD-Int_t(fMaxValue[i]-slew);
-	  trCFD = trCFD + slew; //for the same channel as cosmic
+	  trCFD = trCFD + Int_t(slew); //for the same channel as cosmic
 	  ftimeCFD->AddAt(Int_t (trCFD),i);
 	  trLED = Int_t(trCFD  + sl );
 	  ftimeLED->AddAt(trLED,i); 
