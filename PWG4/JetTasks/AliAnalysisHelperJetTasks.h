@@ -57,6 +57,13 @@ class AliAnalysisHelperJetTasks : public TObject {
 			     TList *recJetsList,const Int_t &kRecJets,
 			     TArrayI &iGenIndex,TArrayI &iRecIndex,
 			     Int_t iDebug = 0,Float_t maxDist = 0.3);
+				 
+  static void GetJetMatching(TList *genJetsList, const Int_t &kGenJets,
+                             TList *recJetsList, const Int_t &kRecJets,
+                             TArrayI &iMatchIndex, TArrayF &fPtFraction,
+                             Int_t iDebug = 0, Float_t maxDist = 0.3);
+							 
+  static Double_t GetFractionOfJet(AliAODJet *recJet, AliAODJet *genJet);
 
 
   static void MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate = false); // merges all directories containing the pattern
@@ -87,7 +94,7 @@ class AliAnalysisHelperJetTasks : public TObject {
   
   static Int_t fgLastProcessType;    // stores the raw value of the last process type extracted
  
-  ClassDef(AliAnalysisHelperJetTasks, 4) 
+  ClassDef(AliAnalysisHelperJetTasks, 5) 
 };
 
 #endif // ALIANALYSISHELPERJETTASKS_H

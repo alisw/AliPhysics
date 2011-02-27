@@ -352,6 +352,148 @@ void AliAnalysisHelperJetTasks::GetClosestJets(TList *genJetsList,const Int_t &k
   }
 }
 
+void AliAnalysisHelperJetTasks::GetJetMatching(TList *genJetsList, const Int_t &kGenJets,
+                                               TList *recJetsList, const Int_t &kRecJets,
+                                               TArrayI &iMatchIndex, TArrayF &fPtFraction,
+                                               Int_t iDebug, Float_t maxDist){
+
+                                            
+    // Matching jets from two lists
+    // Start with highest energetic jet from first list (generated/embedded)
+    // Calculate distance (\Delta R) to all jets from second list (reconstructed)
+    // Select N closest jets = kClosestJetsN
+    // Check energy fraction from jets from first list in jets from second list
+    // Matched jets = jet with largest energy fraction
+    // Store index of matched jet in TArrayI iMatchIndex
+                                            
+    // reset index
+    iMatchIndex.Reset(-1);
+    fPtFraction.Reset(-1.);
+    
+    // N closest jets: store list with index and \Delta R
+    const Int_t kClosestJetsN = 4; 
+    Double_t closestJets[kClosestJetsN][2]; //[][0] = index, [][1] = \Delta R
+    
+    for(Int_t i=0; i<kClosestJetsN; ++i){
+        for(Int_t j=0; j<2; ++j){
+            closestJets[i][j] = 1e6;
+        }
+    }
+
+    
+    const Int_t nGenJets = TMath::Min(genJetsList->GetEntries(),kGenJets);
+    const Int_t nRecJets = TMath::Min(recJetsList->GetEntries(),kRecJets);
+    if(nRecJets==0||nGenJets==0) return;
+    
+    AliAODJet *genJet = 0x0;
+    AliAODJet *recJet = 0x0;
+    
+    // loop over generated/embedded jets
+    for(Int_t ig=0; ig<nGenJets; ++ig){
+        genJet = (AliAODJet*)genJetsList->At(ig);
+        //if(!genJet || !JetSelected(genJet)) continue;
+        if(!genJet) continue;
+        
+        // find N closest reconstructed jets
+        Double_t deltaR = 0.;
+        for(Int_t ir=0; ir<nRecJets; ++ir){
+            recJet = (AliAODJet*)recJetsList->At(ir);
+            //if(!recJet || !JetSelected(recJet)) continue;
+            if(!recJet) continue;
+            
+            deltaR = genJet->DeltaR(recJet);
+            
+            Int_t i=kClosestJetsN-1;
+            if(deltaR<closestJets[i][1] && deltaR<maxDist){
+                closestJets[i][0] = (Double_t) ir; // index
+                closestJets[i][1] = deltaR;
+                
+                // sort array (closest at the beginning)
+                while(i>=1 && closestJets[i][1]<closestJets[i-1][1]){
+                    Double_t tmpArr[2];
+                    for(Int_t j=0; j<2; j++){
+                       tmpArr[j] = closestJets[i-1][j];
+                       closestJets[i-1][j]   = closestJets[i][j];
+                       closestJets[i][j] = tmpArr[j];
+                    }
+                    i--;
+                }
+            } 
+        } // end: loop over reconstructed jets
+        
+        // calculate fraction for the N closest jets
+        Double_t maxFraction = 0.; // maximum found fraction in one jets
+        Double_t cumFraction = 0.; // cummulated fraction of closest jets (for break condition)
+        Double_t fraction = 0.;
+        Int_t ir = -1;  // index of close reconstruced jet
+        
+        for(Int_t irc=0; irc<kClosestJetsN; irc++){
+            ir = (Int_t)(closestJets[irc][0]);
+            recJet = (AliAODJet*)recJetsList->At(ir);
+            if(!(recJet)) continue;
+            
+            fraction = GetFractionOfJet(recJet,genJet);
+            
+            cumFraction += fraction;
+            
+            // check if jet fullfills current matching condition
+            if(fraction>maxFraction){
+                // avoid multiple links
+                for(Int_t ij=0; ij<ig; ++ij){
+                    if(iMatchIndex[ij]==ir) continue;
+                }
+                // set index
+                maxFraction = fraction;
+                fPtFraction[ig] = fraction;                
+                iMatchIndex[ig] = ir;
+            }
+            // break condition: less energy left as already found in one jet or
+            // as required for positiv matching
+            if(1-cumFraction<maxFraction) break;
+        } // end: loop over closest jets
+        
+        if(iMatchIndex[ig]<0){
+            if(iDebug) Printf("Matching failed for (gen) jet #%d", ig);
+        }
+    }
+}
+
+Double_t AliAnalysisHelperJetTasks::GetFractionOfJet(AliAODJet *recJet, AliAODJet *genJet){
+
+    Double_t ptGen = genJet->Pt();
+    if(ptGen==0.) return 999.;
+    
+    Double_t ptAssocTracks = 0.; // sum of pT of tracks found in both jets
+    
+    // look at tracks inside jet
+    TRefArray *genTrackList = genJet->GetRefTracks();
+    TRefArray *recTrackList = recJet->GetRefTracks();
+    Int_t nTracksGenJet = genTrackList->GetEntriesFast();
+    Int_t nTracksRecJet = recTrackList->GetEntriesFast();
+    
+    AliAODTrack* recTrack;
+    AliAODTrack* genTrack;
+    for(Int_t ir=0; ir<nTracksRecJet; ++ir){
+        recTrack = (AliAODTrack*)(recTrackList->At(ir));
+        if(!recTrack) continue;
+        
+        for(Int_t ig=0; ig<nTracksGenJet; ++ig){
+            genTrack = (AliAODTrack*)(genTrackList->At(ig));
+            if(!genTrack) continue;
+            
+            // look if it points to the same track
+            if(genTrack==recTrack){
+                ptAssocTracks += genTrack->Pt();
+                break;
+            }
+        }
+    }
+    
+    // calculate fraction
+    Double_t fraction = ptAssocTracks/ptGen;
+    
+    return fraction;
+}
 
 
 void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate){
