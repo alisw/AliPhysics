@@ -38,7 +38,8 @@ AliMixInputEventHandler::AliMixInputEventHandler(const Int_t size, const Int_t m
    fCurrentEntry(0),
    fCurrentEntryMain(0),
    fCurrentEntryMix(0),
-   fCurrentBinIndex(-1)
+   fCurrentBinIndex(-1),
+   fOfflineTriggerMask(0)
 {
    //
    // Default constructor.
