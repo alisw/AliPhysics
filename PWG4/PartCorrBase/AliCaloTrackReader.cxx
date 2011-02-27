@@ -845,7 +845,8 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     //In case of MC analysis, to match resolution/calibration in real data
     if(fSmearClusterEnergy){
       Float_t energy    = clus->E();
-      Float_t rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0]*TMath::Sqrt(energy)+fSmearClusterParam[1]*energy+fSmearClusterParam[0]);
+      Float_t rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0]*TMath::Sqrt(energy)+
+                                       fSmearClusterParam[1]*energy+fSmearClusterParam[2]);
       clus->SetE(rdmEnergy);
       if(fDebug > 2) printf("\t Energy %f, smeared %f\n", energy, clus->E());
     }
