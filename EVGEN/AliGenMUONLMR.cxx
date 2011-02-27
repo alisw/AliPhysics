@@ -3,6 +3,7 @@
 #include <TDatabasePDG.h>
 #include <TFile.h>
 #include "AliConst.h"
+#include "AliLog.h"
 #include "AliGenMUONLMR.h" 
 #include "AliMC.h" 
 #include "AliRun.h" 
@@ -433,9 +434,15 @@ void AliGenMUONLMR::DecayPiK(TParticle *mother, Bool_t &hasDecayed){
   if (mother->GetPdgCode()>0) fMu[0]->SetMomentum(v1.Px(),v1.Py(),v1.Pz(),v1.E());
   else fMu[1]->SetMomentum(v1.Px(),v1.Py(),v1.Pz(),v1.E());
 
-  Int_t idmother = -1; 
-  if (TMath::Abs(mother->GetPdgCode())== 211) idmother = 0; 
-  if (TMath::Abs(mother->GetPdgCode())== 321) idmother = 1; 
+  Int_t idmother = 0; 
+  if (TMath::Abs(mother->GetPdgCode())== 211) {
+      idmother = 0; 
+  } else if (TMath::Abs(mother->GetPdgCode())== 321) {
+      idmother = 1; 
+  } else {
+      AliWarning("Mother particle is not a pion or kaon \n");
+  }
+  
   Double_t gammaRes = mother->Energy()/mres;
   Double_t zResCM = fDecay[idmother]->GetRandom();
   Double_t zResLab = gammaRes*zResCM;  
@@ -455,10 +462,21 @@ void AliGenMUONLMR::DalitzDecay(TParticle *mother){
   Double_t mumass  = fMu[0]->GetMass(); 
   Double_t md3  = 0;  // unless differently specified, third particle is a photon 
   if (mother->GetPdgCode() == 223) md3 = 0.134977; // if mother is an omega, third particle is a pi0
-  Int_t index = -1; 
-  if (mother->GetPdgCode() == 221) index = 0;  // eta
-  else if (mother->GetPdgCode() == 223) index = 1; // omega  
-  else if (mother->GetPdgCode() == 331) index = 2; // etaPrime  
+
+  Int_t index = 0; 
+  if (TMath::Abs(mother->GetPdgCode())== 221) {
+    // eta
+      index = 0; 
+  } else if (TMath::Abs(mother->GetPdgCode())== 223) {
+    // omega
+      index = 1; 
+  } else if (mother->GetPdgCode() == 331) {
+    // eta'
+      index = 2; 
+  } else {
+      AliWarning("Mother particle is not a eta, eta' or omega \n");
+  }
+
   Int_t flag = 0; 
   Double_t xd=0, mvirt2=0; 
   Double_t countIt = 0;
