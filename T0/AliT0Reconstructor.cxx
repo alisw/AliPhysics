@@ -275,7 +275,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   //  Int_t refPoint = 0;
   //Bad channel
   Int_t badpmt = GetRecoParam()->GetRefPoint();
-  cout<<" bad pmt "<<badpmt<<endl;
+ 
   Int_t low[110], high[110];
 
   Int_t allData[110][5];
@@ -292,7 +292,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 
       low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
       high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
-      cout<<i0<<" "<<  low[i0]<<" "<< high[i0] <<endl;
       }
    
   Double32_t besttimeA=9999999;
