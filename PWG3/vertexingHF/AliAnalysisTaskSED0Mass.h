@@ -50,10 +50,12 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   void SetUsePid4Distr(Bool_t usepid=kTRUE){fUsePid4Distr=usepid;}
   void SetFillOnlyD0D0bar(Int_t flagfill){fFillOnlyD0D0bar=flagfill;}
   void SetFillVarHists(Bool_t flag) {fFillVarHists=flag;}
+  void SetSystem(Int_t sys){fSys=sys; if(fSys==1) SetFillVarHists(kFALSE);}
 
   Bool_t GetCutOnDistr() const {return fCutOnDistr;}
   Bool_t GetUsePid4Distr() const {return fUsePid4Distr;}
   Int_t  GetFillOnlyD0D0bar() const {return fFillOnlyD0D0bar;}
+  Int_t  GetSystem() const {return fSys;}
 
  private:
 
@@ -78,8 +80,9 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   TObjArray fDaughterTracks;      // keeps the daughter tracks
   Int_t     fIsSelectedCandidate; // selection outcome
   Bool_t    fFillVarHists;        // flag to enable filling variable histos
+  Int_t     fSys;                 // fSys=0 -> p-p; fSys=1 ->PbPb (in this case fFillVarHists=kFALSE by default: set it to kTRUE *after* if needed)
 
-  ClassDef(AliAnalysisTaskSED0Mass,13); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Mass,14); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif
