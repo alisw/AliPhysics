@@ -593,7 +593,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
 
        if(kDeltaAODJetName.Length()==0&&kFilterAOD){
-	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(40.);
+	 if(kIsPbPb)taskCl->SetJetTriggerPtCut(0.0001);
 	 else taskCl->SetJetTriggerPtCut(20.);
        }
 
@@ -722,7 +722,6 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
 
        taskjetServ->SetZVertexCut(8.);
      }
-       taskjetServ->SetDebugLevel(3);
      if(iAODanalysis){
        //       taskjetServ->SetDebugLevel(3);
        taskjetServ->SetAODInput(kTRUE);

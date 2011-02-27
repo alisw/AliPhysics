@@ -967,7 +967,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
    // Add the random cones...
    if(fNRandomCones>0&&fTCARandomConesOut){       
      // create a random jet within the acceptance
-     Double_t etaMax = 0.8 - fRparam;
+     Double_t etaMax = fTrackEtaWindow - fRparam;
      Int_t nCone = 0;
      Int_t nConeRan = 0;
      Double_t pTC = 1; // small number
