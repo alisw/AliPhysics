@@ -1,10 +1,10 @@
-AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 5){
+AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t* jf = "FASTKT", Float_t radius = 0.4, UInt_t filterMask = 256 , Float_t ptTrackMin = 0.15, Int_t iBack = 1, Int_t eventClassMin = 1, Int_t eventClassMax = 4){
 
   Printf("adding task jet response\n");
 
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if(!mgr){
-	::Error("AddTaskJetResponse", "No analysis manager to connect ot.");
+	::Error("AddTaskJetResponse", "No analysis manager to connect to.");
 	return NULL;
     }
     if(!mgr->GetInputEventHandler()){
@@ -43,6 +43,8 @@ AliAnalysisTaskJetResponse* AddTaskJetResponse(Char_t* type = "clusters", Char_t
     task->SetEvtClassMax(eventClassMax);
     task->SetCentMin(0.);
     task->SetCentMax(100.);
+    //task->SetJetDeltaEta(0.2);
+    //task->SetJetDeltaPhi(0.2);
 
 
     mgr->AddTask(task);

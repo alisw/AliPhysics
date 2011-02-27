@@ -46,6 +46,8 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 	Int_t GetEvtSelecMode() {return fEvtSelecMode;}
 
 	void SetEvtSelJetPtRange(Float_t minPt, Float_t maxPt) {fEvtSelMinJetPt = minPt; fEvtSelMaxJetPt = maxPt;}
+	void SetEvtSelJetEtaRange(Float_t minEta, Float_t maxEta) {fEvtSelMinJetEta = minEta; fEvtSelMaxJetEta = maxEta;}
+	void SetEvtSelJetPhiRange(Float_t minPhi, Float_t maxPhi) {fEvtSelMinJetPhi = minPhi; fEvtSelMaxJetPhi = maxPhi;}
 	
         void SetToyNumberOfTrackRange(Int_t minN = 1, Int_t maxN = 1){ fToyMinNbOfTracks = minN, fToyMaxNbOfTracks = maxN; }
 	void SetToyTrackRanges(Double_t minPt = 50., Double_t maxPt = 50., Double_t ptDistr=0,
@@ -87,7 +89,10 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
 	// event selection from AOD
 	Float_t fEvtSelMinJetPt;       // minimum pt of the leading jet
 	Float_t fEvtSelMaxJetPt;       // maximum pt of the leading jet
-	// ... todo: eta, phi, ...
+        Float_t fEvtSelMinJetEta;      // minimum eta of the leading jet
+        Float_t fEvtSelMaxJetEta;      // maximum eta of the leading jet
+        Float_t fEvtSelMinJetPhi;      // minimum phi of the leading jet
+        Float_t fEvtSelMaxJetPhi;      // maximum phi of the leading jet
         
          
         // settings for toy "track generation"
@@ -108,16 +113,21 @@ class AliAnalysisTaskFastEmbedding : public AliAnalysisTaskSE {
         TH1F  *fh1TrackPt;         //! track pt
         TH2F  *fh2TrackEtaPhi;     //! track eta-phi
         TH1F  *fh1TrackN;          //! nb. of tracks
+        TH1F  *fh1JetPt;           //! jet pt
+        TH2F  *fh2JetEtaPhi;       //! jet eta-phi
+        TH1F  *fh1JetN;            //! nb. of jets
         TH1F  *fh1MCTrackPt;       //! MC track pt
         TH2F  *fh2MCTrackEtaPhi;   //! MC track eta-phi
         TH1F  *fh1MCTrackN;        //! nb. of MC tracks
+        TH1I  *fh1AODfile;         //! used AOD files from AODPathArray
+		
 
 	Int_t GetJobID();    // get job id (sub-job id on the GRID)
         Int_t SelectAODfile();
-        Int_t OpenAODfile();
+        Int_t OpenAODfile(Int_t trial = 0);
 
 
-	ClassDef(AliAnalysisTaskFastEmbedding, 3);
+	ClassDef(AliAnalysisTaskFastEmbedding, 4);
 };
 
 #endif

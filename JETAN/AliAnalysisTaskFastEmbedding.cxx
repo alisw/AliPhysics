@@ -37,6 +37,7 @@
 
 #include "AliAnalysisTaskFastEmbedding.h"
 #include "AliAnalysisManager.h"
+#include "AliESDtrack.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
@@ -64,6 +65,10 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
       ,fEvtSelecMode(0)
       ,fEvtSelMinJetPt(-1)
       ,fEvtSelMaxJetPt(-1)
+      ,fEvtSelMinJetEta(-999.)
+      ,fEvtSelMaxJetEta( 999.)
+      ,fEvtSelMinJetPhi(0.)
+      ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
       ,fToyMinNbOfTracks(1)
       ,fToyMaxNbOfTracks(1)
       ,fToyMinTrackPt(50.)
@@ -78,9 +83,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding()
       ,fh1TrackPt(0)
       ,fh2TrackEtaPhi(0)
       ,fh1TrackN(0)
+      ,fh1JetPt(0)
+      ,fh2JetEtaPhi(0)
+      ,fh1JetN(0)
       ,fh1MCTrackPt(0)
       ,fh2MCTrackEtaPhi(0)
       ,fh1MCTrackN(0)
+      ,fh1AODfile(0)
 
 
 {
@@ -107,6 +116,10 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
       ,fEvtSelecMode(0)
       ,fEvtSelMinJetPt(-1)
       ,fEvtSelMaxJetPt(-1)
+      ,fEvtSelMinJetEta(-999.)
+      ,fEvtSelMaxJetEta( 999.)
+      ,fEvtSelMinJetPhi(0.)
+      ,fEvtSelMaxJetPhi(TMath::Pi()*2.)
       ,fToyMinNbOfTracks(1)
       ,fToyMaxNbOfTracks(1)
       ,fToyMinTrackPt(50.)
@@ -121,9 +134,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const char *name)
       ,fh1TrackPt(0)
       ,fh2TrackEtaPhi(0)
       ,fh1TrackN(0)
+      ,fh1JetPt(0)
+      ,fh2JetEtaPhi(0)
+      ,fh1JetN(0)
       ,fh1MCTrackPt(0)
       ,fh2MCTrackEtaPhi(0)
       ,fh1MCTrackN(0)
+      ,fh1AODfile(0)
 {
     // constructor
     DefineOutput(1, TList::Class());
@@ -148,6 +165,10 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
       ,fEvtSelecMode(copy.fEvtSelecMode)
       ,fEvtSelMinJetPt(copy.fEvtSelMinJetPt)
       ,fEvtSelMaxJetPt(copy.fEvtSelMaxJetPt)
+      ,fEvtSelMinJetEta(copy.fEvtSelMinJetEta)
+      ,fEvtSelMaxJetEta(copy.fEvtSelMaxJetEta)
+      ,fEvtSelMinJetPhi(copy.fEvtSelMinJetPhi)
+      ,fEvtSelMaxJetPhi(copy.fEvtSelMaxJetPhi)
       ,fToyMinNbOfTracks(copy.fToyMinNbOfTracks)
       ,fToyMaxNbOfTracks(copy.fToyMaxNbOfTracks)
       ,fToyMinTrackPt(copy.fToyMinTrackPt)
@@ -162,9 +183,13 @@ AliAnalysisTaskFastEmbedding::AliAnalysisTaskFastEmbedding(const AliAnalysisTask
       ,fh1TrackPt(copy.fh1TrackPt)
       ,fh2TrackEtaPhi(copy.fh2TrackEtaPhi)
       ,fh1TrackN(copy.fh1TrackN)
+      ,fh1JetPt(copy.fh1JetPt)
+      ,fh2JetEtaPhi(copy.fh2JetEtaPhi)
+      ,fh1JetN(copy.fh1JetN)
       ,fh1MCTrackPt(copy.fh1MCTrackPt)
       ,fh2MCTrackEtaPhi(copy.fh2MCTrackEtaPhi)
       ,fh1MCTrackN(copy.fh1MCTrackN)
+      ,fh1AODfile(copy.fh1AODfile)
 {
     // copy constructor
 }
@@ -192,6 +217,10 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
         fEvtSelecMode      = o.fEvtSelecMode;
         fEvtSelMinJetPt    = o.fEvtSelMinJetPt;
         fEvtSelMaxJetPt    = o.fEvtSelMaxJetPt;
+        fEvtSelMinJetEta   = o.fEvtSelMinJetEta;
+        fEvtSelMaxJetEta   = o.fEvtSelMaxJetEta;
+        fEvtSelMinJetPhi   = o.fEvtSelMinJetPhi;
+        fEvtSelMaxJetPhi   = o.fEvtSelMaxJetPhi;
         fToyMinNbOfTracks  = o.fToyMinNbOfTracks;
         fToyMaxNbOfTracks  = o.fToyMaxNbOfTracks;
         fToyMinTrackPt     = o.fToyMinTrackPt;
@@ -206,9 +235,13 @@ AliAnalysisTaskFastEmbedding& AliAnalysisTaskFastEmbedding::operator=(const AliA
         fh1TrackPt         = o.fh1TrackPt;
         fh2TrackEtaPhi     = o.fh2TrackEtaPhi;
         fh1TrackN          = o.fh1TrackN;
+	fh1JetPt           = o.fh1JetPt;
+        fh2JetEtaPhi       = o.fh2JetEtaPhi;
+        fh1JetN            = o.fh1JetN;
         fh1MCTrackPt       = o.fh1MCTrackPt;
         fh2MCTrackEtaPhi   = o.fh2MCTrackEtaPhi;
         fh1MCTrackN        = o.fh1MCTrackN;
+        fh1AODfile         = o.fh1AODfile;
     }
 
     return *this;
@@ -228,28 +261,6 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
 {
     // create output objects
     if(fDebug > 1) Printf("AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()");
-
-    rndm = new TRandom3();
-    Int_t id = GetJobID();
-    if(id>-1) rndm->SetSeed(id);
-    else      rndm->SetSeed();   // a TTUID is generated and used for seed
-    AliInfo(Form("TRandom3 seed: %d", rndm->GetSeed()));
-
-
-    // embed mode with AOD
-    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
-
-       // open input AOD
-       if(fAODPathArray){
-           Int_t rc = SelectAODfile();
-           if(rc<0) return;
-       }
-
-       Int_t rc = OpenAODfile();
-       if(rc<0) return;
-
-    } //end: embed mode with AOD
-
 
     // connect output aod
     // create a new branch for extra tracks
@@ -278,34 +289,79 @@ void AliAnalysisTaskFastEmbedding::UserCreateOutputObjects()
     //qa histograms
 
     OpenFile(1);
-    fHistList = new TList();
+    if(!fHistList) fHistList = new TList();
+    fHistList->SetOwner(kTRUE);
 
     Bool_t oldStatus = TH1::AddDirectoryStatus();
     TH1::AddDirectory(kFALSE);
 
-    fh1TrackPt      =  new TH1F("fh1TrackPt","pT of extra tracks;p_{T};entries", 300, 0., 300.);
+    fh1TrackPt      =  new TH1F("fh1TrackPt","pT of extra tracks;p_{T};entries", 250, 0., 250.);
     fh2TrackEtaPhi  =  new TH2F("fh2TrackEtaPhi","eta-phi distribution of extra tracks;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
-    fh1TrackN       =  new TH1F("fh1TrackN", "nb. of extra tracks per event;nb. of tracks;entries",300, 0., 3000.);
+    fh1TrackN       =  new TH1F("fh1TrackN", "nb. of extra tracks per event;nb. of tracks;entries",300, 0., 300.);
 
     fHistList->Add(fh1TrackPt);
     fHistList->Add(fh2TrackEtaPhi);
     fHistList->Add(fh1TrackN);
+	
+	if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
+	
+	    fh1JetPt        =  new TH1F("fh1JetPt", "pT of extra jets;p_{T};entries", 250, 0., 250.);
+	    fh2JetEtaPhi    =  new TH2F("fh2JetEtaPhi", "eta-phi distribution of extra jets;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
+	    fh1JetN         =  new TH1F("fh1JetN", "nb. of extra jets per event;nb. of jets;entries",20,0.,20.);
+	
+	    fHistList->Add(fh1JetPt);
+        fHistList->Add(fh2JetEtaPhi);
+        fHistList->Add(fh1JetN);
+    }
 
  
     if(fAODevent && fAODevent->FindListObject("mcparticles") && strlen(fMCparticlesBranch.Data())){ 
 
-       fh1MCTrackPt      =  new TH1F("fh1MCTrackPt","pT of MC extra tracks;p_{T};entries", 300, 0., 300.);
+       fh1MCTrackPt      =  new TH1F("fh1MCTrackPt","pT of MC extra tracks;p_{T};entries", 250, 0., 250.);
        fh2MCTrackEtaPhi  =  new TH2F("fh2MCTrackEtaPhi","eta-phi distribution of MC extra tracks;#eta;#phi", 20, -1., 1., 60, 0., 2*TMath::Pi());
-       fh1MCTrackN       =  new TH1F("fh1MCTrackN", "nb. of MC extra tracks per event;nb. of tracks;entries",300, 0., 3000.);
-
+       fh1MCTrackN       =  new TH1F("fh1MCTrackN", "nb. of MC extra tracks per event;nb. of tracks;entries",300, 0., 300.);
+	   
        fHistList->Add(fh1MCTrackPt);
        fHistList->Add(fh2MCTrackEtaPhi);
        fHistList->Add(fh1MCTrackN);
+	  
+    }
+	
+    fh1AODfile = new TH1I("fh1AODfile", "overview of opened AOD files from the array", 100, 0, 100);
+    fHistList->Add(fh1AODfile);
 
+    // =========== Switch on Sumw2 for all histos ===========
+    for (Int_t i=0; i<fHistList->GetEntries(); ++i) {
+        TH1 *h1 = dynamic_cast<TH1*>(fHistList->At(i));
+        if (h1){
+          h1->Sumw2();
+          continue;
+        }
     }
 
     TH1::AddDirectory(oldStatus);
 
+
+    // set seed
+    rndm = new TRandom3();
+    Int_t id = GetJobID();
+    if(id>-1) rndm->SetSeed(id);
+    else      rndm->SetSeed();   // a TTUID is generated and used for seed
+    AliInfo(Form("TRandom3 seed: %d", rndm->GetSeed()));
+
+    // embed mode with AOD
+    if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
+
+       // open input AOD
+       Int_t rc = OpenAODfile();
+       if(rc<0) return;
+       fh1AODfile->Fill(rc);
+
+    } //end: embed mode with AOD
+
+   
+    
+   PostData(1, fHistList);
 }
 
 
@@ -325,6 +381,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 
     if(!fAODout){
        AliError("Need output AOD, but is not connected."); 
+       PostData(1, fHistList);
        return;
     }
 
@@ -332,6 +389,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
     TClonesArray *tracks = (TClonesArray*)(fAODout->FindListObject(fTrackBranch.Data()));
     if(!tracks){
         AliError("Extra track branch not found in output.");
+        PostData(1, fHistList);
         return;
     }
     tracks->Delete();
@@ -344,6 +402,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
     if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks || fEmbedMode==kAODJet4Mom){
        if(!fAODevent){
           AliError("Need input AOD, but is not connected."); 
+          PostData(1, fHistList);
           return;
        }
 
@@ -353,6 +412,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
        else                    aodJets = fAODevent->GetJets();
        if(!aodJets){
           AliError("Could not find jets in AOD. Check jet branch when indicated.");
+          PostData(1, fHistList);
           return;
        }
         
@@ -368,17 +428,20 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
               } 
               else {
                  AliDebug(AliLog::kDebug, "Last event in AOD reached, select new AOD file ...");
-                 Int_t rc = SelectAODfile();
-                 if(rc<0) return;
 
-                 rc = OpenAODfile();
-                 if(rc<0) return;
+                 Int_t rc = OpenAODfile();
+                 if(rc<0) {
+                    PostData(1, fHistList);
+                    return;
+                 }
+                 fh1AODfile->Fill(rc);
 
 		 // new file => we must use the new jet array
 		 if(fJetBranch.Length()) aodJets = dynamic_cast<TClonesArray*>(fAODevent->FindListObject(fJetBranch.Data()));
 		 else                    aodJets = fAODevent->GetJets();
 		 if(!aodJets){
 		   AliError("Could not find jets in AOD. Check jet branch when indicated.");
+                   PostData(1, fHistList);
 		   return;
 		 }
               }
@@ -394,7 +457,9 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                  if(!jet) continue;
 
                  if(   (fEvtSelMinJetPt==-1. || jet->Pt()>=fEvtSelMinJetPt)
-	            && (fEvtSelMaxJetPt==-1. || jet->Pt()<=fEvtSelMaxJetPt)){
+	            && (fEvtSelMaxJetPt==-1. || jet->Pt()<=fEvtSelMaxJetPt)
+                    && (jet->Eta()>=fEvtSelMinJetEta && jet->Eta()<=fEvtSelMaxJetEta)
+                    && (jet->Phi()>=fEvtSelMinJetPhi && jet->Phi()<=fEvtSelMaxJetPhi)){
                     useEntry = kTRUE;
                     break;
                  } 
@@ -424,18 +489,65 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
        if(fEmbedMode==kAODFull || fEmbedMode==kAODJetTracks){ // take all tracks or jet tracks
 	   // loop over input tracks
 	   // add to output aod
-	   Int_t nTracks = fAODevent->GetNumberOfTracks();
+	   Int_t nTracks = 0;
+	   Int_t nJets = aodJets->GetEntries();
+	   Int_t nSelectedJets = 0;
+       AliAODJet *leadJet = 0x0; // used for jet tracks only
+           
+           if(fEmbedMode==kAODFull){
+        		   nTracks = fAODevent->GetNumberOfTracks();
+				   
+			       for(Int_t ij=0; ij<nJets; ++ij){
+                       AliAODJet *jet = dynamic_cast<AliAODJet*>(aodJets->At(ij));
+                       if(!jet) continue;
+                       if(   (fEvtSelMinJetPt==-1. || jet->Pt()>=fEvtSelMinJetPt)
+                          && (fEvtSelMaxJetPt==-1. || jet->Pt()<=fEvtSelMaxJetPt)
+                          && (jet->Eta()>=fEvtSelMinJetEta && jet->Eta()<=fEvtSelMaxJetEta)
+                          && (jet->Phi()>=fEvtSelMinJetPhi && jet->Eta()<=fEvtSelMaxJetPhi)){
+						  
+						      fh1JetPt->Fill(jet->Pt());
+							  fh2JetEtaPhi->Fill(jet->Eta(), jet->Phi());
+							  nSelectedJets++;
+							  
+					   }
+                   }				   
+				   fh1JetN->Fill(nSelectedJets);
+		   }
+
+           if(fEmbedMode==kAODJetTracks){
+              // look for leading jet within selection
+              // get reference tracks for this jet
+              Float_t leadJetPt = 0.;
+              for(Int_t ij=0; ij<nJets; ++ij){
+                  AliAODJet *jet = dynamic_cast<AliAODJet*>(aodJets->At(ij));
+                  if(!jet) continue;
+                  if(   (fEvtSelMinJetPt==-1. || jet->Pt()>=fEvtSelMinJetPt)
+                     && (fEvtSelMaxJetPt==-1. || jet->Pt()<=fEvtSelMaxJetPt)
+                     && (jet->Eta()>=fEvtSelMinJetEta && jet->Eta()<=fEvtSelMaxJetEta)
+                     && (jet->Phi()>=fEvtSelMinJetPhi && jet->Eta()<=fEvtSelMaxJetPhi)){
+                     if(jet->Pt()>leadJetPt){
+                         leadJetPt = jet->Pt();
+                         leadJet = jet;
+                     } 
+                  }
+               }
+               if(leadJet){
+     			   nTracks = leadJet->GetRefTracks()->GetEntriesFast();
+				   fh1JetPt->Fill(leadJet->Pt());
+                   fh2JetEtaPhi->Fill(leadJet->Eta(), leadJet->Pt());
+                   fh1JetN->Fill(1);				   
+			   }
+           }
+ 
            fh1TrackN->Fill((Float_t)nTracks);
 
 	   for(Int_t it=0; it<nTracks; ++it){
-	       AliAODTrack *tmpTr = fAODevent->GetTrack(it);
-	       // ?? test filter bit, or something else??
+	       AliAODTrack *tmpTr = 0x0;
+               if(fEmbedMode==kAODFull)      tmpTr = fAODevent->GetTrack(it);
+               if(fEmbedMode==kAODJetTracks) tmpTr = dynamic_cast<AliAODTrack*>(leadJet->GetRefTracks()->At(it));
+               if(!tmpTr) continue; 
 
-               if(fEmbedMode==kAODJetTracks){
-                  // jet track? else continue
-                  // not implemented yet
-                  continue;
-               } 
+	       tmpTr->SetStatus(AliESDtrack::kEmbedded);
 
 	       new ((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr); 
 	       dummy = (*tracks)[nAODtracks-1];
@@ -482,6 +594,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
                AliAODJet *jet = dynamic_cast<AliAODJet*>(aodJets->At(ij));
                if(!jet) continue;
 	       AliAODTrack *tmpTr = (AliAODTrack*)jet;
+	       tmpTr->SetFlags(AliESDtrack::kEmbedded);
 
 	       new ((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr);
 	       dummy = (*tracks)[nAODtracks-1]; 
@@ -521,7 +634,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 	   Double_t phi = rndm->Uniform(fToyMinTrackPhi,fToyMaxTrackPhi);
 	   phi = TVector2::Phi_0_2pi(phi);
 
-	   Printf("Add track #%d: pt %.2f, eta %.2f, phi %.2f", i, pt, eta, phi);
+	   if(fDebug) Printf("Add track #%d: pt %.2f, eta %.2f, phi %.2f", i, pt, eta, phi);
 
 	   Double_t theta = 2*TMath::ATan(1/TMath::Exp(eta));
 	   Float_t mom[3];
@@ -551,7 +664,7 @@ void AliAnalysisTaskFastEmbedding::UserExec(Option_t *)
 					      fToyFilterMap,  // select info
 					      -999.    // chi2 per NDF
 		                            );
-	   tmpTr->SetFlags(1<<27);
+	   tmpTr->SetFlags(AliESDtrack::kEmbedded);
 
            new((*tracks)[nAODtracks++]) AliAODTrack(*tmpTr);
            dummy = (*tracks)[nAODtracks-1];
@@ -614,7 +727,18 @@ Int_t AliAnalysisTaskFastEmbedding::SelectAODfile(){
      return n;
 }
 
-Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
+//__________________________________________________________________________
+
+Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(Int_t trial){
+
+    if(trial>3){
+        AliError("Could not open AOD files, give up ...");
+        return -1;
+    }
+	
+	Int_t rc = 0;
+	if(fAODPathArray) rc = SelectAODfile();
+	if(rc<0) return -1;
 
     TDirectory *owd = gDirectory;
     if (fAODfile)
@@ -622,8 +746,16 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
     fAODfile = TFile::Open(fAODPath.Data());
     owd->cd();
     if(!fAODfile){
-       AliError("Could not open AOD file.");
-       return -1;
+	
+       rc = -1;
+       if(fAODPathArray){
+           AliError(Form("Could not open AOD file %s, try another from the list ...", fAODPath.Data()));
+           rc = OpenAODfile(trial+1);
+       } else {
+	       AliError(Form("Could not open AOD file %s.", fAODPath.Data()));
+	   }
+        
+       return rc;
     }
 
     fAODtree = (TTree*)fAODfile->Get("aodTree");
@@ -636,6 +768,6 @@ Int_t AliAnalysisTaskFastEmbedding::OpenAODfile(){
     delete fAODevent;
     fAODevent = new AliAODEvent();
     fAODevent->ReadFromTree(fAODtree);
-    return 1;
+    return rc;  // file position in AOD path array, if array available
 }
 
