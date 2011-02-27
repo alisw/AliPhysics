@@ -67,6 +67,7 @@
 #include "AliRDHFCutsD0toKpipipi.h"
 #include "AliCFVertexingHF2Prong.h"
 #include "AliCFVertexingHF3Prong.h"
+#include "AliCFVertexingHFCascade.h"
 #include "AliCFVertexingHF.h"
 #include "AliAnalysisDataSlot.h"
 #include "AliAnalysisDataContainer.h"
@@ -417,12 +418,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
        	AliCFVertexingHF* cfVtxHF=0x0;
 	switch (fDecayChannel){
 	case 2:{
-		cfVtxHF = new AliCFVertexingHF2Prong(mcArray, fOriginDselection);
-		break;
+	  cfVtxHF = new AliCFVertexingHF2Prong(mcArray, fOriginDselection);
+	  break;
 	}
 	case 21:{ 
-		//	  cfVtxHF = new AliCFVertexingHFCascade(mcArray, originDselection);  // not there yet
-		break;
+	  cfVtxHF = new AliCFVertexingHFCascade(mcArray, fOriginDselection); 
+	  break;
 	}
 	case 31:
 	case 32:
@@ -453,7 +454,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs()-1; iProng++){
 			trackCuts[iProng]=fCuts->GetTrackCuts();
 		}
-		trackCuts[3] = fCuts->GetTrackCutsSoftPi();
+		trackCuts[2] = fCuts->GetTrackCutsSoftPi();
 	}
 	else {
 		for (Int_t iProng = 0; iProng<cfVtxHF->GetNProngs(); iProng++){

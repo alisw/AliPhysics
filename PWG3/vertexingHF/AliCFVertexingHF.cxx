@@ -27,6 +27,7 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliAODMCHeader.h"
 #include "AliAODEvent.h"
 #include "AliLog.h"
