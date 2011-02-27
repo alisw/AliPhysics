@@ -1,5 +1,3 @@
-
-
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -127,7 +125,6 @@ ClassImp(AliT0Reconstructor)
 
 //_____________________________________________________________________________
 void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
-  
 {
   // T0 digits reconstruction
   Int_t refAmp = Int_t (GetRecoParam()->GetRefAmp());
@@ -147,6 +144,9 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
   
+  Float_t lowAmpThreshold =  GetRecoParam()->GetLow(200);  
+  Float_t highAmpThreshold =  GetRecoParam()->GetHigh(200);  
+  Int_t badpmt = GetRecoParam()->GetRefPoint();
 
   TBranch *brDigits=digitsTree->GetBranch("T0");
   AliT0digit *fDigits = new AliT0digit() ;
@@ -179,7 +179,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   Float_t time[24], adc[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(timeCFD->At(ipmt)>0 ){
+    if(timeCFD->At(ipmt)>0 && ipmt != badpmt) {
      if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
 	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
       else
@@ -208,7 +208,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   }
   
   for (Int_t ipmt=0; ipmt<12; ipmt++){
-    if(time[ipmt] > 1 ) {
+    if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold) {
       if(time[ipmt]<besttimeC){
 	besttimeC=time[ipmt]; //timeC
 	pmtBestC=ipmt;
@@ -216,7 +216,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     }
   }
   for ( Int_t ipmt=12; ipmt<24; ipmt++){
-    if(time[ipmt] > 1) {
+    if(time[ipmt] > 1 &&  ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold) {
       if(time[ipmt]<besttimeA) {
 	besttimeA=time[ipmt]; //timeA
         pmtBestA=ipmt;}
@@ -272,11 +272,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   // reference amplitude and time ref. point from reco param
 
   Float_t refAmp = GetRecoParam()->GetRefAmp();
+
   //  Int_t refPoint = 0;
+
   //Bad channel
   Int_t badpmt = GetRecoParam()->GetRefPoint();
  
-  Int_t low[110], high[110];
+  Int_t low[500], high[500];
 
   Int_t allData[110][5];
   
@@ -293,7 +295,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       low[i0] = Int_t (GetRecoParam()->GetLow(i0));	
       high[i0] = Int_t (GetRecoParam()->GetHigh(i0));
       }
-   
+  Float_t lowAmpThreshold =  GetRecoParam()->GetLow(200);  
+  Float_t highAmpThreshold =  GetRecoParam()->GetHigh(200);  
+  
   Double32_t besttimeA=9999999;
   Double32_t besttimeC=9999999;
   Int_t pmtBestA=99999;
@@ -328,8 +332,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
 	}
 	Int_t ref=0;
+
 	//	if (refPoint>0) 
 	//  ref = allData[refPoint][0]-5000;
+
 	
 	Float_t channelWidth = fParam->GetChannelWidth() ;  
 	
@@ -440,7 +446,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1 )
+	 if(time[ipmt] > 1 && ipmt != badpmt &&  adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold )
 	   {
 	     if(time[ipmt]<besttimeC){
 		  besttimeC=time[ipmt]; //timeC
@@ -450,7 +456,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>0.1)
+	   if(time[ipmt] > 1 && ipmt != badpmt && adc[ipmt]>lowAmpThreshold && adc[ipmt]<highAmpThreshold)
 	     {
 	       if(time[ipmt]<besttimeA) {
 		 besttimeA=time[ipmt]; //timeA
@@ -492,7 +498,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  }
       }
       frecpoints->SetT0Trig(tr);
-
+   
       //Set MPD
       if(allData[53][0]>0 && allData[54][0]) 
 	frecpoints->SetMultA(allData[53][0]-allData[54][0]);
