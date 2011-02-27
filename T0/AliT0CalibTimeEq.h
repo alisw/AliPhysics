@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
+#include "TH1F.h"
 
 class AliT0CalibTimeEq: public TNamed {
 
@@ -23,6 +24,8 @@ class AliT0CalibTimeEq: public TNamed {
   virtual void  Print(Option_t* option= "") const; 
   
   Bool_t ComputeOnlineParams(const char* filePhys);
+  Bool_t ComputeOfflineParams(const char* filePhys);
+
   Float_t  GetCFDvalue(Int_t channel,Int_t number)        const {return fCFDvalue[channel][number];}
   Float_t* GetCFDvalue()          const {return (float*)fCFDvalue;}
   Float_t  GetTimeEq(Int_t channel)        const {return fTimeEq[channel];}
@@ -41,8 +44,10 @@ class AliT0CalibTimeEq: public TNamed {
   void SetRmsVertex(Float_t rms=0) { fRmsVertex = rms; };
   Float_t GetRmsVertex () {return fRmsVertex;};
 
+
  protected:
 
+  void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma); 
   Float_t     fCFDvalue[24][5];       // CFD values
   Float_t     fTimeEq[24];	      // Time Equalized for OCDB	 
   Float_t     fTimeEqRms[24];	      // RMS of Time Equalized for OCDB	 
