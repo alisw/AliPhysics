@@ -1558,9 +1558,11 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   ConvertPrimaryVertices(*esd);
 
   //setting best TOF PID
-  fESDpid = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->GetESDpid();
+  AliESDInputHandler* esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if (esdH)
+      fESDpid = esdH->GetESDpid();
 
-  if ( fIsPidOwner){
+  if (fIsPidOwner && fESDpid){
     delete fESDpid;
     fESDpid = 0;
   }
