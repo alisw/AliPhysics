@@ -131,14 +131,15 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   if (flag==0)taskname.Prepend("D0");
   else taskname.Prepend("LS");
   AliAnalysisTaskSED0Mass *massD0Task = new AliAnalysisTaskSED0Mass(taskname.Data(),RDHFD0toKpi);
-  massD0Task->SetDebugLevel(2);
+  massD0Task->SetDebugLevel(0);
   massD0Task->SetArray(flag);
   massD0Task->SetReadMC(readMC);
   massD0Task->SetCutOnDistr(cutOnDistr);
   massD0Task->SetUsePid4Distr(kFALSE);
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
-  massD0Task->SetFillVarHists(kTRUE); // set to FALSE to go faster in PbPb
-
+  massD0Task->SetSystem(1); //0=pp, 1=PbPb
+  //massD0Task->SetFillVarHists(kTRUE); // default is FALSE if System=PbPb
+ 
   mgr->AddTask(massD0Task);
   
   //
