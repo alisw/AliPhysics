@@ -686,7 +686,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
       } // End of eta loop
 
       // Number of events:
-      Int_t nEv = cumulantsHist->GetBinContent(0,0);
+      Int_t nEv = (Int_t)cumulantsHist->GetBinContent(0,0);
       cumulant2Hist->SetBinContent(cumulant2Hist->GetNbinsX() + 1, nEv);
       cumulant4Hist->SetBinContent(cumulant4Hist->GetNbinsX() + 1, nEv);
     } // End of harmonics loop
