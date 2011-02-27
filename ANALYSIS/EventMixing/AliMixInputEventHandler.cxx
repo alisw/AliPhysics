@@ -525,8 +525,10 @@ Bool_t AliMixInputEventHandler::IsEventCurrentSelected()
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliMultiInputEventHandler *mh = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
    Bool_t isSelected = kTRUE;
-   if (fOfflineTriggerMask && mh->GetEventSelection()) {
-      isSelected = fOfflineTriggerMask & mh->IsEventSelected();
+   if (mh) {
+      if (fOfflineTriggerMask && mh->GetEventSelection()) {
+         isSelected = fOfflineTriggerMask & mh->IsEventSelected();
+      }
    }
    AliDebug(AliLog::kDebug + 1, Form("isSelected=%d", isSelected));
    AliDebug(AliLog::kDebug + 5, Form("-> %d", isSelected));
