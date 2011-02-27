@@ -56,6 +56,9 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
   void SetAccCut();
 
+  Double_t GetEtaProng(Int_t iProng)const;
+  Double_t GetPtProng(Int_t iProng) const;
+
  protected:
   
   
@@ -63,7 +66,7 @@ class AliCFVertexingHFCascade : public AliCFVertexingHF{
   AliCFVertexingHFCascade(const AliCFVertexingHFCascade& c);
   AliCFVertexingHFCascade& operator= (const AliCFVertexingHFCascade& other);
   
-  ClassDef(AliCFVertexingHFCascade, 1); // CF class for D* and other cascades
+  ClassDef(AliCFVertexingHFCascade, 2); // CF class for D* and other cascades
   
 };
 
