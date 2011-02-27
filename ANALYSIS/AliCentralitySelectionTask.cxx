@@ -598,7 +598,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
   // ***** V0 vs ZDC
   if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) && 
-      (zdcEnergyCal=kFALSE)) fQuality  += 8;
+      (zdcEnergyCal==kFALSE)) fQuality  += 8;
 
   if (esdCent) {
       esdCent->SetQuality(fQuality);
