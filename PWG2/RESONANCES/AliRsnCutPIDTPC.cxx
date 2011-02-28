@@ -171,7 +171,7 @@ void AliRsnCutPIDTPC::Initialize()
    AliESDInputHandler *handler = dynamic_cast<AliESDInputHandler*>(mgr->GetInputEventHandler());
    if (handler) {
       AliESDpid *pid = handler->GetESDpid();
-      fESDpid = (*pid);
+      if (pid) fESDpid = (*pid);
    }
 
    fInitialized = kTRUE;

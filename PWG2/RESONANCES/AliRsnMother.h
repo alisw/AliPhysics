@@ -1,17 +1,14 @@
-//
-// Class AliRsnMother
-//
-// Implementation of a pair of tracks, for several purposes
-// - computing the total 4-momentum & inv. mass for output histos filling
-// - evaluating cut checks on the pair of particles
-// - evaluating any kind of kinematic value over their sum
-//
-// authors: Martin Vala (martin.vala@cern.ch)
-//          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//
-
 #ifndef ALIRSNMOTHER_H
 #define ALIRSNMOTHER_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+ 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Interface to candidate resonance decaying into 2 bodies.
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliRsnDaughter.h"
 

@@ -216,8 +216,8 @@ void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
    pdgM       = pairDef->GetMotherPDG();
    pdgD   [0] = AliPID::ParticleCode(pairDef->GetPID(0));
    pdgD   [1] = AliPID::ParticleCode(pairDef->GetPID(1));
-   chargeD[0] = pairDef->GetChargeShort(0);
-   chargeD[1] = pairDef->GetChargeShort(1);
+   chargeD[0] = pairDef->GetChargeS(0);
+   chargeD[1] = pairDef->GetChargeS(1);
 
    // other utility variables
    Int_t      first, j, ipart;
@@ -248,9 +248,9 @@ void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
          part[j]   = stack->Particle(label[j]);
          pdgD[j]   = TMath::Abs(part[j]->GetPdgCode());
          charge[j] = (Short_t)(part[j]->GetPDG()->Charge() / 3);
-         if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeShort(0))
+         if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeS(0))
             pairDefMatch[j] = 0;
-         else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeShort(1))
+         else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeS(1))
             pairDefMatch[j] = 1;
          else
             pairDefMatch[j] = -1;
@@ -347,8 +347,8 @@ void AliRsnAnalysisEffSE::ProcessEventAOD(AliRsnPairDef *pairDef)
    pdgM       = pairDef->GetMotherPDG();
    pdgD   [0] = AliPID::ParticleCode(pairDef->GetPID(0));
    pdgD   [1] = AliPID::ParticleCode(pairDef->GetPID(1));
-   chargeD[0] = pairDef->GetChargeShort(0);
-   chargeD[1] = pairDef->GetChargeShort(1);
+   chargeD[0] = pairDef->GetChargeS(0);
+   chargeD[1] = pairDef->GetChargeS(1);
 
    // other utility variables
    Int_t             first, j;
@@ -376,9 +376,9 @@ void AliRsnAnalysisEffSE::ProcessEventAOD(AliRsnPairDef *pairDef)
          part[j]   = (AliAODMCParticle*)mcArray->At(label[j]);
          pdgD[j]   = TMath::Abs(part[j]->GetPdgCode());
          charge[j] = (Short_t)(part[j]->Charge());
-         if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeShort(0))
+         if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(0)) && charge[j] == pairDef->GetChargeS(0))
             pairDefMatch[j] = 0;
-         else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeShort(1))
+         else if (pdgD[j] == AliPID::ParticleCode(pairDef->GetPID(1)) && charge[j] == pairDef->GetChargeS(1))
             pairDefMatch[j] = 1;
          else
             pairDefMatch[j] = -1;

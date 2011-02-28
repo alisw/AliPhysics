@@ -95,29 +95,29 @@ void AliRsnAnalysisTask::RsnUserExec(Option_t*)
 // Recovers the input event and processes it with all included pair objects,
 // using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
 //
+
    if (IsMixing()) return;
 
-   if (fMCOnly) {
-      fRsnAnalysisManager.ProcessAllPairsMC();
-   }
-   else {
-      fRsnAnalysisManager.ProcessAllPairs();
-   }
+   fRsnAnalysisManager.ProcessAll(fMCOnly);
 
    PostData(2, fOutList);
 }
 
+//_____________________________________________________________________________
 void AliRsnAnalysisTask::RsnUserExecMix(Option_t* /*opt*/)
 {
+//
+// Execution of the analysis task with event mixing.
+// Recovers the input event and processes it with all included pair objects,
+// using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
+//
+
    if (!IsMixing()) return;
    AliDebug(AliLog::kDebug, Form("RSN Mixing %lld %d [%lld,%lld] %d", fMixedEH->CurrentEntry(), fMixedEH->NumberMixed(), fMixedEH->CurrentEntryMain(), fMixedEH->CurrentEntryMix(), fMixedEH->CurrentBinIndex()));
 
    // the virtual class has already sorted tracks in the PID index
    // so we need here just to call the execution of analysis
-   if (!fMCOnly)
-      fRsnAnalysisManager.ProcessAllPairs();
-   else
-      fRsnAnalysisManager.ProcessAllPairsMC();
+   fRsnAnalysisManager.ProcessAll(fMCOnly);
 }
 
 //_____________________________________________________________________________

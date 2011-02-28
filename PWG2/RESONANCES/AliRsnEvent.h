@@ -1,18 +1,14 @@
-//
-// *** Class AliRsnEvent ***
-//
-// A container for a collection of AliRsnDaughter objects from an event.
-// Contains also the primary vertex, useful for some cuts.
-// In order to retrieve easily the tracks which have been identified
-// as a specific type and charge, there is an array of indexes which
-// allows to avoid to loop on all tracks and have only the neede ones.
-//
-// authors: A. Pulvirenti (email: alberto.pulvirenti@ct.infn.it)
-//          M. Vala (email: martin.vala@cern.ch)
-//
-
 #ifndef ALIRSNEVENT_H
 #define ALIRSNEVENT_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+ 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Interface to full event.
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliVEvent.h"
 #include "AliMCEvent.h"
@@ -43,24 +39,28 @@ public:
    Int_t      GetLocalID() const           {return fLocalID;}
 
    // getters which convert into allowed input types
-   AliESDEvent* GetRefESD()   {if (classMatchRef  (AliESDEvent::Class())) return static_cast<AliESDEvent*>(fRef); return 0x0;}
-   AliAODEvent* GetRefAOD()   {if (classMatchRef  (AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRef); return 0x0;}
-   AliMCEvent*  GetRefMCESD() {if (classMatchRefMC(AliMCEvent ::Class())) return static_cast<AliMCEvent *>(fRef); return 0x0;}
-   AliAODEvent* GetRefMCAOD() {if (classMatchRefMC(AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRef); return 0x0;}
+   AliESDEvent* GetRefESD()   {if (classMatchRef  (AliESDEvent::Class())) return static_cast<AliESDEvent*>(fRef)  ; return 0x0;}
+   AliAODEvent* GetRefAOD()   {if (classMatchRef  (AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRef)  ; return 0x0;}
+   AliMCEvent*  GetRefMCESD() {if (classMatchRefMC(AliMCEvent ::Class())) return static_cast<AliMCEvent *>(fRefMC); return 0x0;}
+   AliAODEvent* GetRefMCAOD() {if (classMatchRefMC(AliAODEvent::Class())) return static_cast<AliAODEvent*>(fRefMC); return 0x0;}
    Bool_t       IsESD()       {return (GetRefESD() != 0x0);}
    Bool_t       IsAOD()       {return (GetRefAOD() != 0x0);}
 
    // advanced getters
    Double_t         GetVz();
    Int_t            GetMultiplicity(AliESDtrackCuts *cuts = 0x0);
+   Int_t            GetMultiplicityMC();
 
    // setters for a daughter
+   Bool_t           SetDaughterAbs(AliRsnDaughter &daughter, Int_t absoluteIndex);
    Bool_t           SetDaughter(AliRsnDaughter &daughter, Int_t index, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
    Bool_t           SetDaughterMC(AliRsnDaughter &daughter, Int_t index);
+   AliRsnDaughter   GetDaughterAbs(Int_t absoluteIndex);
    AliRsnDaughter   GetDaughter(Int_t i, AliRsnDaughter::ERefType type = AliRsnDaughter::kTrack);
    AliRsnDaughter   GetDaughterMC(Int_t i);
    Int_t            GetAbsoluteSum();
    Bool_t           ConvertAbsoluteIndex(Int_t index, Int_t &realIndex, AliRsnDaughter::ERefType &type);
+   Int_t            ConvertRealIndex(Int_t index, AliRsnDaughter::ERefType type);
 
    // leading particle stuff
    void             SetLeadingParticle(AliRsnDaughter &leading) {if (fLeading >= 0) SetDaughter(leading, fLeading);}
@@ -79,8 +79,8 @@ public:
    
 private:
 
-   Bool_t classMatchRef  (TClass *ref) {if (fRef  ) return (fRef  ->IsA() == ref); return kFALSE;}
-   Bool_t classMatchRefMC(TClass *ref) {if (fRefMC) return (fRefMC->IsA() == ref); return kFALSE;}
+   Bool_t classMatchRef  (TClass *ref) {if (fRef  ) return (fRef  ->InheritsFrom(ref)); return kFALSE;}
+   Bool_t classMatchRefMC(TClass *ref) {if (fRefMC) return (fRefMC->InheritsFrom(ref)); return kFALSE;}
 
    Bool_t SetDaughterESDtrack(AliRsnDaughter &target, Int_t index);
    Bool_t SetDaughterAODtrack(AliRsnDaughter &target, Int_t index);
@@ -91,13 +91,13 @@ private:
    Bool_t SetMCInfoESD(AliRsnDaughter &target);
    Bool_t SetMCInfoAOD(AliRsnDaughter &target);
 
-   AliVEvent   *fRef;         //  pointer to input event
-   AliVEvent   *fRefMC;       //  pointer to reference MC event (if any)
-   Int_t        fLeading;     //  index of leading track
-   Int_t        fLocalID;     //  identification number used locally
+   AliVEvent   *fRef;               //  pointer to input event
+   AliVEvent   *fRefMC;             //  pointer to reference MC event (if any)
+   Int_t        fLeading;           //  index of leading track
+   Int_t        fLocalID;           //  identification number used locally
 
-   static AliRsnEvent    *fgRsnEvent1;     //! pointer to current event #1 (default current event)
-   static AliRsnEvent    *fgRsnEvent2;     //! pointer to current event #2 (different from the other when doing mixing)
+   static AliRsnEvent *fgRsnEvent1; //! pointer to current event #1 (default current event)
+   static AliRsnEvent *fgRsnEvent2; //! pointer to current event #2 (different from the other when doing mixing)
 
    ClassDef(AliRsnEvent, 4);
 };

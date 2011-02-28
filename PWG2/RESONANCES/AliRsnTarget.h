@@ -1,19 +1,14 @@
-//
-// *** Class AliRsnTarget ***
-//
-// Base class used wherever it is needed to check the class type of
-// an object (daughter, mother, event) which could be used for
-// cut checking or value computing.
-// Since most of these operation are implemented into classes that
-// operate on any of such objects, then this class helps in making sure
-// that the object being processed corresponds to what is expected.
-//
-// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//          Martin Vala (martin.vala@cern.ch)
-//
-
 #ifndef ALIRSNTARGET_H
 #define ALIRSNTARGET_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+ 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  General class for cut/computation target objects (daughter/pair/event).
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "TNamed.h"
 

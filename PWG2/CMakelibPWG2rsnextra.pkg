@@ -29,7 +29,6 @@ set ( SRCS RESONANCES/extra/AliRsnTOFT0maker.cxx
            RESONANCES/extra/AliRsnTOFCorrectionESD.cxx 
            RESONANCES/extra/AliRsnAnalysisPhi900GeV.cxx 
            RESONANCES/extra/AliRsnAnalysisPhi7TeV.cxx 
-           RESONANCES/extra/AliRsnAnalysisPhi7TeVNoPID.cxx 
            RESONANCES/extra/AliAnalysisTaskSigma1385.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
