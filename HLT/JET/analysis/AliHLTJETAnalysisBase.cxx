@@ -71,6 +71,7 @@ const Char_t *AliHLTJETAnalysisBase::fgkDeltaType[] = {
 //##################################################################################
 const Char_t *AliHLTJETAnalysisBase::fgkSpectraType[] = { 
   "Compare",       "Compare - Matched",       "Compare - UnMatched",
+  "Com Leading",   "Com Leading - Matched",   "Com Leading - UnMatched",
   "Reconstructed", "Reconstructed - Matched", "Reconstructed - UnMatched",
   "Reco Leading",  "Reco Leading - Matched",  "Reco Leading - UnMatched"
 };
@@ -78,6 +79,7 @@ const Char_t *AliHLTJETAnalysisBase::fgkSpectraType[] = {
 //##################################################################################
 const Char_t *AliHLTJETAnalysisBase::fgkSpectraTypeMC[] = { 
   "MC",        "MC - Matched",        "MC - UnMatched",
+  "MC Leading",        "MC Leading - Matched",        "MC Leading - UnMatched",
   "Reconstructed", "Reconstructed - Matched", "Reconstructed - UnMatched",
   "Reco Leading",  "Reco Leading - Matched",  "Reco Leading - UnMatched"
 };
