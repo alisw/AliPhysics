@@ -1310,34 +1310,56 @@ void AlidNdEtaTask::Terminate(Option_t *)
     fVtxTrigEffNum = dynamic_cast<TH1D*>(fOutput->FindObject("fVtxTrigEffNum"));
     Printf("Events selected = %f", fHistEvents->GetBinContent(fHistEvents->GetXaxis()->FindBin(1.1)));
     Printf("Events selected frm MC = %f", fHistEventsMC->GetBinContent(fHistEventsMC->GetXaxis()->FindBin(1.1)));
-    Float_t nevents = fHistEvents->GetBinContent(fHistEvents->GetXaxis()->FindBin(1.1));
-    Float_t neventsMC = fHistEventsMC->GetBinContent(fHistEventsMC->GetXaxis()->FindBin(1.1));
+    if (!fHistEvents){
+	    AliError("fHistEvents not found, impossible to determine the corresponding dNdEta distribution for the control file");
+    }		    
+    if (!fHistEventsMC){
+	    AliError("fHistEventsMC not found, impossible to determine the corresponding dNdEta distribution for the control file");
+    }	
+    if (!fEta){
+	    AliError("fEta not found, impossible to determine the corresponding dNdEta distribution for the control file");
+    }	
+    if (!fEtaMC){
+	    AliError("fEtaMC not found, impossible to determine the corresponding dNdEta distribution for the control file");
+    }		    
+    Float_t nevents = 0;
+    if (fHistEvents) nevents = fHistEvents->GetBinContent(fHistEvents->GetXaxis()->FindBin(1.1));
+    Float_t neventsMC = 0;
+    if (fHistEventsMC) neventsMC = fHistEventsMC->GetBinContent(fHistEventsMC->GetXaxis()->FindBin(1.1));
     for (Int_t ibin = 1; ibin <= fEta->GetNbinsX(); ibin++){
-      Float_t eta = fEta->GetBinContent(ibin)/nevents/fEta->GetBinWidth(ibin);
-      Float_t etaerr = fEta->GetBinError(ibin)/nevents/fEta->GetBinWidth(ibin);
-      Float_t etaMC = fEtaMC->GetBinContent(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
-      Float_t etaerrMC = fEtaMC->GetBinError(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
-      dNdEta->SetBinContent(ibin,eta);
-      dNdEta->SetBinError(ibin,etaerr);
-      dNdEtaMC->SetBinContent(ibin,etaMC);
-      dNdEtaMC->SetBinError(ibin,etaerrMC);
+	    Float_t eta =0;
+	    Float_t etaerr =0;
+	    Float_t etaMC =0;
+	    Float_t etaerrMC =0;
+	    if (fEta && nevents > 0) {
+		    eta = fEta->GetBinContent(ibin)/nevents/fEta->GetBinWidth(ibin);
+		    etaerr = fEta->GetBinError(ibin)/nevents/fEta->GetBinWidth(ibin);
+		    dNdEta->SetBinContent(ibin,eta);
+		    dNdEta->SetBinError(ibin,etaerr);
+	    }
+	    if (fEtaMC && neventsMC > 0) {
+		    etaMC = fEtaMC->GetBinContent(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
+		    etaerrMC = fEtaMC->GetBinError(ibin)/neventsMC/fEtaMC->GetBinWidth(ibin);
+		    dNdEtaMC->SetBinContent(ibin,etaMC);
+		    dNdEtaMC->SetBinError(ibin,etaerrMC);
+	    }
     }
     new TCanvas("eta", " eta ",50, 50, 550, 550) ;
-    fEta->Draw();
+    if (fEta) fEta->Draw();
     new TCanvas("etaMC", " etaMC ",50, 50, 550, 550) ;
-    fEtaMC->Draw();
+    if (fEtaMC) fEtaMC->Draw();
     new TCanvas("dNdEta", "#eta;dNdEta ",50, 50, 550, 550) ;
     dNdEta->Draw();
     new TCanvas("dNdEtaMC", "#eta,MC;dNdEta ",50, 50, 550, 550) ;
     dNdEtaMC->Draw();
     new TCanvas("Events", "Events;Events ",50, 50, 550, 550) ;
-    fHistEvents->Draw();
+    if (fHistEvents) fHistEvents->Draw();
     new TCanvas("Events, MC", "Events, MC;Events ",50, 50, 550, 550) ;
-    fHistEventsMC->Draw();
+    if (fHistEventsMC) fHistEventsMC->Draw();
     
     TFile* outputFileCheck = new TFile("histogramsCheck.root", "RECREATE");
-    fEta->Write();
-    fEtaMC->Write();
+    if (fEta) fEta->Write();
+    if (fEtaMC) fEtaMC->Write();
     dNdEta->Write();
     dNdEtaMC->Write();
     outputFileCheck->Write();
