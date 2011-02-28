@@ -140,6 +140,7 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserCreateOutputObject
 	//UserCreateOutputObject
 	Printf("AliAnalysisChargedHadronSpectraITSTruncatedMeanTask UserCreateOutputObjects");
 	  flist=new TList();
+	 flist->SetOwner();
 	Float_t ptmax=2.0;
 	Float_t etamax=1.0;
 	
