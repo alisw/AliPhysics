@@ -12,12 +12,13 @@
  * </pre>
  * - run number
  * - GRID input directory, where you define in which LHC period the run number belongs to
- * - GRID working directory, where the .xml, .jdl and the task are uploaded (you have to create it yourself in advance)
- * - GRID output directory with respect to the working one, where the output files of the task are located (you have to create it yourself in advance)
+ * - GRID working directory, where the .xml, .jdl and the task are uploaded 
+ * - GRID output directory with respect to the working one, where the output files of the task are located 
  * - run in full mode, i.e. completely on the GRID with all the chunks of the run processed
  * - specify the analysis task you want to run
  * - specify the path where the task is located, by default it takes $ALICE_ROOT/HLT/QA/tasks
  * - specify whether you are interested only in HLT triggered events
+ * - specify how many events you want to analyze
  *
  * @ingroup alihlt_qa
  * @author Hege.Erdal@student.uib.no, Kalliopi.Kanaki@ift.uib.no
