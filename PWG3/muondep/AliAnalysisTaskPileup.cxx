@@ -145,7 +145,7 @@ AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
   delete fTriggerClassIndex;
 
 #if defined(READOCDB)
-  delete fTriggerRunScalers;
+  //delete fTriggerRunScalers; // Not owner -> Owned by OCDB
   delete fStorageList;
 #endif
 
@@ -216,8 +216,7 @@ void AliAnalysisTaskPileup::NotifyRun()
   entry = AliCDBManager::Instance()->Get("GRP/CTP/Scalers");
   if ( ! entry ) return;
   AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
-  fTriggerRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
-  entry->SetOwner(0);
+  fTriggerRunScalers = static_cast<AliTriggerRunScalers*> (entry->GetObject());
   if (fTriggerRunScalers->CorrectScalersOverflow() == 0) AliInfo("32bit Trigger counters corrected for overflow");
 
   fIsInitCDB = kTRUE;
@@ -361,7 +360,7 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
 #if defined(READOCDB)
   Double_t deltaScalersBeam = 0., deltaScalers = 0.;
 #endif
-  Bool_t isFiredOnce = kFALSE;
+  //Bool_t isFiredOnce = kFALSE;
   for (Int_t itrig=0; itrig<nTriggerClasses+1; itrig++) {
 
     Double_t correctFactorL0 = 1.;
@@ -401,11 +400,11 @@ void AliAnalysisTaskPileup::UserExec(Option_t *)
     else {
       classIndex = -1;
       trigName = "any";
-      isClassFired = isFiredOnce;
+      isClassFired = kTRUE; // isFiredOnce;
     }
 
     if ( ! isClassFired ) continue;
-    isFiredOnce = kTRUE;
+    //isFiredOnce = kTRUE;
 
     //const AliTriggerScalersESD* trigScaler = trigScalerRecords->GetTriggerScalersForClass(classIndex+1); // REMEMBER TO CUT
     //if ( classIndex > 1 ) printf("Index: trigger %i  scaler %i\n", classIndex+1, trigScaler->GetClassIndex()); // REMEMBER TO CUT

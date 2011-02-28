@@ -197,6 +197,27 @@ void AliAnalysisTaskSingleMu::FinishTaskOutput()
     histo2D->GetXaxis()->SetLimits(minX, maxX);
     AliInfo(Form("Histogram %s run limits (%f, %f)",histo2D->GetName(), minX, maxX));
   }
+
+  // Add stat. info from physics selection
+  // (usefull when running on AODs)
+  AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  TString histoName = "";
+  if ( inputHandler ) {
+    for ( Int_t istat=0; istat<2; istat++ ) {
+      TString statType = ( istat == 0 ) ? "ALL" : "BIN0";
+      TH2* hStat = dynamic_cast<TH2*>(inputHandler->GetStatistics(statType.Data()));
+      if ( hStat ) {
+        histoName = Form("%s_SingleMuon", hStat->GetName());
+        TH2* cloneStat = dynamic_cast<TH2*>(hStat->Clone(histoName.Data()));
+        cloneStat->SetDirectory(0);
+        fHistoList->Add(cloneStat);
+      }
+      else {
+        AliWarning("Stat histogram not available");
+        break;
+      }
+    } // loop on stat type
+  }
 }
 
 
@@ -209,9 +230,12 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   AliInfo(Form("   CreateOutputObjects of task %s\n", GetName()));
 
   // initialize histogram lists
-  if ( ! fHistoList ) fHistoList = new TList();
-  if ( ! fHistoListMC ) fHistoListMC = new TList();
-  if ( ! fHistoListQA ) fHistoListQA = new TList();
+  fHistoList = new TList();
+  fHistoList->SetOwner();
+  fHistoListMC = new TList();
+  fHistoListMC->SetOwner();
+  fHistoListQA = new TList();
+  fHistoListQA->SetOwner();
 
   // Init variables
   fVarFloat = new Float_t [kNvarFloat];
@@ -883,7 +907,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
     TCanvas *c1_SingleMu = new TCanvas(currName.Data(),"Vz vs Pt",10,10,310,310);
     c1_SingleMu->SetFillColor(10); c1_SingleMu->SetHighLightColor(10);
     c1_SingleMu->SetLeftMargin(0.15); c1_SingleMu->SetBottomMargin(0.15);
-    TH2* histo = dynamic_cast<TH2*>(container->Project(kStepReconstructed,kHvarPt,kHvarVz));
+    TH2* histo = static_cast<TH2*>(container->Project(kStepReconstructed,kHvarPt,kHvarVz));
     currName = GetName();
     currName.Prepend("hPtVz_");
     histo->SetName(currName.Data());
