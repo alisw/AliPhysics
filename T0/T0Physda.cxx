@@ -122,10 +122,11 @@ int main(int argc, char **argv) {
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
+  TH1F *hCFD[24];  
    
   for(Int_t ic=0; ic<24; ic++) {
     hCFD1minCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",kcbx,kclx,kcmx);
-    hCFD[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD",kt0bx,kt0lx,kt0hx);
+    hCFD[ic] = new TH1F(Form("CFD%d",ic+1),"CFD",kt0bx,kt0lx,kt0hx);
   }
   TH1F *hVertex = new TH1F("hVertex","T0 time",kt0bx,kt0lx,kt0hx);
   
@@ -204,14 +205,15 @@ int main(int argc, char **argv) {
        Float_t meanShift[24];
        for (Int_t ik = 0; ik<24; ik++)
 	 { 
-	   if(allData[ik+1][0]>0 ) hCFD[ik]->Fill(allData[ik+1][0]);
 	   if(ik<12 && allData[ik+1][0]>0 && allData[knpmtC][0]>0 ){
 	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
+	     if(allData[ik+1][0]>0 ) hCFD[ik]->Fill(allData[ik+1][0]);
 	   }
 	   
 	   if(ik>11 && allData[ik+45][0]>0 && allData[56+knpmtA][0]>0 )
 	     {
 	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
+	     if(allData[ik+1][0]>0 ) hCFD[ik]->Fill(allData[ik+45][0]);
 	     }
 	   if(iev == 10000) {	
 	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean(); 
