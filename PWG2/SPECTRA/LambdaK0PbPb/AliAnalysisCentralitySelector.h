@@ -30,7 +30,7 @@ class AliAnalysisCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseSPDOuterRange(kFALSE) {;}
+  AliAnalysisCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseCorrV0(0), fUseSPDOuterRange(kFALSE) {;}
   virtual ~AliAnalysisCentralitySelector(){}
     
   // AliAnalysisCuts interface
