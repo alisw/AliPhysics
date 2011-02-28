@@ -398,6 +398,20 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
       
       break;
     }
+    case kBeamTestCorrected:
+    {
+      //From beam test, corrected for material between beam and EMCAL
+      //fNonLinearityParams[0] =  0.983
+      //fNonLinearityParams[1] =  9.83529e-01;
+      //fNonLinearityParams[2] = -1.84235e+02; 
+      //fNonLinearityParams[3] = -2.05019e+00;
+      //fNonLinearityParams[4] = -5.89423e+00; 
+      energy *= fNonLinearityParams[0]*( ( fNonLinearityParams[1]*exp(-energy/fNonLinearityParams[2]) )  + 
+                                        ( (fNonLinearityParams[2]/(fNonLinearityParams[3]*2.*TMath::Pi())) * 
+                                            exp(-(energy-fNonLinearityParams[4])*(energy-fNonLinearityParams[4])/(2.*fNonLinearityParams[3]*fNonLinearityParams[3])) ) );
+                    
+      break;
+    }
       
     case kNoCorrection:
       AliDebug(2,"No correction on the energy\n");
