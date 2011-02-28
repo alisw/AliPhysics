@@ -265,26 +265,26 @@ void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() {
 //}
 //
 //__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetAODCTS() const {
+TObjArray *  AliAnaPartCorrBaseClass::GetCTSTracks() const {
   //Get list of referenced tracks from reader
 
-  return fReader->GetAODCTS(); 
+  return fReader->GetCTSTracks(); 
 
 }
 
 //__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetAODPHOS() const {
+TObjArray *  AliAnaPartCorrBaseClass::GetPHOSClusters() const {
   //Get list of PHOS reference caloclusters from reader
 
-  return fReader->GetAODPHOS(); 
+  return fReader->GetPHOSClusters(); 
 
 }
 
 //__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetAODEMCAL() const {
+TObjArray *  AliAnaPartCorrBaseClass::GetEMCALClusters() const {
   //Get list of emcal referenced caloclusters from reader
 
-  return fReader->GetAODEMCAL(); 
+  return fReader->GetEMCALClusters(); 
 
 }
 

@@ -677,13 +677,13 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     abort();
   }
   
-  TObjArray *cl = GetAODEMCAL();
+  TObjArray *cl = GetEMCALClusters();
   
   ////////////////////////////////////////////////
   //Start from tracks and get associated clusters 
   ////////////////////////////////////////////////
-  if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
-  Int_t ntracks = GetAODCTS()->GetEntriesFast();
+  if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
+  Int_t ntracks = GetCTSTracks()->GetEntriesFast();
   Int_t refmult = 0; Int_t refmult2 = 0;
   if(GetDebug() > 0)
     printf("AliAnaElectron::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
@@ -695,7 +695,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 
   for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
     iCluster = -999; //start with no match
-    AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
+    AliAODTrack * track = (AliAODTrack*) (GetCTSTracks()->At(itrk)) ;
     //Added negative track condition. Seems that about 3-4% of the tracks have negative label. Causes crashes sometimes.
     if(track->GetLabel()<0){
       printf("Negative track label! Not sure what it  means, abort track. \n");
@@ -771,7 +771,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	if(IsDataMC()) {
 	  //Input from second AOD?
 	  Int_t input = 0;
-	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) input = 1;
+	  //if(GetReader()->GetCTSTracksNormalInputEntries() <= itrk) input = 1;
 	  tmctag = GetMCAnalysisUtils()->CheckOrigin(track->GetLabel(),GetReader(),input);
 
 	  if(trkChgHad) fhPtHadron->Fill(track->Pt(),GetMCSource(tmctag));
@@ -845,7 +845,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    if(IsDataMC()) {  
 	      //Do you want the cluster or the track label?
 	      Int_t input = 0;
-	      //if(GetReader()->GetAODEMCALNormalInputEntries() <= iclus) input = 1;
+	      //if(GetReader()->GetEMCALClustersNormalInputEntries() <= iclus) input = 1;
 	      cmctag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabel(),GetReader(),input);
 	    }
 	    
@@ -906,7 +906,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
 	    tr.SetDetector("CTS"); //PID determined by CTS
 	  }
 
-	  //if(GetReader()->GetAODCTSNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
+	  //if(GetReader()->GetCTSTracksNormalInputEntries() <= itrk) tr.SetInputFileIndex(1);
 	  //Make this preserve sign of particle
 	  if(track->Charge() < 0) tr.SetPdg(11); //electron is 11
 	  else  tr.SetPdg(-11); //positron is -11
@@ -1339,9 +1339,9 @@ Int_t AliAnaElectron::GetDVMBtag(AliAODTrack * tr )
   Int_t nvtx2 = 0;
   Int_t nvtx3 = 0;
 
-  for (Int_t k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
+  for (Int_t k2 =0; k2 < GetCTSTracks()->GetEntriesFast() ; k2++) {
     //loop over assoc
-    AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(k2);
+    AliAODTrack* track2 = (AliAODTrack*)GetCTSTracks()->At(k2);
     Int_t id1 = tr->GetID();
     Int_t id2 = track2->GetID();
     if(id1 == id2) continue;
@@ -1482,14 +1482,14 @@ Double_t AliAnaElectron::GetIPSignificance(AliAODTrack *tr, Double_t jetPhi)
   //for the given jet
 
   Int_t trackIndex = 0;
-  Int_t ntrk = GetAODCTS()->GetEntriesFast();
+  Int_t ntrk = GetCTSTracks()->GetEntriesFast();
   for (Int_t k2 =0; k2 < ntrk ; k2++) {
     //loop over assoc
-    AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(k2);
+    AliAODTrack* track2 = (AliAODTrack*)GetCTSTracks()->At(k2);
     int id1 = tr->GetID();
     int id2 = track2->GetID();
     if(id1 == id2) {
-      trackIndex = k2;//FIXME: check if GetAODCTS stores tracks in the
+      trackIndex = k2;//FIXME: check if GetCTSTracks stores tracks in the
 		      //same order of the event
       break;
     }
@@ -1575,7 +1575,7 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
 
   Int_t pdg1 = part->GetPdg();
   Int_t trackId = part->GetTrackLabel(0);
-  AliAODTrack* track = (AliAODTrack*)GetAODCTS()->At(trackId);
+  AliAODTrack* track = (AliAODTrack*)GetCTSTracks()->At(trackId);
   if(!track) {
     if(GetDebug() > 0) printf("AliAnaElectron::PhotonicPrim - can't get the AOD Track from the particle!  Skipping the photonic check");
     return kFALSE; //Don't proceed because we can't get the track
@@ -1596,7 +1596,7 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
     if(pdg1*pdg2 > 0) continue; //skip same-sign pairs
 
     //propagate to common vertex and check opening angle
-    AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(track2Id);
+    AliAODTrack* track2 = (AliAODTrack*)GetCTSTracks()->At(track2Id);
     if(!track2) {
       if(GetDebug() >0) printf("AliAnaElectron::PhotonicPrim - problem getting the partner track.  Continuing on to the next one");
       continue;

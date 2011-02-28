@@ -509,9 +509,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   TObjArray * pl = 0x0; 
   //Select the Calorimeter of the photon
   if(fCalorimeter == "PHOS")
-    pl = GetAODPHOS();
+    pl = GetPHOSClusters();
   else if (fCalorimeter == "EMCAL")
-    pl = GetAODEMCAL();
+    pl = GetEMCALClusters();
   
   if(!pl) {
     Info("MakeShowerShapeIdentification","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
@@ -540,8 +540,8 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
 	  
     //Input from second AOD?
     //Int_t input = 0;
-    //	if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
-    //	else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+    //	if     (fCalorimeter == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= icalo) input = 1 ;
+    //	else if(fCalorimeter == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= icalo) input = 1;
 	  
     //Get Momentum vector, 
     //if     (input == 0) 
