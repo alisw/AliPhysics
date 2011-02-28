@@ -1004,14 +1004,14 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           Double_t pi0Y  = 0.5*TMath::Log((prim->Energy()-prim->Pz())/(prim->Energy()+prim->Pz())) ;
           Double_t phi   = TMath::RadToDeg()*prim->Phi() ;
           if(pdg == 111){
-            if(TMath::Abs(pi0Y) < 0.5){
+            if(TMath::Abs(pi0Y) < 1.0){
               fhPrimPi0Pt->Fill(pi0Pt) ;
             }
             fhPrimPi0Y  ->Fill(pi0Pt, pi0Y) ;
             fhPrimPi0Phi->Fill(pi0Pt, phi) ;
           }
           else if(pdg == 221){
-            if(TMath::Abs(pi0Y) < 0.5){
+            if(TMath::Abs(pi0Y) < 1.0){
               fhPrimEtaPt->Fill(pi0Pt) ;
             }
             fhPrimEtaY  ->Fill(pi0Pt, pi0Y) ;
@@ -1706,8 +1706,14 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //      }     
       else { //Event centrality
         curCentrBin = GetEventCentrality();
+        //printf("curCentrBin %d\n",curCentrBin);
       }
-
+      
+      if (curCentrBin < 0 || curCentrBin >= fNCentrBin){ 
+        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality bin <%d> not expected, n bins <%d> , return\n",curCentrBin,fNCentrBin);
+        return;
+      }
+        
       //Reaction plane bin
       curRPBin    = 0 ;
        
