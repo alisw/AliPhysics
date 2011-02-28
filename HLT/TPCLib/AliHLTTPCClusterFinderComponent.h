@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTTPCCLUSTERFINDERCOMPONENT_H
 #define ALIHLTTPCCLUSTERFINDERCOMPONENT_H
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCClusterFinderComponent.h
-    @author Timm Steinbeck, Matthias Richter, Kenneth Aamodt
-    @date   
-    @brief  The TPC cluster finder component.
-*/
+/// @file   AliHLTTPCClusterFinderComponent.h
+/// @author Timm Steinbeck, Matthias Richter, Kenneth Aamodt
+/// @date   
+/// @brief  The TPC cluster finder component.
+///
 
 #include "AliHLTProcessor.h"
 #include "AliHLTComponentBenchmark.h"
@@ -25,22 +25,19 @@ class AliTPCTransform;
  * Implementation of the cluster finder component.
  * The component implements the interface methods of the @ref AliHLTProcessor.
  * The actual cluster finding algorithm is implemented in @ref AliHLTTPCClusterFinder.
- * Two components are registered, TPCClusterFinderPacked and TPCClusterFinderDecoder.
- * TPCClusterFinderDecoder use the AliTPCRawStream class for decoding of the data, while TPCClusterFinderDecoder 
- * use the AliAltroDecoder for decoding the data.
- *
- * TPCClusterFinderDecoder is the fastest of the two, this is due to that the AliAltroDecoder
- * returns data in a bunch format. A bunch consist of consecutive signals.
- * TPCClusterFinderPacked first have to read the data one by one, which means that row, pad and
- * time signals have to be compared between each new digit, which leads to a slower alorithm. 
- * 
+ * Two components are registered, TPCClusterFinderUnpacked is for reading the HLT
+ * internal digit data format used in the simulation. TPCClusterFinder32Bit uses
+ * the AliHLTTPCDigitReader for raw data. After a phase of different decoder/raw stream
+ * implementations the CF for raw data is using the default offline raw stream for
+ * the 32bit RCU format AliAltroRawStreamV3, which also has a fall back to the 40bit
+ * AliAltroRawStream if the old RCU format is detected.
  *
  * The clusterfinder is now using the AliTPCTransform instead of the AliHLTTPCTransform for  
  * transformations from row, pad time -> x,y,z.
  *
  * <h2>General properties:</h2>
  *
- * Component ID: \b TPCClusterFinderDecoder and TPCClusterFinderPacked <br>
+ * Component ID: \b TPCClusterFinderUnpacked and TPCClusterFinder32Bit <br>
  * Library: \b libAliHLTTPC
  * Input Data Types: @ref kAliHLTDataTypeDDLRaw <br>
  * Output Data Types: @ref AliHLTTPCDefinitions::fgkClustersDataType and/or kAliHLTDataTypeHwAddr16 <br> 
@@ -118,13 +115,13 @@ class AliHLTTPCClusterFinderComponent : public AliHLTProcessor
        * read the data.
        */
       enum {
-	/** real data, offline AliAltroRawStream used for data decoding */
+	// deprecated option for offline AliAltroRawStream
 	kClusterFinderPacked,
-	/** Unpacked data of format AliHLTTPCUnpackedRawData */
+	// Unpacked data of format AliHLTTPCUnpackedRawData */
 	kClusterFinderUnpacked,
-	/** real data, fast AliAltroDecoder used for data decoding */
+	// deprecated option for AliAltroDecoder
 	kClusterFinderDecoder,
-	/** real data, offline altro decoder 32 bit format*/
+	// real data, offline altro decoder 32 bit format*/
 	kClusterFinder32Bit
       };
 

@@ -27,9 +27,7 @@
 using namespace std;
 #endif
 #include "AliHLTTPCClusterFinderComponent.h"
-#include "AliHLTTPCDigitReaderPacked.h"
 #include "AliHLTTPCDigitReaderUnpacked.h"
-#include "AliHLTTPCDigitReaderDecoder.h"
 #include "AliHLTTPCDigitReader32Bit.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
@@ -130,15 +128,11 @@ void AliHLTTPCClusterFinderComponent::GetInputDataTypes( vector<AliHLTComponentD
   // see header file for class documentation
   list.clear(); 
   switch(fModeSwitch){
-  case kClusterFinderPacked:
-    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
-    break;
   case kClusterFinderUnpacked: 	 
     list.push_back( AliHLTTPCDefinitions::fgkUnpackedRawDataType ); 	 
     break;
-  case kClusterFinderDecoder:
-    list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
-    break;
+  case kClusterFinderDecoder: // deprecated, falling back to 32bit reader
+  case kClusterFinderPacked: // deprecated, falling back to 32bit reader
   case kClusterFinder32Bit:
     list.push_back( kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC );
     break;
@@ -168,15 +162,11 @@ void AliHLTTPCClusterFinderComponent::GetOutputDataSize( unsigned long& constBas
   // XXX TODO: Find more realistic values.  
   constBase = 0;
   switch(fModeSwitch){
-  case kClusterFinderPacked:
-    inputMultiplier = (6 * 0.4);
-    break;
   case kClusterFinderUnpacked:
     inputMultiplier = 0.4;
     break;
-  case kClusterFinderDecoder:
-    inputMultiplier = (6 * 0.4);
-    break;
+  case kClusterFinderDecoder: // deprecated, falling back to 32bit reader
+  case kClusterFinderPacked: // deprecated, falling back to 32bit reader
   case kClusterFinder32Bit:
     inputMultiplier = (6 * 0.4);
     break;
@@ -283,23 +273,21 @@ int AliHLTTPCClusterFinderComponent::DoInit( int argc, const char** argv )
 
   // Choose reader
   if (fModeSwitch==kClusterFinderPacked) {
-      HLTDebug("using AliHLTTPCDigitReaderPacked");
-      fReader = new AliHLTTPCDigitReaderPacked();
-      if(fUnsorted==1){	fReader->SetUnsorted(kTRUE); }
-      fClusterFinder->SetReader(fReader);
+      HLTWarning("AliHLTTPCDigitReaderPacked is deprecated, falling back to AliHLTTPCDigitReader32Bit");
   }
-  else if(fModeSwitch==kClusterFinderUnpacked){ 	 
+  else if(fModeSwitch==kClusterFinderDecoder){
+    HLTWarning("AliHLTTPCDigitReaderPacked is deprecated, falling back to AliHLTTPCDigitReader32Bit");
+  }
+  
+  if(fModeSwitch==kClusterFinderUnpacked){ 	 
     HLTDebug("using AliHLTTPCDigitReaderUnpacked"); 	 
     fReader = new AliHLTTPCDigitReaderUnpacked(); 	 
     if(fUnsorted==1){	fReader->SetUnsorted(kTRUE); }
     fClusterFinder->SetReader(fReader);
   } 
-  else if(fModeSwitch==kClusterFinderDecoder){
-    HLTDebug("using AliHLTTPCDigitReaderDecoder");
-    fReader = new AliHLTTPCDigitReaderDecoder();
-    fClusterFinder->SetReader(fReader);
-  }
-  else if(fModeSwitch==kClusterFinder32Bit){
+  else if(fModeSwitch==kClusterFinder32Bit ||
+	  fModeSwitch==kClusterFinderPacked ||
+	  fModeSwitch==kClusterFinderDecoder){
     HLTDebug("using AliHLTTPCDigitReader32Bit");
     fReader = new AliHLTTPCDigitReader32Bit();
     fClusterFinder->SetReader(fReader);
