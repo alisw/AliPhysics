@@ -7,168 +7,168 @@
 #ifndef ALIRSNANALYSISPHI7TEV_H
 #define ALIRSNANALYSISPHI7TEV_H
 
-#include "AliRsnDaughter.h"
-#include "AliRsnCutESD2010.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliRsnTOFT0maker.h"
 #include "AliESDtrackCuts.h"
 #include "AliPID.h"
 
 class TH1I;
 class TH1F;
 class TH3F;
-class TTree;
 
 class AliStack;
 class AliESDEvent;
 class AliESDVertex;
 class AliESDpid;
-class AliTOFT0maker;
-class AliTOFcalib;
+class AliESDtrack;
+class AliCFContainer;
 
-class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE
-{
-  public:
-  
-    enum
-    {
+class AliRsnAnalysisPhi7TeV : public AliAnalysisTaskSE {
+public:
+
+   enum EVertexType {
       kGoodTracksPrimaryVertex = 0,
       kGoodSPDPrimaryVertex    = 1,
       kFarTracksPrimaryVertex  = 2,
       kFarSPDPrimaryVertex     = 3,
       kNoGoodPrimaryVertex     = 4,
-      kEmptyEvent              = 5
-    };
+      kEmptyEvent              = 5,
+      kVertexTypes
+   };
+   
+   enum ETrackType {
+      kITSStandAlone,
+      kTPConly,
+      kTPCwithTOF,
+      kTrackTypes
+   };
 
-    AliRsnAnalysisPhi7TeV(const char *name = "Phi7TeV", Bool_t isMC = kFALSE);
-    AliRsnAnalysisPhi7TeV(const AliRsnAnalysisPhi7TeV& copy);
-    AliRsnAnalysisPhi7TeV& operator=(const AliRsnAnalysisPhi7TeV& copy);
-    virtual ~AliRsnAnalysisPhi7TeV();
+   AliRsnAnalysisPhi7TeV(const char *name = "Phi7TeV", Bool_t isMC = kFALSE);
+   AliRsnAnalysisPhi7TeV(const AliRsnAnalysisPhi7TeV& copy);
+   AliRsnAnalysisPhi7TeV& operator=(const AliRsnAnalysisPhi7TeV& copy);
+   virtual ~AliRsnAnalysisPhi7TeV();
 
-    void             SetUseMC   (Bool_t yn = kTRUE);
-    void             SetCheckITS(Bool_t yn = kTRUE) {fCheckITS = yn;}
-    void             SetCheckTPC(Bool_t yn = kTRUE) {fCheckTPC = yn;}
-    void             SetCheckTOF(Bool_t yn = kTRUE) {fCheckTOF = yn;}
-    void             SetAddITSSA(Bool_t yn = kTRUE) {fAddITSSA = yn;}
-    
-    void             SetMaxVz(Double_t v)   {fMaxVz = v;}
-    
-    void             SetITSband(Double_t v) {fMaxITSband = v;}
-    void             SetITSmom (Double_t v) {fMaxITSmom  = v;}
-    
-    void             SetTPCpLimit(Double_t v) {fTPCpLimit = v;}
-    void             SetTPCrange(Double_t min, Double_t max) {fMinTPCband = min; fMaxTPCband = max;}
-    void             SetTPCpar(Double_t p0, Double_t p1, Double_t p2, Double_t p3, Double_t p4)
-                       {fTPCpar[0]=p0;fTPCpar[1]=p1;fTPCpar[2]=p2;fTPCpar[3]=p3;fTPCpar[4]=p4;}
+   void             SetMC       (Bool_t yn = kTRUE)     {fIsMC     = yn;}
+   void             SetAddITSTPC(Bool_t yn = kTRUE)     {fAddTPC   = yn;}
+   void             SetAddITSSA (Bool_t yn = kTRUE)     {fAddITS   = yn;}
+   void             SetCheckITS (Bool_t yn = kTRUE)     {fCheckITS = yn;}
+   void             SetCheckTPC (Bool_t yn = kTRUE)     {fCheckTPC = yn;}
+   void             SetCheckTOF (Bool_t yn = kTRUE)     {fCheckTOF = yn;}
+   void             SetStep     (Int_t step)            {fStep     = step;}
 
-    void             SetTOFcalibrateESD(Bool_t yn = kTRUE)  {fTOFcalibrateESD = yn;}
-    void             SetTOFcorrectTExp (Bool_t yn = kTRUE)  {fTOFcorrectTExp = yn;}
-    void             SetTOFuseT0       (Bool_t yn = kTRUE)  {fTOFuseT0 = yn;}
-    void             SetTOFtuneMC      (Bool_t yn = kTRUE)  {fTOFtuneMC = yn;}
-    void             SetTOFresolution  (Double_t v = 100.0) {fTOFresolution = v;}
-    void             SetMinTOF         (Double_t v)         {fMinTOF = v;}
-    void             SetMaxTOF         (Double_t v)         {fMaxTOF = v;}
+   void             SetPhiMass (Double_t value)         {fPhiMass  = value;}
+   void             SetKaonMass(Double_t value)         {fKaonMass = value;}
 
-    virtual void     UserCreateOutputObjects();
-    virtual void     UserExec(Option_t *option = "");
-    virtual void     Terminate(Option_t *option = "");
-    
-    Int_t            EventEval(AliESDEvent *esd);
-    AliESDtrackCuts* GetCutsTPC() {return &fESDtrackCutsTPC;}
-    AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
-    
-    Bool_t           IsITSTPC (AliESDtrack *track);
-    Bool_t           IsITSSA  (AliESDtrack *track);
-    Bool_t           MatchTOF (AliESDtrack *track);
-    Bool_t           OkQuality(AliESDtrack *track);
-    Bool_t           OkITSPID (AliESDtrack *track, AliPID::EParticleType pid);
-    Bool_t           OkTPCPID (AliESDtrack *track, AliPID::EParticleType pid);
-    Bool_t           OkTOFPID (AliESDtrack *track, AliPID::EParticleType pid);
-    Bool_t           OkTrack  (AliESDtrack *track);
+   void             SetMaxVz(Double_t v)                {fMaxVz = v;}
 
-  private:
+   void             SetITSNSigma           (Double_t v) {fITSNSigma            = v;}
+   void             SetTPCNSigmaLow        (Double_t v) {fTPCNSigma[0]         = v;}
+   void             SetTPCNSigmaHigh       (Double_t v) {fTPCNSigma[1]         = v;}
+   void             SetTPCMomentumThreshold(Double_t v) {fTPCMomentumThreshold = v;}
+   void             SetTOFNSigma           (Double_t v) {fTOFNSigma            = v;}
+   
+   void             SetCutsTPC(AliESDtrackCuts *cuts)   {fESDtrackCutsTPC = cuts;}
+   void             SetCutsITS(AliESDtrackCuts *cuts)   {fESDtrackCutsITS = cuts;}
+   void             SetESDpid (AliESDpid       *pid )   {fESDpid          = pid ;}
+   AliESDtrackCuts* GetCutsTPC()                        {return fESDtrackCutsTPC;}
+   AliESDtrackCuts* GetCutsITS()                        {return fESDtrackCutsITS;}
+   AliESDpid*       GetESDpid()                         {return fESDpid;         }
+   
+   virtual void     UserCreateOutputObjects();
+   virtual void     UserExec(Option_t *option = "");
+   virtual void     Terminate(Option_t *option = "");
 
-    void     ProcessESD(AliESDEvent *esd, AliStack *stack);
+   EVertexType      EventEval(AliESDEvent *esd);
+   
+   Bool_t           IsTPC    (AliESDtrack *track);
+   Bool_t           IsITS    (AliESDtrack *track);
+   Bool_t           MatchTOF (AliESDtrack *track);
+   ETrackType       TrackType(AliESDtrack *track);
+   
+   Bool_t           OkQualityITS(AliESDtrack *track) {return fESDtrackCutsITS->IsSelected(track);}
+   Bool_t           OkQualityTPC(AliESDtrack *track) {return fESDtrackCutsTPC->IsSelected(track);}
+   Bool_t           OkQuality   (AliESDtrack *track);
+   Bool_t           OkPIDITS    (AliESDtrack *track, AliPID::EParticleType pid = AliPID::kKaon);
+   Bool_t           OkPIDTPC    (AliESDtrack *track, AliPID::EParticleType pid = AliPID::kKaon);
+   Bool_t           OkPIDTOF    (AliESDtrack *track, AliPID::EParticleType pid = AliPID::kKaon);
+   Bool_t           OkPID       (AliESDtrack *track, AliPID::EParticleType pid = AliPID::kKaon);
 
-    Bool_t   fUseMC;      // use MC or data?
-    Bool_t   fCheckITS;   // chec ITS PID?
-    Bool_t   fCheckTPC;   // chec TPC PID?
-    Bool_t   fCheckTOF;   // chec TOF PID?
-    Bool_t   fAddITSSA;   // add ITS standalone?
-    
-    Double_t fMaxVz;      // range in Z of primary vertex w.r. to origin
-    
-    Double_t fMaxITSband; // range for ITS de/dx band
-    Double_t fMaxITSmom;  // maximum momentum for ITS identification
+private:
 
-    Double_t fTPCpLimit;  // limit to choose what band to apply
-    Double_t fTPCpar[5];  // parameters for TPC bethe-Bloch
-    Double_t fMinTPCband; // range for TPC de/dx band - min
-    Double_t fMaxTPCband; // range for TPC de/dx band - max
-    Double_t fMinTOF;     // TOF range (min)
-    Double_t fMaxTOF;     // TOF range (min)
+   void  ProcessESD      (AliESDEvent *esd, AliMCEvent *mc);
+   void  ProcessMC       (AliESDEvent *esd, AliMCEvent *mc);
+   Int_t MatchedTrack    (AliESDEvent *esd, Int_t label, Int_t &npassed, Int_t start = 0);
+   Int_t BestMatchedTrack(AliESDEvent *esd, Int_t label);
 
-    TList     *fOutList;        // list for monitoring histograms
-    TH3F      *fUnlike;         // unlike-sign pairs
-    TH3F      *fLikePP;         // unlike-sign pairs
-    TH3F      *fLikeMM;         // unlike-sign pairs
-    TH3F      *fTrues;          // true pairs
-    TH1I      *fHEvents;        // histogram of event types
-    TH1F      *fVertexX[2];     // histogram of X coordinate of primary vertex ([0] = tracks, [1] = SPD)
-    TH1F      *fVertexY[2];     // histogram of Y coordinate of primary vertex ([0] = tracks, [1] = SPD)
-    TH1F      *fVertexZ[2];     // histogram of Z coordinate of primary vertex ([0] = tracks, [1] = SPD)
-    
-    AliESDtrackCuts  fESDtrackCutsTPC;  //  ESD standard defined track cuts for TPC tracks
-    AliESDtrackCuts  fESDtrackCutsITS;  //  ESD standard defined track cuts for ITS-SA tracks
-    AliESDpid       *fESDpid;           //! PID manager
-    AliTOFT0maker   *fTOFmaker;         //! TOF time0 computator
-    AliTOFcalib     *fTOFcalib;         //! TOF calibration
-    Bool_t           fTOFcalibrateESD;  //  TOF settings
-    Bool_t           fTOFcorrectTExp;   //  TOF settings
-    Bool_t           fTOFuseT0;         //  TOF settings
-    Bool_t           fTOFtuneMC;        //  TOF settings
-    Double_t         fTOFresolution;    //  TOF settings
-    
-    AliRsnDaughter   fDaughter;
-    AliRsnCutESD2010 fRsnCuts;
+   Bool_t           fIsMC;                      // use MC or data?
+   Bool_t           fAddTPC;                    // include TPC+ITS tracks?
+   Bool_t           fAddITS;                    // add ITS standalone tracks?
+   Bool_t           fCheckITS;                  // check ITS PID (only for ITS-SA)?
+   Bool_t           fCheckTPC;                  // check TPC PID (only for TPC+ITS)?
+   Bool_t           fCheckTOF;                  // check TOF PID (only for TPC+ITS)?
+   Int_t            fStep;                      // step for progress message
+   
+   Double_t         fPhiMass;                   // mass hypothesis for phi
+   Double_t         fKaonMass;                  // mass hypothesis for kaon
+                   
+   Double_t         fMaxVz;                     // range in Z of primary vertex w.r. to origin
+                   
+   Double_t         fITSNSigma;                 // range for ITS dE/dx band (in sigmas)
+   Double_t         fTPCNSigma[2];              // ranges for TPC dE/dx band (in sigmas)
+   Double_t         fTPCMomentumThreshold;      // below this, [0] band is used, above, [1] bandd is used
+   Double_t         fTOFNSigma;                 // range for TOF time band (in sigmas)
+   
+   AliESDtrackCuts *fESDtrackCutsTPC;           // ESD standard defined track cuts for TPC tracks
+   AliESDtrackCuts *fESDtrackCutsITS;           // ESD standard defined track cuts for ITS-SA tracks
+   AliESDpid       *fESDpid;                    // PID manager
+                   
+   TList           *fOutList;                   // list containing all task outputs
+                   
+   AliCFContainer  *fCFunlike;                  // CF container for unlike-sign pairs
+   AliCFContainer  *fCFlikePP;                  // CF container for like-sign pairs ++
+   AliCFContainer  *fCFlikeMM;                  // CF container for like-sign pairs --
+   AliCFContainer  *fCFtrues;                   // CF container for true phis
+   AliCFContainer  *fCFkaons;                   // CF container for kaons (monitoring)
+                   
+   TH1I            *fHEvents;                   // histogram of event types
+   TH1F            *fVertexX[2];                // histogram of X coordinate of primary vertex ([0] = tracks, [1] = SPD)
+   TH1F            *fVertexY[2];                // histogram of Y coordinate of primary vertex ([0] = tracks, [1] = SPD)
+   TH1F            *fVertexZ[2];                // histogram of Z coordinate of primary vertex ([0] = tracks, [1] = SPD)
 
-    // ROOT dictionary
-    ClassDef(AliRsnAnalysisPhi7TeV,1)
+   // ROOT dictionary
+   ClassDef(AliRsnAnalysisPhi7TeV, 1)
 };
 
-inline Bool_t AliRsnAnalysisPhi7TeV::IsITSTPC(AliESDtrack *vtrack)
+inline Bool_t AliRsnAnalysisPhi7TeV::IsTPC(AliESDtrack *vtrack)
 {
 //
-// Checks if the track has the status flags required for a global track
+// Checks if the track has the status flags required for a TPC+ITS track
 //
 
-  if (!vtrack)
-  {
-    AliWarning("NULL argument: impossible to check status");
-    return kFALSE;
-  }
-  
-  return vtrack->IsOn(AliESDtrack::kTPCin);
+   if (!vtrack) {
+      AliWarning("NULL argument: impossible to check status");
+      return kFALSE;
+   }
+
+   return vtrack->IsOn(AliESDtrack::kTPCin);
 }
 
-inline Bool_t AliRsnAnalysisPhi7TeV::IsITSSA(AliESDtrack *vtrack)
+inline Bool_t AliRsnAnalysisPhi7TeV::IsITS(AliESDtrack *vtrack)
 {
 //
 // Checks if the track has the status flags required for an ITS standalone track
 //
 
-  if (!vtrack)
-  {
-    AliWarning("NULL argument: impossible to check status");
-    return kFALSE;
-  }
-  
-  Bool_t isTPCin     = vtrack->IsOn(AliESDtrack::kTPCin);
-  Bool_t isITSrefit  = vtrack->IsOn(AliESDtrack::kITSrefit);
-  Bool_t isITSpureSA = vtrack->IsOn(AliESDtrack::kITSpureSA);
-  Bool_t isITSpid    = vtrack->IsOn(AliESDtrack::kITSpid);
-  
-  return ( (!isTPCin) && isITSrefit && (!isITSpureSA) && isITSpid );
+   if (!vtrack) {
+      AliWarning("NULL argument: impossible to check status");
+      return kFALSE;
+   }
+
+   Bool_t isTPCin     = vtrack->IsOn(AliESDtrack::kTPCin);
+   Bool_t isITSrefit  = vtrack->IsOn(AliESDtrack::kITSrefit);
+   Bool_t isITSpureSA = vtrack->IsOn(AliESDtrack::kITSpureSA);
+   Bool_t isITSpid    = vtrack->IsOn(AliESDtrack::kITSpid);
+
+   return ((!isTPCin) && isITSrefit && (!isITSpureSA) && isITSpid);
 }
 
 
@@ -178,19 +178,80 @@ inline Bool_t AliRsnAnalysisPhi7TeV::MatchTOF(AliESDtrack *vtrack)
 // Checks if the track has matched the TOF detector
 //
 
-  if (!vtrack)
-  {
-    AliWarning("NULL argument: impossible to check status");
-    return kFALSE;
-  }
-  
-  // require a minimum length to have meaningful match
-  if (vtrack->GetIntegratedLength() < 350.) return kFALSE;
-  
-  Bool_t isTOFout = vtrack->IsOn(AliESDtrack::kTOFout);
-  Bool_t isTIME   = vtrack->IsOn(AliESDtrack::kTIME);
-  
-  return ( isTOFout && isTIME );
+   if (!vtrack) {
+      AliWarning("NULL argument: impossible to check status");
+      return kFALSE;
+   }
+
+   // require a minimum length to have meaningful match
+   if (vtrack->GetIntegratedLength() < 350.) return kFALSE;
+
+   Bool_t isTOFout = vtrack->IsOn(AliESDtrack::kTOFout);
+   Bool_t isTIME   = vtrack->IsOn(AliESDtrack::kTIME);
+
+   return (isTOFout && isTIME);
+}
+
+inline AliRsnAnalysisPhi7TeV::ETrackType AliRsnAnalysisPhi7TeV::TrackType(AliESDtrack *track)
+{
+//
+// Assigns the track type according to enum
+//
+
+   if (IsITS(track)) 
+      return kITSStandAlone;
+   else if (IsTPC(track)) {
+      if (MatchTOF(track))
+         return kTPCwithTOF;
+      else
+         return kTPConly;
+   }
+   else
+      return kTrackTypes;
+}
+
+inline Bool_t AliRsnAnalysisPhi7TeV::OkQuality(AliESDtrack *track)
+{
+//
+// Check track quality cut, which depends on track type
+//
+
+   ETrackType type = TrackType(track);
+      
+   switch (type) {
+      case kITSStandAlone:
+         return OkQualityITS(track);
+      case kTPConly:
+      case kTPCwithTOF:
+         return OkQualityTPC(track);
+      default:
+         return kFALSE;
+   }
+}
+
+inline Bool_t AliRsnAnalysisPhi7TeV::OkPID(AliESDtrack *track, AliPID::EParticleType pid)
+{
+//
+// Check PID cut, which depends on track type
+//
+
+   ETrackType type = TrackType(track);
+      
+   switch (type) {
+      case kITSStandAlone:
+         if (fCheckITS) return OkPIDITS(track);
+         else return kTRUE;
+      case kTPConly:
+         if (fCheckTPC) return OkPIDTPC(track);
+         else return kTRUE;
+      case kTPCwithTOF:
+         if (fCheckTPC && fCheckTOF) return (OkPIDTPC(track, pid) && OkPIDTOF(track, pid));
+         else if (fCheckTOF) return OkPIDTOF(track, pid);
+         else if (fCheckTPC) return OkPIDTPC(track, pid);
+         else return kTRUE;
+      default:
+         return kFALSE;
+   }
 }
 
 #endif

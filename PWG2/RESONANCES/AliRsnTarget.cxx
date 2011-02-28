@@ -1,16 +1,34 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
 //
-// *** Class AliRsnTarget ***
+//  Base class used wherever it is needed to check the class type of
+//  an object w.r. to the RSN framework analysis (daughter, mother, event) 
+//  which could be used for cut checking or value computing.
+//  Since most of these operation are implemented into classes that
+//  operate on any of such objects, then this class helps in making sure
+//  that the object being processed corresponds to what is expected.
+//  It also contains three pointers to which any passed object is casted
+//  in order to have a quick reference to any allowed object type from
+//  an appropriate pointer, which is propagated to all inheriting classes.
 //
-// Base class used wherever it is needed to check the class type of
-// an object (daughter, mother, event) which could be used for
-// cut checking or value computing.
-// Since most of these operation are implemented into classes that
-// operate on any of such objects, then this class helps in making sure
-// that the object being processed corresponds to what is expected.
+//  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//           M. Vala (martin.vala@cern.ch)
 //
-// authors: Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//          Martin Vala (martin.vala@cern.ch)
-//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliLog.h"
 

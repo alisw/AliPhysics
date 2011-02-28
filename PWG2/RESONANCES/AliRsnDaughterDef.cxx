@@ -1,16 +1,38 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
 //
-// Class AliRsnDaughterDef
+//  This class is a simple set of definitions which are used to select among
+//  all daughter candidates in term of the object type (track, V0, cascade),
+//  charge and eventually PID.
+//  The PID assigned to the definition is the one which is 'assigned' to the
+//  candidate daughter for whatever implies a mass hypothesis. When MC is 
+//  available and one requires this, thie PID is also used to select only the
+//  daughters which are of that species in MC.
+// 
+//  NOTE: charge is a single character. If one wants to select a well-defined 
+//        charge, he must use '+', '-' or '0', while any other character is
+//        interpreted as 'no charge selection'.
 //
-// Defines a decay channel for a resonance,
-// resulting in a specified PDG code for the mother,
-// and the particle type for the daughters, defined
-// according to the internal PID format of the package
+//  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//           M. Vala (martin.vala@cern.ch)
 //
-// author: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "AliLog.h"
-#include "AliPID.h"
 #include "AliRsnDaughterDef.h"
 
 ClassImp(AliRsnDaughterDef)
@@ -18,60 +40,73 @@ ClassImp(AliRsnDaughterDef)
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef() :
+   fPID(AliRsnDaughter::kUnknown),
    fMass(0.0),
    fCharge(0),
-   fPID(AliPID::kUnknown),
-   fDaughterType(AliRsnDaughter::kNoType)
+   fRefType(AliRsnDaughter::kNoType)
 {
 //
-// Constructor.
-// This version of constructor leaves all undefined,
-// and all daughters will be accepted.
+// This version of constructor leaves everything undefined:
+// this will cause all daughters to be accepted.
 //
 }
 
 //_____________________________________________________________________________
-AliRsnDaughterDef::AliRsnDaughterDef(AliPID::EParticleType type, Char_t sign) :
+AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t sign) :
+   fPID(type),
    fMass(0.0),
    fCharge(sign),
-   fPID(type),
-   fDaughterType(AliRsnDaughter::kNoType)
+   fRefType(AliRsnDaughter::RefType(type))
 {
 //
-// Constructor.
 // This version of constructor initializes the PID type
-// and the charge (optional, leave its default to include both),
-// and calls 'SetDaughter()' to assign the object type accordingly.
+// and the charge (optional, leave 2nd argument to default to include both),
+// and calls 'SetPID()' to assign the object type accordingly.
 //
+}
 
-   SetDaughter(type, sign);
+//_____________________________________________________________________________
+AliRsnDaughterDef::AliRsnDaughterDef(EPARTYPE type, Char_t sign) :
+   fPID(AliRsnDaughter::FromAliPID(type)),
+   fMass(0.0),
+   fCharge(sign),
+   fRefType(AliRsnDaughter::RefType(AliRsnDaughter::FromAliPID(type)))
+{
+//
+// This version of constructor initializes the PID type
+// and the charge (optional, leave 2nd argument to default to include both),
+// and calls 'SetPID()' to assign the object type accordingly.
+//
 }
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t sign) :
+   fPID(AliRsnDaughter::kUnknown),
    fMass(0.0),
    fCharge(sign),
-   fPID(AliPID::kUnknown),
-   fDaughterType(refType)
+   fRefType(refType)
 {
 //
-// Constructor.
-// This version of constructor initialized the object type
-// and the charge (optiona, leave its defaul to include both),
-// and sets the PID type undefined.
+// This version of constructor initializes the object type
+// and the charge (optional, leave 2nd argument to default to include both),
+// and leaves the PID type undefined.
+// This is useful when one is interested in all tracks/V0s/cascades without
+// requiring them to be identified as a certain species, but if one then requires
+// an object linked to this definition to compute a rapidity or a transverse mass,
+// this will not work.
 //
 }
 
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
    TObject(copy),
+   fPID(copy.fPID),
    fMass(copy.fMass),
    fCharge(copy.fCharge),
-   fPID(copy.fPID),
-   fDaughterType(copy.fDaughterType)
+   fRefType(copy.fRefType)
 {
 //
-// Copy constructor with standard behavior
+// Copy constructor has standard behavior.
 //
 }
 
@@ -79,86 +114,31 @@ AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
 const AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &copy)
 {
 //
-// Assignment operator with standard behavior.
+// Assignment operator has standard behavior.
 //
 
    fMass = copy.fMass;
    fCharge = copy.fCharge;
    fPID = copy.fPID;
-   fDaughterType = copy.fDaughterType;
+   fRefType = copy.fRefType;
 
    return (*this);
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnDaughterDef::SetDaughter(AliPID::EParticleType type, Char_t charge)
-{
-//
-// Set one element of the pair
-// and returns warnings if the type is not valid.
-//
-
-   AliPID pid;
-
-   // charge and type come from arguments
-   fCharge = charge;
-   fPID    = type;
-   
-   // mass is assigned by AliPID, if possible
-   fMass = 0.0;
-   if ((Int_t)type >= 0 && (Int_t)type < AliPID::kSPECIESN)
-      fMass = pid.ParticleMass(type);
-   
-   // object type is determined by type itself
-   if ((Int_t)type >= 0 && (Int_t)type < AliPID::kSPECIES) 
-      fDaughterType = AliRsnDaughter::kTrack;
-   else if (type == AliPID::kKaon0) {
-      fDaughterType = AliRsnDaughter::kV0;
-      fCharge = '0';
-   }
-   else
-      fDaughterType = AliRsnDaughter::kNoType;
-
-   return kTRUE;
 }
 
 //_____________________________________________________________________________
 Bool_t AliRsnDaughterDef::MatchesDaughter(AliRsnDaughter *checked, Bool_t truePID)
 {
 //
-// Checks if the argument matches the definitions here.
-// If second argument is kTRUE and checked daughter has MC,
-// check also that the particle species is correct.
+// Checks if the argument matches the definitions, by combining the other
+// inline methods, and using the same philosophy.
+// The only exception is for the PID matching, which can be disabled
+// by second argument. In this case, a track is considered matched
+// if it is matched just in object type and charge.
 //
 
-   // charge matching:
-   // if charge was set to '+', '-' or '0'
-   // the checked daughter charge must match that defined in the settings
-   // otherwise no specific charge requirement was done
-   Bool_t chargeMatch = kTRUE;
-   switch (fCharge) {
-      case '+':
-         chargeMatch = checked->IsPos();
-         break;
-      case '-': 
-         chargeMatch = checked->IsNeg();
-         break;
-      case '0': 
-         chargeMatch = checked->IsNeutral();
-         break;
-      default : 
-         chargeMatch = kTRUE;
-   }
-   
-   // object type matching
-   Bool_t objMatch = kTRUE;
-   if (fDaughterType != AliRsnDaughter::kNoType)
-      objMatch = (checked->RefType() == fDaughterType);
-      
-   // particle type matching (only if MC is available and second arg is true)
-   Bool_t pidMatch = kTRUE;
-   if (truePID && fPID != AliPID::kUnknown && checked->GetRefMC())
-      pidMatch = (AliPID::ParticleCode(fPID) == checked->GetPDG());
+   Bool_t chargeMatch = MatchesCharge(checked);
+   Bool_t objMatch    = MatchesRefType(checked);
+   Bool_t pidMatch    = (truePID ? MatchesPID(checked) : kTRUE);
       
    // return the AND of all
    return (chargeMatch && objMatch && pidMatch);

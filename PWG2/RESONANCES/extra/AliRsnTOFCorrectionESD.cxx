@@ -29,29 +29,29 @@
 ClassImp(AliRsnTOFCorrectionESD)
 
 //Bool_t         AliRsnTOFCorrectionESD::fgTOFcalibrateESD = kTRUE;
-  Bool_t         AliRsnTOFCorrectionESD::fgTOFcorrectTExp  = kTRUE;
-  Bool_t         AliRsnTOFCorrectionESD::fgTOFuseT0        = kTRUE;
-  Bool_t         AliRsnTOFCorrectionESD::fgTOFtuneMC       = kFALSE;
-  Double_t       AliRsnTOFCorrectionESD::fgTOFresolution   = 100.0;
-  AliTOFT0maker* AliRsnTOFCorrectionESD::fgTOFmaker        = 0x0;
-  AliTOFcalib*   AliRsnTOFCorrectionESD::fgTOFcalib        = 0x0;
-  Int_t          AliRsnTOFCorrectionESD::fgLastRun         = -1;
+Bool_t         AliRsnTOFCorrectionESD::fgTOFcorrectTExp  = kTRUE;
+Bool_t         AliRsnTOFCorrectionESD::fgTOFuseT0        = kTRUE;
+Bool_t         AliRsnTOFCorrectionESD::fgTOFtuneMC       = kFALSE;
+Double_t       AliRsnTOFCorrectionESD::fgTOFresolution   = 100.0;
+AliTOFT0maker* AliRsnTOFCorrectionESD::fgTOFmaker        = 0x0;
+AliTOFcalib*   AliRsnTOFCorrectionESD::fgTOFcalib        = 0x0;
+Int_t          AliRsnTOFCorrectionESD::fgLastRun         = -1;
 
 //_________________________________________________________________________________________________
 AliRsnTOFCorrectionESD::AliRsnTOFCorrectionESD(Bool_t isMC, Double_t tofRes)
-: fOwnESDpid(kFALSE), fESDpid(0x0)
+   : fOwnESDpid(kFALSE), fESDpid(0x0)
 {
 //
 // Default constructor.
 //
 
-  fgTOFtuneMC     = isMC;
-  fgTOFresolution = tofRes;
+   fgTOFtuneMC     = isMC;
+   fgTOFresolution = tofRes;
 }
 
 //_________________________________________________________________________________________________
-AliRsnTOFCorrectionESD::AliRsnTOFCorrectionESD(const AliRsnTOFCorrectionESD& copy) 
-: TObject(copy), fOwnESDpid(copy.fOwnESDpid), fESDpid(copy.fESDpid)
+AliRsnTOFCorrectionESD::AliRsnTOFCorrectionESD(const AliRsnTOFCorrectionESD& copy)
+   : TObject(copy), fOwnESDpid(copy.fOwnESDpid), fESDpid(copy.fESDpid)
 {
 //
 // Copy constructor
@@ -65,10 +65,10 @@ AliRsnTOFCorrectionESD& AliRsnTOFCorrectionESD::operator=(const AliRsnTOFCorrect
 // Assignment operator
 //
 
-  fOwnESDpid = copy.fOwnESDpid;
-  fESDpid    = copy.fESDpid;
-  
-  return (*this);
+   fOwnESDpid = copy.fOwnESDpid;
+   fESDpid    = copy.fESDpid;
+
+   return (*this);
 }
 
 //_________________________________________________________________________________________________
@@ -81,55 +81,49 @@ void AliRsnTOFCorrectionESD::ProcessEvent(AliESDEvent *esd)
 // to check if the run has changed.
 //
 
-  // compare run number with static data member
-  Int_t run = esd->GetRunNumber();
-  
-  // initialize only if run number has changed
-  if (run != fgLastRun)
-  {
-    AliInfo("============================================================================================");
-    AliInfo(Form("*** CHANGING RUN NUMBER: PREVIOUS = %d --> CURRENT = %d ***", fgLastRun, run));
-    AliInfo("============================================================================================");
-    fgLastRun = run;
-  
-    AliCDBManager::Instance()->SetDefaultStorage("raw://");
-    AliCDBManager::Instance()->SetRun(fgLastRun);
-    
-    if (fgTOFmaker) delete fgTOFmaker;
-    if (fgTOFcalib) delete fgTOFcalib;
-    
-    fgTOFcalib = new AliTOFcalib();
-    if (fgTOFtuneMC)
-    {
-      fgTOFcalib->SetRemoveMeanT0(kFALSE);
-      fgTOFcalib->SetCalibrateTOFsignal(kFALSE);
-    }
-    else
-    {
-      fgTOFcalib->SetRemoveMeanT0(kTRUE);
-      fgTOFcalib->SetCalibrateTOFsignal(kTRUE);
-    }
-    if (fgTOFcorrectTExp) fgTOFcalib->SetCorrectTExp(kTRUE);
-    fgTOFcalib->Init();
-    
-    fgTOFmaker = new AliTOFT0maker(fESDpid, fgTOFcalib);
-    fgTOFmaker->SetTimeResolution(fgTOFresolution);
-  }
-  
-  // if the ESDpid object is not present, create it
-  if (!fESDpid) 
-  {
-    fESDpid = new AliESDpid;
-    fOwnESDpid = kTRUE;
-  }
+   // compare run number with static data member
+   Int_t run = esd->GetRunNumber();
 
-  // repeat the calibration and PID computations
-  /*if (fgTOFcalibrateESD)*/ fgTOFcalib->CalibrateESD(esd);
-  if (fgTOFtuneMC) fgTOFmaker->TuneForMC(esd);
-  if (fgTOFuseT0)
-  {
-    fgTOFmaker->ComputeT0TOF(esd);
-    fgTOFmaker->ApplyT0TOF(esd);
-    fESDpid->MakePID(esd, kFALSE, 0.);
-  }
+   // initialize only if run number has changed
+   if (run != fgLastRun) {
+      AliInfo("============================================================================================");
+      AliInfo(Form("*** CHANGING RUN NUMBER: PREVIOUS = %d --> CURRENT = %d ***", fgLastRun, run));
+      AliInfo("============================================================================================");
+      fgLastRun = run;
+
+      AliCDBManager::Instance()->SetDefaultStorage("raw://");
+      AliCDBManager::Instance()->SetRun(fgLastRun);
+
+      if (fgTOFmaker) delete fgTOFmaker;
+      if (fgTOFcalib) delete fgTOFcalib;
+
+      fgTOFcalib = new AliTOFcalib();
+      if (fgTOFtuneMC) {
+         fgTOFcalib->SetRemoveMeanT0(kFALSE);
+         fgTOFcalib->SetCalibrateTOFsignal(kFALSE);
+      } else {
+         fgTOFcalib->SetRemoveMeanT0(kTRUE);
+         fgTOFcalib->SetCalibrateTOFsignal(kTRUE);
+      }
+      if (fgTOFcorrectTExp) fgTOFcalib->SetCorrectTExp(kTRUE);
+      fgTOFcalib->Init();
+
+      fgTOFmaker = new AliTOFT0maker(fESDpid, fgTOFcalib);
+      fgTOFmaker->SetTimeResolution(fgTOFresolution);
+   }
+
+   // if the ESDpid object is not present, create it
+   if (!fESDpid) {
+      fESDpid = new AliESDpid;
+      fOwnESDpid = kTRUE;
+   }
+
+   // repeat the calibration and PID computations
+   /*if (fgTOFcalibrateESD)*/ fgTOFcalib->CalibrateESD(esd);
+   if (fgTOFtuneMC) fgTOFmaker->TuneForMC(esd);
+   if (fgTOFuseT0) {
+      fgTOFmaker->ComputeT0TOF(esd);
+      fgTOFmaker->ApplyT0TOF(esd);
+      fESDpid->MakePID(esd, kFALSE, 0.);
+   }
 }

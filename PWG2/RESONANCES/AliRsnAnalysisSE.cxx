@@ -96,10 +96,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
 // using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
 //
 
-   if (fMCOnly)
-      fRsnAnalysisManager.ProcessAllPairsMC();
-   else
-      fRsnAnalysisManager.ProcessAllPairs();
+   fRsnAnalysisManager.ProcessAll(fMCOnly);
 
    PostData(2, fOutList);
 }

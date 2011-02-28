@@ -127,8 +127,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
             if (part) {
                pdg    = TMath::Abs(part->GetPdgCode());
                charge = (Short_t)(part->GetPDG()->Charge() / 3);
-               if (fDef->GetDef1()->MatchesPID(pdg, charge)) pairDefMatch[i] = 0;
-               if (fDef->GetDef2()->MatchesPID(pdg, charge)) pairDefMatch[i] = 1;
+               if (fDef->GetDef1()->MatchesPDG(pdg) && fDef->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
+               if (fDef->GetDef2()->MatchesPDG(pdg) && fDef->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
             }
          }
          
@@ -227,8 +227,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
             if (part) {
                pdg    = TMath::Abs(part->GetPdgCode());
                charge = (Short_t)part->Charge();
-               if (fDef->GetDef1()->MatchesPID(pdg, charge)) pairDefMatch[i] = 0;
-               if (fDef->GetDef2()->MatchesPID(pdg, charge)) pairDefMatch[i] = 1;
+               if (fDef->GetDef1()->MatchesPDG(pdg) && fDef->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
+               if (fDef->GetDef2()->MatchesPDG(pdg) && fDef->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
             }
          }
          
