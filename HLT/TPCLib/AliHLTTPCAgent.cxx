@@ -51,7 +51,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCdEdxComponent.h"
 #include "AliHLTTPCGlobalMergerComponent.h"
 #include "AliHLTTPCSliceTrackerComponent.h"
-#include "AliHLTTPCVertexFinderComponent.h"
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCRawDataUnpackerComponent.h"
 #include "AliHLTTPCDigitPublisherComponent.h"
@@ -280,7 +279,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
   pHandler->AddComponent(new AliHLTTPCSliceTrackerComponent);
-  pHandler->AddComponent(new AliHLTTPCVertexFinderComponent);
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderPacked));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder));

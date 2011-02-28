@@ -16,8 +16,6 @@
 #pragma link C++ class  AliHLTTPCDigitReader32Bit+;
 #pragma link C++ class  AliHLTTPCDigitDumpComponent+;
 #pragma link C++ class  AliHLTTPCVertex+;
-#pragma link C++ class  AliHLTTPCVertexArray+;
-#pragma link C++ class  AliHLTTPCVertexFinder+;
 #pragma link C++ class  AliHLTTPCTrackArray+;
 #pragma link C++ class  AliHLTTPCTrack+;
 #pragma link C++ class  AliHLTTPCDigitPublisherComponent+;
@@ -41,7 +39,6 @@
 #pragma link C++ class  AliHLTTPCRawDataUnpackerComponent+;
 #pragma link C++ class  AliHLTTPCClusterFinderComponent+;
 #pragma link C++ class  AliHLTTPCHWClusterTransformComponent+;
-#pragma link C++ class  AliHLTTPCVertexFinderComponent+;
 #pragma link C++ class  AliHLTTPCSliceTrackerComponent+;
 #pragma link C++ class  AliHLTTPCGlobalMergerComponent+;
 #pragma link C++ class  AliHLTTPCEsdWriterComponent+;
