@@ -240,7 +240,7 @@ Int_t AliHLTMCEvent::FillMCTracks( AliStack* stack ) {
   }
 
   // -- Loop over off-line stack and fill local stack
-  for (Int_t iterStack = 0; iterStack < stack->GetNtrack() && !iResult; iterStack++) {
+  for (Int_t iterStack = 0; !iResult &&iterStack < stack->GetNtrack(); iterStack++) {
 
     TParticle *particle = stack->Particle(iterStack);
     if ( !particle) {
