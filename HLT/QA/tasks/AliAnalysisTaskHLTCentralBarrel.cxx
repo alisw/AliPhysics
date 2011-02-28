@@ -33,6 +33,7 @@
 #include "AliTracker.h"
 #include "AliESDVZERO.h"
 //#include "AliHLTGlobalTriggerDecision.h"
+#include "AliCentrality.h"
 
 #include "TAxis.h"
 #include "TString.h"
@@ -45,7 +46,8 @@ ClassImp(AliAnalysisTaskHLTCentralBarrel)
 
 AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
 :AliAnalysisTaskSE()
-  ,fUseHLTTrigger(kFALSE)   
+  ,fUseHLTTrigger(kFALSE)
+  ,fUseCentrality(kTRUE)   
   ,fOutputList(0)
   ,fEventOFF(0)
   ,fEventHLT(0)
@@ -65,6 +67,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
 AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *name)
 :AliAnalysisTaskSE(name)    
   ,fUseHLTTrigger(kFALSE)   
+  ,fUseCentrality(kFALSE)   
   ,fOutputList(0)
   ,fEventOFF(0)
   ,fEventHLT(0)
@@ -75,7 +78,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *nam
   // Constructor
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  //DefineInput(0, TChain::Class());
+  // DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   
   DefineOutput(1, TList::Class());
@@ -86,7 +89,7 @@ AliAnalysisTaskHLTCentralBarrel::~AliAnalysisTaskHLTCentralBarrel(){
 }
 
 void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
-  // Create THnSpare objects
+  // Create THnSparse objects
   
   OpenFile(1);  
   fOutputList = new TList();
@@ -94,18 +97,18 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   
   static const int sizeEvent = 6;
  
-  int    binsEvent[sizeEvent] = { 200, 200, 250,  2000,  2000, 2 };
-  double minEvent [sizeEvent] = {  -2,  -2, -30,     0,     0, 0 };
-  double maxEvent [sizeEvent] = {   2,   2,  30, 20000, 20000, 2 };
+  int    binsEvent[sizeEvent] = {  50,  50, 250,   100,   100, 2 };
+  double minEvent [sizeEvent] = {  -1,  -1, -30,     0,     0, 0 };
+  double maxEvent [sizeEvent] = {   1,   1,  30, 10000, 10000, 2 };
   
   fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
   fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);
   
-  static const int sizeTrack = 13;
-  
-  Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  400,  400,    3,  400,  400, 10,  2000, 2 };
-  Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1, -100, -100, -1.5, -100, -100,  0,     0, 0 };
-  Double_t maxTrack [sizeTrack] = { 150, 200,   4,   3,   7,  100,  100,  1.5,  100,  100, 10, 20000, 2 };
+  static const int sizeTrack = 15;
+  //                                pt  TPCcl theta eta phi   DCAr  DCAz charge DCArSG DCAzSG ITScl mult vertex status  vertexZ  centrality
+  Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  800,  400,    3,  400,  400,    10,  2000,     2,            250,         90 };
+  Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1,  -40, -100, -1.5, -100, -100,     0,     0,     0,            -30,          0 };
+  Double_t maxTrack [sizeTrack] = { 150, 200,   4,   3,   7,   40,  100,  1.5,  100,  100,    10, 20000,     2,            -30,         90 };
    
   fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
   fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
@@ -116,6 +119,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   fOutputList->Add(fTrackOFF);
   fOutputList->Add(fTrackHLT);
   fOutputList->Add(fTextBox);
+  
+  PostData(1, fOutputList);
 }
 
 void AliAnalysisTaskHLTCentralBarrel::NotifyRun(){
@@ -145,15 +150,16 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      printf("ERROR: HLT ESD is not available.\n");
      return;
   }
-    
-//  if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;
+      
+  // if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;
   
-  if(fUseCentrality){
-    Int_t centbin = CalculateCentrality(esdHLT);
-    Printf("Centrality bin = %d", centbin);
-  }
+//   Int_t centbin;
+//   if(fUseCentrality){
+//     centbin = CalculateCentrality(esdOFF);
+//     printf("Centrality bin = %d", centbin);
+//   } 
 
- 
+
   
   //============================ OFFLINE =============================//
 
@@ -163,7 +169,10 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   Int_t nr_tracksOFF = 0;
   
   if(esdOFF->GetEventSpecie()==16) return;
-   
+
+  //AliCentrality *cent = esdOFF->GetCentrality(); 
+  //printf("centrality V0: %f\n",cent->GetCentralityPercentileUnchecked("V0M"));
+    
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
       AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
       if (!esdTrackOFF) continue;
@@ -194,7 +203,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	 dca[0]=-99;
 	 dca[1]=-99;
       }
-      else esdTrackOFF->GetImpactParametersTPC(dca,cov);
+      //else ????????????? why doesn't it work with pp????
+      esdTrackOFF->GetImpactParametersTPC(dca,cov);
 
       Float_t DCAr =-99, DCAz = -99.;   
       Double_t trackOFF[] = {
@@ -211,6 +221,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
      			       ,esdTrackOFF->GetNcls(0)
 			       ,nr_tracksOFF
 			       ,vertOFF->GetStatus()
+			       ,vertOFF->GetZ()
+			       //,centbin
      			    };
       fTrackOFF->Fill(trackOFF);
     }
@@ -273,7 +285,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 			      //,esdTrackHLT->GetNcls(0)
 			      ,esdTrackHLT->GetITSclusters(dummycl)
 			      ,nr_tracksHLT
-			      ,vertHLT->GetStatus() 
+			      ,vertHLT->GetStatus()
+			      ,vertHLT->GetZ()
+			      //,centbin 
         		    };
       fTrackHLT->Fill(trackHLT);      
   }               
@@ -288,7 +302,7 @@ void AliAnalysisTaskHLTCentralBarrel::Terminate(Option_t *){
 Int_t AliAnalysisTaskHLTCentralBarrel::CalculateCentrality(AliESDEvent* esd){
 //see header for documentation
 
-  Int_t centrality =-1;
+  Int_t centrality = -1;
 
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   //AliESDZDC* esdZDC = esd->GetZDCData();

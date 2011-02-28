@@ -49,7 +49,7 @@ void compare_HLT_offline_local(TString file,
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
  
-  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I.");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I. -I$ALICE_ROOT/STEER");
   
   gSystem->Load("libTPCcalib.so");
   gSystem->Load("libTRDbase.so");
