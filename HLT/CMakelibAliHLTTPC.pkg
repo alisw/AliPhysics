@@ -43,9 +43,6 @@ set ( CLASS_HDRS
     AliHLTTPCDigitReader32Bit.h
     AliHLTTPCDigitDumpComponent.h
     AliHLTTPCDataCheckerComponent.h
-    AliHLTTPCZeroSuppressionComponent.h
-    AliHLTTPCNoiseMap.h
-    AliHLTTPCNoiseMapComponent.h
     AliHLTTPCVertex.h
     AliHLTTPCVertexArray.h
     AliHLTTPCVertexFinder.h
