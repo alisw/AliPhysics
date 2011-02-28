@@ -203,15 +203,15 @@ TObjArray * AliTRDcheckPID::Histos(){
   fPH->SetOwner(); fPH->SetName("PH");
   fContainer->AddAt(fPH, kPH);
   if(!(h = (TProfile2D*)gROOT->FindObject("PHT"))){
-    h = new TProfile2D("PHT", "", 
+    h = new TProfile2D("PHT", "<PH>(tb);p*species;tb [100*ns];entries", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDtrackerV1::GetNTimeBins(), -0.5, AliTRDtrackerV1::GetNTimeBins() - 0.5);
+      AliTRDseedV1::kNtb, -0.5, AliTRDseedV1::kNtb - 0.5);
   } else h->Reset();
   fPH->AddAt(h, 0);
   if(!(h = (TProfile2D*)gROOT->FindObject("PHX"))){
-    h = new TProfile2D("PHX", "", 
+    h = new TProfile2D("PHX", "<PH>(x);p*species;x_{drift} [cm];entries", 
       xBins, -0.5, xBins - 0.5,
-      AliTRDtrackerV1::GetNTimeBins(), 0., .5*AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght());
+      40., 0.,4.5);
   } else h->Reset();
   fPH->AddAt(h, 1);
 
@@ -651,10 +651,10 @@ TH1 *AliTRDcheckPID::PlotPH(const AliTRDtrackV1 *track)
     tracklet = fkTrack->GetTracklet(iChamb);
     if(!tracklet) continue;
     Float_t x0 = tracklet->GetX0(); 
-    for(Int_t ic = 0; ic < AliTRDtrackerV1::GetNTimeBins(); ic++){
+    for(Int_t ic = 0; ic < AliTRDseedV1::kNclusters; ic++){
       if(!(cluster = tracklet->GetClusters(ic))) continue;
       hPHT -> Fill(iBin, cluster->GetLocalTimeBin(), TMath::Abs(cluster->GetQ()));
-      hPHX -> Fill(iBin, x0 - cluster->GetX(), tracklet->GetdQdl(ic));
+      if(ic<AliTRDseedV1::kNtb) hPHX -> Fill(iBin, x0 - cluster->GetX(), tracklet->GetdQdl(ic));
     }
   }
   return hPHT;
