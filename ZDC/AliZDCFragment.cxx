@@ -130,7 +130,7 @@ void AliZDCFragment::GenerateIMF()
    //Float_t bCore = kbMaxPb-2*kNuclearThick;
    if(fB>kbMaxPb){
      fZbAverage = TMath::Exp(-kParamSkinPb[0]*(fB-kParamSkinPb[1]));
-     printf(" b = %1.2f fm   Z_bound %1.2f\n", fB, fZbAverage);
+     //printf(" b = %1.2f fm   Z_bound %1.2f\n", fB, fZbAverage);
    }
    if(fZbAverage>kZProj) fZbAverage = kZProj;
    Float_t zbNorm = fZbAverage/kZProj;
