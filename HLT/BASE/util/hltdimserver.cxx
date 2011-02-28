@@ -149,6 +149,7 @@ private:
 	TString fServerName;  /// The server name to use for this DIM server.
 	TString fVertexServiceName;  /// The name of the vertex service to register.
 	AliHLTHOMERReader* fHomerReader;  /// HOMER reader to access HLT data.
+	UInt_t fPublishPeriod;  /// The period between publishing data points to DIM in milliseconds.
 	
 	virtual const char* Class_Name() { return "AliHLTDCSPublisherServer"; }
 };
@@ -161,7 +162,8 @@ AliHLTDCSPublisherServer::AliHLTDCSPublisherServer() :
 	fDimDns(DEFAULT_DIM_DNS),
 	fServerName(DEFAULT_SERVER_NAME),
 	fVertexServiceName(DEFAULT_VERTEX_SERVICE_NAME),
-	fHomerReader(NULL)
+	fHomerReader(NULL),
+	fPublishPeriod(1000)
 {
 	// Default constructor.
 }
@@ -182,6 +184,7 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 	const char* dimdns = NULL;
 	const char* serverName = NULL;
 	const char* vertexServiceName = NULL;
+	const char* publishPeriod = NULL;
 
 	// Parse the command line.
 	for (int i = 1; i < argc; i++)
@@ -273,6 +276,31 @@ int AliHLTDCSPublisherServer::Init(int argc, char** argv)
 			}
 			vertexServiceName = argv[i];
 		}
+		else if (strcmp(argv[i], "-publishperiod") == 0)
+		{
+			if (publishPeriod != NULL)
+			{
+				HLTWarning("Already used -publishperiod with the value \"%s\" before."
+					   " Will override it with the last value specified with -publishperiod.",
+					   publishPeriod
+				);
+			}
+			if (++i >= argc)
+			{
+				HLTError("Missing the publishing period value in milliseconds.");
+				PrintUsage();
+				return CMDLINE_ERROR;
+			}
+			publishPeriod = argv[i];
+			char* cpErr = NULL;
+			unsigned long num = strtoul(argv[i], &cpErr, 0);
+			if (cpErr == NULL or *cpErr != '\0')
+			{
+				HLTError("Cannot convert \"%s\" to a valid unsigned integer.", argv[i]);
+				return CMDLINE_ERROR;
+			}
+			fPublishPeriod = UInt_t(num);
+		}
 		else
 		{
 			HLTError("Unknown command line option \"%s\".", argv[i]);
@@ -339,7 +367,9 @@ int AliHLTDCSPublisherServer::Run()
 			int result = fHomerReader->ReadNextEvent(10000000); // timeout of 10 seconds.
 			if (result != ETIMEDOUT and result != 0)
 			{
-				HLTError("Error occurred trying to read from HOMER connection to %s:%d",
+				// Do not show as error message since it is expected to loose
+				// HOMER connections as runs stop and start.
+				HLTDebug("Error occurred trying to read from HOMER connection to %s:%d",
 					fHomerSource.Data(), int(fHomerPort)
 				);
 				continue;
@@ -347,12 +377,20 @@ int AliHLTDCSPublisherServer::Run()
 			if (result != ETIMEDOUT)
 			{
 				SetLuminosityRegion(lumiRegion);
+				HLTDebug("Update luminosity region: Beam spot (x [um], y [um], z [mm]) = (%f, %f, %f);"
+					" size (x [um], y [um], z [mm]) = (%f, %f, %f); tilt (dx/dz [urad], dy/dz [urad]) = (%f, %f).",
+					lumiRegion.fX, lumiRegion.fY, lumiRegion.fZ,
+					lumiRegion.fSizeX, lumiRegion.fSizeY, lumiRegion.fSizeZ,
+					lumiRegion.fDxdz, lumiRegion.fDydz
+				);
+				service->Update();
+				gSystem->Sleep(fPublishPeriod);
 			}
 			else
 			{
 				memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+				service->Update();
 			}
-			service->Update();
 		}
 		else
 		{
@@ -449,29 +487,40 @@ void AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegi
 			delete obj;
 			continue;
 		}
+		HLTDebug("Found histogram object \"%s\".", h->GetName());
+		bool assigned = false;
 		for (int j = 0; j < 6; ++j)
 		{
-			if (TString(h->GetName()) == histName[j]) hist[j] = h;
+			if (TString(h->GetName()) == histName[j])
+			{
+				HLTDebug("Marking histogram \"%s\" as found in hist[%d].", h->GetName(), j);
+				// Note: This object will be marked for now and deleted later
+				// at the end of this method.
+				hist[j] = h;
+				assigned = true;
+				break;
+			}
 		}
+		if (not assigned) delete obj;
 	}
 	
 	// Now get the Mean and RMS values as the centroid and beam size values,
 	// Scale the values from centimetres to the required units of microns and mm.
 	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
-	if (hist[0] != NULL)
+	if (hist[3] != NULL)
 	{
-		lumiRegion.fX = hist[0]->GetMean() * 1e7;
-		lumiRegion.fSizeX = hist[0]->GetRMS() * 1e7;
+		lumiRegion.fX = hist[3]->GetMean() * 1e4;
+		lumiRegion.fSizeX = hist[3]->GetRMS() * 1e4;
 	}
-	if (hist[1] != NULL)
+	if (hist[4] != NULL)
 	{
-		lumiRegion.fY = hist[1]->GetMean() * 1e7;
-		lumiRegion.fSizeY = hist[1]->GetRMS() * 1e7;
+		lumiRegion.fY = hist[4]->GetMean() * 1e4;
+		lumiRegion.fSizeY = hist[4]->GetRMS() * 1e4;
 	}
-	if (hist[0] != NULL)
+	if (hist[5] != NULL)
 	{
-		lumiRegion.fZ = hist[0]->GetMean() * 10;
-		lumiRegion.fSizeZ = hist[0]->GetRMS() * 10;
+		lumiRegion.fZ = hist[5]->GetMean() * 10;
+		lumiRegion.fSizeZ = hist[5]->GetRMS() * 10;
 	}
 	
 	//TODO: for now just fill zeros into the tilt angles since they are not yet calculated.
@@ -504,6 +553,9 @@ void AliHLTDCSPublisherServer::PrintUsage(bool asError)
 	os << "       The name to register with for this DIM server." << endl;
 	os << " -vertexservicename <service-name>" << endl;
 	os << "       The name to register with of the vertex information service." << endl;
+	os << " -publishperiod <time>" << endl;
+	os << "       The amount of time in milliseconds to wait between publishing data points to" << endl;
+	os << "       DIM. This controls the publishing rate." << endl;
 	
 	if (asError)
 	{
