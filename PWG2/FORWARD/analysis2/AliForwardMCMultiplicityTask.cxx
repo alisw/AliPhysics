@@ -257,7 +257,9 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   UInt_t   triggers = 0;
   UShort_t ivz      = 0;
   Double_t vz       = 0;
-  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, ivz, vz);
+  Double_t cent     = 0;
+  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
+					      ivz, vz, cent);
   
   
   //Store all events
@@ -308,7 +310,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Do the energy stuff 
-  if (!fEnergyFitter.Accumulate(*esdFMD, triggers & AliAODForwardMult::kEmpty)){
+  if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
+				triggers & AliAODForwardMult::kEmpty)){
     AliWarning("Energy fitter failed");
     return;
   }
