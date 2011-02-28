@@ -1,18 +1,40 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+////////////////////////////////////////////////////////////////////////////////
 //
-// Class AliRsnDaughter
+//  This class works as generic interface to each candidate resonance daughter.
+//  Its main purpose is to provide a unique reference which includes all the
+//  facilities available in the AliVParticle generic base class, plus all info
+//  which could be needed during analysis, which are not in AliVParticle but
+//  need to be accessed from ESD or AOD objects, usually in different ways.
+//  When MC is available, AliRsnDaughter matches each reconstructed object with
+//  its corresponding MC particle.
+//  
+//  Currently, this interface can point to all kinds of single-particle object
+//  which one can have in the reconstructed event: charged tracks, V0s and 
+//  cascades. It is care of the user to treat each of them in the correct way,
+//  regarding cuts, functions to be computed, etc.
 //
-// Interface to candidate daughters of a resonance (tracks).
-// Points to the source of information, which is generally an AliVParticle-derived object
-// and contains few internal data-members to store "on fly" some important information
-// for the computations required during resonance analysis.
-// It contains a TLorentzVector data-member which, provided that a meaningful mass was assigned,
-// eases a lot the computation of invariant masses from summing up several of these objects.
+//  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
+//           M. Vala (martin.vala@cern.ch)
 //
-// authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
-//          M. Vala (martin.vala@cern.ch)
-//
+////////////////////////////////////////////////////////////////////////////////
 
 #include <TParticle.h>
+#include <TDatabasePDG.h>
 #include "AliAODVertex.h"
 
 #include "AliRsnDaughter.h"
@@ -133,6 +155,7 @@ Int_t AliRsnDaughter::GetPDG(Bool_t abs)
 //
 
    Int_t pdg = 0;
+   if (!fRefMC) return pdg;
 
    // ESD
    AliMCParticle *esd = GetRefMCESD();
@@ -166,23 +189,6 @@ Int_t AliRsnDaughter::GetID()
 
    // whatever else
    return GetLabel();
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnDaughter::HasFlag(ULong_t flag)
-{
-//
-// Checks that the 'status' flag of the source object has one or
-// a combination of status flags specified in argument.
-// Works only with objects inheriting from AliVTrack base class.
-//
-
-   AliVTrack *track  = GetRefVtrack();
-   if (!track) return kFALSE;
-
-   ULong_t status = (ULong_t)track->GetStatus();
-
-   return ((status & flag) != 0);
 }
 
 //_____________________________________________________________________________
@@ -224,4 +230,131 @@ Bool_t AliRsnDaughter::IsKinkDaughter()
    }
 
    return kFALSE;
+}
+
+//______________________________________________________________________________
+AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
+{
+//
+// Returns the expected object type for a candidate daughter
+// of the given species.
+//
+
+   switch (species) {
+      case kElectron:
+      case kMuon:
+      case kPion:
+      case kKaon:
+      case kProton:
+         return kTrack;
+      case kKaon0:
+      case kLambda:
+         return kV0;
+      case kXi:
+      case kOmega:
+         return kCascade;
+      default:
+         return kNoType;
+   }
+}
+
+//______________________________________________________________________________
+const char* AliRsnDaughter::SpeciesName(ESpecies species)
+{
+//
+// Return a string with the short name of the particle
+//
+
+   switch (species) {
+      case kElectron: return "E";
+      case kMuon:     return "Mu";
+      case kPion:     return "Pi";
+      case kKaon:     return "K";
+      case kProton:   return "P";
+      case kKaon0:    return "K0s";
+      case kLambda:   return "Lambda";
+      case kXi:       return "Xi";
+      case kOmega:    return "Omega";
+      default:        return "Undef";
+   }
+}
+
+//______________________________________________________________________________
+Int_t AliRsnDaughter::SpeciesPDG(ESpecies species)
+{
+//
+// Return the PDG code of a particle species (abs value)
+//
+
+   switch (species) {
+      case kElectron: return 11;
+      case kMuon:     return 13;
+      case kPion:     return 211;
+      case kKaon:     return 321;
+      case kProton:   return 2212;
+      case kKaon0:    return 310;
+      case kLambda:   return 3122;
+      case kXi:       return 3312;
+      case kOmega:    return 3334;
+      default:        return 0;
+   }
+}
+
+//______________________________________________________________________________
+Double_t AliRsnDaughter::SpeciesMass(ESpecies species)
+{
+//
+// Return the mass of a particle species
+//
+
+   TDatabasePDG *db = TDatabasePDG::Instance();
+   TParticlePDG *part = 0x0;
+   
+   Int_t pdg = SpeciesPDG(species);
+   if (pdg) {
+      part = db->GetParticle(pdg);
+      return part->Mass();
+   }
+   else
+      return 0.0;
+}
+
+//______________________________________________________________________________
+EPARTYPE AliRsnDaughter::ToAliPID(ESpecies species)
+{
+//
+// Convert an enum element from this object
+// into the enumeration of AliPID.
+// If no match are cound 'kUnknown' is returned.
+//
+
+   switch (species) {
+      case kElectron: return AliPID::kElectron;
+      case kMuon:     return AliPID::kMuon;
+      case kPion:     return AliPID::kPion;
+      case kKaon:     return AliPID::kKaon;
+      case kProton:   return AliPID::kProton;
+      case kKaon0:    return AliPID::kKaon0;
+      default:        return AliPID::kUnknown;
+   }
+}
+
+//______________________________________________________________________________
+AliRsnDaughter::ESpecies AliRsnDaughter::FromAliPID(EPARTYPE pid)
+{
+//
+// Convert an enum element from AliPID
+// into the enumeration of this object.
+// If no match are cound 'kUnknown' is returned.
+//
+
+   switch (pid) {
+      case AliPID::kElectron: return kElectron;
+      case AliPID::kMuon:     return kMuon;
+      case AliPID::kPion:     return kPion;
+      case AliPID::kKaon:     return kKaon;
+      case AliPID::kProton:   return kProton;
+      case AliPID::kKaon0:    return kKaon0;
+      default:                return kUnknown;
+   }
 }

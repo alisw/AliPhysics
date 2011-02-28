@@ -1,19 +1,14 @@
-//
-// Class AliRsnValue
-//
-// This class implements all the computations which could be useful
-// during the analysis, both for cuts and for output histograms.
-//
-// It inherits from the AliRsnTarget base class since it can operate
-// on tracks, pairs and events, and the kind of expected object to
-// be processed depends on the kind of requested computation.
-//
-// Since this class is used to produce the outputs, it contains the
-// facilities to define a binning in an output histogram.
-//
-
 #ifndef ALIRSNVALUE_H
 #define ALIRSNVALUE_H
+
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ * See cxx source for full Copyright notice                               */
+ 
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Collection of all values which can be computed within the package
+//
+////////////////////////////////////////////////////////////////////////////////
 
 #include "TArrayD.h"
 #include "AliRsnTarget.h"
@@ -59,6 +54,7 @@ public:
                              
       kEventLeadingPt,       // transverse momentum of the event leading particle
       kEventMult,            // multiplicity computed as the number of tracks
+      kEventMultMC,          // multiplicity from MC
       kEventMultESDCuts,     // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
       kEventVz,              // Z position of event primary vertex
       kValueTypes            // --- last value (used to have a meaningless enum value) ---------------
@@ -78,16 +74,15 @@ public:
    const char* GetValueTypeName() const;
    TObject*    GetSupportObject()             {return fSupportObject;}
    void        SetSupportObject(TObject *obj) {fSupportObject = obj;}
-   void        SetValueType(EValueType type)  {fValueType = type;}
-   void        AssignTarget();
+   void        SetValueType(EValueType type)  {fValueType = type; fTargetType = TargetType(type);}
 
    void        SetBins(Int_t n, Double_t min, Double_t max);
    void        SetBins(Int_t n, Double_t *array);
    void        SetBins(Double_t min, Double_t max, Double_t step);
 
-   void        Set(EValueType type, Int_t n, Double_t min, Double_t max)       {fValueType = type; AssignTarget(); SetBins(n, min, max);}
-   void        Set(EValueType type, Int_t n, Double_t *array)                  {fValueType = type; AssignTarget(); SetBins(n, array);}
-   void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {fValueType = type; AssignTarget(); SetBins(min, max, step);}
+   void        Set(EValueType type, Int_t n, Double_t min, Double_t max)       {SetValueType(type); SetBins(n, min, max);}
+   void        Set(EValueType type, Int_t n, Double_t *array)                  {SetValueType(type); SetBins(n, array);}
+   void        Set(EValueType type, Double_t min, Double_t max, Double_t step) {SetValueType(type); SetBins(min, max, step);}
 
    virtual Bool_t    Eval(TObject *object, Bool_t useMC = kFALSE);
    virtual void      Print(Option_t *option = "") const;
