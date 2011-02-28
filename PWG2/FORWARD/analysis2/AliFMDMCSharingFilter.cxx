@@ -196,7 +196,8 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
     }
   }
   AliStack* stack = const_cast<AliMCEvent&>(event).Stack();
-  Int_t nTracks   = event.GetNumberOfTracks();
+  Int_t nTracks   = stack->GetNtrack();//event.GetNumberOfTracks();
+  Int_t nPrim     = stack->GetNprimary();//event.GetNumberOfPrimary();
   for (Int_t iTr = 0; iTr < nTracks; iTr++) { 
     AliMCParticle* particle = 
       static_cast<AliMCParticle*>(event.GetTrack(iTr));
@@ -210,7 +211,7 @@ AliFMDMCSharingFilter::FilterMC(const AliESDFMD&  input,
     Bool_t isPrimary = stack->IsPhysicalPrimary(iTr);
 
     // Fill 'dn/deta' histogram 
-    if (isPrimary) { 
+    if (isPrimary && iTr < nPrim) { 
       fSumEta->Fill(particle->Eta());
       primary->Fill(particle->Eta(), particle->Phi());
     }

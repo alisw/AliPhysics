@@ -22,6 +22,7 @@
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
 #include "AliMultiplicity.h"
+#include "AliFMDEventInspector.h"
 #include <TROOT.h>
 #include <TFile.h>
 #include <TError.h>
@@ -35,7 +36,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fList(0),
     fAODCentral(kFALSE),
     fManager(),
-    fUseSecondary(true)
+    fUseSecondary(true),
+    firstEventSeen(false)
 {
   
   DefineOutput(1, TList::Class());
@@ -47,7 +49,8 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fList(0),
     fAODCentral(),
     fManager(),
-    fUseSecondary(true)
+    fUseSecondary(true),
+    firstEventSeen(false)
 {
 }
 //____________________________________________________________________
@@ -57,18 +60,20 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fList(o.fList),
     fAODCentral(o.fAODCentral),
     fManager(o.fManager),
-    fUseSecondary(o.fUseSecondary)
+    fUseSecondary(o.fUseSecondary),
+    firstEventSeen(o.firstEventSeen)
 {
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask&
 AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
 {
-  fData         = o.fData;
-  fList         = o.fList;
-  fAODCentral   = o.fAODCentral;
-  fManager      = o.fManager;
-  fUseSecondary = o.fUseSecondary;
+  fData          = o.fData;
+  fList          = o.fList;
+  fAODCentral    = o.fAODCentral;
+  fManager       = o.fManager;
+  fUseSecondary  = o.fUseSecondary;
+  firstEventSeen = o.firstEventSeen;
   return *this;
 }
 //____________________________________________________________________
@@ -100,6 +105,18 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
     return;}
   
   AliESDEvent* esd = eventHandler->GetEvent();
+  
+  if(!GetManager().IsInit() && !firstEventSeen) {
+    AliFMDEventInspector inspector;
+    inspector.ReadRunDetails(esd);
+    GetManager().Init(inspector.GetCollisionSystem(),
+		      inspector.GetEnergy(),
+		      inspector.GetField());
+    
+    //std::cout<<inspector.GetCollisionSystem()<<"  "<<inspector.GetEnergy()<<"    "<<inspector.GetField()<<std::endl;
+    AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
+    firstEventSeen = kTRUE;
+  }
   
   //Selecting only events with |valid vertex| < 10 cm
   const AliESDVertex* vertex = esd->GetPrimaryVertexSPD();
@@ -190,7 +207,8 @@ AliCentralMultiplicityTask::Manager::Manager() :
   fAcceptance(),
   fSecmap(),
   fAcceptanceName("centralacceptance"),
-  fSecMapName("centralsecmap")
+  fSecMapName("centralsecmap"),
+  fIsInit(kFALSE)
 {
 
 
@@ -202,7 +220,8 @@ AliCentralMultiplicityTask::Manager::Manager(const Manager& o)
    fAcceptance(o.fAcceptance),
    fSecmap(o.fSecmap),
    fAcceptanceName(o.fAcceptanceName),
-   fSecMapName(o.fSecMapName) 
+   fSecMapName(o.fSecMapName),
+   fIsInit(o.fIsInit)
 {}
 //____________________________________________________________________
 AliCentralMultiplicityTask::Manager&
@@ -214,6 +233,7 @@ AliCentralMultiplicityTask::Manager::operator=(const Manager& o)
   fSecmap         = o.fSecmap;
   fAcceptanceName = o.fAcceptanceName;
   fSecMapName     = o.fSecMapName;
+  fIsInit         = o.fIsInit;
   return *this;
 }
 
@@ -284,6 +304,8 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
 					  UShort_t  sNN,
 					  Short_t   field) 
 {
+  if(fIsInit) ::Warning("Init","Already initialised - overriding...");
+  
   TFile fsec(GetFullFileName(0,sys,sNN,field));
   fSecmap = 
     dynamic_cast<AliCentralCorrSecondaryMap*>(fsec.Get(fSecMapName.Data()));  
@@ -298,7 +320,14 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
     ::Error("Init", "no central Acceptance found!") ;
     return;
   }
+  
+  if(fSecmap && fAcceptance) {
+    fIsInit = kTRUE;
+    ::Info("Init", 
+	   "Central Manager initialised for sys %d, energy %d, field %d",sys,sNN,field);
 
+  }
+  
 }
 //
 // EOF

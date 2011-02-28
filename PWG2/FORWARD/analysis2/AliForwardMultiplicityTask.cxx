@@ -219,7 +219,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fHistos.Clear();
   fESDFMD.Clear();
   fAODFMD.Clear();
-
+  
   Bool_t   lowFlux  = kFALSE;
   UInt_t   triggers = 0;
   UShort_t ivz      = 0;
@@ -227,7 +227,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   Double_t cent     = -1;
   UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
 					      ivz, vz, cent);
- 
+  
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
 
@@ -235,11 +235,15 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   fAODFMD.SetTriggerBits(triggers);
   fAODFMD.SetSNN(fEventInspector.GetEnergy());
   fAODFMD.SetSystem(fEventInspector.GetCollisionSystem());
+  fAODFMD.SetCentrality(cent);
   MarkEventForStore();
-
+  
   if (found & AliFMDEventInspector::kNoSPD)      return;
   if (found & AliFMDEventInspector::kNoFMD)      return;
   if (found & AliFMDEventInspector::kNoVertex)   return;
+  
+  if (triggers & AliAODForwardMult::kPileUp) return;
+  
   fAODFMD.SetIpZ(vz);
 
   if (found & AliFMDEventInspector::kBadVertex) return;

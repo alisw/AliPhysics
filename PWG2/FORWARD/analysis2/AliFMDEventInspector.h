@@ -50,7 +50,11 @@ public:
     /** No vertex found */
     kNoVertex = 0x10, 
     /** Vertex out of range */
-    kBadVertex = 0x20
+    kBadVertex = 0x20,
+    /** Suspected pileup */
+    kPileUp = 0x40,
+    /** Suspected pileup */
+    kMCNSD = 0x80
   };
   /** 
    * Trigger bins 

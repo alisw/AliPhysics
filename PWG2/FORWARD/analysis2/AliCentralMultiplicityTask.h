@@ -157,6 +157,14 @@ public:
      * @param field  Magnetic field [kG]
      */
     void Init(UShort_t sys, UShort_t sNN, Short_t field);
+    
+    /** 
+     * Is initialized 
+     * 
+     */
+    Bool_t IsInit() { return fIsInit; }
+    
+    
     /** 
      * Get the acceptance path
      * 
@@ -243,6 +251,7 @@ public:
     AliCentralCorrSecondaryMap* fSecmap;         // Secindary map
     TString                     fAcceptanceName; // Acceptance name
     TString                     fSecMapName;     // Secindary name
+    Bool_t                      fIsInit;         // Are we init
 
     ClassDef(Manager,1); // Manager of data 
   };
@@ -267,7 +276,8 @@ protected:
   TList*                 fList;          //Output List for diagnostics
   AliAODCentralMult      fAODCentral;    // Output object
   Manager                fManager;       //Manager object for corrections
-  Bool_t                 fUseSecondary;   // Whether to secondary map
+  Bool_t                 fUseSecondary;  // Whether to secondary map
+  Bool_t                 firstEventSeen; // Have we seen first event     
   ClassDef(AliCentralMultiplicityTask,1) // Forward multiplicity class
 };
 

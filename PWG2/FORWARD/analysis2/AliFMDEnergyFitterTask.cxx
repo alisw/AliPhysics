@@ -26,6 +26,10 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TFile.h>
+#include "AliMCEvent.h"
+#include "AliGenHijingEventHeader.h"
+#include "AliHeader.h"
+#include <iostream>
 
 //====================================================================
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
@@ -46,7 +50,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
     fFirstEvent(true),
     fEventInspector("event"),
     fEnergyFitter("energy"),
-    fList(0)
+    fList(0),
+    fbLow(0),
+    fbHigh(100)
 {
   // 
   // Constructor 
@@ -171,6 +177,21 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // static Int_t cnt = 0;
   // cnt++;
   // Get the input data 
+  
+  AliMCEvent* mcevent = MCEvent();
+  if(mcevent) {
+    AliHeader* header            = mcevent->Header();
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
+    if(hijingHeader) {
+      Float_t b = hijingHeader->ImpactParameter();
+      if(b<fbLow || b>fbHigh) return;
+      else
+	std::cout<<"Selecting event with impact parameter "<<b<<std::endl;
+    }
+    
+  }
+  
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   // AliInfo(Form("Event # %6d (esd=%p)", cnt, esd));
   if (!esd) { 

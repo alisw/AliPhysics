@@ -109,7 +109,12 @@ public:
     /** C-side trigger */
     kC        = 0x080,  
     /** Empty trigger */
-    kE        = 0x100
+    kE        = 0x100,
+    /** pileup from SPD */
+    kPileUp   = 0x200,    
+    /** true NSD from MC */
+    kMCNSD    = 0x400    
+    
   };
   /** 
    * Default constructor 
@@ -222,6 +227,12 @@ public:
    */
   void SetSystem(UShort_t sys);
   /** 
+   * Set the event centrality 
+   * 
+   * @param c Centrality 
+   */
+  void SetCentrality(Float_t c) { fCentrality = c; }
+  /** 
    * Set the z coordinate of the interaction point
    * 
    * @return Interaction point z coordinate
@@ -260,6 +271,21 @@ public:
    */
   Bool_t InRange(Float_t low, Float_t high) const;
   /** 
+   * Get the event centrality 
+   * 
+   * 
+   * @return 
+   */
+  Float_t GetCentrality() const { return fCentrality; }
+  /** 
+   * Check if we have a valid centrality 
+   * 
+   * 
+   * @return 
+   */
+  Bool_t  HasCentrality() const { return !(fCentrality  < 0); }
+  
+  /** 
    * Get the name of the object 
    * 
    * @return Name of object 
@@ -278,9 +304,10 @@ protected:
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
   UInt_t  fTriggers; // Trigger bit mask 
   Float_t fIpZ;      // Z coordinate of the interaction point
+  Float_t fCentrality; // Event centrality 
 
   static const Float_t fgkInvalidIpZ; // Invalid IpZ value 
-  ClassDef(AliAODForwardMult,1); // AOD forward multiplicity 
+  ClassDef(AliAODForwardMult,2); // AOD forward multiplicity 
 };
 
 //____________________________________________________________________
