@@ -37,9 +37,7 @@ set ( CLASS_HDRS
     AliHLTTPCClusterFinder.h
     AliHLTTPCMapping.h
     AliHLTTPCDigitReader.h
-    AliHLTTPCDigitReaderPacked.h
     AliHLTTPCDigitReaderUnpacked.h
-    AliHLTTPCDigitReaderDecoder.h
     AliHLTTPCDigitReader32Bit.h
     AliHLTTPCDigitDumpComponent.h
     AliHLTTPCDataCheckerComponent.h

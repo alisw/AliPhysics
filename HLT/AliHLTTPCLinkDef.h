@@ -12,9 +12,7 @@
 #pragma link C++ class  AliHLTTPCClusterFinder+;
 #pragma link C++ class  AliHLTTPCMapping+;
 #pragma link C++ class  AliHLTTPCDigitReader+;
-#pragma link C++ class  AliHLTTPCDigitReaderPacked+;
 #pragma link C++ class  AliHLTTPCDigitReaderUnpacked+;
-#pragma link C++ class  AliHLTTPCDigitReaderDecoder+;
 #pragma link C++ class  AliHLTTPCDigitReader32Bit+;
 #pragma link C++ class  AliHLTTPCDigitDumpComponent+;
 #pragma link C++ class  AliHLTTPCVertex+;
