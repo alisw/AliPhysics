@@ -243,6 +243,8 @@ Int_t AliHLTTPCCompModelAnalysis::CompareTracks()
   // take track from first tracking,
   for(Int_t ii=0; ii < firsttracks; ii++)
     {
+      if (fFirstTrackArray.GetCheckedTrack(ii)==NULL) continue;
+
       // build track list for all tracks in first array
       // FIXME: I can't find the cleanup of the linked list fFirstTrackList
       AliHLTTPCTrackList* currenttrackentry = new AliHLTTPCTrackList;
