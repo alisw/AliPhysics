@@ -412,6 +412,11 @@ void AliAnalysisTaskMuonResolution::UserExec(Option_t *)
       AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->UncheckedAt(iCluster));
       AliMUONTrackParam* previousTrackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->Before(trackParam));
       AliMUONTrackParam* nextTrackParam = static_cast<AliMUONTrackParam*>(track.GetTrackParamAtCluster()->After(trackParam));
+      if (!previousTrackParam && !nextTrackParam) {
+	AliError(Form("unable to find a cluster neither before nor after the one at position %d !?!", iCluster));
+	track.RecursiveDump();
+	break;
+      }
       
       // save current trackParam and remove it from the track
       AliMUONTrackParam currentTrackParam(*trackParam);
