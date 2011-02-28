@@ -1,3 +1,4 @@
+// $Id$
 // XEmacs -*-C++-*-
 
 #ifndef ALIHLTTPCHWCFDATAREVERTERCOMPONENT_H
@@ -7,11 +8,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCHWCFDataReverterComponent.h
-    @author Kenneth Aamodt
-    @date   
-    @brief  Component for reverting data for the HW clusterfinder
-*/
+/// @file   AliHLTTPCHWCFDataReverterComponent.h
+/// @author Kenneth Aamodt
+/// @date   
+/// @brief  Component for reverting data for the HW clusterfinder
+///
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCPad.h"
