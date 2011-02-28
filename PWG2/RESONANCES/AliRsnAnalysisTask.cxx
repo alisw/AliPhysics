@@ -83,6 +83,7 @@ void AliRsnAnalysisTask::RsnUserCreateOutputObjects()
    fOutList->Clear();
 
    fRsnAnalysisManager.InitAllPairs(fOutList);
+   fOutList->SetOwner(kTRUE);
 
    PostData(2, fOutList);
 }

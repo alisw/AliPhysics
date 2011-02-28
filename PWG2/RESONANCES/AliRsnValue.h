@@ -57,6 +57,9 @@ public:
       kEventMultMC,          // multiplicity from MC
       kEventMultESDCuts,     // multiplicity computed as the number of track passing an ESD quality cut (need this cut defined)
       kEventVz,              // Z position of event primary vertex
+      kEventCentralityV0,    // event centrality (V0 method)
+      kEventCentralityTrack, // event centrality (tracks method)
+      kEventCentralityCL1,   // event centrality (CL1 method)
       kValueTypes            // --- last value (used to have a meaningless enum value) ---------------
    };
 
