@@ -10,6 +10,13 @@ DHDR     = $(PACKAGE)LinkDef.h
 ALICEINC      = -I.
 
 ### define include dir for local case and par case
+ifneq ($(JETAN_INCLUDE),)
+  ifneq ($(FASTJET_ROOT),)
+   ALICEINC += -I$(FASTJET_ROOT)/include
+  else
+   ALICEINC += -I$(ALICE_ROOT)/JETAN/fastjet
+  endif
+endif
 ifneq ($(ESD_INCLUDE),)
    ALICEINC += -I../$(ESD_INCLUDE)
    ALICEINC += -I../$(AOD_INCLUDE)
@@ -21,7 +28,7 @@ ifneq ($(ESD_INCLUDE),)
    endif
  else
     ifneq ($(ALICE_ROOT),)
-       ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/JETAN -I$(ALICE_ROOT)/JETAN/fastjet -I$(ALICE_ROOT)/ANALYSIS
+       ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/JETAN -I$(ALICE_ROOT)/ANALYSIS
      endif
 endif
 

@@ -502,8 +502,10 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	}
       }
     }
-  }
-  PostData(1, fHistList);
+    if(jarrayOut)jarrayOut->Sort();
+   }
+   
+   PostData(1, fHistList);
 }
 
 void AliAnalysisTaskJetBackgroundSubtract::Terminate(Option_t */*option*/)
