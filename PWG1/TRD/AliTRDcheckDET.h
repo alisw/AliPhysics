@@ -104,18 +104,26 @@ private:
   AliTRDcheckDET(const AliTRDcheckDET &);
   AliTRDcheckDET& operator=(const AliTRDcheckDET &);
   void GetDistanceToTracklet(Double_t *dist, AliTRDseedV1 * const tracklet, AliTRDcluster * const c);
+  //----------------------------------------------------
+  // Functions creating the reference figures
   TH1* MakePlotChi2() const;
   TH1* MakePlotNTracklets();
   Bool_t MakePlotPulseHeight();
   void MakePlotnTrackletsVsP();
   void MakePlotMeanClustersLayer();
+  void MakePlotNclustersTrack();
+  void MakePlotNclustersTracklet();
+  void MakePlotTrackletCharge();
   Bool_t MakeBarPlot(TH1 *histo, Int_t Color);
+  //----------------------------------------------------
   void GetEtaPhiAt(const AliExternalTrackParam *track, Double_t x, Double_t &eta, Double_t &phi);
+  TH1 *ProjectCentrality(TH2 *h2d, Int_t centralityBin = -1);
 
   Int_t fCentralityClass;              // Centrality Class
   TMap *fTriggerNames;                 //! Containing trigger class names
   UChar_t fFlags;                      // Flags for setting
-    
+
+  static const Color_t fkColorsCentrality[AliTRDeventInfo::kCentralityClasses];		// Colors for the different centrality classes in the Ref Figures
   ClassDef(AliTRDcheckDET, 2)
 };
 #endif
