@@ -23,7 +23,6 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 0;}
   virtual void  StepManager();
-  virtual void  DrawDetector() const ;
 
 protected:
   

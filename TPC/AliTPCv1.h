@@ -23,7 +23,6 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
-  virtual void  DrawDetector() const;
 
 protected:
   Int_t fIdSens;    //Sensitive volume identifier

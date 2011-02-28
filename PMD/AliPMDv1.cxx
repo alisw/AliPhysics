@@ -2012,47 +2012,6 @@ void AliPMDv1::CreatePMD()
 
 //_____________________________________________________________________________
 
-void AliPMDv1::DrawModule() const
-{
-  // Draw a shaded view of the Photon Multiplicity Detector
-  //
-  //  cout << " Inside Draw Modules " << endl;
-  
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC", "seen", 0);
-  //
-  // Set the visibility of the components
-  // 
-  gMC->Gsatt("ECAR","seen",0);
-  gMC->Gsatt("ECCU","seen",1);
-  gMC->Gsatt("EST1","seen",1);
-  gMC->Gsatt("EST2","seen",1);
-  gMC->Gsatt("EUM1","seen",1);
-  gMC->Gsatt("EUM2","seen",1);
-  
-  gMC->Gsatt("EPMD","seen",1);
-  
-  //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  gMC->DefaultRange();
-  gMC->Gdraw("ALIC", 40, 30, 0, 22, 20.5, .02, .02);
-  gMC->Gdhead(1111, "Photon Multiplicity Detector Version 1");
-  
-  //gMC->Gdman(17, 5, "MAN");
-  gMC->Gdopt("hide", "off");
-  
-  AliDebug(1,"Outside Draw Modules");
-}
-
-//_____________________________________________________________________________
-
 void AliPMDv1::CreateMaterials()
 {
   // Create materials for the PMD

@@ -22,7 +22,6 @@ class AliABSO : public AliModule {
     virtual void    CreateMaterials();
     virtual void    Init();
     virtual Int_t   IsVersion() const {return 0;}
-    virtual void    DrawModule() const;
     virtual Int_t   GetMatId(Int_t imat) const;
     virtual Int_t   NumberOfLayers(Int_t i) const {return fNLayers[i];}
     virtual Float_t ZPositionOfLayer(Int_t i, Int_t il) const 

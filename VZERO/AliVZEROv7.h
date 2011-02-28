@@ -26,7 +26,6 @@ public:
   virtual void   CreateGeometry();
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateMaterials();
-  virtual void   DrawModule() const;
   virtual void   DrawGeometry();
   virtual void   Init();
   virtual void   MakeBranch(Option_t *option);

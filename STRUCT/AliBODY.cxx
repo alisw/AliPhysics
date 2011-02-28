@@ -160,36 +160,3 @@ void AliBODY::CreateMaterials()
   AliMedium(3,"Be pipe $",3,0,isxfld,sxmgmx,10,0.1,0.1,0.01,0.01);
 }
  
-//_____________________________________________________________________________
-void AliBODY::DrawModule() const
-{
-  //
-  // Draw a view of the Alice outside box
-  //
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  // 
-  // Set ALIC mother visible
-  gMC->Gsatt("ALIC","SEEN",1);
-  //
-  // Set the volumes visible
-  //
-  gMC->Gdopt("hide","off");
-  if(gAlice->GetModule("ZDC")) {
-    //
-    // ZDC is present
-    //
-    gMC->DefaultRange();
-    gMC->Gdraw("alic", 40, 30, 0, 15, 10, .0014, .0014);
-    gMC->Gdhead(1111, "Aice Main body with Zero Degree Calorimeter");
-  } else {
-    //
-    // ZDC is not present
-    //
-    gMC->Gdraw("alic", 40, 30, 0, 10, 9, .0027, .0027);
-    gMC->Gdhead(1111, "Aice Main body");
-  }
-  gMC->Gdman(18, 4, "MAN");
-}
- 
-

@@ -217,28 +217,6 @@ void AliT0v2::CreateMaterials()
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Draw a shaded view of the Forward multiplicity detector version 2
-//////////////////////////////////////////////////////////////////////
-void AliT0v2::DrawModule() const
-{  
-  //Set ALIC mother transparent
-  gMC->Gsatt ("ALIC", "SEEN", 0);
-
-  //Set volumes visible
-  gMC->Gsatt ("0STA", "SEEN", 0);
-  gMC->Gsatt ("0PMT", "SEEN", 1);
-  gMC->Gsatt ("0DIV", "SEEN", 1);
-
-  gMC->Gdopt ("hide", "on");
-  gMC->Gdopt ("shad", "on");
-  gMC->SetClipBox (".");
-  gMC->SetClipBox ("*", 0, 1000, -1000, 1000, -1000, 1000);
-  gMC->DefaultRange();
-  gMC->Gdraw ("alic", 40, 30, 0, 12, 9.5, 0.7, 0.7);
-  gMC->Gdhead (1111, "T-Zero detector");
-  gMC->Gdopt ("hide", "off");
-}
 
 //////////////////////////////////////////////////////////////////////
 // Definition of optical properties for the Forward Multiplicity Detector

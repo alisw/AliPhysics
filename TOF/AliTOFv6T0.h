@@ -30,9 +30,6 @@ public:
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t) {};
   virtual void   TOFpc(Float_t, Float_t, Float_t, Float_t, Float_t, Float_t) {};
   virtual void   StepManager();
-  virtual void   DrawModule() const;
-  virtual void   DrawDetectorModules() const;
-  virtual void   DrawDetectorStrips() const;
  
  protected:
 

@@ -398,13 +398,6 @@ public:
   virtual void   FinishEvent();
   /** @}*/
   
-  /** @{*/
-  /** @name Graphics and event display */
-  /** Draw a shaded view of the Forward multiplicity detector.  This 
-      isn't really useful anymore. */
-  virtual        void   DrawDetector() {}
-  /** @}*/
-  
   /** @{ */
   /** @name Hit and digit management */
   /* Create Tree branches for the FMD.

@@ -38,7 +38,6 @@ public:
 			   TArrayI *time, TArrayI *adc, TArrayI *timeAmp, TArrayI *adcAmp);
    virtual void   CreateGeometry(){}
    virtual void   CreateMaterials(){} 
-   virtual void   DrawDetector(){}
    virtual Int_t  IsVersion()const {return 0;}
    virtual void   Init();
    virtual void   DefineOpticalProperties(){}

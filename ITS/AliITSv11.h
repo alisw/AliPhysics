@@ -29,7 +29,6 @@ class AliITSv11 : public AliITS {
     virtual void   CreateMaterials();
     virtual void   Init(); 
     virtual void   SetDefaults();
-    virtual void   DrawModule() const;
     virtual void   StepManager();
     //virtual AliITSv11GeometrySPD*     GetSPDGeometry(){return fSPDgeom;}
     virtual AliITSv11GeometrySDD*    GetSDDGeometry(){return fSDDgeom;}

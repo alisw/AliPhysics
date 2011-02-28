@@ -420,40 +420,6 @@ void AliTOF::CreateGeometry()
 
 }
 
-//_____________________________________________________________________________
-void AliTOF::DrawModule() const
-{
-  //
-  // Draw a shaded view of the common part of the TOF geometry
-  //
-
-  AliInfo(" Drawing of AliTOF"); 
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  // 
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  // Set the volumes visible
-  gMC->Gsatt("FTOA","SEEN",1);
-  gMC->Gsatt("FTOB","SEEN",1);
-  gMC->Gsatt("FTOC","SEEN",1);
-  gMC->Gsatt("FLTA","SEEN",1);
-  gMC->Gsatt("FLTB","SEEN",1);
-  gMC->Gsatt("FLTC","SEEN",1);
-  gMC->Gsatt("FSTR","SEEN",1);
-  //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 1000, -1000, 1000, -1000, 1000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 12, 9.5, .02, .02);
-  gMC->Gdhead(1111, "Time Of Flight");
-  gMC->Gdman(18, 4, "MAN");
-  gMC->Gdopt("hide","off");
-}
 
 //___________________________________________
 void AliTOF::ResetHits ()

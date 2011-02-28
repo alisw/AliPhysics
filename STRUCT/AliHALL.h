@@ -22,7 +22,6 @@ public:
    virtual void  CreateMaterials();
    virtual void  Init();
    virtual Int_t IsVersion() const {return 0;}
-   virtual void  DrawModule() const;
  
    ClassDef(AliHALL,1)  //Class for ALICE experimental hall
 };

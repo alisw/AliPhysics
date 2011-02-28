@@ -58,7 +58,6 @@ class AliITSv11Hybrid : public AliITS {
                                       return 110;} 
     virtual void   Init(); 
     virtual void   SetDefaults();
-    virtual void   DrawModule() const;
     virtual void   StepManager();
     virtual void   AddAlignableVolumes() const;
     virtual void   SetMinorVersion(Int_t v=2){ // Choose between existing minor versions

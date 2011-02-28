@@ -30,7 +30,6 @@ public:
   AliT0v0& operator=(const AliT0v0&) { return *this; }
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
-  virtual void   DrawModule() const;
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   virtual void   StepManager();

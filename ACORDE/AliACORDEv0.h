@@ -23,7 +23,6 @@ public:
   virtual void CreateGeometry();
 
   virtual void Init();
-  virtual void DrawDetector() const;
   virtual void StepManager();
 
 

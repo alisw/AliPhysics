@@ -29,7 +29,6 @@ public:
   virtual void   DefineOpticalProperties();
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateMaterials();
-  virtual void   DrawDetector();
   virtual void   Init();
   virtual Int_t  IsVersion() const {return 0;}
   Bool_t RegisterPhotoE(Int_t impt, Double_t energy);

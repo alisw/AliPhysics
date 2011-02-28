@@ -50,7 +50,6 @@ public:
   virtual Bool_t Raw2SDigits(AliRawReader*);
   virtual void   SetTreeAddress();  
   virtual void   MakeBranch(Option_t *option) =0;
-  virtual void   DrawModule() const {};
   virtual void   StepManager() {};
 // Trigger 
   virtual AliTriggerDetector* CreateTriggerDetector() const 

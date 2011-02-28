@@ -2899,15 +2899,6 @@ void AliVZEROv7::CreateMaterials()
 }
 
 //_____________________________________________________________________________
-void AliVZEROv7::DrawModule() const
-{
-//  Drawing is done in DrawVZERO.C
-
-   AliDebug(2,"DrawModule");
-}
-
-
-//_____________________________________________________________________________
 void AliVZEROv7::DrawGeometry() 
 {
 //  Drawing of V0 geometry done in DrawV0.C

@@ -241,43 +241,6 @@ void AliPIPEv1::CreateGeometry()
 }
 
 //_____________________________________________________________________________
-void AliPIPEv1::DrawModule() const
-{
-  //
-  // Draw a shaded view of the Beam Pipe
-  //
-
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  // 
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  // Set the volumes visible
-  gMC->Gsatt("QQMO","seen",1);
-  gMC->Gsatt("QDT1","seen",1);
-  gMC->Gsatt("QTB1","seen",1);
-  gMC->Gsatt("QDT2","seen",1);
-  gMC->Gsatt("QTB2","seen",1);
-  gMC->Gsatt("QDT5","seen",1);
-  gMC->Gsatt("QTB5","seen",1);
-  gMC->Gsatt("QDT7","seen",1);
-  gMC->Gsatt("QTB7","seen",1);
-  gMC->Gsatt("QN63","seen",1);
-  //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 3000, -3000, 3000, -6000, 6000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 3, 5, .04, .04);
-  gMC->Gdhead(1111, "Beam Pipe");
-  gMC->Gdman(16, 6, "MAN");
-  gMC->Gdopt("hide","off");
-}
-
-//_____________________________________________________________________________
 void AliPIPEv1::CreateMaterials()
 {
   //

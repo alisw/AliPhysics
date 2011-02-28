@@ -20,7 +20,6 @@ public:
   virtual void  CreateGeometry();
   virtual void  CreateMaterials();
   virtual Int_t IsVersion() const {return 2;}
-  virtual void  DrawModule() const;
  private:
   virtual void  CreateSpectrometerDipole();
   virtual void  CreateCompensatorDipole();

@@ -609,13 +609,6 @@ void AliACORDEv0::CreateAcorde()
   } // end if (fITSGeometry)
 
 }
-//_____________________________________________________________________________
-void AliACORDEv0::DrawDetector() const
-{
-
-  // not needed anymore
-
-}
 
 //____________________________________________________________________________
 

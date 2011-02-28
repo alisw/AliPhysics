@@ -74,7 +74,6 @@ install (DIRECTORY scripts
 	 PATTERN ".so"  EXCLUDE)
 
 install (FILES Config.C
-  	       DrawFMD.C
   	       MakeFMDFullMisAlignment.C
   	       MakeFMDResMisAlignment.C
   	       MakeFMDZeroMisAlignment.C

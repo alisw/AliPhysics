@@ -6149,59 +6149,6 @@ void AliITSv11Hybrid::SetDefaults(){
     return;
 }
 //______________________________________________________________________
-void AliITSv11Hybrid::DrawModule() const{
-    //     Draw a shaded view of the FMD version 10.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   none.
-    // Return:
-    //   none.
-
-    // Set everything unseen
-    gMC->Gsatt("*", "seen", -1);
-    // 
-    // Set ALIC mother visible
-    gMC->Gsatt("ALIC","SEEN",0);
-    //
-    // Set the volumes visible
-    gMC->Gsatt("ITSD","SEEN",0);
-    gMC->Gsatt("ITS1","SEEN",1);
-    gMC->Gsatt("ITS2","SEEN",1);
-    gMC->Gsatt("ITS3","SEEN",1);
-    gMC->Gsatt("ITS4","SEEN",1);
-    gMC->Gsatt("ITS5","SEEN",1);
-    gMC->Gsatt("ITS6","SEEN",1);
-    //
-    gMC->Gsatt("IPCB","SEEN",1);
-    gMC->Gsatt("ICO2","SEEN",1);
-    gMC->Gsatt("ICER","SEEN",0);
-    gMC->Gsatt("ISI2","SEEN",0);
-    gMC->Gsatt("IPLA","SEEN",0);
-    gMC->Gsatt("ICO3","SEEN",0);
-    gMC->Gsatt("IEPX","SEEN",0);
-    gMC->Gsatt("ISI3","SEEN",1);
-    gMC->Gsatt("ISUP","SEEN",0);
-    gMC->Gsatt("ICHO","SEEN",0);
-    gMC->Gsatt("ICMO","SEEN",0);
-    gMC->Gsatt("ICMD","SEEN",0);
-    gMC->Gsatt("ICCO","SEEN",1);
-    gMC->Gsatt("ICCM","SEEN",0);
-    gMC->Gsatt("ITMD","SEEN",0);
-    gMC->Gsatt("ITTT","SEEN",1);
-    //
-    gMC->Gdopt("hide", "on");
-    gMC->Gdopt("shad", "on");
-    gMC->Gsatt("*", "fill", 7);
-    gMC->SetClipBox(".");
-    gMC->SetClipBox("*", 0, 300, -300, 300, -300, 300);
-    gMC->DefaultRange();
-    gMC->Gdraw("alic", 40, 30, 0, 11, 10, .07, .07);
-    gMC->Gdhead(1111, "Inner Tracking System Version 1");
-    gMC->Gdman(17, 6, "MAN");
-}
-
-//______________________________________________________________________
 void AliITSv11Hybrid::StepManager(){
     //    Called for every step in the ITS, then calles the AliITShit class
     // creator with the information to be recoreded about that hit.

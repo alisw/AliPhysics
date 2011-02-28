@@ -656,13 +656,6 @@ void AliPIPEvTemp::CreateGeometry()
 
  
 //___________________________________________
-void AliPIPEvTemp::DrawModule()
-{
-// Set drawing options
-    ;
-}
-
-//___________________________________________
 void AliPIPEvTemp::CreateMaterials()
 {
   //

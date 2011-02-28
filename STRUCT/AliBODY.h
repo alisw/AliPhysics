@@ -22,7 +22,6 @@ public:
    virtual void  CreateGeometry();
    virtual void  CreateMaterials();
    virtual Int_t IsVersion() const {return 0;}
-   virtual void  DrawModule() const;
 
    ClassDef(AliBODY,1)  //Class manager for the ALICE body
 };

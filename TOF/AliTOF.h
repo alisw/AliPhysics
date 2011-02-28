@@ -60,11 +60,6 @@ public:
   virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/,
 			Float_t /*zlenB*/){};
   virtual void    TOFpc(Float_t /*xtof*/,  Float_t /*ytof*/, Float_t /*zlenA*/){};
-  virtual void    DrawModule() const;
-  virtual void    DrawDetectorModules() const {};
-  virtual void    DrawDetectorStrips() const {};
-  //virtual void   DrawDetectorModulesinFrame()=0;
-  //virtual void   DrawDetectorStripsinFrame()=0;
           void    CreateTOFFolders();
   Bool_t    CheckOverlap(const Int_t * const vol, Int_t* digit, Int_t Track);
   //virtual void    Hits2Digits();   

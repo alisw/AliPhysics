@@ -803,53 +803,6 @@ void AliDIPOv2::CreateCompensatorDipole()
     gMC->Gspos("DCM0", 1, "ALIC",  0., -12.,  1075., idrotm[1816], "ONLY");
 }
 
-//_____________________________________________________________________________
-void AliDIPOv2::DrawModule() const
-{
-  //
-  // Draw a shaded view of the muon absorber
-  //
-
-  // Set everything unseen
-  gMC->Gsatt("*", "seen", -1);
-  // 
-  // Set ALIC mother transparent
-  gMC->Gsatt("ALIC","SEEN",0);
-  //
-  // Set the volumes visible
-  gMC->Gsatt("DDIP","seen",0);
-  gMC->Gsatt("DC1 ","seen",1);
-  gMC->Gsatt("DC2 ","seen",1);
-  gMC->Gsatt("DC3 ","seen",1);
-  gMC->Gsatt("DC4 ","seen",1);
-  gMC->Gsatt("DC11","seen",1);
-  gMC->Gsatt("DC21","seen",1);
-  gMC->Gsatt("DC12","seen",1);
-  gMC->Gsatt("DC22","seen",1);
-  gMC->Gsatt("DL1 ","seen",1);
-  gMC->Gsatt("DL2 ","seen",1);
-  gMC->Gsatt("DY1 ","seen",1);
-  gMC->Gsatt("DY2 ","seen",1);
-  gMC->Gsatt("DYL ","seen",1);
-  gMC->Gsatt("DY3 ","seen",1);
- // gMC->Gsatt("DY4 ","seen",1);
- // gMC->Gsatt("DY5 ","seen",1);
- // gMC->Gsatt("DY6 ","seen",1);
-//  gMC->Gsatt("DY7 ","seen",1);
-  //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox(".");
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 30, 30, 0, 17, 13.5, .019, .019);
-  gMC->Gdhead(1111, "Magnetic Dipole Version 2");
-  gMC->Gdman(16, 4, "MAN");
-}
-
-
-
 
 //_____________________________________________________________________________
 void AliDIPOv2::CreateMaterials()

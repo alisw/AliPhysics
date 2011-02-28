@@ -27,7 +27,6 @@ public:
   virtual void  Init();
   virtual Int_t IsVersion() const {return 1;}
   virtual void  StepManager();
-  virtual void  DrawModule() const;
   
  private:
   static const Int_t   fgkNcellHole;     // Hole Dimension
