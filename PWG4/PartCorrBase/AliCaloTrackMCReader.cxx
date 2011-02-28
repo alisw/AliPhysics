@@ -112,9 +112,9 @@ void AliCaloTrackMCReader::InitParameters()
   fReadAODMCParticles = kFALSE; //This class only works with Kinematics.root input.
   
   //For this reader we own the objects of the arrays
-  fAODCTS  ->SetOwner(kTRUE); 
-  fAODEMCAL->SetOwner(kTRUE); 
-  fAODPHOS ->SetOwner(kTRUE); 
+  fCTSTracks    ->SetOwner(kTRUE); 
+  fEMCALClusters->SetOwner(kTRUE); 
+  fPHOSClusters ->SetOwner(kTRUE); 
   
 }
 
@@ -183,7 +183,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     if(fDebug > 3 && momentum.Pt() > 0.2)
       printf("AliCaloTrackMCReader::FillCalorimeters() - PHOS : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());			
-    fAODPHOS->Add(calo);//reference the selected object to the list
+    fPHOSClusters->Add(calo);//reference the selected object to the list
   }
   
   //In EMCAL
@@ -207,7 +207,7 @@ void  AliCaloTrackMCReader::FillCalorimeters(Int_t & iParticle, TParticle* parti
     if(fDebug > 3 && momentum.Pt() > 0.2)
       printf("AliCaloTrackMCReader::FillCalorimeters() - EMCAL : Selected cluster %s E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
 	     particle->GetName(),momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());	
-    fAODEMCAL->Add(calo);//reference the selected object to the list
+    fEMCALClusters->Add(calo);//reference the selected object to the list
   }
 }
 
@@ -272,7 +272,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(const Int_t iEntry, const char * /*c
                                                   AliAODTrack::kPrimary, 
                                                   0);
           SetTrackChargeAndPID(pdg, aodTrack);
-          fAODCTS->Add(aodTrack);//reference the selected object to the list
+          fCTSTracks->Add(aodTrack);//reference the selected object to the list
         }
         //Keep some charged particles in calorimeters lists
         if((fFillPHOS || fFillEMCAL) && KeepChargedParticles(pdg)) FillCalorimeters(iParticle, particle, momentum);

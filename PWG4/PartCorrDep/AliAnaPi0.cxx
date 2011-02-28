@@ -1543,16 +1543,16 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   // Count the number of clusters and cells, in case multiplicity bins dependent on such numbers
   // are requested
   if(fCalorimeter=="EMCAL"){ 
-    nClus = GetAODEMCAL()  ->GetEntriesFast();
+    nClus = GetEMCALClusters()  ->GetEntriesFast();
     nCell = GetEMCALCells()->GetNumberOfCells();
     for(Int_t icl=0; icl < nClus; icl++) {
-      Float_t e1 = ((AliVCluster*)GetAODEMCAL()->At(icl))->E();
+      Float_t e1 = ((AliVCluster*)GetEMCALClusters()->At(icl))->E();
       eClusTot +=  e1;
 //      if(e1 > emax) emax = e1;
-//      ((AliVCluster*)GetAODEMCAL()->At(icl))->GetPosition(pos1);
+//      ((AliVCluster*)GetEMCALClusters()->At(icl))->GetPosition(pos1);
 //      for(Int_t icl2=icl+1; icl2 < nClus; icl2++) {
-//        Float_t e2 = ((AliVCluster*)GetAODEMCAL()->At(icl2))->E();
-//        ((AliVCluster*)GetAODEMCAL()->At(icl2))->GetPosition(pos2);
+//        Float_t e2 = ((AliVCluster*)GetEMCALClusters()->At(icl2))->E();
+//        ((AliVCluster*)GetEMCALClusters()->At(icl2))->GetPosition(pos2);
 //        rtmp  =  TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0]) + (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
 //        rtmpw =  TMath::Sqrt((pos1[0]*e1-pos2[0]*e2)*(pos1[0]*e1-pos2[0]*e2) + (pos1[2]*e1-pos2[2]*e2)*(pos1[2]*e1-pos2[2]*e2))/(e1+e2);
 //        rxz  += rtmp;  
@@ -1560,7 +1560,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //        ncomb++;
 //        fhClusterPairDist      ->Fill(rtmp);
 //        fhClusterPairDistWeight->Fill(rtmpw);
-//        //printf("Distance: %f; weighted  %f\n ",rtmp,rtmp/(e1+((AliVCluster*)GetAODEMCAL()->At(icl2))->E()));
+//        //printf("Distance: %f; weighted  %f\n ",rtmp,rtmp/(e1+((AliVCluster*)GetEMCALClusters()->At(icl2))->E()));
 //
 //      }// second cluster loop
     }// first cluster
@@ -1568,15 +1568,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     for(Int_t jce=0; jce < nCell; jce++) eCellTot +=  GetEMCALCells()->GetAmplitude(jce);
   }
   else {                     
-    nClus = GetAODPHOS()  ->GetEntriesFast();
-    nCell = GetPHOSCells()->GetNumberOfCells();
+    nClus = GetPHOSClusters()->GetEntriesFast();
+    nCell = GetPHOSCells()   ->GetNumberOfCells();
     for(Int_t icl=0; icl < nClus; icl++) {
-      Float_t e1 = ((AliVCluster*)GetAODPHOS()->At(icl))->E();
+      Float_t e1 = ((AliVCluster*)GetPHOSClusters()->At(icl))->E();
       eClusTot +=  e1;
-//      ((AliVCluster*)GetAODPHOS()->At(icl))->GetPosition(pos1);
+//      ((AliVCluster*)GetPHOSClusters()->At(icl))->GetPosition(pos1);
 //      for(Int_t icl2=icl+1; icl2 < nClus; icl2++) {
-//        Float_t e2 = ((AliVCluster*)GetAODPHOS()->At(icl2))->E();
-//        ((AliVCluster*)GetAODPHOS()->At(icl2))->GetPosition(pos2);
+//        Float_t e2 = ((AliVCluster*)GetPHOSClusters()->At(icl2))->E();
+//        ((AliVCluster*)GetPHOSClusters()->At(icl2))->GetPosition(pos2);
 //        rtmp  = TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0]) + (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
 //        rtmpw =  TMath::Sqrt((pos1[0]*e1-pos2[0]*e2)*(pos1[0]*e1-pos2[0]*e2) + (pos1[2]*e1-pos2[2]*e2)*(pos1[2]*e1-pos2[2]*e2))/(e1+e2);
 //        rxz  += rtmp;  

@@ -144,16 +144,16 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   
   //Some prints
   if(GetDebug() > 0){
-    if(fDetector == "EMCAL" && GetAODEMCAL())printf("AliAnaExample::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
-    if(fDetector == "CTS"   && GetAODCTS())  printf("AliAnaExample::MakeAnalysisFillAOD() - In CTS aod entries %d\n",   GetAODCTS()  ->GetEntriesFast());
-    if(fDetector == "PHOS"  && GetAODPHOS()) printf("AliAnaExample::MakeAnalysisFillAOD() - In PHOS aod entries %d\n",  GetAODPHOS() ->GetEntriesFast());
+    if(fDetector == "EMCAL" && GetEMCALClusters())printf("AliAnaExample::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetEMCALClusters()->GetEntriesFast());
+    if(fDetector == "CTS"   && GetCTSTracks())  printf("AliAnaExample::MakeAnalysisFillAOD() - In CTS aod entries %d\n",   GetCTSTracks()  ->GetEntriesFast());
+    if(fDetector == "PHOS"  && GetPHOSClusters()) printf("AliAnaExample::MakeAnalysisFillAOD() - In PHOS aod entries %d\n",  GetPHOSClusters() ->GetEntriesFast());
   }
   
   //Get List with tracks or clusters  
   TObjArray * partList = 0x0;
-  if(fDetector == "CTS")        partList = GetAODCTS();
-  else if(fDetector == "EMCAL") partList = GetAODEMCAL();
-  else if(fDetector == "PHOS")  partList = GetAODPHOS();
+  if(fDetector == "CTS")        partList = GetCTSTracks();
+  else if(fDetector == "EMCAL") partList = GetEMCALClusters();
+  else if(fDetector == "PHOS")  partList = GetPHOSClusters();
   
   if(!partList || partList->GetEntriesFast() == 0) return ;
   
@@ -213,9 +213,9 @@ void  AliAnaExample::MakeAnalysisFillAOD()
   else if(fDetector == "CTS"){ //Track analysis
     //Fill AODParticle with CTS aods
     TVector3 p3;
-    for(Int_t i = 0; i < GetAODCTS()->GetEntriesFast(); i++){
+    for(Int_t i = 0; i < GetCTSTracks()->GetEntriesFast(); i++){
       
-      AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(i));
+      AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(i));
       
       //Fill AODParticle after some selection       
       Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};

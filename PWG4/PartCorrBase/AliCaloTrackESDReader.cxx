@@ -35,7 +35,6 @@
 #include "AliMultiEventInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
-#include "AliESDVZERO.h"
 
 
 ClassImp(AliCaloTrackESDReader)
@@ -52,16 +51,6 @@ AliCaloTrackReader()
   fReadAODMCParticles = kFALSE;
 
 }
-
-//____________________________________________________________________________
-Double_t AliCaloTrackESDReader::GetBField() const {
-  //Return magnetic field
-
-  Double_t bfield = fInputEvent->GetMagneticField();
-
-  return bfield;
-}
-
 
 //____________________________________________________________________________
 void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) {
@@ -93,28 +82,4 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* a
   SetOutputEvent(aod);
   SetMC(mc);
   
-}
-
-//____________________________________________________________________________
-void AliCaloTrackESDReader::FillInputVZERO(){
-  //Fill VZERO information in data member, add all the channels information.
-  AliESDVZERO* esdV0 = ((AliESDEvent*)fInputEvent)->GetVZEROData();
-  //printf("Init V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
-
-  if (esdV0) 
-  {
-    for (Int_t i = 0; i < 32; i++)
-    {
-      fV0ADC[0] += (Int_t)esdV0->GetAdcV0C(i);
-      fV0ADC[1] += (Int_t)esdV0->GetAdcV0A(i);
-      fV0Mul[0] += (Int_t)esdV0->GetMultiplicityV0C(i);
-      fV0Mul[1] += (Int_t)esdV0->GetMultiplicityV0A(i);
-    }
-    if(fDebug > 0)
-      printf("V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
-  }
-  else
-  {
-    printf("Cannot retrieve V0 ESD! Run w/ null V0 charges");
-  }
 }

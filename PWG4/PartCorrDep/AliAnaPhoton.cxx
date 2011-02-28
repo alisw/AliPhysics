@@ -682,9 +682,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
   if(fCalorimeter == "PHOS")
-    pl = GetAODPHOS();
+    pl = GetPHOSClusters();
   else if (fCalorimeter == "EMCAL")
-    pl = GetAODEMCAL();
+    pl = GetEMCALClusters();
   
   if(!pl) {
     Info("MakeAnalysisFillAOD","TObjArray with %s clusters is NULL!\n",fCalorimeter.Data());
@@ -722,9 +722,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
 	  
     //Input from second AOD?
     //Int_t input = 0;
-    //    if (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) 
+    //    if (fCalorimeter == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= icalo) 
     //      input = 1 ;
-    //    else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) 
+    //    else if(fCalorimeter == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= icalo) 
     //      input = 1;
 	  
     //Get Momentum vector, 

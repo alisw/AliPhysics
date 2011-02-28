@@ -29,7 +29,7 @@ class TTree ;
 class AliStack ; 
 class AliHeader ; 
 class AliGenEventHeader ; 
-class AliVEvent;
+#include "AliVEvent.h"
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
@@ -69,20 +69,19 @@ public:
   virtual Int_t   GetDataType()        const { return fDataType       ; }
   virtual void    SetDataType(Int_t data )   { fDataType = data       ; }
 
-  virtual Int_t   GetEventNumber()     const {return fEventNumber     ; }
-  //virtual TString GetCurrentFileName() const {return fCurrentFileName ; }
+  virtual Int_t   GetEventNumber()     const { return fEventNumber    ; }
+  //virtual TString GetCurrentFileName() const { return fCurrentFileName ; }
 	
-  TString         GetTaskName()        const {return fTaskName        ; }
-  void            SetTaskName(TString name)  {fTaskName = name        ; }
+  TString         GetTaskName()        const { return fTaskName       ; }
+  void            SetTaskName(TString name)  { fTaskName = name       ; }
     
-
   //---------------------------------------
   //Input/output event setters and getters
   //---------------------------------------
   virtual void    SetInputEvent(AliVEvent* const input) ;
-  virtual void    SetOutputEvent(AliAODEvent* const aod) {fOutputEvent = aod;}
-  virtual void    SetMC(AliMCEvent* const mc)            {fMC  = mc;}
-  virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) {;}
+  virtual void    SetOutputEvent(AliAODEvent* const aod) { fOutputEvent = aod ; }
+  virtual void    SetMC(AliMCEvent* const mc)            { fMC          = mc  ; }
+  virtual void    SetInputOutputMCEvent(AliVEvent* /*esd*/, AliAODEvent* /*aod*/, AliMCEvent* /*mc*/) { ; }
   
   // Delta AODs
   virtual TList * GetAODBranchList()      const { return fAODBranchList        ; }
@@ -97,51 +96,51 @@ public:
   //------------------------------------------------------------
   
   //Minimum pt setters and getters 
-  virtual Float_t  GetEMCALPtMin()      const { return fEMCALPtMin ; }
-  virtual Float_t  GetPHOSPtMin()       const { return fPHOSPtMin  ; }
-  virtual Float_t  GetCTSPtMin()        const { return fCTSPtMin   ; }
+  virtual Float_t  GetEMCALPtMin()        const { return fEMCALPtMin ; }
+  virtual Float_t  GetPHOSPtMin()         const { return fPHOSPtMin  ; }
+  virtual Float_t  GetCTSPtMin()          const { return fCTSPtMin   ; }
   
-  virtual void     SetEMCALPtMin(Float_t  pt) { fEMCALPtMin = pt   ; }
-  virtual void     SetPHOSPtMin(Float_t  pt)  { fPHOSPtMin  = pt   ; }
-  virtual void     SetCTSPtMin(Float_t  pt)   { fCTSPtMin   = pt   ; }  
+  virtual void     SetEMCALPtMin(Float_t  pt)   { fEMCALPtMin = pt   ; }
+  virtual void     SetPHOSPtMin(Float_t  pt)    { fPHOSPtMin  = pt   ; }
+  virtual void     SetCTSPtMin(Float_t  pt)     { fCTSPtMin   = pt   ; }  
   
   // Fidutial cuts  
-  virtual AliFiducialCut * GetFiducialCut()   {if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
-    return  fFiducialCut ;}
+  virtual AliFiducialCut * GetFiducialCut()     { if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
+                                                return  fFiducialCut ;}
   virtual void SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc ;}
-  virtual Bool_t IsFiducialCutOn()     const  { return fCheckFidCut ; }
-  virtual void SwitchOnFiducialCut()          { fCheckFidCut = kTRUE;  fFiducialCut = new AliFiducialCut();}
-  virtual void SwitchOffFiducialCut()         { fCheckFidCut = kFALSE;}
+  virtual Bool_t IsFiducialCutOn()        const { return fCheckFidCut   ; }
+  virtual void SwitchOnFiducialCut()            { fCheckFidCut = kTRUE;  fFiducialCut = new AliFiducialCut();}
+  virtual void SwitchOffFiducialCut()           { fCheckFidCut = kFALSE ; }
   
   // Cluster origin
   Bool_t IsEMCALCluster(AliVCluster *clus) const;
   Bool_t IsPHOSCluster (AliVCluster *clus) const;
   //Patch for cluster origin for Old AODs implementation
-  void   SwitchOnOldAODs()         { fOldAOD = kTRUE     ; }
-  void   SwitchOffOldAODs()        { fOldAOD = kFALSE    ; }
+  void   SwitchOnOldAODs()              { fOldAOD = kTRUE          ; }
+  void   SwitchOffOldAODs()             { fOldAOD = kFALSE         ; }
   
   // Cluster/track/cells switchs
-  Bool_t IsCTSSwitchedOn()   const { return fFillCTS     ; }
-  void   SwitchOnCTS()             { fFillCTS = kTRUE    ; }
-  void   SwitchOffCTS()            { fFillCTS = kFALSE   ; }
+  Bool_t IsCTSSwitchedOn()        const { return fFillCTS          ; }
+  void   SwitchOnCTS()                  { fFillCTS = kTRUE         ; }
+  void   SwitchOffCTS()                 { fFillCTS = kFALSE        ; }
 
-  Bool_t IsEMCALSwitchedOn() const { return fFillEMCAL   ; }
-  void   SwitchOnEMCAL()           { fFillEMCAL = kTRUE  ; }
-  void   SwitchOffEMCAL()          { fFillEMCAL = kFALSE ; }
+  Bool_t IsEMCALSwitchedOn()      const { return fFillEMCAL        ; }
+  void   SwitchOnEMCAL()                { fFillEMCAL = kTRUE       ; }
+  void   SwitchOffEMCAL()               { fFillEMCAL = kFALSE      ; }
 
-  Bool_t IsPHOSSwitchedOn()  const { return fFillPHOS    ; }
-  void   SwitchOnPHOS()            { fFillPHOS = kTRUE   ; }
-  void   SwitchOffPHOS()           { fFillPHOS = kFALSE  ; }
+  Bool_t IsPHOSSwitchedOn()       const { return fFillPHOS         ; }
+  void   SwitchOnPHOS()                 { fFillPHOS = kTRUE        ; }
+  void   SwitchOffPHOS()                { fFillPHOS = kFALSE       ; }
 
   Bool_t IsEMCALCellsSwitchedOn() const { return fFillEMCALCells   ; }
   void   SwitchOnEMCALCells()           { fFillEMCALCells = kTRUE  ; }
   void   SwitchOffEMCALCells()          { fFillEMCALCells = kFALSE ; }
 
-  Bool_t IsPHOSCellsSwitchedOn()  const { return fFillPHOSCells   ; }
-  void   SwitchOnPHOSCells()            { fFillPHOSCells = kTRUE  ; }
-  void   SwitchOffPHOSCells()           { fFillPHOSCells = kFALSE ; }
+  Bool_t IsPHOSCellsSwitchedOn()  const { return fFillPHOSCells    ; }
+  void   SwitchOnPHOSCells()            { fFillPHOSCells = kTRUE   ; }
+  void   SwitchOffPHOSCells()           { fFillPHOSCells = kFALSE  ; }
 
-  // Filling/ filtering methods
+  // Filling/ filtering / detector information access methods
   virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void   FillInputCTS() ;
   virtual void   FillInputEMCAL() ;
@@ -149,15 +148,19 @@ public:
   virtual void   FillInputPHOS() ;
   virtual void   FillInputEMCALCells() ;
   virtual void   FillInputPHOSCells() ;
+  virtual void   FillInputVZERO() ;  
+  
+  Int_t          GetV0Signal(Int_t i)                    const { return fV0ADC[i] ; }
+  Int_t          GetV0Multiplicity(Int_t i)              const { return fV0Mul[i] ; }
+  
   void           SetEMCALClusterListName(TString &name) {fEMCALClustersListName = name ; }
 
-  // Arrayes with clusters/track/cells access methods
-  //FIXME CHANGE NAMES, remove AOD, now they are VClusters, VTracks ...
-  virtual TObjArray*     GetAODCTS()      const { return fAODCTS     ; }
-  virtual TObjArray*     GetAODEMCAL()    const { return fAODEMCAL   ; }
-  virtual TObjArray*     GetAODPHOS()     const { return fAODPHOS    ; }
-  virtual AliVCaloCells* GetEMCALCells()  const { return fEMCALCells ; }
-  virtual AliVCaloCells* GetPHOSCells()   const { return fPHOSCells  ; }
+  // Arrayes with clusters/track/cells access method
+  virtual TObjArray*     GetCTSTracks()     const { return fCTSTracks     ; }
+  virtual TObjArray*     GetEMCALClusters() const { return fEMCALClusters ; }
+  virtual TObjArray*     GetPHOSClusters()  const { return fPHOSClusters  ; }
+  virtual AliVCaloCells* GetEMCALCells()    const { return fEMCALCells    ; }
+  virtual AliVCaloCells* GetPHOSCells()     const { return fPHOSCells     ; }
 
   //Methods for mixing with external input file (AOD)
   //virtual TTree* GetSecondInputAODTree() const {return  fSecondInputAODTree ; } 
@@ -184,13 +187,13 @@ public:
   // Event/track selection methods
   //-------------------------------------
   
-  void    SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name ; }
-  TString GetFiredTriggerClassName()        const { return fFiredTriggerClassName ; }
-  virtual TString GetFiredTriggerClasses()        { return ""                     ; } // look the ESD/AOD reader 
+  void    SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
+  TString GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
+  virtual TString GetFiredTriggerClasses()        { return ""                       ; } // look the ESD/AOD reader 
   
-  void    SwitchOnEventSelection()                { fDoEventSelection = kTRUE  ; }
-  void    SwitchOffEventSelection()               { fDoEventSelection = kFALSE ; }
-  Bool_t  IsEventSelectionDone()            const { return fDoEventSelection   ; } 
+  void    SwitchOnEventSelection()                { fDoEventSelection = kTRUE       ; }
+  void    SwitchOffEventSelection()               { fDoEventSelection = kFALSE      ; }
+  Bool_t  IsEventSelectionDone()            const { return fDoEventSelection        ; } 
   
   void    SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void    SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -207,62 +210,58 @@ public:
   void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }		
   
   // Calorimeter specific and patches
-  void    AnalyzeOnlyLED()                        {fAnaLED = kTRUE  ; }
-  void    AnalyzeOnlyPhysics()                    {fAnaLED = kFALSE ; }
+  void    AnalyzeOnlyLED()                        { fAnaLED = kTRUE         ; }
+  void    AnalyzeOnlyPhysics()                    { fAnaLED = kFALSE        ; }
   
-  void    SwitchOnCaloFilterPatch()               {fCaloFilterPatch = kTRUE ; fFillCTS = kFALSE    ; }
-  void    SwitchOffCaloFilterPatch()              {fCaloFilterPatch = kFALSE                       ; }
-  Bool_t  IsCaloFilterPatchOn()             const {if(fDataType == kAOD) { return fCaloFilterPatch ; } 
-                                                   else                  { return kFALSE           ; } }
+  void    SwitchOnCaloFilterPatch()               { fCaloFilterPatch = kTRUE ; fFillCTS = kFALSE    ; }
+  void    SwitchOffCaloFilterPatch()              { fCaloFilterPatch = kFALSE                       ; }
+  Bool_t  IsCaloFilterPatchOn()             const { if(fDataType == kAOD) { return fCaloFilterPatch ; } 
+                                                    else                  { return kFALSE           ; } }
   	
   //-------------------------------
   //Vertex methods
   //-------------------------------
   virtual void      GetVertex(Double_t v[3])        const ;
-  virtual Double_t* GetVertex(const Int_t evtIndex) const {return fVertex[evtIndex];}
+  virtual Double_t* GetVertex(const Int_t evtIndex) const { return fVertex[evtIndex]            ; }
   virtual void      GetVertex(Double_t vertex[3],   const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
   virtual Bool_t    CheckForPrimaryVertex();
  // virtual void       GetSecondInputAODVertex(Double_t *) const {;}
-  virtual Float_t   GetZvertexCut()                 const {return fZvtxCut ;} //cut on vertex position  
-  virtual void      SetZvertexCut(Float_t zcut=10.)       {fZvtxCut=zcut   ;} //cut on vertex position
+  virtual Float_t   GetZvertexCut()                 const { return fZvtxCut                     ; } //cut on vertex position  
+  virtual void      SetZvertexCut(Float_t zcut=10.)       { fZvtxCut=zcut                       ; } //cut on vertex position
 
   //------------------------
   // Centrality
   //------------------------
-  virtual AliCentrality* GetCentrality() const {return 0x0;} //Actual method to recover the pointer is in the ESD/AODReader
-  void    SetCentralityClass(TString name)     { fCentralityClass   = name       ;}
-  void    SetCentralityOpt(Int_t opt)          { fCentralityOpt     = opt        ;}
-  TString GetCentralityClass()           const { return fCentralityClass         ;}
-  Int_t   GetCentralityOpt()             const { return fCentralityOpt           ;}
-  Int_t   GetEventCentrality()           const ;
-  void    SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
-                                               {fCentralityBin[0]=min; fCentralityBin[1]=max;  
-                                                if(min>=0 && max > 0) fCentralityOpt = 100 ; }
-  Float_t GetCentralityBin(Int_t i)     const  { if(i < 0 || i > 1) return 0 ; 
-                                                else return fCentralityBin[i]   ; }
+  virtual AliCentrality* GetCentrality()            const { return fInputEvent->GetCentrality() ; }
+  virtual void      SetCentralityClass(TString name)      { fCentralityClass   = name           ; }
+  virtual void      SetCentralityOpt(Int_t opt)           { fCentralityOpt     = opt            ; }
+  virtual TString   GetCentralityClass()            const { return fCentralityClass             ; }
+  virtual Int_t     GetCentralityOpt()              const { return fCentralityOpt               ; }
+  virtual Int_t     GetEventCentrality()            const ;
+  virtual void      SetCentralityBin(Int_t min, Int_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+                                                          { fCentralityBin[0]=min; fCentralityBin[1]=max;  
+                                                           if(min>=0 && max > 0) fCentralityOpt = 100 ; }
+  virtual Float_t GetCentralityBin(Int_t i)        const { if(i < 0 || i > 1) return 0 ; 
+                                                           else return fCentralityBin[i]              ; }
   
   //-------------------------------------
   // Other methods
   //-------------------------------------
-  AliCalorimeterUtils * GetCaloUtils()            const { return fCaloUtils      ; }
-  void   SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils ; }  
+  AliCalorimeterUtils * GetCaloUtils()            const { return fCaloUtils                       ; }
+  void   SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils                  ; }  
   
-  void   SwitchOnSuspiciousClustersRemoval()            { fRemoveSuspiciousClusters = kTRUE ;  }
-  void   SwitchOffSuspiciousClustersRemoval()           { fRemoveSuspiciousClusters = kFALSE ; }
-  Bool_t IsSuspiciousClustersRemovalOn()          const { return fRemoveSuspiciousClusters   ; } 
+  void   SwitchOnSuspiciousClustersRemoval()            { fRemoveSuspiciousClusters = kTRUE       ; }
+  void   SwitchOffSuspiciousClustersRemoval()           { fRemoveSuspiciousClusters = kFALSE      ; }
+  Bool_t IsSuspiciousClustersRemovalOn()          const { return fRemoveSuspiciousClusters        ; } 
   
   //Use only for MC
-  void    SwitchOnClusterEnergySmearing()               { fSmearClusterEnergy = kTRUE    ; }
-  void    SwitchOffClusterEnergySmearing()              { fSmearClusterEnergy = kFALSE   ; }
-  Bool_t  IsClusterEnergySmeared()                const { return fSmearClusterEnergy     ; }   
+  void    SwitchOnClusterEnergySmearing()               { fSmearClusterEnergy = kTRUE             ; }
+  void    SwitchOffClusterEnergySmearing()              { fSmearClusterEnergy = kFALSE            ; }
+  Bool_t  IsClusterEnergySmeared()                const { return fSmearClusterEnergy              ; }   
   void    SetSmearingParameters(Int_t i, Float_t param) { if(i < 3)fSmearClusterParam[i] = param  ; }
-  
-  virtual void FillInputVZERO()                         { ; } // done in the AOD/ESD reader
-  Int_t   GetV0Signal(Int_t i)                    const { return fV0ADC[i] ; }
-  Int_t   GetV0Multiplicity(Int_t i)              const { return fV0Mul[i] ; }
-  
-  virtual Double_t GetBField()                    const { return 0.        ; } // get in the AOD/ESD reader
+    
+  virtual Double_t GetBField()                    const { return fInputEvent->GetMagneticField()  ; } 
   
   //------------------------------------------------
   // MC analysis specific methods
@@ -309,7 +308,9 @@ public:
   virtual void SwitchOffStatusSelection()                     { ; }
   virtual void SwitchOnOverlapCheck()                         { ; }
   virtual void SwitchOffOverlapCheck()                        { ; }
-  
+  virtual void SwitchOnOnlyGeneratorParticles()               { ; }
+  virtual void SwitchOffOnlyGeneratorParticles()              { ; }
+
   virtual void SetEMCALOverlapAngle(Float_t /*angle*/)        { ; }
   virtual void SetPHOSOverlapAngle(Float_t /*angle*/)         { ; }
 
@@ -331,11 +332,11 @@ public:
 
   TList          * fAODBranchList ; //! List with AOD branches created and needed in analysis  
   //FIXME CHANGE NAMES, remove AOD, now they are VClusters, VTracks ...
-  TObjArray      * fAODCTS ;        //! temporal referenced array with tracks
-  TObjArray      * fAODEMCAL ;      //! temporal referenced array with EMCAL CaloClusters
-  TObjArray      * fAODPHOS ;       //! temporal referenced array with PHOS CaloClusters
-  AliVCaloCells  * fEMCALCells ;    //! temporal array with EMCAL CaloCells, ESD or AOD
-  AliVCaloCells  * fPHOSCells ;     //! temporal array with PHOS CaloCells, ESD or AOD
+  TObjArray      * fCTSTracks ;     //! temporal array with tracks
+  TObjArray      * fEMCALClusters ; //! temporal array with EMCAL CaloClusters
+  TObjArray      * fPHOSClusters ;  //! temporal array with PHOS  CaloClusters
+  AliVCaloCells  * fEMCALCells ;    //! temporal array with EMCAL CaloCells
+  AliVCaloCells  * fPHOSCells ;     //! temporal array with PHOS  CaloCells
 
   AliVEvent      * fInputEvent;     //! pointer to esd or aod input
   AliAODEvent    * fOutputEvent;    //! pointer to aod output
@@ -398,7 +399,7 @@ public:
   Int_t            fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];   // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,26)
+  ClassDef(AliCaloTrackReader,27)
 } ;
 
 

@@ -356,14 +356,14 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     Int_t ntracks =  0;
     if(!fUseJetRefTracks)
-      ntracks =GetAODCTS()->GetEntriesFast();
+      ntracks =GetCTSTracks()->GetEntriesFast();
     else //If you want to use jet tracks from JETAN
       ntracks =  (jet->GetRefTracks())->GetEntriesFast();
     
     AliAODTrack* track = 0x0 ;
     for(Int_t ipr = 0;ipr < ntracks ; ipr ++ ){
       if(!fUseJetRefTracks)
-        track = (AliAODTrack *) (GetAODCTS()->At(ipr)) ; 
+        track = (AliAODTrack *) (GetCTSTracks()->At(ipr)) ; 
       else //If you want to use jet tracks from JETAN
         track = (AliAODTrack *) ((jet->GetRefTracks())->At(ipr));
       

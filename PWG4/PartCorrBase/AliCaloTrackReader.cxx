@@ -45,6 +45,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliTriggerAnalysis.h"
+#include "AliESDVZERO.h";
 
 //---- PartCorr/EMCAL ---
 #include "AliEMCALRecoUtils.h"
@@ -59,7 +60,7 @@ ClassImp(AliCaloTrackReader)
     fDataType(0), fDebug(0), 
     fFiducialCut(0x0), fCheckFidCut(kFALSE), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
     fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0), fAODBranchList(new TList ),
-    fAODCTS(new TObjArray()), fAODEMCAL(new TObjArray()), fAODPHOS(new TObjArray()),
+    fCTSTracks(new TObjArray()), fEMCALClusters(new TObjArray()), fPHOSClusters(new TObjArray()),
     fEMCALCells(0x0), fPHOSCells(0x0),
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
@@ -67,8 +68,8 @@ ClassImp(AliCaloTrackReader)
     fRemoveSuspiciousClusters(kFALSE), fSmearClusterEnergy(kFALSE), fRandom(),
 //    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
-//    fAODCTSNormalInputEntries(0), fAODEMCALNormalInputEntries(0), 
-//    fAODPHOSNormalInputEntries(0), 
+//    fCTSTracksNormalInputEntries(0), fEMCALClustersNormalInputEntries(0), 
+//    fPHOSClustersNormalInputEntries(0), 
     fTrackStatus(0),   fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
@@ -97,22 +98,22 @@ AliCaloTrackReader::~AliCaloTrackReader() {
     delete fAODBranchList ;
   }  
   
-  if(fAODCTS){
-    if(fDataType!=kMC)fAODCTS->Clear() ; 
-    else              fAODCTS->Delete() ; 
-    delete fAODCTS ;
+  if(fCTSTracks){
+    if(fDataType!=kMC)fCTSTracks->Clear() ; 
+    else              fCTSTracks->Delete() ; 
+    delete fCTSTracks ;
   }
   
-  if(fAODEMCAL){
-    if(fDataType!=kMC)fAODEMCAL->Clear("C") ; 
-    else              fAODEMCAL->Delete() ; 
-    delete fAODEMCAL ;
+  if(fEMCALClusters){
+    if(fDataType!=kMC)fEMCALClusters->Clear("C") ; 
+    else              fEMCALClusters->Delete() ; 
+    delete fEMCALClusters ;
   }
   
-  if(fAODPHOS){
-    if(fDataType!=kMC)fAODPHOS->Clear("C") ; 
-    else              fAODPHOS->Delete() ; 
-    delete fAODPHOS ;
+  if(fPHOSClusters){
+    if(fDataType!=kMC)fPHOSClusters->Clear("C") ; 
+    else              fPHOSClusters->Delete() ; 
+    delete fPHOSClusters ;
   }
   
 //  if(fEMCALCells){
@@ -551,9 +552,9 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
 void AliCaloTrackReader::ResetLists() {
   //  Reset lists, called by the analysis maker 
 
-  if(fAODCTS)     fAODCTS     -> Clear();
-  if(fAODEMCAL)   fAODEMCAL   -> Clear("C");
-  if(fAODPHOS)    fAODPHOS    -> Clear("C");
+  if(fCTSTracks)     fCTSTracks     -> Clear();
+  if(fEMCALClusters)   fEMCALClusters   -> Clear("C");
+  if(fPHOSClusters)    fPHOSClusters    -> Clear("C");
 //  if(fEMCALCells) fEMCALCells -> Clear("");
 //  if(fPHOSCells)  fPHOSCells  -> Clear("");
 
@@ -731,14 +732,14 @@ void AliCaloTrackReader::FillInputCTS() {
         track->SetID(itrack);
       }
       
-      fAODCTS->Add(track);        
+      fCTSTracks->Add(track);        
        
     }//Pt and Fiducial cut passed. 
   }// track loop
 	
-  //fAODCTSNormalInputEntries = fAODCTS->GetEntriesFast();
+  //fCTSTracksNormalInputEntries = fCTSTracks->GetEntriesFast();
   if(fDebug > 1) 
-    printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fAODCTS->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fAODCTSNormalInputEntries);
+    printf("AliCaloTrackReader::FillInputCTS()   - aod entries %d, input tracks %d, pass status %d, multipliticy %d\n", fCTSTracks->GetEntriesFast(), nTracks, nstatus, fTrackMult);//fCTSTracksNormalInputEntries);
   
     //  //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){
@@ -760,12 +761,12 @@ void AliCaloTrackReader::FillInputCTS() {
     //			  if(fDebug > 2 && momentum.Pt() > 0.1) printf("AliCaloTrackReader::FillInputCTS() - Selected tracks E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
     //								       momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
     //			  
-    //			  fAODCTS->Add(track);
+    //			  fCTSTracks->Add(track);
     //			  
     //		  }//Pt and Fiducial cut passed. 
     //	  }// track loop
     //	  
-    //	  if(fDebug > 1) printf("AliCaloTrackReader::FillInputCTS()   - aod normal entries %d, after second input %d\n", fAODCTSNormalInputEntries, fAODCTS->GetEntriesFast());
+    //	  if(fDebug > 1) printf("AliCaloTrackReader::FillInputCTS()   - aod normal entries %d, after second input %d\n", fCTSTracksNormalInputEntries, fCTSTracks->GetEntriesFast());
     //  }	//second input loop
     //	
 }
@@ -854,7 +855,7 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     if (fMixedEvent) 
       clus->SetID(iclus) ; 
     
-    fAODEMCAL->Add(clus);	
+    fEMCALClusters->Add(clus);	
   }
 }
 
@@ -900,8 +901,8 @@ void AliCaloTrackReader::FillInputEMCAL() {
     
   }
     
-  //fAODEMCALNormalInputEntries = fAODEMCAL->GetEntriesFast();
-  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d\n",  fAODEMCAL->GetEntriesFast());//fAODEMCALNormalInputEntries);
+  //fEMCALClustersNormalInputEntries = fEMCALClusters->GetEntriesFast();
+  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod entries %d\n",  fEMCALClusters->GetEntriesFast());//fEMCALClustersNormalInputEntries);
   
     //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){
@@ -921,13 +922,13 @@ void AliCaloTrackReader::FillInputEMCAL() {
     //
     //						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
     //																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-    //					  fAODEMCAL->Add(clus);	
+    //					  fEMCALClusters->Add(clus);	
     //					}//Pt and Fiducial cut passed.
     //				}//EMCAL cluster
     //			}// cluster exists
     //		}// cluster loop
     //		
-    //	  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod normal entries %d, after second input %d\n", fAODEMCALNormalInputEntries, fAODEMCAL->GetEntriesFast());
+    //	  if(fDebug > 1) printf("AliCaloTrackReader::FillInputEMCAL() - aod normal entries %d, after second input %d\n", fEMCALClustersNormalInputEntries, fEMCALClusters->GetEntriesFast());
     //
     //	} //second input loop
 }
@@ -976,15 +977,15 @@ void AliCaloTrackReader::FillInputPHOS() {
             clus->SetID(iclus) ; 
           }              
           
-          fAODPHOS->Add(clus);	
+          fPHOSClusters->Add(clus);	
           
         }//Pt and Fiducial cut passed.
       }//PHOS cluster
     }//cluster exists
   }//esd cluster loop
   
-  //fAODPHOSNormalInputEntries = fAODPHOS->GetEntriesFast() ;
-  if(fDebug > 1) printf("AliCaloTrackReader::FillInputPHOS()  - aod entries %d\n",  fAODPHOS->GetEntriesFast());//fAODPHOSNormalInputEntries);
+  //fPHOSClustersNormalInputEntries = fPHOSClusters->GetEntriesFast() ;
+  if(fDebug > 1) printf("AliCaloTrackReader::FillInputPHOS()  - aod entries %d\n",  fPHOSClusters->GetEntriesFast());//fPHOSClustersNormalInputEntries);
   
     //If second input event available, add the clusters.
     //  if(fSecondInputAODTree && fSecondInputAODEvent){  
@@ -1004,12 +1005,12 @@ void AliCaloTrackReader::FillInputPHOS() {
     //
     //						if(fDebug > 2 && momentum.E() > 0.1) printf("AliCaloTrackReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
     //																	momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-    //						fAODPHOS->Add(clus);	
+    //						fPHOSClusters->Add(clus);	
     //					}//Pt and Fiducial cut passed.
     //				}//PHOS cluster
     //			}// cluster exists
     //		}// cluster loop
-    //		if(fDebug > 1) printf("AliCaloTrackReader::FillInputPHOS()  - aod normal entries %d, after second input %d\n", fAODPHOSNormalInputEntries, fAODPHOS->GetEntriesFast());
+    //		if(fDebug > 1) printf("AliCaloTrackReader::FillInputPHOS()  - aod normal entries %d, after second input %d\n", fPHOSClustersNormalInputEntries, fPHOSClusters->GetEntriesFast());
     //  }	//second input loop
   
 }
@@ -1028,6 +1029,33 @@ void AliCaloTrackReader::FillInputPHOSCells() {
   
   fPHOSCells = fInputEvent->GetPHOSCells(); 
   
+}
+
+//____________________________________________________________________________
+void AliCaloTrackReader::FillInputVZERO(){
+  //Fill VZERO information in data member, add all the channels information.
+  AliVVZERO* v0 = fInputEvent->GetVZEROData();
+  //printf("Init V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
+  
+  if (v0) 
+  {
+    AliESDVZERO* esdV0 = dynamic_cast<AliESDVZERO*> (v0);
+    for (Int_t i = 0; i < 32; i++)
+    {
+      if(esdV0){//Only available in ESDs
+        fV0ADC[0] += (Int_t)esdV0->GetAdcV0C(i);
+        fV0ADC[1] += (Int_t)esdV0->GetAdcV0A(i);
+      }
+      fV0Mul[0] += (Int_t)v0->GetMultiplicityV0C(i);
+      fV0Mul[1] += (Int_t)v0->GetMultiplicityV0A(i);
+    }
+    if(fDebug > 0)
+      printf("V0: ADC (%d,%d), Multiplicity (%d,%d) \n",fV0ADC[0],fV0ADC[1],fV0Mul[0],fV0Mul[1]);
+  }
+  else
+  {
+    printf("Cannot retrieve V0 ESD! Run w/ null V0 charges");
+  }
 }
 
 

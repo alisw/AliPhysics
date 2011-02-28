@@ -238,10 +238,10 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
   //Double_t bfield = 0.;
   if(GetDebug()>0) printf("AliAnaBtag::MakeAnalysisFillAOD() - Write ntuple flag is %d \n",fWriteNtuple);
   //if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) bfield = GetReader()->GetBField();
-  TObjArray *cl = GetAODEMCAL();
+  TObjArray *cl = GetEMCALClusters();
   
-  if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
-  Int_t ntracks = GetAODCTS()->GetEntriesFast();
+  if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
+  Int_t ntracks = GetCTSTracks()->GetEntriesFast();
   if(GetDebug() > 0)
     printf("AliAnaBtag::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
   
@@ -264,7 +264,7 @@ void  AliAnaBtag::MakeAnalysisFillAOD()
   
   for (Int_t itrk =  0; itrk <  ntracks; itrk++) {////////////// track loop
     iCluster = -999; //start with no match
-    AliAODTrack * track = (AliAODTrack*) (GetAODCTS()->At(itrk)) ;
+    AliAODTrack * track = (AliAODTrack*) (GetCTSTracks()->At(itrk)) ;
     if(track->GetLabel()<0){
       if(GetDebug()>0)
         printf("Negative track label, aborting!\n");
@@ -656,10 +656,10 @@ Int_t AliAnaBtag::GetDVMBtag(AliAODTrack * tr, Int_t &pair, Int_t &start, Int_t 
 //   Int_t nvtx2 = 0;
 //   Int_t nvtx3 = 0;
 
-  for (Int_t k2 =0; k2 < GetAODCTS()->GetEntriesFast() ; k2++) {
+  for (Int_t k2 =0; k2 < GetCTSTracks()->GetEntriesFast() ; k2++) {
 
     //loop over assoc
-    AliAODTrack* track2 = (AliAODTrack*)GetAODCTS()->At(k2);
+    AliAODTrack* track2 = (AliAODTrack*)GetCTSTracks()->At(k2);
     Int_t id1 = tr->GetID();
     Int_t id2 = track2->GetID();
     if(id1 == id2) continue;

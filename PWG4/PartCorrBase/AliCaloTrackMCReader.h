@@ -40,62 +40,60 @@ class AliCaloTrackMCReader : public AliCaloTrackReader {
   AliCaloTrackMCReader & operator = (const AliCaloTrackMCReader & g) ;//cpy assignment
 
 public:
-  void InitParameters();
+  void   InitParameters();
   
-  void Print(const Option_t * opt) const; 
+  void   Print(const Option_t * opt) const; 
   
-  void SwitchOnPi0Decay()  { fDecayPi0 = kTRUE ; } 
-  void SwitchOffPi0Decay() { fDecayPi0 = kFALSE ; } 
-  Int_t IsPi0DecaySwitchedOn() const { return fDecayPi0 ; } 
+  void   SwitchOnPi0Decay()           { fDecayPi0 = kTRUE  ; } 
+  void   SwitchOffPi0Decay()          { fDecayPi0 = kFALSE ; } 
+  Int_t  IsPi0DecaySwitchedOn() const { return fDecayPi0   ; } 
   
-  void AddNeutralParticlesArray(TArrayI & array)  
-  { fNeutralParticlesArray   = new TArrayI(array) ; }
-  TArrayI * GetNeutralParticlesArray() const   {return  fNeutralParticlesArray;}
-  Bool_t SkipNeutralParticles(Int_t pdg) const ;
+  void      AddNeutralParticlesArray(TArrayI & array)  
+      { fNeutralParticlesArray   = new TArrayI(array) ; }
+  TArrayI * GetNeutralParticlesArray()      const {return  fNeutralParticlesArray;}
+  Bool_t    SkipNeutralParticles(Int_t pdg) const ;
   
-  void AddChargedParticlesArray(TArrayI & array)  
-  { fChargedParticlesArray   = new TArrayI(array) ; }
-  TArrayI * GetChargedParticlesArray() const   {return  fChargedParticlesArray;}
-  Bool_t KeepChargedParticles(Int_t pdg) const ;
+  void      AddChargedParticlesArray(TArrayI & array)  
+      { fChargedParticlesArray   = new TArrayI(array) ; }
+  TArrayI * GetChargedParticlesArray()   const {return  fChargedParticlesArray;}
+  Bool_t    KeepChargedParticles(Int_t pdg) const ;
 
   void AddStatusArray(TArrayI & array)  
-  { fStatusArray   = new TArrayI(array) ; }
-  TArrayI * GetStatusArray() const   {return  fStatusArray;}
+      { fStatusArray   = new TArrayI(array) ; }
+  TArrayI * GetStatusArray()             const {return  fStatusArray;}
   
-  void SwitchOnStatusSelection()  {fKeepAllStatus = kFALSE;}
-  void SwitchOffStatusSelection() {fKeepAllStatus = kTRUE;}
+  void   SwitchOnStatusSelection()  { fKeepAllStatus = kFALSE ; }
+  void   SwitchOffStatusSelection() { fKeepAllStatus = kTRUE  ; }
   Bool_t KeepParticleWithStatus(Int_t status) const ;
   
-  void SwitchOnOnlyGeneratorParticles()  {fOnlyGeneratorParticles = kTRUE;}
-  void SwitchOffOnlyGeneratorParticles() {fOnlyGeneratorParticles = kFALSE;}
+  void   SwitchOnOnlyGeneratorParticles()  {fOnlyGeneratorParticles = kTRUE  ; }
+  void   SwitchOffOnlyGeneratorParticles() {fOnlyGeneratorParticles = kFALSE ; }
   
-  void GetVertex(Double_t v[3]) const ;
+  void      GetVertex(Double_t v[3]) const ;
   Double_t* GetVertex(const Int_t evtIndex) const {return fVertex[evtIndex];}
-  void GetVertex(Double_t vertex[3], const Int_t evtIndex) const 
+  void      GetVertex(Double_t vertex[3], const Int_t evtIndex) const 
     {vertex[0]=fVertex[evtIndex][0];  vertex[1]=fVertex[evtIndex][1];  vertex[2]=fVertex[evtIndex][2];}   
   
   Bool_t FillInputEvent(const Int_t iEntry, const char * currentFileName) ;
   AliVEvent*  GetInputEvent() const {return (AliVEvent *) GetMC();}
-  void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
+  void   SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ;
   
-  void SetCaloClusterPID(const Int_t pdgCode, AliVCluster *calo) const ;
-  void SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const ;
+  void   SetCaloClusterPID(const Int_t pdgCode, AliVCluster *calo)     const ;
+  void   SetTrackChargeAndPID(const Int_t pdgCode, AliAODTrack *track) const ;
   
-  void SwitchOnOverlapCheck()  {fCheckOverlap = kTRUE;}
-  void SwitchOffOverlapCheck() {fCheckOverlap = kFALSE;}
+  void   SwitchOnOverlapCheck()  {fCheckOverlap = kTRUE  ; }
+  void   SwitchOffOverlapCheck() {fCheckOverlap = kFALSE ; }
 
-  Float_t GetEMCALOverlapAngle()  const {return fEMCALOverlapAngle ;}
-  Float_t GetPHOSOverlapAngle() const {return fPHOSOverlapAngle ;}
-  void SetEMCALOverlapAngle(Float_t angle)  {fEMCALOverlapAngle = angle;}
-  void SetPHOSOverlapAngle(Float_t angle) {fPHOSOverlapAngle = angle;}
-  
-  AliCentrality* GetCentrality() const {return 0x0;}
-  
+  Float_t GetEMCALOverlapAngle() const {return fEMCALOverlapAngle ; }
+  Float_t GetPHOSOverlapAngle()  const {return fPHOSOverlapAngle  ; }
+  void    SetEMCALOverlapAngle(Float_t angle)  {fEMCALOverlapAngle = angle ; }
+  void    SetPHOSOverlapAngle(Float_t angle)   {fPHOSOverlapAngle  = angle ; }
+    
  private:
   
-  void CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
-  void MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
-  void FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector & momentum) ;
+  void   CheckOverlap(const Float_t anglethres, const Int_t imom, Int_t & iPrimary, Int_t & index, TLorentzVector & mom, Int_t & pdg);
+  void   MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, TLorentzVector &p2) const ;//, Double_t &angle); 
+  void   FillCalorimeters(Int_t & iParticle, TParticle* particle, TLorentzVector & momentum) ;
   
   private:
   Bool_t    fDecayPi0 ;              // If not decayed, decay pi0 by hand

@@ -60,16 +60,6 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 //}
 
 //____________________________________________________________________________
-Double_t AliCaloTrackAODReader::GetBField() const {
-  //Return magnetic field
-
-  Double_t bfield = fInputEvent->GetMagneticField();
-
-  return bfield;
-
-}
-
-//____________________________________________________________________________
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent* aod, AliMCEvent* mc) {
   // Connect the data pointers
   // If input is AOD, do analysis with input, if not, do analysis with the output aod.

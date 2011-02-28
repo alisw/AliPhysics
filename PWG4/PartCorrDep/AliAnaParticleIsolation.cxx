@@ -561,9 +561,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   //Select the calorimeter for candidate isolation with neutral particles
   if(fCalorimeter == "PHOS")
-    pl = GetAODPHOS();
+    pl = GetPHOSClusters();
   else if (fCalorimeter == "EMCAL")
-    pl = GetAODEMCAL();
+    pl = GetEMCALClusters();
   
   //Loop on AOD branch, filled previously in AliAnaPhoton
   TLorentzVector mom ;
@@ -593,7 +593,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
 
     //After cuts, study isolation
     n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-    GetIsolationCut()->MakeIsolationCut(GetAODCTS(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
+    GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
     aodinput->SetIsolated(isolated);
     if(GetDebug() > 1 && isolated) printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",iaod);  
 	  
@@ -655,7 +655,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     //Tracks
     coneptsum = 0;
     Double_t sumptFR = 0. ;
-    TObjArray * trackList   = GetAODCTS() ;
+    TObjArray * trackList   = GetCTSTracks() ;
     for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++){
       AliAODTrack* track = (AliAODTrack *) trackList->At(itrack);
       //fill the histograms at forward range
@@ -692,8 +692,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       for(Int_t icalo=0; icalo < refclusters->GetEntriesFast(); icalo++){
         AliVCluster* calo = (AliVCluster *) refclusters->At(icalo);
         Int_t input = 0;
-        //			if     (fCalorimeter == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= icalo) input = 1 ;
-        //			else if(fCalorimeter == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= icalo) input = 1;
+        //			if     (fCalorimeter == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= icalo) input = 1 ;
+        //			else if(fCalorimeter == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= icalo) input = 1;
         
         //Get Momentum vector, 
         if     (input == 0) calo->GetMomentum(mom,vertex) ;//Assume that come from vertex in straight line
