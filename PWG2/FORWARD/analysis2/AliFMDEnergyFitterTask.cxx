@@ -207,7 +207,9 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   UInt_t   triggers = 0;
   UShort_t ivz      = 0;
   Double_t vz       = 0;
-  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, ivz, vz);
+  Double_t cent     = 0;
+  UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
+					      ivz, vz, cent);
   if (found & AliFMDEventInspector::kNoEvent)    return;
   if (found & AliFMDEventInspector::kNoTriggers) return;
   if (found & AliFMDEventInspector::kNoSPD)     return;
@@ -218,7 +220,8 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   // Do the energy stuff 
-  if (!fEnergyFitter.Accumulate(*esdFMD, triggers & AliAODForwardMult::kEmpty)){
+  if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
+				triggers & AliAODForwardMult::kEmpty)){
     AliWarning("Energy fitter failed");
     return;
   }

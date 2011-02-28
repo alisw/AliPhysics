@@ -24,6 +24,7 @@
 #include "AliPhysicsSelection.h"
 #include "AliAODForwardMult.h"
 #include "AliForwardUtil.h"
+#include "AliCentrality.h"
 #include <TH1.h>
 #include <TList.h>
 #include <TDirectory.h>
@@ -39,6 +40,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHTriggers(0),
     fHType(0),
     fHWords(0),
+    fHCent(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
@@ -60,6 +62,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHTriggers(0),
     fHType(0),
     fHWords(0),
+    fHCent(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.1),
     fList(0),
@@ -84,6 +87,7 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHTriggers(o.fHTriggers),
     fHType(o.fHType),
     fHWords(o.fHWords),
+    fHCent(o.fHCent),
     fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
@@ -111,6 +115,7 @@ AliFMDEventInspector::~AliFMDEventInspector()
   if (fHTriggers)    delete fHTriggers;  
   if (fHType)        delete fHType;
   if (fHWords)       delete fHWords;
+  if (fHCent)        delete fHCent;
   if (fList)         delete fList;
 }
 //____________________________________________________________________
@@ -132,6 +137,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHTriggers         = o.fHTriggers;
   fHType             = o.fHType;
   fHWords            = o.fHWords;
+  fHCent             = o.fHCent;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
@@ -146,6 +152,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHTriggers)    fList->Add(fHTriggers);
     if (fHType)        fList->Add(fHType);
     if (fHWords)       fList->Add(fHWords);
+    if (fHCent)        fList->Add(fHCent);
   }
   return *this;
 }
@@ -253,6 +260,15 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHWords->SetDirectory(0);
   fHWords->SetBit(TH1::kCanRebin);
   fList->Add(fHWords);
+
+  fHCent = new TH1F("cent", "Centrality", 101, -1.5, 100.5);
+  fHCent->SetFillColor(kBlue+1);
+  fHCent->SetFillStyle(3001);
+  fHCent->SetStats(0);
+  fHCent->SetDirectory(0);
+  fHCent->SetXTitle("Centrality [%]");
+  fHCent->SetYTitle("Events");
+  fList->Add(fHCent);
 }
 
 //____________________________________________________________________
@@ -277,7 +293,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 			      UInt_t&            triggers,
 			      Bool_t&            lowFlux,
 			      UShort_t&          ivz, 
-			      Double_t&          vz)
+			      Double_t&          vz,
+			      Double_t&          cent)
 {
   // 
   // Process the event 
@@ -290,6 +307,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   //   ivz       On return, the found vertex bin (1-based).  A zero
   //                  means outside of the defined vertex range
   //   vz        On return, the z position of the interaction
+  //   cent      On return, the centrality - if not available < 0
   // 
   // Return:
   //    0 (or kOk) on success, otherwise a bit mask of error codes 
@@ -316,8 +334,14 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     return kNoSPD;
   }
   lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
-  
+
   fHType->Fill(lowFlux ? 0 : 1);
+  
+  cent = -1;
+  AliCentrality* centObj = const_cast<AliESDEvent*>(event)->GetCentrality();
+  if (centObj) 
+    cent = centObj->GetCentralityPercentile("VOM");  
+  fHCent->Fill(cent);
 
   // Check the FMD ESD data 
   if (!event->GetFMDData()) { 

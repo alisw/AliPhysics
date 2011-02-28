@@ -105,6 +105,19 @@ public:
    */
   void SetEtaAxis(const TAxis& etaAxis);
   /** 
+   * Set the centrality bins.  E.g., 
+   * @code 
+   * UShort_t n = 12;
+   * Double_t bins[] = {  0.,  5., 10., 15., 20., 30., 
+   *                     40., 50., 60., 70., 80., 100. };
+   * task->GetFitter().SetCentralityBins(n, bins);
+   * @endcode
+   * 
+   * @param nBins Size of @a bins
+   * @param bins  Bin limits. 
+   */
+  void SetCentralityAxis(UShort_t nBins, Double_t* bins);
+  /** 
    * Set the low cut used for energy 
    * 
    * @param lowCut Low cut
@@ -184,11 +197,13 @@ public:
    * Fitter the input AliESDFMD object
    * 
    * @param input     Input 
+   * @param cent      Event centrality (or < 0 if not valid)
    * @param empty     Whether the event is 'empty'
    * 
    * @return True on success, false otherwise 
    */
   Bool_t Accumulate(const AliESDFMD& input, 
+		    Double_t         cent,
 		    Bool_t           empty);
   /** 
    * Scale the histograms to the total number of events 
@@ -268,11 +283,13 @@ protected:
      * Initialise object 
      * 
      * @param eAxis      Eta axis
+     * @param cAxis      Centrality axis 
      * @param maxDE      Max energy loss to consider 
      * @param nDEbins    Number of bins 
      * @param useIncrBin Whether to use an increasing bin size 
      */
     void Init(const TAxis& eAxis, 
+	      const TAxis& cAxis,
 	      Double_t     maxDE=10, 
 	      Int_t        nDEbins=300, 
 	      Bool_t       useIncrBin=true);
@@ -280,10 +297,11 @@ protected:
      * Fill histogram 
      * 
      * @param empty  True if event is empty
-     * @param ieta   Eta bin
+     * @param ieta   Eta bin (0 based)
+     * @param icent  Centrality bin (1 based)
      * @param mult   Signal 
      */
-    void Fill(Bool_t empty, Int_t ieta, Double_t mult);
+    void Fill(Bool_t empty, Int_t ieta, Int_t icent, Double_t mult);
     /** 
      * Fit each histogram to up to @a nParticles particle responses.
      * 
@@ -470,6 +488,7 @@ protected:
   Bool_t   fDoFits;        // Whether to actually do the fits 
   Bool_t   fDoMakeObject;  // Whether to make corrections object
   TAxis    fEtaAxis;       // Eta axis 
+  TAxis    fCentralityAxis;// Centrality axis 
   Double_t fMaxE;          // Maximum energy loss to consider 
   Int_t    fNEbins;        // Number of energy loss bins 
   Bool_t   fUseIncreasingBins; // Wheter to use increasing bin sizes 
@@ -479,7 +498,7 @@ protected:
   Int_t    fDebug;         // Debug level 
   
 
-  ClassDef(AliFMDEnergyFitter,1); //
+  ClassDef(AliFMDEnergyFitter,2); //
 };
 
 #endif
