@@ -1,4 +1,4 @@
-
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -17,11 +17,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCDigitReader32Bit.cxx
-    @author Kenneth Aamodt
-    @date   
-    @brief  DigitReader implementation for the 32 bit offline decoder
-*/
+/// @file   AliHLTTPCDigitReader32Bit.cxx
+/// @author Kenneth Aamodt
+/// @date   
+/// @brief  DigitReader implementation for the 32 bit offline decoder
+///
 
 #if __GNUC__>= 3
 using namespace std;
@@ -32,10 +32,7 @@ using namespace std;
 #include "AliHLTTPCMapping.h"
 #include "AliRawReader.h"
 #include "AliRawReaderMemory.h"
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
 #include "AliAltroRawStreamV3.h"
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
-#include "AliHLTTPCTransform.h"
 
 ClassImp(AliHLTTPCDigitReader32Bit)
 
@@ -68,12 +65,10 @@ AliHLTTPCDigitReader32Bit::~AliHLTTPCDigitReader32Bit()
     fRawReaderMemory=NULL;
   }
 
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   if (fAltroRawStreamV3){
     delete fAltroRawStreamV3;
     fAltroRawStreamV3 = NULL;
   }
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 
   if(fMapping){
     delete fMapping;
@@ -99,7 +94,6 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   fRawReaderMemory->Reset();
   fSkipDataReadingFlag = fRawReaderMemory->NextEvent();
 
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   if(fAltroRawStreamV3 != NULL){
     delete fAltroRawStreamV3;
     fAltroRawStreamV3=NULL;
@@ -111,10 +105,6 @@ int AliHLTTPCDigitReader32Bit::InitBlock(void* ptr,unsigned long size, Int_t pat
   }
 
   fSkipDataReadingFlag = fAltroRawStreamV3->NextDDL();
-
-#else
-  HLTError("AltroRawStreamV3 is not available in this AliRoot version");
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 
   if(!fMapping){
     fMapping = new AliHLTTPCMapping(patch);
@@ -148,22 +138,13 @@ bool AliHLTTPCDigitReader32Bit::NextChannel()
     return kFALSE;
   }
 
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->NextChannel(); 
-#else
-  return false;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
-
 }
 
 int AliHLTTPCDigitReader32Bit::NextBunch()
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->NextBunch();
-#else
-  return -1;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 bool AliHLTTPCDigitReader32Bit::NextSignal()
@@ -182,31 +163,19 @@ const UInt_t* AliHLTTPCDigitReader32Bit::GetSignals()
 const UShort_t* AliHLTTPCDigitReader32Bit::GetSignalsShort()
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->GetSignals();
-#else
-  return NULL;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 int AliHLTTPCDigitReader32Bit::GetRow()
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fMapping->GetRow(fAltroRawStreamV3->GetHWAddress());
-#else
-  return -1;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 int AliHLTTPCDigitReader32Bit::GetPad()
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fMapping->GetPad(fAltroRawStreamV3->GetHWAddress());
-#else
-  return -1;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 int AliHLTTPCDigitReader32Bit::GetSignal()
@@ -219,20 +188,14 @@ int AliHLTTPCDigitReader32Bit::GetTime()
 {
   // see header file for class documentation
   int iResult=-1;
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   iResult=fAltroRawStreamV3->GetStartTimeBin()-fAltroRawStreamV3->GetBunchLength()+1;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
   return iResult;
 }
 
 int AliHLTTPCDigitReader32Bit::GetBunchSize()
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return fAltroRawStreamV3->GetBunchLength();
-#else
-  return -1;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 int AliHLTTPCDigitReader32Bit::GetRowOffset() const
@@ -243,11 +206,7 @@ int AliHLTTPCDigitReader32Bit::GetRowOffset() const
 AliHLTUInt32_t AliHLTTPCDigitReader32Bit::GetAltroBlockHWaddr() const
 {
   // see header file for class documentation
-#ifndef HAVE_NOT_ALTRORAWSTREAMV3
   return (AliHLTUInt32_t)fAltroRawStreamV3->GetHWAddress();
-#else
-  return 0;
-#endif //HAVE_NOT_ALTRORAWSTREAMV3
 }
 
 AliHLTUInt32_t AliHLTTPCDigitReader32Bit::GetAltroBlockHWaddr(Int_t row, Int_t pad) const

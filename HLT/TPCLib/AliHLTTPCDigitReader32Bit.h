@@ -1,3 +1,4 @@
+// $Id$
 // XEmacs -*-C++-*-
 
 #ifndef ALIHLTTPCDIGITREADER32BIT_H
@@ -7,11 +8,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTTPCDigitReader32Bit.h
-    @author Kenneth Aamodt, Matthias Richter
-    @date   
-    @brief  DigitReader for the 32 bit offline decoder
-*/
+/// @file   AliHLTTPCDigitReader32Bit.h
+/// @author Kenneth Aamodt, Matthias Richter
+/// @date   
+/// @brief  DigitReader for the 32 bit offline decoder
+///
 
 #include "AliHLTTPCDigitReader.h"
 
