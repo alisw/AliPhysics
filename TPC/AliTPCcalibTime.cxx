@@ -477,7 +477,7 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   //
   // fill histos
   //
-  TVectorD vdriftA(5), vdriftC(5),vdriftAC(5);
+  TVectorD vdriftA(5), vdriftC(5),vdriftAC(6);
   vdriftA=*(fLaser->fFitAside);
   vdriftC=*(fLaser->fFitCside);
   vdriftAC=*(fLaser->fFitACside);
@@ -805,6 +805,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   Double_t dcaVertex[2]={0,0};
   Int_t ntracks=event->GetNumberOfTracks();
   if (ntracks==0) return;
+  if (ntracks > fCutTracks) return;
   //
   AliESDfriend *esdFriend=(AliESDfriend*)(((AliESDEvent*)event)->FindListObject("AliESDfriend"));
   //

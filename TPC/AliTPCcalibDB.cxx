@@ -2015,9 +2015,10 @@ AliTPCCorrection * AliTPCcalibDB::GetTPCComposedCorrectionDelta() const{
   //
   if (!fComposedCorrectionArray) return 0;
   if (fRun<0) return 0;
+  if (fDriftCorrectionArray.GetEntriesFast()<=fRun) return 0;
   if (fDriftCorrectionArray.At(fRun)==0) return 0;
-  if (fComposedCorrectionArray->GetEntriesFast()<4) {
-    fComposedCorrectionArray->Expand(4);
+  if (fComposedCorrectionArray->GetEntriesFast()<=4) {
+    fComposedCorrectionArray->Expand(5);
     TObjArray * timeArray =(TObjArray*)(fDriftCorrectionArray.At(fRun));
      AliTPCCorrection * correctionTime = (AliTPCCorrection *)timeArray->FindObject("FitCorrectionTime");
      if (correctionTime){

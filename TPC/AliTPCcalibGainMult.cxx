@@ -128,7 +128,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //
   Int_t binsPadEqual[6]    = { 200, 200,    4,   20,   50, 100};
   Double_t xminPadEqual[6] = { 0.5, 0.5, -0.5,    0, -250,   0}; 
-  Double_t xmaxPadEqual[6] = { 1.5, 1.5,  3.5, 4000,  250,   3};
+  Double_t xmaxPadEqual[6] = { 1.5, 1.5,  3.5, 13000,  250,   3};
   TString axisNamePadEqual[6]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"};
   TString axisTitlePadEqual[6]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","driftlength", "1/pt"};
   //
@@ -142,7 +142,7 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //                    MIP Qmax, MIP Qtot,  z,  pad, vtx. contribut., ncl
   Int_t binsGainMult[6]    = { 145,  145,   25,    4,  100,  80};
   Double_t xminGainMult[6] = { 10.,  10.,    0, -0.5,    0, -0.5}; 
-  Double_t xmaxGainMult[6] = {300., 300.,  250,  3.5, 5000, 159.5};
+  Double_t xmaxGainMult[6] = {300., 300.,  250,  3.5, 13000, 159.5};
   TString axisNameMult[6]={"Qmax","Qtot","drift","padtype""multiplicity","ncl"};
   TString axisTitleMult[6]={"Qmax (a.u)","Qtot (a.u.)","driftlenght l (cm)","Pad Type","multiplicity","ncl"};
   //
@@ -191,8 +191,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
    return;
   }
   UInt_t runNumber = event->GetRunNumber();
-  Int_t nContributors = 0;
-  if (event->GetPrimaryVertexTPC()) nContributors = event->GetPrimaryVertexTPC()->GetNContributors();
+  Int_t nContributors = event->GetNumberOfTracks();
   //
   // track loop
   //

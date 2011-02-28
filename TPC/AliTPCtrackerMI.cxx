@@ -2682,7 +2682,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
   const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
-
+  Int_t nContribut = event->GetNumberOfTracks();
   TGraphErrors * graphMultDependenceDeDx = 0x0;
   if (recoParam && recoParam->GetUseMultiplicityCorrectionDedx() && gainCalibArray) {
     if (recoParam->GetUseTotCharge()) {
@@ -2760,9 +2760,8 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       Float_t dedx  = seed->GetdEdx();
       // apply mutliplicity dependent dEdx correction if available
       if (graphMultDependenceDeDx) {
-	Int_t nContribut  = event->GetPrimaryVertexTPC()->GetNContributors();
 	Double_t corrGain =  AliTPCcalibDButil::EvalGraphConst(graphMultDependenceDeDx, nContribut);
-	dedx /= corrGain;
+	dedx += (1 - corrGain)*50.; // MIP is normalized to 50
       }
       esd->SetTPCsignal(dedx, sdedx, ndedx);
       //

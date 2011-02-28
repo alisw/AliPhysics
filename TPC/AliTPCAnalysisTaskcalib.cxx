@@ -88,6 +88,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     //Printf("ERROR: fESDfriend not available");
     return;
   }
+  if (fESDfriend->TestSkipBit()) return;
   Int_t n=fESD->GetNumberOfTracks();
   Process(fESD);
   Int_t run = fESD->GetRunNumber();
