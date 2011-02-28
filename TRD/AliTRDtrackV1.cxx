@@ -360,15 +360,15 @@ Bool_t AliTRDtrackV1::CookPID()
   for(Int_t iseed = 0; iseed < kNplane; iseed++){
     if(!fTracklet[iseed]) continue;
     trackletP[iseed] = fTracklet[iseed]->GetMomentum();
+    fTracklet[iseed]->CookdEdx(nslices);
+    fTracklet[iseed]->SetPID();
     if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
       dEdx[iseed] = fTracklet[iseed]->GetdQdl();
     } else {
-      fTracklet[iseed]->CookdEdx(nslices);
       const Float_t *trackletdEdx = fTracklet[iseed]->GetdEdx();
       for(Int_t islice = 0; islice < nslices; islice++){
         dEdx[iseed*nslices + islice] = trackletdEdx[islice];
       }
-      fTracklet[iseed]->SetPID();
     }
   }
   pidResponse->GetResponse(nslices, dEdx, trackletP, fPID);
