@@ -17,13 +17,16 @@
 #include "info/AliTRDtrackInfo.h"
 #endif
 
+#ifndef ALITRDEVENTINFO_H
+#include "info/AliTRDeventInfo.h"
+#endif
+
 class TH1;
 class TF1;
 class TList;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
-class AliTRDeventInfo;
 
 class AliTRDrecoTask : public AliAnalysisTaskSE 
 {
