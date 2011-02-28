@@ -8,6 +8,7 @@ class AliESDEvent;
 class TH2D;
 class TH1D;
 class TH1I;
+class TH1F;
 class TAxis;
 class TList;
 
@@ -117,6 +118,8 @@ public:
    * @param ivz       On return, the found vertex bin (1-based).  A zero
    *                  means outside of the defined vertex range
    * @param vz        On return, the z position of the interaction
+   * @param cent      On return, the centrality (in percent) or < 0 
+   *                  if not found
    * 
    * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
    */
@@ -124,7 +127,8 @@ public:
 		 UInt_t&            triggers,
 		 Bool_t&            lowFlux,
 		 UShort_t&          ivz, 
-		 Double_t&          vz);
+		 Double_t&          vz,
+		 Double_t&          cent);
   /** 
    * Define the output histograms.  These are put in a sub list of the
    * passed list.   The histograms are merged before the parent task calls 
@@ -224,6 +228,7 @@ protected:
   TH1I*    fHTriggers;    //! Triggers
   TH1I*    fHType;        //! Type (low/high flux) of event
   TH1I*    fHWords;       //! Trigger words 
+  TH1F*    fHCent;        //! Centrality 
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
@@ -231,7 +236,7 @@ protected:
   Short_t  fField;        // L3 magnetic field [kG]
   UShort_t fCollisionSystem; //  
   Int_t    fDebug;        //  Debug level 
-  ClassDef(AliFMDEventInspector,1); // Inspect the event 
+  ClassDef(AliFMDEventInspector,2); // Inspect the event 
 };
 
 #endif

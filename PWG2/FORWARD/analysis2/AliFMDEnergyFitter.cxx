@@ -37,6 +37,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter()
     fDoFits(false),
     fDoMakeObject(false),
     fEtaAxis(),
+    fCentralityAxis(),
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
@@ -61,6 +62,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
     fDoFits(false),
     fDoMakeObject(false),
     fEtaAxis(0,0,0),
+    fCentralityAxis(0,0,0),
     fMaxE(10),
     fNEbins(300), 
     fUseIncreasingBins(true),
@@ -77,6 +79,8 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const char* title)
   //
   fEtaAxis.SetName("etaAxis");
   fEtaAxis.SetTitle("#eta");
+  fCentralityAxis.SetName("centralityAxis");
+  fCentralityAxis.SetTitle("Centrality [%]");
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
   fRingHistos.Add(new RingHistos(2, 'O'));
@@ -95,6 +99,7 @@ AliFMDEnergyFitter::AliFMDEnergyFitter(const AliFMDEnergyFitter& o)
     fDoFits(o.fDoFits),
     fDoMakeObject(o.fDoMakeObject),
     fEtaAxis(o.fEtaAxis),
+    fCentralityAxis(o.fCentralityAxis),
     fMaxE(o.fMaxE),
     fNEbins(o.fNEbins), 
     fUseIncreasingBins(o.fUseIncreasingBins),
@@ -144,7 +149,17 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
   fFitRangeBinWidth= o.fFitRangeBinWidth;
   fDoFits        = o.fDoFits;
   fDoMakeObject  = o.fDoMakeObject;
-  fEtaAxis.Set(o.fEtaAxis.GetNbins(),o.fEtaAxis.GetXmin(),o.fEtaAxis.GetXmax());
+  fEtaAxis.Set(o.fEtaAxis.GetNbins(),
+	       o.fEtaAxis.GetXmin(),
+	       o.fEtaAxis.GetXmax());
+  if (o.fCentralityAxis.GetXbins()) {
+    const TArrayD* bins = o.fCentralityAxis.GetXbins();
+    fCentralityAxis.Set(bins->GetSize()-1,bins->GetArray());
+  }
+  else 
+    fCentralityAxis.Set(o.fCentralityAxis.GetNbins(),
+			o.fCentralityAxis.GetXmin(),
+			o.fCentralityAxis.GetXmax());
   fDebug         = o.fDebug;
   fMaxRelParError= o.fMaxRelParError;
   fMaxChi2PerNDF = o.fMaxChi2PerNDF;
@@ -198,10 +213,16 @@ AliFMDEnergyFitter::Init(const TAxis& eAxis)
   if (fEtaAxis.GetNbins() == 0 || 
       TMath::Abs(fEtaAxis.GetXmax() - fEtaAxis.GetXmin()) < 1e-7) 
     SetEtaAxis(eAxis);
+  if (fCentralityAxis.GetNbins() == 0) {
+    UShort_t n = 12;
+    Double_t bins[] = {  0.,  5., 10., 15., 20., 30., 
+			 40., 50., 60., 70., 80., 100. };
+    SetCentralityAxis(n, bins);
+  }
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next())))
-    o->Init(fEtaAxis, fMaxE, fNEbins, fUseIncreasingBins);
+    o->Init(fEtaAxis, fCentralityAxis, fMaxE, fNEbins, fUseIncreasingBins);
 }  
 //____________________________________________________________________
 void
@@ -237,10 +258,18 @@ AliFMDEnergyFitter::SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax)
   //
   fEtaAxis.Set(nBins,etaMin,etaMax);
 }
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::SetCentralityAxis(UShort_t n, Double_t* bins)
+{
+  fCentralityAxis.Set(n-1, bins);
+}
+
 
 //____________________________________________________________________
 Bool_t
-AliFMDEnergyFitter::Accumulate(const AliESDFMD& input, 
+AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
+			       Double_t         cent,
 			       Bool_t           empty)
 {
   // 
@@ -248,11 +277,15 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
   // 
   // Parameters:
   //    input     Input 
+  //    cent      Centrality 
   //    empty     Whether the event is 'empty'
   // 
   // Return:
   //    True on success, false otherwise 
   //
+  Int_t icent = fCentralityAxis.FindBin(cent);
+  if (icent < 1 || icent > fCentralityAxis.GetNbins()) icent = 0;
+
   for(UShort_t d = 1; d <= 3; d++) {
     Int_t nRings = (d == 1 ? 1 : 2);
     for (UShort_t q = 0; q < nRings; q++) {
@@ -275,7 +308,7 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 	  Int_t ieta = fEtaAxis.FindBin(eta1);
 	  if (ieta < 1 || ieta >  fEtaAxis.GetNbins()) continue; 
 
-	  histos->Fill(empty, ieta-1, mult);
+	  histos->Fill(empty, ieta-1, icent, mult);
 
 	} // for strip
       } // for sector
@@ -547,14 +580,16 @@ AliFMDEnergyFitter::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta, Double_t mult)
+AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta, 
+				     Int_t /* icent */,  Double_t mult)
 {
   // 
   // Fill histogram 
   // 
   // Parameters:
   //    empty  True if event is empty
-  //    ieta   Eta bin
+  //    ieta   Eta bin (0-based)
+  //    icent  Centrality bin (1-based)
   //    mult   Signal 
   //
   if (empty) { 
@@ -563,6 +598,9 @@ AliFMDEnergyFitter::RingHistos::Fill(Bool_t empty, Int_t ieta, Double_t mult)
   }
   fEDist->Fill(mult);
   
+  // Here, we should first look up in a centrality array, and then in
+  // that array look up the eta bin - or perhaps we should do it the
+  // other way around?
   if (ieta < 0 || ieta >= fEtaEDists.GetEntries()) return;
   
   TH1D* h = static_cast<TH1D*>(fEtaEDists.At(ieta));
@@ -721,6 +759,7 @@ AliFMDEnergyFitter::RingHistos::MakeTotal(const char* name,
 //____________________________________________________________________
 void
 AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis, 
+				     const TAxis& /* cAxis */,
 				     Double_t maxDE, Int_t nDEbins, 
 				     Bool_t useIncrBin)
 {
@@ -741,10 +780,63 @@ AliFMDEnergyFitter::RingHistos::Init(const TAxis& eAxis,
 			 fName.Data()), 200, 0, 6);
   fList->Add(fEDist);
   fList->Add(fEmpty);
+  // Here, we should make an array of centrality bins ...
+  // In that case, the structure will be 
+  // 
+  //    -+- Ring1 -+- Centrality1 -+- Eta1
+  //     |         |               +- Eta2
+  //     ...       ...             ...
+  //     |         |               +- EtaM
+  //     |         +- Centrality2 -+- Eta1
+  //     ...       ...             ...
+  //     |         |               +- EtaM
+  //     ...       ...
+  //     |         +- CentralityN -+- Eta1
+  //     ...       ...             ...
+  //     |                         +- EtaM
+  //    -+- Ring2 -+- Centrality1 -+- Eta1
+  //     |         |               +- Eta2
+  //     ...       ...             ...
+  //     |         |               +- EtaM
+  //     |         +- Centrality2 -+- Eta1
+  //     ...       ...             ...
+  //     |         |               +- EtaM
+  //     ...       ...
+  //     |         +- CentralityN -+- Eta1
+  //     ...       ...             ...
+  //     |                         +- EtaM
+  //     ...       ...             ...
+  //    -+- RingO -+- Centrality1 -+- Eta1
+  //               |               +- Eta2
+  //               ...             ...
+  //               |               +- EtaM
+  //               +- Centrality2 -+- Eta1
+  //               ...             ...
+  //               |               +- EtaM
+  //               ...
+  //               +- CentralityN -+- Eta1
+  //               ...             ...
+  //                               +- EtaM
+  // 
   // fEtaEDists.Expand(eAxis.GetNbins());
   for (Int_t i = 1; i <= eAxis.GetNbins(); i++) { 
     Double_t min = eAxis.GetBinLowEdge(i);
     Double_t max = eAxis.GetBinUpEdge(i);
+    // Or may we should do it here?  In that case we'd have the
+    // following structure:
+    //     Ring1 -+- Eta1 -+- Centrality1 
+    //            |        +- Centrality2
+    //            ...      ...
+    //            |        +- CentralityN
+    //            +- Eta2 -+- Centrality1 
+    //            |        +- Centrality2
+    //            ...      ...
+    //            |        +- CentralityN
+    //            ...
+    //            +- EtaM -+- Centrality1 
+    //                     +- Centrality2
+    //                     ...
+    //                     +- CentralityN
     Make(i, min, max, maxDE, nDEbins, useIncrBin);
   }
   fList->Add(&fEtaEDists);
