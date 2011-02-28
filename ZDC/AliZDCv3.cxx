@@ -1995,15 +1995,6 @@ void AliZDCv3::DrawModule() const
   gMC->Gsatt("ZES0","SEEN",0);
   gMC->Gsatt("ZES1","SEEN",0);
   //
-  gMC->Gdopt("hide", "on");
-  gMC->Gdopt("shad", "on");
-  gMC->Gsatt("*", "fill", 7);
-  gMC->SetClipBox(".");
-  gMC->SetClipBox("*", 0, 100, -100, 100, 12000, 16000);
-  gMC->DefaultRange();
-  gMC->Gdraw("alic", 40, 30, 0, 488, 220, .07, .07);
-  gMC->Gdhead(1111, "Zero Degree Calorimeter Version 3");
-  gMC->Gdman(18, 4, "MAN");
 }
 
 //_____________________________________________________________________________
