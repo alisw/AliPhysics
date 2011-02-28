@@ -35,7 +35,7 @@
 //#include "Riostream.h"
 
 //---- Analysis system ----
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
 #include "AliNeutralMesonSelection.h"
@@ -43,7 +43,6 @@
 #include "AliCaloPID.h"
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliFiducialCut.h"
-#include "AliAODTrack.h"
 
 ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
@@ -435,7 +434,7 @@ void AliAnaParticleJetLeadingConeCorrelation::FillJetHistos(AliAODPWG4ParticleCo
   Int_t nTracksInCone = 0; 
   
   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
-    AliAODTrack* track = dynamic_cast<AliAODTrack *>(pl->At(ipr)) ;
+    AliVTrack* track = dynamic_cast<AliVTrack *>(pl->At(ipr)) ;
     if(track)p3.SetXYZ(track->Px(),track->Py(),track->Pz());
     else printf("AliAnaParticleJetLeadingConeCorrelation::FillJetHistos() - Track not available\n");
     
@@ -912,7 +911,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingCharge(AliAODPWG4Partic
     TVector3 p3;
     
     for(Int_t ipr = 0;ipr < GetCTSTracks()->GetEntriesFast() ; ipr ++ ){
-      AliAODTrack* track = (AliAODTrack *)(GetCTSTracks()->At(ipr)) ;
+      AliVTrack* track = (AliVTrack *)(GetCTSTracks()->At(ipr)) ;
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt   = p3.Pt();
       phi  = p3.Phi() ;
@@ -1461,7 +1460,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeAODJet(AliAODPWG4ParticleCorre
   TObjArray * reftracksbkg  = new TObjArray;
   
   for(Int_t ipr = 0;ipr < (GetCTSTracks())->GetEntriesFast() ; ipr ++ ){
-    AliAODTrack* track = (AliAODTrack *)((GetCTSTracks())->At(ipr)) ;
+    AliVTrack* track = (AliVTrack *)((GetCTSTracks())->At(ipr)) ;
     p3.SetXYZ(track->Px(),track->Py(),track->Pz());
     
     //Particles in jet 
@@ -1598,7 +1597,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
   TVector3 p3;
   if(reftracks){
     for(Int_t ipr = 0;ipr < reftracks->GetEntriesFast() ; ipr ++ ){
-      AliAODTrack* track = (AliAODTrack *) reftracks->At(ipr) ;
+      AliVTrack* track = (AliVTrack *) reftracks->At(ipr) ;
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       Float_t phi = p3.Phi();
       if(phi < 0) phi+=TMath::TwoPi();
@@ -1611,7 +1610,7 @@ void AliAnaParticleJetLeadingConeCorrelation::MakeJetFromAOD(AliAODPWG4ParticleC
   //Particles in background   
   if(reftracksbkg){
     for(Int_t ipr = 0;ipr < reftracksbkg->GetEntriesFast() ; ipr ++ ){
-      AliAODTrack* track = (AliAODTrack *) reftracksbkg->At(ipr) ;
+      AliVTrack* track = (AliVTrack *) reftracksbkg->At(ipr) ;
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       if(p3.Pt() > ptcut && IsParticleInJetCone(p3.Eta(),p3.Phi(),etal, phiTrig) ) {  
 	lv.SetVect(p3);

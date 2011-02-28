@@ -43,7 +43,7 @@
 #include "AliCaloPID.h"
 #include "AliFiducialCut.h"
 #include "AliVCluster.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 
 ClassImp(AliAnaExample)
   
@@ -215,7 +215,7 @@ void  AliAnaExample::MakeAnalysisFillAOD()
     TVector3 p3;
     for(Int_t i = 0; i < GetCTSTracks()->GetEntriesFast(); i++){
       
-      AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(i));
+      AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(i));
       
       //Fill AODParticle after some selection       
       Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};

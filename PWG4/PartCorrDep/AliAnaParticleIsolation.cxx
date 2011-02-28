@@ -42,7 +42,7 @@
 #include "AliNeutralMesonSelection.h"
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliMCAnalysisUtils.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliVCluster.h"
 
 ClassImp(AliAnaParticleIsolation)
@@ -657,7 +657,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     Double_t sumptFR = 0. ;
     TObjArray * trackList   = GetCTSTracks() ;
     for(Int_t itrack=0; itrack < trackList->GetEntriesFast(); itrack++){
-      AliAODTrack* track = (AliAODTrack *) trackList->At(itrack);
+      AliVTrack* track = (AliVTrack *) trackList->At(itrack);
       //fill the histograms at forward range
       if(!track){
         printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Track not available?");
@@ -680,7 +680,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     fhFRConeSumPt->Fill(ptcluster,sumptFR);
     if(reftracks){  
       for(Int_t itrack=0; itrack < reftracks->GetEntriesFast(); itrack++){
-        AliAODTrack* track = (AliAODTrack *) reftracks->At(itrack);
+        AliVTrack* track = (AliVTrack *) reftracks->At(itrack);
         fhPtInCone->Fill(ptcluster,TMath::Sqrt(track->Px()*track->Px()+track->Py()*track->Py()));
         coneptsum+=track->Pt();
       }
