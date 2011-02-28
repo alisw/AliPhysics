@@ -90,6 +90,7 @@ ClassImp(AliFlowAnalysisWithScalarProduct)
   // Constructor.
   fWeightsList = new TList();
   fHistList = new TList();
+  fHistList->SetOwner(kTRUE);
   
   // Initialize arrays:
   for(Int_t i=0;i<3;i++)
