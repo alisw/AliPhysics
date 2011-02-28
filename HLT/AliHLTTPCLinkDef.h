@@ -68,7 +68,6 @@
 #pragma link C++ class  AliHLTTPCCalibCEComponent+;
 #pragma link C++ class  AliHLTTPCHWCFDataReverterComponent+;
 #pragma link C++ class  AliHLTTPCKryptonClusterFinder+;
-#pragma link C++ class  AliHLTTPCKryptonClusterFinderComponent+;
 #pragma link C++ class  AliHLTTPCClusterHistoComponent+;
 #pragma link C++ class  AliHLTTPCTrackHistoComponent+;
 #pragma link C++ class  AliHLTTPCTrackDumpComponent+;
