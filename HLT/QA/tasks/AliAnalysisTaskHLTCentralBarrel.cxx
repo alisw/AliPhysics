@@ -67,7 +67,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
 AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *name)
 :AliAnalysisTaskSE(name)    
   ,fUseHLTTrigger(kFALSE)   
-  ,fUseCentrality(kFALSE)   
+  ,fUseCentrality(kTRUE)   
   ,fOutputList(0)
   ,fEventOFF(0)
   ,fEventHLT(0)
@@ -93,6 +93,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   
   OpenFile(1);  
   fOutputList = new TList();
+  fOutputList->SetOwner();
   fOutputList->SetName(GetName());
   
   static const int sizeEvent = 6;
@@ -153,11 +154,11 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
       
   // if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;
   
-//   Int_t centbin;
-//   if(fUseCentrality){
-//     centbin = CalculateCentrality(esdOFF);
-//     printf("Centrality bin = %d", centbin);
-//   } 
+   Int_t centbin = -1;
+   if(fUseCentrality){
+     centbin = CalculateCentrality(esdOFF);
+     //printf("Centrality bin = %d", centbin);
+   } 
 
 
   
@@ -170,9 +171,11 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   
   if(esdOFF->GetEventSpecie()==16) return;
 
-  //AliCentrality *cent = esdOFF->GetCentrality(); 
-  //printf("centrality V0: %f\n",cent->GetCentralityPercentileUnchecked("V0M"));
-    
+  //AliCentrality *cent = esdOFF->GetCentrality();
+  //printf("QQQQQQQQQ centrality V0: %f\n",cent->GetCentralityPercentileUnchecked("V0M"));
+  //printf("QQQQQQQQQ centrality V0: %f\n", cent->GetCentralityPercentile("V0M"));
+  //printf("QQQQQQQQQ centrality SPD: %f\n",cent->GetCentralityPercentile("CL1"));
+  
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
       AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
       if (!esdTrackOFF) continue;
@@ -203,7 +206,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	 dca[0]=-99;
 	 dca[1]=-99;
       }
-      //else ????????????? why doesn't it work with pp????
+      //else ?????? why doesn't it work with pp????
       esdTrackOFF->GetImpactParametersTPC(dca,cov);
 
       Float_t DCAr =-99, DCAz = -99.;   
@@ -222,7 +225,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 			       ,nr_tracksOFF
 			       ,vertOFF->GetStatus()
 			       ,vertOFF->GetZ()
-			       //,centbin
+			       ,centbin
      			    };
       fTrackOFF->Fill(trackOFF);
     }
@@ -287,7 +290,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 			      ,nr_tracksHLT
 			      ,vertHLT->GetStatus()
 			      ,vertHLT->GetZ()
-			      //,centbin 
+			      ,centbin 
         		    };
       fTrackHLT->Fill(trackHLT);      
   }               
