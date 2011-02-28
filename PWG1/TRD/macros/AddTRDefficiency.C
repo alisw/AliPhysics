@@ -36,7 +36,7 @@ void AddTRDefficiency(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     mgr->ConnectInput(eff, 0, mgr->GetCommonInputContainer());  
     mgr->ConnectInput(eff, 1, ci[trackStatus]);
     mgr->ConnectInput(eff, 2, evInfoContainer);
-    mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName(),eff->GetName())));
+    mgr->ConnectOutput(eff, 1, mgr->CreateContainer(eff->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
   }
 
   // TRD single track selection
