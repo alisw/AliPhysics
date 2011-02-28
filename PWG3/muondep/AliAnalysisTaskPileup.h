@@ -11,7 +11,7 @@
 /// Based on the work by L. Aphecetche - SUBATECH Nantes
 //Author: Diego Stocco - SUBATECH Nantes
 
-#define READOCDB
+//#define READOCDB
 
 #include "AliAnalysisTaskSE.h"
 
