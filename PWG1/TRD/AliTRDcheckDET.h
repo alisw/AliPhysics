@@ -16,6 +16,7 @@
 
 class TObjArray;
 class TH1;
+class TH2;
 class TMap;
 class AliESDHeader;
 class AliExternalTrackParam;
