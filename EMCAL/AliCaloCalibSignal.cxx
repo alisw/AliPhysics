@@ -411,7 +411,7 @@ void AliCaloCalibSignal::WriteParametersToFile(const char *parameterFile)
 
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
-{
+{ 
   // note/FIXME: we are not yet adding correctly the info for fN{HighGain,LowGain,Ref} here - but consider this a feature for now (20080905): we'll do Analyze() unless entries were found for a tower in this original object.
 
   // add info from sig's TTrees to ours..
@@ -470,6 +470,23 @@ Bool_t AliCaloCalibSignal::AddInfo(const AliCaloCalibSignal *sig)
     fTreeLEDAvgAmpVsTime->Fill();
   }
 
+  // We should also copy other pieces of info: counters and parameters 
+  // (not number of columns and rows etc which should be the same)
+  // note that I just assign them here rather than Add them, but we
+  // normally just Add (e.g. in Preprocessor) one object so this should be fine.
+  fRunNumber = sig->GetRunNumber();
+  fStartTime = sig->GetStartTime();
+  fAmpCut = sig->GetAmpCut();
+  fReqFractionAboveAmpCutVal = sig->GetReqFractionAboveAmpCutVal();
+  fReqFractionAboveAmp = sig->GetReqFractionAboveAmp();
+  fAmpCutLEDRef = sig->GetAmpCutLEDRef();
+  fReqLEDRefAboveAmpCutVal = sig->GetReqLEDRefAboveAmpCutVal();
+  fHour = sig->GetHour();
+  fLatestHour = sig->GetLatestHour();
+  fUseAverage = sig->GetUseAverage();
+  fSecInAverage = sig->GetSecInAverage();
+  fNEvents = sig->GetNEvents();
+  fNAcceptedEvents = sig->GetNAcceptedEvents();
 
   return kTRUE;//We hopefully succesfully added info from the supplied object
 }

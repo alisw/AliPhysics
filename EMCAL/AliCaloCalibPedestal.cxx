@@ -530,6 +530,24 @@ Bool_t AliCaloCalibPedestal::AddInfo(AliCaloCalibPedestal *ped)
 
   }//end for nModules 
 
+  // We should also copy other pieces of info: counters and parameters 
+  // (not number of columns and rows etc which should be the same)
+  // note that I just assign them here rather than Add them, but we
+  // normally just Add (e.g. in Preprocessor) one object so this should be fine.
+  fNEvents = ped->GetNEvents();
+  fNChanFills = ped->GetNChanFills();
+  fDeadTowers = ped->GetDeadTowerCount();
+  fNewDeadTowers = ped->GetDeadTowerNew();
+  fResurrectedTowers = ped->GetDeadTowerResurrected();
+  fRunNumber = ped->GetRunNumber();
+  fSelectPedestalSamples = ped->GetSelectPedestalSamples();
+  fFirstPedestalSample = ped->GetFirstPedestalSample();
+  fLastPedestalSample = ped->GetLastPedestalSample();
+  fDeadThreshold = ped->GetDeadThreshold();
+  fWarningThreshold = ped->GetWarningThreshold();
+  fWarningFraction = ped->GetWarningFraction();
+  fHotSigma = ped->GetHotSigma();
+
   // DeadMap; Diff profiles etc would need to be redone after this operation
 
   return kTRUE;//We succesfully added info from the supplied object
