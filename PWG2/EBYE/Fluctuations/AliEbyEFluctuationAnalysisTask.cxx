@@ -54,6 +54,7 @@ void AliEbyEFluctuationAnalysisTask::UserCreateOutputObjects() {
   // Called once
 
   fOutputList = new TList();
+  fOutputList->SetOwner();
 
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
