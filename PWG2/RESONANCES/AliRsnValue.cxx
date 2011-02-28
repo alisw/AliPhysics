@@ -37,9 +37,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
+#include "AliCentrality.h"
 
 #include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
@@ -258,6 +260,9 @@ const char* AliRsnValue::GetValueTypeName() const
       case kEventMultMC:          return "EventMultMC";
       case kEventMultESDCuts:     return "EventMultESDCuts";
       case kEventVz:              return "EventVz";
+      case kEventCentralityV0:    return "EventCentralityV0";
+      case kEventCentralityTrack: return "EventCentralityTrack";
+      case kEventCentralityCL1:   return "EventCentralityCL1";
       default:                    return "Undefined";
    }
 }
@@ -514,7 +519,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       case kPairY:
          // pair:
          // rapidity (requires an AliRsnPairDef to get mass hypothesis)
-         if (!pairDef) {
+         if (pairDef) {
             pRec.SetXYZM(pRec.X(), pRec.Y(), pRec.Z(), pairDef->GetMotherMass());
             pSim.SetXYZM(pSim.X(), pSim.Y(), pSim.Z(), pairDef->GetMotherMass());
             fComputedValue = useMC ? pSim.Rapidity() : pRec.Rapidity();
@@ -625,6 +630,39 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          // Z position of primary vertex
          fComputedValue = fgCurrentEvent->GetRef()->GetPrimaryVertex()->GetZ();
          return kTRUE;
+      case kEventCentralityV0:
+         // event:
+         // centrality using V0 method
+         if (esdev) {
+            AliCentrality *centrality = esdev->GetCentrality();
+            fComputedValue = centrality->GetCentralityPercentile("V0M");
+            return kTRUE;
+         } else {
+            AliError(Form("[%s] Centrality computation is implemented for ESDs only up to now", GetName()));
+            return kFALSE;
+         }
+      case kEventCentralityTrack:
+         // event:
+         // centrality using tracks method
+         if (esdev) {
+            AliCentrality *centrality = esdev->GetCentrality();
+            fComputedValue = centrality->GetCentralityPercentile("TRK");
+            return kTRUE;
+         } else {
+            AliError(Form("[%s] Centrality computation is implemented for ESDs only up to now", GetName()));
+            return kFALSE;
+         }
+      case kEventCentralityCL1:
+         // event:
+         // centrality using CL1 method
+         if (esdev) {
+            AliCentrality *centrality = esdev->GetCentrality();
+            fComputedValue = centrality->GetCentralityPercentile("CL1");
+            return kTRUE;
+         } else {
+            AliError(Form("[%s] Centrality computation is implemented for ESDs only up to now", GetName()));
+            return kFALSE;
+         }
       default:
          AliError(Form("[%s] Invalid value type for this computation", GetName()));
          return kFALSE;
