@@ -181,7 +181,6 @@ TObject *AliAnalysisDataSlot::GetData() const
 {
 // Retreives the data from the container if it is ready.
    if (!fContainer) {
-     cout<<"Data slot of type "<<GetTitle()<<" of task "<<fParent->GetName()<<" has no connected data container"<<endl;
      //AliError(Form("Data slot of type %s of task %s has no connected data container",fType->GetName(), fParent->GetName()));    
       return NULL;
    }
