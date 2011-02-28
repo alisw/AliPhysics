@@ -41,7 +41,7 @@
 #include "AliCaloPID.h"
 #include "AliAODPWG4ParticleCorrelation.h"
 #include "AliFiducialCut.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliVCluster.h"
 #include "AliMCAnalysisUtils.h"
 #include "TParticle.h"
@@ -840,7 +840,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   //Track loop, select tracks with good pt, phi and fill AODs or histograms
   //Int_t currentIndex = -1 ; 
   for(Int_t ipr = 0;ipr < pl->GetEntriesFast() ; ipr ++ ){
-    AliAODTrack * track = (AliAODTrack *) (pl->At(ipr)) ;
+    AliVTrack * track = (AliVTrack *) (pl->At(ipr)) ;
 
     //check if inside the vertex cut
     //printf("charge = %d\n", track->Charge());
