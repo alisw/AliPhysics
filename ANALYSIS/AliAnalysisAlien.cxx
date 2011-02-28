@@ -2845,9 +2845,15 @@ Bool_t AliAnalysisAlien::SubmitMerging()
          printf("### Submitting merging job for run <%s>\n", runOutDir.Data());
          runOutDir = Form("%s/%s", fGridOutputDir.Data(), runOutDir.Data());
       } else {
-         // The output directory is the master number in 3 digits format
-         printf("### Submitting merging job for master <%03d>\n", i);
-         runOutDir = Form("%s/%03d",fGridOutputDir.Data(), i);
+         if (!fRunNumbers.Length() && !fRunRange[0]) {
+            // The output directory is the grid outdir
+            printf("### Submitting merging job for the full output directory %s.\n", fGridOutputDir.Data());
+            runOutDir = fGridOutputDir;
+         } else {
+            // The output directory is the master number in 3 digits format
+            printf("### Submitting merging job for master <%03d>\n", i);
+            runOutDir = Form("%s/%03d",fGridOutputDir.Data(), i);
+         }   
       }
       // Check now the number of merging stages.
       TObjArray *list = fOutputFiles.Tokenize(",");
@@ -2863,6 +2869,7 @@ Bool_t AliAnalysisAlien::SubmitMerging()
       delete list;
       Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, mergeJDLName);
       if (!done && (i==ntosubmit-1)) return kFALSE;
+      if (!fRunNumbers.Length() && !fRunRange[0]) break;
    }
    if (!ntosubmit) return kTRUE;
    Info("StartAnalysis", "\n #### STARTING AN ALIEN SHELL FOR YOU. You can exit any time or inspect your jobs in a different shell.##########\
