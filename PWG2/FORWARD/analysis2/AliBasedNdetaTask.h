@@ -54,6 +54,19 @@ public:
    * @param mask trigger mask 
    */
   void SetTriggerMask(const char* mask);
+  /** 
+   * Trigger efficiency for selected trigger(s)
+   * 
+   * @param e Trigger efficiency 
+   */
+  void SetTriggerEff(Double_t e) { fTriggerEff = e; } 
+  /** 
+   * Set the shape correction (a.k.a., track correction) for selected
+   * trigger(s)
+   * 
+   * @param h Correction
+   */
+  void SetShapeCorrection(const TH1* h);
   /**
    * Destructor
    * 
@@ -171,7 +184,8 @@ protected:
     kMB         = 6, 
     kWithTrigger= 7,
     kWithVertex = 8, 
-    kAccepted   = 9 
+    kAccepted   = 9,
+    kMCNSD      = 10
   };
 
   TH2D*           fSum;          // Sum of histograms 
@@ -189,6 +203,8 @@ protected:
   Bool_t          fCutEdges;     // Whether to cut edges when rebinning
   Bool_t          fSymmetrice;   // Whether to symmetrice data 
   Bool_t          fCorrEmpty;    // Correct for empty bins 
+  Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
+  TH1*            fShapeCorr;    // Shape correction 
 
   ClassDef(AliBasedNdetaTask,1); // Determine multiplicity in base area
 };

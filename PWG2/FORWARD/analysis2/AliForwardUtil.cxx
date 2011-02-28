@@ -84,7 +84,7 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
   // if (sys == AliForwardUtil::kPbPb) energy = energy / 208 * 82;
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
-  if (TMath::Abs(energy - 2750.)  < 10)  return 2750;
+  if (TMath::Abs(energy - 2750.)  < 20)  return 2750;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
   if (TMath::Abs(energy - 10000.) < 10)  return 10000;

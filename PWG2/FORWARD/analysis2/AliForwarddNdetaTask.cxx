@@ -58,11 +58,29 @@ AliForwarddNdetaTask::GetHistogram(AliAODEvent* aod, Bool_t mc)
     if (oPrimary) {
       TH2D* primary   = static_cast<TH2D*>(oPrimary);
       // Add contribtion from MC 
-      if (primary && !fSumPrimary) fSumPrimary = CloneHist(primary, "truth");
-      if (primary) fSumPrimary->Add(primary);
+      
+      if(fTriggerMask == AliAODForwardMult::kInel) {
+	if (primary && !fSumPrimary) fSumPrimary = CloneHist(primary, "truth");
+	else if (primary) fSumPrimary->Add(primary);
+      }
+      
+      else if(fTriggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) {
+	if (primary && !fSumPrimary) fSumPrimary = CloneHist(primary, "truth"); 
+	else if (primary) fSumPrimary->Add(primary);
+      }
+      
+      
+      
+      /*   if(fTriggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) {
+	if (primary) fSumPrimary->Add(primary); 
+      
+      }
+      
+      else if (primary) fSumPrimary->Add(primary);*/
+      
     }    
   }
-
+  
   // Here, we get the update 
   if (!fSNNString) { 
     UShort_t sNN = forward->GetSNN();
@@ -106,12 +124,32 @@ AliForwarddNdetaTask::Terminate(Option_t *)
 
   if (fSumPrimary) { 
     Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
-    TH1D* dndetaTruth = ProjectX(fSumPrimary,"dndetaTruth",
-				 1,fSumPrimary->GetNbinsY());
-    dndetaTruth->Scale(1./nAll, "width");
+    Int_t nNSD        = Int_t(fTriggers->GetBinContent(kMCNSD));
+    
+    //  for(Int_t nn =1; nn<=fSumPrimary->GetNbinsX(); nn++) {
+    //  for(Int_t mm =1; mm<=fSumPrimary->GetNbinsY(); mm++) {
+    //	if(fSumPrimary->GetBinContent(nn,mm) > 0) std::cout<<fSumPrimary->GetBinContent(nn,mm)<<" +/-  "<<fSumPrimary->GetBinError(nn,mm)<<std::endl;
+    //  }
+    // }
+ 
+    
+    //TH1D* dndetaTruth = ProjectX(fSumPrimary,"dndetaTruth",
+    //			 1,fSumPrimary->GetNbinsY(),false,true);
+    TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,fSumPrimary->GetNbinsY(),"e");
+    std::cout<<nAll<<"   "<<nNSD<<std::endl;
+    
+    if(fTriggerMask == AliAODForwardMult::kNSD)
+      dndetaTruth->Scale(1./nNSD, "width");
+    else
+      dndetaTruth->Scale(1./nAll, "width");
+    
+    //for(Int_t nn =1; nn<=dndetaTruth->GetNbinsX(); nn++) {
+    //  if(dndetaTruth->GetBinContent(nn) > 0) std::cout<<dndetaTruth->GetBinContent(nn)<<" +/-  "<<dndetaTruth->GetBinError(nn)<<std::endl;
+    // }
 
-    SetHistogramAttributes(dndetaTruth, kGray+3, 22, "Monte-Carlo truth");
-
+    
+    SetHistogramAttributes(dndetaTruth, kBlue+3, 22, "Monte-Carlo truth");
+    
     fOutput->Add(dndetaTruth);
     fOutput->Add(Rebin(dndetaTruth));
   }

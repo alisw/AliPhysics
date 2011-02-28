@@ -5,6 +5,7 @@
 #include <TH1D.h>
 #include <THStack.h>
 #include <TList.h>
+#include <TParameter.h>
 #include <AliAnalysisManager.h>
 #include <AliAODEvent.h>
 #include <AliAODHandler.h>
@@ -26,7 +27,9 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fRebin(0),       	// Rebinning factor 
     fCutEdges(false), 
     fSymmetrice(true),
-    fCorrEmpty(true)
+    fCorrEmpty(true), 
+    fTriggerEff(1),
+    fShapeCorr(0)
 {}
 
 //____________________________________________________________________
@@ -43,7 +46,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fRebin(5),		// Rebinning factor 
     fCutEdges(false), 
     fSymmetrice(true),
-    fCorrEmpty(true)
+    fCorrEmpty(true), 
+    fTriggerEff(1),
+    fShapeCorr(0)
 {
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
@@ -64,7 +69,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fRebin(o.fRebin),		// Int_t - Rebinning factor 
     fCutEdges(o.fCutEdges),	// Bool_t - Whether to cut edges when rebinning
     fSymmetrice(true),
-    fCorrEmpty(true)
+    fCorrEmpty(true), 
+    fTriggerEff(o.fTriggerEff),
+    fShapeCorr(o.fShapeCorr)
 {}
 
 //____________________________________________________________________
@@ -102,6 +109,15 @@ AliBasedNdetaTask::SetTriggerMask(const char* mask)
   }
   if (trgMask == 0) trgMask = 1;
   SetTriggerMask(trgMask);
+}
+
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
+{
+  if (!c) return;
+  fShapeCorr = static_cast<TH1*>(c->Clone());
+  fShapeCorr->SetDirectory(0);
 }
 
 //________________________________________________________________________
@@ -184,11 +200,15 @@ AliBasedNdetaTask::CheckEvent(AliAODEvent* aod)
     fTriggers->AddBinContent(kE);
   if (forward->IsTriggerBits(AliAODForwardMult::kInel)) 
     fTriggers->AddBinContent(kMB);
-
+  if (forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
+    fTriggers->AddBinContent(kMCNSD);
+  
+  
   // Check if we have an event of interest. 
   if (!forward->IsTriggerBits(fTriggerMask)) return false;
+  
   fTriggers->AddBinContent(kWithTrigger);
-
+  
   // Check that we have a valid vertex
   if (!forward->HasIpZ()) return false;
   fTriggers->AddBinContent(kWithVertex);
@@ -209,9 +229,20 @@ AliBasedNdetaTask::UserExec(Option_t *)
     AliError("Cannot get the AOD event");
     return;
   }  
-
+  
+  TObject* obj = 0;
+  obj = aod->FindListObject("Forward");
+  
+  // AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
+  // Float_t cent = forward->GetCentrality();
+  
+  // if(cent > -1) {
+  //  if( cent < 40 || cent >60 ) return;
+  //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
+  //  }
+  
   // Get the histogram(s) 
-  TH2D* data   = GetHistogram(aod);
+  TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
 
   // We should have a base object at least 
@@ -220,17 +251,23 @@ AliBasedNdetaTask::UserExec(Option_t *)
     return;
   }
   
-  // Create our sum histograms 
-  if (!fSum)             fSum   = CloneHist(data,  GetName());
-  if (!fSumMC && dataMC) fSumMC = CloneHist(dataMC,Form("%sMC", GetName()));
+  
 
   // Check the event 
   if (!CheckEvent(aod)) return;
-
+  
+  // Create our sum histograms 
+  if (!fSum)  fSum   = CloneHist(data,  GetName()); 
+  else fSum->Add((data));
+  
+  //for(Int_t i = 1; i<=data->GetNbinsX(); i++) {
+  //  std::cout<<fSum->GetBinContent(i,0) <<"   "<<data->GetBinContent(i,0)<<std::endl;
+  // }
+  
+  if (!fSumMC && dataMC) fSumMC = CloneHist(dataMC,Form("%sMC", GetName()));
+  else if (fSumMC) fSumMC->Add((dataMC));
   // Add contribution 
-  fSum->Add((data));
-  if (fSumMC) fSumMC->Add((dataMC));
-
+  
   PostData(1, fSums);
 }
 
@@ -265,9 +302,9 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 			    bool  error) const
 {
   if (!h) return 0;
-#if USE_ROOT_PROJECT
+  //#if USE_ROOT_PROJECT
   return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
-#endif
+  //#endif
   
   TAxis* xaxis = h->GetXaxis();
   TAxis* yaxis = h->GetYaxis();
@@ -371,6 +408,32 @@ AliBasedNdetaTask::Terminate(Option_t *)
   Int_t nWithVertex = Int_t(fTriggers->GetBinContent(kWithVertex));
   Int_t nAccepted   = Int_t(fTriggers->GetBinContent(kAccepted));
   Int_t nGood       = nB - nA - nC + 2 * nE;
+  
+  //  Int_t nBg         = nA + nC -nE;
+  //std::cout<<"nBackground "<<nBg<<"   , with vertex in range "<<fNbgValid<<" ,  total "<<fNbgVertex<<"  "<<std::endl<<std::endl;
+  Float_t alpha            = ((Float_t)nAccepted) / ((Float_t)nWithVertex);
+  //Float_t alphaBG  = 1;
+  //if(fNbgVertex > 0) alphaBG= (Float_t)fNbgValid / (Float_t)fNbgVertex;
+  //Float_t nNormalizationJF = nAccepted + alpha*(nMB - nAccepted - nBg);
+  Float_t nNormalizationJF = nAccepted + alpha*(nTriggered - nWithVertex) ; // -alphaBG*(nBg-fNbgVertex);
+  
+  //Float_t nNormalizationBg = fNbgValid + alphaBG*nBg;
+  
+  //std::cout<<nTriggered -nWithVertex<<std::endl;
+  
+  //Double_t vtxEff   = Double_t(nMB) / nTriggered * Double_t(nAccepted) / nGood;
+  Double_t vtxEff   =  (Float_t)nAccepted / nNormalizationJF;
+  vtxEff = vtxEff*fTriggerEff;
+  
+  //if ( fTriggerMask == AliAODForwardMult::kNSD ) vtxEff = 0.97; //From paper...
+  //std::cout<<
+
+  //Double_t vtxEffBg   =  (Float_t)fNbgValid / nNormalizationBg;
+  //Double_t vtxEff   =  1.;//(Float_t)nAccepted / nNormalizationJF;
+  
+  
+  
+  
   if (nTriggered <= 0) { 
     AliError("Number of triggered events <= 0");
     return;
@@ -380,7 +443,8 @@ AliBasedNdetaTask::Terminate(Option_t *)
 		    nGood, nB, nA, nC, nE));
     nGood = nMB;
   }
-  Double_t vtxEff   = Double_t(nMB) / nTriggered * Double_t(nAccepted) / nGood;
+  //Double_t vtxEff   =  Double_t(nMB) / nTriggered * Double_t(nAccepted) / nGood;
+  
   Double_t vNorm    = Double_t(nAccepted) / nGood;
   AliInfo(Form("Total of %9d events\n"
 	       "                   of these %9d are minimum bias\n"
@@ -400,18 +464,56 @@ AliBasedNdetaTask::Terminate(Option_t *)
 	       nB, nA+nC, nA, nC, nE, nGood, vtxEff, vNorm));
   
   const char* name = GetName();
-
+  
   // Get acceptance normalisation from underflow bins 
   TH1D* norm   = ProjectX(fSum, Form("norm%s",name), 0, 1, fCorrEmpty, false);
+  
+    
+  
+
+  /*
+  std::cout<<norm->GetMaximumBin()<<"    "<< (Float_t)nAccepted / norm->GetBinContent((Float_t)norm->GetMaximumBin()) <<std::endl;
+  Float_t scaleForNorm =  (Float_t)nAccepted / (Float_t)norm->GetBinContent(norm->GetMaximumBin()) ;
+  //Float_t scaleForNorm =  norm->Integral() ;
+  std::cout<<norm->Integral()<<std::endl;
+  
+  norm->Scale(scaleForNorm);
+  //norm->Scale(1., "width");
+  //norm->Scale(norm->GetNbinsX() / (norm->GetXaxis()->GetXmax() - norm->GetXaxis()->GetXmin() ));
+  
+  //norm->Scale(1.,"width");
+  */
   // Project onto eta axis - _ignoring_underflow_bins_!
+  
+  TH2D* tmpNorm = (TH2D*)fSum->Clone("tmpNorm");
+  
+  if(fShapeCorr)
+    fSum->Divide(fShapeCorr);
   TH1D* dndeta = ProjectX(fSum, Form("dndeta%s",name), 1, fSum->GetNbinsY(),
 			  fCorrEmpty);
+  
   // Normalize to the acceptance 
-  dndeta->Divide(norm);
+  //dndeta->Divide(norm);
+  
+  for(Int_t i = 1; i<=tmpNorm->GetNbinsX(); i++) {
+    
+    if( tmpNorm->GetBinContent(i,0) > 0 ) {
+      //std::cout<<tmpNorm->GetBinContent(i,0) <<std::endl;
+      dndeta->SetBinContent(i,dndeta->GetBinContent(i) / tmpNorm->GetBinContent(i,0));
+      dndeta->SetBinError(i,dndeta->GetBinError(i) / tmpNorm->GetBinContent(i,0));
+    }
+  }
+  
   // Scale by the vertex efficiency 
-  dndeta->Scale(vNorm, "width");
-  norm->Scale(1. / nAccepted);
-
+  //dndeta->Scale(vNorm, "width");
+    
+  dndeta->Scale(vtxEff, "width");
+  
+  //dndeta->Scale(1./(Float_t)nAccepted);
+  //dndeta->Scale(dndeta->GetNbinsX() / (dndeta->GetXaxis()->GetXmax() - dndeta->GetXaxis()->GetXmin() ));
+  
+  //norm->Scale(1. / nAccepted);
+  //norm->Scale(1. / nNormalizationJF);
   SetHistogramAttributes(dndeta, kRed+1, 20, Form("ALICE %s", name));
   SetHistogramAttributes(norm, kRed+1,20,Form("ALICE %s normalisation", name)); 
 
@@ -455,7 +557,9 @@ AliBasedNdetaTask::Terminate(Option_t *)
   vtxAxis->SetName("vtxAxis");
   vtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin,fVtxMax));
   fOutput->Add(vtxAxis);
-
+  fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
+  if (fShapeCorr) fOutput->Add(fShapeCorr);
+  
   PostData(2, fOutput);
 }
 
