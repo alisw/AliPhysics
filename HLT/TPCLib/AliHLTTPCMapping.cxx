@@ -52,7 +52,11 @@ AliHLTTPCMapping::AliHLTTPCMapping(UInt_t patch)
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
   assert(patch<fgkNofPatches);
-  if (patch>=fgkNofPatches) fPatch=0; // just to avoid boundary overflow
+  if (patch>=fgkNofPatches) {
+    HLTFatal("invalid partition number %d, allowed range [0,%d]", patch, fgkNofPatches-1);
+    fPatch=0; // just to avoid boundary overflow
+    return;
+  }
 
   // Get the row offset.
   // we have several possibilities to count the rows:
