@@ -132,7 +132,6 @@ void AliMixInputHandlerInfo::PrepareEntry(TChainElement *te, Long64_t entry, Ali
          fChain->AddFile(te->GetTitle());
          fChain->GetEntry(0);
          eh->Init(fChain->GetTree(), opt);
-//       eh->Notify(te->GetTitle());
       }
       fNeedNotify = kTRUE;
       AliDebug(AliLog::kDebug + 5, "->");
@@ -151,16 +150,16 @@ void AliMixInputHandlerInfo::PrepareEntry(TChainElement *te, Long64_t entry, Ali
          fChain->GetEntry(0);
          eh->Init(fChain->GetTree(), opt);
          eh->Notify(te->GetTitle());
-         eh->BeginEvent(entry);
          fChain->GetEntry(entry);
+         eh->BeginEvent(entry);
          fNeedNotify = kFALSE;
       } else {
          AliDebug(AliLog::kDebug, Form("We are reusing file %s ...", te->GetTitle()));
          if (fNeedNotify) eh->Notify(te->GetTitle());
          fNeedNotify = kFALSE;
          AliDebug(AliLog::kDebug, Form("Entry is %lld  fChain->GetEntries %lld ...", entry, fChain->GetEntries()));
-         eh->BeginEvent(entry);
          fChain->GetEntry(entry);
+         eh->BeginEvent(entry);
          // file is in tree fChain already
       }
    }
