@@ -34,7 +34,7 @@
 #include "AliAODPWG4Particle.h"
 #include "AliStack.h"
 #include "AliFiducialCut.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliAODMCParticle.h"
 
 ClassImp(AliAnaChargedParticles)
@@ -274,7 +274,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   Int_t evtIndex = 0;
   for(Int_t i = 0; i < ntracks; i++){
     
-    AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(i));
+    AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(i));
     
     //Fill AODParticle after some selection       
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
@@ -328,7 +328,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     fhPhi->Fill(tr->Pt(), tr->Phi());
     fhEta->Fill(tr->Pt(), tr->Eta());
     //for charge information
-    AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(iaod));
+    AliVTrack * track =  (AliVTrack*) (GetCTSTracks()->At(iaod));
     if(track->Charge()>0)fhPtEtaPhiPos->Fill(tr->Pt(), tr->Eta(),tr->Phi());
     if(track->Charge()<0)fhPtEtaPhiNeg->Fill(tr->Pt(), tr->Eta(),tr->Phi());
     

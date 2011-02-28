@@ -31,7 +31,7 @@
 #include "AliAODJet.h"
 #include "AliAnaParticleJetFinderCorrelation.h" 
 #include "AliAODPWG4ParticleCorrelation.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
 
@@ -360,12 +360,12 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     else //If you want to use jet tracks from JETAN
       ntracks =  (jet->GetRefTracks())->GetEntriesFast();
     
-    AliAODTrack* track = 0x0 ;
+    AliVTrack* track = 0x0 ;
     for(Int_t ipr = 0;ipr < ntracks ; ipr ++ ){
       if(!fUseJetRefTracks)
-        track = (AliAODTrack *) (GetCTSTracks()->At(ipr)) ; 
+        track = (AliVTrack *) (GetCTSTracks()->At(ipr)) ; 
       else //If you want to use jet tracks from JETAN
-        track = (AliAODTrack *) ((jet->GetRefTracks())->At(ipr));
+        track = (AliVTrack *) ((jet->GetRefTracks())->At(ipr));
       
       p3.SetXYZ(track->Px(),track->Py(),track->Pz());
       pt    = p3.Pt();
