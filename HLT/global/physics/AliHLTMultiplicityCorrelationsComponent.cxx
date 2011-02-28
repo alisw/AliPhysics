@@ -139,8 +139,6 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoInit( Int_t argc, const Char_t*
   // -- Initialize members
   // -----------------------
   do {
-    if (iResult<0) break;
-
 
     fCorrObj = new AliHLTMultiplicityCorrelations;
     if (!fCorrObj) {
