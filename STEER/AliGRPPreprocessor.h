@@ -104,7 +104,6 @@ class AliGRPPreprocessor: public AliPreprocessor {
    Bool_t GetDAQStartEndTimeOk() const {return fdaqStartEndTimeOk;}
    void SetDAQStartEndTimeOk(Bool_t daqStartEndTimeOk) {fdaqStartEndTimeOk = daqStartEndTimeOk;}
 
-   Double_t CalculateMean(TObjArray* lhcObjArray);
    Float_t ProcessEnergy(TObjArray* array, Double_t timeStart);
    AliLHCClockPhase* ProcessLHCClockPhase(TObjArray *beam1phase,TObjArray *beam2phase,
 					  Double_t timeEnd);
