@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 // QA class of Heavy Flavor quark and fragmeted/decayed particles
 // -Check kinematics of Heavy Quarks/hadrons, and decayed leptons
@@ -60,14 +57,16 @@ AliHFEmcQA::AliHFEmcQA() :
         ,fNparents(0) 
 {
         // Default constructor
-        
+  for(Int_t mom = 0; mom < 9; mom++){
+    fhD[mom] = NULL;
+    fhDLogbin[mom] = NULL;
+  }
   for(Int_t mom = 0; mom < 50; mom++){
     fHeavyQuark[mom] = NULL;
   }
   for(Int_t mom = 0; mom < 2; mom++){
     fIsHeavy[mom] = 0;
   }
-
 }
 
 //_______________________________________________________________________________________________
@@ -80,6 +79,10 @@ AliHFEmcQA::AliHFEmcQA(const AliHFEmcQA&p):
         ,fNparents(p.fNparents) 
 {
         // Copy constructor
+  for(Int_t mom = 0; mom < 9; mom++){
+    fhD[mom] = NULL;
+    fhDLogbin[mom] = NULL;
+  }
   for(Int_t mom = 0; mom < 50; mom++){
     fHeavyQuark[mom] = NULL;
   }
@@ -256,15 +259,15 @@ void AliHFEmcQA::CreateHistograms(const Int_t kquark, Int_t icut, TString hnopt)
     fHistComm[iq][icut].fProcessID = new TH1F(hname,hname,21,-10.5,10.5);
   }
   hname = hnopt+"ePtRatio_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
+  fHistComm[iq][icut].fePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",200,0,20,100,0,1);
   hname = hnopt+"PtCorr_"+kqTypeLabel[kQuark];
   fHistComm[iq][icut].fPtCorr = new TH2F(hname,hname+";p_{T} (GeV/c);p_{T} (GeV/c)",200,0,20,200,0,20);
   hname = hnopt+"DePtRatio_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,30,100,0,1);
+  fHistComm[iq][icut].fDePtRatio = new TH2F(hname,hname+";p_{T} (GeV/c);momentum fraction",100,0,20,100,0,1);
   hname = hnopt+"eDistance_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
+  fHistComm[iq][icut].feDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,20,200,0,2);
   hname = hnopt+"DeDistance_"+kqTypeLabel[kQuark];
-  fHistComm[iq][icut].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,30,200,0,2);
+  fHistComm[iq][icut].fDeDistance= new TH2F(hname,hname+";p_{T} (GeV/c);distance (cm)",100,0,20,200,0,2);
   if(fQAhistos) fHistComm[iq][icut].FillList(fQAhistos);
 }
 
