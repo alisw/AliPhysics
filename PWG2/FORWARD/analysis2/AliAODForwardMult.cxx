@@ -33,7 +33,8 @@ AliAODForwardMult::AliAODForwardMult()
   : fIsMC(false),
     fHist(),
     fTriggers(0),
-    fIpZ(fgkInvalidIpZ)
+    fIpZ(fgkInvalidIpZ), 
+    fCentrality(-1)
 {
   // 
   // Constructor 
@@ -46,7 +47,8 @@ AliAODForwardMult::AliAODForwardMult(Bool_t isMC)
     fHist("forwardMult", "d^{2}N_{ch}/d#etad#varphi in the forward regions", 
 	  200, -4, 6, 20, 0, 2*TMath::Pi()),
     fTriggers(0),
-    fIpZ(fgkInvalidIpZ)
+    fIpZ(fgkInvalidIpZ), 
+    fCentrality(-1)
 {
   // 
   // Constructor 
@@ -156,11 +158,14 @@ AliAODForwardMult::Browse(TBrowser* b)
   //   b   Browser to use 
   static TObjString ipz;
   static TObjString trg;
+  static TObjString cnt;
   ipz = Form("ip_z=%fcm", fIpZ);
   trg = GetTriggerString(fTriggers);
+  cnt = Form("%+6.1f%%", fCentrality);
   b->Add(&fHist);
   b->Add(&ipz);
   b->Add(&trg);
+  b->Add(&cnt);
 }
 
 //____________________________________________________________________
@@ -175,13 +180,14 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   //   Character string representation of mask 
   static TString trg;
   trg = "";
-  if ((mask & kInel)    != 0x0) trg.Append("INEL ");
-  if ((mask & kInelGt0) != 0x0) trg.Append("INEL>0 ");
-  if ((mask & kNSD)     != 0x0) trg.Append("NSD ");
-  if ((mask & kA)       != 0x0) trg.Append("A ");
-  if ((mask & kB)       != 0x0) trg.Append("B ");
-  if ((mask & kC)       != 0x0) trg.Append("C ");
-  if ((mask & kE)       != 0x0) trg.Append("E ");
+  if ((mask & kInel)        != 0x0) trg.Append("INEL ");
+  if ((mask & kInelGt0)     != 0x0) trg.Append("INEL>0 ");
+  if ((mask & kNSD)         != 0x0) trg.Append("NSD ");
+  if ((mask & kA)           != 0x0) trg.Append("A ");
+  if ((mask & kB)           != 0x0) trg.Append("B ");
+  if ((mask & kC)           != 0x0) trg.Append("C ");
+  if ((mask & kE)           != 0x0) trg.Append("E ");
+  if ((mask & kMCNSD)       != 0x0) trg.Append("MCNSD ");
   return trg.Data();
 }
   
@@ -200,11 +206,12 @@ AliAODForwardMult::Print(Option_t* option) const
   case 1:  str = "pp"; break;
   case 2:  str = "PbPb"; break;
   }
-  std::cout << "Ipz:      " << fIpZ << "cm " << (HasIpZ() ? "" : "in") 
+  std::cout << "Ipz:         " << fIpZ << "cm " << (HasIpZ() ? "" : "in") 
 	    << "valid\n"
-	    << "Triggers: " << GetTriggerString(fTriggers) 
-	    << "sNN:      " << GetSNN() << "GeV\n" 
-	    << "System:   " << str 
+	    << "Triggers:    " << GetTriggerString(fTriggers) 
+	    << "sNN:         " << GetSNN() << "GeV\n" 
+	    << "System:      " << str 
+	    << "Centrality:  " << fCentrality << "%" 
 	    << std::endl;
 }
 

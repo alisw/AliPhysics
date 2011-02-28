@@ -272,7 +272,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
   fMCAODFMD.SetTriggerBits(triggers);
-
+  fAODFMD.SetCentrality(cent);
+  
   //All events should be stored - HHD
   //if (isAccepted) MarkEventForStore();
 

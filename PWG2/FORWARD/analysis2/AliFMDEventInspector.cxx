@@ -31,7 +31,11 @@
 #include <TROOT.h>
 #include <iostream>
 #include <iomanip>
-
+#include "AliMCEvent.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliHeader.h"
+#include "AliMCEventHandler.h"
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
   : TNamed(),
@@ -238,8 +242,8 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHTriggers->GetXaxis()->SetBinLabel(kB      +1,"B");
   fHTriggers->GetXaxis()->SetBinLabel(kC      +1,"C");
   fHTriggers->GetXaxis()->SetBinLabel(kE      +1,"E");
-  fHTriggers->GetXaxis()->SetBinLabel(9,         "spare1");
-  fHTriggers->GetXaxis()->SetBinLabel(10,        "spare2");
+  fHTriggers->GetXaxis()->SetBinLabel(kPileUp +1,"Pileup");
+  fHTriggers->GetXaxis()->SetBinLabel(kMCNSD  +1,"nsd");
   fList->Add(fHTriggers);
 
   fHType = new TH1I("type", Form("Event type (cut: SPD mult>%d)", 
@@ -337,10 +341,14 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 
   fHType->Fill(lowFlux ? 0 : 1);
   
-  cent = -1;
+  cent = -10;
   AliCentrality* centObj = const_cast<AliESDEvent*>(event)->GetCentrality();
-  if (centObj) 
-    cent = centObj->GetCentralityPercentile("VOM");  
+  if (centObj) {
+    AliInfo(Form("Got centrality object %p with quality %d", centObj, centObj->GetQuality()));
+    centObj->Print();
+    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
+  }
+  AliInfo(Form("Centrality is %f", cent));
   fHCent->Fill(cent);
 
   // Check the FMD ESD data 
@@ -372,6 +380,8 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     ivz = 0;
     return kBadVertex;
   }
+  
+  
   return kOk;
 }
 
@@ -405,7 +415,38 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     AliWarning("No input handler");
     return kFALSE;
   }
-
+  
+  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  AliMCEvent* mcEvent = 0;
+  if(mcHandler)
+    mcEvent = mcHandler->MCEvent();
+  
+  if(mcEvent) {
+    //Assign MC only triggers : True NSD etc.
+    AliHeader* header            = mcEvent->Header();
+    AliGenEventHeader* genHeader = header->GenEventHeader();
+    
+    AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
+    Bool_t sd = kFALSE;
+    if(pythiaGenHeader) {
+      Int_t pythiaType = pythiaGenHeader->ProcessType();
+      if(pythiaType==92 || pythiaType==93)
+	sd = kTRUE;
+    }
+    if(dpmHeader) {
+      Int_t processType = dpmHeader->ProcessType();
+      if(processType == 5 || processType == 6)  
+	sd = kTRUE;
+      
+    }
+    if(!sd) {
+      triggers |= AliAODForwardMult::kMCNSD;
+      fHTriggers->Fill(kMCNSD+0.5);
+    }
+    
+  }
+    
   // Check if this is a collision candidate (INEL)
   // Note, that we should use the value cached in the input 
   // handler rather than calling IsCollisionCandiate directly 
@@ -445,7 +486,13 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     triggers |= AliAODForwardMult::kNSD;
     fHTriggers->Fill(kNSD+.5);
   }
-
+  //Check pileup
+  Bool_t pileup =  esd->IsPileupFromSPD(3,0.8);
+  if (pileup) {
+    triggers |= AliAODForwardMult::kPileUp;
+    fHTriggers->Fill(kPileUp+.5);
+  }
+    
   // Get trigger stuff 
   TString trigStr = esd->GetFiredTriggerClasses();
   // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
@@ -526,6 +573,16 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
     return kFALSE;
   }
 
+  // HHD test
+  /*
+  if (vertex->IsFromVertexerZ()) { 
+    return kFALSE;
+  }
+  if (TMath::Sqrt(TMath::Power(vertex->GetX(),2) + TMath::Power(vertex->GetY(),2)) > 3 ) { 
+      return kFALSE;
+  }
+  */
+  
   // Get the z coordiante 
   vz = vertex->GetZ();
   return kTRUE;

@@ -125,7 +125,7 @@ RunCopyCentralSecMap(UShort_t sys, UShort_t cms, Short_t field, const Char_t* pa
 
   }
   
-  AliCentralMultiplicityTask* task = new AliCentralMultiplicityTask("central");
+  AliCentralMultiplicityTask::Manager* task = new AliCentralMultiplicityTask::Manager();
 
   TFile f(task->GetFullFileName(0.,sys+1,cms,field), "RECREATE");
   m->Write(task->GetSecMapName());

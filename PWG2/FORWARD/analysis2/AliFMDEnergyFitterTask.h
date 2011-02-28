@@ -119,6 +119,10 @@ public:
    * @param dbg Debug level
    */
   void SetDebug(Int_t dbg);
+
+  void SetBLow(Float_t b) {fbLow = b;}
+  void SetBHigh(Float_t b) {fbHigh = b;}
+
 protected: 
   /** 
    * Initialise the sub objects and stuff.  Called on first event 
@@ -130,7 +134,9 @@ protected:
   AliFMDEventInspector fEventInspector; // Algorithm
   AliFMDEnergyFitter   fEnergyFitter;   // Algorithm
   TList*               fList;           // Output list 
-
+  Float_t              fbLow;
+  Float_t              fbHigh;
+  
   ClassDef(AliFMDEnergyFitterTask,1) // Forward multiplicity class
 };
 
