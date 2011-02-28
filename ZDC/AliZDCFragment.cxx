@@ -96,14 +96,15 @@ void AliZDCFragment::GenerateIMF()
    // Coefficients of polynomial for fluctuations on average number of alphas
    const Float_t  kParamFluctNalpha[5]={0.283,6.2141,-17.113,17.394,-6.6084}; 
    // Coefficients of function for Pb nucleus skin
-   //const Float_t  kParamSkinPb[2]={0.93,11.05};
+   const Float_t  kParamSkinPb[2]={0.762408, 20.};
    
    // Thickness of nuclear surface
    const Float_t  kNuclearThick = 0.52;
    // Maximum impact parameter for U [r0*A**(1/3)]
    const Float_t  kbMaxU = 14.87;
    // Maximum impact parameter for Pb [r0*A**(1/3)]
-   const Float_t  kbMaxPb = 14.22+4*kNuclearThick;
+   //const Float_t  kbMaxPb = 14.22+4*kNuclearThick;
+   const Float_t  kbMaxPb = 14.22;
    // Z of the projectile
    const Float_t  kZProj = 82.;
    
@@ -126,10 +127,11 @@ void AliZDCFragment::GenerateIMF()
    // Zbound is proportional to b**2 up to b < kbMaxPb-2*kNuclearThick
    // and then it is an increasing exponential, imposing that at 
    // b=kbMaxPb-2kNuclearThick the two functions have the same derivative
-   /*Float_t bCore = kbMaxPb-2*kNuclearThick;
-   if(fB>bCore){
-     fZbAverage=kZProj*(1.-TMath::Exp(-kParamSkinPb[0]*(fB-kParamSkinPb[1])));
-   }*/
+   //Float_t bCore = kbMaxPb-2*kNuclearThick;
+   if(fB>kbMaxPb){
+     fZbAverage = TMath::Exp(-kParamSkinPb[0]*(fB-kParamSkinPb[1]));
+     printf(" b = %1.2f fm   Z_bound %1.2f\n", fB, fZbAverage);
+   }
    if(fZbAverage>kZProj) fZbAverage = kZProj;
    Float_t zbNorm = fZbAverage/kZProj;
    Float_t bNorm = fB/kbMaxPb;
