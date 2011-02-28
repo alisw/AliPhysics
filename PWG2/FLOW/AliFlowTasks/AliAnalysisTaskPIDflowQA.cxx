@@ -148,6 +148,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
   if (fOutputList) fOutputList->Delete();
   delete fOutputList;
   fOutputList=new TList();
+  fOutputList->SetOwner(kTRUE);
 
   const  Int_t ndec=2;
   Int_t startvalue=-1;
