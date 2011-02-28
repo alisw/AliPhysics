@@ -286,6 +286,10 @@ void AliAnalysisTaskMuonFakes::UserExec(Option_t *)
   
   // Load ESD event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!esd) {
+    AliError("Cannot get input event");
+    return;
+  }      
   
   // Load MC event 
   AliMCEventHandler *mcH = 0;
@@ -669,6 +673,10 @@ Int_t AliAnalysisTaskMuonFakes::RemoveConnectedFakes(AliMUONVTrackStore &fakeTra
       
       // find the corresponding ESD MUON track
       AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+      if (!esd) {
+	AliError("Cannot get input event");
+	return nFreeMissingTracks;
+      }      
       TIter next3(static_cast<TClonesArray*>(esd->FindListObject("MuonTracks")));
       AliESDMuonTrack* esdTrack = 0x0;
       while ((esdTrack = static_cast<AliESDMuonTrack*>(next3())) && esdTrack->GetUniqueID() != connectedFake->GetUniqueID()) {}

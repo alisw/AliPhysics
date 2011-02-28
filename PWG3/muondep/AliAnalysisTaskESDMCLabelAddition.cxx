@@ -94,6 +94,10 @@ void AliAnalysisTaskESDMCLabelAddition::AddMCLabel()
 {
   // Load ESD event
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!esd) {
+    AliError("Cannot get input event");
+    return;
+  }      
   
   // Load MC event 
   AliMCEventHandler *mcH = 0;
