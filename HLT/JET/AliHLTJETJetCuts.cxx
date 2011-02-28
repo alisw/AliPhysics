@@ -74,10 +74,10 @@ Bool_t AliHLTJETJetCuts::IsSelected( TObject *obj ) {
 
   Bool_t bResult = kTRUE;
 
-  if ( ! strcmp(obj->ClassName(),"AliHLTJETConeJetCandidate") )
-    bResult = IsSelected( dynamic_cast<AliHLTJETConeJetCandidate*> (obj));
-  else if ( ! strcmp(obj->ClassName(),"AliAODJet") )
-    bResult = IsSelected( dynamic_cast<AliAODJet*> (obj));
+  if ( obj->IsA() == AliHLTJETConeJetCandidate::Class() )
+    bResult = IsSelected( static_cast<AliHLTJETConeJetCandidate*> (obj));
+  else if ( obj->IsA() == AliAODJet::Class() )
+    bResult = IsSelected( static_cast<AliAODJet*> (obj));
   else {
     HLTError("Unknown object type %s", obj->ClassName() );
     bResult = kFALSE;

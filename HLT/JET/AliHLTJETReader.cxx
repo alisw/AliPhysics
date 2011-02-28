@@ -603,7 +603,8 @@ Bool_t AliHLTJETReader::FillGridESD() {
 
   // -- Loop over particles
   // ------------------------
-  for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && !bResult; iter++ ) {
+  //  for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && !bResult; iter++ ) { JMT Coverity
+  for ( Int_t iter = 0; iter < fESD->GetNumberOfTracks() && bResult; iter++ ) {
 
     AliESDtrack* esdTrack = fESD->GetTrack(iter);
     if ( ! esdTrack ) {

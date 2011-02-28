@@ -180,14 +180,18 @@ Int_t AliHLTJETConeJetCandidate::AddCell( AliHLTJETConeEtaPhiCell* cell ) {
 Int_t AliHLTJETConeJetCandidate::Compare( const TObject* obj) const {
   // see header file for class documentation
   
-  if (this == obj) 
+  if (this == obj ) 
     return 0;
-    
-  if ( fSeedPt < (dynamic_cast<AliHLTJETConeJetCandidate*>
-		  ( const_cast<TObject*>(obj)))->GetSeedPt() ) 
-    return 1;
+  
+  AliHLTJETConeJetCandidate * cand = dynamic_cast<AliHLTJETConeJetCandidate*>(const_cast<TObject*>(obj));
+  if (cand) {
+    if ( fSeedPt < cand->GetSeedPt() ) 
+      return 1;
+    else 
+      return -1;
+  }
   else 
-    return -1;
+    return 0;
 }
 
 /*

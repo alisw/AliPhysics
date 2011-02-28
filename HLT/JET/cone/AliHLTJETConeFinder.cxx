@@ -88,20 +88,28 @@ Int_t AliHLTJETConeFinder::Initialize() {
 
   // -- Initialize Reader
   AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-  
+  if (!reader) {
+    HLTError( "Casting Reader failed!");
+    return -EINPROGRESS;
+  }
+
   iResult = reader->Initialize();
   if ( iResult ) {
     HLTError( "Initializing Reader failed!");
-    return iResult;
+    return -EINPROGRESS;
   }
  
   // -- Initialize Header
   AliHLTJETConeHeader *header = dynamic_cast<AliHLTJETConeHeader*> (fHeader);
+  if (!header) {
+    HLTError( "Casting Header failed!");
+    return -EINPROGRESS;
+  }
 
   iResult = header->Initialize();
   if ( iResult ) {
     HLTError( "Initializing Header failed!");
-    return iResult;
+    return -EINPROGRESS;
   }
 
   // -- Set ptr to grid

@@ -80,10 +80,10 @@ Bool_t AliHLTJETTrackCuts::IsSelected( TObject *obj ) {
 
   Bool_t bResult = kTRUE;
   
-  if ( ! strcmp(obj->ClassName(),"TParticle") )
-    bResult = IsSelected( dynamic_cast<TParticle*> (obj));
-  else if ( ! strcmp(obj->ClassName(),"AliESDtrack") )
-    bResult = IsSelected( dynamic_cast<AliESDtrack*> (obj));
+  if ( obj->IsA() == TParticle::Class() )
+    bResult = IsSelected( static_cast<TParticle*> (obj));
+  else if ( obj->IsA() == AliESDtrack::Class() )
+    bResult = IsSelected( static_cast<AliESDtrack*> (obj));
   else {
     HLTError("Unknown object type %s", obj->ClassName() );
     bResult = kFALSE;
