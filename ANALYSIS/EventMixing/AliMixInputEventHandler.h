@@ -41,7 +41,6 @@ public:
    void                    SetInputHandlerForMixing(const AliInputEventHandler *const inHandler);
    void                    SetEventPool(AliMixEventPool *const evPool) { fEventPool = evPool; }
 
-   AliInputEventHandler   *InputEventHandler(const Int_t index);
    AliMixEventPool        *GetEventPool() const { return fEventPool; }
    Int_t                   BufferSize() const { return fBufferSize; }
    Int_t                   NumberMixedTimes() const { return fNumberMixed; }
