@@ -104,11 +104,11 @@ if( F77 MATCHES "g95")
   set(DYLIB ${SYSLIBS})
 
 else()
- 
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortran.dylib
+
+  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortran.dylib
                   OUTPUT_VARIABLE _shlib
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -print-file-name=libgfortranbegin.a
+  execute_process(COMMAND ${CMAKE_Fortran_COMPILER} -m64 -print-file-name=libgfortranbegin.a
                   OUTPUT_VARIABLE _alib
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
   set( SYSLIBS "${SYSLIBS} -ldl ${_shlib} ${_alib}")
