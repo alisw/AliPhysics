@@ -13,32 +13,20 @@
 //
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
-// --- ROOT system --- 
-
-// --- AliRoot system ---
-#include "AliCaloTrackReader.h" 
 #include "AliESDEvent.h"
-class AliCentrality;
+#include "AliCaloTrackReader.h" 
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {
   
   public: 
   
   AliCaloTrackESDReader() ; // ctor
-  //AliCaloTrackESDReader(const AliCaloTrackESDReader & g) ; // cpy ctor
-  //AliCaloTrackESDReader & operator = (const AliCaloTrackESDReader & g) ;//cpy assignment
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
 
-  Double_t GetBField() const;
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
-  
-  AliCentrality* GetCentrality() const {AliESDEvent* event = dynamic_cast<AliESDEvent*> (fInputEvent); 
-                                           if(event) return event->GetCentrality(); else return 0x0;}
-  
-  void FillInputVZERO();
-
+    
   ClassDef(AliCaloTrackESDReader,1)
 } ;
 

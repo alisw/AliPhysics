@@ -652,9 +652,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillAOD()
   //Select the Calorimeter of the photon
   TObjArray * pl = 0x0; 
   if(fCalorimeter == "PHOS")
-    pl = GetAODPHOS();
+    pl = GetPHOSClusters();
   else if (fCalorimeter == "EMCAL")
-    pl = GetAODEMCAL();
+    pl = GetEMCALClusters();
   
   if(!pl){
     printf("AliAnaShowerParameter::MakeAnalysisFillAOD() - Careful cluster array NULL!!\n");
@@ -868,9 +868,9 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     
     //Get the list of clusters from the AOD and loop over them to find the onces corresponding to the reconstructed 'photons'.
     if(fCalorimeter == "PHOS")
-      pl = GetAODPHOS();
+      pl = GetPHOSClusters();
     else if (fCalorimeter == "EMCAL")
-      pl = GetAODEMCAL();
+      pl = GetEMCALClusters();
     if(pl){
       //Some values are stored in AliAODCaloCluster objects only; we need to fetch them.
       for(Int_t icalo = 0; icalo < pl->GetEntriesFast(); icalo++){

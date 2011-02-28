@@ -614,16 +614,16 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   if(GetDebug() > 1){
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - Begin hadron correlation analysis, fill AODs \n");
     printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In particle branch aod entries %d\n", GetInputAODBranch()->GetEntriesFast());
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n", GetAODCTS()->GetEntriesFast());
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetAODEMCAL()->GetEntriesFast());
-    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In PHOS aod entries %d\n", GetAODPHOS()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In CTS aod entries %d\n", GetCTSTracks()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In EMCAL aod entries %d\n", GetEMCALClusters()->GetEntriesFast());
+    printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD() - In PHOS aod entries %d\n", GetPHOSClusters()->GetEntriesFast());
   }
   
   //Loop on stored AOD particles, trigger
   Double_t ptTrig    = 0.;
   Int_t    trigIndex = -1;
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
-  //fhNclustersNtracks->Fill(naod, GetAODCTS()->GetEntriesFast());
+  //fhNclustersNtracks->Fill(naod, GetCTSTracks()->GetEntriesFast());
   for(Int_t iaod = 0; iaod < naod ; iaod++){
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(iaod));
     //find the leading particles with highest momentum
@@ -639,7 +639,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(trigIndex));
     //Make correlation with charged hadrons
     if(GetReader()->IsCTSSwitchedOn() )
-      MakeChargedCorrelation(particle, GetAODCTS(),kFALSE);
+      MakeChargedCorrelation(particle, GetCTSTracks(),kFALSE);
     
     TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); //For the future, foresee more possible pi0 lists
     if(fNeutralCorr && pi0list && pi0list->GetEntriesFast() > 0)
@@ -734,7 +734,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
     
     //Make correlation with charged hadrons
     if(GetReader()->IsCTSSwitchedOn() )
-      MakeChargedCorrelation(particle, GetAODCTS(),kTRUE);
+      MakeChargedCorrelation(particle, GetCTSTracks(),kTRUE);
     
     TObjArray * pi0list = (TObjArray*) GetAODBranch(fPi0AODBranchName); //For the future, foresee more possible pi0 lists
     if(fNeutralCorr && pi0list && pi0list->GetEntriesFast() > 0)
@@ -761,7 +761,7 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
   GetReader()->GetVertex(v);
   if(!GetMixedEvent() && TMath::Abs(v[2]) > GetZvertexCut()) return ;  
 
-  Int_t nTracks = GetAODCTS()->GetEntriesFast() ;
+  Int_t nTracks = GetCTSTracks()->GetEntriesFast() ;
   
   if (GetMixedEvent()) {
     evtIndex11 = GetMixedEvent()->EventIndexForCaloCluster(aodParticle->GetCaloLabel(0)) ;
@@ -812,8 +812,8 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
     if(GetDebug() > 1)printf("indexPhoton1 = %d, indexPhoton2 = %d \n", indexPhoton1, indexPhoton2);
     
     if(indexPhoton1!=-1 && indexPhoton2!=-1){
-      if(aodParticle->GetDetector()=="EMCAL") clusters = GetAODEMCAL() ;
-      else  clusters = GetAODPHOS() ;
+      if(aodParticle->GetDetector()=="EMCAL") clusters = GetEMCALClusters() ;
+      else  clusters = GetPHOSClusters() ;
       for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
         AliVCluster * photon =  (AliVCluster*) (clusters->At(iclus));	
         photon->GetMomentum(photonMom,GetVertex(0)) ;
@@ -1051,9 +1051,9 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
 //
 //      //Input from second AOD?
 //    Int_t inputi = 0;
-//    if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= iclus) 
+//    if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= iclus) 
 //      inputi = 1 ;
-//    else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= iclus) 
+//    else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= iclus) 
 //      inputi = 1;
 //    
 //      //Cluster selection, not charged, with photon or pi0 id and in fiducial cut
@@ -1115,9 +1115,9 @@ void  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Particle
 //        
 //          //Input from second AOD?
 //        Int_t inputj = 0;
-//        if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetAODEMCALNormalInputEntries() <= jclus) 
+//        if     (aodParticle->GetDetector() == "EMCAL" && GetReader()->GetEMCALClustersNormalInputEntries() <= jclus) 
 //          inputj = 1;
-//        else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetAODPHOSNormalInputEntries()  <= jclus) 
+//        else if(aodParticle->GetDetector() == "PHOS"  && GetReader()->GetPHOSClustersNormalInputEntries()  <= jclus) 
 //          inputj = 1;
 //        
 //          //Cluster selection, not charged with photon or pi0 id and in fiducial cut
@@ -1261,8 +1261,8 @@ void  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Particle
     if(GetDebug() > 1)printf("indexPhoton1 = %d, indexPhoton2 = %d \n", indexPhoton1, indexPhoton2);
     
     if(indexPhoton1!=-1 && indexPhoton2!=-1){
-      if(aodParticle->GetDetector()=="EMCAL") clusters = GetAODEMCAL() ;
-      else                                    clusters = GetAODPHOS() ;
+      if(aodParticle->GetDetector()=="EMCAL") clusters = GetEMCALClusters() ;
+      else                                    clusters = GetPHOSClusters() ;
       for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
         AliVCluster * photon =  (AliVCluster*) (clusters->At(iclus));	
         photon->GetMomentum(photonMom,GetVertex(0)) ;

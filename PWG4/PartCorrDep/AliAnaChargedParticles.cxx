@@ -262,8 +262,8 @@ void AliAnaChargedParticles::Init()
 void  AliAnaChargedParticles::MakeAnalysisFillAOD() 
 {
   //Do analysis and fill aods
-  if(!GetAODCTS() || GetAODCTS()->GetEntriesFast() == 0) return ;
-  Int_t ntracks = GetAODCTS()->GetEntriesFast();
+  if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
+  Int_t ntracks = GetCTSTracks()->GetEntriesFast();
   Double_t vert[3] = {0,0,0}; //vertex ;
   //Some prints
   if(GetDebug() > 0)
@@ -274,7 +274,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
   Int_t evtIndex = 0;
   for(Int_t i = 0; i < ntracks; i++){
     
-    AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(i));
+    AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(i));
     
     //Fill AODParticle after some selection       
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
@@ -298,7 +298,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
       tr.SetTrackLabel(track->GetID(),-1);
     //  tr.SetChargedBit(track->Charge());
 	  //Input from second AOD?
-	  //if(GetReader()->GetAODCTSNormalInputEntries() <= i) tr.SetInputFileIndex(1);
+	  //if(GetReader()->GetCTSTracksNormalInputEntries() <= i) tr.SetInputFileIndex(1);
 		
       AddAODParticle(tr);
     }//selection
@@ -328,7 +328,7 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     fhPhi->Fill(tr->Pt(), tr->Phi());
     fhEta->Fill(tr->Pt(), tr->Eta());
     //for charge information
-    AliAODTrack * track =  (AliAODTrack*) (GetAODCTS()->At(iaod));
+    AliAODTrack * track =  (AliAODTrack*) (GetCTSTracks()->At(iaod));
     if(track->Charge()>0)fhPtEtaPhiPos->Fill(tr->Pt(), tr->Eta(),tr->Phi());
     if(track->Charge()<0)fhPtEtaPhiNeg->Fill(tr->Pt(), tr->Eta(),tr->Phi());
     

@@ -47,14 +47,8 @@ private:
   
 public:
 
-  virtual void AddAODParticle(AliAODPWG4Particle part) ;
   
-  virtual void ConnectInputOutputAODBranches();
-  
-  virtual TList * GetCreateOutputObjects()      { return (new TList) ;}
-	
-  virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
-  virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
+  //General methods, to be declared in deriving classes if needed
   
   virtual void Init() {;}
   virtual void InitParameters() ;
@@ -65,123 +59,152 @@ public:
   
   virtual void MakeAnalysisFillHistograms() {;}
   	
-  virtual TObjString * GetAnalysisCuts() {return 0x0;}
+  virtual void Terminate(TList * /*outputList*/) {;}
+    
+  
+  //Histograms, cuts 
+  virtual TList * GetCreateOutputObjects()      { return (new TList) ;}
 	
-  virtual Int_t GetDebug() const  { return fDebug ; }
-  virtual void SetDebug(Int_t d)   { fDebug = d ; }
+  virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
+  virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
   
+  virtual TObjString * GetAnalysisCuts() {return 0x0;}
+  TString	GetBaseParametersList();
+
+  //Getters, setters
+  virtual Int_t GetDebug() const   { return fDebug ; }
+  virtual void  SetDebug(Int_t d)  { fDebug = d    ; }
+
   virtual Int_t GetEventNumber() const ;
-  
-  virtual AliCaloTrackReader * GetReader() const {return fReader ; }
+
+  virtual AliCaloTrackReader * GetReader()            const { return fReader   ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }
     
-  //Calorimeter helper class access methods
-  AliEMCALGeoUtils *  GetEMCALGeometry() const { return fCaloUtils->GetEMCALGeometry(); }
-  AliPHOSGeoUtils  *  GetPHOSGeometry()  const { return fCaloUtils->GetPHOSGeometry() ; }
+  //Calorimeter specific access methods
+  AliCalorimeterUtils * GetCaloUtils()            const { return fCaloUtils                     ; }
+  void    SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils                ; }	
+
+  AliEMCALGeoUtils *  GetEMCALGeometry()          const { return fCaloUtils->GetEMCALGeometry() ; }
+  AliPHOSGeoUtils  *  GetPHOSGeometry()           const { return fCaloUtils->GetPHOSGeometry()  ; }
   
   Int_t GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t &iRCU) const {
 	  return fCaloUtils->GetModuleNumberCellIndexes(absId, calo, icol, irow,iRCU);}
   Int_t GetModuleNumber(AliAODPWG4Particle * part) const {
 	  return fCaloUtils->GetModuleNumber(part, fReader->GetInputEvent());}
-  Int_t GetModuleNumber(AliVCluster * cluster) const {
+  Int_t GetModuleNumber(AliVCluster * cluster)     const {
 	  return fCaloUtils->GetModuleNumber(cluster);}
  	
   //Centrality
   AliCentrality* GetCentrality()      const  { return fReader->GetCentrality()      ;}
   Int_t          GetEventCentrality() const  { return fReader->GetEventCentrality() ;}
- 
-  virtual void Terminate(TList * /*outputList*/) {;}
 	
-  //analysis AOD branch
-  virtual TClonesArray * GetCreateOutputAODBranch() ;
-  virtual TString GetInputAODName() const {return fInputAODName ; }
-  virtual void SetInputAODName(TString name)   { fInputAODName = name; }	
-  virtual TString GetOutputAODName()  const {return fOutputAODName ; }
-  virtual void SetOutputAODName(TString name)   { fNewAOD = kTRUE ; fOutputAODName = name; }
-  virtual Bool_t NewOutputAOD() const {return fNewAOD;}
-  virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
-  virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
-  virtual AliCalorimeterUtils * GetCaloUtils() const {return fCaloUtils ; }
-  void SetCaloUtils(AliCalorimeterUtils * caloutils) { fCaloUtils = caloutils ; }	
-	
-  virtual TString GetAODObjArrayName() const {return fAODObjArrayName;}
-  virtual void SetAODObjArrayName(TString name) {fAODObjArrayName = name; }
+  //AOD branch
+  virtual void AddAODParticle(AliAODPWG4Particle part) ;
+  virtual void ConnectInputOutputAODBranches();
   
-  virtual TClonesArray* GetInputAODBranch() const {return fInputAODBranch ;}
-  virtual TClonesArray* GetOutputAODBranch() const {if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ;}
+  virtual TClonesArray * GetCreateOutputAODBranch() ;
+  virtual TString GetInputAODName()          const { return fInputAODName  ; }
+  virtual void SetInputAODName(TString name)       { fInputAODName = name  ; }	
+  virtual TString GetOutputAODName()         const { return fOutputAODName ; }
+  virtual void SetOutputAODName(TString name)      { fNewAOD = kTRUE ; fOutputAODName = name; }
+  virtual Bool_t NewOutputAOD()              const { return fNewAOD        ; }
+  virtual TString GetOutputAODClassName()    const { return fOutputAODClassName ; }
+  virtual void SetOutputAODClassName(TString name) { fOutputAODClassName = name ; }
+  	
+  virtual TString GetAODObjArrayName()       const { return fAODObjArrayName ; }
+  virtual void SetAODObjArrayName(TString name)    { fAODObjArrayName = name ; }
+  
+  virtual TClonesArray* GetInputAODBranch()  const { return fInputAODBranch  ; }
+  virtual TClonesArray* GetOutputAODBranch() const { if(fNewAOD) return fOutputAODBranch; else return fInputAODBranch ; }
   virtual TClonesArray* GetAODBranch(TString aodBranchName) const ;
 	
-  virtual TClonesArray* GetAODCaloClusters() const ;
-  virtual TClonesArray* GetAODTracks() const ;	
-  virtual AliVCaloCells* GetPHOSCells()  const {return fReader->GetPHOSCells()  ;}
-  virtual AliVCaloCells* GetEMCALCells() const {return fReader->GetEMCALCells() ;}
-
-  virtual TObjArray* GetAODCTS() const ;
-  virtual TObjArray* GetAODEMCAL() const ;
-  virtual TObjArray* GetAODPHOS() const ;
+  //Track cluster arrays access methods
+  virtual TClonesArray*  GetAODCaloClusters() const ;
+  virtual TClonesArray*  GetAODTracks()       const ;	
+  virtual AliVCaloCells* GetPHOSCells()       const { return fReader->GetPHOSCells()  ;}
+  virtual AliVCaloCells* GetEMCALCells()      const { return fReader->GetEMCALCells() ;}
+  virtual TObjArray*     GetCTSTracks()       const ;
+  virtual TObjArray*     GetEMCALClusters()   const ;
+  virtual TObjArray*     GetPHOSClusters()    const ;
   
-  virtual TString	GetBaseParametersList();
-    
-  virtual AliStack * GetMCStack() const ;
-  virtual AliHeader* GetMCHeader() const ;
-  virtual AliGenEventHeader* GetMCGenEventHeader() const ;
+  //MC event acces methods
+  virtual AliStack *                 GetMCStack()          const ;
+  virtual AliHeader*                 GetMCHeader()         const ;
+  virtual AliGenEventHeader        * GetMCGenEventHeader() const ;
   
   //Analysis helpers classes pointers setters and getters
-  virtual AliCaloPID * GetCaloPID() {if(!fCaloPID) fCaloPID = new AliCaloPID(); return  fCaloPID ;}
-  virtual void SetCaloPID(AliCaloPID * const pid) { fCaloPID = pid ;}
-  
-  virtual AliFiducialCut * GetFiducialCut() {if(!fFidCut) fFidCut = new AliFiducialCut(); return  fFidCut ;}
-  virtual void SetFiducialCut(AliFiducialCut * const fc) { fFidCut = fc ;}
-  
-  virtual AliIsolationCut * GetIsolationCut() {if(!fIC) fIC = new AliIsolationCut();  return  fIC ;}
-  virtual void SetIsolationCut(AliIsolationCut * const ic) { fIC = ic ;}
-  
-  virtual AliMCAnalysisUtils * GetMCAnalysisUtils()  {if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils(); return  fMCUtils ;}
-  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * const mcutils) { fMCUtils = mcutils ;}	
-  
-  virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  {if(!fNMS) fNMS = new AliNeutralMesonSelection(); return  fNMS ;}
-  virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS = nms ;}
+  virtual AliCaloPID               * GetCaloPID()                { if(!fCaloPID) fCaloPID = new AliCaloPID();           return  fCaloPID ; }
+  virtual AliFiducialCut           * GetFiducialCut()            { if(!fFidCut)  fFidCut = new AliFiducialCut();        return  fFidCut  ; }
+  virtual AliIsolationCut          * GetIsolationCut()           { if(!fIC)      fIC = new AliIsolationCut();           return  fIC      ; }
+  virtual AliMCAnalysisUtils       * GetMCAnalysisUtils()        { if(!fMCUtils) fMCUtils = new AliMCAnalysisUtils();   return  fMCUtils ; }
+  virtual AliNeutralMesonSelection * GetNeutralMesonSelection()  { if(!fNMS)     fNMS = new AliNeutralMesonSelection(); return  fNMS     ; }
+
+  virtual void SetCaloPID(AliCaloPID * const pid)                             { fCaloPID = pid     ; }
+  virtual void SetFiducialCut(AliFiducialCut * const fc)                      { fFidCut  = fc      ; }
+  virtual void SetIsolationCut(AliIsolationCut * const ic)                    { fIC      = ic      ; }
+  virtual void SetMCAnalysisUtils(AliMCAnalysisUtils * const mcutils)         { fMCUtils = mcutils ; }	
+  virtual void SetNeutralMesonSelection(AliNeutralMesonSelection * const nms) { fNMS     = nms     ; }
 	
-  virtual Bool_t     IsDataMC()       {return fDataMC ; }
-  virtual void SwitchOnDataMC()       {fDataMC = kTRUE ; if(!fMCUtils)fMCUtils = new AliMCAnalysisUtils();}
-  virtual void SwitchOffDataMC()      {fDataMC = kFALSE ; }
+  virtual Bool_t IsDataMC()                   const { return fDataMC                ; }
+  virtual void   SwitchOnDataMC()                   { fDataMC = kTRUE ; if(!fMCUtils)fMCUtils = new AliMCAnalysisUtils();}
+  virtual void   SwitchOffDataMC()                  { fDataMC = kFALSE              ; }
   
-  virtual Bool_t IsFiducialCutOn()       { return fCheckFidCut ; }
-  virtual void SwitchOnFiducialCut()     { fCheckFidCut = kTRUE;  if(!fFidCut)fFidCut = new AliFiducialCut();}
-  virtual void SwitchOffFiducialCut()    { fCheckFidCut = kFALSE;}
+  virtual Bool_t IsFiducialCutOn()            const { return fCheckFidCut           ; }
+  virtual void   SwitchOnFiducialCut()              { fCheckFidCut = kTRUE;  if(!fFidCut)fFidCut = new AliFiducialCut();}
+  virtual void   SwitchOffFiducialCut()             { fCheckFidCut = kFALSE         ; }
+    
+  virtual Bool_t IsCaloPIDOn()                const { return fCheckCaloPID          ; }
+  virtual void   SwitchOnCaloPID()                  { fCheckCaloPID = kTRUE; if(!fCaloPID)fCaloPID = new AliCaloPID();}
+  virtual void   SwitchOffCaloPID()                 { fCheckCaloPID = kFALSE        ; }
   
-  virtual Bool_t IsCaloPIDOn()       { return fCheckCaloPID ; }
-  virtual void SwitchOnCaloPID()     { fCheckCaloPID = kTRUE; if(!fCaloPID)fCaloPID = new AliCaloPID();}
-  virtual void SwitchOffCaloPID()    { fCheckCaloPID = kFALSE;}
+  virtual Bool_t IsCaloPIDRecalculationOn()   const { return fRecalculateCaloPID    ; }
+  virtual void   SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE  ; }
+  virtual void   SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE ; }
   
-  virtual Bool_t IsCaloPIDRecalculationOn()       { return fRecalculateCaloPID ; }
-  virtual void SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE;}
-  virtual void SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE;}
-  
-  virtual Float_t    GetMaxPt()         const {return fMaxPt ; }
-  virtual Float_t    GetMinPt()         const {return fMinPt ; }
-  virtual void SetMaxPt(Float_t pt)           {fMaxPt = pt ; }
-  virtual void SetMinPt(Float_t pt)           {fMinPt = pt ; }
-  virtual void SetPtCutRange(Double_t ptmin, Double_t ptmax)
+  virtual Float_t GetMaxPt()     const { return fMaxPt ; }
+  virtual Float_t GetMinPt()     const { return fMinPt ; }
+  virtual void    SetMaxPt(Float_t pt) { fMaxPt = pt   ; }
+  virtual void    SetMinPt(Float_t pt) { fMinPt = pt   ; }
+  virtual void    SetPtCutRange(Double_t ptmin, Double_t ptmax)
   {  fMaxPt=ptmax;   fMinPt=ptmin;}
+  
   //Setters for parameters of event buffers
-  virtual void SetMultiBin(Int_t n=1) {fMultiBin=n ;} //number of bins in Multiplicity  
-  virtual void SetNZvertBin(Int_t n=1) {fNZvertBin=n ;} //number of bins for vertex position
-  virtual void SetNRPBin(Int_t n=1)    {fNrpBin=n ;}    //number of bins in reaction plain  
+  virtual void SetMultiBin(Int_t n=1)    { fMultiBin  = n ;} //number of bins in Multiplicity  
+  virtual void SetNZvertBin(Int_t n=1)   { fNZvertBin = n ;} //number of bins for vertex position
+  virtual void SetNRPBin(Int_t n=1)      { fNrpBin    = n ;} //number of bins in reaction plain  
   virtual void SetMultiplicity(Int_t multimin, Int_t multimax) {fMinMulti = multimin ; fMaxMulti = multimax ; }
-  virtual void SwitchOnEventSelection()    {fUseSelectEvent = kTRUE ; }
-  virtual void SwitchOffEventSelection()   {fUseSelectEvent = kFALSE ; } 
+  virtual void SwitchOnEventSelection()  { fUseSelectEvent = kTRUE  ; }
+  virtual void SwitchOffEventSelection() { fUseSelectEvent = kFALSE ; } 
   //Getters for event selection
-  virtual Int_t GetMultiBin()  const       {return fMultiBin ;} //number of bins in Multiplicity 
-  virtual Int_t GetNZvertBin() const       {return fNZvertBin ;} //number of bins in vertex   
-  virtual Int_t GetNRPBin()    const       {return fNrpBin ;}    //number of bins in reaction plain 
+  virtual Int_t   GetMultiBin()    const { return fMultiBin  ; } //number of bins in Multiplicity 
+  virtual Int_t   GetNZvertBin()   const { return fNZvertBin ; } //number of bins in vertex   
+  virtual Int_t   GetNRPBin()      const { return fNrpBin    ; } //number of bins in reaction plain 
   //Getters for event selection
-  virtual Float_t GetZvertexCut() const {return GetReader()->GetZvertexCut();} //cut on vertex position  
-  virtual Int_t GetMaxMulti()     const {return fMaxMulti  ; }  
-  virtual Int_t GetMinMulti()     const {return fMinMulti  ; }  
+  virtual Float_t GetZvertexCut()  const { return GetReader()->GetZvertexCut();} //cut on vertex position  
+  virtual Int_t   GetMaxMulti()    const { return fMaxMulti  ; }  
+  virtual Int_t   GetMinMulti()    const { return fMinMulti  ; }  
   
   // Do correlation analysis with different event buffers
-  virtual Bool_t DoEventSelect() const {return fUseSelectEvent ; }
+  virtual Bool_t DoEventSelect()  const { return fUseSelectEvent ; }
+  
+  //Mixed event
+  virtual AliMixedEvent * GetMixedEvent()         { return GetReader()->GetMixedEvent()  ; } 
+  virtual Int_t           GetNMixedEvent()  const { return GetReader()->GetNMixedEvent() ; } 
+  
+  //Vertex methods
+  virtual void      GetVertex(Double_t vertex[3]) const { GetReader()->GetVertex(vertex) ; } 
+  virtual void      GetVertex(Double_t vertex[3],const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex)       ; } 
+  virtual Double_t* GetVertex(const Int_t evtIndex)             const { return GetReader()->GetVertex(evtIndex)              ; } 
+  
+	virtual Bool_t    IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster, fCaloUtils) ; } 
+  
+  //MULTIPLICITY
+  Int_t GetTrackMultiplicity()      const { return fReader->GetTrackMultiplicity() ; }
+  //VZERO
+  Int_t GetV0Signal(Int_t i )       const { return fReader->GetV0Signal(i)         ; }
+  Int_t GetV0Multiplicity(Int_t i ) const { return fReader->GetV0Multiplicity(i)   ; }
+  
+  
   
   //Histogrammes setters and getters
   //Pt, Energy 
@@ -191,9 +214,9 @@ public:
     fHistoPtMin = min ;
   }
   
-  virtual Int_t   GetHistoPtBins()  const { return fHistoPtBins; }
-  virtual Float_t GetHistoPtMin()   const { return fHistoPtMin ; }
-  virtual Float_t GetHistoPtMax()   const { return fHistoPtMax ; }
+  virtual Int_t   GetHistoPtBins() const { return fHistoPtBins ; }
+  virtual Float_t GetHistoPtMin()  const { return fHistoPtMin  ; }
+  virtual Float_t GetHistoPtMax()  const { return fHistoPtMax  ; }
   
     //Azimuthal angle
   virtual void SetHistoPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -225,8 +248,8 @@ public:
   }
 	
   virtual Int_t   GetHistoMassBins()  const { return fHistoMassBins ; }
-  virtual Float_t GetHistoMassMin()   const { return fHistoMassMin ; }
-  virtual Float_t GetHistoMassMax()   const { return fHistoMassMax ; }
+  virtual Float_t GetHistoMassMin()   const { return fHistoMassMin  ; }
+  virtual Float_t GetHistoMassMax()   const { return fHistoMassMax  ; }
 	
   //Asymetry
   virtual void SetHistoAsymmetryRangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -236,8 +259,8 @@ public:
   }
 	
   virtual Int_t   GetHistoAsymmetryBins()  const { return fHistoAsymBins ; }
-  virtual Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin ; }
-  virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax ; }	
+  virtual Float_t GetHistoAsymmetryMin()   const { return fHistoAsymMin  ; }
+  virtual Float_t GetHistoAsymmetryMax()   const { return fHistoAsymMax  ; }	
   
   
   //VZero
@@ -248,8 +271,8 @@ public:
   }
 	
   virtual Int_t GetHistoV0SignalBins()  const { return fHistoV0SBins ; }
-  virtual Int_t GetHistoV0SignalMin()   const { return fHistoV0SMin ; }
-  virtual Int_t GetHistoV0SignalMax()   const { return fHistoV0SMax ; }
+  virtual Int_t GetHistoV0SignalMin()   const { return fHistoV0SMin  ; }
+  virtual Int_t GetHistoV0SignalMax()   const { return fHistoV0SMax  ; }
 	
   virtual void SetHistoV0MultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
     fHistoV0MBins = n ;
@@ -258,8 +281,8 @@ public:
   }
 	
   virtual Int_t GetHistoV0MultiplicityBins()  const { return fHistoV0MBins ; }
-  virtual Int_t GetHistoV0MultiplicityMin()   const { return fHistoV0MMin ; }
-  virtual Int_t GetHistoV0MultiplicityMax()   const { return fHistoV0MMax ; }
+  virtual Int_t GetHistoV0MultiplicityMin()   const { return fHistoV0MMin  ; }
+  virtual Int_t GetHistoV0MultiplicityMax()   const { return fHistoV0MMax  ; }
   
   virtual void SetHistoTrackMultiplicityRangeAndNBins(Int_t min, Int_t max, Int_t n) {
     fHistoTrMBins = n ;
@@ -268,28 +291,13 @@ public:
   }
 	
   virtual Int_t GetHistoTrackMultiplicityBins()  const { return fHistoTrMBins ; }
-  virtual Int_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin ; }
-  virtual Int_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax ; }
+  virtual Int_t GetHistoTrackMultiplicityMin()   const { return fHistoTrMMin  ; }
+  virtual Int_t GetHistoTrackMultiplicityMax()   const { return fHistoTrMMax  ; }
   
-  virtual AliMixedEvent * GetMixedEvent()          { return GetReader()->GetMixedEvent() ; } 
-  virtual Int_t           GetNMixedEvent()   const { return GetReader()->GetNMixedEvent() ; } 
+  void   SwitchOnPlotsMaking()  { fMakePlots = kTRUE  ; }
+  void   SwitchOffPlotsMaking() { fMakePlots = kFALSE ; }
+  Bool_t MakePlotsOn()    const { return fMakePlots   ; }
   
-  virtual void      GetVertex(Double_t vertex[3])   const { GetReader()->GetVertex(vertex) ; } 
-  virtual void      GetVertex(Double_t vertex[3],const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex) ; } 
-  virtual Double_t* GetVertex(const Int_t evtIndex) const { return GetReader()->GetVertex(evtIndex) ; } 
-
-	virtual Bool_t IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster, fCaloUtils); } 
-  
-  void SwitchOnPlotsMaking()  {fMakePlots = kTRUE  ;}
-  void SwitchOffPlotsMaking() {fMakePlots = kFALSE ;}
-  Bool_t MakePlotsOn() const  {return fMakePlots;}
-  
-  //MULTIPLICITY
-  Int_t GetTrackMultiplicity() const {return fReader->GetTrackMultiplicity();}
-  //VZERO
-  Int_t GetV0Signal(Int_t i )       const {return fReader->GetV0Signal(i);}
-  Int_t GetV0Multiplicity(Int_t i ) const {return fReader->GetV0Multiplicity(i);}
-
 private:    
   
   Bool_t   fDataMC ;             // Flag to access MC data when using ESD or AOD     
@@ -353,7 +361,7 @@ private:
   Int_t   fHistoTrMMax   ;  // Maximum value of track multiplicity histogram range
   Int_t   fHistoTrMMin   ;  // Minimum value of track multiplicity histogram range
   
-  ClassDef(AliAnaPartCorrBaseClass,15)
+  ClassDef(AliAnaPartCorrBaseClass,16)
 } ;
 
 

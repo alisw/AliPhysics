@@ -13,32 +13,16 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
-// --- ROOT system --- 
-
-// --- AliRoot system ---
 #include "AliCaloTrackReader.h" 
-#include "AliAODEvent.h"
 
 class AliCaloTrackAODReader : public AliCaloTrackReader {
 	
 public: 
 	
   AliCaloTrackAODReader() ; // ctor
-  //AliCaloTrackAODReader(const AliCaloTrackAODReader & g)  ; // cpy ctor
-  //AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
   virtual ~AliCaloTrackAODReader() {;} //virtual dtor
   
- 	
-  Double_t GetBField() const;
-
-  //void GetSecondInputAODVertex(Double_t v[3]) const ;
-  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
-
-  TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}	
-
-  AliCentrality* GetCentrality() const {return 0x0;}
-
   
   ClassDef(AliCaloTrackAODReader,5)
 } ;

@@ -1362,13 +1362,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   
   //Get List with CaloClusters  
-  if      (fCalorimeter == "PHOS")  caloClusters = GetAODPHOS();
-  else if (fCalorimeter == "EMCAL") caloClusters = GetAODEMCAL();
+  if      (fCalorimeter == "PHOS")  caloClusters = GetPHOSClusters();
+  else if (fCalorimeter == "EMCAL") caloClusters = GetEMCALClusters();
   else 
     AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
   
-  //  if     (fCalorimeter == "EMCAL") GetReader()->GetInputEvent()->GetEMCALClusters(caloClusters);//GetAODEMCAL();
-  //  else if(fCalorimeter == "PHOS")  GetReader()->GetInputEvent()->GetPHOSClusters (caloClusters);//GetAODPHOS();
+  //  if     (fCalorimeter == "EMCAL") GetReader()->GetInputEvent()->GetEMCALClusters(caloClusters);//GetEMCALClusters();
+  //  else if(fCalorimeter == "PHOS")  GetReader()->GetInputEvent()->GetPHOSClusters (caloClusters);//GetPHOSClusters();
   //  else 
   //    AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
   
@@ -2338,8 +2338,8 @@ void AliAnaCalorimeterQA::Correlate(){
   // Correlate information from PHOS and EMCAL and with V0 and track multiplicity
  
   //Clusters 
-  TObjArray * caloClustersEMCAL = GetAODEMCAL();
-  TObjArray * caloClustersPHOS  = GetAODPHOS();
+  TObjArray * caloClustersEMCAL = GetEMCALClusters();
+  TObjArray * caloClustersPHOS  = GetPHOSClusters();
   
   Int_t nclEMCAL = caloClustersEMCAL->GetEntriesFast();
   Int_t nclPHOS  = caloClustersPHOS ->GetEntriesFast();
