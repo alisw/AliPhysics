@@ -82,10 +82,13 @@ AliTPCAlign::AliTPCAlign(Int_t reportloc, Int_t reportglob) :
   fFileLoc = new Char_t[80];
   fFileGlob = new Char_t[80];
   Char_t path[50];
-  sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
+  //sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
+  snprintf(path,50,gSystem->Getenv("ALICE_ROOT"));
   //
-  sprintf(fFileLoc,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
-  sprintf(fFileGlob,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
+  //sprintf(fFileLoc,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
+  snprintf(fFileLoc,100,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
+  //sprintf(fFileGlob,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
+  snprintf(fFileGlob,100,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
   //
 
 }

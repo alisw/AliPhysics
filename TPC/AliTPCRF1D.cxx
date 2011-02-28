@@ -198,7 +198,8 @@ void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
    if (sigma==0) sigma= fpadWidth/TMath::Sqrt(12.);
    forigsigma=sigma;
    fDSTEPM1 = 10/TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
-   sprintf(fType,"User");
+   //sprintf(fType,"User");
+   snprintf(fType,6,"User");
    //   Update();   
 }
   
@@ -218,7 +219,8 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
   fGRF->SetParameters(funParam);
    fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma  
-  sprintf(fType,"Gauss");
+  //sprintf(fType,"Gauss");
+   snprintf(fType,6,"Gauss");
 }
 
 void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
@@ -236,7 +238,8 @@ void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
   forigsigma=sigma;
   fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
-  sprintf(fType,"Cosh");
+  //sprintf(fType,"Cosh");
+  snprintf(fType,6,"Cosh");
 }
 
 void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
@@ -255,7 +258,8 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   forigsigma=padDistance;
   fDSTEPM1 = 10./TMath::Sqrt(padDistance*padDistance+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
-  sprintf(fType,"Gati");
+  //sprintf(fType,"Gati");
+  snprintf(fType,6,"Gati");
 }
 
 
@@ -273,8 +277,9 @@ void AliTPCRF1D::DrawRF(Float_t x1,Float_t x2,Int_t N)
   TPad * pad2 = new TPad("pad2RF","",0.05,0.05,0.95,0.45,21);
   pad2->Draw();
 
-  sprintf(s,"RF response function for %1.2f cm pad width",
-	  fpadWidth);  
+  //sprintf(s,"RF response function for %1.2f cm pad width",
+  //	  fpadWidth); 
+  snprintf(s,60,"RF response function for %1.2f cm pad width",fpadWidth); 
   pad1->cd();
   TH1F * hRFo = new TH1F("hRFo","Original charge distribution",N+1,x1,x2);
   pad2->cd();

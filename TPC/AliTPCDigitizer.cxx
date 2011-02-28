@@ -132,15 +132,18 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   AliTPC *pTPC  = (AliTPC *) gAlice->GetModule("TPC");
   AliTPCParam * param = pTPC->GetParam();
   
-  sprintf(s,param->GetTitle());
-  sprintf(ss,"75x40_100x60");
+  //sprintf(s,param->GetTitle());
+  snprintf(s,100,param->GetTitle());
+  //sprintf(ss,"75x40_100x60");
+  snprintf(ss,100,"75x40_100x60");
   if(strcmp(s,ss)==0){
     printf("2 pad-length geom hits with 3 pad-lenght geom digits...\n");
     delete param;
     param=new AliTPCParamSR();
   }
   else{
-   sprintf(ss,"75x40_100x60_150x60");
+    //sprintf(ss,"75x40_100x60_150x60");
+    snprintf(ss,100,"75x40_100x60_150x60");
    if(strcmp(s,ss)!=0) {
      printf("No TPC parameters found...\n");
      exit(2); 
@@ -200,7 +203,8 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
         return;
        }
 
-      sprintf(phname,"lhcphase%d",i1);
+      //sprintf(phname,"lhcphase%d",i1);
+      snprintf(phname,100,"lhcphase%d",i1);
       TParameter<float> *ph = (TParameter<float>*)treear->GetUserInfo()
 	                       ->FindObject("lhcphase0");
       if(!ph){

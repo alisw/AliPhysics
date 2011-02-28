@@ -372,7 +372,8 @@ AliH2F *  AliSimDigits::DrawTracks( const char *option,Int_t level,
   //  
   //make digits histo 
   char ch[30];
-  sprintf(ch,"Track Segment_%d level %d ",GetID(),level );
+  //sprintf(ch,"Track Segment_%d level %d ",GetID(),level );
+  snprintf(ch,30,"Track Segment_%d level %d ",GetID(),level );
   if ( (fNrows<1)|| (fNcols<1)) {
     return 0;
   }

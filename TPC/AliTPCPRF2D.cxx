@@ -282,7 +282,8 @@ void AliTPCPRF2D::SetParam( TF2 *const GRF,  Float_t kNorm,
    if (fGRF !=0 ) fGRF->Delete();
    fGRF = GRF;
    fKNorm = kNorm;
-   sprintf(fType,"User");
+   //sprintf(fType,"User");
+   snprintf(fType,6,"User");
    if (sigmaX ==0) sigmaX=(fWidth*(1+TMath::Abs(fK)))/fgkSQRT12;
    if (sigmaY ==0) sigmaY=(fWidth*(1+TMath::Abs(fK)))/fgkSQRT12;
    fOrigSigmaX=sigmaX; 
@@ -312,7 +313,8 @@ void AliTPCPRF2D::SetGauss(Float_t sigmaX, Float_t sigmaY,
   fKNorm = kNorm;
   fOrigSigmaX=sigmaX;
   fOrigSigmaY=sigmaY;
-  sprintf(fType,"Gauss");
+  //sprintf(fType,"Gauss");
+  snprintf(fType,6,"Gauss");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunGauss2D",FunGauss2D,-5.,5.,-5.,5.,4);
   
@@ -345,7 +347,8 @@ void AliTPCPRF2D::SetCosh(Float_t sigmaX, Float_t sigmaY,
   fKNorm = kNorm;
   fOrigSigmaX=sigmaX;
   fOrigSigmaY=sigmaY; 
-  sprintf(fType,"Cosh");
+  //  sprintf(fType,"Cosh");
+  snprintf(fType,6,"Cosh");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunCosh2D",	FunCosh2D,-5.,5.,-5.,5.,4);   
   funParam[0]=sigmaX;
@@ -376,7 +379,8 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
   fK3X=K3X;
   fK3Y=K3Y;
   fPadDistance=padDistance;  
-  sprintf(fType,"Gati");
+  //sprintf(fType,"Gati");
+  snprintf(fType,6,"Gati");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunGati2D",	FunGati2D,-5.,5.,-5.,5.,5);  
  
@@ -703,7 +707,8 @@ TH1F *  AliTPCPRF2D::GenerDrawXHisto(Float_t x1, Float_t x2,Float_t y)
   //  at position y 
   char s[100]; 
   const Int_t kn=200;
-  sprintf(s,"Pad Response Function");  
+  //sprintf(s,"Pad Response Function"); 
+  snprintf(s,100,"Pad Response Function");  
   TH1F * hPRFc = new TH1F("hPRFc",s,kn+1,x1,x2);
   Float_t x=x1;
   Float_t y1;
@@ -724,7 +729,8 @@ AliH2F * AliTPCPRF2D::GenerDrawHisto(Float_t x1, Float_t x2, Float_t y1, Float_t
   //gener two dimensional histogram with PRF
   //
   char s[100];
-  sprintf(s,"Pad Response Function");  
+  //sprintf(s,"Pad Response Function"); 
+  snprintf(s,100,"Pad Response Function");  
   AliH2F * hPRFc = new AliH2F("hPRFc",s,Nx,x1,x2,Ny,y1,y2);
   Float_t dx=(x2-x1)/Float_t(Nx);
   Float_t dy=(y2-y1)/Float_t(Ny) ;
@@ -752,7 +758,8 @@ AliH2F * AliTPCPRF2D::GenerDrawDistHisto(Float_t x1, Float_t x2, Float_t y1, Flo
   const Float_t kminth=0.00001;
   if (thr<kminth) thr=kminth;
   char s[100]; 
-  sprintf(s,"COG distortion of PRF (threshold=%2.2f)",thr);  
+  //sprintf(s,"COG distortion of PRF (threshold=%2.2f)",thr); 
+  snprintf(s,100,"COG distortion of PRF (threshold=%2.2f)",thr); 
   AliH2F * hPRFDist = new AliH2F("hDistortion",s,Nx,x1,x2,Ny,y1,y2);
   Float_t dx=(x2-x1)/Float_t(Nx);
   Float_t dy=(y2-y1)/Float_t(Ny) ;
@@ -821,9 +828,11 @@ void AliTPCPRF2D::DrawX(Float_t x1 ,Float_t x2,Float_t y1,Float_t y2, Int_t N)
     else y = y1+i*(y2-y1)/Float_t(N-1);
     pad2->cd(i+1);
     TH1F * hPRFc =GenerDrawXHisto(x1, x2,y);
-    sprintf(ch,"PRF at wire position: %2.3f",y);
+    //sprintf(ch,"PRF at wire position: %2.3f",y);
+    snprintf(ch,40,"PRF at wire position: %2.3f",y);
     hPRFc->SetTitle(ch);  
-    sprintf(ch,"PRF %d",i);
+    //sprintf(ch,"PRF %d",i);
+    snprintf(ch,15,"PRF %d",i);
     hPRFc->SetName(ch);  
      hPRFc->Fit("gaus");
   }
@@ -894,55 +903,74 @@ void AliTPCPRF2D::DrawComment(TPaveText *comment)
   //draw comments to picture
   TText * title = comment->AddText("Pad Response Function  parameters:");
   title->SetTextSize(0.03);
-  sprintf(s,"Height of pad:  %2.2f cm",fHeightFull);
+  //sprintf(s,"Height of pad:  %2.2f cm",fHeightFull);
+  snprintf(s,100,"Height of pad:  %2.2f cm",fHeightFull);
   comment->AddText(s);
-  sprintf(s,"Width pad:  %2.2f cm",fWidth);
+  //sprintf(s,"Width pad:  %2.2f cm",fWidth);
+  snprintf(s,100,"Width pad:  %2.2f cm",fWidth);
   comment->AddText(s);
-  sprintf(s,"Pad Angle:  %2.2f ",fPadAngle);
+  //sprintf(s,"Pad Angle:  %2.2f ",fPadAngle);
+  snprintf(s,100,"Pad Angle:  %2.2f ",fPadAngle);
   comment->AddText(s);
   
   if (TMath::Abs(fK)>0.0001){
-    sprintf(s,"Height of one chevron unit h:  %2.2f cm",2*fHeightS);
+    //sprintf(s,"Height of one chevron unit h:  %2.2f cm",2*fHeightS);
+    snprintf(s,100,"Height of one chevron unit h:  %2.2f cm",2*fHeightS);
     comment->AddText(s);
-    sprintf(s,"Overlap factor:  %2.2f",fK);
+    //sprintf(s,"Overlap factor:  %2.2f",fK);
+    snprintf(s,100,"Overlap factor:  %2.2f",fK);
     comment->AddText(s); 
   }
 
   if (strncmp(fType,"User",3)==0){
-    sprintf(s,"Charge distribution - user defined function  %s ",fGRF->GetTitle());
+    //sprintf(s,"Charge distribution - user defined function  %s ",fGRF->GetTitle());
+    snprintf(s,100,"Charge distribution - user defined function  %s ",fGRF->GetTitle());
     comment->AddText(s);  
-    sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    //sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    snprintf(s,100,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);  
     comment->AddText(s);  
-    sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    //sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    snprintf(s,100,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
     comment->AddText(s); 
   }
   if (strncmp(fType,"Gauss",3)==0){
-    sprintf(s,"Gauss charge distribution");
+    //sprintf(s,"Gauss charge distribution");
+    snprintf(s,100,"Gauss charge distribution");
     comment->AddText(s);  
-    sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    //sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    snprintf(s,100,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
     comment->AddText(s);  
-    sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    //sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    snprintf(s,100,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
     comment->AddText(s); 
   }
   if (strncmp(fType,"Gati",3)==0){
-    sprintf(s,"Gati charge distribution");
+    //sprintf(s,"Gati charge distribution");
+    snprintf(s,100,"Gati charge distribution");
     comment->AddText(s);  
-    sprintf(s,"K3X of Gati : %2.2f ",fK3X);
+    //sprintf(s,"K3X of Gati : %2.2f ",fK3X);
+    snprintf(s,100,"K3X of Gati : %2.2f ",fK3X);
     comment->AddText(s);  
-    sprintf(s,"K3Y of Gati: %2.2f ",fK3Y);
+    //sprintf(s,"K3Y of Gati: %2.2f ",fK3Y);
+    snprintf(s,100,"K3Y of Gati: %2.2f ",fK3Y);
     comment->AddText(s); 
-    sprintf(s,"Wire to Pad Distance: %2.2f ",fPadDistance);
+    //sprintf(s,"Wire to Pad Distance: %2.2f ",fPadDistance);
+    snprintf(s,100,"Wire to Pad Distance: %2.2f ",fPadDistance);
     comment->AddText(s); 
   }
   if (strncmp(fType,"Cosh",3)==0){
-    sprintf(s,"Cosh charge distribution");
+    //sprintf(s,"Cosh charge distribution");
+    snprintf(s,100,"Cosh charge distribution");
     comment->AddText(s);  
-    sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    //sprintf(s,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
+    snprintf(s,100,"Sigma x of charge distribution: %2.2f ",fOrigSigmaX);
     comment->AddText(s);  
-    sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    //sprintf(s,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
+    snprintf(s,100,"Sigma y of charge distribution: %2.2f ",fOrigSigmaY);
     comment->AddText(s); 
   }
-  sprintf(s,"Normalisation: %2.2f ",fKNorm);
+  //sprintf(s,"Normalisation: %2.2f ",fKNorm);
+  snprintf(s,100,"Normalisation: %2.2f ",fKNorm);
   comment->AddText(s);    
 }
 

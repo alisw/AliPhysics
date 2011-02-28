@@ -1240,8 +1240,9 @@ void AliTPC::SetDefaults(){
   // Use gamma 4
   //
   char  strgamma4[1000];
-  sprintf(strgamma4,"AliTPCRF1D::Gamma4((x-0.135+%f)*%f,55,160)",3*param->GetZSigma(), 1000000000*param->GetTSample()/param->GetZWidth());
+  //sprintf(strgamma4,"AliTPCRF1D::Gamma4((x-0.135+%f)*%f,55,160)",3*param->GetZSigma(), 1000000000*param->GetTSample()/param->GetZWidth());
   
+  snprintf(strgamma4,1000,"AliTPCRF1D::Gamma4((x-0.135+%f)*%f,55,160)",3*param->GetZSigma(), 1000000000*param->GetTSample()/param->GetZWidth());
   TF1 * fgamma4 = new TF1("fgamma4",strgamma4, -1,1);
   AliTPCRF1D     * rf    = new AliTPCRF1D(kTRUE,1000);
   rf->SetParam(fgamma4,param->GetZWidth(), 1,0.2);
@@ -2317,7 +2318,8 @@ void AliTPC::MakeBranch(Option_t *option)
   AliDebug(1,"");
   if (fHitType<2) return;
   char branchname[10];
-  sprintf(branchname,"%s2",GetName());  
+  //sprintf(branchname,"%s2",GetName()); 
+  snprintf(branchname,10,"%s2",GetName()); 
   //
   // Get the pointer to the header
   const char *cH = strstr(option,"H");
@@ -2354,7 +2356,8 @@ void AliTPC::SetTreeAddress2()
   
   TBranch *branch;
   char branchname[20];
-  sprintf(branchname,"%s2",GetName());
+  //sprintf(branchname,"%s2",GetName());
+  snprintf(branchname,20,"%s2",GetName());
   //
   // Branch address for hit tree
   TTree *treeH = fLoader->TreeH();
@@ -2566,7 +2569,8 @@ AliTPCParam* AliTPC::LoadTPCParam(TFile *file) {
 // and one has to decide where to store the TPC parameters
 // M.Kowalski
   char paramName[50];
-  sprintf(paramName,"75x40_100x60_150x60");
+  //sprintf(paramName,"75x40_100x60_150x60");
+  snprintf(paramName,50,"75x40_100x60_150x60");
   AliTPCParam *paramTPC=(AliTPCParam*)file->Get(paramName);
   if (paramTPC) {
     AliDebugClass(1,Form("TPC parameters %s found.",paramName));

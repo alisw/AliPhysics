@@ -1065,20 +1065,23 @@ void AliTPCv2::CreateGeometry()
   TGeoCombiTrans *transf[13];
   Char_t name[30];
   for(Int_t i=0;i<13;i++){
-    sprintf(name,"transf%d",i);
+    //sprintf(name,"transf%d",i);
+    snprintf(name,30,"transf%d",i);
     transf[i]= new TGeoCombiTrans(name,0.,-2.,-9.+i*1.5,rhole);
     transf[i]->RegisterYourself();
   }
   // union expression for holes
   TString operl("hhole:transf0");
   for (Int_t i=1;i<13;i++){
-    sprintf(name,"+hhole:transf%d",i);
+    //sprintf(name,"+hhole:transf%d",i);
+    snprintf(name,30,"+hhole:transf%d",i);
     operl.Append(name);   
   }
   //
  TString opers("hhole:transf1");
   for (Int_t i=2;i<12;i++){
-    sprintf(name,"+hhole:transf%d",i);
+    //sprintf(name,"+hhole:transf%d",i);
+    snprintf(name,30,"+hhole:transf%d",i); 
     opers.Append(name);   
   }
   //union of holes
