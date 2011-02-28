@@ -28,7 +28,6 @@
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
-//#include "TH3F.h"
 #include "TF1.h"
 #include "TList.h"
 #include "TMath.h"
@@ -55,8 +54,6 @@
 #include "AliAODMCHeader.h"
 #include "AliAODInputHandler.h"
 
-//#include "AliV0vertexer.h"
-
 #include "AliAODMCParticle.h"
 
 #include "AliMCEventHandler.h"
@@ -78,25 +75,32 @@ ClassImp(AliAnalysisTaskPerformanceStrange)
 
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
-: AliAnalysisTaskSE("TaskStrange"), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fESD(0), fListHist(0), fCentrSelector(0),
+  : AliAnalysisTaskSE("TaskStrange"), fAnalysisMC(0), fAnalysisType("infoType"),  fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fUseOnTheFly(0), fESD(0), fListHist(0), fCentrSelector(0),
 
+    // MC histograms  ---------------------------------------
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
+
     fHistMCMultiplicityPrimary(0),
     fHistMCMultiplicityTracks(0),
+
     fHistMCtracksProdRadiusK0s(0),
     fHistMCtracksProdRadiusLambda(0),
     fHistMCtracksProdRadiusAntiLambda(0),
+
     fHistMCtracksDecayRadiusK0s(0),
     fHistMCtracksDecayRadiusLambda(0),
     fHistMCtracksDecayRadiusAntiLambda(0),
+
     fHistMCPtAllK0s(0),
     fHistMCPtAllLambda(0),
     fHistMCPtAllAntiLambda(0),
+
     fHistMCProdRadiusK0s(0),
     fHistMCProdRadiusLambda(0),
     fHistMCProdRadiusAntiLambda(0),
+
     fHistMCRapK0s(0),
     fHistMCRapInPtRangeK0s(0),
     fHistMCRapLambda(0),
@@ -107,42 +111,43 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistMCRapInPtRangeXi(0),
     fHistMCRapPhi(0),
     fHistMCRapInPtRangePhi(0),
-////////////////////////////////////////
+
     fHistMCPtK0s(0),
-
-
     fHistMCPtLambda(0),
-///////////////////////////////////////////
 
     fHistMCPtLambdaFromSigma(0),
     fHistMCPtAntiLambdaFromSigma(0),
+
     fHistNTimesRecK0s(0),
-//    fHistNTimesRecK0sMI(0),
     fHistNTimesRecLambda(0),
-//    fHistNTimesRecLambdaMI(0),
     fHistNTimesRecAntiLambda(0),
-//    fHistNTimesRecAntiLambdaMI(0),
     fHistNTimesRecK0sVsPt(0),
-//    fHistNTimesRecK0sVsPtMI(0),
     fHistNTimesRecLambdaVsPt(0),
-//    fHistNTimesRecLambdaVsPtMI(0),
     fHistNTimesRecAntiLambdaVsPt(0),
-//    fHistNTimesRecAntiLambdaVsPtMI(0),
+    // ------------------------------------------------------
+
+    // Reconstructed particle histograms  -------------------
     fHistNumberEvents(0),
     fHistTrackPerEvent(0),
     fHistTrackletPerEvent(0),
     fHistMCDaughterTrack(0),
+
     fHistSPDPrimaryVertexZ(0),
+
     fHistPrimaryVertexX(0),
     fHistPrimaryVertexY(0),
     fHistPrimaryVertexZ(0),
+
     fHistPrimaryVertexResX(0),
     fHistPrimaryVertexResY(0),
     fHistPrimaryVertexResZ(0),
+
     fHistPrimaryVertexPosXV0events(0), 
     fHistPrimaryVertexPosYV0events(0), 
     fHistPrimaryVertexPosZV0events(0),
+
     fHistDaughterPt(0),
+
     fHistDcaPosToPrimVertex(0),
     fHistDcaNegToPrimVertex(0),
     fHistDcaPosToPrimVertexZoom(0),
@@ -154,201 +159,137 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistCosPointAngle(0),
     fHistCosPointAngleZoom(0),
     fHistProdRadius(0),
-//    fHistProdRadiusMI(0),
+
     fHistV0Multiplicity(0),
-//    fHistV0MultiplicityMI(0),
+
     fHistChi2KFBeforeCutK0s(0), 
     fHistChi2KFBeforeCutLambda(0), 
     fHistChi2KFBeforeCutAntiLambda(0),
     fHistChi2KFAfterCutK0s(0), 
     fHistChi2KFAfterCutLambda(0), 
     fHistChi2KFAfterCutAntiLambda(0),
+
     fHistMassK0(0),
-//    fHistMassK0MI(0),
     fHistMassLambda(0),
-//    fHistMassLambdaMI(0),
     fHistMassAntiLambda(0),
-//    fHistMassAntiLambdaMI(0),
     fHistMassVsRadiusK0(0),
-//    fHistMassVsRadiusK0MI(0),
     fHistMassVsRadiusLambda(0),
-//    fHistMassVsRadiusLambdaMI(0),
     fHistMassVsRadiusAntiLambda(0),
-//    fHistMassVsRadiusAntiLambdaMI(0),
 
-///////////////////////////////////////
     fHistPtVsMassK0(0),
-//    fHistPtVsMassK0MI(0),
     fHistPtVsMassLambda(0),
-////////////////////////////////////////
-	fHistPzPtBeforeK0s(0),
-	fHistPzPtAfterK0s(0),
-	fHistPzPtBeforeLambda(0),
-	fHistPzPtAfterLambda(0),
-
-//////////////////////////////////////////
-//    fHistPtVsMassLambdaMI(0),
-//    fHistPtVsMassAntiLambda(0),
-//    fHistPtVsMassAntiLambdaMI(0),
-
-
-
-//    fHistMultVsPtVsMassK0(0),
-//    fHistMultVsPtVsMassLambda(0),
-//    fHistMultVsPtVsMassAntiLambda(0),
-
-
     fHistArmenterosPodolanski(0),
-//    fHistArmenterosPodolanskiMI(0),
+    // ------------------------------------------------------
+
+    // kontrola pre |pz/pt| histograms  ---------------------
+    fHistPzPtBeforeK0s(0),
+    fHistPzPtAfterK0s(0),
+    fHistPzPtBeforeLambda(0),
+    fHistPzPtAfterLambda(0),
+    // ------------------------------------------------------
+
+    // PID histograms  --------------------------------------
     fHistNsigmaPosPionAntiLambda(0),
     fHistNsigmaNegProtonAntiLambda(0),
     fHistNsigmaPosProtonLambda(0),
     fHistNsigmaNegPionLambda(0),
     fHistNsigmaPosPionK0(0),
     fHistNsigmaNegPionK0(0),
+    // ------------------------------------------------------
+
+    // Associated particles ---------------------------------
     fHistAsMcRapK0(0),
-//    fHistAsMcRapK0MI(0),
     fHistAsMcRapLambda(0),
-//    fHistAsMcRapLambdaMI(0),
     fHistAsMcRapAntiLambda(0),
-//    fHistAsMcRapAntiLambdaMI(0),
 
-/////////////////////////////////////////////
     fHistAsMcPtK0(0),
-
-//    fHistAsMcPtK0MI(0),
     fHistAsMcPtLambda(0),
-//////////////////////////////////////////////
 
-
-//    fHistAsMcPtAntiLambdaMI(0),
     fHistAsMcPtZoomK0(0),
-//    fHistAsMcPtZoomK0MI(0),
     fHistAsMcPtZoomLambda(0),
-//    fHistAsMcPtZoomLambdaMI(0),
+
     fHistAsMcProdRadiusK0(0),
-//    fHistAsMcProdRadiusK0MI(0),
     fHistAsMcProdRadiusLambda(0),
-//    fHistAsMcProdRadiusLambdaMI(0),
     fHistAsMcProdRadiusAntiLambda(0),
-//    fHistAsMcProdRadiusAntiLambdaMI(0),
+
     fHistAsMcProdRadiusXvsYK0s(0),
-//    fHistAsMcProdRadiusXvsYK0sMI(0),
     fHistAsMcProdRadiusXvsYLambda(0),
-//    fHistAsMcProdRadiusXvsYLambdaMI(0),
     fHistAsMcProdRadiusXvsYAntiLambda(0),
-//    fHistAsMcProdRadiusXvsYAntiLambdaMI(0),
+
     fHistPidMcMassK0(0),
-//    fHistPidMcMassK0MI(0),
     fHistPidMcMassLambda(0),
-//    fHistPidMcMassLambdaMI(0),
     fHistPidMcMassAntiLambda(0),
-//    fHistPidMcMassAntiLambdaMI(0),
     fHistAsMcMassK0(0),
-//    fHistAsMcMassK0MI(0),
     fHistAsMcMassLambda(0),
-//    fHistAsMcMassLambdaMI(0),
     fHistAsMcMassAntiLambda(0),
-//    fHistAsMcMassAntiLambdaMI(0),
+
     fHistAsMcPtVsMassK0(0),
-//    fHistAsMcPtVsMassK0MI(0),
     fHistAsMcPtVsMassLambda(0),
-//    fHistAsMcPtVsMassLambdaMI(0),
     fHistAsMcPtVsMassAntiLambda(0),
-//    fHistAsMcPtVsMassAntiLambdaMI(0),
+
     fHistAsMcMassVsRadiusK0(0),
-//    fHistAsMcMassVsRadiusK0MI(0),
     fHistAsMcMassVsRadiusLambda(0),
-//    fHistAsMcMassVsRadiusLambdaMI(0),
     fHistAsMcMassVsRadiusAntiLambda(0),
-//    fHistAsMcMassVsRadiusAntiLambdaMI(0),
+
     fHistAsMcResxK0(0),
     fHistAsMcResyK0(0),
     fHistAsMcReszK0(0),
+
     fHistAsMcResrVsRadiusK0(0),
     fHistAsMcReszVsRadiusK0(0),
-//    fHistAsMcResxK0MI(0),
-//    fHistAsMcResyK0MI(0),
- //   fHistAsMcReszK0MI(0),
-//    fHistAsMcResrVsRadiusK0MI(0),
-//    fHistAsMcReszVsRadiusK0MI(0),
+
     fHistAsMcResxLambda(0),
     fHistAsMcResyLambda(0),
     fHistAsMcReszLambda(0),
+
     fHistAsMcResrVsRadiusLambda(0),
     fHistAsMcReszVsRadiusLambda(0),
-//    fHistAsMcResxLambdaMI(0),
-//    fHistAsMcResyLambdaMI(0),
-//    fHistAsMcReszLambdaMI(0),
-//    fHistAsMcResrVsRadiusLambdaMI(0),
-//    fHistAsMcReszVsRadiusLambdaMI(0),
+
     fHistAsMcResxAntiLambda(0),
     fHistAsMcResyAntiLambda(0),
     fHistAsMcReszAntiLambda(0),
+
     fHistAsMcResrVsRadiusAntiLambda(0),
     fHistAsMcReszVsRadiusAntiLambda(0),
-//    fHistAsMcResxAntiLambdaMI(0),
-//    fHistAsMcResyAntiLambdaMI(0),
-//    fHistAsMcReszAntiLambdaMI(0),
-//    fHistAsMcResrVsRadiusAntiLambdaMI(0),
-//    fHistAsMcReszVsRadiusAntiLambdaMI(0),
+
     fHistAsMcResPtK0(0),
-//    fHistAsMcResPtK0MI(0),
     fHistAsMcResPtLambda(0),
-//    fHistAsMcResPtLambdaMI(0),
     fHistAsMcResPtAntiLambda(0),
-//    fHistAsMcResPtAntiLambdaMI(0),
+
     fHistAsMcResPtVsRapK0(0),
-//    fHistAsMcResPtVsRapK0MI(0),
     fHistAsMcResPtVsRapLambda(0),
-//    fHistAsMcResPtVsRapLambdaMI(0),
     fHistAsMcResPtVsRapAntiLambda(0),
-//    fHistAsMcResPtVsRapAntiLambdaMI(0),
     fHistAsMcResPtVsPtK0(0),
-//    fHistAsMcResPtVsPtK0MI(0),
     fHistAsMcResPtVsPtLambda(0),
-//    fHistAsMcResPtVsPtLambdaMI(0),
     fHistAsMcResPtVsPtAntiLambda(0),
-//    fHistAsMcResPtVsPtAntiLambdaMI(0),
+
     fHistAsMcMotherPdgCodeK0s(0),
-//    fHistAsMcMotherPdgCodeK0sMI(0),
     fHistAsMcMotherPdgCodeLambda(0),
-//    fHistAsMcMotherPdgCodeLambdaMI(0),
     fHistAsMcMotherPdgCodeAntiLambda(0),
-//    fHistAsMcMotherPdgCodeAntiLambdaMI(0),
+
     fHistAsMcPtLambdaFromSigma(0),
-//    fHistAsMcPtLambdaFromSigmaMI(0),
     fHistAsMcPtAntiLambdaFromSigma(0),
-//    fHistAsMcPtAntiLambdaFromSigmaMI(0),
+    // ------------------------------------------------------
+
+    // Associated secondary particle histograms -------------
     fHistAsMcSecondaryPtVsRapK0s(0),
-//    fHistAsMcSecondaryPtVsRapK0sMI(0),
     fHistAsMcSecondaryPtVsRapLambda(0),
-//    fHistAsMcSecondaryPtVsRapLambdaMI(0),
     fHistAsMcSecondaryPtVsRapAntiLambda(0),
-//    fHistAsMcSecondaryPtVsRapAntiLambdaMI(0),
+
     fHistAsMcSecondaryProdRadiusK0s(0),
-//    fHistAsMcSecondaryProdRadiusK0sMI(0),
     fHistAsMcSecondaryProdRadiusLambda(0),
-//    fHistAsMcSecondaryProdRadiusLambdaMI(0),
     fHistAsMcSecondaryProdRadiusAntiLambda(0),
-//    fHistAsMcSecondaryProdRadiusAntiLambdaMI(0),
+
     fHistAsMcSecondaryProdRadiusXvsYK0s(0),
-//    fHistAsMcSecondaryProdRadiusXvsYK0sMI(0),
     fHistAsMcSecondaryProdRadiusXvsYLambda(0),
-//    fHistAsMcSecondaryProdRadiusXvsYLambdaMI(0),
     fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
-//    fHistAsMcSecondaryProdRadiusXvsYAntiLambdaMI(0),
+
     fHistAsMcSecondaryMotherPdgCodeK0s(0),
-//    fHistAsMcSecondaryMotherPdgCodeK0sMI(0),
     fHistAsMcSecondaryMotherPdgCodeLambda(0),
-//    fHistAsMcSecondaryMotherPdgCodeLambdaMI(0),
     fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
-//    fHistAsMcSecondaryMotherPdgCodeAntiLambdaMI(0),
+
     fHistAsMcSecondaryPtLambdaFromSigma(0),
-//    fHistAsMcSecondaryPtLambdaFromSigmaMI(0),
     fHistAsMcSecondaryPtAntiLambdaFromSigma(0)
-//    fHistAsMcSecondaryPtAntiLambdaFromSigmaMI(0)
-    
 {
   // Constructor
 
@@ -363,30 +304,34 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
 */
 }
 
-
-
-
-
 //________________________________________________________________________
 AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char *name)
-  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infocut"), fESD(0), fListHist(),fCentrSelector(0),
+  : AliAnalysisTaskSE(name), fAnalysisMC(0), fAnalysisType("infoType"), fCollidingSystems(0), fUsePID("infoPID"), fUseCut("infoCut"), fUseOnTheFly(0), fESD(0), fListHist(),fCentrSelector(0),
+
+    // MC histograms  ---------------------------------------
     fHistMCPrimaryVertexX(0),
     fHistMCPrimaryVertexY(0),
     fHistMCPrimaryVertexZ(0),
+
     fHistMCMultiplicityPrimary(0),
     fHistMCMultiplicityTracks(0),
+
     fHistMCtracksProdRadiusK0s(0),
     fHistMCtracksProdRadiusLambda(0),
     fHistMCtracksProdRadiusAntiLambda(0),
+
     fHistMCtracksDecayRadiusK0s(0),
     fHistMCtracksDecayRadiusLambda(0),
     fHistMCtracksDecayRadiusAntiLambda(0),
+
     fHistMCPtAllK0s(0),
     fHistMCPtAllLambda(0),
     fHistMCPtAllAntiLambda(0),
+
     fHistMCProdRadiusK0s(0),
     fHistMCProdRadiusLambda(0),
     fHistMCProdRadiusAntiLambda(0),
+
     fHistMCRapK0s(0),
     fHistMCRapInPtRangeK0s(0),
     fHistMCRapLambda(0),
@@ -398,41 +343,42 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistMCRapPhi(0),
     fHistMCRapInPtRangePhi(0),
 
-////////////////////////////////////////////////
     fHistMCPtK0s(0),
-
     fHistMCPtLambda(0),
-/////////////////////////////////////////////////
 
     fHistMCPtLambdaFromSigma(0),
     fHistMCPtAntiLambdaFromSigma(0),
+
     fHistNTimesRecK0s(0),
-//    fHistNTimesRecK0sMI(0),
     fHistNTimesRecLambda(0),
-//    fHistNTimesRecLambdaMI(0),
     fHistNTimesRecAntiLambda(0),
-//    fHistNTimesRecAntiLambdaMI(0),
     fHistNTimesRecK0sVsPt(0),
-//    fHistNTimesRecK0sVsPtMI(0),
     fHistNTimesRecLambdaVsPt(0),
-//    fHistNTimesRecLambdaVsPtMI(0),
     fHistNTimesRecAntiLambdaVsPt(0),
-//    fHistNTimesRecAntiLambdaVsPtMI(0),
+    // ------------------------------------------------------
+
+    // Reconstructed particle histograms  -------------------
     fHistNumberEvents(0),
     fHistTrackPerEvent(0),
     fHistTrackletPerEvent(0),
     fHistMCDaughterTrack(0),
+
     fHistSPDPrimaryVertexZ(0),
+
     fHistPrimaryVertexX(0),
     fHistPrimaryVertexY(0),
     fHistPrimaryVertexZ(0),
+
     fHistPrimaryVertexResX(0),
     fHistPrimaryVertexResY(0),
     fHistPrimaryVertexResZ(0),
+
     fHistPrimaryVertexPosXV0events(0), 
     fHistPrimaryVertexPosYV0events(0), 
     fHistPrimaryVertexPosZV0events(0),
+
     fHistDaughterPt(0),
+
     fHistDcaPosToPrimVertex(0),
     fHistDcaNegToPrimVertex(0),
     fHistDcaPosToPrimVertexZoom(0),
@@ -444,199 +390,137 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistCosPointAngle(0),
     fHistCosPointAngleZoom(0),
     fHistProdRadius(0),
-//    fHistProdRadiusMI(0),
+
     fHistV0Multiplicity(0),
-//    fHistV0MultiplicityMI(0),
+
     fHistChi2KFBeforeCutK0s(0), 
     fHistChi2KFBeforeCutLambda(0), 
     fHistChi2KFBeforeCutAntiLambda(0),
     fHistChi2KFAfterCutK0s(0), 
     fHistChi2KFAfterCutLambda(0), 
     fHistChi2KFAfterCutAntiLambda(0),
+
     fHistMassK0(0),
-//    fHistMassK0MI(0),
     fHistMassLambda(0),
-//    fHistMassLambdaMI(0),
     fHistMassAntiLambda(0),
-//    fHistMassAntiLambdaMI(0),
     fHistMassVsRadiusK0(0),
-//    fHistMassVsRadiusK0MI(0),
     fHistMassVsRadiusLambda(0),
-//    fHistMassVsRadiusLambdaMI(0),
     fHistMassVsRadiusAntiLambda(0),
-//    fHistMassVsRadiusAntiLambdaMI(0),
 
-/////////////////////////////////////////////
     fHistPtVsMassK0(0),
-//    fHistPtVsMassK0MI(0),
     fHistPtVsMassLambda(0),
-//    fHistPtVsMassLambdaMI(0),
-///////////////////////////////////////////////////
-	fHistPzPtBeforeK0s(0),
-	fHistPzPtAfterK0s(0),
-	fHistPzPtBeforeLambda(0),
-	fHistPzPtAfterLambda(0),
-
-//////////////////////////////////////////
-
-//    fHistMultVsPtVsMassK0(0),
-//    fHistMultVsPtVsMassLambda(0),
-//    fHistMultVsPtVsMassAntiLambda(0),
-
-
     fHistArmenterosPodolanski(0),
-//    fHistArmenterosPodolanskiMI(0),
+    // ------------------------------------------------------
+
+    // kontrola pre |pz/pt| histograms  ---------------------
+    fHistPzPtBeforeK0s(0),
+    fHistPzPtAfterK0s(0),
+    fHistPzPtBeforeLambda(0),
+    fHistPzPtAfterLambda(0),
+    // ------------------------------------------------------
+
+    // PID histograms  --------------------------------------
     fHistNsigmaPosPionAntiLambda(0),
     fHistNsigmaNegProtonAntiLambda(0),
     fHistNsigmaPosProtonLambda(0),
     fHistNsigmaNegPionLambda(0),
     fHistNsigmaPosPionK0(0),
     fHistNsigmaNegPionK0(0),
+    // ------------------------------------------------------
+
+    // Associated particles ---------------------------------
     fHistAsMcRapK0(0),
-//    fHistAsMcRapK0MI(0),
     fHistAsMcRapLambda(0),
-//    fHistAsMcRapLambdaMI(0),
     fHistAsMcRapAntiLambda(0),
-//    fHistAsMcRapAntiLambdaMI(0),
 
-///////////////////////////////////
     fHistAsMcPtK0(0),
-
-
-//    fHistAsMcPtK0MI(0),
     fHistAsMcPtLambda(0),
 
-/////////////////////////////////////
-
-
-//    fHistAsMcPtAntiLambdaMI(0),
     fHistAsMcPtZoomK0(0),
-//    fHistAsMcPtZoomK0MI(0),
     fHistAsMcPtZoomLambda(0),
-//    fHistAsMcPtZoomLambdaMI(0),
+
     fHistAsMcProdRadiusK0(0),
-//    fHistAsMcProdRadiusK0MI(0),
     fHistAsMcProdRadiusLambda(0),
-//    fHistAsMcProdRadiusLambdaMI(0),
     fHistAsMcProdRadiusAntiLambda(0),
-//    fHistAsMcProdRadiusAntiLambdaMI(0),
+
     fHistAsMcProdRadiusXvsYK0s(0),
-//    fHistAsMcProdRadiusXvsYK0sMI(0),
     fHistAsMcProdRadiusXvsYLambda(0),
-//    fHistAsMcProdRadiusXvsYLambdaMI(0),
     fHistAsMcProdRadiusXvsYAntiLambda(0),
-//    fHistAsMcProdRadiusXvsYAntiLambdaMI(0),
+
     fHistPidMcMassK0(0),
-//    fHistPidMcMassK0MI(0),
     fHistPidMcMassLambda(0),
-//    fHistPidMcMassLambdaMI(0),
     fHistPidMcMassAntiLambda(0),
-//    fHistPidMcMassAntiLambdaMI(0),
     fHistAsMcMassK0(0),
-//    fHistAsMcMassK0MI(0),
     fHistAsMcMassLambda(0),
-//    fHistAsMcMassLambdaMI(0),
     fHistAsMcMassAntiLambda(0),
-//    fHistAsMcMassAntiLambdaMI(0),
+
     fHistAsMcPtVsMassK0(0),
-//    fHistAsMcPtVsMassK0MI(0),
     fHistAsMcPtVsMassLambda(0),
-//    fHistAsMcPtVsMassLambdaMI(0),
     fHistAsMcPtVsMassAntiLambda(0),
-//    fHistAsMcPtVsMassAntiLambdaMI(0),
+
     fHistAsMcMassVsRadiusK0(0),
-//    fHistAsMcMassVsRadiusK0MI(0),
     fHistAsMcMassVsRadiusLambda(0),
-//    fHistAsMcMassVsRadiusLambdaMI(0),
     fHistAsMcMassVsRadiusAntiLambda(0),
-//    fHistAsMcMassVsRadiusAntiLambdaMI(0),
+
     fHistAsMcResxK0(0),
     fHistAsMcResyK0(0),
     fHistAsMcReszK0(0),
+
     fHistAsMcResrVsRadiusK0(0),
     fHistAsMcReszVsRadiusK0(0),
-//    fHistAsMcResxK0MI(0),
-//    fHistAsMcResyK0MI(0),
- //   fHistAsMcReszK0MI(0),
-//    fHistAsMcResrVsRadiusK0MI(0),
-//    fHistAsMcReszVsRadiusK0MI(0),
+
     fHistAsMcResxLambda(0),
     fHistAsMcResyLambda(0),
     fHistAsMcReszLambda(0),
+
     fHistAsMcResrVsRadiusLambda(0),
     fHistAsMcReszVsRadiusLambda(0),
-//    fHistAsMcResxLambdaMI(0),
-//    fHistAsMcResyLambdaMI(0),
-//    fHistAsMcReszLambdaMI(0),
-//    fHistAsMcResrVsRadiusLambdaMI(0),
-//    fHistAsMcReszVsRadiusLambdaMI(0),
+
     fHistAsMcResxAntiLambda(0),
     fHistAsMcResyAntiLambda(0),
     fHistAsMcReszAntiLambda(0),
+
     fHistAsMcResrVsRadiusAntiLambda(0),
     fHistAsMcReszVsRadiusAntiLambda(0),
-//    fHistAsMcResxAntiLambdaMI(0),
-//    fHistAsMcResyAntiLambdaMI(0),
-//    fHistAsMcReszAntiLambdaMI(0),
-//    fHistAsMcResrVsRadiusAntiLambdaMI(0),
-//    fHistAsMcReszVsRadiusAntiLambdaMI(0),
+
     fHistAsMcResPtK0(0),
-//    fHistAsMcResPtK0MI(0),
     fHistAsMcResPtLambda(0),
-//    fHistAsMcResPtLambdaMI(0),
     fHistAsMcResPtAntiLambda(0),
-//    fHistAsMcResPtAntiLambdaMI(0),
+
     fHistAsMcResPtVsRapK0(0),
-//    fHistAsMcResPtVsRapK0MI(0),
     fHistAsMcResPtVsRapLambda(0),
-//    fHistAsMcResPtVsRapLambdaMI(0),
     fHistAsMcResPtVsRapAntiLambda(0),
-//    fHistAsMcResPtVsRapAntiLambdaMI(0),
     fHistAsMcResPtVsPtK0(0),
-//    fHistAsMcResPtVsPtK0MI(0),
     fHistAsMcResPtVsPtLambda(0),
-//    fHistAsMcResPtVsPtLambdaMI(0),
     fHistAsMcResPtVsPtAntiLambda(0),
-//    fHistAsMcResPtVsPtAntiLambdaMI(0),
+
     fHistAsMcMotherPdgCodeK0s(0),
-//    fHistAsMcMotherPdgCodeK0sMI(0),
     fHistAsMcMotherPdgCodeLambda(0),
-//    fHistAsMcMotherPdgCodeLambdaMI(0),
     fHistAsMcMotherPdgCodeAntiLambda(0),
-//    fHistAsMcMotherPdgCodeAntiLambdaMI(0),
+
     fHistAsMcPtLambdaFromSigma(0),
-//    fHistAsMcPtLambdaFromSigmaMI(0),
     fHistAsMcPtAntiLambdaFromSigma(0),
-//    fHistAsMcPtAntiLambdaFromSigmaMI(0),
+    // ------------------------------------------------------
+
+    // Associated secondary particle histograms -------------
     fHistAsMcSecondaryPtVsRapK0s(0),
-//    fHistAsMcSecondaryPtVsRapK0sMI(0),
     fHistAsMcSecondaryPtVsRapLambda(0),
-//    fHistAsMcSecondaryPtVsRapLambdaMI(0),
     fHistAsMcSecondaryPtVsRapAntiLambda(0),
-//    fHistAsMcSecondaryPtVsRapAntiLambdaMI(0),
+
     fHistAsMcSecondaryProdRadiusK0s(0),
-//    fHistAsMcSecondaryProdRadiusK0sMI(0),
     fHistAsMcSecondaryProdRadiusLambda(0),
-//    fHistAsMcSecondaryProdRadiusLambdaMI(0),
     fHistAsMcSecondaryProdRadiusAntiLambda(0),
-//    fHistAsMcSecondaryProdRadiusAntiLambdaMI(0),
+
     fHistAsMcSecondaryProdRadiusXvsYK0s(0),
-//    fHistAsMcSecondaryProdRadiusXvsYK0sMI(0),
     fHistAsMcSecondaryProdRadiusXvsYLambda(0),
-//    fHistAsMcSecondaryProdRadiusXvsYLambdaMI(0),
     fHistAsMcSecondaryProdRadiusXvsYAntiLambda(0),
-//    fHistAsMcSecondaryProdRadiusXvsYAntiLambdaMI(0),
+
     fHistAsMcSecondaryMotherPdgCodeK0s(0),
-//    fHistAsMcSecondaryMotherPdgCodeK0sMI(0),
     fHistAsMcSecondaryMotherPdgCodeLambda(0),
-//    fHistAsMcSecondaryMotherPdgCodeLambdaMI(0),
     fHistAsMcSecondaryMotherPdgCodeAntiLambda(0),
-//    fHistAsMcSecondaryMotherPdgCodeAntiLambdaMI(0),
+
     fHistAsMcSecondaryPtLambdaFromSigma(0),
-//    fHistAsMcSecondaryPtLambdaFromSigmaMI(0),
     fHistAsMcSecondaryPtAntiLambdaFromSigma(0)
-//    fHistAsMcSecondaryPtAntiLambdaFromSigmaMI(0)
-    
 {
   // Constructor
 
@@ -659,7 +543,6 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
 //________________________________________________________________________
 void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects() 
 {
-
   //******************
   // Create histograms
   //*******************
@@ -668,13 +551,11 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
 
   // Bo: tbd: condition before allocation (i.e. if (!fHistMCMultiplicityPrimary){...} for each histo...
 
-
-
   //***************
   // MC histograms
   //***************
  
-  // Primary Vertex:
+  // Primary Vertex X,Y,Z:
   fHistMCPrimaryVertexX          = new TH1F("h1MCPrimaryVertexX", "MC Primary Vertex Position X;Primary Vertex Position X (cm);Events",100,-0.5,0.5);
   fListHist->Add(fHistMCPrimaryVertexX);
 
@@ -684,7 +565,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistMCPrimaryVertexZ          = new TH1F("h1MCPrimaryVertexZ", "MC Primary Vertex Position Z;Primary Vertex Position Z (cm);Events",200,-20,20);
   fListHist->Add(fHistMCPrimaryVertexZ);
   
-  // Multiplicity
+  // Multiplicity:
   fHistMCMultiplicityPrimary           = new TH1F("h1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
   fListHist->Add(fHistMCMultiplicityPrimary);
 
@@ -751,16 +632,16 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistMCRapInPtRangeAntiLambda = new TH1F("h1MCRapInPtRangeAntiLambda", "#bar{#Lambda};y",160,-4,4);
   fListHist->Add(fHistMCRapInPtRangeAntiLambda);
 
-  fHistMCRapXi                  = new TH1F("h1MCRapXi", "Xi;y",160,-4,4);
+  fHistMCRapXi                  = new TH1F("h1MCRapXi", "#Xi;y",160,-4,4);
   fListHist->Add(fHistMCRapXi);
 
-  fHistMCRapInPtRangeXi         = new TH1F("h1MCRapInPtRangeXi", "Xi;y",160,-4,4);
+  fHistMCRapInPtRangeXi         = new TH1F("h1MCRapInPtRangeXi", "#Xi;y",160,-4,4);
   fListHist->Add(fHistMCRapInPtRangeXi);
 
-  fHistMCRapPhi                  = new TH1F("h1MCRapPhi", "Phi;y",160,-4,4);
+  fHistMCRapPhi                  = new TH1F("h1MCRapPhi", "#phi;y",160,-4,4);
   fListHist->Add(fHistMCRapPhi);
 
-  fHistMCRapInPtRangePhi         = new TH1F("h1MCRapInPtRangePhi", "Phi;y",160,-4,4);
+  fHistMCRapInPtRangePhi         = new TH1F("h1MCRapInPtRangePhi", "#phi;y",160,-4,4);
   fListHist->Add(fHistMCRapInPtRangePhi);
 
 
@@ -768,64 +649,44 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistMCPtK0s               = new TH1F("h1MCPtK0s", "K^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtK0s);
 
-
-
-
   fHistMCPtLambda            = new TH1F("h1MCPtLambda", "#Lambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtLambda);
 
-
-
-
-  // Pt distribution of Lambda coming from Sigma decay
+  // Pt distribution of Lambda coming from Sigma decay:
   fHistMCPtLambdaFromSigma      = new TH1F("h1MCPtLambdaFromSigma", "#Lambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtLambdaFromSigma);
 
   fHistMCPtAntiLambdaFromSigma  = new TH1F("h1MCPtAntiLambdaFromSigma", "#Lambda^{0};p_{t} (GeV/c)",240,0,12);
   fListHist->Add(fHistMCPtAntiLambdaFromSigma);
  
-  // Multiple reconstruction studies
+  // Multiple reconstruction studies:
   fHistNTimesRecK0s             = new TH1F("h1NTimesRecK0s","number of times a K0s is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
   fListHist->Add(fHistNTimesRecK0s);
-//  fHistNTimesRecK0sMI           = new TH1F("h1NTimesRecK0sMI","number of times a K0s MI is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecK0sMI);
 
   fHistNTimesRecLambda          = new TH1F("h1NTimesRecLambda","number of times a Lambda is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
   fListHist->Add(fHistNTimesRecLambda);
-//  fHistNTimesRecLambdaMI        = new TH1F("h1NTimesRecLambdaMI","number of times a Lambda MI is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecLambdaMI);
 
   fHistNTimesRecAntiLambda      = new TH1F("h1NTimesRecAntiLambda","number of times an AntiLambda is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
   fListHist->Add(fHistNTimesRecAntiLambda);
-//  fHistNTimesRecAntiLambdaMI    = new TH1F("h1NTimesRecAntiLambdaMI","number of times an AntiLambda  MI is reconstructed in -1<y<1;number of times;counts",500,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecAntiLambdaMI);
 
   fHistNTimesRecK0sVsPt         = new TH2F("h2NTimesRecK0sVsPt","NTimes versus Pt, K^{0} in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
   fListHist->Add(fHistNTimesRecK0sVsPt);
-//  fHistNTimesRecK0sVsPtMI       = new TH2F("h2NTimesRecK0sVsPtMI","NTimes versus Pt, K^{0}, on-the-fly finder, in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecK0sVsPtMI);
 
   fHistNTimesRecLambdaVsPt      = new TH2F("h2NTimesRecLambdaVsPt","NTimes versus Pt, #Lambda^{0} in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
   fListHist->Add(fHistNTimesRecLambdaVsPt);
-//  fHistNTimesRecLambdaVsPtMI    = new TH2F("h2NTimesRecLambdaVsPtMI","NTimes versus Pt, #Lambda^{0} on-the-fly finder in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecLambdaVsPtMI);
 
   fHistNTimesRecAntiLambdaVsPt  = new TH2F("h2NTimesRecAntiLambdaVsPt","NTimes versus Pt, #bar{#Lambda}^{0} in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
   fListHist->Add(fHistNTimesRecAntiLambdaVsPt);
-//  fHistNTimesRecAntiLambdaVsPtMI= new TH2F("h2NTimesRecAntiLambdaVsPtMI","NTimes versus Pt, #bar{#Lambda}^{0}, on-the-fly finder in -1<y<1;p_{t} (GeV/c);number of times",75,0,15,5,-0.5,4.5);
-//  fListHist->Add(fHistNTimesRecAntiLambdaVsPtMI);
-
-  
 
   //***********************************
   // Reconstructed particles histograms
   //***********************************
 
-  // Number of events;
+  // Number of events:
   fHistNumberEvents           = new TH1F("h1NumberEvents", "Number of events; index;Number of Events",10,0,10);
   fListHist->Add(fHistNumberEvents);
 
-  // multiplicity
+  // Multiplicity:
   fHistTrackPerEvent           = new TH1F("h1TrackPerEvent", "Tracks per event;Number of Tracks;Number of Events",1000,0,1000);
   fListHist->Add(fHistTrackPerEvent);
 
@@ -849,7 +710,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fListHist->Add(fHistPrimaryVertexZ);
 
 
-  // Primary vertex resolution
+  // Primary vertex resolution:
   fHistPrimaryVertexResX          = new TH1F("h1PrimaryVertexResX", "Primary Vertex Resolution X;Primary Vertex Resolution X (cm);Events",100,-0.25,0.25);
   fListHist->Add(fHistPrimaryVertexResX);
 
@@ -906,10 +767,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistProdRadius              = new TH2F("h2ProdRadius", "Production position;x (cm);y (cm)", 100,-50,50,100,-50,50);
   fListHist->Add(fHistProdRadius);
 
-//  fHistProdRadiusMI            = new TH2F("h2ProdRadiusMI", "Production position, V0s MI;x (cm);y (cm)", 100,-50,50,100,-50,50);
-//  fListHist->Add(fHistProdRadiusMI);
-
-  // V0 Multiplicity
+  // V0 Multiplicity:
   if (!fHistV0Multiplicity) {
     if (fCollidingSystems)
       fHistV0Multiplicity = new TH1F("fHistV0Multiplicity", "Multiplicity distribution;Number of Offline V0s;Events", 200, 0, 40000);
@@ -918,15 +776,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
     fListHist->Add(fHistV0Multiplicity);
   }
 
-/*  if (!fHistV0MultiplicityMI) {
-    if (fCollidingSystems)
-      fHistV0MultiplicityMI = new TH1F("fHistV0MultiplicityMI", "Multiplicity distribution;Number of On-the-fly V0s;Events", 200, 0, 40000);
-    else
-      fHistV0MultiplicityMI = new TH1F("fHistV0MultiplicityMI", "Multiplicity distribution;Number of On-the-fly V0s;Events", 10, 0, 10); 
-    fListHist->Add(fHistV0MultiplicityMI);
-  }
-*/
-  // AliKF Chi2
+  // Kalman Filter Chi2:
   fHistChi2KFBeforeCutK0s               = new TH2F("h1Chi2KFBeforeCutK0s", "K^{0}  candidates;#Chi^{2});Counts", 250, 0, 50, 2,-0.5,1.5);
   fListHist->Add(fHistChi2KFBeforeCutK0s);
   fHistChi2KFBeforeCutLambda            = new TH2F("h1Chi2KFBeforeCutLambda", "#Lambda^{0}  candidates;#Chi^{2};Counts", 250, 0, 50, 2,-0.5,1.5);
@@ -941,74 +791,54 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistChi2KFAfterCutAntiLambda        = new TH2F("h1Chi2KFAfterCutAntiLambda", "#bar{#Lambda}^{0} candidates;#Chi^{2};Counts", 250, 0, 50, 2,-0.5,1.5);
   fListHist->Add(fHistChi2KFAfterCutAntiLambda);
 
-  // Mass:
+  // Invariant mass:
   fHistMassK0                   = new TH1F("h1MassK0", "K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
   fListHist->Add(fHistMassK0);
-//  fHistMassK0MI                 = new TH1F("h1MassK0MI", "K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
-//  fListHist->Add(fHistMassK0MI);
 
   fHistMassLambda               = new TH1F("h1MassLambda", "#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistMassLambda);
-//  fHistMassLambdaMI             = new TH1F("h1MassLambdaMI", "#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistMassLambdaMI);
 
   fHistMassAntiLambda           = new TH1F("h1MassAntiLambda", "#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistMassAntiLambda);
-//  fHistMassAntiLambdaMI         = new TH1F("h1MassAntiLambdaMI", "#bar{#Lambda}^{0} candidates;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistMassAntiLambdaMI);
 
-  // invariant mass vs radius
+  // Invariant mass vs. radius:
   const Double_t radius[10] = {0.0,2.5,2.9,3.9,7.6,15.0,23.9,37.8,42.8,100.0};
   Int_t lNbinRadius        = 9;
   Int_t lNbinInvMassLambda = 300;
 
   fHistMassVsRadiusK0           = new TH2F("h2MassVsRadiusK0", "K^{0} candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 200, 0.4, 0.6);
   fListHist->Add(fHistMassVsRadiusK0);
-
-//  fHistMassVsRadiusK0MI         = new TH2F("h2MassVsRadiusK0MI", "K^{0} MI candidates;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 200, 0.4, 0.6);
-//  fListHist->Add(fHistMassVsRadiusK0MI);
   
   fHistMassVsRadiusLambda       = new TH2F("h2MassVsRadiusLambda", "#Lambda candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusLambda);
 
-//  fHistMassVsRadiusLambdaMI     = new TH2F("h2MassVsRadiusLambdaMI", "#Lambda MI candidates;radius (cm);M(p#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 140, 1.06, 1.2);
-//  fListHist->Add(fHistMassVsRadiusLambdaMI);
-
   fHistMassVsRadiusAntiLambda   = new TH2F("h2MassVsRadiusAntiLambda", "#bar{#Lambda} candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",lNbinRadius,radius, 140, 1.06, 1.2);
   fListHist->Add(fHistMassVsRadiusAntiLambda);
 
-//  fHistMassVsRadiusAntiLambdaMI = new TH2F("h2MassVsRadiusAntiLambdaMI", "#bar{#Lambda} candidates;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",lNbinRadius,radius, 140, 1.06, 1.2);
-//  fListHist->Add(fHistMassVsRadiusAntiLambdaMI);
-
-  // Pt Vs Mass
+  // Pt vs. mass:
   fHistPtVsMassK0               = new TH2F("h2PtVsMassK0","K^{0} candidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
   fListHist->Add(fHistPtVsMassK0);
-//  fHistPtVsMassK0MI             = new TH2F("h2PtVsMassK0MI","K^{0} MIcandidates;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
-//  fListHist->Add(fHistPtVsMassK0MI);
 
   fHistPtVsMassLambda           = new TH2F("h2PtVsMassLambda","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
   fListHist->Add(fHistPtVsMassLambda);
-//  fHistPtVsMassLambdaMI         = new TH2F("h2PtVsMassLambdaMI","#Lambda^{0} candidates;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
-//  fListHist->Add(fHistPtVsMassLambdaMI);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-fHistPzPtBeforeK0s	= new TH1F("h1PzPtBeforeK0s","K0s; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtBeforeK0s);
-
-fHistPzPtAfterK0s	= new TH1F("h1PzPtAfterK0s","K0s; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtAfterK0s);
-
-fHistPzPtBeforeLambda	= new TH1F("h1PzPtBeforeLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtBeforeLambda);
-
-fHistPzPtAfterLambda	= new TH1F("h1PzPtAfterLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtAfterLambda);
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   fHistArmenterosPodolanski     = new TH2F("h2ArmenterosPodolanski","Armenteros-Podolanski phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
-//  fHistArmenterosPodolanskiMI   = new TH2F("h2ArmenterosPodolanskiMI","Armenteros-Podolanski phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
+  fListHist->Add(fHistArmenterosPodolanski);
 
+  // Kontrola pre |pz/pt| histograms:
+  fHistPzPtBeforeK0s	= new TH1F("h1PzPtBeforeK0s","K0s; Abs(pz/pt); count",1000,0,10);
+  fListHist->Add(fHistPzPtBeforeK0s);
 
-  //PID
+  fHistPzPtAfterK0s	= new TH1F("h1PzPtAfterK0s","K0s; Abs(pz/pt); count",1000,0,10);
+  fListHist->Add(fHistPzPtAfterK0s);
+
+  fHistPzPtBeforeLambda	= new TH1F("h1PzPtBeforeLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
+  fListHist->Add(fHistPzPtBeforeLambda);
+
+  fHistPzPtAfterLambda	= new TH1F("h1PzPtAfterLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
+  fListHist->Add(fHistPzPtAfterLambda);
+
+  // PID histograms:
   fHistNsigmaPosPionAntiLambda   = new TH1F("h1NsigmaPosPionAntiLambda", "Positive daughter of Antilambda;NsigmaPion;Counts",25,0,5);
   fListHist->Add(fHistNsigmaPosPionAntiLambda);
 
@@ -1027,378 +857,221 @@ fHistPzPtAfterLambda	= new TH1F("h1PzPtAfterLambda","#Lambda^{0}; Abs(pz/pt); co
   fHistNsigmaNegPionK0           = new TH1F("h1NsigmaNegPionK0", "Negative daughter of K0s;NsigmaPion;Counts",25,0,5);
   fListHist->Add(fHistNsigmaNegPionK0);
 
-
   //********************************
-  // Associated particles histograms
+  // Associated particle histograms
   //********************************
 
-  // Rap distribution
+  // Rapidity distribution:
   fHistAsMcRapK0                = new TH1F("h1AsMcRapK0", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
   fListHist->Add(fHistAsMcRapK0);
-//  fHistAsMcRapK0MI              = new TH1F("h1AsMcRapK0MI", "K^{0} associated;eta;Counts", 60, -1.5, 1.5);
-//  fListHist->Add(fHistAsMcRapK0MI);
 
   fHistAsMcRapLambda            = new TH1F("h1AsMcRapLambda", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
   fListHist->Add(fHistAsMcRapLambda);
-//  fHistAsMcRapLambdaMI          = new TH1F("h1AsMcRapLambdaMI", "#Lambda^{0} associated;eta;Counts", 60, -1.5, 1.5);
-//  fListHist->Add(fHistAsMcRapLambdaMI);
 
   fHistAsMcRapAntiLambda        = new TH1F("h1AsMcRapAntiLambda", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
   fListHist->Add(fHistAsMcRapAntiLambda);
- // fHistAsMcRapAntiLambdaMI      = new TH1F("h1AsMcRapAntiLambdaMI", "#bar{#Lambda}^{0} associated;eta;Counts", 60, -1.5, 1.5);
-//  fListHist->Add(fHistAsMcRapAntiLambdaMI);
 
-
-  //Pt distribution
+  //Pt distribution:
   fHistAsMcPtK0                = new TH1F("h1AsMcPtK0", "K^{0} associated;p_{t} (GeV/c);Counts", 240,0,12);
   fListHist->Add(fHistAsMcPtK0);
-
-
-//  fHistAsMcPtK0MI              = new TH1F("h1AsMcPtK0MI", "K^{0} associated;p_{t} (GeV/c);Counts", 240,0,12);
-//  fListHist->Add(fHistAsMcPtK0MI);
 
   fHistAsMcPtLambda            = new TH1F("h1AsMcPtLambda", "#Lambda^{0} associated;p_{t} (GeV/c);Counts", 240,0,12);
   fListHist->Add(fHistAsMcPtLambda);
 
-
-
-//  fHistAsMcPtAntiLambdaMI      = new TH1F("h1AsMcPtAntiLambdaMI", "#bar{#Lambda}^{0} associated;p_{t} (GeV/c);Counts", 240,0,12);
-//  fListHist->Add(fHistAsMcPtAntiLambdaMI);
-
   fHistAsMcPtZoomK0            = new TH1F("h1AsMcPtZoomK0", "K^{0} candidates in -1 <y<1;p_{t} (GeV/c);Counts",20,0,1);
   fListHist->Add(fHistAsMcPtZoomK0);
-//  fHistAsMcPtZoomK0MI          = new TH1F("h1AsMcPtZoomK0MI", "K^{0} MI candidates in -1 <y<1;p_{t} (GeV/c);Counts",20,0,1);
-//  fListHist->Add(fHistAsMcPtZoomK0MI);
 
   fHistAsMcPtZoomLambda        = new TH1F("h1AsMcPtZoomLambda", "#Lambda^{0} candidates in -1 <y<1;p_{t} (GeV/c);Counts",20,0,1);
   fListHist->Add(fHistAsMcPtZoomLambda);
-//  fHistAsMcPtZoomLambdaMI      = new TH1F("h1AsMcPtZoomLambdaMI", "#Lambda^{0} MI candidates in -1 <y<1;p_{t} (GeV/c);Counts",20,0,1);
-//  fListHist->Add(fHistAsMcPtZoomLambdaMI);
 
-
-  // Radius distribution
+  // Radius distribution:
   fHistAsMcProdRadiusK0               = new TH1F("h1AsMcProdRadiusK0", "K^{0} associated;r (cm);Counts", 500, 0, 100);
   fListHist->Add(fHistAsMcProdRadiusK0);
-//  fHistAsMcProdRadiusK0MI             = new TH1F("h1AsMcProdRadiusK0MI", "K^{0} associated;r (cm);Counts", 500, 0, 100);
-//  fListHist->Add(fHistAsMcProdRadiusK0MI);
 
   fHistAsMcProdRadiusLambda           = new TH1F("h1AsMcProdRadiusLambda", "#Lambda^{0} associated;r (cm);Counts", 500, 0, 100);
   fListHist->Add(fHistAsMcProdRadiusLambda);
-//  fHistAsMcProdRadiusLambdaMI         = new TH1F("h1AsMcProdRadiusLambdaMI", "#Lambda^{0} associated;r (cm);Counts", 500, 0, 100);
-//  fListHist->Add(fHistAsMcProdRadiusLambdaMI);
 
   fHistAsMcProdRadiusAntiLambda       = new TH1F("h1AsMcProdRadiusAntiLambda", "#bar{#Lambda}^{0} associated;r (cm);Counts", 500, 0, 100);
   fListHist->Add(fHistAsMcProdRadiusAntiLambda);
-//  fHistAsMcProdRadiusAntiLambdaMI     = new TH1F("h1AsMcProdRadiusAntiLambdaMI", "#bar{#Lambda}^{0} associated;r (cm);Counts", 500, 0, 100);
-//  fListHist->Add(fHistAsMcProdRadiusAntiLambdaMI);
 
+  // Radius distribution vs. rapidity:
   fHistAsMcProdRadiusXvsYK0s          = new TH2F("h2AsMcProdRadiusXvsYK0s","Associated Secondary K^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
   fListHist->Add(fHistAsMcProdRadiusXvsYK0s);
-//  fHistAsMcProdRadiusXvsYK0sMI        = new TH2F("h2AsMcProdRadiusXvsYK0sMI","Associated Secondary K^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
-//  fListHist->Add(fHistAsMcProdRadiusXvsYK0sMI);
 
   fHistAsMcProdRadiusXvsYLambda       = new TH2F("h2AsMcProdRadiusXvsYLambda","Associated Secondary #Lambda^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
   fListHist->Add(fHistAsMcProdRadiusXvsYLambda);
-//  fHistAsMcProdRadiusXvsYLambdaMI     = new TH2F("h2AsMcProdRadiusXvsYLambdaMI","Associated Secondary #Lambda^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
-//  fListHist->Add(fHistAsMcProdRadiusXvsYLambdaMI);
 
   fHistAsMcProdRadiusXvsYAntiLambda   = new TH2F("h2AsMcProdRadiusXvsYAntiLambda","Associated Secondary #bar{#Lambda}^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
   fListHist->Add(fHistAsMcProdRadiusXvsYAntiLambda);
-//  fHistAsMcProdRadiusXvsYAntiLambdaMI = new TH2F("h2AsMcProdRadiusXvsYAntiLambdaMI","Associated Secondary #bar{#Lambda}^{0} Production Radius;x (cm); y (cm)",200,-50,50,200,-50,50);
-//  fListHist->Add(fHistAsMcProdRadiusXvsYAntiLambdaMI);
 
-
-
-  // Mass
+  // Invariant mass distribution with PID checked:
   fHistPidMcMassK0             = new TH1F("h1PidMcMassK0", "K^{0} MC PId checked;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
   fListHist->Add(fHistPidMcMassK0);
-//  fHistPidMcMassK0MI           = new TH1F("h1PidMcMassK0MI", "K^{0} MC PId checked;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
-//  fListHist->Add(fHistPidMcMassK0MI);
 
   fHistPidMcMassLambda         = new TH1F("h1PidMcMassLambda", "#Lambda^{0} MC PId checked;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistPidMcMassLambda);
-//  fHistPidMcMassLambdaMI       = new TH1F("h1PidMcMassLambdaMI", "#Lambda^{0} MC PId checked;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistPidMcMassLambdaMI);
   
   fHistPidMcMassAntiLambda     = new TH1F("h1PidMcMassAntiLambda", "#bar{#Lambda}^{0} MC PId checked;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistPidMcMassAntiLambda);
-//  fHistPidMcMassAntiLambdaMI   = new TH1F("h1PidMcMassAntiLambdaMI", "#bar{#Lambda}^{0} MC PId checked;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistPidMcMassAntiLambdaMI);
 
+  // Invariant mass distribution:
   fHistAsMcMassK0              = new TH1F("h1AsMcMassK0", "K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
   fListHist->Add(fHistAsMcMassK0);
-//  fHistAsMcMassK0MI            = new TH1F("h1AsMcMassK0MI", "K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});Counts", 100, 0.4, 0.6);
-//  fListHist->Add(fHistAsMcMassK0MI);
   
   fHistAsMcMassLambda          = new TH1F("h1AsMcMassLambda", "#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistAsMcMassLambda);
-//  fHistAsMcMassLambdaMI        = new TH1F("h1AsMcMassLambdaMI", "#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistAsMcMassLambdaMI);
 
   fHistAsMcMassAntiLambda      = new TH1F("h1AsMcMassAntiLambda", "#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
   fListHist->Add(fHistAsMcMassAntiLambda);
-//  fHistAsMcMassAntiLambdaMI    = new TH1F("h1AsMcMassAntiLambdaMI", "#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});Counts", 75, 1.05, 1.2);
-//  fListHist->Add(fHistAsMcMassAntiLambdaMI);
 
-  //Pt versus Mass
+  // Pt vs. invariant mass:
   fHistAsMcPtVsMassK0               = new TH2F("h2AsMcPtVsMassK0","K^{0} associated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassK0);
-//  fHistAsMcPtVsMassK0MI             = new TH2F("h2AsMcPtVsMassK0MI","K^{0} MIassociated;M(#pi^{+}#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",200, 0.4, 0.6,240,0,12);
-//  fListHist->Add(fHistAsMcPtVsMassK0MI);
 
   fHistAsMcPtVsMassLambda           = new TH2F("h2AsMcPtVsMassLambda","#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassLambda);
-//  fHistAsMcPtVsMassLambdaMI         = new TH2F("h2AsMcPtVsMassLambdaMI","#Lambda^{0} associated;M(p#pi^{-}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
-//  fListHist->Add(fHistAsMcPtVsMassLambdaMI);
 
   fHistAsMcPtVsMassAntiLambda       = new TH2F("h2AsMcPtVsMassAntiLambda","#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
   fListHist->Add(fHistAsMcPtVsMassAntiLambda);
-//  fHistAsMcPtVsMassAntiLambdaMI     = new TH2F("h2AsMcPtVsMassAntiLambdaMI","#bar{#Lambda}^{0} associated;M(#bar{p}#pi^{+}) (GeV/c^{2});p_{t} (GeV/c)",140, 1.06, 1.2,240,0,12);
-//  fListHist->Add(fHistAsMcPtVsMassAntiLambdaMI);
 
 
-  // invariant mass vs radius
+  // Invariant mass vs. radius:
   fHistAsMcMassVsRadiusK0             = new TH2F("h2AsMcMassVsRadiusK0", "K^{0} associated;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 500, 0.47, 0.52);
   fListHist->Add(fHistAsMcMassVsRadiusK0);
-
-//  fHistAsMcMassVsRadiusK0MI           = new TH2F("h2AsMcMassVsRadiusK0MI", "K^{0} MI associated;radius (cm);M(#pi^{+}#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, 500, 0.47, 0.52);
-//  fListHist->Add(fHistAsMcMassVsRadiusK0MI);
   
   fHistAsMcMassVsRadiusLambda         = new TH2F("h2AsMcMassVsRadiusLambda", "#Lambda associated;radius (cm);M(p#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, lNbinInvMassLambda, 1.10, 1.13);
   fListHist->Add(fHistAsMcMassVsRadiusLambda);
 
-//  fHistAsMcMassVsRadiusLambdaMI       = new TH2F("h2AsMcMassVsRadiusLambdaMI", "#Lambda MI associated;radius (cm);M(p#pi^{-}) (GeV/c^{2})",lNbinRadius,radius, lNbinInvMassLambda, 1.10, 1.13);
-//  fListHist->Add(fHistAsMcMassVsRadiusLambdaMI);
-
   fHistAsMcMassVsRadiusAntiLambda     = new TH2F("h2AsMcMassVsRadiusAntiLambda", "#bar{#Lambda} associated;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",lNbinRadius,radius,lNbinInvMassLambda , 1.10, 1.13);
   fListHist->Add(fHistAsMcMassVsRadiusAntiLambda);
   
-//  fHistAsMcMassVsRadiusAntiLambdaMI   = new TH2F("h2AsMcMassVsRadiusAntiLambdaMI", "#bar{#Lambda} MI associated;radius (cm);M(#bar{p}#pi^{+}) (GeV/c^{2})",lNbinRadius,radius,lNbinInvMassLambda , 1.10, 1.13);
-//  fListHist->Add(fHistAsMcMassVsRadiusAntiLambdaMI);
-    
-
-  // Position Resolution
+  // Position resolution for K0s:
   fHistAsMcResxK0                     = new TH1F("h1AsMcResxK0", "K^{0} associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResxK0);
   fHistAsMcResyK0                     = new TH1F("h1AsMcResyK0", "K^{0} associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResyK0);
   fHistAsMcReszK0                     = new TH1F("h1AsMcReszK0", "K^{0} associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszK0);
+
+  // Position resolution vs. radius for K0s:
   fHistAsMcResrVsRadiusK0             = new TH2F("h2AsMcResrVsRadiusK0", "K^{0} associated;Radius (cm);#Delta r (cm)",200,0.0,50., 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResrVsRadiusK0);
   fHistAsMcReszVsRadiusK0             = new TH2F("h2AsMcReszVsRadiusK0", "K^{0} associated;Radius (cm);#Delta z (cm)",200,0.0,50.0, 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszVsRadiusK0);
 
-//  fHistAsMcResxK0MI                   = new TH1F("h1AsMcResxK0MI", "K^{0} MI associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResxK0MI);
-//  fHistAsMcResyK0MI                   = new TH1F("h1AsMcResyK0MI", "K^{0} MI associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResyK0MI);
-//  fHistAsMcReszK0MI                   = new TH1F("h1AsMcReszK0MI", "K^{0} MI associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszK0MI);
-//  fHistAsMcResrVsRadiusK0MI           = new TH2F("h2AsMcResrVsRadiusK0MI", "K^{0} MI associated;Radius (cm);#Delta r (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResrVsRadiusK0MI);
-//  fHistAsMcReszVsRadiusK0MI           = new TH2F("h2AsMcReszVsRadiusK0MI", "K^{0} MI associated;Radius (cm);#Delta z (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszVsRadiusK0MI);
-
+  // Position resolution for Lambda:
   fHistAsMcResxLambda                 = new TH1F("h1AsMcResxLambda", "#Lambda^{0} associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResxLambda);
   fHistAsMcResyLambda                 = new TH1F("h1AsMcResyLambda", "#Lambda^{0} associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResyLambda);
   fHistAsMcReszLambda                 = new TH1F("h1AsMcReszLambda", "#Lambda^{0} associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszLambda);
+
+  // Position resolution vs. radius for Lambda:
   fHistAsMcResrVsRadiusLambda         = new TH2F("h2AsMcResrVsRadiusLambda", "#Lambda^{0} associated;Radius (cm);#Delta r (cm)",200,0.0,50.0, 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResrVsRadiusLambda);
   fHistAsMcReszVsRadiusLambda         = new TH2F("h2AsMcReszVsRadiusLambda", "#Lambda^{0} associated;Radius (cm);#Delta z (cm)",200,0.0,50.0, 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszVsRadiusLambda);
 
-//  fHistAsMcResxLambdaMI               = new TH1F("h1AsMcResxLambdaMI", "#Lambda^{0} MI associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResxLambdaMI);
-//  fHistAsMcResyLambdaMI               = new TH1F("h1AsMcResyLambdaMI", "#Lambda^{0} MI associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResyLambdaMI);
-//  fHistAsMcReszLambdaMI               = new TH1F("h1AsMcReszLambdaMI", "#Lambda^{0} MI associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszLambdaMI);
-//  fHistAsMcResrVsRadiusLambdaMI       = new TH2F("h2AsMcResrVsRadiusLambdaMI", "#Lambda^{0} MI associated;Radius (cm);#Delta r (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResrVsRadiusLambdaMI);
-//  fHistAsMcReszVsRadiusLambdaMI       = new TH2F("h2AsMcReszVsRadiusLambdaMI", "#Lambda^{0} MI associated;Radius (cm);#Delta z (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszVsRadiusLambdaMI);
-
+  // Position resolution for anti-Lambda:
   fHistAsMcResxAntiLambda             = new TH1F("h1AsMcResxAntiLambda", "#bar{#Lambda}^{0} associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResxAntiLambda);
   fHistAsMcResyAntiLambda             = new TH1F("h1AsMcResyAntiLambda", "#bar{#Lambda}^{0} associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResyAntiLambda);
   fHistAsMcReszAntiLambda             = new TH1F("h1AsMcReszAntiLambda", "#bar{#Lambda}^{0} associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszAntiLambda);
+
+  // Position resolution vs. radius for anti-Lambda:
   fHistAsMcResrVsRadiusAntiLambda     = new TH2F("h2AsMcResrVsRadiusAntiLambda", "#bar{#Lambda}^{0} associated;Radius (cm);#Delta r (cm)",200,0.0,50.0, 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcResrVsRadiusAntiLambda);
   fHistAsMcReszVsRadiusAntiLambda     = new TH2F("h2AsMcReszVsRadiusAntiLambda", "#bar{#Lambda}^{0} associated;Radius (cm);#Delta z (cm)",200,0.0,50.0, 50, -0.25, 0.25);
   fListHist->Add(fHistAsMcReszVsRadiusAntiLambda);
 
-//  fHistAsMcResxAntiLambdaMI           = new TH1F("h1AsMcResxAntiLambdaMI", "#bar{#Lambda}^{0} MI associated;#Delta x (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResxAntiLambdaMI);
-//  fHistAsMcResyAntiLambdaMI           = new TH1F("h1AsMcResyAntiLambdaMI", "#bar{#Lambda}^{0} MI associated;#Delta y (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResyAntiLambdaMI);
-//  fHistAsMcReszAntiLambdaMI           = new TH1F("h1AsMcReszAntiLambdaMI", "#bar{#Lambda}^{0} MI associated;#Delta z (cm);Counts", 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszAntiLambdaMI);
-//  fHistAsMcResrVsRadiusAntiLambdaMI   = new TH2F("h2AsMcResrVsRadiusAntiLambdaMI", "#bar{#Lambda}^{0} MI associated;Radius (cm);#Delta r (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcResrVsRadiusAntiLambdaMI);
-//  fHistAsMcReszVsRadiusAntiLambdaMI   = new TH2F("h2AsMcReszVsRadiusAntiLambdaMI", "#bar{#Lambda}^{0} MI associated;Radius (cm);#Delta z (cm)",8,radius, 50, -0.25, 0.25);
-//  fListHist->Add(fHistAsMcReszVsRadiusAntiLambdaMI);
-
-  // Pt Resolution
+  // Pt Resolution:
   fHistAsMcResPtK0                   = new TH1F("h1AsMcResPtK0","Pt Resolution K^{0};#Delta Pt;Counts",200,-1,1);
   fListHist->Add(fHistAsMcResPtK0);
-//  fHistAsMcResPtK0MI                 = new TH1F("h1AsMcResPtK0MI","Pt Resolution K^{0} MI;#Delta Pt;Counts",200,-1,1);
-//  fListHist->Add(fHistAsMcResPtK0MI);
-  
   fHistAsMcResPtLambda               = new TH1F("h1AsMcResPtLambda","Pt Resolution #Lambda^{0};#Delta Pt;Counts",200,-1,1);
   fListHist->Add(fHistAsMcResPtLambda);
-//  fHistAsMcResPtLambdaMI             = new TH1F("h1AsMcResPtLambdaMI","Pt Resolution #Lambda^{0} MI;#Delta Pt;Counts",200,-1,1);
-//  fListHist->Add(fHistAsMcResPtLambdaMI);
-
   fHistAsMcResPtAntiLambda           = new TH1F("h1AsMcResPtAntiLambda","Pt Resolution #bar{#Lambda}^{0};#Delta Pt;Counts",200,-1,1);
   fListHist->Add(fHistAsMcResPtAntiLambda);
-//  fHistAsMcResPtAntiLambdaMI         = new TH1F("h1AsMcResPtAntiLambdaMI","Pt Resolution #bar{#Lambda}^{0} MI;#Delta Pt;Counts",200,-1,1);
-///  fListHist->Add(fHistAsMcResPtAntiLambdaMI);
 
-
+  // Pt Resolution vs. rapidity:
   fHistAsMcResPtVsRapK0              = new TH2F("h2AsMcResPtVsRapK0","Pt Resolution K^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
   fListHist->Add(fHistAsMcResPtVsRapK0);
-//  fHistAsMcResPtVsRapK0MI            = new TH2F("h2AsMcResPtVsRapK0MI","Pt Resolution K^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
-//  fListHist->Add(fHistAsMcResPtVsRapK0MI);
-  
   fHistAsMcResPtVsRapLambda          = new TH2F("h2AsMcResPtVsRapLambda","Pt Resolution #Lambda^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
   fListHist->Add(fHistAsMcResPtVsRapLambda);
-//  fHistAsMcResPtVsRapLambdaMI        = new TH2F("h2AsMcResPtVsRapLambdaMI","Pt Resolution #Lambda^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
-//  fListHist->Add(fHistAsMcResPtVsRapLambdaMI);
-
   fHistAsMcResPtVsRapAntiLambda      = new TH2F("h2AsMcResPtVsRapAntiLambda","Pt Resolution #bar{#Lambda}^{0};#Delta Pt;Rap",200,-1,1,20,-1,1);
   fListHist->Add(fHistAsMcResPtVsRapAntiLambda);
-//  fHistAsMcResPtVsRapAntiLambdaMI    = new TH2F("h2AsMcResPtVsRapAntiLambdaMI","Pt Resolution #bar{#Lambda}^{0} MI;#Delta Pt;Rap",200,-1,1,20,-1,1);
-//  fListHist->Add(fHistAsMcResPtVsRapAntiLambdaMI);
 
-
+  // Pt Resolution vs. Pt:
   fHistAsMcResPtVsPtK0               = new TH2F("h2AsMcResPtVsPtK0","Pt Resolution K^{0};#Delta Pt;Pt",600,-0.15,0.15,240,0,12);
   fListHist->Add(fHistAsMcResPtVsPtK0);
-//  fHistAsMcResPtVsPtK0MI             = new TH2F("h2AsMcResPtVsPtK0MI","Pt Resolution K^{0} MI;#Delta Pt;Pt",600,-0.15,0.15,240,0,12);
-//  fListHist->Add(fHistAsMcResPtVsPtK0MI);
-    
   fHistAsMcResPtVsPtLambda           = new TH2F("h2AsMcResPtVsPtLambda","Pt Resolution #Lambda^{0};#Delta Pt;Pt",600,-0.15,0.15,240,0,12);
   fListHist->Add(fHistAsMcResPtVsPtLambda);
-//  fHistAsMcResPtVsPtLambdaMI         = new TH2F("h2AsMcResPtVsPtLambdaMI","Pt Resolution #Lambda^{0} MI;#Delta Pt;Pt",600,-0.15,0.15,240,0,12);
-//  fListHist->Add(fHistAsMcResPtVsPtLambdaMI);
-
   fHistAsMcResPtVsPtAntiLambda       = new TH2F("h2AsMcResPtVsPtAntiLambda","Pt Resolution #bar{#Lambda}^{0};#Delta Pt;Pt",300,-0.15,0.15,240,0,12);
   fListHist->Add(fHistAsMcResPtVsPtAntiLambda);
-//  fHistAsMcResPtVsPtAntiLambdaMI     = new TH2F("h2AsMcResPtVsPtAntiLambdaMI","Pt Resolution #bar{#Lambda}^{0} MI;#Delta Pt;Pt",300,-0.15,0.15,240,0,12);
-//  fListHist->Add(fHistAsMcResPtVsPtAntiLambdaMI);
 
-
-  // pdgcode of mother
+  // Pdg code of mother particle:
   fHistAsMcMotherPdgCodeK0s           = new TH1F("h1AsMcMotherPdgCodeK0s","Mother of Associated K^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcMotherPdgCodeK0s);
-//  fHistAsMcMotherPdgCodeK0sMI         = new TH1F("h1AsMcMotherPdgCodeK0sMI","Mother of Associated K^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcMotherPdgCodeK0sMI);
-
   fHistAsMcMotherPdgCodeLambda        = new TH1F("h1AsMcMotherPdgCodeLambda","Mother of Associated #Lambda^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcMotherPdgCodeLambda);
-//  fHistAsMcMotherPdgCodeLambdaMI      = new TH1F("h1AsMcMotherPdgCodeLambdaMI","Mother of Associated #Lambda^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcMotherPdgCodeLambdaMI);
-
   fHistAsMcMotherPdgCodeAntiLambda    = new TH1F("h1AsMcMotherPdgCodeAntiLambda","Mother of Associated #bar{#Lambda}^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcMotherPdgCodeAntiLambda);
-//  fHistAsMcMotherPdgCodeAntiLambdaMI  = new TH1F("h1AsMcMotherPdgCodeAntiLambdaMI","Mother of Associated #bar{Lambda}^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcMotherPdgCodeAntiLambdaMI);
 
-
-  // Pt distribution Lambda from Sigma
+  // Pt distribution of Lambda <- Sigma decay
   fHistAsMcPtLambdaFromSigma          = new TH1F("h1AsMcPtLambdaFromSigma","#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcPtLambdaFromSigma);
-//  fHistAsMcPtLambdaFromSigmaMI        = new TH1F("h1AsMcPtLambdaFromSigmaMI","#Lambda^{0} MI associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
-//  fListHist->Add(fHistAsMcPtLambdaFromSigmaMI);
-
   fHistAsMcPtAntiLambdaFromSigma      = new TH1F("h1AsMcPtAntiLambdaFromSigma","#bar{#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcPtAntiLambdaFromSigma);
-//  fHistAsMcPtAntiLambdaFromSigmaMI    = new TH1F("h1AsMcPtAntiLambdaFromSigmaMI","#bar{#Lambda}^{0} MI associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
-//  fListHist->Add(fHistAsMcPtAntiLambdaFromSigmaMI);
 
+  //*******************************************
+  // Associated secondary particles histograms
+  //*******************************************
 
-  // Associated secondary particles:
-  // Pt and rapidity distribution
+  // Pt vs. rapidity distribution:
   fHistAsMcSecondaryPtVsRapK0s          = new TH2F("h2AsMcSecondaryPtVsRapK0s", "K^{0} associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
   fListHist->Add(fHistAsMcSecondaryPtVsRapK0s);
-//  fHistAsMcSecondaryPtVsRapK0sMI        = new TH2F("h2AsMcSecondaryPtVsRapK0sMI", "K^{0} MI associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
-//  fListHist->Add(fHistAsMcSecondaryPtVsRapK0sMI);
-
   fHistAsMcSecondaryPtVsRapLambda       = new TH2F("h2AsMcSecondaryPtVsRapLambda", "#Lambda^{0} associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
   fListHist->Add(fHistAsMcSecondaryPtVsRapLambda);
-//  fHistAsMcSecondaryPtVsRapLambdaMI     = new TH2F("h2AsMcSecondaryPtVsRapLambdaMI", "#Lambda^{0} MI associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
-//  fListHist->Add(fHistAsMcSecondaryPtVsRapLambdaMI);
 
   fHistAsMcSecondaryPtVsRapAntiLambda   = new TH2F("h2AsMcSecondaryPtVsRapAntiLambda", "#bar{#Lambda}^{0} associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
   fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambda);
-//  fHistAsMcSecondaryPtVsRapAntiLambdaMI = new TH2F("h2AsMcSecondaryPtVsRapAntiLambdaMI", "#bar{#Lambda}^{0} MI associated secondary;p_{t} (GeV/c);rapidity",240,0,12,30,-1.5,1.5);
-//  fListHist->Add(fHistAsMcSecondaryPtVsRapAntiLambdaMI);
 
   // Production radius
   fHistAsMcSecondaryProdRadiusK0s              = new TH1F("h1AsMcSecondaryProdRadiusK0s", "K^{0} Production Radius;r (cm);Count", 170, -2, 15);
   fListHist->Add(fHistAsMcSecondaryProdRadiusK0s);
-//  fHistAsMcSecondaryProdRadiusK0sMI            = new TH1F("h1AsMcSecondaryProdRadiusK0sMI", "K^{0} MI Production Radius;r (cm);Count", 170, -2, 15);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusK0sMI);
 
   fHistAsMcSecondaryProdRadiusLambda           = new TH1F("h1AsMcSecondaryProdRadiusLambda", "#Lambda^{0} Production Radius;r (cm);Count", 170, -2, 15);
   fListHist->Add(fHistAsMcSecondaryProdRadiusLambda);
-//  fHistAsMcSecondaryProdRadiusLambdaMI         = new TH1F("h1AsMcSecondaryProdRadiusLambdaMI", "#Lambda^{0} MI Production Radius;r (cm);Count", 170, -2, 15);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusLambdaMI);
 
   fHistAsMcSecondaryProdRadiusAntiLambda       = new TH1F("h1AsMcSecondaryProdRadiusAntiLambda", "#bar{#Lambda}^{0} Production Radius;r (cm);Count", 170, -2, 15);
   fListHist->Add(fHistAsMcSecondaryProdRadiusAntiLambda);  
-//  fHistAsMcSecondaryProdRadiusAntiLambdaMI     = new TH1F("h1AsMcSecondaryProdRadiusAntiLambdaMI", "#bar{#Lambda}^{0} MI Production Radius;r (cm);Count", 170, -2, 15);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusAntiLambdaMI);
 
+  // Production radius vs. rapidity:
   fHistAsMcSecondaryProdRadiusXvsYK0s          = new TH2F("h2AsMcSecondaryProdRadiusXvsYK0s","Associated Secondary K^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
   fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYK0s);
-//  fHistAsMcSecondaryProdRadiusXvsYK0sMI        = new TH2F("h2AsMcSecondaryProdRadiusXvsYK0sMI","Associated Secondary K^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYK0sMI);
-
   fHistAsMcSecondaryProdRadiusXvsYLambda       = new TH2F("h2AsMcSecondaryProdRadiusXvsYLambda","Associated Secondary #Lambda^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
   fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYLambda);
-//  fHistAsMcSecondaryProdRadiusXvsYLambdaMI     = new TH2F("h2AsMcSecondaryProdRadiusXvsYLambdaMI","Associated Secondary #Lambda^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYLambdaMI);
-
   fHistAsMcSecondaryProdRadiusXvsYAntiLambda   = new TH2F("h2AsMcSecondaryProdRadiusXvsYAntiLambda","Associated Secondary #bar{#Lambda}^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
   fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYAntiLambda);
-//  fHistAsMcSecondaryProdRadiusXvsYAntiLambdaMI = new TH2F("h2AsMcSecondaryProdRadiusXvsYAntiLambdaMI","Associated Secondary #bar{#Lambda}^{0} Production Radius;x (cm); y (cm)",200,-20,20,200,-20,20);
-//  fListHist->Add(fHistAsMcSecondaryProdRadiusXvsYAntiLambdaMI);
 
+  // Pdg code of mother particle for secondary V0s:
   fHistAsMcSecondaryMotherPdgCodeK0s           = new TH1F("h1AsMcSecondaryMotherPdgCodeK0s","Mother of Associated Secondary K^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcSecondaryMotherPdgCodeK0s);
-//  fHistAsMcSecondaryMotherPdgCodeK0sMI         = new TH1F("h1AsMcSecondaryMotherPdgCodeK0sMI","Mother of Associated Secondary K^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcSecondaryMotherPdgCodeK0sMI);
-
   fHistAsMcSecondaryMotherPdgCodeLambda        = new TH1F("h1AsMcSecondaryMotherPdgCodeLambda","Mother of Associated Secondary #Lambda^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcSecondaryMotherPdgCodeLambda);
-//  fHistAsMcSecondaryMotherPdgCodeLambdaMI      = new TH1F("h1AsMcSecondaryMotherPdgCodeLambdaMI","Mother of Associated Secondary #Lambda^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcSecondaryMotherPdgCodeLambdaMI);
-
   fHistAsMcSecondaryMotherPdgCodeAntiLambda    = new TH1F("h1AsMcSecondaryMotherPdgCodeAntiLambda","Mother of Associated Secondary #bar{#Lambda}^{0};mother;counts",11,0,11);
   fListHist->Add(fHistAsMcSecondaryMotherPdgCodeAntiLambda);
-//  fHistAsMcSecondaryMotherPdgCodeAntiLambdaMI  = new TH1F("h1AsMcSecondaryMotherPdgCodeAntiLambdaMI","Mother of Associated Secondary #bar{Lambda}^{0} MI;mother;counts",11,0,11);
-//  fListHist->Add(fHistAsMcSecondaryMotherPdgCodeAntiLambdaMI);
 
-  // Pt distribution Lambda from Sigma
+  // Pt distribution of secondary Lambda <- Sigma decay:
   fHistAsMcSecondaryPtLambdaFromSigma          = new TH1F("h1AsMcSecondaryPtLambdaFromSigma","#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtLambdaFromSigma);
-//  fHistAsMcSecondaryPtLambdaFromSigmaMI        = new TH1F("h1AsMcSecondaryPtLambdaFromSigmaMI","#Lambda^{0} MI associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
-//  fListHist->Add(fHistAsMcSecondaryPtLambdaFromSigmaMI);
-
   fHistAsMcSecondaryPtAntiLambdaFromSigma      = new TH1F("h1AsMcSecondaryPtAntiLambdaFromSigma","#bar{#Lambda}^{0} associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
   fListHist->Add(fHistAsMcSecondaryPtAntiLambdaFromSigma);
-//  fHistAsMcSecondaryPtAntiLambdaFromSigmaMI    = new TH1F("h1AsMcSecondaryPtAntiLambdaFromSigmaMI","#bar{#Lambda}^{0} MI associated from Sigma;p_{t} (GeV/c);Count",240,0,12);
-//  fListHist->Add(fHistAsMcSecondaryPtAntiLambdaFromSigmaMI);
 
   PostData(1, fListHist);
   PostData(2, fCentrSelector);
-
 }
 
 //________________________________________________________________________
@@ -1695,7 +1368,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	//check if V0 is reconstructed several times  
      
 	lNtimesReconstructedK0s   = 0; lNtimesReconstructedLambda   = 0; lNtimesReconstructedAntiLambda   = 0;
-	//lNtimesReconstructedK0sMI = 0; lNtimesReconstructedLambdaMI = 0; lNtimesReconstructedAntiLambdaMI = 0;
 
 	//for (Int_t jV0 = 0; jV0 < fESD->GetNumberOfV0s(); jV0++) {
 	
@@ -1777,12 +1449,8 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 	  fHistMCPtK0s->Fill(lPtCurrentPart);
 
-
-
 	  fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
-	//  fHistNTimesRecK0sMI->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
-	//  fHistNTimesRecK0sVsPtMI->Fill(lPtCurrentPart,lNtimesReconstructedK0sMI);
 	}
 	else 
 	if (lPdgcodeCurrentPart==3122) {
@@ -1792,16 +1460,12 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 
 	  fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
-	//  fHistNTimesRecLambdaMI->Fill(lNtimesReconstructedLambdaMI);
 	  fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
-	 // fHistNTimesRecLambdaVsPtMI->Fill(lPtCurrentPart,lNtimesReconstructedLambdaMI);
 	  if (lComeFromSigma) fHistMCPtLambdaFromSigma->Fill(lPtCurrentPart);
-
 	  //printf("found Lambda MC pT=%e\n",lPtCurrentPart);
 	  //printf("found Lambda MC Plabel=%d PPDGcode=%d Nlabel=%d NPDGcode=%d\n\n",id0,lPdgCurrentDaughter0,id1,lPdgCurrentDaughter1); 
 	  
 	}
-
 	
       } // end loop ESD MC
       
@@ -1948,26 +1612,19 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	  fHistMCProdRadiusK0s->Fill(mcPosR);
 	  fHistMCPtK0s->Fill(lPtCurrentPart);
 	  fHistNTimesRecK0s->Fill(lNtimesReconstructedK0s);
-	//  fHistNTimesRecK0sMI->Fill(lNtimesReconstructedK0s);
 	  fHistNTimesRecK0sVsPt->Fill(lPtCurrentPart,lNtimesReconstructedK0s);
-	//  fHistNTimesRecK0sVsPtMI->Fill(lPtCurrentPart,lNtimesReconstructedK0sMI);
 	}
 	else if (lPdgcodeCurrentPart==3122) {
 	  fHistMCProdRadiusLambda->Fill(mcPosR);
 	  fHistMCPtLambda->Fill(lPtCurrentPart);
 	  fHistNTimesRecLambda->Fill(lNtimesReconstructedLambda);
-	//  fHistNTimesRecLambdaMI->Fill(lNtimesReconstructedLambdaMI);
 	  fHistNTimesRecLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedLambda);
-	//  fHistNTimesRecLambdaVsPtMI->Fill(lPtCurrentPart,lNtimesReconstructedLambdaMI);
 	  if (lComeFromSigma) fHistMCPtLambdaFromSigma->Fill(lPtCurrentPart);
 	}
 	else if (lPdgcodeCurrentPart==-3122) {
 	  fHistMCProdRadiusAntiLambda->Fill(mcPosR);
-	  //fHistMCPtAntiLambda->Fill(lPtCurrentPart);
 	  fHistNTimesRecAntiLambda->Fill(lNtimesReconstructedAntiLambda);
-	//  fHistNTimesRecAntiLambdaMI->Fill(lNtimesReconstructedAntiLambdaMI);
 	  fHistNTimesRecAntiLambdaVsPt->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambda);
-	//  fHistNTimesRecAntiLambdaVsPtMI->Fill(lPtCurrentPart,lNtimesReconstructedAntiLambdaMI);
 	  if (lComeFromSigma) fHistMCPtAntiLambdaFromSigma->Fill(lPtCurrentPart);
 	}
 
@@ -2442,8 +2099,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
       
 
       //Multiplicity:
-      if(!lOnFlyStatus) nv0s++;
-//      else  if(lOnFlyStatus) nv0sMI++;
+      if(lOnFlyStatus == fUseOnTheFly) nv0s++;
 
       // V0's Daughters
       lIndexTrackPos = TMath::Abs(myAODv0->GetPosID());
@@ -2583,8 +2239,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
     
     
     // Multiplicity:
-    if(!lOnFlyStatus) nv0s++;
-//    else  if(lOnFlyStatus) nv0sMI++;
+    if(lOnFlyStatus == fUseOnTheFly) nv0s++;
 
     // Daughter momentum cut: ! FIX it in case of AOD !
     if ( (lPtPos  < cutMinPtDaughter ) ||
@@ -2833,19 +2488,13 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 
     // Histo versus Rap and armenteros plot
-    if (!lOnFlyStatus){
+    if (lOnFlyStatus == fUseOnTheFly){
       if (lCheckMcK0Short) fHistAsMcRapK0->Fill(lRapK0s);
       if (lCheckMcLambda) fHistAsMcRapLambda->Fill(lRapLambda);
       if (lCheckMcAntiLambda) fHistAsMcRapLambda->Fill(lRapAntiLambda);
 //      fHistArmenterosPodolanski->Fill(lAlphaV0,lPtArmV0);
 //      fHistDaughterPt->Fill(lPtPos,lPtNeg);
     }
-/*    else {
-      if (lCheckMcK0Short) fHistAsMcRapK0MI->Fill(lRapK0s);
-      if (lCheckMcLambda) fHistAsMcRapLambdaMI->Fill(lRapLambda);
-      if (lCheckMcAntiLambda) fHistAsMcRapLambdaMI->Fill(lRapAntiLambda);
-      fHistArmenterosPodolanskiMI->Fill(lAlphaV0,lPtArmV0);
-    }*/
     
     // FIXME: associated histos, what are they used for?
 
@@ -2872,11 +2521,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	fHistNsigmaPosPionK0->Fill(nSigmaPosPion);
 	fHistNsigmaNegPionK0->Fill(nSigmaNegPion);
 	
-	switch (lOnFlyStatus){
-	case 0 : 
+	if (lOnFlyStatus == fUseOnTheFly){
 	  fHistMassK0->Fill(lInvMassK0s);
 	  fHistMassVsRadiusK0->Fill(rcPosRK0s,lInvMassK0s);
-	 fHistPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
+	  fHistPtVsMassK0->Fill(lInvMassK0s,lPtK0s);
 
 
 //	  fHistMultVsPtVsMassK0->Fill(multiplicity ,lInvMassK0s,lPtK0s);
@@ -2912,43 +2560,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    default    : fHistAsMcSecondaryMotherPdgCodeK0s->Fill(6.5);break;
 	    }
 	  }
-	  break;
-	  
-/*	case 1 :
-	  fHistMassK0MI->Fill(lInvMassK0s);
-	  fHistMassVsRadiusK0MI->Fill(rcPosRK0s,lInvMassK0s);
-	  fHistPtVsMassK0MI->Fill(lInvMassK0s,lPtK0s);
-	  if(lCheckPIdK0Short) fHistPidMcMassK0MI->Fill(lInvMassK0s);
-	  if(lCheckMcK0Short) {
-	    fHistAsMcMassK0MI->Fill(lInvMassK0s);
-	    fHistAsMcPtK0MI->Fill(lPtK0s);
-	    fHistAsMcPtVsMassK0MI->Fill(lInvMassK0s,lPtK0s);
-	    if (lPtK0s <= 1) fHistAsMcPtZoomK0MI->Fill(lPtK0s);
-	    fHistAsMcMassVsRadiusK0MI->Fill(rcPosRK0s,lInvMassK0s);
-	    fHistAsMcResxK0MI->Fill(rcPosXK0s-mcPosX);
-	    fHistAsMcResyK0MI->Fill(rcPosYK0s-mcPosY);
-	    fHistAsMcReszK0MI->Fill(rcPosZK0s-mcPosZ);
-	    fHistAsMcResrVsRadiusK0MI->Fill(rcPosRK0s,rcPosRK0s-mcPosR);
-	    fHistAsMcReszVsRadiusK0MI->Fill(rcPosZK0s,rcPosZK0s-mcPosZ);
-	    fHistAsMcProdRadiusK0MI->Fill(mcPosMotherR);
-	    fHistAsMcProdRadiusXvsYK0sMI->Fill(mcPosMotherX,mcPosMotherY);
-	    fHistAsMcResPtK0MI->Fill(deltaPtK0s);
-	    fHistAsMcResPtVsRapK0MI->Fill(deltaPtK0s,lRapK0s);
-	    fHistAsMcResPtVsPtK0MI->Fill(deltaPtK0s,lPtK0s);
-	  }
-	  else if (lCheckSecondaryK0s) {
-	    fHistAsMcSecondaryPtVsRapK0sMI->Fill(lPtK0s,lRapK0s);
-	    fHistAsMcSecondaryProdRadiusK0sMI->Fill(mcPosMotherR); 
-	    fHistAsMcSecondaryProdRadiusXvsYK0sMI->Fill(mcPosMotherX,mcPosMotherY);
-	    switch (lPdgcodeMotherOfMother) {
-	    case 130   : fHistAsMcSecondaryMotherPdgCodeK0sMI->Fill(0.5);break; // K0L
-	    case 321   : fHistAsMcSecondaryMotherPdgCodeK0sMI->Fill(1.5);break; // K+
-	    case -321  : fHistAsMcSecondaryMotherPdgCodeK0sMI->Fill(2.5);break; // K-
-	    case -3122 : fHistAsMcSecondaryMotherPdgCodeK0sMI->Fill(3.5);break; //AntiLambda
-	    default    : fHistAsMcSecondaryMotherPdgCodeK0sMI->Fill(6.5);break;
-	    }
-	  }
-	  break;	*/
 	}
       } // end rapidity condition
     } // end nsigma condition
@@ -2975,14 +2586,10 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
 	fHistNsigmaPosProtonLambda->Fill(nSigmaPosProton);
 	fHistNsigmaNegPionLambda->Fill(nSigmaNegPion);
-	switch (lOnFlyStatus){
-	case 0 : 
+	if (lOnFlyStatus == fUseOnTheFly){
 	  fHistMassLambda->Fill(lInvMassLambda);
 	  fHistMassVsRadiusLambda->Fill(rcPosRLambda,lInvMassLambda);
-	 fHistPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
-
-
-
+	  fHistPtVsMassLambda->Fill(lInvMassLambda,lPtLambda);
 
 //          fHistMultVsPtVsMassLambda->Fill(multiplicity ,lInvMassLambda,lPtLambda);
 	  if(lCheckPIdLambda) fHistPidMcMassLambda->Fill(lInvMassLambda);
@@ -3046,65 +2653,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	    default   : fHistAsMcSecondaryMotherPdgCodeLambda->Fill(10.5);break;
 	    }
 	  }
-	  break;
-	  
-/*	case 1 :
-	  fHistMassLambdaMI->Fill(lInvMassLambda);
-	  fHistMassVsRadiusLambdaMI->Fill(rcPosRLambda,lInvMassLambda);
-	  fHistPtVsMassLambdaMI->Fill(lInvMassLambda,lPtLambda);
-	  if(lCheckPIdLambda) fHistPidMcMassLambdaMI->Fill(lInvMassLambda);
-	  
-	  if(lCheckMcLambda) {
-	    fHistAsMcMassLambdaMI->Fill(lInvMassLambda);
-	    fHistAsMcPtLambdaMI->Fill(lPtLambda);
-	    fHistAsMcPtVsMassLambdaMI->Fill(lInvMassLambda,lPtLambda);
-	    fHistAsMcMassVsRadiusLambdaMI->Fill(rcPosRLambda,lInvMassLambda);
-	    fHistAsMcResxLambdaMI->Fill(rcPosXLambda-mcPosX);
-	    fHistAsMcResyLambdaMI->Fill(rcPosYLambda-mcPosY);
-	    fHistAsMcReszLambdaMI->Fill(rcPosZLambda-mcPosZ);
-	    fHistAsMcResrVsRadiusLambdaMI->Fill(rcPosRLambda,rcPosRLambda-mcPosR);
-	    fHistAsMcReszVsRadiusLambdaMI->Fill(rcPosZLambda,rcPosZLambda-mcPosZ);
-	    fHistAsMcProdRadiusLambdaMI->Fill(mcPosMotherR);
-	    fHistAsMcProdRadiusXvsYLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
-	    fHistAsMcResPtLambdaMI->Fill(deltaPtLambda);
-	    fHistAsMcResPtVsRapLambdaMI->Fill(deltaPtLambda,lRapLambda);
-	    fHistAsMcResPtVsPtLambdaMI->Fill(deltaPtLambda,lPtLambda);
-	    if (lComeFromSigma) fHistAsMcPtLambdaFromSigmaMI->Fill(lPtLambda);
-	    switch (lPdgcodeMotherOfMother) {
-	    case 3222 : fHistAsMcMotherPdgCodeLambdaMI->Fill(0.5); break; // Sigma +
-	    case 3212 : fHistAsMcMotherPdgCodeLambdaMI->Fill(1.5); break; // Sigma 0
-	    case 3112 : fHistAsMcMotherPdgCodeLambdaMI->Fill(2.5); break;// Sigma -
-	    case 3224 : fHistAsMcMotherPdgCodeLambdaMI->Fill(3.5); break;// Sigma(1385) +
-	    case 3214 : fHistAsMcMotherPdgCodeLambdaMI->Fill(4.5); break;// Sigma(1385) 0
-	    case 3114 : fHistAsMcMotherPdgCodeLambdaMI->Fill(5.5); break;// Sigma(1385) -
-	    case 3322 : fHistAsMcMotherPdgCodeLambdaMI->Fill(6.5);break; // Xi 0
-	    case 3312 : fHistAsMcMotherPdgCodeLambdaMI->Fill(7.5);break; // Xi -
-	    case 3334 : fHistAsMcMotherPdgCodeLambdaMI->Fill(8.5);break; // Omega
-	    case -1   : fHistAsMcMotherPdgCodeLambdaMI->Fill(9.5);break;
-	    default   : fHistAsMcMotherPdgCodeLambdaMI->Fill(10.5);break;
-	    }
-	  }
-	  else if (lCheckSecondaryLambda) {
-	    fHistAsMcSecondaryPtVsRapLambdaMI->Fill(lPtLambda,lRapLambda);
-	    fHistAsMcSecondaryProdRadiusLambdaMI->Fill(mcPosMotherR); 
-	    fHistAsMcSecondaryProdRadiusXvsYLambdaMI->Fill(mcPosMotherX,mcPosMotherY);
-	    if (lComeFromSigma) fHistAsMcSecondaryPtLambdaFromSigmaMI->Fill(lPtLambda);
-	    switch (lPdgcodeMotherOfMother) {
-	    case 3222 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(0.5); break;// Sigma +
-	    case 3212 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(1.5); break;// Sigma 0
-	    case 3112 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(2.5); break;// Sigma -
-	    case 3224 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(3.5); break;// Sigma(1385) +
-	    case 3214 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(4.5); break;// Sigma(1385) 0
-	    case 3114 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(5.5); break;// Sigma(1385) -
-	    case 3322 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(6.5); break; // Xi 0
-	    case 3312 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(7.5); break; // Xi -
-	    case 3334 : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(8.5); break; // Omega
-	    case -1   : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(9.5); break;
-	    default   : fHistAsMcSecondaryMotherPdgCodeLambdaMI->Fill(10.5);break;
-	    }
-	  }
-	  break;	
-	*/
 	}
       } // end rapidity condition
     } //end nsigma condition - lambda
@@ -3118,8 +2666,6 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
   } // end V0 loop
 
   fHistV0Multiplicity->Fill(nv0s);
-//  fHistV0MultiplicityMI->Fill(nv0sMI);
-
   if (fAnalysisType == "ESD") { if(myPrimaryVertex) delete myPrimaryVertex; }
 
   if(myTracksCuts) delete myTracksCuts;
