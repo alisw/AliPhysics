@@ -149,11 +149,15 @@ void AliHLTJETConeFinder::Reset() {
 Bool_t AliHLTJETConeFinder::ProcessEvent() {
   // see header file for class documentation
 
-  // -- Pick up jet reader
-  AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-
   // -- Reset
   Reset();
+
+  // -- Pick up jet reader
+  AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
+  if ( !reader ) {
+    HLTError("Error getting reader.");
+    return kFALSE;  
+  }
 
   // -- Fill Grid
   if ( !reader->FillGrid() ){
@@ -222,6 +226,17 @@ Int_t AliHLTJETConeFinder::FindConeLeading() {
 
   // -- Pick up jet reader
   AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
+  if ( !reader ) {
+    HLTError("Error getting reader.");
+    return -EINPROGRESS;
+  }
+
+  // -- Pick up jet header
+  AliHLTJETConeHeader* header = dynamic_cast<AliHLTJETConeHeader*> (fHeader);
+  if ( !header ) {
+    HLTError("Error getting header.");
+    return -EINPROGRESS;
+  }
 
   // -- Pick up jet canidates
   TClonesArray* jetCandidates = reader->GetJetCandidates();
@@ -234,7 +249,7 @@ Int_t AliHLTJETConeFinder::FindConeLeading() {
     
     // -- Use leading seed only
     //    Keep index 0, remove the others
-    if ( (dynamic_cast<AliHLTJETConeHeader*> (fHeader))->GetUseLeading() ) {
+    if ( header->GetUseLeading() ) {
       
       for ( Int_t iter = 1; iter < reader->GetNJetCandidates(); iter++ )
 	jetCandidates->RemoveAt(iter);
@@ -258,7 +273,11 @@ Int_t AliHLTJETConeFinder::FindConeJets() {
 
   // -- Pick up jet reader
   AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
-   
+  if ( !reader ) {
+    HLTError("Error getting reader.");
+    return -EINPROGRESS;
+  }
+
   // -- Pick up jet canidates
   TClonesArray* jetCandidates = reader->GetJetCandidates();
 
@@ -298,10 +317,18 @@ Int_t AliHLTJETConeFinder::FillConeJets() {
 
   // -- Pick up jet reader
   AliHLTJETReader *reader = dynamic_cast<AliHLTJETReader*> (fReader);
+  if ( !reader ) {
+    HLTError("Error getting reader.");
+    return -EINPROGRESS;
+  }
 
   // -- Pick up jet header
   AliHLTJETConeHeader *header = dynamic_cast<AliHLTJETConeHeader*> (fHeader);
-  
+  if ( !header ) {
+    HLTError("Error getting header.");
+    return -EINPROGRESS;
+  }
+
   // -- Get jet canidates
   TClonesArray* jetCandidates = reader->GetJetCandidates();
   
