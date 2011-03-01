@@ -51,6 +51,7 @@ set ( CLASS_HDRS
     AliHLTMuonSpectroScalars.h
     AliHLTMuonSpectroTriggerComponent.h
     AliHLTUpcTriggerComponent.h
+    AliHLTTriggerCosmics.h
     AliHLTTriggerCounterComponent.h
     AliHLTTriggerCounters.h
     )

@@ -48,6 +48,7 @@
 #include "AliHLTTriggerGammaConversion.h"
 #include "AliHLTMuonSpectroTriggerComponent.h"
 #include "AliHLTUpcTriggerComponent.h"
+#include "AliHLTTriggerCosmics.h"
 #include "AliHLTTriggerCounterComponent.h"
 
 
@@ -90,6 +91,7 @@ int AliHLTTriggerAgent::RegisterComponents(AliHLTComponentHandler* pHandler) con
   pHandler->AddComponent(new AliHLTTriggerGammaConversion);
   pHandler->AddComponent(new AliHLTMuonSpectroTriggerComponent);
   pHandler->AddComponent(new AliHLTUpcTriggerComponent);
+  pHandler->AddComponent(new AliHLTTriggerCosmics);
   pHandler->AddComponent(new AliHLTTriggerCounterComponent);
   return 0;
 }
