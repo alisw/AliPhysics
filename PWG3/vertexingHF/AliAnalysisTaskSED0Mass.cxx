@@ -535,9 +535,9 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
 
   if(fArray==1){
     namedistr="hpospair";
-    TH1F* hpospair=new TH1F(namedistr.Data(),"Number of positive pairs",2*fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
+    TH1F* hpospair=new TH1F(namedistr.Data(),"Number of positive pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
     namedistr="hnegpair";
-    TH1F* hnegpair=new TH1F(namedistr.Data(),"Number of negative pairs",fCuts->GetNPtBins(),-0.5,2*fCuts->GetNPtBins()-0.5);
+    TH1F* hnegpair=new TH1F(namedistr.Data(),"Number of negative pairs",fCuts->GetNPtBins(),-0.5,fCuts->GetNPtBins()-0.5);
     fDistr->Add(hpospair);
     fDistr->Add(hnegpair);
   }
