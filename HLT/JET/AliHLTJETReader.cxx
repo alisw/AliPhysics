@@ -103,7 +103,7 @@ Int_t AliHLTJETReader::Initialize() {
   Int_t iResult = 0;
   AliHLTJETReaderHeader* readerHeader = NULL;
 
-  HLTInfo(" -= AliHLTJETReader =- " );
+  HLTInfo(" -= AliHLTJETReader =- ");
 
   // -- Initialize reader header
   // -----------------------------
@@ -121,22 +121,22 @@ Int_t AliHLTJETReader::Initialize() {
   
   // -- Initialize Algorithms
   // --------------------------
-  if ( readerHeader->GetJetAlgorithm() >= AliHLTJETBase::kFFSCSquareCell )
-    iResult = InitializeFFSC();
-  else {
+  if ( !iResult ) {
+    if ( readerHeader->GetJetAlgorithm() >= AliHLTJETBase::kFFSCSquareCell )
+      iResult = InitializeFFSC();
+    else {
 #ifdef HAVE_FASTJET
-    iResult = InitializeFastjet();
+      iResult = InitializeFastjet();
 #else  
-    HLTError("Error FastJet not present.");
-    iResult = -EINPROGRESS;
+      HLTError("Error FastJet not present.");
+      iResult = -EINPROGRESS;
 #endif
+    }
   }
- 
+
   // -- Get ptr to cuts from reader
   // --------------------------------
-
-  // -- Track cuts
-  if ( ! iResult ) {
+  if ( !iResult ) {
     fTrackCuts = readerHeader->GetTrackCuts();
     if ( ! fTrackCuts ) {
       HLTError("Error getting ptr to track cuts.");
