@@ -556,11 +556,13 @@ Int_t AliHLTESDMCEventPublisherComponent::OpenCurrentFileList() {
       else {
 	HLTError("File already open, this should not happen.");
 	iResult=-EFAULT;
+	continue;
       }
       
       if ( (pFile = *pFileDesc ) == NULL ) {
 	HLTError("Opening file failed." );
 	iResult=-EFAULT;
+	continue;
       }
 
       // -- Open trees
