@@ -40,7 +40,6 @@ Bool_t AliAnalysisCentralitySelector::IsCentralityBinSelected(AliESDEvent* aEsd,
     Float_t multV0C=esdV0->GetMTotV0C();
     multV0 = multV0A+multV0C;
     
-    if (fIsMC) multV0 = 0.85871 * multV0; // FIXME: still valid? DEPRECATED
     if (multV0 < fMultMin) return kFALSE;
     if (multV0 > fMultMax) return kFALSE;
     //    cout << "ok" << endl;
