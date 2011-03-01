@@ -1054,7 +1054,8 @@ void AliCaloTrackReader::FillInputVZERO(){
   }
   else
   {
-    printf("Cannot retrieve V0 ESD! Run w/ null V0 charges");
+    if(fDebug > 0)
+      printf("Cannot retrieve V0 ESD! Run w/ null V0 charges\n ");
   }
 }
 
