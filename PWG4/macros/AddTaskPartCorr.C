@@ -32,13 +32,15 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
   if(calorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
-    reader->SwitchOnEMCAL();
+    reader->SwitchOnEMCAL(); 
   }
   if(calorimeter == "PHOS") { 
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
   }
   
+   reader->SwitchOnSuspiciousClustersRemoval();  //EMCAL
+
   // for case inputDataType="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(inputDataType.Contains("delta")){
     reader->SwitchOffEMCAL();
@@ -121,16 +123,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(TString inputDataType, TStri
   anaphoton->SetMultiplicity(80, 120);
 
   if(calorimeter == "PHOS"){
-    anaphoton->SetNCellCut(0);// At least 2 cells
-    anaphoton->SetMinPt(0.);
+    anaphoton->SetNCellCut(2);// At least 3 cells
+    anaphoton->SetMinPt(0.3);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
   }
   else {//EMCAL
-    //anaphoton->SetNCellCut(0);// At least 2 cells
-    anaphoton->SetMinPt(0.1); // no effect minium EMCAL cut.
-    if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
-    anaphoton->SetMinDistanceToBadChannel(6, 12, 18);
-    //anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For new releases.
+    anaphoton->SetNCellCut(1);// At least 2 cells
+    anaphoton->SetMinPt(0.3); 
+    //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
+    //anaphoton->SetMinDistanceToBadChannel(6, 12, 18);
+    anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For new releases.
   }
   anaphoton->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms

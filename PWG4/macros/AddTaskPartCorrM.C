@@ -34,6 +34,8 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     reader->SwitchOnPHOS();
   }
   
+   reader->SwitchOnSuspiciousClustersRemoval();  //EMCAL
+
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(data.Contains("delta")){
     reader->SwitchOffEMCAL();
@@ -148,10 +150,12 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     
     if(calorimeter == "EMCAL"){
       anaphoton->SetNCellCut(1);
-      if(!kUseKinematics) anaphoton->SetTimeCut(525, 725);
-      anaphoton->SetMinDistanceToBadChannel(4, 5, 10);
+      anaphoton->SetMinPt(0.3); 
+      //if(!kUseKinematics) anaphoton->SetTimeCut(525, 725);
+      anaphoton->SetMinDistanceToBadChannel(1, 2, 3);
     }
     else{
+      anaphoton->SetMinPt(0.3);       
       anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
       anaphoton->SetNCellCut(2);
     }
