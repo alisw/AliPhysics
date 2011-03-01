@@ -30,7 +30,7 @@ class AliAnalysisCentralitySelector : public AliAnalysisCuts
 {
 public:
 
-  AliAnalysisCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseCorrV0(0), fUseSPDOuterRange(kFALSE) {;}
+  AliAnalysisCentralitySelector() : fIsMC (0), fCentrEstimator(""), fCentrBin(-1), fMultMin(0), fMultMax(1000000), fUseMultRange(kFALSE), fUseV0CutRange(kFALSE), fUseSPDOuterRange(kFALSE) {;}
   virtual ~AliAnalysisCentralitySelector(){}
     
   // AliAnalysisCuts interface
@@ -58,10 +58,9 @@ protected:
   Float_t fMultMax ; // Maximum multiplicity, because on MC we cut on tracks rather than on the estimator . Also used for other estimators
   Bool_t fUseMultRange; // if true, use track bins rather than multiplicity estimator
   Bool_t fUseV0CutRange; // if true, use v0 range rather than multiplicity estimator
-  Bool_t fUseCorrV0; // linearized V0
   Bool_t fUseSPDOuterRange; // if true, use SPD outer cluster range rather than multiplicity estimator
 
-  ClassDef(AliAnalysisCentralitySelector, 1)
+  ClassDef(AliAnalysisCentralitySelector, 2)
     
   private:
   AliAnalysisCentralitySelector(const AliAnalysisCentralitySelector&); // not implemented
