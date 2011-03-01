@@ -1,5 +1,6 @@
 #include <fstream>
 #include <Riostream.h>
+#include <TSystem.h>
 #include <TH1F.h>
 #include <TF1.h>
 #include <TFile.h>
@@ -10,6 +11,7 @@
 #include <TGraphErrors.h>
 #include <TGraph.h>
 #include <TMultiGraph.h>
+#include <TKey.h>
 #include <TObjectTable.h>
 #include <TDatabasePDG.h>
 
@@ -18,6 +20,25 @@
 #include <AliSignificanceCalculator.h>
 
 #include <fstream>
+
+//global variables
+Double_t nsigma=3;
+Int_t decCh=1;//5;
+Int_t fitbtype=0;
+Int_t rebin=2;
+Double_t sigma=0.012;
+Int_t pdg;
+Double_t mass;
+
+Double_t sigmaCut=0.035;//0.03;
+Double_t errSgnCut=0.4;//0.35;
+Double_t nSigmaMeanCut=4.;//3.;
+
+ofstream outcheck("output.dat");
+ofstream outdetail("discarddetails.dat");
+
+Bool_t Data(TH1F* h,Double_t* rangefit,Bool_t writefit,Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmafit, Int_t& status);
+Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmaused, Int_t& status);
 
 //decCh:
 //- 0 = kDplustoKpipi
@@ -29,7 +50,7 @@
 
 //Note: writefit=kTRUE writes the root files with the fit performed but it also draw all the canvas, so if your computer is not powerfull enough I suggest to run it in batch mode (root -b)
 
-Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,Int_t rebin=2,TString part="both"/*"A" anti-particle, "P" particle*/,Bool_t writefit=kTRUE,Double_t sigma=0.012,Int_t minentries=50,Double_t *rangefit=0x0,TString hname="hMass_"){
+Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kTRUE,Int_t minentries=50,Double_t *rangefit=0x0){
 
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasColor(0);
@@ -40,9 +61,8 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
 
   TString filename="AnalysisResults.root",dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
 
+  TString hnamemass="hMass_",hnamesgn="hSig_",hnamebkg="hBkg_";
 
-  Int_t pdg;
-  Double_t mass;
 
   switch (decCh) {
   case 0:
@@ -85,15 +105,16 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
     listname.Append(part);
     mdvlistname.Append(part);
   }
-
+  if(centr!="no"){
+    listname.Append(centr);
+    mdvlistname.Append(centr);
+  }
   cout<<"Mass = "<<mass<<endl;
   
   Int_t countFitFail=0,countSgnfFail=0,countNoHist=0,countBkgOnly=0;
-  ofstream outcheck("output.dat");
-  ofstream outdetail("discarddetails.dat");
 
   outcheck<<"ptbin\tmdvGlobAddr\thistIndex\tSignif\tS\tB"<<endl;
-  outdetail<<"ptbin\tmdvGlobAddr\thistIndex\trelErrS\t\tmean_F-mass"<<endl;
+  outdetail<<"ptbin\tmdvGlobAddr\thistIndex\trelErrS\t\tmean_F-mass (mass = "<<mass<<")"<<endl;
   TFile *fin=new TFile(filename.Data());
   if(!fin->IsOpen()){
     cout<<"File "<<filename.Data()<<" not found"<<endl;
@@ -124,13 +145,13 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
     cst->cd();
     cst->SetGrid();
     hstat->Draw("htext0");
-    hstat->SaveAs("hstat.png");
+    cst->SaveAs("hstat.png");
   }else{
     cout<<"Warning! fHistNEvents not found in "<<listname.Data()<<endl;
   }
 
   Bool_t isMC=kFALSE;
-  TH1F* htestIsMC=(TH1F*)histlist->FindObject("hSgn_0");
+  TH1F* htestIsMC=(TH1F*)histlist->FindObject("hSig_0");
   if(htestIsMC) isMC=kTRUE;
 
   Int_t nptbins=listamdv->GetEntries();
@@ -146,33 +167,42 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
   TFile* fout=new TFile(Form("outputSignifMaxim.root"),"recreate");
 
   TH1F** hSigma=new TH1F*[nptbins];
+  TH1F* hstatus=new TH1F("hstatus","Flag status",6,-0.5,5.5);
+  hstatus->GetXaxis()->SetBinLabel(1,"fit fail");
+  hstatus->GetXaxis()->SetBinLabel(2,"fit ok and good results");
+  hstatus->GetXaxis()->SetBinLabel(3,"quality requirements not satisfied");
+  hstatus->GetXaxis()->SetBinLabel(4,"only bkg fit ok");
+  hstatus->GetXaxis()->SetBinLabel(5,"negative signif");
+  hstatus->GetXaxis()->SetBinLabel(6,Form("< %d entries",minentries));
 
   //Check wheter histograms are filled
-  for(Int_t i=0;i<nhist;i++){
-    TString name=Form("%s%d",hname.Data(),i);
-    TH1F* h=(TH1F*)histlist->FindObject(name.Data());
+  if(isData){
+    for(Int_t i=0;i<nhist;i++){
+      TString name=Form("%s%d",hnamemass.Data(),i);
+      TH1F* h=(TH1F*)histlist->FindObject(name.Data());
 
-    if(!h){
-      cout<<name<<" not found"<<endl;
-      continue;
-    }
+      if(!h){
+	cout<<name<<" not found"<<endl;
+	continue;
+      }
 
-    if(h->GetEntries()>minentries){
-      //cout<<"Entries = "<<h->GetEntries()<<endl;
-      if (h->Integral() > minentries){
-	cout<<i<<") Integral = "<<h->Integral()<<endl;
-	indexes[i]=i;
-	count++;
+      if(h->GetEntries()>minentries){
+	//cout<<"Entries = "<<h->GetEntries()<<endl;
+	if (h->Integral() > minentries){
+	  cout<<i<<") Integral = "<<h->Integral()<<endl;
+	  indexes[i]=i;
+	  count++;
+	}
       }
     }
-  }
-
-  cout<<"There are "<<count<<" histogram with more than "<<minentries<<" entries"<<endl;
-  if(count==0) {
-    cout<<"No histogram to draw..."<<endl;
-    return kFALSE;
-  }
   
+
+    cout<<"There are "<<count<<" histogram with more than "<<minentries<<" entries"<<endl;
+    if(count==0) {
+      cout<<"No histogram to draw..."<<endl;
+      return kFALSE;
+    }
+  }
   //create multidimvectors
 
   //for(Int_t i=0;i<1;i++){
@@ -217,149 +247,71 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
     //for(Int_t ih=0;ih<1;ih++){
     for(Int_t ih=0;ih<nhistforptbin;ih++){
       printf("Analyzing indexes[%d] = %d \n",ih+i*nhistforptbin,indexes[ih+i*nhistforptbin]);
+      Int_t status=-1;
+      if(isData && indexes[ih+i*nhistforptbin] == -1) {
+	status=5;
+	mdvSgnferr->SetElement(ih,0);
+	mdvS->SetElement(ih,0);
+	mdvSerr->SetElement(ih,0);
+	mdvB->SetElement(ih,0);
+	mdvBerr->SetElement(ih,0);
 
-      if(indexes[ih+i*nhistforptbin] != -1){
-	TString name=Form("%s%d",hname.Data(),indexes[ih+i*nhistforptbin]);
-	TH1F* h=(TH1F*)histlist->FindObject(name.Data());
+	continue;
+      }
+      outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin];
+      TString name;
+      TH1F* h=0x0;
+      TH1F* g=0x0;
+      Double_t signif=0, signal=0, background=0, errSignif=0, errSignal=0, errBackground=0,sigmafit=0;
 
-	Int_t nbin=((TH1F*)histlist->FindObject(name))->GetNbinsX();
-	Double_t min=((TH1F*)histlist->FindObject(name))->GetBinLowEdge(7);
-	Double_t max=((TH1F*)histlist->FindObject(name))->GetBinLowEdge(nbin-5)+((TH1F*)histlist->FindObject(name))->GetBinWidth(nbin-5);
-	if(rangefit) {
-	  min=rangefit[0];
-	  max=rangefit[1];
+      if(isData){
+	name=Form("%s%d",hnamemass.Data(),indexes[ih+i*nhistforptbin]);
+	h=(TH1F*)histlist->FindObject(name.Data());
+	if(!h)continue;
+	Data(h,rangefit,writefit,signal,errSignal,background,errBackground,signif,errSignif,sigmafit,status);
+      }else{
+	name=Form("%s%d",hnamesgn.Data(),ih+i*nhistforptbin);
+	h=(TH1F*)histlist->FindObject(name.Data());
+	if(!h){
+	  cout<<name.Data()<<" not found"<<endl;
+	  continue;
 	}
-
-	AliHFMassFitter fitter(h,min, max,rebin,fitbtype);
-	fitter.SetInitialGaussianMean(mass);
-	fitter.SetInitialGaussianSigma(sigma);
-
-	if(ih==0) fitter.InitNtuParam(Form("ntuPtbin%d",i));
-	// fitter.SetHisto(h);
-	// fitter.SetRangeFit(min,max);
-	//fitter.SetRangeFit(1.68,2.05);
-
-	//fitter.SetType(fitbtype,0);
-
-	Bool_t ok=fitter.MassFitter(kFALSE);
-        if(!ok){
-	  cout<<"FIT NOT OK!"<<endl;
-	  //   ok=fitter.RefitWithBkgOnly(kFALSE);
-	  //   if (ok){ //onlybkg
-	  countBkgOnly++;
-	  //     Double_t bkg=0,errbkg=0.;
-	  //     fitter.Background(nsigma,bkg,errbkg); 
-	  outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t xxx"<<"\t bkgonly"<<endl;
-	  //     mdvSgnf->SetElement(ih,0);
-	  //     mdvSgnferr->SetElement(ih,0);
-	  //     mdvS->SetElement(ih,0);
-	  //     mdvSerr->SetElement(ih,0);
-	  //     mdvB->SetElement(ih,bkg);
-	  //     mdvBerr->SetElement(ih,errbkg);
-	  //   }else{ //bkg fit failed
-	  //     cout<<"Setting to 0"<<endl;
-	  //     outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t fit failed also with only bkg"<<endl;
-	  //     countFitFail++;
-	  //     mdvSgnf->SetElement(ih,0);
-	  //     mdvSgnferr->SetElement(ih,0);
-	  //     mdvS->SetElement(ih,0);
-	  //     mdvSerr->SetElement(ih,0);
-	  //     mdvB->SetElement(ih,0);
-	  //     mdvBerr->SetElement(ih,0);
-	  //   }
-	}else{ //fit ok!
-
-	  if(writefit) fitter.WriteCanvas(Form("h%d",ih+i*nhistforptbin),"./",nsigma);
-	  Double_t signif=0, signal=0, background=0, errSignif=0, errSignal=0, errBackground=0;
-	  fitter.Signal(nsigma,signal,errSignal);
-	  fitter.Background(nsigma,background,errBackground);
-	  Double_t meanfit=fitter.GetMean();
-	  Double_t sigmafit=fitter.GetSigma();
-	  //outcheck<<"Sigma = "<<sigmafit<<endl;
-	  hSigma[i]->Fill(sigmafit);
-
-	  // if(sigmafit > 0.03){
-	  //   //refit
-	  //   fitter.Reset();
-	  //   fitter.SetHisto(h);
-	  //   fitter.SetRangeFit(1.8,1.93); //WARNING!! this is candidate dependant!! (change)
-	  //   fitter.RebinMass(rebin);
-	  //   fitter.SetInitialGaussianMean(mass);
-	  //   fitter.SetInitialGaussianSigma(sigma);
-	  //   ok=fitter.MassFitter(kFALSE);
-	  //   if(ok){
-	  //     meanfit=fitter.GetMean();
-	  //     sigmafit=fitter.GetSigma();
-	  //     fitter.Signal(nsigma,signal,errSignal);
-	  //     fitter.Background(nsigma,background,errBackground);
-	  //     if(writefit) fitter.WriteCanvas(Form("h%dbis",ih+i*nhistforptbin),"./",nsigma);
-	  //     hSigma[i]->Fill(fitter.GetSigma());
-	  //   }
-	  // } //sigma check done and fit recalc
-
-	  if(ok==kTRUE && sigmafit < 0.03 && signal > 0 && background > 0){
-	    fitter.Significance(nsigma,signif,errSignif);
-	    if(signif >0){
-	      if(errSignal/signal < 0.35 && TMath::Abs(meanfit-mass)<0.01){
-		outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<signif<<" +- "<<errSignif<<"\t"<<signal<<" +- "<<errSignal<<"\t"<<background<<" +- "<<errBackground<<endl;
-		mdvSgnf->SetElement(ih,signif);
-		mdvSgnferr->SetElement(ih,errSignif);
-		mdvS->SetElement(ih,signal);
-		mdvSerr->SetElement(ih,errSignal);
-		mdvB->SetElement(ih,background);
-		mdvBerr->SetElement(ih,errBackground);
-	      
-	      }else{
-		ok=fitter.RefitWithBkgOnly(kFALSE);
-		if (ok){
-		  countBkgOnly++;
-		  Double_t bkg=0,errbkg=0.;
-		  Double_t nsigmarange[2]={mass-nsigma*sigma,mass+nsigma*sigma};
-		  fitter.Background(nsigmarange[0],nsigmarange[1],bkg,errbkg); 
-		  outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t "<<bkg <<"\t bkgonly"<<endl;
-		  outdetail<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<errSignal/signal<<"\t\t "<<meanfit-mass<<endl;
-		  mdvSgnf->SetElement(ih,0);
-		  mdvSgnferr->SetElement(ih,0);
-		  mdvS->SetElement(ih,0);
-		  mdvSerr->SetElement(ih,0);
-		  mdvB->SetElement(ih,bkg);
-		  mdvBerr->SetElement(ih,errbkg);
-		}
-	      }//only bkg
-	    }//check signif>0
-	    else{ 
-	      countSgnfFail++;
-	      cout<<"Setting to 0 (fitter results meaningless)"<<endl;
-	      outcheck<<"\t S || B || sgnf negative";
-	      outcheck<<endl;
-	      mdvSgnf->SetElement(ih,0);
-	      mdvSgnferr->SetElement(ih,0);
-	      mdvS->SetElement(ih,0);
-	      mdvSerr->SetElement(ih,0);
-	      mdvB->SetElement(ih,0);
-	      mdvBerr->SetElement(ih,0);
-	    } 
-	  } //end fit ok!
+	name=Form("%s%d",hnamebkg.Data(),ih+i*nhistforptbin);
+	g=(TH1F*)histlist->FindObject(name.Data());
+	if(!g){
+	  cout<<name.Data()<<" not found"<<endl;
+	  continue;
 	}
-      }else{ //check on histo
+	MC(h,g,signal,errSignal,background,errBackground,signif,errSignif,sigmafit,status);
+      }
+      hstatus->Fill(status);
 
-	countNoHist++;
-	cout<<"Setting to 0 (indexes = -1)"<<endl;
-	outcheck<<"\t histo not accepted for fit";
-	outcheck<<endl;
+      if(status==1){
+	mdvSgnf->SetElement(ih,signif);
+	mdvSgnferr->SetElement(ih,errSignif);
+	mdvS->SetElement(ih,signal);
+	mdvSerr->SetElement(ih,errSignal);
+	mdvB->SetElement(ih,background);
+	mdvBerr->SetElement(ih,errBackground);
+	hSigma[i]->Fill(sigmafit);
+      
+      }else{
 	mdvSgnf->SetElement(ih,0);
 	mdvSgnferr->SetElement(ih,0);
 	mdvS->SetElement(ih,0);
 	mdvSerr->SetElement(ih,0);
 	mdvB->SetElement(ih,0);
 	mdvBerr->SetElement(ih,0);
-	
+	if(status==3){
+	  mdvB->SetElement(ih,background);
+	  mdvBerr->SetElement(ih,errBackground);
+	}
+
       }
 
-     
-      cout<<mdvS->GetElement(ih)<<"\t"<<mdvB->GetElement(ih)<<endl;
-
     }
+  
+  
 
     fout->cd();
     mdvS->Write();
@@ -372,7 +324,15 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
     hSigma[i]->Write();
  
   }
- 
+  
+
+  TCanvas *cinfo=new TCanvas("cinfo","Status");
+  cinfo->cd();
+  cinfo->SetGrid();
+  hstatus->Draw("htext0");
+
+  fout->cd();
+  hstatus->Write();
 
   fout->Close();
 
@@ -381,6 +341,129 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
   return kTRUE;
 }
 
+//this function fit the hMass histograms
+//status = 0 -> fit fail
+//         1 -> fit ok and good results
+//         2 -> quality requirements not satisfied, try to fit with bkg only
+//         3 -> only bkg fit ok
+//         4 -> negative signif
+//         5 -> not enough entries in the hisotgram
+Bool_t Data(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmafit, Int_t& status){
+  Int_t nbin=h->GetNbinsX();
+  Double_t min=h->GetBinLowEdge(7);
+  Double_t max=h->GetBinLowEdge(nbin-5)+h->GetBinWidth(nbin-5);
+
+  min=h->GetBinLowEdge(1);
+  max=h->GetBinLowEdge(nbin+1);
+
+  if(rangefit) {
+    min=rangefit[0];
+    max=rangefit[1];
+  }
+
+  AliHFMassFitter fitter(h,min, max,rebin,fitbtype);
+  fitter.SetInitialGaussianMean(mass);
+  fitter.SetInitialGaussianSigma(sigma);
+
+  //if(ih==0) fitter.InitNtuParam(Form("ntuPtbin%d",i));
+  // fitter.SetHisto(h);
+  // fitter.SetRangeFit(min,max);
+  //fitter.SetRangeFit(1.68,2.05);
+
+  //fitter.SetType(fitbtype,0);
+
+  Bool_t ok=fitter.MassFitter(kFALSE);
+  if(!ok){
+    cout<<"FIT NOT OK!"<<endl;
+    //countBkgOnly++;
+    //outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t xxx"<<"\t bkgonly"<<endl;
+    outcheck<<"\t 0\t xxx"<<"\t failed"<<endl;
+    status=0;
+    return kFALSE;
+  }else{ //fit ok!
+
+    if(writefit) fitter.WriteCanvas(h->GetName(),"./",nsigma);
+    fitter.Signal(nsigma,sgn,errsgn);
+    fitter.Background(nsigma,bkg,errbkg);
+    Double_t meanfit=fitter.GetMean();
+    sigmafit=fitter.GetSigma();
+	  
+
+    //if(ok==kTRUE && ( (sigmafit < 0.03) || (sigmafit < 0.04 && mdvS->GetPtLimit(0)>8.)) && sgn > 0 && bkg > 0){
+    if(ok==kTRUE && ( (sigmafit < sigmaCut) ) && sgn > 0 && bkg > 0){
+      Double_t errmeanfit=fitter.GetMassFunc()->GetParError(fitter.GetNFinalPars()-2);
+      fitter.Significance(nsigma,sgnf,errsgnf);
+      if(sgnf >0){
+	      
+	if(errsgn/sgn < errSgnCut && /*TMath::Abs(meanfit-mass)<0.015*/TMath::Abs(meanfit-mass)/errmeanfit < nSigmaMeanCut){
+	  //outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<signif<<" +- "<<errSignif<<"\t"<<sgn<<" +- "<<errsgn<<"\t"<<bkg<<" +- "<<errbkg<<endl;
+	  outcheck<<"\t\t "<<sgnf<<" +- "<<errsgnf<<"\t"<<sgn<<" +- "<<errsgn<<"\t"<<bkg<<" +- "<<errbkg<<endl;
+	  status=1;
+	      
+	}else{
+	  status=2;
+	  //outdetail<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t"<<errsgn/sgn<<"\t\t "<<(meanfit-mass)/errmeanfit<<endl;
+	  outdetail<<"\t\t "<<errsgn/sgn<<"\t\t "<<(meanfit-mass)/errmeanfit<<endl;
+	  ok=fitter.RefitWithBkgOnly(kFALSE);
+	  if (ok){
+	    status=3;
+	    //countBkgOnly++;
+	    Double_t bkg=0,errbkg=0.;
+	    Double_t nsigmarange[2]={mass-nsigma*sigma,mass+nsigma*sigma};
+	    fitter.Background(nsigmarange[0],nsigmarange[1],bkg,errbkg); 
+	    //outcheck<<i<<"\t\t "<<ih<<"\t\t"<<indexes[ih+i*nhistforptbin]<<"\t 0\t "<<bkg <<"\t bkgonly"<<endl;
+	    outcheck<<"\t\t  0\t "<<bkg <<"\t bkgonly"<<endl;
+	  }else{
+	    //outdetail<<i<<"\t\t "<<ih<<"\t\tnot able to refit with bkg obly"<<endl;
+	    outdetail<<"\t\t \t\tnot able to refit with bkg obly"<<endl;
+	    status=0;
+	    return kFALSE;
+	  }
+	}//only bkg
+      }//check signif>0
+      else{ 
+	status=4;
+	//countSgnfFail++;
+	cout<<"Setting to 0 (fitter results meaningless)"<<endl;
+	outcheck<<"\t S || B || sgnf negative";
+
+	return kFALSE;
+      } 
+    } //end fit ok!
+  }
+  outcheck<<endl;
+  return kTRUE; 
+}
+
+
+
+//this function counts the entries in hSgn and hBgk
+Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmaused, Int_t& status){
+
+  //do we want to use a fixed sigma or take the standard deviation of the signal histogram?
+  sigmaused=hs->GetRMS();
+  //sigmaused=sigma;
+
+  Double_t nsigmarange[2]={mass-nsigma*sigmaused,mass+nsigma*sigmaused}; 
+  cout<<"from "<<nsigmarange[0]<<" to "<<nsigmarange[1]<<endl;
+
+  Int_t binnsigmarange[2]={hs->FindBin(nsigmarange[0]),hs->FindBin(nsigmarange[1])};//for bkg histo it's the same
+  cout<<"bins "<<binnsigmarange[0]<<" e "<<binnsigmarange[1]<<endl;
+
+  sgn=hs->Integral(binnsigmarange[0],binnsigmarange[1]);
+  errsgn=TMath::Sqrt(sgn);
+  bkg=hb->Integral(binnsigmarange[0],binnsigmarange[1]);
+  errbkg=TMath::Sqrt(bkg);
+  if(sgn+bkg>0.) sgnf=sgn/TMath::Sqrt(sgn+bkg);
+  else {
+    status=2;
+    return kFALSE;
+  }
+  errsgnf=TMath::Sqrt(sgnf*sgnf/(sgn+bkg)/(sgn+bkg)*(1/4.*errsgn*errsgn+errbkg*errbkg)+sgnf*sgnf/sgn/sgn*errsgn*errsgn);
+  status=1;
+  return kTRUE; 
+
+}
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -392,7 +475,7 @@ Bool_t charmCutsOptimization(Double_t nsigma=3,Int_t decCh=1,Int_t fitbtype=0,In
 // readfromfile = kTRUE (default is kFALSE) if you want to read the value fixed in a previous run of this function (e.g. significance or signal maximization)
 
 
-void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_t maximize=kTRUE,Bool_t readfromfile=kFALSE){
+void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_t maximize=kTRUE,Bool_t readfromfile=kFALSE, Bool_t fixedrange=kFALSE){
 
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
@@ -514,6 +597,23 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
   leg->SetBorderSize(0);
   leg->SetFillStyle(0);
 
+  //set scale
+  fstream writerange;
+  Float_t axisrange[2*nptbins];
+  if(fixedrange) {
+    //open file in read mode
+    writerange.open("rangehistos.dat",ios::in);
+    Int_t longi=0;
+    while(writerange){
+      writerange>>axisrange[longi];
+      longi++;
+    }
+  }
+  else {
+    //open file in write mode
+    writerange.open("rangehistos.dat",ios::out);
+  }
+
   for (Int_t i=0;i<nptbins;i++){   //loop on ptbins
     cout<<"\nPtBin = "<<i<<endl;
 
@@ -546,7 +646,7 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
     //init
     for(Int_t ind=0;ind<ncuts;ind++)maxInd[ind]=0;
 
-    Float_t sigMax0=cal->GetMaxSignificance(maxInd,0);
+    Float_t sigMax0=cal->GetMaxSignificance(maxInd,0); //look better into this!!
     for(Int_t ic=0;ic<ncuts;ic++){
       cutvalues[ic]=((AliMultiDimVector*)fin->Get(nameS.Data()))->GetCutValue(ic,maxInd[ic]);
 
@@ -599,6 +699,12 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
       gStyle->SetPalette(1);
       TH2F* hproj=mdv->Project(variable[0],variable[1],fixedvars,0);
       hproj->SetTitle(Form("%s wrt %s vs %s (Ptbin%d %.1f<pt<%.1f);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,mdv->GetPtLimit(0),mdv->GetPtLimit(1),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()));
+      if(fixedrange) {
+	hproj->SetMinimum(axisrange[2*i]);
+	hproj->SetMaximum(axisrange[2*i+1]);
+      } else{
+	writerange<<hproj->GetMinimum()<<"\t"<<hproj->GetMinimum()<<endl;
+      }
 
       TCanvas* cvpj=new TCanvas(Form("proj%d%dpt%d",variable[0],variable[1],i),Form("%s wrt %s vs %s (Ptbin%d)",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i));
       cvpj->cd();
@@ -659,6 +765,25 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
   } else delete cvpj;
 }
 
+//draw sigma as a function of cuts
+
+void DrawSigmas(TH2F* h2cuts){
+  TFile *fin=0x0;
+  TString fittype="ExpFit";
+  Int_t ntot=5;
+  if(fittype=="Pol2Fit") ntot=6;
+  Int_t ihfirst=0,ihlast=1; //change this (must think on it and remember what I wanted to do!)
+  for(Int_t ih=ihfirst;ih<ihlast;ih++){
+    fin=new TFile(Form("h%d%s.root",ih,fittype.Data()));
+    if(!fin) continue;
+    TCanvas *cv=(TCanvas*)fin->Get(Form("cv1%s%d",fittype.Data(),ih));
+    TF1* func=(TF1*)cv->FindObject("funcmass");
+    Int_t sigma=func->GetParameter(ntot-1);
+    //h2cuts->SetBinContent();
+    //to be finished
+  }
+}
+
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 // Some methods to get the index of the histogram corresponding to a set of cuts
 
@@ -705,7 +830,7 @@ Int_t GetNHistFromValues(AliMultiDimVector* vct,Int_t ptbin,Float_t* values){
 
 Int_t* GetRangeHistFromValues(AliMultiDimVector* vct,Int_t ptbin,Bool_t* valsgiven,Float_t* values,Int_t& nhistinrange){
   Int_t nvargiven=0;
-  nhistinrange=0;
+  nhistinrange=1;
 
   Int_t nvar4opt=vct->GetNVariables();
   Float_t allvals[nvar4opt];
@@ -718,25 +843,32 @@ Int_t* GetRangeHistFromValues(AliMultiDimVector* vct,Int_t ptbin,Bool_t* valsgiv
     else {
       nhistinrange+=vct->GetNCutSteps(i);
       allvals[i]=vct->GetCutValue(i,0);
+      //allvals[i]=vct->GetCutValue(0,i); //ivar,icell
     }
   }
   cout<<nhistinrange<<" index will be returned"<<endl;
-  Int_t index[nvar4opt-nvargiven];
-  Int_t k=0;
-  for (Int_t i=0;i<nvar4opt;i++){
-     if(valsgiven[i]==kFALSE) {
-       //cout<<"kTRUE==>"<<i<<endl;
-       index[k]=i;
-       k++;
-     }
-  }
-
   Int_t *rangeofhistos=new Int_t[nhistinrange];
-  for(Int_t i=0;i<nvar4opt-nvargiven;i++){ //loop on number of free variables
-    cout<<"Info: incrementing "<<vct->GetAxisTitle(index[i])<<endl;
-    for(Int_t j=0;j<vct->GetNCutSteps(i);j++){ //loop on steps of each free variable
-      allvals[index[i]]=vct->GetCutValue(index[i],j);
-      rangeofhistos[i*vct->GetNCutSteps(i)+j]=GetNHistFromValues(vct,ptbin,allvals);
+
+  if(nhistinrange==1){
+    rangeofhistos[0]=GetNHistFromValues(vct,ptbin,allvals);
+    cout<<"output"<<rangeofhistos[0]<<endl;
+  }else{
+    Int_t index[nvar4opt-nvargiven];
+    Int_t k=0;
+    for (Int_t i=0;i<nvar4opt;i++){
+      if(valsgiven[i]==kFALSE) {
+	//cout<<"kTRUE==>"<<i<<endl;
+	index[k]=i;
+	k++;
+      }
+    }
+
+    for(Int_t i=0;i<nvar4opt-nvargiven;i++){ //loop on number of free variables
+      cout<<"Info: incrementing "<<vct->GetAxisTitle(index[i])<<endl;
+      for(Int_t j=0;j<vct->GetNCutSteps(i);j++){ //loop on steps of each free variable
+	allvals[index[i]]=vct->GetCutValue(index[i],j);
+	rangeofhistos[i*vct->GetNCutSteps(i)+j]=GetNHistFromValues(vct,ptbin,allvals);
+      }
     }
   }
   return rangeofhistos;
@@ -770,6 +902,8 @@ void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString pat
   Int_t nhists;
   TString filename="AnalysisResults.root";
   TString dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
+  TString centr="020";
+
   TFile *fin=new TFile(Form("%s%s",path.Data(),filename.Data()));
   if(!fin){
     cout<<path.Data()<<filename.Data()<<" not found"<<endl;
@@ -815,6 +949,8 @@ void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString pat
     cout<<decCh<<" is not allowed as decay channel "<<endl;
     return;
   }
+  mdvlistname+=centr;
+  listname+=centr;
 
   TList* listamdv= (TList*)dir->Get(mdvlistname);
   if(!listamdv) {
@@ -846,4 +982,276 @@ void DrawPossibilities(Int_t ptbin,Bool_t* valsgiven,Float_t* values,TString pat
       }
     }
   }
+}
+
+void Merge2Bins(Int_t b1, Int_t b2,TString pathin="./",Int_t decCh=1,TString part="both"/*"A" anti-particle, "P" particle*/){
+
+  if(b2!=b1+1){
+    printf("The bins to be merget must be consecutive. Check! [b1 = %d, b2= %d]\n",b1,b2);
+    return;
+  }
+
+  TFile *fin=new TFile(Form("%sAnalysisResults.root",pathin.Data()));
+  if (!fin){
+    cout<<"Input file not found"<<endl;
+    return;
+  }
+
+  TString dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
+
+  switch (decCh) {
+  case 0:
+    listname+="Dplus";
+    mdvlistname+="Dplus";
+    break;
+  case 1:
+    listname+="D0";
+    mdvlistname+="D0";
+    break;
+  case 2:
+    listname+="Dstar";
+    mdvlistname+="Dstar";
+    break;
+  case 3:
+    listname+="Ds";
+    mdvlistname+="Ds";
+    break;
+  case 4:
+    listname+="D04";
+    mdvlistname+="D04";
+    break;
+  case 5:
+    listname+="Lc";
+    mdvlistname+="Lc";
+    break;
+  default:
+    cout<<decCh<<" is not allowed as decay channel "<<endl;
+    return;
+  }
+
+  if(part!="both"){
+    listname.Append(part);
+    mdvlistname.Append(part);
+  }
+
+  TDirectoryFile *dir=(TDirectoryFile*)fin->GetDirectory(dirname);
+  if(!dir){
+    cout<<"Directory "<<dirname<<" not found"<<endl;
+    return;
+  }
+
+  TList* histlist= (TList*)dir->Get(listname);
+  if(!histlist) {
+    cout<<listname<<" doesn't exist"<<endl;
+    return;
+  }
+
+  TList* listamdv= (TList*)dir->Get(mdvlistname);
+  if(!listamdv) {
+    cout<<mdvlistname<<" doesn't exist"<<endl;
+    return;
+  }
+  if (!gSystem->AccessPathName(Form("merged%d%d",b1,b2))) gSystem->Exec(Form("mkdir merged%d%d",b1,b2));
+  gSystem->Exec(Form("cd merged%d%d",b1,b2));
+
+  TFile* fout=new TFile("mergeAnalysisResults.root","recreate");
+
+  fout->mkdir(dirname);
+  TList* listmdvout=new TList();
+  listmdvout->SetName(listamdv->GetName());
+  listmdvout->SetOwner();
+  //listmdvout->SetTitle(listamdv->GetTitle());
+  TList* histlistout=new TList();
+  histlistout->SetName(histlist->GetName());
+  histlistout->SetOwner();
+  //histlistout->SetTitle(histlist->GetTitle());
+
+  AliMultiDimVector* mdvin1=(AliMultiDimVector*)listamdv->FindObject(Form("multiDimVectorPtBin%d",b1));
+  AliMultiDimVector* mdvin2=(AliMultiDimVector*)listamdv->FindObject(Form("multiDimVectorPtBin%d",b2));
+
+  Int_t ntotHperbin = mdvin1->GetNTotCells();
+  if(mdvin2->GetNTotCells() != ntotHperbin) {
+    cout<<"Error! Number of histos in pt bin "<<b1<<" = "<<ntotHperbin<<" != Number of histos in pt bin "<<b2<<" = "<<mdvin2->GetNTotCells()<<endl;
+    return;
+  }
+  Int_t nvar1=mdvin1->GetNVariables();
+  if(nvar1 != mdvin2->GetNVariables()){
+    cout<<"Error! Mismatch in number of variables"<<endl;
+    return;
+  }
+  
+  Float_t newptbins[2]={mdvin1->GetPtLimit(0),mdvin2->GetPtLimit(1)};
+  Float_t loosercuts[nvar1], tightercuts[nvar1];
+  TString axistitles[nvar1];
+  Int_t ncells[nvar1];
+
+  for (Int_t ivar=0;ivar<nvar1;ivar++){
+    loosercuts[ivar]=mdvin1->GetCutValue(ivar,0);
+    if(loosercuts[ivar] - mdvin2->GetCutValue(ivar,0) < 1e-8) printf("Warning! The loose cut %s is different between the 2: %f and %f\n",mdvin1->GetAxisTitle(ivar).Data(),loosercuts[ivar],mdvin2->GetCutValue(ivar,0));
+    tightercuts[ivar]=mdvin1->GetCutValue(ivar,mdvin1->GetNCutSteps(ivar)-1);
+    if(tightercuts[ivar] - mdvin2->GetCutValue(ivar,mdvin1->GetNCutSteps(ivar)-1) < 1e-8) printf("Warning! The tight cut %s is different between the 2: %f and %f\n",mdvin1->GetAxisTitle(ivar).Data(),tightercuts[ivar],mdvin2->GetCutValue(ivar,mdvin2->GetNCutSteps(ivar)));
+    axistitles[ivar]=mdvin1->GetAxisTitle(ivar);
+    cout<<axistitles[ivar]<<"\t";
+    ncells[ivar]=mdvin1->GetNCutSteps(ivar);
+  }
+
+  AliMultiDimVector* mdvout= new AliMultiDimVector(Form("multiDimVectorPtBin%d",b1),"MultiDimVector",1,newptbins,mdvin1->GetNVariables(),ncells,loosercuts,tightercuts,axistitles);
+  cout<<"Info: writing mdv"<<endl;
+  listmdvout->Add(mdvout);
+
+  Bool_t isMC=kFALSE;
+  TH1F* htestIsMC=(TH1F*)histlist->FindObject("hSgn_0");
+  if(htestIsMC) isMC=kTRUE;
+  Int_t nptbins=listamdv->GetEntries();
+  Int_t nhist=(histlist->GetEntries()-1);//-1 because of fHistNevents
+  if(isMC) nhist/=4; ///4 because hMass_, hSgn_,hBkg_,hRfl_
+
+ cout<<"Merging bin from "<<mdvin1->GetPtLimit(0)<<" to "<<mdvin1->GetPtLimit(1)<<" and from "<<mdvin2->GetPtLimit(0)<<" to "<<mdvin2->GetPtLimit(1)<<endl;
+ Int_t firsth1=b1*ntotHperbin,firsth2=b2*ntotHperbin; //firsth2 = (b1+1)*ntotHperbin
+ Int_t lasth1=firsth1+ntotHperbin-1,lasth2=firsth2+ntotHperbin-1;
+ cout<<"Histograms from "<<firsth1<<" to "<<lasth1<<" and "<<firsth2<<" to "<<lasth2<<endl;
+
+ //add the others mdv to the list
+ Int_t cnt=0;
+ for(Int_t i=0;i<nptbins;i++){
+   if(i!=b1 && i!=b2){
+     AliMultiDimVector* vcttmp=(AliMultiDimVector*)listamdv->FindObject(Form("multiDimVectorPtBin%d",i));
+     if(i>b2) {
+       vcttmp->SetName(Form("multiDimVectorPtBin%d",b2+cnt));
+       cnt++;
+     }
+     listmdvout->Add(vcttmp);
+   }
+ }
+
+ histlistout->Add((TH1F*)histlist->FindObject("fHistNEvents"));
+
+ Int_t ih2=firsth2;
+
+ for(Int_t ih1=firsth1;ih1<lasth1;ih1++){
+   TH1F* h1=(TH1F*)histlist->FindObject(Form("hMass_%d",ih1));
+   if(!h1){
+     cout<<"hMass_"<<ih1<<" not found!"<<endl;
+     continue;
+   }
+   TH1F* h2=(TH1F*)histlist->FindObject(Form("hMass_%d",ih2));
+   if(!h2){
+     cout<<"hMass_"<<ih2<<" not found!"<<endl;
+     continue;
+   }
+   //h1->SetName(Form("hMass_%d",cnt));
+   h1->Add(h2);
+   histlistout->Add(h1);
+   ih2++;
+   //cnt++;
+   h1=0x0;
+ }
+
+ cnt=0;
+ for(Int_t j=0;j<ntotHperbin*nptbins;j++){
+   if(!(j>=firsth1 && j<lasth2)){
+     TH1F* htmp=(TH1F*)histlist->FindObject(Form("hMass_%d",j));
+     if(j>=lasth2){
+       //cout<<lasth1<<" + "<<cnt<<endl;
+       htmp->SetName(Form("hMass_%d",lasth1+cnt));
+       cnt++;
+     }
+     histlistout->Add(htmp);
+   }
+ }
+
+ fout->cd();
+ ((TDirectoryFile*)fout->Get(dirname))->cd();
+ listmdvout->Write(mdvlistname.Data(),TObject::kSingleKey);
+ histlistout->Write(listname.Data(),TObject::kSingleKey);
+ fout->Close();
+}
+
+void SubtractBkg(Int_t nhisto){
+
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetFrameFillColor(0);
+  gStyle->SetOptStat(0);
+
+  TString fitType="Exp";
+  TString filename=Form("h%d%sMassFit.root",nhisto,fitType.Data());
+
+  TFile* fin=new TFile(filename.Data());
+  if(!fin->IsOpen()){
+    cout<<filename.Data()<<" not found, exit"<<endl;
+    return;
+  }
+
+  TKey* key=((TKey*)((TList*)fin->GetListOfKeys())->At(fin->GetNkeys()-1));
+  TCanvas* canvas=((TCanvas*)fin->Get(key->GetName()));
+  if(!canvas){
+    cout<<"Canvas not found"<<endl;
+    return;
+  }
+  canvas->Draw();
+
+  TH1F* hfit=(TH1F*)canvas->FindObject("fhistoInvMass");
+  if(!hfit){
+    canvas->ls();
+    cout<<"Histogram not found"<<endl;
+    return;
+  }
+
+  TF1* funcBkgRecalc=(TF1*)hfit->FindObject("funcbkgRecalc");
+  if(!funcBkgRecalc){
+    cout<<"Background fit function (final) not found"<<endl;
+    return;
+  }
+
+  TF1* funcBkgFullRange=(TF1*)hfit->FindObject("funcbkgFullRange");
+  if(!funcBkgFullRange){
+    cout<<"Background fit function (side bands) not found"<<endl;
+    return;
+  }
+
+  Int_t nbins=hfit->GetNbinsX();
+  Double_t min=hfit->GetBinLowEdge(1), width=hfit->GetBinWidth(1);
+  TH1F* hsubRecalc=(TH1F*)hfit->Clone("hsub");
+  hsubRecalc->SetMarkerColor(kRed);
+  hsubRecalc->SetLineColor(kRed);
+  hsubRecalc->GetListOfFunctions()->Delete();
+  TH1F* hsubFullRange=(TH1F*)hfit->Clone("hsub");
+  hsubFullRange->SetMarkerColor(kGray+2);
+  hsubFullRange->SetLineColor(kGray+2);
+  hsubFullRange->GetListOfFunctions()->Delete();
+  for(Int_t i=0;i<nbins;i++){
+    //Double_t x=min+i*0.5*width;
+    Double_t x1=min+i*width, x2=min+(i+1)*width;
+    Double_t ycont=hfit->GetBinContent(i+1);
+    Double_t y1=funcBkgRecalc->Integral(x1,x2) / width;//funcBkgRecalc->Eval(x);
+    hsubRecalc->SetBinContent(i+1,ycont-y1);
+    Double_t y2=funcBkgFullRange->Integral(x1,x2) / width;//funcBkgFullRange->Eval(x);
+    hsubFullRange->SetBinContent(i+1,ycont-y2);
+  }
+
+  TCanvas* c=new TCanvas("c","subtraction");
+  c->cd();
+  hsubRecalc->DrawClone();
+  hsubFullRange->DrawClone("sames");
+
+  for(Int_t i=0;i<nbins;i++){
+    if(hsubRecalc->GetBinContent(i+1)<0) hsubRecalc->SetBinContent(i+1,0);
+    if(hsubFullRange->GetBinContent(i+1)<0) hsubFullRange->SetBinContent(i+1,0);
+  }
+
+  TCanvas *cvnewfits=new TCanvas("cvnewfits", "new Fits",1200,600);
+  cvnewfits->Divide(2,1);
+
+  AliHFMassFitter fitter1(hsubRecalc,min,min+nbins*width,1,1);
+  fitter1.MassFitter(kFALSE);
+  fitter1.DrawHere(cvnewfits->cd(1));
+
+  AliHFMassFitter fitter2(hsubFullRange,min,min+nbins*width,1,1);
+  fitter2.MassFitter(kFALSE);
+  fitter2.DrawHere(cvnewfits->cd(2));
+
+  canvas->SaveAs(Form("h%d%sMassFit.png",nhisto,fitType.Data()));
+  c->SaveAs(Form("h%d%sSubtr.png",nhisto,fitType.Data()));
+  cvnewfits->SaveAs(Form("h%d%sFitNew.png",nhisto,fitType.Data()));
 }
