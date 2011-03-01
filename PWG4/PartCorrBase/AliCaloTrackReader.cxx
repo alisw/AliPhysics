@@ -45,7 +45,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliTriggerAnalysis.h"
-#include "AliESDVZERO.h";
+#include "AliESDVZERO.h"
 
 //---- PartCorr/EMCAL ---
 #include "AliEMCALRecoUtils.h"
