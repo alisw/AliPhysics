@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 //
 // Dielectron helper functions wrapped in a namespace
 // 
@@ -31,6 +29,9 @@
 #include <TObjString.h>
 #include <TObjArray.h>
 #include <TVectorD.h>
+
+#include <AliVEvent.h>
+#include <AliKFParticle.h>
 
 #include "AliDielectronHelper.h"
 
@@ -111,5 +112,81 @@ TVectorD* AliDielectronHelper::MakeArbitraryBinning(const char* bins)
   
   delete arr;
   return binLimits;
+}
+
+//_____________________________________________________________________________
+void AliDielectronHelper::RotateKFParticle(AliKFParticle * kfParticle,Double_t angle, const AliVEvent * const ev){
+  // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
+  if (!kfParticle) return;
+  Double_t dx = 0.;
+  Double_t dy = 0.;
+  Double_t dz = 0.;
+
+  if (ev){
+    dx = ev->GetPrimaryVertex()->GetX()-0.;
+    dy = ev->GetPrimaryVertex()->GetY()-0.;
+    dz = ev->GetPrimaryVertex()->GetZ()-0.;
+  }
+  
+  kfParticle->X() = kfParticle->GetX() - dx;
+  kfParticle->Y() = kfParticle->GetY() - dy;
+  kfParticle->Z() = kfParticle->GetZ() - dz;
+  
+  
+  // Rotate the kf particle
+  Double_t c = cos(angle);
+  Double_t s = sin(angle);
+  
+  Double_t mA[8][ 8];
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++){
+      mA[i][j] = 0;
+    }
+  }
+  for( int i=0; i<8; i++ ){
+    mA[i][i] = 1;
+  }
+  mA[0][0] =  c;  mA[0][1] = s;
+  mA[1][0] = -s;  mA[1][1] = c;
+  mA[3][3] =  c;  mA[3][4] = s;
+  mA[4][3] = -s;  mA[4][4] = c;
+  
+  Double_t mAC[8][8];
+  Double_t mAp[8];
+  
+  for( Int_t i=0; i<8; i++ ){
+    mAp[i] = 0;
+    for( Int_t k=0; k<8; k++){
+      mAp[i]+=mA[i][k] * kfParticle->GetParameter(k);
+    }
+  }
+  
+  for( Int_t i=0; i<8; i++){
+    kfParticle->Parameter(i) = mAp[i];
+  }
+  
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++ ){
+      mAC[i][j] = 0;
+      for( Int_t k=0; k<8; k++ ){
+        mAC[i][j]+= mA[i][k] * kfParticle->GetCovariance(k,j);
+      }
+    }
+  }
+  
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<=i; j++ ){
+      Double_t xx = 0;
+      for( Int_t k=0; k<8; k++){
+        xx+= mAC[i][k]*mA[j][k];
+      }
+      kfParticle->Covariance(i,j) = xx;
+    }
+  }
+  
+  kfParticle->X() = kfParticle->GetX() + dx;
+  kfParticle->Y() = kfParticle->GetY() + dy;
+  kfParticle->Z() = kfParticle->GetZ() + dz;
+  
 }
 

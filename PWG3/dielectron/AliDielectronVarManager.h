@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           # 
 //#         Class AliDielectronVarManager                     #
@@ -194,6 +192,8 @@ private:
   static void FillVarMCParticle(const AliMCParticle *particle,       Double_t * const values);
   static void FillVarAODMCParticle(const AliAODMCParticle *particle, Double_t * const values);
   static void FillVarDielectronPair(const AliDielectronPair *pair,   Double_t * const values);
+  static void FillVarKFParticle(const AliKFParticle *pair,   Double_t * const values);
+  
   static void FillVarVEvent(const AliVEvent *event,                  Double_t * const values);
   static void FillVarESDEvent(const AliESDEvent *event,              Double_t * const values);
   static void FillVarAODEvent(const AliAODEvent *event,              Double_t * const values);
@@ -217,20 +217,19 @@ inline void AliDielectronVarManager::Fill(const TObject* object, Double_t * cons
   //
   // Main function to fill all available variables according to the type of particle
   //
-
   if      (object->IsA() == AliESDtrack::Class())       FillVarESDtrack(static_cast<const AliESDtrack*>(object), values);
   else if (object->IsA() == AliAODTrack::Class())       FillVarAODTrack(static_cast<const AliAODTrack*>(object), values);
   else if (object->IsA() == AliMCParticle::Class())     FillVarMCParticle(static_cast<const AliMCParticle*>(object), values);
   else if (object->IsA() == AliAODMCParticle::Class())  FillVarAODMCParticle(static_cast<const AliAODMCParticle*>(object), values);
   else if (object->IsA() == AliDielectronPair::Class()) FillVarDielectronPair(static_cast<const AliDielectronPair*>(object), values);
-
+  else if (object->IsA() == AliKFParticle::Class())     FillVarKFParticle(static_cast<const AliKFParticle*>(object),values);
   // Main function to fill all available variables according to the type of event
   
   else if (object->IsA() == AliVEvent::Class())         FillVarVEvent(static_cast<const AliVEvent*>(object), values);
   else if (object->IsA() == AliESDEvent::Class())       FillVarESDEvent(static_cast<const AliESDEvent*>(object), values);
   else if (object->IsA() == AliAODEvent::Class())       FillVarAODEvent(static_cast<const AliAODEvent*>(object), values);
   else if (object->IsA() == AliMCEvent::Class())        FillVarMCEvent(static_cast<const AliMCEvent*>(object), values);
-//   else Error("Fill",Form("Type %s is not supported by AliDielectronVarManager!", object->ClassName())); //TODO: implement without object needed
+//   else printf(Form("AliDielectronVarManager::Fill: Type %s is not supported by AliDielectronVarManager!", object->ClassName())); //TODO: implement without object needed
 }
 
 inline void AliDielectronVarManager::FillVarVParticle(const AliVParticle *particle, Double_t * const values)
@@ -587,6 +586,60 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
 }
 
+inline void AliDielectronVarManager::FillVarKFParticle(const AliKFParticle *particle, Double_t * const values)
+{
+  //
+  // Fill track information available in AliVParticle into an array
+  //
+  values[AliDielectronVarManager::kPx]        = particle->GetPx();
+  values[AliDielectronVarManager::kPy]        = particle->GetPy();
+  values[AliDielectronVarManager::kPz]        = particle->GetPz();
+  values[AliDielectronVarManager::kPt]        = particle->GetPt();
+  values[AliDielectronVarManager::kP]         = particle->GetP();
+  
+  values[AliDielectronVarManager::kXv]        = particle->GetX();
+  values[AliDielectronVarManager::kYv]        = particle->GetY();
+  values[AliDielectronVarManager::kZv]        = particle->GetZ();
+  
+  values[AliDielectronVarManager::kOneOverPt] = 0;
+  values[AliDielectronVarManager::kPhi]       = particle->GetPhi();
+  values[AliDielectronVarManager::kTheta]     = 0.;
+  values[AliDielectronVarManager::kEta]       = particle->GetEta();
+  values[AliDielectronVarManager::kY]         = ((particle->GetE()*particle->GetE()-particle->GetPx()*particle->GetPx()-particle->GetPy()*particle->GetPy()-particle->GetPz()*particle->GetPz())>0.) ? TLorentzVector(particle->GetPx(),particle->GetPy(),particle->GetPz(),particle->GetE()).Rapidity() : -1111.;
+  
+  values[AliDielectronVarManager::kE]         = particle->GetE();
+  values[AliDielectronVarManager::kM]         = particle->GetMass();
+  values[AliDielectronVarManager::kCharge]    = particle->GetQ();
+  
+  values[AliDielectronVarManager::kNclsITS]       = 0;
+  values[AliDielectronVarManager::kNclsTPC]       = 0;
+  values[AliDielectronVarManager::kNclsTPCiter1]  = 0;
+  values[AliDielectronVarManager::kNFclsTPC]      = 0;
+  values[AliDielectronVarManager::kNclsTRD]       = 0;
+  values[AliDielectronVarManager::kTRDntracklets] = 0;
+  values[AliDielectronVarManager::kTRDpidQuality] = 0;
+  values[AliDielectronVarManager::kTPCchi2Cl]     = 0;
+  values[AliDielectronVarManager::kTrackStatus]   = 0;
+  values[AliDielectronVarManager::kTRDprobEle]    = 0;
+  values[AliDielectronVarManager::kTRDprobPio]    = 0;
+  values[AliDielectronVarManager::kTPCsignalN]    = 0;
+  values[AliDielectronVarManager::kImpactParXY]   = 0;
+  values[AliDielectronVarManager::kImpactParZ]    = 0;
+  values[AliDielectronVarManager::kPIn]           = 0;
+  values[AliDielectronVarManager::kTPCsignal]     = 0;
+  values[AliDielectronVarManager::kTPCnSigmaEle]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPio]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaMuo]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaKao]  = 0;
+  values[AliDielectronVarManager::kTPCnSigmaPro]  = 0;
+  values[AliDielectronVarManager::kITSclusterMap] = 0;
+  
+  values[AliDielectronVarManager::kPdgCode]       = 0;
+  values[AliDielectronVarManager::kPdgCodeMother] = 0;
+  
+  
+  if ( fgEvent ) AliDielectronVarManager::Fill(fgEvent, values);
+}
 
 inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Double_t * const values)
 {

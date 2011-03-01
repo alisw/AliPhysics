@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           # 
 //#         Class AliDielectronTrackRotator                   #
@@ -23,8 +21,11 @@
 
 #include <TNamed.h>
 
+#include <AliKFParticle.h>
+
 class TObjArray;
 class AliVTrack;
+class AliVEvent;
 
 class AliDielectronTrackRotator : public TNamed {
 public:
@@ -51,10 +52,15 @@ public:
   Double_t GetStartAnglePhi() const     { return fStartAnglePhi; }
   Double_t GetConeAnglePhi() const      { return fConeAnglePhi;  }
 
+  void SetEvent(AliVEvent * const ev)   { fEvent = ev;           }
+  void SetPdgLegs(Int_t pdfLeg1, Int_t pdfLeg2) { fPdgLeg1=pdfLeg1; fPdgLeg2=pdfLeg2; }
 
-  AliVTrack* GetTrackP() const {return fTrackP;}
-  AliVTrack* GetTrackN() const {return fTrackN;}
+  const AliKFParticle& GetKFTrackP() const {return fTrackP;}
+  const AliKFParticle& GetKFTrackN() const {return fTrackN;}
 
+  AliVTrack* GetVTrackP() const {return fVTrackP;}
+  AliVTrack* GetVTrackN() const {return fVTrackN;}
+  
 private:
   UInt_t   fIterations;             // number of iterations
 
@@ -63,15 +69,24 @@ private:
   Double_t fStartAnglePhi;          // starting angle for rotation
   Double_t fConeAnglePhi;           // opening angle in phi for multiple rotation
 
-  const TObjArray *fkArrTracksP;           //! array of positive tracks
-  const TObjArray *fkArrTracksN;           //! array of negative tracks
+  const TObjArray *fkArrTracksP;    //! array of positive tracks
+  const TObjArray *fkArrTracksN;    //! array of negative tracks
 
   UInt_t   fCurrentIteration;       //! current iteration step
   Int_t    fCurrentTackP;           //! current positive track in array
   Int_t    fCurrentTackN;           //! current negative track in array
 
-  AliVTrack *fTrackP;               //! Positive track
-  AliVTrack *fTrackN;               //! Negative track
+  AliVEvent *fEvent;                //! current event
+  
+  AliKFParticle fTrackP;            //! Positive track
+  AliKFParticle fTrackN;            //! Negative track
+  
+  AliVTrack *fVTrackP;              //! Positive track
+  AliVTrack *fVTrackN;              //! Negative track
+  
+  Int_t fPdgLeg1;                   //! pdg code leg1
+  Int_t fPdgLeg2;                   //! pdg code leg2
+  
 
   Bool_t RotateTracks();
   

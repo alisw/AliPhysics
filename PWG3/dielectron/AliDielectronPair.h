@@ -3,8 +3,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           # 
 //#                  AliDielectronPair                        #
@@ -42,11 +40,22 @@ public:
   AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
                     AliVTrack * const particle2, Int_t pid2, Char_t type);
 
-  //TODO:  copy constructor + assignment operator
+  AliDielectronPair(const AliKFParticle * const particle1,
+                    const AliKFParticle * const particle2,
+                    AliVTrack * const refParticle1,
+                    AliVTrack * const refParticle2,
+                    Char_t type);
+  
+//TODO:  copy constructor + assignment operator
   
   void SetTracks(AliVTrack * const particle1, Int_t pid1,
                  AliVTrack * const particle2, Int_t pid2);
 
+  void SetTracks(const AliKFParticle * const particle1,
+                 const AliKFParticle * const particle2,
+                 AliVTrack * const refParticle1,
+                 AliVTrack * const refParticle2);
+    
   //AliVParticle interface
   // kinematics
   virtual Double_t Px() const { return fPair.GetPx(); }
