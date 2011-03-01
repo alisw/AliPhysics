@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                Dielectron TrackRotator                                  //
 //                                                                       //
@@ -28,10 +26,12 @@ Detailed description
 ///////////////////////////////////////////////////////////////////////////
 
 #include <TMath.h>
-#include <TObjArray.h>
-#include <AliAODTrack.h>
-#include <AliESDtrack.h>
 #include <TRandom3.h>
+#include <TObjArray.h>
+
+#include <AliVTrack.h>
+
+#include "AliDielectronHelper.h"
 
 #include "AliDielectronTrackRotator.h"
 
@@ -48,8 +48,13 @@ AliDielectronTrackRotator::AliDielectronTrackRotator() :
   fCurrentIteration(0),
   fCurrentTackP(0),
   fCurrentTackN(0),
-  fTrackP(0x0),
-  fTrackN(0x0)
+  fEvent(0x0),
+  fTrackP(),
+  fTrackN(),
+  fVTrackP(0x0),
+  fVTrackN(0x0),
+  fPdgLeg1(-11),
+  fPdgLeg2(11)
 {
   //
   // Default Constructor
@@ -69,8 +74,13 @@ AliDielectronTrackRotator::AliDielectronTrackRotator(const char* name, const cha
   fCurrentIteration(0),
   fCurrentTackP(0),
   fCurrentTackN(0),
-  fTrackP(0x0),
-  fTrackN(0x0)
+  fEvent(0x0),
+  fTrackP(),
+  fTrackN(),
+  fVTrackP(0x0),
+  fVTrackN(0x0),
+  fPdgLeg1(-11),
+  fPdgLeg2(11)
 {
   //
   // Named Constructor
@@ -148,54 +158,28 @@ Bool_t AliDielectronTrackRotator::RotateTracks()
   // Find out particle type and perform the rotation
   //
 
-  const AliVTrack *trackP=dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fCurrentTackP));
-  const AliVTrack *trackN=dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fCurrentTackN));
+  AliVTrack *trackP=dynamic_cast<AliVTrack*>(fkArrTracksP->UncheckedAt(fCurrentTackP));
+  AliVTrack *trackN=dynamic_cast<AliVTrack*>(fkArrTracksN->UncheckedAt(fCurrentTackN));
+  fTrackP.Initialize();
+  fTrackN.Initialize();
+  fVTrackP=0x0;
+  fVTrackN=0x0;
   if (!trackP||!trackN) return kFALSE;
+  fTrackP+=AliKFParticle(*trackP,fPdgLeg1);
+  fTrackN+=AliKFParticle(*trackN,fPdgLeg2);
 
+  fVTrackP=trackP;
+  fVTrackN=trackN;
   
   Double_t angle  = fStartAnglePhi+(2*gRandom->Rndm()-1)*fConeAnglePhi;
   Int_t    charge = TMath::Nint(gRandom->Rndm());
   
-  if (trackP->IsA()==AliESDtrack::Class()) {
-    
-    if (!fTrackP) {
-      fTrackP=new AliESDtrack;
-      fTrackN=new AliESDtrack;
-    }
-    
-    trackP->Copy(*fTrackP);
-    trackN->Copy(*fTrackN);
-    
-    if (fRotationType==kRotatePositive||(fRotationType==kRotateBothRandom&&charge==0)){
-      ((AliESDtrack*)fTrackP)->Rotate(angle);
-    }
-    
-    if (fRotationType==kRotateNegative||(fRotationType==kRotateBothRandom&&charge==1)){
-      ((AliESDtrack*)fTrackN)->Rotate(angle);
-    }
-    
-  } else if (trackP->IsA()==AliAODTrack::Class()) {
-    
-    if (!fTrackP) {
-      fTrackP=new AliAODTrack;
-      fTrackN=new AliAODTrack;
-    }
-    
-    (*(AliAODTrack*)fTrackP)=(*(AliAODTrack*)trackP);
-    (*(AliAODTrack*)fTrackN)=(*(AliAODTrack*)trackN);
-        
-    if (fRotationType==kRotatePositive||(fRotationType==kRotateBothRandom&&charge==0)){
-      Double_t phi=fTrackP->Phi()+angle;
-      if (phi>2*TMath::Pi()) phi-=2*TMath::Pi();
-      ((AliAODTrack*)fTrackP)->SetPhi(phi);
-    }
-    
-    if (fRotationType==kRotateNegative||(fRotationType==kRotateBothRandom&&charge==1)){
-      Double_t phi=fTrackN->Phi()+angle;
-      if (phi>2*TMath::Pi()) phi-=2*TMath::Pi();
-      ((AliAODTrack*)fTrackN)->SetPhi(phi);
-    }
-    
+  if (fRotationType==kRotatePositive||(fRotationType==kRotateBothRandom&&charge==0)){
+    AliDielectronHelper::RotateKFParticle(&fTrackP, angle, fEvent);
+  }
+  
+  if (fRotationType==kRotateNegative||(fRotationType==kRotateBothRandom&&charge==1)){
+    AliDielectronHelper::RotateKFParticle(&fTrackN, angle, fEvent);
   }
 
   return kTRUE;

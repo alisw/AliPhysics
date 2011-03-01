@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                Dielectron Analysis Main class                         //
 //                                                                       //
@@ -160,7 +158,10 @@ void AliDielectron::Init()
   if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
   
   if (fCfManagerPair) fCfManagerPair->InitialiseContainer(fPairFilter);
-  if (fTrackRotator)  fTrackRotator->SetTrackArrays(&fTracks[0],&fTracks[1]);
+  if (fTrackRotator)  {
+    fTrackRotator->SetTrackArrays(&fTracks[0],&fTracks[1]);
+    fTrackRotator->SetPdgLegs(fPdgLeg1,fPdgLeg2);
+  }
   if (fDebugTree) fDebugTree->SetDielectron(this);
 } 
 
@@ -226,7 +227,10 @@ void AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     }
 
     //track rotation
-    if (fTrackRotator) FillPairArrayTR();
+    if (fTrackRotator) {
+      fTrackRotator->SetEvent(ev1);
+      FillPairArrayTR();
+    }
   }
   
   //in case there is a histogram manager, fill the QA histograms
@@ -566,7 +570,8 @@ void AliDielectron::FillPairArrayTR()
   
   while ( fTrackRotator->NextCombination() ){
     AliDielectronPair candidate;
-    candidate.SetTracks(fTrackRotator->GetTrackP(), fPdgLeg1, fTrackRotator->GetTrackN(), fPdgLeg2);
+    candidate.SetTracks(&fTrackRotator->GetKFTrackP(), &fTrackRotator->GetKFTrackN(),
+                        fTrackRotator->GetVTrackP(),fTrackRotator->GetVTrackN());
     candidate.SetType(kEv1PMRot);
     
     //pair cuts

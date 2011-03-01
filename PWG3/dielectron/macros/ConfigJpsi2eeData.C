@@ -5,9 +5,9 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD);
 
 AliESDtrackCuts *SetupESDtrackCutsDieleData(Int_t cutDefinition);
 
-TString namesDieleData=("basicQ+SPDfirst+pt>1+PID;basicQ+SPDany+pt>1+PID");
+TString namesDieleData=("basicQ+SPDfirst+pt>1+PID; basicQ+SPDany+pt>1+PID");
 
-TObjArray *arrNamesDieleData=namesDieleData.Tokenize(";");
+TObjArray *arrNamesDieleData=namesDieleData.Tokenize("; ");
 
 const Int_t nDie=arrNamesDieleData->GetEntries();
 
@@ -40,9 +40,9 @@ AliDielectron* ConfigJpsi2ee(Int_t cutDefinition, Bool_t isAOD=kFALSE)
 //   if (cutDefinition<nDie-1)
   InitCFDieleData(diele, cutDefinition, isAOD);
 
-//   AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
-//   rot->SetIterations(10);
-//   diele->SetTrackRotator(rot);
+  AliDielectronTrackRotator *rot=new AliDielectronTrackRotator;
+  rot->SetIterations(4);
+  diele->SetTrackRotator(rot);
   return diele;
 }
 
@@ -87,8 +87,8 @@ void SetupTrackCutsDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t i
   // PID cuts --------------------------------------------------------
   AliDielectronPID *pid = new AliDielectronPID("PID10","TPC nSigma |e|<3 + |Pi|>3 + |P|>3 + TOF nSigma |e|<3");
   pid->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.,3.);
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.,3.5,0.,0.,kTRUE);
-  pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-20.,3.5,0.,0.,kTRUE);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-3.,3.,0.,0.,kTRUE);
+  pid->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-20.,3.,0.,0.,kTRUE);
   diele->GetTrackFilter().AddCuts(pid);
 }
 
@@ -225,8 +225,8 @@ void InitCFDieleData(AliDielectron *diele, Int_t cutDefinition, Bool_t isAOD)
   cf->AddVariable(AliDielectronVarManager::kEta,"-5,-1,-0.9,-0.8,-0.5,0.5,0.8,0.9,1.0,5",kTRUE);
   
 //   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaEle,"-2.5,-2,-1.5,-1,-0.5,4.",kTRUE);
-//   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"2.5,3.,3.5,4.,100",kTRUE);
-//   cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"2.5,3.,3.5,4.,100",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPio,"3.,3.5,4.,100",kTRUE);
+  cf->AddVariable(AliDielectronVarManager::kTPCnSigmaPro,"3.,3.5,4.,100",kTRUE);
   
   diele->SetCFManagerPair(cf);
   

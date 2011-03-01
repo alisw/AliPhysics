@@ -4,8 +4,6 @@
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
-
 //#############################################################
 //#                                                           # 
 //#         Class AliDielectronEventCuts                     #
@@ -28,7 +26,7 @@ class AliESDVertex;
 
 class AliDielectronEventCuts : public AliAnalysisCuts {
 public:
-  enum EVtxType { kVtxTracks=0, kVtxSPD, kVtxTPC, kVtxAny };
+  enum EVtxType { kVtxTracks=0, kVtxSPD, kVtxTPC, kVtxAny, kVtxTracksOrSPD };
   
   AliDielectronEventCuts();
   AliDielectronEventCuts(const char*name, const char* title);

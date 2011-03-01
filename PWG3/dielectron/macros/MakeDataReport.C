@@ -500,8 +500,8 @@ c->GetHistogram()->GetXaxis()->SetRangeUser(2,4);
 c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
 
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3.5&&abs(Leg2_TPC_nSigma_Pions)>3.5");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3.5&&(Leg2_TPC_nSigma_Protons)>3.5");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
 
 c->Draw("M>>hM2(301,-.01,6.01)","cut","esame");
 
@@ -560,10 +560,10 @@ c->SetAlias("cut","PairType==1&&QA&&pidSig");
 c->SetMarkerColor(kBlack);
 c->SetLineColor(kBlack);
 
-c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3.5");
-c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3.5");
+c->SetAlias("cutPi","abs(Leg1_TPC_nSigma_Pions)>3&&abs(Leg2_TPC_nSigma_Pions)>3");
+c->SetAlias("cutP","(Leg1_TPC_nSigma_Protons)>3&&(Leg2_TPC_nSigma_Protons)>3");
 
-c->Draw("M>>hM(301,-.015,6.005)","cut","e");
+c->Draw("M>>hM(601,-.015,6.005)","cut","e");
 
 TGraphErrors gr0;
 TH1 *h=c->GetHistogram();
@@ -581,7 +581,7 @@ for (Int_t i=0;i<h->GetNbinsX();++i){
 c->SetMarkerColor(kBlue);
 c->SetLineColor(kBlue);
 
-c->Draw("M>>hM2(301,-.01,6.01)","cut","egoff");
+c->Draw("M>>hM2(601,-.01,6.01)","cut","egoff");
 
 TGraphErrors gr1;
 TH1 *h=c->GetHistogram();
@@ -599,7 +599,7 @@ for (Int_t i=0;i<h->GetNbinsX();++i){
 c->SetMarkerColor(kGreen);
 c->SetLineColor(kGreen);
 
-c->Draw("M>>hM3(301,-.005,6.015)","cut","egoff");
+c->Draw("M>>hM3(601,-.005,6.015)","cut","egoff");
 c->GetHistogram()->GetXaxis()->SetRangeUser(2.,4);
 
 TGraphErrors gr2;
@@ -618,7 +618,7 @@ for (Int_t i=0;i<h->GetNbinsX();++i){
 c->SetMarkerColor(kMagenta);
 c->SetLineColor(kMagenta);
 
-c->Draw("M>>hM4(301,-.0,6.02)","cut","egoff");
+c->Draw("M>>hM4(601,-.0,6.02)","cut","egoff");
 
 TGraphErrors gr3;
 TH1 *h=c->GetHistogram();
