@@ -119,10 +119,15 @@ Float_t AliESDUtils::GetCorrV0(const AliESDEvent* esd, Float_t &v0CorrResc, Floa
   Float_t multChCorrResc[64];
   AliESDVZERO* esdV0 = esd->GetVZEROData();
   for(Int_t i = 0; i < 64; ++i) {
-    Double_t b = (esdV0->GetMultiplicity(i)*par1[i]-par0[i]);
-    Double_t s = (b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i));
-    Double_t n = (s<0) ? -b : (-b + TMath::Sqrt(s));
-    multChCorr[i] = 2.*esdV0->GetMultiplicity(i)/n*par0[i];
+    if (esdV0->TestBit(AliESDVZERO::kCorrectedForSaturation)) {
+      multChCorr[i] = esdV0->GetMultiplicity(i);
+    }
+    else {
+      Double_t b = (esdV0->GetMultiplicity(i)*par1[i]-par0[i]);
+      Double_t s = (b*b-4.*par2[i]*esdV0->GetMultiplicity(i)*esdV0->GetMultiplicity(i));
+      Double_t n = (s<0) ? -b : (-b + TMath::Sqrt(s));
+      multChCorr[i] = 2.*esdV0->GetMultiplicity(i)/n*par0[i];
+    }
     multCorr += multChCorr[i];
     multChCorrResc[i] = multChCorr[i]/par0[i]/64.;
     multCorr2 += multChCorrResc[i];
