@@ -410,6 +410,11 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
 	
 	FileDesc* pFileDesc = dynamic_cast<FileDesc*>( flnk->GetObject() );
 	TFile* pFile = *pFileDesc;
+	if ( !pFile ) {
+	  HLTError("No pointer to file");
+	  iResult=-EFAULT;
+	  continue;
+	}
 
 	TString filename = pFile->GetName();
 	filename.Remove(0,filename.Last('/')+1);
