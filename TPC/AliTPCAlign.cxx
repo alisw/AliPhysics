@@ -307,7 +307,8 @@ TClonesArray *array = new TClonesArray("AliAlignObjParams",1);
     // save on file
     const char* filename = "TPCSurveyMisalignment.root";
     Char_t fullname[80];
-    sprintf(fullname,"%s/TPC/%s",gSystem->Getenv("ALICE_ROOT"),filename);
+    //sprintf(fullname,"%s/TPC/%s",gSystem->Getenv("ALICE_ROOT"),filename);
+    snprintf(fullname,80,"%s/TPC/%s",gSystem->Getenv("ALICE_ROOT"),filename);
     TFile *f = new TFile(fullname,"RECREATE");
     if(!f){
       AliError("cannot open file for output\n");
