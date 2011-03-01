@@ -79,8 +79,17 @@ AliHLTTPCConfMapper::AliHLTTPCConfMapper()
   fClusterCutZ(-1)
 {
   //Default constructor
-  fParamSet[0]=0;
-  fParamSet[1]=0;
+  memset(fParamSet, 0, sizeof(fParamSet));
+  memset(fTrackletLength, 0, sizeof(fTrackletLength));
+  memset(fRowScopeTracklet, 0, sizeof(fRowScopeTracklet));
+  memset(fRowScopeTrack, 0, sizeof(fRowScopeTrack));
+  memset(fMinPoints, 0, sizeof(fMinPoints));
+  
+  memset(fMaxAngleTracklet, 0, sizeof(fMaxAngleTracklet));
+  memset(fMaxDist, 0, sizeof(fMaxDist));
+  memset(fHitChi2Cut, 0, sizeof(fHitChi2Cut));
+  memset(fGoodHitChi2, 0, sizeof(fGoodHitChi2));
+  memset(fTrackChi2Cut, 0, sizeof(fTrackChi2Cut));
 }
 
 AliHLTTPCConfMapper::~AliHLTTPCConfMapper()
