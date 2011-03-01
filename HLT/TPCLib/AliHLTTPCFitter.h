@@ -30,7 +30,6 @@ class AliHLTTPCFitter {
   AliHLTTPCFitter(AliHLTTPCVertex *vertex,Bool_t vertexconstraint=kTRUE);
   virtual ~AliHLTTPCFitter();
   
-  void LoadClusters(Char_t *path,Int_t event=0,Bool_t sp=kFALSE);
   void SortTrackClusters(AliHLTTPCTrack *track) const;
   Int_t FitHelix(AliHLTTPCTrack *track);
   Int_t FitCircle();

@@ -30,7 +30,6 @@
 #include "AliHLTTPCVertex.h"
 #include "AliHLTTPCTrack.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCTransform.h"
 //#include "AliHLTTPC.h"
 
@@ -77,41 +76,6 @@ AliHLTTPCFitter::~AliHLTTPCFitter()
 	{
 	  if(fClusters[i][j])
 	    delete [] fClusters[i][j];
-	}
-    }
-}
-
-void AliHLTTPCFitter::LoadClusters(Char_t *path,Int_t event,Bool_t sp)
-{
-  //load clusters
-  const Int_t fnamelen=256;
-  Char_t fname[fnamelen];
-  AliHLTTPCMemHandler *clusterfile[36][6];
-  for(Int_t s=0; s<=35; s++)
-    {
-      for(Int_t p=0; p<6; p++)
-	{
-	  Int_t patch;
-	  if(sp==kTRUE)
-	    patch=-1;
-	  else
-	    patch=p;
-	  if(fClusters[s][p])
-	    delete fClusters[s][p];
-	  fClusters[s][p] = 0;
-	  clusterfile[s][p] = new AliHLTTPCMemHandler();
-	  snprintf(fname,fnamelen,"%s/points_%d_%d_%d.raw",path,event,s,patch);
-	  if(!clusterfile[s][p]->SetBinaryInput(fname))
-	    {
-	      delete clusterfile[s][p];
-              clusterfile[s][p] = 0; 
-	      continue;
-	    }
-	  fClusters[s][p] = (AliHLTTPCSpacePointData*)clusterfile[s][p]->Allocate();
-	  clusterfile[s][p]->Binary2Memory(fNcl[s][p],fClusters[s][p]);
-	  clusterfile[s][p]->CloseBinaryInput();
-	  if(sp==kTRUE)
-	    break;
 	}
     }
 }
