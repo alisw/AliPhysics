@@ -269,21 +269,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   AliAODEvent* myAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
   AliMultiplicity* myTracklets = NULL;
   AliESDPmdTrack* pmdtracks = NULL;//pmd      
-  TH2F* histFMD = NULL;
 
   int availableINslot=1;
-  if(strcmp(fRPType,"FMD")==0) {
-    TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
-    if(!FMDdata) {
-      cout<<" No FMDdata "<<endl;
-      return;
-    }
-    histFMD = dynamic_cast<TH2F*>(FMDdata->FindObject("dNdetadphiHistogramTrVtx"));
-    if (!histFMD) {
-      cout<< "No histFMD"<<endl;
-      return;
-    }
-  }
 
   if (!(fCutsRP&&fCutsPOI&&fCutsEvent))
   {
@@ -375,6 +362,16 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       flowEvent = new AliFlowEvent(myESD,myTracklets,fCFManager2);
     }
     else if (fRPType == "FMD"){
+      TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
+      if(!FMDdata) {
+        cout<<" No FMDdata "<<endl;
+        return;
+      }
+      TH2F* histFMD = dynamic_cast<TH2F*>(FMDdata->FindObject("dNdetadphiHistogramTrVtx"));
+      if (!histFMD) {
+        cout<< "No histFMD"<<endl;
+        return;
+      }
       flowEvent = new AliFlowEvent(myESD,histFMD,fCFManager2);
     }
     else if (fRPType == "PMD"){
