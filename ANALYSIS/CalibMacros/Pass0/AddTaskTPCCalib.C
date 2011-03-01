@@ -110,6 +110,17 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   calibTimeGain->SetUpperTrunc(0.6);
 
   myTask->AddJob(calibTimeGain);
+
+  AliTPCcalibGainMult *calibGainMult = new AliTPCcalibGainMult("calibGainMult","calibGainMult");
+  calibGainMult->SetUseMax(kTRUE);
+  calibGainMult->SetDebugLevel(0);
+  calibGainMult->SetStreamLevel(0);
+  calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser
+  calibGainMult->SetLowerTrunc(0.02);
+  calibGainMult->SetUpperTrunc(0.6);
+
+  myTask->AddJob(calibGainMult);
+
 }
 
 //_____________________________________________________________________________
@@ -145,10 +156,13 @@ void AddCalibTime(TObject* task){
   // setup calibration component
   //
   AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
-  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 10*60);
+  AliTPCcalibTime *calibTime = new AliTPCcalibTime("calibTime","calibTime",  startTime.GetSec(), stopTime.GetSec(), 10*60, 2);
   calibTime->SetDebugLevel(0);
   calibTime->SetStreamLevel(0);
   calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
+
+  // max 200 tracks per event
+  calibTime->SetCutTracks(200);
 
   myTask->AddJob(calibTime);
 }
@@ -203,7 +217,7 @@ void ConfigOCDB(Int_t run){
   //
   transform->SetCurrentRecoParam(tpcRecoParam);
   tpcRecoParam->SetUseGainCorrectionTime(0);
-  tpcRecoParam->SetUseRPHICorrection(kTRUE); 
+  tpcRecoParam->SetUseRPHICorrection(kFALSE); 
   tpcRecoParam->SetUseTOFCorrection(kFALSE);
   //
   tpcRecoParam->SetUseDriftCorrectionTime(0);
@@ -212,8 +226,13 @@ void ConfigOCDB(Int_t run){
   tpcRecoParam->SetUseRadialCorrection(kFALSE);
   tpcRecoParam->SetUseQuadrantAlignment(kFALSE);
   //
-  tpcRecoParam->SetUseSectorAlignment(kTRUE);
+  tpcRecoParam->SetUseSectorAlignment(kFALSE);
   tpcRecoParam->SetUseFieldCorrection(kFALSE);
-  tpcRecoParam->SetUseExBCorrection(kTRUE);
+  tpcRecoParam->SetUseExBCorrection(kFALSE);
+  //
+  tpcRecoParam->SetUseMultiplicityCorrectionDedx(kFALSE);
+  tpcRecoParam->SetUseAlignmentTime(kFALSE);
+  tpcRecoParam->SetUseComposedCorrection(kTRUE);
+
   AliTPCcalibDB::Instance()->SetRun(run); 
 }

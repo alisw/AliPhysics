@@ -37,7 +37,9 @@ echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runnum..."
 aliroot -l -b -q recPass0.C\(\"alien://$1\",$entries\) 2>&1 | tee rec.log
+mv syswatch.log syswatch_rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."
 aliroot -l -b -q  runCalibTrain.C\(\"$runnum\"\)   2>&1 | tee calib.log
+mv syswatch.log syswatch_calib.log
 

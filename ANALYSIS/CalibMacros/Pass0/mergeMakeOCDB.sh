@@ -16,6 +16,8 @@
 
 echo ">>>>>>> Running AliRoot to merge calib objects found in $1 with pattern AliESDfriends_v1.root"
 aliroot -l -b -q merge.C\(\"$1\",\"AliESDfriends_v1.root\"\) 2>&1 | tee merge.log
+mv syswatch.log syswatch_merge.log
 
 echo ">>>>>>> Extract OCDB entries for run = $2, to be stored in $3"
 aliroot -l -b -q makeOCDB.C\(\"$2\",\"$3\"\) 2>&1 | tee ocdb.log
+mv syswatch.log syswatch_makeOCDB.log

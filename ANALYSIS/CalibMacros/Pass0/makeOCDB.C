@@ -29,6 +29,7 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   
   // Steering Tasks - set output storage
   // DefaultStorage set already before - in ConfigCalibTrain.C
+ocdbStorage+="?se=ALICE::CERN::SE";
   AliCDBManager::Instance()->SetSpecificStorage("*/*/*",ocdbStorage.Data());
   
   // set OCDB storage
@@ -59,14 +60,12 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
   procestrd.SetCalDetVdrift(GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed));
          
   procestrd.SetMinStatsVdriftT0PH(600*10);
-  procestrd.SetMinStatsVdriftLinear(600);
+  procestrd.SetMinStatsVdriftLinear(60);
   procestrd.SetMinStatsGain(600);
-  procestrd.SetMinStatsPRF(600);
-
+  
   procestrd.CalibVdriftT0("CalibObjects.root",runNumber,runNumber,ocdbStorage);
   procestrd.CalibGain("CalibObjects.root",runNumber,runNumber,ocdbStorage);
-  procestrd.CalibPRF("CalibObjects.root",runNumber,runNumber,ocdbStorage); 
-
+  
   return;
 }
 

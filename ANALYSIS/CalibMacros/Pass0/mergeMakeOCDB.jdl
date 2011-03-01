@@ -26,5 +26,5 @@ InputFile={"LF:/alice/cern.ch/user/j/jotwinow/Pass0/MergeCalibration/ConfigCalib
 OutputDir="/alice/cern.ch/user/j/jotwinow/Pass0/output/$2/";
 
 OutputArchive={"log_archive:*.log@disk=1",
-              "root_archive.zip:CalibObjects.root@disk=1"};
+              "root_archive.zip:CalibObjects.root,meanITSVertex.root,fitITSVertex.root@disk=1"};
 
