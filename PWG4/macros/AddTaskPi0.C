@@ -51,6 +51,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
     reader->SwitchOnPHOSCells();  
     reader->SwitchOnPHOS();
   }
+
+   reader->SwitchOnSuspiciousClustersRemoval();  //EMCAL
   
   // for case data="deltaAOD", no need to fill the EMCAL/PHOS cluster lists
   if(data.Contains("delta")){
@@ -128,16 +130,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPi0(TString data, TString calorimeter
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
   if(calorimeter == "PHOS"){
-    anaphoton->SetNCellCut(0);// At least 2 cells
-    anaphoton->SetMinPt(0.);
+    anaphoton->SetNCellCut(2);// At least 2 cells
+    anaphoton->SetMinPt(3.);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
   }
   else {//EMCAL
-    //anaphoton->SetNCellCut(0);// At least 2 cells
-    anaphoton->SetMinPt(0.1); // no effect minium EMCAL cut.
-    if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
-    anaphoton->SetMinDistanceToBadChannel(6, 12, 18);//For officially produced ESDs/AODs
-    //anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For filtered AODs, new releases.
+    anaphoton->SetNCellCut(1);// At least 2 cells
+    anaphoton->SetMinPt(0.3); // no effect minium EMCAL cut.
+    //if(!kUseKinematics) anaphoton->SetTimeCut(400,900);// Time window of [400-900] ns
+    //anaphoton->SetMinDistanceToBadChannel(6, 12, 18);//For officially produced ESDs/AODs
+    anaphoton->SetMinDistanceToBadChannel(1, 2, 3);//For filtered AODs, new releases.
   }
   anaphoton->SetCalorimeter(calorimeter);
   if(kUseKinematics) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms
