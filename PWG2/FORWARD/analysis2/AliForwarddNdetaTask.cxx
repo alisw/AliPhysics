@@ -136,7 +136,7 @@ AliForwarddNdetaTask::Terminate(Option_t *)
     //TH1D* dndetaTruth = ProjectX(fSumPrimary,"dndetaTruth",
     //			 1,fSumPrimary->GetNbinsY(),false,true);
     TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,fSumPrimary->GetNbinsY(),"e");
-    std::cout<<nAll<<"   "<<nNSD<<std::endl;
+
     
     if(fTriggerMask == AliAODForwardMult::kNSD)
       dndetaTruth->Scale(1./nNSD, "width");
