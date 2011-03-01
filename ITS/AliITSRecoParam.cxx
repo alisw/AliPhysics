@@ -176,7 +176,7 @@ fTrackleterRemoveClustersFromOverlaps(kFALSE),
 fTrackleterPhiOverlapCut(0.005),
 fTrackleterZetaOverlapCut(0.05),
 fTrackleterPhiRotationAngle(0.0),
-fTrackleterNStdDev(1.),
+fTrackleterNStdDev(1.5),
 fScaleDTBySin2T(kFALSE),
 fUseCosmicRunShiftsSSD(kFALSE),
 fSPDRemoveNoisyFlag(kTRUE),
@@ -441,7 +441,6 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   //
   // trackleter
   param->fTrackleterPhiWindow = 0.06;
-  param->fTrackleterNStdDev = 25.;
   param->fScaleDTBySin2T = kTRUE;
   //
   param->fSelectBestMIP03 = kTRUE;
@@ -899,3 +898,4 @@ void AliITSRecoParam::PrintParameters() const
 
   return;
 }
+
