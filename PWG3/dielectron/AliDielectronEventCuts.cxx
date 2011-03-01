@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                Dielectron EventCuts                                  //
 //                                                                       //
@@ -93,7 +91,10 @@ Bool_t AliDielectronEventCuts::IsSelected(TObject* event)
 
   fkVertex=0x0;
   switch(fVtxType){
-  case kVtxTracks: fkVertex=ev->GetPrimaryVertexTracks(); break;
+  case kVtxTracks:
+  case kVtxTracksOrSPD:
+    fkVertex=ev->GetPrimaryVertexTracks();
+    break;
   case kVtxSPD:    fkVertex=ev->GetPrimaryVertexSPD(); break;
   case kVtxTPC:    fkVertex=ev->GetPrimaryVertexTPC(); break;
   case kVtxAny:    fkVertex=ev->GetPrimaryVertex(); break;

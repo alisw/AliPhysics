@@ -13,8 +13,6 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
-
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 //  Dielectron Pair class. Internally it makes use of AliKFParticle.     //
@@ -61,6 +59,25 @@ AliDielectronPair::AliDielectronPair(AliVTrack * const particle1, Int_t pid1,
 }
 
 //______________________________________________
+AliDielectronPair::AliDielectronPair(const AliKFParticle * const particle1,
+                                     const AliKFParticle * const particle2,
+                                     AliVTrack * const refParticle1,
+                                     AliVTrack * const refParticle2, Char_t type) :
+  fType(type),
+  fLabel(-1),
+  fPair(),
+  fD1(),
+  fD2(),
+  fRefD1(),
+  fRefD2()
+{
+  //
+  // Constructor with tracks
+  //
+  SetTracks(particle1, particle2,refParticle1,refParticle2);
+}
+
+//______________________________________________
 AliDielectronPair::~AliDielectronPair()
 {
   //
@@ -76,6 +93,8 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
   //
   // Sort particles by pt, first particle larget Pt
   // set AliKF daughters and pair
+  // refParticle1 and 2 are the original tracks. In the case of track rotation
+  // they are needed in the framework
   //
   fPair.Initialize();
   fD1.Initialize();
@@ -101,22 +120,57 @@ void AliDielectronPair::SetTracks(AliVTrack * const particle1, Int_t pid1,
 }
 
 //______________________________________________
+void AliDielectronPair::SetTracks(const AliKFParticle * const particle1,
+                                  const AliKFParticle * const particle2,
+                                  AliVTrack * const refParticle1,
+                                  AliVTrack * const refParticle2)
+{
+  //
+  // Sort particles by pt, first particle larget Pt
+  // set AliKF daughters and pair
+  // refParticle1 and 2 are the original tracks. In the case of track rotation
+  // they are needed in the framework
+  //
+  fPair.Initialize();
+  fD1.Initialize();
+  fD2.Initialize();
+  
+  AliKFParticle kf1(*particle1);
+  AliKFParticle kf2(*particle2);
+  
+  fPair.AddDaughter(kf1);
+  fPair.AddDaughter(kf2);
+  
+  if (kf1.GetPt()>kf2.GetPt()){
+    fRefD1 = refParticle1;
+    fRefD2 = refParticle2;
+    fD1+=kf1;
+    fD2+=kf2;
+  } else {
+    fRefD1 = refParticle2;
+    fRefD2 = refParticle1;
+    fD1+=kf2;
+    fD2+=kf1;
+  }
+}
+
+//______________________________________________
 void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const
 {
   //
   // Calculate theta and phi in helicity and Collins-Soper coordinate frame
   //
   const Double_t kBeamEnergy   = 3500.;
-  Double_t pxyz1[3]={0,0,0};
-  Double_t pxyz2[3]={0,0,0};
+  Double_t pxyz1[3]={fD1.GetPx(),fD1.GetPy(),fD1.GetPz()};
+  Double_t pxyz2[3]={fD2.GetPx(),fD2.GetPy(),fD2.GetPz()};
   Double_t eleMass=AliPID::ParticleMass(AliPID::kElectron);
   Double_t proMass=AliPID::ParticleMass(AliPID::kProton);
   
-  AliVParticle *d1 = static_cast<AliVParticle*>(fRefD1.GetObject());
-  AliVParticle *d2 = static_cast<AliVParticle*>(fRefD2.GetObject());
+//   AliVParticle *d1 = static_cast<AliVParticle*>(fRefD1.GetObject());
+//   AliVParticle *d2 = static_cast<AliVParticle*>(fRefD2.GetObject());
 
-  d1->PxPyPz(pxyz1);
-  d2->PxPyPz(pxyz2);
+//   d1->PxPyPz(pxyz1);
+//   d2->PxPyPz(pxyz2);
   
   TLorentzVector projMom(0.,0.,-kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
   TLorentzVector targMom(0.,0., kBeamEnergy,TMath::Sqrt(kBeamEnergy*kBeamEnergy+proMass*proMass));
@@ -144,7 +198,7 @@ void AliDielectronPair::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double
   TVector3 xAxisCS = (yAxis.Cross(zAxisCS)).Unit();
   
   // fill theta and phi
-  if(d1->Charge()>0){
+  if(fD1.GetQ()>0){
     thetaHE = zAxisHE.Dot((p1Mom.Vect()).Unit());
     thetaCS = zAxisCS.Dot((p1Mom.Vect()).Unit());
     phiHE   = TMath::ATan2((p1Mom.Vect()).Dot(yAxis), (p1Mom.Vect()).Dot(xAxisHE));

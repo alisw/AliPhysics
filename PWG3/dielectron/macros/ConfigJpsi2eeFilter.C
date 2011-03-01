@@ -117,8 +117,8 @@ AliESDtrackCuts *SetupESDtrackCutsDieleFilter()
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-  
-  esdTrackCuts->SetMinNClustersTPC(90);
+ 
+  esdTrackCuts->SetMinNClustersTPC(70);
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
 
   return esdTrackCuts;
