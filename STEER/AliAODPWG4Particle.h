@@ -23,8 +23,11 @@ class AliAODPWG4Particle : public AliVParticle {
  public:
   AliAODPWG4Particle();
   AliAODPWG4Particle(Double_t px, Double_t py, Double_t pz, Double_t e);
-  AliAODPWG4Particle(TLorentzVector & p);  
+  AliAODPWG4Particle(TLorentzVector & p);
+  
   virtual ~AliAODPWG4Particle();
+  virtual void Clear(const Option_t* /*opt*/);
+
   AliAODPWG4Particle(const AliAODPWG4Particle& photon); 
   AliAODPWG4Particle& operator=(const AliAODPWG4Particle& photon);
 

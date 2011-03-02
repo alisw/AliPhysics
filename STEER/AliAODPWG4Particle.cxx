@@ -81,6 +81,13 @@ AliAODPWG4Particle::~AliAODPWG4Particle()
 }
 
 //______________________________________________________________________________
+void AliAODPWG4Particle::Clear(const Option_t* /*opt*/) 
+{
+  //clear
+  delete fMomentum;
+}
+
+//______________________________________________________________________________
 AliAODPWG4Particle::AliAODPWG4Particle(const AliAODPWG4Particle& part) :
   AliVParticle(part),
   fMomentum(0), fPdg(part.fPdg), fTag(part.fTag), fBtag(part.fBtag), fLabel(part.fLabel), 

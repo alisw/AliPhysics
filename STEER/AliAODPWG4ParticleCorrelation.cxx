@@ -85,6 +85,9 @@ AliAODPWG4ParticleCorrelation::~AliAODPWG4ParticleCorrelation()
 void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/) 
 {
   // Clear
+  
+  AliAODPWG4Particle::Clear(""); //delete fMomentum
+  
   if(fListOfObjArrays){
     fListOfObjArrays->Clear();
     delete   fListOfObjArrays ;
