@@ -24,6 +24,7 @@
 */
 
 #include "AliHLTESDMCEventPublisherComponent.h"
+#include "AliHLTErrorGuard.h"
 
 #include "TList.h"
 #include "TTree.h"
@@ -60,10 +61,12 @@ AliHLTESDMCEventPublisherComponent::AliHLTESDMCEventPublisherComponent()
   fpTreeTR(NULL),
   fpESD(NULL),
   fpHLTESD(NULL),
+  fpESDClone(NULL),
   fpMC(NULL),
   fpHLTMC(NULL),
   fOutputSize(0),
-  fApplyParticleCuts(kFALSE) {
+  fApplyParticleCuts(kFALSE),
+  fSkippedEsdObjects() {
   // see header file for class documentation
   // or
   // refer to README to build package
@@ -189,6 +192,12 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
       fApplyParticleCuts = kTRUE;
     } 
 
+   else if ( !argument.CompareTo("-skip-esd-object") ) {
+      if ((bMissingParam=(++iter>=argc))) break;
+      if (!fSkippedEsdObjects.IsNull()) fSkippedEsdObjects+=" ";
+      fSkippedEsdObjects+=argv[iter];
+    } 
+
     // -- Argument not known
     else {
       HLTError("Unknown argument %s.", argument.Data());
@@ -238,6 +247,10 @@ Int_t AliHLTESDMCEventPublisherComponent::DoInit(int argc, const char** argv) {
   if ( iResult < 0 ) {
     fEvents.Clear();
   }
+
+  if (!fSkippedEsdObjects.IsNull()) {
+    fpESDClone=new AliESDEvent;
+  }
   
   return iResult;
 }
@@ -255,6 +268,10 @@ Int_t AliHLTESDMCEventPublisherComponent::DoDeinit() {
   if ( fpHLTESD ) 
     delete fpHLTESD;
   fpHLTESD = NULL;
+
+  if ( fpESDClone ) 
+    delete fpESDClone;
+  fpESDClone = NULL;
 
   if ( fpMC ) 
     delete fpMC;
@@ -387,7 +404,11 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
     // -- Publish ESDs
     if ( fPublishESD  && fpTreeESD ) {
       fpTreeESD->GetEntry(fCurrentEvent);
-      if ((iResult=PushBack( fpESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline , fSpecification  ))==-ENOSPC) {
+      AliESDEvent* pESDpublish=fpESD;
+      if (fpESDClone && CopyESDObjects(fpESDClone, fpESD, fSkippedEsdObjects.Data())>=0) {
+	pESDpublish=fpESDClone;
+      }
+      if ((iResult=PushBack( pESDpublish, kAliHLTDataTypeESDObject|kAliHLTDataOriginOffline , fSpecification  ))==-ENOSPC) {
 	fOutputSize+=GetLastObjectSize();
       }
     }
@@ -395,7 +416,11 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
     // -- Publish HLTESDs
     if ( fPublishHLTESD && fpTreeHLTESD ) {
       fpTreeHLTESD->GetEntry(fCurrentEvent);
-      if ((iResult=PushBack(fpHLTESD, kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {
+      AliESDEvent* pESDpublish=fpHLTESD;
+      if (fpESDClone && CopyESDObjects(fpESDClone, fpHLTESD, fSkippedEsdObjects.Data())>=0) {
+	pESDpublish=fpESDClone;
+      }
+      if ((iResult=PushBack(pESDpublish, kAliHLTDataTypeESDObject|kAliHLTDataOriginHLT , fSpecification ))==-ENOSPC) {
 	fOutputSize+=GetLastObjectSize();	  
       }
     }
@@ -409,6 +434,10 @@ Int_t AliHLTESDMCEventPublisherComponent::GetEvent( const AliHLTComponentEventDa
       while (flnk && iResult>=0) {
 	
 	FileDesc* pFileDesc = dynamic_cast<FileDesc*>( flnk->GetObject() );
+	if (!pFileDesc) {
+	  ALIHLTERRORGUARD(1, "internal mismatch, object is not of type FileDesc");
+	  break;
+	}
 	TFile* pFile = *pFileDesc;
 	if ( !pFile ) {
 	  HLTError("No pointer to file");
@@ -553,17 +582,20 @@ Int_t AliHLTESDMCEventPublisherComponent::OpenCurrentFileList() {
     // ----------------------------------
     while ( flnk && iResult>=0 ) {
       FileDesc* pFileDesc = dynamic_cast<FileDesc*>( flnk->GetObject() );
-      TFile* pFile = NULL;
+      if (!pFileDesc) {
+	ALIHLTERRORGUARD(1, "internal mismatch, object is not of type FileDesc");
+	break;
+      }
+      TFile* pFile = *pFileDesc;
     
       // If file is not opened yet, open it ... which it should not
-      if ( pFileDesc && ( pFile = *pFileDesc ) == NULL )
-      	pFileDesc->OpenFile();
-      else {
+      if (pFile != NULL ) {
 	HLTError("File already open, this should not happen.");
 	iResult=-EFAULT;
 	continue;
       }
       
+      pFileDesc->OpenFile();
       if ( (pFile = *pFileDesc ) == NULL ) {
 	HLTError("Opening file failed." );
 	iResult=-EFAULT;
@@ -680,15 +712,16 @@ Int_t AliHLTESDMCEventPublisherComponent::CloseCurrentFileList() {
     // -- Loop over all files in folder
     while ( flnk && iResult>=0 ) {
       FileDesc* pFileDesc = dynamic_cast<FileDesc*>( flnk->GetObject() );
+      if (!pFileDesc) {
+	ALIHLTERRORGUARD(1, "internal mismatch, object is not of type FileDesc");
+	break;
+      }
       
-      TFile* pFile = NULL;
+      TFile* pFile = *pFileDesc;
     
       // If is opened, close it
-      if ( pFileDesc && ( pFile = *pFileDesc ) != NULL )
+      if ( pFile != NULL ) {
       	pFileDesc->CloseFile();
-      else {
-	HLTError("File already open, this should not happen.");
-	iResult=-EFAULT;
       }
       
       if ( (pFile = *pFileDesc ) != NULL ) {
@@ -705,4 +738,44 @@ Int_t AliHLTESDMCEventPublisherComponent::CloseCurrentFileList() {
   } // if ( fpCurrentFileList && iResult >= 0 ) {
   
   return iResult;  
+}
+
+// #################################################################################
+Int_t AliHLTESDMCEventPublisherComponent::CopyESDObjects(AliESDEvent* pTgt,
+							 const AliESDEvent* pSrc,
+							 const char* skippedObjects) const {
+  // clone an ESD by copying all objects but skip the specified ones
+
+  Int_t iResult = 0;
+  if (!pSrc || !pTgt) return -EINVAL;
+
+  // copy the full ESD
+  pTgt->Reset();
+  *pTgt=*pSrc;
+
+  // filter according to the list of objects to be skipped
+  if (pTgt->GetList() && skippedObjects!=NULL) {
+    TString skipObjects=skippedObjects;
+    TObjArray* pTokens=skipObjects.Tokenize(" ");
+    if (pTokens) {
+      const char* id=NULL;
+      TIter next(pTokens);
+      TObject* pObject=NULL;
+      while ((pObject=next())!=NULL) {
+	id=pObject->GetName();
+	TObject* pObj=pTgt->GetList()->FindObject(id);
+	if (pObj) {
+	  HLTDebug("removing object %s", id);
+	  pTgt->GetList()->Remove(pObj);
+	  delete pObj;
+	} else {
+	  HLTWarning("failed to remove object '%s' from ESD", id);
+	}
+      }
+      pTgt->GetStdContent();
+      delete pTokens;
+    }
+  }
+
+  return iResult;
 }

@@ -18,6 +18,7 @@
 
 #include "TList.h"
 #include "TTree.h"
+#include "TString.h"
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -70,6 +71,9 @@
  *
  * \li -applyParticleCuts  <i> Apply particle cuts before filling in AliHLTMCEvent </i> <br>
  *
+ * \li -skip-esd-object  <i> object </i> <br>
+ *      remove object from ESD content before publishing, can be a blank separated list of
+ *      objects, but don't forget to enclose multiple names in quotes
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
@@ -224,6 +228,10 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
    */
   Int_t CloseCurrentFileList();
 
+  /** clone an ESD by copying all objects but skip the specified ones
+   */
+  Int_t CopyESDObjects(AliESDEvent* pTgt, const AliESDEvent* pSrc, const char* skippedObjects) const;
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -287,6 +295,9 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
   /* Ptr to current HLT - AliESDEvent, to be shipped out*/
   AliESDEvent* fpHLTESD;                     //! transient
 
+  /* Ptr for ESD with selected objects, to be shipped out*/
+  AliESDEvent* fpESDClone;                   //! transient
+
   /* Ptr to current AliMCEvent, to be shipped out*/
   AliMCEvent* fpMC;                          //! transient
   
@@ -298,6 +309,9 @@ class AliHLTESDMCEventPublisherComponent : public AliHLTFilePublisher  {
 
   /** Apply particle cuts, before filling in AliHLTMCEvent */
   Bool_t fApplyParticleCuts;                 // see above
+
+  /// list of ESD objects to be skipped
+  TString fSkippedEsdObjects;                //! transient
 
   ClassDef(AliHLTESDMCEventPublisherComponent, 0)
 };
