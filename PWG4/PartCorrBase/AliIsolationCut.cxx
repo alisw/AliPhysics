@@ -56,35 +56,7 @@ ClassImp(AliIsolationCut)
   InitParameters();
 
 }
-/*
-//____________________________________________________________________________
-AliIsolationCut::AliIsolationCut(const AliIsolationCut & g) : 
-  TObject(g),
-  fConeSize(g.fConeSize),
-  fPtThreshold(g.fPtThreshold),
-  fPtFraction(g.fPtFraction), 
-  fICMethod(g.fICMethod)
-{
-  // cpy ctor
-  
-}
 
-//_________________________________________________________________________
-AliIsolationCut & AliIsolationCut::operator = (const AliIsolationCut & source)
-{
-  // assignment operator
-  
-  if(&source == this) return *this;
-  
-  fConeSize = source.fConeSize ;
-  fPtThreshold = source.fPtThreshold ; 
-  fICMethod = source.fICMethod ;
-  fPtFraction = source.fPtFraction ;
-
-  return *this;
-  
-}
-*/
 //____________________________________________________________________________
 TString AliIsolationCut::GetICParametersList()
 {
@@ -115,12 +87,12 @@ void AliIsolationCut::InitParameters()
 {
   //Initialize the parameters of the analysis.
   
-  fConeSize    = 0.4 ; 
-  fPtThreshold = 1. ; 
+  fConeSize       = 0.4 ; 
+  fPtThreshold    = 1.  ; 
   fSumPtThreshold = 0.5 ; 
-  fPtFraction  = 0.1 ; 
-  fPartInCone  = kNeutralAndCharged;
-  fICMethod    = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
+  fPtFraction     = 0.1 ; 
+  fPartInCone     = kNeutralAndCharged;
+  fICMethod       = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
   
 }
 
@@ -170,7 +142,10 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
-        if(bFillAOD && reftracks) reftracks->Clear(); 
+        if(bFillAOD && reftracks) {
+          reftracks->Clear(); 
+          delete reftracks;
+        }
         return ;
       }
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
@@ -245,8 +220,14 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         coneptsum = -1;
         isolated  = kFALSE;
         if(bFillAOD){
-          if(reftracks)  reftracks  ->Clear(); 
-          if(refclusters)refclusters->Clear(); 
+          if(reftracks){  
+            reftracks  ->Clear();
+            delete reftracks;
+          }
+          if(refclusters){
+            refclusters->Clear(); 
+            delete refclusters;
+          }
         }
         return ;
       }

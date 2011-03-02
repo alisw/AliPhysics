@@ -295,9 +295,8 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
   TList * aodList = fReader->GetAODBranchList();
   Int_t nAODBranches = aodList->GetEntries();
   for(Int_t iaod = 0; iaod < nAODBranches; iaod++){
-	  //aodList->At(iaod)->Clear();
 	  TClonesArray *tca = dynamic_cast<TClonesArray*> (aodList->At(iaod));
-	  if(tca) tca->Delete();
+	  if(tca) tca->Clear("C");
   }
   
   //Tell the reader to fill the data in the 3 detector lists

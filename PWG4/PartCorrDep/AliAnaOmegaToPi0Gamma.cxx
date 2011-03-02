@@ -197,7 +197,7 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
   //
   Int_t nptbins   = GetHistoPtBins();
   Float_t ptmax   = GetHistoPtMax();
-  Float_t ptmin  = GetHistoPtMin();
+  Float_t ptmin   = GetHistoPtMin();
   
   Int_t nmassbins = GetHistoMassBins();
   Float_t massmin = GetHistoMassMin();
@@ -252,7 +252,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"RealToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s Real Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fRealOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
             fRealOmega0[index]->SetName(key) ;
             fRealOmega0[index]->SetTitle(title);
@@ -260,7 +259,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixAToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixA Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixAOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixAOmega0[index]->SetName(key) ;
             fMixAOmega0[index]->SetTitle(title);
@@ -268,7 +266,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixBToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixB Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixBOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixBOmega0[index]->SetName(key) ;
             fMixBOmega0[index]->SetTitle(title);
@@ -276,7 +273,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixCToPi0Gamma_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixC Pi0GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixCOmega0[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixCOmega0[index]->SetName(key) ;
             fMixCOmega0[index]->SetTitle(title);
@@ -284,7 +280,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"RealToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s Real Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fRealOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
             fRealOmega1[index]->SetName(key) ;
             fRealOmega1[index]->SetTitle(title);
@@ -292,7 +287,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixAToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixA Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixAOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixAOmega1[index]->SetName(key) ;
             fMixAOmega1[index]->SetTitle(title);
@@ -300,7 +294,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixBToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixB Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixBOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixBOmega1[index]->SetName(key) ;
             fMixBOmega1[index]->SetTitle(title);
@@ -308,7 +301,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixCToPi0Gamma1_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixC Pi0(A<0.7)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixCOmega1[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixCOmega1[index]->SetName(key) ;
             fMixCOmega1[index]->SetTitle(title);
@@ -316,7 +308,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"RealToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s Real Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fRealOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
             fRealOmega2[index]->SetName(key) ;
             fRealOmega2[index]->SetTitle(title);
@@ -324,7 +315,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixAToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixA Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixAOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixAOmega2[index]->SetName(key) ;
             fMixAOmega2[index]->SetTitle(title);
@@ -332,7 +322,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixBToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixB Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixBOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixBOmega2[index]->SetName(key) ;
             fMixBOmega2[index]->SetTitle(title);
@@ -340,7 +329,6 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
             
             snprintf(key,buffersize,"MixCToPi0Gamma2_Vz%dC%dRp%dPid%dDist%d",i,j,k,ipid,idist);
             snprintf(title,buffersize, "%s MixC Pi0(A<0.8)GammaIVM vz_%2.1f_ct_%2.1f_Rp_%2.1f_pid_%d_dist_%d",detector,fVtxZCut[i],fCent[j],fRp[k],ipid,idist);
-            fhEtalon->Clone(key);
             fMixCOmega2[index]=(TH2F*)fhEtalon->Clone(key) ;
             fMixCOmega2[index]->SetName(key) ;
             fMixCOmega2[index]->SetTitle(title);
