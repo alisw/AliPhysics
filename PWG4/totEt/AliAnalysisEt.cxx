@@ -215,9 +215,9 @@ void AliAnalysisEt::CreateHistograms()
 
   // see if we should change histogram limits etc, and possibly create a tree
   if (fCuts) {
-    //if (fCuts->GetHistMakeTree()) {
+    if (fCuts->GetHistMakeTree()) {
       CreateTrees();
-    //}
+    }
 
     nbinsMult = fCuts->GetHistNbinsMult();
     minMult = fCuts->GetHistMinMult();
