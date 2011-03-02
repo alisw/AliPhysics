@@ -66,6 +66,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "SSD cluster requirement",
  "require ITS stand-alone",
  "rel 1/pt uncertainty",
+ "TPC n shared clusters",
+ "TPC rel shared clusters",
  "require ITS Pid"
 };
 
@@ -145,6 +147,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetRequireITSStandAlone(kFALSE);
   SetRequireITSPureStandAlone(kFALSE);
   SetAcceptKinkDaughters();
+  SetAcceptSharedTPCClusters();
+  SetMaxFractionSharedTPCClusters();
   SetMaxNsigmaToVertex();
   SetMaxDCAToVertexXY();
   SetMaxDCAToVertexZ();
@@ -1080,6 +1084,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
       fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin("n cut tracks")));
     
     for (Int_t i=0; i<kNCuts; i++) {
+      if (fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i]) < 1)
+        AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutNames[i]));
+    
       if (cuts[i])
         fhCutStatistics->Fill(fhCutStatistics->GetBinCenter(fhCutStatistics->GetXaxis()->FindBin(fgkCutNames[i])));
 
@@ -1092,7 +1099,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
       }
     }
   }
-
+  
   // now we loop over the filling of the histograms twice: once "before" the cut, once "after"
   // the code is not in a function due to too many local variables that would need to be passed
 
@@ -1213,6 +1220,8 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
   // returns an array of all tracks that pass the cuts
   // or an array of TPC only tracks (propagated to the TPC vertex during reco)
   // tracks that pass the cut
+  //
+  // NOTE: List has to be deleted by the user
 
   TObjArray* acceptedTracks = new TObjArray();
 
