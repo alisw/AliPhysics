@@ -83,6 +83,7 @@ AliAnalysisTaskSE(),
   fLowRunN(0),
   fHighRunN(0),
   fUseScaling(0),
+  fUseCleaning(0),
   fTrackCuts(0),
   fZVCut(10),
   fOutliersCut(5),
@@ -153,6 +154,7 @@ AliAnalysisTaskSE(),
     V0MScaleFactorMC[i]=0.0;
   }
   fUseScaling=kTRUE;
+  fUseCleaning=kTRUE;
 }   
 
 //________________________________________________________________________
@@ -168,6 +170,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fLowRunN(0),
   fHighRunN(0),
   fUseScaling(0),
+  fUseCleaning(0),
   fTrackCuts(0),
   fZVCut(10),
   fOutliersCut(5),
@@ -239,6 +242,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
     V0MScaleFactorMC[i]=0.0;
   }
   fUseScaling=kTRUE;
+  fUseCleaning=kTRUE;
 }
 
 //________________________________________________________________________
@@ -264,6 +268,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fLowRunN(ana.fLowRunN),
   fHighRunN(ana.fHighRunN),
   fUseScaling(ana.fUseScaling),
+  fUseCleaning(ana.fUseCleaning),
   fTrackCuts(ana.fTrackCuts),
   fZVCut(ana.fZVCut),
   fOutliersCut(ana.fOutliersCut),
@@ -572,6 +577,13 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
 
   // ***** Scaling
+  // ***** Scaling for MC
+  if (fIsMCInput) {
+    fUseScaling=kFALSE;
+    Float_t temp_scalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
+    v0Corr  = Short_t((multV0A+multV0C)  * temp_scalefactorV0M);
+  }
+  // ***** Scaling for Data
   if (fUseScaling) {
     Float_t temp_scalefactorV0M = MyGetScaleFactor(fCurrentRun,0);
     Float_t temp_scalefactorSPD = MyGetScaleFactor(fCurrentRun,1);
@@ -579,11 +591,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     v0Corr  = Short_t(v0Corr / temp_scalefactorV0M);
     spdCorr = spdCorr / temp_scalefactorSPD;
     nTracks = Int_t(nTracks / temp_scalefactorTPC);
-  }
-  // ***** Scaling for MC
-  if (fIsMCInput) {
-    Float_t temp_scalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
-    v0Corr  = Short_t((multV0A+multV0C)  * temp_scalefactorV0M);
   }
 
   // ***** Centrality Selection
@@ -599,24 +606,29 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if(fHtempZEMvsZDC) fCentZEMvsZDC = fHtempZEMvsZDC->GetBinContent(fHtempZEMvsZDC->FindBin(zem1Energy+zem2Energy,zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
 
   // ***** Cleaning
-  fQuality=0;
-  fZVCut=10;
-  fOutliersCut=6;
-  
-  // ***** vertex
-  if (TMath::Abs(zvtx)>fZVCut) fQuality += 1;   
+  if (fUseCleaning) {
+      fQuality=0;
+      fZVCut=10;
+      fOutliersCut=6;
+      
+      // ***** vertex
+      if (TMath::Abs(zvtx)>fZVCut) fQuality += 1;   
 
-  // ***** outliers
-  // **** V0 vs SPD
-  if (IsOutlierV0MSPD(spdCorr, v0Corr, int(fCentV0M))) fQuality  += 2;
-  // ***** V0 vs TPC
-  if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
-  // ***** V0 vs ZDC
-  if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) && 
-      (zdcEnergyCal==kFALSE) && !(fIsMCInput)) fQuality  += 8;
-  if (IsOutlierV0MZDCECal((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) && 
-      ((zdcEnergyCal==kTRUE) || (fIsMCInput))) fQuality  += 8;
+      // ***** outliers
+      // **** V0 vs SPD
+      if (IsOutlierV0MSPD(spdCorr, v0Corr, int(fCentV0M))) fQuality  += 2;
+      // ***** V0 vs TPC
+      if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
+      // ***** V0 vs ZDC
+       if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
+	   (zdcEnergyCal==kFALSE) && !(fIsMCInput)) fQuality  += 8;
+       if (IsOutlierV0MZDCECal((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
+	   ((zdcEnergyCal==kTRUE) || (fIsMCInput))) fQuality  += 8;
+  } else {
+      fQuality = 0;
+  }
 
+        
   if (esdCent) {
       esdCent->SetQuality(fQuality);
       esdCent->SetCentralityV0M(fCentV0M);
@@ -832,7 +844,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0)
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t zdc, Float_t v0)
+Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t /*zdc*/, Float_t /*v0*/)
 {
     return kFALSE;
 }
@@ -1117,7 +1129,7 @@ void AliCentralitySelectionTask::MyInitScaleFactorMC()
 {
   for (int i=0; i<(fHighRunN-fLowRunN); i++) V0MScaleFactorMC[i] = 0.0;
   // scale factors determined from <V0 charge> on a run-by-run basis
-  V0MScaleFactor[0] = 0.75108;
+  V0MScaleFactorMC[0] = 0.75108;
   // set all missing values to the value of the run before it ....
   for (int i=0; i<(fHighRunN-fLowRunN); i++) {    
     if (V0MScaleFactorMC[i] == 0.0) {     

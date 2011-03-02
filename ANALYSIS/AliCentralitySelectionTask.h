@@ -39,7 +39,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
-
+  void DontUseCleaning()                   {fUseCleaning=kFALSE;}
   void ReadCentralityHistos(TString filename);
   void ReadCentralityHistos2(TString filename);
  private:
@@ -63,7 +63,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Int_t    fRunNo;              // reference run number
   Int_t    fLowRunN;            // first run  
   Int_t    fHighRunN;           // last run
-  Bool_t   fUseScaling;
+  Bool_t   fUseScaling;         // flag to use scaling 
+  Bool_t   fUseCleaning;        // flag to use cleanin  
   Float_t V0MScaleFactor[2667]; // number of runs in PbPb 2010
   Float_t SPDScaleFactor[2667]; // number of runs in PbPb 2010
   Float_t TPCScaleFactor[2667]; // number of runs in PbPb 2010
