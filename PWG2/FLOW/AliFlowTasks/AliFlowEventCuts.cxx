@@ -49,6 +49,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
   fMeanPtCuts(NULL),
+  fStandardTPCcuts(NULL),
+  fStandardGlobalCuts(NULL),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -65,6 +67,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
   fCutSPDvertexerAnomaly(kFALSE),
+  fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
@@ -87,6 +90,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
   fMeanPtCuts(NULL),
+  fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010()),
+  fStandardGlobalCuts(AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
   fPrimaryVertexXmin(INT_MIN),
@@ -103,6 +108,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fMeanPtMax(-DBL_MAX),
   fMeanPtMin(DBL_MAX),
   fCutSPDvertexerAnomaly(kFALSE),
+  fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
@@ -125,6 +131,8 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fRefMultMin(that.fRefMultMin),
   fRefMultCuts(NULL),
   fMeanPtCuts(NULL),
+  fStandardTPCcuts(NULL),
+  fStandardGlobalCuts(NULL),
   fCutPrimaryVertexX(that.fCutPrimaryVertexX),
   fPrimaryVertexXmax(that.fPrimaryVertexXmax),
   fPrimaryVertexXmin(that.fPrimaryVertexXmin),
@@ -141,6 +149,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fMeanPtMax(that.fMeanPtMax),
   fMeanPtMin(that.fMeanPtMin),
   fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
+  fCutTPCmultiplicityOutliers(that.fCutTPCmultiplicityOutliers),
   fCutCentralityPercentile(that.fCutCentralityPercentile),
   fCentralityPercentileMethod(that.fCentralityPercentileMethod),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
@@ -153,6 +162,10 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
     fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
   if (that.fMeanPtCuts)
     fMeanPtCuts = new AliFlowTrackCuts(*(that.fMeanPtCuts));
+  if (that.fStandardTPCcuts && fStandardTPCcuts)
+    *fStandardTPCcuts = *(that.fStandardTPCcuts);
+  if (that.fStandardGlobalCuts && fStandardGlobalCuts)
+    *fStandardGlobalCuts = *(that.fStandardGlobalCuts);
 }
 
 ////-----------------------------------------------------------------------
@@ -178,6 +191,8 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fRefMultMin=that.fRefMultMin;
   if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
   if (that.fMeanPtCuts) *fMeanPtCuts=*(that.fMeanPtCuts);
+  if (that.fStandardTPCcuts && fStandardTPCcuts) *fStandardTPCcuts = *(that.fStandardTPCcuts);
+  if (that.fStandardGlobalCuts && fStandardGlobalCuts) *fStandardGlobalCuts = *(that.fStandardGlobalCuts);
   fCutPrimaryVertexX=that.fCutPrimaryVertexX;
   fPrimaryVertexXmax=that.fPrimaryVertexXmax;
   fPrimaryVertexXmin=that.fPrimaryVertexXmin;
@@ -194,6 +209,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fMeanPtMax=that.fMeanPtMax;
   fMeanPtMin=that.fMeanPtMin;
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
+  fCutTPCmultiplicityOutliers=that.fCutTPCmultiplicityOutliers;
   fCutCentralityPercentile=that.fCutCentralityPercentile;
   fCentralityPercentileMethod=that.fCentralityPercentileMethod;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
@@ -281,6 +297,13 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   {
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
       return kFALSE;
+  }
+  if (fCutTPCmultiplicityOutliers)
+  {
+    //this is pretty slow as we check the event track by track twice
+    Int_t multTPC = fStandardTPCcuts->Count(event);
+    Int_t multGlobal = fStandardGlobalCuts->Count(event);
+    if (multTPC > (20+1.2*multGlobal)) return kFALSE;
   }
   if (fCutMeanPt)
   {
