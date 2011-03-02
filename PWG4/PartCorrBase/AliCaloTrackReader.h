@@ -330,11 +330,10 @@ public:
   Float_t          fEMCALPtMin;     // pT Threshold on emcal clusters
   Float_t          fPHOSPtMin;      // pT Threshold on phos clusters
 
-  TList          * fAODBranchList ; //! List with AOD branches created and needed in analysis  
-  //FIXME CHANGE NAMES, remove AOD, now they are VClusters, VTracks ...
-  TObjArray      * fCTSTracks ;     //! temporal array with tracks
-  TObjArray      * fEMCALClusters ; //! temporal array with EMCAL CaloClusters
-  TObjArray      * fPHOSClusters ;  //! temporal array with PHOS  CaloClusters
+  TList          * fAODBranchList ; //-> List with AOD branches created and needed in analysis  
+  TObjArray      * fCTSTracks ;     //-> temporal array with tracks
+  TObjArray      * fEMCALClusters ; //-> temporal array with EMCAL CaloClusters
+  TObjArray      * fPHOSClusters ;  //-> temporal array with PHOS  CaloClusters
   AliVCaloCells  * fEMCALCells ;    //! temporal array with EMCAL CaloCells
   AliVCaloCells  * fPHOSCells ;     //! temporal array with PHOS  CaloCells
 
@@ -371,23 +370,23 @@ public:
   TString          fDeltaAODFileName   ; // Delta AOD file name
   TString          fFiredTriggerClassName; // Name of trigger event type used to do the analysis
 
-  Bool_t           fAnaLED;             // Analyze LED data only.
+  Bool_t           fAnaLED;              // Analyze LED data only.
 
-  TString          fTaskName;           // Name of task that executes the analysis
+  TString          fTaskName;            // Name of task that executes the analysis
 	
-  AliCalorimeterUtils * fCaloUtils ;    //  Pointer to CalorimeterUtils
+  AliCalorimeterUtils * fCaloUtils ;     //  Pointer to CalorimeterUtils
 
-  AliMixedEvent  * fMixedEvent  ;       //! mixed event object. This class is not the owner
-  Int_t            fNMixedEvent ;       // number of events in mixed event buffer
-  Double_t      ** fVertex      ;       //! vertex array 3 dim for each mixed event buffer
+  AliMixedEvent  * fMixedEvent  ;        //! mixed event object. This class is not the owner
+  Int_t            fNMixedEvent ;        // number of events in mixed event buffer
+  Double_t      ** fVertex      ;        //! vertex array 3 dim for each mixed event buffer
   
-  Bool_t           fWriteOutputDeltaAOD;// Write the created delta AOD objects into file  
-	Bool_t           fOldAOD;             // Old AODs, before revision 4.20
+  Bool_t           fWriteOutputDeltaAOD; // Write the created delta AOD objects into file  
+	Bool_t           fOldAOD;              // Old AODs, before revision 4.20
   
-  Int_t            fV0ADC[2]    ;       // Integrated V0 signal
-  Int_t            fV0Mul[2]    ;       // Integrated V0 Multiplicity
+  Int_t            fV0ADC[2]    ;        // Integrated V0 signal
+  Int_t            fV0Mul[2]    ;        // Integrated V0 Multiplicity
 
-  Bool_t           fCaloFilterPatch;    // CaloFilter patch
+  Bool_t           fCaloFilterPatch;     // CaloFilter patch
   TString          fEMCALClustersListName; //Alternative list of clusters produced elsewhere and not from InputEvent
   Float_t          fZvtxCut ;	           // Cut on vertex position  
   Bool_t           fDoEventSelection;    // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
@@ -395,9 +394,9 @@ public:
   AliTriggerAnalysis* fTriggerAnalysis;  // Access to trigger selection algorithm for V0AND calculation
   
   //Centrality
-  TString          fCentralityClass;    // Name of selected centrality class     
-  Int_t            fCentralityOpt;      // Option for the returned value of the centrality, possible options 5, 10, 100
-  Int_t            fCentralityBin[2];   // Minimum and maximum value of the centrality for the analysis
+  TString          fCentralityClass;     // Name of selected centrality class     
+  Int_t            fCentralityOpt;       // Option for the returned value of the centrality, possible options 5, 10, 100
+  Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   
   ClassDef(AliCaloTrackReader,27)
 } ;
