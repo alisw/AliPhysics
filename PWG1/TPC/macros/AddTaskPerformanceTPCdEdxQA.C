@@ -19,7 +19,7 @@
 // gSystem->Load("libPWG1.so");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
-// AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA("kFALSE","kTRUE","triggerClass"); 
+// AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA("kFALSE","kTRUE","kFALSE","triggerClass"); 
 // 
 // Output:
 // TPC.Performance.root file with TPC performance components is created.
@@ -156,7 +156,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   AliAnalysisDataContainer *coutput2_tpc = mgr->CreateContainer("TPCQASummary", TTree::Class(), AliAnalysisManager::kParamContainer, "trending.root:SummaryTPCQA"); 
 
   mgr->ConnectOutput(task, 1, coutput_tpc);
-  mgr->ConnectOutput(task, 2, coutput2_tpc);
+  mgr->ConnectOutput(task, 0, coutput2_tpc);
 
 return task;  
 }

@@ -52,7 +52,10 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
     static void AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* pcstream);
     
-      
+    static Int_t AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
+
+    static Int_t AnalyzeChargeOverPt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
+
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)
       
