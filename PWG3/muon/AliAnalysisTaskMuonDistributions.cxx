@@ -195,9 +195,17 @@ void AliAnalysisTaskMuonDistributions::UserExec(Option_t *)
   if(strcmp(fkAnalysisType,"ESD")==0){
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
         (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if ( ! esdH ) {
+      AliError("Cannot get input event handler");
+      return;    
+    }    
     esd = esdH->GetEvent();
   } else if(strcmp(fkAnalysisType,"AOD")==0){
     aod = dynamic_cast<AliAODEvent*> (InputEvent());
+    if ( ! aod ) {
+      AliError("Cannot get AOD event");
+      return;    
+    }    
   }
   
   Int_t ntracks=-999;

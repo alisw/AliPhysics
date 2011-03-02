@@ -464,8 +464,8 @@ Int_t AliESDMuonTrackCuts::CountAcceptedTracks(AliESDEvent* esd)
 
   Char_t str[256];
   for (Int_t i=0; i<2; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,256," ");
+    else snprintf(str,256,"_cut");
 
     fhPt[i]                  = new TH1F(Form("pt%s",str)     ,"p_{T} distribution;p_{T} (GeV/c)",500,0.0,100.0);
     fhEta[i]                 = new TH1F(Form("eta%s",str)     ,"#eta distribution;#eta",40,-2.0,2.0);
@@ -501,7 +501,7 @@ Bool_t AliESDMuonTrackCuts::LoadHistograms(const Char_t* dir)
     else
     {
       gDirectory->cd("after_cuts");
-      sprintf(str,"_cut");
+      snprintf(str,5,"_cut");
     }
 
     fhPt[i] = dynamic_cast<TH1F*> (gDirectory->Get(Form("pt%s",str)));
