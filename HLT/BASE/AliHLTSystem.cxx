@@ -1541,7 +1541,9 @@ int AliHLTSystem::AddHLTOUTTask(const char* hltoutchains)
 
   fpHLTOUTTask=new AliHLTOUTTask(chains);
   if (fpHLTOUTTask) {
-    if (fpHLTOUTTask->GetConf() && fpHLTOUTTask->GetConf()->SourcesResolved()>=0) {
+    if (fpHLTOUTTask->GetConf() && 
+	(fpHLTOUTTask->GetConf()->SourcesResolved()>0 ||
+	 fpHLTOUTTask->GetConf()->ExtractSources()>0)) {
       iResult=InsertTask(fpHLTOUTTask);
     } else {
       HLTError("HLTOUT task (%s) sources not resolved", fpHLTOUTTask->GetName());
