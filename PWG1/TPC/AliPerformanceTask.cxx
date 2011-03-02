@@ -113,8 +113,8 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
   // Constructor
 
   // Define input and output slots here
+  DefineOutput(0, TTree::Class());
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TTree::Class());
 
   // create the list for comparison objects
   fCompList = new TList;
@@ -169,7 +169,7 @@ void AliPerformanceTask::UserCreateOutputObjects()
   Printf("UserCreateOutputObjects(): Number of output comparison objects: %d \n", count);
   
   PostData(1, fOutput);  
-  //PostData(2, fOutputSummary);  
+  PostData(0, fOutputSummary);  
 }
 
 //_____________________________________________________________________________
@@ -255,7 +255,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     return;
 
   // check output data
-    fOutputSummary = dynamic_cast<TTree*> (GetOutputData(2));
+    fOutputSummary = dynamic_cast<TTree*> (GetOutputData(0));
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutput) {
         Printf("ERROR: AliPerformanceTask::Terminate(): fOutput data not available  ..." );
@@ -291,7 +291,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     fOutputSummary = tree;
       
      // Post output data.
-     PostData(2, fOutputSummary);
+     PostData(0, fOutputSummary);
 
 }
 
