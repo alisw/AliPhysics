@@ -94,7 +94,13 @@ void AliAnalysisTaskMixInfo::UserExec(Option_t *)
          if (fInputEHMix->NumberMixedTimes() >= fInputEHMix->BufferSize())
             fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
       } else {
-         fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
+         if ((!fInputEHMix->IsMixingIfNotEnoughEvents())) {
+            if (fInputEHMix->NumberMixed() == fInputEHMix->MixNumber())
+               // add main entry only when there was enough mixed events mixed
+               fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
+         } else {
+            fMixInfo->FillHistogram(AliMixInfo::kMainEvents, fInputEHMix->CurrentBinIndex());
+         }
       }
       AliDebug(AliLog::kDebug, Form("Main %lld %d [%lld,%lld] %d", fInputEHMix->CurrentEntry(), fInputEHMix->CurrentBinIndex(), fInputEHMix->CurrentEntryMain(), fInputEHMix->CurrentEntryMix(), fInputEHMix->NumberMixed()));
    }

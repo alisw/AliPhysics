@@ -47,7 +47,8 @@ public:
    Int_t                   MixNumber() const { return fMixNumber; }
    Long64_t                EntryAll() const { return fEntryCounter; }
    void                    UseDefaultProcess(Bool_t b = kTRUE) { fUseDefautProcess = b; }
-   void                    UsePreMixEvents(Bool_t b = kTRUE) { fUsePreMixEvents = b; }
+   void                    DoMixExtra(Bool_t b = kTRUE) { fDoMixExtra = b; }
+   void                    DoMixIfNotEnoughEvents(Bool_t b = kTRUE) { fDoMixIfNotEnoughEvents = b; }
    void                    SetMixNumber(const Int_t mixNum);
 
    void                    SetCurrentBinIndex(Int_t const index) { fCurrentBinIndex = index; }
@@ -64,6 +65,8 @@ public:
 
    void                    SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB) {fOfflineTriggerMask = offlineTriggerMask;}
    Bool_t                  IsEventCurrentSelected();
+   Bool_t                  IsMixingIfNotEnoughEvents() { return fDoMixIfNotEnoughEvents;}
+
 protected:
 
    TObjArray               fMixTrees;              // buffer of input handlers
@@ -77,7 +80,8 @@ protected:
 private:
 
    Bool_t                  fUseDefautProcess;      // use default process
-   Bool_t                  fUsePreMixEvents;       // use pre mixing events
+   Bool_t                  fDoMixExtra;            // mix extra events to get enough combinations
+   Bool_t                  fDoMixIfNotEnoughEvents;// mix events if they dont have enough events to mix
 
    // mixing info
    Long64_t fCurrentEntry;       //! current entry number (adds 1 for every event processed on each worker)
@@ -97,7 +101,7 @@ private:
    AliMixInputEventHandler(const AliMixInputEventHandler& handler);
    AliMixInputEventHandler &operator=(const AliMixInputEventHandler &handler);
 
-   ClassDef(AliMixInputEventHandler, 2)
+   ClassDef(AliMixInputEventHandler, 3)
 };
 
 #endif

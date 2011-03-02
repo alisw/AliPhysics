@@ -34,7 +34,8 @@ AliMixInputEventHandler::AliMixInputEventHandler(const Int_t size, const Int_t m
    fNumberMixed(0),
    fMixNumber(mixNum),
    fUseDefautProcess(kFALSE),
-   fUsePreMixEvents(kTRUE),
+   fDoMixExtra(kTRUE),
+   fDoMixIfNotEnoughEvents(kTRUE),
    fCurrentEntry(0),
    fCurrentEntryMain(0),
    fCurrentEntryMix(0),
@@ -63,6 +64,7 @@ void AliMixInputEventHandler::SetInputHandlerForMixing(const AliInputEventHandle
       AliDebug(AliLog::kDebug + 5, Form("Adding %d ...", i));
       fInputHandlers.Add((AliInputEventHandler *) inHandler->Clone());
    }
+
    AliDebug(AliLog::kDebug + 5, Form("->"));
 }
 
@@ -79,6 +81,12 @@ Bool_t AliMixInputEventHandler::Init(TTree *tree, Option_t *opt)
       AliDebug(AliLog::kDebug + 5, Form("->"));
       return kFALSE;
    }
+
+   if (!fDoMixIfNotEnoughEvents) {
+      fDoMixExtra = kFALSE;
+      AliWarning("fDoMixIfNotEnoughEvents=kTRUE -> setting fDoMixExtra=kFALSE");
+   }
+
    // clears array of input handlers
    fMixTrees.Clear();
    // create AliMixInputHandlerInfo
@@ -211,7 +219,7 @@ Bool_t AliMixInputEventHandler::MixStd()
    }
    // pre mix evetns
    Int_t mixNum = fMixNumber;
-   if (fUsePreMixEvents) {
+   if (fDoMixExtra) {
       if (fEntryCounter <= 2 * fMixNumber) mixNum = 2 * fMixNumber + 2;
    }
    // start of
@@ -294,7 +302,7 @@ Bool_t AliMixInputEventHandler::MixBuffer()
       elNum = el->GetN();
       if (elNum < fBufferSize + 1) {
          UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
-         AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (%lld) +++++++++++++++++++", fEntryCounter, elNum));
+         AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (%lld) LESS THEN BUFFER +++++++++++++++++++", fEntryCounter, elNum));
          return kTRUE;
       }
    }
@@ -373,8 +381,12 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
    // return in case of 0 entry in full chain
    if (!fEntryCounter) {
       // runs UserExecMix for all tasks, if needed
-      if (el) UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
-      else UserExecMixAllTasks(fEntryCounter, -1, currentMainEntry, -1, 0);
+      if (el && fDoMixIfNotEnoughEvents) {
+         UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+      } else {
+         idEntryList = -1;
+         UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+      }
       AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (fEntryCounter=0, idEntryList=%d) +++++++++++++++++++", fEntryCounter, idEntryList));
       return kTRUE;
    }
@@ -387,14 +399,28 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
    } else {
       elNum = el->GetN();
       if (elNum < fBufferSize + 1) {
-         UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+         if (fDoMixIfNotEnoughEvents) {
+            // include main event in to counter in this case (so idEntryList>0)
+            UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+         }  else {
+            // dont include it in main event counter (idEntryList = -1)
+            idEntryList = -1;
+            UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+         }
          AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED [FIRST ENTRY in el] (elnum=%lld, idEntryList=%d) +++++++++++++++++++", fEntryCounter, elNum, idEntryList));
          return kTRUE;
+      }
+      if (!fDoMixIfNotEnoughEvents) {
+         if (elNum <= fMixNumber + 1) {
+            UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, -1, 0);
+            AliDebug(AliLog::kDebug + 3, Form("++++++++++++++ END SETUP EVENT %lld SKIPPED (%lld) NOT ENOUGH EVENTS TO MIX => NEED=%d +++++++++++++++++++", fEntryCounter, elNum, fMixNumber + 1));
+            return kTRUE;
+         }
       }
    }
    // pre mix evetns
    Int_t mixNum = fMixNumber;
-   if (fUsePreMixEvents) {
+   if (fDoMixExtra) {
       if (elNum <= 2 * fMixNumber + 1) mixNum = elNum + 1;
    }
    AliMixInputHandlerInfo *mihi = 0;
