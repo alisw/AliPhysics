@@ -20,6 +20,7 @@ class TString;
 class AliESDEvent;
 class AliESDfriend;
 class AliITSTPArrayFit;
+class AliTrackPointArray;
 
 #include "AliAnalysisTaskSE.h"
 
