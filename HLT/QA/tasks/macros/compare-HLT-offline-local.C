@@ -27,6 +27,7 @@
 void compare_HLT_offline_local(TString file, 
                                const char* detectorTask="global",
 			       TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/", 
+			       TString beamType="p-p",
 			       bool fUseHLTTrigger=kFALSE, 
 			       Long64_t nEvents=1234567890
 			      )
@@ -49,7 +50,7 @@ void compare_HLT_offline_local(TString file,
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
  
-  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I. -I$ALICE_ROOT/STEER");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I. -I$ALICE_ROOT/STEER -I$ALICE_ROOT/ANALYSIS");
   
   gSystem->Load("libTPCcalib.so");
   gSystem->Load("libTRDbase.so");
@@ -61,7 +62,7 @@ void compare_HLT_offline_local(TString file,
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  
+    
   Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  
   TString allArgs = detectorTask;
@@ -251,7 +252,13 @@ void compare_HLT_offline_local(TString file,
   }  
   
   if(bCB){
-     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_CB");    
+     AliAnalysisTaskHLTCentralBarrel *taskCB = new AliAnalysisTaskHLTCentralBarrel("offhlt_comparison_CB"); 
+     mgr->AddTask(taskCB); 
+     taskCB->SetBeamType(beamType);
+     if(beamType.Contains("Pb-Pb")){
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
+     }   
      AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");  
      mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskCB,1,coutputCB);
