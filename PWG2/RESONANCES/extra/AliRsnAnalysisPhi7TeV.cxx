@@ -814,7 +814,7 @@ Int_t AliRsnAnalysisPhi7TeV::BestMatchedTrack(AliESDEvent *esd, Int_t label)
    // first attempt:
    // if it fails, there are no matched tracks
    Int_t ncuts = 0;
-   Int_t it, itrack = MatchedTrack(esd, label, ncuts);
+   Int_t itrack = MatchedTrack(esd, label, ncuts);
    /*if (itrack < 0) return -1;
    
    // if it succeeds, use it as a start for a loop
