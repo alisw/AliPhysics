@@ -45,7 +45,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG1LinkDef.h)
 
-set ( EINCLUDE  STEER TPC ITS TRD TOF TRD/Cal ANALYSIS/Tender ANALYSIS PWG1/comparison PWG1/cosmic PWG1/global PWG1/tender PWG1/ITS PWG1/TPC PWG1/TOF PWG1/TRD PWG1/TRD/info PWG1/background PWG1/Centrality)
+set ( EINCLUDE  STEER TPC ITS TRD TOF TRD/Cal ANALYSIS/Tender ANALYSIS PWG1/comparison PWG1/cosmic PWG1/global PWG1/tender PWG1/ITS PWG1/TPC PWG1/TOF PWG1/TRD PWG1/TRD/info PWG1/background PWG1/Centrality HMPID)
 
   if( ALICE_TARGET STREQUAL "win32gcc")
 	
