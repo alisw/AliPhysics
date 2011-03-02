@@ -108,6 +108,10 @@ void AliAnalysisTaskMuonAODCreation::UserExec(Option_t *)
 {
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
+  if ( ! aod ) {
+    AliError("Cannot get AOD event");
+    return;
+  }  
   
   Int_t nMuons=0;
  
