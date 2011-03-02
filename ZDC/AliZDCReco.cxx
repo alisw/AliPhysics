@@ -47,6 +47,7 @@ AliZDCReco::AliZDCReco() :
   fImpParSideA(0),
   fImpParSideC(0),
   fRecoFlag(0x0),
+  fEnergyFlag(kFALSE),
   fIsScalerOn(kFALSE)
 { 
   //
@@ -78,7 +79,8 @@ AliZDCReco::AliZDCReco(
      Int_t trsp, Int_t trspSideA,Int_t trspSideC,
      Int_t npart, Int_t npartSideA, Int_t npartSideC, 
      Float_t b, Float_t bSideA, Float_t bSideC,
-     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t tdcData[32][4]) :
+     UInt_t recoFlag, Bool_t energyFlag, Bool_t scalerOn, 
+     UInt_t* scaler, Int_t tdcData[32][4]) :
 	
   TObject(),
   //
@@ -96,6 +98,7 @@ AliZDCReco::AliZDCReco(
   fImpParSideA(bSideA),
   fImpParSideC(bSideC),
   fRecoFlag(recoFlag),
+  fEnergyFlag(energyFlag),
   fIsScalerOn(scalerOn)
 { 
   //
@@ -140,6 +143,7 @@ fImpParameter(oldreco.GetImpParameter()),
 fImpParSideA(oldreco.GetImpParSideA()),      
 fImpParSideC(oldreco.GetImpParSideC()),
 fRecoFlag(oldreco.GetRecoFlag()),
+fEnergyFlag(oldreco.GetEnergyFlag()),
 fIsScalerOn(oldreco.IsScalerOn())    
 {
   // Copy constructor

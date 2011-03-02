@@ -426,7 +426,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
        // Not interested in o.o.t. signals (ADC modules 2, 3)
        //if(adcMod == 2 || adcMod == 3) continue;
-       if(((det==1 && quad==0) || (det==2 && quad==2) || (det==3)) && (quad != 5)){
+       if(((det==1 && quad==0) || (det==3))){
          if(det == 1){
 	    if(adcMod==0 || adcMod==1){
 	     if(gain==0) adcZN1[quad] = rawData.GetADCValue();
@@ -435,16 +435,6 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
 	   else if(adcMod==2 || adcMod==3){
 	     if(gain==0) adcZN1oot[quad] = rawData.GetADCValue();
              else adcZN1ootlg[quad] = rawData.GetADCValue();
-	   }
-	 }
-	 else if(det == 2){
-	   if(adcMod==0 || adcMod==1){
-	     if(gain==0) adcZP2[quad] = rawData.GetADCValue();
-             else adcZP2lg[quad] = rawData.GetADCValue();
-	   }
-	   else if(adcMod==2 || adcMod==3){
-	     if(gain==0) adcZP2oot[quad] = rawData.GetADCValue();
-             else adcZP2ootlg[quad] = rawData.GetADCValue();
 	   }
 	 }
 	 else if(det == 3){
@@ -468,7 +458,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
           if(gain == 0) tZN1Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
           else tZN1Corr[quad+5]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
         }
-        else if(det==2 && quad!=2){ 
+        else if(det==2){ 
           pedindex = quad+5;
           if(gain == 0) tZP1Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
           else tZP1Corr[quad+5]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
@@ -647,8 +637,8 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     //printf(" adcZN1 %d  adcZN1oot %d tZN1Corr %1.2f \n", adcZN1[0],adcZN1oot[0],tZN1Corr[0]);
     //printf(" adcZN1lg %d  adcZN1ootlg %d tZN1Corrlg %1.2f \n", adcZN1lg[0],adcZN1ootlg[0],tZN1Corr[5]);
     //
-    tZP1Corr[2] = adcZP1[2] - (corrCoeff1[2+5]*adcZP1oot[2]+corrCoeff0[2+5]);
-    tZP1Corr[2+5] = adcZP1lg[2] - (corrCoeff1[2+5+kNch]*adcZP1ootlg[2]+corrCoeff0[2+5+kNch]);
+    //tZP1Corr[2] = adcZP1[2] - (corrCoeff1[2+5]*adcZP1oot[2]+corrCoeff0[2+5]);
+    //tZP1Corr[2+5] = adcZP1lg[2] - (corrCoeff1[2+5+kNch]*adcZP1ootlg[2]+corrCoeff0[2+5+kNch]);
     //
     dZEM1Corr[0] = adcZEM[0]   - (corrCoeff1[10]*adcZEMoot[0]+corrCoeff0[10]);
     dZEM1Corr[1] = adcZEMlg[0] - (corrCoeff1[10+kNch]*adcZEMootlg[0]+corrCoeff0[10+kNch]);
@@ -848,6 +838,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
   Int_t nPart=0, nPartTotLeft=0, nPartTotRight=0;
   Double_t impPar=0., impPar1=0., impPar2=0.;
   
+  Bool_t energyFlag = kFALSE;
   // create the output tree
   AliZDCReco* reco = new AliZDCReco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
   		   calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
@@ -856,7 +847,7 @@ void AliZDCReconstructor::ReconstructEventpp(TTree *clustersTree,
 		   nGenSpec, nGenSpecLeft, nGenSpecRight, 
 		   nPart, nPartTotLeft, nPartTotRight, 
 		   impPar, impPar1, impPar2,
-		   recoFlag, isScalerOn, scaler, tdcData);
+		   recoFlag, energyFlag, isScalerOn, scaler, tdcData);
 		  
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
@@ -1283,13 +1274,14 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
 
   } // ONLY IF fIsCalibrationMB==kFALSE
   
+  Bool_t energyFlag = kTRUE;  
   AliZDCReco* reco = new AliZDCReco(calibSumZN1, calibSumZP1, calibSumZN2, calibSumZP2, 
   	  	  calibTowZN1, calibTowZP1, calibTowZN2, calibTowZP2, 
 		  calibZEM1, calibZEM2, sPMRef1, sPMRef2,
 		  nDetSpecNLeft, nDetSpecPLeft, nDetSpecNRight, nDetSpecPRight, 
 		  nGenSpec, nGenSpecA, nGenSpecC, 
 		  nPart, nPartA, nPartC, b, bA, bC,
-		  recoFlag, isScalerOn, scaler, tdcData);
+		  recoFlag, energyFlag, isScalerOn, scaler, tdcData);
 		    
   const Int_t kBufferSize = 4000;
   clustersTree->Branch("ZDC", "AliZDCReco", &reco, kBufferSize);
@@ -1372,7 +1364,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
   }
   fESDZDC->SetZDCTDCData(tdcValues);
   fESDZDC->SetZDCTDCCorrected(tdcCorrected);
-  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, kTRUE);
+  fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, reco.GetEnergyFlag());
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kEnergyCalibratedSignal, kTRUE);
   
   if(esd) esd->SetZDCData(fESDZDC);

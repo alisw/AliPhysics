@@ -22,7 +22,8 @@ public:
 	     Int_t trsp, Int_t trspSideA, Int_t trspSideC,
 	     Int_t npart, Int_t npartSideA, Int_t npartSideC, 
 	     Float_t b, Float_t bSideA, Float_t bSideC,
-	     UInt_t recoFlag, Bool_t scalerOn, UInt_t* scaler, Int_t tdcData[32][4]);
+	     UInt_t recoFlag, Bool_t energyFlag, Bool_t scalerOn, 
+	     UInt_t* scaler, Int_t tdcData[32][4]);
 
   AliZDCReco(const AliZDCReco &oldreco);
   virtual ~AliZDCReco() {}
@@ -78,6 +79,7 @@ public:
   virtual UInt_t  GetChOvflwFlag()   const {return (fRecoFlag & 0x00000200);}
   virtual UInt_t  GetChUndflwFlag()  const {return (fRecoFlag & 0x00000400);}
   //
+  virtual Bool_t  GetEnergyFlag()    const {return fEnergyFlag;}
   virtual Bool_t  IsScalerOn()          const {return fIsScalerOn;}
   virtual UInt_t  GetZDCScaler(Int_t k) const {return fZDCScaler[k];}
   //
@@ -119,12 +121,13 @@ private:
   Float_t fImpParSideC;	   // Estimate of the impact parameter side B
   //
   UInt_t  fRecoFlag;       // Reconstruction flag
+  Bool_t  fEnergyFlag;     // Is the reco value in energy?
   Bool_t  fIsScalerOn;     // True if scaler has been read in the event
   UInt_t  fZDCScaler[32];  // Counts from ZDC VME scaler
   //
   Int_t fZDCTDCData[32][4];      // TDC data raw
 
-  ClassDef(AliZDCReco,12)  // RecPoints for the Zero Degree Calorimeters
+  ClassDef(AliZDCReco,14)  // RecPoints for the Zero Degree Calorimeters
 };
  
 #endif
