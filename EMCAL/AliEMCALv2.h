@@ -34,23 +34,13 @@ public:
   virtual Int_t  IsVersion(void) const {return 2;}
   virtual const TString Version(void)const {return TString("v2");}
 
-  // 30-aug-04
-  virtual void Browse(TBrowser* b);
-  // drawing
-  void DrawCalorimeterCut(const char *name="SMOD", int axis=3, double dcut=1.); // *MENU*
-  void DrawSuperModuleCut(const char *name="EMOD", int axis=2, double dcut=0.03, int fill = 6);//  *MENU*
-  void DrawTowerCut(const char *name="SCMY", int axis=2, double dcut=0., int fill=1, const char *optShad="on");   //  *MENU*
-  void DrawAlicWithHits(int mode=1);                            // *MENU*
-  void SetVolumeAttributes(const char *name="SCM0", int seen=1, int color=1, int fill=1); // *MENU*
-  void TestIndexTransition(int pri=0, int idmax=0); // *MENU*
-
  protected:
 
  private:
   AliEMCALv2(const AliEMCALv2 & emcal);
   AliEMCALv2 & operator = (const AliEMCALv2  & /*rvalue*/);
  
-  ClassDef(AliEMCALv2,2)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
+  ClassDef(AliEMCALv2,3)    //Implementation of EMCAL manager class to produce hits in a Shish-Kebab
     
 };
 
