@@ -105,10 +105,10 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   }
   Float_t Edrift=(1800-45)/291/0.012;  
   Int_t nrun,nrun2,nv,ns;
-  Float_t timeZero;
+  UInt_t timeZero;
   if(year==2009) timeZero=1247762992;
   else if(year==2010) timeZero=1262300400;
-  else timeZero=1293861600;
+  else timeZero=1293836400; // 1/1/2011 at 0:00 CEST
 
   while(!feof(listruns)){
     fscanf(listruns,"%s\n",filnam);
