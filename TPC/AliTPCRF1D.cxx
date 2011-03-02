@@ -199,7 +199,7 @@ void AliTPCRF1D::SetParam( TF1 * GRF,Float_t padwidth,
    forigsigma=sigma;
    fDSTEPM1 = 10/TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
    //sprintf(fType,"User");
-   snprintf(fType,6,"User");
+   snprintf(fType,5,"User");
    //   Update();   
 }
   
@@ -220,7 +220,7 @@ void AliTPCRF1D::SetGauss(Float_t sigma, Float_t padWidth,
    fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma  
   //sprintf(fType,"Gauss");
-   snprintf(fType,6,"Gauss");
+   snprintf(fType,5,"Gauss");
 }
 
 void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
@@ -239,7 +239,7 @@ void AliTPCRF1D::SetCosh(Float_t sigma, Float_t padWidth,
   fDSTEPM1 = 10./TMath::Sqrt(sigma*sigma+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
   //sprintf(fType,"Cosh");
-  snprintf(fType,6,"Cosh");
+  snprintf(fType,5,"Cosh");
 }
 
 void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
@@ -259,7 +259,7 @@ void AliTPCRF1D::SetGati(Float_t K3, Float_t padDistance, Float_t padWidth,
   fDSTEPM1 = 10./TMath::Sqrt(padDistance*padDistance+fpadWidth*fpadWidth/12); 
   //by default I set the step as one tenth of sigma
   //sprintf(fType,"Gati");
-  snprintf(fType,6,"Gati");
+  snprintf(fType,5,"Gati");
 }
 
 

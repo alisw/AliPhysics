@@ -283,7 +283,7 @@ void AliTPCPRF2D::SetParam( TF2 *const GRF,  Float_t kNorm,
    fGRF = GRF;
    fKNorm = kNorm;
    //sprintf(fType,"User");
-   snprintf(fType,6,"User");
+   snprintf(fType,5,"User");
    if (sigmaX ==0) sigmaX=(fWidth*(1+TMath::Abs(fK)))/fgkSQRT12;
    if (sigmaY ==0) sigmaY=(fWidth*(1+TMath::Abs(fK)))/fgkSQRT12;
    fOrigSigmaX=sigmaX; 
@@ -314,7 +314,7 @@ void AliTPCPRF2D::SetGauss(Float_t sigmaX, Float_t sigmaY,
   fOrigSigmaX=sigmaX;
   fOrigSigmaY=sigmaY;
   //sprintf(fType,"Gauss");
-  snprintf(fType,6,"Gauss");
+  snprintf(fType,5,"Gauss");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunGauss2D",FunGauss2D,-5.,5.,-5.,5.,4);
   
@@ -348,7 +348,7 @@ void AliTPCPRF2D::SetCosh(Float_t sigmaX, Float_t sigmaY,
   fOrigSigmaX=sigmaX;
   fOrigSigmaY=sigmaY; 
   //  sprintf(fType,"Cosh");
-  snprintf(fType,6,"Cosh");
+  snprintf(fType,5,"Cosh");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunCosh2D",	FunCosh2D,-5.,5.,-5.,5.,4);   
   funParam[0]=sigmaX;
@@ -380,7 +380,7 @@ void AliTPCPRF2D::SetGati(Float_t K3X, Float_t K3Y,
   fK3Y=K3Y;
   fPadDistance=padDistance;  
   //sprintf(fType,"Gati");
-  snprintf(fType,6,"Gati");
+  snprintf(fType,5,"Gati");
   if (fGRF !=0 ) fGRF->Delete();
   fGRF = new TF2("FunGati2D",	FunGati2D,-5.,5.,-5.,5.,5);  
  

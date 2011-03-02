@@ -86,9 +86,9 @@ AliTPCAlign::AliTPCAlign(Int_t reportloc, Int_t reportglob) :
   snprintf(path,50,gSystem->Getenv("ALICE_ROOT"));
   //
   //sprintf(fFileLoc,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
-  snprintf(fFileLoc,100,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
+  snprintf(fFileLoc,80,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
   //sprintf(fFileGlob,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
-  snprintf(fFileGlob,100,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
+  snprintf(fFileGlob,80,"%s/TPC/Survey_%d_TPC.txt",path,reportglob);
   //
 
 }
