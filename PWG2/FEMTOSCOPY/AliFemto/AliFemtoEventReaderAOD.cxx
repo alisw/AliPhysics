@@ -529,6 +529,14 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   AliCentrality *cent = fEvent->GetCentrality();
   if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
 
+  if (cent) {
+    tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    //    tEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    tEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
+    //    tEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+  }
+  
+
   if (mcP) delete [] motherids;
 
   cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;

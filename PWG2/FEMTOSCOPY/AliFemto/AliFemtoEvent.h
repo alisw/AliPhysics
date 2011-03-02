@@ -77,6 +77,10 @@ public:
   void SetMultiplicityEstimateITSTPC(const unsigned short &s);
   void SetMultiplicityEstimateTracklets(const unsigned short &s);
   void SetMultiplicityEstimateITSPure(const unsigned short &s);
+  void SetCentralityV0(const float &c);
+  void SetCentralityFMD(const float &c);
+  void SetCentralitySPD1(const float &c);
+  void SetCentralityTrk(const float &c);
   void SetSPDMult(const int& i);
   void SetPrimVertPos(const AliFemtoThreeVector& v);
   void SetPrimVertCov(const double* v);
@@ -96,13 +100,18 @@ public:
 
   void SetReactionPlaneAngle(const float& a);
   
-  double UncorrectedNumberOfNegativePrimaries() const;
-  double UncorrectedNumberOfPrimaries() const;
-  double SPDMultiplicity() const;
+  int UncorrectedNumberOfNegativePrimaries() const;
+  int UncorrectedNumberOfPrimaries() const;
+  int SPDMultiplicity() const;
 
   unsigned short MultiplicityEstimateITSTPC() const;
   unsigned short MultiplicityEstimateTracklets() const;
   unsigned short MultiplicityEstimateITSPure() const;
+
+  float CentralityV0() const;
+  float CentralityFMD() const;
+  float CentralitySPD1() const;
+  float CentralityTrk() const;
 
 private:
   unsigned short fEventNumber;           // Event number in file
@@ -113,6 +122,10 @@ private:
   unsigned short fEstimateITSTPC;        // Official multiplicity estimate ITS+TPC
   unsigned short fEstimateTracklets;     // Official multiplicity estimate Tracklets
   unsigned short fEstimateITSPure;       // Official multiplicity estimate ITS SA
+  float fCentralityV0;                   // Official centrality from V0
+  float fCentralityFMD;                  // Official centrality from FMD
+  float fCentralitySPD1;                 // Official centrality from SPD layer 1
+  float fCentralityTrk;                  // Official centrality from tracks
   double fMagneticField;                 // magnetic field in Z direction
   bool fIsCollisionCandidate;            // is collision candidate
   
