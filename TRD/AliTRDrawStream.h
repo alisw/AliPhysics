@@ -96,11 +96,25 @@ class AliTRDrawStream : public TObject
   };
 
   enum MarkerCode_t {
-    kHCactive = 1
+    kHCactive = 1,
+    kSecactive = 2
   };
 
   TTree* GetErrorTree() const { return fErrors; }
   static const char* GetErrorMessage(ErrorCode_t errCode);
+
+  class AliTRDrawStreamError : public TObject {
+  public:
+    AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1); 
+    virtual ~AliTRDrawStreamError() {}
+    Int_t fError;                               // error code
+    Int_t fSector;				// sector
+    Int_t fStack;				// stack
+    Int_t fLink;				// link
+    Int_t fRob;					// ROB no
+    Int_t fMcm;					// MCM no
+    ClassDef(AliTRDrawStreamError, 1);
+  };
 
   // event statistics
   class AliTRDrawStats : public TObject {
@@ -209,18 +223,7 @@ class AliTRDrawStream : public TObject
   AliTRDdigitsParam   *fDigitsParam;            // pointer to the parameters belonging to the digits
 
   TTree *fErrors;                               // tree containing the occured error codes
-  class AliTRDrawStreamError : public TObject {
-  public: 
-    AliTRDrawStreamError(Int_t error = 0, Int_t sector = -1, Int_t stack = -1, Int_t link = -1, Int_t rob = -1, Int_t mcm = -1); 
-    virtual ~AliTRDrawStreamError() {}
-    Int_t fError;                               // error code
-    Int_t fSector;				// sector
-    Int_t fStack;				// stack
-    Int_t fLink;				// link
-    Int_t fRob;					// ROB no
-    Int_t fMcm;					// MCM no
-    ClassDef(AliTRDrawStreamError, 1);
-  } fLastError;                                 // last error which occured
+  AliTRDrawStreamError fLastError;              // last error which occured
   UInt_t fErrorFlags;                           // error flags used to steer subsequent reading
   char   fErrorBuffer[100];                     // buffer for error message
 

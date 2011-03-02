@@ -254,6 +254,10 @@ Bool_t AliTRDrawStream::ReadEvent(TTree *trackletTree)
       continue;
     }
 
+    if (fMarkers)
+      new ((*fMarkers)[fMarkers->GetEntriesFast()])
+	AliTRDrawStreamError(-kSecactive, fCurrEquipmentId - 1024);
+
     // setting the pointer to data and current reading position
     fPayloadCurr = fPayloadStart = (UInt_t*) (buffer);
     fPayloadSize = fRawReader->GetDataSize() / sizeof(UInt_t);
@@ -323,6 +327,10 @@ Bool_t AliTRDrawStream::NextDDL()
       EquipmentError(kNonTrdEq, "Skipping");
       continue;
     }
+
+    if (fMarkers)
+      new ((*fMarkers)[fMarkers->GetEntriesFast()])
+	AliTRDrawStreamError(-kSecactive, fCurrEquipmentId - 1024);
 
     // setting the pointer to data and current reading position
     fPayloadCurr = fPayloadStart = (UInt_t*) (buffer);
