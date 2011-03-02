@@ -171,6 +171,7 @@
 #include "AliTRDresolution.h"
 #include "AliTRDinfoGen.h"
 #include "info/AliTRDclusterInfo.h"
+#include "info/AliTRDeventInfo.h"
 
 #include "AliTRDcalibDB.h"
 #include "Cal/AliTRDCalROC.h"
@@ -485,23 +486,28 @@ TObjArray* AliTRDclusterResolution::Histos()
   //  RESOLUTION/PULLS PLOTS
   fContainer->AddAt(arr = new TObjArray(6), kYRes);
   arr->SetName("ResY");
-  // resolution plot on pw and q (for dydx=0 && B=0)
-  if(!(h3=(TH3S*)gROOT->FindObject(Form("Res%s%03d", (HasMCdata()?"MC":"") ,fDet)))) {
-    h3 = new TH3S(
-      Form("Res%s%03d", (HasMCdata()?"MC":""),fDet),
-      Form(" Det[%d] Col[%d] Row[%d];log q [a.u];#deltay [pw];#Delta y[cm]", fDet, fCol, fRow),
-      45,   2., 6.5,            // log(q) [a.u]
-      25, -.51, .51,            // y [pw]
-      60, -fDyRange, fDyRange); // dy
-  } h3->Reset();
-  arr->AddAt(h3, 0);
+  // resolution plot on pw and q (for dydx=0 && B=0) np = 3 and for tb in [5, 20]
+  TObjArray *arrt(NULL);
+  arr->AddAt(arrt = new TObjArray(16), 0);
+  arrt->SetName("PwQvsX");
+  for(Int_t it(0); it<=15; it++){
+    if(!(h3=(TH3S*)gROOT->FindObject(Form("Res%s%03d%02d", (HasMCdata()?"MC":"") ,fDet, it)))) {
+      h3 = new TH3S(
+        Form("Res%s%03d%02d", (HasMCdata()?"MC":""),fDet, it),
+        Form(" Det[%d] TB[%d];log q [a.u];#deltay [pw];#Delta y[cm]", fDet, it+5),
+        4,   2., 6.,            // log(q) [a.u]
+        5, -.51, .51,            // y [pw]
+        60, -fDyRange, fDyRange); // dy
+    } h3->Reset();
+    arrt->AddAt(h3, it);
+  }
   // Pull plot on pw and q (for dydx=0 && B=0)
   if(!(h3=(TH3S*)gROOT->FindObject(Form("Pull%s%03d", (HasMCdata()?"MC":""), fDet)))){
     h3 = new TH3S(
       Form("Pull%s%03d", (HasMCdata()?"MC":""), fDet),
       Form(" Det[%d] Col[%d] Row[%d];log q [a.u.];#deltay [pw];#Delta y[cm]/#sigma_{y}", fDet, fCol, fRow),
-      45,   2., 6.5,            // log(q) [a.u]
-      25, -.51, .51,            // y [pw]
+      4,   2., 6.,            // log(q) [a.u]
+      5, -.51, .51,            // y [pw]
       60, -4., 4.);             // dy/sy
   } h3->Reset();
   arr->AddAt(h3, 1);
@@ -519,8 +525,8 @@ TObjArray* AliTRDclusterResolution::Histos()
     h3 = new TH3S(
       Form("Res2%s%03d", (HasMCdata()?"MC":""),fDet),
       Form(" Det[%d] Col[%d] Row[%d];log q [a.u];#deltay [pw];#Delta y[cm]", fDet, fCol, fRow),
-      45,   2., 6.5,            // log(q) [a.u]
-      25, -.51, .51,            // y [pw]
+      4,   2., 6.,            // log(q) [a.u]
+      5, -.51, .51,            // y [pw]
       60, -fDyRange, fDyRange); // dy
   } h3->Reset();
   arr->AddAt(h3, 3);
@@ -529,8 +535,8 @@ TObjArray* AliTRDclusterResolution::Histos()
     h3 = new TH3S(
       Form("Res4%s%03d", (HasMCdata()?"MC":""),fDet),
       Form(" Det[%d] Col[%d] Row[%d];log q [a.u];#deltay [pw];#Delta y[cm]", fDet, fCol, fRow),
-      45,   2., 6.5,            // log(q) [a.u]
-      25, -.51, .51,            // y [pw]
+      4,   2., 6.,            // log(q) [a.u]
+      5, -.51, .51,            // y [pw]
       60, -fDyRange, fDyRange); // dy
   } h3->Reset();
   arr->AddAt(h3, 4);
@@ -539,8 +545,8 @@ TObjArray* AliTRDclusterResolution::Histos()
     h3 = new TH3S(
       Form("SysTbPwQ%s%03d", (HasMCdata()?"MC":""),fDet),
       Form(" Det[%d] Col[%d] Row[%d];log q [a.u];#deltay [pw];t [time bin]", fDet, fCol, fRow),
-      45,   2., 6.5,            // log(q) [a.u]
-      25, -.51, .51,            // y [pw]
+      4,   2., 6.,            // log(q) [a.u]
+      5, -.51, .51,            // y [pw]
       AliTRDseedV1::kNtb, -.5, AliTRDseedV1::kNtb-0.5);   // t [tb]
   } h3->Reset();
   arr->AddAt(h3, 5);
@@ -568,20 +574,25 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 {
 // Fill container histograms
 
+  if(!(fInfo = dynamic_cast<TObjArray *>(GetInputData(1)))){
+    AliError("Cluster array missing.");
+    return;
+  }
+  if(!(fEvent = dynamic_cast<AliTRDeventInfo*>(GetInputData(2)))){
+    AliError("Event Info missing.");
+    return;
+  }
   if(!IsCalibrated()){
     LoadCalibration();
     if(!IsCalibrated()){
       AliFatal("Loading the calibration settings failed. Check OCDB access.");
       return;
     }
+    fEvent->Print();
   }
   if(!fContainer){
     fContainer = Histos();
     PostData(1, fContainer);
-  }
-  if(!(fInfo = dynamic_cast<TObjArray *>(GetInputData(1)))){
-    AliError("Cluster array missing.");
-    return;
   }
   AliDebug(2, Form("Clusters[%d]", fInfo->GetEntriesFast()));
 
@@ -594,6 +605,7 @@ void AliTRDclusterResolution::UserExec(Option_t *)
 
   TObjArray *arr0 = (TObjArray*)fContainer->At(kYSys);
   TObjArray *arr1 = (TObjArray*)fContainer->At(kYRes);
+  TObjArray *arr10 = (TObjArray*)arr1->At(0);
   TObjArray *arr2 = (TObjArray*)fContainer->At(kSigm);
 
   const AliTRDclusterInfo *cli = NULL;
@@ -626,10 +638,10 @@ void AliTRDclusterResolution::UserExec(Option_t *)
     // only for dydx = 0, ExB=0
     if(TMath::Abs(fExB) < kAroundZero &&
        TMath::Abs(dydx) < kAroundZero &&
-       t>5 && t<24 ){
+       t>=5 && t<=20 ){
       switch(np){
       case 3: // MPV np
-        h3 = (TH3S*)arr1->At(0);
+        h3 = (TH3S*)arr10->At(t-5);
         h3->Fill(TMath::Log(q), pw, dy);
         h3 = (TH3S*)arr1->At(5);
         h3->Fill(TMath::Log(q), pw, t);

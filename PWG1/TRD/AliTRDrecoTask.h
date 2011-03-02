@@ -17,13 +17,17 @@
 #include "info/AliTRDtrackInfo.h"
 #endif
 
+#ifndef ALITRDEVENTINFO_H
+#include "info/AliTRDeventInfo.h"
+#endif
+
 class TH1;
 class TF1;
 class TList;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
-class AliTRDtrackInfo;
+
 class AliTRDrecoTask : public AliAnalysisTaskSE 
 {
 public:
@@ -31,6 +35,7 @@ public:
     kMCdata       = BIT(18)
     ,kFriends     = BIT(19)
     ,kPostProcess = BIT(20)
+    ,kHeavyIon     = BIT(21)
   };
   
   AliTRDrecoTask();
@@ -49,9 +54,12 @@ public:
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
 
+  Bool_t         IsHeavyIon() const      { return TestBit(kHeavyIon);};
+  Bool_t         IsPP() const            { return !TestBit(kHeavyIon);};
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
   Bool_t         HasMCdata() const       { return TestBit(kMCdata);};
   Bool_t         HasPostProcess() const  { return TestBit(kPostProcess);};
+  Bool_t         HasRunTerminate() const { return fRunTerminate; }
   virtual TObjArray* Histos()            { return fContainer;}
 
   virtual Bool_t Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD_Performance");
@@ -62,6 +70,7 @@ public:
   virtual void   SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   virtual void   SetNameId(const Char_t *nid) {snprintf(fNameId, 10, "%s", nid);}
   virtual void   SetPostProcess(Bool_t pp = kTRUE) {SetBit(kPostProcess, pp);}
+  void SetRunTerminate(Bool_t runTerminate = kTRUE) { fRunTerminate = runTerminate; }
   virtual void   Terminate(Option_t *);
 
 protected:
@@ -72,6 +81,7 @@ protected:
   Char_t    fNameId[10];   // unique identifier of task particularity
   UChar_t   fNRefFigures;  // no of reference figures reported by task
   TObjArray *fContainer;   //! container to store results
+  AliTRDeventInfo *fEvent; //! Event Info
   TObjArray *fTracks;      //! Array of tracks
   const AliTRDtrackV1    *fkTrack;         //! current track
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
@@ -82,6 +92,7 @@ private:
   AliTRDrecoTask& operator=(const AliTRDrecoTask&);
 
   TList             *fPlotFuncList;//! plot functors list
+  Bool_t            fRunTerminate;  // Switch for Terminate Function
   static TList      *fgTrendPoint;          //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 

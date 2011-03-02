@@ -238,13 +238,21 @@ Bool_t AliTRDpidRefMakerLQ::Load(const Char_t *file, const Char_t *dir)
   return kTRUE;
 }
 
-
+#include "AliAnalysisManager.h"
 //________________________________________________________________________
 void AliTRDpidRefMakerLQ::UserExec(Option_t */*opt*/)
 {
-// Load PID data into local data storage
+// Process pid info data array
+// The tasks have also access to the following containers which, for the time being, are not used 
+// fTracks = dynamic_cast<TObjArray*>(GetInputData(1))
+// fEvent  = dynamic_cast<AliTRDeventInfo*>(GetInputData(2))
+// fV0s    = dynamic_cast<TObjArray*>(GetInputData(3))
 
-  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(3)))) return;
+  if(!(fInfo   = dynamic_cast<TObjArray*>(GetInputData(4)))){
+    Int_t ev((Int_t)AliAnalysisManager::GetAnalysisManager()->GetCurrentEntry());
+    AliDebug(3, Form("Missing pid info container in ev %d", ev));
+    return;
+  }
 
   AliDebug(2, Form("ENTRIES pid[%d]\n", fInfo->GetEntriesFast()));
   AliTRDpidInfo *pid(NULL);

@@ -57,10 +57,12 @@
 #include "AliESDfriend.h"
 #include "AliESDfriendTrack.h"
 #include "AliESDHeader.h"
+#include "AliESDRun.h"
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
 #include "AliESDtrackCuts.h"
 #include "AliMCParticle.h"
+#include "AliMultiplicity.h"
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
@@ -228,22 +230,22 @@ void AliTRDinfoGen::UserCreateOutputObjects()
 
   // define general monitor
   fContainer = new TObjArray(1); fContainer->SetOwner(kTRUE);
-  TH1 *h=new TH1I("hStat", "Run statistics;Observable;Entries", 14, -0.5, 11.5);
+  TH1 *h=new TH1I("hStat", "Run statistics;Observable;Entries", Int_t(kNObjects), -0.5, Float_t(kNObjects)-0.5);
   TAxis *ax(h->GetXaxis());
-  ax->SetBinLabel( 1, "ESD");
-  ax->SetBinLabel( 2, "MC");
-  ax->SetBinLabel( 3, "V0");
-  ax->SetBinLabel( 4, "TPC");
-  ax->SetBinLabel( 5, "TRDin");
-  ax->SetBinLabel( 6, "TRDout");
-  ax->SetBinLabel( 7, "Barrel");
-  ax->SetBinLabel( 8, "BarrelMC");
-  ax->SetBinLabel( 9, "SA");
-  ax->SetBinLabel(10, "SAMC");
-  ax->SetBinLabel(11, "Kink");
-  ax->SetBinLabel(12, "KinkMC");
-  ax->SetBinLabel(13, "BFriend");
-  ax->SetBinLabel(14, "SFriend");
+  ax->SetBinLabel(Int_t(kTracksESD) + 1, "ESD");
+  ax->SetBinLabel(Int_t(kTracksMC) + 1, "MC");
+  ax->SetBinLabel(Int_t(kV0) + 1, "V0");
+  ax->SetBinLabel(Int_t(kTPC) + 1, "TPC");
+  ax->SetBinLabel(Int_t(kTRDin) + 1, "TRDin");
+  ax->SetBinLabel(Int_t(kTRDout) + 1, "TRDout");
+  ax->SetBinLabel(Int_t(kBarrel) + 1, "Barrel");
+  ax->SetBinLabel(Int_t(kBarrelMC) + 1, "BarrelMC");
+  ax->SetBinLabel(Int_t(kSA) + 1, "SA");
+  ax->SetBinLabel(Int_t(kSAMC) + 1, "SAMC");
+  ax->SetBinLabel(Int_t(kKink) + 1, "Kink");
+  ax->SetBinLabel(Int_t(kKinkMC) + 1, "KinkMC");
+  ax->SetBinLabel(Int_t(kBarrelFriend) + 1, "BFriend");
+  ax->SetBinLabel(Int_t(kSAFriend) + 1, "SFriend");
   fContainer->AddAt(h, 0);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
@@ -397,7 +399,25 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
 
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
-  
+  // Determine centrality
+  // Author: Ionut Arsene <I.C.Arsene@gsi.de>
+  Int_t centralityBin = -1;
+  AliDebug(2, Form("Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
+  if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("Pb-Pb")){
+    centralityBin = 4;
+    const AliMultiplicity *mult = fESDev->GetMultiplicity();
+    Double_t zdcNeutronEnergy = fESDev->GetZDCN1Energy()+fESDev->GetZDCN2Energy();
+    Double_t itsNTracklets = mult->GetNumberOfTracklets();
+    Double_t centralitySlopes[6] = {0.0, 4.0, 8.0, 20.0, 50.0, 1000000.};
+    AliDebug(1, Form("zdcNeutronEnergy: %f, itsNTracklets: %f\n", zdcNeutronEnergy, itsNTracklets));
+    for(Int_t iCent=1; iCent<=5; ++iCent) {
+      if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets && zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
+        centralityBin=iCent - 1;
+    }
+    AliDebug(1, Form("Centrality Class: %d", centralityBin));
+  }
+  fEventInfo->SetCentrality(centralityBin);
+
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
   Int_t nTracksMC = HasMCdata() ? fMCev->GetNumberOfTracks() : 0, nTracksESD = fESDev->GetNumberOfTracks();
@@ -688,20 +708,20 @@ void AliTRDinfoGen::UserExec(Option_t *){
   ));
   // save track statistics
   TH1 *h((TH1S*)fContainer->At(0));
-  h->Fill( 0., nTracksESD);
-  h->Fill( 1., nTracksMC);
-  h->Fill( 2., fV0List->GetEntries());
-  h->Fill( 3., nTPC);
-  h->Fill( 4., nTRDin);
-  h->Fill( 5., nTRDout);
-  h->Fill( 6., nBarrel);
-  h->Fill( 7., nBarrelMC);
-  h->Fill( 8., nSA);
-  h->Fill( 9., nSAMC);
-  h->Fill(10., nKink);
-  h->Fill(11., nKinkMC);
-  h->Fill(12., nBarrelFriend);
-  h->Fill(13., nSAFriend);
+  h->Fill(Float_t(kTracksESD), nTracksESD);
+  h->Fill(Float_t(kTracksMC), nTracksMC);
+  h->Fill(Float_t(kV0), fV0List->GetEntries());
+  h->Fill(Float_t(kTPC), nTPC);
+  h->Fill(Float_t(kTRDin), nTRDin);
+  h->Fill(Float_t(kTRDout), nTRDout);
+  h->Fill(Float_t(kBarrel), nBarrel);
+  h->Fill(Float_t(kBarrelMC), nBarrelMC);
+  h->Fill(Float_t(kSA), nSA);
+  h->Fill(Float_t(kSAMC), nSAMC);
+  h->Fill(Float_t(kKink), nKink);
+  h->Fill(Float_t(kKinkMC), nKinkMC);
+  h->Fill(Float_t(kBarrelFriend), nBarrelFriend);
+  h->Fill(Float_t(kSAFriend), nSAFriend);
 
   PostData(AliTRDpwg1Helper::kTracksBarrel, fTracksBarrel);
   PostData(AliTRDpwg1Helper::kTracksSA, fTracksSA);
