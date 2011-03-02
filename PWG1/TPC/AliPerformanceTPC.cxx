@@ -156,6 +156,16 @@ void AliPerformanceTPC::Init()
     binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
   }
 
+  const Int_t  nCOverPtBins = 80;
+  Double_t coverptMin = -10, coverptMax = 10;
+  Double_t *binsCOverPtP = 0;
+  Double_t *binsCOverPt = new Double_t[nCOverPtBins+1];
+  binsCOverPtP = CreateLogAxis(nCOverPtBins/2,0.04,coverptMax-0.04);
+  for(Int_t i=0; i < nCOverPtBins/2; i++){
+    binsCOverPt[nCOverPtBins - i] = binsCOverPtP[nCOverPtBins/2  - i];
+    binsCOverPt[i] = 0 - binsCOverPtP[nCOverPtBins/2  - i];
+ }
+
   /*
   Int_t nPtBins = 31;
   Double_t binsPt[32] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.25,2.5,2.75,3.,3.5,4.,5.,6.,8.,10.};
@@ -213,11 +223,10 @@ void AliPerformanceTPC::Init()
   fTPCEventHisto->GetAxis(6)->SetTitle("vertStatus");
   //fTPCEventHisto->Sumw2();
 
-
   // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
-   Int_t binsTPCTrackHisto[10]=  { 160,  20,  60,  30, 30,  30,   144,             nPtBins,   3, 2 };
-   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3,  -3., -1.5, 0.,             ptMin,   -1.5, -0.5 };
-   Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3,   3.,  1.5, 2.*TMath::Pi(), ptMax,    1.5,  1.5 };
+   Int_t binsTPCTrackHisto[10]=  { 160,  20,  60,  30, 30,  30,   144,             nPtBins,   nCOverPtBins, 2 };
+   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3,  -3., -1.5, 0.,             ptMin,   coverptMin, -0.5 };
+   Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3,   3.,  1.5, 2.*TMath::Pi(), ptMax,    coverptMax,  1.5 };
   
   // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
 //   Int_t binsTPCTrackHisto[10]=  { 160,  50,  60,  100, 100,  30,   144,            nPtBins,    3, 2 };
@@ -226,8 +235,9 @@ void AliPerformanceTPC::Init()
 
 
 
-  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
+  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge/pt:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
   fTPCTrackHisto->SetBinEdges(7,binsPt);
+  fTPCTrackHisto->SetBinEdges(8,binsCOverPt);
 
   fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
   fTPCTrackHisto->GetAxis(1)->SetTitle("chi2PerClust");
@@ -237,7 +247,7 @@ void AliPerformanceTPC::Init()
   fTPCTrackHisto->GetAxis(5)->SetTitle("#eta");
   fTPCTrackHisto->GetAxis(6)->SetTitle("#phi (rad)");
   fTPCTrackHisto->GetAxis(7)->SetTitle("p_{T} (GeV/c)");
-  fTPCTrackHisto->GetAxis(8)->SetTitle("charge");
+  fTPCTrackHisto->GetAxis(8)->SetTitle("charge/pt");
   fTPCTrackHisto->GetAxis(9)->SetTitle("vertStatus");
   //fTPCTrackHisto->Sumw2();
 
@@ -251,7 +261,8 @@ void AliPerformanceTPC::Init()
 
   // init folder
   fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
-  
+
+  delete []binsCOverPt;
 }
 
 
@@ -301,6 +312,9 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   Float_t clustPerFindClust = 0.;
   if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
   
+  Float_t qpt = 0;
+  if( fabs(pt)>0 ) qpt = q/fabs(pt);
+
   //
   // select primaries
   //
@@ -313,7 +327,7 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q,vertStatus};
+  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,qpt,vertStatus};
   fTPCTrackHisto->Fill(vTPCTrackHisto); 
  
   //
@@ -368,6 +382,9 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   Float_t clustPerFindClust = 0.;
   if(nFindableClust>0.) clustPerFindClust = Float_t(nClust)/nFindableClust;
   
+  Float_t qpt = 0;
+  if( fabs(pt)>0 ) qpt = q/fabs(pt);
+
   //
   // select primaries
   //
@@ -380,7 +397,7 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q,vertStatus};
+  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,qpt,vertStatus};
   fTPCTrackHisto->Fill(vTPCTrackHisto); 
  
   //
@@ -627,12 +644,15 @@ void AliPerformanceTPC::Analyse()
     // Track histograms 
     // 
     // all with vertex
-    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
+    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-10,10);
     fTPCTrackHisto->GetAxis(9)->SetRangeUser(0.5,1.5);
     selString = "all_recVertex";
     for(Int_t i=0; i <= 9; i++) {
         AddProjection(aFolderObj, "track", fTPCTrackHisto, i, &selString);        
     }
+
+     AddProjection(aFolderObj, "track", fTPCTrackHisto, 5, 8, &selString); 
+
     for(Int_t i=0; i <= 4; i++) {
         AddProjection(aFolderObj, "track", fTPCTrackHisto, i, 5, 7, &selString);        
     }    
@@ -640,7 +660,7 @@ void AliPerformanceTPC::Analyse()
 
 
     // Track histograms (pos with vertex)
-    fTPCTrackHisto->GetAxis(8)->SetRangeUser(0,1.5);
+    fTPCTrackHisto->GetAxis(8)->SetRangeUser(0,10);
     selString = "pos_recVertex";
     for(Int_t i=0; i <= 9; i++) {
         AddProjection(aFolderObj, "track", fTPCTrackHisto, i, &selString);
@@ -656,7 +676,7 @@ void AliPerformanceTPC::Analyse()
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 5, 6, 7, &selString);
   
     // Track histograms (neg with vertex)
-    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,0);
+    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-10,0);
     selString = "neg_recVertex";
     for(Int_t i=0; i <= 9; i++) {
         AddProjection(aFolderObj, "track", fTPCTrackHisto, i, &selString);
@@ -670,8 +690,9 @@ void AliPerformanceTPC::Analyse()
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 1, 2, 5, &selString);
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 3, 4, 5, &selString);
 
+
     //restore cuts
-    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-1.5,1.5);
+    fTPCTrackHisto->GetAxis(8)->SetRangeUser(-10,10);
     fTPCTrackHisto->GetAxis(9)->SetRangeUser(-0.5,1.5);
   
   
