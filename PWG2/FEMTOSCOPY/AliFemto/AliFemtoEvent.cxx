@@ -28,11 +28,15 @@ AliFemtoEvent::AliFemtoEvent():
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
-  fNormalizedMult(-1),
+  fNormalizedMult(-2),
   fSPDMult(0),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
+  fCentralityV0(0),
+  fCentralityFMD(0),
+  fCentralitySPD1(0),
+  fCentralityTrk(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -72,11 +76,15 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
-  fNormalizedMult(-1),
+  fNormalizedMult(-2),
   fSPDMult(0),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
+  fCentralityV0(0),
+  fCentralityFMD(0),
+  fCentralitySPD1(0),
+  fCentralityTrk(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -112,6 +120,10 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev, AliFemtoTrackCut* tCut, Al
   fEstimateITSTPC = ev.fEstimateITSTPC;
   fEstimateTracklets = ev.fEstimateTracklets;
   fEstimateITSPure = ev.fEstimateITSPure;
+  fCentralityV0 = ev.fCentralityV0; 
+  fCentralityFMD = ev.fCentralityFMD;
+  fCentralitySPD1 = ev.fCentralitySPD1;
+  fCentralityTrk = ev.fCentralityTrk;
   fMagneticField= ev.fMagneticField;
   fIsCollisionCandidate = ev.fIsCollisionCandidate;
 
@@ -159,11 +171,15 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEventNumber(0),
   fRunNumber(0),
   fNumberOfTracks(0),
-  fNormalizedMult(-1),
+  fNormalizedMult(-2),
   fSPDMult(0),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
+  fCentralityV0(0),
+  fCentralityFMD(0),
+  fCentralitySPD1(0),
+  fCentralityTrk(0),
   fMagneticField(0),
   fIsCollisionCandidate(kTRUE),
   fPrimVertPos(0,0,0),
@@ -198,6 +214,10 @@ AliFemtoEvent::AliFemtoEvent(const AliFemtoEvent& ev):
   fEstimateITSTPC = ev.fEstimateITSTPC;
   fEstimateTracklets = ev.fEstimateTracklets;
   fEstimateITSPure = ev.fEstimateITSPure;
+  fCentralityV0 = ev.fCentralityV0; 
+  fCentralityFMD = ev.fCentralityFMD;
+  fCentralitySPD1 = ev.fCentralitySPD1;
+  fCentralityTrk = ev.fCentralityTrk;
   fMagneticField= ev.fMagneticField;
   fIsCollisionCandidate = ev.fIsCollisionCandidate;
   fTriggerMask=ev.fTriggerMask;     // Trigger Type (mask)
@@ -250,6 +270,10 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fEstimateITSTPC = aEvent.fEstimateITSTPC;
   fEstimateTracklets = aEvent.fEstimateTracklets;
   fEstimateITSPure = aEvent.fEstimateITSPure;
+  fCentralityV0 = aEvent.fCentralityV0; 
+  fCentralityFMD = aEvent.fCentralityFMD;
+  fCentralitySPD1 = aEvent.fCentralitySPD1;
+  fCentralityTrk = aEvent.fCentralityTrk;
   fNormalizedMult = aEvent.fNormalizedMult;
   fEstimateITSTPC = aEvent.fEstimateITSTPC;
   fEstimateTracklets = aEvent.fEstimateTracklets;
@@ -385,19 +409,19 @@ float AliFemtoEvent::ReactionPlaneAngle() const { return fReactionPlaneAngle; }
 
 //----------------------------- below here is only for star
 
-double AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
+int AliFemtoEvent::UncorrectedNumberOfNegativePrimaries() const
 {
   return NumberOfTracks()/2;
 }
 
-double AliFemtoEvent::SPDMultiplicity() const
+int AliFemtoEvent::SPDMultiplicity() const
 {
   return fSPDMult;
 }
 
-double AliFemtoEvent::UncorrectedNumberOfPrimaries() const
+int AliFemtoEvent::UncorrectedNumberOfPrimaries() const
 {
-  if (fNormalizedMult < 0) {
+  if (fNormalizedMult < -1) {
     // Count number of normalized charged tracks 
     Int_t tNormTrackCount = 0;
     for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
@@ -445,4 +469,44 @@ void AliFemtoEvent::SetMultiplicityEstimateTracklets(const unsigned short &s)
 void AliFemtoEvent::SetMultiplicityEstimateITSPure(const unsigned short &s)
 {
   fEstimateITSPure = s;
+}
+
+void AliFemtoEvent::SetCentralityV0(const float &c)
+{
+  fCentralityV0 = c;
+}
+
+void AliFemtoEvent::SetCentralityFMD(const float &c)
+{
+  fCentralityFMD = c;
+}
+
+void AliFemtoEvent::SetCentralitySPD1(const float &c)
+{
+  fCentralitySPD1 = c;
+}
+
+void AliFemtoEvent::SetCentralityTrk(const float &c)
+{
+  fCentralityTrk = c;
+}
+
+float AliFemtoEvent::CentralityV0() const
+{
+  return fCentralityV0;
+}
+
+float AliFemtoEvent::CentralityFMD() const
+{
+  return fCentralityFMD;
+}
+
+float AliFemtoEvent::CentralitySPD1() const
+{
+  return fCentralitySPD1;
+}
+
+float AliFemtoEvent::CentralityTrk() const
+{
+  return fCentralityTrk;
 }
