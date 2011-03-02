@@ -69,6 +69,8 @@ protected:
   int DoEvent(const AliHLTComponentEventData& evtData,
               AliHLTComponentTriggerData& trigData);
   using AliHLTProcessor::DoEvent;
+  /// inherited from AliHLTComponent, scan argument
+  virtual int ScanConfigurationArgument(int argc, const char** argv);
 
   class AliHLTHistogramDefinition {
   public:
@@ -105,10 +107,7 @@ protected:
   typedef std::list<AliHLTHistogramDefinition>::iterator list_iterator;
   typedef std::list<AliHLTHistogramDefinition>::const_iterator list_const_iterator;
 
-
 private:
-  /// inherited from AliHLTComponent, scan argument
-  int ScanConfigurationArgument(int argc, const char** argv);
   /// create the tree instance and all branches
   virtual TTree* CreateTree(int argc, const char** argv) = 0;
   /// process input blocks and fill tree

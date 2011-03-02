@@ -101,6 +101,26 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
   // ask child to create the tree.
   int iResult = 0;
 
+  // component configuration
+  //Stage 1: default initialization.
+  //"Default" (for derived component) histograms.
+  FillHistogramDefinitions();
+  //Default values.
+  fMaxEntries = kMaxEntries;
+  fPublishInterval = kInterval;
+  fLastTime = 0;
+  //Stage 2: OCDB.
+  TString cdbPath("HLT/ConfigHLT/");
+  cdbPath += GetComponentID();
+  //
+  iResult = ConfigureFromCDBTObjString(cdbPath);
+  //
+  if (iResult < 0)
+    return iResult;
+  //Stage 3: command line arguments.
+  if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
+    return iResult;
+
   // calculating a unique id from the hostname and process id
   // used for identifying output of multiple components
   TUUID guid = GenerateGUID();
@@ -112,30 +132,13 @@ int AliHLTTTreeProcessor::DoInit(int argc, const char** argv)
   guid.GetUUID(buf);
   fUniqueId = bufAsInt[0];
   
-
   if (!fTree) {
-    std::auto_ptr<TTree> ptr(CreateTree(argc, argv));
+    // originally foreseen to pass the arguments to the function, however
+    // this is not appropriate. Argument scan via overloaded function
+    // ScanConfigurationArgument
+    std::auto_ptr<TTree> ptr(CreateTree(0, NULL));
     if (ptr.get()) {
-      //Stage 1: default initialization.
       ptr->SetDirectory(0);
-      //"Default" (for derived component) histograms.
-      FillHistogramDefinitions();
-      //Default values.
-      fMaxEntries = kMaxEntries;
-      fPublishInterval = kInterval;
-      fLastTime = 0;
-      //Stage 2: OCDB.
-      TString cdbPath("HLT/ConfigHLT/");
-      cdbPath += GetComponentID();
-      //
-      iResult = ConfigureFromCDBTObjString(cdbPath);
-      //
-      if (iResult < 0)
-        return iResult;
-      //Stage 3: command line arguments.
-      if (argc && (iResult = ConfigureFromArgumentString(argc, argv)) < 0)
-        return iResult;
-
       ptr->SetCircular(fMaxEntries);
       fTree = ptr.release();
     } else //No way to process error correctly - error is unknown here.
@@ -312,7 +315,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
   AliHLTHistogramDefinition def;
 
   int i = 0;
-  int maxEntries = 0;
+  int maxEntries = fMaxEntries;
 
   while (i < argc) {
     const TString argument(argv[i]);
