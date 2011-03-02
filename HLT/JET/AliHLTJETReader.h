@@ -169,7 +169,7 @@ public:
   /** Get Ptr to AliHLTJETReaderHeader
    *  @return ptr to AliHLTJETReaderHeader
    */
-  AliHLTJETReaderHeader*      GetReaderHeader()       { return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
+  AliHLTJETReaderHeader*      GetReaderHeader() const { return dynamic_cast<AliHLTJETReaderHeader*>(fReaderHeader);}
 
 #ifdef HAVE_FASTJET
   /** Get Ptr to input vector of Fastjet
