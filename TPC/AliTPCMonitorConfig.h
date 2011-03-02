@@ -20,7 +20,8 @@
 ////
 /////////////////////////////////////////////////////////////////////////
 
-#include "TNamed.h" 
+#include <TNamed.h>
+#include <TString.h>
 
 class AliTPCMonitorConfig: public TNamed
 {
@@ -52,10 +53,10 @@ class AliTPCMonitorConfig: public TNamed
     
   
     Int_t    GetFormat()                             const { return fFormat      ;}
-    Char_t*  GetFile()                               const { return fFileCurrent;}
+    const Char_t*  GetFile()                         const { return fFileCurrent.Data();}
     
     Int_t    GetFitPulse()                           const { return fFitPulse     ;}
-    Char_t*  GetLastProcFile();
+    const Char_t*  GetLastProcFile();
     Int_t    GetMaxHwAddr()                          const { return fMaxHwAddr            ; } 
     
     Int_t    GetLastSector()                         const { return fSectorLast;}
@@ -92,7 +93,7 @@ class AliTPCMonitorConfig: public TNamed
 
     void     SetBaseConfig(float*  ConfArr);
         
-    void     SetLastProcFile(Char_t* val);
+    void     SetLastProcFile(const Char_t* val);
     
     void     SetEventProcessed(Int_t val)            {        fEventProcessed=val;}
  
@@ -104,7 +105,7 @@ class AliTPCMonitorConfig: public TNamed
     
     void     SetTimeBins(Int_t val)                  {        fTimeBins  = val      ; }
     
-    void     SetFile(Char_t* val)                      { sprintf(fFileCurrent,val);}
+    void     SetFile(const Char_t* val)              { fFileCurrent=val; }
         
     void     SetLastSector(Int_t val)                { fSectorLast = val;}
 
@@ -133,7 +134,7 @@ class AliTPCMonitorConfig: public TNamed
     
     void     PrintConfig();
 
-    void     ReadConfig(Char_t* nameconf);
+    void     ReadConfig(const Char_t* nameconf);
     void     ResetSectorArray()                      { for(Int_t i=0;i<36; i++) fSectorArr[i]=0;}
     
  private: 
@@ -147,10 +148,10 @@ class AliTPCMonitorConfig: public TNamed
     Int_t*   fSectorArr;                                                // Array of processed sectors
     
     // Current and Last Files and Dirs
-    Char_t*  fFileLast;                                                 // Name of last processed file/stream
+    TString  fFileLast;                                                 // Name of last processed file/stream
     Int_t    fFileLastSet ;                                             // Flag showing if last file name was set
     
-    Char_t*  fFileCurrent;                                              // Current file/stream  name
+    TString  fFileCurrent;                                              // Current file/stream  name
     
     Int_t    fEventNext;                                                // Process next event -> do not stay in current event                         
     Int_t    fEventNextID;                                              // Next event ID to be processed (if event id does not exist search for next existing event)                                             

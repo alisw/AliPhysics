@@ -1773,7 +1773,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
       if (i < dim) centries = fTree->Draw(((TObjString*)formulaTokens->At(i))->GetName(), cutStr.Data(), "goff");
       else  centries = fTree->Draw(drawStr.Data(), cutStr.Data(), "goff");
       
-      if (entries != centries) return new TString("An ERROR has occured during fitting!");
+      if (entries != centries) {
+        delete [] values;
+        return new TString("An ERROR has occured during fitting!");
+      }
       values[i] = new Double_t[entries];
       memcpy(values[i],  fTree->GetV1(), entries*sizeof(Double_t)); 
    }
@@ -1800,10 +1803,10 @@ TString* AliTPCCalibViewer::Fit(const char* drawCommand, const char* formula, co
    returnFormula.Append(" )");
    delete formulaTokens;
    delete fitter;
-  for (Int_t i = 0; i < dim + 1; i++){
-    delete [] values[i];
-  }
-  delete [] values;
+   for (Int_t i = 0; i < dim + 1; i++){
+     delete [] values[i];
+   }
+   delete [] values;
    return preturnFormula;
 }
 

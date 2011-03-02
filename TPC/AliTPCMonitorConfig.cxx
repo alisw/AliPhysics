@@ -54,9 +54,9 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const Char_t* name, const Char_t* title
   fSectorLast(-1),
   fSectorLastDisplayed(-1),
   fSectorArr(new Int_t[36]),
-  fFileLast(new Char_t[256]),
+  fFileLast(),
   fFileLastSet(0),
-  fFileCurrent(new Char_t[256]),
+  fFileCurrent(),
   fEventNext(1),
   fEventNextID(1),
   fEventProcessed(0),
@@ -107,9 +107,9 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
   fSectorLast(config.fSectorLast),
   fSectorLastDisplayed(config.fSectorLastDisplayed),
   fSectorArr(new Int_t[36]),
-  fFileLast(new Char_t[strlen(config.fFileLast)+1]), 
+  fFileLast(config.fFileLast),
   fFileLastSet(config.fFileLastSet),
-  fFileCurrent(new Char_t[strlen(config.fFileCurrent)+1]),
+  fFileCurrent(config.fFileCurrent),
   fEventNext(config.fEventNext),
   fEventNextID(config.fEventNextID),
   fEventProcessed(config.fEventProcessed),
@@ -145,8 +145,6 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
   fProcOneSector(config.fProcOneSector)
 {
   // copy constructor
-  strcpy(fFileLast,config.fFileLast);
-  strcpy(fFileCurrent,config.fFileCurrent);
   
   for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
   for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
@@ -194,12 +192,8 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
     fFitPulse=config.fFitPulse; 
     fProcOneSector=config.fProcOneSector;
 
-    fFileLast             = new Char_t[strlen(config.fFileLast)+1]; 
-    strcpy(fFileLast,config.fFileLast);
-    
-    
-    fFileCurrent          = new Char_t[strlen(config.fFileCurrent)+1];
-    strcpy(fFileCurrent,config.fFileCurrent);
+    fFileLast             = config.fFileLast;
+    fFileCurrent          = config.fFileCurrent;
     
     fSectorArr            = new Int_t[36];    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
     fComponents           = new Float_t[10];  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
@@ -214,8 +208,6 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
 AliTPCMonitorConfig::~AliTPCMonitorConfig() 
 {
   // Destructor
-  delete[] fFileLast; 
-  delete[] fFileCurrent;
   delete[] fSectorArr;
   delete[] fComponents;
 } 
@@ -280,7 +272,7 @@ void AliTPCMonitorConfig::SetBaseConfig(Float_t* confarr)
 }
 
 //_______________________________________________________________________________________________________________
-void AliTPCMonitorConfig::ReadConfig(Char_t* nameconf) 
+void AliTPCMonitorConfig::ReadConfig(const Char_t* nameconf) 
 {
   // Read base configuration from file
   // Update main window size
@@ -363,26 +355,24 @@ void AliTPCMonitorConfig::PrintConfig()
   cout << " Data Format             :: " <<  fFormat                                     << endl;
   cout << " File current            :: " <<  fFileCurrent                                << endl;
   
-  if(fFileLastSet)  {      cout << " File last           :: " <<  fFileLast << endl;    }
+  if(fFileLastSet)  {      cout << " File last           :: " <<  fFileLast.Data() << endl;    }
   return;										  
   
 }
 
 //______________________________________________________________________________________________________________
-Char_t* AliTPCMonitorConfig::GetLastProcFile()
+const Char_t* AliTPCMonitorConfig::GetLastProcFile()
 {
   // Return name of last processed file
   // Get from file if written  
   if(!fFileLastSet)
     {
-      Char_t fnlast[256];
-      sprintf(fnlast,"AliTPCMonitorLastFile.txt");
-      ifstream datin(fnlast);
+      ifstream datin("AliTPCMonitorLastFile.txt");
       if(!datin.is_open()) {
         AliWarning("Could not read file containing  name of last processed file: Check permissions and path");
-	sprintf(fFileLast,"%s","");
-	fFileLastSet=0;
-        return fFileLast;
+        fFileLast="";
+        fFileLastSet=0;
+        return fFileLast.Data();
       }
       datin >> fFileLast;
       datin.close(); 
@@ -392,15 +382,13 @@ Char_t* AliTPCMonitorConfig::GetLastProcFile()
 }
 
 //_______________________________________________________________________________________________________________
-void AliTPCMonitorConfig::SetLastProcFile(Char_t* file)
+void AliTPCMonitorConfig::SetLastProcFile(const Char_t* file)
 {
   // Set name of last processed file 
   // Write name to a file 
   
-  sprintf(fFileLast,file);
-  Char_t fnlast[256];
-  sprintf(fnlast,"AliTPCMonitorLastFile.txt");
-  ofstream datout(fnlast);
+  fFileLast=file;
+  ofstream datout("AliTPCMonitorLastFile.txt");
   if(!datout) {  AliWarning("Could not write file containing name of last processed file: Check permissions and path");}
   datout << fFileLast << endl;
   datout.close();

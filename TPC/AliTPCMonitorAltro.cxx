@@ -63,7 +63,7 @@ AliTPCMonitorAltro::AliTPCMonitorAltro(UInt_t* memory, Int_t size, Int_t fformat
   fTrailerBlockPos(0),
   fTrailerPos(0),
   fNextPos(0),
-  ffilename(new Char_t[256])
+  ffilename()
 {
   // Constructor: Set different CDH offsets for ROOT (0) and date format
   // Data offset can be changed via SetDataOffset(Int_t val)
@@ -93,10 +93,9 @@ AliTPCMonitorAltro::AliTPCMonitorAltro(const AliTPCMonitorAltro &altro) :
   fTrailerBlockPos(altro.fTrailerBlockPos),
   fTrailerPos(altro.fTrailerPos),
   fNextPos(altro.fNextPos),
-  ffilename(new Char_t[strlen(altro.ffilename)+1])
+  ffilename(altro.ffilename)
 {
   // copy constructor
-  strcpy(ffilename,altro.ffilename);
 
 }
 
@@ -123,8 +122,7 @@ AliTPCMonitorAltro &AliTPCMonitorAltro::operator =(const AliTPCMonitorAltro& alt
     fTrailerBlockPos=altro.fTrailerBlockPos;
     fTrailerPos=altro.fTrailerPos; 
     fNextPos=altro.fNextPos;
-    ffilename = new Char_t[strlen(altro.ffilename)+1]; 
-    strcpy(ffilename,altro.ffilename);
+    ffilename = altro.ffilename;
   }
   return *this;
 }
@@ -135,7 +133,6 @@ AliTPCMonitorAltro::~AliTPCMonitorAltro() {
   // Destructor
   if(fallocate40BitArray == true) delete[] f40BitArray;
   if(fallocate10BitArray == true) delete[] f10BitArray;
-  delete[] ffilename;
  }
 
 //_____________________________________________________________________________________________
@@ -229,9 +226,9 @@ void AliTPCMonitorAltro::Decodeto10Bit(Int_t equipment)
   ofstream datout;
   if(fwrite10bit)
   {
-    Char_t nameout[256] ; sprintf(nameout,"%s_PayloadEquipmentId_%03i.txt",ffilename,equipment);
-    datout.open(nameout);
-    AliInfo(Form("AliTPCMonitorAltro::decodeto10Bit :  Write Data to %s",nameout));
+    TString nameout=Form("%s_PayloadEquipmentId_%03i.txt",ffilename.Data(),equipment);
+    datout.open(nameout.Data());
+    AliInfo(Form("AliTPCMonitorAltro::decodeto10Bit :  Write Data to %s",nameout.Data()));
     if(foffset==0) datout <<  "Payload without CDH in 10bit words " << endl;
     else           datout  << "CDH in 32 bit hex words words (" << foffset << " lines )  followed by payload in 10 bit words " << endl;
     for(Int_t ih = 0; ih< foffset ; ih++)

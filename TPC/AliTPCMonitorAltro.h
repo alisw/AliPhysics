@@ -17,7 +17,8 @@
 ////       
 /////////////////////////////////////////////////////////////////////////
 
-#include "TNamed.h"
+#include <TString.h>
+#include <TNamed.h>
 
 class AliTPCMonitorAltro : public TNamed {
  public:
@@ -39,7 +40,7 @@ class AliTPCMonitorAltro : public TNamed {
     Short_t     *Get10BitArray();     
     Int_t        Get40BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()];}   //hier �ndern
     Int_t        Get10BitArraySize()     const { return fmemory[fsize-GetRCUTrailerSize()]*4;}  //number of 10 bit words from trailer
-    Char_t*      GetActFileName()        const { return ffilename;}
+    const Char_t* GetActFileName()        const { return ffilename.Data();}
     
     static Int_t GetHwMaskFEC()                { return fgkHwMaskFEC;}
     static Int_t GetHwMaskBranch()             { return fgkHwMaskBranch;}
@@ -65,7 +66,7 @@ class AliTPCMonitorAltro : public TNamed {
     void         SetWrite10Bit(Int_t wr) { fwrite10bit =wr  ;}
     
   
-    void         SetActFilename(Char_t* name){ snprintf(ffilename,256,"%s",name); }
+    void         SetActFilename(const Char_t* name){ ffilename=name; }
     void         SetVerbose(Int_t val)   { fverb=val;}
      
  private:
@@ -89,7 +90,7 @@ class AliTPCMonitorAltro : public TNamed {
     Int_t                    fTrailerPos;                                               // trailer position
 
     Int_t                    fNextPos;                                                  // position of next trailer
-    Char_t*                  ffilename;                                                 // name of processed file
+    TString                  ffilename;                                                 // name of processed file
     
     static const Int_t       fgk24BitOn                = 16777215;                        // bit masks for first 24 bits of 32  for decoding 32 bit words
     static const Int_t       fgk16BitOn                = 65535;                           // bit masks for first 24 bits of 24

@@ -951,6 +951,7 @@ void AliTPCMonitor::FillGlobal(Int_t sector)
     {
       pad    = fMapHand->GetPad(   hw);
       row    = fMapHand->GetPadRow(hw);
+      if (row==-1) continue;
       padmax = fMapHand->GetNumofPads(row);
       if (sector%36>17) fMirror=-1;
       else fMirror=1;
@@ -2126,7 +2127,7 @@ Int_t AliTPCMonitor::GetRCUPatch(Int_t runid, Int_t eqid) const
   if(runid>=0)
   {
     if ( eqid<768 || eqid>983 ) return 0; //no TPC eqid
-    if(eqid>=1000) return 0;
+//     if(eqid>=1000) return 0;
     patch = fMapEqidsRcu[eqid] ;
   }
   else
