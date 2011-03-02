@@ -65,6 +65,7 @@
 #pragma link C++ class AliAlignmentDataFilterITS+;
 #pragma link C++ class AliAnalysisTaskITSTrackingCheck+;
 #pragma link C++ class AliAnalysisTaskITSsaTracks+;
+#pragma link C++ class AliAnalysisTaskITSAlignQA+;
 #pragma link C++ class AliAnalysisTaskSEImpParRes+;
 #pragma link C++ class AliTrackMatchingTPCITSCosmics+;
 #pragma link C++ class AliAnalysisTaskV0QA+;
