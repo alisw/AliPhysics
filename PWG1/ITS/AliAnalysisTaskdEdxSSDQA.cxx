@@ -52,6 +52,7 @@ void AliAnalysisTaskdEdxSSDQA::UserCreateOutputObjects()
   // Called once
   	
 	fListOfHistos = new TList();
+	fListOfHistos->SetOwner();
 	fHist1 =new TH2F("QAChargeRatio","QAChargeRatio;Module;CR",1698,-0.5,1697.5,80,-1.0,1.0);
 	fListOfHistos->Add(fHist1);
 	fHist2=new TH2F("QACharge","QACharge;Module;Q",1698,-0.5,1697.5,150,0,300);
