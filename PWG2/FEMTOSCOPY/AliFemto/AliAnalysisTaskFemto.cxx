@@ -185,6 +185,8 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
 
     delete tOL;
   }
+
+  PostData(0, fOutputList);
 }
 
 //________________________________________________________________________
