@@ -14,6 +14,8 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
+#include "AliCentrality.h"
+#include "AliESDVZERO.h"
 
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
@@ -519,7 +521,10 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
 	else if (fTrackType == kTPCOnly) {
 	  if (esdtrack->GetTPCInnerParam())
 	    esdtrack->GetTPCInnerParam()->GetPxPyPz(pxyz);
-	  else continue;
+	  else {
+	    delete trackCopy;
+	    continue;
+	  }
 	}
 	else if (fTrackType == kITSOnly) {
 	  if (fConstrained==true)		    
@@ -614,6 +619,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     }
 
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+
+  AliCentrality *cent = fEvent->GetCentrality();
+  if (cent) {
+    hbtEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    //    hbtEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
+    //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+
+    printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
+  }
+
   if (fEstEventMult == kGlobalCount) 
     hbtEvent->SetNormalizedMult(tNormMult);
   else if (fEstEventMult == kTracklet)
@@ -624,6 +640,18 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
     hbtEvent->SetNormalizedMult(tITSPure);
   else if (fEstEventMult == kSPDLayer1)
     hbtEvent->SetNormalizedMult(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
+  else if (fEstEventMult == kV0Centrality) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("V0M") < 0.0)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
+      printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+	      10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
+    }
+  }
 
   if (tNormMultPos > tNormMultNeg)
     hbtEvent->SetZDCParticipants(tNormMultPos);
