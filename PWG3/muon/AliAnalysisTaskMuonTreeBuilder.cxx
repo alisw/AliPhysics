@@ -241,6 +241,10 @@ void AliAnalysisTaskMuonTreeBuilder::UserExec(Option_t *)
   }
 
   fESD = dynamic_cast<AliESDEvent*>(InputEvent()); 
+  if ( ! fESD ) {
+    AliError("Cannot get input event");
+    return; 
+  }
 
   fIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
@@ -248,7 +252,7 @@ void AliAnalysisTaskMuonTreeBuilder::UserExec(Option_t *)
    Int_t loopEnd = fNumMuonTracks;
   if(!fIsMC) {
     TString cla = fESD->GetFiredTriggerClasses();
-    sprintf(fTrigClass,"%s",cla.Data());
+    snprintf(fTrigClass,100,"%s",cla.Data());
   }
 
   if(fNumMuonTracks>0 && fIsMC){

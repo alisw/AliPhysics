@@ -165,7 +165,7 @@ void AliQuarkoniaEfficiency::Init()
   if ( efficiencyFile.IsOpen() ) {
 
     char quarkoniaDir[15];
-    sprintf(quarkoniaDir,"%s",GetTitle());
+    snprintf(quarkoniaDir,15,"%s",GetTitle());
     if (! efficiencyFile.cd(quarkoniaDir) ){
       AliError(Form("Directory %s not found in file %s \n Efficiency data for quarkonia %s and channel %s not found ",
 		    quarkoniaDir,fEfficiencyFileName.Data(),GetTitle(),GetName() ));
@@ -173,7 +173,7 @@ void AliQuarkoniaEfficiency::Init()
     }
     
     char histosDir[30];
-    sprintf(histosDir,"%s/%s_%s_%s",quarkoniaDir,GetTitle(),GetName(),param);
+    snprintf(histosDir,30,"%s/%s_%s_%s",quarkoniaDir,GetTitle(),GetName(),param);
     if(! efficiencyFile.cd(histosDir) ){
       AliError(Form("Subdirectory %s/%s not found in file %s \n Efficiency data for quarkonia %s and channel %s not found ",
 		    quarkoniaDir,histosDir,fEfficiencyFileName.Data(),GetTitle(),GetName() ));

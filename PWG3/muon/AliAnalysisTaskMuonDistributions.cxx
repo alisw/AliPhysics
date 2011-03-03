@@ -538,7 +538,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   printf("\n\n****************************************************************************\n");
   char psitext[100];
   if(nPsiFit<0) nPsiFit = 0;  
-  sprintf(psitext,"N. J/#psi = %10.0f",nPsiFit);
+  snprintf(psitext,100,"N. J/#psi = %10.0f",nPsiFit);
   printf("\nN. J/psi = %10.0f\n",nPsiFit);
   TLatex *psilatex = new TLatex(4.,0.85*histo->GetMaximum(),psitext);
   psilatex->SetTextColor(2);
@@ -547,7 +547,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   psilatex->Draw();
   
   char psi2text[100];
-  sprintf(psi2text,"J/#psi m=%4.3f GeV   #sigma= %4.2f MeV",meanPsi,sigPsi);
+  snprintf(psi2text,100,"J/#psi m=%4.3f GeV   #sigma= %4.2f MeV",meanPsi,sigPsi);
   printf("J/psi m= %4.3f GeV sigma= %4.2f MeV\n",meanPsi,sigPsi);
   TLatex *psi2latex = new TLatex(4.,0.425*histo->GetMaximum(),psi2text);
   psi2latex->SetTextColor(2);
@@ -556,7 +556,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   psi2latex->Draw();
   
   char sbtext[100];
-  sprintf(sbtext,"S/B (2.9-3.3)= %4.2f ",nPsi2933/nBck);
+  snprintf(sbtext,100,"S/B (2.9-3.3)= %4.2f ",nPsi2933/nBck);
   printf("S/B (2.9-3.3)= %4.2f\n",nPsi2933/nBck);
   TLatex *sblatex = new TLatex(4.,0.212*histo->GetMaximum(),sbtext);
   sblatex->SetTextColor(2);
@@ -566,7 +566,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   
   char psiptext[100];
   if(nPsiPFit<0) nPsiPFit = 0;  
-  sprintf(psiptext,"N. #psi(2S) = %10.0f",nPsiPFit);
+  snprintf(psiptext,100,"N. #psi(2S) = %10.0f",nPsiPFit);
   printf("\npsi(2S) = %10.0f\n",nPsiPFit);
   TLatex *psiplatex = new TLatex(4.,0.106*histo->GetMaximum(),psiptext);
   psiplatex->SetTextColor(2);
@@ -575,7 +575,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   psiplatex->Draw();
   
   char psip2text[100];
-  sprintf(psip2text,"#psi(2S) m=%4.3f GeV   #sigma= %4.2f MeV",meanPsiP,sigPsiP);
+  snprintf(psip2text,100,"#psi(2S) m=%4.3f GeV   #sigma= %4.2f MeV",meanPsiP,sigPsiP);
   printf("psi(2S) m= %4.3f GeV sigma= %4.2f MeV\n",meanPsiP,sigPsiP);
   TLatex *psip2latex = new TLatex(4.,0.053*histo->GetMaximum(),psip2text);
   psip2latex->SetTextColor(2);
@@ -584,7 +584,7 @@ void AliAnalysisTaskMuonDistributions::FitInvMass(TH1D *histo)
   psip2latex->Draw();
   
   char chi2text[100];
-  sprintf(chi2text,"#chi^2/ndf = %4.2f ",chi2/ndf);
+  snprintf(chi2text,100,"#chi^2/ndf = %4.2f ",chi2/ndf);
   printf("chi^2/ndf = %4.2f\n",chi2/ndf);
   TLatex *chi2latex = new TLatex(4.,0.026*histo->GetMaximum(),chi2text);
   chi2latex->SetTextColor(2);
