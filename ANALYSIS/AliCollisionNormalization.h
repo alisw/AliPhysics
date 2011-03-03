@@ -74,6 +74,17 @@ public:
 
   Long64_t Merge(TCollection* list);
 
+  Double_t GetInputEvents(){return fInputEvents;}   // number of Input Events 
+  Double_t GetPhysSelEvents(){return fPhysSelEvents;} // number of  Events after Physics Selection 
+  Double_t GetBgEvents(){return fBgEvents;}      // number of background events 
+
+  Double_t GetAllEvents(){return fAllEvents;}             // number of corrected events 
+  Double_t GetAllEventsZRange(){return fAllEventsZRange;}       // number of corrected events in z range
+  Double_t GetAllEventsZRangeMult1(){return fAllEventsZRangeMult1;}  // number of corrected events with multiplicity larger 1 in z range
+  Double_t GetAllEventsInBin0ZRange(){return fAllEventsInBin0ZRange;} // number of corrected events in bin0 in z range
+  Double_t GetTrigEffBin0(){return fTrigEffBin0;}                // trigger efficiency
+
+
 protected:
 
   Int_t   fNbinsVz; // number of z bins in the vz histo
@@ -99,9 +110,19 @@ protected:
   TH1F * fHistStatBin0     ; // event stat histogram, created by physiscs selection; used in ComputeNint;
   TH1F * fHistStat         ; // event stat histogram, created by physiscs selection; used in ComputeNint;
 
+  Double_t fInputEvents;   // number of Input Events 
+  Double_t fPhysSelEvents; // number of  Events after Physics Selection 
+  Double_t fBgEvents;            // number of background events 
+
+  Double_t fAllEvents;     // number of corrected events 
+  Double_t fAllEventsZRange;  // number of corrected events in z range
+  Double_t fAllEventsZRangeMult1; // number of corrected events with multiplicity larger 1 in z range
+  Double_t fAllEventsInBin0ZRange; // number of corrected events in bin0 in z range
+  Double_t fTrigEffBin0;  // trigger efficiency in Bin0
+
   static const char * fProcLabel[] ; // labels of the different process types
   
-  ClassDef(AliCollisionNormalization, 3);
+  ClassDef(AliCollisionNormalization, 4);
     
 private:
   AliCollisionNormalization(const AliCollisionNormalization&);

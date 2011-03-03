@@ -36,7 +36,15 @@ AliCollisionNormalization::AliCollisionNormalization() :
   fHistVzData       (0),
   fHistProcTypes    (0),
   fHistStatBin0     (0),
-  fHistStat     (0)
+  fHistStat     (0),
+  fInputEvents(0),   
+  fPhysSelEvents(0),
+  fBgEvents(0),      
+  fAllEvents(0),     
+  fAllEventsZRange(0),
+  fAllEventsZRangeMult1(0), 
+  fAllEventsInBin0ZRange(0),
+  fTrigEffBin0(0)  
 {
 
   // ctor
@@ -68,8 +76,15 @@ AliCollisionNormalization::AliCollisionNormalization(Int_t nbinz, Float_t minz, 
   fHistVzData       (0),
   fHistProcTypes    (0),
   fHistStatBin0     (0),
-  fHistStat     (0)
-
+  fHistStat     (0),
+  fInputEvents(0),   
+  fPhysSelEvents(0),
+  fBgEvents(0),      
+  fAllEvents(0),     
+  fAllEventsZRange(0),
+  fAllEventsZRangeMult1(0), 
+  fAllEventsInBin0ZRange(0),
+  fTrigEffBin0(0)  
 {
 
   // ctor, allows setting binning
@@ -101,7 +116,15 @@ AliCollisionNormalization::AliCollisionNormalization(const char * dataFile, cons
   fHistVzData       (0),
   fHistProcTypes    (0),
   fHistStatBin0     (0),
-  fHistStat     (0)
+  fHistStat     (0),
+  fInputEvents(0),   
+  fPhysSelEvents(0),
+  fBgEvents(0),      
+  fAllEvents(0),     
+  fAllEventsZRange(0),
+  fAllEventsZRangeMult1(0), 
+  fAllEventsInBin0ZRange(0),
+  fTrigEffBin0(0)  
 
 {
 
@@ -281,13 +304,17 @@ Double_t AliCollisionNormalization::ComputeNint() {
   // selection: this allows to crosscheck that all runs were
   // successfully processed (useful if running on grid: you may have a
   // crash without noticing it).
+
+  fInputEvents = fHistStat->GetBinContent(1,1);
+  fPhysSelEvents = fHistStat->GetBinContent( fHistStat->GetNbinsX(),1);
+
   AliInfo(Form("Input Events (No cuts: %d, After Phys. Sel.:%d)",
-	       Int_t(fHistStat->GetBinContent(1,1)),
-	       Int_t(fHistStat->GetBinContent(fHistStat->GetNbinsX(),1)))); // Fixme: will this change with a different trigger scheme?
+	       Int_t(fInputEvents),
+	       Int_t(fPhysSelEvents))); // Fixme: will this change with a different trigger scheme?
 
   // Get or compute BG. This assumes the CINT1B suite
   Double_t triggeredEventsWith0MultWithBG = fHistVzData->Integral(0, fHistVzData->GetNbinsX()+1,1, 1);
-  Double_t bg = 0; // This will include beam gas + accidentals
+  //  Double_t bg = 0; // This will include beam gas + accidentals
   if (fHistStatBin0->GetNbinsY() > 4) { // FIXME: we need a better criterion to decide...
     AliInfo("Using BG computed by Physics Selection");
     // WARNING
@@ -305,8 +332,8 @@ Double_t AliCollisionNormalization::ComputeNint() {
     if(fVerbose > 2) AliInfo(Form("BG Offset: %d",bgOffset));
     
 
-    bg = fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(), bgOffset+AliPhysicsSelection::kStatRowBG);
-    bg += fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),bgOffset+AliPhysicsSelection::kStatRowAcc);
+    fBgEvents = fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(), bgOffset+AliPhysicsSelection::kStatRowBG);
+    fBgEvents += fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),bgOffset+AliPhysicsSelection::kStatRowAcc);
     Int_t cint1B = (Int_t) fHistStatBin0->GetBinContent(fHistStatBin0->GetNbinsX(),1);	
     if (cint1B != Int_t(triggeredEventsWith0MultWithBG)) {
       AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, Int_t(triggeredEventsWith0MultWithBG)));
@@ -319,17 +346,17 @@ Double_t AliCollisionNormalization::ComputeNint() {
     Int_t cint1A = (Int_t) fHistStatBin0->GetBinContent(icol,2);	
     Int_t cint1C = (Int_t) fHistStatBin0->GetBinContent(icol,3);	
     Int_t cint1E = (Int_t) fHistStatBin0->GetBinContent(icol,4);      
-    bg   = cint1A + cint1C-2*cint1E ; // FIXME: to be changed to take into account ratios of events
+    fBgEvents   = cint1A + cint1C-2*cint1E ; // FIXME: to be changed to take into account ratios of events
     if (cint1B != triggeredEventsWith0MultWithBG) {
       AliWarning(Form("Events in bin0 from physics selection and local counter not consistent: %d - %d", cint1B, (Int_t)triggeredEventsWith0MultWithBG));
     }
   }
 
-  Double_t triggeredEventsWith0Mult = triggeredEventsWith0MultWithBG - bg; 
+  Double_t triggeredEventsWith0Mult = triggeredEventsWith0MultWithBG - fBgEvents; 
   if(fVerbose > 0) AliInfo(Form("Measured events with vertex: %d",allEventsWithVertex));
   Double_t bin0 = fHistVzData->Integral(0, fHistVzData->GetNbinsX()+1,
 					1, 1);
-  if(fVerbose > 0) AliInfo(Form("Zero Bin, Meas: %2.2f, BG: %2.2f, Meas - BG: %2.2f", bin0, bg, triggeredEventsWith0Mult)); 
+  if(fVerbose > 0) AliInfo(Form("Zero Bin, Meas: %2.2f, BG: %2.2f, Meas - BG: %2.2f", bin0, fBgEvents, triggeredEventsWith0Mult)); 
 
   // This pointers are here so that I use the same names used in Jan Fiete's code (allows for faster/easier comparison)
 
@@ -375,29 +402,35 @@ Double_t AliCollisionNormalization::ComputeNint() {
   
   
   // Integrate correctedEvents over full z range
-  Double_t allEvents       = correctedEvents->Integral(0, correctedEvents->GetNbinsX()+1,0, correctedEvents->GetNbinsY()+1);
+  fAllEvents       = correctedEvents->Integral(0, correctedEvents->GetNbinsX()+1,0, correctedEvents->GetNbinsY()+1);
   // Integrate correctedEvents over needed z range
-  Double_t allEventsZrange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),
+  fAllEventsZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),
 						       0, correctedEvents->GetNbinsY()+1);
-  
+
+  fAllEventsZRangeMult1 = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange), 
+						    2,correctedEvents->GetNbinsX()+1);
+
+  fAllEventsInBin0ZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),1,1);
+
   if(fVerbose > 1) AliInfo(Form("Results in |Vz| < %3.3f",fZRange));
   if(fVerbose > 1) AliInfo(Form(" Events in Bin0: %2.2f, With > 1 track: %2.2f, All corrected: %2.2f",
-				correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),1,1),
-				correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange), 
-							  2,correctedEvents->GetNbinsX()+1),
-				allEventsZrange));
+				fAllEventsInBin0ZRange,
+				fAllEventsZRangeMult1,
+				fAllEventsZRange));
+
   if(fVerbose > 1) {    
     Int_t nbin = histVzMCTrg->GetNbinsX();
-    AliInfo(Form("Trigger Efficiency in the zero bin: %3.3f", histVzMCTrg->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1) ));
+    fTrigEffBin0 =  histVzMCTrg->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1);
+    AliInfo(Form("Trigger Efficiency in the zero bin: %3.3f", fTrigEffBin0 ));
   }
   
 
-  AliInfo(Form("Number of collisions in full phase space: %2.2f", allEvents));
+  AliInfo(Form("Number of collisions in full phase space: %2.2f", fAllEvents));
 //   effVtxTrig->Draw();
 //   new TCanvas();
 //   correctedEvents->Draw(); // FIXME: debug
 
-  return allEvents;
+  return fAllEvents;
 }
 
 Long64_t AliCollisionNormalization::Merge(TCollection* list)
