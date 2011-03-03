@@ -69,7 +69,7 @@ void AliQuarkoniaAcceptance::Init()
   TFile acceptanceFile(fAcceptanceFileName);
   if ( acceptanceFile.IsOpen() ) {
     char histoname[30];
-    sprintf(histoname,"h%s%sAccep",GetTitle(),GetName());
+    snprintf(histoname,30,"h%s%sAccep",GetTitle(),GetName());
     fAcceptance = (TH2F*) acceptanceFile.Get(histoname);
     if ( !fAcceptance ) {
       AliError(Form("Acceptance data for quarkonia %s and channel %s not found", GetTitle(), GetName() ));
