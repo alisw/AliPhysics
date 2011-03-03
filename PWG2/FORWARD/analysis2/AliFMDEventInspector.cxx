@@ -46,7 +46,7 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHWords(0),
     fHCent(0),
     fLowFluxCut(1000),
-    fMaxVzErr(0.1),
+    fMaxVzErr(0.2),
     fList(0),
     fEnergy(0),
     fField(999), 
@@ -68,7 +68,7 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHWords(0),
     fHCent(0),
     fLowFluxCut(1000),
-    fMaxVzErr(0.1),
+    fMaxVzErr(0.2),
     fList(0),
     fEnergy(0),
     fField(999), 
@@ -344,11 +344,12 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   cent = -10;
   AliCentrality* centObj = const_cast<AliESDEvent*>(event)->GetCentrality();
   if (centObj) {
-    AliInfo(Form("Got centrality object %p with quality %d", centObj, centObj->GetQuality()));
-    centObj->Print();
+    // AliInfo(Form("Got centrality object %p with quality %d", 
+    //              centObj, centObj->GetQuality()));
+    // centObj->Print();
     cent = centObj->GetCentralityPercentileUnchecked("V0M");  
   }
-  AliInfo(Form("Centrality is %f", cent));
+  // AliInfo(Form("Centrality is %f", cent));
   fHCent->Fill(cent);
 
   // Check the FMD ESD data 

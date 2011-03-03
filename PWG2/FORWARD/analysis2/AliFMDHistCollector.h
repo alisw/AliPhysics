@@ -43,8 +43,11 @@ public:
    */
   AliFMDHistCollector(const char* title)
     : TNamed("fmdHistCollector", title), 
-      fNCutBins(1), fCorrectionCut(0.5), 
-      fFirstBins(1), fLastBins(1), fDebug(0)
+      fNCutBins(2), 
+      fCorrectionCut(0.5), 
+      fFirstBins(1), 
+      fLastBins(1), 
+      fDebug(0)
   {}
   /** 
    * Copy constructor 

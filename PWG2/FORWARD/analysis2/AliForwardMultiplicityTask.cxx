@@ -181,6 +181,7 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   // 
   //
   fList = new TList;
+  fList->SetOwner();
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 

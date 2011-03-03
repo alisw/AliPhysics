@@ -90,6 +90,7 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
   ah->AddBranch("AliAODCentralMult", &obj);
   
   fList = new TList();
+  fList->SetOwner();
   PostData(1,fList);
   
 }
