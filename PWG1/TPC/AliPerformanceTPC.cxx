@@ -237,7 +237,7 @@ void AliPerformanceTPC::Init()
 
   fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge/pt:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
   fTPCTrackHisto->SetBinEdges(7,binsPt);
-  fTPCTrackHisto->SetBinEdges(8,binsCOverPt);
+  //fTPCTrackHisto->SetBinEdges(8,binsCOverPt);
 
   fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
   fTPCTrackHisto->GetAxis(1)->SetTitle("chi2PerClust");
