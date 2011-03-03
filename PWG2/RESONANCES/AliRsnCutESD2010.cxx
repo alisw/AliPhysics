@@ -54,6 +54,8 @@ AliRsnCutESD2010::AliRsnCutESD2010
 //
 
    SetMC(isMC);
+   
+   fTPCpar[0] = fTPCpar[1] = fTPCpar[2] = fTPCpar[3] = fTPCpar[4] = 0.0;
 }
 
 //_________________________________________________________________________________________________

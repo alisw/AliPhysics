@@ -68,6 +68,9 @@ AliRsnTOFT0maker::AliRsnTOFT0maker():
    fCalib->LoadCalibPar();
 
    if (AliPID::ParticleMass(0) == 0) new AliPID();
+   
+   Int_t i;
+   for (i = 0; i < 4; i++) fCalculated[i] = 0.0;
 }
 //____________________________________________________________________________
 AliRsnTOFT0maker::AliRsnTOFT0maker(const AliRsnTOFT0maker & t) :

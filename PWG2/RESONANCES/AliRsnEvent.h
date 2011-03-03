@@ -66,7 +66,7 @@ public:
    void             SetLeadingParticle(AliRsnDaughter &leading) {if (fLeading >= 0) SetDaughter(leading, fLeading);}
    Int_t            SelectLeadingParticle(Double_t ptMin = 0.0, AliRsnCutPID *cutPID = 0x0);
    Double_t         GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID = 0x0);
-   Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter reference);
+   Bool_t           GetAngleDistr(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter *reference = 0x0);
 
    // statig getters
    static AliRsnEvent    *GetCurrentEvent1()                                 {return fgRsnEvent1;}

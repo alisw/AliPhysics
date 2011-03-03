@@ -30,6 +30,22 @@ AliRsnMonitorTrack::AliRsnMonitorTrack() :
 //
 // Unique constructor
 //
+
+   Int_t k;
+
+   for (k = 0; k < 2; k++) fDCA[k] = 0.0;
+   for (k = 0; k < 6; k++) fITSmap[k] = 0;
+   for (k = 0; k < AliPID::kSPECIES; k++) {
+      fITSnsigma[k] = 0.0;
+      fTPCnsigma[k] = 0.0;
+      fTOFref   [k] = 0.0;
+      fTOFsigma [k] = 0.0;
+   }
+   for (k = 0; k < 3; k++) {
+      fPsim[k] = 0.0;
+      fPrec[k] = 0.0;
+      fPtpc[k] = 0.0;
+   }
 }
 
 AliRsnMonitorTrack::AliRsnMonitorTrack(const AliRsnMonitorTrack& copy) :
