@@ -1043,8 +1043,7 @@ Bool_t AliStack::IsPhysicalPrimary(Int_t index)
 // 
 // Check if it comes from a pi0 decay
 //
-// What about the pi0 Dalitz ??
-//	if ((mpdg == kPi0) && (imo < GetNprimary())) return kTRUE; 
+	if ((mpdg == kPi0) && (imo < GetNprimary()))   return kTRUE; 
 
 // Check if this is a heavy flavor decay product
 	Int_t mfl  = Int_t (mpdg / TMath::Power(10, Int_t(TMath::Log10(mpdg))));
