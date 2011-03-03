@@ -37,7 +37,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
     fFirstEvent(true),
     fEventInspector(),
     fEnergyFitter(),
-    fList(0)
+    fList(0),
+    fbLow(0),
+    fbHigh(100)
 {
   // 
   // Constructor
@@ -70,7 +72,9 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const AliFMDEnergyFitterTask& o)
     fFirstEvent(o.fFirstEvent),
     fEventInspector(o.fEventInspector),
     fEnergyFitter(o.fEnergyFitter),
-    fList(o.fList) 
+    fList(o.fList),
+    fbLow(o.fbLow),
+    fbHigh(o.fbHigh)
 {
   // 
   // Copy constructor 
@@ -101,6 +105,8 @@ AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
   fEventInspector    = o.fEventInspector;
   fEnergyFitter      = o.fEnergyFitter;
   fList              = o.fList;
+  fbLow              = o.fbLow;
+  fbHigh             = o.fbHigh;
 
   return *this;
 }
@@ -181,7 +187,6 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   AliMCEvent* mcevent = MCEvent();
   if(mcevent) {
     AliHeader* header            = mcevent->Header();
-    AliGenEventHeader* genHeader = header->GenEventHeader();
     AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(header->GenEventHeader());
     if(hijingHeader) {
       Float_t b = hijingHeader->ImpactParameter();
