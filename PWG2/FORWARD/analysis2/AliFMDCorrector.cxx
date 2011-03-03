@@ -24,9 +24,9 @@ AliFMDCorrector::AliFMDCorrector()
   : TNamed(), 
     fRingHistos(),
     fUseSecondaryMap(true),
-    fUseVertexBias(true),
+    fUseVertexBias(false),
     fUseAcceptance(true),
-    fUseMergingEfficiency(true),
+    fUseMergingEfficiency(false),
     fDebug(0)
 {
   // Constructor
@@ -37,9 +37,9 @@ AliFMDCorrector::AliFMDCorrector(const char* title)
   : TNamed("fmdCorrector", title), 
     fRingHistos(), 
     fUseSecondaryMap(true),
-    fUseVertexBias(true),
+    fUseVertexBias(false),
     fUseAcceptance(true),
-    fUseMergingEfficiency(true),
+    fUseMergingEfficiency(false),
     fDebug(0)
 {
   // Constructor 

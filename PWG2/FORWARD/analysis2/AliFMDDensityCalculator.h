@@ -107,6 +107,21 @@ public:
    */
   void SetMaxParticles(UShort_t m) { fMaxParticles = m; }  
   /** 
+   * Set whether to use poisson statistics to estimate the 
+   * number of particles that has hit within a region.  If this is true, 
+   * then the average charge particle density is given by 
+   * @f[
+   *  \lamda = -\log\left(\frac{N_e}{N_t}\right)
+   * @f]
+   * where $N_e$ is the number of strips within the region that has no
+   * hits over threshold, and $N_t$ is the total number of strips in the 
+   * region/ 
+   * 
+   * @param u Whether to use poisson statistics to estimate the 
+   * number of particles that has hit within a region.
+   */
+  void SetUsePoisson(Bool_t u) { fUsePoisson = u; }
+  /** 
    * Set the lower multiplicity cut.  This overrides the setting in
    * the energy loss fits.
    * 
@@ -256,6 +271,12 @@ protected:
      */
     ~RingHistos();
     /** 
+     * Initialize the object 
+     * 
+     * @param eAxis 
+     */
+    void Init(const TAxis& eAxis);
+    /** 
      * Make output 
      * 
      * @param dir Where to put it 
@@ -274,6 +295,10 @@ protected:
     TProfile* fEtaVsM;       // Average corrected Nch vs eta
     TProfile* fCorr;         // Average correction vs eta
     TH2D*     fDensity;      // Distribution inclusive Nch
+    TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
+    TH2D*     fTotalStrips;  //! Total number of strips in a region
+    TH2D*     fEmptyStrips;  //! Total number of strips in a region
+    TH2D*     fEmptyVsTotal; // # of empty strips vs total number of strips 
     ClassDef(RingHistos,1);
   };
   /** 
@@ -292,6 +317,7 @@ protected:
   TH1D*    fWeightedSum;   //  Histogram
   TH1D*    fCorrections;   //  Histogram
   UShort_t fMaxParticles;  //  Maximum particle weight to use 
+  Bool_t   fUsePoisson;    //  If true, then use poisson statistics 
   TH1D*    fAccI;          //  Acceptance correction for inner rings
   TH1D*    fAccO;          //  Acceptance correction for outer rings
   TArrayI  fFMD1iMax;      //  Array of max weights 
@@ -301,7 +327,7 @@ protected:
   TArrayI  fFMD3oMax;      //  Array of max weights 
   Int_t    fDebug;         //  Debug level 
 
-  ClassDef(AliFMDDensityCalculator,1); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,2); // Calculate Nch density 
 };
 
 #endif
