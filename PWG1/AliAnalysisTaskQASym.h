@@ -65,6 +65,7 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F        *fEtaPt;          // eta over pt 
   TH1F        *fQPt;            // charge over pt 
   TH1F        *fDca;            // distance of closest approach
+  TH1F        *fDcaZ;            // distance of closest approach
   TH1F        *fqRec;           // reconstrcuted charge
   TH1F        *fSigmaPtHist;    // sigma_pT
 
@@ -123,9 +124,6 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH1F * fVx;                  // x of first track point
   TH1F * fVy;                  // y of first track point
   TH1F * fVz;                  // z of first track point
-  TH1F * fVertexX;             // x of vertex
-  TH1F * fVertexY;             // y of vertex
-  TH1F * fVertexZ;             // z of vertex
   TH1F * fNVertexSPD;          //number of vertices SPD
   TH1F * fNVertexTracks;       //number of vertices of Tracks
 
@@ -185,6 +183,11 @@ class AliAnalysisTaskQASym : public AliAnalysisTaskSE {
   TH2F        *fITSlayerPhi;            // ITS layer vs phi
 
   AliESDtrackCuts* fCuts;               // List of cuts
+
+  // four different vertex types: primary, spd, tracks, tpc
+  TH1F * fVertexX[4];             // x of vertex
+  TH1F * fVertexY[4];             // y of vertex
+  TH1F * fVertexZ[4];             // z of vertex
 
   // sectors of TPC 
   TH1F        *fRecPtTpcSector[18];     //pt for TPC sectors
