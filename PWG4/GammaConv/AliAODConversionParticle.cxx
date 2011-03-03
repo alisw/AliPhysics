@@ -20,11 +20,10 @@
 ////////////////////////////////////////////////
 
 #include "AliAODConversionParticle.h"
-//#include "AliAODv0.h"
 #include "AliStack.h"
 #include "AliESDEvent.h"
-//#include "AliESDtrack.h"
 #include "TParticle.h"
+#include <iostream>
 
 class AliAODv0;
 class AliESDtrack;
@@ -39,7 +38,7 @@ AliAODConversionParticle::AliAODConversionParticle() :
   AliAODPhoton(),
   fChi2(0),
   fIMass(0), 
-//fTagged(kFALSE),
+  fTagged(kFALSE),
   fMCStack(NULL),
   fESDEvent(NULL)
 {
@@ -52,7 +51,7 @@ AliAODConversionParticle::AliAODConversionParticle(TLorentzVector & momentum) :
   AliAODPhoton(momentum),
   fChi2(-1),
   fIMass(-1), 
-//fTagged(kFALSE),
+  fTagged(kFALSE),
   fMCStack(NULL),
   fESDEvent(NULL)
 {
@@ -61,18 +60,59 @@ AliAODConversionParticle::AliAODConversionParticle(TLorentzVector & momentum) :
   fLabel[1] = -1;
 }
 
-AliAODConversionParticle::~AliAODConversionParticle() {
-  
-  ///destructor
+AliAODConversionParticle::AliAODConversionParticle(AliGammaConversionAODObject *obj):
+  AliAODPhoton(obj->Px(),obj->Py(),obj->Pz(),obj->E()),
+  fChi2(0),
+  fIMass(0), 
+  fTagged(kFALSE),
+  fMCStack(NULL),
+  fESDEvent(NULL)
+{
+
+    fIMass=obj->IMass();
+ 
+ //  fIMass=obj->M();
+    //Default constructor
+  fLabel[0] = obj->GetLabel1();
+  fLabel[1] = obj->GetLabel2();
 
 }
 
+AliAODConversionParticle::AliAODConversionParticle(AliKFParticle * gammakf,Int_t label1,Int_t label2):
+  AliAODPhoton(gammakf->Px(),gammakf->Py(),gammakf->Pz(), gammakf->E()),
+  fChi2(0),
+  fIMass(0), 
+  fTagged(kFALSE),
+  fMCStack(NULL),
+  fESDEvent(NULL)
+{
+  
+     fLabel[0] = label1;
+     fLabel[1] = label2;
+
+     fIMass=gammakf->GetMass();
+
+    
+}
+
+
+
+AliAODConversionParticle::AliAODConversionParticle(AliAODConversionParticle *y1,AliAODConversionParticle *y2):
+  AliAODPhoton(y1->Px()+y2->Px(),y1->Py()+y2->Py(),y1->Pz()+y2->Pz(),y1->E()+y2->E()),
+  fChi2(0),
+  fIMass(0), 
+  fTagged(kFALSE),
+  fMCStack(NULL),
+  fESDEvent(NULL)
+{
+    fIMass=M();
+}
 
 AliAODConversionParticle::AliAODConversionParticle(const AliAODConversionParticle & original) :
   AliAODPhoton(original),
   fChi2(original.fChi2),
   fIMass(original.fIMass),
-  //fTagged(original.fTagged),
+  fTagged(original.fTagged),
   fMCStack(original.fMCStack),
   fESDEvent(original.fESDEvent)
 {
@@ -160,3 +200,13 @@ Int_t AliAODConversionParticle::GetElectronMCLabel2() const{
   
   return -1;
 }
+
+///_________________________________________________________
+Bool_t AliAODConversionParticle::IsMySpawn(const Int_t trackId, const Int_t nSpawn, const Int_t * const spawnList) const {
+  for(int iSpawn = 0; iSpawn < nSpawn; iSpawn++) {
+    //cout << spawnList[iSpawn] << endl;;
+    if(spawnList[iSpawn] == trackId) return kTRUE;
+  }
+  return kFALSE;
+}
+

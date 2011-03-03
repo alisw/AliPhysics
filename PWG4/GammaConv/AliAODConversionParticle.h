@@ -15,6 +15,8 @@ class AliStack;
 class AliESDEvent;
 #include "TMath.h"
 #include "AliAODPhoton.h"
+#include "AliGammaConversionAODObject.h"
+#include "AliKFParticle.h"
 
 class AliAODConversionParticle : public AliAODPhoton {
 
@@ -23,13 +25,19 @@ class AliAODConversionParticle : public AliAODPhoton {
   //Constructors
   AliAODConversionParticle();    
   AliAODConversionParticle(TLorentzVector& momentum); 
+  AliAODConversionParticle(AliGammaConversionAODObject *obj);
+  AliAODConversionParticle(AliKFParticle * gammakf, Int_t label1, Int_t label2);
+
+  //Constructor Mother Particle
+  AliAODConversionParticle(AliAODConversionParticle *y1,AliAODConversionParticle *y2);
+
   //Copy Constructor
   AliAODConversionParticle(const AliAODConversionParticle & g);           
   //assignment operator
   AliAODConversionParticle & operator = (const AliAODConversionParticle & g);
 
   //Destructor
-  virtual ~AliAODConversionParticle();
+  virtual ~AliAODConversionParticle() {;}
 
   ///Set the Chi2 of reconstructed conversion gamma
   void SetChi2(Float_t chi2) {fChi2 = chi2;}
@@ -43,7 +51,7 @@ class AliAODConversionParticle : public AliAODPhoton {
   void SetIMass(Float_t im) { fIMass = im; }
 
   ///Set the tag for decay meson
-  //void SetTag( Bool_t tagged ) { fTagged = tagged; }
+  void SetTag( Bool_t tagged ) { fTagged = tagged; }
 
   ///Set pointer to MC stack
   void SetStack(AliStack* const stack){fMCStack=stack;}
@@ -63,10 +71,7 @@ class AliAODConversionParticle : public AliAODPhoton {
   Int_t GetTrackLabel(Int_t i) const {return fLabel[i];}
   void  GetTrackLabels(Int_t * labels) { labels[0] = fLabel[0]; labels[1] = fLabel[1];} 
 
-
-  
   Int_t GetMCLabel(Int_t Label) const;
-
 
   /* This function returns the Gamma MC label */
   Int_t GetGammaMCLabel() const;
@@ -79,16 +84,18 @@ class AliAODConversionParticle : public AliAODPhoton {
   Int_t GetElectronMCLabel1() const;
   Int_t GetElectronMCLabel2() const;
 
+  Bool_t IsMySpawn(const Int_t trackId, const Int_t nSpawn, const Int_t * const spawn) const;
+
  private:
 
   Int_t fLabel[2];
   Float_t fChi2; // Chi sq of reconstructed mother
   Float_t fIMass; //Invariant mass, 0 for photons
-  //Bool_t fTagged; // Is it tagged as decay pion (only for gammas)
+  Bool_t fTagged; // Is it tagged as decay pion (only for gammas)
   AliStack* fMCStack; //!transient pointer to the mc stack
   AliESDEvent * fESDEvent; //!transient pointer to the esdevent
 
-  ClassDef(AliAODConversionParticle,1)
+  ClassDef(AliAODConversionParticle,2)
 };
 
 
