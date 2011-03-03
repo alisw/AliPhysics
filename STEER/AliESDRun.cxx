@@ -180,15 +180,17 @@ AliESDRun::~AliESDRun() {
 
 void AliESDRun::SetDiamond(const AliESDVertex *vertex) {
   // set the interaction diamond
-  fDiamondXY[0]=vertex->GetXv();
-  fDiamondXY[1]=vertex->GetYv();
-  fDiamondZ=vertex->GetZv();
-  Double32_t cov[6];
-  vertex->GetCovMatrix(cov);
-  fDiamondCovXY[0]=cov[0];
-  fDiamondCovXY[1]=cov[1];
-  fDiamondCovXY[2]=cov[2];
-  fDiamondSig2Z=cov[5];
+  if (vertex) {
+    fDiamondXY[0]=vertex->GetXv();
+    fDiamondXY[1]=vertex->GetYv();
+    fDiamondZ=vertex->GetZv();
+    Double32_t cov[6];
+    vertex->GetCovMatrix(cov);
+    fDiamondCovXY[0]=cov[0];
+    fDiamondCovXY[1]=cov[1];
+    fDiamondCovXY[2]=cov[2];
+    fDiamondSig2Z=cov[5];
+  }
 }
 
 

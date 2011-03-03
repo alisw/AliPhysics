@@ -1217,7 +1217,7 @@ Bool_t AliReconstruction::LoadTriggerScalersCDB()
        AliInfo("Found an AliTriggerRunScalers in GRP/CTP/Scalers, reading it");
        fRunScalers = dynamic_cast<AliTriggerRunScalers*> (entry->GetObject());
        entry->SetOwner(0);
-       if (fRunScalers->CorrectScalersOverflow() == 0) AliInfo("32bit Trigger counters corrected for overflow");
+       if (fRunScalers && (fRunScalers->CorrectScalersOverflow() == 0)) AliInfo("32bit Trigger counters corrected for overflow");
 
   }
   return kTRUE;
@@ -1256,7 +1256,7 @@ Bool_t AliReconstruction::ReadIntensityInfoCDB()
     AliLHCData* dipData = dynamic_cast<AliLHCData*> (entry->GetObject());
     for (int ib=2;ib--;) {
       double intI,intNI;
-      if (dipData->GetMeanIntensity(ib,intI,intNI)>=0) {
+      if (dipData && (dipData->GetMeanIntensity(ib,intI,intNI)>=0)) {
 	fBeamInt[ib][0] = intI;
 	fBeamInt[ib][1] = intNI;	
       }
@@ -2176,8 +2176,9 @@ void AliReconstruction::SlaveTerminate()
    TPair* pair = 0;	 
    while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
          TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
-         TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());	 
-         cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+         TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+	 if (keyStr && valStr)
+	   cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
    }	 
  	 
    TList *cdbListCopy = new TList();	 
@@ -2355,7 +2356,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     loader->UnloadRecPoints();
     AliSysInfo::AddStamp(Form("LRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
   }
-  IsSelected("CTP", detStr);
+  if (!IsSelected("CTP", detStr)) AliDebug(10,"No CTP");
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s",
                   detStr.Data()));
@@ -2851,7 +2852,7 @@ Bool_t AliReconstruction::FillESD(AliESDEvent*& esd, const TString& detectors)
     }
   }
   
-  IsSelected("CTP", detStr);
+  if (!IsSelected("CTP", detStr)) AliDebug(10,"No CTP");
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
     AliError(Form("the following detectors were not found: %s", 
                   detStr.Data()));
@@ -3128,8 +3129,10 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
       
   if (fRecoParam.GetDetRecoParamArray(iDet) && !AliReconstructor::GetRecoParam(iDet)) {
     const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
-    reconstructor->SetRecoParam(par);
-    reconstructor->SetRunInfo(fRunInfo);
+    if (reconstructor) {
+      reconstructor->SetRecoParam(par);
+      reconstructor->SetRunInfo(fRunInfo);
+    }
   }
   return reconstructor;
 }
