@@ -456,7 +456,7 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID)
 
 //_____________________________________________________________________________
 Bool_t AliRsnEvent::GetAngleDistr
-(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter leading)
+(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter *ref)
 {
 //
 // Takes the leading particle and computes the mean and RMS
@@ -464,6 +464,9 @@ Bool_t AliRsnEvent::GetAngleDistr
 // with respect to the direction of leading particle.
 //
 
+   AliRsnDaughter leading;
+   if (ref) leading = *ref;
+   else if (fLeading >= 0) SetDaughter(leading, fLeading, AliRsnDaughter::kTrack);
    if (!leading.IsOK()) return kFALSE;
 
    Int_t i, count, nTracks = fRef->GetNumberOfTracks();
@@ -651,12 +654,16 @@ Bool_t AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
       Int_t        ln = TMath::Abs(tn->GetLabel());
       // loop on array to find MC daughters
       AliAODMCParticle *pp = 0x0, *pn = 0x0;
+      Int_t ipp = -1, ipn = -1;
       TObjArrayIter next(mcArray);
       AliAODMCParticle *part = 0x0;
       while ((part = (AliAODMCParticle*)next())) {
-         if (TMath::Abs(part->GetLabel()) == lp) pp = (AliAODMCParticle*)mcArray->IndexOf(part);
-         if (TMath::Abs(part->GetLabel()) == ln) pn = (AliAODMCParticle*)mcArray->IndexOf(part);
+         if (TMath::Abs(part->GetLabel()) == lp) ipp = mcArray->IndexOf(part);
+         if (TMath::Abs(part->GetLabel()) == ln) ipn = mcArray->IndexOf(part);
       }
+      if (ipp >= 0) pp = (AliAODMCParticle*)mcArray->At(ipp);
+      if (ipn >= 0) pn = (AliAODMCParticle*)mcArray->At(ipn);
+      if (!pp || !pn) return kTRUE;
       // assign a MC reference and a label only to true V0s
       if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) out.SetLabel(pp->GetMother());
    }

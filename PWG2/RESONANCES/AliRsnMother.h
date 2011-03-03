@@ -25,7 +25,7 @@ public:
    TLorentzVector&   Sum()                                    {return fSum;}
    TLorentzVector&   SumMC()                                  {return fSumMC;}
    
-   Double_t          AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE) const {return fSum.Angle(track.P(mc).Vect());}
+   Double_t          AngleTo(AliRsnDaughter *track, Bool_t mc = kFALSE) const {if (track) return fSum.Angle(track->P(mc).Vect()); return -99.0;}
    Double_t          CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
 
    Bool_t            IsLabelEqual() const {return abs(fDaughter[0]->GetLabel()) == abs(fDaughter[1]->GetLabel());}
