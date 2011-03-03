@@ -39,7 +39,7 @@ ClassImp(AliAnalysisTaskQASym)
     ,fTrackType(0)
     ,fStandAlone(0)
     ,fLow(0)
-    ,fHigh(100000)
+    ,fHigh(100)
     ,fFieldOn(kTRUE)
     ,fHists(0)
     ,fHistRECpt(0)
@@ -52,6 +52,7 @@ ClassImp(AliAnalysisTaskQASym)
     ,fEtaPt(0)
     ,fQPt(0)
     ,fDca(0)
+    ,fDcaZ(0)
     ,fqRec(0)
     ,fSigmaPtHist(0)
     
@@ -106,9 +107,6 @@ ClassImp(AliAnalysisTaskQASym)
     ,fVx(0)
     ,fVy(0)
     ,fVz(0)
-    ,fVertexX(0)
-    ,fVertexY(0)
-    ,fVertexZ(0)
     ,fNVertexSPD(0)
     ,fNVertexTracks(0)
     ,fRecDcaPosPhi(0)
@@ -170,6 +168,12 @@ ClassImp(AliAnalysisTaskQASym)
 
 {
   // Constructor
+  for(Int_t i = 0;i<4;++i){
+    fVertexX[i]=0;
+    fVertexY[i]=0;
+    fVertexZ[i]=0;
+  }
+
   for(Int_t i = 0;i<18;++i){
     fRecPtTpcSector[i] = 0;
     fRecEtaTpcSector[i] = 0;
@@ -288,15 +292,6 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fVz   = new TH1F("fVz", 
 		   "Z of first track point",
 		   200, -50., 50.);
-  fVertexX   = new TH1F("fVertexX", 
-			"X of vertex",
-			100, -1., 1.);
-  fVertexY   = new TH1F("fVertexY", 
-			"Y of vertex",
-			100, -1., 1.);
-  fVertexZ   = new TH1F("fVertexZ", 
-			"Z of vertex",
-			200, -50., 50.);
   fNVertexSPD   = new TH1F("fNVertexSPD", 
 			"Number of SPD vertices",
 			10, -0.5, 9.5);
@@ -316,6 +311,8 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 		    " dca ",
 		    200,  -range*(1+Int_t(fTrackType/2)*9), range*(1+Int_t(fTrackType/2)*9));
 
+  fDcaZ   = new TH1F("fDcaZ", "fDcaZ ",200,  -range*50*(1+Int_t(fTrackType/2)*9), range*50*(1+Int_t(fTrackType/2)*9));
+
 
   fqRec    = new TH1F("fqRec",   
 		      " charge all reconstructed particle",
@@ -326,7 +323,25 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
 			 200, -4., 8.);
 
 
-
+  TString lable[4]={"", "SPD", "Track", "TPC"};
+  for(Int_t i=0;i<4;i++){
+    fVertexX[i]   = new TH1F(Form("fVertexX%s",lable[i].Data()),
+			     Form("fVertexX%s",lable[i].Data()),
+			     100, -1., 1.);
+    fVertexY[i]   = new TH1F(Form("fVertexY%s",lable[i].Data()),
+			     Form("fVertexY%s",lable[i].Data()),
+			     100, -1., 1.);
+    if(i==1 || i==2){
+      fVertexZ[i]   = new TH1F(Form("fVertexZ%s",lable[i].Data()),
+			       Form("fVertexZ%s",lable[i].Data()),
+			       200, -5., 5.);
+    }
+    else{
+      fVertexZ[i]   = new TH1F(Form("fVertexZ%s",lable[i].Data()),
+			       Form("fVertexZ%s",lable[i].Data()),
+			       200, -50., 50.);
+    }
+  }
 
   //------------
   for(Int_t ITSlayer_case=0;ITSlayer_case<7;ITSlayer_case++){
@@ -918,15 +933,13 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fVx);
   fHists->Add(fVy);
   fHists->Add(fVz);
-  fHists->Add(fVertexX);
-  fHists->Add(fVertexY);
-  fHists->Add(fVertexZ);
   fHists->Add(fNVertexSPD);
   fHists->Add(fNVertexTracks);
 
   fHists->Add(fEtaPt);
   fHists->Add(fQPt);
   fHists->Add(fDca);
+  fHists->Add(fDcaZ);
 
   fHists->Add(fDeltaPhiAll);
   fHists->Add(fDeltaPhiLeading);
@@ -961,7 +974,11 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   fHists->Add(fRecDPosEta);
   fHists->Add(fRecDNegEta);
 
-
+  for(Int_t i=0;i<4;i++){
+    fHists->Add(fVertexX[i]);
+    fHists->Add(fVertexY[i]);
+    fHists->Add(fVertexZ[i]);
+  }
   for(Int_t i=0;i<18;i++){
     fHists->Add(fRecPtTpcSector[i]);
     fHists->Add(fRecEtaTpcSector[i]);
@@ -1115,18 +1132,53 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   fNVertexSPD->Fill(nPileSPDVertices);
   fNVertexTracks->Fill(nPileTrkVertices);
 
-  
   //check primary vertex
-  const AliVVertex* vertex = event->GetPrimaryVertex();
-  if(vertex->GetNContributors()==0) return;
-  Float_t vx = vertex->GetX();
-  Float_t vy = vertex->GetY();
-  Float_t vz = vertex->GetZ();
-  
-  fVertexX->Fill(vx);
-  fVertexY->Fill(vy);
-  fVertexZ->Fill(vz);
+  Float_t vx = 0;
+  Float_t vy = 0;
+  Float_t vz = 0;
 
+  //primary vertex: contribution from different vertexers
+  const AliVVertex* vertex = event->GetPrimaryVertex();
+  if(vertex){
+    vx = vertex->GetX();
+    vy = vertex->GetY();
+    vz = vertex->GetZ();
+    if(vertex->GetNContributors()>0){
+      fVertexX[0]->Fill(vx);
+      fVertexY[0]->Fill(vy);
+      fVertexZ[0]->Fill(vz);     
+    }
+  }
+  
+  const AliVVertex* vertexSPD = esd->GetPrimaryVertexSPD();
+  if(vertexSPD){
+    if(vertexSPD->GetNContributors()>0){
+      fVertexX[1]->Fill(vertexSPD->GetX());
+      fVertexY[1]->Fill(vertexSPD->GetX());
+      fVertexZ[1]->Fill(vertexSPD->GetX());
+    }
+  }
+
+  const AliVVertex* vertexTrack = esd->GetPrimaryVertexTracks();
+  if(vertexTrack){
+    if(vertexTrack->GetNContributors()>0){
+      fVertexX[2]->Fill(vertexTrack->GetX());
+      fVertexY[2]->Fill(vertexTrack->GetX());
+      fVertexZ[2]->Fill(vertexTrack->GetX());
+    }
+  }
+
+  const AliVVertex* vertexTPC = esd->GetPrimaryVertexTPC();
+  if(vertexTPC){
+    if(vertexTPC->GetNContributors()>0){
+      fVertexX[3]->Fill(vertexTPC->GetX());
+      fVertexY[3]->Fill(vertexTPC->GetX());
+      fVertexZ[3]->Fill(vertexTPC->GetX());
+    }
+  }
+
+  //cuts on general vertex
+  if(vertex->GetNContributors()<1) return;
   if (TMath::Abs(vz) > 10.) return;
 
   fNumber->Fill(event->GetNumberOfTracks());
@@ -1312,7 +1364,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
     tpcP->GetImpactParameters(fXY,fZ);
     fDiffDcaD->Fill(fSignedDca+fXY);
-
+    fDcaZ->Fill(fZ);
+    
     if(fTrackType==2) fCompareTPCparam->Fill(fZ,tpcPin->GetTgl());
 
     if(fTrackType!=2){//for global and ITS tracks
