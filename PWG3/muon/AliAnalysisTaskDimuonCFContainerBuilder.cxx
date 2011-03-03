@@ -358,6 +358,10 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
   
       AliESDEvent *fESD; 
       AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+      if ( ! esdH ) {
+        AliError("Cannot get input event handler");
+        return;
+      }  
       fESD = esdH->GetEvent();
       Int_t mult1 = fESD->GetNumberOfMuonTracks() ;
 

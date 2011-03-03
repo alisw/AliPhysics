@@ -362,29 +362,29 @@ void AliAnalysisTaskLinkToMC::UserCreateOutputObjects()
 	Double_t minY = -4.;
 	Double_t maxY = -2.4;
 	
-	sprintf(name, "findableTracksHist");
-	sprintf(title, "Findable tracks");
+	snprintf(name, 1024, "findableTracksHist");
+	snprintf(title, 1024, "Findable tracks");
 	fFindableHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFindableHist->SetXTitle("p_{T} [GeV/c]");
 	fFindableHist->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFindableHist);
 	
-	sprintf(name, "foundTracksHistMC");
-	sprintf(title, "Found tracks (filled with Monte Carlo kinematic information)");
+	snprintf(name, 1024, "foundTracksHistMC");
+	snprintf(title, 1024, "Found tracks (filled with Monte Carlo kinematic information)");
 	fFoundHistMC = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFoundHistMC->SetXTitle("p_{T} [GeV/c]");
 	fFoundHistMC->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFoundHistMC);
 	
-	sprintf(name, "foundTracksHist");
-	sprintf(title, "Found tracks (filled with reconstructed kinematic information)");
+	snprintf(name, 1024, "foundTracksHist");
+	snprintf(title, 1024, "Found tracks (filled with reconstructed kinematic information)");
 	fFoundHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFoundHist->SetXTitle("p_{T} [GeV/c]");
 	fFoundHist->SetYTitle("Rapidity (Y)");
 	fHistos->Add(fFoundHist);
 	
-	sprintf(name, "fakeTracksHist");
-	sprintf(title, "Fake tracks");
+	snprintf(name, 1024, "fakeTracksHist");
+	snprintf(title, 1024, "Fake tracks");
 	fFakeHist = new TH2D(name, title, nBinsX, minX, maxX, nBinsY, minY, maxY);
 	fFakeHist->SetXTitle("p_{T} [GeV/c]");
 	fFakeHist->SetYTitle("Rapidity (Y)");
@@ -574,6 +574,11 @@ void AliAnalysisTaskLinkToMC::CreateAODTracks(TMap& links)
 	
 	// ESD Muon Filter analysis task executed for each event
 	AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+        // CHECK
+        if ( ! esd ) {
+          AliError("Cannot get input event");
+          return;
+        }  
 	
 	// Define arrays for muons
 	Double_t pos[3];

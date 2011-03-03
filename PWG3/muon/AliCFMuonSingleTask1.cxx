@@ -222,6 +222,10 @@ void AliCFMuonSingleTask1::UserExec(Option_t *)
   AliESDEvent *fESD; 
   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*>
       (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  if ( ! esdH) {
+    AliError("Cannot get input event handler");    
+    return;
+  }    
   fESD = esdH->GetEvent();
 
 // trigger 
@@ -347,6 +351,10 @@ void AliCFMuonSingleTask1::Terminate(Option_t *)
   // project pt (var[3]) from the two steps MC(0) and ESD(1)
 
     AliCFContainer *cont = dynamic_cast<AliCFContainer*> (GetOutputData(2));
+    if ( ! cont ) {
+      AliError("Cannot find container in file");
+      return;
+    }
 
     TH1D *kpt = cont->ShowProjection(16,0);
     TH1D *rpt = cont->ShowProjection(16,1);
