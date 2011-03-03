@@ -32,7 +32,7 @@
 //====================================================================
 AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name) 
   : AliAnalysisTaskSE(name), 
-    fEnableLowFlux(true), 
+    fEnableLowFlux(false), 
     fFirstEvent(true),
     fCorrManager(0)
 {

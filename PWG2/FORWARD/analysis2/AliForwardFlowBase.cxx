@@ -51,6 +51,7 @@ Bool_t AliForwardFlowBase::LoopAODFMD(AliAODEvent* AODevent)
   if (!AODFMult) return kFALSE;
   if (!AODCheck(AODFMult)) return kFALSE;
 
+  // Memory leak starts here!
   TH2D* hdNdetadphi = static_cast<TH2D*>(AODFMult->GetHistogram().Clone("d2ndetadphi"));
   TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSE");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSE");
@@ -83,6 +84,7 @@ Bool_t AliForwardFlowBase::LoopAODSPD(AliAODEvent* AODevent)
   AliAODCentralMult* AODCMult = static_cast<AliAODCentralMult*>(AODevent->FindListObject("CentralClusters"));
   if (!AODCMult) return kFALSE;
 
+  // Memory leak starts here! 
   TH2D* hdNdetadphi = static_cast<TH2D*>(AODCMult->GetHistogram().Clone("central"));
   TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSE");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSE");

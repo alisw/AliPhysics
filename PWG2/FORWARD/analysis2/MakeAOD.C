@@ -89,14 +89,14 @@ void MakeAOD(const char* esddir,
   // --- AOD output handler ------------------------------------------
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
-  aodHandler->SetOutputFileName("AliAODs.root");
+  aodHandler->SetOutputFileName("AliAOD.root");
 
   // --- Add tasks ---------------------------------------------------
   // Physics selection 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
 
-#if 1
+#if 0
   // Centrality 
   if (!proof) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");

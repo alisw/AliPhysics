@@ -29,13 +29,16 @@
 #include "AliAODForwardMult.h"
 
 ClassImp(AliForwardFlowTaskQC)
+#if 0
+; // For emacs 
+#endif
 
 AliForwardFlowTaskQC::AliForwardFlowTaskQC()
-: fDebug(0),  		// Debug flag
-  fOutputList(0),	// Output list
-  fAOD(0),		// AOD input event
-  fMC(kFALSE),		// MC flag
-  fEtaBins(20)		// # of eta bins in histograms
+  : fDebug(0),  		// Debug flag
+    fOutputList(0),	// Output list
+    fAOD(0),		// AOD input event
+    fMC(kFALSE),		// MC flag
+    fEtaBins(20)		// # of eta bins in histograms
 {
   // 
   // Default constructor
@@ -222,8 +225,8 @@ void AliForwardFlowTaskQC::UserExec(Option_t */*option*/)
   AliForwardFlowBase* common = new AliForwardFlowBase(fOutputList);
 
   if (!common->LoopAODFMD(fAOD)) return;
-//  else if (!common->LoopAODSPD(fAOD)) return;
-//  if (!common->LoopAODFMDandSPD(fAOD)) return;
+  //  else if (!common->LoopAODSPD(fAOD)) return;
+  //  if (!common->LoopAODFMDandSPD(fAOD)) return;
 
   // Run analysis
   for (Int_t n = 1; n <= 4; n++) {
@@ -242,7 +245,8 @@ void AliForwardFlowTaskQC::UserExec(Option_t */*option*/)
 
 }
 //_____________________________________________________________________
-void AliForwardFlowTaskQC::CumulantsMethod(TString type = "", Int_t harmonic = 2)
+void AliForwardFlowTaskQC::CumulantsMethod(TString type = "", 
+					   Int_t harmonic = 2)
 {
   // 
   // Calculate the Q cumulant of order n
@@ -616,7 +620,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
         d4 += 4.*AvgSin2Psi1Phi2*AvgCos2Phi*AvgSin2Phi;
         d4 += 4.*Avg2p*(TMath::Power(AvgCos2Phi, 2) + TMath::Power(AvgSin2Phi, 2)); 
         d4 -= 6.*(TMath::Power(AvgCos2Phi, 2) - TMath::Power(AvgSin2Phi, 2))
-              *(AvgCos2Psi*AvgCos2Phi-AvgSin2Psi*AvgSin2Phi); 
+	  *(AvgCos2Psi*AvgCos2Phi-AvgSin2Psi*AvgSin2Phi); 
         d4 -= 12.*AvgCos2Phi*AvgSin2Phi*(AvgSin2Psi*AvgCos2Phi+AvgCos2Psi*AvgSin2Phi); 
  
         vTwo4diff = - d4 / TMath::Power(-c4, 0.75);
@@ -657,30 +661,30 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
         Cov2p2np = CovXY(W2pW4pavg2pavg4p, W2pW4p, Avg2p*Avg4p, W2p, W4p);
  
         // Numbers on the side reference term number in paper (cite needed) loosely
-/*1*/ vTwo4diffErr =  TMath::Power(2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p, 2) 
-                      * TMath::Power(sqrtW2sq, 2) * sAvg2sq / (W2*W2);
-/*2*/ vTwo4diffErr += 9. * TMath::Power(2.*Avg2*Avg2p - Avg4p, 2) * TMath::Power(sqrtW4sq, 2)
-                      * sAvg4sq / (16. * W4*W4);
-/*3*/ vTwo4diffErr += 4. * Avg2*Avg2 * TMath::Power(2.*Avg2*Avg2 - Avg4, 2) * TMath::Power(sqrtW2psq, 2)
-                      * sAvg2psq / (W2p*W2p);
-/*4*/ vTwo4diffErr += TMath::Power(2.*Avg2*Avg2 - Avg4, 2) * TMath::Power(sqrtW4psq, 2) * sAvg4psq
-                      / (W4p*W4p);
-/*5*/ vTwo4diffErr -= 1.5 * (2.*Avg2*Avg2p - Avg4p) * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
-                      * W2W4 * Cov24 / (W2*W4);
-/*6*/ vTwo4diffErr -= 4. * Avg2 * (2.*Avg2*Avg2 - Avg4) 
-                      * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
-                      * W2W2p * Cov22p / (W2 * W2p);
-/*7*/ vTwo4diffErr += 2. * (2.*Avg2*Avg2 - Avg4)
-                      * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
-                      * W2W4p * Cov24p / (W2 * W4p);
-/*8*/ vTwo4diffErr += 3.*Avg2*(2.*Avg2*Avg2 - Avg4)*(2.*Avg2*Avg2p - Avg4p)
-                      * W4W2p * Cov42p / (W4*W2p);
-/*9*/ vTwo4diffErr -= 1.5 * (2.*Avg2*Avg2 - Avg4)*(2.*Avg2*Avg2p - Avg4p)
-                      * W4W4p * Cov44p / (W4 * W4p);
-/*10*/vTwo4diffErr -= 4.*Avg2*TMath::Power(2.*Avg2*Avg2 - Avg4, 2)
-                      * W2pW4p * Cov2p2np / (W2p * W4p);
-/*11*/vTwo4diffErr /= TMath::Power(2.*Avg2*Avg2 - Avg4, 3.5);
-      vTwo4diffErr = TMath::Sqrt(vTwo4diffErr);
+	/*1*/ vTwo4diffErr =  TMath::Power(2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p, 2) 
+	  * TMath::Power(sqrtW2sq, 2) * sAvg2sq / (W2*W2);
+	/*2*/ vTwo4diffErr += 9. * TMath::Power(2.*Avg2*Avg2p - Avg4p, 2) * TMath::Power(sqrtW4sq, 2)
+	  * sAvg4sq / (16. * W4*W4);
+	/*3*/ vTwo4diffErr += 4. * Avg2*Avg2 * TMath::Power(2.*Avg2*Avg2 - Avg4, 2) * TMath::Power(sqrtW2psq, 2)
+	  * sAvg2psq / (W2p*W2p);
+	/*4*/ vTwo4diffErr += TMath::Power(2.*Avg2*Avg2 - Avg4, 2) * TMath::Power(sqrtW4psq, 2) * sAvg4psq
+	  / (W4p*W4p);
+	/*5*/ vTwo4diffErr -= 1.5 * (2.*Avg2*Avg2p - Avg4p) * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
+	  * W2W4 * Cov24 / (W2*W4);
+	/*6*/ vTwo4diffErr -= 4. * Avg2 * (2.*Avg2*Avg2 - Avg4) 
+	  * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
+	  * W2W2p * Cov22p / (W2 * W2p);
+	/*7*/ vTwo4diffErr += 2. * (2.*Avg2*Avg2 - Avg4)
+	  * (2.*Avg2*Avg2*Avg2p - 3.*Avg2*Avg4p + 2.*Avg4*Avg2p)
+	  * W2W4p * Cov24p / (W2 * W4p);
+	/*8*/ vTwo4diffErr += 3.*Avg2*(2.*Avg2*Avg2 - Avg4)*(2.*Avg2*Avg2p - Avg4p)
+	  * W4W2p * Cov42p / (W4*W2p);
+	/*9*/ vTwo4diffErr -= 1.5 * (2.*Avg2*Avg2 - Avg4)*(2.*Avg2*Avg2p - Avg4p)
+	  * W4W4p * Cov44p / (W4 * W4p);
+	/*10*/vTwo4diffErr -= 4.*Avg2*TMath::Power(2.*Avg2*Avg2 - Avg4, 2)
+	  * W2pW4p * Cov2p2np / (W2p * W4p);
+	/*11*/vTwo4diffErr /= TMath::Power(2.*Avg2*Avg2 - Avg4, 3.5);
+	vTwo4diffErr = TMath::Sqrt(vTwo4diffErr);
 
         cumulant4Hist->SetBinError(eta, vTwo4diffErr);
       } // End of eta loop
@@ -719,9 +723,9 @@ void AliForwardFlowTaskQC::ProcessPrimary()
   if (fAOD) {
     if (!common->LoopAODmc(fAOD)) return;
     if (!common->LoopAODtrrefHits(fAOD)) return;
-//    if (!common->LoopMCaddptFlow(fAOD)) return;
-//    if (!common->LoopMCaddpdgFlow(fAOD)) return;
-//    if (!common->LoopMCaddetaFlow(fAOD)) return;
+    //    if (!common->LoopMCaddptFlow(fAOD)) return;
+    //    if (!common->LoopMCaddpdgFlow(fAOD)) return;
+    //    if (!common->LoopMCaddetaFlow(fAOD)) return;
   }
 
   // Run analysis on MC truth
@@ -738,7 +742,8 @@ void AliForwardFlowTaskQC::ProcessPrimary()
 
 }
 //_____________________________________________________________________
-Double_t AliForwardFlowTaskQC::VarSQ(Double_t wxx2, Double_t x, Double_t wx, Double_t wxx, Double_t sqrtwx2)
+Double_t AliForwardFlowTaskQC::VarSQ(Double_t wxx2, Double_t x, Double_t wx, 
+				     Double_t wxx, Double_t sqrtwx2)
 {
   //
   // Small function to compute the variance squared - used by Terminte()
@@ -752,7 +757,8 @@ Double_t AliForwardFlowTaskQC::VarSQ(Double_t wxx2, Double_t x, Double_t wx, Dou
   return sx;
 }
 //_____________________________________________________________________
-Double_t AliForwardFlowTaskQC::CovXY(Double_t wxwyxy, Double_t wxwy, Double_t xy, Double_t wx, Double_t wy)
+Double_t AliForwardFlowTaskQC::CovXY(Double_t wxwyxy, Double_t wxwy, 
+				     Double_t xy, Double_t wx, Double_t wy)
 {
   //
   // Small function to compute the covariance between two numbers
