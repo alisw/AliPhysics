@@ -107,6 +107,7 @@ class AliITS : public AliDetector {
    // Trigger
     virtual AliTriggerDetector* CreateTriggerDetector() const;
 
+    AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
     virtual void UpdateInternalGeometry();
     virtual void SDigitsToDigits(Option_t *opt="All");
     virtual void SDigits2Digits(){SDigitsToDigits("All");}
