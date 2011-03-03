@@ -54,39 +54,6 @@ private:
   ClassDef(AliAODpidUtil,1)  // PID calculation class
 };
 
-inline Float_t AliAODpidUtil::NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const {
-  
-  Double_t mom = track->P();
-  AliAODPid *pidObj = track->GetDetPid();
-  UShort_t nTPCClus=pidObj->GetTPCsignalN();
-  if (pidObj)
-    mom = pidObj->GetTPCmomentum();
-  return fTPCResponse.GetNumberOfSigmas(mom,pidObj->GetTPCsignal(),nTPCClus,type); 
-}
-
-inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const {
-  Double_t times[AliPID::kSPECIES];
-  Double_t sigmaTOFPid[AliPID::kSPECIES];
-  AliAODPid *pidObj = track->GetDetPid();
-  pidObj->GetIntegratedTimes(times);
-  pidObj->GetTOFpidResolution(sigmaTOFPid);
-  if (sigmaTOFPid[type]>0) return (pidObj->GetTOFsignal() - times[type])/sigmaTOFPid[type];
-  else return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
-}
-
-inline Float_t AliAODpidUtil::NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const {
-  AliAODPid *pidObj = track->GetDetPid();
-  Float_t dEdx=pidObj->GetITSsignal();
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  Float_t mom=track->P();
-  Bool_t isSA=kTRUE;  
-  if(track->GetTPCNcls()>0) isSA=kFALSE;
-  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA);
-}
 #endif
 
 
