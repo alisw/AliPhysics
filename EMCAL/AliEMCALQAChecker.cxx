@@ -55,20 +55,32 @@ ClassImp(AliEMCALQAChecker)
 AliEMCALQAChecker::AliEMCALQAChecker() : 
 AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
 fTextSM(new TText*[fknSM]),
-fLineCol(new TLine(48.0,0.,48.0,47.0)),
-fLineRow(new TLine(0.,24.,96.,24.)),
+fLineCol(new TLine(47.5,-0.5,47.5,119.5)),
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
   // ctor
   fLineCol->SetLineColor(1);
   fLineCol->SetLineWidth(2);
-  fLineRow->SetLineColor(1);
-  fLineRow->SetLineWidth(2);
 
   fTextSM[0]= new TText(20, 12, "SM A0");
-  fTextSM[1]= new TText(20, 38, "SM A1");
-  fTextSM[2]= new TText(64, 12, "SM C0");
-  fTextSM[3]= new TText(64, 38, "SM C1");
+  fTextSM[1]= new TText(20, 36, "SM A1");
+  fTextSM[2]= new TText(20, 60, "SM A2");
+  fTextSM[3]= new TText(20, 84, "SM A3");
+  fTextSM[4]= new TText(20, 108,"SM A4");
+
+  fTextSM[5]= new TText(64, 12, "SM C0");
+  fTextSM[6]= new TText(64, 36, "SM C1");
+  fTextSM[7]= new TText(64, 60, "SM C2");
+  fTextSM[8]= new TText(64, 84, "SM C3");
+  fTextSM[9]= new TText(64, 108,"SM C4");
+
+	for(int i = 0; i < 4; i++) {
+		fLineRow[i] = new TLine(-0.5,23.5+(24*i),95.5,23.5+(24*i));
+		fLineRow[i]->SetLineColor(1);
+		fLineRow[i]->SetLineWidth(2);
+	}
+
+
 }          
 
 //__________________________________________________________________
@@ -77,7 +89,7 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
 	/// dtor
   delete [] fTextSM ;
   delete fLineCol ;
-  delete fLineRow ;
+  delete []fLineRow ;
   delete fText  ; 
 }
 
@@ -86,25 +98,30 @@ AliEMCALQAChecker::AliEMCALQAChecker(const AliEMCALQAChecker& qac) :
 AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
 fTextSM(new TText*[fknSM]) ,
 fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
-fLineRow(static_cast<TLine*>(qac.fLineRow->Clone())) , 
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
    // copy ctor 
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
+	for(Int_t i = 0 ; i < 4 ; i++) {
 
+		fLineRow[i] = static_cast<TLine*>(qac.fLineRow[i]->Clone()) ; 
+	}
 }   
 //__________________________________________________________________
 AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
 {
   fTextSM  = new TText*[fknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
-  fLineRow = static_cast<TLine*>(qac.fLineRow->Clone()) ; 
   fText    = new TPaveText(0.2,0.7,0.8,0.9,"NDC") ;
   for (Int_t sm = 0 ; sm < fknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
+	for(Int_t i = 0; i < 4; i++) {
+
+		fLineRow[i] = static_cast<TLine*>(qac.fLineRow[i]->Clone()) ; 
+	}
   return *this ;
 }
 
@@ -186,7 +203,9 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       //adding the lines to distinguish different SMs
       if ( hdata->GetListOfFunctions()->GetEntries() == 0 ){
         hdata->GetListOfFunctions()->Add(fLineCol); 
-        hdata->GetListOfFunctions()->Add(fLineRow); 
+				for(Int_t iLine = 0; iLine < 4; iLine++) {
+					hdata->GetListOfFunctions()->Add(fLineRow[iLine]);
+				} 
         //Now adding the text to for each SM
         for(Int_t iSM = 0 ; iSM < fknSM ; iSM++){  //number of SMs loop start
           hdata->GetListOfFunctions()->Add(fTextSM[iSM]); 

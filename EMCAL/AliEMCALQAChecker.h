@@ -79,14 +79,14 @@ private:
 	//TH1F * htemp; //a tempory histrogram for getting the mean and sigma
 	//Double_t fMean; //mean value 
 	//Double_t fWidth; //sigma of the distribution
-  static const Int_t fknSM = 4;    //! number of current SM
+  static const Int_t fknSM = 10;    //! number of current SM
 //  TLine **     fLine       ; //! line to distinguish the different SM
 //  TLine **     fHref       ; //! Line marking the average value for each SM
   TText **    fTextSM        ; //! Text info for each SM
   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
-  TLine *     fLineRow       ; //! line to distinguish the different SM sector 0 and 1 
+  TLine *     fLineRow[4]       ; //! line to distinguish the different SM sectors (0-4) 
   TPaveText * fText          ;  //! Information text for the quality of each SM
-  ClassDef(AliEMCALQAChecker,2)  // description 
+  ClassDef(AliEMCALQAChecker,3)  // description 
 
 };
 
