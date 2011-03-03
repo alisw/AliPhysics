@@ -28,13 +28,13 @@ class AliT0Align : public TObject {
   // reportglob - EDMS number of the survey report
   AliT0Align(const AliT0Align &align); // copy constructor
   AliT0Align &operator = (const AliT0Align &align); //assignment operator
+  virtual   ~AliT0Align();
+  // void SetDebug(Int_t debug){debug=fDebug;}
   Bool_t LoadSurveyData();
   Double_t ComputePosition();
   void CreateAlignObj();
   void Run();
-  void SetDebug(Int_t debug){debug=fDebug;}
   void StoreAlignObj();
-  virtual   ~AliT0Align();
   //
  private:
 

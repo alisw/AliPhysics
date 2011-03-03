@@ -116,7 +116,7 @@ AliT0Align::AliT0Align(const AliT0Align &align) :
   //
   //  copy constructor - dummy
   //
-  fDebug = align.fDebug;
+  // fDebug = align.fDebug;
 }
 //__________________________________________________________________________
 AliT0Align & AliT0Align::operator =(const AliT0Align & align)
@@ -124,7 +124,7 @@ AliT0Align & AliT0Align::operator =(const AliT0Align & align)
   //
   // assignment operator - dummy
   //
-  fDebug=align.fDebug;
+  // fDebug=align.fDebug;
   return (*this);
 }
 
@@ -252,7 +252,7 @@ void AliT0Align::Run()
   //
   // runs the full chain
   //
-  SetDebug(0);
+  // SetDebug(0);
   Bool_t flag = LoadSurveyData();
     if(flag) 
   {

@@ -309,7 +309,7 @@ void AliT0CalibLaserData::ReadData()
   //  start->SetNumberOfTRM(1);
   for (Int_t i0=0; i0<105; i0++)
     {
-      for (Int_t j0=0; j0<50; j0++) allData[i0][j0]=0; 	
+      for (Int_t j0=0; j0<5; j0++) allData[i0][j0]=0; 	
       numberOfHits[i0]=0;
     }
   Int_t event=0;
@@ -317,7 +317,7 @@ void AliT0CalibLaserData::ReadData()
   while (reader->NextEvent()) {
     start->Next();
     for (Int_t i=0; i<105; i++) {
-      for (Int_t iHit=0; iHit<50; iHit++) 
+      for (Int_t iHit=0; iHit<5; iHit++) 
 	{
 	  allData[i][iHit]= start->GetData(i,iHit);
 	  //	  if( allData[i][iHit]>0)	  cout<<i<<" "<<iHit<<" "<<allData[i][iHit]<<endl;
