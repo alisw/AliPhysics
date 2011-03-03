@@ -335,6 +335,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
           Info("UserExec","Matched Track index %d to new cluster %d \n",trackIndex,i);
       }
     }
+    
+    newCluster->SetID(i);
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
   }
   
