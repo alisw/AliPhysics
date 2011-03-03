@@ -141,6 +141,7 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
    // if we arrive here, this means that we have an ESD track
    // and we want to customize the PID
    AliESDtrack *track = daughter->GetRefESDtrack();
+   if (!track) return kFALSE;
    Double_t     w[kDetectors][AliPID::kSPECIES];
    track->GetITSpid(w[kITS]);
    track->GetTPCpid(w[kTPC]);

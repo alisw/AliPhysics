@@ -179,10 +179,10 @@ void AliRsnVAnalysisTask::UserExec(Option_t* opt)
       } else if (fESDEvent[0]) {
          fRsnEvent[0].SetRef(fESDEvent[0]);
          fRsnEvent[0].SetRefMC(fMCEvent[0]);
-      } else if (fAODEventOut) {
+      } else if (fAODEventOut[0]) {
          fRsnEvent[0].SetRef(fAODEventOut[0]);
          fRsnEvent[0].SetRefMC(fAODEventOut[0]);
-      } else if (fAODEventIn) {
+      } else if (fAODEventIn[0]) {
          fRsnEvent[0].SetRef(fAODEventIn[0]);
          fRsnEvent[0].SetRefMC(fAODEventIn[0]);
       } else {
