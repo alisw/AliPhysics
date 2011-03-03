@@ -1,4 +1,4 @@
- AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* AddTaskChargedHadronSpectraITSTruncatedMean(Int_t lowcut=-1,Int_t upcut=-1,Int_t mc=0)
+ AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* AddTaskChargedHadronSpectraITSTruncatedMean(Int_t lowcut=-1,Int_t upcut=-1,Int_t mc=0, TString filename="./configChargedHadronSpectraITSTruncatedMeanTask.C")
 {
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) 
@@ -23,7 +23,7 @@
 	}
 	TString outputFileName = AliAnalysisManager::GetCommonFileName();
 	outputFileName += ":PWG2SpectraITSTPC";
-	gROOT->LoadMacro("./configChargedHadronSpectraITSTruncatedMeanTask.C");
+	gROOT->LoadMacro(filename.Data());
 	AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* task = GetAliAnalysisChargedHadronSpectraITSTruncatedMeanTask(mc);
 	mgr->AddTask(task);
 	Int_t upint=0;
@@ -40,7 +40,7 @@
 	return task;
   }
 
-AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* AddTaskChargedHadronSpectraITSTruncatedMean(Float_t lowcut=0.0,Float_t upcut=100.0,Int_t mc=0, Int_t hi=1)
+AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* AddTaskChargedHadronSpectraITSTruncatedMean(Float_t lowcut,Float_t upcut,Int_t mc=0,TString filename="./configChargedHadronSpectraITSTruncatedMeanTask.C")
 {
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) 
@@ -65,7 +65,7 @@ AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* AddTaskChargedHadronSpectra
 	}
 	TString outputFileName = AliAnalysisManager::GetCommonFileName();
 	outputFileName += ":PWG2SpectraITSTPC";
-	gROOT->LoadMacro("./configChargedHadronSpectraITSTruncatedMeanTask.C");
+	gROOT->LoadMacro(filename.Data());
 	AliAnalysisChargedHadronSpectraITSTruncatedMeanTask* task = GetAliAnalysisChargedHadronSpectraITSTruncatedMeanTask(mc);
 	mgr->AddTask(task);
 	Int_t upint=0;
