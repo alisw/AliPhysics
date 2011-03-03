@@ -180,8 +180,8 @@ void AliT0::MakeBranch(Option_t* option)
   //    R         Make a branch of  AliT0RecPoints
   //
   char branchname[20];
-  sprintf(branchname,"%s",GetName());
-
+  // sprintf(branchname,"%s",GetName());
+  strncpy(branchname, GetName(), 20);
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
   const char *cR = strstr(option,"R");
@@ -280,7 +280,8 @@ void AliT0::MakeBranchInTreeD(TTree *treeD, const char *file)
     //
     const Int_t kBufferSize = 4000;
     char branchname[20];
-    sprintf(branchname,"%s",GetName());
+   strncpy(branchname, GetName(), 20);
+   //   sprintf(branchname,"%s",GetName());
     if(treeD)
      {
        MakeBranchInTree(treeD,  branchname,&fDigits, kBufferSize, file);

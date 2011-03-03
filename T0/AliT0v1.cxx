@@ -41,6 +41,7 @@
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TVirtualMC.h>
+#include <TString.h>
 
 #include "AliLog.h"
 #include "AliMagF.h"
@@ -261,12 +262,14 @@ void AliT0v1::CreateGeometry()
     new TGeoTube("0HOLE", 0, 1.51, 6.5);
     TGeoTranslation *tr [12];
     Double_t angle  = 2 * TMath::Pi() / 12;
-    Char_t nameTr[40];
+    // Char_t nameTr[40];
+    TString nameTr;
     for (Int_t itr=0; itr<12; itr++) {
-      sprintf (nameTr,"0TR%i",itr+1);
+      //      sprintf (nameTr,"0TR%i",itr+1);
+      nameTr = Form("0TR%i",itr+1);
       x = 6.5 * TMath::Sin(itr * angle);
       y = 6.5 * TMath::Cos(itr * angle);
-      tr[itr] = new TGeoTranslation(nameTr,x,y,6.5);
+      tr[itr] = new TGeoTranslation(nameTr.Data(),x,y,6.5);
       tr[itr]->RegisterYourself();
       stlin->AddNode(ins,itr+13,tr[itr]);
     }

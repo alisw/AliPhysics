@@ -66,8 +66,12 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffA[i]=0;
       feffqtc[i]=0;
       feffPhysC[i]=0;
+      feffPhysA[i]=0;
+      feffqtcPhys[i]=0;
+
    }
 }
+
 
 //____________________________________________________________________________ 
 AliT0QADataMakerRec::AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) :
