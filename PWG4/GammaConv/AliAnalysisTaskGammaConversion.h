@@ -75,13 +75,9 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetAODBranchName(TString name)  {fAODBranchName = name ;}	
   void SetForceAOD(Bool_t forceAOD ) { fKFForceAOD = forceAOD; }
   void FillAODWithConversionGammas();
-  void AddToAODBranch(TClonesArray * branch, AliAODPWG4Particle & particle);
-  void AddToAODBranch(TClonesArray * branch, AliGammaConversionAODObject & particle);
-  void AddToAODBranch(TClonesArray * branch, AliAODConversionParticle & particle);
-
-  virtual TString GetOutputAODClassName() const {return fOutputAODClassName;}
-  virtual void SetOutputAODClassName(TString name) {fOutputAODClassName = name; }
-  
+  void AddToAODBranch(TClonesArray * branch, AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2);
+  void AddPionToAOD(AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2);
+  void TagDaughter(Int_t gammaIndex);
   // end AOD
 		
   static Bool_t IsGoodImpPar(const AliESDtrack *const track);
@@ -181,9 +177,6 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   AliAnalysisTaskGammaConversion(const AliAnalysisTaskGammaConversion&); // Not implemented
   AliAnalysisTaskGammaConversion& operator=(const AliAnalysisTaskGammaConversion&); // Not implemented
   
-  /// Add reconstructed pions to aod
-  void AddPionToAOD(AliKFParticle * pionkf, Double_t mass, Int_t daughter1, Int_t daughter2); 
-  void AddOmegaToAOD(const AliKFParticle * const omegakf, Double_t mass, Int_t daughter1, Int_t daughter2); 
 		
   // for CF
   enum{
@@ -300,7 +293,6 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   TClonesArray * fAODPi0; //TTClonesArray for Pi0s to put in AOD
   TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
   TString fAODBranchName; // New AOD branch name
-  TString fOutputAODClassName; //Class to use for the AOD
   Bool_t fKFCreateAOD; //Create the AOD tclones? (regardless if storing or not)
   
   Bool_t fKFForceAOD;  //Set the Analysis Manager FillAOD variable to true every event
