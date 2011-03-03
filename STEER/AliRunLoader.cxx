@@ -1662,7 +1662,7 @@ AliLoader* AliRunLoader::GetDetectorLoader(const char* detname)
 //run loader object
   
   char loadername[256];
-  sprintf(loadername, "%sLoader", detname);
+  snprintf(loadername, 255, "%sLoader", detname);
   AliLoader* loader = GetLoader(loadername);
   if (!loader) {
     AliError(Form("No loader for %s found", detname));
@@ -1821,8 +1821,8 @@ void AliRunLoader::GetListOfDetectors(const char * namelist,TObjArray& pointerar
   
    char buff[10];
    char dets [200];
-   strcpy(dets,namelist);//compiler cries when char* = const Option_t*;
-   dets[strlen(dets)+1] = '\n';//set endl at the end of string 
+   strncpy(dets,namelist,199);//compiler cries when char* = const Option_t*;
+   //   dets[strlen(dets)+1] = '\n';//set endl at the end of string 
    char* pdet = dets;
    Int_t tmp;
    for(;;)
