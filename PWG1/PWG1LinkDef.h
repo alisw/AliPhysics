@@ -132,6 +132,9 @@
 #pragma link C++ class  AliAnalysisTaskHIMultCorr+;
 // ZDC
 #pragma link C++ class  AliAnalysisTaskZDC+;
+#
+#pragma link C++ class  AliTrackComparison+;
+#pragma link C++ class  AliTrackComparisonESD+;
 
 
 #endif
