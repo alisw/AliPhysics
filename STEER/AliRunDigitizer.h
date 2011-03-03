@@ -36,9 +36,7 @@ class AliRunDigitizer: public TTask {
 public:
   AliRunDigitizer();
   AliRunDigitizer(Int_t nInputStreams, Int_t sperb=1);
-  AliRunDigitizer(const AliRunDigitizer& dig);
-  AliRunDigitizer& operator=(const AliRunDigitizer& dig)
-    {dig.Copy(*this); return (*this);}
+
   virtual ~AliRunDigitizer();
 
   void      ExecuteTask(Option_t* option = 0);
@@ -98,6 +96,8 @@ public:
   TString GetInputFileName(Int_t input, Int_t order) const;
   
 private:
+  AliRunDigitizer(const AliRunDigitizer& dig); // not implemented
+  AliRunDigitizer& operator=(const AliRunDigitizer& dig); // not implemented
   void Copy(TObject& dig) const;
   Bool_t            ConnectInputTrees();
   Bool_t            InitGlobal();

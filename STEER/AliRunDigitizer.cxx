@@ -133,6 +133,7 @@ AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Mer
   //
   // root requires default ctor, where no new objects can be created
   // do not use this ctor, it is supplied only for root needs
+  for (Int_t i=0; i<MAXSTREAMSTOMERGE; ++i) fkMASK[i]=0;
 }
 
 //_______________________________________________________________________
@@ -179,31 +180,6 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
   for (i=1;i<nInputStreams;i++) {
     new(lInputStreams[i]) AliStream(fgkBaseInFolderName+(Long_t)i,"READ");
   }
-}
-//_______________________________________________________________________
-
-AliRunDigitizer::AliRunDigitizer(const AliRunDigitizer& dig):
- TTask(dig),
- fkMASKSTEP(0),
- fOutputFileName(0),
- fOutputDirName(0),
- fEvent(0),
- fNrOfEventsToWrite(0),
- fNrOfEventsWritten(0),
- fCopyTreesFromInput(0),
- fNinputs(0),
- fNinputsGiven(0),
- fInputStreams(0x0),
- fOutRunLoader(0x0),
- fOutputInitialized(kFALSE),
- fCombi(0),
- fCombination(0),
- fCombinationFileName(0)
-{
-  //
-  // Copy ctor
-  //
-  dig.Copy(*this);
 }
 //_______________________________________________________________________
 
