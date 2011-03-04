@@ -296,8 +296,7 @@ void AliQACheckerBase::GetRefSubDir(const char * det, const char * task, TDirect
         } 
         if ( listDetQAD ) {
           TIter next(listDetQAD) ;
-          TObjArray * ar ; 
-          while ( (ar = (TObjArray*)next()) ) 
+          while ( (TObjArray*)next() ) 
             dirOCDB[specie] = static_cast<TObjArray *>(listDetQAD->FindObject(Form("%s/%s", task, AliRecoParam::GetEventSpecieName(specie)))) ;             
         }
       }
