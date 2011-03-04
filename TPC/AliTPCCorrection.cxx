@@ -650,7 +650,6 @@ Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t
 
 }
 
-
 Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t yArray[], 
 				       const Int_t order, const Double_t x ) {
   //
@@ -669,6 +668,92 @@ Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t 
   return (y);
 
 }
+
+Float_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
+					      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+					      const TMatrixF &array ) {
+  //
+  // Interpolate table (TMatrix format) - 2D interpolation
+  // Float version (in order to decrease the OCDB size)
+  //
+
+  static  Int_t jlow = 0, klow = 0 ;
+  Float_t saveArray[5] = {0.,0.,0.,0.,0.} ;
+
+  Search( nx,  xv,  x,   jlow  ) ;
+  Search( ny,  yv,  y,   klow  ) ;
+  if ( jlow < 0 ) jlow = 0 ;   // check if out of range
+  if ( klow < 0 ) klow = 0 ;
+  if ( jlow + order  >=    nx - 1 ) jlow =   nx - 1 - order ;
+  if ( klow + order  >=    ny - 1 ) klow =   ny - 1 - order ;
+
+  for ( Int_t j = jlow ; j < jlow + order + 1 ; j++ )
+    {
+      Float_t *ajkl = &((TMatrixF&)array)(j,klow);
+      saveArray[j-jlow]  = Interpolate( &yv[klow], ajkl , order, y )   ;
+    }
+
+  return( Interpolate( &xv[jlow], saveArray, order, x ) )   ;
+
+}
+
+Float_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
+					      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+					      const Double_t xv[], const Double_t yv[], const Double_t zv[],
+					      TMatrixF **arrayofArrays ) {
+  //
+  // Interpolate table (TMatrix format) - 3D interpolation 
+  // Float version (in order to decrease the OCDB size)
+  //
+
+  static  Int_t ilow = 0, jlow = 0, klow = 0 ;
+  Float_t saveArray[5]= {0.,0.,0.,0.,0.};
+  Float_t savedArray[5]= {0.,0.,0.,0.,0.} ;
+
+  Search( nx, xv, x, ilow   ) ;
+  Search( ny, yv, y, jlow   ) ;
+  Search( nz, zv, z, klow   ) ;  
+
+  if ( ilow < 0 ) ilow = 0 ;   // check if out of range
+  if ( jlow < 0 ) jlow = 0 ;
+  if ( klow < 0 ) klow = 0 ;
+
+  if ( ilow + order  >=    nx - 1 ) ilow =   nx - 1 - order ;
+  if ( jlow + order  >=    ny - 1 ) jlow =   ny - 1 - order ;
+  if ( klow + order  >=    nz - 1 ) klow =   nz - 1 - order ;
+
+  for ( Int_t k = klow ; k < klow + order + 1 ; k++ )
+    {
+      TMatrixF &table = *arrayofArrays[k] ;
+      for ( Int_t i = ilow ; i < ilow + order + 1 ; i++ )
+	{
+	  saveArray[i-ilow] = Interpolate( &yv[jlow], &table(i,jlow), order, y )   ;
+	}
+      savedArray[k-klow] = Interpolate( &xv[ilow], saveArray, order, x )   ; 
+    }
+  return( Interpolate( &zv[klow], savedArray, order, z ) )   ;
+
+}
+Float_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Float_t yArray[], 
+				       const Int_t order, const Double_t x ) {
+  //
+  // Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
+  // Float version (in order to decrease the OCDB size)
+  //
+
+  Float_t y ;
+  if ( order == 2 ) {                // Quadratic Interpolation = 2 
+    y  = (x-xArray[1]) * (x-xArray[2]) * yArray[0] / ( (xArray[0]-xArray[1]) * (xArray[0]-xArray[2]) ) ; 
+    y += (x-xArray[2]) * (x-xArray[0]) * yArray[1] / ( (xArray[1]-xArray[2]) * (xArray[1]-xArray[0]) ) ; 
+    y += (x-xArray[0]) * (x-xArray[1]) * yArray[2] / ( (xArray[2]-xArray[0]) * (xArray[2]-xArray[1]) ) ; 
+  } else {                           // Linear Interpolation = 1
+    y  = yArray[0] + ( yArray[1]-yArray[0] ) * ( x-xArray[0] ) / ( xArray[1] - xArray[0] ) ;
+  }
+
+  return (y);
+
+}
+
 
 
 void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low ) {

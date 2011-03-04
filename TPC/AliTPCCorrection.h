@@ -12,6 +12,7 @@
 
 #include <TNamed.h>
 #include "TMatrixD.h"
+#include "TMatrixF.h"
 class TH2F;
 class TTimeStamp;
 class TCollection;
@@ -105,12 +106,14 @@ protected:
 
   // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
   Int_t fILow, fJLow, fKLow;          // variable to help in the interpolation 
+  // Double_t versions
   void Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
 				 const Double_t er[kNZ][kNR], Double_t &erValue );
   void Interpolate3DEdistortion( const Int_t order, const Double_t r, const Float_t phi, const Double_t z, 
 				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], 
 				 const Double_t ez[kNZ][kNPhi][kNR],
 				 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue);
+  // TMatrixD versions (for e.g. Poisson relaxation)
   Double_t Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
 			      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
 			      const TMatrixD &array );
@@ -121,6 +124,18 @@ protected:
   Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
 			const Int_t order, const Double_t x );
   void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
+ 
+  // TMatrixF versions (smaller size, e.g. for final look up table)
+  Float_t Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
+			      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+			      const TMatrixF &array );
+  Float_t Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
+			      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+			      const Double_t xv[], const Double_t yv[], const Double_t zv[],
+			       TMatrixF **arrayofArrays ); 
+  Float_t Interpolate( const Double_t xArray[], const Float_t yArray[], 
+			const Int_t order, const Double_t x );
+
   virtual Int_t IsPowerOfTwo ( Int_t i ) const  ;
 
   

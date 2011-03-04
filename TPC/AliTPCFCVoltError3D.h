@@ -58,8 +58,11 @@ public:
 
 
   void InitFCVoltError3D(); // Fill the lookup tables
+  void ForceInitFCVoltError3D() { fInitLookUp=kFALSE; InitFCVoltError3D(); }
 
   virtual void Print(const Option_t* option="") const;
+
+
 
 protected:
   virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
@@ -78,13 +81,13 @@ private:
   Float_t fCopperRodShiftA[36];    // only Rod shift 
   Float_t fCopperRodShiftC[36];    // only Rod shift 
 
-  Bool_t fInitLookUp;           // flag to check it the Look Up table was created (SUM)
+  Bool_t fInitLookUp;           // flag to check if the Look Up table was created (SUM)
   Bool_t fInitLookUpBasic[6];   // ! flag if the basic lookup was created (shifted Rod (IFC,OFC) or rotated clip (IFC,OFC))
 
 
-  TMatrixD *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
 
   // basic numbers for the poisson relaxation //can be set individually in each class
   enum {kRows   =257}; // grid size in r direction used in the poisson relaxation // ( 2**n + 1 ) eg. 65, 129, 257 etc.
@@ -124,7 +127,7 @@ private:
   TMatrixD *fLookUpBasic6DeltaEz[kPhiSlices];    // ! Array to store electric field integral 
 
 
-  ClassDef(AliTPCFCVoltError3D,2); //
+  ClassDef(AliTPCFCVoltError3D,3); //
 };
 
 #endif

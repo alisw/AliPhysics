@@ -52,6 +52,7 @@ public:
 
 
   void InitROCVoltError3D(); // Fill the lookup tables
+  void ForceInitROCVoltError3D() { fInitLookUp=kFALSE; InitROCVoltError3D(); }; 
 
   Float_t GetROCVoltOffset(Int_t side, Float_t r0, Float_t phi0);
   TH2F* CreateHistoOfZAlignment(Int_t side, Int_t nx=250, Int_t ny=250);
@@ -75,13 +76,12 @@ private:
   Bool_t fElectronArrivalCorrection; // flag on wheter to consider the difference 
                                       // in the electron arrival between IROC and OROC
                                       // due to the different position of the Anode wires
-  
 
   Bool_t fInitLookUp;           // flag to check it the Look Up table was created (SUM)
 
-  TMatrixD *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
 
   TString  fROCDataFileName;         // filename of the survey data containing the lin Fit values
   TMatrixD *fdzDataLinFit;  // Linear fits of dz survey points (each sector=72) (z0,slopeX,slopeY)         
@@ -93,7 +93,7 @@ private:
   enum {kPhiSlices = 18*kPhiSlicesPerSector };    // number of points in phi for the basic lookup tables
   enum {kIterations=100}; // Number of iterations within the poisson relaxation 
 
-  ClassDef(AliTPCROCVoltError3D,1); 
+  ClassDef(AliTPCROCVoltError3D,2); 
 };
 
 #endif

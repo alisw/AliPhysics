@@ -40,6 +40,7 @@ public:
 
   void InitSpaceCharge3DDistortion();       // faster model and more accurate ;-)
   void InitSpaceCharge3DDistortionCourse(); // real 3D but not accurate enough
+  void ForceInitSpaceCharge3DDistortion() { fInitLookUp=kFALSE; InitSpaceCharge3DDistortion(); }
 
   Float_t GetSpaceChargeDensity(Float_t r, Float_t phi, Float_t z, Int_t mode=0);
   TH2F* CreateHistoSCinXY(Float_t z, Int_t nx=100, Int_t ny=100, Int_t mode=0);
@@ -69,11 +70,11 @@ private:
                                    // look up table which was created for M_mb = 900 and IR = 3000
                                    // compare Internal Note Nr: ???
 
-  Bool_t fInitLookUp;                 // flag to check it the Look Up table was created
+  Bool_t fInitLookUp;                 // flag to check if the Look Up table was created
 
-  TMatrixD *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
-  TMatrixD *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpErOverEz[kNPhi];   // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpEphiOverEz[kNPhi]; // Array to store electric field integral (int Er/Ez)
+  TMatrixF *fLookUpDeltaEz[kNPhi];    // Array to store electric field integral (int Er/Ez)
 
   TString fSCDataFileName;          // file which contains the space charge distribution
   TString fSCLookUpPOCsFileName3D;  // filename of the precalculated lookup tables (for individual voxels)
@@ -81,12 +82,12 @@ private:
   TString fSCLookUpPOCsFileNameRPhi;  // filename of the precalculated lookup tables (for individual voxels)
 
 
-  TMatrixD *fSCdensityDistribution[kNPhi]; // 3D space charge distribution
+  TMatrixF *fSCdensityDistribution[kNPhi]; // 3D space charge distribution
   TMatrixD *fSCdensityInRZ;       // (r,z) space charge distribution
   TMatrixD *fSCdensityInRPhiA;     // (r,phi) space charge distribution
   TMatrixD *fSCdensityInRPhiC;     // (r,phi) space charge distribution
  
-  ClassDef(AliTPCSpaceCharge3D,1); 
+  ClassDef(AliTPCSpaceCharge3D,2); 
 };
 
 #endif

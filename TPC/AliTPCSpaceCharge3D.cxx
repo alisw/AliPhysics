@@ -101,10 +101,10 @@ AliTPCSpaceCharge3D::AliTPCSpaceCharge3D()
   // Array which will contain the solution according to the setted charge density distribution
   // see InitSpaceCharge3DDistortion() function
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
-    fLookUpErOverEz[k]   =  new TMatrixD(kNR,kNZ);  
-    fLookUpEphiOverEz[k] =  new TMatrixD(kNR,kNZ);
-    fLookUpDeltaEz[k]    =  new TMatrixD(kNR,kNZ); 
-    fSCdensityDistribution[k] = new TMatrixD(kNR,kNZ);
+    fLookUpErOverEz[k]   =  new TMatrixF(kNR,kNZ);  
+    fLookUpEphiOverEz[k] =  new TMatrixF(kNR,kNZ);
+    fLookUpDeltaEz[k]    =  new TMatrixF(kNR,kNZ); 
+    fSCdensityDistribution[k] = new TMatrixF(kNR,kNZ);
   }
   fSCdensityInRZ   = new TMatrixD(kNR,kNZ);
   fSCdensityInRPhiA = new TMatrixD(kNR,kNPhi);
@@ -196,7 +196,7 @@ void AliTPCSpaceCharge3D::GetCorrection(const Float_t x[],const Short_t roc,Floa
 
   Int_t   order     = 1 ;    // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
                         
-  Double_t intEr, intEphi, intdEz ;
+  Float_t intEr, intEphi, intdEz ;
   Double_t r, phi, z ;
   Int_t    sign;
 
@@ -472,8 +472,8 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
     //    phi = fgkPhiList[k] ;
 	
     // final lookup table
-    TMatrixD &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
-    TMatrixD &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
+    TMatrixF &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
+    TMatrixF &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
 	
     // calculated and integrated tables - just one phi slice
     TMatrixD &erOverEzA   =  *arrayofEroverEzA[0]  ;
@@ -837,9 +837,9 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortion() {
     Double_t phi = fgkPhiList[k] ;
 	
     // final lookup table
-    TMatrixD &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
-    TMatrixD &ephiOverEzFinal =  *fLookUpEphiOverEz[k];
-    TMatrixD &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
+    TMatrixF &erOverEzFinal   =  *fLookUpErOverEz[k]  ;
+    TMatrixF &ephiOverEzFinal =  *fLookUpEphiOverEz[k];
+    TMatrixF &deltaEzFinal    =  *fLookUpDeltaEz[k]   ;
 	
     for ( Int_t j = 0 ; j < kNZ ; j++ ) {
 
@@ -1247,9 +1247,9 @@ void AliTPCSpaceCharge3D::InitSpaceCharge3DDistortionCourse() {
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
     phi = fgkPhiList[k] ;
 	
-    TMatrixD &erOverEz   =  *fLookUpErOverEz[k]  ;
-    TMatrixD &ephiOverEz =  *fLookUpEphiOverEz[k];
-    TMatrixD &deltaEz    =  *fLookUpDeltaEz[k]   ;
+    TMatrixF &erOverEz   =  *fLookUpErOverEz[k]  ;
+    TMatrixF &ephiOverEz =  *fLookUpEphiOverEz[k];
+    TMatrixF &deltaEz    =  *fLookUpDeltaEz[k]   ;
 	
     for ( Int_t j = 0 ; j < kNZ ; j++ ) {
 
@@ -1343,7 +1343,7 @@ void AliTPCSpaceCharge3D::SetSCDataFileName(TString fname) {
   TMatrixD &scDensityInRPhiC   =  *fSCdensityInRPhiC;
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
     phi = fgkPhiList[k] ;
-    TMatrixD &scDensity   =  *fSCdensityDistribution[k]  ;
+    TMatrixF &scDensity   =  *fSCdensityDistribution[k]  ;
     for ( Int_t j = 0 ; j < kNZ ; j++ ) {
       z = fgkZList[j] ; 
       for ( Int_t i = 0 ; i < kNR ; i++ ) { 

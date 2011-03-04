@@ -101,9 +101,9 @@ AliTPCROCVoltError3D::AliTPCROCVoltError3D()
   // main input: z alignment of the Read Out chambers
   // see InitROCVoltError3D() function
   for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
-    fLookUpErOverEz[k]   =  new TMatrixD(kNR,kNZ);  
-    fLookUpEphiOverEz[k] =  new TMatrixD(kNR,kNZ);
-    fLookUpDeltaEz[k]    =  new TMatrixD(kNR,kNZ);   
+    fLookUpErOverEz[k]   =  new TMatrixF(kNR,kNZ);  
+    fLookUpEphiOverEz[k] =  new TMatrixF(kNR,kNZ);
+    fLookUpDeltaEz[k]    =  new TMatrixF(kNR,kNZ);   
   }
   fROCDataFileName="$ALICE_ROOT/TPC/Calib/maps/TPCROCdzSurvey.root";
   SetROCDataFileName(fROCDataFileName.Data()); // initialization of fdzDataLinFit is included
@@ -203,16 +203,23 @@ void AliTPCROCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Flo
   //
   // Calculates the correction due e.g. residual voltage errors on the TPC boundaries
   //   
-
+  const Double_t kEpsilon=Double_t(FLT_MIN);
   if (!fInitLookUp) {
     AliInfo("Lookup table was not initialized! Perform the inizialisation now ...");
     InitROCVoltError3D();
-    return;
+  }
+  static Bool_t forceInit=kTRUE; //temporary needed for back compatibility with old OCDB entries
+  if (forceInit&&fLookUpErOverEz[0]){
+    if (fLookUpErOverEz[0]->Sum()<kEpsilon){//temporary needed for back compatibility with old OCDB entries
+      ForceInitROCVoltError3D();
+    }
+    forceInit=kFALSE;
   }
 
+  
   Int_t   order     = 1 ;    // FIXME: hardcoded? Linear interpolation = 1, Quadratic = 2         
 
-  Double_t intEr, intEphi, intDeltaEz;
+  Float_t intEr, intEphi, intDeltaEz;
   Double_t r, phi, z ;
   Int_t    sign;
 
@@ -373,9 +380,9 @@ void AliTPCROCVoltError3D::InitROCVoltError3D() {
       for ( Int_t k = 0 ; k < kNPhi ; k++ ) {
 	phi = fgkPhiList[k] ;
 	
-	TMatrixD &erOverEz   =  *fLookUpErOverEz[k]  ;
-	TMatrixD &ephiOverEz =  *fLookUpEphiOverEz[k];
-	TMatrixD &deltaEz    =  *fLookUpDeltaEz[k]   ;
+	TMatrixF &erOverEz   =  *fLookUpErOverEz[k]  ;
+	TMatrixF &ephiOverEz =  *fLookUpEphiOverEz[k];
+	TMatrixF &deltaEz    =  *fLookUpDeltaEz[k]   ;
 	
 	for ( Int_t j = 0 ; j < kNZ ; j++ ) {
 
