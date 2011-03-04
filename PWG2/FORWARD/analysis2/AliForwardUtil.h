@@ -118,13 +118,13 @@ public:
   /**
    * Number of steps to do in the Landau, Gaussiam convolution 
    */
-  static Int_t fgConvolutionSteps;
+  static Int_t fgConvolutionSteps; // Number of convolution steps
   //------------------------------------------------------------------
   /** 
    * How many sigma's of the Gaussian in the Landau, Gaussian
    * convolution to integrate over
    */
-  static Double_t fgConvolutionNSigma;
+  static Double_t fgConvolutionNSigma; // Number of convolution sigmas 
   //------------------------------------------------------------------
   /** 
    * Calculate the shifted Landau
@@ -274,7 +274,7 @@ public:
    */
   static Double_t NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			      Double_t sigma, Double_t sigma_n, Int_t n, 
-			      Double_t* a);
+			      const Double_t* a);
   /** 
    * Generate a TF1 object of @f$ f_I@f$ 
    * 
@@ -313,7 +313,7 @@ public:
   static TF1* MakeNLandauGaus(Double_t c, 
 			      Double_t delta, Double_t  xi, 
 			      Double_t sigma, Double_t  sigma_n,
-			      Int_t    n,     Double_t* a, 
+			      Int_t    n,     const Double_t* a, 
 			      Double_t xmin,  Double_t  xmax);
 			    			    
   //__________________________________________________________________
@@ -378,8 +378,49 @@ public:
      * @return The function fitted to the data 
      */
     TF1* FitNParticle(TH1* dist, UShort_t n, Double_t sigman=-1);
-     
-
+    /**
+     * Get Lower cut on data 
+     *
+     * @return Lower cut on data 
+     */
+    Double_t GetLowCut() const { return fLowCut; }
+    /**
+     * Get Maximum range to fit 
+     *
+     * @return Maximum range to fit 
+     */
+    Double_t GetMaxRange() const { return fMaxRange; }
+    /**
+     * Get Number of bins from maximum to fit 1st peak
+     *
+     * @return Number of bins from maximum to fit 1st peak
+     */
+    UShort_t GetMinusBins() const { return fMinusBins; }
+    /**
+     * Get Array of fit results 
+     *
+     * @return Array of fit results 
+     */
+    const TObjArray& GetFitResults() const { return fFitResults; }
+    /** 
+     * Get Array of fit results  
+     *
+     * @return Array of fit results 
+     */
+    TObjArray& GetFitResults() { return fFitResults; }
+    /**
+     * Get Array of functions 
+     *
+     * @return Array of functions 
+     */
+    const TObjArray& GetFunctions() const { return fFunctions; }
+    /** 
+     * Get Array of functions  
+     *
+     * @return Array of functions 
+     */
+    TObjArray& GetFunctions() { return fFunctions; }
+  private:
     const Double_t fLowCut;     // Lower cut on data 
     const Double_t fMaxRange;   // Maximum range to fit 
     const UShort_t fMinusBins;  // Number of bins from maximum to fit 1st peak
@@ -535,7 +576,7 @@ public:
      * 
      * @return The found TList or null
      */
-    TList* GetOutputList(TList* d) const;
+    TList* GetOutputList(const TList* d) const;
     /** 
      * Find a specific histogram in the source list @a d
      * 
@@ -544,7 +585,7 @@ public:
      * 
      * @return Found histogram or null
      */
-    TH1* GetOutputHist(TList* d, const char* name) const;
+    TH1* GetOutputHist(const TList* d, const char* name) const;
     /** 
      * 
      * 

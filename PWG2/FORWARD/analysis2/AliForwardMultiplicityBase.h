@@ -5,7 +5,6 @@
 #ifndef ALIFORWARDMULTIPLICITYBASE_H
 #define ALIFORWARDMULTIPLICITYBASE_H
 #include <AliAnalysisTaskSE.h>
-#include "AliForwardUtil.h"
 class AliFMDEventInspector;
 class AliFMDEnergyFitter;
 class AliFMDSharingFilter;
@@ -17,7 +16,7 @@ class AliESDEvent;
 class TH2D;
 class TList;
 class TTree;
-
+class TAxis;
 
 /** 
  * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
@@ -212,13 +211,7 @@ protected:
    * 
    * @return Reference to this object 
    */
-  AliForwardMultiplicityBase& operator=(const AliForwardMultiplicityBase& o)
-  {
-    fEnableLowFlux = o.fEnableLowFlux;
-    fFirstEvent    = o.fFirstEvent;
-    fCorrManager   = o.fCorrManager;
-    return *this;
-  }
+  AliForwardMultiplicityBase& operator=(const AliForwardMultiplicityBase& o);
   /** 
    * Check if all needed corrections are there and accounted for.  If not,
    * do a Fatal exit 

@@ -109,7 +109,7 @@ public:
    * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
-  void ScaleHistograms(TList* dir, Int_t nEvents);
+  void ScaleHistograms(const TList* dir, Int_t nEvents);
   /** 
    * Print information
    * 

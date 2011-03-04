@@ -14,6 +14,7 @@
 // Corrections used 
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardCorrectionManager.h"
+#include "AliForwardUtil.h"
 #include "AliLog.h"
 #include "AliAODHandler.h"
 #include "AliInputEventHandler.h"
@@ -26,6 +27,7 @@
 #include "AliFMDHistCollector.h"
 #include "AliESDEvent.h"
 #include <TROOT.h>
+#include <TAxis.h>
 #include <iostream>
 #include <iomanip>
 
@@ -38,6 +40,16 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
 {
   // Set our persistent pointer 
   fCorrManager = &AliForwardCorrectionManager::Instance();
+}
+
+//____________________________________________________________________
+AliForwardMultiplicityBase& 
+AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
+{
+  fEnableLowFlux = o.fEnableLowFlux;
+  fFirstEvent    = o.fFirstEvent;
+  fCorrManager   = o.fCorrManager;
+  return *this;
 }
 
 //____________________________________________________________________
@@ -106,6 +118,10 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
 					    const TAxis*& pv, 
 					    Bool_t        mc)
 {
+  //
+  // Read corrections
+  //
+  //
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
     what ^= AliForwardCorrectionManager::kDoubleHit;
@@ -144,6 +160,9 @@ AliForwardMultiplicityBase::ReadCorrections(const TAxis*& pe,
 AliESDEvent*
 AliForwardMultiplicityBase::GetESDEvent()
 {
+  //
+  // Get the ESD event. IF this is the first event, initialise
+  //
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
   if (!esd) {
     AliWarning("No ESD event found for input event");

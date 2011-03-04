@@ -163,7 +163,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::FetchHistograms(TList* d, 
+AliFMDEventInspector::FetchHistograms(const TList* d, 
 				      TH1I*& hEventsTr, 
 				      TH1I*& hEventsTrVtx, 
 				      TH1I*& hTriggers) const

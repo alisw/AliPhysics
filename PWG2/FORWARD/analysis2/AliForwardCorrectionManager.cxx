@@ -2,6 +2,11 @@
 // Manager (singleton) of corrections 
 // 
 #include "AliForwardCorrectionManager.h"
+#include "AliFMDCorrDoubleHit.h"
+#include "AliFMDCorrELossFit.h"
+#include "AliFMDCorrVertexBias.h"
+#include "AliFMDCorrMergingEfficiency.h"
+#include "AliFMDCorrAcceptance.h"
 #include "AliForwardUtil.h"
 #include <TString.h>
 #include <AliLog.h>
@@ -130,6 +135,10 @@ AliForwardCorrectionManager::operator=(const AliForwardCorrectionManager& o)
 void
 AliForwardCorrectionManager::SetPrefix(const char* prefix)
 {
+  /** 
+   *
+   * @param prefix Prefix to correction objects. 
+   */
   fELossFitsPath    = Form("%s/%s", prefix, ELOSSFIT_DIR);
   fMergingEffPath   = Form("%s/%s", prefix, MERGING_DIR); 
   fSecondaryMapPath = Form("%s/%s", prefix, SECONDARY_DIR);
@@ -142,16 +151,13 @@ AliForwardCorrectionManager::SetPrefix(const char* prefix)
 void
 AliForwardCorrectionManager::SetFileDir(ECorrection what, const char* dir)
 {
+  /** 
+   * Set the file directory for a type 
+   * 
+   * @param what     Type 
+   * @param dirname  Directory name 
+   */
   TString *path = 0;
-  // 
-  // Get the path to the specified object 
-  // 
-  // Parameters:
-  //    what  Which stuff to get the path for 
-  // 
-  // Return:
-  //    The full path or null 
-  //
   if      (what & kSecondaryMap)        path = &fSecondaryMapPath;
   else if (what & kDoubleHit)           path = &fDoubleHitPath;
   else if (what & kELossFits)           path = &fELossFitsPath;
@@ -833,6 +839,9 @@ AliForwardCorrectionManager::ReadAcceptance(UShort_t sys,
 void
 AliForwardCorrectionManager::Print(Option_t* option) const
 {
+  // 
+  // Print stuff 
+  //
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
@@ -889,6 +898,9 @@ AliForwardCorrectionManager::Print(Option_t* option) const
 void
 AliForwardCorrectionManager::Browse(TBrowser* b)
 {
+  // 
+  // Browse thos
+  // 
   if (fELossFit)	  b->Add(fELossFit,          "Energy loss fits");
   if (fSecondaryMap)	  b->Add(fSecondaryMap,      "Secondary particle corr");
   if (fDoubleHit)	  b->Add(fDoubleHit,         "Double hit corr");
@@ -901,18 +913,19 @@ AliForwardCorrectionManager::Browse(TBrowser* b)
 //______________________________________________________________________________
 void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
 {
-   // Stream an object of class AliForwardCorrectionManager.
-
-   if (R__b.IsReading()) {
-      R__b.ReadClassBuffer(AliForwardCorrectionManager::Class(),this);
-      if (fgInstance) 
-	AliWarning(Form("Singleton instance already set (%p) when reading "
-			"singleton object (%p).  Read object will be new "
-			"singleton object", fgInstance, this));
-      fgInstance = this;
-   } else {
-      R__b.WriteClassBuffer(AliForwardCorrectionManager::Class(),this);
-   }
+  //
+  // Stream an object of class AliForwardCorrectionManager.
+  //
+  if (R__b.IsReading()) {
+     R__b.ReadClassBuffer(AliForwardCorrectionManager::Class(),this);
+     if (fgInstance) 
+       AliWarning(Form("Singleton instance already set (%p) when reading "
+		       "singleton object (%p).  Read object will be new "
+		       "singleton object", fgInstance, this));
+     fgInstance = this;
+  } else {
+    R__b.WriteClassBuffer(AliForwardCorrectionManager::Class(),this);
+  }
 }
 #endif
 #if 0

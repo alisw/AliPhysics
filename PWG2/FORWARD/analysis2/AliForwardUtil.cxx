@@ -419,7 +419,7 @@ AliForwardUtil::IdLandauGausdPar(Double_t x,
 Double_t 
 AliForwardUtil::NLandauGaus(Double_t x, Double_t delta, Double_t xi, 
 			    Double_t sigma, Double_t sigmaN, Int_t n, 
-			    Double_t* a)
+			    const Double_t* a)
 {
   // 
   // Evaluate 
@@ -475,7 +475,7 @@ TF1*
 AliForwardUtil::MakeNLandauGaus(Double_t  c, 
 				Double_t  delta, Double_t xi, 
 				Double_t  sigma, Double_t sigmaN, Int_t n, 
-				Double_t* a, 
+				const Double_t* a, 
 				Double_t  xmin, Double_t xmax)
 {
   // 
@@ -848,7 +848,7 @@ AliForwardUtil::RingHistos::DefineOutputList(TList* d) const
 }
 //____________________________________________________________________
 TList*
-AliForwardUtil::RingHistos::GetOutputList(TList* d) const
+AliForwardUtil::RingHistos::GetOutputList(const TList* d) const
 {
   // 
   // Get our output list from the container @a d
@@ -866,7 +866,7 @@ AliForwardUtil::RingHistos::GetOutputList(TList* d) const
 
 //____________________________________________________________________
 TH1*
-AliForwardUtil::RingHistos::GetOutputHist(TList* d, const char* name) const
+AliForwardUtil::RingHistos::GetOutputHist(const TList* d, const char* name) const
 {
   // 
   // Find a specific histogram in the source list @a d

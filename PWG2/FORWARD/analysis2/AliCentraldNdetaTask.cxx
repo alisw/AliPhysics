@@ -16,7 +16,7 @@
 
 //____________________________________________________________________
 TH2D*
-AliCentraldNdetaTask::GetHistogram(AliAODEvent* aod, Bool_t mc) 
+AliCentraldNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc) 
 {
   // Get objects from the event structure 
   TObject* obj = 0;

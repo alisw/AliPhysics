@@ -8,6 +8,10 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
+// #include "AliFMDCorrDoubleHit.h"
+#include "AliFMDCorrVertexBias.h"
+#include "AliFMDCorrMergingEfficiency.h"
+#include "AliFMDCorrAcceptance.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TROOT.h>
@@ -245,7 +249,7 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 
 //____________________________________________________________________
 void
-AliFMDCorrector::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDCorrector::ScaleHistograms(const TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -266,6 +270,12 @@ AliFMDCorrector::ScaleHistograms(TList* dir, Int_t nEvents)
 void
 AliFMDCorrector::DefineOutput(TList* dir)
 {
+  // 
+  // Output diagnostic histograms to directory 
+  // 
+  // Parameters:
+  //    dir List to write in
+  //  
   TList* d = new TList;
   d->SetName(GetName());
   dir->Add(d);

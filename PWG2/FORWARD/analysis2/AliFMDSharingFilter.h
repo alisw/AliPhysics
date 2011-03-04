@@ -122,7 +122,7 @@ public:
    * @param dir     Where the output is 
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
   
   /** 
    * Define the output histograms.  These are put in a sub list of the
@@ -199,7 +199,7 @@ protected:
      * @param nEvents Number of events 
      * @param dir     Where the output is 
      */
-    void ScaleHistograms(TList* dir, Int_t nEvents);
+    void ScaleHistograms(const TList* dir, Int_t nEvents);
     TH1D*     fBefore;       // Distribution of signals before filter
     TH1D*     fAfter;        // Distribution of signals after filter
     TH1D*     fHits;         // Distribution of hit strips. 
@@ -258,7 +258,7 @@ protected:
 			       UShort_t s,
 			       UShort_t t,
 			       Bool_t&  usedPrev, 
-			       Bool_t&  usedThis);
+			       Bool_t&  usedThis) const;
   /** 
    * Angle correct the signal 
    * 

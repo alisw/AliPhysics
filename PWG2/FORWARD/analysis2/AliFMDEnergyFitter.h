@@ -368,7 +368,7 @@ protected:
      *                       the reduced @f$\chi^2@f$ 
      * @param minWeightCut   Least valid @f$ a_i@f$ 
      */
-    void FindBestFits(TList*              d, 
+    void FindBestFits(const TList*        d, 
 		      AliFMDCorrELossFit& obj,
 		      const TAxis&        eta,     
 		      Double_t            relErrorCut, 
@@ -387,7 +387,7 @@ protected:
      * 
      * @return Best fit 
      */
-    AliFMDCorrELossFit::ELossFit* FindBestFit(TH1* dist,
+    AliFMDCorrELossFit::ELossFit* FindBestFit(const TH1* dist,
 					      Double_t relErrorCut, 
 					      Double_t chi2nuCut,
 					      Double_t minWeightCut);
