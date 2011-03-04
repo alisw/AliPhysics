@@ -43,9 +43,24 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   Int_t Count(AliVEvent* event=NULL);
 
-  enum trackParameterType { kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet };
-  enum trackParameterMix  { kPure, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt, kTrackWithPtFromFirstMother };
-  enum PIDsource {kTPCpid, kTOFpid, kTPCTOFpid, kTOFbayesian};
+  enum trackParameterType { kMC, 
+                            kGlobal, 
+                            kESD_TPConly, 
+                            kESD_SPDtracklet 
+                          };
+  enum trackParameterMix  { kPure, 
+                            kTrackWithMCkine, 
+                            kTrackWithMCPID, 
+                            kTrackWithMCpt, 
+                            kTrackWithPtFromFirstMother
+                          };
+  enum PIDsource {
+                   kTPCpid,      // default TPC pid (via GetTPCpid)
+                   kTOFpid,      // default TOF pid (via GetTOFpid)
+                   kTOFbayesian, // TOF bayesian pid (F.Noferini)
+                   kTOFbeta,     // asymmetric cuts of TOF beta signal
+                   kTPCdedx      // asymmetric cuts of TPC dedx signal
+                 };
 
   //setters (interface to AliESDtrackCuts)
   void SetMinNClustersTPC( Int_t a ) {fCutNClustersTPC=kTRUE; fNClustersTPCMin=a;}
@@ -77,6 +92,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetIgnoreTPCzRange( Double_t min, Double_t max ) 
                          { fIgnoreTPCzRange=kTRUE; fIgnoreTPCzRangeMin=min; fIgnoreTPCzRangeMax=max; }
   void SetAODfilterBit( UInt_t a ) {fAODFilterBit = a; fUseAODFilterBit = kTRUE;}  						 
+  void SetMinimalTPCdedx(Double_t d=10.) {fMinimalTPCdedx=d; fCutMinimalTPCdedx=kTRUE;}
 						 
 
   Int_t GetMinNClustersTPC() const {if (!fAliESDtrackCuts) return 0; return fAliESDtrackCuts->GetMinNClusterTPC();}
@@ -103,6 +119,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t GetSPDtrackletDeltaPhiMax() const {return fSPDtrackletDeltaPhiMax;}
   Double_t GetSPDtrackletDeltaPhiMin() const {return fSPDtrackletDeltaPhiMin;}
   UInt_t GetAODFilterBit() const {if (!fUseAODFilterBit) return 0; return fAODFilterBit;}
+  Double_t GetMinimalTPCdedx() const {return fMinimalTPCdedx;}
  
   void SetQA(const char* dirname);
   TObjArray* GetQA() const {return fQA;}
@@ -139,10 +156,11 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void Clear(Option_t* option="");
 
   //PID
-  void SetPID(AliPID::EParticleType pid, PIDsource s=kTPCTOFpid) {fAliPID=pid; fPIDsource=s; fCutPID=kTRUE; InitPIDcuts();}
-  void SetTPCTOFpidCrossOverPt(Double_t pt) {fTPCTOFpidCrossOverPt=pt;}
+  void SetPID(AliPID::EParticleType pid, PIDsource s=kTOFpid, Double_t prob=0.9)
+             {fParticleID=pid; fPIDsource=s; fParticleProbability=prob; fCutPID=kTRUE; InitPIDcuts();}
   void SetTPCpidCuts(TMatrixF* mat) {fTPCpidCuts=new TMatrixF(*mat);}
   void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
+  static const char* PIDsourceName(PIDsource s);
   AliESDpid& GetESDpid() {return fESDpid;}
 
  protected:
@@ -153,7 +171,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
   Bool_t PassesMCcuts(AliMCEvent* mcevent, Int_t label);
+  Bool_t PassesTPCdedxCut(AliESDtrack* track);
   Bool_t PassesTPCpidCut(AliESDtrack* track);
+  Bool_t PassesTOFbetaCut(AliESDtrack* track);  
   Bool_t PassesTOFpidCut(AliESDtrack* track);  
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
@@ -199,6 +219,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   UInt_t fAODFilterBit;          //AOD filter bit to select
   Bool_t fCutDCAToVertexXY;      //dca xy cut
   Bool_t fCutDCAToVertexZ;       //dca z cut
+  Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
+  Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
 
   trackParameterType fParamType;     //parameter type tu cut on
   trackParameterMix fParamMix;       //parameter mixing
@@ -217,8 +239,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   PIDsource fPIDsource; //pid source
   TMatrixF* fTPCpidCuts; //tpc pid cuts
   TMatrixF* fTOFpidCuts; //tof pid cuts
-  Double_t fTPCTOFpidCrossOverPt; //pt cross over for pid, below TPC is taken, above TOF
-  AliPID::EParticleType fAliPID; //alipid
+  AliPID::EParticleType fParticleID; //alipid
+  Double_t fParticleProbability; //desired prob for a particle type
 
   // part added by F. Noferini
   static const Int_t fnPIDptBin = 20; // pT bins for priors
@@ -226,7 +248,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fProbBayes[5]; // bayesian probability
   // end part added by F. Noferini
 
-  ClassDef(AliFlowTrackCuts,4)
+  ClassDef(AliFlowTrackCuts,6)
 };
 
 #endif

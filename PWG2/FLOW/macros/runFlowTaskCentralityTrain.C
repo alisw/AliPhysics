@@ -21,9 +21,10 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
                                  Bool_t useFlowParFiles = kFALSE,
                                  Bool_t DATA = kTRUE,
-                                 const Char_t* dataDir="/alice/data/LHC10h_000137162_p1_plusplusplus#esdTree",
+                                 const Char_t* dataDir = "/alice/data/LHC10h_000137162_p1_plusplusplus#esdTree",
                                  Int_t nEvents = 1e4,
-                                 Int_t offset=0 )
+                                 Int_t offset = 0,
+                                 Bool_t useTender = kFALSE )
 {
   // Time:
   TStopwatch timer;
@@ -70,9 +71,12 @@ void runFlowTaskCentralityTrain( Int_t mode = mPROOF,
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AddTaskCentrality();
 
-  //Add the TOF tender
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
-  AddTaskTenderTOF();
+  if (useTender)
+  {
+    //Add the tenders
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderFlow.C");
+    AddTaskTenderFlow();
+  }
 
   // Setup analysis per centrality bin:
   gROOT->LoadMacro("AddTaskFlowCentrality.C");
@@ -150,6 +154,7 @@ void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
     gSystem->Load("libSTEER");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTPCbase");
     gSystem->Load("libTOFbase");
     gSystem->Load("libTOFrec");
     gSystem->Load("libTRDbase");
