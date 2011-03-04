@@ -1446,7 +1446,7 @@ void AliFlowAnalysisWithCumulants::CalculateIntegratedFlow(TString rpPoi)
  // Calculate final results for integrated flow of RPs and POIs. 
  // (to be improved - this method can be implemented much better)
   
- Int_t rp = -1;
+ Int_t rp = 0;
 
  if(rpPoi == "RP")
  {
@@ -1566,7 +1566,7 @@ void AliFlowAnalysisWithCumulants::FillCommonHistResultsForDifferentialFlow(TStr
  // Fill common result histograms for differential flow.
  // (to be improved - this method can be implemented much better)
  
- Int_t rp = -1;
+ Int_t rp = 0;
 
  if(rpPoi == "RP")
  {
@@ -1642,8 +1642,8 @@ void AliFlowAnalysisWithCumulants::CalculateDifferentialFlow(TString rpPoi, TStr
 {
  // Calculate differential flow for RPs/POIs vs pt/eta from cumulants.
  
- Int_t rp = -1; // RP or POI
- Int_t pe = -1; // pt or eta
+ Int_t rp = 0; // RP or POI
+ Int_t pe = 0; // pt or eta
 
  if(rpPoi == "RP")
  {
@@ -1714,8 +1714,8 @@ void AliFlowAnalysisWithCumulants::CalculateDifferentialFlowErrors(TString rpPoi
 {
  // Calculate errors of differential flow.
 
- Int_t rp = -1; // RP or POI
- Int_t pe = -1; // pt or eta
+ Int_t rp = 0; // RP or POI
+ Int_t pe = 0; // pt or eta
 
  if(rpPoi == "RP")
  {
@@ -1776,8 +1776,8 @@ void AliFlowAnalysisWithCumulants::CalculateCumulantsForDiffFlow(TString rpPoi,T
 {
  // Calculate cumulants for differential flow. 
  
- Int_t rp = -1; // RP or POI
- Int_t pe = -1; // pt or eta
+ Int_t rp = 0; // RP or POI
+ Int_t pe = 0; // pt or eta
 
  if(rpPoi == "RP")
  {
@@ -2379,6 +2379,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("phi_weights"))
   {
    fPhiWeights = dynamic_cast<TH1F*>(fWeightsList->FindObject("phi_weights"));
+   if(!fPhiWeights){printf("\n WARNING (GFC): !fPhiWeights !!!!\n");exit(0);}
    if(TMath::Abs(fPhiWeights->GetBinWidth(1)-fPhiBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
@@ -2400,6 +2401,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("pt_weights"))
   {
    fPtWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("pt_weights"));
+   if(!fPtWeights){printf("\n WARNING (GFC): !fPtWeights !!!!\n");exit(0);}
    if(TMath::Abs(fPtWeights->GetBinWidth(1)-fPtBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
@@ -2421,6 +2423,7 @@ void AliFlowAnalysisWithCumulants::BookAndFillWeightsHistograms()
   if(fWeightsList->FindObject("eta_weights"))
   {
    fEtaWeights = dynamic_cast<TH1D*>(fWeightsList->FindObject("eta_weights"));
+   if(!fEtaWeights){printf("\n WARNING (GFC): !fEtaWeights !!!!\n");exit(0);}
    if(TMath::Abs(fEtaWeights->GetBinWidth(1)-fEtaBinWidth)>pow(10.,-6.))
    {
     cout<<endl;
