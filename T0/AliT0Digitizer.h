@@ -45,8 +45,7 @@ private:
   Int_t fSumMult;        // multiplicity
   TObjArray fAmpLED;     // amplitude  CFD-LED dependence #channel -> #MIPs
   TObjArray fAmpQTC;     // amplitude  QTC dependence #channel -> #MIPs
-  Double_t fMaxValue[24];  //max amplitue-time LED
-
+ 
   AliT0Parameters  *fParam;           //pointer to T0 parameters class     
 
 
