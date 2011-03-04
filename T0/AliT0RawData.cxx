@@ -76,9 +76,10 @@ uncertances
   */
 
   //open the output file
-  char fileName[15];
-  strcpy(fileName,AliDAQ::DdlFileName("T0",0)); //The name of the output file
-  fFile = new AliFstream(fileName);
+  // char fileName[15];
+  // strcpy(fileName,AliDAQ::DdlFileName("T0",0)); //The name of the output file
+  TString fileName = Form("%s",AliDAQ::DdlFileName("T0",0));
+  fFile = new AliFstream(fileName.Data());
   memset(fBuffer,0,512*sizeof(UInt_t));
 
   //get event number 

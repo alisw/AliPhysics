@@ -277,13 +277,13 @@ void AliT0CalibLaserData::ReadData()
       sprintf(buf4,"LEDminCFD%i",ic+1);
       sprintf(buf7,"mpd%i",ic+1);
       
-      hQTC[ic] = new TH1I(buf1,"QTC",(Int_t)fHistLimits[2],fHistLimits[0],fHistLimits[1]);
-      h1CFDminLED[ic] = new TH1I(buf4,"LED - CFD",(Int_t)fHistLimits[5],fHistLimits[3],fHistLimits[4]);
+      hQTC[ic] = new TH1I(Form("QTC%i",ic+1),"QTC",(Int_t)fHistLimits[2],fHistLimits[0],fHistLimits[1]);
+      h1CFDminLED[ic] = new TH1I(Form("LEDminCFD%i",ic+1),"LED - CFD",(Int_t)fHistLimits[5],fHistLimits[3],fHistLimits[4]);
       
-      hCFDvsQTC[ic] = new TH2F(buf2,"CFD vs	QTC",
+      hCFDvsQTC[ic] = new TH2F(Form("CFDvsQTC%i",ic+1),"CFD vs	QTC",
 			       (Int_t)fHistLimits[8],fHistLimits[6],fHistLimits[7],
 			       (Int_t)fHistLimits[11],fHistLimits[9],fHistLimits[10]);
-      hCFDvsLED[ic] = new TH2F(buf3,"CFD vs LED-CFD",
+      hCFDvsLED[ic] = new TH2F(Form("CFDvsLED%i",ic+1),"CFD vs LED-CFD",
 			       (Int_t)fHistLimits[14],fHistLimits[12],fHistLimits[13],
 			       (Int_t)fHistLimits[17],fHistLimits[15],fHistLimits[16]);
 
@@ -432,22 +432,22 @@ void AliT0CalibLaserData::ReadData()
 	}
     }	      
   
-
-  Char_t filehist[50]; 
+  
+  TString filehist = Form("t0tree%s",fFileName);; 
   // sprintf(filehist,"t0treeDA%s",fFileName);
-   sprintf(filehist,"t0tree%s",fFileName);
-  printf("\n Wrote data in %s !!\n",filehist);
-     TFile *hist = new TFile(filehist,"RECREATE");
-     hist->cd();
-     //  digitsTree->Write("",TObject::kOverwrite);
+  //  sprintf(filehist,"t0tree%s",fFileName);
+  printf("\n Wrote data in %s !!\n",filehist.Data());
+  TFile *hist = new TFile(filehist.Data(),"RECREATE");
+  hist->cd();
+  //  digitsTree->Write("",TObject::kOverwrite);
      
-     hEffCFD->Write();
-     hEffLED->Write();
-     hEffQT0->Write();
-      hEffQT1->Write();
-      
-      for(Int_t ik=0; ik<105; ik++)	hChannel[ik] ->Write();
-      
+  hEffCFD->Write();
+  hEffLED->Write();
+  hEffQT0->Write();
+  hEffQT1->Write();
+  
+  for(Int_t ik=0; ik<105; ik++)	hChannel[ik] ->Write();
+  
       for (Int_t i=0; i<24; i++)
 	{
 	  hQTC[i]->Write();
