@@ -63,11 +63,15 @@ private:
   Bool_t fIsInitCDB; //!< Flag telling if CDB is used
   TAxis* fCentralityClasses; //!< Centrality classes
 
-#ifdef READOCDB
+  // In principle it is used only when READOCDB is defined
+  // but if it is defined in the #if condition, it is not
+  // correctly streamed to file (not good for plugin)
+  TString fStorageList; /// List of storages
+
+#if defined(READOCDB)
   AliTriggerRunScalers* fTriggerRunScalers; //!< Trigger scalers from OCDB
-  TObjArray* fStorageList; /// List of storages
 #endif
-  
+
   ClassDef(AliAnalysisTaskPileup, 1);
 };
 
