@@ -298,6 +298,13 @@ void AddAnalysisTasks()
      AliAnalysisTask *taskFemto = AddTaskFemto("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/TwoTrackQA/ConfigFemtoAnalysis.C");
      if (!taskFemto) ::Warning("AnalysisTrainNew", "AliAnalysisTaskFemto cannot run for this train conditions - EXCLUDED");
    }         
+
+   // PWG2 Spectra
+   if (iPWG2spectra) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskChargedHadronSpectraITSTruncatedMean.C");
+     AliAnalysisTask *taskSpectraITSTPC = AddTaskChargedHadronSpectraITSTruncatedMean(-1,-1,useMC,iCollision,"$ALICE_ROOT/PWG2/SPECTRA/macros/configChargedHadronSpectraITSTruncatedMeanTask.C");
+     if (!taskSpectraITSTPC) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSpectraITSTPC cannot run for this train conditions - EXCLUDED");
+   }         
 }
 
 //______________________________________________________________________________
