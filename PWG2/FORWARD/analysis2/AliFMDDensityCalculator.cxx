@@ -294,14 +294,27 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
 	  Double_t eLossV   = h->GetBinContent(ieta, iphi);
 	  // Double_t eLossE   = h->GetBinError(ieta, iphi);
-	  
+	  Float_t eta       = h->GetXaxis()->GetBinCenter(ieta);
 	  Double_t empty    = rh->fEmptyStrips->GetBinContent(ieta,iphi);
 	  Double_t total    = rh->fTotalStrips->GetBinContent(ieta,iphi);
-
+	  Double_t corr     = rh->fCorr->GetBinContent(rh->fCorr->GetXaxis()->FindBin(eta));
+	  
+	  
+	  Double_t hits     = total - empty;
+	  
 	  Double_t poissonV =  (total <= 0 || empty <= 0 ? 0 : 
 				-TMath::Log(empty / total));
+	  if(poissonV > 0)
+	    poissonV = (hits * poissonV) / (1 - TMath::Exp(-1*poissonV));
+	  if(corr > 0) {
+	    poissonV = poissonV / corr;
+	  }
+	  //else poissonV = 0;
+	  
 	  Double_t poissonE = TMath::Sqrt(poissonV);
+	  
 
+	  
 	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
 	  rh->fEmptyVsTotal->Fill(total, empty);
 	  if (fUsePoisson) {
