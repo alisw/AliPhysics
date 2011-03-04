@@ -375,8 +375,10 @@ TCanvas ** AliQAManager::GetImage(Char_t * detName)
   // retrieves QA Image for the given detector
   TCanvas ** rv = NULL ; 
   Int_t detIndex = AliQAv1::GetDetIndex(detName) ; 
-  AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(detIndex) ; 
-  rv = qac->GetImage() ;
+  if ( detIndex != AliQAv1::kNULLDET) {
+    AliQACheckerBase * qac = AliQAChecker::Instance()->GetDetQAChecker(detIndex) ; 
+    rv = qac->GetImage() ;
+  }
   return rv ; 
 }
 
