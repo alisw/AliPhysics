@@ -1505,12 +1505,13 @@ void AliTRDmcmSim::FitTracklet()
   // which have been filled in the fit registers. 
 
   // parameters in fitred.asm (fit program)
-  Int_t decPlaces = 5;
   Int_t rndAdd = 0;
-  if (decPlaces >  1) 
+  Int_t decPlaces = 5; // must be larger than 1 or change the following code
+  // if (decPlaces >  1)
     rndAdd = (1 << (decPlaces-1)) + 1;
-  else if (decPlaces == 1)
-    rndAdd = 1;
+  // else if (decPlaces == 1)
+  //   rndAdd = 1;
+
   Int_t ndriftDp = 5;  // decimal places for drift time
   Long64_t shift = ((Long64_t) 1 << 32);
 
@@ -2183,7 +2184,7 @@ ostream& operator<<(ostream& os, const AliTRDmcmSim& mcm)
     Int_t bufLength   = mcm.ProduceRawStream(&buf[0], bufSize);
     
     for (Int_t i = 0; i < bufLength; i++) 
-      std::cout << "0x" << std::hex << buf[i] << std::endl;
+      std::cout << "0x" << std::hex << buf[i] << std::dec << std::endl;
     
     delete [] buf;
   }
