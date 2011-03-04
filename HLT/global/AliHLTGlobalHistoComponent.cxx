@@ -135,14 +135,10 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
 //     "px_2 "
 //     "py_2 "
 //   };
-  
-  //int fMaxTrackCount = 20000; // FIXME: make configurable
-  
+    
   //int maxV0Count    = 100000;
   //int maxUPCCount   = 1;
-  
-  printf("KKKKKKKKKKKKKKKK %d\n", fMaxTrackCount);
-    
+     
   if ((iResult=fTrackVariables.Init(fMaxTrackCount, trackVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties (float)");
   }
