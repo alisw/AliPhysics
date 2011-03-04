@@ -124,46 +124,26 @@ void makeGlobalHistoConfigObject()
 TString makeString(){
   
   TString s = "";
+
   s+="-max-track-count 8000 ";
+  //s+="-max-track-count 8000 -fill-V0 -max-V0-count 200 ";
   
-  s+="-histogram TrackPt -size 1000 -expression Track_pt -cut Track_Nclusters>0 ";
-  s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_Nclusters>0 ";
-  s+="-histogram TrackMultiplicity -size 1000 -expression trackcount -cut Track_Nclusters>0 ";
-  s+="-histogram TrackEta -size 1000 -expression Track_eta -cut Track_Nclusters>0 ";
-  s+="-histogram TrackNclusters(200,0,200) -size 1000 -expression Track_Nclusters -cut Track_Nclusters>0 ";
-  s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_Nclusters>0 ";
-  s+="-histogram TrackDCAr -size 1000 -expression Track_DCAr -cut Track_Nclusters>0 ";
-  s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_Nclusters>0 ";
+  s+="-histogram TrackPt(100,0,20) -size 1000 -expression Track_pt -cut Track_TPCclus>0 ";
+  s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_TPCclus>0 ";
+  s+="-histogram TrackMultiplicity(500,0,10000) -size 1000 -expression trackcount -cut Track_TPCclus>0 ";
+  s+="-histogram TrackEta(100,-2,2) -size 1000 -expression Track_eta -cut Track_TPCclus>0 ";
+  s+="-histogram TrackTPCclus(200,0,200) -size 1000 -expression Track_TPCclus -cut Track_TPCclus>0 ";
+  s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus -cut Track_ITSclus>0 ";
+  s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_TPCclus>0 ";
+  s+="-histogram TrackDCAr(100,-50,50) -size 1000 -expression Track_DCAr -cut Track_TPCclus>0 ";
+  s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_TPCclus>0 ";
 
   s+="-histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz ";
-  s+="-histogram VertexX  -size 1000 -expression vertexX -cut nContributors>3 ";
-  s+="-histogram VertexY  -size 1000 -expression vertexY -cut nContributors>3 ";
-  s+="-histogram VertexZ  -size 1000 -expression vertexZ -cut nContributors>3 ";
+  s+="-histogram VertexX(100,-20,20)  -size 1000 -expression vertexX -cut nContributors>3 ";
+  s+="-histogram VertexY(100,-20,20)  -size 1000 -expression vertexY -cut nContributors>3 ";
+  s+="-histogram VertexZ(200,-50,50)  -size 1000 -expression vertexZ -cut nContributors>3 ";
   s+="-histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 ";
   s+="-histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 ";
-
-  //s+= "-histogram UPC -size 1500 -expression (px_1+px_2)*(px_1+px_2)+(py_1+py_2)*(py_1+py_2) -cut nClusters_1>50&&nClusters_2>50 ";
-  //s+= "-histogram pt1square -size 1500 -expression px_1*px_1+py_1*py_1 -cut nClusters_1>50 ";
-  //s+= "-histogram pt2 -size 1500 -expression TMath::Sqrt(px_2*px_2+py_2*py_2) -cut nClusters_2>50 ";
-
+  
   return s;
 }
-/*
--histogram TrackPt -size 1000 -expression Track_pt -cut Track_Nclusters>0 
--histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_Nclusters>0 
--histogram TrackMultiplicity -size 1000 -expression trackcount -cut Track_Nclusters>0 
--histogram TrackEta -size 1000 -expression Track_eta -cut Track_Nclusters>0 
--histogram TrackNclusters(200,0,200) -size 1000 -expression Track_Nclusters -cut Track_Nclusters>0 
--histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_Nclusters>0 
--histogram TrackDCAr -size 1000 -expression Track_DCAr -cut Track_Nclusters>0 
--histogram TrackCharge -size 1000 -expression Track_charge -cut Track_Nclusters>0 
-
--histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz 
--histogram VertexX  -size 1000 -expression vertexX -cut nContributors>3 
--histogram VertexY  -size 1000 -expression vertexY -cut nContributors>3 
--histogram VertexZ  -size 1000 -expression vertexZ -cut nContributors>3 
--histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 
--histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 
-
--histogram UPC -size 1000 -expression TMath::Sqrt((px_1+px_2)*(px_1+px_2)+(py_1+py_2)*(py_1+py_2)) -cut nClusters_1>50&&nClusters_2>50 
-*/

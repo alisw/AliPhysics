@@ -90,7 +90,8 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
     "Track_eta "
     "Track_p "
     "Track_theta "
-    "Track_Nclusters "
+    "Track_TPCclus "
+    "Track_ITSclus "
     "Track_status "
     "Track_charge "
     "Track_DCAr "
@@ -183,8 +184,8 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   ResetVariables();
 
   // fetch ESD from input stream
-  const TObject* obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
+  const TObject *obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
+  AliESDEvent *esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   esd->GetStdContent();
 
   // fill track variables
@@ -194,9 +195,9 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   fVertexZ         = esd->GetPrimaryVertexTracks()->GetZ();
   fNofContributors = esd->GetPrimaryVertexTracks()->GetNContributors();
   fVertexStatus    = esd->GetPrimaryVertexTracks()->GetStatus();
-  fNofV0s = esd->GetNumberOfV0s();
+  fNofV0s          = esd->GetNumberOfV0s();
   
-  if(fNofV0s > fMaxV0Count){
+  if(fFillV0==kTRUE && (fNofV0s > fMaxV0Count)){
      HLTWarning("Found V0s are %d, while component argument is %d, the respective TTree branch is not filled properly. Need to reconfigure.\n", fNofV0s, fMaxV0Count);
   }
   
@@ -209,10 +210,11 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
       
       fTrackVariables.Fill("Track_pt"	     , esdTrack->Pt()			   );
       fTrackVariables.Fill("Track_phi"       , esdTrack->Phi()*TMath::RadToDeg()   );
-      fTrackVariables.Fill("Track_eta"       , esdTrack->Theta()		   );
+      fTrackVariables.Fill("Track_eta"       , esdTrack->Eta()   		   );
       fTrackVariables.Fill("Track_p"	     , esdTrack->P()			   );
       fTrackVariables.Fill("Track_theta"     , esdTrack->Theta()*TMath::RadToDeg() );
-      fTrackVariables.Fill("Track_Nclusters" , esdTrack->GetTPCNcls()		   );
+      fTrackVariables.Fill("Track_TPCclus"   , esdTrack->GetTPCNcls()		   );
+      fTrackVariables.Fill("Track_ITSclus"   , esdTrack->GetNcls(0)		   );
       fTrackVariables.Fill("Track_status"    , esdTrack->GetStatus()		   );
       fTrackVariables.Fill("Track_charge"    , esdTrack->Charge()		   );
       fTrackVariables.Fill("Track_DCAr"      , DCAr				   );
@@ -222,12 +224,9 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   }
   
   if(fFillV0==kTRUE){
-     for(int i=0; i<fNofV0s; i++){
-     
-     
+     for(int i=0; i<fNofV0s; i++){     
    	 AliESDv0 *esdV0 = esd->GetV0(i);
    	 if(!esdV0) continue;
-   	
    	    
    	//fV0Variables.Fill("V0_AP", ap);
    	//fV0Variables.Fill("V0_pt", pt); 
