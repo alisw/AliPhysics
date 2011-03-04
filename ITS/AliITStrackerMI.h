@@ -28,6 +28,7 @@ class AliPlaneEff;
 #include "AliITSRecPoint.h"
 #include "AliTracker.h"
 #include "AliRefArray.h"
+#include "AliITSPIDResponse.h"
 
 //-------------------------------------------------------------------------
 class AliITStrackerMI : public AliTracker {
@@ -238,6 +239,18 @@ protected:
      new(&fTrackToFollow) AliITStrackMI(t);
   }
   void CookdEdx(AliITStrackMI* track);
+
+  Int_t GetParticleId(const AliESDtrack* track) const{
+    ULong_t trStatus=track->GetStatus();
+    Bool_t isSA=kTRUE;
+    if(trStatus&AliESDtrack::kTPCin) isSA=kFALSE;
+    return fITSPid->GetParticleIdFromdEdxVsP(track->P(),track->GetITSsignal(),isSA);
+  }
+  Int_t GetParticleId(const AliITStrackV2* track) const{
+    if(track->GetESDtrack()) return GetParticleId(track->GetESDtrack());
+    return fITSPid->GetParticleIdFromdEdxVsP(track->P(),track->GetdEdx(),kFALSE);
+  }
+
   Double_t GetNormalizedChi2(AliITStrackMI * track, Int_t mode);
   Double_t GetTruncatedChi2(const AliITStrackMI * track, Float_t fac);
   Double_t NormalizedChi2(AliITStrackMI * track, Int_t layer);
@@ -318,11 +331,12 @@ protected:
   AliITSChannelStatus *fITSChannelStatus;//! bitmaps with channel status for SPD and SDD
   const AliITSDetTypeRec *fkDetTypeRec;         //! ITS det type rec, from AliITSReconstructor
   AliITSPlaneEff *fPlaneEff;             //! Pointer to the ITS plane efficicency
+  AliITSPIDResponse *fITSPid;            //! parameters for ITS pid 
   //
 private:
   AliITStrackerMI(const AliITStrackerMI &tracker);
   AliITStrackerMI & operator=(const AliITStrackerMI &tracker);
-  ClassDef(AliITStrackerMI,9)   //ITS tracker MI
+  ClassDef(AliITStrackerMI,10)   //ITS tracker MI
 };
 
 

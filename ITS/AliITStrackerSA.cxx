@@ -813,6 +813,28 @@ void AliITStrackerSA::StoreTrack(AliITStrackV2 *t,AliESDEvent *event, Bool_t pur
   Double_t sdedx[4]={0.,0.,0.,0.};
   for(Int_t i=0; i<4; i++) sdedx[i]=t->GetSampledEdx(i);
   outtrack.SetITSdEdxSamples(sdedx);
+
+
+  if(AliITSReconstructor::GetRecoParam()->GetSAUsedEdxInfo()){
+    Double_t mom=t->P();
+    Double_t ppid[AliPID::kSPECIES];
+    for(Int_t isp=0;isp<AliPID::kSPECIES;isp++) ppid[isp]=0.;
+    ppid[AliPID::kPion]=1.;
+    if(mom<0.7){
+      Double_t truncmean=t->GetdEdx();
+      Int_t ide=fITSPid->GetParticleIdFromdEdxVsP(mom,truncmean,kTRUE);
+      if(ide==AliPID::kProton){
+	ppid[AliPID::kProton]=1.;
+	ppid[AliPID::kPion]=0.;
+      }
+      else if(ide==AliPID::kKaon){ 
+	ppid[AliPID::kKaon]=1.; 
+	ppid[AliPID::kPion]=0.;
+      }
+    }
+    outtrack.SetITSpid(ppid);
+    outtrack.SetESDpid(ppid);    
+  }
   event->AddTrack(&outtrack);
 
   return;

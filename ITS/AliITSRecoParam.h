@@ -315,6 +315,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetMaxSPDcontrForSAToUseAllClusters(Int_t contr=50) { fMaxSPDcontrForSAToUseAllClusters=contr; return; }
   Int_t GetMaxSPDcontrForSAToUseAllClusters() const { return fMaxSPDcontrForSAToUseAllClusters; }
 
+  void   SetSAUsedEdxInfo(Bool_t opt=kTRUE) { fSAUsedEdxInfo=opt; return; }
+  Bool_t GetSAUsedEdxInfo() const { return fSAUsedEdxInfo; }
+
   void   SetFindV0s(Bool_t find=kTRUE) { fFindV0s=find; return; }
   Bool_t GetFindV0s() const { return fFindV0s; }
 
@@ -639,6 +642,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fSAOnePointTracks; // one-cluster tracks in SA (only for cosmics!)
   Bool_t fSAUseAllClusters; // do not skip clusters used by MI (same track twice in AliESDEvent!)
   Int_t fMaxSPDcontrForSAToUseAllClusters; // maximum nContr of SPD vertex for which trackerSA will reuse all ITS clusters
+  Bool_t fSAUsedEdxInfo;   // use/not use dE/dx in ITS for assign mass hypothesis
 
   Bool_t fSelectBestMIP03;          // (MI) Multiply norm chi2 by interpolated one in hypthesis analysis
   Bool_t fFlagFakes;                // (MI) preform shared cluster analysis and flag candidates for fakes
@@ -738,7 +742,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,37) // ITS reco parameters
+  ClassDef(AliITSRecoParam,38) // ITS reco parameters
 };
 
 #endif

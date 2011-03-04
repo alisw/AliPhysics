@@ -92,7 +92,10 @@ fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
 fITSChannelStatus(0),
 fkDetTypeRec(0),
-fPlaneEff(0) {
+fPlaneEff(0),
+fITSPid(0)
+
+ {
   //Default constructor
   Int_t i;
   for(i=0;i<4;i++) fSPDdetzcentre[i]=0.;
@@ -105,6 +108,7 @@ fPlaneEff(0) {
   fOriginal.SetOwner();
   for(i=0;i<AliITSgeomTGeo::kNLayers;i++)fForceSkippingOfLayer[i]=0;
   for(i=0;i<100000;i++)fBestTrackIndex[i]=0;
+  fITSPid=new AliITSPIDResponse();
 
 }
 //------------------------------------------------------------------------
@@ -138,7 +142,8 @@ fxTimesRhoLayerTrks(0),
 fDebugStreamer(0),
 fITSChannelStatus(0),
 fkDetTypeRec(0),
-fPlaneEff(0) {
+fPlaneEff(0),
+fITSPid(0) {
   //--------------------------------------------------------------------
   //This is the AliITStrackerMI constructor
   //--------------------------------------------------------------------
@@ -275,6 +280,7 @@ fPlaneEff(0) {
   fFlagFakes        = AliITSReconstructor::GetRecoParam()->GetFlagFakes();
   fUseImproveKalman = AliITSReconstructor::GetRecoParam()->GetUseImproveKalman();
   //
+  fITSPid=new AliITSPIDResponse();
 }
 /*
 //------------------------------------------------------------------------
@@ -346,6 +352,8 @@ AliITStrackerMI::~AliITStrackerMI()
   }
   if(fITSChannelStatus) delete fITSChannelStatus;
   if(fPlaneEff) delete fPlaneEff;
+  if(fITSPid) delete fITSPid;
+
 }
 //------------------------------------------------------------------------
 void AliITStrackerMI::ReadBadFromDetTypeRec() {
