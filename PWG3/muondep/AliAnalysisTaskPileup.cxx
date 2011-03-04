@@ -98,10 +98,10 @@ AliAnalysisTaskSE(),
   fTriggerClasses(0x0),
   fTriggerClassIndex(0x0),
   fIsInitCDB(0),
-  fCentralityClasses(0x0)
+  fCentralityClasses(0x0),
+  fStorageList("")
 #if defined(READOCDB)
-  , fTriggerRunScalers(0x0),
-  fStorageList(0x0)
+  , fTriggerRunScalers(0x0)
 #endif
 
 {
@@ -117,12 +117,11 @@ AliAnalysisTaskPileup::AliAnalysisTaskPileup(const char *name) :
   fTriggerClasses(0x0),
   fTriggerClassIndex(0x0),
   fIsInitCDB(0),
-  fCentralityClasses(0x0)
+  fCentralityClasses(0x0),
+  fStorageList("")
 #if defined(READOCDB)
-  , fTriggerRunScalers(0x0),
-  fStorageList(0x0)
+  , fTriggerRunScalers(0x0)
 #endif
-
 {
   /// Constructor
 
@@ -136,7 +135,7 @@ AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
   /// Destructor
 
   // For proof: do not delete output containers
-  if ( ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
     delete fEventCounters;
   }
 
@@ -144,10 +143,9 @@ AliAnalysisTaskPileup::~AliAnalysisTaskPileup()
   delete fTriggerClasses;
   delete fTriggerClassIndex;
 
-#if defined(READOCDB)
+  //#if defined(READOCDB)
   //delete fTriggerRunScalers; // Not owner -> Owned by OCDB
-  delete fStorageList;
-#endif
+  //#endif
 
 }
 
@@ -158,12 +156,17 @@ void AliAnalysisTaskPileup::NotifyRun()
   /// Notify run
 
 #if defined(READOCDB)
-  fStorageList->Compress();
+  if ( fStorageList.IsNull() ) {
+    AliError("Default storage not set! Pileup corrections won't be calculated!");
+    return;
+  }
   if ( ! AliCDBManager::Instance()->GetDefaultStorage() ) {
-    for ( Int_t ientry=0; ientry<fStorageList->GetEntries(); ientry++ ) {
-      TObjString* calibStr = (TObjString*)fStorageList->At(ientry);
+    TObjArray* storageList = fStorageList.Tokenize(" ");
+    storageList->SetOwner();
+    for ( Int_t ientry=0; ientry<storageList->GetEntries(); ientry++ ) {
+      TObjString* calibStr = (TObjString*)storageList->At(ientry);
       ientry++;
-      TObjString* dbStr = (TObjString*)fStorageList->At(ientry);
+      TObjString* dbStr = (TObjString*)storageList->At(ientry);
       TString calibName = calibStr->GetString();
       if ( ! calibName.CompareTo("default") ) {
 	AliCDBManager::Instance()->SetDefaultStorage(dbStr->GetName());
@@ -172,6 +175,7 @@ void AliAnalysisTaskPileup::NotifyRun()
 	AliCDBManager::Instance()->SetSpecificStorage(calibStr->GetName(), dbStr->GetName());
       }
     }
+    delete storageList;
   }
 
   // Default storage was not correclty set: nothing done
@@ -537,16 +541,13 @@ void AliAnalysisTaskPileup::SetSpecificStorage(TString calibType, TString dbStri
 {
   /// Set specific storage
 #if defined(READOCDB)
-  if ( ! fStorageList ) {
-    fStorageList = new TObjArray(5);
-    fStorageList->SetOwner();
-  }
-  fStorageList->AddLast(new TObjString(calibType));
-  fStorageList->AddLast(new TObjString(dbString));
+  if ( ! fStorageList.IsNull() ) fStorageList += " ";
+  fStorageList += Form("%s %s", calibType.Data(), dbString.Data());
+  if ( fDebug >= 3 ) printf("AliAnalysisTaskPileup: Setting storage %s %s", calibType.Data(), dbString.Data());
 #else
   calibType = "";
   dbString  = "";
-  AliWarning(Form("Class was not compiled to run on OCDB. Command will not have effect"));
+  AliWarning("Class was not compiled to run on OCDB. Command will not have effect");
 #endif
 }
 
