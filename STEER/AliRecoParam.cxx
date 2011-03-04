@@ -338,6 +338,7 @@ Bool_t AliRecoParam::AddDetRecoParamArray(Int_t iDet, TObjArray* parArray)
   // for a given detector
   // Basic check on the consistency of the array
   Bool_t defaultFound = kFALSE;
+  if (!parArray) return defaultFound;
   for(Int_t i = 0; i < parArray->GetEntriesFast(); i++) {
     AliDetectorRecoParam *par = (AliDetectorRecoParam*)parArray->At(i);
     if (!par) continue;

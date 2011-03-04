@@ -1700,8 +1700,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
-    fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
-				   iEvent, iEvent);
+    if (fRawReader)
+      fRunLoader->GetHeader()->Reset(fRawReader->GetRunNumber(), 
+				     iEvent, iEvent);
     fRunLoader->TreeE()->Fill();
     if (fRawReader && fRawReader->UseAutoSaveESD())
       fRunLoader->TreeE()->AutoSave("SaveSelf");
@@ -2082,6 +2083,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   }
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
+    if (qadm)
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     if (qadm && IsInTasks(AliQAv1::kESDS))
       qadm->Exec(AliQAv1::kESDS, fesd);

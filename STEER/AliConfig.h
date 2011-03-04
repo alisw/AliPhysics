@@ -36,7 +36,6 @@ public:
   virtual ~ AliConfig (); 
 
   void       Add(TDatabasePDG *pdg);
-  void       Add(char *list);
   
   void       Add(AliGenerator *generator,const char* eventfolder = fgkDefaultEventFolderName);
   void       Add (TVirtualMC *mc,const char* eventfolder = fgkDefaultEventFolderName);
