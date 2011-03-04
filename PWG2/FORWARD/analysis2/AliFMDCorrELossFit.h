@@ -95,7 +95,7 @@ public:
 	     Double_t  xi,     Double_t  exi,
 	     Double_t  sigma,  Double_t  esigma, 
 	     Double_t  sigman, Double_t  esigman, 
-	     Double_t* a,      Double_t* ea);
+	     const Double_t* a,const Double_t* ea);
     /** 
      * Copy constructor 
      * 

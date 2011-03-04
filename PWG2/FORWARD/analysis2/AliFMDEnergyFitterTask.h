@@ -4,7 +4,6 @@
 #ifndef ALIFMDENERGYFITTERTASK_H
 #define ALIFMDENERGYFITTERTASK_H
 #include <AliAnalysisTaskSE.h>
-#include "AliForwardUtil.h"
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
 #include <AliESDFMD.h>

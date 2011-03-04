@@ -4,12 +4,6 @@
 #ifndef ALIFORWARDMCCORRECTIONS_H
 #define ALIFORWARDMCCORRECTIONS_H
 #include <AliAnalysisTaskSE.h>
-#include "AliForwardUtil.h"
-#include "AliFMDSharingFilter.h"
-#include "AliFMDDensityCalculator.h"
-#include "AliFMDCorrector.h"
-#include "AliFMDHistCollector.h"
-#include "AliAODForwardMult.h"
 #include <AliESDFMD.h>
 #include <TH1I.h>
 class AliFMDAnaParameters;

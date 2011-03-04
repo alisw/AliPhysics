@@ -30,7 +30,11 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCorrEmpty(true), 
     fTriggerEff(1),
     fShapeCorr(0)
-{}
+{
+  // 
+  // Constructor
+  // 
+}
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
@@ -50,6 +54,10 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fTriggerEff(1),
     fShapeCorr(0)
 {
+  // 
+  // Constructor
+  // 
+
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
   DefineOutput(2, TList::Class()); 
@@ -77,6 +85,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
 //____________________________________________________________________
 AliBasedNdetaTask::~AliBasedNdetaTask()
 {
+  // 
+  // Destructor
+  // 
   if (fSums) { 
     fSums->Delete();
     delete fSums;
@@ -93,6 +104,12 @@ AliBasedNdetaTask::~AliBasedNdetaTask()
 void 
 AliBasedNdetaTask::SetTriggerMask(const char* mask)
 {
+  // 
+  // Set the trigger maskl 
+  // 
+  // Parameters:
+  //    mask Trigger mask
+  //
   UShort_t    trgMask = 0;
   TString     trgs(mask);
   trgs.ToUpper();
@@ -115,6 +132,13 @@ AliBasedNdetaTask::SetTriggerMask(const char* mask)
 void 
 AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
 {
+  // 
+  // Set the shape correction (a.k.a., track correction) for selected
+  // trigger(s)
+  // 
+  // Parameters:
+  //    h Correction
+  //
   if (!c) return;
   fShapeCorr = static_cast<TH1*>(c->Clone());
   fShapeCorr->SetDirectory(0);
@@ -124,9 +148,11 @@ AliBasedNdetaTask::SetShapeCorrection(const TH1* c)
 void 
 AliBasedNdetaTask::UserCreateOutputObjects()
 {
-  // Create histograms
-  // Called once (on the worker node)
-
+  // 
+  // Create output objects.  
+  //
+  // This is called once per slave process 
+  //
   fOutput = new TList;
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
@@ -166,8 +192,18 @@ AliBasedNdetaTask::UserCreateOutputObjects()
 
 //____________________________________________________________________
 TH2D*
-AliBasedNdetaTask::CloneHist(TH2D* in, const char* name) 
+AliBasedNdetaTask::CloneHist(const TH2D* in, const char* name) 
 {
+  // 
+  // Clone a 2D histogram
+  // 
+  // Parameters:
+  //    in    Histogram to clone.
+  //    name  New name of clone.
+  // 
+  // Return:
+  //    The clone
+  //
   if (!in) return 0;
   TH2D* ret = static_cast<TH2D*>(in->Clone(name));
   ret->SetDirectory(0);
@@ -179,8 +215,17 @@ AliBasedNdetaTask::CloneHist(TH2D* in, const char* name)
 
 //____________________________________________________________________
 Bool_t
-AliBasedNdetaTask::CheckEvent(AliAODEvent* aod)
+AliBasedNdetaTask::CheckEvent(const AliAODEvent* aod)
 {
+  // 
+  // Check the trigger and vertex 
+  // 
+  // Parameters:
+  //    aod 
+  // 
+  // Return:
+  //    
+  //
   TObject*           oForward   = aod->FindListObject("Forward");
   if (!oForward) { 
     AliWarning("No forward object found");
@@ -223,6 +268,12 @@ AliBasedNdetaTask::CheckEvent(AliAODEvent* aod)
 void 
 AliBasedNdetaTask::UserExec(Option_t *) 
 {
+  // 
+  // Process a single event 
+  // 
+  // Parameters:
+  //    option Not used
+  //
   // Main loop
   AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aod) {
@@ -276,6 +327,16 @@ void
 AliBasedNdetaTask::SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker,
 					  const char* title, const char* ytitle)
 {
+  // 
+  // Set histogram graphical options, etc. 
+  // 
+  // Parameters:
+  //    h       Histogram to modify
+  //    colour  Marker color 
+  //    marker  Marker style
+  //    title   Title of histogram
+  //    ytitle  Title on y-axis. 
+  //
   h->SetTitle(title);
   h->SetMarkerColor(colour);
   h->SetMarkerStyle(marker);
@@ -301,6 +362,19 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 			    bool  corr,
 			    bool  error) const
 {
+  // 
+  // Project onto the X axis 
+  // 
+  // Parameters:
+  //    h         2D histogram 
+  //    name      New name 
+  //    firstbin  First bin to use 
+  //    lastbin   Last bin to use
+  //    error     Whether to calculate errors
+  // 
+  // Return:
+  //    Newly created histogram or null
+  //
   if (!h) return 0;
   //#if USE_ROOT_PROJECT
   return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
@@ -370,6 +444,14 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 void 
 AliBasedNdetaTask::Terminate(Option_t *) 
 {
+  // 
+  // Called at end of event processing.. 
+  //
+  // This is called once in the master 
+  // 
+  // Parameters:
+  //    option Not used 
+  //
   // Draw result to screen, or perform fitting, normalizations Called
   // once at the end of the query
         
@@ -471,7 +553,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
     
   
 
-  /*
+  //
   std::cout<<norm->GetMaximumBin()<<"    "<< (Float_t)nAccepted / norm->GetBinContent((Float_t)norm->GetMaximumBin()) <<std::endl;
   Float_t scaleForNorm =  (Float_t)nAccepted / (Float_t)norm->GetBinContent(norm->GetMaximumBin()) ;
   //Float_t scaleForNorm =  norm->Integral() ;
@@ -482,7 +564,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   //norm->Scale(norm->GetNbinsX() / (norm->GetXaxis()->GetXmax() - norm->GetXaxis()->GetXmin() ));
   
   //norm->Scale(1.,"width");
-  */
+  //
   // Project onto eta axis - _ignoring_underflow_bins_!
   
   TH2D* tmpNorm = (TH2D*)fSum->Clone("tmpNorm");
@@ -567,6 +649,15 @@ AliBasedNdetaTask::Terminate(Option_t *)
 TH1D*
 AliBasedNdetaTask::Rebin(const TH1D* h) const
 {
+  // 
+  // Make a copy of the input histogram and rebin that histogram
+  // 
+  // Parameters:
+  //    h  Histogram to rebin
+  // 
+  // Return:
+  //    New (rebinned) histogram
+  //
   if (fRebin <= 1) return 0;
 
   Int_t nBins = h->GetNbinsX();
@@ -623,16 +714,18 @@ AliBasedNdetaTask::Rebin(const TH1D* h) const
 }
 
 //__________________________________________________________________
-/** 
- * Make an extension of @a h to make it symmetric about 0 
- * 
- * @param h Histogram to symmertrice 
- * 
- * @return Symmetric extension of @a h 
- */
 TH1* 
 AliBasedNdetaTask::Symmetrice(const TH1* h) const
 {
+  // 
+  // Make an extension of @a h to make it symmetric about 0 
+  // 
+  // Parameters:
+  //    h Histogram to symmertrice 
+  // 
+  // Return:
+  //    Symmetric extension of @a h 
+  //
   Int_t nBins = h->GetNbinsX();
   TH1* s = static_cast<TH1*>(h->Clone(Form("%s_mirror", h->GetName())));
   s->SetTitle(Form("%s (mirrored)", h->GetTitle()));
@@ -666,3 +759,6 @@ AliBasedNdetaTask::Symmetrice(const TH1* h) const
   s->SetBinError(l2+1, h->GetBinError(first));
   return s;
 }
+//
+// EOF
+//

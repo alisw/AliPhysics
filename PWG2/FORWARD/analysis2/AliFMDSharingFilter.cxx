@@ -28,6 +28,7 @@
 #include <TH1.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
+#include "AliFMDCorrELossFit.h"
 #include <AliLog.h>
 #include <TROOT.h>
 #include <iostream>
@@ -336,7 +337,7 @@ AliFMDSharingFilter::MultiplicityOfStrip(Double_t mult,
 					 UShort_t /*s*/,
 					 UShort_t /*t*/,
 					 Bool_t&  usedPrev, 
-					 Bool_t&  usedThis) 
+					 Bool_t&  usedThis) const
 {
   // 
   // The actual algorithm 
@@ -478,7 +479,7 @@ AliFMDSharingFilter::DeAngleCorrect(Double_t mult, Double_t eta) const
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 
@@ -659,7 +660,8 @@ AliFMDSharingFilter::RingHistos::Finish()
 
 //____________________________________________________________________
 void
-AliFMDSharingFilter::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDSharingFilter::RingHistos::ScaleHistograms(const TList* dir, 
+						 Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 

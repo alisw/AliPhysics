@@ -272,13 +272,13 @@ public:
 
 protected: 
   
-  TH2D*                  fData;          //sum histogram if needed
-  TList*                 fList;          //Output List for diagnostics
-  AliAODCentralMult      fAODCentral;    // Output object
-  Manager                fManager;       //Manager object for corrections
-  Bool_t                 fUseSecondary;  // Whether to secondary map
-  Bool_t                 firstEventSeen; // Have we seen first event     
-  ClassDef(AliCentralMultiplicityTask,1) // Forward multiplicity class
+  TH2D*                  fData;           //sum histogram if needed
+  TList*                 fList;           //Output List for diagnostics
+  AliAODCentralMult      fAODCentral;     // Output object
+  Manager                fManager;        //Manager object for corrections
+  Bool_t                 fUseSecondary;   // Whether to secondary map
+  Bool_t                 fFirstEventSeen; // Have we seen first event     
+  ClassDef(AliCentralMultiplicityTask,1)  // Forward multiplicity class
 };
 
 #endif

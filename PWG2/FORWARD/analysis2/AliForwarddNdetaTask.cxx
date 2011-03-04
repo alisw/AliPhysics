@@ -18,7 +18,11 @@ AliForwarddNdetaTask::AliForwarddNdetaTask()
     fSumPrimary(0),	//  Sum of primary histograms
     fSNNString(0),
     fSysString(0)
-{}
+{
+  //
+  // Constructor 
+  // 
+}
 
 //____________________________________________________________________
 AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
@@ -27,6 +31,11 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
     fSNNString(0),
     fSysString(0)
 {
+  // 
+  // Constructor
+  // 
+  // Paramters
+  //   name    Name of task 
 }
 
 //____________________________________________________________________
@@ -35,12 +44,26 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
     fSumPrimary(o.fSumPrimary),	   // Sum of primary histograms
     fSNNString(o.fSNNString),	   //  
     fSysString(o.fSysString)	   //  
-{}
+{
+  // 
+  // Copy constructor
+  // 
+}
 
 //____________________________________________________________________
 TH2D*
-AliForwarddNdetaTask::GetHistogram(AliAODEvent* aod, Bool_t mc)
+AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
 {
+  // 
+  // Retrieve the histogram 
+  // 
+  // Parameters:
+  //    aod AOD event 
+  //    mc  Whether to get the MC histogram or not
+  // 
+  // Return:
+  //    Retrieved histogram or null
+  //
   TObject* obj = 0;
   if (mc) obj = aod->FindListObject("ForwardMC");
   else    obj = aod->FindListObject("Forward");
@@ -72,11 +95,11 @@ AliForwarddNdetaTask::GetHistogram(AliAODEvent* aod, Bool_t mc)
       
       
       /*   if(fTriggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) {
-	if (primary) fSumPrimary->Add(primary); 
-      
-      }
-      
-      else if (primary) fSumPrimary->Add(primary);*/
+	   if (primary) fSumPrimary->Add(primary); 
+	   
+	   }
+	   
+	   else if (primary) fSumPrimary->Add(primary);*/
       
     }    
   }

@@ -45,7 +45,7 @@ protected:
    * 
    * @return 
    */
-  TH2D* GetHistogram(AliAODEvent* aod, Bool_t mc=false);
+  TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false);
 
   ClassDef(AliCentraldNdetaTask,1); // Determine multiplicity in central area
 };

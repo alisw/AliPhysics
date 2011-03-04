@@ -26,8 +26,10 @@
 //#include "AliFMDStripIndex.h"
 #include <TH1.h>
 #include <TH3D.h>
+#include <TH2D.h>
 #include <TDirectory.h>
 #include <TTree.h>
+#include <TList.h>
 
 //====================================================================
 namespace {

@@ -59,10 +59,10 @@ protected:
    * 
    * @return Retrieved histogram or null
    */
-  TH2D* GetHistogram(AliAODEvent* aod, Bool_t mc);
+  TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc);
   TH2D*           fSumPrimary;    //  Sum of primary histograms
-  TNamed*         fSNNString;     // 
-  TNamed*         fSysString;     // 
+  TNamed*         fSNNString;     //  sqrt(s_NN) string 
+  TNamed*         fSysString;     //  Collision system string 
 
   ClassDef(AliForwarddNdetaTask,1); // Determine multiplicity in forward region
 };

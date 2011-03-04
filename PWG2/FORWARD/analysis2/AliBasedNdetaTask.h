@@ -109,7 +109,7 @@ protected:
    * 
    * @return Retrieved histogram or null
    */
-  virtual TH2D* GetHistogram(AliAODEvent* aod, Bool_t mc=false) = 0;
+  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
   /** 
    * Check the trigger and vertex 
    * 
@@ -117,7 +117,7 @@ protected:
    * 
    * @return 
    */
-  Bool_t CheckEvent(AliAODEvent* aod);
+  Bool_t CheckEvent(const AliAODEvent* aod);
   /** 
    * Clone a 2D histogram
    * 
@@ -126,7 +126,7 @@ protected:
    * 
    * @return The clone
    */
-  TH2D* CloneHist(TH2D* in, const char* name);
+  TH2D* CloneHist(const TH2D* in, const char* name);
   /** 
    * Make a copy of the input histogram and rebin that histogram
    * 

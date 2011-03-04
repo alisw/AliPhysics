@@ -170,7 +170,7 @@ public:
    * 
    * @return true on success, false otherwise 
    */
-  Bool_t FetchHistograms(TList* d, 
+  Bool_t FetchHistograms(const TList* d, 
 			 TH1I*& hEventsTr, 
 			 TH1I*& hEventsTrVtx, 
 			 TH1I*& hTriggers) const;
@@ -238,7 +238,7 @@ protected:
   TList*   fList;         //! Histogram container 
   UShort_t fEnergy;       // CMS energy (per nucleon pair) [GeV]
   Short_t  fField;        // L3 magnetic field [kG]
-  UShort_t fCollisionSystem; //  
+  UShort_t fCollisionSystem; //  Collision system
   Int_t    fDebug;        //  Debug level 
   ClassDef(AliFMDEventInspector,2); // Inspect the event 
 };
