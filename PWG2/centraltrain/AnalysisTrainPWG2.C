@@ -313,10 +313,15 @@ void AddAnalysisTasks()
 
    // PWG2 Spectra
    if (iPWG2spectra) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskITSsaSpectra.C");
+     AliAnalysisTask *taskSpectraITSsa = AddTaskITSsaSpectra(0,useMC,-1,-1,iCollision);
+     if (!taskSpectraITSsa) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSpectraITSsa cannot run for this train conditions - EXCLUDED");
+   }
+   if (iPWG2spectra) {
      gROOT->LoadMacro("$ALICE_ROOT/PWG2/SPECTRA/macros/AddTaskChargedHadronSpectraITSTruncatedMean.C");
      AliAnalysisTask *taskSpectraITSTPC = AddTaskChargedHadronSpectraITSTruncatedMean(-1,-1,useMC,iCollision,"$ALICE_ROOT/PWG2/SPECTRA/macros/configChargedHadronSpectraITSTruncatedMeanTask.C");
      if (!taskSpectraITSTPC) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSpectraITSTPC cannot run for this train conditions - EXCLUDED");
-   }         
+   }
 }
 
 //______________________________________________________________________________
