@@ -43,18 +43,22 @@
 #include "AliPhysicsSelection.h"
 #include "AliAnalysisTaskSEITSsaSpectra.h"
 #include "AliESDtrackCuts.h"
+#include "AliCentrality.h"
+#include "AliMultiplicity.h"
+#include "AliESDUtils.h"
 
 ClassImp(AliAnalysisTaskSEITSsaSpectra)
 /* $Id$ */
 
 //________________________________________________________________________
 AliAnalysisTaskSEITSsaSpectra::AliAnalysisTaskSEITSsaSpectra():
-AliAnalysisTaskSE("Task CFits"),
+AliAnalysisTaskSE("Task CFit"),
   fESD(0),
   fesdTrackCutsMult(0),
   fOutput(0),
   fHistNEvents(0),
   fHistMult(0),
+  fHistCen(0),
   fHistNTracks(0),
   fHistNTracksPos(0),
   fHistNTracksNeg(0),
@@ -71,8 +75,12 @@ AliAnalysisTaskSE("Task CFits"),
   fNSigmaDCAxy(7.),
   fNSigmaDCAz(7.),
   fEtaRange(0.8),
-  fLowMult(0),
-  fUpMult(9999),
+  fLowMult(-1),
+  fUpMult(-1),
+  fLowCentrality(-1.0),
+  fUpCentrality(-1.0),
+  fSPD(0),
+  fHImode(0),
   fYear(2010),
   fMC(kFALSE), 
   fSmearMC(kFALSE),
@@ -272,10 +280,15 @@ void AliAnalysisTaskSEITSsaSpectra::UserCreateOutputObjects(){
   fHistNEvents->SetMinimum(0);
   fOutput->Add(fHistNEvents);
   
-  fHistMult = new TH1F("fHistMult", "Event Multiplicity",1000,-0.5,999.5);
+  fHistMult = new TH1F("fHistMult", "Event Multiplicity",3000,-0.5,2999.5);
   fHistMult->Sumw2();
   fHistMult->SetMinimum(0);
   fOutput->Add(fHistMult);
+  
+  fHistCen = new TH1F("fHistCen", "Event Centrality",101,-0.5,100.5);
+  fHistCen->Sumw2();
+  fHistCen->SetMinimum(0);
+  fOutput->Add(fHistCen);
   
   fHistNTracks = new TH1F("fHistNTracks", "Number of ITSsa tracks",20,0.5,20.5);
   fHistNTracks->Sumw2();
@@ -512,29 +525,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
     return;
   } 
   fHistNEvents->Fill(0);
-
-  //selection on the event multiplicity
   
- 
-
-  
-  Int_t multiplicity = fesdTrackCutsMult->CountAcceptedTracks(fESD);
-  
-  if(fLowMult>-1)
-    {
-      if(multiplicity<fLowMult)
-	return;
-    }
-  if(fUpMult>-1)
-    {
-      if(multiplicity>fUpMult)
-	return;
-    }
-  
-  Printf("Multiplicity of the event: %i\n",multiplicity);
-  
-  fHistMult->Fill(multiplicity);
-  
+  ///////////////////////////////////////
   //variables
   Float_t pdgmass[4]={0.13957,0.493677,0.938272,1.8756}; //mass for pi, K, P (Gev/c^2)
   Int_t listcode[3]={211,321,2212};//code for pi, K, P (Gev/c^2)
@@ -584,6 +576,74 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   Int_t nTrackMC=0; 
   if(stack) nTrackMC = stack->GetNtrack();	
   const AliESDVertex *vtx =  fESD->GetPrimaryVertexSPD();
+
+///////////selection of the centrality or multiplicity bin
+
+  //selection on the event centrality
+  if(fHImode){
+    if(!(fLowCentrality<0.0)&&fUpCentrality>0.0)
+      {
+	AliCentrality *centrality = fESD->GetCentrality();
+	if(!centrality->IsEventInCentralityClass(fLowCentrality,fUpCentrality,"V0M"))
+	  return;
+	Printf("Centrality of the event: %.1f",centrality->GetCentralityPercentile("V0M"));
+	Printf("Centrality cut: %.1f to %.1f",fLowCentrality,fUpCentrality);
+	fHistCen->Fill(centrality->GetCentralityPercentile("V0M"));
+      }
+  }
+  
+  //selection on the event multiplicity based on global tracks
+  Int_t multiplicity = fesdTrackCutsMult->CountAcceptedTracks(fESD);
+  if(!fSPD){
+    if(fLowMult>-1)
+      {
+	if(multiplicity<fLowMult)
+	  return;
+      }
+    if(fUpMult>-1)
+      {
+	if(multiplicity>fUpMult)
+	  return;
+      }
+    
+    Printf("Multiplicity of the event (global tracks) : %i",multiplicity);
+    Printf("Multiplicity cut (global tracks) : %i to %i",fLowMult,fUpMult);
+    fHistMult->Fill(multiplicity);
+  }
+  
+  //multipicity selection based on SPD
+  if(fSPD){
+    Float_t spdCorr=-1.0;
+    const AliMultiplicity *mult = fESD->GetMultiplicity();
+    Float_t nClusters[6]={0.0,0.0,0.0,0.0,0.0,0.0};
+    for(Int_t ilay=0; ilay<6; ilay++)
+      {
+	nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
+      } 
+    spdCorr = AliESDUtils::GetCorrSPD2(nClusters[1],vtx->GetZ());
+    {
+      if(fLowMult>-1)
+	{
+	  if(((Int_t)spdCorr)<fLowMult)
+	    {
+	      return;
+	    }	
+	}
+      if(fUpMult>-1)
+	{
+	  if(((Int_t)spdCorr)>fUpMult)
+	    {
+	      return;
+	    }		
+	}
+    }
+    
+    Printf("Multiplicity of the event (SPD) : %i",(Int_t)spdCorr);
+    Printf("Multiplicity cut (SPD) : %i to %i",fLowMult,fUpMult);
+    fHistMult->Fill(spdCorr);
+  }
+  
+  
   
   //event selection
   fHistNEvents->Fill(1);
@@ -605,8 +665,7 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
       }
     }
   }
-	
-  /////first loop on stack, before event selection, filling MC ntuple
+/////first loop on stack, before event selection, filling MC ntuple
 	
   for(Int_t imc=0; imc<nTrackMC; imc++){
     part = stack->Particle(imc);
@@ -681,7 +740,8 @@ void AliAnalysisTaskSEITSsaSpectra::UserExec(Option_t *){
   
   
   if(evSel==0)return;  //event selection
-	
+  
+
   //loop on tracks
   for (Int_t iTrack=0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {  
     isph=-999;
@@ -1118,6 +1178,7 @@ void AliAnalysisTaskSEITSsaSpectra::Terminate(Option_t *) {
   } 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNEvents"));
   fHistMult = dynamic_cast<TH1F*>(fOutput->FindObject("fHistMult"));
+  fHistCen = dynamic_cast<TH1F*>(fOutput->FindObject("fHistCen"));
   fHistNTracks = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracks"));
   fHistNTracksPos = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracksPos"));
   fHistNTracksNeg = dynamic_cast<TH1F*>(fOutput->FindObject("fHistNTracksNeg"));
