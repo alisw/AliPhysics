@@ -30,8 +30,9 @@
 
 class AliAnalysisTaskFemto : public AliAnalysisTask {
  public:
- AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0) {}
-    AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
+  AliAnalysisTaskFemto() : AliAnalysisTask(), fESD(0), fAOD(0), fStack(0), fOutputList(0), fReader(0x0), fManager(0x0), fAnalysisType(0), fConfigMacro(0), fConfigParams(0) {}
+  AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams);
+  AliAnalysisTaskFemto(const char *name, const char *aConfigMacro);
   AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask);
   virtual ~AliAnalysisTaskFemto();
   
@@ -58,8 +59,9 @@ class AliAnalysisTaskFemto : public AliAnalysisTask {
   AliFemtoManager             *fManager;      //! AliFemto top-level manager 
   int                          fAnalysisType; //  Mark ESD of AOD analysis
   char                        *fConfigMacro;  //  Config macro location
+  char                        *fConfigParams; //  Config macro parameters
 
-  ClassDef(AliAnalysisTaskFemto, 2); // example of analysis
+  ClassDef(AliAnalysisTaskFemto, 3); // example of analysis
 };
 
 #endif

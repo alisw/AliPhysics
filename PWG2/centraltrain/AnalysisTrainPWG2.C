@@ -87,7 +87,7 @@ TString     local_xmldataset   = "";
 //==============================================================================
 Bool_t      usePhysicsSelection = kFALSE; // use physics selection
 Bool_t      useBKrejection      = kFALSE; // use BK rejection
-Bool_t      useCentrality       = kFALSE; // centrality delta AOD
+Bool_t      useCentrality       = kTRUE; // centrality delta AOD
 Bool_t      useTender           = kFALSE; // use tender wagon
 Bool_t      useV0tender         = kFALSE;  // use V0 correction in tender
 Bool_t      useMergeViaJDL      = kTRUE;  // merge via JDL
@@ -112,7 +112,7 @@ Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 
 Int_t       iPWG2fmd           = 0;      // FMD forward analysis (PWG2)
 Int_t       iPWG2femto         = 1;      // Femtoscopy two-track analysis (PWG2)
-
+Int_t       iPWG2spectra       = 1;      // Charge hadron spectra (PWG2)
 
 // Temporaries.
 TString anaPars = "";
@@ -147,6 +147,7 @@ void AnalysisTrainPWG2(const char *analysis_mode="local",
    if (useTender)    printf("=  TENDER                                                        =\n");
    if (iPWG2fmd)       printf("=  PWG2 FMD                                                      =\n");
    if (iPWG2femto)      printf("=  PWG2 Femtoscopy                                               =\n");
+   if (iPWG2spectra)      printf("=  PWG2 Charged Spectra                                          =\n");
    printf("==================================================================\n");
    printf(":: use physics selection: %d\n", (UInt_t)usePhysicsSelection);
    printf(":: use xrootd tweaks:     %d\n", (UInt_t)useFastReadOption);
@@ -271,6 +272,17 @@ void AddAnalysisTasks()
       mgr->AddStatisticsTask(AliVEvent::kMB);
    }
    
+   if (useCentrality) {
+   // Common Centrality task
+     AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
+     mgr->AddTask(centralityTask);
+     mgr->ConnectInput(centralityTask, 0, mgr->GetCommonInputContainer());
+//       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+//       mgr->RegisterExtraFile("event_stat.root");
+//       AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(useMC,useBKrejection);
+//       mgr->AddStatisticsTask(AliVEvent::kMB);
+   }
+   
    // AOD tags
    if (useAODTAGS) {
       AliAnalysisTaskTagCreator* tagTask = new AliAnalysisTaskTagCreator("AOD Tag Creator");
@@ -295,7 +307,7 @@ void AddAnalysisTasks()
    // PWG2 Femtoscopy
    if (iPWG2femto) {
      gROOT->LoadMacro("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/AddTaskFemto.C");
-     AliAnalysisTask *taskFemto = AddTaskFemto("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/TwoTrackQA/ConfigFemtoAnalysis.C");
+     AliAnalysisTask *taskFemto = AddTaskFemto("$ALICE_ROOT/PWG2/FEMTOSCOPY/macros/Train/TwoTrackQA/ConfigFemtoAnalysisCentral.C",Form("%i, %i, %i", iAODanalysis?0:1, iCollision, 0));
      if (!taskFemto) ::Warning("AnalysisTrainNew", "AliAnalysisTaskFemto cannot run for this train conditions - EXCLUDED");
    }         
 
@@ -541,7 +553,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
 	  !LoadLibrary("PWG2femtoscopy", mode, kTRUE) ||
 	  !LoadLibrary("PWG2femtoscopyUser", mode, kTRUE)) return kFALSE;
    }   
-   
+   // PWG2 spectra
+   if (iPWG2spectra) {
+      if (!LoadLibrary("PWG2spectra", mode, kTRUE)) return kFALSE;
+   }
    ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
 }
@@ -958,6 +973,7 @@ void WriteConfig()
    out << "   iAODhandler     = " << iAODhandler << ";" << endl;
    out << "   iPWG2fmd        = " << iPWG2fmd << ";" << endl;   
    out << "   iPWG2femto      = " << iPWG2femto << ";" << endl;   
+   out << "   iPWG2spectra    = " << iPWG2spectra << ";" << endl;   
    out << "}" << endl;
    ::Info("AnalysisTrainNew.C::WriteConfig", "Train configuration wrote to file %s", Form("config_%s.C", train_name.Data()));
    gSystem->ChangeDirectory(cdir);

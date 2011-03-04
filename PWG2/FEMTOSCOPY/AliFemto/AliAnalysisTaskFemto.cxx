@@ -31,7 +31,7 @@ ClassImp(AliAnalysisTaskFemto)
 // extern AliFemtoManager *ConfigFemtoAnalysis();
 
 //________________________________________________________________________
-  AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro="ConfigFemtoAnalysis.C"): 
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro, const char *aConfigParams):
     AliAnalysisTask(name,""), 
     fESD(0), 
     fAOD(0),
@@ -40,7 +40,8 @@ ClassImp(AliAnalysisTaskFemto)
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
-    fConfigMacro(0)
+    fConfigMacro(0),
+    fConfigParams(0)
 {
   // Constructor.
   // Input slot #0 works with an Ntuple
@@ -49,6 +50,31 @@ ClassImp(AliAnalysisTaskFemto)
   DefineOutput(0, TList::Class());
   fConfigMacro = (char *) malloc(sizeof(char) * strlen(aConfigMacro));
   strcpy(fConfigMacro, aConfigMacro);
+  fConfigParams = (char *) malloc(sizeof(char) * strlen(aConfigParams));
+  strcpy(fConfigParams, aConfigParams);
+}
+//________________________________________________________________________
+AliAnalysisTaskFemto::AliAnalysisTaskFemto(const char *name, const char *aConfigMacro="ConfigFemtoAnalysis.C"): 
+    AliAnalysisTask(name,""), 
+    fESD(0), 
+    fAOD(0),
+    fStack(0),
+    fOutputList(0), 
+    fReader(0x0),
+    fManager(0x0),
+    fAnalysisType(0),
+    fConfigMacro(0),
+    fConfigParams(0)
+{
+  // Constructor.
+  // Input slot #0 works with an Ntuple
+  DefineInput(0, TChain::Class());
+  // Output slot #0 writes into a TH1 container
+  DefineOutput(0, TList::Class());
+  fConfigMacro = (char *) malloc(sizeof(char) * strlen(aConfigMacro));
+  strcpy(fConfigMacro, aConfigMacro);
+  fConfigParams = (char *) malloc(sizeof(char) * 2);
+  strcpy(fConfigParams, "");
 }
 
 AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTask):
@@ -60,7 +86,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
     fReader(0x0),
     fManager(0x0),
     fAnalysisType(0),
-    fConfigMacro(0)
+    fConfigMacro(0),
+    fConfigParams(0)
 {
   // copy constructor
   fESD = aFemtoTask.fESD; 
@@ -72,6 +99,8 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto& aFemtoTas
   fAnalysisType = aFemtoTask.fAnalysisType; 
   fConfigMacro = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigMacro));
   strcpy(fConfigMacro, aFemtoTask.fConfigMacro);
+  fConfigParams = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigParams));
+  strcpy(fConfigParams, aFemtoTask.fConfigParams);
 }
 
 
@@ -90,6 +119,9 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   if (fConfigMacro) free(fConfigMacro);
   fConfigMacro = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigMacro));
   strcpy(fConfigMacro, aFemtoTask.fConfigMacro);
+  if (fConfigParams) free(fConfigParams);
+  fConfigParams = (char *) malloc(sizeof(char) * strlen(aFemtoTask.fConfigParams));
+  strcpy(fConfigParams, aFemtoTask.fConfigParams);
 
   return *this;
 }
@@ -97,6 +129,7 @@ AliAnalysisTaskFemto& AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
 AliAnalysisTaskFemto::~AliAnalysisTaskFemto() 
 {
   if (fConfigMacro) free(fConfigMacro);
+  if (fConfigParams) free(fConfigParams);
 }
 
 
@@ -170,7 +203,10 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
 //   gROOT->LoadMacro(fcm);
   gROOT->LoadMacro(fConfigMacro);
   //  fJetFinder = (AliJetFinder*) gInterpreter->ProcessLine("ConfigJetAnalysis()");
-  SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
+  if (fConfigParams)
+    SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
+  else
+    SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams)));
 
   TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();
