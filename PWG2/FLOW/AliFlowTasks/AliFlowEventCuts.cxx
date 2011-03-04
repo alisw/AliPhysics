@@ -301,9 +301,12 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutTPCmultiplicityOutliers)
   {
     //this is pretty slow as we check the event track by track twice
+    //this cut will work for 2010 PbPb data and is dependent on
+    //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
     Int_t multTPC = fStandardTPCcuts->Count(event);
     Int_t multGlobal = fStandardGlobalCuts->Count(event);
-    if (multTPC > (20+1.2*multGlobal)) return kFALSE;
+    if (multTPC > ( 23+1.216*multGlobal)) return kFALSE;
+    if (multTPC < (-20+1.087*multGlobal)) return kFALSE;
   }
   if (fCutMeanPt)
   {

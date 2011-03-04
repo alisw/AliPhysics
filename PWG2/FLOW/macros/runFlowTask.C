@@ -76,8 +76,8 @@ void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000,
   }
 
   //Add the TOF tender
-  //gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
-  //AddTaskTenderTOF();
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderFlow.C");
+  //AddTaskTenderFlow();
 
   // Setup analysis and usage of centrality bins
   gROOT->LoadMacro("AddTaskFlow.C");

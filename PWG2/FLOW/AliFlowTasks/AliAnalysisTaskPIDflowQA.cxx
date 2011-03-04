@@ -21,21 +21,25 @@
 //origin: Marek Chojnacki, Marek.Chojnacki@cern.ch
 //modified: Mikolaj Krzewicki, Mikolaj.Krzewicki@cern.ch
 
+#include <stdio.h>
+
 #include "AliAnalysisTaskPIDflowQA.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
-#include "AliInputEventHandler.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "TH2F.h"
 #include "TProfile.h"
 #include "TMath.h"
 #include "AliVEvent.h"
-#include "AliESDtrackCuts.h"
 #include "AliPID.h"
 #include "AliCDBManager.h"
 #include "AliFlowEventCuts.h"
 #include "AliFlowTrackCuts.h"
+#include "AliVEventHandler.h"
+#include "AliInputEventHandler.h"
+#include "TTree.h"
+#include "TFile.h"
 
 ClassImp( AliAnalysisTaskPIDflowQA)
 
@@ -47,6 +51,8 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fEventCuts(NULL),
   fESDpid(NULL),
   fMC(kFALSE),
+  fUseDebugFile(kFALSE),
+  fFile(NULL),
   fITSsignal(NULL),
   fTPCsignal(NULL),
   fTOFsignal(NULL),
@@ -90,6 +96,8 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fEventCuts(NULL),
   fESDpid(NULL),
   fMC(kFALSE),
+  fUseDebugFile(kFALSE),
+  fFile(NULL),
   fITSsignal(NULL),
   fTPCsignal(NULL),
   fTOFsignal(NULL),
@@ -260,6 +268,8 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   //fOutputList->Add(fESDpid);
 
+  if (fUseDebugFile) fFile = fopen("debug.txt","w");
+
   PostData(1,  fOutputList);
 }
 
@@ -303,7 +313,7 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     trackESD=fESD->GetTrack(tr1);
     if (!trackESD) continue;
 
-    if(!(fCuts->AcceptTrack(trackESD))) continue;
+    if(!(fCuts->IsSelected(trackESD))) continue;
 
     Int_t label=-1;
     if(fMC) label=trackESD->GetLabel();
@@ -328,10 +338,27 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   //check the correlation between the global and TPConly number of tracks
   fStandardGlobalCuts->SetEvent(fESD);
   fStandardTPCCuts->SetEvent(fESD);
-  fTPCvsGlobalMult->Fill(fStandardGlobalCuts->Count(),fStandardTPCCuts->Count());
+  Int_t multGlobal = fStandardGlobalCuts->Count();
+  Int_t multTPC = fStandardTPCCuts->Count();
+  fTPCvsGlobalMult->Fill(multGlobal,multTPC);
 
-  // Post output data.
-  PostData(1,  fOutputList);
+  if (fFile)
+  {
+    const AliESDVertex* pvtx = fESD->GetPrimaryVertex();
+    const AliESDVertex* tpcvtx = fESD->GetPrimaryVertexTPC();
+    const AliESDVertex* spdvtx = fESD->GetPrimaryVertexSPD();
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliVEventHandler* handler = mgr->GetInputEventHandler();
+    TTree* tree = handler->GetTree();
+    TFile* file = tree->GetCurrentFile();
+    if (multTPC>(23+1.216*multGlobal) || multTPC<(-20+1.087*multGlobal))
+    {
+      fprintf(fFile, "%i %i %s %i\n",multTPC,multGlobal,file->GetName(),fESD->GetEventNumberInFile());
+      fprintf(fFile, "  primary vertex: x: %.2f, y: %.2f, z: %.2f, n: %i\n", pvtx->GetX(), pvtx->GetY(), pvtx->GetZ(), pvtx->GetNContributors());
+      fprintf(fFile, "      SPD vertex: x: %.2f, y: %.2f, z: %.2f, n: %i\n", spdvtx->GetX(), spdvtx->GetY(), spdvtx->GetZ(), spdvtx->GetNContributors());
+      fprintf(fFile, "      TPC vertex: x: %.2f, y: %.2f, z: %.2f, n: %i\n", tpcvtx->GetX(), tpcvtx->GetY(), tpcvtx->GetZ(), tpcvtx->GetNContributors());
+    }
+  }
 }
 
 //________________________________________________________________________

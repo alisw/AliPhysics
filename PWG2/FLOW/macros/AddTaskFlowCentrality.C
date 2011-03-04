@@ -97,6 +97,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   cutsEvent->SetPrimaryVertexZrange(-10.,10.);
   cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
   cutsEvent->SetCutZDCtiming();
+  //cutsEvent->SetCutTPCmultiplicityOutliers();
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("rp cuts");
@@ -120,6 +121,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   //cutsRP->SetMaxNsigmaToVertex(1.e+10);
   //cutsRP->SetRequireSigmaToVertex(kFALSE);
   cutsRP->SetAcceptKinkDaughters(kFALSE);
+  cutsRP->SetMinimalTPCdedx(10.);
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("poi cuts");
@@ -143,10 +145,11 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
   //cutsPOI->SetRequireSigmaToVertex(kFALSE);
   cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  cutsRP->SetMinimalTPCdedx(10.);
   //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFpid);
   //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
-  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCTOFpid);
-  //cutsPOI->SetTPCTOFpidCrossOverPt(0.4);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
   //iexample: francesco's tunig TPC Bethe Bloch for data:
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
