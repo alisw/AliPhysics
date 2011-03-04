@@ -959,7 +959,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
   printf("Depth of event buffer: %d \n",fNmaxMixEv) ;
   printf("Pair in same Module: %d \n",fSameSM) ;
   printf("Cuts: \n") ;
-  printf("Z vertex position: -%2.3f < z < %2.3f \n",GetZvertexCut(),GetZvertexCut()) ;
+// printf("Z vertex position: -%2.3f < z < %2.3f \n",GetZvertexCut(),GetZvertexCut()) ; //It crashes here, why?
   printf("Number of modules:             %d \n",fNModules) ;
   printf("Select pairs with their angle: %d, edep %d, min angle %2.3f, max angle %2.3f \n",fUseAngleCut, fUseAngleEDepCut, fAngleCut, fAngleMaxCut) ;
   printf("Asymmetry cuts: n = %d, \n",fNAsymCuts) ;
@@ -1020,6 +1020,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           //Origin of meson
           Int_t momindex  = prim->GetFirstMother();
+          if(momindex < 0) continue;
           TParticle* mother = stack->Particle(momindex);
           Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
           Int_t momstatus = mother->GetStatusCode();
@@ -1158,6 +1159,7 @@ void AliAnaPi0::FillAcceptanceHistograms(){
           
           //Origin of meson
           Int_t momindex  = prim->GetMother();
+          if(momindex < 0) continue;
           AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
           Int_t mompdg    = TMath::Abs(mother->GetPdgCode());
           Int_t momstatus = mother->GetStatus();
@@ -1347,6 +1349,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
             if(GetReader()->ReadStack()){	
               TParticle* ancestor = GetMCStack()->Particle(ancLabel);
               momindex  = ancestor->GetFirstMother();
+              if(momindex < 0) return;
               TParticle* mother = GetMCStack()->Particle(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatusCode();         
@@ -1355,6 +1358,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
               TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
               AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
               momindex  = ancestor->GetMother();
+              if(momindex < 0) return;
               AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
               mompdg    = TMath::Abs(mother->GetPdgCode());
               momstatus = mother->GetStatus();  
@@ -1404,6 +1408,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
           if(GetReader()->ReadStack()){	
             TParticle* ancestor = GetMCStack()->Particle(ancLabel);
             momindex  = ancestor->GetFirstMother();
+            if(momindex < 0) return;
             TParticle* mother = GetMCStack()->Particle(momindex);
             mompdg    = TMath::Abs(mother->GetPdgCode());
             momstatus = mother->GetStatusCode();         
@@ -1412,6 +1417,7 @@ void AliAnaPi0::FillMCVersusRecDataHistograms(const Int_t index1,  const Int_t i
             TClonesArray * mcparticles = GetReader()->GetAODMCParticles(0);
             AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(ancLabel);
             momindex  = ancestor->GetMother();
+            if(momindex < 0) return;
             AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
             mompdg    = TMath::Abs(mother->GetPdgCode());
             momstatus = mother->GetStatus();  
@@ -1648,7 +1654,10 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       return ; 
     if ( evtIndex1 == -2 )
       continue ; 
+    
+    //printf("z vertex %f < %f\n",vert[2],GetZvertexCut());
     if(TMath::Abs(vert[2]) > GetZvertexCut()) continue ;   //vertex cut
+  
     
     //----------------------------------------------------------------------------
     // Get the multiplicity bin. Different cases: centrality (PbPb), 
@@ -1705,7 +1714,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
 //        //printf("cluster pair rW average %f, bin %d \n",rxzw,curCentrBin);
 //      }     
       else { //Event centrality
-        curCentrBin = GetEventCentrality();
+          curCentrBin = GetEventCentrality();
         //printf("curCentrBin %d\n",curCentrBin);
       }
       
