@@ -335,7 +335,7 @@ Bool_t AliQAChecker::Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task
 
   if (det >= AliQAv1::kNDET) {
     AliError(Form("det = %i is larger than AliQAv1::kNDET ... should never happen", det)); 
-    return ; 
+    return kFALSE ; 
   }
 	AliQACheckerBase * qac = GetDetQAChecker(det) ; 
 	if (qac)
