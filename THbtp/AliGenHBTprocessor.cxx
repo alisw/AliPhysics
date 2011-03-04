@@ -240,7 +240,10 @@ void AliGenHBTprocessor::InitStatusCodes()
  //creates and inits status codes array to zero
   AliGenCocktailAfterBurner *cab = GetGenerator();
 
-  if(!cab) Fatal("InitStatusCodes()","Can not find AliGenCocktailAfterBurner generator");
+  if(!cab) {
+    Fatal("InitStatusCodes()","Can not find AliGenCocktailAfterBurner generator");
+    return;
+  }
 
   Int_t nev = cab->GetNumberOfEvents();
 
@@ -356,6 +359,7 @@ void AliGenHBTprocessor::Generate()
    if (cab == 0x0)
     {
       Fatal("Generate()","AliGenHBTprocessor needs AliGenCocktailAfterBurner to be main generator");
+      return;
     }
    if (cab->GetNumberOfEvents() <2)
     {

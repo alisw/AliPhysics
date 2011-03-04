@@ -1827,7 +1827,7 @@ void AliRunLoader::GetListOfDetectors(const char * namelist,TObjArray& pointerar
    Int_t tmp;
    for(;;)
     {
-      tmp = sscanf(pdet,"%s",buff);//read the string from the input string pdet into buff
+      tmp = sscanf(pdet,"%9s",buff);//read the string from the input string pdet into buff
       if ( (buff[0] == 0) || (tmp == 0) ) break; //if not read
      
       pdet = strstr(pdet,buff) + strlen(buff);//move the input pointer about number of bytes (letters) read
