@@ -12,9 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class for PID QA
 // Several studies done on clean samples of electrons, pions and kaons
@@ -412,7 +409,7 @@ void AliHFEpidQA::FillIllumination(const TObjArray * const tracks, Int_t species
       if(!esdtrack) continue;
     } else if(!TString(o->IsA()->GetName()).CompareTo("AliAODrack")){
       // Bad hack: Fill ESD track with AOD information
-      esdtrack = new AliESDtrack(dynamic_cast<AliAODTrack *>(o));
+      esdtrack = new AliESDtrack(static_cast<AliAODTrack *>(o));
       if(!esdtrack) continue;
     } else {
       // Non usable

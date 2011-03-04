@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // HFE correction framework container
 // Contains many single containers
@@ -108,16 +105,16 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
     fVariables = new TObjArray(fNVars);
     AliHFEvarInfo *vtmp = NULL;
     for(UInt_t ivar = 0; ivar < fNVars; ivar++){
-      vtmp = dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
-      if(vtmp) fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
+      vtmp = static_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
+      fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
     }
   }
   fContainers = new THashList;
   fContainers->SetOwner();
   AliCFContainer *ctmp = NULL;
   for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
-    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
-    if(ctmp) CreateContainer(ctmp->GetName(), ctmp->GetTitle(), ctmp->GetNStep());
+    ctmp = static_cast<AliCFContainer *>(ref.fContainers->At(ien));
+    CreateContainer(ctmp->GetName(), ctmp->GetTitle(), ctmp->GetNStep());
   }
   // Copy also correlation matrices
   if(ref.fCorrelationMatrices){
@@ -125,8 +122,8 @@ AliHFEcontainer::AliHFEcontainer(const AliHFEcontainer &ref):
     fCorrelationMatrices = new THashList;
     fCorrelationMatrices->SetOwner();
     for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
-      htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
-      if(htmp) CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+      htmp = static_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
+      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
     }
   }
 }
@@ -146,8 +143,8 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
     fVariables = new TObjArray(fNVars);
     AliHFEvarInfo *vtmp = NULL;
     for(UInt_t ivar = 0; ivar < fNVars; ivar++){
-      vtmp = dynamic_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
-      if(vtmp) fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
+      vtmp = static_cast<AliHFEvarInfo *>(ref.fVariables->UncheckedAt(ivar));
+      fVariables->AddAt(new AliHFEvarInfo(*vtmp), ivar);
     }
   } else {
     // No varible defined, do not try to copy anything
@@ -159,8 +156,8 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
   fContainers = new THashList();
   AliCFContainer *ctmp = NULL;
   for(Int_t ien = 0; ien < ref.fContainers->GetEntries(); ien++){
-    ctmp = dynamic_cast<AliCFContainer *>(ref.fContainers->At(ien));
-    if(ctmp) fContainers->Add(new AliCFContainer(*ctmp));
+    ctmp = static_cast<AliCFContainer *>(ref.fContainers->At(ien));
+    fContainers->Add(new AliCFContainer(*ctmp));
   }
   // Copy also correlation matrices
   if(ref.fCorrelationMatrices){
@@ -168,8 +165,8 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
     fCorrelationMatrices = new THashList;
     fCorrelationMatrices->SetOwner();
     for(Int_t ien = 0; ien < ref.fCorrelationMatrices->GetEntries(); ien++){
-      htmp = dynamic_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
-      if(htmp) CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
+      htmp = static_cast<THnSparseF *>(ref.fCorrelationMatrices->At(ien));
+      CreateCorrelationMatrix(htmp->GetName(), htmp->GetTitle());
     }
   }
   return *this;
