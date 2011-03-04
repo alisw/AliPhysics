@@ -59,10 +59,18 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
     fLowMult=LowBin;
     fUpMult=UpBin;
   }
+  void SetCentralityCut(Float_t low, Float_t up){
+    if((up>low)&&(!(low<0.0))&&(!(up>100.0))){
+      fLowCentrality=low; fUpCentrality=up;
+    }
+  }
+ void SetSPDMethodCut(){fSPD=kTRUE;}
+ void SetHImode(){fHImode=kTRUE;}
+  
   void SetEtaMax(Double_t maxeta){
     fEtaRange=maxeta;
   }
-
+  
   void SetYear(Int_t year);
   void SetReadMC(Bool_t flag = kTRUE) {fMC = flag;}
   void SetFillNtuple(Bool_t fill=kTRUE) {fFillNtuple=fill;}
@@ -89,6 +97,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TList *fOutput; //! tlist with output
   TH1F *fHistNEvents; //! histo with number of events
   TH1F *fHistMult; //! histo with multiplicity of the events
+  TH1F *fHistCen; //! histo with multiplicity of the events
   TH1F *fHistNTracks; //! histo with number of tracks
   TH1F *fHistNTracksPos; //! histo with number of tracks
   TH1F *fHistNTracksNeg; //! histo with number of tracks
@@ -192,6 +201,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   Double_t fEtaRange;        // limits in pseudorap
   Int_t fLowMult;      // Multiplicity bin
   Int_t fUpMult;      // Multiplicity bin
+  Float_t fLowCentrality;//low Centrality cut
+  Float_t fUpCentrality;//up  Centrality cut
+  Bool_t fSPD;//use spd2 as mulestimator 
+  Bool_t fHImode;//use spd2 as mulestimator 
   Int_t fYear;        // Year (2009, 2010)
   Bool_t   fMC;        //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fSmearMC;   // flag to apply extra smearing on MC 
@@ -202,7 +215,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE {
   TNtuple     *fNtupleNSigma;//! output ntuple
   TNtuple     *fNtupleMC;//! output MC ntuple
   
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 4);
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 5);
 };
 
 #endif

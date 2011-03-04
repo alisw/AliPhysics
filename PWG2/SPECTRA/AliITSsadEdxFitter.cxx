@@ -400,7 +400,7 @@ void AliITSsadEdxFitter::GetInitialParam(TH1F* h,Bool_t mc,Int_t code,Int_t bin,
   sigma1 = CalcSigma(211,pt,mc); //expected sigma values
   sigma2 = CalcSigma(321,pt,mc);
   sigma3 = CalcSigma(2212,pt,mc);
-  printf("sigma values -> %f %f %f\n",sigma1,sigma1,sigma1);
+  printf("sigma values -> %f %f %f\n",sigma1,sigma2,sigma3);
   printf("sigma ranges -> (%1.2f,%1.2f) (%1.2f,%1.2f) (%1.2f,%1.2f)\n",fLimitsOnSigmaPion[0],fLimitsOnSigmaPion[1],fLimitsOnSigmaKaon[0],fLimitsOnSigmaKaon[1],fLimitsOnSigmaProton[0],fLimitsOnSigmaProton[1]);
   return;
 }
