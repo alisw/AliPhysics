@@ -13,6 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+// $Id$
+
 //-----------------------------------------------------------------------
 // Class for HF corrections as a function of many variables and step 
 // Author : C. Zampolli, CERN
@@ -143,6 +145,8 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fCentValue=c.fCentValue;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
+                        fPtAccCut = new Float_t[fProngs];
+                        fEtaAccCut = new Float_t[fProngs];
 			for(Int_t iP=0; iP<fProngs; iP++){
 				fLabelArray[iP]=c.fLabelArray[iP];
 				fPtAccCut[iP]=c.fPtAccCut[iP];
@@ -180,6 +184,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	//
 	if (fProngs > 0){
 		fLabelArray = new Int_t[fProngs];
+                fPtAccCut = new Float_t[fProngs];
+                fEtaAccCut = new Float_t[fProngs];
 		if (c.fLabelArray) memcpy(fLabelArray,c.fLabelArray,fProngs*sizeof(Int_t));
 		if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
 		if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
@@ -743,6 +749,12 @@ Bool_t AliCFVertexingHF::SetLabelArray()
 		for(Int_t iDau=0; iDau<fProngs-1; iDau++){
 			Int_t iLabelDau = labelFirstDau+iDau;
 			AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(fmcArray->At(iLabelDau));
+                        if ( ! part ) {
+                          AliError("Wrong particle type in fmcArray");
+			  delete [] fLabelArray; 
+			  fLabelArray = 0x0; 
+                          return bLabelArray;
+                        }  
 			Int_t pdgCode=TMath::Abs(part->GetPdgCode());
 			if(pdgCode==211 || pdgCode==321 || pdgCode==2212){
 				if (part) {
