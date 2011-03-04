@@ -200,8 +200,10 @@ void AliAnalysisTaskESDfilter::UserExec(Option_t */*option*/)
   }
   // Filters must explicitely enable AOD filling in their UserExec (AG)
   if (!AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()) AliFatal("Cannot run ESD filter without an output event handler");
-  if(fEnableFillAOD) AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
-
+  if(fEnableFillAOD) {
+     AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+     AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);
+  }   
   ConvertESDtoAOD();
 }
 

@@ -431,7 +431,6 @@ void AliAODHandler::StoreMCParticles(){
 Bool_t AliAODHandler::FinishEvent()
 {
   // Fill data structures
-  
   if(fFillAOD && fFillAODRun && fAODEvent){
       fAODEvent->MakeEntriesReferencable();
       fTreeA->BranchRef();
@@ -439,12 +438,13 @@ Bool_t AliAODHandler::FinishEvent()
   }
 
   if ((fFillAOD && fFillAODRun) || fFillExtension) {
-    if (fExtensions) {
+    if (fExtensions && fFillExtension) {
+      // fFillExtension can be set by the ESD filter or by a delta filter in case of AOD inputs
       TIter next(fExtensions);
       AliAODExtension *ext;
       while ((ext=(AliAODExtension*)next())) ext->FinishEvent();
     }
-    if (fFilters) {   
+    if (fFilters && fFillAOD && fFillAODRun) {
       TIter nextf(fFilters);
       AliAODExtension *ext;
       while ((ext=(AliAODExtension*)nextf())) {

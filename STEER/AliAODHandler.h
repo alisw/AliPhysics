@@ -37,7 +37,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
     virtual Bool_t       GetEntry() {return kTRUE;}
 	    
-    virtual Bool_t       BeginEvent(Long64_t /*entry*/) {fFillAOD=kFALSE; return kTRUE;}
+    virtual Bool_t       BeginEvent(Long64_t /*entry*/) {fFillAOD=kFALSE; fFillExtension=kFALSE; return kTRUE;}
     virtual Bool_t       Notify() { return AliVEventHandler::Notify(); };
     virtual Bool_t       Notify(const char * /* path */) {return kTRUE;}
     virtual Bool_t       FinishEvent();
@@ -46,6 +46,7 @@ class AliAODHandler : public AliVEventHandler {
     //
     virtual void         SetCreateNonStandardAOD()               {fIsStandard = kFALSE;}
     virtual void         SetFillAOD(Bool_t b)                    {fFillAOD = b;}
+    virtual void         SetFillExtension(Bool_t b)              {fFillExtension = b;}
     virtual void         SetFillAODforRun(Bool_t b)              {fFillAODRun = b;}
     virtual void         SetNeedsHeaderReplication()             {fNeedsHeaderReplication             = kTRUE;}
     virtual void         SetNeedsTracksBranchReplication()       {fNeedsTracksBranchReplication       = kTRUE;}
