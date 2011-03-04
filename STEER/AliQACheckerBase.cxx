@@ -321,14 +321,13 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * reco
 { 
 	AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
-	Double_t * rv = NULL ;
+	Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
   Check(rv, index, recoParam) ;
 	SetQA(index, rv) ; 	
 	
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
 	
-  if (rv) 
-    delete [] rv ; 
+  delete [] rv ; 
   Finish() ; 
 }
 
