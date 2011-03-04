@@ -211,7 +211,7 @@ TObjArray * AliTRDcheckPID::Histos(){
   if(!(h = (TProfile2D*)gROOT->FindObject("PHX"))){
     h = new TProfile2D("PHX", "<PH>(x);p*species;x_{drift} [cm];entries", 
       xBins, -0.5, xBins - 0.5,
-      40., 0.,4.5);
+      40, 0., 4.5);
   } else h->Reset();
   fPH->AddAt(h, 1);
 
