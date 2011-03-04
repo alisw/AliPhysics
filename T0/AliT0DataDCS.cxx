@@ -351,7 +351,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    aliasEntr[j] = aliasArr->GetEntries();
 		    for(Int_t l=0; l<aliasEntr[j]; l++)
 		    {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
 		      t0Scaler[j]+= (UInt_t)  aValue->GetFloat(); 
 	            }
 		    fScalerMean[j] = ((UInt_t) t0Scaler[j])/((UInt_t) aliasEntr[j]);
@@ -361,7 +361,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
 		    aliasEntr[j] = aliasArr->GetEntries();		
    	            for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ScalerSec[j-kScalers]+= (UInt_t)  aValue->GetFloat();  
                     }
 		    fScalerSecMean[j-kScalers] = ((UInt_t) t0ScalerSec[j-kScalers])/((UInt_t) aliasEntr[j]);
@@ -371,7 +371,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AhvImon[j-2*kScalers]+= aValue->GetFloat();
                     }
                     fHViA[j-2*kScalers] = t0AhvImon[j-2*kScalers] / aliasEntr[j];
@@ -381,7 +381,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AHVvmon[j-(2*kScalers+kHV)]+= aValue->GetFloat();
                     }
                     fHVvA[j-(2*kScalers+kHV)] = t0AHVvmon[j-(2*kScalers+kHV)] / aliasEntr[j];
@@ -391,7 +391,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AlvImon[j-(2*kScalers+2*kHV)]+= aValue->GetFloat();
                     }
                     fLViA[j-(2*kScalers+2*kHV)] = t0AlvImon[j-(2*kScalers+2*kHV)] / aliasEntr[j];
@@ -401,7 +401,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AlvVmon[j-(2*kScalers+2*kHV+kLV)]+= aValue->GetFloat();
                     }
                     fLVvA[j-(2*kScalers+2*kHV+kLV)] = t0AlvVmon[j-(2*kScalers+2*kHV+kLV)] / aliasEntr[j];
@@ -411,7 +411,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ChvImon[j-(2*kScalers+2*kHV+2*kLV)]+= aValue->GetFloat();
                     }
                     fHViC[j-(2*kScalers+2*kHV+2*kLV)] = t0ChvImon[j-(2*kScalers+2*kHV+2*kLV)] / aliasEntr[j];
@@ -421,7 +421,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ChvVmon[j-(2*kScalers+3*kHV+2*kLV)]+= aValue->GetFloat();
                     }
                     fHVvC[j-(2*kScalers+3*kHV+2*kLV)] = t0ChvVmon[j-(2*kScalers+3*kHV+2*kLV)] / aliasEntr[j];
@@ -431,7 +431,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ClvImon[j-(2*kScalers+4*kHV+2*kLV)]+= aValue->GetFloat();
                     }
                     fLViC[j-(2*kScalers+4*kHV+2*kLV)] = t0ClvImon[j-(2*kScalers+4*kHV+2*kLV)] / aliasEntr[j];
@@ -441,7 +441,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ClvVmon[j-(2*kScalers+4*kHV+3*kLV)]+= aValue->GetFloat();
                     }
                     fLVvC[j-(2*kScalers+4*kHV+3*kLV)] = t0ClvVmon[j-(2*kScalers+4*kHV+3*kLV)] / aliasEntr[j];
@@ -451,7 +451,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AcfdThre[j-(2*kScalers+4*kHV+4*kLV)]+= aValue->GetFloat();
                     }
                     fCFDtA[j-(2*kScalers+4*kHV+4*kLV)] = t0AcfdThre[j-(2*kScalers+4*kHV+4*kLV)] / aliasEntr[j];
@@ -461,7 +461,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0AcfdWalk[j-(2*kScalers+4*kHV+4*kLV+kCFD)]+= aValue->GetFloat();
                     }
                     fCFDwA[j-(2*kScalers+4*kHV+4*kLV+kCFD)] = t0AcfdWalk[j-(2*kScalers+4*kHV+4*kLV+kCFD)] / aliasEntr[j];
@@ -471,7 +471,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0CcfdThre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)]+= aValue->GetFloat();
                     }
                     fCFDtC[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] = t0CcfdThre[j-(2*kScalers+4*kHV+4*kLV+2*kCFD)] / aliasEntr[j];
@@ -481,7 +481,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0CcfdWalk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)]+= aValue->GetFloat();
                     }
                     fCFDwC[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] = t0CcfdWalk[j-(2*kScalers+4*kHV+4*kLV+3*kCFD)] / aliasEntr[j];
@@ -491,7 +491,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ACtrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)]+= aValue->GetFloat();
                     }
                     fTRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] = t0ACtrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD)] / aliasEntr[j];
@@ -501,7 +501,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0ACdrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)]+= aValue->GetFloat();
                     }
                     fDRM[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] = t0ACdrm[j-(2*kScalers+4*kHV+4*kLV+4*kCFD+kTRM)] / aliasEntr[j];
@@ -511,7 +511,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
 		    for(Int_t l=0; l<aliasEntr[j]; l++)
 		    {		
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0atten += aValue->GetFloat();  
                     }
                     fAtten = t0atten /((Float_t) aliasEntr[j]);
@@ -521,7 +521,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0MPDcentA +=  Int_t(aValue->GetFloat());
                     }
 		    if(aliasEntr[j]!=0)
@@ -532,7 +532,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0MPDcentC += (Int_t) aValue->GetFloat();
                     }
                     fMPDcentC = ((Int_t) t0MPDcentC) /((Int_t) aliasEntr[j]);
@@ -552,7 +552,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0MPDsemiCentC += (Int_t) aValue->GetFloat();
                     }
                     fMPDsemiCentC =  ((Int_t) t0MPDsemiCentC)/ ((Int_t) aliasEntr[j]);
@@ -562,7 +562,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0TVDCtop += (Int_t)  aValue->GetFloat();
                     }
                     fTVDCtop =  ((Int_t) t0TVDCtop)/((Int_t) aliasEntr[j]);
@@ -572,7 +572,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0TVDCbottom += (Int_t) aValue->GetFloat();
                     }
                     fTVDCbottom = ((Int_t) t0TVDCbottom) /((Int_t) aliasEntr[j]);
@@ -582,7 +582,7 @@ Bool_t AliT0DataDCS::ProcessData(TMap& aliasMap)
                     aliasEntr[j] = aliasArr->GetEntries();
                     for(Int_t l=0; l<aliasEntr[j]; l++)
                     {
-                      AliDCSValue *aValue=dynamic_cast<AliDCSValue*> (aliasArr->At(l));
+                      AliDCSValue *aValue=static_cast<AliDCSValue*> (aliasArr->At(l));
                       t0MPDmode += (Int_t) aValue->GetFloat();
                     }
                     fMPDmode = ((Int_t) t0MPDmode)/((Int_t) aliasEntr[j]);
