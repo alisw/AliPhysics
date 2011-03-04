@@ -19,7 +19,13 @@ class AliT0CalibLaserData : public TObject
   AliT0CalibLaserData(const AliT0CalibLaserData &calibda) : TObject(calibda),
     fTEntry(0),
     fFileName(" ")
-    {}
+    {
+      for ( Int_t i=0; i<30; i++ )
+      {
+         fEntries[i] = NULL;
+         fHistLimits[i] = 0;
+      }
+    }
   AliT0CalibLaserData & operator= (const AliT0CalibLaserData  &) {return *this;}
   virtual ~AliT0CalibLaserData() {}
   void ReadHistSize();
