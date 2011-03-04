@@ -88,15 +88,18 @@ AliT0Align::AliT0Align(Int_t reportloc, Int_t side, Int_t reportglob) :
   fRepLoc = reportloc;
   fRepGlob = reportglob;
   fSide = side;
-  Char_t path[50];
-  fFileGlob = new Char_t[80];
-  fUser = new Char_t[10];
-  sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
+  // Char_t path[50];
+  TString path = Form("%s",gSystem->Getenv("ALICE_ROOT")) ;
+  // fFileGlob = new Char_t[80];
+  //  fUser = new Char_t[10];
+  fFileGlob = Form("%s/T0/Survey_%d_V0.txt",path.Data(),reportglob);
+  fUser = Form("%s/T0/Survey_%d_V0.txt",path.Data(),reportglob);
+  // sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
   //
   // sprintf(fFileLoc,"%s/T0/Survey_%d_T0.txt",path,reportloc);
-  sprintf(fFileGlob,"%s/T0/Survey_%d_V0.txt",path,reportglob);
+  // sprintf(fFileGlob,"%s/T0/Survey_%d_V0.txt",path,reportglob);
   //
-  sprintf(fUser,gSystem->Getenv("alien_API_USER"));
+  // sprintf(fUser,gSystem->Getenv("alien_API_USER"));
 }
 //_________________________________________________________________________
 AliT0Align::AliT0Align(const AliT0Align &align) :
