@@ -89,6 +89,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fAODFilterBit(0),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
+  fCutMinimalTPCdedx(kFALSE),
+  fMinimalTPCdedx(0.),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -101,11 +103,11 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fEvent(NULL),
   fTPCtrack(),
   fESDpid(),
-  fPIDsource(kTPCTOFpid),
+  fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
-  fTPCTOFpidCrossOverPt(0.4),
-  fAliPID(AliPID::kPion)
+  fParticleID(AliPID::kPion),
+  fParticleProbability(.9)
 {
   //io constructor 
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
@@ -147,6 +149,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fAODFilterBit(0),
   fCutDCAToVertexXY(kFALSE),
   fCutDCAToVertexZ(kFALSE),
+  fCutMinimalTPCdedx(kFALSE),
+  fMinimalTPCdedx(0.),
   fParamType(kGlobal),
   fParamMix(kPure),
   fTrack(NULL),
@@ -159,11 +163,11 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fEvent(NULL),
   fTPCtrack(),
   fESDpid(),
-  fPIDsource(kTPCTOFpid),
+  fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
-  fTPCTOFpidCrossOverPt(0.4),
-  fAliPID(AliPID::kPion)
+  fParticleID(AliPID::kPion),
+  fParticleProbability(.9)
 {
   //constructor 
   SetName(name);
@@ -212,6 +216,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fAODFilterBit(that.fAODFilterBit),
   fCutDCAToVertexXY(that.fCutDCAToVertexXY),
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
+  fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
+  fMinimalTPCdedx(that.fMinimalTPCdedx),
   fParamType(that.fParamType),
   fParamMix(that.fParamMix),
   fTrack(NULL),
@@ -227,8 +233,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fPIDsource(that.fPIDsource),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
-  fTPCTOFpidCrossOverPt(that.fTPCTOFpidCrossOverPt),
-  fAliPID(that.fAliPID)
+  fParticleID(that.fParticleID),
+  fParticleProbability(that.fParticleProbability)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -277,6 +283,8 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fAODFilterBit=that.fAODFilterBit;
   fCutDCAToVertexXY=that.fCutDCAToVertexXY;
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
+  fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
+  fMinimalTPCdedx=that.fMinimalTPCdedx;
   fParamType=that.fParamType;
   fParamMix=that.fParamMix;
 
@@ -296,9 +304,9 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   delete fTOFpidCuts;
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
   if (that.fTOFpidCuts) fTOFpidCuts = new TMatrixF(*(that.fTOFpidCuts));
-  fTPCTOFpidCrossOverPt=that.fTPCTOFpidCrossOverPt;
 
-  fAliPID=that.fAliPID;
+  fParticleID=that.fParticleID;
+  fParticleProbability=that.fParticleProbability;
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
   return *this;
@@ -595,6 +603,11 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
       pass=kFALSE;
   }
 
+  if (fCutMinimalTPCdedx) 
+  {
+    if (track->GetTPCsignal() < fMinimalTPCdedx) pass=kFALSE;
+  }
+
   if (fCutNClustersTPC)
   {
     if (ntpccls < fNClustersTPCMin || ntpccls > fNClustersTPCMax) pass=kFALSE;
@@ -606,7 +619,6 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (nitscls < fNClustersITSMin || nitscls > fNClustersITSMax) pass=kFALSE;
   }
 
-  Double_t pt = track->Pt();
   if (fCutPID)
   {
     switch (fPIDsource)    
@@ -614,18 +626,14 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
       case kTPCpid:
         if (!PassesTPCpidCut(track)) pass=kFALSE;
         break;
+      case kTPCdedx:
+        if (!PassesTPCdedxCut(track)) pass=kFALSE;
+        break;
       case kTOFpid:
         if (!PassesTOFpidCut(track)) pass=kFALSE;
         break;
-      case kTPCTOFpid:
-        if (pt< fTPCTOFpidCrossOverPt)
-        {
-          if (!PassesTPCpidCut(track)) pass=kFALSE;
-        }
-        else //if (pt>=fTPCTOFpidCrossOverPt)
-        {
-          if (!PassesTOFpidCut(track)) pass=kFALSE;
-        }
+      case kTOFbeta:
+        if (!PassesTOFbetaCut(track)) pass=kFALSE;
         break;
 	    // part added by F. Noferini
       case kTOFbayesian:
@@ -670,7 +678,7 @@ void AliFlowTrackCuts::HandleESDtrack(AliESDtrack* track)
       fTrack = track;
       break;
     case kESD_TPConly:
-      if (!track->FillTPCOnlyTrack(fTPCtrack))
+      if (!track->FillTPCOnlyTrack(fTPCtrack)) 
       {
         fTrack=NULL;
         fMCparticle=NULL;
@@ -730,6 +738,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
   cuts->SetMaxDCAToVertexXY(0.3);
   cuts->SetMaxDCAToVertexZ(0.3);
   cuts->SetAcceptKinkDaughters(kFALSE);
+  cuts->SetMinimalTPCdedx(10.);
 
   return cuts;
 }
@@ -749,6 +758,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010()
   cuts->SetMaxDCAToVertexZ(3.0);
   cuts->SetDCAToVertex2D(kTRUE);
   cuts->SetAcceptKinkDaughters(kFALSE);
+  cuts->SetMinimalTPCdedx(10.);
 
   return cuts;
 }
@@ -768,6 +778,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts()
   cuts->SetMaxDCAToVertexZ(3.0);
   cuts->SetDCAToVertex2D(kTRUE);
   cuts->SetAcceptKinkDaughters(kFALSE);
+  cuts->SetMinimalTPCdedx(10.);
 
   return cuts;
 }
@@ -896,25 +907,6 @@ Bool_t AliFlowTrackCuts::IsPhysicalPrimary(AliMCEvent* mcEvent, Int_t label, Boo
 }
 
 //-----------------------------------------------------------------------
-const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type) 
-{
-  //return the name of the selected parameter type
-  switch (type)
-  {
-    case kMC:
-      return "MC";
-    case kGlobal:
-      return "ESD global";
-    case kESD_TPConly:
-      return "TPC only";
-    case kESD_SPDtracklet:
-      return "SPD tracklet";
-    default:
-      return "unknown";
-  }
-}
-
-//-----------------------------------------------------------------------
 void AliFlowTrackCuts::DefineHistograms()
 {
   //define qa histograms
@@ -977,7 +969,7 @@ void AliFlowTrackCuts::Clear(Option_t*)
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* track )
+Bool_t AliFlowTrackCuts::PassesTOFbetaCut(AliESDtrack* track )
 {
   //check if passes PID cut using timing in TOF
   Bool_t goodtrack = (track) && 
@@ -1000,7 +992,7 @@ Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* track )
 
   //construct the pid index because it's not AliPID::EParticleType
   Int_t pid = 0;
-  switch (fAliPID)
+  switch (fParticleID)
   {
     case AliPID::kPion:
       pid=2;
@@ -1024,12 +1016,41 @@ Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* track )
   Float_t min = (*fTOFpidCuts)(1,col);
   Float_t max = (*fTOFpidCuts)(2,col);
 
-  //printf("--------------TOF pid cut %s\n",(s>min && s<max)?"PASS":"FAIL");
+  //printf("--------------TOF beta cut %s\n",(s>min && s<max)?"PASS":"FAIL");
   return (s>min && s<max);
 }
 
 //-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTOFpidCut(AliESDtrack* track)
+{
+  //check if passes PID cut using default TOF pid
+  Double_t pidTOF[AliPID::kSPECIES];
+  track->GetTOFpid(pidTOF);
+  if (pidTOF[fParticleID]>=fParticleProbability) return kTRUE;
+  return kFALSE;
+}
+
+//-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
+{
+  //check if passes PID cut using default TPC pid
+  Double_t pidTPC[AliPID::kSPECIES];
+  track->GetTPCpid(pidTPC);
+  Double_t probablity = 0.;
+  switch (fParticleID)
+  {
+    case AliPID::kPion:
+      probablity = pidTPC[AliPID::kPion] + pidTPC[AliPID::kMuon];
+      break;
+    default:
+      probablity = pidTPC[fParticleID];
+  }
+  if (probablity >= fParticleProbability) return kTRUE;
+  return kFALSE;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCdedxCut(AliESDtrack* track)
 {
   //check if passes PID cut using dedx signal in the TPC
   if (!fTPCpidCuts)
@@ -1040,7 +1061,7 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(AliESDtrack* track)
 
   const AliExternalTrackParam* tpcparam = track->GetInnerParam(); //tpc only params at the inner wall
   if (!tpcparam) return kFALSE;
-  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fAliPID);
+  Float_t sigExp = fESDpid.GetTPCResponse().GetExpectedSignal(tpcparam->GetP(), fParticleID);
   Float_t sigTPC = track->GetTPCsignal();
   Float_t s = (sigTPC-sigExp)/sigExp;
   Double_t pt = track->Pt();
@@ -1062,7 +1083,7 @@ void AliFlowTrackCuts::InitPIDcuts()
   TMatrixF* t = NULL;
   if (!fTPCpidCuts)
   {
-    if (fAliPID==AliPID::kPion)
+    if (fParticleID==AliPID::kPion)
     {
       t = new TMatrixF(3,10);
       (*t)(0,0)  = 0.20;  (*t)(1,0)  = -0.4;  (*t)(2,0)  =   0.2;
@@ -1077,7 +1098,7 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,9)  = 0.65;  (*t)(1,9)  =    0;  (*t)(2,9)  =     0;
     }
     else
-    if (fAliPID==AliPID::kKaon)
+    if (fParticleID==AliPID::kKaon)
     {
       t = new TMatrixF(3,7);
       (*t)(0,0)  = 0.20;  (*t)(1,0)  = -0.2;  (*t)(2,0)  = 0.4; 
@@ -1089,7 +1110,7 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,6)  = 0.50;  (*t)(1,6)  =    0;  (*t)(2,6)  =   0;
     }
     else
-    if (fAliPID==AliPID::kProton)
+    if (fParticleID==AliPID::kProton)
     {
       t = new TMatrixF(3,16);
       (*t)(0,0)  = 0.20;  (*t)(1,0)  =     0;  (*t)(2,0)  =    0; 
@@ -1114,7 +1135,7 @@ void AliFlowTrackCuts::InitPIDcuts()
   t = NULL;
   if (!fTOFpidCuts)
   {
-    if (fAliPID==AliPID::kPion)
+    if (fParticleID==AliPID::kPion)
     {
       //TOF pions, 0.9 purity
       t = new TMatrixF(3,61);
@@ -1181,7 +1202,7 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,60)  = 5.900;  (*t)(2,60)  = 0.000;  (*t)(2,60)  =   0.000;
     }
     else
-    if (fAliPID==AliPID::kProton)
+    if (fParticleID==AliPID::kProton)
     {
       //TOF protons, 0.9 purity
       t = new TMatrixF(3,61);
@@ -1248,7 +1269,7 @@ void AliFlowTrackCuts::InitPIDcuts()
       (*t)(0,60)  = 5.900;  (*t)(2,60)  = 0.000;  (*t)(2,60)  =   0.000; 
     }
     else
-    if (fAliPID==AliPID::kKaon)
+    if (fParticleID==AliPID::kKaon)
     {
       //TOF kaons, 0.9 purity
       t = new TMatrixF(3,61);
@@ -1332,7 +1353,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(AliESDtrack* track){
 
   Int_t pid = 0;
   Float_t prob = 0;
-  switch (fAliPID)
+  switch (fParticleID)
   {
     case AliPID::kPion:
       pid=211;
@@ -1665,3 +1686,45 @@ void AliFlowTrackCuts::SetPriors(){
 }
 // end part added by F. Noferini
 //-----------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------
+const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
+{
+  //get the name of the particle id source
+  switch (s)
+  {
+    case kTPCdedx:
+      return "TPCdedx";
+    case kTOFbeta:
+      return "TOFbeta";
+    case kTPCpid:
+      return "TPCpid";
+    case kTOFpid:
+      return "TOFpid";
+    case kTOFbayesian:
+      return "TOFbayesianPID";
+    default:
+      return "NOPID";
+  }
+}
+
+//-----------------------------------------------------------------------
+const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type) 
+{
+  //return the name of the selected parameter type
+  switch (type)
+  {
+    case kMC:
+      return "MC";
+    case kGlobal:
+      return "ESD global";
+    case kESD_TPConly:
+      return "TPC only";
+    case kESD_SPDtracklet:
+      return "SPD tracklet";
+    default:
+      return "unknown";
+  }
+}
+

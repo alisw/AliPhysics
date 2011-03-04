@@ -51,7 +51,7 @@ class AliFlowEventCuts : public TNamed {
   void SetMeanPtRange(Double_t min, Double_t max) {fCutMeanPt=kTRUE; fMeanPtMax=max; fMeanPtMin=min;}
   void SetCutSPDvertexerAnomaly(Bool_t b=kTRUE) {fCutSPDvertexerAnomaly=b;}
   void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
-  void SetCutTPCmultiplicityOutliers(Bool_t b) {fCutTPCmultiplicityOutliers=b;}
+  void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}

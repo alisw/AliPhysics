@@ -8,11 +8,7 @@ class TH2F;
 class TProfile;
 class AliESDEvent;
 class AliESDtrack;
-class AliESDtrackCuts;
-class AliESDpidCuts;
 class AliESDpid;
-class TGraph;
-class AliStack;
 class AliFlowEventCuts;
 class AliFlowTrackCuts;
 #include "AliAnalysisTaskSE.h"
@@ -28,20 +24,23 @@ public:
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *); 
 
-  AliESDtrackCuts* GetAliESDtrackCuts() const {return fCuts;}
-  void SetAliESDtrackCuts(AliESDtrackCuts* const cuts ){fCuts=cuts;}
+  AliFlowTrackCuts* GetAliESDtrackCuts() const {return fCuts;}
+  void SetAliESDtrackCuts(AliFlowTrackCuts* const cuts ){fCuts=cuts;}
   void SetEventCuts(AliFlowEventCuts* c) {fEventCuts=c;}
   void SetMCOn(){fMC=kTRUE;}
   AliESDpid* GetESDpid() const {return fESDpid;}
+  void SetUseDebugFile(Bool_t b=kTRUE) {fUseDebugFile=b;}
 
   Float_t Beta(Float_t m, Float_t p);
 
 private:
   AliESDEvent *fESD;            //!ESD object    
-  AliESDtrackCuts *fCuts;       //cuts 
+  AliFlowTrackCuts *fCuts;       //cuts 
   AliFlowEventCuts *fEventCuts; //event cuts
   AliESDpid *fESDpid;           //pid object
   Bool_t fMC;                   //if TRUE use MC 
+  Bool_t fUseDebugFile; //write debug file
+  FILE* fFile; //debug output file
 
   TH2F* fITSsignal; //!ITS signal as function of p
   TH2F* fTPCsignal; //!TPC signal as function of p
@@ -82,7 +81,7 @@ private:
   void pidTPC(AliESDtrack* t, Int_t pdgcode);
   void pidTOF(AliESDtrack* t, Int_t pdgcode);
     
-  ClassDef( AliAnalysisTaskPIDflowQA, 2); // example of analysis
+  ClassDef( AliAnalysisTaskPIDflowQA, 3); // example of analysis
 };
 
 #endif
