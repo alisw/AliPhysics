@@ -97,20 +97,46 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
   if (xk == GetX()) return kTRUE;
   
   Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
+  Double_t start[3], end[3], mparam[7];
 
+  /* get start position */
+  GetXYZ(start);
+
+  /* propagate the track */
   Double_t b[3];GetBxByBz(b);
   if (!AliExternalTrackParam::PropagateToBxByBz(xk,b)) return kFALSE;
   // OLD used code
   //Double_t bz=GetBz();
   //if (!AliExternalTrackParam::PropagateTo(xk,bz)) return kFALSE;
 
+  /* get end position */
+  GetXYZ(end);
+
+  /* add time step to integral */
+#if 0 /*** OLD ***/
   Double_t d = TMath::Sqrt((GetX()-oldX)*(GetX()-oldX) + 
                            (GetY()-oldY)*(GetY()-oldY) + 
                            (GetZ()-oldZ)*(GetZ()-oldZ));
   if (IsStartedTimeIntegral() && GetX()>oldX) AddTimeStep(d);
+#endif
+  Double_t d = TMath::Sqrt((end[0]-start[0])*(end[0]-start[0]) + 
+                           (end[1]-start[1])*(end[1]-start[1]) + 
+                           (end[2]-start[2])*(end[2]-start[2]));
+  if (IsStartedTimeIntegral() && GetX()>oldX) AddTimeStep(d);
 
+  /* get material budget from tracker */
+  AliTracker::MeanMaterialBudget(start, end, mparam);
+  Double_t xTimesRho = mparam[4]*mparam[0];
+  Double_t xOverX0   = mparam[1];
+
+  /* correct for mean material */
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass())) return kFALSE;
+
+
+#if 0 /*** OLD ***/
   if (!AliExternalTrackParam::CorrectForMaterial(d*rho/x0,x0,GetMass())) 
      return kFALSE;
+#endif
 
   /*
   //Energy losses************************
@@ -150,14 +176,14 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
     }
   }
   
-  
   Double_t x = GetX();
   Int_t nsteps=Int_t((AliTOFGeometry::Rmin()-x)/0.5); // 0.5 cm Steps
   for (Int_t istep=0;istep<nsteps;istep++){
     Float_t xp = x+istep*0.5; 
-    Double_t param[2];  
-    GetPropagationParameters(param);  
-    PropagateTo(xp,param[0],param[1]);
+    //    GetPropagationParameters(param);  
+    PropagateTo(xp,0.,0.); /* passing 0.,0. as arguments since now
+			      this method queries TGeo for material budget
+			   */
     
   }
   
