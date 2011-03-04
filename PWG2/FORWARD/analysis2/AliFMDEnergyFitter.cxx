@@ -1097,15 +1097,15 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
 
 
   // Now, we need to select the best fit 
-  Int_t nFits = f.fFitResults.GetEntriesFast();
+  Int_t nFits = f.GetFitResults().GetEntriesFast();
   TF1*  good[nFits];
   for (Int_t i = nFits-1; i >= 0; i--) { 
     good[i] = 0;
-    TF1* ff = static_cast<TF1*>(f.fFunctions.At(i));
+    TF1* ff = static_cast<TF1*>(f.GetFunctions().At(i));
     // ff->SetLineColor(Color());
     ff->SetRange(0, maxRange);
     dist->GetListOfFunctions()->Add(new TF1(*ff));
-    if (CheckResult(static_cast<TFitResult*>(f.fFitResults.At(i)),
+    if (CheckResult(static_cast<TFitResult*>(f.GetFitResults().At(i)),
 		    relErrorCut, chi2nuCut)) {
       good[i] = ff;
       ff->SetLineWidth(2);
@@ -1113,20 +1113,20 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*     dist,
     }
   }
   // If all else fails, use the 1 particle fit 
-  TF1* ret = static_cast<TF1*>(f.fFunctions.At(0));
+  TF1* ret = static_cast<TF1*>(f.GetFunctions().At(0));
 
   // Find the fit with the most valid particles 
   for (Int_t i = nFits-1; i > 0; i--) {
     if (!good[i]) continue;
     if (fDebug > 1) {
       AliInfo(Form("Choosing fit with n=%d", i+1));
-      f.fFitResults.At(i)->Print();
+      f.GetFitResults().At(i)->Print();
     }
     ret = good[i];
     break;
   }
   // Give a warning if we're using fall-back 
-  if (ret == f.fFunctions.At(0)) {
+  if (ret == f.GetFunctions().At(0)) {
     AliWarning("Choosing fall-back 1 particle fit");
   }
   // Copy our result and return (the functions are owned by the fitter)
@@ -1217,7 +1217,7 @@ AliFMDEnergyFitter::RingHistos::CheckResult(TFitResult* r,
 
 //__________________________________________________________________
 void
-AliFMDEnergyFitter::RingHistos::FindBestFits(TList*              d, 
+AliFMDEnergyFitter::RingHistos::FindBestFits(const TList*        d, 
 					     AliFMDCorrELossFit& obj,
 					     const TAxis&        eta,     
 					     Double_t            relErrorCut, 
@@ -1273,7 +1273,7 @@ AliFMDEnergyFitter::RingHistos::FindBestFits(TList*              d,
 
 //__________________________________________________________________
 AliFMDCorrELossFit::ELossFit* 
-AliFMDEnergyFitter::RingHistos::FindBestFit(TH1* dist,
+AliFMDEnergyFitter::RingHistos::FindBestFit(const TH1* dist,
 					    Double_t relErrorCut, 
 					    Double_t chi2nuCut,
 					    Double_t minWeightCut) 

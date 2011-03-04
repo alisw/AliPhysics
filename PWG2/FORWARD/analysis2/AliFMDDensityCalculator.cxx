@@ -7,6 +7,8 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
+#include "AliFMDCorrDoubleHit.h"
+#include "AliFMDCorrELossFit.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TProfile.h>
@@ -332,9 +334,18 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 
 //_____________________________________________________________________
 Int_t
-AliFMDDensityCalculator::FindMaxWeight(AliFMDCorrELossFit* cor,
+AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
 				       UShort_t d, Char_t r, Int_t iEta) const
 {
+  // 
+  // Find the max weight to use for FMD<i>dr</i> in eta bin @a iEta
+  // 
+  // Parameters:
+  //    cor   Correction
+  //    d     Detector 
+  //    r     Ring 
+  //    iEta  Eta bin 
+  //
   AliFMDCorrELossFit::ELossFit* fit = cor->GetFit(d,r,iEta);
   if (!fit) { 
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
@@ -347,6 +358,9 @@ AliFMDDensityCalculator::FindMaxWeight(AliFMDCorrELossFit* cor,
 void
 AliFMDDensityCalculator::CacheMaxWeights()
 {
+  // 
+  // Find the max weights and cache them 
+  // 
   AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
   AliFMDCorrELossFit*           cor = fcm.GetELossFit();
   const TAxis&                  eta = cor->GetEtaAxis();
@@ -371,6 +385,18 @@ AliFMDDensityCalculator::CacheMaxWeights()
 Int_t
 AliFMDDensityCalculator::GetMaxWeight(UShort_t d, Char_t r, Int_t iEta) const
 {
+  // 
+  // Find the (cached) maximum weight for FMD<i>dr</i> in 
+  // @f$\eta@f$ bin @a iEta
+  // 
+  // Parameters:
+  //    d     Detector
+  //    r     Ring
+  //    iEta  Eta bin
+  // 
+  // Return:
+  //    max weight or <= 0 in case of problems 
+  //
   if (iEta < 0) return -1;
 
   const TArrayI* max  = 0;
@@ -399,6 +425,18 @@ AliFMDDensityCalculator::GetMaxWeight(UShort_t d, Char_t r, Int_t iEta) const
 Int_t
 AliFMDDensityCalculator::GetMaxWeight(UShort_t d, Char_t r, Float_t eta) const
 {
+  // 
+  // Find the (cached) maximum weight for FMD<i>dr</i> iat
+  // @f$\eta@f$ 
+  // 
+  // Parameters:
+  //    d     Detector
+  //    r     Ring
+  //    eta   Eta bin
+  // 
+  // Return:
+  //    max weight or <= 0 in case of problems 
+  //
   AliForwardCorrectionManager&  fcm  = AliForwardCorrectionManager::Instance();
   Int_t                         iEta = fcm.GetELossFit()->FindEtaBin(eta) -1;
 
@@ -606,7 +644,7 @@ AliFMDDensityCalculator::AcceptanceCorrection(Char_t r, UShort_t t) const
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDDensityCalculator::ScaleHistograms(const TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 

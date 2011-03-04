@@ -339,7 +339,7 @@ AliFMDMCSharingFilter::DefineOutput(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDMCSharingFilter::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDMCSharingFilter::ScaleHistograms(const TList* dir, Int_t nEvents)
 {
   // 
   // Scale the histograms to the total number of events 

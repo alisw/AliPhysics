@@ -37,9 +37,11 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fAODCentral(kFALSE),
     fManager(),
     fUseSecondary(true),
-    firstEventSeen(false)
+    fFirstEventSeen(false)
 {
-  
+  // 
+  // Constructor 
+  //   
   DefineOutput(1, TList::Class());
 }
 //____________________________________________________________________
@@ -50,8 +52,11 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fAODCentral(),
     fManager(),
     fUseSecondary(true),
-    firstEventSeen(false)
+    fFirstEventSeen(false)
 {
+  // 
+  // Constructor 
+  // 
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplicityTask& o)
@@ -61,24 +66,34 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fAODCentral(o.fAODCentral),
     fManager(o.fManager),
     fUseSecondary(o.fUseSecondary),
-    firstEventSeen(o.firstEventSeen)
+    fFirstEventSeen(o.fFirstEventSeen)
 {
+  //
+  // Copy constructor 
+  // 
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask&
 AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
 {
+  // 
+  // Assignment operator 
+  //
   fData          = o.fData;
   fList          = o.fList;
   fAODCentral    = o.fAODCentral;
   fManager       = o.fManager;
   fUseSecondary  = o.fUseSecondary;
-  firstEventSeen = o.firstEventSeen;
+  fFirstEventSeen = o.fFirstEventSeen;
   return *this;
 }
 //____________________________________________________________________
 void AliCentralMultiplicityTask::UserCreateOutputObjects() 
 {
+  // 
+  // Create output objects 
+  // 
+  //
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
@@ -97,6 +112,12 @@ void AliCentralMultiplicityTask::UserCreateOutputObjects()
 //____________________________________________________________________
 void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/) 
 {
+  // 
+  // Process each event 
+  // 
+  // Parameters:
+  //    option Not used
+  //  
   
   AliESDInputHandler* eventHandler = 
     dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()
@@ -107,7 +128,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   
   AliESDEvent* esd = eventHandler->GetEvent();
   
-  if(!GetManager().IsInit() && !firstEventSeen) {
+  if(!GetManager().IsInit() && !fFirstEventSeen) {
     AliFMDEventInspector inspector;
     inspector.ReadRunDetails(esd);
     GetManager().Init(inspector.GetCollisionSystem(),
@@ -116,7 +137,7 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
     
     //std::cout<<inspector.GetCollisionSystem()<<"  "<<inspector.GetEnergy()<<"    "<<inspector.GetField()<<std::endl;
     AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
-    firstEventSeen = kTRUE;
+    fFirstEventSeen = kTRUE;
   }
   
   //Selecting only events with |valid vertex| < 10 cm
@@ -195,11 +216,23 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
 //____________________________________________________________________
 void AliCentralMultiplicityTask::Terminate(Option_t* /*option*/) 
 {
+  // 
+  // End of job
+  // 
+  // Parameters:
+  //    option Not used 
+  //
 }
 //____________________________________________________________________
 void
 AliCentralMultiplicityTask::Print(Option_t* /*option*/) const
 {
+  // 
+  // Print information 
+  // 
+  // Parameters:
+  //    option Not used
+  //
 }
 //====================================================================
 AliCentralMultiplicityTask::Manager::Manager() :
@@ -211,8 +244,9 @@ AliCentralMultiplicityTask::Manager::Manager() :
   fSecMapName("centralsecmap"),
   fIsInit(kFALSE)
 {
-
-
+  //
+  // Constructor 
+  // 
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::Manager::Manager(const Manager& o) 
@@ -223,11 +257,18 @@ AliCentralMultiplicityTask::Manager::Manager(const Manager& o)
    fAcceptanceName(o.fAcceptanceName),
    fSecMapName(o.fSecMapName),
    fIsInit(o.fIsInit)
-{}
+{
+  //
+  // Copy Constructor 
+  // 
+}
 //____________________________________________________________________
 AliCentralMultiplicityTask::Manager&
 AliCentralMultiplicityTask::Manager::operator=(const Manager& o)
 {
+  //
+  // Assignment operator  
+  // 
   fAcceptancePath = o.fAcceptancePath;
   fSecMapPath     = o.fSecMapPath;
   fAcceptance     = o.fAcceptance;
@@ -245,6 +286,18 @@ AliCentralMultiplicityTask::Manager::GetFullFileName(UShort_t what,
 						     UShort_t sNN,  
 						     Short_t  field) const
 {
+  // 
+  // Get full path name to object file 
+  // 
+  // Parameters:
+  //    what   What to get 
+  //    sys    Collision system
+  //    sNN    Center of mass energy 
+  //    field  Magnetic field 
+  // 
+  // Return:
+  //    
+  //
   return Form("%s/%s",
 	      what == 0 ? GetSecMapPath() : GetAcceptancePath(), 
 	      GetFileName(what, sys, sNN, field));
@@ -257,6 +310,18 @@ AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
 						 UShort_t  sNN,
 						 Short_t   field) const
 {
+  // 
+  // Get the full path name 
+  // 
+  // Parameters:
+  //    what   What to get
+  //    sys    Collision system
+  //    sNN    Center of mass energy 
+  //    field  Magnetic field 
+  // 
+  // Return:
+  //    
+  //
   // Must be static - otherwise the data may disappear on return from
   // this member function
   static TString fname = "";
@@ -281,6 +346,15 @@ AliCentralMultiplicityTask::Manager::GetFileName(UShort_t  what ,
 TH2D* 
 AliCentralMultiplicityTask::Manager::GetSecMapCorrection(UShort_t vtxbin) const
 {
+  // 
+  // Get the secondary map
+  // 
+  // Parameters:
+  //    vtxbin 
+  // 
+  // Return:
+  //    
+  //
   if (!fSecmap) { 
     ::Warning("GetSecMapCorrection","No secondary map defined");
     return 0;
@@ -292,6 +366,15 @@ TH1D*
 AliCentralMultiplicityTask::Manager::GetAcceptanceCorrection(UShort_t vtxbin) 
   const 
 {
+  // 
+  // Get the acceptance correction 
+  // 
+  // Parameters:
+  //    vtxbin 
+  // 
+  // Return:
+  //    
+  //
   if (!fAcceptance) { 
     ::Warning("GetAcceptanceCorrection","No acceptance map defined");
     return 0;
@@ -305,6 +388,14 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
 					  UShort_t  sNN,
 					  Short_t   field) 
 {
+  // 
+  // Initialize 
+  // 
+  // Parameters:
+  //    sys    Collision system (1: pp, 2: PbPb)
+  //    sNN    Center of mass energy per nucleon pair [GeV]
+  //    field  Magnetic field [kG]
+  //
   if(fIsInit) ::Warning("Init","Already initialised - overriding...");
   
   TFile fsec(GetFullFileName(0,sys,sNN,field));

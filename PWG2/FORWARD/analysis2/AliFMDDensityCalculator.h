@@ -87,7 +87,7 @@ public:
    * @param dir     where to put the output
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 
@@ -152,7 +152,7 @@ protected:
    * @param r     Ring 
    * @param iEta  Eta bin 
    */
-  Int_t FindMaxWeight(AliFMDCorrELossFit* cor,
+  Int_t FindMaxWeight(const AliFMDCorrELossFit* cor,
 		      UShort_t d, Char_t r, Int_t iEta) const;
 
   /** 

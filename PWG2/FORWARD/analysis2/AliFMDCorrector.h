@@ -84,7 +84,7 @@ public:
    * @param dir     Where the output is stored
    * @param nEvents Number of events 
    */
-  virtual void ScaleHistograms(TList* dir, Int_t nEvents);
+  virtual void ScaleHistograms(const TList* dir, Int_t nEvents);
   /** 
    * Output diagnostic histograms to directory 
    * 

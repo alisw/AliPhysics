@@ -21,6 +21,7 @@
 #include <TList.h>
 #include <TMath.h>
 #include "AliForwardCorrectionManager.h"
+#include "AliFMDCorrVertexBias.h"
 #include "AliLog.h"
 #include <TH2D.h>
 #include <TROOT.h>

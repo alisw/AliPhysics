@@ -4,15 +4,21 @@
 #ifndef ALIFORWARDCORRECTIONMANAGER_H
 #define ALIFORWARDCORRECTIONMANAGER_H
 #include <TObject.h>
-#include "AliFMDCorrELossFit.h"
+// #include "AliFMDCorrELossFit.h"
 #include "AliFMDCorrSecondaryMap.h"
-#include "AliFMDCorrDoubleHit.h"
-#include "AliFMDCorrVertexBias.h"
-#include "AliFMDCorrMergingEfficiency.h"
-#include "AliFMDCorrAcceptance.h"
+// #include "AliFMDCorrDoubleHit.h"
+// #include "AliFMDCorrVertexBias.h"
+// #include "AliFMDCorrMergingEfficiency.h"
+// #include "AliFMDCorrAcceptance.h"
 #include <TString.h>
 class TFile;
 class TBrowser;
+class AliFMDCorrELossFit;
+// class AliFMDCorrSecondaryMap;
+class AliFMDCorrDoubleHit;
+class AliFMDCorrVertexBias;
+class AliFMDCorrMergingEfficiency;
+class AliFMDCorrAcceptance;
 
 /**
  * Manager (singleton) of corrections 
@@ -60,6 +66,12 @@ public:
    * @param prefix Prefix to correction objects. 
    */
   void SetPrefix(const char* prefix);
+  /** 
+   * Set the file directory for a type 
+   * 
+   * @param what     Type 
+   * @param dirname  Directory name 
+   */
   void SetFileDir(ECorrection what, const char* dirname);
   void SetSecondaryMapPath(const char* d) { SetFileDir(kSecondaryMap, d); }
   void SetDoubleHitPath(const char* d)    { SetFileDir(kDoubleHit, d); }
@@ -394,7 +406,7 @@ private:
    */
   
   /** Static singleton instance */
-  static AliForwardCorrectionManager* fgInstance;
+  static AliForwardCorrectionManager* fgInstance; // Skeleton
   Bool_t    fInit;  // whether we have been initialised 
   UShort_t  fSys;   // Collision System
   UShort_t  fSNN;   // Collision energy per nucleon (GeV)

@@ -15,7 +15,7 @@
 #include <iostream>
 #include <iomanip>
 
-Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .2;
+Double_t AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
 Double_t AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
 Double_t AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
 
@@ -96,7 +96,7 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t     quality,UShort_t  n,
 				       Double_t  xi,     Double_t  exi,
 				       Double_t  sigma,  Double_t  esigma, 
 				       Double_t  sigman, Double_t  esigman, 
-				       Double_t* a,      Double_t* ea)
+				       const Double_t* a,const Double_t* ea)
   : fN(n),
     fNu(nu),
     fChi2(chi2),
@@ -606,7 +606,8 @@ AliFMDCorrELossFit::FindEtaBin(Double_t eta) const
   //    Bin (in @f$[1,N_{bins}]@f$) corresponding to the given
   // eta, or 0 if out of range.
   //
-  if (fEtaAxis.GetXmin() == fEtaAxis.GetXmax() || fEtaAxis.GetNbins() == 0) {
+  if (TMath::Abs(fEtaAxis.GetXmin() - fEtaAxis.GetXmax()) < 1e-6 
+      || fEtaAxis.GetNbins() == 0) {
     AliWarning("No eta axis defined");
     return -1;
   }
@@ -1136,6 +1137,14 @@ AliFMDCorrELossFit::Draw(Option_t* option)
 void
 AliFMDCorrELossFit::Print(Option_t* option) const
 {
+  // 
+  // Print this object.  
+  // 
+  // Parameters:
+  //    option Options 
+  //   - R   Print recursive  
+  //
+  //
   TString opt(option);
   opt.ToUpper();
   Int_t nRings = fRings.GetEntriesFast();
