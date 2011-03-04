@@ -78,11 +78,8 @@ AliCheckMuonDetEltResponse::AliCheckMuonDetEltResponse()
 
     fNbrUsableTracks = 0;
 
-    for (Int_t iCluster = 0; iCluster<fgkNCh; ++iCluster)
-      fNbrClustersCh[iCluster] = 0;
-
-    for (Int_t i=0; i<fgkNCh; ++i)
-      fTrackFilter[i] = 0;
+    memset(fNbrClustersCh,0, fgkNCh*sizeof(Int_t));
+    memset(fTrackFilter,  0, fgkNCh*sizeof(Int_t));
 }
 
 //_____________________________________________________________________________
