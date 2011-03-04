@@ -7434,7 +7434,8 @@ void AliFlowAnalysisWithQCumulants::GetPointersForParticleWeightsHistograms()
  // Get pointers for histograms with particle weights.
 
  TList *weightsList = dynamic_cast<TList*>(fHistList->FindObject("Weights"));
- if(weightsList) this->SetWeightsList(weightsList);
+ if(!weightsList){printf("\n WARNING (QC): weightsList is NULL in AFAWQC::GPFPWH() !!!!\n");exit(0);}
+ this->SetWeightsList(weightsList);
  TString fUseParticleWeightsName = "fUseParticleWeightsQC"; // to be improved (hirdwired label QC)
  fUseParticleWeightsName += fAnalysisLabel->Data();
  TProfile *useParticleWeights = dynamic_cast<TProfile*>(weightsList->FindObject(fUseParticleWeightsName.Data()));

@@ -402,7 +402,7 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   
   //RP:
   TH1F* fHistPtRP = NULL;
-  if(fCommonHists)
+  if(fCommonHists && fCommonHists->GetHistPtRP())
   {
    fHistPtRP = fCommonHists->GetHistPtRP(); 
   }
@@ -448,7 +448,11 @@ void AliFlowAnalysisWithMCEventPlane::Finish() {
   }
                                                                                                                                    
   //POI:
-  TH1F* fHistPtPOI = fCommonHists->GetHistPtPOI(); 
+  TH1F* fHistPtPOI = NULL;
+  if(fCommonHists && fCommonHists->GetHistPtPOI())
+  {
+   fHistPtPOI = fCommonHists->GetHistPtPOI(); 
+  }
   Double_t dYieldPtPOI = 0.;
   Double_t dVPOI = 0.;
   Double_t dErrVPOI = 0.;
