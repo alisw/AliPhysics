@@ -87,22 +87,28 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
   // ** Conversion pair analysis **
   
-  Float_t  GetMassCut()                     const {return fMassCut ; }
-  void     SetMassCut(Float_t m)                  {fMassCut = m ; }
+  Float_t  GetMassCut()                     const { return fMassCut ; }
+  void     SetMassCut(Float_t m)                  { fMassCut    = m ; }
   
-  Bool_t   IsCheckConversionOn()            const {return fCheckConversion   ; }
-  void     SwitchOnConversionChecker()            {fCheckConversion = kTRUE  ; }
-  void     SwitchOffConversionChecker()           {fCheckConversion = kFALSE ; }  
+  Bool_t   IsCheckConversionOn()            const { return fCheckConversion   ; }
+  void     SwitchOnConversionChecker()            { fCheckConversion = kTRUE  ; }
+  void     SwitchOffConversionChecker()           { fCheckConversion = kFALSE ; }  
 	
-  Bool_t   AreConvertedPairsInAOD()         const {return fAddConvertedPairsToAOD   ; }
-  void     SwitchOnAdditionConvertedPairsToAOD()  {fAddConvertedPairsToAOD = kTRUE  ; }
-  void     SwitchOffAdditionConvertedPairsToAOD() {fAddConvertedPairsToAOD = kFALSE ; }  
+  Bool_t   AreConvertedPairsInAOD()         const { return fAddConvertedPairsToAOD   ; }
+  void     SwitchOnAdditionConvertedPairsToAOD()  { fAddConvertedPairsToAOD = kTRUE  ; }
+  void     SwitchOffAdditionConvertedPairsToAOD() { fAddConvertedPairsToAOD = kFALSE ; }  
 	
-  void     SetConvDEtaCut(Float_t c)              {fConvDEtaCut = c    ; }
-  Float_t  GetConvDEtaCut()                 const {return fConvDEtaCut ; }
-  void     SetConvDPhiCut(Float_t c)              {fConvDPhiCut = c    ; }
-  Float_t  GetConvDPhiCut()                 const {return fConvDPhiCut ; }
+  void     SetConvAsymCut(Float_t c)              { fConvAsymCut = c    ; }
+  Float_t  GetConvAsymCut()                 const { return fConvAsymCut ; }
   
+  void     SetConvDEtaCut(Float_t c)              { fConvDEtaCut = c    ; }
+  Float_t  GetConvDEtaCut()                 const { return fConvDEtaCut ; }
+  
+  void     SetConvDPhiCut(Float_t min, Float_t max)  { fConvDPhiMinCut = min ;  
+                                                       fConvDPhiMaxCut = max ; }
+  Float_t  GetConvDPhiMinCut()              const { return fConvDPhiMinCut ; }
+  Float_t  GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut ; }
+
   private:
  
   TString  fCalorimeter ;                // Calorimeter where the gamma is searched;
@@ -110,15 +116,19 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Float_t  fMinDist2;                    // Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                    // One more cut on distance used for acceptance-efficiency study
   Bool_t   fRejectTrackMatch ;           // If PID on, reject clusters which have an associated TPC track
-  Bool_t   fCheckConversion;             // Combine pairs of clusters with mass close to 0
-  Bool_t   fAddConvertedPairsToAOD;      // Put Converted pairs in AOD
-  Float_t  fMassCut;                     // Mass cut for the conversion pairs selection
   Double_t fTimeCutMin  ;                // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
-	Float_t  fConvDEtaCut;                 // Select conversion pairs when deta of pair smaller than cut
-  Float_t  fConvDPhiCut;                 // Select conversion pairs when dphi of pair smaller than cut
   
+  //Conversion pairs selection cuts
+  Bool_t   fCheckConversion;             // Combine pairs of clusters with mass close to 0
+  Bool_t   fAddConvertedPairsToAOD;      // Put Converted pairs in AOD
+  Float_t  fMassCut;                     // Mass cut for the conversion pairs selection  
+  Float_t  fConvAsymCut;                 // Select conversion pairs when asymmetry is smaller than cut
+	Float_t  fConvDEtaCut;                 // Select conversion pairs when deta of pair smaller than cut
+  Float_t  fConvDPhiMinCut;              // Select conversion pairs when dphi of pair lager than cut
+  Float_t  fConvDPhiMaxCut;              // Select conversion pairs when dphi of pair smaller than cut
+
   //Histograms 
   TH2F * fhNtraNclu;                     //! track multiplicity distribution vs cluster multiplicity
   TH2F * fhNCellsPt;                     //! number of cells in cluster vs pt 
@@ -174,7 +184,6 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH1F * fhPtConversion;                 //! Number of identified Conversion gamma 
   TH2F * fhPhiConversion;                //! Phi of identified  Conversion gamma
   TH2F * fhEtaConversion;                //! eta of identified  Conversion gamma
-  TH1F * fhPtConversionTagged;           //! Number of identified Conversion gamma, tagged as conversion 
 
   TH2F * fhEtaPhiConversion  ;           //! Pseudorapidity vs Phi of identified  photon for transerse momentum > 0.5
   TH2F * fhEtaPhi05Conversion  ;         //! Pseudorapidity vs Phi of identified  photon for transerse momentum < 0.5
@@ -190,8 +199,13 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH1F * fhPtUnknown;                    //! Number of identified Unknown gamma 
   TH2F * fhPhiUnknown;                   //! Phi of identified  Unknown gamma
   TH2F * fhEtaUnknown;                   //! eta of identified  Unknown gamma
-
+  
   //Conversion pairs analysis histograms
+  TH1F * fhPtConversionTagged;           //! Number of identified gamma from Conversion , tagged as conversion 
+  TH1F * fhPtAntiNeutronTagged;          //! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
+  TH1F * fhPtAntiProtonTagged;           //! Number of identified gamma from AntiProtons gamma, tagged as conversion 
+  TH1F * fhPtUnknownTagged;              //! Number of identified gamma from unknown, tagged as conversion 
+  
   TH2F * fhConvDeltaEtaMCConversion;     //! Small mass cluster pairs, correlation in eta, origin of both clusters is conversion
   TH2F * fhConvDeltaPhiMCConversion;     //! Small mass cluster pairs, correlation in phi, origin of both clusters is conversion
   TH2F * fhConvDeltaEtaPhiMCConversion;  //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
@@ -224,7 +238,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhConvDispersionMCString;       //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
   TH2F * fhConvM02MCString;              //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
 
-   ClassDef(AliAnaPhoton,9)
+   ClassDef(AliAnaPhoton,10)
 
 } ;
  
