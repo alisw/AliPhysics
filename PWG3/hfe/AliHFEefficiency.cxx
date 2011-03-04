@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Task for Efficiency studies
 // Used for testing classes AliHFEcontainer and AliHFEfilter
@@ -164,6 +161,10 @@ void AliHFEefficiency::UserExec(Option_t *){
   fFilter->SetRecEvent(fInputEvent);
   if(fMCEvent){
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+   if ( ! mcH ) {
+     AliError("Cannot get MC truth event handler");
+     return;
+    }  
     if(mcH &&(!mcH->InitOk())) return;
     if(mcH &&(!mcH->TreeK())) return;
     if(mcH &&(!mcH->TreeTR())) return;

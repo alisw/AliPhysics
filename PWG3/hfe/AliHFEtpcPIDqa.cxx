@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Class AliHFEtpcPIDqa
 // Monitoring TPC PID in the HFE PID montioring framework. The following
@@ -197,12 +194,12 @@ void AliHFEtpcPIDqa::Initialize(){
   Int_t nBinsdEdx[kNdim] = {kPIDbins, kPbins, kDedxbins, kSteps, kCentralityBins};
   Double_t mindEdx[kNdim] =  {kMinPID, kMinP, 0., 0., 0.};
   Double_t maxdEdx[kNdim] =  {kMaxPID, kMaxP, 200, 2., 11.}; 
-  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Centrality; Selection Step", kNdim, nBinsdEdx, mindEdx, maxdEdx);
+  fHistos->CreateTHnSparse("tpcDedx", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", kNdim, nBinsdEdx, mindEdx, maxdEdx);
   // 2nd histogram: TPC sigmas: (species, p nsigma, step)
   Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
   Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0.};
-  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 100.};
-  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Centrality; Selection Step", kNdim, nBinsSigma, minSigma, maxSigma);
+  Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11.};
+  fHistos->CreateTHnSparse("tpcnSigma", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", kNdim, nBinsSigma, minSigma, maxSigma);
 
   // General TPC QA
 }
@@ -238,10 +235,10 @@ Double_t AliHFEtpcPIDqa::GetTPCsignal(const AliVParticle *track, AliHFEpidObject
   //
   Double_t tpcSignal = 0.;
   if(anatype == AliHFEpidObject::kESDanalysis){
-    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
+    const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track);
     tpcSignal = esdtrack->GetTPCsignal();
   } else {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
+    const AliAODTrack *aodtrack = static_cast<const AliAODTrack *>(track);
     tpcSignal = aodtrack->GetDetPid() ? aodtrack->GetDetPid()->GetTPCsignal() : 0.;
   }
   return tpcSignal;

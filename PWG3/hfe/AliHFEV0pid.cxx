@@ -12,9 +12,6 @@
 * about the suitability of this software for any purpose. It is          *
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
-
-/* $Id$ */
-
 //
 // Utility class for V0 PID
 // Identifies Electrons, Pions and Protons using gamma conversions and
@@ -249,9 +246,15 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
   // Apply general cut and special cuts for gamma, K0s, Lambda
   //
   if(!v0)  return AliHFEV0cuts::kUndef;
+  // CHECK
+  AliESDv0* esdV0 =  dynamic_cast<AliESDv0 *>(v0);
+  if( ! esdV0 ) {
+    AliError("Unexpected v0 type.");
+    return AliHFEV0cuts::kUndef;
+  }  
   AliVTrack* daughter[2];
-  daughter[0] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((static_cast<AliESDv0 *>(v0))->GetPindex()));
-  daughter[1] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack((static_cast<AliESDv0 *>(v0))->GetNindex()));
+  daughter[0] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(esdV0->GetPindex()));
+  daughter[1] = dynamic_cast<AliVTrack *>(fInputEvent->GetTrack(esdV0->GetNindex()));
   if(!daughter[0] || !daughter[1]) return AliHFEV0cuts::kUndef;
 
   if(fMCEvent != NULL) fMCon = kTRUE;
@@ -273,11 +276,12 @@ Int_t AliHFEV0pid::ProcessV0(TObject *v0){
       if(!fV0cuts->TrackCutsCommon(static_cast<AliESDtrack*>(daughter[i]))) return AliHFEV0cuts::kUndef;
     }
     // check commom V0 cuts
-    if(!fV0cuts->V0CutsCommon(dynamic_cast<AliESDv0 *>(v0))) return AliHFEV0cuts::kUndef;
+    // CHECK
+    if(!fV0cuts->V0CutsCommon(esdV0)) return AliHFEV0cuts::kUndef;
   }
 
   // preselect the V0 candidates based on the Armenteros plot
-  Int_t id = PreselectV0((dynamic_cast<AliESDv0 *>(v0)), idMC);
+  Int_t id = PreselectV0(esdV0, idMC);
 
   // store the resutls
   if(AliHFEV0cuts::kRecoGamma == id && IsGammaConv(v0)){
