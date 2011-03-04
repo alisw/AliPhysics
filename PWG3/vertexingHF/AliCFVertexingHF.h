@@ -93,7 +93,7 @@ class AliCFVertexingHF : public TObject {
 	Bool_t FillUnfoldingMatrix(Double_t fill[4]) const;
 	
 	void SetNProngs(Int_t nProngs){fProngs = nProngs;}
-	const Int_t GetNProngs() const {return fProngs;}
+	Int_t GetNProngs() const {return fProngs;}
 	void SetDselection(UShort_t originDselection); 
 	UShort_t GetDselection() {return fOriginDselection;}; 
 	Int_t CheckReflexion(Char_t isSign);

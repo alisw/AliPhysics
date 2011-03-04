@@ -138,8 +138,11 @@ AliAnalysisTaskSingleMu::~AliAnalysisTaskSingleMu()
 
   delete fTriggerClasses;
   // For proof: do not delete output containers
-  if ( ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
-    delete fCFManager->GetParticleContainer();  // The container is not deleted by framework
+  if ( ! AliAnalysisManager::GetAnalysisManager() || ! AliAnalysisManager::GetAnalysisManager()->IsProofMode() ) {
+    // In terminate mode fCFManager does not exist!
+    // So, check before deleting
+    if ( fCFManager )
+      delete fCFManager->GetParticleContainer();  // The container is not deleted by framework
     delete fCFManager;
     delete fHistoList;
     delete fHistoListMC;
@@ -208,7 +211,7 @@ void AliAnalysisTaskSingleMu::FinishTaskOutput()
       TH2* hStat = dynamic_cast<TH2*>(inputHandler->GetStatistics(statType.Data()));
       if ( hStat ) {
         histoName = Form("%s_SingleMuon", hStat->GetName());
-        TH2* cloneStat = dynamic_cast<TH2*>(hStat->Clone(histoName.Data()));
+        TH2* cloneStat = static_cast<TH2*>(hStat->Clone(histoName.Data()));
         cloneStat->SetDirectory(0);
         fHistoList->Add(cloneStat);
       }

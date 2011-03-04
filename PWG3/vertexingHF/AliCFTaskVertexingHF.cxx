@@ -469,7 +469,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetNVar(fNvar);
 
 	if (fCentralitySelection)
-	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) return;  
+	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
+  	    delete[] containerInput;
+	    delete[] containerInputMC;
+            delete [] trackCuts;
+            return;
+          }    
 	
 	Float_t centValue = fCuts->GetCentrality(aodEvent);
 	cfVtxHF->SetCentralityValue(centValue);  
