@@ -124,6 +124,7 @@ void makeGlobalHistoConfigObject()
 TString makeString(){
   
   TString s = "";
+  s+="-max-track-count 8000 ";
   
   s+="-histogram TrackPt -size 1000 -expression Track_pt -cut Track_Nclusters>0 ";
   s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_Nclusters>0 ";

@@ -46,6 +46,7 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
   , fVertexY(-99)
   , fVertexZ(-99)
   , fVertexStatus(kFALSE)
+  , fMaxTrackCount(20000)
   , fTrackVariables()
   , fTrackVariablesInt()
   //, fV0Variables()
@@ -64,8 +65,7 @@ AliHLTGlobalHistoComponent::AliHLTGlobalHistoComponent()
 
 }
 
-AliHLTGlobalHistoComponent::~AliHLTGlobalHistoComponent()
-{
+AliHLTGlobalHistoComponent::~AliHLTGlobalHistoComponent(){
   // see header file for class documentation
   fTrackVariables.Reset();
   fTrackVariablesInt.Reset();
@@ -84,9 +84,10 @@ AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOutputDataType(){
 }
 
 TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*/){
-  // create the tree and branches
+// create the tree and branches
+ 
   int iResult=0;
-  TTree* pTree=new TTree("ESDproperties", "HLT ESD properties");
+  TTree* pTree = new TTree("ESDproperties", "HLT ESD properties");
   if (!pTree) return NULL;
 
   const char* trackVariableNames = {
@@ -135,14 +136,17 @@ TTree* AliHLTGlobalHistoComponent::CreateTree(int /*argc*/, const char** /*argv*
 //     "py_2 "
 //   };
   
-  int maxTrackCount = 20000; // FIXME: make configurable
+  //int fMaxTrackCount = 20000; // FIXME: make configurable
+  
   //int maxV0Count    = 100000;
   //int maxUPCCount   = 1;
+  
+  printf("KKKKKKKKKKKKKKKK %d\n", fMaxTrackCount);
     
-  if ((iResult=fTrackVariables.Init(maxTrackCount, trackVariableNames))<0) {
+  if ((iResult=fTrackVariables.Init(fMaxTrackCount, trackVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties (float)");
   }
-  if ((iResult=fTrackVariablesInt.Init(maxTrackCount, trackIntVariableNames))<0) {
+  if ((iResult=fTrackVariablesInt.Init(fMaxTrackCount, trackIntVariableNames))<0) {
     HLTError("failed to initialize internal structure for track properties (int)");
   }
 //   if ((iResult=fV0Variables.Init(maxV0Count, V0VariableNames))<0) {
@@ -267,7 +271,7 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
 //     } 
 //   }
   
-  AliKFParticle::SetField( esd->GetMagneticField() );
+//  AliKFParticle::SetField( esd->GetMagneticField() );
 
   //const double kKsMass = 0.49767;
   //const double kLambdaMass = 1.11568;
@@ -459,9 +463,8 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   return iResult;
 }
 
-int AliHLTGlobalHistoComponent::ResetVariables()
-{
-  /// reset all filling variables
+int AliHLTGlobalHistoComponent::ResetVariables(){
+/// reset all filling variables
   fNofTracks=0;
   //fNofV0s=0;
   fTrackVariables.ResetCount();
@@ -471,8 +474,59 @@ int AliHLTGlobalHistoComponent::ResetVariables()
   return 0;
 }
 
-AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOriginDataType() const
-{
-  // get the origin of the output data
+AliHLTComponentDataType AliHLTGlobalHistoComponent::GetOriginDataType() const{
+// get the origin of the output data
   return kAliHLTDataTypeHistogram|kAliHLTDataOriginHLT;
 }
+
+int AliHLTGlobalHistoComponent::ScanConfigurationArgument(int argc, const char** argv){
+/// inherited from AliHLTComponent, scan argument
+
+  if (argv==NULL || argc<1) return 0;
+
+  int i=0;
+  TString argument=argv[i];
+
+  // -argument1 with one parameter
+  if(argument.CompareTo("-max-track-count")==0){
+    
+    if (++i>=argc) return -EPROTO; // missing parameter
+    argument = argv[i];
+    fMaxTrackCount = argument.Atoi();
+    
+    HLTInfo("got %s with parameter %s", argument.Data(), argv[i]);
+    return ++i; // two arguments scanned
+  }
+
+//   // -argument1 with one parameter
+//   if (argument.CompareTo("-argument1")==0) {
+//     if (++i>=argc) return -EPROTO; // missing parameter
+//     HLTInfo("got %s with parameter %s", argument.Data(), argv[i]);
+//     return ++i; // two arguments scanned
+//   }
+// 
+//   // -argument2 without parameter
+//   if (argument.CompareTo("-argument2")==0) {
+//     HLTInfo("got %s", argument.Data());
+//     return ++i; // one argument scanned
+//   }
+// 
+  // no recognized argument, forward to base class
+  return AliHLTTTreeProcessor::ScanConfigurationArgument(argc, argv);
+}
+
+int AliHLTGlobalHistoComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/){  
+// see header file for class documentation
+
+  TString cdbPath;
+  if (cdbEntry) {
+    cdbPath=cdbEntry;
+  } else {
+    cdbPath="HLT/ConfigHLT/";
+    cdbPath+=GetComponentID();
+  }
+
+  return ConfigureFromCDBTObjString(cdbPath.Data());
+}
+
+

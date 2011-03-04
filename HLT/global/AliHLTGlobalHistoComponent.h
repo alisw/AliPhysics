@@ -202,13 +202,16 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
   /// inherited from AliHLTTTreeProcessor: create the tree instance and all branches
   TTree* CreateTree(int argc, const char** argv);
   /// inherited from AliHLTTTreeProcessor: process input blocks and fill tree
-  int FillTree(TTree* pTree, const AliHLTComponentEventData& evtData, 
-                       AliHLTComponentTriggerData& trigData );
+  int FillTree(TTree* pTree, const AliHLTComponentEventData& evtData, AliHLTComponentTriggerData& trigData );
   /// dtOrigin for PushBack.
   AliHLTComponentDataType GetOriginDataType() const;
-
+  /// clean up variables
   int ResetVariables();
-  
+  /// inherited from AliHLTComponent, scan argument
+  int ScanConfigurationArgument(int argc, const char** argv);
+  /// function for online reconfiguration
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
 private:
   /// copy constructor prohibited
   AliHLTGlobalHistoComponent(const AliHLTGlobalHistoComponent&);
@@ -233,6 +236,8 @@ private:
   float fVertexZ; //!
   /// vertex status, found or not
   bool fVertexStatus; //!
+  /// maximum track multiplicity
+  UInt_t fMaxTrackCount; //!
  
   /// filling arrays for track parameters
   AliHLTGlobalHistoVariables<float> fTrackVariables; //!
