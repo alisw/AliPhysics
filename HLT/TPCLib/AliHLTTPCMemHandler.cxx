@@ -244,9 +244,10 @@ UInt_t AliHLTTPCMemHandler::GetFileSize()
     return 0;
   }
   fseek(fInBinary,0,SEEK_END);
-  UInt_t size = (UInt_t) ftell(fInBinary);
+  long size=ftell(fInBinary);
   rewind(fInBinary);
-  return size; 
+  if (size<0) return 0;
+  return (UInt_t)size;
 }
 
 Byte_t *AliHLTTPCMemHandler::Allocate()
@@ -371,29 +372,6 @@ UInt_t AliHLTTPCMemHandler::GetRandomSize() const
   return 9 * nrandom * sizeof(AliHLTTPCDigitData);
 }
 
-void AliHLTTPCMemHandler::Generate(Int_t row)
-{
-  //Generate random data on row, if you didn't 
-  //ask for this, nothing happens here.
-  
-  if(!fIsRandom) return;
-  ResetRandom();
-  fNDigits = 0;
-  Int_t npad=AliHLTTPCTransform::GetNPads(row);
-  Int_t ntime = fEtaMaxTimeBin[row] - fEtaMinTimeBin[row];
-  Int_t nrandom  = Int_t (fNGenerate * ((Double_t) npad/141.) * 
-			  (Double_t) ntime/(Double_t) AliHLTTPCTransform::GetNTimeBins() );
-  
-  for(Int_t n=0;n<nrandom;n++){
-    Int_t pad = (int)((float)rand()/RAND_MAX*npad);
-    Int_t time =(int)((float)rand()/RAND_MAX*ntime+fEtaMinTimeBin[row] );
-    Int_t charge = (int)((float)rand()/RAND_MAX*AliHLTTPCTransform::GetADCSat());
-    DigitizePoint(row,pad,time,charge);
-  }
-  QSort(fDPt,0,fNDigits);
-}
-
-
 void AliHLTTPCMemHandler::DigitizePoint(Int_t row, Int_t pad, 
 				    Int_t time,Int_t charge)
 {
@@ -450,60 +428,6 @@ Bool_t AliHLTTPCMemHandler::Memory2BinaryFile(UInt_t nrow,AliHLTTPCDigitRowData 
   LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Memory2Binary","Memory")
     <<AliHLTTPCLog::kDec<<"Wrote "<<outsize<<" Bytes to Memory ("
     <<nrow<<" Rows)"<<ENDLOG;
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data,UInt_t& sz)
-{
-  //Read inputfile into memory as is, and store it in data. 
-  // No run-length encoding is assumed.
-
-  if(!fInBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","File")
-      <<"No Input File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-      <<"Pointer to AliHLTTPCDigitRowData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  rewind(fInBinary);
-  AliHLTTPCDigitRowData *rowPt = data;
-  UInt_t rowcount = 0;
-  UInt_t outsize =0;
-  while(!feof(fInBinary)){
-    Byte_t  *bytePt =(Byte_t *) rowPt;
-
-    if (sz<outsize+sizeof(AliHLTTPCDigitRowData)) {
-      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-	<< "target data buffer too small" <<ENDLOG;
-      return kFALSE;
-    }
-    if(fread(rowPt,sizeof(AliHLTTPCDigitRowData),1,fInBinary)!=1) break;
-
-    bytePt += sizeof(AliHLTTPCDigitRowData);
-    outsize += sizeof(AliHLTTPCDigitRowData);
-
-    UInt_t size = sizeof(AliHLTTPCDigitData) * rowPt->fNDigit;
-
-    if (sz<outsize+size) {
-      LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-	<< "target data buffer too small" <<ENDLOG;
-      return kFALSE;
-    }
-    //if(fread(bytePt,size,1,fInBinary)!=1) break;
-    fread(bytePt,size,1,fInBinary);
-    bytePt += size;
-    outsize += size;
-    rowPt = (AliHLTTPCDigitRowData *) bytePt;
-    rowcount++;
-  }  
-  nrow= rowcount;
-    LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-    <<AliHLTTPCLog::kDec<<"Wrote "<<outsize<<" Bytes to Memory ("
-    <<rowcount<<" Rows)"<<ENDLOG;
-  sz = outsize;
   return kTRUE;
 }
 
@@ -677,69 +601,6 @@ Int_t AliHLTTPCMemHandler::Memory2CompMemory(UInt_t nrow,
   return index * sizeof(UInt_t);
 }
 
-Int_t AliHLTTPCMemHandler::CompMemory2Memory(UInt_t  nrow,
-					     AliHLTTPCDigitRowData *data,UInt_t *comp, UInt_t& sz)
-{
-  //Uncompress the run-length encoded data in memory pointed to by comp, and
-  //  store it in data.
-
-  if(!comp){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::CompMemory2Memory","Memory")
-      <<"Pointer to compressed data = 0x0 "<<ENDLOG;
-    return 0;
-  }
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::CompMemory2Memory","Memory")
-      <<"Pointer to AliHLTTPCDigitRowData = 0x0 "<<ENDLOG;
-    return 0;
-  }
-  Int_t outsize=0;
-  
-  AliHLTTPCDigitRowData *rowPt = data;
-  UInt_t index=0;
-  UInt_t subindex=0;
-  
-  for(UInt_t i=0;i<nrow;i++){
-    UInt_t ndigit=0;
-    UInt_t row =Read(comp,index,subindex);
-    rowPt->fRow=row;
-    Generate(row);
-    UShort_t npad = Read(comp,index,subindex);
-    for(UShort_t p=0;p<npad;p++){
-      UShort_t charge;
-      UShort_t time =0;
-      UShort_t pad = Read(comp,index,subindex);
-      if(Test(comp,index,subindex)==0){
-        Read(comp,index,subindex);
-        if( (time = Read(comp,index,subindex)) == 0 ){
-          continue;
-        }
-      }
-      for(;;){
-        while( (charge=Read(comp,index,subindex)) != 0){
-          if(time>=fEtaMinTimeBin[row]&&time<=fEtaMaxTimeBin[row])
-	    //AddData(rowPt->fDigitData,ndigit,row,pad,time,charge);
-	    //seems we are using this function... but dont know why
-            AddDataRandom(rowPt->fDigitData,ndigit,row,pad,time,charge);
-          time++;
-        }
-        UShort_t tshift = Read(comp,index,subindex);
-        if(tshift == 0) break;
-        time += tshift;
-      }
-    }
-    rowPt->fNDigit = ndigit;
-    Int_t size = sizeof(AliHLTTPCDigitData) * rowPt->fNDigit+
-      sizeof(AliHLTTPCDigitRowData);
-    Byte_t  *bytePt =(Byte_t *) rowPt;
-    bytePt += size;
-    outsize += size;
-    rowPt = (AliHLTTPCDigitRowData *) bytePt;
-  }
-  sz = outsize;
-  return outsize;
-}
-
 UInt_t AliHLTTPCMemHandler::GetCompMemorySize(UInt_t nrow,AliHLTTPCDigitRowData *data) const
 {
   //Return the size of RLE data, after compressing data.
@@ -882,7 +743,7 @@ UInt_t AliHLTTPCMemHandler::GetNRow(UInt_t *comp,UInt_t size)
 }
 
 Bool_t AliHLTTPCMemHandler::CompMemory2CompBinary(UInt_t nrow,UInt_t *comp,
-					      UInt_t size)
+                                             UInt_t size)
 {
   //Write the RLE data in comp to the output file.
   
@@ -909,45 +770,6 @@ Bool_t AliHLTTPCMemHandler::CompMemory2CompBinary(UInt_t nrow,UInt_t *comp,
   return kTRUE;
 }
 
-Bool_t AliHLTTPCMemHandler::CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp)
-{
-  //Read the RLE data from file, and store it in comp. No unpacking yet.
-
-  if(!fInBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::CompBinary2CompMemory","File")
-      <<"No Output File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!comp){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::CompBinary2CompMemory","Memory")
-      <<"Pointer to compressed data = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  rewind(fInBinary);
-  UInt_t length;
-  if(fread(&length,sizeof(UInt_t),1,fInBinary)!=1) return kFALSE;
-  UInt_t size = length*sizeof(UInt_t);
-  if(fread(comp,size,1,fInBinary)!=1) return kFALSE;
-  // now find the number of dig
-  nrow =  GetNRow(comp,size);
-  return kTRUE;
-}
-
-AliHLTTPCDigitRowData *AliHLTTPCMemHandler::CompBinary2Memory(UInt_t & nrow, UInt_t& sz )
-{
-  // Read the RLE inputfile, unpack it and return the pointer to it.
-  AliHLTTPCMemHandler * handler = new AliHLTTPCMemHandler();
-  handler->SetBinaryInput(fInBinary);
-  UInt_t *comp =(UInt_t *)handler->Allocate();
-  handler->CompBinary2CompMemory(nrow,comp);
-  UInt_t size = GetMemorySize(nrow,comp);
-  sz = size;
-  AliHLTTPCDigitRowData *data = (AliHLTTPCDigitRowData *)Allocate(size);
-  CompMemory2Memory(nrow,data,comp);
-  handler->Free();
-  delete handler;
-  return data;  
-}
 
 Bool_t AliHLTTPCMemHandler::Memory2CompBinary(UInt_t nrow,AliHLTTPCDigitRowData *data)
 {
@@ -1006,44 +828,6 @@ Bool_t AliHLTTPCMemHandler::Transform(UInt_t npoint,AliHLTTPCSpacePointData *dat
   return kTRUE;
 }
 
-Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data, UInt_t& sz)
-{
-  //Read the space points in inputfile, and store it in data.
-  if(!fInBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","File")
-    <<"No Input File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-    <<"Pointer to AliHLTTPCSpacePointData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-
-  Int_t size = GetFileSize(); 
-  sz = size;
-  npoint = size/sizeof(AliHLTTPCSpacePointData);
-  if(size==0) {
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","File")
-    <<"File Size == 0"<<ENDLOG;
-    return kFALSE;
-  }
-
-  if(fread(data,size,1,fInBinary)!=1){
-    LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","File")
-    <<"File Read Error "<<ENDLOG;
-    return kFALSE;
-  }
-  if(size%sizeof(AliHLTTPCSpacePointData)){
-    LOG(AliHLTTPCLog::kFatal,"AliHLTTPCMemHandler::Binary2Memory","File Size")
-    <<"File Size wrong "<<ENDLOG;
-    return kFALSE; 
-  }
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Binary2Memory","File")
-  <<AliHLTTPCLog::kDec<<"Wrote  "<<size<<" Bytes to Memory"<<ENDLOG;
-  return kTRUE;
-}
-
 ///////////////////////////////////////// Track IO  
 Bool_t AliHLTTPCMemHandler::Memory2Binary(UInt_t ntrack,AliHLTTPCTrackSegmentData *data)
 {
@@ -1072,38 +856,6 @@ Bool_t AliHLTTPCMemHandler::Memory2Binary(UInt_t ntrack,AliHLTTPCTrackSegmentDat
   return kTRUE;
 }
 
-Bool_t AliHLTTPCMemHandler::Binary2Memory(UInt_t & ntrack,AliHLTTPCTrackSegmentData *data)
-{
-  //Read the tracks in inputfile, and store it in data.
-  if(!fInBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","File")
-    <<"No Input File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2Memory","Memory")
-    <<"Pointer to AliHLTTPCTrackSegmentData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-
-  ntrack=0;
-  AliHLTTPCTrackSegmentData *trackPt = data;
-  rewind(fInBinary);
-
-  while(!feof(fInBinary)){
-    if(fread(trackPt,sizeof(AliHLTTPCTrackSegmentData),1,fInBinary)!=1) break;
-    Int_t size=trackPt->fNPoints*sizeof(UInt_t);
-    if(fread(trackPt->fPointIDs,size,1,fInBinary)!=1) break;
-    Byte_t *bytePt = (Byte_t*) trackPt;
-    bytePt += sizeof(AliHLTTPCTrackSegmentData)+size;
-    trackPt = (AliHLTTPCTrackSegmentData*) bytePt;
-    ntrack++; 
-  }
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Binary2Memory","File")
-  <<AliHLTTPCLog::kDec<<"Wrote  "<<ntrack<<" Tracks to Memory"<<ENDLOG;
-  return kTRUE;
-}
-
 Bool_t AliHLTTPCMemHandler::TrackArray2Binary(AliHLTTPCTrackArray *array)
 {
   //Write the trackarray to the outputfile.
@@ -1122,28 +874,6 @@ Bool_t AliHLTTPCMemHandler::TrackArray2Binary(AliHLTTPCTrackArray *array)
   UInt_t ntrack;
   TrackArray2Memory(ntrack,data,array);
   Memory2Binary(ntrack,data);
-  Free();
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::Binary2TrackArray(AliHLTTPCTrackArray *array)
-{
-  //Read the tracks in inputfile, and fill it in trackarray. 
-  //array should already be constructed.
-  if(!fInBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2TrackArray","File")
-    <<"No Input File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Binary2TrackArray","Memory")
-    <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  AliHLTTPCTrackSegmentData *data = (AliHLTTPCTrackSegmentData *)Allocate();
-  UInt_t ntrack;
-  Binary2Memory(ntrack,data);
-  Memory2TrackArray(ntrack,data,array);  
   Free();
   return kTRUE;
 }

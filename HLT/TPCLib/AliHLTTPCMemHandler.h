@@ -108,7 +108,6 @@ class AliHLTTPCMemHandler {
   void SetRandomSeed();
 
   void ResetRandom(){fNDigits = 0; fNUsed = 0;}
-  void Generate(Int_t row);
   void SetNGenerate(Int_t number){(number>fNRandom)?fNGenerate=fNRandom:fNGenerate = number;}
 
   void SetROI(const Float_t *eta,Int_t *slice);
@@ -128,44 +127,21 @@ class AliHLTTPCMemHandler {
    */
   Bool_t Memory2BinaryFile(UInt_t nrow,AliHLTTPCDigitRowData *data);
 
-  /**
-   * Read digit data from binary file.
-   * @param nrow    size of the array
-   * @param data    data buffer to receive the data
-   * @param sz      [IN] buffer size [OUT] total output size
-   * @return kTRUE if succeeded, kFALSE if error
-   */
-  Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data, UInt_t& sz);
-
-  // Matthias 18.09.2007
-  // this function is highly error prone, no size check for data buffer
-  // depricated
-  //Bool_t Binary2Memory(UInt_t & nrow,AliHLTTPCDigitRowData *data){UInt_t tmp;return Binary2Memory(nrow,data,tmp);};
-
   Int_t Memory2CompMemory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp);
-  Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp,UInt_t& sz);
-  Int_t CompMemory2Memory(UInt_t nrow,AliHLTTPCDigitRowData *data,UInt_t *comp) {UInt_t tmp;return CompMemory2Memory(nrow,data,comp,tmp);};
   Bool_t CompMemory2CompBinary(UInt_t nrow,UInt_t *comp, UInt_t size=0);
-  Bool_t CompBinary2CompMemory(UInt_t & nrow,UInt_t *comp);
 
-  virtual AliHLTTPCDigitRowData *CompBinary2Memory(UInt_t & nrow, UInt_t& sz);
-  virtual AliHLTTPCDigitRowData *CompBinary2Memory(UInt_t & nrow){UInt_t tmp;return CompBinary2Memory(nrow,tmp);};
   virtual Bool_t Memory2CompBinary(UInt_t nrow,AliHLTTPCDigitRowData *data);
   
   UInt_t GetNRow(UInt_t *comp,UInt_t size);
 
   //Point IO
   Bool_t Memory2Binary(UInt_t npoint,AliHLTTPCSpacePointData *data);
-  Bool_t Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data, UInt_t& sz);
-  Bool_t Binary2Memory(UInt_t & npoint,AliHLTTPCSpacePointData *data) {UInt_t tmp; return Binary2Memory(npoint,data,tmp);};
   Bool_t Transform(UInt_t npoint,AliHLTTPCSpacePointData *data,Int_t slice);
   static void UpdateRowPointer(AliHLTTPCDigitRowData *&tempPt);
   
   //Track IO
   Bool_t Memory2Binary(UInt_t ntrack,AliHLTTPCTrackSegmentData *data);
-  Bool_t Binary2Memory(UInt_t & ntrack,AliHLTTPCTrackSegmentData *data);
   Bool_t TrackArray2Binary(AliHLTTPCTrackArray *array);
-  Bool_t Binary2TrackArray(AliHLTTPCTrackArray *array);
   Bool_t TrackArray2Memory(UInt_t & ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const;
   Bool_t Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const;
   Bool_t Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array,Int_t slice) const;
