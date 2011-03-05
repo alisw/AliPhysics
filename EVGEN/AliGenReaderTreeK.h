@@ -10,7 +10,6 @@
 // Author: andreas.morsch@cern.ch
 //
 #include "AliGenReader.h"
-#include "AliStack.h"
 
 class TFile;
 class AliRunLoader;
