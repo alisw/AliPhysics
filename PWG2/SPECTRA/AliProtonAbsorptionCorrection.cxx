@@ -106,7 +106,7 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
     mcKineCutsProtons->SetRapidityRange(fMinY,fMaxY);
   mcKineCutsProtons->SetChargeMC(1.0);
 
-  strncpy(titleCF,"mcKineCutsAntiProtons",21);
+  strncpy(titleCF,"mcKineCutsAntiProtons",22);
   AliCFTrackKineCuts *mcKineCutsAntiProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   mcKineCutsAntiProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
@@ -115,13 +115,13 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
     mcKineCutsAntiProtons->SetRapidityRange(fMinY,fMaxY);
   mcKineCutsAntiProtons->SetChargeMC(-1.0);
 
-  strncpy(titleCF,"mcGenCutsProtons",16);
-  strncpy(nameCF,"MC particle generation cuts",27);
+  strncpy(titleCF,"mcGenCutsProtons",17);
+  strncpy(nameCF,"MC particle generation cuts",28);
   AliCFParticleGenCuts* mcGenCutsProtons = new AliCFParticleGenCuts(titleCF,nameCF);
   mcGenCutsProtons->SetRequireIsPrimary();
   mcGenCutsProtons->SetRequirePdgCode(2212);
 
-  strncpy(titleCF,"mcGenCutsAntiProtons",20);
+  strncpy(titleCF,"mcGenCutsAntiProtons",21);
   AliCFParticleGenCuts* mcGenCutsAntiProtons = new AliCFParticleGenCuts(titleCF,nameCF);
   mcGenCutsAntiProtons->SetRequireIsPrimary();
   mcGenCutsAntiProtons->SetRequirePdgCode(-2212);
@@ -134,8 +134,8 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
   mcListAntiProtons->AddLast(mcGenCutsAntiProtons);
 
   //Setting up the criteria for the reconstructible particles
-  strncpy(titleCF,"mcAccCuts",9);
-  strncpy(nameCF,"Acceptance cuts",15);
+  strncpy(titleCF,"mcAccCuts",10);
+  strncpy(nameCF,"Acceptance cuts",16);
   AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts(titleCF,nameCF);
   mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
   TObjArray* accList = new TObjArray(0);
@@ -144,8 +144,8 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
   //____________________________________________//
   //Setting up the criteria for the reconstructed tracks
   //____________________________________________//
-  strncpy(titleCF,"recKineCutsProtons",18);
-  strncpy(nameCF,"rec-level kine cuts",19);
+  strncpy(titleCF,"recKineCutsProtons",19);
+  strncpy(nameCF,"rec-level kine cuts",20);
   AliCFTrackKineCuts *recKineCutsProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   recKineCutsProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
@@ -155,7 +155,7 @@ void AliProtonAbsorptionCorrection::InitAnalysisHistograms(Int_t nbinsY,
   recKineCutsProtons->SetChargeRec(1.0);
 
   //____________________________________________//
-  strncpy(titleCF,"recKineCutsAntiProtons",22);
+  strncpy(titleCF,"recKineCutsAntiProtons",23);
   AliCFTrackKineCuts *recKineCutsAntiProtons = new AliCFTrackKineCuts(titleCF,nameCF);
   recKineCutsAntiProtons->SetPtRange(fMinPt,fMaxPt);
   if(fProtonAnalysisBase->GetEtaMode()) 
