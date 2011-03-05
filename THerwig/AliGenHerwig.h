@@ -58,7 +58,7 @@ class AliGenHerwig : public AliGenMC
     virtual void    SetHardProcessFile(TString filename) {fFileName=TString(filename);};
     virtual void    SetEventListRange(Int_t eventFirst=-1, Int_t eventLast=-1);
 
-    virtual Bool_t CheckParton(TParticle* parton1, TParticle* parton2);
+    virtual Bool_t CheckParton(const TParticle* parton1, const TParticle* parton2);
 
     virtual void         GetPartonEtaRange(Float_t& etamin, Float_t& etamax) const
 	{etamin = fEtaMinParton; etamax = fEtaMaxParton;}
@@ -82,7 +82,7 @@ class AliGenHerwig : public AliGenMC
 	{fPhiMinGamma = TMath::Pi()*phimin/180.; fPhiMaxGamma = TMath::Pi()*phimax/180.;}
 
  protected:
-    Bool_t SelectFlavor(Int_t pid);
+    Bool_t SelectFlavor(Int_t pid) const;
     void   MakeHeader();    
  protected:
     TString     fAutPDF;         // PDF group
@@ -129,9 +129,9 @@ class AliGenHerwig : public AliGenMC
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters
-    Bool_t DaughtersSelection(TParticle* iparticle, TClonesArray* particles);
+    Bool_t DaughtersSelection(const TParticle* iparticle, const TClonesArray* particles);
     // check if stable
-    Bool_t Stable(TParticle*  particle);
+    Bool_t Stable(const TParticle*  particle) const;
 
     void InitPDF();
 

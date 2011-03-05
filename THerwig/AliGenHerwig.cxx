@@ -113,6 +113,7 @@ AliGenHerwig::AliGenHerwig(Int_t npart)
     fPhiMaxGamma(2. * TMath::Pi()),
     fHeader(0)
 {
+// Constructor
     fEnergyCMS = 14000;
     SetTarget();
     SetProjectile();
@@ -208,6 +209,7 @@ void AliGenHerwig::InitJimmy()
 
 void AliGenHerwig::InitPDF()
 {
+// Initialize PDF
   switch(fStrucFunc)
     {
 // ONLY USES LHAPDF STRUCTURE FUNCTIONS
@@ -372,7 +374,7 @@ void AliGenHerwig::Generate()
   //printf(">> trials << %d\n",fTrials);
 }
 
-Bool_t AliGenHerwig::CheckParton(TParticle* parton1, TParticle* parton2)
+Bool_t AliGenHerwig::CheckParton(const TParticle* parton1, const TParticle* parton2)
 {
 // Check the kinematic trigger condition
 //
@@ -435,7 +437,7 @@ void AliGenHerwig::KeepFullEvent()
     fKeep=1;
 }
 
-Bool_t AliGenHerwig::DaughtersSelection(TParticle* iparticle, TClonesArray* particles)
+Bool_t AliGenHerwig::DaughtersSelection(const TParticle* iparticle, const TClonesArray* particles)
 {
 //
 // Looks recursively if one of the daughters has been selected
@@ -465,7 +467,7 @@ Bool_t AliGenHerwig::DaughtersSelection(TParticle* iparticle, TClonesArray* part
 }
 
 
-Bool_t AliGenHerwig::SelectFlavor(Int_t pid)
+Bool_t AliGenHerwig::SelectFlavor(Int_t pid) const
 {
 // Select flavor of particle
 // 0: all
@@ -478,7 +480,7 @@ Bool_t AliGenHerwig::SelectFlavor(Int_t pid)
     return (fFlavor == ifl);
 }
 
-Bool_t AliGenHerwig::Stable(TParticle*  particle)
+Bool_t AliGenHerwig::Stable(const TParticle*  particle) const
 {
 // Return true for a stable particle
 //

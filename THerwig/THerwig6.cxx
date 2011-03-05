@@ -628,81 +628,81 @@ int         THerwig6::GetIPROC         () const     { return HWPROC.IPROC; }
 int         THerwig6::GetMAXEV         () const     { return HWPROC.MAXEV; }
 
 // /HWPRAM/
-double      THerwig6::GetQCDLAM        () const     { return HWPRAM.QCDLAM; }
-void        THerwig6::SetQCDLAM   (double q)        { HWPRAM.QCDLAM = q; }
-double      THerwig6::GetVQCUT         () const     { return HWPRAM.VQCUT; }
-void        THerwig6::SetVQCUT    (double v)        { HWPRAM.VQCUT = v; }
-double      THerwig6::GetVGCUT         () const     { return HWPRAM.VGCUT; }
-void        THerwig6::SetVGCUT    (double v)        { HWPRAM.VGCUT = v; }
-double      THerwig6::GetVPCUT         () const     { return HWPRAM.VPCUT; }
-void        THerwig6::SetVPCUT    (double v)        { HWPRAM.VPCUT = v; }
-double      THerwig6::GetCLMAX         () const     { return HWPRAM.CLMAX; }
-void        THerwig6::SetCLMAX    (double c)        { HWPRAM.CLMAX = c; }
-double      THerwig6::GetCLPOW         () const     { return HWPRAM.CLPOW; }
-void        THerwig6::SetCLPOW    (double c)        { HWPRAM.CLPOW = c; }
-double      THerwig6::GetPSPLT    (int i) const     { return HWPRAM.PSPLT[i-1];}
-void        THerwig6::SetPSPLT    (int i, double p) { HWPRAM.PSPLT[i-1] = p;}
-double      THerwig6::GetQDIQK         () const     { return HWPRAM.QDIQK; }
-void        THerwig6::SetQDIQK    (double q)        { HWPRAM.QDIQK = q; }
-double      THerwig6::GetPDIQK         () const     { return HWPRAM.PDIQK; }
-void        THerwig6::SetPDIQK    (double p)        { HWPRAM.PDIQK = p; }
-double      THerwig6::GetQSPAC         () const     { return HWPRAM.QSPAC; }
-void        THerwig6::SetQSPAC    (double q)        { HWPRAM.QSPAC = q; }
-double      THerwig6::GetPTRMS         () const     { return HWPRAM.PTRMS; }
-void        THerwig6::SetPTRMS    (double p)        { HWPRAM.PTRMS = p; }
-double      THerwig6::GetENSOF         () const     { return HWPRAM.ENSOF; }
-void        THerwig6::SetENSOF    (double e)        { HWPRAM.ENSOF = e; }
-int         THerwig6::GetIPRINT        () const     { return HWPRAM.IPRINT; }
-void        THerwig6::SetIPRINT   (int i)           { HWPRAM.IPRINT = i; }
-int         THerwig6::GetMODPDF   (int i) const     { return HWPRAM.MODPDF[i-1];}
-void        THerwig6::SetMODPDF   (int i, int j)  { HWPRAM.MODPDF[i-1] = j; }
-int         THerwig6::GetNSTRU         () const     { return HWPRAM.NSTRU; }
-void        THerwig6::SetNSTRU    (int i)          { HWPRAM.NSTRU = i; }
+double      THerwig6::GetQCDLAM        ()           const     { return HWPRAM.QCDLAM; }
+void        THerwig6::SetQCDLAM   (double q)        const     { HWPRAM.QCDLAM = q; }
+double      THerwig6::GetVQCUT         ()           const     { return HWPRAM.VQCUT; }
+void        THerwig6::SetVQCUT    (double v)        const     { HWPRAM.VQCUT = v; }
+double      THerwig6::GetVGCUT         ()           const     { return HWPRAM.VGCUT; }
+void        THerwig6::SetVGCUT    (double v)        const     { HWPRAM.VGCUT = v; }
+double      THerwig6::GetVPCUT         ()           const     { return HWPRAM.VPCUT; }
+void        THerwig6::SetVPCUT    (double v)        const     { HWPRAM.VPCUT = v; }
+double      THerwig6::GetCLMAX         ()           const     { return HWPRAM.CLMAX; }
+void        THerwig6::SetCLMAX    (double c)        const     { HWPRAM.CLMAX = c; }
+double      THerwig6::GetCLPOW         ()           const     { return HWPRAM.CLPOW; }
+void        THerwig6::SetCLPOW    (double c)        const     { HWPRAM.CLPOW = c; }
+double      THerwig6::GetPSPLT    (int i)           const     { return HWPRAM.PSPLT[i-1];}
+void        THerwig6::SetPSPLT    (int i, double p) const     { HWPRAM.PSPLT[i-1] = p;}
+double      THerwig6::GetQDIQK         ()           const     { return HWPRAM.QDIQK; }
+void        THerwig6::SetQDIQK    (double q)        const     { HWPRAM.QDIQK = q; }
+double      THerwig6::GetPDIQK         ()           const     { return HWPRAM.PDIQK; }
+void        THerwig6::SetPDIQK    (double p)        const     { HWPRAM.PDIQK = p; }
+double      THerwig6::GetQSPAC         ()           const     { return HWPRAM.QSPAC; }
+void        THerwig6::SetQSPAC    (double q)        const     { HWPRAM.QSPAC = q; }
+double      THerwig6::GetPTRMS         ()           const     { return HWPRAM.PTRMS; }
+void        THerwig6::SetPTRMS    (double p)        const     { HWPRAM.PTRMS = p; }
+double      THerwig6::GetENSOF         ()           const     { return HWPRAM.ENSOF; }
+void        THerwig6::SetENSOF    (double e)        const     { HWPRAM.ENSOF = e; }
+int         THerwig6::GetIPRINT        ()           const     { return HWPRAM.IPRINT; }
+void        THerwig6::SetIPRINT   (int i)           const     { HWPRAM.IPRINT = i; }
+int         THerwig6::GetMODPDF   (int i)           const     { return HWPRAM.MODPDF[i-1];}
+void        THerwig6::SetMODPDF   (int i, int j)    const     { HWPRAM.MODPDF[i-1] = j; }
+int         THerwig6::GetNSTRU         ()           const     { return HWPRAM.NSTRU; }
+void        THerwig6::SetNSTRU    (int i)           const     { HWPRAM.NSTRU = i; }
 
 // /HWPRCH/
-char*       THerwig6::GetAUTPDF     (int i)         { return HWPRCH.AUTPDF[i-1]; }
-void        THerwig6::SetAUTPDF(int i,const char* s){ strncpy(HWPRCH.AUTPDF[i-1], s, 19);}
-char*       THerwig6::GetBDECAY        ()           { return HWPRCH.BDECAY; }
+char*       THerwig6::GetAUTPDF     (int i)         const     { return HWPRCH.AUTPDF[i-1]; }
+void        THerwig6::SetAUTPDF(int i,const char* s)const     { strncpy(HWPRCH.AUTPDF[i-1], s, 19);}
+char*       THerwig6::GetBDECAY        ()           const     { return HWPRCH.BDECAY; }
 
 // /HWEVNT/
-double      THerwig6::GetAVWGT         () const     { return HWEVNT.AVWGT; }
-int         THerwig6::GetMAXPR         () const     { return HWEVNT.MAXPR; }
-void        THerwig6::SetMAXPR    (int i)           { HWEVNT.MAXPR = i; }
-int         THerwig6::GetMAXER         () const     { return HWEVNT.MAXER; }
-void        THerwig6::SetMAXER    (int i)           { HWEVNT.MAXER = i; }
-int         THerwig6::GetNRN      (int i) const     { return HWEVNT.NRN[i-1]; }
-void        THerwig6::SetNRN    (int i, int j)      { HWEVNT.NRN[i-1] = j; }
-double      THerwig6::GetEVWGT         () const     { return HWEVNT.EVWGT; }
+double      THerwig6::GetAVWGT         ()           const     { return HWEVNT.AVWGT; }
+int         THerwig6::GetMAXPR         ()           const     { return HWEVNT.MAXPR; }
+void        THerwig6::SetMAXPR    (int i)           const     { HWEVNT.MAXPR = i; }
+int         THerwig6::GetMAXER         ()           const     { return HWEVNT.MAXER; }
+void        THerwig6::SetMAXER    (int i)           const     { HWEVNT.MAXER = i; }
+int         THerwig6::GetNRN      (int i)           const     { return HWEVNT.NRN[i-1]; }
+void        THerwig6::SetNRN    (int i, int j)      const     { HWEVNT.NRN[i-1] = j; }
+double      THerwig6::GetEVWGT         ()           const     { return HWEVNT.EVWGT; }
 
-int         THerwig6::GetIDHW     (int i) const     { return HWEVNT.IDHW[i]; }
+int         THerwig6::GetIDHW     (int i)           const     { return HWEVNT.IDHW[i]; }
 
-int         THerwig6::GetIERROR        () const     { return HWEVNT.IERROR; }
+int         THerwig6::GetIERROR        ()           const     { return HWEVNT.IERROR; }
 
 // /HWHARD/
-double      THerwig6::GetPTMIN         () const     { return HWHARD.PTMIN; }
-void        THerwig6::SetPTMIN    (double d)        { HWHARD.PTMIN = d; }
-double      THerwig6::GetPTMAX         () const     { return HWHARD.PTMAX; }
-void        THerwig6::SetPTMAX    (double d)        { HWHARD.PTMAX = d; }
-double      THerwig6::GetPTPOW         () const     { return HWHARD.PTPOW; }
-void        THerwig6::SetPTPOW    (double d)        { HWHARD.PTPOW = d; }
-double      THerwig6::GetYJMIN         () const     { return HWHARD.YJMIN; }
-void        THerwig6::SetYJMIN    (double d)        { HWHARD.YJMIN = d; }
-double      THerwig6::GetYJMAX         () const     { return HWHARD.YJMAX; }
-void        THerwig6::SetYJMAX    (double d)        { HWHARD.YJMAX = d; }
-double      THerwig6::GetQ2MIN         () const     { return HWHARD.Q2MIN; }
-void        THerwig6::SetQ2MIN    (double d)        { HWHARD.Q2MIN = d; }
-double      THerwig6::GetQ2MAX         () const     { return HWHARD.Q2MAX; }
-void        THerwig6::SetQ2MAX    (double d)        { HWHARD.Q2MAX = d; }
-double      THerwig6::GetYBMIN         () const     { return HWHARD.YBMIN; }
-void        THerwig6::SetYBMIN    (double d)        { HWHARD.YBMIN = d; }
-double      THerwig6::GetYBMAX         () const     { return HWHARD.YBMAX; }
-void        THerwig6::SetYBMAX    (double d)        { HWHARD.YBMAX = d; }
-double      THerwig6::GetZJMAX        ()  const     { return HWHARD.ZJMAX; }
-void        THerwig6::SetZJMAX    (double d)        { HWHARD.ZJMAX = d; }
-int         THerwig6::GetIHPRO        ()  const     { return HWHARD.IHPRO; }
+double      THerwig6::GetPTMIN         ()           const     { return HWHARD.PTMIN; }
+void        THerwig6::SetPTMIN    (double d)        const     { HWHARD.PTMIN = d; }
+double      THerwig6::GetPTMAX         ()           const     { return HWHARD.PTMAX; }
+void        THerwig6::SetPTMAX    (double d)        const     { HWHARD.PTMAX = d; }
+double      THerwig6::GetPTPOW         ()           const     { return HWHARD.PTPOW; }
+void        THerwig6::SetPTPOW    (double d)        const     { HWHARD.PTPOW = d; }
+double      THerwig6::GetYJMIN         ()           const     { return HWHARD.YJMIN; }
+void        THerwig6::SetYJMIN    (double d)        const     { HWHARD.YJMIN = d; }
+double      THerwig6::GetYJMAX         ()           const     { return HWHARD.YJMAX; }
+void        THerwig6::SetYJMAX    (double d)        const     { HWHARD.YJMAX = d; }
+double      THerwig6::GetQ2MIN         ()           const     { return HWHARD.Q2MIN; }
+void        THerwig6::SetQ2MIN    (double d)        const     { HWHARD.Q2MIN = d; }
+double      THerwig6::GetQ2MAX         ()           const     { return HWHARD.Q2MAX; }
+void        THerwig6::SetQ2MAX    (double d)        const     { HWHARD.Q2MAX = d; }
+double      THerwig6::GetYBMIN         ()           const     { return HWHARD.YBMIN; }
+void        THerwig6::SetYBMIN    (double d)        const     { HWHARD.YBMIN = d; }
+double      THerwig6::GetYBMAX         ()           const     { return HWHARD.YBMAX; }
+void        THerwig6::SetYBMAX    (double d)        const     { HWHARD.YBMAX = d; }
+double      THerwig6::GetZJMAX        ()            const     { return HWHARD.ZJMAX; }
+void        THerwig6::SetZJMAX    (double d)        const     { HWHARD.ZJMAX = d; }
+int         THerwig6::GetIHPRO        ()            const     { return HWHARD.IHPRO; }
 // /HWPROP/
-double      THerwig6::GetRMASS      (int i) const   { return HWPROP.RMASS[i]; }
-void        THerwig6::SetRMASS    (int i, double r) { HWPROP.RMASS[i] = r; }
+double      THerwig6::GetRMASS      (int i)         const     { return HWPROP.RMASS[i]; }
+void        THerwig6::SetRMASS    (int i, double r) const     { HWPROP.RMASS[i] = r; }
 
 
-void        THerwig6::GetRNAME (int i, char a[9])   { for (int j=0;j<8;j++) a[j] = HWUNAM.RNAME[i][j]; a[8] = '\0';}
+void        THerwig6::GetRNAME (int i, char a[9])   const     { for (int j=0;j<8;j++) a[j] = HWUNAM.RNAME[i][j]; a[8] = '\0';}

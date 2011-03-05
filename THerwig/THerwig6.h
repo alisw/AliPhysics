@@ -108,45 +108,45 @@ public:
   int         GetIPROC         () const;
   int         GetMAXEV         () const;
   double      GetQCDLAM        () const;    
-  void        SetQCDLAM   (double q);       
+  void        SetQCDLAM   (double q) const;       
   double      GetVQCUT         () const;    
-  void        SetVQCUT    (double v);       
+  void        SetVQCUT    (double v) const;       
   double      GetVGCUT         () const;    
-  void        SetVGCUT    (double v);       
+  void        SetVGCUT    (double v) const;       
   double      GetVPCUT         () const;    
-  void        SetVPCUT    (double v);       
+  void        SetVPCUT    (double v) const;
   double      GetCLMAX         () const;    
-  void        SetCLMAX    (double c);       
+  void        SetCLMAX    (double c) const;       
   double      GetCLPOW         () const;    
-  void        SetCLPOW    (double c);       
+  void        SetCLPOW    (double c) const;       
   double      GetPSPLT    (int i) const;    
-  void        SetPSPLT    (int i, double p);
+  void        SetPSPLT    (int i, double p) const;
   double      GetQDIQK         () const;
-  void        SetQDIQK    (double q);
+  void        SetQDIQK    (double q) const;
   double      GetPDIQK         () const;
-  void        SetPDIQK    (double p);   
+  void        SetPDIQK    (double p) const;   
   double      GetQSPAC         () const;
-  void        SetQSPAC    (double q);   
+  void        SetQSPAC    (double q) const;   
   double      GetPTRMS         () const;
-  void        SetPTRMS    (double p);   
+  void        SetPTRMS    (double p) const;   
   double      GetENSOF         () const;
-  void        SetENSOF    (double e);   
+  void        SetENSOF    (double e) const;   
   int         GetIPRINT        () const;
-  void        SetIPRINT   (int i);      
+  void        SetIPRINT   (int i) const;      
   int         GetMODPDF   (int i) const;
-  void        SetMODPDF   (int i, int j);
+  void        SetMODPDF   (int i, int j) const;
   int         GetNSTRU         () const; 
-  void        SetNSTRU    (int i);       
-  char*       GetAUTPDF     (int i);         
-  void        SetAUTPDF(int i,const char* s);
-  char*       GetBDECAY        ();           
+  void        SetNSTRU    (int i) const;       
+  char*       GetAUTPDF     (int i) const;         
+  void        SetAUTPDF(int i,const char* s) const;
+  char*       GetBDECAY        () const;           
   double      GetAVWGT         () const;
   int         GetMAXPR         () const;
-  void        SetMAXPR    (int i);      
+  void        SetMAXPR    (int i) const;      
   int         GetMAXER         () const;
-  void        SetMAXER    (int i);      
+  void        SetMAXER    (int i) const;      
   int         GetNRN      (int i) const;
-  void        SetNRN    (int i, int j); 
+  void        SetNRN    (int i, int j) const; 
   double      GetEVWGT         () const;
 
   int         GetIDHW     (int i) const;
@@ -155,33 +155,33 @@ public:
 
   // /HWHARD/
   double      GetPTMIN         () const;
-  void        SetPTMIN    (double d);
+  void        SetPTMIN    (double d) const;
   double      GetPTMAX         () const;
-  void        SetPTMAX    (double d);
+  void        SetPTMAX    (double d) const;
   double      GetPTPOW         () const;
-  void        SetPTPOW    (double d);
+  void        SetPTPOW    (double d) const;
   double      GetYJMIN         () const;
-  void        SetYJMIN    (double d);
+  void        SetYJMIN    (double d) const;
   double      GetYJMAX         () const;
-  void        SetYJMAX    (double d);
+  void        SetYJMAX    (double d) const;
   double      GetQ2MIN         () const;
-  void        SetQ2MIN    (double d);
+  void        SetQ2MIN    (double d) const;
   double      GetQ2MAX         () const;
-  void        SetQ2MAX    (double d);
+  void        SetQ2MAX    (double d) const;
   double      GetYBMIN         () const;
-  void        SetYBMIN    (double d);
+  void        SetYBMIN    (double d) const;
   double      GetYBMAX         () const;
-  void        SetYBMAX    (double d);
+  void        SetYBMAX    (double d) const;
   double      GetZJMAX        ()  const;
-  void        SetZJMAX    (double d);
+  void        SetZJMAX    (double d) const;
   int         GetIHPRO        () const;
   
   // /HWPROP/
   double      GetRMASS      (int i) const;
-  void        SetRMASS    (int i, double r);
+  void        SetRMASS    (int i, double r) const;
 
 
-  void        GetRNAME (int i, char a[9]);
+  void        GetRNAME (int i, char a[9]) const;
 
   // Herwig6 routines
   // the user would call
@@ -225,7 +225,7 @@ public:
   void             Jimmin();
   void             Jmefin();
 protected:
-  static   THerwig6 *fgInstance;
+  static   THerwig6 *fgInstance; // Singlet instance
   ClassDef(THerwig6,0)  //Interface to Herwig6.1 Event Generator
 };
 
