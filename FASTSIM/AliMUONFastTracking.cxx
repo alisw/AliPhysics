@@ -47,6 +47,7 @@ ClassImp(AliMUONFastTracking)
 AliMUONFastTracking* AliMUONFastTracking::fgMUONFastTracking=NULL;
 
 static Double_t FitP(Double_t *x, Double_t *par){
+// Fit function
     Double_t dx = x[0] - par[0];
     Double_t dx2 = x[0] - par[4];
     Double_t sigma = par[1] * ( 1 + par[2] * dx);

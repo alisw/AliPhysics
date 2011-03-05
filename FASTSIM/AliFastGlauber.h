@@ -34,7 +34,7 @@ class AliFastGlauber : public TObject {
     void SetNucleus(Int_t n=208) {fA=n;}
     void SetAuAuRhic();
     void SetPbPbLHC();
-    void SetFileName(TString &fn){fName=fn;}
+    void SetFileName(const TString &fn){fName=fn;}
     void SetFileName(const char *fn="$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root"){fName=fn;}
 
     const TF1* GetWSB()            const {return fgWSb;}
@@ -107,8 +107,8 @@ class AliFastGlauber : public TObject {
     void SetCentralityClass(Double_t xsecFrLow=0.0,Double_t xsecFrUp=0.1);    
     void GetRandomBHard(Double_t& b);
     void GetRandomXY(Double_t& x,Double_t& y);
-    void GetSavedXY(Double_t xy[2]) {xy[0] = fXY[0]; xy[1] = fXY[1];}
-    void GetSavedI0I1(Double_t i0i1[2]) {i0i1[0] = fI0I1[0]; i0i1[1] = fI0I1[1];}
+    void GetSavedXY(Double_t xy[2]) const {xy[0] = fXY[0]; xy[1] = fXY[1];} 
+    void GetSavedI0I1(Double_t i0i1[2]) const {i0i1[0] = fI0I1[0]; i0i1[1] = fI0I1[1];}
     void SaveXY(Double_t x, Double_t y) {fXY[0] = x; fXY[1] = y;}
     void SaveI0I1(Double_t i0, Double_t i1) {fI0I1[0] = i0; fI0I1[1] = i1;}
 
@@ -122,7 +122,7 @@ class AliFastGlauber : public TObject {
 				    Double_t b=-1.);
     void GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
 			      Double_t b=-1.);
-    void GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell,
+    void GetLengthsForPythia(Int_t n,Double_t* const phi,Double_t* ell,
 			     Double_t b=-1.);
     void PlotBDistr(Int_t n=1000);
     void PlotLengthDistr(Int_t n=1000,Bool_t save=kFALSE,

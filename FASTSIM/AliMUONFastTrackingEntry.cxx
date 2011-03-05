@@ -35,6 +35,7 @@ AliMUONFastTrackingEntry::AliMUONFastTrackingEntry():
     fMeanG2(0.),
     fSigmaG2(0.)
 { 
+// Default constructor
   for (Int_t i=0; i<5; i++) { 
     for (Int_t j=0; j<3; j++) { 
       fAcc[i][j] = 0;

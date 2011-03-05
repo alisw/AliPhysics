@@ -30,7 +30,7 @@ class AliQuenchingWeights : public TObject {
   AliQuenchingWeights& operator=(const AliQuenchingWeights& a)
       {a.Copy(*this); return(*this);}
   virtual ~AliQuenchingWeights();
-
+  void Init();
   void Reset();
   Int_t SampleEnergyLoss();
   Int_t SampleEnergyLoss(Int_t ipart, Double_t r);

@@ -1455,7 +1455,7 @@ void AliFastGlauber::GetLengthsBackToBack(Double_t& ell1,Double_t& ell2,
   return;
 }
 
-void AliFastGlauber::GetLengthsForPythia(Int_t n,Double_t* phi,Double_t* ell, Double_t b)
+void AliFastGlauber::GetLengthsForPythia(Int_t n,Double_t* const phi,Double_t* ell, Double_t b)
 {
   //
   // Returns lenghts for n partons with azimuthal angles phi[n] 

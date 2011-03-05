@@ -455,7 +455,7 @@ void AliFastMuonTriggerEff::Evaluate(Float_t charge, Float_t pt,Float_t theta,
 	printf(" 6:1 No more points above! No interpolation is needed!\n");
         #endif
 	return;        
-      }else if(ptc==pt){
+      }else if(TMath::Abs(ptc-pt) < 1.e-10){
         #ifdef MYTRIGDEBUG
 	  printf(" 6:1 No interpolation is needed!\n");
         #endif

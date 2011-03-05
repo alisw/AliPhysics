@@ -75,9 +75,7 @@ AliQuenchingWeights::AliQuenchingWeights()
       fTablesLoaded(kFALSE)
 {
   //default constructor 
-  fHisto = new TH1F(Form("hhistoqw_%d",fInstanceNumber),"",fgkBins,0.,fgkMaxBin);
-  for(Int_t bin=1;bin<=fgkBins;bin++) 
-    fHisto->SetBinContent(bin,0.);
+
 }
 
 AliQuenchingWeights::AliQuenchingWeights(const AliQuenchingWeights& a) 
@@ -120,6 +118,15 @@ AliQuenchingWeights::~AliQuenchingWeights()
 {
   Reset();
   delete fHisto;
+}
+
+void AliQuenchingWeights::Init()
+{
+//    Initialization
+    if (fHisto) return;
+    fHisto = new TH1F(Form("hhistoqw_%d",fInstanceNumber),"",fgkBins,0.,fgkMaxBin);
+    for(Int_t bin=1;bin<=fgkBins;bin++) 
+	fHisto->SetBinContent(bin,0.);
 }
 
 void AliQuenchingWeights::Reset()
@@ -877,7 +884,7 @@ Double_t AliQuenchingWeights::GetELossRandom(Int_t ipart, Double_t length, Doubl
       ret=fHistos[ipart-1][l-1]->GetRandom(); 
       if(++ws==1e6){
 	Warning("GetELossRandom",
-                "Aborted reweighting; maximum loss assigned after 1e6 trials.");
+                "Stopping reweighting; maximum loss assigned after 1e6 trials.");
 	return e;
       }
     }
@@ -961,7 +968,7 @@ Double_t AliQuenchingWeights::GetELossRandomK(Int_t ipart, Double_t I0, Double_t
       ret=fHisto->GetRandom(); 
       if(++ws==1e6){
 	Warning("GetELossRandomK",
-                "Aborted reweighting; maximum loss assigned after 1e6 trials.");
+                "Stopping reweighting; maximum loss assigned after 1e6 trials.");
 	return e;
       }
     }
@@ -1032,7 +1039,8 @@ Double_t AliQuenchingWeights::GetELossRandomKFastR(Int_t ipart, Double_t r, Doub
   if(discrete>=1.0) {
     return 0.; //no energy loss
   }
-
+  if (!fHisto) Init();
+  
   fHisto->SetBinContent(bin,continuous);
   Int_t kbinmax=fHisto->FindBin(e/wc);
   if(kbinmax>=fgkBins) kbinmax=fgkBins-1;
@@ -1142,7 +1150,7 @@ void AliQuenchingWeights::GetZeroLossProbR(Double_t &p,Double_t &prw,Double_t &p
 
   Double_t discrete=0.;
   Double_t continuous=0.;
-
+  if (!fHisto) Init();
   Int_t kbinmax=fHisto->FindBin(e/wc);
   if(kbinmax>=fgkBins) kbinmax=fgkBins-1;
   if(fMultSoft) {
@@ -1278,6 +1286,7 @@ Int_t AliQuenchingWeights::SampleEnergyLoss(Int_t ipart, Double_t r)
   Double_t discrete=0.;
   Double_t continuous=0;;
   Int_t bin=1;
+  if (!fHisto) Init();
   Double_t xxxx = fHisto->GetBinCenter(bin);
   if(fMultSoft)
     CalcMult(ipart,r,xxxx,continuous,discrete);
