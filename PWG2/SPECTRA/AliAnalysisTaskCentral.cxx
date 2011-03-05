@@ -334,7 +334,7 @@ void AliAnalysisTaskCentral::SendEvent(TObject *obj) const{
 					
 				if(checkCut){
 					AliAnalysisCentralCutMC *newcut = dynamic_cast<AliAnalysisCentralCutMC *>(cut);
-					newcut->ReceiveEvt(obj);
+					if (newcut) newcut->ReceiveEvt(obj);
 				}
 			}
 		}
