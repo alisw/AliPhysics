@@ -208,13 +208,12 @@ void AliAnalysisTaskChargedHadronSpectra::UserCreateOutputObjects()
   const Int_t kMultBins = 10;
   const Int_t kMultMax = 300;
 
-  // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
-  Int_t indexes[kPtBins+1];
-  TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
-  Double_t binsPt[kPtBins+1];
-  for(Int_t i=0; i<kPtBins+1; i++) binsPt[i] = binsPtDummy[indexes[i]];
-  
+  Double_t binsPt[kPtBins+1] = {-2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10,
+				-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
+				-0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05,
+				 0.00,  0.05,  0.10,  0.15,  0.20,  0.25,  0.30,  0.35,  0.40,  0.45,
+				 0.50,  0.55,  0.60,  0.65,  0.70,  0.75,  0.80,  0.85,  0.90,  0.95,
+				 1.00,  1.10,  1.20,  1.30,  1.40,  1.50,  1.60,  1.70,  1.80,  1.90, 2.00};
 
   // MC histograms
   fHistPtMCKaon = new TH3F("HistPtMCKaon", "PtEtaKaon; mult; #eta; p_{T} (GeV)",kMultBins,-0.5,kMultMax,kEtaBins,0,kEtaMax,kPtBins,-kPtMax,kPtMax);
@@ -760,14 +759,15 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicProton(const TH3F * in
   const Int_t kEtaBins = input->GetYaxis()->GetNbins();
 
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
-  // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
-  Int_t indexes[kPtBins+1];
-  TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
-  Double_t binsPt[kPtBins+1];
-  for(Int_t i=0; i<kPtBins+1; i++) binsPt[i] = binsPtDummy[indexes[i]];
+
+  Double_t binsPt[kPtBins+1] = {-2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10,
+				-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
+				-0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05,
+				 0.00,  0.05,  0.10,  0.15,  0.20,  0.25,  0.30,  0.35,  0.40,  0.45,
+				 0.50,  0.55,  0.60,  0.65,  0.70,  0.75,  0.80,  0.85,  0.90,  0.95,
+				 1.00,  1.10,  1.20,  1.30,  1.40,  1.50,  1.60,  1.70,  1.80,  1.90, 2.00};
+
   histPt->GetXaxis()->Set(kPtBins, binsPt);
-  //
 
   TCanvas * canvMany = new TCanvas("canvManyProton","canvManyProton");
   canvMany->Print("canvManyProton.ps[");
@@ -898,12 +898,14 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicPion(const TH3F * inpu
   const Int_t kEtaBins = input->GetYaxis()->GetNbins();
 
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
-  // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
-  Int_t indexes[kPtBins+1];
-  TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
-  Double_t binsPt[kPtBins+1];
-  for(Int_t i=0; i<kPtBins+1; i++) binsPt[i] = binsPtDummy[indexes[i]];
+
+  Double_t binsPt[kPtBins+1] = {-2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10,
+				-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
+				-0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05,
+				 0.00,  0.05,  0.10,  0.15,  0.20,  0.25,  0.30,  0.35,  0.40,  0.45,
+				 0.50,  0.55,  0.60,  0.65,  0.70,  0.75,  0.80,  0.85,  0.90,  0.95,
+				 1.00,  1.10,  1.20,  1.30,  1.40,  1.50,  1.60,  1.70,  1.80,  1.90, 2.00};
+
   histPt->GetXaxis()->Set(kPtBins, binsPt);
   //
 
@@ -1027,14 +1029,15 @@ TH1D * AliAnalysisTaskChargedHadronSpectra::AnalyseClassicKaon(const TH3F * inpu
   //const Int_t kEtaBins = input->GetYaxis()->GetNbins();
 
   TH1D * histPt = new TH1D("histPt", "Pt; pT (Gev); dN",kPtBins,-kPtMax,kPtMax);
-  // sort pT-bins ..
-  Double_t binsPtDummy[kPtBins+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, -0.05, -0.1, -0.15, -0.2, -0.25, -0.3, -0.35, -0.4, -0.45, -0.5, -0.55, -0.6, -0.65, -0.7, -0.75, -0.8, -0.85, -0.9, -0.95, -1.0, -1.1, -1.2, -1.3, -1.4, -1.5, -1.6, -1.7, -1.8, -1.9, -2.0};
-  Int_t indexes[kPtBins+1];
-  TMath::Sort(kPtBins+1,binsPtDummy,indexes,kFALSE);
-  Double_t binsPt[kPtBins+1];
-  for(Int_t i=0; i<kPtBins+1; i++) binsPt[i] = binsPtDummy[indexes[i]];
+
+  Double_t binsPt[kPtBins+1] = {-2.00, -1.90, -1.80, -1.70, -1.60, -1.50, -1.40, -1.30, -1.20, -1.10,
+				-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55,
+				-0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05,
+				 0.00,  0.05,  0.10,  0.15,  0.20,  0.25,  0.30,  0.35,  0.40,  0.45,
+				 0.50,  0.55,  0.60,  0.65,  0.70,  0.75,  0.80,  0.85,  0.90,  0.95,
+				 1.00,  1.10,  1.20,  1.30,  1.40,  1.50,  1.60,  1.70,  1.80,  1.90, 2.00};
+
   histPt->GetXaxis()->Set(kPtBins, binsPt);
-  //
 
   TCanvas * canvMany = new TCanvas("canvManyKaon","canvManyKaon");
   canvMany->Print("canvManyKaon.ps[");
