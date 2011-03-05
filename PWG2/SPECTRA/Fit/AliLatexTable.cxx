@@ -398,7 +398,7 @@ void AliLatexTable::PrintTable(Option_t * opt){
       printf ("\n");
     }
     
-    delete colWidths;
+    delete [] colWidths;
     return;
   }
   
