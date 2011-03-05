@@ -34,13 +34,13 @@ AliDecayerPolarized::AliDecayerPolarized():
     fAlpha(0),
     fSystRef(kHelicity),
     fDecProd(kMuon),
-    fPol(new TF1("dsigdcostheta","1.+[0]*x*x",-1.,1.)),
+    fPol(0),
     fMother(0),
     fDaughter1(0),
     fDaughter2(0)
 {
 // Default constructor
-    fPol->SetParameter(0,fAlpha);
+
 }
 
 //____________________________________________________________
