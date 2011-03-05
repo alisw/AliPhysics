@@ -110,8 +110,10 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 {
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
-  Double_t rms=0, rmsver=0, rmscfd=0;
-  Int_t nent=0;
+  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
+    // Double_t rms=0, rmscfd=0; 
+  Double_t rmsver=0;
+ Int_t nent=0;
   Bool_t ok=false;
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -189,10 +191,12 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys)
 {
   // compute online equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
-  Double_t rms=0, rmsver=0, rmscfd=0;
+  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
+  // Double_t rms=0, rmscfd=0; 
+  Double_t rmsver=0;
   Int_t nent=0;
   Bool_t ok=false;
-   gFile = TFile::Open(filePhys);
+  gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
   }
@@ -266,7 +270,6 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys)
 //________________________________________________________________________
 void AliT0CalibTimeEq::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
 
-  const double threshold = 0.5;  // threshold level with respect to maximum bin
   const double window = 5.;  //fit window 
   double norm  = hist->Integral();  // normalize to one count
   hist->Scale(1./norm); 
