@@ -2128,13 +2128,13 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 		//-------------
 	
 	// A - Combined PID
-	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
-	Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
-	Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
+	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)// Bo: neutral part added now !
+	Double_t lPriorsGuessXi[10]    = {0, 0, 2, 0, 1, 0, 0, 0, 0, 0};
+	Double_t lPriorsGuessOmega[10] = {0, 0, 1, 1, 1, 0, 0, 0, 0, 0};
 	
 	// Combined VO-positive-daughter PID
-	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi,    1); // Bo: now needed to specify charged
+	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega, 1); // Bo: now needed to specify charged
 		
 	if( pTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10] = {0.}; pTrackXi->GetESDpid(r);
@@ -2176,8 +2176,8 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	
 	
 	// Combined VO-negative-daughter PID
-	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi,    1); // Bo: now needed to specify charged
+	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega, 1); // Bo: now needed to specify charged
 		
 	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10] = {0.}; nTrackXi->GetESDpid(r);
@@ -2218,8 +2218,8 @@ void AliAnalysisTaskCheckCascade::UserExec(Option_t *)
 	
 		
 	// Combined bachelor PID
-	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi,    1); // Bo: now needed to specify charged
+	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega, 1); // Bo: now needed to specify charged
 	
 	if( bachTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10] = {0.}; bachTrackXi->GetESDpid(r);
