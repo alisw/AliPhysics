@@ -206,7 +206,7 @@ void AliProtonSpectraCorrection::FillCorrectionMaps(AliESDEvent *esd,
 
     //Protons
     //check the MC-level cuts
-    if (fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
+    if (mcPart && fCFManagerProtons->CheckParticleCuts(AliCFManager::kPartGenCuts,
 					     mcPart)) {
       containerInput[0] = (Float_t)mcPart->Eta();
       containerInput[1] = (Float_t)mcPart->Pt();
