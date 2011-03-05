@@ -343,10 +343,10 @@ void Parser::ReadInput()
 	  else
 	    tRatio *= atof(tBRatio);
 
-	  delete tFather;
-	  delete tDaughter1;
-	  delete tDaughter2;
-	  delete tBRatio;
+	  delete [] tFather;
+	  delete [] tDaughter1;
+	  delete [] tDaughter2;
+	  delete [] tBRatio;
 	}
 
       //THREE-BODY DECAYS
