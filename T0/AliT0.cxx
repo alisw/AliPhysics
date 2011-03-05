@@ -38,6 +38,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TClonesArray.h"
+#include "TString.h"
 
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -50,7 +51,6 @@
 #include "AliT0RecPoint.h"
 #include "AliT0digit.h"
 #include "AliT0hit.h"
-
 ClassImp(AliT0)
 
   //static  AliT0digit *digits; 
@@ -179,9 +179,11 @@ void AliT0::MakeBranch(Option_t* option)
   //
   //    R         Make a branch of  AliT0RecPoints
   //
-  char branchname[20];
+  //  char branchname[20];
   // sprintf(branchname,"%s",GetName());
-  strncpy(branchname, GetName(), 20);
+  //  strncpy(branchname, GetName(), 20);
+  TString branchname = Form("%s", GetName());
+
   const char *cH = strstr(option,"H");
   const char *cD = strstr(option,"D");
   const char *cR = strstr(option,"R");
@@ -199,7 +201,7 @@ void AliT0::MakeBranch(Option_t* option)
       if (fDigits == 0x0) fDigits  = new AliT0digit();
       //     MakeBranchInTree(fLoader->TreeD(), branchname,
       //		       &fDigits, 405, 0);
-      fLoader->TreeD()->Branch(branchname,"AliT0digit",&fDigits);
+      fLoader->TreeD()->Branch(branchname.Data(),"AliT0digit",&fDigits);
       //   fLoader->TreeD()->Print();
     } 
   if (cR && fLoader->TreeR())
@@ -279,12 +281,13 @@ void AliT0::MakeBranchInTreeD(TTree *treeD, const char *file)
     // Create TreeD branches for the FMD
     //
     const Int_t kBufferSize = 4000;
-    char branchname[20];
-   strncpy(branchname, GetName(), 20);
-   //   sprintf(branchname,"%s",GetName());
+    //   char branchname[20];
+    // strncpy(branchname, GetName(), 20);
+    TString branchname = Form("%s", GetName());
+ //   sprintf(branchname,"%s",GetName());
     if(treeD)
      {
-       MakeBranchInTree(treeD,  branchname,&fDigits, kBufferSize, file);
+       MakeBranchInTree(treeD,  branchname.Data(),&fDigits, kBufferSize, file);
      }
 }
 
