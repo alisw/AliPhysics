@@ -69,7 +69,7 @@ ClassImp(AliGenParam)
 // Default constructor
 }
 //____________________________________________________________
-AliGenParam::AliGenParam(Int_t npart, AliGenLib * Library,  Int_t param, const char* tname)
+AliGenParam::AliGenParam(Int_t npart, const AliGenLib * Library,  Int_t param, const char* tname)
     :AliGenMC(npart),
      fPtParaFunc(Library->GetPt(param, tname)),
      fYParaFunc (Library->GetY (param, tname)),
