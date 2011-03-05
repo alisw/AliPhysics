@@ -25,16 +25,11 @@ class AliT0CalibWalk: public TNamed {
   TGraph *GetWalk(Int_t ipmt )  const {return (TGraph*)fWalk.At(ipmt);}
   TObjArray* GetfWalk() {return &fWalk;}    
 
-  TGraph *GetQTC(Int_t ipmt )  const {return (TGraph*)fQTC.At(ipmt);}
- 
-  TGraph *GetAmpLED(Int_t ipmt )  const {return (TGraph*)fAmpLED.At(ipmt);}
- 
+  TGraph *GetQTC(Int_t ipmt )  const {return (TGraph*)fQTC.At(ipmt);} 
+  TGraph *GetAmpLED(Int_t ipmt )  const {return (TGraph*)fAmpLED.At(ipmt);} 
   Bool_t MakeWalkCorrGraph(const char *laserFile);
-  
-  
-
   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
-   
+  void    GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
