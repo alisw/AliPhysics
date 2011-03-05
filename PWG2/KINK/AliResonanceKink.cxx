@@ -304,7 +304,7 @@ void AliResonanceKink::Analyse(AliESDEvent* esd, AliMCEvent* mcEvent)
          for(Int_t ic=nDecayKaonDaughter; ic<=daughterParticle1->GetLastDaughter(); ic++) {
 	   if ((ic>=0)&&(ic<stack->GetNtrack())) mcDaughters1Daughter= dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(ic));
 	    else continue;
-	    if(mcDaughters1Daughter->Charge()!=0) numberOfCharged=numberOfCharged+1;
+	    if(mcDaughters1Daughter && mcDaughters1Daughter->Charge()!=0) numberOfCharged=numberOfCharged+1;
          }
        }
        
