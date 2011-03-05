@@ -514,38 +514,38 @@ Bool_t AliProtonAnalysis::ReadFromFile(const char* filename) {
     cout<<"Could not find the input file "<<filename<<endl;
     status = kFALSE;
   }
-
-  TList *list = (TList *)file->Get("outputList");
-  if(list) {
-    cout<<"Retrieving objects from the list "<<list->GetName()<<"..."<<endl; 
-    fHistYPtProtons = (TH2D *)list->At(0);
-    fHistYPtAntiProtons = (TH2D *)list->At(1);
-    fHistEvents = (TH1I *)list->At(2);
-    fProtonContainer = (AliCFContainer *)list->At(3);
-    fAntiProtonContainer = (AliCFContainer *)list->At(4);
-    fHistEventStats = (TH1F *)list->At(5);
-  }
-  else if(!list) {
-    cout<<"Retrieving objects from the file... "<<endl;
-    fHistYPtProtons = (TH2D *)file->Get("fHistYPtProtons");
-    fHistYPtAntiProtons = (TH2D *)file->Get("fHistYPtAntiProtons");
-    fHistEvents = (TH1I *)file->Get("fHistEvents");
-    fProtonContainer = (AliCFContainer *)file->Get("containerProtons");
-    fAntiProtonContainer = (AliCFContainer *)file->Get("containerAntiProtons");
-    fHistEventStats = (TH1F *)file->Get("fHistEventStats");
-  }
-  if((!fHistYPtProtons)||(!fHistYPtAntiProtons)||(!fHistEvents)
-     ||(!fProtonContainer)||(!fAntiProtonContainer)||(!fHistEventStats)) {
-    cout<<"Input containers were not found!!!"<<endl;
-    status = kFALSE;
-  }
   else {
-    //fHistYPtProtons = fProtonContainer->ShowProjection(0,1,0);
-    //fHistYPtAntiProtons = fAntiProtonContainer->ShowProjection(0,1,0);
-    fHistYPtProtons->Sumw2();
-    fHistYPtAntiProtons->Sumw2();
+    TList *list = (TList *)file->Get("outputList");
+    if(list) {
+      cout<<"Retrieving objects from the list "<<list->GetName()<<"..."<<endl; 
+      fHistYPtProtons = (TH2D *)list->At(0);
+      fHistYPtAntiProtons = (TH2D *)list->At(1);
+      fHistEvents = (TH1I *)list->At(2);
+      fProtonContainer = (AliCFContainer *)list->At(3);
+      fAntiProtonContainer = (AliCFContainer *)list->At(4);
+      fHistEventStats = (TH1F *)list->At(5);
+    }
+    else if(!list) {
+      cout<<"Retrieving objects from the file... "<<endl;
+      fHistYPtProtons = (TH2D *)file->Get("fHistYPtProtons");
+      fHistYPtAntiProtons = (TH2D *)file->Get("fHistYPtAntiProtons");
+      fHistEvents = (TH1I *)file->Get("fHistEvents");
+      fProtonContainer = (AliCFContainer *)file->Get("containerProtons");
+      fAntiProtonContainer = (AliCFContainer *)file->Get("containerAntiProtons");
+      fHistEventStats = (TH1F *)file->Get("fHistEventStats");
+    }
+    if((!fHistYPtProtons)||(!fHistYPtAntiProtons)||(!fHistEvents)
+       ||(!fProtonContainer)||(!fAntiProtonContainer)||(!fHistEventStats)) {
+      cout<<"Input containers were not found!!!"<<endl;
+      status = kFALSE;
+    }
+    else {
+      //fHistYPtProtons = fProtonContainer->ShowProjection(0,1,0);
+      //fHistYPtAntiProtons = fAntiProtonContainer->ShowProjection(0,1,0);
+      fHistYPtProtons->Sumw2();
+      fHistYPtAntiProtons->Sumw2();
+    }
   }
-
   return status;
 }
 
@@ -1712,23 +1712,30 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
 
     //Calculation of efficiency/correction: Protons
     AliCFContainer *gProtonContainer = dynamic_cast<AliCFContainer *>(list->At(0));
-    AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
-							  "effProtonsStep0Step2",
-							  *gProtonContainer);
-    effProtonsStep0Step2->CalculateEfficiency(2,0); 
-    fHistEfficiencyYPtProtons = (TH2D*)effProtonsStep0Step2->Project(iRap,iPt);
-    fHistEfficiencyYPtProtons->Sumw2();
-
-    //Calculation of efficiency/correction: Protons
     AliCFContainer *gAntiProtonContainer = dynamic_cast<AliCFContainer *>(list->At(1));
-    AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
-							      "effAntiProtonsStep0Step2",
-							      *gAntiProtonContainer);
-    effAntiProtonsStep0Step2->CalculateEfficiency(2,0); 
-    fHistEfficiencyYPtAntiProtons = (TH2D*)effAntiProtonsStep0Step2->Project(iRap,iPt);
-    fHistEfficiencyYPtAntiProtons->Sumw2();
 
-    Correct();
+    if (gProtonContainer && gAntiProtonContainer){
+      AliCFEffGrid *effProtonsStep0Step2 = new AliCFEffGrid("eff20",
+							    "effProtonsStep0Step2",
+							    *gProtonContainer);
+      effProtonsStep0Step2->CalculateEfficiency(2,0); 
+      fHistEfficiencyYPtProtons = (TH2D*)effProtonsStep0Step2->Project(iRap,iPt);
+      fHistEfficiencyYPtProtons->Sumw2();
+
+      //Calculation of efficiency/correction: Protons
+      AliCFEffGrid *effAntiProtonsStep0Step2 = new AliCFEffGrid("eff20",
+								"effAntiProtonsStep0Step2",
+								*gAntiProtonContainer);
+      effAntiProtonsStep0Step2->CalculateEfficiency(2,0); 
+      fHistEfficiencyYPtAntiProtons = (TH2D*)effAntiProtonsStep0Step2->Project(iRap,iPt);
+      fHistEfficiencyYPtAntiProtons->Sumw2();
+
+      Correct();
+    }
+    else {
+      cout<<"Could not retreive the proton and anti-proton correction containers"<<endl;
+      status = kFALSE;
+    }
   }
 
   return status;
