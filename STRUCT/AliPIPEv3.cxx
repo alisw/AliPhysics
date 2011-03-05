@@ -63,11 +63,10 @@ AliPIPEv3::AliPIPEv3(const char *name, const char *title)
 //___________________________________________
 void AliPIPEv3::CreateGeometry()
 {
+//
+//  Method describing the beam pipe geometry
+//
     AliDebug(1,"Create PIPEv3 geometry");
-//
-//  Class describing the beam pipe geometry
-//
-
     Float_t dz, z, zsh, z0;
 //
 // Rotation Matrices
@@ -2856,7 +2855,7 @@ void AliPIPEv3::CreateMaterials()
 }
 
 
-TGeoPcon* AliPIPEv3::MakeMotherFromTemplate(TGeoPcon* shape, Int_t imin, Int_t imax, Float_t r0, Int_t nz)
+TGeoPcon* AliPIPEv3::MakeMotherFromTemplate(const TGeoPcon* shape, Int_t imin, Int_t imax, Float_t r0, Int_t nz)
 {
 //
 //  Create a mother shape from a template setting some min radii to 0

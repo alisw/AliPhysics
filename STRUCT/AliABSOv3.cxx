@@ -896,7 +896,7 @@ void AliABSOv3::CreateGeometry()
 }
 
 
-TGeoPcon* AliABSOv3::MakeShapeFromTemplate(TGeoPcon* pcon, Float_t drMin, Float_t drMax)
+TGeoPcon* AliABSOv3::MakeShapeFromTemplate(const TGeoPcon* pcon, Float_t drMin, Float_t drMax)
 {
     // 
     // Returns new shape based on a template changing

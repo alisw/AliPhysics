@@ -23,7 +23,7 @@ public:
   virtual void  Init();
  private:
   virtual void InvertPcon(TGeoPcon* pcon);
-  virtual TGeoPcon* MakeShapeFromTemplate(TGeoPcon* pcon, Float_t drIn, Float_t drOut);  
+  virtual TGeoPcon* MakeShapeFromTemplate(const TGeoPcon* pcon, Float_t drIn, Float_t drOut);  
  protected:
   ClassDef(AliSHILv3,1)  // Small angle absorber as built
 };

@@ -1380,7 +1380,7 @@ void AliSHILv3::InvertPcon(TGeoPcon* pcon)
     delete[] rmax;
 }
 
-TGeoPcon* AliSHILv3::MakeShapeFromTemplate(TGeoPcon* pcon, Float_t drMin, Float_t drMax)
+TGeoPcon* AliSHILv3::MakeShapeFromTemplate(const TGeoPcon* pcon, Float_t drMin, Float_t drMax)
 {
     // 
     // Returns new shape based on a template changing
