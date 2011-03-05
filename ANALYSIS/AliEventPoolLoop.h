@@ -39,8 +39,8 @@ class AliEventPoolLoop : public AliVEventPool
     AliEventPoolLoop(const AliEventPoolLoop& obj);
     AliEventPoolLoop& operator=(const AliEventPoolLoop& other);
  protected:
-    Int_t fMaxIterations;
-    Int_t fNIteration;
+    Int_t fMaxIterations; // Maximum number of iterations 
+    Int_t fNIteration;    // Number of iterations
     TChain* fChainClone; // Clone of the original 
     ClassDef(AliEventPoolLoop, 0); 
 };

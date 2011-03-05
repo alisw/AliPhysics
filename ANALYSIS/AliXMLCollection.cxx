@@ -501,7 +501,7 @@ void AliXMLCollection::ParseXML() {
   } while ((xevent =  xml.GetNext(xevent)));
 }
 
-Bool_t      AliXMLCollection::GetCollectionSummary(Int_t *aTot, Int_t *aAcc, Int_t *aRejRun, Int_t *aRejLHC, Int_t *aRejDet, Int_t *aRejEvt)
+Bool_t AliXMLCollection::GetCollectionSummary(Int_t  *aTot, Int_t  *aAcc, Int_t  *aRejRun, Int_t  *aRejLHC, Int_t  *aRejDet, Int_t  *aRejEvt) const
 {
   // Return read list summary
   *aTot = fTotalEvents;

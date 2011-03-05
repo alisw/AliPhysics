@@ -126,7 +126,7 @@ AliEventPoolOTF& AliEventPoolOTF::operator=(const AliEventPoolOTF& other)
 
 void AliEventPoolOTF::Init()
 {
-    //
+    // Initialisation
     if (!fGridTags) {
 	fTagAnalysis->ChainLocalTags(fTagDirectory);
     } else {
@@ -139,7 +139,7 @@ void AliEventPoolOTF::Init()
 
 TChain* AliEventPoolOTF::GetNextChain()
 {
-    //
+    // Get Next Chain
     if (fChain) {
 	delete fChain;
 	fChain = 0;

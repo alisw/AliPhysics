@@ -36,8 +36,8 @@ class AliPriorsTask : public AliAnalysisTaskSE {
   void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
   
-  void SetPriors(Double_t conc[AliPID::kSPECIES]) {for(Int_t i=0; i<AliPID::kSPECIES; i++) fPriors[i]=conc[i];}
-  void GetPriors(Double_t conc[AliPID::kSPECIES]) {for(Int_t i=0; i<AliPID::kSPECIES; i++) conc[i]=fPriors[i];}
+  void SetPriors(Double_t conc[AliPID::kSPECIES])        {for(Int_t i=0; i<AliPID::kSPECIES; i++) fPriors[i]=conc[i];}
+  void GetPriors(Double_t conc[AliPID::kSPECIES]) const  {for(Int_t i=0; i<AliPID::kSPECIES; i++) conc[i]=fPriors[i];}
 
   void SetNiterations(Int_t nIter) {fNiterMax = nIter;}
 
@@ -50,9 +50,9 @@ class AliPriorsTask : public AliAnalysisTaskSE {
   TH1I  *fHistEventsProcessed; // simple histo for monitoring the number of events processed
   TH2D  *fCalcPriors;          // histo monitoring priors during iterations
 
-  Double_t fPriors[AliPID::kSPECIES];
-  Double_t fRecId[AliPID::kSPECIES];
-  Double_t fMCId[AliPID::kSPECIES];
+  Double_t fPriors[AliPID::kSPECIES];  // Priors
+  Double_t fRecId[AliPID::kSPECIES];   // Reconstructed Id
+  Double_t fMCId[AliPID::kSPECIES];    // MC Id
 
   Int_t fNiterations;          //counter  
   Int_t fNiterMax;             //max number of iterations

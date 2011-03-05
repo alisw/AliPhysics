@@ -90,7 +90,7 @@ void AliEventPoolLoop::Init()
 
 TChain* AliEventPoolLoop::GetNextChain()
 {
-    //
+    // Get the next chain
     if (fNIteration > fMaxIterations) {
 	return (0);
     } else {

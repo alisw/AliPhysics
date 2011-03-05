@@ -343,6 +343,7 @@ void AliESDv0Cuts::EnableNeededBranches(TTree* tree)
 //____________________________________________________________________
 Bool_t
 AliESDv0Cuts::IsSelected(TList* listObj) {
+// Selection cuts
   if(listObj->GetSize()!=4) return kFALSE;
   AliESDv0           *esdV0     = (AliESDv0*)listObj->At(0);
   AliESDtrack        *trackPos  = (AliESDtrack*)listObj->At(1);
@@ -353,7 +354,7 @@ AliESDv0Cuts::IsSelected(TList* listObj) {
 
 //____________________________________________________________________
 Bool_t
-AliESDv0Cuts::AcceptV0(AliESDv0* esdV0, AliESDtrack* trackPos, AliESDtrack* trackNeg, const AliESDVertex* esdVertex) {
+AliESDv0Cuts::AcceptV0(AliESDv0* const esdV0, AliESDtrack* const trackPos, AliESDtrack* const trackNeg, const AliESDVertex* esdVertex) {
   // 
   // figure out if the v0s survives all the v0 cuts defined
   //
@@ -498,7 +499,7 @@ AliESDv0Cuts::AcceptV0(AliESDv0* esdV0, AliESDtrack* trackPos, AliESDtrack* trac
 }
 
 //____________________________________________________________________
-TObjArray* AliESDv0Cuts::GetAcceptedV0s(AliESD* esd)
+TObjArray* AliESDv0Cuts::GetAcceptedV0s(const AliESD* esd)
 {
   //
   // returns an array of all v0s that pass the cuts
@@ -526,7 +527,7 @@ TObjArray* AliESDv0Cuts::GetAcceptedV0s(AliESD* esd)
 }
 
 //____________________________________________________________________
-Int_t AliESDv0Cuts::CountAcceptedV0s(AliESD* esd)
+Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESD* esd)
 {
   //
   // returns an the number of v0s that pass the cuts
@@ -554,7 +555,7 @@ Int_t AliESDv0Cuts::CountAcceptedV0s(AliESD* esd)
 }
 
 //____________________________________________________________________
-TObjArray* AliESDv0Cuts::GetAcceptedV0s(AliESDEvent* esd)
+TObjArray* AliESDv0Cuts::GetAcceptedV0s(const AliESDEvent* esd)
 {
   //
   // returns an array of all v0s that pass the cuts
@@ -582,7 +583,7 @@ TObjArray* AliESDv0Cuts::GetAcceptedV0s(AliESDEvent* esd)
 }
 
 //____________________________________________________________________
-Int_t AliESDv0Cuts::CountAcceptedV0s(AliESDEvent* esd)
+Int_t AliESDv0Cuts::CountAcceptedV0s(const AliESDEvent* esd)
 {
   //
   // returns an the number of v0s that pass the cuts

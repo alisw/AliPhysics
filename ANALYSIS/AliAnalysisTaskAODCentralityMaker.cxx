@@ -121,6 +121,7 @@ void AliAnalysisTaskAODCentralityMaker::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskAODCentralityMaker::UserExec(Option_t */*option*/)
 {
+// User Exec
   AliVEvent*   event = InputEvent();
   AliESDEvent* esd   = dynamic_cast<AliESDEvent*>(event);
   if (!esd) {

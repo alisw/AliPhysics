@@ -26,13 +26,13 @@ public:
 
   Bool_t IsSelected(TObject* /*obj*/) {return kTRUE;}
   Bool_t IsSelected(TList* listObj);
-  Bool_t IsSelected(TObject* obj1, TObject* obj2, TObject* obj3, TObject* obj4)
+  Bool_t IsSelected(TObject* const obj1, TObject* const obj2, TObject* const obj3, TObject* const obj4)
   {return AcceptV0((AliESDv0*) obj1, (AliESDtrack*) obj2, (AliESDtrack*) obj3, (const AliESDVertex*) obj4);}
-  Bool_t AcceptV0(AliESDv0* esdV0, AliESDtrack* trackPos, AliESDtrack* trackNeg, const AliESDVertex* esdVertex);
-  TObjArray* GetAcceptedV0s(AliESD* esd);
-  Int_t CountAcceptedV0s(AliESD* esd);
-  TObjArray* GetAcceptedV0s(AliESDEvent* esd);
-  Int_t CountAcceptedV0s(AliESDEvent* esd);
+  Bool_t AcceptV0(AliESDv0* const esdV0, AliESDtrack* const trackPos, AliESDtrack* const trackNeg, const AliESDVertex*  esdVertex);
+  TObjArray* GetAcceptedV0s(const AliESD* esd);
+  Int_t CountAcceptedV0s(const AliESD* esd);
+  TObjArray* GetAcceptedV0s(const AliESDEvent* esd);
+  Int_t CountAcceptedV0s(const AliESDEvent* esd);
 
   virtual Long64_t Merge(TCollection* list);
   virtual void Copy(TObject &c) const;

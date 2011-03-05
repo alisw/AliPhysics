@@ -36,10 +36,10 @@ class AliAnalysisTaskAODCentralityMaker : public AliAnalysisTaskSE
 
  private:
 
-  AliAODCentrality *fAODCentrality;
+
   AliAnalysisTaskAODCentralityMaker(const AliAnalysisTaskAODCentralityMaker &source);
   AliAnalysisTaskAODCentralityMaker& operator=(const AliAnalysisTaskAODCentralityMaker& source); 
-  
+  AliAODCentrality *fAODCentrality;    // AOD centrality pointer   
   TString       fDeltaAODFileName;     // Name of output file
   AliAODHeader* fAODHeader;            // Header for replaction
   

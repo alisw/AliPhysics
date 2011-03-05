@@ -44,14 +44,14 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void ReadCentralityHistos2(TString filename);
  private:
 
-  Int_t SetupRun(AliESDEvent* esd);
-  Bool_t IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent);
-  Bool_t IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent);
-  Bool_t IsOutlierV0MZDC(Float_t zdc, Float_t v0);
-  Bool_t IsOutlierV0MZDCECal(Float_t zdc, Float_t v0);
-  Float_t MyGetScaleFactor(Int_t runnumber, Int_t flag); 
+  Int_t SetupRun(AliESDEvent* const esd);
+  Bool_t IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent) const;
+  Bool_t IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const;
+  Bool_t IsOutlierV0MZDC(Float_t zdc, Float_t v0) const;
+  Bool_t IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) const;
+  Float_t MyGetScaleFactor(Int_t runnumber, Int_t flag) const; 
   void MyInitScaleFactor();
-  Float_t MyGetScaleFactorMC(Int_t runnumber); 
+  Float_t MyGetScaleFactorMC(Int_t runnumber) const; 
   void MyInitScaleFactorMC();
 
   Int_t    fDebug;	   	// Debug flag

@@ -1764,6 +1764,7 @@ void AliAnalysisTaskESDfilter::Terminate(Option_t */*option*/)
 
 //______________________________________________________________________________
 void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label){
+// Print MC info
   if(!pStack)return;
   label = TMath::Abs(label);
   TParticle *part = pStack->Particle(label);

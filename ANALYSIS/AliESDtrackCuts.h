@@ -51,7 +51,7 @@ public:
 
   Bool_t AcceptTrack(AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(AliESDEvent* esd, Bool_t bTPC = kFALSE);
-  Int_t CountAcceptedTracks(AliESDEvent* esd);
+  Int_t CountAcceptedTracks(AliESDEvent* const esd);
   
   static Int_t GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly);
 
@@ -121,7 +121,7 @@ public:
   Bool_t  GetAcceptKinkDaughters()   const   { return fCutAcceptKinkDaughters;}
   Bool_t  GetAcceptSharedTPCClusters()        const   {return fCutAcceptSharedTPCClusters;}
   Float_t GetMaxFractionSharedTPCClusters()   const   {return fCutMaxFractionSharedTPCClusters;}
-  void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) 
+  void    GetMaxCovDiagonalElements(Float_t& c1, Float_t& c2, Float_t& c3, Float_t& c4, Float_t& c5) const
       {c1 = fCutMaxC11; c2 = fCutMaxC22; c3 = fCutMaxC33; c4 = fCutMaxC44; c5 = fCutMaxC55;}
   Float_t GetMaxRel1PtUncertainty()  const   { return fCutMaxRel1PtUncertainty;}
   Float_t GetMaxNsigmaToVertex()     const   { return fCutNsigmaToVertex;}
@@ -160,7 +160,7 @@ public:
   void SaveHistograms(const Char_t* dir = 0);
   void DrawHistograms();
 
-  static Float_t GetSigmaToVertex(AliESDtrack* esdTrack);
+  static Float_t GetSigmaToVertex(AliESDtrack* const esdTrack);
   
   static void EnableNeededBranches(TTree* tree);
 

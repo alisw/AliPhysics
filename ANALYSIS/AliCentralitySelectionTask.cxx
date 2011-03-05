@@ -749,7 +749,7 @@ void AliCentralitySelectionTask::Terminate(Option_t */*option*/)
     fFile2->Close();  
 }
 //________________________________________________________________________
-Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
+Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
 {
   // Setup files for run
 
@@ -783,8 +783,9 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* esd)
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent)
+Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent) const
 {
+// Clean outliers
   Float_t val= -0.143789 + 0.288874 * v0;
   Float_t SPDsigma[100]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
 			 160.84, 159.33, 154.453, 151.644, 148.337, 145.215, 142.353, 
@@ -808,8 +809,9 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent)
+Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const
 {
+// Clean outliers
   Float_t val = -0.540691 + 0.128358 * v0;
   Float_t TPCsigma[100]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
 			 78.0616, 77.2167, 75.0021, 73.9957, 72.0926, 71.0442, 69.8395, 
@@ -833,8 +835,9 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0)
+Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0) const
 {
+// Clean outliers
   Float_t val1 = 6350. - 0.26 * v0;
   Float_t val2 = 5580.;
   if ((zdc >  val1) || (zdc > val2)) 
@@ -844,14 +847,16 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0)
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t /*zdc*/, Float_t /*v0*/)
+Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t /*zdc*/, Float_t /*v0*/) const
 {
+// Clean outliers
     return kFALSE;
 }
 
 //________________________________________________________________________  
-Float_t AliCentralitySelectionTask::MyGetScaleFactor(Int_t runnumber, Int_t flag) 
+Float_t AliCentralitySelectionTask::MyGetScaleFactor(Int_t runnumber, Int_t flag) const
 {
+// Get scaling factor
   if (! (runnumber >= fLowRunN && runnumber <=fHighRunN)) {
     cout << "MyGetScaleFactor error in run number range " << runnumber << endl;
     return 0.0;
@@ -870,8 +875,9 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactor(Int_t runnumber, Int_t flag
 }
 
 //________________________________________________________________________  
-Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber) 
+Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber) const
 {
+// Get MC scaling factor
   if (! (runnumber >= fLowRunN && runnumber <=fHighRunN)) {
     cout << "MyGetScaleFactor error in run number range " << runnumber << endl;
     return 0.0;
@@ -885,6 +891,7 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber)
 //________________________________________________________________________  
 void AliCentralitySelectionTask::MyInitScaleFactor () 
 {
+// Initialize the scaling factors
   for (int i=0; i<(fHighRunN-fLowRunN); i++) V0MScaleFactor[i] = 0.0;
   for (int i=0; i<(fHighRunN-fLowRunN); i++) SPDScaleFactor[i] = 0.0;
   for (int i=0; i<(fHighRunN-fLowRunN); i++) TPCScaleFactor[i] = 0.0;
@@ -1127,6 +1134,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
 //________________________________________________________________________  
 void AliCentralitySelectionTask::MyInitScaleFactorMC() 
 {
+// Initialize the MC scaling factors
   for (int i=0; i<(fHighRunN-fLowRunN); i++) V0MScaleFactorMC[i] = 0.0;
   // scale factors determined from <V0 charge> on a run-by-run basis
   V0MScaleFactorMC[0] = 0.75108;

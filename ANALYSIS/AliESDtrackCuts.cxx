@@ -798,7 +798,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(AliESDEvent* esd, Bool_t tpcOnly
 }
 
 //____________________________________________________________________
-Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* esdTrack)
+Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* const esdTrack)
 {
   // Calculates the number of sigma to the vertex.
 
@@ -1253,7 +1253,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
 }
 
 //____________________________________________________________________
-Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* esd)
+Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
 {
   //
   // returns an the number of tracks that pass the cuts

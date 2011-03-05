@@ -55,7 +55,7 @@ class AliXMLCollection : public TGridCollection {
   TEntryList *GetEventList(const char *filename) const;
   TEntryList *GetEntryList(const char *filename) { return GetEventList(filename); }
   Bool_t      OverlapCollection(TGridCollection * comparator);
-  Bool_t      GetCollectionSummary(Int_t *aTot, Int_t *aAcc, Int_t *aRejRun, Int_t *aRejLHC, Int_t *aRejDet, Int_t *aRejEvt);
+  Bool_t      GetCollectionSummary(Int_t  *aTot, Int_t  *aAcc, Int_t  *aRejRun, Int_t  *aRejLHC, Int_t  *aRejDet, Int_t  *aRejEvt) const;
 
   static AliXMLCollection *Open(const char *localcollectionfile);
 
