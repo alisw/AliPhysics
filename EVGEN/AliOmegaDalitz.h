@@ -27,7 +27,7 @@ class AliOmegaDalitz : public AliDecayer
  public:
     AliOmegaDalitz();
     virtual void    Init();
-    virtual void    Decay(Int_t idlepton, TLorentzVector* p);
+    virtual void    Decay(Int_t idlepton, const TLorentzVector* p);
     virtual Int_t   ImportParticles(TClonesArray *particles);
     virtual void    SetForceDecay(Int_t)                      {;}
     virtual void    ForceDecay()                              {;}

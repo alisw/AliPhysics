@@ -122,7 +122,7 @@ void AliOmegaDalitz::Init()
 }
 
 
-void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
+void AliOmegaDalitz::Decay(Int_t idlepton, const TLorentzVector* pparent)
 {
 //-----------------------------------------------------------------------------
 //
@@ -251,6 +251,7 @@ void AliOmegaDalitz::
 Rot(Double_t pin[3], Double_t pout[3], Double_t costheta, Double_t sintheta,
     Double_t cosphi, Double_t sinphi)
 {
+// Perform rotation
   pout[0] = pin[0]*costheta*cosphi-pin[1]*sinphi+pin[2]*sintheta*cosphi;
   pout[1] = pin[0]*costheta*sinphi+pin[1]*cosphi+pin[2]*sintheta*sinphi;
   pout[2] = -1.0  * pin[0] * sintheta + pin[2] * costheta;
