@@ -122,7 +122,7 @@ void AliOmegaDalitz::Init()
 }
 
 
-void AliOmegaDalitz::Decay(Int_t idlepton, const TLorentzVector* pparent)
+void AliOmegaDalitz::Decay(Int_t idlepton, TLorentzVector* pparent)
 {
 //-----------------------------------------------------------------------------
 //
