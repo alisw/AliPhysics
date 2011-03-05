@@ -99,7 +99,7 @@ void AliZDCFragment::GenerateIMF()
    const Float_t  kParamSkinPb[2]={0.762408, 20.};
    
    // Thickness of nuclear surface
-   const Float_t  kNuclearThick = 0.52;
+   //const Float_t  kNuclearThick = 0.52;
    // Maximum impact parameter for U [r0*A**(1/3)]
    const Float_t  kbMaxU = 14.87;
    // Maximum impact parameter for Pb [r0*A**(1/3)]
