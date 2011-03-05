@@ -89,7 +89,7 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
 	/// dtor
   delete [] fTextSM ;
   delete fLineCol ;
-  delete []fLineRow ;
+  for (Int_t i=0; i<4; ++i) delete fLineRow[i] ;
   delete fText  ; 
 }
 
