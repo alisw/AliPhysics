@@ -58,6 +58,7 @@
 #include <TDatabasePDG.h>
 
 #include "AliRun.h"
+#include "AliLog.h"
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include "AliGenFunction.h"
@@ -191,7 +192,7 @@ void AliGenFunction::Init()
 
 void AliGenFunction::SetFunctions(TF1 * momentum, TF1 *fphi, TF1 *ftheta,TF3 * position, TF1* pdg){
   //
-  //
+  // Set the function
   //
   fFMomentum = momentum;
   fFPhi = fphi;
@@ -202,7 +203,7 @@ void AliGenFunction::SetFunctions(TF1 * momentum, TF1 *fphi, TF1 *ftheta,TF3 * p
 
 void AliGenFunction::SetCylinder(Double_t refR, Double_t zmin, Double_t zmax){
   //
-  //
+  // Set the cylinder geometry
   //
   fRefRadius = refR;          // reference radius to be crossed
   fZmin = zmin;               // minimal z at reference radius

@@ -15,7 +15,6 @@
 // Origin: marian.ivanov@cern.ch
 
 
-#include "AliLog.h"
 #include "AliGenerator.h"
 class TF3;
 
