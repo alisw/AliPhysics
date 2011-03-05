@@ -76,7 +76,6 @@ AliAnalysisCentralCutESD::~AliAnalysisCentralCutESD() {
 // Destructor
 // Delete the created priors
 
-	if(fPartPriors) delete [] fPartPriors;
 
 	if(fElectronFunction) delete fElectronFunction;
 	if(fMuonFunction) delete fMuonFunction;
