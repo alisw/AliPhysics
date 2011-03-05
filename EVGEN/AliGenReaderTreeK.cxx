@@ -30,6 +30,7 @@
 #include "AliGenReaderTreeK.h"
 #include "AliHeader.h"
 #include "AliRun.h"
+#include "AliStack.h"
 #include "AliRunLoader.h"
 
 ClassImp(AliGenReaderTreeK)
@@ -215,3 +216,9 @@ void AliGenReaderTreeK::AddDir(const char* dirname)
   TObjString *odir= new TObjString(dirname);
   fDirs->Add(odir);
 }
+
+TParticle* AliGenReaderTreeK::GetParticle(Int_t i)
+ {
+  if (fStack && i<fNp) return fStack->Particle(i);
+  return 0x0;
+ }

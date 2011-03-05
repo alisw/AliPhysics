@@ -54,12 +54,7 @@ class AliGenReaderTreeK : public AliGenReader
     ClassDef(AliGenReaderTreeK,1) // Read particles from TreeK
 };
 
-inline 
-TParticle* AliGenReaderTreeK::GetParticle(Int_t i)
- {
-  if (fStack && i<fNp) return fStack->Particle(i);
-  return 0x0;
- }
+
 
 #endif
 
