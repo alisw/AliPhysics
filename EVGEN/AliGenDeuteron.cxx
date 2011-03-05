@@ -42,6 +42,7 @@
 #include "TList.h"
 #include "TVector3.h"
 #include "AliMC.h"
+#include "AliRun.h"
 #include "TArrayF.h"
 #include "AliGenCocktailEventHeader.h"
 
@@ -202,6 +203,7 @@ void AliGenDeuteron::Generate()
 // create the freeze-out nucleon distribution around the collision vertex
 void AliGenDeuteron::FixProductionVertex(TParticle* i)
 {
+    // Fix for the production vertex
 	Double_t x,y,z;
 	
 	if(fModel == kThermal) // homogeneous volume

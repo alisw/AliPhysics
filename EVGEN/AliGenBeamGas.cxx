@@ -23,6 +23,7 @@
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenBeamGas.h"
+#include "AliGenReader.h"
 
 #include <TParticle.h>
 

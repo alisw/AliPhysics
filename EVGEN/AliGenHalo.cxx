@@ -392,6 +392,7 @@ void AliGenHalo::SkipEvents()
 }
 void AliGenHalo::CountEvents()
 {
+    // Count total number of events
     Int_t nev = 0;
     Int_t oldID = -1;
     Int_t nc = 1;

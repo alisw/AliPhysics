@@ -11,7 +11,8 @@
 // Author: andreas.morsch@cern.ch
 
 #include "AliGenMC.h"
-#include "AliGenReader.h"
+class AliGenReader;
+
 
 class TTree;
 

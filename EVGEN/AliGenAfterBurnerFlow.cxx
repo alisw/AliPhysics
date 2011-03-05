@@ -36,6 +36,7 @@
 #include "AliGenAfterBurnerFlow.h"
 #include "AliGenCocktailAfterBurner.h"
 #include "AliMC.h"
+#include "AliRun.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenCocktailEntry.h"
 
@@ -343,7 +344,7 @@ Float_t AliGenAfterBurnerFlow::GetCoefficient(Int_t pdg, Int_t n, Float_t Pt, Fl
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Float_t AliGenAfterBurnerFlow::GetNpNorm(Int_t npart)
+Float_t AliGenAfterBurnerFlow::GetNpNorm(Int_t npart) const
 {
   //
   // Calculate npart norm.
@@ -367,7 +368,7 @@ Float_t AliGenAfterBurnerFlow::GetNpNorm(Int_t npart)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Bool_t AliGenAfterBurnerFlow::IsPrimary(Int_t pdg)
+Bool_t AliGenAfterBurnerFlow::IsPrimary(Int_t pdg) const
 {
   if(pdg>=fgkPDG) return kFALSE;
   return fIsPrim[pdg];
@@ -377,6 +378,7 @@ Bool_t AliGenAfterBurnerFlow::IsPrimary(Int_t pdg)
 
 Double_t CalcAngle(Double_t phi, Double_t phi0, Double_t phiRP, Double_t v2, Double_t v1=0.)
 {
+    // Calculate relative angle
   Double_t phi1 = phi-(phi+2*v1*TMath::Sin(phi-phiRP)+v2*TMath::Sin(2*(phi-phiRP))-phi0)/
     (1.+2*v1*TMath::Cos(phi-phiRP)+ 2*v2*TMath::Cos(2*(phi-phiRP)));
   if(TMath::Abs(phi/phi1-1.)<0.00001) return phi1;
@@ -387,6 +389,7 @@ Double_t CalcAngle(Double_t phi, Double_t phi0, Double_t phiRP, Double_t v2, Dou
 
 void AliGenAfterBurnerFlow::InitPrimaries()
 {
+  // Init the primary particle list
   for(Int_t i=0; i<fgkPDG; i++) fIsPrim[i]=kFALSE;
 
   //mesons
@@ -608,6 +611,7 @@ void AliGenAfterBurnerFlow::Generate()
 
 void AliGenAfterBurnerFlow::Rotate(Int_t i, Double_t phi, Bool_t IsPrim)
 {
+  // Rotation
   TParticle*  particle = fStack->Particle(i);
   
   TLorentzVector momentum;

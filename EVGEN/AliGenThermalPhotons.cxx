@@ -86,7 +86,7 @@
 ClassImp(AliGenThermalPhotons)
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t rateQGP(Double_t *x, Double_t *par) {
+static Double_t rateQGP(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - tau (fm), proper time
@@ -139,7 +139,7 @@ static Double_t rateQGP(Double_t *x, Double_t *par) {
 }   
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t fromQGP(Double_t *x, Double_t *par) {
+static Double_t fromQGP(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - p_T (GeV), photon p_T
@@ -165,7 +165,7 @@ static Double_t fromQGP(Double_t *x, Double_t *par) {
 }   
          
 // -----------------------------------------------------------------------------------------------------
-static Double_t rateMixQ(Double_t *x, Double_t *par) {
+static Double_t rateMixQ(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - yprime, space rapidity
@@ -215,7 +215,7 @@ static Double_t rateMixQ(Double_t *x, Double_t *par) {
 }   
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t fromMixQ(Double_t *x, Double_t *par) {
+static Double_t fromMixQ(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - p_T (GeV), photon p_T
@@ -239,7 +239,7 @@ static Double_t fromMixQ(Double_t *x, Double_t *par) {
 }   
          
 // -----------------------------------------------------------------------------------------------------
-static Double_t rateMixH(Double_t *x, Double_t *par) {
+static Double_t rateMixH(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - yprime, space rapidity
@@ -297,7 +297,7 @@ static Double_t rateMixH(Double_t *x, Double_t *par) {
 }   
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t fromMixH(Double_t *x, Double_t *par) {
+static Double_t fromMixH(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - p_T (GeV), photon p_T
@@ -321,7 +321,7 @@ static Double_t fromMixH(Double_t *x, Double_t *par) {
 }   
          
 // -----------------------------------------------------------------------------------------------------
-static Double_t rateHHG(Double_t *x, Double_t *par) {
+static Double_t rateHHG(const Double_t *x, const Double_t *par) {
 //---------------------------------------------------
 // input:
 // x[0] - tau (fm), proper time
@@ -380,7 +380,7 @@ static Double_t rateHHG(Double_t *x, Double_t *par) {
 }   
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t fromHHG(Double_t *x, Double_t *par) {
+static Double_t fromHHG(const Double_t *x, const Double_t *par) {
 // Thermal photon spectrum from Hot Hadron Gas (HHG)
 //  F.D.Steffen, nucl-th/9909035
 //  T.Peitzmann and M.H.Thoma, Phys.Rep., 364, 175 (2002), section 2.2.2 
@@ -407,7 +407,7 @@ static Double_t fromHHG(Double_t *x, Double_t *par) {
 }   
 
 // -----------------------------------------------------------------------------------------------------
-static Double_t fOverlapAB(Double_t *x, Double_t *par)
+static Double_t fOverlapAB(const Double_t *x, const Double_t *par)
 {
 //-------------------------------------------------------------------------
 // overlap area at the impact parameter b
@@ -499,7 +499,7 @@ AliGenThermalPhotons::~AliGenThermalPhotons()
 //_____________________________________________________________________________
 void AliGenThermalPhotons::Init()
 {
-
+    // Initialisation
   const Double_t step=0.1; 
   Int_t nPt=Int_t((fPtMax-fPtMin)/step);
 

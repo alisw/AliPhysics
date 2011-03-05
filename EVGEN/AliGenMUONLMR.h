@@ -13,10 +13,10 @@ class AliGenMUONLMR : public AliGenMC {
   enum parttype_t {kPionLMR, kKaonLMR, kEtaLMR, kRhoLMR, kOmegaLMR, kPhiLMR, kEtaPrimeLMR};
   AliGenMUONLMR(); 
   ~AliGenMUONLMR(); 
-  static Double_t PtDistr(Double_t *x, Double_t *par); 
-  static Double_t YDistr(Double_t *x, Double_t *par); 
-  virtual void Decay2Body(TParticle *mother);
-  virtual void DalitzDecay(TParticle *mother);
+  static Double_t PtDistr(const Double_t *x, const Double_t *par); 
+  static Double_t YDistr(const Double_t *x, const Double_t *par); 
+  virtual void Decay2Body(const TParticle *mother);
+  virtual void DalitzDecay(const TParticle *mother);
   virtual void DecayPiK(TParticle *mother, Bool_t &hadDecayed);
   virtual Double_t FormFactor(Double_t q2, Int_t decay); 
   virtual void Generate(); 
@@ -24,7 +24,7 @@ class AliGenMUONLMR : public AliGenMC {
   virtual void SetNMuMin(Int_t nmin) {fNMuMin = nmin; }
   virtual void GenerateSingleProcess(Int_t whichproc) { fGenSingleProc = whichproc;}
   virtual void SetScaleMultiplicity(Int_t ipart, Double_t scale) { fScaleMult[ipart] = scale; } 
-  static Double_t RhoLineShapeNew(Double_t *, Double_t *); 
+  static Double_t RhoLineShapeNew(const Double_t *, const Double_t *); 
   virtual void FinishRun(); 
  private:
   AliGenMUONLMR(const AliGenMUONLMR &lmr);

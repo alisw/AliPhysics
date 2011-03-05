@@ -47,7 +47,7 @@ class AliGenDeuteron: public AliGenerator
 	
  private:
 	
-	const Double_t fDeuteronMass;
+	const Double_t fDeuteronMass; // Deuteron mass
 	Double_t fPmax; // Maximum p-n momentum difference (GeV/c)
 	Double_t fRmax; // Maximum p-n distance (cm)
 	Double_t fRsrc; // Emitting source radius (cm)

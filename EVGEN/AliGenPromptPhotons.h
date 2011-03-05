@@ -68,13 +68,13 @@ class AliGenPromptPhotons : public AliGenerator
   Float_t fMinImpactParam;  // minimum impact parameter
   Float_t fMaxImpactParam;  // maximum impact parameter	
   
-  static Double_t FitData      (Double_t *xx, Double_t *par);
-  static Double_t WSforNorm    (Double_t *xx, Double_t *par);
-  static Double_t WSz          (Double_t *xx, Double_t *par);
-  static Double_t TA           (Double_t *xx, Double_t *par);
-  static Double_t TB           (Double_t *xx, Double_t *par);
-  static Double_t TAxTB        (Double_t *xx, Double_t *par);
-  static Double_t TAB          (Double_t *xx, Double_t *par);
+  static Double_t FitData      (const Double_t *xx, const Double_t *par);
+  static Double_t WSforNorm    (const Double_t *xx, const Double_t *par);
+  static Double_t WSz          (const Double_t *xx, const Double_t *par);
+  static Double_t TA           (const Double_t *xx, const Double_t *par);
+  static Double_t TB           (const Double_t *xx, const Double_t *par);
+  static Double_t TAxTB        (const Double_t *xx, const Double_t *par);
+  static Double_t TAB          (const Double_t *xx, const Double_t *par);
 
   static TF1 *fgDataPt;             // d^{2}#sigma^{pp}/(dp_t dy) from data fit 
   static TF1 *fgWSzA;               // Wood Saxon parameterisation for nucleus A 

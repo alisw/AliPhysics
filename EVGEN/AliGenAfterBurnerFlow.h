@@ -32,7 +32,7 @@ class AliGenAfterBurnerFlow : public AliGenerator {
   void      SetEllipticParam(Int_t pdg, Float_t v00, Float_t v10, Float_t v11, Float_t v22);
   void      SetNpParams(Int_t order=-1, Float_t p0=-1, Float_t p1=-1, Float_t p2=-1, Float_t p3=-1);
   void      SetNpDefault() { SetNpParams(2,1,-5e-8,-5e-6); } 
-  Bool_t    IsPrimary(Int_t pdg);
+  Bool_t    IsPrimary(Int_t pdg) const;
   void      Init();
   void      Generate(); 
   void      NeglectFlow(Int_t pdg) {fIsPrim[pdg]=kFALSE;}
@@ -53,7 +53,7 @@ class AliGenAfterBurnerFlow : public AliGenerator {
   AliStack *fStack;            //!
 
   Float_t   GetCoefficient(Int_t pdg, Int_t n, Float_t Pt, Float_t Y) const;
-  Float_t   GetNpNorm(Int_t npart);
+  Float_t   GetNpNorm(Int_t npart) const;
   void      InitPrimaries();
   void      Rotate(Int_t i, Double_t phi, Bool_t IsPrim=kTRUE);
   void      SetFlowParameters(Int_t pdg, Int_t order, Int_t type, Float_t v1, Float_t v2, Float_t v3, Float_t v4);

@@ -35,7 +35,7 @@
 ClassImp(AliGenHIJINGparaBa)
 
 
-static Double_t ptpi(Double_t *px, Double_t *)
+static Double_t ptpi(const Double_t *px, const Double_t *)
 {
   //
   //     PT-PARAMETERIZATION CDF, PRL 61(88) 1819

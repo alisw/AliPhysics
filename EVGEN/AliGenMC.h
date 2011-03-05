@@ -19,8 +19,8 @@ class TParticle;
 
 class AliGeometry;
 class AliGenEventHeader;
-#include "AliDecayer.h"
 #include "AliGenerator.h"
+#include "AliDecayer.h"
 
 class AliGenMC : public AliGenerator
 {
@@ -68,7 +68,7 @@ class AliGenMC : public AliGenerator
     // check if particle is selected as child particle
     Bool_t ChildSelected(Int_t ip) const;
     // all kinematic selection cuts go here 
-    Bool_t KinematicSelection(TParticle *particle, Int_t flag) const;
+    Bool_t KinematicSelection(const TParticle *particle, Int_t flag) const;
     Int_t  CheckPDGCode(Int_t pdgcode) const;
 
  protected:

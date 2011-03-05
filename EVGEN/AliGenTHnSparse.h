@@ -7,7 +7,6 @@
 // the root file (path and name to be set via the SetTHnSparse method).
 // This class is similar to AliGenFunction.
 
-#include "AliLog.h"
 #include "AliGenerator.h"
 #include "THnSparse.h"
 

@@ -31,6 +31,7 @@
 #include "AliGenMC.h"
 #include "AliRun.h"
 #include "AliGeometry.h"
+#include "AliDecayer.h"
 
 ClassImp(AliGenMC)
 
@@ -209,7 +210,7 @@ Bool_t AliGenMC::ChildSelected(Int_t ip) const
     return kFALSE;
 }
 
-Bool_t AliGenMC::KinematicSelection(TParticle *particle, Int_t flag) const
+Bool_t AliGenMC::KinematicSelection(const TParticle *particle, Int_t flag) const
 {
 // Perform kinematic selection
     Double_t pz    = particle->Pz();

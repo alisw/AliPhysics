@@ -69,7 +69,7 @@ AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry):
 }
 
 
-void AliGenCocktailEntry::PrintInfo()
+void AliGenCocktailEntry::PrintInfo() const
 {
 // Print out information about generator entry
     printf("\n Generator: %s Generated Events: %d First: %d Last: %d",

@@ -138,7 +138,7 @@ AliGenPromptPhotons::~AliGenPromptPhotons()
 //_____________________________________________________________________________
 void AliGenPromptPhotons::Init()
 {
-
+  // Initialisation 
   fgDataPt = new TF1("fgDataPt",FitData,fPtMin,fPtMax,1);
   fgDataPt->SetParameter(0,fEnergyCMS);
 
@@ -261,7 +261,7 @@ void AliGenPromptPhotons::SetYRange(Float_t ymin, Float_t ymax) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::FitData(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::FitData(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - p_t (GeV).
@@ -294,7 +294,7 @@ Double_t AliGenPromptPhotons::FitData(Double_t* x, Double_t* par) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::WSforNorm(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::WSforNorm(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - r (fm)
@@ -316,7 +316,7 @@ Double_t AliGenPromptPhotons::WSforNorm(Double_t* x, Double_t* par) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::WSz(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::WSz(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - z (fm)
@@ -336,7 +336,7 @@ Double_t AliGenPromptPhotons::WSz(Double_t* x, Double_t* par) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::TA(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::TA(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - b (fm), impact parameter
@@ -354,7 +354,7 @@ Double_t AliGenPromptPhotons::TA(Double_t* x, Double_t* par) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::TB(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::TB(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - phi (rad)
@@ -376,7 +376,7 @@ Double_t AliGenPromptPhotons::TB(Double_t* x, Double_t* par) {
 }
 
 //**********************************************************************************
-Double_t AliGenPromptPhotons::TAxTB(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::TAxTB(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - s (fm)
@@ -405,7 +405,7 @@ Double_t AliGenPromptPhotons::TAxTB(Double_t* x, Double_t* par) {
 }
 
 // ---------------------------------------------------------------------------------
-Double_t AliGenPromptPhotons::TAB(Double_t* x, Double_t* par) {
+Double_t AliGenPromptPhotons::TAB(const Double_t* x, const Double_t* par) {
 //---------------------------------------------------
 // input:
 // x[0] - b (fm), impact parameter

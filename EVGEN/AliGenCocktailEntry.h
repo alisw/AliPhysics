@@ -29,7 +29,7 @@ class AliGenCocktailEntry : public TNamed
     Int_t GetFirst() const {return fFirst;}
     Int_t GetLast () const {return fLast;}
     Float_t Rate()   const {return fRate;}
-    void  PrintInfo();
+    void  PrintInfo() const;
     AliGenCocktailEntry & operator =(const AliGenCocktailEntry & rhs);
  protected:
     AliGenerator *fGenerator;   // Pointer to generator

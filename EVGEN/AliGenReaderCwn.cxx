@@ -130,7 +130,7 @@ Int_t AliGenReaderCwn::NextEvent()
 
 TParticle* AliGenReaderCwn::NextParticle() 
 {
-//
+// Read next particle
 //  
     Float_t prwn;
     Float_t p[4];

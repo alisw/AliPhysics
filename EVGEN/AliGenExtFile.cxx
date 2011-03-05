@@ -36,6 +36,7 @@
 #include "AliHeader.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
+#include "AliGenReader.h"
 
 #include <TParticle.h>
 #include <TFile.h>

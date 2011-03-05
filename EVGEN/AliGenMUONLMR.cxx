@@ -187,7 +187,7 @@ void AliGenMUONLMR::FinishRun(){
 
 //-----------------------------------------------------------
 
-Double_t AliGenMUONLMR::YDistr(Double_t *px, Double_t *par){ 
+Double_t AliGenMUONLMR::YDistr(const Double_t *px, const Double_t *par){ 
   // function for rapidity distribution: plateau at par[0] +
   // gaussian tails centered at par[1] and with par[2]=sigma  
   Double_t x = TMath::Abs(px[0]);
@@ -202,7 +202,7 @@ Double_t AliGenMUONLMR::YDistr(Double_t *px, Double_t *par){
 
 //-----------------------------------------------------------
 
-Double_t AliGenMUONLMR::PtDistr(Double_t *px, Double_t *par){
+Double_t AliGenMUONLMR::PtDistr(const Double_t *px, const Double_t *par){
   // pt distribution: power law 
   Double_t x = px[0];
   Double_t func = par[0] * x / TMath::Power((1+(x/par[1])*(x/par[1])),par[2]); 
@@ -361,7 +361,7 @@ void AliGenMUONLMR::Generate() {
 
 //------------------------------------------------------------------
 
-void AliGenMUONLMR::Decay2Body(TParticle *mother){ 
+void AliGenMUONLMR::Decay2Body(const TParticle *mother){ 
   // performs decay in two muons of the low mass resonances
   Double_t md1 = fMu[0]->GetMass(); 
   Int_t pdg = mother->GetPdgCode(); 
@@ -453,7 +453,7 @@ void AliGenMUONLMR::DecayPiK(TParticle *mother, Bool_t &hasDecayed){
 
 //-------------------------------------------------------------------
 
-void AliGenMUONLMR::DalitzDecay(TParticle *mother){
+void AliGenMUONLMR::DalitzDecay(const TParticle *mother){
   //
   // perform dalitz decays of eta, omega and etaprime 
   //
@@ -644,7 +644,7 @@ Double_t AliGenMUONLMR::FormFactor(Double_t q2, Int_t decay){
 
 //____________________________________________________________
 
-Double_t AliGenMUONLMR::RhoLineShapeNew(Double_t *x, Double_t* /*para*/){
+Double_t AliGenMUONLMR::RhoLineShapeNew(const Double_t *x, const Double_t* /*para*/){
   //new parameterization implemented by Hiroyuki Sako (GSI)
   Double_t mass = *x;
   double r, GammaTot;

@@ -13,7 +13,7 @@
 #include <TMCProcess.h>
 
 #include "AliGenCocktail.h"
-#include "AliRun.h"
+#include "AliRunLoader.h"
 
 class AliGenCocktailEntry;
 class AliStack;

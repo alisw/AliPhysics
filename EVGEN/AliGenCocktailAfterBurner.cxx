@@ -43,6 +43,7 @@
 #include "AliCollisionGeometry.h"
 #include "AliStack.h"
 #include "AliMC.h"
+#include "AliRun.h"
 
 
 ClassImp(AliGenCocktailAfterBurner)
@@ -51,7 +52,7 @@ ClassImp(AliGenCocktailAfterBurner)
 
     AliGenCocktailAfterBurner::AliGenCocktailAfterBurner():
 	fNAfterBurners(0),
-	fAfterBurnerEntries(new TList()),
+	fAfterBurnerEntries(0),
 	fGenerationDone(kFALSE),
 	fInternalStacks(0),
 	fCollisionGeometries(0),
@@ -122,6 +123,8 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
     
     AliGenCocktailEntry *entry = 
 	new AliGenCocktailEntry(AfterBurner, Name, RateExp);
+    if (!fAfterBurnerEntries) fAfterBurnerEntries = new TList();
+    
     fAfterBurnerEntries->Add(entry);
     fNAfterBurners++;
 //

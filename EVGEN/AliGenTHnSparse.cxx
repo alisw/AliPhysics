@@ -38,6 +38,7 @@
 
 // NEW
 #include "AliRun.h"
+#include "AliLog.h"
 #include "AliGenEventHeader.h"
 //
 
@@ -90,9 +91,8 @@ AliGenTHnSparse::~AliGenTHnSparse()
 //_______________________________________________________________________
 void AliGenTHnSparse::Generate()
 {
-    Int_t naccepted =0;
-
     // Generate Npart of id Ipart
+    Int_t naccepted =0;
     
     Double_t rand[4]; //  z, ptot, r, theta
     Float_t pos[3], phi, ptot, theta, pt, z, r;

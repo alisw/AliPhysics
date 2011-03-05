@@ -48,32 +48,32 @@ public:
     void SetPtMin(Float_t ptmin) {fPtMin=ptmin;}
     void SetEtaCut(Float_t etamin, Float_t etamax)
 	{fEtaMin=etamin; fEtaMax=etamax;}
-    Bool_t Selected(TParticle* part) const;
-    Bool_t Selected(TParticle* part1, TParticle* part2) const;
+    Bool_t Selected(const TParticle* part) const;
+    Bool_t Selected(const TParticle* part1, const TParticle* part2) const;
 // Kinematics
-    Float_t Mass(TParticle* part1, TParticle* part) const;
-    Float_t PT(TParticle* part1, TParticle* part) const;
-    Float_t Pz(TParticle* part1, TParticle* part) const;
-    Float_t Y(TParticle* part1, TParticle* part) const;
+    Float_t Mass(const TParticle* part1, const TParticle* part) const;
+    Float_t PT(const TParticle* part1, const TParticle* part) const;
+    Float_t Pz(const TParticle* part1, const TParticle* part) const;
+    Float_t Y(const TParticle* part1, const TParticle* part) const;
 // Response
     void SmearGauss(Float_t width, Float_t & value) const;
 // Weight
-    Bool_t  Correlated(TParticle* part1, TParticle* part2) const;
+    Bool_t  Correlated(const TParticle* part1, const TParticle* part2) const;
     void    SetRate(Float_t rate) {fRate1=rate;}
     void    SetRate(Float_t rate1, Float_t rate2 ) {fRate1=rate1; fRate2=rate2;}
-    Float_t Weight(TParticle* part) const;
-    Float_t Weight(TParticle* part1, TParticle* part) const;
-    Float_t DecayProbability(TParticle* part) const;
+    Float_t Weight(const TParticle* part) const;
+    Float_t Weight(const TParticle* part1, const TParticle* part) const;
+    Float_t DecayProbability(const TParticle* part) const;
     
  private:
     void FirstPartner();
     void NextPartner();
     void FirstPartnerSelected();
     void NextPartnerSelected();
-    Int_t Origin(TParticle* part) const;
-    TParticle* Parent(TParticle* part) const;
+    Int_t Origin(const TParticle* part) const;
+    TParticle* Parent(const TParticle* part) const;
     TParticle* Partner() const;
-    Int_t Type(TParticle *part) const;
+    Int_t Type(const TParticle *part) const;
     AliDimuCombinator(const AliDimuCombinator &combinator);
     AliDimuCombinator & operator=(const AliDimuCombinator & rhs);
 
