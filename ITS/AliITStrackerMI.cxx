@@ -532,7 +532,12 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
 
   fTrackingPhase="Clusters2Tracks";
-
+  //
+  // RS
+  fSelectBestMIP03  = AliITSReconstructor::GetRecoParam()->GetSelectBestMIP03();
+  fFlagFakes        = AliITSReconstructor::GetRecoParam()->GetFlagFakes();
+  fUseImproveKalman = AliITSReconstructor::GetRecoParam()->GetUseImproveKalman();
+  //
   TObjArray itsTracks(15000);
   fOriginal.Clear();
   fEsd = event;         // store pointer to the esd 
