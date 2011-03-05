@@ -124,7 +124,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
 			     fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtons->SetStats(kTRUE);
   fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtons->GetXaxis()->SetTitle("y");
@@ -146,7 +146,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
 				      fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtonsCorrected->SetStats(kTRUE);
   fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -158,7 +158,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
 					  fNBinsPt,fMinPt,fMaxPt);
   fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
   fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -231,7 +231,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
 			     fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtProtons->SetStats(kTRUE);
   fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtons->GetXaxis()->SetTitle("y");
@@ -241,7 +241,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
 				 fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtAntiProtons->SetStats(kTRUE);
   fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
@@ -252,7 +252,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
 				      fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtonsCorrected->SetStats(kTRUE);
   fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -264,7 +264,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
 					  fNBinsPt,fMinPt,fMaxPt);
   fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
   fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -358,7 +358,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
 			     fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtons->SetStats(kTRUE);
   fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtons->GetXaxis()->SetTitle("y");
@@ -369,7 +369,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
 				 fNBinsPt,fMinPt,fMaxPt);
   fHistYPtAntiProtons->SetStats(kTRUE);
   fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
@@ -380,7 +380,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
 				      fNBinsPt,fMinPt,fMaxPt);
   fHistYPtProtonsCorrected->SetStats(kTRUE);
   fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -392,7 +392,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
 					  fNBinsPt,fMinPt,fMaxPt);
   fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
   fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -447,7 +447,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
 			     fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtProtons->SetStats(kTRUE);
   fHistYPtProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtons->GetXaxis()->SetTitle("y");
@@ -457,7 +457,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
 				 fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtAntiProtons->SetStats(kTRUE);
   fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
@@ -467,7 +467,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
 				      fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtProtonsCorrected->SetStats(kTRUE);
   fHistYPtProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtProtonsCorrected->GetXaxis()->SetTitle("y");
@@ -478,7 +478,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
 					  fNBinsY,gY,fNBinsPt,gPt);
   fHistYPtAntiProtonsCorrected->SetStats(kTRUE);
   fHistYPtAntiProtonsCorrected->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtonsCorrected->GetXaxis()->SetTitle("y");
