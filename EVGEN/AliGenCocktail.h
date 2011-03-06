@@ -17,7 +17,7 @@
 class AliGenCocktailEntry;
 class AliGenCocktailEventHeader;
 class TArrayF;
-
+class TFormula;
 
 class AliGenCocktail : public AliGenerator
 {
@@ -35,7 +35,7 @@ class AliGenCocktail : public AliGenerator
     //
     // Add a new generator to the list
     virtual void AddGenerator
-	(AliGenerator *Generator, const char* Name, Float_t RateExp );
+      (AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula = 0);
     virtual TList* Entries() {return fEntries;}
     // Iterators
     AliGenCocktailEntry*  FirstGenerator();

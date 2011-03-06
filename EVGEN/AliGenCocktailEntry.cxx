@@ -22,6 +22,7 @@
 // Author: andreas.morsch@cern.ch
 
 #include <TString.h>
+#include <TFormula.h>
 #include "AliGenCocktailEntry.h"
 #include "AliGenerator.h"
 
@@ -35,21 +36,24 @@ AliGenCocktailEntry::AliGenCocktailEntry():
     fLast(-1),
     fRate(0),
     fKineBias(1),
-    fBias(1)
+    fBias(1),
+    fFormula(0)
 {
 // Default constructor
 
 }
 
 AliGenCocktailEntry:: AliGenCocktailEntry
-(AliGenerator* pGenerator, const char* Name, Float_t RateExp):TNamed(Name, "Generator Cocktail Entry"),
-    fGenerator(pGenerator),
-    fNGenerated(0),
-    fFirst(-1),
-    fLast(-1),
-    fRate(RateExp),
-    fKineBias(1),
-    fBias(1)
+(AliGenerator* pGenerator, const char* Name, Float_t RateExp) : 
+  TNamed(Name, "Generator Cocktail Entry"),
+  fGenerator(pGenerator),
+  fNGenerated(0),
+  fFirst(-1),
+  fLast(-1),
+  fRate(RateExp),
+  fKineBias(1),
+  fBias(1),
+  fFormula(0)
 {
     // Constructor
 }
@@ -62,7 +66,8 @@ AliGenCocktailEntry::AliGenCocktailEntry(const AliGenCocktailEntry &entry):
     fLast(-1),
     fRate(0),
     fKineBias(1),
-    fBias(1)
+    fBias(1),
+    fFormula(0)
 {
 // Dummy copy constructor
     entry.Copy(*this);

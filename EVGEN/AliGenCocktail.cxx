@@ -25,11 +25,13 @@
 
 #include <TList.h>
 #include <TObjArray.h>
+#include <TFormula.h>
 
 #include "AliGenCocktail.h"
 #include "AliGenCocktailEntry.h"
 #include "AliCollisionGeometry.h"
 #include "AliRun.h"
+#include "AliLog.h"
 #include "AliMC.h"
 #include "AliGenCocktailEventHeader.h"
 
@@ -62,7 +64,7 @@ AliGenCocktail::~AliGenCocktail()
 }
 
 void AliGenCocktail::
-AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
+AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormula* formula)
 {
 //
 // Add a generator to the list 
@@ -90,7 +92,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     }
     Generator->SetTrackingFlag(fTrackIt);
     Generator->SetContainer(this);
-    
+
         
 //
 //  Add generator to list   
@@ -100,7 +102,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 
     AliGenCocktailEntry *entry = 
 	new AliGenCocktailEntry(Generator, Name, RateExp);
-    
+    if (formula) entry->SetFormula(formula);    
      fEntries->Add(entry);
      fNGenerators++;
      flnk1 = 0;
@@ -161,6 +163,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
     TIter next(fEntries);
     AliGenCocktailEntry *entry = 0;
     AliGenCocktailEntry *preventry = 0;
+    AliGenCocktailEntry *collentry = 0;
     AliGenerator* gen = 0;
     if (fHeader) delete fHeader;
 
@@ -183,32 +186,50 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp)
 	// Loop over generators and generate events
 	Int_t igen=0;
 	while((entry = (AliGenCocktailEntry*)next())) {
-	    if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
-	    
-	    igen++;
-	    if (igen ==1) {
-		entry->SetFirst(0);
-	    } else {
-		entry->SetFirst((partArray->GetEntriesFast())+1);
-	    }
-//
-//      Handle case in which current generator needs collision geometry from previous generator
-//
-	    gen = entry->Generator();
-	    if (gen->NeedsCollisionGeometry())
+	  if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
+	  
+	  igen++;
+	  if (igen ==1) {
+	    entry->SetFirst(0);
+	  } else {
+	    entry->SetFirst((partArray->GetEntriesFast())+1);
+	  }
+	  gen = entry->Generator();
+	  if (gen->ProvidesCollisionGeometry()) collentry = entry; 
+	  //
+	  //      Handle case in which current generator needs collision geometry from previous generator
+          //
+	  if (gen->NeedsCollisionGeometry() && (entry->Formula() == 0))
 	    {
-		if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
+	      if (preventry && preventry->Generator()->ProvidesCollisionGeometry())
 		{
-		    gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
+		  gen->SetCollisionGeometry(preventry->Generator()->CollisionGeometry());
 		} else {
-		    Fatal("Generate()", "No Collision Geometry Provided");
-		}
+		Fatal("Generate()", "No Collision Geometry Provided");
+	      }
 	    }
-	    entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-	    entry->Generator()->Generate();
-	    entry->SetLast(partArray->GetEntriesFast());
-	    preventry = entry;
-	}  
+	  //
+	  //      Number of signals is calculated from Collision Geometry
+	  //
+	  if (entry->Formula() != 0)
+	    {
+	      if (!collentry) {
+		Fatal("Generate()", "No Collision Geometry Provided");
+		return;
+	      }
+	      AliCollisionGeometry* coll = (collentry->Generator())->CollisionGeometry();
+	      Float_t b  = coll->ImpactParameter();
+	      Int_t nsig = Int_t(entry->Formula()->Eval(b));
+	      if (nsig < 1) nsig = 1;
+	      AliInfo(Form("Signal Events %13.3f %5d\n", b, nsig));
+	      gen->SetNumberParticles(nsig);
+	    }
+	  
+	  entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
+	  entry->Generator()->Generate();
+	  entry->SetLast(partArray->GetEntriesFast());
+	  preventry = entry;
+	}
     } else if (fRandom) {
 	//
 	// Select a generator randomly
