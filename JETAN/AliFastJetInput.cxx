@@ -189,7 +189,7 @@ Float_t  AliFastJetInput::EtaToTheta(Float_t arg)
 
 
 }
-Double_t AliFastJetInput::Thermalspectrum(Double_t *x, Double_t *par){
+Double_t AliFastJetInput::Thermalspectrum(const Double_t *x, const Double_t *par){
 
   return x[0]*TMath::Exp(-x[0]/par[0]);
 

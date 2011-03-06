@@ -54,6 +54,7 @@ AliJetHistos::AliJetHistos():
 
 AliJetHistos::~AliJetHistos()
 {
+// Destructor
   delete fNJetsH;
   delete fPtH;
   delete fEtaH;
@@ -74,6 +75,7 @@ void AliJetHistos::SetProperties(TH1* h,const char* x, const char* y) const
 
 void AliJetHistos::AddHistosToList(TList *list)
 {
+// Add histos to the list
   list->Add(fNJetsH);
   list->Add(fPtH);
   list->Add(fEtaH);
@@ -84,7 +86,7 @@ void AliJetHistos::AddHistosToList(TList *list)
 
 void AliJetHistos::FillHistos(TClonesArray *jets)
 {
-
+// Fill histograms
   if(!jets)return;
   Int_t nj = jets->GetEntries();
   fNJetsH->Fill(nj,1);

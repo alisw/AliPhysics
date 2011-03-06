@@ -291,7 +291,7 @@ meanareab, false);
 
 //___________________________________________________________________
 Float_t AliJetBkg::BkgFastJet(){
-  
+// Return background  
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
 
@@ -313,7 +313,7 @@ Float_t AliJetBkg::BkgFastJet(){
 }
 //___________________________________________________________________
 Float_t  AliJetBkg::BkgChargedFastJet(){
-
+// Background for charged jets
   AliFastJetHeaderV1 *header = (AliFastJetHeaderV1*)fHeader;
   Bool_t debug  = header->GetDebug();     // debug option
 
@@ -593,8 +593,8 @@ Double_t  AliJetBkg::BkgFunction(Double_t */*x*/,Double_t */*par*/){
 }
 
 
-Bool_t AliJetBkg::EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius){
- 
+Bool_t AliJetBkg::EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const{
+// Apply emcal acceptance cuts
   Float_t meanPhi=190./180.*TMath::Pi()-110./180.*TMath::Pi()/2;
   Float_t deltaphi=110./180.*TMath::Pi();
   Float_t phicut=deltaphi/2.-radius;

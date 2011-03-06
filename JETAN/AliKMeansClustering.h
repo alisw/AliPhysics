@@ -20,16 +20,16 @@ class AliKMeansClustering : public TObject
   AliKMeansClustering()          {}
   virtual ~AliKMeansClustering() {}
   
-  static Int_t SoftKMeans (Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk );
+  static Int_t SoftKMeans (Int_t k, Int_t n, const Double_t* x, const Double_t* y, Double_t* mx, Double_t* my , Double_t* rk );
   static Int_t SoftKMeans2(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* sigma2, 
 			  Double_t* rk );
   static Int_t SoftKMeans3(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , 
 			   Double_t* sigmax2, Double_t* sigmay2, Double_t* rk );
-  static void  OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my);
+  static void  OptimalInit(Int_t k, Int_t n, const Double_t* x, const Double_t* y, Double_t* mx, Double_t* my);
   static void  SetBeta(Double_t beta) {fBeta = beta;}
   static Double_t d(Double_t mx, Double_t my, Double_t x, Double_t y);
 protected:
-  static Double_t fBeta;
+  static Double_t fBeta; // beta parameter
   
   ClassDef(AliKMeansClustering, 1)
 };
@@ -49,9 +49,9 @@ class AliKMeansResult : public TObject
   Double_t*  GetRk()     const  {return fRk;}
   Int_t*     GetInd()    const  {return fInd;}
   Double_t*  GetTarget() const  {return fTarget;}
-  void       CopyResults(AliKMeansResult* res);
+  void       CopyResults(const AliKMeansResult* res);
   void       Sort();
-  void       Sort(Int_t n, Double_t* x, Double_t* y);  
+  void       Sort(Int_t n, const Double_t* x, const Double_t* y);  
 protected:
   Int_t        fK;        //! Number of clusters
   Double_t*    fMx;       //! Position x

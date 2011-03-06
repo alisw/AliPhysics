@@ -280,7 +280,7 @@ AliJetDummyGeo::~AliJetDummyGeo()
 }
 
 //------------------------------------------------------------------------------------
-void AliJetDummyGeo::EtaPhiFromIndex(Int_t absId, Float_t& eta, Float_t& phi)
+void AliJetDummyGeo::EtaPhiFromIndex(Int_t absId, Float_t& eta, Float_t& phi) const
 {
   // Nov 16, 2006- float to double
   // version for TRD1 only

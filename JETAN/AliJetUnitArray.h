@@ -131,9 +131,9 @@ class AliJetUnitArray : public TObject
  protected:
   AliJetUnitArray(const AliJetUnitArray& rUnit);
   AliJetUnitArray& operator = (const AliJetUnitArray& rhs);
-  Bool_t operator>  ( AliJetUnitArray* unit1) const;
-  Bool_t operator<  ( AliJetUnitArray* unit1) const;
-  Bool_t operator== ( AliJetUnitArray* unit1) const;
+  Bool_t operator>  (const AliJetUnitArray* unit1) const;
+  Bool_t operator<  (const AliJetUnitArray* unit1) const;
+  Bool_t operator== (const AliJetUnitArray* unit1) const;
 
   Float_t                            fUnitEnergy;       // Energy (Pt,et) of the unit 
   Float_t                            fUnitEta;          // Eta of the unit

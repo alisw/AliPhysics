@@ -61,6 +61,7 @@ AliJetHadronCorrectionv0::Instance()
 Double_t 
 AliJetHadronCorrectionv0::GetEnergy(Double_t pmom, Double_t eta, Int_t /*gid*/)
 {
+// Get energy for momentum pmom and pseudorapidity eta
   Int_t iEta=0; // index 
   Double_t etaw = TMath::Abs(eta);
   if(etaw > etaGrid[maxVariant-1]) etaw = etaGrid[maxVariant-1];

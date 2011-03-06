@@ -40,7 +40,7 @@ class AliJetBkg : public TObject
 //    Float_t BkgRemoveJetLeading(TClonesArray* fAODJets);
     Float_t BkgRemoveJetLeadingFromUArray(TClonesArray* fAODJets);
     Float_t EtaToTheta(Float_t arg);
-    Bool_t EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius);
+    Bool_t EmcalAcceptance(const Float_t eta, const Float_t phi, const Float_t radius) const;
     static Double_t BkgFunction(Double_t *x,Double_t *par);
     
  private:

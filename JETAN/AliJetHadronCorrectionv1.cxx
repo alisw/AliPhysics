@@ -63,7 +63,7 @@ AliJetHadronCorrectionv1::Instance()
   return fgHadrCorr;
 }
 
-void AliJetHadronCorrectionv1::SetGeometry2(AliJetDummyGeo *geometry)
+void AliJetHadronCorrectionv1::SetGeometry2(const AliJetDummyGeo *geometry)
 {
   // Initialise EMCAL geometry
     if (!geometry)
@@ -168,8 +168,9 @@ Double_t AliJetHadronCorrectionv1::GetEnergy(Double_t pmom, Double_t eta, Int_t 
    
 }
 
-void AliJetHadronCorrectionv1::TrackPositionEMCal(AliAODTrack* track,Double_t &eta, Double_t &phi)
+void AliJetHadronCorrectionv1::TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi)
 {
+// Return track position on EMCal
   AliAODPid*    pid   = (AliAODPid*) track->GetDetPid();
     
   if(pid) {

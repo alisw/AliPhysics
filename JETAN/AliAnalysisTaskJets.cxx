@@ -35,6 +35,7 @@
 #include "AliAODEvent.h"
 #include "AliAODJetEventBackground.h"
 #include "AliAODHandler.h"
+#include "AliAODExtension.h"
 #include "AliMCEventHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliMCEvent.h"

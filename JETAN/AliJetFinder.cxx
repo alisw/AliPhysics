@@ -157,7 +157,7 @@ void AliJetFinder::AddJet(AliAODJet p)
   new ((*fAODjets)[fNAODjets++]) AliAODJet(p);
 }
 
-void AliJetFinder::ConnectAOD(AliAODEvent* aod)
+void AliJetFinder::ConnectAOD(const AliAODEvent* aod)
 {
 // Connect to the AOD
     fAODjets = aod->GetJets();

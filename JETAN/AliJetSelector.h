@@ -35,7 +35,7 @@ class AliJetSelector : public TSelector
   virtual void   Terminate();
   
  protected:
-  AliJetFinder* fJetFinder;
+  AliJetFinder* fJetFinder; // Pointer to jet finder
   
   ClassDef(AliJetSelector, 1)
 };
