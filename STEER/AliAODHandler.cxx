@@ -31,6 +31,7 @@
 #include "AliLog.h"
 #include "AliAODHandler.h"
 #include "AliAODEvent.h"
+#include "AliAODExtension.h"
 #include "AliAODTracklets.h"
 #include "AliStack.h"
 #include "AliAODMCParticle.h"

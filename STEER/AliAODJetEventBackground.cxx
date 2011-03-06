@@ -33,6 +33,7 @@ TString AliAODJetEventBackground::fgkStdBranchName("jeteventbackground");
 AliAODJetEventBackground::AliAODJetEventBackground() :
     TNamed()
 {
+    // Constructor
   for(int i = 0;i < kMaxBackground;++i){
     fBackground[i] = 0;
     fSigma[i] = 0;

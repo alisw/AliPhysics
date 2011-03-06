@@ -69,7 +69,7 @@ public:
     virtual TTree*      GetTree() const {return fTreeE;}
     Int_t       GetParticleAndTR(Int_t i, TParticle*& particle, TClonesArray*& trefs);
     void        DrawCheck(Int_t i, Int_t search=0);
-    Bool_t      InitOk() {return fInitOk;}
+    Bool_t      InitOk() const {return fInitOk;}
     // Label manipulation
     void   SelectParticle(Int_t i);
     Bool_t IsParticleSelected(Int_t i);

@@ -75,9 +75,11 @@ AliMixedEvent::AliMixedEvent(const AliMixedEvent& Evnt) :
 { } // Copy constructor
 
 AliMixedEvent& AliMixedEvent::operator=(const AliMixedEvent& vEvnt)
-{ if (this!=&vEvnt) { 
+{ 
+// Assignment operator
+    if (this!=&vEvnt) { 
     AliVEvent::operator=(vEvnt); 
-  }
+}
   
   return *this; 
 }
@@ -279,7 +281,7 @@ Int_t AliMixedEvent::EventIndexForEMCALCell(Int_t icell) const
   return  TMath::BinarySearch(fNEvents, fNEMCALCellsCumul, icell);
 }
 
-Bool_t AliMixedEvent::ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors){
+Bool_t AliMixedEvent::ComputeVtx(const TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors)  {
 //
 // Calculate the mean vertex psoitions from events in the buffer
  

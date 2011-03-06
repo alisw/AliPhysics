@@ -18,9 +18,9 @@ class TTree;
 class TObjArray;
 class AliMCEventHandler;
 class AliAODMCHeader;
-#include "AliAODExtension.h" // should be a forward declaration : class AliAODExtension;
 class AliGenEventHeader;
 class TMap;
+class AliAODExtension;
 class AliAnalysisFilter;
 
 class AliAODHandler : public AliVEventHandler {

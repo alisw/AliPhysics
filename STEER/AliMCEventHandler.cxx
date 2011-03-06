@@ -267,6 +267,7 @@ Bool_t AliMCEventHandler::OpenFile(Int_t i)
 
 Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 { 
+    // Begin event
     fParticleSelected.Delete();
     fLabelMap.Delete();
     // Read the next event

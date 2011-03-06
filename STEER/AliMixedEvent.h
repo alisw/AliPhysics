@@ -15,10 +15,10 @@
 //-------------------------------------------------------------------------
 
 #include "AliVEvent.h"
-#include "AliVVertex.h"
 #include <TList.h>
 #include <TObjArray.h>
 class AliCentrality;
+class AliVVertex;
 
 class AliMixedEvent : public AliVEvent {
 
@@ -112,7 +112,7 @@ public:
   virtual AliCentrality* GetCentrality() {return 0;}
   // Primary vertex
     virtual const AliVVertex   *GetPrimaryVertex() const {return fMeanVertex;}
-    virtual Bool_t ComputeVtx(TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);
+    virtual Bool_t ComputeVtx(const TObjArray *vertices, Double_t *pos,Double_t *sig,Int_t *nContributors);
   // VZERO
   virtual AliVVZERO *GetVZEROData() const {return 0;}
 private:

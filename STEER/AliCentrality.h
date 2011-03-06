@@ -34,17 +34,17 @@ class AliCentrality : public TNamed
   void SetCentralityZEMvsZDC(Float_t cent) {fCentralityZEMvsZDC = cent;}
 
   /// get centrality result
-  Float_t GetCentralityPercentile(const char *method);
-  Int_t   GetCentralityClass10(const char *method);
-  Int_t   GetCentralityClass5(const char *method);
-  Bool_t  IsEventInCentralityClass(Float_t a, Float_t b, const char *method);
+  Float_t GetCentralityPercentile(const char *method) const;
+  Int_t   GetCentralityClass10(const char *method) const;
+  Int_t   GetCentralityClass5(const char *method) const;
+  Bool_t  IsEventInCentralityClass(Float_t a, Float_t b, const char *method) const;
 
-  Float_t GetCentralityPercentileUnchecked(const char *method);
-  Int_t   GetCentralityClass10Unchecked(const char *method);
-  Int_t   GetCentralityClass5Unchecked(const char *method);
-  Bool_t  IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *method);
+  Float_t GetCentralityPercentileUnchecked(const char *method) const;
+  Int_t   GetCentralityClass10Unchecked(const char *method) const;
+  Int_t   GetCentralityClass5Unchecked(const char *method) const;
+  Bool_t  IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *method) const;
 
-  Int_t GetQuality();
+  Int_t GetQuality() const;
 
  private:
   Int_t   fQuality; // Quality of centrality determination

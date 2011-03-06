@@ -79,13 +79,14 @@ AliCentrality::~AliCentrality()
   /// destructor
 }
 
-Int_t AliCentrality::GetQuality()
+Int_t AliCentrality::GetQuality() const
 {
   return fQuality;
 }
 
-Float_t AliCentrality::GetCentralityPercentile(const char *x)
+Float_t AliCentrality::GetCentralityPercentile(const char *x) const
 {
+// Return the centrality percentile
   if (fQuality == 0) {
     TString method = x;
     if(method.CompareTo("V0M")==0)      return fCentralityV0M;
@@ -103,8 +104,9 @@ Float_t AliCentrality::GetCentralityPercentile(const char *x)
   }
 }
 
-Int_t AliCentrality::GetCentralityClass10(const char *x)
+Int_t AliCentrality::GetCentralityClass10(const char *x) const
 {
+// Return the centrality class
   if (fQuality == 0) {
     TString method = x;
     if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 10.0);
@@ -122,8 +124,9 @@ Int_t AliCentrality::GetCentralityClass10(const char *x)
   }
 }
 
-Int_t AliCentrality::GetCentralityClass5(const char *x)
+Int_t AliCentrality::GetCentralityClass5(const char *x) const
 {
+// Return the centrality class
   if (fQuality == 0) {
     TString method = x;
     if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 5.0);
@@ -142,8 +145,9 @@ Int_t AliCentrality::GetCentralityClass5(const char *x)
 }
 
 
-Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char *x)
+Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char *x) const
 {
+// True if event is inside a given class
   if (fQuality == 0) {
     TString method = x;
     if ((method.CompareTo("V0M")==0) && (fCentralityV0M >=a && fCentralityV0M < b)) return kTRUE;
@@ -161,8 +165,9 @@ Bool_t AliCentrality::IsEventInCentralityClass(Float_t a, Float_t b, const char 
   }
 }
 
-Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x)
+Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x) const
 {
+// Return the centrality percentile
   TString method = x;
   if(method.CompareTo("V0M")==0)      return fCentralityV0M;
   if(method.CompareTo("FMD")==0)      return fCentralityFMD;
@@ -176,8 +181,9 @@ Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x)
   return -1;
 }
 
-Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x)
+Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x) const
 {
+// Return the centrality class
   TString method = x;
   if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 10.0);
   if(method.CompareTo("FMD")==0)      return (Int_t) (fCentralityFMD / 10.0);
@@ -191,8 +197,9 @@ Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x)
   return -1;
 }
 
-Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x)
+Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x) const
 {
+// Return the centrality class
   TString method = x;
   if(method.CompareTo("V0M")==0)      return (Int_t) (fCentralityV0M / 5.0);
   if(method.CompareTo("FMD")==0)      return (Int_t) (fCentralityFMD / 5.0);
@@ -206,8 +213,9 @@ Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x)
   return -1;
 } 
 
-Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *x)
+Bool_t AliCentrality::IsEventInCentralityClassUnchecked(Float_t a, Float_t b, const char *x) const
 {
+// True if event inside given centrality class
   TString method = x;
   if ((method.CompareTo("V0M")==0) && (fCentralityV0M >=a && fCentralityV0M < b)) return kTRUE;
   if ((method.CompareTo("FMD")==0) && (fCentralityFMD >=a && fCentralityFMD < b)) return kTRUE;
