@@ -386,7 +386,7 @@ void AliJetAODFillUnitArrayEMCalDigits::Exec(Option_t* const /*option*/)
 //____________________________________________________________________________
 void AliJetAODFillUnitArrayEMCalDigits::GetTracksPointingToCell(TArrayS* array,Double_t eta, Double_t phi, Double_t cut)
 {
- 
+// Get all tracks pointing to cell 
   int size=0;
   
   for (Int_t itrk =  0; itrk <  fAOD->GetNumberOfTracks() ; itrk++) { //track loop

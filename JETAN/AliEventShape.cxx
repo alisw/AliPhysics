@@ -259,7 +259,7 @@ Double_t AliEventShape::GetCircularityMC(AliMCEvent* mcEvent, Int_t  nstudymin, 
 
 
   if (nmctracks < nstudymin) {
-      Printf("Too few particles, abort");
+      Printf("Too few particles, stopping");
       return -2;
   }
 

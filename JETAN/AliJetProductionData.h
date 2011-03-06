@@ -23,7 +23,7 @@ class AliJetProductionData : public TObject
     void    GetPtHardLimits(Int_t bin, Float_t& ptmin, Float_t& ptmax);
     TString GetRunTitle(Int_t bin);
     Float_t GetWeight(Int_t bin);
-
+ protected:
     Int_t     fNbins;         // Number of pt_hard bins used in the production
     Float_t*  fPtHardLimits;  //[fNbins+1]
     Float_t*  fWeights;       //[fNbins]

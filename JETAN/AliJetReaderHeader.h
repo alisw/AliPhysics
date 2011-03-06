@@ -72,7 +72,7 @@ class AliJetReaderHeader : public TNamed
   Int_t   fCluster;        // cluster type
   Int_t   fDebug;          // debug option
   Bool_t  fDZ;             // include dead zones or not 
-  Int_t   fSignalPerBg;
+  Int_t   fSignalPerBg;    // Signal per Background
   Float_t fFiducialEtaMin; // Fiducial minimum eta
   Float_t fFiducialEtaMax; // Fiducial maximum eta
   Float_t fFiducialPhiMin; // Fiducial minimum phi

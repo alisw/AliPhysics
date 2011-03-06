@@ -67,12 +67,12 @@ class AliFastJetHeader : public AliJetHeader
   fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
   
   //fastjet::GhostedAreaSpec parameters
-  Double_t fGhostEtaMax;
-  Double_t fGhostArea;
-  Int_t    fActiveAreaRepeats;
+  Double_t fGhostEtaMax;       // max area of ghosts
+  Double_t fGhostArea;         // ghost area
+  Int_t    fActiveAreaRepeats; // number of repetitions of active area 
   
   //fastjet::AreaDefinition parameters
-  fastjet::AreaType fAreaType; 
+  fastjet::AreaType fAreaType; // the are type
   
   //fastjet::ClusterSequenceArea options parameters
   Double_t fPtMin; //jets with pt > ptmin

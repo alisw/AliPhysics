@@ -30,9 +30,9 @@ class AliJetKineReaderHeader : public AliJetReaderHeader
 	  
  protected:
   //parameters set by user
-  Bool_t fFastSimTPC;
-  Bool_t fFastSimEMCAL;
-  Bool_t fChargedOnly;
+  Bool_t fFastSimTPC;   // TPC fast simulation flag
+  Bool_t fFastSimEMCAL; // EMCAL fast simulation flag
+  Bool_t fChargedOnly;  // Charged particle only flag
 
   ClassDef(AliJetKineReaderHeader,2);
 };

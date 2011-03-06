@@ -42,9 +42,8 @@ class AliFastJetInput : public TObject
     void FillInput();
     vector<fastjet::PseudoJet> GetInputParticles()   const {return fInputParticles;}
     vector<fastjet::PseudoJet> GetInputParticlesCh() const {return fInputParticlesCh;}
-
     Float_t  EtaToTheta(Float_t arg);
-    static Double_t Thermalspectrum(Double_t *x, Double_t *par);
+    static Double_t Thermalspectrum(const Double_t *x, const Double_t *par);
 
  private:
    AliJetReader *fReader;  //! reader 

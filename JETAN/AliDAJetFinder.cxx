@@ -156,8 +156,9 @@ void AliDAJetFinder::InitDetAnn(Double_t &dEtSum,Double_t **xData,TVectorD *vPx,
 }
 
 //-----------------------------------------------------------------------------------
-void AliDAJetFinder::DoubleClusters(Int_t nc,Int_t &nk,  TVectorD *vPy,  TMatrixD *mY) const
+void AliDAJetFinder::DoubleClusters(Int_t nc,Int_t &nk,  TVectorD *vPy, TMatrixD *mY) const
 {
+// Return double clusters
 	for(Int_t iClust=0; iClust<nc; iClust++){
 		(*vPy)(iClust)=(*vPy)(iClust)/2;
 		(*vPy)(nc+iClust)=(*vPy)(iClust);
@@ -264,6 +265,7 @@ void AliDAJetFinder::Annealing(Int_t nk,Double_t **xData,  TVectorD *vPx,  TVect
 //-----------------------------------------------------------------------------------
 void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TMatrixD *mY)
 {
+    // Number of clusters
 	static Bool_t growcl=true;
 	
 	if (nk==2) growcl=true;
@@ -321,6 +323,7 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TM
 //-----------------------------------------------------------------------------------
 void AliDAJetFinder::ReduceClusters(Int_t **iSame,Int_t nc,Int_t &ncout,Int_t **cont,Int_t *nSameOut) const
 {
+// Reduction step
 	Int_t *nSame = new Int_t[nc];
 	Int_t *iperm = new Int_t[nc];
 	Int_t *go = new Int_t[nc];

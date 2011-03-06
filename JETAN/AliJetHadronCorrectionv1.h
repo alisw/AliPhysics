@@ -23,8 +23,8 @@ class AliJetHadronCorrectionv1 : public AliJetHadronCorrection
   Double_t GetEnergy(Double_t pmom, Double_t eta){return GetEnergy(pmom,eta,7);}
   
   void SetGeometry(TString name, Double_t fs = 1.); 
-  void SetGeometry2(AliJetDummyGeo *geometry);
-  void TrackPositionEMCal(AliAODTrack* track,Double_t &eta, Double_t &phi);
+  void SetGeometry2(const AliJetDummyGeo *geometry);
+  void TrackPositionEMCal(const AliAODTrack* track,Double_t &eta, Double_t &phi);
 
  protected:
   AliJetHadronCorrectionv1():fSamplingFraction(0) {for (Int_t i = 0; i < 8; i++) fPar[i] = 0.;}
@@ -35,7 +35,7 @@ class AliJetHadronCorrectionv1 : public AliJetHadronCorrection
 
   static AliJetHadronCorrectionv1* fgHadrCorr;  // Pointer to global instance (singleton)
   static Double_t fgParLookup[HCPARAMETERS][HCPARAMETERSETS]; // Global array with parameters for hadronic response
-  Double_t fPar[8];
+  Double_t fPar[8];            // Parameters
   Float_t  fSamplingFraction;  // Sampling fraction
     
   ClassDef(AliJetHadronCorrectionv1,2) // Hadron correction for EMC (version for MDC)

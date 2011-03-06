@@ -12,19 +12,19 @@
 
 class AliJetHadronCorrectionv0: public AliJetHadronCorrection {
 
-  private:
-  static AliJetHadronCorrectionv0* fHadrCorr;
+  public:
+  static  AliJetHadronCorrectionv0* Instance();
+  virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
+  Double_t GetEnergy(Double_t pmom, Double_t eta){return GetEnergy(pmom,eta,7);}
+  virtual ~AliJetHadronCorrectionv0() {}
 
   protected:
   AliJetHadronCorrectionv0() {;}
   AliJetHadronCorrectionv0(const char *name, const char *title);
 
-  public:
-  static  AliJetHadronCorrectionv0* Instance();
-  virtual Double_t GetEnergy(Double_t pmom, Double_t eta, Int_t gid); 
-  Double_t GetEnergy(Double_t pmom, Double_t eta){return GetEnergy(pmom,eta,7);}
 
-  virtual ~AliJetHadronCorrectionv0() {}
+  private:
+    static AliJetHadronCorrectionv0* fHadrCorr; // pointer to instance
 
   ClassDef(AliJetHadronCorrectionv0,1) // Hadron correction for EMC (version for MDC)
 };

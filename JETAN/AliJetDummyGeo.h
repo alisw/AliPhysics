@@ -53,7 +53,7 @@ class AliJetDummyGeo : public TObject
   Float_t GetArm1PhiMin()           const  {return fArm1PhiMin;}
   Float_t GetArm1PhiMax()           const  {return fArm1PhiMax;}
   Float_t GetIPDistance()           const  {return fIPDistance;} 
-  void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi);
+  void    EtaPhiFromIndex(Int_t id, Float_t& eta, Float_t& phi) const;
   void    GetGlobal(const Double_t *loc, Double_t *glob, Int_t ind) const;
   void    GetGlobal(Int_t absId, Double_t glob[3]) const;
   void    GetGlobal(Int_t absId, TVector3 &vglob) const;

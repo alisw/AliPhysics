@@ -254,7 +254,7 @@ Float_t  AliJetUnitArray::EtaToTheta(Float_t arg) const
 }
 
 //------------------------------------------------------------------------
-Bool_t AliJetUnitArray::operator>(AliJetUnitArray* unit) const
+Bool_t AliJetUnitArray::operator>(const AliJetUnitArray* unit) const
 {
   // Greater than operator used by sort
   if( fUnitEnergy > unit->GetUnitEnergy())
@@ -264,7 +264,7 @@ Bool_t AliJetUnitArray::operator>(AliJetUnitArray* unit) const
 }
 
 //------------------------------------------------------------------------
-Bool_t AliJetUnitArray::operator<( AliJetUnitArray* unit) const
+Bool_t AliJetUnitArray::operator<(const AliJetUnitArray* unit) const
 {
   // Less than operator used by sort
   if( fUnitEnergy < unit->GetUnitEnergy())
@@ -274,7 +274,7 @@ Bool_t AliJetUnitArray::operator<( AliJetUnitArray* unit) const
 }
 
 //------------------------------------------------------------------------
-Bool_t AliJetUnitArray::operator==( AliJetUnitArray* unit) const
+Bool_t AliJetUnitArray::operator==(const AliJetUnitArray* unit) const
 {
   // equality operator used by sort
   if( fUnitEnergy == unit->GetUnitEnergy())

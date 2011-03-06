@@ -45,6 +45,7 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
+#include "AliAODExtension.h"
 #include "AliAODTrack.h"
 #include "AliAODJet.h"
 #include "AliAODMCParticle.h"

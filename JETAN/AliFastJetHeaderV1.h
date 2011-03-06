@@ -69,19 +69,19 @@ class AliFastJetHeaderV1 : public AliJetHeader
  protected:
 
   //fastjet::JetDefinition parameters
-  Double_t fRparam;
+  Double_t fRparam;   // R param
   Double_t fRparamBkg;//R param for bkg calculation
   fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
   fastjet::Strategy fStrategy;  //= fastjet::Best;
   fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
   
   //fastjet::GhostedAreaSpec parameters
-  Double_t fGhostEtaMax;
-  Double_t fGhostArea;
-  Int_t    fActiveAreaRepeats;
+  Double_t fGhostEtaMax;       // Max eta for ghosts
+  Double_t fGhostArea;         // Ghost area 
+  Int_t    fActiveAreaRepeats; // Active are repetitions
   
   //fastjet::AreaDefinition parameters
-  fastjet::AreaType fAreaType; 
+  fastjet::AreaType fAreaType; // area types
   
   //fastjet::ClusterSequenceArea options parameters
   Double_t fPtMin; //jets with pt > ptmin

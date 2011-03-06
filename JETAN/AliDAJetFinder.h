@@ -26,7 +26,7 @@ public:
     void Annealing     (Int_t nk, Double_t **xData, TVectorD *vPx, TVectorD *vPy, TMatrixD *mPyx, TMatrixD *mY);
     void NumCl         (Int_t &nc, Int_t &nk, TVectorD *vPy, TMatrixD *mPyx, TMatrixD *mY);
     void ReduceClusters(Int_t **iSame, Int_t nc, Int_t &ncout, Int_t **cont, Int_t *nSameOut) const;
-    void DoubleClusters(Int_t nc, Int_t &nk, TVectorD *vPy, TMatrixD *mY) const;
+    void DoubleClusters(Int_t nc, Int_t &nk,  TVectorD *vPy,  TMatrixD *mY) const;
     void EndDetAnn     (Int_t &nk, Double_t **xData, Int_t *xx, Double_t etx, TVectorD *px, TVectorD *py, TMatrixD *pyx, TMatrixD *y);
     void StoreJets     (Int_t nk, Double_t **xData, Int_t *xx, TMatrixD *mY);
 

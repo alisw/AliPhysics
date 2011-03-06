@@ -32,7 +32,7 @@ ClassImp(AliKMeansClustering)
 Double_t AliKMeansClustering::fBeta = 10.;
 
  
-Int_t AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my , Double_t* rk )
+Int_t AliKMeansClustering::SoftKMeans(Int_t k, Int_t n, const Double_t* x, const Double_t* y, Double_t* mx, Double_t* my , Double_t* rk )
 {
     //
     // The soft K-means algorithm
@@ -397,7 +397,7 @@ Double_t AliKMeansClustering::d(Double_t mx, Double_t my, Double_t x, Double_t y
 
 
 
-void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, Double_t* x, Double_t* y, Double_t* mx, Double_t* my)
+void AliKMeansClustering::OptimalInit(Int_t k, Int_t n, const Double_t* x, const Double_t* y, Double_t* mx, Double_t* my)
 {
   //  
   // Optimal initialisation using the k-means++ algorithm
@@ -520,7 +520,7 @@ void AliKMeansResult::Sort()
   TMath::Sort(fK, fTarget, fInd);
 }
 
-void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
+void AliKMeansResult::Sort(Int_t n, const Double_t* x, const Double_t* y)
 {
   // Build target array and sort
   for (Int_t i = 0; i < fK; i++)
@@ -541,7 +541,7 @@ void AliKMeansResult::Sort(Int_t n, Double_t* x, Double_t* y)
   TMath::Sort(fK, fTarget, fInd);
 }
 
-void AliKMeansResult::CopyResults(AliKMeansResult* res)
+void AliKMeansResult::CopyResults(const AliKMeansResult* res)
 {
   fK = res->GetK();
   for (Int_t i = 0; i <fK; i++) {

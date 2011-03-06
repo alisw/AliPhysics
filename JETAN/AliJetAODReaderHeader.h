@@ -22,7 +22,7 @@ class AliJetAODReaderHeader : public AliJetReaderHeader
 
   // Getters
   Int_t   GetNaod()       const {return fNaod;}
-  UInt_t  GetTestFilterMask(){return fTestFilterMask;}	    
+  UInt_t  GetTestFilterMask()   const {return fTestFilterMask;}	    
   TString GetNonStdBranch()     const { return fNonStdBranch; }
   Bool_t  GetReadStdBranch()    const { return (fReadBranches & kReadStdBranch); }
   Bool_t  GetReadNonStdBranch() const { return (fReadBranches & kReadNonStdBranch); }
