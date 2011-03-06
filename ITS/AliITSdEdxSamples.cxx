@@ -39,7 +39,10 @@ AliITSdEdxSamples::AliITSdEdxSamples():TObject(),
 {
   // Default constructor
 
-  for(Int_t i=0; i<fgkMaxSamples; i++) fdEdxSamples[i]=0.;
+  for(Int_t i=0; i<fgkMaxSamples; i++) {
+    fdEdxSamples[i]=0.;
+    fPAtSample[i]=0.;
+  }
 }
 
 //______________________________________________________________________
@@ -50,7 +53,7 @@ AliITSdEdxSamples::AliITSdEdxSamples(Int_t nSamples,Double_t* samples, Double_t 
   fParticleSpecie(specie)
 {
   // Standard constructor
-
+  for(Int_t i=0; i<fgkMaxSamples; i++)fPAtSample[i]=0.;
   SetSamples(nSamples,samples);
 }
 //______________________________________________________________________
