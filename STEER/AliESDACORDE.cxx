@@ -41,6 +41,7 @@ AliESDACORDE::AliESDACORDE(Bool_t* MACORDEBitPattern):TObject()
 
 AliESDACORDE& AliESDACORDE::operator=(const AliESDACORDE& o)
 {
+// Copy Constructor
 	if(this==&o)return *this;
 	TObject::operator=(o);
 
@@ -54,7 +55,7 @@ AliESDACORDE& AliESDACORDE::operator=(const AliESDACORDE& o)
 }
 
 
-Bool_t AliESDACORDE::GetHitChannel(Int_t i)
+Bool_t AliESDACORDE::GetHitChannel(Int_t i) const
 {
 	return fACORDEBitPattern[i];
 }

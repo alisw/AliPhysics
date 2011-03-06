@@ -25,6 +25,7 @@
 
 //-- Analysis system
 #include "AliAODPWG4ParticleCorrelation.h"
+#include "AliAODJet.h"
 
 ClassImp(AliAODPWG4ParticleCorrelation)
 

@@ -37,6 +37,7 @@ AliCheb3D::AliCheb3D() :
   fUsrFunName(""), 
   fUsrMacro(0) 
 {
+// Default constructor
   for (int i=3;i--;) {
     fBMin[i] = fBMax[i] = fBScale[i] = fBOffset[i] = fArgsTmp[i] = 0;
     fNPoints[i] = 0;
@@ -116,7 +117,7 @@ AliCheb3D::AliCheb3D(FILE* stream) :
 
 //__________________________________________________________________________________________
 #ifdef _INC_CREATION_ALICHEB3D_
-AliCheb3D::AliCheb3D(const char* funName, int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t prec) : 
+AliCheb3D::AliCheb3D(const char* funName, int DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t prec) : 
   TNamed(funName,funName), 
   fDimOut(0), 
   fPrec(TMath::Max(1.E-12f,prec)), 

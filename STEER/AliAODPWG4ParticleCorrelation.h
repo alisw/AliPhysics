@@ -13,9 +13,11 @@
 
 //-- ROOT system --
 #include "TList.h"
+#include "AliAODJet.h"
 
 //-- Analysis system
-#include "AliAODJet.h"
+
+
 #include "AliAODPWG4Particle.h"
 
 class AliAODPWG4ParticleCorrelation : public AliAODPWG4Particle {

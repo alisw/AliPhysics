@@ -27,9 +27,11 @@ AliVVertex::AliVVertex(const AliVVertex& vVert) :
   TNamed(vVert) { } // Copy constructor
 
 AliVVertex& AliVVertex::operator=(const AliVVertex& vVert)
-{ if (this!=&vVert) { 
-    TNamed::operator=(vVert); 
-  }
+{ 
+    // Copy constructor
+    if (this!=&vVert) { 
+	TNamed::operator=(vVert); 
+    }
   
   return *this; 
 }

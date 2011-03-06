@@ -367,6 +367,7 @@ void AliAODHeader::RemoveQTheta()
 
 void AliAODHeader::Clear(Option_t* /*opt*/)
 {
+// Clear memory
   RemoveQTheta();
   if (fCentralityP){
     delete fCentralityP;

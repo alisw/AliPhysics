@@ -18,17 +18,17 @@ class AliGenHijingEventHeader : public AliGenEventHeader, public AliCollisionGeo
   AliGenHijingEventHeader();
   virtual ~AliGenHijingEventHeader() {}
   // Getters
-  Float_t TotalEnergy()  {return fTotalEnergy;} 
-  Int_t   Trials() {return fTrials;}
+  Float_t TotalEnergy() const {return fTotalEnergy;} 
+  Int_t   Trials() const {return fTrials;}
   
 	  
   // Setters
   void SetTotalEnergy(Float_t energy)  {fTotalEnergy=energy;}
-  void SetJets(TLorentzVector* jet1, TLorentzVector* jet2,
-	       TLorentzVector* jet3, TLorentzVector* jet4)
+  void SetJets(const TLorentzVector* jet1, const TLorentzVector* jet2,
+	       const TLorentzVector* jet3, const TLorentzVector* jet4)
       {fJet1 = *jet1; fJet2 = *jet2; fJetFsr1 = *jet3; fJetFsr2 = *jet4;}
   void GetJets(TLorentzVector& jet1, TLorentzVector& jet2,
-	       TLorentzVector& jet3, TLorentzVector& jet4)  
+	       TLorentzVector& jet3, TLorentzVector& jet4) const  
       {jet1 = fJet1; jet2 = fJet2; jet3 = fJetFsr1; jet4 = fJetFsr2;}
   void SetTrials(Int_t trials) {fTrials = trials;}
 	  

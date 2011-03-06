@@ -59,40 +59,22 @@ class AliAODCentrality : public TNamed {
   void SetZEM1Energy	  (Float_t  x) {fZEM1Energy = x; }
   void SetZEM2Energy	  (Float_t  x) {fZEM2Energy = x; }
   void SetZNCtower          (Float_t x0, Float_t x1, Float_t x2, Float_t x3, Float_t x4) {
-    fZNCtower[0] = x0; 
-    fZNCtower[1] = x1; 
-    fZNCtower[2] = x2; 
-    fZNCtower[3] = x3; 
-    fZNCtower[4] = x4; 
+    fZNCtower[0] = x0; fZNCtower[1] = x1; fZNCtower[2] = x2; fZNCtower[3] = x3; fZNCtower[4] = x4; 
   }   
   void SetZPCtower          (Float_t x0, Float_t x1, Float_t x2, Float_t x3, Float_t x4) {
-    fZPCtower[0] = x0; 
-    fZPCtower[1] = x1; 
-    fZPCtower[2] = x2; 
-    fZPCtower[3] = x3; 
-    fZPCtower[4] = x4; 
+    fZPCtower[0] = x0; fZPCtower[1] = x1; fZPCtower[2] = x2; fZPCtower[3] = x3; fZPCtower[4] = x4; 
   }   
   void SetZNAtower          (Float_t x0, Float_t x1, Float_t x2, Float_t x3, Float_t x4) {
-    fZNAtower[0] = x0; 
-    fZNAtower[1] = x1; 
-    fZNAtower[2] = x2; 
-    fZNAtower[3] = x3; 
-    fZNAtower[4] = x4; 
+    fZNAtower[0] = x0; fZNAtower[1] = x1; fZNAtower[2] = x2; fZNAtower[3] = x3; fZNAtower[4] = x4; 
   }   
   void SetZPAtower          (Float_t x0, Float_t x1, Float_t x2, Float_t x3, Float_t x4) {
-    fZPAtower[0] = x0; 
-    fZPAtower[1] = x1; 
-    fZPAtower[2] = x2; 
-    fZPAtower[3] = x3; 
-    fZPAtower[4] = x4; 
+    fZPAtower[0] = x0; fZPAtower[1] = x1; fZPAtower[2] = x2; fZPAtower[3] = x3; fZPAtower[4] = x4; 
   }   
   void SetCentrZNC          (Float_t x0, Float_t x1) {
-    fCentrZNC[0] = x0; 
-    fCentrZNC[1] = x1; 
+    fCentrZNC[0] = x0; fCentrZNC[1] = x1; 
   }   
   void SetCentrZNA          (Float_t x0, Float_t x1) {
-    fCentrZNA[0] = x0; 
-    fCentrZNA[1] = x1; 
+    fCentrZNA[0] = x0; fCentrZNA[1] = x1; 
   }   
   void SetNTracks           (Int_t    x) {fNTracks = x; }    
   void SetNPmdTracks        (Int_t    x) {fNPmdTracks = x; } 

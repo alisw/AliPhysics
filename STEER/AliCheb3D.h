@@ -88,7 +88,7 @@ class AliCheb3D: public TNamed
   AliCheb3D(FILE* stream);
   //
 #ifdef _INC_CREATION_ALICHEB3D_
-  AliCheb3D(const char* funName, Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
+  AliCheb3D(const char* funName, Int_t DimOut, const Float_t  *bmin, const Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
   AliCheb3D(void (*ptr)(float*,float*), Int_t DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npoints, Float_t  prec=1E-6);
   AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Int_t *npX,Int_t *npY,Int_t *npZ, Float_t prec=1E-6);
   AliCheb3D(void (*ptr)(float*,float*), int DimOut, Float_t  *bmin,Float_t  *bmax, Float_t prec=1E-6, Bool_t run=kTRUE);

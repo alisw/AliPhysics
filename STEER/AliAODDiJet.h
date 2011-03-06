@@ -35,9 +35,9 @@ class AliAODDiJet : public AliAODJet {
     AliAODDiJet& operator=(const AliAODDiJet& jet);
 
  private:
-    TRefArray*  fJetR;
-    TRef        fJet1;
-    TRef        fJet2;
+    TRefArray*  fJetR;  // References to jets
+    TRef        fJet1;  // Reference to Jet 1
+    TRef        fJet2;  // Reference to Jet 2
     ClassDef(AliAODDiJet, 1);
 };
 #endif

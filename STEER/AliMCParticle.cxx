@@ -75,7 +75,7 @@ AliMCParticle::AliMCParticle(const AliMCParticle& mcPart) :
 
 AliMCParticle& AliMCParticle::operator=(const AliMCParticle& mcPart)
 { 
-
+// Copy constructor
   if (this!=&mcPart) { 
     AliVParticle::operator=(mcPart);
   }

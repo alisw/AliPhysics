@@ -30,6 +30,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliVCuts.h"
+#include "AliMCEvent.h"
 
 ClassImp(AliAODInputHandler)
 
@@ -109,7 +110,7 @@ Bool_t AliAODInputHandler::Init(TTree* tree, Option_t* opt)
 //______________________________________________________________________________
 Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 {
-    //
+    // Begin event
     TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
     if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
     if (fTreeToMerge) fTreeToMerge->GetEntry(entry + fMergeOffset);

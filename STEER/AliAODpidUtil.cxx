@@ -65,7 +65,7 @@ ClassImp(AliAODpidUtil)
   return 0;
 }
 //_________________________________________________________________________
-void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
+void AliAODpidUtil::MakeTPCPID(const AliAODTrack *track,Double_t *p) const
 {
   //
   //  TPC pid using bethe-bloch and gaussian response
@@ -105,7 +105,7 @@ void AliAODpidUtil::MakeTPCPID(AliAODTrack *track,Double_t *p) const
   return;
 }
 //_________________________________________________________________________
-void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
+void AliAODpidUtil::MakeITSPID(const AliAODTrack *track,Double_t *p) const
 {
   //
   // ITS PID
@@ -161,7 +161,7 @@ void AliAODpidUtil::MakeITSPID(AliAODTrack *track,Double_t *p) const
 
 }
 //_________________________________________________________________________
-void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Double_t *p) const
+void AliAODpidUtil::MakeTOFPID(const AliAODTrack *track, Double_t *p) const
 {
   //
   //   TOF PID using gaussian response
@@ -221,7 +221,7 @@ void AliAODpidUtil::MakeTOFPID(AliAODTrack *track, Double_t *p) const
   return;
 }
 //_________________________________________________________________________
-void AliAODpidUtil::MakeTRDPID(AliAODTrack *track,Double_t *p) const
+void AliAODpidUtil::MakeTRDPID(const AliAODTrack *track,Double_t *p) const
 {
   
   // Method to recalculate the TRD PID probabilities

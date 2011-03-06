@@ -54,7 +54,7 @@ AliVParticle(),
 }
 
     
-AliAODMCParticle::AliAODMCParticle(AliMCParticle* mcpart, Int_t label,Int_t flag):
+AliAODMCParticle::AliAODMCParticle(const AliMCParticle* mcpart, Int_t label,Int_t flag):
     AliVParticle(),
     fPdgCode(mcpart->Particle()->GetPdgCode()),
     fFlag(flag),
@@ -69,6 +69,7 @@ AliAODMCParticle::AliAODMCParticle(AliMCParticle* mcpart, Int_t label,Int_t flag
     fVz(mcpart->Particle()->Vz()),
     fVt(mcpart->Particle()->T())
 {
+    // Constructor
   fDaughter[0] =  mcpart->GetFirstDaughter(); 
   fDaughter[1] =  mcpart->GetLastDaughter();
 }
@@ -141,6 +142,7 @@ Short_t AliAODMCParticle::Charge()     const
 }
 
 void AliAODMCParticle::Print(const Option_t */*opt*/) const {
+// Print particle information
   if(TDatabasePDG::Instance()->GetParticle(fPdgCode)){
     Printf(">>> PDG (%d) : %s",fPdgCode,TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName());
   }

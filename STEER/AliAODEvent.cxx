@@ -673,7 +673,7 @@ Int_t  AliAODEvent::GetNumberOfPileupVerticesTracks() const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
-  //
+  // Get SPD primary vertex
   Int_t nVertices=GetNumberOfVertices();
   for(Int_t iVert=0; iVert<nVertices; iVert++){
     AliAODVertex *v=GetVertex(iVert);
@@ -683,7 +683,7 @@ AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
-  //
+  // Get pile-up vertex iV
   Int_t nVertices=GetNumberOfVertices();
   Int_t counter=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -697,7 +697,7 @@ AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
 }
 //______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPileupVertexTracks(Int_t iV) const{
-  //
+  // Get pile-up vertex iV
   Int_t nVertices=GetNumberOfVertices();
   Int_t counter=0;
   for(Int_t iVert=0; iVert<nVertices; iVert++){
@@ -777,7 +777,7 @@ void AliAODEvent::Print(Option_t *) const
   return;
 }
 
-void AliAODEvent::AssignIDtoCollection(TCollection* col)
+void AliAODEvent::AssignIDtoCollection(const TCollection* col)
 {
     // Static method which assigns a ID to each object in a collection
     // In this way the objects are marked as referenced and written with 

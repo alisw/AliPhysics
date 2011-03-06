@@ -104,17 +104,7 @@ class AliAODHeader : public AliVHeader {
   void SetEventType(UInt_t evttype)            { fEventType = evttype; }
   void SetMagneticField(Double_t magFld)       { fMagneticField = magFld; }
   void SetMuonMagFieldScale(Double_t magFldScl){ fMuonMagFieldScale = magFldScl; }
-  
-  void SetCentrality(AliCentrality* cent)      { 
-    if(cent){
-      if(fCentralityP)*fCentralityP = *cent;
-      else fCentralityP = new AliCentrality(*cent);
-      fCentrality = cent->GetCentralityPercentile("V0M");
-    }
-    else{
-      fCentrality = -999;
-    }
-  }
+  void SetCentrality(AliCentrality* cent);
   void SetZDCN1Energy(Double_t n1Energy)       { fZDCN1Energy = n1Energy; }
   void SetZDCP1Energy(Double_t p1Energy)       { fZDCP1Energy = p1Energy; }
   void SetZDCN2Energy(Double_t n2Energy)       { fZDCN2Energy = n2Energy; }
@@ -159,7 +149,7 @@ class AliAODHeader : public AliVHeader {
   
   UInt_t GetOfflineTrigger() { return fOfflineTrigger; }
   void SetOfflineTrigger(UInt_t trigger) { fOfflineTrigger = trigger; }
-  TString GetESDFileName()   {return fESDFileName;}
+  TString GetESDFileName() const  {return fESDFileName;}
   void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
@@ -204,5 +194,15 @@ class AliAODHeader : public AliVHeader {
   AliCentrality* fCentralityP;      // Pointer to full centrality information
   ClassDef(AliAODHeader, 14);
 };
-
+inline
+void AliAODHeader::SetCentrality(AliCentrality* cent)      { 
+    if(cent){
+	if(fCentralityP)*fCentralityP = *cent;
+	else fCentralityP = new AliCentrality(*cent);
+	fCentrality = cent->GetCentralityPercentile("V0M");
+    }
+    else{
+	fCentrality = -999;
+    }
+}
 #endif

@@ -484,7 +484,7 @@ Double_t AliAODVertex::RotatedCovMatrixZZ(Double_t phi, Double_t theta) const
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::Distance2ToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::Distance2ToVertex(const AliAODVertex *vtx) const
 {
   // distance in 3D to another AliAODVertex
 
@@ -496,7 +496,7 @@ Double_t AliAODVertex::Distance2ToVertex(AliAODVertex *vtx) const
 }
 
 //______________________________________________________________________________
-Double_t AliAODVertex::DistanceXY2ToVertex(AliAODVertex *vtx) const
+Double_t AliAODVertex::DistanceXY2ToVertex(const AliAODVertex *vtx) const
 {
   // distance in XY to another AliAODVertex
 

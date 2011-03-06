@@ -531,8 +531,8 @@ Double_t AliAODRecoDecay::InvMass2Prongs(Int_t ip1,Int_t ip2,
   return mass;
 }
 //----------------------------------------------------------------------------
-Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
-				 Int_t ndgCk,Int_t *pdgDg) const
+Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs, TClonesArray *mcArray,
+				 Int_t ndgCk, const Int_t *pdgDg) const
 {
   //
   // Check if this candidate is matched to a MC signal
@@ -568,7 +568,7 @@ Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
 //----------------------------------------------------------------------------
 Int_t AliAODRecoDecay::MatchToMC(Int_t pdgabs,TClonesArray *mcArray,
 				 Int_t dgLabels[10],Int_t ndg,
-				 Int_t ndgCk,Int_t *pdgDg) const
+				 Int_t ndgCk, const Int_t *pdgDg) const
 {
   //
   // Check if this candidate is matched to a MC signal

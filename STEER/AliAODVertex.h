@@ -119,10 +119,10 @@ class AliAODVertex : public AliVVertex {
   Double_t  RotatedCovMatrixZZ(Double_t phi = 0., Double_t theta = 0.) const;
 
   template <class T, class P> void     PhiAndThetaToVertex(AliAODVertex *vtx, P &phi, T &theta) const;
-  Double_t  Distance2ToVertex(AliAODVertex *vtx) const;
+  Double_t  Distance2ToVertex(const AliAODVertex *vtx) const;
   Double_t  DistanceToVertex(AliAODVertex *vtx) const 
      {return TMath::Sqrt(Distance2ToVertex(vtx));}
-  Double_t  DistanceXY2ToVertex(AliAODVertex *vtx) const;
+  Double_t  DistanceXY2ToVertex(const AliAODVertex *vtx) const;
   Double_t  DistanceXYToVertex(AliAODVertex *vtx) const 
      {return TMath::Sqrt(DistanceXY2ToVertex(vtx));}
   Double_t  Error2DistanceToVertex(AliAODVertex *vtx) const;

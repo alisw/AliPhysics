@@ -42,6 +42,7 @@ public:
     virtual Double_t Yv()        const;
     virtual Double_t Zv()        const;
     virtual Bool_t   XvYvZv(Double_t x[3]) const;  
+    virtual Double_t T()         const;
 
     virtual Double_t E()          const;
     virtual Double_t M()          const;
@@ -60,7 +61,7 @@ public:
     virtual const Double_t *PID() const {return 0;} // return PID object (to be defined, still)
 
     // Track References
-    Int_t              GetNumberOfTrackReferences() {return fNTrackRef;}
+    Int_t              GetNumberOfTrackReferences() const {return fNTrackRef;}
     AliTrackReference* GetTrackReference(Int_t i)
       {return dynamic_cast<AliTrackReference*>((*fTrackReferences)[i]);}
 
@@ -100,6 +101,7 @@ inline Double_t AliMCParticle::Xv()        const {return fParticle->Vx();}
 inline Double_t AliMCParticle::Yv()        const {return fParticle->Vy();}
 inline Double_t AliMCParticle::Zv()        const {return fParticle->Vz();}
 inline Bool_t   AliMCParticle::XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
+inline Double_t AliMCParticle::T()        const {return fParticle->T();}
 inline Double_t AliMCParticle::E()         const {return fParticle->Energy();}
 inline Double_t AliMCParticle::Eta()       const {return fParticle->Eta();}
 

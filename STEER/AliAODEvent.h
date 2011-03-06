@@ -228,7 +228,7 @@ class AliAODEvent : public AliVEvent {
 
   void  Print(Option_t *option="") const;
   void  MakeEntriesReferencable();
-  static void AssignIDtoCollection(TCollection* col);
+  static void AssignIDtoCollection(const TCollection* col);
   
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}

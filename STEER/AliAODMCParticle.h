@@ -27,7 +27,7 @@ class TClonesArray;
 class AliAODMCParticle: public AliVParticle {
  public:
   AliAODMCParticle();
-  AliAODMCParticle(AliMCParticle* part, Int_t label=0,Int_t flag = 0);
+  AliAODMCParticle(const AliMCParticle* part, Int_t label=0,Int_t flag = 0);
   virtual ~AliAODMCParticle(){};
   AliAODMCParticle(const AliAODMCParticle& mcPart); 
   AliAODMCParticle& operator=(const AliAODMCParticle& mcPart);

@@ -12,7 +12,6 @@
 //-------------------------------------------------------------------------
 
 #include "AliESDInputHandler.h"
-#include "AliESDEvent.h"
 class TList;
 class TTree;
 class TDirectoryFile;

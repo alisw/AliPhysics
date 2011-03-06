@@ -30,11 +30,11 @@ public:
 
 
   Int_t MakePID(AliAODTrack *track,Double_t *p) const;
-  void MakeTPCPID(AliAODTrack *track,Double_t *p) const;
-  void MakeITSPID(AliAODTrack *track,Double_t *p) const;
-  void MakeTOFPID(AliAODTrack *track,Double_t *p) const;
+  void MakeTPCPID(const AliAODTrack *track,Double_t *p) const;
+  void MakeITSPID(const AliAODTrack *track,Double_t *p) const;
+  void MakeTOFPID(const AliAODTrack *track,Double_t *p) const;
   //  void MakeHMPIDPID(AliESDtrack *track);
-  void MakeTRDPID(AliAODTrack *track,Double_t *p) const;
+  void MakeTRDPID(const AliAODTrack *track,Double_t *p) const;
 
   Float_t NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const;
   Float_t NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const;
@@ -46,10 +46,10 @@ public:
 
 private:
   Float_t           fRange;          // nSigma max in likelihood
-  AliTPCPIDResponse fTPCResponse;
-  AliITSPIDResponse fITSResponse;
-  AliTOFPIDResponse fTOFResponse;
-  AliTRDPIDResponse fTRDResponse;
+  AliTPCPIDResponse fTPCResponse;    // TPC Response
+  AliITSPIDResponse fITSResponse;    // ITS Response
+  AliTOFPIDResponse fTOFResponse;    // TOF Response
+  AliTRDPIDResponse fTRDResponse;    // TRD Response
   
   ClassDef(AliAODpidUtil,1)  // PID calculation class
 };

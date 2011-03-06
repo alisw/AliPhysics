@@ -16,28 +16,28 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     AliGenPythiaEventHeader(const char* name);
     virtual ~AliGenPythiaEventHeader() {}
     // Getters
-    Int_t    ProcessType()  {return fProcessType;}
+    Int_t    ProcessType() const {return fProcessType;}
     // Setters
     void     SetProcessType(Int_t type)  {fProcessType = type;}
-    Int_t    Trials() {return fTrials;}
+    Int_t    Trials() const {return fTrials;}
     void     SetTrials(Int_t trials) {fTrials = trials;}
     void     AddJet(Float_t px, Float_t py, Float_t pz, Float_t e);
     void     AddUQJet(Float_t px, Float_t py, Float_t pz, Float_t e);
-    Int_t    NTriggerJets() {return fNJets;}
-    Int_t    NUQTriggerJets() {return fNUQJets;}
+    Int_t    NTriggerJets() const {return fNJets;}
+    Int_t    NUQTriggerJets() const {return fNUQJets;}
     void     TriggerJet(Int_t i, Float_t p[4]);
     void     UQJet(Int_t i, Float_t p[4]);
-    Double_t GetXJet() {return fXJet;}
-    Double_t GetYJet() {return fYJet;}
-    Double_t GetInMediumLength()  {return fInMediumLength;}
-    Double_t GetImpactParameter() {return fImpactParameter;}
+    Double_t GetXJet() const {return fXJet;}
+    Double_t GetYJet() const {return fYJet;}
+    Double_t GetInMediumLength() const  {return fInMediumLength;}
+    Double_t GetImpactParameter() const {return fImpactParameter;}
     void     SetXYJet(Double_t x, Double_t y);
     void     SetImpactParameter(Double_t b) {fImpactParameter = b;}
     void     SetInMe(Double_t l) {fInMediumLength = l;}
     void     SetZQuench(Double_t z[4]);
-    void     GetZQuench(Double_t z[4]);
+    void     GetZQuench(Double_t z[4]) const;
     void     SetPtHard(Float_t pthard) {fPtHard = pthard;}
-    Float_t  GetPtHard() {return fPtHard;}    
+    Float_t  GetPtHard() const {return fPtHard;}    
 	
 	    
 protected:

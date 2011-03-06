@@ -17,9 +17,9 @@ class AliGenDPMjetEventHeader : public AliGenEventHeader, public AliCollisionGeo
     virtual ~AliGenDPMjetEventHeader() {}
 
   // Getters
-  Float_t TotalEnergy()  {return fTotalEnergy;} 
-  Int_t   Trials()       {return fTrials;}
-  Int_t   ProcessType()  {return fProcessType;}
+  Float_t TotalEnergy()  const {return fTotalEnergy;} 
+  Int_t   Trials()       const {return fTrials;}
+  Int_t   ProcessType()  const {return fProcessType;}
   
 	  
   // Setters

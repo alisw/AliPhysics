@@ -51,7 +51,7 @@ AliGenCocktailEventHeader::~AliGenCocktailEventHeader()
     }
 }
 
-void AliGenCocktailEventHeader::AddHeader(AliGenEventHeader* header)
+void AliGenCocktailEventHeader::AddHeader(const AliGenEventHeader* header)
 {
 // Add a header to the list
     if (!fHeaders) fHeaders = new TList();

@@ -24,7 +24,7 @@ class AliESDACORDE : public TObject
   
   
  // Getters  	
-  Bool_t GetHitChannel(Int_t i);
+  Bool_t GetHitChannel(Int_t i) const;
   AliESDACORDE &operator=(const AliESDACORDE& source);
   
  protected:

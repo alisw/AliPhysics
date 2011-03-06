@@ -379,7 +379,7 @@ Int_t AliESDInputHandler::GetNEventRejectedInFile()
 }
 
 //______________________________________________________________________________
-Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected)
+Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal,  Int_t *aAccepted,  Int_t *aRejected)
 {
   // Get number of events in the full chain
   // Count accepted and rejected events

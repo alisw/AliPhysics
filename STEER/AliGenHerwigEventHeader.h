@@ -15,11 +15,11 @@ class AliGenHerwigEventHeader : public AliGenEventHeader
     AliGenHerwigEventHeader();
     AliGenHerwigEventHeader(const char* name);
     virtual ~AliGenHerwigEventHeader() {}
-    Int_t    ProcessType()  {return fProcessType;}
+    Int_t    ProcessType() const  {return fProcessType;}
     void     SetProcessType(Int_t type)  {fProcessType = type;}
-    Int_t    Trials() {return fTrials;}
+    Int_t    Trials() const {return fTrials;}
     void     SetTrials(Int_t trials) {fTrials = trials;}
-    Float_t  Weight() {return fWeight;}
+    Float_t  Weight() const {return fWeight;}
     void     SetWeight(Float_t weight) {fWeight = weight;}
 protected:
     Int_t    fProcessType;               // HERWIG process id for this event 

@@ -100,7 +100,7 @@ void AliGenPythiaEventHeader::SetZQuench(Double_t z[4])
     for (Int_t i = 0; i < 4; i++) fZquench[i] = z[i];
 }
 
-void AliGenPythiaEventHeader::GetZQuench(Double_t z[4])
+void AliGenPythiaEventHeader::GetZQuench(Double_t z[4]) const
 {
     //
     // Get quenching fraction

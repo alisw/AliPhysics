@@ -12,11 +12,11 @@
 
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
-#include "AliMCEvent.h"
-
 class TList;
 class AliMCEvent;
 class TH2F;
+class AliMCEvent;
+
 
 class AliAODInputHandler : public AliInputEventHandler {
 

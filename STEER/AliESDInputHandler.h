@@ -19,6 +19,7 @@ class AliEventTag;
 class TMap;
 class AliESDfriend;
 class AliESDpid;
+class AliESDEvent;
 
 
 class AliESDInputHandler : public AliInputEventHandler {
