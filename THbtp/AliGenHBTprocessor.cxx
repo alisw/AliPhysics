@@ -77,6 +77,7 @@
 
 #include "AliStack.h"
 #include "AliMC.h"
+#include "AliRun.h"
 #include "AliGenCocktailAfterBurner.h"
 #include "AliLog.h"
 
