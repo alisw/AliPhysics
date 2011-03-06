@@ -157,6 +157,7 @@ fhphiClustersLay1(0),
   fRecoDone(0),
   fSPDSeg()
 {
+  // default c-tor
   for (int i=0;i<2;i++) {
     fNFiredChips[i] = 0;
     fClArr[i] = 0;
@@ -442,7 +443,7 @@ void AliITSMultReconstructor::Reconstruct(TTree* clusterTree, Float_t* vtx, Floa
 
 
 //____________________________________________________________________
-void AliITSMultReconstructor::ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, Float_t* vtx, Float_t*) 
+void AliITSMultReconstructor::ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, const Float_t* vtx, Float_t*) 
 {
   //
   // RS NOTE - this is old reconstructor invocation, to be used from VertexFinder and in analysis mode
@@ -777,8 +778,9 @@ AliITSMultReconstructor::SaveHists() {
 }
 
 //____________________________________________________________________
-void AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithBestDist) {
-
+void AliITSMultReconstructor::FlagClustersInOverlapRegions (Int_t iC1, Int_t iC2WithBestDist) 
+{
+  // Flags clusters in the overlapping regions
   Float_t distClSameMod=0.;
   Float_t distClSameModMin=0.;
   Int_t   iClOverlap =0;

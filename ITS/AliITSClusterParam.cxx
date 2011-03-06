@@ -120,6 +120,7 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
   //
   // Calculate cluster position error
   //
+  static Double_t bz = (Double_t)AliTracker::GetBz();
   Int_t retval=0;
   covyz=0.;
   switch(AliITSReconstructor::GetRecoParam()->GetClusterErrorsParam()) {
@@ -149,7 +150,6 @@ Int_t AliITSClusterParam::GetError(Int_t layer,
   }
   
   if(addMisalErr) {
-    Double_t bz = (Double_t)AliTracker::GetBz();
     // add error due to misalignment (to be improved)
     Float_t errmisalY2 = AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer,bz)
       *AliITSReconstructor::GetRecoParam()->GetClusterMisalErrorY(layer,bz);
@@ -345,31 +345,31 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
   // residuals, as a function of angle between track and det module plane.
   // Origin: M.Lunardon, S.Moretto)
   //
-  const int kNcfSPDResX = 21;
-  float kCfSPDResX[kNcfSPDResX] = {+1.1201e+01,+2.0903e+00,-2.2909e-01,-2.6413e-01,+4.2135e-01,-3.7190e-01,
-			    +4.2339e-01,+1.8679e-01,-5.1249e-01,+1.8421e-01,+4.8849e-02,-4.3127e-01,
-			    -1.1148e-01,+3.1984e-03,-2.5743e-01,-6.6408e-02,+3.0756e-01,+2.6809e-01,
-			    -5.0339e-03,-1.4964e-01,-1.1001e-01};
+  const int   kNcfSPDResX = 21;
+  const float kCfSPDResX[kNcfSPDResX] = {+1.1201e+01,+2.0903e+00,-2.2909e-01,-2.6413e-01,+4.2135e-01,-3.7190e-01,
+					 +4.2339e-01,+1.8679e-01,-5.1249e-01,+1.8421e-01,+4.8849e-02,-4.3127e-01,
+					 -1.1148e-01,+3.1984e-03,-2.5743e-01,-6.6408e-02,+3.0756e-01,+2.6809e-01,
+					 -5.0339e-03,-1.4964e-01,-1.1001e-01};
   const float kSPDazMax=56.000000;
   //
-  const int kNcfSPDMeanX = 16;
-  float kCfSPDMeanX[kNcfSPDMeanX] = {-1.2532e+00,-3.8185e-01,-8.9039e-01,+2.6648e+00,+7.0361e-01,+1.2298e+00,
-				     +3.2871e-01,+7.8487e-02,-1.6792e-01,-1.3966e-01,-3.1670e-01,-2.1795e-01,
-				     -1.9451e-01,-4.9347e-02,-1.9186e-01,-1.9195e-01};
+  const int   kNcfSPDMeanX = 16;
+  const float kCfSPDMeanX[kNcfSPDMeanX] = {-1.2532e+00,-3.8185e-01,-8.9039e-01,+2.6648e+00,+7.0361e-01,+1.2298e+00,
+					   +3.2871e-01,+7.8487e-02,-1.6792e-01,-1.3966e-01,-3.1670e-01,-2.1795e-01,
+					   -1.9451e-01,-4.9347e-02,-1.9186e-01,-1.9195e-01};
   //
-  const int kNcfSPDResZ = 5;
-  float kCfSPDResZ[kNcfSPDResZ] = {+9.2384e+01,+3.4352e-01,-2.7317e+01,-1.4642e-01,+2.0868e+00};
+  const int   kNcfSPDResZ = 5;
+  const float kCfSPDResZ[kNcfSPDResZ] = {+9.2384e+01,+3.4352e-01,-2.7317e+01,-1.4642e-01,+2.0868e+00};
   const float kSPDpolMin=34.358002, kSPDpolMax=145.000000;
   //
-  Double_t maxSigmaSDDx=100.;
-  Double_t maxSigmaSDDz=400.;
-  Double_t maxSigmaSSDx=100.;
-  Double_t maxSigmaSSDz=1000.;
+  const Double_t kMaxSigmaSDDx=100.;
+  const Double_t kMaxSigmaSDDz=400.;
+  const Double_t kMaxSigmaSSDx=100.;
+  const Double_t kMaxSigmaSSDz=1000.;
   //  
-  Double_t paramSDDx[2]={30.93,0.059};
-  Double_t paramSDDz[2]={33.09,0.011};
-  Double_t paramSSDx[2]={18.64,-0.0046};
-  Double_t paramSSDz[2]={784.4,-0.828};
+  const Double_t kParamSDDx[2]={30.93,0.059};
+  const Double_t kParamSDDz[2]={33.09,0.011};
+  const Double_t kParamSSDx[2]={18.64,-0.0046};
+  const Double_t kParamSSDz[2]={784.4,-0.828};
   Double_t sigmax=1000.0,sigmaz=1000.0;
   Double_t biasx = 0.0;
 
@@ -406,17 +406,17 @@ Int_t AliITSClusterParam::GetErrorParamAngle(Int_t layer,
     
   } else if(layer==2 || layer==3) { // SDD
 
-    sigmax = angleAziDeg*paramSDDx[1]+paramSDDx[0];
-    sigmaz = paramSDDz[0]+paramSDDz[1]*anglePolDeg;
-    if(sigmax > maxSigmaSDDx) sigmax = maxSigmaSDDx;
-    if(sigmaz > maxSigmaSDDz) sigmax = maxSigmaSDDz;
+    sigmax = angleAziDeg*kParamSDDx[1]+kParamSDDx[0];
+    sigmaz = kParamSDDz[0]+kParamSDDz[1]*anglePolDeg;
+    if(sigmax > kMaxSigmaSDDx) sigmax = kMaxSigmaSDDx;
+    if(sigmaz > kMaxSigmaSDDz) sigmax = kMaxSigmaSDDz;
     
   } else if(layer==4 || layer==5) { // SSD
 
-    sigmax = angleAziDeg*paramSSDx[1]+paramSSDx[0];
-    sigmaz = paramSSDz[0]+paramSSDz[1]*anglePolDeg;
-    if(sigmax > maxSigmaSSDx) sigmax = maxSigmaSSDx;
-    if(sigmaz > maxSigmaSSDz) sigmax = maxSigmaSSDz;
+    sigmax = angleAziDeg*kParamSSDx[1]+kParamSSDx[0];
+    sigmaz = kParamSSDz[0]+kParamSSDz[1]*anglePolDeg;
+    if(sigmax > kMaxSigmaSSDx) sigmax = kMaxSigmaSSDx;
+    if(sigmaz > kMaxSigmaSSDz) sigmax = kMaxSigmaSSDz;
     
   }
 

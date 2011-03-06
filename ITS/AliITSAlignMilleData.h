@@ -31,15 +31,15 @@ class AliITSAlignMilleData : public TObject
   void      SetMeasZ(Double_t meas) {fMeasZ=meas;}
   void      SetSigmaZ(Double_t meas) {fSigmaZ=meas;}
 
-  Int_t    *GetIdxlocX()  {return fIdxlocX;}
-  Int_t    *GetIdxgloX()  {return fIdxgloX;}
-  Double_t *GetDerlocX()  {return fDerlocX;}
-  Double_t *GetDergloX()  {return fDergloX;}    
+  Int_t    *GetIdxlocX() const {return (Int_t*)fIdxlocX;}
+  Int_t    *GetIdxgloX() const {return (Int_t*)fIdxgloX;}
+  Double_t *GetDerlocX() const {return (Double_t*)fDerlocX;}
+  Double_t *GetDergloX() const {return (Double_t*)fDergloX;}    
 
-  Int_t    *GetIdxlocZ()  {return fIdxlocZ;}
-  Int_t    *GetIdxgloZ()  {return fIdxgloZ;}
-  Double_t *GetDerlocZ()  {return fDerlocZ;}
-  Double_t *GetDergloZ()  {return fDergloZ;}    
+  Int_t    *GetIdxlocZ() const {return (Int_t*)fIdxlocZ;}
+  Int_t    *GetIdxgloZ() const {return (Int_t*)fIdxgloZ;}
+  Double_t *GetDerlocZ() const {return (Double_t*)fDerlocZ;}
+  Double_t *GetDergloZ() const {return (Double_t*)fDergloZ;}    
 
  private:  
   /// structure to store data for 2 LocalEquations (X and Z)

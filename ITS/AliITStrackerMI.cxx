@@ -5228,7 +5228,8 @@ Int_t AliITStrackerMI::GetPattern(const AliITStrackMI* track, char* patt)
 }
 */
 //------------------------------------------------------------------------
-Int_t AliITStrackerMI::AliITSlayer::FindClusterForLabel(Int_t label, Int_t *store) { //RS
+Int_t AliITStrackerMI::AliITSlayer::FindClusterForLabel(Int_t label, Int_t *store) const
+{ //RS
   //--------------------------------------------------------------------
 
   int nfound = 0;

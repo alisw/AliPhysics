@@ -32,7 +32,7 @@
 
 #include <TObject.h>
 #include <TMath.h>
-#include "AliTrackPointArray.h"
+#include <AliTrackPointArray.h>
 class AliSymMatrix;
 class AliLog;
 class AliParamSolver;
@@ -94,7 +94,7 @@ class AliITSTPArrayFit : public TObject
   //
   void          GetDResDPosLine (Double_t *dXYZdP,/*const Double_t *xyz,*/ const Double_t *covI=0/*,Double_t sclCovI=-1*/) const;
   void          GetDResDPosLine (Double_t *dXYZdP, Int_t ipnt) const;
-  void          GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0, Double_t sclCovI=-1);
+  void          GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI=0, Double_t sclCovI=-1) const;
   void          GetDResDPos(Double_t *dXYZdP, Int_t ipnt);
   //
   Double_t*     GetPoint(int ip)                            const;

@@ -707,7 +707,7 @@ void AliITSTPArrayFit::GetDResDParams(Double_t *dXYZdP, const Double_t *xyz, con
 
 
 //____________________________________________________
-void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI,Double_t sclCovI) 
+void AliITSTPArrayFit::GetDResDPos(Double_t *dXYZdP, const Double_t *xyz, const Double_t *covI,Double_t sclCovI) const
 {
   // get residuals detivative over the point position for the point with least weighted distance to the point
   //

@@ -21,6 +21,7 @@ AliITSAlignMille2ConstrArray::AliITSAlignMille2ConstrArray(const Char_t* name,Do
   fCoeffs(npar),
   fError(err)
 {
+  // create module
   for (int i=0;i<npar;i++) {fCoeffs[i] = parcf[i]; if (parcf[i]!=0) SetBit(0x1<<i);}
 }
 
@@ -36,6 +37,7 @@ AliITSAlignMille2ConstrArray::AliITSAlignMille2ConstrArray(const AliITSAlignMill
 //________________________________________________________________________________________________________
 void AliITSAlignMille2ConstrArray::AddModule(AliITSAlignMille2Module* mod, Bool_t needGeom)
 {
+  // add module to constraint
   int nmd = GetNModules();
   // check if its already not there
   for (int im=nmd;im--;) {if (mod->GetUniqueID() == (UInt_t)fModuleIDs[im]) return; }
@@ -92,6 +94,7 @@ Bool_t AliITSAlignMille2ConstrArray::IncludesModPar(const AliITSAlignMille2Modul
 //________________________________________________________________________________________________________
 void AliITSAlignMille2ConstrArray::Print(Option_t* ) const
 {
+  // print data
   printf("#%3d Constraint %s of type %d | Value=%+e Error=%+e\n",GetConstraintID(),GetName(),GetType(),GetValue(),GetError());
   printf("Weights on params: "); for (int i=0;i<GetNCoeffs();i++) printf("%+.3e ",GetCoeff(i)); 
   printf("\nModules involved: \n");

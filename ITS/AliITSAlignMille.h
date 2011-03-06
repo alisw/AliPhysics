@@ -57,7 +57,7 @@ public:
   // fitting methods
   void      SetMinNPtsPerTrack(Int_t pts=3) {fMinNPtsPerTrack=pts;}
   Int_t     ProcessTrack(AliTrackPointArray *track);
-  AliTrackPointArray *PrepareTrack(AliTrackPointArray *track); // build a new AliTrackPointArray with selected conditions
+  AliTrackPointArray *PrepareTrack(const AliTrackPointArray *track); // build a new AliTrackPointArray with selected conditions
   void      InitTrackParams(int meth=1);
   Bool_t    InitRiemanFit();
   AliTrackFitterRieman  *GetRiemanFitter() const {return fRieman;}
@@ -66,12 +66,12 @@ public:
   Bool_t    CheckVolumeID(UShort_t voluid) const; // checks voluid for sensitive volumes
   Int_t     IsDefined(UShort_t voluid) const;
   Int_t     IsContained(UShort_t voluid) const;
-  Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
+  Int_t     CalcIntersectionPoint(const Double_t *lpar, const Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
   const Double_t* GetLocalIntersectionPoint() const {return fPintLoc;}
   const Double_t* GetGlobalIntersectionPoint() const {return fPintGlo;}
   void      SetInitTrackParamsMeth(Int_t meth=1) {fInitTrackParamsMeth=meth;}
-  AliTrackPointArray *SortTrack(AliTrackPointArray *atp);
+  AliTrackPointArray *SortTrack(const AliTrackPointArray *atp);
   void      SetTemporaryExcludedModule(Int_t index) {fTempExcludedModule=index;}
 
   // millepede methods
@@ -87,7 +87,7 @@ public:
   void      PrintGlobalParameters();
   Double_t  GetParError(Int_t iPar);
   Int_t     AddLocalEquation(AliITSAlignMilleData &m);
-  void      SetLocalEquations(AliITSAlignMilleData *m, Int_t neq);
+  void      SetLocalEquations(const AliITSAlignMilleData *m, Int_t neq);
   
   // fitting stuffs
   AliTrackPointArray *GetCurrentTrack() const {return fTrack;}
@@ -104,7 +104,7 @@ public:
   const Int_t    *GetModuleIndexArray() const {return fModuleIndex;}
   const Int_t    *GetProcessedPoints() const {return fProcessedPoints;}
   Int_t     GetTotBadLocEqPoints() const {return fTotBadLocEqPoints;}
-  AliITSAlignMilleModule  *GetMilleModule(UShort_t voluid); // get pointer to the defined supermodule
+  AliITSAlignMilleModule  *GetMilleModule(UShort_t voluid) const; // get pointer to the defined supermodule
   AliITSAlignMilleModule  *GetCurrentModule() const;
   const UShort_t *GetModuleVolumeIDArray() const {return fModuleVolumeID;}
 

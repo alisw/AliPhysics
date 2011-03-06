@@ -60,7 +60,7 @@ AliITSAlignMilleModule::AliITSAlignMilleModule() : TNamed(),
   }
 } 
 //-------------------------------------------------------------
-AliITSAlignMilleModule::AliITSAlignMilleModule(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv, UShort_t *volidsv) : TNamed(), 
+AliITSAlignMilleModule::AliITSAlignMilleModule(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix *m, Int_t nsv, const UShort_t *volidsv) : TNamed(), 
   fNSensVol(0), 
   fIndex(-1),  
   fVolumeID(0),  
@@ -125,7 +125,7 @@ AliITSAlignMilleModule::~AliITSAlignMilleModule() {
   delete fTempAlignObj;
 } 
 //-------------------------------------------------------------
-Int_t AliITSAlignMilleModule::Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv, UShort_t *volidsv) 
+Int_t AliITSAlignMilleModule::Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv, const UShort_t *volidsv) 
 {
   // initialize a custom supermodule
   // index, volid, symname and matrix must be given
@@ -267,7 +267,7 @@ AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort
   return GetSensitiveVolumeMisalignment(voluid,fTempAlignObj);
 }
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a)
+AliAlignObjParams *AliITSAlignMilleModule::GetSensitiveVolumeMisalignment(UShort_t voluid, const AliAlignObjParams *a)
 {
   // return the misalignment of the sens. vol. 'voluid' corresponding with 
   // a misalignment 'a' in the mother volume

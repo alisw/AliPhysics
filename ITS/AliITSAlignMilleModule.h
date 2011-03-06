@@ -23,7 +23,7 @@ class AliITSAlignMilleModule : public TNamed
 public: 
   AliITSAlignMilleModule(); 
   AliITSAlignMilleModule(UShort_t volid); // basic single volume constructor
-  AliITSAlignMilleModule(Int_t index, UShort_t volid, char* symname, TGeoHMatrix *m, Int_t nsv=0, UShort_t *volidsv=NULL); // general constructor
+  AliITSAlignMilleModule(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix *m, Int_t nsv=0, const UShort_t *volidsv=NULL); // general constructor
 
   AliITSAlignMilleModule(const AliITSAlignMilleModule& rhs); // copy constructor
   AliITSAlignMilleModule& operator=(const AliITSAlignMilleModule& rhs);  
@@ -37,7 +37,7 @@ public:
   TGeoHMatrix *GetMatrix() const {return fMatrix;} 
   const UShort_t *GetSensitiveVolumeVolumeID() const {return fSensVolVolumeID;}
 
-  Int_t     Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv=0, UShort_t *volidsv=NULL); // initialize a super module
+  Int_t     Set(Int_t index, UShort_t volid, char* symname, const TGeoHMatrix * const m, Int_t nsv=0, const UShort_t *volidsv=NULL); // initialize a super module
   
   // util
   static Int_t GetIndexFromVolumeID(UShort_t volid);
@@ -49,7 +49,7 @@ public:
   TGeoHMatrix *GetSensitiveVolumeMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeOrigGlobalMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, const Double_t * const deltalocal); 
-  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a); 
+  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const AliAlignObjParams *a); 
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t * const deltalocal); 
   // forse non serve...
   AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, const Double_t * const deltalocal); 
@@ -63,7 +63,7 @@ protected:
   void      AddSensitiveVolume(UShort_t volid);
 
 private:
-  static const Int_t fgkSensModules = 2198;
+  static const Int_t fgkSensModules = 2198; // number of sensors
   Int_t          fNSensVol; ///
   Int_t          fIndex; ///
   UShort_t       fVolumeID; ///

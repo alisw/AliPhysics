@@ -46,7 +46,7 @@ public:
 
   void Reconstruct(AliESDEvent* esd, TTree* treeRP);
   void Reconstruct(TTree* tree, Float_t* vtx, Float_t* vtxRes=0);   // old reconstructor invocation
-  void ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, Float_t* vtx, Float_t* vtrRes=0);
+  void ReconstructMix(TTree* clusterTree, TTree* clusterTreeMix, const Float_t* vtx, Float_t* vtrRes=0);
   void FindTracklets(const Float_t* vtx); 
   void LoadClusterFiredChips(TTree* tree);
   void FlagClustersInOverlapRegions(Int_t ic1,Int_t ic2);
@@ -137,7 +137,7 @@ public:
   //
   void  InitAux();
   void  ClusterPos2Angles(const Float_t *vtx);
-  void  ClusterPos2Angles(Float_t *clPar, const Float_t *vtx);
+  void  ClusterPos2Angles(Float_t *clPar, const Float_t *vtx) const;
   Int_t AssociateClusterOfL1(Int_t iC1);
   Int_t StoreTrackletForL2Cluster(Int_t iC2);
   void  StoreL1Singles();
@@ -262,7 +262,7 @@ public:
 };
 
 //____________________________________________________________________
-inline void AliITSMultReconstructor::ClusterPos2Angles(Float_t *clPar, const Float_t *vtx)
+inline void AliITSMultReconstructor::ClusterPos2Angles(Float_t *clPar, const Float_t *vtx) const
 {
   // convert cluster coordinates to angles wrt vertex
   Float_t x = clPar[kClTh] - vtx[0];

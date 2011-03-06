@@ -150,7 +150,7 @@ public:
     Int_t GetAccepted() const {return fAccepted;}    
     Int_t GetClusterTracks(Int_t i, Int_t j) const {return fClusterTracks[i][j];}
     void SetClusterTracks(Int_t i, Int_t j, Int_t c) {fClusterTracks[i][j]=c;}
-    Int_t FindClusterForLabel(Int_t label, Int_t *store); //RS
+    Int_t FindClusterForLabel(Int_t label, Int_t *store) const; //RS
   protected:
     AliITSlayer(const AliITSlayer& layer);
     AliITSlayer & operator=(const AliITSlayer& layer){

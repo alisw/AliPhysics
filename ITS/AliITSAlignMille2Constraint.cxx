@@ -59,6 +59,7 @@ Bool_t AliITSAlignMille2Constraint::IncludesModPar(const AliITSAlignMille2Module
 //________________________________________________________________________________________________________
 void AliITSAlignMille2Constraint::Print(Option_t* ) const
 {
+  // print data
   printf("#%3d Constraint %s of type %d on module %d to value %+e\n",GetConstraintID(),GetName(),GetType(),GetModuleID(),GetValue());
   printf("Paremeters: ");
   for (int i=0;i<=8;i++) if (TestBit(0x1<<i)) printf("%d ",i); printf("\n");

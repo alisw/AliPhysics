@@ -144,7 +144,7 @@ class AliITSAlignMille2: public TObject
   void      SetCovIScale(Float_t *v, Int_t np)             {for (int i=TMath::Min(np,kMaxPoints);i--;) fCovIScale[i]=v[i]; TouchCovIScale();}
   void      ResetCovIScale()                               {for (int i=kMaxPoints;i--;) fCovIScale[i]=-1; TouchCovIScale(kFALSE);}
   //
-  Int_t     CalcIntersectionPoint(Double_t *lpar, Double_t *gpar);
+  Int_t     CalcIntersectionPoint(const Double_t *lpar, const Double_t *gpar);
   Int_t     CalcDerivatives(Int_t paridx, Bool_t islpar);
   void      JacobianPosGloLoc(int locid,double* jacobian);
   Double_t* GetLocalIntersectionPoint()                           const {return (Double_t*)fPintLoc;}
@@ -288,7 +288,7 @@ class AliITSAlignMille2: public TObject
   Int_t     CacheMatricesOrig();
   Int_t     CacheMatricesCurr();
   Int_t     ProcessUserInfo(TList *userInfo=0);
-  Int_t     GetPathFromUserInfo(TList* cdbList,const char* calib,TString& path, Int_t useBit);
+  Int_t     GetPathFromUserInfo(const TList* cdbList,const char* calib,TString& path, Int_t useBit);
   Int_t     LoadConfig(const Char_t *cfile="AliITSAlignMille.conf");
   TObjArray* GetConfigRecord(FILE* stream, TString& recTitle, TString& recOpt, Bool_t rew);
   Int_t     CheckConfigRecords(FILE* stream);

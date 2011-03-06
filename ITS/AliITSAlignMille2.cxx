@@ -323,6 +323,7 @@ TObjArray* AliITSAlignMille2::GetConfigRecord(FILE* stream, TString& recTitle, T
 //________________________________________________________________________________________________________
 Int_t AliITSAlignMille2::CheckConfigRecords(FILE* stream)
 {  
+  // check the correctness of the record
   TString record,recTitle;
   int lineCnt = 0;
   rewind(stream);
@@ -2560,7 +2561,7 @@ Int_t AliITSAlignMille2::FitTrack()
 }
 
 //________________________________________________________________________________________________________
-Int_t AliITSAlignMille2::CalcIntersectionPoint(Double_t *lpar, Double_t *gpar) 
+Int_t AliITSAlignMille2::CalcIntersectionPoint(const Double_t *lpar, const Double_t *gpar) 
 {
   /// calculate track intersection point in local coordinates
   /// according with a given set of parameters (local(4) and global(6))
@@ -3234,7 +3235,7 @@ Int_t AliITSAlignMille2::LoadSuperModuleFile(const Char_t *sfile)
     strncpy(st,a->GetSymName(),TMath::Min(sizeof(st),strlen(a->GetSymName())+1));
     a->GetMatrix(m);
     //
-    symname[0] = '\0';
+    memset(symname,0,250*sizeof(char));
     sscanf(st,"%249s",symname);
     //
     // decode module list
@@ -3980,7 +3981,7 @@ Int_t AliITSAlignMille2::ProcessUserInfo(TList* userInfo)
 }
 
 //________________________________________________________________________________________________________
-Int_t AliITSAlignMille2::GetPathFromUserInfo(TList* cdbList,const char* calib,TString& path, Int_t useBit)
+Int_t AliITSAlignMille2::GetPathFromUserInfo(const TList* cdbList,const char* calib,TString& path, Int_t useBit)
 {
   // extract the path for specific CDB path from user info. If it is the same as already loaded, set corresponing bit
   TIter itList(cdbList);

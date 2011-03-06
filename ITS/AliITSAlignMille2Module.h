@@ -113,9 +113,9 @@ public:
   //
   TGeoHMatrix *GetSensitiveVolumeMatrix(UShort_t voluid);
   TGeoHMatrix *GetSensitiveVolumeOrigGlobalMatrix(UShort_t voluid);
-  TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, Double_t *delta,Bool_t local=kTRUE); 
-  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a); 
-  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, Double_t *deltalocal); 
+  TGeoHMatrix *GetSensitiveVolumeModifiedMatrix(UShort_t voluid, const Double_t *delta,Bool_t local=kTRUE); 
+  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const AliAlignObjParams *a); 
+  AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t *deltalocal); 
   //
   void         GetGlobalParams(Double_t *t, Double_t *r);
   void         GetGlobalParams(const Double_t *loct, const Double_t *locr,Double_t *t, Double_t *r);
@@ -123,8 +123,8 @@ public:
   //
   void         GetSensVolGlobalParams(UShort_t volid,Double_t *t, Double_t *r);
   void         GetSensVolLocalParams(UShort_t volid,Double_t *t, Double_t *r);
-  void         GetSensVolGlobalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r);
-  void         GetSensVolLocalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r);
+  void         GetSensVolGlobalParams(UShort_t volid,const Double_t* loct,const Double_t* locr,Double_t *t, Double_t *r);
+  void         GetSensVolLocalParams(UShort_t volid,const Double_t* loct,const Double_t* locr,Double_t *t, Double_t *r);
   //
   void         CalcDerivLocGlo(Double_t *deriv);
   void         CalcDerivGloLoc(Int_t idx,Double_t *deriv);
@@ -133,9 +133,9 @@ public:
   void         CalcDerivDPosDPar(Int_t sensVol,const Double_t *pl,Double_t *deriv);
   //
   // forse non serve...
-  AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, Double_t *deltalocal); 
+  AliAlignObjParams *GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, const Double_t *deltalocal); 
   // mo' proviamo questo
-  AliAlignObjParams *GetSensitiveVolumeTotalMisalignment(UShort_t voluid, Double_t *deltalocal); 
+  AliAlignObjParams *GetSensitiveVolumeTotalMisalignment(UShort_t voluid, const Double_t *deltalocal); 
   //
   static Int_t    GetIndexFromVolumeID(UShort_t volid);
   static UShort_t GetVolumeIDFromSymname(const Char_t *symname);

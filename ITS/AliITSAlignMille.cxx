@@ -176,8 +176,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"GEOMETRY_FILE")) {
-      tmp[0] = '\0';
-      st2[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
+      memset(st2,0,200*sizeof(char));
       sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** geometry file not found! ");
@@ -189,8 +189,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"PREALIGNMENT_FILE")) {
-      tmp[0] = '\0';
-      st2[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
+      memset(st2,0,200*sizeof(char));
       sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** prealignment file not found! ");
@@ -207,8 +207,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SUPERMODULE_FILE")) {
-      tmp[0] = '\0';
-      st2[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
+      memset(st2,0,200*sizeof(char));
       sscanf(st,"%99s %199s",tmp,st2);
       if (gSystem->AccessPathName(st2)) {
 	AliInfo("*** WARNING! *** supermodule file not found! ");
@@ -219,7 +219,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SET_B_FIELD")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       if (f1>0) {
 	fBField = f1;
@@ -235,37 +235,37 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SET_PARSIG_TRA")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       fParSigTranslations=f1;
     }
 
     if (strstr(st,"SET_PARSIG_ROT")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       fParSigRotations=f1;
     }
 
     if (strstr(st,"SET_NSTDDEV")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %d",tmp,&idx);
       fNStdDev=idx;
     }
 
     if (strstr(st,"SET_RESCUT_INIT")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       fResCutInitial=f1;
     }
 
     if (strstr(st,"SET_RESCUT_OTHER")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       fResCut=f1;
     }
 
     if (strstr(st,"SET_LOCALSIGMAFACTOR")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f %f",tmp,&f1,&f2);
       if (f1>0 && f2>0) {
 	fSigmaXfactor=f1;
@@ -274,7 +274,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
     }
 
     if (strstr(st,"SET_STARTFAC")) {
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %f",tmp,&f1);
       fStartFac=f1;
     }
@@ -285,8 +285,8 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
       //    ndet = detector number: 1-6 for LAYER and 1-3 for DETECTOR (SPD=1, SDD=2, SSD=3)
       //    updw = 1 for Y>0, -1 for Y<0, 0 if not specified
       //    nreqpts = minimum number of points of that type
-      tmp[0] = '\0';
-      st2[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
+      memset(st2,0,200*sizeof(char));
       sscanf(st,"%99s %199s %d %d %d",tmp,st2,&itx,&ity,&itz);
       itx--;
       if (strstr(st2,"LAYER")) {
@@ -312,7 +312,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
 
     if (strstr(st,"MODULE_INDEX")) { // works only for sensitive modules
       f1=0; f2=0;
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
       if (idx<0 || idx>2197) {fclose(pfc); return 1;} // bad index
       voluid=GetModuleVolumeID(idx);
@@ -333,7 +333,7 @@ Int_t AliITSAlignMille::LoadConfig(const Char_t *cfile) {
    
     if (strstr(st,"MODULE_VOLUID")) {
       f1=0; f2=0;
-      tmp[0] = '\0';
+      memset(tmp,0,100*sizeof(char));
       sscanf(st,"%99s %d %d %d %d %d %d %d %f %f",tmp,&idx,&itx,&ity,&itz,&iph,&ith,&ips,&f1,&f2);
       voluid=UShort_t(idx);
       if (voluid>14335 && fUseSuperModules) { // custom supermodule
@@ -585,7 +585,7 @@ Int_t AliITSAlignMille::GetPreAlignmentQualityFactor(Int_t index) const {
   return fPreAlignQF[index];
 }
 
-AliTrackPointArray *AliITSAlignMille::PrepareTrack(AliTrackPointArray *atp) {
+AliTrackPointArray *AliITSAlignMille::PrepareTrack(const AliTrackPointArray *atp) {
   /// create a new AliTrackPointArray keeping only defined modules
   /// move points according to a given prealignment, if any
   /// sort alitrackpoints w.r.t. global Y direction, if selected
@@ -753,7 +753,7 @@ AliTrackPointArray *AliITSAlignMille::PrepareTrack(AliTrackPointArray *atp) {
 
 
 
-AliTrackPointArray *AliITSAlignMille::SortTrack(AliTrackPointArray *atp) {
+AliTrackPointArray *AliITSAlignMille::SortTrack(const AliTrackPointArray *atp) {
   /// sort alitrackpoints w.r.t. global Y direction
   AliTrackPointArray *atps=NULL;
   Int_t idx[20];
@@ -954,7 +954,7 @@ void AliITSAlignMille::Print(Option_t*) const
    
 }
 
-AliITSAlignMilleModule  *AliITSAlignMille::GetMilleModule(UShort_t voluid) 
+AliITSAlignMilleModule  *AliITSAlignMille::GetMilleModule(UShort_t voluid) const
 {
   // return pointer to a define supermodule
   // return NULL if error
@@ -1238,7 +1238,7 @@ Int_t AliITSAlignMille::ProcessTrack(AliTrackPointArray *track) {
   return 0;
 }
 
-Int_t AliITSAlignMille::CalcIntersectionPoint(Double_t *lpar, Double_t *gpar) {
+Int_t AliITSAlignMille::CalcIntersectionPoint(const Double_t *lpar, const Double_t *gpar) {
   /// calculate intersection point of track with current module in local coordinates
   /// according with a given set of parameters (local(4/5) and global(6))
   /// and fill fPintLoc/Glo
@@ -1482,25 +1482,25 @@ Int_t AliITSAlignMille::AddLocalEquation(AliITSAlignMilleData &m) {
   Double_t nonzero=0.0;
   for (Int_t i=0; i<fNLocal; i++) nonzero += TMath::Abs(dXdL[i]);
   if (nonzero==0.0) {
-    AliInfo("Aborting local equations for this point beacuse of zero local X derivatives!");
+    AliInfo("Discarding local equations for this point beacuse of zero local X derivatives!");
     return -2;
   }
   nonzero=0.0;
   for (Int_t i=0; i<ITSMILLENPARCH; i++) nonzero += TMath::Abs(dXdG[i]);
   if (nonzero==0.0) {
-    AliInfo("Aborting local equations for this point beacuse of zero global X derivatives!");
+    AliInfo("Discarding local equations for this point beacuse of zero global X derivatives!");
     return -2;
   }
   nonzero=0.0;
   for (Int_t i=0; i<fNLocal; i++) nonzero += TMath::Abs(dZdL[i]);
   if (nonzero==0.0) {
-    AliInfo("Aborting local equations for this point beacuse of zero local Z derivatives!");
+    AliInfo("Discarding local equations for this point beacuse of zero local Z derivatives!");
     return -2;
   }
   nonzero=0.0;
   for (Int_t i=0; i<ITSMILLENPARCH; i++) nonzero += TMath::Abs(dZdG[i]);
   if (nonzero==0.0) {
-    AliInfo("Aborting local equations for this point beacuse of zero global Z derivatives!");
+    AliInfo("Discarding local equations for this point beacuse of zero global Z derivatives!");
     return -2;
   }
 
@@ -1536,7 +1536,7 @@ Int_t AliITSAlignMille::AddLocalEquation(AliITSAlignMilleData &m) {
 }
 
 
-void AliITSAlignMille::SetLocalEquations(AliITSAlignMilleData *m, Int_t neq) {
+void AliITSAlignMille::SetLocalEquations(const AliITSAlignMilleData *m, Int_t neq) {
   /// Set local equations with data stored in m
   /// return 0 if success
   
@@ -1639,8 +1639,7 @@ Int_t AliITSAlignMille::LoadSuperModuleFile(const Char_t *sfile)
     volid=a->GetVolUID();
     strncpy(st,a->GetSymName(),TMath::Min(sizeof(st),strlen(a->GetSymName())+1));
     a->GetMatrix(m);
-
-    symname[0] = '\0';
+    memset(symname,0,250*sizeof(char));
     sscanf(st,"%249s",symname);
     // decode module list
     char *stp=strstr(st,"ModuleList:");

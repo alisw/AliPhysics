@@ -377,7 +377,7 @@ Bool_t AliITSAlignMille2Module::BelongsTo(AliITSAlignMille2Module* parent) const
 }
 
 //-------------------------------------------------------------
-TGeoHMatrix *AliITSAlignMille2Module::GetSensitiveVolumeModifiedMatrix(UShort_t voluid, Double_t *delta,Bool_t local)
+TGeoHMatrix *AliITSAlignMille2Module::GetSensitiveVolumeModifiedMatrix(UShort_t voluid, const Double_t *delta,Bool_t local)
 {
   // modify the original TGeoHMatrix of the sensitive module 'voluid' according
   // with a delta transform. applied to the supermodule matrix
@@ -419,7 +419,7 @@ TGeoHMatrix *AliITSAlignMille2Module::GetSensitiveVolumeModifiedMatrix(UShort_t 
 }
 
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShort_t voluid, Double_t *deltalocal)
+AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t *deltalocal)
 {
   // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
   // of the mother volume. The misalignment is returned as AliAlignObjParams object
@@ -444,7 +444,7 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
 }
 
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShort_t voluid, AliAlignObjParams *a)
+AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShort_t voluid, const AliAlignObjParams *a)
 {
   // return the misalignment of the sens. vol. 'voluid' corresponding with 
   // a misalignment 'a' in the mother volume
@@ -529,7 +529,7 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
 
 // >> RS
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(UShort_t voluid, Double_t *deltalocal)
+AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(UShort_t voluid, const Double_t *deltalocal)
 {
   // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
   // of the mother volume. The misalignment is returned as AliAlignObjParams object including
@@ -615,7 +615,7 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
 //-------------------------------------------------------------
 
 //-------------------------------------------------------------
-AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, Double_t *deltalocal)
+AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeGlobalMisalignment(UShort_t voluid, const Double_t *deltalocal)
 {
   // calculate misalignment of sens.vol. 'voluid' according with a displacement 'deltalocal'
   // of the mother volume. The misalignment is returned as AliAlignObjParams object
@@ -750,6 +750,7 @@ UShort_t AliITSAlignMille2Module::GetVolumeIDFromIndex(Int_t index) {
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::Print(Option_t*) const 
 {
+  // print data
   //
   const char* typeName[] = {"SPD","SDD","SSD"};
   printf("*** ITS SuperModule for AliITSAlignMille ***\n");
@@ -777,6 +778,7 @@ void AliITSAlignMille2Module::Print(Option_t*) const
 //-------------------------------------------------------------
 Bool_t AliITSAlignMille2Module::IsAlignable() const
 {
+  // it it alignable?
   TGeoManager* geoManager = AliGeomManager::GetGeometry();
   if (!geoManager) {
     AliInfo("Couldn't initialize geometry");
@@ -796,6 +798,7 @@ void AliITSAlignMille2Module::GetLocalMatrix(TGeoHMatrix &mat) const
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::AssignDetType()
 {
+  // assign the detector type
   TString tp = GetName();
   if      (tp.Contains("SPD",TString::kIgnoreCase)) fDetType = kSPD;
   else if (tp.Contains("SDD",TString::kIgnoreCase)) fDetType = kSDD;
@@ -817,6 +820,7 @@ void AliITSAlignMille2Module::AssignDetType()
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::EvaluateDOF()
 {
+  // count d.o.f.
   fNParFree = 0;
   for (int i=fNParTot;i--;) if (IsFreeDOF(i)) fNParFree++;
 }
@@ -843,7 +847,7 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,Double_t *t, 
 }
 
 //-------------------------------------------------------------
-void AliITSAlignMille2Module::GetSensVolGlobalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r)
+void AliITSAlignMille2Module::GetSensVolGlobalParams(UShort_t volid,const Double_t* loct, const Double_t* locr,Double_t *t, Double_t *r)
 {
   // return global parameters of the sensor volid modified by the localDelta params
   for (int i=3;i--;) t[i] = r[i] = 0.;
@@ -858,7 +862,7 @@ void AliITSAlignMille2Module::GetSensVolGlobalParams(UShort_t volid,Double_t* lo
 }
 
 //-------------------------------------------------------------
-void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,Double_t* loct,Double_t* locr,Double_t *t, Double_t *r)
+void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,const Double_t* loct,const Double_t* locr,Double_t *t, Double_t *r)
 {
   // return parameters of the sensor volid (modified by the localDelta params) in the current volume
   for (int i=3;i--;) t[i] = r[i] = 0.;
@@ -876,6 +880,7 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,Double_t* loc
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::SetParVals(Double_t *vl,Int_t npar)
 {
+  // set parameters
   for (int i=TMath::Min(npar,(Int_t)fNParTot);i--;) fParVals[i] = vl[i];
 }
 
