@@ -493,7 +493,7 @@ void AliGenHijing::EvaluateCrossSections()
     fDnDb      = new TGraph(i, b, si2);
 }
 
-Bool_t AliGenHijing::DaughtersSelection(TParticle* iparticle)
+Bool_t AliGenHijing::DaughtersSelection(const TParticle* iparticle)
 {
 //
 // Looks recursively if one of the daughters has been selected
@@ -545,7 +545,7 @@ Bool_t AliGenHijing::SelectFlavor(Int_t pid)
     return res;
 }
 
-Bool_t AliGenHijing::Stable(TParticle*  particle) const
+Bool_t AliGenHijing::Stable(const TParticle*  particle) const
 {
 // Return true for a stable particle
 //

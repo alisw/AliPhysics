@@ -137,9 +137,9 @@ class AliGenHijing : public AliGenMC
     // adjust the weight from kinematic cuts
     void   AdjustWeights();
     // check seleted daughters
-    Bool_t DaughtersSelection(TParticle* iparticle);
+    Bool_t DaughtersSelection(const TParticle* iparticle);
     // check if stable
-    Bool_t Stable(TParticle*  particle) const;
+    Bool_t Stable(const TParticle*  particle) const;
     
     ClassDef(AliGenHijing, 7) // AliGenerator interface to Hijing
 };

@@ -66,6 +66,7 @@ AliGenBeamGasNew::~AliGenBeamGasNew()
 void AliGenBeamGasNew::SetTimeWindow(Float_t twindow) { fTwindow = twindow; }
 
 bool AliGenBeamGasNew::SetRate(Float_t rate) {
+// Set the Rate
   if (rate >= 0) {  
     fRate = rate; 
     return true;
