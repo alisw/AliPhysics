@@ -11,6 +11,7 @@
 //-------------------------------------------------------------------------
 
 #include "AliVEventHandler.h"
+#include "AliAODExtension.h"
 
 class AliAODEvent;
 class TFile;
@@ -20,7 +21,6 @@ class AliMCEventHandler;
 class AliAODMCHeader;
 class AliGenEventHeader;
 class TMap;
-class AliAODExtension;
 class AliAnalysisFilter;
 
 class AliAODHandler : public AliVEventHandler {
