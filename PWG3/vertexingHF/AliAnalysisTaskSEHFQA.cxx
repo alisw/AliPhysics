@@ -58,7 +58,6 @@
 
 #include "AliAnalysisTaskSEHFQA.h"
 
-
 ClassImp(AliAnalysisTaskSEHFQA)
 
 //____________________________________________________________________________
@@ -379,7 +378,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     AliCounterCollection *stdEstimator=new AliCounterCollection("stdEstimator");
     stdEstimator->AddRubric("run",500000);
-    stdEstimator->AddRubric("centralityclass","0_10/10_20/20_30/30_40/40_50/50_60/60_70/70_80/80_90/90_100");
+    stdEstimator->AddRubric("centralityclass","0_10/10_20/20_30/30_40/40_50/50_60/60_70/70_80/80_90/90_100/-990_-980");
     stdEstimator->Init();
     AliCounterCollection *secondEstimator=new AliCounterCollection("secondEstimator");
     secondEstimator->AddRubric("run",500000);
@@ -406,10 +405,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hMultOut";
     TH1F* hMultOut=new TH1F(hname.Data(),"Multiplicity out of Centrality range;multiplicity;Entries",10000,-0.5,9999.5);
 
+    hname="hMultvsPercentile";
+    TH2F* hMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,11,0.,110);
+
     fOutputCheckCentrality->Add(hNtrackletsIn);
     fOutputCheckCentrality->Add(hNtrackletsOut);
     fOutputCheckCentrality->Add(hMultIn);
     fOutputCheckCentrality->Add(hMultOut);
+    fOutputCheckCentrality->Add(hMultvsPercentile);
 
     PostData(6,fOutputCheckCentrality);
   
@@ -592,9 +595,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       break; 
     }
   }
-
-  if(!aod) {delete [] pdgdaughters;return;}
-
   Bool_t isSimpleMode=fSimpleMode;
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only trak related histograms\n");
@@ -623,9 +623,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       return;
     }
   }
+  if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {delete [] pdgdaughters; return;}
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
 
   // count event
   fNEntries->Fill(0); 
@@ -640,17 +641,19 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD") || trigclass.Contains("C0SMH-B-NOPF-ALL")) fNEntries->Fill(5);
 
-  Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE;
+  Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kFALSE;
   //select event
   if(!fCuts->IsEventSelected(aod)) {
     evSelected=kFALSE;
-    if(fCuts->GetWhyRejection()==1) fNEntries->Fill(1); // rejected for pileup
-    if(fCuts->GetWhyRejection()==2) evSelbyCentrality=kFALSE; //rejected by centrality
+    if(fCuts->GetWhyRejection()==1) {fNEntries->Fill(1); evselByPileup=kTRUE;}// rejected for pileup
+    if(fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3) evSelbyCentrality=kFALSE; //rejected by centrality
+    if(fCuts->GetWhyRejection()==4) evSelByVertex=kFALSE; //rejected by vertex
   }
-  if(evSelected || (!evSelected && !evSelbyCentrality)){ //events selected or not selected because of vtx
+  if(evSelected || (!evSelected && !evSelbyCentrality && evSelByVertex && !evselByPileup)){ //events selected or not selected because of vtx or pileup
     if(fCuts->GetUseCentrality()){
       Int_t runNumber = aod->GetRunNumber();
-      Int_t stdCent = (Int_t)(fCuts->GetCentrality(aod)+0.5);
+      Float_t stdCentf=fCuts->GetCentrality(aod);
+      Int_t stdCent = (Int_t)(stdCentf+0.5);
       Int_t secondCent = (Int_t)(fCuts->GetCentrality(aod,fEstimator)+0.5);
       Int_t mincent=stdCent-stdCent%10;
       ((AliCounterCollection*)fOutputCounters->FindObject("stdEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
@@ -664,6 +667,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	((TH1F*)fOutputCheckCentrality->FindObject("hNtrackletsIn"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputCheckCentrality->FindObject("hMultIn"))->Fill(aod->GetHeader()->GetRefMultiplicity());
       }
+      ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
 
       PostData(6,fOutputCheckCentrality);
 
@@ -735,12 +739,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
     if(pidHF && pidHF->CheckStatus(track,"TPC")){ 
       Double_t alephParameters[5];
+      /*
       //this is recommended for LHC10d
       alephParameters[0] = 1.34490e+00/50.;
       alephParameters[1] =  2.69455e+01;
       alephParameters[2] =  TMath::Exp(-2.97552e+01);
       alephParameters[3] = 2.35339e+00;
       alephParameters[4] = 5.98079e+00;
+      */
+      
+      //this is recommended for PbPb (LHC10h)
+      alephParameters[0] = 1.25202/50.; 
+      alephParameters[1] = 2.74992e+01; 
+      alephParameters[2] = TMath::Exp(-3.31517e+01); 
+      alephParameters[3] = 2.46246; 
+      alephParameters[4] = 6.78938;
+      
       /*
       //this is recommended for LHC10bc
       alephParameters[0] = 0.0283086/0.97;
@@ -749,6 +763,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       alephParameters[3] = 2.12543e+00;
       alephParameters[4] = 4.88663e+00;
       */
+
       AliTPCPIDResponse* tpcres=new AliTPCPIDResponse();
       tpcres->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
       Double_t TPCp=pid->GetTPCmomentum();

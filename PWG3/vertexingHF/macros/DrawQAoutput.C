@@ -145,17 +145,47 @@ void DrawOutputPID(TString partname="D0",TString textleg="",TString path="./"){
 	cout<<"Histogram "<<i<<" not found"<<endl;
 	continue;
       }
+      h->Sumw2();
       h->Scale(1./h->Integral("width"));
       TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
       c->SetLogz();
+      //c->SetLogx();
       c->cd();
       
       h->Draw("colz");
+
+      //mean and pull, code from Jens Wiechula
+      TF1 fg("fg","gaus",-2.,2.); // fit range +- 2 sigma
+      TLine l;
+      TObjArray arr;
+
+      h->Draw("colz");
+      fg.SetParameters(1,0,1);
+      h->FitSlicesY(&fg,0,-1,0,"NQR",&arr);
+
+      TH1 *hM=(TH1*)arr.At(1);
+      hM->SetMarkerStyle(20);
+      hM->SetMarkerSize(.5);
+      hM->Draw("same");
+
+      TH1 *hS=(TH1*)arr.At(2);
+      hS->SetMarkerStyle(20);
+      hS->SetMarkerSize(.5);
+      hS->SetMarkerColor(kRed);
+      hS->SetLineColor(kRed);
+      hS->Draw("same");
+
+      l.SetLineColor(kBlack);
+      l.DrawLine(.2,0,20,0);
+      l.SetLineColor(kRed);
+      l.DrawLine(.2,1,20,1);
+
       //write
       c->SaveAs(Form("%s.png",h->GetName()));
       TFile* fout=new TFile(Form("%s.root",h->GetName()),"recreate");
       fout->cd();
       c->Write();
+
     }
   }
 }
@@ -185,6 +215,8 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   hstat->Draw("htext0");
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
   Int_t nevents080=1;
+
+  //TCanvas *spare=new TCanvas("sparecv","Spare");
 
   for(Int_t i=0;i<list->GetEntries();i++){
 
@@ -304,6 +336,12 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       ccent->cd(ic+1);
       h->GetYaxis()->SetRangeUser(0.,0.15);
       h->DrawClone();
+      /*
+      if(ic==0&&i==0){
+	spare->cd();
+	h->Draw();
+      }
+      */
       // ccent->cd(1);
       // h->SetLineColor(ic+1);
       // if(ic==0)h->DrawClone();
@@ -373,8 +411,15 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
     TH1F* h=0x0;
     if(direction=="X")h=(TH1F*)h2->ProjectionX(Form("px%d",i),i+kbins,i+2*kbins);
     if(direction=="Y")h=(TH1F*)h2->ProjectionY(Form("py%d",i),i+kbins,i+2*kbins);
+
+    TPaveText *pvtxt=new TPaveText(0.6,0.6,0.9,0.9,"NDC");
+    pvtxt->SetBorderSize(0);
+    pvtxt->SetFillStyle(0);
+    pvtxt->AddText(Form("%d - %d",((i+kbins-1)*10),(i+2*kbins-1)*10));
+
     cvpj->cd(i+1);
     h->Draw();
+    pvtxt->Draw();
     fout->cd();
     h->Write();
   }
