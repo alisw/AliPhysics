@@ -36,8 +36,8 @@ ClassImp(AliOADBContainer);
 //______________________________________________________________________________
 AliOADBContainer::AliOADBContainer() : 
   TNamed(),
-  fArray(new TObjArray(100)),
-  fDefaultList(new TList()),
+  fArray(0),
+  fDefaultList(0),
   fLowerLimits(),
   fUpperLimits(),
   fEntries(0)
@@ -295,7 +295,7 @@ void AliOADBContainer::List()
 
 }
 
-Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper)
+Int_t AliOADBContainer::HasOverlap(Int_t lower, Int_t upper) const
 {
   //
   // Checks for overlpapping validity regions

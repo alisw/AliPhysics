@@ -51,7 +51,7 @@ class AliOADBContainer : public TNamed {
   void Browse(TBrowser *b);
 
  private:
-  Int_t HasOverlap(Int_t lower, Int_t upper);
+  Int_t HasOverlap(Int_t lower, Int_t upper) const;
   Int_t GetIndexForRun(Int_t run) const;
  private :
   TObjArray*               fArray;         // Array with objects corresponding to run ranges
