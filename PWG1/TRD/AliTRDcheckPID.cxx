@@ -250,6 +250,12 @@ TObjArray * AliTRDcheckPID::Histos(){
   } else h->Reset();
   fContainer->AddAt(h, kV0);
 
+  // dQ/dl for 1D-Likelihood
+  if(!(h = (TH1F *)gROOT->FindObject("dQdl"))){
+    h = new TH2F("dQdl", "dQ/dl per layer;p*species;dQ/dl [a.u.]", xBins, -0.5, xBins - 0.5, 800, 0., 40000.);
+  } else h->Reset();
+  fContainer->AddAt(h, kdQdl);
+
   return fContainer;
 }
 
@@ -274,9 +280,9 @@ Int_t AliTRDcheckPID::CalcPDG(AliTRDtrackV1* track)
 {
 // Documentation to come
 
-  track -> SetReconstructor(AliTRDinfoGen::Reconstructor());
+ /* track -> SetReconstructor(AliTRDinfoGen::Reconstructor());
   (const_cast<AliTRDrecoParam*>(AliTRDinfoGen::Reconstructor()->GetRecoParam()))->SetPIDNeuralNetwork();
-  track -> CookPID();
+  track -> CookPID();*/
 
   if(track -> GetPID(AliPID::kElectron) > track -> GetPID(AliPID::kMuon) + track -> GetPID(AliPID::kPion)  + track -> GetPID(AliPID::kKaon) + track -> GetPID(AliPID::kProton)){
     return kElectron;
@@ -486,6 +492,49 @@ TH1 *AliTRDcheckPID::PlotESD(const AliTRDtrackV1 *track)
 }
 
 
+
+//_______________________________________________________
+TH1 *AliTRDcheckPID::PlotdQdl(const AliTRDtrackV1 *track){
+  //
+  // Plot the total charge for the 1D Likelihood method
+  //
+  if(track) fkTrack = track;
+  if(!fkTrack){
+    AliDebug(2, "No Track defined");
+    return NULL;
+  }
+  TH2 *hdQdl = dynamic_cast<TH2F *>(fContainer->At(kdQdl));
+  if(!hdQdl){
+    AliWarning("No Histogram defined");
+    return NULL;
+  }
+
+  if(!CheckTrackQuality(fkTrack)) return NULL;
+
+  Int_t pdg = 0;
+  Float_t momentum = 0.;
+  AliTRDtrackV1 cTrack(*fkTrack);
+  if(fkMC){
+    if(fkMC->GetTrackRef()) momentum = fkMC->GetTrackRef()->P();
+    pdg = fkMC->GetPDG();
+  } else {
+    //AliWarning("No MC info available!");
+    momentum = cTrack.GetMomentum(0);
+    pdg = CalcPDG(&cTrack);
+  }
+  if(!IsInRange(momentum)) return NULL;
+
+  // Init exchange container
+  Int_t s(AliTRDpidUtil::Pdg2Pid(pdg));
+  Int_t ibin = FindBin(s, momentum);
+
+  AliTRDseedV1 *tracklet = NULL;
+  for(Int_t iseed = 0; iseed < 6; iseed++){
+    if(!((tracklet = fkTrack->GetTracklet(iseed)) && tracklet->IsOK())) continue;
+    hdQdl->Fill(ibin, tracklet->GetdQdl());
+  }
+  return hdQdl;
+}
 
 //_______________________________________________________
 TH1 *AliTRDcheckPID::PlotdEdx(const AliTRDtrackV1 *track)

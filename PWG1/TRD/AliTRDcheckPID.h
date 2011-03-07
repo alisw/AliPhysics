@@ -42,8 +42,9 @@ public:
     ,kEfficiencyKa     =  10    // K Efficiency plot
     ,kEfficiencyPr     =  11    // pr Efficiency plot
     ,kV0               =  12    // V0 performance
-    ,kNPlots           =  13    // Number of plots for this tasks 
-  };
+    ,kdQdl             =  13  // Plot total charge used for the 1D-Likelihood calculation
+    ,kNPlots           =  14    // Number of plots for this tasks
+ };
   AliTRDcheckPID();
   AliTRDcheckPID(char* name);
   virtual ~AliTRDcheckPID();
@@ -56,6 +57,7 @@ public:
   TH1 *PlotLQ(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotNN(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotESD(const AliTRDtrackV1 *track = 0x0);
+  TH1 *PlotdQdl(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotdEdx(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotdEdxSlice(const AliTRDtrackV1 *track = 0x0);
   TH1 *PlotPH(const AliTRDtrackV1 *track = 0x0);
