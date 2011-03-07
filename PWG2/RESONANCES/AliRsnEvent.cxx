@@ -374,13 +374,13 @@ Int_t AliRsnEvent::GetMultiplicityFromESDCuts()
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnEvent::GetMultiplicityFromSPD()
+Float_t AliRsnEvent::GetMultiplicityFromSPD()
 {
 //
 // Returns event multiplicity computed from SPD.
 //
 
-   if (!fRef) return -1;
+   if (!fRef) return -1.0;
 
    AliESDEvent *esd = GetRefESD();
    if (esd) {
@@ -391,7 +391,7 @@ Int_t AliRsnEvent::GetMultiplicityFromSPD()
    }
    else {
       AliWarning("Cannot compute SPD multiplicity without a well initialized ESD event");
-      return -1;
+      return -1.0;
    }
 }
 

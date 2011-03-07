@@ -52,7 +52,7 @@ public:
    Int_t            GetMultiplicityFromTracks()   {if (fRef) return fRef->GetNumberOfTracks(); return -1;}
    Int_t            GetMultiplicityFromMC()       {if (fRefMC) return fRefMC->GetNumberOfTracks(); return -1;}
    Int_t            GetMultiplicityFromESDCuts();
-   Int_t            GetMultiplicityFromSPD();
+   Float_t          GetMultiplicityFromSPD();
 
    // setters for a daughter
    Bool_t           SetDaughterAbs(AliRsnDaughter &daughter, Int_t absoluteIndex);

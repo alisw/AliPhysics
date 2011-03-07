@@ -87,7 +87,7 @@ void AliRsnPair::Print(Option_t* /*option*/) const
 
 //_____________________________________________________________________________
 Bool_t AliRsnPair::Fill
-(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2)
+(AliRsnDaughter *daughter1, AliRsnDaughter *daughter2, Bool_t refFirst)
 {
 //
 // Checks that first argument matches definitions for first daughter
@@ -96,6 +96,8 @@ Bool_t AliRsnPair::Fill
 // If the matching is successful, the AliRsnMother data member is 
 // initialized using the mass hypotheses defined here and the momenta
 // in the passed daughters.
+// The third argument is necessary to choose which one of the possible two
+// events owning the two daughter will be used as reference.
 //
    
    // check matching and exit if one of them fails
@@ -151,6 +153,9 @@ Bool_t AliRsnPair::Fill
 
    // if pair is accepted, increment counter
    ++fCount;
+   
+   // assign reference event
+   if (refFirst) fMother.SetRefEvent(daughter1->GetOwnerEvent()); else fMother.SetRefEvent(daughter2->GetOwnerEvent());
 
    return kTRUE;
 }
