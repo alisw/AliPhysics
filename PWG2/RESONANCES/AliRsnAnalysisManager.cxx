@@ -271,7 +271,7 @@ void AliRsnAnalysisManager::ProcessAll(AliRsnEvent *ev0, AliRsnEvent *ev1, Bool_
          if (!ev0->SetDaughterAbs(daughter0, i0)) continue;
       }
       // when the assigment is unsuccessful, this i known in internal status flag
-      if (!daughter0.IsOK()) continue;
+      if (!daughter0.IsOK() || !daughter0.GetRef()) continue;
       
       // process all single-track monitors
       nextMonitor.Reset();
@@ -293,7 +293,7 @@ void AliRsnAnalysisManager::ProcessAll(AliRsnEvent *ev0, AliRsnEvent *ev1, Bool_
             if (!ev1->SetDaughterAbs(daughter1, i1)) continue;
          }
          // when the assigment is unsuccessful, this i known in internal status flag
-         if (!daughter1.IsOK()) continue;
+         if (!daughter1.IsOK() || !daughter1.GetRef()) continue;
 
          // loop over all pairs and make computations
          i = 0;
@@ -307,9 +307,9 @@ void AliRsnAnalysisManager::ProcessAll(AliRsnEvent *ev0, AliRsnEvent *ev1, Bool_
             // the Fill() method returns kTRUE if the two daughters
             // do match the pair definition of each AliRsnPait object,
             // and the pair is processed only in this case
-            if (pair->Fill(&daughter0, &daughter1)) {
+            if (pair->Fill(&daughter0, &daughter1, kTRUE)) {
                pair->Compute();
-            } else if (pair->Fill(&daughter1, &daughter0)) {
+            } else if (pair->Fill(&daughter1, &daughter0, kFALSE)) {
                pair->Compute();
             }
          }
