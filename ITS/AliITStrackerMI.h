@@ -267,7 +267,7 @@ protected:
   void UnRegisterClusterTracks(const AliITStrackMI* track, Int_t id);
   Float_t GetNumberOfSharedClusters(AliITStrackMI* track,Int_t id, Int_t list[6], AliITSRecPoint *clist[6]);
   Int_t GetOverlapTrack(const AliITStrackMI *track, Int_t trackID, Int_t &shared, Int_t clusterlist[6], Int_t overlist[6]);
-  AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1);
+  AliITStrackMI * GetBest2Tracks(Int_t trackID1, Int_t treackID2, Float_t th0, Float_t th1,AliITStrackMI* original);
   Float_t  * GetErrY(Int_t trackindex) const {return &fCoefficients[trackindex*48];}
   Float_t  * GetErrZ(Int_t trackindex) const {return &fCoefficients[trackindex*48+12];}
   Float_t  * GetNy(Int_t trackindex) const {return &fCoefficients[trackindex*48+24];}
@@ -410,3 +410,4 @@ inline void  AliITStrackerMI::AliITSdetector::GetGlobalXYZ(const AliITSRecPoint 
   xyz[1] = fR*fSinPhi + cl->GetY()*fCosPhi;
 }
 #endif
+

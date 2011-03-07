@@ -444,7 +444,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   param->fTrackleterPhiWindow = 0.06;
   param->fScaleDTBySin2T = kTRUE;
   //
-  param->fSelectBestMIP03 = kTRUE;
+  param->fSelectBestMIP03 = kFALSE;//kTRUE;
   param->fFlagFakes       = kTRUE;
   param->fUseImproveKalman= kFALSE;
   //
@@ -899,4 +899,5 @@ void AliITSRecoParam::PrintParameters() const
 
   return;
 }
+
 
