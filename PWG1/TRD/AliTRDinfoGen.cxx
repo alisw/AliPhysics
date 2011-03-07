@@ -123,6 +123,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fTracksKink(NULL)
   ,fV0List(NULL)
   ,fContainer(NULL)
+  ,fRecos(NULL)
   ,fDebugStream(NULL)
 {
   //
@@ -149,6 +150,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
   ,fContainer(NULL)
+  ,fRecos(NULL)
   ,fDebugStream(NULL)
 {
   //
@@ -229,7 +231,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fV0List = new TObjArray(10); fV0List->SetOwner(kTRUE);
 
   // define general monitor
-  fContainer = new TObjArray(1); fContainer->SetOwner(kTRUE);
+  fContainer = new TObjArray(2); fContainer->SetOwner(kTRUE);
   TH1 *h=new TH1I("hStat", "Run statistics;Observable;Entries", Int_t(kNObjects), -0.5, Float_t(kNObjects)-0.5);
   TAxis *ax(h->GetXaxis());
   ax->SetBinLabel(Int_t(kTracksESD) + 1, "ESD");
@@ -247,6 +249,13 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(Int_t(kBarrelFriend) + 1, "BFriend");
   ax->SetBinLabel(Int_t(kSAFriend) + 1, "SFriend");
   fContainer->AddAt(h, 0);
+  h=new TH1I("hEv", "Run statistics;Event Class;Entries", 4, -0.5, 3.5);
+  ax = h->GetXaxis();
+  ax->SetBinLabel(1, "Low");
+  ax->SetBinLabel(2, "High");
+  ax->SetBinLabel(3, "Cosmic");
+  ax->SetBinLabel(4, "Calib");
+  fContainer->AddAt(h, 1);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
 
@@ -322,32 +331,39 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
     AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
 
-    // set reco param valid for this run/event
+    // load reco param list from OCDB
     AliInfo(Form("Initializing TRD reco params for EventSpecie[%d]...",
       fESDev->GetEventSpecie()));
     fgReconstructor = new AliTRDReconstructor();
     if(!(obj = ocdb->Get(AliCDBPath("TRD", "Calib", "RecoParam")))){
       AliError("RECO PARAM failed initialization.");
-      fgReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
     } else {
       obj->PrintMetaData();
-      TObjArray *recos((TObjArray*)obj->GetObject());
-      for(Int_t ireco(0); ireco<recos->GetEntriesFast(); ireco++){
-        AliTRDrecoParam *reco((AliTRDrecoParam*)recos->At(ireco));
-        Int_t es(reco->GetEventSpecie());
-        if(!(es&fESDev->GetEventSpecie())) continue;
-        fgReconstructor->SetRecoParam(reco);
-        TString s;
-        if(es&AliRecoParam::kLowMult) s="LowMult";
-        else if(es&AliRecoParam::kHighMult) s="HighMult";
-        else if(es&AliRecoParam::kCosmic) s="Cosmic";
-        else if(es&AliRecoParam::kCalib) s="Calib";
-        else s="Unknown";
-        AliInfo(Form("Using reco params for %s", s.Data()));
-        break;
-      }
+      fRecos = (TObjArray*)obj->GetObject();
     }
     SetInitOCDB();
+  }
+  // set reco param valid for this event
+  TH1 *h = (TH1I*)fContainer->At(1);
+  if(!fRecos){
+    fgReconstructor->SetRecoParam(AliTRDrecoParam::GetLowFluxParam());
+    h->Fill(0);
+  } else {
+    for(Int_t ireco(0); ireco<fRecos->GetEntriesFast(); ireco++){
+      AliTRDrecoParam *reco((AliTRDrecoParam*)fRecos->At(ireco));
+      Int_t es(reco->GetEventSpecie());
+      if(!(es&fESDev->GetEventSpecie())) continue;
+      fgReconstructor->SetRecoParam(reco);
+      if(AliLog::GetDebugLevel("PWG1/TRD", "AliTRDinfoGen")>1) reco->Dump();
+      TString s;
+      if(es&AliRecoParam::kLowMult){ s="LowMult"; h->Fill(0);}
+      else if(es&AliRecoParam::kHighMult){ s="HighMult"; h->Fill(1);}
+      else if(es&AliRecoParam::kCosmic){ s="Cosmic"; h->Fill(2);}
+      else if(es&AliRecoParam::kCalib){ s="Calib"; h->Fill(3);}
+      else s="Unknown";
+      AliDebug(2, Form("Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
+      break;
+    }
   }
 
   // link MC if available
@@ -708,7 +724,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     ,nKink, nKinkMC, fTracksKink->GetEntries()
   ));
   // save track statistics
-  TH1 *h((TH1S*)fContainer->At(0));
+  h = (TH1I*)fContainer->At(0);
   h->Fill(Float_t(kTracksESD), nTracksESD);
   h->Fill(Float_t(kTracksMC), nTracksMC);
   h->Fill(Float_t(kV0), fV0List->GetEntries());

@@ -86,7 +86,7 @@ void  AliTRDefficiency::UserCreateOutputObjects()
   Float_t xbins[nbins+1] = {.5, .7, .9, 1.3, 1.7, 2.4, 3.5, 4.5, 5.5, 7., 9., 11.};
 
   TH1 *h = NULL;
-  fContainer = new TObjArray();
+  fContainer = new TObjArray(); fContainer->SetOwner();
   for(Int_t is=0; is<AliPID::kSPECIES; is++){
     fContainer->Add(h = new TProfile(Form("h%s", AliTRDCalPID::GetPartSymb(is)), AliPID::ParticleShortName(is), nbins, xbins));
     h->SetLineColor(AliTRDCalPID::GetPartColor(is));

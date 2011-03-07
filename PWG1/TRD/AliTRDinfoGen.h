@@ -129,6 +129,7 @@ private:
   TObjArray        *fTracksKink;     //! Array of kink tracks
   TObjArray        *fV0List;         //! V0 container
   TObjArray        *fContainer;      //! container to store results
+  TObjArray        *fRecos;          //! array of reco params
   TTreeSRedirector *fDebugStream;    //! debug stream
 
   ClassDef(AliTRDinfoGen, 7)         // entry to TRD analysis train
