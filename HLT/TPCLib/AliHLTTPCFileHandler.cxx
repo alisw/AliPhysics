@@ -151,11 +151,12 @@ Int_t AliHLTTPCFileHandler::SaveStaticIndex(Char_t *prefix,Int_t event)
   // use this static call to store static index after
   if(!fgStaticIndexCreated) return -1;
 
-  Char_t fname[1024];
+  const int fnamelen=1024;
+  Char_t fname[fnamelen];
   if(prefix)
-    sprintf(fname,"%s-%d.txt",prefix,event);
+    snprintf(fname,fnamelen, "%s-%d.txt",prefix,event);
   else
-    sprintf(fname,"TPC.Digits.staticindex-%d.txt",event);
+    snprintf(fname,fnamelen, "TPC.Digits.staticindex-%d.txt",event);
 
   ofstream file(fname,ios::trunc);
   if(!file.good()) return -1;
@@ -178,11 +179,12 @@ Int_t AliHLTTPCFileHandler::LoadStaticIndex(Char_t *prefix,Int_t event)
       CleanStaticIndex();
   }
 
-  Char_t fname[1024];
+  const int fnamelen=1024;
+  Char_t fname[fnamelen];
   if(prefix)
-    sprintf(fname,"%s-%d.txt",prefix,event);
+    snprintf(fname,fnamelen,"%s-%d.txt",prefix,event);
   else
-    sprintf(fname,"TPC.Digits.staticindex-%d.txt",event);
+    snprintf(fname,fnamelen,"TPC.Digits.staticindex-%d.txt",event);
 
   ifstream file(fname);
   if(!file.good()) return -1;
@@ -1093,135 +1095,6 @@ Bool_t AliHLTTPCFileHandler::GetDigitsTree(Int_t event)
 
   if(!fIndexCreated) return CreateIndex();
   else return kTRUE;
-}
-
-void AliHLTTPCFileHandler::AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *newDigitsfile)
-{
-  //Write the data stored in rowPt, into a new AliROOT file.
-  //The data is stored in the AliROOT format 
-  //This is specially a nice thing if you have modified data, and wants to run it  
-  //through the offline reconstruction chain.
-  //The arguments is a pointer to the data, and the name of the new AliROOT file.
-  //Remember to pass the original AliROOT file (the one that contains the original
-  //simulated data) to this object, in order to retrieve the MC id's of the digits.
-
-  if(!fInAli)
-    {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-	<<"No rootfile "<<ENDLOG;
-      return;
-    }
-  if(!fParam)
-    {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-	<<"No parameter object. Run on rootfile "<<ENDLOG;
-      return;
-    }
-
-  //Get the original digitstree:
-  AliLoader* tpcLoader = fInAli->GetLoader("TPCLoader");
-  if(!tpcLoader){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-    <<"Pointer to AliLoader for TPC = 0x0 "<<ENDLOG;
-    return;
-  }
-  tpcLoader->LoadDigits();
-  TTree *treeD=tpcLoader->TreeD();
-
-  AliTPCDigitsArray *oldArray = new AliTPCDigitsArray();
-  oldArray->Setup(fParam);
-  oldArray->SetClass("AliSimDigits");
-
-  Bool_t ok = oldArray->ConnectTree(treeD);
-  if(!ok)
-    {
-      LOG(AliHLTTPCLog::kError,"AliHLTTPCFileHandler::AliDigits2RootFile","File")
-	<< "No digits tree object" << ENDLOG;
-      return;
-    }
-
-  tpcLoader->SetDigitsFileName(newDigitsfile);
-  tpcLoader->MakeDigitsContainer();
-    
-  //setup a new one, or connect it to the existing one:
-  AliTPCDigitsArray *arr = new AliTPCDigitsArray(); 
-  arr->SetClass("AliSimDigits");
-  arr->Setup(fParam);
-  arr->MakeTree(tpcLoader->TreeD());
-
-  Int_t digcounter=0,trackID[3];
-
-  for(Int_t i=fRowMin; i<=fRowMax; i++)
-    {
-      
-      if((Int_t)rowPt->fRow != i) 
-	LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2RootFile","Data")
-	  <<"Mismatching row numbering "<<(Int_t)rowPt->fRow<<" "<<i<<ENDLOG;
-            
-      Int_t sector,row;
-      AliHLTTPCTransform::Slice2Sector(fSlice,i,sector,row);
-      
-      AliSimDigits *oldDig = (AliSimDigits*)oldArray->LoadRow(sector,row);
-      AliSimDigits * dig = (AliSimDigits*)arr->CreateRow(sector,row);
-      oldDig->ExpandBuffer();
-      oldDig->ExpandTrackBuffer();
-      dig->ExpandBuffer();
-      dig->ExpandTrackBuffer();
-      
-      if(!oldDig)
-	LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2RootFile","Data")
-	  <<"No padrow " << sector << " " << row <<ENDLOG;
-
-      AliHLTTPCDigitData *digPt = rowPt->fDigitData;
-      digcounter=0;
-      for(UInt_t j=0; j<rowPt->fNDigit; j++)
-	{
-	  Short_t charge = (Short_t)digPt[j].fCharge;
-	  Int_t pad = (Int_t)digPt[j].fPad;
-	  Int_t time = (Int_t)digPt[j].fTime;
-	  
-	  if(charge == 0) //Only write the digits that has not been removed
-	    {
-	      LOG(AliHLTTPCLog::kWarning,"AliHLTTPCFileHandler::AliDigits2RootFile","Data")
-		<<"Zero charge" <<ENDLOG;
-	      continue;
-	    }
-
-	  digcounter++;
-	  
-	  //Tricks to get and set the correct track id's. 
-	  for(Int_t track=0; track<3; track++)
-	    {
-	      Int_t label = oldDig->GetTrackIDFast(time,pad,track);
-	      if(label > 1)
-		trackID[track] = label - 2;
-	      else if(label==0)
-		trackID[track] = -2;
-	      else
-		trackID[track] = -1;
-	    }
-	  
-	  dig->SetDigitFast(charge,time,pad);
-	  
-	  for(Int_t track=0; track<3; track++)
-	    ((AliSimDigits*)dig)->SetTrackIDFast(trackID[track],time,pad,track);
-	  
-	}
-      //cout<<"Wrote "<<digcounter<<" on row "<<i<<endl;
-      UpdateRowPointer(rowPt);
-      arr->StoreRow(sector,row);
-      arr->ClearRow(sector,row);  
-      oldArray->ClearRow(sector,row);
-    }
-
-  char treeName[100];
-  sprintf(treeName,"TreeD_%s_0",fParam->GetTitle());
-  
-  arr->GetTree()->SetName(treeName);
-  arr->GetTree()->AutoSave();
-  tpcLoader->WriteDigits("OVERWRITE");
-  delete arr;
-  delete oldArray;
 }
 
 ///////////////////////////////////////// Point IO  

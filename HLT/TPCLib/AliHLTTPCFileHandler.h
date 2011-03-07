@@ -125,17 +125,6 @@ class AliHLTTPCFileHandler:public AliHLTTPCMemHandler {
    */
   Bool_t AliDigits2CompBinary(Int_t event=0,Bool_t altro=kFALSE);  
 
-  /**
-   * Write the data stored in rowPt, into a new AliROOT file.
-   * The data is stored in the AliROOT format 
-   * This is specially a nice thing if you have modified data, and wants to run it  
-   * through the offline reconstruction chain.
-   * The arguments is a pointer to the data, and the name of the new AliROOT file.
-   * Remember to pass the original AliROOT file (the one that contains the original
-   * simulated data) to this object, in order to retrieve the MC id's of the digits.
-  */
-  void AliDigits2RootFile(AliHLTTPCDigitRowData *rowPt,Char_t *newDigitsfile);
-
   //Point IO
   Bool_t AliPoints2Binary(Int_t eventn=0);
   AliHLTTPCSpacePointData *AliPoints2Memory(UInt_t & npoint,Int_t eventn=0);//Allocates Memory
