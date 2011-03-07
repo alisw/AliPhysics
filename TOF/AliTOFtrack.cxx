@@ -87,7 +87,7 @@ AliTOFtrack& AliTOFtrack::operator=(const AliTOFtrack &/*source*/)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
+Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t /*rho*/)
  {
   //
   // Propagates a track of particle with mass=pm to a reference plane 
@@ -96,7 +96,8 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t x0,Double_t rho)
 
   if (xk == GetX()) return kTRUE;
   
-  Double_t oldX=GetX(), oldY=GetY(), oldZ=GetZ();
+  Double_t oldX=GetX();//, oldY=GetY(), oldZ=GetZ();
+  Double_t start[3], end[3], mparam[7];
   Double_t start[3], end[3], mparam[7];
 
   /* get start position */
