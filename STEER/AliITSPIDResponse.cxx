@@ -85,6 +85,12 @@ AliITSPIDResponse::AliITSPIDResponse(Double_t *param):
   //
   //  The main constructor
   //
+  for (Int_t i=0; i<5;i++) {
+      fBBsa[i]=0.; 
+      fBBtpcits[i]=0.;
+      fResolSA[i]=0.; 
+      fResolTPCITS[i]=0.;
+  }
 }
 
 
