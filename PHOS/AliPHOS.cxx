@@ -533,7 +533,9 @@ void AliPHOS::Digits2Raw()
 			   pulse->GetRawFormatTimeBins(), adcValuesHigh, kAdcThreshold);
     }
   }
-  
+  delete [] adcValuesLow;
+  delete [] adcValuesHigh;
+
   // write real header and close last file
   for (Int_t iDDL=0; iDDL<maxDDL; iDDL++) {
     if (buffer[iDDL]) {
