@@ -414,6 +414,8 @@ Double_t  AliMathBase::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t 
   Float_t entries = 0;
   Int_t nfilled=0;
 
+  if (!param) { cerr<<"Zero param pointer"<<endl; return 1e10; }
+
   for (Int_t i=0; i<nBins; i++){
       entries+=arr[i];
       if (arr[i]>0) nfilled++;
@@ -671,7 +673,8 @@ TGraph2D * AliMathBase::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t 
   //  TAxis * zaxis  = his->GetZaxis();
   Int_t   nbinx  = xaxis->GetNbins();
   Int_t   nbiny  = yaxis->GetNbins();
-  char name[1000];
+  const Int_t nc=1000;
+  char name[nc];
   Int_t icount=0;
   TGraph2D  *graph = new TGraph2D(nbinx*nbiny);
   TF1 f1("f1","gaus");
@@ -679,7 +682,7 @@ TGraph2D * AliMathBase::MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t 
     for (Int_t iy=0; iy<nbiny;iy++){
       Float_t xcenter = xaxis->GetBinCenter(ix); 
       Float_t ycenter = yaxis->GetBinCenter(iy); 
-      sprintf(name,"%s_%d_%d",his->GetName(), ix,iy);
+      snprintf(name,nc,"%s_%d_%d",his->GetName(), ix,iy);
       TH1 *projection = his->ProjectionZ(name,ix-delta0,ix+delta0,iy-delta1,iy+delta1);
       Float_t stat= 0;
       if (type==0) stat = projection->GetMean();
@@ -714,14 +717,15 @@ TGraph * AliMathBase::MakeStat1D(TH3 * his, Int_t delta1, Int_t type){
   //  TAxis * zaxis  = his->GetZaxis();
   Int_t   nbinx  = xaxis->GetNbins();
   Int_t   nbiny  = yaxis->GetNbins();
-  char name[1000];
+  const Int_t nc=1000;
+  char name[nc];
   Int_t icount=0;
   TGraph  *graph = new TGraph(nbinx);
   TF1 f1("f1","gaus");
   for (Int_t ix=0; ix<nbinx;ix++){
     Float_t xcenter = xaxis->GetBinCenter(ix); 
     //    Float_t ycenter = yaxis->GetBinCenter(iy); 
-    sprintf(name,"%s_%d",his->GetName(), ix);
+    snprintf(name,nc,"%s_%d",his->GetName(), ix);
     TH1 *projection = his->ProjectionZ(name,ix-delta1,ix+delta1,0,nbiny);
     Float_t stat= 0;
     if (type==0) stat = projection->GetMean();
