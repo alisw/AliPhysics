@@ -174,8 +174,8 @@ void AliPHOSFastRecParticle::ExecuteEvent(Int_t event, Int_t , Int_t )
     clustertext = new TPaveText(x-1, y+1, x+5, y+3, "") ;
     Text_t  line1[40] ;
     Text_t  line2[40] ;
-    sprintf( line1, "PID: %s ", (const char*)Name() ) ;
-    sprintf( line2, "ENERGY: %f ", Energy() ) ;
+    snprintf( line1,40, "PID: %s ", (const char*)Name() ) ;
+    snprintf( line2,40, "ENERGY: %f ", Energy() ) ;
     clustertext ->AddText(line1) ;
     clustertext ->AddText(line2) ;
     clustertext ->Draw("");   

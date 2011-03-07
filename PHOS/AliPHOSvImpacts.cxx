@@ -154,12 +154,14 @@ void AliPHOSvImpacts::AddImpact(const char* det, Int_t shunt, Int_t primary, Int
     nImpacts= fNCPVImpacts[module];
     fNCPVImpacts[module]++ ;
   }
+  else
+    AliFatal(Form("Wrong PHOS configuration: det=%s",det));
 
   new((*impacts)[nImpacts]) AliPHOSImpact(shunt,primary,track,pid,p,xyz) ;
 
   AliDebugClass(1,Form("Module %d %s: ",module,det));
   if (AliLog::GetGlobalDebugLevel()>0)
-    (dynamic_cast<AliPHOSImpact*>((impacts->At(nImpacts))))->Print();
+    (static_cast<AliPHOSImpact*>((impacts->At(nImpacts))))->Print();
 }
 
 //____________________________________________________________________________

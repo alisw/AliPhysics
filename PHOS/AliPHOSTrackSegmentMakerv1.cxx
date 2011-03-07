@@ -548,19 +548,25 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
   // remove them from the list of "unassigned". 
 
   //Make arrays to mark clusters already chosen
-  Int_t * emcExist = 0;
-  if(fEmcLast > fEmcFirst)
-    emcExist = new Int_t[fEmcLast-fEmcFirst] ;
-  
   Int_t index;
-  for(index = 0; index <fEmcLast-fEmcFirst; index ++)
-    emcExist[index] = 1 ;
-  
+
+  Int_t * emcExist = 0;
+  if(fEmcLast > fEmcFirst) {
+    emcExist = new Int_t[fEmcLast-fEmcFirst] ;
+    for(index = 0; index <fEmcLast-fEmcFirst; index ++)
+      emcExist[index] = 1 ;
+  }
+  else 
+    return;
+
   Bool_t * cpvExist = 0;
-  if(fCpvLast > fCpvFirst)
+  if(fCpvLast > fCpvFirst) {
     cpvExist = new Bool_t[fCpvLast-fCpvFirst] ;
-  for(index = 0; index <fCpvLast-fCpvFirst; index ++)
-    cpvExist[index] = kTRUE ;
+    for(index = 0; index <fCpvLast-fCpvFirst; index ++)
+      cpvExist[index] = kTRUE ;
+  }
+ else 
+    return;
   
   
   // Finds the smallest links and makes pairs of CPV and EMC clusters with smallest distance 
@@ -582,14 +588,14 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 			       static_cast<AliPHOSCpvRecPoint *>(fCPVRecPoints->At(linkUp->GetCpv())) , 
 			       linkUp->GetTrack(),dx,dz) ;
 	 
-       (dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+       (static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
        fNTrackSegments++ ;
        emcExist[linkUp->GetEmc()-fEmcFirst] = -1 ; //Mark emc  that Cpv was found 
        //mark CPV recpoint as already used 
        cpvExist[linkUp->GetCpv()-fCpvFirst] = kFALSE ;
       } //if CpvUp still exist
-    } 
-  }        
+    }
+  }
 
   //look through emc recPoints left without CPV
   if(emcExist){ //if there is emc rec point
