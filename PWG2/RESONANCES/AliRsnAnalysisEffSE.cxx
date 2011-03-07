@@ -296,7 +296,9 @@ void AliRsnAnalysisEffSE::ProcessEventESD(AliRsnPairDef *pairDef)
 
       // first, we set the internal AliRsnMother object to
       // the MC particles and then operate the selections on MC
-      fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
+      fPair.SetDaughter(0, &fDaughter[0]);
+      fPair.SetDaughter(1, &fDaughter[1]);
+      fPair.ComputeSum(pairDef->GetMass1(), pairDef->GetMass2());
       FillContainer(cont, &fStepListMC, pairDef, 0);
 
       // then, if both particles found a good match in the ESD
@@ -421,7 +423,9 @@ void AliRsnAnalysisEffSE::ProcessEventAOD(AliRsnPairDef *pairDef)
 
       // first, we set the internal AliRsnMother object to
       // the MC particles and then operate the selections on MC
-      fPair.SetDaughters(&fDaughter[0], pairDef->GetMass(0), &fDaughter[1], pairDef->GetMass(1));
+      fPair.SetDaughter(0, &fDaughter[0]);
+      fPair.SetDaughter(1, &fDaughter[1]);
+      fPair.ComputeSum(pairDef->GetMass1(), pairDef->GetMass2());
       FillContainer(cont, &fStepListMC, pairDef, 0);
 
       // then, if both particles found a good match in the AOD
@@ -459,7 +463,9 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
    Bool_t computeOK;
 
    // set daughters to pair
-   fPair.SetDaughters(&fDaughter[0], pd->GetMass(0), &fDaughter[1], pd->GetMass(1));
+   fPair.SetDaughter(0, &fDaughter[0]);
+   fPair.SetDaughter(1, &fDaughter[1]);
+   fPair.ComputeSum(pd->GetMass1(), pd->GetMass2());
 
    // compute values for all axes
    for (iaxis = 0; iaxis < nAxes; iaxis++) {
@@ -483,7 +489,6 @@ void AliRsnAnalysisEffSE::FillContainer(AliCFContainer *cont, const TObjArray *s
    // fill all steps
    for (istep = 0; istep < nSteps; istep++) {
       AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList->At(istep);
-      AliRsnTarget::SwitchToFirst();
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[0])) break;
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[1])) break;
       if (!cutMgr->PassDaughter1Cuts(&fDaughter[0])) break;

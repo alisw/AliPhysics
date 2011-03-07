@@ -15,6 +15,7 @@
 
 #include "AliLog.h"
 
+#include "AliRsnEvent.h"
 #include "AliRsnFunction.h"
 #include "AliRsnVATProcessInfo.h"
 
@@ -113,7 +114,7 @@ void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
    if (fHistUsedEvents) delete fHistUsedEvents;
 
    // create stored objects
-   fHistUsedEvents = new TH1I(GetEventHistogramName(), "Skipped/used events", 3, 0, 3);
+   fHistUsedEvents = new TH1I(GetEventHistogramName(), "Skipped/used events", 2, 0, 2);
 
    // ad objects to list
    list->Add(fHistUsedEvents);
@@ -135,7 +136,7 @@ void AliRsnVATProcessInfo::GenerateInfoList(TList *list)
 }
 
 //______________________________________________________________________________
-void AliRsnVATProcessInfo::FillInfo()
+void AliRsnVATProcessInfo::FillInfo(AliRsnEvent *event)
 {
 //
 // This method defines how the information histograms must be filled.
@@ -154,7 +155,7 @@ void AliRsnVATProcessInfo::FillInfo()
    AliRsnFunction *fcn = 0;
    for (i = 0; i < fEventFunctions.GetEntries(); i++) {
       fcn = (AliRsnFunction*)fEventFunctions.At(i);
-      fcn->Fill();
+      fcn->Fill(event);
    }
 }
 
@@ -176,7 +177,7 @@ Long64_t AliRsnVATProcessInfo::GetNumerOfEventsProcessed()
 // returns number of events from histogram
 //
 
-   if (fHistUsedEvents) return (Long64_t)fHistUsedEvents->Integral();
+   if (fHistUsedEvents) return (Long64_t)fHistUsedEvents->GetEntries();
    return 0;
 }
 

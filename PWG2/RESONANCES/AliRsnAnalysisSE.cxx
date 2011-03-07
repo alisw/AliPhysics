@@ -96,7 +96,7 @@ void AliRsnAnalysisSE::RsnUserExec(Option_t*)
 // using 'reconstructed' or 'MonteCarlo' functions depending on MC-only flag.
 //
 
-   fRsnAnalysisManager.ProcessAll(fMCOnly);
+   fRsnAnalysisManager.ProcessAll(&fRsnEvent, &fRsnEvent, fMCOnly);
 
    PostData(2, fOutList);
 }
@@ -125,7 +125,7 @@ Bool_t AliRsnAnalysisSE::EventProcess()
    fTaskInfo.SetEventUsed(kFALSE);
 
    // check #1: number of tracks in event (reject empty events)
-   Int_t    ntracks = fRsnEvent.GetMultiplicity();
+   Int_t    ntracks = fRsnEvent.GetMultiplicityFromTracks();
    Double_t zeroEventPercent = 0.0;
    if (ntracks < 1) {
       // if using the checker for amount of empty events, update it

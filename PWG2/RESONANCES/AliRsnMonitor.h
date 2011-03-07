@@ -29,7 +29,7 @@ public:
    Int_t              GetCount()     const {return fCount;}
    AliRsnDaughterDef* GetDaughterDef()     {return fDaughterDef;}
    AliRsnCutSet*      GetCuts()            {return &fCuts;}
-   AliRsnDaughter*    GetDaughter()        {return &fDaughter;}
+   AliRsnDaughter*    GetDaughter()        {return fDaughter;}
    
    // setters (not for all members)
    void               SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
@@ -49,7 +49,7 @@ protected:
 
    AliRsnDaughterDef *fDaughterDef;     //  Monitor definition (particles, charges)
    AliRsnCutSet       fCuts;            //  collection of all cuts
-   AliRsnDaughter     fDaughter;        //  mother candidate (to avoid creating it continuously)
+   AliRsnDaughter    *fDaughter;        //! pointer to daughter
 
 private:
 

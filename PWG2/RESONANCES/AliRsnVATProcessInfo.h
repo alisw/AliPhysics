@@ -28,7 +28,7 @@ public:
    ~AliRsnVATProcessInfo();
 
    void          GenerateInfoList(TList* list);
-   virtual void  FillInfo();
+   virtual void  FillInfo(AliRsnEvent *event);
    virtual void  PrintInfo(const Long64_t &num);
 
    const char*   GetEventHistogramName() { return Form("hEventsUsed_%s", GetName()); };

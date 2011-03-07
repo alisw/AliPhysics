@@ -24,10 +24,6 @@
 
 #include "AliLog.h"
 
-#include "AliRsnDaughter.h"
-#include "AliRsnEvent.h"
-#include "AliRsnPairDef.h"
-#include "AliRsnMother.h"
 #include "AliRsnValue.h"
 
 #include "AliRsnFunction.h"
@@ -35,18 +31,14 @@
 ClassImp(AliRsnFunction)
 
 //________________________________________________________________________________________
-AliRsnFunction::AliRsnFunction(Bool_t single, Bool_t useTH1) :
+AliRsnFunction::AliRsnFunction(Bool_t useTH1) :
    TObject(),
-   fPairDef(0x0),
    fAxisList("AliRsnValue", 0),
-   fPair(0x0),
-   fEvent(0x0),
-   fDaughter(0x0),
-   fSingle(single),
    fUseTH1(useTH1),
    fSize(0),
    fH1(0x0),
-   fHSparse(0x0)
+   fHSparse(0x0),
+   fValues(0)
 {
 //
 // Constructor.
@@ -56,16 +48,12 @@ AliRsnFunction::AliRsnFunction(Bool_t single, Bool_t useTH1) :
 //________________________________________________________________________________________
 AliRsnFunction::AliRsnFunction(const AliRsnFunction &copy) :
    TObject(copy),
-   fPairDef(copy.fPairDef),
    fAxisList(copy.fAxisList),
-   fPair(copy.fPair),
-   fEvent(copy.fEvent),
-   fDaughter(copy.fDaughter),
-   fSingle(copy.fSingle),
    fUseTH1(copy.fUseTH1),
    fSize(copy.fSize),
    fH1(0x0),
-   fHSparse(0x0)
+   fHSparse(0x0),
+   fValues(copy.fValues)
 {
 //
 // Copy constructor.
@@ -79,19 +67,13 @@ const AliRsnFunction& AliRsnFunction::operator=(const AliRsnFunction& copy)
 // Assignment operator.
 //
 
-   fPairDef = copy.fPairDef;
-   fPair = copy.fPair;
-   fEvent = copy.fEvent;
-   fDaughter = copy.fDaughter;
-   fSingle = copy.fSingle;
+   fAxisList = copy.fAxisList;
    fUseTH1 = copy.fUseTH1;
    fSize = copy.fSize;
+   fValues = copy.fValues;
 
    if (fH1) delete fH1;
-   fH1 = 0x0;
-
    if (fHSparse) delete fHSparse;
-   fHSparse = 0x0;
 
    return (*this);
 }
@@ -132,18 +114,8 @@ Bool_t AliRsnFunction::AddAxis(AliRsnValue *const axis)
 // NOTE: this can cause large files and high memory occupancy.
 //
 
-   RSNTARGET target = axis->GetTargetType();
-   if (target == AliRsnTarget::kDaughter && !fSingle) {
-      AliError("An axis with 'AliRsnDaughter' target is not allowed in a non-single function");
-      return kFALSE;
-   }
-   if (target == AliRsnTarget::kMother && fSingle) {
-      AliError("An axis with 'AliRsnMother' target is not allowed in a single function");
-      return kFALSE;
-   }
-
    Int_t size = fAxisList.GetEntries();
-   new(fAxisList[size]) AliRsnValue(*axis);
+   new (fAxisList[size]) AliRsnValue(*axis);
 
    if (fAxisList.GetEntries() > 3) {
       AliWarning("Adding more than 3 axes will produce a THnSparseD output.");
@@ -174,6 +146,9 @@ TH1* AliRsnFunction::CreateHistogram(const char *histoName, const char *histoTit
       AliError("Too many axes defined for a TH1 object");
       return 0x0;
    }
+   
+   // initialize the size of values container
+   fValues.Set(fSize);
 
    // retrieve binnings for main and secondary axes
    AliRsnValue *fcnAxis;
@@ -226,11 +201,13 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
       AliError("No axes defined");
       return 0x0;
    }
+   
+   // initialize the size of values container
+   fValues.Set(fSize);
 
    // initialize the array of number of bins for each axis
    // taking it from the stored values, while for the bins
    // they are set as summied and defined later
-   Double_t     dummyD;
    Int_t       *nbins   = new Int_t[fSize];
    AliRsnValue *fcnAxis = 0;
    for (Int_t i = 0; i < fSize; i++) {
@@ -244,7 +221,7 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
    }
 
    // create histogram
-   fHSparse = new THnSparseF(histoName, histoTitle, fSize, nbins, &dummyD, &dummyD);
+   fHSparse = new THnSparseF(histoName, histoTitle, fSize, nbins);
    fHSparse->Sumw2();
 
    // update the various axes using the definitions given in the array of axes here
@@ -254,7 +231,8 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
          AliError("Empty axis: doing unique bin betweeen -100000 and 100000");
          continue;
       }
-      fHSparse->SetBinEdges(i, fcnAxis->GetArray().GetArray());
+      TAxis* axis = fHSparse->GetAxis(i);
+      axis->Set(nbins[i], fcnAxis->GetArray().GetArray());
    }
 
    delete [] nbins;
@@ -264,59 +242,40 @@ THnSparseF* AliRsnFunction::CreateHistogramSparse(const char *histoName, const c
 
 
 //________________________________________________________________________________________
-Bool_t AliRsnFunction::Fill()
+Bool_t AliRsnFunction::Fill(TObject *object)
 {
 //
-// Fill function histogram with values computed from given input object.
+// Fill function histogram using the passed object
 //
 
    AliDebug(AliLog::kDebug + 2, "->");
 
+   // loop on axes and try to compute values
+   // using this object or, as an alternative
+   // its reference event
    Int_t  i;
-   Double_t *values = new Double_t[fSize];
-   Bool_t    computeOK = kFALSE;
-
+   Bool_t globalOK = kTRUE, computeOK;
    AliRsnValue *fcnAxis = 0;
    for (i = 0; i < fSize; i++) {
-      values[i] = 0.0;
+      fValues[i] = 0.0;
+      computeOK = kFALSE;
       fcnAxis = (AliRsnValue*)fAxisList.At(i);
-      if (!fcnAxis) continue;
-      switch (fcnAxis->GetTargetType()) {
-         case AliRsnTarget::kMother:
-            if (!fSingle) {
-               fcnAxis->SetSupportObject(fPairDef);
-               computeOK = fcnAxis->Eval(fPair);
-            }
-            else {
-               AliError(Form("Allowed targets are daughters and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
-               computeOK = kFALSE;
-            }
-            break;
-         case AliRsnTarget::kEvent:
-            computeOK = fcnAxis->Eval(fEvent);
-            break;
-         case AliRsnTarget::kDaughter:
-            if (fSingle) {
-               computeOK = fcnAxis->Eval(fDaughter);
-            }
-            else {
-               AliError(Form("Allowed targets are daughters and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
-               computeOK = kFALSE;
-            }
-            break;
-         default:
-            AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", fcnAxis->GetName(), fcnAxis->GetTargetTypeName()));
-            computeOK = kFALSE;
+      if (fcnAxis) {
+         computeOK = fcnAxis->Eval(object);
+         if (computeOK) fValues[i] = ((Float_t)fcnAxis->GetComputedValue());
       }
-      if (computeOK) values[i] = ((Float_t)fcnAxis->GetComputedValue());
+      if (!computeOK) globalOK = kFALSE;
    }
+   
+   // if even one of the computations has failes, the histograms are not filled
+   if (!globalOK) return kFALSE;
 
    // fill histogram
    if (fUseTH1) {
+      
       // check presence of output histogram
       if (!fH1) {
          AliError("Required a TH1 which is not initialized");
-         delete [] values;
          return kFALSE;
       }
 
@@ -324,36 +283,33 @@ Bool_t AliRsnFunction::Fill()
       switch (fSize) {
          case 1: {
             TH1F *h1 = (TH1F*)fH1;
-            h1->Fill(values[0]);
+            h1->Fill(fValues[0]);
          }
          break;
          case 2: {
             TH2F *h2 = (TH2F*)fH1;
-            h2->Fill(values[0], values[1]);
+            h2->Fill(fValues[0], fValues[1]);
          }
          break;
          case 3: {
             TH3F *h3 = (TH3F*)fH1;
-            h3->Fill(values[0], values[1], values[2]);
+            h3->Fill(fValues[0], fValues[1], fValues[2]);
          }
          break;
          default:
             AliError(Form("Wrong size : %d", fSize));
-            delete [] values;
             return kFALSE;
       }
    } else {
+      
       // check presence of output histogram
       if (!fHSparse) {
          AliError("Required a THnSparseF which is not initialized");
-         delete [] values;
          return kFALSE;
       }
 
-      fHSparse->Fill(values);
+      fHSparse->Fill(fValues.GetArray());
    }
-
-   delete [] values;
 
    AliDebug(AliLog::kDebug + 2, "->");
    return kTRUE;

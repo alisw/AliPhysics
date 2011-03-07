@@ -31,6 +31,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <Riostream.h>
 #include <TH1.h>
 #include <TROOT.h>
 
@@ -55,8 +56,7 @@ AliRsnAnalysisManager::AliRsnAnalysisManager(const char *name) :
    fAddUsageHist(kFALSE),
    fList(0x0),
    fPairs(0),
-   fMonitors(0),
-   fGlobalTrackCuts()
+   fMonitors(0)
 {
 //
 // Default constructor
@@ -69,8 +69,7 @@ AliRsnAnalysisManager::AliRsnAnalysisManager(const AliRsnAnalysisManager& copy) 
    fAddUsageHist(copy.fAddUsageHist),
    fList(copy.fList),
    fPairs(copy.fPairs),
-   fMonitors(copy.fMonitors),
-   fGlobalTrackCuts(copy.fGlobalTrackCuts)
+   fMonitors(copy.fMonitors)
 {
 //
 // Copy constructor
@@ -90,7 +89,6 @@ AliRsnAnalysisManager& AliRsnAnalysisManager::operator=(const AliRsnAnalysisMana
    fList = copy.fList;
    fPairs = copy.fPairs;
    fMonitors = copy.fMonitors;
-   fGlobalTrackCuts = copy.fGlobalTrackCuts;
 
    return (*this);
 }
@@ -205,7 +203,7 @@ void AliRsnAnalysisManager::InitAllPairs(TList *list)
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisManager::ProcessAll(Bool_t pureMC)
+void AliRsnAnalysisManager::ProcessAll(AliRsnEvent *ev0, AliRsnEvent *ev1, Bool_t pureMC)
 {
 //
 // Loop on all pairs/monitors stored here 
@@ -216,14 +214,13 @@ void AliRsnAnalysisManager::ProcessAll(Bool_t pureMC)
    
    // don't do anything if the output list isn't initialized
    if (!fList) return;
-
-   // skip if the global event pointers are NULL
-   if (!AliRsnEvent::IsCurrentEvent1()) return;
-   if (!AliRsnEvent::IsCurrentEvent2()) return;
-
-   // for better readability, reference two pointers to the current events
-   AliRsnEvent *ev0 = AliRsnEvent::GetCurrentEvent1();
-   AliRsnEvent *ev1 = AliRsnEvent::GetCurrentEvent2();
+   
+   // if second event is NULL, we assume that analysis is on single event
+   Bool_t sameEvent = kFALSE;
+   if (!ev1) {
+      ev1 = ev0;
+      sameEvent = kTRUE;
+   }
    
    // if MC reference is absent, cannot process pure MC
    if (pureMC && (!ev0->GetRefMC() || !ev1->GetRefMC())) {
@@ -238,22 +235,27 @@ void AliRsnAnalysisManager::ProcessAll(Bool_t pureMC)
       nTot[0] = ev0->GetRefMC()->GetNumberOfTracks();
       nTot[1] = ev1->GetRefMC()->GetNumberOfTracks();
    } else {
-      nTot[0] = AliRsnEvent::GetCurrentEvent1()->GetAbsoluteSum();
-      nTot[1] = AliRsnEvent::GetCurrentEvent2()->GetAbsoluteSum();
+      nTot[0] = ev0->GetAbsoluteSum();
+      nTot[1] = ev1->GetAbsoluteSum();
    }
+   
+   // if there are only monitors and no pairs
+   // disable the inner loop by settin counter to zero
+   if (fPairs.IsEmpty()) nTot[1] = 0;
 
    // variables
-   Int_t                    i0, i1, i, start;
-   AliRsnDaughter           daughter0, daughter1;
-   AliRsnPair              *pair = 0x0;
-   AliRsnMonitor           *monitor = 0x0;
-   TObjArrayIter            nextPair(&fPairs);
-   TObjArrayIter            nextMonitor(&fMonitors);
+   Int_t           i0, i1, i;
+   AliRsnDaughter  daughter0, daughter1;
+   AliRsnPair     *pair = 0x0;
+   AliRsnMonitor  *monitor = 0x0;
+   TObjArrayIter   nextPair(&fPairs);
+   TObjArrayIter   nextMonitor(&fMonitors);
 
    // reset all counters which tell us
    // how many entries were added now
    while ((pair = (AliRsnPair*)nextPair())) {
       pair->ResetCount();
+      pair->GetMother()->SetRefEvent(daughter0.GetOwnerEvent());
    }
 
    // external loop
@@ -268,17 +270,18 @@ void AliRsnAnalysisManager::ProcessAll(Bool_t pureMC)
       } else {
          if (!ev0->SetDaughterAbs(daughter0, i0)) continue;
       }
-      if (!fGlobalTrackCuts.IsSelected(&daughter0)) continue;
+      // when the assigment is unsuccessful, this i known in internal status flag
+      if (!daughter0.IsOK()) continue;
       
       // process all single-track monitors
       nextMonitor.Reset();
-      while ((monitor = (AliRsnMonitor*)nextMonitor())) if (monitor->Fill(&daughter0)) monitor->Compute();
+      while ((monitor = (AliRsnMonitor*)nextMonitor())) 
+         if (monitor->Fill(&daughter0)) 
+            monitor->Compute();
 
-      // define start of inner loop depending if we are processing one or two events
-      start = (AliRsnEvent::SameEvent() ? i0 + 1 : 0);
-
-      // internal loop (same criterion)
-      for (i1 = start; i1 < nTot[1]; i1++) {
+      // internal loop
+      // starts from next track or first, depending if not mixing or yes
+      for (i1 = (sameEvent ? i0 + 1 : 0); i1 < nTot[1]; i1++) {
 
          // try to assign first track
          // and check global cuts
@@ -289,7 +292,8 @@ void AliRsnAnalysisManager::ProcessAll(Bool_t pureMC)
          } else {
             if (!ev1->SetDaughterAbs(daughter1, i1)) continue;
          }
-         if (!fGlobalTrackCuts.IsSelected(&daughter1)) continue;
+         // when the assigment is unsuccessful, this i known in internal status flag
+         if (!daughter1.IsOK()) continue;
 
          // loop over all pairs and make computations
          i = 0;

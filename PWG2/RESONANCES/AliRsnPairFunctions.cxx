@@ -81,9 +81,7 @@ void AliRsnPairFunctions::Compute()
    AliRsnFunction *fcn = 0x0;
 
    while ((fcn = (AliRsnFunction*)nextFcn())) {
-      fcn->SetPairDef(fPairDef);
-      fcn->SetPair(&fMother);
-      fcn->Fill();
+      fcn->Fill(&fMother);
    }
 }
 

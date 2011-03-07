@@ -22,10 +22,10 @@ public:
    AliRsnMonitorFunctions& operator=(const AliRsnMonitorFunctions&);
    ~AliRsnMonitorFunctions();
 
-   void         AddFunction(AliRsnFunction* const fcn);
-   TList*       GenerateHistograms(const char *prefix = "", TList *list = 0);
-   virtual void Compute();
-   virtual void Init(const char *prefix, TList *list);
+   void           AddFunction(AliRsnFunction* const fcn);
+   TList*         GenerateHistograms(const char *prefix = "", TList *list = 0);
+   virtual void   Compute();
+   virtual void   Init(const char *prefix, TList *list);
 
 protected:
 

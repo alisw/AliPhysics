@@ -10,10 +10,9 @@
 #ifndef ALIRSNANALYSISTASK_H
 #define ALIRSNANALYSISTASK_H
 
-#include "AliPID.h"
 #include "AliRsnVAnalysisTask.h"
 #include "AliRsnAnalysisManager.h"
-#include "AliRsnEvent.h"
+
 #include "AliRsnCutSet.h"
 
 class AliRsnPIDDefESD;
@@ -30,7 +29,7 @@ public:
    virtual void            RsnUserExec(Option_t*);
    virtual void            RsnUserExecMix(Option_t*);
    virtual void            RsnTerminate(Option_t*);
-   virtual Bool_t          EventProcess();
+   virtual Bool_t          RsnEventProcess();
 
    AliRsnCutSet*           GetEventCuts()                           {return &fEventCuts;}
    AliRsnAnalysisManager*  GetAnalysisManager()                     {return &fRsnAnalysisManager;}
