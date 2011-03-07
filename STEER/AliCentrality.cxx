@@ -97,7 +97,7 @@ Float_t AliCentrality::GetCentralityPercentile(const char *x) const
     if(method.CompareTo("CL1")==0)      return fCentralityCL1;
     if(method.CompareTo("V0MvsFMD")==0) return fCentralityV0MvsFMD;
     if(method.CompareTo("TKLvsV0M")==0) return fCentralityTKLvsV0M;
-    if(method.CompareTo("ZENvsZDC")==0) return fCentralityZEMvsZDC;
+    if(method.CompareTo("ZEMvsZDC")==0) return fCentralityZEMvsZDC;
     return -1;
   } else {
     return -1;
@@ -117,7 +117,7 @@ Int_t AliCentrality::GetCentralityClass10(const char *x) const
     if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 10.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 10.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 10.0);
-    if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 10.0);
+    if(method.CompareTo("ZEMvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 10.0);
     return -1;
   } else {
     return -1;
@@ -137,7 +137,7 @@ Int_t AliCentrality::GetCentralityClass5(const char *x) const
     if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 5.0);
     if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 5.0);
     if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 5.0);
-    if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 5.0);
+    if(method.CompareTo("ZEMvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 5.0);
     return -1;
   } else {
     return -1;
@@ -177,7 +177,7 @@ Float_t AliCentrality::GetCentralityPercentileUnchecked(const char *x) const
   if(method.CompareTo("CL1")==0)      return fCentralityCL1;
   if(method.CompareTo("V0MvsFMD")==0) return fCentralityV0MvsFMD;
   if(method.CompareTo("TKLvsV0M")==0) return fCentralityTKLvsV0M;
-  if(method.CompareTo("ZENvsZDC")==0) return fCentralityZEMvsZDC;
+  if(method.CompareTo("ZEMvsZDC")==0) return fCentralityZEMvsZDC;
   return -1;
 }
 
@@ -193,7 +193,7 @@ Int_t AliCentrality::GetCentralityClass10Unchecked(const char *x) const
   if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 10.0);
   if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 10.0);
   if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 10.0);
-  if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 10.0);
+  if(method.CompareTo("ZEMvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 10.0);
   return -1;
 }
 
@@ -209,7 +209,7 @@ Int_t AliCentrality::GetCentralityClass5Unchecked(const char *x) const
   if(method.CompareTo("CL1")==0)      return (Int_t) (fCentralityCL1 / 5.0);
   if(method.CompareTo("V0MvsFMD")==0) return (Int_t) (fCentralityV0MvsFMD / 5.0);
   if(method.CompareTo("TKLvsV0M")==0) return (Int_t) (fCentralityTKLvsV0M / 5.0);
-  if(method.CompareTo("ZENvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 5.0);
+  if(method.CompareTo("ZEMvsZDC")==0) return (Int_t) (fCentralityZEMvsZDC / 5.0);
   return -1;
 } 
 
