@@ -417,7 +417,9 @@ void AliAnalysisTaskPIDflowQA::pidITS(AliESDtrack* t, Int_t pdgcode)
 //________________________________________________________________________
 void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t pdgcode)
 {
-  Double_t pinTPCglobal=t->GetInnerParam()->GetP();
+  const AliExternalTrackParam* innerParam = t->GetInnerParam();
+  if (!innerParam) return;
+  Double_t pinTPCglobal=innerParam->GetP();
   Float_t sigPion     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kPion);
   Float_t sigKaon     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kKaon);
   Float_t sigProton   = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kProton);
