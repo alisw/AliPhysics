@@ -1283,7 +1283,7 @@ void AliBaseCalibViewerGUI::GetMinMax() {
       ptr = listOfPrimitives->At(i);
       if ( ptr->InheritsFrom("TH1") ) break;
    }
-   if ( ptr != 0 && !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
+   if ( !ptr || !ptr->InheritsFrom("TH1") ) return;      // if the loop did not find a TH1
    TH1 *hist = (TH1*)ptr;
 
    if (fRadio2D->GetState() == kButtonDown) {

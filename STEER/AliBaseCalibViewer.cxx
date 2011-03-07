@@ -274,7 +274,6 @@ TString* AliBaseCalibViewer::Fit(const Char_t* drawCommand, const Char_t* formul
    fitter->GetParameters(fitParam);
    fitter->GetCovarianceMatrix(covMatrix);
    chi2 = fitter->GetChisquare();
-   chi2 = chi2;
    
    TString *preturnFormula = new TString(Form("( %e+",fitParam[0])), &returnFormula = *preturnFormula;
    
@@ -471,125 +470,126 @@ TH1F* AliBaseCalibViewer::SigmaCut(Int_t n, Double_t *array, Double_t mean, Doub
 
 //_____________________________________________________________________________
 Int_t  AliBaseCalibViewer::DrawHisto1D(const Char_t* drawCommand, const Char_t* sector, const Char_t* cuts, 
-				       const Char_t *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const {
-   // 
+				       const Char_t *sigmas, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM) const
+{
+   //
    // Easy drawing of data, in principle the same as EasyDraw1D
-   // Difference: A line for the mean / median / LTM is drawn 
+   // Difference: A line for the mean / median / LTM is drawn
    // in 'sigmas' you can specify in which distance to the mean/median/LTM you want to see a line in sigma-units, separated by ';'
    // example: sigmas = "2; 4; 6;"  at Begin_Latex 2 #sigma End_Latex, Begin_Latex 4 #sigma End_Latex and Begin_Latex 6 #sigma End_Latex  a line is drawn.
    // "plotMean", "plotMedian" and "plotLTM": what kind of lines do you want to see?
-   // 
-   Int_t oldOptStat = gStyle->GetOptStat();
-   gStyle->SetOptStat(0000000);
-   Double_t ltmFraction = 0.8;
-   
-   TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");  
-   TVectorF nsigma(sigmasTokens->GetEntriesFast());
-   for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
-      TString str(((TObjString*)sigmasTokens->At(i))->GetString());
-      Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
-      nsigma[i] = sig;
-   }
-   
-   TString drawStr(drawCommand);
-   Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
-   if (dangerousToDraw) {
-      Warning("DrawHisto1D", "The draw string must not contain ':' or '>>'.");
-      return -1;
-   }
-   drawStr += " >> tempHist";
-   Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts);
-   TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
+   //
+  Int_t oldOptStat = gStyle->GetOptStat();
+  gStyle->SetOptStat(0000000);
+  Double_t ltmFraction = 0.8;
+  
+  TObjArray *sigmasTokens = TString(sigmas).Tokenize(";");
+  TVectorF nsigma(sigmasTokens->GetEntriesFast());
+  for (Int_t i = 0; i < sigmasTokens->GetEntriesFast(); i++) {
+    TString str(((TObjString*)sigmasTokens->At(i))->GetString());
+    Double_t sig = (str.IsFloat()) ? str.Atof() : 0;
+    nsigma[i] = sig;
+  }
+  
+  TString drawStr(drawCommand);
+  Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
+  if (dangerousToDraw) {
+    Warning("DrawHisto1D", "The draw string must not contain ':' or '>>'.");
+    return -1;
+  }
+  drawStr += " >> tempHist";
+  Int_t entries = EasyDraw1D(drawStr.Data(), sector, cuts);
+  TH1F *htemp = (TH1F*)gDirectory->Get("tempHist");
    // FIXME is this histogram deleted automatically?
-   Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
-   
-   Double_t mean = TMath::Mean(entries, values);
-   Double_t median = TMath::Median(entries, values);
-   Double_t sigma = TMath::RMS(entries, values);
-   Double_t maxY = htemp->GetMaximum();
-   
-   Char_t c[500];
-   TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
-
-   if (plotMean) {
+  Double_t *values = fTree->GetV1();  // value is the array containing 'entries' numbers
+  
+  Double_t mean = TMath::Mean(entries, values);
+  Double_t median = TMath::Median(entries, values);
+  Double_t sigma = TMath::RMS(entries, values);
+  Double_t maxY = htemp->GetMaximum();
+  
+  TLegend * legend = new TLegend(.7,.7, .99, .99, "Statistical information");
+   //fListOfObjectsToBeDeleted->Add(legend);
+  
+  if (plotMean) {
       // draw Mean
-      TLine* line = new TLine(mean, 0, mean, maxY);
-      line->SetLineColor(kRed);
-      line->SetLineWidth(2);
-      line->SetLineStyle(1);
-      line->Draw();
-      sprintf(c, "Mean: %f", mean);
-      legend->AddEntry(line, c, "l");
-      // draw sigma lines
-      for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(mean + nsigma[i] * sigma, 0, mean + nsigma[i] * sigma, maxY);
-         linePlusSigma->SetLineColor(kRed);
-         linePlusSigma->SetLineStyle(2 + i);
-         linePlusSigma->Draw();
-         TLine* lineMinusSigma = new TLine(mean - nsigma[i] * sigma, 0, mean - nsigma[i] * sigma, maxY);
-         lineMinusSigma->SetLineColor(kRed);
-         lineMinusSigma->SetLineStyle(2 + i);
-         lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
-         legend->AddEntry(lineMinusSigma, c, "l");
-      }
-   }
-   if (plotMedian) {
-      // draw median
-      TLine* line = new TLine(median, 0, median, maxY);
-      line->SetLineColor(kBlue);
-      line->SetLineWidth(2);
-      line->SetLineStyle(1);
-      line->Draw();
-      sprintf(c, "Median: %f", median);
-      legend->AddEntry(line, c, "l");
-      // draw sigma lines
-      for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(median + nsigma[i] * sigma, 0, median + nsigma[i]*sigma, maxY);
-         linePlusSigma->SetLineColor(kBlue);
-         linePlusSigma->SetLineStyle(2 + i);
-         linePlusSigma->Draw();
-         TLine* lineMinusSigma = new TLine(median - nsigma[i] * sigma, 0, median - nsigma[i]*sigma, maxY);
-         lineMinusSigma->SetLineColor(kBlue);
-         lineMinusSigma->SetLineStyle(2 + i);
-         lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma));
-         legend->AddEntry(lineMinusSigma, c, "l");
-      }
-   }
-   if (plotLTM) {
-      // draw LTM
-      Double_t ltmRms = 0;
-      Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
-      TLine* line = new TLine(ltm, 0, ltm, maxY);
+    TLine* line = new TLine(mean, 0, mean, maxY);
       //fListOfObjectsToBeDeleted->Add(line);
-      line->SetLineColor(kGreen+2);
-      line->SetLineWidth(2);
-      line->SetLineStyle(1);
-      line->Draw();
-      sprintf(c, "LTM: %f", ltm);
-      legend->AddEntry(line, c, "l");
+    line->SetLineColor(kRed);
+    line->SetLineWidth(2);
+    line->SetLineStyle(1);
+    line->Draw();
+    legend->AddEntry(line, Form("Mean: %f", mean), "l");
       // draw sigma lines
-      for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-         TLine* linePlusSigma = new TLine(ltm + nsigma[i] * ltmRms, 0, ltm + nsigma[i] * ltmRms, maxY);
+    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+      TLine* linePlusSigma = new TLine(mean + nsigma[i] * sigma, 0, mean + nsigma[i] * sigma, maxY);
          //fListOfObjectsToBeDeleted->Add(linePlusSigma);
-         linePlusSigma->SetLineColor(kGreen+2);
-         linePlusSigma->SetLineStyle(2+i);
-         linePlusSigma->Draw();
-   
-         TLine* lineMinusSigma = new TLine(ltm - nsigma[i] * ltmRms, 0, ltm - nsigma[i] * ltmRms, maxY);
+      linePlusSigma->SetLineColor(kRed);
+      linePlusSigma->SetLineStyle(2 + i);
+      linePlusSigma->Draw();
+      TLine* lineMinusSigma = new TLine(mean - nsigma[i] * sigma, 0, mean - nsigma[i] * sigma, maxY);
          //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
-         lineMinusSigma->SetLineColor(kGreen+2);
-         lineMinusSigma->SetLineStyle(2+i);
-         lineMinusSigma->Draw();
-         sprintf(c, "%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i] * ltmRms));
-         legend->AddEntry(lineMinusSigma, c, "l");
-      }
-   }
-   if (!plotMean && !plotMedian && !plotLTM) return -1;
-   legend->Draw();
-   gStyle->SetOptStat(oldOptStat);
-   return 1;
+      lineMinusSigma->SetLineColor(kRed);
+      lineMinusSigma->SetLineStyle(2 + i);
+      lineMinusSigma->Draw();
+      legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma)), "l");
+    }
+  }
+  if (plotMedian) {
+      // draw median
+    TLine* line = new TLine(median, 0, median, maxY);
+      //fListOfObjectsToBeDeleted->Add(line);
+    line->SetLineColor(kBlue);
+    line->SetLineWidth(2);
+    line->SetLineStyle(1);
+    line->Draw();
+    legend->AddEntry(line, Form("Median: %f", median), "l");
+      // draw sigma lines
+    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+      TLine* linePlusSigma = new TLine(median + nsigma[i] * sigma, 0, median + nsigma[i]*sigma, maxY);
+         //fListOfObjectsToBeDeleted->Add(linePlusSigma);
+      linePlusSigma->SetLineColor(kBlue);
+      linePlusSigma->SetLineStyle(2 + i);
+      linePlusSigma->Draw();
+      TLine* lineMinusSigma = new TLine(median - nsigma[i] * sigma, 0, median - nsigma[i]*sigma, maxY);
+         //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
+      lineMinusSigma->SetLineColor(kBlue);
+      lineMinusSigma->SetLineStyle(2 + i);
+      lineMinusSigma->Draw();
+      legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f",(Int_t)(nsigma[i]), (Float_t)(nsigma[i] * sigma)), "l");
+    }
+  }
+  if (plotLTM) {
+      // draw LTM
+    Double_t ltmRms = 0;
+    Double_t ltm = GetLTM(entries, values, &ltmRms, ltmFraction);
+    TLine* line = new TLine(ltm, 0, ltm, maxY);
+      //fListOfObjectsToBeDeleted->Add(line);
+    line->SetLineColor(kGreen+2);
+    line->SetLineWidth(2);
+    line->SetLineStyle(1);
+    line->Draw();
+    legend->AddEntry(line, Form("LTM: %f", ltm), "l");
+      // draw sigma lines
+    for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+      TLine* linePlusSigma = new TLine(ltm + nsigma[i] * ltmRms, 0, ltm + nsigma[i] * ltmRms, maxY);
+         //fListOfObjectsToBeDeleted->Add(linePlusSigma);
+      linePlusSigma->SetLineColor(kGreen+2);
+      linePlusSigma->SetLineStyle(2+i);
+      linePlusSigma->Draw();
+      
+      TLine* lineMinusSigma = new TLine(ltm - nsigma[i] * ltmRms, 0, ltm - nsigma[i] * ltmRms, maxY);
+         //fListOfObjectsToBeDeleted->Add(lineMinusSigma);
+      lineMinusSigma->SetLineColor(kGreen+2);
+      lineMinusSigma->SetLineStyle(2+i);
+      lineMinusSigma->Draw();
+      legend->AddEntry(lineMinusSigma, Form("%i #sigma = %f", (Int_t)(nsigma[i]), (Float_t)(nsigma[i] * ltmRms)), "l");
+    }
+  }
+  if (!plotMean && !plotMedian && !plotLTM) return -1;
+  legend->Draw();
+  gStyle->SetOptStat(oldOptStat);
+  return 1;
 }
 
 //_____________________________________________________________________________
@@ -905,109 +905,101 @@ TH1F* AliBaseCalibViewer::Integrate(Int_t n, Float_t *array, Int_t nbins, Float_
 
 //_____________________________________________________________________________
 void AliBaseCalibViewer::DrawLines(TH1F *histogram, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
-   // 
+   //
    // Private function for SigmaCut(...) and Integrate(...)
    // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
-   // 
-   
+   //
+  
    // start to draw the lines, loop over requested sigmas
-   Char_t c[500];
-   for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-      if (!pm) { 
-         Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
-         TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
+  for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+    if (!pm) {
+      Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
+      TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineUp);
-         lineUp->SetLineColor(color);
-         lineUp->SetLineStyle(2 + i);
-         lineUp->Draw();
-         TLine* lineLeft = new TLine(nsigma[i], histogram->GetBinContent(bin), 0, histogram->GetBinContent(bin));
+      lineUp->SetLineColor(color);
+      lineUp->SetLineStyle(2 + i);
+      lineUp->Draw();
+      TLine* lineLeft = new TLine(nsigma[i], histogram->GetBinContent(bin), 0, histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineLeft);
-         lineLeft->SetLineColor(color);
-         lineLeft->SetLineStyle(2 + i);
-         lineLeft->Draw();
-         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft, c, "l");
-      }
-      else { // if (pm)
-         Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
-         TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
+      lineLeft->SetLineColor(color);
+      lineLeft->SetLineStyle(2 + i);
+      lineLeft->Draw();
+      legend->AddEntry(lineLeft, Form("Fraction(%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
+    }
+    else { // if (pm)
+      Int_t bin = histogram->GetXaxis()->FindBin(nsigma[i]);
+      TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineUp1);
-         lineUp1->SetLineColor(color);
-         lineUp1->SetLineStyle(2 + i);
-         lineUp1->Draw();
-         TLine* lineLeft1 = new TLine(nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
+      lineUp1->SetLineColor(color);
+      lineUp1->SetLineStyle(2 + i);
+      lineUp1->Draw();
+      TLine* lineLeft1 = new TLine(nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineLeft1);
-         lineLeft1->SetLineColor(color);
-         lineLeft1->SetLineStyle(2 + i);
-         lineLeft1->Draw();
-         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft1, c, "l");
-         bin = histogram->GetXaxis()->FindBin(-nsigma[i]);
-         TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], histogram->GetBinContent(bin));
+      lineLeft1->SetLineColor(color);
+      lineLeft1->SetLineStyle(2 + i);
+      lineLeft1->Draw();
+      legend->AddEntry(lineLeft1, Form("Fraction(+%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
+      bin = histogram->GetXaxis()->FindBin(-nsigma[i]);
+      TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineUp2);
-         lineUp2->SetLineColor(color);
-         lineUp2->SetLineStyle(2 + i);
-         lineUp2->Draw();
-         TLine* lineLeft2 = new TLine(-nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
+      lineUp2->SetLineColor(color);
+      lineUp2->SetLineStyle(2 + i);
+      lineUp2->Draw();
+      TLine* lineLeft2 = new TLine(-nsigma[i], histogram->GetBinContent(bin), histogram->GetBinLowEdge(0)+histogram->GetBinWidth(0), histogram->GetBinContent(bin));
          //fListOfObjectsToBeDeleted->Add(lineLeft2);
-         lineLeft2->SetLineColor(color);
-         lineLeft2->SetLineStyle(2 + i);
-         lineLeft2->Draw();
-         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin));
-         legend->AddEntry(lineLeft2, c, "l");
-      }
-   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+      lineLeft2->SetLineColor(color);
+      lineLeft2->SetLineStyle(2 + i);
+      lineLeft2->Draw();
+      legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], histogram->GetBinContent(bin)), "l");
+    }
+  }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)
 }
 
 //_____________________________________________________________________________
 void AliBaseCalibViewer::DrawLines(TGraph *graph, TVectorF nsigma, TLegend *legend, Int_t color, Bool_t pm) const {
-   // 
+   //
    // Private function for SigmaCut(...) and Integrate(...)
    // Draws lines into the given histogram, specified by "nsigma", the lines are addeed to the legend
-   // 
-   
+   //
+  
    // start to draw the lines, loop over requested sigmas
-   Char_t c[500];
-   for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
-      if (!pm) { 
-         TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
+  for (Int_t i = 0; i < nsigma.GetNoElements(); i++) {
+    if (!pm) {
+      TLine* lineUp = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineUp);
-         lineUp->SetLineColor(color);
-         lineUp->SetLineStyle(2 + i);
-         lineUp->Draw();
-         TLine* lineLeft = new TLine(nsigma[i], graph->Eval(nsigma[i]), 0, graph->Eval(nsigma[i]));
+      lineUp->SetLineColor(color);
+      lineUp->SetLineStyle(2 + i);
+      lineUp->Draw();
+      TLine* lineLeft = new TLine(nsigma[i], graph->Eval(nsigma[i]), 0, graph->Eval(nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineLeft);
-         lineLeft->SetLineColor(color);
-         lineLeft->SetLineStyle(2 + i);
-         lineLeft->Draw();
-         sprintf(c, "Fraction(%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
-         legend->AddEntry(lineLeft, c, "l");
-      }
-      else { // if (pm)
-         TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
+      lineLeft->SetLineColor(color);
+      lineLeft->SetLineStyle(2 + i);
+      lineLeft->Draw();
+      legend->AddEntry(lineLeft, Form("Fraction(%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i])), "l");
+    }
+    else { // if (pm)
+      TLine* lineUp1 = new TLine(nsigma[i], 0, nsigma[i], graph->Eval(nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineUp1);
-         lineUp1->SetLineColor(color);
-         lineUp1->SetLineStyle(2 + i);
-         lineUp1->Draw();
-         TLine* lineLeft1 = new TLine(nsigma[i], graph->Eval(nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(nsigma[i]));
+      lineUp1->SetLineColor(color);
+      lineUp1->SetLineStyle(2 + i);
+      lineUp1->Draw();
+      TLine* lineLeft1 = new TLine(nsigma[i], graph->Eval(nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineLeft1);
-         lineLeft1->SetLineColor(color);
-         lineLeft1->SetLineStyle(2 + i);
-         lineLeft1->Draw();
-         sprintf(c, "Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i]));
-         legend->AddEntry(lineLeft1, c, "l");
-         TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], graph->Eval(-nsigma[i]));
+      lineLeft1->SetLineColor(color);
+      lineLeft1->SetLineStyle(2 + i);
+      lineLeft1->Draw();
+      legend->AddEntry(lineLeft1, Form("Fraction(+%f #sigma) = %f",nsigma[i], graph->Eval(nsigma[i])), "l");
+      TLine* lineUp2 = new TLine(-nsigma[i], 0, -nsigma[i], graph->Eval(-nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineUp2);
-         lineUp2->SetLineColor(color);
-         lineUp2->SetLineStyle(2 + i);
-         lineUp2->Draw();
-         TLine* lineLeft2 = new TLine(-nsigma[i], graph->Eval(-nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(-nsigma[i]));
+      lineUp2->SetLineColor(color);
+      lineUp2->SetLineStyle(2 + i);
+      lineUp2->Draw();
+      TLine* lineLeft2 = new TLine(-nsigma[i], graph->Eval(-nsigma[i]), graph->GetHistogram()->GetXaxis()->GetBinLowEdge(0), graph->Eval(-nsigma[i]));
          //fListOfObjectsToBeDeleted->Add(lineLeft2);
-         lineLeft2->SetLineColor(color);
-         lineLeft2->SetLineStyle(2 + i);
-         lineLeft2->Draw();
-         sprintf(c, "Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i]));
-         legend->AddEntry(lineLeft2, c, "l");
-      }
-   }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)   
+      lineLeft2->SetLineColor(color);
+      lineLeft2->SetLineStyle(2 + i);
+      lineLeft2->Draw();
+      legend->AddEntry(lineLeft2, Form("Fraction(-%f #sigma) = %f",nsigma[i], graph->Eval(-nsigma[i])), "l");
+    }
+  }  // for (Int_t i = 0; i < nsigma.GetNoElements(); i++)
 }
