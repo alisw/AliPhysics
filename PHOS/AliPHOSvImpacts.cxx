@@ -67,7 +67,10 @@ ClassImp(AliPHOSvImpacts)
 AliPHOSvImpacts::AliPHOSvImpacts():
   fEMCImpacts(new TList),
   fCPVImpacts(new TList),
-  fPPSDImpacts(new TList)
+  fPPSDImpacts(new TList),
+  fNEMCImpacts(),
+  fNCPVImpacts(),
+  fNPPSDImpacts()
 {
   // ctor
 }
@@ -77,7 +80,10 @@ AliPHOSvImpacts::AliPHOSvImpacts(const char *name, const char *title):
   AliPHOSv1(name,title),
   fEMCImpacts(new TList),
   fCPVImpacts(new TList),
-  fPPSDImpacts(0)
+  fPPSDImpacts(0),
+  fNEMCImpacts(),
+  fNCPVImpacts(),
+  fNPPSDImpacts()
 {
   // ctor : title is used to identify the layout
   //
