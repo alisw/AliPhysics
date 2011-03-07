@@ -388,7 +388,7 @@ TObjArray *AliTRDcheckDET::Histos(){
   if(fContainer) return fContainer;
   
   fContainer = new TObjArray(20);
-  //fContainer->SetOwner(kTRUE);
+  fContainer->SetOwner(kTRUE);
 
   // Register Histograms
   TH1 * h = NULL;
