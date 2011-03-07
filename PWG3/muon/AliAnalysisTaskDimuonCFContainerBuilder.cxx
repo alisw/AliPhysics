@@ -504,6 +504,10 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 
     AliAODEvent *aod;
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if ( ! aodH ) {
+      AliError("Cannot get input event handler");
+      return;
+    }
     aod = aodH->GetEvent();
     Int_t ntracks=aod->GetNumberOfTracks(); 
 
@@ -511,6 +515,10 @@ void AliAnalysisTaskDimuonCFContainerBuilder::UserExec(Option_t *)
 
     if (fReadMCInfo){
       TClonesArray *mcarray = dynamic_cast<TClonesArray*> (aod->FindListObject(AliAODMCParticle::StdBranchName()));  //array of MC particles in this event
+      if ( ! mcarray ) {
+        AliError("Cannot associate MC branch");
+        return;
+      }
       for(int ii=0;ii<mcarray->GetEntries();ii++){
 	AliAODMCParticle *mctrack = (AliAODMCParticle*) mcarray->At(ii);
 	if(mctrack->GetPdgCode()!=13) continue;
