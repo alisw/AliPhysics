@@ -9,7 +9,6 @@
 #pragma link C++ class AliPHOSTrackSegmentMakerv1+;
 #pragma link C++ class AliPHOSTrackSegmentMakerv2+;
 #pragma link C++ class AliPHOSPIDv0+;
-#pragma link C++ class AliPHOSAnalyze+;
 #pragma link C++ class AliPHOSIhepAnalyze+;
 #pragma link C++ class AliPHOSRecManager+;
 #pragma link C++ class AliPHOSRecCpvManager+;
