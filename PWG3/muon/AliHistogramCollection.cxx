@@ -383,6 +383,10 @@ AliHistogramCollection::Merge(TCollection* list)
   while ( ( o = next() ) )
   {
     AliHistogramCollection* hcol = dynamic_cast<AliHistogramCollection*>(o);
+    if (!hcol) {
+      AliFatal(Form("object named \"%s\" is a %s instead of an AliHistogramCollection!", o->GetName(), o->ClassName()));
+      continue;
+    }
     
     ++count;
     
