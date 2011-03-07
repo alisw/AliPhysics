@@ -714,11 +714,13 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      if(TMath::Abs(gainout-1.0) > 0.000001) {
        Double_t newgain = gaininit*gainout;
        if(newgain < 0.1) newgain = 0.1;
+       if(newgain > 1.9) newgain = 1.9;
        calDetGain->SetValue(det,newgain);
      }
      else {
        Double_t newgain = mean;
        if(newgain < 0.1) newgain = 0.1;
+       if(newgain > 1.9) newgain = 1.9;
        calDetGain->SetValue(det,newgain);
      }
    }
@@ -751,6 +753,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      Float_t gain = calDetGain->GetValue(det);
      if(vdriftout > 0.0) gain = gain*vdriftinit/vdriftout;
      if(gain < 0.1) gain = 0.1;
+     if(gain > 1.9) gain = 1.9;
      calDetGain->SetValue(det,gain);
 
 
