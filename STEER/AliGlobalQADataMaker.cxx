@@ -446,7 +446,7 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
       Double_t pp=par->GetP();
       Double_t dedx=track->GetTPCsignal();
       TH2F *h = dynamic_cast<TH2F*>(GetESDsData(kPid3));
-      h->Fill(pp,dedx);
+      if (h) h->Fill(pp,dedx);
     }
  
   }
@@ -460,9 +460,9 @@ void AliGlobalQADataMaker::MakeESDs(AliESDEvent * event) {
        Short_t nv0c=mltV0->GetNbPMV0C();
        Int_t   nits=mltITS->GetNumberOfTracklets();
        TH2F *h0=dynamic_cast<TH2F*>(GetESDsData(kMlt0));
-       h0->Fill(nits,nv0a);
+       if (h0) h0->Fill(nits,nv0a);
        TH2F *h1=dynamic_cast<TH2F*>(GetESDsData(kMlt1));
-       h1->Fill(nits,nv0c);
+       if (h1) h1->Fill(nits,nv0c);
     }
 
 
