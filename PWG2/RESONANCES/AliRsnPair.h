@@ -49,7 +49,7 @@ public:
    void              ResetCount()                         {fCount = 0;}
 
    // methods
-   Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1);
+   Bool_t            Fill(AliRsnDaughter *d0, AliRsnDaughter *d1, Bool_t refFirst = kTRUE);
    virtual void      Print(Option_t *option = "") const;
    virtual void      Compute();
    virtual void      Init(const char *prefix, TList *list);
