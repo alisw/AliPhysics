@@ -69,6 +69,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutSPDvertexerAnomaly(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
+  fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
@@ -110,6 +111,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutSPDvertexerAnomaly(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
   fCutCentralityPercentile(kFALSE),
+  fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCentralityPercentileMax(100.),
   fCentralityPercentileMin(0.),
@@ -151,6 +153,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
   fCutTPCmultiplicityOutliers(that.fCutTPCmultiplicityOutliers),
   fCutCentralityPercentile(that.fCutCentralityPercentile),
+  fUseCentralityUnchecked(that.fUseCentralityUnchecked),
   fCentralityPercentileMethod(that.fCentralityPercentileMethod),
   fCentralityPercentileMax(that.fCentralityPercentileMax),
   fCentralityPercentileMin(that.fCentralityPercentileMin),
@@ -211,6 +214,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
   fCutTPCmultiplicityOutliers=that.fCutTPCmultiplicityOutliers;
   fCutCentralityPercentile=that.fCutCentralityPercentile;
+  fUseCentralityUnchecked=that.fUseCentralityUnchecked;
   fCentralityPercentileMethod=that.fCentralityPercentileMethod;
   fCentralityPercentileMax=that.fCentralityPercentileMax;
   fCentralityPercentileMin=that.fCentralityPercentileMin;
@@ -234,11 +238,23 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutCentralityPercentile&&esdevent)
   {
     AliCentrality* centr = esdevent->GetCentrality();
-    if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
-                                          fCentralityPercentileMax,
-                                          CentrMethName(fCentralityPercentileMethod) ))
+    if (fUseCentralityUnchecked)
     {
-      return kFALSE;
+      if (!centr->IsEventInCentralityClassUnchecked( fCentralityPercentileMin,
+                                                     fCentralityPercentileMax,
+                                                     CentrMethName(fCentralityPercentileMethod) ))
+      {
+        return kFALSE;
+      }
+    }
+    else
+    {
+      if (!centr->IsEventInCentralityClass( fCentralityPercentileMin,
+                                            fCentralityPercentileMax,
+                                            CentrMethName(fCentralityPercentileMethod) ))
+      {
+        return kFALSE;
+      }
     }
   }
   if (fCutSPDvertexerAnomaly&&esdevent)

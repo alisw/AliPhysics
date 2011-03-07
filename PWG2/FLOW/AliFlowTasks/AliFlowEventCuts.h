@@ -71,6 +71,7 @@ class AliFlowEventCuts : public TNamed {
                                                                fCentralityPercentileMax=max;
                                                                fCutCentralityPercentile=kTRUE; }
   void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
+  void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
 
  private:
   Bool_t fCutNumberOfTracks;//cut on # of tracks
@@ -102,6 +103,7 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
   Bool_t fCutTPCmultiplicityOutliers; //cut TPC multiplicity outliers
   Bool_t fCutCentralityPercentile; //cut on centrality perc. from AliESDCentrality
+  Bool_t fUseCentralityUnchecked; //use the unchecked method
   refMultMethod fCentralityPercentileMethod; //where to get the percentile from
   Float_t fCentralityPercentileMax; // max centr. perc
   Float_t fCentralityPercentileMin; // min centr. perc
