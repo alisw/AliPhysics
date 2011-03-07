@@ -52,6 +52,7 @@
 #include "AliLog.h"
 #include "AliESDpid.h"
 #include "AliESDPmdTrack.h"
+#include "AliESDVZERO.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -373,6 +374,8 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (tracklets) return PassesCuts(tracklets,id);
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
+  AliESDVZERO* esdvzero = dynamic_cast<AliESDVZERO*>(obj);
+  if (esdvzero) return PassesV0cuts(esdvzero,id);
   return kFALSE;  //default when passed wrong type of object
 }
 
@@ -941,17 +944,75 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackPMDtrack() const
 }
 
 //-----------------------------------------------------------------------
+AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackV0() const
+{
+  //make a flow track from V0
+  AliFlowTrack* flowtrack=NULL;
+  TParticle *tmpTParticle=NULL;
+  AliMCParticle* tmpAliMCParticle=NULL;
+  switch (fParamMix)
+  {
+    case kPure:
+      flowtrack = new AliFlowTrack();
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
+      break;
+    case kTrackWithMCkine:
+      if (!fMCparticle) return NULL;
+      flowtrack = new AliFlowTrack();
+      flowtrack->SetPhi( fMCparticle->Phi() );
+      flowtrack->SetEta( fMCparticle->Eta() );
+      flowtrack->SetWeight(fTrackWeight);
+      flowtrack->SetPt( fMCparticle->Pt() );
+      break;
+    case kTrackWithMCpt:
+      if (!fMCparticle) return NULL;
+      flowtrack = new AliFlowTrack();
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
+      flowtrack->SetPt(fMCparticle->Pt());
+      break;
+    case kTrackWithPtFromFirstMother:
+      if (!fMCparticle) return NULL;
+      flowtrack = new AliFlowTrack();
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
+      tmpTParticle = fMCparticle->Particle();
+      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+      flowtrack->SetPt(tmpAliMCParticle->Pt());
+      break;
+    default:
+      flowtrack = new AliFlowTrack();
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      flowtrack->SetWeight(fTrackWeight);
+      break;
+  }
+
+  flowtrack->SetSource(AliFlowTrack::kFromV0);
+  return flowtrack;
+}
+
+//-----------------------------------------------------------------------
 AliFlowTrack* AliFlowTrackCuts::MakeFlowTrack() const
 {
   //get a flow track constructed from whatever we applied cuts on
   //caller is resposible for deletion
   //if construction fails return NULL
+  //TODO: for tracklets, PMD and V0 we probably need just one method,
+  //something like MakeFlowTrackGeneric(), wait with this until
+  //requirements quirks are known.
   switch (fParamType)
   {
     case kESD_SPDtracklet:
       return MakeFlowTrackSPDtracklet();
     case kPMD:
       return MakeFlowTrackPMDtrack();
+    case kV0:
+      return MakeFlowTrackV0();
     default:
       return MakeFlowTrackVParticle();
   }
@@ -1005,6 +1066,8 @@ Int_t AliFlowTrackCuts::GetNumberOfInputObjects() const
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) return 0;
       return esd->GetNumberOfPmdTracks();
+    case kV0:
+      return fgkNumberOfV0tracks;
     default:
       if (!fEvent) return 0;
       return fEvent->GetNumberOfTracks();
@@ -1031,6 +1094,9 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       esd = dynamic_cast<AliESDEvent*>(fEvent);
       if (!esd) return NULL;
       return esd->GetPmdTrack(i);
+    case kV0:
+      esd = dynamic_cast<AliESDEvent*>(fEvent);
+      return esd->GetVZEROData();
     default:
       if (!fEvent) return NULL;
       return fEvent->GetTrack(i);
@@ -1044,7 +1110,7 @@ void AliFlowTrackCuts::Clear(Option_t*)
   fTrack=NULL;
   fMCevent=NULL;
   fMCparticle=NULL;
-  fTrackLabel=0;
+  fTrackLabel=-1;
   fTrackWeight=0.0;
   fTrackEta=0.0;
   fTrackPhi=0.0;
@@ -1807,6 +1873,8 @@ const char* AliFlowTrackCuts::GetParamTypeName(trackParameterType type)
       return "SPD tracklet";
     case kPMD:
       return "PMD";
+    case kV0:
+      return "V0";
     default:
       return "unknown";
   }
@@ -1832,3 +1900,25 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(AliESDPmdTrack* /*track*/ )
 
   return kFALSE;
 }
+  
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesV0cuts(AliESDVZERO* vzero, Int_t id)
+{
+  //check V0 cuts
+
+  //clean up from last iter
+  fTrack = NULL;
+  fMCparticle=NULL;
+  fTrackLabel=-1;
+
+  fTrackPhi = 0.; //somefunctionof(vzero->GetAdc(id));
+  fTrackEta = 0.; //somefunctionof(vzero->GetAdc(id));
+  fTrackWeight = vzero->GetAdc(id);
+
+  Bool_t pass=kTRUE;
+  if (fCutEta) {if (  fTrackEta < fEtaMin || fTrackEta >= fEtaMax ) pass = kFALSE;}
+  if (fCutPhi) {if ( fTrackPhi < fPhiMin || fTrackPhi >= fPhiMax ) pass = kFALSE;}
+
+  return kFALSE;
+}
+

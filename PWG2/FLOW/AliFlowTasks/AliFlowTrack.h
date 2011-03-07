@@ -20,7 +20,8 @@ public:
                      kFromAOD=2,
                      kFromTracklet=3,
                      kFromFMD=4,
-                     kFromPMD=5 };
+                     kFromPMD=5,
+                     kFromV0=6 };
   AliFlowTrack();
   AliFlowTrack(const AliVParticle* p);
   AliFlowTrack& operator=(const AliFlowTrack& aTrack);
