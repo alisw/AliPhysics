@@ -291,8 +291,8 @@ FindClustersSDD(AliBin* bins[2], TBits* anodeFired[2],
 	  y=trk[1];
 	  z=trk[2]; 
 	  
+	  q+=(driftTime*rsdd->GetADCvsDriftTime(fModule)); // correction for zero supp.
 	  q/=rsdd->GetADCtokeV(fModule);
-	  q+=(driftTime*rsdd->GetChargevsTime()); // correction for zero supp.
 	  if(cal-> IsAMAt20MHz()) q*=2.; // account for 1/2 sampling freq.
 	  if(q<repa->GetMinClusterChargeSDD()) continue; // remove noise clusters
 	  

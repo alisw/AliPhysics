@@ -38,18 +38,12 @@ class AliITSCorrMapSDD : public TNamed {
   }
 
   Bool_t CheckAnodeBounds(Int_t iAn) const {
-    if(iAn<0 || iAn>=fNAnodePts){
-      AliWarning(Form("Cell out of bounds, anode=%d",iAn));
-      return kFALSE;
-    }
-    return kTRUE;
+    if(iAn<0 || iAn>=fNAnodePts)return kFALSE;
+    else return kTRUE;
   }
   Bool_t CheckDriftBounds(Int_t iTb) const {
-    if(iTb<0 || iTb >= fNDriftPts){ 
-      AliWarning(Form("Cell out of bounds, time-bin=%d",iTb));
-      return kFALSE;
-    }
-    return kTRUE;
+    if(iTb<0 || iTb >= fNDriftPts)return kFALSE;
+    else return kTRUE;
   }
 
   virtual void Set1DMap(TH1F* /*hmap*/){
@@ -70,7 +64,9 @@ class AliITSCorrMapSDD : public TNamed {
     return -99999.;
   }
 
+  void    ComputeGridPoints(Float_t z, Float_t x, AliITSsegmentationSDD *seg, Bool_t isReco=kTRUE);
   Float_t GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg);
+  Float_t GetShiftForSimulation(Float_t z, Float_t x, AliITSsegmentationSDD *seg);
   TH2F* GetMapHisto() const;
   TH1F* GetMapProfile() const;
   TH1F* GetResidualDistr(Float_t dmin=-300., Float_t dmax=300.) const;
@@ -86,6 +82,12 @@ class AliITSCorrMapSDD : public TNamed {
   Int_t fNAnodePts; // number of map points along anodes
   Int_t fNDriftPts; // number of map points along anodes
 
-  ClassDef(AliITSCorrMapSDD,1);
+  Float_t fXt1;   // true coordinate in lower grid point
+  Float_t fXt2;   // true coordinate in upper grid point
+  Float_t fXm1;   // measured coordinate in lower grid point
+  Float_t fXm2;   // measured coordinate in upper grid point
+  Float_t fDrLen; // drift length
+
+  ClassDef(AliITSCorrMapSDD,2);
 };
 #endif

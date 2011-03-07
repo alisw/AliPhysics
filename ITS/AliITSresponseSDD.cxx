@@ -32,6 +32,7 @@
 const Float_t AliITSresponseSDD::fgkTimeOffsetDefault = 54.30;
 const Float_t AliITSresponseSDD::fgkADC2keVDefault = 3.34;
 const Float_t AliITSresponseSDD::fgkChargevsTimeDefault = 0.00355;
+const Float_t AliITSresponseSDD::fgkADCvsDrTimeDefault = 0.0101;
 const Float_t AliITSresponseSDD::fgkCarlosRXClockPeriod = 25.;
 ClassImp(AliITSresponseSDD)
 
@@ -40,12 +41,14 @@ AliITSresponseSDD::AliITSresponseSDD():
 TObject(),
   fTimeOffset(fgkTimeOffsetDefault),
   fADC2keV(fgkADC2keVDefault),
-  fChargevsTime(fgkChargevsTimeDefault){
+  fChargevsTime(fgkChargevsTimeDefault)
+{
   // default constructor
   for(Int_t i=0; i<kNSDDmods;i++){
     fTimeZero[i]=fgkTimeOffsetDefault;
     fDeltaVDrift[i] = fDeltaVDrift[i+kNSDDmods] = 0.;
     fADCtokeV[i]=fgkADC2keVDefault;
+    fADCvsDriftTime[i]=fgkADCvsDrTimeDefault;
   }  
   SetVDCorr2Side(kTRUE); // default for new objects will be separate corrections for 2 sides (bwd compatible)
   //  SetVDCorrMult(kTRUE); // default for new objects will have multiplicative correction v'=(1+corr)*v (bwd compatible)
@@ -106,7 +109,8 @@ void AliITSresponseSDD::SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tze
 }
 //_________________________________________________________________________
 void AliITSresponseSDD::PrintChargeCalibrationParams() const{
-  //
+  // Dump charge calibration parameters
+
   printf("ADC vs. drift time corr=%f\n",GetChargevsTime());
   printf("-------------------------------------\n");
   printf("Layer 3\n");
@@ -131,7 +135,8 @@ void AliITSresponseSDD::PrintChargeCalibrationParams() const{
 }
 //_________________________________________________________________________
 void AliITSresponseSDD::PrintTimeZeroes() const{
-  //
+  // Dump time zero values
+
   printf("Layer 3\n");
   for(Int_t ilad=1; ilad<=14; ilad++){
     for(Int_t idet=1; idet<=6;idet++){
@@ -155,7 +160,8 @@ void AliITSresponseSDD::PrintTimeZeroes() const{
 }
 //_________________________________________________________________________
 void AliITSresponseSDD::PrintVdriftCorerctions() const{
-  //
+  // Dump corrections to vdrift
+
   for(Int_t iMod=240; iMod<500; iMod++){
     printf("Module %d   dVleft=%f   dVright=%f\n",iMod,GetDeltaVDrift(iMod,0),GetDeltaVDrift(iMod,1));
   }

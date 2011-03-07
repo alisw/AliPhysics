@@ -151,8 +151,20 @@ void AliITSCalibrationSDD::GetCorrections(Float_t z, Float_t x, Float_t &devz, F
   return;
 }
 //______________________________________________________________________
+void AliITSCalibrationSDD::GetShiftsForSimulation(Float_t z, Float_t x, Float_t &devz, Float_t &devx, AliITSsegmentationSDD* seg){
+  //correction of coordinates using the maps stored in the DB
+  Int_t nSide=seg->GetSideFromLocalX(x);
+  devz=0;
+//     if(nSide==0) devz=fMapAW0->GetCorrection(z,x,seg);
+//     else devz=fMapAW1->GetCorrection(z,x,seg);
+  devx=0;
+  if(nSide==0) devx=fMapTW0->GetShiftForSimulation(z,x,seg);
+  else devx=fMapTW1->GetShiftForSimulation(z,x,seg);
+  return;
+}
+//______________________________________________________________________
 void AliITSCalibrationSDD::PrintGains() const{
-  //
+  // Print Gains
 
   if( GetDeadChips() == 0 && 
       GetDeadChannels() == 0 )

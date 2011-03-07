@@ -31,24 +31,34 @@ const Int_t AliITSCorrMapSDD::fgkNDriftPtsDefault = 72;
 
 ClassImp(AliITSCorrMapSDD)
 //______________________________________________________________________
-AliITSCorrMapSDD::AliITSCorrMapSDD():
-TNamed("defaultmap",""),
-fNAnodePts(fgkNAnodePtsDefault),
-fNDriftPts(fgkNDriftPtsDefault)
+AliITSCorrMapSDD::AliITSCorrMapSDD():TNamed("defaultmap",""),
+  fNAnodePts(fgkNAnodePtsDefault),
+  fNDriftPts(fgkNDriftPtsDefault),
+  fXt1(0.),
+  fXt2(0.),
+  fXm1(0.),
+  fXm2(0.),
+  fDrLen(0.)
 {
   // default constructor  
 }
 //______________________________________________________________________
 AliITSCorrMapSDD::AliITSCorrMapSDD(Char_t *mapname):
-TNamed(mapname,""),
-fNAnodePts(fgkNAnodePtsDefault),
-fNDriftPts(fgkNDriftPtsDefault)
+  TNamed(mapname,""),
+  fNAnodePts(fgkNAnodePtsDefault),
+  fNDriftPts(fgkNDriftPtsDefault),
+  fXt1(0.),
+  fXt2(0.),
+  fXm1(0.),
+  fXm2(0.),
+  fDrLen(0.)
 {
   // standard constructor
 }
 //______________________________________________________________________
-Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
-  // returns correction in cm starting from local coordinates on the module
+void AliITSCorrMapSDD::ComputeGridPoints(Float_t z, Float_t x, AliITSsegmentationSDD *seg, Bool_t isReco){
+  // extracts points from the discrete grid with the correction map
+
   const Double_t kMicronTocm = 1.0e-4; 
   Int_t nAnodes=seg->Npz();
   Int_t nAnodesHybrid=seg->NpzHalf();
@@ -56,11 +66,70 @@ Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentation
   if(bina>nAnodes)  AliError("Wrong anode anumber!");
   if(bina>=nAnodesHybrid) bina-=nAnodesHybrid;
   Float_t stept = seg->Dx()*kMicronTocm/(Float_t)fNDriftPts;
-  Float_t drLen= seg->Dx()*kMicronTocm-TMath::Abs(x);
-  Int_t bint = TMath::Abs((Int_t)(drLen/stept));
+  fDrLen= seg->Dx()*kMicronTocm-TMath::Abs(x);
+  Int_t bint = TMath::Abs((Int_t)(fDrLen/stept));
   if(bint==fNDriftPts) bint-=1;
-  if(bint>=fNDriftPts) AliError("Wrong bin number along drift direction!");
-  return kMicronTocm*GetCellContent(bina,bint);
+  if(bint>=fNDriftPts){
+    AliError("Wrong bin number along drift direction!");
+    bint=fNDriftPts-1;
+  }
+  fXt1=stept*bint;
+  fXm1=fXt1-GetCellContent(bina,bint)*kMicronTocm;
+  if((bint+1)<fNDriftPts){
+    fXt2=stept*(bint+1);
+    fXm2=fXt2-GetCellContent(bina,bint+1)*kMicronTocm;
+  }else{
+    fXt2=stept*(bint-1);
+    fXm2=fXt2-GetCellContent(bina,bint-1)*kMicronTocm;
+  }
+  if(isReco){
+    if(fXm1<fDrLen && fXm2>fDrLen) return;
+    if(bint==0 || bint==(fNDriftPts-1)) return;
+    if(fXm1>fDrLen){
+      for(Int_t itry=1; itry<=10; itry++){
+	Float_t xmtest=(bint-itry)*stept-GetCellContent(bina,bint-itry)*kMicronTocm;
+	if(xmtest<fDrLen){
+	  fXt1=stept*(bint-itry);
+	  fXt2=fXt1+stept;
+	  fXm1=fXt1-GetCellContent(bina,bint-itry)*kMicronTocm;
+	  fXm2=fXt2-GetCellContent(bina,bint+1-itry)*kMicronTocm;
+	  return;
+	}
+      }
+    }
+    if(fXm2<fDrLen){
+      for(Int_t itry=1; itry<=10; itry++){
+	Float_t xmtest=(bint+1+itry)*stept-GetCellContent(bina,bint+1+itry)*kMicronTocm;
+	if(xmtest>fDrLen){
+	  fXt1=stept*(bint+itry);
+	  fXt2=fXt1+stept;
+	  fXm1=fXt1-GetCellContent(bina,bint+itry)*kMicronTocm;
+	  fXm2=fXt2-GetCellContent(bina,bint+1+itry)*kMicronTocm;
+	  return;
+	}
+      }
+    }
+  }
+}
+//______________________________________________________________________
+Float_t AliITSCorrMapSDD::GetCorrection(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
+  // returns correction in cm starting from local coordinates on the module
+  ComputeGridPoints(z,x,seg,kTRUE);
+  Float_t m=(fXt2-fXt1)/(fXm2-fXm1);
+  Float_t q=fXt1-m*fXm1;
+  Float_t xcorr=m*fDrLen+q;
+  // fDrLen is the measured drift distance, xcorr is the corresponding true
+  return (xcorr-fDrLen); 
+}
+//______________________________________________________________________
+Float_t AliITSCorrMapSDD::GetShiftForSimulation(Float_t z, Float_t x, AliITSsegmentationSDD *seg){
+  // returns shift to be appiled in digitizarion (in cm) starting from local coordinates on the module
+  ComputeGridPoints(z,x,seg,kFALSE);
+  Float_t m=(fXm2-fXm1)/(fXt2-fXt1);
+  Float_t q=fXm1-m*fXt1;
+  Float_t xshifted=m*fDrLen+q;
+  // fDrLen is the true drift distance, xshifted is the one with map shift
+  return (fDrLen-xshifted);
 }
 //______________________________________________________________________
 TH2F* AliITSCorrMapSDD::GetMapHisto() const{

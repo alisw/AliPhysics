@@ -41,6 +41,8 @@ const Float_t  AliITSSimuParam::fgkSDDDynamicRangeDefault = 1400./2.5; // mV/MOh
 const Int_t    AliITSSimuParam::fgkSDDMaxAdcDefault = 1024;
 const Float_t  AliITSSimuParam::fgkSDDChargeLossDefault = 0.;
 const Float_t  AliITSSimuParam::fgkSDDTrigDelayDefault = 54.3;
+const Float_t  AliITSSimuParam::fgkSDDMapPrecDefault = 20.; // 20 um from laser tests
+const Float_t  AliITSSimuParam::fgkSDDkeVtoADCDefault = 3.42;
 const Double_t AliITSSimuParam::fgkSSDCouplingPRDefault = 0.01;
 const Double_t AliITSSimuParam::fgkSSDCouplingPLDefault = 0.01;
 const Double_t AliITSSimuParam::fgkSSDCouplingNRDefault = 0.01;
@@ -55,39 +57,41 @@ ClassImp(AliITSSimuParam)
 //______________________________________________________________________
 AliITSSimuParam::AliITSSimuParam():
   TObject(),
-fGeVcharge(0.),
-fDOverV(0.),
+  fGeVcharge(0.),
+  fDOverV(0.),
 //fSPDBiasVoltage(fgkSPDBiasVoltageDefault),
 //fSPDThresh(fgkSPDThreshDefault),
 //fSPDSigma(fgkSPDSigmaDefault),
-fSPDCouplOpt(0),
-fSPDCouplCol(fgkSPDCouplColDefault),
-fSPDCouplRow(fgkSPDCouplRowDefault),
-fSPDEccDiff(0.),
-fSPDLorentzDrift(kTRUE),
-fSPDLorentzHoleWeight(fgkSPDLorentzHoleWeightDefault),
-fSPDAddNoisyFlag(kFALSE),
-fSPDRemoveDeadFlag(kFALSE),
-fSDDElectronics(0),
-fSDDDiffCoeff(0.),
-fSDDDiffCoeff1(0.),
-fSDDJitterError(fgkSDDJitterErrorDefault),
-fSDDDynamicRange(fgkSDDDynamicRangeDefault),
-fSDDMaxAdc(0.),
-fSDDChargeLoss(fgkSDDChargeLossDefault),
-fSDDTrigDelay(fgkSDDTrigDelayDefault),
-fSDDRawFormat(7),
-fSSDLorentzDrift(kTRUE),
-fSSDCouplingPR(0),
-fSSDCouplingPL(0),
-fSSDCouplingNR(0),
-fSSDCouplingNL(0),
-fSSDZSThreshold(fgkSSDZSThresholdDefault),
-fNsigmas(fgkNsigmasDefault),
-fNcomps(fgkNcompsDefault),
-fGaus(),
-fN(0.),
-fT(300.)
+  fSPDCouplOpt(0),
+  fSPDCouplCol(fgkSPDCouplColDefault),
+  fSPDCouplRow(fgkSPDCouplRowDefault),
+  fSPDEccDiff(0.),
+  fSPDLorentzDrift(kTRUE),
+  fSPDLorentzHoleWeight(fgkSPDLorentzHoleWeightDefault),
+  fSPDAddNoisyFlag(kFALSE),
+  fSPDRemoveDeadFlag(kFALSE),
+  fSDDElectronics(0),
+  fSDDDiffCoeff(0.),
+  fSDDDiffCoeff1(0.),
+  fSDDJitterError(fgkSDDJitterErrorDefault),
+  fSDDDynamicRange(fgkSDDDynamicRangeDefault),
+  fSDDMaxAdc(0.),
+  fSDDChargeLoss(fgkSDDChargeLossDefault),
+  fSDDTrigDelay(fgkSDDTrigDelayDefault),
+  fSDDMapPrec(fgkSDDMapPrecDefault),
+  fSDDkeVtoADC(fgkSDDkeVtoADCDefault),
+  fSDDRawFormat(7),
+  fSSDLorentzDrift(kTRUE),
+  fSSDCouplingPR(0),
+  fSSDCouplingPL(0),
+  fSSDCouplingNR(0),
+  fSSDCouplingNL(0),
+  fSSDZSThreshold(fgkSSDZSThresholdDefault),
+  fNsigmas(fgkNsigmasDefault),
+  fNcomps(fgkNcompsDefault),
+  fGaus(),
+  fN(0.),
+  fT(300.)
 {  
   // default constructor
   SetSPDBiasVoltageAll(fgkSPDBiasVoltageDefault);
@@ -104,40 +108,42 @@ fT(300.)
 }
 //______________________________________________________________________
 AliITSSimuParam::AliITSSimuParam(const AliITSSimuParam &simpar):
-TObject(),
-fGeVcharge(simpar.fGeVcharge),
-fDOverV(simpar.fDOverV),
-//fSPDBiasVoltage(simpar.fSPDBiasVoltage),
-//fSPDThresh(simpar.fSPDThresh),
-//fSPDSigma(simpar.fSPDSigma),
-fSPDCouplOpt(simpar.fSPDCouplOpt),
-fSPDCouplCol(simpar.fSPDCouplCol),
-fSPDCouplRow(simpar.fSPDCouplRow),
-fSPDEccDiff(simpar.fSPDEccDiff),
-fSPDLorentzDrift(simpar.fSPDLorentzDrift),
-fSPDLorentzHoleWeight(simpar.fSPDLorentzHoleWeight),
-fSPDAddNoisyFlag(simpar.fSPDAddNoisyFlag),
-fSPDRemoveDeadFlag(simpar.fSPDRemoveDeadFlag),
-fSDDElectronics(simpar.fSDDElectronics),
-fSDDDiffCoeff(simpar.fSDDDiffCoeff),
-fSDDDiffCoeff1(simpar.fSDDDiffCoeff1),
-fSDDJitterError(simpar.fSDDJitterError),
-fSDDDynamicRange(simpar.fSDDDynamicRange),
-fSDDMaxAdc(simpar.fSDDMaxAdc),
-fSDDChargeLoss(simpar.fSDDChargeLoss),
-fSDDTrigDelay(simpar.fSDDTrigDelay),
-fSDDRawFormat(simpar.fSDDRawFormat),
-fSSDLorentzDrift(simpar.fSSDLorentzDrift),
-fSSDCouplingPR(simpar.fSSDCouplingPR),
-fSSDCouplingPL(simpar.fSSDCouplingPL),
-fSSDCouplingNR(simpar.fSSDCouplingNR),
-fSSDCouplingNL(simpar.fSSDCouplingNL),
-fSSDZSThreshold(simpar.fSSDZSThreshold),
-fNsigmas(simpar.fNsigmas),
-fNcomps(simpar.fNcomps),
-fGaus(),
-fN(simpar.fN),
-fT(simpar.fT){
+  TObject(),
+  fGeVcharge(simpar.fGeVcharge),
+  fDOverV(simpar.fDOverV),
+  //fSPDBiasVoltage(simpar.fSPDBiasVoltage),
+  //fSPDThresh(simpar.fSPDThresh),
+  //fSPDSigma(simpar.fSPDSigma),
+  fSPDCouplOpt(simpar.fSPDCouplOpt),
+  fSPDCouplCol(simpar.fSPDCouplCol),
+  fSPDCouplRow(simpar.fSPDCouplRow),
+  fSPDEccDiff(simpar.fSPDEccDiff),
+  fSPDLorentzDrift(simpar.fSPDLorentzDrift),
+  fSPDLorentzHoleWeight(simpar.fSPDLorentzHoleWeight),
+  fSPDAddNoisyFlag(simpar.fSPDAddNoisyFlag),
+  fSPDRemoveDeadFlag(simpar.fSPDRemoveDeadFlag),
+  fSDDElectronics(simpar.fSDDElectronics),
+  fSDDDiffCoeff(simpar.fSDDDiffCoeff),
+  fSDDDiffCoeff1(simpar.fSDDDiffCoeff1),
+  fSDDJitterError(simpar.fSDDJitterError),
+  fSDDDynamicRange(simpar.fSDDDynamicRange),
+  fSDDMaxAdc(simpar.fSDDMaxAdc),
+  fSDDChargeLoss(simpar.fSDDChargeLoss),
+  fSDDTrigDelay(simpar.fSDDTrigDelay),
+  fSDDMapPrec(simpar.fSDDMapPrec),
+  fSDDkeVtoADC(simpar.fSDDkeVtoADC),
+  fSDDRawFormat(simpar.fSDDRawFormat),
+  fSSDLorentzDrift(simpar.fSSDLorentzDrift),
+  fSSDCouplingPR(simpar.fSSDCouplingPR),
+  fSSDCouplingPL(simpar.fSSDCouplingPL),
+  fSSDCouplingNR(simpar.fSSDCouplingNR),
+  fSSDCouplingNL(simpar.fSSDCouplingNL),
+  fSSDZSThreshold(simpar.fSSDZSThreshold),
+  fNsigmas(simpar.fNsigmas),
+  fNcomps(simpar.fNcomps),
+  fGaus(),
+  fN(simpar.fN),
+  fT(simpar.fT){
   // copy constructor
   for (Int_t i=0;i<240;i++) {
     fSPDBiasVoltage[i]=simpar.fSPDBiasVoltage[i];
@@ -150,11 +156,11 @@ fT(simpar.fT){
 
 //______________________________________________________________________
 AliITSSimuParam& AliITSSimuParam::operator=(const AliITSSimuParam& source){
-    // Assignment operator. 
-    this->~AliITSSimuParam();
-    new(this) AliITSSimuParam(source);
-    return *this;
-
+  // Assignment operator. 
+  this->~AliITSSimuParam();
+  new(this) AliITSSimuParam(source);
+  return *this;
+  
 }
 
 
@@ -176,6 +182,7 @@ void AliITSSimuParam::SetNLookUp(Int_t p1){
 }
 //________________________________________________________________________
 void AliITSSimuParam::PrintParameters() const{
+  // Dump all parameters
   printf("GeVToCharge               = %G\n",fGeVcharge);
   printf("DistanveOverVoltage       = %f \n",fDOverV);
   printf("\n");
@@ -199,6 +206,8 @@ void AliITSSimuParam::PrintParameters() const{
   printf("Max. ADC                  = %f\n",fSDDMaxAdc);
   printf("Charge Loss               = %f\n",fSDDChargeLoss);  
   printf("Trigger Delay (ns)        = %f\n",fSDDTrigDelay);  
+  printf("Smear from map (um)       = %f\n",fSDDMapPrec);
+  printf("keV->ADC conv. fact.        = %f\n",fSDDkeVtoADC);
   printf("Raw Data Format           = %d\n",fSDDRawFormat);  
   printf("\n");
   printf("=====  SSD parameters  =====\n");
@@ -541,6 +550,7 @@ Double_t AliITSSimuParam::ReverseBiasCurrent(Double_t temp,
 }
 //______________________________________________________________________
  void   AliITSSimuParam::SPDThresholds(const Int_t mod, Double_t& thresh, Double_t& sigma) const {
+   // Get SPD threshold values
     if(mod<0 || mod>239) {
        thresh=0;
        sigma=0; 
@@ -552,6 +562,7 @@ Double_t AliITSSimuParam::ReverseBiasCurrent(Double_t temp,
 }
 //_______________________________________________________________________
  void   AliITSSimuParam::SPDNoise(const Int_t mod,Double_t &noise, Double_t &baseline) const {
+   //Get SPD noise and baseline values
      if(mod<0 || mod>239) {
        noise=0;
        baseline=0; 

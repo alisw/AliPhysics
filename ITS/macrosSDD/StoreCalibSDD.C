@@ -77,7 +77,7 @@ void StoreCalibSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity(), Bo
   
   for(Int_t mod=0;mod<260;mod++){
     AliITSCalibrationSDD* resd = new AliITSCalibrationSDD("simulated");
-
+    resd->SetAMAt20MHz();
     Int_t nBadUp = 0;
     Int_t nBadDown = 0;
       

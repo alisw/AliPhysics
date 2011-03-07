@@ -73,9 +73,9 @@ class AliITSSimuParam : public TObject {
   Float_t GetSPDLorentzHoleWeight() const {return fSPDLorentzHoleWeight;}
   
   void   SetSPDAddNoisyFlag(Bool_t value) {fSPDAddNoisyFlag = value;}
-  Bool_t GetSPDAddNoisyFlag() {return fSPDAddNoisyFlag;}
+  Bool_t GetSPDAddNoisyFlag() const {return fSPDAddNoisyFlag;}
   void   SetSPDRemoveDeadFlag(Bool_t value) {fSPDRemoveDeadFlag = value;}
-  Bool_t GetSPDRemoveDeadFlag() {return fSPDRemoveDeadFlag;}
+  Bool_t GetSPDRemoveDeadFlag() const {return fSPDRemoveDeadFlag;}
   
   void SetSDDElectronics(Int_t p1=1) {fSDDElectronics=p1;   }
   Int_t GetSDDElectronics()  const {return fSDDElectronics;}
@@ -99,6 +99,12 @@ class AliITSSimuParam : public TObject {
 
   void    SetSDDTrigDelay(Double_t p1) {fSDDTrigDelay=p1;}
   Float_t GetSDDTrigDelay() const {return fSDDTrigDelay;}
+
+  void    SetSDDCorrMapPrecision(Double_t p1) {fSDDMapPrec=p1;}
+  Float_t GetSDDCorrMapPrecision() const {return fSDDMapPrec;}
+
+  void    SetSDDkeVtoADC(Double_t p1) {fSDDkeVtoADC=p1;}
+  Float_t GetSDDkeVtoADC() const {return fSDDkeVtoADC;}
 
   void    SetSDDRawDataFormatCarlos() {fSDDRawFormat=7;}
   void    SetSDDRawDataFormatFixLen8bitEncoded() {fSDDRawFormat=0;}
@@ -203,6 +209,8 @@ class AliITSSimuParam : public TObject {
   static const Int_t fgkSDDMaxAdcDefault; // default for fSDDMaxAdc
   static const Float_t fgkSDDChargeLossDefault; // default for fSDDChargeLoss
   static const Float_t fgkSDDTrigDelayDefault; // default for fSDDTrigDelay
+  static const Float_t fgkSDDMapPrecDefault; // default for fSDDTrigDelay
+  static const Float_t fgkSDDkeVtoADCDefault; // default for keV->ADC conv.
 
   static const Double_t fgkSSDCouplingPRDefault;  // default values
   static const Double_t fgkSSDCouplingPLDefault;  // for the
@@ -243,6 +251,8 @@ class AliITSSimuParam : public TObject {
   Float_t  fSDDMaxAdc;       // SDD ADC saturation value
   Float_t  fSDDChargeLoss;   // Set Linear Coefficient for Charge Loss 
   Float_t  fSDDTrigDelay;    // SDD time-zero
+  Float_t  fSDDMapPrec;      // SDD maps precision
+  Float_t  fSDDkeVtoADC;     // SDD keV->ADC conv. factor
   Char_t   fSDDRawFormat;    // Index for SDD RawFormat
   
   Bool_t   fSSDLorentzDrift;     // Flag to decide whether to simulate the Lorentz Drift or not in SSD
@@ -261,6 +271,6 @@ class AliITSSimuParam : public TObject {
   Double_t fN;  // the impurity concentration of the material in #/cm^3  (NOT USED!)
   Float_t fT;   // The temperature of the Si in Degree K.
 
-  ClassDef(AliITSSimuParam,5);
+  ClassDef(AliITSSimuParam,6);
 };
 #endif

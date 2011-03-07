@@ -99,8 +99,24 @@ class AliITSresponseSDD : public TObject {
   virtual void SetChargevsTime(Float_t slope){fChargevsTime=slope;}
   virtual Float_t GetChargevsTime()const {return fChargevsTime;}
 
+  virtual void SetADCvsDriftTime(Int_t modIndex, Float_t slope){
+    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return;
+    }
+    fADCvsDriftTime[modIndex-kNSPDmods]=slope;
+  }
+  virtual Float_t GetADCvsDriftTime(Int_t modIndex) const {
+    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
+      AliError(Form("SDD module number %d out of range",modIndex));
+      return 0.;
+    }
+    return fADCvsDriftTime[modIndex-kNSPDmods];
+  }
+
   static Float_t DefaultADC2keV() {return fgkADC2keVDefault;}
   static Float_t DefaultChargevsTime() {return fgkChargevsTimeDefault;}
+  static Float_t DefaultADCvsDriftTime() {return fgkADCvsDrTimeDefault;}
 
   static Float_t GetCarlosRXClockPeriod() {return fgkCarlosRXClockPeriod;}
   void PrintChargeCalibrationParams() const;
@@ -128,6 +144,7 @@ class AliITSresponseSDD : public TObject {
   static const Float_t fgkTimeOffsetDefault;   // default for fTimeOffset
   static const Float_t fgkADC2keVDefault;      // default for fADC2keV
   static const Float_t fgkChargevsTimeDefault; // default for fChargevsTime
+  static const Float_t fgkADCvsDrTimeDefault;  // default for fADCvsDriftTime
   static const Float_t fgkCarlosRXClockPeriod; // clock period for CarlosRX
 
   Float_t  fTimeOffset;             // Time offset due to electronic delays 
@@ -136,15 +153,17 @@ class AliITSresponseSDD : public TObject {
   Float_t  fDeltaVDrift[2*kNSDDmods];  // Vdrift correction (um/ns) for each module left (<kNSDDmods) and right (>=kNSDDmods) sides
   Float_t  fADC2keV;                // Conversion factor from ADC to keV
                                     // --> obsolete, kept for backw. comp. 
-  Float_t  fChargevsTime;           // Correction for zero suppression effect
-  Float_t  fADCtokeV[kNSDDmods]; // ADC to keV conversion for each module
+  Float_t  fChargevsTime;           // --> obsolete, kept for backw. comp. 
+
+  Float_t  fADCvsDriftTime[kNSDDmods]; // Correction for zero suppression effect
+  Float_t  fADCtokeV[kNSDDmods];       // ADC to keV conversion for each module
 
  private:
 
   AliITSresponseSDD(const AliITSresponseSDD &ob); // copy constructor
   AliITSresponseSDD& operator=(const AliITSresponseSDD & /* source */); // ass. op.
 
-  ClassDef(AliITSresponseSDD,20) 
+  ClassDef(AliITSresponseSDD,21) 
      
     };
 #endif

@@ -399,9 +399,13 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
   Double_t  nsigma     = simpar->GetNSigmaIntegration(); //
   Int_t     nlookups   = simpar->GetGausNLookUp();       //
   Float_t   jitter     = simpar->GetSDDJitterError(); // 
+  Float_t   mapsmear   = simpar->GetSDDCorrMapPrecision(); // 
   Float_t   trigDelay  = simpar->GetSDDTrigDelay(); // compensation for MC time zero
   if(res->IsAMAt20MHz()) trigDelay+=12.5; // compensation for discretization step
+
   Float_t   timeZero=fDetType->GetResponseSDD()->GetTimeZero(fModule);
+  Float_t   adcscale   = fDetType->GetResponseSDD()->GetADCtokeV(fModule);
+  adcscale/=simpar->GetSDDkeVtoADC();
 
   // Piergiorgio's part (apart for few variables which I made float
   // when i thought that can be done
@@ -456,6 +460,8 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
     Float_t zloc=xL[2]+0.5*dxL[2];
     zAnode=seg->GetAnodeFromLocal(xloc,zloc); // anode number in the range 0.-511.
     driftSpeed = res->GetDriftSpeedAtAnode(zAnode);
+    driftSpeed+= fDetType->GetResponseSDD()->GetDeltaVDrift(fModule,zAnode>255);
+
     if(timeStep*fMaxNofSamples < sddLength/driftSpeed) {
       AliWarning("Time Interval > Allowed Time Interval");
     }
@@ -476,14 +482,20 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       AliDebug(1,Form("TOF for hit %d on mod %d (particle %d)=%g",ii,fModule,h->Track(),tof));
     }
 
+    Float_t corrx=0, corrz=0;
+    res->GetShiftsForSimulation(xL[2],xL[0],corrz,corrx,seg);
+    xL[2]-=corrz;
+    xL[0]-=corrx;
+    xL[0] += 0.0001*gRandom->Gaus( 0, mapsmear); //
     xL[0] += 0.0001*gRandom->Gaus( 0, jitter ); //
+
     pathInSDD = TMath::Sqrt(dxL[0]*dxL[0]+dxL[1]*dxL[1]+dxL[2]*dxL[2]);
     
     if (fFlag && pathInSDD) { depEnergy *= (0.03/pathInSDD); }
     drPath = TMath::Abs(10000.*(dxL[0]+2.*xL[0])*0.5);
     drPath = sddLength-drPath;
     if(drPath < 0) {
-      AliDebug(1, // this should be fixed at geometry level
+      AliInfo( // this should be fixed at geometry level
 	       Form("negative drift path drPath=%e sddLength=%e dxL[0]=%e xL[0]=%e",
 		    drPath,sddLength,dxL[0],xL[0]));
       continue;
@@ -508,6 +520,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
       theAverage+=avAnode;
       zAnode = seg->GetAnodeFromLocal(avDrft,avAnode);
       driftSpeed = res->GetDriftSpeedAtAnode(zAnode);	
+      driftSpeed+= fDetType->GetResponseSDD()->GetDeltaVDrift(fModule,zAnode>255);
       driftPath = TMath::Abs(10000.*avDrft);
       driftPath = sddLength-driftPath;
       if(driftPath < 0) {
@@ -533,6 +546,7 @@ void AliITSsimulationSDD::HitsToAnalogDigits( AliITSmodule *mod ) {
 	(timeStep*eVpairs*2.*acos(-1.));
       chargeloss = 1.-cHloss*driftPath/1000.;
       amplitude *= chargeloss;
+      amplitude *= adcscale;
       width  = 2.*nsigma/(nlookups-1);
       // Spread the charge 
       nsplitAn = 4; 
