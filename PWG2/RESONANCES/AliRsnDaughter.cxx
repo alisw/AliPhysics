@@ -258,16 +258,16 @@ void AliRsnDaughter::Print(Option_t *) const
 //
 
    AliInfo("=== DAUGHTER INFO ======================================================================");
-   if (fRef) {
-      AliInfo(Form(" Ref  : %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRef  , fRef  ->ClassName(), fPrec.X(), fPrec.Y(), fPrec.Z()));
-   } else {
-      AliInfo(" Ref  : NULL");
-   }
-   if (fRefMC) {
-      AliInfo(Form(" RefMC: %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRefMC, fRefMC->ClassName(), fPsim.X(), fPsim.Y(), fPsim.Z()));
-   } else {
-      AliInfo(" RefMC: NULL");
-   }
+   //if (fRef) {
+   //   AliInfo(Form(" Ref  : %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRef  , fRef  ->ClassName(), fPrec.X(), fPrec.Y(), fPrec.Z()));
+   //} else {
+   //   AliInfo(" Ref  : NULL");
+   //}
+   //if (fRefMC) {
+   //   AliInfo(Form(" RefMC: %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRefMC, fRefMC->ClassName(), fPsim.X(), fPsim.Y(), fPsim.Z()));
+   //} else {
+   //   AliInfo(" RefMC: NULL");
+   //}
    AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4d", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
    AliInfo("========================================================================================");
 }
