@@ -53,8 +53,7 @@ AliAnalysisTaskSE(),
 fOutput(0), 
 fNtupleCmp(0),
 fHistMass(0),
-fHistNEvents(0),
-fVHF(0)
+fHistNEvents(0)
 {
   // Default constructor
 
@@ -67,8 +66,7 @@ AliAnalysisTaskSE(name),
 fOutput(0), 
 fNtupleCmp(0),
 fHistMass(0),
-fHistNEvents(0),
-fVHF(0)
+fHistNEvents(0)
 {
   // Standard constructor
 
@@ -86,10 +84,6 @@ AliAnalysisTaskSECompareHF::~AliAnalysisTaskSECompareHF()
     delete fOutput;
     fOutput = 0;
   }
-  if (fVHF) {
-    delete fVHF;
-    fVHF = 0;
-  }
 }  
 
 //________________________________________________________________________
@@ -98,11 +92,6 @@ void AliAnalysisTaskSECompareHF::Init()
   // Initialization
 
   if(fDebug > 1) printf("AnalysisTaskSECompareHF::Init() \n");
-  
-  gROOT->LoadMacro("ConfigVertexingHF.C");
-
-  fVHF = (AliAnalysisVertexingHF*)gROOT->ProcessLine("ConfigVertexingHF()");  
-  fVHF->PrintStatus();
   
   return;
 }
@@ -295,7 +284,6 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  d3->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
 	  unsetvtx=kTRUE;
 	}
-	//if(d3->SelectDplus(fVHF->GetDplusCuts())) {
 	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
 	pdg = dMC->GetPdgCode();
 	invmass = d3->InvMassDplus();
@@ -310,7 +298,6 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 (Float_t)d3->CosPointingAngle(),(Float_t)(d3->Getd0Prong(0)*d3->Getd0Prong(1)*d3->Getd0Prong(2))};
 	fNtupleCmp->Fill(tmp);
 	PostData(2,fNtupleCmp);
-	//}
 	if(unsetvtx) d3->UnsetOwnPrimaryVtx();
       }
       break;
@@ -325,7 +312,6 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 	  unsetvtx=kTRUE;
 	}
 	okD0=0; okD0bar=0; 
-	//if(d4->SelectD0(fVHF->GetD0to4ProngsCuts(),okD0,okD0bar)) {
 	AliAODMCParticle *dMC = (AliAODMCParticle*)mcArray->At(lab);
 	pdg = dMC->GetPdgCode();
 	//invmass = (pdg==421 ? d->InvMassD0() : d->InvMassD0bar());
@@ -341,7 +327,6 @@ void AliAnalysisTaskSECompareHF::UserExec(Option_t */*option*/)
 			 (Float_t)d4->CosPointingAngle(),(Float_t)(d4->Getd0Prong(0)*d4->Getd0Prong(1)*d4->Getd0Prong(2)*d4->Getd0Prong(3))};
 	fNtupleCmp->Fill(tmp);
 	PostData(2,fNtupleCmp);
-	//}
 	if(unsetvtx) d4->UnsetOwnPrimaryVtx();
       }
       break;
