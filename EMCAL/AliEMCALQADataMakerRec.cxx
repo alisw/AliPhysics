@@ -730,54 +730,54 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   ConvertProfile2H(dynamic_cast<TProfile *>(GetRawsData(kSigHG)), fHighEmcHistoH2F) ;  
   Double_t binContent = 0. ;
   
-  //reset ratio histograms
-  GetRawsData(k2DRatioAmp)->Reset("ICE"); 
-  GetRawsData(kRatioDist)->Reset("ICE"); 
-  GetRawsData(kLEDMonRatio)->Reset("ICE");	
-  GetRawsData(kLEDMonRatioDist)->Reset("ICE");
-  GetRawsData(k2DRatioAmp)->ResetStats(); 
-  GetRawsData(kRatioDist)->ResetStats();
-  GetRawsData(kLEDMonRatio)->ResetStats();
-  GetRawsData(kLEDMonRatioDist)->ResetStats();
   
   //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
- if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
-      for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
-       for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) {
-         if(fCalibRefHistoH2F->GetBinContent(ix, iy))binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy) ;
-         GetRawsData(k2DRatioAmp)->SetBinContent(ix, iy, binContent);
-         GetRawsData(kRatioDist)->Fill(GetRawsData(k2DRatioAmp)->GetBinContent(ix, iy));
-       }
-     } 
-   
- }
-  //Now for LED monitor system, to calculate the ratio as well
-  Double_t binError = 0. ;
-  // for the binError, we add the relative errors, squared
-  Double_t relativeErrorSqr = 0. ;
-  
-  for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
-    
-    if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
-      binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+ if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) {
+		//reset ratio histograms
+		GetRawsData(k2DRatioAmp)->Reset("ICE"); 
+		GetRawsData(kRatioDist)->Reset("ICE"); 
+		GetRawsData(kLEDMonRatio)->Reset("ICE");	
+		GetRawsData(kLEDMonRatioDist)->Reset("ICE");
+		GetRawsData(k2DRatioAmp)->ResetStats(); 
+		GetRawsData(kRatioDist)->ResetStats();
+		GetRawsData(kLEDMonRatio)->ResetStats();
+		GetRawsData(kLEDMonRatioDist)->ResetStats();
 
-      relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
-      if(GetRawsData(kSigLGLEDMon)->GetBinContent(ib) != 0) {
-	relativeErrorSqr += TMath::Power( (GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kSigLGLEDMon)->GetBinContent(ib)), 2);
+    for(Int_t ix = 1; ix <= fHighEmcHistoH2F->GetNbinsX(); ix++) {
+     for(Int_t iy = 1; iy <= fHighEmcHistoH2F->GetNbinsY(); iy++) {
+       if(fCalibRefHistoH2F->GetBinContent(ix, iy))binContent = fHighEmcHistoH2F->GetBinContent(ix, iy)/fCalibRefHistoH2F->GetBinContent(ix, iy) ;
+        GetRawsData(k2DRatioAmp)->SetBinContent(ix, iy, binContent);
+        GetRawsData(kRatioDist)->Fill(GetRawsData(k2DRatioAmp)->GetBinContent(ix, iy));
       }
-    }
-    else {
-      binContent = 0;
-      relativeErrorSqr = 0;
-    }
-    GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
+    } 
+   
+		//Now for LED monitor system, to calculate the ratio as well
+		Double_t binError = 0. ;
+		// for the binError, we add the relative errors, squared
+		Double_t relativeErrorSqr = 0. ;
+  
+		for(int ib = 1; ib <= fLEDMonRefHistoPro->GetNbinsX(); ib++) {
     
-    binError = sqrt(relativeErrorSqr) * binContent;
-    GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
-    GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
-    }
+			if(fLEDMonRefHistoPro->GetBinContent(ib) != 0) {
+				binContent = GetRawsData(kSigLGLEDMon)->GetBinContent(ib) / fLEDMonRefHistoPro->GetBinContent(ib);
+
+				relativeErrorSqr = TMath::Power( (fLEDMonRefHistoPro->GetBinError(ib) / fLEDMonRefHistoPro->GetBinContent(ib)), 2);
+				if(GetRawsData(kSigLGLEDMon)->GetBinContent(ib) != 0) {
+			relativeErrorSqr += TMath::Power( (GetRawsData(kSigLGLEDMon)->GetBinError(ib)/GetRawsData(kSigLGLEDMon)->GetBinContent(ib)), 2);
+				}
+			}
+			else {
+				binContent = 0;
+				relativeErrorSqr = 0;
+			}
+			GetRawsData(kLEDMonRatio)->SetBinContent(ib, binContent);
+    
+			binError = sqrt(relativeErrorSqr) * binContent;
+			GetRawsData(kLEDMonRatio)->SetBinError(ib, binError);
+			GetRawsData(kLEDMonRatioDist)->Fill(GetRawsData(kLEDMonRatio)->GetBinContent(ib));
+		}
   
-  
+	} 
   // let's also fill the SM and event counter histograms
   Int_t nTotalHG = 0;
   Int_t nTotalLG = 0;
