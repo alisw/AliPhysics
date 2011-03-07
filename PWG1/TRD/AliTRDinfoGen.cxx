@@ -332,8 +332,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
 
     // load reco param list from OCDB
-    AliInfo(Form("Initializing TRD reco params for EventSpecie[%d]...",
-      fESDev->GetEventSpecie()));
+    AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
     if(!(obj = ocdb->Get(AliCDBPath("TRD", "Calib", "RecoParam")))){
       AliError("RECO PARAM failed initialization.");
@@ -354,14 +353,14 @@ void AliTRDinfoGen::UserExec(Option_t *){
       Int_t es(reco->GetEventSpecie());
       if(!(es&fESDev->GetEventSpecie())) continue;
       fgReconstructor->SetRecoParam(reco);
-      if(AliLog::GetDebugLevel("PWG1/TRD", "AliTRDinfoGen")>1) reco->Dump();
+      if(AliLog::GetDebugLevel("PWG1/TRD", "AliTRDinfoGen")>2) reco->Dump();
       TString s;
       if(es&AliRecoParam::kLowMult){ s="LowMult"; h->Fill(0);}
       else if(es&AliRecoParam::kHighMult){ s="HighMult"; h->Fill(1);}
       else if(es&AliRecoParam::kCosmic){ s="Cosmic"; h->Fill(2);}
       else if(es&AliRecoParam::kCalib){ s="Calib"; h->Fill(3);}
       else s="Unknown";
-      AliDebug(2, Form("Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
+      AliDebug(1, Form("Using reco param \"%s\" for event %d.", s.Data(), fESDev->GetEventNumberInFile()));
       break;
     }
   }
