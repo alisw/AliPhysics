@@ -26,6 +26,7 @@ class AliVEvent;
 class AliMultiplicity; 
 class AliAODTrack;
 class AliESDtrack;
+class AliESDPmdTrack;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -46,7 +47,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   enum trackParameterType { kMC, 
                             kGlobal, 
                             kESD_TPConly, 
-                            kESD_SPDtracklet 
+                            kESD_SPDtracklet,
+                            kPMD
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 
@@ -167,6 +169,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesCuts(AliVParticle* track);
   Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(AliAODTrack* track);
+  Bool_t PassesPMDcuts(AliESDPmdTrack* track);
   Bool_t PassesCuts(AliFlowTrackSimple* track);
   Bool_t PassesCuts(AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
@@ -175,6 +178,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTPCpidCut(AliESDtrack* track);
   Bool_t PassesTOFbetaCut(AliESDtrack* track);  
   Bool_t PassesTOFpidCut(AliESDtrack* track);  
+  AliFlowTrack* MakeFlowTrackSPDtracklet() const;
+  AliFlowTrack* MakeFlowTrackPMDtrack() const;
+  AliFlowTrack* MakeFlowTrackVParticle() const;
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
