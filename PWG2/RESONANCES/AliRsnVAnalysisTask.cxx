@@ -8,7 +8,7 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#include <Riostream.h>
+#include <TH1.h>
 
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -46,6 +46,7 @@ AliRsnVAnalysisTask::AliRsnVAnalysisTask
 
    DefineOutput(1, TList::Class());
    DefineOutput(2, TList::Class());
+   
    for (Int_t i = 0; i < 2; i++) {
       fESDEvent[i] = 0;
       fMCEvent[i] = 0;
@@ -71,6 +72,7 @@ AliRsnVAnalysisTask::AliRsnVAnalysisTask(const AliRsnVAnalysisTask& copy) :
 // Defined for coding conventions compliance but never used.
 //
    AliDebug(AliLog::kDebug + 2, "<-");
+   
    for (Int_t i = 0; i < 2; i++) {
       fESDEvent[i] = copy.fESDEvent[i];
       fMCEvent[i] = copy.fMCEvent[i];
@@ -78,8 +80,8 @@ AliRsnVAnalysisTask::AliRsnVAnalysisTask(const AliRsnVAnalysisTask& copy) :
       fAODEventOut[i] = copy.fAODEventOut[i];
       fRsnEvent[i] = copy.fRsnEvent[i];
    }
+   
    AliDebug(AliLog::kDebug + 2, "->");
-
 }
 
 //_____________________________________________________________________________
@@ -170,8 +172,8 @@ void AliRsnVAnalysisTask::UserExec(Option_t* opt)
 // RSN package event interface, which will point to the not NULL
 // objects obtained from dynamic-casts called in ConnectInputData().
 //
-   if (!IsMixing()) {
 
+   if (!IsMixing()) {
 
       if (fMCOnly && fMCEvent) {
          fRsnEvent[0].SetRef(fMCEvent[0]);
@@ -190,28 +192,21 @@ void AliRsnVAnalysisTask::UserExec(Option_t* opt)
          return;
       }
 
-      // since this class is for single-event analysis
-      // both static pointers of AliRsnEvent class
-      // will point to the same unique datamember
-      AliRsnEvent::SetCurrentEvent1(&fRsnEvent[0], fEntry);
-      AliRsnEvent::SetCurrentEvent2(&fRsnEvent[0], fEntry);
-      AliRsnTarget::SwitchToFirst();
-
       // call event preprocessing...
-      Bool_t preCheck = EventProcess();
+      Bool_t preCheck = RsnEventProcess();
       // ...then fill the information object and print informations...
-      fTaskInfo.FillInfo();
+      fTaskInfo.FillInfo(&fRsnEvent[0]);
       fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
       // ...and return if event did not pass selections
       if (!preCheck) {
          AliDebug(AliLog::kDebug, "Event preprocessing has failed. Skipping event");
          return;
       }
-
-
+      
       // call customized implementation for execution
       RsnUserExec(opt);
    }
+   
    // post outputs for the info object
    // (eventually others are done in the derived classes)
    PostData(1, fInfoList);
@@ -252,19 +247,11 @@ void AliRsnVAnalysisTask::UserExecMix(Option_t* option)
       AliError("NO ESD or AOD object!!! Skipping ...");
       return;
    }
-   // since this class is for single-event analysis
-   // both static pointers of AliRsnEvent class
-   // will point to the same unique datamember
-
-
-   AliRsnEvent::SetCurrentEvent1(&fRsnEvent[0], fMixedEH->CurrentEntryMain());
-   AliRsnEvent::SetCurrentEvent2(&fRsnEvent[1], fMixedEH->CurrentEntryMix());
-   AliRsnTarget::SwitchToFirst();
 
    // call event preprocessing...
-   Bool_t preCheck = EventProcess();
+   Bool_t preCheck = RsnEventProcess();
    // ...then fill the information object and print informations...
-   fTaskInfo.FillInfo();
+   fTaskInfo.FillInfo(&fRsnEvent[0]);
    fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
    // ...and return if event did not pass selections
    if (!preCheck) {
@@ -352,7 +339,7 @@ void AliRsnVAnalysisTask::RsnTerminate(Option_t*)
 }
 
 //_____________________________________________________________________________
-Bool_t AliRsnVAnalysisTask::EventProcess()
+Bool_t AliRsnVAnalysisTask::RsnEventProcess()
 {
 //
 // Performs some pre-processing of current event,
@@ -364,24 +351,29 @@ Bool_t AliRsnVAnalysisTask::EventProcess()
    if (!IsUsingMixingRange()) return kTRUE;
 
    // cut if event was in range of mixing cuts
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
-   if (inEvHMain) {
-      fMixedEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
-      if (fMixedEH) {
-         if (fMixedEH->CurrentBinIndex() < 0) return kFALSE;
+   AliVEventHandler *inh = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+   if (inh->InheritsFrom(AliMultiInputEventHandler::Class())) {
+      AliMultiInputEventHandler *inEvHMain = static_cast<AliMultiInputEventHandler *>(inh);
+      if (inEvHMain->GetFirstMultiInputHandler()->InheritsFrom(AliMixInputEventHandler::Class())) {
+         fMixedEH = static_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
+         if (fMixedEH) {
+            if (fMixedEH->CurrentBinIndex() < 0) return kFALSE;
+         }
       }
-
    }
 
    // in this case, return always a success
    return kTRUE;
 }
 
+//_____________________________________________________________________________
 void AliRsnVAnalysisTask::SetupMixingEvents()
 {
-   // mixing setup
-
+//
+// Setup the pointers to the mixed event.
+// This requires to retrieve them from the mixed event handler
+//
+   
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(mgr->GetInputEventHandler());
    if (inEvHMain) {

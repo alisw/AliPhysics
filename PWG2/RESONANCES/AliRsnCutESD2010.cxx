@@ -54,8 +54,6 @@ AliRsnCutESD2010::AliRsnCutESD2010
 //
 
    SetMC(isMC);
-   
-   fTPCpar[0] = fTPCpar[1] = fTPCpar[2] = fTPCpar[3] = fTPCpar[4] = 0.0;
 }
 
 //_________________________________________________________________________________________________
@@ -152,7 +150,7 @@ Bool_t AliRsnCutESD2010::IsSelected(TObject *object)
    if (!track) return kFALSE;
 
    // if no reference event, skip
-   AliRsnEvent *rsn = AliRsnTarget::GetCurrentEvent();
+   AliRsnEvent *rsn = fEvent;
    if (!rsn) return kFALSE;
    fESDpid.SetTOFResponse(rsn->GetRefESD(), AliESDpid::kTOF_T0);
 

@@ -32,27 +32,16 @@
 #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
 #include "AliRsnDaughter.h"
+#include "AliRsnEvent.h"
+
 #include "AliRsnMother.h"
 
 ClassImp(AliRsnMother)
 
 //_____________________________________________________________________________
-AliRsnMother::AliRsnMother() :
-   fSum(),
-   fSumMC()
-{
-//
-// Constructor.
-// Initializes all variables to meaningless values.
-//
-
-   Int_t i;
-   for (i = 0; i < 2; i++) fDaughter[i] = 0x0;
-}
-
-//_____________________________________________________________________________
 AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    TObject(obj),
+   fRefEvent(obj.fRefEvent),
    fSum(obj.fSum),
    fSumMC(obj.fSumMC)
 {
@@ -79,6 +68,8 @@ AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
    fSumMC = obj.fSumMC;
 
    for (i = 0; i < 2; i++) fDaughter[i] = obj.fDaughter[i];
+   
+   fRefEvent = obj.fRefEvent;
 
    return (*this);
 }
@@ -134,23 +125,13 @@ Int_t AliRsnMother::CommonMother(Int_t &m0, Int_t &m1) const
 }
 
 //_____________________________________________________________________________
-void AliRsnMother::SetDaughters
-(AliRsnDaughter *d0, Double_t mass0, AliRsnDaughter *d1, Double_t mass1)
+void AliRsnMother::ComputeSum(Double_t mass0, Double_t mass1)
 {
 //
-// Define both the two candidate daughters to use, and the mass hypothesis
-// to be assigned to each of them. 
-// This calls the 'SetMass()' function of each daughter, which defines
-// their 4-momenta, and then sums them to obtain the total 4-momentum
-// of the mother (and then invariant mass, also).
-// The computation is done always for both the reconstructed and the MC,
-// when it is available.
+// Sets the masses for the 4-momenta of the daughters and then
+// sums them, taking into account that the space part is set to
+// each of them when the reference object is set (see AliRsnDaughter::SetRef)
 //
-
-   if (d0) fDaughter[0] = d0;
-   if (d1) fDaughter[1] = d1;
-
-   if (!d0 || !d1) return;
 
    fDaughter[0]->SetMass(mass0);
    fDaughter[1]->SetMass(mass1);
@@ -168,9 +149,61 @@ void AliRsnMother::ResetPair()
 
    Int_t i;
    for (i = 0; i < 2; i++) fDaughter[i] = 0x0;
+   fRefEvent = 0x0;
 
    fSum  .SetXYZM(0.0, 0.0, 0.0, 0.0);
    fSumMC.SetXYZM(0.0, 0.0, 0.0, 0.0);
+}
+
+//_____________________________________________________________________________
+Double_t AliRsnMother::AngleTo(AliRsnDaughter track, Bool_t mc)
+{
+//
+// Compute the angle betwee this and the passed object
+// if second argument is kTRUE, use MC values.
+//
+
+   TLorentzVector &me = (mc ? fSumMC : fSum);
+   TLorentzVector &he = track.P(mc);
+   
+   return me.Angle(he.Vect());
+}
+
+//_____________________________________________________________________________
+Double_t AliRsnMother::AngleToLeading(Bool_t &success)
+{
+//
+// Compute the angle betwee this and the leading particls
+// of the reference event (if this was set properly).
+// In case one of the two daughters is the leading, return
+// a meaningless value, in order to skip this pair.
+// if second argument is kTRUE, use MC values.
+//
+
+   if (!fRefEvent) {
+      success = kFALSE;
+      return -99.0;
+   }
+   
+   Int_t id1 = fDaughter[0]->GetID();
+   Int_t id2 = fDaughter[1]->GetID();
+   Int_t idL = fRefEvent->GetLeadingParticleID();
+   
+   if (id1 == idL || id2 == idL) {
+      success = kFALSE;
+      return -99.0;
+   }
+   
+   AliRsnDaughter leading = fRefEvent->GetDaughter(idL);
+   AliVParticle  *ref     = leading.GetRef();
+   Double_t       angle   = ref->Phi() - fSum.Phi();
+   
+   //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
+   while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
+   while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
+   success = kTRUE;
+   
+   return angle;
 }
 
 //_____________________________________________________________________________

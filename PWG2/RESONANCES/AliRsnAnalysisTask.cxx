@@ -10,6 +10,8 @@
 
 #include <Riostream.h>
 #include <TList.h>
+#include <TH1.h>
+
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODEvent.h"
@@ -79,11 +81,13 @@ void AliRsnAnalysisTask::RsnUserCreateOutputObjects()
 // is then linked to the TList data member of this, which will contain all the output.
 //
 
+   // initialize the list
    if (!fOutList) fOutList = new TList;
    fOutList->Clear();
-
-   fRsnAnalysisManager.InitAllPairs(fOutList);
    fOutList->SetOwner(kTRUE);
+
+   // initialize all pairs
+   fRsnAnalysisManager.InitAllPairs(fOutList);   
 
    PostData(2, fOutList);
 }
@@ -99,7 +103,7 @@ void AliRsnAnalysisTask::RsnUserExec(Option_t*)
 
    if (IsMixing()) return;
 
-   fRsnAnalysisManager.ProcessAll(fMCOnly);
+   fRsnAnalysisManager.ProcessAll(&fRsnEvent[0], 0x0, fMCOnly);
 
    PostData(2, fOutList);
 }
@@ -118,7 +122,7 @@ void AliRsnAnalysisTask::RsnUserExecMix(Option_t* /*opt*/)
 
    // the virtual class has already sorted tracks in the PID index
    // so we need here just to call the execution of analysis
-   fRsnAnalysisManager.ProcessAll(fMCOnly);
+   fRsnAnalysisManager.ProcessAll(&fRsnEvent[0], &fRsnEvent[1], fMCOnly);
 }
 
 //_____________________________________________________________________________
@@ -131,7 +135,7 @@ void AliRsnAnalysisTask::RsnTerminate(Option_t*)
 }
 
 //______________________________________________________________________________
-Bool_t AliRsnAnalysisTask::EventProcess()
+Bool_t AliRsnAnalysisTask::RsnEventProcess()
 {
 //
 // Customized event pre-processing.
@@ -144,10 +148,10 @@ Bool_t AliRsnAnalysisTask::EventProcess()
    // initially, an event is expected to be bad
    fTaskInfo.SetEventUsed(kFALSE);
 
-   if (!AliRsnVAnalysisTask::EventProcess()) return kFALSE;
+   if (!AliRsnVAnalysisTask::RsnEventProcess()) return kFALSE;
 
    // check #1: number of tracks in event (reject empty events)
-   Int_t    ntracks = fRsnEvent[0].GetMultiplicity();
+   Int_t    ntracks = fRsnEvent[0].GetMultiplicityFromTracks();
    Double_t zeroEventPercent = 0.0;
    if (ntracks < 1) {
       // if using the checker for amount of empty events, update it

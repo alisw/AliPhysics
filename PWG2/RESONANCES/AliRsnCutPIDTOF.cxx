@@ -116,7 +116,8 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
    // cut check depends on the object type
    if (esdTrack) {
       // setup the ESD PID object
-      AliESDEvent *esd = AliRsnTarget::GetCurrentEvent()->GetRefESD();
+      AliESDEvent *esd = 0x0;
+      if (fEvent) esd = fEvent->GetRefESD();
       if (!esd) {
          AliError("Processing an ESD track, but target is not an ESD event");
          return kFALSE;

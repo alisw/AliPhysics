@@ -30,11 +30,10 @@ protected:
    virtual void    ProcessEventESD();
    virtual void    ProcessEventAOD();
    virtual Int_t   NGoodSteps();
-   virtual void    FillContainer(Bool_t mcList);
+   virtual void    FillContainer(Bool_t mcList, TObject*def);
 
    AliRsnDaughter  fDaughter[2];   //! current tracks
    AliRsnMother    fMother;        //! current mother
-   AliRsnPairDef  *fDef;           //! current definition
 
    ClassDef(AliRsnAnalysisTaskEffPair, 1)
 };

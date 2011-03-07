@@ -21,8 +21,7 @@ ClassImp(AliRsnAnalysisTaskEffPair)
 //_____________________________________________________________________________
 AliRsnAnalysisTaskEffPair::AliRsnAnalysisTaskEffPair(const char *name) :
    AliRsnAnalysisTaskEff(name),
-   fMother(),
-   fDef(0x0)
+   fMother()
 {
 //
 // Default constructor.
@@ -33,8 +32,7 @@ AliRsnAnalysisTaskEffPair::AliRsnAnalysisTaskEffPair(const char *name) :
 //_____________________________________________________________________________
 AliRsnAnalysisTaskEffPair::AliRsnAnalysisTaskEffPair(const AliRsnAnalysisTaskEffPair& copy) :
    AliRsnAnalysisTaskEff(copy),
-   fMother(),
-   fDef(0x0)
+   fMother()
 {
 //
 // Copy constrtuctor.
@@ -65,7 +63,6 @@ Int_t AliRsnAnalysisTaskEffPair::NGoodSteps()
    
    for (istep = 0; istep < nSteps; istep++) {
       AliRsnCutManager *cutMgr = (AliRsnCutManager*)fStepsRec[istep];
-      AliRsnTarget::SwitchToFirst();
       
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[0])) break;
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[1])) break;
@@ -98,19 +95,28 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
    TParticle     *part = 0x0;
    AliMCParticle *mother = 0x0;
    
+   // set pointers
+   fMother.SetDaughter(0, &fDaughter[0]);
+   fMother.SetDaughter(1, &fDaughter[1]);
+   
    // loop on definitions
+   AliRsnPairDef *def = 0x0;
    TObjArrayIter nextDef(&fDefs);
-   while ( (fDef = (AliRsnPairDef*)nextDef()) ) {
+   while ( (def = (AliRsnPairDef*)nextDef()) ) {
       
       // loop on the MC list of particles
       for (ipart = 0; ipart < stack->GetNprimary(); ipart++) {
+         
+         // reset daughters
+         fDaughter[0].Reset();
+         fDaughter[1].Reset();
          
          // taks MC particle
          mother = (AliMCParticle*)mc->GetTrack(ipart);
          
          // check that it is a binary decay and the PDG code matches
          if (mother->Particle()->GetNDaughters() != 2) continue;
-         if (mother->Particle()->GetPdgCode() != fDef->GetMotherPDG()) continue;
+         if (mother->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          
          // store the labels of the two daughters
          // and check that they are in the stack
@@ -127,8 +133,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
             if (part) {
                pdg    = TMath::Abs(part->GetPdgCode());
                charge = (Short_t)(part->GetPDG()->Charge() / 3);
-               if (fDef->GetDef1()->MatchesPDG(pdg) && fDef->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
-               if (fDef->GetDef2()->MatchesPDG(pdg) && fDef->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
+               if (def->GetDef1()->MatchesPDG(pdg) && def->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
+               if (def->GetDef2()->MatchesPDG(pdg) && def->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
             }
          }
          
@@ -150,8 +156,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
          
          // assign masses and fill the MC steps,
          // where reconstruction is not taken into account
-         fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
-         FillContainer(kTRUE);
+         fMother.ComputeSum(def->GetMass1(), def->GetMass2());
+         FillContainer(kTRUE, def);
          
          // search for all reconstructed tracks which have these labels
          for (i = 0; i < 2; i++) indexes[i] = FindTracks(label[i], esd);
@@ -166,7 +172,7 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
             for (j = 0; j < indexes[1].GetSize(); j++) {
                fDaughter[0].SetRef(esd->GetTrack(indexes[0][i]));
                fDaughter[1].SetRef(esd->GetTrack(indexes[1][j]));
-               fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
+               fMother.ComputeSum(def->GetMass1(), def->GetMass2());
                istep = NGoodSteps();
                if (istep > imax) {
                   itrack[0] = indexes[0][i];
@@ -179,8 +185,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
          // then assign definitely the best combination and fill rec container
          fDaughter[0].SetRef(esd->GetTrack(itrack[0]));
          fDaughter[1].SetRef(esd->GetTrack(itrack[1]));
-         fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
-         FillContainer(kFALSE);
+         fMother.ComputeSum(def->GetMass1(), def->GetMass2());
+         FillContainer(kFALSE, def);
       }
    }
 }
@@ -203,9 +209,14 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
    AliAODMCParticle *part = 0x0, *mother = 0x0;
    Short_t           charge = 0, pairDefMatch[2];
    
+   // set pointers
+   fMother.SetDaughter(0, &fDaughter[0]);
+   fMother.SetDaughter(1, &fDaughter[1]);
+   
    // loop on definitions
+   AliRsnPairDef *def = 0x0;
    TObjArrayIter nextDef(&fDefs);
-   while ( (fDef = (AliRsnPairDef*)nextDef()) ) {
+   while ( (def = (AliRsnPairDef*)nextDef()) ) {
       
       // loop on the MC list of particles
       TObjArrayIter next(mcArray);
@@ -213,7 +224,7 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
          
          // check that it is a binary decay and the PDG code matches
          if (mother->GetNDaughters() != 2) continue;
-         if (mother->GetPdgCode() != fDef->GetMotherPDG()) continue;
+         if (mother->GetPdgCode() != def->GetMotherPDG()) continue;
          
          // store the labels of the two daughters
          label[0] = mother->GetDaughter(0);
@@ -227,8 +238,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
             if (part) {
                pdg    = TMath::Abs(part->GetPdgCode());
                charge = (Short_t)part->Charge();
-               if (fDef->GetDef1()->MatchesPDG(pdg) && fDef->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
-               if (fDef->GetDef2()->MatchesPDG(pdg) && fDef->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
+               if (def->GetDef1()->MatchesPDG(pdg) && def->GetDef1()->MatchesCharge(charge)) pairDefMatch[i] = 0;
+               if (def->GetDef2()->MatchesPDG(pdg) && def->GetDef2()->MatchesCharge(charge)) pairDefMatch[i] = 1;
             }
          }
          
@@ -250,8 +261,8 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
          
          // assign masses and fill the MC steps,
          // where reconstruction is not taken into account
-         fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
-         FillContainer(kTRUE);
+         fMother.ComputeSum(def->GetMass1(), def->GetMass2());
+         FillContainer(kTRUE, def);
          
          // search for all reconstructed tracks which have these labels
          for (i = 0; i < 2; i++) indexes[i] = FindTracks(label[i], aod);
@@ -266,7 +277,7 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
             for (j = 0; j < indexes[1].GetSize(); j++) {
                fDaughter[0].SetRef(aod->GetTrack(indexes[0][i]));
                fDaughter[1].SetRef(aod->GetTrack(indexes[1][j]));
-               fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
+               fMother.ComputeSum(def->GetMass1(), def->GetMass2());
                istep = NGoodSteps();
                if (istep > imax) {
                   itrack[0] = indexes[0][i];
@@ -278,21 +289,28 @@ void AliRsnAnalysisTaskEffPair::ProcessEventAOD()
          // then assign definitely the best combination and fill rec container
          fDaughter[0].SetRef(aod->GetTrack(itrack[0]));
          fDaughter[1].SetRef(aod->GetTrack(itrack[1]));
-         fMother.SetDaughters(&fDaughter[0], fDef->GetMass1(), &fDaughter[1], fDef->GetMass2());
-         FillContainer(kFALSE);
+         fMother.ComputeSum(def->GetMass1(), def->GetMass2());
+         FillContainer(kFALSE, def);
       }
    }
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisTaskEffPair::FillContainer(Bool_t mcList)
+void AliRsnAnalysisTaskEffPair::FillContainer(Bool_t mcList, TObject *defObj)
 {
 //
 // Fill the container corresponding to current definition.
 //
-
+   
+   // cast the object into the def
+   if (!defObj->InheritsFrom(AliRsnPairDef::Class())) {
+      AliError("Def object does not inherit from AliRsnPairDef!");
+      return;
+   }
+   AliRsnPairDef *def = static_cast<AliRsnPairDef*>(defObj);
+   
    // retrieve container
-   AliCFContainer *cont = (AliCFContainer*)fOutList->FindObject(fDef->GetName());
+   AliCFContainer *cont = (AliCFContainer*)fOutList->FindObject(def->GetName());
    if (!cont) return;
 
    TObjArray &stepList =  (mcList ? fStepsMC : fStepsRec);
@@ -307,7 +325,7 @@ void AliRsnAnalysisTaskEffPair::FillContainer(Bool_t mcList)
       fVar[iaxis] = -1E10;
       switch (fcnAxis->GetTargetType()) {
          case AliRsnTarget::kMother:
-            fcnAxis->SetSupportObject(fDef);
+            fcnAxis->SetSupportObject(def);
             computeOK = fcnAxis->Eval(&fMother, mcList);
             break;
          case AliRsnTarget::kEvent:
@@ -323,7 +341,6 @@ void AliRsnAnalysisTaskEffPair::FillContainer(Bool_t mcList)
    // fill all successful steps
    for (istep = 0; istep < nSteps; istep++) {
       AliRsnCutManager *cutMgr = (AliRsnCutManager*)stepList[istep];
-      AliRsnTarget::SwitchToFirst();
       
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[0])) break;
       if (!cutMgr->PassCommonDaughterCuts(&fDaughter[1])) break;
@@ -331,7 +348,7 @@ void AliRsnAnalysisTaskEffPair::FillContainer(Bool_t mcList)
       if (!cutMgr->PassDaughter2Cuts(&fDaughter[1])) break;
       if (!cutMgr->PassMotherCuts(&fMother)) break;
       
-      AliDebug(AliLog::kDebug + 2, Form("DEF: %s --> filling step %d", fDef->GetName(), istep));
+      AliDebug(AliLog::kDebug + 2, Form("DEF: %s --> filling step %d", def->GetName(), istep));
       cont->Fill(fVar.GetArray(), istep + firstStep);
    }
 }

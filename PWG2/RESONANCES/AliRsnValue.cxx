@@ -37,7 +37,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <Riostream.h>
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
 #include "AliAODPid.h"
@@ -214,7 +213,9 @@ void AliRsnValue::SetBins(Int_t nbins, Double_t *array)
       return;
    }
 
-   fBinArray.Adopt(nbins, array);
+   Int_t i;
+   fBinArray.Set(nbins);
+   for (i = 0; i < nbins; i++) fBinArray[i] = array[i];
 }
 
 //_____________________________________________________________________________
@@ -228,12 +229,15 @@ const char* AliRsnValue::GetValueTypeName() const
    switch (fValueType) {
       case kTrackP:               return "SingleTrackPtot";
       case kTrackPt:              return "SingleTrackPt";
+      case kTrackPtpc:            return "SingleTrackPtpc";
       case kTrackEta:             return "SingleTrackEta";
       case kTrackY:               return "SingleTrackRapidity";
       case kTrackITSsignal:       return "SingleTrackITSsignal";
       case kTrackTPCsignal:       return "SingleTrackTPCsignal";
       case kTrackTOFsignal:       return "SingleTrackTOFsignal";
+      case kTrackTOFbeta:         return "SingleTrackTOFbeta";
       case kTrackLength:          return "SingleTrackLength";
+      
       case kPairP1:               return "PairPtotDaughter1";
       case kPairP2:               return "PairPtotDaughter2";
       case kPairP1t:              return "PairPtDaughter1";
@@ -255,10 +259,12 @@ const char* AliRsnValue::GetValueTypeName() const
       case kPairCosThetaStar:     return "PairCosThetaStar";
       case kPairQInv:             return "PairQInv";
       case kPairAngleToLeading:   return "PairAngleToLeading";
+      
       case kEventLeadingPt:       return "EventLeadingPt";
       case kEventMult:            return "EventMult";
       case kEventMultMC:          return "EventMultMC";
       case kEventMultESDCuts:     return "EventMultESDCuts";
+      case kEventMultSPD:         return "EventMultSPD";
       case kEventVz:              return "EventVz";
       case kEventCentralityV0:    return "EventCentralityV0";
       case kEventCentralityTrack: return "EventCentralityTrack";
@@ -278,41 +284,43 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
 // and the values must be taken with GetValue().
 //
 
-   // coherence check 
-   // (which also casts object to AliRsnTarget data members)
+   // utility variables
+   Bool_t         success;
+   const Double_t fgkVeryBig = 1E20;
+   Double_t       time;
+   Int_t          leadingID = -1;
+   ULong_t        status = 0x0;
+
+   // coherence check, which also casts object 
+   // to AliRsnTarget data members and returns kFALSE
+   // in case the object is NULL
    if (!TargetOK(object)) return kFALSE;
-   if (IsAllNull()) {
-      AliError("TargetOK passed but all pointers are NULL");
-      return kFALSE;
-   }
 
-   // cast the input to the allowed types
-   AliESDEvent *esdev  = fgCurrentEvent->GetRefESD();
-   AliESDtrack *esdt   = 0x0;
-   AliAODTrack *aodt   = 0x0;
-   AliAODPid   *pidObj = 0x0;
-   
-   // conditional initializations
-   if (fDaughter) {
-      esdt = fDaughter->GetRefESDtrack();
-      aodt = fDaughter->GetRefAODtrack();
-      if (aodt) pidObj = aodt->GetDetPid();
-   }
-
-   // common variables
-   TLorentzVector pRec;   // 4-momentum for single track or pair sum (reco)
-   TLorentzVector pSim;   // 4-momentum for single track or pair sum (MC)
-   TLorentzVector pRec0;  // 4-momentum of first daughter (reco)
-   TLorentzVector pSim0;  // 4-momentum of first daughter (MC)
-   TLorentzVector pRec1;  // 4-momentum of second daughter (reco)
-   TLorentzVector pSim1;  // 4-momentum of second daughter (MC)
+   // these variables are initialized
+   // from the target object, once it
+   // is casted to one of the expected
+   // types (daughter/mother/event)
+   // -- not all are initialized always
+   TLorentzVector pRec;          // 4-momentum for single track or pair sum (reco)
+   TLorentzVector pSim;          // 4-momentum for single track or pair sum (MC)
+   TLorentzVector pRec0;         // 4-momentum of first daughter (reco)
+   TLorentzVector pSim0;         // 4-momentum of first daughter (MC)
+   TLorentzVector pRec1;         // 4-momentum of second daughter (reco)
+   TLorentzVector pSim1;         // 4-momentum of second daughter (MC)
+   AliESDEvent   *esdev  = 0x0;  // reference ESD event
+   AliESDtrack   *esdt   = 0x0;  // reference ESD track
+   AliAODTrack   *aodt   = 0x0;  // reference AOD track
+   AliAODPid     *pidObj = 0x0;  // reference AOD PID object
 
    // initialize the above 4-vectors according to the 
    // expected target type (which has been checked above)
    switch (fTargetType) {
       case AliRsnTarget::kDaughter:
-         pRec = fDaughter->Psim();
-         pSim = fDaughter->Prec();
+         pRec = fDaughter->Prec();
+         pSim = fDaughter->Psim();
+         esdt = fDaughter->GetRefESDtrack();
+         aodt = fDaughter->GetRefAODtrack();
+         if (aodt) pidObj = aodt->GetDetPid();
          break;
       case AliRsnTarget::kMother:
          pRec  = fMother->Sum();
@@ -323,17 +331,20 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          pSim1 = fMother->GetDaughter(1)->Psim();
          break;
       case AliRsnTarget::kEvent:
-         if (!fgCurrentEvent) {
-            AliError(Form("[%s] current event not initialized", GetName()));
-            return kFALSE;
-         }
          break;
       default:
          AliError(Form("[%s] Wrong type", GetName()));
          return kFALSE;
    }
-
-   // cast the support object to the types which could be needed
+   if (fEvent) {
+      leadingID = fEvent->GetLeadingParticleID();
+      esdev = fEvent->GetRefESD();
+   }
+   if (esdt) status = esdt->GetStatus();
+   if (aodt) status = aodt->GetStatus();
+   
+   // these objects are all types of supports
+   // which could be needed for some values
    AliRsnPairDef     *pairDef     = 0x0;
    AliRsnDaughterDef *daughterDef = 0x0;
    AliESDpid         *esdPID      = 0x0;
@@ -347,18 +358,37 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem
    // (not initialized support object, wrong values, risk of floating point errors)
-   // the method returng kFALSE and sets the computed value to a very large number
+   // the method returng kFALSE and sets the computed value to a meaningless number
    switch (fValueType) {
       case kTrackP:
          // single track:
          // total momentum 
-         fComputedValue = useMC ? pSim.Mag() : pRec.Mag();
+         fComputedValue = useMC ? pSim.Vect().Mag() : pRec.Vect().Mag();
          return kTRUE;
       case kTrackPt:
          // single track:
          // transverse momentum
          fComputedValue = useMC ? pSim.Perp() : pRec.Perp();
          return kTRUE;
+      case kTrackPtpc:
+         // single track:
+         // transverse momentum
+         if (esdt) {
+            if (esdt->GetInnerParam()) {
+               fComputedValue = esdt->GetInnerParam()->P();
+               return kTRUE;
+            } else {
+               AliError(Form("[%s] TPC inner param is not initialized", GetName()));
+               return kFALSE;
+            }
+         }
+         else if (aodt && pidObj) {
+            fComputedValue = pidObj->GetTPCmomentum();
+            return kTRUE;
+         } else {
+            AliError(Form("[%s] Cannot retrieve TPC momentum", GetName()));
+            return kFALSE;
+         }
       case kTrackEta:
          // single track:
          // pseudo-rapidity
@@ -381,6 +411,11 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       case kTrackITSsignal:
          // single track:
          // ITS signal (successful only for tracks)
+         // works only if the status is OK
+         if ((status & AliESDtrack::kITSin) == 0) {
+            AliDebug(AliLog::kDebug + 2, "Rejecting non-ITS track");
+            return kFALSE;
+         }
          if (esdt) {
             fComputedValue = esdt->GetITSsignal();
             return kTRUE;
@@ -397,6 +432,11 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       case kTrackTPCsignal:
          // single track:
          // TPC signal (successful only for tracks)
+         // works only if the status is OK
+         if ((status & AliESDtrack::kTPCin) == 0) {
+            AliDebug(AliLog::kDebug + 2, "Rejecting non-TPC track");
+            return kFALSE;
+         }
          if (esdt) {
             fComputedValue = esdt->GetTPCsignal();
             return kTRUE;
@@ -413,13 +453,19 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       case kTrackTOFsignal:
          // single track:
          // TOF signal (successful only for tracks, for ESD requires an AliESDpid support)
+         // works only if the status is OK
+         if ((status & AliESDtrack::kTOFout) == 0 || (status & AliESDtrack::kTIME) == 0) {
+            AliDebug(AliLog::kDebug + 2, "Rejecting non-TOF track");
+            return kFALSE;
+         }
          if (esdt) {
-            if (!esdPID) {
-               AliError(Form("[%s] Required a correctly initialized AliESDpid support object to compute this value with ESDs", GetName()));
+            if (!esdPID || !esdev) {
+               AliError(Form("[%s] Required a correctly initialized AliRsnEvent and AliESDpid support object to compute this value with ESDs", GetName()));
                fComputedValue = fgkVeryBig;
                return kFALSE;
             }
             else {
+               esdPID->SetTOFResponse(esdev, AliESDpid::kTOF_T0);
                fComputedValue = (esdt->GetTOFsignal() - esdPID->GetTOFResponse().GetStartTime(esdt->P()));
                return kTRUE;
             }
@@ -430,6 +476,39 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          }
          else {
             AliError(Form("[%s] Detector signals can be computed only on reconstructed tracks", GetName()));
+            fComputedValue = fgkVeryBig;
+            return kFALSE;
+         }
+      case kTrackTOFbeta:
+         // single track:
+         // TOF beta (successful only for tracks, for ESD requires an AliESDpid support)
+         if (esdt) {
+            if (!esdPID) {
+               AliError(Form("[%s] Required a correctly initialized AliESDpid support object to compute this value with ESDs", GetName()));
+               fComputedValue = fgkVeryBig;
+               return kFALSE;
+            }
+            else if (!esdev) {
+               AliError(Form("[%s] Required a correctly initialized AliESDEvent to compute this value with ESDs", GetName()));
+               fComputedValue = fgkVeryBig;
+               return kFALSE;
+            }
+            else {
+               esdPID->SetTOFResponse(esdev, AliESDpid::kTOF_T0);
+               fComputedValue = esdt->GetIntegratedLength();
+               time = (esdt->GetTOFsignal() - esdPID->GetTOFResponse().GetStartTime(esdt->P()));
+               if (time > 0.0) {
+                  fComputedValue /= time;
+                  fComputedValue /= 2.99792458E-2;
+                  return kTRUE;
+               } else {
+                  fComputedValue = fgkVeryBig;
+                  return kFALSE;
+               }
+            }
+         }
+         else {
+            AliError(Form("[%s] Length information not available in AODs", GetName()));
             fComputedValue = fgkVeryBig;
             return kFALSE;
          }
@@ -575,60 +654,44 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
       case kPairAngleToLeading:
          // pair:
          // angle w.r. to leading particle (if any)
-         {
-            int ID1 = (fMother->GetDaughter(0))->GetID();
-            int ID2 = (fMother->GetDaughter(1))->GetID();
-            Int_t leadingID = fgCurrentEvent->GetLeadingParticleID();
-            if (leadingID == ID1 || leadingID == ID2) {
-               fComputedValue = -99.;
-               return kFALSE;
-            }
-            AliRsnDaughter leadingPart = fgCurrentEvent->GetDaughter(leadingID);
-            AliVParticle  *ref = leadingPart.GetRef();
-            fComputedValue = ref->Phi() - fMother->Sum().Phi();
-            //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
-            while (fComputedValue >= 1.5 * TMath::Pi()) fComputedValue -= 2 * TMath::Pi();
-            while (fComputedValue < -0.5 * TMath::Pi()) fComputedValue += 2 * TMath::Pi();
-         }
-         return kTRUE;
+         fComputedValue = fMother->AngleToLeading(success);
+         return success;
       //---------------------------------------------------------------------------------------------------------------------
       case kEventMult:
          // event:
          // multiplicity of tracks
-         fComputedValue = (Double_t)fgCurrentEvent->GetMultiplicity(0x0);
-         return kTRUE;
+         fComputedValue = (Double_t)fEvent->GetMultiplicityFromTracks();
+         return (fComputedValue >= 0);
       case kEventMultMC:
          // event:
          // multiplicity of MC tracks
-         fComputedValue = (Double_t)fgCurrentEvent->GetMultiplicityMC();
+         fComputedValue = (Double_t)fEvent->GetMultiplicityFromMC();
+         return (fComputedValue >= 0);
       case kEventMultESDCuts:
          // event:
          // multiplicity of good quality tracks 
-         if (esdev) {
-            fComputedValue = AliESDtrackCuts::GetReferenceMultiplicity(esdev, kTRUE);
-            return kTRUE;
-         }
-         else {
-            AliError(Form("[%s] Can be computed only on ESDs", GetName()));
-            fComputedValue = fgkVeryBig;
-            return kFALSE;
-         }
+         fComputedValue = fEvent->GetMultiplicityFromESDCuts();
+         return (fComputedValue >= 0);
+      case kEventMultSPD:
+         // event:
+         // multiplicity of good quality tracks 
+         fComputedValue = fEvent->GetMultiplicityFromSPD();
+         return (fComputedValue >= 0);
       case kEventLeadingPt: 
          // event:
          // transverse momentum of leading particle
-         {
-            int leadingID = fgCurrentEvent->GetLeadingParticleID(); //fEvent->SelectLeadingParticle(0);
-            if (leadingID >= 0) {
-               AliRsnDaughter leadingPart = fgCurrentEvent->GetDaughter(leadingID);
-               AliVParticle *ref = leadingPart.GetRef();
-               fComputedValue = ref->Pt();
-            } else fComputedValue = 0;
+         if (leadingID >= 0) {
+            AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
+            AliVParticle *ref = leadingPart.GetRef();
+            fComputedValue = ref->Pt();
+         } else {
+            AliError(Form("[%s] Leading ID has bad value (%d)", GetName(), leadingID));
+            return kFALSE;
          }
-         return kTRUE;
       case kEventVz:
          // event:
          // Z position of primary vertex
-         fComputedValue = fgCurrentEvent->GetRef()->GetPrimaryVertex()->GetZ();
+         fComputedValue = fEvent->GetRef()->GetPrimaryVertex()->GetZ();
          return kTRUE;
       case kEventCentralityV0:
          // event:
@@ -682,7 +745,7 @@ void AliRsnValue::Print(Option_t * /*option */) const
    AliInfo(Form(" Current computed value: %f", fComputedValue));
    Int_t i;
    for (i = 0; i < fBinArray.GetSize(); i++) {
-      AliInfo(Form(" Bin limit #%d         = %f", i, fBinArray[i]));
+   AliInfo(Form(" Bin limit #%03d        = %f", i, fBinArray[i]));
    }
    AliInfo(Form(" Support object        : %s", (fSupportObject ? fSupportObject->ClassName() : " NO SUPPORT")));
    AliInfo("=== END VALUE INFO =============================================");

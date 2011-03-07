@@ -44,7 +44,7 @@ public:
    virtual void    RsnUserCreateOutputObjects();
    virtual void    RsnUserExec(Option_t*);
    virtual void    RsnTerminate(Option_t*);
-   virtual Bool_t  EventProcess();
+   virtual Bool_t  RsnEventProcess();
 
 protected:
 
@@ -52,7 +52,7 @@ protected:
    virtual void    ProcessEventESD();
    virtual void    ProcessEventAOD();
    virtual Int_t   NGoodSteps();
-   virtual void    FillContainer(Bool_t mcList);
+   virtual void    FillContainer(Bool_t mcList, TObject *def);
    
    TObjArray       fDefs;        //  list of definitions
    TObjArray       fStepsMC;     //  list of cuts for all steps with MC tracks

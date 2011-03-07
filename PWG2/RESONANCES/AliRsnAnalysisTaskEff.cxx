@@ -192,7 +192,7 @@ void AliRsnAnalysisTaskEff::RsnTerminate(Option_t*)
 }
 
 //______________________________________________________________________________
-Bool_t AliRsnAnalysisTaskEff::EventProcess()
+Bool_t AliRsnAnalysisTaskEff::RsnEventProcess()
 {
 //
 // Customized event pre-processing.
@@ -221,7 +221,7 @@ Bool_t AliRsnAnalysisTaskEff::EventProcess()
    // final return value is positive
    // but call the mother class method which updates info object
    fTaskInfo.SetEventUsed(kTRUE);
-   return AliRsnVAnalysisTask::EventProcess();
+   return AliRsnVAnalysisTask::RsnEventProcess();
 }
 
 //_____________________________________________________________________________
@@ -283,7 +283,7 @@ void AliRsnAnalysisTaskEff::ProcessEventAOD()
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisTaskEff::FillContainer(Bool_t)
+void AliRsnAnalysisTaskEff::FillContainer(Bool_t, TObject*)
 {
 //
 // Fill the containers

@@ -23,10 +23,10 @@ public:
    AliRsnMonitorNtuple& operator=(const AliRsnMonitorNtuple&);
    ~AliRsnMonitorNtuple();
 
-   Bool_t       AddValue(AliRsnValue*const val);
-   void         GenerateNtuple(const char *prefix = "", TList *list = 0);
-   virtual void Compute();
-   virtual void Init(const char *prefix, TList *list);
+   Bool_t         AddValue(AliRsnValue*const val);
+   void           GenerateNtuple(const char *prefix = "", TList *list = 0);
+   virtual void   Compute();
+   virtual void   Init(const char *prefix, TList *list);
 
 private:
 

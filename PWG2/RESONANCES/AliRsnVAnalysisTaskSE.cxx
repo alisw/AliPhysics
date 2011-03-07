@@ -170,17 +170,10 @@ void AliRsnVAnalysisTaskSE::UserExec(Option_t* opt)
       return;
    }
 
-   // since this class is for single-event analysis
-   // both static pointers of AliRsnEvent class
-   // will point to the same unique datamember
-   AliRsnEvent::SetCurrentEvent1(&fRsnEvent, fEntry);
-   AliRsnEvent::SetCurrentEvent2(&fRsnEvent, fEntry);
-   AliRsnTarget::SwitchToFirst();
-
    // call event preprocessing...
    Bool_t preCheck = EventProcess();
    // ...then fill the information object and print informations...
-   fTaskInfo.FillInfo();
+   fTaskInfo.FillInfo(&fRsnEvent);
    fTaskInfo.PrintInfo(fTaskInfo.GetNumerOfEventsProcessed());
    // ...and return if event did not pass selections
    if (!preCheck) {
