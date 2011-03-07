@@ -125,7 +125,7 @@ AliTRDcheckESD::~AliTRDcheckESD()
 {
 // Destructor
   if(fHistos){
-    //fHistos->Delete();
+    if(fHistos->IsOwner()) fHistos->Delete();
     delete fHistos;
   }
   if(fResults){
@@ -1088,7 +1088,7 @@ TObjArray* AliTRDcheckESD::Histos()
   if(fHistos) return fHistos;
 
   fHistos = new TObjArray(kNhistos);
-  //fHistos->SetOwner(kTRUE);
+  fHistos->SetOwner(kTRUE);
 
   TH1 *h = NULL;
 

@@ -2440,7 +2440,7 @@ TObjArray* AliTRDresolution::Histos()
   if(fContainer) return fContainer;
 
   fContainer  = new TObjArray(kNviews);
-  //fContainer->SetOwner(kTRUE);
+  fContainer->SetOwner(kTRUE);
   TH1 *h(NULL);
   TObjArray *arr(NULL);
 
