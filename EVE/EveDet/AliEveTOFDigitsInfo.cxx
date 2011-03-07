@@ -76,14 +76,14 @@ void AliEveTOFDigitsInfo::SetTree(TTree * const tree)
   */
 }
 /* ******************************************************* */
-void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
+void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Int_t newDecoder)
 {
   //
   // Read raw-data. AliTOFdigit is used to
   // store raw-adata for all sub-detectors.
   //
 
-  AliTOFCableLengthMap *cableLength = new AliTOFCableLengthMap();
+  //AliTOFCableLengthMap *cableLength = new AliTOFCableLengthMap();
 
   //ofstream ftxt;
   //Char_t fileName[100];
@@ -112,8 +112,9 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
   for (Int_t indexDDL = 0; indexDDL < kDDL; indexDDL++) {
 
     rawReader->Reset();
-    if (!newDecoder) stream.LoadRawData(indexDDL);
-    else stream.LoadRawDataBuffers(indexDDL);
+    if (newDecoder==0) stream.LoadRawData(indexDDL);
+    else if (newDecoder==1) stream.LoadRawDataBuffers(indexDDL);
+    else if (newDecoder==2) stream.LoadRawDataBuffersV2(indexDDL);
 
     clonesRawData = (TClonesArray*)stream.GetRawData();
 
@@ -125,8 +126,8 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 
       if (tofRawDatum->GetTOF()==-1) continue;
 
-      Int_t cLenInt = Int_t(cableLength->GetCableTimeShift(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),tofRawDatum->GetTDC())*1000./AliTOFGeometry::TdcBinWidth());
-      digit[0] = tofRawDatum->GetTOF() - cLenInt;
+      //Int_t cLenInt = Int_t(cableLength->GetCableTimeShift(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),tofRawDatum->GetTDC())*1000./AliTOFGeometry::TdcBinWidth());
+      digit[0] = tofRawDatum->GetTOF();// - cLenInt;
       digit[1] = tofRawDatum->GetTOT();
       digit[2] = tofRawDatum->GetTOT();
       digit[3] = -1;
@@ -145,17 +146,15 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
       stream.EquipmentId2VolumeId(indexDDL, tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
 				  tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(), detectorIndex);
 
-      if (detectorIndex[0]==0 || detectorIndex[0]==10)
-	AliDebug(2, Form(" %2i %2i %1i %2i %1i --- %2i %1i %2i %1i %2i     %5i -  %4i =  %5i (%f ns)\n",
-			 indexDDL,
-			 tofRawDatum->GetTRM(), tofRawDatum->GetTRMchain(),
-			 tofRawDatum->GetTDC(), tofRawDatum->GetTDCchannel(),
-			 detectorIndex[0], detectorIndex[1],
-			 detectorIndex[2], detectorIndex[3],
-			 detectorIndex[4], tofRawDatum->GetTOF(),
-			 cLenInt, tofRawDatum->GetTOF()-cLenInt,
-			 (tofRawDatum->GetTOF()-cLenInt)*
-			 AliTOFGeometry::TdcBinWidth()/1000.));
+      /* check valid index */
+      if (detectorIndex[0]==-1||detectorIndex[1]==-1||detectorIndex[2]==-1||detectorIndex[3]==-1||detectorIndex[4]==-1) continue;
+
+      // Do not reconstruct anything in the holes
+      if (detectorIndex[0]==13 || detectorIndex[0]==14 || detectorIndex[0]==15 ) { // sectors with holes
+	if (detectorIndex[1]==2) { // plate with holes
+	  continue;
+	}
+      }
 
       /*
       if (detectorIndex[0]<10) ftxt  << "  ->  " << detectorIndex[0];
@@ -206,7 +205,7 @@ void AliEveTOFDigitsInfo::ReadRaw(AliRawReader* rawReader, Bool_t newDecoder)
 
   //ftxt.close();
 
-  delete cableLength;
+  //delete cableLength;
 
 }
 

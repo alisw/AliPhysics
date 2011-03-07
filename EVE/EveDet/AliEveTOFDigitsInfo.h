@@ -35,7 +35,7 @@ class AliEveTOFDigitsInfo : public TObject, public TEveRefCnt
     virtual ~AliEveTOFDigitsInfo();
     
     void SetTree(TTree * const tree);
-    void ReadRaw(AliRawReader* rawReader, Bool_t newDecoder=kTRUE);
+    void ReadRaw(AliRawReader* rawReader, Int_t newDecoder=2);
     void LoadDigits();
 
     void GetDigits(Int_t nSector, Int_t nPlate, Int_t nStrip,
