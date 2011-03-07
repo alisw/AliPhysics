@@ -445,19 +445,20 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   gStyle->SetTitleY(1);
   gStyle->SetTitleX(0.2);
   //
-  char buff[200];
+  const Int_t nc=200;
+  char buff[nc];
   //
   cnv->Divide(2,2);
   cnv->cd(1);
   //
   TPaveText *pt = new TPaveText(0.05,0.05,0.95,0.95,"blNDC");
-  sprintf(buff,"%s | Outliers Cut : %.2e",GetName(),fOutlierCut);
+  snprintf(buff,nc,"%s | Outliers Cut : %.2e",GetName(),fOutlierCut);
   pt->AddText(buff);
   //
-  sprintf(buff,"Processed Events:\n%d",fEvProc);
+  snprintf(buff,nc,"Processed Events:\n%d",fEvProc);
   pt->AddText(buff);
   //
-  sprintf(buff,"Accepted  Events\n%d",fIPCenterStat);
+  snprintf(buff,nc,"Accepted  Events\n%d",fIPCenterStat);
   pt->AddText(buff);
   //
   double cx,cy,cz,cxe,cye,cze;
@@ -465,12 +466,12 @@ TCanvas* AliIntSpotEstimator::CreateReport(const char* outname)
   cy = GetIPCenter(1,&cye);
   cz = GetIPCenter(2,&cze);
   //  
-  sprintf(buff,"Int.Spot (#mum)\n%+d#pm%d\n%+d#pm%d\n%+d#pm%d",
+  snprintf(buff,nc,"Int.Spot (#mum)\n%+d#pm%d\n%+d#pm%d\n%+d#pm%d",
 	  int(cx*1e4),int(cxe*1e4),int(cy*1e4),int(cye*1e4),int(cz*1e4),int(cze*1e4));
   pt->AddText(buff);
   //
   cx = GetIPSigma(0,&cxe);
-  sprintf(buff,"Int.Spot #sigma (#mum):\n%d#pm%d",int(cx*1e4),int(cxe*1e4));
+  snprintf(buff,nc,"Int.Spot #sigma (#mum):\n%d#pm%d",int(cx*1e4),int(cxe*1e4));
   pt->AddText(buff);
   pt->Draw();
   gPad->Modified();
@@ -546,6 +547,7 @@ Long64_t AliIntSpotEstimator::Merge(TCollection *coll)
   int count = 0;
   while ((obj = iter->Next())) {
     AliIntSpotEstimator* entry = dynamic_cast<AliIntSpotEstimator*>(obj);
+    if (!entry) continue;
     (*this) += *entry;
     count++;
   }
