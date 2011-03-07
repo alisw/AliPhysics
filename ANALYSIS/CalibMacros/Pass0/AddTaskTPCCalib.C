@@ -8,7 +8,6 @@
  1. AliTPCcalibCalib - redo reconstruction with current calibration
  2. AliTPCcalibTimeGain - TPC time dependent gain calibration
  3. AliTPCcalibTime - TPC time dependent drift time calibration
- 4. AliTPCcalibLaser - laser track calibration
 
 */
 
@@ -168,21 +167,6 @@ void AddCalibTime(TObject* task){
 }
 
 //_____________________________________________________________________________
-void AddCalibLaser(TObject* task){
-  //
-  // Responsible: Marian Ivanov
-  // Description:
-  //
-  AliTPCAnalysisTaskcalib* myTask = (AliTPCAnalysisTaskcalib*) task;
-  AliTPCcalibLaser *calibLaser = new AliTPCcalibLaser("laserTPC","laserTPC");
-  calibLaser->SetDebugLevel(0);
-  calibLaser->SetStreamLevel(0);
-  calibLaser->SetTriggerMask(-1,-1,kFALSE);        //accept everything
-
-  myTask->AddJob(calibLaser);
-}
-
-//_____________________________________________________________________________
 void SetupCalibTaskTrain1(TObject* task){
   //
   // Setup tasks for calibration train
@@ -190,7 +174,6 @@ void SetupCalibTaskTrain1(TObject* task){
   AddCalibCalib(task);
   AddCalibTimeGain(task);
   AddCalibTime(task);
-  AddCalibLaser(task);
 }
 
 //_____________________________________________________________________________
