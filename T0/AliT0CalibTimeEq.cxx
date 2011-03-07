@@ -131,7 +131,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfd) {
 	    GetMeanAndSigma(cfd, meandiff, sigmadiff);
- 	    nent=cfd->GetEntries();
+ 	    nent = Int_t(cfd->GetEntries());
 	    if(nent<500 || cfd->GetRMS()>20. ) {
 	      ok=false;
 	      AliWarning(Form("Data is not good enouph in PMT %i - mean %f rsm %f nentries %i", i,meandiff,sigmadiff , nent));
@@ -147,7 +147,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfdtime) {
 	    GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
- 	    nent=cfdtime->GetEntries();
+ 	    nent = Int_t(cfdtime->GetEntries());
 	    if(nent<500 || sigmacfdtime>30. ) {
 	      ok=false;
 	      AliWarning(Form("Data is not good enouph in PMT %i CFD data - meancfdtime %f rsm %f nentries %i", i,meancfdtime, sigmacfdtime, nent));
@@ -213,7 +213,7 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys)
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfddiff) {
  	    GetMeanAndSigma(cfddiff,meandiff, sigmadiff);
- 	    nent=cfddiff->GetEntries();
+ 	    nent = Int_t(cfddiff->GetEntries());
 	    if(nent<500 || cfddiff->GetRMS()>20. ) {
 	      ok=false;
 	      AliWarning(Form("Data is not good enouph in PMT %i - mean %f rsm %f nentries %i", i,meandiff,sigmadiff, nent));
@@ -228,7 +228,7 @@ Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys)
 	  //      printf(" i = %d buf1 = %s\n", i, buf1);
 	  if(cfdtime) {
 	    GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
- 	    nent=cfdtime->GetEntries();
+ 	    nent = Int_t(cfdtime->GetEntries());
 	    if(nent<500 || cfdtime->GetRMS()>30. ) {
 	      ok=false;
 	      AliWarning(Form("Data is not good enouph in PMT %i CFD data - mean %f rsm %f nentries %i", i,meancfdtime, sigmacfdtime, nent));
