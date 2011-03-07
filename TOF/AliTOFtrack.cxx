@@ -98,7 +98,6 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t /*rho*/)
   
   Double_t oldX=GetX();//, oldY=GetY(), oldZ=GetZ();
   Double_t start[3], end[3], mparam[7];
-  Double_t start[3], end[3], mparam[7];
 
   /* get start position */
   GetXYZ(start);
