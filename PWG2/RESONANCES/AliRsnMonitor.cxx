@@ -29,7 +29,7 @@ AliRsnMonitor::AliRsnMonitor(const char *name, AliRsnDaughterDef *def) :
    fCount(0),
    fDaughterDef(def),
    fCuts(Form("cuts_%s", name), AliRsnTarget::kDaughter),
-   fDaughter()
+   fDaughter(0)
 {
 //
 // Default constructor
@@ -99,8 +99,8 @@ Bool_t AliRsnMonitor::Fill(AliRsnDaughter *daughter)
    
    // if matching is successful
    // update track data member and assigh default mass
-   fDaughter = *daughter;
-   daughter->SetMass(fDaughterDef->GetMass());
+   fDaughter = daughter;
+   fDaughter->SetMass(fDaughterDef->GetMass());
 
    // check the cuts
    if (!fCuts.IsSelected(daughter)) return kFALSE;

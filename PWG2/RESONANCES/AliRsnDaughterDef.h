@@ -32,7 +32,7 @@ public:
    virtual const char*      GetName()    const {return Form("%s%c", AliRsnDaughter::SpeciesName(fPID), fCharge);}
 
    // setters
-   void SetPID(AliRsnDaughter::ESpecies pid = AliRsnDaughter::kUnknown)     {fPID = pid; fRefType = AliRsnDaughter::RefType(pid);}
+   void SetPID(AliRsnDaughter::ESpecies pid = AliRsnDaughter::kUnknown)     {fPID = pid; fRefType = AliRsnDaughter::RefType(pid); fMass = AliRsnDaughter::SpeciesMass(pid);}
    void SetCharge(Char_t charge = 0)                                        {fCharge = charge;}
    void SetRefType(AliRsnDaughter::ERefType type = AliRsnDaughter::kNoType) {fRefType = type;}
    
@@ -100,12 +100,12 @@ inline Bool_t AliRsnDaughterDef::MatchesRefType(AliRsnDaughter *daughter)
 // otherwise it accepts everything.
 //
 
-   switch (fRefType) {
-      case AliRsnDaughter::kTrack  : return daughter->IsTrack();
-      case AliRsnDaughter::kV0     : return daughter->IsV0();
-      case AliRsnDaughter::kCascade: return daughter->IsCascade();
-      default                      : return kTRUE;
-   }
+   AliRsnDaughter::ERefType type = daughter->RefType();
+   
+   if (fRefType != AliRsnDaughter::kNoType) 
+      return (type == fRefType);
+   else
+      return kTRUE;
 }
 
 #endif

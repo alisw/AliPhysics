@@ -20,8 +20,7 @@ ClassImp(AliRsnAnalysisTaskEffMonitor)
 //_____________________________________________________________________________
 AliRsnAnalysisTaskEffMonitor::AliRsnAnalysisTaskEffMonitor(const char *name) :
    AliRsnAnalysisTaskEff(name),
-   fDaughter(),
-   fDef(0x0)
+   fDaughter()
 {
 //
 // Default constructor.
@@ -32,8 +31,7 @@ AliRsnAnalysisTaskEffMonitor::AliRsnAnalysisTaskEffMonitor(const char *name) :
 //_____________________________________________________________________________
 AliRsnAnalysisTaskEffMonitor::AliRsnAnalysisTaskEffMonitor(const AliRsnAnalysisTaskEffMonitor& copy) :
    AliRsnAnalysisTaskEff(copy),
-   fDaughter(),
-   fDef(0x0)
+   fDaughter()
 {
 //
 // Copy constrtuctor.
@@ -64,10 +62,7 @@ Int_t AliRsnAnalysisTaskEffMonitor::NGoodSteps()
    
    for (istep = 0; istep < nSteps; istep++) {
       AliRsnCutSet *cutSet = (AliRsnCutSet*)fStepsRec[istep];
-      AliRsnTarget::SwitchToFirst();
-      
       if (!cutSet->IsSelected(&fDaughter)) break;
-      
       count++;
    }
    
@@ -90,8 +85,9 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventESD()
    Int_t          imax, istep, icheck, itrack, ipart;
    
    // loop on definitions
+   AliRsnDaughterDef *def = 0x0;
    TObjArrayIter nextDef(&fDefs);
-   while ( (fDef = (AliRsnDaughterDef*)nextDef()) ) {
+   while ( (def = (AliRsnDaughterDef*)nextDef()) ) {
 
       // loop on the MC list of particles
       for (ipart = 0; ipart < stack->GetNprimary(); ipart++) {
@@ -112,7 +108,7 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventESD()
             imax = istep = itrack = 0;
             for (icheck = 0; icheck < indexes.GetSize(); icheck++) {
                fDaughter.SetRef(esd->GetTrack(indexes[icheck]));
-               fDaughter.SetMass(fDef->GetMass());
+               fDaughter.SetMass(def->GetMass());
                istep = NGoodSteps();
                if (istep > imax) itrack = icheck;
             }
@@ -120,11 +116,11 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventESD()
          }
          
          // compute 4-momenta
-         fDaughter.SetMass(fDef->GetMass());
+         fDaughter.SetMass(def->GetMass());
 
          // fill MC container
-         FillContainer(kTRUE);
-         if (fDaughter.GetRef()) FillContainer(kFALSE);
+         FillContainer(kTRUE, def);
+         if (fDaughter.GetRef()) FillContainer(kFALSE, def);
       }
    }
 }
@@ -145,8 +141,9 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventAOD()
    Int_t         imax, istep, icheck, itrack, ipart;
    
    // loop on definitions
+   AliRsnDaughterDef *def = 0x0;
    TObjArrayIter nextDef(&fDefs);
-   while ( (fDef = (AliRsnDaughterDef*)nextDef()) ) {
+   while ( (def = (AliRsnDaughterDef*)nextDef()) ) {
 
       // loop on the MC list of particles
       TObjArrayIter next(mcArray);
@@ -170,7 +167,7 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventAOD()
             imax = istep = itrack = 0;
             for (icheck = 0; icheck < indexes.GetSize(); icheck++) {
                fDaughter.SetRef(aod->GetTrack(indexes[icheck]));
-               fDaughter.SetMass(fDef->GetMass());
+               fDaughter.SetMass(def->GetMass());
                istep = NGoodSteps();
                if (istep > imax) {
                   itrack = icheck;
@@ -181,24 +178,31 @@ void AliRsnAnalysisTaskEffMonitor::ProcessEventAOD()
          }
          
          // compute 4-momenta
-         fDaughter.SetMass(fDef->GetMass());
+         fDaughter.SetMass(def->GetMass());
 
          // fill MC container
-         FillContainer(kTRUE);
-         if (fDaughter.GetRef()) FillContainer(kFALSE);
+         FillContainer(kTRUE, def);
+         if (fDaughter.GetRef()) FillContainer(kFALSE, def);
       }
    }
 }
 
 //_____________________________________________________________________________
-void AliRsnAnalysisTaskEffMonitor::FillContainer(Bool_t mcList)
+void AliRsnAnalysisTaskEffMonitor::FillContainer(Bool_t mcList, TObject *defObj)
 {
 //
 // Fill the container corresponding to current definition.
 //
 
+   // cast the object into the def
+   if (!defObj->InheritsFrom(AliRsnDaughterDef::Class())) {
+      AliError("Def object does not inherit from AliRsnDaughterDef!");
+      return;
+   }
+   AliRsnDaughterDef *def = static_cast<AliRsnDaughterDef*>(defObj);
+
    // retrieve container
-   AliCFContainer *cont = (AliCFContainer*)fOutList->FindObject(fDef->GetName());
+   AliCFContainer *cont = (AliCFContainer*)fOutList->FindObject(def->GetName());
    if (!cont) return;
 
    TObjArray &stepList =  (mcList ? fStepsMC : fStepsRec);
@@ -213,7 +217,7 @@ void AliRsnAnalysisTaskEffMonitor::FillContainer(Bool_t mcList)
       fVar[iaxis] = -1E10;
       switch (fcnAxis->GetTargetType()) {
          case AliRsnTarget::kDaughter:
-            fcnAxis->SetSupportObject(fDef);
+            fcnAxis->SetSupportObject(def);
             computeOK = fcnAxis->Eval(&fDaughter, mcList);
             break;
          case AliRsnTarget::kEvent:
@@ -229,11 +233,10 @@ void AliRsnAnalysisTaskEffMonitor::FillContainer(Bool_t mcList)
    // fill all successful steps
    for (istep = 0; istep < nSteps; istep++) {
       AliRsnCutSet *cutSet = (AliRsnCutSet*)stepList[istep];
-      AliRsnTarget::SwitchToFirst();
       
       if (!cutSet->IsSelected(&fDaughter)) break;
       
-      AliDebug(AliLog::kDebug + 2, Form("DEF: %s --> filling step %d", fDef->GetName(), istep));
+      AliDebug(AliLog::kDebug + 2, Form("DEF: %s --> filling step %d", def->GetName(), istep));
       cont->Fill(fVar.GetArray(), istep + firstStep);
    }
 }

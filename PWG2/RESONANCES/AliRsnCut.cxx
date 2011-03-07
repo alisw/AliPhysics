@@ -152,7 +152,7 @@ Bool_t AliRsnCut::OkValueD()
 //
 
    // eval result
-   fCutResult = (TMath::Abs(fCutValueD - fMinD) < fgkVerySmall);
+   fCutResult = (TMath::Abs(fCutValueD - fMinD) < 1E-6);
 
    // print debug message
    AliDebug(AliLog::kDebug + 2, "=== CUT DEBUG =======================================================");

@@ -35,16 +35,13 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "AliGenEventHeader.h"
-#include "AliAODEvent.h"
-#include "AliRsnCutPID.h"
 #include "AliESDtrackCuts.h"
-
+#include "AliESDUtils.h"
+#include "AliMultiplicity.h"
+#include "AliRsnCutPID.h"
 #include "AliRsnEvent.h"
 
 ClassImp(AliRsnEvent)
-
-AliRsnEvent* AliRsnEvent::fgRsnEvent1 = 0;
-AliRsnEvent* AliRsnEvent::fgRsnEvent2 = 0;
 
 //_____________________________________________________________________________
 AliRsnEvent::AliRsnEvent(AliVEvent *ref, AliVEvent *refMC) :
@@ -113,6 +110,9 @@ Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ER
 //
 
    Bool_t ok = kFALSE;
+   
+   out.Reset();
+   out.SetOwnerEvent(this);
 
    if (IsESD() && type == AliRsnDaughter::kTrack)   ok = SetDaughterESDtrack  (out, i);
    if (IsAOD() && type == AliRsnDaughter::kTrack)   ok = SetDaughterAODtrack  (out, i);
@@ -120,7 +120,7 @@ Bool_t AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t i, AliRsnDaughter::ER
    if (IsAOD() && type == AliRsnDaughter::kV0)      ok = SetDaughterAODv0     (out, i);
    if (IsESD() && type == AliRsnDaughter::kCascade) ok = SetDaughterESDcascade(out, i);
    if (IsAOD() && type == AliRsnDaughter::kCascade) ok = SetDaughterAODcascade(out, i);
-
+   
    return ok;
 }
 
@@ -136,16 +136,15 @@ Bool_t AliRsnEvent::SetDaughterAbs(AliRsnDaughter &out, Int_t absIndex)
 
    Int_t index;
    AliRsnDaughter::ERefType type;
+   
+   out.SetRsnID(absIndex);
 
-   if (!ConvertAbsoluteIndex(absIndex, index, type)) {
+   if (ConvertAbsoluteIndex(absIndex, index, type))
+      return SetDaughter(out, index, type);
+   else {
       out.Reset();
-      out.SetBad();
       return kFALSE;
    }
-   
-   SetDaughter(out, index, type);
-   out.SetRsnID(absIndex);
-   return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -220,6 +219,8 @@ Bool_t AliRsnEvent::SetDaughterMC(AliRsnDaughter &out, Int_t label)
       }
       return kTRUE;
    }
+   
+   out.SetOwnerEvent(this);
 
    return kFALSE;
 }
@@ -354,47 +355,44 @@ Int_t AliRsnEvent::ConvertRealIndex(Int_t index, AliRsnDaughter::ERefType type)
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnEvent::GetMultiplicity(AliESDtrackCuts *cuts)
+Int_t AliRsnEvent::GetMultiplicityFromESDCuts()
 {
 //
-// Returns event multiplicity as the number of tracks.
-// If the argument is not NULL, returns instead the
-// number of tracks passing the cuts hereby defined.
+// Returns event multiplicity as the number of
+// tracks passing the standard quality cuts.
 //
 
-   if (!fRef) return 0;
+   if (!fRef) return -1;
 
    AliESDEvent *esd = GetRefESD();
-   if (cuts && esd) return cuts->CountAcceptedTracks(esd);
-   else return fRef->GetNumberOfTracks();
+   if (esd) 
+      return AliESDtrackCuts::GetReferenceMultiplicity(esd, kTRUE);
+   else {
+      AliWarning("Invoked multicplicity estimation from AliESDtrackCuts with null ESD");
+      return -1;
+   }
 }
 
 //_____________________________________________________________________________
-Int_t AliRsnEvent::GetMultiplicityMC()
+Int_t AliRsnEvent::GetMultiplicityFromSPD()
 {
 //
-// Returns event multiplicity as the number of primary tracks
-// counted from the MC sample, if present.
+// Returns event multiplicity computed from SPD.
 //
 
-   if (!fRefMC) return 0;
+   if (!fRef) return -1;
 
-   if (IsESD())
-      return GetRefMCESD()->Stack()->GetNprimary();
-   else if (IsAOD())
-      return GetRefMCAOD()->GetNumberOfTracks();
-   else
-      return 0;
-}
-
-//_____________________________________________________________________________
-Double_t AliRsnEvent::GetVz()
-{
-//
-// Return Z coord of primary vertex
-//
-
-   return fRef->GetPrimaryVertex()->GetZ();
+   AliESDEvent *esd = GetRefESD();
+   if (esd) {
+      const AliMultiplicity *mult = esd->GetMultiplicity();
+      Float_t nClusters[6] = {0.0,0.0,0.0,0.0,0.0,0.0};
+      for(Int_t ilay = 0; ilay < 6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
+      return AliESDUtils::GetCorrSPD2(nClusters[1], GetVz());
+   }
+   else {
+      AliWarning("Cannot compute SPD multiplicity without a well initialized ESD event");
+      return -1;
+   }
 }
 
 //_____________________________________________________________________________
@@ -456,7 +454,7 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID)
 
 //_____________________________________________________________________________
 Bool_t AliRsnEvent::GetAngleDistr
-(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter *ref)
+(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter leading)
 {
 //
 // Takes the leading particle and computes the mean and RMS
@@ -464,9 +462,6 @@ Bool_t AliRsnEvent::GetAngleDistr
 // with respect to the direction of leading particle.
 //
 
-   AliRsnDaughter leading;
-   if (ref) leading = *ref;
-   else if (fLeading >= 0) SetDaughter(leading, fLeading, AliRsnDaughter::kTrack);
    if (!leading.IsOK()) return kFALSE;
 
    Int_t i, count, nTracks = fRef->GetNumberOfTracks();
@@ -654,16 +649,12 @@ Bool_t AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
       Int_t        ln = TMath::Abs(tn->GetLabel());
       // loop on array to find MC daughters
       AliAODMCParticle *pp = 0x0, *pn = 0x0;
-      Int_t ipp = -1, ipn = -1;
       TObjArrayIter next(mcArray);
       AliAODMCParticle *part = 0x0;
       while ((part = (AliAODMCParticle*)next())) {
-         if (TMath::Abs(part->GetLabel()) == lp) ipp = mcArray->IndexOf(part);
-         if (TMath::Abs(part->GetLabel()) == ln) ipn = mcArray->IndexOf(part);
+         if (TMath::Abs(part->GetLabel()) == lp) pp = (AliAODMCParticle*)mcArray->IndexOf(part);
+         if (TMath::Abs(part->GetLabel()) == ln) pn = (AliAODMCParticle*)mcArray->IndexOf(part);
       }
-      if (ipp >= 0) pp = (AliAODMCParticle*)mcArray->At(ipp);
-      if (ipn >= 0) pn = (AliAODMCParticle*)mcArray->At(ipn);
-      if (!pp || !pn) return kTRUE;
       // assign a MC reference and a label only to true V0s
       if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) out.SetLabel(pp->GetMother());
    }

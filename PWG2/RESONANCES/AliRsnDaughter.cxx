@@ -13,7 +13,6 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-////////////////////////////////////////////////////////////////////////////////
 //
 //  This class works as generic interface to each candidate resonance daughter.
 //  Its main purpose is to provide a unique reference which includes all the
@@ -31,7 +30,6 @@
 //  authors: A. Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //           M. Vala (martin.vala@cern.ch)
 //
-////////////////////////////////////////////////////////////////////////////////
 
 #include <TParticle.h>
 #include <TDatabasePDG.h>
@@ -50,7 +48,8 @@ AliRsnDaughter::AliRsnDaughter() :
    fPrec(0.0, 0.0, 0.0, 0.0),
    fPsim(0.0, 0.0, 0.0, 0.0),
    fRef(0x0),
-   fRefMC(0x0)
+   fRefMC(0x0),
+   fOwnerEvent(0x0)
 {
 //
 // Default constructor.
@@ -69,7 +68,8 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
    fPrec(copy.fPrec),
    fPsim(copy.fPsim),
    fRef(copy.fRef),
-   fRefMC(copy.fRefMC)
+   fRefMC(copy.fRefMC),
+   fOwnerEvent(copy.fOwnerEvent)
 {
 //
 // Copy constructor.
@@ -87,14 +87,15 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 // statement, but from just referencing something in the data source.
 //
 
-   fOK        = copy.fOK;
-   fLabel     = copy.fLabel;
-   fMotherPDG = copy.fMotherPDG;
-   fRsnID     = copy.fRsnID;
-   fPrec      = copy.fPrec;
-   fPsim      = copy.fPsim;
-   fRef       = copy.fRef;
-   fRefMC     = copy.fRefMC;
+   fOK         = copy.fOK;
+   fLabel      = copy.fLabel;
+   fMotherPDG  = copy.fMotherPDG;
+   fRsnID      = copy.fRsnID;
+   fPrec       = copy.fPrec;
+   fPsim       = copy.fPsim;
+   fRef        = copy.fRef;
+   fRefMC      = copy.fRefMC;
+   fOwnerEvent = copy.fOwnerEvent;
 
    return (*this);
 }
@@ -103,14 +104,19 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 void AliRsnDaughter::SetRef(AliVParticle *p)
 {
 //
-// Set the pointer to reference VParticle
+// Set the pointer to reference reconstructed VParticle
 // and copies its momentum in the 4-vector.
-// Mass is assigned by SetMass().
+// Mass is set to 0 (must be assigned by SetMass()).
 //
 
+   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
    fRef = p;
-   if (p) fPrec.SetXYZT(p->Px(), p->Py(), p->Pz(), 0.0);
-   else   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
+   
+   if (fRef) {
+      fPrec.SetX(fRef->Px());
+      fPrec.SetY(fRef->Py());
+      fPrec.SetZ(fRef->Pz());
+   }
 }
 
 //_____________________________________________________________________________
@@ -119,12 +125,17 @@ void AliRsnDaughter::SetRefMC(AliVParticle *p)
 //
 // Set the pointer to reference MonteCarlo VParticle
 // and copies its momentum in the 4-vector.
-// Mass is assigned by SetMass().
+// Mass is set to 0 (must be assigned by SetMass()).
 //
 
+   fPsim.SetXYZT(0.0, 0.0, 0.0, 0.0);
    fRefMC = p;
-   if (p) fPsim.SetXYZT(p->Px(), p->Py(), p->Pz(), 0.0);
-   else   fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
+   
+   if (fRefMC) {
+      fPsim.SetX(fRefMC->Px());
+      fPsim.SetY(fRefMC->Py());
+      fPsim.SetZ(fRefMC->Pz());
+   }
 }
 
 //_____________________________________________________________________________
@@ -144,7 +155,6 @@ void AliRsnDaughter::Reset()
    SetRef(NULL);
    SetRefMC(NULL);
 }
-
 
 //_____________________________________________________________________________
 Int_t AliRsnDaughter::GetPDG(Bool_t abs)
@@ -189,24 +199,6 @@ Int_t AliRsnDaughter::GetID()
 
    // whatever else
    return GetLabel();
-}
-
-//_____________________________________________________________________________
-Bool_t AliRsnDaughter::SetMass(Double_t mass)
-{
-//
-// Assign a mass hypothesis to the track.
-// This causes the 4-momentum data members to be re-initialized
-// using the momenta of referenced tracks/v0s and this mass.
-// This step is fundamental for the following of the analysis.
-//
-
-   if (mass < 0.) return kFALSE;
-
-   if (fRef)   fPrec.SetXYZM(fRef  ->Px(), fRef  ->Py(), fRef  ->Pz(), mass);
-   if (fRefMC) fPsim.SetXYZM(fRefMC->Px(), fRefMC->Py(), fRefMC->Pz(), mass);
-
-   return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -256,6 +248,28 @@ AliRsnDaughter::ERefType AliRsnDaughter::RefType(ESpecies species)
       default:
          return kNoType;
    }
+}
+
+//______________________________________________________________________________
+void AliRsnDaughter::Print(Option_t *) const
+{
+//
+// Override of TObject::Print()
+//
+
+   AliInfo("=== DAUGHTER INFO ======================================================================");
+   if (fRef) {
+      AliInfo(Form(" Ref  : %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRef  , fRef  ->ClassName(), fPrec.X(), fPrec.Y(), fPrec.Z()));
+   } else {
+      AliInfo(" Ref  : NULL");
+   }
+   if (fRefMC) {
+      AliInfo(Form(" RefMC: %x (%15s) with px,py,pz = %6.2f %6.2f %6.2f", (UInt_t)fRefMC, fRefMC->ClassName(), fPsim.X(), fPsim.Y(), fPsim.Z()));
+   } else {
+      AliInfo(" RefMC: NULL");
+   }
+   AliInfo(Form(" OK, RsnID, Label, MotherPDG = %s, %5d, %5d, %4d", (fOK ? "true " : "false"), fRsnID, fLabel, fMotherPDG));
+   AliInfo("========================================================================================");
 }
 
 //______________________________________________________________________________

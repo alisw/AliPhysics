@@ -92,8 +92,7 @@ void AliRsnMonitorFunctions::Compute()
    AliRsnFunction *fcn = 0x0;
 
    while ((fcn = (AliRsnFunction*)nextFcn())) {
-      fcn->SetDaughter(&fDaughter);
-      fcn->Fill();
+      fcn->Fill(fDaughter);
    }
 
    AliDebug(AliLog::kDebug + 2, "->");
@@ -137,9 +136,6 @@ void AliRsnMonitorFunctions::AddFunction(AliRsnFunction *const fcn)
 //
 
    AliDebug(AliLog::kDebug + 2, "<-");
-   
-   // set function for single tracks
-   fcn->SetSingle();
 
    Int_t size = fFunctions.GetEntries();
    new(fFunctions[size]) AliRsnFunction(*fcn);

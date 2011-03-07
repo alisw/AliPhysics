@@ -98,7 +98,7 @@ void AliRsnPairNtuple::Compute()
             computeOK = value->Eval(&fMother);
             break;
          case AliRsnTarget::kEvent:
-            computeOK = value->Eval(AliRsnTarget::GetCurrentEvent());
+            computeOK = value->Eval(fMother.GetRefEvent());
             break;
          default:
             computeOK = kFALSE;

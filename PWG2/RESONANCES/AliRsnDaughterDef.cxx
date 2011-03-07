@@ -54,7 +54,7 @@ AliRsnDaughterDef::AliRsnDaughterDef() :
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t sign) :
    fPID(type),
-   fMass(0.0),
+   fMass(AliRsnDaughter::SpeciesMass(type)),
    fCharge(sign),
    fRefType(AliRsnDaughter::RefType(type))
 {
@@ -68,7 +68,7 @@ AliRsnDaughterDef::AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t sign)
 //_____________________________________________________________________________
 AliRsnDaughterDef::AliRsnDaughterDef(EPARTYPE type, Char_t sign) :
    fPID(AliRsnDaughter::FromAliPID(type)),
-   fMass(0.0),
+   fMass(AliRsnDaughter::SpeciesMass(AliRsnDaughter::FromAliPID(type))),
    fCharge(sign),
    fRefType(AliRsnDaughter::RefType(AliRsnDaughter::FromAliPID(type)))
 {

@@ -27,38 +27,24 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <THnSparse.h>
-#include <TNamed.h>
-
-#include "AliRsnCut.h"
+#include <TArrayD.h>
 
 class AliRsnValue;
-class AliRsnMother;
-class AliRsnPairDef;
 
 class AliRsnFunction : public TObject {
 
 public:
 
-   AliRsnFunction(Bool_t single = kFALSE, Bool_t useTH1 = kTRUE);
+   AliRsnFunction(Bool_t useTH1 = kTRUE);
    AliRsnFunction(const AliRsnFunction &copy);
    virtual ~AliRsnFunction() { delete fH1; delete fHSparse; }
    const AliRsnFunction& operator=(const AliRsnFunction &copy);
 
-   void                 SetPairDef(AliRsnPairDef * const def)        {fPairDef = def;}
-   void                 SetPair(AliRsnMother * const pair)           {fPair = pair;}
-   void                 SetDaughter(AliRsnDaughter * const daughter) {fDaughter = daughter;}
+   virtual const char*  GetName() const;
 
-   AliRsnPairDef*       GetPairDef()  const {return fPairDef;}
-   AliRsnMother*        GetPair()     const {return fPair;}
-   AliRsnDaughter*      GetDaughter() const {return fDaughter;}
-   AliRsnEvent*         GetEvent()    const {return fEvent;}
-   virtual const char*  GetName()     const;
-
-   Bool_t               IsSingle() const             {return fSingle;}
-   void                 SetSingle(Bool_t yn = kTRUE) {fSingle = yn;}
-   Bool_t               IsUsingTH1()                 {return fUseTH1;}
-   void                 UseTH1()                     {fUseTH1 = kTRUE;}
-   void                 UseSparse()                  {fUseTH1 = kFALSE;}
+   Bool_t               IsUsingTH1()  {return fUseTH1;}
+   void                 UseTH1()      {fUseTH1 = kTRUE;}
+   void                 UseSparse()   {fUseTH1 = kFALSE;}
    
    Bool_t               AddAxis(AliRsnValue* const axis);
    Int_t                GetNumberOfAxes() {return fAxisList.GetEntries();}
@@ -66,22 +52,16 @@ public:
    TH1*                 CreateHistogram(const char *histoName, const char *histoTitle);
    THnSparseF*          CreateHistogramSparse(const char *histoName, const char *histoTitle);
 
-   Bool_t               Fill();
+   Bool_t               Fill(TObject *object);
 
 protected:
 
-   AliRsnPairDef      *fPairDef;     // reference to used pair definition
-   TClonesArray        fAxisList;    // list of axis
-
-   AliRsnMother       *fPair;        // processed pair
-   AliRsnEvent        *fEvent;       // processed event
-   AliRsnDaughter     *fDaughter;    // processed track
-
-   Bool_t              fSingle;      // is kTRUE when function processes tracks instead of pairs
-   Bool_t              fUseTH1;      // use TH1 or not?
-   Int_t               fSize;        // number of dim of output histogram
-   TH1                *fH1;          // output histogram (standard type)
-   THnSparseF         *fHSparse;     // output histogram (sparse type)
+   TClonesArray   fAxisList;    //  list of axis
+   Bool_t         fUseTH1;      //  use TH1 or not?
+   Int_t          fSize;        //  number of dim of output histogram
+   TH1           *fH1;          //  output histogram (standard type)
+   THnSparseF    *fHSparse;     //  output histogram (sparse type)
+   TArrayD        fValues;      //! computed values
 
    // ROOT dictionary
    ClassDef(AliRsnFunction, 3)

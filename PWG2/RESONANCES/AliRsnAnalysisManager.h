@@ -12,8 +12,6 @@
 
 #include <TObjArray.h>
 
-#include "AliRsnCutSet.h"
-
 class TList;
 class AliRsnPair;
 class AliRsnMonitor;
@@ -32,16 +30,14 @@ public:
    virtual void   Print(Option_t *option = "") const;
 
    void           InitAllPairs(TList *list);
-   void           ProcessAll(Bool_t pureMC = kFALSE);
-   AliRsnCutSet*  GetGlobalTrackCuts() {return &fGlobalTrackCuts;}
+   void           ProcessAll(AliRsnEvent *ev0, AliRsnEvent *ev1, Bool_t pureMC = kFALSE);
 
 private:
 
-   Bool_t        fAddUsageHist;     //  flag to switch on the production of usage histograms
-   TList        *fList;             //! container for output histograms (external object)
-   TObjArray     fPairs;            //  collection of pair objects for the different outputs
-   TObjArray     fMonitors;         //  collection of monitor objects for the different outputs
-   AliRsnCutSet  fGlobalTrackCuts;  //  a set of cuts which are applied to all tracks for all analysis
+   Bool_t          fAddUsageHist;     //  flag to switch on the production of usage histograms
+   TList          *fList;             //! container for output histograms (external object)
+   TObjArray       fPairs;            //  collection of pair objects for the different outputs
+   TObjArray       fMonitors;         //  collection of monitor objects for the different outputs
 
    ClassDef(AliRsnAnalysisManager, 1)
 };

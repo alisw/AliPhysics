@@ -35,19 +35,16 @@ public:
 
    Bool_t           IsAllNull()                       {return (!fDaughter && !fMother && !fEvent);}
    Bool_t           IsTarget(ETargetType targetType)  {return (fTargetType == targetType);}
+   Bool_t           TargetOK(TObject *object);
+   
+   void             SetTargetType(ETargetType type)   {fTargetType = type;}
    ETargetType      GetTargetType() const             {return fTargetType;}
    Char_t           GetTargetTypeChar() const;
    const char*      GetTargetTypeName() const;
+   
    AliRsnDaughter*  GetTargetDaughter()               {return fDaughter;}
    AliRsnMother*    GetTargetMother()                 {return fMother;}
    AliRsnEvent*     GetTargetEvent()                  {return fEvent;}
-   void             SetTargetType(ETargetType type)   {fTargetType = type;}
-   Bool_t           TargetOK(TObject *object);
-
-   static AliRsnEvent*  GetCurrentEvent()                   {return fgCurrentEvent;}
-   static void          SetCurrentEvent(AliRsnEvent *event) {fgCurrentEvent = event;}
-   static void          SwitchToFirst()                     {fgCurrentEvent = AliRsnEvent::GetCurrentEvent1();}
-   static void          SwitchToSecond()                    {fgCurrentEvent = AliRsnEvent::GetCurrentEvent2();}
 
 protected:
 
@@ -56,12 +53,8 @@ protected:
    AliRsnMother   *fMother;      //! internal pointer to which any checked object is cast if it matches expected type
    AliRsnEvent    *fEvent;       //! internal pointer to which any checked object is cast if it matches expected type
 
-   static AliRsnEvent    *fgCurrentEvent; //! pointer to current event (useful in many cases)
-   static const Double_t  fgkVeryBig;     //  utility value for very large value
-   static const Double_t  fgkVerySmall;   //  utility value for very small value
-
    // ROOT dictionary
-   ClassDef(AliRsnTarget, 1)
+   ClassDef(AliRsnTarget, 2)
 };
 
 typedef AliRsnTarget::ETargetType RSNTARGET;

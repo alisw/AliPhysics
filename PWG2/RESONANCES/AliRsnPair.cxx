@@ -108,7 +108,9 @@ Bool_t AliRsnPair::Fill
    
    // if matching is successful
    // compute 4-momenta of daughters and mother
-   fMother.SetDaughters(daughter1, fPairDef->GetMass1(), daughter2, fPairDef->GetMass2());
+   fMother.SetDaughter(0, daughter1);
+   fMother.SetDaughter(1, daughter2);
+   fMother.ComputeSum(fPairDef->GetMass1(), fPairDef->GetMass2());
    
    // if required a true pair, check this here and eventually return a fail message
    // this is done using the method AliRsnMother::CommonMother with 2 arguments
@@ -125,11 +127,9 @@ Bool_t AliRsnPair::Fill
    // and checks the pair cuts,
    // (done first because it is more likely 
    // that it is not passed and execution is faster)
-   AliRsnTarget::SwitchToFirst();
    if (!fCutManager.PassMotherCuts(&fMother)) return kFALSE;
 
    // cuts on track #1 & common
-   AliRsnTarget::SwitchToFirst();
    if (!fCutManager.PassDaughter1Cuts(daughter1)) {
       AliDebug(AliLog::kDebug + 2, "Specific cuts for track #1 not passed");
       return kFALSE;
@@ -140,7 +140,6 @@ Bool_t AliRsnPair::Fill
    }
 
    // cuts on track #2 & common
-   AliRsnTarget::SwitchToSecond();
    if (!fCutManager.PassDaughter2Cuts(daughter2)) {
       AliDebug(AliLog::kDebug + 2, "Specific cuts for track #2 not passed");
       return kFALSE;

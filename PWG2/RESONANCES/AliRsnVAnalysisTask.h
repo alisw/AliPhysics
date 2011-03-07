@@ -1,3 +1,6 @@
+#ifndef ALIRSNVANALYSISTASK_H
+#define ALIRSNVANALYSISTASK_H
+
 //
 // Class AliRsnVAnalysisTask
 //
@@ -8,16 +11,11 @@
 //          Alberto Pulvirenti (alberto.pulvirenti@ct.infn.it)
 //
 
-#ifndef ALIRSNVANALYSISTASK_H
-#define ALIRSNVANALYSISTASK_H
-
-#include <TH1.h>
-
 #include "AliAnalysisTaskSE.h"
+#include "AliMixInputEventHandler.h"
 
 #include "AliRsnEvent.h"
 #include "AliRsnVATProcessInfo.h"
-#include <AliMixInputEventHandler.h>
 
 class AliESDEvent;
 class AliAODEvent;
@@ -45,47 +43,43 @@ public:
    virtual void    RsnUserExec(Option_t*);
    virtual void    RsnUserExecMix(Option_t*);
    virtual void    RsnTerminate(Option_t*);
-
-   // event pre-processing functions
-   virtual Bool_t  EventProcess();
+   virtual Bool_t  RsnEventProcess();
 
    // getters
    AliRsnEvent*           GetRsnEvent(Int_t i = 0) {return &fRsnEvent[i];}
-   AliRsnVATProcessInfo*  GetInfo()     {return &fTaskInfo;}
+   AliRsnVATProcessInfo*  GetInfo()                {return &fTaskInfo;}
+   Bool_t                 IsMixing()               {return fIsMixing;}
+   Bool_t                 IsUsingMixingRange()     {return fUseMixingRange;}
 
    // setters
    void SetMCOnly(Bool_t mcOnly = kTRUE)                           {fMCOnly = mcOnly;}
    void SetLogType(AliLog::EType_t type, const char *classes = "") {fLogType = type; fLogClassesString = classes;}
    void SetPrintInfoNumber(const Long64_t &num = 100)              {fTaskInfo.SetPrintInfoNumber(num);}
-
-   void SetMixing(Bool_t doMix = kTRUE) {fIsMixing = doMix;}
-   Bool_t IsMixing() { return fIsMixing;}
-
-   void UseMixingRange(Bool_t useMixRange = kTRUE) {fUseMixingRange = useMixRange;}
-   Bool_t IsUsingMixingRange() { return fUseMixingRange;}
+   void SetMixing(Bool_t doMix = kTRUE)                            {fIsMixing = doMix;}
+   void UseMixingRange(Bool_t useMixRange = kTRUE)                 {fUseMixingRange = useMixRange;}
 
 protected:
 
-   AliLog::EType_t         fLogType;          //  log type
-   TString                 fLogClassesString; //  all classes string divided with ":"
+   AliLog::EType_t          fLogType;             //  log type
+   TString                  fLogClassesString;    //  all classes string divided with ":"
 
-   AliESDEvent            *fESDEvent[2];         //  ESD event
-   AliMCEvent             *fMCEvent[2];          //  MC event
-   AliAODEvent            *fAODEventIn[2];       //  AOD event from input
-   AliAODEvent            *fAODEventOut[2];      //  AOD event from output from previous taks
+   AliESDEvent             *fESDEvent[2];         //  ESD event
+   AliMCEvent              *fMCEvent[2];          //  MC event
+   AliAODEvent             *fAODEventIn[2];       //  AOD event from input
+   AliAODEvent             *fAODEventOut[2];      //  AOD event from output from previous taks
+ 
+   Bool_t                   fIsMixing;            //  flag is using mixing
+   Bool_t                   fMCOnly;              //  use only MC information
+   AliRsnEvent              fRsnEvent[2];         //  interface to event for RSN package
 
-   Bool_t                  fIsMixing;        // flag is using mixing
-   Bool_t                  fMCOnly;           //  use only MC information
-   AliRsnEvent             fRsnEvent[2];         //  interface to event for RSN package
+   TList                   *fInfoList;            //! output list for informations
+   AliRsnVATProcessInfo     fTaskInfo;            //  task info
 
-   TList                  *fInfoList;         //! output list for informations
-   AliRsnVATProcessInfo    fTaskInfo;         //  task info
+   AliMixInputEventHandler *fMixedEH;             //! mixed event hadnler
+   Bool_t                   fUseMixingRange;      //  flag
 
-   AliMixInputEventHandler *fMixedEH;         //! mixed event hadnler
-   Bool_t                          fUseMixingRange;   //
-
-   void                    SetupMixingEvents();
-   void                    SetDebugForAllClasses();
+   void                     SetupMixingEvents();
+   void                     SetDebugForAllClasses();
 
    ClassDef(AliRsnVAnalysisTask, 1)
 };

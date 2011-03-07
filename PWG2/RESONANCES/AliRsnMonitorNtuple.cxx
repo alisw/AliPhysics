@@ -97,25 +97,28 @@ void AliRsnMonitorNtuple::Compute()
    Int_t        i, n = fValues.GetEntries();
    TArrayF      values(n);
    AliRsnValue *value = 0x0;
-   Bool_t       computeOK = kFALSE;
+   Bool_t       computeOK = kFALSE, globalOK = kTRUE;
    for (i = 0; i < n; i++) {
       values[i] = -1E10;
       value = (AliRsnValue*)fValues[i];
       switch (value->GetTargetType()) {
          case AliRsnTarget::kDaughter:
-            computeOK = value->Eval(&fDaughter);
+            computeOK = value->Eval(fDaughter);
             break;
          case AliRsnTarget::kEvent:
-            computeOK = value->Eval(AliRsnTarget::GetCurrentEvent());
+            computeOK = value->Eval(fDaughter->GetOwnerEvent());
             break;
          default:
             AliError(Form("Allowed targets are mothers and events; cannot use axis '%s' which has target '%s'", value->GetName(), value->GetTargetTypeName()));
             computeOK = kFALSE;
       }
-      if (computeOK) values[i] = ((Float_t)value->GetComputedValue());
+      if (computeOK) 
+         values[i] = ((Float_t)value->GetComputedValue());
+      else 
+         globalOK = kFALSE;
    }
 
-   fNtuple->Fill(values.GetArray());
+   if (globalOK) fNtuple->Fill(values.GetArray());
 
    AliDebug(AliLog::kDebug + 2, "->");
 }
