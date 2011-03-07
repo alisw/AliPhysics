@@ -184,7 +184,8 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
     if (!fRandom) {
 	//
 	// Loop over generators and generate events
-	Int_t igen=0;
+	Int_t igen   = 0;
+	Int_t ntimes = 1;
 	while((entry = (AliGenCocktailEntry*)next())) {
 	  if (fUsePerEventRate && (gRandom->Rndm() > entry->Rate())) continue;
 	  
@@ -221,12 +222,12 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	      Float_t b  = coll->ImpactParameter();
 	      Int_t nsig = Int_t(entry->Formula()->Eval(b));
 	      if (nsig < 1) nsig = 1;
-	      AliInfo(Form("Signal Events %13.3f %5d\n", b, nsig));
-	      gen->SetNumberParticles(nsig);
+	      AliInfo(Form("Signal Events %13.3f %5d %5d\n", b, coll->HardScatters(), nsig));
+	      ntimes = nsig;
 	    }
 	  
 	  entry->Generator()->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-	  entry->Generator()->Generate();
+	  for (Int_t i = 0; i < ntimes; i++) entry->Generator()->Generate();
 	  entry->SetLast(partArray->GetEntriesFast());
 	  preventry = entry;
 	}
