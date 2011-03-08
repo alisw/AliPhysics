@@ -176,6 +176,10 @@ void AliRsnAnalysisPhi900GeV::UserExec(Option_t *)
    // retrieve ESD event and related stack (if available)
    AliESDEvent *esd   = dynamic_cast<AliESDEvent*>(fInputEvent);
    AliStack    *stack = (fMCEvent ? fMCEvent->Stack() : 0x0);
+   if (!esd) {
+      AliError("No ESD");
+      return;
+   }
 
    // get the best primary vertex:
    // first try the one with tracks

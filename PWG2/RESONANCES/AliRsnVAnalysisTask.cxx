@@ -175,7 +175,7 @@ void AliRsnVAnalysisTask::UserExec(Option_t* opt)
 
    if (!IsMixing()) {
 
-      if (fMCOnly && fMCEvent) {
+      if (fMCOnly && fMCEvent[0]) {
          fRsnEvent[0].SetRef(fMCEvent[0]);
          fRsnEvent[0].SetRefMC(fMCEvent[0]);
       } else if (fESDEvent[0]) {

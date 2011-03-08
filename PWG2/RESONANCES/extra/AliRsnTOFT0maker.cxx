@@ -84,6 +84,10 @@ AliRsnTOFT0maker::AliRsnTOFT0maker(const AliRsnTOFT0maker & t) :
    fKmask(t.fKmask),
    fNoTOFT0(t.fNoTOFT0)
 {
+   fCalculated[0] = t.fCalculated[0];
+   fCalculated[1] = t.fCalculated[1];
+   fCalculated[2] = t.fCalculated[2];
+   fCalculated[3] = t.fCalculated[3];
 }
 
 //____________________________________________________________________________
@@ -92,6 +96,11 @@ AliRsnTOFT0maker& AliRsnTOFT0maker::operator=(const AliRsnTOFT0maker &t)
 //
    // assign. operator
    //
+   
+   fCalculated[0] = t.fCalculated[0];
+   fCalculated[1] = t.fCalculated[1];
+   fCalculated[2] = t.fCalculated[2];
+   fCalculated[3] = t.fCalculated[3];
 
    fSettings = t.fSettings;
    if (this == &t)

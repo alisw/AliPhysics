@@ -42,7 +42,7 @@ public:
    
    // useful computations/operations
    void      ComputeSum(Double_t mass1, Double_t mass2);
-   Double_t  AngleTo(AliRsnDaughter track, Bool_t mc = kFALSE);
+   Double_t  AngleTo(AliRsnDaughter *track, Bool_t mc = kFALSE);
    Double_t  AngleToLeading(Bool_t &success);
    Double_t  CosThetaStar(Bool_t first = kTRUE, Bool_t useMC = kFALSE);
    void      ResetPair();
