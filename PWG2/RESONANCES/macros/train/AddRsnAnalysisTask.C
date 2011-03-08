@@ -40,7 +40,7 @@ Bool_t AddRsnAnalysisTask
    // load common macro with cuts and axes
    // for cuts and axes, load the support macro
    gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PWG2/RESONANCES");
-   gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C++", path));
+   gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C+", path));
    
    // add all configs for phi
    gROOT->LoadMacro(Form("%s/RsnConfigPhi.C", path));
