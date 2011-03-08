@@ -2,6 +2,9 @@
 // Initialization of some example cuts of common use
 //
 
+#ifndef CPHICUTSANDAXES
+#define CPHICUTSANDAXES
+
 #if !defined(__CINT__) || defined(__MAKECINT__)
 
    #include "AliRsnCutPrimaryVertex.h"
@@ -53,7 +56,6 @@ AliRsnCutTrackQuality* TrackQualityITS()
 // works exactly like the one above, but has settings for selecting TPC+ITS tracks
 // in this case, the flags required are all necessary, so here the procedure is simpler
 //
-
 AliRsnCutTrackQuality *TrackQualityTPC()
 {
    AliRsnCutTrackQuality *cutQualityTPC = new AliRsnCutTrackQuality("cutQualityTPC");
@@ -207,3 +209,5 @@ AliRsnValue *AxisMultMC()
    AliRsnValue *axis = new AliRsnValue("MSPD", AliRsnValue::kEventMultMC, nmult, mult);
    return axis;
 }
+
+#endif

@@ -83,8 +83,8 @@ Bool_t RsnConfigPhi
    pair[0]->SetCheckDecay(kTRUE);
    
    // for cuts and axes, load the support macro
-   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PWG2/RESONANCES");
-   gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C++", path));
+   //gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PWG2/RESONANCES");
+   //gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C++", path));
    
    // ==================================================================================================================
    // == SINGLE DAUGHTER CUTS ==========================================================================================
