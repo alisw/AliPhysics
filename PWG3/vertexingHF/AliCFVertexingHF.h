@@ -106,6 +106,8 @@ class AliCFVertexingHF : public TObject {
 	virtual void SetAccCut(Float_t* ptAccCut, Float_t* etaAccCut);
 	virtual void SetAccCut();
 
+	void SetFakeSelection(Int_t fakeSel){fFakeSelection = fakeSel;}
+
 	protected:
 	
 	TClonesArray      *fmcArray;               //mcArray candidate
@@ -128,6 +130,7 @@ class AliCFVertexingHF : public TObject {
 	Float_t fCentValue;         // centrality value
 	Float_t* fPtAccCut;         //[fProngs] array of pt cut values for the Acceptance (MC+Rec) steps 
 	Float_t* fEtaAccCut;          //[fProngs] array of eta (absolute value) cut values for the Acceptance (MC+Rec) steps 
+	Int_t fFakeSelection; // fakes selection 
 
 	ClassDef(AliCFVertexingHF, 4);
 	
