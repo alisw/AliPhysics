@@ -210,7 +210,7 @@ void AliTPCROCVoltError3D::GetCorrection(const Float_t x[],const Short_t roc,Flo
   }
   static Bool_t forceInit=kTRUE; //temporary needed for back compatibility with old OCDB entries
   if (forceInit&&fLookUpErOverEz[0]){
-    if (fLookUpErOverEz[0]->Sum()<kEpsilon){//temporary needed for back compatibility with old OCDB entries
+    if (TMath::Abs(fLookUpErOverEz[0]->Sum())<kEpsilon){//temporary needed for back compatibility with old OCDB entries
       ForceInitROCVoltError3D();
     }
     forceInit=kFALSE;
