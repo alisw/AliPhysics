@@ -138,7 +138,7 @@ void AliRsnCutSet::AddCut(AliRsnCut *cut)
    AliDebug(AliLog::kDebug, "<-");
    fCuts.Add(cut);
    AliInfo(Form("====> Adding a new cut: [%s]", cut->GetName()));
-   cut->Print();
+   //cut->Print();
    fNumOfCuts++;
 
    if (fBoolValues) delete [] fBoolValues;
