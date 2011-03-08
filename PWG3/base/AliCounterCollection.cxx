@@ -1470,7 +1470,7 @@ Long64_t AliCounterCollection::Merge(TCollection* list)
     // check that "obj" is an object of the class AliCounterCollection
     const AliCounterCollection* counter = dynamic_cast<const AliCounterCollection*>(obj);
     if (!counter) {
-      AliError(Form("object named %s is not AliCounterCollection! Skipping it.", counter->GetName()));
+      AliFatal(Form("object named \"%s\" is a %s instead of an AliCounterCollection!", obj->GetName(), obj->ClassName()));
       continue;
     }
     
@@ -1572,6 +1572,7 @@ void AliCounterCollection::Sort(const Bool_t* rubricsToSort, Bool_t asInt)
   else 
     fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
   Int_t** newBins = new Int_t*[nRubrics];
+  Bool_t newBinsFilled = kTRUE;
   
   // define the new axes
   for (Int_t i=0; i<nRubrics; i++) {
@@ -1583,7 +1584,11 @@ void AliCounterCollection::Sort(const Bool_t* rubricsToSort, Bool_t asInt)
     
     // get old labels
     THashList* oldLabels = oldAxis->GetLabels();
-    if (!oldLabels) continue;
+    if (!oldLabels) {
+      newBins[i] = 0x0;
+      newBinsFilled = kFALSE;
+      continue;
+    }
     
     // sort them if required
     if (rubricsToSort[i]) {
@@ -1606,20 +1611,26 @@ void AliCounterCollection::Sort(const Bool_t* rubricsToSort, Bool_t asInt)
     if (rubricsToSort[i] && asInt) delete oldLabels;
   }
   
-  // fill the new counters
-  Int_t* oldCoor = new Int_t[nRubrics];
-  Int_t* newCoor = new Int_t[nRubrics];
-  for (Long64_t i = 0; i < oldCounters->GetNbins(); i++) {
-    Double_t value = oldCounters->GetBinContent(i, oldCoor);
-    for (Int_t dim = 0; dim < nRubrics; dim++) newCoor[dim] = newBins[dim][oldCoor[dim]];    
-    fCounters->AddBinContent(newCoor, value);
+  // fill the new fCounters only if all axes have label(s) defined (otherwise it is empty)
+  if (newBinsFilled) {
+    
+    // fill the new counters
+    Int_t* oldCoor = new Int_t[nRubrics];
+    Int_t* newCoor = new Int_t[nRubrics];
+    for (Long64_t i = 0; i < oldCounters->GetNbins(); i++) {
+      Double_t value = oldCounters->GetBinContent(i, oldCoor);
+      for (Int_t dim = 0; dim < nRubrics; dim++) newCoor[dim] = newBins[dim][oldCoor[dim]];    
+      fCounters->AddBinContent(newCoor, value);
+    }
+    
+    // clean memory
+    delete[] oldCoor;
+    delete[] newCoor;
   }
   
   // clean memory
   for (Int_t i=0; i<nRubrics; i++) delete[] newBins[i];
   delete[] newBins;
-  delete[] oldCoor;
-  delete[] newCoor;
   delete oldCounters;
 }
 
