@@ -48,6 +48,7 @@
 //-------------------------------------------------------------------------
 
 #include <TParticle.h>
+#include <TFormula.h>
 
 #include "AliGenPileup.h"
 #include "AliLog.h"
@@ -97,7 +98,7 @@ void AliGenPileup::SetGenerator(AliGenerator *generator, Float_t rate, Bool_t fl
 
 void AliGenPileup::AddGenerator(AliGenerator *Generator,
 				const char* Name,
-				Float_t RateExp )
+				Float_t RateExp , TFormula* /*form*/)
 {
   // The method used to add the pileup generator
   // in the cocktail list.
