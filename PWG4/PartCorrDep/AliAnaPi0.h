@@ -258,6 +258,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhRePtAsymEta ;           //! REAL two-photon pt vs asymmetry, close to eta mass
 
   TH3D * fhEvents;                  //! Number of events per centrality, RP, zbin
+  TH1D * fhCentrality;              //! Simple TH1D histogram with finer binning to check centrality
   
   // Pair opening angle
   TH2D * fhRealOpeningAngle ;       //! Opening angle of pair versus pair energy
@@ -306,7 +307,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2D *  fhMCPi0PtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2D *  fhMCEtaPtOrigin ;         //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
-  ClassDef(AliAnaPi0,16)
+  ClassDef(AliAnaPi0,17)
 } ;
 
 
