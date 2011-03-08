@@ -31,16 +31,21 @@ class AliAnalysisTaskTOFqa : public AliAnalysisTaskSE {
   AliESDEvent *fESD;    //ESD object
   AliAnalysisFilter *fTrackFilter; //track filter object
   AliESDVertex *fVertex; //pointer to the vertex object
-  
+  AliESDpid *fESDpid; //pointer to the PID object
+    
   Int_t fNTOFtracks; //number of tracks matching with TOF
-  Int_t fNPrimaryTracks; //number of primary tracks
-  Float_t fT0; //event time
+  //Int_t fNPrimaryTracks; //number of primary tracks
+  Float_t fT0[3]; //event time
+  Float_t fSigmaSpecie[5]; //number of TOF PID sigmas, ie.fSigmaPion, fSigmaKaon, fSigmaProton;
+  Double_t fTrkExpTimes[5]; //expected times from tracking for 5 mass hypothesis
+  Double_t fThExpTimes[5]; //theoretical expected times for 5 mass hypothesis
   
   //output objects
   TList *fHlist;  //list of general histos
-  TList *fHlistExperts; //list of experts histos
+  TList *fHlistTimeZero; //list of timeZero related histos
+  TList *fHlistPID; //list of PID-related histos
 
-  ClassDef(AliAnalysisTaskTOFqa, 1); // example of analysis
+  ClassDef(AliAnalysisTaskTOFqa, 2); // example of analysis
 };
 
 #endif
