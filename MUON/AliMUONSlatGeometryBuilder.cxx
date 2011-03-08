@@ -657,22 +657,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  // position the vertical frames 
 	  if ( i > 2) { 
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+						    (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
 						    (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+						    (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
 						    (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));	  
 	  } 
 
 	  if (i == 2) {
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame2,0.,0.)); 
+						    (2*i+1)*10+quadrant,TGeoTranslation(xvFrame2,0.,0.)); 
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
 						    (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+						    (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
 						    (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	  }
@@ -680,9 +680,9 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  // Different rotation due to new mapping convention
 	  if (i == 0 || i == 1) { // first vertical spacers
 	    GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("S05V", idSlatCh5, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame2,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0)); 
+						    (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame2,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0)); 
 	    GetEnvelopes(moduleSlatCh6)->AddEnvelopeConstituent("S06V", idSlatCh6, 
-						    (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));	  
+						    (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));	  
 	    if (i == 0) { // rounded spacer for central slat (J.C.)
 	      GetEnvelopes(moduleSlatCh5)->AddEnvelopeConstituent("SC5D", idSlatCh5, 
 								  (2*i)*10+quadrant,TGeoTranslation(xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
@@ -1378,14 +1378,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 	// position the vertical frames 
 	if (i != 1) { 
-	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	} else { // Vertical and Rounded+Vertical spacer - Different rotation due to new mapping convention
-	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("S07V", idSlatCh7, (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	  GetEnvelopes(moduleSlatCh7)->AddEnvelopeConstituent("SD7D", idSlatCh7, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos41[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
-	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("S08V", idSlatCh8, (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	  GetEnvelopes(moduleSlatCh8)->AddEnvelopeConstituent("SD8D", idSlatCh8, (2*i)*10+quadrant,TGeoTranslation(+xvFrame,-kYpos42[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	}
 	// position the panels and the insulating material 
@@ -1979,14 +1979,14 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 	// position the vertical frames (spacers)
 	if (i != 1) { 
-	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
-	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i-1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
+	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i+1)*10+quadrant,TGeoTranslation(xvFrame,0.,0.));
 	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.));
 	} else {  // Vertical and Rounded+Vertical spacer - Different rotation due to new mapping convention
-	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("S09V", idSlatCh9, (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	  GetEnvelopes(moduleSlatCh9)->AddEnvelopeConstituent("SD9D", idSlatCh9, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos5[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
-	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i-1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
+	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("S10V", idSlatCh10, (2*i+1)*10+quadrant,TGeoTranslation(-xvFrame,0.,0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	  GetEnvelopes(moduleSlatCh10)->AddEnvelopeConstituent("SD0D", idSlatCh10, (2*i)*10+quadrant,TGeoTranslation(xvFrame,-kYpos5[1],0.),TGeoRotation("rotAbX",90,180+angle,90,90+angle,180,0));
 	}
 
