@@ -314,6 +314,8 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
 
    // initialize the above 4-vectors according to the 
    // expected target type (which has been checked above)
+   // in particular, the 'fEvent' data member of base AliRsnTarget
+   // will be *always* well initialized if the TargetOK() returns kTRUE
    switch (fTargetType) {
       case AliRsnTarget::kDaughter:
          pRec = fDaughter->Prec();
@@ -336,10 +338,9 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
          AliError(Form("[%s] Wrong type", GetName()));
          return kFALSE;
    }
-   if (fEvent) {
-      leadingID = fEvent->GetLeadingParticleID();
-      esdev = fEvent->GetRefESD();
-   }
+   leadingID = fEvent->GetLeadingParticleID();
+   esdev = fEvent->GetRefESD();
+
    if (esdt) status = esdt->GetStatus();
    if (aodt) status = aodt->GetStatus();
    
@@ -684,6 +685,7 @@ Bool_t AliRsnValue::Eval(TObject *object, Bool_t useMC)
             AliRsnDaughter leadingPart = fEvent->GetDaughter(leadingID);
             AliVParticle *ref = leadingPart.GetRef();
             fComputedValue = ref->Pt();
+            return kTRUE;
          } else {
             AliError(Form("[%s] Leading ID has bad value (%d)", GetName(), leadingID));
             return kFALSE;

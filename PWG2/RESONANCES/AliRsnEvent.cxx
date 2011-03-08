@@ -454,7 +454,7 @@ Double_t AliRsnEvent::GetAverageMomentum(Int_t &count, AliRsnCutPID *cutPID)
 
 //_____________________________________________________________________________
 Bool_t AliRsnEvent::GetAngleDistr
-(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter leading)
+(Double_t &angleMean, Double_t &angleRMS, AliRsnDaughter *leading)
 {
 //
 // Takes the leading particle and computes the mean and RMS
@@ -462,7 +462,8 @@ Bool_t AliRsnEvent::GetAngleDistr
 // with respect to the direction of leading particle.
 //
 
-   if (!leading.IsOK()) return kFALSE;
+   if (!leading) return kFALSE;
+   if (!leading->IsOK()) return kFALSE;
 
    Int_t i, count, nTracks = fRef->GetNumberOfTracks();
    Double_t angle, angle2Mean = 0.0;
@@ -471,9 +472,9 @@ Bool_t AliRsnEvent::GetAngleDistr
 
    for (i = 0, count = 0; i < nTracks; i++) {
       AliRsnDaughter trk = GetDaughter(i);
-      if (trk.GetID() == leading.GetID()) continue;
+      if (trk.GetID() == leading->GetID()) continue;
 
-      angle = leading.Prec().Angle(trk.Prec().Vect());
+      angle = leading->Prec().Angle(trk.Prec().Vect());
 
       angleMean += angle;
       angle2Mean += angle * angle;
@@ -645,15 +646,15 @@ Bool_t AliRsnEvent::SetDaughterAODv0(AliRsnDaughter &out, Int_t i)
    AliAODTrack  *tp = ev->GetTrack(v0->GetPosID());
    AliAODTrack  *tn = ev->GetTrack(v0->GetNegID());
    if (mcArray && tp && tn) {
-      Int_t        lp = TMath::Abs(tp->GetLabel());
-      Int_t        ln = TMath::Abs(tn->GetLabel());
+      Int_t lp = TMath::Abs(tp->GetLabel());
+      Int_t ln = TMath::Abs(tn->GetLabel());
       // loop on array to find MC daughters
       AliAODMCParticle *pp = 0x0, *pn = 0x0;
       TObjArrayIter next(mcArray);
       AliAODMCParticle *part = 0x0;
       while ((part = (AliAODMCParticle*)next())) {
-         if (TMath::Abs(part->GetLabel()) == lp) pp = (AliAODMCParticle*)mcArray->IndexOf(part);
-         if (TMath::Abs(part->GetLabel()) == ln) pn = (AliAODMCParticle*)mcArray->IndexOf(part);
+         if (TMath::Abs(part->GetLabel()) == lp) pp = part;
+         if (TMath::Abs(part->GetLabel()) == ln) pn = part;
       }
       // assign a MC reference and a label only to true V0s
       if (pp->GetMother() == pn->GetMother() && pp->GetMother() >= 0) out.SetLabel(pp->GetMother());

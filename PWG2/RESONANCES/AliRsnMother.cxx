@@ -156,7 +156,7 @@ void AliRsnMother::ResetPair()
 }
 
 //_____________________________________________________________________________
-Double_t AliRsnMother::AngleTo(AliRsnDaughter track, Bool_t mc)
+Double_t AliRsnMother::AngleTo(AliRsnDaughter *track, Bool_t mc)
 {
 //
 // Compute the angle betwee this and the passed object
@@ -164,7 +164,7 @@ Double_t AliRsnMother::AngleTo(AliRsnDaughter track, Bool_t mc)
 //
 
    TLorentzVector &me = (mc ? fSumMC : fSum);
-   TLorentzVector &he = track.P(mc);
+   TLorentzVector &he = track->P(mc);
    
    return me.Angle(he.Vect());
 }
