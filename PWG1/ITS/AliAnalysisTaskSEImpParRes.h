@@ -34,6 +34,7 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   void SetSelectedPdg(Int_t pdg) { fSelectedPdg=pdg; return; }
   void SetUseDiamond(Bool_t use=kFALSE) { fUseDiamond=use; return; }
   void SetSkipTrack(Bool_t skip=kFALSE) { fSkipTrack=skip; return; }
+  void SetMultiplicityRange(Int_t min,Int_t max) { fMinMult=min; fMaxMult=max; }
 
  private:
   
@@ -49,6 +50,8 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   Int_t  fSelectedPdg;  // only for a given particle species (-1 takes all tracks)
   Bool_t fUseDiamond;   // use diamond constraint in primary vertex
   Bool_t fSkipTrack;    // redo primary vertex for each track
+  Int_t  fMinMult; // minimum multiplicity
+  Int_t  fMaxMult; // maximum multiplicity
   TList *fOutputitspureSARec;  //! ITS StandAlone: with track in vtx 
   TList *fOutputitspureSASkip; //! ITS StandAlone: w/o track in vtx
   TList *fOutputallPointRec;   //! ITS+TPC: 6 ITScls, with track in vtx      
@@ -85,7 +88,9 @@ class AliAnalysisTaskSEImpParRes : public AliAnalysisTaskSE {
   TH1F  *fNentries;   //! histogram of number of events
   TH1F  *fEstimVtx;   //! vertex resolution
 
-  ClassDef(AliAnalysisTaskSEImpParRes,4); // AliAnalysisTaskSE for the study of the impact parameter resolution
+  Bool_t IsSelectedCentrality(AliESDEvent *esd) const;
+
+  ClassDef(AliAnalysisTaskSEImpParRes,5); // AliAnalysisTaskSE for the study of the impact parameter resolution
 };
 
 #endif
