@@ -59,12 +59,14 @@ public:
   const UInt_t* GetZDCScaler()  const {return fVMEScaler;}
 
   Int_t GetZDCTDCData(Int_t i, Int_t j) const {return fZDCTDCData[i][j];}
-  Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const {return fZDCTDCCorrected[i][j];}
+  Float_t GetZDCTDCCorrected(Int_t i, Int_t j) const 
+  	  {if(AliESDZDC::kCorrectedTDCFilled) return fZDCTDCCorrected[i][j];
+	   else return 0.;}
   Float_t GetZNTDCSum(Int_t ihit) const 
-          {if(ihit<4) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
+          {if(ihit<4 && AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[10][ihit]+fZDCTDCCorrected[12][ihit]);
            else return 0.;}
   Float_t GetZNTDCDiff(Int_t ihit) const 
-          {if(ihit<4) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
+          {if(ihit<4 && AliESDZDC::kCorrectedTDCFilled) return (Float_t) (fZDCTDCCorrected[12][ihit]-fZDCTDCCorrected[10][ihit]);
            else return 0.;}
   
   void  SetZDC(Double_t n1Energy, Double_t p1Energy, 
