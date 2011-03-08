@@ -96,7 +96,11 @@ Bool_t AliCFVertexingHFCascade::SetRecoCandidateParam(AliAODRecoDecayHF *recoCan
  
   Int_t mcLabel =  dstarD0pi->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,fmcArray); 
   
-  if (mcLabel < 0) return bSignAssoc;
+  if (mcLabel == -1) return bSignAssoc;
+
+  if ((fRecoCandidate->NumberOfFakeDaughters()>0)&&(fFakeSelection==1)) return bSignAssoc;
+  if ((fRecoCandidate->NumberOfFakeDaughters()==0)&&(fFakeSelection==2)) return bSignAssoc;
+  
   SetMCLabel(mcLabel);
   fmcPartCandidate = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fmcLabel)); 
 

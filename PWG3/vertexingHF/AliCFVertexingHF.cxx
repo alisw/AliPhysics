@@ -56,7 +56,8 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fLabelArray(0x0), 
 	fCentValue(0.),
 	fPtAccCut(0x0),
-	fEtaAccCut(0x0)
+	fEtaAccCut(0x0),
+	fFakeSelection(0)
 {
 	//
 	// constructor
@@ -86,7 +87,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fLabelArray(0x0),
 	fCentValue(0.),
 	fPtAccCut(0x0),
-	fEtaAccCut(0x0)
+	fEtaAccCut(0x0),
+	fFakeSelection(0)
 {
 	//
 	// constructor with mcArray
@@ -143,6 +145,7 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fmcLabel = c.fmcLabel;
 		fProngs=c.fProngs;
 		fCentValue=c.fCentValue;
+		fFakeSelection=c.fFakeSelection;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
                         fPtAccCut = new Float_t[fProngs];
@@ -177,7 +180,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fLabelArray(0x0),
 	fCentValue(c.fCentValue),
 	fPtAccCut(0x0),
-	fEtaAccCut(0x0)
+	fEtaAccCut(0x0),
+	fFakeSelection(0)
 {  
 	//
 	//copy constructor
@@ -502,6 +506,9 @@ Bool_t AliCFVertexingHF::MCRefitStep(AliAODEvent *aodEvent, AliESDtrackCuts **tr
 		Int_t prongindex;
 		for (Int_t ilabel = 0; ilabel<fProngs; ilabel++){
 			AliDebug(3,Form("fLabelArray[%d] = %d, track->GetLabel() = %d",ilabel,fLabelArray[ilabel],TMath::Abs(track->GetLabel())));
+			if ((track->GetLabel()<0)&&(fFakeSelection==1)) continue;
+			if ((track->GetLabel()>0)&&(fFakeSelection==2)) continue;
+
 			if (TMath::Abs(track->GetLabel()) == temp[ilabel]) {
 				foundTrack = kTRUE;
 				temp[ilabel] = 0;

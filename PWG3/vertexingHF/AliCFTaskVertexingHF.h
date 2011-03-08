@@ -57,6 +57,7 @@ public:
 		kStepRecoPPR         = 8,
 		kStepRecoPID         = 9
 	};
+
 	
 	AliCFTaskVertexingHF();
 	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts);
@@ -96,8 +97,12 @@ public:
 	void SetSign(Char_t isSign) {fSign = isSign;}
 	Char_t GetSign() {return fSign;}
 	 
-	void SetCentralitySelection(Bool_t centSelec = kTRUE) {fCentralitySelection = centSelec;}        Bool_t GetCentralitySelection() {return fCentralitySelection;} 
+	void SetCentralitySelection(Bool_t centSelec = kTRUE) {fCentralitySelection = centSelec;}   
+	Bool_t GetCentralitySelection() {return fCentralitySelection;} 
 
+	void SetFakesSelection(Int_t fakeSel = 0) {fFakeSelection=fakeSel;}
+	Int_t GetFakesSelection(){return fFakeSelection;}
+	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -124,9 +129,10 @@ protected:
 	TString fDauNames;    // daughter in fin state
 	Char_t fSign;                 // flag to decide wheter to keep D0 only (0), D0bar only (1), or both D0 and D0bar (2)
         Bool_t fCentralitySelection;  //flag to switch off the centrality selection
+	Int_t  fFakeSelection;  //selection flag for fakes tracks 
 
 
-	ClassDef(AliCFTaskVertexingHF,5); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,6); // class for HF corrections as a function of many variables
 };
 
 #endif

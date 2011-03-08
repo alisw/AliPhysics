@@ -99,7 +99,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fPartName(""),
 	fDauNames(""),
 	fSign(2),
-	fCentralitySelection(kTRUE)
+	fCentralitySelection(kTRUE),
+	fFakeSelection(0)
 {
 	//
 	//Default ctor
@@ -132,7 +133,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fPartName(""),
 	fDauNames(""),
 	fSign(2), 
-	fCentralitySelection(kTRUE)
+	fCentralitySelection(kTRUE),
+	fFakeSelection(0)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -191,7 +193,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fPartName(c.fPartName),
 	fDauNames(c.fDauNames),
 	fSign(c.fSign),
-	fCentralitySelection(c.fCentralitySelection)
+	fCentralitySelection(c.fCentralitySelection),
+	fFakeSelection(c.fFakeSelection)
 {
 	//
 	// Copy Constructor
@@ -467,6 +470,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetMCPrimaryVertex(zMCVertex);
 	cfVtxHF->SetFillFromGenerated(fFillFromGenerated);
 	cfVtxHF->SetNVar(fNvar);
+	cfVtxHF->SetFakeSelection(fFakeSelection);
 
 	if (fCentralitySelection)
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
