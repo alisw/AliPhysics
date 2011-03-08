@@ -203,10 +203,10 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    Int_t ncascades = -1;
    if (fAnalysisType == "ESD") {
       lESDevent = dynamic_cast<AliESDEvent*>(InputEvent());
-      ncascades = lESDevent->GetNumberOfCascades();
+      if (lESDevent) ncascades = lESDevent->GetNumberOfCascades();
    } else if (fAnalysisType == "AOD") {
       lAODevent = dynamic_cast<AliAODEvent*>(InputEvent());
-      ncascades = lAODevent->GetNumberOfCascades();
+      if (lAODevent) ncascades = lAODevent->GetNumberOfCascades();
    }
    if (!lESDevent && !lAODevent) {
       Printf("ERROR: neither lESDevent nor lAODevent are available \n");
