@@ -62,7 +62,7 @@ AliITSOnlineSDDBase::~AliITSOnlineSDDBase(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDBase::Reset(){
-  //
+  // reset all counters
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
@@ -73,7 +73,7 @@ void AliITSOnlineSDDBase::Reset(){
 }
 //______________________________________________________________________
 void  AliITSOnlineSDDBase::ValidateAnodes(){
-  //
+  // tag good/bad channels
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     fGoodAnode[ian]=1;
     Float_t basel=GetAnodeBaseline(ian);
@@ -89,7 +89,8 @@ void  AliITSOnlineSDDBase::ValidateAnodes(){
 
 //______________________________________________________________________
 void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
-  // 
+  // analyzes one event and adds its ontribution to the various counters
+
   fNEvents++;
   const Int_t kTimeBins=fLastGoodTB+1;
   Float_t sum[fgkNAnodes];
@@ -168,7 +169,7 @@ Float_t AliITSOnlineSDDBase::GetMinimumBaseline() const {
 }
 //______________________________________________________________________
 Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
-  //
+  // compute mean value of raw noise
   Float_t meanns=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
@@ -181,7 +182,10 @@ Float_t AliITSOnlineSDDBase::CalcMeanRawNoise() const{
 }
 //______________________________________________________________________
 void AliITSOnlineSDDBase::WriteToASCII(){
-  //
+  // writes parameters of each channel into an ASCII file 
+  // to be then read in the successive step for common mode noise
+  // correction (AliITSOnlineSDDCMN)
+
   TString outfilnam;
   Float_t basMin,basMax;
   GetMinAndMaxBaseline(basMin,basMax);

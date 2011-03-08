@@ -51,7 +51,7 @@ AliITSOnlineSDDTP::~AliITSOnlineSDDTP(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDTP::Reset(){
-  //
+  // reset all counters
   for(Int_t i=0;i<fgkNAnodes;i++){
     fNEvents[i]=0;
     fGoodAnode[i]=1;
@@ -67,7 +67,7 @@ void AliITSOnlineSDDTP::Reset(){
 
 //______________________________________________________________________
 void AliITSOnlineSDDTP::AddEvent(TH2F* hrawd){
-  // 
+  // analyzes current event and sum its contribution to the various counters
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     Float_t auxmax=0.;
     Int_t auxtb=0;
@@ -131,7 +131,7 @@ Bool_t AliITSOnlineSDDTP::IsModuleGood() const{
 }
 //______________________________________________________________________
 void AliITSOnlineSDDTP::ValidateAnodes(){
-  //
+  // tag good/bad channels
   Float_t meang,rmsg;
   StatGain(meang,rmsg);
   Float_t lowlim=meang-fNSigmaGain*rmsg;
@@ -145,8 +145,8 @@ void AliITSOnlineSDDTP::ValidateAnodes(){
 
 
 //______________________________________________________________________
-void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
-  //
+void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms) const {
+  // compute average gain and rms
   Float_t sum=0.,sumq=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
@@ -171,7 +171,9 @@ void AliITSOnlineSDDTP::StatGain(Float_t &mean, Float_t  &rms){
 
 //______________________________________________________________________
 void AliITSOnlineSDDTP::WriteToASCII(){
-  //
+  // writes parameters of each channel into an ASCII file 
+  // to be sent to FXS by the DA and processed by the SHUTTLE
+
   TString outfilnam;
   outfilnam.Form("SDDbase_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam.Data(),"w");
@@ -185,7 +187,7 @@ void AliITSOnlineSDDTP::WriteToASCII(){
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetBaselineAnodeHisto() const {
-  //
+  // produce histogram with baseline vs. anode number
   TString hisnam;  
   hisnam.Form("hbase%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -196,7 +198,7 @@ TH1F* AliITSOnlineSDDTP::GetBaselineAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetRawNoiseAnodeHisto() const {
-  //
+  // produce histogram with raw noise vs. anode number
   TString hisnam;  
   hisnam.Form("hnois%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -207,7 +209,7 @@ TH1F* AliITSOnlineSDDTP::GetRawNoiseAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetCorrNoiseAnodeHisto() const {
-  //
+  // produce histogram with corrected noise vs. anode number
   TString hisnam;  
   hisnam.Form("hcorn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -218,7 +220,7 @@ TH1F* AliITSOnlineSDDTP::GetCorrNoiseAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetCMNCoefAnodeHisto() const {
-//
+  // produce histogram with coefficients for common mode noise subtraction
   TString hisnam;  
   hisnam.Form("hcmn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -229,7 +231,7 @@ TH1F* AliITSOnlineSDDTP::GetCMNCoefAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetStatusAnodeHisto() const {
-//
+  // produce histogram with status bit of each anode
   TString hisnam;  
   hisnam.Form("hgood%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -240,7 +242,7 @@ TH1F* AliITSOnlineSDDTP::GetStatusAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDTP::GetGainAnodeHisto() const {
-//
+  // produce histogram with gain vs. anode number
   TString hisnam;  
   hisnam.Form("hgain%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -251,7 +253,7 @@ TH1F* AliITSOnlineSDDTP::GetGainAnodeHisto() const {
 }
 //______________________________________________________________________
 Bool_t AliITSOnlineSDDTP::WriteToROOT(TFile *fil){
-  //
+  // writes output into a root file
   if(fil==0){ 
     AliWarning("Invalid pointer to ROOT file");
     return kFALSE;    

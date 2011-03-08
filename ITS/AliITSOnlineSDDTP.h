@@ -43,7 +43,7 @@ class AliITSOnlineSDDTP : public AliITSOnlineSDD {
     if(fNEvents[iAnode]>0) return fSumTPPeak[iAnode]/fNEvents[iAnode]/fDAC;
     else return 0;
   }
-  void StatGain(Float_t &mean, Float_t  &rms);
+  void StatGain(Float_t &mean, Float_t  &rms) const;
   void WriteToASCII();
   Bool_t WriteToROOT(TFile *fil);
 

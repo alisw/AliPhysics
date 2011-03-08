@@ -61,7 +61,9 @@ fStatusSetPoints(0)
 
 void AliITSDCSDataSDD::SetNPointsTempLeft( Int_t npts )
 {
+  // dimension arrays with left side temperatures
   //
+
   if( npts < fTempLeftSetPoints)
   {                     // Cannot resize arrays - some elements would be lost
     AliWarning("Attemp to reduce size of full array (SDD DCS _TEMP_L)"); 
@@ -80,7 +82,9 @@ void AliITSDCSDataSDD::SetNPointsTempLeft( Int_t npts )
 
 void AliITSDCSDataSDD::SetNPointsTempRight( Int_t npts )
 {
+  // dimension arrays with right side temperatures
   //
+
   if( npts < fTempRightSetPoints)
   {                     // Cannot resize arrays - some elements would be lost
     AliWarning("Attemp to reduce size of full array (SDD DCS _TEMP_R)");
@@ -99,7 +103,9 @@ void AliITSDCSDataSDD::SetNPointsTempRight( Int_t npts )
 
 void AliITSDCSDataSDD::SetNPointsHV( Int_t npts )
 {
+  // dimension arrays with HV values
   //
+
   if( npts < fHVSetPoints)
   {                     // Cannot resize arrays - some elements would be lost
     AliWarning("Attemp to reduce size of full array (SDD DCS _HV)");
@@ -118,7 +124,9 @@ void AliITSDCSDataSDD::SetNPointsHV( Int_t npts )
 
 void AliITSDCSDataSDD::SetNPointsMV( Int_t npts )
 {
+  // dimension arrays with   MV values
   //
+
   if( npts < fMVSetPoints)
   {                     // Cannot resize arrays - some elements would be lost
     AliWarning("Attemp to reduce size of full array (SDD DCS _MV)");
@@ -137,7 +145,9 @@ void AliITSDCSDataSDD::SetNPointsMV( Int_t npts )
 
 void AliITSDCSDataSDD::SetNPointsStatus( Int_t npts )
 {
+  // dimension arrays withn DCS channel status
   //
+
   if( npts < fStatusSetPoints)
   {                     // Cannot resize arrays - some elements would be lost
     AliWarning("Attemp to reduce size of full array (SDD DCS Status)");
@@ -156,7 +166,9 @@ void AliITSDCSDataSDD::SetNPointsStatus( Int_t npts )
 //---------------------------------------------------------------------------
 void AliITSDCSDataSDD::SetValueTempLeft(Int_t time, Float_t temperature )
 {
+  // insert a value for left temperature data point
   //
+
    if( fTempLeftMaxPoints == fTempLeftSetPoints )
     SetNPointsTempLeft( fTempLeftMaxPoints + AUTORESIZE );
                         // Enlarges arrays if necessary
@@ -199,7 +211,9 @@ void AliITSDCSDataSDD::SetValueTempLeft(Int_t time, Float_t temperature )
 
 void AliITSDCSDataSDD::SetValueTempRight(Int_t time, Float_t temperature )
 {
+  // insert a value for right temperature data point
   //
+
    if( fTempRightMaxPoints == fTempRightSetPoints )
     SetNPointsTempRight( fTempRightMaxPoints + AUTORESIZE );
                         // Enlarges arrays if necessary
@@ -242,7 +256,9 @@ void AliITSDCSDataSDD::SetValueTempRight(Int_t time, Float_t temperature )
 
 void AliITSDCSDataSDD::SetValueHV(Int_t time, Float_t voltage )
 {
+  // insert a value for HV data point
   //
+
    if( fHVMaxPoints == fHVSetPoints )
     SetNPointsHV( fHVMaxPoints + AUTORESIZE );
                         // Enlarges arrays if necessary
@@ -282,7 +298,9 @@ void AliITSDCSDataSDD::SetValueHV(Int_t time, Float_t voltage )
 
 void AliITSDCSDataSDD::SetValueMV(Int_t time, Float_t voltage )
 {
+  // insert a value for MV data point
   //
+
    if( fMVMaxPoints == fMVSetPoints )
     SetNPointsMV( fMVMaxPoints + AUTORESIZE );
                         // Enlarges arrays if necessary
@@ -325,7 +343,9 @@ void AliITSDCSDataSDD::SetValueMV(Int_t time, Float_t voltage )
 
 void AliITSDCSDataSDD::SetValueStatus(Int_t time, Char_t status )
 {
+  // insert a value for channel status
   //
+
    if( fStatusMaxPoints == fStatusSetPoints )
     SetNPointsStatus( fStatusMaxPoints + AUTORESIZE );
                         // Enlarges arrays if necessary

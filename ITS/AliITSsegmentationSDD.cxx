@@ -213,6 +213,9 @@ Int_t AliITSsegmentationSDD::GetChipFromLocal(Float_t xloc, Float_t zloc) const 
 }
 //----------------------------------------------------------------------
 Int_t AliITSsegmentationSDD::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, Float_t xmin, Float_t xmax) const {
+  // returns the numbers of the chips that read channels in a given region
+  // of the module defined in local coordinates by zmin-zmax, xmin-max
+
   Int_t nChipInW = 0;
   Float_t zminDet=-fDz*fgkMicron2Cm/2.;
   Float_t zmaxDet=fDz*fgkMicron2Cm/2.;

@@ -53,7 +53,7 @@ AliITSOnlineSDDCMN::~AliITSOnlineSDDCMN(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::Reset(){
-  //
+  // Reset counters
   fNEvents=0;
   for(Int_t i=0;i<fgkNAnodes;i++){
     fGoodAnode[i]=1;
@@ -97,7 +97,7 @@ void AliITSOnlineSDDCMN::ReadBaselines(){
 }
 //______________________________________________________________________
 void  AliITSOnlineSDDCMN::ValidateAnodes(){
-  //
+  // Tag good/bad anodes
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
     if(!fGoodAnode[ian]) continue;
     if(GetAnodeCorrNoise(ian)>fMaxCorrNoise || GetAnodeCorrNoise(ian)<fMinCorrNoise) fGoodAnode[ian]=0;
@@ -107,7 +107,8 @@ void  AliITSOnlineSDDCMN::ValidateAnodes(){
 
 //______________________________________________________________________
 TH2F* AliITSOnlineSDDCMN::GetCleanEvent(TH2F* hrawd) const {
-  // 
+  // Fills an histogram with counts corrected for common mode noise
+
   TH2F* hcorrd=new TH2F("hcorrd","",hrawd->GetNbinsX(),hrawd->GetXaxis()->GetXmin(),hrawd->GetXaxis()->GetXmax(),hrawd->GetNbinsY(),hrawd->GetYaxis()->GetXmin(),hrawd->GetYaxis()->GetXmax());
   for(Int_t itb=fFirstGoodTB;itb<=fLastGoodTB;itb++){
     Float_t sumEven=0., sumOdd=0.;
@@ -135,7 +136,8 @@ TH2F* AliITSOnlineSDDCMN::GetCleanEvent(TH2F* hrawd) const {
 }
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
-  // 
+  // analyzes one event and adds its ontribution to the various counters
+
   fNEvents++;
   TH2F* hcorrd=GetCleanEvent(hrawd);
 
@@ -154,7 +156,8 @@ void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
 }
 //______________________________________________________________________
 Float_t AliITSOnlineSDDCMN::CalcMeanNoise() const{
-  //
+  // compute average noise
+
   Float_t meanns=0.;
   Int_t cnt=0;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
@@ -167,7 +170,9 @@ Float_t AliITSOnlineSDDCMN::CalcMeanNoise() const{
 }
 //______________________________________________________________________
 void AliITSOnlineSDDCMN::WriteToASCII(){
-  //
+  // writes parameters of each channel into an ASCII file 
+  // to be then read by the PULSER DA (AliITSOnlineSDDTP)
+
   TString outfilnam;
   outfilnam.Form("SDDbase_step2_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);
   FILE* outf=fopen(outfilnam.Data(),"w");
@@ -181,7 +186,7 @@ void AliITSOnlineSDDCMN::WriteToASCII(){
 
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetBaselineAnodeHisto() const {
-  //
+  // produce histogram with baseline vs. anode number
   TString hisnam;  
   hisnam.Form("hbase%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -192,7 +197,7 @@ TH1F* AliITSOnlineSDDCMN::GetBaselineAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetRawNoiseAnodeHisto() const {
-  //
+  // produce histogram with raw noise vs. anode number
   TString hisnam;  
   hisnam.Form("hnois%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -203,7 +208,7 @@ TH1F* AliITSOnlineSDDCMN::GetRawNoiseAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetCorrNoiseAnodeHisto() const {
-  //
+  // produce histogram with corrected noise vs. anode number
   TString hisnam;  
   hisnam.Form("hcorn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -214,7 +219,7 @@ TH1F* AliITSOnlineSDDCMN::GetCorrNoiseAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetCMNCoefAnodeHisto() const {
-//
+  // produce histogram with coefficients for common mode noise subtraction
   TString hisnam;  
   hisnam.Form("hcmn%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -225,7 +230,7 @@ TH1F* AliITSOnlineSDDCMN::GetCMNCoefAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetStatusAnodeHisto() const {
-//
+  // produce histogram with status bit of each anode
   TString hisnam;  
   hisnam.Form("hgood%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",256,-0.5,255.5);
@@ -236,7 +241,7 @@ TH1F* AliITSOnlineSDDCMN::GetStatusAnodeHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetBaselineHisto() const {
-  //
+  // produce histogram with baseline distribution
   TString hisnam;  
   hisnam.Form("hdbd%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",100,0.,150.);
@@ -247,7 +252,7 @@ TH1F* AliITSOnlineSDDCMN::GetBaselineHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetRawNoiseHisto() const {
-  //
+  // produce histogram with raw noise distribution
   TString hisnam;  
   hisnam.Form("hdnd%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",100,0.,8.);
@@ -258,7 +263,7 @@ TH1F* AliITSOnlineSDDCMN::GetRawNoiseHisto() const {
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDCMN::GetCorrNoiseHisto() const {
-  //
+  // produce histogram with corrected noise distribution
   TString hisnam;  
   hisnam.Form("hdcd%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",100,0.,8.);
@@ -269,7 +274,7 @@ TH1F* AliITSOnlineSDDCMN::GetCorrNoiseHisto() const {
 }
 //______________________________________________________________________
 Bool_t AliITSOnlineSDDCMN::WriteToROOT(TFile *fil){
-  //
+  // writes output into a root file
   if(fil==0){ 
     AliWarning("Invalid pointer to ROOT file");
     return kFALSE;    

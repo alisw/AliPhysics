@@ -46,11 +46,7 @@ class AliITSresponseSDD : public TObject {
   virtual void SetHalfLadderATimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetHalfLadderCTimeZero(Int_t lay, Int_t lad, Float_t tzero);
   virtual void SetModuleTimeZero(Int_t modIndex, Float_t tzero){
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return;
-    }
-    fTimeZero[modIndex-kNSPDmods]=tzero;
+    if(CheckModuleIndex(modIndex)) fTimeZero[modIndex-kNSPDmods]=tzero;
   }
 
   virtual void SetDeltaVDrift(Int_t modIndex, Float_t dv, Bool_t rightSide=kFALSE) {
@@ -72,46 +68,29 @@ class AliITSresponseSDD : public TObject {
   virtual void SetTimeOffset(Float_t to){fTimeOffset = to;}
   virtual Float_t GetTimeOffset()const {return fTimeOffset;}
   virtual Float_t GetTimeZero(Int_t modIndex) const {
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return 0.;
-    }
-    return fTimeZero[modIndex-kNSPDmods];
+    if(CheckModuleIndex(modIndex)) return fTimeZero[modIndex-kNSPDmods];
+    else return 0.;
   }
 
   virtual void SetADC2keV(Float_t conv){fADC2keV=conv;}
   virtual Float_t GetADC2keV()const {return fADC2keV;}
   virtual void SetADCtokeV(Int_t modIndex, Float_t conv){
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return;
-    }
-    fADCtokeV[modIndex-kNSPDmods]=conv;
+    if(CheckModuleIndex(modIndex)) fADCtokeV[modIndex-kNSPDmods]=conv;
   }
   virtual Float_t GetADCtokeV(Int_t modIndex) const {
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return 0.;
-    }
-    return fADCtokeV[modIndex-kNSPDmods];
+    if(CheckModuleIndex(modIndex)) return fADCtokeV[modIndex-kNSPDmods];
+    else return 0.;
   }
 
   virtual void SetChargevsTime(Float_t slope){fChargevsTime=slope;}
   virtual Float_t GetChargevsTime()const {return fChargevsTime;}
 
   virtual void SetADCvsDriftTime(Int_t modIndex, Float_t slope){
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return;
-    }
-    fADCvsDriftTime[modIndex-kNSPDmods]=slope;
+    if(CheckModuleIndex(modIndex)) fADCvsDriftTime[modIndex-kNSPDmods]=slope;
   }
   virtual Float_t GetADCvsDriftTime(Int_t modIndex) const {
-    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){
-      AliError(Form("SDD module number %d out of range",modIndex));
-      return 0.;
-    }
-    return fADCvsDriftTime[modIndex-kNSPDmods];
+    if(CheckModuleIndex(modIndex)) return fADCvsDriftTime[modIndex-kNSPDmods];
+    else return 0.;
   }
 
   static Float_t DefaultADC2keV() {return fgkADC2keVDefault;}
@@ -132,6 +111,10 @@ class AliITSresponseSDD : public TObject {
     return (rightSide && IsVDCorr2Side()) ? ind + kNSDDmods : ind;
   }
 
+  virtual Bool_t CheckModuleIndex(Int_t modIndex) const {
+    if(modIndex<kNSPDmods || modIndex>=kNSPDmods+kNSDDmods){ AliError(Form("SDD module number %d out of range",modIndex)); return kFALSE;}
+    return kTRUE;
+  }
 
  protected:
 
