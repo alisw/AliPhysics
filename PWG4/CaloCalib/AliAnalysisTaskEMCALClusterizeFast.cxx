@@ -65,7 +65,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
 { 
   // Constructor
 
-  fBranchNames     = "ESD:AliESDHeader.,EMCALCells.,AOD:cells";
+  fBranchNames     = "ESD:AliESDHeader.,EMCALCells. AOD:header,emcalCells";
   for(Int_t i = 0; i < 10; ++i) 
     fGeomMatrix[i] = 0;
 }
