@@ -186,6 +186,7 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
          fDaughter[0].SetRef(esd->GetTrack(itrack[0]));
          fDaughter[1].SetRef(esd->GetTrack(itrack[1]));
          fMother.ComputeSum(def->GetMass1(), def->GetMass2());
+         fMother.SetRefEvent(fDaughter[0].GetOwnerEvent());
          FillContainer(kFALSE, def);
       }
    }
