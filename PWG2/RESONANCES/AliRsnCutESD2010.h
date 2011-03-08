@@ -34,8 +34,8 @@ public:
    AliESDtrackCuts* GetCutsITS() {return &fESDtrackCutsITS;}
    void             CopyCutsTPC(const AliESDtrackCuts *cuts) {fESDtrackCutsTPC = (*cuts);}
    void             CopyCutsITS(const AliESDtrackCuts *cuts) {fESDtrackCutsITS = (*cuts);}
-   void             CopyCutsTPC(AliESDtrackCuts cuts)        {fESDtrackCutsTPC = cuts;}
-   void             CopyCutsITS(AliESDtrackCuts cuts)        {fESDtrackCutsITS = cuts;}
+   //void             CopyCutsTPC(AliESDtrackCuts cuts)        {fESDtrackCutsTPC = cuts;}
+   //void             CopyCutsITS(AliESDtrackCuts cuts)        {fESDtrackCutsITS = cuts;}
    virtual Bool_t   IsSelected(TObject *object);
    virtual void     Print(const Option_t *option = "") const;
 
