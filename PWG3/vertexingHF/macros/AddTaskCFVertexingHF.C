@@ -410,7 +410,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetDecayChannel(2);
 	task->SetUseWeight(kFALSE);
 	task->SetSign(isSign);
-	task->SetCentralitySelection(kTRUE);
+	task->SetCentralitySelection(kFALSE);
+	task->SetFakesSelection(0);
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
