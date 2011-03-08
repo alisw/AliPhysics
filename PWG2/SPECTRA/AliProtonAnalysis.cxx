@@ -135,7 +135,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
 				 fNBinsPt,fMinPt,fMaxPt);
   fHistYPtAntiProtons->SetStats(kTRUE);
   fHistYPtAntiProtons->GetYaxis()->SetTitle("P_{T} [GeV/c]");
-  if(fProtonAnalysisBase->GetEtaMode())
+  if(fProtonAnalysisBase && fProtonAnalysisBase->GetEtaMode())
     fHistYPtAntiProtons->GetXaxis()->SetTitle("#eta");
   else
     fHistYPtAntiProtons->GetXaxis()->SetTitle("y");
@@ -188,7 +188,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY,
   fAntiProtonContainer->SetBinLimits(1,binLimPt); //pT
 
   //Initialize the QA
-  if(fProtonAnalysisBase->IsQARun()) InitQA();
+  if(fProtonAnalysisBase && fProtonAnalysisBase->IsQARun()) InitQA();
 } 
 
 //____________________________________________________________________//
@@ -286,7 +286,7 @@ AliProtonAnalysis::AliProtonAnalysis(Int_t nbinsY, Double_t *gY,
   fAntiProtonContainer->SetBinLimits(1,gPt); //pT
 
   //Initialize the QA
-  if(fProtonAnalysisBase->IsQARun()) InitQA();
+  if(fProtonAnalysisBase && fProtonAnalysisBase->IsQARun()) InitQA();
 } 
 
 //____________________________________________________________________//
@@ -425,7 +425,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY,
   delete [] binLimPt;
 
   //Initialize the QA
-  if(fProtonAnalysisBase->IsQARun()) InitQA();
+  if(fProtonAnalysisBase && fProtonAnalysisBase->IsQARun()) InitQA();
 }
 
 //____________________________________________________________________//
@@ -501,7 +501,7 @@ void AliProtonAnalysis::InitAnalysisHistograms(Int_t nbinsY, Double_t *gY,
   fAntiProtonContainer->SetBinLimits(1,gPt); //pT
 
   //Initialize the QA
-  if(fProtonAnalysisBase->IsQARun()) InitQA();
+  if(fProtonAnalysisBase && fProtonAnalysisBase->IsQARun()) InitQA();
 }
 
 //____________________________________________________________________//
@@ -900,6 +900,8 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
   Int_t nTracks = 0;
   Int_t nIdentifiedProtons = 0, nIdentifiedAntiProtons = 0;
   Int_t nSurvivedProtons = 0, nSurvivedAntiProtons = 0;
+
+  if(!fProtonAnalysisBase) return;
   
   //=========================================//
   //Aleph parametrization
@@ -1423,6 +1425,7 @@ void AliProtonAnalysis::Analyze(AliESDEvent* esd,
 //____________________________________________________________________//
 void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
   //Main analysis part - AOD
+  if(!fProtonAnalysisBase) return;
   fHistEvents->Fill(1); //number of analyzed events
   Int_t nTracks = fAOD->GetNumberOfTracks();
   for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) {
@@ -1452,6 +1455,7 @@ void AliProtonAnalysis::Analyze(AliAODEvent* const fAOD) {
 void AliProtonAnalysis::Analyze(AliStack* const stack, 
 				Bool_t iInclusive) {
   //Main analysis part - MC
+  if(!fProtonAnalysisBase) return;
   fHistEvents->Fill(1); //number of analyzed events
 
   Int_t nParticles = 0;
@@ -1960,6 +1964,7 @@ Bool_t AliProtonAnalysis::ReadCorrectionContainer(const char* filename) {
  
 //____________________________________________________________________//
 void AliProtonAnalysis::InitQA() {
+  if(!fProtonAnalysisBase) return;
   //Applies the correction maps to the initial containers
   fGlobalQAList = new TList();
   fGlobalQAList->SetName("fGlobalQAList");
@@ -2648,6 +2653,7 @@ void AliProtonAnalysis::FillQA(AliESDEvent *esd,
   Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};  //The impact parameters and their covariance.
   Double_t dca3D = 0.0;
   Float_t dcaXY = 0.0, dcaZ = 0.0;
+  if(!fProtonAnalysisBase) return;
 
   if((fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kTPC)||(fProtonAnalysisBase->GetAnalysisMode()==AliProtonAnalysisBase::kHybrid)) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
