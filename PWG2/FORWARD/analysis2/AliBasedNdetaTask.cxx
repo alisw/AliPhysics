@@ -12,6 +12,7 @@
 #include <AliAODInputHandler.h>
 #include "AliForwardUtil.h"
 #include "AliAODForwardMult.h"
+#include <TFile.h>
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
@@ -29,7 +30,9 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fSymmetrice(true),
     fCorrEmpty(true), 
     fTriggerEff(1),
-    fShapeCorr(0)
+    fShapeCorr(0),
+    fCentLow(0),
+    fCentHigh(100)
 {
   // 
   // Constructor
@@ -52,7 +55,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSymmetrice(true),
     fCorrEmpty(true), 
     fTriggerEff(1),
-    fShapeCorr(0)
+    fShapeCorr(0),
+    fCentLow(0),
+    fCentHigh(100)
 {
   // 
   // Constructor
@@ -79,7 +84,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fSymmetrice(true),
     fCorrEmpty(true), 
     fTriggerEff(o.fTriggerEff),
-    fShapeCorr(o.fShapeCorr)
+    fShapeCorr(o.fShapeCorr),
+    fCentLow(o.fCentLow),
+    fCentHigh(o.fCentHigh)
 {}
 
 //____________________________________________________________________
@@ -173,6 +180,7 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   fTriggers->GetXaxis()->SetBinLabel(kMB,          "w/Collision trigger");
   fTriggers->GetXaxis()->SetBinLabel(kWithVertex,  "w/Vertex");
   fTriggers->GetXaxis()->SetBinLabel(kWithTrigger, "w/Selected trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kPileUp,      "with pileup");
   fTriggers->GetXaxis()->SetBinLabel(kAccepted,    "Accepted by cut");
   fTriggers->GetXaxis()->SetNdivisions(kAccepted, false);
   fTriggers->SetFillColor(kRed+1);
@@ -247,10 +255,16 @@ AliBasedNdetaTask::CheckEvent(const AliAODEvent* aod)
     fTriggers->AddBinContent(kMB);
   if (forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
     fTriggers->AddBinContent(kMCNSD);
+  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) 
+    fTriggers->AddBinContent(kPileUp);
+  
   
   
   // Check if we have an event of interest. 
   if (!forward->IsTriggerBits(fTriggerMask)) return false;
+  
+  //Check for pileup
+  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return false;
   
   fTriggers->AddBinContent(kWithTrigger);
   
@@ -284,13 +298,13 @@ AliBasedNdetaTask::UserExec(Option_t *)
   TObject* obj = 0;
   obj = aod->FindListObject("Forward");
   
-  // AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
-  // Float_t cent = forward->GetCentrality();
+  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
+  Float_t cent = forward->GetCentrality();
   
-  // if(cent > -1) {
-  //  if( cent < 40 || cent >60 ) return;
+  //if(cent > 0) {
+  //  if( cent < 40 || cent >50 ) return;
   //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
-  //  }
+  //}
   
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
@@ -308,7 +322,11 @@ AliBasedNdetaTask::UserExec(Option_t *)
   if (!CheckEvent(aod)) return;
   
   // Create our sum histograms 
-  if (!fSum)  fSum   = CloneHist(data,  GetName()); 
+  if (!fSum)  { 
+    fSum   = CloneHist(data,  GetName()); 
+    if(forward->GetSystem()  < 2)
+      LoadNormalizationData(forward->GetSystem(),forward->GetSNN());
+  }
   else fSum->Add((data));
   
   //for(Int_t i = 1; i<=data->GetNbinsX(); i++) {
@@ -479,7 +497,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
     AliError("Couldn't find histogram 'base' in list");
     return;
   }
-
+  
   Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
   Int_t nB          = Int_t(fTriggers->GetBinContent(kB));
   Int_t nA          = Int_t(fTriggers->GetBinContent(kA));
@@ -554,7 +572,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   
 
   //
-  std::cout<<norm->GetMaximumBin()<<"    "<< (Float_t)nAccepted / norm->GetBinContent((Float_t)norm->GetMaximumBin()) <<std::endl;
+  //std::cout<<norm->GetMaximumBin()<<"    "<< (Float_t)nAccepted / norm->GetBinContent((Float_t)norm->GetMaximumBin()) <<std::endl;
   Float_t scaleForNorm =  (Float_t)nAccepted / (Float_t)norm->GetBinContent(norm->GetMaximumBin()) ;
   //Float_t scaleForNorm =  norm->Integral() ;
   std::cout<<norm->Integral()<<std::endl;
@@ -571,6 +589,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   
   if(fShapeCorr)
     fSum->Divide(fShapeCorr);
+  
   TH1D* dndeta = ProjectX(fSum, Form("dndeta%s",name), 1, fSum->GetNbinsY(),
 			  fCorrEmpty);
   
@@ -644,7 +663,51 @@ AliBasedNdetaTask::Terminate(Option_t *)
   
   PostData(2, fOutput);
 }
+//________________________________________________________________________
+void
+AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
+{
+  sys = 1;
+  energy = 900;
+  TString type("pp");
+  if(sys == 2) type.Form("PbPb");
+  TString snn("900");
+  if(energy == 7000) snn.Form("7000");
+  if(energy == 2750) snn.Form("2750"); 
+  
+  if(fShapeCorr && (fTriggerEff != 1)) {AliInfo("Objects already set for normalization - no action taken"); return; }
+  
+  //std::cout<<Form("normalizationHists_%s_%s.root",type.Data(),snn.Data())<<std::endl;
+  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWG2/FORWARD/corrections/Normalization/normalizationHists_%s_%s.root",type.Data(),snn.Data()));
+  if(!fin) AliWarning("no file for normalization");
+  
+  if ( fTriggerMask == AliAODForwardMult::kInel ) {
+    TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hInelNormalization"));
+    if(shapeCor) SetShapeCorrection(shapeCor);
+    TParameter<float>* ineleff = (TParameter<float>*)fin->Get("inelTriggerEff");
+  if ( ineleff) SetTriggerEff(ineleff->GetVal());
+  if (shapeCor && ineleff) AliInfo("Loaded objects for normalization.");
+  
+}
 
+if ( fTriggerMask == AliAODForwardMult::kNSD ) {
+  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hNSDNormalization"));
+  if(shapeCor) SetShapeCorrection(shapeCor);
+  TParameter<float>* nsdeff = (TParameter<float>*)fin->Get("nsdTriggerEff");
+if ( nsdeff) SetTriggerEff(nsdeff->GetVal());
+if (shapeCor && nsdeff) AliInfo("Loaded objects for normalization.");
+}
+
+if ( fTriggerMask == AliAODForwardMult::kInelGt0 ) {
+  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hInelGt0Normalization"));
+    if(shapeCor) SetShapeCorrection(shapeCor);
+    TParameter<float>* inelgt0eff = (TParameter<float>*)fin->Get("inelgt0TriggerEff");
+if ( inelgt0eff) SetTriggerEff(inelgt0eff->GetVal());
+if (shapeCor && inelgt0eff) AliInfo("Loaded objects for normalization.");
+  }
+  
+
+}
 //________________________________________________________________________
 TH1D*
 AliBasedNdetaTask::Rebin(const TH1D* h) const
@@ -688,7 +751,7 @@ AliBasedNdetaTask::Rebin(const TH1D* h) const
 
       if (fCutEdges) {
 	if (h->GetBinContent(bin+1)<=0 || 
-	    h->GetBinContent(bin-1)) {
+	    h->GetBinContent(bin-1)<=0) {
 	  Warning("Rebin", "removing bin %d=%f of %s (%d=%f,%d=%f)", 
 		  bin, c, h->GetName(), 
 		  bin+1, h->GetBinContent(bin+1), 

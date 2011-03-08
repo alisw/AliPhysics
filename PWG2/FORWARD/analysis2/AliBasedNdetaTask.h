@@ -59,6 +59,12 @@ public:
    * 
    * @param e Trigger efficiency 
    */
+  void SetCutEdges(Bool_t cut) {fCutEdges = cut;}
+  /** 
+   * Trigger efficiency for selected trigger(s)
+   * 
+   * @param e Trigger efficiency 
+   */
   void SetTriggerEff(Double_t e) { fTriggerEff = e; } 
   /** 
    * Set the shape correction (a.k.a., track correction) for selected
@@ -66,6 +72,8 @@ public:
    * 
    * @param h Correction
    */
+  void LoadNormalizationData(UShort_t sys, UShort_t energy);
+  
   void SetShapeCorrection(const TH1* h);
   /**
    * Destructor
@@ -181,11 +189,12 @@ protected:
     kA          = 3, 
     kC          = 4, 
     kE          = 5,
-    kMB         = 6, 
-    kWithTrigger= 7,
-    kWithVertex = 8, 
-    kAccepted   = 9,
-    kMCNSD      = 10
+    kMB         = 6,
+    kPileUp     = 7,
+    kWithTrigger= 8,
+    kWithVertex = 9,
+    kAccepted   = 10,
+    kMCNSD      = 11
   };
 
   TH2D*           fSum;          // Sum of histograms 
@@ -205,7 +214,9 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH1*            fShapeCorr;    // Shape correction 
-
+  Float_t         fCentLow;      // Low centrality cut
+  Float_t         fCentHigh;      // High centrality cut
+  
   ClassDef(AliBasedNdetaTask,1); // Determine multiplicity in base area
 };
 
