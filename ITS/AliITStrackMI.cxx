@@ -91,7 +91,7 @@ fExpQ(t.fExpQ),
 fChi22(t.fChi22),
 fdEdxMismatch(t.fdEdxMismatch),
 fConstrain(t.fConstrain),
-fWinner(t.fWinner),
+fWinner(0),
 fGoldV0(t.fGoldV0) {
   //------------------------------------------------------------------
   //Copy constructor

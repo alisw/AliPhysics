@@ -39,6 +39,7 @@ public:
   AliITStrackMI();
   AliITStrackMI(AliESDtrack& t,Bool_t c=kFALSE);
   AliITStrackMI(const AliITStrackMI& t);
+  virtual ~AliITStrackMI()  {if (fWinner) fWinner->fWinner = 0;} // release associated seed
   Int_t GetProlongationFast(Double_t alpha, Double_t xr,Double_t &y, Double_t &z);
   Bool_t UpdateMI(const AliCluster *c, Double_t chi2, Int_t i);  
 
@@ -99,7 +100,7 @@ public:
   void SetDeadZoneProbability(Int_t ilayer,Float_t d) {fDeadZoneProbability[ilayer]=d;}
   //
   AliITStrackMI*  GetWinner()        const {return fWinner;}
-  void   SetWinner(AliITStrackMI* p)       {fWinner = p;}
+  void   SetWinner(AliITStrackMI* p);
   //
   Double_t GetPredictedChi2MI(Double_t cy, Double_t cz, Double_t cerry, Double_t cerrz, Double_t covyz=0.) const;
   Bool_t IsGoldPrimary();
@@ -136,6 +137,14 @@ protected:
 
   ClassDef(AliITStrackMI,4)   //ITS reconstructed track
 };
+
+inline void AliITStrackMI::SetWinner(AliITStrackMI* p) 
+{
+  // connect winning hypothesis with the seed
+  if (fWinner) fWinner->fWinner = 0; // release previous winner
+  fWinner = p; 
+  if (p) p->fWinner = this;
+}
 
 #endif
 
