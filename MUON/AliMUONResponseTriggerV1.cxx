@@ -152,6 +152,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
   }
 
   Bool_t isTrig[2]={kTRUE, kTRUE};
+  Int_t nboard = 0;
 
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
   {
@@ -174,6 +175,16 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
                       xhit,yhit,x,y,z,ix,iy));
       continue;
     }
+    
+    if(fTriggerEfficiency){
+      if(cath==0){
+        nboard = pad.GetLocalBoardId(0);
+        fTriggerEfficiency->IsTriggered(detElemId, nboard, 
+                                        isTrig[0], isTrig[1]);
+      }
+      if(!isTrig[cath]) continue;
+    }
+    
     AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
                                        pad.GetLocalBoardChannel(0),
                                        cath);
@@ -181,14 +192,6 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 
     d->SetCharge(twentyNano);
 
-    if(fTriggerEfficiency){
-      if(cath==0){
-	Int_t nboard = pad.GetLocalBoardId(0);
-	fTriggerEfficiency->IsTriggered(detElemId, nboard, 
-					isTrig[0], isTrig[1]);
-      }
-      if(!isTrig[cath]) continue;
-    }
 
     digits.Add(d);
 
@@ -241,6 +244,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 	} // built-up cluster
     } // loop on neighbors
   } // loop on cathode
+  if ( fTriggerEfficiency ) AliDebug(1,Form("MTReff: DetElemId %i  Board %3i  Fired %i %i", detElemId, nboard, isTrig[0], isTrig[1]));
 }
 
 //------------------------------------------------------------------  
