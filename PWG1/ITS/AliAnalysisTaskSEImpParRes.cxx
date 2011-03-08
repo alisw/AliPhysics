@@ -26,6 +26,7 @@
 
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
+#include "AliMultiplicity.h"
 #include "AliTrackPointArray.h"
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
@@ -48,6 +49,8 @@ fReadMC(kFALSE),
 fSelectedPdg(-1),
 fUseDiamond(kFALSE),
 fSkipTrack(kTRUE),
+fMinMult(0),
+fMaxMult(1000000),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -96,6 +99,8 @@ fReadMC(kFALSE),
 fSelectedPdg(-1),
 fUseDiamond(kFALSE),
 fSkipTrack(kTRUE),
+fMinMult(0),
+fMaxMult(1000000),
 fOutputitspureSARec(0),
 fOutputitspureSASkip(0), 
 fOutputallPointRec(0),
@@ -1139,6 +1144,9 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     return;
   }
 
+  // only events in the requested multiplicity range
+  if(!IsSelectedCentrality(esd)) return;
+
   fNentries->Fill(1);
 
 
@@ -1924,4 +1932,24 @@ Int_t AliAnalysisTaskSEImpParRes::ClusterTypeOnITSLayer(AliESDtrack *track,
     }
   }
   return ctype;
+}
+//---------------------------------------------------------------------------
+Bool_t AliAnalysisTaskSEImpParRes::IsSelectedCentrality(AliESDEvent *esd) const
+{
+  //
+  // check if events is in the required multiplicity range
+  //
+
+  const AliMultiplicity *alimult = esd->GetMultiplicity();
+  Int_t ntrklets=1;
+  Int_t nclsSPDouter=0;
+  if(alimult) {
+    ntrklets = alimult->GetNumberOfTracklets();
+    nclsSPDouter = alimult->GetNumberOfITSClusters(1);
+  }
+
+  if(nclsSPDouter<fMinMult || nclsSPDouter>fMaxMult) return kFALSE;
+
+
+  return kTRUE;
 }

@@ -1,7 +1,9 @@
 AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
 					     Int_t selPdg=-1,
 					     Bool_t diamond=kTRUE,
-					     Bool_t skipTrack=kTRUE)
+					     Bool_t skipTrack=kTRUE,
+					     Int_t minmult=0,
+					     Int_t maxmult=1000000)
 {
   //
   // Configuration for the study of the impact parameter resolution
@@ -25,6 +27,7 @@ AliAnalysisTaskSEImpParRes *AddTaskImpParRes(Bool_t readMC=kFALSE,
   d0ResTask->SetSelectedPdg(selPdg);
   d0ResTask->SetUseDiamond(diamond);
   d0ResTask->SetSkipTrack(skipTrack);
+  d0ResTask->SetMultiplicityRange(minmult,maxmult);
   mgr->AddTask(d0ResTask);
 
   TString fname=Form("%s:ImpParRes_Performance",mgr->GetCommonFileName());
