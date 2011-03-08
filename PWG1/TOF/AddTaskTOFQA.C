@@ -1,5 +1,5 @@
 /*  created by fbellini@cern.ch on 14/09/2010 */
-/*  last modified by fbellini   on 14/09/2010 */
+/*  last modified by fbellini   on 08/03/2010 */
 
 #include "AliAnalysisTaskTOFqa.h"
 AliAnalysisTaskSE * AddTaskTOFQA() 
@@ -15,7 +15,7 @@ AliAnalysisTaskSE * AddTaskTOFQA()
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTas", "This task requires an input event handler");
+    ::Error("AddTask", "This task requires an input event handler");
     return NULL;
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -29,29 +29,50 @@ AliAnalysisTaskSE * AddTaskTOFQA()
 
   //--------------- set the filtering ------------
   // Barrel Tracks
-  AliESDtrackCuts* esdTrackCutsL = new AliESDtrackCuts("AliESDtrackCuts", "Standard");
-  esdTrackCutsL->SetMinNClustersTPC(50); // ok 50
-  esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5); // ok 3.5
-  esdTrackCutsL->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);//ok
-  esdTrackCutsL->SetRequireTPCRefit(kTRUE);//ok (?)
-  esdTrackCutsL->SetMaxDCAToVertexXY(3.0); // ok
-  esdTrackCutsL->SetMaxDCAToVertexZ(3.0); // ok
-  esdTrackCutsL->SetRequireSigmaToVertex(kTRUE); //ok ?
-  esdTrackCutsL->SetAcceptKinkDaughters(kFALSE); // ok
+
+  /* cuts used for QA in 2010 p-p */
+  AliESDtrackCuts* esdTrackCutsLoose2010 = new AliESDtrackCuts("AliESDtrackCuts", "esdTrackCutsLoose2010");
+  esdTrackCutsL->SetMinNClustersTPC(70); 
+  esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5); 
+  esdTrackCutsL->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);
+  esdTrackCutsL->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsL->SetMaxDCAToVertexXY(3.0); 
+  esdTrackCutsL->SetMaxDCAToVertexZ(3.0); 
+  esdTrackCutsL->SetRequireSigmaToVertex(kTRUE); 
+  esdTrackCutsL->SetAcceptKinkDaughters(kFALSE); 
   esdTrackCutsL->SetMaxNsigmaToVertex(4.0);
+
+  /* standard cuts ITS-TPC 2010 */
+  AliESDtrackCuts* esdTrackCutsStd2010 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2010");
+  // TPC  
+  esdTrackCutsStd2010->SetMinNClustersTPC(70); 
+  esdTrackCutsStd2010->SetMaxChi2PerClusterTPC(4);
+  esdTrackCutsStd2010->SetAcceptKinkDaughters(kFALSE); 
+  esdTrackCutsStd2010->SetRequireTPCRefit(kTRUE);
+  // ITS
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
+  esdTrackCutsStd2010->SetMaxDCAToVertexZ(2);
+  esdTrackCutsStd2010->SetDCAToVertex2D(kFALSE);
+  esdTrackCutsStd2010->SetRequireSigmaToVertex(kFALSE);
+
   AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-  trackFilter->AddCuts(esdTrackCutsL);
+  trackFilter->AddCuts(esdTrackCutsStd2010);
   task->SetTrackFilter(trackFilter);
    
   
   // Create containers for input/output
   AliAnalysisDataContainer *cInputTOFqa = mgr->CreateContainer("cInputTOFqa",TChain::Class(),AliAnalysisManager::kInputContainer);
-  AliAnalysisDataContainer *cOutGeneralTOFqa = mgr->CreateContainer("cOutGeneralTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
-   AliAnalysisDataContainer *cOutExpertsTOFqa = mgr->CreateContainer("cOutExpertsTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *cGeneralTOFqa = mgr->CreateContainer("cGeneralTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+  AliAnalysisDataContainer *cTimeZeroTOFqa = mgr->CreateContainer("cTimeZeroTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+   AliAnalysisDataContainer *cPIDTOFqa = mgr->CreateContainer("cPIDTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
   // Attach i/o
   mgr->ConnectInput(task, 0,mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, cOutGeneralTOFqa);
-  mgr->ConnectOutput(task, 2, cOutExpertsTOFqa);
+  mgr->ConnectOutput(task, 1, cGeneralTOFqa);
+  mgr->ConnectOutput(task, 2, cTimeZeroTOFqa);
+  mgr->ConnectOutput(task, 3, cPIDTOFqa);
   
   return task;
 }
