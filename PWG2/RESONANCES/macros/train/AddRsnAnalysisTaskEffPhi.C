@@ -10,6 +10,7 @@
 //
 Bool_t AddRsnAnalysisTaskEffPhi
 (
+   const char *evtopts,
    const char *options, 
    const char *path = "$(ALICE_ROOT)/PWG2/RESONANCES/macros/train"
 )
@@ -44,13 +45,14 @@ Bool_t AddRsnAnalysisTaskEffPhi
    AliRsnPairDef *pairPhi = new AliRsnPairDef(AliPID::kKaon, '+', AliPID::kKaon, '-', 333, 1.019455);
    
    // for cuts and axes, load the support macro
-   gROOT->LoadMacro("$(ALICE_ROOT)/PWG2/RESONANCES/macros/train/PhiCutsAndAxes.C");
+   //gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PWG2/RESONANCES");
+   //gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C", path));
    
    AliRsnCutTrackQuality *cutQualityITS     = TrackQualityITS();
    AliRsnCutTrackQuality *cutQualityTPC     = TrackQualityTPC();
-   AliRsnCutPIDITS       *cutPIDITSkaon     = PIDITS(isMC, AliRsnDaughter::kKaon, 0.0, 1E20, 3.0, "cutPIDITSkaon");
-   AliRsnCutPIDTPC       *cutPIDTPCkaonLow  = PIDTPC(isMC, AliRsnDaughter::kKaon, 0.0, 0.350, 5.0, "cutPIDTPCkaonLow");
-   AliRsnCutPIDTPC       *cutPIDTPCkaonHigh = PIDTPC(isMC, AliRsnDaughter::kKaon, 0.350, 1E20, 3.0, "cutPIDTPCkaonHigh");
+   AliRsnCutPIDITS       *cutPIDITSkaon     = PIDITS(kTRUE, AliRsnDaughter::kKaon, 0.0, 1E20, 3.0, "cutPIDITSkaon");
+   AliRsnCutPIDTPC       *cutPIDTPCkaonLow  = PIDTPC(kTRUE, AliRsnDaughter::kKaon, 0.0, 0.350, 5.0, "cutPIDTPCkaonLow");
+   AliRsnCutPIDTPC       *cutPIDTPCkaonHigh = PIDTPC(kTRUE, AliRsnDaughter::kKaon, 0.350, 1E20, 3.0, "cutPIDTPCkaonHigh");
    AliRsnCutPIDTOF       *cutPIDTOFkaon     = PIDTOF(AliRsnDaughter::kKaon, 3.0, !useTPC, "cutPIDTOFkaon");
    
    AliRsnValue *axisIM      = AxisIM();
@@ -58,6 +60,7 @@ Bool_t AddRsnAnalysisTaskEffPhi
    AliRsnValue *axisRes     = AxisRes();
    AliRsnValue *axisMultSPD = AxisMultSPD();
    AliRsnValue *axisMultMC  = AxisMultMC();
+   AliRsnValue *axisY       = AxisY();
    
    // ==================================================================================================================
    // == PRELIMINARY OPERATIONS ========================================================================================
@@ -85,8 +88,8 @@ Bool_t AddRsnAnalysisTaskEffPhi
    // == EVENT CUTS ====================================================================================================
    // ==================================================================================================================
 
-   gROOT->LoadMacro(Form("%s/AddEventStuff.C", path));
-   AddEventStuff(task->GetName(), options);
+   gROOT->LoadMacro(Form("%s/AddRsnEventComputations.C", path));
+   AddRsnEventComputations(kTRUE, evtopts);
 
    // ==================================================================================================================
    // == STEPS =========================================================================================================
@@ -96,11 +99,11 @@ Bool_t AddRsnAnalysisTaskEffPhi
    Char_t pidITS[255], pidTPC[255], pidTOF[255];
    Char_t schemeITS[255], schemeTPC[255], scheme[255];
    
-   sprintf(qualityITS, "%s"     , conf.cutQualityITS->GetName());
-   sprintf(qualityTPC, "%s"     , conf.cutQualityTPC->GetName());
-   sprintf(pidITS    , "%s"     , conf.cutPIDITSkaon->GetName());
-   sprintf(pidTPC    , "(%s|%s)", conf.cutPIDTPCkaonHigh->GetName(), conf.cutPIDTPCkaonLow->GetName());
-   sprintf(pidTOF    , "%s"     , conf.cutPIDTOFkaon->GetName());
+   sprintf(qualityITS, "%s"     , cutQualityITS->GetName());
+   sprintf(qualityTPC, "%s"     , cutQualityTPC->GetName());
+   sprintf(pidITS    , "%s"     , cutPIDITSkaon->GetName());
+   sprintf(pidTPC    , "(%s|%s)", cutPIDTPCkaonHigh->GetName(), cutPIDTPCkaonLow->GetName());
+   sprintf(pidTOF    , "%s"     , cutPIDTOFkaon->GetName());
    sprintf(schemeITS , "");
    sprintf(schemeTPC , "");
    sprintf(scheme    , "");
@@ -124,14 +127,14 @@ Bool_t AddRsnAnalysisTaskEffPhi
    AliRsnCutSet     *set_step1 = mgr_step1->GetCommonDaughterCuts();
 
    if (addTPC && addITS) {
-      set_step1->AddCut(conf.cutQualityTPC);
-      set_step1->AddCut(conf.cutQualityITS);
+      set_step1->AddCut(cutQualityTPC);
+      set_step1->AddCut(cutQualityITS);
       set_step1->SetCutScheme(Form("%s|%s", qualityTPC, qualityITS));
    } else if (addTPC) {
-      set_step1->AddCut(conf.cutQualityTPC);
+      set_step1->AddCut(cutQualityTPC);
       set_step1->SetCutScheme(qualityTPC);
    } else if (addITS) {
-      set_step1->AddCut(conf.cutQualityITS);
+      set_step1->AddCut(cutQualityITS);
       set_step1->SetCutScheme(qualityITS);
    } else {
       ::Error("Need to ad at least one between ITS and TPC tracks");
@@ -149,20 +152,20 @@ Bool_t AddRsnAnalysisTaskEffPhi
 
    if (addITS && useITS) {
       sprintf(schemeITS, "%s & %s", qualityITS, pidITS);
-      set_step2->AddCut(conf.cutPIDITSkaon);
+      set_step2->AddCut(cutPIDITSkaon);
    }
    if (addTPC) {
       if (useTPC && useTOF) {
-         set_step2->AddCut(conf.cutPIDTPCkaonLow);
-         set_step2->AddCut(conf.cutPIDTPCkaonHigh);
-         set_step2->AddCut(conf.cutPIDTOFkaon);
+         set_step2->AddCut(cutPIDTPCkaonLow);
+         set_step2->AddCut(cutPIDTPCkaonHigh);
+         set_step2->AddCut(cutPIDTOFkaon);
          sprintf(schemeTPC, "%s & %s", pidTPC, pidTOF);
       } else if (useTPC) {
-         set_step2->AddCut(conf.cutPIDTPCkaonLow);
-         set_step2->AddCut(conf.cutPIDTPCkaonHigh);
+         set_step2->AddCut(cutPIDTPCkaonLow);
+         set_step2->AddCut(cutPIDTPCkaonHigh);
          sprintf(schemeTPC, "%s & %s", pidTPC);
       } else if (useTOF) {
-         set_step2->AddCut(conf.cutPIDTOFkaon);
+         set_step2->AddCut(cutPIDTOFkaon);
          sprintf(schemeTPC, "%s & %s", pidTOF);
       }
    }
@@ -199,8 +202,8 @@ Bool_t AddRsnAnalysisTaskEffPhi
    // create paths for the output in the common file
    TString infoname(task->GetName());
    TString histname(task->GetName());
-   infoname.Append("Info");
-   histname.Append("Hist");
+   infoname.Append("_Info");
+   histname.Append("_Hist");
    AliAnalysisDataContainer *outputInfo = mgr->CreateContainer(infoname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
    AliAnalysisDataContainer *outputHist = mgr->CreateContainer(histname.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
    mgr->ConnectOutput(task, 1, outputInfo);
