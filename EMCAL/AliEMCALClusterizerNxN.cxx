@@ -79,7 +79,6 @@ AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
   // change needed by HLT - MP
-
 }
 
 //____________________________________________________________________________
@@ -101,62 +100,56 @@ void AliEMCALClusterizerNxN::Digits2Clusters(Option_t * option)
   // Steering method to perform clusterization for the current event 
   // in AliEMCALLoader
   
-  if(strstr(option,"tim"))
+  if (strstr(option,"tim"))
     gBenchmark->Start("EMCALClusterizer"); 
   
-  if(strstr(option,"print"))
-    Print("") ; 
+  if (strstr(option,"print"))
+    Print(""); 
   
   //Get calibration parameters from file or digitizer default values.
-  GetCalibrationParameters() ;
+  GetCalibrationParameters();
   
   //Get dead channel map from file or digitizer default values.
-  GetCaloCalibPedestal() ;
+  GetCaloCalibPedestal();
 	
-  fNumberOfECAClusters = 0;
+  MakeClusters();  //only the real clusters
   
-  MakeClusters() ;  //only the real clusters
-  
-  if(fToUnfold){
+  if (fToUnfold) {
     fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
     fClusterUnfolding->MakeUnfolding();
   }
   
   //Evaluate position, dispersion and other RecPoint properties for EC section 
-  Int_t index ;
-  for(index = 0; index < fRecPoints->GetEntries(); index++) 
-  { 
+  for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) { 
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-    if(rp){
-      rp->EvalAll(fECAW0,fDigitsArr,fgkIsInputCalibrated) ;
+    if (rp) {
+      rp->EvalAll(fECAW0,fDigitsArr,fIsInputCalibrated);
       AliDebug(5, Form("MAX INDEX %d ", rp->GetMaximalEnergyIndex()));
       //For each rec.point set the distance to the nearest bad crystal
-      rp->EvalDistanceToBadChannels(fCaloPed);
+      if (fCaloPed)
+        rp->EvalDistanceToBadChannels(fCaloPed);
     }
   }
   
-  fRecPoints->Sort() ;
+  fRecPoints->Sort();
   
-  for(index = 0; index < fRecPoints->GetEntries(); index++) 
-  {
-    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-    if(rp){
-      rp->SetIndexInList(index) ;
-      rp->Print();
+  for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) {
+    AliEMCALRecPoint *rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if (rp) {
+      rp->SetIndexInList(index);
     }
     else AliFatal("RecPoint NULL!!");
   }
   
-  fTreeR->Fill();
+  if (fTreeR)
+    fTreeR->Fill();
   
-  if(strstr(option,"deb") || strstr(option,"all"))  
-    PrintRecPoints(option) ;
+  if (strstr(option,"deb") || strstr(option,"all"))  
+    PrintRecPoints(option);
   
   AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
   
-  fRecPoints->Delete();
-  
-  if(strstr(option,"tim")){
+  if (strstr(option,"tim")) {
     gBenchmark->Stop("EMCALClusterizer");
     printf("Exec took %f seconds for Clusterizing", 
            gBenchmark->GetCpuTime("EMCALClusterizer"));
@@ -174,9 +167,9 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
   
-  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
-  static Int_t rowdiff=0, coldiff=0;
+  Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  Int_t rowdiff=0, coldiff=0;
   
   shared = kFALSE;
   
@@ -186,17 +179,17 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
   fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
   
   //If different SM, check if they are in the same phi, then consider cells close to eta=0 as neighbours; May 2010
-  if(nSupMod1 != nSupMod2 ) 
+  if (nSupMod1 != nSupMod2 ) 
     {
       //Check if the 2 SM are in the same PHI position (0,1), (2,3), ...
       Float_t smPhi1 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod1);
       Float_t smPhi2 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod2);
       
-      if(!TMath::AreEqualAbs(smPhi1, smPhi2, 1e-3)) return 2; //Not phi rack equal, not neighbours
+      if (!TMath::AreEqualAbs(smPhi1, smPhi2, 1e-3)) return 2; //Not phi rack equal, not neighbours
       
       // In case of a shared cluster, index of SM in C side, columns start at 48 and ends at 48*2
       // C Side impair SM, nSupMod%2=1; A side pair SM nSupMod%2=0
-      if(nSupMod1%2) ieta1+=AliEMCALGeoParams::fgkEMCALCols;
+      if (nSupMod1%2) ieta1+=AliEMCALGeoParams::fgkEMCALCols;
       else           ieta2+=AliEMCALGeoParams::fgkEMCALCols;
       
       shared = kTRUE; // maybe a shared cluster, we know this later, set it for the moment.
@@ -204,7 +197,7 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
     }//Different SM, same phi
   
   rowdiff = TMath::Abs(iphi1 - iphi2);  
-  coldiff = TMath::Abs(ieta1 - ieta2) ;  
+  coldiff = TMath::Abs(ieta1 - ieta2);  
   
   // neighbours +-1 in col and row
   if ( TMath::Abs(coldiff) <= fNColDiff && TMath::Abs(rowdiff) <= fNRowDiff)
@@ -220,7 +213,7 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
       AliDebug(9, Form("NOT AliEMCALClusterizerNxN::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
 		       d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared));
       shared = kFALSE;
-      return 2 ; 
+      return 2; 
     }//Not neighbours
 }
 
@@ -232,13 +225,14 @@ void AliEMCALClusterizerNxN::MakeClusters()
   if (fGeom==0) 
     AliFatal("Did not get geometry from EMCALLoader");
   
-  fRecPoints->Clear();
+  fNumberOfECAClusters = 0;
+  fRecPoints->Delete();
   
   // Set up TObjArray with pointers to digits to work on 
   TObjArray digitsC;
   TIter nextdigit(fDigitsArr);
   AliEMCALDigit *digit = 0;
-  while ( (digit = dynamic_cast<AliEMCALDigit*>(nextdigit())) ) {
+  while ( (digit = static_cast<AliEMCALDigit*>(nextdigit())) ) {
     Float_t dEnergyCalibrated = Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId());
     digit->SetCalibAmp(dEnergyCalibrated);
     digitsC.AddLast(digit);
@@ -261,7 +255,7 @@ void AliEMCALClusterizerNxN::MakeClusters()
     { // scan over the list of digitsC
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
 
-      if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
+      if (fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
       {
         if (dEnergyCalibrated > dMaxEnergyDigit) 
         {
@@ -289,19 +283,19 @@ void AliEMCALClusterizerNxN::MakeClusters()
     // now loop over the rest of the digits and cluster into NxN cluster 
     // we do not actually cluster yet: we keep them in the list clusterDigitList
     nextdigitC.Reset();
-    while ( (digit = dynamic_cast<AliEMCALDigit *>(nextdigitC())) ) 
+    while ( (digit = static_cast<AliEMCALDigit *>(nextdigitC())) ) 
     { // scan over the list of digitsC
       if (digit == pMaxEnergyDigit) continue;
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
       AliDebug(5, Form("-> Digit ENERGY: %1.5f", dEnergyCalibrated));
-      if(fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0  )
+      if (fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0  )
       {
         Float_t time = pMaxEnergyDigit->GetTime(); //Time or TimeR?
-        if(TMath::Abs(time - digit->GetTime()) > fTimeCut ) continue; //Time or TimeR?
+        if (TMath::Abs(time - digit->GetTime()) > fTimeCut ) continue; //Time or TimeR?
         Bool_t shared = kFALSE; //cluster shared by 2 SuperModules?
         if (AreNeighbours(pMaxEnergyDigit, digit, shared) == 1) // call (digit,digitN) in THAT order !!!!! 
         {      
-          clusterDigitList.AddLast(digit) ;
+          clusterDigitList.AddLast(digit);
           clusterCandidateEnergy += dEnergyCalibrated;
         }
       }
@@ -311,14 +305,14 @@ void AliEMCALClusterizerNxN::MakeClusters()
     AliDebug(5, Form("Clusterization threshold is %f MeV", fECAClusteringThreshold));
     if (clusterCandidateEnergy > fECAClusteringThreshold)
     {
-      if(fNumberOfECAClusters >= fRecPoints->GetSize()) 
-        fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
+      if (fNumberOfECAClusters >= fRecPoints->GetSize()) 
+        fRecPoints->Expand(2*fNumberOfECAClusters+1);
       
-      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
-      fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
-      recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
-      if(recPoint){
-        fNumberOfECAClusters++ ;       
+      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
+      fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
+      recPoint = static_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
+      if (recPoint) {
+        fNumberOfECAClusters++;       
         recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
         
         AliDebug(9, Form("Number of cells per cluster (max is 9!): %d", clusterDigitList.GetEntries()));
@@ -328,7 +322,7 @@ void AliEMCALClusterizerNxN::MakeClusters()
           Float_t dEnergyCalibrated = digit->GetCalibAmp();
           AliDebug(5, Form(" Adding digit %d", digit->GetId()));
           // note: this way the sharing info is lost!
-          recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE) ; //Time or TimeR?
+          recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
           digitsC.Remove(digit); 		  
         }
       }// recpoint
@@ -346,4 +340,3 @@ void AliEMCALClusterizerNxN::MakeClusters()
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
-
