@@ -466,6 +466,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.08");
+  rn->AddLine("");
+  rn->AddLine("Changed the default OCDB to 2011 version");
+  rn->AddLine("");
+  
   rn->AddLine("1.07");
   rn->AddLine("");
   rn->AddLine("Added the RejectList as a possible OCDB data source");
