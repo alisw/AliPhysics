@@ -114,6 +114,9 @@ Bool_t AliRsnPair::Fill
    fMother.SetDaughter(1, daughter2);
    fMother.ComputeSum(fPairDef->GetMass1(), fPairDef->GetMass2());
    
+   // assign reference event
+   if (refFirst) fMother.SetRefEvent(daughter1->GetOwnerEvent()); else fMother.SetRefEvent(daughter2->GetOwnerEvent());
+   
    // if required a true pair, check this here and eventually return a fail message
    // this is done using the method AliRsnMother::CommonMother with 2 arguments
    // passed by reference, where the real GEANT label of the particle is stored
@@ -153,9 +156,6 @@ Bool_t AliRsnPair::Fill
 
    // if pair is accepted, increment counter
    ++fCount;
-   
-   // assign reference event
-   if (refFirst) fMother.SetRefEvent(daughter1->GetOwnerEvent()); else fMother.SetRefEvent(daughter2->GetOwnerEvent());
 
    return kTRUE;
 }
