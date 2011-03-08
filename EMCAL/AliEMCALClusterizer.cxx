@@ -59,11 +59,9 @@ class AliCDBStorage;
 
 ClassImp(AliEMCALClusterizer)
 
-Bool_t AliEMCALClusterizer::fgkIsInputCalibrated = kFALSE;
-
-
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer():
+  fIsInputCalibrated(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -80,11 +78,11 @@ AliEMCALClusterizer::AliEMCALClusterizer():
   // ctor
   
   Init();
-  
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry): 
+  fIsInputCalibrated(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -98,14 +96,12 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
   fECALocMaxCut(0.),fECAW0(0.),fMinECut(0.),
   fClusterUnfolding(NULL)
 {
-  // ctor with the indication of the file where header Tree and digits Tree are stored
-  // use this contructor to avoid usage of Init() which uses runloader
-  // change needed by HLT - MP
-  
-  // Note for the future: the use on runloader should be avoided or optional at least
-  // another way is to make Init virtual and protected at least such that the deriving classes can overload
-  // Init() ;
-  //
+  // Ctor with the indication of the file where header Tree and digits Tree are stored.
+  // Use this contructor to avoid usage of Init() which uses runloader.
+  // Change needed by HLT - MP.
+  // Note for the future: the use on runloader should be avoided or optional at least.
+  // Another way is to make Init virtual and protected at least 
+  // such that the deriving classes can overload Init();
   
   if (!fGeom)
   {
@@ -121,7 +117,10 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry):
 }
 
 //____________________________________________________________________________
-AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped): 
+AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry, 
+                                         AliEMCALCalibData *calib, 
+                                         AliCaloCalibPedestal *caloped): 
+  fIsInputCalibrated(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -147,9 +146,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry, AliEMCALCal
     fPar5[i] = 0.;
     fPar6[i] = 0.;
   }
-  
 }
-
 
 //____________________________________________________________________________
 AliEMCALClusterizer::~AliEMCALClusterizer()
@@ -157,80 +154,19 @@ AliEMCALClusterizer::~AliEMCALClusterizer()
   // dtor
   //Already deleted in AliEMCALReconstructor.
 
-//   if(fGeom)      delete fGeom;
-//   if(fCalibData) delete fCalibData;
-//   if(fCaloPed)   delete fCaloPed;
-
-//   if (fDigitsArr) {
-//     fDigitsArr->Clear("C");
-//     delete fDigitsArr;
-//   }
-//   if (fRecPoints) {
-//     fRecPoints->Delete();
-//     delete fRecPoints;
-//  }
-  
   if(fClusterUnfolding) delete fClusterUnfolding;
 }
 
 //____________________________________________________________________________
-Float_t  AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, const Int_t absId) 
+Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, const Int_t absId) 
 {
-  
   // Convert digitized amplitude into energy.
   // Calibration parameters are taken from calibration data base for raw data,
   // or from digitizer parameters for simulated data.
-  if(fCalibData){
-    
-    if (fGeom==0)
-      AliFatal("Did not get geometry from EMCALLoader") ;
-    
-    Int_t iSupMod = -1;
-    Int_t nModule = -1;
-    Int_t nIphi   = -1;
-    Int_t nIeta   = -1;
-    Int_t iphi    = -1;
-    Int_t ieta    = -1;
-    
-    Bool_t bCell = fGeom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
-    if(!bCell) {
-      fGeom->PrintGeometry();
-      AliError(Form("Wrong cell id number : %i", absId));
-      //assert(0); // GCB: This aborts reconstruction of raw simulations where simulation had more SM than default geometry, 
-      //change to return 0, to avoid aborting good generations.
-      return 0;
-    }
-    
-    fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
-	  
-    // Check if channel is bad (dead or hot), in this case return 0.	
-    // Gustavo: 15-12-09 In case of RAW data this selection is already done, but not in simulation.
-    // for the moment keep it here but remember to do the selection at the sdigitizer level 
-    // and remove it from here
-    Int_t channelStatus = (Int_t)(fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
-    if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
-		  AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
-		  return 0;
-    }
-    //Check if time is too large or too small, indication of a noisy channel, remove in this case
-    if(time > fTimeMax || time < fTimeMin) return 0;
-    
-    if (AliEMCALClusterizer::fgkIsInputCalibrated == kTRUE)
-    {
-      AliDebug(10, Form("Input already calibrated!"));
-      return amp;
-    }
-	  
-    fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
-    fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
-    
-    
-    return -fADCpedestalECA + amp * fADCchannelECA ;        
-    
-  }
-  else{ //Return energy with default parameters if calibration is not available
-    
-    if (AliEMCALClusterizer::fgkIsInputCalibrated == kTRUE)
+
+  //Return energy with default parameters if calibration is not available
+  if (!fCalibData) {
+    if (fIsInputCalibrated == kTRUE)
     {
       AliDebug(10, Form("Input already calibrated!"));
       return amp;
@@ -239,21 +175,66 @@ Float_t  AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, c
     return -fADCpedestalECA + amp * fADCchannelECA ; 
   }
   
+  if (fGeom==0)
+    AliFatal("Did not get geometry from EMCALLoader") ;
+    
+  Int_t iSupMod = -1;
+  Int_t nModule = -1;
+  Int_t nIphi   = -1;
+  Int_t nIeta   = -1;
+  Int_t iphi    = -1;
+  Int_t ieta    = -1;
+    
+  Bool_t bCell = fGeom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
+  if(!bCell) {
+    fGeom->PrintGeometry();
+    AliError(Form("Wrong cell id number : %i", absId));
+    //assert(0); // GCB: This aborts reconstruction of raw simulations 
+    //where simulation had more SM than default geometry, 
+    //change to return 0, to avoid aborting good generations.
+    return 0;
+  }
+    
+  fGeom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
+	  
+  // Check if channel is bad (dead or hot), in this case return 0.	
+  // Gustavo: 15-12-09 In case of RAW data this selection is already done, but not in simulation.
+  // for the moment keep it here but remember to do the selection at the sdigitizer level 
+  // and remove it from here
+  Int_t channelStatus = (Int_t)(fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
+  if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
+    AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
+    return 0;
+  }
+  //Check if time is too large or too small, indication of a noisy channel, remove in this case
+  if(time > fTimeMax || time < fTimeMin) return 0;
+    
+  if (fIsInputCalibrated)
+  {
+    AliDebug(10, Form("Input already calibrated!"));
+    return amp;
+  }
+	  
+  fADCchannelECA  = fCalibData->GetADCchannel (iSupMod,ieta,iphi);
+  fADCpedestalECA = fCalibData->GetADCpedestal(iSupMod,ieta,iphi);
+      
+  return -fADCpedestalECA + amp * fADCchannelECA ;        
 }
 
 //____________________________________________________________________________
 void AliEMCALClusterizer::GetCalibrationParameters() 
 {
   // Set calibration parameters:
-  // if calibration database exists, they are read from database,
+  // If calibration database exists, they are read from database,
   // otherwise, they are taken from digitizer.
-  //
   // It is a user responsilibity to open CDB before reconstruction, 
   // for example: 
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
+
+  if (fIsInputCalibrated)
+    return;
   
   //Check if calibration is stored in data base
-  
   if(!fCalibData)
   {
     AliCDBEntry *entry = (AliCDBEntry*) 
@@ -263,7 +244,6 @@ void AliEMCALClusterizer::GetCalibrationParameters()
   
   if(!fCalibData)
     AliFatal("Calibration parameters not found in CDB!");
-  
 }
 
 //____________________________________________________________________________
@@ -276,9 +256,11 @@ void AliEMCALClusterizer::GetCaloCalibPedestal()
   // It is a user responsilibity to open CDB before reconstruction, 
   // for example: 
   // AliCDBStorage* storage = AliCDBManager::Instance()->GetStorage("local://CalibDB");
+
+  if (fIsInputCalibrated)
+    return;
   
-  //Check if calibration is stored in data base
-  
+  // Check if calibration is stored in data base
   if(!fCaloPed)
     {
       AliCDBEntry *entry = (AliCDBEntry*) 
@@ -288,7 +270,6 @@ void AliEMCALClusterizer::GetCaloCalibPedestal()
   
   if(!fCaloPed)
     AliFatal("Pedestal info not found in CDB!");
-  
 }
 
 //____________________________________________________________________________
@@ -304,7 +285,7 @@ void AliEMCALClusterizer::Init()
   }
   
   if(!fGeom){ 
-    fGeom =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
+    fGeom = AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
   }
   
   AliDebug(1,Form("geom %p",fGeom));
@@ -319,59 +300,63 @@ void AliEMCALClusterizer::Init()
     fPar5[i] = 0.;
     fPar6[i] = 0.;
   }
-  
 }
 
 //____________________________________________________________________________
 void AliEMCALClusterizer::InitParameters()
 { 
+  // Initializes the parameters for the Clusterizer from AliEMCALReconstructor::GetRecParam().
+
+  return InitParameters(AliEMCALReconstructor::GetRecParam());
+}
+
+//____________________________________________________________________________
+void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
+{ 
   // Initializes the parameters for the Clusterizer
+
   fNumberOfECAClusters = 0 ;
   fCalibData           = 0 ;
   fCaloPed             = 0 ;
 	
-  const AliEMCALRecParam* recParam = AliEMCALReconstructor::GetRecParam();
   if(!recParam) {
     AliFatal("Reconstruction parameters for EMCAL not set!");
-  } else {
-    fECAClusteringThreshold = recParam->GetClusteringThreshold();
-    fECAW0                  = recParam->GetW0();
-    fMinECut                = recParam->GetMinECut();    
-    fToUnfold               = recParam->GetUnfold();
-    fECALocMaxCut           = recParam->GetLocMaxCut();
-    fTimeCut                = recParam->GetTimeCut();
-    fTimeMin                = recParam->GetTimeMin();
-    fTimeMax                = recParam->GetTimeMax();
-    
-    AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
-                    fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
-    
-    if(fToUnfold){
-      
-      Int_t i=0;
-      for (i = 0; i < 8; i++) {
-        fSSPars[i] = recParam->GetSSPars(i);
-      }//end of loop over parameters
-      for (i = 0; i < 3; i++) {
-        fPar5[i] = recParam->GetPar5(i);
-        fPar6[i] = recParam->GetPar6(i);
-      }//end of loop over parameters
-      
-      InitClusterUnfolding();
-      
-      for (i = 0; i < 8; i++) {
-        AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));
-      }
-      for (i = 0; i < 3; i++) {
-        AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
-        AliDebug(1,Form("unfolding parameter 6: fPar6=%f \n",fPar6[i]));
-      }
-      
-    }// to unfold
-  }// recparam not null
-  
-}
+  } 
 
+  fECAClusteringThreshold = recParam->GetClusteringThreshold();
+  fECAW0                  = recParam->GetW0();
+  fMinECut                = recParam->GetMinECut();    
+  fToUnfold               = recParam->GetUnfold();
+  fECALocMaxCut           = recParam->GetLocMaxCut();
+  fTimeCut                = recParam->GetTimeCut();
+  fTimeMin                = recParam->GetTimeMin();
+  fTimeMax                = recParam->GetTimeMax();
+    
+  AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, "
+                  "fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
+                  fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
+
+  if (fToUnfold) {
+    Int_t i=0;
+    for (i = 0; i < 8; i++) {
+      fSSPars[i] = recParam->GetSSPars(i);
+    } //end of loop over parameters
+    for (i = 0; i < 3; i++) {
+      fPar5[i] = recParam->GetPar5(i);
+      fPar6[i] = recParam->GetPar6(i);
+    } //end of loop over parameters
+      
+    InitClusterUnfolding();
+      
+    for (i = 0; i < 8; i++) {
+      AliDebug(1,Form("unfolding shower shape parameters: fSSPars=%f \n",fSSPars[i]));
+    }
+    for (i = 0; i < 3; i++) {
+      AliDebug(1,Form("unfolding parameter 5: fPar5=%f \n",fPar5[i]));
+      AliDebug(1,Form("unfolding parameter 6: fPar6=%f \n",fPar6[i]));
+    }
+  } // to unfold
+}
 
 //____________________________________________________________________________
 void AliEMCALClusterizer::Print(Option_t * /*option*/)const
@@ -380,53 +365,52 @@ void AliEMCALClusterizer::Print(Option_t * /*option*/)const
   
   TString message("\n") ; 
   
-  if( strcmp(GetName(), "") !=0 ){
+  if (strcmp(GetName(),"") == 0) {
+    printf("AliEMCALClusterizer not initialized\n");
+    return;
+  }
     
-    // Print parameters
+  // Print parameters
+  TString taskName(Version()) ;
     
-    TString taskName(Version()) ;
-    
-    printf("--------------- "); 
-    printf("%s",taskName.Data()) ; 
-    printf(" "); 
-    printf("Clusterizing digits: "); 
-    printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
-    printf("\n                       ECA Logarithmic weight   = %f", fECAW0); 
-    if(fToUnfold){
-      printf("\nUnfolding on\n");
-      printf("Unfolding parameters: fSSpars: \n");
-      Int_t i=0;
-      for (i = 0; i < 8; i++) {
-        printf("fSSPars[%d] = %f \n", i, fSSPars[i]);
-      }
-      printf("Unfolding parameter 5 and 6: fPar5 and fPar6: \n");
-      for (i = 0; i < 3; i++) {
-        printf("fPar5[%d] = %f \n", i, fPar5[i]);
-        printf("fPar6[%d] = %f \n", i, fPar6[i]);
-      }
+  printf("--------------- "); 
+  printf("%s",taskName.Data()) ; 
+  printf(" "); 
+  printf("Clusterizing digits: "); 
+  printf("\n                       ECA Local Maximum cut    = %f", fECALocMaxCut); 
+  printf("\n                       ECA Logarithmic weight   = %f", fECAW0); 
+  if (fToUnfold) {
+    printf("\nUnfolding on\n");
+    printf("Unfolding parameters: fSSpars: \n");
+    Int_t i=0;
+    for (i = 0; i < 8; i++) {
+      printf("fSSPars[%d] = %f \n", i, fSSPars[i]);
     }
-    else
-      printf("\nUnfolding off\n");
-    
-    printf("------------------------------------------------------------------"); 
+    printf("Unfolding parameter 5 and 6: fPar5 and fPar6: \n");
+    for (i = 0; i < 3; i++) {
+      printf("fPar5[%d] = %f \n", i, fPar5[i]);
+      printf("fPar6[%d] = %f \n", i, fPar6[i]);
+    }
   }
   else
-    printf("AliEMCALClusterizer not initialized ") ;
+    printf("\nUnfolding off\n");
+    
+  printf("------------------------------------------------------------------"); 
 }
 
 //____________________________________________________________________________
 void AliEMCALClusterizer::PrintRecPoints(Option_t * option)
 {
   // Prints list of RecPoints produced at the current pass of AliEMCALClusterizer
-  if(strstr(option,"deb")) {
+
+  if (strstr(option,"deb")) {
     printf("PrintRecPoints: Clusterization result:") ; 
-    
     printf("           Found %d ECA Rec Points\n ", 
            fRecPoints->GetEntriesFast()) ; 
   }
   
-  if(strstr(option,"all")) {
-    if(strstr(option,"deb")) {
+  if (strstr(option,"all")) {
+    if (strstr(option,"deb")) {
       printf("\n-----------------------------------------------------------------------\n") ;
       printf("Clusters in ECAL section\n") ;
       printf("Index    Ene(GeV) Multi Module     GX    GY   GZ  lX    lY   lZ   Dispersion Lambda 1   Lambda 2  # of prim  Primaries list\n") ;
@@ -434,26 +418,26 @@ void AliEMCALClusterizer::PrintRecPoints(Option_t * option)
     Int_t index; 
     for (index =  0 ; index < fRecPoints->GetEntries() ; index++) {
       AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint * >(fRecPoints->At(index)) ; 
-      if(rp){
-        TVector3  globalpos;  
-        //rp->GetGlobalPosition(globalpos);
-        TVector3  localpos;  
-        rp->GetLocalPosition(localpos);
-        Float_t lambda[2]; 
-        rp->GetElipsAxis(lambda);
+      if (!rp) 
+        continue;
+
+      TVector3  globalpos;  
+      //rp->GetGlobalPosition(globalpos);
+      TVector3  localpos;  
+      rp->GetLocalPosition(localpos);
+      Float_t lambda[2]; 
+      rp->GetElipsAxis(lambda);
         
-        Int_t nprimaries=0;
-        Int_t * primaries = rp->GetPrimaries(nprimaries);
-        
-        if(strstr(option,"deb")) 
-          printf("\n%6d  %8.4f  %3d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
-                 rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(),
-                 globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
-                 rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
-        if(strstr(option,"deb")){ 
-          for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
-            printf("%d ", primaries[iprimary] ) ; 
-          }
+      Int_t nprimaries=0;
+      Int_t * primaries = rp->GetPrimaries(nprimaries);
+      if(strstr(option,"deb")) 
+        printf("\n%6d  %8.4f  %3d     %4.1f    %4.1f %4.1f  %4.1f %4.1f %4.1f    %4.1f   %4f  %4f    %2d     : ", 
+               rp->GetIndexInList(), rp->GetEnergy(), rp->GetMultiplicity(),
+               globalpos.X(), globalpos.Y(), globalpos.Z(), localpos.X(), localpos.Y(), localpos.Z(), 
+               rp->GetDispersion(), lambda[0], lambda[1], nprimaries) ; 
+      if(strstr(option,"deb")){ 
+        for (Int_t iprimary=0; iprimary<nprimaries; iprimary++) {
+          printf("%d ", primaries[iprimary] ) ; 
         }
       }
     }
@@ -466,15 +450,16 @@ void AliEMCALClusterizer::PrintRecPoints(Option_t * option)
 //___________________________________________________________________
 void  AliEMCALClusterizer::PrintRecoInfo()
 {
-  //print reco version
+  // Print reco version
+
   printf(" AliEMCALClusterizer::PrintRecoInfo() : version %s \n", Version() );
-  
 }
 
 //____________________________________________________________________________
 void AliEMCALClusterizer::SetInput(TTree *digitsTree)
 {
   // Read the digits from the input tree
+
   TBranch *branch = digitsTree->GetBranch("EMCAL");
   if (!branch) { 
     AliError("can't get the branch with the EMCAL digits !");
@@ -490,23 +475,21 @@ void AliEMCALClusterizer::SetInput(TTree *digitsTree)
 void AliEMCALClusterizer::SetOutput(TTree *clustersTree)
 {
   // Read the digits from the input tree
-  fTreeR = clustersTree;
-  
+
   AliDebug(9, "Making array for EMCAL clusters");
-  fRecPoints = new TObjArray(100) ;
-  Int_t split = 0;
-  Int_t bufsize = 32000;
-  fTreeR->Branch("EMCALECARP", "TObjArray", &fRecPoints, bufsize, split);
+  fRecPoints = new TObjArray(1000);
+  if (clustersTree) {
+    fTreeR = clustersTree;
+    Int_t split = 0;
+    Int_t bufsize = 32000;
+    fTreeR->Branch("EMCALECARP", "TObjArray", &fRecPoints, bufsize, split);
+  }
 }
 
 //___________________________________________________________________
-void   AliEMCALClusterizer::SetInputCalibrated(Bool_t val)
+void AliEMCALClusterizer::SetInputCalibrated(Bool_t val)
 {
-  //
-  // input is calibrated - the case when we run already on ESD
-  //
-  AliEMCALClusterizer::fgkIsInputCalibrated = val;
+  // Flag to indicate that input is calibrated - the case when we run already on ESD
+
+  fIsInputCalibrated = val;
 }
-
-
-
