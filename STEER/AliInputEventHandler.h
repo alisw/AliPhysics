@@ -24,7 +24,8 @@ class AliInputEventHandler : public AliVEventHandler {
 
  public:
  enum EInputHandlerFlags {
-    kUserCallSelectionMask = BIT(14) // Watch out for defining base class bits
+    kUserCallSelectionMask = BIT(14), // Watch out for defining base class bits
+    kCheckStatistics       = BIT(15)
  };
     AliInputEventHandler();
     AliInputEventHandler(const char* name, const char* title);
@@ -46,6 +47,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual void         SetInputTree(TTree* tree)                    {fTree = tree;}
     virtual void         SetEventSelection(AliVCuts* cuts)            {fEventCuts = cuts;}
     virtual void         SetUserCallSelectionMask(Bool_t flag=kTRUE)  {TObject::SetBit(kUserCallSelectionMask,flag);}
+    virtual void         SetCheckStatistics(Bool_t flag=kTRUE)        {TObject::SetBit(kCheckStatistics,flag);}
     //
     void SetInactiveBranches(const char* branches) {fBranches   = branches;}
     void SetActiveBranches  (const char* branches) {fBranchesOn = branches;}
@@ -59,6 +61,7 @@ class AliInputEventHandler : public AliVEventHandler {
     virtual TTree       *GetTree( )        const                      {return fTree;}
     virtual AliVCuts    *GetEventSelection() const                    {return fEventCuts;}
     virtual Long64_t     GetReadEntry()    const;
+    virtual Bool_t       IsCheckStatistics() const                    {return TObject::TestBit(kCheckStatistics);}
     virtual Bool_t       IsUserCallSelectionMask() const              {return TObject::TestBit(kUserCallSelectionMask);}
     virtual Bool_t       NewEvent()
 	{Bool_t ne = fNewEvent; fNewEvent = kFALSE; return ne;}

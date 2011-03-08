@@ -135,9 +135,17 @@ Bool_t AliAODInputHandler::Notify(const char* path)
     
   TTree *ttree = fTree->GetTree();
   if (!ttree) ttree = fTree;
-  TString statFname(gSystem->DirName(ttree->GetCurrentFile()->GetName()));
-  statFname += "/EventStat_temp.root";
-  TFile *statFile = TFile::Open(statFname, "READ");
+  TString statFname(ttree->GetCurrentFile()->GetName());
+  Int_t indarchive = statFname.Index("#");
+  if (indarchive<0) {
+     statFname = gSystem->DirName(statFname);
+     statFname += "/";
+  } else {
+     statFname.Remove(indarchive+1);
+  }   
+  statFname += "EventStat_temp.root";
+  TFile *statFile = 0;
+  if (IsCheckStatistics()) statFile = TFile::Open(statFname, "READ");
   if (statFile) {
      TList *list = (TList*)statFile->Get("cstatsout");
      if (list) {
