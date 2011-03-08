@@ -98,6 +98,7 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
    // set pointers
    fMother.SetDaughter(0, &fDaughter[0]);
    fMother.SetDaughter(1, &fDaughter[1]);
+   fMother.SetRefEvent(&fRsnEvent[0]);
    
    // loop on definitions
    AliRsnPairDef *def = 0x0;
@@ -186,7 +187,6 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
          fDaughter[0].SetRef(esd->GetTrack(itrack[0]));
          fDaughter[1].SetRef(esd->GetTrack(itrack[1]));
          fMother.ComputeSum(def->GetMass1(), def->GetMass2());
-         fMother.SetRefEvent(fDaughter[0].GetOwnerEvent());
          FillContainer(kFALSE, def);
       }
    }

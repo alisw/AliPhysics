@@ -19,6 +19,14 @@ Bool_t AddRsnAnalysisTaskEffPhi
    // == OPTIONS =======================================================================================================
    // ==================================================================================================================
    
+   // Instead or getting confused with plenty of arguments in the macro (with default values),
+   // we use a unique string of options with a set of conventional strings to set up the job:
+   // -- "MC"/"DATA" --> what kind of sample
+   // -- "ITS"/"TPC" --> what tracks to use (ITS standalone and/or TPC+ITS)
+   // -- "xxxPID"    --> add the PID cuts for the detector xxx.
+   //
+   // In this point, these options are converted into boolean variables.
+   
    TString opt(options);
    opt.ToUpper();
    opt.ReplaceAll(" ", "");
@@ -70,11 +78,11 @@ Bool_t AddRsnAnalysisTaskEffPhi
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
    // create task
-   AliRsnAnalysisEffSE *task = new AliRsnAnalysisEffSE(Form("RsnEff_%s", options));
+   AliRsnAnalysisTaskEffPair *task = new AliRsnAnalysisTaskEffPair(Form("RsnEff_%s", options));
    task->SelectCollisionCandidates();
 
    // add pair definition, to choose the checked resonance
-   task->AddPairDef(pairPhi);
+   task->AddDef(pairPhi);
 
    // add the output histogram axis
    task->AddAxis(axisIM);
@@ -192,8 +200,8 @@ Bool_t AddRsnAnalysisTaskEffPhi
    // - first step computed on MC
    // - all other steps computed on reconstruction
    task->AddStepMC(mgr_step0);
-   task->AddStepESD(mgr_step1);
-   task->AddStepESD(mgr_step2);
+   task->AddStepRec(mgr_step1);
+   task->AddStepRec(mgr_step2);
 
    // add the task to the manager and connect to input
    mgr->AddTask(task);
