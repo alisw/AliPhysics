@@ -9,6 +9,8 @@
 // Author: A.Dainese, andrea.dainese@pd.infn.it
 //***********************************************************
 
+#include <TString.h>
+
 #include "AliAnalysisCuts.h"
 #include "AliESDtrackCuts.h"
 #include "AliAODPidHF.h"
@@ -47,6 +49,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;} 
+  void SetTriggerClass(TString trclass) {fTriggerClass=trclass;} 
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
   void SetGlobalIndex(Int_t nVars,Int_t nptBins){fnVars=nVars; fnPtBins=nptBins; SetGlobalIndex();}
@@ -143,6 +146,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxZ; // maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; // SPD multiplicity
   ULong64_t fTriggerMask; // trigger mask
+  TString  fTriggerClass; // trigger class
   // quality cuts on the daughter tracks
   AliESDtrackCuts *fTrackCuts; // tracks for daughter tracks (AOD converted to ESD on the flight!)
   // cuts on the candidate
@@ -176,7 +180,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,11);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,12);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

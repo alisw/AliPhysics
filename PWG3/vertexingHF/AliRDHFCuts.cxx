@@ -49,6 +49,7 @@ fMaxVtxRedChi2(1e6),
 fMaxVtxZ(1e6),
 fMinSPDMultiplicity(0),
 fTriggerMask(0),
+fTriggerClass("CINT1"),
 fTrackCuts(0),
 fnPtBins(1),
 fnPtBinLimits(1),
@@ -89,6 +90,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
   fTriggerMask(source.fTriggerMask),
+  fTriggerClass(source.fTriggerClass),
   fTrackCuts(0),
   fnPtBins(source.fnPtBins),
   fnPtBinLimits(source.fnPtBinLimits),
@@ -145,6 +147,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
   fTriggerMask=source.fTriggerMask;
+  fTriggerClass=source.fTriggerClass;
   fnPtBins=source.fnPtBins;
   fnVars=source.fnVars;
   fGlobalIndex=source.fGlobalIndex;
@@ -220,6 +223,18 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   // 
   //if(fTriggerMask && event->GetTriggerMask()!=fTriggerMask) return kFALSE;
 
+  fWhyRejection=0;
+
+  // trigger class
+  TString firedTriggerClasses=((AliAODEvent*)event)->GetFiredTriggerClasses();
+  // don't do for PbPb 2010 data
+  if(event->GetRunNumber()<136851 || event->GetRunNumber()>139517) {
+    if(!firedTriggerClasses.Contains(fTriggerClass.Data())) {
+      fWhyRejection=5;
+      return kFALSE;
+    }
+  }
+
   // TEMPORARY FIX FOR REFERENCES
   // Fix references to daughter tracks
   if(fFixRefs) {
@@ -230,7 +245,6 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //
 
 
-  fWhyRejection=0;
 
   // multiplicity cuts no implemented yet
    
