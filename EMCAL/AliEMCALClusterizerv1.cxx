@@ -58,7 +58,7 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(): AliEMCALClusterizer()
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   
-  Init() ;
+  Init();
 }
 
 //____________________________________________________________________________
@@ -68,17 +68,14 @@ AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry)
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
   // change needed by HLT - MP
-
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizerv1::AliEMCALClusterizerv1(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped)
 : AliEMCALClusterizer(geometry, calib, caloped)
 {
-	// ctor, geometry and calibration are initialized elsewhere.
-				
+  // ctor, geometry and calibration are initialized elsewhere.
 }
-
 
 //____________________________________________________________________________
   AliEMCALClusterizerv1::~AliEMCALClusterizerv1()
@@ -96,17 +93,17 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
     gBenchmark->Start("EMCALClusterizer"); 
   
   if(strstr(option,"print"))
-    Print("") ; 
+    Print(""); 
   
   //Get calibration parameters from file or digitizer default values.
-  GetCalibrationParameters() ;
+  GetCalibrationParameters();
   
   //Get dead channel map from file or digitizer default values.
-  GetCaloCalibPedestal() ;
+  GetCaloCalibPedestal();
 	
   fNumberOfECAClusters = 0;
   
-  MakeClusters() ;  //only the real clusters
+  MakeClusters();  //only the real clusters
   
   if(fToUnfold){
     fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
@@ -114,36 +111,36 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
   }
     
   //Evaluate position, dispersion and other RecPoint properties for EC section 
-  Int_t index ;
+  Int_t index;
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
     if(rp){
-      rp->EvalAll(fECAW0,fDigitsArr,fgkIsInputCalibrated) ;
+      rp->EvalAll(fECAW0,fDigitsArr,fIsInputCalibrated);
       //For each rec.point set the distance to the nearest bad crystal
-	    rp->EvalDistanceToBadChannels(fCaloPed);
+      if (fCaloPed)
+        rp->EvalDistanceToBadChannels(fCaloPed);
     }
     else AliFatal("Null rec point in list!");
   }
   
-  fRecPoints->Sort() ;
+  fRecPoints->Sort();
   
   for(index = 0; index < fRecPoints->GetEntries(); index++) {
     AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
     if(rp){
-      rp->SetIndexInList(index) ;
+      rp->SetIndexInList(index);
       rp->Print();
     }
     else AliFatal("Null rec point in list!");
   }
   
-  fTreeR->Fill();
+  if (fTreeR)
+    fTreeR->Fill();
   
   if(strstr(option,"deb") || strstr(option,"all"))  
-    PrintRecPoints(option) ;
+    PrintRecPoints(option);
   
   AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
-  
-  fRecPoints->Delete();
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALClusterizer");
@@ -155,7 +152,7 @@ void AliEMCALClusterizerv1::Digits2Clusters(Option_t * option)
 //____________________________________________________________________________
 Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d2, Bool_t & shared) const
 {
-  // Gives the neighbourness of two digits = 0 are not neighbour ; continue searching 
+  // Gives the neighbourness of two digits = 0 are not neighbour; continue searching 
   //                                       = 1 are neighbour
   //                                       = 2 is in different SM; continue searching 
   // In case it is in different SM, but same phi rack, check if neigbours at eta=0
@@ -163,8 +160,8 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
   
-  static Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
-  static Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
+  Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
+  Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
   
   shared = kFALSE;
   
@@ -174,7 +171,7 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
   fGeom->GetCellPhiEtaIndexInSModule(nSupMod2,nModule2,nIphi2,nIeta2, iphi2,ieta2);
   
   //If different SM, check if they are in the same phi, then consider cells close to eta=0 as neighbours; May 2010
-  if(nSupMod1 != nSupMod2 ) {
+  if (nSupMod1 != nSupMod2 ) {
     //Check if the 2 SM are in the same PHI position (0,1), (2,3), ...
     Float_t smPhi1 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod1);
     Float_t smPhi2 = fGeom->GetEMCGeometry()->GetPhiCenterOfSM(nSupMod2);
@@ -187,11 +184,10 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
     else           ieta2+=AliEMCALGeoParams::fgkEMCALCols;
     
     shared = kTRUE; // maybe a shared cluster, we know this later, set it for the moment.
-    
-  }//Different SM, same phi
+  } //Different SM, same phi
   
   Int_t rowdiff = TMath::Abs(iphi1 - iphi2);  
-  Int_t coldiff = TMath::Abs(ieta1 - ieta2) ;  
+  Int_t coldiff = TMath::Abs(ieta1 - ieta2);  
   
   // neighbours with at least common side; May 11, 2007
   if ((coldiff==0 && TMath::Abs(rowdiff)==1) || (rowdiff==0 && TMath::Abs(coldiff)==1)) {  
@@ -201,13 +197,12 @@ Int_t AliEMCALClusterizerv1::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * d
     if (gDebug == 2) 
       printf("AliEMCALClusterizerv1::AreNeighbours(): id1=%d, (row %d, col %d) ; id2=%d, (row %d, col %d), shared %d \n",
 	     d1->GetId(), iphi1,ieta1, d2->GetId(), iphi2,ieta2, shared);   
-    
     return 1;
-  }//Neighbours
+  } //Neighbours
   else {
     shared = kFALSE;
-    return 2 ; 
-  }//Not neighbours
+    return 2; 
+  } //Not neighbours
 }
 
 //____________________________________________________________________________
@@ -219,7 +214,7 @@ void AliEMCALClusterizerv1::MakeClusters()
   
   if (fGeom==0) AliFatal("Did not get geometry from EMCALLoader");
   
-  fRecPoints->Clear();
+  fRecPoints->Delete();
   
   // Set up TObjArray with pointers to digits to work on 
   TObjArray *digitsC = new TObjArray();
@@ -248,20 +243,20 @@ void AliEMCALClusterizerv1::MakeClusters()
     
     if(fGeom->CheckAbsCellId(digit->GetId()) && (Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()) > fECAClusteringThreshold  ) ){
       // start a new Tower RecPoint
-      if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1) ;
+      if(fNumberOfECAClusters >= fRecPoints->GetSize()) fRecPoints->Expand(2*fNumberOfECAClusters+1);
       
-      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint("") ; 
-      fRecPoints->AddAt(recPoint, fNumberOfECAClusters) ;
-      recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)) ; 
-      if(recPoint){
-        fNumberOfECAClusters++ ; 
+      AliEMCALRecPoint *recPoint = new  AliEMCALRecPoint(""); 
+      fRecPoints->AddAt(recPoint, fNumberOfECAClusters);
+      recPoint = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(fNumberOfECAClusters)); 
+      if (recPoint) {
+        fNumberOfECAClusters++; 
         
         recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
         
-        recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE) ; //Time or TimeR?
+        recPoint->AddDigit(*digit, Calibrate(digit->GetAmplitude(), digit->GetTime(),digit->GetId()),kFALSE); //Time or TimeR?
         TObjArray clusterDigits;
         clusterDigits.AddLast(digit);	
-        digitsC->Remove(digit) ; 
+        digitsC->Remove(digit); 
         
         AliDebug(1,Form("MakeClusters: OK id = %d, ene = %f , cell.th. = %f \n", digit->GetId(),
                         Calibrate(digit->GetAmplitude(),digit->GetTime(),digit->GetId()), fECAClusteringThreshold));  //Time or TimeR?
@@ -277,9 +272,9 @@ void AliEMCALClusterizerv1::MakeClusters()
             Bool_t shared = kFALSE;//cluster shared by 2 SuperModules?
             if(TMath::Abs(time - digitN->GetTime()) > fTimeCut ) continue; //Time or TimeR?
             if (AreNeighbours(digit, digitN, shared)==1) {      // call (digit,digitN) in THAT order !!!!! 
-              recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()),shared) ;//Time or TimeR?
-              clusterDigits.AddLast(digitN) ; 
-              digitsC->Remove(digitN) ; 
+              recPoint->AddDigit(*digitN, Calibrate(digitN->GetAmplitude(), digitN->GetTime(), digitN->GetId()),shared); //Time or TimeR?
+              clusterDigits.AddLast(digitN); 
+              digitsC->Remove(digitN); 
             } // if(ineb==1)
           } // scan over digits
         } // scan over digits already in cluster
@@ -290,8 +285,7 @@ void AliEMCALClusterizerv1::MakeClusters()
     } // If seed found
   } // while digit 
   
-  delete digitsC ;
+  delete digitsC;
   
   AliDebug(1,Form("total no of clusters %d from %d digits",fNumberOfECAClusters,fDigitsArr->GetEntriesFast())); 
 }
-
