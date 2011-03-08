@@ -139,9 +139,7 @@ AliForwarddNdetaTask::Terminate(Option_t *)
   }
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
-  fSNNString      = static_cast<TNamed*>(fSums->FindObject("sNN"));
-  fSysString      = static_cast<TNamed*>(fSums->FindObject("sys"));
-
+  
   fOutput->Add(fSNNString->Clone());
   fOutput->Add(fSysString->Clone());
 
