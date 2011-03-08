@@ -75,7 +75,8 @@ fhRe1(0x0),      fhMi1(0x0),       fhRe2(0x0),      fhMi2(0x0),      fhRe3(0x0),
 fhReInvPt1(0x0), fhMiInvPt1(0x0),  fhReInvPt2(0x0), fhMiInvPt2(0x0), fhReInvPt3(0x0), fhMiInvPt3(0x0),
 fhRePtNCellAsymCuts(0x0), fhRePtNCellAsymCutsSM0(0x0), fhRePtNCellAsymCutsSM1(0x0), fhRePtNCellAsymCutsSM2(0x0), fhRePtNCellAsymCutsSM3(0x0), fhMiPtNCellAsymCuts(0x0),
 fhRePIDBits(0x0),fhRePtMult(0x0), fhRePtAsym(0x0), fhRePtAsymPi0(0x0),fhRePtAsymEta(0x0),  
-fhEvents(0x0), fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0), fhMixedOpeningAngle(0x0),fhMixedCosOpeningAngle(0x0),
+fhEvents(0x0),   fhCentrality(0x0),
+fhRealOpeningAngle(0x0),fhRealCosOpeningAngle(0x0), fhMixedOpeningAngle(0x0),fhMixedCosOpeningAngle(0x0),
 fhPrimPi0Pt(0x0), fhPrimPi0AccPt(0x0), fhPrimPi0Y(0x0), fhPrimPi0AccY(0x0), fhPrimPi0Phi(0x0), fhPrimPi0AccPhi(0x0),
 fhPrimPi0OpeningAngle(0x0), fhPrimPi0CosOpeningAngle(0x0),
 fhPrimEtaPt(0x0), fhPrimEtaAccPt(0x0), fhPrimEtaY(0x0), fhPrimEtaAccY(0x0), fhPrimEtaPhi(0x0), fhPrimEtaAccPhi(0x0),
@@ -597,8 +598,16 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   fhEvents=new TH3D("hEvents","Number of events",fNCentrBin,0.,1.*fNCentrBin,
                     GetNZvertBin(),0.,1.*GetNZvertBin(),GetNRPBin(),0.,1.*GetNRPBin()) ;
+  
+  fhEvents->SetXTitle("Centrality bin");
+  fhEvents->SetYTitle("Z vertex bin bin");
+  fhEvents->SetZTitle("RP bin");
   outputContainer->Add(fhEvents) ;
 	
+  fhCentrality=new TH1D("hCentralityBin","Number of events in centrality bin",fNCentrBin*10,0.,1.*fNCentrBin) ;
+  fhCentrality->SetXTitle("Centrality bin");
+  outputContainer->Add(fhCentrality) ;
+
   fhRealOpeningAngle  = new TH2D
   ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,300,0,TMath::Pi()); 
   fhRealOpeningAngle->SetYTitle("#theta(rad)");
@@ -1730,7 +1739,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       curZvertBin = (Int_t)(0.5*GetNZvertBin()*(vert[2]+GetZvertexCut())/GetZvertexCut()) ;
       
       //Fill event bin info
-      fhEvents->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
+      fhEvents    ->Fill(curCentrBin+0.5,curZvertBin+0.5,curRPBin+0.5) ;
+      fhCentrality->Fill(curCentrBin);
       currentEvtIndex = evtIndex1 ; 
       if(GetDebug() > 1) 
         printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality %d, Vertex Bin %d, RP bin %d \n",curCentrBin,curRPBin,curZvertBin);
@@ -2200,8 +2210,9 @@ void AliAnaPi0::ReadHistograms(TList* outputList)
       fhRePtMult[iasym] = (TH3D*) outputList->At(index++);
   }// multi cut analysis 
   
-  fhEvents = (TH3D *) outputList->At(index++); 
-  
+  fhEvents     = (TH3D *) outputList->At(index++); 
+  fhCentrality = (TH1D *) outputList->At(index++); 
+
   fhRealOpeningAngle     = (TH2D*)  outputList->At(index++);
   fhRealCosOpeningAngle  = (TH2D*)  outputList->At(index++);
   if(fDoOwnMix){
