@@ -278,15 +278,11 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
   // ****************************************************
   
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    
+  AliESDZDC *esdZDC = esd->GetESDZDC();
   
   if((((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB)){
-    
-    AliESDZDC *esdZDC = esd->GetESDZDC();
   
-    for(Int_t i=0; i<4; i++){
-      fhTDCZNSum->Fill(esdZDC->GetZNTDCDiff(i));  
-      fhTDCZNDiff->Fill(esdZDC->GetZNTDCSum(i)); 
-    }
     fhZNCSpectrum->Fill(esdZDC->GetZDCN1Energy());	  
     fhZNASpectrum->Fill(esdZDC->GetZDCN2Energy());
     fhZPCSpectrum->Fill(esdZDC->GetZDCP1Energy());		  
@@ -300,8 +296,8 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     const Double_t * towZPA = esdZDC->GetZP2TowerEnergy();
     //    
     fhZNCpmc->Fill(towZNC[0]);    
-    fhZNApmc->Fill(towZPC[0]);    
-    fhZPCpmc->Fill(towZNA[0]);    
+    fhZNApmc->Fill(towZNA[0]);    
+    fhZPCpmc->Fill(towZPC[0]);    
     fhZPApmc->Fill(towZPA[0]);    
   
     Double_t xyZNC[2]={-99.,-99.}, xyZNA[2]={-99.,-99.};
@@ -318,18 +314,22 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
        znclg += towZNCLG[iq];
        znalg += towZNALG[iq];
     }
-    fhZNCemd->Fill(znclg);	 
-    fhZNAemd->Fill(znalg);	 
+    fhZNCemd->Fill(znclg/2.);	 
+    fhZNAemd->Fill(znalg/2.);	 
     fhPMCZNCemd->Fill(towZNCLG[0]);   
     fhPMCZNAemd->Fill(towZNALG[0]);   
-    
-    Float_t tdcC = esdZDC->GetZDCTDCCorrected(10,0)-esdZDC->GetZDCTDCCorrected(15,0);
-    Float_t tdcA = esdZDC->GetZDCTDCCorrected(12,0)-esdZDC->GetZDCTDCCorrected(15,0);
-    fDebunch->Fill(tdcC-tdcA, tdcC+tdcA);
-  
-    PostData(1, fOutput);
   
   }
+    
+  Float_t tdcC = esdZDC->GetZDCTDCCorrected(10,0)-esdZDC->GetZDCTDCCorrected(15,0);
+  Float_t tdcA = esdZDC->GetZDCTDCCorrected(12,0)-esdZDC->GetZDCTDCCorrected(15,0);
+  //for(Int_t i=0; i<4; i++){
+    fhTDCZNSum->Fill(tdcC+tdcA);  
+    fhTDCZNDiff->Fill(tdcC-tdcA); 
+  //}
+  fDebunch->Fill(tdcC-tdcA, tdcC+tdcA);
+  
+  PostData(1, fOutput);
    
 }
 
