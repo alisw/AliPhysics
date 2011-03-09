@@ -27,7 +27,7 @@ class AliITSTableSSD : public TObject{
     virtual void Clear(Option_t*)  {TObject::Clear();}
 
  private:
-    Int_t SearchValue(Int_t *arr, Int_t refer, Int_t max) const{
+    Int_t SearchValue(const Int_t *arr, Int_t refer, Int_t max) const{
 	for(Int_t i=0;i<max;i++)if(arr[i]==refer)return i;
 	return -1;}
  private:

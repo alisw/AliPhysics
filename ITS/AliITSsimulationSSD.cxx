@@ -717,7 +717,7 @@ void AliITSsimulationSSD::GetList(Int_t label,Int_t hit,Int_t mod,
     tav->Clear();
 }
 //----------------------------------------------------------------------
-void AliITSsimulationSSD::ChargeToSignal(Int_t module,AliITSpList *pList) {
+void AliITSsimulationSSD::ChargeToSignal(Int_t module,const AliITSpList *pList) {
     // charge to signal
     static AliITS *aliITS = (AliITS*)gAlice->GetModule("ITS");
     Float_t threshold = 0.;

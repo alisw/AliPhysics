@@ -705,9 +705,9 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 
 
 void AliITSClusterFinderV2SSD::
-FindClustersSSD(Ali1Dcluster* neg, Int_t nn, 
-		Ali1Dcluster* pos, Int_t np,
-		TClonesArray *clusters) {
+FindClustersSSD(const Ali1Dcluster* neg, Int_t nn, 
+		const Ali1Dcluster* pos, Int_t np,
+		const TClonesArray *clusters) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------

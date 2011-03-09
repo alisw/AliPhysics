@@ -371,6 +371,7 @@ Int_t AliITSsegmentationSSD::GetChipFromLocal(Float_t xloc, Float_t zloc) const
 
 Int_t AliITSsegmentationSSD::GetChipsInLocalWindow(Int_t* array, Float_t zmin, Float_t zmax, 
 						   Float_t xmin, Float_t xmax) const {
+  // returns chip number in a given xz window
 
   Int_t nChipInW = 0;
 

@@ -44,11 +44,11 @@ class AliITSRawStreamSSD: public AliITSRawStream {
       kWrongModuleIdErr = 1
     };
 
-    Int_t fddl;
-    Int_t fad;
-    Int_t fadc;
+    Int_t fddl;   // ddl
+    Int_t fad;    // ad module
+    Int_t fadc;   // adc
 
-    Bool_t flag;
+    Bool_t flag;  //
 
   protected :
     static Bool_t fgkDDLModuleMapInit; // Module map is initialized or not

@@ -110,7 +110,7 @@ class AliITSsimulationSSD: public AliITSsimulation {
     void GetList(Int_t trk,Int_t ht,Int_t mod,AliITSpList *pLt,
 		 AliITSTableSSD *tav);
     // sets thresholds and fills digits
-    void ChargeToSignal(Int_t module,AliITSpList *pList);
+    void ChargeToSignal(Int_t module,const AliITSpList *pList);
     // Writes Summable Digits to a root file for later use.
     void WriteSDigits(AliITSpList *pList);
     // ReadSDigits and create Digits
