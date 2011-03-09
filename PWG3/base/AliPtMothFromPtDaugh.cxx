@@ -139,40 +139,49 @@ AliPtMothFromPtDaugh::AliPtMothFromPtDaugh(const AliPtMothFromPtDaugh& extractio
   fAnalysisMode(extraction.fAnalysisMode)
     {
    // Copy constructor
-   if(extraction.fHistoPtDaughter) fHistoPtDaughter =(TH1F*)extraction.fHistoPtDaughter->Clone("fHistoPtDaughter_copy");
-   if(extraction.fHistoPtMothers) fHistoPtMothers = (TH1F*)extraction.fHistoPtMothers->Clone("fHistoPtMothers_copy");
-   if(extraction.fHistoPtMinMothers) fHistoPtMinMothers = (TH1F*)extraction.fHistoPtMinMothers->Clone("fHistoPtMinMothers_copy");
-  
+   Int_t nbinsM=0;Int_t nbinsD=0;  Int_t nbinsMmin=0;
+   if(extraction.fHistoPtDaughter) 
+   {fHistoPtDaughter =(TH1F*)extraction.fHistoPtDaughter->Clone("fHistoPtDaughter_copy"); nbinsD = fHistoPtDaughter->GetNbinsX();}
+   if(extraction.fHistoPtMothers) 
+   {fHistoPtMothers = (TH1F*)extraction.fHistoPtMothers->Clone("fHistoPtMothers_copy"); nbinsM = fHistoPtMothers->GetNbinsX();}
+   if(extraction.fHistoPtMinMothers) 
+   {fHistoPtMinMothers = (TH1F*)extraction.fHistoPtMinMothers->Clone("fHistoPtMinMothers_copy"); nbinsMmin = fHistoPtMinMothers->GetNbinsX();}
+ 
+   if(nbinsD>0 && nbinsM>0){
    if(extraction.fWij){
-     fWij = new Double_t*[2*(fHistoPtMothers->GetNbinsX())]; 
-     for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) *(fWij+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
-        for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++){
-          for(Int_t j=0;j<fHistoPtDaughter->GetNbinsX();j++){
+     fWij = new Double_t*[2*nbinsM]; 
+     for(Int_t i=0;i<2*nbinsM;i++) *(fWij+i)=new Double_t[nbinsD];
+        for(Int_t i=0;i<2*nbinsM;i++){
+          for(Int_t j=0;j<nbinsD;j++){
              fWij[i][j]=extraction.fWij[i][j];
              } 
            } 
      } 
    
    if(extraction.fFi){
-     fFi=new Double_t[2*(fHistoPtMothers->GetNbinsX())];
-     for(Int_t i=0;i<2*(fHistoPtMothers->GetNbinsX());i++) fFi[i]=extraction.fFi[i];
+     fFi=new Double_t[2*nbinsM];
+     for(Int_t i=0;i<2*nbinsM;i++) fFi[i]=extraction.fFi[i];
      }
+   } // if nbinsD, nbinsM > 0 
   
+  if(nbinsD>0 && nbinsMmin>0){
    if(extraction.fWijMin){ 
-     fWijMin = new Double_t*[2*(fHistoPtMinMothers->GetNbinsX())];
-     for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) *(fWijMin+i)=new Double_t[fHistoPtDaughter->GetNbinsX()];
-        for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++){
-          for(Int_t j=0;j<fHistoPtDaughter->GetNbinsX();j++){
+     fWijMin = new Double_t*[2*nbinsMmin];
+     for(Int_t i=0;i<2*nbinsMmin;i++) *(fWijMin+i)=new Double_t[nbinsD];
+        for(Int_t i=0;i<2*nbinsMmin;i++){
+          for(Int_t j=0;j<nbinsD;j++){
              fWijMin[i][j]=extraction.fWijMin[i][j];
              }
            }
      }
 
    if(extraction.fFiMin){
-     fFiMin=new Double_t[2*(fHistoPtMinMothers->GetNbinsX())];
-     for(Int_t i=0;i<2*(fHistoPtMinMothers->GetNbinsX());i++) fFiMin[i]=extraction.fFiMin[i];
+     fFiMin=new Double_t[2*nbinsMmin];
+     for(Int_t i=0;i<2*nbinsMmin;i++) fFiMin[i]=extraction.fFiMin[i];
      }
 
+   } // if nbinsD, nbinsMmin > 0 
+   
    if(extraction.fDecayKine) fDecayKine = (TNtuple*)extraction.fDecayKine->CloneTree(); 
 
    if(extraction.fMothers) fMothers = new TArrayI(*(extraction.fMothers));
@@ -749,7 +758,12 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
    Double_t* entries=new Double_t[nbinsD];
    for(Int_t ii=0;ii<nbinsD;ii++) {entries[ii]=0.;}
    Int_t i,j,iMin;
-   if(!fDecayKine) {AliError("TNtupla is not defined!\n"); return kFALSE;}
+   if(!fDecayKine) 
+   {
+    AliError("TNtupla is not defined!\n"); 
+    delete [] entries;
+    return kFALSE;
+   }
    fDecayKine->SetBranchAddress("pdgM",&pdgM);
    fDecayKine->SetBranchAddress("pxM",&pxM);
    fDecayKine->SetBranchAddress("pyM",&pyM);
@@ -764,8 +778,19 @@ Bool_t AliPtMothFromPtDaugh::EvaluateWij()
    fDecayKine->SetBranchAddress("etaD",&etaD);
    Double_t ptD,ptM;
    // Initialize correction factors for pT and pTmin if those exist
-   if(!fWij) {AliError("Correction factors Wij have not been created!\n"); return kFALSE;}
-   if(!fWijMin) {AliError("Correction factors Wij_min have not been created!\n"); return kFALSE;}
+   if(!fWij)
+    {
+     AliError("Correction factors Wij have not been created!\n"); 
+     delete [] entries;
+     return kFALSE;
+    }
+
+   if(!fWijMin)
+    {
+     AliError("Correction factors Wij_min have not been created!\n"); 
+     delete [] entries;
+     return kFALSE;
+    }
    for(Int_t ii=0;ii<(2*nbinsM);ii++){
      for(Int_t jj=0;jj<nbinsD;jj++){
         fWij[ii][jj]=0;
@@ -845,8 +870,22 @@ Bool_t AliPtMothFromPtDaugh::EvaluateFi()
    Int_t nbinsMmin=fHistoPtMinMothers->GetNbinsX()+2;
    Double_t* entries=new Double_t[nbinsM];
    Double_t* entries1=new Double_t[nbinsMmin];
-   if(!fFi) {AliError("Correction factors Fi have not been created!\n"); return kFALSE;}
-   if(!fFiMin) {AliError("Correction factors Fi_min have not been created!\n"); return kFALSE;}
+   if(!fFi)
+     {
+      AliError("Correction factors Fi have not been created!\n"); 
+      delete [] entries;
+      delete [] entries1;
+      return kFALSE;
+     }
+
+   if(!fFiMin)
+     {
+      AliError("Correction factors Fi_min have not been created!\n"); 
+      delete [] entries;
+      delete [] entries1;
+      return kFALSE;
+     }
+
    //initialize the correction factor for pT and pTmin
    for(Int_t ii=0;ii<nbinsM;ii++){
        fFi[ii]=0.; //for correction factors
@@ -860,7 +899,12 @@ Bool_t AliPtMothFromPtDaugh::EvaluateFi()
       }
    Float_t pdgM, pdgD, pxM,pyM,pzM,yM,pxD,pyD,pzD,yD,etaM,etaD,cutVarD,cutVarM;
    Int_t i,iMin;
-   if(!fDecayKine) {AliError("TNtupla is not defined!\n"); return kFALSE;} 
+   if(!fDecayKine) {
+     AliError("TNtupla is not defined!\n"); 
+     delete [] entries;
+     delete [] entries1;
+     return kFALSE;
+   } 
    fDecayKine->SetBranchAddress("pdgM",&pdgM);
    fDecayKine->SetBranchAddress("pxM",&pxM);
    fDecayKine->SetBranchAddress("pyM",&pyM);
@@ -1070,6 +1114,8 @@ Bool_t AliPtMothFromPtDaugh::EvaluatePtMoth()
          fHistoPtMinMothers->SetBinError(i,erPtMinStat[i]);
         }
       }
+   delete [] erPtStat;
+   delete [] erPtMinStat;  
    return kTRUE;
   }
 
