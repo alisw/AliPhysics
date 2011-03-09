@@ -42,7 +42,7 @@ ClassImp(AliCalorimeterUtils)
 //____________________________________________________________________________
   AliCalorimeterUtils::AliCalorimeterUtils() : 
     TObject(), fDebug(0), 
-    fEMCALGeoName("EMCAL_FIRSTYEARV1"),fPHOSGeoName("PHOSgeo"), 
+    fEMCALGeoName("EMCAL_COMPLETEV1"),fPHOSGeoName("PHOSgeo"), 
     fEMCALGeo(0x0), fPHOSGeo(0x0), 
     fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
     fLoadEMCALMatrices(kFALSE), fLoadPHOSMatrices(kFALSE),
@@ -415,7 +415,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 void AliCalorimeterUtils::InitParameters()
 {
   //Initialize the parameters of the analysis.
-  fEMCALGeoName = "EMCAL_FIRSTYEARV1";
+  fEMCALGeoName = "EMCAL_COMPLETEV1";
   fPHOSGeoName  = "PHOSgeo";
 	
   if(gGeoManager) {// geoManager was set
