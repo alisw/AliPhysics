@@ -274,10 +274,10 @@ void compare_HLT_offline_local( TString file
 void compare_HLT_offline_local(){
   cout << " " << endl;
   cout << " Usage examples:" << endl;
-  cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, beamType, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, beamType, options, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\", \"p-p\", kFALSE,nEvents)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos cb D0\", \"./\", \"Pb-Pb\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\", \"p-p\", \"event-off event-hlt track-off track-hlt\", kFALSE, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos cb D0\", \"./\", \"Pb-Pb\", \"event-hlt\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
   cout << " " << endl;
 }
