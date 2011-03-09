@@ -72,6 +72,8 @@ public:
     void SetTPCITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITSTPC = (AliESDtrackCuts *) cuts;}
     void SetTPCOnlyTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsTPC = (AliESDtrackCuts *) cuts;}
     void SetITSTrackCuts(const AliESDtrackCuts *cuts){ fEsdtrackCutsITS = (AliESDtrackCuts *) cuts;}
+    void SetCentralityMethod(char *method){ mCentralityMethod = TString(method);}
+    void SetNumberOfCentralityBins(Int_t bins){nCentBins = bins;}
     void SetDataSet(Int_t val){fDataSet = val;}
     Int_t DataSet()const {return fDataSet;}
 
@@ -148,6 +150,8 @@ protected:
     TF1 *fProtonEnhancement;//function to describe anti-lambda enhancement
     Float_t LambdaBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
+    TString mCentralityMethod;//string specifying the centrality method, see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
+    Int_t nCentBins;//number of centrality bins (10 or 20)
 
 
  private:
