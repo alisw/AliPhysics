@@ -275,9 +275,9 @@ void AlidNdEtaCorrectionTask::CreateOutputObjects()
 
   if (fEsdTrackCuts)
   {
-    fEsdTrackCutsPrim = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsPrim"));
-    fEsdTrackCutsSec  = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsSec"));
-    fEsdTrackCutsCheck  = dynamic_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsCheck"));
+    fEsdTrackCutsPrim = static_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsPrim"));
+    fEsdTrackCutsSec  = static_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsSec"));
+    fEsdTrackCutsCheck  = static_cast<AliESDtrackCuts*> (fEsdTrackCuts->Clone("fEsdTrackCutsCheck"));
     fEsdTrackCutsCheck->SetPtRange(0.15);
     fEsdTrackCutsCheck->SetEtaRange(-1.,1.);
     fOutput->Add(fEsdTrackCutsPrim);
