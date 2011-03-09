@@ -246,9 +246,9 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fUseCentrality(0), 
   fUseCentralityBin(0)
 {
-  // Common I/O in slot 0
-  DefineInput (0, TChain::Class());
-  DefineOutput(0, TTree::Class());
+  // Common I/O in slot 0, don't define when inheriting from AnalysisTaskSE
+  // DefineInput (0, TChain::Class());  
+  // DefineOutput(0, TTree::Class()); 
 	
   // Your private output
   DefineOutput(1, TList::Class());
@@ -3815,6 +3815,10 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
   }
 	
   fOutputContainer->SetName(GetName());
+
+  PostData(1, fOutputContainer);
+  PostData(2, fCFManager->GetParticleContainer());  // for CF
+
 }
 
 Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(const TParticle* const daughter0, const TParticle* const daughter1) const{
