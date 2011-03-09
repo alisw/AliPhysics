@@ -404,13 +404,13 @@ Double_t AliCollisionNormalization::ComputeNint() {
   // Integrate correctedEvents over full z range
   fAllEvents       = correctedEvents->Integral(0, correctedEvents->GetNbinsX()+1,0, correctedEvents->GetNbinsY()+1);
   // Integrate correctedEvents over needed z range
-  fAllEventsZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),
+  fAllEventsZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange-0.0001),
 						       0, correctedEvents->GetNbinsY()+1);
 
-  fAllEventsZRangeMult1 = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange), 
-						    2,correctedEvents->GetNbinsX()+1);
+  fAllEventsZRangeMult1 = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange-0.0001), 
+						    2,correctedEvents->GetNbinsY()+1);
 
-  fAllEventsInBin0ZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange),1,1);
+  fAllEventsInBin0ZRange = correctedEvents->Integral(correctedEvents->GetXaxis()->FindBin(-fZRange), correctedEvents->GetXaxis()->FindBin(fZRange-0.0001),1,1);
 
   if(fVerbose > 1) AliInfo(Form("Results in |Vz| < %3.3f",fZRange));
   if(fVerbose > 1) AliInfo(Form(" Events in Bin0: %2.2f, With > 1 track: %2.2f, All corrected: %2.2f",
