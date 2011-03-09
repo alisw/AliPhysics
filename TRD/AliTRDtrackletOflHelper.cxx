@@ -471,13 +471,16 @@ Int_t AliTRDtrackletOflHelper::Segmentation(Int_t n, Double_t *x, Double_t *y, I
     AliErrorGeneral("AliTRDtrackletOflHelper::Segmentation()", "One of the input arrays non initialized.");
     return 0;
   }
-
+  const Int_t kBuffer = 200;
+  if(n>kBuffer){
+    AliWarningGeneral("AliTRDtrackletOflHelper::Segmentation()", Form("Input array size %d exceed buffer %d. Truncate.", n, kBuffer));
+    n = kBuffer;
+  }
   const Double_t kGapSize(0.2); // cm
   Int_t ng(0),
         nc(0);
-  Double_t xx[100], dy;
-  Int_t idx[200], jdx[100], kdx[100]; 
-  for(Int_t i(100); i--;) kdx[i] = -1;
+  Double_t xx[kBuffer], dy;
+  Int_t idx[kBuffer], jdx[kBuffer], kdx[kBuffer];
   TMath::Sort(n, y, idx);
   for(Int_t iy(0); iy<n; iy++){
     dy = iy>0?(TMath::Abs(y[idx[iy-1]]-y[idx[iy]])):0.;
@@ -486,7 +489,6 @@ Int_t AliTRDtrackletOflHelper::Segmentation(Int_t n, Double_t *x, Double_t *y, I
       for(Int_t ic(0), jc0, jc1; ic<nc; ic++){
         jc0 = ic>0?kdx[jdx[ic-1]]:0;
         jc1 = kdx[jdx[ic]];
-        if(jc0<0 || jc1<0) continue;
         dy = TMath::Abs(y[jc0] - y[jc1]);
         if(ic && dy>kGapSize) ng++;
         Index[jc1] = ng;
