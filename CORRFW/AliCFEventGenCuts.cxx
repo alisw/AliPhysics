@@ -225,20 +225,23 @@ Bool_t AliCFEventGenCuts::IsMBProcType(AliMCEvent *ev, PrType iproc){
       if ( process!=92 && process!=93 && process!=94)
 	return kTRUE;
     }
+    break;
   case kSD: //Single Diffractive
     {
       if ( process==92 || process==93)
 	return kTRUE;
     }
+    break;
   case kDD: //Double Diffractive
     {
       if ( process==94)
 	return kTRUE;
     }
-  default: return kFALSE;
+    break;
+  default: return kFALSE; break;
   }
   
-  return kFALSE;     
+  return kFALSE;
 }
  //____________________________________________________________________________
 Int_t AliCFEventGenCuts::ProcType(AliGenEventHeader *genHeader) {
