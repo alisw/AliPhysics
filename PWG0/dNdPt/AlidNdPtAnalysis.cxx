@@ -855,13 +855,13 @@ void AlidNdPtAnalysis::Init(){
   fMCPrimTrackHist1[i]->GetAxis(4)->SetTitle("mother");
   fMCPrimTrackHist1[i]->Sumw2();
 
-  Int_t binsMCPrimTrackHist2[5]=  {4000,20,4000};
-  Double_t minMCPrimTrackHist2[5]={0.,0.,0.}; 
-  Double_t maxMCPrimTrackHist2[5]={4000.,20.,4000.}; 
+  Int_t binsMCPrimTrackHist2[3]=  {4000,20,4000};
+  Double_t minMCPrimTrackHist2[3]={0.,0.,0.}; 
+  Double_t maxMCPrimTrackHist2[3]={4000.,20.,4000.}; 
   sprintf(name,"fMCPrimTrackHist2_%d",i);
   sprintf(title,"pdg:mech:mother");
   
-  fMCPrimTrackHist2[i] = new THnSparseF(name,title,5,binsMCPrimTrackHist2,minMCPrimTrackHist2,maxMCPrimTrackHist2);
+  fMCPrimTrackHist2[i] = new THnSparseF(name,title,3,binsMCPrimTrackHist2,minMCPrimTrackHist2,maxMCPrimTrackHist2);
   fMCPrimTrackHist2[i]->GetAxis(0)->SetTitle("pdg");
   fMCPrimTrackHist2[i]->GetAxis(1)->SetTitle("mech");
   fMCPrimTrackHist2[i]->GetAxis(2)->SetTitle("mother");
@@ -871,7 +871,7 @@ void AlidNdPtAnalysis::Init(){
   Double_t minMCSecTrackHist1[5]={0.,-1.,0.,0.,0.}; 
   Double_t maxMCSecTrackHist1[5]={10.,1.,6.,20.,4000.}; 
   sprintf(name,"fMCSecTrackHist1_%d",i);
-  sprintf(title,"mcPt:mcEta:mcPhi:pid:mech:mother");
+  sprintf(title,"mcPt:mcEta:pid:mech:mother");
   
   fMCSecTrackHist1[i] = new THnSparseF(name,title,5,binsMCSecTrackHist1,minMCSecTrackHist1,maxMCSecTrackHist1);
   fMCSecTrackHist1[i]->SetBinEdges(0,binsPt);
