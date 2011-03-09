@@ -9,5 +9,6 @@
 #pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterize+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 
 #endif
