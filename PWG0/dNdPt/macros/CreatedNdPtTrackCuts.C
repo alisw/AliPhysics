@@ -1149,7 +1149,6 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
   {
     Int_t    minclsTPC=70;
     Double_t maxchi2perTPCcl=4.;
-    Double_t maxdcazITSTPC=1.e9;
 
     //
     // TPC
@@ -1168,7 +1167,6 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     //
     esdTrackCuts->SetDCAToVertex2D(kFALSE);
     esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-    esdTrackCuts->SetMaxDCAToVertexZ(maxdcazITSTPC);
 
     // DCArphi parametrization (LHC10c pass2)
     // 7*(0.0026+0.0050/pt^1.01)
