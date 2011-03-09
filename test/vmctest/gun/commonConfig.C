@@ -18,7 +18,7 @@ const char * pprTrigConfName[] = {
 
 enum ConfigVersion_t {
     kConfigV0,  // default configuration  
-    kConfigV1   // configuration for LHC production
+    kConfigV1   // configuration for LHC 2010 production
 };
 
 // Options 
@@ -29,8 +29,7 @@ static TString comment;
 // Functions
 void  LoadPythia();
 
-void commonConfig(Bool_t setRootGeometry = kFALSE,
-                  ConfigVersion_t configVersion = kConfigV1)
+void commonConfig(ConfigVersion_t configVersion = kConfigV0)
 {
   cout << "Running commonConfig.C ... " << endl;
 
@@ -48,11 +47,6 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   //=======================================================================
   // ALICE steering object (AliRunLoader)
   //=======================================================================
-
-  // Set Root geometry file
-  if ( setRootGeometry ) {
-    AliSimulation::Instance()->SetGeometryFile("geometry.root");
-  }
 
   AliRunLoader* rl 
     = AliRunLoader::Open("galice.root",
@@ -108,31 +102,9 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   Int_t   iTRD   =  1;
   Int_t   iZDC   =  1;
   Int_t   iEMCAL =  1;
-  Int_t   iACORDE = 0;
+  Int_t   iACORDE = 1;
   Int_t   iVZERO =  1;
-/*
-  Int_t   iABSO  =  0;
-  Int_t   iDIPO  =  0;
-  Int_t   iFMD   =  0;
-  Int_t   iFRAME =  0;
-  Int_t   iHALL  =  0;
-  Int_t   iITS   =  0;
-  Int_t   iMAG   =  0;
-  Int_t   iMUON  =  0;
-  Int_t   iPHOS  =  0;
-  Int_t   iPIPE  =  0;
-  Int_t   iPMD   =  0;
-  Int_t   iHMPID =  0;
-  Int_t   iSHIL  =  0;
-  Int_t   iT0    =  0;
-  Int_t   iTOF   =  0;
-  Int_t   iTPC   =  1;
-  Int_t   iTRD   =  0;
-  Int_t   iZDC   =  0;
-  Int_t   iEMCAL =  0;
-  Int_t   iACORDE = 0;
-  Int_t   iVZERO =  0;
-*/
+
   rl->CdGAFile();
   //=================== Alice BODY parameters =============================
   AliBODY *BODY = new AliBODY("BODY", "Alice envelop");
@@ -287,7 +259,7 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   {
       //=================== EMCAL parameters ============================
     if ( configVersion == kConfigV0 ) 
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
+      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
     else if ( configVersion == kConfigV1 )  
       AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEAR");
   }

@@ -3,18 +3,14 @@
 // Macro for running simulation in test/vmctest/ppbench.
 // From test/ppbench. 
 
-void sim(Int_t nev=4, const TString& config) {
+void sim(Int_t nev=3, const TString& config) {
   if (gSystem->Getenv("EVENT"))
    nev = atoi(gSystem->Getenv("EVENT")) ;   
   
   AliSimulation simulator(config);
   simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
   simulator.SetMakeDigitsFromHits("ITS TPC");
-  //simulator.SetWriteRawData("ALL","raw.root",kTRUE);
-  //simulator.SetMakeDigits("");
-  //simulator.SetMakeSDigits("");
-  //simulator.SetMakeDigitsFromHits("");
-  simulator.SetWriteRawData("","raw.root",kTRUE);
+  simulator.SetWriteRawData("ALL","raw.root",kTRUE); 
 
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",

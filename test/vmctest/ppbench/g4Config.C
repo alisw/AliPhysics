@@ -13,7 +13,7 @@ void Config()
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/ppbench/commonConfig.C");
-  commonConfig(kTRUE);
+  commonConfig();
 
   // Load Geant4 + Geant4 VMC libraries
   //
@@ -36,7 +36,7 @@ void Config()
                                  true);
 //      = new TG4RunConfiguration("geomRootToGeant4",
 //                                "QGSP_BERT_EMV+optical", 
-//                                "specialCuts+specialControls+stackPopper+stepLimiter",
+//                                "specialCuts+stackPopper+stepLimiter",
 //                                 true);
       
 

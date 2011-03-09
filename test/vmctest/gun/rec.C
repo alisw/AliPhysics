@@ -12,6 +12,9 @@ void rec() {
   reco.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   reco.SetSpecificStorage("GRP/GRP/Data",
 			  Form("local://%s",gSystem->pwd()));
+  reco.SetRunPlaneEff(kTRUE);
+
+  reco.SetFractionFriends(1.);
 
   TStopwatch timer;
   timer.Start();

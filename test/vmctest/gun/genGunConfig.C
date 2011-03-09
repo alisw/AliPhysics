@@ -15,7 +15,7 @@ AliGenerator* genGunConfig()
   // Event generator
   //=======================================================================
 
-  // The cocktail iitself
+  // The cocktail itself
 
   AliGenCocktail *gener = new AliGenCocktail();
   gener->SetPhiRange(0, 360);
@@ -175,6 +175,77 @@ AliGenerator* genGunConfig()
   gfmd3i->SetPhi(50);
   gener->AddGenerator(gfmd3i,"Pi- for FMD3i",1);
   
+  //VZERO C
+  AliGenFixed *gv0c=new AliGenFixed(1);
+  gv0c->SetPart(kPiPlus);
+  gv0c->SetMomentum(1.5);
+  gv0c->SetTheta(170);
+  gv0c->SetPhi(50);
+  gener->AddGenerator(gv0c,"Pi+ for V0C",1);
+  
+  //VZERO A
+  AliGenFixed *gv0a=new AliGenFixed(1);
+  gv0a->SetPart(kPiMinus);
+  gv0a->SetMomentum(1.5);
+  gv0a->SetTheta(1.5);
+  gv0a->SetPhi(70);
+  gener->AddGenerator(gv0a,"Pi- for V0A",1);
+
+
+  //PMD
+  AliGenFixed *gpmd=new AliGenFixed(1);
+  gpmd->SetPart(kGamma);
+  gpmd->SetMomentum(2);
+  gpmd->SetTheta(12.6);
+  gpmd->SetPhi(60);
+  gener->AddGenerator(gpmd,"Gamma for PMD",1);
+
+  //ZDC
+  AliGenFixed *gzdc1=new AliGenFixed(1);
+  gzdc1->SetPart(kProton);
+  gzdc1->SetMomentum(700);
+  gzdc1->SetTheta(0.6);
+  gzdc1->SetPhi(60);
+  gener->AddGenerator(gzdc1,"Proton for ZDC",1);
+
+  AliGenFixed *gzdc2=new AliGenFixed(1);
+  gzdc2->SetPart(kNeutron);
+  gzdc2->SetMomentum(500);
+  gzdc2->SetTheta(0.6);
+  gzdc2->SetPhi(60);
+  gener->AddGenerator(gzdc2,"Neutron for ZDC",1);
+
+  //T0
+  AliGenFixed *gt0=new AliGenFixed(1);
+  gt0->SetPart(kPiPlus);
+  gt0->SetMomentum(2);
+  gt0->SetTheta(5.1);
+  gt0->SetPhi(60);
+  gener->AddGenerator(gt0,"Pi+ for T0",1);
+
+  AliGenFixed *gt01=new AliGenFixed(1);
+  gt01->SetPart(kPiMinus);
+  gt01->SetMomentum(2);
+  gt01->SetTheta(5.1);
+  gt01->SetPhi(60);
+  gener->AddGenerator(gt01,"Pi- for T0",1);
+
+
+  //ACORDE
+  AliGenFixed *gacorde=new AliGenFixed(1);
+  gacorde->SetPart(kMuonPlus);
+  gacorde->SetMomentum(20);
+  gacorde->SetTheta(90.);
+  gacorde->SetPhi(90);
+  gener->AddGenerator(gacorde,"Muon+ for ACORDE",1);
+
+  AliGenFixed *gacorde1=new AliGenFixed(1);
+  gacorde1->SetPart(kMuonMinus);
+  gacorde1->SetMomentum(20);
+  gacorde1->SetTheta(90.);
+  gacorde1->SetPhi(90);
+  gener->AddGenerator(gacorde1,"Muon- for ACORDE",1);
+
   gener->Init();
   
   return gener;

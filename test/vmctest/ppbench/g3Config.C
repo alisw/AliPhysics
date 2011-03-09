@@ -12,7 +12,7 @@ void Config()
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/test/vmctest/ppbench/commonConfig.C");
-  commonConfig(kFALSE);
+  commonConfig();
 
   // Load Geant3 + Geant3 VMC libraries
   //

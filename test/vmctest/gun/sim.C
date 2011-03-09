@@ -3,12 +3,12 @@
 // Macro for running simulation in test/vmctest/gun.
 // From test/gun. 
 
-void sim(Int_t nev=4, const TString& config) {
+void sim(Int_t nev=1, const TString& config) {
 
   AliSimulation simulator(config);
-  simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO");
+  simulator.SetMakeSDigits("TRD TOF PHOS HMPID EMCAL MUON FMD ZDC PMD T0 VZERO ACORDE");
   simulator.SetMakeDigitsFromHits("ITS TPC");
-  simulator.SetWriteRawData("","raw.root",kTRUE);
+  simulator.SetWriteRawData("ALL","raw.root",kTRUE);
 
   simulator.SetDefaultStorage("local://$ALICE_ROOT/OCDB");
   simulator.SetSpecificStorage("GRP/GRP/Data",
