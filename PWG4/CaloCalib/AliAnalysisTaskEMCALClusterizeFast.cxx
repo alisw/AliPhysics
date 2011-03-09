@@ -166,6 +166,8 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliAODEvent *event)
 {
+  // Update cells in case re-calibration was done.
+
   if (!fCalibData)
     return;
 
@@ -187,6 +189,8 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliAODEvent *event)
 //________________________________________________________________________
 void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliESDEvent *event)
 {
+  // Update cells in case re-calibration was done.
+
   if (!fCalibData)
     return;
 
