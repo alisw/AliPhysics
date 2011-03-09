@@ -22,16 +22,20 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const char *name);
   virtual ~AliAnalysisTaskEMCALPi0PbPb(); 
   
-  virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t *option);
-  virtual void Terminate(Option_t *);
+  void         UserCreateOutputObjects();
+  void         UserExec(Option_t *option);
+  void         Terminate(Option_t *);
 
-  void SetCentrality(const char *name)                { fCentVar = name;            }
-  void SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
-  void SetClusName(const char *name)                  { fClusName = name;           }
-  void SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
+  void         SetCentrality(const char *name)                { fCentVar = name;            }
+  void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
+  void         SetClusName(const char *name)                  { fClusName = name;           }
+  void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
  protected:
+  void         FillCellHists();
+  void         FillClusHists();
+  void         FillPionHists();
+
     // input members
   TString                fCentVar;              // variable for centrality determination
   Double_t               fCentFrom;             // min centrality (def=0)
@@ -48,6 +52,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   const TObjArray       *fAodClusters;          //!pointer to aod clusters
   const AliAODCaloCells *fAodCells;             //!pointer to aod cells
     // histograms
+  TH1F                  *fHcuts;                //!histo for cuts
+  TH1F                  *fHvertexZ;             //!histo for vtxz
+  TH1F                  *fHcent;                //!histo for cent
 
  private:
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented

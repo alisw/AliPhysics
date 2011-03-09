@@ -33,7 +33,10 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fEsdClusters(0),
     fEsdCells(0),
     fAodClusters(0),
-    fAodCells(0)
+    fAodCells(0),
+    fHcuts(0),
+    fHvertexZ(0),
+    fHcent(0)
 {
   // ROOT constructor.
 }
@@ -53,7 +56,10 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fEsdClusters(0),
     fEsdCells(0),
     fAodClusters(0),
-    fAodCells(0)
+    fAodCells(0),
+    fHcuts(0),
+    fHvertexZ(0),
+    fHcent(0)
 {
   // Constructor.
 
@@ -79,6 +85,16 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();
 
+  fHcuts = new TH1F("hCuts","",3,0.5,3.5);
+  fHcuts->GetXaxis()->SetBinLabel(1,"All (PS)");
+  fHcuts->GetXaxis()->SetBinLabel(2,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
+  fHcuts->GetXaxis()->SetBinLabel(3,Form("zvtx: %.0f-%.0f",fVtxZMin,fVtxZMax));
+  fOutput->Add(fHcuts);
+  fHvertexZ = new TH1F("hVertexZ",";z [cm];",100,-25,25);
+  fOutput->Add(fHvertexZ);
+  fHcent = new TH1F("hCent",Form(";%s;",fCentVar.Data()),101,-1,100);
+  fOutput->Add(fHcent);
+
   PostData(1, fOutput); 
 }
 
@@ -90,19 +106,29 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   if (!InputEvent())
     return;
 
+  Int_t cut = 1;
+  fHcuts->Fill(cut++);
+
   const AliCentrality *centP = InputEvent()->GetCentrality();
   Double_t cent = centP->GetCentralityPercentileUnchecked(fCentVar);
+  fHcent->Fill(cent);
   if (cent<fCentFrom||cent>fCentTo)
-    return; //todo bookeeping
-  // todo test quality flag
+    return;
+  
+  // todo test quality flag (optional)
+
+  fHcuts->Fill(cut++);
 
   const AliVVertex *vertex =  InputEvent()->GetPrimaryVertex();
   if (!vertex)
     return;
 
+  fHvertexZ->Fill(vertex->GetZ());
+
   if(vertex->GetZ()<fVtxZMin||vertex->GetZ()>fVtxZMax)
     return;
-  //todo bookkeeping
+
+  fHcuts->Fill(cut++);
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   fEsdEv = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -122,7 +148,6 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       fAodClusters = clus;
     }
   }
-//todo need to figure out how to get modified cells
 
   if (fEsdEv) { // ESD input mode
     if (!fEsdClusters) {
@@ -166,41 +191,11 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   } else {
     AliFatal("Impossible to not have either pointer to ESD or AOD event");
   }
-  
-#if 0
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  AliAODHandler *oh = dynamic_cast<AliAODHandler*>(am->GetOutputEventHandler());
-  if (!oh)
-    return;
-  AliAODEvent *aod = oh->GetAOD();
-  if (!aod)
-    return;
 
-  for (Int_t i=0; i<10; ++i) {
-    TClonesArray *myclusters = fMyExClusters[i];
-    if (!myclusters)
-      break;
-    myclusters->Clear();
+  FillCellHists();
+  FillClusHists();
+  FillPionHists();
 
-    TClonesArray *arr = dynamic_cast<TClonesArray*>(aod->FindListObject(fMyExClusters[i]->GetName()));
-    if (!arr) 
-      continue;
-
-    virtual AliVEvent*      {return fInputEvent;}
-    virtual AliESDfriend* ESDfriend()   {return fESDfriend; }
-    virtual AliAODEvent*  AODEvent()    {return fOutputAOD; }
-    virtual TTree*        OutputTree()  {return fTreeA;     }
-    virtual AliMCEvent*   MCEvent()     {return fMCEvent;   }
-
-
-  // Main loop
-  // Called for each event
-      TRefArray * clusterListESD = new TRefArray();
-      event->GetEMCALClusters(clusterListESD); 
-      TClonesArray * clusterListAOD = new TClonesArray();
-      if(AODEvent()){clusterListAOD = dynamic_cast<TClonesArray*> (AODEvent()->FindListObject("newEMCALClusters"));}
-
-#endif
   PostData(1, fOutput);
 }      
 
@@ -208,5 +203,23 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *) 
 {
   // Terminate called at the end of analysis.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
+{
+  // Fill histograms related to cell properties.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
+{
+  // Fill histograms related to cluster properties.
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
+{
+  // Fill histograms related to pions.
 }
 
