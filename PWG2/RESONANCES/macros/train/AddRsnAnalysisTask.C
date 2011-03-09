@@ -37,18 +37,13 @@ Bool_t AddRsnAnalysisTask
    gROOT->LoadMacro(Form("%s/AddRsnEventComputations.C", path));
    AddRsnEventComputations(isMC, options);
    
-   // load common macro with cuts and axes
-   // for cuts and axes, load the support macro
-   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PWG2/RESONANCES");
-   gROOT->LoadMacro(Form("%s/CPhiCutsAndAxes.C+", path));
-   
    // add all configs for phi
    gROOT->LoadMacro(Form("%s/RsnConfigPhi.C", path));
    RsnConfigPhi(isMC, "tpcpid_tofpid", path, taskName);
    //RsnConfigPhi(isMC, "itspid_tpcpid_tofpid", path, taskName);
    
    // in case of MC, add efficiency tasks
-   if (isMC) {
+   if (isMC && !isMix) {
       ::Info("Adding efficiency");
       gROOT->LoadMacro(Form("%s/AddRsnAnalysisTaskEffPhi.C", path));
       AddRsnAnalysisTaskEffPhi(options, "tpcpid_tofpid");

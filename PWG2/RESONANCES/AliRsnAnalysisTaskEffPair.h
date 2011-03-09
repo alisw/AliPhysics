@@ -24,6 +24,8 @@ public:
    AliRsnAnalysisTaskEffPair(const AliRsnAnalysisTaskEffPair& copy);
    AliRsnAnalysisTaskEffPair& operator=(const AliRsnAnalysisTaskEffPair& copy);
    virtual ~AliRsnAnalysisTaskEffPair() {;};
+   
+   virtual Bool_t  RsnEventProcess();
 
 protected:
 
