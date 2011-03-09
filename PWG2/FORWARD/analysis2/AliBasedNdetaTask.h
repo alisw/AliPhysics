@@ -72,9 +72,27 @@ public:
    * 
    * @param h Correction
    */
-  void LoadNormalizationData(UShort_t sys, UShort_t energy);
-  
   void SetShapeCorrection(const TH1* h);
+  /** 
+   * Load the normalization data - done automatically if not set from outside
+   * 
+   * @param sys system
+   * @param energy energy
+   */
+  void LoadNormalizationData(UShort_t sys, UShort_t energy);
+  /** 
+   * Load the normalization data - done automatically if not set from outside
+   * 
+   * @param centlow low cent cut
+   */
+  void SetCentLow(Float_t centlow)   { fCentLow = centlow; }
+  /** 
+   * Load the normalization data - done automatically if not set from outside
+   * 
+   * @param centhigh high cent cut
+   */
+  void SetCentHigh(Float_t centhigh) { fCentHigh = centhigh; }
+  
   /**
    * Destructor
    * 
