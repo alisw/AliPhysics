@@ -61,7 +61,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fPedestalData(0),
     fOutputAODBranch(0),
     fOutputAODBrName(),
-    fRecoUtils(0)
+    fRecoUtils(0),
+    fLoadCalib(0),
+    fLoadPed(0)
 { 
   // Constructor
 
@@ -323,21 +325,26 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
   }
   fClusterizer->InitParameters(fRecParam);
-  fClusterizer->SetInputCalibrated(kTRUE);   
-  if (!fCalibData&&0) {
+  if (!fCalibData&&fLoadCalib) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Data"));
     if (entry) 
       fCalibData =  static_cast<AliEMCALCalibData*>(entry->GetObject());
     if (!fCalibData)
       AliFatal("Calibration parameters not found in CDB!");
   }
-  if (!fPedestalData&&0) {
+  if (!fPedestalData&&fLoadPed) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Pedestals"));
     if (entry) 
       fPedestalData =  static_cast<AliCaloCalibPedestal*>(entry->GetObject());
   }
-  fClusterizer->SetCalibrationParameters(fCalibData);
-  fClusterizer->SetCaloCalibPedestal(fPedestalData);
+  if (fCalibData) {
+    fClusterizer->SetInputCalibrated(kFALSE);   
+    fClusterizer->SetCalibrationParameters(fCalibData);
+    fClusterizer->SetCaloCalibPedestal(fPedestalData);
+  } else {
+    fClusterizer->SetInputCalibrated(kTRUE);   
+  }
+  fClusterizer->SetJustClusters(kTRUE);
   fClusterizer->SetDigitsArr(fDigitsArr);
   fClusterizer->SetOutput(0);
   fClusterArr = const_cast<TObjArray *>(fClusterizer->GetRecPoints());
