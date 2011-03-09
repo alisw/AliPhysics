@@ -7,6 +7,7 @@
 // AlidNdPtAnalysisPbPb class used for dNdPt analysis.in PbPb collision 
 // 
 // Author: J.Otwinowski 04/11/2008 
+// changed by M.L.Knichel 2011-03-08
 //------------------------------------------------------------------------------
 
 class iostream;
@@ -61,9 +62,9 @@ public :
   TFolder *CreateFolder(TString folder = "folderdNdPtAnalysis",TString title = "Analysed dNdPt histograms");
 
   // Fill histograms
-  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj);
-  void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj);
-  void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec);
+  void FillHistograms(AliESDtrack *const esdTrack, AliStack *const stack, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
+  void FillHistograms(AliStack *const stack, Int_t label, AlidNdPtHelper::TrackObject trackObj, Float_t centralityF);
+  void FillHistograms(TObjArray *const allChargedTracks,Int_t *const labelsAll,Int_t multAll,Int_t *const labelsAcc,Int_t multAcc,Int_t *const labelsRec,Int_t multRec,  Float_t centralityF);
 
   // Getters
   THnSparseF *GetTrackPtCorrelationMatrix()   const {return fTrackPtCorrelationMatrix;}
@@ -109,6 +110,10 @@ public :
   THnSparseF *GetMCMultRecTrackHist1() const {return fMCMultRecTrackHist1;}
 
   THnSparseF *GetRecTrackHist3() const {return fRecTrackHist3;}
+  
+  TString GetCentralityEstimator() const {return fCentralityEstimator; }
+   
+  void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
 
 private:
 
@@ -120,74 +125,76 @@ private:
   // correlation matrices (histograms)
   //
   // rec. track pt vs true track pt correlation matrix for given eta
-  THnSparseF *fTrackPtCorrelationMatrix; //-> Pt:mcPt:mcEta
+  THnSparseF *fTrackPtCorrelationMatrix; //-> Pt:mcPt:mcEta:centrality
 
   //
   // event level correction 
   //
   // all generated
-  THnSparseF *fGenEventMatrix; //-> mcZv:multMB 
+  THnSparseF *fGenEventMatrix; //-> mcZv:multMB:centrality 
 
   // trigger bias corrections (fTriggerEventMatrix / fGenEventMatrix)
-  THnSparseF *fTriggerEventMatrix; //-> mcZv:multMB
+  THnSparseF *fTriggerEventMatrix; //-> mcZv:multMB:centrality
 
   // event vertex rec. eff correction (fRecEventMatrix / fTriggerEventMatrix)
-  THnSparseF *fRecEventMatrix; //-> mcZv:multMB 
+  THnSparseF *fRecEventMatrix; //-> mcZv:multMB:centrality 
 
   // track-event level correction 
-  THnSparseF *fGenTrackEventMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fGenTrackEventMatrix; //-> mcZv:mcPt:mcEta:centrality
 
   // trigger bias corrections (fTriggerTrackEventMatrix / fGenTrackEventMatrix)
-  THnSparseF *fTriggerTrackEventMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fTriggerTrackEventMatrix; //-> mcZv:mcPt:mcEta:centrality
 
   // event vertex rec. corrections (fRecTrackEventMatrix / fTriggerTrackEventMatrix)
-  THnSparseF *fRecTrackEventMatrix; //-> mcZv:Pt:mcEta
+  THnSparseF *fRecTrackEventMatrix; //-> mcZv:Pt:mcEta:centrality
 
   //
   // track level correction 
   //
   // track rec. efficiency correction (fRecPrimTrackMatrix / fGenPrimTrackMatrix)
-  THnSparseF *fGenTrackMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta
-  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fGenTrackMatrix; //-> mcZv:mcPt:mcEta:centrality
+  THnSparseF *fGenPrimTrackMatrix; //-> mcZv:mcPt:mcEta:centrality
+  THnSparseF *fRecPrimTrackMatrix; //-> mcZv:mcPt:mcEta:centrality
   // secondary track contamination correction (fRecSecTrackMatrix / fRecTrackMatrix)
-  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta
-  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta
+  THnSparseF *fRecTrackMatrix;    //-> mcZv:mcPt:mcEta:centrality
+  THnSparseF *fRecSecTrackMatrix; //-> mcZv:mcPt:mcEta:centrality
   // multiple rec. track corrections (fRecMultTrackMatrix / fRecTrackMatrix)
-  THnSparseF *fRecMultTrackMatrix; //-> mcZv:Pt:mcEta
+  THnSparseF *fRecMultTrackMatrix; //-> mcZv:Pt:mcEta:centrality
 
   //
   // ESD and MC control analysis histograms
   //
   // THnSparse event histograms
-  THnSparseF *fMCEventHist1;  //-> mcXv:mcYv:mcZv
-  THnSparseF *fRecEventHist1; //-> Xv:Yv:Zv
-  THnSparseF *fRecEventHist2; //-> Zv:multMB:mult
-  THnSparseF *fRecMCEventHist1; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv
-  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:mult
+  THnSparseF *fMCEventHist1;  //-> mcXv:mcYv:mcZv:centrality
+  THnSparseF *fRecEventHist1; //-> Xv:Yv:Zv:centrality
+  THnSparseF *fRecEventHist2; //-> Zv:multMB:mult:centrality
+  THnSparseF *fRecMCEventHist1; //-> Xv-mcXv:Yv-mcYv:Zv-mcZv:centrality
+  THnSparseF *fRecMCEventHist2; //-> Xv-mcXv:Zv-mcZv:mult:centrality
 
   // [0] - after charged track selection, [1] - after acceptance cuts, [2] - after esd track cuts
-  THnSparseF *fMCTrackHist1[AlidNdPtHelper::kCutSteps];     //-> mcPt:mcEta:mcPhi
-  THnSparseF *fMCPrimTrackHist1[AlidNdPtHelper::kCutSteps]; //-> mcPt:mcEta:pid:mech:mother
-  THnSparseF *fMCPrimTrackHist2[AlidNdPtHelper::kCutSteps]; //-> pdg:mech:mother
-  THnSparseF *fMCSecTrackHist1[AlidNdPtHelper::kCutSteps];  //-> mcPt:mcEta:pid:mech:mother
+  THnSparseF *fMCTrackHist1[AlidNdPtHelper::kCutSteps];     //-> mcPt:mcEta:mcPhi:centrality
+  THnSparseF *fMCPrimTrackHist1[AlidNdPtHelper::kCutSteps]; //-> mcPt:mcEta:pid:mech:mother:centrality
+  THnSparseF *fMCPrimTrackHist2[AlidNdPtHelper::kCutSteps]; //-> pdg:mech:mother:centrality
+  THnSparseF *fMCSecTrackHist1[AlidNdPtHelper::kCutSteps];  //-> mcPt:mcEta:pid:mech:mother:centrality
 
-  THnSparseF *fRecTrackHist1[AlidNdPtHelper::kCutSteps];     //-> Pt:Eta:Phi
-  THnSparseF *fRecTrackHist2[AlidNdPtHelper::kCutSteps];     //-> Zv:Pt:Eta
-  THnSparseF *fRecTrackMultHist1[AlidNdPtHelper::kCutSteps]; //-> Pt:mult
-  THnSparseF *fRecMCTrackHist1; //-> mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta)
+  THnSparseF *fRecTrackHist1[AlidNdPtHelper::kCutSteps];     //-> Pt:Eta:Phi:centrality
+  THnSparseF *fRecTrackHist2[AlidNdPtHelper::kCutSteps];     //-> Zv:Pt:Eta:centrality
+  THnSparseF *fRecTrackMultHist1[AlidNdPtHelper::kCutSteps]; //-> Pt:mult:centrality
+  THnSparseF *fRecMCTrackHist1; //-> mcPt:mcEta:(Pt-mcPt)/mcPt:(Eta-mcEta):centrality
 
   //multple reconstructed tracks
-  THnSparseF *fMCMultRecTrackHist1; //-> mcPt:mcEta:pid
+  THnSparseF *fMCMultRecTrackHist1; //-> mcPt:mcEta:pid:centrality
   // track control histograms
-  THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi
+  THnSparseF *fRecTrackHist3;  //-> nclust:chi2:Pt:Eta:Phi:centrality
 
   AliTriggerAnalysis *fTriggerAnalysis; //! trigger analysis object;
 
   AlidNdPtAnalysisPbPb(const AlidNdPtAnalysisPbPb&); // not implemented
   AlidNdPtAnalysisPbPb& operator=(const AlidNdPtAnalysisPbPb&); // not implemented
+  
+  TString fCentralityEstimator;     // use centrality can be "VOM" (default), "FMD", "TRK", "TKL", "CL0", "CL1", "V0MvsFMD", "TKLvsV0M", "ZEMvsZDC"
 
-  ClassDef(AlidNdPtAnalysisPbPb,4);
+  ClassDef(AlidNdPtAnalysisPbPb,5);
 };
 
 #endif
