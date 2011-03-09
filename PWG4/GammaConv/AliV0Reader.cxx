@@ -36,11 +36,12 @@
 #include "AliESDpid.h"
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDtrackCuts.h"
-
+#include "TRandom3.h"
 
 class iostream;
 class AliESDv0;
 class TFormula;
+class TRandom3;
 
 using namespace std;
 
@@ -107,7 +108,8 @@ AliV0Reader::AliV0Reader() :
   fPIDnSigmaBelowElectronLine(-100),
   fTofPIDnSigmaAboveElectronLine(100), // RRnewTOF
   fTofPIDnSigmaBelowElectronLine(-100), // RRnewTOF
-  fPIDnSigmaAbovePionLine(-100), 
+  fPIDnSigmaAbovePionLine(-100),
+  fPIDnSigmaAbovePionLineHighPt(-100),
   fPIDMinPnSigmaAbovePionLine(100), 
   fPIDMaxPnSigmaAbovePionLine(100), 
   fDoKaonRejectionLowP(kFALSE),
@@ -147,7 +149,15 @@ AliV0Reader::AliV0Reader() :
   fUseChargedTrackMultiplicityForBG(kTRUE),
   fNumberOfGoodV0s(0),
   fIsHeavyIon(0),
-  fUseCorrectedTPCClsInfo(kFALSE)
+  fUseCorrectedTPCClsInfo(kFALSE),
+  fPBremSmearing(1.),
+  fPSigSmearing(0.),
+  fPSigSmearingCte(0.),
+  fRandom(0),
+  fBrem(NULL),
+  fDoPhotonAsymmetryCut(0),
+  fMinPPhotonAsymmetryCut(100.),
+  fMinPhotonAsymmetry(0.)
 {
   //fESDpid = new AliESDpid;	
 }
@@ -212,6 +222,7 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fTofPIDnSigmaAboveElectronLine(original.fTofPIDnSigmaAboveElectronLine), // RRnewTOF
   fTofPIDnSigmaBelowElectronLine(original.fTofPIDnSigmaBelowElectronLine), // RRnewTOF
   fPIDnSigmaAbovePionLine(original.fPIDnSigmaAbovePionLine), 
+  fPIDnSigmaAbovePionLineHighPt(original.fPIDnSigmaAbovePionLineHighPt), 
   fPIDMinPnSigmaAbovePionLine(original.fPIDMinPnSigmaAbovePionLine), 
   fPIDMaxPnSigmaAbovePionLine(original.fPIDMaxPnSigmaAbovePionLine), 
   fDoKaonRejectionLowP(original.fDoKaonRejectionLowP),
@@ -251,7 +262,15 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
   fUseChargedTrackMultiplicityForBG(original.fUseChargedTrackMultiplicityForBG),
   fNumberOfGoodV0s(original.fNumberOfGoodV0s),
   fIsHeavyIon(original.fIsHeavyIon),
-  fUseCorrectedTPCClsInfo(original.fUseCorrectedTPCClsInfo)
+  fUseCorrectedTPCClsInfo(original.fUseCorrectedTPCClsInfo),
+  fPBremSmearing(original.fPBremSmearing),
+  fPSigSmearing(original.fPSigSmearing),
+  fPSigSmearingCte(original.fPSigSmearingCte),
+  fRandom(original.fRandom),
+  fBrem(original.fBrem),
+  fDoPhotonAsymmetryCut(original.fDoPhotonAsymmetryCut),
+  fMinPPhotonAsymmetryCut(original.fMinPPhotonAsymmetryCut),
+  fMinPhotonAsymmetry(original.fMinPhotonAsymmetry)
 {
 	
 }
@@ -359,6 +378,19 @@ void AliV0Reader::Initialize(){
 
   fV0Pindex.clear();
   fV0Nindex.clear();
+
+  if(gRandom != NULL){
+    delete gRandom;
+    gRandom= new TRandom3(0);
+  }
+
+
+  if (fBrem == NULL){
+    fBrem = new TF1("fBrem","pow(-log(x),[0]/log(2.0)-1.0)/TMath::Gamma([0]/log(2.0))",0.00001,0.999999999);
+    // tests done with 1.0e-14
+    fBrem->SetParameter(0,fPBremSmearing);
+    fBrem->SetNpx(100000);
+  }
 
   if(fCalculateBackground == kTRUE){
     if(fBGEventInitialized == kFALSE){
@@ -675,6 +707,41 @@ Bool_t AliV0Reader::NextV0(){
 	  continue;
 	}
       }
+
+      // High Pt
+      if( fCurrentPositiveESDTrack->P()>fPIDMaxPnSigmaAbovePionLine ){
+	if(fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
+	  //	  iResult=kFALSE;
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+      
+      if( fCurrentNegativeESDTrack->P()>fPIDMaxPnSigmaAbovePionLine){
+	if(fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
+	   fgESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLineHighPt){
+	  //	  iResult=kFALSE;
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+
+
       if(fDoCF){
 	fCFManager->GetParticleContainer()->Fill(containerInput,kStepdEdxPionrejection);               // for CF
       }
@@ -821,6 +888,41 @@ Bool_t AliV0Reader::NextV0(){
 	}
     }   // RRnew end
 
+    if(fDoPhotonAsymmetryCut == kTRUE){
+      if( fNegativeTrackLorentzVector->P()>fMinPPhotonAsymmetryCut ){
+	Double_t trackNegAsy=0;
+	if (fCurrentMotherKFCandidate->GetP()!=0.){
+	  trackNegAsy= fNegativeTrackLorentzVector->P()/fMotherCandidateLorentzVector->P();
+	}
+	if( trackNegAsy<fMinPhotonAsymmetry ||trackNegAsy>(1.- fMinPhotonAsymmetry)){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+
+      if( fPositiveTrackLorentzVector->P()>fMinPPhotonAsymmetryCut ){
+	Double_t trackPosAsy=0;
+	if (fCurrentMotherKFCandidate->GetP()!=0.){
+	  trackPosAsy= fPositiveTrackLorentzVector->P()/fMotherCandidateLorentzVector->P();
+	}
+	if( trackPosAsy<fMinPhotonAsymmetry ||trackPosAsy>(1.- fMinPhotonAsymmetry)){
+	  if(fHistograms != NULL){
+	    fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_InvMass",GetMotherCandidateMass());
+	    // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+	    // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+	    //fUpdateV0AlreadyCalled = kTRUE;
+	  }
+	  fCurrentV0IndexNumber++;
+	  continue;
+	}
+      }
+    }
     //checks if we have a prim vertex
     //if(fESDEvent->GetPrimaryVertex()->GetNContributors()<=0) { 
     if(GetNumberOfContributorsVtx()<=0) { 
@@ -1020,6 +1122,15 @@ Bool_t AliV0Reader::NextV0(){
     }
 
     //    fCurrentEventGoodV0s.push_back(*fCurrentMotherKFCandidate);
+
+    if(fPositiveTrackPID==-11 && fNegativeTrackPID==11){
+      fCurrentMotherKFCandidate->E()=fCurrentMotherKFCandidate->GetP();
+    }
+
+    if(fDoMC&& fUseMCPSmearing>0){
+      SmearKFParticle(fCurrentMotherKFCandidate);
+
+    }		
 
     new((*fCurrentEventGoodV0s)[fCurrentEventGoodV0s->GetEntriesFast()])  AliKFParticle(*fCurrentMotherKFCandidate);
     fV0Pindex.push_back(fCurrentV0->GetPindex());
@@ -1772,4 +1883,34 @@ Int_t AliV0Reader::GetFirstTPCRow(Double_t radius){
 
 
   return firstTPCRow;
+}
+void AliV0Reader::SmearKFParticle(AliKFParticle * kfParticle)
+{
+  Double_t facPBrem = 1.;
+  Double_t facPSig = 0.;
+
+  Double_t phi=0.;
+  Double_t theta=0.;
+  Double_t P=0.;
+
+  P=kfParticle->GetP();
+  phi=kfParticle->GetPhi();
+  if( kfParticle->GetP()!=0){
+    theta=acos( kfParticle->Pz()/ kfParticle->GetP());
+  }
+
+  if( fPSigSmearing != 0. || fPSigSmearingCte!=0. ){ 
+    facPSig = TMath::Sqrt(fPSigSmearingCte*fPSigSmearingCte+fPSigSmearing*fPSigSmearing*P*P)*fRandom.Gaus(0.,1.);
+  }
+  
+  if( fPBremSmearing != 1.){
+    if(fBrem!=NULL){
+      facPBrem = fBrem->GetRandom();
+    }
+  }
+
+  kfParticle->Px() = facPBrem* (1+facPSig)* P*sin(theta)*cos(phi) ;
+  kfParticle->Py() = facPBrem* (1+facPSig)* P*sin(theta)*sin(phi) ;
+  kfParticle->Pz() = facPBrem* (1+facPSig)* P*cos(theta) ;
+  kfParticle->E() = kfParticle->GetP();
 }

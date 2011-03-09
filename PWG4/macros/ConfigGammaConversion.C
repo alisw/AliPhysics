@@ -15,7 +15,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-const int c_array_size = 27; // RRnewTOF c_array_size was increased to 27 in order to put a TOF PID cut on electrons
+const int c_array_size = 29; // RRnewTOF c_array_size was increased to 27 in order to put a TOF PID cut on electrons
 
 class AliAnalysisDataContainer;
 class AliGammaConversionHistograms;
@@ -48,7 +48,7 @@ Bool_t kGCdoBGProbability=kFALSE;
 //Svein 
 Bool_t kGCRunGammaJetTask = kFALSE;
 /** ---------------------------------- define cuts here ------------------------------------*/
-TString kGCAnalysisCutSelectionId="900356204010033210220000000"; // do not change here, use -set-cut-selection in argument instead
+TString kGCAnalysisCutSelectionId="90035620401003321022000000011"; // do not change here, use -set-cut-selection in argument instead
 
 Int_t kGCNEventsForBGCalculation=20;
 
@@ -111,7 +111,11 @@ Int_t kGCIsHeavyIon = 0;
 Int_t kGCUseCentrality = 0;
 Int_t kGCUseCentralityBin = 0;
 Int_t kGCUseCorrectedTPCClsInfo = 0;
+Int_t kGCUseMCPSmearing=0;
 
+Double_t kGCPBremSmearing=1.;
+Double_t kGCPSigSmearing=0.;
+Double_t kGCPSigSmearingCte=0.;
 
 /** ---------------------------------- define pi0 dalitz cuts here ------------------------------------*/
 
@@ -490,6 +494,7 @@ Bool_t kGCplotESDCutLine          = kTRUE;
 Bool_t kGCplotESDCutZ             = kTRUE;
 Bool_t kGCplotESDCutMinClsTPC     = kTRUE;
 Bool_t kGCplotESDCutMinClsTPCToF  = kTRUE;
+Bool_t kGCplotESDCutPhotonAsymmetry  = kTRUE;
 Bool_t kGCplotESDGoodV0s          = kTRUE;
 Bool_t kGCplotESDAllV0s           = kTRUE;
 Bool_t kGCplotESDAllV0sCurrentFinder = kTRUE;
@@ -939,6 +944,7 @@ Double_t kGCPIDnSigmaBelowElectronLine=-3;
 Double_t kGCPIDnSigmaAbovePionLine=0;
 Double_t kGCPIDMinPnSigmaAbovePionLine=1.;
 Double_t kGCPIDMaxPnSigmaAbovePionLine=3.;
+Double_t kGCPIDnSigmaAbovePionLineHighPt=0;
 
 Bool_t    kGCuseTOFpid = kFALSE; // RRnewTOF start //////////
 Double_t  kGCtofPIDnSigmaBelowElectronLine=-100;
@@ -965,6 +971,10 @@ Bool_t kGCdoHighPtQtGammaSelection=kFALSE; // RRnew
 Double_t kGCHighPtQtMax=100.;		   // RRnew
 Double_t kGCPtBorderForQt=100.;	  	   // RRnew
 
+/**----Flag to apply cut on the photon asymmetry -----*/
+Bool_t  kGCdoPhotonAsymmetryCut= kTRUE;
+Double_t kGCMinPPhotonAsymmetryCut=100.;
+Double_t kGCMinPhotonAsymmetry=0.;
 
 
 Bool_t scanArguments(TString arguments){
@@ -1495,6 +1505,7 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetPIDnSigmaAboveElectronLine(kGCPIDnSigmaAboveElectronLine);
   v0Reader->SetPIDnSigmaBelowElectronLine(kGCPIDnSigmaBelowElectronLine);
   v0Reader->SetPIDnSigmaAbovePionLine(kGCPIDnSigmaAbovePionLine);
+  v0Reader->SetPIDnSigmaAbovePionLineHighPt(kGCPIDnSigmaAbovePionLineHighPt);
   v0Reader->SetPIDMinPnSigmaAbovePionLine(kGCPIDMinPnSigmaAbovePionLine);
   v0Reader->SetPIDMaxPnSigmaAbovePionLine(kGCPIDMaxPnSigmaAbovePionLine);
   v0Reader->SetOnFlyFlag(kGCUseOnFlyV0Finder);
@@ -1520,6 +1531,12 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   v0Reader->SetQtMax(kGCQtMax);
   v0Reader->SetHighPtQtMax(kGCHighPtQtMax); // RRnew
   v0Reader->SetPtBorderForQt(kGCPtBorderForQt); // RRnew
+
+  v0Reader->SetDoPhotonAsymmetryCut(kGCdoPhotonAsymmetryCut);
+  v0Reader->SetMinPPhotonAsymmetryCut(kGCMinPPhotonAsymmetryCut);
+  v0Reader->SetMinPhotonAsymmetry(kGCMinPhotonAsymmetry);
+
+
   kGCNEventsForBGCalculation= kGCnumberOfRotationEventsForBG;
   cout<< "number of Events used for mixing::"<<kGCNEventsForBGCalculation<<endl;
   v0Reader->SetNEventsForBG(kGCNEventsForBGCalculation);
@@ -1605,8 +1622,10 @@ AliAnalysisTaskGammaConversion* ConfigGammaConversion(TString arguments, AliAnal
   if(kGCUseCentrality){
     gammaconversion->SetUseCentralityBin(kGCUseCentralityBin);
   }
-
-
+  v0Reader->SetUseMCPSmearing(kGCUseMCPSmearing);
+  v0Reader->SetPBremSmearing(kGCPBremSmearing);
+  v0Reader->SetPSigSmearing(kGCPSigSmearing);
+  v0Reader->SetPSigSmearingCte(kGCPSigSmearingCte);
 
 
   // for CF
@@ -2255,6 +2274,7 @@ void AddHistograms(AliGammaConversionHistograms *histograms){
     if(kGCplotESDCutZ == kTRUE){histograms->AddHistogram("ESD_CutZ_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutMinClsTPC == kTRUE){histograms->AddHistogram("ESD_CutMinNClsTPC_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDCutMinClsTPCToF == kTRUE){histograms->AddHistogram("ESD_CutMinNClsTPCToF_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
+    if(kGCplotESDCutPhotonAsymmetry== kTRUE){histograms->AddHistogram("ESD_CutPhotonAsymmetry_InvMass" ,"Out of reconstruction area" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
 
     if(kGCplotESDGoodV0s == kTRUE){histograms->AddHistogram("ESD_GoodV0s_InvMass" ,"Good V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
     if(kGCplotESDAllV0s == kTRUE){histograms->AddHistogram("ESD_AllV0s_InvMass" ,"All V0s" , kGCnXBinsGammaMass, kGCfirstXBinGammaMass, kGClastXBinGammaMass,"","");}
@@ -2605,7 +2625,12 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   Int_t useCentrality=array[24];
   Int_t centralityBin=array[25];
   Int_t TOFelectronPID=array[26]; // RRnewTOF
+  Int_t useMCPSmearing=array[27];
+  Int_t doPhotonAsymmetryCut=array[28];
 
+  cout<<"doPhotonAsymmetryCut::"<<doPhotonAsymmetryCut<<endl;
+  cout<<"useMCPSmearing::"<<useMCPSmearing<<endl;
+  cout<<"TOFelectronPID: "<<TOFelectronPID<<endl; // RRnewTOF
   cout<<"CentralityBin::"<< centralityBin <<endl;
   cout<<"Use Centrality::"<< useCentrality <<endl;
   cout<<"Heavy Ion::"<< isHeavyIon<<endl;
@@ -2632,7 +2657,7 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   cout<<"eProbCut: "<< eProbCut<<endl;
   cout<<"v0FinderType: "<<v0FinderType <<endl;
   cout<<"goodId: "<<goodId <<endl;
-  cout<<"TOFelectronPID: "<<TOFelectronPID<<endl; // RRnewTOF
+
 
   if(goodId !=9){
     cout<<"Analysis Cut Selection too short or does not start with 9"<<endl;
@@ -2691,23 +2716,40 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
   switch(pidedxSigmaCut){
   case 0:  // -10
     kGCPIDnSigmaAbovePionLine=-10;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
   case 1:   // 0
     kGCPIDnSigmaAbovePionLine=0;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
   case 2:  // 1
     kGCPIDnSigmaAbovePionLine=1;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
   case 3:  // 1
     kGCPIDnSigmaAbovePionLine=-1;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
   case 4:  // 1
     kGCPIDnSigmaAbovePionLine=-1.5;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
   case 5:  // 1
     kGCPIDnSigmaAbovePionLine=2.;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
     break;
-
+  case 6:  // 1
+    kGCPIDnSigmaAbovePionLine=2.;
+    kGCPIDnSigmaAbovePionLineHighPt=0.5;
+    break;
+  case 7:  // 1
+    kGCPIDnSigmaAbovePionLine=3.5;
+    kGCPIDnSigmaAbovePionLineHighPt=-10;
+    break;
+  case 8:  // 1
+    kGCPIDnSigmaAbovePionLine=2.;
+    kGCPIDnSigmaAbovePionLineHighPt=1.;
+    break;
   default:
     return iResult;
   }
@@ -3277,6 +3319,91 @@ Int_t SetAnalysisCutSelection(TString analysisCutSelection){
     return iResult;
   } //////////////////////// RRnewTOF end //////////////////////////////////////////////////////////////////////////
 
+  switch(useMCPSmearing){
+  case 0:
+    kGCUseMCPSmearing=0;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.;
+    kGCPSigSmearingCte=0.;
+    break;
+  case 1:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.0e-14;
+    kGCPSigSmearing=0.;
+    kGCPSigSmearingCte=0.;
+    break;
+  case 2:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.0e-15;
+    kGCPSigSmearing=0.0;
+    kGCPSigSmearingCte=0.;
+    break;
+  case 3:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.003;
+    kGCPSigSmearingCte=0.002;
+    break;
+ case 4:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.003;
+    kGCPSigSmearingCte=0.007;
+    break;
+  case 5:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.003;
+    kGCPSigSmearingCte=0.016;
+    break;
+  case 6:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.007;
+    kGCPSigSmearingCte=0.016;
+    break;
+  case 7:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.0e-16;
+    kGCPSigSmearing=0.0;
+    kGCPSigSmearingCte=0.;
+    break;
+  case 8:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.007;
+    kGCPSigSmearingCte=0.014;
+    break;
+  case 9:
+    kGCUseMCPSmearing=1;
+    kGCPBremSmearing=1.;
+    kGCPSigSmearing=0.007;
+    kGCPSigSmearingCte=0.011;
+    break;
+
+   default:
+    return iResult;
+  }
+  switch(doPhotonAsymmetryCut){
+  case 0:
+    kGCdoPhotonAsymmetryCut=0;
+    kGCMinPPhotonAsymmetryCut=100.;
+    kGCMinPhotonAsymmetry=0.;
+    break;
+  case 1:
+    kGCdoPhotonAsymmetryCut=1;
+    kGCMinPPhotonAsymmetryCut=3.5;
+    kGCMinPhotonAsymmetry=0.04;
+    break;
+  case 2:
+    kGCdoPhotonAsymmetryCut=1;
+    kGCMinPPhotonAsymmetryCut=3.5;
+    kGCMinPhotonAsymmetry=0.06;
+    break;
+   default:
+    return iResult;
+  }
+
   iResult = 1;
   return iResult;
 
@@ -3314,6 +3441,8 @@ void string2array(const std::string& number, int a[c_array_size])
         ASSIGNARRAY(24);
         ASSIGNARRAY(25);
         ASSIGNARRAY(26); // RRnewTOF
+        ASSIGNARRAY(27); 
+        ASSIGNARRAY(28); 
   }
 }
 
