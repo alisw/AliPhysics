@@ -42,7 +42,7 @@ ClassImp(AliITSv11GeometrySupport)
 #define SQ(A) (A)*(A)
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
+void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 {
 //
 // Creates the SPD thermal shield as a volume assembly
@@ -503,7 +503,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,TGeoManager *mgr)
 void AliITSv11GeometrySupport::CreateSPDThermalShape(
      Double_t ina, Double_t inb, Double_t inr,
      Double_t oua, Double_t oub, Double_t our,
-     Double_t   t, Double_t *x , Double_t *y )
+     Double_t   t, Double_t *x , Double_t *y ) const
 {
 //
 // Creates the proper sequence of X and Y coordinates to determine
@@ -773,7 +773,7 @@ void AliITSv11GeometrySupport::ReflectPoint(Double_t x1, Double_t y1,
 }
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
+void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,const TGeoManager *mgr)
 {
 //
 // Creates the SDD support cone and cylinder geometry as a
@@ -1724,7 +1724,7 @@ void AliITSv11GeometrySupport::SDDCone(TGeoVolume *moth,TGeoManager *mgr)
 }
 
 //______________________________________________________________________
-void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,TGeoManager *mgr)
+void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,const TGeoManager *mgr)
 {
 //
 // Creates the SSD support cone and cylinder geometry. as a
@@ -2517,7 +2517,7 @@ void AliITSv11GeometrySupport::ServicesCableSupport(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::TraySupportsSideA(TGeoVolume *moth,
-						 TGeoManager *mgr){
+					   const TGeoManager *mgr){
 //
 // Creates the structure supporting the ITS cable trays on Side A
 //
@@ -3329,7 +3329,7 @@ void AliITSv11GeometrySupport::ServicesCableSupportSSD(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					    const TGeoManager *mgr){
 //
 // Creates the SPD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side A
@@ -4287,7 +4287,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					    const TGeoManager *mgr){
 //
 // Creates the SPD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side C
@@ -5826,7 +5826,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					    const TGeoManager *mgr){
 //
 // Creates the SDD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side C
@@ -6561,7 +6561,7 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					    const TGeoManager *mgr){
 //
 // Creates the SSD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side A
@@ -7101,7 +7101,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					    const TGeoManager *mgr){
 //
 // Creates the SSD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side C
@@ -7301,7 +7301,7 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::CreateSDDForwardTraySideA(TGeoVolumeAssembly *tray,
-							 TGeoManager *mgr){
+						   const TGeoManager *mgr){
 //
 // Creates the forward SDD tray on Side A (0872/G/D/01)
 //
@@ -7908,8 +7908,8 @@ TGeoXtru* AliITSv11GeometrySupport::CreateSDDSSDTraysSideA(
 
 //______________________________________________________________________
 TGeoVolumeAssembly* AliITSv11GeometrySupport::CreateSDDSSDTraysSideC(
-							const char *trayName,
-							TGeoManager *mgr){
+						       const char *trayName,
+						       const TGeoManager *mgr){
 
 //
 // Creates the SDD and SSD Trays on Side C which are supposedly identical
@@ -8314,7 +8314,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySupport::CreateSDDSSDTraysSideC(
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::ITSTPCSupports(TGeoVolume *moth,
-					      TGeoManager *mgr){
+					const TGeoManager *mgr){
 //
 // Creates the elements suspending the ITS to the TPC and other fixed
 // elements used to hook the rails (0872/C and its daughters)

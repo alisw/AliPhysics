@@ -213,7 +213,7 @@ AliITSv11GeometrySPD& AliITSv11GeometrySPD::operator=(const
 }
 //______________________________________________________________________
 TGeoMedium* AliITSv11GeometrySPD::GetMedium(const char* mediumName,
-                                            TGeoManager *mgr) const
+                                            const TGeoManager *mgr) const
 {
     //
     // This function is used to recovery any medium
@@ -3692,9 +3692,9 @@ void AliITSv11GeometrySPD::ReadAscii(istream* is)
     //   none.
     //
     Int_t i,j,k,n;
-    Double_t gapLadder,GapHalfStave;
+    Double_t gapLadder,gapHalfStave;
     const Int_t kLimits = 100;
-    *is>>gapLadder>>GapHalfStave>>n;
+    *is>>gapLadder>>gapHalfStave>>n;
     if(n!=6){
       AliError(Form("fAddStave Array !=6 n=%d",n));
         return;

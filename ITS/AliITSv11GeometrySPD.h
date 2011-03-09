@@ -54,7 +54,7 @@ class AliITSv11GeometrySPD : public AliITSv11Geometry
         {return (lay==1) ? GetSenstiveVolumeName1():GetSenstiveVolumeName2();}
     // get medium
     virtual TGeoMedium* GetMedium(const char* mediumName,
-                                  TGeoManager *mgr = gGeoManager) const;
+                                  const TGeoManager *mgr = gGeoManager) const;
     // retrieve the mounting location and rotation needed to mount an SPD stave
     virtual Int_t GetSPDsectorX0Size() const
         {return fSPDsectorX0.GetSize();}

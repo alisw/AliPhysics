@@ -29,9 +29,9 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     AliITSv11GeometrySupport(Int_t debug):AliITSv11Geometry(debug){};
     virtual ~AliITSv11GeometrySupport(){};
     //
-    virtual void SPDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
-    virtual void SDDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
-    virtual void SSDCone(TGeoVolume *moth,TGeoManager *mgr=gGeoManager);
+    virtual void SPDCone(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    virtual void SDDCone(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    virtual void SSDCone(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     virtual void ServicesCableSupport(TGeoVolume *moth,
                                       TGeoManager *mgr=gGeoManager);
     virtual void ServicesCableSupportSPD(TGeoVolume *moth,
@@ -41,13 +41,13 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     virtual void ServicesCableSupportSSD(TGeoVolume *moth,
 					 TGeoManager *mgr=gGeoManager);
     virtual void ITSTPCSupports(TGeoVolume *moth,
-				TGeoManager *mgr=gGeoManager);
+				const TGeoManager *mgr=gGeoManager);
 
 
   private:
     void CreateSPDThermalShape(Double_t ina, Double_t inb, Double_t inr,
 			       Double_t oua, Double_t oub, Double_t our,
-			       Double_t   t, Double_t *x , Double_t *y );
+			       Double_t   t, Double_t *x , Double_t *y ) const;
     void CreateSPDOmegaShape(const Double_t *xin, const Double_t *yin, Double_t  d,
 			     Double_t   *x, Double_t *y);
     void FillSPDXtruShape(Double_t a, Double_t  b, Double_t  r,
@@ -59,15 +59,16 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void ReflectPoint(Double_t x1, Double_t y1, Double_t x2, Double_t y2,
 		      Double_t x3, Double_t y3, Double_t &x, Double_t &y) const;
 
-    void  TraySupportsSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-    void SPDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-    void SPDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void  TraySupportsSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    void SPDCableTraysSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    void SPDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     void SDDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-    void SDDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-    void SSDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
-    void SSDCableTraysSideC(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void SDDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    void SSDCableTraysSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
+    void SSDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
 
-    void CreateSDDForwardTraySideA(TGeoVolumeAssembly *tray, TGeoManager *mgr);
+    void CreateSDDForwardTraySideA(TGeoVolumeAssembly *tray,
+				   const TGeoManager *mgr);
 
     TGeoCompositeShape* CreateTrayAForwardCover(const Double_t coverLen);
     TGeoCompositeShape* CreateTrayAExternalCover(const Double_t coverLen);
@@ -79,7 +80,7 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
 				     const Double_t trayHi);
 
     TGeoVolumeAssembly* CreateSDDSSDTraysSideC(const char *trayName,
-					       TGeoManager *mgr=gGeoManager);
+					 const TGeoManager *mgr=gGeoManager);
 
     ClassDef(AliITSv11GeometrySupport,1) // ITS v11 Support geometry
 };

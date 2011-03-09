@@ -99,7 +99,7 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   void                         CreateBasicObjects();
   Double_t                     GetConeZ(Double_t r, Double_t refR1, Double_t refR2,
-					Double_t refZ1, Double_t refZ2);
+					Double_t refZ1, Double_t refZ2) const;
   TGeoPcon*                    CreateConeConstSection(Double_t r1max, Double_t z1,
 						      Double_t r2max, Double_t z2,
 						      Double_t section, Int_t nDiv=1);

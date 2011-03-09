@@ -5593,7 +5593,7 @@ TGeoPcon* AliITSv11GeometrySDD::CreateConeConstSection(Double_t r1max, Double_t 
 
 //________________________________________________________________________
 Double_t AliITSv11GeometrySDD::GetConeZ(Double_t r, Double_t refR1, Double_t refR2, 
-					Double_t refZ1, Double_t refZ2) {
+					Double_t refZ1, Double_t refZ2) const {
   // just a helping function
   return refZ1+(refZ2-refZ1)*(r-refR1)/(refR2-refR1);
 }
