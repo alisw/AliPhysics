@@ -202,8 +202,9 @@ Bool_t RsnConfigPhi
    AliRsnValue *axisRes     = new AliRsnValue("Res" , AliRsnValue::kPairInvMassRes, -0.5, 0.5, 0.001);
    AliRsnValue *axisPt      = new AliRsnValue("PT"  , AliRsnValue::kPairPt        ,  0.0, 5.0, 0.1  );
    AliRsnValue *axisY       = new AliRsnValue("Y"   , AliRsnValue::kPairY         , -1.1, 1.1, 0.1  );
-   AliRsnValue *axisMultSPD = new AliRsnValue("MSPD", AliRsnValue::kEventMultSPD  , nmult, mult);
-   AliRsnValue *axisMultMC  = new AliRsnValue("MMC" , AliRsnValue::kEventMultMC   , nmult, mult);
+   AliRsnValue *axisMultESD = new AliRsnValue("MESD", AliRsnValue::kEventMultESDCuts, nmult, mult);
+   AliRsnValue *axisMultSPD = new AliRsnValue("MSPD", AliRsnValue::kEventMultSPD    , nmult, mult);
+   AliRsnValue *axisMultMC  = new AliRsnValue("MMC" , AliRsnValue::kEventMultMC     , nmult, mult);
    
    // ==================================================================================================================
    // == PRELIMINARY OPERATIONS ========================================================================================
