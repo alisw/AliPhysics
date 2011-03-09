@@ -26,14 +26,16 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALClusterize();
   AliAnalysisTaskEMCALClusterize(const char *name);
   virtual ~AliAnalysisTaskEMCALClusterize();
-  
- private:
-  AliAnalysisTaskEMCALClusterize(const AliAnalysisTaskEMCALClusterize&); // not implemented
+
+ private:  
+  AliAnalysisTaskEMCALClusterize(const AliAnalysisTaskEMCALClusterize&); 
   AliAnalysisTaskEMCALClusterize& operator=(const AliAnalysisTaskEMCALClusterize&); // not implemented
   
  public:
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
+  virtual void   Init();
+  virtual void   LocalInit()                                    { Init()                       ; }
   Bool_t         AccessOCDB();
 
   void           SetOCDBPath(const char *path)                  { fOCDBpath = path             ; }
@@ -56,6 +58,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   void SetEMCALRecoUtils(AliEMCALRecoUtils * ru)                { fRecoUtils           = ru    ; }
   AliEMCALRecoUtils* GetRecoUtils()                      const  { return fRecoUtils            ; }
+  
+  void SetConfigFileName(TString name)                          { fConfigName          = name  ; }
   
  private:
     
@@ -92,9 +96,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Int_t                  fRun;              //!run number
   
   AliEMCALRecoUtils*     fRecoUtils;        // Access to factorized reconstruction algorithms
+  TString                fConfigName;       // Name of analysis configuration file
   
-  
-  ClassDef(AliAnalysisTaskEMCALClusterize, 2);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 3);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H

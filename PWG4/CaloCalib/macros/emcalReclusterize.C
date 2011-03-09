@@ -18,7 +18,7 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NFILES, respectivelly
-char * kInDir = "/user/data/files/"; 
+char * kInDir = "/Users/data/path/data/"; 
 char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kFile = 1; // Number of files
 //---------------------------------------------------------------------------
@@ -42,24 +42,20 @@ void emcalReclusterize(Int_t mode=mLocal)
   // change whatever you need for your analysis case
   // ------------------------------------------------------------------
   LoadLibraries(mode) ;
-  //gSystem->Unload("libPWG4CaloCalib.so");
-  //Try to set the new library
-  //gSystem->Load("./PWG4CaloCalib/libPWG4CaloCalib.so");
-  //gSystem->ListLibraries();
-
+  
   //-------------------------------------------------------------------------------------------------
   //Create chain from ESD and from cross sections files, look below for options.
   //-------------------------------------------------------------------------------------------------
-  if(kInputData == "ESD") kTreeName = "esdTree" ;
+  if(kInputData == "ESD")      kTreeName = "esdTree" ;
   else if(kInputData == "AOD") kTreeName = "aodTree" ;
   else {
     cout<<"Wrong  data type "<<kInputData<<endl;
     break;
   }
-
+  
   TChain *chain       = new TChain(kTreeName) ;
   CreateChain(mode, chain);  
-
+  
   if(chain){
     AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
     
@@ -67,7 +63,7 @@ void emcalReclusterize(Int_t mode=mLocal)
     // Make the analysis manager
     //-------------------------------------
     AliAnalysisManager *mgr  = new AliAnalysisManager("Manager", "Manager");
-
+    
     // AOD output handler
     AliAODHandler* aodoutHandler   = new AliAODHandler();
     aodoutHandler->SetOutputFileName("aod.root");
@@ -76,94 +72,52 @@ void emcalReclusterize(Int_t mode=mLocal)
     
     //input
     if(kInputData == "ESD")
-      {
-	// ESD handler
-	AliESDInputHandler *esdHandler = new AliESDInputHandler();
-	mgr->SetInputEventHandler(esdHandler);
-	esdHandler->SetReadFriends(kFALSE);
-	cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
-      }
+    {
+      // ESD handler
+      AliESDInputHandler *esdHandler = new AliESDInputHandler();
+      mgr->SetInputEventHandler(esdHandler);
+      esdHandler->SetReadFriends(kFALSE);
+      cout<<"ESD handler "<<mgr->GetInputEventHandler()<<endl;
+    }
     if(kInputData == "AOD")
-      {
-	// AOD handler
-	AliAODInputHandler *aodHandler = new AliAODInputHandler();
-	mgr->SetInputEventHandler(aodHandler);
-	cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
-	
-      }
+    {
+      // AOD handler
+      AliAODInputHandler *aodHandler = new AliAODInputHandler();
+      mgr->SetInputEventHandler(aodHandler);
+      cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
+      
+    }
     
     mgr->SetDebugLevel(1);
-
-    // Create containers for input/output
-    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
     //-------------------------------------------------------------------------
+    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer();
+    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer();
     
     // ESD physics selection task
     if(kInputData == "ESD" && kUsePhysSel){
       gROOT->LoadMacro("AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
     }
- 
-    AliAnalysisTaskEMCALClusterize * clusterize = new AliAnalysisTaskEMCALClusterize("EMCALClusterize");
-    if(kUsePhysSel)clusterize->SelectCollisionCandidates();
-    //clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB"); // by default it is raw://
-    clusterize->FillAODFile(kFALSE); // fill aod.root with clusters?, not really needed for analysis.
-    clusterize->JustUnfold(kTRUE); // if TRUE, do just unfolding, do not recluster cells
-    AliEMCALRecParam * params = clusterize->GetRecParam();
-    params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
-    params->SetClusteringThreshold(0.1); // 100 MeV                                             
-    params->SetMinECut(0.01);  //10 MeV    
-    params->SetUnfold(kFALSE);
-    params->SetW0(4.5);
-    params->SetTimeCut(1e6);///Open this cut for AODs
-    params->SetTimeMin(-1);//Open this cut for AODs
-    params->SetTimeMax(1e6);//Open this cut for AODs
-
-//    TGeoHMatrix *matrix[4];
     
-//     double rotationMatrix[4][9] = {-0.014585, -0.999892, -0.002031, 0.999892, -0.014589,  0.001950, -0.001979, -0.002003,  0.999996,
-// 				   -0.014585,  0.999892,  0.002031, 0.999892,  0.014589, -0.001950, -0.001979,  0.002003, -0.999996,
-// 				   -0.345861, -0.938280, -0.003412, 0.938281, -0.345869,  0.001950, -0.003010, -0.002527,  0.999992,
-// 				   -0.345861,  0.938280,  0.003412, 0.938281,  0.345869, -0.001950, -0.003010,  0.002527, -0.999992};
+    gROOT->LoadMacro("AddTaskEMCALClusterize.C");
+    AliAnalysisTaskEMCALClusterize * clusterize = AddTaskEMCALClusterize();    
     
-//     double translationMatrix[4][3] = {0.367264,    446.508738,  175.97185+0.3,
-// 				      1.078181,    445.826258, -174.026758+0.3,
-// 				      -153.843916, 418.304256,  175.956905+0.8,
-// 				      -152.649580, 417.621779, -174.040392+0.8};
-
-
-//     double rotationMatrix[4][9] = {-0.014587, -0.999892, -0.002031, 0.999892, -0.014591,  0.001979, -0.002009, -0.002002,  0.999996,
-// 				 -0.014587,  0.999892,  0.002031, 0.999892,  0.014591, -0.001979, -0.002009,  0.002002, -0.999996,
-// 				 -0.345864, -0.938278, -0.003412, 0.938276, -0.345874,  0.003010, -0.004004, -0.002161,  0.999990,
-// 				 -0.345864,  0.938278,  0.003412, 0.938276,  0.345874, -0.003010, -0.004004,  0.002161, -0.999990};
-    
-//     double translationMatrix[4][3] = {0.351659,    447.576446,  176.269742,
-// 				      1.062577,    446.893974, -173.728870,
-// 				      -154.213287, 419.306156,  176.753692,
-// 				      -153.018950, 418.623681, -173.243605};
-
-//     for(int j=0; j<4; j++)
-//       {
-// 	matrix[j] = new TGeoHMatrix();
-// 	matrix[j]->SetRotation(rotationMatrix[j]);
-// 	matrix[j]->SetTranslation(translationMatrix[j]);
-// 	matrix[j]->Print();
-// 	clusterize->SetGeometryMatrixInSM(matrix[j],j);
-//       }
+//    AliAnalysisTaskEMCALClusterize * clusterize = new AliAnalysisTaskEMCALClusterize();
+//    clusterize->SetConfigFileName("ConfigEMCALClusterize.C");
+//    clusterize->SetOCDBPath("local://$ALICE_ROOT/OCDB");
+//    mgr->AddTask(clusterize);
+//    
+//    // Create containers for input/output
+//    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+//    AliAnalysisDataContainer *coutput1 = mgr->GetCommonOutputContainer() ;
+//    
+//    mgr->ConnectInput  (clusterize, 0,  cinput1 );
+//    mgr->ConnectOutput (clusterize, 0, coutput1 );
     
     
-//     clusterize->SwitchOnLoadOwnEMCALGeometryMatrices();
-    
-        
-    mgr->AddTask(clusterize);
-    mgr->ConnectInput  (clusterize,  0, cinput1);
-    mgr->ConnectOutput (clusterize, 0, coutput1 );
-   
-
     //-----------------------
     // Run the analysis
     //-----------------------    
@@ -178,9 +132,9 @@ void emcalReclusterize(Int_t mode=mLocal)
     mgr->InitAnalysis();
     mgr->PrintStatus();
     mgr->StartAnalysis(smode.Data(),chain);
-
-cout <<" Analysis ended sucessfully "<< endl ;
-
+    
+    cout <<" Analysis ended sucessfully "<< endl ;
+    
   }
   else cout << "Chain was not produced ! "<<endl;
   
@@ -218,7 +172,7 @@ void  LoadLibraries(const anaModes mode) {
     //SetupPar("EMCALUtils"); 
     //SetupPar("PWG4CaloCalib"); 
     
-    TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
+    //TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
     gSystem->Load("libPWG4CaloCalib.so");
    
     /*

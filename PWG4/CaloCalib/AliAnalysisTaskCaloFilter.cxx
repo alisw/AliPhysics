@@ -27,6 +27,10 @@
 
 //Root
 #include "TGeoManager.h"
+#include "TFile.h"
+#include "TNtuple.h"
+#include "TROOT.h"
+#include "TInterpreter.h"
 
 //STEER
 #include "AliESDEvent.h"
@@ -51,19 +55,21 @@ ClassImp(AliAnalysisTaskCaloFilter)
 ////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter():
-  AliAnalysisTaskSE(), //fCuts(0x0),
+  AliAnalysisTaskSE("CaloFilterTask"), //fCuts(0x0),
   fCaloFilter(0), fCorrect(kFALSE), 
   fEMCALGeo(0x0),fEMCALGeoName("EMCAL_FIRSTYEARV1"), 
   fEMCALRecoUtils(new AliEMCALRecoUtils),
   fESDtrackCuts(0), fTriggerAnalysis (new AliTriggerAnalysis), fTrackMultEtaCut(0.8),
   fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
-  fGeoMatrixSet(kFALSE)
+  fGeoMatrixSet(kFALSE), fEventNtuple(0),fConfigName(""),fFillAODFile(kTRUE)
 {
   // Default constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
 
+  DefineOutput(1, TNtuple::Class());
+  
 }
 
 //__________________________________________________
@@ -74,12 +80,14 @@ AliAnalysisTaskCaloFilter::AliAnalysisTaskCaloFilter(const char* name):
   fEMCALRecoUtils(new AliEMCALRecoUtils),
   fESDtrackCuts(0), fTriggerAnalysis (new AliTriggerAnalysis), fTrackMultEtaCut(0.8),
   fLoadEMCALMatrices(kFALSE), //fLoadPHOSMatrices(kFALSE),
-  fGeoMatrixSet(kFALSE)
+  fGeoMatrixSet(kFALSE), fEventNtuple(0),fConfigName(""),fFillAODFile(kTRUE)
 {
   // Constructor
   fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
   //for(Int_t i = 0; i < 5 ; i++) fPHOSMatrix[i]  = 0 ;
+
+  DefineOutput(1, TNtuple::Class());
 
 }
 
@@ -93,7 +101,30 @@ AliAnalysisTaskCaloFilter::~AliAnalysisTaskCaloFilter()
   if(fESDtrackCuts)    delete fESDtrackCuts;
   if(fTriggerAnalysis) delete fTriggerAnalysis;
 
+  if(fEventNtuple)     delete fEventNtuple;
+  
 }
+
+//-------------------------------------------------------------------
+void AliAnalysisTaskCaloFilter::Init()
+{
+  //Init analysis with configuration macro if available
+  
+  if(gROOT->LoadMacro(fConfigName) >=0){
+    printf("Configure analysis with %s\n",fConfigName.Data());
+    AliAnalysisTaskCaloFilter *filter = (AliAnalysisTaskCaloFilter*)gInterpreter->ProcessLine("ConfigCaloFilter()");
+    fEMCALGeoName      = filter->fEMCALGeoName; 
+    fLoadEMCALMatrices = filter->fLoadEMCALMatrices;
+    fFillAODFile       = filter->fFillAODFile;
+    fEMCALRecoUtils    = filter->fEMCALRecoUtils; 
+    fConfigName        = filter->fConfigName;
+    fCaloFilter        = filter->fCaloFilter;
+    fCorrect           = filter->fCorrect;
+    fTrackMultEtaCut   = filter->fTrackMultEtaCut;
+    fESDtrackCuts      = filter->fESDtrackCuts;
+    for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = filter->fEMCALMatrix[i] ;
+  }
+} 
 
 //__________________________________________________
 void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
@@ -102,6 +133,12 @@ void AliAnalysisTaskCaloFilter::UserCreateOutputObjects()
 	
   fEMCALGeo =  AliEMCALGeometry::GetInstance(fEMCALGeoName) ;	
   
+  OpenFile(1);
+  
+  fEventNtuple = new TNtuple("EventSelection","EventSelection", "bPileup:bGoodVertex:bV0AND:trackMult");
+ 
+  PostData(1, fEventNtuple);
+
 }  
 
 //__________________________________________________
@@ -113,7 +150,6 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   if (fDebug > 0)  
     printf("CaloFilter: Analysing event # %d\n", (Int_t)Entry());
   
-  
   AliVEvent* event = InputEvent();
   if(!event) {
     printf("AliAnalysisTaskCaloFilter::UserExec - This event does not contain Input?");
@@ -121,7 +157,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   }
 
   //Magic line to write events to file
-  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
    
   // cast event, depending on input we will have to use one or the other type of event
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);  
@@ -158,51 +194,80 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
   if(fDebug > 0)
     printf("AliAnalysisTaskCaloFilter::UserExec() - PileUp %d, Good Vertex %d, v0AND %d, Track Mult in |eta| < %2.1f = %d\n",
            bPileup,bGoodVertex,bV0AND, fTrackMultEtaCut, trackMult);
-  //Put bools with event selection parameters in an array, as a patch, put it later in the MC labels list
-  Int_t eventSelection[] = {bPileup,bGoodVertex,bV0AND,trackMult};
   
-  //----------------------------------------------------
-  //Set in AOD General Event Parameters, vertex, runnumber etc 
-  //----------------------------------------------------
+  //Put bools with event selection parameters in a TNtuple
+  //Int_t eventSelection[] = {bPileup,bGoodVertex,bV0AND,trackMult};
+  fEventNtuple->Fill(bPileup,bGoodVertex,bV0AND,trackMult);
+  
+  //--------------------------------------------------------------------
+  //Set in AOD General Event Parameters, vertex, runnumber, trigger, etc 
+  //-------------------------------------------------------------------
   
   // set arrays and pointers
-  Float_t posF[3];
-  Double_t pos[3];
-  
+  Float_t  posF[3]  ;
+  Double_t pos[3]   ;
   Double_t covVtx[6];
-  
   for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
       
   AliAODHeader* header = AODEvent()->GetHeader();
   
   header->SetRunNumber(event->GetRunNumber());
-  header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
-  if(esdevent)
-    header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
-  header->SetTriggerMask(event->GetTriggerMask()); 
-  header->SetTriggerCluster(event->GetTriggerCluster());
+  
+  if(esdevent){
+    TTree* tree = fInputHandler->GetTree();
+    if (tree) {
+      TFile* file = tree->GetCurrentFile();
+      if (file) header->SetESDFileName(file->GetName());
+    }
+  }
+  else  header->SetESDFileName(aodevent->GetHeader()->GetESDFileName());
   
   header->SetBunchCrossNumber(event->GetBunchCrossNumber());
   header->SetOrbitNumber(event->GetOrbitNumber());
   header->SetPeriodNumber(event->GetPeriodNumber());
   header->SetEventType(event->GetEventType());
-  header->SetMuonMagFieldScale(-999.); // FIXME
-  //header->SetCentrality(0);        // FIXME
   
+  //Centrality
+  if(event->GetCentrality()){
+    header->SetCentrality(new AliCentrality(*(event->GetCentrality())));
+  }
+  else{
+    header->SetCentrality(0);
+  }
+  
+  //Trigger  
+  header->SetOfflineTrigger(fInputHandler->IsEventSelected()); // propagate the decision of the physics selection
+  if (esdevent) header->SetFiredTriggerClasses(esdevent->GetFiredTriggerClasses());
+  else          header->SetFiredTriggerClasses(aodevent->GetFiredTriggerClasses());
   header->SetTriggerMask(event->GetTriggerMask()); 
   header->SetTriggerCluster(event->GetTriggerCluster());
+  if(esdevent){
+    header->SetL0TriggerInputs(esdevent->GetHeader()->GetL0TriggerInputs());    
+    header->SetL1TriggerInputs(esdevent->GetHeader()->GetL1TriggerInputs());    
+    header->SetL2TriggerInputs(esdevent->GetHeader()->GetL2TriggerInputs());    
+  }
+  else {
+    header->SetL0TriggerInputs(aodevent->GetHeader()->GetL0TriggerInputs());    
+    header->SetL1TriggerInputs(aodevent->GetHeader()->GetL1TriggerInputs());    
+    header->SetL2TriggerInputs(aodevent->GetHeader()->GetL2TriggerInputs());    
+  }
+
   header->SetMagneticField(event->GetMagneticField());
+  //header->SetMuonMagFieldScale(esdevent->GetCurrentDip()/6000.); 
+
   header->SetZDCN1Energy(event->GetZDCN1Energy());
   header->SetZDCP1Energy(event->GetZDCP1Energy());
   header->SetZDCN2Energy(event->GetZDCN2Energy());
   header->SetZDCP2Energy(event->GetZDCP2Energy());
   header->SetZDCEMEnergy(event->GetZDCEMEnergy(0),event->GetZDCEMEnergy(1));
+  
   Float_t diamxy[2]={event->GetDiamondX(),event->GetDiamondY()};
-  Float_t diamcov[3]; event->GetDiamondCovXY(diamcov);
+  Float_t diamcov[3];
+  event->GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);
-  if(esdevent){
-    header->SetDiamondZ(esdevent->GetDiamondZ(),esdevent->GetSigma2DiamondZ());
-  }
+  if(esdevent) header->SetDiamondZ(esdevent->GetDiamondZ(),esdevent->GetSigma2DiamondZ());
+  else         header->SetDiamondZ(aodevent->GetDiamondZ(),aodevent->GetSigma2DiamondZ());
+  
   //
   //
   Int_t nVertices = 1 ;/* = prim. vtx*/;
@@ -382,8 +447,8 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     
     AliAODCaloCluster *caloCluster = new(caloClusters[jClusters++]) 
       AliAODCaloCluster(id,
-			4,
-			eventSelection,
+			cluster->GetNLabels(),
+			cluster->GetLabels(),
 			energy,
 			posF,
 			NULL,
@@ -475,8 +540,9 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
     aodPHcells.Sort();
   }
   
+   PostData(1, fEventNtuple);
   
-  return;
+  //return;
 }
 
 //____________________________________________________________________________
