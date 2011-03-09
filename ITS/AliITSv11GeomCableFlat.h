@@ -45,12 +45,13 @@ class AliITSv11GeomCableFlat : public AliITSv11GeomCable {
   virtual Int_t GetVect(Int_t iCheckPt, Double_t *coord) const;
 
  protected:
-  TGeoVolume *CreateSegment( Double_t *coord1,Double_t *coord2,
-			     Double_t *localVect1, Double_t *localVect2 );
+  TGeoVolume *CreateSegment( const Double_t *coord1,const Double_t *coord2,
+			     const Double_t *localVect1,
+			     const Double_t *localVect2 );
 
-  TGeoVolume *CreateBoxSegment( Double_t *coord1,Double_t *coord2);
+  TGeoVolume *CreateBoxSegment( const Double_t *coord1,const Double_t *coord2);
 
-  TGeoVolume *CreateCylSegment( Double_t &phi, Double_t &r);
+  TGeoVolume *CreateCylSegment( const Double_t &phi, const Double_t &r);
 
   Double_t  fWidth;                                 // width
   Double_t  fThick;                                 // total thickness

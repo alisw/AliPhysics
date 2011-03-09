@@ -741,10 +741,10 @@ TGeoVolume* AliITSv11GeomCableFlat::CreateAndInsertCableCylSegment(Int_t p2,
 }
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
-						   Double_t *coord2,
-						   Double_t *localVect1,
-						   Double_t *localVect2 )
+TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( const Double_t *coord1,
+						   const Double_t *coord2,
+						   const Double_t *localVect1,
+						   const Double_t *localVect2 )
 {
   // Create a segment with arbitrary vertices (general case)
   //=================================================
@@ -831,8 +831,8 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateSegment( Double_t *coord1,
 }
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
-						     Double_t &r)
+TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(const Double_t &phi,
+						     const Double_t &r)
 {
   // Create a segment in shape of a cylinder, allows to represent
   // a folded flat cable
@@ -872,8 +872,8 @@ TGeoVolume *AliITSv11GeomCableFlat::CreateCylSegment(Double_t &phi,
 }
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( Double_t *coord1,
-						      Double_t *coord2)
+TGeoVolume *AliITSv11GeomCableFlat::CreateBoxSegment( const Double_t *coord1,
+						      const Double_t *coord2)
 {
   // Create a segment for the case it is a simple box
   //=================================================

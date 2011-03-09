@@ -40,10 +40,10 @@ class AliITSv11GeomCableRound : public AliITSv11GeomCable {
                       {fPhiMin=phi1; fPhiMax=phi2;};
 
  protected:
-  TGeoVolume*   CreateSegment( Double_t *coord1,Double_t *coord2,
+  TGeoVolume*   CreateSegment( const Double_t *coord1,const Double_t *coord2,
 			       Double_t *localVect1, Double_t *localVect2, Int_t p);
-  TGeoVolume*   CreateTubeSegment( Double_t *coord1,Double_t *coord2, Int_t p);
-  TGeoVolume*   CreateTorus(  Double_t &phi, Double_t &r, Int_t p);
+  TGeoVolume*   CreateTubeSegment( const Double_t *coord1,const Double_t *coord2, Int_t p);
+  TGeoVolume*   CreateTorus( const Double_t &phi, const Double_t &r, Int_t p);
 
   Double_t   fRadius;                         // total radius
   Int_t      fNlayer;                         // number of layers

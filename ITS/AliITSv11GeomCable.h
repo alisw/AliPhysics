@@ -48,7 +48,7 @@ class AliITSv11GeomCable : public TNamed {
   void ResetPoints();
 
  protected:
-  bool     CheckDaughter(TGeoNode* node, Int_t i = 0);
+  bool     CheckDaughter(const TGeoNode* node, Int_t i = 0);
   void     ResetCheckDaughter();
   void     CopyFrom(Double_t *c, const Double_t *o) const;
   Double_t ScalProd(const Double_t *a, const Double_t *b) const;

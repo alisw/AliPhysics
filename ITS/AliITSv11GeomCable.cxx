@@ -187,7 +187,7 @@ void AliITSv11GeomCable::ResetInitialNode() {
 }
 
 //________________________________________________________________________
-bool AliITSv11GeomCable::CheckDaughter(TGeoNode* node, Int_t i)
+bool AliITSv11GeomCable::CheckDaughter(const TGeoNode* node, Int_t i)
 {
 // Search where is the current volume in the tree of nodes
 // stop each time it find the pointer of the current volume

@@ -919,7 +919,7 @@ void AliITSgeom::GetNearest27(const Double_t g[3],Int_t n[27],Int_t lay)const{
 }
 //_______________________________________________________________________
 void AliITSgeom::DetLToTrackingV2(Int_t md,Float_t xin,Float_t zin,
-                                  Float_t &yout,Float_t &zout) {
+                                  Float_t &yout,Float_t &zout) const {
 
     //Conversion from local coordinates on detectors to local
     //coordinates used for tracking ("v2")
@@ -944,7 +944,7 @@ void AliITSgeom::DetLToTrackingV2(Int_t md,Float_t xin,Float_t zin,
 }
 //_______________________________________________________________________
 void AliITSgeom::TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,
-                                  Float_t &xout,Float_t &zout) {
+                                  Float_t &xout,Float_t &zout) const {
     //Conversion from local coordinates used for tracking ("v2") to
     //local detector coordinates  
     // Inputs:

@@ -68,16 +68,12 @@ class AliITSgeom : public TObject {
     //
     //     This function returns a pointer to the particular AliITSgeomMatrix
     // class for a specific module index.
-    AliITSgeomMatrix *GetGeomMatrix(Int_t index){if(index<fGm.GetSize()&&
-                                                    index>=0)
+    AliITSgeomMatrix *GetGeomMatrix(Int_t index){if(index<fGm.GetSize()&&index>=0)
         return (AliITSgeomMatrix*)(fGm.At(index));else 
-            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",
-                  index,fGm.GetSize());return 0;}
-    AliITSgeomMatrix *GetGeomMatrix(Int_t index)const{if(index<fGm.GetSize()
-                                                         &&index>=0)
+            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
+    AliITSgeomMatrix *GetGeomMatrix(Int_t index)const{if(index<fGm.GetSize()&&index>=0)
         return (AliITSgeomMatrix*)(fGm.At(index));else 
-            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",
-                  index,fGm.GetSize());return 0;}
+            Error("GetGeomMatrix","index=%d<0||>=GetSize()=%d",index,fGm.GetSize());return 0;}
     // This function find and return the number of detector types only.
     Int_t GetNDetTypes()const{Int_t max;return GetNDetTypes(max);};
     // This function find and return the number of detector types and the
@@ -239,7 +235,7 @@ class AliITSgeom : public TObject {
           for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) mat[3*i+j] = rot[i][j];}
     //     This function sets the rotation matrix in a Double
     // precision pointer for a given module. mat[i][j] => mat[3*i+j].
-    void  SetRotMatrix(Int_t index,Double_t *mat){Double_t rot[3][3];
+    void  SetRotMatrix(Int_t index,const Double_t *mat){Double_t rot[3][3];
           for(Int_t i=0;i<3;i++)for(Int_t j=0;j<3;j++) rot[i][j]=mat[3*i+j];
           GetGeomMatrix(index)->SetMatrix(rot);}
     // Return the normal for a specific module
@@ -739,10 +735,10 @@ class AliITSgeom : public TObject {
     //used for tracking
 
     void DetLToTrackingV2(Int_t md,Float_t xin,Float_t zin,
-                          Float_t &yout, Float_t &zout); 
+                          Float_t &yout, Float_t &zout) const ; 
 
     void TrackingV2ToDetL(Int_t md,Float_t yin,Float_t zin,
-                          Float_t &xout,Float_t &zout);
+                          Float_t &xout,Float_t &zout) const ;
 
  private:
     TString    fVersion; // Transformation version.

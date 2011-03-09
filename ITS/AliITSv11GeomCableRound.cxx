@@ -724,8 +724,8 @@ TGeoVolume* AliITSv11GeomCableRound::CreateAndInsertTorusSegment(Int_t p2,
 }
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
-						      Double_t *coord2,
+TGeoVolume *AliITSv11GeomCableRound::CreateSegment( const Double_t *coord1,
+						    const Double_t *coord2,
 						      Double_t *localVect1,
 						      Double_t *localVect2, Int_t p)
 {
@@ -784,8 +784,9 @@ TGeoVolume *AliITSv11GeomCableRound::CreateSegment( Double_t *coord1,
 
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableRound::CreateTubeSegment( Double_t *coord1,
-						      Double_t *coord2, Int_t p)
+TGeoVolume *AliITSv11GeomCableRound::CreateTubeSegment( const Double_t *coord1,
+						        const Double_t *coord2,
+							Int_t p)
 {
   // Create a cylindrical segment and its layers
 
@@ -826,8 +827,8 @@ TGeoVolume *AliITSv11GeomCableRound::CreateTubeSegment( Double_t *coord1,
 
 
 //________________________________________________________________________
-TGeoVolume *AliITSv11GeomCableRound::CreateTorus( Double_t &phi,
-						  Double_t &r, Int_t p)
+TGeoVolume *AliITSv11GeomCableRound::CreateTorus( const Double_t &phi,
+						  const Double_t &r, Int_t p)
 {
   // Create one torus segment and its layers
 
