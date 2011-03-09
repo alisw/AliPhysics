@@ -301,11 +301,11 @@ AliBasedNdetaTask::UserExec(Option_t *)
   AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
   Float_t cent = forward->GetCentrality();
   
-  //if(cent > 0) {
-  //  if( cent < 40 || cent >50 ) return;
-  //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
-  //}
-  
+  if(cent > 0) {
+    if( cent < fCentLow || cent > fCentHigh ) return;
+    else std::cout<<"selecting event with cent "<<cent<<std::endl;
+  }
+  //std::cout<<fCentLow<<"  "<<fCentHigh<<std::endl;
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
@@ -566,7 +566,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   const char* name = GetName();
   
   // Get acceptance normalisation from underflow bins 
-  TH1D* norm   = ProjectX(fSum, Form("norm%s",name), 0, 1, fCorrEmpty, false);
+  TH1D* norm   = ProjectX(fSum, Form("norm%s",name), 0, 0, fCorrEmpty, false);
   
     
   
@@ -677,7 +677,6 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   
   if(fShapeCorr && (fTriggerEff != 1)) {AliInfo("Objects already set for normalization - no action taken"); return; }
   
-  //std::cout<<Form("normalizationHists_%s_%s.root",type.Data(),snn.Data())<<std::endl;
   TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWG2/FORWARD/corrections/Normalization/normalizationHists_%s_%s.root",type.Data(),snn.Data()));
   if(!fin) AliWarning("no file for normalization");
   
@@ -746,9 +745,8 @@ AliBasedNdetaTask::Rebin(const TH1D* h) const
     for(Int_t j = 1; j<=fRebin;j++) {
       Int_t    bin = (i-1)*fRebin + j;
       Double_t c   =  h->GetBinContent(bin);
-
       if (c <= 0) continue;
-
+      
       if (fCutEdges) {
 	if (h->GetBinContent(bin+1)<=0 || 
 	    h->GetBinContent(bin-1)<=0) {
