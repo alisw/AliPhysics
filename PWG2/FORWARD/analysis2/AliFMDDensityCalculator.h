@@ -298,7 +298,10 @@ protected:
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
     TH2D*     fTotalStrips;  //! Total number of strips in a region
     TH2D*     fEmptyStrips;  //! Total number of strips in a region
+    TH2D*     fBasicHits  ;  //! Total number basic hits in a region
     TH2D*     fEmptyVsTotal; // # of empty strips vs total number of strips 
+    
+    
     ClassDef(RingHistos,1);
   };
   /** 
