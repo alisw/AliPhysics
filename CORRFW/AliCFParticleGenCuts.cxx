@@ -545,6 +545,7 @@ void AliCFParticleGenCuts::SelectionBitMap(AliAODMCParticle* mcPart)
 	goodDecay = kTRUE ;
 	for (Int_t iDaughter = 0 ; iDaughter<nDaughters; iDaughter++) {
 	  AliAODMCParticle* daug = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)-iDaughter));
+	  if (!daug) AliFatal("");
 	  if (daug->GetPdgCode() != fDecayChannel->DaughterPdgCode(iDaughter)) {goodDecay = kFALSE; break;}
 	}
       }
