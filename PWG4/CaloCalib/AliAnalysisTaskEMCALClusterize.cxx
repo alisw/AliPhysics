@@ -29,6 +29,8 @@
 #include "TClonesArray.h"
 #include "TTree.h"
 #include "TGeoManager.h"
+#include "TROOT.h"
+#include "TInterpreter.h"
 
 // --- AliRoot Analysis Steering
 #include "AliAnalysisTask.h"
@@ -67,7 +69,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kTRUE)
-  , fRun(-1),            fRecoUtils(0)
+  , fRun(-1),            fRecoUtils(0),        fConfigName("")
   
   {
   //ctor
@@ -88,7 +90,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
   , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters"),     fFillAODFile(kFALSE)
-  , fRun(-1),            fRecoUtils(0)
+  , fRun(-1),            fRecoUtils(0),        fConfigName("")
 {
   // Constructor
   for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = 0 ;
@@ -99,6 +101,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
   fRecoUtils       = new AliEMCALRecoUtils();
 }
+
 
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
@@ -127,16 +130,39 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
 }
 
 //-------------------------------------------------------------------
+void AliAnalysisTaskEMCALClusterize::Init()
+{
+  //Init analysis with configuration macro if available
+  
+  if(gROOT->LoadMacro(fConfigName) >=0){
+    printf("Configure analysis with %s\n",fConfigName.Data());
+    AliAnalysisTaskEMCALClusterize *clus = (AliAnalysisTaskEMCALClusterize*)gInterpreter->ProcessLine("ConfigEMCALClusterize()");
+    fGeomName         = clus->fGeomName; 
+    fLoadGeomMatrices = clus->fLoadGeomMatrices;
+    fOCDBpath         = clus->fOCDBpath;
+    fRecParam         = clus->fRecParam;
+    fJustUnfold       = clus->fJustUnfold;
+    fFillAODFile      = clus->fFillAODFile;
+    fRecoUtils        = clus->fRecoUtils; 
+    fConfigName       = clus->fConfigName;
+    fOutputAODBranchName = clus->fOutputAODBranchName;
+    for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
+
+  }
+
+}  
+
+//-------------------------------------------------------------------
 void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
 {
   // Init geometry, create list of output clusters
-  
+
   fGeom =  AliEMCALGeometry::GetInstance(fGeomName) ;	
 
   fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
   fOutputAODBranch->SetName(fOutputAODBranchName);
   AddAODBranch("TClonesArray", &fOutputAODBranch);
-  Info("UserCreateOutputObjects","Create Branch: %s",fOutputAODBranchName.Data());
+
 }
 
 //________________________________________________________________________
@@ -145,6 +171,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   // Main loop
   // Called for each event
   
+  //printf("--- Event %d -- \n",(Int_t)Entry());
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
   
@@ -199,6 +226,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         fGeomMatrixSet=kTRUE;
       }//ESD
     }//Load matrices from Data 
+    
+    //Recover time dependent corrections, put then in recalibration histograms. Do it once
+    fRecoUtils->SetTimeDependentCorrections(InputEvent()->GetRunNumber());
+
   }//first event
 
   //Get the list of cells needed for unfolding and reclustering
@@ -215,6 +246,19 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       AliVCluster *clus = event->GetCaloCluster(i);
       if(clus->IsEMCAL()){        
         //printf("Org Cluster %d, E %f\n",i, clus->E());
+        
+        //recalibrate/remove bad channels/etc if requested
+        if(fRecoUtils->ClusterContainsBadChannel(fGeom,clus->GetCellsAbsId(), clus->GetNCells())){
+          //printf("Remove cluster\n");
+          continue;
+        } 
+        
+        if(fRecoUtils->IsRecalibrationOn()){
+          //printf("Energy before %f ",clus->E());
+          fRecoUtils->RecalibrateClusterEnergy(fGeom, clus, cells);
+          //printf("; after %f\n",clus->E());
+        }
+        //Cast to ESD or AOD, needed to create the cluster array
         AliESDCaloCluster * esdCluster = dynamic_cast<AliESDCaloCluster*> (clus);
         AliAODCaloCluster * aodCluster = dynamic_cast<AliAODCaloCluster*> (clus);
         if     (esdCluster){
@@ -234,6 +278,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     
     //CLEAN-UP
     fUnfolder->Clear();
+    
     
     //printf("nClustersOrg %d\n",nClustersOrg);
   }
@@ -266,6 +311,23 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       amp  = cellAmplitude;
       id   = cellNumber;
       
+      Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+      fGeom->GetCellIndex(id,imod,iTower,iIphi,iIeta); 
+      fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+      
+      //Do not include bad channels found in analysis?
+      if( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
+          fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){
+        //printf("Remove channel %d\n",id);
+        continue;
+      }
+             
+      //Recalibrate?
+      if(fRecoUtils->IsRecalibrationOn()){ 
+        //printf("CalibFactor %f times %f for id %d\n",fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),amp,id);
+        amp *=fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+      }
+           
       AliEMCALDigit *digit = (AliEMCALDigit*) fDigitsArr->New(idigit);
       digit->SetId(id);
       digit->SetAmplitude(amp);
@@ -273,7 +335,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       digit->SetTimeR(time);
       digit->SetIndexInList(idigit);
       digit->SetType(AliEMCALDigit::kHG);
-      //if(Entry()==0) printf("Digit: Id %d, amp %f, time %e, index %d\n",id, amp,time,idigit);
+      
+      //printf("Digit: Id %d, amp %f, time %e, index %d\n",id, amp,time,idigit);
       idigit++;
     }
     
@@ -336,7 +399,15 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       }
     }
     
+    //In case of new bad channels, recalculate distance to bad channels
+    if(fRecoUtils->IsBadChannelsRemovalSwitchedOn()){
+      //printf("DistToBad before %f ",newCluster->GetDistanceToBadChannel());
+      fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, event->GetEMCALCells(), newCluster);
+      //printf("; after %f \n",newCluster->GetDistanceToBadChannel());
+    }
+    
     newCluster->SetID(i);
+    //printf("Cluster %d, energy %f\n",newCluster->GetID(),newCluster->E());
     new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
   }
   
@@ -525,7 +596,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     recPoint->GetElipsAxis(elipAxis);
     clus->SetM02(elipAxis[0]*elipAxis[0]) ;
     clus->SetM20(elipAxis[1]*elipAxis[1]) ;
-    clus->SetDistToBadChannel(recPoint->GetDistanceToBadTower()); 
+    clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
     clusArray->Add(clus);
   } // recPoints loop
 }
