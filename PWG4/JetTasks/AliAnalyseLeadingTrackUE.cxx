@@ -48,9 +48,12 @@
 //#include "AliKFVertex.h"
 //#include "AliLog.h"
 #include "AliMCEvent.h"
-//#include "AliMCEventHandler.h"
-//#include "AliStack.h"
 #include "AliVParticle.h"
+
+#include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
+#include "AliStack.h"
+
 
 ////////////////////////////////////////////////
 //--------------------------------------------- 
@@ -235,19 +238,19 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
   Int_t nTracks;
   
   if (obj->InheritsFrom("TClonesArray")){ // MC particles
-  	TClonesArray *arrayMC = dynamic_cast<TClonesArray*>(obj);
+  	TClonesArray *arrayMC = static_cast<TClonesArray*>(obj);
         nTracks = arrayMC->GetEntriesFast();
   }else if (obj->InheritsFrom("TObjArray")){ // list of AliVParticle
-  	TObjArray *array = dynamic_cast<TObjArray*>(obj);
+  	TObjArray *array = static_cast<TObjArray*>(obj);
         nTracks = array->GetEntriesFast();
   }else if (obj->InheritsFrom("AliAODEvent")){  // RECO AOD tracks
-  	AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(obj);
+  	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
         nTracks = aodEvent->GetNTracks();
   }else if (obj->InheritsFrom("AliESDEvent")){  // RECO ESD tracks
-  	AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(obj);
+  	AliESDEvent *esdEvent = static_cast<AliESDEvent*>(obj);
         nTracks = esdEvent->GetNumberOfTracks();
   }else if (obj->InheritsFrom("AliMCEvent")){  // RECO ESD tracks
-  	AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(obj);
+  	AliMCEvent *mcEvent = static_cast<AliMCEvent*>(obj);
         nTracks = mcEvent->GetNumberOfTracks();
   }else {
   	if (fDebug > 1) AliFatal(" Analysis type not defined !!! ");
@@ -267,7 +270,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
   AliVParticle *part=0;
   
   if (obj->InheritsFrom("TClonesArray")){ // AOD-MC PARTICLE
-  	TClonesArray *arrayMC = dynamic_cast<TClonesArray*>(obj);
+  	TClonesArray *arrayMC = static_cast<TClonesArray*>(obj);
         part = (AliVParticle*)arrayMC->At( ipart );
 	if (!part)return 0;
 	// eventually only primaries
@@ -311,18 +314,31 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
                 else
                 {
                   // if mother not found, accept particle only in case of particleSpecies == 3. To include it in all or no sample is no solution
-                  Printf("WARNING: No mother found for particle %d", part->GetLabel());
+                  Printf("WARNING: No mother found for particle %d:", part->GetLabel());
+                  part->Print();
+  
+                  /*
+                  // this code prints the details of the mother that is missing in the AOD
+                  AliMCEventHandler* fMcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  
+                  AliMCEvent* fMcEvent = fMcHandler->MCEvent();
+                  
+                  fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->Print();
+                  fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->GetMother(0))->Print();
+                  Printf("eta = %f", fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(fMcEvent->Stack()->Particle(part->GetLabel())->GetMother(0))->GetMother(0))->Eta());
+                  */
+                  
                   if (particleSpecies != 3)
                     return 0;
                 }
         }
   
   }else if (obj->InheritsFrom("TObjArray")){ // list of AliVParticle
-  	TObjArray *array = dynamic_cast<TObjArray*>(obj);
+  	TObjArray *array = static_cast<TObjArray*>(obj);
         part = (AliVParticle*)array->At( ipart );
 	if (!part)return 0;
   }else if (obj->InheritsFrom("AliMCEvent")){ // MC PARTICLE
-        AliMCEvent* mcEvent =  dynamic_cast<AliMCEvent*>(obj);
+        AliMCEvent* mcEvent =  static_cast<AliMCEvent*>(obj);
 	part = mcEvent->GetTrack( ipart );
 	if (!part) return 0;
 	// eventually only primaries
@@ -339,7 +355,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	*/
 
   }else if (obj->InheritsFrom("AliAODEvent")){ // RECO AOD TRACKS
-  	AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(obj);
+  	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
         part = aodEvent->GetTrack(ipart);
 	// track selection cuts
 	if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) ) return 0; 
@@ -355,7 +371,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 		}
   
   }else if (obj->InheritsFrom("AliESDEvent")){ // RECO ESD TRACKS
-  	AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(obj);
+  	AliESDEvent *esdEvent = static_cast<AliESDEvent*>(obj);
         part = esdEvent->GetTrack(ipart);
 	if (!part)return 0;
 	// track selection cuts
