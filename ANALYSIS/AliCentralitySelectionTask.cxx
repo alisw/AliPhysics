@@ -368,7 +368,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC vs Cent SPD",501,0,101,501,0,101);
 
   fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
-  fHOutMultV0R = new TH1F("fHOutMultV0R","fHOutMultV0R; Multiplicity V0",25000,0,25000);
+  fHOutMultV0R = new TH1F("fHOutMultV0R","fHOutMultV0R; Multiplicity V0",30000,0,30000);
   fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
   fHOutMultTRK = new TH1F("fHOutMultTRK","fHOutMultTRK; Multiplicity TPC",4000,0,4000);
   fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
@@ -787,7 +787,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 {
 // Clean outliers
   Float_t val= -0.143789 + 0.288874 * v0;
-  Float_t SPDsigma[100]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
+  Float_t SPDsigma[101]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
 			 160.84, 159.33, 154.453, 151.644, 148.337, 145.215, 142.353, 
 			 139.351, 136, 133.838, 129.885, 127.36, 125.032, 122.21, 120.3, 
 			 117.766, 114.77, 113.1, 110.268, 107.463, 105.293, 102.845, 
@@ -800,7 +800,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 			 28.9319, 27.564, 26.0443, 25.2836, 23.9753, 22.8936, 21.5665, 
 			 20.7048, 19.8016, 18.7095, 18.1144, 17.2095, 16.602, 16.3233, 
 			 15.7185, 15.3006, 14.7432, 14.4174, 14.0805, 13.7638, 13.7638, 
-			 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 18.0803};
+			 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 18.0803, 18.0803};
 
   if ( TMath::Abs(spd-val) > fOutliersCut*SPDsigma[cent] ) 
     return kTRUE;
@@ -813,7 +813,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 {
 // Clean outliers
   Float_t val = -0.540691 + 0.128358 * v0;
-  Float_t TPCsigma[100]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
+  Float_t TPCsigma[101]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
 			 78.0616, 77.2167, 75.0021, 73.9957, 72.0926, 71.0442, 69.8395, 
 			 68.1169, 66.6676, 66.0038, 64.2284, 63.3845, 61.7439, 60.642, 
 			 59.5383, 58.3696, 57.0227, 56.0619, 54.7108, 53.8382, 52.3398, 
@@ -826,7 +826,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 			 14.3911, 13.9301, 13.254, 12.6745, 12.2436, 11.7776, 11.1795, 
 			 10.673, 10.27, 9.95646, 9.50939, 9.26162, 8.95315, 8.73439, 
 			 8.67375, 8.43029, 8.34818, 8.33484, 8.40709, 8.3974, 8.32814, 
-			 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 12.351};
+			 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 12.351, 12.351};
 
   if ( TMath::Abs(tracks-val) > fOutliersCut*TPCsigma[cent] ) 
     return kTRUE;
