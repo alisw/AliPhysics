@@ -38,6 +38,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetGeometryName(const char *name)           { fGeomName            = name  ; }
   void                   SetOCDBPath(const char *path)               { fOCDBpath            = path  ; }
   void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
+  void                   SetLoadCalib(Bool_t b)                      { fLoadCalib           = b     ; }
+  void                   SetLoadPed(Bool_t b)                        { fLoadPed             = b     ; }
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
@@ -65,7 +67,10 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   TClonesArray          *fOutputAODBranch;  //!AOD Branch with output clusters  
   TString                fOutputAODBrName;  // output AOD branch name (none by default)
   AliEMCALRecoUtils     *fRecoUtils;        // access to factorized reconstruction algorithms
-  
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 1);
+  Bool_t                 fLoadCalib;        // access calib object from OCDB (def=off)
+  Bool_t                 fLoadPed;          // access ped object from OCDB (def=off)
+
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 2);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
+
