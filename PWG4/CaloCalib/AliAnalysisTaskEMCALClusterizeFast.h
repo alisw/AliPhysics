@@ -18,7 +18,8 @@ class AliEMCALRecoUtils;
 
 class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskEMCALClusterizeFast(const char *name=0);
+  AliAnalysisTaskEMCALClusterizeFast();
+  AliAnalysisTaskEMCALClusterizeFast(const char *name);
   virtual ~AliAnalysisTaskEMCALClusterizeFast();
   
  public:
@@ -48,6 +49,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   Init();
   void                   FillDigitsArray(AliAODEvent *event);
   void                   FillDigitsArray(AliESDEvent *event);
+  void                   UpdateCells(AliAODEvent *event);
+  void                   UpdateCells(AliESDEvent *event);
   void                   RecPoints2Clusters();
 
   Int_t                  fRun;              //!run number
