@@ -62,6 +62,7 @@ ClassImp(AliEMCALClusterizer)
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer():
   fIsInputCalibrated(kFALSE),
+  fJustClusters(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -83,6 +84,7 @@ AliEMCALClusterizer::AliEMCALClusterizer():
 //____________________________________________________________________________
 AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry* geometry): 
   fIsInputCalibrated(kFALSE),
+  fJustClusters(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -121,6 +123,7 @@ AliEMCALClusterizer::AliEMCALClusterizer(AliEMCALGeometry *geometry,
                                          AliEMCALCalibData *calib, 
                                          AliCaloCalibPedestal *caloped): 
   fIsInputCalibrated(kFALSE),
+  fJustClusters(kFALSE),
   fDigitsArr(NULL),
   fTreeR(NULL),
   fRecPoints(NULL),
@@ -201,10 +204,12 @@ Float_t AliEMCALClusterizer::Calibrate(const Float_t amp, const Float_t time, co
   // Gustavo: 15-12-09 In case of RAW data this selection is already done, but not in simulation.
   // for the moment keep it here but remember to do the selection at the sdigitizer level 
   // and remove it from here
-  Int_t channelStatus = (Int_t)(fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
-  if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
-    AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
-    return 0;
+  if (fCaloPed) {
+    Int_t channelStatus = (Int_t)(fCaloPed->GetDeadMap(iSupMod))->GetBinContent(ieta,iphi);
+    if(channelStatus == AliCaloCalibPedestal::kHot || channelStatus == AliCaloCalibPedestal::kDead) {
+      AliDebug(2,Form("Tower from SM %d, ieta %d, iphi %d is BAD : status %d !!!",iSupMod,ieta,iphi, channelStatus));
+      return 0;
+    }
   }
   //Check if time is too large or too small, indication of a noisy channel, remove in this case
   if(time > fTimeMax || time < fTimeMin) return 0;
@@ -492,4 +497,13 @@ void AliEMCALClusterizer::SetInputCalibrated(Bool_t val)
   // Flag to indicate that input is calibrated - the case when we run already on ESD
 
   fIsInputCalibrated = val;
+}
+
+//___________________________________________________________________
+void AliEMCALClusterizer::SetJustClusters(Bool_t val)
+{
+  // Flag to indicate that we are running on ESDs, when calling 
+  // rp->EvalAll(fECAW0,fDigitsArr,fJustClusters); in derived classes
+
+  fJustClusters = val;
 }

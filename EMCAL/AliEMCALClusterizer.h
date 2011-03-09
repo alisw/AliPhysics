@@ -79,7 +79,8 @@ public:
   virtual void PrintRecPoints(Option_t *option);
   virtual void PrintRecoInfo();
 
-  void    SetInputCalibrated(Bool_t val);
+  void         SetInputCalibrated(Bool_t val);
+  void         SetJustClusters(Bool_t val);
   
   virtual const char *Version() const { Warning("Version", "Not Defined"); return 0; } 
 
@@ -92,7 +93,7 @@ protected:
   virtual void MakeClusters() = 0;
   
   Bool_t fIsInputCalibrated; // to enable reclusterization from ESD cells
-  
+  Bool_t fJustClusters;      // false for standard reco  
   TClonesArray *fDigitsArr;  // array with EMCAL digits
   TTree        *fTreeR;      // tree with output clusters
   TObjArray    *fRecPoints;  // array with EMCAL clusters
@@ -126,6 +127,6 @@ protected:
   AliEMCALClusterizer(const AliEMCALClusterizer &);
   AliEMCALClusterizer & operator = (const AliEMCALClusterizer &);
   
-  ClassDef(AliEMCALClusterizer,5)  // Clusterization algorithm class 
+  ClassDef(AliEMCALClusterizer,6)  // Clusterization algorithm class 
 };
 #endif // AliEMCALCLUSTERIZER_H
