@@ -2090,7 +2090,7 @@ TList* AliITSv11GeometrySSD::GetCarbonFiberLowerSupportList(){
 }
 ///////////////////////////////////////////////////////////////////////////////
 TGeoVolume* AliITSv11GeometrySSD::GetSSDSensorSupport(Double_t length, Double_t height, 
-								 Double_t width, Double_t* thickness)const{
+								 Double_t width, const Double_t* thickness)const{
   /////////////////////////////////////////////////////////////
   // Method generating the Sensor Support   
   /////////////////////////////////////////////////////////////  
@@ -8022,7 +8022,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   return ssdcablesmother;
  }
  ////////////////////////////////////////////////////////////////////////////////
-TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], Double_t* width, 
+TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], const Double_t* width, 
                                             Double_t height, const char* shapename, Int_t isign) const{
   /////////////////////////////////////////////////////////////
   // Method generating an Arb shape 
@@ -8116,7 +8116,7 @@ TGeoXtru* AliITSv11GeometrySSD::GetArcShape(Double_t phi, Double_t rmin,
 	return arcshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoShape* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const {
+TGeoShape* AliITSv11GeometrySSD::GetScrewShape(const Double_t* radius,const Int_t* edgesnumber,const Double_t* section) const {
   ///////////////////////////////////////////////////////////////////////
   // Method Generating the Screw Shape  
   // radius[0]: outer radius
@@ -8156,7 +8156,7 @@ TGeoShape* AliITSv11GeometrySSD::GetScrewShape(Double_t* radius,Int_t* edgesnumb
   return screwshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoShape* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const {
+TGeoShape* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, const Double_t *section) const {
   ///////////////////////////////////////////////////////////////////////
   // Method Generating the Hole Shape  
   // radius of the Hole
@@ -8188,7 +8188,7 @@ TGeoShape* AliITSv11GeometrySSD::GetHoleShape(Double_t radius, Int_t nedges, Dou
   return holeshape;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TVector3* AliITSv11GeometrySSD::GetReflection(TVector3* vector,Double_t* param) const{
+TVector3* AliITSv11GeometrySSD::GetReflection(const TVector3* vector,const Double_t* param) const{
   /////////////////////////////////////////////////////////////
   // Given an axis specified by param, it gives the reflection of the point
   // respect to the axis

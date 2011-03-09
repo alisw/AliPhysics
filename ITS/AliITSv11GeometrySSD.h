@@ -38,9 +38,9 @@ public:
   // it returns the Sensitive Volume of Layer 5
   const char*   GetSenstiveVolumeName6() const {return fgSSDsensitiveVolName6;};
   // it returns the Sensitive Volume of Layer 6
-  TGeoVolumeAssembly* GetLadderSegment(Int_t i){return fladdersegment[i];}; // Get Ladder Segment
-  TGeoVolumeAssembly* GetEndLadderSegment(Int_t i){return fendladdersegment[i];}; // Get End Ladder Segment 
-  TGeoVolume* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
+  TGeoVolumeAssembly* GetLadderSegment(Int_t i) const {return fladdersegment[i];}; // Get Ladder Segment
+  TGeoVolumeAssembly* GetEndLadderSegment(Int_t i) const {return fendladdersegment[i];}; // Get End Ladder Segment 
+  TGeoVolume* GetLadder(Int_t i) const {return fladder[i];}; // Get Ladder
 //  TGeoVolumeAssembly* GetLadder(Int_t i) {return fladder[i];}; // Get Ladder
   TGeoVolumeAssembly* GetLayer(Int_t i)const {return i==5? fSSDLayer5 : fSSDLayer6;}; // Get Layer
   TGeoVolume** GetEndCapAssembly();     // End Cap Assembly
@@ -422,7 +422,7 @@ private:
   TList* GetCarbonFiberLowerSupportList(); 
 									    // Method generating CarbonFiberLowerSupport
   TGeoVolume* GetSSDSensorSupport(Double_t length, Double_t height, 
-								  Double_t width, Double_t* thickness) const; //
+								  Double_t width, const Double_t* thickness) const; //
 										// Method generating SSDSensorSupport
   TGeoVolume* GetCoolingTubeSupport(Int_t nedges); // Method generating CoolingTubeSupport 
   TList* GetSSDHybridParts();			// Method setting Hybrid Components 
@@ -458,12 +458,12 @@ private:
   TGeoXtru* GetArcShape(Double_t phi, Double_t rmin, 
 					    Double_t rmax, Int_t nedges, Double_t height); 
 										//Auxiliary Method for Arc Shape
-  TGeoArb8* GetArbShape(TVector3* vertexpos[],Double_t* width, 
+  TGeoArb8* GetArbShape(TVector3* vertexpos[],const Double_t* width, 
                         Double_t height,const char* shapename,Int_t isign = 1) const;
 									   // Method generating an Arb shape 
-  TGeoShape* GetScrewShape(Double_t* radius,Int_t* edgesnumber,Double_t* section) const;// Method Generating the Screw Shape  
-  TGeoShape* GetHoleShape(Double_t radius, Int_t nedges, Double_t *section) const;// Method Generating the Hole Shape  
-  TVector3* GetReflection(TVector3* vector,Double_t* param) const; 
+  TGeoShape* GetScrewShape(const Double_t* radius,const Int_t* edgesnumber,const Double_t* section) const;// Method Generating the Screw Shape  
+  TGeoShape* GetHoleShape(Double_t radius, Int_t nedges, const Double_t *section) const;// Method Generating the Hole Shape  
+  TVector3* GetReflection(const TVector3* vector,const Double_t* param) const; 
 										// Given an axis specified by param,
 										// it gives the reflection of the point respect to the axis
   TGeoHMatrix* AddTranslationToHMatrix(TGeoHMatrix* ct,Double_t dx,Double_t dy,
