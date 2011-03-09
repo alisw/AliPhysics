@@ -117,9 +117,14 @@ Bool_t AliRsnCutPIDTOF::IsSelected(TObject *object)
    if (esdTrack) {
       // setup the ESD PID object
       AliESDEvent *esd = 0x0;
-      if (fEvent) esd = fEvent->GetRefESD();
-      if (!esd) {
-         AliError("Processing an ESD track, but target is not an ESD event");
+      if (fEvent) {
+         esd = fEvent->GetRefESD();
+         if (!esd) {
+            AliError("Processing an ESD track, but target is not an ESD event");
+            return kFALSE;
+         }
+      } else {
+         AliError("NULL event reference");
          return kFALSE;
       }
       fESDpid.SetTOFResponse(esd, AliESDpid::kTOF_T0);

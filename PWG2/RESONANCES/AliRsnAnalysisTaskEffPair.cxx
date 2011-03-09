@@ -52,6 +52,24 @@ AliRsnAnalysisTaskEffPair& AliRsnAnalysisTaskEffPair::operator=(const AliRsnAnal
 }
 
 //_____________________________________________________________________________
+Bool_t AliRsnAnalysisTaskEffPair::RsnEventProcess()
+{
+//
+// Preprocessing to the event
+// Calls the same function in base class plus somethin specific
+//
+
+   if (!AliRsnAnalysisTaskEff::RsnEventProcess()) return kFALSE;
+   
+   // assign this event to the mother reference
+   fMother.SetRefEvent(&fRsnEvent[0]);
+   fDaughter[0].SetOwnerEvent(&fRsnEvent[0]);
+   fDaughter[1].SetOwnerEvent(&fRsnEvent[0]);
+   
+   return kTRUE;
+}
+
+//_____________________________________________________________________________
 Int_t AliRsnAnalysisTaskEffPair::NGoodSteps()
 {
 //
@@ -98,7 +116,6 @@ void AliRsnAnalysisTaskEffPair::ProcessEventESD()
    // set pointers
    fMother.SetDaughter(0, &fDaughter[0]);
    fMother.SetDaughter(1, &fDaughter[1]);
-   fMother.SetRefEvent(&fRsnEvent[0]);
    
    // loop on definitions
    AliRsnPairDef *def = 0x0;
