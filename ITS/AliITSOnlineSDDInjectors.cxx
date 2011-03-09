@@ -33,8 +33,10 @@
 ClassImp(AliITSOnlineSDDInjectors)
 
 const Float_t AliITSOnlineSDDInjectors::fgkSaturation = 1008.;
-const Float_t AliITSOnlineSDDInjectors::fgkDefaultLThreshold = 5.;
-const Float_t AliITSOnlineSDDInjectors::fgkDefaultHThreshold = 25.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultLThreshold1 = 8.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultLThreshold = 15.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultHThreshold1 =15.;
+const Float_t AliITSOnlineSDDInjectors::fgkDefaultHThreshold = 30.;
 const Float_t AliITSOnlineSDDInjectors::fgkDefaultMinSpeed = 5.5;
 const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxSpeed = 9.0;
 const Float_t AliITSOnlineSDDInjectors::fgkDefaultMaxErr = 1.5;
@@ -44,7 +46,24 @@ const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMin[kInjLines] = {10,50,100
 const UShort_t AliITSOnlineSDDInjectors::fgkDefaultTbMax[kInjLines] = {20,70,120};
 
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),fTbZero(0.),fRMSTbZero(0.),fNEvents(0),fParam(),fPolDegree(0),fActualPolDegree(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0),fTimeStep(0.),fUseTimeZeroSignal(kFALSE)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():
+  AliITSOnlineSDD(),
+  fHisto(),
+  fTbZero(0.),
+  fRMSTbZero(0.),
+  fNEvents(0),
+  fParam(),
+  fPolDegree(0),
+  fActualPolDegree(0),
+  fMinDriftSpeed(0.),
+  fMaxDriftSpeed(0.),
+  fMaxDriftSpeedErr(0.),
+  fFirstPadForFit(0),
+  fLastPadForFit(0),
+  fPadStatusCutForFit(0),
+  fTimeStep(0.),
+  fUseTimeZeroSignal(kFALSE),
+  fMaxCellsAboveThreshold(40)
 {
   // default constructor
   SetPositions();
@@ -60,7 +79,24 @@ AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors():AliITSOnlineSDD(),fHisto(),
   Reset();
 }
 //______________________________________________________________________
-AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):AliITSOnlineSDD(nddl,ncarlos,sid),fHisto(),fTbZero(0.),fRMSTbZero(0.),fNEvents(0),fParam(),fPolDegree(0),fActualPolDegree(0),fMinDriftSpeed(0.),fMaxDriftSpeed(0.),fMaxDriftSpeedErr(0.),fLowThreshold(0.),fHighThreshold(0.),fFirstPadForFit(0),fLastPadForFit(0),fPadStatusCutForFit(0),fTimeStep(0.),fUseTimeZeroSignal(kFALSE)
+AliITSOnlineSDDInjectors::AliITSOnlineSDDInjectors(Int_t nddl, Int_t ncarlos, Int_t sid):
+  AliITSOnlineSDD(nddl,ncarlos,sid),
+  fHisto(),
+  fTbZero(0.),
+  fRMSTbZero(0.),
+  fNEvents(0),
+  fParam(),
+  fPolDegree(0),
+  fActualPolDegree(0),
+  fMinDriftSpeed(0.),
+  fMaxDriftSpeed(0.),
+  fMaxDriftSpeedErr(0.),
+  fFirstPadForFit(0),
+  fLastPadForFit(0),
+  fPadStatusCutForFit(0),
+  fTimeStep(0.),
+  fUseTimeZeroSignal(kFALSE),
+  fMaxCellsAboveThreshold(40)
 { 
 // standard constructor
   SetPositions();
@@ -85,11 +121,13 @@ AliITSOnlineSDDInjectors::~AliITSOnlineSDDInjectors(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::SetDefaults(){
+  // Sets default values for parameters
   for(Int_t i=0;i<kInjLines;i++) {
     SetInjLineRange(i,fgkDefaultTbMin[i],fgkDefaultTbMax[i]);
     SetUseLine(i,kTRUE);
+    SetThresholds(i,fgkDefaultLThreshold,fgkDefaultHThreshold);
   }
-  SetThresholds(fgkDefaultLThreshold,fgkDefaultHThreshold);
+  SetThresholds(0,fgkDefaultLThreshold1,fgkDefaultHThreshold1);
   SetPolDegree(fgkDefaultPolDegree);
   SetMinDriftSpeed(fgkDefaultMinSpeed);
   SetMaxDriftSpeed(fgkDefaultMaxSpeed);
@@ -98,8 +136,26 @@ void AliITSOnlineSDDInjectors::SetDefaults(){
   SetPadStatusCutForFit();
 }
 //______________________________________________________________________
+void AliITSOnlineSDDInjectors::Set20MHzConfig(){
+  // Sets specific parameters for 20 MHz running
+  SetInjLineRange(0,10,20);
+  SetInjLineRange(1,50,70);
+  SetInjLineRange(2,100,120);
+  SetTimeStep(50.);
+  SetMaxNumberOfCellsPerAnode(40);
+}
+//______________________________________________________________________
+void AliITSOnlineSDDInjectors::Set40MHzConfig(){
+  // Sets specific parameters for 20 MHz running
+  SetInjLineRange(0,20,50);
+  SetInjLineRange(1,90,160);
+  SetInjLineRange(2,170,240);
+  SetTimeStep(25.);
+  SetMaxNumberOfCellsPerAnode(80);
+}
+//______________________________________________________________________
 void AliITSOnlineSDDInjectors::SetPositions(){
-  // 
+  // Sets drift distances for the 3 injector lines
   Double_t xLinFromCenterUm[kInjLines]={31860.,17460.,660.};
   Double_t xAnodeFromCenterUm=35085;
   for(Int_t i=0;i<kInjLines;i++){
@@ -109,7 +165,7 @@ void AliITSOnlineSDDInjectors::SetPositions(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::Reset(){
-  //
+  // Resets all counters
   for(Int_t i=0;i<kInjPads;i++){ 
     fDriftSpeed[i]=0.;
     fDriftSpeedErr[i]=0.;
@@ -124,7 +180,7 @@ void AliITSOnlineSDDInjectors::Reset(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::AnalyzeEvent(TH2F* his){
-  //
+  // Analyze the current event
   AddEvent(his);
   FitDriftSpeedVsAnode();
 }
@@ -160,7 +216,7 @@ void AliITSOnlineSDDInjectors::AddEvent(TH2F* his){
 }
 //______________________________________________________________________
 Double_t AliITSOnlineSDDInjectors::GetRMSDriftSpeed(Int_t ipad) const {
-  // 
+  // Compute RMS of drift speed distribution on one anode
   if(fNEventsInPad[ipad]<=1) return 0.;
   Double_t mean=fSumDriftSpeed[ipad]/(Double_t)fNEventsInPad[ipad];
   Double_t diff=fSumSqDriftSpeed[ipad]/(Double_t)fNEventsInPad[ipad]-mean*mean;
@@ -170,7 +226,7 @@ Double_t AliITSOnlineSDDInjectors::GetRMSDriftSpeed(Int_t ipad) const {
 
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FitMeanDriftSpeedVsAnode(){
-  // Calculates
+  // Fits the average drift speed vs.anode number
   if(fNEvents==0) return;
   for(Int_t i=0;i<kInjPads;i++){ 
     fDriftSpeed[i]=GetMeanDriftSpeed(i);
@@ -191,7 +247,7 @@ void AliITSOnlineSDDInjectors::FitMeanDriftSpeedVsAnode(){
 }
 //______________________________________________________________________
 TGraphErrors* AliITSOnlineSDDInjectors::GetTimeVsDistGraph(Int_t jpad) const{
-  // 
+  // Builds the graph of drift time vs. drift distance
   const Int_t kPts=kInjLines+1;
   Float_t x[kPts],y[kPts],ex[kPts],ey[kPts];
   x[0]=0.;
@@ -210,7 +266,7 @@ TGraphErrors* AliITSOnlineSDDInjectors::GetTimeVsDistGraph(Int_t jpad) const{
 
 //______________________________________________________________________
 TGraphErrors* AliITSOnlineSDDInjectors::GetDriftSpeedGraph() const{
-  // 
+  // Builds the graph of drift speed vs. anode number
   Int_t ipt=0;
   TGraphErrors *g=new TGraphErrors(0);
   for(Int_t i=0;i<kInjPads;i++){
@@ -249,8 +305,8 @@ void AliITSOnlineSDDInjectors::CalcTimeBinZero(){
       Double_t cont=fHisto->GetBinContent(itb,ian+1);
       Double_t contm1=fHisto->GetBinContent(itb+1,ian+1);
       Double_t contp1=fHisto->GetBinContent(itb-1,ian+1);
-      if(cont>fLowThreshold){
-	if(contm1>fHighThreshold || cont>fHighThreshold || contp1>fHighThreshold){
+      if(cont>fLowThreshold[0]){
+	if(cont>fHighThreshold[0] &&(contm1>fLowThreshold[0] || contp1>fLowThreshold[0])){
 	  tzero+=cont*float(itb);
 	  rmsPeak+=cont*float(itb)*float(itb);
 	  intCont+=cont;
@@ -416,7 +472,7 @@ void AliITSOnlineSDDInjectors::PolyFit(Int_t degree){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::CalcDriftSpeed(Int_t jpad){
-  // 
+  // Computes the drift speed from the fit to the 3 injector lines for each anode
   Double_t sumY=0,sumX=0,sumXX=0,sumYY=0.,sumXY=0,sumWEI=0.;
   Int_t npt=0;
   Double_t y[kInjLines],ey[kInjLines];
@@ -487,7 +543,7 @@ Int_t AliITSOnlineSDDInjectors::GetAnodeNumber(Int_t iInjPad) const{
 }
 //______________________________________________________________________
 Int_t AliITSOnlineSDDInjectors::GetInjPadNumberFromAnode(Int_t nAnode) const{
-  //
+  // Converts anode number into injector pad index
   Int_t iInjPad=-1;
   if(fSide==1){  // right side
     if(nAnode%8==0) iInjPad=nAnode/8;
@@ -515,18 +571,28 @@ Int_t AliITSOnlineSDDInjectors::GetInjPadStatus(Int_t jpad) const{
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FindGoodInjectors(){
-  // 
+  // Mark good injector pads
+  // good = 1 cell above high threshold + 1 neighbour above low threshold
   for(Int_t jpad=0;jpad<kInjPads;jpad++){
     Int_t ian=GetAnodeNumber(jpad);
-    for(Int_t jlin=0;jlin<kInjLines;jlin++){
-      for(Int_t jjj=fTbMin[jlin];jjj<fTbMax[jlin];jjj++){
-	Float_t c1=fHisto->GetBinContent(jjj,ian+1);
-	Float_t c2=fHisto->GetBinContent(jjj+1,ian+1);
-	//	Float_t c3=fHisto->GetBinContent(jjj+2,ian+1);
-	if(c1>fLowThreshold && c2>fLowThreshold){ 
-	  if(c1>fHighThreshold || c2>fHighThreshold){
-	    fGoodInj[jpad][jlin]=1;
-	    break;
+    Int_t countAbove=0;
+    for(Int_t jjj=0; jjj<fHisto->GetNbinsX(); jjj++){
+      Float_t c=fHisto->GetBinContent(jjj+1,ian+1);
+      if(c>0.5) countAbove++;
+    }
+    if(countAbove>fMaxCellsAboveThreshold){
+      for(Int_t jlin=0;jlin<kInjLines;jlin++) fGoodInj[jpad][jlin]=0;           
+    }else{
+      for(Int_t jlin=0;jlin<kInjLines;jlin++){
+	for(Int_t jjj=fTbMin[jlin];jjj<fTbMax[jlin];jjj++){
+	  Float_t c1=fHisto->GetBinContent(jjj,ian+1);
+	  Float_t c2=fHisto->GetBinContent(jjj+1,ian+1);
+	  //	Float_t c3=fHisto->GetBinContent(jjj+2,ian+1);
+	  if(c1>fLowThreshold[jlin] && c2>fLowThreshold[jlin]){ 
+	    if(c1>fHighThreshold[jlin] || c2>fHighThreshold[jlin]){
+	      fGoodInj[jpad][jlin]=1;
+	      break;
+	    }
 	  }
 	}
       }
@@ -535,7 +601,7 @@ void AliITSOnlineSDDInjectors::FindGoodInjectors(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::FindCentroids(){
-  // 
+  // Computes the centroids (weighted mean) of teh injector pads
   for(Int_t jpad=0;jpad<kInjPads;jpad++){
     Int_t ian=GetAnodeNumber(jpad);
     for(Int_t jlin=0;jlin<kInjLines;jlin++){
@@ -553,7 +619,7 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
       Int_t jjj=ilmax;
       while(1){
 	Double_t cont=fHisto->GetBinContent(jjj,ian+1);
-	if(cont<fLowThreshold) break;
+	if(cont<fLowThreshold[jlin]) break;
 	if(cont<fgkSaturation){
 	  fCentroid[jpad][jlin]+=cont*(Double_t)jjj;
 	  fRMSCentroid[jpad][jlin]+=cont*(Double_t)jjj*(Double_t)jjj;
@@ -564,7 +630,7 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
       jjj=ilmax+1;
       while(1){
 	Double_t cont=fHisto->GetBinContent(jjj,ian+1);
-	if(cont<fLowThreshold) break;
+	if(cont<fLowThreshold[jlin]) break;
 	if(cont<fgkSaturation){
 	  fCentroid[jpad][jlin]+=cont*float(jjj);
 	  fRMSCentroid[jpad][jlin]+=cont*(Double_t)jjj*(Double_t)jjj;
@@ -587,21 +653,23 @@ void AliITSOnlineSDDInjectors::FindCentroids(){
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::PrintInjectorStatus(){
-  //
+  // Dumps the status bit of injector pads
   for(Int_t jpad=0;jpad<kInjPads;jpad++){
     printf("Line%d-Anode%d: %d %d %d\n",jpad,GetAnodeNumber(jpad),fGoodInj[jpad][0],fGoodInj[jpad][1],fGoodInj[jpad][2]);
   }
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::PrintCentroids(){
-  //
+  // Dumps the drift time centroids of injector pads
   for(Int_t jpad=0;jpad<kInjPads;jpad++){
     printf("Line%d-Anode%d: %f+-%f %f+-%f %f+-%f\n",jpad,GetAnodeNumber(jpad),fCentroid[jpad][0],fRMSCentroid[jpad][0],fCentroid[jpad][1],fRMSCentroid[jpad][1],fCentroid[jpad][2],fRMSCentroid[jpad][2]);
   }
 }
 //______________________________________________________________________
 void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_t optAppend){
-  //
+  // writes drift speed vs. anode fit parameters into an ASCII file 
+  // to be sent to FXS by the DA and processed by the SHUTTLE
+
   TString outfilnam;
   outfilnam.Form("SDDinj_ddl%02dc%02d_sid%d.data",fDDL,fCarlos,fSide);  
   FILE* outf;
@@ -619,6 +687,7 @@ void AliITSOnlineSDDInjectors::WriteToASCII(Int_t evNumb, UInt_t timeStamp, Int_
 }
 //______________________________________________________________________
 TH1F* AliITSOnlineSDDInjectors::GetMeanDriftSpeedVsPadHisto() const{
+  // Builds histogram of average drift speed vs. pad number
   TString hisnam;
   hisnam.Form("hdrsp%02dc%02ds%d",fDDL,fCarlos,fSide);
   TH1F* h=new TH1F(hisnam.Data(),"",kInjPads,-0.5,kInjPads-0.5);
@@ -635,7 +704,7 @@ TH1F* AliITSOnlineSDDInjectors::GetMeanDriftSpeedVsPadHisto() const{
 }
 //______________________________________________________________________
 Bool_t AliITSOnlineSDDInjectors::WriteToROOT(TFile *fil) const {
-  //
+  // Writes the output histograms into a root file
   if(fil==0){ 
     AliWarning("Invalid pointer to ROOT file");
     return kFALSE;    

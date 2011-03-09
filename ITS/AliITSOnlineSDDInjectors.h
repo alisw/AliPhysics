@@ -25,26 +25,21 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   virtual ~AliITSOnlineSDDInjectors();
 
 
-  void SetThresholds(Float_t tl, Float_t th){
-    fLowThreshold=tl;
-    fHighThreshold=th;
+  void SetThresholds(Int_t ilin, Float_t tl, Float_t th){
+    fLowThreshold[ilin]=tl;
+    fHighThreshold[ilin]=th;
   }
+  void SetMaxNumberOfCellsPerAnode(Int_t maxc=40){
+    fMaxCellsAboveThreshold=maxc;
+  }
+
   void SetInjLineRange(Int_t jlin, Int_t tbmin, Int_t tbmax){
     fTbMin[jlin]=tbmin;
     fTbMax[jlin]=tbmax;
   }
-  void Set20MHzConfig(){
-    SetInjLineRange(0,10,20);
-    SetInjLineRange(1,50,70);
-    SetInjLineRange(2,100,120);
-    SetTimeStep(50.);
-  }
-  void Set40MHzConfig(){
-    SetInjLineRange(0,20,50);
-    SetInjLineRange(1,90,160);
-    SetInjLineRange(2,170,240);
-    SetTimeStep(25.);
-  }
+  void Set20MHzConfig();
+  void Set40MHzConfig();
+
   void SetPolDegree(Int_t n){fPolDegree=n;}
   void SetMinDriftSpeed(Float_t vmin){fMinDriftSpeed=vmin;}
   void SetMaxDriftSpeed(Float_t vmax){fMaxDriftSpeed=vmax;}
@@ -135,7 +130,9 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   AliITSOnlineSDDInjectors& operator = (const AliITSOnlineSDDInjectors& source);
   static const Float_t fgkSaturation;        // ADC saturation value (1008)
   static const Float_t fgkDefaultLThreshold;  // Default for fLowThreshold
+  static const Float_t fgkDefaultLThreshold1;  // Default for fLowThreshold
   static const Float_t fgkDefaultHThreshold;  // Default for fHighThreshold
+  static const Float_t fgkDefaultHThreshold1;  // Default for fHighThreshold
   static const Float_t fgkDefaultMinSpeed;   // Default for fMinDriftSpeed
   static const Float_t fgkDefaultMaxSpeed;   // Default for fMaxDriftSpeed
   static const Float_t fgkDefaultMaxErr;     // Default for fMaxDriftSpeedErr
@@ -170,18 +167,20 @@ class AliITSOnlineSDDInjectors : public AliITSOnlineSDD {
   Float_t fMinDriftSpeed;            // Minimum value for drift speed
   Float_t fMaxDriftSpeed;            // Maximum value for drift speed
   Float_t fMaxDriftSpeedErr;         // Maximum value for error on drift speed
-  Float_t fLowThreshold;             // Low threshold for injector signal
-  Float_t fHighThreshold;            // High threshold for injector signal
+  Float_t fLowThreshold[kInjLines];  // Low threshold for injector signal
+  Float_t fHighThreshold[kInjLines]; // High threshold for injector signal
 
   Bool_t fUseLine[kInjLines];        // Flag to use/not use a line
   Int_t fFirstPadForFit;             // first injector pad used in fit
   Int_t fLastPadForFit;              // last injector pad used in fit
   Int_t fPadStatusCutForFit;         // minimum value of pad status for fit
 
-  Double_t fTimeStep;                 // time bin value (25 or 50 ns)
+  Double_t fTimeStep;                // time bin value (25 or 50 ns)
   Bool_t fUseTimeZeroSignal;         // flag for usage of time zero signal
                                      // in drift speed calculation
 
-  ClassDef(AliITSOnlineSDDInjectors,8)
+  Int_t fMaxCellsAboveThreshold;     // cut to remove noisy anodes
+
+  ClassDef(AliITSOnlineSDDInjectors,9)
 };
 #endif
