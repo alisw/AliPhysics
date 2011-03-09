@@ -40,11 +40,13 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     // function to select centrality
     void SetUseCentrality(Bool_t useCentrality = kFALSE)  { fUseCentrality = useCentrality; }    
     // function to set the beam type
-    void SetBeamType(TString beamType) {  fBeamType = beamType; }
+    void SetBeamType(TString beamType) {  fBeamType = beamType; }    
     // function to create the THnSparse and name the axis
     THnSparseF* CreateEventTHnSparse(const char* name, Int_t size, const int* bins, double* min, double* max);
     // function to create the THnSparse and name the axis
     THnSparseF* CreateTrackTHnSparse(const char* name, Int_t size, const int* bins, double* min, double* max);
+    // options for filling HLT or OFF properties, or event and track properties
+    void SetOptions(TString options) { fOptions = options; }
     //function to fill the THnSparse
     //void Fill(AliESDevent *esd, THnSparseF* thn);
     
@@ -54,9 +56,7 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     AliAnalysisTaskHLTCentralBarrel(const AliAnalysisTaskHLTCentralBarrel&); 
     /** assignment operator */
     AliAnalysisTaskHLTCentralBarrel& operator=(const AliAnalysisTaskHLTCentralBarrel&); 
-             
-    //Int_t CalculateCentrality(AliESDEvent* esd);
-   
+                
     Bool_t fUseHLTTrigger;  // Use HLT Trigger Decision
     Bool_t fUseCentrality;  // Include centrality
     TString fBeamType;      // beam type, p-p, Pb-Pb, No beam
@@ -68,6 +68,8 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
 
     THnSparse *fTrackOFF; //! offline track properties
     THnSparse *fTrackHLT; //! HLT track properties
+    
+    TString fOptions; //!
 
     TText *fTextBox; //! TText box
     

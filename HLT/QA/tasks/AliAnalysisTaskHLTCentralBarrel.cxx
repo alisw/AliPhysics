@@ -54,6 +54,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
   ,fEventHLT(0)
   ,fTrackOFF(0) 
   ,fTrackHLT(0)
+  ,fOptions()
   ,fTextBox(0)
 {
   // Constructor
@@ -75,6 +76,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *nam
   ,fEventHLT(0)
   ,fTrackOFF(0) 
   ,fTrackHLT(0) 
+  ,fOptions()
   ,fTextBox(0)
 {
   // Constructor
@@ -97,9 +99,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList->SetOwner();
   fOutputList->SetName(GetName());
-  
- 
-  
+    
   static const int sizeEvent = 6;
  
   int    binsEvent[sizeEvent] = {  50,  50, 250,   100,   100, 2 };
@@ -131,11 +131,11 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   }
   
   fTextBox = new TText();  
-  
+
   fOutputList->Add(fEventOFF);
   fOutputList->Add(fEventHLT);
   fOutputList->Add(fTrackOFF);
-  fOutputList->Add(fTrackHLT);
+  fOutputList->Add(fTrackHLT);  
   fOutputList->Add(fTextBox);
   
   PostData(1, fOutputList);
@@ -170,12 +170,6 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   }
       
   // if(fUseHLTTrigger && !((AliHLTGlobalTriggerDecision*)esdHLT->GetHLTTriggerDecision())->Result()) return;  
-   //Int_t centbin = -1;
-   //if(fUseCentrality){
-     //centbin = CalculateCentrality(esdOFF);
-     //printf("Centrality bin = %d", centbin);
-   //} 
-
   
   //============================ OFFLINE =============================//
 
@@ -187,10 +181,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   if(esdOFF->GetEventSpecie()==16) return;
 
   AliCentrality *cent = esdOFF->GetCentrality();
-  //printf("centrality V0: %f\n", cent->GetCentralityPercentile("V0M"));
-  //printf("centrality V0: %f\n",cent->GetCentralityPercentileUnchecked("V0M"));
-  //printf("centrality SPD: %f\n",cent->GetCentralityPercentile("CL1"));
-  
+    
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
       AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
       if (!esdTrackOFF) continue;
@@ -224,30 +215,50 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
       //else ?????? why doesn't it work with pp????
       esdTrackOFF->GetImpactParametersTPC(dca,cov);
 
-      Float_t DCAr =-99, DCAz = -99.;   
-      Double_t trackOFF[] = {
-     			        TMath::Abs(esdTrackOFF->Pt()) 
-     			       ,esdTrackOFF->GetTPCNcls()      
-     			       ,esdTrackOFF->Theta()	       
-     			       ,esdTrackOFF->Eta()	       
-     			       ,esdTrackOFF->Phi()	       
-     			       ,dca[0]  		       
-     			       ,dca[1]  		       
-     			       ,esdTrackOFF->Charge() 
-     			       ,DCAr			       
-     			       ,DCAz			       
-     			       ,esdTrackOFF->GetNcls(0)
-			       ,nr_tracksOFF
-			       ,vertOFF->GetStatus()
-			       ,vertOFF->GetZ()
-			       //,centbin
-			       ,cent->GetCentralityPercentile("V0M")
-     			    };
-      fTrackOFF->Fill(trackOFF);
-    }
+      Float_t DCAr =-99, DCAz = -99.;  
+
+      if(fBeamType.Contains("Pb")){       
+         Double_t trackOFF[] = {
+        			   TMath::Abs(esdTrackOFF->Pt()) 
+        			  ,esdTrackOFF->GetTPCNcls()	  
+        			  ,esdTrackOFF->Theta() 	  
+        			  ,esdTrackOFF->Eta()		  
+        			  ,esdTrackOFF->Phi()		  
+        			  ,dca[0]			  
+        			  ,dca[1]			  
+        			  ,esdTrackOFF->Charge() 
+        			  ,DCAr 			  
+        			  ,DCAz 			  
+        			  ,esdTrackOFF->GetNcls(0)
+        			  ,nr_tracksOFF
+        			  ,vertOFF->GetStatus()
+        			  ,vertOFF->GetZ()
+        			  ,cent->GetCentralityPercentile("V0M")
+        		       };			       			      
+        if(fOptions.Contains("track-off")) fTrackOFF->Fill(trackOFF);
+      } else {
+        Double_t trackOFF[] = {
+        			   TMath::Abs(esdTrackOFF->Pt()) 
+        			  ,esdTrackOFF->GetTPCNcls()	  
+        			  ,esdTrackOFF->Theta() 	  
+        			  ,esdTrackOFF->Eta()		  
+        			  ,esdTrackOFF->Phi()		  
+        			  ,dca[0]			  
+        			  ,dca[1]			  
+        			  ,esdTrackOFF->Charge() 
+        			  ,DCAr 			  
+        			  ,DCAz 			  
+        			  ,esdTrackOFF->GetNcls(0)
+        			  ,nr_tracksOFF
+        			  ,vertOFF->GetStatus()
+        			  ,vertOFF->GetZ()        			  
+        		      };
+        if(fOptions.Contains("track-off")) fTrackOFF->Fill(trackOFF);
+      }
+  } // end of track loop
     
-    Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};
-    fEventOFF->Fill(eventOFF);  
+  Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};
+  if(fOptions.Contains("event-off")) fEventOFF->Fill(eventOFF);  
     
   
   
@@ -265,7 +276,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   }
   
   Double_t eventHLT[] = { vertHLT->GetX(), vertHLT->GetY(), vertHLT->GetZ(), vertHLT->GetNContributors(), nr_tracksHLT, vertHLT->GetStatus()};
-  fEventHLT->Fill(eventHLT);  
+  if(fOptions.Contains("event-hlt")) fEventHLT->Fill(eventHLT);  
 
   for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){
       
@@ -288,29 +299,45 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
       }
       
-      Int_t dummycl[10];
-
-      Double_t trackHLT[] = {
-        		       TMath::Abs(esdTrackHLT->Pt())
-        		      ,esdTrackHLT->GetTPCNcls()    
-        		      ,esdTrackHLT->Theta()
-        		      ,esdTrackHLT->Eta()	    
-        		      ,esdTrackHLT->Phi()
-        		      ,dca[0]			    
-        		      ,dca[1]			    
-        		      ,esdTrackHLT->Charge()	    
-        		      ,DCAr			    
-        		      ,DCAz			    
-			      //,esdTrackHLT->GetNcls(0)
-			      ,esdTrackHLT->GetITSclusters(dummycl)
-			      ,nr_tracksHLT
-			      ,vertHLT->GetStatus()
-			      ,vertHLT->GetZ()
-			      //,centbin
-			      ,cent->GetCentralityPercentile("V0M")
-        		    };
-      fTrackHLT->Fill(trackHLT);      
-  }               
+      if(fBeamType.Contains("Pb")){
+         Double_t trackHLT[] = {
+        		         TMath::Abs(esdTrackHLT->Pt())
+        		        ,esdTrackHLT->GetTPCNcls()    
+        		        ,esdTrackHLT->Theta()
+        		        ,esdTrackHLT->Eta()	      
+        		        ,esdTrackHLT->Phi()
+        		        ,dca[0] 		      
+        		        ,dca[1] 		      
+        		        ,esdTrackHLT->Charge()        
+        		        ,DCAr			      
+        		        ,DCAz			      
+        		        ,esdTrackHLT->GetNcls(0)
+        		        ,nr_tracksHLT
+        		        ,vertHLT->GetStatus()
+        		        ,vertHLT->GetZ()
+        		        ,cent->GetCentralityPercentile("V0M")
+        		       };
+        if(fOptions.Contains("track-hlt")) fTrackHLT->Fill(trackHLT);   
+      } else {
+         Double_t trackHLT[] = {
+             		   	 TMath::Abs(esdTrackHLT->Pt())
+             		   	,esdTrackHLT->GetTPCNcls()    
+             		   	,esdTrackHLT->Theta()
+             		   	,esdTrackHLT->Eta()	      
+             		   	,esdTrackHLT->Phi()
+             		   	,dca[0] 		      
+             		   	,dca[1] 		      
+             		   	,esdTrackHLT->Charge()        
+             		   	,DCAr			      
+             		   	,DCAz			      
+	     		   	,esdTrackHLT->GetNcls(0)
+	     		   	,nr_tracksHLT
+	     		   	,vertHLT->GetStatus()
+	     		   	,vertHLT->GetZ()		       
+             		       };
+        if(fOptions.Contains("track-hlt")) fTrackHLT->Fill(trackHLT);
+      }   
+  }  // end of track loop             
   // Post output data.
   PostData(1, fOutputList);
 }
@@ -318,32 +345,6 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 void AliAnalysisTaskHLTCentralBarrel::Terminate(Option_t *){
   // see header file of AliAnalysisTask for documentation 
 }
-
-// Int_t AliAnalysisTaskHLTCentralBarrel::CalculateCentrality(AliESDEvent* esd){
-// //see header for documentation
-// 
-//   Int_t centrality = -1;
-// 
-//   AliESDVZERO* esdV0 = esd->GetVZEROData();
-//   //AliESDZDC* esdZDC = esd->GetZDCData();
-//   //Int_t partZDC = esdZDC->GetZDCParticipants();
-// 
-//   Float_t multV0 = esdV0->GetMTotV0A() + esdV0->GetMTotV0C();
-//     
-//   if (      multV0 >=    0.  && multV0 <=   124.5 ) centrality = 90;
-//   else if ( multV0 >   124.5 && multV0 <=   274.5 ) centrality = 80;
-//   else if ( multV0 >   274.5 && multV0 <=   574.5 ) centrality = 70;
-//   else if ( multV0 >   574.5 && multV0 <=  1224.5 ) centrality = 60;
-//   else if ( multV0 >  1224.5 && multV0 <=  2174.5 ) centrality = 50;
-//   else if ( multV0 >  2174.5 && multV0 <=  3624.5 ) centrality = 40;
-//   else if ( multV0 >  3624.5 && multV0 <=  5574.5 ) centrality = 30;
-//   else if ( multV0 >  5574.5 && multV0 <=  8274.5 ) centrality = 20;
-//   else if ( multV0 >  8274.5 && multV0 <= 12024.5 ) centrality = 10;
-//   else if ( multV0 > 12024.5 && multV0 <= 14674.5 ) centrality = 5;
-//   else if ( multV0 > 14674.5 && multV0 <= 19449.5 ) centrality = 0;
-// 
-//   return centrality;
-// }
 
 THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateEventTHnSparse(const char* name, Int_t size, const Int_t* bins, Double_t* min, Double_t* max){
 //see header for documentation                     
@@ -373,7 +374,6 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
   thn->GetAxis(8)->SetTitle("DCArSG");
   thn->GetAxis(9)->SetTitle("DCAzSG");
   thn->GetAxis(10)->SetTitle("ITS clusters/track");  
-  thn->GetAxis(12)->SetTitle("V0 centrality");  
   return thn;
 }
 

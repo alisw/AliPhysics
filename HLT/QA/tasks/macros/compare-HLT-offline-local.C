@@ -7,15 +7,20 @@
  * analysis task. There is one output file per detector.
  *
  * Run without arguments to get a few examples how to use the macro.
- *
- * Usage:
- * <pre>
- *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","global","./",kTRUE,10)' 2>&1 | tee task.log
- *   aliroot -b -l -q compare-HLT-offline-local.C'("/home/blabla/AliESDs.root","phos global cb","./",kTRUE,100)' 2>&1 | tee task.log
- *   aliroot -b -l -q compare-HLT-offline-local.C'("alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root","global")' 2>&1 | tee log
- * </pre>
  * 
- * If alien:// is contained in the name of the file, then the macro connects to the grid to access the file.
+ * The arguments are:
+ * - the input file or txt file containing a list of ESDs to be processed (CreateESDChain takes 20 files as a default argument)
+ * - the task you want to use
+ * - the path of the task location
+ * - the beam type, "p-p" or "Pb-Pb", this is relevant ONLY for the central barrel task at the moment and is 
+ *   used to select proper binning and axes ranges for the THnSparse objects that it fills
+ * - options to make the central barrel task more flexible and lightweight; you can select if you want to 
+ *   fill the THnSparse object with only event or track properties or only HLT data or only OFF
+ *   possible options are: event-off event-hlt track-off track-hlt, all are turned on by default
+ * - boolean variable for selecting events which contain an HLT trigger
+ * - number of events to be analyzed
+ *
+ * If alien:// is placed before the input filename, then the macro connects to the grid to access the file.
  * 
  * In case you want to run over many ESD files, then prepare a list of them in a .txt file and they will be chained for the analysis.
  * The .txt file takes the place of the first argument in that case.
@@ -24,12 +29,13 @@
  * @author Kalliopi.Kanaki@ift.uib.no, Hege.Erdal@student.uib.no
  */
 
-void compare_HLT_offline_local(TString file, 
-                               const char* detectorTask="global",
-			       TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/", 
-			       TString beamType="p-p",
-			       bool fUseHLTTrigger=kFALSE, 
-			       Long64_t nEvents=1234567890
+void compare_HLT_offline_local( TString file
+                               ,const char* detectorTask="global"
+			       ,TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/"
+			       ,TString beamType="p-p"
+			       ,TString options="event-off event-hlt track-off track-hlt"
+			       ,bool fUseHLTTrigger=kFALSE
+			       ,Long64_t nEvents=1234567890
 			      )
 {
 
@@ -98,14 +104,6 @@ void compare_HLT_offline_local(TString file,
 	bCB = kTRUE;
 	continue;
       } 
-      if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	bPHOS   = kTRUE;
-	bEMCAL  = kTRUE;
-	bGLOBAL = kTRUE; 
-	bD0     = kTRUE;  
-	bCB     = kTRUE; 
-	continue;
-      }
       else break;
     }
   }
@@ -173,7 +171,7 @@ void compare_HLT_offline_local(TString file,
   }
 
   if(!chain){
-    Printf("Chain is empty");
+    Printf("Chain is empty.\n");
     return;
   }
    
@@ -258,7 +256,8 @@ void compare_HLT_offline_local(TString file,
      if(beamType.Contains("Pb-Pb")){
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
-     }   
+     }        
+     taskCB->SetOptions(options);
      AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse", TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");  
      mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskCB,1,coutputCB);
@@ -275,11 +274,10 @@ void compare_HLT_offline_local(TString file,
 void compare_HLT_offline_local(){
   cout << " " << endl;
   cout << " Usage examples:" << endl;
-  cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(file, taskOption, taskFolder, beamType, fUseHLTTrigger, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\",kFALSE,nEvents)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos cb D0\", \"./\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
-  cout << "    compare-HLT-offline-local.C'(\"files.txt\",\"all\")' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global\",\"./\", \"p-p\", kFALSE,nEvents)' 2>&1 | tee log" << endl;
+  cout << "    compare-HLT-offline-local.C'(\"AliESDs.root\",\"global phos cb D0\", \"./\", \"Pb-Pb\", kTRUE, nEvents)' 2>&1 | tee log" << endl;
   cout << "    compare-HLT-offline-local.C'(\"alien:///alice/data/2010/LHC10b/000115322/ESDs/pass1/10000115322040.20/AliESDs.root\",\"global\")' 2>&1 | tee log" << endl;
   cout << " " << endl;
 }
