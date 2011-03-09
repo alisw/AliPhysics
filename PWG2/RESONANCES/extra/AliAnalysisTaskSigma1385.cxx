@@ -82,6 +82,8 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
 
 {
    // Dummy Constructor
+   Int_t i;
+   for (i = 0; i < 5; i++) fOkTrack[i] = kFALSE;
 }
 
 //________________________________________________________________________
@@ -119,6 +121,9 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
 
    // Output slot #0 writes into a TList container (Cascade)
    DefineOutput(1, TList::Class());
+   
+   Int_t i;
+   for (i = 0; i < 5; i++) fOkTrack[i] = kFALSE;
 }
 
 //________________________________________________________________________
@@ -448,11 +453,13 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
          if ((bachTPCcls = btrk->GetTPCNcls()) < 70) continue;
 
-         Bool_t *IsOkTrack = IsSelected(btrk); //for Alberto's PID
+         //Bool_t *IsOkTrack = IsSelected(btrk); //for Alberto's PID
 
-         Bool_t *okTrack = new Bool_t[5];
+         //Bool_t *okTrack = new Bool_t[5];
 
-         for (Int_t k = 0; k < 5; k++) okTrack[k] = IsOkTrack[k];
+         //for (Int_t k = 0; k < 5; k++) okTrack[k] = IsOkTrack[k];
+         
+         IsSelected(btrk);
 
 
          Int_t BachCharge = btrk->Charge();
@@ -564,13 +571,14 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
          fNtuple1->Fill(TrackNumber);
          fNtuple2->Fill((1.*strness), LambdaDCA, v0cospointangle, v0daughtersDCA , lambdaP, lambdaPt, lambdaMass);
-         fNtuple3->Fill((1.*BachCharge), PionDCA, bachp, bachpt, bachphi, bachtheta, okTrack[1], okTrack[2]);
+         //fNtuple3->Fill((1.*BachCharge), PionDCA, bachp, bachpt, bachphi, bachtheta, okTrack[1], okTrack[2]);
+         fNtuple3->Fill((1.*BachCharge), PionDCA, bachp, bachpt, bachphi, bachtheta, fOkTrack[1], fOkTrack[2]);
          fNtuple4->Fill(dca, (1.*MCtrue), lPhi, lTheta, lEta, lRapXi, lPt, lP, openingangle, invmass);
 
          ncasc++;
 
-         delete IsOkTrack;
-         delete okTrack;
+         //delete IsOkTrack;
+         //delete okTrack;
 
 
       } // end loop tracks
@@ -586,13 +594,15 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
 //________________________________________________________________________
 
-Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
+//Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
+void AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
 {
 //
 //
-   Bool_t okTrack[5];
+   //Bool_t okTrack[5];
 
-   for (Int_t i = 0; i < 5; i++) okTrack[i] = kFALSE;
+   //for (Int_t i = 0; i < 5; i++) okTrack[i] = kFALSE;
+   for (Int_t i = 0; i < 5; i++) fOkTrack[i] = kFALSE;
 
 
    AliITSPIDResponse itsrsp(fIsMC);
@@ -620,16 +630,18 @@ Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
    // check if the track type matches what is required
    if (!isTPC && !isITSSA) {
       AliDebug(AliLog::kDebug + 2, "Track is not either a TPC track or a ITS standalone. Rejected");
-      return okTrack;
+      //return okTrack;
+      return;
 
    } else if (isTPC && !fUseGlobal) {
       AliDebug(AliLog::kDebug + 2, "Global tracks not used. Rejected");
-      return okTrack;
+      //return okTrack;
+      return;
 
    } else if (isITSSA && !fUseITSSA) {
       AliDebug(AliLog::kDebug + 2, "ITS standalone not used. Rejected");
-      return okTrack;
-
+      //return okTrack;
+      return;
    }
 
    // does a preliminary check on TOF values, if necessary
@@ -688,10 +700,16 @@ Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
          itsCluMap = track->GetITSClusterMap();
          nITS      = 0;
          for (k = 2; k < 6; k++) if (itsCluMap & (1 << k)) ++nITS;
-         if (nITS < 3) return kFALSE;
-         itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kPion, nITS, kTRUE);
-         okITS = ((TMath::Abs(itsNSigma)) <= fMaxITSband);
-         AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", itsNSigma, fMaxITSband, (okITS ? "passed" : "failed")));
+         //if (nITS < 3) return kFALSE;
+         //itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kPion, nITS, kTRUE);
+         //okITS = ((TMath::Abs(itsNSigma)) <= fMaxITSband);
+         if (nITS < 3) 
+            okITS = kFALSE;
+         else {
+            itsNSigma = itsrsp.GetNumberOfSigmas(mom, itsSignal, AliPID::kPion, nITS, kTRUE);
+            okITS = ((TMath::Abs(itsNSigma)) <= fMaxITSband);
+            AliDebug(AliLog::kDebug + 2, Form("ITS nsigma = %f -- max = %f -- cut %s", itsNSigma, fMaxITSband, (okITS ? "passed" : "failed")));
+         }
       } else {
          okITS = kTRUE;
       }
@@ -703,18 +721,24 @@ Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
    }
 
 
-   okTrack[0] = okITS;
-   okTrack[1] = okTPC;
-   okTrack[2] = okTOF;
-   okTrack[3] = isTPC;
-   okTrack[4] = isITSSA;
+   //okTrack[0] = okITS;
+   //okTrack[1] = okTPC;
+   //okTrack[2] = okTOF;
+   //okTrack[3] = isTPC;
+   //okTrack[4] = isITSSA;
+   
+   fOkTrack[0] = okITS;
+   fOkTrack[1] = okTPC;
+   fOkTrack[2] = okTOF;
+   fOkTrack[3] = isTPC;
+   fOkTrack[4] = isITSSA;
 
    //cout<<"##########################################"<<endl;
    //cout<<"isITSSA "<<isITSSA<< " isTPC "<<isTPC<<endl;
    //cout<<"##########################################"<<endl;
 
 
-   return okTrack;
+   //return okTrack;
 }
 
 
