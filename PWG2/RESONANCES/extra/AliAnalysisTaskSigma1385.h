@@ -42,7 +42,8 @@ public:
 
    virtual const char *GetDataType() {return fDataType;}
 
-   Bool_t *IsSelected(AliESDtrack* track);
+   //Bool_t *IsSelected(AliESDtrack* track);
+   void IsSelected(AliESDtrack* track);
 
 
 
@@ -120,6 +121,7 @@ protected:
    Double_t         fMinTOF;           //  range for TOF PID (min)
    Double_t         fMaxTOF;           //  range for TOF PID (max)
    Int_t            fLastRun;          //  last run number
+   Bool_t           fOkTrack[5];       //  utility variable to know track selection success
 
 //-------------------------------
 
