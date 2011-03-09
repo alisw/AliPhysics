@@ -4,7 +4,7 @@
 //by default this runs locally
 //With the argument true this submits jobs to the grid
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
-void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
+void runHadEt(bool submit = false, bool data = false, bool PbPb = true) {
     TStopwatch timer;
     timer.Start();
     gSystem->Load("libTree.so");
@@ -40,8 +40,10 @@ void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
     gSystem->Load("libRAliEn.so"); 
     TGrid::Connect("alien://") ;
   }
+  chain->Add("/data/LHC10h8/137161/999/AliESDs.root");//Hijing Pb+Pb
+  //chain->Add("/data/LHC11a4_bis/137161/999/AliESDs.root");//Hijing Pb+Pb
   //chain->Add("/data/LHC10h12/999/AliESDs.root");//Hijing Pb+Pb
-  chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
+  //chain->Add("/data/LHC10d15/1821/AliESDs.root");//simulation p+p
   //chain->Add("/data/LHC10dpass2/10000126403050.70/AliESDs.root");//data
 
   // Make the analysis manager
@@ -67,28 +69,29 @@ void runHadEt(bool submit = false, bool data = false, bool PbPb = false) {
     mgr->SetMCtruthEventHandler(handler);
   }
 
+  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
+
   bool isMc = true;
   if(data) isMC = false;
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-
-  
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(isMc);
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+
+  AliCentralitySelectionTask *centTask;
+  
   if(PbPb){
-   AliCentralitySelectionTask *centTask = AddTaskCentrality();
-   mgr->AddTask(centTask);
+    AliCentralitySelectionTask *centTask = AddTaskCentrality();
+   if(isMc){
+     cout<<"Setting up centrality for MC"<<endl;
+     centTask->SetMCInput();
+   }
   }
 
-  if(data){
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out1", TList::Class(), AliAnalysisManager::kOutputContainer,"event_stat.root");
-    mgr->ConnectInput(physSelTask,0,cinput1);
-    mgr->ConnectOutput(physSelTask,1,coutput1);
-  }
 
 
     AliAnalysisTaskHadEt *task2 = new AliAnalysisTaskHadEt("TaskHadEt");
+    if(isMc) task2->SetMcData();
     mgr->AddTask(task2);
-  AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"Et.ESD.new.sim.root");
   mgr->ConnectInput(task2,0,cinput1);
   mgr->ConnectOutput(task2,1,coutput2);
