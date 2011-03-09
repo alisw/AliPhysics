@@ -207,8 +207,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    } else if (fAnalysisType == "AOD") {
       lAODevent = dynamic_cast<AliAODEvent*>(InputEvent());
       if (lAODevent) ncascades = lAODevent->GetNumberOfCascades();
-   }
-   if (!lESDevent && !lAODevent) {
+   } else {
       Printf("ERROR: neither lESDevent nor lAODevent are available \n");
       return;
    }
@@ -591,7 +590,7 @@ Bool_t *AliAnalysisTaskSigma1385::IsSelected(AliESDtrack *track)
 {
 //
 //
-   Bool_t *okTrack = new Bool_t[5];
+   Bool_t okTrack[5];
 
    for (Int_t i = 0; i < 5; i++) okTrack[i] = kFALSE;
 
