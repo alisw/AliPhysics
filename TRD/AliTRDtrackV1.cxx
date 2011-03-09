@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -360,11 +361,11 @@ Bool_t AliTRDtrackV1::CookPID()
   for(Int_t iseed = 0; iseed < kNplane; iseed++){
     if(!fTracklet[iseed]) continue;
     trackletP[iseed] = fTracklet[iseed]->GetMomentum();
-    fTracklet[iseed]->CookdEdx(nslices);
     fTracklet[iseed]->SetPID();
     if(pidResponse->GetPIDmethod() == AliTRDPIDResponse::kLQ1D){
       dEdx[iseed] = fTracklet[iseed]->GetdQdl();
     } else {
+      fTracklet[iseed]->CookdEdx(nslices);
       const Float_t *trackletdEdx = fTracklet[iseed]->GetdEdx();
       for(Int_t islice = 0; islice < nslices; islice++){
         dEdx[iseed*nslices + islice] = trackletdEdx[islice];
@@ -855,7 +856,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // Update the TRD PID information in the ESD track
   //
 
-  Int_t nslices = AliTRDcalibDB::Instance()->GetPIDResponse(fkReconstructor->GetRecoParam()->GetPIDmethod())->GetNumberOfSlices();
+//   Int_t nslices = AliTRDcalibDB::Instance()->GetPIDResponse(fkReconstructor->GetRecoParam()->GetPIDmethod())->GetNumberOfSlices();
   // number of tracklets used for PID calculation
   UChar_t nPID = GetNumberOfTrackletsPID();
   // number of tracklets attached to the track
@@ -863,19 +864,25 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // pack the two numbers together and store them in the ESD
   track->SetTRDntracklets(nPID | (nTrk<<3));
   // allocate space to store raw PID signals dEdx & momentum
-  track->SetNumberOfTRDslices((nslices+3)*AliTRDgeometry::kNlayer);
+  track->SetNumberOfTRDslices((AliTRDPIDResponse::kNslicesNN+3)*AliTRDgeometry::kNlayer);
   // store raw signals
   Float_t p, sp; Double_t spd;
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
     if(!fTracklet[ip]->HasPID()) continue;
+    //printf("Setting slices for tracklet %d\n", ip);
+    fTracklet[ip]->CookdEdx(AliTRDPIDResponse::kNslicesNN);
     const Float_t *dedx = fTracklet[ip]->GetdEdx();
-    for (Int_t js = 0; js < nslices; js++, dedx++) track->SetTRDslice(*dedx, ip, js+1);
+    for (Int_t js = 0; js < AliTRDPIDResponse::kNslicesNN; js++, dedx++){
+      //printf("Slice %d, dEdx %f\n", js, *dedx);
+      track->SetTRDslice(*dedx, ip, js+1);
+    }
     p = fTracklet[ip]->GetMomentum(&sp); 
     // 04.01.11 A.Bercuci
     // store global dQdl per tracklet instead of momentum error
     spd = sp;
     track->SetTRDmomentum(p, ip, &spd);
+    //printf("Total Charge %f\n", fTracklet[ip]->GetdQdl());
     track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }
   // store PID probabilities
