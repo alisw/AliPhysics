@@ -121,8 +121,8 @@ TUHKMgen::TUHKMgen() :
   fHydjetParams.fIanglu=0;  
 */
    
-  strcpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")));
-  strcpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")));
+  strncpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")), 256);
+  strncpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")), 256);
   for(Int_t i=0; i<500; i++) {
     fStableFlagPDG[i] = 0;
     fStableFlagStatus[i] = kFALSE;
@@ -329,7 +329,12 @@ void TUHKMgen::Initialize()
 
 void TUHKMgen::Print(const Option_t*) const
 {
-  cout << "TUHKMgen::Print() method not implemented yet!!" << endl;
+  cout << "**********************************************************************************" << endl;
+  cout << "* UHKM Generator interface to ROOT::TGenerator                                   *" << endl;
+  cout << "*  Documentation:                                                                *" << endl;
+  cout << "* I.P.Lokhtin, L.V.Malinina, S.V.Petrushanko, A.M.Snigirev, I.Arsene, K.Tywoniuk *" << endl;
+  cout << "*    Comput.Phys.Commun.180:779-799, 2009                                        *" << endl;
+  cout << "**********************************************************************************" << endl;
 }
 
 void TUHKMgen::GenerateEvent()

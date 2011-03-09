@@ -20,6 +20,8 @@
 
 class ParticleAllocator;
 
+const Int_t kNPartTypes = 1000;
+
 struct InitialParamsHydjet_t {
 
   Int_t fNevnt; //number of events
@@ -94,13 +96,12 @@ struct InitialParamsHydjet_t {
                                   // gluons (0: small-angular, 1: wide-angular, 2:collinear) (default: 0).
   
   
-
   Int_t    fNPartTypes;                   //counter of hadron species  
-  Int_t    fPartEnc[1000];                 //Hadron encodings. Maximal number of hadron species is 100!!!
-  Double_t fPartMult[2000];                //Multiplicities of hadron species
-  Double_t fPartMu[2000];                //Chemical potentials of hadron species
+  Int_t    fPartEnc[kNPartTypes];                 //Hadron encodings. Maximal number of hadron species is 100!!!
+  Double_t fPartMult[2*kNPartTypes];                //Multiplicities of hadron species
+  Double_t fPartMu[2*kNPartTypes];                //Chemical potentials of hadron species
 
-  Double_t fMuTh[1000];                    //Chemical potentials at thermal freezeout of hadron species
+  Double_t fMuTh[kNPartTypes];                    //Chemical potentials at thermal freezeout of hadron species
 
 };
 

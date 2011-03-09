@@ -11,8 +11,8 @@
 //
 
 #include <iostream>
-using std::cout;
-using std::endl;
+#include <string>
+using namespace std;
 #include "ParticlePDG.h"
 
 //________________________________________________________________________
@@ -35,6 +35,7 @@ ParticlePDG::ParticlePDG() :
 //
 // default constructor
 //
+  memset(fName,'0',9);
   for(Int_t i=0; i<kMaxDecayChannels; i++)
     fDecayChannels[i] = new DecayChannel();
 }

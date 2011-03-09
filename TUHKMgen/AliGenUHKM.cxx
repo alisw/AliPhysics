@@ -119,8 +119,8 @@ AliGenUHKM::AliGenUHKM()
   fHydjetParams.fIenglu=0;
   fHydjetParams.fIanglu=0;
 */
-  strcpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")));
-  strcpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")));
+  strncpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")), 256);
+  strncpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")), 256);
   for(Int_t i=0; i<500; i++) {
     fStableFlagPDG[i] = 0;
     fStableFlagStatus[i] = kFALSE;
@@ -209,8 +209,8 @@ AliGenUHKM::AliGenUHKM(Int_t npart)
   fHydjetParams.fIanglu=0;
 */
 
-  strcpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")));
-  strcpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")));
+  strncpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")), 256);
+  strncpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")), 256);
   for(Int_t i=0; i<500; i++) {
     fStableFlagPDG[i] = 0;
     fStableFlagStatus[i] = kFALSE;
@@ -324,32 +324,38 @@ void AliGenUHKM::Generate()
   Float_t polar[3] = {0,0,0};
   Float_t origin[3]   = {0,0,0};
   Float_t origin0[3]  = {0,0,0};
+  Float_t p[3];
   Float_t v[3];
-  Float_t mass, energy;
+  Float_t mass=0.0, energy=0.0;
 
   Vertex();
   for(Int_t j=0; j<3; j++) origin0[j] = fVertex[j];
 
-  fTrials = 0;
-
+  // Generate the event and import particles
+  fUHKMgen->GenerateEvent();
+  fUHKMgen->ImportParticles(&fParticles,"All");
+  Int_t np = fParticles.GetEntriesFast();
   Int_t nt  =  0;
-  Int_t np  = -1;
-  while (np <= 0 && fTrials < 100) {
-    fUHKMgen->GenerateEvent();
-    fTrials++;
-    fUHKMgen->ImportParticles(&fParticles,"All");
-    np = fParticles.GetEntriesFast();
-  }
-  if (np <= 0) {
-    AliFatal(Form("Attempted %d trials, giving up", fTrials));
-    return;
-  }
 
+
+  // Handle the IDs of particles on the stack  
   Int_t* idsOnStack = new Int_t[np];
-  
-  //_________ Loop for particle selection
+  Int_t* newPos     = new Int_t[np];
   for(Int_t i=0; i<np; i++) {
-    TParticle *iparticle = (TParticle*)fParticles.At(i);
+    newPos[i] = i;
+    idsOnStack[i] = -1;
+  }
+  
+
+  // Generate a random phi used to rotate the whole event
+  Double_t eventRotation = gRandom->Rndm()*TMath::Pi();
+
+  TParticle *iparticle;
+  Double_t partMomPhi=0.0, partPt=0.0;
+  Double_t partVtxPhi=0.0, partVtxR=0.0;
+  //_________ Loop for particles in the stack
+  for(Int_t i=0; i<np; i++) {
+    iparticle = (TParticle*)fParticles.At(i);
     Int_t kf = iparticle->GetPdgCode();
     Bool_t hasMother = (iparticle->GetFirstMother() >= 0);
     Bool_t hasDaughter = (iparticle->GetNDaughters() > 0);
@@ -359,14 +365,24 @@ void AliGenUHKM::Generate()
       // It will not be tracked
       // Add it only once with coordinates not
       // smeared with primary vertex position
-      Float_t p[3] = {p[0] = iparticle->Px(),
-		      p[1] = iparticle->Py(),
-		      p[2] = iparticle->Pz()};
+      
+      // rotate the direction of the particle
+      partMomPhi = TMath::ATan2(iparticle->Py(), iparticle->Px());
+      partPt = TMath::Hypot(iparticle->Px(), iparticle->Py());
+      p[0] = partPt*TMath::Cos(partMomPhi+eventRotation);
+      p[1] = partPt*TMath::Sin(partMomPhi+eventRotation);
+      p[2] = iparticle->Pz();
+      
       mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
       energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-      v[0] = iparticle->Vx();
-      v[1] = iparticle->Vy();
+
+      // rotate the freezeout point
+      partVtxPhi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
+      partVtxR = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
+      v[0] = partVtxR*TMath::Cos(partVtxPhi + eventRotation);
+      v[1] = partVtxR*TMath::Cos(partVtxPhi + eventRotation);
       v[2] = iparticle->Vz();
+
       Float_t time = iparticle->T();
       
       Int_t imo = -1;
@@ -393,15 +409,22 @@ void AliGenUHKM::Generate()
       //   this one will not be tracked
       // Second time with event-wide c0ordinates and vertex smearing
       //   this one will be tracked
-      
-      Float_t p[3] = {p[0] = iparticle->Px(),
-		      p[1] = iparticle->Py(),
-		      p[2] = iparticle->Pz()};
-      mass = TDatabasePDG::Instance()->GetParticle(kf)->Mass();
+
+      // rotate the direction of the particle      
+      partMomPhi = TMath::ATan2(iparticle->Py(), iparticle->Px());
+      partPt = TMath::Hypot(iparticle->Px(), iparticle->Py());
+      p[0] = partPt*TMath::Cos(partMomPhi+eventRotation);
+      p[1] = partPt*TMath::Sin(partMomPhi+eventRotation);
+      p[2] = iparticle->Pz();      
+
       energy = sqrt(mass*mass + p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-      v[0] = iparticle->Vx();
-      v[1] = iparticle->Vy();
-      v[2] = iparticle->Vz();
+
+      // rotate the freezeout point
+      partVtxPhi = TMath::ATan2(iparticle->Vy(), iparticle->Vx());
+      partVtxR = TMath::Hypot(iparticle->Vx(), iparticle->Vy());
+      v[0] = partVtxR*TMath::Cos(partVtxPhi + eventRotation);
+      v[1] = partVtxR*TMath::Cos(partVtxPhi + eventRotation);
+      v[2] = iparticle->Vz();      
       
       Int_t type    = iparticle->GetStatusCode(); // 1-from jet / 0-from hydro 
       Int_t coeffT=1;
@@ -417,7 +440,7 @@ void AliGenUHKM::Generate()
       Bool_t trackFlag = kFALSE;  // tFlag = kFALSE --> do not track this one, its for femtoscopy
       PushTrack(trackFlag, (imo>=0 ? idsOnStack[imo] : imo), kf,
 		p[0], p[1], p[2], energy,
-		v[0], v[1], v[2], (iparticle->T())*coeffT,
+		v[0], v[1], v[2], (iparticle->T())*coeffT,    // freeze-out time is negative if the particle comes from jet
 		polar[0], polar[1], polar[2],
 		hasMother ? kPDecay:kPNoProcess, nt);
       
@@ -430,7 +453,7 @@ void AliGenUHKM::Generate()
       origin[2] = origin0[2]+v[2];
       imo = nt;
       
-      trackFlag = kTRUE;    // tFlag = kTRUE --> track this one
+      trackFlag = fTrackIt;    // Track this particle, unless otherwise specified by fTrackIt
       
       PushTrack(trackFlag, imo, kf,
 		p[0], p[1], p[2], energy,

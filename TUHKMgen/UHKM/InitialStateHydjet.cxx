@@ -469,7 +469,7 @@ Bool_t InitialStateHydjet::MultIni() {
     particleDensityPiTh = gcPiTh.ParticleNumberDensity(fDatabase->GetPDGParticle(211));
   }
 
-  for(Int_t particleIndex = 0; particleIndex < fDatabase->GetNParticles(); particleIndex++) {
+  for(Int_t particleIndex = 0; particleIndex < TMath::Min(fDatabase->GetNParticles(), kNPartTypes); particleIndex++) {
     ParticlePDG *currParticle = fDatabase->GetPDGParticleByIndex(particleIndex);
     Int_t encoding = currParticle->GetPDG();
     //strangeness supression

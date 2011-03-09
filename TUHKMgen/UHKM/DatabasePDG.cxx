@@ -41,8 +41,8 @@ DatabasePDG::DatabasePDG():
 {
   // Default constructor, initialize members, set input files  
   
-  strcpy(fParticleFilename, "particles.data");
-  strcpy(fDecayFilename, "tabledecay.txt");
+  strncpy(fParticleFilename, "particles.data", 256);
+  strncpy(fDecayFilename, "tabledecay.txt", 256);
   for(Int_t i=0; i<kMaxParticles; i++) {
     fParticles[i] = new ParticlePDG();
     fStatus[i] = kFALSE;
@@ -56,11 +56,11 @@ DatabasePDG::~DatabasePDG() {
 }
 
 void DatabasePDG::SetParticleFilename(Char_t *filename) {
-  strcpy(fParticleFilename, filename);
+  strncpy(fParticleFilename, filename, 256);
 }
 
 void DatabasePDG::SetDecayFilename(Char_t *filename) {
-  strcpy(fDecayFilename, filename);
+  strncpy(fDecayFilename, filename, 256);
 }
 
 Bool_t DatabasePDG::LoadData() {
@@ -674,7 +674,8 @@ Int_t DatabasePDG::GetNAllowedChannels(ParticlePDG *particle, Double_t motherMas
   // Check how many decay channels are allowed for a given particle definition at a given mass
 
   Int_t nAllowedChannels = 0;
-  for(Int_t i=0; i<particle->GetNDecayChannels(); i++)
+  for(Int_t i=0; i<particle->GetNDecayChannels(); i++) 
     nAllowedChannels += (IsChannelAllowed(particle->GetDecayChannel(i), motherMass) ? 1:0);
+  
   return nAllowedChannels;
 }

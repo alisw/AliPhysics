@@ -107,8 +107,8 @@ class TUHKMgen : public TGenerator {
                                   // gluons (0: small-angular, 1: wide-angular, 2:collinear) (default: 0).
   
  
-  void SetPDGParticleFile(const Char_t *name)              {strcpy(fParticleFilename, name);}     // Set the filename containing the particle PDG info
-  void SetPDGDecayFile(const Char_t *name)                 {strcpy(fDecayFilename, name);}        // Set the filename containing the PDG decay channels info
+  void SetPDGParticleFile(const Char_t *name)              {strncpy(fParticleFilename, name, 256);}     // Set the filename containing the particle PDG info
+  void SetPDGDecayFile(const Char_t *name)                 {strncpy(fDecayFilename, name, 256);}        // Set the filename containing the PDG decay channels info
   void SetPDGParticleStable(Int_t pdg, Bool_t value) {                                      // Turn on/off the decay flag for a PDG particle
     fStableFlagPDG[fStableFlagged] = pdg;
     fStableFlagStatus[fStableFlagged++] = value;
