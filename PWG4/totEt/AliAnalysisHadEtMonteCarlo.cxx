@@ -25,6 +25,7 @@
 #include <iostream>
 #include "TRandom.h"
 #include "AliAnalysisEtCommon.h"
+#include "AliCentrality.h"
 
 using namespace std;
 
@@ -45,6 +46,7 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fInvestigatePiKP(0)
 							,fRequireITSHits(0)
 							,fBaryonEnhancement(0)
+							,centBin(-1)
 							,fPtSmearer(0)
 {
 }
@@ -65,10 +67,16 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     Printf("ERROR: Event does not exist");   
     return 0;
   }
-  AnalyseEvent(ev);
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
   AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
   AliStack *stack = mcEvent->Stack();
+  centBin= -1;
+  if(fDataSet==20100){//If this is Pb+Pb
+    AliCentrality *centrality = realEvent->GetCentrality();
+    if(nCentBins<20) centBin= centrality->GetCentralityClass10(mCentralityMethod);
+    else{ centBin= centrality->GetCentralityClass5(mCentralityMethod);}
+  }
+  AnalyseEvent(ev);
 
   //for PID
   AliESDpid *pID = new AliESDpid();//This is identified as a memory leak in valgrind but I delete this object so I think it may be a problem with AliESDpid.
@@ -258,6 +266,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sPiPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sPiPlusCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
@@ -273,6 +285,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sPiMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sPiMinusCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
@@ -288,6 +304,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sKPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sKPlusCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
@@ -304,6 +324,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sKMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sKMinusCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
@@ -320,6 +344,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sProtonCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
@@ -344,6 +372,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sAntiProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  if(centBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sAntiProtonCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),centBin),simPart->Pt(),simPart->Eta(),myEt);
+		  }
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
 		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
@@ -562,6 +594,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedPiPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedPiPlusCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingProton",part->Pt(),part->Eta(),myEtP);
 	      FillHisto2D("EtSimulatedPiPlusAssumingProton",part->Pt(),part->Eta(),myEtP);
@@ -587,6 +623,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedPiMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedPiMinusCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingProton",part->Pt(),part->Eta(),myEtP);
 	      FillHisto2D("EtSimulatedPiMinusAssumingProton",part->Pt(),part->Eta(),myEtP);
@@ -612,6 +652,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedKPlus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedKPlusCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedKPlusAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingProton",part->Pt(),part->Eta(),myEtP);
@@ -636,6 +680,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedKMinus",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedKMinusCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedKMinusAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingProton",part->Pt(),part->Eta(),myEtP);
@@ -660,6 +708,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedProtonCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedProtonAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingKaon",part->Pt(),part->Eta(),myEtK);
@@ -690,6 +742,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      FillHisto2D("EtNSimulatedAntiProton",part->Pt(),part->Eta(),1.0);
 	      FillHisto2D("EtSimulatedChargedHadron",part->Pt(),part->Eta(),myEt);
 	      FillHisto2D("EtNSimulatedChargedHadron",part->Pt(),part->Eta(),1.0);
+	      if(centBin>=0){//if a centrality bin was defined
+		FillHisto2D(Form("EtNSimulatedAntiProtonCB%i",centBin),part->Pt(),part->Eta(),1.0);
+		FillHisto2D(Form("EtNSimulatedChargedHadronCB%i",centBin),part->Pt(),part->Eta(),1.0);
+	      }
 	      FillHisto2D("EtSimulatedChargedHadronAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedAntiProtonAssumingPion",part->Pt(),part->Eta(),myEtPi);
 	      FillHisto2D("EtSimulatedChargedHadronAssumingKaon",part->Pt(),part->Eta(),myEtK);
@@ -1095,7 +1151,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D("EtSimulatedAntiProtonEnhanced","Simulated E_{T} from #bar{p}");
   }
   CreateEtaPtHisto2D("EtSimulatedChargedHadron","Simulated E_{T} from charged hadrons");
-  CreateEtaPtHisto2D(TString("EtNSimulatedPiPlus"),TString("Number of Simulated #pi^{+}"));
+  CreateEtaPtHisto2D("EtNSimulatedPiPlus","Number of Simulated #pi^{+}");
   CreateEtaPtHisto2D("EtNSimulatedPiMinus","Number of simulated #pi^{-}");
   CreateEtaPtHisto2D("EtNSimulatedKPlus","Number of simulated K^{+}");
   CreateEtaPtHisto2D("EtNSimulatedKMinus","Number of simulated K^{-}");
@@ -1106,6 +1162,19 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D("EtNSimulatedAntiProtonEnhanced","Number of simulated #bar{p}");
   }
   CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
+  if(fDataSet==20100){//If this is Pb+Pb
+    Int_t width = 5;
+    if(nCentBins<20) width = 10;
+    for(Int_t i=0;i<nCentBins;i++){
+      CreateEtaPtHisto2D(Form("EtNSimulatedPiPlusCB%i",i),Form("Number of Simulated #pi^{+} for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedPiMinusCB%i",i),Form("Number of simulated #pi^{-} for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedKPlusCB%i",i),Form("Number of simulated K^{+} for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedKMinusCB%i",i),Form("Number of simulated K^{-} for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedProtonCB%i",i),Form("Number of simulated p for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedAntiProtonCB%i",i),Form("Number of simulated #bar{p} for %i-%i central",i*width,(i+1)*width));
+      CreateEtaPtHisto2D(Form("EtNSimulatedChargedHadronCB%i",i),Form("Number of simulated charged hadrons for %i-%i central",i*width,(i+1)*width));
+    }
+  }
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingNoPt","Simulated E_{T} from charged hadrons assuming p_{T}=0");
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPtTPCCut","Simulated E_{T} from charged hadrons assuming p_{T}=0.15");
   CreateEtaPtHisto2D("EtSimulatedChargedHadronAssumingPtITSCut","Simulated E_{T} from charged hadrons assuming p_{T}=0.10");
@@ -1264,6 +1333,19 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
       CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),"Reconstructed E_{T} from #bar{p}");
     }
     CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
+    if(fDataSet==20100){//If this is Pb+Pb
+      Int_t width = 5;
+      if(nCentBins<20) width = 10;
+      for(Int_t j=0;j<nCentBins;j++){
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sPiPlusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from #pi^{+} for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sPiMinusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from #pi^{-} for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sKPlusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from K^{+} for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sKMinusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from K^{-} for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sProtonCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from p for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sAntiProtonCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from #bar{p} for %i-%i central",j*width,(j+1)*width));
+	CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from charged hadrons for %i-%i central",j*width,(j+1)*width));
+      }
+    }
 
     CreateEtaPtHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),"Reconstructed E_{T} from charged hadrons assuming they are all pions");
     CreateEtaPtHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),"Reconstructed E_{T} from charged hadrons assuming they are all pions");
