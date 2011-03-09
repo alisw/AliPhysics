@@ -61,7 +61,7 @@ Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
     else
     {
         AliPhysicsSelection *selection = 0;
-        AliPhysicsSelectionTask *physSelTask = dynamic_cast<AliPhysicsSelectionTask*>(AliAnalysisManager::GetAnalysisManager()->GetTasks()->At(0));
+        AliPhysicsSelectionTask *physSelTask = dynamic_cast<AliPhysicsSelectionTask*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AliPhysicsSelectionTask"));
         if (physSelTask)
         {
 
