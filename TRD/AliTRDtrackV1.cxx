@@ -863,7 +863,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   // pack the two numbers together and store them in the ESD
   track->SetTRDntracklets(nPID | (nTrk<<3));
   // allocate space to store raw PID signals dEdx & momentum
-  track->SetNumberOfTRDslices((nslices+2)*AliTRDgeometry::kNlayer);
+  track->SetNumberOfTRDslices((nslices+3)*AliTRDgeometry::kNlayer);
   // store raw signals
   Float_t p, sp; Double_t spd;
   for (Int_t ip = 0; ip < kNplane; ip++) {
