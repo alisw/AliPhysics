@@ -13,6 +13,10 @@ endif
 
 ALICEINC = -I.
 
+ifneq ($(STEERBase_INCLUDE),)
+   ALICEINC += -I../$(STEERBase_INCLUDE)
+endif
+
 ifneq ($(OADB_INCLUDE),)
    ALICEINC += -I../$(OADB_INCLUDE) 
 endif

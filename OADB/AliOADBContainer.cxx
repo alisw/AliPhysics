@@ -244,8 +244,9 @@ void AliOADBContainer::WriteToFile(char* fname) const
 {
   //
   // Write object to file
-  TFile* f = new TFile(fname, "recreate");
+  TFile* f = new TFile(fname, "update");
   Write();
+  f->Purge();
   f->Close();
 }
 
