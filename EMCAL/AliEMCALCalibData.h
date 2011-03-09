@@ -29,6 +29,8 @@ class AliEMCALCalibData: public TNamed {
   //
   void SetADCchannel(Int_t module, Int_t column, Int_t row, Float_t value);
   void SetADCpedestal(Int_t module, Int_t column, Int_t row, Float_t value);
+  // Fill for (relative) recalibration (undo 1, apply 2)
+  void Fill(const AliEMCALCalibData *cd1, const AliEMCALCalibData *cd2, Bool_t print=0);
 
  protected:
   Float_t  fADCchannel [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row])

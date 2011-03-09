@@ -117,20 +117,21 @@ void AliEMCALCalibData::Reset()
   // Set all pedestals to 0 and all ADC channels widths to 1
   //memset(fADCchannel ,1,12*48*24*sizeof(Float_t));
   //memset(fADCpedestal,0,12*48*24*sizeof(Float_t));
-	Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
-	Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-	Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-	Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
-	for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-		 if(supermodule >= 10)
-			nRow = nRow2;
-		 for (Int_t column=0; column<nCol; column++){
-				for (Int_t row=0; row<nRow; row++){
-					  fADCpedestal[supermodule][column][row]=0.;
-					  fADCchannel [supermodule][column][row]=1.;
-				}
-		}
-	} 
+
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+  Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
+  for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
+    if(supermodule >= 10)
+      nRow = nRow2;
+    for (Int_t column=0; column<nCol; column++){
+      for (Int_t row=0; row<nRow; row++){
+        fADCpedestal[supermodule][column][row]=0.;
+        fADCchannel [supermodule][column][row]=1.;
+      }
+    }
+  } 
 }
 
 //________________________________________________________________
@@ -205,3 +206,34 @@ void AliEMCALCalibData::SetADCpedestal(Int_t supermodule, Int_t column, Int_t ro
   // Set ADC pedestal values
   fADCpedestal[supermodule][column][row] = value;
 }
+
+//________________________________________________________________
+void AliEMCALCalibData::Fill(const AliEMCALCalibData *cd1, const AliEMCALCalibData *cd2, Bool_t print)
+{
+  // Fill for (relative) recalibration to undo calibration 
+  // from 1 and apply calibration from 2.
+
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+  Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
+  for (Int_t supermodule=0; supermodule<nSMod; supermodule++) {
+    if(supermodule >= 10)
+      nRow = nRow2;
+    for (Int_t column=0; column<nCol; column++) {
+      for (Int_t row=0; row<nRow; row++){
+        Double_t adc1 = cd1->GetADCchannel(supermodule, column, row);
+        Double_t ped1 = cd1->GetADCpedestal(supermodule, column, row);
+        Double_t adc2 = cd2->GetADCchannel(supermodule, column, row);
+        Double_t ped2 = cd2->GetADCpedestal(supermodule, column, row);
+        Double_t adc = adc2/adc1;
+        Double_t ped = ped2-adc*ped1;
+        if (print)
+          printf("%d %d %d: %f %f %f %f -> %f %f\n",supermodule,column,row,adc1,ped1,adc2,ped2,adc,ped);
+        fADCchannel [supermodule][column][row]=adc;
+        fADCpedestal[supermodule][column][row]=ped;
+      }
+    }
+  } 
+}
+
