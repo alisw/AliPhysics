@@ -14,7 +14,8 @@
 #include <vector>
 #include "AliV0Reader.h"
 #include "AliGammaConversionBGHandler.h"
-//#include "TRandom3.h"
+#include "TRandom3.h"
+#include "TF1.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
 
@@ -39,6 +40,7 @@ class AliTriggerAnalysis;
 class AliCFManager; // for CF
 class AliCFContainer; // for CF
 class TRandom3;
+class TF1;
 
 class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
 {
@@ -314,7 +316,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fUseMultiplicityBin;
   Int_t fUseCentrality;
   Int_t fUseCentralityBin;
-  ClassDef(AliAnalysisTaskGammaConversion, 17); // Analysis task for gamma conversions
+  TRandom3 fRandom;
+  ClassDef(AliAnalysisTaskGammaConversion, 18); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

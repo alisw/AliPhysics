@@ -147,7 +147,8 @@ AliAnalysisTaskSE(),
   fUseMultiplicity(0), 
   fUseMultiplicityBin(0),
   fUseCentrality(0), 
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fRandom(0)
 {
   // Default constructor
 
@@ -244,7 +245,8 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
   fUseMultiplicity(0), 
   fUseMultiplicityBin(0),
   fUseCentrality(0), 
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fRandom(0)
 {
   // Common I/O in slot 0, don't define when inheriting from AnalysisTaskSE
   // DefineInput (0, TChain::Class());  
@@ -2906,7 +2908,6 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
   }
 
   if(fDoRotation == kTRUE){
-    TRandom3 *random = new TRandom3(0);
 
     for(Int_t iCurrent=0;iCurrent<currentEventV0s->GetEntriesFast();iCurrent++){
       AliKFParticle currentEventGoodV0 = *(AliKFParticle *)(currentEventV0s->At(iCurrent)); 
@@ -2921,7 +2922,7 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	    AliKFParticle *backgroundCandidateProb = new AliKFParticle(currentEventGoodV0,currentEventGoodV02);
 	    backgroundCandidateProb->GetMass(massBGprob,widthBGprob);
 	    if(massBGprob>0.1 && massBGprob<0.14){
-	      if(random->Rndm()>bgHandler->GetBGProb(zbin,mbin)){
+	      if(fRandom.Rndm()>bgHandler->GetBGProb(zbin,mbin)){
 		delete backgroundCandidateProb;
 		continue;
 	      }
@@ -2930,8 +2931,8 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	  }
 	
 	  Double_t nRadiansPM = fNDegreesPMBackground*TMath::Pi()/180;
-	  
-	  Double_t rotationValue = random->Rndm()*2*nRadiansPM + TMath::Pi()-nRadiansPM;
+
+	  Double_t rotationValue = fRandom.Rndm()*2*nRadiansPM + TMath::Pi()-nRadiansPM;
 	  
 	  RotateKFParticle(&currentEventGoodV02,rotationValue);
 
@@ -3028,7 +3029,6 @@ void AliAnalysisTaskGammaConversion::CalculateBackground(){
 	}
       }
     }
-    delete random;
   }
   else{ // means no rotation
     AliGammaConversionBGHandler::GammaConversionVertex *bgEventVertex = NULL;

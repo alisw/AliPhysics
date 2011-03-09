@@ -21,6 +21,8 @@
 #include "AliCFManager.h"
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDpid.h"
+#include "TF1.h"
+#include "TRandom3.h"
 
 class TClonesArray; 
 class TFormula;
@@ -42,6 +44,8 @@ class AliCFManager;   // for CF
 class AliCFContainer;  // for CF
 //class AliESDpid; // for dEdx cut based on nSigma to particle lines 
 class AliESDtrackCuts; 
+class TF1;
+class TRandom3;
 
 class AliV0Reader : public TObject {
 	
@@ -671,6 +675,11 @@ class AliV0Reader : public TObject {
   void SetPIDnSigmaAbovePionLine(Double_t nSigmaAbovePion){fPIDnSigmaAbovePionLine=nSigmaAbovePion;}
 
   /*
+   * Sets the PIDnSigmaAbovePion cut value for the tracks.
+   */
+  void SetPIDnSigmaAbovePionLineHighPt(Double_t nSigmaAbovePionHighPt){fPIDnSigmaAbovePionLineHighPt=nSigmaAbovePionHighPt;}
+
+  /*
    * Sets the PIDMinPnSigmaAbovePion cut value for the tracks.
    */
   void SetPIDMinPnSigmaAbovePionLine(Double_t MinPnSigmaAbovePion){fPIDMinPnSigmaAbovePionLine=MinPnSigmaAbovePion;}
@@ -701,7 +710,10 @@ class AliV0Reader : public TObject {
 
   void SetDodEdxSigmaCut( Bool_t dodEdxSigmaCut){fDodEdxSigmaCut=dodEdxSigmaCut;}
   void SetDoTOFsigmaCut( Bool_t doTOFsigmaCut){fDoTOFsigmaCut=doTOFsigmaCut;} //RRnewTOF
+  void SetDoPhotonAsymmetryCut( Bool_t doPhotonAsymmetryCut){fDoPhotonAsymmetryCut=doPhotonAsymmetryCut;}
 
+  void SetMinPPhotonAsymmetryCut(Double_t minPPhotonAsymmetryCut){fMinPPhotonAsymmetryCut=minPPhotonAsymmetryCut;}
+  void SetMinPhotonAsymmetry(Double_t minPhotonAsymmetry){fMinPhotonAsymmetry=minPhotonAsymmetry;}
   /*
    * Sets the flag to enable/disable the cut dedx N sigma for Kaon Rejection at low p 
    */
@@ -855,6 +867,12 @@ class AliV0Reader : public TObject {
   void SetUseCorrectedTPCClsInfo(Bool_t flag){fUseCorrectedTPCClsInfo = flag;}
   Bool_t GetUseCorrectedTPCClsInfo() const {return fUseCorrectedTPCClsInfo;}
 
+  void SetUseMCPSmearing(Int_t useMCPSmearing) {fUseMCPSmearing=useMCPSmearing;}
+  void SetPBremSmearing(Double_t pBremSmearing){fPBremSmearing=pBremSmearing;}
+  void SetPSigSmearing(Double_t pSigSmearing){fPSigSmearing=pSigSmearing;}
+  void SetPSigSmearingCte(Double_t pSigSmearingCte){fPSigSmearingCte=pSigSmearingCte;}
+  void SmearKFParticle(AliKFParticle * kfParticle);
+
  private:
   AliStack * fMCStack;           // pointer to MonteCarlo particle stack 
   //  AliMCEventHandler* fMCTruth;   // for CF    pointer to the MC object
@@ -932,6 +950,7 @@ class AliV0Reader : public TObject {
   Double_t fTofPIDnSigmaAboveElectronLine; // sigma cut RRnewTOF
   Double_t fTofPIDnSigmaBelowElectronLine; // sigma cut RRnewTOF 
   Double_t fPIDnSigmaAbovePionLine;     // sigma cut
+  Double_t fPIDnSigmaAbovePionLineHighPt;     // sigma cut
   Double_t fPIDMinPnSigmaAbovePionLine; // sigma cut
   Double_t fPIDMaxPnSigmaAbovePionLine; // sigma cut
   Double_t fDoKaonRejectionLowP;   // Kaon rejection at low p
@@ -987,8 +1006,16 @@ class AliV0Reader : public TObject {
   Int_t fNumberOfGoodV0s; // number of good V0s
   Int_t fIsHeavyIon; // flag
   Bool_t fUseCorrectedTPCClsInfo;
-
-  ClassDef(AliV0Reader,20) // RRnew
+  Int_t fUseMCPSmearing;
+  Double_t fPBremSmearing;
+  Double_t fPSigSmearing;
+  Double_t fPSigSmearingCte;
+  TRandom3 fRandom;
+  TF1 * fBrem;	
+  Bool_t   fDoPhotonAsymmetryCut; // flag to use the PhotonAsymetryCut
+  Double_t fMinPPhotonAsymmetryCut;
+  Double_t fMinPhotonAsymmetry;
+  ClassDef(AliV0Reader,22) // RRnewTOF
 };
 
 inline void AliV0Reader::InitESDpid(Int_t type)
