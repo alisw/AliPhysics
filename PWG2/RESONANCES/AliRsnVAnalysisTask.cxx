@@ -348,14 +348,14 @@ Bool_t AliRsnVAnalysisTask::RsnEventProcess()
 //
 
    // if not using mixing cuts return kTRUE
-   if (!IsUsingMixingRange()) return kTRUE;
+   if (!IsMixing() || !IsUsingMixingRange()) return kTRUE;
 
    // cut if event was in range of mixing cuts
    AliVEventHandler *inh = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
    if (inh->InheritsFrom(AliMultiInputEventHandler::Class())) {
-      AliMultiInputEventHandler *inEvHMain = static_cast<AliMultiInputEventHandler *>(inh);
-      if (inEvHMain->GetFirstMultiInputHandler()->InheritsFrom(AliMixInputEventHandler::Class())) {
-         fMixedEH = static_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
+      AliMultiInputEventHandler *inEvHMain = dynamic_cast<AliMultiInputEventHandler *>(inh);
+      if (inEvHMain) {
+         fMixedEH = dynamic_cast<AliMixInputEventHandler *>(inEvHMain->GetFirstMultiInputHandler());
          if (fMixedEH) {
             if (fMixedEH->CurrentBinIndex() < 0) return kFALSE;
          }
