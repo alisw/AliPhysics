@@ -258,51 +258,58 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       RingHistos* rh= GetRingHistos(d,r);
       rh->fEmptyStrips->Reset();
       rh->fTotalStrips->Reset();
-
+      rh->fBasicHits->Reset();
+      
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
 	  Float_t mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t eta  = fmd.Eta(d,r,s,t);
-
-	  if (mult == AliESDFMD::kInvalidMult || mult > 20) continue;
 	  rh->fTotalStrips->Fill(eta, phi);
+	  if (mult < GetMultCut() || mult > 20) rh->fEmptyStrips->Fill(eta,phi);
+	  if (mult == AliESDFMD::kInvalidMult || mult > 20) continue;
 	  
-	  if (mult == 0) { 
-	    rh->fEmptyStrips->Fill(eta,phi);
-	    continue;
-	  }
-	    
+	  //if (mult == 0) { 
+	  //  rh->fEmptyStrips->Fill(eta,phi);
+	  //  continue;
+	  // }
+	  
 	  Float_t n   = NParticles(mult,d,r,s,t,vtxbin,eta,lowFlux);
+	  
 	  rh->fEvsN->Fill(mult,n);
 	  rh->fEtaVsN->Fill(eta, n);
-
+	  
 	  Float_t c = Correction(d,r,s,t,vtxbin,eta,lowFlux);
 	  fCorrections->Fill(c);
 	  if (c > 0) n /= c;
 	  rh->fEvsM->Fill(mult,n);
 	  rh->fEtaVsM->Fill(eta, n);
 	  rh->fCorr->Fill(eta, c);
-
-	  if (n < .9) rh->fEmptyStrips->Fill(eta,phi);
-
+	  
+	  //if (n < .9) rh->fEmptyStrips->Fill(eta,phi);
+	  if (n > 0.9) rh->fBasicHits->Fill(eta,phi);
+	    
 	  h->Fill(eta,phi,n);
 	  rh->fDensity->Fill(eta,phi,n);
 	} // for t
       } // for s 
-
+      //std::cout<<rh->fTotalStrips->GetEntries()<<"  "<<rh->fEmptyStrips->GetEntries()<<std::endl;
       // Loop over poisson histograms 
       for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) { 
 	for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
 	  Double_t eLossV   = h->GetBinContent(ieta, iphi);
 	  // Double_t eLossE   = h->GetBinError(ieta, iphi);
 	  Float_t eta       = h->GetXaxis()->GetBinCenter(ieta);
-	  Double_t empty    = rh->fEmptyStrips->GetBinContent(ieta,iphi);
-	  Double_t total    = rh->fTotalStrips->GetBinContent(ieta,iphi);
+	  Float_t phi       = h->GetYaxis()->GetBinCenter(iphi);
+	  Double_t empty    = rh->fEmptyStrips->GetBinContent(rh->fEmptyStrips->GetXaxis()->FindBin(eta),
+							      rh->fEmptyStrips->GetYaxis()->FindBin(phi)) ;
+	  Double_t total    = rh->fTotalStrips->GetBinContent(rh->fTotalStrips->GetXaxis()->FindBin(eta),
+							      rh->fTotalStrips->GetYaxis()->FindBin(phi));
+	  
 	  Double_t corr     = rh->fCorr->GetBinContent(rh->fCorr->GetXaxis()->FindBin(eta));
 	  
 	  
-	  Double_t hits     = total - empty;
+	  Double_t hits     = rh->fBasicHits->GetBinContent(ieta,iphi);
 	  
 	  Double_t poissonV =  (total <= 0 || empty <= 0 ? 0 : 
 				-TMath::Log(empty / total));
@@ -312,8 +319,10 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	    poissonV = poissonV / corr;
 	  }
 	  //else poissonV = 0;
-	  
-	  Double_t poissonE = TMath::Sqrt(poissonV);
+	  // if ( eLossV > 0)
+	  //  std::cout<<"event : "<<total<<"  "<<empty<<"  "<<hits<<"  "<<poissonV<<"  "<<eLossV<<std::endl;
+	  Double_t poissonE = 0 ;
+	  if(poissonE > 0) poissonE = TMath::Sqrt(poissonV);
 	  
 
 	  
@@ -748,6 +757,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fELossVsPoisson(0),
     fTotalStrips(0),
     fEmptyStrips(0),
+    fBasicHits(0),
     fEmptyVsTotal(0)
 {
   // 
@@ -767,6 +777,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fELossVsPoisson(0),
     fTotalStrips(0),
     fEmptyStrips(0),
+    fBasicHits(0),
     fEmptyVsTotal(0)
 {
   // 
@@ -844,7 +855,43 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fEmptyVsTotal->SetXTitle("Total # strips");
   fEmptyVsTotal->SetYTitle("Empty # strips");
   fEmptyVsTotal->SetZTitle("Correlation");
-
+  
+  //Inserted by HHD
+  fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
+			  Form("Total number of strips in %s", fName.Data()), 
+			  40., 
+			  -4,
+			  6, 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
+			  0, 2*TMath::Pi());
+  fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
+			  Form("Empty number of strips in %s", fName.Data()), 
+			  40., 
+			  -4,
+			  6, 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
+			  0, 2*TMath::Pi());
+  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
+			  Form("Basic number of hits in %s", fName.Data()), 
+			  200, 
+			  -4, 
+			  6, 
+			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
+			  0, 2*TMath::Pi());
+  
+  fTotalStrips->SetDirectory(0);
+  fEmptyStrips->SetDirectory(0);
+  fBasicHits->SetDirectory(0);
+  fTotalStrips->SetXTitle("#eta");
+  fEmptyStrips->SetXTitle("#eta");
+  fBasicHits->SetXTitle("#eta");
+  fTotalStrips->SetYTitle("#varphi [radians]");
+  fEmptyStrips->SetYTitle("#varphi [radians]");
+  fBasicHits->SetYTitle("#varphi [radians]");
+  fTotalStrips->Sumw2();
+  fEmptyStrips->Sumw2();
+  fBasicHits->Sumw2();
+  
 }
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
@@ -858,6 +905,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fELossVsPoisson(o.fELossVsPoisson),
     fTotalStrips(o.fTotalStrips),
     fEmptyStrips(o.fEmptyStrips),
+    fBasicHits(o.fBasicHits),
     fEmptyVsTotal(o.fEmptyVsTotal)
 {
   // 
@@ -924,34 +972,46 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 
   //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::Init(const TAxis& eAxis)
+AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
 {
-  if (fTotalStrips) delete fTotalStrips;
+  /*if (fTotalStrips) delete fTotalStrips;
   if (fEmptyStrips) delete fEmptyStrips;
-
+  if (fBasicHits) delete fBasicHits;
+  
   fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
 			  Form("Total number of strips in %s", fName.Data()), 
-			  eAxis.GetNbins(), 
+			  eAxis.GetNbins()/5., 
 			  eAxis.GetXmin(),
 			  eAxis.GetXmax(), 
-			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 5), 
 			  0, 2*TMath::Pi());
   fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
 			  Form("Empty number of strips in %s", fName.Data()), 
+			  eAxis.GetNbins()/5., 
+			  eAxis.GetXmin(), 
+			  eAxis.GetXmax(), 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
+			  0, 2*TMath::Pi());
+  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
+			  Form("Basic number of hits in %s", fName.Data()), 
 			  eAxis.GetNbins(), 
 			  eAxis.GetXmin(), 
 			  eAxis.GetXmax(), 
 			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
 			  0, 2*TMath::Pi());
+  
   fTotalStrips->SetDirectory(0);
   fEmptyStrips->SetDirectory(0);
+  fBasicHits->SetDirectory(0);
   fTotalStrips->SetXTitle("#eta");
   fEmptyStrips->SetXTitle("#eta");
+  fBasicHits->SetXTitle("#eta");
   fTotalStrips->SetYTitle("#varphi [radians]");
   fEmptyStrips->SetYTitle("#varphi [radians]");
+  fBasicHits->SetYTitle("#varphi [radians]");
   fTotalStrips->Sumw2();
   fEmptyStrips->Sumw2();
-
+  fBasicHits->Sumw2();*/
 }
 
 //____________________________________________________________________
@@ -973,6 +1033,11 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
   d->Add(fEmptyVsTotal);
+  d->Add(fTotalStrips);
+  d->Add(fEmptyStrips);
+  d->Add(fBasicHits);
+  
+  
 }
 
 //____________________________________________________________________
