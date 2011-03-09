@@ -25,7 +25,14 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   CaloCalib/AliAnalysisTaskCaloFilter.cxx CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx CaloCalib/AliAnalysisTaskEMCALClusterize.cxx CaloCalib/AliAnalysisTaskEMCALClusterizeFast.cxx)
+set ( SRCS 
+ CaloCalib/AliAnalysisTaskCaloFilter.cxx 
+ CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx 
+ CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
+ CaloCalib/AliAnalysisTaskEMCALClusterize.cxx 
+ CaloCalib/AliAnalysisTaskEMCALClusterizeFast.cxx
+ CaloCalib/AliAnalysisTaskEMCALPi0PbPb.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -36,7 +43,5 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 set ( EINCLUDE  PWG4/CaloCalib EMCAL PHOS)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
-	
-			set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase -L${ROOTLIBDIR} -lEG)
-
+set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEERBase -lESD -lAOD -lANALYSIS -lANALYSISalice -lPHOSbase -lEMCALbase -L${ROOTLIBDIR} -lEG)
 endif( ALICE_TARGET STREQUAL "win32gcc")
