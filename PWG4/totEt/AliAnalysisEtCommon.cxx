@@ -85,6 +85,8 @@ AliAnalysisEtCommon::AliAnalysisEtCommon() :
   ,fAntiLambdaData(0)
   ,fLambdaEnhancement(0)
   ,fProtonEnhancement(0)
+  ,mCentralityMethod("V0M")
+  ,nCentBins(20)
 {//default constructor
 
 }
