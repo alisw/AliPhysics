@@ -149,11 +149,11 @@ void AliAnalysisTaskMuonAODCreation::Terminate(Option_t *)
   TH1D *h_pt_all = dynamic_cast<TH1D*> (fOutput->FindObject("pt_alltracks"));  
   TH1D *h_pt_muons = dynamic_cast<TH1D*> (fOutput->FindObject("pt_muontracks"));  
   c->cd(1);
-  h_pt_all->Draw();
+  if (h_pt_all) h_pt_all->Draw();
   c->cd(2);
-  h_pt_muons->Draw();
+  if (h_pt_muons) h_pt_muons->Draw();
   c->cd(3);
-  h_pt_all->Draw();
-  h_pt_muons->Draw("same");
+  if (h_pt_all) h_pt_all->Draw();
+  if (h_pt_muons) h_pt_muons->Draw("same");
 }
 
