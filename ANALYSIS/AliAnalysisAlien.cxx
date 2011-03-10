@@ -2238,6 +2238,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
    }   
    // Make sure we change the temporary directory
    gSystem->Setenv("TMPDIR", gSystem->pwd());
+   // Set temporary compilation directory to current one
+   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);   
    TObjArray *list = fOutputFiles.Tokenize(",");
    TIter next(list);
    TObjString *str;
@@ -3055,6 +3057,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       // Change temp directory to current one
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
+      out << "// Set temporary compilation directory to current one" << endl;
+      out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
       // Reset existing include path
       out << "// Reset existing include path and add current directory first in the search" << endl;
       out << "   gSystem->SetIncludePath(\"-I.\");" << endl;
@@ -3557,6 +3561,8 @@ void AliAnalysisAlien::WriteMergingMacro()
       // Change temp directory to current one
       out << "// Set temporary merging directory to current one" << endl;
       out << "   gSystem->Setenv(\"TMPDIR\", gSystem->pwd());" << endl << endl;   
+      out << "// Set temporary compilation directory to current one" << endl;
+      out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
       out << "// Connect to AliEn" << endl;
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "   TString outputDir = dir;" << endl;  
