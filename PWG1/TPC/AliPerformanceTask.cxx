@@ -178,6 +178,7 @@ void AliPerformanceTask::UserExec(Option_t *)
   // Main loop
   // Called for each event
 
+
   // Decide whether to use HLT or Offline ESD
   if(fUseHLT){
 
@@ -226,7 +227,7 @@ void AliPerformanceTask::UserExec(Option_t *)
   // Process analysis
   Bool_t process = kTRUE;
 
-  // Check fo centrality
+  // Check for centrality
   if (fUseCentrality) {
     if ( CalculateCentralityBin() != fUseCentralityBin ) {
       process = kFALSE;
