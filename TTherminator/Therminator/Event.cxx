@@ -269,7 +269,7 @@ Event::ReadMultiplicities()
     {
       (*fin) >> tName >> tMult;
       PRINT_DEBUG_2(tName << " " <<  mDB->GetParticleTypeIndex(tName) << " " << tMult);
-      mAverageMultiplicities[mDB->GetParticleTypeIndex(strdup(tName))] = tMult;
+      mAverageMultiplicities[mDB->GetParticleTypeIndex(tName)] = tMult;
     }
     fin->close();
   }

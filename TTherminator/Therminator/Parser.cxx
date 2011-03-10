@@ -514,6 +514,12 @@ void Parser::ReadInput()
 	  // 	      mDB->GetParticleType(tDaughter3)->GetMass()
 	  // 	      < mDB->GetParticleType(tFather)->GetMass())
 	  (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
+
+	  delete tFather;
+	  delete tDaughter1;
+	  delete tDaughter2;
+	  delete tDaughter3;
+	  delete tBRatio;
 	}
     }
 
@@ -711,6 +717,8 @@ void Parser::ReadShare()
 		  {
 		    
 		    PRINT_DEBUG_2("Masses do not match! Not adding channel " << newChannel);
+
+		    delete newChannel;
 		  }
 	      }
 	      else {
