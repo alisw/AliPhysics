@@ -42,11 +42,13 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fCentTo;               // max centrality (def=100)
   Double_t               fVtxZMin;              // min primary vertex z (def=-7cm)
   Double_t               fVtxZMax;              // max primary vertex z (def=+7cm)
+  Bool_t                 fUseQualFlag;          // if true use quality flag for centrality
   TString                fClusName;             // cluster branch name (def="")
-    // derived members (ie with ! after //)
+     // derived members (ie with ! after //)
   TList                 *fOutput;               //!container of output histograms
   AliESDEvent           *fEsdEv;                //!pointer to input esd event
   AliAODEvent           *fAodEv;                //!pointer to input aod event
+  const TObjArray       *fRecPoints;            //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
   const TObjArray       *fEsdClusters;          //!pointer to esd clusters
   const AliESDCaloCells *fEsdCells;             //!pointer to esd cells
   const TObjArray       *fAodClusters;          //!pointer to aod clusters
