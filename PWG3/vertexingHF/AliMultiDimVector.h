@@ -112,6 +112,7 @@ class AliMultiDimVector :  public TNamed{
   void Sqrt(const AliMultiDimVector* mv);
   
   void FindMaximum(Float_t& max_value, Int_t *ind, Int_t ptbin); 
+  Int_t* FindLocalMaximum(Float_t& maxValue, Int_t *numFixed,Int_t* indFixed, Int_t nfixed,Int_t ptbin);
 
   TH2F*  Project(Int_t firstVar, Int_t secondVar, const Int_t* fixedVars, Int_t ptbin, Float_t norm=1.);
 
