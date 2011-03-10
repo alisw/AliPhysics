@@ -897,8 +897,8 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
   for (int i=0; i<(fHighRunN-fLowRunN); i++) TPCScaleFactor[i] = 0.0;
   
   // scale factors determined from <V0 charge> on a run-by-run basis
-   V0MScaleFactor[310] = 0.956841;
-   V0MScaleFactor[311] = 0.958274;
+   V0MScaleFactor[310] = 1.;
+   V0MScaleFactor[311] = 1.;
    V0MScaleFactor[514] = 1.0046;
    V0MScaleFactor[515] = 0.983535;
    V0MScaleFactor[579] = 0.988185;
