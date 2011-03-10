@@ -31,6 +31,7 @@
 
 Particle::Particle()
 {
+  mPartType  = 0;
 }
 
 Particle::Particle(double aRapidity, double aPt, double aPhip, 

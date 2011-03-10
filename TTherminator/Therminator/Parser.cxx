@@ -597,7 +597,7 @@ void Parser::ReadShare()
       in2.ignore(200,'\n');
       //END OF HEAD-LINE
 
-      char tFather[20], tDaughter1[20], tDaughter2[20], tDaughter3[20];
+      char tFather[50], tDaughter1[50], tDaughter2[50], tDaughter3[50];
       double tBRatio, tRatio;
       int CGcoeff; // complete branching ratio by Clebsch-Gordan coefficient: 0-no 1-yes
 	
