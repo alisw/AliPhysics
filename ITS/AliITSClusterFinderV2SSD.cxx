@@ -707,7 +707,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 void AliITSClusterFinderV2SSD::
 FindClustersSSD(const Ali1Dcluster* neg, Int_t nn, 
 		const Ali1Dcluster* pos, Int_t np,
-		const TClonesArray *clusters) {
+		TClonesArray *clusters) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------
@@ -926,7 +926,7 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
 	}
 
 	AliITSRecPoint * cl2;
-    cl2 = new ((*clusters)[ncl]) AliITSRecPoint(milab,lp,info);
+	cl2 = new ((*clusters)[ncl]) AliITSRecPoint(milab,lp,info);
 	  
     cl2->SetChargeRatio(ratio);    	
     cl2->SetType(1);

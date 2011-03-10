@@ -35,7 +35,7 @@ public:
   void FindClustersSSD(TClonesArray *digits);
   void FindClustersSSD(const Ali1Dcluster* neg, Int_t nn, 
 		       const Ali1Dcluster* pos, Int_t np,
-		       const TClonesArray *clusters=0x0);
+		       TClonesArray *clusters=0x0);
 
   void FindClustersSSD(AliITSRawStreamSSD* input);
   virtual AliITSCalibrationSSD* GetResp(Int_t mod)const{
