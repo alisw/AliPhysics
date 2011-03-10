@@ -33,6 +33,7 @@
 #include "TH2F.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
+#include "TF1.h"
 
 // ALICE Analysis Framework
 #include "AliAnalysisManager.h"
@@ -121,6 +122,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV2(0.),
   fV3(0.),
   fV4(0.),
+  fV2Function(0),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -173,6 +175,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV2(0.),
   fV3(0.),
   fV4(0.),
+  fV2Function(0),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -498,7 +501,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (!flowEvent->IsSetMCReactionPlaneAngle())
       flowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
 
-    flowEvent->AddFlow(fV1,fV2,fV3,fV4);     //add flow
+    //flowEvent->AddFlow(fV1,fV2,fV3,fV4);     //add flow
+    flowEvent->AddV2(fV2Function);
     flowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
   }
   //////////////////////////////////////////////////////////////////////////////
