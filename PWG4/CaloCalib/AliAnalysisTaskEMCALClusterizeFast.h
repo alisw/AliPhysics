@@ -34,6 +34,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliEMCALRecoUtils     *GetRecoUtils()                       const  { return fRecoUtils            ; }
   AliEMCALCalibData     *GetCalibData()                       const  { return fCalibData            ; }
   AliCaloCalibPedestal  *GetPedData()                         const  { return fPedestalData         ; }
+  TGeoHMatrix           *GetGeometryMatrix(Int_t i)           const  { return fGeomMatrix[i]        ; }
   void                   JustUnfold(Bool_t yesno)                    { fJustUnfold          = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices    = b     ; }
   void                   SetAODBranchName(const char *name)          { fOutputAODBrName     = name  ; }
@@ -72,7 +73,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   TString                fGeomName;         // name of geometry to use.
   Bool_t                 fGeomMatrixSet;    // set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices; // matrices from configuration, not geometry.root nor ESDs/AODs
-  TGeoHMatrix           *fGeomMatrix[10];   // geometry matrices with alignments
+  TGeoHMatrix           *fGeomMatrix[12];   // geometry matrices with alignments
   TString                fOCDBpath;         // path with OCDB location
   AliEMCALCalibData     *fCalibData;        // EMCAL calib data
   AliCaloCalibPedestal  *fPedestalData;     // EMCAL pedestal

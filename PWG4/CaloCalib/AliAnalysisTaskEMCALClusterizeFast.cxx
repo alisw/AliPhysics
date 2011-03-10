@@ -227,8 +227,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters(AliAODEvent *event)
   if (!fAttachClusters)
     return;
 
-  AliAODEvent *aodevent = dynamic_cast<AliAODEvent*>(InputEvent());
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(aodevent->FindListObject("caloClusters"));
+  TClonesArray *clus = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
   if (!clus)
     return;
 
@@ -252,8 +251,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters(AliESDEvent *event)
   if (!fAttachClusters)
     return;
 
-  AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(esdevent->FindListObject("CaloClusters"));
+  TClonesArray *clus = dynamic_cast<TClonesArray*>(event->FindListObject("CaloClusters"));
   if (!clus)
     return;
 
