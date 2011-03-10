@@ -20,6 +20,11 @@ public :
   AliITSRecPointU& operator=(const AliITSRecPointU &source);
 
   void SetLocalCoord(Float_t x, Float_t z) {fXloc=x; fZloc=z;}
+  void SetModule(Int_t i){fModule=i;} 
+  Int_t GetModule(){return fModule;}
+
+ protected:
+  Int_t fModule;
 
   ClassDef(AliITSRecPointU,1)  // AliITSRecPointU class
 

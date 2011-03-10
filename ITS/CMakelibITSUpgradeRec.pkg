@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	UPGRADE/AliITSlayerUpgrade.cxx UPGRADE/AliITStrackerUpgrade.cxx UPGRADE/AliITStrackU.cxx UPGRADE/AliITStrackerU.cxx UPGRADE/AliITSUpgradeReconstructor.cxx UPGRADE/AliITSUpgradeClusterList.cxx UPGRADE/AliITSUpgradeClusterListNode.cxx UPGRADE/AliITSUpgradeClusterFinder.cxx)
+set ( SRCS  	UPGRADE/AliITSlayerUpgrade.cxx UPGRADE/AliITStrackerUpgrade.cxx UPGRADE/AliITStrackU.cxx UPGRADE/AliITStrackerU.cxx UPGRADE/AliITSUpgradeReconstructor.cxx UPGRADE/AliITSUpgradeClusterList.cxx UPGRADE/AliITSUpgradeClusterListNode.cxx UPGRADE/AliITSUPixelModule.cxx UPGRADE/AliITSUpgradeClusterFinder.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

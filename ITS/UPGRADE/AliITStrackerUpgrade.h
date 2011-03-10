@@ -1,12 +1,6 @@
 #ifndef ALIITSTRACKERUPGRADE_H
 #define ALIITSTRACKERUPGRADE_H 
 
-
-
-#include "AliITStrackerMI.h"
-#include "AliITSlayerUpgrade.h"
-#include "AliITStrackU.h"
-
 /* Copyright(c) 1998-2003, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -19,7 +13,13 @@
 //  tracks are saved as AliITStrackV2 objects     //
 ////////////////////////////////////////////////////
 
+
+
 #include <TClonesArray.h>
+#include "AliITSRecPointU.h"
+#include "AliITStrackerMI.h"
+#include "AliITSlayerUpgrade.h"
+#include "AliITStrackU.h"
 
 class AliITSclusterTable;
 class AliITStrackU;
@@ -109,23 +109,23 @@ class AliITStrackerUpgrade : public AliITStrackerMI {
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackU* trs,Double_t zvertex,Int_t flagp); 
 
-  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,Double_t* vertex);
-  void GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz);
+  void GetCoorAngles(AliITSRecPointU* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,Double_t* vertex);
+  void GetCoorErrors(AliITSRecPointU* cl,Float_t &sx,Float_t &sy, Float_t &sz);
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
   void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
   Bool_t RefitAtBase(Double_t x, AliITStrackU *track,
 		     const Int_t *clusters);
-  Int_t UpdateMI(AliITStrackU* track, const AliITSRecPoint* cl,Double_t chi2,Int_t layer) const;
+  Int_t UpdateMI(AliITStrackU* track, const AliITSRecPointU* cl,Double_t chi2,Int_t layer) const;
   Int_t CorrectForLayerMaterial(AliITStrackU *t, Int_t layerindex, Double_t oldGlobXYZ[3], TString direction="inward");
-  Double_t GetPredictedChi2MI(AliITStrackU* track, const AliITSRecPoint *cluster,Int_t layer);
-  static Int_t GetError(Int_t layer,const AliITSRecPoint*cl,
+  Double_t GetPredictedChi2MI(AliITStrackU* track, const AliITSRecPointU *cluster,Int_t layer);
+  static Int_t GetError(Int_t layer,const AliITSRecPointU *cl,
                         Float_t tgl,Float_t tgphitr,Float_t expQ,
                         Float_t &erry,Float_t &errz,Float_t &covyz,
                         Bool_t addMisalErr=kTRUE);
   
-  static Int_t GetErrorOrigRecPoint(const AliITSRecPoint*cl,
+  static Int_t GetErrorOrigRecPoint(const AliITSRecPointU*cl,
                                     Float_t &erry,Float_t &errz,Float_t &covyz);
-  static void GetNTeor(Int_t layer,const AliITSRecPoint* cl,
+  static void GetNTeor(Int_t layer,const AliITSRecPointU* cl,
                        Float_t tgl,Float_t tgphitr,
                        Float_t &ny,Float_t &nz);
   static const Int_t fgMaxNLayer = 8; //max number of layers in ITSUpgrade

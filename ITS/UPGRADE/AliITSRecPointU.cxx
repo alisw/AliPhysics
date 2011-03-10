@@ -23,7 +23,8 @@
 ClassImp(AliITSRecPointU)
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU():
-    AliITSRecPoint()
+    AliITSRecPoint(),
+    fModule(0)
 {
  //
  // Default constructor
@@ -31,7 +32,8 @@ AliITSRecPointU::AliITSRecPointU():
 }
 //_____________________________________________________________
 AliITSRecPointU::AliITSRecPointU(const AliITSRecPointU& pt):
-    AliITSRecPoint(pt)
+    AliITSRecPoint(pt),
+    fModule(pt.fModule)
 {
   //
   // Copy constructor

@@ -17,8 +17,9 @@
 
 #include <TArrayD.h>            //new constructor
 #include <TFile.h>  
-#include <TGeoManager.h>        //CreateGeometry()
+#include <TGeoManager.h>    
 #include <TGeoVolume.h>         //CreateGeometry()
+#include <TGeoMatrix.h>
 #include <TVirtualMC.h>         //->gMC in StepManager
 #include <TPDGCode.h>           //StepHistory
 #include <TClonesArray.h>
@@ -39,6 +40,7 @@ ClassImp(AliITSupgrade)
     AliITS(),
     fWidths(0),
     fRadii(0),
+    fNSectors(20),
     fRadiiCu(0),
     fWidthsCu(0),
     fCopper(0),
@@ -50,7 +52,6 @@ ClassImp(AliITSupgrade)
     fHalfLength(0),
     fSdigits(0),
     fDigits(0),
-    //fClusters(0),
     fSegmentation(0x0)
 {
   //
@@ -63,6 +64,7 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   AliITS(name,title),
   fWidths(0),
   fRadii(0),
+  fNSectors(20),
   fRadiiCu(0),
   fWidthsCu(0),
   fCopper(0),
@@ -132,13 +134,13 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   }
 
   SetFullSegmentation(xsizeSi,zsizeSi);
-  Init();
 }
 //__________________________________________________________________________________________________
 AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths, TArrayD radii,TArrayD halfLengths, TArrayD radiiCu, TArrayD widthsCu, TArrayS copper,Bool_t bp,Double_t radiusBP, Double_t widthBP, Double_t halfLengthBP):
   AliITS(name,title),
   fWidths(0),
   fRadii(0),
+  fNSectors(20),
   fRadiiCu(radiiCu),
   fWidthsCu(widthsCu),
   fCopper(copper),
@@ -150,7 +152,6 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
   fHalfLength(halfLengths),
   fSdigits(0),
   fDigits(0),
-  //fClusters(0),
   fSegmentation(0x0)
 {
 
@@ -256,15 +257,6 @@ void AliITSupgrade::CreateGeometry()
   PrintSummary();
 } 
 //__________________________________________________________________________________________________
-void AliITSupgrade::Init()
-{
-  // This method defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(gMC->CurrentVolID()==XXX) 
-  // statements in StepManager()
-  // Arguments: none
-  //   Returns: none      
-  AliDebug(1,"Init ITS upgrade preliminary version.");    
-}
-//__________________________________________________________________________________________________
 void AliITSupgrade::StepManager()
 {
   // Full Step Manager.
@@ -272,10 +264,15 @@ void AliITSupgrade::StepManager()
   //   Returns: none           
   //  StepHistory(); return; //uncomment to print tracks history
   //  StepCount(); return;   //uncomment to count photons
+
+  if(!fSegmentation) AliFatal("No segmentation available");
+
   if(!(this->IsActive())) return;
   if(!(gMC->TrackCharge())) return;
   TString volumeName=gMC->CurrentVolName();
-  if(gMC->IsTrackExiting() && !volumeName.Contains("Cu") && !volumeName.Contains("Be")) {
+  if(volumeName.Contains("Be")) return;
+  if(volumeName.Contains("Cu")) return;
+  if(gMC->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
   } // if Outer ITS mother Volume
 
@@ -298,11 +295,11 @@ void AliITSupgrade::StepManager()
   //
   // Fill hit structure.
   //
-  TString volname = gMC->CurrentVolName();
-  if(volname.Contains("Cu"))return;
-  if(volname.Contains("Be"))return; 
-  volname.Remove(0,12);          // remove letters to get the layer number
-  hit.SetModule(volname.Atoi()); // this will be the layer, not the module
+  Int_t copy=-1;
+  gMC->CurrentVolID(copy);   
+
+  volumeName.Remove(0,12);          // remove letters to get the layer number
+  hit.SetModule(fSegmentation->GetIdIndex(volumeName.Atoi(),copy)); // layer and sector information are together in the IdIndex (if copy=0 the idIndex is the layer)); 
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     
   gMC->TrackPosition(position);
@@ -333,32 +330,68 @@ void AliITSupgrade::StepManager()
 //__________________________________________________________________________________________________
 TGeoVolumeAssembly * AliITSupgrade::CreateVol()
 {
-  TGeoVolumeAssembly *vol = new TGeoVolumeAssembly("ITSupgrade");
+  
+   TGeoVolumeAssembly *vol = new TGeoVolumeAssembly("ITSupgrade");
   TGeoMedium *si   =gGeoManager->GetMedium("ITS_UpgradeSi");
   TGeoMedium *cu   =gGeoManager->GetMedium("ITS_UpgradeCu");
   TGeoMedium *be   =gGeoManager->GetMedium("ITS_UpgradeBe");
   for(Int_t ivol=0;ivol<fNlayers;ivol++){
-    TGeoVolume *layer=gGeoManager->MakeTube(Form("LayerSilicon%i",ivol),si   ,    fRadii.At(ivol)   ,   fRadii.At(ivol)+fWidths.At(ivol)  ,   fHalfLength.At(ivol)); //upgraded situation 
-    
-    TGeoVolume *layerCu=gGeoManager->MakeTube(Form("LayerCu%i",ivol),cu   ,    fRadiiCu.At(ivol)   ,   fRadiiCu.At(ivol)+fWidthsCu.At(ivol) ,  fHalfLength.At(ivol)  ); //upgraded situation 
-    
 
-    vol ->AddNode(layer,ivol);
-    if(fCopper.At(ivol)){
-      vol->AddNode(layerCu,ivol);
+    if(fNSectors<1){
+      TGeoVolume *layer=gGeoManager->MakeTube(Form("LayerSilicon%i",ivol),si   ,    fRadii.At(ivol)   ,   fRadii.At(ivol)+fWidths.At(ivol)  ,   fHalfLength.At(ivol)); //upgraded situation
+
+      TGeoVolume *layerCu=gGeoManager->MakeTube(Form("LayerCu%i",ivol),cu   ,    fRadiiCu.At(ivol)   ,   fRadiiCu.At(ivol)+fWidthsCu.At(ivol) ,  fHalfLength.At(ivol)  ); //upgraded situation
+
+      vol ->AddNode(layer,ivol);
+      if(fCopper.At(ivol)){
+        vol->AddNode(layerCu,ivol);
+      }
+
+    }else{
+
+      TGeoVolume *layer = gGeoManager->MakeTubs(Form("LayerSilicon%i",ivol),si,  fRadii.At(ivol),   fRadii.At(ivol)+fWidths.At(ivol)  ,fHalfLength.At(ivol),0,(360./fNSectors));
+      TGeoVolume *layerCu = gGeoManager->MakeTubs(Form("LayerCu%i",ivol),cu   ,    fRadiiCu.At(ivol)   ,   fRadiiCu.At(ivol)+fWidthsCu.At(ivol) ,  fHalfLength.At(ivol) ,0,(360./fNSectors));
+
+
+      for(Int_t i=0;i<fNSectors;i++){
+        TGeoRotation *rot1 = new TGeoRotation(" ",0.0,0.0,360.*i/fNSectors);//sector rotation
+        TGeoRotation *rot2 = new TGeoRotation(" ",0.0,0.0,360.*i/fNSectors);//
+        vol->AddNode(layer,i,rot1);
+        if(fCopper.At(ivol)){
+          vol->AddNode(layerCu,i,rot2);
+        }
+      }
     }
   }
-  TGeoVolume *beampipe=gGeoManager->MakeTube("BeamPipe", be   ,    fRadiusBP   ,  fRadiusBP+ fWidthBP ,  fHalfLengthBP  ); //upgraded situation
+  
 
-  if(fBeampipe) vol->AddNode(beampipe,0);
-  return vol; 
+  if(fBeampipe) {
+    TGeoVolume *beampipe=gGeoManager->MakeTube("BeamPipe", be   ,    fRadiusBP   ,  fRadiusBP+ fWidthBP ,  fHalfLengthBP  ); //upgraded situation
+     vol->AddNode(beampipe,0);
+   }
+  return vol;
+
   
 }
 //_________________________________________________________________________________________________
 void AliITSupgrade::SetFullSegmentation(TArrayD xsize,TArrayD zsize){
+
+  Bool_t Check=kFALSE;
+  for(Int_t lay = 0; lay< xsize.GetSize(); lay++){
+    Double_t arch = fRadii.At(lay)*(TMath::Pi()*2/fNSectors);
+    Int_t nPixRPhi = (Int_t)(arch/xsize.At(lay));
+    Int_t nPixZed = (Int_t)((2*fHalfLength.At(lay))/zsize.At(lay));
+    if(nPixRPhi>9999)Check=kTRUE;
+    if(nPixZed>99999)Check=kTRUE;
+  }
+  if(Check) AliFatal(" Segmentation is too small!! ");
+  if(fSegmentation) fSegmentation->SetNSectors(fNSectors);
+  TArrayD nSect(1);
+  nSect.AddAt(fNSectors,0);
   TFile *file= TFile::Open("Segmentation.root","recreate");
   file->WriteObjectAny(&xsize,"TArrayD","CellSizeX");
-  file->WriteObjectAny(&zsize,"TArrayD","CellSizeZ");    
+  file->WriteObjectAny(&zsize,"TArrayD","CellSizeZ");
+  file->WriteObjectAny(&nSect,"TArrayD","nSectors");
   file->Close();
 }
 //_________________________________________________________________________________________________
@@ -473,24 +506,22 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdig
   for(Int_t iHit=0;iHit<hits->GetEntries();iHit++){         //hits loop
     AliITShit *hit = (AliITShit*)hits->At(iHit);
     Double_t xz[2];
-    if(!fSegmentation->GlobalToDet(hit->GetModule(),hit->GetXG(),hit->GetYG(),hit->GetZG(),xz[0],xz[1])) continue;
+
+    Int_t module;
+    if(!fSegmentation->GlobalToDet(fSegmentation->GetLayerFromIdIndex(hit->GetModule()),hit->GetXG(),hit->GetYG(),hit->GetZG(),xz[0],xz[1],module)) continue;
     AliITSDigitUpgrade digit;
     digit.SetSignal(hit->GetIonization());
     digit.SetNelectrons(hit->GetIonization()/(3.62*1e-09));
-    digit.SetLayer(hit->GetModule()); 
+    digit.SetLayer(fSegmentation->GetLayerFromIdIndex(hit->GetModule()));
+    digit.SetModule(fSegmentation->GetModuleFromIdIndex(hit->GetModule()));//set the module (=sector) of ITSupgrade 
     digit.SetTrackID(hit->GetTrack()); 
     
     Int_t xpix = 999;
-    if(fSegmentation->GetCellSizeX(hit->GetModule())!=0) xpix =(Int_t) (xz[0]/ fSegmentation->GetCellSizeX(hit->GetModule()));
-    
     Int_t zpix = 999; // shift at the next line to have zpix always positive. Such numbers are used to build the Pixel Id in the layer (> 0!) 
-    if(fSegmentation->GetCellSizeZ(hit->GetModule())!=0){
-      zpix =(Int_t)((xz[1]+fHalfLength.At(hit->GetModule())) / fSegmentation->GetCellSizeZ(hit->GetModule())); 
-    }
+    fSegmentation->DetToPixID(xz[0], xz[1],fSegmentation->GetLayerFromIdIndex(hit->GetModule()), xpix, zpix);
     digit.SetPixId(xpix,zpix);
-
+    new((*pSdigList[fSegmentation->GetLayerFromIdIndex(hit->GetModule())])[nSdigit[fSegmentation->GetLayerFromIdIndex(hit->GetModule())]++]) AliITSDigitUpgrade(digit);
     
-    new((*pSdigList[hit->GetModule()])[nSdigit[hit->GetModule()]++]) AliITSDigitUpgrade(digit);
   }
   
   AliDebug(1,"Stop Hit2SumDig.");

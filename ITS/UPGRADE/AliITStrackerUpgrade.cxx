@@ -35,7 +35,7 @@
 #include "AliESDtrack.h"
 #include "AliITSVertexer.h"
 #include "AliITSclusterTable.h"
-#include "AliITSRecPoint.h"
+#include "AliITSRecPointU.h"
 #include "AliITStrackU.h"
 #include "AliITStrackerMI.h"
 #include "AliITSlayerUpgrade.h"
@@ -230,7 +230,7 @@ Int_t AliITStrackerUpgrade::LoadClusters(TTree *clusTree){
   // Load clusters for tracking
   // 
 
-  TClonesArray statITSCluster("AliITSRecPoint");
+  TClonesArray statITSCluster("AliITSRecPointU");
   TClonesArray *ITSCluster = &statITSCluster;
 
   TBranch* itsClusterBranch=clusTree->GetBranch("ITSRecPoints");
@@ -242,8 +242,8 @@ Int_t AliITStrackerUpgrade::LoadClusters(TTree *clusTree){
   clusTree->GetEvent(0);
   Int_t nCluster = ITSCluster->GetEntriesFast();
   for(Int_t i=0; i<nCluster; i++){
-    AliITSRecPoint *recp = (AliITSRecPoint*)ITSCluster->UncheckedAt(i);
-    fLayers[recp->GetLayer()]->InsertCluster(new AliITSRecPoint(*recp));
+    AliITSRecPointU *recp = (AliITSRecPointU*)ITSCluster->UncheckedAt(i);
+    fLayers[recp->GetLayer()]->InsertCluster(new AliITSRecPointU(*recp));
   }//loop clusters
 
   SetClusterTree(clusTree);
@@ -288,7 +288,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
         Int_t idx[12];
         Int_t ncl = track->GetITSclusters(idx);
         for(Int_t k=0;k<ncl;k++){
-          AliITSRecPoint* cll = (AliITSRecPoint*)GetCluster(idx[k]);
+          AliITSRecPointU* cll = (AliITSRecPointU*)GetCluster(idx[k]);
           cll->SetBit(kSAflag);
         }
       }
@@ -300,7 +300,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
         Int_t idx[12];
         Int_t ncl = track->GetITSclusters(idx);
         for(Int_t k=0;k<ncl;k++){
-          AliITSRecPoint* cll = (AliITSRecPoint*)GetCluster(idx[k]);
+          AliITSRecPointU* cll = (AliITSRecPointU*)GetCluster(idx[k]);
           cll->ResetBit(kSAflag);
         }
       }
@@ -330,7 +330,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
   for(Int_t i=0;i<fNLayers;i++){
     if (!ForceSkippingOfLayer(i)) {
       for(Int_t cli=0;cli<fLayers[i]->GetNumberOfClusters();cli++){
-        AliITSRecPoint* cls = (AliITSRecPoint*)fLayers[i]->GetCluster(cli);
+        AliITSRecPointU* cls = (AliITSRecPointU*)fLayers[i]->GetCluster(cli);
         if(cls->TestBit(kSAflag)==kTRUE) continue; //clusters used by TPC prol.
         if(cls->GetQ()==0) continue; //fake clusters dead zones
         if(i>1 && cls->GetQ()<=fMinQ) continue; // cut on SDD and SSD cluster charge
@@ -339,7 +339,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
     } 
     dmar[i]=0;
     if(!fCluLayer[i]){
-      fCluLayer[i] = new TClonesArray("AliITSRecPoint",nclusters[i]);
+      fCluLayer[i] = new TClonesArray("AliITSRecPointU",nclusters[i]);
     }else{
       fCluLayer[i]->Delete();
       fCluLayer[i]->Expand(nclusters[i]);
@@ -357,7 +357,7 @@ Int_t AliITStrackerUpgrade::FindTracks(AliESDEvent* event,Bool_t useAllClusters)
     if (!ForceSkippingOfLayer(ilay)){
       AliDebug(2,Form("number of clusters in layer %i : %i",ilay,fLayers[ilay]->GetNumberOfClusters()));
       for(Int_t cli=0;cli<fLayers[ilay]->GetNumberOfClusters();cli++){
-        AliITSRecPoint* cls = (AliITSRecPoint*)fLayers[ilay]->GetCluster(cli);
+        AliITSRecPointU* cls = (AliITSRecPointU*)fLayers[ilay]->GetCluster(cli);
         if(cls->TestBit(kSAflag)==kTRUE) continue;
         if(cls->GetQ()==0) continue;
         Double_t phi=0;Double_t lambda=0;
@@ -483,7 +483,7 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
   static Int_t clind[fgMaxNLayer][kMaxClu];
   static Int_t clmark[fgMaxNLayer][kMaxClu];
   static Int_t end[fgMaxNLayer];
-  static AliITSRecPoint *listlayer[fgMaxNLayer][kMaxClu];
+  static AliITSRecPointU *listlayer[fgMaxNLayer][kMaxClu];
   for(Int_t k=0;k<fgMaxNLayer; k++)end[k]=0;
 
   for(Int_t i=0;i<fNLayers;i++) {
@@ -501,7 +501,7 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
     Int_t lay = (index & 0xf0000000) >> 28;
     //Int_t cli = index&0x0fffffff;
     //AliITSRecPoint* cl = (AliITSRecPoint*)fLayers[lay]->GetCluster(cli);
-    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(index);
+    AliITSRecPointU* cl = (AliITSRecPointU*)GetCluster(index);
     if(cl->TestBit(kSAflag)==kTRUE) cl->ResetBit(kSAflag);  
     inx[lay]=index;
  
@@ -671,14 +671,13 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
 		  check2 = fSegmentation->DetToGlobal(layer,xz[0], xz[1],x,y,z);
 
 
-		  Double_t phiclrad, phicldeg;
+		  Double_t phiclrad;
 		  phiclrad=TMath::ATan2(y,x); 
 		  if (phiclrad<0) phiclrad+=TMath::TwoPi();
 		  else if (phiclrad>=TMath::TwoPi()) phiclrad-=TMath::TwoPi();
 
-		  phicldeg=180.*phiclrad/TMath::Pi();
-		  Int_t ladder=(Int_t)(phicldeg/18.);//virtual segmentation
-		  Double_t alpha= (ladder*18.+9.)*TMath::Pi()/180.;
+                   Double_t alpha = fSegmentation->GetAlpha(fSegmentation->GetModule(phiclrad));
+
 		  AliITStrackU trac(alpha,radius,yclu1,zclu1,phi2,tgl2,cv,1,fNLayers);
 		  if(cl7!=0){
                     trac.AddClusterV2(7,(clind[7][l7] & 0x0fffffff)>>0);
@@ -823,7 +822,7 @@ Int_t AliITStrackerUpgrade::SearchClusters(Int_t layer,Double_t phiwindow,Double
   Int_t ncl = fCluLayer[layer]->GetEntries();
   AliDebug(2,Form(" Number of clusters %i in layer %i.",ncl,layer));
   for (Int_t index=0; index<ncl; index++) {
-    AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->At(index);
+    AliITSRecPointU *c = (AliITSRecPointU*)fCluLayer[layer]->At(index);
     if (!c) continue;
     if (c->GetQ()<=0) continue;
     if(layer>1 && c->GetQ()<=fMinQ) continue;
@@ -863,7 +862,7 @@ Int_t AliITStrackerUpgrade::SearchClusters(Int_t layer,Double_t phiwindow,Double
 Bool_t AliITStrackerUpgrade::SetFirstPoint(Int_t lay, Int_t clu, Double_t* primaryVertex){
   // Sets the first point (seed) for tracking
 
-  AliITSRecPoint* cl = (AliITSRecPoint*)fCluLayer[lay]->At(clu);
+  AliITSRecPointU* cl = (AliITSRecPointU*)fCluLayer[lay]->At(clu);
   if(!cl) return kFALSE;
   if (cl->GetQ()<=0) return kFALSE;
   if(lay>1 && cl->GetQ()<=fMinQ) return kFALSE;
@@ -999,7 +998,7 @@ Int_t AliITStrackerUpgrade::FindLabel(AliITStrackV2* track) const {
   Int_t iNotLabel=0;
   for(Int_t i=0;i<track->GetNumberOfClusters(); i++) {
     Int_t indexc = track->GetClusterIndex(i);
-    AliITSRecPoint* cl = (AliITSRecPoint*)GetCluster(indexc);
+    AliITSRecPointU* cl = (AliITSRecPointU*)GetCluster(indexc);
     AliDebug(2,Form(" cluster index %i  ",indexc));
     Int_t iLayer=cl->GetLayer();
     for(Int_t k=0;k<3;k++){
@@ -1101,24 +1100,8 @@ void AliITStrackerUpgrade::SetFixedWindowSizes(Int_t n, Double_t *phi, Double_t 
 
 }
 //_______________________________________________________________________
-void AliITStrackerUpgrade::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z,Double_t* vertex){
+void AliITStrackerUpgrade::GetCoorAngles(AliITSRecPointU* cl,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z,Double_t* vertex){
   //Returns values of phi (azimuthal) and lambda angles for a given cluster
-  /*  
-      Double_t rot[9];     fGeom->GetRotMatrix(module,rot);
-      Int_t lay,lad,det; fGeom->GetModuleId(module,lay,lad,det);
-      Float_t tx,ty,tz;  fGeom->GetTrans(lay,lad,det,tx,ty,tz);     
-
-      Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
-      Double_t phi1=TMath::Pi()/2+alpha;
-      if (lay==1) phi1+=TMath::Pi();
-
-      Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
-      Float_t r=tx*cp+ty*sp;
-
-      xyz= r*cp - cl->GetY()*sp;
-      y= r*sp + cl->GetY()*cp;
-      z=cl->GetZ();
-  */
   
   Double_t xz[2];
   xz[0]= cl->GetDetLocalX(); 
@@ -1134,7 +1117,7 @@ void AliITStrackerUpgrade::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double
 }
 
 //________________________________________________________________________
-void AliITStrackerUpgrade::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz){
+void AliITStrackerUpgrade::GetCoorErrors(AliITSRecPointU* cl,Float_t &sx,Float_t &sy, Float_t &sz){
 
   //returns sigmax, y, z of cluster in global coordinates
   /*
@@ -1243,22 +1226,20 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackU *track,
       
     if (phi<0) phi+=TMath::TwoPi();//from 0 to 360 (rad) 
     else if (phi>=TMath::TwoPi()) phi-=TMath::TwoPi();//
-    Double_t phideg=0.;  
-    phideg=180.*phi/TMath::Pi();// in deg  
-    Int_t ladder=(Int_t)(phideg/18.);// virtual segmentation 
-    Double_t alpha= (ladder*18.+9.)*TMath::Pi()/180.;
+
+    Double_t alpha = fSegmentation->GetAlpha(fSegmentation->GetModule(phi));
     
     if (!track->Propagate(alpha,r)) {
       return kFALSE;
     }
 
-    const AliITSRecPoint *clAcc=0;
+    const AliITSRecPointU *clAcc=0;
     Double_t maxchi2=1000.*AliITSReconstructor::GetRecoParam()->GetMaxChi2();
 
     Int_t idx=index[ilayer];
     if (idx>=0) { // cluster in this layer   
       Int_t cli = idx&0x0fffffff;
-      const AliITSRecPoint *cl=(AliITSRecPoint *)fLayers[ilayer]->GetCluster(cli);
+      const AliITSRecPointU *cl=(AliITSRecPointU *)fLayers[ilayer]->GetCluster(cli);
 
       if (cl) {                                                                  
 	Int_t cllayer = (idx & 0xf0000000) >> 28;;                               
@@ -1296,7 +1277,7 @@ Bool_t AliITStrackerUpgrade::RefitAtBase(Double_t xx,AliITStrackU *track,
 }
 
 //_____________________________________________________________________
-Int_t AliITStrackerUpgrade::UpdateMI(AliITStrackU* track, const AliITSRecPoint* cl,Double_t chi2,Int_t index) const
+Int_t AliITStrackerUpgrade::UpdateMI(AliITStrackU* track, const AliITSRecPointU* cl,Double_t chi2,Int_t index) const
 {
   //
   // Update ITS track
@@ -1444,7 +1425,7 @@ Int_t AliITStrackerUpgrade::CorrectForLayerMaterial(AliITStrackU *t,
 
 
 //_____________________________________________________________________________
-Double_t AliITStrackerUpgrade::GetPredictedChi2MI(AliITStrackU* track, const AliITSRecPoint *cluster,Int_t layer)
+Double_t AliITStrackerUpgrade::GetPredictedChi2MI(AliITStrackU* track, const AliITSRecPointU *cluster,Int_t layer)
 {
   //
   // Compute predicted chi2
@@ -1482,7 +1463,7 @@ Double_t AliITStrackerUpgrade::GetPredictedChi2MI(AliITStrackU* track, const Ali
 }
 //________________________________________________________________
 Int_t AliITStrackerUpgrade::GetError(Int_t /*layer*/,
-				     const AliITSRecPoint *cl,
+				     const AliITSRecPointU *cl,
 				     Float_t /*tgl*/,Float_t /*tgphitr*/,Float_t /*expQ*/,
 				     Float_t &erry,Float_t &errz,Float_t &covyz,
 				     Bool_t /*addMisalErr*/)
@@ -1501,7 +1482,7 @@ Int_t AliITStrackerUpgrade::GetError(Int_t /*layer*/,
 }
 //____________________________________________________________________-
 
-Int_t AliITStrackerUpgrade::GetErrorOrigRecPoint(const AliITSRecPoint*cl,
+Int_t AliITStrackerUpgrade::GetErrorOrigRecPoint(const AliITSRecPointU *cl,
 						 Float_t &erry,Float_t &errz,Float_t &covyz)
 {
   //
@@ -1513,7 +1494,7 @@ Int_t AliITStrackerUpgrade::GetErrorOrigRecPoint(const AliITSRecPoint*cl,
   return 1;
 }
 //__________________________
-void AliITStrackerUpgrade::GetNTeor(Int_t layer,const AliITSRecPoint* /*cl*/,
+void AliITStrackerUpgrade::GetNTeor(Int_t layer,const AliITSRecPointU* /*cl*/,
 				    Float_t tgl,Float_t tgphitr,
 				    Float_t &ny,Float_t &nz)
 {

@@ -142,12 +142,12 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
      
     AliITSDigitUpgrade *tmpdig=0x0;
     pSDigitList[ilay].Sort();
-     
+    Int_t module=999; 
     Int_t iNdigPart=0; 
     AliDebug(1,"starting loop over sdigits to create digits");
     for(Int_t isdigentr=0; isdigentr<pSDigitList[ilay].GetEntries(); isdigentr++){
       tmpdig = (AliITSDigitUpgrade*)(pSDigitList[ilay].At(isdigentr) )  ;
-      if(tmpdig->GetPixId()==pixid) { 
+     if(tmpdig->GetPixId()==pixid && tmpdig->GetModule()==module) {
 	iNdigPart++; 
 	if(iNdigPart<=3) {
           tids[iNdigPart-1] = tmpdig->GetTrack(0);
@@ -158,9 +158,10 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
 	continue;
       }
       AliITSDigitUpgrade digit(pixid,eloss);
-
+      
       digit.SetNelectrons(nele); 
       digit.SetLayer(ilay);
+      digit.SetModule(module);
       digit.SetTids(tids);
       digit.SetSignalID(elossID);       
       if(isdigentr!=0) new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(digit);
@@ -170,7 +171,8 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
       tids[0]=tmpdig->GetTrack(0);
       tids[1]=tids[2]=-1;      
       elossID[0]=tmpdig->GetSignal();
-      elossID[1]=elossID[2]=-1;   
+      elossID[1]=elossID[2]=-1;
+      module=tmpdig->GetModule();   
     }
      
     if(!tmpdig) AliDebug(1,"\n \n---------> tmpdig is null...break is expected ! \n");
@@ -183,6 +185,7 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
       tmpdig->SetSignalID(elossID);
       tmpdig->SetNelectrons(nele);  
       tmpdig->SetLayer(ilay); 
+      tmpdig->SetModule(module);
       //cout<<" tmpdigit : pixid "<< pixid<< "  tids "<< tids << " nele " << nele << " ilay "<<ilay<<endl;     
       new((*pLst[ilay])[iCnt[ilay]++]) AliITSDigitUpgrade(*tmpdig);
     }     

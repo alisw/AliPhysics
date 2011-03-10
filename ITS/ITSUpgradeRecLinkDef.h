@@ -20,6 +20,7 @@
 #pragma link C++ class AliITSUpgradeReconstructor+;
 #pragma link C++ class AliITSUpgradeClusterList+;
 #pragma link C++ class AliITSUpgradeClusterListNode+;
+#pragma link C++ class AliITSUPixelModule+;
 #pragma link C++ class AliITSUpgradeClusterFinder+;
 
 #endif

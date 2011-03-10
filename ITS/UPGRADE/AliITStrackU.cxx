@@ -115,9 +115,9 @@ AliITStrackU::AliITStrackU(const AliITStrackU& t, Bool_t trackMI) :
   if(trackMI){
     fLab = t.fLab;
     fFakeRatio = t.fFakeRatio;
-    for(Int_t i=0; i<fNLayers; i++) {
-      fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];
-    }
+    //for(Int_t i=0; i<fNLayers; i++) {
+    //  fClIndex[i]= t.fClIndex[i]; fNy[i]=t.fNy[i]; fNz[i]=t.fNz[i]; fNormQ[i]=t.fNormQ[i]; fNormChi2[i] = t.fNormChi2[i];
+   // }
     for(Int_t i=0; i<12; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i];
       fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; }
   }
@@ -136,7 +136,7 @@ AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Doub
 
   // get the azimuthal angle of the detector containing the innermost
   // cluster of this track (data member fAlpha)
-  for(Int_t i=0; i<12; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
+  for(Int_t i=0; i<fgMaxNLayer; i++) {fDy[i]=0; fDz[i]=0; fSigmaY[i]=0; fSigmaZ[i]=0; fSigmaYZ[i]=0;}
 
   if (alpha<0) alpha+=TMath::TwoPi();
   else if (alpha>=TMath::TwoPi()) alpha-=TMath::TwoPi();

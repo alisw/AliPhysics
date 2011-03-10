@@ -35,6 +35,7 @@ class AliITSDigitUpgrade: public AliDigit {
        
   void SetSignal(Float_t sig) {fSignal = sig;}
   void SetLayer(Int_t layer) {fNLayer = layer;}
+  void SetModule(Int_t module) {fModule = module ;}
   void SetNelectrons(Double_t nele) {fNelectrons = nele;}
   void SetTrackID(Int_t tid) {fTracks[0]=tid;}
   void SetPixId(ULong_t nx, ULong_t nz) {fPixId = 100000*nx + nz ;}
@@ -46,6 +47,7 @@ class AliITSDigitUpgrade: public AliDigit {
     
   Float_t  GetSignal() const {return fSignal;}
   Int_t    GetLayer() const {return fNLayer;}
+  Int_t    GetModule() const {return fModule;}
   Double_t GetNelectrons() const {return fNelectrons;}
   ULong_t  GetPixId(){return fPixId;}
   Int_t    GetxPixelNumber() const {return fPixId/100000;}
@@ -63,6 +65,7 @@ class AliITSDigitUpgrade: public AliDigit {
   ULong_t fPixId;
   Float_t fSignal;   // Signal as Eloss in the medium
   Int_t fNLayer;     
+  Int_t fModule;
   Double_t fNelectrons; 
   Float_t fSignalID[3];
 
@@ -75,8 +78,13 @@ Int_t AliITSDigitUpgrade::Compare(const TObject *pObj) const
 {
   // Arguments: pObj - pointer to object to compare with
   //   Returns: -1 if AbsPad less then in pObj, 1 if more and 0 if they are the same      
-  if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) return  0;
-  else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) return  1;
+
+   if (fModule>((AliITSDigitUpgrade*)pObj)->GetModule())return 1;      
+
+  else  if(fModule==((AliITSDigitUpgrade*)pObj)->GetModule()){
+   if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) return  0;
+   else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) return  1;
+   }
   else                                         return -1;
 }
 

@@ -98,12 +98,11 @@ class AliITSUpgradeClusterFinder :public TObject{
   UShort_t fClusterWidthMaxRow; //max row ID of the cluster
   UShort_t fClusterWidthMinRow; //min row ID of the cluster
   Bool_t   fClusterTypeArea[kMAXCLUSTERTYPESIDEZ][kMAXCLUSTERTYPESIDEY];// same as above comments
-  AliITSUpgradeClusterList fClusterList[8]; // cluster container
+  AliITSUpgradeClusterList **fClusterList; //[fNSectors] cluster container
   TObjArray *fChargeArray;  // charge identifier
   TClonesArray *fRecPoints; // used to fill treeR
   
-  Int_t fNlayers;//number of layer in ITSUpgrade
-
+  Int_t fNSectors;
   AliITSUpgradeClusterFinder(const AliITSUpgradeClusterFinder &source); // copy constructor
   // assignment operator
   AliITSUpgradeClusterFinder& operator=(const AliITSUpgradeClusterFinder &source);

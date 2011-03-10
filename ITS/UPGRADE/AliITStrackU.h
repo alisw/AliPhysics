@@ -84,11 +84,11 @@ class AliITStrackU : public AliITStrackV2 {
   Int_t fCluMark[fgMaxNLayer][kMaxNumberOfClustersL]; //indices for cluster used
   Int_t fNM[fgMaxNLayer]; //number of marked clusters
   
-  Float_t fDy[12];           //dy in layer
-  Float_t fDz[12];           //dz in layer
-  Float_t fSigmaY[12];       //sigma y 
-  Float_t fSigmaZ[12];       //sigma z
-  Float_t fSigmaYZ[12];       //covariance of y and z
+  Float_t fDy[fgMaxNLayer];           //dy in layer
+  Float_t fDz[fgMaxNLayer];           //dz in layer
+  Float_t fSigmaY[fgMaxNLayer];       //sigma y 
+  Float_t fSigmaZ[fgMaxNLayer];       //sigma z
+  Float_t fSigmaYZ[fgMaxNLayer];       //covariance of y and z
 
   Float_t fNy[fgMaxNLayer];              //expected size of cluster
   Float_t fNz[fgMaxNLayer];              //expected size of cluster

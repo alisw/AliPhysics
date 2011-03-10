@@ -26,7 +26,7 @@
 #include "AliITSsegmentationUpgrade.h"
 #include "AliITSupgradeDigitizer.h"
 #include <TArrayS.h>
-
+    
 class TGeoVolume;
 class TGeoVolumeAssembly;
 class TArrayD;
@@ -47,7 +47,6 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   void    AddAlignableVolumes() const;             //from AliModule invoked from AliMC           
   void    CreateMaterials  ();                     //from AliModule invoked from AliMC
   void    CreateGeometry   ();                     //from AliModule invoked from AliMC                     
-  void    Init             ();                     //from AliModule invoked from AliMC::InitGeometry()
   void    StepManager      ();                     //from AliModule invoked from AliMC::Stepping()
   void    Hits2SDigits();
   void    MakeBranch      (Option_t *opt="");        //from AliModule invokde from AliRun::Tree2Tree() to make requested ITSupgrade branch
@@ -81,6 +80,8 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
 
   // Geometry/segmentation creation part
   TGeoVolumeAssembly * CreateVol();
+  TGeoVolumeAssembly * CreateVol(Bool_t cil);
+  
   void SetFullSegmentation(TArrayD xsize, TArrayD zsize);
 
   void SetRadius(Double_t r, Int_t lay) {fRadii.AddAt(r,lay);}
@@ -89,13 +90,14 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   void SetWidthCu(Double_t wCu, Int_t lay) {fWidthsCu.AddAt(wCu,lay);}
   void SetSegmentationX(Double_t x, Int_t lay);
   void SetSegmentationZ(Double_t z, Int_t lay);
-
+ void SetNSectors(Int_t nsect) {fNSectors=nsect;}
   void StepHistory();
   void PrintSummary();
 
  protected:
   TArrayD fWidths;
   TArrayD fRadii;
+  Int_t fNSectors;
   TArrayD fRadiiCu;
   TArrayD fWidthsCu;
   TArrayS fCopper;
