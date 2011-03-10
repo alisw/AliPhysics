@@ -344,7 +344,7 @@ AliFemtoString AliFemtoModelCorrFctnDEtaDPhi::Report(){
   snprintf(ctemp,100,"Number of entries in numerator true:\t%E\n",fDPhiDEtaNumeratorTrue->GetEntries());
   snprintf(ctemp,100,"Number of entries in numerator fake:\t%E\n",fDPhiDEtaNumeratorFake->GetEntries());
   stemp += ctemp;
-  snprintf(ctemp,100,,"Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
+  snprintf(ctemp,100,"Number of entries in denominator:\t%E\n",fDPhiDEtaDenominator->GetEntries());
   stemp += ctemp;
   //  stemp += mCoulombWeight->Report();
   AliFemtoString returnThis = stemp;
