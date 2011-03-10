@@ -13,6 +13,7 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
+#include "AliAODEvent.h"
 #include "AliCaloTrackReader.h" 
 
 class AliCaloTrackAODReader : public AliCaloTrackReader {
@@ -21,6 +22,11 @@ public:
 	
   AliCaloTrackAODReader() ; // ctor
   virtual ~AliCaloTrackAODReader() {;} //virtual dtor
+  
+  AliCentrality* GetCentrality() const {
+    AliAODEvent* event = dynamic_cast<AliAODEvent*> (fInputEvent);	 
+    if(event) return event->GetHeader()->GetCentralityP() ; 
+    else      return 0x0                    ; }
   
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
