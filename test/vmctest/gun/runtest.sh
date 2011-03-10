@@ -18,7 +18,7 @@ if [ "$RUNG3" = "1" ]; then
   aliroot -b -q rec.C      2>&1 | tee rec.log
   rm -fr $G3OUTDIR
   mkdir $G3OUTDIR
-  mv *.root *.log $G3OUTDIR
+  mv *.root *.log GRP $G3OUTDIR
   cp g3Config.C $G3OUTDIR
 fi
 
@@ -28,6 +28,6 @@ if [ "$RUNG4" = "1" ]; then
   aliroot -b -q rec.C      2>&1 | tee rec.log
   rm -fr $G4OUTDIR
   mkdir $G4OUTDIR
-  mv *.root *.log $G4OUTDIR
+  mv *.root *.log GRP $G4OUTDIR
   cp g4Config.C $G4OUTDIR
 fi
