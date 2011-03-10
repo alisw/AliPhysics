@@ -37,9 +37,9 @@ AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const char *title
 {
   // basic constructor
   char fname[1000];
-  sprintf(fname, "%s%s", title, "True");
+  snprintf(fname, 1000, "%s%s", title, "True");
   fCYlmTrue = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi, fUseLCMS);
-  sprintf(fname, "%s%s", title, "Fake");
+  snprintf(fname, 1000, "%s%s", title, "Fake");
   fCYlmFake = new AliFemtoCorrFctnDirectYlm(fname, aMaxL, aNbins, aQinvLo, aQinvHi, fUseLCMS);
 }
 //_______________________
