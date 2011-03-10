@@ -57,7 +57,14 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
 {
     // Assignment operator
   if(&cells == this) return *this;
+  delete [] fCellNumber;
+  delete [] fAmplitude;
+
   fNCells = cells.fNCells;
+
+  fCellNumber = new Short_t[fNCells];
+  fAmplitude  = new Double32_t[fNCells];
+
   for (Int_t i = 0; i < fNCells; i++) {
     fCellNumber[i]    = cells.fCellNumber[i];
     fAmplitude[i]     = cells.fAmplitude[i];
