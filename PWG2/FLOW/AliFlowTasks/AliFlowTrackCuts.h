@@ -58,7 +58,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kTrackWithMCkine, 
                             kTrackWithMCPID, 
                             kTrackWithMCpt, 
-                            kTrackWithPtFromFirstMother
+                            kTrackWithPtFromFirstMother,
+                            kTrackWithTPCInnerParams
                           };
   enum PIDsource {
                    kTPCpid,      // default TPC pid (via GetTPCpid)
