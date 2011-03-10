@@ -157,7 +157,7 @@ void AliGenTherminator::Generate()
       TParticle* mother = 0;
       if (hasMother) {
 	imo = iparticle->GetFirstMother();
-	mother = (TParticle *) fParticles.At(imo);
+	//	mother = (TParticle *) fParticles.At(imo);
       } // if has mother   
       Bool_t tFlag = (!hasDaughter);
       
