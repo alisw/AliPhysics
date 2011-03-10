@@ -14,6 +14,9 @@
 #include <TKey.h>
 #include <TObjectTable.h>
 #include <TDatabasePDG.h>
+#include <TMath.h>
+#include <TPaveText.h>
+#include <TText.h>
 
 #include <AliMultiDimVector.h>
 #include "AliHFMassFitter.h"
@@ -23,7 +26,7 @@
 
 //global variables
 Double_t nsigma=3;
-Int_t decCh=1;//5;
+Int_t decCh=0;
 Int_t fitbtype=0;
 Int_t rebin=2;
 Double_t sigma=0.012;
@@ -34,10 +37,12 @@ Double_t sigmaCut=0.035;//0.03;
 Double_t errSgnCut=0.4;//0.35;
 Double_t nSigmaMeanCut=4.;//3.;
 
-ofstream outcheck("output.dat");
-ofstream outdetail("discarddetails.dat");
+
+ofstream outcheck;
+ofstream outdetail;
 
 Bool_t Data(TH1F* h,Double_t* rangefit,Bool_t writefit,Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmafit, Int_t& status);
+Bool_t BinCounting(TH1F* h, Double_t* rangefit, Bool_t writefit, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Int_t& status);
 Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Double_t& sigmaused, Int_t& status);
 
 //decCh:
@@ -50,7 +55,9 @@ Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Dou
 
 //Note: writefit=kTRUE writes the root files with the fit performed but it also draw all the canvas, so if your computer is not powerfull enough I suggest to run it in batch mode (root -b)
 
-Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kTRUE,Int_t minentries=50,Double_t *rangefit=0x0){
+Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-particle, "P" particle*/,TString centr="no",Bool_t writefit=kFALSE,Int_t minentries=50,Double_t *rangefit=0x0, Bool_t useBinCounting=kTRUE){
+  outcheck.open("output.dat",ios::out);
+  outdetail.open("discarddetails.dat",ios::out);
 
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasColor(0);
@@ -58,7 +65,7 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
 
-
+  //~/Lavoro/PbPb/tagli/SIGAOD33/mar02/cent3070/
   TString filename="AnalysisResults.root",dirname="PWG3_D2H_Significance",listname="coutputSig",mdvlistname="coutputmv";
 
   TString hnamemass="hMass_",hnamesgn="hSig_",hnamebkg="hBkg_";
@@ -268,7 +275,11 @@ Bool_t charmCutsOptimization(Bool_t isData=kTRUE,TString part="both"/*"A" anti-p
 	name=Form("%s%d",hnamemass.Data(),indexes[ih+i*nhistforptbin]);
 	h=(TH1F*)histlist->FindObject(name.Data());
 	if(!h)continue;
-	Data(h,rangefit,writefit,signal,errSignal,background,errBackground,signif,errSignif,sigmafit,status);
+	if(useBinCounting) {
+	  if (h->GetEntries() >= minentries)
+	    BinCounting(h,rangefit,writefit,signal,errSignal,background,errBackground,signif,errSignif,status);
+	} else 
+	  Data(h,rangefit,writefit,signal,errSignal,background,errBackground,signif,errSignif,sigmafit,status);
       }else{
 	name=Form("%s%d",hnamesgn.Data(),ih+i*nhistforptbin);
 	h=(TH1F*)histlist->FindObject(name.Data());
@@ -466,6 +477,106 @@ Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Dou
 }
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+// par[0], par[1] expo params, par[2], par[3] exclusion range
+Bool_t reject = true;
+Double_t ExpoBkgWoPeak(Double_t *x, Double_t *par){
+
+  if( reject && x[0]>par[2] && x[0]<par[3] ){
+    TF1::RejectPoint();
+    return 0;
+  }
+  return par[0] + TMath::Exp(par[1]*x[0]) ;
+
+}
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+//this function fit the hMass histograms
+//status = 0 -> fit fail
+//         1 -> fit ok and good results
+//         2 -> negative signif
+Bool_t BinCounting(TH1F* h,Double_t* rangefit,Bool_t writefit, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Double_t& errbkg, Double_t& sgnf, Double_t& errsgnf, Int_t& status){
+
+  Int_t nbin=h->GetNbinsX();
+  Double_t min=h->GetBinLowEdge(1);
+  Double_t max=h->GetBinLowEdge(nbin+1);
+
+  if(rangefit) {
+    min=rangefit[0];
+    max=rangefit[1];
+  }
+
+  // Bkg fit : exponential = A*exp(B*x) 
+  reject = true;
+  TF1 *fBkgFit = new TF1("fBkgFit",ExpoBkgWoPeak,min,max,4);
+  fBkgFit->FixParameter(2,mass-nsigma*sigma);
+  fBkgFit->FixParameter(3,mass+nsigma*sigma);
+  TFitResultPtr r = h->Fit(fBkgFit,"RS+");
+  Int_t ok = r;
+
+  reject = false;
+  TF1 *fBkgFct = new TF1("fBkgFct",ExpoBkgWoPeak,min,max,4);
+  fBkgFct->SetLineStyle(2);
+  for(Int_t i=0; i<4; i++) fBkgFct->SetParameter(i,fBkgFit->GetParameter(i));
+  h->GetListOfFunctions()->Add(fBkgFct);
+  TH1F * hBkgFct = (TH1F*)fBkgFct->GetHistogram();
+
+  if(ok==-1){
+    cout<<"FIT NOT OK!"<<endl;
+    cout<<"\t 0\t xxx"<<"\t failed"<<endl;
+    status=0;
+    return kFALSE;
+  } 
+  else { //fit ok!
+    status = 1;    
+    Double_t binStartCount = h->FindBin(mass-nsigma*sigma);
+    Double_t binEndCount = h->FindBin(mass+nsigma*sigma);
+    Double_t counts=0., bkgcounts=0., errcounts=0., errbkgcounts=0.;
+    for (Int_t ibin = binStartCount; ibin<=binEndCount; ibin++) {
+      counts += h->GetBinContent( ibin );
+      errcounts += counts ;
+      Double_t center =  h->GetBinCenter(ibin);
+      bkgcounts += hBkgFct->GetBinContent( hBkgFct->FindBin(center) );
+      errbkgcounts += bkgcounts ;
+    }
+    bkg = bkgcounts;
+    errbkg = TMath::Sqrt( errbkgcounts );
+    sgn = counts - bkg ;
+    if(sgn<0) status = 2; // significance < 0
+    errsgn = TMath::Sqrt( counts + errbkg*errbkg );
+    sgnf = sgn / TMath::Sqrt( sgn + bkg );
+    errsgnf = TMath::Sqrt( sgnf*sgnf/(sgn+bkg)/(sgn+bkg)*(1/4.*errsgn*errsgn+errbkg*errbkg) + sgnf*sgnf/sgn/sgn*errsgn*errsgn );
+    //    cout << " Signal "<<sgn<<" +- "<<errsgn<<", bkg "<<bkg<<" +- "<<errbkg<<", significance "<<sgnf<<" +- "<<errsgnf<<endl;
+
+    if(writefit) {
+      TString filename = Form("%sMassFit.root",h->GetName());
+      TFile* outputcv = new TFile(filename.Data(),"recreate");      
+      TCanvas* c = new TCanvas();
+      c->SetName(Form("%s",h->GetName()));
+      h->Draw();
+      TPaveText *pavetext=new TPaveText(0.4,0.7,0.85,0.9,"NDC");     
+      pavetext->SetBorderSize(0);
+      pavetext->SetFillStyle(0);
+      pavetext->AddText(Form("Signal = %4.2e #pm %4.2e",sgn,errsgn));
+      pavetext->AddText(Form("Bkg = %4.2e #pm %4.2e",bkg,errbkg));
+      pavetext->AddText(Form("Signif = %3.2f #pm %3.2f",sgnf,errsgnf));
+      c->cd();
+      pavetext->DrawClone();
+      outputcv->cd();
+      c->Write();
+      outputcv->Close();
+      delete outputcv;
+      delete c;
+    }
+
+  }
+  
+  delete fBkgFit;
+  delete fBkgFct;
+
+  return kTRUE; 
+}
+
+//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 // which=0 plot significance
 //      =1 plot signal
@@ -475,7 +586,7 @@ Bool_t MC(TH1F* hs,TH1F* hb, Double_t& sgn, Double_t& errsgn, Double_t& bkg, Dou
 // readfromfile = kTRUE (default is kFALSE) if you want to read the value fixed in a previous run of this function (e.g. significance or signal maximization)
 
 
-void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_t maximize=kTRUE,Bool_t readfromfile=kFALSE, Bool_t fixedrange=kFALSE){
+void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE,Bool_t readfromfile=kFALSE, Bool_t fixedrange=kFALSE, Bool_t fixedplane=kFALSE){
 
   gStyle->SetCanvasColor(0);
   gStyle->SetFrameFillColor(0);
@@ -483,11 +594,6 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
   gStyle->SetOptStat(0);
   //gStyle->SetOptTitle(0);
   gStyle->SetFrameBorderMode(0);
-
-  if((maximize && readfromfile) || (!maximize && !readfromfile)){
-    cout<<"Error! maximize & readfromfile cannot be both kTRUE or kFALSE"<<endl;
-    return;
-  }
 
   TFile* fin=new TFile("outputSignifMaxim.root");
   if(!fin->IsOpen()){
@@ -558,11 +664,13 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
     return;
   }
   
-
   Int_t nvarsopt=mdv->GetNVariables();
   //Int_t nfixed=nvarsopt-n;
+ 
   Int_t fixedvars[nvarsopt];
   Int_t allfixedvars[nvarsopt*nptbins];
+ 
+
 
   fstream writefixedvars;
   if(readfromfile) {
@@ -579,14 +687,18 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
     writefixedvars.open("fixedvars.dat",ios::out);
   }
 
+  Bool_t freevars[nvarsopt];
+
   //ask variables for projection
   for(Int_t k=0;k<nvarsopt;k++){
     cout<<k<<" "<<mdv->GetAxisTitle(k)<<endl;
+    freevars[k]=kTRUE;
   }
   cout<<"Choose "<<n<<" variable(s)"<<endl;
   for(Int_t j=0;j<n;j++){
     cout<<"var"<<j<<": ";
-    cin>>variable[j];	
+    cin>>variable[j];
+    freevars[variable[j]]=kFALSE;
   }
   if(n==1) variable[1]=999;
 
@@ -644,9 +756,10 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
     Int_t *maxInd=new Int_t[ncuts];
     Float_t *cutvalues=new Float_t[ncuts];
     //init
-    for(Int_t ind=0;ind<ncuts;ind++)maxInd[ind]=0;
+    // for(Int_t ind=0;ind<ncuts;ind++)maxInd[ind]=0;
 
     Float_t sigMax0=cal->GetMaxSignificance(maxInd,0); //look better into this!!
+
     for(Int_t ic=0;ic<ncuts;ic++){
       cutvalues[ic]=((AliMultiDimVector*)fin->Get(nameS.Data()))->GetCutValue(ic,maxInd[ic]);
 
@@ -655,25 +768,23 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
 	fixedvars[ic]=allfixedvars[i+ic];
       }
 
-      if(maximize) { //using the values which maximize the significance
-	fixedvars[ic]=maxInd[ic];
-	//write to output fixedvars.dat
-	writefixedvars<<fixedvars[ic]<<"\t";
+      if(!readfromfile) { //using the values which maximize the significance
+       	fixedvars[ic]=maxInd[ic];
+       	//write to output fixedvars.dat
+       	writefixedvars<<fixedvars[ic]<<"\t";
       }
     }
     //output file: return after each pt bin
-    if(maximize) writefixedvars<<endl;
+    if(!readfromfile) writefixedvars<<endl;
 
     printf("Maximum of significance for Ptbin %d found in bin:\n",i);
-    for(Int_t ic=0;ic<ncuts;ic++){
-      printf("   %d\n",maxInd[ic]);
-      printf("corresponding to cut:\n");
-      printf("   %f\n",cutvalues[ic]);
-    }
-
-    printf("Significance = %f +- %f\n",sigMax0,mvess->GetElement(maxInd,0));
+    for(Int_t ic=0;ic<ncuts;ic++)printf(" %d  ",maxInd[ic]);
+    printf("\ncorresponding to cut:\n");
+    for(Int_t ic=0;ic<ncuts;ic++)printf(" %f  ",cutvalues[ic]);
+    
+    printf("\nSignificance = %f +- %f\n",sigMax0,mvess->GetElement(maxInd,0));
     printf("Purity       = %f +- %f\n",mvpur->GetElement(maxInd,0),mvepur->GetElement(maxInd,i));
-
+    
     if(which==3){
       //mdv=0x0;
       mdv=cal->CalculateSOverB();
@@ -693,19 +804,41 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
       mdverr=(AliMultiDimVector*)fin->Get(mdverrname);
       if(!mdverr)cout<<mdverrname.Data()<<" not found"<<endl;
     }
+    printf("Global Address %d (%d)\n",(Int_t)mdv->GetGlobalAddressFromIndices(maxInd,0),(Int_t)mdv->GetNTotCells()*i+(Int_t)mdv->GetGlobalAddressFromIndices(maxInd,0));
     TString ptbinrange=Form("%.1f < p_{t} < %.1f GeV/c",mdv->GetPtLimit(0),mdv->GetPtLimit(1));
+
+    Float_t maxval=0;
 
     if(n==2) {
       gStyle->SetPalette(1);
-      TH2F* hproj=mdv->Project(variable[0],variable[1],fixedvars,0);
-      hproj->SetTitle(Form("%s wrt %s vs %s (Ptbin%d %.1f<pt<%.1f);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,mdv->GetPtLimit(0),mdv->GetPtLimit(1),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()));
+      Int_t steps[2];
+      Int_t nstep[2]={mdv->GetNCutSteps(variable[0]),mdv->GetNCutSteps(variable[1])}; 
+  
+      TH2F* hproj=new TH2F(Form("hproj%d",i),Form("%s wrt %s vs %s (Ptbin%d %.1f<pt<%.1f);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,mdv->GetPtLimit(0),mdv->GetPtLimit(1),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()),nstep[0],mdv->GetMinLimit(variable[0]),mdv->GetMaxLimit(variable[0]),nstep[1],mdv->GetMinLimit(variable[1]),mdv->GetMaxLimit(variable[1]));
+      if(fixedplane){
+	hproj=mdv->Project(variable[0],variable[1],fixedvars,0);
+	hproj->SetTitle(Form("%s wrt %s vs %s (Ptbin%d %.1f<pt<%.1f);%s;%s",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i,mdv->GetPtLimit(0),mdv->GetPtLimit(1),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data()));
+      }else{
+	for(Int_t ist1=0;ist1<nstep[0];ist1++){
+	  steps[0]=ist1;
+	  Int_t fillbin1=ist1+1;
+	  if(mdv->GetCutValue(variable[0],0)>mdv->GetCutValue(variable[0],mdv->GetNCutSteps(variable[0])-1))fillbin1=nstep[0]-ist1;
+	  for(Int_t ist2=0;ist2<nstep[1];ist2++){
+	    steps[1]=ist2;
+	    Int_t fillbin2=ist2+1;
+	    if(mdv->GetCutValue(variable[1],0)>mdv->GetCutValue(variable[1],mdv->GetNCutSteps(variable[1])-1))fillbin2=nstep[1]-ist2;
+	    Int_t* varmaxim=mdv->FindLocalMaximum(maxval,variable,steps,n,0);
+	    hproj->SetBinContent(fillbin1,fillbin2,maxval);
+	    delete varmaxim;
+	  }
+	}
+      }
       if(fixedrange) {
 	hproj->SetMinimum(axisrange[2*i]);
 	hproj->SetMaximum(axisrange[2*i+1]);
       } else{
 	writerange<<hproj->GetMinimum()<<"\t"<<hproj->GetMinimum()<<endl;
       }
-
       TCanvas* cvpj=new TCanvas(Form("proj%d%dpt%d",variable[0],variable[1],i),Form("%s wrt %s vs %s (Ptbin%d)",title.Data(),(mdv->GetAxisTitle(variable[0])).Data(),mdv->GetAxisTitle(variable[1]).Data(),i));
       cvpj->cd();
       hproj->DrawClone("COLZtext");
@@ -726,20 +859,25 @@ void showMultiDimVector(Int_t n=2,Int_t which=0, Bool_t plotErrors=kFALSE, Bool_
 	//init
 	x[k]=0;y[k]=0;
 	errx[k]=0;erry[k]=0;
-
-	fixedvars[variable[0]]=k; //variable[0] is the index of the variable on which we project. This variable must increase, the others have been set before
-
+	
 	x[k]=mdv->GetCutValue(variable[0],k);
 	errx[k]=mdv->GetCutStep(variable[0])/2.;
-	
-	y[k]=mdv->GetElement(fixedvars,0);
-	erry[k]=mdverr->GetElement(fixedvars,0);
-	if(which==3){
+	Int_t onevariable[1]={variable[0]};
+	Int_t onestep[1]={k};
+	ULong64_t gladd;
 
-	}
+	Float_t maxval;
+	Int_t* varmaxim=mdv->FindLocalMaximum(maxval,onevariable,onestep,n,0);
+	y[k]=maxval;
+	gladd=mdv->GetGlobalAddressFromIndices(varmaxim,0);
+	cout<<gladd<<endl;
+	delete varmaxim;
+      
+	erry[k]=mdverr->GetElement(gladd);
+	
 	cout<<mdv->GetAxisTitle(variable[0])<<" step "<<k<<" = "<<x[k]<<":"<<" y = "<<y[k]<<endl;
       }
-            
+      
       cout<<"----------------------------------------------------------"<<endl;
       TGraphErrors* gr=new TGraphErrors(nbins,x,y,errx,erry);
       gr->SetMarkerStyle(20+i);

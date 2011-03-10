@@ -26,7 +26,8 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-
+#include <fstream>
+#include <Riostream.h>
 #include "TH2.h"
 #include "AliMultiDimVector.h"
 #include "AliLog.h"
@@ -330,6 +331,82 @@ void AliMultiDimVector::FindMaximum(Float_t& maxValue, Int_t *ind , Int_t ptbin)
   ULong64_t maxGlobalAddress=ptbin+maxAddress*fNPtBins;
   Int_t checkedptbin;
   GetIndicesFromGlobalAddress(maxGlobalAddress,ind,checkedptbin);
+}
+
+//_____________________________________________________________________________
+//Int_t* AliMultiDimVector::FindLocalMaximum(Float_t& maxValue, Bool_t *isFree,Int_t* indFixed, Int_t ptbin){
+Int_t* AliMultiDimVector::FindLocalMaximum(Float_t& maxValue, Int_t *numFixed,Int_t* indFixed, Int_t nfixed,Int_t ptbin){
+  //return the elements with maximum content (maxValue) given fixed step for not free variables
+  //numFixed[nfixed] is the indices of the fixed variables in the cuts array [fNVariables]={kTRUE,kTRUE,...,kFALSE,...,kFALSE,...,kTRUE}
+  //indFixed[nfixed]={1,2} //nfixed is the number of false in isFree; indFixed contains the step for the i-th variable
+  //!!take care of deleting the array of index returned!!
+
+  //  Int_t nfixed=0,nfree=0;
+  //Int_t indtmp[fNVariables];
+  if(nfixed>fNVariables)cout<<"AliMultiDimVector::FindLocalMaximum:ERROR! too many variables"<<endl;
+  ULong64_t nelem=1;
+  Int_t* indMax=new Int_t[fNVariables];
+  //Get the number of fixed vars
+  /*
+  for (Int_t iv=0;iv<fNVariables;iv++){
+    if(isFree[iv]){
+      nfree++;
+      nelem*=fNCutSteps[iv];
+      indMax[iv]=0;
+    }
+    else {
+      indMax[iv]=indFixed[nfixed];
+      if(indFixed[nfixed]>=GetNCutSteps(iv)){
+	indMax[iv]=0;
+	cout<<"AliMultiDimVector::FindLocalMaximum:ERROR! called fixed ind "<< indFixed[nfixed]<<"  but "<<iv<<" var has only "<<GetNCutSteps(iv)<<" steps"<<endl;
+      }
+      nfixed++;
+    }
+  }
+  */
+  for (Int_t iv=0;iv<fNVariables;iv++)indMax[iv]=0;
+  for(Int_t i=0;i<nfixed;i++){
+    indMax[numFixed[i]]=indFixed[i];
+  }
+  //Get position of fixed vars
+  /*
+  Int_t fixedIndexes[nfixed];
+  Int_t iforfixed=0;
+  for (Int_t iv=0;iv<fNVariables;iv++){
+    if(!isFree[iv]){
+      fixedIndexes[iforfixed]=iv;
+      iforfixed++;
+    }
+  }
+  */
+  TArrayF vett;
+  vett.Set(nelem);
+
+  ULong64_t first=fNTotCells/fNPtBins*ptbin;
+  ULong64_t last=first+fNTotCells/fNPtBins;
+  Int_t dummyptbin;
+
+  maxValue=fVett[GetGlobalAddressFromIndices(indMax,ptbin)];
+  Int_t tmpInd[fNVariables];
+
+  //loop on multidimvector global addresses
+  for(ULong64_t iga=first;iga<last;iga++){
+    GetIndicesFromGlobalAddress(iga,tmpInd,dummyptbin);
+    Bool_t goodCell=kTRUE;
+    for(Int_t ifix=0;ifix<nfixed&&goodCell;ifix++){
+      //      if(indFixed[ifix]!=indMax[fixedIndexes[ifix]])goodCell=kFALSE;
+      if(indFixed[ifix]!=tmpInd[numFixed[ifix]])goodCell=kFALSE;
+    }
+    if(goodCell){
+      if(fVett[iga]>maxValue){
+	maxValue=fVett[iga];
+	//	GetIndicesFromGlobalAddress(iga,indMax,dummyptbin);
+	for(Int_t inv=0;inv<fNVariables;inv++)indMax[inv]=tmpInd[inv];
+      }
+    }
+  }
+
+  return indMax;
 }
 
 //_____________________________________________________________________________
