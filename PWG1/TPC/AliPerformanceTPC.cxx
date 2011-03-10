@@ -206,12 +206,15 @@ void AliPerformanceTPC::Init()
   //fTPCClustHisto->Sumw2();
   */
   
+  Float_t scaleVxy = 1.0;
+  if(fAnalysisMode !=0) scaleVxy = 0.1; 
+
   Int_t maxMult;
-  if (fHighMultiplicity) { maxMult = 4001; } else { maxMult = 151; }
+  if (fHighMultiplicity) { maxMult = 4001; scaleVxy = 0.1;} else { maxMult = 151; }
   // Xv:Yv:Zv:mult:multP:multN:vertStatus
   Int_t binsTPCEventHisto[7]=  {100,  100,   100,  maxMult,  maxMult,  maxMult, 2   };
-  Double_t minTPCEventHisto[7]={-10., -10., -30., -0.5,  -0.5,  -0.5, -0.5  };
-  Double_t maxTPCEventHisto[7]={ 10.,  10.,  30.,  maxMult-0.5,  maxMult-0.5, maxMult-0.5, 1.5 };
+  Double_t minTPCEventHisto[7]={-10.*scaleVxy, -10.*scaleVxy, -30., -0.5,  -0.5,  -0.5, -0.5  };
+  Double_t maxTPCEventHisto[7]={ 10.*scaleVxy,  10.*scaleVxy,  30.,  maxMult-0.5,  maxMult-0.5, maxMult-0.5, 1.5 };
 
   fTPCEventHisto = new THnSparseF("fTPCEventHisto","Xv:Yv:Zv:mult:multP:multN:vertStatus",7,binsTPCEventHisto,minTPCEventHisto,maxTPCEventHisto);
   fTPCEventHisto->GetAxis(0)->SetTitle("Xv (cm)");
@@ -223,18 +226,13 @@ void AliPerformanceTPC::Init()
   fTPCEventHisto->GetAxis(6)->SetTitle("vertStatus");
   //fTPCEventHisto->Sumw2();
 
+  Float_t scaleDCA = 1.0;
+  if(fAnalysisMode !=0) scaleDCA = 0.1; 
   // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
    Int_t binsTPCTrackHisto[10]=  { 160,  20,  60,  30, 30,  30,   144,             nPtBins,   nCOverPtBins, 2 };
-   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3,  -3., -1.5, 0.,             ptMin,   coverptMin, -0.5 };
-   Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3,   3.,  1.5, 2.*TMath::Pi(), ptMax,    coverptMax,  1.5 };
+   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3*scaleDCA, -3.*scaleDCA, -1.5, 0.,             ptMin,   coverptMin, -0.5 };
+   Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3*scaleDCA,  3.*scaleDCA,  1.5, 2.*TMath::Pi(), ptMax,    coverptMax,  1.5 };
   
-  // nTPCClust:chi2PerTPCClust:nTPCClustFindRatio:DCAr:DCAz:eta:phi:pt:charge:vertStatus
-//   Int_t binsTPCTrackHisto[10]=  { 160,  50,  60,  100, 100,  30,   144,            nPtBins,    3, 2 };
-//   Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -10,  -10., -1.5, 0.,             ptMin,   -1.5, 0 };
-//   Double_t maxTPCTrackHisto[10]={ 160., 10., 1.2, 10,   10.,  1.5, 2.*TMath::Pi(), ptMax,    1.5, 2 };
-
-
-
   fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge/pt:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
   fTPCTrackHisto->SetBinEdges(7,binsPt);
   //fTPCTrackHisto->SetBinEdges(8,binsCOverPt);
@@ -315,6 +313,9 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   Float_t qpt = 0;
   if( fabs(pt)>0 ) qpt = q/fabs(pt);
 
+  // filter out noise tracks
+  if(esdTrack->GetTPCsignal() < 5) return;
+
   //
   // select primaries
   //
@@ -367,7 +368,8 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
 
   if ((esdTrack->GetStatus()&AliESDtrack::kITSrefit)==0) return; // ITS refit
   if ((esdTrack->GetStatus()&AliESDtrack::kTPCrefit)==0) return; // TPC refit
-  if (esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
+  if ((esdTrack->HasPointOnITSLayer(0)==kFALSE)&&(esdTrack->HasPointOnITSLayer(1)==kFALSE)) return; // at least one SPD
+  //if (esdTrack->GetITSclusters(0)<fCutsRC->GetMinNClustersITS()) return;  // min. nb. ITS clusters
 
   Float_t q = esdTrack->Charge();
   Float_t pt = esdTrack->Pt();
@@ -420,6 +422,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 {
   // Process comparison information 
   //
+
   if(!esdEvent) 
   {
     Error("Exec","esdEvent not available");
@@ -550,29 +553,36 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
 
     // TPC only
     if(!fUseHLT){
-      AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
-      if(!tpcTrack) continue;
+      if(GetAnalysisMode() == 0) {
+        AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
+        if(!tpcTrack) continue;
       
-      // track selection
-      if( fCutsRC->AcceptTrack(tpcTrack) ) { 
-	mult++;
-	if(tpcTrack->Charge()>0.) multP++;
-	if(tpcTrack->Charge()<0.) multN++;
+        // track selection
+        if( fCutsRC->AcceptTrack(tpcTrack) ) { 
+	  mult++;
+	  if(tpcTrack->Charge()>0.) multP++;
+	  if(tpcTrack->Charge()<0.) multN++;
+        }
+        if(tpcTrack) delete tpcTrack;
       }
-      
-      if(tpcTrack) delete tpcTrack;
+      else {
+       // track selection
+        if( fCutsRC->AcceptTrack(track) ) { 
+	  mult++;
+	  if(track->Charge()>0.) multP++;
+	  if(track->Charge()<0.) multN++;
+        }
+      } 
     }
-    else
+    else {
       if( fCutsRC->AcceptTrack(track) ) { 
 	//Printf("Still here for HLT");
 	mult++;
 	if(track->Charge()>0.) multP++;
 	if(track->Charge()<0.) multN++;
       }
-    
+    }
   }
-//  }
-  //
   
   Double_t vTPCEvent[7] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),mult,multP,multN,vtxESD->GetStatus()};
   fTPCEventHisto->Fill(vTPCEvent);
@@ -689,7 +699,7 @@ void AliPerformanceTPC::Analyse()
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 0, 2, 5, &selString);
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 1, 2, 5, &selString);
     AddProjection(aFolderObj, "track", fTPCTrackHisto, 3, 4, 5, &selString);
-
+    AddProjection(aFolderObj, "track", fTPCTrackHisto, 5, 6, 7, &selString);
 
     //restore cuts
     fTPCTrackHisto->GetAxis(8)->SetRangeUser(-10,10);
