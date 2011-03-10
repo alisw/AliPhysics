@@ -232,7 +232,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fL0TriggerInputs(hdr.fL0TriggerInputs),
   fL1TriggerInputs(hdr.fL1TriggerInputs),
   fL2TriggerInputs(hdr.fL2TriggerInputs),
-  fCentralityP(hdr.fCentralityP)
+  fCentralityP(new AliCentrality(*hdr.fCentralityP))
 {
   // Copy constructor.
   
@@ -296,7 +296,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fL0TriggerInputs    = hdr.fL0TriggerInputs;
     fL1TriggerInputs    = hdr.fL1TriggerInputs;
     fL2TriggerInputs    = hdr.fL2TriggerInputs;
-    fCentralityP        = hdr.fCentralityP;
+    fCentralityP        = new AliCentrality(*hdr.fCentralityP);
 
     SetName(hdr.fName);
     SetTitle(hdr.fTitle);
