@@ -26,10 +26,13 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           UserCreateOutputObjects();
   virtual void           UserExec(Option_t *option);
 
+  Bool_t                 GetAttachClusters()                  const  { return fAttachClusters       ; }
   const TObjArray       *GetClusters()                        const  { return fClusterArr           ; }
   const TString         &GeometryName()                       const  { return fGeomName             ; }  
   AliEMCALRecParam      *GetRecParam()                        const  { return fRecParam             ; }
   AliEMCALRecoUtils     *GetRecoUtils()                       const  { return fRecoUtils            ; }
+  AliEMCALCalibData     *GetCalibData()                       const  { return fCalibData            ; }
+  AliCaloCalibPedestal  *GetPedData()                         const  { return fPedestalData         ; }
   void                   JustUnfold(Bool_t yesno)                    { fJustUnfold          = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices    = b     ; }
   void                   SetAODBranchName(const char *name)          { fOutputAODBrName     = name  ; }
