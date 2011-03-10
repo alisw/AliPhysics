@@ -379,7 +379,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2AODClusters(TClonesArray *clu
     recpoint->GetElipsAxis(elipAxis);
     c->SetM02(elipAxis[0]*elipAxis[0]) ;
     c->SetM20(elipAxis[1]*elipAxis[1]) ;
-    c->SetDistToBadChannel(recpoint->GetDistanceToBadTower()); 
+    c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
     if (esdevent && fRecoUtils) {
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
       if(trackIndex >= 0) {
