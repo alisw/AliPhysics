@@ -857,18 +857,35 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fEmptyVsTotal->SetZTitle("Correlation");
   
   //Inserted by HHD
+  
+  //Float_t nbinlimitsFMD3I[8] =  {-3.4,-3.2,-3,-2.8,-2.6,-2.4,-2.2,-2};
+  Int_t nbins = 40;
+  /*if(fName.Contains("FMD1I")) nbins = 7;
+  if(fName.Contains("FMD2I")) nbins = 8;
+  if(fName.Contains("FMD2O")) nbins = 4;
+  if(fName.Contains("FMD3I")) nbins = 8;
+  if(fName.Contains("FMD3O")) nbins = 4;*/
+  Float_t lowlimit = -4, highlimit = 6;
+  /*if(fName.Contains("FMD1I")) {lowlimit = 3.6; highlimit = 5;}
+  if(fName.Contains("FMD2I")) {lowlimit = 2.2; highlimit = 3.8;}
+  if(fName.Contains("FMD2O")) {lowlimit = 1.6; highlimit = 2.4;} 
+  if(fName.Contains("FMD3I")) {lowlimit = -2.4; highlimit = -1.6;}
+  if(fName.Contains("FMD3O")) {lowlimit = -3.5; highlimit = -2.1;} 
+  
+  std::cout<<nbins<<"   "<<lowlimit<<"    "<<highlimit<<std::endl;
+  */
   fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
 			  Form("Total number of strips in %s", fName.Data()), 
-			  40., 
-			  -4,
-			  6, 
+			  nbins, 
+			  lowlimit,
+			  highlimit, 
 			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
 			  0, 2*TMath::Pi());
   fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
 			  Form("Empty number of strips in %s", fName.Data()), 
-			  40., 
-			  -4,
-			  6, 
+			  nbins, 
+			  lowlimit,
+			  highlimit, 
 			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
 			  0, 2*TMath::Pi());
   fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
