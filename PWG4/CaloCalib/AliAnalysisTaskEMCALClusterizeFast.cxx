@@ -499,12 +499,22 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
           geometry->SetMisalMatrix(fGeomMatrix[mod],mod);  
         }
       }
-    } else {
+    } else { // get matrix from file (work around bug in aliroot)
       for(Int_t mod=0; mod < geometry->GetEMCGeometry()->GetNumberOfSuperModules(); ++mod) {
-        if(event->GetEMCALMatrix(mod)) {
+        const TGeoHMatrix *gm = 0;
+        AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(event->GetHeader());
+        if (esdevent) {
+          gm = esdevent->GetEMCALMatrix(mod);
+        } else {
+          AliAODHeader *aodheader = dynamic_cast<AliAODHeader*>(event->GetHeader());
+          if (aodheader) {
+            gm = aodheader->GetEMCALMatrix(mod);
+          }
+        }
+        if (gm) {
           if(DebugLevel() > 2) 
-            event->GetEMCALMatrix(mod)->Print();
-          geometry->SetMisalMatrix(event->GetEMCALMatrix(mod),mod);
+            gm->Print();
+          geometry->SetMisalMatrix(gm,mod);
         }
       }
     }

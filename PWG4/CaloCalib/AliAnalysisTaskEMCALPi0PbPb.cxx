@@ -70,8 +70,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex,EMCALCells.,CaloClusters "
-               "AOD:header,vertices,emcalCells,caloClusters";
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex,EMCALCells. "
+               "AOD:header,vertices,emcalCells";
 }
 
 //________________________________________________________________________
