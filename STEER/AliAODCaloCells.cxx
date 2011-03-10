@@ -69,6 +69,9 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
     fCellNumber[i]    = cells.fCellNumber[i];
     fAmplitude[i]     = cells.fAmplitude[i];
   }
+  fIsSorted = cells.fIsSorted;
+  fType = cells.fType;
+  
   SetName(cells.GetName()) ; 
   SetTitle(cells.GetTitle()) ; 
   return *this;
