@@ -417,10 +417,9 @@ Double_t AliCollisionNormalization::ComputeNint() {
 				fAllEventsInBin0ZRange,
 				fAllEventsZRangeMult1,
 				fAllEventsZRange));
-
+  Int_t nbin = histVzMCTrg->GetNbinsX();
+  fTrigEffBin0 =  histVzMCTrg->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1);
   if(fVerbose > 1) {    
-    Int_t nbin = histVzMCTrg->GetNbinsX();
-    fTrigEffBin0 =  histVzMCTrg->Integral(0,nbin+1,1,1)/histVzMCGen->Integral(0,nbin+1,1,1);
     AliInfo(Form("Trigger Efficiency in the zero bin: %3.3f", fTrigEffBin0 ));
   }
   
