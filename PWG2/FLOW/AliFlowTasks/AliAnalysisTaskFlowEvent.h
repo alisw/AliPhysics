@@ -16,7 +16,6 @@ class AliFlowEventCuts;
 class AliFlowTrackCuts;
 class AliFlowEventSimpleMaker;
 class TList;
-class TF1;
 class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
@@ -96,7 +95,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetAfterburnerOn(Bool_t b=kTRUE) {fAfterburnerOn=b;}
   void SetNonFlowNumberOfTrackClones(Int_t n) {fNonFlowNumberOfTrackClones=n;}
   void SetFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4) {fV1=v1;fV2=v2;fV3=v3;fV4=v4;}
-  void SetDifferentialV2(TF1 *v2Function) {fV2Function = v2Function;}
   // end setters afterburner
 
  private:
@@ -162,8 +160,6 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fV3;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
     
-  TF1 *fV2Function; //v2(pT)
-
   TRandom3* fMyTRandom3;     // TRandom3 generator
   // end afterburner
   
