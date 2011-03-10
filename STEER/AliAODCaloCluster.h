@@ -80,7 +80,7 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t    GetTrackDz(void)const        {return 10000. ;}
 	
   // setters
-  void SetDistToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
+  void SetDistanceToBadChannel(Double_t dist) { fDistToBadChannel = dist; }
   void SetDispersion(Double_t disp) { fDispersion = disp; }
   void SetM20(Double_t m20) { fM20 = m20; }
   void SetM02(Double_t m02) { fM02 = m02; }
