@@ -350,7 +350,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
       Int_t index0 = nMuonTrack[i];
       for(int j=i+1;j<nMuons;j++){
         Int_t index1 = nMuonTrack[j];
-        aodDimuon = new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
+        new(dimuons[jDimuons++]) AliAODDimuon(tracks.At(index0),tracks.At(index1));
         ++nDimuons;
         if (fDebug > 1){
           AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jDimuons-1);
