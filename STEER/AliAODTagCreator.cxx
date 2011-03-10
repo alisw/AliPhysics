@@ -76,7 +76,7 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
   TString alienUrl;
   const char* guid;
   const char* md5;
-  const char* turl;
+  //  const char* turl;
   Long64_t size = -1;
 
   fChain = new TChain("aodTree");
@@ -86,7 +86,7 @@ Bool_t AliAODTagCreator::ReadGridCollection(TGridResult *fresult) {
     guid = fresult->GetKey(i,"guid");
     if(fresult->GetKey(i,"size")) size = atol (fresult->GetKey(i,"size"));
     md5 = fresult->GetKey(i,"md5");
-    turl = fresult->GetKey(i,"turl");
+    //    turl = fresult->GetKey(i,"turl");
     if(md5 && !strlen(guid)) md5 = 0;
     if(guid && !strlen(guid)) guid = 0;
     
