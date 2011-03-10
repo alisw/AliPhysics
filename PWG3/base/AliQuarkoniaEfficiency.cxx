@@ -181,10 +181,10 @@ void AliQuarkoniaEfficiency::Init()
     }
 
     char histoname[50];
-    if(fTrigger) sprintf(histoname,"h%sEfficiencyPtRap_%s",GetTitle(),trig);
-    else sprintf(histoname,"h%sEfficiencyPtRap",GetTitle());
+    if(fTrigger) snprintf(histoname,50,"h%sEfficiencyPtRap_%s",GetTitle(),trig);
+    else snprintf(histoname,50,"h%sEfficiencyPtRap",GetTitle());
     char histonameposition[99];
-    sprintf(histonameposition,"%s/%s",histosDir,histoname);
+    snprintf(histonameposition,99,"%s/%s",histosDir,histoname);
     fEfficiency = (TH2F*)efficiencyFile.Get(histonameposition);
 
     if ( !fEfficiency ) {
