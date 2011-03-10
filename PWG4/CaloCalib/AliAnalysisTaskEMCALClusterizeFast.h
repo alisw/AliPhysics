@@ -27,6 +27,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           UserExec(Option_t *option);
 
   Bool_t                 GetAttachClusters()                  const  { return fAttachClusters       ; }
+  Bool_t                 GetRecalibrateOnly()                 const  { return fRecalibOnly          ; }
   const TObjArray       *GetClusters()                        const  { return fClusterArr           ; }
   const TString         &GeometryName()                       const  { return fGeomName             ; }  
   AliEMCALRecParam      *GetRecParam()                        const  { return fRecParam             ; }
@@ -45,6 +46,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetLoadPed(Bool_t b)                        { fLoadPed             = b     ; }
   void                   SetOCDBPath(const char *path)               { fOCDBpath            = path  ; }
   void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
+  void                   SetRecalibrateCellsOnly(Bool_t b)           { fRecalibOnly         = b     ; }
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
@@ -80,7 +82,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fLoadCalib;        // access calib object from OCDB (def=off)
   Bool_t                 fLoadPed;          // access ped object from OCDB (def=off)
   Bool_t                 fAttachClusters;   // attach clusters to input event (AOD or ESD)
+  Bool_t                 fRecalibOnly;      // only recalibrate cells if true (def=off)
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 3);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 4);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H

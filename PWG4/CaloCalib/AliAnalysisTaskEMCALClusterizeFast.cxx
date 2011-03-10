@@ -64,7 +64,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fRecoUtils(0),
     fLoadCalib(0),
     fLoadPed(0),
-    fAttachClusters(0)
+    fAttachClusters(0),
+    fRecalibOnly(0)
 { 
   // Constructor
 }
@@ -90,7 +91,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fRecoUtils(0),
     fLoadCalib(0),
     fLoadPed(0),
-    fAttachClusters(0)
+    fAttachClusters(0),
+    fRecalibOnly(0)
 { 
   // Constructor
 
@@ -151,18 +153,22 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
       FillDigitsArray(esdevent);
     else 
       FillDigitsArray(aodevent);
-    fClusterizer->Digits2Clusters("");
-    if (esdevent && fRecoUtils)
-      fRecoUtils->FindMatches(esdevent,fClusterArr);
+    if (fRecalibOnly==0) {
+      fClusterizer->Digits2Clusters("");
+      if (esdevent && fRecoUtils)
+        fRecoUtils->FindMatches(esdevent,fClusterArr);
+    }
     if (fOutputAODBranch) {
       RecPoints2AODClusters(fOutputAODBranch);
     }
     if (esdevent) {
       UpdateCells(esdevent);
-      UpdateClusters(esdevent);
+      if (fRecalibOnly==0)
+        UpdateClusters(esdevent);
     } else {
       UpdateCells(aodevent);
-      UpdateClusters(aodevent);
+      if (fRecalibOnly==0)
+        UpdateClusters(aodevent);
     }
   }
 }
@@ -285,6 +291,10 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray(AliAODEvent *event)
     digit->SetTimeR(cellTime);
     digit->SetIndexInList(idigit);
     digit->SetType(AliEMCALDigit::kHG);
+    if (fRecalibOnly) {
+      Double_t energy = fClusterizer->Calibrate(cellAmplitude,cellTime,cellNumber);
+      digit->SetCalibAmp(energy);
+    }
     idigit++;
   }
 }
@@ -311,6 +321,10 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray(AliESDEvent *event)
     digit->SetTimeR(cellTime);
     digit->SetIndexInList(idigit);
     digit->SetType(AliEMCALDigit::kHG);
+    if (fRecalibOnly) {
+      Double_t energy = fClusterizer->Calibrate(cellAmplitude,cellTime,cellNumber);
+      digit->SetCalibAmp(energy);
+    }
     idigit++;
   }
 }
