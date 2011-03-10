@@ -300,16 +300,17 @@ void AliAnalysisTaskMuonDistributions::Terminate(Option_t *)
   
   printf("Using beam Energy=%f \n",fBeamEnergy);
 
-  fOutput = dynamic_cast<TList*> (GetOutputData(1));
-  TH1D *hNumberMuonTracks = dynamic_cast<TH1D*> (fOutput->FindObject("hNumberMuonTracks"));  
-  TH1D *hMassDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hMassDimu"));  
-  TH1D *hPtDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hPtDimu"));  
-  TH1D *hRapidityDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hRapidityDimu"));  
-  TH1D *hCosThetaCSDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaCSDimu"));  
-  TH1D *hCosThetaHEDimu = dynamic_cast<TH1D*> (fOutput->FindObject("hCosThetaHEDimu"));  
-  TH1D *hP = dynamic_cast<TH1D*> (fOutput->FindObject("hP"));  
-  TH1D *hPt = dynamic_cast<TH1D*> (fOutput->FindObject("hPt"));  
-  TH1D *hRapidity = dynamic_cast<TH1D*> (fOutput->FindObject("hRapidity"));  
+  fOutput = static_cast<TList*> (GetOutputData(1));
+  TH1D *hNumberMuonTracks = static_cast<TH1D*> (fOutput->FindObject("hNumberMuonTracks"));  
+  TH1D *hMassDimu = static_cast<TH1D*> (fOutput->FindObject("hMassDimu"));  
+  TH1D *hPtDimu = static_cast<TH1D*> (fOutput->FindObject("hPtDimu"));  
+  TH1D *hRapidityDimu = static_cast<TH1D*> (fOutput->FindObject("hRapidityDimu"));  
+  TH1D *hCosThetaCSDimu = static_cast<TH1D*> (fOutput->FindObject("hCosThetaCSDimu"));  
+  TH1D *hCosThetaHEDimu = static_cast<TH1D*> (fOutput->FindObject("hCosThetaHEDimu"));  
+  TH1D *hP = static_cast<TH1D*> (fOutput->FindObject("hP"));  
+  TH1D *hPt = static_cast<TH1D*> (fOutput->FindObject("hPt"));  
+  TH1D *hRapidity = static_cast<TH1D*> (fOutput->FindObject("hRapidity"));  
+  
  
   TCanvas *c0_MuonDistributions = new TCanvas("c0_MuonDistributions","Plots",xmin,ymin,600,600);
   c0_MuonDistributions->Divide(2,2);
