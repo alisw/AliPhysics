@@ -33,14 +33,15 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   JustUnfold(Bool_t yesno)                    { fJustUnfold          = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices    = b     ; }
   void                   SetAODBranchName(const char *name)          { fOutputAODBrName     = name  ; }
+  void                   SetAttachClusters(Bool_t b)                 { fAttachClusters      = b     ; }
   void                   SetCalibData(AliEMCALCalibData *d)          { fCalibData           = d     ; }
   void                   SetEMCALRecoUtils(AliEMCALRecoUtils *ru)    { fRecoUtils           = ru    ; }
   void                   SetGeometryMatrix(TGeoHMatrix* m, Int_t i)  { fGeomMatrix[i]       = m     ; }
   void                   SetGeometryName(const char *name)           { fGeomName            = name  ; }
-  void                   SetOCDBPath(const char *path)               { fOCDBpath            = path  ; }
-  void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
   void                   SetLoadCalib(Bool_t b)                      { fLoadCalib           = b     ; }
   void                   SetLoadPed(Bool_t b)                        { fLoadPed             = b     ; }
+  void                   SetOCDBPath(const char *path)               { fOCDBpath            = path  ; }
+  void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
@@ -51,7 +52,10 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   FillDigitsArray(AliESDEvent *event);
   void                   UpdateCells(AliAODEvent *event);
   void                   UpdateCells(AliESDEvent *event);
-  void                   RecPoints2Clusters();
+  void                   UpdateClusters(AliAODEvent *event);
+  void                   UpdateClusters(AliESDEvent *event);
+  void                   RecPoints2AODClusters(TClonesArray *clus);
+  void                   RecPoints2ESDClusters(TClonesArray *clus);
 
   Int_t                  fRun;              //!run number
   TClonesArray          *fDigitsArr;        //!digits array
@@ -72,8 +76,8 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliEMCALRecoUtils     *fRecoUtils;        // access to factorized reconstruction algorithms
   Bool_t                 fLoadCalib;        // access calib object from OCDB (def=off)
   Bool_t                 fLoadPed;          // access ped object from OCDB (def=off)
+  Bool_t                 fAttachClusters;   // attach clusters to input event (AOD or ESD)
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 2);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 3);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
-
