@@ -461,7 +461,7 @@ AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
       continue;
     }
     emctrack->GetXYZ(trkPos);
-    if (emctrack) delete emctrack;
+    delete emctrack;
 
     distX = clsPos[0]-trkPos[0];
     distY = clsPos[1]-trkPos[1];
