@@ -61,7 +61,12 @@ Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
     else
     {
         AliPhysicsSelection *selection = 0;
-        AliPhysicsSelectionTask *physSelTask = dynamic_cast<AliPhysicsSelectionTask*>(AliAnalysisManager::GetAnalysisManager()->GetTask("AliPhysicsSelectionTask"));
+	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+	if(!mgr){
+	  AliError("Error: no analysis manager");
+	  return -1;
+	}
+        AliPhysicsSelectionTask *physSelTask = dynamic_cast<AliPhysicsSelectionTask*>(mgr->GetTask("AliPhysicsSelectionTask"));
         if (physSelTask)
         {
 
@@ -88,12 +93,12 @@ Int_t AliAnalysisTaskTransverseEnergy::CheckPhysicsSelection(Int_t runNumber)
             return -1;
         }
         AliInfo("Changing the physics selection");
+        AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (mgr->GetInputEventHandler());
         // The physics selection task has a bit weird implementation, setting the the physics selection will not update the handler, so we do it manually
-	if(!AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()){
+	if(!handler){
             AliError("Analysis manager does not exist!");
             return -1;
 	}
-        AliInputEventHandler* handler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
         physSelTask->SetPhysicsSelection(selection);
         handler->SetEventSelection(selection);
         fCurrentRunNum = runNumber;

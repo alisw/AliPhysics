@@ -25,6 +25,10 @@
 #include <iostream>
 #include "TH2F.h"
 #include "AliAnalysisHadEtCorrections.h"
+#include "AliLog.h"
+
+
+
 
 using namespace std;
 
@@ -55,7 +59,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 { // analyse ESD event
     ResetEventValues();
      if(!ev){
-            Printf("ERROR: Event does not exist");   
+            AliFatal("ERROR: Event does not exist");   
 	    return 0;
      }
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
@@ -75,8 +79,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	AliESDtrack *track = dynamic_cast<AliESDtrack*> (list->At(iTrack));
         if (!track)
         {
-            Printf("ERROR: Could not get track %d", iTrack);
-            continue;
+	  AliError(Form("ERROR: Could not get track %d", iTrack));
+	  continue;
         }
 
         fMultiplicity++;
@@ -197,7 +201,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         AliESDCaloCluster* cluster = event->GetCaloCluster(iCluster);
         if (!cluster)
         {
-            Printf("ERROR: Could not get cluster %d", iCluster);
+	  AliError(Form("ERROR: Could not get cluster %d", iCluster));
             continue;
         }
 
@@ -245,8 +249,19 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		      fCharge = track->Charge();
 		      fParticlePid = maxpid;
 		      fPidProb = maxpidweight;
-		      if(track) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(dynamic_cast<AliESDtrack*>(track));
-		      fTreeDeposit->Fill();
+		      if(!track){
+			AliError("Error: track does not exist");
+		      }
+		      else{
+			AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+			if(!esdTrack){
+			  AliError("Error: track does not exist");
+			}
+			else{
+			  if(esdTrack) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(esdTrack);
+			  fTreeDeposit->Fill();
+			}
+		      }
 		    }
 			 
                     if(maxpidweight > fPidCut)
@@ -434,7 +449,7 @@ AliAnalysisEtReconstructed::CalcTrackClusterDistance(const Float_t clsPos[3],
   for (Int_t iTrack = 0; iTrack < event->GetNumberOfTracks(); iTrack++) {
     AliESDtrack *track = event->GetTrack(iTrack);
     if (!track) {
-      Printf("ERROR: Could not get track %d", iTrack);
+      AliError(Form("ERROR: Could not get track %d", iTrack));
       continue;
     }
 
