@@ -41,6 +41,7 @@
 ////
 
 #include <Riostream.h>
+#include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
 
@@ -2138,75 +2139,75 @@ void AliPMDv1::Init()
   //gMC->Gstpar(idtmed[605], "DRAY", 1.);
   
   // Visualization of volumes
-  gMC->Gsatt("ECAR", "SEEN", 0);
-  gMC->Gsatt("ECCU", "SEEN", 1);
-  gMC->Gsatt("ECCU", "COLO", 4);
-  gMC->Gsatt("EST1", "SEEN", 0);
-  gMC->Gsatt("EST2", "SEEN", 0);
-  gMC->Gsatt("EHC1", "SEEN", 0);  
-  gMC->Gsatt("EHC2", "SEEN", 0);
-  gMC->Gsatt("EDGA", "SEEN", 1);
-  gMC->Gsatt("EDGB", "SEEN", 1);
-  gMC->Gsatt("EEGA", "SEEN", 1);
-  gMC->Gsatt("EEGB", "SEEN", 1);
-  gMC->Gsatt("EUM1", "SEEN", 0);
-  gMC->Gsatt("EUV1", "SEEN", 0);
-  gMC->Gsatt("EUM2", "SEEN", 0);
-  gMC->Gsatt("EUV2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECAR", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECCU", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("ECCU", "COLO", 4);
+  gGeoManager->SetVolumeAttribute("EST1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EST2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EHC1", "SEEN", 0);  
+  gGeoManager->SetVolumeAttribute("EHC2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EDGA", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EDGB", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EEGA", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EEGB", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EUM1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EUV1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EUM2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EUV2", "SEEN", 0);
 
  
-  gMC->Gsatt("EFEE", "SEEN", 0);
-  gMC->Gsatt("EFEE", "COLO", 4);
-  gMC->Gsatt("EFBA", "SEEN", 1);
-  gMC->Gsatt("EFBA", "COLO", 4);
-  gMC->Gsatt("EFBB", "SEEN", 0);
-  gMC->Gsatt("EFBB", "COLO", 4);
+  gGeoManager->SetVolumeAttribute("EFEE", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFEE", "COLO", 4);
+  gGeoManager->SetVolumeAttribute("EFBA", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EFBA", "COLO", 4);
+  gGeoManager->SetVolumeAttribute("EFBB", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFBB", "COLO", 4);
 
-  gMC->Gsatt("ELDA", "SEEN", 0);
-  gMC->Gsatt("ELDB", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ELDA", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ELDB", "SEEN", 0);
 
-  gMC->Gsatt("EFE1", "SEEN", 0); 
-  gMC->Gsatt("EFE2", "SEEN", 0);
-  gMC->Gsatt("EFE3", "SEEN", 0);
-  gMC->Gsatt("EFE4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFE1", "SEEN", 0); 
+  gGeoManager->SetVolumeAttribute("EFE2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFE3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFE4", "SEEN", 0);
 
-  gMC->Gsatt("ESC1", "SEEN", 0);
-  gMC->Gsatt("ECC1", "COLO", 2);
-  gMC->Gsatt("ESC2", "SEEN", 0);
-  gMC->Gsatt("ECC2", "COLO", 2);
-  gMC->Gsatt("ESC3", "SEEN", 0);
-  gMC->Gsatt("ECC3", "COLO", 2);
-  gMC->Gsatt("ESC4", "SEEN", 0);
-  gMC->Gsatt("ECC4", "COLO", 2);
+  gGeoManager->SetVolumeAttribute("ESC1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC1", "COLO", 2);
+  gGeoManager->SetVolumeAttribute("ESC2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC2", "COLO", 2);
+  gGeoManager->SetVolumeAttribute("ESC3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC3", "COLO", 2);
+  gGeoManager->SetVolumeAttribute("ESC4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC4", "COLO", 2);
 
-  gMC->Gsatt("ECC1", "SEEN", 0);
-  gMC->Gsatt("ECC2", "SEEN", 0);
-  gMC->Gsatt("ECC3", "SEEN", 0);
-  gMC->Gsatt("ECC4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECC4", "SEEN", 0);
 
-  gMC->Gsatt("EPM1", "SEEN", 1);
-  gMC->Gsatt("EPM2", "SEEN", 1);
-  gMC->Gsatt("EPM3", "SEEN", 1);
-  gMC->Gsatt("EPM4", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EPM1", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EPM2", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EPM3", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EPM4", "SEEN", 1);
 
-  gMC->Gsatt("ECB1", "SEEN", 0);
-  gMC->Gsatt("ECB2", "SEEN", 0);
-  gMC->Gsatt("ECB3", "SEEN", 0);
-  gMC->Gsatt("ECB4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECB1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECB2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECB3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECB4", "SEEN", 0);
 
-  gMC->Gsatt("ELMB", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ELMB", "SEEN", 0);
   
-  gMC->Gsatt("ESV1", "SEEN", 0);
-  gMC->Gsatt("ESV2", "SEEN", 0);
-  gMC->Gsatt("ESV3", "SEEN", 0);
-  gMC->Gsatt("ESV4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESV1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESV2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESV3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESV4", "SEEN", 0);
 
-  gMC->Gsatt("EVV1", "SEEN", 0);
-  gMC->Gsatt("EVV2", "SEEN", 0);
-  gMC->Gsatt("EVV3", "SEEN", 0);
-  gMC->Gsatt("EVV4", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EVV1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EVV2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EVV3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EVV4", "SEEN", 0);
 
-  gMC->Gsatt("EFGD", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EFGD", "SEEN", 0);
 }
 
 //_____________________________________________________________________________

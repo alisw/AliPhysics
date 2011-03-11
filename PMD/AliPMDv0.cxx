@@ -30,6 +30,7 @@
 ////
 
 #include <Riostream.h>
+#include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TVirtualMC.h>
 
@@ -200,7 +201,7 @@ void AliPMDv0::CreateSupermodule()
   // Gas replaced by vacuum for v0(insensitive) version of PMD.
 
   gMC->Gsvolu("ECAR", "PGON", idtmed[697], hexd2,10);
-  gMC->Gsatt("ECAR", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ECAR", "SEEN", 0);
   
   // Outer hexagon made of Copper
   
@@ -212,7 +213,7 @@ void AliPMDv0::CreateSupermodule()
   hexd1[9]=   fgkCellRadius;
 
   gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
-  gMC->Gsatt("ECCU", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("ECCU", "SEEN", 1);
 
   // --- place  inner hex inside outer hex 
 
@@ -229,10 +230,10 @@ void AliPMDv0::CreateSupermodule()
   
   //
   gMC->Gsvolu("ESMA","PARA", idtmed[607], dparasm1, 6);
-  gMC->Gsatt("ESMA", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMA", "SEEN", 0);
   //
   gMC->Gsvolu("ESMB","PARA", idtmed[607], dparasm1, 6);
-  gMC->Gsatt("ESMB", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMB", "SEEN", 0);
   
   // Air residing between the PCB and the base
   
@@ -242,7 +243,7 @@ void AliPMDv0::CreateSupermodule()
   dparaair[2]= fgkThAir/2.;
   
   gMC->Gsvolu("EAIR","PARA", idtmed[698], dparaair, 6);
-  gMC->Gsatt("EAIR", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EAIR", "SEEN", 0);
   
   // volume for honeycomb chamber EHC1 
   
@@ -252,7 +253,7 @@ void AliPMDv0::CreateSupermodule()
   dpara1[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC1","PARA", idtmed[698], dpara1, 6);
-  gMC->Gsatt("EHC1", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EHC1", "SEEN", 1);
   
   // Place hexagonal cells ECCU cells  inside EHC1 (72 X 72)
 
@@ -309,10 +310,10 @@ void AliPMDv0::CreateSupermodule()
   dparasm2[2] = fSMthick/2.;
 
   gMC->Gsvolu("ESMX","PARA", idtmed[607], dparasm2, 6);
-  gMC->Gsatt("ESMX", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMX", "SEEN", 0);
   //
   gMC->Gsvolu("ESMY","PARA", idtmed[607], dparasm2, 6);
-  gMC->Gsatt("ESMY", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMY", "SEEN", 0);
 
   Float_t dpara2[6] = {12.5,12.5,0.4,30.,0.,0.};
   dpara2[0] = dparasm2[0];
@@ -320,7 +321,7 @@ void AliPMDv0::CreateSupermodule()
   dpara2[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC2","PARA", idtmed[698], dpara2, 6);
-  gMC->Gsatt("EHC2", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EHC2", "SEEN", 1);
 
 
   // Air residing between the PCB and the base
@@ -331,7 +332,7 @@ void AliPMDv0::CreateSupermodule()
   dpara2Air[2]= fgkThAir/2.;
 
   gMC->Gsvolu("EAIX","PARA", idtmed[698], dpara2Air, 6);
-  gMC->Gsatt("EAIX", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EAIX", "SEEN", 0);
 
   // Place hexagonal single cells ECCU inside EHC2
   // skip cells which go into the hole in top left corner.
@@ -384,10 +385,10 @@ void AliPMDv0::CreateSupermodule()
   dparaSM3[2] = fSMthick/2.;
 
   gMC->Gsvolu("ESMP","PARA", idtmed[607], dparaSM3, 6);
-  gMC->Gsatt("ESMP", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMP", "SEEN", 0);
   //
   gMC->Gsvolu("ESMQ","PARA", idtmed[607], dparaSM3, 6);
-  gMC->Gsatt("ESMQ", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("ESMQ", "SEEN", 0);
 
   Float_t dpara3[6] = {12.5,12.5,0.4,30.,0.,0.};
   dpara3[0] = dparaSM3[0];
@@ -395,7 +396,7 @@ void AliPMDv0::CreateSupermodule()
   dpara3[2] = fgkCellDepth/2.;
 
   gMC->Gsvolu("EHC3","PARA", idtmed[698], dpara3, 6);
-  gMC->Gsatt("EHC3", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EHC3", "SEEN", 1);
 
   // Air residing between the PCB and the base
 
@@ -405,7 +406,7 @@ void AliPMDv0::CreateSupermodule()
   dpara3Air[2]= fgkThAir/2.;
 
   gMC->Gsvolu("EAIP","PARA", idtmed[698], dpara3Air, 6);
-  gMC->Gsatt("EAIP", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EAIP", "SEEN", 0);
 
 
   // Place hexagonal single cells ECCU inside EHC3
@@ -483,7 +484,7 @@ void AliPMDv0::CreatePMD()
   gaspmd[8] = gaspmd[5];
 
   gMC->Gsvolu("EPMD", "PGON", idtmed[698], gaspmd, 10);
-  gMC->Gsatt("EPMD", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("EPMD", "SEEN", 0);
 
   AliMatrix(irotdm, 90., 0.,  90.,  90., 180., 0.);
    
@@ -504,7 +505,7 @@ void AliPMDv0::CreatePMD()
   dparaemm1[2] = dmthick/2.;
 
   gMC->Gsvolu("EMM1","PARA", idtmed[698], dparaemm1, 6);
-  gMC->Gsatt("EMM1", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EMM1", "SEEN", 1);
 
   //
   // --- DEFINE Modules, iron, and lead volumes 
@@ -516,7 +517,7 @@ void AliPMDv0::CreatePMD()
   dparapb1[2] = fgkThLead/2.;
 
   gMC->Gsvolu("EPB1","PARA", idtmed[600], dparapb1, 6);
-  gMC->Gsatt ("EPB1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EPB1", "SEEN", 0);
 
   //   Fe Support for EMM1
   Float_t dparafe1[6] = {12.5,12.5,8.,30.,0.,0.};
@@ -525,7 +526,7 @@ void AliPMDv0::CreatePMD()
   dparafe1[2] = fgkThSteel/2.;
 
   gMC->Gsvolu("EFE1","PARA", idtmed[618], dparafe1, 6);
-  gMC->Gsatt ("EFE1", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EFE1", "SEEN", 0);
 
   //  
   // position supermodule ESMA, ESMB, EPB1, EFE1 inside EMM1
@@ -550,7 +551,7 @@ void AliPMDv0::CreatePMD()
   dparaemm2[2] = dmthick/2.;
 
   gMC->Gsvolu("EMM2","PARA", idtmed[698], dparaemm2, 6);
-  gMC->Gsatt("EMM2", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EMM2", "SEEN", 1);
 
   //   Pb Convertor for EMM2
   Float_t dparapb2[6] = {12.5,12.5,8.,30.,0.,0.};
@@ -559,7 +560,7 @@ void AliPMDv0::CreatePMD()
   dparapb2[2] = fgkThLead/2.;
 
   gMC->Gsvolu("EPB2","PARA", idtmed[600], dparapb2, 6);
-  gMC->Gsatt ("EPB2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EPB2", "SEEN", 0);
 
   //   Fe Support for EMM2
   Float_t dparafe2[6] = {12.5,12.5,8.,30.,0.,0.};
@@ -568,7 +569,7 @@ void AliPMDv0::CreatePMD()
   dparafe2[2] = fgkThSteel/2.;
 
   gMC->Gsvolu("EFE2","PARA", idtmed[618], dparafe2, 6);
-  gMC->Gsatt ("EFE2", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EFE2", "SEEN", 0);
 
   // position supermodule  ESMX, ESMY inside EMM2
 
@@ -590,7 +591,7 @@ void AliPMDv0::CreatePMD()
   dparaemm3[2] = dmthick/2.;
 
   gMC->Gsvolu("EMM3","PARA", idtmed[698], dparaemm3, 6);
-  gMC->Gsatt("EMM3", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute("EMM3", "SEEN", 1);
 
   //   Pb Convertor for EMM3
   Float_t dparapb3[6] = {12.5,12.5,8.,30.,0.,0.};
@@ -599,7 +600,7 @@ void AliPMDv0::CreatePMD()
   dparapb3[2] = fgkThLead/2.;
 
   gMC->Gsvolu("EPB3","PARA", idtmed[600], dparapb3, 6);
-  gMC->Gsatt ("EPB3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EPB3", "SEEN", 0);
 
   //   Fe Support for EMM3
   Float_t dparafe3[6] = {12.5,12.5,8.,30.,0.,0.};
@@ -608,7 +609,7 @@ void AliPMDv0::CreatePMD()
   dparafe3[2] = fgkThSteel/2.;
 
   gMC->Gsvolu("EFE3","PARA", idtmed[618], dparafe3, 6);
-  gMC->Gsatt ("EFE3", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute ("EFE3", "SEEN", 0);
 
   // position supermodule  ESMP, ESMQ inside EMM3
 
@@ -630,7 +631,7 @@ void AliPMDv0::CreatePMD()
   //d_hole[2] = dmthick/2.;
   //
   //gMC->Gsvolu("EHOL", "TUBE", idtmed[698], d_hole, 3);
-  //gMC->Gsatt("EHOL", "SEEN", 1);
+  //gGeoManager->SetVolumeAttribute("EHOL", "SEEN", 1);
 
   //Al-rod as boundary of the supermodules
 
@@ -640,7 +641,7 @@ void AliPMDv0::CreatePMD()
   alRod[2] = dmthick/2.;
 
   gMC->Gsvolu("EALM","BOX ", idtmed[698], alRod, 3);
-  gMC->Gsatt ("EALM", "SEEN", 1);
+  gGeoManager->SetVolumeAttribute ("EALM", "SEEN", 1);
   Float_t xalm[3];
   xalm[0]=alRod[0] + gaspmd[5] + 3.0*fgkBoundary;
   xalm[1]=-xalm[0]/2.;
