@@ -63,17 +63,17 @@ public:
     
   
   //Histograms, cuts 
-  virtual TList * GetCreateOutputObjects()      { return (new TList) ;}
+  virtual TList * GetCreateOutputObjects()              { return (new TList)          ; }
 	
-  virtual void AddToHistogramsName(TString add) { fAddToHistogramsName = add; }  
-  virtual TString GetAddedHistogramsStringToName() {return fAddToHistogramsName ;}
+  virtual void AddToHistogramsName(TString add)         { fAddToHistogramsName = add  ; }  
+  virtual TString GetAddedHistogramsStringToName()const { return fAddToHistogramsName ; }
   
-  virtual TObjString * GetAnalysisCuts() {return 0x0;}
+  virtual TObjString * GetAnalysisCuts()                { return 0x0                  ; }
   TString	GetBaseParametersList();
 
   //Getters, setters
-  virtual Int_t GetDebug() const   { return fDebug ; }
-  virtual void  SetDebug(Int_t d)  { fDebug = d    ; }
+  virtual Int_t GetDebug()                        const { return fDebug               ; }
+  virtual void  SetDebug(Int_t d)                       { fDebug = d                  ; }
 
   virtual Int_t GetEventNumber() const ;
 
@@ -328,11 +328,11 @@ private:
   TString       fAddToHistogramsName;//  Add this string to histograms name
   
   //Analysis helper classes access pointers
-  AliCaloPID               * fCaloPID; //! PID calculation
-  AliFiducialCut           * fFidCut;  //! Acceptance cuts
-  AliIsolationCut          * fIC;      //! Isolation cut 
-  AliMCAnalysisUtils       * fMCUtils; //! MonteCarlo Analysis utils 
-  AliNeutralMesonSelection * fNMS;     //! Neutral Meson Selection
+  AliCaloPID               * fCaloPID; // PID calculation
+  AliFiducialCut           * fFidCut;  // Acceptance cuts
+  AliIsolationCut          * fIC;      // Isolation cut 
+  AliMCAnalysisUtils       * fMCUtils; // MonteCarlo Analysis utils 
+  AliNeutralMesonSelection * fNMS;     // Neutral Meson Selection
   AliCalorimeterUtils      * fCaloUtils ; //  Pointer to CalorimeterUtils
 
   //Histograms binning and range    
