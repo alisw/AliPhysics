@@ -5,7 +5,7 @@
 
 #include "AliAnalysisMultPbCentralitySelector.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliLog.h"
 #include "AliESDVZERO.h"
@@ -74,7 +74,7 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
     if (ntracks > fMultMax) return kFALSE;						       
   } else {
 
-    AliESDCentrality *centrality = aEsd->GetCentrality();
+    AliCentrality *centrality = aEsd->GetCentrality();
     if(!centrality && !fUseMultRange) {
       AliFatal("Centrality object not available"); 
     }

@@ -16,7 +16,7 @@
 #include "TH2D.h"
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 #include "AliMultiplicity.h"
 #include "TFile.h"
 #include <iostream>
