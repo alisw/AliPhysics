@@ -35,9 +35,9 @@ Do Pass1 and Pass2 on ESD files in current directory.
 Options:
 	-h,--help		This help                  
 	-n,--events N		Number of events            ($nev)
-	-1,--pass1 		Run only pass 1, only AOD   ($dopass1)
-	-2,--pass2		Run only pass 2, only Hists ($dopass2)
-	-D,--draw		Draw results                ($dopass3)
+	-1,--pass1 		Run pass 1, only AOD        ($dopass1)
+	-2,--pass2		Run pass 2, only Hists      ($dopass2)
+	-3,--pass3		Draw results                ($dopass3)
 	-v,--vz-min CM          Minimum value of vz         ($vzmin)
 	-V,--vz-max CM          Maximum value of vz         ($vzmax)
 	-t,--trigger TYPE       Select trigger TYPE         ($type)
