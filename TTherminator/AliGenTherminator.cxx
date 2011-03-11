@@ -154,7 +154,7 @@ void AliGenTherminator::Generate()
       origin[2] = iparticle->Vz();
       
       imo = -1;
-      TParticle* mother = 0;
+      //      TParticle* mother = 0;
       if (hasMother) {
 	imo = iparticle->GetFirstMother();
 	//	mother = (TParticle *) fParticles.At(imo);
