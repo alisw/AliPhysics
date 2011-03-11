@@ -5,6 +5,8 @@ nev=-1
 rebin=1
 vzmin=-10
 vzmax=10
+centlow=0
+centhigh=100
 batch=0
 gdb=0
 proof=0
@@ -13,6 +15,7 @@ type=INEL
 cms=900
 hhd=1
 comp=1
+cent=0
 tit=
 dopass1=0
 dopass2=0
@@ -45,7 +48,11 @@ Options:
 	-P,--proof NWORKERS	Run in PROOF(Lite) mode     ($proof)
 	-M,--mc			Run over MC data            ($mc)
 	-g,--gdb		Run in GDB mode    	    ($gdb)
-	-E,--eloss		Run energy loss script     
+	-E,--eloss		Run energy loss script      
+        -r,--rebin              Rebin factor                ($rebin)
+        -A,--cent               Run centrality task         ($cent)
+	-c,--cent-low		Lower centrality cut	    ($centlow)
+	-C,--cent-high		Upper centrality cut	    ($centhigh)
 
 TYPE is a comma or space separated list of 
  
@@ -91,12 +98,16 @@ while test $# -gt 0 ; do
 	-3|--pass3|-D|--draw) dopass3=`toggle $dopass3`   ;; 
 	-2|--pass2|-H|--hist) dopass2=`toggle $dopass2`   ;; 
 	-1|--pass1|-A|--aod)  dopass1=`toggle $dopass1`   ;; 
-	-b|--batch)           batch=`toggle $batch`   ;; 
-	-P|--proof)           proof=$2	      ; shift ;; 
-	-M|--mc)              mc=`toggle $mc`   ;; 
-	-g|--gdb)             gdb=`toggle $gdb`   ;; 
-	-v|--vz-min)          vzmin=$2         ; shift ;; 
-	-V|--vz-max)          vzmax=$2         ; shift ;; 
+	-b|--batch)           batch=`toggle $batch`       ;; 
+	-P|--proof)           proof=$2	          ; shift ;; 
+	-B|--use-cent)        cent=`toggle $cent` ;;
+	-M|--mc)              mc=`toggle $mc`     ;; 
+	-g|--gdb)             gdb=`toggle $gdb`   ;;
+	-r|--rebin)           rebin=$2            ; shift ;;
+	-c|--cent-low)        centlow=$2          ; shift ;;
+	-C|--cent-high)       centhigh=$2         ; shift ;;
+	-v|--vz-min)          vzmin=$2            ; shift ;; 
+	-V|--vz-max)          vzmax=$2            ; shift ;; 
 	-E|--eloss)           pass1=MakeELossFits.C 
 	                      pass2=scripts/ExtractELoss.C
 	                      pass3=scripts/DrawAnaELoss.C 
@@ -104,7 +115,8 @@ while test $# -gt 0 ; do
 			      dopass2=1 
 			     ;;
 	-t|--type)           
-	    if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
+	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
+	    type=$2
 	    shift ;;
 	*) echo "$0: Unknown option '$1'" >> /dev/stderr ; exit 1 ;;
     esac
@@ -119,6 +131,7 @@ fi
 opts="-l -x"
 opts1=""
 redir=
+
 if test $dopass2 -gt 0 ; then 
     opts1="-q" 
 fi
@@ -136,9 +149,9 @@ if test $dopass1 -gt 0 ; then
     fi
     echo "Running aliroot ${opts} ${opts1} ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) $redir"
     if test $batch -gt 0 ; then 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) 2>&1 | tee ${base}.log
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent\) 2>&1 | tee ${base}.log
     else 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc\)
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent\)
     fi
     fail=$?
     if  test $fail -gt 0  ; then 
@@ -156,7 +169,7 @@ fi
 if test $dopass2 -gt 0 ; then
     rotate ${output2}
 
-    args=(\(\".\",$nev,\"$type\",$vzmin,$vzmax,$proof\))
+    args=(\(\".\",$nev,\"$type\",$centlow,$centhigh,$vzmin,$vzmax,$proof\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi
@@ -175,7 +188,7 @@ fi
 
 if test $dopass3 -gt 0 ; then
     tit=`echo $tit | tr ' ' '@'` 
-    args=(\(\"${output2}\"\))
+    args=(\(\"${output2}\"\,0xf,\"\",$rebin \))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi
