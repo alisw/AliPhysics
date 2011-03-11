@@ -227,80 +227,80 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
             if (cluster->GetNTracksMatched() == 1 && trackMatchedIndex>0)
             {
                 AliVTrack *track = event->GetTrack(trackMatchedIndex);
-                const Double_t *pidWeights = track->PID();
+		if(!track){
+		  AliError("Error: track does not exist");
+		}
+		else{
+		  const Double_t *pidWeights = track->PID();
                 
-		Double_t maxpidweight = 0;
-		Int_t maxpid = 0;
+		  Double_t maxpidweight = 0;
+		  Int_t maxpid = 0;
                 
-		if (pidWeights)
-                {
-                    for (Int_t p =0; p < AliPID::kSPECIES; p++)
-                    {
-                        if (pidWeights[p] > maxpidweight)
-                        {
-                            maxpidweight = pidWeights[p];
-                            maxpid = p;
-                        }
-                    }
-                    if(fCuts->GetHistMakeTreeDeposit() && fTreeDeposit)
+		  if (pidWeights)
 		    {
-		      fEnergyDeposited = cluster->E();
-		      fEnergyTPC = track->E();
-		      fCharge = track->Charge();
-		      fParticlePid = maxpid;
-		      fPidProb = maxpidweight;
-		      if(!track){
-			AliError("Error: track does not exist");
-		      }
-		      else{
-			AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
-			if(!esdTrack){
-			  AliError("Error: track does not exist");
+		      for (Int_t p =0; p < AliPID::kSPECIES; p++)
+			{
+			  if (pidWeights[p] > maxpidweight)
+			    {
+			      maxpidweight = pidWeights[p];
+			      maxpid = p;
+			    }
 			}
-			else{
-			  if(esdTrack) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(esdTrack);
-			  fTreeDeposit->Fill();
+		      if(fCuts->GetHistMakeTreeDeposit() && fTreeDeposit)
+			{
+			  fEnergyDeposited = cluster->E();
+			  fEnergyTPC = track->E();
+			  fCharge = track->Charge();
+			  fParticlePid = maxpid;
+			  fPidProb = maxpidweight;
+			  AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+			  if(!esdTrack){
+			    AliError("Error: track does not exist");
+			  }
+			  else{
+			    if(esdTrack) fTrackPassedCut = fEsdtrackCutsTPC->AcceptTrack(esdTrack);
+			    fTreeDeposit->Fill();
+			  }
 			}
-		      }
-		    }
 			 
-                    if(maxpidweight > fPidCut)
-		    {
-		      Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+		      if(maxpidweight > fPidCut)
+			{
+			  Float_t dist = TMath::Sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
 
-		      Float_t theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
+			  Float_t theta = TMath::ATan(pos[2]/dist)+TMath::Pi()/2;
 
-		       Float_t et = cluster->E() * TMath::Sin(theta);
-		       if(maxpid == AliPID::kProton)
-		       {
+			  Float_t et = cluster->E() * TMath::Sin(theta);
+			  if(maxpid == AliPID::kProton)
+			    {
 			 
-			  if(track->Charge() == 1)
-			  {
-			    fBaryonEt += et;
-			     fHistProtonEnergyDeposit->Fill(cluster->E(), track->E());
-			  }
-			  else if(track->Charge() == -1)
-			  {
-			    fAntiBaryonEt += et;
-			     fHistAntiProtonEnergyDeposit->Fill(cluster->E(), track->E());
-			  }
-		       }
-		       else if(maxpid == AliPID::kPion)
-		       {
-			 fMesonEt += et;
-			  fHistChargedPionEnergyDeposit->Fill(cluster->E(), track->E());
-		       }
-		       else if(maxpid == AliPID::kKaon)
-		       {
-			 fMesonEt += et;
-			  fHistChargedKaonEnergyDeposit->Fill(cluster->E(), track->E());
-		       }   
-		       else if(maxpid == AliPID::kMuon)
-		       {
-			  fHistMuonEnergyDeposit->Fill(cluster->E(), track->E());
-		       }
+			      if(track->Charge() == 1)
+				{
+				  fBaryonEt += et;
+				  fHistProtonEnergyDeposit->Fill(cluster->E(), track->E());
+				}
+			      else if(track->Charge() == -1)
+				{
+				  fAntiBaryonEt += et;
+				  fHistAntiProtonEnergyDeposit->Fill(cluster->E(), track->E());
+				}
+			    }
+			  else if(maxpid == AliPID::kPion)
+			    {
+			      fMesonEt += et;
+			      fHistChargedPionEnergyDeposit->Fill(cluster->E(), track->E());
+			    }
+			  else if(maxpid == AliPID::kKaon)
+			    {
+			      fMesonEt += et;
+			      fHistChargedKaonEnergyDeposit->Fill(cluster->E(), track->E());
+			    }   
+			  else if(maxpid == AliPID::kMuon)
+			    {
+			      fHistMuonEnergyDeposit->Fill(cluster->E(), track->E());
+			    }
 		    }
                 }
+		}
             }
 
             continue;
