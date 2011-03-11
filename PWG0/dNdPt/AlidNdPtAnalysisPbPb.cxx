@@ -262,20 +262,25 @@ void AlidNdPtAnalysisPbPb::Init(){
   // Init histograms
   //
 
-  const Int_t multNbins = 47;
+  //const Int_t multNbins = 47;
+  const Int_t multNbins = 1;
   //const Int_t ptNbinsTrackEventCorr = 37;
   const Int_t ptNbinsTrackEventCorr = 68;
   const Int_t ptNbins = 68;
   const Int_t etaNbins = 30;
   const Int_t zvNbins = 12;
-  const Int_t centralityBins = 11;
-
+  const Int_t centralityBins = 3;
+/*
   Double_t binsMult[multNbins+1] = {
                    -0.5, 0.5 , 1.5 , 2.5 , 3.5 , 4.5 , 5.5 , 6.5 , 7.5 , 8.5,
                     9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.5, 17.5, 18.5,
                     19.5, 20.5, 30.5, 40.5 , 50.5 , 60.5 , 70.5 , 80.5 , 90.5 , 100.5, 
 		    200.5, 300.5, 400.5, 500.5, 600.5, 700.5, 800.5, 900.5, 1000.5, 2000.5, 
 		    3000.5, 4000.5, 5000.5, 6000.5, 7000.5, 8000.5, 9000.5, 10000.5 }; // forPbPb
+*/
+  Double_t binsMult[multNbins+1] = {-0.5,  10000.5 }; // forPbPb
+
+
 
   // Double_t binsPtTrackEventCorr[ptNbinsTrackEventCorr+1] = {0.,0.05,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,3.0,4.0,20.0,50.0};
 
@@ -305,7 +310,8 @@ void AlidNdPtAnalysisPbPb::Init(){
 
   Double_t binsZv[zvNbins+1] = {-30.,-25.,-20.,-15.,-10.,-5.,0.,5.,10.,15.,20.,25.,30.};
   
-  Double_t binsCentrality[centralityBins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+  //Double_t binsCentrality[centralityBins+1] = {0., 5., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.};
+  Double_t binsCentrality[centralityBins+1] = {0., 5., 70., 80.};
 
   Int_t binsTrackEventCorrMatrix[4]={zvNbins,ptNbinsTrackEventCorr,etaNbins,centralityBins};
   Int_t binsTrackEvent[4]={zvNbins,ptNbins,etaNbins,centralityBins};
