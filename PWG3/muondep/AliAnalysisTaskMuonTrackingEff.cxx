@@ -20,339 +20,494 @@
 //WOrk on ESD only
 //Author:  Nicolas LE BRIS - SUBATECH Nantes
 // Modified by Matthieu LENHARDT - SUBATECH Nantes
+// Modified by Antoine LARDEUX - SUBATECH Nantes
 
-
-//ROOT includes
-#include <TChain.h>
-#include <TFile.h>
+// ROOT includes
 #include <TList.h>
+#include <TH3F.h>
 #include <TH2F.h>
+#include <TObjArray.h>
+#include <TGeoGlobalMagField.h>
 
-//ANALYSIS includes
-#include "AliAnalysisManager.h"
-
-//STEER includes
+// STEER includes
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-#include "AliESDInputHandler.h"
-#include "AliMagF.h"
-#include "AliTracker.h"
-#include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
+#include "AliESDVZERO.h"
 
-
-//PWG3/muondep includes
+// ANALYSIS includes
+#include "AliInputEventHandler.h"
+#include "AliAnalysisManager.h"
 #include "AliAnalysisTaskMuonTrackingEff.h"
-#include "AliCheckMuonDetEltResponse.h"
+#include "AliCentrality.h"
 
 //MUON includes
-#include "AliMUONTrackExtrap.h"
+#include "AliMUONCDB.h"
+#include "AliMUONESDInterface.h"
 #include "AliMUONGeometryTransformer.h"
+#include "AliMUONTrack.h"
+#include "AliMUONTrackParam.h"
+#include "AliMUONTrackExtrap.h"
+#include "AliMUONVCluster.h"
 #include "AliMUONConstants.h"
+
+//include MUON/mapping:
+#include "AliMpDEManager.h"
+#include "AliMpSegmentation.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpPad.h"
 
 ClassImp(AliAnalysisTaskMuonTrackingEff)
 
-const Int_t AliAnalysisTaskMuonTrackingEff::fgkTotNbrOfDetectionElt  = 156;
-const Int_t AliAnalysisTaskMuonTrackingEff::fgkTotNbrOfChamber  = AliMUONConstants::NTrackingCh();
+const Int_t AliAnalysisTaskMuonTrackingEff::fgkNbrOfDetectionElt[10] = {4, 4, 4, 4, 18, 18, 26, 26, 26, 26};
+const Int_t AliAnalysisTaskMuonTrackingEff::fgkOffset = 100;
 
 //________________________________________________________________________
-AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff()
-  :
-  AliAnalysisTask(),
-  fIsInit(kFALSE),
-  fIsLoaded(kFALSE),
-  fOCDBpath(0),
-  fUsableTracks(0),
-  fESD(0x0),
+AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff() :
+  AliAnalysisTaskSE(),
+  fOCDBLoaded(kFALSE),
+  fOCDBpath(""),
+  fMatchTrig(kFALSE),
+  fApplyAccCut(kFALSE),
+  fCurrentCentrality(0.),
   fTransformer(0x0),
-  fDetEltTDHistList(0),
-  fDetEltTTHistList(0),
-  fChamberTDHistList(0),
-  fChamberTTHistList(0),
-  fChamberEff(0x0)
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
-/// Default constructor
+  /// Default constructor
 }
+
 //________________________________________________________________________
-AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(const AliAnalysisTaskMuonTrackingEff& src)
-  :
-  AliAnalysisTask(src),
-  fIsInit(kFALSE),
-  fIsLoaded(kFALSE),
-  fOCDBpath(0),
-  fUsableTracks(0),
-  fESD(0x0),
+AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name) :
+  AliAnalysisTaskSE(name),
+  fOCDBLoaded(kFALSE),
+  fOCDBpath("raw://"),
+  fMatchTrig(kFALSE),
+  fApplyAccCut(kFALSE),
+  fCurrentCentrality(100.),
   fTransformer(0x0),
-  fDetEltTDHistList(0),
-  fDetEltTTHistList(0),
-  fChamberTDHistList(0),
-  fChamberTTHistList(0),
-  fChamberEff(0x0)
+  fDetEltTDHistList(0x0),
+  fDetEltTTHistList(0x0),
+  fChamberTDHistList(0x0),
+  fChamberTTHistList(0x0)
 {
-  /// copy ctor
-  src.Copy(*this);
-}
-//________________________________________________________________________
-AliAnalysisTaskMuonTrackingEff& AliAnalysisTaskMuonTrackingEff::operator=(const AliAnalysisTaskMuonTrackingEff& src)
-{
-  /// assignement operator
-  if ( this != &src ) 
-  {
-    src.Copy(*this);
-  }
-  return *this;
+  /// Constructor
+  
+  // Output slots 0 to 5 writes into a TClonesArray:
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
+  DefineOutput(4, TList::Class());
 }
 
 //________________________________________________________________________
-AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name, TString path)
-  :
-  AliAnalysisTask(name, "AnalysisTaskESD"),
-  fIsInit(kFALSE),
-  fIsLoaded(kFALSE),
-  fOCDBpath(path),
-  fUsableTracks(0),
-  fESD(0x0),
-  fTransformer(0x0),
-  fDetEltTDHistList(0),
-  fDetEltTTHistList(0),
-  fChamberTDHistList(0),
-  fChamberTTHistList(0),
-  fChamberEff(0x0)
-{
-//Constructor
-//-----------
-//Define input & output
-//---------------------
-// -Input slot 0 works with a TChain:
-    DefineInput(0, TChain::Class());
-
-// -Output slots 0 to 5 writes into a TClonesArray:
-    DefineOutput(0, TList::Class());
-    DefineOutput(1, TList::Class());
-    DefineOutput(2, TList::Class());
-    DefineOutput(3, TList::Class());
-}
-
-
-
-//______________________________________________________________________________
 AliAnalysisTaskMuonTrackingEff::~AliAnalysisTaskMuonTrackingEff()
 {
-// Destructor.
+  /// Destructor
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    delete fDetEltTDHistList;
+    delete fDetEltTTHistList;
+    delete fChamberTDHistList;
+    delete fChamberTTHistList;
+  }
   delete fTransformer;
-  delete fDetEltTDHistList;
-  delete fDetEltTTHistList;
-  delete fChamberTDHistList;
-  delete fChamberTTHistList;
-  delete fChamberEff;
 }
 
-
-
 //________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::CreateOutputObjects()
+void AliAnalysisTaskMuonTrackingEff::NotifyRun()
 {
-  if (!fIsInit)
-    Init();
-
-  OpenFile(0);
-}
-
-
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::ConnectInputData(Option_t */*option*/)
-
-{
-  //Connect input
-    AliESDInputHandler* esdHandler = (AliESDInputHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-    if (!esdHandler)
-      Printf("ERROR: Could not get ESDInputHandler");
-     
-    else fESD = esdHandler->GetEvent();
-}
-
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::Exec(Option_t */*option*/)
-{
-//Execute analysis for current event
-
-  // Initialize the object first
-  if (!fIsInit)
-    Init();
-
-  // Then load the OCDB and Geometry
-  if (!fIsLoaded)
-    LoadOCDBandGeometry();
-
-  // Fill the histograms
-  if (fChamberEff == 0x0)
-    fChamberEff = new AliCheckMuonDetEltResponse(fTransformer, fESD, fDetEltTDHistList, fDetEltTTHistList, fChamberTDHistList, fChamberTTHistList);
-  fChamberEff->CheckDetEltResponse();
-  fUsableTracks += fChamberEff -> GetNbrUsableTracks();
-
-//Post the output data:
-    PostData(0, fDetEltTDHistList);  
-    PostData(1, fDetEltTTHistList);  
-    PostData(2, fChamberTDHistList);
-    PostData(3, fChamberTTHistList);
-}
-
-
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::Terminate(Option_t */*option*/)
-{
-//Terminate analysis
-  fDetEltTDHistList = (TList*) GetOutputData(0);
-  fDetEltTTHistList = (TList*) GetOutputData(1);
-  fChamberTDHistList = (TList*) GetOutputData(2);
-  fChamberTTHistList = (TList*) GetOutputData(3);
-}
-
-
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::Init()
-{
-  //Define detection element efficiency histograms
-  //----------------------------------------------
-  fUsableTracks = 0;
-
-
-  fDetEltTDHistList  = new TList();
-  fDetEltTTHistList  = new TList();
-
-  fChamberTDHistList = new TList();
-  fChamberTTHistList = new TList();
+  /// Load the OCDB and the Geometry
   
-  TString histName; 
-  TString histTitle;
-
+  // Load it only once
+  if (fOCDBLoaded) return;
   
-  for (Int_t ii = 0; ii < fgkTotNbrOfDetectionElt; ++ii)
-    {
-      Int_t iDetElt = 0;
-      if      (ii<16) iDetElt = 100*(ii/4+1)       + ii -  int(ii/4)*4;
-      else if (ii<52) iDetElt = 100*((ii-16)/18+5) + ii - (int((ii-16)/18)*18 + 16);
-      if      (ii>51) iDetElt = 100*((ii-52)/26+7) + ii - (int((ii-52)/26)*26 + 52); 
-
-      
-      histTitle.Form("detEltNbr %d",iDetElt);
-      histName.Form("TD_detEltNbr%d",iDetElt);
-      if(ii<16)
-	{// Chambers 1 -> 4
-	  TH2F *histo = new TH2F(histName, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0);
-	  fDetEltTDHistList->AddAt(histo, ii);
-	}
-
-      else 
-	{// Chambers 5 -> 10
-	  TH2F *histo = new TH2F(histName, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0);
-	  fDetEltTDHistList->AddAt(histo, ii);	  
-	}
-
-
-      histName.Form("TT_detEltNbr%d",iDetElt);
-      if(ii<16)
-	{// Chambers 1 -> 4
-	  TH2F *histo = new TH2F(histName, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0);
-	  fDetEltTTHistList->AddAt(histo, ii);
-	}
-
-      else 
-	{// Chambers 5 -> 10
-	  TH2F *histo = new TH2F(histName, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0);
-	  fDetEltTTHistList->AddAt(histo, ii);	  
-	}
-    }
-
-
-  for (Int_t jj = 0; jj < fgkTotNbrOfChamber+1; jj++)
-    {
-      histName.Form("TD_ChamberNbr%d", jj+1);
-      histTitle.Form("ChamberNbr %d", jj+1);
-      if (jj<4)
-	{//Chambers 1 -> 4
-	  TH1F *histo = new TH1F(histName, histTitle, 4, 0.0, 4.0);
-	  fChamberTDHistList->AddAt(histo, jj);
-	}
-      else 
-	{
-	  if (jj<6) 
-	    {//Chambers 5 -> 6
-	      TH1F *histo = new TH1F(histName, histTitle, 18, 0.0, 18.0);
-	      fChamberTDHistList->AddAt(histo, jj);
-	    }
-
-	  if (jj>=6 && jj < 10) 
-	    {//Chambers 7 -> 10
-	      TH1F *histo = new TH1F(histName, histTitle, 26, 0.0, 26.0);
-	      fChamberTDHistList->AddAt(histo, jj);
-	    }
-	}
-      
-      histName.Form("TT_ChamberNbr%d",jj+1);
-      if (jj<4)
-	{//Chambers 1 -> 4
-	  TH1F *histo = new TH1F(histName, histTitle, 4, 0.0, 4.0);
-	  fChamberTTHistList->AddAt(histo, jj);
-	}
-      else 
-	{
-	  if (jj<6) 
-	    {//Chambers 5 -> 6
-	      TH1F *histo = new TH1F(histName, histTitle, 18, 0.0, 18.0);
-	      fChamberTTHistList->AddAt(histo, jj);
-	    }
-
-	  if (jj>=6 && jj < 10) 
-	    {//Chambers 7 -> 10
-	      TH1F *histo = new TH1F(histName, histTitle, 26, 0.0, 26.0);
-	      fChamberTTHistList->AddAt(histo, jj);
-	    }
-	}
-      
-      if (jj == 10)
-	{
-	  histName.Form("TD_Chambers %d", jj+1);
-	  histTitle.Form("Chambers %d", jj+1);
-	  TH1F *histoTDchambers = new TH1F(histName, histTitle, 10, 0.5, 10.5);
-	  fChamberTDHistList->AddAt(histoTDchambers, jj);
-	  
-	  histName.Form("TT_Chambers %d", jj+1);
-	  TH1F *histoTTchambers = new TH1F(histName, histTitle, 10, 0.5, 10.5);
-	  fChamberTTHistList->AddAt(histoTTchambers, jj);
-	}
-
-    }
-  
-  fIsInit = kTRUE;
-}
-
-
-//________________________________________________________________________
-void AliAnalysisTaskMuonTrackingEff::LoadOCDBandGeometry()
-{
-  // Load the OCDB and the Geometry
-
   // OCDB
   AliCDBManager* man = AliCDBManager::Instance();
-  TString ocdbPath= "alien://folder=/alice/data/2010/OCDB";
-  man->SetDefaultStorage(ocdbPath.Data());
-  man->SetRun(fESD->GetRunNumber());
-
-  //Geometry
-  if (!AliGeomManager::GetGeometry())
+  if (man->IsDefaultStorageSet()) printf("EfficiencyTask: CDB default storage already set!");
+  else man->SetDefaultStorage(fOCDBpath.Data());
+  if (man->GetRun() > -1) printf("EfficiencyTask: run number already set!");
+  else man->SetRun(fCurrentRunNumber);
+  
+  // Geometry
+  if (!AliGeomManager::GetGeometry()) {
     AliGeomManager::LoadGeometry();
+    if (!AliGeomManager::GetGeometry()) return;  
+    if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return;
+  }
   fTransformer = new AliMUONGeometryTransformer();
   fTransformer->LoadGeometryData();
+  
+  // Magnetic field for track extrapolation
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    if (!AliMUONCDB::LoadField()) return;
+  }
+  
+  // Mapping
+  if (!AliMpSegmentation::Instance(kFALSE)) {
+    if (!AliMUONCDB::LoadMapping(kTRUE)) return;
+  }
+  
+  // RecoParam for refitting
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
+  if (!recoParam) return;
+  AliMUONESDInterface::ResetTracker(recoParam);
+  
+  fOCDBLoaded = kTRUE;
+}
 
-  //Set Field Map for track extrapolation
-  AliMUONTrackExtrap::SetField();
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
+{
+  /// Define efficiency histograms
+  
+  fDetEltTDHistList  = new TList();
+  fDetEltTDHistList->SetOwner();
+  fDetEltTTHistList  = new TList();
+  fDetEltTTHistList->SetOwner();
+  fChamberTDHistList = new TList();
+  fChamberTDHistList->SetOwner();
+  fChamberTTHistList = new TList();
+  fChamberTTHistList->SetOwner();
+  
+  TH2F *h2;
+  TH3F *h3;
+  TString histNameTD;
+  TString histNameTT;
+  TString histTitle;
+  Int_t nCentBins = 22;
+  Double_t centRange[2] = {-5., 105.};
+  Int_t iDEGlobal = 0;
+  
+  for (Int_t iCh = 0; iCh < 10; iCh++)
+  {
+    // histograms per chamber
+    histTitle.Form("ChamberNbr %d", iCh+1);
+    histNameTD.Form("TD_ChamberNbr%d", iCh+1);
+    histNameTT.Form("TT_ChamberNbr%d",iCh+1);
+    h2 = new TH2F(histNameTD, histTitle, fgkNbrOfDetectionElt[iCh], 0., fgkNbrOfDetectionElt[iCh], nCentBins, centRange[0], centRange[1]);
+    fChamberTDHistList->AddAt(h2, iCh);
+    h2 = new TH2F(histNameTT, histTitle, fgkNbrOfDetectionElt[iCh], 0., fgkNbrOfDetectionElt[iCh], nCentBins, centRange[0], centRange[1]);
+    fChamberTTHistList->AddAt(h2, iCh);
+    
+    // histograms per DE
+    for (Int_t iDE = 0; iDE < fgkNbrOfDetectionElt[iCh]; iDE++)
+    {
+      Int_t deId = FromLocalId2DetElt(iCh, iDE);
+      histTitle.Form("detEltNbr %d",deId);
+      histNameTD.Form("TD_detEltNbr%d",deId);
+      histNameTT.Form("TT_detEltNbr%d",deId);
+      if(iCh < 4)
+      {// chambers 1 -> 4
+	h3 = new TH3F(histNameTD, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
+	fDetEltTDHistList->AddAt(h3, iDEGlobal);
+	h3 = new TH3F(histNameTT, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
+	fDetEltTTHistList->AddAt(h3, iDEGlobal);
+      }
+      else 
+      {// chambers 5 -> 10
+	h3 = new TH3F(histNameTD, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
+	fDetEltTDHistList->AddAt(h3, iDEGlobal);	  
+	h3 = new TH3F(histNameTT, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
+	fDetEltTTHistList->AddAt(h3, iDEGlobal);	  
+      }
+      iDEGlobal++;
+    }
+  }
+  
+  // global histograms per chamber
+  h2 = new TH2F("TD_Chambers 11", "Chambers 11", 10, 0.5, 10.5, nCentBins, centRange[0], centRange[1]);
+  fChamberTDHistList->AddAt(h2, 10);
+  h2 = new TH2F("TT_Chambers 11", "Chambers 11", 10, 0.5, 10.5, nCentBins, centRange[0], centRange[1]);
+  fChamberTTHistList->AddAt(h2, 10);
+  
+  // post the output data at least once
+  PostData(1, fDetEltTDHistList);  
+  PostData(2, fDetEltTTHistList);  
+  PostData(3, fChamberTDHistList);
+  PostData(4, fChamberTTHistList);
+}
 
-  fIsLoaded = kTRUE;
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
+{
+  /// Main event loop
+  
+  // check the OCDB has been loaded properly
+  if (!fOCDBLoaded) return;
+  
+  // get the current event
+  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+  if (!esd) return;
+  
+  // get the centrality
+  fCurrentCentrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  
+  // loop over tracks
+  AliMUONTrack track;
+  Int_t nTracks = (Int_t)esd->GetNumberOfMuonTracks();
+  for (Int_t iTrack = 0; iTrack < nTracks; iTrack++)
+  {
+    AliESDMuonTrack* esdTrack = esd->GetMuonTrack(iTrack);
+    
+    if(!esdTrack->ContainTrackerData()) continue;
+    
+    if(fMatchTrig && !esdTrack->ContainTriggerData()) continue;
+    
+    Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
+    Double_t eta = esdTrack->Eta();
+    if(fApplyAccCut && !(thetaTrackAbsEnd >= 2. && thetaTrackAbsEnd <= 9. && eta >= -4. && eta <= -2.5)) continue;
+    
+    AliMUONESDInterface::ESDToMUON(*esdTrack, track);
+    
+    TrackParamLoop(track.GetTrackParamAtCluster());
+  }
+  
+  // post the output data:
+  PostData(1, fDetEltTDHistList);  
+  PostData(2, fDetEltTTHistList);  
+  PostData(3, fChamberTDHistList);
+  PostData(4, fChamberTTHistList);
+}
+    
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::Terminate(Option_t *)
+{
+  /// final plots
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::TrackParamLoop(const TObjArray* trackParams)
+{
+  /// Loop on all the track params and fill the histos
+  
+  Bool_t trackFilter[10];
+  memset(trackFilter, kFALSE, 10*sizeof(Bool_t));
+  Bool_t chamberResponse[10];
+  memset(chamberResponse, kFALSE, 10*sizeof(Bool_t));
+  
+  // check if the chamber responds
+  Int_t nTrackParams = (Int_t) trackParams->GetEntriesFast();
+  for (Int_t iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
+  { 
+    Int_t chamberId = static_cast<AliMUONTrackParam*>(trackParams->UncheckedAt(iTrackParam))->GetClusterPtr()->GetChamberId();
+    trackFilter[chamberId] = kTRUE;
+    chamberResponse[chamberId] = kTRUE;
+  }
+  
+  // To make sure the calculation of the efficiency of a given chamber (DE) is not biased by the tracking algorithm
+  // we must make sure the track would have been reconstructed whatever this chamber (DE) has responded or not.
+  // If the track is valid for a given chamber, the following code set trackFilter[chamberId] to kTRUE.
+  for (Int_t station = 0; station < 4; ++station)
+  {
+    Int_t filter;
+    Int_t ch1 = 2*station;
+    Int_t ch2 = 2*station + 1;
+    Int_t ch3 = 2*station + 2;
+    Int_t ch4 = 2*station + 3;
+    if (station < 3 )
+    {
+      filter           = trackFilter[ch1];
+      trackFilter[ch1] = trackFilter[ch2];
+      trackFilter[ch2] = filter;
+    }
+    else
+    {
+      if (chamberResponse[ch3] && chamberResponse[ch4])
+      {
+	filter           = trackFilter[ch1];
+	trackFilter[ch1] = trackFilter[ch2];
+	trackFilter[ch2] = filter;
+      }
+      else
+      {
+	trackFilter[ch1] = kFALSE;
+	trackFilter[ch2] = kFALSE;
+      }
+      
+      if (chamberResponse[ch1] && chamberResponse[ch2])
+      {
+	filter           = trackFilter[ch3];
+	trackFilter[ch3] = trackFilter[ch4];
+	trackFilter[ch4] = filter;
+      }
+      else
+      {
+	trackFilter[ch3] = kFALSE;
+	trackFilter[ch4] = kFALSE;
+      }
+    }
+  }
+  
+  // loop over track parameters
+  Int_t oldChamber = -1;
+  for (Int_t iTrackParam = 0; iTrackParam < nTrackParams; ++iTrackParam)
+  {
+    AliMUONTrackParam* trackParam = static_cast<AliMUONTrackParam*>(trackParams->UncheckedAt(iTrackParam));
+    AliMUONVCluster* cluster = trackParam->GetClusterPtr();
+    
+    Int_t newChamber = cluster->GetChamberId();
+    
+    // fill histograms if the track is valid for this chamber
+    if(trackFilter[newChamber])
+    {
+      Int_t detElt = cluster->GetDetElemId();
+      
+      ///track position in the global coordinate system
+      Double_t posXG = trackParam->GetNonBendingCoor(); 
+      Double_t posYG = trackParam->GetBendingCoor(); 
+      Double_t posZG = trackParam->GetZ(); 
+      
+      ///track position in the coordinate system of the DE
+      Double_t posXL, posYL, posZL;
+      fTransformer->Global2Local(detElt, posXG, posYG, posZG, posXL, posYL, posZL);
+      
+      // fill histograms of the cluster positions on the detection element of the TRACKS DETECTED (TD)
+      FillTDHistos(newChamber, detElt, posXL, posYL);
+      
+      // fill histograms of the cluster positions on the detection element of ALL THE TRACKS (TT)
+      FillTTHistos(newChamber, detElt, posXL, posYL);
+    }
+    
+    // look for missing cluster(s) if any
+    if (newChamber != oldChamber) 
+    {
+      if (newChamber > oldChamber + 1)
+      {
+	Int_t nbrMissChamber = newChamber - (oldChamber + 1);
+	
+	// find the DE(s) that should have been fired and fill the corresponding histograms
+	FindAndFillMissedDetElt(trackParam, trackFilter, oldChamber+1, nbrMissChamber);
+      }
+      
+      // in case the last chamber has not responded
+      if ( iTrackParam == nTrackParams-1 && newChamber != 9) FindAndFillMissedDetElt(trackParam, trackFilter, 9, 1);
+    }
+    
+    oldChamber = newChamber; 
+  } 
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::FindAndFillMissedDetElt(const AliMUONTrackParam* trackParam,
+							     const Bool_t* trackFilter,
+							     Int_t firstMissCh, Int_t nbrMissCh)
+{
+  /// Find which detection elements should have been hit but were missed, and fill the TT histos appropriately
+  
+  // copy track parameters for extrapolation
+  AliMUONTrackParam extrapTrackParam(*trackParam);
+  
+  // loop over missing chambers
+  for (Int_t iCh = 0; iCh < nbrMissCh; ++iCh)
+  {
+    Int_t chamber = firstMissCh + iCh;
+    
+    // skip this chamber if the track is not valid for it
+    if(!trackFilter[chamber]) continue;
+    
+    Int_t nbrOfDetElt =  AliMpDEManager::GetNofDEInChamber(chamber, kTRUE);
+    
+    Double_t pos1[6] = {0, 0, 0, 0, 0, 0};
+    Double_t pos2[6] = {0, 0, 0, 0, 0, 0};
+    Double_t posMiss[2] = {0, 0};
+    
+    // track position at the chamber z
+    pos1[2] = AliMUONConstants::DefaultChamberZ(chamber);
+    AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, pos1[2]);
+    pos1[0] = extrapTrackParam.GetNonBendingCoor();
+    pos1[1] = extrapTrackParam.GetBendingCoor();
+    
+    // track position at the chamber z + dz (where dz = distance between the 2 chamber in the station)
+    pos2[2] = AliMUONConstants::DefaultChamberZ(chamber) + AliMUONConstants::DzCh();
+    AliMUONTrackExtrap::ExtrapToZ(&extrapTrackParam, pos2[2]);
+    pos2[0] = extrapTrackParam.GetNonBendingCoor();
+    pos2[1] = extrapTrackParam.GetBendingCoor();
+    
+    // loop over all the detection element of the chamber
+    for (Int_t iDE = 0; iDE < nbrOfDetElt; iDE++)
+    {
+      Int_t deId = (chamber + 1)*fgkOffset + iDE;
+      
+      // track positions (at chamber z and chamber z + dz) in the local coordinate system of the DE
+      fTransformer->Global2Local(deId, pos1[0], pos1[1], pos1[2], pos1[3], pos1[4], pos1[5]);
+      fTransformer->Global2Local(deId, pos2[0], pos2[1], pos2[2], pos2[3], pos2[4], pos2[5]);
+      
+      // track position at z=0 in the local coordinate system of the DE
+      CoordinatesOfMissingCluster(pos1[3], pos1[4], pos1[5], pos2[3], pos2[4], pos2[5], posMiss[0], posMiss[1]);
+      
+      // check if the track cross this DE and fill the corresponding histogram
+      if (CoordinatesInDetElt(deId, posMiss[0], posMiss[1])) FillTTHistos(chamber, deId, posMiss[0], posMiss[1]);
+    }
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::CoordinatesOfMissingCluster(Double_t x1, Double_t y1, Double_t z1,
+								 Double_t x2, Double_t y2, Double_t z2,
+								 Double_t& x, Double_t& y) const
+{
+  /// Compute the coordinates of the missing cluster. They are defined by the intersection between
+  /// the straigth line joining two extrapolated points (1 and 2) and the detection element plane.
+  /// In the local coordinates, this means Z=0 in the parametric equation of the line.
+  Double_t t = - z1 / (z2 - z1);
+  x = t * (x2 - x1) + x1;
+  y = t * (y2 - y1) + y1;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskMuonTrackingEff::CoordinatesInDetElt(Int_t DeId, Double_t x, Double_t y) const
+{
+  /// Return kTRUE if the coordinates are in the Detection Element.
+  /// This is done by checking if a pad correspond to the (x, y) position.
+  const AliMpVSegmentation* seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(DeId, AliMp::kCath0);
+  const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(DeId, AliMp::kCath1);
+  if (!seg1 || !seg2) return kFALSE;
+  AliMpPad pad1 = seg1->PadByPosition(x, y, kFALSE);
+  AliMpPad pad2 = seg2->PadByPosition(x, y, kFALSE);
+  return (pad1.IsValid() && pad2.IsValid());
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::FillTDHistos(Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL)
+{
+  /// Fill the histo for detected tracks
+  ((TH3F*) fDetEltTDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
+  ((TH2F*) fChamberTDHistList->At(chamber))->Fill(FromDetElt2LocalId(chamber, detElt), fCurrentCentrality);
+  ((TH2F*) fChamberTDHistList->At(10))->Fill(chamber+1, fCurrentCentrality);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskMuonTrackingEff::FillTTHistos(Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL)
+{
+  /// Fill the histo for all tracks
+  ((TH3F*) fDetEltTTHistList->At(FromDetElt2iDet(chamber, detElt))) -> Fill(posXL, posYL, fCurrentCentrality);
+  ((TH2F*) fChamberTTHistList->At(chamber))->Fill(FromDetElt2LocalId(chamber, detElt), fCurrentCentrality);
+  ((TH2F*) fChamberTTHistList->At(10))->Fill(chamber+1, fCurrentCentrality);
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskMuonTrackingEff::FromDetElt2iDet(Int_t chamber, Int_t detElt) const
+{
+  /// Connexion between the detection element Id and its position in the list of histograms
+  Int_t iDet = FromDetElt2LocalId(chamber, detElt);
+  for (Int_t iCh = chamber-1; iCh >=0; iCh--) iDet += fgkNbrOfDetectionElt[iCh];
+  return iDet;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskMuonTrackingEff::FromDetElt2LocalId(Int_t chamber, Int_t detElt) const
+{
+  /// Connexion between the detection element Id and its number in the chamber
+  return detElt - fgkOffset*(chamber+1);    
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskMuonTrackingEff::FromLocalId2DetElt(Int_t chamber, Int_t iDet) const
+{
+  /// Connexion between the number of the detection element in the chamber and its Id
+  return iDet + fgkOffset*(chamber+1);    
 }
 
