@@ -95,6 +95,7 @@ AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fNTracksPassed(0),
     fNTracksFailed(0),
     fRemoveKinks(kFALSE),
+    fRemoveITSFake(kFALSE),
     fMostProbable(0), 
     fMaxImpactXY(1000.0),
     fMaxImpactZ(1000.0),
@@ -150,6 +151,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     }
   if (fRemoveKinks) {
     if ((track->KinkIndex(0)) || (track->KinkIndex(1)) || (track->KinkIndex(2)))
+      return false;
+  }
+  if (fRemoveITSFake) {
+    if (track->ITSncls() < 0)
       return false;
   }
   if (fminTPCclsF>track->TPCnclsF())
@@ -442,6 +447,11 @@ TList *AliFemtoESDTrackCut::ListSettings()
 void AliFemtoESDTrackCut::SetRemoveKinks(const bool& flag)
 {
   fRemoveKinks = flag;
+}
+			    
+void AliFemtoESDTrackCut::SetRemoveITSFake(const bool& flag)
+{
+  fRemoveITSFake = flag;
 }
 			    
 			    // electron
