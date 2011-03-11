@@ -63,7 +63,7 @@ Bool_t AliForwardFlowBase::LoopAODFMD(AliAODEvent* AODevent)
   for(Int_t eta = 1; eta<=hdNdetadphi->GetNbinsX(); eta++) {
     Eta = hdNdetadphi->GetXaxis()->GetBinCenter(eta);
     for(Int_t phi = 1; phi<=hdNdetadphi->GetNbinsY()+1; phi++) {
-      Phi = hdNdetadphi->GetYaxis()->GetBinCenter(phi);
+      Phi    = hdNdetadphi->GetYaxis()->GetBinCenter(phi);
       Weight = hdNdetadphi->GetBinContent(eta, phi);
       dNdetadphi->Fill(Eta, Phi, Weight);
       dNdphi->Fill(Phi, Weight);
