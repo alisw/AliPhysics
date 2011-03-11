@@ -3,6 +3,7 @@
 
 // $Id$
 
+class TAxis;
 class TH1F;
 class TH2F;
 class TClonesArray;
@@ -53,10 +54,22 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   const AliESDCaloCells *fEsdCells;             //!pointer to esd cells
   const TObjArray       *fAodClusters;          //!pointer to aod clusters
   const AliAODCaloCells *fAodCells;             //!pointer to aod cells
+  TAxis                 *fPtRanges;             //!pointer to pt ranges
     // histograms
-  TH1F                  *fHcuts;                //!histo for cuts
-  TH1F                  *fHvertexZ;             //!histo for vtxz
-  TH1F                  *fHcent;                //!histo for cent
+  TH1F                  *fHCuts;                //!histo for cuts
+  TH1F                  *fHVertexZ;             //!histo for vtxz
+  TH1F                  *fHCent;                //!histo for cent
+  TH1F                  *fHCentQual;            //!histo for cent after quality flag cut
+    // histograms for clusters
+  TH2F                  *fHClustEtaPhi;         //!histo for cluster eta vs. phi
+  TH2F                  *fHClustEnergyPt;       //!histo for cluster energy vs. pT
+  TH2F                  *fHClustEnergySigma;    //!histo for cluster 
+  TH2F                  *fHClustNTowEnergyRatio;//!histo for cluster n tow vs. energy ratio
+    // histograms for pion candidates
+  TH2F                  *fHPionEtaPhi;          //!histo for pion eta vs. phi
+  TH2F                  *fHPionMggPt;           //!histo for pion mass vs. pT
+  TH2F                  *fHPionMggAsym;         //!histo for pion mass vs. asym
+  TH1F                  *fHPionInvMasses[20];   //!histos for invariant mass plots 
 
  private:
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
