@@ -521,16 +521,11 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
 
   //Check if there is a centrality value, PbPb analysis, and if a centrality bin selection is requested
   //If we need a centrality bin, we select only those events in the corresponding bin.
-  //printf("AliCaloTrackReader::FillInputEvent() - Centrality poiter %p min %d, max %d,opt %d \n",GetCentrality(), fCentralityBin[0],fCentralityBin[1],fCentralityOpt);
   if(GetCentrality() && fCentralityBin[0]>=0 && fCentralityBin[1]>=0 && fCentralityOpt==100){
     Int_t cen = GetEventCentrality();
-   // if(fDebug > 1)
-      printf("AliCaloTrackReader::FillInputEvent() - Centrality min %d < value %d < max %d \n",fCentralityBin[0],cen,fCentralityBin[1]);
     if(cen > fCentralityBin[1] || cen < fCentralityBin[0]) return kFALSE; //reject events out of bin.
   }
   
-  printf("Centrality passed\n");
-
   //Fill the arrays with cluster/tracks/cells data
    if(fFillEMCALCells) 
     FillInputEMCALCells();
