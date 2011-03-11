@@ -458,7 +458,7 @@ private:
   TGeoXtru* GetArcShape(Double_t phi, Double_t rmin, 
 					    Double_t rmax, Int_t nedges, Double_t height); 
 										//Auxiliary Method for Arc Shape
-  TGeoArb8* GetArbShape(TVector3* vertexpos[],const Double_t* width, 
+  TGeoArb8* GetArbShape(TVector3 const * const vertexpos[4],const Double_t* width, 
                         Double_t height,const char* shapename,Int_t isign = 1) const;
 									   // Method generating an Arb shape 
   TGeoShape* GetScrewShape(const Double_t* radius,const Int_t* edgesnumber,const Double_t* section) const;// Method Generating the Screw Shape  
@@ -672,3 +672,4 @@ private:
 ClassDef(AliITSv11GeometrySSD, 5)     // ITS v11 SSD geometry
 };
 #endif
+

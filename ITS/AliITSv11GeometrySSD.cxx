@@ -8022,7 +8022,7 @@ void AliITSv11GeometrySSD::SetLadderSupport(Int_t nedges){
   return ssdcablesmother;
  }
  ////////////////////////////////////////////////////////////////////////////////
-TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3* vertexpos[], const Double_t* width, 
+TGeoArb8* AliITSv11GeometrySSD::GetArbShape(TVector3 const * const vertexpos[4] , const Double_t* width, 
                                             Double_t height, const char* shapename, Int_t isign) const{
   /////////////////////////////////////////////////////////////
   // Method generating an Arb shape 
@@ -8304,3 +8304,4 @@ void AliITSv11GeometrySSD::CreateMaterials(){
   fCreateMaterials = kTRUE;
 }
 /////////////////////////////////////////////////////////////////////
+
