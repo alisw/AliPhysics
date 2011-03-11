@@ -39,7 +39,7 @@ class AliRefArray : public TObject {
  protected:
   UInt_t        fNElems;               //   number of referrer elements
   UInt_t        fRefSize;              //   current size of all references
-  Int_t*        fElems;                //[fNElems] forbidden partners on L1
+  Int_t*        fElems;                //[fNElems] array of referrers
   UInt_t*       fRefInd;               //[fRefSize] indices of next referred node
   UInt_t*       fRefBuff;              //[fRefSize] buffer of entries for referred nodes
   ClassDef(AliRefArray,1)
@@ -91,7 +91,7 @@ inline void AliRefArray::AddReference(UInt_t from, UInt_t to)
   if (!ref0) {ref0 = -(++to); return;}         // 1st reference, save in situ
   //
   int chk = ref0>0 ? 1:2; // if <0 (just 1 ref.before) need to transfer both to index array
-  if (!fRefInd || fRefInd[0]>(fRefSize-chk)) ExpandReferences( fRefSize );
+  if (!fRefInd || int(fRefInd[0])>(int(fRefSize)-chk)) ExpandReferences( fRefSize );
   UInt_t &freeSlot = fRefInd[0];
   Int_t ref = fElems[from];
   if (ref<0) { fRefInd[freeSlot]=0; fRefBuff[freeSlot] = -ref; ref = fElems[from] = freeSlot++; }

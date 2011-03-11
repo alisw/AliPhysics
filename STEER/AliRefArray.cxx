@@ -125,8 +125,8 @@ void AliRefArray::ExpandReferences(Int_t addSize)
   fRefSize += addSize;
   UInt_t*   buff = new UInt_t[fRefSize];
   UInt_t*   ind  = new UInt_t[fRefSize];
-  memcpy(buff, fRefBuff, oldSize*sizeof(UInt_t)); // copy current content
-  if (fRefInd) memcpy(ind,  fRefInd,  oldSize*sizeof(UInt_t));
+  if (fRefBuff) memcpy(buff, fRefBuff, oldSize*sizeof(UInt_t)); // copy current content
+  if (fRefInd)  memcpy(ind,  fRefInd,  oldSize*sizeof(UInt_t));
   memset(buff+oldSize,0,(fRefSize-oldSize)*sizeof(UInt_t));
   memset(ind +oldSize,0,(fRefSize-oldSize)*sizeof(UInt_t));
   delete[] fRefBuff; fRefBuff = buff;
