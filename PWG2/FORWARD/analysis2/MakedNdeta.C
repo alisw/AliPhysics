@@ -23,6 +23,8 @@
 void MakedNdeta(const char* aoddir=".", 
 	        Int_t       nEvents=-1, 
 		const char* trig="INEL",
+		Float_t     centLow = 0,
+		Float_t     centHigh = 100,
 		Double_t    vzMin=-10,
 		Double_t    vzMax=10,
 	        Int_t       proof=0)
@@ -54,11 +56,10 @@ void MakedNdeta(const char* aoddir=".",
   // --- Add tasks ---------------------------------------------------
   // Forward 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwarddNdeta.C");
-  AddTaskForwarddNdeta(trig, vzMin, vzMax);
-
+  AddTaskForwarddNdeta(trig, vzMin, vzMax, centLow, centHigh, true);
   // Central
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentraldNdeta.C");
-  AddTaskCentraldNdeta(trig, vzMin, vzMax);
+  AddTaskCentraldNdeta(trig, vzMin, vzMax, centLow, centHigh);
 
   
   // --- Run the analysis --------------------------------------------
@@ -74,7 +75,7 @@ void MakedNdeta(const char* aoddir=".",
   // mgr->SetDebugLevel(3);
   if (mgr->GetDebugLevel() < 1 && !proof) 
     mgr->SetUseProgressBar(kTRUE,100);
-
+  
   // Run the train 
   t.Start();
   Printf("=== RUNNING ANALYSIS ==================================");

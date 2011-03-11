@@ -23,7 +23,8 @@
 void MakeAOD(const char* esddir, 
 	     Int_t       nEvents=-1, 
 	     Int_t       proof=0,
-	     Bool_t      mc=false)
+	     Bool_t      mc=false,
+	     Bool_t      centrality=true )
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
@@ -94,7 +95,8 @@ void MakeAOD(const char* esddir,
   // --- Add tasks ---------------------------------------------------
   // Physics selection 
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+  // test HHD
+  AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
 
 #if 0
   // Centrality 
@@ -104,7 +106,10 @@ void MakeAOD(const char* esddir,
     AddTaskCopyHeader();
   }
 #endif
-
+  if(centrality) {
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AddTaskCentrality();
+  }
   // FMD 
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
   AddTaskFMD(mc);

@@ -32,6 +32,7 @@ RunCopySecMap(const char* sys, UShort_t cms, Short_t field,
   p->SetMagField(Float_t(field));
   p->SetCollisionSystem(sys);
   if (path) {
+    std::cout<<"Setting path to "<<path<<std::endl;
     p->SetBackgroundPath(path);
     p->SetEnergyPath(path);
     p->SetEventSelectionPath(path);
