@@ -347,7 +347,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
     zm=0.;
     ezm=0.;
     ncontr=0;
-    for(Int_t i =0; i<points.GetEntries(); i++){
+    for(Int_t i =0; i<points.GetEntriesFast(); i++){
       AliITSZPoint* p=(AliITSZPoint*)points.UncheckedAt(i);
       if(p->GetZ()>lim1 && p->GetZ()<lim2){
         Float_t deno = p->GetErrZ();
