@@ -45,6 +45,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetminTPCncls(const short& s);
   void SetminITScls(const int& s);
   void SetRemoveKinks(const bool& flag);
+  void SetRemoveITSFake(const bool& flag);
   void SetMaxITSChiNdof(const float& maxchi);
   void SetMaxTPCChiNdof(const float& maxchi);
   void SetMaxSigmaToVertex(const float& maxsig);
@@ -83,6 +84,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   long              fNTracksPassed;      // passed tracks count
   long              fNTracksFailed;      // failed tracks count
   bool              fRemoveKinks;        // if true particles with any kink label will not pass
+  bool              fRemoveITSFake;      // if true particles with ITS fake flag will not pass
   int               fMostProbable;       // this particle type is required to be most probable
 
   float             fMaxImpactXY;        // Max XY impact parameter

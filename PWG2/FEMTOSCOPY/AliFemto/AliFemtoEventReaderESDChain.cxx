@@ -577,7 +577,10 @@ AliFemtoEvent* AliFemtoEventReaderESDChain::ReturnHbtEvent()
       trackCopy->SetLabel(esdtrack->GetLabel());
 		
       trackCopy->SetITSchi2(esdtrack->GetITSchi2());    
-      trackCopy->SetITSncls(esdtrack->GetNcls(0));     
+      if (esdtrack->GetITSFakeFlag())
+	trackCopy->SetITSncls(-esdtrack->GetNcls(0));     
+      else
+	trackCopy->SetITSncls(esdtrack->GetNcls(0));     
       trackCopy->SetTPCchi2(esdtrack->GetTPCchi2());       
       trackCopy->SetTPCncls(esdtrack->GetTPCNcls());       
       trackCopy->SetTPCnclsF(esdtrack->GetTPCNclsF());      
