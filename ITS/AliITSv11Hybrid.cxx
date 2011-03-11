@@ -1661,7 +1661,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     //     invisible
     //    gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY");
     //gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., idrotm[199], "MANY");
-    //gMC->Gsatt("ITSV", "SEEN", 0);
+    //gGeoManager->SetVolumeAttribute("ITSV", "SEEN", 0);
 
     //gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "MANY"); //=== LG
     gMC->Gspos("ITSV", 1, "ALIC", 0., 0., 0., 0, "ONLY"); //=== LG
@@ -1702,7 +1702,7 @@ void AliITSv11Hybrid::CreateOldGeometry(){
     // --- Place the ghost volume in its mother volume (ITSV) and make it 
     //     invisible
     //gMC->Gspos("ITSD", 1, "ITSV", 0., 0., 0., 0, "ONLY");
-    //gMC->Gsatt("ITSD", "SEEN", 0);
+    //gGeoManager->SetVolumeAttribute("ITSD", "SEEN", 0);
 
     //======================================================================
     // Let's make ITSD an assembly, because we can then add the new geometry
