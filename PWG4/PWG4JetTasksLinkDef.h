@@ -18,6 +18,7 @@
 #pragma link C++ class AliPWG4HighPtQAMC+;
 #pragma link C++ class AliPWG4HighPtSpectra+;
 #pragma link C++ class AliPWG4CosmicCandidates+;
+#pragma link C++ class AliPWG4HighPtTrackQA+;
 #pragma link C++ class AliAnalysisTaskPWG4PidDetEx+;
 #pragma link C++ class AliJetSpectrumUnfolding+;
 #pragma link C++ class AliAnalysisTaskJetChem+;
@@ -35,7 +36,6 @@
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskJetsTM+;
 #pragma link C++ class AliAnalysisTaskQGSep+;
-#pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliAnalysisTaskJetResponse+;
 
 #endif
