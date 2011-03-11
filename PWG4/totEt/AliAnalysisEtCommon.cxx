@@ -70,23 +70,23 @@ Int_t AliAnalysisEtCommon::fgOmega0Code = 223;
 Float_t AliAnalysisEtCommon::fgPtTPCCutOff = 0.15;
 Float_t AliAnalysisEtCommon::fgPtITSCutOff = 0.10;
 
-AliAnalysisEtCommon::AliAnalysisEtCommon() :
-  fHistogramNameSuffix("")
-  ,fCuts(0)
-  ,fDataSet(2010)
-  ,fEsdtrackCutsITSTPC(0)
-  ,fEsdtrackCutsTPC(0)
-  ,fEsdtrackCutsITS(0)
-  ,fK0PythiaD6T(0)
-  ,fLambdaPythiaD6T(0)
-  ,fAntiLambdaPythiaD6T(0)
-  ,fK0Data(0)
-  ,fLambdaData(0)
-  ,fAntiLambdaData(0)
-  ,fLambdaEnhancement(0)
-  ,fProtonEnhancement(0)
-  ,mCentralityMethod("V0M")
-  ,nCentBins(20)
+AliAnalysisEtCommon::AliAnalysisEtCommon() : TObject()
+					   ,fHistogramNameSuffix("")
+					   ,fCuts(0)
+					   ,fDataSet(2010)
+					   ,fEsdtrackCutsITSTPC(0)
+					   ,fEsdtrackCutsTPC(0)
+					   ,fEsdtrackCutsITS(0)
+					   ,fK0PythiaD6T(0)
+					   ,fLambdaPythiaD6T(0)
+					   ,fAntiLambdaPythiaD6T(0)
+					   ,fK0Data(0)
+					   ,fLambdaData(0)
+					   ,fAntiLambdaData(0)
+					   ,fLambdaEnhancement(0)
+					   ,fProtonEnhancement(0)
+					   ,mCentralityMethod("V0M")
+					   ,nCentBins(20)
 {//default constructor
 
 }

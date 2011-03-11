@@ -10,6 +10,7 @@
 
 #include "TString.h"
 #include "TMath.h"
+#include "TObject.h"
 
 class TH2F;
 class TH1F;
@@ -45,7 +46,7 @@ class AliAnalysisLevyPt{
 
 #endif // ALIANALYSISLEVYPT_H
 
-class AliAnalysisEtCommon
+class AliAnalysisEtCommon  : public TObject
 {
 public:
    
