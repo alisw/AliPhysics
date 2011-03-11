@@ -22,9 +22,9 @@ class AliRawReader;
 
 class AliITSQADataMakerSim: public AliQADataMakerSim {
 
-friend class AliITSQASPDDataMakerSim;
-friend class AliITSQASDDDataMakerSim;
-friend class AliITSQASSDDataMakerSim;
+friend class AliITSQASPDDataMakerSim; //friend class
+friend class AliITSQASDDDataMakerSim;   //friend class
+friend class AliITSQASSDDataMakerSim;   //friend class
 
 public:
   AliITSQADataMakerSim(Short_t subDet = 0); // subDet = 0 (ALL), 1 (SPD), 2 (SDD), 3 (SSD)
@@ -42,7 +42,7 @@ public:
   virtual void MakeSDigits(TTree * sdigits);
   virtual void MakeHits(TTree * hits);
   virtual ~AliITSQADataMakerSim(); // dtor
-  Short_t GetSubDet(){return fSubDetector;};
+  Short_t GetSubDet() const {return fSubDetector;};
   Int_t GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task);
   virtual Int_t GetEventSpecie() const { return AliRecoParam::AConvert(fEventSpecie); }
   Int_t GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task);

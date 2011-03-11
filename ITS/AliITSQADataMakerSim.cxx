@@ -163,25 +163,25 @@ void AliITSQADataMakerSim::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 void AliITSQADataMakerSim::InitDigits()
 {  
 
+ // Initialization for Digits data 
   fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(60);
-  // Initialization for Digits data 
-	if(fSubDetector == 0 || fSubDetector == 1) {
-	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigits\n");
-
-	  fSPDDataMaker->InitDigits();
-	}
-	if(fSubDetector == 0 || fSubDetector == 2) {
- 	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitDigits\n");
-
-	  fSDDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
-	  fSDDDataMaker->InitDigits();
-	}
-	if(fSubDetector == 0 || fSubDetector == 3) {
-	  AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitDigits\n");
-
-	  fSSDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
-	  fSSDDataMaker->InitDigits();
-	}
+  if(fSubDetector == 0 || fSubDetector == 1) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitDigits\n");
+    
+    fSPDDataMaker->InitDigits();
+  }
+  if(fSubDetector == 0 || fSubDetector == 2) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SDD InitDigits\n");
+    
+    fSDDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+    fSDDDataMaker->InitDigits();
+  }
+  if(fSubDetector == 0 || fSubDetector == 3) {
+    AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SSD InitDigits\n");
+    
+    fSSDDataMaker->SetOffset(AliQAv1::kDIGITS, fDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->GetEntries(),AliRecoParam::AConvert(fEventSpecie));
+    fSSDDataMaker->InitDigits();
+  }
 }
 
 //____________________________________________________________________________
@@ -214,8 +214,8 @@ void AliITSQADataMakerSim::MakeDigits(TTree * digits)
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::InitSDigits()
 {
+  // Initialization for SDigits
   fSDigitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(70);
-  // Initialization for RECPOINTS
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitSDigits\n");
 
@@ -238,7 +238,7 @@ void AliITSQADataMakerSim::InitSDigits()
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::MakeSDigits()
 {
-  // Fill QA for recpoints
+  // Fill QA for sdigits
   if(fSubDetector == 0 || fSubDetector == 1)
     fSPDDataMaker->MakeSDigits() ; 
 
@@ -268,8 +268,8 @@ void AliITSQADataMakerSim::MakeSDigits(TTree * sdigits)
 //____________________________________________________________________________ 
 void AliITSQADataMakerSim::InitHits()
 {
-  fHitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(50);
   // Initialization for hits
+  fHitsQAList[AliRecoParam::AConvert(fEventSpecie)]->SetUniqueID(50);
   if(fSubDetector == 0 || fSubDetector == 1) {
     AliDebug(AliQAv1::GetQADebugLevel(),"AliITSQADM:: SPD InitHits\n");
     fSPDDataMaker->InitHits();
@@ -320,6 +320,8 @@ void AliITSQADataMakerSim::MakeHits(TTree * hits)
 //_________________________________________________________________
 Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t task)
 {
+
+  //return the offset for each subdetector
   switch(subdet)
     {
 
@@ -348,6 +350,7 @@ Int_t AliITSQADataMakerSim::GetDetTaskOffset(Int_t subdet,AliQAv1::TASKINDEX_t t
 //_________________________________________________________________
 Int_t AliITSQADataMakerSim::GetDetTaskHisto(Int_t subdet,AliQAv1::TASKINDEX_t task)
 {
+  //return of the number of histograms for each task and for each sub detector
   switch(subdet)
     {
 

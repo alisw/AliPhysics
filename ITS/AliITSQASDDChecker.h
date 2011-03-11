@@ -14,7 +14,7 @@
 //
 
 #include "AliQAv1.h"
-#include "TPad.h"
+//#include "TPad.h"
 // --- ROOT system ---
 class TFile;
 class TH2F; 

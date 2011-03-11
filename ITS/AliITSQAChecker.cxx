@@ -359,6 +359,7 @@ void AliITSQAChecker::SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto)
  //____________________________________________________________________________
  void AliITSQAChecker::SetDetTaskOffset(Int_t subdet,Int_t offset)
  {
+   //returns the offset for each task and for each subdetector
    switch(subdet){
    case 1:
      SetSPDTaskOffset(offset);
@@ -379,6 +380,7 @@ void AliITSQAChecker::SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto)
  //____________________________________________________________________________
  void AliITSQAChecker::SetDetHisto(Int_t subdet,Int_t histo)
  {
+   //set the number od histograms for the subdetector
    switch(subdet){
    case 1:
      SetSPDHisto(histo);
@@ -400,7 +402,7 @@ void AliITSQAChecker::SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto)
 
 void AliITSQAChecker::InitQACheckerLimits()
 {
-  
+  //init the tolerance range for each QA bit 
   AliInfo("Setting of tolerance values\n");
 
   Float_t lowtolerancevalue[AliQAv1::kNBIT];
@@ -433,6 +435,7 @@ void AliITSQAChecker::InitQACheckerLimits()
 
 void AliITSQAChecker::CreateStepForBit(Double_t histonumb,Double_t *steprange)
 {
+  //creation of the step bit for each QA bit 
   for(Int_t bit=0;bit < AliQAv1::kNBIT; bit++)
     {       
       //printf("%i\t %f \t %f \t %f \n",bit, fUpTestValue[bit],fLowTestValue[AliQAv1::kINFO],histonumb);
@@ -446,7 +449,7 @@ void AliITSQAChecker::CreateStepForBit(Double_t histonumb,Double_t *steprange)
 //_____________________________________________________________________________
 void AliITSQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 {
-
+  //Setting of the QA tolerance values
   AliQAv1 * qa = AliQAv1::Instance(index) ;
 
 
@@ -476,7 +479,7 @@ void AliITSQAChecker::SetQA(AliQAv1::ALITASK_t index, Double_t * value) const
 //__________________________________________________________________
 void  AliITSQAChecker::MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
-
+  //make a summary image
   //gStyle->SetPalette(1);
 
   //Int_t nImages = 0 ;

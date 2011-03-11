@@ -37,9 +37,9 @@ public:
   void SetMode(Bool_t kMode) { fkOnline = kMode; }
   void SetSubDet(Short_t subdet) { fDet = subdet; }
   void SetLDC(Short_t ldc) { fLDC = ldc; }
-  Bool_t GetMode() { return fkOnline; }
-  Short_t GetSubDet() { return fDet; }
-  Short_t GetLDC() { return fLDC; }
+  Bool_t GetMode() const { return fkOnline; };
+  Short_t GetSubDet() const { return fDet; } ;
+  Short_t GetLDC() const { return fLDC; }  ;
   virtual void SetTaskOffset(Int_t SPDOffset, Int_t SDDOffset, Int_t SSDOffset);
   virtual void SetHisto(Int_t SPDhisto, Int_t SDDhisto, Int_t SSDhisto);
   virtual void SetDetTaskOffset(Int_t subdet=0,Int_t offset=0);
@@ -67,17 +67,17 @@ protected:
 
 private:
 
-  Bool_t  fkOnline;
-  Short_t fDet;  
-  Short_t fLDC;
+  Bool_t  fkOnline; //online=kTRUE offline=kFALSE
+  Short_t fDet;   //0=all 1=SPD 2=SDD 3=SSD
+  Short_t fLDC; //LDC number
 
-  Int_t fSPDOffset; //starting point for the QACheck list
-  Int_t fSDDOffset;
-  Int_t fSSDOffset;
+  Int_t fSPDOffset; //starting point for the QACheck list SPD
+  Int_t fSDDOffset; //starting point for the QACheck list SDD
+  Int_t fSSDOffset; //starting point for the QACheck list SSD
 
-  Int_t fSPDHisto;
-  Int_t fSDDHisto;
-  Int_t fSSDHisto;
+  Int_t fSPDHisto; //number of histograms for SPD
+  Int_t fSDDHisto; //number of histograms for SDD
+  Int_t fSSDHisto; //number of histograms for SSD
 
   AliITSQASPDChecker *fSPDChecker;  // SPD Checker
   AliITSQASDDChecker *fSDDChecker;  // SDD Checker
