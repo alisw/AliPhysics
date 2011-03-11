@@ -182,8 +182,11 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   // Corrections
   TH2D* hSecMap     = 0;
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
-  if (fUseSecondary) hSecMap = fManager.GetSecMapCorrection(vtxbin);
-  if (fUseSecondary && !hSecMap)  AliFatal("No secondary map!");
+  //if (fUseSecondary) 
+    hSecMap = fManager.GetSecMapCorrection(vtxbin);
+  
+    //if (fUseSecondary && !hSecMap)
+  if (!hSecMap)                   AliFatal("No secondary map!");
   if (!hAcceptance)               AliFatal("No acceptance!");
     
   if (hSecMap) aodHist->Divide(hSecMap);
@@ -194,7 +197,8 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
     Bool_t etabinSeen = kFALSE;  
     for(Int_t ny = 1; ny <= aodHist->GetNbinsY(); ny++) {
       Float_t aodValue = aodHist->GetBinContent(nx,ny);
-      Float_t secCor   = hSecMap->GetBinContent(nx,ny);
+      Float_t secCor   = 0;
+      if(hSecMap) secCor   = hSecMap->GetBinContent(nx,ny);
       if (secCor > 0.5) etabinSeen = kTRUE;
       if (aodValue < 0.000001) { aodHist->SetBinContent(nx,ny, 0); continue; }
       if (accCor   < 0.000001) accCor = 1;
@@ -202,9 +206,12 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
       aodHist->SetBinContent(nx,ny, aodNew);
       Float_t aodErr   = aodHist->GetBinError(nx,ny);
       Float_t accErr   = hAcceptance->GetBinError(nx);
-      Float_t error    = aodNew *TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
-					     TMath::Power(accErr/accCor,2) );
+      
+      Float_t error    = aodNew*TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
+					    TMath::Power(accErr/accCor,2) );
+      //test
       aodHist->SetBinError(nx,ny,error);
+      aodHist->SetBinError(nx,ny,aodErr);
       
     }
     //Filling underflow bin if we eta bin is in range

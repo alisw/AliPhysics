@@ -167,7 +167,7 @@ AliForwardMultiplicityTask::InitializeSubs()
   fEventInspector.Init(*pv);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
-  fHistCollector.Init(*pv);
+  fHistCollector.Init(*pv,*pe);
 
   this->Print();
 }
@@ -197,6 +197,7 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   fSharingFilter.DefineOutput(fList);
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
+  fHistCollector.DefineOutput(fList);
 
   PostData(1, fList);
 }
@@ -254,7 +255,7 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
 
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
-  // Apply the sharing filter (or hit merging or clustering if you like)
+  //  // Apply the sharing filter (or hit merging or clustering if you like)
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
     AliWarning("Sharing filter failed!");
     return;
@@ -268,7 +269,8 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   }
 
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
+  //if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
+  if (!fDensityCalculator.Calculate(*esdFMD, fHistos, ivz, lowFlux)) { 
     AliWarning("Density calculator failed!");
     return;
   }
@@ -331,7 +333,7 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   
   // TH1D* dNdeta = fHData->ProjectionX("dNdeta", 0, -1, "e");
   TH1D* dNdeta = hData->ProjectionX("dNdeta", 1, -1, "e");
-  TH1D* norm   = hData->ProjectionX("norm",   0,  1,  "");
+  TH1D* norm   = hData->ProjectionX("norm",   0,  0,  "");
   dNdeta->SetTitle("dN_{ch}/d#eta in the forward regions");
   dNdeta->SetYTitle("#frac{1}{N}#frac{dN_{ch}}{d#eta}");
   dNdeta->Divide(norm);
