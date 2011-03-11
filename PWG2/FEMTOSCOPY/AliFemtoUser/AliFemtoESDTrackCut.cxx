@@ -322,24 +322,25 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
   if (fMostProbable) {
     int imost=0;
-//     if (fMostProbable == 2) {
-//       if (IsPionTPCdEdx(track->P().Mag(), track->TPCsignal()))
-// 	imost = 2;
-//     }
-//     else if (fMostProbable == 3) {
-//       if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
-// 	imost = 3;
-//     }
-//     else {
-      tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
-      tMost[1] = 0.0;
-      tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
-      tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
-      tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
-      float ipidmax = 0.0;
-      for (int ip=0; ip<5; ip++)
-	if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
-//     }
+    tMost[0] = track->PidProbElectron()*PidFractionElectron(track->P().Mag());
+    tMost[1] = 0.0;
+    tMost[2] = track->PidProbPion()*PidFractionPion(track->P().Mag());
+    tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
+    tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
+    float ipidmax = 0.0;
+    for (int ip=0; ip<5; ip++)
+      if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+    //     }
+    if (fMostProbable == 2) {
+      if (imost == 2)
+	if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal())))
+	  imost = 0;
+    }
+    //     else if (fMostProbable == 3) {
+    //       if (IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+    // 	imost = 3;
+    //     }
+    //     else {
     if (imost != fMostProbable) return false;
   }
   
@@ -579,8 +580,10 @@ void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& ma
 
 bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 {
-  double a1 = -95.4545, b1 = 86.5455;
-  double a2 = 0.0,      b2 = 56.0;
+//   double a1 = -95.4545, b1 = 86.5455;
+//   double a2 = 0.0,      b2 = 56.0;
+  double a1 = -343.75,  b1 = 168.125;
+  double a2 = 0.0,      b2 = 65.0;
 
   if (mom < 0.32) {
     if (dEdx < a1*mom+b1) return true;
