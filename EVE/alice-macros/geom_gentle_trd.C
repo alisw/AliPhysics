@@ -15,8 +15,9 @@ TEveGeoShape* geom_gentle_trd()
   gEve->AddGlobalElement(gsre);
   f.Close();
 
+  const Int_t smInstalled[]={0, 1, 7, 8, 9, 10, 11, 15, 16, 17};
+  const Int_t nInstalled = static_cast<Int_t>(sizeof(smInstalled)/sizeof(Int_t));
   Int_t sm = 0;
-
   // Fix visibility, color and transparency
   gsre->SetRnrSelf(kFALSE);
   for (TEveElement::List_i i = gsre->BeginChildren(); i != gsre->EndChildren(); ++i)
@@ -26,17 +27,18 @@ TEveGeoShape* geom_gentle_trd()
     for (TEveElement::List_i j = lvl1->BeginChildren(); j != lvl1->EndChildren(); ++j)
     {
       TEveGeoShape* lvl2 = (TEveGeoShape*) *j;
-      if ( sm == 0 || sm == 1 || sm == 7 || sm == 8 || sm == 9 || sm == 10 || sm == 17 )
-	lvl2->SetRnrSelf(kTRUE);
-      else 
-	lvl2->SetRnrSelf(kFALSE);	
-
+      lvl2->SetRnrSelf(kFALSE);
+      for(Int_t ism(nInstalled); ism--;){
+        if ( sm == smInstalled[ism] ){
+          lvl2->SetRnrSelf(kTRUE);
+          break; 
+        }
+      }
       lvl2->SetMainColor(3);
       lvl2->SetMainTransparency(80);
 
       ++sm;
     }
-    
   }
 
   return gsre;
