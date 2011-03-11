@@ -37,6 +37,7 @@ ClassImp(AliHLTCaloConstantsHandler)
 AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
   fCaloConstants(0)
 {
+    
   if (det.CompareTo("PHOS") == 0) {
     fCaloConstants = AliHLTMisc::LoadInstance( ( AliHLTCaloConstants*  ) NULL, 
 					       "AliHLTPHOSConstants", "libAliHLTPHOS.so");
@@ -50,7 +51,7 @@ AliHLTCaloConstantsHandler::AliHLTCaloConstantsHandler(TString det):
   if( fCaloConstants == 0 )
     {
       AliHLTLogging *log = new AliHLTLogging();
-      log->Logging(kHLTLogFatal, __FILE__, "fCaloConstants == ZERO ",  "fCaloConstants == ZERO " ); 
+      log->Logging(kHLTLogDebug, __FILE__, "fCaloConstants == ZERO ",  "fCaloConstants == ZERO " ); 
       delete log;
     }
 }
