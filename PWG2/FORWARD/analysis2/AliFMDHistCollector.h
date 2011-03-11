@@ -34,7 +34,14 @@ public:
    * Constructor 
    */
   AliFMDHistCollector() 
-    : fNCutBins(0), fCorrectionCut(0), fFirstBins(), fLastBins(), fDebug(0)
+    : fNCutBins(0), 
+      fCorrectionCut(0), 
+      fFirstBins(), 
+      fLastBins(), 
+      fDebug(0),
+      fList(0),
+      fSumRings(0),
+      fCoverage(0)
   {}
   /** 
    * Constructor 
@@ -47,7 +54,10 @@ public:
       fCorrectionCut(0.5), 
       fFirstBins(1), 
       fLastBins(1), 
-      fDebug(0)
+      fDebug(0),
+      fList(0),
+      fSumRings(0),
+      fCoverage(0)
   {}
   /** 
    * Copy constructor 
@@ -56,14 +66,20 @@ public:
    */
   AliFMDHistCollector(const AliFMDHistCollector& o)
     : TNamed(o), 
-      fNCutBins(o.fNCutBins), fCorrectionCut(o.fCorrectionCut),
-      fFirstBins(o.fFirstBins), fLastBins(o.fLastBins), fDebug(o.fDebug) 
+      fNCutBins(o.fNCutBins), 
+      fCorrectionCut(o.fCorrectionCut),
+      fFirstBins(o.fFirstBins), 
+      fLastBins(o.fLastBins), 
+      fDebug(o.fDebug),
+      fList(o.fList),
+      fSumRings(o.fSumRings),
+      fCoverage(o.fCoverage)
   {}
 
   /** 
    * Destructor 
    */
-  virtual ~AliFMDHistCollector() {}
+  virtual ~AliFMDHistCollector();
   /** 
    * Assignement operator
    * 
@@ -77,7 +93,8 @@ public:
    * 
    * @param vtxAxis  Vertex axis 
    */  
-  virtual void Init(const TAxis& vtxAxis);
+  virtual void Init(const TAxis& vtxAxis,
+		    const TAxis& etaAxis);
   /** 
    * Do the calculations 
    * 
@@ -89,6 +106,12 @@ public:
    */
   virtual Bool_t Collect(AliForwardUtil::Histos& hists, UShort_t vtxBin, 
 			 TH2D& out);
+  /** 
+   * Output diagnostic histograms to directory 
+   * 
+   * @param dir List to write in
+   */  
+  virtual void DefineOutput(TList* dir);
   /** 
    * Set the number of extra bins (beyond the secondary map border) 
    * to cut away. 
@@ -246,6 +269,9 @@ protected:
   TArrayI     fFirstBins;       // Array of first eta bins 
   TArrayI     fLastBins;        // Array of last eta bins 
   Int_t       fDebug;           // Debug level 
+  TList*      fList;		// Output list
+  TH2D*       fSumRings;        // Sum per ring (on y-axis)
+  TH2D*       fCoverage;        // Sum per ring (on y-axis)
 
   ClassDef(AliFMDHistCollector,1); // Calculate Nch density 
 };

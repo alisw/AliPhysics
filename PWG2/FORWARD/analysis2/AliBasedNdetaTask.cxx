@@ -303,9 +303,9 @@ AliBasedNdetaTask::UserExec(Option_t *)
   
   if(cent > 0) {
     if( cent < fCentLow || cent > fCentHigh ) return;
-    else std::cout<<"selecting event with cent "<<cent<<std::endl;
+    //else std::cout<<"selecting event with cent "<<cent<<std::endl;
   }
-  //std::cout<<fCentLow<<"  "<<fCentHigh<<std::endl;
+  
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
@@ -395,7 +395,7 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   //
   if (!h) return 0;
   //#if USE_ROOT_PROJECT
-  return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
+  //return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
   //#endif
   
   TAxis* xaxis = h->GetXaxis();

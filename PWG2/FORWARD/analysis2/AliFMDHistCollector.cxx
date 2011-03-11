@@ -33,7 +33,11 @@ ClassImp(AliFMDHistCollector)
 ; // For Emacs
 #endif 
 
-
+//____________________________________________________________________
+AliFMDHistCollector::~AliFMDHistCollector()
+{ 
+  if (fList) delete fList;
+}
 //____________________________________________________________________
 AliFMDHistCollector&
 AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
@@ -54,13 +58,17 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   fFirstBins      = o.fFirstBins;
   fLastBins       = o.fLastBins;
   fDebug          = o.fDebug;
+  fList           = o.fList;
+  fSumRings       = o.fSumRings;
+  fCoverage       = o.fCoverage;
 
   return *this;
 }
 
 //____________________________________________________________________
 void
-AliFMDHistCollector::Init(const TAxis& vtxAxis)
+AliFMDHistCollector::Init(const TAxis& vtxAxis,
+			  const TAxis& etaAxis)
 {
   // 
   // Intialise 
@@ -71,6 +79,28 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
 
   AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
 
+  fSumRings = new TH2D("sumRings", "Sum in individual rings",
+		       etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(),
+		       5, 1, 6);
+  fSumRings->Sumw2();
+  fSumRings->SetDirectory(0);
+  fSumRings->SetXTitle("#eta");
+  fSumRings->GetYaxis()->SetBinLabel(1,"FMD1i");
+  fSumRings->GetYaxis()->SetBinLabel(2,"FMD2i");
+  fSumRings->GetYaxis()->SetBinLabel(3,"FMD2o");
+  fSumRings->GetYaxis()->SetBinLabel(4,"FMD3i");
+  fSumRings->GetYaxis()->SetBinLabel(5,"FMD3o");
+  fList->Add(fSumRings);
+
+  fCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
+		       etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(),
+		       vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
+  fCoverage->SetDirectory(0);
+  fCoverage->SetXTitle("#eta");
+  fCoverage->SetYTitle("v_{z} [cm]");
+  fCoverage->SetZTitle("n_{bins}");
+  fList->Add(fCoverage);
+		       
   UShort_t nVz = vtxAxis.GetNbins();
   fFirstBins.Set(5*nVz);
   fLastBins.Set(5*nVz);
@@ -94,13 +124,11 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
 
       // Loop over the eta bins 
       for (Int_t ie = 1; ie <= nEta; ie++) { 
-	if (bg->GetBinContent(ie,1) < fCorrectionCut) continue;
-
 	// Loop over the phi bins to make sure that we 
 	// do not have holes in the coverage 
 	bool ok = true;
 	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) { 
-	  if (bg->GetBinContent(ie,ip) < 0.001) {
+	  if (bg->GetBinContent(ie,ip) < fCorrectionCut) {
 	    ok = false;
 	    continue;
 	  }
@@ -114,8 +142,28 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis)
       // Store the result for later use 
       fFirstBins[(iVz-1)*5+iIdx] = first;
       fLastBins[(iVz-1)*5+iIdx]  = last;
+      for (Int_t iC = first+fNCutBins; iC <= last-fNCutBins; iC++) {
+	Double_t old = fCoverage->GetBinContent(iC, iVz);
+	fCoverage->SetBinContent(iC, iVz, old+1);
+      }
     } // for j 
   }
+}
+
+//____________________________________________________________________
+void
+AliFMDHistCollector::DefineOutput(TList* dir)
+{
+  // 
+  // Output diagnostic histograms to directory 
+  // 
+  // Parameters:
+  //    dir List to write in
+  //  
+  fList = new TList;
+  fList->SetOwner();
+  fList->SetName(GetName());
+  dir->Add(fList);
 }
 
 //____________________________________________________________________
@@ -316,7 +364,8 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
       Char_t      r = (q == 0 ? 'I' : 'O');
       TH2D*       h = hists.Get(d,r);
       TH2D*       t = static_cast<TH2D*>(h->Clone(Form("FMD%d%c_tmp",d,r)));
-      
+      Int_t       i = (d == 1 ? 1 : 2*d + (q == 0 ? -2 : -1));
+
       // Outer rings have better phi segmentation - rebin to same as inner. 
       if (q == 1) t->RebinY(2);
 
@@ -336,8 +385,10 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 	out.SetBinContent(iEta, 0, ooc + noc);
 
 	for (Int_t iPhi = 1; iPhi <= h->GetNbinsY(); iPhi++) { 
-	  Double_t c = t->GetBinContent(iEta,iPhi);
-	  Double_t e = t->GetBinError(iEta,iPhi);
+	  Double_t c  = t->GetBinContent(iEta,iPhi);
+	  Double_t e  = t->GetBinError(iEta,iPhi);
+	  Double_t ee = t->GetXaxis()->GetBinCenter(iEta);
+	  fSumRings->Fill(ee, i, c);
 
 	  // If there's no signal, continue 
 	  // if (e <= 0) continue;

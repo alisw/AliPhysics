@@ -322,7 +322,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  // if ( eLossV > 0)
 	  //  std::cout<<"event : "<<total<<"  "<<empty<<"  "<<hits<<"  "<<poissonV<<"  "<<eLossV<<std::endl;
 	  Double_t poissonE = 0 ;
-	  if(poissonE > 0) poissonE = TMath::Sqrt(poissonV);
+	  if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
 	  
 
 	  

@@ -242,7 +242,12 @@ AliFMDEnergyFitterTask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoFMD)     return;
   if (found & AliFMDEventInspector::kNoVertex)  return;
   if (found & AliFMDEventInspector::kBadVertex) return;
-
+  
+  //  if(cent > 0) {
+  //  if( cent < 40 || cent >50 ) return;
+  //  else std::cout<<"selecting event with cent "<<cent<<std::endl;
+  // }
+  
   // Get FMD data 
   AliESDFMD* esdFMD = esd->GetFMDData();
   // Do the energy stuff 
