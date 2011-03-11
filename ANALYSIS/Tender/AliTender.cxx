@@ -106,10 +106,16 @@ void AliTender::ConnectInputData(Option_t* option)
   fCDB = AliCDBManager::Instance();
   // SetDefault storage. Specific storages must be set by AliTenderSupply::Init()
   fCDB->SetDefaultStorage(fDefaultStorage);
-  fRun = fESD->GetRunNumber();
+  Int_t run = AliAnalysisManager::GetAnalysisManager()->GetRunFromPath();
   // Unlock CDB
   fCDBkey = fCDB->SetLock(kFALSE, fCDBkey);
-  fCDB->SetRun(fRun);
+  if (!run) {
+     AliWarning("AliTaskCDBconnect: Could not set run from path");
+  } else {
+     fRun = run;
+     printf("AliTender: #### Setting run to: %d\n", fRun);
+     fCDB->SetRun(fRun);
+  }   
   TIter next(fSupplies);
   AliTenderSupply *supply;
   while ((supply=(AliTenderSupply*)next())) supply->Init();
