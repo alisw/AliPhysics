@@ -105,18 +105,16 @@ public:
   virtual void     SetCTSPtMin(Float_t  pt)     { fCTSPtMin   = pt   ; }  
   
   // Fidutial cuts  
-  virtual AliFiducialCut * GetFiducialCut()              { if(!fFiducialCut) fFiducialCut = new AliFiducialCut()      ; 
-                                                           return            fFiducialCut                             ; }
-  virtual void SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc                                          ; }
-  
-  virtual Bool_t IsFiducialCutOn()                 const { return fCheckFidCut                                        ; }
-  virtual void SwitchOnFiducialCut()                     { fCheckFidCut = kTRUE;  fFiducialCut = new AliFiducialCut() ; }
-  virtual void SwitchOffFiducialCut()                    { fCheckFidCut = kFALSE                                      ; }
+  virtual AliFiducialCut * GetFiducialCut()     { if(!fFiducialCut) fFiducialCut = new AliFiducialCut(); 
+                                                return  fFiducialCut ;}
+  virtual void SetFiducialCut(AliFiducialCut * const fc) { fFiducialCut = fc ;}
+  virtual Bool_t IsFiducialCutOn()        const { return fCheckFidCut   ; }
+  virtual void SwitchOnFiducialCut()            { fCheckFidCut = kTRUE;  fFiducialCut = new AliFiducialCut();}
+  virtual void SwitchOffFiducialCut()           { fCheckFidCut = kFALSE ; }
   
   // Cluster origin
   Bool_t IsEMCALCluster(AliVCluster *clus) const;
   Bool_t IsPHOSCluster (AliVCluster *clus) const;
-  
   //Patch for cluster origin for Old AODs implementation
   void   SwitchOnOldAODs()              { fOldAOD = kTRUE          ; }
   void   SwitchOffOldAODs()             { fOldAOD = kFALSE         ; }
@@ -235,7 +233,7 @@ public:
   //------------------------
   // Centrality
   //------------------------
-  virtual AliCentrality* GetCentrality()            const { return 0x0                          ; }// Set in ESD/AOD reader, if not it crashes
+  virtual AliCentrality* GetCentrality()            const { return fInputEvent->GetCentrality() ; }
   virtual void      SetCentralityClass(TString name)      { fCentralityClass   = name           ; }
   virtual void      SetCentralityOpt(Int_t opt)           { fCentralityOpt     = opt            ; }
   virtual TString   GetCentralityClass()            const { return fCentralityClass             ; }
