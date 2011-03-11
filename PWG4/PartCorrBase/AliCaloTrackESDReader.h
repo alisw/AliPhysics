@@ -23,6 +23,11 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   AliCaloTrackESDReader() ; // ctor
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
 
+  AliCentrality* GetCentrality() const {
+    AliESDEvent* event = dynamic_cast<AliESDEvent*> (fInputEvent);	 
+    if(event) return event->GetCentrality() ; 
+    else      return 0x0                    ; }  
+  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
 	
   TString GetFiredTriggerClasses() {return ((AliESDEvent*)GetInputEvent())->GetFiredTriggerClasses();}
