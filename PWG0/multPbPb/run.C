@@ -66,8 +66,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
   // const char * file1 = "$ALICE_ROOT/ANALYSIS/macros/AliCentralityBy1D_137161_GLAU.root";
   // const char * file2 = "$ALICE_ROOT/ANALYSIS/macros/test_AliCentralityByFunction.root";
   
-  taskCentr->SetPercentileFile (file1);
-  taskCentr->SetPercentileFile2(file2);
+  // taskCentr->SetPercentileFile (file1);
+  // taskCentr->SetPercentileFile2(file2);
   //FIXME: include back centrality estimator
   //  mgr->AddTask(taskCentr);
   //  mgr->ConnectInput (taskCentr,0, mgr->GetCommonInputContainer());
@@ -118,9 +118,9 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   if (optionStr.Contains("DCA")) {
     delete cuts;
-    cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
+    //    cuts = AliESDtrackCuts::GetStandardITSPureSATrackCuts2009();
     cout << ">>>> USING DCA cut" << endl;
-    cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);  
     pathsuffix+="_DCAcut";
   }
 
@@ -145,6 +145,8 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
     pathsuffix+="_NOMCKIN";
   }
   
+  AliLog::SetClassDebugLevel("AliESDtrackCuts", AliLog::kDebug);// FIXME
+  cuts->DefineHistograms();
   
   // load my task
   if (useSingleBin) {
@@ -212,6 +214,10 @@ void run(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kF
 
   if (doSave) MoveOutput(data, pathsuffix.Data());
 
+  // FIXME
+  TFile * f = new TFile("cuts.root", "recreate");
+  cuts->SaveHistograms();
+  f->Close();
   
 }
 
@@ -287,19 +293,34 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
 
+      // gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-17b-AN");
+      // gSystem->Load("libCore.so");  
+      // gSystem->Load("libTree.so");
+      // gSystem->Load("libGeom.so");
+      // gSystem->Load("libVMC.so");
+      // gSystem->Load("libPhysics.so");
+      // gSystem->Load("libSTEERBase");
+      // gSystem->Load("libESD");
+      // gSystem->Load("libAOD");
+      // gSystem->Load("libANALYSIS");
+      // gSystem->Load("libOADB");
+      // gSystem->Load("libANALYSISalice");   
+
       // Enable the needed package
-      gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-      gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-      gProof->UploadPackage("$ALICE_ROOT/ESD");
-      gProof->EnablePackage("$ALICE_ROOT/ESD");
-      gProof->UploadPackage("$ALICE_ROOT/AOD");
-      gProof->EnablePackage("$ALICE_ROOT/AOD");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-      gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-      gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
-      gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-      gProof->EnablePackage("$ALICE_ROOT/PWG0base");
+      gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
+      gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
+      gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
+      gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
+      gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
+      gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
+      gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
+      gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
+      gProof->UploadPackage("$ALICE_ROOT/obj/OADB");
+      gProof->EnablePackage("$ALICE_ROOT/obj/OADB");
+      gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
+      gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
+      gProof->UploadPackage("$ALICE_ROOT/obj/PWG0base");
+      gProof->EnablePackage("$ALICE_ROOT/obj/PWG0base");
       gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
       gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
     }
@@ -315,6 +336,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
       gSystem->Load("libESD");
       gSystem->Load("libAOD");
       gSystem->Load("libANALYSIS");
+      gSystem->Load("libOADB");
       gSystem->Load("libANALYSISalice");   
       // Use AliRoot includes to compile our task
       gROOT->ProcessLine(".include $ALICE_ROOT/include");
