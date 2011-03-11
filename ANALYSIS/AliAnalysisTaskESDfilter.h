@@ -45,8 +45,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetPshape        (TF1 *func)                   {fPtshape        =     func;}
     virtual void SetEnableFillAOD (Bool_t b)                    {fEnableFillAOD  =     b;}
 
-    virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid, Double_t bfield);
-    void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track, Double_t bfield);
+    virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid);
+    void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track);
 
   void PrintTask(Option_t *option="all", Int_t indent=0) const;
   
