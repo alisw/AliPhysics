@@ -580,7 +580,7 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if(!esdtrack) continue;
 
-    if(fTrackType==1)
+    if(fTrackType==1 || fTrackType==3)
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
     else if(fTrackType==2) {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
