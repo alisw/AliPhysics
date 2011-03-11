@@ -26,6 +26,7 @@
 #include "TString.h"
 #include "AliAnalysisEtCommon.h"
 #include "AliAnalysisHadEt.h"
+#include "AliLog.h"
 
 using namespace std;
 
@@ -90,7 +91,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 { // analyse ESD event
     ResetEventValues();
   if(!ev){
-    Printf("ERROR: Event does not exist");   
+    AliFatal("ERROR: Event does not exist");   
     return 0;
   }
 
@@ -380,14 +381,10 @@ Bool_t AliAnalysisHadEtReconstructed::IsInEMCAL(AliESDtrack *track){//This funct
 }
 Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 { // check vertex
-  if(!track){
-    cout<<"Error: Track does not exist!!"<<endl;
-    return kFALSE;
-  }
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
-    dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
+    if(track) dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
 
     bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
       (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 

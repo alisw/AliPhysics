@@ -20,6 +20,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "TList.h"
 #include "AliESDCaloCluster.h"
+#include "AliLog.h"
 
   using namespace std;
 
@@ -86,8 +87,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
   ResetEventValues();
 	
   // Get us an mc event
-  if(!ev){
-    Printf("ERROR: Event does not exist");   
+  if(!ev){  
+    AliFatal("ERROR: Event does not exist");
     return 0;
   }
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
@@ -485,7 +486,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
   //if(!mcEvent || !realEvent){
   if(!ev || !ev2){
-    Printf("ERROR: Event does not exist");   
+    AliFatal("ERROR: Event does not exist");   
     return 0;
   }
   //AnalyseEvent(mcEvent);

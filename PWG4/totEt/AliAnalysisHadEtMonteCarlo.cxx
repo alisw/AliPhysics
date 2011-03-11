@@ -26,6 +26,7 @@
 #include "TRandom.h"
 #include "AliAnalysisEtCommon.h"
 #include "AliCentrality.h"
+#include "AliLog.h"
 
 using namespace std;
 
@@ -64,7 +65,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
   FillHisto1D("NEvents",0.5,1);
   if(!ev || !ev2){
-    Printf("ERROR: Event does not exist");   
+    AliFatal("ERROR: Event does not exist");   
     return 0;
   }
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
@@ -509,7 +510,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 { // analyse MC event
      ResetEventValues();
      if(!ev){
-            Printf("ERROR: Event does not exist");   
+            AliFatal("ERROR: Event does not exist");   
 	    return 0;
      }
      
