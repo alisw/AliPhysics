@@ -14,7 +14,7 @@
  * @ingroup pwg2_forward_scripts
  */
 AliAnalysisTask*
-AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field)
+AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 {
   gSystem->Load("libPWG2forward2");
 

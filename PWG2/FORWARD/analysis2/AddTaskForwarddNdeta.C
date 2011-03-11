@@ -9,7 +9,7 @@
  * 
  */
 AliAnalysisTask*
-AddTaskForwarddNdeta(const char* trig="INEL", Double_t vzMin=-10, Double_t vzMax=10)
+AddTaskForwarddNdeta(const char* trig="INEL", Double_t vzMin=-10, Double_t vzMax=10, Float_t centlow = 0, Float_t centhigh = 100, Bool_t cutEdges = false)
 {
   // analysis manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -19,6 +19,19 @@ AddTaskForwarddNdeta(const char* trig="INEL", Double_t vzMin=-10, Double_t vzMax
   AliForwarddNdetaTask* task = new AliForwarddNdetaTask("Forward");
   task->SetVertexRange(vzMin, vzMax);
   task->SetTriggerMask(trig);
+  task->SetCutEdges(cutEdges);
+  task->SetCentLow(centlow);
+  task->SetCentHigh(centhigh);
+   
+  //task->SetTriggerEff(0.93);
+  /*if(trig == "INEL") task->SetTriggerEff(0.95);
+  if(trig == "NSD")  task->SetTriggerEff(1.04);
+  TFile f("/home/canute/ALICE/FMDanalysis/productionData/normalizationHists900GeV.root", "READ");
+  //TFile f("/home/canute/ALICE/FMDanalysis/BackgroundCorrection/normalizationHists.root", "READ");
+  TH2D* hnorm = 0 ;
+  if(trig == "INEL") hnorm = (TH2D*)f.Get("hInelNormalization");
+  if(trig == "NSD") hnorm = (TH2D*)f.Get("hNSDNormalization");
+  task->SetShapeCorrection(hnorm);*/
   mgr->AddTask(task);
 
   // create containers for input/output

@@ -14,7 +14,7 @@
  * @ingroup pwg2_forward_scripts
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc)
+AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
 {
   gSystem->Load("libPWG2forward2");
 
@@ -23,11 +23,14 @@ AddTaskFMDELoss(Bool_t mc)
     Error("AddTaskFMD", "No analysis manager to connect to.");
     return NULL;
   }   
-
+  
   // --- Make the task and add it to the manager ---------------------
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
+  task->SetBLow(blow);
+  task->SetBLow(bhigh);
   mgr->AddTask(task);
-   // --- Set parameters on the algorithms ----------------------------
+  
+  // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
   task->GetEventInspector().SetLowFluxCut(1000); 

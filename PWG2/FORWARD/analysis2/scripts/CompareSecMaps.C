@@ -50,7 +50,7 @@ CompareSecMaps(const char* fn1,   const char* fn2,
 	TVirtualPad* p = c->cd(v);
 	
 	TH2* h1 = obj1->GetCorrection(d, r, v);
-	TH2* h2 = obj1->GetCorrection(d, r, v);
+	TH2* h2 = obj2->GetCorrection(d, r, v);
   
 	if (!h1) { 
 	  Error("CompareSecMaps", 

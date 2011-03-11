@@ -929,7 +929,7 @@ struct dNdetaDrawer
     TH1* tmp = static_cast<TH1*>(h->Clone("tmp"));
     tmp->Rebin(fRebin);
     tmp->SetDirectory(0);
-
+    tmp->Reset();
     // The new number of bins 
     Int_t nBinsNew = nBins / fRebin;
     for(Int_t i = 1;i<= nBinsNew; i++) {
@@ -961,7 +961,7 @@ struct dNdetaDrawer
 	nbins++;
       }
       
-      if(content > 0 && nbins > 0) {
+      if(content > 0 && nbins > 1 ) {
 	tmp->SetBinContent(i, wsum / sumw);
 	tmp->SetBinError(i,1./TMath::Sqrt(sumw));
       }

@@ -12,7 +12,8 @@
 void MakeELossFits(const char* esddir, 
 		   Int_t       nEvents=1000, 
 		   Int_t       proof=0,
-		   Bool_t      mc=false)
+		   Bool_t      mc=false,
+		   Bool_t      cent=false)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
@@ -57,10 +58,17 @@ void MakeELossFits(const char* esddir,
 
   // --- Add tasks ---------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+  AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
+  
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  AddTaskCentrality();
+  
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
   mgr->AddTask(task);
-
+  
+ 
+  
+  
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer* histOut = 
