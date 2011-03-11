@@ -29,6 +29,7 @@
 #include "AliFemtoChi2CorrFctn.h"
 #include "AliFemtoCorrFctnTPCNcls.h"
 #include "AliFemtoModelBPLCMSCorrFctn.h"
+#include "AliFemtoModelCorrFctn3DLCMSSym.h"
 #include "AliFemtoModelCorrFctn3DSpherical.h"
 #include "AliFemtoModelGausLCMSFreezeOutGenerator.h"
 #include "AliFemtoModelGausRinvFreezeOutGenerator.h"
@@ -156,6 +157,9 @@ AliFemtoManager* ConfigFemtoAnalysis(int doESD=1, int iCollision=1, int iCent=0)
     AliFemtoCorrFctnTPCNcls *cqtpcnclspipstd = new AliFemtoCorrFctnTPCNcls("cqtpcnclspipstd",40,0.0,0.4);
     anpipstd->AddCorrFctn(cqtpcnclspipstd);
 
+    AliFemtoCorrFctn3DLCMSSym *cq3dlcmspipstd = new AliFemtoCorrFctn3DLCMSSym("cq3dlcmspipstd",60,0.3);
+    anpipstd->AddCorrFctn(cq3dlcmspipstd);
+
     Manager->AddAnalysis(anpipstd);	
   }
   // *** End pion-pion (positive) analysis
@@ -218,6 +222,9 @@ AliFemtoManager* ConfigFemtoAnalysis(int doESD=1, int iCollision=1, int iCent=0)
 
     AliFemtoCorrFctnTPCNcls *cqtpcnclspimstd = new AliFemtoCorrFctnTPCNcls("cqtpcnclspimstd",40,0.0,0.4);
     anpimstd->AddCorrFctn(cqtpcnclspimstd);
+
+    AliFemtoCorrFctn3DLCMSSym *cq3dlcmspimstd = new AliFemtoCorrFctn3DLCMSSym("cq3dlcmspimstd",60,0.3);
+    anpimstd->AddCorrFctn(cq3dlcmspimstd);
 
     Manager->AddAnalysis(anpimstd);	
   }
@@ -384,7 +391,7 @@ AliFemtoManager* ConfigFemtoAnalysis(int doESD=1, int iCollision=1, int iCent=0)
     dtcpiptpc->SetRemoveKinks(kTRUE);
     dtcpiptpc->SetLabel(kFALSE);
 //     dtcpiptpc->SetMaxITSChiNdof(6.0);
-//     dtcpiptpc->SetMaxTPCChiNdof(6.0);
+    dtcpiptpc->SetMaxTPCChiNdof(4.0);
 //     dtcpiptpc->SetMaxImpactXY(3.0);
 //     dtcpiptpc->SetMaxImpactZ(3.0);
 
