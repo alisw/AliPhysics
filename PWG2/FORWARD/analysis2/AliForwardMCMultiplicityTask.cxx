@@ -185,7 +185,7 @@ AliForwardMCMultiplicityTask::InitializeSubs()
   fEventInspector.Init(*pv);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
-  fHistCollector.Init(*pv);
+  fHistCollector.Init(*pv,*pe);
 
   this->Print();
 }
@@ -227,6 +227,7 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   fSharingFilter.DefineOutput(fList);
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
+  fHistCollector.DefineOutput(fList);
 
   PostData(1, fList);
 }

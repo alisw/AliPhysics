@@ -240,6 +240,50 @@ AliFMDCorrector::Correct(AliForwardUtil::Histos& hists,
 	  }
 	}
       }
+      //HHD
+      /*
+      TH2D*  bg = fcm.GetSecondaryMap()->GetCorrection(d, r, uvb);
+      TH2D   hRing("hring","hring",bg->GetNbinsX(),
+		   bg->GetXaxis()->GetXmin(),
+		   bg->GetXaxis()->GetXmax(),
+		   bg->GetNbinsY(),
+		   bg->GetYaxis()->GetXmin(),
+		   bg->GetYaxis()->GetXmax());
+      
+      Int_t edgebin[4] = {0,0,0,0};
+      for(Int_t ii = 1; ii <=bg->GetNbinsX(); ii++) {
+	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
+	  Float_t bgcor = bg->GetBinContent(ii,jj);
+	  if(bgcor<0.1) continue;
+	  if(edgebin[0] == 0) edgebin[0] = ii;
+	  if(edgebin[0] == ii) continue;
+	  if(edgebin[0] > 0 && edgebin[1] == 0) edgebin[1] = ii;
+	  if(edgebin[0]>0 && edgebin[1]>0) break; 
+	}
+      }
+      for(Int_t ii = bg->GetNbinsX(); ii >= 1;  ii--) {
+	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
+	  Float_t bgcor = bg->GetBinContent(ii,jj);
+	  if(bgcor<0.1) continue;
+	  if(edgebin[2] == 0) edgebin[2] = ii;
+	  if(edgebin[2] == ii) continue;
+	  if(edgebin[2] > 0 && edgebin[3] == 0) edgebin[3] = ii;
+	  if(edgebin[2]>0 && edgebin[3]>0) break; 
+	}
+      }
+      for(Int_t ii = 1; ii <=bg->GetNbinsX(); ii++) {
+	for(Int_t jj = 1; jj <=bg->GetNbinsY(); jj++) {
+	  Float_t data = h->GetBinContent(ii,jj);
+	  if(data <0.000001) continue;
+	  if(edgebin[0] == ii || edgebin[1] == ii || edgebin[2] == ii || edgebin[3] == ii) continue;
+	  hRing.SetBinContent(ii,jj,data);
+	  hRing.SetBinError(ii,jj,h->GetBinError(ii,jj));
+	}
+      }
+      
+      //std::cout<<edgebin[0]<<"  "<<edgebin[1]<<"  "<<edgebin[2]<<"   "<<edgebin[3]<<std::endl;
+      */
+      
       rh->fDensity->Add(h);
     }
   }
@@ -404,8 +448,8 @@ AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
   TList* l = GetOutputList(dir);
   if (!l) return; 
 
-  TH1* density = GetOutputHist(l,Form("%s_Primary_Density", fName.Data()));
-  if (density) density->Scale(1./nEvents);
+  //TH1* density = GetOutputHist(l,Form("%s_Primary_Density", fName.Data()));
+  //if (density) density->Scale(1./nEvents);
 }
 
 //____________________________________________________________________
