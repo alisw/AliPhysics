@@ -649,9 +649,9 @@ void AliPIPEvTemp::CreateGeometry()
     gMC->Gspos("QIPM",1,"ALIC",0,0,-385,idrotm[2013], "ONLY");
     
 
-    gMC->Gsatt("QIPM", "SEEN", 0);
-    gMC->Gsatt("QBPM", "SEEN", 0);
-    gMC->Gsatt("QBEM", "SEEN", 0);
+    gGeoManager->SetVolumeAttribute("QIPM", "SEEN", 0);
+    gGeoManager->SetVolumeAttribute("QBPM", "SEEN", 0);
+    gGeoManager->SetVolumeAttribute("QBEM", "SEEN", 0);
 }
 
  
@@ -821,14 +821,14 @@ void AliPIPEvTemp::Undulation(char *undul, Float_t pitch, Float_t thick,
   gMC->Gsvolu(cone[5], "CONE", idtmed[2018], dcone6, 5);
   gMC->Gsvolu(cone[6], "CONE", idtmed[2018], dcone7, 5);
   gMC->Gsvolu(cone[7], "CONE", idtmed[2018], dcone8, 5);
-  gMC->Gsatt(cone[0], "SEEN", 0);
-  gMC->Gsatt(cone[1], "SEEN", 0);
-  gMC->Gsatt(cone[2], "SEEN", 0);
-  gMC->Gsatt(cone[3], "SEEN", 0);
-  gMC->Gsatt(cone[4], "SEEN", 0);
-  gMC->Gsatt(cone[5], "SEEN", 0);
-  gMC->Gsatt(cone[6], "SEEN", 0);
-  gMC->Gsatt(cone[7], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[0], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[1], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[2], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[3], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[4], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[5], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[6], "SEEN", 0);
+  gGeoManager->SetVolumeAttribute(cone[7], "SEEN", 0);
 
   // DEFINE AN IMAGINARY TUBE VOLUME FOR UNDULATED CHAMBER, FILL WITH VACUUM
 

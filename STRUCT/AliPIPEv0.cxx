@@ -23,6 +23,7 @@
 
 #include <Riostream.h>
 
+#include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TSystem.h>
 #include <TVirtualMC.h>
@@ -360,7 +361,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[2] =   hlenQb28;    
 
     gMC->Gsvolu("QA28","TUBE", idtmed[kAirHigh], ptube, 3);
-    gMC->Gsatt("QA28", "SEEN", 0);
+    gGeoManager->SetVolumeAttribute("QA28", "SEEN", 0);
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
 //  This section is under study (A.M. 1/2/2002)
@@ -704,8 +705,8 @@ void AliPIPEv0::CreateGeometry()
     gMC->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
     gMC->Gspos("QI35", 1, "QBPM", 0.0, -24.35, zPump,idrotm[2002], "ONLY");
 
-    gMC->Gsatt("QBPM", "SEEN", 1);
-    gMC->Gsatt("QBEM", "SEEN", 1);
+    gGeoManager->SetVolumeAttribute("QBPM", "SEEN", 1);
+    gGeoManager->SetVolumeAttribute("QBEM", "SEEN", 1);
 }
 
 

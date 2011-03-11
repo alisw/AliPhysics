@@ -34,6 +34,7 @@
 //                                                                           //
 //                                                                           //
 
+#include <TGeoManager.h>
 #include <TGeoGlobalMagField.h>
 #include <TGeoVolume.h>
 #include <TVirtualMC.h>
@@ -615,7 +616,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
   
   AliMatrix(idrotm[1811], 270., 0., 90., 90., 180., 0.);
   gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., idrotm[1811], "ONLY");
-  gMC->Gsatt("DDIP", "SEEN", 0);
+  gGeoManager->SetVolumeAttribute("DDIP", "SEEN", 0);
 }
 
 
