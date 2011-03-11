@@ -77,8 +77,8 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   void RealignITSVolIndependent(Int_t iter1,Int_t iterations,Int_t minNtracks,Int_t layer=0,Int_t minTrackPoint=6);
   void RealignITStracks(TString minimizer,Int_t fit,Int_t iter1,Int_t iterations,Int_t minNtracks,Int_t layer,Int_t minTrackPoint,Bool_t covUsed,TString misalignmentFile,TString startingfile,Int_t doGlobal);
   Bool_t AlignVolumesITS(const TArrayI *volids, const TArrayI *volidsfit,AliGeomManager::ELayerID layerRangeMin,AliGeomManager::ELayerID layerRangeMax,Int_t iterations);
-  Bool_t FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,TArrayI *volidsSet=0x0);
-  Bool_t FirstAlignmentLayers(const Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,TArrayI *volidsSet=0x0);
+  Bool_t FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,const TArrayI *volidsSet=0x0);
+  Bool_t FirstAlignmentLayers(const Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall=kTRUE,const TArrayI *volidsSet=0x0);
   Bool_t SPDmodulesAlignToSSD(Int_t minNtracks,Int_t iterations);
   Bool_t AlignSPDBarrel(Int_t iterations);
   Bool_t AlignSPDHalfBarrel(Int_t method,Int_t iterations);
@@ -88,14 +88,14 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   Bool_t AlignLayerToSector(Int_t layer,Int_t sector,Int_t iterations);
   Bool_t AlignSPDSectorToOuterLayers(Int_t sector,Int_t iterations);
   Bool_t AlignSPDSectorWithSectors(Int_t sector,Int_t iterations);
-  Bool_t AlignSPDSectorsWithSectors(Int_t *sectorIN,Int_t *sectorFit,Int_t iterations);
-  Bool_t AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations);
+  Bool_t AlignSPDSectorsWithSectors(const Int_t *sectorIN,const Int_t *sectorFit,Int_t iterations);
+  Bool_t AlignSPDStaves(const Int_t *staves,const Int_t *sectorsIN,const Int_t *sectorsFit,Int_t iterations);
   Bool_t AlignSPDHalfBarrelToHalfBarrel(Int_t updown,Int_t iterations); 
   Bool_t AlignSPDHalfBarrelToSectorRef(Int_t sector,Int_t iterations);
   Bool_t AlignSPD1SectorRef(Int_t sector,Int_t iterations);
   //masera  void AlignGlobalToSectRef(Int_t sector,Int_t minNtracks=100);
   TArrayI* GetLayersVolUID(const Int_t *layer);
-  AliAlignObjParams* MediateAlignObj(TArrayI *volIDs,Int_t lastVolid);
+  AliAlignObjParams* MediateAlignObj(const TArrayI *volIDs,Int_t lastVolid);
   TArrayI* GetSPDSectorsVolids(const Int_t *sectors); 
   TArrayI* GetSPDStavesVolids(const Int_t *sectors,const Int_t* staves);
   TArrayI* SelectLayerInVolids(const TArrayI *volidsIN,AliGeomManager::ELayerID layer);
@@ -128,18 +128,18 @@ class AliITSRealignTracks: public AliAlignmentTracks {
   AliAlignObj  ***fAlignDrawObjs; //Array with reference objects for histograms
   TCanvas              *fCanvPar; //Canvas with iterations distributions
   TCanvas               *fCanvGr; //Canvas with iterations results
-  TGraph           *fgrIterMeanX; //
-  TGraph           *fgrIterRMSX;  //
-  TGraph           *fgrIterMeanY; //
-  TGraph           *fgrIterRMSY;  //
-  TGraph           *fgrIterMeanZ; //
-  TGraph           *fgrIterRMSZ;  //        TGraphs for displaying results during iterations
-  TGraph           *fgrIterMeanPsi; //
-  TGraph           *fgrIterRMSPsi;  //
-  TGraph           *fgrIterMeanTheta; //
-  TGraph           *fgrIterRMSTheta;  //
-  TGraph           *fgrIterMeanPhi; //
-  TGraph           *fgrIterRMSPhi;  //
+  TGraph           *fgrIterMeanX; // graph of Delta X
+  TGraph           *fgrIterRMSX;  // graph of RMS X
+  TGraph           *fgrIterMeanY; // graph of Delta Y
+  TGraph           *fgrIterRMSY;  // graph of RMS Y
+  TGraph           *fgrIterMeanZ; // graph of DeltaZ
+  TGraph           *fgrIterRMSZ;  // TGraphs for displaying results during iterations
+  TGraph           *fgrIterMeanPsi; // graphs during iterations
+  TGraph           *fgrIterRMSPsi;  // graphs during iterations
+  TGraph           *fgrIterMeanTheta; // graphs during iterations
+  TGraph           *fgrIterRMSTheta;  // graphs during iterations
+  TGraph           *fgrIterMeanPhi; // graphs during iterations
+  TGraph           *fgrIterRMSPhi;  // graphs during iterations
 
   ClassDef(AliITSRealignTracks,3)
     

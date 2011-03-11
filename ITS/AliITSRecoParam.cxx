@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include "AliITSRecoParam.h"
+#include "AliESDV0Params.h"
 #include "AliLog.h"
 
 /* $Id$ */

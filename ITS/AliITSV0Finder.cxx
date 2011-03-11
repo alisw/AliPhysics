@@ -32,6 +32,7 @@
 #include "AliESDVertex.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
+#include "AliESDV0Params.h"
 #include "AliV0.h"
 #include "AliHelix.h"
 #include "AliITSRecPoint.h"

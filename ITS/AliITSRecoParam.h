@@ -15,7 +15,9 @@
 
 #include "AliDetectorRecoParam.h"
 #include "AliITSgeomTGeo.h"
-#include "AliESDV0Params.h"
+//#include "AliESDV0Params.h"
+
+class AliESDV0Params;
 
 class AliITSRecoParam : public AliDetectorRecoParam
 {

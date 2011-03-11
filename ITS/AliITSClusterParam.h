@@ -13,9 +13,9 @@
 
 
 #include <TObject.h>
-#include "AliITSRecPoint.h"
+//#include "AliITSRecPoint.h"
 
-//class TTree;
+class AliITSRecPoint;
 
 //_____________________________________________________________________________
 class AliITSClusterParam : public TObject {

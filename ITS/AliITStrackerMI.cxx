@@ -39,6 +39,7 @@
 #include "AliITSPlaneEff.h"
 #include "AliTrackPointArray.h"
 #include "AliESDEvent.h"
+#include "AliESDV0Params.h"
 #include "AliESDtrack.h"
 #include "AliV0.h"
 #include "AliITSChannelStatus.h"

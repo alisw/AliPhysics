@@ -196,26 +196,26 @@ class AliITSMisAligner : public AliMisAligner{
 	static const Int_t  fgkNDetectors[kNLayers];// Array of the number of detector/ladder(layer)
 
 	// Parameters setting the misalignment at all SPD/SDD/SSD levels
-	Double_t fWholeITS[6];
-	Double_t fSPDSector[6];
-	Double_t fSPDHB[6];
-	Double_t fSPDBarrel[6];
-	Double_t fSPDHS[6];
-	Double_t fSPDLadder[6];
-	Double_t fSDDLayer[6];
-	Double_t fSDDBarrel[6];
-	Double_t fSDDLadder[6];
-	Double_t fSDDModule[6];
-	Double_t fSSDBarrel[6];
-	Double_t fSSDLayer[6];
-	Double_t fSSDLadder[6];
-	Double_t fSSDModule[6];
+	Double_t fWholeITS[6];   // parameters for the whole TIS
+	Double_t fSPDSector[6];  // sectors
+	Double_t fSPDHB[6];      // SPD half barrel
+	Double_t fSPDBarrel[6];  // SPD barrel
+	Double_t fSPDHS[6];      // SPD half stave
+	Double_t fSPDLadder[6];  // SPD ladder
+	Double_t fSDDLayer[6];   // SPD layer
+	Double_t fSDDBarrel[6];  // SDD barrel
+	Double_t fSDDLadder[6];  // SDD ladder
+	Double_t fSDDModule[6];  // SDD module
+	Double_t fSSDBarrel[6];  // SSD barrel
+	Double_t fSSDLayer[6];   // SSD layer
+	Double_t fSSDLadder[6];  // SSD ladder
+	Double_t fSSDModule[6];  // SSD module
 
 	// Parameters setting common shifts (used for "full" misalignment)
 	Double_t fSPDLadderShiftT[6]; // for top half-barrel ladders
 	Double_t fSPDLadderShiftB[6]; // for bottom half-barrel ladders
-	Double_t fSDDLadderShift1[6];
-	Double_t fSDDLadderShift2[6];
+	Double_t fSDDLadderShift1[6]; // for ladder first SDD layer
+	Double_t fSDDLadderShift2[6]; // for ladder second SDD layer
 
 	// Choice between uniform (kTRUE) or gaussian (kFALSE) distribution in the smearing
 	Bool_t fUnifSPDSector, fUnifSPDHS, fUnifSDDLadder, fUnifSSDLadder, fUnifSPDLadder, fUnifSDDModule, fUnifSSDModule;

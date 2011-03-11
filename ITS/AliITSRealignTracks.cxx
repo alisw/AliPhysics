@@ -836,7 +836,7 @@ Bool_t AliITSRealignTracks::ReadAlignObjs(const char *alignObjFileName, const ch
 }
 
 //_________________________________________
-Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
+Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minNtracks,Int_t iterations,Bool_t fitall,const TArrayI *volidsSet){
 
   //Align all modules in the set of layers independently according to a sequence based on the number of tracks passing through a given module
   
@@ -952,7 +952,7 @@ Bool_t AliITSRealignTracks::FirstAlignmentLayers(const Bool_t *layers,Int_t minN
 }
 
 //__________________________________________
-Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall,TArrayI *volidsSet){
+Bool_t AliITSRealignTracks::FirstAlignmentSPD(Int_t minNtracks,Int_t iterations,Bool_t fitall,const TArrayI *volidsSet){
 
   //OBSOLETE METHOD: perform a stand-alone realignment of the SPD modules
   //                 based on a sequence constructed accordingly to the number of tracks
@@ -1551,7 +1551,7 @@ Bool_t AliITSRealignTracks::AlignSPDSectorWithSectors(Int_t sector,Int_t iterati
 
 
 //___________________________________________________
-Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations){
+Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(const Int_t *sectorsIN,const Int_t *sectorsFit,Int_t iterations){
   //Align SPD sectors defined in "sectorsIN" with respect to 
   //SPD sectors defined in "sectorsFit" iterations time
 
@@ -1567,7 +1567,7 @@ Bool_t AliITSRealignTracks::AlignSPDSectorsWithSectors(Int_t *sectorsIN,Int_t *s
 }
 
 //___________________________________________________
-Bool_t AliITSRealignTracks::AlignSPDStaves(Int_t *staves,Int_t *sectorsIN,Int_t *sectorsFit,Int_t iterations){
+Bool_t AliITSRealignTracks::AlignSPDStaves(const Int_t *staves,const Int_t *sectorsIN,const Int_t *sectorsFit,Int_t iterations){
   //Align SPD staves defined by staves and sectorsIN with respect to sectorsFit volumes iterations times
 
   TArrayI *volIDs=GetSPDStavesVolids(sectorsIN,staves);
@@ -1744,7 +1744,7 @@ Bool_t AliITSRealignTracks::AlignSPD1SectorRef(Int_t sector,Int_t iterations){
 
 //_____________________________________________
 
-AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(TArrayI *volIDs,Int_t lastVolid){
+AliAlignObjParams* AliITSRealignTracks::MediateAlignObj(const TArrayI *volIDs,Int_t lastVolid){
   //TEMPORARY METHOD: perform an average of the values of the parameters of the AlignObjs 
   // defined by the array volIDs up to lastVolid position in this array
   //The aim of such a method is to look for collective movement of a given set of modules
