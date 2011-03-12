@@ -1,4 +1,5 @@
 Int_t AddD2HTrain(Bool_t readMC=kTRUE,
+                  Int_t addQA=1,
 		  Int_t addD0Mass=1,
 		  Int_t addD0MassLS=1,
 		  Int_t addDplus=1,
@@ -29,6 +30,14 @@ Int_t AddD2HTrain(Bool_t readMC=kTRUE,
   //gROOT->LoadMacro(taskName.Data());
   //AliAnalysisTaskSECompareHF *cmpTask = AddTaskCompareHF();
   
+  if(addQA) {
+    taskName="AddTaskHFQA.C"; taskName.Prepend(loadMacroPath.Data());
+    gROOT->LoadMacro(taskName.Data());
+    AliAnalysisTaskSEHFQA *taskQAHF = AddTaskHFQA(AliAnalysisTaskSEHFQA::kD0toKpi,"",readMC,kTRUE);
+    ntasks++;
+  }
+
+
   if(addD0Mass || addD0MassLS) {
     taskName="AddTaskD0Mass.C"; taskName.Prepend(loadMacroPath.Data());
     gROOT->LoadMacro(taskName.Data());
