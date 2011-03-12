@@ -980,7 +980,7 @@ int AliHLTMUONHitReconstructorComponent::ReadLookUpTable(const char* lutFileName
 		}
 		
 		int result = sscanf(
-			str.c_str(), "%d\t%d\t%d\t%d\t%e\t%e\t%e\t%e\t%d\t%e\t%e\t%e\t%e\t%d\t%d",
+			str.c_str(), "%14d\t%14d\t%14d\t%14d\t%23e\t%23e\t%23e\t%23e\t%14d\t%23e\t%23e\t%23e\t%23e\t%14d\t%14d",
 			&idManuChannel, &fLut[i].fDetElemId, &fLut[i].fIX,
 			&fLut[i].fIY, &fLut[i].fRealX,
 			&fLut[i].fRealY, &fLut[i].fRealZ,
