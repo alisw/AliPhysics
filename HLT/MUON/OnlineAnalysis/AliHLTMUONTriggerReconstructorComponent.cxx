@@ -1116,6 +1116,16 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 	/// @return  True if the generation of the LUT file succeeded.
 	
 	AliHLTMUONTriggerReconstructorComponent comp;
+	try
+	{
+		// Perform minimal initialisation to be able to fill the LUT buffer.
+		comp.fTrigRec = new AliHLTMUONTriggerReconstructor();
+	}
+	catch (const std::bad_alloc&)
+	{
+		std::cerr << "ERROR: Could not allocate more memory for the trigger reconstructor component." << std::endl;
+		return false;
+	}
 	
 	if (ddl < 20 or 21 < ddl)
 	{
@@ -1123,23 +1133,10 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 		return false;
 	}
 	
-	char ddlNum[32];
-	char runNum[32];
-	sprintf(ddlNum, "%d", ddl+1);
-	sprintf(runNum, "%d", run);
-	int argc = 7;
-	const char* argv[8] = {"-ddl", ddlNum, "-cdbpath", cdbPath, "-run", runNum, "-dont_use_crateid", NULL};
-	if (useCrateId)
-	{
-		argv[6] = NULL;
-		argc--;
-	}
-	int result = comp.DoInit(argc, argv);
-	if (result != 0)
-	{
-		// Error message already generated in DoInit.
-		return false;
-	}
+	comp.fDDL = ddl;
+	comp.fUseCrateId = useCrateId;
+	if (comp.SetCDBPathAndRunNo(cdbPath, run) != 0) return false;
+	if (comp.ReadLutFromCDB() != 0) return false;
 	
 	std::fstream file(filename, std::ios::out);
 	if (not file)
@@ -1158,8 +1155,6 @@ bool AliHLTMUONTriggerReconstructorComponent::GenerateLookupTable(
 		return false;
 	}
 	file.close();
-	
-	comp.DoDeinit();
 	
 	return true;
 }
