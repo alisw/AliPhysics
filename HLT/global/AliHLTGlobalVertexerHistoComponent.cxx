@@ -284,20 +284,24 @@ int AliHLTGlobalVertexerHistoComponent::DoEvent(const AliHLTComponentEventData& 
   const AliESDVertex *vertexGlobal = 0;
 
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS); iter != NULL; iter = GetNextInputObject() ) {
-    if( !( vertexITS = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){    
-      HLTError("ITS SPD vertex object is corrupted");
-      iResult = -EINVAL;    
+  {
+    const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS);
+    if( iter != NULL  ) {
+      if( !( vertexITS = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){    
+	HLTError("ITS SPD vertex object is corrupted");
+	iResult = -EINVAL;    
+      }
     }
-    break;
   }
 
-  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut); iter != NULL; iter = GetNextInputObject() ) {
-    if( !( vertexGlobal = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){
-      HLTError("Global vertex object is corrupted");
-      iResult = -EINVAL;    
+  {
+    const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut);
+    if( iter != NULL ){
+      if( !( vertexGlobal = dynamic_cast<AliESDVertex*>(const_cast<TObject*>( iter ) ) ) ){
+	HLTError("Global vertex object is corrupted");
+	iResult = -EINVAL;    
+      }
     }
-    break;
   }
 
   if( !vertexITS || !vertexGlobal ){
