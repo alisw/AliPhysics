@@ -207,9 +207,9 @@ int AliHLTITSTrackerComponent::ReadCDBEntry( const char* cdbEntry, const char* c
 
   if ( !cdbEntry ) {
     return 0;// need to add the HLT/ConfigITS/ITSTracker directory to cdb SG!!!
-    cdbEntry = "HLT/ConfigITS/ITSTracker";
-    defaultNotify = " (default)";
-    chainId = 0;
+    //cdbEntry = "HLT/ConfigITS/ITSTracker";
+    //defaultNotify = " (default)";
+    //chainId = 0;
   }
 
   HLTInfo( "configure from entry \"%s\"%s, chain id %s", cdbEntry, defaultNotify, ( chainId != NULL && chainId[0] != 0 ) ? chainId : "<none>" );
