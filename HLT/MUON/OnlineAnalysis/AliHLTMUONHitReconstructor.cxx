@@ -126,7 +126,7 @@ AliHLTMUONHitReconstructor::AliHLTMUONHitReconstructor() :
 	fPadData[0].fRealY = 0.0 ;
 	fPadData[0].fRealZ = 0.0 ;
 	fPadData[0].fHalfPadSize = 0.0 ;
-	fPadData[0].fPlane = -1 ;
+	fPadData[0].fPlane = 0 ;
 	fPadData[0].fCharge = 0 ;
 	fPadData[0].fBusPatch = -1;
 	fPadData[0].fRawData = 0 ;
@@ -1890,7 +1890,7 @@ void AliHLTMUONHitReconstructor::Clear()
     fPadData[iPad].fRealY = 0.0 ;
     fPadData[iPad].fRealZ = 0.0 ;
     fPadData[iPad].fHalfPadSize = -1 ;
-    fPadData[iPad].fPlane = -1 ;
+    fPadData[iPad].fPlane = 0 ;
     fPadData[iPad].fCharge = 0 ;
     fPadData[iPad].fBusPatch = -1;
     fPadData[iPad].fRawData = 0;
@@ -2050,14 +2050,14 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnData(UInt_t dataWord, b
   if(fPadCharge > 2.0*fkLookUpTableData[fLutEntry].fSigma){  // (charge > 4) is due cut out the noise level  			
       
     fPadData[fDataCount].fDetElemId = fkLookUpTableData[fLutEntry].fDetElemId;
-    fPadData[fDataCount].fIX = fkLookUpTableData[fLutEntry].fIX;
-    fPadData[fDataCount].fIY = fkLookUpTableData[fLutEntry].fIY;
+    fPadData[fDataCount].fIX = AliHLTInt32_t(AliHLTUInt32_t(fkLookUpTableData[fLutEntry].fIX) % 336);  // modulus protectes against overflow.
+    fPadData[fDataCount].fIY = AliHLTInt32_t(AliHLTUInt32_t(fkLookUpTableData[fLutEntry].fIY) % 237);  // modulus protectes against overflow.
     fPadData[fDataCount].fRealX = fkLookUpTableData[fLutEntry].fRealX;
     fPadData[fDataCount].fRealY = fkLookUpTableData[fLutEntry].fRealY;
     fPadData[fDataCount].fRealZ = fkLookUpTableData[fLutEntry].fRealZ;
     fPadData[fDataCount].fHalfPadSize = fkLookUpTableData[fLutEntry].fHalfPadSize;
     fPadData[fDataCount].fPadSizeXY = fkLookUpTableData[fLutEntry].fPadSizeXY;
-    fPadData[fDataCount].fPlane = fkLookUpTableData[fLutEntry].fPlane;
+    fPadData[fDataCount].fPlane = fkLookUpTableData[fLutEntry].fPlane & 0x1;  // The mask makes sure the plane value is within range.
     fPadData[fDataCount].fBusPatch = fBusPatchId;
     fPadData[fDataCount].fRawData = dataWord;
     
