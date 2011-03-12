@@ -68,7 +68,12 @@ AliHLTV0HistoComponent::AliHLTV0HistoComponent() :
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
+  for( int i=0; i<8; i++){
+    fGammaCuts[i] = 0;
+    fKsCuts[i] = 0;
+    fLambdaCuts[i] = 0;
+    fAPCuts[i] = 0;
+  }
 }
 
 AliHLTV0HistoComponent::~AliHLTV0HistoComponent()
