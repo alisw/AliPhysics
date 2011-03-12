@@ -132,6 +132,11 @@ private:
 	void MakeHOMERConnection();
 	
 	/**
+	 * Initialises the luminosity buffer with values indicating an invalid data point.
+	 */
+	void InitLumiRegionAsInvalid(AliLuminosityRegion& lumiRegion);
+	
+	/**
 	 * Fills the luminosity region structure.
 	 */
 	void SetLuminosityRegion(AliLuminosityRegion& lumiRegion);
@@ -342,7 +347,7 @@ int AliHLTDCSPublisherServer::Run()
 	
 	// Create and register the service.
 	AliLuminosityRegion lumiRegion;
-	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+	InitLumiRegionAsInvalid(lumiRegion);
 	AliHLTDimServer::AliHLTDimService* service = new AliHLTDimServer::AliHLTDimService("F:8", &lumiRegion, sizeof(lumiRegion), fVertexServiceName.Data());
 	if (dimServer.RegisterService(service) != 0)
 	{
@@ -388,13 +393,13 @@ int AliHLTDCSPublisherServer::Run()
 			}
 			else
 			{
-				memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+				InitLumiRegionAsInvalid(lumiRegion);
 				service->Update();
 			}
 		}
 		else
 		{
-			memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+			InitLumiRegionAsInvalid(lumiRegion);
 			service->Update();
 			gSystem->Sleep(10000);  // sleep for 10 seconds.
 		}
@@ -447,6 +452,22 @@ void AliHLTDCSPublisherServer::MakeHOMERConnection()
 			HLTInfo("Established new HOMER connection to %s:%d.", fHomerSource.Data(), int(fHomerPort));
 		}
 	}
+}
+
+
+void AliHLTDCSPublisherServer::InitLumiRegionAsInvalid(AliLuminosityRegion& lumiRegion)
+{
+	// Initialises the luminosity regions with values indicating an invalid data point.
+	
+	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+	lumiRegion.fX = -999.;
+	lumiRegion.fY = -999.;
+	lumiRegion.fZ = -999.;
+	lumiRegion.fSizeX = -999.;
+	lumiRegion.fSizeY = -999.;
+	lumiRegion.fSizeZ = -999.;
+	lumiRegion.fDxdz = -999.;
+	lumiRegion.fDydz = -999.;
 }
 
 
@@ -506,7 +527,7 @@ void AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegi
 	
 	// Now get the Mean and RMS values as the centroid and beam size values,
 	// Scale the values from centimetres to the required units of microns and mm.
-	memset(&lumiRegion, 0x0, sizeof(lumiRegion));
+	InitLumiRegionAsInvalid(lumiRegion);
 	if (hist[3] != NULL)
 	{
 		lumiRegion.fX = hist[3]->GetMean() * 1e4;
@@ -523,9 +544,9 @@ void AliHLTDCSPublisherServer::SetLuminosityRegion(AliLuminosityRegion& lumiRegi
 		lumiRegion.fSizeZ = hist[5]->GetRMS() * 10;
 	}
 	
-	//TODO: for now just fill zeros into the tilt angles since they are not yet calculated.
-	lumiRegion.fDxdz = 0;
-	lumiRegion.fDydz = 0;
+	//TODO: for now just fill -999 into the tilt angles since they are not yet calculated.
+	lumiRegion.fDxdz = -999.;
+	lumiRegion.fDydz = -999.;
 	
 	for (int j = 0; j < 6; ++j)
 	{
