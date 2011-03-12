@@ -1110,7 +1110,7 @@ void AliHistogramsUE::PlotBranchesUE(TString file, TString branches, Double_t mi
   TObject *o=0;
   Int_t br=0;
   while ( (o=next()) ){
-    br++;
+    if(o)br++;
   }
   
 
