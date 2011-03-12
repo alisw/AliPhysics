@@ -124,7 +124,8 @@ AliHLTITSTrack::AliHLTITSTrack(AliExternalTrackParam& t ) throw (const Char_t *)
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
   SetLabel(t.GetLabel());
   //SetMass(t.GetMass());
-  SetNumberOfClusters(0);
+  SetNumberOfClusters(0); 
+  for( int i=0; i<2*AliITSgeomTGeo::kNLayers; i++ ) fIndex[i] = 0;
 }
 
 
