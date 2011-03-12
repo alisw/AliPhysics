@@ -45,11 +45,24 @@ fI(0),
 fImax(0),
 fSkip(0),
 fAccepted(0),
-fRoad(0){
+fRoad(0)
+{
   //--------------------------------------------------------------------
   //default AliHLTITSLayer constructor
   //--------------------------------------------------------------------
+  for (Int_t i=0;i<6;i++)  fN5[i] =0;  
+  for (Int_t i=0;i<11;i++) fN10[i]=0;  
+  for (Int_t i=0;i<21;i++) fN20[i]=0;
+  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+    fClusters[i] = 0;
+    fClusterIndex[i] = 0;
+    fZ[i]        = 0;
+    fY[i] = 0;
+  }
+  fYB[0] = 0;
+  fYB[1] = 0;
 }
+
 //------------------------------------------------------------------------
 AliHLTITSLayer::
 AliHLTITSLayer(Double_t r,Double_t p,Double_t z,Int_t nl,Int_t nd):
@@ -76,13 +89,27 @@ fI(0),
 fImax(0),
 fSkip(0),
 fAccepted(0),
-fRoad(0) {
+fRoad(0) 
+{
   //--------------------------------------------------------------------
   //main AliHLTITSLayer constructor
   //--------------------------------------------------------------------
   fDetectors=new AliHLTITSDetector[fNladders*fNdetectors];
   fRoad=2*fR*TMath::Sqrt(TMath::Pi()/1.);//assuming that there's only one cluster
+
+  for (Int_t i=0;i<6;i++)  fN5[i] =0;  
+  for (Int_t i=0;i<11;i++) fN10[i]=0;  
+  for (Int_t i=0;i<21;i++) fN20[i]=0;
+  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+    fClusters[i] = 0;
+    fClusterIndex[i] = 0;
+    fZ[i]        = 0;
+    fY[i] = 0;
+  }
+  fYB[0] = 0;
+  fYB[1] = 0;
 }
+
 //------------------------------------------------------------------------
 AliHLTITSLayer::AliHLTITSLayer(const AliHLTITSLayer& layer):
 fR(layer.fR),
@@ -108,9 +135,22 @@ fI(layer.fI),
 fImax(layer.fImax),
 fSkip(layer.fSkip),
 fAccepted(layer.fAccepted),
-fRoad(layer.fRoad){
+fRoad(layer.fRoad)
+{
   //Copy constructor
+  for (Int_t i=0;i<6;i++)  fN5[i] =0;  
+  for (Int_t i=0;i<11;i++) fN10[i]=0;  
+  for (Int_t i=0;i<21;i++) fN20[i]=0;
+  for (Int_t i=0;i<AliITSRecoParam::fgkMaxClusterPerLayer;i++){
+    fClusters[i] = 0;
+    fClusterIndex[i] = 0;
+    fZ[i]        = 0;
+    fY[i] = 0;
+  }
+  fYB[0] = 0;
+  fYB[1] = 0;
 }
+
 //------------------------------------------------------------------------
 AliHLTITSLayer::~AliHLTITSLayer() {
   //--------------------------------------------------------------------
