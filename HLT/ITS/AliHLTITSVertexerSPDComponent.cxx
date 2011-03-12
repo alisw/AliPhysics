@@ -93,6 +93,13 @@ AliHLTITSVertexerSPDComponent::AliHLTITSVertexerSPDComponent( const AliHLTITSVer
     fNZBins(0)
 {
   // see header file for class documentation
+
+  for( int i=0; i<9; i++ ) fSum[i] = 0;
+
+  fRunVtx[0] = 0;
+  fRunVtx[1] = 0;
+  fRunVtx[2] = 0;
+
   HLTFatal( "copy constructor untested" );
 }
 
@@ -242,9 +249,9 @@ int AliHLTITSVertexerSPDComponent::ReadCDBEntry( const char* cdbEntry, const cha
 
   if ( !cdbEntry ) {
     return 0;// need to add the HLT/ConfigITS/ITSTracker directory to cdb SG!!!
-    cdbEntry = "HLT/ConfigITS/ITSTracker";
-    defaultNotify = " (default)";
-    chainId = 0;
+    //cdbEntry = "HLT/ConfigITS/ITSTracker";
+    //defaultNotify = " (default)";
+    //chainId = 0;
   }
 
   HLTInfo( "configure from entry \"%s\"%s, chain id %s", cdbEntry, defaultNotify, ( chainId != NULL && chainId[0] != 0 ) ? chainId : "<none>" );
