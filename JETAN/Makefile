@@ -10,7 +10,7 @@ DHDR     = $(PACKAGE)LinkDef.h
 ALICEINC      = -I.
 
 ### define include dir for local case and par case
-ifneq ($(OADB_INCLUDe),)
+ifneq ($(OADB_INCLUDE),)
    ALICEINC += -I../$(OADB_INCLUDE)
 endif
 ifneq ($(EMCALUtils_INCLUDE),)
