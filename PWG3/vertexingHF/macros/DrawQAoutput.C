@@ -376,6 +376,7 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
   gStyle->SetCanvasColor(0);
   gStyle->SetTitleFillColor(0);
   gStyle->SetStatColor(0);
+  gStyle->SetPalette(1);
 
   TString listname="outputCentrCheck";
 
@@ -394,6 +395,12 @@ void DrawProjections(TString partname="D0",TString h2dname="hMultvsPercentile",I
     cout<<h2dname.Data()<<" not found"<<endl;
     return;
   }
+  TCanvas* cv2d=new TCanvas("cv2d",h2->GetName());
+  cv2d->cd();
+  cv2d->SetLogz();
+  h2->Draw("colz");
+  cv2d->SaveAs(Form("%s.png",h2->GetName()));
+
   Int_t kbins=1;
   if(nsteps==0){
     if(direction=="X") nsteps=h2->GetNbinsY();
