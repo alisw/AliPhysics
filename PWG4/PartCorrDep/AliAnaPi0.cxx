@@ -1728,7 +1728,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
       }
       
       if (curCentrBin < 0 || curCentrBin >= fNCentrBin){ 
-        printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality bin <%d> not expected, n bins <%d> , return\n",curCentrBin,fNCentrBin);
+        if(GetDebug() > 0) 
+          printf("AliAnaPi0::MakeAnalysisFillHistograms() - Centrality bin <%d> not expected, n bins <%d> , return\n",curCentrBin,fNCentrBin);
         return;
       }
         
