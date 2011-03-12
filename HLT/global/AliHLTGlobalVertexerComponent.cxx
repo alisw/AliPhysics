@@ -418,7 +418,7 @@ int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char*
   // see header file for class documentation
 
   return 0; // no CDB path is set so far
-
+  /*
   int iResult=0;  
   const char* path="HLT/ConfigTPC/KryptonHistoComponent";
   const char* defaultNotify="";
@@ -443,6 +443,7 @@ int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char*
   }
 
   return iResult;
+*/
 }
 
 
