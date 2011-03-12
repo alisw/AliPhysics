@@ -51,6 +51,7 @@ AliHLTMUONRecHitsSource::AliHLTMUONRecHitsSource() :
 	fMCDataInterface(NULL),
 	fDataInterface(NULL),
 	fSelection(kWholePlane),
+	fServeChamber(),
 	fCurrentEventIndex(0)
 {
 	///
