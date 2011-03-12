@@ -73,7 +73,11 @@ AliHLTTPCdEdxComponent::AliHLTTPCdEdxComponent( const AliHLTTPCdEdxComponent& )
     fStatTime( 0 ),
     fStatNEvents( 0 )
 {
-  // see header file for class documentation
+  // dummy
+  for( int i=0; i<fkNPatches; i++ ){
+    fPatchClusters[i] = 0;    
+    fNPatchClusters[i] = 0;    
+  }
   HLTFatal( "copy constructor untested" );
 }
 
@@ -191,9 +195,9 @@ int AliHLTTPCdEdxComponent::ReadCDBEntry( const char* cdbEntry, const char* chai
 
   if ( !cdbEntry ) {
     return 0;// need to add the HLT/ConfigTPC/TPCdEdx directory to cdb SG!!!
-    cdbEntry = "HLT/ConfigTPC/TPCdEdx";
-    defaultNotify = " (default)";
-    chainId = 0;
+    //cdbEntry = "HLT/ConfigTPC/TPCdEdx";
+    //defaultNotify = " (default)";
+    //chainId = 0;
   }
 
   HLTInfo( "configure from entry \"%s\"%s, chain id %s", cdbEntry, defaultNotify, ( chainId != NULL && chainId[0] != 0 ) ? chainId : "<none>" );
@@ -233,25 +237,24 @@ int AliHLTTPCdEdxComponent::Configure( const char* cdbEntry, const char* chainId
 
   //* read magnetic field
 
-  int iResult2 = 0;//ReadCDBEntry( kAliHLTCDBSolenoidBz, chainId );
   fSolenoidBz=GetBz();
 
   //* read the actual CDB entry if required
 
-  int iResult3 = ( cdbEntry ) ? ReadCDBEntry( cdbEntry, chainId ) : 0;
+  int iResult2 = ( cdbEntry ) ? ReadCDBEntry( cdbEntry, chainId ) : 0;
 
   //* read extra parameters from input (if they are)
 
-  int iResult4 = 0;
+  int iResult3 = 0;
 
   if ( commandLine && commandLine[0] != '\0' ) {
     HLTInfo( "received configuration string from HLT framework: \"%s\"", commandLine );
-    iResult4 = ReadConfigurationString( commandLine );
+    iResult3 = ReadConfigurationString( commandLine );
   }
 
   // Initialise the tracker here
 
-  return iResult1 ? iResult1 : ( iResult2 ? iResult2 : ( iResult3 ? iResult3 : iResult4 ) );
+  return iResult1 ? iResult1 : ( iResult2 ? iResult2 : iResult3 );
 }
 
 
@@ -353,7 +356,7 @@ int AliHLTTPCdEdxComponent::DoEvent
     Int_t slice=AliHLTTPCDefinitions::GetMinSliceNr(iter->fSpecification);
     Int_t patch=AliHLTTPCDefinitions::GetMinPatchNr(iter->fSpecification);
     Int_t slicepatch=slice*6+patch;
-    if( slicepatch > fkNPatches ){
+    if( slicepatch >= fkNPatches ){
       HLTWarning("Wrong header of TPC cluster data, slice %d, patch %d",
 		 slice, patch );
       continue;
