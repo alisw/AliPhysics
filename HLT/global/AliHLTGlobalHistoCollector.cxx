@@ -173,7 +173,7 @@ int AliHLTGlobalHistoCollector::Configure(const char* arguments)
 }
 
 
-int AliHLTGlobalHistoCollector::Reconfigure(const char* cdbEntry, const char* chainId) { 
+int AliHLTGlobalHistoCollector::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/) { 
   // see header file for class documentation
   
   return 0; // no CDB entry exist
@@ -188,7 +188,7 @@ int AliHLTGlobalHistoCollector::Reconfigure(const char* cdbEntry, const char* ch
   
   if (path) {
     HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path);
     if (pEntry) {
       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
       if (pString) {

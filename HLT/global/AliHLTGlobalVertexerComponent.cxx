@@ -413,7 +413,7 @@ int AliHLTGlobalVertexerComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char* chainId)
+int AliHLTGlobalVertexerComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/)
 {
   // see header file for class documentation
 
@@ -428,7 +428,7 @@ int AliHLTGlobalVertexerComponent::Reconfigure(const char* cdbEntry, const char*
   }
   if (path) {
     HLTInfo("reconfigure from entry %s%s, chain id %s", path, defaultNotify,(chainId!=NULL && chainId[0]!=0)?chainId:"<none>");
-    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path/*,GetRunNo()*/);
+    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path);
     if (pEntry) {
       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
       if (pString) {
