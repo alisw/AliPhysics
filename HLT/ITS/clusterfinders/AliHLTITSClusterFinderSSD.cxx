@@ -374,6 +374,10 @@ FindClustersSSD(Ali1Dcluster* neg, Int_t nn,
   const TGeoHMatrix *mT2L=AliITSgeomTGeo::GetTracking2LocalMatrix(fModule);
 
   AliITSsegmentationSSD *seg = dynamic_cast<AliITSsegmentationSSD*>(fDetTypeRec->GetSegmentationModel(2));
+  if(!mT2L || !seg){
+     AliError(Form("HLT ClustersFinderSSD: null pointer from TGeo"));
+    return;
+  }
   if (fModule>fLastSSD1) 
     seg->SetLayer(6);
   else 
