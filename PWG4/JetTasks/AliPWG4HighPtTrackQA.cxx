@@ -418,8 +418,8 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
   }
 
   //Check if vertex is reconstructed
-  if(fDataType==kESD) {
-    fVtx = dynamic_cast<AliESDEvent*>(fEvent)->GetPrimaryVertexSPD();
+  if(fDataType==kESD&&dynamic_cast<AliESDEvent*>(fEvent)) {
+    fVtx = ((AliESDEvent*)fEvent)->GetPrimaryVertexSPD();
 
     if(!fVtx) {
       fNEventReject->Fill("noVTX",1);
@@ -449,8 +449,8 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
       return selectEvent;
     }
   }
-  else if(fDataType==kAOD) {
-    const AliAODVertex *vtx = dynamic_cast<AliAODEvent*>(fEvent)->GetPrimaryVertexSPD();
+  else if(fDataType==kAOD&&dynamic_cast<AliAODEvent*>(fEvent)) {
+    const AliAODVertex *vtx = ((AliAODEvent*)fEvent)->GetPrimaryVertexSPD();
     if(!vtx) {
       fNEventReject->Fill("noVTX",1);
       selectEvent = kFALSE;
@@ -519,10 +519,14 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev){
 //________________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
 
+
   Float_t cent = 999;
-  if(esd->GetCentrality()){
-    cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
-    if(fDebug>3) cout << "centrality: " << cent << endl;
+
+  if(esd){
+    if(esd->GetCentrality()){
+      cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+      if(fDebug>3) cout << "centrality: " << cent << endl;
+    }
   }
 
   if(cent>80)return 4;
@@ -536,6 +540,7 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
 //________________________________________________________________________
 Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliAODEvent *aod){
 
+  if(!aod)return 4;
   Float_t cent = aod->GetHeader()->GetCentrality();
   cout << "centrality: " << cent << endl;
   if(cent>80)return 4;
@@ -647,7 +652,6 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
       if(!track) {
 	fh1NTracksReject->Fill("noTPConly",1);
-	delete track;
 	continue;
       }
       AliExternalTrackParam exParam;
@@ -736,6 +740,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 
   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent);
+  if(!aod)return;
   for (Int_t iTrack = 0; iTrack < fEvent->GetNumberOfTracks(); iTrack++) {
 
     AliAODTrack *aodtrack = aod->GetTrack(iTrack);

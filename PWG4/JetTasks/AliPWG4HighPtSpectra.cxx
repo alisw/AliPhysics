@@ -315,13 +315,13 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     {   
       if(!fESD->GetTrack(iTrack) ) continue;
       AliESDtrack* track = fESD->GetTrack(iTrack);
-      AliESDtrack* trackTPCESD = fESD->GetTrack(iTrack);
+      if(!track)continue;
+      AliESDtrack* trackTPCESD = 0;
       if(fTrackType==0)
 	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
       else if(fTrackType==1) {
 	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
 	if(!trackTPCESD) {
-	  delete trackTPCESD;
 	  continue;
 	}
       AliExternalTrackParam exParam;

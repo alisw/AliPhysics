@@ -3279,7 +3279,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   if(fQAMode || fFFMode || fIJMode || fPhiCorrMode){
     for(Int_t ij=0; ij<nRecJetsCuts; ++ij){
       
-      AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(ij));
+      AliAODJet* jet = (AliAODJet*)(fJetsRecCuts->At(ij));
       if(fQAMode&2) fQAJetHistosRecCuts->FillJetQA( jet->Eta(), TVector2::Phi_0_2pi(jet->Phi()), jet->Pt());
       
       if(ij==0){ // leading jet
@@ -3349,7 +3349,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	// phi correlation
 	if(fPhiCorrMode){
 	  for(Int_t it=0; it<nRecPartCuts; ++it){
-	    AliVParticle *part = dynamic_cast<AliVParticle*>(fTracksRecCuts->At(it));
+	    AliVParticle *part = (AliVParticle*)(fTracksRecCuts->At(it));
 	    
 	    Float_t partEta = part->Eta();
 	    Float_t partPhi = part->Phi();
@@ -3433,8 +3433,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   if(fDJMode){
     if (nRecJetsCuts > 1) 
       {
-	AliAODJet* jet1 = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(0));
-	AliAODJet* jet2 = dynamic_cast<AliAODJet*>(fJetsRecCuts->At(1));
+	AliAODJet* jet1 = (AliAODJet*)(fJetsRecCuts->At(0));
+	AliAODJet* jet2 = (AliAODJet*)(fJetsRecCuts->At(1));
 	
 	// DiJet deltaphi calculation
 	Double_t phi1 = TVector2::Phi_0_2pi(jet1->Phi());
@@ -3637,7 +3637,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 		    {
 		      if (it < jettracklist1->GetSize())
 			{ 
-			  Float_t trackPt1 = (dynamic_cast<AliVParticle*>(jettracklist1->At(it)))->Pt();
+			  Float_t trackPt1 = ((AliVParticle*)jettracklist1->At(it))->Pt();
 			  Float_t jetPt1 = jet1->Pt();
 			  
 			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -4339,7 +4339,7 @@ void AliAnalysisTaskFragmentationFunction::FillSingleTrackRecEffHisto(AliFragFun
     if(isGenPrim[iGen] != 1) continue; // select primaries
 
     AliAODMCParticle* gentrack =  dynamic_cast<AliAODMCParticle*> (tracksGen->At(iGen));
-    if(gentrack)continue;
+    if(!gentrack)continue;
     Double_t ptGen  = gentrack->Pt();
     Double_t etaGen = gentrack->Eta();
     Double_t phiGen = TVector2::Phi_0_2pi(gentrack->Phi());
@@ -4732,7 +4732,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJets(Int_t nCases, TLi
 
   for(Int_t ipart=0; ipart<nScaled; ipart++)
     {
-      AliVParticle* track = dynamic_cast<AliVParticle*>(templist->At(randIndex[ipart]));
+      AliVParticle* track = (AliVParticle*)(templist->At(randIndex[ipart]));
       outputlist->Add(track);
       sumPt += track->Pt();
     }
@@ -5005,7 +5005,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
       for(Int_t it=0; it<tracklistaside->GetSize(); ++it){
 
-        AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(tracklistaside->At(it));
+        AliVParticle*   trackVP = (AliVParticle*)(tracklistaside->At(it));
         TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 
         Float_t jetPt   = jet->Pt();
