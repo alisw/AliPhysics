@@ -120,6 +120,13 @@ AliHLTITSClusterFinderSPD::AliHLTITSClusterFinderSPD( const AliHLTITSClusterFind
   fBin2Signal(0)
 {
   // dummy
+  for (Int_t m=0; m<2200; m++) {
+    fNdet[m] = 0;
+    fNlayer[m] = 0;
+  }
+
+  for (Int_t m=0; m<fNySPD; m++) fYSPD[m]=0;
+  for (Int_t m=0; m<fNzSPD; m++) fZSPD[m]=0;  
 }
 
 AliHLTITSClusterFinderSPD &AliHLTITSClusterFinderSPD::operator=( const AliHLTITSClusterFinderSPD &)
@@ -231,6 +238,7 @@ Int_t AliHLTITSClusterFinderSPD::ClustersSPD( std::vector<AliITSRecPoint> & clus
       //Error("ClustersSPD","SPD Too big cluster !\n"); 
       continue;
     }
+    idxBins[0] = 0;
     for( int i=0; i<nBins; i++ ) idxBins[i] = fSignal2Bin[idxSignals[i]-1];
     
     Int_t ymin,ymax,zmin,zmax;
@@ -288,7 +296,7 @@ Int_t AliHLTITSClusterFinderSPD::ClustersSPD( std::vector<AliITSRecPoint> & clus
 	y -= fHwSPD;
 	z -= fHlSPD;
 
-	Float_t hit[5]; //y,z,sigma(y)^2, sigma(z)^2, charge
+	Float_t hit[6]; //y,z,sigma(y)^2, sigma(z)^2, charge
         {
         Double_t loc[3]={y,0.,z},trk[3]={0.,0.,0.};
         mT2L->MasterToLocal(loc,trk);
@@ -298,6 +306,7 @@ Int_t AliHLTITSClusterFinderSPD::ClustersSPD( std::vector<AliITSRecPoint> & clus
 	hit[2] = fYpitchSPD*fYpitchSPD/12.;
 	hit[3] = fZ1pitchSPD*fZ1pitchSPD/12.;
 	hit[4] = 1.;
+	hit[5] = 0;
 
 	Int_t info[3] = {ymax-ymin+1,zmax-zmin+1,fNlayer[iModule]};
 	Int_t label[4]={-2,-2,-2, fNdet[iModule] };
