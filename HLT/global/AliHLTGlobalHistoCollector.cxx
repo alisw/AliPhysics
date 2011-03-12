@@ -177,7 +177,7 @@ int AliHLTGlobalHistoCollector::Reconfigure(const char* cdbEntry, const char* ch
   // see header file for class documentation
   
   return 0; // no CDB entry exist
-
+  /*
   int iResult=0;  
   const char* path="HLT/ConfigGlobal/GlobalHistoCollector";
   const char* defaultNotify="";
@@ -202,6 +202,7 @@ int AliHLTGlobalHistoCollector::Reconfigure(const char* cdbEntry, const char* ch
     }
   }
   return iResult;
+*/
 }
 
 
@@ -242,9 +243,7 @@ int AliHLTGlobalHistoCollector::DoEvent(const AliHLTComponentEventData & evtData
 
   const TObject *iter = NULL;
   for(iter = GetFirstInputObject(); iter != NULL; iter = GetNextInputObject()){
-    
-    if( !iter ) continue;            
-    
+            
     if( !iter->InheritsFrom(TH1::Class()) 
 	&& !iter->InheritsFrom(TSeqCollection::Class()) ) continue;
 
