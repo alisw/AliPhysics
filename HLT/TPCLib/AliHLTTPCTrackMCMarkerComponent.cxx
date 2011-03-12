@@ -49,6 +49,10 @@ ClassImp( AliHLTTPCTrackMCMarkerComponent )
 AliHLTTPCTrackMCMarkerComponent::AliHLTTPCTrackMCMarkerComponent()
 {
   // see header file for class documentation
+  for( int i=0; i<36*6; i++ ){
+    fClusterLabels[i] = 0;
+    fNClusterLabels[i] = 0; 
+  }
 }
 
 // Public functions to implement AliHLTComponent's interface.
@@ -244,7 +248,7 @@ Int_t AliHLTTPCTrackMCMarkerComponent::GetTrackMCLabel( unsigned int *hits, int 
     int iSlice = AliHLTTPCSpacePointData::GetSlice(id);
     int iPatch = AliHLTTPCSpacePointData::GetPatch(id);
     int iCluster = AliHLTTPCSpacePointData::GetNumber(id);
-    if( iSlice<0 || iSlice>36 || iPatch<0 || iPatch>5 ){
+    if( iSlice<0 || iSlice>=36 || iPatch<0 || iPatch>5 ){
       HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d",
 	       iSlice, iPatch,iCluster );
       continue;
