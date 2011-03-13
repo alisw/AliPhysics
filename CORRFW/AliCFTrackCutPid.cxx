@@ -90,11 +90,12 @@ AliCFTrackCutPid::AliCFTrackCutPid() :
   //
   //Default constructor 
   //
-  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
+  for(Int_t j=0; j< AliPID::kSPECIESN; j++) {
     fPriors[j]=0.2;
+  }
+  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
     fPriorsFunc[j]=0x0;
   }
-  
   for(Int_t jDet=0; jDet< kNdets; jDet++)  {
     fDets[jDet]=kFALSE;
     fDetsInAnd[jDet]=kFALSE;
@@ -126,11 +127,12 @@ AliCFTrackCutPid::AliCFTrackCutPid(const Char_t* name, const Char_t* title) :
   //
   //Constructor
   // 
-  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
+  for(Int_t j=0; j< AliPID::kSPECIESN; j++) {
     fPriors[j]=0.2;
+  }
+  for(Int_t j=0; j< AliPID::kSPECIES; j++) {
     fPriorsFunc[j]=0x0;
   }
-  
   for(Int_t jDet=0; jDet< kNdets; jDet++)  {
     fDets[jDet]=kFALSE;
     fDetsInAnd[jDet]=kFALSE;
@@ -170,8 +172,10 @@ AliCFTrackCutPid::AliCFTrackCutPid(const AliCFTrackCutPid& c) :
       fhProb[i][iP]=c.fhProb[i][iP];
     }
   }
-  for(Int_t j=0; j< AliPID::kSPECIES; j++){
+  for(Int_t j=0; j< AliPID::kSPECIESN; j++){
     fPriors[j]=c.fPriors[j];
+  }
+  for(Int_t j=0; j< AliPID::kSPECIES; j++){
     fPriorsFunc[j]=c.fPriorsFunc[j];
     fhCombResp[j]=c.fhCombResp[j];
     fhCombProb[j]=c.fhCombProb[j];
@@ -211,8 +215,10 @@ AliCFTrackCutPid& AliCFTrackCutPid::operator=(const AliCFTrackCutPid& c)
       }  
     }
 
-    for(Int_t j=0; j< AliPID::kSPECIES; j++){
+    for(Int_t j=0; j< AliPID::kSPECIESN; j++){
       this->fPriors[j]=c.fPriors[j];
+    }
+    for(Int_t j=0; j< AliPID::kSPECIES; j++){
       this->fhCombResp[j]=c.fhCombResp[j];
       this->fhCombProb[j]=c.fhCombProb[j];
       this-> fPriorsFunc[j]=c.fPriorsFunc[j];
@@ -520,7 +526,8 @@ Int_t AliCFTrackCutPid::IdentifyQA(const Double_t pid[AliPID::kSPECIES], Int_t i
     fhProb[idets][iP]->Fill(probability[iP]);
   }
   
-  AliPID toresp(pid,kTRUE); Double_t qapriors[5]={0.2,0.2,0.2,0.2,0.2};
+  AliPID toresp(pid,kTRUE); 
+  Double_t qapriors[10]={0.2,0.2,0.2,0.2,0.2,0,0,0,0,0};
   toresp.SetPriors(qapriors);
   for(Int_t iPr=0; iPr<AliPID::kSPECIES; iPr++) fhResp[idets][iPr]->Fill(toresp.GetProbability((AliPID::EParticleType)iPr));
   
@@ -542,6 +549,7 @@ Bool_t AliCFTrackCutPid::IsSelected(TObject *track){
   TString className(track->ClassName());
   if (className.CompareTo("AliESDtrack") == 0) {
   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track); 
+  if (!esdTrack) return kFALSE;
   ULong_t status[kNdets+1]={0,0,0,0,0,0};
   Double_t pid[kNdets+1][AliPID::kSPECIES];
   TrackInfo(esdTrack,status,pid);
@@ -551,6 +559,7 @@ Bool_t AliCFTrackCutPid::IsSelected(TObject *track){
 
   if (className.CompareTo("AliAODTrack") == 0) {
   AliAODTrack *aodtrack = dynamic_cast<AliAODTrack *>(track);
+  if (!aodtrack) return kFALSE ;
   if(GetAODID(aodtrack) == fgParticleType) sel = kTRUE;
   }
 

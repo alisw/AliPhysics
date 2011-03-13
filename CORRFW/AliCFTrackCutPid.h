@@ -113,7 +113,7 @@ class AliCFTrackCutPid : public AliCFCutBase
                                                             // fgParticleType if the probability is larger than this threshold,
                                                             // regardless it is the highest or not (!)
 
-  Double_t fPriors[AliPID::kSPECIES];                       // a priori concentrations
+  Double_t fPriors[AliPID::kSPECIESN];                       // a priori concentrations
   TF1 *fPriorsFunc[AliPID::kSPECIES];                       // momentum dependent priors
   Bool_t fDets[kNdets];                                     // boolean(s) corresponding to the chosen detector(s) 
   Bool_t fDetsInAnd[kNdets];                                // detector to be in AND for the combined PID
