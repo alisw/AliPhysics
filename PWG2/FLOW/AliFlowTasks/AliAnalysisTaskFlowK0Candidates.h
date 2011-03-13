@@ -8,8 +8,8 @@
 * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-#ifndef AliAnalysisTaskFlowK0Candidates_H
-#define AliAnalysisTaskFlowK0Candidates_H
+#ifndef ALIANALYSISTASKFLOWK0CANDIDATES_H
+#define ALIANALYSISTASKFLOWK0CANDIDATES_H
 
 #include "AliAnalysisTaskSE.h"
 
@@ -19,23 +19,6 @@ class TList;
 class TH1D;
 
 class AliAnalysisTaskFlowK0Candidates : public AliAnalysisTaskSE {
-  private:
-    AliAnalysisTaskFlowK0Candidates(const AliAnalysisTaskFlowK0Candidates& analysisTask);
-    AliAnalysisTaskFlowK0Candidates& operator=(const AliAnalysisTaskFlowK0Candidates& analysisTask);
-    void AddQAEvents();
-    void AddQACandidates();
-    void ReadFromESD(AliESDEvent *fESD);
-    void ReadFromAOD(AliAODEvent *fAOD);
-
-    AliFlowEventCuts *fCutsEvent; // cuts for event
-    AliESDtrackCuts  *fCuts;      // cuts for both pis
-    TList *fQAList;               // list for QA histos (slot2)
-    Double_t fMassMin, fMassMax;  // Mass cutting range
-    Double_t fDLcut;
-    TH1D *tEvent, *tMulti;
-    TH1D *tMass[4], *tDCA[4], *tDL[4], *tCTP[4], *td0d0[4], *tPhi[4], *tEta[4], *tPt[4];
-    TH1D *tAPhi[4], *tAEta[4], *tAPt[4], *tBPhi[4], *tBEta[4], *tBPt[4];
-
   public:
     AliAnalysisTaskFlowK0Candidates();
     AliAnalysisTaskFlowK0Candidates(const char *name, AliFlowEventCuts *cutsEvent, AliESDtrackCuts *cuts, Double_t MassMin, Double_t MassMax);
@@ -46,6 +29,22 @@ class AliAnalysisTaskFlowK0Candidates : public AliAnalysisTaskSE {
     virtual void NotifyRun();
     void SetDL( Double_t pMin ) { fDLcut = pMin; }
 
+  private:
+    AliAnalysisTaskFlowK0Candidates(const AliAnalysisTaskFlowK0Candidates& analysisTask);
+    AliAnalysisTaskFlowK0Candidates& operator=(const AliAnalysisTaskFlowK0Candidates& analysisTask);
+    void AddQAEvents();
+    void AddQACandidates();
+    void ReadFromESD(const AliESDEvent *fESD);
+    void ReadFromAOD(const AliAODEvent *fAOD);
+
+    AliFlowEventCuts *fCutsEvent; // cuts for event
+    AliESDtrackCuts  *fCuts;      // cuts for both pis
+    TList *fQAList;               // list for QA histos (slot2)
+    Double_t fMassMin, fMassMax;  // Mass cutting range
+    Double_t fDLcut;//
+    TH1D *fEvent, *fMulti;//
+    TH1D *fMass[4], *fDCA[4], *fDL[4], *fCTP[4], *fd0d0[4], *fPhi[4], *fEta[4], *fPt[4];//
+    TH1D *fAPhi[4], *fAEta[4], *fAPt[4], *fBPhi[4], *fBEta[4], *fBPt[4];//
 
   ClassDef(AliAnalysisTaskFlowK0Candidates, 1);
 };
