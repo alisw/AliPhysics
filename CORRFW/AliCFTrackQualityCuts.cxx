@@ -903,7 +903,7 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
   // fill the QA histograms
   //
 
-  //if (!obj) return;
+  if (!obj) return;
   if (!obj->InheritsFrom("AliVParticle")) {
     AliError("object must derived from AliVParticle !");
     return;
@@ -995,7 +995,6 @@ void AliCFTrackQualityCuts::FillHistograms(TObject* obj, Bool_t b)
   if (b) return;
 
   // Get the bitmap of the single cuts
-  if ( !obj ) return;
   SelectionBitMap(obj);
 
   // Number of single cuts in this class

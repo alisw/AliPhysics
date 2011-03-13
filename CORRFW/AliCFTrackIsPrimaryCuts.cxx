@@ -794,10 +794,10 @@ void AliCFTrackIsPrimaryCuts::SetHistogramBins(Int_t index, Int_t nbins, Double_
   fhCutCorrelation->GetYaxis()->SetBinLabel(9,"AOD type");
 
   // book QA histograms
-  Char_t str[256];
+  Char_t str[5];
   for (Int_t i=0; i<kNStepQA; i++) {
-    if (i==0) sprintf(str," ");
-    else sprintf(str,"_cut");
+    if (i==0) snprintf(str,5," ");
+    else snprintf(str,5,"_cut");
 
     fhDcaXYvsDcaZ[i]            = new  TH2F(Form("%s_dcaXYvsDcaZ%s",GetName(),str),"",200,-10,10,200,-10,10);
     fhQA[kCutNSigmaToVertex][i]	= new TH1F(Form("%s_nSigmaToVertex%s",GetName(),str),"",fhNBinsNSigma-1,fhBinLimNSigma);
@@ -832,6 +832,7 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   // fill the QA histograms
   //
 
+  if (!obj) return;
   Bool_t isESDTrack = strcmp(obj->ClassName(),"AliESDtrack") == 0 ? kTRUE : kFALSE ;
   Bool_t isAODTrack = strcmp(obj->ClassName(),"AliAODTrack") == 0 ? kTRUE : kFALSE ;
 
@@ -871,7 +872,6 @@ void AliCFTrackIsPrimaryCuts::FillHistograms(TObject* obj, Bool_t f)
   if (f) return;
 
   // Get the bitmap of the single cuts
-  if ( !obj ) return;
   SelectionBitMap(obj);
 
   // Number of single cuts in this class
