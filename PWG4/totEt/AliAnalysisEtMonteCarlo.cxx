@@ -92,6 +92,10 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     return 0;
   }
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(ev);
+  if(!event){  
+    AliFatal("ERROR: MC Event does not exist");
+    return 0;
+  }
 	
   Double_t protonMass =fgProtonMass;
 	
@@ -493,6 +497,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   AnalyseEvent(ev);
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
   AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
+  if(!mcEvent || !realEvent){  
+    AliFatal("ERROR: mcEvent or realEvent does not exist");
+    return 0;
+  }
+
   AliStack *stack = mcEvent->Stack();
 	
   // get all emcal clusters
