@@ -27,13 +27,12 @@
 #include "AliRun.h"             //CreateMaterials()    
 #include "AliMC.h"             //CreateMaterials()    
 #include "AliMagF.h"            //CreateMaterials()
-#include "AliCDBManager.h"      //CreateMaterials()
-#include "AliCDBEntry.h"        //CreateMaterials()
 #include "AliITSupgrade.h"      //class header
 #include "AliITShit.h"           // StepManager()
 #include "AliITSDigitUpgrade.h"
 #include "AliTrackReference.h"   // StepManager()
-#include "AliITSDetTypeSim.h"
+#include "AliITSsegmentationUpgrade.h"
+
 ClassImp(AliITSupgrade) 
 //__________________________________________________________________________________________________
   AliITSupgrade::AliITSupgrade():
@@ -51,7 +50,7 @@ ClassImp(AliITSupgrade)
     fNlayers(0),
     fHalfLength(0),
     fSdigits(0),
-    fDigits(0),
+    fDigitArray(0),
     fSegmentation(0x0)
 {
   //
@@ -75,9 +74,14 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   fNlayers(0),
   fHalfLength(0),
   fSdigits(0),
-  fDigits(0),
+  fDigitArray(0),
   fSegmentation(0x0)
 {
+  // Default values are used in order to simulate the standard ITS material budget (see The ALICE Collaboration et al 2008 JINST 3 S08002 - Figure 3.2).
+  // The cell segmentation is chosen to achieve the tracking resolution as described in Table 3.2 of The ALICE Collaboration et al 2008 JINST 3 S08002,
+  // apart from SPD0 where the 9 um value is considered : resolution*sqrt(12)
+  // Cilinder lenghts are chosen according to Table 1 of the Alignment paper : http://iopscience.iop.org/1748-0221/5/03/P03003
+
   fNlayers = 6;
   fWidths.Set(fNlayers);
   fRadii.Set(fNlayers);
@@ -86,14 +90,10 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   fCopper.Set(fNlayers);
   fHalfLength.Set(fNlayers);
 
-  // Default values are used in order to simulate the standard ITS material budget (see The ALICE Collaboration et al 2008 JINST 3 S08002 - Figure 3.2).
-  // The cell segmentation is chosen to achieve the tracking resolution as described in Table 3.2 of The ALICE Collaboration et al 2008 JINST 3 S08002,
-  // apart from SPD0 where the 9 um value is considered : resolution*sqrt(12)
-  // Cilinder lenghts are chosen according to Table 1 of the Alignment paper : http://iopscience.iop.org/1748-0221/5/03/P03003
 
-  Double_t xsz[6]={31.18*1e-04,41.6*1e-04,131.6*1e-04,131.6*1e-04,69.3*1e-04,69.3*1e-04};
+  Double_t xsz[6]={31.18*1e-04,41.6*1e-04,121.2e-04,121.4*1e-04,69.3*1e-04,69.3*1e-04};
   Double_t zsz[6]={416*1e-04,416*1e-04,97*1e-04,97*1e-04,2875*1e-04,2875*1e-04};
-  Double_t Lhalf[6]={14.1,14.1,22.2,29.7,43.1,48.9};
+  Double_t halfL[6]={14.1,14.1,22.2,29.7,43.1,48.9};
   Double_t r[6]={4.,7.6,14.9,23.8,39.1,43.6};
   Double_t thick[6]={75.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04};
 
@@ -105,25 +105,25 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, Bool_t isBeamPi
   if(isBeamPipe){
     fRadiusBP = 2.9;
     fWidthBP = 0.08;
-    fHalfLengthBP = Lhalf[0];
+    fHalfLengthBP = halfL[0];
   }
 
   // setting the geonetry parameters and the segmentation
   Int_t npixHalf[6], npixR[6];
-  Double_t HalfL[6], xszInt[6];
+  Double_t halfLmod[6], xszInt[6];
   Int_t c[6]={1,1,1,1,1,1};
 
   for(Int_t i=0; i<nlayers; i++){
     // recalc length 
-    npixHalf[i]=(Int_t)(Lhalf[i]/zsz[i]);
-    HalfL[i]=npixHalf[i]*zsz[i];
+    npixHalf[i]=(Int_t)(halfL[i]/zsz[i]);
+    halfLmod[i]=npixHalf[i]*zsz[i];
     // recalc segmentation 
     npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
     xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
     xsizeSi.AddAt(xszInt[i],i);
     zsizeSi.AddAt(zsz[i],i);
 
-    fHalfLength.AddAt(HalfL[i],i);
+    fHalfLength.AddAt(halfLmod[i],i);
 
     fRadii.AddAt(r[i],i);
     fWidths.AddAt(thick[i],i);
@@ -151,12 +151,12 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
   fNlayers(widths.GetSize()),
   fHalfLength(halfLengths),
   fSdigits(0),
-  fDigits(0),
+  fDigitArray(0),
   fSegmentation(0x0)
 {
-
   //
-  // constructor
+  // constructor to set all the geometrical/segmentation specs from outside
+  // 
   for(Int_t i=0;i<fNlayers;i++){
     fWidths.Set(i+1);
     fWidths.AddAt(widths.At(i),i);
@@ -177,7 +177,7 @@ AliITSupgrade::AliITSupgrade(const char *name,const char *title, TArrayD widths,
 AliITSupgrade::~AliITSupgrade(){
 
   if(fSdigits) {fSdigits->Delete(); delete fSdigits;}
-  if(fDigits)  {fDigits->Delete(); delete fDigits;}
+  if(fDigitArray)  {fDigitArray->Delete(); delete fDigitArray;}
 }
 
 
@@ -330,8 +330,10 @@ void AliITSupgrade::StepManager()
 //__________________________________________________________________________________________________
 TGeoVolumeAssembly * AliITSupgrade::CreateVol()
 {
-  
-   TGeoVolumeAssembly *vol = new TGeoVolumeAssembly("ITSupgrade");
+//
+// method to create the Upgrade Geometry (silicon, copper cylinders and beampipe)
+//  
+  TGeoVolumeAssembly *vol = new TGeoVolumeAssembly("ITSupgrade");
   TGeoMedium *si   =gGeoManager->GetMedium("ITS_UpgradeSi");
   TGeoMedium *cu   =gGeoManager->GetMedium("ITS_UpgradeCu");
   TGeoMedium *be   =gGeoManager->GetMedium("ITS_UpgradeBe");
@@ -346,7 +348,6 @@ TGeoVolumeAssembly * AliITSupgrade::CreateVol()
       if(fCopper.At(ivol)){
         vol->AddNode(layerCu,ivol);
       }
-
     }else{
 
       TGeoVolume *layer = gGeoManager->MakeTubs(Form("LayerSilicon%i",ivol),si,  fRadii.At(ivol),   fRadii.At(ivol)+fWidths.At(ivol)  ,fHalfLength.At(ivol),0,(360./fNSectors));
@@ -370,21 +371,22 @@ TGeoVolumeAssembly * AliITSupgrade::CreateVol()
      vol->AddNode(beampipe,0);
    }
   return vol;
-
-  
 }
 //_________________________________________________________________________________________________
 void AliITSupgrade::SetFullSegmentation(TArrayD xsize,TArrayD zsize){
+//
+// Upgrade detector specs specified in used constructor are stored in a file .
+// for further usage (loc<->master<->tracking reference system changes)
 
-  Bool_t Check=kFALSE;
+  Bool_t check=kFALSE;
   for(Int_t lay = 0; lay< xsize.GetSize(); lay++){
     Double_t arch = fRadii.At(lay)*(TMath::Pi()*2/fNSectors);
     Int_t nPixRPhi = (Int_t)(arch/xsize.At(lay));
     Int_t nPixZed = (Int_t)((2*fHalfLength.At(lay))/zsize.At(lay));
-    if(nPixRPhi>9999)Check=kTRUE;
-    if(nPixZed>99999)Check=kTRUE;
+    if(nPixRPhi>9999)check=kTRUE;
+    if(nPixZed>99999)check=kTRUE;
   }
-  if(Check) AliFatal(" Segmentation is too small!! ");
+  if(check) AliFatal(" Segmentation is too small!! ");
   if(fSegmentation) fSegmentation->SetNSectors(fNSectors);
   TArrayD nSect(1);
   nSect.AddAt(fNSectors,0);
@@ -483,7 +485,7 @@ void AliITSupgrade::Hits2SDigits(){
   
 }
 //____________________________
-void AliITSupgrade::Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdigit)
+void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t *nSdigit)
 {
   // Adds  sdigits of this hit to the list
   //   Returns: none
@@ -553,7 +555,7 @@ void AliITSupgrade::MakeBranch(Option_t *option){
 
   if(cD&&fLoader->TreeD()){
     DigitsCreate();
-    for(Int_t i=0;i<fNlayers;i++) MakeBranchInTree(fLoader->TreeD(),Form("Layer%d",i),&((*fDigits)[i]),kBufSize,0);
+    for(Int_t i=0;i<fNlayers;i++) MakeBranchInTree(fLoader->TreeD(),Form("Layer%d",i),&((*fDigitArray)[i]),kBufSize,0);
   }
   AliDebug(1,"Stop.");
 }
@@ -578,7 +580,7 @@ void AliITSupgrade::SetTreeAddress()
   if(fLoader->TreeD() && fLoader->TreeD()->GetBranch("Layer0")){
     DigitsCreate(); 
     for(int i=0;i<fNlayers;i++){
-      fLoader->TreeD()->SetBranchAddress(Form("Layer%d",i),&((*fDigits)[i]));
+      fLoader->TreeD()->SetBranchAddress(Form("Layer%d",i),&((*fDigitArray)[i]));
     }
   }
   AliDebug(1,"Stop.");
@@ -606,6 +608,10 @@ void AliITSupgrade::PrintSummary()
 }
 //____________________________________________________________________________________________________ 
 void AliITSupgrade::SetSegmentationX(Double_t x, Int_t lay){
+//
+// Virtual dimension in X direction is written into the file
+// (-> see SetFullSegmentation)
+
 TFile *f = TFile::Open("Segmentation.root","UPDATE");
 if(!f) { 
   AliError("\n\n\n Segmentation.root file does not exist. The segmentation is 0! \n\n\n");
@@ -625,6 +631,11 @@ else {
 }
 //____________________________________________________________________________________________________ 
 void AliITSupgrade::SetSegmentationZ(Double_t z, Int_t lay){
+//
+// Virtual dimension in X direction is written into the file
+// (-> see SetFullSegmentation)
+//
+
 
 TFile *f = TFile::Open("Segmentation.root","UPDATE");
 if(!f) { 

@@ -24,6 +24,7 @@
 #include "AliITSupgradeDigitizer.h"
 #include "AliITSDigitUpgrade.h"
 #include "AliITSupgrade.h"
+#include "AliITSsegmentationUpgrade.h"
 #include <TObjArray.h>
 #include <TClonesArray.h>
 

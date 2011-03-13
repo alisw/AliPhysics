@@ -23,7 +23,6 @@
 //
 
 #include "AliITS.h"             //base class 
-#include "AliITSsegmentationUpgrade.h"
 #include "AliITSupgradeDigitizer.h"
 #include <TArrayS.h>
     
@@ -33,6 +32,8 @@ class TArrayD;
 class TClonesArray;
 class TObjArray;
 class AiITShit;
+class AliITSsegmentationUpgrade;
+
 class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliITS-AliITSupgrade
 {
  public:
@@ -64,16 +65,16 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
      
      
      
-  TObjArray*      DigitsList()            const{return fDigits;}//get digits list for all layers
-  TClonesArray*   DigitsList(Int_t layer) const{return fDigits ? (TClonesArray *)fDigits->At(layer):0;}//get digits list for chamber
-  void            DigitsCreate()            {if (fDigits) return; 
-    fDigits=new TObjArray(fNlayers);
-    for(Int_t i=0;i<fNlayers;i++)fDigits->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);}//create digits list
-  void          DigitsReset ()              {if(fDigits)for(int i=0;i<fNlayers;i++)fDigits->At(i)->Clear();                     }//clean digits list
+  TObjArray*      DigitsList()            const{return fDigitArray;}//get digits list for all layers
+  TClonesArray*   DigitsList(Int_t layer) const{return fDigitArray ? (TClonesArray *)fDigitArray->At(layer):0;}//get digits list for chamber
+  void            DigitsCreate()            {if (fDigitArray) return; 
+    fDigitArray=new TObjArray(fNlayers);
+    for(Int_t i=0;i<fNlayers;i++)fDigitArray->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);}//create digits list
+  void          DigitsReset ()              {if(fDigitArray)for(int i=0;i<fNlayers;i++)fDigitArray->At(i)->Clear();                     }//clean digits list
 
   AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m) const {return new AliITSupgradeDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
            
-  void Hit2SumDig(TClonesArray *hits,TObjArray *pSDig, Int_t *nSdigit);
+  void Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t *nSdigit);
 
   enum EMedia {kAir=0,kSi=1,kBe=2, kCu=3};                         //media ids used in CreateMaterials  
     
@@ -95,21 +96,21 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
   void PrintSummary();
 
  protected:
-  TArrayD fWidths;
-  TArrayD fRadii;
-  Int_t fNSectors;
-  TArrayD fRadiiCu;
-  TArrayD fWidthsCu;
-  TArrayS fCopper;
-  Bool_t fBeampipe;
-  Double_t fRadiusBP;
-  Double_t fWidthBP;
-  Double_t fHalfLengthBP;
-  Int_t   fNlayers;
-  TArrayD fHalfLength;
-  TObjArray            *fSdigits;                 //![fNlayers] list of sdigits
-  TObjArray            *fDigits;                     //![fNlayers] list of digits per layer
-  AliITSsegmentationUpgrade *fSegmentation;
+  TArrayD fWidths;   			      // thicknesses of silicon cylinders
+  TArrayD fRadii;    			      // radii of silicon cylinders
+  Int_t fNSectors;   			      // number of sectors
+  TArrayD fRadiiCu;  			      // radii of copper cylinders 
+  TArrayD fWidthsCu; 			      // thicknesses of copper cylinders
+  TArrayS   fCopper; 			      // check to set the copper cylinder 
+  Bool_t fBeampipe;                           // boolean to set beam pipe vol in geometry
+  Double_t fRadiusBP;                         // beam pipe radius
+  Double_t fWidthBP; 			      // thickness of the beam pipe		
+  Double_t fHalfLengthBP;		      // 1/2 beam pipe cyclinder length
+  Int_t   fNlayers;			      // # of layers
+  TArrayD fHalfLength;			      // 1/2 silicon and copper cylinder lengths
+  TObjArray            *fSdigits;             //![fNlayers] list of sdigits
+  TObjArray            *fDigitArray;          //![fNlayers] list of digits per layer
+  AliITSsegmentationUpgrade *fSegmentation;   //virtual segmentation class
   
  private:
   AliITSupgrade(const AliITSupgrade& u);              //dummy copy constructor
