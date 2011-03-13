@@ -70,6 +70,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   }
   AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
   AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev2);
+  if(!mcEvent || !realEvent){  
+    AliFatal("ERROR: mcEvent or realEvent does not exist");
+    return 0;
+  }
   AliStack *stack = mcEvent->Stack();
   centBin= -1;
   if(fDataSet==20100){//If this is Pb+Pb
@@ -516,7 +520,10 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
      
     // Get us an mc event
     AliMCEvent *mcEvent = dynamic_cast<AliMCEvent*>(ev);
-
+    if(!mcEvent){  
+      AliFatal("ERROR: MC Event does not exist");
+      return 0;
+    }
     // Let's play with the stack!
     AliStack *stack = mcEvent->Stack();
 

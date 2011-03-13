@@ -63,6 +63,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    return 0;
      }
     AliESDEvent *event = dynamic_cast<AliESDEvent*>(ev);
+    if(!event){  
+      AliFatal("ERROR: ESD Event does not exist");
+      return 0;
+    }
 
     Double_t protonMass = fgProtonMass;
 
@@ -337,7 +341,14 @@ bool AliAnalysisEtReconstructed::CheckGoodVertex(AliVParticle* track)
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
-    if(track) dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
+    if(track) { 
+      dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);    
+    } 
+    else {
+      AliError("ERROR: no track");
+      return kFALSE;
+    }
+
 
     bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
       (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
@@ -366,6 +377,10 @@ bool AliAnalysisEtReconstructed::TrackHitsCalorimeter(AliVParticle* track, Doubl
     return kFALSE;
   }
   AliESDtrack *esdTrack= dynamic_cast<AliESDtrack*>(track);
+  if (!esdTrack) {
+    AliError("ERROR: no ESD track");
+    return kFALSE;
+  }
    // Printf("Propagating track: eta: %f, phi: %f, pt: %f", esdTrack->Eta(), esdTrack->Phi(), esdTrack->Pt());
 
     Bool_t prop = esdTrack->PropagateTo(fDetectorRadius, magField);

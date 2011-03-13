@@ -96,6 +96,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
   }
 
     AliESDEvent *realEvent = dynamic_cast<AliESDEvent*>(ev);
+    if(!realEvent){  
+      AliFatal("ERROR: ESD Event does not exist");
+      return 0;
+    }
     //for PID
     AliESDpid *pID = new AliESDpid();
     pID->MakePID(realEvent);
@@ -384,7 +388,13 @@ Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
-    if(track) dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
+    if(track) {
+      dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
+    }
+    else {
+      AliError("ERROR: no track");
+      return kFALSE;
+    }
 
     bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
       (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
