@@ -97,7 +97,7 @@ AliT0CalibWalk::~AliT0CalibWalk()
 Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 {
   //make walk corerction for preprocessor
-  Float_t sigma, xp, cfdmean, qtmean, ledmean;
+  Float_t sigma,cfdmean, qtmean, ledmean;
   Bool_t ok=true;
   Float_t   mips[50];
   
@@ -154,44 +154,43 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
  	      	AliWarning(Form(" no QTC correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
 	      if(!hLED)	      
 	      	AliWarning(Form(" no LED correction data in LASER DA for channel %i for amplitude %f MIPs",i,mips[im]));
+	      if( hCFD && hCFD->GetEntries()<500 ) {
+		ok=false;
+		printf("no peak in CFD spectrum for PMT %i amplitude %i\n",i,im);
+		return ok;
+	      }
 	      
-	      if(hCFD && hCFD->GetEntries()>500) {
-		GetMeanAndSigma(hCFD, xp, sigma);
-		}		   
-	      else 
-		{
+	      if(hCFD && hCFD->GetEntries()>500 ) {
+		if( hCFD->GetRMS() >= 1.5) 
+		  GetMeanAndSigma(hCFD, cfdmean, sigma);
+		else
+		  cfdmean = hCFD->GetMean();
+		
+		if (im == 0) cfd0[i] = cfdmean;
+		y1[im] =  cfdmean - cfd0[i];
+	      }	
+	      if(hQTC && hQTC->GetEntries()>500) {
+		GetMeanAndSigma(hQTC, qtmean, sigma);
+		
+		x1[im] = qtmean;
+		if( x1[im] == 0) {
 		  ok=false;
-		  printf("no peak in CFD spectrum for PMT %i amplitude %i\n",i,im);
+		  printf("no peak in QTC signal for PMT %i amplitude %i\n",i,im);
 		  return ok;
 		}
-
-	      if (hCFD->GetRMS() < 1.5) cfdmean = hCFD->GetMean();
-	      else cfdmean=xp;
-	      if (im == 0) cfd0[i] = cfdmean;
-		y1[im] =  cfdmean - cfd0[i];
+	      }
 		
-		if(hQTC && hQTC->GetEntries()>500) {
-		  GetMeanAndSigma(hQTC, qtmean, sigma);
-				   
-		  x1[im] = qtmean;
-		  if( x1[im] == 0) {
-		    ok=false;
-		    printf("no peak in QTC signal for PMT %i amplitude %i\n",i,im);
-		    return ok;
-		  }
+	      if( hLED && hLED->GetEntries()>500) {
+		GetMeanAndSigma(hLED, ledmean, sigma);
+	      }				   
+	      else
+		{ 
+		  ok=false;
+		  printf("no peak in LED spectrum for PMT %i amplitude %i\n",i,im);
+		  return ok;
 		}
-		
-		if( hLED && hLED->GetEntries()>500) {
-		  GetMeanAndSigma(hLED, ledmean, sigma);
-		}				   
-		else
-		  { 
-		    ok=false;
-		    printf("no peak in LED spectrum for PMT %i amplitude %i\n",i,im);
-		    return ok;
-		  }
-		x2[im] = ledmean;
-		xx2[im] = x2[nmips-im-1];
+	      x2[im] = ledmean;
+	      xx2[im] = x2[nmips-im-1];
 		
 		xx[im]=mips[im];
 		if (hQTC) delete  hQTC;
@@ -209,26 +208,7 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  
 	  if(i==0) cout<<"Making graphs..."<<endl;
 	  
-	  
-	  /*
-	  
-	  
-	  Float_t x1[50], y1[50]; 
-	  Float_t x2[50], xx2[50],y2[50];
-	  Float_t xx1[50],yy1[50], xx[50];
-	  
-	  Int_t nmips=20;
-	  for (Int_t i=0; i<24; i++)
-	  {
- 
-	  for (Int_t im=0; im<nmips; im++)
-	  {
-	  x1[im]=xx[im]=500+im*200;
-	  y1[im]=0;
-	  x2[im]=xx1[im]=yy1[im]=260+20*im;
-	  } 
-	  */	  
-       TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
+      TGraph *grwalkqtc = new TGraph (nmips,x1,y1);
       grwalkqtc->SetTitle(Form("PMT%i",i));
       TGraph *grwalkled = new TGraph (nmips,x2,y1);
       grwalkled->SetTitle(Form("PMT%i",i));
@@ -255,8 +235,6 @@ void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma)
 {
 
   const double window = 5.;  //fit window 
-  double norm  = hist->Integral();  // normalize to one count
-  hist->Scale(1./norm); 
  
   double meanEstimate, sigmaEstimate; 
   int maxBin;
