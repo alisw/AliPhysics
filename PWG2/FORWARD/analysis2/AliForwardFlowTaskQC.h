@@ -4,7 +4,8 @@
 #ifndef ALIFORWARDFLOWTASKQC_H
 #define ALIFORWARDFLOWTASKQC_H
 #include "AliAnalysisTaskSE.h"
-#include "AliAODEvent.h"
+#include "AliForwardFlowUtil.h"
+class AliAODEvent;
 
 /**
  * Calculate the flow in the forward regions using the Q cumulants method
@@ -95,10 +96,25 @@ public:
   void SetDoHarmonics(Bool_t v1 = kTRUE, Bool_t v2 = kTRUE, 
 		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE) { 
     fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; }
+  /*
+   * Set string to add flow to MC truth particles
+   */
+  void AddFlow(TString type = "") { fAddFlow = type; }
+  /*
+   * Set which function fAddFlow should use
+   */
+  void AddFlowType(Int_t number = 0) { fAddType = number; }
+  /*
+   * Set which order of flow to add
+   */
+  void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
+ /**
+   * Set Z vertex range - Used by flow task
+   */
+  void SetVertexRange(Int_t vertex = 2) { fZvertex = vertex; }
   /** 
    * @} 
    */
-  virtual void SetDebugLevel(Int_t level) { fDebug = level; }
   
 protected:
   /*
@@ -123,22 +139,28 @@ protected:
    *
    */
   Double_t VarSQ(Double_t wxx2, Double_t x, Double_t wx, 
-		 Double_t wxx, Double_t sqrtwx2);
+		 Double_t wxx, Double_t sqrtwx2) const ;
   /**
    * Caclulate the covariance between x and y - used to finalize
    * calculations in Terminate()
    *
    */
   Double_t CovXY(Double_t wxwyxy, Double_t wxwy, Double_t XY, 
-		 Double_t wx, Double_t wy);
+		 Double_t wx, Double_t wy) const;
 
-  Int_t          fDebug;        //  Debug flag
   TList*         fOutputList;   //  Output list
+  AliForwardFlowUtil* fFlowUtil;//  AliForwardFlowUtil
   AliAODEvent*   fAOD;          //  AOD event
   Bool_t         fMC;           //  Is MC flags
   Int_t          fEtaBins;      //  Number of eta bins in histograms
   Bool_t         fv[5];         //  Calculate v_{n} flag
-   
+  TString        fAddFlow;	//  Add flow string
+  Int_t          fAddType;	//  Add flow type #
+  Int_t          fAddOrder;	//  Add flow order
+  Int_t	         fZvertex;	//  Z vertex range
+  Double_t       fCent;         //  Centrality
+  
+
   ClassDef(AliForwardFlowTaskQC, 1); // Analysis task for FMD analysis
 };
  
