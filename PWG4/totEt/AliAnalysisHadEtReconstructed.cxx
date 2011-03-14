@@ -388,13 +388,16 @@ Bool_t AliAnalysisHadEtReconstructed::CheckGoodVertex(AliVParticle* track)
 
     Float_t bxy = 999.;
     Float_t bz = 999.;
-    if(track) {
-      dynamic_cast<AliESDtrack*>(track)->GetImpactParametersTPC(bxy,bz);
-    }
-    else {
+    if(!track){
       AliError("ERROR: no track");
       return kFALSE;
     }
+    AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(track);
+    if(!esdTrack){
+      AliError("ERROR: no track");
+      return kFALSE;
+    }
+    esdTrack->GetImpactParametersTPC(bxy,bz);
 
     bool status = (TMath::Abs(track->Xv()) < fCuts->GetReconstructedVertexXCut()) && 
       (TMath::Abs(track->Yv()) < fCuts->GetReconstructedVertexYCut()) && 
