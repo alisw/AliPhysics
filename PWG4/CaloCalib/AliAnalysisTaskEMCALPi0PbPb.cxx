@@ -41,6 +41,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fPtRanges(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
+    fHVertexZ2(0x0),
     fHCent(0x0),
     fHCentQual(0x0),
     fHClustEtaPhi(0x0),
@@ -60,8 +61,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fCentVar("V0M"),
     fCentFrom(0),
     fCentTo(100),
-    fVtxZMin(-7),
-    fVtxZMax(+7),
+    fVtxZMin(-10),
+    fVtxZMax(+10),
     fUseQualFlag(1),
     fClusName(),
     fOutput(0),
@@ -75,6 +76,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fPtRanges(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
+    fHVertexZ2(0x0),
     fHCent(0x0),
     fHCentQual(0x0),
     fHClustEtaPhi(0x0),
@@ -119,8 +121,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHVertexZ = new TH1F("hVertexZBeforeCut","",100,-25,25);
   fHVertexZ->SetXTitle("z [cm]");
   fOutput->Add(fHVertexZ);
+  fHVertexZ2 = new TH1F("hVertexZAfterCut","",100,-25,25);
+  fHVertexZ2->SetXTitle("z [cm]");
+  fOutput->Add(fHVertexZ2);
   fHCent = new TH1F("hCentBeforeCut","",101,-1,100);
   fHCent->SetXTitle(fCentVar.Data());
+  fOutput->Add(fHCent);
   fHCentQual = new TH1F("hCentAfterCut","",101,-1,100);
   fHCentQual->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCentQual);
@@ -229,6 +235,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     return;
 
   fHCuts->Fill(cut++);
+  fHVertexZ2->Fill(vertex->GetZ());
 
   fRecPoints   = 0; // will be set if fClusName is given and AliAnalysisTaskEMCALClusterizeFast is used
   fEsdClusters = 0; // will be set if ESD input used and if fRecPoints are not set of if clusters are attached

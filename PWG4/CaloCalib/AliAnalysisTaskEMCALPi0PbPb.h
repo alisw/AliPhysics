@@ -31,11 +31,12 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
   void         SetClusName(const char *name)                  { fClusName = name;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
+  void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
 
  protected:
-  void         FillCellHists();
-  void         FillClusHists();
-  void         FillPionHists();
+  virtual void FillCellHists();
+  virtual void FillClusHists();
+  virtual void FillPionHists();
 
     // input members
   TString                fCentVar;              // variable for centrality determination
@@ -58,6 +59,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
     // histograms
   TH1F                  *fHCuts;                //!histo for cuts
   TH1F                  *fHVertexZ;             //!histo for vtxz
+  TH1F                  *fHVertexZ2;            //!histo for vtxz after vtx cuts
   TH1F                  *fHCent;                //!histo for cent
   TH1F                  *fHCentQual;            //!histo for cent after quality flag cut
     // histograms for clusters
