@@ -68,13 +68,17 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "rel 1/pt uncertainty",
  "TPC n shared clusters",
  "TPC rel shared clusters",
- "require ITS Pid"
+ "require ITS Pid",
+ "n crossed rows TPC",
+ "n crossed rows / n findable clusters",
 };
 
 //____________________________________________________________________
 AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliAnalysisCuts(name,title),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
+  fCutMinNCrossedRowsTPC(0),
+  fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxC11(0),
@@ -136,6 +140,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   // setting default cuts
   SetMinNClustersTPC();
   SetMinNClustersITS();
+  SetMinNCrossedRowsTPC();
+  SetMinRatioCrossedRowsOverFindableClustersTPC();
   SetMaxChi2PerClusterTPC();
   SetMaxChi2PerClusterITS();  				    
   SetMaxCovDiagonalElements();
@@ -173,6 +179,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
 AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMinNClusterTPC(0),
   fCutMinNClusterITS(0),
+  fCutMinNCrossedRowsTPC(0),
+  fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxC11(0),
@@ -243,6 +251,10 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhNClustersITS[i];            
     if (fhNClustersTPC[i])
       delete fhNClustersTPC[i];                
+    if (fhNCrossedRowsTPC[i])
+      delete fhNCrossedRowsTPC[i];                
+    if (fhRatioCrossedRowsOverFindableClustersTPC[i])
+      delete fhRatioCrossedRowsOverFindableClustersTPC[i];                
     if (fhChi2PerClusterITS[i])
       delete fhChi2PerClusterITS[i];       
     if (fhChi2PerClusterTPC[i])
@@ -381,6 +393,8 @@ void AliESDtrackCuts::Init()
   {
     fhNClustersITS[i] = 0;
     fhNClustersTPC[i] = 0;
+    fhNCrossedRowsTPC[i] = 0;
+    fhRatioCrossedRowsOverFindableClustersTPC[i] = 0;
 
     fhChi2PerClusterITS[i] = 0;
     fhChi2PerClusterTPC[i] = 0;
@@ -436,6 +450,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutMinNClusterTPC = fCutMinNClusterTPC;
   target.fCutMinNClusterITS = fCutMinNClusterITS;
+  target.fCutMinNCrossedRowsTPC = fCutMinNCrossedRowsTPC;
+  target.fCutMinRatioCrossedRowsOverFindableClustersTPC = fCutMinRatioCrossedRowsOverFindableClustersTPC;
+
 
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
@@ -502,6 +519,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
   {
     if (fhNClustersITS[i]) target.fhNClustersITS[i] = (TH1F*) fhNClustersITS[i]->Clone();
     if (fhNClustersTPC[i]) target.fhNClustersTPC[i] = (TH1F*) fhNClustersTPC[i]->Clone();
+    if (fhNCrossedRowsTPC[i]) target.fhNCrossedRowsTPC[i] = (TH1F*) fhNCrossedRowsTPC[i]->Clone();
+    if (fhRatioCrossedRowsOverFindableClustersTPC[i]) target.fhRatioCrossedRowsOverFindableClustersTPC[i] = (TH1F*) fhRatioCrossedRowsOverFindableClustersTPC[i]->Clone();
 
     if (fhChi2PerClusterITS[i]) target.fhChi2PerClusterITS[i] = (TH1F*) fhChi2PerClusterITS[i]->Clone();
     if (fhChi2PerClusterTPC[i]) target.fhChi2PerClusterTPC[i] = (TH1F*) fhChi2PerClusterTPC[i]->Clone();
@@ -563,6 +582,8 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       
       fhNClustersITS[i]      ->Add(entry->fhNClustersITS[i]     );      
       fhNClustersTPC[i]      ->Add(entry->fhNClustersTPC[i]     ); 
+      fhNCrossedRowsTPC[i]   ->Add(entry->fhNCrossedRowsTPC[i]     ); 
+      fhRatioCrossedRowsOverFindableClustersTPC[i]      ->Add(entry->fhRatioCrossedRowsOverFindableClustersTPC[i]     ); 
       					  			    
       fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
       fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
@@ -649,16 +670,27 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
 }
 
 //____________________________________________________________________
-AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries)
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
 {
-  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data
-  
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data  
+  // if clusterCut = 1, the cut on the number of clusters is replaced by
+  // a cut on the number of crossed rows and on the ration crossed
+  // rows/findable clusters
+
   Printf("AliESDtrackCuts::GetStandardITSTPCTrackCuts: Creating track cuts for ITS+TPC.");
   
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
   // TPC  
-  esdTrackCuts->SetMinNClustersTPC(70);
+  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(70);
+  else if (clusterCut == 1) {
+    esdTrackCuts->SetMinNCrossedRowsTPC(70);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }
+  else {
+    Printf("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut);
+    esdTrackCuts->SetMinNClustersTPC(70);
+  }
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
@@ -676,6 +708,10 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   
   return esdTrackCuts;
 }
+
+//____________________________________________________________________
+
+
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
@@ -898,7 +934,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   else {
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
-
+  Float_t nCrossedRowsTPC = esdTrack->GetTPCClusterInfo(2,1); 
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF();
+  
   Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
   Float_t fracClustersTPCShared = -1.;
 
@@ -1071,6 +1109,11 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     if(nPointsForPid<3) cuts[35] = kTRUE;
   }
 
+  if (nCrossedRowsTPC<fCutMinNCrossedRowsTPC)
+    cuts[36]=kTRUE;
+  if (ratioCrossedRowsOverFindableClustersTPC<fCutMinRatioCrossedRowsOverFindableClustersTPC) 
+    cuts[37]=kTRUE;
+
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
@@ -1112,6 +1155,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     {
       fhNClustersITS[id]->Fill(nClustersITS);
       fhNClustersTPC[id]->Fill(nClustersTPC);
+      fhNCrossedRowsTPC[id]->Fill(nCrossedRowsTPC);
+      fhRatioCrossedRowsOverFindableClustersTPC[id]->Fill(ratioCrossedRowsOverFindableClustersTPC);
       fhChi2PerClusterITS[id]->Fill(chi2PerClusterITS);
       fhChi2PerClusterTPC[id]->Fill(chi2PerClusterTPC);
 
@@ -1306,6 +1351,8 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(AliESDEvent* const esd)
   for (Int_t i=0; i<2; i++) {
     fhNClustersITS[i]        = new TH1F("nClustersITS"    ,"",8,-0.5,7.5);
     fhNClustersTPC[i]        = new TH1F("nClustersTPC"     ,"",165,-0.5,164.5);
+    fhNCrossedRowsTPC[i]     = new TH1F("nCrossedRowsTPC"  ,"",165,-0.5,164.5);
+    fhRatioCrossedRowsOverFindableClustersTPC[i]     = new TH1F("ratioCrossedRowsOverFindableClustersTPC"  ,"",60,0,1.5);
     fhChi2PerClusterITS[i]   = new TH1F("chi2PerClusterITS","",500,0,10);
     fhChi2PerClusterTPC[i]   = new TH1F("chi2PerClusterTPC","",500,0,10);
 
@@ -1414,6 +1461,8 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
 
     fhNClustersITS[i]      = dynamic_cast<TH1F*> (gDirectory->Get("nClustersITS"     ));
     fhNClustersTPC[i]      = dynamic_cast<TH1F*> (gDirectory->Get("nClustersTPC"     ));
+    fhNCrossedRowsTPC[i]   = dynamic_cast<TH1F*> (gDirectory->Get("nCrossedRowsTPC"  ));
+    fhRatioCrossedRowsOverFindableClustersTPC[i]   = dynamic_cast<TH1F*> (gDirectory->Get("ratioCrossedRowsOverFindableClustersTPC"  ));
     fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterITS"));
     fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterTPC"));
 
@@ -1481,6 +1530,8 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
 
     fhNClustersITS[i]        ->Write();
     fhNClustersTPC[i]        ->Write();
+    fhNCrossedRowsTPC[i]     ->Write();
+    fhRatioCrossedRowsOverFindableClustersTPC[i]     ->Write();
     fhChi2PerClusterITS[i]   ->Write();
     fhChi2PerClusterTPC[i]   ->Write();
 

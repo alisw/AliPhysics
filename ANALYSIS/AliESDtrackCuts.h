@@ -60,7 +60,7 @@ public:
   // Standard cut definitions
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
-  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
@@ -75,6 +75,8 @@ public:
   // track quality cut setters  
   void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
   void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
+  void SetMinNCrossedRowsTPC(Float_t min=-1) { fCutMinNCrossedRowsTPC=min;}
+  void SetMinRatioCrossedRowsOverFindableClustersTPC(Float_t min = -1) { fCutMinRatioCrossedRowsOverFindableClustersTPC=min;}
   void SetClusterRequirementITS(Detector det, ITSClusterRequirement req = kOff) { fCutClusterRequirementITS[det] = req; }
   void SetMaxChi2PerClusterTPC(Float_t max=1e10) {fCutMaxChi2PerClusterTPC=max;}
   void SetMaxChi2PerClusterITS(Float_t max=1e10) {fCutMaxChi2PerClusterITS=max;}
@@ -92,6 +94,7 @@ public:
   void SetMaxCovDiagonalElements(Float_t c1=1e10, Float_t c2=1e10, Float_t c3=1e10, Float_t c4=1e10, Float_t c5=1e10) 
     {fCutMaxC11=c1; fCutMaxC22=c2; fCutMaxC33=c3; fCutMaxC44=c4; fCutMaxC55=c5;}
   void SetMaxRel1PtUncertainty(Float_t max=1e10)      {fCutMaxRel1PtUncertainty=max;}
+
 
   // track to vertex cut setters
   void SetMaxNsigmaToVertex(Float_t sigma=1e10)       {fCutNsigmaToVertex = sigma; SetRequireSigmaToVertex(kTRUE);}
@@ -175,7 +178,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 36 }; 
+  enum { kNCuts = 38 }; 
 
   //######################################################
   // esd track quality cuts
@@ -183,7 +186,9 @@ protected:
 
   Int_t   fCutMinNClusterTPC;         // min number of tpc clusters
   Int_t   fCutMinNClusterITS;         // min number of its clusters
-  
+  Float_t   fCutMinNCrossedRowsTPC;     // min number of tpc crossed rows
+  Float_t fCutMinRatioCrossedRowsOverFindableClustersTPC; // min ratio crossed rows / findable clusters
+
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
   Float_t fCutMaxChi2PerClusterTPC;   // max tpc fit chi2 per tpc cluster
@@ -206,6 +211,7 @@ protected:
   Bool_t  fCutRequireITSPid;          // require ITS pid
   Bool_t  fCutRequireITSStandAlone;   // require ITS standalone tracks (remove pure SA)
   Bool_t  fCutRequireITSpureSA;       // require ITS pure standalone tracks (found using all ITS clusters)
+
 
   // track to vertex cut
   Float_t fCutNsigmaToVertex;         // max number of estimated sigma from track-to-vertex
@@ -243,6 +249,8 @@ protected:
 
   TH1F* fhNClustersITS[2];            //->
   TH1F* fhNClustersTPC[2];            //->
+  TH1F* fhNCrossedRowsTPC[2];         //->
+  TH1F* fhRatioCrossedRowsOverFindableClustersTPC[2]; // ->
 
   TH1F* fhChi2PerClusterITS[2];       //->
   TH1F* fhChi2PerClusterTPC[2];       //->
@@ -273,7 +281,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 12)
+  ClassDef(AliESDtrackCuts, 13)
 };
 
 
