@@ -27,7 +27,7 @@ public:
   AliT0QADataMakerRec() ;          // ctor
   AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) ;   
   AliT0QADataMakerRec& operator = (const AliT0QADataMakerRec& qadm) ;
-  virtual ~AliT0QADataMakerRec() {;} // dtor
+  virtual ~AliT0QADataMakerRec(); // dtor
 
 private:
   virtual void   InitRaws() ;    //book Digit QA histo
@@ -56,6 +56,7 @@ private:
   Int_t feffqtcPhys[24];
   Float_t fTrEffCal[6];
   Float_t fTrEffPhys[6];
+  TH1F*  fhTimeDiff[24];
 
 
   ClassDef(AliT0QADataMakerRec,5)  // description 

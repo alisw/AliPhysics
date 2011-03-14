@@ -70,6 +70,8 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffqtcPhys[i]=0;
 
    }
+ for(Int_t ic=0; ic<24; ic++) 
+     fhTimeDiff[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
 }
 
 
@@ -94,6 +96,14 @@ AliT0QADataMakerRec& AliT0QADataMakerRec::operator = (const AliT0QADataMakerRec&
   new(this) AliT0QADataMakerRec(qadm);
   return *this;
 }
+//__________________________________________________________________
+AliT0QADataMakerRec::~AliT0QADataMakerRec()
+{
+  //destructor
+  for(Int_t ic=0; ic<24; ic++) {
+    if (fhTimeDiff[ic]) delete fhTimeDiff[ic];
+  }
+}
 //____________________________________________________________________________
 void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
 {
@@ -114,8 +124,8 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
 	if ( fnEventPhys>0) 
 	  fTrEffPhys[itr] = Float_t (fNumTriggers[itr])/Float_t (fnEventPhys);
 
-        GetRawsData(169+251)->Fill(triggers[itr], fTrEffCal[itr]);
-        GetRawsData(169+251)->SetBinContent(itr+1, fTrEffCal[itr]);
+        GetRawsData(169+250)->Fill(triggers[itr], fTrEffCal[itr]);
+        GetRawsData(169+250)->SetBinContent(itr+1, fTrEffCal[itr]);
         GetRawsData(169)->Fill(triggers[itr], fTrEffPhys[itr]);
         GetRawsData(169)->SetBinContent(itr+1, fTrEffPhys[itr]);
       } 
@@ -124,13 +134,13 @@ void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArra
 	{  
 	  effic=0;
 	  if ( fnEventCal>0) effic = Float_t(feffC[ik])/Float_t(fnEventCal);
-	  GetRawsData(207+251)->SetBinContent(ik+1,effic) ;
+	  GetRawsData(207+250)->SetBinContent(ik+1,effic) ;
 	  effic=0;
 	  if ( fnEventCal>0) effic = Float_t(feffA[ik])/Float_t(fnEventCal);
-	  GetRawsData(208+251)->SetBinContent(ik+1,effic );
+	  GetRawsData(208+250)->SetBinContent(ik+1,effic );
 	  effic=0;
 	  if ( fnEventCal>0) effic = Float_t(feffqtc[ik])/Float_t(fnEventCal);
-	  GetRawsData(209+251)->SetBinContent(ik+1, effic);
+	  GetRawsData(209+250)->SetBinContent(ik+1, effic);
 
 	  effic=0;
 	  if ( fnEventPhys>0) effic = Float_t(feffPhysC[ik])/Float_t(fnEventPhys);
@@ -410,6 +420,8 @@ void AliT0QADataMakerRec::InitRaws()
    TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
 
+   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 60, -30, 30, 60, -30, 30);
+   Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
    
    const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
    for (Int_t itr=0; itr<6; itr++) {
@@ -418,7 +430,8 @@ void AliT0QADataMakerRec::InitRaws()
      GetRawsData(169+250)->Fill(triggers[itr], fNumTriggers[itr]);
      GetRawsData(169+250)->SetBinContent(itr+1, fNumTriggers[itr]);
    }
-   
+  
+    
 }
   
 
@@ -487,7 +500,7 @@ void AliT0QADataMakerRec::InitESDs()
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
 
- 
+	
   rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
@@ -501,7 +514,6 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     AliDebug(AliQAv1::GetQADebugLevel(),Form(" no raw data found!!"));
   else
     {  
-      
       UInt_t type =rawReader->GetType();
       if (type == 8){ shift=250; fnEventCal++;} 
       if (type == 7){ shift=0;   fnEventPhys++;}
@@ -657,9 +669,60 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       
       GetRawsData(215)->Fill(nhitsOrA);
       GetRawsData(216)->Fill(nhitsOrC);
-      
-    }
-  
+
+      //draw satellite
+      if (type == 7) {
+	if ( fnEventPhys < 1000) {
+	  for (Int_t ik=0; ik<12; ik++)
+	    {
+	      if(allData[ik+1][0]>0 && allData[1][0]>0)
+		fhTimeDiff[ik] -> Fill(allData[ik+1][0] - allData[1][0]);
+	    }
+	  for (Int_t ik=12; ik<24; ik++)
+	    {
+	      if(allData[ik+45][0]>0 && allData[57][0]>0)
+		fhTimeDiff[ik] -> Fill(allData[ik+45][0] - allData[57][0]);
+	    }
+	}
+	Int_t besttimeA=9999999;
+	Int_t besttimeC=9999999;
+	Int_t diff[24], time[24] ;
+	for (Int_t ik=0; ik<24; ik++) {time[ik]=0; diff[ik]=0;}     
+  	if( fnEventPhys ==1000) {
+ 	  
+	    for (Int_t in=0; in<24; in++)  
+	      {
+		diff[in] = fhTimeDiff[in]->GetMean();
+	      }
+	  }
+	
+	if( fnEventPhys > 1000) {
+	  for (Int_t ipmt=0; ipmt<12; ipmt++){
+	    time[ipmt] = allData[ipmt+1][0] - diff[ipmt]  ;
+	    time[ipmt+12] = allData[ipmt+57][0]- diff[ipmt+12] ;
+	    if(time[ipmt] > 1 ) {
+	      if(time[ipmt]<besttimeC)
+		besttimeC=time[ipmt]; //timeC
+	    }
+	  }
+	  for ( Int_t ipmt=12; ipmt<24; ipmt++){
+	    if(time[ipmt] > 1) {
+	      if(time[ipmt]<besttimeA) 
+		besttimeA=time[ipmt]; //timeA
+	    }
+	  }
+	
+	  if(besttimeA<9999 &&besttimeC< 99999) {
+	    Float_t t0 = 24.4 * Float_t( besttimeA+besttimeC)/2.;
+	    Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
+	    GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
+	  }
+	} //event >100
+      } //type 7
+    } //next
+        
+
+
   delete start;
 }
 
