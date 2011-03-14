@@ -71,7 +71,7 @@
 #pragma link C++ class AliCentralCorrSecondaryMap+;
 #pragma link C++ class AliCentralCorrAcceptance+;
 #pragma link C++ class AliCentraldNdetaTask+;
-#pragma link C++ class AliForwardFlowBase+;
+#pragma link C++ class AliForwardFlowUtil+;
 #pragma link C++ class AliForwardFlowTaskQC+;
 
 #else
