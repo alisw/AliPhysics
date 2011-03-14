@@ -49,10 +49,9 @@ class AliOADBContainer : public TNamed {
 // Browsable
   virtual Bool_t	IsFolder() const { return kTRUE; }
   void Browse(TBrowser *b);
-
+  Int_t GetIndexForRun(Int_t run) const;
  private:
   Int_t HasOverlap(Int_t lower, Int_t upper) const;
-  Int_t GetIndexForRun(Int_t run) const;
  private :
   TObjArray*               fArray;         // Array with objects corresponding to run ranges
   TList*                   fDefaultList;   // List with default arrays
