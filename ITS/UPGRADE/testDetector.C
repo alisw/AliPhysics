@@ -6,40 +6,20 @@ void standardPlots() {
 
   Detector its("ALICE","ITS");
 
-  its.MakeAliceCurrent(1); 
+  its.MakeAliceCurrent(0,0); 
 
-  its.SetRadius("bpipe",2.1);
-  its.AddLayer("spd0",2.2,0.001,0.0012,0.0012);
+  // its.SetRadius("bpipe",2.1);
+  // its.AddLayer("spd0",2.2,0.001,0.0012,0.0012);
 
   its.PrintLayout();
   its.SolveViaBilloir();
  
- 
-  TCanvas *c1 = new TCanvas("c1","c1");
- 
-  c1->Divide(2,2);
+  its.MakeStandardPlots(0,2);
 
-  Int_t color =4;
-  c1->cd(1);  gPad->SetGridx();   gPad->SetGridy(); 
-
-  gPad->SetLogx(); 
-  its.GetGraphRecoEfficiency(3,color)->Draw("AC");
-  its.GetGraphRecoEfficiency(2,color)->Draw("C");
-  its.GetGraphRecoEfficiency(1,color)->Draw("C");
+  its.AddTPC(0.1,0.1);
+  its.SolveViaBilloir();
  
-  c1->cd(2); gPad->SetGridx();   gPad->SetGridy(); 
-  its.GetGraphMomentumResolution(color)->Draw("AC");
- 
-  c1->cd(3); gPad->SetGridx();   gPad->SetGridy(); 
-  gPad->SetLogx(); 
-  its.GetGraphPointingResolution(0,color)->Draw("AC");
-  its.GetGraphPointingResolutionTeleEqu(0,1)->Draw("C");
-
-  c1->cd(4); gPad->SetGridx();   gPad->SetGridy(); 
-  gPad->SetLogx(); 
-  its.GetGraphPointingResolution(1,color)->Draw("AC");
-  its.GetGraphPointingResolutionTeleEqu(1,1)->Draw("C");
-
+  its.MakeStandardPlots(1,1);
 
 }
 
@@ -47,11 +27,14 @@ void standardPlots() {
 void particleDependendResolution() { 
 // particle dependency on resolution
 
+  // .L Detector.cxx++
+
   Detector its("ALICE","ITS");
 
   its.MakeAliceCurrent(); 
-
   its.PrintLayout();
+  its.PlotLayout();
+
   its.SolveViaBilloir(0);
  
   its.SetRadius("bpipe",2.1);
