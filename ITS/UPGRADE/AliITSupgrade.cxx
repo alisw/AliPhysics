@@ -211,7 +211,7 @@ void AliITSupgrade::CreateMaterials()
   Float_t tmaxfd = -10.0;                    //max deflection angle due to magnetic field in one step
   Float_t deemax = - 0.2;                    //max fractional energy loss in one step   
   Float_t stemax = - 0.1;                    //max step allowed [cm]
-  Float_t epsil  =   0.001;                  //abs tracking precision [cm]   
+  Float_t epsil  =  0.001;                  //abs tracking precision [cm]   
   Float_t stmin  = - 0.001;                  //min step size [cm] in continius process transport, negative value: choose it automatically
   Float_t tmaxfdSi = 0.1; // .10000E+01; // Degree
   Float_t stemaxSi = 0.0075; //  .10000E+01; // cm
@@ -232,7 +232,7 @@ void AliITSupgrade::CreateMaterials()
   AliMedium(kAir  ,"UpgradeAir"  ,matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
     
   AliMaterial(++matId,"UpgradeSi"  ,aSi  ,zSi  ,dSi  ,radSi  ,absSi  );  
-  AliMedium(kSi  ,"UpgradeSi"  , matId, sens, itgfld, maxfld, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
+  AliMedium(kSi  ,"UpgradeSi"  , matId, sens, isxfld, sxmgmx, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
     
   AliMaterial(++matId,"UpgradeBe"  ,aBe  ,zBe  ,dBe  ,radBe  ,absBe  );  
   AliMedium(kBe  ,"UpgradeBe"  , matId, unsens, isxfld, sxmgmx, tmaxfdBe, stemaxBe, deemaxBe, epsilBe, stminBe);
@@ -262,7 +262,7 @@ void AliITSupgrade::StepManager()
   // Full Step Manager.
   // Arguments: none
   //   Returns: none           
-  //  StepHistory(); return; //uncomment to print tracks history
+  // StepHistory(); return; //uncomment to print tracks history
   //  StepCount(); return;   //uncomment to count photons
 
   if(!fSegmentation) AliFatal("No segmentation available");
@@ -400,6 +400,8 @@ void AliITSupgrade::SetFullSegmentation(TArrayD xsize,TArrayD zsize){
 void AliITSupgrade::StepHistory()
 {
   // This methode is invoked from StepManager() in order to print out
+  TString volumeName=gMC->CurrentVolName();
+  if(!volumeName.Contains("Silicon")) return;
   static Int_t iStepN;
   const char *sParticle;
   switch(gMC->TrackPid()){
@@ -424,12 +426,17 @@ void AliITSupgrade::StepHistory()
   TString path=gMC->CurrentVolName(); path.Prepend("-");path.Prepend(gMC->CurrentVolOffName(1));//current volume and his mother are always there
   vid=gMC->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
   vid=gMC->CurrentVolOffID(3,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
+  
 
-  AliDebug(10, Form("Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,gMC->TrackPid(),flag.Data(),path.Data(),gMC->TrackMass(),gMC->TrackCharge(),gMC->Edep()*1e9,gMC->Etot()));
+  AliInfo(Form("\n Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,gMC->TrackPid(),flag.Data(),path.Data(),gMC->TrackMass(),gMC->TrackCharge(),gMC->Edep()*1e9,gMC->Etot()));
 
   Double_t gMcTrackPos[3]; gMC->TrackPosition(gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2]);
   Double_t  gMcTrackPosLoc[3]; gMC->Gmtod(gMcTrackPos,gMcTrackPosLoc,1);
-  AliDebug(10,Form("gMC Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) ---> (LOC) x: %5.3f, y: %5.3f, z: %5.3f",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2],TMath::Sqrt(gMcTrackPos[0]*gMcTrackPos[0]+gMcTrackPos[1]*gMcTrackPos[1]+gMcTrackPos[2]*gMcTrackPos[2]),gMcTrackPosLoc[0],gMcTrackPosLoc[1],gMcTrackPosLoc[2]));
+  TString v(volumeName.Data());
+  v.ReplaceAll("LayerSilicon","");
+  Int_t ilayer = v.Atoi();
+  Double_t rXY = TMath::Sqrt(gMcTrackPos[0]*gMcTrackPos[0]+gMcTrackPos[1]*gMcTrackPos[1]);
+  AliInfo(Form("gMC Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) (deltaR %5.5lf - width %5.5f)",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2], rXY , rXY - (fRadii.At(ilayer)),fWidths.At(ilayer)));
 
 
   AliDebug(10,Form("Step %i: tid=%i flags alive=%i disap=%i enter=%i exit=%i inside=%i out=%i stop=%i new=%i",
@@ -442,12 +449,13 @@ void AliITSupgrade::StepHistory()
   AliDebug(10, Form("Step %i: mid=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f\n\n",iStepN,mid,a,z,den,rad,abs));
 
   TArrayI proc;  gMC->StepProcesses(proc);
-  AliDebug(1,"Processes in this step:");
+  AliInfo("Processes in this step:");
   for ( int i = 0 ; i < proc.GetSize(); i++)
     {
-      AliDebug(10, Form("%s",TMCProcessName[proc.At(i)]));
+      printf(Form(" - %s - ",TMCProcessName[proc.At(i)]));
     }
-  AliDebug(1,"End process list");
+  printf("\n");
+  AliInfo("End process list");
   iStepN++;
 }//StepHistory()
 //______________________________________________________
