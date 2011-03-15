@@ -30,7 +30,7 @@
 #include "AliMUONRecoParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
-#include "AliMpCDB.h"
+#include "AliMUONCDB.h"
 #include "AliMpConstants.h"
 #include "AliMpDDLStore.h"
 #include "AliMpDetElement.h"
@@ -39,13 +39,17 @@
 #endif
 
 //AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "alien://folder=/alice/data/2009/OCDB",
-AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT/OCDB",
-                             Int_t runNumber=67138, Bool_t statusOnly=kTRUE)
+AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "alien://folder=/alice/data/2011/OCDB",
+                             Int_t runNumber=145000, Bool_t statusOnly=kTRUE)
 {  
 
-  AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
+  AliCDBManager::Instance()->SetDefaultStorage(cdbStorage);
+  AliCDBManager::Instance()->SetRun(runNumber);
   
-  AliMpCDB::LoadAll2();
+  
+  AliMUONCDB::LoadMapping();
+  
+  AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   
   AliCDBManager* man = AliCDBManager::Instance();
   
@@ -56,17 +60,15 @@ AliMUONVStore* MUONStatusMap(const TString& cdbStorage = "local://$ALICE_ROOT/OC
 //  man->SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
 //  man->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
 
-//  man->SetRun(runNumber);
-
   AliMUONCalibrationData cd(runNumber);
   
   AliMUONPadStatusMaker statusMaker(cd);
   
   statusMaker.SetLimits(*recoParam);
   
-  delete recoParam;
-  
   UInt_t mask = recoParam->PadGoodnessMask();
+
+  //  delete recoParam;
   
   statusMaker.Report(mask);
   
