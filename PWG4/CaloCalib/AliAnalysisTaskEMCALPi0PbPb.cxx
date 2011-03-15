@@ -111,6 +111,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCentQual = new TH1F("hCentAfterCut","",101,-1,100);
   fHCentQual->SetXTitle(fCentVar.Data());
   fOutput->Add(fHCentQual);
+
   // histograms for cells
   fHColuRow   = new TH2F*[4];
   fHColuRowE  = new TH2F*[4];
@@ -121,12 +122,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fHColuRow[i]->SetXTitle("col (i#eta)");
     fHColuRow[i]->SetYTitle("row (i#phi)");
     fHColuRowE[i] = new TH2F(Form("hColRowE_Mod%d", i),"",49,0,49,25,0,25);
-    fHColuRowE[i]->SetTitle(Form("Module %d: cell energy",i));
+    fHColuRowE[i]->SetTitle(Form("Module %d: Cell energy",i));
     fHColuRowE[i]->SetXTitle("col (i#eta)");
     fHColuRowE[i]->SetYTitle("row (i#phi)");
     fHCellMult[i] = new TH1F(Form("hCellMult_Mod%d",i),"",1000,0,1000); 
     fHCellMult[i]->SetTitle(Form("Module %d: Cell multiplicity",i));
-    fHCellMult[i]->SetXTitle("# of cell");
+    fHCellMult[i]->SetXTitle("# of cells");
     fOutput->Add(fHColuRow[i]);
     fOutput->Add(fHColuRowE[i]);
     fOutput->Add(fHCellMult[i]);
@@ -137,6 +138,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCellH = new TH1F ("fHCellHighestE","",100,0.,10.);
   fHCellH->SetXTitle("E^{max}_{cell} [GeV] ");
   fOutput->Add(fHCellH);
+
   // histograms for clusters
   fHClustEtaPhi = new TH2F("hClustEtaPhi","",100,-0.8,0.8,100,1.2,2.2);
   fHClustEtaPhi->SetXTitle("#eta");
@@ -158,6 +160,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHClustNTowEnergyRatio->SetXTitle("N towers");
   fHClustNTowEnergyRatio->SetYTitle("Energy ratio");
   fOutput->Add(fHClustNTowEnergyRatio);
+
   // histograms for pion candidates
   fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100,1.2,2.2);
   fHPionEtaPhi->SetXTitle("#eta^{#gamma#gamma}");
@@ -207,7 +210,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     am->LoadBranch("header");
   }
 
-  if (!fGeom) {
+  if (!fGeom) { // set misalignment matrices (stored in first event)
     fGeom = new AliEMCALGeoUtils("EMCAL_FIRSTYEARV1","EMCAL");
     if (fEsdEv) {
       for (Int_t i=0; i<4; ++i)
@@ -351,72 +354,57 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
 {
   // Fill histograms related to cell properties.
   
-  if (fEsdCells) {
-    Int_t ncells = fEsdCells->GetNumberOfCells();
-    Int_t CellModuCount[4]={0,0,0,0};
-    Float_t cellH = 0; 
-    for (Int_t i = 0; i<ncells; ++i ) {
-      Int_t AbsID = fEsdCells->GetCellNumber(i);
-      Float_t cellE = fEsdCells->GetAmplitude(i);
-      fHCellE->Fill(cellE);
-      if (cellE>cellH) cellH = cellE;
-      Int_t iSM1=-1, iTower1=-1, Iphi1=-1, Ieta1=-1;
-      fGeom->GetCellIndex(AbsID, iSM1, iTower1, Iphi1, Ieta1 );
-      Int_t iPhi1=-1, iEta1=-1;
-      fGeom->GetCellPhiEtaIndexInSModule(iSM1, iTower1, Iphi1, Ieta1, iPhi1,iEta1);   
-      for (Int_t j=0; j<4; ++j) {
-        if (j==iSM1) {
-          ++CellModuCount[j];
-          fHColuRow[j]->Fill(iEta1,iPhi1,1);
-          fHColuRowE[j]->Fill(iEta1,iPhi1,fEsdCells->GetAmplitude(i));
-         }
-       }  
-    }
-    cout<<"the cell multiplicity is $$$$$$$$$$$$"<<CellModuCount[0]<<"<$0$"<<CellModuCount[1]<<"$2$"<<CellModuCount[2]<<"$3$"<<CellModuCount[3]<<endl;
-       fHCellH->Fill(cellH);
-       for (Int_t i=0; i<4; ++i) { if(CellModuCount[i]> 0.) fHCellMult[i]->Fill(CellModuCount[i]);}
-  } else if (fAodCells){
-     Int_t ncells = fAodCells->GetNumberOfCells();
-     Float_t cellH = 0; 
-     Int_t CellModuCount[4]={0,0,0,0}; 
-     for (Int_t i = 0; i<ncells; ++i ){
-       Int_t AbsID = fAodCells->GetCellNumber(i);
-       Float_t cellE = fAodCells->GetAmplitude(i);
-       fHCellE->Fill(cellE);
-       if (cellE>cellH) cellH = cellE;
-//       cout<<"$$$$$$$$$cell energy is"<<cellE<<"and the highest is "<<cellH<<endl;
-       Int_t iSM1=-1, iTower1=-1, Iphi1=-1, Ieta1=-1;
-       fGeom->GetCellIndex(AbsID, iSM1, iTower1, Iphi1, Ieta1 );
-       Int_t iPhi1=-1, iEta1=-1;
-       fGeom->GetCellPhiEtaIndexInSModule(iSM1, iTower1, Iphi1, Ieta1, iPhi1,iEta1);
-       for(Int_t j=0; j<4; ++j){
-         if(j==iSM1){
-           CellModuCount[j]++;
-           fHColuRow[j]->Fill(iEta1,iPhi1,1);
-           fHColuRowE[j]->Fill(iEta1,iPhi1,fAodCells->GetAmplitude(i));
-         }
-       }
-    }
-       fHCellH->Fill(cellH);
-       for (Int_t i=0; i<4; ++i) { if(CellModuCount[i]> 0.) fHCellMult[i]->Fill(CellModuCount[i]);}
-    }//aod
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
 
+  if (cells) {
+    Int_t cellModCount[4] = {0,0,0,0};
+    Double_t cellMaxE = 0; 
+    Int_t ncells = cells->GetNumberOfCells();
+
+    for (Int_t i = 0; i<ncells; ++i ) {
+      Int_t absID    = cells->GetCellNumber(i);
+      Double_t cellE = cells->GetAmplitude(i);
+      fHCellE->Fill(cellE);
+      if (cellE>cellMaxE) 
+        cellMaxE = cellE;
+
+      Int_t iSM=-1, iTower=-1, nIphi=-1, nIeta=-1;
+      Bool_t ret = fGeom->GetCellIndex(absID, iSM, iTower, nIphi, nIeta);
+      if (!ret) {
+        AliError(Form("Could not get cell index for %d", absID));
+        continue;
+      }
+      ++cellModCount[iSM];
+      Int_t iPhi=-1, iEta=-1;
+      fGeom->GetCellPhiEtaIndexInSModule(iSM, iTower, nIphi, nIeta, iPhi, iEta);   
+      fHColuRow[iSM]->Fill(iEta,iPhi,1);
+      fHColuRowE[iSM]->Fill(iEta,iPhi,cellE);
+    }    
+    fHCellH->Fill(cellMaxE);
+    for (Int_t i=0; i<4; ++i) 
+      fHCellMult[i]->Fill(cellModCount[i]);
+  }
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
 {
-  // Fill histograms related to clusters.
+  // Fill histograms related to cluster properties.
 
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  // Fill histograms related to cluster properties.
-  TLorentzVector clusterVec;
-  if (fEsdClusters) {
-    Int_t nclus = fEsdClusters->GetEntries();
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
+
+  if (clusters) {
+    TLorentzVector clusterVec;
+    Int_t nclus = clusters->GetEntries();
     for(Int_t i = 0; i<nclus; ++i) {
-      AliESDCaloCluster *clus = static_cast<AliESDCaloCluster*>(fEsdClusters->At(i));
+      AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
       if (!clus)
         continue;
       if (!clus->IsEMCAL()) 
@@ -427,23 +415,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
       fHClustEnergySigma->Fill(clus->E()*GetSigmaMax(clus),clus->E());
       fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*GetSigmaMax(clus));
-      fHClustNTowEnergyRatio->Fill(clus->GetNCells(),GetEnergyRatio(clus));
-    }
-  } else if (fAodClusters) {
-    Int_t nclus = fAodClusters->GetEntries();
-    for (Int_t i = 0; i<nclus; ++i) {
-      AliAODCaloCluster *clus = static_cast<AliAODCaloCluster*>(fAodClusters->At(i));
-      if (!clus)
-        continue;
-      if (!clus->IsEMCAL()) 
-        continue;
-      clus->GetMomentum(clusterVec,vertex);
-      
-      fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
-      fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
-      fHClustEnergySigma->Fill(clus->E(),clus->E()*GetSigmaMax(clus));
-      fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*GetSigmaMax(clus));
-      fHClustNTowEnergyRatio->Fill(clus->GetNCells(),GetEnergyRatio(clus));
+      fHClustNTowEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus));
     }
   }
 }
@@ -456,21 +428,25 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  TLorentzVector clusterVec1;
-  TLorentzVector clusterVec2;
-  TLorentzVector pionVec;
+  TObjArray *clusters = fEsdClusters;
+  if (!clusters)
+    clusters = fAodClusters;
 
-  if (fEsdClusters) {
-    Int_t nclus = fEsdClusters->GetEntries();
+  if (clusters) {
+    TLorentzVector clusterVec1;
+    TLorentzVector clusterVec2;
+    TLorentzVector pionVec;
+
+    Int_t nclus = clusters->GetEntries();
     for (Int_t i = 0; i<nclus; ++i) {
-      AliESDCaloCluster *clus1 = static_cast<AliESDCaloCluster*>(fEsdClusters->At(i));
+      AliVCluster *clus1 = static_cast<AliVCluster*>(clusters->At(i));
       if (!clus1)
         continue;
       if (!clus1->IsEMCAL()) 
         continue;
       clus1->GetMomentum(clusterVec1,vertex);
       for (Int_t j = i+1; j<nclus; ++j) {
-        AliESDCaloCluster *clus2 = static_cast<AliESDCaloCluster*>(fEsdClusters->At(j));
+        AliVCluster *clus2 = static_cast<AliVCluster*>(clusters->At(j));
         if (!clus2)
           continue;
         if (!clus2->IsEMCAL()) 
@@ -487,81 +463,73 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         }
       }
     }
-  } else if (fAodClusters) {
-    Int_t nclus = fAodClusters->GetEntries();
-    for (Int_t i = 0; i<nclus; ++i) {
-      AliAODCaloCluster *clus1 = static_cast<AliAODCaloCluster*>(fAodClusters->At(i));
-      if (!clus1)
-        continue;
-      if (!clus1->IsEMCAL()) 
-        continue;
-      clus1->GetMomentum(clusterVec1,vertex);
-      for (Int_t j = i+1; j<nclus; ++j) {
-        AliAODCaloCluster *clus2 = static_cast<AliAODCaloCluster*>(fAodClusters->At(j));
-        if (!clus2)
-          continue;
-        if (!clus2->IsEMCAL()) 
-          continue;
-        clus2->GetMomentum(clusterVec2,vertex);
-        pionVec = clusterVec1 + clusterVec2;
-        Double_t pionZgg = TMath::Abs(clusterVec1.E()-clusterVec2.E())/pionVec.E();
-        if (pionZgg < fAsymMax) {
-          fHPionEtaPhi->Fill(pionVec.Eta(),pionVec.Phi()); 
-          fHPionMggPt->Fill(pionVec.M(),pionVec.Pt()); 
-          fHPionMggAsym->Fill(pionVec.M(),pionZgg); 
-          Int_t bin = fPtRanges->FindBin(pionVec.Pt());
-          fHPionInvMasses[bin]->Fill(pionVec.M());
-        }
-      }
-    }
-  }
-}
-
-//________________________________________________________________________
-Double_t  AliAnalysisTaskEMCALPi0PbPb::GetEnergyRatio(AliVCluster * cluster)
-{
-  Double_t energyRatio = 0;
-  for (Int_t i=0; i<cluster->GetNCells(); i++) {
-    if (fEsdCells) 
-      fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(i)) > energyRatio ? energyRatio = fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(i)) : energyRatio = energyRatio ;
-    if (fAodCells)
-      fAodCells->GetCellAmplitude(cluster->GetCellAbsId(i)) > energyRatio ? energyRatio = fAodCells->GetCellAmplitude(cluster->GetCellAbsId(i)) : energyRatio = energyRatio ;
- }
- return energyRatio;
-}
-
-//________________________________________________________________________
-Double_t  AliAnalysisTaskEMCALPi0PbPb::GetSigmaMax(AliVCluster * cluster)
-{
-  Double_t sigmaMax = 0;      //! cluster variance along its longer axis
-  Double_t Ec = cluster->E(); //! cluster energy
-  Double_t Xc = 0 ;           //! cluster first moment along X
-  Double_t Yc = 0 ;           //! cluster first moment along Y
-  Double_t Sxx = 0 ;          //! cluster second central moment along X (variance_X^2)
-  Double_t Sxy = 0 ;          //! cluster second central moment along Y (variance_Y^2)
-  Double_t Syy = 0 ;          //! cluster covariance^2
-  //AliEMCALGeoUtils * fGeom   = new AliEMCALGeoUtils("EMCAL_FIRSTYEARV1","EMCAL");
-  //fGeom->GetEMCGeometry();
-  for(Int_t j=0; j<cluster->GetNCells();j++){
-    TVector3 pos;
-    fGeom->GetGlobal(cluster->GetCellAbsId(j),pos);
-    if (fAodCells) Xc = Xc + fAodCells->GetCellAmplitude(cluster->GetCellAbsId(j))*pos.X()/Ec; 
-    else if (fEsdCells) Xc = Xc + fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(j))*pos.X()/Ec; 
-    if (fAodCells) Yc = Yc + fAodCells->GetCellAmplitude(cluster->GetCellAbsId(j))*pos.Y()/Ec;    
-    else if (fEsdCells) Yc = Yc + fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(j))*pos.Y()/Ec;    
-  }
-  for(Int_t j=0; j<cluster->GetNCells();j++){
-    TVector3 pos;
-    fGeom->GetGlobal(cluster->GetCellAbsId(j),pos);
-    if (fAodCells) Sxx = Sxx + fAodCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.X()-Xc)*(pos.X()-Xc)/Ec; 
-    else if (fEsdCells) Sxx = Sxx + fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.X()-Xc)*(pos.X()-Xc)/Ec; 
-    if (fAodCells) Syy = Syy + fAodCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.Y()-Yc)*(pos.Y()-Yc)/Ec; 
-    else if (fEsdCells) Syy = Syy + fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.Y()-Yc)*(pos.Y()-Yc)/Ec; 
-    if (fAodCells) Sxy = Sxy + fAodCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.X()-Xc)*(pos.Y()-Yc)/Ec; 
-    else if (fEsdCells) Sxy = Sxy + fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(j))*(pos.X()-Xc)*(pos.Y()-Yc)/Ec; 
   } 
-  sigmaMax = (Sxx + Syy + TMath::Sqrt((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy))/2.0;
-  sigmaMax = TMath::Sqrt(sigmaMax); 
-  //fGeom->Delete();
+}
+
+//________________________________________________________________________
+Double_t  AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster)
+{
+  // Get maximum energy of attached cell.
+
+  Double_t maxe = 0;
+
+  Int_t ncells = cluster->GetNCells();
+  if (fEsdCells) {
+    for (Int_t i=0; i<ncells; i++) {
+      Double_t e = fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(i));
+      if (e>maxe)
+        maxe = e;
+    }
+  } else {
+    for (Int_t i=0; i<ncells; i++) {
+      Double_t e = fAodCells->GetCellAmplitude(cluster->GetCellAbsId(i));
+      if (e>maxe)
+        maxe = e;
+    }
+  }
+ return maxe;
+}
+
+//________________________________________________________________________
+Double_t  AliAnalysisTaskEMCALPi0PbPb::GetSigmaMax(AliVCluster *cluster)
+{
+  // Calculate the (E) weighted variance along the longer (eigen) axis.
+
+  Double_t sigmaMax = 0;      // cluster variance along its longer axis
+  Double_t Ec = cluster->E(); // cluster energy
+  Double_t Xc = 0 ;           // cluster first moment along X
+  Double_t Yc = 0 ;           // cluster first moment along Y
+  Double_t Sxx = 0 ;          // cluster second central moment along X (variance_X^2)
+  Double_t Sxy = 0 ;          // cluster second central moment along Y (variance_Y^2)
+  Double_t Syy = 0 ;          // cluster covariance^2
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+
+  if (cells) {
+    TVector3 pos;
+    Int_t ncells = cluster->GetNCells();
+    for(Int_t j=0; j<ncells; ++j) {
+      fGeom->GetGlobal(cluster->GetCellAbsId(j),pos);
+      Int_t id = cluster->GetCellAbsId(j);
+      Xc  += cells->GetCellAmplitude(id)*pos.X();
+      Yc  += cells->GetCellAmplitude(id)*pos.Y();    
+      Sxx += cells->GetCellAmplitude(id)*pos.X()*pos.X(); 
+      Syy += cells->GetCellAmplitude(id)*pos.Y()*pos.Y(); 
+      Sxy += cells->GetCellAmplitude(id)*pos.X()*pos.Y(); 
+    }
+    Xc  /= Ec;
+    Yc  /= Ec;
+    Sxx /= Ec;
+    Syy /= Ec;
+    Sxy /= Ec;
+    Sxx -= Xc*Xc;
+    Syy -= Yc*Yc;
+    Sxy -= Xc*Yc;
+    sigmaMax = (Sxx + Syy + TMath::Sqrt((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy))/2.0;
+    sigmaMax = TMath::Sqrt(sigmaMax); 
+  } 
   return sigmaMax;
 }
+

@@ -38,7 +38,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillCellHists();
   virtual void FillClusHists();
   virtual void FillPionHists();
-  Double_t     GetEnergyRatio(AliVCluster *c);
+  Double_t     GetMaxCellEnergy(AliVCluster *c);
   Double_t     GetSigmaMax(AliVCluster *c);
 
     // input members
