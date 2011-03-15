@@ -5,7 +5,7 @@
 #define ALIFORWARDMCMULTIPLICITYTASK_H
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
-#include "AliFMDEventInspector.h"
+#include "AliFMDMCEventInspector.h"
 #include "AliFMDEnergyFitter.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
@@ -190,7 +190,7 @@ protected:
   AliAODForwardMult      fMCAODFMD;     // MC Output object
   TH2D*                  fPrimary;      // Per event primary particles 
 
-  AliFMDEventInspector      fEventInspector;    // Algorithm
+  AliFMDMCEventInspector    fEventInspector;    // Algorithm
   AliFMDEnergyFitter        fEnergyFitter;      // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm

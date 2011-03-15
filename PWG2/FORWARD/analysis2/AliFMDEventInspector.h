@@ -111,7 +111,7 @@ public:
    * 
    * @param vtxAxis Vertex axis in use 
    */
-  void Init(const TAxis& vtxAxis);
+  virtual void Init(const TAxis& vtxAxis);
   /** 
    * Process the event 
    * 
@@ -226,6 +226,15 @@ protected:
    * @return @c true on success, @c false otherwise 
    */
   Bool_t ReadVertex(const AliESDEvent* esd, Double_t& vz);
+  /** 
+   * Read centrality from event 
+   * 
+   * @param esd  Event 
+   * @param cent On return, the centrality or negative if not found
+   * 
+   * @return False on error, true otherwise 
+   */
+  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent);
 
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 

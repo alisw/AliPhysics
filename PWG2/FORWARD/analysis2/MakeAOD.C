@@ -43,6 +43,11 @@ void MakeAOD(const char* esddir,
   TChain* chain = MakeChain("ESD", esddir,true);
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
+  
+  // --- Set the macro path ------------------------------------------
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			   "$ALICE_ROOT/ANALYSIS/macros",
+			   gROOT->GetMacroPath()));
 
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Train", 
@@ -94,7 +99,7 @@ void MakeAOD(const char* esddir,
 
   // --- Add tasks ---------------------------------------------------
   // Physics selection 
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("AddTaskPhysicsSelection.C");
   // test HHD
   AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
 
@@ -107,15 +112,15 @@ void MakeAOD(const char* esddir,
   }
 #endif
   if(centrality) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    gROOT->LoadMacro("AddTaskCentrality.C");
     AddTaskCentrality();
   }
   // FMD 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
+  gROOT->LoadMacro("AddTaskFMD.C");
   AddTaskFMD(mc);
 
   // Central 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentral.C");
+  gROOT->LoadMacro("AddTaskCentral.C");
   AddTaskCentral();
   
   // --- Run the analysis --------------------------------------------

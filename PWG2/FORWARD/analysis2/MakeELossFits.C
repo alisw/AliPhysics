@@ -31,6 +31,11 @@ void MakeELossFits(const char* esddir,
   if (nEvents <= 0) nEvents = chain->GetEntries();
   Info("MakeELossFits", "Will analyse %d events", nEvents);
 
+  // --- Set the macro path ------------------------------------------
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			   "$ALICE_ROOT/ANALYSIS/macros",
+			   gROOT->GetMacroPath()));
+
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Forward ELoss Train", 
 						    "Forward energy loss");
@@ -57,17 +62,14 @@ void MakeELossFits(const char* esddir,
   aodHandler->SetOutputFileName("AliAODs.root");
 
   // --- Add tasks ---------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+  gROOT->LoadMacro("AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
   
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+  gROOT->LoadMacro("AddTaskCentrality.C");
   AddTaskCentrality();
   
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
   mgr->AddTask(task);
-  
- 
-  
   
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();

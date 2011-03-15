@@ -1,3 +1,8 @@
+/**
+ * Script to visualise the dN/deta 
+ *
+ * This script is independent of any AliROOT code - and should stay that way. 
+ */
 #include <TH1.h>
 #include <THStack.h>
 #include <TGraphErrors.h>
@@ -48,19 +53,18 @@ struct dNdetaDrawer
       fRebin(5),		// UShort_t
       fCutEdges(false),		// Bool_t
       fTitle(""),		// TString
-      fHHDFile(""),		// TString
       fTrigString(0),		// TNamed*
       fSNNString(0),		// TNamed*
       fSysString(0),		// TNamed*
       fVtxAxis(0),		// TAxis*
-      fForward(0),		// TH1*
-      fForwardMC(0),		// TH1*
-      fForwardHHD(0),		// TH1*
-      fTruth(0),		// TH1*
-      fCentral(0),		// TH1*
-      fForwardSym(0),		// TH1*
-      fForwardMCSym(0),		// TH1*
-      fForwardHHDSym(0),	// TH1*
+      // fForward(0),		// TH1*
+      // fForwardMC(0),		// TH1*
+      // fForwardHHD(0),	// TH1*
+      // fTruth(0),		// TH1*
+      // fCentral(0),		// TH1*
+      // fForwardSym(0),	// TH1*
+      // fForwardMCSym(0),	// TH1*
+      // fForwardHHDSym(0),	// TH1*
       fTriggers(0),		// TH1*
       fRangeParam(0)
 
@@ -127,13 +131,6 @@ struct dNdetaDrawer
    * @param x Title
    */
   void SetTitle(TString x)        { fTitle = x; }
-  //__________________________________________________________________
-  /** 
-   * Set the file name of the file containing the HHD results
-   * 
-   * @param fn File name 
-   */
-  void SetHHDFile(const char* fn) { fHHDFile = fn; }
   /* @} */
   //==================================================================  
   /** 
@@ -200,12 +197,13 @@ struct dNdetaDrawer
    */
   void Run(const char* filename="forward_dndeta.C") 
   {
-    if (!Open(filename)) return;
-
     Double_t max = 0;
 
+    if (!Open(filename, max)) return;
+    Info("Run", "Got data from %s with maximum %f", filename, max);
+
     // Create our stack of results
-    THStack* results = StackResults(max);
+    THStack* results = fResults; // StackResults(max);
 
     // Create our stack of other results 
     TMultiGraph* other = 0;
@@ -221,6 +219,43 @@ struct dNdetaDrawer
 
     Plot(results, other, max, ratios, smax, leftright, amax);
   }
+
+  //__________________________________________________________________
+  /** 
+   * Fetch the information on the run from the results list
+   * 
+   * @param results  Results list
+   */
+  void FetchInformation(const TList* results)
+  {
+    if (!fTrigString) 
+      fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
+    if (!fSNNString) 
+      fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
+    if (!fSysString) 
+      fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
+    if (!fVtxAxis)
+      fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
+    if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
+    if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
+    if (!fSysString)  fSysString  = new TNamed("sys", "unknown");
+    if (!fVtxAxis) { 
+      fVtxAxis    = new TAxis(1,0,0);
+      fVtxAxis->SetName("vtxAxis");
+      fVtxAxis->SetTitle("v_{z} range unspecified");
+    }
+
+    Info("FetchInformation", 
+	 "Initialized for\n"
+	 "   Trigger:    %s  (%d)\n"
+	 "   sqrt(sNN):  %s  (%dGeV)\n"
+	 "   System:     %s  (%d)\n"
+	 "   Vz range:   %s  (%f,%f)",
+	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
+	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
+	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
+	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
+  }
     
   //__________________________________________________________________
   /** 
@@ -230,7 +265,7 @@ struct dNdetaDrawer
    * 
    * @return true on success 
    */
-  Bool_t Open(const char* filename)
+  Bool_t Open(const char* filename, Double_t& max)
   {
     TFile* file = TFile::Open(filename, "READ");
     if (!file) { 
@@ -244,79 +279,45 @@ struct dNdetaDrawer
       return false;
     }
 
-    fForward   = GetResult(results, "dndetaForward");
-    fForwardMC = GetResult(results, "dndetaForwardMC");
-    fTruth     = GetResult(results, "dndetaTruth");
-    if (!fTruth) results->ls();
+    // Get information on the run 
+    FetchInformation(results);
 
     TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
-    if (!clusters) 
-      Warning("Open", "Couldn't find list CentralResults");
-    else {
-      fCentral   = GetResult(clusters, "dndetaCentral");
-      if (fCentral) fCentral->SetMarkerColor(kGreen+1);
-    }
-    if (!fTrigString) 
-      fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
-    if (!fSNNString) 
-      fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
-    if (!fSysString) 
-      fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
-    if (!fVtxAxis)
-      fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
-    
-    if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
-    if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
-    if (!fSysString)  fSysString  = new TNamed("sys", "unknown");
-    if (!fVtxAxis) { 
-      fVtxAxis    = new TAxis(1,0,0);
-      fVtxAxis->SetName("vtxAxis");
-      fVtxAxis->SetTitle("v_{z} range unspecified");
-    }
+    if (!clusters) Warning("Open", "Couldn't find list CentralResults");
 
-    Info("Open", 
-	 "Initialized for\n"
-	 "   Trigger:    %s  (%d)\n"
-	 "   sqrt(sNN):  %s  (%dGeV)\n"
-	 "   System:     %s  (%d)\n"
-	 "   Vz range:   %s  (%f,%f)",
-	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
-	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
-	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
-	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
+    fResults   = new THStack("results", "Results");
+    FetchResults(fResults, results,  "Forward", max);
+    FetchResults(fResults, clusters, "Central", max);
 
     TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
-    if (sums) 
-      fTriggers = GetResult(sums, "triggers");
-
-    if (!fForward) { 
-      Error("Open", "Couldn't find the result of the forward analysis");
-      return false;
-    }
-    file->Close();
-
+    if (sums) fTriggers = FetchResult(sums, "triggers");
     
-    fForwardHHD = GetHHD();
+    file->Close();
 
     return true;
   }
   //__________________________________________________________________
-  /** 
-   * Make a histogram stack of results 
-   * 
-   * @param max On return, the maximum value in the stack 
-   * 
-   * @return Newly allocated stack
-   */
-  THStack* StackResults(Double_t& max)
+  void FetchResults(THStack* stack, const TList* list, const char* name, 
+		    Double_t& max)
   {
-    THStack* stack = new THStack("results", "Stack of Results");
-    max = TMath::Max(max, AddHistogram(stack, fTruth,      "e5 p"));
-    max = TMath::Max(max, AddHistogram(stack, fForwardHHD, "", fForwardHHDSym));
-    max = TMath::Max(max, AddHistogram(stack, fForwardMC,  "", fForwardMCSym));
-    max = TMath::Max(max, AddHistogram(stack, fCentral,    ""));
-    max = TMath::Max(max, AddHistogram(stack, fForward,    "", fForwardSym));
-    return stack;
+    TH1* dndeta      = FetchResult(list, Form("dndeta%s", name));
+    TH1* dndetaMC    = FetchResult(list, Form("dndeta%sMC", name));
+    TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
+    TH1* dndetaSym   = 0;
+    TH1* dndetaMCSym = 0;
+
+    max = TMath::Max(max, AddHistogram(stack, dndetaTruth, "e5 p"));
+    max = TMath::Max(max, AddHistogram(stack, dndetaMC,    "", dndetaMCSym));
+    max = TMath::Max(max, AddHistogram(stack, dndeta,      "", dndetaSym));
+    
+    Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
+	 dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
+
+    if (dndetaMCSym) fNumerators.Add(dndetaMCSym);
+    if (dndetaMC)    fNumerators.Add(dndetaMC);
+    if (dndetaSym)   fNumerators.Add(dndetaSym);
+    if (dndeta)      fNumerators.Add(dndeta);
+    if (dndetaTruth) fDenominators.Add(dndetaTruth);
   }
   //__________________________________________________________________
   /** 
@@ -326,7 +327,7 @@ struct dNdetaDrawer
    * 
    * @return Newly allocated stack
    */
-  TMultiGraph* StackOther(Double_t& max) const
+  TMultiGraph* StackOther(Double_t& max)
   {
     gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/OtherData.C");
     Int_t    error = 0;
@@ -349,8 +350,10 @@ struct dNdetaDrawer
 
     TGraphAsymmErrors* o      = 0;
     TIter              next(other->GetListOfGraphs());
-    while ((o = static_cast<TGraphAsymmErrors*>(next()))) 
+    while ((o = static_cast<TGraphAsymmErrors*>(next()))) {
       max = TMath::Max(max, TMath::MaxElement(o->GetN(), o->GetY()));
+      fDenominators.Add(o);
+    }
 
     return other;
   }
@@ -367,49 +370,31 @@ struct dNdetaDrawer
     THStack* ratios = new THStack("ratios", "Ratios");
 
     if (others) {
-      TGraphAsymmErrors* ua5_1  = 0;
-      TGraphAsymmErrors* ua5_2  = 0;
-      TGraphAsymmErrors* alice  = 0;
-      TGraphAsymmErrors* cms    = 0;
-      TGraphAsymmErrors* o      = 0;
-      TIter              nextG(others->GetListOfGraphs());
-      while ((o = static_cast<TGraphAsymmErrors*>(nextG()))) {
-	ratios->Add(Ratio(fForward,          o, max));
-	ratios->Add(Ratio(fForwardSym,       o, max));
-	ratios->Add(Ratio(fForwardHHD,       o, max));
-	ratios->Add(Ratio(fForwardHHDSym,    o, max));
-	ratios->Add(Ratio(fCentral,          o, max));
-	TString oName(o->GetName());
+      TObject* ua5_1  = 0;
+      TObject* ua5_2  = 0;
+      TObject* alice  = 0;
+      TObject* cms    = 0;
+      TObject* denom  = 0;
+      TIter    nextD(&fDenominators);
+      while ((denom = nextD())) {
+	TIter nextN(&fNumerators);
+	TObject* numer = 0;
+	while ((numer = nextN())) { 
+	  ratios->Add(Ratio(numer, denom, max));
+	}
+	TString oName(denom->GetName());
 	oName.ToLower();
-	if (oName.Contains("ua5"))  { if (ua5_1) ua5_2 = o; else ua5_1 = o; }
-	if (oName.Contains("alice")) alice = o;
-	if (oName.Contains("cms"))   cms = o;
+	if (oName.Contains("ua5"))  { 
+	  if (ua5_1) ua5_2 = denom; 
+	  else       ua5_1 = denom; 
+	}
+	if (oName.Contains("alice")) alice = denom;
+	if (oName.Contains("cms"))   cms   = denom;
       }
       if (ua5_1 && alice) ratios->Add(Ratio(alice, ua5_1, max));
       if (ua5_2 && alice) ratios->Add(Ratio(alice, ua5_2, max));
       if (cms   && alice) ratios->Add(Ratio(alice, cms,   max));
     }
-
-    // Check if we have a primaries from MC 
-    if (fTruth) {
-      ratios->Add(Ratio(fForward,    fTruth, max));
-      ratios->Add(Ratio(fForwardSym, fTruth, max));
-      ratios->Add(Ratio(fCentral,    fTruth, max));
-    }
-
-    // If we have data from HHD's analysis, then do the ratio of 
-    // our result to that data. 
-    if (fForwardHHD) { 
-      ratios->Add(Ratio(fForward,    fForwardHHD,    max));
-      ratios->Add(Ratio(fForwardSym, fForwardHHDSym, max));
-    }
-
-    // Do comparison to MC 
-    if (fForwardMC) { 
-      ratios->Add(Ratio(fForward,    fForwardMC,    max));
-      ratios->Add(Ratio(fForwardSym, fForwardMCSym, max));
-    }
-
     // Check if we have ratios 
     if (!ratios->GetHists() || 
 	(ratios->GetHists()->GetEntries() <= 0)) { 
@@ -429,9 +414,8 @@ struct dNdetaDrawer
   THStack* StackLeftRight(Double_t& max)
   {
     THStack* ret = new THStack("leftright", "Left-right asymmetry");
-    ret->Add(Asymmetry(fForward,    max));
-    ret->Add(Asymmetry(fForwardHHD, max));
-    ret->Add(Asymmetry(fForwardMC,  max));
+    // ret->Add(Asymmetry(fForward,    max));
+    // ret->Add(Asymmetry(fForwardMC,  max));
 
     if (!ret->GetHists() || 
 	(ret->GetHists()->GetEntries() <= 0)) { 
@@ -538,6 +522,8 @@ struct dNdetaDrawer
     p1->Draw();
     p1->cd();
     
+    Info("PlotResults", "Plotting results with max=%f", max);
+    results->ls();
     results->SetMaximum(1.15*max);
     results->SetMinimum(yd > 0.00001 ? -0.1 : 0);
 
@@ -674,8 +660,8 @@ struct dNdetaDrawer
 
     // Make a nice band from 0.9 to 1.1
     TGraphErrors* band = new TGraphErrors(2);
-    band->SetPoint(0, fForwardSym->GetXaxis()->GetXmin(), 1);
-    band->SetPoint(1, fForward->GetXaxis()->GetXmax(), 1);
+    band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
+    band->SetPoint(1, fResults->GetXaxis()->GetXmax(), 1);
     band->SetPointError(0, 0, .1);
     band->SetPointError(1, 0, .1);
     band->SetFillColor(kYellow+2);
@@ -765,8 +751,8 @@ struct dNdetaDrawer
 #endif
     // Make a nice band from 0.9 to 1.1
     TGraphErrors* band = new TGraphErrors(2);
-    band->SetPoint(0, fForwardSym->GetXaxis()->GetXmin(), 1);
-    band->SetPoint(1, fForward->GetXaxis()->GetXmax(), 1);
+    band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
+    band->SetPoint(1, fResults->GetXaxis()->GetXmax(), 1);
     band->SetPointError(0, 0, .05);
     band->SetPointError(1, 0, .05);
     band->SetFillColor(kYellow+2);
@@ -801,60 +787,24 @@ struct dNdetaDrawer
    * 
    * @return 
    */
-  TH1* GetResult(TList* list, const char* name) const 
+  TH1* FetchResult(const TList* list, const char* name) const 
   {
     if (!list) return 0;
     
-    TH1* ret = static_cast<TH1*>(list->FindObject(name));
-    if (!ret) 
-      Warning("GetResult", "Histogram %s not found", name);
-    
-    return ret;
-  }
-  //__________________________________________________________________
-  /** 
-   * Get the result from previous analysis code 
-   * 
-   * @param fn  File to open 
-   * @param nsd Whether this is NSD
-   * 
-   * @return null or result of previous analysis code 
-   */
-  TH1* GetHHD() 
-  {
-    if (fHHDFile.IsNull()) return 0;
-    const char* fn = fHHDFile.Data();
-    Bool_t nsd = (fTrigString ? fTrigString->GetUniqueID() & 0x4 : false);
-    TDirectory* savdir = gDirectory;
-    if (gSystem->AccessPathName(fn)) { 
-      Warning("GetHHD", "Output of HHD analysis (%s) not available", fn);
+    TList* all = static_cast<TList*>(list->FindObject("all"));
+    if (!all) { 
+      Warning("GetResult", "No 'all' list find in %s", list->GetName());
+      // list->ls();
       return 0;
     }
-    TFile* file = TFile::Open(fn, "READ");
-    if (!file) { 
-      Warning("GetHHD", "couldn't open HHD file %s", fn);
-      return 0;
-    }
-    TString hist(Form("dNdeta_dNdeta%s", (nsd ? "NSD" : "")));
-    TH1* h = static_cast<TH1*>(file->Get(hist.Data()));
-    if (!h) { 
-      Warning("GetHHD", "Couldn't find HHD histogram %s in %s", 
-	      hist.Data(), fn);
-      file->Close();
-      savdir->cd();
-      return 0;
-    }
-    TH1* r = static_cast<TH1*>(h->Clone("dndeta_hhd"));
-    r->SetTitle("ALICE Forward (HHD)");
-    r->SetFillStyle(0);
-    r->SetFillColor(0);
-    r->SetMarkerStyle(21);
-    r->SetMarkerColor(kPink+1);
-    r->SetDirectory(0);
 
-    file->Close();
-    savdir->cd();
-    return r;
+    TH1* ret = static_cast<TH1*>(all->FindObject(name));
+    if (!ret) {
+      // all->ls();
+      Warning("GetResult", "Histogram %s not found", name);
+    }
+
+    return ret;
   }
   //__________________________________________________________________
   /** 
@@ -1135,6 +1085,36 @@ struct dNdetaDrawer
   }
   //__________________________________________________________________
   /** 
+   * Make the ratio of h1 to h2 
+   * 
+   * @param h1 First histogram (numerator) 
+   * @param h2 Second histogram (denominator)
+   * 
+   * @return h1 / h2
+   */
+  TH1* Ratio(const TObject* o1, const TObject* o2, Double_t& max) const
+  {
+    const TH1* h1 = dynamic_cast<const TH1*>(o1); 
+    if (h1) { 
+      const TH1* h2 = dynamic_cast<const TH1*>(o2); 
+      if (h2) return Ratio(h1,h2,max);
+      
+      const TGraph* g2 = dynamic_cast<const TGraph*>(o2);
+      if (g2) return Ratio(h1,g2,max);      
+    }
+    
+    const TGraphAsymmErrors* g1 = dynamic_cast<const TGraphAsymmErrors*>(o1);
+    if (g1) { 
+      const TGraphAsymmErrors* g2 = dynamic_cast<const TGraphAsymmErrors*>(o2);
+      if (g2) return Ratio(g1, g2, max);
+    }
+
+    Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
+	    o1->ClassName(), o1->GetName(), o2->ClassName(), o2->GetName());
+    return 0;
+  }
+  //__________________________________________________________________
+  /** 
    * Compute the ratio of @a h to @a g.  @a g is evaluated at the bin
    * centers of @a h 
    * 
@@ -1340,19 +1320,22 @@ struct dNdetaDrawer
   UShort_t    fRebin;        // Rebinning factor 
   Bool_t      fCutEdges;     // Whether to cut edges
   TString     fTitle;        // Title on plot
-  TString     fHHDFile;      // File name of old results
   TNamed*     fTrigString;   // Trigger string (read, or set)
   TNamed*     fSNNString;    // Energy string (read, or set)
   TNamed*     fSysString;    // Collision system string (read or set)
   TAxis*      fVtxAxis;      // Vertex cuts (read or set)
-  TH1*        fForward;      // Results
-  TH1*        fForwardMC;    // MC results
-  TH1*        fForwardHHD;   // Old results
-  TH1*        fTruth;        // MC truth
-  TH1*        fCentral;      // Central region data
-  TH1*        fForwardSym;   // Symmetric extension
-  TH1*        fForwardMCSym; // Symmetric extension
-  TH1*        fForwardHHDSym;// Symmetric extension
+  TList       fNumerators;   // Numerators in ratios 
+  TList       fDenominators; // Denominators in ratios 
+  THStack*    fResults;      // Stack of results 
+  THStack*    fRatios;       // Stack of ratios 
+  // TH1*        fForward;      // Results
+  // TH1*        fForwardMC;    // MC results
+  // TH1*        fForwardHHD;   // Old results
+  // TH1*        fTruth;        // MC truth
+  // TH1*        fCentral;      // Central region data
+  // TH1*        fForwardSym;   // Symmetric extension
+  // TH1*        fForwardMCSym; // Symmetric extension
+  // TH1*        fForwardHHDSym;// Symmetric extension
   TH1*        fTriggers;     // Number of triggers
   RangeParam* fRangeParam;   // Parameter object for range zoom 
   
@@ -1431,7 +1414,6 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetRebin(rebin);
   d.SetCutEdges(cutEdges);
   d.SetTitle(title);
-  d.SetHHDFile("");
   d.SetShowOthers(flags & 0x1);
   d.SetShowAlice(flags & 0x2);
   d.SetShowRatios(flags & 0x4);

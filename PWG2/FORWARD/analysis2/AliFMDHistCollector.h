@@ -31,6 +31,59 @@ class AliFMDHistCollector : public TNamed
 {
 public:
   /** 
+   * Methods to use when merging overlapping bins @f$b_1@f$, @f$b_2@f$
+   * with content @f$c_1@f$, @f$c_2@f$, and errors @f$e_1@f$,
+   * @f$e_2@f$ into bin @f$ b@f$ with content @f$c@f$ and error @f$e@f$ 
+   */
+  enum MergeMethod {
+    /**
+     * @f[
+     *   c = \frac{1}{2}(c_1+c_2) 
+     * @f]
+     * @f[
+     *   e = \sqrt{e_1^2+e_2^2} 
+     * @f]
+     */
+    kStraightMean,       
+    /**
+     * As above, exept zero's are ignored 
+     */
+    kStraightMeanNoZero, 
+    /** 
+     * @f[ 
+     *   c = \frac{\frac{c_1}{e_1^2}+\frac{c_2}{e_2^2}}{
+     *             \frac{1}{e_1^2}+\frac{1}{e_2^2}}
+     * @f]
+     * @f[
+     *   e = \sqrt{\frac{1}{\frac{1}{e_1^2}+\frac{1}{e_2^2}}
+     * @f]
+     */
+    kWeightedMean, 
+    /** 
+     * @f[
+     *     c = \left\{\begin{array}{cl}
+     *          c_1 & \text{if $e_1 < e_2} \\
+     *          c_2 & \text{otherwise}\end{array}\right.
+     * @f]
+     */
+    kLeastError
+  };
+  /**
+   * How to obtain the fiducial cuts 
+   */
+  enum FiducialMethod { 
+    /**
+     * Select bins by fixed cut.  Bins with a secondary correction
+     * less than the cut is considered as non-valid
+     */
+    kByCut, 
+    /**
+     * A bin is considered non-valid, if it is less then twice as
+     * large as it's neighbors (in eta)
+     */
+    kDistance 
+  };
+  /** 
    * Constructor 
    */
   AliFMDHistCollector() 
@@ -41,7 +94,9 @@ public:
       fDebug(0),
       fList(0),
       fSumRings(0),
-      fCoverage(0)
+      fCoverage(0),
+      fMergeMethod(kStraightMean),
+      fFiducialMethod(kByCut)
   {}
   /** 
    * Constructor 
@@ -57,7 +112,9 @@ public:
       fDebug(0),
       fList(0),
       fSumRings(0),
-      fCoverage(0)
+      fCoverage(0),
+      fMergeMethod(kStraightMean),
+      fFiducialMethod(kByCut)
   {}
   /** 
    * Copy constructor 
@@ -73,7 +130,9 @@ public:
       fDebug(o.fDebug),
       fList(o.fList),
       fSumRings(o.fSumRings),
-      fCoverage(o.fCoverage)
+      fCoverage(o.fCoverage),
+      fMergeMethod(o.fMergeMethod),
+      fFiducialMethod(o.fFiducialMethod)
   {}
 
   /** 
@@ -112,6 +171,18 @@ public:
    * @param dir List to write in
    */  
   virtual void DefineOutput(TList* dir);
+  /** 
+   * Set the merge method 
+   * 
+   * @param m Method
+   */
+  void SetMergeMethod(MergeMethod m) { fMergeMethod = m; }
+  /** 
+   * Set the method for finding the fidicual area of the secondary maps 
+   * 
+   * @param m Method
+   */
+  void SetFiducialMethod(FiducialMethod m) { fFiducialMethod = m; }
   /** 
    * Set the number of extra bins (beyond the secondary map border) 
    * to cut away. 
@@ -262,7 +333,29 @@ protected:
    * @return True if there's an overlapping histogram 
    */
   Bool_t HasOverlap(Int_t i, Int_t e, UShort_t v) const;
-
+  /** 
+   * Check if we should include the bin in the data range 
+   * 
+   * @param bg Secondary map histogram
+   * @param ie Eta bin
+   * @param ip Phi bin
+   * 
+   * @return True if to be used
+   */
+  Bool_t CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const;
+  /** 
+   * Merge bins accoring to set method
+   * 
+   * @param c   Current content
+   * @param e   Current error
+   * @param oc  Old content
+   * @param oe  Old error
+   * @param rc  On return, the new content
+   * @param re  On return, tne new error
+   */
+  void MergeBins(Double_t c,   Double_t e, 
+		 Double_t oc,  Double_t oe,
+		 Double_t& rc, Double_t& re) const;
 
   Int_t       fNCutBins;        // Number of additional bins to cut away
   Float_t     fCorrectionCut;   // Cut-off on secondary corrections 
@@ -272,7 +365,8 @@ protected:
   TList*      fList;		// Output list
   TH2D*       fSumRings;        // Sum per ring (on y-axis)
   TH2D*       fCoverage;        // Sum per ring (on y-axis)
-
+  MergeMethod fMergeMethod;     // Merge methiod for overlapping bins 
+  FiducialMethod fFiducialMethod; // Fidicual method
   ClassDef(AliFMDHistCollector,1); // Calculate Nch density 
 };
 

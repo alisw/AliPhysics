@@ -4,11 +4,11 @@
 #ifndef ALIBASEDNDETATASK_H
 #define ALIBASEDNDETATASK_H
 #include <AliAnalysisTaskSE.h>
-// #include <AliAODBaseMult.h>
 class TList;
 class TH2D;
 class TH1D;
 class AliAODEvent;
+class AliAODForwardMult;
 
 /**
  * Task to determine the 
@@ -28,7 +28,23 @@ public:
    * @param maxVtx  Set @f$v_z@f$ range
    */
   AliBasedNdetaTask(const char* name);
+  /**
+   * Destructor
+   * 
+   */
+  virtual ~AliBasedNdetaTask();
 
+  /** 
+   * @{ 
+   * @name Task configuration 
+   */
+  /** 
+   * Add a centrality bin 
+   * 
+   * @param low  Low cut
+   * @param high High cut
+   */
+  void AddCentralityBin(Short_t low, Short_t high);
   /** 
    * Set the vertex range to use 
    * 
@@ -74,30 +90,23 @@ public:
    */
   void SetShapeCorrection(const TH1* h);
   /** 
+   * Set whether to use the shape correction 
+   *
+   * @param use  whether to use the shape correction 
+   */
+  void SetUseShapeCorrection(Bool_t use) { fUseShapeCorr = use; }
+  /** 
    * Load the normalization data - done automatically if not set from outside
    * 
    * @param sys system
    * @param energy energy
    */
-  void LoadNormalizationData(UShort_t sys, UShort_t energy);
-  /** 
-   * Load the normalization data - done automatically if not set from outside
-   * 
-   * @param centlow low cent cut
+  void LoadNormalizationData(UShort_t sys, UShort_t energy);  
+  /** @} */
+
+  /** @{ 
+   *  @name Task interface 
    */
-  void SetCentLow(Float_t centlow)   { fCentLow = centlow; }
-  /** 
-   * Load the normalization data - done automatically if not set from outside
-   * 
-   * @param centhigh high cent cut
-   */
-  void SetCentHigh(Float_t centhigh) { fCentHigh = centhigh; }
-  
-  /**
-   * Destructor
-   * 
-   */
-  virtual ~AliBasedNdetaTask();
   /** 
    * Initialise on master - does nothing
    * 
@@ -123,36 +132,12 @@ public:
    * @param option Not used 
    */
   virtual void Terminate(Option_t* option);
-protected:
-  AliBasedNdetaTask(const AliBasedNdetaTask&);
-  AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
+  /** @} */
 
   /** 
-   * Retrieve the histogram 
-   * 
-   * @param aod AOD event 
-   * @param mc  Whether to get the MC histogram or not
-   * 
-   * @return Retrieved histogram or null
+   * @{ 
+   * @name Services member functions 
    */
-  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
-  /** 
-   * Check the trigger and vertex 
-   * 
-   * @param aod 
-   * 
-   * @return 
-   */
-  Bool_t CheckEvent(const AliAODEvent* aod);
-  /** 
-   * Clone a 2D histogram
-   * 
-   * @param in    Histogram to clone.
-   * @param name  New name of clone.
-   * 
-   * @return The clone
-   */
-  TH2D* CloneHist(const TH2D* in, const char* name);
   /** 
    * Make a copy of the input histogram and rebin that histogram
    * 
@@ -160,7 +145,7 @@ protected:
    * 
    * @return New (rebinned) histogram
    */
-  TH1D* Rebin(const TH1D* h) const;
+  static TH1D* Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges=false);
   /** 
    * Make an extension of @a h to make it symmetric about 0 
    * 
@@ -168,7 +153,7 @@ protected:
    * 
    * @return Symmetric extension of @a h 
    */
-  TH1* Symmetrice(const TH1* h) const;
+  static TH1* Symmetrice(const TH1* h);
   /** 
    * Project onto the X axis 
    * 
@@ -180,12 +165,12 @@ protected:
    * 
    * @return Newly created histogram or null
    */
-  TH1D* ProjectX(const TH2D* h, 
-		 const char* name,
-		 Int_t firstbin, 
-		 Int_t lastbin, 
-		 bool  corr=true,
-		 bool  error=true) const;
+  static TH1D* ProjectX(const TH2D* h, 
+			const char* name,
+			Int_t firstbin, 
+			Int_t lastbin, 
+			bool  corr=true,
+			bool  error=true);
   /** 
    * Set histogram graphical options, etc. 
    * 
@@ -195,9 +180,35 @@ protected:
    * @param title   Title of histogram
    * @param ytitle  Title on y-axis. 
    */
-  void  SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker, 
-			       const char* title, 
-			       const char* ytitle="#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+  static void SetHistogramAttributes(TH1D* h, Int_t colour, Int_t marker, 
+				     const char* title, 
+				     const char* ytitle="#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+  /** @} */
+protected:
+  AliBasedNdetaTask(const AliBasedNdetaTask&);
+  AliBasedNdetaTask& operator=(const AliBasedNdetaTask&) { return *this; }
+  class CentralityBin;
+
+  /** 
+   * Retrieve the histogram 
+   * 
+   * @param aod AOD event 
+   * @param mc  Whether to get the MC histogram or not
+   * 
+   * @return Retrieved histogram or null
+   */
+  virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
+  /** 
+   * Make a centrality bin 
+   * 
+   * @param name  Name used for histograms
+   * @param low   Low cut in percent
+   * @param high  High cut in percent
+   * 
+   * @return A newly created centrality bin 
+   */
+  virtual CentralityBin* MakeCentralityBin(const char* name, Short_t low, 
+					   Short_t high) const;
   /** 
    * Trigger histogram bins 
    */
@@ -214,15 +225,163 @@ protected:
     kAccepted   = 10,
     kMCNSD      = 11
   };
+  /**
+   * Calculations done per centrality 
+   * 
+   */
+  struct CentralityBin : public TNamed
+  {
+    /** 
+     * Constructor 
+     */
+    CentralityBin();
+    /** 
+     * Constructor 
+     * 
+     * @param name Name used for histograms (e.g., Forward)
+     * @param low  Lower centrality cut in percent 
+     * @param high Upper centrality cut in percent 
+     */
+    CentralityBin(const char* name, Short_t low, Short_t high);
+    /** 
+     * Copy constructor 
+     * 
+     * @param other Object to copy from 
+     */
+    CentralityBin(const CentralityBin& other);
+    /** 
+     * Destructor 
+     */
+    virtual ~CentralityBin();
+    /** 
+     * Assignment operator 
+     * 
+     * @param other Object to assign from 
+     * 
+     * @return Reference to this 
+     */
+    CentralityBin& operator=(const CentralityBin& other);
+    /** 
+     * Check if this is the 'all' bin 
+     * 
+     * @return true if low and high cuts are both zero
+     */    
+    Bool_t IsAllBin() const { return fLow == 0 && fHigh == 0; }
+    /** 
+     * Get the list name 
+     * 
+     * @return List Name 
+     */
+    const char* GetListName() const;
+    /** 
+     * Create output objects 
+     * 
+     * @param dir   Parent list
+     */
+    virtual void CreateOutputObjects(TList* dir);
+    /** 
+     * Process an event
+     * 
+     * @param forward     Forward data (for trigger, vertex, & centrality)
+     * @param triggerMask Trigger mask 
+     * @param vzMin       Minimum IP z coordinate
+     * @param vzMax       Maximum IP z coordinate
+     * @param data        Data histogram 
+     * @param mc          MC histogram
+     */
+    virtual void ProcessEvent(const AliAODForwardMult* forward, 
+			      Int_t triggerMask,
+			      Double_t vzMin, Double_t vzMax, 
+			      const TH2D* data, const TH2D* mc);
+    /** 
+     * End of processing 
+     * 
+     * @param sums        List of sums
+     * @param results     Output list of results
+     * @param shapeCorr   Shape correction or nil
+     * @param trigEff     Trigger efficiency 
+     * @param symmetrice  Whether to symmetrice the results
+     * @param rebin       Whether to rebin the results
+     * @param corrEmpty   Whether to correct for empty bins
+     * @param cutEdges    Whether to cut edges when rebinning
+     * @param vzMin       Minimum IP z coordinate
+     * @param vzMax 	  Maximum IP z coordinate
+     * @param triggerMask Trigger mask 
+     */
+    virtual void End(TList*      sums, 
+		     TList*      results,
+		     const TH1*  shapeCorr, 
+		     Double_t    trigEff,
+		     Bool_t      symmetrice,
+		     Int_t       rebin, 
+		     Bool_t      corrEmpty, 
+		     Bool_t      cutEdges, 
+		     Double_t    vzMin, 
+		     Double_t    vzMax, 
+		     Int_t       triggerMask);
+    /**
+     * @{
+     * @name Access histograms
+     */
+    /** 
+     * Get sum histogram 
+     * 
+     * @param mc If true, return MC histogram 
+     * 
+     * @return Sum histogram
+     */
+    const TH2D* GetSum(Bool_t mc=false) const { return mc ? fSumMC : fSum; }
+    /** 
+     * Get sum histogram 
+     * 
+     * @param mc If true, return MC histogram 
+     * 
+     * @return Sum histogram
+     */
+    TH2D* GetSum(Bool_t mc=false) { return mc ? fSumMC : fSum; }
+    /** 
+     * Get trigger histogram
+     * 
+     * @return Trigger histogram
+     */
+    const TH1D* GetTriggers() const { return fTriggers; } 
+    /** 
+     * Get trigger histogram
+     * 
+     * @return Trigger histogram 
+     */
+    TH1D* GetTrigggers() { return fTriggers; }
+    /** @} */
+  protected:
+    /** 
+     * Create sum histogram 
+     * 
+     * @param data  Data histogram to clone 
+     * @param mc    (optional) MC histogram to clone 
+     */
+    virtual void CreateSums(const TH2D* data, const TH2D* mc);
+    /** 
+     * Check the trigger, vertex, and centrality
+     * 
+     * @param aod Event input 
+     * 
+     * @return true if the event is to be used 
+     */
+    virtual Bool_t CheckEvent(const AliAODForwardMult* forward, 
+			      Int_t triggerMask,
+			      Double_t vzMin, Double_t vzMax);
+    TList*   fSums;      // Output list 
+    TList*   fOutput;    // Output list 
+    TH2D*    fSum;       // Sum histogram
+    TH2D*    fSumMC;     // MC sum histogram
+    TH1D*    fTriggers;  // Trigger histogram 
+    UShort_t fLow;       // Lower limit (inclusive)
+    UShort_t fHigh;      // Upper limit (exclusive)
 
-  TH2D*           fSum;          // Sum of histograms 
-  TH2D*           fSumMC;        // Sum of MC histograms (if any)
-
+    ClassDef(CentralityBin,1); // A centrality bin 
+  };
   TList*          fSums;         // Container of sums 
   TList*          fOutput;       // Container of outputs 
-
-  TH1D*           fTriggers;     // Histogram of triggers 
-   
   Double_t        fVtxMin;       // Minimum v_z
   Double_t        fVtxMax;       // Maximum v_z
   Int_t           fTriggerMask;  // Trigger mask 
@@ -232,10 +391,13 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH1*            fShapeCorr;    // Shape correction 
-  Float_t         fCentLow;      // Low centrality cut
-  Float_t         fCentHigh;      // High centrality cut
-  
-  ClassDef(AliBasedNdetaTask,1); // Determine multiplicity in base area
+  TList*          fListOfCentralities; // Centrality bins 
+  Bool_t          fUseShapeCorr; // Whether to use shape correction
+  TNamed*         fSNNString;    // sqrt(s_NN) string 
+  TNamed*         fSysString;    // Collision system string 
+  TH1D*           fCent;         // Centrality distribution 
+
+  ClassDef(AliBasedNdetaTask,2); // Determine multiplicity in base area
 };
 
 #endif

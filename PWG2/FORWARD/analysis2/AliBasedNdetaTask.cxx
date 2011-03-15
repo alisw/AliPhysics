@@ -17,11 +17,8 @@
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask()
   : AliAnalysisTaskSE(), 
-    fSum(0),	        //  Sum of histograms 
-    fSumMC(0),	        //  Sum of MC histograms (if any)
     fSums(0),		// Container of sums 
-    fOutput(0),		// Container of outputs 
-    fTriggers(0),	// Histogram of triggers 
+    fOutput(0),         // Container of output 
     fVtxMin(0),		// Minimum v_z
     fVtxMax(0),		// Maximum v_z
     fTriggerMask(0),    // Trigger mask 
@@ -31,8 +28,11 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCorrEmpty(true), 
     fTriggerEff(1),
     fShapeCorr(0),
-    fCentLow(0),
-    fCentHigh(100)
+    fListOfCentralities(0),
+    fUseShapeCorr(true),
+    fSNNString(0),
+    fSysString(0),
+    fCent(0)
 {
   // 
   // Constructor
@@ -42,11 +42,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
   : AliAnalysisTaskSE(name), 
-    fSum(0),	        // Sum of histograms 
-    fSumMC(0),	        // Sum of MC histograms (if any)
     fSums(0),	        // Container of sums 
-    fOutput(0),		// Container of outputs 
-    fTriggers(0),	// Histogram of triggers 
+    fOutput(0),         // Container of output 
     fVtxMin(-10),	// Minimum v_z
     fVtxMax(10),	// Maximum v_z
     fTriggerMask(AliAODForwardMult::kInel), 
@@ -56,12 +53,16 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCorrEmpty(true), 
     fTriggerEff(1),
     fShapeCorr(0),
-    fCentLow(0),
-    fCentHigh(100)
+    fListOfCentralities(0),
+    fUseShapeCorr(true),
+    fSNNString(0),
+    fSysString(0),
+    fCent(0)
 {
   // 
   // Constructor
   // 
+  fListOfCentralities = new TList;
 
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
@@ -71,11 +72,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
   : AliAnalysisTaskSE(o), 
-    fSum(o.fSum),	// TH2D* -  Sum of histograms 
-    fSumMC(o.fSumMC),// TH2D* -  Sum of MC histograms (if any)
     fSums(o.fSums),		// TList* - Container of sums 
-    fOutput(o.fOutput),		// TList* - Container of outputs 
-    fTriggers(o.fTriggers),	// TH1D* - Histogram of triggers 
+    fOutput(o.fOutput),         // Container of output 
     fVtxMin(o.fVtxMin),		// Double_t - Minimum v_z
     fVtxMax(o.fVtxMax),		// Double_t - Maximum v_z
     fTriggerMask(o.fTriggerMask),// Int_t - Trigger mask 
@@ -85,8 +83,11 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fCorrEmpty(true), 
     fTriggerEff(o.fTriggerEff),
     fShapeCorr(o.fShapeCorr),
-    fCentLow(o.fCentLow),
-    fCentHigh(o.fCentHigh)
+    fListOfCentralities(o.fListOfCentralities),
+    fUseShapeCorr(o.fUseShapeCorr),
+    fSNNString(o.fSNNString),
+    fSysString(o.fSysString),
+    fCent(o.fCent)
 {}
 
 //____________________________________________________________________
@@ -100,13 +101,45 @@ AliBasedNdetaTask::~AliBasedNdetaTask()
     delete fSums;
     fSums = 0;
   }
-  if (fOutputs) { 
-    fOutputs->Delete();
-    delete fOutputs;
-    fOutputs = 0;
+  if (fOutput) { 
+    fOutput->Delete();
+    delete fOutput;
+    fOutput = 0;
   }
 }
 
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::AddCentralityBin(Short_t low, Short_t high)
+{
+  // 
+  // Add a centrality bin 
+  // 
+  // Parameters:
+  //    low  Low cut
+  //    high High cut
+  //
+  fListOfCentralities->Add(MakeCentralityBin(GetName(), low, high));
+}
+
+//________________________________________________________________________
+AliBasedNdetaTask::CentralityBin*
+AliBasedNdetaTask::MakeCentralityBin(const char* name, 
+				     Short_t low, Short_t high) const
+{
+  // 
+  // Make a centrality bin 
+  // 
+  // Parameters:
+  //    name  Name used for histograms
+  //    low   Low cut in percent
+  //    high  High cut in percent
+  // 
+  // Return:
+  //    A newly created centrality bin 
+  //
+  return new CentralityBin(name, low, high);
+}
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::SetTriggerMask(const char* mask)
@@ -160,33 +193,24 @@ AliBasedNdetaTask::UserCreateOutputObjects()
   //
   // This is called once per slave process 
   //
-  fOutput = new TList;
-  fOutput->SetName(Form("%s_result", GetName()));
-  fOutput->SetOwner();
-
   fSums = new TList;
   fSums->SetName(Form("%s_sums", GetName()));
   fSums->SetOwner();
 
+  // Automatically add 'all' centrality bin if nothing has been defined. 
+  if (fListOfCentralities->GetEntries() <= 0) AddCentralityBin(0,0); 
 
-  fTriggers = new TH1D("triggers", "Number of triggers", 
-		       kAccepted, 1, kAccepted);
-  fTriggers->SetYTitle("# of events");
-  fTriggers->GetXaxis()->SetBinLabel(kAll,         "All events");
-  fTriggers->GetXaxis()->SetBinLabel(kB,           "w/B trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kA,           "w/A trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kC,           "w/C trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kE,           "w/E trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kMB,          "w/Collision trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kWithVertex,  "w/Vertex");
-  fTriggers->GetXaxis()->SetBinLabel(kWithTrigger, "w/Selected trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kPileUp,      "with pileup");
-  fTriggers->GetXaxis()->SetBinLabel(kAccepted,    "Accepted by cut");
-  fTriggers->GetXaxis()->SetNdivisions(kAccepted, false);
-  fTriggers->SetFillColor(kRed+1);
-  fTriggers->SetFillStyle(3001);
-  fTriggers->SetStats(0);
-  fSums->Add(fTriggers);
+  // Centrality histogram 
+  fCent = new TH1D("cent", "Centrality", 100, 0, 100);
+  fCent->SetDirectory(0);
+  fCent->SetXTitle(0);
+  fSums->Add(fCent);
+
+  // Loop over centrality bins 
+  TIter next(fListOfCentralities);
+  CentralityBin* bin = 0;
+  while ((bin = static_cast<CentralityBin*>(next()))) 
+    bin->CreateOutputObjects(fSums);
 
   // Check that we have an AOD input handler 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
@@ -196,87 +220,6 @@ AliBasedNdetaTask::UserCreateOutputObjects()
 
   // Post data for ALL output slots >0 here, to get at least an empty histogram
   PostData(1, fSums); 
-}
-
-//____________________________________________________________________
-TH2D*
-AliBasedNdetaTask::CloneHist(const TH2D* in, const char* name) 
-{
-  // 
-  // Clone a 2D histogram
-  // 
-  // Parameters:
-  //    in    Histogram to clone.
-  //    name  New name of clone.
-  // 
-  // Return:
-  //    The clone
-  //
-  if (!in) return 0;
-  TH2D* ret = static_cast<TH2D*>(in->Clone(name));
-  ret->SetDirectory(0);
-  ret->Sumw2();
-  fSums->Add(ret);
-
-  return ret;
-}
-
-//____________________________________________________________________
-Bool_t
-AliBasedNdetaTask::CheckEvent(const AliAODEvent* aod)
-{
-  // 
-  // Check the trigger and vertex 
-  // 
-  // Parameters:
-  //    aod 
-  // 
-  // Return:
-  //    
-  //
-  TObject*           oForward   = aod->FindListObject("Forward");
-  if (!oForward) { 
-    AliWarning("No forward object found");
-    return false;
-  }
-  AliAODForwardMult* forward   = static_cast<AliAODForwardMult*>(oForward);
-  
-  // Count event 
-  fTriggers->AddBinContent(kAll);
-  if (forward->IsTriggerBits(AliAODForwardMult::kB)) 
-    fTriggers->AddBinContent(kB);
-  if (forward->IsTriggerBits(AliAODForwardMult::kA)) 
-    fTriggers->AddBinContent(kA);
-  if (forward->IsTriggerBits(AliAODForwardMult::kC)) 
-    fTriggers->AddBinContent(kC);
-  if (forward->IsTriggerBits(AliAODForwardMult::kE)) 
-    fTriggers->AddBinContent(kE);
-  if (forward->IsTriggerBits(AliAODForwardMult::kInel)) 
-    fTriggers->AddBinContent(kMB);
-  if (forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
-    fTriggers->AddBinContent(kMCNSD);
-  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) 
-    fTriggers->AddBinContent(kPileUp);
-  
-  
-  
-  // Check if we have an event of interest. 
-  if (!forward->IsTriggerBits(fTriggerMask)) return false;
-  
-  //Check for pileup
-  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return false;
-  
-  fTriggers->AddBinContent(kWithTrigger);
-  
-  // Check that we have a valid vertex
-  if (!forward->HasIpZ()) return false;
-  fTriggers->AddBinContent(kWithVertex);
-
-  // Check that vertex is within cuts 
-  if (!forward->InRange(fVtxMin, fVtxMax)) return false;
-  fTriggers->AddBinContent(kAccepted);
-
-  return true;
 }
 //____________________________________________________________________
 void 
@@ -295,47 +238,40 @@ AliBasedNdetaTask::UserExec(Option_t *)
     return;
   }  
   
-  TObject* obj = 0;
-  obj = aod->FindListObject("Forward");
-  
-  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
-  Float_t cent = forward->GetCentrality();
-  
-  if(cent > 0) {
-    if( cent < fCentLow || cent > fCentHigh ) return;
-    //else std::cout<<"selecting event with cent "<<cent<<std::endl;
+  TObject* obj = aod->FindListObject("Forward");
+  if (!obj) { 
+    AliWarning("No forward object found");
+    return;
   }
-  
+  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
+
+  // Fill centrality histogram 
+  fCent->Fill(forward->GetCentrality());
+
   // Get the histogram(s) 
   TH2D* data   = GetHistogram(aod, false);
   TH2D* dataMC = GetHistogram(aod, true);
 
-  // We should have a base object at least 
-  if (!data) { 
-    AliWarning("No data object found in AOD");
-    return;
-  }
-  
-  
+  // Loop over centrality bins 
+  TIter next(fListOfCentralities);
+  CentralityBin* bin = 0;
+  while ((bin = static_cast<CentralityBin*>(next()))) 
+    bin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, data, dataMC);
 
-  // Check the event 
-  if (!CheckEvent(aod)) return;
+  // Here, we get the update 
+  if (!fSNNString) { 
+    UShort_t sNN = forward->GetSNN();
+    fSNNString = new TNamed("sNN", "");
+    fSNNString->SetTitle(AliForwardUtil::CenterOfMassEnergyString(sNN));
+    fSNNString->SetUniqueID(sNN);
+    fSums->Add(fSNNString);
   
-  // Create our sum histograms 
-  if (!fSum)  { 
-    fSum   = CloneHist(data,  GetName()); 
-    if(forward->GetSystem()  < 2)
-      LoadNormalizationData(forward->GetSystem(),forward->GetSNN());
+    UShort_t sys = forward->GetSystem();
+    fSysString = new TNamed("sys", "");
+    fSysString->SetTitle(AliForwardUtil::CollisionSystemString(sys));
+    fSysString->SetUniqueID(sys);
+    fSums->Add(fSysString);
   }
-  else fSum->Add((data));
-  
-  //for(Int_t i = 1; i<=data->GetNbinsX(); i++) {
-  //  std::cout<<fSum->GetBinContent(i,0) <<"   "<<data->GetBinContent(i,0)<<std::endl;
-  // }
-  
-  if (!fSumMC && dataMC) fSumMC = CloneHist(dataMC,Form("%sMC", GetName()));
-  else if (fSumMC) fSumMC->Add((dataMC));
-  // Add contribution 
   
   PostData(1, fSums);
 }
@@ -378,7 +314,7 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 			    Int_t firstbin, 
 			    Int_t lastbin, 
 			    bool  corr,
-			    bool  error) const
+			    bool  error)
 {
   // 
   // Project onto the X axis 
@@ -394,9 +330,9 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   //    Newly created histogram or null
   //
   if (!h) return 0;
-  //#if USE_ROOT_PROJECT
-  //return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
-  //#endif
+#if USE_ROOT_PROJECT
+  return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
+#endif
   
   TAxis* xaxis = h->GetXaxis();
   TAxis* yaxis = h->GetYaxis();
@@ -414,7 +350,8 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   if      (last  < 0)                    last  = yaxis->GetNbins();
   else if (last  >  yaxis->GetNbins()+1) last  = yaxis->GetNbins();
   if (last-first < 0) { 
-    AliWarning(Form("Nothing to project [%d,%d]", first, last));
+    AliWarningGeneral("AliBasedNdetaTask", 
+		      Form("Nothing to project [%d,%d]", first, last));
     return 0;
     
   }
@@ -479,185 +416,45 @@ AliBasedNdetaTask::Terminate(Option_t *)
     return; 
   }
   
-  if (!fOutput) { 
-    fOutput = new TList;
-    fOutput->SetName(Form("%s_result", GetName()));
-    fOutput->SetOwner();
-  }
+  fOutput = new TList;
+  fOutput->SetName(Form("%s_result", GetName()));
+  fOutput->SetOwner();
 
-  fSum     = static_cast<TH2D*>(fSums->FindObject(GetName()));
-  fSumMC   = static_cast<TH2D*>(fSums->FindObject(Form("%sMC", GetName())));
-  fTriggers       = static_cast<TH1D*>(fSums->FindObject("triggers"));
+  fSNNString = static_cast<TNamed*>(fSums->FindObject("sNN"));
+  fSysString = static_cast<TNamed*>(fSums->FindObject("sys"));
 
-  if (!fTriggers) { 
-    AliError("Couldn't find histogram 'triggers' in list");
-    return;
-  }
-  if (!fSum) { 
-    AliError("Couldn't find histogram 'base' in list");
-    return;
-  }
-  
-  Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
-  Int_t nB          = Int_t(fTriggers->GetBinContent(kB));
-  Int_t nA          = Int_t(fTriggers->GetBinContent(kA));
-  Int_t nC          = Int_t(fTriggers->GetBinContent(kC));
-  Int_t nE          = Int_t(fTriggers->GetBinContent(kE));
-  Int_t nMB         = Int_t(fTriggers->GetBinContent(kMB));
-  Int_t nTriggered  = Int_t(fTriggers->GetBinContent(kWithTrigger));
-  Int_t nWithVertex = Int_t(fTriggers->GetBinContent(kWithVertex));
-  Int_t nAccepted   = Int_t(fTriggers->GetBinContent(kAccepted));
-  Int_t nGood       = nB - nA - nC + 2 * nE;
-  
-  //  Int_t nBg         = nA + nC -nE;
-  //std::cout<<"nBackground "<<nBg<<"   , with vertex in range "<<fNbgValid<<" ,  total "<<fNbgVertex<<"  "<<std::endl<<std::endl;
-  Float_t alpha            = ((Float_t)nAccepted) / ((Float_t)nWithVertex);
-  //Float_t alphaBG  = 1;
-  //if(fNbgVertex > 0) alphaBG= (Float_t)fNbgValid / (Float_t)fNbgVertex;
-  //Float_t nNormalizationJF = nAccepted + alpha*(nMB - nAccepted - nBg);
-  Float_t nNormalizationJF = nAccepted + alpha*(nTriggered - nWithVertex) ; // -alphaBG*(nBg-fNbgVertex);
-  
-  //Float_t nNormalizationBg = fNbgValid + alphaBG*nBg;
-  
-  //std::cout<<nTriggered -nWithVertex<<std::endl;
-  
-  //Double_t vtxEff   = Double_t(nMB) / nTriggered * Double_t(nAccepted) / nGood;
-  Double_t vtxEff   =  (Float_t)nAccepted / nNormalizationJF;
-  vtxEff = vtxEff*fTriggerEff;
-  
-  //if ( fTriggerMask == AliAODForwardMult::kNSD ) vtxEff = 0.97; //From paper...
-  //std::cout<<
+  if(fSysString && fSNNString && 
+     fSysString->GetUniqueID() == AliForwardUtil::kPP)
+    LoadNormalizationData(fSysString->GetUniqueID(),
+			  fSNNString->GetUniqueID());
 
-  //Double_t vtxEffBg   =  (Float_t)fNbgValid / nNormalizationBg;
-  //Double_t vtxEff   =  1.;//(Float_t)nAccepted / nNormalizationJF;
-  
-  
-  
-  
-  if (nTriggered <= 0) { 
-    AliError("Number of triggered events <= 0");
-    return;
-  }
-  if (nGood <= 0) { 
-    AliWarning(Form("Number of good events=%d=%d-%d-%d+2*%d<=0",
-		    nGood, nB, nA, nC, nE));
-    nGood = nMB;
-  }
-  //Double_t vtxEff   =  Double_t(nMB) / nTriggered * Double_t(nAccepted) / nGood;
-  
-  Double_t vNorm    = Double_t(nAccepted) / nGood;
-  AliInfo(Form("Total of %9d events\n"
-	       "                   of these %9d are minimum bias\n"
-	       "                   of these %9d has a %s trigger\n" 
-	       "                   of these %9d has a vertex\n" 
-	       "                   of these %9d were in [%+4.1f,%+4.1f]cm\n"
-	       "                   Triggers by type:\n"
-	       "                     B   = %9d\n"
-	       "                     A|C = %9d (%9d+%-9d)\n"
-	       "                     E   = %9d\n"
-	       "                   Implies %9d good triggers\n"
-	       "                   Vertex efficiency: %f (%f)",
-	       nAll, nMB, nTriggered, 
-	       AliAODForwardMult::GetTriggerString(fTriggerMask),
-	       nWithVertex, nAccepted,
-	       fVtxMin, fVtxMax, 
-	       nB, nA+nC, nA, nC, nE, nGood, vtxEff, vNorm));
-  
-  const char* name = GetName();
-  
-  // Get acceptance normalisation from underflow bins 
-  TH1D* norm   = ProjectX(fSum, Form("norm%s",name), 0, 0, fCorrEmpty, false);
-  
-    
-  
+  // Loop over centrality bins 
+  TIter next(fListOfCentralities);
+  CentralityBin* bin = 0;
+  while ((bin = static_cast<CentralityBin*>(next()))) 
+    bin->End(fSums, fOutput, fUseShapeCorr ? fShapeCorr : 0, fTriggerEff,
+	     fSymmetrice, fRebin, fCorrEmpty, fCutEdges, 
+	     fVtxMin, fVtxMax, fTriggerMask);
 
-  //
-  //std::cout<<norm->GetMaximumBin()<<"    "<< (Float_t)nAccepted / norm->GetBinContent((Float_t)norm->GetMaximumBin()) <<std::endl;
-  Float_t scaleForNorm =  (Float_t)nAccepted / (Float_t)norm->GetBinContent(norm->GetMaximumBin()) ;
-  //Float_t scaleForNorm =  norm->Integral() ;
-  std::cout<<norm->Integral()<<std::endl;
-  
-  norm->Scale(scaleForNorm);
-  //norm->Scale(1., "width");
-  //norm->Scale(norm->GetNbinsX() / (norm->GetXaxis()->GetXmax() - norm->GetXaxis()->GetXmin() ));
-  
-  //norm->Scale(1.,"width");
-  //
-  // Project onto eta axis - _ignoring_underflow_bins_!
-  
-  TH2D* tmpNorm = (TH2D*)fSum->Clone("tmpNorm");
-  
-  if(fShapeCorr)
-    fSum->Divide(fShapeCorr);
-  
-  TH1D* dndeta = ProjectX(fSum, Form("dndeta%s",name), 1, fSum->GetNbinsY(),
-			  fCorrEmpty);
-  
-  // Normalize to the acceptance 
-  //dndeta->Divide(norm);
-  
-  for(Int_t i = 1; i<=tmpNorm->GetNbinsX(); i++) {
-    
-    if( tmpNorm->GetBinContent(i,0) > 0 ) {
-      //std::cout<<tmpNorm->GetBinContent(i,0) <<std::endl;
-      dndeta->SetBinContent(i,dndeta->GetBinContent(i) / tmpNorm->GetBinContent(i,0));
-      dndeta->SetBinError(i,dndeta->GetBinError(i) / tmpNorm->GetBinContent(i,0));
-    }
-  }
-  
-  // Scale by the vertex efficiency 
-  //dndeta->Scale(vNorm, "width");
-    
-  dndeta->Scale(vtxEff, "width");
-  
-  //dndeta->Scale(1./(Float_t)nAccepted);
-  //dndeta->Scale(dndeta->GetNbinsX() / (dndeta->GetXaxis()->GetXmax() - dndeta->GetXaxis()->GetXmin() ));
-  
-  //norm->Scale(1. / nAccepted);
-  //norm->Scale(1. / nNormalizationJF);
-  SetHistogramAttributes(dndeta, kRed+1, 20, Form("ALICE %s", name));
-  SetHistogramAttributes(norm, kRed+1,20,Form("ALICE %s normalisation", name)); 
+  // Output collision energy string 
+  if (fSNNString) fOutput->Add(fSNNString->Clone());
 
-  fOutput->Add(fTriggers->Clone());
-  if (fSymmetrice)   fOutput->Add(Symmetrice(dndeta));
-  fOutput->Add(dndeta);
-  fOutput->Add(norm);
-  fOutput->Add(Rebin(dndeta));
-  if (fSymmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta)));
+  // Output collision system string 
+  if (fSysString) fOutput->Add(fSysString->Clone());
 
-  if (fSumMC) { 
-    // Get acceptance normalisation from underflow bins 
-    TH1D* normMC   = ProjectX(fSumMC,Form("norm%sMC", name), 0, 1, 
-			      fCorrEmpty, false);
-    // Project onto eta axis - _ignoring_underflow_bins_!
-    TH1D* dndetaMC = ProjectX(fSumMC,Form("dndeta%sMC", name),1,
-			      fSum->GetNbinsY(), fCorrEmpty);
-    // Normalize to the acceptance 
-    dndetaMC->Divide(normMC);
-    // Scale by the vertex efficiency 
-    dndetaMC->Scale(vNorm, "width");
-    normMC->Scale(1. / nAccepted);
-
-    SetHistogramAttributes(dndetaMC, kRed+3, 21, Form("ALICE %s (MC)",name));
-    SetHistogramAttributes(normMC, kRed+3, 21, Form("ALICE %s (MC) "
-						    "normalisation",name)); 
-
-    fOutput->Add(dndetaMC);
-    if (fSymmetrice)   fOutput->Add(Symmetrice(dndetaMC));    
-    fOutput->Add(normMC);
-    fOutput->Add(Rebin(dndetaMC));
-    if (fSymmetrice)   fOutput->Add(Symmetrice(Rebin(dndetaMC)));
-  }
-
+  // Output trigger string 
   TNamed* trigString = 
     new TNamed("trigString", AliAODForwardMult::GetTriggerString(fTriggerMask));
   trigString->SetUniqueID(fTriggerMask);
   fOutput->Add(trigString);
 
+  // Output vertex axis 
   TAxis* vtxAxis = new TAxis(1,fVtxMin,fVtxMax);
   vtxAxis->SetName("vtxAxis");
   vtxAxis->SetTitle(Form("v_{z}#in[%+5.1f,%+5.1f]cm", fVtxMin,fVtxMax));
   fOutput->Add(vtxAxis);
+
+  // Output trigger efficiency and shape correction 
   fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
   if (fShapeCorr) fOutput->Add(fShapeCorr);
   
@@ -667,49 +464,49 @@ AliBasedNdetaTask::Terminate(Option_t *)
 void
 AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
 {
-  sys = 1;
-  energy = 900;
+  // Load the normalisation data for dN/deta for pp INEL, INEL>0, and NSD
   TString type("pp");
-  if(sys == 2) type.Form("PbPb");
   TString snn("900");
   if(energy == 7000) snn.Form("7000");
   if(energy == 2750) snn.Form("2750"); 
   
-  if(fShapeCorr && (fTriggerEff != 1)) {AliInfo("Objects already set for normalization - no action taken"); return; }
-  
-  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWG2/FORWARD/corrections/Normalization/normalizationHists_%s_%s.root",type.Data(),snn.Data()));
-  if(!fin) AliWarning("no file for normalization");
-  
-  if ( fTriggerMask == AliAODForwardMult::kInel ) {
-    TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hInelNormalization"));
-    if(shapeCor) SetShapeCorrection(shapeCor);
-    TParameter<float>* ineleff = (TParameter<float>*)fin->Get("inelTriggerEff");
-  if ( ineleff) SetTriggerEff(ineleff->GetVal());
-  if (shapeCor && ineleff) AliInfo("Loaded objects for normalization.");
-  
-}
-
-if ( fTriggerMask == AliAODForwardMult::kNSD ) {
-  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hNSDNormalization"));
-  if(shapeCor) SetShapeCorrection(shapeCor);
-  TParameter<float>* nsdeff = (TParameter<float>*)fin->Get("nsdTriggerEff");
-if ( nsdeff) SetTriggerEff(nsdeff->GetVal());
-if (shapeCor && nsdeff) AliInfo("Loaded objects for normalization.");
-}
-
-if ( fTriggerMask == AliAODForwardMult::kInelGt0 ) {
-  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get("hInelGt0Normalization"));
-    if(shapeCor) SetShapeCorrection(shapeCor);
-    TParameter<float>* inelgt0eff = (TParameter<float>*)fin->Get("inelgt0TriggerEff");
-if ( inelgt0eff) SetTriggerEff(inelgt0eff->GetVal());
-if (shapeCor && inelgt0eff) AliInfo("Loaded objects for normalization.");
+  if(fShapeCorr && (fTriggerEff != 1)) {
+    AliInfo("Objects already set for normalization - no action taken"); 
+    return; 
   }
   
+  TFile* fin = TFile::Open(Form("$ALICE_ROOT/PWG2/FORWARD/corrections/"
+				"Normalization/normalizationHists_%s_%s.root",
+				type.Data(),snn.Data()));
+  if(!fin) {
+    AliWarning(Form("no file for normalization of %d/%d", sys, energy));
+    return;
+  }
 
+  // Shape correction 
+  TString shapeCorName(Form("h%sNormalization", 
+			    fTriggerMask == AliAODForwardMult::kInel ? "Inel" :
+			    fTriggerMask == AliAODForwardMult::kNSD ? "NSD" :
+			    fTriggerMask == AliAODForwardMult::kInelGt0 ?
+			    "InelGt0" : "All"));
+  TH2F* shapeCor = dynamic_cast<TH2F*>(fin->Get(shapeCorName));
+  if (shapeCor) SetShapeCorrection(shapeCor);
+
+  // Trigger efficiency
+  TString effName(Form("%sTriggerEff", 
+		       fTriggerMask == AliAODForwardMult::kInel ? "inel" :
+		       fTriggerMask == AliAODForwardMult::kNSD ? "nsd" :
+		       fTriggerMask == AliAODForwardMult::kInelGt0 ?
+		       "inelgt0" : "all"));
+  TParameter<float>* eff = static_cast<TParameter<float>*>(fin->Get(effName));
+  if (eff) SetTriggerEff(eff->GetVal());
+
+  // Print - out
+  if (shapeCor && eff) AliInfo("Loaded objects for normalization.");
 }
 //________________________________________________________________________
 TH1D*
-AliBasedNdetaTask::Rebin(const TH1D* h) const
+AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
 {
   // 
   // Make a copy of the input histogram and rebin that histogram
@@ -720,40 +517,45 @@ AliBasedNdetaTask::Rebin(const TH1D* h) const
   // Return:
   //    New (rebinned) histogram
   //
-  if (fRebin <= 1) return 0;
+  if (rebin <= 1) return 0;
 
   Int_t nBins = h->GetNbinsX();
-  if(nBins % fRebin != 0) {
-    Warning("Rebin", "Rebin factor %d is not a devisor of current number "
-	    "of bins %d in the histogram %s", fRebin, nBins, h->GetName());
+  if(nBins % rebin != 0) {
+    AliWarningGeneral("AliBasedNdetaTask", 
+		      Form("Rebin factor %d is not a devisor of current number "
+			   "of bins %d in the histogram %s", 
+			   rebin, nBins, h->GetName()));
     return 0;
   }
     
   // Make a copy 
   TH1D* tmp = static_cast<TH1D*>(h->Clone(Form("%s_rebin%02d", 
-					       h->GetName(), fRebin)));
-  tmp->Rebin(fRebin);
+					       h->GetName(), rebin)));
+  tmp->Rebin(rebin);
   tmp->SetDirectory(0);
 
   // The new number of bins 
-  Int_t nBinsNew = nBins / fRebin;
+  Int_t nBinsNew = nBins / rebin;
   for(Int_t i = 1;i<= nBinsNew; i++) {
     Double_t content = 0;
     Double_t sumw    = 0;
     Double_t wsum    = 0;
     Int_t    nbins   = 0;
-    for(Int_t j = 1; j<=fRebin;j++) {
-      Int_t    bin = (i-1)*fRebin + j;
+    for(Int_t j = 1; j<=rebin;j++) {
+      Int_t    bin = (i-1)*rebin + j;
       Double_t c   =  h->GetBinContent(bin);
       if (c <= 0) continue;
       
-      if (fCutEdges) {
+      if (cutEdges) {
 	if (h->GetBinContent(bin+1)<=0 || 
 	    h->GetBinContent(bin-1)<=0) {
-	  Warning("Rebin", "removing bin %d=%f of %s (%d=%f,%d=%f)", 
-		  bin, c, h->GetName(), 
-		  bin+1, h->GetBinContent(bin+1), 
-		  bin-1, h->GetBinContent(bin-1));
+#if 0
+	  AliWarningGeneral("AliBasedNdetaTask", 
+			    Form("removing bin %d=%f of %s (%d=%f,%d=%f)", 
+				 bin, c, h->GetName(), 
+				 bin+1, h->GetBinContent(bin+1), 
+				 bin-1, h->GetBinContent(bin-1)));
+#endif
 	  continue;
 	}	
       }
@@ -776,7 +578,7 @@ AliBasedNdetaTask::Rebin(const TH1D* h) const
 
 //__________________________________________________________________
 TH1* 
-AliBasedNdetaTask::Symmetrice(const TH1* h) const
+AliBasedNdetaTask::Symmetrice(const TH1* h)
 {
   // 
   // Make an extension of @a h to make it symmetric about 0 
@@ -820,6 +622,419 @@ AliBasedNdetaTask::Symmetrice(const TH1* h) const
   s->SetBinError(l2+1, h->GetBinError(first));
   return s;
 }
+
+//====================================================================
+AliBasedNdetaTask::CentralityBin::CentralityBin()
+  : TNamed("", ""), 
+    fSums(0), 
+    fOutput(0),
+    fSum(0), 
+    fSumMC(0), 
+    fTriggers(0), 
+    fLow(0), 
+    fHigh(0)
+{
+  // 
+  // Constructor 
+  //
+}
+//____________________________________________________________________
+AliBasedNdetaTask::CentralityBin::CentralityBin(const char* name, 
+						Short_t low, Short_t high)
+  : TNamed(name, ""), 
+    fSums(0), 
+    fOutput(0),
+    fSum(0), 
+    fSumMC(0), 
+    fTriggers(0),
+    fLow(low), 
+    fHigh(high)
+{
+  // 
+  // Constructor 
+  // 
+  // Parameters:
+  //    name Name used for histograms (e.g., Forward)
+  //    low  Lower centrality cut in percent 
+  //    high Upper centrality cut in percent 
+  //
+  if (low <= 0 && high <= 0) { 
+    fLow  = 0; 
+    fHigh = 0;
+    SetTitle("All centralities");
+  }
+  else {
+    fLow  = low;
+    fHigh = high;
+    SetTitle(Form("Centrality bin from %3d%% to %3d%%", low, high));
+  }
+}
+//____________________________________________________________________
+AliBasedNdetaTask::CentralityBin::CentralityBin(const CentralityBin& o)
+  : TNamed(o), 
+    fSums(o.fSums), 
+    fOutput(o.fOutput),
+    fSum(o.fSum), 
+    fSumMC(o.fSumMC), 
+    fTriggers(o.fTriggers), 
+    fLow(o.fLow), 
+    fHigh(o.fHigh)
+{
+  // 
+  // Copy constructor 
+  // 
+  // Parameters:
+  //    other Object to copy from 
+  //
+}
+//____________________________________________________________________
+AliBasedNdetaTask::CentralityBin::~CentralityBin()
+{
+  // 
+  // Destructor 
+  //
+  if (fSums) fSums->Delete();
+  if (fOutput) fOutput->Delete();
+}
+
+//____________________________________________________________________
+AliBasedNdetaTask::CentralityBin&
+AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
+{
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    other Object to assign from 
+  // 
+  // Return:
+  //    Reference to this 
+  //
+  SetName(o.GetName());
+  SetTitle(o.GetTitle());
+  fSums      = o.fSums;
+  fOutput    = o.fOutput;
+  fSum       = o.fSum;
+  fSumMC     = o.fSumMC;
+  fTriggers  = o.fTriggers;
+  fLow       = o.fLow;
+  fHigh      = o.fHigh;
+
+  return *this;
+}
+//____________________________________________________________________
+const char* 
+AliBasedNdetaTask::CentralityBin::GetListName() const
+{
+  // 
+  // Get the list name 
+  // 
+  // Return:
+  //    List Name 
+  //
+  if (IsAllBin()) return "all"; 
+  return Form("cent%03d_%03d", fLow, fHigh);
+}
+//____________________________________________________________________
+void
+AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
+{
+  // 
+  // Create output objects 
+  // 
+  // Parameters:
+  //    dir   Parent list
+  //
+  fSums = new TList;
+  fSums->SetName(GetListName());
+  fSums->SetOwner();
+  dir->Add(fSums);
+
+  fTriggers = new TH1D("triggers", "Number of triggers", 
+		       kAccepted, 1, kAccepted);
+  fTriggers->SetYTitle("# of events");
+  fTriggers->GetXaxis()->SetBinLabel(kAll,         "All events");
+  fTriggers->GetXaxis()->SetBinLabel(kB,           "w/B trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kA,           "w/A trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kC,           "w/C trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kE,           "w/E trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kMB,          "w/Collision trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kWithVertex,  "w/Vertex");
+  fTriggers->GetXaxis()->SetBinLabel(kWithTrigger, "w/Selected trigger");
+  fTriggers->GetXaxis()->SetBinLabel(kPileUp,      "w/Pileup");
+  fTriggers->GetXaxis()->SetBinLabel(kAccepted,    "Accepted by cut");
+  fTriggers->GetXaxis()->SetNdivisions(kAccepted, false);
+  fTriggers->SetFillColor(kRed+1);
+  fTriggers->SetFillStyle(3001);
+  fTriggers->SetStats(0);
+  fSums->Add(fTriggers);
+}
+//____________________________________________________________________
+void
+AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
+{
+  // 
+  // Create sum histogram 
+  // 
+  // Parameters:
+  //    data  Data histogram to clone 
+  //    mc    (optional) MC histogram to clone 
+  //
+  fSum = static_cast<TH2D*>(data->Clone(GetName()));
+  fSum->SetDirectory(0);
+  fSum->Reset();
+  fSums->Add(fSum);
+  
+  // If no MC data is given, then do not create MC sum histogram 
+  if (!mc) return;
+
+  fSumMC = static_cast<TH2D*>(mc->Clone(Form("%sMC", GetName())));
+  fSumMC->SetDirectory(0);
+  fSumMC->Reset();
+  fSums->Add(fSumMC);
+}
+
+//____________________________________________________________________
+Bool_t
+AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
+					     Int_t triggerMask,
+					     Double_t vzMin, Double_t vzMax)
+{
+  // 
+  // Check the trigger, vertex, and centrality
+  // 
+  // Parameters:
+  //    aod Event input 
+  // 
+  // Return:
+  //    true if the event is to be used 
+  //
+  if (!forward) return false;
+  
+  // Check the centrality class unless this is the 'all' bin 
+  if (!IsAllBin()) { 
+    Double_t centrality = forward->GetCentrality();
+    if (centrality < fLow || centrality >= fHigh) return false;
+  }
+  
+  fTriggers->AddBinContent(kAll);
+  if (forward->IsTriggerBits(AliAODForwardMult::kB)) 
+    fTriggers->AddBinContent(kB);
+  if (forward->IsTriggerBits(AliAODForwardMult::kA)) 
+    fTriggers->AddBinContent(kA);
+  if (forward->IsTriggerBits(AliAODForwardMult::kC)) 
+    fTriggers->AddBinContent(kC);
+  if (forward->IsTriggerBits(AliAODForwardMult::kE)) 
+    fTriggers->AddBinContent(kE);
+  if (forward->IsTriggerBits(AliAODForwardMult::kInel)) 
+    fTriggers->AddBinContent(kMB);
+  if (forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
+    fTriggers->AddBinContent(kMCNSD);
+  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) 
+    fTriggers->AddBinContent(kPileUp);
+  
+  // Check if we have an event of interest. 
+  if (!forward->IsTriggerBits(triggerMask)) return false;
+  
+  //Check for pileup
+  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return false;
+  
+  fTriggers->AddBinContent(kWithTrigger);
+  
+  // Check that we have a valid vertex
+  if (!forward->HasIpZ()) return false;
+  fTriggers->AddBinContent(kWithVertex);
+
+  // Check that vertex is within cuts 
+  if (!forward->InRange(vzMin, vzMax)) return false;
+  fTriggers->AddBinContent(kAccepted);
+  
+  return true;
+}
+  
+  
+//____________________________________________________________________
+void
+AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
+					       Int_t triggerMask,
+					       Double_t vzMin, Double_t vzMax,
+					       const TH2D* data, const TH2D* mc)
+{
+  // 
+  // Process an event
+  // 
+  // Parameters:
+  //    forward     Forward data (for trigger, vertex, & centrality)
+  //    triggerMask Trigger mask 
+  //    vzMin       Minimum IP z coordinate
+  //    vzMax       Maximum IP z coordinate
+  //    data        Data histogram 
+  //    mc          MC histogram
+  //
+  if (!CheckEvent(forward, triggerMask, vzMin, vzMax)) return;
+  if (!data) return;
+  if (!fSum) CreateSums(data, mc);
+  
+  fSum->Add(data);
+  if (mc) fSumMC->Add(mc);
+}
+
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
+				      TList*      results,
+				      const TH1*  shapeCorr, 
+				      Double_t    trigEff,
+				      Bool_t      symmetrice,
+				      Int_t       rebin, 
+				      Bool_t      corrEmpty, 
+				      Bool_t      cutEdges, 
+				      Double_t    vzMin, 
+				      Double_t    vzMax, 
+				      Int_t       triggerMask) 
+{
+  // 
+  // End of processing 
+  // 
+  // Parameters:
+  //    sums        List of sums
+  //    results     Output list of results
+  //    shapeCorr   Shape correction or nil
+  //    trigEff     Trigger efficiency 
+  //    symmetrice  Whether to symmetrice the results
+  //    rebin       Whether to rebin the results
+  //    corrEmpty   Whether to correct for empty bins
+  //    cutEdges    Whether to cut edges when rebinning
+  //    vzMin       Minimum IP z coordinate
+  //    vzMax 	  Maximum IP z coordinate
+  //    triggerMask Trigger mask 
+  //
+
+  fSums = dynamic_cast<TList*>(sums->FindObject(GetListName()));
+  if(!fSums) {
+    AliError("Could not retrieve TList fSums"); 
+    return; 
+  }
+  
+  fOutput = new TList;
+  fOutput->SetName(GetListName());
+  fOutput->SetOwner();
+  results->Add(fOutput);
+
+  fSum      = static_cast<TH2D*>(fSums->FindObject(GetName()));
+  fSumMC    = static_cast<TH2D*>(fSums->FindObject(Form("%sMC", GetName())));
+  fTriggers = static_cast<TH1D*>(fSums->FindObject("triggers"));
+
+  if (!fTriggers) { 
+    AliError("Couldn't find histogram 'triggers' in list");
+    return;
+  }
+  if (!fSum) { 
+    AliError("Couldn't find histogram 'base' in list");
+    return;
+  }
+  
+  Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
+  Int_t nB          = Int_t(fTriggers->GetBinContent(kB));
+  Int_t nA          = Int_t(fTriggers->GetBinContent(kA));
+  Int_t nC          = Int_t(fTriggers->GetBinContent(kC));
+  Int_t nE          = Int_t(fTriggers->GetBinContent(kE));
+  Int_t nMB         = Int_t(fTriggers->GetBinContent(kMB));
+  Int_t nTriggered  = Int_t(fTriggers->GetBinContent(kWithTrigger));
+  Int_t nWithVertex = Int_t(fTriggers->GetBinContent(kWithVertex));
+  Int_t nAccepted   = Int_t(fTriggers->GetBinContent(kAccepted));
+  Int_t nGood       = nB - nA - nC + 2 * nE;
+  
+  Double_t alpha    = Double_t(nAccepted) / nWithVertex;
+  Double_t vNorm     = nAccepted + alpha*(nTriggered - nWithVertex);
+  Double_t vtxEff   = Double_t(nAccepted) / vNorm;
+  vtxEff            = vtxEff * trigEff;
+  
+  if (nTriggered <= 0) { 
+    AliError("Number of triggered events <= 0");
+    return;
+  }
+  if (nGood <= 0) { 
+    AliWarning(Form("Number of good events=%d=%d-%d-%d+2*%d<=0",
+		    nGood, nB, nA, nC, nE));
+    nGood = nMB;
+  }
+  AliInfo(Form("Total of %9d events for %s\n"
+	       "                   of these %9d are minimum bias\n"
+	       "                   of these %9d has a %s trigger\n" 
+	       "                   of these %9d has a vertex\n" 
+	       "                   of these %9d were in [%+4.1f,%+4.1f]cm\n"
+	       "                   Triggers by type:\n"
+	       "                     B   = %9d\n"
+	       "                     A|C = %9d (%9d+%-9d)\n"
+	       "                     E   = %9d\n"
+	       "                   Implies %9d good triggers\n"
+	       "                   Vertex efficiency: %f (%f)",
+	       nAll, GetTitle(), nMB, nTriggered, 
+	       AliAODForwardMult::GetTriggerString(triggerMask),
+	       nWithVertex, nAccepted,
+	       vzMin, vzMax, 
+	       nB, nA+nC, nA, nC, nE, nGood, vtxEff, vNorm));
+  
+  const char* name = GetName();
+  
+  // Get acceptance normalisation from underflow bins 
+  TH1D* norm = ProjectX(fSum, Form("norm%s",name), 0, 0, corrEmpty, false);
+  norm->SetDirectory(0);
+
+  // Scale by shape correction 
+  if(shapeCorr) fSum->Divide(shapeCorr);
+  else AliInfo("No shape correction specified, or disabled");
+  
+  // Project on X axis 
+  TH1D* dndeta = ProjectX(fSum, Form("dndeta%s",name), 1, fSum->GetNbinsY(),
+			  corrEmpty);
+  dndeta->SetDirectory(0);
+
+  // Normalize to the acceptance -
+  dndeta->Divide(norm);
+  
+  // Scale by the vertex efficiency 
+  dndeta->Scale(vtxEff, "width");
+  
+  SetHistogramAttributes(dndeta, kRed+1, 20, Form("ALICE %s", name));
+  SetHistogramAttributes(norm, kRed+1,20,Form("ALICE %s normalisation", name)); 
+
+  fOutput->Add(fTriggers->Clone());
+  if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
+  fOutput->Add(dndeta);
+  fOutput->Add(norm);
+  fOutput->Add(Rebin(dndeta, rebin, cutEdges));
+  if (symmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
+
+  if (fSumMC) { 
+    // Get acceptance normalisation from underflow bins 
+    TH1D* normMC   = ProjectX(fSumMC,Form("norm%sMC", name), 0, 1, 
+			      corrEmpty, false);
+    // Project onto eta axis - _ignoring_underflow_bins_!
+    TH1D* dndetaMC = ProjectX(fSumMC,Form("dndeta%sMC", name),1,
+			      fSum->GetNbinsY(), corrEmpty);
+    // Normalize to the acceptance 
+    dndetaMC->Divide(normMC);
+    // Scale by the vertex efficiency 
+    dndetaMC->Scale(vNorm, "width");
+    normMC->Scale(1. / nAccepted);
+
+    SetHistogramAttributes(dndetaMC, kRed+3, 21, Form("ALICE %s (MC)",name));
+    SetHistogramAttributes(normMC, kRed+3, 21, Form("ALICE %s (MC) "
+						    "normalisation",name)); 
+
+    fOutput->Add(dndetaMC);
+    if (symmetrice)   fOutput->Add(Symmetrice(dndetaMC));    
+
+    fOutput->Add(normMC);
+    fOutput->Add(Rebin(dndetaMC, rebin, cutEdges));
+
+    if (symmetrice)   
+      fOutput->Add(Symmetrice(Rebin(dndetaMC, rebin, cutEdges)));
+  }
+}
+
 //
 // EOF
 //
