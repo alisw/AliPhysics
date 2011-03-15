@@ -69,6 +69,7 @@ AliTOFFEEReader::AliTOFFEEReader(const AliTOFFEEReader &source) :
    *
    */
 
+  Reset();
   memcpy(fFEEConfig, source.fFEEConfig, sizeof(AliTOFFEEConfig));
   memcpy(fFEElightConfig, source.fFEElightConfig, sizeof(AliTOFFEElightConfig));
 }
@@ -410,7 +411,7 @@ AliTOFFEEReader::IsChannelEnabled(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iT
 //_______________________________________________________________
 
 Int_t 
-AliTOFFEEReader::GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t iTDC, Int_t iChannel) const
+AliTOFFEEReader::GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t, Int_t, Int_t) const
 {
   /*
    *
@@ -426,8 +427,6 @@ AliTOFFEEReader::GetMatchingWindow(Int_t iDDL, Int_t iTRM, Int_t iChain, Int_t i
   AliTOFCrateConfig *crateConfig;
   AliTOFTRMConfig *trmConfig;
 
-  iChain = 0; iTDC = 0; iChannel = 0; /* dummy for the time being */
-  
   /* get and check fee config */
   if (!(feeConfig = GetFEEConfig()))
     return 0;
