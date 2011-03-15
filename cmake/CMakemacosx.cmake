@@ -19,8 +19,16 @@ if( NOT FINK_ROOT )
 
 endif( NOT FINK_ROOT )
 
-set ( OPT  "-O -g")
-set ( NOOPT  "-O0 -g")
+# Global Optimization
+set ( OPT )
+# ------- Setting optimization flags for default configuration -------
+if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+    set(DEFAULT_CXX_FLAGS "-O -g")
+    set(OPT "${DEFAULT_CXX_FLAGS}")
+    message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
+endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+# --------------------------------------------------------------------
+set ( NOOPT  "-g")
 
 set ( CXXOPT  "${OPT}")
 set ( CXXNOOPT  "${NOOPT}")

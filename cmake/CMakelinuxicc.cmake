@@ -33,7 +33,15 @@ execute_process (COMMAND ${CMAKE_C_COMPILER} -V 2>&1 | awk '{ if(NR == 1) print 
                  OUTPUT_VARIABLE ICC_MINOR
                  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+# Global Optimization
 set ( OPT  "-O -ip")
+# ------- Setting optimization flags for default configuration -------
+if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+    set(DEFAULT_CXX_FLAGS "-O -g")
+    set(OPT "${DEFAULT_CXX_FLAGS}")
+    message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
+endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+# --------------------------------------------------------------------
 set ( NOOPT  "-O0")
 
 set ( CXXOPT  "${OPT} -fPIC")

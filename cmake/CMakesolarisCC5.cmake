@@ -25,7 +25,15 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( OPT  "-g -O")
+# Global Optimization
+set ( OPT )
+# ------- Setting optimization flags for default configuration -------
+if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+    set(DEFAULT_CXX_FLAGS "-O -g")
+    set(OPT "${DEFAULT_CXX_FLAGS}")
+    message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
+endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+# --------------------------------------------------------------------
 set ( NOOPT  "-g")
 
 set ( CXXOPT  ${OPT})

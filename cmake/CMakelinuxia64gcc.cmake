@@ -20,7 +20,14 @@ execute_process (COMMAND ${CMAKE_C_COMPILER} -dumpversion | cut -d. -f2
 
 
 # Global Optimization
-set(OPT "-O -g -mieee -mno-soft-float")
+set(OPT)
+# ------- Setting optimization flags for default configuration -------
+if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+    set(DEFAULT_CXX_FLAGS "-O -g")
+    set(OPT "${DEFAULT_CXX_FLAGS}")
+    message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
+endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
+# --------------------------------------------------------------------
 set(NOOPT "-g -mieee -mno-soft-float")
 
 set(CXXOPT ${OPT})

@@ -31,8 +31,20 @@ It you do not specify it, "make install" will put lib, bin and include in ALICE_
 
 	cmake $ALICE_ROOT
 
+
 Note: Some files CMakeLists.txt will be created in the source tree, so you need write access there. This 
 is a temporary situation that will change soon.
+ 	
+	6a.Run 
+		cmake -DCMAKE_BUILD_TYPE=DEBUG  $ALICE_ROOT
+ 
+	to compile AliRoot in Debug configuration (-g compiler flags).
+	To change the configuration later on you can either edit
+	cache variable CMAKE_BUILD_TYPE using 'ccmake' command ('None' value for default configuration), 
+	or setup default configuration by running 
+		cmake $ALICE_ROOT
+
+	6b. By default -O -g options are setting up. 
 
 7. Build and install AliRoot. Note that the parralel build is fully operational with CMake.
 
