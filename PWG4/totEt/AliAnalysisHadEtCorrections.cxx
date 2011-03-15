@@ -12,6 +12,8 @@
 #include <iostream>
 #include "Rtypes.h"
 #include "TNamed.h"
+#include "TObjArray.h"
+#include "AliLog.h"
 
 using namespace std;
 
@@ -58,11 +60,20 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fEfficiencyKaonITS(0)
 							   ,fEfficiencyProtonITS(0)
 							   ,fEfficiencyHadronITS(0)
+							   ,fEfficiencyTPC(0)
+							   ,fEfficiencyITS(0)
 							   ,fBackgroundTPC(0)
 							   ,fBackgroundITS(0)
+							   ,fIsEMCal(kTRUE)
+							   ,fIsData(kFALSE)
+							   ,fDataSet(2009)
+							   ,fProduction("ProductionName")
+							   ,fProductionDescription("Long production description")
 {//default constructor
   //This seems to solve a compiler error
   cout<<"Creating new AliAnalysisHadEtCorrections"<<endl;
+  fEfficiencyTPC = new TObjArray();
+  fEfficiencyITS = new TObjArray();
 
 }
 AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
@@ -92,6 +103,8 @@ AliAnalysisHadEtCorrections::~AliAnalysisHadEtCorrections()
     delete fEfficiencyKaonITS;
     delete fEfficiencyProtonITS;
     delete fEfficiencyHadronITS;
+    delete fEfficiencyTPC;
+    delete fEfficiencyITS;
     delete fBackgroundTPC;
     delete fBackgroundITS;
 }
@@ -135,8 +148,15 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
 											      ,fEfficiencyKaonITS(0)
 											      ,fEfficiencyProtonITS(0)
 											      ,fEfficiencyHadronITS(0)
+											      ,fEfficiencyTPC(0)
+											      ,fEfficiencyITS(0)
 											      ,fBackgroundTPC(0)
 											      ,fBackgroundITS(0)
+											      ,fIsEMCal(g->fIsEMCal)
+											      ,fIsData(g->fIsData)
+											      ,fDataSet(g->fDataSet)
+											      ,fProduction(g->fProduction)
+											      ,fProductionDescription(g->fProductionDescription)
 {//copy constructor
   //SetName(g->GetName());
   fnotIDTPC = new TH1D(*(g->fnotIDTPC));
@@ -150,6 +170,8 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
   fEfficiencyKaonITS = new TH1D(*(g->fEfficiencyKaonITS));
   fEfficiencyProtonITS = new TH1D(*(g->fEfficiencyProtonITS));
   fEfficiencyHadronITS = new TH1D(*(g->fEfficiencyHadronITS));
+  fEfficiencyTPC = new TObjArray(*(g->fEfficiencyTPC));
+  fEfficiencyITS = new TObjArray(*(g->fEfficiencyITS));
   fBackgroundTPC = new TH1D(*(g->fBackgroundTPC));
   fBackgroundITS = new TH1D(*(g->fBackgroundITS));
 }
@@ -231,54 +253,240 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 //   fBackgroundTPC = g->fBackgroundTPC;
 //   fBackgroundITS = g->fBackgroundITS;
 // }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT){//Get the efficiency for reconstructing a pion in the TPC
-  if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
-  float eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT, const int cb){//Get the efficiency for reconstructing a pion in the TPC
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyPionTPC){cerr<<"No histogram fEfficiencyPionTPC!"<<endl; return -1.0;}
+    eff = fEfficiencyPionTPC->GetBinContent(fEfficiencyPionTPC->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionTPC%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float pT){//Get the efficiency for reconstructing a kaon in the TPC
-  if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
-  float eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionKaon(const float pT, const int cb){//Get the efficiency for reconstructing a kaon in the TPC
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyKaonTPC){cerr<<"No histogram fEfficiencyKaonTPC!"<<endl; return -1.0;}
+    eff = fEfficiencyKaonTPC->GetBinContent(fEfficiencyKaonTPC->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonTPC%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const float pT){//Get the efficiency for reconstructing a proton in the TPC
-  if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
-  float eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionProton(const float pT, const int cb){//Get the efficiency for reconstructing a proton in the TPC
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyProtonTPC){cerr<<"No histogram fEfficiencyProtonTPC!"<<endl; return -1.0;}
+    eff = fEfficiencyProtonTPC->GetBinContent(fEfficiencyProtonTPC->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonTPC%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const float pT){//Get the efficiency for reconstructing a hadron in the TPC
-  if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
-  float eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionHadron(const float pT, const int cb){//Get the efficiency for reconstructing a hadron in the TPC
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyHadronTPC){cerr<<"No histogram fEfficiencyHadronTPC!"<<endl; return -1.0;}
+    eff = fEfficiencyHadronTPC->GetBinContent(fEfficiencyHadronTPC->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronTPC%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float pT){//Get the efficiency for reconstructing a pion in the ITS
-  if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
-  float eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionPion(const float pT, const int cb){//Get the efficiency for reconstructing a pion in the ITS
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyPionITS){cerr<<"No histogram fEfficiencyPionITS!"<<endl; return -1.0;}
+    eff = fEfficiencyPionITS->GetBinContent(fEfficiencyPionITS->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyPionITS%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float pT){//Get the efficiency for reconstructing a kaon in the ITS
-  if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
-  float eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionKaon(const float pT, const int cb){//Get the efficiency for reconstructing a kaon in the ITS
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyKaonITS){cerr<<"No histogram fEfficiencyKaonITS!"<<endl; return -1.0;}
+    eff = fEfficiencyKaonITS->GetBinContent(fEfficiencyKaonITS->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyKaonITS%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const float pT){//Get the efficiency for reconstructing a proton in the ITS
-  if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
-  float eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionProton(const float pT, const int cb){//Get the efficiency for reconstructing a proton in the ITS
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyProtonITS){cerr<<"No histogram fEfficiencyProtonITS!"<<endl; return -1.0;}
+    eff = fEfficiencyProtonITS->GetBinContent(fEfficiencyProtonITS->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyProtonITS%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
-Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const float pT){//Get the efficiency for reconstructing a hadron in the ITS
-  if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
-  float eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
-  if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+Float_t AliAnalysisHadEtCorrections::GetITSEfficiencyCorrectionHadron(const float pT, const int cb){//Get the efficiency for reconstructing a hadron in the ITS
+  float eff = -1.0;
+  if(cb ==-1){//pp
+    if(!fEfficiencyHadronITS){cerr<<"No histogram fEfficiencyHadronITS!"<<endl; return -1.0;}
+    eff = fEfficiencyHadronITS->GetBinContent(fEfficiencyHadronITS->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
+  else{
+    TH1D *fEfficiency = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",cb));
+    if(!fEfficiency){cerr<<"No histogram "<<Form("fEfficiencyHadronITS%i",cb)<<endl; return -1.0;}
+    eff = fEfficiency->GetBinContent(fEfficiency->FindBin(pT));
+    if(eff<=0.0){cerr<<"Efficiency is zero!"<<endl;  return 0.0;}
+  }
   return 1.0/eff;
 }
+void AliAnalysisHadEtCorrections::SetEfficiencyPionTPC(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",cb));
+    if(old){
+      fEfficiencyTPC->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyPionTPC%i",cb));
+    fEfficiencyTPC->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}
+void AliAnalysisHadEtCorrections::SetEfficiencyKaonTPC(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",cb));
+    if(old){
+      fEfficiencyTPC->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyKaonTPC%i",cb));
+    fEfficiencyTPC->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}//Kaon
+void AliAnalysisHadEtCorrections::SetEfficiencyProtonTPC(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",cb));
+    if(old){
+      fEfficiencyTPC->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyProtonTPC%i",cb));
+    fEfficiencyTPC->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}//Proton
+void AliAnalysisHadEtCorrections::SetEfficiencyHadronTPC(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",cb));
+    if(old){
+      fEfficiencyTPC->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyHadronTPC%i",cb));
+    fEfficiencyTPC->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}
+void AliAnalysisHadEtCorrections::SetEfficiencyPionITS(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",cb));
+    if(old){
+      fEfficiencyITS->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyPionITS%i",cb));
+    fEfficiencyITS->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}
+void AliAnalysisHadEtCorrections::SetEfficiencyKaonITS(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",cb));
+    if(old){
+      fEfficiencyITS->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyKaonITS%i",cb));
+    fEfficiencyITS->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}//Kaon
+void AliAnalysisHadEtCorrections::SetEfficiencyProtonITS(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",cb));
+    if(old){
+      fEfficiencyITS->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyProtonITS%i",cb));
+    fEfficiencyITS->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}//Proton
+void AliAnalysisHadEtCorrections::SetEfficiencyHadronITS(TH1D *histo, const int cb){//Set centrality dependent efficiency for centrality bin cb
+  if(histo){
+    //first check to see if the histogram exists already
+    TH1D *old = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",cb));
+    if(old){
+      fEfficiencyITS->Remove(old);
+      delete old;
+    }
+    //then if the new histogram exists, add it to the array
+    histo->SetName(Form("fEfficiencyHadronITS%i",cb));
+    fEfficiencyITS->Add(histo);
+  }
+  else{cerr<<"Histogram does not exist!"<<endl;}
+}
+
+
 Float_t AliAnalysisHadEtCorrections::GetNotIDCorrectionTPC(const float pT){//get correction for unidentified particles in the TPC
   Float_t val = fnotIDTPC->GetBinContent(fnotIDTPC->FindBin(pT));
   if(val>0.0) return 1.0/(val);
@@ -294,3 +502,171 @@ Float_t AliAnalysisHadEtCorrections::GetNotIDCorrectionNoPID(const float pT){//G
   if(val>0.0) return 1.0/(val);
   else{return 0.0;}
 }
+void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all corrections
+  cout<<"======================================================================="<<endl;
+  cout<<"                   Report from "<<GetName()<<endl;
+  cout<<"======================================================================="<<endl;
+  cout<<fProductionDescription<<" created from "<<fProduction<<endl;
+  cout<<"This for determination of EThad from ";
+  if(fIsData) cout<<"data of ";
+  else{cout<<"simulation of ";}
+  switch(fDataSet){
+  case 2009:
+    cout<<"p+p collisions at 900 GeV"<<endl;
+    break;
+  case 2010:
+    cout<<"p+p collisions at 7 TeV"<<endl;
+    break;
+  case 20100:
+    cout<<"Pb+Pb collisions at 2.76 TeV"<<endl;
+    break;
+  default:
+    cout<<"an undetermined collision system and energy"<<endl;
+  }
+  cout<<"This is initialized for the ";
+  if(fIsEMCal) cout<<"EMCal";
+  else{cout<<"PHOS";}
+  cout<<" acceptance"<<endl<<endl;
+
+  cout<<"The acceptance correction for the full  "<<fAcceptanceCorrectionFull<<endl;
+  cout<<"                                  EMCal "<<fAcceptanceCorrectionEMCAL<<endl;
+  cout<<"                                  PHOS  "<<fAcceptanceCorrectionPHOS<<endl<<endl;
+
+  cout<<Form("The neutral energy correction is %2.4f [%2.4f,%2.4f]",fNeutralCorrection,fNeutralCorrectionLow,fNeutralCorrectionHigh)<<endl;
+  cout<<Form("    total                        %2.4f [%2.4f,%2.4f]",fNotHadronicCorrection,fNotHadronicCorrectionLow,fNotHadronicCorrectionHigh)<<endl<<endl;
+
+  cout<<Form("The pT cut correction for 100 MeV is %2.4f [%2.4f,%2.4f]",fpTcutCorrectionITS,ffpTcutCorrectionITSLow,ffpTcutCorrectionITSHigh)<<endl;
+  cout<<Form("                          150 MeV    %2.4f [%2.4f,%2.4f]",fpTcutCorrectionTPC,ffpTcutCorrectionTPCLow,ffpTcutCorrectionTPCHigh)<<endl<<endl;
+
+  cout<<Form("The pT cut correction for ITS tracks is %2.4f [%2.4f,%2.4f]",fNotIDConstITS,fNotIDConstITSLow,fNotIDConstITSHigh)<<endl;
+  cout<<Form("                          TPC tracks    %2.4f [%2.4f,%2.4f]",fNotIDConstTPC,fNotIDConstTPCLow,fNotIDConstTPCHigh)<<endl<<endl;
+
+  cout<<"Background correction histogram for ITS tracks is";
+  if(!fBackgroundITS)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fBackgroundITS->GetEntries()<<" entries"<<endl;}
+  cout<<"                                    TPC          ";
+  if(!fBackgroundTPC)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fBackgroundTPC->GetEntries()<<" entries"<<endl;}
+  cout<<endl;
+
+
+  cout<<"Efficiency histogram for ITS tracks for hadrons is";
+  if(!fEfficiencyHadronITS)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyHadronITS->GetEntries()<<" entries"<<endl;}
+  cout<<"                         TPC            hadrons   ";
+  if(!fEfficiencyHadronTPC)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyHadronTPC->GetEntries()<<" entries"<<endl;}
+  cout<<"                         ITS            pions     ";
+  if(!fEfficiencyPionITS)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyPionITS->GetEntries()<<" entries"<<endl;}
+  cout<<"                         TPC            pions     ";
+  if(!fEfficiencyPionTPC)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyPionTPC->GetEntries()<<" entries"<<endl;}
+  cout<<"                         ITS            kaons     ";
+  if(!fEfficiencyKaonITS)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyKaonITS->GetEntries()<<" entries"<<endl;}
+  cout<<"                         TPC            kaons     ";
+  if(!fEfficiencyKaonTPC)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyKaonTPC->GetEntries()<<" entries"<<endl;}
+  cout<<"                         ITS            protons   ";
+  if(!fEfficiencyProtonITS)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyProtonITS->GetEntries()<<" entries"<<endl;}
+  cout<<"                         TPC            protons   ";
+  if(!fEfficiencyProtonTPC)cout<<" not set"<<endl;
+  else{cout<<" set and has "<<fEfficiencyProtonTPC->GetEntries()<<" entries"<<endl;}
+  cout<<endl;
+
+  if(fDataSet==20100){//if Pb+Pb
+    cout<<"Efficiency histogram for TPC tracks for hadrons is set for centrality bins ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        pions                              ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        kaons                              ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        protons                            ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                         ITS            hadrons                            ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        pions                              ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        kaons                              ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+    cout<<"                                        protons                            ";
+    for(int i = 0;i<=20;i++){
+      TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",i));
+      if(histo) cout<<i<<" ";
+    }
+    cout<<endl;
+
+
+    int nEntries = fEfficiencyTPC->GetEntries();
+    int nbadhistograms = 0;
+    for(int i=0;i<nEntries;i++){
+      TH1D *histo = (TH1D*) fEfficiencyTPC->At(i);
+      if(!histo){
+	cout<<"Warning:  Histogram in fEfficiencyTPC at "<<i<<" is NULL!"<<endl;
+	nbadhistograms++;
+      }
+      else{
+	if(histo->GetEntries()<=1e-2){
+	  cout<<"Warning: Histogram "<<histo->GetName()<<" in fEfficiencyTPC is empty!"<<endl;
+	  nbadhistograms++;
+	}
+      }
+    }
+    cout<<nbadhistograms<<" bad histograms in fEfficiencyTPC"<<endl;
+
+    nEntries = fEfficiencyITS->GetEntries();
+    nbadhistograms = 0;
+    for(int i=0;i<nEntries;i++){
+      TH1D *histo = (TH1D*) fEfficiencyITS->At(i);
+      if(!histo){
+	cout<<"Warning:  Histogram in fEfficiencyITS at "<<i<<" is NULL!"<<endl;
+	nbadhistograms++;
+      }
+      else{
+	if(histo->GetEntries()<=1e-2){
+	  cout<<"Warning: Histogram "<<histo->GetName()<<" in fEfficiencyITS is empty!"<<endl;
+	  nbadhistograms++;
+	}
+      }
+    }
+    cout<<nbadhistograms<<" bad histograms in fEfficiencyITS"<<endl;
+
+
+  }
+
+
+  cout<<endl;
+  cout<<"======================================================================="<<endl;
+  cout<<"======================================================================="<<endl;
+}
+
