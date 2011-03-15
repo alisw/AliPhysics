@@ -155,6 +155,8 @@ AliAnalysisTaskSE(),
   }
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO."
+               ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }   
 
 //________________________________________________________________________
@@ -243,6 +245,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   }
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO."
+               ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }
 
 //________________________________________________________________________
@@ -477,6 +481,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	AliError("No ESD Event");
 	return;
     }
+
+    LoadBranches();
     
     if (fRunNo<=0) {
       if (SetupRun(esd)<0)
