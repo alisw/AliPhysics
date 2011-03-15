@@ -69,7 +69,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   cu->SetNumberOfCellsFromPHOSBorder(2);
   cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");  
   // Remove EMCAL hottest channels for first LHC10 periods 	
-  //cu->SwitchOnBadChannelsRemoval();
+  cu->SwitchOnBadChannelsRemoval();
   // SM0
   //cu->SetEMCALChannelStatus(0,3,13);  cu->SetEMCALChannelStatus(0,44,1); cu->SetEMCALChannelStatus(0,3,13); 
   //cu->SetEMCALChannelStatus(0,20,7);  cu->SetEMCALChannelStatus(0,38,2);   
@@ -106,7 +106,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //fidCut->DoPHOSFiducialCut(kTRUE) ;	
 	
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
-  //emcalQA->SetDebug(2); //10 for lots of messages
+  //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
   if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
   else  emcalQA->SwitchOffDataMC() ;
@@ -115,7 +115,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCorrelation();
-  if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
+//  if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
   emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
