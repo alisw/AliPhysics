@@ -227,15 +227,11 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==23){
-	      Double_t refTDCs = -319.5;
+	      Double_t refTDCs[6] = {-325.,-321.6,-323.4,-321.6,-322.2,-321.7};
 	      Float_t resTDC=0.;
-	      for(int ibin=5; ibin<=6; ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<2.){
+	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<10.){
 		   res=1.;
-		 }
-		 else if((TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)>=2.) &&
-		         (TMath::Abs((hdata->GetBinContent(ibin))-refTDCs)<=3.)){
-	           res=0.9;
 		 }
 		 else{
 		   res=0.5;
@@ -246,13 +242,12 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	 count++;
 	      }
 	      Float_t rv=1.;
-	      if(hdata->GetNbinsX() != 0) rv = resTDC/2;
+	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
 	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
-	      else if(rv<1 && rv>=0.9) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else if(rv<1 && rv>0.8) messages.Add(new TObjString("Minor problem with TDCs"));
 	      else{
 	        messages.Add(new TObjString("Serious problem in ZDC timing"));
                 messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
-                messages.Add(new TObjString("OR A STANDALONE_PEDESTAL RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
 	    }
