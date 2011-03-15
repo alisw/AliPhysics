@@ -25,7 +25,21 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  GammaConv/AliV0Reader.cxx 	GammaConv/AliAnalysisTaskGammaConversion.cxx GammaConv/AliGammaConversionHistograms.cxx GammaConv/AliGammaConversionAODObject.cxx GammaConv/AliAODConversionParticle.cxx GammaConv/AliGammaConversionBGHandler.cxx GammaConv/AliAnalysisTaskCaloConv.cxx GammaConv/AliAnalysisTaskGammaJet.cxx GammaConv/AliAnalysisTaskGammaConvDalitz.cxx GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx )
+set ( SRCS  GammaConv/AliV0Reader.cxx 	
+    GammaConv/AliAnalysisTaskGammaConversion.cxx 
+    GammaConv/AliGammaConversionHistograms.cxx 
+    GammaConv/AliGammaConversionAODObject.cxx 
+    GammaConv/AliAODConversionParticle.cxx 
+    GammaConv/AliGammaConversionBGHandler.cxx 
+    GammaConv/AliAnalysisTaskCaloConv.cxx 
+    GammaConv/AliAnalysisTaskGammaConvDalitz.cxx 
+    GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx 
+    GammaConv/ConvCorrelations/AliAnalysisTaskGammaJet.cxx 
+    GammaConv/ConvCorrelations/AliAnaConvIsolation.cxx 
+    GammaConv/ConvCorrelations/AliAnaConvCorrBase.cxx 
+    GammaConv/ConvCorrelations/AliAnaConvCorrPion.cxx 
+    GammaConv/ConvCorrelations/AliAnaConvCorrPhoton.cxx 
+    GammaConv/ConvCorrelations/AliAnaConvCorrPhotonJet.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
