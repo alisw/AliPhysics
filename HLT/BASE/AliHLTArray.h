@@ -51,7 +51,7 @@
 #endif
 
 enum {
-  AliHLTFullyCacheLineAligned = -1
+  kAliHLTFullyCacheLineAligned = -1
 };
 
 #if defined(__CUDACC__) & 0
@@ -87,7 +87,7 @@ namespace AliHLTInternal
       PaddingSize = RequiredSize - sizeof( T )
     };
   };
-  template<typename T> class CacheLineSizeHelper : private CacheLineSizeHelperData<T>, private Padding<CacheLineSizeHelperEnums<T>::PaddingSize>
+  template<typename T> class AliCacheLineSizeHelper : private CacheLineSizeHelperData<T>, private Padding<CacheLineSizeHelperEnums<T>::PaddingSize>
   {
     public:
       operator T &() { return CacheLineSizeHelperData<T>::fData; }
@@ -97,10 +97,10 @@ namespace AliHLTInternal
     private:
   };
   template<typename T, int alignment> struct TypeForAlignmentHelper { typedef T Type; };
-  template<typename T> struct TypeForAlignmentHelper<T, AliHLTFullyCacheLineAligned> { typedef CacheLineSizeHelper<T> Type; };
+  template<typename T> struct TypeForAlignmentHelper<T, kAliHLTFullyCacheLineAligned> { typedef AliCacheLineSizeHelper<T> Type; };
 
   // XXX
-  // The ArrayBoundsCheck and Allocator classes implement a virtual destructor only in order to
+  // The AliArrayBoundsCheck and AliAllocator classes implement a virtual destructor only in order to
   // silence the -Weffc++ warning. It really is not required for these classes to have a virtual
   // dtor since polymorphism is not used (AliHLTResizableArray and AliHLTFixedArray are allocated on
   // the stack only). The virtual dtor only adds an unnecessary vtable to the code.
@@ -108,24 +108,24 @@ namespace AliHLTInternal
   /**
    * no-op implementation that for no-bounds-checking
    */
-  class ArrayBoundsCheck
+  class AliArrayBoundsCheck
   {
     protected:
-      virtual inline ~ArrayBoundsCheck() {}
+      virtual inline ~AliArrayBoundsCheck() {}
       inline bool IsInBounds( int ) const { return true; }
       inline void SetBounds( int, int ) {}
       inline void MoveBounds( int ) {}
-      inline void ReinterpretCast( const ArrayBoundsCheck &, int, int ) {}
+      inline void ReinterpretCast( const AliArrayBoundsCheck &, int, int ) {}
   };
 #define BOUNDS_CHECK(x, y)
 #else
   /**
    * implementation for bounds-checking.
    */
-  class ArrayBoundsCheck
+  class AliArrayBoundsCheck
   {
     protected:
-      virtual inline ~ArrayBoundsCheck() {}
+      virtual inline ~AliArrayBoundsCheck() {}
       /**
        * checks whether the given offset is valid
        */
@@ -139,7 +139,7 @@ namespace AliHLTInternal
        */
       inline void MoveBounds( int d ) { fStart += d; fEnd += d; }
 
-      inline void ReinterpretCast( const ArrayBoundsCheck &other, int sizeofOld, int sizeofNew ) {
+      inline void ReinterpretCast( const AliArrayBoundsCheck &other, int sizeofOld, int sizeofNew ) {
         fStart = other.fStart * sizeofNew / sizeofOld;
         fEnd = other.fEnd * sizeofNew / sizeofOld;
       }
@@ -148,9 +148,9 @@ namespace AliHLTInternal
       int fStart; // start
       int fEnd;   // end
   };
-#define BOUNDS_CHECK(x, y) if (AliHLTInternal::ArrayBoundsCheck::IsInBounds(x)) {} else return y
+#define BOUNDS_CHECK(x, y) if (AliHLTInternal::AliArrayBoundsCheck::IsInBounds(x)) {} else return y
 #endif
-  template<typename T, int alignment> class Allocator
+  template<typename T, int alignment> class AliAllocator
   {
     public:
 #ifdef USE_MM_MALLOC
@@ -171,10 +171,10 @@ namespace AliHLTInternal
       }
 #endif
   };
-  template<typename T> class Allocator<T, AliHLTFullyCacheLineAligned>
+  template<typename T> class AliAllocator<T, kAliHLTFullyCacheLineAligned>
   {
     public:
-      typedef CacheLineSizeHelper<T> T2;
+      typedef AliCacheLineSizeHelper<T> T2;
 #ifdef USE_MM_MALLOC
       static inline T2 *Alloc( int s ) { T2 *p = reinterpret_cast<T2 *>( _mm_malloc( s * sizeof( T2 ), 128 ) ); return new( p ) T2[s]; }
       static inline void Free( T2 *const p, int size ) {
@@ -193,7 +193,7 @@ namespace AliHLTInternal
       }
 #endif
   };
-  template<typename T> class Allocator<T, 0>
+  template<typename T> class AliAllocator<T, 0>
   {
     public:
       static inline T *Alloc( int s ) { return new T[s]; }
@@ -201,7 +201,7 @@ namespace AliHLTInternal
   };
 
   template<typename T> struct ReturnTypeHelper { typedef T Type; };
-  template<typename T> struct ReturnTypeHelper<CacheLineSizeHelper<T> > { typedef T Type; };
+  template<typename T> struct ReturnTypeHelper<AliCacheLineSizeHelper<T> > { typedef T Type; };
   /**
    * Array base class for dimension dependent behavior
    */
@@ -211,13 +211,13 @@ namespace AliHLTInternal
    * 1-dim arrays only have operator[]
    */
   template<typename T>
-  class ArrayBase<T, 1> : public ArrayBoundsCheck
+  class ArrayBase<T, 1> : public AliArrayBoundsCheck
   {
       friend class ArrayBase<T, 2>;
     public:
       ArrayBase() : fData( 0 ), fSize( 0 ) {} // XXX really shouldn't be done. But -Weffc++ wants it so
-      ArrayBase( const ArrayBase &rhs ) : ArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ) {} // XXX
-      ArrayBase &operator=( const ArrayBase &rhs ) { ArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; return *this; } // XXX
+      ArrayBase( const ArrayBase &rhs ) : AliArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ) {} // XXX
+      ArrayBase &operator=( const ArrayBase &rhs ) { AliArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; return *this; } // XXX
       typedef typename ReturnTypeHelper<T>::Type R;
       /**
        * return a reference to the value at the given index
@@ -239,13 +239,13 @@ namespace AliHLTInternal
    * operator[] can be used to return a 1-dim array
    */
   template<typename T>
-  class ArrayBase<T, 2> : public ArrayBoundsCheck
+  class ArrayBase<T, 2> : public AliArrayBoundsCheck
   {
       friend class ArrayBase<T, 3>;
     public:
       ArrayBase() : fData( 0 ), fSize( 0 ), fStride( 0 ) {} // XXX really shouldn't be done. But -Weffc++ wants it so
-      ArrayBase( const ArrayBase &rhs ) : ArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ), fStride( rhs.fStride ) {} // XXX
-      ArrayBase &operator=( const ArrayBase &rhs ) { ArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; fSize = rhs.fSize; fStride = rhs.fStride; return *this; } // XXX
+      ArrayBase( const ArrayBase &rhs ) : AliArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ), fStride( rhs.fStride ) {} // XXX
+      ArrayBase &operator=( const ArrayBase &rhs ) { AliArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; fSize = rhs.fSize; fStride = rhs.fStride; return *this; } // XXX
       typedef typename ReturnTypeHelper<T>::Type R;
       /**
        * return a reference to the value at the given indexes
@@ -267,7 +267,7 @@ namespace AliHLTInternal
     protected:
       T *fData;    // actual data
       int fSize;   // data size
-      int fStride; // 
+      int fStride; // stride
       inline void SetSize( int x, int y, int ) { fStride = y; fSize = x * y; }
   };
 
@@ -276,12 +276,12 @@ namespace AliHLTInternal
    * operator[] can be used to return a 2-dim array
    */
   template<typename T>
-  class ArrayBase<T, 3> : public ArrayBoundsCheck
+  class ArrayBase<T, 3> : public AliArrayBoundsCheck
   {
     public:
       ArrayBase() : fData( 0 ), fSize( 0 ), fStrideX( 0 ), fStrideY( 0 ) {} // XXX really shouldn't be done. But -Weffc++ wants it so
-      ArrayBase( const ArrayBase &rhs ) : ArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ), fStrideX( rhs.fStrideX ), fStrideY( rhs.fStrideY ) {} // XXX
-      ArrayBase &operator=( const ArrayBase &rhs ) { ArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; fSize = rhs.fSize; fStrideX = rhs.fStrideX; fStrideY = rhs.fStrideY; return *this; } // XXX
+      ArrayBase( const ArrayBase &rhs ) : AliArrayBoundsCheck( rhs ), fData( rhs.fData ), fSize( rhs.fSize ), fStrideX( rhs.fStrideX ), fStrideY( rhs.fStrideY ) {} // XXX
+      ArrayBase &operator=( const ArrayBase &rhs ) { AliArrayBoundsCheck::operator=( rhs ); fData = rhs.fData; fSize = rhs.fSize; fStrideX = rhs.fStrideX; fStrideY = rhs.fStrideY; return *this; } // XXX
       // Stopped working on GCC 4.5.0
       //typedef typename ReturnTypeHelper<T>::Type R;
       /**
@@ -304,8 +304,8 @@ namespace AliHLTInternal
     protected:
       T *fData;     // actual data
       int fSize;    // data size
-      int fStrideX; //
-      int fStrideY; //
+      int fStrideX; // stride X
+      int fStrideY; // stride Y
       inline void SetSize( int x, int y, int z ) { fStrideX = y * z; fStrideY = z; fSize = fStrideX * x; }
   };
 
@@ -326,19 +326,19 @@ namespace AliHLTInternal
       }
     private:
       enum {
-        Alignment = _alignment == AliHLTFullyCacheLineAligned ? 128 : _alignment,
+        Alignment = _alignment == kAliHLTFullyCacheLineAligned ? 128 : _alignment,
         PaddedSize = Size * sizeof( T ) + Alignment
       };
       ALIHLTARRAY_STATIC_ASSERT_NC( ( Alignment & ( Alignment - 1 ) ) == 0, alignment_needs_to_be_a_multiple_of_2 );
 
-      char fUnalignedArray[PaddedSize]; //
+      char fUnalignedArray[PaddedSize]; // data array
   };
   template<typename T, unsigned int Size> class AlignedData<T, Size, 0>
   {
     public:
       T *ConstructAlignedData() { return &fArray[0]; }
     private:
-      T fArray[Size]; //
+      T fArray[Size]; // data array
   };
 } // namespace AliHLTInternal
 
@@ -463,7 +463,7 @@ class AliHLTResizableArray : public AliHLTArray<typename AliHLTInternal::TypeFor
     /**
      * frees the data
      */
-    inline ~AliHLTResizableArray() { AliHLTInternal::Allocator<T, alignment>::Free( Parent::fData, Parent::fSize ); }
+    inline ~AliHLTResizableArray() { AliHLTInternal::AliAllocator<T, alignment>::Free( Parent::fData, Parent::fSize ); }
 
     /**
      * use for 1-dim arrays: resizes the memory for the array to x * sizeof(T) bytes.
@@ -531,7 +531,7 @@ class AliHLTFixedArray : public AliHLTArray<typename AliHLTInternal::TypeForAlig
     }
 
   private:
-    AliHLTInternal::AlignedData<typename AliHLTInternal::TypeForAlignmentHelper<T, alignment>::Type, Size::Size, alignment> fFixedArray; //
+    AliHLTInternal::AlignedData<typename AliHLTInternal::TypeForAlignmentHelper<T, alignment>::Type, Size::Size, alignment> fFixedArray; // data array
 
     // disable allocation on the heap
     void *operator new( size_t );
@@ -557,7 +557,7 @@ class AliHLTFixedArray : public AliHLTArray<typename AliHLTInternal::TypeForAlig
 namespace AliHLTInternal
 {
 #ifdef ENABLE_ARRAY_BOUNDS_CHECKING
-  inline bool ArrayBoundsCheck::IsInBounds( int x ) const
+  inline bool AliArrayBoundsCheck::IsInBounds( int x ) const
   {
     assert( x >= fStart );
     assert( x <= fEnd );
@@ -573,7 +573,7 @@ namespace AliHLTInternal
     BOUNDS_CHECK( x, AT1() );
     AliHLTArray<T, 1> a;
     a.fData = &fData[x];
-    a.ArrayBoundsCheck::operator=( *this );
+    a.AliArrayBoundsCheck::operator=( *this );
     a.MoveBounds( -x );
     return a;
   }
@@ -586,7 +586,7 @@ namespace AliHLTInternal
     BOUNDS_CHECK( x, AT1() );
     AliHLTArray<T, 1> a;
     a.fData = &fData[x];
-    a.ArrayBoundsCheck::operator=( *this );
+    a.AliArrayBoundsCheck::operator=( *this );
     a.MoveBounds( -x );
     return a;
   }
@@ -612,7 +612,7 @@ namespace AliHLTInternal
     AliHLTArray<T, 2> a;
     a.fData = &fData[x];
     a.fStride = fStrideY;
-    a.ArrayBoundsCheck::operator=( *this );
+    a.AliArrayBoundsCheck::operator=( *this );
     a.MoveBounds( -x );
     return a;
   }
@@ -625,7 +625,7 @@ namespace AliHLTInternal
     AliHLTArray<T, 2> a;
     a.fData = &fData[x];
     a.fStride = fStrideY;
-    a.ArrayBoundsCheck::operator=( *this );
+    a.AliArrayBoundsCheck::operator=( *this );
     a.MoveBounds( -x );
     return a;
   }
@@ -660,7 +660,7 @@ template<typename T, int Dim, int alignment>
 inline AliHLTResizableArray<T, Dim, alignment>::AliHLTResizableArray( int x )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 1, AliHLTResizableArray1_used_with_incorrect_dimension );
-  Parent::fData = AliHLTInternal::Allocator<T, alignment>::Alloc( x );
+  Parent::fData = AliHLTInternal::AliAllocator<T, alignment>::Alloc( x );
   Parent::SetSize( x, 0, 0 );
   Parent::SetBounds( 0, x - 1 );
 }
@@ -668,7 +668,7 @@ template<typename T, int Dim, int alignment>
 inline AliHLTResizableArray<T, Dim, alignment>::AliHLTResizableArray( int x, int y )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 2, AliHLTResizableArray2_used_with_incorrect_dimension );
-  Parent::fData = AliHLTInternal::Allocator<T, alignment>::Alloc( x * y );
+  Parent::fData = AliHLTInternal::AliAllocator<T, alignment>::Alloc( x * y );
   Parent::SetSize( x, y, 0 );
   Parent::SetBounds( 0, x * y - 1 );
 }
@@ -676,7 +676,7 @@ template<typename T, int Dim, int alignment>
 inline AliHLTResizableArray<T, Dim, alignment>::AliHLTResizableArray( int x, int y, int z )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 3, AliHLTResizableArray3_used_with_incorrect_dimension );
-  Parent::fData = AliHLTInternal::Allocator<T, alignment>::Alloc( x * y * z );
+  Parent::fData = AliHLTInternal::AliAllocator<T, alignment>::Alloc( x * y * z );
   Parent::SetSize( x, y, z );
   Parent::SetBounds( 0, x * y * z - 1 );
 }
@@ -684,8 +684,8 @@ template<typename T, int Dim, int alignment>
 inline void AliHLTResizableArray<T, Dim, alignment>::Resize( int x )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 1, AliHLTResizableArray1_resize_used_with_incorrect_dimension );
-  AliHLTInternal::Allocator<T, alignment>::Free( Parent::fData, Parent::fSize );
-  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::Allocator<T, alignment>::Alloc( x );
+  AliHLTInternal::AliAllocator<T, alignment>::Free( Parent::fData, Parent::fSize );
+  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::AliAllocator<T, alignment>::Alloc( x );
   Parent::SetSize( x, 0, 0 );
   Parent::SetBounds( 0, x - 1 );
 }
@@ -693,8 +693,8 @@ template<typename T, int Dim, int alignment>
 inline void AliHLTResizableArray<T, Dim, alignment>::Resize( int x, int y )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 2, AliHLTResizableArray2_resize_used_with_incorrect_dimension );
-  AliHLTInternal::Allocator<T, alignment>::Free( Parent::fData, Parent::fSize );
-  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::Allocator<T, alignment>::Alloc( x * y );
+  AliHLTInternal::AliAllocator<T, alignment>::Free( Parent::fData, Parent::fSize );
+  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::AliAllocator<T, alignment>::Alloc( x * y );
   Parent::SetSize( x, y, 0 );
   Parent::SetBounds( 0, x * y - 1 );
 }
@@ -702,8 +702,8 @@ template<typename T, int Dim, int alignment>
 inline void AliHLTResizableArray<T, Dim, alignment>::Resize( int x, int y, int z )
 {
   ALIHLTARRAY_STATIC_ASSERT( Dim == 3, AliHLTResizableArray3_resize_used_with_incorrect_dimension );
-  AliHLTInternal::Allocator<T, alignment>::Free( Parent::fData, Parent::fSize );
-  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::Allocator<T, alignment>::Alloc( x * y * z );
+  AliHLTInternal::AliAllocator<T, alignment>::Free( Parent::fData, Parent::fSize );
+  Parent::fData = ( x == 0 ) ? 0 : AliHLTInternal::AliAllocator<T, alignment>::Alloc( x * y * z );
   Parent::SetSize( x, y, z );
   Parent::SetBounds( 0, x * y * z - 1 );
 }
