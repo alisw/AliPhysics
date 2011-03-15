@@ -247,9 +247,12 @@ void AliHLTEveMultCorr::AddHistogramToCanvas(TH1* hist, TCanvas* canvas, Int_t& 
 	    if(zoom) 
 	    {
 	      TH1F *h = dynamic_cast<TH1F*>(hist);
-	      if(h) h->GetXaxis()->SetRange(0, (Int_t) (h->GetMaximumBin() + h->GetMaximumBin()*0.2));
+	      if(h) 
+		{
+		  h->GetXaxis()->SetRange(0, (Int_t) (h->GetMaximumBin() + h->GetMaximumBin()*0.2));
+		  h->Draw();
+		}
 	    }
-            dynamic_cast<TH1F*>(hist)->Draw();
         }
         else if (!strcmp(hist->ClassName(), "TH2F"))
         {
