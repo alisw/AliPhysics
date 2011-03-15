@@ -33,6 +33,7 @@
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
 #pragma link C++ class AliFMDEventInspector+;
+#pragma link C++ class AliFMDMCEventInspector+;
 #pragma link C++ class AliFMDSharingFilter+;
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;
 #pragma link C++ class AliFMDMCSharingFilter+;
@@ -63,7 +64,9 @@
 #pragma link C++ class AliForwardCorrectionManager-;
 #pragma link C++ class AliForwardMCCorrectionsTask+;
 #pragma link C++ class AliForwarddNdetaTask+;
+#pragma link C++ class AliForwarddNdetaTask::CentralityBin+;
 #pragma link C++ class AliBasedNdetaTask+;
+#pragma link C++ class AliBasedNdetaTask::CentralityBin+;
 
 #pragma link C++ class AliCentralMultiplicityTask+;
 #pragma link C++ class AliCentralMultiplicityTask::Manager+;
