@@ -35,8 +35,6 @@ AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
     AliForwardCorrectionManager::Instance().Init(sys,sNN,field);
 
   // --- Configure the task ------------------------------------------
-  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2", 
-			   gROOT->GetMacroPath()));
   const char* config = gSystem->Which(gROOT->GetMacroPath(),
 				      "ForwardAODConfig.C");
   if (!config) 
@@ -44,8 +42,8 @@ AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 	    gROOT->GetMacroPath());
   else {
     Info("AddTaskFMD", 
-	 "Loading configuration of AliForwardMultiplicityTask from %s",
-	 config);
+	 "Loading configuration of '%s' from %s",
+	 task->ClassName(), config);
     gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, task));
     delete config;
   }

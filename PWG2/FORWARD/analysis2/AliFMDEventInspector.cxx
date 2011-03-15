@@ -31,11 +31,7 @@
 #include <TROOT.h>
 #include <iostream>
 #include <iomanip>
-#include "AliMCEvent.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliGenDPMjetEventHeader.h"
-#include "AliHeader.h"
-#include "AliMCEventHandler.h"
+
 //====================================================================
 AliFMDEventInspector::AliFMDEventInspector()
   : TNamed(),
@@ -317,49 +313,38 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   //    0 (or kOk) on success, otherwise a bit mask of error codes 
   //
 
-  // Check that we have an event 
+  // --- Check that we have an event ---------------------------------
   if (!event) { 
     AliWarning("No ESD event found for input event");
     return kNoEvent;
   }
 
-  // Read trigger information from the ESD and store in AOD object
+  // --- Read trigger information from the ESD and store in AOD object
   if (!ReadTriggers(event, triggers)) { 
     if (fDebug > 2) {
       AliWarning("Failed to read triggers from ESD"); }
     return kNoTriggers;
   }
 
-  // Check if this is a high-flux event 
+  // --- Check if this is a high-flux event --------------------------
   const AliMultiplicity* testmult = event->GetMultiplicity();
   if (!testmult) {
     if (fDebug > 3) {
       AliWarning("No central multiplicity object found"); }
-    return kNoSPD;
   }
-  lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
+  else 
+    lowFlux = testmult->GetNumberOfTracklets() < fLowFluxCut;
 
   fHType->Fill(lowFlux ? 0 : 1);
   
+  // --- Read centrality information 
   cent = -10;
-  AliCentrality* centObj = const_cast<AliESDEvent*>(event)->GetCentrality();
-  if (centObj) {
-    // AliInfo(Form("Got centrality object %p with quality %d", 
-    //              centObj, centObj->GetQuality()));
-    // centObj->Print();
-    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
-  }
-  // AliInfo(Form("Centrality is %f", cent));
-  fHCent->Fill(cent);
-
-  // Check the FMD ESD data 
-  if (!event->GetFMDData()) { 
-    if (fDebug > 3) {
-      AliWarning("No FMD data found in ESD"); }
-    return kNoFMD;
+  if (!ReadCentrality(event, cent)) {
+    if (fDebug > 3) 
+      AliWarning("Failed to get centrality");
   }
 
-  // Get the vertex information 
+  // --- Get the vertex information ----------------------------------
   vz          = 0;
   Bool_t vzOk = ReadVertex(event, vz);
 
@@ -371,7 +356,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
   fHEventsTrVtx->Fill(vz);
 
-  // Get the vertex bin 
+  // --- Get the vertex bin ------------------------------------------
   ivz = fHEventsTr->GetXaxis()->FindBin(vz);
   if (ivz <= 0 || ivz > fHEventsTr->GetXaxis()->GetNbins()) { 
     if (fDebug > 3) {
@@ -382,8 +367,42 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
     return kBadVertex;
   }
   
+  // --- Check the FMD ESD data --------------------------------------
+  if (!event->GetFMDData()) { 
+    if (fDebug > 3) {
+      AliWarning("No FMD data found in ESD"); }
+    return kNoFMD;
+  }
+
   
   return kOk;
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
+{
+  // 
+  // Read centrality from event 
+  // 
+  // Parameters:
+  //    esd  Event 
+  //    cent On return, the centrality or negative if not found
+  // 
+  // Return:
+  //    False on error, true otherwise 
+  //
+  AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
+  if (centObj) {
+    // AliInfo(Form("Got centrality object %p with quality %d", 
+    //              centObj, centObj->GetQuality()));
+    // centObj->Print();
+    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
+  }
+  // AliInfo(Form("Centrality is %f", cent));
+  fHCent->Fill(cent);
+
+  return true;
 }
 
 //____________________________________________________________________
@@ -416,39 +435,8 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     AliWarning("No input handler");
     return kFALSE;
   }
-  
-  AliMCEventHandler* mcHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  AliMCEvent* mcEvent = 0;
-  if(mcHandler)
-    mcEvent = mcHandler->MCEvent();
-  
-  if(mcEvent) {
-    //Assign MC only triggers : True NSD etc.
-    AliHeader* header            = mcEvent->Header();
-    AliGenEventHeader* genHeader = header->GenEventHeader();
     
-    AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-    AliGenDPMjetEventHeader* dpmHeader = dynamic_cast<AliGenDPMjetEventHeader*>(header->GenEventHeader());
-    Bool_t sd = kFALSE;
-    if(pythiaGenHeader) {
-      Int_t pythiaType = pythiaGenHeader->ProcessType();
-      if(pythiaType==92 || pythiaType==93)
-	sd = kTRUE;
-    }
-    if(dpmHeader) {
-      Int_t processType = dpmHeader->ProcessType();
-      if(processType == 5 || processType == 6)  
-	sd = kTRUE;
-      
-    }
-    if(!sd) {
-      triggers |= AliAODForwardMult::kMCNSD;
-      fHTriggers->Fill(kMCNSD+0.5);
-    }
-    
-  }
-    
-  // Check if this is a collision candidate (INEL)
+  // Check if this is a collision candidate (MB)
   // Note, that we should use the value cached in the input 
   // handler rather than calling IsCollisionCandiate directly 
   // on the AliPhysicsSelection obejct.  If we called the latter
@@ -574,16 +562,6 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
     return kFALSE;
   }
 
-  // HHD test
-  /*
-  if (vertex->IsFromVertexerZ()) { 
-    return kFALSE;
-  }
-  if (TMath::Sqrt(TMath::Power(vertex->GetX(),2) + TMath::Power(vertex->GetY(),2)) > 3 ) { 
-      return kFALSE;
-  }
-  */
-  
   // Get the z coordiante 
   vz = vertex->GetZ();
   return kTRUE;
@@ -642,7 +620,7 @@ AliFMDEventInspector::Print(Option_t*) const
   field.ReplaceAll("m",  "-");
   field.ReplaceAll("kG", " kG");
   
-  std::cout << ind << "AliFMDEventInspector: " << GetName() << '\n'
+  std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " Low flux cut:           " << fLowFluxCut << '\n'
 	    << ind << " Max(delta v_z):         " << fMaxVzErr << " cm\n"
 	    << ind << " System:                 " 

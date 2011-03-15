@@ -199,6 +199,7 @@ AliForwardMCMultiplicityTask::UserCreateOutputObjects()
   // 
   //
   fList = new TList;
+  fList->SetOwner();
 
   AliAnalysisManager* am = AliAnalysisManager::GetAnalysisManager();
   AliAODHandler*      ah = 
@@ -243,7 +244,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   //  
 
   // Get the input data 
-  AliESDEvent* esd = GetESDEvent();
+  AliESDEvent* esd     = GetESDEvent();
+  AliMCEvent*  mcEvent = MCEvent();
 
   // Clear stuff 
   fHistos.Clear();
@@ -261,6 +263,12 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   Double_t cent     = 0;
   UInt_t   found    = fEventInspector.Process(esd, triggers, lowFlux, 
 					      ivz, vz, cent);
+  UShort_t ivzMC    = 0;
+  Double_t vzMC     = 0;
+  Double_t phiR     = 0;
+  Double_t b        = 0;
+  // UInt_t   foundMC  = 
+  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, phiR);
   
   
   //Store all events
@@ -278,7 +286,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   //All events should be stored - HHD
   //if (isAccepted) MarkEventForStore();
 
-  if (found & AliFMDEventInspector::kNoSPD)     isAccepted = false; // return;
+  // Disable this check on SPD - will bias data 
+  // if (found & AliFMDEventInspector::kNoSPD)  isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoFMD)     isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoVertex)  isAccepted = false; // return;
 
@@ -295,7 +304,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
 
   // Get FMD data 
   AliESDFMD*  esdFMD  = esd->GetFMDData();
-  AliMCEvent* mcEvent = MCEvent();
+
   // Apply the sharing filter (or hit merging or clustering if you like)
   if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
     AliWarning("Sharing filter failed!");

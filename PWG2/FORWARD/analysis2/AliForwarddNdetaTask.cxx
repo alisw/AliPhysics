@@ -14,10 +14,7 @@
 
 //____________________________________________________________________
 AliForwarddNdetaTask::AliForwarddNdetaTask()
-  : AliBasedNdetaTask(),
-    fSumPrimary(0),	//  Sum of primary histograms
-    fSNNString(0),
-    fSysString(0)
+  : AliBasedNdetaTask()
 {
   //
   // Constructor 
@@ -26,10 +23,7 @@ AliForwarddNdetaTask::AliForwarddNdetaTask()
 
 //____________________________________________________________________
 AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
-  : AliBasedNdetaTask("Forward"), 
-    fSumPrimary(0),	//  Sum of primary histograms
-    fSNNString(0),
-    fSysString(0)
+  : AliBasedNdetaTask("Forward")
 {
   // 
   // Constructor
@@ -40,15 +34,71 @@ AliForwarddNdetaTask::AliForwarddNdetaTask(const char* /* name */)
 
 //____________________________________________________________________
 AliForwarddNdetaTask::AliForwarddNdetaTask(const AliForwarddNdetaTask& o)
-  : AliBasedNdetaTask(o),
-    fSumPrimary(o.fSumPrimary),	   // Sum of primary histograms
-    fSNNString(o.fSNNString),	   //  
-    fSysString(o.fSysString)	   //  
+  : AliBasedNdetaTask(o)
 {
   // 
   // Copy constructor
   // 
 }
+
+//____________________________________________________________________
+AliBasedNdetaTask::CentralityBin*
+AliForwarddNdetaTask::MakeCentralityBin(const char* name, Short_t l, Short_t h) 
+  const 
+{
+  // 
+  // Make a new centrality bin
+  // 
+  // Parameters:
+  //    name   Histogram names
+  //    l      Lower cut
+  //    h      Upper cut
+  // 
+  // Return:
+  //    Newly allocated object (of our type)
+  //
+  return new AliForwarddNdetaTask::CentralityBin(name, l, h);
+}
+
+//____________________________________________________________________
+void
+AliForwarddNdetaTask::UserExec(Option_t* option)
+{
+  // 
+  // Called at each event 
+  //
+  // This is called once in the master 
+  // 
+  // Parameters:
+  //    option Not used 
+  //
+  AliBasedNdetaTask::UserExec(option);
+  
+  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(InputEvent());
+  if (!aod) {
+    AliError("Cannot get the AOD event");
+    return;
+  } 
+
+  TObject* obj = aod->FindListObject("Forward");
+  if (!obj) { 
+    AliWarning("No forward object found");
+    return;
+  }
+  AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
+ 
+  TObject* oPrimary   = aod->FindListObject("primary");
+  if (!oPrimary) return;
+  
+  TH2D* primary   = static_cast<TH2D*>(oPrimary);
+
+  // Loop over centrality bins 
+  TIter next(fListOfCentralities);
+  CentralityBin* bin = 0;
+  while ((bin = static_cast<CentralityBin*>(next()))) 
+    bin->ProcessPrimary(forward, fTriggerMask, fVtxMin, fVtxMax, primary);
+}  
+  
 
 //____________________________________________________________________
 TH2D*
@@ -74,110 +124,82 @@ AliForwarddNdetaTask::GetHistogram(const AliAODEvent* aod, Bool_t mc)
     return 0;
   }
   AliAODForwardMult* forward = static_cast<AliAODForwardMult*>(obj);
-
-  // Here, we update the primary stuff 
-  if (mc) { 
-    TObject* oPrimary   = aod->FindListObject("primary");
-    if (oPrimary) {
-      TH2D* primary   = static_cast<TH2D*>(oPrimary);
-      // Add contribtion from MC 
-      
-      if(fTriggerMask == AliAODForwardMult::kInel) {
-	if (primary && !fSumPrimary) fSumPrimary = CloneHist(primary, "truth");
-	else if (primary) fSumPrimary->Add(primary);
-      }
-      
-      else if(fTriggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) {
-	if (primary && !fSumPrimary) fSumPrimary = CloneHist(primary, "truth"); 
-	else if (primary) fSumPrimary->Add(primary);
-      }
-      
-      
-      
-      /*   if(fTriggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) {
-	   if (primary) fSumPrimary->Add(primary); 
-	   
-	   }
-	   
-	   else if (primary) fSumPrimary->Add(primary);*/
-      
-    }    
-  }
-  
-  // Here, we get the update 
-  if (!fSNNString) { 
-    UShort_t sNN = forward->GetSNN();
-    fSNNString = new TNamed("sNN", "");
-    fSNNString->SetTitle(AliForwardUtil::CenterOfMassEnergyString(sNN));
-    fSNNString->SetUniqueID(sNN);
-    fSums->Add(fSNNString);
-  
-    UShort_t sys = forward->GetSystem();
-    fSysString = new TNamed("sys", "");
-    fSysString->SetTitle(AliForwardUtil::CollisionSystemString(sys));
-    fSysString->SetUniqueID(sys);
-    fSums->Add(fSysString);
-  }
-
   return &(forward->GetHistogram());
 }
 
+//========================================================================
+void
+AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult* 
+						    forward, 
+						    Int_t triggerMask,
+						    Double_t vzMin, 
+						    Double_t vzMax, 
+						    const TH2D* primary)
+{ 
+  // Check the centrality class unless this is the 'all' bin 
+  if (!IsAllBin()) { 
+    Double_t centrality = forward->GetCentrality();
+    if (centrality < fLow || centrality >= fHigh) return;
+  }
+  // Check if we have an event of interest. 
+  if (!forward->IsTriggerBits(triggerMask)) return;
+  
+  //Check for pileup
+  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return;
+  
+  // Check that we have a valid vertex
+  if (!forward->HasIpZ()) return;
+
+  // Check that vertex is within cuts 
+  if (!forward->InRange(vzMin, vzMax)) return;
+
+  if (!fSumPrimary) { 
+    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
+    fSumPrimary->SetDirectory(0);
+    fSumPrimary->Reset();
+    fSums->Add(fSumPrimary);
+  }
+
+  if (triggerMask == AliAODForwardMult::kInel ||
+      (triggerMask == AliAODForwardMult::kNSD && 
+       forward->IsTriggerBits(AliAODForwardMult::kMCNSD)))
+    fSumPrimary->Add(primary);
+}
+
 //________________________________________________________________________
-void 
-AliForwarddNdetaTask::Terminate(Option_t *) 
+void
+AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
+					 TList*      results,
+					 const TH1*  shapeCorr, 
+					 Double_t    trigEff,
+					 Bool_t      symmetrice,
+					 Int_t       rebin, 
+					 Bool_t      corrEmpty, 
+					 Bool_t      cutEdges, 
+					 Double_t    vzMin, 
+					 Double_t    vzMax, 
+					 Int_t       triggerMask)
 {
-  // Draw result to screen, or perform fitting, normalizations Called
-  // once at the end of the query
-  AliBasedNdetaTask::Terminate("");
-  if(!fSums) {
-    AliError("Could not retrieve TList fSums"); 
-    return; 
-  }
-  if (!fOutput) { 
-    AliError("Could not retrieve TList fOutput"); 
-    return; 
-  }
+  AliBasedNdetaTask::CentralityBin::End(sums, results, shapeCorr, trigEff, 
+					symmetrice, rebin, corrEmpty, cutEdges,
+					vzMin, vzMax, triggerMask);
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
-  
-  fOutput->Add(fSNNString->Clone());
-  fOutput->Add(fSysString->Clone());
 
-  if (fSumPrimary) { 
-    Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
-    Int_t nNSD        = Int_t(fTriggers->GetBinContent(kMCNSD));
-    
-    //  for(Int_t nn =1; nn<=fSumPrimary->GetNbinsX(); nn++) {
-    //  for(Int_t mm =1; mm<=fSumPrimary->GetNbinsY(); mm++) {
-    //	if(fSumPrimary->GetBinContent(nn,mm) > 0) std::cout<<fSumPrimary->GetBinContent(nn,mm)<<" +/-  "<<fSumPrimary->GetBinError(nn,mm)<<std::endl;
-    //  }
-    // }
- 
-    
-    //TH1D* dndetaTruth = ProjectX(fSumPrimary,"dndetaTruth",
-    //			 1,fSumPrimary->GetNbinsY(),false,true);
-    TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,fSumPrimary->GetNbinsY(),"e");
+  if (!fSumPrimary) return;
+  Int_t n           = (triggerMask == AliAODForwardMult::kNSD ? 
+		       Int_t(fTriggers->GetBinContent(kMCNSD)) : 
+		       Int_t(fTriggers->GetBinContent(kAll)));
 
     
-    if(fTriggerMask == AliAODForwardMult::kNSD)
-      dndetaTruth->Scale(1./nNSD, "width");
-    else
-      dndetaTruth->Scale(1./nAll, "width");
-    
-    //for(Int_t nn =1; nn<=dndetaTruth->GetNbinsX(); nn++) {
-    //  if(dndetaTruth->GetBinContent(nn) > 0) std::cout<<dndetaTruth->GetBinContent(nn)<<" +/-  "<<dndetaTruth->GetBinError(nn)<<std::endl;
-    // }
+  TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,
+					       fSumPrimary->GetNbinsY(),"e");
+  dndetaTruth->Scale(1./n, "width");
 
+  SetHistogramAttributes(dndetaTruth, kBlue+3, 22, "Monte-Carlo truth");
     
-    SetHistogramAttributes(dndetaTruth, kBlue+3, 22, "Monte-Carlo truth");
-    
-    fOutput->Add(dndetaTruth);
-    fOutput->Add(Rebin(dndetaTruth));
-  }
-  // If only there was a away to get sqrt{s_NN} and beam type 
-  
-
-  PostData(2, fOutput);
+  fOutput->Add(dndetaTruth);
+  fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));
 }
 
 //________________________________________________________________________
