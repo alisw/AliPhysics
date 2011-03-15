@@ -578,8 +578,8 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   gStyle->SetHistLineWidth(2);
 
   Int_t nPtBins=34;
-  Float_t xPtBins[35]={0,0.025,0.05,0.075,0.08,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.280,0.325,0.35,0.375,0.4,0.45,0.55,0.7,0.75,0.9,1.2,1.7,2.5,3.5,4.5,5,6,8,13,15,23,28,35};
-  //Float_t xPtBins[35]={0,0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.5,0.6,0.7,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
+  //Float_t xPtBins[35]={0,0.025,0.05,0.075,0.08,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.280,0.325,0.35,0.375,0.4,0.45,0.55,0.7,0.75,0.9,1.2,1.7,2.5,3.5,4.5,5,6,8,13,15,23,28,35};
+  Float_t xPtBins[35]={0,0.025,0.05,0.075,0.1,0.125,0.15,0.175,0.2,0.225,0.25,0.275,0.3,0.325,0.35,0.375,0.4,0.5,0.6,0.7,0.8,1.0,1.5,2.,2.5,3,4,5,6,8,10,15,20,25,30};
 
   for(Int_t i=0; i<11; i++) fCountsPerPtBin[i]=0;
 
@@ -1724,10 +1724,10 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     }
     AliGenEventHeader* genHeader = header->GenEventHeader();
     genHeader->PrimaryVertex(mcVertex);
-    printf("MC vertex: %f %f %f\n",mcVertex[0],mcVertex[1],mcVertex[2]);
+    //printf("MC vertex: %f %f %f\n",mcVertex[0],mcVertex[1],mcVertex[2]);
 
     Int_t ngenpart = (Int_t)stack->GetNtrack();
-    printf("# generated particles = %d\n",ngenpart);
+    //printf("# generated particles = %d\n",ngenpart);
     dNchdy=0;
     for(Int_t ip=0; ip<ngenpart; ip++) {
       part = (TParticle*)stack->Particle(ip);
@@ -1744,7 +1744,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       Double_t y = 0.5*TMath::Log((energy+pz+1.e-13)/(energy-pz+1.e-13));
       if(TMath::Abs(y)<1.0) dNchdy += 0.5; // count 1/2 of particles in |y|<1
     }
-    printf("# primary particles = %7.1f\n",dNchdy);
+    //printf("# primary particles = %7.1f\n",dNchdy);
   } 
   // ***********  MC info ***************
   Double_t mcVtxPos[3]={mcVertex[0],mcVertex[1],mcVertex[2]},mcVtxSigma[3]={0,0,0};
@@ -1831,12 +1831,12 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     delete esdtrackCutsITSTPC; esdtrackCutsITSTPC=0;
     return;
   }
-  spdv->Print();
+  //spdv->Print();
 
   //
   // Tracks vertex
   const AliESDVertex *vertexESD = fESD->GetPrimaryVertexTracks();
-  vertexESD->Print();
+  //vertexESD->Print();
 
   if(spdvtitle.Contains("3D")) {
     fHistNEvents->Fill(1);
@@ -2179,6 +2179,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
     }
 
     //if(hasSharedSPD) continue;
+    //if(track->GetITSFakeFlag()) continue;
 
     // track prolonged in ITS with different conditions
     if(itsrefit) {
