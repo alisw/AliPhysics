@@ -692,7 +692,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
  	  
 	    for (Int_t in=0; in<24; in++)  
 	      {
-		diff[in] = fhTimeDiff[in]->GetMean();
+		diff[in] = Int_t (fhTimeDiff[in]->GetMean());
 	      }
 	  }
 	
