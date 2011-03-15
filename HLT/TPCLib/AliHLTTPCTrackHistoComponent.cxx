@@ -289,13 +289,13 @@ void AliHLTTPCTrackHistoComponent::ReadTracks(const AliHLTComponentBlockData* it
            Int_t sliceTrack = AliHLTTPCSpacePointData::GetSlice(idTrack);
            Int_t patchTrack = AliHLTTPCSpacePointData::GetPatch(idTrack);
            UInt_t pos	    = AliHLTTPCSpacePointData::GetNumber(idTrack);
- 
-           if( !fClustersArray[sliceTrack][patchTrack] ) continue;	       
-      	   
+       	   
       	   if(sliceTrack<0 || sliceTrack>36 || patchTrack<0 || patchTrack>5 ){
       	      HLTError("Corrupted TPC cluster Id: slice %d, patch %d, cluster %d", sliceTrack, patchTrack, idTrack);
       	      continue;
       	   }
+ 
+           if( !fClustersArray[sliceTrack][patchTrack] ) continue;	       
 
            if(fNSpacePoints[sliceTrack][patchTrack]<=pos ){
       	      HLTError("Space point array out of boundaries!");
