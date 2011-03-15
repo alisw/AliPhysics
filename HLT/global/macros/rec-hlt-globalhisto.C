@@ -197,7 +197,7 @@ void rec_hlt_globalhisto(const char *esdfilename,
 
   AliHLTConfiguration esdpublisher(histoinput.Data(), "ESDMCEventPublisher", "", arguments.Data());
 
-  AliHLTConfiguration v0histo("v0","V0Histo",histoinput.Data(),"");
+  //AliHLTConfiguration v0histo("v0","V0Histo",histoinput.Data(),"");
   
   AliHLTConfiguration globalhisto("globalhisto", "GlobalHisto", histoinput.Data(),
         			"-histogram TrackPt    -size 1000 -expression Track_pt "
@@ -222,7 +222,7 @@ void rec_hlt_globalhisto(const char *esdfilename,
 				);
   
   AliHLTConfiguration writer("writer1", "ROOTFileWriter", "globalhisto", "-datafile   histo.root -overwrite -concatenate-events");
-  AliHLTConfiguration writer("writer2", "ROOTFileWriter", "v0",          "-datafile v0histo.root -overwrite -concatenate-events");
+  //AliHLTConfiguration writer("writer2", "ROOTFileWriter", "v0",          "-datafile v0histo.root -overwrite -concatenate-events");
 
   // set option for the HLT system
   // arguments
@@ -231,7 +231,7 @@ void rec_hlt_globalhisto(const char *esdfilename,
   pHLT->ScanOptions("libAliHLTUtil.so libAliHLTGlobal.so loglevel=0x79");
 
   pHLT->BuildTaskList("writer1");
-  pHLT->BuildTaskList("writer2");
+  //pHLT->BuildTaskList("writer2");
   pHLT->Run(nofEvents);
 }
 	
