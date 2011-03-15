@@ -125,14 +125,14 @@ public:
      AliTPCSector& operator=(const AliTPCSector &s);//dummy assignment operator
    };
 
-//**************** Internal tracker class ********************** 
+//**************** Internal tracker class **********************
    class AliTPCseed : public AliTPCtrack {
    public:
-     AliTPCseed():AliTPCtrack(){}
-     AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){}
+     AliTPCseed():AliTPCtrack(){Init();}
+     AliTPCseed(const AliTPCtrack &t):AliTPCtrack(t){Init();}
      AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5], 
                 const Double_t cc[15], Int_t index): 
-                AliTPCtrack(xr, alpha, xx, cc, index) {}
+                AliTPCtrack(xr, alpha, xx, cc, index) {Init();}
      void SetSampledEdx(Float_t q, Int_t i) {
         Double_t s=GetSnp(), t=GetTgl();
         q *= TMath::Sqrt((1-s*s)/(1+t*t));
@@ -141,9 +141,9 @@ public:
      void CookdEdx(Double_t low=0.05, Double_t up=0.70);
 
    private:
+     void Init() {for (Int_t i=0; i<200; i++) fdEdxSample[i]=0.;}
      Float_t fdEdxSample[200]; //array of dE/dx samples 
    };
-
 private:
 
    void MakeSeeds(Int_t i1, Int_t i2);
