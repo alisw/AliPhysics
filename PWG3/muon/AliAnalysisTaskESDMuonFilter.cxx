@@ -273,7 +273,6 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   
   // Access to the AOD container of dimuons
   TClonesArray &dimuons = *(AODEvent()->GetDimuons());
-  AliAODDimuon *aodDimuon = 0x0;
   
   Int_t nMuons=0;
   Int_t nDimuons=0;
