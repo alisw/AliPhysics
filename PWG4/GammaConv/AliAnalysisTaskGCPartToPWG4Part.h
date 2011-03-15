@@ -12,7 +12,6 @@ class AliAODPWG4ParticleCorrelation;
 class AliAODPWG4Particle;
 class TClonesArray;
 class TString;
-class AliMCAnalysisUtils;
 class AliAODMCHeader;
 
 #include "AliAnalysisTaskSE.h"
