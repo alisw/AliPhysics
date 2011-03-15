@@ -14,6 +14,7 @@
 #include "TH1D.h"
 class Rtypes;
 class TNamed;
+class TObjArray;
 
 class AliAnalysisHadEtCorrections : public TNamed
 {
@@ -65,14 +66,14 @@ public:
     Float_t GetNotIDCorrectionITS(const float pT);//{return 1.0/(fnotIDITS->GetBinContent(fnotIDITS->FindBin(pT)));}
     Float_t GetNotIDCorrectionNoPID(const float pT);//{return 1.0/(fnotIDNoID->GetBinContent(fnotIDNoID->FindBin(pT)));}
     //As is this...
-    Float_t GetTPCEfficiencyCorrectionPion(const float pT);
-    Float_t GetTPCEfficiencyCorrectionKaon(const float pT);
-    Float_t GetTPCEfficiencyCorrectionProton(const float pT);
-    Float_t GetTPCEfficiencyCorrectionHadron(const float pT);
-    Float_t GetITSEfficiencyCorrectionPion(const float pT);
-    Float_t GetITSEfficiencyCorrectionKaon(const float pT);
-    Float_t GetITSEfficiencyCorrectionProton(const float pT);
-    Float_t GetITSEfficiencyCorrectionHadron(const float pT);
+    Float_t GetTPCEfficiencyCorrectionPion(const float pT, const int cb = -1);
+    Float_t GetTPCEfficiencyCorrectionKaon(const float pT, const int cb = -1);
+    Float_t GetTPCEfficiencyCorrectionProton(const float pT, const int cb = -1);
+    Float_t GetTPCEfficiencyCorrectionHadron(const float pT, const int cb = -1);
+    Float_t GetITSEfficiencyCorrectionPion(const float pT, const int cb = -1);
+    Float_t GetITSEfficiencyCorrectionKaon(const float pT, const int cb = -1);
+    Float_t GetITSEfficiencyCorrectionProton(const float pT, const int cb = -1);
+    Float_t GetITSEfficiencyCorrectionHadron(const float pT, const int cb = -1);
     //...and these guys are too
     Float_t GetBackgroundCorrectionTPC(const float pT){return (1.0-fBackgroundTPC->GetBinContent(fBackgroundTPC->FindBin(pT)));}
     Float_t GetBackgroundCorrectionITS(const float pT){return (1.0-fBackgroundITS->GetBinContent(fBackgroundITS->FindBin(pT)));}
@@ -117,8 +118,22 @@ public:
     void SetEfficiencyKaonITS(const TH1D *histo){fEfficiencyKaonITS=(TH1D*) histo;}
     void SetEfficiencyProtonITS(const TH1D *histo){fEfficiencyProtonITS=(TH1D*) histo;}
     void SetEfficiencyHadronITS(const TH1D *histo){fEfficiencyHadronITS=(TH1D*) histo;}
+    void SetEfficiencyPionTPC(TH1D *histo, const int cb);
+    void SetEfficiencyKaonTPC(TH1D *histo, const int cb);
+    void SetEfficiencyProtonTPC(TH1D *histo, const int cb);
+    void SetEfficiencyHadronTPC(TH1D *histo, const int cb);
+    void SetEfficiencyPionITS(TH1D *histo, const int cb);
+    void SetEfficiencyKaonITS(TH1D *histo, const int cb);
+    void SetEfficiencyProtonITS(TH1D *histo, const int cb);
+    void SetEfficiencyHadronITS(TH1D *histo, const int cb);
     void SetBackgroundCorrectionTPC(const TH1D *histo){fBackgroundTPC=(TH1D*) histo;}
     void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
+    void IsEMCal(Bool_t val){fIsEMCal=val;}
+    void IsData(Bool_t val){fIsData=val;}
+    void SetDataSet(Int_t val){fDataSet=val;}
+    void SetProduction(char *prod){fProduction = prod;}
+    void SetProductionDescription(char *prod){fProductionDescription = prod;}
+    void Report();//Gives a report on the status of all of the corrections
 
     //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
     Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const;
@@ -171,8 +186,15 @@ protected:
     TH1D *fEfficiencyKaonITS;//efficiency correction for kaons in the ITS
     TH1D *fEfficiencyProtonITS;//efficiency correction for protons in the ITS
     TH1D *fEfficiencyHadronITS;//efficiency correction for unidentified hadrons in the ITS
+    TObjArray *fEfficiencyTPC;//TList containing efficiencies for ITS standalone tracks for different centrality bins
+    TObjArray *fEfficiencyITS;//TList containing efficiencies for ITS standalone tracks for different centrality bins
     TH1D *fBackgroundTPC;//background correction for the TPC
     TH1D *fBackgroundITS;//background correction for the ITS
+    Bool_t fIsEMCal;//boolean to keep track of whether this is for EMCal or PHOS acceptance
+    Bool_t fIsData;//boolean to keep track of whether this is for data or simulation acceptance
+    Int_t fDataSet;//integer to keep track of data set
+    TString fProduction;//Short version name of production
+    TString fProductionDescription;//Long description of production
 
 
 
