@@ -1696,6 +1696,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
     
     if(nModule < fNModules) {	
+      
       //Check if the cell is a bad channel
       if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
         if(fCalorimeter=="EMCAL"){
@@ -1707,11 +1708,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             continue;
           }
         }
-      }
-      else {
-        delete [] nCellsInModule;
-        return;
-      }
+      } // use bad channel map
 
       //Get Recalibration factor if set
       if (GetCaloUtils()->IsRecalibrationOn()) {
