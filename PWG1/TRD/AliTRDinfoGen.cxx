@@ -47,6 +47,7 @@
 #include "AliAnalysisManager.h"
 #include "AliGeomManager.h"
 #include "AliCDBManager.h"
+#include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
 #include "AliCDBPath.h"
 #include "AliESDEvent.h"
@@ -304,33 +305,37 @@ void AliTRDinfoGen::UserExec(Option_t *){
   }
   // WARNING
   // This part may conflict with other detectors !!
-  if(!IsInitOCDB()){ 
-    AliInfo("Initializing OCDB ...");
-    // prepare OCDB access
-    AliCDBManager* ocdb = AliCDBManager::Instance();
-    ocdb->SetDefaultStorage(fOCDB.Data());
-    ocdb->SetRun(fESDev->GetRunNumber());
-    // create geo manager
+  if(!IsInitOCDB()){
     AliCDBEntry* obj(NULL);
-    if(!(obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data")))){
-      AliError("GEOMETRY failed initialization.");
+    AliCDBManager* ocdb = AliCDBManager::Instance();
+    if(ocdb->IsDefaultStorageSet()){
+      AliInfo("OCDB :: initialized.");
     } else {
-      AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-      AliGeomManager::GetNalignable("TRD");
-      AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+      AliInfo("OCDB :: initializing locally ...");
+      // prepare OCDB access
+      ocdb->SetDefaultStorage(fOCDB.Data());
+      ocdb->SetRun(fESDev->GetRunNumber());
+      // create geo manager
+      if(!(obj = ocdb->Get(AliCDBPath("GRP", "Geometry", "Data")))){
+        AliError("GEOMETRY failed initialization.");
+      } else {
+        AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+        AliGeomManager::GetNalignable("TRD");
+        AliGeomManager::ApplyAlignObjsFromCDB("TRD");
+      }
+      //init magnetic field
+      if(!TGeoGlobalMagField::Instance()->IsLocked() &&
+        !fESDev->InitMagneticField()){
+        AliError("MAGNETIC FIELD failed initialization.");
+      }
+      // set no of time bins
+      AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
     }
+    AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", ocdb->GetDefaultStorage()->GetURI().Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
+
+    // load misalignment
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
-    //init magnetic field
-    if(!TGeoGlobalMagField::Instance()->IsLocked() &&
-       !fESDev->InitMagneticField()){
-      AliError("MAGNETIC FIELD failed initialization.");
-    }
-
-    // set no of time bins
-    AliTRDtrackerV1::SetNTimeBins(AliTRDcalibDB::Instance()->GetNumberOfTimeBinsDCS());
-    AliInfo(Form("OCDB :  Loc[%s] Run[%d] TB[%d]", fOCDB.Data(), ocdb->GetRun(), AliTRDtrackerV1::GetNTimeBins()));
-
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
