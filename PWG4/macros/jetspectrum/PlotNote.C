@@ -1146,3 +1146,17 @@ void ScaleNevent(TH1* h,TFile *fIn,Int_t iCond,Int_t iMC,Int_t iCen){
 
 }
 
+TF1* FitLHSgaus(TH1D *hDeltaPt, double &sigma, double &sigma_error, double &mean)
+{
+  hDeltaPt->Fit("gaus",-50.,0.);
+  TF1 *f1 = hDeltaPt->GetFunction("gaus");
+  sigma = f1->GetParameter(2);
+  mean = f1->GetParameter(1);
+  hDeltaPt->Fit("gaus","""","""",mean-3.*sigma,0.);
+  f1 =  hDeltaPt->GetFunction("gaus");
+  mean = f1->GetParameter(1);
+  sigma = f1->GetParameter(2);
+  sigma_error = f1->GetParError(2);
+
+  return f1;
+}
