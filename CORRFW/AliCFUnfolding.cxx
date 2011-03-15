@@ -217,7 +217,7 @@ AliCFUnfolding::AliCFUnfolding(const AliCFUnfolding& c) :
   fNVariables(c.fNVariables),
   fUseSmoothing(c.fUseSmoothing),
   fSmoothFunction((TF1*)c.fSmoothFunction->Clone()),
-  fSmoothOption(fSmoothOption),
+  fSmoothOption(c.fSmoothOption),
   fMaxConvergence(c.fMaxConvergence),
   fUseCorrelatedErrors(c.fUseCorrelatedErrors),
   fNRandomIterations(c.fNRandomIterations),
