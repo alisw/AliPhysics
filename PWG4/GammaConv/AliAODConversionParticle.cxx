@@ -106,6 +106,8 @@ AliAODConversionParticle::AliAODConversionParticle(AliAODConversionParticle *y1,
   fESDEvent(NULL)
 {
     fIMass=M();
+    fLabel[0] = -1;
+    fLabel[1] = -1;
 }
 
 AliAODConversionParticle::AliAODConversionParticle(const AliAODConversionParticle & original) :
