@@ -117,6 +117,11 @@ Just use the buttons or choose the event number in the bottom panel. You can als
 <pre></pre>
 -# Leave the cursor on a track to pop-up its characteristics
 
+\section eve_s3 The simplified "gentle" geometry for the event display
+
+Execute from aliroot the macro MUONGenerateGentleGeometry.C and place the resulting file in EVE/alice-data. This file is used by the macro geom_gentle_muon.C
+from EVE/alice-macros.
+
 This chapter is defined in the READMEeve.txt file.
 
 */
