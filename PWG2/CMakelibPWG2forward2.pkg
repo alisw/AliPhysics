@@ -41,6 +41,7 @@ set ( SRCS
   FORWARD/analysis2/AliFMDEventInspector.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
   FORWARD/analysis2/AliFMDSharingFilter.cxx
+  FORWARD/analysis2/AliFMDMCEventInspector.cxx
   FORWARD/analysis2/AliFMDMCCorrector.cxx
   FORWARD/analysis2/AliFMDMCDensityCalculator.cxx
   FORWARD/analysis2/AliFMDMCSharingFilter.cxx
@@ -109,7 +110,9 @@ install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
                 FORWARD/analysis2/AddTaskFMD.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
+		FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
+		FORWARD/analysis2/ForwardAODConfig.C
                 FORWARD/analysis2/MakeAOD.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
@@ -126,6 +129,7 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 		    FORWARD/corrections/SecondaryMap
 		    FORWARD/corrections/VertexBias
 		    FORWARD/corrections/Acceptance
+		    FORWARD/corrections/Normalization
 		    FORWARD/corrections/CentralAcceptance
 		    FORWARD/corrections/CentralSecMap
           DESTINATION PWG2/FORWARD/corrections 
