@@ -506,6 +506,10 @@ UInt_t AliTOFPreprocessor::ProcessOnlineDelays()
 			  list->Print();
 			  for (Int_t jj=0;jj<list->GetEntries();jj++){
 				  TObjString * str = dynamic_cast<TObjString*> (list->At(jj));
+				  if (!str) {
+				    AliError("dynamic_cast returned NULL");
+				    return 4;
+				  }
 				  AliInfo(Form("found source %s", str->String().Data()));
 				  // file to be stored run per run
 				  TString fileNameRun = GetFile(kDAQ, "RUNLevel", str->GetName());
@@ -1253,6 +1257,10 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
 		  for (Int_t jj=0;jj<listPulser->GetEntries();jj++){
 			  Int_t nPulserSource = 0;
 			  TObjString * str = dynamic_cast<TObjString*> (listPulser->At(jj));
+			  if (!str) {
+			    AliError("dynamic_cast returned NULL");
+			    return 4;
+			  }
 			  AliInfo(Form("found source %s", str->String().Data()));
 			  // file to be stored run per run
 			  TString fileNamePulser = GetFile(kDAQ, "PULSER", str->GetName());
@@ -1381,9 +1389,7 @@ UInt_t AliTOFPreprocessor::ProcessPulserData()
     AliCDBMetaData metaDataHisto;
     metaDataHisto.SetBeamPeriod(0);
     metaDataHisto.SetResponsible("Chiara Zampolli");
-    char comment[200];
-    sprintf(comment,"This preprocessor stores the Ref data from a pulser run.");
-    metaDataHisto.SetComment(comment);
+    metaDataHisto.SetComment("This preprocessor stores the Ref data from a pulser run.");
     AliInfo("Storing Reference Data");
     resultPulserRef = StoreReferenceData("Calib","PulserData",htofPulser, &metaDataHisto);
     if (!resultPulserRef){
@@ -1483,6 +1489,10 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
 		  for (Int_t jj=0;jj<listNoise->GetEntries();jj++){
 			  Int_t nNoiseSource = 0;
 			  TObjString * str = dynamic_cast<TObjString*> (listNoise->At(jj));
+			  if (!str) {
+			    AliError("dynamic_cast returned NULL");
+			    return 4;
+			  }
 			  AliInfo(Form("found source %s", str->String().Data()));
 			  // file to be stored run per run
 			  TString fileNameNoise = GetFile(kDAQ, "NOISE", str->GetName());
@@ -1622,9 +1632,7 @@ UInt_t AliTOFPreprocessor::ProcessNoiseData()
     AliCDBMetaData metaDataHisto;
     metaDataHisto.SetBeamPeriod(0);
     metaDataHisto.SetResponsible("Chiara Zampolli");
-    char comment[200];
-    sprintf(comment,"This preprocessor stores the Ref data from a noise run. ");
-    metaDataHisto.SetComment(comment);
+    metaDataHisto.SetComment("This preprocessor stores the Ref data from a noise run. ");
     AliInfo("Storing Reference Data");
     resultNoiseRef = StoreReferenceData("Calib","NoiseData",htofNoise, &metaDataHisto);
     if (!resultNoiseRef){
@@ -1910,6 +1918,7 @@ AliTOFPreprocessor::FillWithCableLengthMap(AliTOFChannelOnlineArray *cal)
 	    
 	    /* get channel index */
 	    index = AliTOFGeometry::GetIndex(det);
+	    if (index < 0) continue;
 	    
 	    /* get cable time shift */
 	    cableTimeShift = AliTOFCableLengthMap::GetCableTimeShift(iddl, islot, ichain, itdc);
