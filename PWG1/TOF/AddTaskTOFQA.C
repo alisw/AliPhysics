@@ -32,15 +32,15 @@ AliAnalysisTaskSE * AddTaskTOFQA()
 
   /* cuts used for QA in 2010 p-p */
   AliESDtrackCuts* esdTrackCutsLoose2010 = new AliESDtrackCuts("AliESDtrackCuts", "esdTrackCutsLoose2010");
-  esdTrackCutsL->SetMinNClustersTPC(70); 
-  esdTrackCutsL->SetMaxChi2PerClusterTPC(3.5); 
-  esdTrackCutsL->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);
-  esdTrackCutsL->SetRequireTPCRefit(kTRUE);
-  esdTrackCutsL->SetMaxDCAToVertexXY(3.0); 
-  esdTrackCutsL->SetMaxDCAToVertexZ(3.0); 
-  esdTrackCutsL->SetRequireSigmaToVertex(kTRUE); 
-  esdTrackCutsL->SetAcceptKinkDaughters(kFALSE); 
-  esdTrackCutsL->SetMaxNsigmaToVertex(4.0);
+  esdTrackCutsLoose2010->SetMinNClustersTPC(70); 
+  esdTrackCutsLoose2010->SetMaxChi2PerClusterTPC(3.5); 
+  esdTrackCutsLoose2010->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);
+  esdTrackCutsLoose2010->SetRequireTPCRefit(kTRUE);
+  esdTrackCutsLoose2010->SetMaxDCAToVertexXY(3.0); 
+  esdTrackCutsLoose2010->SetMaxDCAToVertexZ(3.0); 
+  esdTrackCutsLoose2010->SetRequireSigmaToVertex(kTRUE); 
+  esdTrackCutsLoose2010->SetAcceptKinkDaughters(kFALSE); 
+  esdTrackCutsLoose2010->SetMaxNsigmaToVertex(4.0);
 
   /* standard cuts ITS-TPC 2010 */
   AliESDtrackCuts* esdTrackCutsStd2010 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2010");
@@ -50,10 +50,10 @@ AliAnalysisTaskSE * AddTaskTOFQA()
   esdTrackCutsStd2010->SetAcceptKinkDaughters(kFALSE); 
   esdTrackCutsStd2010->SetRequireTPCRefit(kTRUE);
   // ITS
-  esdTrackCuts->SetRequireITSRefit(kTRUE);
-  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  esdTrackCutsStd2010->SetRequireITSRefit(kTRUE);
+  esdTrackCutsStd2010->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
-  esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
+  esdTrackCutsStd2010->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//selects primaries
   esdTrackCutsStd2010->SetMaxDCAToVertexZ(2);
   esdTrackCutsStd2010->SetDCAToVertex2D(kFALSE);
   esdTrackCutsStd2010->SetRequireSigmaToVertex(kFALSE);
