@@ -51,7 +51,6 @@
 #endif
 #include <cerrno>
 #include <netdb.h>
-extern int h_errno;
 //#include <sys/types.h>
 //#include <sys/socket.h>
 //#include <netinet/in.h>
@@ -154,7 +153,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( const char* hostname, unsigned short port 
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports )
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, const unsigned short* ports )
   :
   AliHLTMonitoringReader(),
   TObject(),
@@ -231,7 +230,7 @@ AliHLTHOMERReader::AliHLTHOMERReader( key_t shmKey, int shmSize )
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int shmCnt, const key_t* shmKeys, const int* shmSizes )
   :
   AliHLTMonitoringReader(),
   TObject(),
@@ -270,8 +269,8 @@ AliHLTHOMERReader::AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKeys, int* 
 	}
     }
 
-AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
-			  unsigned int shmCnt, key_t* shmKeys, int* shmSizes )
+AliHLTHOMERReader::AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, const unsigned short* ports, 
+			  unsigned int shmCnt, const key_t* shmKeys, const int* shmSizes )
   :
   AliHLTMonitoringReader(),
   TObject(),
@@ -1222,7 +1221,7 @@ int AliHLTHOMERReader::ReadDataFromShmSources( unsigned sourceCnt, DataSource* s
     return 0;
     }
 
-int AliHLTHOMERReader::ParseSourceData( DataSource& source )
+int AliHLTHOMERReader::ParseSourceData( const DataSource& source )
     {
 // see header file for class documentation
     if ( source.fData )
@@ -1288,14 +1287,14 @@ int AliHLTHOMERReader::ReAllocBlocks( unsigned long newCnt )
     return 0;
     }
 
-homer_uint64 AliHLTHOMERReader::GetSourceEventID( DataSource& source )
+homer_uint64 AliHLTHOMERReader::GetSourceEventID( const DataSource& source )
     {
 // see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];
     return Swap( kHOMERNativeByteOrder, sourceByteOrder, ((homer_uint64*)source.fData)[ kSubType1_64b_Offset ] );
     }
 
-homer_uint64 AliHLTHOMERReader::GetSourceEventType( DataSource& source )
+homer_uint64 AliHLTHOMERReader::GetSourceEventType( const DataSource& source )
     {
 // see header file for class documentation
     homer_uint8 sourceByteOrder = ((homer_uint8*)source.fData)[ kByteOrderAttribute_8b_Offset ];

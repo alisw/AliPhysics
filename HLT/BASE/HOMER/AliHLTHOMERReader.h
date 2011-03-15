@@ -134,14 +134,14 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
 	/* For reading from a TCP port */
 	AliHLTHOMERReader( const char* hostname, unsigned short port );
 	/* For reading from multiple TCP ports */
-	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports );
+	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, const unsigned short* ports );
 	/* For reading from a System V shared memory segment */
 	AliHLTHOMERReader( key_t shmKey, int shmSize );
 	/* For reading from multiple System V shared memory segments */
-	AliHLTHOMERReader( unsigned int shmCnt, key_t* shmKey, int* shmSize );
+	AliHLTHOMERReader( unsigned int shmCnt, const key_t* shmKey, const int* shmSize );
 	/* For reading from multiple TCP ports and multiple System V shared memory segments */
-	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, unsigned short* ports, 
-		     unsigned int shmCnt, key_t* shmKey, int* shmSize );
+	AliHLTHOMERReader( unsigned int tcpCnt, const char** hostnames, const unsigned short* ports, 
+		     unsigned int shmCnt, const key_t* shmKey, const int* shmSize );
 	/* For reading from a buffer */
 	AliHLTHOMERReader( const void* pBuffer, int size );
 	virtual ~AliHLTHOMERReader();
@@ -286,10 +286,10 @@ class AliHLTHOMERReader: public AliHLTMonitoringReader, public TObject
 	int TriggerShmSource( DataSource& source, bool useTimeout, unsigned long timeout ) const;
 	int ReadDataFromTCPSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout );
 	int ReadDataFromShmSources( unsigned sourceCnt, DataSource* sources, bool useTimeout, unsigned long timeout );
-	int ParseSourceData( DataSource& source );
+	int ParseSourceData( const DataSource& source );
 	int ReAllocBlocks( unsigned long newCnt );
-	homer_uint64 GetSourceEventID( DataSource& source );
-	homer_uint64 GetSourceEventType( DataSource& source );
+	homer_uint64 GetSourceEventID( const DataSource& source );
+	homer_uint64 GetSourceEventType( const DataSource& source );
         homer_uint64 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint64 source ) const;
 
         homer_uint32 Swap( homer_uint8 destFormat, homer_uint8 sourceFormat, homer_uint32 source ) const;
