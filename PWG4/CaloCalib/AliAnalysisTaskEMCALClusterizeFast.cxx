@@ -193,7 +193,6 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliAODEvent *event)
     cells->SetCell(icell, cellNumber, cellAmplitude, cellTime);
     idigit++;
   }
-  cells->Sort();
 }
 
 //________________________________________________________________________
@@ -216,7 +215,6 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliESDEvent *event)
     cells->SetCell(icell, cellNumber, cellAmplitude, cellTime);
     idigit++;
   }
-  cells->Sort();
 }
 
 //________________________________________________________________________
@@ -295,6 +293,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray(AliAODEvent *event)
     }
     idigit++;
   }
+  fDigitsArr->Sort();
 }
 
 //________________________________________________________________________
