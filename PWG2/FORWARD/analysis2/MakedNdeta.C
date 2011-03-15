@@ -44,6 +44,11 @@ void MakedNdeta(const char* aoddir=".",
   // If 0 or less events is select, choose all 
   if (nEvents <= 0) nEvents = chain->GetEntries();
 
+  // --- Set the macro path ------------------------------------------
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			   "$ALICE_ROOT/ANALYSIS/macros",
+			   gROOT->GetMacroPath()));
+
   // --- Creating the manager and handlers ---------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Train", 
 						    "Forward dN/deta");
@@ -55,10 +60,10 @@ void MakedNdeta(const char* aoddir=".",
        
   // --- Add tasks ---------------------------------------------------
   // Forward 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwarddNdeta.C");
+  gROOT->LoadMacro("AddTaskForwarddNdeta.C");
   AddTaskForwarddNdeta(trig, vzMin, vzMax, centLow, centHigh, true);
   // Central
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCentraldNdeta.C");
+  gROOT->LoadMacro("AddTaskCentraldNdeta.C");
   AddTaskCentraldNdeta(trig, vzMin, vzMax, centLow, centHigh);
 
   

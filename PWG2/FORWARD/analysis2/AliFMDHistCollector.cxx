@@ -61,7 +61,8 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   fList           = o.fList;
   fSumRings       = o.fSumRings;
   fCoverage       = o.fCoverage;
-
+  fMergeMethod    = o.fMergeMethod;
+  fFiducialMethod = o.fFiducialMethod;
   return *this;
 }
 
@@ -93,8 +94,8 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
   fList->Add(fSumRings);
 
   fCoverage = new TH2D("coverage", "#eta coverage per v_{z}", 
-		       etaAxis.GetNbins(), etaAxis.GetXmin(), etaAxis.GetXmax(),
-		       vtxAxis.GetNbins(), vtxAxis.GetXmin(), vtxAxis.GetXmax());
+		       etaAxis.GetNbins(),etaAxis.GetXmin(),etaAxis.GetXmax(),
+		       vtxAxis.GetNbins(),vtxAxis.GetXmin(),vtxAxis.GetXmax());
   fCoverage->SetDirectory(0);
   fCoverage->SetXTitle("#eta");
   fCoverage->SetYTitle("v_{z} [cm]");
@@ -107,6 +108,14 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
 
   // Find the eta bin ranges 
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) {
+    TList*   vtxList = new TList;
+    Double_t vMin    = vtxAxis.GetBinLowEdge(iVz);
+    Double_t vMax    = vtxAxis.GetBinUpEdge(iVz);
+    vtxList->SetName(Form("%c%02d_%c%02d", 
+			  vMin < 0 ? 'm' : 'p', int(TMath::Abs(vMin)),
+			  vMax < 0 ? 'm' : 'p', int(TMath::Abs(vMax))));
+    fList->Add(vtxList);
+
     // Find the first and last eta bin to use for each ring for 
     // each vertex bin.   This is instead of using the methods 
     // provided by AliFMDAnaParameters 
@@ -128,7 +137,7 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
 	// do not have holes in the coverage 
 	bool ok = true;
 	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) { 
-	  if (bg->GetBinContent(ie,ip) < fCorrectionCut) {
+	  if (!CheckCorrection(bg, ie, ip)) {
 	    ok = false;
 	    continue;
 	  }
@@ -142,14 +151,53 @@ AliFMDHistCollector::Init(const TAxis& vtxAxis,
       // Store the result for later use 
       fFirstBins[(iVz-1)*5+iIdx] = first;
       fLastBins[(iVz-1)*5+iIdx]  = last;
-      for (Int_t iC = first+fNCutBins; iC <= last-fNCutBins; iC++) {
-	Double_t old = fCoverage->GetBinContent(iC, iVz);
-	fCoverage->SetBinContent(iC, iVz, old+1);
+      TH2D* obg = static_cast<TH2D*>(bg->Clone());
+      obg->SetDirectory(0);
+      obg->Reset();
+      vtxList->Add(obg);
+
+      // Fill diagnostics histograms 
+      for (Int_t ie = first+fNCutBins; ie <= last-fNCutBins; ie++) {
+	Double_t old = fCoverage->GetBinContent(ie, iVz);
+	fCoverage->SetBinContent(ie, iVz, old+1);
+	for (Int_t ip = 1; ip <= bg->GetNbinsY(); ip++) {
+	  obg->SetBinContent(ie, ip, bg->GetBinContent(ie, ip));
+	  obg->SetBinError(ie, ip, bg->GetBinError(ie, ip));
+	}
       }
     } // for j 
   }
 }
 
+//____________________________________________________________________
+Bool_t
+AliFMDHistCollector::CheckCorrection(const TH2D* bg, Int_t ie, Int_t ip) const
+{
+  // 
+  // Check if we should include the bin in the data range 
+  // 
+  // Parameters:
+  //    bg Secondary map histogram
+  //    ie Eta bin
+  //    ip Phi bin
+  // 
+  // Return:
+  //    True if to be used
+  //
+  Double_t c = bg->GetBinContent(ie,ip);
+  switch (fFiducialMethod) { 
+  case kByCut:
+    return c >= fCorrectionCut;
+  case kDistance: 
+    if (2 * c < bg->GetBinContent(ie+1,ip) ||
+	2 * c < bg->GetBinContent(ie-1,ip)) return false;
+    return true;
+  default: 
+    AliError("No fiducal cut method defined");
+  }
+  return false;
+}
+    
 //____________________________________________________________________
 void
 AliFMDHistCollector::DefineOutput(TList* dir)
@@ -342,6 +390,92 @@ AliFMDHistCollector::GetOverlap(Int_t idx, Int_t bin, UShort_t vtxbin) const
   
   
 //____________________________________________________________________
+void
+AliFMDHistCollector::MergeBins(Double_t c,   Double_t e, 
+			       Double_t oc,  Double_t oe,
+			       Double_t& rc, Double_t& re) const
+{
+  // 
+  // Merge bins accoring to set method
+  // 
+  // Parameters:
+  //    c   Current content
+  //    e   Current error
+  //    oc  Old content
+  //    oe  Old error
+  //    rc  On return, the new content
+  //    re  On return, tne new error
+  //
+  rc = re = 0;
+  switch (fMergeMethod) { 
+  case kStraightMean:
+    // calculate the average of old value (half the original), 
+    // and this value, as well as the summed squared errors 
+    // of the existing content (sqrt((e_1/2)^2=sqrt(e_1^2/4)=e_1/2) 
+    // and half the error of this.   
+    //
+    // So, on the first overlapping histogram we get 
+    // 
+    //    c = c_1 / 2
+    //    e = sqrt((e_1 / 2)^2) = e_1/2
+    // 
+    // On the second we get 
+    // 
+    //    c' = c_2 / 2 + c = c_2 / 2 + c_1 / 2 = (c_1+c_2)/2 
+    //    e' = sqrt(e^2 + (e_2/2)^2) 
+    //       = sqrt(e_1^2/4 + e_2^2/4) 
+    //       = sqrt(1/4 * (e_1^2+e_2^2)) 
+    //       = 1/2 * sqrt(e_1^2 + e_2^2)
+    rc = oc + c/2;
+    re = TMath::Sqrt(oe*oe+(e*e)/4);
+    break;
+  case kStraightMeanNoZero:
+    // If there's data in the overlapping histogram, 
+    // calculate the average and add the errors in 
+    // quadrature.  
+    // 
+    // If there's no data in the overlapping histogram, 
+    // then just fill in the data 
+    if (oe > 0) {
+      rc = (oc + c)/2;
+      re = TMath::Sqrt(oe*oe + e*e)/2;
+    }
+    else {
+      rc = c;
+      re = e;
+    }	    
+    break;
+  case kWeightedMean: {
+    // Calculate the weighted mean 
+    Double_t w  = 1/(e*e);
+    Double_t sc = w * c;
+    Double_t sw = w;
+    if (oe > 0) {
+      Double_t ow =  1/(oe*oe);
+      sc          += ow * oc;
+      sw          += ow;
+    }
+    rc = sc / sw;
+    re = TMath::Sqrt(1 / sw);
+  }
+    break;
+  case kLeastError:
+    if (e < oe) {
+      rc = c;
+      re = e;
+    }
+    else {
+      rc = oc;
+      re = oe;
+    }
+    break;
+  default:
+    AliError("No method for defining content of overlapping bins defined");
+    return;
+  }
+}
+
+//____________________________________________________________________
 Bool_t
 AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 			     UShort_t                vtxbin, 
@@ -406,82 +540,10 @@ AliFMDHistCollector::Collect(AliForwardUtil::Histos& hists,
 	  Double_t oc = out.GetBinContent(iEta,iPhi);
 	  Double_t oe = out.GetBinError(iEta,iPhi);
 
-#define USE_STRAIGHT_MEAN
-// #define USE_STRAIGHT_MEAN_NONZERO
-// #define USE_WEIGHTED_MEAN
-// #define USE_MOST_CERTAIN
-#if defined(USE_STRAIGHT_MEAN)
-	  // calculate the average of old value (half the original), 
-	  // and this value, as well as the summed squared errors 
-	  // of the existing content (sqrt((e_1/2)^2=sqrt(e_1^2/4)=e_1/2) 
-	  // and half the error of this.   
-	  //
-	  // So, on the first overlapping histogram we get 
-	  // 
-	  //    c = c_1 / 2
-	  //    e = sqrt((e_1 / 2)^2) = e_1/2
-	  // 
-	  // On the second we get 
-	  // 
-	  //    c' = c_2 / 2 + c = c_2 / 2 + c_1 / 2 = (c_1+c_2)/2 
-	  //    e' = sqrt(e^2 + (e_2/2)^2) 
-	  //       = sqrt(e_1^2/4 + e_2^2/4) 
-	  //       = sqrt(1/4 * (e_1^2+e_2^2)) 
-	  //       = 1/2 * sqrt(e_1^2 + e_2^2)
-	  out.SetBinContent(iEta,iPhi,oc + c/2);
-	  out.SetBinError(iEta,iPhi,TMath::Sqrt(oe*oe+(e*e)/4));
-#elif defined(USE_STRAIGHT_MEAN_NONZERO)
-# define ZERO_OTHER
-	  // If there's data in the overlapping histogram, 
-	  // calculate the average and add the errors in 
-	  // quadrature.  
-	  // 
-	  // If there's no data in the overlapping histogram, 
-	  // then just fill in the data 
-	  if (oe > 0) {
-	    out.SetBinContent(iEta,iPhi,(oc + c)/2);
-	    out.SetBinError(iEta,iPhi,TMath::Sqrt(oe*oe + e*e)/2);
-	  }
-	  else {
-	    out.SetBinContent(iEta,iPhi,c);
-	    out.SetBinError(iEta,iPhi,e);
-	  }	    
-#elif defined(USE_WEIGHTED_MEAN) 
-	  // Calculate the weighted mean 
-	  Double_t w  = 1/(e*e);
-	  Double_t sc = w * c;
-	  Double_t sw = w;
-	  if (oe > 0) {
-	    Double_t ow = 1/(oe*oe);
-	    sc          += ow * oc;
-	    sw          += ow;
-	  }
-	  Double_t nc = sc / sw;
-	  Double_t ne = TMath::Sqrt(1 / sw);
-	  out.SetBinContent(iEta,iPhi,nc,ne);
-#elif defined(USE_MOST_CERTAIN)
-# define ZERO_OTHER
-	  if (e < oe) {
-	    out.SetBinContent(iEta,iPhi,c);
-	    out.SetBinError(iEta,iPhi,e);
-	  }
-	  else {
-	    out.SetBinContent(iEta,iPhi,oc);
-	    out.SetBinError(iEta,iPhi,oe);
-	  }
-#else 
-#         error No method for defining content of overlapping bins defined
-#endif
-#if defined(ZERO_OTHER)
-	  // Get the content of the overlapping histogram, 
-	  // and zero the content so that we won't use it 
-	  // again 
-	  UShort_t od; Char_t oR; 
-	  GetDetRing(overlap, od, oR);
-	  TH2D* other = hists.Get(od,oR);
-	  other->SetBinContent(iEta,iPhi,0);
-	  other->SetBinError(iEta,iPhi,0);
-#endif
+	  Double_t rc, re;
+	  MergeBins(c, e, oc, oe, rc, re);
+	  out.SetBinContent(iEta,iPhi, rc);
+	  out.SetBinError(iEta,iPhi, re);
 	}
       }
       // Remove temporary histogram 
@@ -507,7 +569,15 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   std::cout << ind << "AliFMDHistCollector: " << GetName() << '\n'
 	    << ind << " # of cut bins:          " << fNCutBins << '\n'
 	    << ind << " Correction cut:         " << fCorrectionCut << '\n'
-	    << ind << " Bin ranges:\n" << ind << "  v_z bin";
+	    << ind << " Merge method:           ";
+  switch (fMergeMethod) {
+  case kStraightMean:       std::cout << "straight mean\n"; break;
+  case kStraightMeanNoZero: std::cout << "straight mean (no zeros)\n"; break;
+  case kWeightedMean:       std::cout << "weighted mean\n"; break;
+  case kLeastError:         std::cout << "least error\n"; break;
+  }
+    
+  std::cout << ind << " Bin ranges:\n" << ind << "  v_z bin";
   Int_t nVz = fFirstBins.fN / 5;
   for (UShort_t iVz = 1; iVz <= nVz; iVz++) 
     std::cout << " | " << std::setw(7) << iVz;

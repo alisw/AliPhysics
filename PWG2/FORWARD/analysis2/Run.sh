@@ -17,6 +17,10 @@ hhd=1
 comp=1
 cent=0
 tit=
+others=0
+published=1
+ratios=1
+asymm=1 
 dopass1=0
 dopass2=0
 dopass3=0
@@ -50,9 +54,11 @@ Options:
 	-g,--gdb		Run in GDB mode    	    ($gdb)
 	-E,--eloss		Run energy loss script      
         -r,--rebin              Rebin factor                ($rebin)
-        -A,--cent               Run centrality task         ($cent)
-	-c,--cent-low		Lower centrality cut	    ($centlow)
-	-C,--cent-high		Upper centrality cut	    ($centhigh)
+        -C,--use-centrality     Run centrality task         ($cent)
+	-O,--show-older		Show older data	            ($others)
+	-J,--show-published	Show ALICE published data   ($published)
+	-R,--show-ratios	Show ratios to other data   ($ratios)
+	-Z,--show-asymmetry	Show asymmetry 		    ($asymm)
 
 TYPE is a comma or space separated list of 
  
@@ -100,12 +106,10 @@ while test $# -gt 0 ; do
 	-1|--pass1|-A|--aod)  dopass1=`toggle $dopass1`   ;; 
 	-b|--batch)           batch=`toggle $batch`       ;; 
 	-P|--proof)           proof=$2	          ; shift ;; 
-	-B|--use-cent)        cent=`toggle $cent` ;;
+	-C|--use-centrality)  cent=`toggle $cent` ;;
 	-M|--mc)              mc=`toggle $mc`     ;; 
 	-g|--gdb)             gdb=`toggle $gdb`   ;;
 	-r|--rebin)           rebin=$2            ; shift ;;
-	-c|--cent-low)        centlow=$2          ; shift ;;
-	-C|--cent-high)       centhigh=$2         ; shift ;;
 	-v|--vz-min)          vzmin=$2            ; shift ;; 
 	-V|--vz-max)          vzmax=$2            ; shift ;; 
 	-E|--eloss)           pass1=MakeELossFits.C 
@@ -113,7 +117,11 @@ while test $# -gt 0 ; do
 	                      pass3=scripts/DrawAnaELoss.C 
 	                      output1=forward_eloss.root 
 			      dopass2=1 
-			     ;;
+			      ;;
+	-O|--show-older)      others=`toggle $others`	;;
+	-J|--show-published)  published=`toggle $published`	;;
+	-R|--show-ratios)     ratios=`toggle $ratios`	;;
+	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
 	-t|--type)           
 	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    type=$2
@@ -188,7 +196,13 @@ fi
 
 if test $dopass3 -gt 0 ; then
     tit=`echo $tit | tr ' ' '@'` 
-    args=(\(\"${output2}\"\,0xf,\"\",$rebin \))
+    flags=0
+    if test $others    -gt 0 ; then let flags=$(($flags|0x1)); fi
+    if test $published -gt 0 ; then let flags=$(($flags|0x2)); fi
+    if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
+    if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
+
+    args=(\(\"${output2}\"\,${flags},\"\",$rebin \))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi
