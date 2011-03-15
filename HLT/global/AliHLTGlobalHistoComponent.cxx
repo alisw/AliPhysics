@@ -186,6 +186,7 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   // fetch ESD from input stream
   const TObject *obj = GetFirstInputObject(kAliHLTAllDataTypes, "AliESDEvent");
   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
+  if(!esd) return 0;
   esd->GetStdContent();
 
   // fill track variables
