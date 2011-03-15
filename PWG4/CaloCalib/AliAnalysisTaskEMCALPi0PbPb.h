@@ -4,9 +4,10 @@
 // $Id$
 
 class TAxis;
+class TClonesArray;
 class TH1F;
 class TH2F;
-class TClonesArray;
+class TNtuple;
 class TObjArray;
 class AliAODCaloCells;
 class AliAODCaloCluster;
@@ -31,6 +32,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetCentrality(const char *name)                { fCentVar = name;            }
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
   void         SetClusName(const char *name)                  { fClusName = name;           }
+  void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
@@ -38,6 +40,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillCellHists();
   virtual void FillClusHists();
   virtual void FillPionHists();
+
   Double_t     GetMaxCellEnergy(AliVCluster *c);
   Double_t     GetSigmaMax(AliVCluster *c);
 
@@ -50,7 +53,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t               fVtxZMax;              // max primary vertex z (def=+10cm)
   Bool_t                 fUseQualFlag;          // if true use quality flag for centrality
   TString                fClusName;             // cluster branch name (def="")
-     // derived members (ie with ! after //)
+  Bool_t                 fDoNtuple;             // if true write out ntuple
+    // derived members (ie with ! after //)
   AliEMCALGeoUtils      *fGeom;                 //! geometry utils
   TList                 *fOutput;               //!container of output histograms
   AliESDEvent           *fEsdEv;                //!pointer to input esd event
@@ -61,6 +65,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TObjArray             *fAodClusters;          //!pointer to aod clusters
   AliAODCaloCells       *fAodCells;             //!pointer to aod cells
   TAxis                 *fPtRanges;             //!pointer to pt ranges
+  TNtuple               *fNtuple;               //!pointer to ntuple
     // histograms
   TH1F                  *fHCuts;                //!histo for cuts
   TH1F                  *fHVertexZ;             //!histo for vtxz
