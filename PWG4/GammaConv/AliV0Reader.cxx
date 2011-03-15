@@ -1222,7 +1222,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
   if(fUseKFParticle){
     fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveKFParticle->Px(),fCurrentPositiveKFParticle->Py(),fCurrentPositiveKFParticle->Pz());
   }
-  else if(fUseESDTrack){
+  else  { // if(fUseESDTrack){  fPositiveTrackLorentzVector must be reinitialized, so assuming use ESD if not kfparticle Svein. 
     fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveESDTrack->Px(),fCurrentPositiveESDTrack->Py(),fCurrentPositiveESDTrack->Pz());
   }
 	
