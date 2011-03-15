@@ -4,10 +4,12 @@
 #include <TAxis.h>
 #include <TChain.h>
 #include <TClonesArray.h>
+#include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
+#include <TNtuple.h>
 #include "AliAODEvent.h"
 #include "AliAODVertex.h"
 #include "AliAnalysisManager.h"
@@ -31,6 +33,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fVtxZMax(+10),
     fUseQualFlag(1),
     fClusName(),
+    fDoNtuple(0),
     fGeom(0),
     fOutput(0),
     fEsdEv(0),
@@ -41,6 +44,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fAodClusters(0),
     fAodCells(0),
     fPtRanges(0),
+    fNtuple(0),
     fHCuts(0x0),
     fHVertexZ(0x0),
     fHVertexZ2(0x0),
@@ -91,6 +95,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
 
   fOutput = new TList();
   fOutput->SetOwner();
+
+  if (fDoNtuple) {
+    TFile *f = OpenFile(1);
+    if (f)
+      fNtuple = new TNtuple("nt","nt","cent:m:pt:e1:e2:e1m:e2m:n1:n2:db1:db2:disp1:disp2:mm1:mm2:ms1:ms2");
+  }
 
   // histograms
   fHCuts = new TH1F("hEventCuts","",4,0.5,4.5);
@@ -347,6 +357,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *) 
 {
   // Terminate called at the end of analysis.
+
+  if (fNtuple) {
+    TFile *f = OpenFile(1);
+    if (f) 
+      fNtuple->Write();
+  }
 }
 
 //________________________________________________________________________
@@ -461,6 +477,31 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
           Int_t bin = fPtRanges->FindBin(pionVec.Pt());
           fHPionInvMasses[bin]->Fill(pionVec.M());
         }
+
+        if (fNtuple) {
+          Double_t mass = pionVec.M();
+          if (mass>0.08 && mass<0.2) {
+            Float_t vals[17];
+            vals[0]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
+            vals[1]  = mass;
+            vals[2]  = pionVec.Pt();
+            vals[3]  = clusterVec1.E();
+            vals[4]  = clusterVec2.E();
+            vals[5]  = GetMaxCellEnergy(clus1);
+            vals[6]  = GetMaxCellEnergy(clus2);
+            vals[7]  = clus1->GetNCells();
+            vals[8]  = clus2->GetNCells();
+            vals[9]  = clus1->GetDistanceToBadChannel();
+            vals[10] = clus2->GetDistanceToBadChannel();
+            vals[11] = clus1->GetDispersion();
+            vals[12] = clus2->GetDispersion();
+            vals[13] = clus1->GetM20();
+            vals[14] = clus2->GetM20();
+            vals[15] = clus1->GetM02();
+            vals[16] = clus2->GetM02();
+            fNtuple->Fill(vals);
+          }
+        }
       }
     }
   } 
@@ -503,6 +544,7 @@ Double_t  AliAnalysisTaskEMCALPi0PbPb::GetSigmaMax(AliVCluster *cluster)
   Double_t Sxy = 0 ;          // cluster second central moment along Y (variance_Y^2)
   Double_t Syy = 0 ;          // cluster covariance^2
 
+  Double_t testenergy = 0;
   AliVCaloCells *cells = fEsdCells;
   if (!cells)
     cells = fAodCells;
@@ -510,14 +552,18 @@ Double_t  AliAnalysisTaskEMCALPi0PbPb::GetSigmaMax(AliVCluster *cluster)
   if (cells) {
     TVector3 pos;
     Int_t ncells = cluster->GetNCells();
+    if (ncells==1)
+      return 0;
     for(Int_t j=0; j<ncells; ++j) {
       fGeom->GetGlobal(cluster->GetCellAbsId(j),pos);
       Int_t id = cluster->GetCellAbsId(j);
-      Xc  += cells->GetCellAmplitude(id)*pos.X();
-      Yc  += cells->GetCellAmplitude(id)*pos.Y();    
-      Sxx += cells->GetCellAmplitude(id)*pos.X()*pos.X(); 
-      Syy += cells->GetCellAmplitude(id)*pos.Y()*pos.Y(); 
-      Sxy += cells->GetCellAmplitude(id)*pos.X()*pos.Y(); 
+      Double_t cellen = cells->GetCellAmplitude(id);
+      testenergy += cellen;
+      Xc  += cellen*pos.X();
+      Yc  += cellen*pos.Y();    
+      Sxx += cellen*pos.X()*pos.X(); 
+      Syy += cellen*pos.Y()*pos.Y(); 
+      Sxy += cellen*pos.X()*pos.Y(); 
     }
     Xc  /= Ec;
     Yc  /= Ec;
@@ -529,6 +575,9 @@ Double_t  AliAnalysisTaskEMCALPi0PbPb::GetSigmaMax(AliVCluster *cluster)
     Sxy -= Xc*Yc;
     sigmaMax = (Sxx + Syy + TMath::Sqrt((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy))/2.0;
     sigmaMax = TMath::Sqrt(sigmaMax); 
+
+    printf("%f %f\n",testenergy,cluster->E());
+    cout << testenergy << " " << cluster->E() << endl;
   } 
   return sigmaMax;
 }
