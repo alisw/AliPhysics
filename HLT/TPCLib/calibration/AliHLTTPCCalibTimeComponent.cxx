@@ -506,7 +506,7 @@ Int_t AliHLTTPCCalibTimeComponent::ShipDataToFXS( const AliHLTComponentEventData
   THnSparse *hist = NULL;
   while((hist = (THnSparseF*)iterator->Next())){
        
-         if(!hist) continue;
+         //if(!hist) continue;
          hist->Print();
          hist->GetAxis(0)->SetRange(startTimeBin, endTimeBin);
          hist->GetAxis(1)->SetRange(startPtBin,   endPtBin);
