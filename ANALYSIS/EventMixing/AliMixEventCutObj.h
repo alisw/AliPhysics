@@ -12,14 +12,16 @@
 #define ALIMIXEVENTCUTOBJ_H
 
 #include <TObject.h>
+#include <TString.h>
+
 class AliVEvent;
 class AliAODEvent;
 class AliESDEvent;
 class AliMixEventCutObj : public TObject {
 public:
-   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kAllEventAxis = 4};
+   enum EEPAxis_t {kMultiplicity = 0, kZVertex = 1, kNumberV0s = 2, kNumberTracklets = 3, kCentrality = 4, kAllEventAxis = 5};
 
-   AliMixEventCutObj(EEPAxis_t type = kMultiplicity, Float_t min = 0.0, Float_t max = 0.0, Float_t step = 1.0);
+   AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type = kMultiplicity, Float_t min = 0.0, Float_t max = 0.0, Float_t step = 1.0, const char* opt = "");
    AliMixEventCutObj(const AliMixEventCutObj &obj);
    AliMixEventCutObj &operator=(const AliMixEventCutObj &obj);
 
@@ -48,6 +50,7 @@ public:
 
 private:
    Int_t       fCutType;       // cut type
+   TString     fCutOpt;        // cut option string
    Float_t     fCutMin;        // cut min
    Float_t     fCutMax;        // cut max
    Float_t     fCutStep;       // cut step
@@ -55,7 +58,7 @@ private:
 
    Float_t     fCurrentVal;    // current value
 
-   ClassDef(AliMixEventCutObj, 1)
+   ClassDef(AliMixEventCutObj, 2)
 };
 
 #endif

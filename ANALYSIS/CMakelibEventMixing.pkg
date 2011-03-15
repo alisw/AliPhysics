@@ -30,7 +30,8 @@ set ( SRCS EventMixing/AliMixEventCutObj.cxx
   EventMixing/AliMixInfo.cxx
   EventMixing/AliMixInputHandlerInfo.cxx
   EventMixing/AliMixInputEventHandler.cxx
-  EventMixing/AliAnalysisTaskMixInfo.cxx)
+  EventMixing/AliAnalysisTaskMixInfo.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

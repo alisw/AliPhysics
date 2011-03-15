@@ -18,8 +18,9 @@
 ClassImp(AliMixEventCutObj)
 
 //_________________________________________________________________________________________________
-AliMixEventCutObj::AliMixEventCutObj(EEPAxis_t type, Float_t min, Float_t max, Float_t step) : TObject(),
+AliMixEventCutObj::AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type, Float_t min, Float_t max, Float_t step, const char* opt) : TObject(),
    fCutType((Int_t)type),
+   fCutOpt(opt),
    fCutMin(min),
    fCutMax(max),
    fCutStep(step),
@@ -37,6 +38,7 @@ AliMixEventCutObj::AliMixEventCutObj(EEPAxis_t type, Float_t min, Float_t max, F
 //_________________________________________________________________________________________________
 AliMixEventCutObj::AliMixEventCutObj(const AliMixEventCutObj &obj) : TObject(obj),
    fCutType(obj.fCutType),
+   fCutOpt(obj.fCutOpt),
    fCutMin(obj.fCutMin),
    fCutMax(obj.fCutMax),
    fCutStep(obj.fCutStep),
@@ -59,6 +61,7 @@ AliMixEventCutObj& AliMixEventCutObj::operator=(const AliMixEventCutObj& obj)
    if (&obj != this) {
       TObject::operator=(obj);
       fCutType = obj.fCutType;
+      fCutOpt = obj.fCutOpt;
       fCutMin = obj.fCutMin;
       fCutMax = obj.fCutMax;
       fCutStep = obj.fCutStep;
@@ -174,6 +177,8 @@ Double_t AliMixEventCutObj::GetValue(AliESDEvent* ev)
    // Returns value from esd event
    //
 
+   const AliMultiplicity *multESD = 0;
+
    switch (fCutType) {
       case kMultiplicity:
          return (Double_t)ev->GetNumberOfTracks();
@@ -182,11 +187,19 @@ Double_t AliMixEventCutObj::GetValue(AliESDEvent* ev)
       case kNumberV0s:
          return ev->GetNumberOfV0s();
       case kNumberTracklets:
-         const AliMultiplicity *multESD = ev->GetMultiplicity();
-         return multESD->GetNumberOfTracklets();
+         multESD = ev->GetMultiplicity();
+         if (multESD) return multESD->GetNumberOfTracklets();
+         else AliFatal("esd->GetMultiplicity() is null");
+         break;
+      case kCentrality:
+         AliCentrality *c = ev->GetCentrality();
+         if (!c) AliFatal("esd->GetCentrality() is null");
+         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
+         return c->GetCentralityPercentile(fCutOpt.Data());
+
    }
 
-   AliFatal("Mixing Cut TYPE is not supported");
+   AliFatal("Mixing Cut TYPE is not supported for ESD");
    return -99999;
 
 }
@@ -204,9 +217,15 @@ Double_t AliMixEventCutObj::GetValue(AliAODEvent* ev)
          return ev->GetVertex(0)->GetZ();
       case kNumberV0s:
          return ev->GetNumberOfV0s();
+      case kCentrality:
+         AliCentrality *c = ev->GetCentrality();
+         if (!c) AliFatal("aod->GetCentrality() is null");
+         if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
+         return c->GetCentralityPercentile(fCutOpt.Data());
+
    }
 
-   AliFatal("Mixing Cut TYPE is not supported");
+   AliFatal("Mixing Cut TYPE is not supported for AOD");
    return -99999;
 }
 
@@ -227,6 +246,8 @@ const char *AliMixEventCutObj::GetCutName(Int_t index) const
          return "NumberV0s";
       case kNumberTracklets:
          return "NumberTracklets";
+      case kCentrality:
+         return Form("kCentrality[%s]", fCutOpt.Data());
    }
    return "";
 }
