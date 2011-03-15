@@ -11,4 +11,5 @@
 
 #pragma link C++ class AliOADBContainer+;
 #pragma link C++ class AliOADBCentrality+;
+#pragma link C++ class AliOADBPWG2Spectra+;
 #endif
