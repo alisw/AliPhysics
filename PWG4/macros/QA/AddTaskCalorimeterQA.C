@@ -119,9 +119,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
   emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 100) ;
+  emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
-  emcalQA->SetNumberOfModules(10); //EMCAL first year
+  emcalQA->SetNumberOfModules(10); 
   emcalQA->SetHistoMassRangeAndNBins(0., 1, 400) ;
   emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
