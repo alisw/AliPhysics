@@ -218,6 +218,9 @@ void AliHLTTRDTracklet::InitArrays()
   fC[0] = 0.; fC[1] = 0.; 
   for (Int_t i=0; i < AliPID::kSPECIES; i++)
     fProb[i]=0;
+  for (Int_t i=0; i<AliTRDseedV1::kNclusters; i++)
+    fPos[i]=0;
+
 }
 
 /**

@@ -68,6 +68,10 @@ AliHLTTRDCalibFitComponent::AliHLTTRDCalibFitComponent()
     fNoOfIncSM(0)
 {
   // Default constructor
+
+  for(int i=0; i<18; i++)
+    fIncSM[i]=kFALSE;
+
 }
 
 AliHLTTRDCalibFitComponent::~AliHLTTRDCalibFitComponent()

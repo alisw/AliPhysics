@@ -53,6 +53,12 @@ AliHLTTRDHistoMergerComponent::AliHLTTRDHistoMergerComponent()
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+  for(int i=0; i<9; i++)
+    fHistoArr[i]=NULL;
+
+  for(int i=0; i<18; i++)
+    fIncSM[i]=kFALSE;
+
 }
 
 AliHLTTRDHistoMergerComponent::~AliHLTTRDHistoMergerComponent()
