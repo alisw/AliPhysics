@@ -1,3 +1,20 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+// $Id$
+//
 /// \ingroup macros
 /// \file MUONGenerateGentleGeometry.C
 /// \brief Macro for generating a simplified geometry used by the
@@ -11,6 +28,22 @@
 ///
 ///
 /// \author: M. Tadel, CERN and B. Vulpescu LPC, Clermont-Ferrand
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+
+#include <TSystem.h>
+#include <TEveManager.h>
+#include <TEveGeoNode.h>
+#include <TGeoManager.h>
+#include <TGeoNode.h>
+#include <TString.h>
+#include <TObjArray.h>
+#include <Riostream.h>
+
+#endif
+
+void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax,
+              TObjArray *list);
 
 void MUONGenerateGentleGeometry() {
 
@@ -50,7 +83,8 @@ void MUONGenerateGentleGeometry() {
 }
 
 //_____________________________________________________________________________
-void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax, TObjArray *list)
+void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax, 
+              TObjArray *list)
 {  
   if (--depth <= 0)
     return;
@@ -64,20 +98,20 @@ void AddNodes(TGeoNode *node, TEveGeoNode *parent, Int_t depth, Int_t depthmax, 
  
  for (Int_t in = 0; in < nNodes; in++)
  {
-    TGeoNode *node = (TGeoNode*) nlist->At(in);
+    TGeoNode *node2 = (TGeoNode*) nlist->At(in);
     TEveGeoNode *son;
-    if (strcmp(node->GetName(),sname.Data()) == 0)
+    if (strcmp(node2->GetName(),sname.Data()) == 0)
     {
       son = dynamic_cast<TEveGeoNode*>(parent->FindChild(nname->GetName()));
       if (!son)
       {
-	son = new TEveGeoNode(node);
+	son = new TEveGeoNode(node2);
 	parent->AddElement(son);
       }
     } else {
       continue;
     }
-    AddNodes(node,son, depth, depthmax, list);
+    AddNodes(node2,son, depth, depthmax, list);
   }
 
 }
