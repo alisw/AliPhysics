@@ -121,6 +121,7 @@ void runCaloEt(bool submit = false, // true or false
   }
 
   AliAnalysisTaskTotEt *task1 = new AliAnalysisTaskTotEt(taskName);
+  task1->SetMcData(isMc);//necessary to tell the task to basically accept all MC events.
   mgr->AddTask(task1);
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
