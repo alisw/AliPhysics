@@ -50,8 +50,16 @@ AliAnaConvIsolation::AliAnaConvIsolation () : TObject(),
   fHistograms(NULL),
   fHistogramMaxPt(50)  
 {
-  fHistograms = new TList();
-  fHistograms->SetName("Isolation_histo");
+  //Constructor
+  for(Int_t i = 0; i < 2; i++){
+    fhMaxPtInCone[i] = NULL;
+    fhSumPtInCone[i] = NULL;
+    fhSumPtVsMaxPt[i] = NULL;
+    fhPtCandidates[i] = NULL;
+    fhTrackMult[i] = NULL;
+  }
+
+
 }
 
 //________________________________________________________________________
@@ -68,13 +76,20 @@ AliAnaConvIsolation::AliAnaConvIsolation(Float_t coneSize, Float_t maxPtThreshol
   fHistograms(NULL),
   fHistogramMaxPt(50)
 {
-
+  //Constructor
+  for(Int_t i = 0; i < 2; i++){
+    fhMaxPtInCone[i] = NULL;
+    fhSumPtInCone[i] = NULL;
+    fhSumPtVsMaxPt[i] = NULL;
+    fhPtCandidates[i] = NULL;
+    fhTrackMult[i] = NULL;
+  }
 }
 
 
 //________________________________________________________________________________
 AliAnaConvIsolation::~AliAnaConvIsolation() {
-
+  //Destructor
 
 }
 
@@ -82,8 +97,8 @@ AliAnaConvIsolation::~AliAnaConvIsolation() {
 //________________________________________________________________________
 void AliAnaConvIsolation::CreateHistograms()
 {
-
-  fHistograms = new TList();
+	//Create histograms
+  if(!fHistograms) fHistograms = new TList();
   fHistograms->SetName(Form("Isolation_histo_cone_%f_maxPt_%f_sumPt_%f", fConeSize, fSumPtThreshold, fMaxPtThreshold));
 
   fIsoCurve = new TF1("Isolation_curve", fCurveFunction.Data(), 0, 100);
@@ -240,7 +255,7 @@ Bool_t AliAnaConvIsolation::IsIsolated(const AliAODConversionParticle * const pa
 
 ///___________________________________________________________________________
 void AliAnaConvIsolation::FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks) {
-  
+  //Fill histograms
   fhMaxPtInCone[isolated]->Fill(pt, ptMax);
   fhSumPtInCone[isolated]->Fill(pt, ptSum);
   fhSumPtVsMaxPt[isolated]->Fill(ptMax, ptSum);
@@ -251,7 +266,7 @@ void AliAnaConvIsolation::FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSu
 
 ///_____________________________________________________________________________
 Bool_t AliAnaConvIsolation::EvaluateIsolationCriteria(Float_t ptSum, Float_t pt) const {
-
+  //Evaluate isolation criteria
   return (ptSum < fIsoCurve->Eval(pt));
 
 }
