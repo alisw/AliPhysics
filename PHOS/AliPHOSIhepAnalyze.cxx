@@ -259,7 +259,7 @@ void AliPHOSIhepAnalyze::AnalyzeCPV1(Int_t Nevents)
   // Save histograms
 
   Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed",GetFileName().Data());
+  snprintf(outputname,80,"%s.analyzed",GetFileName().Data());
   TFile output(outputname,"RECREATE");
   output.cd();
   
@@ -486,7 +486,7 @@ void AliPHOSIhepAnalyze::AnalyzeEMC1(Int_t Nevents)
   // Save histograms
 
   Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed",GetFileName().Data());
+  snprintf(outputname,80,"%s.analyzed",GetFileName().Data());
   TFile output(outputname,"update");
   output.cd();
   
@@ -733,7 +733,7 @@ void AliPHOSIhepAnalyze::CpvSingle(Int_t nevents)
     }
 	
   Text_t outputname[80] ;
-  sprintf(outputname,"%s.analyzed.single",GetFileName().Data());
+  snprintf(outputname,80,"%s.analyzed.single",GetFileName().Data());
   TFile output(outputname,"RECREATE");
   output.cd();
     
@@ -795,6 +795,10 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 
      
   printf("\n=================== Event %10d ===================\n",nev);
+  //16.03.2011: DP. Code below seems to be obsollete
+  //Comment it to sutisfy Coverity
+/* 
+
   fRunLoader->GetEvent(nev);
   Int_t ntracks = fRunLoader->GetHeader()->GetNtrack();
     
@@ -842,6 +846,9 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
     Int_t nsum = hitsPerModule[iModule]->GetEntriesFast();
     printf("CPV module %d has %d hits\n",iModule,nsum);
   }
+
+*/
+
 
 //    TList * fCpvImpacts ;
 //    TBranch * branchCPVimpacts;
