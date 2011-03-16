@@ -106,6 +106,7 @@ void loadmacros ()
   loadmacro("MUONFakes");                  // Philippe P.
   loadmacro("MUONefficiency");             // Christophe
   loadmacro("MUONGenerateBusPatch");       // Christian
+  loadmacro("MUONGenerateGentleGeometry"); // Bogdan
   loadmacro("MUONGenerateGeometryData");   // Ivana
   loadmacro("MUONGenerateTestGMS");        // Ivana
   loadmacro("MUONGeometryViewingHelper");  // Ivana
