@@ -41,6 +41,8 @@
 #include "AliHLTGlobalHistoCollector.h"
 #include "AliHLTGlobalDCSPublisherComponent.h"
 #include "AliHLTMultiplicityCorrelationsComponent.h"
+#include "AliHLTPrimaryVertexFinderComponent.h"
+#include "AliHLTV0FinderComponent.h"
 
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
@@ -79,6 +81,8 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   //pHandler->AddComponent(new AliHLTdNdPtAnalysisComponent );
   //pHandler->AddComponent(new AliHLTdNdPtAnalysisMergerComponent );
   pHandler->AddComponent(new AliHLTMultiplicityCorrelationsComponent );
+  pHandler->AddComponent(new AliHLTPrimaryVertexFinderComponent);
+  pHandler->AddComponent(new AliHLTV0FinderComponent);
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
   return 0;
