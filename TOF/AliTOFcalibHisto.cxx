@@ -421,8 +421,10 @@ AliTOFcalibHisto::LoadCalibHisto()
 
   /* open input file */
   TFile *fileIn = TFile::Open(GetCalibHistoFileName());
-  if (!fileIn || !fileIn->IsOpen())
+  if (!fileIn || !fileIn->IsOpen()) {
     AliFatal(Form("cannot open input file %s", GetCalibHistoFileName()));
+    return;
+  }
 
   /* set calib histo file */
   fgCalibHistoFile = fileIn;
@@ -450,8 +452,10 @@ AliTOFcalibHisto::LoadCalibPar()
 
   /* open input file */
   TFile *fileIn = TFile::Open(GetCalibParFileName());
-  if (!fileIn || !fileIn->IsOpen())
+  if (!fileIn || !fileIn->IsOpen()) {
     AliError(Form("cannot open input file %s", GetCalibParFileName()));
+    return;
+  }
 
   /* set calib par file */
   fgCalibParFile = fileIn;
@@ -498,8 +502,10 @@ AliTOFcalibHisto::WriteCalibHisto()
 
   /* open output file */
   TFile *fileOut = TFile::Open(GetCalibHistoFileName(), "RECREATE");
-  if (!fileOut || !fileOut->IsOpen())
+  if (!fileOut || !fileOut->IsOpen()) {
     AliFatal(Form("cannot open output file %s", GetCalibHistoFileName()));
+    return;
+  }
 
   /* create consts */
   for (Int_t iConst = 0; iConst < kNcalibConsts; iConst++)
@@ -616,8 +622,10 @@ AliTOFcalibHisto::WriteCalibStat()
 
   /* open output file */
   TFile *fileOut = TFile::Open(GetCalibStatFileName(), "RECREATE");
-  if (!fileOut || !fileOut->IsOpen())
+  if (!fileOut || !fileOut->IsOpen()) {
     AliFatal(Form("cannot open output file %s", GetCalibStatFileName()));
+    return;
+  }
 
   /* create stats */
   for (Int_t iStat = 0; iStat < kNcalibStats; iStat++)
