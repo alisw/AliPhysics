@@ -538,8 +538,8 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
   cout<<Form("The pT cut correction for 100 MeV is %2.4f [%2.4f,%2.4f]",fpTcutCorrectionITS,ffpTcutCorrectionITSLow,ffpTcutCorrectionITSHigh)<<endl;
   cout<<Form("                          150 MeV    %2.4f [%2.4f,%2.4f]",fpTcutCorrectionTPC,ffpTcutCorrectionTPCLow,ffpTcutCorrectionTPCHigh)<<endl<<endl;
 
-  cout<<Form("The pT cut correction for ITS tracks is %2.4f [%2.4f,%2.4f]",fNotIDConstITS,fNotIDConstITSLow,fNotIDConstITSHigh)<<endl;
-  cout<<Form("                          TPC tracks    %2.4f [%2.4f,%2.4f]",fNotIDConstTPC,fNotIDConstTPCLow,fNotIDConstTPCHigh)<<endl<<endl;
+  cout<<Form("The correction for unidentified ITS tracks is %2.4f [%2.4f,%2.4f]",fNotIDConstITS,fNotIDConstITSLow,fNotIDConstITSHigh)<<endl;
+  cout<<Form("                                TPC tracks    %2.4f [%2.4f,%2.4f]",fNotIDConstTPC,fNotIDConstTPCLow,fNotIDConstTPCHigh)<<endl<<endl;
 
   cout<<"Background correction histogram for ITS tracks is";
   if(!fBackgroundITS)cout<<" not set"<<endl;
