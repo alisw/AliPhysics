@@ -286,7 +286,7 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
   CreateReadoutList( sourceHostnames, sourcePorts, sourceCount, detector );
   if ( sourceCount == 0 ) {
     HLTError(Form("No sources selected, aborting."));
-
+    delete [] sourcePorts;
     delete [] sourceHostnames;
     return -2;
   }
@@ -306,6 +306,8 @@ Int_t AliHLTHOMERManager::ConnectHOMER( TString detector ){
     AliHLTHOMERReader *reader = static_cast<AliHLTHOMERReader*>(fReaderList->Last());
     if ( !reader ) {
       HLTError(Form("Adding reader failed, aborting"));
+      delete [] sourcePorts;
+      delete [] sourceHostnames;
       return -3;
     }
 
