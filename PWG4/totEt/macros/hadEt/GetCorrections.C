@@ -72,7 +72,7 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    if(forSim) sim = "ForSimulations";
    char *system = "PbPb";
    if(ispp) system = "pp";
-   sprintf(outfilename,"corrections.%s.%s.%s.root",shortprodname,system,sim);
+   sprintf(outfilename,"rootFiles/corrections/corrections.%s.%s.%s.root",shortprodname,system,sim);
    TFile *outfile = new TFile(outfilename,"RECREATE");
    AliAnalysisHadEtCorrections *hadCorrectionEMCAL = new AliAnalysisHadEtCorrections();
    hadCorrectionEMCAL->SetName("hadCorrectionEMCAL");
@@ -137,16 +137,16 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNotIDConstCorrectionTPC(1.0/NotIDConstTPC);
    hadCorrectionEMCAL->SetNotIDConstCorrectionITS(1.0/NotIDConstITS);
    if(ispp){
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.010)/0.996);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.010)/0.996);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.010)/0.996);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010)/0.996);
+     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.010));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.010));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.010));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010));
    }
    else{
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022)/0.976);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022)/0.976);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022)/0.976);
-     hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022)/0.976);
+     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022));
+     hadCorrectionEMCAL->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022));
    }
 
    TH1D *NoID = CorrNoID(etacut,"CorrNoIDEMCAL",prodname,shortprodname,ispp,forSim);
@@ -277,23 +277,23 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.013)/0.736);
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.013)/0.736);
+     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.013));
+     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.013));
    }
    else{
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049)/0.689);
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049)/0.689);
+     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049));
+     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.049));
    }
 
    float hadronicCorr = CorrNeutral(ptcut,prodname,shortprodname,ispp,forSim,TPC,true,etacut);
    hadCorrectionPHOS->SetNotHadronicCorrection(hadronicCorr);
    if(ispp){
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.008)/0.571);
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.008)/0.571);
+     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.008));
+     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.008));
    }
    else{
-     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.023)/0.549);
-     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.023)/0.549);
+     hadCorrectionPHOS->SetNotHadronicCorrectionLowBound(neutralCorr*(1.0-0.023));
+     hadCorrectionPHOS->SetNotHadronicCorrectionHighBound(neutralCorr*(1.0+0.023));
    }
 
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
@@ -320,16 +320,16 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNotIDConstCorrectionTPC(1./NotIDConstTPC);
    hadCorrectionPHOS->SetNotIDConstCorrectionITS(1./NotIDConstITS);
    if(ispp){
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.010)/0.996);
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.010)/0.996);
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.010)/0.996);
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010)/0.996);
+     hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.010));
+     hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.010));
+     hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.010));
+     hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.010));
    }
    else{
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022)/0.976);
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022)/0.976);
-     hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022)/0.976);
-     hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022)/0.976);
+     hadCorrectionPHOS->SetNotIDConstCorrectionTPCLowBound(1./NotIDConstTPC*(1.0-0.022));
+     hadCorrectionPHOS->SetNotIDConstCorrectionITSLowBound(1./NotIDConstITS*(1.0-0.022));
+     hadCorrectionPHOS->SetNotIDConstCorrectionTPCHighBound(1./NotIDConstTPC*(1.0+0.022));
+     hadCorrectionPHOS->SetNotIDConstCorrectionITSHighBound(1./NotIDConstITS*(1.0+0.022));
    }
 
 
