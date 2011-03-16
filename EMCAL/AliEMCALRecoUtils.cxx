@@ -999,10 +999,10 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event, TObjArray * clusterArr)
   fResidualZ          ->Reset();
   fResidualR          ->Reset();
   
-  fMatchedTrackIndex  ->Set(100);
-  fMatchedClusterIndex->Set(100);
-  fResidualZ          ->Set(100);
-  fResidualR          ->Set(100);
+  fMatchedTrackIndex  ->Set(500);
+  fMatchedClusterIndex->Set(500);
+  fResidualZ          ->Set(500);
+  fResidualR          ->Set(500);
   
   Int_t    matched=0;
   Float_t  clsPos[3];
