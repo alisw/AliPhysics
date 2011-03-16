@@ -19,12 +19,15 @@ class AliESDEvent;
 class AliAODEvent;
 class AliMCEvent;
 class TList;
+class TLorentzVector;
 class AliCFContainer ;
 class AliStack;
 class AliESDpid ;
+class AliESDtrackCuts ;
 class AliEMCALGeoUtils ;
 class AliPHOSGeoUtils ;
 class AliExternalTrackParam ;
+class AliKFParticle ;
 
 class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
 {
@@ -76,19 +79,26 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
    void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
    Double_t PlanarityAngle(const AliExternalTrackParam * pos, const AliExternalTrackParam * neg)const ;
    Bool_t IsGoodChannel(const char * det="PHOS", Int_t mod=1, Int_t ix=1,Int_t iz=1) ; //Checks bad map
+   void Recalibrate(Double_t &m, Double_t &pt, const TLorentzVector *calo, const TLorentzVector * conv, Int_t iw, Int_t in) ;
+   void RecalibrateConvPHOS(Double_t &m, Double_t &pt, const TLorentzVector *calo, const TLorentzVector * conv, Int_t iw, Int_t in) ;
+   void RecalibrateEMCAL(Double_t &m, Double_t &pt, const TLorentzVector *calo, const TLorentzVector * conv, Int_t iw, Int_t in) ;
+   void GetArmenterosQtAlfa(AliKFParticle* positiveKFParticle, AliKFParticle * negativeKFParticle, 
+                            AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ) ;
 
  private:
   AliAnalysisTaskCaloConv(const AliAnalysisTaskCaloConv&); // Not implemented
   AliAnalysisTaskCaloConv& operator=(const AliAnalysisTaskCaloConv&); // Not implemented
 		
+ protected:
   enum{
     kCaloPIDdisp = BIT(14),
     kCaloPIDtof  = BIT(15),
-    kCaloPIDneutral= BIT(16)
+    kCaloPIDneutral= BIT(16),
+    kCaloDistBad = BIT(17)
   };
   enum{
     kConvOnFly= BIT(14),
-    kConvKink = BIT(15),
+    kConvArmQt= BIT(15),
     kConvdEdx = BIT(16),
     kConvProb = BIT(17),
     kConvR    = BIT(18),
@@ -101,6 +111,7 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
 		
   AliESDEvent* fESDEvent; //!pointer to the ESDEvent
   AliESDpid * fESDpid ;   //class for Track PID calculation
+  AliESDtrackCuts * fESDtrackCuts; //class for charged multiplicity estimation
   AliStack * fStack;      //! pointer to the MC particle stack
   TList * fOutputContainer; //final histogram container
   TList * fCFOutputContainer; //Correction Fremework conntainer
@@ -109,6 +120,8 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   AliCFContainer * fPHOSCFCont ;  //Container for Conv. photons correction calculation
   AliCFContainer * fEMCALCFCont ; //Container for Conv. photons correction calculation
   AliCFContainer * fPi0CFCont ;   //Container for Conv. photons correction calculation
+
+  Double_t fCentr ;
 		
   Bool_t fTriggerCINT1B; //Flag to select trigger CINT1B
   Bool_t fToUseCF ;      //Switch on/off CF histogram filling
@@ -119,6 +132,8 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   AliEMCALGeoUtils *fEMCALgeom;     //!EMCAL geometry
   Double_t fPi0Thresh1 ;    //Threshold 1 for pi0 calibration
   Double_t fPi0Thresh2 ;    //Threshold 2 for pi0 calibration
+  Double_t fBadDistCutPHOS ; //Cut on distance to bad channel
+  Double_t fBadDistCutEMCAL ; //Cut on distance to bad channel
   TH2I * fPHOSBadMap[6] ;   //Container for PHOS bad channels map
   TH2I * fEMCALBadMap[10] ; //Container for EMCAL Bad channels map
 
@@ -146,7 +161,7 @@ class AliAnalysisTaskCaloConv : public AliAnalysisTaskSE
   Double_t fptCut ;                  //fptCut
   Double_t fchi2CutConversion ;      //fchi2CutConversion
 
-  ClassDef(AliAnalysisTaskCaloConv, 1); // Analysis task for conversion + calorimeters
+  ClassDef(AliAnalysisTaskCaloConv, 2); // Analysis task for conversion + calorimeters
 };
 
 #endif //ALIANALYSISTASKCALOCO_H
