@@ -56,11 +56,13 @@ DatabasePDG::~DatabasePDG() {
 }
 
 void DatabasePDG::SetParticleFilename(Char_t *filename) {
-  strncpy(fParticleFilename, filename, 256);
+  if(strlen(filename)<255)
+    strncpy(fParticleFilename, filename, 256);
 }
 
 void DatabasePDG::SetDecayFilename(Char_t *filename) {
-  strncpy(fDecayFilename, filename, 256);
+  if(strlen(filename)<255)
+    strncpy(fDecayFilename, filename, 256);
 }
 
 Bool_t DatabasePDG::LoadData() {

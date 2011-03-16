@@ -86,8 +86,8 @@ class AliGenUHKM : public AliGenMC
                                                    //gluons (0: small-angular, 1: wide-angular, 2:collinear) (default: 0).
 
 
-  void SetPDGParticleFile(const Char_t *name) {strncpy(fParticleFilename, name, 256);}//Set the filename containing the particle PDG info
-  void SetPDGDecayFile(const Char_t *name) {strncpy(fDecayFilename, name, 256);} //Set the filename containing the PDG decay channels info
+  void SetPDGParticleFile(const Char_t *name) {if(strlen(name)<255) strncpy(fParticleFilename, name, 256);}//Set the filename containing the particle PDG info
+  void SetPDGDecayFile(const Char_t *name) {if(strlen(name)<255) strncpy(fDecayFilename, name, 256);} //Set the filename containing the PDG decay channels info
   void SetPDGParticleStable(Int_t pdg, Bool_t value) { // Turn on/off the decay flag for a PDG particle
     fStableFlagPDG[fStableFlagged] = pdg;
     fStableFlagStatus[fStableFlagged++] = value;

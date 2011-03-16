@@ -51,10 +51,6 @@ DecayChannel::DecayChannel(Int_t mother, Double_t branching, Int_t nDaughters, c
   // constructor
   //
   for(Int_t i=0; i<kMaxDaughters; i++) {
-    if(i >= kMaxDaughters) {
-      cout << "ERROR in DecayChannel explicit constructor: " << endl;
-      cout << "Number of daughters bigger than the maximum allowed one (" << kMaxDaughters << ") !!" << endl;
-    }
     if(i<nDaughters)
       fDaughtersPDG[fNDaughters++] = *(daughters+i);
     else

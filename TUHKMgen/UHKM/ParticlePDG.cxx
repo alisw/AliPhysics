@@ -35,7 +35,7 @@ ParticlePDG::ParticlePDG() :
 //
 // default constructor
 //
-  memset(fName,'0',9);
+  memset(fName,'a',9);
   for(Int_t i=0; i<kMaxDecayChannels; i++)
     fDecayChannels[i] = new DecayChannel();
 }
