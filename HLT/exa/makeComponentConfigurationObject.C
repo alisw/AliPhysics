@@ -36,7 +36,7 @@ void makeComponentConfigurationObject(const char* path,
 				      const char* param,
 				      const char* cdbUri,
 				      int runmin=0,
-				      int runmax=999999999,
+				      int runmax=AliCDBRunRange::Infinity(),
 				      int runNo=0)
 {
   AliCDBManager* man = AliCDBManager::Instance();
@@ -94,7 +94,7 @@ void makeComponentConfigurationObject(const char* path,
 void makeComponentConfigurationObject(const char* path, const char* param="",
 				      const char* cdbUri=NULL,
 				      int runmin=0,
-				      int runmax=999999999)
+				      int runmax=AliCDBRunRange::Infinity())
 {
   makeComponentConfigurationObject(path, NULL, param, cdbUri, runmin, runmax);
 }
@@ -104,7 +104,7 @@ void makeComponentConfigurationObject(const char* path,
 				      const char* key,
 				      const char* param)
 {
-  makeComponentConfigurationObject(path, key, param, NULL, 0, 999999999, runNo);
+  makeComponentConfigurationObject(path, key, param, NULL, 0, AliCDBRunRange::Infinity(), runNo);
 }
 
 void makeComponentConfigurationObject()
@@ -115,13 +115,13 @@ void makeComponentConfigurationObject()
   cout << "  param (opt)    string to be stored in the TObjSting, default empty" << endl;
   cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
   cout << "  rangemin (opt) default 0" << endl;
-  cout << "  rangemax (opt) default 999999999" << endl;
+  cout << "  rangemax (opt) default AliCDBRunRange::Infinity()" << endl;
   cout << "===============================================================" << endl;
   cout << "usage: aliroot -b -q -l makeComponentConfigurationObject.C'(\"path\", \"key\", \"param\", \"uri\", rangemin, rangemax)'" << endl << endl;
   cout << "  path           path of the entry within the OCDB" << endl;
   cout << "  param (opt)    string to be stored in the TObjSting, default empty" << endl;
   cout << "  uri   (opt)    the OCDB URI, default $ALICE_ROOT/OCDB   " << endl;
   cout << "  rangemin (opt) default 0" << endl;
-  cout << "  rangemax (opt) default 999999999" << endl;
+  cout << "  rangemax (opt) default AliCDBRunRange::Infinity()" << endl;
   cout << "===============================================================" << endl;
 }
