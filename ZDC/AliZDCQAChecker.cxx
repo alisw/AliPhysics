@@ -230,7 +230,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      Double_t refTDCs[6] = {-325.,-321.6,-323.4,-321.6,-322.2,-321.7};
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<10.){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<12.){
 		   res=1.;
 		 }
 		 else{
