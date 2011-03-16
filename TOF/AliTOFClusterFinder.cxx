@@ -581,7 +581,7 @@ void AliTOFClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	if (parTOF[0]<10) ftxt << "      " << parTOF[0] << endl;
 	else if (parTOF[0]>=10 && parTOF[0]<100)   ftxt << "    " << parTOF[0] << endl;
 	else if (parTOF[0]>=100 && parTOF[0]<1000) ftxt << "    " << parTOF[0] << endl;
-	else ftxt << "   " << parTOF[3] << endl;
+	else ftxt << "   " << parTOF[0] << endl;
       }
 
     } // closed loop on TOF raw data per current DDL file
@@ -742,7 +742,7 @@ void AliTOFClusterFinder::Digits2RecPoints(Int_t iEvent, AliRawReader *rawReader
 	if (parTOF[0]<10) ftxt << "      " << parTOF[0] << endl;
 	else if (parTOF[0]>=10 && parTOF[0]<100)   ftxt << "    " << parTOF[0] << endl;
 	else if (parTOF[0]>=100 && parTOF[0]<1000) ftxt << "    " << parTOF[0] << endl;
-	else ftxt << "   " << parTOF[3] << endl;
+	else ftxt << "   " << parTOF[0] << endl;
       }
 
     } // closed loop on TOF raw data per current DDL file

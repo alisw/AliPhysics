@@ -1781,6 +1781,7 @@ AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
     /* skip if bad TRM event counter detected */
     if (trmsd->GetEventCounter() != drmsd->GetLocalEventCounter()) continue;
     /* skip if bad TRM CRC detected */
+    AliDebug(2,Form("~~~~~~ %02d %02d --- TRM CRC: as written in raw data =%d and as computed =%d ~~~~~~",indexDDL,itrm,trmsd->GetEventCRC(), trmsd->GetDecoderCRC()));
     if (trmsd->GetEventCRC() != trmsd->GetDecoderCRC()) continue;
 
     /* loop over chains */

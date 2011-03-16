@@ -52,10 +52,10 @@ class AliTOFDDLRawData:public TObject {
   void  MakeLTMtrailer(UInt_t *buf);
   void  MakeTRMheader(Int_t nTRM, UInt_t *buf);
   void  MakeTRMtrailer(UInt_t *buf);
-  void  MakeTRMfiller(UInt_t *buf, UInt_t nWordsPerTRM);
+  void  MakeTRMfiller(UInt_t *buf);
   void  MakeTRMchainHeader(Int_t iChain, Int_t nTRM, UInt_t *buf);
   void  MakeTRMchainTrailer(Int_t iChain, UInt_t *buf);
-  void  MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_t *buf, UInt_t &nWordsPerTRM);
+  void  MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_t *buf);
 
   UInt_t MakeFiller() const;
 
@@ -77,11 +77,11 @@ class AliTOFDDLRawData:public TObject {
 
   TClonesArray *fTOFdigitArray;   //Pointer to the TOF digits
 
-  //AliTOFRawStream *fTOFrawStream; //Pointer to the AliTOFRawStream class
+  Int_t fWordsPerDRM;
+  Int_t fWordsPerTRM;
+  Int_t fWordsPerChain;
 
-  //AliTOFCableLengthMap *fTOFCableLengthMap; // Pointer to the map of Amphenol cable length
-
-  ClassDef(AliTOFDDLRawData,3)
+  ClassDef(AliTOFDDLRawData,4)
 
 };
     

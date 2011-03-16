@@ -102,9 +102,10 @@ AliTOFDDLRawData::AliTOFDDLRawData():
   fFakeOrphaneProduction(kFALSE),
   fMatchingWindow(8192),
   fTOFdigitMap(new AliTOFDigitMap()),
-  fTOFdigitArray(0x0)
-  //fTOFrawStream(AliTOFRawStream()),
-  //fTOFCableLengthMap(new AliTOFCableLengthMap())
+  fTOFdigitArray(0x0),
+  fWordsPerDRM(0),
+  fWordsPerTRM(0),
+  fWordsPerChain(0)
 {
   //Default constructor
 }
@@ -117,9 +118,10 @@ AliTOFDDLRawData::AliTOFDDLRawData(const AliTOFDDLRawData &source) :
   fFakeOrphaneProduction(source.fFakeOrphaneProduction),
   fMatchingWindow(source.fMatchingWindow),
   fTOFdigitMap(source.fTOFdigitMap),
-  fTOFdigitArray(source.fTOFdigitArray)
-  //fTOFrawStream(source.fTOFrawStream),
-  //fTOFCableLengthMap(source.fTOFCableLengthMap)
+  fTOFdigitArray(source.fTOFdigitArray),
+  fWordsPerDRM(source.fWordsPerDRM),
+  fWordsPerTRM(source.fWordsPerTRM),
+  fWordsPerChain(source.fWordsPerChain)
  {
   //Copy Constructor
   return;
@@ -140,17 +142,18 @@ AliTOFDDLRawData& AliTOFDDLRawData::operator=(const AliTOFDDLRawData &source) {
   fMatchingWindow=source.fMatchingWindow;
   fTOFdigitMap=source.fTOFdigitMap;
   fTOFdigitArray=source.fTOFdigitArray;
-  //fTOFrawStream=source.fTOFrawStream;
-  //fTOFCableLengthMap=source.fTOFCableLengthMap;
+  fWordsPerDRM=source.fWordsPerDRM;
+  fWordsPerTRM=source.fWordsPerTRM;
+  fWordsPerChain=source.fWordsPerChain;
   return *this;
 }
 
 //----------------------------------------------------------------------------
 AliTOFDDLRawData::~AliTOFDDLRawData()
 {
+  // dtr
+
   delete fTOFdigitMap;
-  //delete fTOFrawStream;
-  //delete fTOFCableLengthMap;
 }
 //----------------------------------------------------------------------------
 Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
@@ -166,15 +169,12 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   // To clear the digit indices map for each event
   fTOFdigitMap->Clear();
 
-  //fTOFrawStream->Clear();
-
   fIndex = -1;
 
   fTOFdigitArray = * (TClonesArray**) branch->GetAddress();
 
   AliFstream* outfile;      // logical name of the output file 
 
-  //AliRawDataHeader header;
   AliRawDataHeaderSim header;
 
   UInt_t sizeRawData = 0;
@@ -191,8 +191,6 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
   Int_t nTRM =  0;
   Int_t iChain = -1;
 
-  UInt_t nWordsPerTRM = 0;
-
   //loop over TOF DDL files
   for (nDDL=0; nDDL<AliDAQ::NumberOfDdls("TOF"); nDDL++) {
 
@@ -200,7 +198,6 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
     strncpy(fileName,AliDAQ::DdlFileName("TOF",nDDL),255); //The name of the output file
 
     outfile = new AliFstream(fileName);
-    //iDDL = fTOFrawStream->GetDDLnumberPerSector(nDDL);
     iDDL = AliTOFRawStream::GetDDLnumberPerSector(nDDL);
 
     // write Dummy DATA HEADER
@@ -210,48 +207,50 @@ Int_t AliTOFDDLRawData::RawDataTOF(TBranch* branch)
     // DRM section: trailer
     MakeDRMtrailer(buf);
 
-    // LTM section
-    fIndex++;
-    buf[fIndex] = MakeFiller();
-    MakeLTMtrailer(buf);
-    MakeLTMdata(buf);
-    MakeLTMheader(buf);
-
     // loop on TRM number per DRM
     for (nTRM=AliTOFGeometry::NTRM(); nTRM>=3; nTRM--) {
 
-      nWordsPerTRM = 0;
+      fWordsPerTRM = 0;
 
       // the slot number 3 of the even DRM (i.e. right) doesn't contain TDC digit data
       if (iDDL%2==0 && nTRM==3) continue;
-
-      // TRM global trailer
-      MakeTRMtrailer(buf);
 
       // loop on TRM chain number per TRM
       for (iChain=AliTOFGeometry::NChain()-1; iChain>=0; iChain--) {
 
 	// TRM chain trailer
-	MakeTRMchainTrailer(iChain, buf);
-	nWordsPerTRM++;
+	MakeTRMchainTrailer(iChain, buf); fWordsPerTRM++;
 
 	// TRM TDC digits
-	MakeTDCdigits(nDDL, nTRM, iChain, buf, nWordsPerTRM);
+	MakeTDCdigits(nDDL, nTRM, iChain, buf);
 
 	// TRM chain header
-	MakeTRMchainHeader(nTRM, iChain, buf);
-	nWordsPerTRM++;
+	MakeTRMchainHeader(nTRM, iChain, buf); fWordsPerTRM++;
 
       } // end loop on iChain
 
       // TRM global header
-      MakeTRMheader(nTRM, buf);
+      MakeTRMheader(nTRM, buf); fWordsPerTRM++;
 
       // TRM filler in case where TRM data number is odd
-      if (nWordsPerTRM%2!=0) MakeTRMfiller(buf, nWordsPerTRM);
+      if ((fWordsPerTRM+1)%2!=0) {
+	MakeTRMfiller(buf); fWordsPerTRM++;
+      }
+
+      MakeTRMtrailer(buf); fWordsPerDRM++;
+
+      fWordsPerDRM += fWordsPerTRM;
 
     } // end loop on nTRM
-       
+
+
+    // LTM section
+    //fIndex++;
+    //buf[fIndex] = MakeFiller(); fWordsPerDRM++; // valid till when LTM word number was 33
+    MakeLTMtrailer(buf); fWordsPerDRM++;
+    MakeLTMdata(buf); fWordsPerDRM+=48;
+    MakeLTMheader(buf); fWordsPerDRM++;
+
     // DRM section: in
     MakeDRMheader(nDDL, buf);
 
@@ -329,7 +328,7 @@ void AliTOFDDLRawData::MakeDRMheader(Int_t nDDL, UInt_t *buf)
   baseWord=0;
   word = 1; // 0001 -> DRM data are coming from the VME slot number 1
   AliBitPacking::PackWord(word,baseWord, 0, 3);
-  word = 0; // event CRC
+  word = 0; // event CRC --> CHANGED
   AliBitPacking::PackWord(word,baseWord, 4,19);
   word = 0; // reserved for future use
   AliBitPacking::PackWord(word,baseWord,20,27);
@@ -456,7 +455,7 @@ void AliTOFDDLRawData::MakeDRMtrailer(UInt_t *buf)
   baseWord=0;
   word = 1; // 0001 -> DRM data are coming from the VME slot number 1
   AliBitPacking::PackWord(word,baseWord, 0, 3);
-  word = 0; // local event counter
+  word = 0; // local event counter --> TO BE CHANGED IN fWordsPerDRM+5
   AliBitPacking::PackWord(word,baseWord, 4,15);
   word = 0; // reserved for future use
   AliBitPacking::PackWord(word,baseWord,16,27);
@@ -841,7 +840,8 @@ void AliTOFDDLRawData::MakeTRMheader(Int_t nTRM, UInt_t *buf)
 void AliTOFDDLRawData::MakeTRMtrailer(UInt_t *buf)
 {
   //
-  // TRM trailer
+  // Set TRM Global Trailer
+  // with the calculated CRC
   //
 
   UInt_t baseWord;
@@ -850,17 +850,34 @@ void AliTOFDDLRawData::MakeTRMtrailer(UInt_t *buf)
   baseWord=0;
   word = 15; // 1111 -> TRM trailer ID 1
   AliBitPacking::PackWord(word,baseWord, 0, 3);
-  word = 0; // event CRC
-  AliBitPacking::PackWord(word,baseWord, 4,15);
-  word = 0; // local event counter == DRM local event counter
+
+  UInt_t trmCRC=0x0;
+  for (Int_t ii=fIndex-(fWordsPerTRM-1); ii<fIndex; ii++)
+    trmCRC ^= buf[ii];
+  printf(" A trmCRC=%d\n",trmCRC);
+
+  word = 0x0;
+  word ^= ( (trmCRC & 0x00000fff) >>  0);
+  word ^= ( (trmCRC & 0x00fff000) >> 12);
+  word ^= ( (trmCRC & 0xff000000) >> 24);
+
+  printf(" B trmCRC=%d\n",word);
+
+  AliBitPacking::PackWord(word,baseWord, 4,15); // event CRC --> CHANGED
+
+  word = 0; // local event counter == DRM local event counter --> TO BE CHANGED
   AliBitPacking::PackWord(word,baseWord,16,27);
   word = 5; // 0101 -> TRM trailer ID 2
   AliBitPacking::PackWord(word,baseWord,28,31);
+
   fIndex++;
-  buf[fIndex]=baseWord;
+  for (Int_t ii=fIndex; ii>fIndex-fWordsPerTRM; ii--)
+    buf[ii]=buf[ii-1];
+
+  buf[fIndex-fWordsPerTRM] = baseWord;
 
 }
-
+  
 //----------------------------------------------------------------------------
 void AliTOFDDLRawData::MakeTRMchainHeader(Int_t nTRM, Int_t iChain,
 					  UInt_t *buf)
@@ -887,9 +904,9 @@ void AliTOFDDLRawData::MakeTRMchainHeader(Int_t nTRM, Int_t iChain,
   AliBitPacking::PackWord(word,baseWord, 0, 3);
   word = 0; // bunch ID
   AliBitPacking::PackWord(word,baseWord, 4,15);
-  word = 100; // PB24 temperature -> 4 X 25 degree (environment temperature)
+  word = 0;//100; // PB24 temperature -> 4 X 25 degree (environment temperature)
   AliBitPacking::PackWord(word,baseWord,16,23);
-  word = (Int_t)(5 * gRandom->Rndm()); // PB24 ID [0;4]
+  word = 0;//(Int_t)(5 * gRandom->Rndm()); // PB24 ID [0;4]
   AliBitPacking::PackWord(word,baseWord,24,26);
   word = 0; // TS
   AliBitPacking::PackWord(word,baseWord,27,27);
@@ -908,7 +925,7 @@ void AliTOFDDLRawData::MakeTRMchainHeader(Int_t nTRM, Int_t iChain,
 }
 
 //----------------------------------------------------------------------------
-void AliTOFDDLRawData::MakeTRMfiller(UInt_t *buf, UInt_t nWordsPerTRM)
+void AliTOFDDLRawData::MakeTRMfiller(UInt_t *buf)
 {
   //
   // TRM filler
@@ -917,11 +934,10 @@ void AliTOFDDLRawData::MakeTRMfiller(UInt_t *buf, UInt_t nWordsPerTRM)
   Int_t jj = -1;
 
   fIndex++;
-  for (jj=fIndex; jj>fIndex-(Int_t)nWordsPerTRM; jj--) {
+  for (jj=fIndex; jj>fIndex-fWordsPerTRM; jj--)
     buf[jj] = buf[jj-1];
-  }
 
-  buf[fIndex-nWordsPerTRM] = MakeFiller();
+  buf[fIndex-fWordsPerTRM] = MakeFiller();
 
 }
   
@@ -967,7 +983,7 @@ void AliTOFDDLRawData::MakeTRMchainTrailer(Int_t iChain, UInt_t *buf)
   AliBitPacking::PackWord(word,baseWord, 0, 3);
   word = 0; // MBZ
   AliBitPacking::PackWord(word,baseWord, 4,15);
-  word = 0; // event counter
+  word = 0; // event counter --> TO BE CHANGED
   AliBitPacking::PackWord(word,baseWord,16,27);
   switch (iChain) {
     case 0:
@@ -984,8 +1000,7 @@ void AliTOFDDLRawData::MakeTRMchainTrailer(Int_t iChain, UInt_t *buf)
 }
 
 //----------------------------------------------------------------------------
-void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
-				     UInt_t *buf, UInt_t &nWordsPerTRM)
+void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain, UInt_t *buf)
 {
   //
   // TRM TDC digit
@@ -1132,11 +1147,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	  word = 1; // TRM TDC digit ID
 	  AliBitPacking::PackWord(word,baseWord,31,31);
 
-	  localIndex++;
+	  localIndex++;	fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
 	  psArray[localIndex]=dummyPS;
 
-	  nWordsPerTRM++;
 	  baseWord=0;
 
 	} // if ( fFakeOrphaneProduction && ( ( fPackedAcquisition && percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells) ) or ... ) )
@@ -1227,10 +1241,9 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	word = 1; // TRM TDC digit ID
 	AliBitPacking::PackWord(word,baseWord,31,31);
 
-	localIndex++;
+	localIndex++; fWordsPerTRM++;
 	localBuffer[localIndex]=baseWord;
 
-	nWordsPerTRM++;
 	baseWord=0;
 
 	if ( fFakeOrphaneProduction &&
@@ -1292,11 +1305,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	  word = 1; // TRM TDC digit ID
 	  AliBitPacking::PackWord(word,baseWord,31,31);
 
-	  localIndex++;
+	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
 	  psArray[localIndex]=dummyPS;
 
-	  nWordsPerTRM++;
 	  baseWord=0;
 
 	} // if ( fFakeOrphaneProduction && percentFilledCells<0.12 && gRandom->Rndm()<(0.12-percentFilledCells) )
@@ -1354,11 +1366,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	  word = 1; // TRM TDC digit ID
 	  AliBitPacking::PackWord(word,baseWord,31,31);
 
-	  localIndex++;
+	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
 	  psArray[localIndex]=dummyPS;
 
-	  nWordsPerTRM++;
 	  baseWord=0;
 
 	} // if ( fFakeOrphaneProduction && percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells)  && outOut )
@@ -1407,11 +1418,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	word = 1; // TRM TDC digit ID
 	AliBitPacking::PackWord(word,baseWord,31,31);
 
-	localIndex++;
+	localIndex++; fWordsPerTRM++;
 	localBuffer[localIndex]=baseWord;
 	psArray[localIndex]=2;
 
-	nWordsPerTRM++;
 	baseWord=0;
 
 	word = timeOfFlight%2097152; // leading edge measurement
@@ -1457,11 +1467,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	word = 1; // TRM TDC digit ID
 	AliBitPacking::PackWord(word,baseWord,31,31);
 
-	localIndex++;
+	localIndex++; fWordsPerTRM++;
 	localBuffer[localIndex]=baseWord;
 	psArray[localIndex]=1;
 
-	nWordsPerTRM++;
 	baseWord=0;
 
 
@@ -1514,11 +1523,10 @@ void AliTOFDDLRawData::MakeTDCdigits(Int_t nDDL, Int_t nTRM, Int_t iChain,
 	  word = 1; // TRM TDC digit ID
 	  AliBitPacking::PackWord(word,baseWord,31,31);
 
-	  localIndex++;
+	  localIndex++; fWordsPerTRM++;
 	  localBuffer[localIndex]=baseWord;
 	  psArray[localIndex]=dummyPS;
 
-	  nWordsPerTRM++;
 	  baseWord=0;
 
 	} // if ( fFakeOrphaneProduction && percentFilledCells<0.24 && gRandom->Rndm()<(0.24-percentFilledCells) && !outOut )
