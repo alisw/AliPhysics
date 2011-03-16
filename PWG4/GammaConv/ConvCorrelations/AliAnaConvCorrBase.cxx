@@ -55,7 +55,20 @@ AliAnaConvCorrBase::AliAnaConvCorrBase(TString name) : TObject(),
   fCBins[0] = 5.0;
   fCBins[1] = 3.0;
   fCBins[2] = 1.5;
-  
+
+  for(int iIso = 0; iIso < 2; iIso++) {
+    fHEtaPhiPt[iIso] = NULL;
+    fHdEta[iIso] = NULL;
+    fHdPhi[iIso] = NULL;
+    fHNTriggers[iIso] = NULL;
+    for(Int_t tBin = 0; tBin < fNTBins; tBin++) {
+      for(Int_t cBin = 0; cBin < fNCBins; cBin++) {
+	fHdPhiBins[iIso][tBin][cBin] = NULL;
+      }
+    }
+  }
+
+ 
 }
 
 
@@ -189,11 +202,11 @@ Float_t AliAnaConvCorrBase::GetLowerBinLimit(const Int_t bin, const Float_t * co
 Float_t AliAnaConvCorrBase::GetUpperBinLimit(const Int_t bin, const Float_t * const bins) const {
   //Get upper bin limit for bin 
 
-  Float_t limit = -999;
+  Float_t limit = -999.;
   if(bin < 1)
-    limit = 999;
+    limit = 999.;
   else
-    limit = bins[bin -1];
+    limit = bins[bin - 1];
 
   return limit;
 
@@ -205,7 +218,7 @@ Float_t AliAnaConvCorrBase::GetUpperBinLimit(const Int_t bin, const Float_t * co
 void AliAnaConvCorrBase::PrintStatistics()  { 
   //Print some statistics between each file
   
-  for(int i = 0; i < fNTBins; i++) {
+  for(Int_t i = 0; i < fNTBins; i++) {
     Int_t nTrig = fHNTriggers[0]->GetBinContent(i+1);
     cout << "triggers: " << nTrig << endl;
     for(int j = 0; j < fNCBins; j++) {

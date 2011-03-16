@@ -197,6 +197,12 @@ void AliAnalysisTaskGammaJet::UserExec(Option_t *)
     return;
   }
 
+  TClonesArray * tracks = aodEvent->GetTracks();
+  if(!tracks) {
+    AliError("Can't get tracks!!");
+    return;
+  }
+
   if(!((Entry() )%10000)) {
     AliInfo(Form("%s ----> Processing event # %lld", CurrentFileName(), Entry()));
     AliInfo(Form("%d %d", photons->GetEntriesFast(), pions->GetEntriesFast()));
@@ -208,18 +214,16 @@ void AliAnalysisTaskGammaJet::UserExec(Option_t *)
   if(photons->GetEntriesFast() > aodEvent->GetNumberOfTracks()) {
     AliError(Form("more conv gamma than tracks, ntracks %d, nconvGamma %d:  ", aodEvent->GetNumberOfTracks(), photons->GetEntriesFast()));
     return;
+
   } else if(photons->GetEntriesFast() > 0) {
     
-    ProcessConvGamma(photons, pions, aodEvent->GetTracks());
-    ProcessPions(pions, photons, aodEvent->GetTracks());
+    ProcessConvGamma(photons, pions, tracks);
+    ProcessPions(pions, photons, tracks);
   } 
 
 	
-
   PostData(1, fOutputList);
 
-
-        
 }
 
 
@@ -283,14 +287,14 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
 
     for(Int_t i = 0; i < fAnaIsolationArray->GetEntriesFast(); i ++) {
       AliAnaConvIsolation * isoAna = dynamic_cast<AliAnaConvIsolation*>(fAnaIsolationArray->At(i));
-      isoAna->IsIsolated(photon, tracks, leading);
+      if(isoAna)  isoAna->IsIsolated(photon, tracks, leading);
     }
 
     Bool_t isolated = fAnaIsolation->IsIsolated(photon, tracks, leading);
     if(leading) {
       for(Int_t i = 0; i < fAnaPhotonArray->GetEntriesFast(); i ++) {
 	AliAnaConvCorrPhoton * ana = static_cast<AliAnaConvCorrPhoton*>(fAnaPhotonArray->At(i));
-	if(ana && tracks) {
+	if(ana) {
 	  ana->CorrelateWithHadrons(photon, tracks, isolated, decayPion);
 	} 
       }
@@ -299,7 +303,7 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
       if(jets) {
 	for(Int_t i = 0; i < fAnaPhotonJetArray->GetEntriesFast(); i ++) {
 	  AliAnaConvCorrPhotonJet * ana = static_cast<AliAnaConvCorrPhotonJet*>(fAnaPhotonJetArray->At(i));
-	  if(ana && tracks) {
+	  if(ana) {
 	    ana->CorrelateWithHadrons(photon, jets, isolated);
 	  } 
 	}
@@ -307,7 +311,7 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
 	cout << "No jets "<<endl;
       }
     } 
-    if (photon && delP) delete photon;
+    if (delP) delete photon;
   } // 
 }
 
@@ -342,14 +346,14 @@ void AliAnalysisTaskGammaJet::ProcessPions( const TClonesArray * const pions, co
 
     for(Int_t i = 0; i < fAnaIsolationArray->GetEntriesFast(); i ++) {
       AliAnaConvIsolation * isoAna = dynamic_cast<AliAnaConvIsolation*>(fAnaIsolationArray->At(i));
-      isoAna->IsIsolated(pion, tracks, 4, trackLabels, leading);
+      if(isoAna) isoAna->IsIsolated(pion, tracks, 4, trackLabels, leading);
     }
 
     Bool_t isolated = fAnaIsolation->IsIsolated(pion, tracks, 4, trackLabels, leading);
     if(leading) {
       for(Int_t i = 0; i < fAnaPionArray->GetEntriesFast(); i ++) {
 	AliAnaConvCorrPion * ana = dynamic_cast<AliAnaConvCorrPion*>(fAnaPionArray->At(i));
-	ana->CorrelateWithHadrons(pion, tracks, isolated, 4, trackLabels );
+	if(ana) ana->CorrelateWithHadrons(pion, tracks, isolated, 4, trackLabels );
       }
     } 
     if (delP) delete pion;
