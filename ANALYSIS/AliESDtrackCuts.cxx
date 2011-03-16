@@ -935,7 +935,10 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
   Float_t nCrossedRowsTPC = esdTrack->GetTPCClusterInfo(2,1); 
-  Float_t  ratioCrossedRowsOverFindableClustersTPC = esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF();
+  Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+  if (esdTrack->GetTPCNclsF()>0) {
+    ratioCrossedRowsOverFindableClustersTPC = esdTrack->GetTPCClusterInfo(2,1)/esdTrack->GetTPCNclsF();
+  }
   
   Int_t nClustersTPCShared = esdTrack->GetTPCnclsS();
   Float_t fracClustersTPCShared = -1.;
