@@ -437,7 +437,7 @@ AliFMDCorrector::RingHistos::Output(TList* dir)
 
 //____________________________________________________________________
 void
-AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t nEvents)
+AliFMDCorrector::RingHistos::ScaleHistograms(TList* dir, Int_t /*nEvents*/)
 { 
   // 
   // Scale the histograms to the total number of events 

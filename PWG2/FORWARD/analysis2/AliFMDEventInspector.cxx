@@ -397,7 +397,7 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
     // AliInfo(Form("Got centrality object %p with quality %d", 
     //              centObj, centObj->GetQuality()));
     // centObj->Print();
-    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
+    cent = centObj->GetCentralityPercentile("V0M");  
   }
   // AliInfo(Form("Centrality is %f", cent));
   fHCent->Fill(cent);
