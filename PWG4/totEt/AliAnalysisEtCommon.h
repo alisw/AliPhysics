@@ -153,6 +153,7 @@ protected:
     Float_t ProtonBaryonEnhancement(Float_t pt);//Function which gives the factor to reweigh a lambda or antilambda so it roughly matches baryon enhancement seen at RHIC
     TString fCentralityMethod;//string specifying the centrality method, see https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
     Int_t fNCentBins;//number of centrality bins (10 or 20)
+    Int_t fCentBin;//current centrality bin
 
 
  private:
