@@ -87,6 +87,7 @@ AliAnalysisEtCommon::AliAnalysisEtCommon() : TObject()
 					   ,fProtonEnhancement(0)
 					   ,fCentralityMethod("V0M")
 					   ,fNCentBins(20)
+					   ,fCentBin(-1)
 {//default constructor
 
 }
