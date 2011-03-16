@@ -40,55 +40,59 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   virtual void FillCellHists();
   virtual void FillClusHists();
   virtual void FillPionHists();
+  virtual void ClusterAfterburner();
 
   Double_t     GetMaxCellEnergy(AliVCluster *c);
-  Double_t     GetSigmaMax(AliVCluster *c);
+  void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin);
 
     // input members
-  Double_t               fAsymMax;              // energy asymmetry max (def=1)
-  TString                fCentVar;              // variable for centrality determination
-  Double_t               fCentFrom;             // min centrality (def=0)
-  Double_t               fCentTo;               // max centrality (def=100)
-  Double_t               fVtxZMin;              // min primary vertex z (def=-10cm)
-  Double_t               fVtxZMax;              // max primary vertex z (def=+10cm)
-  Bool_t                 fUseQualFlag;          // if true use quality flag for centrality
-  TString                fClusName;             // cluster branch name (def="")
-  Bool_t                 fDoNtuple;             // if true write out ntuple
+  Double_t               fAsymMax;                // energy asymmetry max (def=1)
+  TString                fCentVar;                // variable for centrality determination
+  Double_t               fCentFrom;               // min centrality (def=0)
+  Double_t               fCentTo;                 // max centrality (def=100)
+  Double_t               fVtxZMin;                // min primary vertex z (def=-10cm)
+  Double_t               fVtxZMax;                // max primary vertex z (def=+10cm)
+  Bool_t                 fUseQualFlag;            // if true use quality flag for centrality
+  TString                fClusName;               // cluster branch name (def="")
+  Bool_t                 fDoNtuple;               // if true write out ntuple
     // derived members (ie with ! after //)
-  AliEMCALGeoUtils      *fGeom;                 //! geometry utils
-  TList                 *fOutput;               //!container of output histograms
-  AliESDEvent           *fEsdEv;                //!pointer to input esd event
-  AliAODEvent           *fAodEv;                //!pointer to input aod event
-  TObjArray             *fRecPoints;            //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
-  TObjArray             *fEsdClusters;          //!pointer to esd clusters
-  AliESDCaloCells       *fEsdCells;             //!pointer to esd cells
-  TObjArray             *fAodClusters;          //!pointer to aod clusters
-  AliAODCaloCells       *fAodCells;             //!pointer to aod cells
-  TAxis                 *fPtRanges;             //!pointer to pt ranges
-  TNtuple               *fNtuple;               //!pointer to ntuple
+  AliEMCALGeoUtils      *fGeom;                   //! geometry utils
+  TList                 *fOutput;                 //!container of output histograms
+  AliESDEvent           *fEsdEv;                  //!pointer to input esd event
+  AliAODEvent           *fAodEv;                  //!pointer to input aod event
+  TObjArray             *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
+  TObjArray             *fEsdClusters;            //!pointer to esd clusters
+  AliESDCaloCells       *fEsdCells;               //!pointer to esd cells
+  TObjArray             *fAodClusters;            //!pointer to aod clusters
+  AliAODCaloCells       *fAodCells;               //!pointer to aod cells
+  TAxis                 *fPtRanges;               //!pointer to pt ranges
+  TNtuple               *fNtuple;                 //!pointer to ntuple
     // histograms
-  TH1F                  *fHCuts;                //!histo for cuts
-  TH1F                  *fHVertexZ;             //!histo for vtxz
-  TH1F                  *fHVertexZ2;            //!histo for vtxz after vtx cuts
-  TH1F                  *fHCent;                //!histo for cent
-  TH1F                  *fHCentQual;            //!histo for cent after quality flag cut
+  TH1F                  *fHCuts;                  //!histo for cuts
+  TH1F                  *fHVertexZ;               //!histo for vtxz
+  TH1F                  *fHVertexZ2;              //!histo for vtxz after vtx cuts
+  TH1F                  *fHCent;                  //!histo for cent
+  TH1F                  *fHCentQual;              //!histo for cent after quality flag cut
     // histograms for cells
-  TH2F                 **fHColuRow;             //!histo for cell column and row
-  TH2F                 **fHColuRowE;            //!histo for cell column and row weight energy
-  TH1F                 **fHCellMult;            //!histo for cell multiplicity in module
-  TH1F                  *fHCellE;               //!histo for cell energy
-  TH1F                  *fHCellH;               //!histo for highest cell energy
+  TH2F                 **fHColuRow;               //!histo for cell column and row
+  TH2F                 **fHColuRowE;              //!histo for cell column and row weight energy
+  TH1F                 **fHCellMult;              //!histo for cell multiplicity in module
+  TH1F                  *fHCellE;                 //!histo for cell energy
+  TH1F                  *fHCellH;                 //!histo for highest cell energy
+  TH1F                  *fHCellM;                 //!histo for mean cell energy
     // histograms for clusters
-  TH2F                  *fHClustEtaPhi;         //!histo for cluster eta vs. phi
-  TH2F                  *fHClustEnergyPt;       //!histo for cluster energy vs. pT
-  TH2F                  *fHClustEnergySigma;    //!histo for cluster energy vs. variance over long axis 
-  TH2F                  *fHClustSigmaSigma;     //!histo for sigma vs. lambda_0 comparison
-  TH2F                  *fHClustNTowEnergyRatio;//!histo for cluster n tow vs. energy ratio
+  TH1F                  *fHClustEccentricity;     //!histo for cluster eccentricity
+  TH2F                  *fHClustEtaPhi;           //!histo for cluster eta vs. phi
+  TH2F                  *fHClustEnergyPt;         //!histo for cluster energy vs. pT
+  TH2F                  *fHClustEnergySigma;      //!histo for cluster energy vs. variance over long axis 
+  TH2F                  *fHClustSigmaSigma;       //!histo for sigma vs. lambda_0 comparison
+  TH2F                  *fHClustNCellEnergyRatio; //!histo for cluster n tow vs. energy ratio
     // histograms for pion candidates
-  TH2F                  *fHPionEtaPhi;          //!histo for pion eta vs. phi
-  TH2F                  *fHPionMggPt;           //!histo for pion mass vs. pT
-  TH2F                  *fHPionMggAsym;         //!histo for pion mass vs. asym
-  TH1F                  *fHPionInvMasses[20];   //!histos for invariant mass plots 
+  TH2F                  *fHPionEtaPhi;            //!histo for pion eta vs. phi
+  TH2F                  *fHPionMggPt;             //!histo for pion mass vs. pT
+  TH2F                  *fHPionMggAsym;           //!histo for pion mass vs. asym
+  TH2F                  *fHPionMggDgg;            //!histo for pion mass vs. opening angle
+  TH1F                  *fHPionInvMasses[20];     //!histos for invariant mass plots 
 
  private:
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
