@@ -356,12 +356,12 @@ Bool_t AliPHOSRawFitterv3::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       spectrum_1->SetRightMargin(0.05);
 
       char title[155] ;
-      sprintf(title,"Sample, mod=%d, x=%d, z=%d, Quality=%5.1f",fModule,fCellX,fCellZ,fQuality) ;
+      snprintf(title,155,"Sample, mod=%d, x=%d, z=%d, Quality=%5.1f",fModule,fCellX,fCellZ,fQuality) ;
       h->SetTitle(title) ;
       h->Draw() ;
       fffit->Draw("same") ;
 
-      sprintf(title,"mod%d_x%d_z%d_HG_qu%4.1f",fModule,fCellX,fCellZ,fQuality) ;
+      snprintf(title,155,"mod%d_x%d_z%d_HG_qu%4.1f",fModule,fCellX,fCellZ,fQuality) ;
       TFile fout("samples_bad.root","update") ;
       h->Write(title);
       fout.Close() ;
