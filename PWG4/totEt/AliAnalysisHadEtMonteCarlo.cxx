@@ -47,7 +47,6 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fInvestigatePiKP(0)
 							,fRequireITSHits(0)
 							,fBaryonEnhancement(0)
-							,fCentBin(-1)
 							,fPtSmearer(0)
 {
 }
@@ -1121,6 +1120,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     if(fSimTotEt>0.0)FillHisto1D("SimTotEt",fSimTotEt,1.0);
     if(fSimHadEt>0.0)FillHisto1D("SimHadEt",fSimHadEt,1.0);
     if(fSimPiKPEt>0.0)FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
+    if(fCentBin != -1){//if we have Pb+Pb and a centrality bin was found
+      if(fSimTotEt>0.0) FillHisto1D(Form("SimTotEtCB%i",fCentBin),fSimTotEt,1.0);
+      if(fSimHadEt>0.0) FillHisto1D(Form("SimHadEtCB%i",fCentBin),fSimHadEt,1.0);
+      if(fSimPiKPEt>0.0)FillHisto1D(Form("SimPiKPEtCB%i",fCentBin),fSimPiKPEt,1.0);
+    }
 
     if(fInvestigateSmearing){
       //Smearing histograms
@@ -1412,7 +1416,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
-  if(fDataSet==20100) maxEt=5000.0;
+  if(fDataSet==20100) maxEt=3000.0;
   Int_t nbinsEt = 100;
   char histoname[200];
   char histotitle[200];
@@ -1489,6 +1493,14 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimPiKPEt","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+  if(fDataSet==20100){
+    Int_t width = 5;
+    if(fNCentBins<20) width = 10;
+    for(Int_t j=0;j<fNCentBins;j++){
+      CreateHisto1D(Form("SimTotEtCB%i",j),Form("Simulated Total E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+      CreateHisto1D(Form("SimHadEtCB%i",j),Form("Simulated Hadronic E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+    }
+  }
 
   etDiff = 0.15;
 
