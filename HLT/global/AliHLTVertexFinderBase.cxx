@@ -201,6 +201,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
   }
 
   //Add v0s.
+  if (v0Data) {
   const int* v0s = static_cast<const int*>(v0Data);
   const int nV0s = v0s[0];
   ++v0s;
@@ -231,6 +232,7 @@ void AliHLTVertexFinderBase::FillESD(AliESDEvent* esd, AliKFVertex* vtx,
       constrainedToVtx[iTr] = true;
       constrainedToVtx[jTr] = true;
     }
+  }
   }
 }
 
