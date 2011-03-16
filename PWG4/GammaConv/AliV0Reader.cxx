@@ -1212,7 +1212,7 @@ Bool_t AliV0Reader::UpdateV0Information(){
   if(fUseKFParticle){
     fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeKFParticle->Px(),fCurrentNegativeKFParticle->Py(),fCurrentNegativeKFParticle->Pz());
   }
-  else if(fUseESDTrack){
+  else  { //if(fUseESDTrack){
     fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeESDTrack->Px(),fCurrentNegativeESDTrack->Py(),fCurrentNegativeESDTrack->Pz());
   }
 	
