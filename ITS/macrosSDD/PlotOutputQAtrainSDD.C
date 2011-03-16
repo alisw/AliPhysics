@@ -189,7 +189,6 @@ void PlotOutputQAtrainSDD(TString option="local",
       h2dmodT4N->SetBinContent(iDet,iLad,tpsN);
     }
   }
-
   gStyle->SetPalette(1);
 
   if(hmodR->GetEntries()>0){
@@ -230,41 +229,44 @@ void PlotOutputQAtrainSDD(TString option="local",
     h2dmodR4N->GetYaxis()->SetTitle("Ladder");
     cmodR->Update();
   }
-    
-  TCanvas* cmodT=new TCanvas("cmodT","TrackPoint Occup",1200,1200);
-  cmodT->Divide(2,3);
-  cmodT->cd(1);
-  hmodT->Draw();
-  hmodT->GetXaxis()->SetTitle("SDD Module Id");
-  hmodT->GetYaxis()->SetTitle("TrackPoints");
-  hmodT->GetYaxis()->SetTitleOffset(1.4);
-  cmodT->cd(2);
-  gPad->SetLeftMargin(0.14);
-  hmodTN->Draw("E");
-  hmodTN->GetXaxis()->SetTitle("SDD Module Id");
-  hmodTN->GetYaxis()->SetTitle("TrackPoints");
-  hmodTN->GetYaxis()->SetTitleOffset(1.4);
-  cmodT->cd(3);
-  gPad->SetLeftMargin(0.14);
-  h2dmodT3->Draw("colz");
-  h2dmodT3->GetXaxis()->SetTitle("Detector");
-  h2dmodT3->GetYaxis()->SetTitle("Ladder");
-  cmodT->cd(4);
-  gPad->SetLeftMargin(0.14);
-  h2dmodT3N->Draw("colz");
-  h2dmodT3N->GetXaxis()->SetTitle("Detector");
-  h2dmodT3N->GetYaxis()->SetTitle("Ladder");  
-  cmodT->cd(5);
-  gPad->SetLeftMargin(0.14);
-  h2dmodT4->Draw("colz");
-  h2dmodT4->GetXaxis()->SetTitle("Detector");
-  h2dmodT4->GetYaxis()->SetTitle("Ladder");
-  cmodT->cd(6);
-  gPad->SetLeftMargin(0.14);
-  h2dmodT4N->Draw("colz");
-  h2dmodT4N->GetXaxis()->SetTitle("Detector");
-  h2dmodT4N->GetYaxis()->SetTitle("Ladder");
-  cmodT->Update();
+
+
+  if(hmodT->GetEntries()>0){
+    TCanvas* cmodT=new TCanvas("cmodT","TrackPoint Occup",1200,1200);
+    cmodT->Divide(2,3);
+    cmodT->cd(1);
+    hmodT->Draw();
+    hmodT->GetXaxis()->SetTitle("SDD Module Id");
+    hmodT->GetYaxis()->SetTitle("TrackPoints");
+    hmodT->GetYaxis()->SetTitleOffset(1.4);
+    cmodT->cd(2);
+    gPad->SetLeftMargin(0.14);
+    hmodTN->Draw("E");
+    hmodTN->GetXaxis()->SetTitle("SDD Module Id");
+    hmodTN->GetYaxis()->SetTitle("TrackPoints");
+    hmodTN->GetYaxis()->SetTitleOffset(1.4);
+    cmodT->cd(3);
+    gPad->SetLeftMargin(0.14);
+    h2dmodT3->Draw("colz");
+    h2dmodT3->GetXaxis()->SetTitle("Detector");
+    h2dmodT3->GetYaxis()->SetTitle("Ladder");
+    cmodT->cd(4);
+    gPad->SetLeftMargin(0.14);
+    h2dmodT3N->Draw("colz");
+    h2dmodT3N->GetXaxis()->SetTitle("Detector");
+    h2dmodT3N->GetYaxis()->SetTitle("Ladder");  
+    cmodT->cd(5);
+    gPad->SetLeftMargin(0.14);
+    h2dmodT4->Draw("colz");
+    h2dmodT4->GetXaxis()->SetTitle("Detector");
+    h2dmodT4->GetYaxis()->SetTitle("Ladder");
+    cmodT->cd(6);
+    gPad->SetLeftMargin(0.14);
+    h2dmodT4N->Draw("colz");
+    h2dmodT4N->GetXaxis()->SetTitle("Detector");
+    h2dmodT4N->GetYaxis()->SetTitle("Ladder");
+    cmodT->Update();
+  }
 
   TH1F* htplad3=(TH1F*)l->FindObject("hTPLad3");
   TH1F* htplad4=(TH1F*)l->FindObject("hTPLad4");
@@ -296,7 +298,7 @@ void PlotOutputQAtrainSDD(TString option="local",
     hnormOcc4->SetBinError(ilad+1,eocc);
   }
 
- 
+
   if(tpok){
     TCanvas* cn0=new TCanvas("cn0","Normalized Ladder Occupancy",1400,600);
     cn0->Divide(2,1);
@@ -314,20 +316,23 @@ void PlotOutputQAtrainSDD(TString option="local",
     hnormOcc4->GetYaxis()->SetTitleOffset(1.35);
     cn0->Update();
   }
+
   if(hcllay){
     Double_t norm=hcllay->GetBinContent(1);
-    hcllay->Scale(1./norm);
-    hcllay->SetTitle("");
-    hcllay->GetXaxis()->SetRange(2,7);
-    hcllay->SetMinimum(0.);
-    hcllay->SetMaximum(1.1);
-    hcllay->SetMarkerStyle(23);
-    TCanvas* ceffL=new TCanvas("ceffL","PointPerLayer",1000,600);
-    ceffL->SetGridy();
-    hcllay->Draw();
-    hcllay->GetXaxis()->SetTitle("Layer");
-    hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
-    ceffL->Update();
+    if(norm>0.){
+      hcllay->Scale(1./norm);
+      hcllay->SetTitle("");
+      hcllay->GetXaxis()->SetRange(2,7);
+      hcllay->SetMinimum(0.);
+      hcllay->SetMaximum(1.1);
+      hcllay->SetMarkerStyle(23);
+      TCanvas* ceffL=new TCanvas("ceffL","PointPerLayer",1000,600);
+      ceffL->SetGridy();
+      hcllay->Draw();
+      hcllay->GetXaxis()->SetTitle("Layer");
+      hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
+      ceffL->Update();
+    }
   }
 
   hgpmod->SetTitle("");
