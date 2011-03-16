@@ -545,23 +545,24 @@ AliEveTrack* AliHLTEveHLT::MakeEsdTrack (AliESDtrack *at, TEveTrackList* cont) {
     // set a reference at the half of trajectory for better drawing
     //
     
-    for( double dxx=dx/2; ok && TMath::Abs(dxx)>=1.; dxx*=.9 ){
+    if( ok ){ 
+      double dxx=dx/2; 
+      if( TMath::Abs(dxx)>=1. ){
 
-      if( !t.TransportToX(x0+dxx, bz, .999 ) ){
-	ok = 0;
-	break;
+	if( !t.TransportToX(x0+dxx, bz, .999 ) ){
+	  ok = 0;
+	} else {
+	  AliExternalTrackParam tt;
+	  AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
+	  tt.GetXYZ(vbuf);
+	  tt.GetPxPyPz(pbuf);
+	  TEvePathMark midPoint(TEvePathMark::kReference);
+	  midPoint.fV.Set(vbuf);
+	  midPoint.fP.Set(pbuf);    
+	  track->AddPathMark( midPoint );     
+	}
       }
-      AliExternalTrackParam tt;
-      AliHLTTPCCATrackConvertor::GetExtParam( t, tt, trackParam.GetAlpha() ); 
-      tt.GetXYZ(vbuf);
-      tt.GetPxPyPz(pbuf);
-      TEvePathMark midPoint(TEvePathMark::kReference);
-      midPoint.fV.Set(vbuf);
-      midPoint.fP.Set(pbuf);    
-      track->AddPathMark( midPoint );
-      break;
     }
- 
    
     //
     // Set a reference at the end of the trajectory
