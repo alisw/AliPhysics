@@ -214,7 +214,7 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
   sName = "Control_Flow_MultPOIvsRP_";
   sName +=anInput;
-  fHistMultPOIvsRP = new TH2F(sName.Data(), sName.Data(),100, dMultMin, dMultMax,100, dMultMin, dMultMax);
+  fHistMultPOIvsRP = new TH2F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax,100, dMultMin, dMultMax);
   fHistMultPOIvsRP->SetXTitle("Multiplicity for RP selection");
   fHistMultPOIvsRP->SetYTitle("Multiplicity for POI selection");
 
