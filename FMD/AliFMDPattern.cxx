@@ -55,6 +55,7 @@
 #include "AliESDVertex.h"
 // #include <AliLog.h>
 #include "AliFMDDebug.h" // Better debug macros
+// #include "AliPhysicsSelection.h"
 class AliFMDDetector;
 
 //____________________________________________________________________
@@ -90,7 +91,7 @@ AliFMDPattern::AliFMDPatternDetector::~AliFMDPatternDetector()
 
 //____________________________________________________________________
 void
-AliFMDPattern::AliFMDPatternDetector::DrawShape(TObjArray& a) 
+AliFMDPattern::AliFMDPatternDetector::DrawShape(const TObjArray& a) 
 {
   // Draw all shapes. 
   // 
@@ -108,12 +109,22 @@ AliFMDPattern::AliFMDPatternDetector::DrawShape(TObjArray& a)
 
 //____________________________________________________________________
 void
-AliFMDPattern::AliFMDPatternDetector::CopyShapes(TObjArray& src, 
+AliFMDPattern::AliFMDPatternDetector::CopyShapes(const TObjArray& src, 
 						 TObjArray& dest, 
 						 Double_t ang, 
 						 Double_t fx, 
 						 Double_t fy)
 {
+  // 
+  // Copy shapes
+  // 
+  // Parameters:
+  //    input  Source
+  //    own    Ours
+  //    ang    Angle 
+  //    fx     Factor x
+  //    fy     Factor y
+  //
   TIter     next(&src);
   TGraph*   g = 0;
   while ((g = static_cast<TGraph*>(next()))) { 
@@ -253,8 +264,9 @@ AliFMDPattern::AliFMDPatternDetector::AddMarker(Double_t x,
   //	X,Y,Z		Coordiantes 
   //	MAX		Maximum value. 
   // 
-  /** Sigh, for some odd reason, the code-checker does not recognise
-      this a usage of the TMath namespace declaration! Idiot */
+  // Sigh, for some odd reason, the code-checker does not recognise
+  // this a usage of the TMath namespace declaration! Idiot 
+  // 
   Int_t i = TMath::Min(Int_t(fCounts.fN * s / max),  
 		       Int_t(fGraphs.GetEntries()-1));
   if (i < 0 || i >= fCounts.fN) { 
@@ -291,8 +303,7 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
     fTotal(.2, .35, "Total:   "), 
     fFMD1Area(0),
     fFMD2Area(0),
-    fFMD3Area(0),
-    fPhysicsSelection(0)
+    fFMD3Area(0)// ,fPhysicsSelection(0)
 {
   // Constructor. 
   // 
@@ -303,7 +314,7 @@ AliFMDPattern::AliFMDPattern(const char* gAliceFile)
 
   SetName("AliFMDPattern");
   SetName("2D display of FMD data");
-  fPhysicsSelection = new AliPhysicsSelection();
+  // fPhysicsSelection = new AliPhysicsSelection();
   // RemoveLoad(kGeometry);
   fEvent.SetBit(TLatex::kTextNDC);
   fFMD1Sum.SetBit(TLatex::kTextNDC);
@@ -459,6 +470,7 @@ AliFMDPattern::Begin(Int_t event)
   fFMD2.Clear();
   fFMD3.Clear();
   
+#if 0
   TString triggers = fESDEvent->GetFiredTriggerClasses();
   const AliESDVertex* vertex = fESDEvent->GetPrimaryVertexSPD();
   Double_t vertexXYZ[3];
@@ -466,7 +478,7 @@ AliFMDPattern::Begin(Int_t event)
   const AliMultiplicity* mult = fESDEvent->GetMultiplicity();
   Int_t nTrackLets = mult->GetNumberOfTracklets();
   std::cout<<triggers.Data()<<"  "<<fPhysicsSelection->IsCollisionCandidate(fESDEvent)<<"    "<<nTrackLets<<"   "<<vertexXYZ[0]<<"   "<<vertexXYZ[1]<<"   "<<vertexXYZ[2]<<std::endl;
-  
+#endif   
   
   return AliFMDInput::Begin(event);
 }

@@ -110,7 +110,7 @@ protected:
    *
    * @return  Ring volume 
    */
-  virtual TGeoVolume* RingGeometry(AliFMDRing* r);
+  virtual TGeoVolume* RingGeometry(const AliFMDRing* r);
 
   /** 
    * Make a honey comb shape from passed parameters.
@@ -135,17 +135,21 @@ protected:
    * @return 
    */
   virtual TGeoVolume* TensionBox();
-  /** Make a detector volume 
-      @param d Detector geometry 
-      @param motherTop Mother volume (detector volume)
-      @param motherBot Mother volume (detector volume)
-      @param zmother Z position of mother 
-      @param innerTop Inner ring volume 
-      @param innerBot Inner ring volume 
-      @param outerTop Outer ring volume 
-      @param outerBot Outer ring volume 
-      @return  Detector volume */
-  virtual TGeoVolume* DetectorGeometry(AliFMDDetector* d, 
+  /** 
+   * Make a detector volume 
+   *
+   * @param d Detector geometry 
+   * @param motherTop Mother volume (detector volume)
+   * @param motherBot Mother volume (detector volume)
+   * @param zmother Z position of mother 
+   * @param innerTop Inner ring volume 
+   * @param innerBot Inner ring volume 
+   * @param outerTop Outer ring volume 
+   * @param outerBot Outer ring volume 
+   *
+   * @return  Detector volume 
+   */
+  virtual TGeoVolume* DetectorGeometry(const AliFMDDetector* d, 
 				       TGeoVolume* motherTop, 
 				       TGeoVolume* motherBot, 
 				       Double_t    zmother, 
@@ -153,12 +157,15 @@ protected:
 				       TGeoVolume* innerBot, 
 				       TGeoVolume* outerTop=0,
 				       TGeoVolume* outerBot=0);
-  /** Make FMD1 volume 
-      @param d Detector geometry 
-      @param innerTop Inner ring volume 
-      @param innerBot Inner ring volume 
-      @return FMD1 volume  */
-  virtual TGeoVolume* FMD1Geometry(AliFMD1* d, 
+  /** 
+   * Make FMD1 volume 
+   *
+   * @param d Detector geometry 
+   * @param innerTop Inner ring volume 
+   * @param innerBot Inner ring volume 
+   * @return FMD1 volume  
+   */
+  virtual TGeoVolume* FMD1Geometry(const AliFMD1* d, 
 				   TGeoVolume* innerTop,
 				   TGeoVolume* innerBot);
   /** 
@@ -172,7 +179,7 @@ protected:
    *
    * @return FMD2 volume  
    */
-  virtual TGeoVolume* FMD2Geometry(AliFMD2* d, 
+  virtual TGeoVolume* FMD2Geometry(const AliFMD2* d, 
 				   TGeoVolume* innerTop, 
 				   TGeoVolume* innerBot, 
 				   TGeoVolume* outerTop,
@@ -188,7 +195,7 @@ protected:
    *
    * @return FMD3 volume  
    */
-  virtual TGeoVolume* FMD3Geometry(AliFMD3* d, 
+  virtual TGeoVolume* FMD3Geometry(const AliFMD3* d, 
 				   TGeoVolume* innerTop, 
 				   TGeoVolume* innerBot, 
 				   TGeoVolume* outerTop,

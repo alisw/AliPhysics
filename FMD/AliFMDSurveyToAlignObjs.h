@@ -165,9 +165,9 @@ protected:
    * 
    * @return Newly 
    */
-  Bool_t MakeDelta(TGeoMatrix*  global,
-		   Double_t*    rot, 
-		   Double_t*    trans,
+  Bool_t MakeDelta(const TGeoMatrix*  global,
+		   const Double_t*    rot, 
+		   const Double_t*    trans,
 		   TGeoHMatrix& delta) const;
   /** 
    * Create a delta transform from a global rotation matrix and
@@ -181,8 +181,8 @@ protected:
    * @return Newly 
    */
   Bool_t MakeDelta(const char*  path, 
-		   Double_t*    rot, 
-		   Double_t*    trans,
+		   const Double_t*    rot, 
+		   const Double_t*    trans,
 		   TGeoHMatrix& delta) const;
   /** 
    * Service member function to print a vector

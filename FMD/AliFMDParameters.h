@@ -24,19 +24,7 @@
 #ifndef ROOT_TArrayI
 # include <TArrayI.h>
 #endif
-#ifndef ALIFMDUSHORTMAP_H
-# include <AliFMDUShortMap.h>
-#endif
-#ifndef ALIFMDBOOLMAP_H
-# include <AliFMDBoolMap.h>
-#endif
-typedef AliFMDUShortMap AliFMDCalibZeroSuppression;
-typedef AliFMDBoolMap   AliFMDCalibDeadMap;
-class AliFMDCalibPedestal;
-class AliFMDCalibGain;
-class AliFMDCalibSampleRate;
-class AliFMDCalibStripRange;
-class AliFMDAltroMapping;
+#include "AliFMDCalibFwd.h"
 class AliCDBEntry;
 class AliFMDPreprocessor;
 
@@ -100,16 +88,29 @@ public:
 	    kZeroSuppression|kAltroMap|kStripRange)
   };
     
-  /** Singleton access
-      @return  single to */
+  /** 
+   * Singleton access
+   * 
+   * 
+   * @return singleton
+   */
   static AliFMDParameters* Instance();
 
-  /** Initialize the manager.  This tries to read the parameters from
-      CDB.  If that fails, the class uses the hard-coded parameters. 
+  /** 
+   * Initialize the manager.  This tries to read the parameters from
+   * CDB.  If that fails, the class uses the hard-coded parameters.
+   *
+   * @param forceReInit Force (re-)initalize flag
+   * @param what        What to initialize 
    */
   void Init(Bool_t forceReInit=kFALSE, UInt_t what=kAll );
-  /** Initialize the manager.  This tries to read the parameters from
-      CDB.  If that fails, the class uses the hard-coded parameters. 
+  /** 
+   * Initialize the manager.  This tries to read the parameters from
+   * CDB.  If that fails, the class uses the hard-coded parameters.
+   * 
+   * @param pp          Preprocessor 
+   * @param forceReInit Force (re-)initalize flag
+   * @param what        What to initialize 
    */
   void Init(AliFMDPreprocessor* pp, 
 	    Bool_t              forceReInit=kFALSE, 
@@ -158,326 +159,429 @@ public:
    * channel is considered dead. 
    */
   void MakeDeadMap(Float_t maxNoise=10, Float_t minGain=.1, Float_t maxGain=10);
-  /** Print all parameters. 
-      @param option Option string */
+  /** 
+   * Print all parameters. 
+   *
+   * If option contains an 'A' then everything is printed. 
+   *
+   * If the option contains the string "FMD" the function will search 
+   * for detector, ring, sector, and strip numbers to print, in 
+   * format 
+   *
+   * @verbatim 
+   *    FMD<detector><ring>[<sector>,<string>] 
+   * @endverbatim 
+   *
+   * The wild card '*' means all of <detector>, <ring>, <sector>, or 
+   * <strip>. 
+   *
+   * @param option Option string 
+   */
   void Print(Option_t* option="A") const;
-  /** Draw parameters. 
-      @param option What to draw. Should be one of 
-      - dead	  Dead channels
-      - threshold Threshold
-      - gain	  Gain
-      - pedestal  Pedestal
-      - noise	  Noise (or pedestal width)
-      - zero	  Zero suppression
-      - rate	  Sampling rate (VA1 clock / ALTRO clock)
-      - min	  Minimum strip read out
-      - max 	  Maximum strip read out
-      - map	  hardware address
-  */
+  /** 
+   * Draw parameters. 
+   *
+   * @param option What to draw. Should be one of 
+   * - dead	  Dead channels
+   * - threshold Threshold
+   * - gain	  Gain
+   * - pedestal  Pedestal
+   * - noise	  Noise (or pedestal width)
+   * - zero	  Zero suppression
+   * - rate	  Sampling rate (VA1 clock / ALTRO clock)
+   * - min	  Minimum strip read out
+   * - max 	  Maximum strip read out
+   * - map	  hardware address
+   */
   void Draw(Option_t* option="pedestal");
   
   /** @{ */
   /** @name Set various `Fixed' parameters */
-  /** @param r How many MIP signals we can fit in the VA1
-      pre-amps. (default and design is 20) */
+  /** 
+   * @param r How many MIP signals we can fit in the VA1
+   * pre-amps. (default and design is 20) 
+   */
   void SetVA1MipRange(UShort_t r=20)          { fVA1MipRange = r; }
-  /** @param s Maximum number of the ADC (ALTRO).  This is a 10 bit
-      ADC so, the maximum number is 1024 */
+  /** 
+   * @param s Maximum number of the ADC (ALTRO).  This is a 10 bit
+   * ADC so, the maximum number is 1024 
+   */
   void SetAltroChannelSize(UShort_t s=1024)   { fAltroChannelSize = s;}
-  /** @param size The number of strips multiplexed into one ALTRO
-      channel. That is, how many strips is connected to one VA1
-      pre-amp. */
+  /** 
+   * @param size The number of strips multiplexed into one ALTRO
+   * channel. That is, how many strips is connected to one VA1
+   * pre-amp. 
+   */
   void SetChannelsPerAltro(UShort_t size=128) { fChannelsPerAltro = size; }
-  /** @param f Factor to use for accepting a signal. */
+  /** 
+   * @param f Factor to use for accepting a signal. 
+   */
   void SetPedestalFactor(Float_t f=3)         { fPedestalFactor = f; }
-  /** @param n Number of pre-samples to keep during zero-suppression -
-      only used in simulation. */
+  /** 
+   * @param n Number of pre-samples to keep during zero-suppression -
+   * only used in simulation. 
+   */
   void SetZSPreSamples(UShort_t n=1) { fZSPre = (n & 0x3); }
-  /** @param n Number of post-samples to keep during zero-suppression -
-      only used in simulation. */
+  /** 
+   * @param n Number of post-samples to keep during zero-suppression -
+   * only used in simulation. 
+   */
   void SetZSPostSamples(UShort_t n=1) { fZSPost = (n & 0x3); }
-  /** @param use If true, do pedestal subtraction before zero
-      suppression - only used in simulation */
+  /** 
+   * @param use If true, do pedestal subtraction before zero
+   * suppression - only used in simulation 
+   */
   void SetZSPedSubtract(Bool_t use=kTRUE) { fZSPedSubtract = use; }
   /** @} */
 
   /** @{ */
   /** @name Set various variable parameter defaults */
-  /** @param s Zero suppression threshold in ADC counts */
+  /** 
+   * @param s Zero suppression threshold in ADC counts 
+   */
   void SetZeroSuppression(UShort_t s=0)       { fFixedZeroSuppression = s; }
-  /** @param r How many times we oversample each strip. */
+  /** 
+   * @param r How many times we oversample each strip. 
+   */
   void SetSampleRate(UShort_t r=1)            { fFixedSampleRate = r ;}//(r>2?2:r);}
+  /** 
+   * @param r How many times we oversample each strip. 
+   */
   void SetSampleRate(AliFMDCalibSampleRate* r) { fSampleRate = r; }
-  /** @param p Pedestal value in ADC counts */
+  /** 
+   * @param p Pedestal value in ADC counts 
+   */
   void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
-  /** @param p Pedestal map */
+  /** 
+   * @param p Pedestal map 
+   */
   void SetPedestal(AliFMDCalibPedestal* p) { fPedestal = p; }
-  /** @param w Pedestal width in ADC counts */
+  /** 
+   * @param w Pedestal width in ADC counts 
+   */
   void SetPedestalWidth(Float_t w=1)          { fFixedPedestalWidth = w; }
-  /** @param t Threshold used for 1 MIP acceptance. */
+  /** 
+   * @param t Threshold used for 1 MIP acceptance. 
+   */
   void SetThreshold(Float_t t=0)              { fFixedThreshold = t; }
-  /** Range of strips read out 
-      @param min Minimum strip number (0-127). 
-      @param max Maximum strip number (0-127). */
+  /** 
+   * Range of strips read out 
+   *
+   * @param min Minimum strip number (0-127). 
+   * @param max Maximum strip number (0-127). 
+   */
   void SetStripRange(UShort_t min=0, UShort_t max=127);
+  /** 
+   * set the strip range from object
+   * 
+   * @param r Strip range object 
+   */
   void SetStripRange(AliFMDCalibStripRange* r) { fStripRange = r; }
-  /** Whether raw data has full common data header (8 32bit words) or
-      the older invalid format (7 32bit words with bogus entries)
-      @param yes if true the raw data has complete data header */ 
+  /** 
+   * Whether raw data has full common data header (8 32bit words) or
+   * the older invalid format (7 32bit words with bogus entries)
+   *
+   * @param yes if true the raw data has complete data header 
+   */ 
   void UseCompleteHeader(Bool_t yes=kTRUE) { fHasCompleteHeader = yes; } 
-  /** @param g Gain map */
+  /** 
+   * @param g Gain map 
+   */
   void SetGain(AliFMDCalibGain* g) { fPulseGain = g; }
   /** @} */
 
   /** @{ */
   /** @name Get `Fixed' various parameters */
-  /** @return Number of MIP signals that fit inside a VA1 channel  */
+  /** 
+   * @return Number of MIP signals that fit inside a VA1 channel  
+   */
   UShort_t GetVA1MipRange()          const { return fVA1MipRange; }
-  /** @return The maximum count in the ADC */
+  /** 
+   * @return The maximum count in the ADC 
+   */
   UShort_t GetAltroChannelSize()     const { return fAltroChannelSize; }
-  /** @return Number of strips muliplexed into one ADC channel */
+  /** 
+   * @return Number of strips muliplexed into one ADC channel 
+   */
   UShort_t GetChannelsPerAltro()     const { return fChannelsPerAltro; }
-  /** @return The average energy deposited by one MIP */
+  /** 
+   * @return The average energy deposited by one MIP 
+   */
   Float_t  GetEdepMip()              const;
-  /** @return The conversion factor from DAC to ADC */
+  /** 
+   * This is the conversion from Digital-to-Analog-Converter setting
+   * to the number of MIPs. The number was measured in the NBI lab during
+   * August 2008.
+   *
+   * @return The conversion factor from DAC to ADC 
+   */
   Float_t  GetDACPerMIP()              const;
-  /** @return The factor used of signal acceptance */
+  /** 
+   * @return The factor used of signal acceptance 
+   */
   Float_t  GetPedestalFactor()	     const { return fPedestalFactor; }
-  /** @param n Number of pre-samples to keep during zero-suppression -
-      only used in simulation. */
+  /** 
+   * @param n Number of pre-samples to keep during zero-suppression -
+   * only used in simulation. 
+   */
   UShort_t GetZSPreSamples() const { return fZSPre; }
-  /** @param n Number of post-samples to keep during zero-suppression -
-      only used in simulation. */
+  /** 
+   * @param n Number of post-samples to keep during zero-suppression -
+   * only used in simulation. 
+   */
   UShort_t GetZSPostSamples() const { return fZSPost; }
-  /** @param use If true, do pedestal subtraction before zero
-      suppression - only used in simulation */
+  /**
+   * @param use If true, do pedestal subtraction before zero
+   * suppression - only used in simulation 
+   */
   Bool_t IsZSPedSubtract() const { return fZSPedSubtract; }
   /** @} */
-
+  
   /** @{ */
   /** @name Various varible conditions */
-  /** Whether the strip is considered dead
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return @c true if the strip is considered dead, @c false if
-      it's OK. */
+  /** 
+   * Whether the strip is considered dead
+   * 
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return @c true if the strip is considered dead, @c false if it's
+   * OK.
+   */
   Bool_t   IsDead(UShort_t detector, 
 		  Char_t ring, 
 		  UShort_t sector, 
 		  UShort_t strip) const;
+  /** 
+   * Get the threshold in the pulser gain 
+   * 
+   * 
+   * @return Threshold from pulser 
+   */
   Float_t  GetThreshold() const;
-  /** Gain of pre-amp. 
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Gain of pre-amp.  */
+  /** 
+   * Gain of pre-amp. for strip, sector, ring, detector 
+   *
+   * For simulations this is normally set to 
+   *
+   * @f[ 
+   *  \frac{\mbox{VA1_MIP_Range}{\mbox{ALTRO_channel_size}}\mbox{MIP_Energy_Loss}
+   * @f]
+   * 
+   *  
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Gain of pre-amp.  
+   */
   Float_t  GetPulseGain(UShort_t detector, 
 			Char_t ring, 
 			UShort_t sector, 
 			UShort_t strip) const;
-  /** Get mean of pedestal
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Mean of pedestal */
+  /** 
+   * Get mean of pedestal
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Mean of pedestal 
+   */
   Float_t  GetPedestal(UShort_t detector, 
 		       Char_t ring, 
 		       UShort_t sector, 
 		       UShort_t strip) const;
-  /** Width of pedestal
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Width of pedestal */
+  /** 
+   * Width of pedestal
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Width of pedestal 
+   */
   Float_t  GetPedestalWidth(UShort_t detector, 
 			    Char_t ring, 
 			    UShort_t sector, 
 			    UShort_t strip) const;
-  /** zero suppression threshold (in ADC counts)
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return zero suppression threshold (in ADC counts) */
+  /** 
+   * zero suppression threshold (in ADC counts)
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return zero suppression threshold (in ADC counts) 
+   */
   UShort_t GetZeroSuppression(UShort_t detector, 
 			      Char_t ring, 
 			      UShort_t sector, 
 			      UShort_t strip) const;
-  /** Get the sampling rate
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return The sampling rate */
+  /** 
+   * Get the sampling rate
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return The sampling rate 
+   */
   UShort_t GetSampleRate(UShort_t detector, 
 			 Char_t ring, 
 			 UShort_t sector, 
 			 UShort_t strip) const;
-  /** Get the minimum strip in the read-out range
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Minimum strip */
+  /** 
+   * Get the minimum strip in the read-out range
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Minimum strip 
+   */
   UShort_t GetMinStrip(UShort_t detector, 
 		       Char_t ring, 
 		       UShort_t sector, 
 		       UShort_t strip) const;
-  /** Get the maximum strip in the read-out range
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Maximum strip */
+  /** 
+   * Get the maximum strip in the read-out range
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Maximum strip 
+   */
   UShort_t GetMaxStrip(UShort_t detector, 
 		       Char_t ring, 
 		       UShort_t sector, 
 		       UShort_t strip) const;
-  /** Get the number of pre-samples in ALTRO channels
-      @param detector Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sector   Sector number (0-39)
-      @param strip    Strip number (0-511)
-      @return Maximum strip */
+  /** 
+   * Get the number of pre-samples in ALTRO channels
+   *
+   * @param detector Detector # (1-3)
+   * @param ring     Ring ID ('I' or 'O')
+   * @param sector   Sector number (0-39)
+   * @param strip    Strip number (0-511)
+   *
+   * @return Maximum strip 
+   */
   UShort_t GetPreSamples(UShort_t, 
 			 Char_t, 
 			 UShort_t, 
 			 UShort_t) const { return 14+5; }
-  /** @} */
+  /* @}*/
   
-  /** @{ 
-      @name Hardware to detector translation (and inverse) */
-  /** Map a hardware address into a detector index. 
-      @param ddl        Hardware DDL number 
-      @param board      FEC number
-      @param altro      ALTRO number 
-      @param channel    Channel number 
-      @param timebin    Timebin 
-      @param det        On return, the detector #
-      @param ring       On return, the ring ID
-      @param sec        On return, the sector #
-      @param str        On return, the base of strip #
-      @param sam        On return, the sample number for this strip
-      @return @c true on success, false otherwise */
+  /** 
+   * @{ 
+   * @name Hardware to detector translation (and inverse) 
+   */
+  /** 
+   * Map a hardware address into a detector index. 
+   *
+   * @param ddl        Hardware DDL number 
+   * @param board      FEC number
+   * @param altro      ALTRO number 
+   * @param channel    Channel number 
+   * @param timebin    Timebin 
+   * @param det        On return, the detector #
+   * @param ring       On return, the ring ID
+   * @param sec        On return, the sector #
+   * @param str        On return, the base of strip #
+   * @param sam        On return, the sample number for this strip
+   *
+   * @return @c true on success, false otherwise 
+   */
   Bool_t Hardware2Detector(UShort_t    ddl,        UShort_t    board, 
 			   UShort_t    altro,      UShort_t    chan,
 			   UShort_t  timebin,   
 			   UShort_t& det,        Char_t&   ring, 
 			   UShort_t& sec,        Short_t& str,
 			   UShort_t& sam) const;
-  /** Map a hardware address into a detector index. 
-      @param ddl        Hardware DDL number 
-      @param hwaddr     Hardware address.  
-      @param timebin    Timebin 
-      @param det        On return, the detector #
-      @param ring       On return, the ring ID
-      @param sec        On return, the sector #
-      @param str        On return, the base of strip #
-      @param sam        On return, the sample number for this strip
-      @return @c true on success, false otherwise */
+  /** 
+   * Map a hardware address into a detector index. 
+   *
+   * @param ddl        Hardware DDL number 
+   * @param hwaddr     Hardware address.  
+   * @param timebin    Timebin 
+   * @param det        On return, the detector #
+   * @param ring       On return, the ring ID
+   * @param sec        On return, the sector #
+   * @param str        On return, the base of strip #
+   * @param sam        On return, the sample number for this strip
+   *
+   * @return @c true on success, false otherwise 
+   */
   Bool_t Hardware2Detector(UShort_t    ddl,        UShort_t    hwaddr, 
 			   UShort_t  timebin,    
 			   UShort_t& det,        Char_t&   ring, 
 			   UShort_t& sec,        Short_t& str,
 			   UShort_t& sam) const;
-#if 0
-  /** Translate hardware address to detector coordinates 
-      @param ddl      DDL number 
-      @param board    Board address
-      @param chip     Chip #
-      @param channel  Channel #
-      @param det      On return, Detector # (1-3)
-      @param ring     On return, Ring ID ('I' or 'O')
-      @param sec      On return, Sector number (0-39)
-      @param str      On return, Strip number (0-511)
-      @return @c true on success. */
-  Bool_t   Hardware2Detector(UShort_t ddl,    UShort_t    board, 
-			     UShort_t chip,   UShort_t    channel, 
-			     UShort_t& det, Char_t&   ring, 
-			     UShort_t& sec, Short_t& str) const;
-  /** Translate hardware address to detector coordinates 
-      @param ddl      DDL number 
-      @param addr     Hardware address
-      @param det      On return, Detector # (1-3)
-      @param ring     On return, Ring ID ('I' or 'O')
-      @param sec      On return, Sector number (0-39)
-      @param str      On return, Strip number (0-511)
-      @return @c true on success. */
-  Bool_t   Hardware2Detector(UShort_t ddl, UShort_t addr, UShort_t& det,
-			     Char_t& ring, UShort_t& sec, Short_t& str) const;
-#endif
 
-  /** Map a detector index into a hardware address. 
-      @param det         The detector #
-      @param ring        The ring ID
-      @param sec         The sector #
-      @param str         The strip #
-      @param sam         The sample number 
-      @param ddl         On return, hardware DDL number 
-      @param board       On return, the FEC board address (local to DDL)
-      @param altro       On return, the ALTRO number (local to FEC)
-      @param channel     On return, the channel number (local to ALTRO)
-      @param timebin     On return, the timebin number (local to ALTRO)
-      @return @c true on success, false otherwise */
+  /** 
+   * Map a detector index into a hardware address. 
+   *
+   * @param det         The detector #
+   * @param ring        The ring ID
+   * @param sec         The sector #
+   * @param str         The strip #
+   * @param sam         The sample number 
+   * @param ddl         On return, hardware DDL number 
+   * @param board       On return, the FEC board address (local to DDL)
+   * @param altro       On return, the ALTRO number (local to FEC)
+   * @param channel     On return, the channel number (local to ALTRO)
+   * @param timebin     On return, the timebin number (local to ALTRO)
+   *
+   * @return @c true on success, false otherwise 
+   */
   Bool_t Detector2Hardware(UShort_t  det,        Char_t    ring, 
 			   UShort_t  sec,        UShort_t  str,
 			   UShort_t  sam, 
 			   UShort_t&   ddl,        UShort_t&   board, 
 			   UShort_t&   altro,      UShort_t&   channel, 
 			   UShort_t& timebin) const;
-  /** Map a detector index into a hardware address. 
-      @param det         The detector #
-      @param ring        The ring ID
-      @param sec         The sector #
-      @param str         The strip #
-      @param sam         The sample number 
-      @param ddl         On return, hardware DDL number 
-      @param hwaddr      On return, hardware address.  
-      @param timebin     On return, the timebin number (local to ALTRO)
-      @return @c true on success, false otherwise */
+  /** 
+   * Map a detector index into a hardware address. 
+   *
+   * @param det         The detector #
+   * @param ring        The ring ID
+   * @param sec         The sector #
+   * @param str         The strip #
+   * @param sam         The sample number 
+   * @param ddl         On return, hardware DDL number 
+   * @param hwaddr      On return, hardware address.  
+   * @param timebin     On return, the timebin number (local to ALTRO)
+   *
+   * @return @c true on success, false otherwise 
+   */
   Bool_t Detector2Hardware(UShort_t  det,        Char_t    ring, 
 			   UShort_t  sec,        UShort_t  str,
 			   UShort_t  sam, 
 			   UShort_t&   ddl,        UShort_t&   hwaddr, 
 			   UShort_t& timebin) const;
-#if 0
-  /** Translate detector coordinates to hardware address 
-      @param det      Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sec      Sector number (0-39)
-      @param str      Strip number (0-511)
-      @param ddl      On return, DDL number 
-      @param board    On return, Board address
-      @param chip     On return, Chip #
-      @param channel  On return, Channel #
-      @return @c true on success. */
-  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, 
-			     UShort_t sec, UShort_t str, 
-			     UShort_t& ddl,  UShort_t& board,
-			     UShort_t& chip, UShort_t& channel) const;
-  /** Translate detector coordinates to hardware address 
-      @param det      Detector # (1-3)
-      @param ring     Ring ID ('I' or 'O')
-      @param sec      Sector number (0-39)
-      @param str      Strip number (0-511)
-      @param ddl      On return, DDL number 
-      @param addr     On return, Hardware address
-      @return @c true on success. */
-  Bool_t   Detector2Hardware(UShort_t det, Char_t ring, UShort_t sec, 
-			     UShort_t str, UShort_t& ddl, UShort_t& addr) const;
-#endif
-  /** Get the map that translates hardware to detector coordinates 
-      @return Get the map that translates hardware to detector
-      coordinates */ 
+  /** 
+   * Get the map that translates hardware to detector coordinates 
+   *
+   * @return Get the map that translates hardware to detector
+   * coordinates 
+   */ 
   AliFMDAltroMapping* GetAltroMap() const;
-  /** Whether raw data has full common data header (8 32bit words) or
-      the older invalid format (7 32bit words with bogus entries)
-      @return false if the raw data has incomplete data header */ 
+  /** 
+   * Whether raw data has full common data header (8 32bit words) or
+   * the older invalid format (7 32bit words with bogus entries)
+   *
+   * @return false if the raw data has incomplete data header 
+   */ 
   Bool_t HasCompleteHeader() const { return fHasCompleteHeader; } 
 
   /** @} */
@@ -494,9 +598,13 @@ public:
   static const char* GetConditionsShuttleID()   {return fkConditionsShuttleID;}
   
 protected:
-  /** CTOR  */
+  /** 
+   * CTOR  
+   */
   AliFMDParameters();
-  /** CTOR  */
+  /** 
+   * CTOR  
+   */
   AliFMDParameters(const AliFMDParameters& o) 
     : TNamed(o), 
       fIsInit(o.fIsInit),
@@ -526,12 +634,19 @@ protected:
       fAltroMap(o.fAltroMap),
       fStripRange(o.fStripRange)
   {}
-  /** Assignement operator 
-      @return Reference to this */
+  /** 
+   * Assignement operator 
+   *
+   * @return Reference to this 
+   */
   AliFMDParameters& operator=(const AliFMDParameters&) { return *this; }
-  /** DTOR */
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDParameters() {}
-  /** Singleton instance  */
+  /** 
+   * Singleton instance  
+   */
   static AliFMDParameters* fgInstance;   // Static singleton instance
   /** 
    * Check if the file <i>prefix</i><i>number</i> exists in @a path, 
@@ -546,27 +661,58 @@ protected:
    */
   Bool_t CheckFile(const char* prefix, const char* path, 
 		   int         number, TString&    f) const;
-  /** Get an entry from either global AliCDBManager or passed
-      AliFMDPreprocessor. 
-      @param path  Path to CDB object. 
-      @param pp    AliFMDPreprocessor 
-      @param fatal If true, raise a fatal flag if we didn't get the entry.
-      @return AliCDBEntry if found */ 
+  /** 
+   * Get an entry from either global AliCDBManager or passed
+   * AliFMDPreprocessor. 
+   * 
+   * @param path  Path to CDB object. 
+   * @param pp    AliFMDPreprocessor 
+   * @param fatal If true, raise a fatal flag if we didn't get the entry.
+   * @return AliCDBEntry if found 
+   */ 
   AliCDBEntry* GetEntry(const char* path, AliFMDPreprocessor* pp, 
 			Bool_t fatal=kTRUE) const;
-  /** Initialize gains.  Try to get them from CDB */
+  /** 
+   * Initialize gains.  Try to get them from CDB 
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitPulseGain(AliFMDPreprocessor* pp=0);
-  /** Initialize pedestals.  Try to get them from CDB */
+  /**
+   * Initialize pedestals.  Try to get them from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitPedestal(AliFMDPreprocessor* pp=0);
-  /** Initialize dead map.  Try to get it from CDB */
+  /**
+   * Initialize dead map.  Try to get it from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitDeadMap(AliFMDPreprocessor* pp=0);
-  /** Initialize sample rates.  Try to get them from CDB */
+  /**
+   * Initialize sample rates.  Try to get them from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitSampleRate(AliFMDPreprocessor* pp=0);
-  /** Initialize zero suppression thresholds.  Try to get them from CDB */
+  /**
+   * Initialize zero suppression thresholds.  Try to get them from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitZeroSuppression(AliFMDPreprocessor* pp=0);
-  /** Initialize hardware map.  Try to get it from CDB */
+  /**
+   * Initialize hardware map.  Try to get it from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitAltroMap(AliFMDPreprocessor* pp=0);
-  /** Initialize strip range.  Try to get it from CDB */
+  /**
+   * Initialize strip range.  Try to get it from CDB
+   *
+   * @param pp Pre-processor if called from shuttle
+   */
   void InitStripRange(AliFMDPreprocessor* pp=0);
 
   Bool_t          fIsInit;                   // Whether we've been initialised  
@@ -612,6 +758,15 @@ protected:
   
   ClassDef(AliFMDParameters,6) // Manager of parameters
 };
+
+//__________________________________________________________________
+inline void
+AliFMDParameters::SetStripRange(UShort_t min, UShort_t max) 
+{
+  // Set fixed strip range 
+  fFixedMinStrip = min;
+  fFixedMaxStrip = max;
+}
 
 #endif
 //____________________________________________________________________

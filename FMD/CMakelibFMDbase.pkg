@@ -50,7 +50,7 @@ set ( SRCS   AliFMDIndex.cxx
 	AliFMDSurveyToAlignObjs.cxx)
 
 string (REPLACE ".cxx" ".h" HDRS  "${SRCS}")
-
+set ( HDRS ${HDRS} AliFMDCalibFwd.h )
 set ( DHDR  FMDbaseLinkDef.h)
 
 set ( EINCLUDE   RAW)

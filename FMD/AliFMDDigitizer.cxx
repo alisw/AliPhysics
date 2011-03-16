@@ -1,24 +1,27 @@
-/**************************************************************************
- * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/* $Id$ */
-/** @file    AliFMDDigitizer.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:38:26 2006
-    @brief   FMD Digitizers implementation
-    @ingroup FMD_sim
-*/
+//************************************************************************
+// Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
+//                                                                        *
+// Author: The ALICE Off-line Project.                                    *
+// Contributors are mentioned in the code where appropriate.              *
+//                                                                        *
+// Permission to use, copy, modify and distribute this software and its   *
+// documentation strictly for non-commercial purposes is hereby granted   *
+// without fee, provided that the above copyright notice appears in all   *
+// copies and that both the copyright notice and this permission notice   *
+// appear in the supporting documentation. The authors make no claims     *
+// about the suitability of this software for any purpose. It is          *
+// provided "as is" without express or implied warranty.                  *
+//************************************************************************/
+// $Id$ */
+/**
+ * @file    AliFMDDigitizer.cxx
+ * 
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:38:26 2006
+ * @brief   FMD Digitizers implementation
+ *
+ * @ingroup FMD_sim
+ */
 //////////////////////////////////////////////////////////////////////////////
 //
 //  This class contains the procedures simulation ADC  signal for the
@@ -223,7 +226,9 @@ ClassImp(AliFMDDigitizer)
 Bool_t
 AliFMDDigitizer::Init()
 {
+  // 
   // Initialisation
+  // 
   if (!AliFMDBaseDigitizer::Init()) return kFALSE;
   
 #if 0
@@ -253,6 +258,14 @@ AliFMDDigitizer::Init()
 void
 AliFMDDigitizer::Exec(Option_t*)
 {
+  // 
+  // Execute this digitizer.  
+  // This member function will be called once per event by the passed
+  // AliRunDigitizer manager object. 
+  // 
+  // Parameters:
+  //    options Not used 
+  //
   if (!fManager) { 
     AliError("No digitisation manager defined");
     return;
@@ -296,7 +309,7 @@ AliFMDDigitizer::Exec(Option_t*)
     AliRunLoader* currentLoader = 
       AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
     if (!currentLoader) { 
-      Error("Exec", Form("no run loader for input file # %d", inputFile));
+      Error("Exec", "no run loader for input file # %d", inputFile);
       continue;
     }
 
@@ -376,8 +389,12 @@ AliFMDDigitizer::Exec(Option_t*)
 void
 AliFMDDigitizer::SumContributions(TBranch* sdigitsBranch) 
 {
-  // Sum energy deposited contributions from each sdigits in a cache
-  // (fEdep).  
+  // 
+  // Sum contributions from SDigits 
+  // 
+  // Parameters:
+  //    sdigitsBranch Branch of SDigit data 
+  //
   AliFMDDebug(3, ("Runnin our version of SumContributions"));
 
   // Get a list of hits from the FMD manager 

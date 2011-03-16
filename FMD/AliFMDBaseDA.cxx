@@ -27,16 +27,22 @@
 //
 
 #include "AliFMDBaseDA.h"
-#include "iostream"
+#include "AliRawReader.h"
+#include "AliFMDDigit.h"
+#include "AliFMDParameters.h"
 #include "AliFMDRawReader.h"
 #include "AliFMDCalibSampleRate.h"
 #include "AliFMDCalibStripRange.h"
 #include "AliLog.h"
 #include "AliRawEventHeaderBase.h"
+#include "AliFMDDigit.h"
+#include <TClonesArray.h>
+#include <TFile.h>
 #include <TDatime.h>
 #include <TSystem.h>
 #include <TH2F.h>
-
+#include <iostream>
+#include <fstream>
 //_____________________________________________________________________
 ClassImp(AliFMDBaseDA)
 #if 0 
@@ -503,6 +509,15 @@ TH2*
 AliFMDBaseDA::MakeSummaryHistogram(const char* prefix, const char* title, 
 				   UShort_t d, Char_t r) 
 {
+  // 
+  // Utility function for defining summary histograms 
+  // 
+  // Parameters:
+  //    det    Detector 
+  //    ring   Ring identifier 
+  //    prefix Histogram prefix 
+  //    title  Histogram title 
+  //
   Int_t nX = ((d == 1 || r == 'I' || r == 'i') ?  20 :  40);
   Int_t nY = ((d == 1 || r == 'I' || r == 'i') ? 512 : 256);
   

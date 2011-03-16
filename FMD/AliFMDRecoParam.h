@@ -42,12 +42,44 @@ public:
    */
   Bool_t  SharingCorrect() const { return fSharingCorrect; }
 
+  /** 
+   * Whether to do angle corrections 
+   * 
+   * @param doit Whether to do angle corrections 
+   */
   void SetAngleCorrect(Bool_t doit) { fAngleCorrect = doit; }
+  /** 
+   * Whether to do sharing corrections 
+   * 
+   * @param doit Whether to do sharing corrections 
+   */
   void SetSharingCorrect(Bool_t doit) { fSharingCorrect = doit; }
+  /** 
+   * Set the noise factor 
+   * 
+   * @param f Noise factor 
+   */
   void SetNoiseFactor(Float_t f) { fNoiseFactor = f; }
 
+  /** 
+   * Get low flux parameter
+   *
+   * @return low flux parameters 
+   */  
   static AliFMDRecoParam* GetLowFluxParam();
+  /** 
+   * Get high flux parameter
+   *
+   * @return high flux parameters 
+   */  
   static AliFMDRecoParam* GetHighFluxParam();
+  /** 
+   * Get parameters for a specific species 
+   * 
+   * @param specie Species 
+   * 
+   * @return Reconstruction paramters 
+   */
   static AliFMDRecoParam* GetParam(AliRecoParam::EventSpecie_t specie);
 private:
   Float_t fNoiseFactor;    // Noise suppression factor 

@@ -22,18 +22,18 @@
 
 #include "TNamed.h"
 #include "TObjArray.h"
-#include "TClonesArray.h"
-#include "TFile.h"
-#include "iostream"
-#include "fstream"
 #include "TString.h"
-#include "AliRawReader.h"
-#include "AliFMDDigit.h"
-#include "AliFMDParameters.h"
 #include "TArrayS.h"
-class TDirectory;
+#include <iosfwd>
+#include <fstream>
+class AliFMDDigit;
+class AliRawReader;
+class AliFMDParameters;
 class AliFMDRawReader;
+class TDirectory;
 class TH2;
+class TFile;
+class TClonesArray;
 
 class AliFMDBaseDA: public TNamed 
 {
@@ -98,42 +98,35 @@ public:
    * @param det Detector number to check 
    * @return true if the code has seen data from the detector 
    */
-  bool HasSeenDetector(UShort_t d) { return (d == 0 || d > 3) ? false : fSeenDetectors[d-1]; }
+  Bool_t HasSeenDetector(UShort_t d) const;
 protected:
   /** 
    * Initialize 
-   * 
    */  
   virtual void Init()  {};
   /** 
    * Fill channels 
-   * 
    */
   virtual void FillChannels(AliFMDDigit* )  {};
   /** 
    * Analyse a single strip result
-   * 
    */
   virtual void Analyse(UShort_t, Char_t, UShort_t, UShort_t)  {};
   /** 
    * Write header to output file
-   * 
    */
   virtual void WriteHeaderToFile()  {};
   /** 
    * Add a strip container 
-   * 
    */
   virtual void AddChannelContainer(TObjArray*, UShort_t, Char_t, 
 				   UShort_t, UShort_t )  {};
   /** 
    * End of event
-   * 
    */
   virtual void FinishEvent()  {};
   /** 
    * End of run
-   * 
    */
   virtual void Terminate(TFile* ) {};
   /** 
@@ -154,14 +147,6 @@ protected:
    * @param max  Maximum number to keep (minus one for the current).
    */
   void Rotate(const char* base, int max) const;
-  static const UInt_t fgkBaseDDL = 3072;   // base FMD ddl
-  //Char_t* fDiagnosticsFilename;
-  TString fDiagnosticsFilename;            // name of diagnostics file
-  std::ofstream fOutputFile;               // output file
-  std::ofstream fConditionsFile;           // conditions file
-  Bool_t fSaveHistograms;                  // save hists or not
-  Bool_t fMakeSummaries;                   // save hists or not
-  TObjArray fDetectorArray;                // array indiced by detector
   /** 
    * Ge the half-ring index 
    * 
@@ -247,14 +232,6 @@ protected:
    */  
   const char* GetStripPath(UShort_t det, Char_t ring, UShort_t sec, 
 			   UShort_t str, Bool_t full=kTRUE) const;
-  
-
-  
-  TArrayS fPulseSize;                     // Pulse size for gain calib
-  TArrayS fPulseLength;                   // Pulse length for gain calib
-
-  Bool_t  fSeenDetectors[3];              // Detectors seen so far
-private:
   /** 
    * Write conditions file 
    * 
@@ -273,10 +250,6 @@ private:
    * @param dir Directory to make containers in 
    */
   void InitContainer(TDirectory* dir);
-  Int_t fRequiredEvents;            // number of events required for this calib
-  Int_t fCurrentEvent;              // the current event       
-protected:
-  UInt_t fRunno;                    // Current run number 
   /** 
    * Utility function for defining summary histograms 
    *
@@ -287,11 +260,39 @@ protected:
    */
   TH2* MakeSummaryHistogram(const char* prefix, const char* title, 
 			    UShort_t det, Char_t ring);
+  /** 
+   * Make a summary
+   * 
+   */
   virtual void  MakeSummary(UShort_t, Char_t) { }
-  TObjArray fSummaries;
+
+
+
+  static const UInt_t fgkBaseDDL = 3072;   // base FMD ddl
+  //Char_t* fDiagnosticsFilename;
+  TString       fDiagnosticsFilename;  // name of diagnostics file
+  std::ofstream fOutputFile;           // output file
+  std::ofstream fConditionsFile;       // conditions file
+  Bool_t        fSaveHistograms;       // save hists or not
+  Bool_t        fMakeSummaries;        // save hists or not
+  TObjArray     fDetectorArray;        // array indiced by detector
+  TArrayS       fPulseSize;            // Pulse size for gain calib
+  TArrayS       fPulseLength;          // Pulse length for gain calib
+  Bool_t        fSeenDetectors[3];     // Detectors seen so far
+  Int_t         fRequiredEvents;       // # events required for this calib
+  Int_t         fCurrentEvent;         // the current event       
+  UInt_t        fRunno;                // Current run number 
+  TObjArray     fSummaries;            // Summary histograms 
   
   ClassDef(AliFMDBaseDA,0) // Base Detector algorithm for all run types
 
 };
+//____________________________________________________________________
+inline Bool_t
+AliFMDBaseDA::HasSeenDetector(UShort_t d) const
+{ 
+  return (d == 0 || d > 3) ? false : fSeenDetectors[d-1]; 
+}
+
 #endif
 

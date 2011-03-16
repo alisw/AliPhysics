@@ -381,6 +381,9 @@ AliFMDRawWriter::ZeroSuppress(Int_t*& data, Int_t nWords,
 void
 AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 {
+  // 
+  // Write digits to file 
+  //
   Int_t nDigits = digits->GetEntries();
   if (nDigits < 1) return;
 

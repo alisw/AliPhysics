@@ -22,7 +22,8 @@
 #ifndef ROOT_TTask
 # include <TTask.h>
 #endif
-#include "AliFMDParameters.h"	   // ALIFMDPARAMETERS_H
+class AliFMDParameters;
+#include "AliFMDCalibFwd.h"
 
 /** @class AliFMDCalibFaker
     @brief Class to make fake calibration parameters. 

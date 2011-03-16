@@ -1,3 +1,9 @@
+//
+// Class to take survey data and 
+// transform that to alignment objects. 
+// 
+// FMD
+//
 #include "AliFMDSurveyToAlignObjs.h"
 #include "AliLog.h"
 #include "AliSurveyPoint.h"
@@ -64,6 +70,20 @@ AliFMDSurveyToAlignObjs::CalculatePlane(const     TVector3& a,
 					Double_t* trans,
 					Double_t* rot) const
 {
+  // 
+  // Calculate the plane translation and rotation from 3 survey points
+  // 
+  // Parameters:
+  //    a     1st Survey point 
+  //    b     2nd Survey point
+  //    c     3rd Survey point
+  //    trans Translation vector
+  //    rot   Rotation matrix (direction cosines)
+  // 
+  // Return:
+  //    
+  //
+
   // Vector a->b, b->c, and normal to plane defined by these two
   // vectors. 
   TVector3 ab(b-a), bc(c-b);
@@ -125,6 +145,24 @@ AliFMDSurveyToAlignObjs::FitPlane(const TObjArray& points,
 				  Double_t*        trans,
 				  Double_t*        rot) const
 {
+  // 
+  // Calculate the plane rotation and translation by doing a fit of
+  // the plane equation to the surveyed points.  At least 4 points
+  // must be passed in the @a points array with corresponding errors
+  // in the array @a errors.  The arrays are assumed to contain
+  // TVector3 objects.
+  // 
+  // Parameters:
+  //    points Array surveyed positions
+  //    errors Array of errors corresponding to @a points
+  //    depth  Survey targets depth (perpendicular to the plane)
+  //    trans  On return, translation of the plane
+  //    rot    On return, rotation (direction cosines) of the plane
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise
+  //
+
   Int_t nPoints = points.GetEntries();
   if (nPoints < 4) { 
     AliError(Form("Cannot fit a plane equation to less than 4 survey points, "
@@ -197,11 +235,23 @@ AliFMDSurveyToAlignObjs::FitPlane(const TObjArray& points,
 //____________________________________________________________________
 Bool_t
 AliFMDSurveyToAlignObjs::MakeDelta(const char*  path, 
-				   Double_t*    rot, 
-				   Double_t*    trans, 
+				   const Double_t*    rot, 
+				   const Double_t*    trans, 
 				   TGeoHMatrix& delta) const
 {
-  // Make delta transformation
+  // 
+  // Create a delta transform from a global rotation matrix and
+  // translation. 
+  // 
+  // Parameters:
+  //    path   Path of element to transform.
+  //    rot    Rotation matrix (direction cosines)
+  //    trans  Translation 
+  //    delta  On return, the delta transform
+  // 
+  // Return:
+  //    Newly 
+  //
   if (!gGeoManager)           return kFALSE;
   if (!gGeoManager->cd(path)) return kFALSE;
   
@@ -217,12 +267,24 @@ AliFMDSurveyToAlignObjs::MakeDelta(const char*  path,
 
 //____________________________________________________________________
 Bool_t
-AliFMDSurveyToAlignObjs::MakeDelta(TGeoMatrix*  global,
-				   Double_t*    rot, 
-				   Double_t*    trans, 
+AliFMDSurveyToAlignObjs::MakeDelta(const TGeoMatrix*  global,
+				   const Double_t*    rot, 
+				   const Double_t*    trans, 
 				   TGeoHMatrix& delta) const
 {
-  // Make delta transformation
+  // 
+  // Create a delta transform from a global rotation matrix and
+  // translation. 
+  // 
+  // Parameters:
+  //    global Global matrix of element to transform.
+  //    rot    Rotation matrix (direction cosines)
+  //    trans  Translation 
+  //    delta  On return, the delta transform
+  // 
+  // Return:
+  //    Newly 
+  //
   TGeoHMatrix* geoM = new TGeoHMatrix;
   geoM->SetTranslation(trans);
   geoM->SetRotation(rot);
@@ -237,6 +299,16 @@ AliFMDSurveyToAlignObjs::MakeDelta(TGeoMatrix*  global,
 Bool_t
 AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
 {
+  // 
+  // Get the FMD1 plane from the survey points
+  // 
+  // Parameters:
+  //    rot    Rotation matrix (direction cosines)
+  //    trans  Translation
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise.
+  //
 
   // The possile survey points 
   TVector3  icb, ict, ocb, oct, dummy;
@@ -280,6 +352,25 @@ AliFMDSurveyToAlignObjs::GetFMD1Plane(Double_t* rot, Double_t* trans) const
 Bool_t
 AliFMDSurveyToAlignObjs::DoFMD1()
 {
+  // 
+  // Do the FMD1 analysis.  We have 4 survey targets on V0-A on the
+  // C-side.  These are 
+  //
+  //  - V0A_ICT  In-side, C-side, top.
+  //  - V0A_ICB  In-side, C-side, bottom.  
+  //  - V0A_OCT  Out-side, C-side, top.	 
+  //  - V0A_OCB	 Out-side, C-side, bottom.
+  // 
+  // These 4 survey targets sit 3.3mm over the V0-A C-side surface, or
+  // 3.3mm over the back surface of FMD1.  
+  //
+  // Since these are really sitting on a plane, we can use the method
+  // proposed by the CORE offline. 
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise.
+  //
+
   // Do the FMD1 stuff
   Double_t rot[9], trans[3];
   if (!GetFMD1Plane(rot, trans)) return kFALSE;
@@ -300,6 +391,18 @@ AliFMDSurveyToAlignObjs::DoFMD1()
 Bool_t
 AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot, Double_t* trans) const
 {
+  // 
+  // Get the surveyed plane corresponding to the backside of FMD2.
+  // The plane is done as a best fit of the plane equation to at least
+  // 4 of the available survey points.
+  // 
+  // Parameters:
+  //    rot    Rotation matrix (direction cosines)
+  //    trans  Translation vector.
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise
+  //
 
   // The possible survey points 
   const char*    names[] = { "FMD2_ITOP",  "FMD2_OTOP", 
@@ -333,6 +436,30 @@ AliFMDSurveyToAlignObjs::GetFMD2Plane(Double_t* rot, Double_t* trans) const
 Bool_t
 AliFMDSurveyToAlignObjs::DoFMD2()
 {
+  // 
+  // Do the FMD2 calculations.  We have 6 survey points of which only
+  // 5 are normally surveyed.  These are all sittings 
+  //
+  //  - FMD2_ITOP   - In-side, top
+  //  - FMD2_IBOTM  - In-side, middle bottom
+  //  - FMD2_IBOT   - In-side, bottom
+  //  - FMD2_OTOP   - Out-side, top
+  //  - FMD2_OBOTM  - Out-side, middle bottom
+  //  - FMD2_OBOT   - Out-side, bottom
+  //
+  // The nominal coordinates of these retro-fitted survey stickers
+  // isn't known.  Also, these stickers are put on a thin (0.3mm
+  // thick) carbon cover which flexes quite easily.  This means, that
+  // to rotations and xy-translation obtained from the survey data
+  // cannot be used, and left is only the z-translation.
+  //
+  // Further more, since FMD2 to is attached to the ITS SPD thermal
+  // screen, it is questionable if the FMD2 survey will ever be used. 
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise.
+  //
+
   // Do the FMD2 stuff
   Double_t rot[9], trans[3];
   if (!GetFMD2Plane(rot, trans)) return kFALSE;
@@ -363,6 +490,11 @@ AliFMDSurveyToAlignObjs::DoFMD2()
 void
 AliFMDSurveyToAlignObjs::Run()
 {
+  // 
+  // Run the task.
+  // 
+  //  
+
   AliFMDGeometry* geom = AliFMDGeometry::Instance();
   geom->Init();
   geom->InitTransformations();
@@ -375,6 +507,13 @@ AliFMDSurveyToAlignObjs::Run()
 Bool_t 
 AliFMDSurveyToAlignObjs::CreateAlignObjs()
 {
+  // 
+  // 
+  // Method to create the alignment objects
+  // 
+  // Return:
+  //    @c true on success, @c false otherwise
+  //  
   TClonesArray& array = *fAlignObjArray;
   Int_t         n     = array.GetEntriesFast();
 
@@ -395,7 +534,13 @@ AliFMDSurveyToAlignObjs::CreateAlignObjs()
 void 
 AliFMDSurveyToAlignObjs::PrintVector(const char* text, const TVector3& v)
 {
-  // Print a vector
+  // 
+  // Service member function to print a vector
+  // 
+  // Parameters:
+  //    text Prefix text
+  //    v    Vector
+  //
   Double_t va[] = { v.X(), v.Y(), v.Z() };
   PrintVector(text, va);
 }
@@ -403,7 +548,13 @@ AliFMDSurveyToAlignObjs::PrintVector(const char* text, const TVector3& v)
 void 
 AliFMDSurveyToAlignObjs::PrintVector(const char* text, const Double_t* v)
 {
-  // Print a vector
+  // 
+  // Service member function to print a vector
+  // 
+  // Parameters:
+  //    text Prefix text
+  //    v    Vector (array of 3 doubles)
+  //
   std::cout << text 
 	    << std::setw(15) << v[0] 
 	    << std::setw(15) << v[1]
@@ -416,7 +567,14 @@ AliFMDSurveyToAlignObjs::PrintVector(const char* text, const Double_t* v)
 void 
 AliFMDSurveyToAlignObjs::PrintRotation(const char* text, const Double_t* rot)
 {
-  // Print a rotation matrix
+  // 
+  // Service member function to print a rotation matrix
+  // 
+  // Parameters:
+  //    text Prefix text
+  //    v    Matrix (array of 9 doubles)
+  //
+
   std::cout << text << std::endl;
   for (size_t i = 0; i < 3; i++) { 
     for (size_t j = 0; j < 3; j++) 

@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -11,13 +11,14 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/* $Id$ */
-/** @file    AliFMDParameters.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:44:26 2006
-    @brief   Manager of FMD parameters     
-*/
+ *************************************************************************
+ * $Id$ */
+/**
+ * @file    AliFMDParameters.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:44:26 2006
+ * @brief   Manager of FMD parameters     
+ */
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -73,7 +74,9 @@ const char* AliFMDParameters::fkConditionsShuttleID = "conditions";
 AliFMDParameters* 
 AliFMDParameters::Instance() 
 {
+  // 
   // Get static instance 
+  //
   if (!fgInstance) fgInstance = new AliFMDParameters;
   return fgInstance;
 }
@@ -107,7 +110,9 @@ AliFMDParameters::AliFMDParameters()
     fAltroMap(0), 
     fStripRange(0)
 {
+  //
   // Default constructor 
+  //
   SetVA1MipRange();
   SetAltroChannelSize();
   SetChannelsPerAltro();
@@ -125,8 +130,14 @@ AliFMDParameters::AliFMDParameters()
 void
 AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
 {
-  // Initialize the parameters manager.  We need to get stuff from the
-  // CDB here. 
+  // 
+  // Initialize the manager.  This tries to read the parameters from
+  // CDB.  If that fails, the class uses the hard-coded parameters.
+  // 
+  // Parameters:
+  //    forceReInit Force (re-)initalize flag
+  //    what        What to initialize 
+  //
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
   if (what & kPulseGain)       InitPulseGain();
@@ -142,8 +153,15 @@ AliFMDParameters::Init(Bool_t forceReInit, UInt_t what)
 void
 AliFMDParameters::Init(AliFMDPreprocessor* pp, Bool_t forceReInit, UInt_t what)
 {
-  // Initialize the parameters manager.  We need to get stuff from the
-  // CDB here. 
+  // 
+  // Initialize the manager.  This tries to read the parameters from
+  // CDB.  If that fails, the class uses the hard-coded parameters.
+  // 
+  // Parameters:
+  //    pp          Preprocessor 
+  //    forceReInit Force (re-)initalize flag
+  //    what        What to initialize 
+  //
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
   if (what & kPulseGain)       InitPulseGain(pp);
@@ -163,6 +181,19 @@ AliFMDParameters::CheckFile(const char* prefix,
 			    int         number, 
 			    TString&    f) const
 {
+  // 
+  // Check if the file <i>prefix</i><i>number</i> exists in @a path, 
+  // and write the full path to @a f.  
+  // 
+  // Parameters:
+  //    prefix  File prefix (cond, peds, gains, ...)
+  //    path    Path to files
+  //    number  Detector number (1, 2, or 3)
+  //    f       On return full path to file (if found)
+  // 
+  // Return:
+  //    @c true if file exists and is readable, @c false otherwise
+  //
   f = (Form("%s%d.csv", prefix, number));
   AliFMDDebug(5, ("Checking if %s exists in %s ...", f.Data(), path));
   f = gSystem->Which(path, f.Data());
@@ -174,10 +205,28 @@ AliFMDParameters::CheckFile(const char* prefix,
 void
 AliFMDParameters::Init(const char* path, Bool_t forceReInit, UInt_t what)
 {
-  // Initialize the parameters manager.  Pedestals, gains, strip
-  // range, and sample rate is read from local comma separated value
-  // files if available.  Otherwise, the calibrations are obtained
-  // from OCDB.
+  // 
+  // Initialize the manager.  This will try to read some calibrations
+  // (sample rate, strip range, gains, pedestals) from local comma
+  // separated value (CSV) files in the directory pointed at by @a
+  // path.  If they are not found, then they will be retrieved from
+  // OCDB as appropriately.   Other calibrations are always read from
+  // OCDB.  
+  // 
+  // The CSV files should be named as 
+  // 
+  // - Pedestals: <tt>peds</tt><i>det_number</i><tt>.csv</tt>
+  // - Gains: <tt>gains</tt><i>det_number</i><tt>.csv</tt>
+  // - Sample Rate: <tt>conditions</tt><i>det_number</i><tt>.csv</tt>
+  // - Strip Range: <tt>conditions</tt><i>det_number</i><tt>.csv</tt>
+  //
+  // where <i>det_number</i> is the detector number (1, 2, or 3). 
+  // 
+  // Parameters:
+  //    path        Where to look for the CSV files
+  //    forceReInit Always reinitialise 
+  //    what        What calibrations to load. 
+  //  
   if (forceReInit) fIsInit = kFALSE;
   if (fIsInit) return;
 
@@ -232,6 +281,25 @@ AliFMDParameters::MakeDeadMap(Float_t maxNoise,
 			      Float_t minGain, 
 			      Float_t maxGain)
 {
+  // 
+  // Automatically generate a dead map from the pedestals and gains.
+  // A channel is marked as dead of the noise is too high (currently
+  // more than 10 ADC counts), or the gain is unreasonable (currently
+  // larger than 10, or smaller than 0.1). 
+  // 
+  // The procedure does not overwrite channels previously marked as
+  // dead - e.g., channels marked as dead in the calibration loaded
+  // from OCDB will continue to be marked as dead.  That is, this
+  // procedure will never make a channel un-dead. 
+  // 
+  // Parameters:
+  //    maxNoise  Maximum noise value before a channel is marked
+  // as dead. 
+  //    minGain   Minimum value of the calibrated gain before a
+  // channel is considered dead. 
+  //    maxGain   Maximum value of the calibrated gain before a
+  // channel is considered dead. 
+  //
   if (fPedestal)  
     fDeadMap = fPedestal->MakeDeadMap(maxNoise, fDeadMap);
   if (fPulseGain) 
@@ -245,6 +313,22 @@ AliFMDParameters::MakeDeadMap(Float_t maxNoise,
 void
 AliFMDParameters::Draw(Option_t* option)
 {
+  // 
+  // Draw parameters. 
+  // 
+  // Parameters:
+  //    option What to draw. Should be one of 
+  // - dead	  Dead channels
+  // - threshold Threshold
+  // - gain	  Gain
+  // - pedestal  Pedestal
+  // - noise	  Noise (or pedestal width)
+  // - zero	  Zero suppression
+  // - rate	  Sampling rate (VA1 clock / ALTRO clock)
+  // - min	  Minimum strip read out
+  // - max 	  Maximum strip read out
+  // - map	  hardware address
+  //
   TString opt(option);
   enum {
     kLocalPulseGain,       // Path to PulseGain calib object
@@ -539,20 +623,21 @@ AliFMDParameters::Print(Option_t* option) const
 }
 
 //__________________________________________________________________
-void
-AliFMDParameters::SetStripRange(UShort_t min, UShort_t max) 
-{
-  // Set fixed strip range 
-  fFixedMinStrip = min;
-  fFixedMaxStrip = max;
-}
-
-//__________________________________________________________________
 AliCDBEntry*
 AliFMDParameters::GetEntry(const char* path, AliFMDPreprocessor* pp, 
 			   Bool_t fatal) const
 {
-  // Get an entry from the CDB or via preprocessor 
+  // 
+  // Get an entry from either global AliCDBManager or passed
+  // AliFMDPreprocessor. 
+  // 
+  // Parameters:
+  //    path  Path to CDB object. 
+  //    pp    AliFMDPreprocessor 
+  //    fatal If true, raise a fatal flag if we didn't get the entry.
+  // Return:
+  //    AliCDBEntry if found 
+  // 
   AliCDBEntry* entry = 0;
   if (!pp) {
     AliCDBManager* cdb = AliCDBManager::Instance();
@@ -580,7 +665,12 @@ AliFMDParameters::GetEntry(const char* path, AliFMDPreprocessor* pp,
 void
 AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
 {
-  // Get pulse gain from CDB or used fixed 
+  // 
+  // Initialize gains.  Try to get them from CDB 
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   gain     = GetEntry(fgkPulseGain, pp);
   if (!gain) return;
   
@@ -592,7 +682,12 @@ AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
 {
-  // Initialize the pedestals from CDB 
+  //
+  // Initialize pedestals.  Try to get them from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   pedestal = GetEntry(fgkPedestal, pp);
   if (!pedestal) return;
 
@@ -605,7 +700,12 @@ AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
 {
-  // Get Dead-channel-map from CDB 
+  //
+  // Initialize dead map.  Try to get it from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   deadMap  = GetEntry(fgkDead, pp);
   if (!deadMap) return;
   
@@ -618,7 +718,12 @@ AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
 {
-  // Get 0-suppression from CDB 
+  //
+  // Initialize zero suppression thresholds.  Try to get them from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   zeroSup  = GetEntry(fgkZeroSuppression, pp);
   if (!zeroSup) return;
   AliFMDDebug(5, ("Got zero suppression from CDB"));
@@ -631,7 +736,12 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
 {
-  // get Sample rate from CDB
+  //
+  // Initialize sample rates.  Try to get them from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   sampRat  = GetEntry(fgkSampleRate, pp);
   if (!sampRat) return;
   AliFMDDebug(5, ("Got zero suppression from CDB"));
@@ -643,7 +753,12 @@ AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
 {
-  // Get hardware mapping from CDB
+  //
+  // Initialize hardware map.  Try to get it from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   if (fAltroMap) { 
     delete fAltroMap;
     fAltroMap = 0;
@@ -663,7 +778,12 @@ AliFMDParameters::InitAltroMap(AliFMDPreprocessor* pp)
 void
 AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
 {
-  // Get strips read-out from CDB
+  //
+  // Initialize strip range.  Try to get it from CDB
+  // 
+  // Parameters:
+  //    pp Pre-processor if called from shuttle
+  //
   AliCDBEntry*   range    = GetEntry(fgkStripRange, pp);
   if (!range) return;
   AliFMDDebug(5, ("Got strip range from CDB"));
@@ -676,7 +796,13 @@ AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
 Float_t
 AliFMDParameters::GetThreshold() const
 {
-  // Get threshold from CDB
+  // 
+  // Get the threshold in the pulser gain 
+  // 
+  // 
+  // Return:
+  //    Threshold from pulser 
+  //
   if (!fPulseGain) return fFixedThreshold;
   return fPulseGain->Threshold();
 }
@@ -686,15 +812,25 @@ Float_t
 AliFMDParameters::GetPulseGain(UShort_t detector, Char_t ring, 
 			       UShort_t sector, UShort_t strip) const
 {
-  // Returns the pulser calibrated gain for strip # strip in sector #
-  // sector or ring id ring of detector # detector. 
   // 
-  // For simulation, this is normally set to 
+  // Gain of pre-amp. for strip, sector, ring, detector 
+  //
+  // For simulations this is normally set to 
+  //
+  // @f[ 
+  //  \frac{\mbox{VA1_MIP_Range}{\mbox{ALTRO_channel_size}}\mbox{MIP_Energy_Loss}
+  // @f]
   // 
-  //       VA1_MIP_Range 
-  //    ------------------ * MIP_Energy_Loss
-  //    ALTRO_channel_size
   // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    Gain of pre-amp.  
+  //
   if (!fPulseGain) { 
     if (fFixedPulseGain <= 0)
       fFixedPulseGain = fVA1MipRange * GetEdepMip() / fAltroChannelSize;
@@ -711,7 +847,19 @@ Bool_t
 AliFMDParameters::IsDead(UShort_t detector, Char_t ring, 
 			 UShort_t sector, UShort_t strip) const
 {
-  // Check if the channel is dead 
+  // 
+  // Whether the strip is considered dead
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    @c true if the strip is considered dead, @c false if it's
+  // OK.
+  //
   if (!fDeadMap) return kFALSE;
   AliFMDDebug(50, ("Dead for FMD%d%c[%2d,%3d]=%s",
 		    detector, ring, sector, strip,
@@ -725,7 +873,18 @@ UShort_t
 AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring, 
 				     UShort_t sector, UShort_t strip) const
 {
-  // Get zero suppression threshold 
+  // 
+  // zero suppression threshold (in ADC counts)
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    zero suppression threshold (in ADC counts) 
+  //
   if (!fZeroSuppression) return fFixedZeroSuppression;
   // Need to map strip to ALTRO chip. 
   AliFMDDebug(50, ("zero sup. for FMD%d%c[%2d,%3d]=%d",
@@ -740,7 +899,18 @@ UShort_t
 AliFMDParameters::GetSampleRate(UShort_t det, Char_t ring, UShort_t sector, 
 				UShort_t str) const
 {
-  // Get sampl rate 
+  // 
+  // Get the sampling rate
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    The sampling rate 
+  //
   if (!fSampleRate) return fFixedSampleRate;
   // Need to map sector to digitizier card. 
   UInt_t ret = fSampleRate->Rate(det, ring, sector, str);
@@ -754,7 +924,18 @@ UShort_t
 AliFMDParameters::GetMinStrip(UShort_t det, Char_t ring, UShort_t sector, 
 			      UShort_t str) const
 {
-  // Get strip range read out 
+  // 
+  // Get the minimum strip in the read-out range
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    Minimum strip 
+  //
   if (!fStripRange) return fFixedMinStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Min(det, ring, sector, str);
@@ -768,7 +949,18 @@ UShort_t
 AliFMDParameters::GetMaxStrip(UShort_t det, Char_t ring, UShort_t sector, 
 			      UShort_t str) const
 {
-  // Get strip range read out 
+  // 
+  // Get the maximum strip in the read-out range
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    Maximum strip 
+  //
   if (!fStripRange) return fFixedMaxStrip;
   // Need to map sector to digitizier card. 
   UInt_t ret = fStripRange->Max(det, ring, sector, str);
@@ -782,7 +974,18 @@ Float_t
 AliFMDParameters::GetPedestal(UShort_t detector, Char_t ring, 
 			      UShort_t sector, UShort_t strip) const
 {
-  // Get the pedesal 
+  // 
+  // Get mean of pedestal
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    Mean of pedestal 
+  //
   if (!fPedestal) return fFixedPedestal;
   AliFMDDebug(50, ("pedestal for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
@@ -795,7 +998,18 @@ Float_t
 AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring, 
 				   UShort_t sector, UShort_t strip) const
 {
-  // Get the pedesal 
+  // 
+  // Width of pedestal
+  // 
+  // Parameters:
+  //    detector Detector # (1-3)
+  //    ring     Ring ID ('I' or 'O')
+  //    sector   Sector number (0-39)
+  //    strip    Strip number (0-511)
+  //
+  // Return:
+  //    Width of pedestal 
+  //
   if (!fPedestal) return fFixedPedestalWidth;
   AliFMDDebug(50, ("pedetal width for FMD%d%c[%2d,%3d]=%f",
 		    detector, ring, sector, strip,
@@ -807,7 +1021,13 @@ AliFMDParameters::GetPedestalWidth(UShort_t detector, Char_t ring,
 AliFMDAltroMapping*
 AliFMDParameters::GetAltroMap() const
 {
-  // Get the hardware address to detector index map 
+  // 
+  // Get the map that translates hardware to detector coordinates 
+  //
+  // Return:
+  //    Get the map that translates hardware to detector
+  // coordinates 
+  // 
   return fAltroMap;
 }
 
@@ -820,9 +1040,22 @@ AliFMDParameters::Hardware2Detector(UShort_t  ddl,       UShort_t addr,
 				    UShort_t& sec,       Short_t& str,
 				    UShort_t& sam) const
 {
-  // Translate a hardware address to detector coordinates. 
   // 
-  // See also Hardware2Detector that accepts 4 inputs 
+  // Map a hardware address into a detector index. 
+  // 
+  // Parameters:
+  //    ddl        Hardware DDL number 
+  //    addr       Hardware address.  
+  //    timebin    Timebin 
+  //    det        On return, the detector #
+  //    ring       On return, the ring ID
+  //    sec        On return, the sector #
+  //    str        On return, the base of strip #
+  //    sam        On return, the sample number for this strip
+  //
+  // Return:
+  //    @c true on success, false otherwise 
+  //
   if (!fAltroMap) return kFALSE;
   UShort_t board, chip, chan;
   fAltroMap->ChannelAddress(addr, board, chip, chan);
@@ -837,9 +1070,24 @@ AliFMDParameters::Hardware2Detector(UShort_t    ddl,       UShort_t   board,
 				    UShort_t& sec,       Short_t& str,
 				    UShort_t& sam) const
 {
-  // Translate a hardware address to detector coordinates. 
   // 
-  // See also Hardware2Detector that accepts 4 inputs 
+  // Map a hardware address into a detector index. 
+  // 
+  // Parameters:
+  //    ddl        Hardware DDL number 
+  //    board      FEC number
+  //    altro      ALTRO number 
+  //    channel    Channel number 
+  //    timebin    Timebin 
+  //    det        On return, the detector #
+  //    ring       On return, the ring ID
+  //    sec        On return, the sector #
+  //    str        On return, the base of strip #
+  //    sam        On return, the sample number for this strip
+  //
+  // Return:
+  //    @c true on success, false otherwise 
+  //
   if (!fAltroMap) return kFALSE;
   if (fAltroMap->DDL2Detector(ddl) < 0) return kFALSE;
   Short_t stripBase = 0;
@@ -857,29 +1105,6 @@ AliFMDParameters::Hardware2Detector(UShort_t    ddl,       UShort_t   board,
   return kTRUE;
 }
 
-#if 0
-//__________________________________________________________________
-Bool_t
-AliFMDParameters::Hardware2Detector(UShort_t    ddl,  UShort_t    board, 
-				    UShort_t    chip, UShort_t    chan,
-				    UShort_t& det,  Char_t&   ring, 
-				    UShort_t& sec,  Short_t& str) const
-{
-  // Map hardware address to detector index
-  if (!fAltroMap) return kFALSE;
-  return fAltroMap->Hardware2Detector(ddl,board,chip,chan, det,ring,sec,str);
-}
-//__________________________________________________________________
-Bool_t
-AliFMDParameters::Hardware2Detector(UShort_t    ddl,  UShort_t    addr, 
-				    UShort_t& det,  Char_t&   ring, 
-				    UShort_t& sec,  Short_t& str) const
-{
-  // Map hardware address to detector index
-  if (!fAltroMap) return kFALSE;
-  return fAltroMap->Hardware2Detector(ddl, addr, det, ring, sec, str);
-}
-#endif
 
 //____________________________________________________________________
 Bool_t 
@@ -890,6 +1115,24 @@ AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring,
 				    UShort_t& altro,      UShort_t& channel, 
 				    UShort_t& timebin) const
 {
+  // 
+  // Map a detector index into a hardware address. 
+  // 
+  // Parameters:
+  //    det         The detector #
+  //    ring        The ring ID
+  //    sec         The sector #
+  //    str         The strip #
+  //    sam         The sample number 
+  //    ddl         On return, hardware DDL number 
+  //    board       On return, the FEC board address (local to DDL)
+  //    altro       On return, the ALTRO number (local to FEC)
+  //    channel     On return, the channel number (local to ALTRO)
+  //    timebin     On return, the timebin number (local to ALTRO)
+  //
+  // Return:
+  //    @c true on success, false otherwise 
+  //
   if (!fAltroMap) return kFALSE;
   UShort_t preSamples = GetPreSamples(det, ring, sec, str);
   UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
@@ -909,6 +1152,22 @@ AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring,
 				    UShort_t&   ddl,        UShort_t&   addr,
 				    UShort_t& timebin) const
 {
+  // 
+  // Map a detector index into a hardware address. 
+  // 
+  // Parameters:
+  //    det         The detector #
+  //    ring        The ring ID
+  //    sec         The sector #
+  //    str         The strip #
+  //    sam         The sample number 
+  //    ddl         On return, hardware DDL number 
+  //    addr      On return, hardware address.  
+  //    timebin     On return, the timebin number (local to ALTRO)
+  //
+  // Return:
+  //    @c true on success, false otherwise 
+  //
   if (!fAltroMap) return kFALSE;
   UShort_t preSamples = GetPreSamples(det, ring, sec, str);
   UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
@@ -918,36 +1177,15 @@ AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring,
 				      ddl, addr, timebin);
 }
 
-#if 0
-//__________________________________________________________________
-Bool_t
-AliFMDParameters::Detector2Hardware(UShort_t det,  Char_t   ring, 
-				    UShort_t sec,  UShort_t str, 
-				    UShort_t&  ddl,  UShort_t&  board, 
-				    UShort_t&  chip, UShort_t&  chan) const
-{
-  // Map detector index to hardware address
-  if (!fAltroMap) return kFALSE;
-  return fAltroMap->Detector2Hardware(det,ring,sec,str, ddl,board,chip,chan);
-}
-
-//__________________________________________________________________
-Bool_t
-AliFMDParameters::Detector2Hardware(UShort_t det, Char_t   ring, 
-				    UShort_t sec, UShort_t str, 
-				    UShort_t&  ddl, UShort_t&  addr) const
-{
-  // Map detector index to hardware address
-  if (!fAltroMap) return kFALSE;
-  return fAltroMap->Detector2Hardware(det, ring, sec, str, ddl, addr);
-}
-#endif
 
 //__________________________________________________________________
 Float_t
 AliFMDParameters::GetEdepMip() const 
 { 
-  // Get energy deposited by a MIP in the silicon sensors
+  // 
+  // Return:
+  //    The average energy deposited by one MIP 
+  //
   if (fEdepMip <= 0){
     AliFMDGeometry* fmd = AliFMDGeometry::Instance();
     fEdepMip = (fkSiDeDxMip 
@@ -960,10 +1198,14 @@ AliFMDParameters::GetEdepMip() const
 Float_t  
 AliFMDParameters::GetDACPerMIP() const
 {
-  //This is the conversion from the Digital-to-Analog-Converter setting
+  // 
+  // This is the conversion from Digital-to-Analog-Converter setting
   // to the number of MIPs. The number was measured in the NBI lab during
   // August 2008.
-  
+  //
+  // Return:
+  //    The conversion factor from DAC to ADC 
+  //
   return 29.67;
   
 }

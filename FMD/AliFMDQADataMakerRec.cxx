@@ -74,6 +74,15 @@ AliFMDQADataMakerRec::AliFMDQADataMakerRec(const AliFMDQADataMakerRec& qadm)
 AliFMDQADataMakerRec& 
 AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm ) 
 {
+  // 
+  // Assignment operator 
+  // 
+  // Parameters:
+  //    qadm What to assign from 
+  // 
+  // Return:
+  //    Reference to this
+  //
   fRecPointsArray = qadm.fRecPointsArray;
   
   return *this;
@@ -81,7 +90,9 @@ AliFMDQADataMakerRec::operator = (const AliFMDQADataMakerRec& qadm )
 //_____________________________________________________________________
 AliFMDQADataMakerRec::~AliFMDQADataMakerRec()
 {
- 
+  // 
+  // Destrcutor 
+  // 
 }
 
 
@@ -211,6 +222,12 @@ struct FillESDHist : public AliESDFMD::ForOne
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeESDs(AliESDEvent * esd)
 {
+  // 
+  // Analyse ESD event
+  // 
+  // Parameters:
+  //    esd ESD event
+  //
   if(!esd) {
     AliError("FMD ESD object not found!!") ; 
     return;
@@ -267,6 +284,12 @@ void AliFMDQADataMakerRec::MakeDigits()
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 {
+  // 
+  // Analyse digits
+  // 
+  // Parameters:
+  //    digitTree Tree of digits
+  //
   
   if (fDigitsArray) 
     fDigitsArray->Clear();
@@ -286,8 +309,14 @@ void AliFMDQADataMakerRec::MakeDigits(TTree * digitTree)
 //_____________________________________________________________________
 void AliFMDQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 {
+  // 
+  // Analyse raw 
+  // 
+  // Parameters:
+  //    rawReader Raw reader
+  //
  
- AliFMDRawReader fmdReader(rawReader,0);
+  AliFMDRawReader fmdReader(rawReader,0);
   
   if (fDigitsArray) 
     fDigitsArray->Clear();
@@ -356,14 +385,25 @@ void AliFMDQADataMakerRec::StartOfDetectorCycle()
 Int_t AliFMDQADataMakerRec::GetHalfringIndex(UShort_t det, 
 					     Char_t ring, 
 					     UShort_t board, 
-					     UShort_t monitor) {
-  
+					     UShort_t monitor) const
+{
+  // 
+  // Get the half-ring index
+  // 
+  // Parameters:
+  //    det      Detector
+  //    ring     Ring
+  //    board    Board number
+  //    monitor  Monitor 
+  // 
+  // Return:
+  //    Half ring index
+  //  
   UShort_t iring  =  (ring == 'I' ? 1 : 0);
-  
-  Int_t index = ( ((det-1) << 3) | (iring << 2) | (board << 1) | (monitor << 0));
+  Int_t index = ( ((det-1) << 3) | (iring << 2) | (board << 1) | 
+		  (monitor << 0));
   
   return index-2;
-  
 }
 
 //_____________________________________________________________________ 

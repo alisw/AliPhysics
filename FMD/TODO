@@ -1,9 +1,7 @@
 	Things to do in the FMD offline code
 	------------------------------------
-
-
-
-
+* Code clean up 
+- Fix Coverity warnings, errors, ... 
 
 * Alignment
 - Waiting for a fix by Andrei when aligning nodes inside a two nested

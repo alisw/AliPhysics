@@ -58,6 +58,98 @@ public:
     /** Add a marker */
     void AddMarker(Char_t rng, UShort_t sec, UShort_t str, 
 		   Float_t v, Float_t max);
+
+    /**
+     * Get  Mother frame 
+     * 
+     * @return  Mother frame 
+     */
+    TH1*& GetFrame() { return fFrame; }
+    /**
+     * Set  Mother frame 
+     *
+     * @param p
+     */
+    void SetFrame(TH1* p) { fFrame = p; }
+    /**
+     * Get  Identifier 
+     * 
+     * @return  Identifier 
+     */
+    Int_t GetId() const { return fId; }
+    /**
+     * Set  Identifier 
+     *
+     * @param p
+     */
+    void SetId(Int_t p) { fId = p; }
+    /**
+     * Get  Array of shapes 
+     * 
+     * @return  Array of shapes 
+     */
+    TObjArray& GetShapes() { return fShapes; }
+    /**
+     * Get  Number of inner hits 
+     * 
+     * @return  Number of inner hits 
+     */
+    Int_t& GetNInnerHits() { return fNInnerHits; }
+    /**
+     * Get  Graph of inner hits 
+     * 
+     * @return  Graph of inner hits 
+     */
+    TGraph2D& GetInnerHits() { return fInnerHits; }
+    /**
+     * Get  Number of outer hits 
+     * 
+     * @return  Number of outer hits 
+     */
+    Int_t& GetNOuterHits() { return fNOuterHits; }
+    /**
+     * Get  Graph  of outer hits 
+     * 
+     * @return  Graph  of outer hits 
+     */
+    TGraph2D& GetOuterHits() { return fOuterHits; }
+    /**
+     * Get  Maximum radius 
+     * 
+     * @return  Maximum radius 
+     */
+    Double_t GetMaxR() const { return fMaxR; }
+    /**
+     * Set  Maximum radius 
+     *
+     * @param p
+     */
+    void SetMaxR(Double_t p) { fMaxR = p; }
+    /**
+     * Get  Minimum Z 
+     * 
+     * @return  Minimum Z 
+     */
+    Double_t GetMinZ() const { return fMinZ; }
+    /**
+     * Set  Minimum Z 
+     *
+     * @param p
+     */
+    void SetMinZ(Double_t p) { fMinZ = p; }
+    /**
+     * Get  Maximum Z 
+     * 
+     * @return  Maximum Z 
+     */
+    Double_t GetMaxZ() const { return fMaxZ; }
+    /**
+     * Set  Maximum Z 
+     *
+     * @param p
+     */
+    void SetMaxZ(Double_t p) { fMaxZ = p; }
+  protected:
     /** Mother frame */
     TH1*      fFrame;	// Mother frame
     /** Identifier */

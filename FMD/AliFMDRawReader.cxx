@@ -133,58 +133,58 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
   UInt_t ddl = input.GetDDLNumber();
   AliFMDDebug(2, ("DDL number %d", ddl));
 
-  /* Note, previously, the ALTROCFG1 register was interpreted as 
-   * 
-   * Bits    Value    Description
-   *   0- 3      0/1   1st Baseline filter, mode 
-   *   4- 5   Over-1   2nd baseline filter, # of pre-samples
-   *   6- 9   factor   2nd baseline filter, # of post-samples 
-   *  10-          0   2nd baseline filter, enable
-   *  11-12       00   Zero suppression, glitch filter mode
-   *  13-15      001   Zero suppression, # of post samples
-   *  16-17       01   Zero suppression, # of pre  samples
-   *  18         0/1   Zero suppression, enable
-   *
-   * The interpretation used in AliAltroRawStreamerV3 - which
-   * corresponds directly to ALTRO DPCFG register - is 
-   *
-   * Bits    Value  Description
-   *   0- 3    0/1   1st Baseline filter, mode 
-   *   4         0   Polarity (if '1', then "1's inverse")
-   *   5- 6     01   Zero suppression, # of pre samples
-   *   7-10   0001   Zero suppression, # of post samples
-   *  11         0   2nd baseline filter, enable
-   *  12-13     00   Zero suppression, glitch filter mode
-   *  14-16 factor   2nd baseline filter, # of post-samples
-   *  17-18     01   2nd baseline filter, # of pre-samples 
-   *  19       0/1   Zero suppression, enable
-   *
-   *  Writing 'x' for variable values, that means we have the
-   *  following patterns for the 2 cases 
-   *
-   *    bit #  20   16   12    8    4    0
-   *     old    |0x01|0010|00xx|xxxx|xxxx|
-   *     new    |x01x|xx00|0000|1010|xxxx|
-   *
-   *  That means that we can check if bits 10-13 are '1000' or
-   *  '0000', which will tell us if the value was written with the
-   *  new or the old interpretation.    That is, we can check that 
-   *
-   *    if (((altrocfg1 >> 10) & 0x8) == 0x8) { 
-   *      // old interpretation 
-   *    }
-   *    else { 
-   *      // New interpretation 
-   *    }
-   *
-   * That means, that we should never 
-   *
-   *  - change the # of zero suppression post samples 
-   *  - Turn on 2nd baseline correction 
-   *  - Change the zero-suppression glitch filter mode
-   *
-   * This change as introduced in version 1.2 of Rcu++
-   */
+  // Note, previously, the ALTROCFG1 register was interpreted as 
+  // 
+  // Bits    Value    Description
+  //   0- 3      0/1   1st Baseline filter, mode 
+  //   4- 5   Over-1   2nd baseline filter, # of pre-samples
+  //   6- 9   factor   2nd baseline filter, # of post-samples 
+  //  10-          0   2nd baseline filter, enable
+  //  11-12       00   Zero suppression, glitch filter mode
+  //  13-15      001   Zero suppression, # of post samples
+  //  16-17       01   Zero suppression, # of pre  samples
+  //  18         0/1   Zero suppression, enable
+  //
+  // The interpretation used in AliAltroRawStreamerV3 - which
+  // corresponds directly to ALTRO DPCFG register - is 
+  //
+  // Bits    Value  Description
+  //   0- 3    0/1   1st Baseline filter, mode 
+  //   4         0   Polarity (if '1', then "1's inverse")
+  //   5- 6     01   Zero suppression, # of pre samples
+  //   7-10   0001   Zero suppression, # of post samples
+  //  11         0   2nd baseline filter, enable
+  //  12-13     00   Zero suppression, glitch filter mode
+  //  14-16 factor   2nd baseline filter, # of post-samples
+  //  17-18     01   2nd baseline filter, # of pre-samples 
+  //  19       0/1   Zero suppression, enable
+  //
+  //  Writing 'x' for variable values, that means we have the
+  //  following patterns for the 2 cases 
+  //
+  //    bit #  20   16   12    8    4    0
+  //     old    |0x01|0010|00xx|xxxx|xxxx|
+  //     new    |x01x|xx00|0000|1010|xxxx|
+  //
+  //  That means that we can check if bits 10-13 are '1000' or
+  //  '0000', which will tell us if the value was written with the
+  //  new or the old interpretation.    That is, we can check that 
+  //
+  //    if (((altrocfg1 >> 10) & 0x8) == 0x8) { 
+  //      // old interpretation 
+  //    }
+  //    else { 
+  //      // New interpretation 
+  //    }
+  //
+  // That means, that we should never 
+  //
+  //  - change the # of zero suppression post samples 
+  //  - Turn on 2nd baseline correction 
+  //  - Change the zero-suppression glitch filter mode
+  //
+  // This change as introduced in version 1.2 of Rcu++
+  //
   UInt_t cfg1 = input.GetAltroCFG1();
   if (((cfg1 >> 10) & 0x8) == 0x8) {
     UInt_t cfg2 = input.GetAltroCFG2();
@@ -235,7 +235,7 @@ AliFMDRawReader::NewDDL(AliAltroRawStreamV3& input, UShort_t& det)
 
 //____________________________________________________________________
 Int_t
-AliFMDRawReader::NewChannel(AliAltroRawStreamV3& input,  UShort_t det,
+AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
 			    Char_t&  ring, UShort_t& sec, Short_t& strbase)
 {
   // Processs a new channel.  Sets the internal data members
@@ -283,7 +283,7 @@ AliFMDRawReader::NewChannel(AliAltroRawStreamV3& input,  UShort_t det,
 
 //____________________________________________________________________
 Int_t
-AliFMDRawReader::NewSample(AliAltroRawStreamV3& input, 
+AliFMDRawReader::NewSample(const AliAltroRawStreamV3& input, 
 			   Int_t i, UShort_t t, UShort_t sec,
 			   UShort_t  strbase, Short_t&  str, UShort_t& samp)
 {
@@ -422,6 +422,21 @@ AliFMDRawReader::NextSignal(UShort_t& det, Char_t&   rng,
 			    Short_t&  adc, Bool_t&   zs, 
 			    UShort_t& fac)
 {
+  // 
+  // Get the next signal
+  // 
+  // Parameters:
+  //    det  On return, the detector
+  //    rng  On return, the ring
+  //    sec  On return, the sector
+  //    str  On return, the strip
+  //    adc  On return, the ADC value
+  //    zs   On return, whether zero-supp. is enabled
+  //    fac  On return, the usd noise factor
+  // 
+  // Return:
+  //    true if valid data is returned
+  //
   
   do { 
     UShort_t samp, rate;
@@ -544,7 +559,18 @@ Bool_t AliFMDRawReader::ReadSODevent(AliFMDCalibSampleRate* sampleRate,
 				     TArrayS &pulseLength, 
 				     Bool_t* detectors) 
 {
-
+  // 
+  // Read SOD event into passed objects.
+  // 
+  // Parameters:
+  //    samplerate   The sample rate object to fill
+  //    striprange   The strip range object to fill
+  //    pulseSize    The pulse size object to fill
+  //    pulseLength  The pulse length (in events) object to fill
+  // 
+  // Return:
+  //    @c true on success
+  //  
   AliFMDDebug(0, ("Start of SOD/EOD"));
   
   UInt_t shift_clk[18];
@@ -864,8 +890,19 @@ UInt_t AliFMDRawReader::Get32bitWord(Int_t idx)
 }
 //_____________________________________________________________________ 
 Int_t AliFMDRawReader::GetHalfringIndex(UShort_t det, Char_t ring, 
-					UShort_t board) {
-
+					UShort_t board) const
+{
+  // 
+  // Get short index for a given half-ring
+  // 
+  // Parameters:
+  //    det   Detector number
+  //    ring  Ring identifer
+  //    board Board number
+  // 
+  // Return:
+  //    
+  //
   UShort_t iring  =  (ring == 'I' ? 1 : 0);
   
   Int_t index = (((det-1) << 2) | (iring << 1) | (board << 0));

@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
  * Copyright(c) 2004, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -11,14 +11,15 @@
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-/* $Id$ */
-/** @file    AliFMDBaseDigit.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:37:41 2006
-    @brief   Digits for the FMD 
-    @ingroup FMD_base
-*/
+ *************************************************************************
+ * $Id$ */
+/**
+ * @file    AliFMDBaseDigit.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:37:41 2006
+ * @brief   Digits for the FMD 
+ * @ingroup FMD_base
+ */
 //////////////////////////////////////////////////////////////////////
 //
 //  Digits classes for the FMD                
@@ -83,7 +84,11 @@ AliFMDBaseDigit::AliFMDBaseDigit()
     fSector(0), 
     fStrip(0), 
     fName("")
-{}
+{
+  // 
+  // CTOR 
+  //
+}
 
 //____________________________________________________________________
 AliFMDBaseDigit::AliFMDBaseDigit(UShort_t detector, 
@@ -199,6 +204,12 @@ AliFMDBaseDigit::Compare(const TObject* o) const
 void
 AliFMDBaseDigit::AddTrack(Int_t track)
 {
+  // 
+  // Add a track referenc
+  // 
+  // Parameters:
+  //    trackno The track number
+  //  
   if      (fTracks[0] == -1) fTracks[0] = track;
   else if (fTracks[1] == -1) fTracks[1] = track;
   else if (fTracks[2] == -1) fTracks[2] = track;
@@ -213,6 +224,13 @@ AliFMDBaseDigit::AddTrack(Int_t track)
 UShort_t
 AliFMDBaseDigit::GetNTrack() const
 {
+  // 
+  // Get the number of track references (max 3)
+  // 
+  // 
+  // Return:
+  //    Number of valid track references. 
+  //
   for (Int_t i = 3; i > 0; i--) 
     if (fTracks[i-1] != -1) return i;
   return 0;

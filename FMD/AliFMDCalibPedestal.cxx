@@ -143,7 +143,28 @@ namespace {
 AliFMDBoolMap*
 AliFMDCalibPedestal::MakeDeadMap(Float_t maxW, AliFMDBoolMap* dead) const
 {
-  if (!dead) { 
+  // 
+  // Make a dead map based on the noise of the channels.  If the noise
+  // of a paraticular channel is larger than @a maxW, then the channel
+  // is marked as dead. 
+  //
+  // If the argument @a dead is non-null, then the map passed is
+  // modified.  That is, channels marked as dead in the map will
+  // remain marked.   Channels that meat the criterion (noise larger
+  // than @a maxW) will in addition be marked as dead. 
+  //
+  // If the argument @a dead is null, then a new map is created and a
+  // pointer to this will be returned. 
+  // 
+  // Parameters:
+  //    maxW Maximum value of noise for a channel before it is
+  // marked as dead. 
+  //    dead If non-null, then modify this map. 
+  // 
+  // Return:
+  //    A pointer to possibly newly allocated dead map. 
+  //
+ if (!dead) { 
     dead = new AliFMDBoolMap(0,0,0,0);
     dead->Reset(kFALSE);
   }
@@ -157,7 +178,12 @@ AliFMDCalibPedestal::MakeDeadMap(Float_t maxW, AliFMDBoolMap* dead) const
 Bool_t
 AliFMDCalibPedestal::ReadFromFile(std::istream& in)
 {
-  // Get header (how long is it ?)
+  //
+  // Read information from file and set values
+  // 
+  // Parameters:
+  //    inFile inputFile
+  //
   TString header;
   header.ReadLine(in);
   header.ToLower();

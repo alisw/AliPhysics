@@ -154,6 +154,17 @@ TGeoShape*
 AliFMDGeometryBuilder::MakeXTRU(const TObjArray& verticies, 
 				Double_t thick) const
 {
+  // 
+  // Make a polygonic extrusion shape based on verticies passed in @a
+  // verticies 
+  // 
+  // Parameters:
+  //    verticies List of verticies
+  //    thick     Thickness
+  // 
+  // Return:
+  //    newly allocated polygonic extrusion shape
+  //
   TArrayD xs(6);
   TArrayD ys(6);
   for (Int_t i = 0; i < 3; i++) { 
@@ -173,7 +184,7 @@ AliFMDGeometryBuilder::MakeXTRU(const TObjArray& verticies,
 
 //____________________________________________________________________
 TGeoVolume*
-AliFMDGeometryBuilder::RingGeometry(AliFMDRing* r) 
+AliFMDGeometryBuilder::RingGeometry(const AliFMDRing* r) 
 {
   // Setup the geometry of a ring.    The defined TGeoVolume is
   // returned, and should be used when setting up the rest of the
@@ -538,6 +549,13 @@ AliFMDGeometryBuilder::HoneycombShape(Int_t id, Char_t ring,
 TGeoVolume* 
 AliFMDGeometryBuilder::TensionBox()
 {
+  // 
+  // Get the tension box volume
+  // 
+  // 
+  // Return:
+  //    
+  //
   static TGeoVolumeAssembly* tensionBox = 0;
   if (tensionBox) return tensionBox;
   
@@ -558,7 +576,7 @@ AliFMDGeometryBuilder::TensionBox()
 
 //____________________________________________________________________
 TGeoVolume*
-AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d, 
+AliFMDGeometryBuilder::DetectorGeometry(const AliFMDDetector* d, 
 					TGeoVolume* topMother, 
 					TGeoVolume* botMother, 
 					Double_t    zMother, 
@@ -650,7 +668,7 @@ AliFMDGeometryBuilder::DetectorGeometry(AliFMDDetector* d,
 
 //____________________________________________________________________
 TGeoVolume*
-AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1, 
+AliFMDGeometryBuilder::FMD1Geometry(const AliFMD1* fmd1, 
 				    TGeoVolume* innerTop, 
 				    TGeoVolume* innerBot) 
 {
@@ -798,7 +816,7 @@ AliFMDGeometryBuilder::FMD1Geometry(AliFMD1* fmd1,
 
 //____________________________________________________________________
 TGeoVolume*
-AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2, 
+AliFMDGeometryBuilder::FMD2Geometry(const AliFMD2* fmd2, 
 				    TGeoVolume* innerTop, 
 				    TGeoVolume* innerBot, 
 				    TGeoVolume* outerTop,
@@ -997,7 +1015,7 @@ AliFMDGeometryBuilder::FMD2Geometry(AliFMD2* fmd2,
   
 //____________________________________________________________________
 TGeoVolume*
-AliFMDGeometryBuilder::FMD3Geometry(AliFMD3* fmd3, 
+AliFMDGeometryBuilder::FMD3Geometry(const AliFMD3* fmd3, 
 				    TGeoVolume* innerTop, 
 				    TGeoVolume* innerBot, 
 				    TGeoVolume* outerTop,

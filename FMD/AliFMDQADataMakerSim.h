@@ -7,7 +7,7 @@
  */
 
 #include "AliQADataMakerSim.h"
-#include "TClonesArray.h"
+// #include "TClonesArray.h"
 class TH1F ; 
 class TH1I ; 
 class TList ; 

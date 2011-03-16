@@ -1,3 +1,16 @@
+//____________________________________________________________________
+//
+// This is a class that constructs AliFMDRecPoint objects from of Digits
+// This class reads either digits from a TClonesArray or raw data from 
+// a DDL file (or similar), and stores the read ADC counts in an
+// internal cache (fAdcs).   The rec-points are made via the naiive
+// method. 
+//
+//-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
+//  Latest changes by Christian Holm Christensen <cholm@nbi.dk>
+//
+//
+//____________________________________________________________________
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -13,24 +26,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDReconstructor.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:47:09 2006
-    @brief   FMD reconstruction 
+/** 
+ * @file    AliFMDReconstructor.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:47:09 2006
+ * @brief   FMD reconstruction 
 */
-//____________________________________________________________________
-//
-// This is a class that constructs AliFMDRecPoint objects from of Digits
-// This class reads either digits from a TClonesArray or raw data from 
-// a DDL file (or similar), and stores the read ADC counts in an
-// internal cache (fAdcs).   The rec-points are made via the naiive
-// method. 
-//
-//-- Authors: Evgeny Karpechev(INR) and Alla Maevsksia
-//  Latest changes by Christian Holm Christensen <cholm@nbi.dk>
-//
-//
-//____________________________________________________________________
 
 // #include <AliLog.h>                        // ALILOG_H
 // #include <AliRun.h>                        // ALIRUN_H
@@ -248,6 +249,14 @@ AliFMDReconstructor::GetParameters() const
 void 
 AliFMDReconstructor::UseRecoParam(Bool_t set) const
 {
+  // 
+  // Set-up reconstructor to use values from reconstruction
+  // parameters, if present, for this event.   If the argument @a set
+  // is @c false, then restore preset values. 
+  // 
+  // Parameters:
+  //    set 
+  //  
   static Float_t savedNoiseFactor  = fNoiseFactor;
   static Bool_t  savedAngleCorrect = fAngleCorrect;
   if (set) { 
@@ -436,6 +445,12 @@ AliFMDReconstructor::ProcessDigits(TClonesArray* digits) const
 void
 AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
 {
+  // 
+  // Process a single digit 
+  // 
+  // Parameters:
+  //    digit Digiti to process
+  // 
   UShort_t det = digit->Detector();
   Char_t   rng = digit->Ring();
   UShort_t sec = digit->Sector();
@@ -565,6 +580,25 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
 				      Bool_t   zsEnabled, 
 				      UShort_t zsNoiseFactor) const
 {
+  // 
+  // Subtract the pedestal off the ADC counts. 
+  // 
+  // Parameters:
+  //    det           Detector number
+  //    rng           Ring identifier
+  //    sec           Sector number
+  //    str           Strip number
+  //    adc           ADC counts
+  //    noiseFactor   If pedestal substracted pedestal is less then
+  //        this times the noise, then consider this to be 0. 
+  //    zsEnabled     Whether zero-suppression is on.
+  //    zsNoiseFactor Noise factor used in on-line pedestal
+  //        subtraction. 
+  // 
+  // Return:
+  //    The pedestal subtracted ADC counts (possibly 0), or @c
+  //         USHRT_MAX in case of problems.
+  //  
   AliFMDParameters* param  = AliFMDParameters::Instance();
   Float_t           ped    = (zsEnabled ? 0 : 
 				param->GetPedestal(det, rng, sec, str));
@@ -913,6 +947,9 @@ void
 AliFMDReconstructor::FillESD(AliRawReader*, TTree* clusterTree, 
 			     AliESDEvent* esd) const
 {
+  // 
+  // Forwards to above member function 
+  //
   TTree* dummy = 0;
   FillESD(dummy, clusterTree, esd);
 }

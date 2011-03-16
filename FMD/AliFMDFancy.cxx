@@ -338,26 +338,26 @@ AliFMDFancy::End()
     fFMD1Pad->cd();
     fFMD1.End();
     fFMD1Pad->Modified();
-    fFMD1IHits.SetTitle(Form("# hits in FMD1I:  %5d", fFMD1.fNInnerHits));
-    total += fFMD1.fNInnerHits;
+    fFMD1IHits.SetTitle(Form("# hits in FMD1I:  %5d", fFMD1.GetNInnerHits()));
+    total += fFMD1.GetNInnerHits();
   }
   if ((/*det =*/ geom->GetDetector(2))) {
     fFMD2Pad->cd();
     fFMD2.End();
     fFMD2Pad->Modified();
-    fFMD2IHits.SetTitle(Form("# hits in FMD2I:  %5d", fFMD2.fNInnerHits));
-    fFMD2OHits.SetTitle(Form("# hits in FMD2O: %5d", fFMD2.fNOuterHits));
-    total += fFMD2.fNInnerHits;
-    total += fFMD2.fNOuterHits;    
+    fFMD2IHits.SetTitle(Form("# hits in FMD2I:  %5d", fFMD2.GetNInnerHits()));
+    fFMD2OHits.SetTitle(Form("# hits in FMD2O: %5d", fFMD2.GetNOuterHits()));
+    total += fFMD2.GetNInnerHits();
+    total += fFMD2.GetNOuterHits();    
   }
   if ((/*det =*/ geom->GetDetector(3))) {
     fFMD3Pad->cd();
     fFMD3.End();
     fFMD3Pad->Modified();
-    fFMD3IHits.SetTitle(Form("# hits in FMD3I:  %5d", fFMD3.fNInnerHits));
-    fFMD3OHits.SetTitle(Form("# hits in FMD3O: %5d", fFMD3.fNOuterHits));
-    total += fFMD3.fNInnerHits;
-    total += fFMD3.fNOuterHits;    
+    fFMD3IHits.SetTitle(Form("# hits in FMD3I:  %5d", fFMD3.GetNInnerHits()));
+    fFMD3OHits.SetTitle(Form("# hits in FMD3O: %5d", fFMD3.GetNOuterHits()));
+    total += fFMD3.GetNInnerHits();
+    total += fFMD3.GetNOuterHits();    
   }
   fTotal.SetTitle(Form("Total:    %5d/51200 (%3d%%)", 
 		      total, Int_t(100. / 51200 * total)));

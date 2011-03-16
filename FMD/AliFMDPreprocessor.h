@@ -74,15 +74,22 @@ public:
   /** Get an entry from OCDB */ 
   AliCDBEntry* GetFromCDB(const char* second, const char* third);
 protected:
-  /** Get the pedestal calibrations 
-      @param list List of files */
-  AliFMDCalibPedestal*   GetPedestalCalibration(TList* list);
-  /** Get the gain calibrations 
-      @param list List of files */
-  AliFMDCalibGain*       GetGainCalibration(TList*);
-  /** Get the dead channels map based on the pedestal
-      an gain calibration objects. */
-    
+  /** 
+   * Get the pedestal calibrations 
+   *
+   * @param list List of files 
+   */
+  AliFMDCalibPedestal*   GetPedestalCalibration(const TList* list);
+  /** 
+   * Get the gain calibrations 
+   * 
+   * @param list List of files 
+   */
+  AliFMDCalibGain*       GetGainCalibration(const TList*);
+  /** 
+   * Get the dead channels map based on the pedestal
+   * an gain calibration objects. 
+   */
   AliFMDCalibDeadMap*    GetDeadChannelMap(AliFMDCalibPedestal* pedcalib,
 					   AliFMDCalibGain*     gaincalib);
 

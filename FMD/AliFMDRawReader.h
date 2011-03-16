@@ -199,7 +199,8 @@ protected:
    * 
    * @return negative value in case of problems, hardware address otherwise
    */
-  Int_t NewChannel(AliAltroRawStreamV3& input, UShort_t det, Char_t&  ring, 
+  Int_t NewChannel(const AliAltroRawStreamV3& input, 
+		   UShort_t det, Char_t&  ring, 
 		   UShort_t& sec, Short_t& strbase);
 
   /** 
@@ -215,7 +216,8 @@ protected:
    * 
    * @return negative value in case of problems, ADC value otherwise
    */  
-  Int_t NewSample(AliAltroRawStreamV3& input, Int_t i, UShort_t t, UShort_t sec,
+  Int_t NewSample(const AliAltroRawStreamV3& input, 
+		  Int_t i, UShort_t t, UShort_t sec,
 		  UShort_t  strbase, Short_t&  str, UShort_t& samp);
 
   /** 
@@ -242,7 +244,7 @@ protected:
    * 
    * @return 
    */
-  Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board);
+  Int_t GetHalfringIndex(UShort_t det, Char_t ring, UShort_t board) const;
   TTree*          fTree;            //! Pointer to tree to read into 
   AliRawReader*   fReader;          //! Pointer to raw reader 
   UShort_t        fSampleRate[3];   // The sample rate (if 0,inferred from data)
@@ -253,7 +255,7 @@ protected:
   UShort_t        fMinStrip;        // Current minimum strip number (0)
   UShort_t        fMaxStrip;        // Current maximum strip number (127)
   UShort_t        fPreSamp;         // Current number of pre-samples (14+5)
-  AliFMDUShortMap fSeen;
+  AliFMDUShortMap fSeen;            // Seen strips 
   
   ClassDef(AliFMDRawReader, 0) // Read FMD raw data into a cache 
 };

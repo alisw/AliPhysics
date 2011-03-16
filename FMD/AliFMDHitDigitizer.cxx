@@ -222,6 +222,23 @@ AliFMDHitDigitizer::AliFMDHitDigitizer(AliFMD* fmd, Output_t  output)
 }
 
 //____________________________________________________________________
+AliFMDHitDigitizer& 
+AliFMDHitDigitizer::operator=(const AliFMDHitDigitizer& o) 
+{
+  /** 
+   * Assignment operator
+   *
+   * @param o Object to assign from 
+   * @return Reference to this 
+   */
+  AliFMDBaseDigitizer::operator=(o);
+  fHoldTime    = o.fHoldTime;
+  fOutput      = o.fOutput;
+  fStack       = o.fStack;
+  return *this;
+}
+
+//____________________________________________________________________
 void
 AliFMDHitDigitizer::Exec(Option_t* /*option*/)
 {
@@ -337,6 +354,12 @@ AliFMDHitDigitizer::Exec(Option_t* /*option*/)
 TTree*
 AliFMDHitDigitizer::MakeOutputTree(AliLoader* loader)
 {
+  /** 
+   * Make the output tree using the passed loader 
+   *
+   * @param loader 
+   * @return The generated tree. 
+   */
   if (fOutput == kDigits) 
     return AliFMDBaseDigitizer::MakeOutputTree(loader);
   
@@ -542,6 +565,11 @@ AliFMDHitDigitizer::CheckDigit(AliFMDDigit*    digit,
 void
 AliFMDHitDigitizer::StoreDigits(AliLoader* loader)
 {
+  /** 
+   * Store the data using the loader 
+   *
+   * @param loader The loader 
+   */
   if (fOutput == kDigits) { 
     AliFMDBaseDigitizer::StoreDigits(loader);
     return;

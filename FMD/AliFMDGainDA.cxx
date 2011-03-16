@@ -29,15 +29,15 @@
 // pulse and the response of the detector.
 //
 #include "AliFMDGainDA.h"
-// #include <iostream>
-// #include <fstream>
-#include "AliLog.h"
-#include "TF1.h"
-#include "TH1S.h"
-// #include "TMath.h"
-#include "TGraphErrors.h"
-#include "AliFMDParameters.h"
 #include "AliFMDAltroMapping.h"
+#include "AliFMDParameters.h"
+#include "AliFMDCalibGain.h"
+#include "AliFMDDigit.h"
+#include "AliLog.h"
+#include <TFile.h>
+#include <TF1.h>
+#include <TH1S.h>
+#include <TGraphErrors.h>
 #include <TDatime.h>
 #include <TH2.h>
 

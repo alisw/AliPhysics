@@ -12,8 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FMD Reconstruction Parameters 
@@ -47,6 +45,12 @@ AliFMDRecoParam::AliFMDRecoParam(Float_t noiseFactor,
 AliFMDRecoParam*
 AliFMDRecoParam::GetLowFluxParam()
 {
+  // 
+  // Get low flux parameter
+  //
+  // Return:
+  //    low flux parameters 
+  //  
   AliFMDRecoParam* p = new AliFMDRecoParam(10, kTRUE, kFALSE);
   p->SetName("FMD_low_flux");
   p->SetTitle("FMD low flux");
@@ -56,6 +60,12 @@ AliFMDRecoParam::GetLowFluxParam()
 AliFMDRecoParam*
 AliFMDRecoParam::GetHighFluxParam()
 {
+  // 
+  // Get high flux parameter
+  //
+  // Return:
+  //    high flux parameters 
+  //  
   AliFMDRecoParam* p = new AliFMDRecoParam(10, kTRUE, kFALSE);
   p->SetName("FMD_high_flux");
   p->SetTitle("FMD high flux");
@@ -65,6 +75,15 @@ AliFMDRecoParam::GetHighFluxParam()
 AliFMDRecoParam*
 AliFMDRecoParam::GetParam(AliRecoParam::EventSpecie_t specie)
 {
+  // 
+  // Get parameters for a specific species 
+  // 
+  // Parameters:
+  //    specie Species 
+  // 
+  // Return:
+  //    Reconstruction paramters 
+  //
   switch (specie) { 
   case AliRecoParam::kDefault: 
   case AliRecoParam::kCalib: 

@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDGeometry.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:40:37 2006
-    @brief   Geometry mananger for the FMD
-*/
+/** 
+ * @file    AliFMDGeometry.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:40:37 2006
+ * @brief   Geometry mananger for the FMD
+ */
 //____________________________________________________________________
 //                                                                          
 // Forward Multiplicity Detector based on Silicon wafers. 
@@ -93,23 +94,28 @@ AliFMDGeometry* AliFMDGeometry::fgInstance = 0;
 AliFMDGeometry* 
 AliFMDGeometry::Instance() 
 {
-  // Return (newly created) singleton instance 
-  if (!fgInstance) fgInstance = new AliFMDGeometry;
+  // 
+  // singleton access 
+  //
+  // Return:
+  //    Singleton 
+  //
+  if (!fgInstance) fgInstance = new AliFMDGeometry("FMD");
   return fgInstance;
 }
 
 //____________________________________________________________________
 AliFMDGeometry::AliFMDGeometry() 
-  : AliGeometry("FMD", "Forward multiplicity"), 
+  : AliGeometry(),
     fIsInitialized(kFALSE), 
     fInner(0),
     fOuter(0),
     fFMD1(0),
     fFMD2(0),
     fFMD3(0),
-    fUseFMD1(kFALSE),
-    fUseFMD2(kFALSE),
-    fUseFMD3(kFALSE),
+    fUseFMD1(kTRUE),
+    fUseFMD2(kTRUE),
+    fUseFMD3(kTRUE),
     fIsInitTrans(kFALSE),
     fBuilder(0),
     fDetectorOff(0),
@@ -117,23 +123,44 @@ AliFMDGeometry::AliFMDGeometry()
     fRingOff(0),
     fSectorOff(0),
     fActive(2),
-    fDetailed(kFALSE),       
-    fUseAssembly(kFALSE)
+    fDetailed(kTRUE),       
+    fUseAssembly(kTRUE)
 {
   // PROTECTED
-  // Default constructor 
-  fUseFMD1     = kTRUE;
-  fUseFMD2     = kTRUE;
-  fUseFMD3     = kTRUE;  
-  fDetailed    = kTRUE;
-  fUseAssembly = kTRUE;
-  fInner = new AliFMDRing('I');
-  fOuter = new AliFMDRing('O');
-  fFMD1  = new AliFMD1(fInner);
-  fFMD2  = new AliFMD2(fInner, fOuter);
-  fFMD3  = new AliFMD3(fInner, fOuter);
-  fIsInitialized = kFALSE;
-  fActive.Reset(-1);
+  // 
+  // CTOR 
+  //
+}
+
+//____________________________________________________________________
+AliFMDGeometry::AliFMDGeometry(const char* ) 
+  : AliGeometry("FMD", "Forward multiplicity"), 
+    fIsInitialized(kFALSE), 
+    fInner(0),
+    fOuter(0),
+    fFMD1(0),
+    fFMD2(0),
+    fFMD3(0),
+    fUseFMD1(kTRUE),
+    fUseFMD2(kTRUE),
+    fUseFMD3(kTRUE),
+    fIsInitTrans(kFALSE),
+    fBuilder(0),
+    fDetectorOff(0),
+    fModuleOff(0),  
+    fRingOff(0),
+    fSectorOff(0),
+    fActive(2),
+    fDetailed(kTRUE),       
+    fUseAssembly(kTRUE)
+{
+  // PROTECTED
+  // 
+  // CTOR 
+  // 
+  // Parameters:
+  //    name Not used
+  //
 }
 
 //____________________________________________________________________
@@ -159,7 +186,12 @@ AliFMDGeometry::AliFMDGeometry(const AliFMDGeometry& other)
     fUseAssembly(other.fUseAssembly)
 {
   // PROTECTED
-  // Copy constructor
+  // 
+  // Copy CTOR
+  // 
+  // Parameters:
+  //    other To copy from  
+  //
 }
 
 
@@ -169,7 +201,14 @@ AliFMDGeometry&
 AliFMDGeometry::operator=(const AliFMDGeometry& other) 
 {
   // PROTECTED
+  // 
   // Assignment operator 
+  // 
+  // Parameters:
+  //    other To assig from
+  // Return:
+  //    reference to this.  
+  //
   fUseFMD1		= other.fUseFMD1; 
   fUseFMD2		= other.fUseFMD2; 
   fUseFMD3		= other.fUseFMD3; 
@@ -186,7 +225,9 @@ AliFMDGeometry::operator=(const AliFMDGeometry& other)
 void
 AliFMDGeometry::Init()
 {
+  // 
   // Initialize the the singleton if not done so already 
+  //
   if (fIsInitialized) return;
   fInner->Init();
   fOuter->Init();
@@ -199,7 +240,9 @@ AliFMDGeometry::Init()
 void
 AliFMDGeometry::InitTransformations(Bool_t force)
 {
+  // 
   // Find all local <-> global transforms 
+  //
   if (force) fIsInitTrans = kFALSE;
   if (fIsInitTrans) return; 
   if (!gGeoManager) {
@@ -217,7 +260,9 @@ AliFMDGeometry::InitTransformations(Bool_t force)
 void
 AliFMDGeometry::Build()
 {
-  // Build the geometry 
+  // 
+  // Make the geometry.  This delegates to AliFMDGeometryBuilder 
+  //
   if (!fBuilder) fBuilder = new AliFMDGeometryBuilder(fDetailed);
   fBuilder->SetDetailed(fDetailed);
   fBuilder->UseAssembly(fUseAssembly);
@@ -228,7 +273,13 @@ AliFMDGeometry::Build()
 void
 AliFMDGeometry::SetActive(Int_t* active, Int_t n) 
 {
+  // 
   // Set active volumes 
+  // 
+  // Parameters:
+  //    active Active volume id array 
+  //    n elements of @a active 
+  //
   fActive.Set(n);
   for (Int_t i = 0; i < n; i++) { 
     AliFMDDebug(1, ("Active vol id # %d: %d", i, active[i]));
@@ -240,7 +291,13 @@ AliFMDGeometry::SetActive(Int_t* active, Int_t n)
 void
 AliFMDGeometry::AddActive(Int_t active)
 {
+  //
   // Add an active volume 
+  // 
+  // Parameters:
+  //    id Register volume @a id to be active 
+  //
+  // 
   Int_t n = fActive.fN;
   fActive.Set(n+1);
   fActive[n] = active;
@@ -250,7 +307,14 @@ AliFMDGeometry::AddActive(Int_t active)
 Bool_t
 AliFMDGeometry::IsActive(Int_t vol) const
 {
-  // Check if a volume is active 
+  // 
+  // Check if volume @a vol is marked as active 
+  // 
+  // Parameters:
+  //    vol Volume ID
+  // Return:
+  //     @c true if @a vol is declared active 
+  //
   for (Int_t i = 0; i < fActive.fN; i++) 
     if (fActive[i] == vol) return kTRUE;
   return kFALSE;
@@ -260,8 +324,14 @@ AliFMDGeometry::IsActive(Int_t vol) const
 AliFMDDetector*
 AliFMDGeometry::GetDetector(Int_t i) const
 {
-  // Get the ith detector.   i should be one of 1, 2, or 3.  If an
-  // invalid value is passed, 0 (NULL) is returned. 
+  // 
+  // Get description of a sub-detector
+  // 
+  // Parameters:
+  //    i Sub-detector #
+  // Return:
+  //    Description of sub-detector, or 0 
+  //
   switch (i) {
   case 1: return fUseFMD1 ? static_cast<AliFMDDetector*>(fFMD1) : 0;
   case 2: return fUseFMD2 ? static_cast<AliFMDDetector*>(fFMD2) : 0;
@@ -274,9 +344,16 @@ AliFMDGeometry::GetDetector(Int_t i) const
 AliFMDRing*
 AliFMDGeometry::GetRing(Char_t i) const
 {
-  // Get the ith ring.  i should be one of 'I' or 'O' (case
+  // 
+  // Get description of a ring, i should be one of 'I' or 'O' (case
   // insensitive).  If an invalid parameter is passed, 0 (NULL) is
-  // returned. 
+  // returned.
+  // 
+  // Parameters:
+  //    i Ring id
+  // Return:
+  //    Description of ring, or 0 
+  //
   switch (i) {
   case 'I':
   case 'i': return fInner;
@@ -290,7 +367,12 @@ AliFMDGeometry::GetRing(Char_t i) const
 void
 AliFMDGeometry::Enable(Int_t i)
 {
-  // Enable the ith detector.  i should be one of 1, 2, or 3
+  // 
+  // Enable the ith detector
+  // 
+  // Parameters:
+  //    i IF true, enable sub-detector @a i 
+  //
   switch (i) {
   case 1: fUseFMD1 = kTRUE; break;
   case 2: fUseFMD2 = kTRUE; break;
@@ -302,7 +384,12 @@ AliFMDGeometry::Enable(Int_t i)
 void
 AliFMDGeometry::Disable(Int_t i)
 {
-  // Disable the ith detector.  i should be one of 1, 2, or 3
+  // 
+  // Disable the ith detector
+  // 
+  // Parameters:
+  //    i IF true, disable sub-detector @a i 
+  //
   switch (i) {
   case 1: fUseFMD1 = kFALSE; break;
   case 2: fUseFMD2 = kFALSE; break;
@@ -320,9 +407,21 @@ AliFMDGeometry::Detector2XYZ(UShort_t  detector,
 			     Double_t& y, 
 			     Double_t& z) const
 {
-  // Translate detector coordinates (detector, ring, sector, strip) to
-  // spatial coordinates (x, y, z) in the master reference frame of
-  // ALICE. 
+  // 
+  // Translate detector coordinates (detector, ring, sector, strip)
+  // to spatial coordinates (x, y, z) in the master reference frame
+  // of ALICE.  The member function uses the transformations
+  // previously obtained from the TGeoManager.
+  // 
+  // Parameters:
+  //    detector Detector number
+  //    ring     Ring id
+  //    sector   Sector number
+  //    strip    Strip number
+  //    x        On return, X coordinate 
+  //    y        On return, Y coordinate 
+  //    z        On return, Z coordinate  
+  //
   AliFMDDetector* det = GetDetector(detector);
   if (!det) { 
     AliWarning(Form("Unknown detector %d", detector));
@@ -341,12 +440,29 @@ AliFMDGeometry::XYZ2Detector(Double_t  x,
 			     UShort_t& sector, 
 			     UShort_t& strip) const
 {
-  // Translate spatial coordinates (x,y,z) in the master reference frame of
-  // ALICE to the detector coordinates (detector, ring, sector,
-  // strip).  Note, that if this method is to be used in
-  // reconstruction or the like, then the input z-coordinate should be
-  // corrected for the events interactions points z-coordinate, like 
+  // 
+  // Translate spatial coordinates (x,y,z) in the master reference
+  // frame of ALICE to the detector coordinates (detector, ring,
+  // sector, strip).  Note, that if this method is to be used in
+  // reconstruction or the like, then the input z-coordinate should
+  //  be corrected for the events interactions points z-coordinate,
+  // like  
+  // @code 
   // geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
+  // @endcode
+  // 
+  // Parameters:
+  //    x        X coordinate
+  //    y 	      Y coordinate
+  //    z 	      Z coordinate
+  //    detector On return, Detector number
+  //    ring     On return, Ring id		   
+  //    sector   On return, Sector number	   
+  //    strip    On return, Strip number	   
+  // Return:
+  //    @c  false of (@a x, @a y, @a z) is not within this
+  // detector.  
+  //
   AliFMDDetector* det = 0;
   detector = 0;
   for (int i = 1; i <= 3; i++) {
@@ -368,22 +484,24 @@ AliFMDGeometry::XYZ2REtaPhiTheta(Double_t  x,   Double_t y,
 				 Double_t& phi, Double_t& theta)
 {
   
-  // Service function to convert Cartisean XYZ to r, eta, phi, and theta.   
   // 
+  // Service function to convert Cartisean XYZ to r, eta, phi, and theta.   
+  //
   // Note, that the z input should be corrected for the vertex location 
   // if needed.
-  //
-  //     x      Cartisean X coordinate
-  //     y      Cartisean Y coordinate 
-  //     z      Cartisean Z coordinate 
-  //     r      On return, the radius
-  //     eta    On return, the pseudo-rapidity
-  //     phi    On return, the azimuthal angle
-  //     theta  On return, the polar angle;
   // 
+  // Parameters:
+  //    x      Cartisean X coordinate
+  //    y      Cartisean Y coordinate 
+  //    z      Cartisean Z coordinate 
+  //    r      On return, the radius
+  //    eta    On return, the pseudo-rapidity
+  //    phi    On return, the azimuthal angle
+  //    theta  On return, the polar angle;
+  //
   // Return:
-  //     kFALSE in case of problems. 
-
+  //    kTRUE on success, kFALSE in case of problems
+  //     
   if (x == 0 && y == 0 && z == 0) return kFALSE;
   
   // Correct for vertex offset. 
@@ -402,9 +520,14 @@ AliFMDGeometry::GetGlobal(const AliRecPoint* p,
 			  TVector3& pos, 
 			  TMatrixF& /* mat */) const 
 {
-  // Get the global coordinates cooresponding to the reconstructed
-  // point p.  The coordiates is returned in the 3-vector pos passed
-  // to this member function.  The matrix mat is used for rotations. 
+  // 
+  // Get global coordinates cooresponding to a rec point. 
+  // 
+  // Parameters:
+  //    p   Reconstructed point.
+  //    pos On return, the position
+  //    mat On return, the material at @a post 
+  //
   GetGlobal(p, pos);
 }
 
@@ -412,12 +535,13 @@ AliFMDGeometry::GetGlobal(const AliRecPoint* p,
 void
 AliFMDGeometry::GetGlobal(const AliRecPoint* p, TVector3& pos) const 
 {
-  // Get the global coordinates cooresponding to the reconstructed
-  // point p.  The coordiates is returned in the 3-vector pos passed
-  // to this member function. Note, as AliRecPoint only has places for
-  // 3 indicies, it is assumed that the ring hit is an inner ring -
-  // which obviously needn't be the case. This makes the member
-  // function pretty darn useless. 
+  // 
+  // Get global coordinates cooresponding to a rec point. 
+  // 
+  // Parameters:
+  //    p   Reconstructed point.
+  //    pos On return, the position 
+  //
   // FIXME: Implement this function to work with outer rings too. 
   Double_t x, y, z;
   TVector3 local;
@@ -433,11 +557,16 @@ AliFMDGeometry::GetGlobal(const AliRecPoint* p, TVector3& pos) const
 Bool_t
 AliFMDGeometry::Impact(const TParticle* /* particle */) const 
 { 
-  // Return true, if the particle will hit the active detector
-  // elements, and false if not.  Should be used for fast
-  // simulations.  Note, that the function currently return false
-  // always.  
-  // FIXME: Implement this function. 
+  // 
+  // Check if particle will hit an active detector element.  
+  // 
+  // @todo implement this function 
+  // 
+  // Parameters:
+  //    particle Track 
+  // Return:
+  //    @c true if @a particle will hit this detector 
+  //
   return kFALSE; 
 }
 
@@ -445,7 +574,9 @@ AliFMDGeometry::Impact(const TParticle* /* particle */) const
 void  
 AliFMDGeometry::SetAlignableVolumes() const
 {
-  // Declare alignable volumes
+  // 
+  // Declare alignable volumes 
+  //
   for (Int_t d = 1; d <= 3; d++) 
     if (GetDetector(d)) GetDetector(d)->SetAlignableVolumes();
 }

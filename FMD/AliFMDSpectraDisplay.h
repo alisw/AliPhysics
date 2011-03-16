@@ -76,7 +76,7 @@ public:
      * 
      * @param axis Axis specs
      */
-    virtual void MakeHistograms(TAxis* axis);
+    virtual void MakeHistograms(const TAxis* axis);
     /** 
      * Compare to object
      * 

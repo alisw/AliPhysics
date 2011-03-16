@@ -69,6 +69,11 @@ public:
    *        2\mu{}s@f$) 
    */
   void SetHoldTime(Double_t holdT=2e-6) { fHoldTime = holdT; }
+  /** 
+   * Get the hold time 
+   * 
+   * @return Hold time in seconds
+   */
   Double_t GetHoldTime() const { return fHoldTime; }
 protected:
   /** Copy constructor 
@@ -79,20 +84,19 @@ protected:
       fHoldTime(2e-6),
       fStack(o.fStack)
   {}
-  /** Assignment operator
-      @param o Object to assign from 
-      @return Reference to this */
-  AliFMDHitDigitizer& operator=(const AliFMDHitDigitizer& o) 
-  {
-    AliFMDBaseDigitizer::operator=(o);
-    fHoldTime    = o.fHoldTime;
-    fOutput      = o.fOutput;
-    fStack       = o.fStack;
-    return *this;
-  }
-  /** Make the output tree using the passed loader 
-      @param loader 
-      @return The generated tree. */
+  /** 
+   * Assignment operator
+   *
+   * @param o Object to assign from 
+   * @return Reference to this 
+   */
+  AliFMDHitDigitizer& operator=(const AliFMDHitDigitizer& o); 
+  /** 
+   * Make the output tree using the passed loader 
+   *
+   * @param loader 
+   * @return The generated tree. 
+   */
   TTree* MakeOutputTree(AliLoader* loader);
   /** Sum energy deposited contributions from each hit in a cache
       @param hitsBranch Branch in input tree */
@@ -137,8 +141,11 @@ protected:
   void CheckDigit(AliFMDDigit*    digit,
 		  UShort_t        nhits,
 		  const TArrayI&  counts);
-  /** Store the data using the loader 
-      @param loader The loader */
+  /** 
+   * Store the data using the loader 
+   *
+   * @param loader The loader 
+   */
   void StoreDigits(AliLoader* loader);
   
 

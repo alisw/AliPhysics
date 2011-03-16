@@ -42,32 +42,49 @@ class AliFMDDigit;
 
 
 //====================================================================
-/** @class AliFMDDigitizer
-    @brief Concrete digitizer to make digits from hits.  See also
-    AliFMDBaseDigitizer documentation.  
-    @ingroup FMD_sim
+/** 
+ * @class AliFMDDigitizer
+ * @brief Concrete digitizer to make digits from hits.  See also
+ * AliFMDBaseDigitizer documentation.  
+ *
+ * @ingroup FMD_sim
  */
 class AliFMDDigitizer : public AliFMDBaseDigitizer 
 {
 public:
-  /** CTOR */
+  /** 
+   * CTOR 
+   */
   AliFMDDigitizer() : AliFMDBaseDigitizer() {}
-  /** CTOR 
-      @param manager Manager of digitization */
+  /** 
+   * CTOR 
+   *
+   * @param manager Manager of digitization 
+   */
   AliFMDDigitizer(AliRunDigitizer * manager)
     : AliFMDBaseDigitizer(manager) {}
-  /** DTOR */
+  /** 
+   * DTOR 
+   */
   virtual ~AliFMDDigitizer() {}
-  /** Initialise */
+  /** 
+   * Initialise 
+   */
   virtual Bool_t Init();
-  /** Execute this digitizer.  
-      This member function will be called once per event by the passed
-      AliRunDigitizer manager object. 
-      @param options Not used */
+  /** 
+   * Execute this digitizer.  
+   * This member function will be called once per event by the passed
+   * AliRunDigitizer manager object. 
+   *
+   * @param options Not used 
+   */
   virtual void Exec(Option_t* option="");
 protected:
-  /** Sum contributions from SDigits 
-      @param sdigitsBranch Branch of SDigit data */
+  /** 
+   * Sum contributions from SDigits 
+   *
+   * @param sdigitsBranch Branch of SDigit data 
+   */
   void SumContributions(TBranch* sdigitsBranch);
   
   ClassDef(AliFMDDigitizer,1) // Make Digits from Hits

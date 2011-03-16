@@ -40,6 +40,7 @@
 #include "AliFMDCalibStripRange.h" // ALIFMDCALIBSTRIPRANGE_H
 #include <AliCDBManager.h>         // ALICDBMANAGER_H
 #include <AliCDBEntry.h>           // ALICDBMANAGER_H
+#include "AliFMDParameters.h"	   // ALIFMDPARAMETERS_H
 //#include <Riostream.h>
 #include <TSystem.h>
 // #include <TMath.h>

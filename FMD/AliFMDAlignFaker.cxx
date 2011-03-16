@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDAlignFaker.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Sun Mar 26 17:57:55 2006
-    @brief   Implementation of AliFMDAlignFaker 
-*/
+/** 
+ * @file    AliFMDAlignFaker.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Sun Mar 26 17:57:55 2006
+ * @brief   Implementation of AliFMDAlignFaker 
+ */
 //____________________________________________________________________
 //
 //  Class 
@@ -146,6 +147,16 @@ AliFMDAlignFaker::SetHalfRotation(Double_t x1, Double_t y1, Double_t z1,
 Bool_t
 AliFMDAlignFaker::GetGeometry(Bool_t toCdb, const TString& storage)
 {
+  // 
+  // Get the geometry
+  // 
+  // Parameters:
+  //    toCdb   Whether to store in CDB
+  //    storage Storage element to use 
+  // 
+  // Return:
+  //    true on success 
+  //
   if (!toCdb) { 
      //load geom from default CDB storage
     AliGeomManager::LoadGeometry(); 

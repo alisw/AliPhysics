@@ -41,7 +41,10 @@
 #define NESTED(X) AliFMDSpectraDisplay::AliFMDSpectraDisplay # X
 
 //==================================================================
-void AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::MakeHistograms(TAxis* axis) 
+void 
+AliFMDSpectraDisplay::AliFMDSpectraDisplayElement::MakeHistograms(const 
+								  TAxis* 
+								  axis) 
 {
   // Create the 
   // needed histograms

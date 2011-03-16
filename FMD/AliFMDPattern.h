@@ -23,8 +23,8 @@
 #include <TObjArray.h>
 // #include <TGraph.h>
 #include <TLatex.h>
-#include "AliPhysicsSelection.h"
 #include <TLine.h>
+// class AliPhysicsSelection;
 class TCanvas;
 class TPad;
 class TH2;
@@ -66,30 +66,83 @@ public:
 		TObjArray&  outers);
     /** Draw everything 
 	@param a Array of shapes to draw */
-    void  DrawShape(TObjArray& a);
+    void  DrawShape(const TObjArray& a);
     /** Add a marker at specified coordinates 
 	@param X X coordinate 
 	@param Y Y coordinate 
 	@param Z Z coordinate 
 	@param max The maximum value to scale to */
     void  AddMarker(Double_t x, Double_t y, Float_t s, Float_t max);
+    /** 
+     * Get the indentifier 
+     * 
+     * @return Identifier 
+     */
+    Int_t GetId() const { return fId; }
+    /** 
+     * Get the counts array. Number of counts at each level  
+     * 
+     * @return Counts array
+     */
+    TArrayI&     GetCounts() { return fCounts; }
+    /** 
+     * Get the counts array. Number of counts at each level 
+     * 
+     * @return Counts array
+     */
+    const TArrayI& GetCounts() const { return fCounts; }
+    /** 
+     * Get the list of graphs 
+     * 
+     * @return Array of graphs - one for each level
+     */
+    TObjArray& GetGraphs() { return fGraphs; }
+    /** 
+     * Get the list of graphs 
+     * 
+     * @return Array of graphs - one for each level
+     */
+    const TObjArray& GetGraphs() const { return fGraphs; } 
+    /** 
+     * Get the mother frame
+     * 
+     * @return The mother frame 
+     */
+    TH2*& GetFrame() { return fFrame; }
+    /** 
+     * Get the mother frame
+     * 
+     * @return The mother frame 
+     */
+    const TH2* GetFrame() const { return fFrame; }  
+  private:
+    /** 
+     * Copy constructor 
+     * - Not implemented. 
+     */ 
+    AliFMDPatternDetector(const AliFMDPatternDetector&);
+    /** 
+     * Assignement operator 
+     * -- Not implemented 
+     */
+    AliFMDPatternDetector& operator=(const AliFMDPatternDetector&);
+    /** 
+     * Copy shapes
+     * 
+     * @param input  Source
+     * @param own    Ours
+     * @param ang    Angle 
+     * @param fx     Factor x
+     * @param fy     Factor y
+     */
+    void CopyShapes(const TObjArray& input, TObjArray& own, 
+		    Double_t ang=0, Double_t fx=1, Double_t fy=1);
     Int_t     fId;     // Identifier # 
     TArrayI   fCounts; // Number of counts at each level 
     TObjArray fGraphs; // Array of graphs - one for each level
     TH2*      fFrame;  // The mother frame 
-  private:
-    /** Copy constructor 
-	- Not implemented. */ 
-    AliFMDPatternDetector(const AliFMDPatternDetector&);
-    /** Assignement operator 
-	-- Not implemented */
-    AliFMDPatternDetector& operator=(const AliFMDPatternDetector&);
-    void CopyShapes(TObjArray& input, TObjArray& own, 
-		    Double_t ang=0, Double_t fx=1, Double_t fy=1);
-    /** Our own cache of shapes */
-    TObjArray fInners;
-    /** Our own cache of shapes */
-    TObjArray fOuters;
+    TObjArray fInners; // Our own cache of shapes
+    TObjArray fOuters; // Our own cache of shapes
   };
   
   
@@ -135,41 +188,29 @@ public:
   virtual void Redisplay();
   /** Called at the end. */
   virtual void AtEnd();
-  /** Graph to show shape of inner sensor */
   TObjArray fInners;	// Graph to show shape of inner sensor
-  /** Graph to show shape of outer sensor */
   TObjArray fOuters;	// Graph to show shape of outer sensor
-  /** Max inner radius */
   Float_t fInnerMax;	// Max inner radius
-  /** Max outer radius */
   Float_t fOuterMax;	// Max outer radius
-  /** FMD1 Pad */
   TPad*  fFMD1Pad;	// FMD1 Pad
-  /** FMD1 Frame */
   AliFMDPatternDetector fFMD1;	// FMD1 Frame
-  /** FMD2 Pad  */
   TPad*  fFMD2Pad;	// FMD2 Pad 
-  /** FMD2 Frame */
   AliFMDPatternDetector fFMD2;	// FMD2 Frame
-  /** FMD3 Pad */
   TPad*  fFMD3Pad;	// FMD3 Pad
-  /** FMD3 Frame */
   AliFMDPatternDetector fFMD3;	// FMD3 Frame
-  /** Summary pad */
   TPad* fSummary;	// Summary pad
-  /** Text fields */
   TLatex fEvent;	// Text fields
   TLatex fFMD1Sum;	// Total in FMD1
-  TLatex fFMD2Sum;	// Total in FMD1
-  TLatex fFMD3Sum;	// Total in FMD1
+  TLatex fFMD2Sum;	// Total in FMD2
+  TLatex fFMD3Sum;	// Total in FMD3
   TLine  fLine;		// Just a line 
   TLatex fTotal;	// Total in FMD
 
-  Double_t fFMD1Area;   // 
-  Double_t fFMD2Area;   // 
-  Double_t fFMD3Area;   // 
+  Double_t fFMD1Area;   // estimated FMD1 area
+  Double_t fFMD2Area;   // estimated FMD2 area
+  Double_t fFMD3Area;   // estimated FMD3 area
 
-  AliPhysicsSelection* fPhysicsSelection;
+  // AliPhysicsSelection* fPhysicsSelection;
   
   ClassDef(AliFMDPattern,0) // Display FMD data as hit-patterns. 
 };

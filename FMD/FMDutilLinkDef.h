@@ -25,8 +25,6 @@
 #pragma link C++ class  AliFMDFancy;
 #pragma link C++ class  AliFMDCalibFaker;
 #pragma link C++ class  AliFMDAlignFaker;
-#pragma link C++ class  AliFMDAnaRing;
-#pragma link C++ class  AliFMDAnaESD;
 #pragma link C++ class  AliFMDBaseDA;
 #pragma link C++ class  AliFMDPedestalDA;
 #pragma link C++ class  AliFMDGainDA;

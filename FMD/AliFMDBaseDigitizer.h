@@ -271,18 +271,12 @@ protected:
       fStoreTrackRefs(o.fStoreTrackRefs), 
       fIgnoredLabels(o.fIgnoredLabels)
   {}
-  /** Assignment operator
-      @return Reference to this object */
-  AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer& o) 
-  { 
-    AliDigitizer::operator=(o);
-    fRunLoader      = o.fRunLoader;
-    fEdep           = o.fEdep;
-    fShapingTime    = o.fShapingTime;
-    fStoreTrackRefs = o.fStoreTrackRefs;
-    fIgnoredLabels  = o.fIgnoredLabels;
-    return *this; 
-  }
+  /** 
+   * Assignment operator
+   * 
+   * @return Reference to this object 
+   */
+  AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer& o);
 
   ClassDef(AliFMDBaseDigitizer,4) // Base class for FMD digitizers
 };

@@ -83,132 +83,237 @@ class AliFMDGeometryBuilder;
 class AliFMDGeometry : public AliGeometry
 {
 public:
-  /** @return Singleton */
+  /** 
+   * singleton access 
+   *
+   * @return Singleton 
+   */
   static AliFMDGeometry* Instance();
-  /** Initialize */
+  /** 
+   * Initialize the the singleton if not done so already 
+   */
   virtual void Init();
-  /** Initialize transforms */
+  /** 
+   * Find all local <-> global transforms 
+   */
   virtual void InitTransformations(Bool_t force=kFALSE);
-  /** @return Get inner description */
+  /** 
+   * @return Get inner description 
+   */
   AliFMDRing*     GetInner() const { return fInner; }
-  /** @return Get outer description */
+  /** 
+   * @return Get outer description 
+   */
   AliFMDRing*     GetOuter() const { return fOuter; }
-  /** @return Get FMD1 description */
+  /** 
+   * @return Get FMD1 description 
+   */
   AliFMD1*        GetFMD1()  const { return (fUseFMD1 ? fFMD1 : 0); }
-  /** @return Get FMD2 description */
+  /** 
+   * @return Get FMD2 description 
+   */
   AliFMD2*        GetFMD2()  const { return (fUseFMD2 ? fFMD2 : 0); }
-  /** @return Get FMD3 description */
+  /** 
+   * @return Get FMD3 description 
+   */
   AliFMD3*        GetFMD3()  const { return (fUseFMD3 ? fFMD3 : 0); }
-  /** Get description of a sub-detector
-      @param i Sub-detector #
-      @return Description of sub-detector, or 0 */
+  /** 
+   * Get description of a sub-detector
+   * 
+   * @param i Sub-detector #
+   * @return Description of sub-detector, or 0 
+   */
   AliFMDDetector* GetDetector(Int_t i) const;
-  /** Get description of a ring
-      @param i Ring id
-      @return Description of ring, or 0 */
+  /** 
+   * Get description of a ring, i should be one of 'I' or 'O' (case
+   * insensitive).  If an invalid parameter is passed, 0 (NULL) is
+   * returned.
+   *
+   * @param i Ring id
+   * @return Description of ring, or 0 
+   */
   AliFMDRing*     GetRing(Char_t i) const;
-  /** @param i IF true, disable sub-detector @a i */
+  /** 
+   * Disable the ith detector
+   *
+   * @param i IF true, disable sub-detector @a i 
+   */
   void            Disable(Int_t i);
-  /** @param i IF true, enable sub-detector @a i */
+  /** 
+   * Enable the ith detector
+   *
+   * @param i IF true, enable sub-detector @a i 
+   */
   void            Enable(Int_t i);
-  /** @return Density @f$ \rho@f$ of silicon */
+  /** 
+   * @return Density @f$ \rho@f$ of silicon 
+   */
   Double_t        GetSiDensity() const { return 2.33; }
-  /** Translate detector coordinates (detector, ring, sector, strip)
-      to spatial coordinates (x, y, z) in the master reference frame
-      of ALICE.  The member function uses the transformations
-      previously obtained from the TGeoManager.
-      @param detector Detector number
-      @param ring     Ring id
-      @param sector   Sector number
-      @param strip    Strip number
-      @param x        On return, X coordinate 
-      @param y        On return, Y coordinate 
-      @param z        On return, Z coordinate  */
+  /** 
+   * Translate detector coordinates (detector, ring, sector, strip)
+   * to spatial coordinates (x, y, z) in the master reference frame
+   * of ALICE.  The member function uses the transformations
+   * previously obtained from the TGeoManager.
+   *
+   * @param detector Detector number
+   * @param ring     Ring id
+   * @param sector   Sector number
+   * @param strip    Strip number
+   * @param x        On return, X coordinate 
+   * @param y        On return, Y coordinate 
+   * @param z        On return, Z coordinate  
+   */
   void            Detector2XYZ(UShort_t detector, Char_t ring, 
 			       UShort_t sector, UShort_t strip, 
 			       Double_t& x, Double_t& y, Double_t& z) const;
-  /** Translate spatial coordinates (x,y,z) in the master reference
-      frame of ALICE to the detector coordinates (detector, ring,
-      sector, strip).  Note, that if this method is to be used in
-      reconstruction or the like, then the input z-coordinate should
-      be corrected for the events interactions points z-coordinate,
-      like  
-      @code 
-      geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
-      @endcode
-      @param x        X coordinate
-      @param y 	      Y coordinate
-      @param z 	      Z coordinate
-      @param detector On return, Detector number
-      @param ring     On return, Ring id		   
-      @param sector   On return, Sector number	   
-      @param strip    On return, Strip number	   
-      @return @c  false of (@a x, @a y, @a z) is not within this
-      detector.  */
+  /** 
+   * Translate spatial coordinates (x,y,z) in the master reference
+   * frame of ALICE to the detector coordinates (detector, ring,
+   * sector, strip).  Note, that if this method is to be used in
+   * reconstruction or the like, then the input z-coordinate should
+   *  be corrected for the events interactions points z-coordinate,
+   * like  
+   * @code 
+   * geom->XYZ2Detector(x,y,z-ipz,d,r,s,t);
+   * @endcode
+   *
+   * @param x        X coordinate
+   * @param y 	      Y coordinate
+   * @param z 	      Z coordinate
+   * @param detector On return, Detector number
+   * @param ring     On return, Ring id		   
+   * @param sector   On return, Sector number	   
+   * @param strip    On return, Strip number	   
+   * @return @c  false of (@a x, @a y, @a z) is not within this
+   * detector.  
+   */
   Bool_t          XYZ2Detector(Double_t x, Double_t y, Double_t z, 
 			       UShort_t& detector, Char_t& ring, 
 			       UShort_t& sector, UShort_t& strip) const;
-  /** Make the geometry.  This delegates to AliFMDGeometryBuilder */
+  /** 
+   * Make the geometry.  This delegates to AliFMDGeometryBuilder 
+   */
   void   Build();
-  /** @return Get detector offset in paths */
+  /** 
+   * @return Get detector offset in paths 
+   */
   Int_t  GetDetectorOff() const    { return fDetectorOff; }
-  /** @return Get sensor offset in paths */
+  /**
+   * @return Get sensor offset in paths 
+   */
   Int_t  GetModuleOff() const      { return fModuleOff;   }
-  /** @return Get ring offset in paths */
+  /** 
+   * @return Get ring offset in paths 
+   */
   Int_t  GetRingOff() const        { return fRingOff;     }
-  /** @return Get ring sector in paths */
+  /** 
+   * @return Get ring sector in paths 
+   */
   Int_t  GetSectorOff() const      { return fSectorOff;   }
-  /** @param off Detector off-set set in geometry path */
+  /** 
+   * @param off Detector off-set set in geometry path 
+   */
   void   SetDetectorOff(Int_t off) { fDetectorOff = off; }
-  /** @param off Module off-set set in geometry path */
+  /** 
+   * @param off Module off-set set in geometry path 
+   */
   void   SetModuleOff(Int_t off)   { fModuleOff   = off; }
-  /** @param off Ring off-set set in geometry path */
+  /** 
+   * @param off Ring off-set set in geometry path 
+   */
   void   SetRingOff(Int_t off)     { fRingOff     = off; }
-  /** @param off Sectord off-set set in geometry path */
+  /** 
+   * @param off Sectord off-set set in geometry path 
+   */
   void   SetSectorOff(Int_t off)   { fSectorOff   = off; }
-  /** Check if volume @a vol is marked as active 
-      @param vol Volume ID
-      @return  @c true if @a vol is declared active */
+  /** 
+   * Check if volume @a vol is marked as active 
+   *
+   * @param vol Volume ID
+   * @return  @c true if @a vol is declared active 
+   */
   Bool_t IsActive(Int_t vol) const;
-  /** Set active volumes 
-      @param active Active volume id array 
-      @param n elements of @a active */
+  /** 
+   * Set active volumes 
+   *
+   * @param active Active volume id array 
+   * @param n elements of @a active 
+   */
   void   SetActive(Int_t* active, Int_t n);
-  /** @param id Register volume @a id to be active */
+  /** 
+   * Add an active volume 
+   *
+   * @param id Register volume @a id to be active 
+   */
   void   AddActive(Int_t id);
-  /** Get Array of active volume numbers 
-      @return constant reference to active volume numbers */ 
+  /** 
+   * Get Array of active volume numbers 
+   *
+   * @return constant reference to active volume numbers 
+   */ 
   const TArrayI& ActiveIds() const { return fActive; }
-  /** Set an external geometry builder
-      @param b Geometry builder */
+  /** 
+   * Set an external geometry builder
+   *
+   * @param b Geometry builder 
+   */
   void   SetBuilder(AliFMDGeometryBuilder* b) { fBuilder = b; }
-  /** Extract informaton from TGeoManager */
+  /** 
+   * Check the volume depth of some nodes, get the active volume
+   * numbers, and so forth.
+   * 
+   * @todo Here, we should actually also get the parameters of the
+   * shapes, like the verticies of the polygon shape that makes up the
+   * silicon sensor, the strip pitch, the ring radii, the z-positions,
+   * and so on - that is, all the geometric information we need for
+   * futher processing, such as simulation, digitization,
+   * reconstruction, etc.
+  */
   void   ExtractGeomInfo();
-  /** Whether we are to use a detailed geometry or not
-      @param det if @c true, make a detailed geometry. */
+  /** 
+   * Whether we are to use a detailed geometry or not
+   * 
+   * @param det if @c true, make a detailed geometry. 
+   */
   void   SetDetailed(Bool_t det) { fDetailed = det; }
-  /** @return @c true if geometry is detailed */
+  /** 
+   * @return @c true if geometry is detailed 
+   */
   Bool_t IsDetailed() const { return fDetailed; }
-  /** @param ass Whether to use assemblies or not */
+  /** 
+   * @param ass Whether to use assemblies or not 
+   */
   void   UseAssembly(Bool_t ass)  { fUseAssembly = ass; }
 
   // AliGeometry member functions 
-  /** Get global coordinates cooresponding to a rec point. 
-      @param p   Reconstructed point.
-      @param pos On return, the position
-      @param mat On return, the material at @a post */
+  /** 
+   * Get global coordinates cooresponding to a rec point. 
+   * 
+   * @param p   Reconstructed point.
+   * @param pos On return, the position
+   * @param mat On return, the material at @a post 
+   */
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos, 
 			 TMatrixF& mat) const;
-  /** Get global coordinates cooresponding to a rec point. 
-      @param p   Reconstructed point.
-      @param pos On return, the position */
+  /** 
+   * Get global coordinates cooresponding to a rec point. 
+   *
+   * @param p   Reconstructed point.
+   * @param pos On return, the position 
+   */
   virtual void GetGlobal(const AliRecPoint* p, TVector3& pos) const;
-  /** Check if particle will hit an active detector element.  Note
-      done yet. 
-      @param particle Track 
-      @return @c true if @a particle will hit this detector */
+  /** 
+   * Check if particle will hit an active detector element.  
+   * 
+   * @todo implement this function 
+   *
+   * @param particle Track 
+   * @return @c true if @a particle will hit this detector 
+   */
   virtual Bool_t Impact(const TParticle* particle) const;
-  /** Declare alignable volumes */
+  /** 
+   * Declare alignable volumes 
+   */
   virtual void SetAlignableVolumes() const;
 
 
@@ -245,15 +350,32 @@ protected:
   Bool_t	fUseFMD3;	// Wheter to Use FMD3 or not
   Bool_t        fIsInitTrans;   // Transforms initialised?
   static AliFMDGeometry* fgInstance; // Singleton instance 
-  /** CTOR */
+  /** 
+   * CTOR 
+   */
   AliFMDGeometry();
-  /** Copy CTOR
-      @param other To copy from  */
+  /** 
+   * CTOR 
+   *
+   * @param name Not used
+   */
+  AliFMDGeometry(const char* name);
+  /** 
+   * Copy CTOR
+   * 
+   * @param other To copy from  
+   */
   AliFMDGeometry(const AliFMDGeometry& other);
-  /** Assignment operator 
-      @param other To assig from
-      @return reference to this.  */
+  /** 
+   * Assignment operator 
+   * 
+   * @param other To assig from
+   * @return reference to this.  
+   */
   AliFMDGeometry& operator=(const AliFMDGeometry& other);
+  /** 
+   * Destructor 
+   */
   virtual ~AliFMDGeometry() {}
   
   AliFMDGeometryBuilder* fBuilder; // Geometry builder 

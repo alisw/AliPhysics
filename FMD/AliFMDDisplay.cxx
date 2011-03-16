@@ -13,11 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 /* $Id$ */
-/** @file    AliFMDDisplay.cxx
-    @author  Christian Holm Christensen <cholm@nbi.dk>
-    @date    Mon Mar 27 12:39:09 2006
-    @brief   FMD Event display 
-*/
+/** 
+ * @file    AliFMDDisplay.cxx
+ * @author  Christian Holm Christensen <cholm@nbi.dk>
+ * @date    Mon Mar 27 12:39:09 2006
+ * @brief   FMD Event display 
+ */
 //___________________________________________________________________
 //
 // The classes defined here, are utility classes for reading in data
@@ -702,6 +703,17 @@ Bool_t
 AliFMDDisplay::InsideCut(Float_t val, const Float_t& min, 
 			 const Float_t& max) const
 {
+  // 
+  // Whether a point is inside 
+  // 
+  // Parameters:
+  //    v   Point
+  //    min Minimum
+  //    max Maximum
+  // 
+  // Return:
+  //    true if @a v is inside cut 
+  //
   Float_t r = max - min;
   Float_t l = fSlider->GetMinimum();
   Float_t h = fSlider->GetMaximum();
@@ -906,6 +918,18 @@ Double_t
 AliFMDDisplay::GetADCThreshold(UShort_t d, Char_t r, 
 			       UShort_t s, UShort_t t) const
 {
+  // 
+  // Get the ADC threshold
+  // 
+  // Parameters:
+  //    d Detector
+  //    r Ring 
+  //    s Sector 
+  //    t Strip 
+  // 
+  // Return:
+  //    The threshold 
+  //
   AliFMDParameters* parm = AliFMDParameters::Instance();
   Double_t ped           =  parm->GetPedestal(d,r, s, t);
   Double_t pedW          =  parm->GetPedestalWidth(d,r, s, t);

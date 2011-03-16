@@ -51,7 +51,7 @@ public:
 	      Short_t        count3=-1, 
 	      Short_t        count4=-1, 
 	      UShort_t       nrefs=0,
-	      Int_t*         refs=0);
+	      const Int_t*   refs=0);
   /** 
    * DTOR 
    */

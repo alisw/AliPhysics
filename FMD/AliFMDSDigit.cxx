@@ -98,7 +98,7 @@ AliFMDSDigit::AliFMDSDigit(UShort_t       detector,
 			   Short_t        count4,
 			   UShort_t       npart,
 			   UShort_t       nprim,
-			   Int_t*         refs)
+			   const Int_t*   refs)
   : AliFMDBaseDigit(detector, ring, sector, strip), 
     fEdep(edep),
     fCount1(count1),

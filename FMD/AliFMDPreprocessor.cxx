@@ -281,7 +281,7 @@ AliFMDPreprocessor::GetInfoCalibration(TList* files,
   
 //____________________________________________________________________
 AliFMDCalibPedestal* 
-AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
+AliFMDPreprocessor::GetPedestalCalibration(const TList* pedFiles)
 {
   // Read DAQ DA produced CSV files of pedestals, and return a
   // calibration object. 
@@ -298,7 +298,8 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
   TObjString*          fileSource;
   
   while((fileSource = dynamic_cast<TObjString*>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, pars->GetPedestalShuttleID(), fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, pars->GetPedestalShuttleID(), 
+				     fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));
@@ -363,7 +364,7 @@ AliFMDPreprocessor::GetPedestalCalibration(TList* pedFiles)
 
 //____________________________________________________________________
 AliFMDCalibGain* 
-AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
+AliFMDPreprocessor::GetGainCalibration(const TList* gainFiles)
 {
   // Read DAQ DA produced CSV files of pedestals, and return a
   // calibration object. 
@@ -379,7 +380,8 @@ AliFMDPreprocessor::GetGainCalibration(TList* gainFiles)
   TIter             iter(gainFiles);
   TObjString*       fileSource;
   while((fileSource = dynamic_cast<TObjString *>(iter.Next()))) {
-    const Char_t* filename = GetFile(kDAQ, pars->GetGainShuttleID(), fileSource->GetName());
+    const Char_t* filename = GetFile(kDAQ, pars->GetGainShuttleID(), 
+				     fileSource->GetName());
     std::ifstream in(filename);
     if(!in) {
       Log(Form("File %s not found!", filename));

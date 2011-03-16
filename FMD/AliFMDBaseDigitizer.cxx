@@ -276,6 +276,25 @@ AliFMDBaseDigitizer::~AliFMDBaseDigitizer()
 }
 
 //____________________________________________________________________
+AliFMDBaseDigitizer&
+AliFMDBaseDigitizer::operator=(const AliFMDBaseDigitizer& o) 
+{ 
+  // 
+  // Assignment operator
+  // 
+  // Return:
+  //    Reference to this object 
+  //
+  AliDigitizer::operator=(o);
+  fRunLoader      = o.fRunLoader;
+  fEdep           = o.fEdep;
+  fShapingTime    = o.fShapingTime;
+  fStoreTrackRefs = o.fStoreTrackRefs;
+  fIgnoredLabels  = o.fIgnoredLabels;
+  return *this; 
+}
+
+//____________________________________________________________________
 Bool_t 
 AliFMDBaseDigitizer::Init()
 {
