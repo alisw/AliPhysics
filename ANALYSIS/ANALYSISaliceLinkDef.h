@@ -13,6 +13,7 @@
 #pragma link C++ class  AliESDtrackCuts+;
 #pragma link C++ class  AliESDpidCuts+;
 #pragma link C++ class  AliESDv0Cuts+;
+#pragma link C++ class  AliESDv0KineCuts+;
 
 #pragma link C++ class  AliEventPoolOTF+;
 #pragma link C++ class  AliEventPoolLoop+;
