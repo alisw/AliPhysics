@@ -206,7 +206,7 @@ Int_t AliRDHFCuts::IsEventSelectedInCentrality(AliVEvent *event) {
     return 3;  
   }else{    
     Float_t centvalue=GetCentrality((AliAODEvent*)event);          
-    if (centvalue<0.){      
+    if (centvalue<-998.){//-999 if no centralityP
       return 0;    
     }else{      
       if (centvalue<fMinCentrality || centvalue>fMaxCentrality){
