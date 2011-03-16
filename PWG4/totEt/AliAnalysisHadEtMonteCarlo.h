@@ -131,7 +131,6 @@ public:
     Bool_t fInvestigatePiKP;//Turns on and off functions and histos for looking pi/k/p Et event-by-event
     Bool_t fRequireITSHits;//Also investigates Et for track cuts with ITS+TPC hits
     Bool_t fBaryonEnhancement;//Turns on and off baryon enhancement
-    Int_t fCentBin;//current centrality bin
 
     void ResetEventValues();
 
