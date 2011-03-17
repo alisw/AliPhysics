@@ -14,7 +14,8 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// This class compares the global reconstruction with the MC information
+// This class stores QA variables as function of pT for different type
+// of tracks and track selection criteria
 // Author : Marta Verweij - UU
 //-----------------------------------------------------------------------
 
@@ -73,6 +74,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   void SetFilterMask(UInt_t filterMask)    {fFilterMask = filterMask;}
 
+  void SetSigmaConstrainedMax(Double_t sigma) {fSigmaConstrainedMax=sigma;}
   void SetPtMax(Float_t ptmax) {fPtMax = ptmax;}
   void SetNVariables(Int_t nv) {fNVariables = nv;}
 
@@ -98,6 +100,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Int_t   fTrackType;             // 0: global track; 1:TPConly track 2: TPConly constrained track 3: global ITSrefit
   UInt_t fFilterMask;             //! Select tracks from specific track cuts belonging to certain filter mask for AOD analysis
 
+  Double_t fSigmaConstrainedMax;  // max sigma on constrained fit
   Float_t fPtMax;                 // Maximum pT for histograms
 
   Bool_t   fIsPbPb;               //  kTRUE if PbPb
@@ -149,11 +152,18 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
   TH2F *fPtRelUncertainty1Pt;                  //! Pt vs relUncertainty1Pt
+  TH2F *fPtUncertainty1Pt;                   //! Pt vs Uncertainty1Pt
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
 
+  //histos for covariance matrix elements
+  TH2F *fPtSigmaY2;                            //! Pt vs sigma(y)^2 extCov[0]
+  TH2F *fPtSigmaZ2;                            //! Pt vs sigma(z)^2 extCov[2]
+  TH2F *fPtSigmaSnp2;                          //! Pt vs sigma(Snp)^2 extCov[5]
+  TH2F *fPtSigmaTgl2;                          //! Pt vs sigma(Tgl)^2 extCov[9]
+  TH2F *fPtSigma1Pt2;                          //! Pt vs sigma(1/pT)^2 extCov[14]
 
   TList *fHistList; //! List of Histograms
   
