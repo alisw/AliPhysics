@@ -664,7 +664,25 @@ int AliHLTITSClusterFinderComponent::Reconfigure(const char* cdbEntry, const cha
   // see header file for class documentation
   int iResult=0;
   
-  const char* path="HLT/ConfigITS/ClusterFinderComponent";
+  const char* path="";
+
+  switch(fModeSwitch){
+  case kClusterFinderSPD:
+    path = "HLT/ConfigITS/ITSClusterFinderSPD";
+    break;
+  case kClusterFinderSDD: 	 
+    path = "HLT/ConfigITS/ITSClusterFinderSDD";
+    break;
+  case kClusterFinderSSD:
+    path = "HLT/ConfigITS/ITSClusterFinderSSD";
+    break;
+  case kClusterFinderDigits:
+    path = "";
+    break;
+  default:
+    HLTFatal("unknown cluster finder");
+  }
+
   const char* defaultNotify="";
   if (cdbEntry) {
     path=cdbEntry;
