@@ -26,13 +26,15 @@
 #include "AliESDVZERO.h"
 #include "TH2F.h"
 #include "AliESDUtils.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
 
 using namespace std;
 
 ClassImp(AliAnalysisTaskTriggerStudy)
 
 //const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND","V0OR","NTRACKS"};//,"C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND","V0OR","NTRACKS", "NTRACKS ESD"};//,"C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -140,17 +142,94 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Bool_t v0BG  = v0ABG || v0CBG;
 
   // At least one track in eta < 0.8 with pt > 0.5
+  // MC Checks
+  Bool_t atLeast1Track = kFALSE;
+  Bool_t isSD = kFALSE;
+  Bool_t isND = kFALSE;
+
+  if(fIsMC) {
+    if (!fMCEvent) {
+      AliError("No MC info found");
+    } else {
+      Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
+      Int_t nPhysicalPrimaries = 0;
+      for (Int_t ipart=0; ipart<nMCTracks; ipart++) { 	
+	AliMCParticle *mcPart  = (AliMCParticle*)fMCEvent->GetTrack(ipart);
+	// We don't care about neutrals and non-physical primaries
+	if(mcPart->Charge() == 0) continue;
+
+	//check if current particle is a physical primary
+	if(!fMCEvent->IsPhysicalPrimary(ipart)) continue;
+	if(mcPart->Pt()<0.5) continue;
+	if(TMath::Abs(mcPart->Eta())>0.8) continue;
+	atLeast1Track = kTRUE;
+	break;
+      }
+      
+      AliGenPythiaEventHeader * headPy  = 0;
+      AliGenDPMjetEventHeader * headPho = 0;
+      AliGenEventHeader * htmp = fMCEvent->GenEventHeader();
+      if(!htmp) {
+	AliFatal("Cannot Get MC Header!!");
+	return;
+      }
+      if( TString(htmp->IsA()->GetName()) == "AliGenPythiaEventHeader") {
+	headPy =  (AliGenPythiaEventHeader*) htmp;
+      } else if (TString(htmp->IsA()->GetName()) == "AliGenDPMjetEventHeader") {
+	headPho = (AliGenDPMjetEventHeader*) htmp;
+      } else {
+	AliFatal("Unknown header");	
+      }
+      if(headPy)   {
+	//    cout << "Process: " << headPy->ProcessType() << endl;
+	if(headPy->ProcessType() == 92 || headPy->ProcessType() == 93) {
+	  isSD = kTRUE; // is single difractive
+	}
+	if(headPy->ProcessType() != 92 && headPy->ProcessType() != 93 && headPy->ProcessType() != 94) {     
+	  isND = kTRUE; // is non-diffractive
+	}
+	
+      } else if (headPho) {
+	if(headPho->ProcessType() == 5 || headPho->ProcessType() == 6 ) {
+	  isSD = kTRUE;
+	}       
+	if(headPho->ProcessType() != 5 && headPho->ProcessType() != 6  && headPho->ProcessType() != 7 ) {
+	  isND = kTRUE;
+	}       
+      }
+      
+    }
+  }
+  
   static AliESDtrackCuts * cuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
-  cuts->SetPtRange(0.5,10000);
-  cuts->SetEtaRange(-0.8, 0.8);
-  Bool_t atLeast1Track = cuts->CountAcceptedTracks(fESD) > 0;
+  // cuts->SetPtRange(0.5,10000);
+  // cuts->SetEtaRange(-0.8, 0.8);
+  Int_t ntracksLoop = fESD->GetNumberOfTracks();
+
+  Bool_t atLeast1TrackESD = kFALSE;
+  for (Int_t iTrack = 0; iTrack<ntracksLoop; iTrack++) {    
+    AliESDtrack * track = dynamic_cast<AliESDtrack*>(fESD->GetTrack(iTrack));
+    // for each track
+    
+    // track quality cuts
+    if(!cuts->AcceptTrack(track)) continue;
+    if(track->Pt()<0.5) continue;
+    if(TMath::Abs(track->Eta())>0.8) continue;
+
+    atLeast1TrackESD = kTRUE;
+    break;
+  }
+
+
 
   Bool_t vdArray[kNVDEntries];
   vdArray[kVDV0AND]    = c0v0A && c0v0C;
   vdArray[kVDV0OR]     = c0v0A || c0v0C;
   vdArray[kVDNTRACKS]  = atLeast1Track;
+  //  vdArray[kVDNTRACKSESD]  = atLeast1TrackESD;
 
   FillTriggerOverlaps("All", "All Events",vdArray);
+  if(!isSD)   FillTriggerOverlaps("NSD", "NSD Events",vdArray);
 
 
   // Physics selection
