@@ -531,9 +531,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
     if (his3D && !fgForceTHnSparse) { 
         his2D = dynamic_cast<TH2*>(his3D->Project3D("xy")); 
     } else {    
-        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(0,10);        
+        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(0,1.5);        
         his2D = pTPC->GetTPCTrackHisto()->Projection(3,5);
-        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,10);
+        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-1.5,1.5);
     }            
     
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
@@ -619,9 +619,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
     if (his3D && !fgForceTHnSparse) {
         his2D = dynamic_cast<TH2*>(his3D->Project3D("xy")); 
     } else {    
-        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,0);        
+        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-1.5,0);        
         his2D = pTPC->GetTPCTrackHisto()->Projection(3,5);
-        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,10);
+        pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-1.5,1.5);
     }            
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
     delete his2D;    
@@ -937,8 +937,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, T
     TH2* his2D=0;
     TH3* his3D=0;
     
-    //pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(0,10);    
-    
    if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_4_5_7"));
         his3D->GetYaxis()->SetRangeUser(-1,1);
@@ -954,7 +952,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, T
     TObjArray arrayFit;
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
     delete his2D;
-    //pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,10);
     
     his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpol1,"QNRROB=0.8","QNR",-0.8,-0.1);
@@ -1027,7 +1024,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
     TH2* his2D=0;
     TH3* his3D=0;
     
-    //pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,0);    
     
    if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_7")) {    
         his3D = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_4_5_7"));
@@ -1045,7 +1041,6 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
     his2D->FitSlicesY(0,0,-1,10,"QNR",&arrayFit);
     delete his2D;
     
-    // pTPC->GetTPCTrackHisto()->GetAxis(8)->SetRangeUser(-10,10);
     his1D = (TH1*) arrayFit.At(1);
     his1D->Fit(fpol1,"QNRROB=0.8","QNR",-0.8,-0.1);
     offsetdZCNeg=fpol1->GetParameter(0);
