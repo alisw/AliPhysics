@@ -81,7 +81,7 @@ TH1D * AliOADBPWG2Spectra::GetHisto(EPWG2SpectraDetector det, EPWG2SpectraPIDTyp
 void  AliOADBPWG2Spectra::AddHisto(TH1D * h, EPWG2SpectraDetector det, EPWG2SpectraPIDType pidType, EPWG2SpectraParticle part, 
 				    EPWG2SpectraCharge charge, const char * centrTag, Int_t centrBin) {
   // Add a histogram to the list
-  
+  // Rename it if necessary
   const char * name = GetHistoName(det,pidType,part,charge,centrTag,centrBin);
   TH1D * hold = (TH1D*) fHistos->FindObject(name);
   if (hold) fHistos->Remove(hold);
@@ -102,8 +102,8 @@ TH1D * AliOADBPWG2Spectra::BookHisto(EPWG2SpectraDetector det, EPWG2SpectraPIDTy
   // should have the same binning (if possible/reasonable) to
   // facilitate the compoarison and the combination
 
-  const Float_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2,2.2,2.4,2.6};
-  Int_t nbinsTempl=34;
+  const Float_t templBins[] = {0.05,0.1,0.12,0.14,0.16,0.18,0.20,0.25,0.30,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2,2.2,2.4,2.6, 2.7, 2.8, 2.9, 3.0, 3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0};
+  Int_t nbinsTempl=48;
   const char * name = GetHistoName(det,pidType,part,charge,centrTag,centrBin);
   TH1D * h = new TH1D(name, name, nbinsTempl, templBins);
   return h;

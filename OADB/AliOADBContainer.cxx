@@ -111,7 +111,7 @@ void AliOADBContainer::AppendObject(TObject* obj, Int_t lower, Int_t upper)
   Int_t index = HasOverlap(lower, upper);
   
   if (index != -1) {
-    AliFatal(Form("Ambiguos validity range (%5d) !\n", index));
+    AliFatal(Form("Ambiguos validity range (%5d, %5.5d-%5.5d) !\n", index,lower,upper));
     return;
   }
   //
