@@ -367,7 +367,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetDJMode(Int_t dj = 1)      {fDJMode = dj;}
   virtual void   SetEffMode(Int_t eff = 1)    {fEffMode = eff;}
   virtual void   SetPhiCorrMode(Int_t pc = 1) {fPhiCorrMode = pc;}
-  virtual void   SetBckgSubMethod(Int_t bg = 2) {fBckgSubMethod = bg;}
+  virtual void   SetBckgSubMethod(Int_t bg = 0) {fBckgSubMethod = bg;}
 
   virtual void   UseRecEffRecJetPtBins(Bool_t useRec = kTRUE) { fUseRecEffRecJetPtBins = useRec; }
 
@@ -478,7 +478,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   
   Int_t   GetListOfTracks(TList* list, Int_t type);
   Int_t	  GetListOfJets(TList* list, Int_t type);
-  Int_t   GetListOfBckgJets(/*TList *list, Int_t type*/) const;
+  Int_t   GetListOfBckgJets(/*TList *list, Int_t type*/);
 
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
