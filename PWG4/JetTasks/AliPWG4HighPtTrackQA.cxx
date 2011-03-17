@@ -67,10 +67,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fTrackCuts(0), 
   fTrackType(0),
   fFilterMask(0),
+  fSigmaConstrainedMax(5.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(13),
+  fNVariables(18),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -95,13 +96,19 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
+  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
+  fPtSigmaY2(0x0),
+  fPtSigmaZ2(0x0),
+  fPtSigmaSnp2(0x0),
+  fPtSigmaTgl2(0x0),
+  fPtSigma1Pt2(0x0),
   fHistList(0)
 {
-  SetNVariables(13);
+  SetNVariables(18);
 }
 //________________________________________________________________________
 AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name): 
@@ -113,10 +120,11 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fTrackCuts(),
   fTrackType(0),
   fFilterMask(0),
+  fSigmaConstrainedMax(5.),
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(13),
+  fNVariables(18),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -141,10 +149,16 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
   fPtRelUncertainty1Pt(0x0),
+  fPtUncertainty1Pt(0x0),
   fPtChi2PerClusterTPC(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
+  fPtSigmaY2(0x0),
+  fPtSigmaZ2(0x0),
+  fPtSigmaSnp2(0x0),
+  fPtSigmaTgl2(0x0),
+  fPtSigma1Pt2(0x0),
   fHistList(0)
 {
   //
@@ -152,7 +166,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   //
   AliDebug(2,Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
-  SetNVariables(13);
+  SetNVariables(18);
 
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
@@ -228,12 +242,20 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Int_t fgkNDCA2DBins=80;
   Float_t fgkDCA2DMin = -0.2;
   Float_t fgkDCA2DMax = 0.2;
+  if(fTrackType==1 || fTrackType==2) {
+    fgkDCA2DMin = -2.;
+    fgkDCA2DMax = 2.;
+  }
   Double_t *binsDCA2D=new Double_t[fgkNDCA2DBins+1];
   for(Int_t i=0; i<=fgkNDCA2DBins; i++) binsDCA2D[i]=(Double_t)fgkDCA2DMin + (fgkDCA2DMax-fgkDCA2DMin)/fgkNDCA2DBins*(Double_t)i ;
 
   Int_t fgkNDCAZBins=80;
   Float_t fgkDCAZMin = -2.;
   Float_t fgkDCAZMax = 2.;
+  if(fTrackType==1 || fTrackType==2) {
+    fgkDCAZMin = -5.;
+    fgkDCAZMax = 5.;
+  }
   Double_t *binsDCAZ=new Double_t[fgkNDCAZBins+1];
   for(Int_t i=0; i<=fgkNDCAZBins; i++) binsDCAZ[i]=(Double_t)fgkDCAZMin + (fgkDCAZMax-fgkDCAZMin)/fgkNDCAZBins*(Double_t)i ;
 
@@ -251,15 +273,23 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   Int_t fgkNChi2CBins=20;
   Float_t fgkChi2CMin = 0.;
-  Float_t fgkChi2CMax = 10.;
+  Float_t fgkChi2CMax = 100.;
   Double_t *binsChi2C=new Double_t[fgkNChi2CBins+1];
   for(Int_t i=0; i<=fgkNChi2CBins; i++) binsChi2C[i]=(Double_t)fgkChi2CMin + (fgkChi2CMax-fgkChi2CMin)/fgkNChi2CBins*(Double_t)i ;
 
   Int_t fgkNRel1PtUncertaintyBins=30;
   Float_t fgkRel1PtUncertaintyMin = 0.;
   Float_t fgkRel1PtUncertaintyMax = 0.3;
+  if(fTrackType==1 || fTrackType==2) fgkRel1PtUncertaintyMax = 0.5; 
   Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
   for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
+
+  Int_t fgkNUncertainty1PtBins = 30;
+  Float_t fgkUncertainty1PtMin = 0.;
+  Float_t fgkUncertainty1PtMax = 0.1;
+  if(fTrackType==1 || fTrackType==2) fgkUncertainty1PtMax = 0.2; 
+  Double_t *binsUncertainty1Pt=new Double_t[fgkNUncertainty1PtBins+1];
+  for(Int_t i=0; i<=fgkNUncertainty1PtBins; i++) binsUncertainty1Pt[i]=(Double_t)fgkUncertainty1PtMin + (fgkUncertainty1PtMax-fgkUncertainty1PtMin)/fgkNUncertainty1PtBins*(Double_t)i ;
 
   Float_t fgkChi2PerClusMin = 0.;
   Float_t fgkChi2PerClusMax = 4.;
@@ -272,6 +302,43 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Float_t fgkNCrossedRowsNClusFMax = 1.;
   Double_t *binsNCrossedRowsNClusF=new Double_t[fgkNCrossedRowsNClusFBins+1];
   for(Int_t i=0; i<=fgkNCrossedRowsNClusFBins; i++) binsNCrossedRowsNClusF[i]=(Double_t)fgkNCrossedRowsNClusFMin + (fgkNCrossedRowsNClusFMax-fgkNCrossedRowsNClusFMin)/fgkNCrossedRowsNClusFBins*(Double_t)i ;
+
+  Int_t fgkN1PtBins = 50;
+  Float_t fgk1PtMin = 0.;
+  Float_t fgk1PtMax = 6.;
+  Double_t *bins1Pt=new Double_t[fgkN1PtBins+1];
+  for(Int_t i=0; i<=fgkN1PtBins; i++) bins1Pt[i]=(Double_t)fgk1PtMin + (fgk1PtMax-fgk1PtMin)/fgkN1PtBins*(Double_t)i ;
+
+  Int_t fgkNSigmaY2Bins = 50;
+  Float_t fgkSigmaY2Min = 0.;
+  Float_t fgkSigmaY2Max = 2.;
+  Double_t *binsSigmaY2=new Double_t[fgkNSigmaY2Bins+1];
+  for(Int_t i=0; i<=fgkNSigmaY2Bins; i++) binsSigmaY2[i]=(Double_t)fgkSigmaY2Min + (fgkSigmaY2Max-fgkSigmaY2Min)/fgkNSigmaY2Bins*(Double_t)i ;
+
+  Int_t fgkNSigmaZ2Bins = 50;
+  Float_t fgkSigmaZ2Min = 0.;
+  Float_t fgkSigmaZ2Max = 2.;
+  Double_t *binsSigmaZ2=new Double_t[fgkNSigmaZ2Bins+1];
+  for(Int_t i=0; i<=fgkNSigmaZ2Bins; i++) binsSigmaZ2[i]=(Double_t)fgkSigmaZ2Min + (fgkSigmaZ2Max-fgkSigmaZ2Min)/fgkNSigmaZ2Bins*(Double_t)i ;
+
+  Int_t fgkNSigmaSnp2Bins = 50;
+  Float_t fgkSigmaSnp2Min = 0.;
+  Float_t fgkSigmaSnp2Max = 2.;
+  Double_t *binsSigmaSnp2=new Double_t[fgkNSigmaSnp2Bins+1];
+  for(Int_t i=0; i<=fgkNSigmaSnp2Bins; i++) binsSigmaSnp2[i]=(Double_t)fgkSigmaSnp2Min + (fgkSigmaSnp2Max-fgkSigmaSnp2Min)/fgkNSigmaSnp2Bins*(Double_t)i ;
+
+  Int_t fgkNSigmaTgl2Bins = 50;
+  Float_t fgkSigmaTgl2Min = 0.;
+  Float_t fgkSigmaTgl2Max = 2.;
+  Double_t *binsSigmaTgl2=new Double_t[fgkNSigmaTgl2Bins+1];
+  for(Int_t i=0; i<=fgkNSigmaTgl2Bins; i++) binsSigmaTgl2[i]=(Double_t)fgkSigmaTgl2Min + (fgkSigmaTgl2Max-fgkSigmaTgl2Min)/fgkNSigmaTgl2Bins*(Double_t)i ;
+
+  Int_t fgkNSigma1Pt2Bins = 50;
+  Float_t fgkSigma1Pt2Min = 0.;
+  Float_t fgkSigma1Pt2Max = 2.;
+  Double_t *binsSigma1Pt2=new Double_t[fgkNSigma1Pt2Bins+1];
+  for(Int_t i=0; i<=fgkNSigma1Pt2Bins; i++) binsSigma1Pt2[i]=(Double_t)fgkSigma1Pt2Min + (fgkSigma1Pt2Max-fgkSigma1Pt2Min)/fgkNSigma1Pt2Bins*(Double_t)i ;
+
 
   fNEventAll = new TH1F("fNEventAll","NEventAll",1,-0.5,0.5);
   fHistList->Add(fNEventAll);
@@ -317,6 +384,7 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fh1NTracksReject->Fill("relate",0);
   fh1NTracksReject->Fill("trackCuts",0);
   fh1NTracksReject->Fill("laser",0);
+  fh1NTracksReject->Fill("chi2",0);
   fHistList->Add(fh1NTracksReject);
 
   fh1NTracksSel = new TH1F("fh1NTracksSel","fh1NTracksSel",1,-0.5,0.5);
@@ -354,6 +422,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fPtRelUncertainty1Pt = new TH2F("fPtRelUncertainty1Pt","fPtRelUncertainty1Pt",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
   fHistList->Add(fPtRelUncertainty1Pt);
+
+  fPtUncertainty1Pt = new TH2F("fPtUncertainty1Pt","fPtUncertainty1Pt",fgkNPtBins,binsPt,fgkNUncertainty1PtBins,binsUncertainty1Pt);
+  fHistList->Add(fPtUncertainty1Pt);
  
   fPtChi2PerClusterTPC = new TH2F("fPtChi2PerClusterTPC","fPtChi2PerClusterTPC",fgkNPtBins,binsPt,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtChi2PerClusterTPC);
@@ -366,7 +437,22 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
  
   fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF","fPtNCrRNCrRNClusF",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrRNCrRNClusF);
- 
+
+  fPtSigmaY2 = new TH2F("fPtSigmaY2","fPtSigmaY2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaY2);
+  fHistList->Add(fPtSigmaY2);
+
+  fPtSigmaZ2 = new TH2F("fPtSigmaZ2","fPtSigmaZ2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaZ2);
+  fHistList->Add(fPtSigmaZ2);
+
+  fPtSigmaSnp2 = new TH2F("fPtSigmaSnp2","fPtSigmaSnp2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaSnp2);
+  fHistList->Add(fPtSigmaSnp2);
+
+  fPtSigmaTgl2 = new TH2F("fPtSigmaTgl2","fPtSigmaTgl2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigmaTgl2);
+  fHistList->Add(fPtSigmaTgl2);
+
+  fPtSigma1Pt2 = new TH2F("fPtSigma1Pt2","fPtSigma1Pt2",fgkN1PtBins,bins1Pt,fgkNSigmaZ2Bins,binsSigma1Pt2);
+  fHistList->Add(fPtSigma1Pt2);
+
   TH1::AddDirectory(oldStatus); 
 
   PostData(1, fHistList);
@@ -381,8 +467,15 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   if(binsChi2C)             delete [] binsChi2C;
   if(binsEta)               delete [] binsEta;
   if(binsRel1PtUncertainty) delete [] binsRel1PtUncertainty;
+  if(binsUncertainty1Pt)    delete [] binsUncertainty1Pt;
   if(binsChi2PerClus)       delete [] binsChi2PerClus;
   if(binsChi2PerClus)       delete [] binsNCrossedRowsNClusF;
+  if(bins1Pt)               delete [] bins1Pt;
+  if(binsSigmaY2)           delete [] binsSigmaY2;
+  if(binsSigmaZ2)           delete [] binsSigmaZ2;
+  if(binsSigmaSnp2)         delete [] binsSigmaSnp2;
+  if(binsSigmaTgl2)         delete [] binsSigmaTgl2;
+  if(binsSigma1Pt2)         delete [] binsSigma1Pt2;
 }
 
 //________________________________________________________________________
@@ -633,13 +726,18 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     10: chi2PerClusterTPC
     11: #crossed rows
     12: (#crossed rows)/(#findable clusters)
+    13: SigmaY2
+    14: SigmaZ2
+    15: SigmaSnp2
+    16: SigmaTgl2
+    17: Sigma1Pt2
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
     fh1NTracksAll->Fill(0.);
 
     //Get track for analysis
-    AliESDtrack *track;
+    AliESDtrack *track = 0x0;
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
     if(!esdtrack) {
       fh1NTracksReject->Fill("noESDtrack",1);
@@ -671,6 +769,15 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       continue;
     }
 
+    if(fTrackType==2) {
+      //Cut on chi2 of constrained fit
+      if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
+	fh1NTracksReject->Fill("chi2",1);
+	delete track;
+	continue;
+      }
+    }
+
     fPtAll->Fill(track->Pt());
 
     if (!(fTrackCuts->AcceptTrack(track))) {
@@ -688,9 +795,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     fVariables->Reset(0.);
       
-    fVariables->SetAt(track->Pt(),0);
-    fVariables->SetAt(track->Phi(),1);
-    fVariables->SetAt(track->Eta(),2);
+    fVariables->SetAt(track->Pt(),0); 
+    fVariables->SetAt(track->Phi(),1); 
+    fVariables->SetAt(track->Eta(),2); 
 
     Float_t dca2D = 0.;
     Float_t dcaz  = 0.;
@@ -701,7 +808,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track->GetImpactParametersTPC(dca2D,dcaz);
     }
     fVariables->SetAt(dca2D,3);
-    fVariables->SetAt(dcaz,5);
+    fVariables->SetAt(dcaz,4);
 
     fVariables->SetAt((float)track->GetTPCNcls(),5);
 
@@ -712,7 +819,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 	nPointITS ++;
     }
     fVariables->SetAt((float)nPointITS,6);
-    fVariables->SetAt(track->GetConstrainedChi2(),7);
+    Float_t chi2C = (float)track->GetConstrainedChi2();
+    if(fTrackType==1 || fTrackType==2)
+      chi2C = (float)track->GetConstrainedChi2TPC();
+    fVariables->SetAt(chi2C,7);
     fVariables->SetAt(fTrackCuts->GetSigmaToVertex(track),8);// Calculates the number of sigma to the vertex for a track.
   
     fVariables->SetAt(TMath::Sqrt(track->GetSigma1Pt2())*fVariables->At(0),9);
@@ -725,6 +835,11 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     Float_t crossedRowsTPCNClsF = track->GetTPCClusterInfo(2,0);
     //if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsF,12);//(#crossed rows)/(#findable clusters)
+    fVariables->SetAt(track->GetSigmaY2(),13);
+    fVariables->SetAt(track->GetSigmaZ2(),14);
+    fVariables->SetAt(track->GetSigmaSnp2(),15);
+    fVariables->SetAt(track->GetSigmaTgl2(),16);
+    fVariables->SetAt(track->GetSigma1Pt2(),17);
     
     FillHistograms();
   
@@ -792,6 +907,12 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
     fPtChi2C->Fill(fVariables->At(0),fVariables->At(7));
     fPtNSigmaToVertex->Fill(fVariables->At(0),fVariables->At(8));
     fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(9));
+    fPtUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)/fVariables->At(9));
+    fPtSigmaY2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(13)));
+    fPtSigmaZ2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(14)));
+    fPtSigmaSnp2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(15)));
+    fPtSigmaTgl2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(16)));
+    fPtSigma1Pt2->Fill(1./fVariables->At(0),TMath::Sqrt(fVariables->At(17)));
   }
   fPtChi2PerClusterTPC->Fill(fVariables->At(0),fVariables->At(10));
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
