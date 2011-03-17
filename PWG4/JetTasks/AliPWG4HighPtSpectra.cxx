@@ -14,9 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Example of task (running locally, on AliEn and CAF),
-// which provides standard way of calculating acceptance and efficiency
-// between different steps of the procedure.
+// Efficiency between different steps of the procedure.
 // The ouptut of the task is a AliCFContainer from which the efficiencies
 // can be calculated
 //-----------------------------------------------------------------------
@@ -46,6 +44,7 @@
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
+#include "AliCentrality.h"
 
 #include "AliLog.h"
 
@@ -72,14 +71,17 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
+  fIsPbPb(0),
+  fCentClass(10),
   fTrackType(0),
   fTrackCuts(0x0),
-  fTrackCutsTPConly(0x0),
+  fSigmaConstrainedMax(5.),
   fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
   fNEventSel(0),
   fNEventReject(0),
+  fh1Centrality(0x0),
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
@@ -99,14 +101,17 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
+  fIsPbPb(0),
+  fCentClass(10),
   fTrackType(0),
   fTrackCuts(0x0),
-  fTrackCutsTPConly(0x0),
+  fSigmaConstrainedMax(5.),
   fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
   fNEventSel(0),
   fNEventReject(0),
+  fh1Centrality(0x0),
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
@@ -135,7 +140,6 @@ void AliPWG4HighPtSpectra::LocalInit()
   // Only called once at beginning
   //
   PostData(3,fTrackCuts);
-  PostData(4,fTrackCutsTPConly);
 }
 
 //________________________________________________________________________
@@ -239,7 +243,48 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
     return selectEvent;
   }
 
+  //Centrality selection should only be done in case of PbPb
+  if(IsPbPb()) {
+    Float_t cent = 0.;
+    if(fCentClass!=CalculateCentrality(fESD) && fCentClass!=10) {
+      fNEventReject->Fill("cent",1);
+      selectEvent = kFALSE;
+      return selectEvent;
+    }
+    else {
+      if(dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()) {
+	cent = dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()->GetCentralityPercentile("V0M");
+      }
+      if(cent>90.) {
+	fNEventReject->Fill("cent>90",1);
+	selectEvent = kFALSE;
+	return selectEvent;	
+      }
+      fh1Centrality->Fill(cent);
+    }
+  }
+
   return selectEvent;
+
+}
+
+//________________________________________________________________________
+Int_t AliPWG4HighPtSpectra::CalculateCentrality(AliESDEvent *esd){
+
+
+  Float_t cent = 999;
+
+  if(esd){
+    if(esd->GetCentrality()){
+      cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+    }
+  }
+
+  if(cent>80)return 4;
+  if(cent>50)return 3;
+  if(cent>30)return 2;
+  if(cent>10)return 1;
+  return 0;
 
 }
 
@@ -305,43 +350,45 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   
   
   Double_t containerInputRec[3]       = {0.,0.,0.};
-  Double_t containerInputTPConly[3]   = {0.,0.,0.};
   Double_t containerInputMC[3]        = {0.,0.,0.};
-  Double_t containerInputRecMC[3]     = {0.,0.,0.};
-  Double_t containerInputTPConlyMC[3] = {0.,0.,0.};
+  Double_t containerInputRecMC[3]     = {0.,0.,0.}; //reconstructed yield as function of MC variable
 
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {   
-      if(!fESD->GetTrack(iTrack) ) continue;
-      AliESDtrack* track = fESD->GetTrack(iTrack);
-      if(!track)continue;
-      AliESDtrack* trackTPCESD = 0;
-      if(fTrackType==0)
-	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
-      else if(fTrackType==1) {
-	trackTPCESD = AliESDtrackCuts::GetTPCOnlyTrack(fESD,track->GetID());
-	if(!trackTPCESD) {
+      //Get track for analysis
+      AliESDtrack *track = 0x0;
+      AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
+      if(!esdtrack) continue;
+
+      if(fTrackType==1)
+	track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+      else if(fTrackType==2) {
+	track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+	if(!track) continue;
+
+	AliExternalTrackParam exParam;
+	Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	if( !relate ) {
+	  delete track;
 	  continue;
 	}
-      AliExternalTrackParam exParam;
-      Bool_t relate = trackTPCESD->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
-      if( !relate ) {
-	delete trackTPCESD;
-	continue;
-      }
-      trackTPCESD->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+	track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
       }
       else
-	trackTPCESD = track;
+	track = esdtrack;
     
-      if(!trackTPCESD) {
-	delete trackTPCESD;
+      if(!track) {
+	if(fTrackType==1 || fTrackType==2) delete track;
 	continue;
       }
-      if(!track) {
-	delete trackTPCESD;
-	continue;
+ 
+      if(fTrackType==2) {
+	//Cut on chi2 of constrained fit
+	if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
+	  delete track;
+	  continue;
+	}
       }
 
 
@@ -350,43 +397,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputRec[1] = track->Phi();
       containerInputRec[2] = track->Eta();
     
-      //Store TPC Inner Params for TPConly tracks
-      containerInputTPConly[0] = trackTPCESD->Pt();
-      containerInputTPConly[1] = trackTPCESD->Phi();
-      containerInputTPConly[2] = trackTPCESD->Eta();
-
-      if(trackTPCESD) {
-	if (fTrackCutsTPConly->AcceptTrack(trackTPCESD)) {
-	  if(trackTPCESD->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
-	  if(trackTPCESD->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConly,kStepReconstructedTPCOnly);
-
-	  //Only fill the MC containers if MC information is available
-	  if(fMC) {
-	    Int_t label = TMath::Abs(track->GetLabel());
-	    TParticle *particle = fStack->Particle(label) ;
-	    if(!particle) {
-	      delete trackTPCESD;
-	      continue;
-	    }
-	    
-	    containerInputTPConlyMC[0] = particle->Pt();      
-	    containerInputTPConlyMC[1] = particle->Phi();      
-	    containerInputTPConlyMC[2] = particle->Eta();  
-	    
-	    //Container with primaries
-	    if(fStack->IsPhysicalPrimary(label)) {
-	      if(particle->GetPDG()->Charge()>0.) {
-		fCFManagerPos->GetParticleContainer()->Fill(containerInputTPConlyMC,kStepReconstructedTPCOnlyMC);
-	      }
-	      if(particle->GetPDG()->Charge()<0.) {
-		fCFManagerNeg->GetParticleContainer()->Fill(containerInputTPConlyMC,kStepReconstructedTPCOnlyMC);
-	      }
-	    }
-	  }
-	  
-	}
-      }
-
       if (fTrackCuts->AcceptTrack(track)) {
 	if(track->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 	if(track->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
@@ -397,7 +407,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  Int_t label = TMath::Abs(track->GetLabel());
 	  TParticle *particle = fStack->Particle(label) ;
 	  if(!particle) {
-	    delete trackTPCESD;
+	    if(fTrackType==1 || fTrackType==2)
+	      delete track;
 	    continue;
 	  }
 	  containerInputRecMC[0] = particle->Pt();      
@@ -425,9 +436,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  }
 	}
 	
-      }//trackCuts
+      }//trackCuts global tracks
 
-      delete trackTPCESD;
+      if(fTrackType==1 || fTrackType==2)
+	delete track;
     }//track loop
   
 
@@ -611,7 +623,20 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   fHistList->Add(fNEventSel);
 
   fNEventReject = new TH1F("fNEventReject","Reason events are rejectected for analysis",20,0,20);
+  //Set labels
+  fNEventReject->Fill("noESD",0);
+  fNEventReject->Fill("Trigger",0);
+  fNEventReject->Fill("NTracks<2",0);
+  fNEventReject->Fill("noVTX",0);
+  fNEventReject->Fill("VtxStatus",0);
+  fNEventReject->Fill("NCont<2",0);
+  fNEventReject->Fill("ZVTX>10",0);
+  fNEventReject->Fill("cent",0);
+  fNEventReject->Fill("cent>90",0);
   fHistList->Add(fNEventReject);
+
+  fh1Centrality = new TH1F("fh1Centrality","fh1Centrality; Centrality %",100,0,100);
+  fHistList->Add(fh1Centrality);
 
   fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
   fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
