@@ -190,7 +190,6 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   esd->GetStdContent();
 
   // fill track variables
-  fNofTracks       = esd->GetNumberOfTracks();
   fVertexX         = esd->GetPrimaryVertexTracks()->GetX();
   fVertexY         = esd->GetPrimaryVertexTracks()->GetY();
   fVertexZ         = esd->GetPrimaryVertexTracks()->GetZ();
@@ -201,8 +200,10 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
   if(fFillV0==kTRUE && (fNofV0s > fMaxV0Count)){
      HLTWarning("Found V0s are %d, while component argument is %d, the respective TTree branch is not filled properly. Need to reconfigure.\n", fNofV0s, fMaxV0Count);
   }
-  
-  for(int i=0; i<fNofTracks; i++){    
+
+  Int_t nTracks = 0;
+
+  for(int i=0; i<esd->GetNumberOfTracks(); i++){    
       AliESDtrack *esdTrack = esd->GetTrack(i);
       if (!esdTrack) continue;
       
@@ -221,9 +222,14 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
       fTrackVariables.Fill("Track_DCAr"      , DCAr				   );
       fTrackVariables.Fill("Track_DCAz"      , DCAz				   );	
       fTrackVariables.Fill("Track_dEdx"      , esdTrack->GetTPCsignal() 	   );	
-      fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()		   );	   
+      fTrackVariablesInt.Fill("Track_status" , esdTrack->GetStatus()		   );	
+      
+      // selection of TPC tracks, the condition rejects e.g. TRD tracklets which would appear with 0 TPC clusters
+      if( esdTrack->GetTPCNcls()>0 ) nTracks++;
   }
   
+  fNofTracks = nTracks; 
+    
   if(fFillV0==kTRUE){
      for(int i=0; i<fNofV0s; i++){     
    	 AliESDv0 *esdV0 = esd->GetV0(i);
