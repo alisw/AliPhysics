@@ -348,12 +348,13 @@ void AliLRCAnalysis::DrawHist( const int * const mDrawArray, bool drawPaveLabel,
 	if ( histType == 0 )	{
 		f1 = new TF1( "f1", "[0]+[1]*x", fxFitMin, fxFitMax);
 		f1->SetLineColor(kRed);
+		f1->SetParameters(aCoef,bCoef); 
 	}
 	else if ( histType == 1 )	{
 		f1 = new TF1( "f1", "[0]+[1]*(x-1)", fxFitMin/mnf, fxFitMax/mnf);
 		f1->SetLineColor(kGreen);
+		f1->SetParameters(aCoef,bCoef); 
 	}
-	f1->SetParameters(aCoef,bCoef); 
 	//cout << " set draw params: a=" << aCoef << " b=" << bCoef << endl;
 
 	y1=profToDraw->GetBinContent(1)-profToDraw->GetBinError(1);
@@ -383,27 +384,36 @@ void AliLRCAnalysis::DrawHist( const int * const mDrawArray, bool drawPaveLabel,
 		double aYshift = (y2-y1)/20;
 
 		TPaveText *pt1 = new TPaveText(x1+(x2-x1)/2 + aXshift, y1+aYshift, x2-(x2-x1)/6 + aXshift, y1+(y2-y1)/3*2/9*nDatas + aYshift);
-		sprintf(str, "Events = %i", fEntries);
+		snprintf(str,50, "Events = %i", fEntries);
+		//sprintf(str, "Events = %i", fEntries);
 		if ( mDrawArray[0] ) pt1->AddText(str);
-		sprintf(str, "a = %g #pm %g", GetRoundWithError( aCoef, aCoefError ), GetRoundWithPrecision(aCoefError, 2)); //fit1->GetParameter(0), fit1->GetParError(0));
+		snprintf(str, 50,"a = %g #pm %g", GetRoundWithError( aCoef, aCoefError ), GetRoundWithPrecision(aCoefError, 2)); //fit1->GetParameter(0), fit1->GetParError(0));
+		//sprintf(str, "a = %g #pm %g", GetRoundWithError( aCoef, aCoefError ), GetRoundWithPrecision(aCoefError, 2)); //fit1->GetParameter(0), fit1->GetParError(0));
 		if ( mDrawArray[1] ) pt1->AddText(str);
-		sprintf(str, "b = %g #pm %g", GetRoundWithError( bCoef, bCoefError ), GetRoundWithPrecision(bCoefError, 2)); //fit1->GetParameter(1), fit1->GetParError(1));
+		snprintf(str, 50,"b = %g #pm %g", GetRoundWithError( bCoef, bCoefError ), GetRoundWithPrecision(bCoefError, 2)); //fit1->GetParameter(1), fit1->GetParError(1));
+		//sprintf(str, "b = %g #pm %g", GetRoundWithError( bCoef, bCoefError ), GetRoundWithPrecision(bCoefError, 2)); //fit1->GetParameter(1), fit1->GetParError(1));
 		if ( mDrawArray[2] ) pt1->AddText(str);
-		sprintf(str, "#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(fXi2abs, 3));
+		snprintf(str, 50,"#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(fXi2abs, 3));
+		//sprintf(str, "#hat{#chi}^{2} = #chi^{2}/(n-2) = %g", GetRoundWithPrecision(fXi2abs, 3));
 		if ( mDrawArray[3] ) pt1->AddText(str);
-		sprintf(str, "<%s> = %g " , fSx, GetRoundWithPrecision(fPrf->GetMean(), 3));
+		snprintf(str,50, "<%s> = %g " , fSx, GetRoundWithPrecision(fPrf->GetMean(), 3));
+		//sprintf(str, "<%s> = %g " , fSx, GetRoundWithPrecision(fPrf->GetMean(), 3));
 		if ( mDrawArray[4] ) pt1->AddText(str);
 		
-		sprintf(str, "<%s> = %g", fSy,  GetRoundWithPrecision(fPrb->GetMean(),3));
+		snprintf(str,50, "<%s> = %g", fSy,  GetRoundWithPrecision(fPrb->GetMean(),3));
+		//sprintf(str, "<%s> = %g", fSy,  GetRoundWithPrecision(fPrb->GetMean(),3));
 		if ( mDrawArray[5] ) pt1->AddText(str);
 		
-		sprintf(str, "<<%s>> = %g " , fSx, GetRoundWithPrecision(fPrf->GetRMS(), 3));
+		snprintf(str, 50,"<<%s>> = %g " , fSx, GetRoundWithPrecision(fPrf->GetRMS(), 3));
+		//sprintf(str, "<<%s>> = %g " , fSx, GetRoundWithPrecision(fPrf->GetRMS(), 3));
 		if ( mDrawArray[6] ) pt1->AddText(str);
-		sprintf(str, "<<%s>> = %g", fSy,  GetRoundWithPrecision(fPrb->GetRMS(), 3));
+		snprintf(str, 50,"<<%s>> = %g", fSy,  GetRoundWithPrecision(fPrb->GetRMS(), 3));
+		//sprintf(str, "<<%s>> = %g", fSy,  GetRoundWithPrecision(fPrb->GetRMS(), 3));
 		if ( mDrawArray[7] ) pt1->AddText(str);
 		
 		if ( fdptb ) {
-			sprintf(str, "d%s = %g", fSy,  GetRoundWithPrecision(fdptb, 3));
+			snprintf(str,50, "d%s = %g", fSy,  GetRoundWithPrecision(fdptb, 3));
+			//sprintf(str, "d%s = %g", fSy,  GetRoundWithPrecision(fdptb, 3));
 			if ( mDrawArray[8] ) pt1->AddText(str);
 		}
 		

@@ -811,10 +811,10 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 	}
 	
 	//Good vertex	
-	const AliESDVertex *vertex = 0x0;
+	const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
 	if(isphysevent)
 	{
-		vertex = fESD->GetPrimaryVertexTracks();
+	  //vertex = fESD->GetPrimaryVertexTracks();
 		if(vertex->GetNContributors()<1) 
 		{
 			// SPD vertex
@@ -1039,21 +1039,23 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 		Int_t   uniqueID=-1;
 		Int_t pdgcodefake=0;
 		Int_t primaryfake=0;
-		TParticle *particle2=0x0;
+		//TParticle *particle2=0x0;
+		TParticle *particle2 = stack->Particle(TMath::Abs(label));
+
 		if(label>=0&&stack&&fMC)
 		{
 			primary=stack->IsPhysicalPrimary(TMath::Abs(label));
-			particle2 = stack->Particle(TMath::Abs(label));
+			//particle2 = stack->Particle(TMath::Abs(label));
 			pdgcode=particle2->GetPdgCode();
 			chargeMC=particle2->GetPDG(0)->Charge()/3.0;
 			etaMC=particle2->Eta();
 			ptMC=particle2->Pt();
 			uniqueID=particle2->GetUniqueID();
 		}
-		if(label<0&&stack&&fMC)
+		else if(label<0&&stack&&fMC)
 		{
 			primaryfake=stack->IsPhysicalPrimary(TMath::Abs(label));
-			particle2 = stack->Particle(TMath::Abs(label));
+			//particle2 = stack->Particle(TMath::Abs(label));
 			pdgcodefake=particle2->GetPdgCode();
 			uniqueID=particle2->GetUniqueID();
 			

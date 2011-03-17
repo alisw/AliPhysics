@@ -887,6 +887,7 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVParticle() const
       externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
       if (!externalParams) return NULL;
       flowtrack = new AliFlowTrack(externalParams);
+      break;
     default:
       flowtrack = new AliFlowTrack(fTrack);
       break;
