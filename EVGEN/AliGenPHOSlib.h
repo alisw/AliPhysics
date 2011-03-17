@@ -22,7 +22,7 @@ class AliGenPHOSlib :
 public AliGenLib
 {
  public:
-    enum constants{kPion, kChargedPion, kPi0Flat, kKaon, kChargedKaon, kKaon0L,
+    enum constants{kPion, kChargedPion, kPi0, kPi0Flat, kKaon, kChargedKaon, kKaon0L,
 		   kEta, kEtaFlat,kOmega, kOmegaFlat, kEtaPrime, kPhi, 
 		   kBaryon, kProton, kAProton, kNeutron, kANeutron};
     GenFunc   GetPt(Int_t param, const char* tname=0) const;
@@ -35,7 +35,8 @@ public AliGenLib
     static Double_t YPion( const Double_t *py, const Double_t *dummy);
     static Int_t    IpPion(TRandom* ran);
     static Int_t    IpChargedPion(TRandom* ran);
-
+//  pi0 Distribution
+    static Double_t PtPi0(const Double_t *px, const Double_t *dummy);
 //  pi0 Flat Distribution
     static Double_t PtPi0Flat(const Double_t *px, const Double_t *dummy);
     static Double_t YPi0Flat( const Double_t *py, const Double_t *dummy);
