@@ -60,8 +60,8 @@ struct TrainSetup
   TrainSetup(const char* name, UShort_t year=0, UShort_t month=0, 
 	     UShort_t day=0, UShort_t hour=0, UShort_t min=0) 
     : fName(name),
-      fRootVersion("v5-27-06b"),
-      fAliRootVersion("v4-21-13-AN"),
+      fRootVersion("v5-28-00a"),
+      fAliRootVersion("v4-21-18-AN"),
       fProofServer("alicecaf.cern.ch"),
       fDataDir("/alice/data/2010/LHC10c"),
       fDataSet("/COMMON/COMMON/LHC09a4_run8100X#/esdTree"),
@@ -1137,16 +1137,17 @@ public:
       fField(field)
   {}
   void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false)
+	   Int_t nEvents=-1, Bool_t mc=false,
+	   Bool_t usePar=false)
   {
     EMode eMode = ParseMode(mode);
     EOper eOper = ParseOperation(oper);
     
-    Run(eMode, eOper, nEvents, mc);
+    Run(eMode, eOper, nEvents, mc, usePar);
   }
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false)
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, Bool_t usePar = false)
   {
-    Exec(kESD, mode, oper, nEvents, mc, true);
+    Exec(kESD, mode, oper, nEvents, mc, usePar);
   }
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
