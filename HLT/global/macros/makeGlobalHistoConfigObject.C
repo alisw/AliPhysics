@@ -130,20 +130,21 @@ TString makeString(){
   
   s+="-histogram TrackPt(100,0,20) -size 1000 -expression Track_pt -cut Track_TPCclus>0 ";
   s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_TPCclus>0 ";
-  s+="-histogram TrackMultiplicity(500,0,10000) -size 1000 -expression trackcount -cut Track_TPCclus>0 ";
+  s+="-histogram TrackMultiplicity(250,0,5000) -size 1000 -expression trackcount ";
   s+="-histogram TrackEta(100,-2,2) -size 1000 -expression Track_eta -cut Track_TPCclus>0 ";
   s+="-histogram TrackTPCclus(200,0,200) -size 1000 -expression Track_TPCclus -cut Track_TPCclus>0 ";
   s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus -cut Track_ITSclus>0 ";
   s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_TPCclus>0 ";
   s+="-histogram TrackDCAr(100,-50,50) -size 1000 -expression Track_DCAr -cut Track_TPCclus>0 ";
   s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_TPCclus>0 ";
-
+ 
   s+="-histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz ";
-  s+="-histogram VertexX(100,-20,20)  -size 1000 -expression vertexX -cut nContributors>3 ";
-  s+="-histogram VertexY(100,-20,20)  -size 1000 -expression vertexY -cut nContributors>3 ";
+  s+="-histogram VertexX(50,-5,5)  -size 1000 -expression vertexX -cut nContributors>3 ";
+  s+="-histogram VertexY(50,-5,5)  -size 1000 -expression vertexY -cut nContributors>3 ";
   s+="-histogram VertexZ(200,-50,50)  -size 1000 -expression vertexZ -cut nContributors>3 ";
   s+="-histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 ";
   s+="-histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 ";
+
   
   return s;
 }
