@@ -1,3 +1,23 @@
+/**************************************************************************
+ * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//
+// Helper Class that contains a lot of 
+// usefull static functions jet matchin pythia access etc.
+//
+// Author: C. Klein-Boesing IKP Muenster 
 
 #include "TROOT.h"
 #include "TDirectory.h"
@@ -36,8 +56,10 @@ ClassImp(AliAnalysisHelperJetTasks)
 Int_t AliAnalysisHelperJetTasks::fgLastProcessType = -1;
 
  
-AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCEvent *mcEvent){
-  
+AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(const AliMCEvent *mcEvent){
+  //
+  // Fetch  the pythia event header
+  // 
   if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
@@ -67,6 +89,9 @@ AliGenPythiaEventHeader*  AliAnalysisHelperJetTasks::GetPythiaEventHeader(AliMCE
 
 
 void AliAnalysisHelperJetTasks::PrintStack(AliMCEvent *mcEvent,Int_t iFirst,Int_t iLast,Int_t iMaxPrint){
+  // 
+  // Print the stack informatuin up to the iMaxPrint event
+  //
 
   AliStack *stack = mcEvent->Stack();
   if(!stack){
@@ -97,7 +122,7 @@ void AliAnalysisHelperJetTasks::PrintStack(AliMCEvent *mcEvent,Int_t iFirst,Int_
 
 
 void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &kGenJets,
-					       AliAODJet *recJets,const Int_t &kRecJets,
+					       const AliAODJet *recJets,const Int_t &kRecJets,
 					       Int_t *iGenIndex,Int_t *iRecIndex,
 					       Int_t iDebug,Float_t maxDist){
 
@@ -225,8 +250,8 @@ void AliAnalysisHelperJetTasks::GetClosestJets(AliAODJet *genJets,const Int_t &k
 
 
 
-void AliAnalysisHelperJetTasks::GetClosestJets(TList *genJetsList,const Int_t &kGenJets,
-					       TList *recJetsList,const Int_t &kRecJets,
+void AliAnalysisHelperJetTasks::GetClosestJets(const TList *genJetsList,const Int_t &kGenJets,
+					       const TList *recJetsList,const Int_t &kRecJets,
 					       TArrayI &iGenIndex,TArrayI &iRecIndex,
 					       Int_t iDebug,Float_t maxDist){
 
@@ -352,8 +377,8 @@ void AliAnalysisHelperJetTasks::GetClosestJets(TList *genJetsList,const Int_t &k
   }
 }
 
-void AliAnalysisHelperJetTasks::GetJetMatching(TList *genJetsList, const Int_t &kGenJets,
-                                               TList *recJetsList, const Int_t &kRecJets,
+void AliAnalysisHelperJetTasks::GetJetMatching(const TList *genJetsList, const Int_t &kGenJets,
+                                               const TList *recJetsList, const Int_t &kRecJets,
                                                TArrayI &iMatchIndex, TArrayF &fPtFraction,
                                                Int_t iDebug, Float_t maxDist){
 
@@ -458,8 +483,10 @@ void AliAnalysisHelperJetTasks::GetJetMatching(TList *genJetsList, const Int_t &
     }
 }
 
-Double_t AliAnalysisHelperJetTasks::GetFractionOfJet(AliAODJet *recJet, AliAODJet *genJet){
-
+Double_t AliAnalysisHelperJetTasks::GetFractionOfJet(const AliAODJet *recJet, const AliAODJet *genJet){
+  //
+  // get the fraction of hte signal jet in the full jt
+  //
     Double_t ptGen = genJet->Pt();
     if(ptGen==0.) return 999.;
     
@@ -771,6 +798,10 @@ Bool_t AliAnalysisHelperJetTasks::PythiaInfoFromFile(const char* currFile,Float_
 
 Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
 
+  //
+  // Print the size on disk and in memory occuppied by a directory 
+  //
+
   TFile *fIn = TFile::Open(currFile);
   if(!fIn){
     // not a severe condition but inciate that we have no information
@@ -815,6 +846,11 @@ Bool_t AliAnalysisHelperJetTasks::PrintDirectorySize(const char* currFile){
 
 
 Bool_t  AliAnalysisHelperJetTasks::Selected(Bool_t bSet,Bool_t bNew){
+  // 
+  // Static helper task, (re)set event by event
+  //
+
+
   static Bool_t bSelected = kTRUE; // if service task is not run we acccpet all
   if(bSet){
     bSelected = bNew;
@@ -843,6 +879,10 @@ Bool_t  AliAnalysisHelperJetTasks::TestEventClass(Int_t iMask){
 
 
 UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
+  // 
+  // set event by event the slection info
+  // 
+
   static UInt_t iSelectInfo = 0; //
   if(bSet){
     iSelectInfo = iNew;
@@ -852,6 +892,10 @@ UInt_t  AliAnalysisHelperJetTasks::SelectInfo(Bool_t bSet,UInt_t iNew){
 
 
 Int_t  AliAnalysisHelperJetTasks::EventClass(Bool_t bSet,Int_t iNew){
+  //
+  // gloab storage/access to event class
+  //
+
   static Int_t iEventClass = 0; //
   if(bSet){
     iEventClass = iNew;
@@ -864,7 +908,7 @@ Int_t  AliAnalysisHelperJetTasks::EventClass(Bool_t bSet,Int_t iNew){
 
 //___________________________________________________________________________________________________________
 
-Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01, TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
+Bool_t AliAnalysisHelperJetTasks::GetEventShapes(TVector3 &n01,const  TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes)
 {       
   // ***
   // Event shape calculation
@@ -1202,6 +1246,10 @@ Bool_t AliAnalysisHelperJetTasks::IsTriggerFired(const AliVEvent* aEv, Trigger t
 
 
  AliAnalysisHelperJetTasks::MCProcessType  AliAnalysisHelperJetTasks::GetPythiaEventProcessType(AliGenEventHeader* aHeader, Bool_t adebug) {
+   //
+   // fetch the process type from the mc header
+   //
+
 
   AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(aHeader);
 
