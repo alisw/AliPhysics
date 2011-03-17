@@ -96,6 +96,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(): AliAnalysisTaskSE(),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),  
   fNSkipLeadingRan(0),
+  fNSkipLeadingCone(0),
   fNRandomCones(0),
   fAvgTrials(1),
   fExternalWeight(1),
@@ -204,6 +205,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fNSkipLeadingRan(0),
+  fNSkipLeadingCone(0),
   fNRandomCones(0),
   fAvgTrials(1),
   fExternalWeight(1),    
@@ -353,8 +355,8 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
 	}
       }
       // create the branch for the random cones with the same R 
-      TString cName = Form("%sRandomCone",fNonStdBranch.Data());
-
+      TString cName = Form("%sRandomConeSkip%02d",fNonStdBranch.Data(),fNSkipLeadingCone);
+  
       if(fNRandomCones>0){
 	if(!AODEvent()->FindListObject(cName.Data())){
 	  fTCARandomConesOut = new TClonesArray("AliAODJet", 0);
@@ -983,7 +985,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        Double_t pC  = TMath::Sqrt(pTC*pTC+pZC*pZC); 
        AliAODJet tmpRecC (pXC,pYC,pZC, pC); 
        bool skip = false;
-       for(int jj = 0; jj < TMath::Min(nRec,2);jj++){// test for overlap with leading jets
+       for(int jj = 0; jj < TMath::Min(nRec,fNSkipLeadingCone);jj++){// test for overlap with leading jets
 	 AliAODJet jet (sortedJets[jj].px(), sortedJets[jj].py(), sortedJets[jj].pz(), sortedJets[jj].E());
 	 if(jet.DeltaR(& tmpRecC)<2.*fRparam+0.2){
 	   skip = true;
