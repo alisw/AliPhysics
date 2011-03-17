@@ -219,7 +219,7 @@ void AliAnaConvCorrBase::PrintStatistics()  {
   //Print some statistics between each file
   
   for(Int_t i = 0; i < fNTBins; i++) {
-    Int_t nTrig = fHNTriggers[0]->GetBinContent(i+1);
+    Int_t nTrig = (Int_t) fHNTriggers[0]->GetBinContent(i+1);
     cout << "triggers: " << nTrig << endl;
     for(int j = 0; j < fNCBins; j++) {
       cout << fHdPhiBins[0][i][j]->GetEntries() << "/" << ((nTrig>0)? fHdPhiBins[0][i][j]->GetEntries()/nTrig : 0) << ";  ";
