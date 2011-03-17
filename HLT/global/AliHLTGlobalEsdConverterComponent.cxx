@@ -50,6 +50,7 @@
 #include "AliESDCaloCluster.h"
 #include "AliESDVZERO.h"
 #include "AliHLTGlobalVertexerComponent.h"
+#include "AliHLTVertexFinderBase.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -152,6 +153,9 @@ void AliHLTGlobalEsdConverterComponent::GetInputDataTypes(AliHLTComponentDataTyp
   list.push_back(kAliHLTDataTypeESDObject);
   list.push_back(kAliHLTDataTypeTObject);
   list.push_back(kAliHLTDataTypeGlobalVertexer);
+  list.push_back(kAliHLTDataTypeV0Finder); // array of track ids for V0s
+  list.push_back(kAliHLTDataTypeKFVertex); // KFVertex object from vertexer
+  list.push_back(kAliHLTDataTypePrimaryFinder); // array of track ids for prim vertex
   list.push_back(kAliHLTDataTypeESDContent);
 }
 
@@ -356,6 +360,19 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   int iResult=0;
   int iAddedDataBlocks=0;
 
+  // check if there is an ESD block in the input and copy its content first to the
+  // ESD
+  const TObject* pEsdObj = GetFirstInputObject(kAliHLTDataTypeESDObject, "AliESDEvent");
+  AliESDEvent* pInputESD=NULL;
+  if (pEsdObj) pInputESD=dynamic_cast<AliESDEvent*>(const_cast<TObject*>(pEsdObj));
+  if (pInputESD) {
+    pInputESD->GetStdContent();
+    *pESD=*pInputESD;
+  }
+  if (GetNextInputObject()!=NULL) {
+    HLTWarning("handling of multiple ESD input objects not implemented, skipping input");
+  }
+
   // Barrel tracking
   // tracks are based on the TPC tracks, and only updated from the ITS information
   // Sequence:
@@ -435,6 +452,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   // 2) convert the TPC tracks to ESD tracks
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
+    if (pInputESD && pInputESD->GetNumberOfTracks()>0) {
+      HLTWarning("Tracks array already filled from the input esd block, additional filling from TPC tracks block might cause inconsistent content");
+    }
     fBenchmark.AddInput(pBlock->fSize);
     vector<AliHLTGlobalBarrelTrack> tracks;
     if ((iResult=AliHLTGlobalBarrelTrack::ConvertTrackDataArray(reinterpret_cast<const AliHLTTracksData*>(pBlock->fPtr), pBlock->fSize, tracks))>=0) {
@@ -595,11 +615,39 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   }
 
   // update with  vertices and vertex-fitted tracks
-
+  // output of the GlobalVertexerComponent
   for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer);
        pBlock!=NULL; pBlock=GetNextInputBlock()) {
     fBenchmark.AddInput(pBlock->fSize);   
     AliHLTGlobalVertexerComponent::FillESD( pESD, reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData* >(pBlock->fPtr) );
+  }
+
+  // update with  vertices and vertex-fitted tracks
+  // output of PrimaryVertexer and V0Finder components
+  TObject* pBase = (TObject*)GetFirstInputObject(kAliHLTDataTypeKFVertex | kAliHLTDataOriginOut);
+  if (pBase) {
+    AliKFVertex* kfVertex = dynamic_cast<AliKFVertex *>(pBase);
+    if (kfVertex) {
+      const AliHLTComponentBlockData* pP = GetFirstInputBlock(kAliHLTDataTypePrimaryFinder | kAliHLTDataOriginOut);
+      if (pP && pP->fSize && pP->fPtr) {
+	const AliHLTComponentBlockData* pV0 = GetFirstInputBlock(kAliHLTDataTypeV0Finder | kAliHLTDataOriginOut);
+	if (pV0 && pV0->fPtr && pInputESD && pInputESD->GetNumberOfV0s()>0) {
+	  const int* v0s = static_cast<const int*>(pV0->fPtr);
+	  HLTWarning("V0 array already filled from the input esd block, additional filling from V0 block of %d entries might cause inconsistent content", v0s[0]);
+	}
+	AliHLTVertexFinderBase::FillESD(pESD, kfVertex, pP->fPtr, pV0?pV0->fPtr:NULL);
+      } else
+	HLTWarning("Problem with primary finder's data block");
+    } else {
+      HLTWarning("primary vertex block of wrong type, expecting AliKFVertex instead of %s", pBase->GetName());
+    }
+  } else {
+    // throw an error if there is a V0 data block which can not be handled without
+    // the AliKFVertex object
+    if (GetFirstInputBlock(kAliHLTDataTypeV0Finder | kAliHLTDataOriginOut)!=NULL) {
+      ALIHLTERRORGUARD(1, "missing AliKFVertex object ignoring V0 data block of type %s",
+		       DataType2Text(kAliHLTDataTypeV0Finder|kAliHLTDataOriginOut).c_str());
+    }
   }
 
   // Fill DCA parameters for TPC tracks
