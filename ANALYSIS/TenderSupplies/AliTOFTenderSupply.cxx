@@ -53,10 +53,11 @@ AliTOFTenderSupply::AliTOFTenderSupply() :
   fCorrectExpTimes(kTRUE),
   fLHC10dPatch(kFALSE),
   fDebugLevel(0),
+  fAutomaticSettings(kTRUE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.)
-
+  fTOFres(100.),
+  fT0IntercalibrationShift(0)
 
 
 {
@@ -78,9 +79,11 @@ AliTOFTenderSupply::AliTOFTenderSupply(const char *name, const AliTender *tender
   fCorrectExpTimes(kTRUE),
   fLHC10dPatch(kFALSE),
   fDebugLevel(0),
+  fAutomaticSettings(kTRUE),
   fTOFCalib(0x0),
   fTOFT0maker(0x0),
-  fTOFres(100.) 
+  fTOFres(100.),
+  fT0IntercalibrationShift(0)
  
 {
   //
@@ -100,7 +103,71 @@ void AliTOFTenderSupply::Init()
   
   // Initialise TOF tender (this is called at each detected run change)
   // Setup PID object, check for MC, set AliTOFcalib and TOFT0 maker conf
+  Int_t run = fTender->GetRun();
+  if (run == 0) return;                // to skip first init, when we don't have yet a run number
 
+  if (fAutomaticSettings) {
+    if (run>=114737&&run<=117223) {      //period="LHC10B";
+      fCorrectExpTimes=kTRUE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kTOF_T0;
+      fT0IntercalibrationShift = 0;
+    }
+    else if (run>=118503&&run<=121040) { //period="LHC10C";
+      fCorrectExpTimes=kTRUE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kTOF_T0;
+      fT0IntercalibrationShift = 0;
+    }
+    else if (run>=122195&&run<=126437) { //period="LHC10D";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kTRUE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kBest_T0;
+      fT0IntercalibrationShift = 0;
+    }
+    else if (run>=127719&&run<=130850) { //period="LHC10E";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kBest_T0;
+      fT0IntercalibrationShift = 30.;
+    }
+    else if (run>=133004&&run<=135029) { //period="LHC10F";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kBest_T0;
+      fT0IntercalibrationShift = 0.;
+      AliWarning("TOF tender not supported for LHC10F period!! Settings are just a guess!!");
+    }
+    else if (run>=135654&&run<=136377) { //period="LHC10G";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kBest_T0;
+      fT0IntercalibrationShift = 0.;
+      AliWarning("TOF tender not supported for LHC10G period!! Settings are just a guess!!");
+    }
+    else if (run>=136851&&run<=139517) { //period="LHC10H";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kTRUE;                // this will be removed when we will have pass2
+      fTOFres=90.;
+      fTimeZeroType=AliESDpid::kTOF_T0;
+      fT0IntercalibrationShift = 0.;
+      AliWarning("TOF tender not supported for LHC10H period!! Settings are just a guess!!");
+    }
+    else if (run>=139699) {              //period="LHC11A";
+      fCorrectExpTimes=kFALSE;
+      fLHC10dPatch=kFALSE;
+      fTOFres=100.;
+      fTimeZeroType=AliESDpid::kBest_T0;
+      fT0IntercalibrationShift = 0.;
+      AliWarning("TOF tender not supported for LHC11A period!! Settings are just a guess!!");
+    }
+  }
 
   // Check if another detector already created the esd pid object
   // if not we create it and set it to the ESD input handler
@@ -129,7 +196,6 @@ void AliTOFTenderSupply::Init()
   fTOFT0maker->SetTimeResolution(fTOFres);     // set TOF resolution for the PID
   
 
-
   AliInfo("|******************************************************|");
   AliInfo(Form("|    Alice TOF Tender Initialisation (Run %d)  |",fTender->GetRun()));
   AliInfo("|    Settings:                                         |");
@@ -138,6 +204,7 @@ void AliTOFTenderSupply::Init()
   AliInfo(Form("|    TOF resolution for TOFT0 maker :  %5.2f (ps)     |",fTOFres));
   AliInfo(Form("|    timeZero selection             :  %d               |",fTimeZeroType));
   AliInfo(Form("|    MC flag                        :  %d               |",fIsMC));
+  AliInfo(Form("|    TOF/T0 intecalibration shift   :  %5.2f (ps)     |",fT0IntercalibrationShift));
   AliInfo("|******************************************************|");
 
 
@@ -160,6 +227,8 @@ void AliTOFTenderSupply::ProcessEvent()
     
   if (fTender->RunChanged()){ 
 
+    Init();            
+
     fTOFCalib->Init(fTender->GetRun());
     
     if(event->GetT0TOF()){ // read T0 detector correction from OCDB
@@ -171,12 +240,12 @@ void AliTOFTenderSupply::ProcessEvent()
 	AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*) entry->GetObject();
 	Float_t *t0means= clb->GetT0Means();
 	//      Float_t *t0sigmas = clb->GetT0Sigmas();
-	fT0shift[0] = t0means[0];
-	fT0shift[1] = t0means[1];
-	fT0shift[2] = t0means[2];
-	fT0shift[3] = t0means[3];
+	fT0shift[0] = t0means[0] + fT0IntercalibrationShift;
+	fT0shift[1] = t0means[1] + fT0IntercalibrationShift;
+	fT0shift[2] = t0means[2] + fT0IntercalibrationShift;
+	fT0shift[3] = t0means[3] + fT0IntercalibrationShift;
       } else {
-	for (Int_t i=0;i<4;i++) fT0shift[i]=0.;
+	for (Int_t i=0;i<4;i++) fT0shift[i]=0;
 	AliWarning("TofTender no T0 entry found T0shift set to 0");
       }
     }

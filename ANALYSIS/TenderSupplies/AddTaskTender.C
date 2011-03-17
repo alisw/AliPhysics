@@ -39,7 +39,6 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
 
   //========= Attach TOF supply ======
   AliTOFTenderSupply *tofTender = new AliTOFTenderSupply("TOFtender");
-  tofTender->SetTimeZeroType(AliESDpid::kTOF_T0);
   tender->AddSupply(tofTender);
   
   //========= Attach TRD supply ======

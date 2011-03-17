@@ -43,7 +43,7 @@ public:
     fLHC10dPatch=flag;
     return;
   }
-  
+  void SetAutomaticSettings(Bool_t flag=kTRUE){fAutomaticSettings=flag;}
   virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
 
   /* theoretical expected time: related stuff for LHC10d patch */
@@ -60,12 +60,14 @@ private:
   Bool_t fCorrectExpTimes;   // flag to apply Expected Time correction 
   Bool_t fLHC10dPatch;       // flag to apply special patch for LHC10d (reconstructed with wrong geometry)
   Int_t  fDebugLevel;        // debug purposes 0= no output, 1 Info, 2 lot of info....
+  Bool_t fAutomaticSettings; // enable/disable automatic (per run) settings
 
   // variables for TOF calibrations and timeZero setup
   AliTOFcalib     *fTOFCalib;       // recalibrate TOF signal with OCDB
   AliTOFT0maker   *fTOFT0maker;     // computation of TOF-T0
   Float_t fTOFres;                  // TOF resolution
   Float_t fT0shift[4];              // T0 detector correction from OCDB
+  Float_t fT0IntercalibrationShift; // extra-shift to adjust TOF/TO intercalibration issue in some period
 
   // variables to parametrize MC
   static Float_t fgT0Aresolution;   // T0 resolution A-Side (MC)
@@ -75,7 +77,7 @@ private:
   AliTOFTenderSupply(const AliTOFTenderSupply&c);
   AliTOFTenderSupply& operator= (const AliTOFTenderSupply&c);
 
-  ClassDef(AliTOFTenderSupply, 4);
+  ClassDef(AliTOFTenderSupply, 6);
 };
 
 
