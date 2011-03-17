@@ -639,8 +639,9 @@ TH1* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_
       }
       projection = (TH1D*)clone->Projection(iVar1); 
       projection->SetTitle(Form("%s_proj-%s",GetTitle(),GetVarTitle(iVar1)));
-      for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
-	TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+      for (Int_t iBin=1; iBin<=projection->GetNbinsX(); iBin++) {
+        Int_t origBin = GetAxis(iVar1)->GetFirst()+iBin-1;
+	TString binLabel = GetAxis(iVar1)->GetBinLabel(origBin) ;
 	if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
       }
     }
@@ -651,12 +652,14 @@ TH1* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_
 	return 0x0;
       }
       projection = (TH2D*)clone->Projection(iVar2,iVar1); 
-      for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
-	TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+      for (Int_t iBin=1; iBin<=projection->GetNbinsX(); iBin++) {
+        Int_t origBin = GetAxis(iVar1)->GetFirst()+iBin-1;
+	TString binLabel = GetAxis(iVar1)->GetBinLabel(origBin) ;
 	if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
       }
-      for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
-	TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+      for (Int_t iBin=1; iBin<=projection->GetNbinsY(); iBin++) {
+        Int_t origBin = GetAxis(iVar2)->GetFirst()+iBin-1;
+	TString binLabel = GetAxis(iVar2)->GetBinLabel(origBin) ;
 	if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
       }
     }
@@ -669,16 +672,19 @@ TH1* AliCFGridSparse::Slice(Int_t iVar1, Int_t iVar2, Int_t iVar3, const Double_
       return 0x0;
     }
     projection = (TH3D*)clone->Projection(iVar1,iVar2,iVar3); 
-    for (Int_t iBin=1; iBin<=GetNBins(iVar1); iBin++) {
-      TString binLabel = GetAxis(iVar1)->GetBinLabel(iBin) ;
+    for (Int_t iBin=1; iBin<=projection->GetNbinsX(); iBin++) {
+      Int_t origBin = GetAxis(iVar1)->GetFirst()+iBin-1;
+      TString binLabel = GetAxis(iVar1)->GetBinLabel(origBin) ;
       if (binLabel.CompareTo("") != 0) projection->GetXaxis()->SetBinLabel(iBin,binLabel);
     }
-    for (Int_t iBin=1; iBin<=GetNBins(iVar2); iBin++) {
-      TString binLabel = GetAxis(iVar2)->GetBinLabel(iBin) ;
+    for (Int_t iBin=1; iBin<=projection->GetNbinsY(); iBin++) {
+      Int_t origBin = GetAxis(iVar2)->GetFirst()+iBin-1;
+      TString binLabel = GetAxis(iVar2)->GetBinLabel(origBin) ;
       if (binLabel.CompareTo("") != 0) projection->GetYaxis()->SetBinLabel(iBin,binLabel);
     }
-    for (Int_t iBin=1; iBin<=GetNBins(iVar3); iBin++) {
-      TString binLabel = GetAxis(iVar3)->GetBinLabel(iBin) ;
+    for (Int_t iBin=1; iBin<=projection->GetNbinsZ(); iBin++) {
+      Int_t origBin = GetAxis(iVar3)->GetFirst()+iBin-1;
+      TString binLabel = GetAxis(iVar3)->GetBinLabel(origBin) ;
       if (binLabel.CompareTo("") != 0) projection->GetZaxis()->SetBinLabel(iBin,binLabel);
     }
   }
@@ -707,7 +713,19 @@ void AliCFGridSparse::SetRangeUser(Int_t iVar, Double_t varMin, Double_t varMax,
   // set range of axis iVar. 
   //
   SetAxisRange(fData->GetAxis(iVar),varMin,varMax,useBins);
-  AliInfo(Form("AliCFGridSparse axis %d range has been modified",iVar));
+	//AliInfo(Form("AliCFGridSparse axis %d range has been modified",iVar));
+	TAxis* currAxis = fData->GetAxis(iVar);
+  TString outString = Form("%s new range: %.1f < %s < %.1f", GetName(), currAxis->GetBinLowEdge(currAxis->GetFirst()), currAxis->GetTitle(), currAxis->GetBinUpEdge(currAxis->GetLast()));
+  TString binLabel = currAxis->GetBinLabel(currAxis->GetFirst());
+  if ( ! binLabel.IsNull() ) {
+    outString += " ( ";
+    for ( Int_t ibin = currAxis->GetFirst(); ibin <= currAxis->GetLast(); ibin++ ) {
+      outString += Form("%s ", currAxis->GetBinLabel(ibin));
+    }
+    outString += ")";
+  }
+  AliWarning(outString.Data());
+
 }
 
 //____________________________________________________________________
