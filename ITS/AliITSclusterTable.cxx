@@ -49,7 +49,7 @@ fLam(0){
 
 }
 //_______________________________________________________________
-AliITSclusterTable::AliITSclusterTable(Float_t x, Float_t y, Float_t z, Float_t sx, Float_t sy, Float_t sz, Double_t phi, Double_t lambda, Int_t index):
+AliITSclusterTable::AliITSclusterTable(Double_t x, Double_t y, Double_t z, Double_t sx, Double_t sy, Double_t sz, Double_t phi, Double_t lambda, Int_t index):
 fOrInd(index),
 fX(x),
 fY(y),

@@ -433,8 +433,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 	if(cls->GetQ()==0) continue;
 	if(ilay>1 && cls->GetQ()<=fMinQ) continue; 
 	Double_t phi=0;Double_t lambda=0;
-	Float_t x=0;Float_t y=0;Float_t z=0;
-	Float_t sx=0;Float_t sy=0;Float_t sz=0;
+	Double_t x=0;Double_t y=0;Double_t z=0;
+	Double_t sx=0;Double_t sy=0;Double_t sz=0;
 	GetCoorAngles(cls,phi,lambda,x,y,z,primaryVertex);
 	GetCoorErrors(cls,sx,sy,sz);
 	new (clulay[dmar[ilay]]) AliITSRecPoint(*cls);
@@ -696,8 +696,8 @@ AliITStrackV2* AliITStrackerSA::FitTrack(AliITStrackSA* tr,Double_t *primaryVert
 	      Int_t module1 = p1->GetDetectorIndex()+firstmod[firstLay]; 
 	      Int_t layer,ladder,detector;
 	      AliITSgeomTGeo::GetModuleId(module1,layer,ladder,detector);
-	      Float_t yclu1 = p1->GetY();
-	      Float_t zclu1 = p1->GetZ();
+	      Double_t yclu1 = p1->GetY();
+	      Double_t zclu1 = p1->GetZ();
 
 	      Double_t x1,y1,z1;
 	      Double_t x2,y2,z2;
@@ -851,7 +851,7 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
   AliITSlayer &lay = fgLayers[layer];
   Double_t r=lay.GetR();
   if(pflag==1){      
-    Float_t cx1,cx2,cy1,cy2;
+    Double_t cx1,cx2,cy1,cy2;
     FindEquation(fPoint1[0],fPoint1[1],fPoint2[0],fPoint2[1],fPoint3[0],fPoint3[1],fCoef1,fCoef2,fCoef3);
     if (FindIntersection(fCoef1,fCoef2,fCoef3,-r*r,cx1,cy1,cx2,cy2)==0)
        return 0;
@@ -866,8 +866,6 @@ Int_t AliITStrackerSA::SearchClusters(Int_t layer,Double_t phiwindow,Double_t la
 
   Int_t ncl = fCluLayer[layer]->GetEntriesFast();
   for (Int_t index=0; index<ncl; index++) {
-    AliITSRecPoint *c = (AliITSRecPoint*)fCluLayer[layer]->UncheckedAt(index);
-    if (!c) continue;
     
     AliITSclusterTable* arr = (AliITSclusterTable*)GetClusterCoord(layer,index);
 
@@ -929,12 +927,12 @@ void AliITStrackerSA::UpdatePoints(){
 }
 
 //___________________________________________________________________
-Int_t AliITStrackerSA::FindEquation(Float_t x1, Float_t y1, Float_t x2, Float_t y2, Float_t x3, Float_t y3,Float_t& a, Float_t& b, Float_t& c){
+Int_t AliITStrackerSA::FindEquation(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t x3, Double_t y3,Double_t& a, Double_t& b, Double_t& c){
 
    //given (x,y) of three recpoints (in global coordinates) 
    //returns the parameters a,b,c of circonference x*x + y*y +a*x + b*y +c
 
-   Float_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
+   Double_t den = (x3-x1)*(y2-y1)-(x2-x1)*(y3-y1);
    if(den==0) return 0;
    a = ((y3-y1)*(x2*x2+y2*y2-x1*x1-y1*y1)-(y2-y1)*(x3*x3+y3*y3-x1*x1-y1*y1))/den;
    b = -(x2*x2-x1*x1+y2*y2-y1*y1+a*(x2-x1))/(y2-y1);
@@ -942,7 +940,7 @@ Int_t AliITStrackerSA::FindEquation(Float_t x1, Float_t y1, Float_t x2, Float_t 
    return 1;
  }
 //__________________________________________________________________________
- Int_t AliITStrackerSA::FindIntersection(Float_t a1, Float_t b1, Float_t c1, Float_t c2,Float_t& x1,Float_t& y1, Float_t& x2, Float_t& y2){
+ Int_t AliITStrackerSA::FindIntersection(Double_t a1, Double_t b1, Double_t c1, Double_t c2,Double_t& x1,Double_t& y1, Double_t& x2, Double_t& y2){
  
  //Finds the intersection between the circonference of the track and the circonference centered in (0,0) represented by one layer
  //c2 is -rlayer*rlayer
@@ -1079,18 +1077,18 @@ Int_t AliITStrackerSA::FindLabel(AliITStrackV2* track){
   return label;
 }
 //_____________________________________________________________________________
-void AliITStrackerSA::SetCalculatedWindowSizes(Int_t n, Float_t phimin, Float_t phimax, Float_t lambdamin, Float_t lambdamax){
+void AliITStrackerSA::SetCalculatedWindowSizes(Int_t n, Double_t phimin, Double_t phimax, Double_t lambdamin, Double_t lambdamax){
   // Set sizes of the phi and lambda windows used for track finding
   fNloop = n;
   if(fPhiWin) delete [] fPhiWin;
   if(fLambdaWin) delete [] fLambdaWin;
   fPhiWin = new Double_t[fNloop];
   fLambdaWin = new Double_t[fNloop];
-  Float_t stepPhi=(phimax-phimin)/(Float_t)(fNloop-1);
-  Float_t stepLambda=(lambdamax-lambdamin)/(Float_t)(fNloop-1);
+  Double_t stepPhi=(phimax-phimin)/(Double_t)(fNloop-1);
+  Double_t stepLambda=(lambdamax-lambdamin)/(Double_t)(fNloop-1);
   for(Int_t k=0;k<fNloop;k++){
-    Float_t phi=phimin+k*stepPhi;
-    Float_t lam=lambdamin+k*stepLambda;
+    Double_t phi=phimin+k*stepPhi;
+    Double_t lam=lambdamin+k*stepLambda;
     fPhiWin[k]=phi;
     fLambdaWin[k]=lam;
   }
@@ -1139,19 +1137,19 @@ void AliITStrackerSA::SetFixedWindowSizes(Int_t n, Double_t *phi, Double_t *lam)
 
 }
 //_______________________________________________________________________
-void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda, Float_t &x, Float_t &y,Float_t &z,Double_t* vertex){
+void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda, Double_t &x, Double_t &y,Double_t &z,Double_t* vertex){
   //Returns values of phi (azimuthal) and lambda angles for a given cluster
 /*  
   Double_t rot[9];     fGeom->GetRotMatrix(module,rot);
   Int_t lay,lad,det; fGeom->GetModuleId(module,lay,lad,det);
-  Float_t tx,ty,tz;  fGeom->GetTrans(lay,lad,det,tx,ty,tz);     
+  Double_t tx,ty,tz;  fGeom->GetTrans(lay,lad,det,tx,ty,tz);     
 
   Double_t alpha=TMath::ATan2(rot[1],rot[0])+TMath::Pi();
   Double_t phi1=TMath::Pi()/2+alpha;
   if (lay==1) phi1+=TMath::Pi();
 
-  Float_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
-  Float_t r=tx*cp+ty*sp;
+  Double_t cp=TMath::Cos(phi1), sp=TMath::Sin(phi1);
+  Double_t r=tx*cp+ty*sp;
 
   xyz= r*cp - cl->GetY()*sp;
   y= r*sp + cl->GetY()*cp;
@@ -1168,7 +1166,7 @@ void AliITStrackerSA::GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &l
 }
 
 //________________________________________________________________________
-void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz){
+void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Double_t &sx,Double_t &sy, Double_t &sz){
 
   //returns sigmax, y, z of cluster in global coordinates
 /*
@@ -1180,7 +1178,7 @@ void AliITStrackerSA::GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, 
   Double_t phi=TMath::Pi()/2+alpha;
   if (lay==1) phi+=TMath::Pi();
 
-  Float_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
+  Double_t cp=TMath::Cos(phi), sp=TMath::Sin(phi);
 */
   Float_t covm[6];
   cl->GetGlobalCov(covm);

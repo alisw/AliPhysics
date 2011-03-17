@@ -25,32 +25,32 @@ class AliITSclusterTable : public TObject {
  public:
 
   AliITSclusterTable();
-  AliITSclusterTable(Float_t x, Float_t y, Float_t z, Float_t sx, Float_t sy, Float_t sz, Double_t phi, Double_t lambda, Int_t index);
+  AliITSclusterTable(Double_t x, Double_t y, Double_t z, Double_t sx, Double_t sy, Double_t sz, Double_t phi, Double_t lambda, Int_t index);
   virtual ~AliITSclusterTable(){;}
 
   Int_t   GetOrInd() const {return fOrInd;}
-  Float_t GetX() const {return fX;}
-  Float_t GetY() const {return fY;}
-  Float_t GetZ() const {return fZ;}
-  Float_t GetSx() const {return fSx;}
-  Float_t GetSy() const {return fSy;}
-  Float_t GetSz() const {return fSz;}
-  Float_t GetPhi() const {return fPhi;}
-  Float_t GetLambda() const {return fLam;}
+  Double_t GetX() const {return fX;}
+  Double_t GetY() const {return fY;}
+  Double_t GetZ() const {return fZ;}
+  Double_t GetSx() const {return fSx;}
+  Double_t GetSy() const {return fSy;}
+  Double_t GetSz() const {return fSz;}
+  Double_t GetPhi() const {return fPhi;}
+  Double_t GetLambda() const {return fLam;}
 
  protected: 
 
   Int_t   fOrInd; //! original index in tracker
-  Float_t fX;  //!x of cluster 
-  Float_t fY;  //!y of cluster
-  Float_t fZ;  //!z of cluster
-  Float_t fSx; //! error on x
-  Float_t fSy; //! error on y
-  Float_t fSz; //! error on z
+  Double_t fX;  //!x of cluster 
+  Double_t fY;  //!y of cluster
+  Double_t fZ;  //!z of cluster
+  Double_t fSx; //! error on x
+  Double_t fSy; //! error on y
+  Double_t fSz; //! error on z
   Double_t fPhi; //! azimuthal angle
   Double_t fLam; //! lambda angle
 
-  ClassDef(AliITSclusterTable,2)
+  ClassDef(AliITSclusterTable,3)
 };
 
 #endif

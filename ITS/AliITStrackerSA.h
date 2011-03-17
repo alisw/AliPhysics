@@ -63,11 +63,11 @@ class AliITStrackerSA : public AliITStrackerMI {
   void SetSAFlag(Bool_t fl){fITSStandAlone=fl;}  // StandAlone flag setter
   Bool_t GetSAFlag() const {return fITSStandAlone;} // StandAlone flag getter
   void SetFixedWindowSizes(Int_t n=46, Double_t *phi=0, Double_t *lam=0);
-  void SetCalculatedWindowSizes(Int_t n=10, Float_t phimin=0.002, Float_t phimax=0.0145, Float_t lambdamin=0.003, Float_t lambdamax=0.008);
+  void SetCalculatedWindowSizes(Int_t n=10, Double_t phimin=0.002, Double_t phimax=0.0145, Double_t lambdamin=0.003, Double_t lambdamax=0.008);
 
   void SetMinNPoints(Int_t np){fMinNPoints=np;}
   Int_t GetMinNPoints() const {return fMinNPoints;}
-  void SetMinimumChargeSDDSSD(Float_t minq=0.){fMinQ=minq;}
+  void SetMinimumChargeSDDSSD(Double_t minq=0.){fMinQ=minq;}
   enum {kSAflag=0x8000}; //flag to mark clusters used in the SA tracker
  protected:
 
@@ -81,18 +81,18 @@ class AliITStrackerSA : public AliITStrackerMI {
 
   Double_t ChoosePoint(Double_t p1, Double_t p2, Double_t pp); 
 
-  static Int_t   FindIntersection(Float_t a1, Float_t b1, Float_t c1, Float_t c2, 
-                           Float_t& x1,Float_t& y1, Float_t& x2, Float_t& y2);
-  static Int_t   FindEquation(Float_t x1, Float_t y1, Float_t x2, Float_t y2, 
-                       Float_t x3, Float_t y3,Float_t& a, Float_t& b, 
-                       Float_t& c);
+  static Int_t   FindIntersection(Double_t a1, Double_t b1, Double_t c1, Double_t c2, 
+                           Double_t& x1,Double_t& y1, Double_t& x2, Double_t& y2);
+  static Int_t   FindEquation(Double_t x1, Double_t y1, Double_t x2, Double_t y2, 
+                       Double_t x3, Double_t y3,Double_t& a, Double_t& b, 
+                       Double_t& c);
  
   Int_t FindLabel(AliITStrackV2* track);
   Int_t SearchClusters(Int_t layer,Double_t phiwindow,Double_t lambdawindow, 
                        AliITStrackSA* trs,Double_t zvertex,Int_t flagp); 
 
-  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Float_t &x,Float_t &y,Float_t &z,Double_t* vertex);
-  void GetCoorErrors(AliITSRecPoint* cl,Float_t &sx,Float_t &sy, Float_t &sz);
+  void GetCoorAngles(AliITSRecPoint* cl,Double_t &phi,Double_t &lambda,Double_t &x,Double_t &y,Double_t &z,Double_t* vertex);
+  void GetCoorErrors(AliITSRecPoint* cl,Double_t &sx,Double_t &sy, Double_t &sz);
 
   AliITSclusterTable* GetClusterCoord(Int_t layer,Int_t n) const {return (AliITSclusterTable*)fCluCoord[layer]->UncheckedAt(n);}
   void RemoveClusterCoord(Int_t layer, Int_t n) {fCluCoord[layer]->RemoveAt(n);fCluCoord[layer]->Compress();}
@@ -100,15 +100,15 @@ class AliITStrackerSA : public AliITStrackerMI {
 
   Double_t fPhiEstimate; //Estimation of phi angle on next layer
   Bool_t fITSStandAlone; //Tracking is performed in the ITS alone if kTRUE
-  Float_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
-  Float_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
-  Float_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
-  Float_t fPointc[2];   //! current point coord (for curvature eval.)
+  Double_t fPoint1[2];   //! coord. of 1-st point to evaluate the curvature
+  Double_t fPoint2[2];   //! coord. of 2-nd point to evaluate the curvature
+  Double_t fPoint3[2];   //! coord. of 3-rd point to evaluate the curvature
+  Double_t fPointc[2];   //! current point coord (for curvature eval.)
   Double_t fLambdac;    //! current value of the Lambda angle in the window
   Double_t fPhic;       //! current value of the Phi angle in the window
-  Float_t fCoef1;       //! param. of the equation of the circ. approx a layer
-  Float_t fCoef2;       //! param. of the equation of the circ. approx a layer
-  Float_t fCoef3;       //! param. of the equation of the circ. approx a layer
+  Double_t fCoef1;       //! param. of the equation of the circ. approx a layer
+  Double_t fCoef2;       //! param. of the equation of the circ. approx a layer
+  Double_t fCoef3;       //! param. of the equation of the circ. approx a layer
   Int_t fNloop;         //  Number of iterqations on phi and lambda windows
   Double_t *fPhiWin;    // phi window sizes
   Double_t *fLambdaWin; // lambda window sizes
@@ -121,7 +121,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   Int_t fOuterStartLayer;     // Outward search for tracks with <6 points: outer layer to start from
   Int_t fInnerStartLayer;     // Inward search for tracks with <6 points: inner layer to start from
   Int_t fMinNPoints;        // minimum number of clusters for a track
-  Float_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
+  Double_t fMinQ;              // lower cut on cluster charge (SDD and SSD)
 
   TClonesArray** fCluLayer; //! array with clusters 
   TClonesArray** fCluCoord; //! array with cluster info
@@ -130,7 +130,7 @@ class AliITStrackerSA : public AliITStrackerMI {
   AliITStrackerSA(const AliITStrackerSA& tracker);
   AliITStrackerSA& operator=(const AliITStrackerSA& source);
 
-  ClassDef(AliITStrackerSA,10)
+  ClassDef(AliITStrackerSA,11)
 };
 
 #endif
