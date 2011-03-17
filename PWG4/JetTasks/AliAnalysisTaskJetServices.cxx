@@ -407,6 +407,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(fDebug)Printf("%s:%d Centrality %3.3f vtxin %d",(char*)__FILE__,__LINE__,cent,esdVtxIn);
       if(cent<=80&&esdVtxIn){
 	aodH->SetFillAOD(kTRUE);
+	aodH->SetFillExtension(kTRUE);
       }
     }
 
