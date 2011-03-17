@@ -933,7 +933,7 @@ TCanvas *AliProtonAnalysisBase::GetListOfCuts() {
 //________________________________________________________________________
 Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
   //Function that checks if a track is a proton
-  Double_t probability[5];
+  Double_t probability[5] = {0.,0.,0.,0.,0.};
   Double_t gPt = 0.0, gP = 0.0, gEta = 0.0;
   Long64_t fParticleType = 0;
  
@@ -946,6 +946,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
 	gP = tpcTrack->P();
 	track->GetTPCpid(probability);
       }
+      else return 0;
     }//TPC standalone or Hybrid TPC
     else if(fProtonAnalysisMode == kGlobal) {
       gPt = track->Pt();
@@ -964,7 +965,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
     }
     if(fParticleType == 4)
       return kTRUE;
-  }
+  }//Bayesian pid
   //Ratio of the measured over the theoretical dE/dx a la STAR
   else if(fProtonPIDMode == kRatio) {
     AliExternalTrackParam *tpcTrack = (AliExternalTrackParam *)track->GetTPCInnerParam();
@@ -973,7 +974,7 @@ Bool_t AliProtonAnalysisBase::IsProton(AliESDtrack *track) {
       gP = track->GetInnerParam()->P();
       gEta = tpcTrack->Eta();
     }
-    Double_t fAlephParameters[5];
+    Double_t fAlephParameters[5] = {0.,0.,0.,0.,0.};
     if(fAnalysisMC) {
       fAlephParameters[0] = 2.15898e+00/50.;
       fAlephParameters[1] = 1.75295e+01;

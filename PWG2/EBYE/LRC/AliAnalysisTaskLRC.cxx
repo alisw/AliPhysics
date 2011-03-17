@@ -101,7 +101,10 @@ void AliAnalysisTaskLRC::UserExec(Option_t *)
   
   for(Int_t i=0; i < lLrcNum; i++)
   {
-  (dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)))->StartEvent();
+    AliLRCProcess *prc = dynamic_cast<AliLRCProcess*> (fLRCproc.At(i));
+    if(!prc) continue;
+    else prc->StartEvent();
+    //(dynamic_cast<AliLRCProcess*> (fLRCproc.At(i)))->StartEvent();
   }
  
     
