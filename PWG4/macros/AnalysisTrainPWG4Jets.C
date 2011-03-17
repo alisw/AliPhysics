@@ -31,7 +31,7 @@ TString     kJobTag            = "PWG4 Jet Tasks analysis train configured"; // 
 // AliRoot.
 Bool_t      kUsePAR             = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR            = kFALSE;  // use par files for common libs
-Bool_t      kFillAOD = kFALSE;  // switch of AOD filling for on the fly analysis
+Bool_t      kFillAOD = kTRUE;  // switch of AOD filling for on the fly analysis
 Bool_t      kFilterAOD = kTRUE;
 Int_t       kSaveAOD = 8;        // Bit switch 1 = Full AOD 2 = Jet AOD , 4 = PartCorr, 8 = JCORRAN 
 //== general input and output variables
@@ -110,6 +110,7 @@ Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
 Int_t       iPWG4Fragmentation = 0;      // Official Fragmentation
 Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
+Int_t       iPWG4PtTrackQA     = 0;      // Marta's QA tasks  
 Int_t       iPWG4PtSpectra     = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtQATPC       = 0;      // Marta's QA tasks 
 Int_t       iPWG4Cosmics     = 0;      // Marta's Cosmics Taks 
@@ -268,6 +269,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PWG4 Leading UE",iPWG4LeadingUE); 
    printf(printMask,"PWG4 Corrections UE",iPWG4CorrectionsUE); 
    printf(printMask,"PWG4 Pt QA MC",iPWG4PtQAMC);
+   printf(printMask,"PWG4 Pt QA track",iPWG4PtTrackQA);
    printf(printMask,"PWG4 Pt Spectra",iPWG4PtSpectra);
    printf(printMask,"PWG4 Pt QA TPC",iPWG4PtQATPC);     
    printf(printMask,"PWG4 Cosmics",iPWG4Cosmics);     
@@ -394,10 +396,12 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    Float_t fTrackEtaWindow = 0.9;
    Float_t fJetEtaWindow   = 0.5;
 
+   /*
    if(kIsPbPb){// for pass1
      Float_t fTrackEtaWindow = 0.8;
      Float_t fJetEtaWindow   = 0.4;
    }
+   */
 
    if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
@@ -533,8 +537,9 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(iPWG4Cluster&1){
 
        if(kIsPbPb){
-	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow); // this one is for the background and random jets
+	 taskCl = AddTaskJetCluster("AOD","",kHighPtFilterMask,iPhysicsSelectionFlag,"KT",0.4,0,1, kDeltaAODJetName.Data(),0.15,fTrackEtaWindow,0); // this one is for the background and random jets, random cones with no skip
 	 taskCl->SetBackgroundCalc(kTRUE);
+	 taskCl->SetNRandomCones(10);
 	 taskCl->SetCentralityCut(fCenLo,fCenUp);
 	 taskCl->SetGhostEtamax(fTrackEtaWindow);
 	 kDefaultJetBackgroundBranch = Form("%s_%s",AliAODJetEventBackground::StdBranchName(),taskCl->GetJetOutputBranch());
@@ -719,11 +724,11 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      if(kIsPbPb){
        if(kDeltaAODJetName.Length()>0&&kFilterAOD)taskjetServ->SetFilterAODCollisions(kTRUE);
        //       else if(iAODanalysis)taskjetServ->SetFilterAODCollisions(kTRUE);
-
+       taskjetServ->SetDebugLevel(3);
        taskjetServ->SetZVertexCut(8.);
      }
      if(iAODanalysis){
-       //       taskjetServ->SetDebugLevel(3);
+       //  
        taskjetServ->SetAODInput(kTRUE);
      }
    }
@@ -850,13 +855,14 @@ if(iPWG4JetSpectrum){
    if(iPWG4Fragmentation){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskFragmentationFunction.C");
        AliAnalysisTaskFragmentationFunction *taskFrag = 0;
-     if(kUseAODMC){
+       if(kUseAODMC){
 
-     }
-     else{
-       taskFrag = AddTaskFragmentationFunction(kDefaultJetBranch.Data(),"","","",kHighPtFilterMask);
-     }
-     if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
+       }
+       else{
+	 taskFrag = AddTaskFragmentationFunction(kDefaultJetBranch.Data(),"","","",kHighPtFilterMask);
+	 traskFrag->SetIJMode(0);
+       }
+       if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
    }
 
    if(iPWG4JetChem){
@@ -961,6 +967,13 @@ if(iPWG4JetSpectrum){
      if (!taskQAMC) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQAMC cannot run for this train conditions - EXCLUDED");
    }
 
+   if(iPWG4PtTrackQA){
+     gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtTrackQA.C");
+
+     AddTaskPWG4HighPtTrackQAAll(kGridDataSet.Data(),kIsPbPb,iAODanalysis);
+
+   }
+
    if(iPWG4PtQATPC){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtQATPConly.C");
      AliPWG4HighPtQATPConly *taskQATPC = 0;
@@ -982,9 +995,7 @@ if(iPWG4JetSpectrum){
 
    if(iPWG4PtSpectra){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskPWG4HighPtSpectra.C");
-     AliPWG4HighPtSpectra *taskPtSpectra = AddTaskPWG4HighPtSpectra(kGridDataSet.Data(),0);
-     taskPtSpectra = AddTaskPWG4HighPtSpectra(kGridDataSet.Data(),1);
-     if (!taskPtSpectra) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskPtSpectra cannot run for this train conditions - EXCLUDED");
+     AddTaskPWG4HighPtSpectraAll(kGridDataSet.Data(),kIsPbPb);
    }
 
    if(iPWG4KMeans){
@@ -1307,10 +1318,6 @@ void CheckModuleFlags(const char *mode) {
        if( iPWG4CorrectionsUE)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG4 CorrectionsUE disabled in analysis without MC");
        iPWG4CorrectionsUE = 0;
      }
-     if (!kUseTR) {
-       if(iPWG4PtQAMC)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "iPWG4QATPCMC disabled if not reading track references");
-       iPWG4PtQAMC        = 0;
-     }   
      if (iJETAN){
        iESDfilter=1;
      }
@@ -1322,12 +1329,12 @@ void CheckModuleFlags(const char *mode) {
 	iPWG4JetSpectrum = iPWG4UE =  iPWG4CorrectionsUE = iPWG4ThreeJets = iPWG4QGSep = iDIJETAN = 0;
       }
    }
-   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4QGSep||iPWG4JetChem||iPWG4Minijet||iPWG4Fragmentation;
+   iPWG4JetTasks = iPWG4JetServices||iPWG4JetSpectrum||iPWG4UE||iPWG4LeadingUE||iPWG4PtQAMC||iPWG4PtTrackQA||iPWG4PtSpectra||iPWG4PtQATPC||iPWG4Cosmics||iPWG4ThreeJets||iPWG4QGSep||iPWG4JetChem||iPWG4Minijet||iPWG4Fragmentation;
    iPWG4PartCorrLibs = iPWG4PartCorr||iPWG4Tagged||iPWG4CaloQA;
    iPWG4GammaConvLib = iPWG4GammaConv||iPWG4CaloConv;
 
 
-   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib;
+   iEMCUtilLibs = iPWG4PartCorrLibs||iPWG4JCORRAN||iPWG4GammaConvLib||iJETAN;
    iJETANLib = iPWG4JetTasks||iJETAN||iDIJETAN;
 
    if (iESDfilter) {iAODhandler=1;}
@@ -1442,8 +1449,9 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("AOD", mode, kTRUE);
             success &= LoadLibrary("ANALYSIS", mode, kTRUE);
             success &= LoadLibrary("ANALYSISalice", mode, kTRUE);
+            success &= LoadLibrary("OADB", mode, kTRUE);
             success &= LoadLibrary("ROOTFILES", mode, kTRUE);
-            // success &= LoadLibrary("EventMixing", mode,kTRUE);
+	    //            success &= LoadLibrary("EventMixing", mode,kTRUE);
             success &= LoadLibrary("CORRFW", mode, kTRUE);
          } else {   
             success &= LoadLibrary("libSTEERBase.so", mode);
@@ -1451,7 +1459,8 @@ Bool_t LoadCommonLibraries(const char *mode)
             success &= LoadLibrary("libAOD.so", mode);
             success &= LoadLibrary("libANALYSIS.so", mode);
             success &= LoadLibrary("libANALYSISalice.so", mode);
-            // success &= LoadLibrary("libEventMixing.so", mode);
+            success &= LoadLibrary("libOADB.so", mode, kTRUE);
+	    //            success &= LoadLibrary("libEventMixing.so", mode);
             success &= LoadLibrary("libCORRFW.so", mode);
             gROOT->ProcessLine(".include $ALICE_ROOT/include");
          }   
@@ -1506,6 +1515,10 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    // JETAN
    if (iJETANLib) {
      // this part needs some rework in case we do not need the fastjed finders for processing
+     if(iEMCUtilLibs){
+       if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
+	   !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
+     }
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
      if (!strcmp(mode, "PROOF")){
        gProof->Exec("gSystem->Load\(\"/afs/cern.ch/user/d/dperrino/public/libCGAL.so\"\)", kTRUE); 
@@ -1540,11 +1553,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if(iPWG4TmpSourceSara){
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!
      if(!LoadSource(Form("%s/PWG4/JetTasks/AliAnalysisTaskEta.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
-   }
-
-   if(iEMCUtilLibs){
-     if (!LoadLibrary("EMCALUtils", mode, kTRUE) ||
-	 !LoadLibrary("PHOSUtils", mode, kTRUE)) return kFALSE;
    }
 
    if (iPWG4PartCorrLibs) {   
