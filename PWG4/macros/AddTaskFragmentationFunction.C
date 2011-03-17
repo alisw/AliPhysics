@@ -2,7 +2,7 @@
 /*************************************************************************************************
 ***  Add Fragmentation Function Task ***
 **************************************************************************************************
-The fragmenation function task expects an ESD filter and jet finder running before this task. 
+The fragmentation function task expects an ESD filter and jet finder running before this task. 
 Or it runs on delta-AODs filled with filtered tracks and jets before.
 
 ** Parameters **
@@ -24,40 +24,47 @@ Or it runs on delta-AODs filled with filtered tracks and jets before.
 
 
 
-AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=32){
+AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=32, Int_t eventClass=0){
         
         AliAnalysisTaskFragmentationFunction *ff=0;
 
         // UA1 Jets
         // only reconstructed (default)
-	if(iFlag&(1<<0)) ff = AddTaskFragmentationFunction("jets", "", "", "", filterMask);
+	if(iFlag&(1<<0)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "", "", "", filterMask, 0.4,0,1000., eventClass);
         // charged MC tracks and jets
-	if(iFlag&(1<<1)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA104", "AODMC", "AODMC2", filterMask);
+	if(iFlag&(1<<1)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODMC", "AODMC2", filterMask, 0.4,0,1000., eventClass);
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<2)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA104", "AODMCb", "AODMC2b", filterMask);
+	if(iFlag&(1<<2)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODMCb", "AODMC2b", filterMask, 0.4,0,1000., eventClass);
         // kine tracks in acceptance, pythia jets in acceptance
-	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jets", "", "KINEb", "KINEb", filterMask);
+	if(iFlag&(1<<3)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "", "KINEb", "KINEb", filterMask, 0.4,0,1000., eventClass);
         // reconstructed charged tracks after cuts, MC jets in acceptance 
-	if(iFlag&(1<<4)) ff = AddTaskFragmentationFunction("jets", "jetsMC2b", "AODMCb", "AOD2b", filterMask);
+	if(iFlag&(1<<4)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "jetsMC2b", "AODMCb", "AOD2b", filterMask, 0.4,0,1000., eventClass);
 	// reconstruction efficiency: pointing with rec jet axis into gen tracks 
-	if(iFlag&(1<<5)) ff = AddTaskFragmentationFunction("jets", "jetsAODMC2_UA104", "AODb", "AODMC2b", filterMask);
+	if(iFlag&(1<<5)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODb", "AODMC2b", filterMask, 0.4,0,1000., eventClass);
 
         // kt jets
         // only reconstructed 
-	if(iFlag&(1<<10)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "", "", "", filterMask);
+	if(iFlag&(1<<10)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip00");
         // charged MC tracks and jets
-	if(iFlag&(1<<11)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "jetsAODMC2_FASTKT04", "AODMC", "AODMC2", filterMask);
+	if(iFlag&(1<<11)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTKT", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass,"_Skip00");
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<12)) ff = AddTaskFragmentationFunction("jetsAOD_FASTKT04", "jetsAODMC2_FASTKT04", "AODMCb", "AODMC2b", filterMask);
+	if(iFlag&(1<<12)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTKT", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip00");
 
         // anti-kt jets
+	// Jet not background subtracted
         // only reconstructed 
-	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "", "", "", filterMask);
+	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip02");
         // charged MC tracks and jets
-	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "jetsAODMC2_FASTJET04", "AODMC", "AODMC2", filterMask);
+	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass, "_Skip02");
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("jetsAOD_FASTJET04", "jetsAODMC2_FASTJET04", "AODMCb", "AODMC2b", filterMask);
+	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip02");
 
+	// Jet background subtracted
+	if(iFlag&(1<<23)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip02");
+        // charged MC tracks and jets
+	if(iFlag&(1<<24)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,1,150.,eventClass, "_Skip02");
+        // charged MC tracks and jets with acceptance cuts
+	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,1,150., eventClass, "_Skip02");
 
 	
 	return ff;
@@ -67,10 +74,18 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
 
 AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
         const char* recJetsBranch,
+	const char* recJetsBackBranch,
 	const char* genJetsBranch,
 	const char* jetType,
 	const char* trackType,
-	UInt_t filterMask)
+	UInt_t filterMask,
+        Float_t radius,
+        int kBackgroundMode,
+        float PtTrackMin,
+        Int_t eventClass=0,
+        TString BrOpt="",
+        TString BrOpt2="",
+        Float_t radiusBckg=0.4)
 {
    // Creates a fragmentation function task,
    // configures it and adds it to the analysis manager.
@@ -106,11 +121,13 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
    Printf("Data Type: %s", type.Data());
 
+   TString branchRecBackJets(recJetsBackBranch);
    TString branchRecJets(recJetsBranch);
    TString branchGenJets(genJetsBranch);
    TString typeJets(jetType);
    TString typeTracks(trackType);
 
+   if(branchRecBackJets.Length()==0) branchRecBackJets = "noRecBackJets";
    if(branchRecJets.Length()==0) branchRecJets = "noRecJets";
    if(branchGenJets.Length()==0) branchGenJets = "noGenJets";
    if(typeTracks.Length()==0) typeTracks = "trackTypeUndef";
@@ -120,20 +137,56 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    //===========================================================================
 
    AliAnalysisTaskFragmentationFunction *task = new AliAnalysisTaskFragmentationFunction(
-        Form("Fragmenation Function %s %s %s %s", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(), typeTracks.Data()));
+        Form("Fragmentation Function %s %s %s %s", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(), typeTracks.Data()));
    
    if(debug>=0) task->SetDebugLevel(debug);
    
    Printf("Rec Jets %s", branchRecJets.Data());
+   Printf("Back Rec Jets %s", branchRecBackJets.Data());
    Printf("Gen Jets %s", branchGenJets.Data());
    Printf("Jet Type %s", typeJets.Data());
    Printf("Track Type %s", typeTracks.Data());
    
-   // attach the filter maska
-   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchRecJets.Contains("MC"))branchRecJets += Form("_Filter%05d",filterMask); 
-   if(branchGenJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchGenJets.Contains("MC"))branchGenJets += Form("_Filter%05d",filterMask);
+   // attach the filter mask and options
+   TString cAdd = "";
+   cAdd += Form("%02d",(int)((radius+0.01)*10.));
+   cAdd += Form("_B%d",(int)((kBackgroundMode)));
+   cAdd += Form("_Filter%05d",filterMask);
+   cAdd += Form("_Cut%05d",(int)((PtTrackMin)));
+   cAdd += Form("%s",BrOpt.Data());
+   cAdd += Form("%s",BrOpt2.Data());
+   Printf("%s",cAdd.Data());
+
+   TString cAddb = "";
+   cAddb += Form("%02d",(int)((radiusBckg+0.01)*10.));
+   cAddb += Form("_B%d",(int)((kBackgroundMode)));
+   cAddb += Form("_Filter%05d",filterMask);
+   cAddb += Form("_Cut%05d",(int)((PtTrackMin)));
+   cAddb += Form("%s",BrOpt.Data());
+   cAddb += Form("%s",BrOpt2.Data());
+   Printf("%s",cAddb.Data());
+
+   TString cAddmc = "";
+   cAddmc += Form("%02d",(int)((radius+0.01)*10.));
+   cAddmc += Form("_B%d",(int)((kBackgroundMode)));
+   cAddmc += Form("_Filter%05d",filterMask);
+   cAddmc += Form("_Cut%05d",(int)((PtTrackMin)));
+   Printf("%s",cAddmc.Data());
+
+
+   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchRecJets.Contains("MC"))branchRecJets = branchRecJets + cAdd;
+   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("cluster")&&!branchRecJets.Contains("MC"))branchRecJets = branchRecJets + cAdd;
+
+   if(branchRecBackJets.Contains("back")&&branchRecBackJets.Contains("cluster")&&!branchRecBackJets.Contains("MC"))branchRecBackJets = branchRecBackJets + cAddb; 
+
+   if(branchGenJets.Contains("AOD")&&branchGenJets.Contains("MC"))branchGenJets = branchGenJets + cAddmc;
+
+   Printf("Gen jets branch %s: ", branchGenJets.Data());
+   Printf("Rec jets branch %s: ", branchRecJets.Data());
+   Printf("Jet backg branch %s: ", branchRecBackJets.Data());
 
    if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
+   if(!branchRecBackJets.Contains("noRecBackJets")) task->SetBranchRecBackJets(branchRecBackJets);
    if(!branchGenJets.Contains("noGenJets")) task->SetBranchGenJets(branchGenJets);
 
 
@@ -162,6 +215,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    else task->SetJetTypeRecEff(0);
 
    task->SetFilterMask(filterMask);
+   task->SetEventClass(eventClass);
   
    // Set default parameters 
    // Cut selection 
@@ -173,7 +227,13 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetFFBckgRadius();    // default: R = 0.7
    task->SetBckgMode();        // default: bgMode = 1
    task->SetBckgType();        // default: 0,1,2
+   task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
    task->SetIJMode();          // default: ijMode = 1
+   task->SetQAMode();          // default: qaMode = 3
+   task->SetFFMode();          // default: ffMode = 1
+   task->SetDJMode();          // default: djMode = 1
+   task->SetEffMode();         // default: effMode = 1
+   task->SetPhiCorrMode();     // default: phiCorrMode = 1
    task->SetHighPtThreshold(); // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
@@ -192,11 +252,11 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    //==============================================================================
 
    AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(
-      Form("fracfunc_%s_%s_%s_%s", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data()),
+      Form("fracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass),
       TList::Class(),
       AliAnalysisManager::kOutputContainer,
-      Form("%s:PWG4_FragmentationFunction_%s_%s_%s_%s", 
-         AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), typeTracks.Data(), typeJets.Data()));
+      Form("%s:PWG4_FragmentationFunction_%s_%s_%s_%s_cl%d", 
+         AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), typeTracks.Data(), typeJets.Data(), eventClass));
 
    mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());

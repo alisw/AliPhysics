@@ -60,7 +60,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fESD(0)
    ,fAOD(0)
    ,fBranchRecJets("jets")
-   ,fBranchRecBackJets("backjets")
+   ,fBranchRecBackJets("")
    ,fBranchGenJets("")
    ,fTrackTypeGen(0)
    ,fJetTypeGen(0)
@@ -307,7 +307,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fESD(0)
   ,fAOD(0)
   ,fBranchRecJets("jets")
-  ,fBranchRecBackJets("backjets")
+  ,fBranchRecBackJets("")
   ,fBranchGenJets("")
   ,fTrackTypeGen(0)
   ,fJetTypeGen(0)
@@ -2184,11 +2184,11 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
 
   fJetsRec = new TList();
   fJetsRec->SetOwner(kFALSE);
-  if(!fBranchRecJets.Contains("UA1") && fBranchRecJets.Contains("KT")) fJetsRec->SetOwner(kTRUE);
+  if(fBranchRecJets.Contains("KT") && fBckgSubMethod) fJetsRec->SetOwner(kTRUE);
 
   fJetsRecCuts = new TList();
   fJetsRecCuts->SetOwner(kFALSE);
-  if(!fBranchRecJets.Contains("UA1") && fBranchRecJets.Contains("KT")) fJetsRecCuts->SetOwner(kTRUE);
+  if(fBranchRecJets.Contains("KT") && fBckgSubMethod) fJetsRecCuts->SetOwner(kTRUE);
 
   fJetsGen = new TList();
   fJetsGen->SetOwner(kFALSE);
@@ -3093,7 +3093,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
       return;
     }
   }
-	
+
   // *** vertex cut ***
   AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
   Int_t nTracksPrim = primVtx->GetNContributors();
@@ -3166,7 +3166,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   
   
   //___ fetch jets __________________________________________________________________________
-  
+ 
   Int_t nJ = GetListOfJets(fJetsRec, kJetsRec);
   Int_t nRecJets = 0;
   if(nJ>=0) nRecJets = fJetsRec->GetEntries();
@@ -3180,7 +3180,6 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   if(nRecJetsCuts != nJCuts) Printf("%s:%d Mismatch selected Rec jets after cuts: %d %d",(char*)__FILE__,__LINE__,nJCuts,nRecJetsCuts);
   fh1nRecJetsCuts->Fill(nRecJetsCuts);
 
-  
   if(fJetTypeGen==kJetsKine || fJetTypeGen == kJetsKineAcceptance) fJetsGen->SetOwner(kTRUE); // kine aod jets allocated on heap, delete them with TList::Clear() 
   Int_t nJGen  = GetListOfJets(fJetsGen, fJetTypeGen);
   Int_t nGenJets = 0;
@@ -3221,6 +3220,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     if(nBJGen != nGenBckgJets) Printf("%s:%d Mismatch selected Gen background jets: %d %d",(char*)__FILE__,__LINE__,nBJGen,nGenBckgJets);
     fh1nGenBckgJets->Fill(nGenBckgJets);
   }
+
 
   //____ fetch particles __________________________________________________________
   
@@ -4001,7 +4001,6 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
 
     if(!aodRecJets){
       if(fBranchRecJets.Length()) Printf("%s:%d no reconstructed jet array with name %s in AOD", (char*)__FILE__,__LINE__,fBranchRecJets.Data());
-
       if(fDebug>1)fAOD->Print();
       return 0;
     }
@@ -4021,15 +4020,15 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
 	    || tmp->Phi() < fJetPhiMin
 	    || tmp->Phi() > fJetPhiMax )) continue;
 
-      if(!fBranchRecJets.Contains("UA1") &&
+      if(fBckgSubMethod && fBranchRecJets.Contains("B0") &&
 	 fBranchRecJets.Contains("KT")) {
-	
+
 	AliAODJet *tmpJet = GetAODBckgSubJet(tmp, fBckgSubMethod);
 	
 	if(!tmpJet) continue;
 
 	list->Add(tmpJet);
-	
+
 	nRecJets++;
       }
       else {
@@ -4152,7 +4151,7 @@ Int_t AliAnalysisTaskFragmentationFunction::GetListOfJets(TList *list, Int_t typ
 }
 
 // _______________________________________________________________________________
-Int_t AliAnalysisTaskFragmentationFunction::GetListOfBckgJets(/*TList *list, Int_t type*/) const 
+Int_t AliAnalysisTaskFragmentationFunction::GetListOfBckgJets(/*TList *list, Int_t type*/)  
 {
  // fill list of jets selected according to type
 
@@ -5256,10 +5255,15 @@ AliAODJet* AliAnalysisTaskFragmentationFunction::GetAODBckgSubJet(AliAODJet* jet
 {
   // correct jet pt for (mean bgr energy density) x (jet area) 
 
+  if(!fBranchRecBackJets.Length()){
+    if(fDebug>0)Printf("%s:%d background branch name not set",(char*)__FILE__,__LINE__);
+    return 0;
+  }
+
   static AliAODJetEventBackground*   externalBackground =  (AliAODJetEventBackground*)(fAOD->FindListObject(fBranchRecBackJets.Data()));
 
   if(!externalBackground){
-    if(fDebug>0)Printf("%s:%d no such background branch %s",(char*)__FILE__,__LINE__,fBranchRecBackJets.Data());
+    if(fDebug>0)Printf("%s:%d no external background object found in %s",(char*)__FILE__,__LINE__,fBranchRecBackJets.Data());
     return 0;
   }
 
