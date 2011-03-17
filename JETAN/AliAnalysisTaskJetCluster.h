@@ -65,6 +65,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}
     virtual const char* GetBackgroundBranch(){return fBackgroundBranch.Data();}    
     virtual void SetNSkipLeadingRan(Int_t x){fNSkipLeadingRan = x;}
+    virtual void SetNSkipLeadingCone(Int_t x){fNSkipLeadingCone = x;}
     virtual void SetNRandomCones(Int_t x){fNRandomCones = x;}
 
     virtual void SetJetOutputBranch(const char *c){fNonStdBranch = c;}
@@ -122,7 +123,8 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
-    Int_t         fNSkipLeadingRan;        // number of leading tracks to be skipped in the randomized event
+    Int_t         fNSkipLeadingRan;       // number of leading tracks to be skipped in the randomized event
+    Int_t         fNSkipLeadingCone;      // number of leading jets to be for the random cones
     Int_t         fNRandomCones;          // number of generated random cones
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
@@ -228,7 +230,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 14) 
+    ClassDef(AliAnalysisTaskJetCluster, 16) 
 };
  
 #endif
