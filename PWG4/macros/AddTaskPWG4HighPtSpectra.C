@@ -7,8 +7,41 @@ const Float_t etamax = 0.9;
 const Int_t   mintrackrefsTPC = 1;
 const Int_t   mintrackrefsITS = 1;
 
-AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t trackType = 0)
+void AddTaskPWG4HighPtSpectraAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
 {
+  int cent = 10;
+
+  AliPWG4HighPtSpectra *taskSpectra00cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
+  AliPWG4HighPtSpectra *taskSpectra01cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
+  AliPWG4HighPtSpectra *taskSpectra10cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+  AliPWG4HighPtSpectra *taskSpectra20cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
+
+  if(isPbPb) {
+    for(cent=0; cent<4; cent++) {
+      AliPWG4HighPtSpectra *taskSpectra00 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
+      AliPWG4HighPtSpectra *taskSpectra01 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
+      AliPWG4HighPtSpectra *taskSpectra10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
+      AliPWG4HighPtSpectra *taskSpectra20 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
+    }
+  }
+
+}
+
+
+AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool_t isPbPb=kTRUE,Int_t centClass = 0, Int_t trackType = 0, Int_t cuts = 0)
+{
+
+  /*
+    trackType: 0 = global
+               1 = TPC stand alone
+               2 = TPC stand alone constrained to SPD vertex
+    cuts:      0 (global) = standard ITSTPC2010
+               1 (global) = ITSrefit, no SPD requirements
+               2 (global) = SPD || SDD
+               0 (TPC)    = standard TPC + NClusters>70
+               1 (TPC)    = standard TPC + NClusters>0 --> to study new TPC QA recommendations
+   */
+
   // Creates HighPtSpectra analysis task and adds it to the analysis manager.
   
   // A. Get the pointer to the existing analysis manager via the static access method.
@@ -39,13 +72,11 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   UInt_t ieta  = 2;
 
   //Setting up the container grid... 
-  UInt_t nstep = 6; //Steps/Modes for containers
-  Int_t kStepReconstructed = 0;
-  Int_t kStepReconstructedTPCOnly = 1;
-  Int_t kStepSecondaries = 2;
-  Int_t kStepReconstructedMC = 3;
-  Int_t kStepMCAcceptance = 4;
-  Int_t kStepReconstructedTPCOnlyMC = 5;
+  UInt_t nstep = 7; //Steps/Modes for containers
+  Int_t kStepReconstructed          = 0;
+  Int_t kStepSecondaries            = 1;
+  Int_t kStepReconstructedMC        = 2;
+  Int_t kStepMCAcceptance           = 3;
 
   //redefine pt ranges in case of Jet-Jet production
   Float_t ptBinEdges[2][2];
@@ -115,11 +146,14 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
-  AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
-  if(trackType==0) {
-    trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Quality Selection for Global tracks
+ AliESDtrackCuts *trackCuts = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts");
+  //Standard Cuts
+  //Set track cuts for global tracks
+  if(trackType==0 && cuts==0) {
+    trackCuts = trackCuts->GetStandardITSTPCTrackCuts2010(kTRUE);//Primary Track Selection
+    trackCuts->SetRequireITSRefit(kTRUE);
   }
-  else if(trackType==1) {
+  if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement
     // TPC  
     trackCuts->SetMinNClustersTPC(70);
@@ -134,14 +168,18 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
     trackCuts->SetDCAToVertex2D(kFALSE);
     trackCuts->SetRequireSigmaToVertex(kFALSE);
   }
+  if(trackType==1 && cuts==0) {
+    //Set track cuts for TPConly tracks
+    trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts(); 
+    trackCuts->SetMinNClustersTPC(70);
+  }
+  if(trackType==2 && cuts==0) {
+     //	      Set track cuts for TPConly constrained tracks
+    trackCuts = trackCuts->GetStandardTPCOnlyTrackCuts();
+    trackCuts->SetMinNClustersTPC(70);
+  }
   trackCuts->SetEtaRange(-0.9,0.9);
   trackCuts->SetPtRange(0.15, 1e10);
-
-  AliESDtrackCuts *trackCutsTPConly = new AliESDtrackCuts("AliESDtrackCuts","Standard Cuts TPC only tracks");
-  trackCutsTPConly = trackCutsTPConly->GetStandardTPCOnlyTrackCuts();//TPC only Track Quality Cuts
-  trackCutsTPConly->SetMinNClustersTPC(70);
-  trackCutsTPConly->SetEtaRange(-0.9,0.9);
-  trackCutsTPConly->SetPtRange(0.15, 1e10);
 
   // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
@@ -155,10 +193,8 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
 
   TObjArray* recList = new TObjArray(0);
-  TObjArray* recTPConlyList = new TObjArray(0);
   TObjArray* secList = new TObjArray(0) ;
   TObjArray* recMCList = new TObjArray(0);
-  TObjArray* recTPConlyMCList = new TObjArray(0);
 
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList = new TObjArray(0) ;
@@ -170,29 +206,30 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   AliCFManager* manPos = new AliCFManager("manPos","Manager for Positive tracks") ;
   manPos->SetParticleContainer(containerPos);
   manPos->SetParticleCutsList(kStepReconstructed,recList);
-  manPos->SetParticleCutsList(kStepReconstructedTPCOnly,recTPConlyList);
   manPos->SetParticleCutsList(kStepSecondaries,secList);
   manPos->SetParticleCutsList(kStepReconstructedMC,recMCList);
   manPos->SetParticleCutsList(kStepMCAcceptance,mcList);
-  manPos->SetParticleCutsList(kStepReconstructedTPCOnlyMC,recTPConlyMCList);
 
   AliCFManager* manNeg = new AliCFManager("manNeg","Manager for Negative tracks") ;
   manNeg->SetParticleContainer(containerNeg);
   manNeg->SetParticleCutsList(kStepReconstructed,recList);
-  manNeg->SetParticleCutsList(kStepReconstructedTPCOnly,recTPConlyList);
   manNeg->SetParticleCutsList(kStepSecondaries,secList);
   manNeg->SetParticleCutsList(kStepReconstructedMC,recMCList);
   manNeg->SetParticleCutsList(kStepMCAcceptance,mcList);
-  manNeg->SetParticleCutsList(kStepReconstructedTPCOnlyMC,recTPConlyMCList);
 
 
   printf("Create task AliPWG4HighPtSpectra\n");
   AliPWG4HighPtSpectra *taskPWG4HighPtSpectra = new AliPWG4HighPtSpectra(Form("AliPWG4HighPtSpectra%d",trackType));
   taskPWG4HighPtSpectra->SetTrackType(trackType);
   taskPWG4HighPtSpectra->SetCuts(trackCuts);
-  taskPWG4HighPtSpectra->SetCutsTPConly(trackCutsTPConly);
   taskPWG4HighPtSpectra->SetCFManagerPos(manPos); //here is set the CF manager +
   taskPWG4HighPtSpectra->SetCFManagerNeg(manNeg); //here is set the CF manager -
+
+  if(isPbPb) {
+    taskPWG4HighPtSpectra->SetIsPbPb(kTRUE);
+    taskPWG4HighPtSpectra->SetCentralityClass(centClass);
+  }
+  taskPWG4HighPtSpectra->SetSigmaConstrainedMax(5.);
 
 
   // E. Create ONLY the output containers for the data produced by the task.
@@ -201,13 +238,12 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
 
   //------ output containers ------
   TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += Form(":PWG4_HighPtSpectra%d",trackType);
+  outputfile += Form(":PWG4_HighPtSpectraCent%dTrackType%dCuts%d",centClass,trackType,cuts);
 
-  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectra%d",trackType), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectra%d",trackType), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectra%d",trackType), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-  AliAnalysisDataContainer *cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCuts%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
-  AliAnalysisDataContainer *cout_cuts1 = mgr->CreateContainer(Form("qa_SpectraTrackCutsTPConly%d",trackType), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
+  AliAnalysisDataContainer *coutput0 = mgr->CreateContainer(Form("chist0HighPtSpectraCent%dTrackType%dCuts%d",centClass,trackType,cuts), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("ccontainer0HighPtSpectraCent%dTrackType%dCuts%d",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("ccontainer1HighPtSpectraCent%dTrackType%dCuts%d",centClass,trackType,cuts), AliCFContainer::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *cout_cuts0 = mgr->CreateContainer(Form("qa_SpectraTrackCutsCent%dTrackType%dCuts%d",centClass,trackType,cuts), AliESDtrackCuts::Class(), AliAnalysisManager::kParamContainer,outputfile);
 
   mgr->AddTask(taskPWG4HighPtSpectra);
 
@@ -216,7 +252,6 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14",Int_t
   mgr->ConnectOutput(taskPWG4HighPtSpectra,1,coutput1);
   mgr->ConnectOutput(taskPWG4HighPtSpectra,2,coutput2);
   mgr->ConnectOutput(taskPWG4HighPtSpectra,3,cout_cuts0);
-  mgr->ConnectOutput(taskPWG4HighPtSpectra,4,cout_cuts1);
 
   // Return task pointer at the end
   return taskPWG4HighPtSpectra;
