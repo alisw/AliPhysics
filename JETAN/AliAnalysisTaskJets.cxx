@@ -203,6 +203,10 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
   
   if(!fAODExtension)OutputTree()->GetUserInfo()->Add(fH);
   else fAODExtension->GetTree()->GetUserInfo()->Add(fH);
+
+  // post
+  PostData(1, fListOfHistos);
+
 }
 
 //----------------------------------------------------------------
