@@ -34,6 +34,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fUseQualFlag(1),
     fClusName(),
     fDoNtuple(0),
+    fDoAfterburner(0),
+    fNminCells(1),
     fGeom(0),
     fOutput(0),
     fEsdEv(0),
@@ -56,6 +58,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fHCellE(0x0),
     fHCellH(0x0),
     fHCellM(0x0),
+    fHCellM2(0x0),
     fHClustEccentricity(0),
     fHClustEtaPhi(0x0),
     fHClustEnergyPt(0x0),
@@ -103,10 +106,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     TFile *f = OpenFile(1);
     if (f)
       fNtuple = new TNtuple(Form("nt%.0fto%.0f",fCentFrom,fCentTo),"nt",
-                            "cent:m:pt:e1:e2:e1m:e2m:n1:n2:db1:db2:disp1:disp2:mm1:mm2:ms1:ms2:dz1:dz2:dx1:dx2:dphi:deta:theta");
+                            "run:evt:cent:pt:e:emax:n:db:disp:mn:ms:chi:cpv:ecc:sig:eta:phi");
   }
 
   // histograms
+  TH1::SetDefaultSumw2(kTRUE);
+  TH2::SetDefaultSumw2(kTRUE);
   fHCuts = new TH1F("hEventCuts","",4,0.5,4.5);
   fHCuts->GetXaxis()->SetBinLabel(1,"All (PS)");
   fHCuts->GetXaxis()->SetBinLabel(2,Form("%s: %.0f-%.0f",fCentVar.Data(),fCentFrom,fCentTo));
@@ -146,21 +151,24 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     fOutput->Add(fHColuRowE[i]);
     fOutput->Add(fHCellMult[i]);
   }  
-  fHCellE = new TH1F("hCellE","",100,0.,10.);
+  fHCellE = new TH1F("hCellE","",150,0.,15.);
   fHCellE->SetXTitle("E_{cell} [GeV]");
   fOutput->Add(fHCellE);
-  fHCellH = new TH1F ("fHCellHighestE","",100,0.,10.);
+  fHCellH = new TH1F ("fHCellHighestE","",150,0.,15.);
   fHCellH->SetXTitle("E^{max}_{cell} [GeV]");
   fOutput->Add(fHCellH);
-  fHCellM = new TH1F ("fHCellMeanE","",250,0.,2.5);
+  fHCellM = new TH1F ("fHCellMeanEperHitCell","",250,0.,2.5);
   fHCellM->SetXTitle("#LT E_{cell}#GT [GeV]");
   fOutput->Add(fHCellM);
+  fHCellM2 = new TH1F ("fHCellMeanEperAllCells","",250,0.,1);
+  fHCellM2->SetXTitle("1/N_{cells} #Sum E_{cell} [GeV]");
+  fOutput->Add(fHCellM2);
 
   // histograms for clusters
   fHClustEccentricity = new TH1F("hClustEccentricity","",100,-0.1,1.1);
   fHClustEccentricity->SetXTitle("#epsilon_{C}");
   fOutput->Add(fHClustEccentricity);
-  fHClustEtaPhi = new TH2F("hClustEtaPhi","",100,-0.8,0.8,100,1.2,2.2);
+  fHClustEtaPhi = new TH2F("hClustEtaPhi","",500,-0.8,0.8,500,1.2,2.2);
   fHClustEtaPhi->SetXTitle("#eta");
   fHClustEtaPhi->SetYTitle("#varphi");
   fOutput->Add(fHClustEtaPhi);
@@ -168,11 +176,11 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHClustEnergyPt->SetXTitle("E [GeV]");
   fHClustEnergyPt->SetYTitle("p_{T} [GeV/c]");
   fOutput->Add(fHClustEnergyPt);
-  fHClustEnergySigma = new TH2F("hClustEnergySigma","",100,0,100,100,0,30);
-  fHClustEnergySigma->SetXTitle("E_{C} * #sigma_{max}^{} [GeV*cm]");
+  fHClustEnergySigma = new TH2F("hClustEnergySigma","",100,0,100,500,0,50);
+  fHClustEnergySigma->SetXTitle("E_{C} * #sigma_{max} [GeV*cm]");
   fHClustEnergySigma->SetYTitle("E_{C} [GeV]");
   fOutput->Add(fHClustEnergySigma);
-  fHClustSigmaSigma = new TH2F("hClustSigmaSigma","",100,0,100,100,0,30);
+  fHClustSigmaSigma = new TH2F("hClustSigmaSigma","",500,0,50,500,0,50);
   fHClustSigmaSigma->SetXTitle("#lambda_{0} [cm]");
   fHClustSigmaSigma->SetYTitle("#sigma_{max} [cm]");
   fOutput->Add(fHClustSigmaSigma);
@@ -183,18 +191,18 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
 
   // histograms for pion candidates
   fHPionEtaPhi = new TH2F("hPionEtaPhi","",100,-0.8,0.8,100,1.2,2.2);
-  fHPionEtaPhi->SetXTitle("#eta^{#gamma#gamma}");
-  fHPionEtaPhi->SetYTitle("#varphi^{#gamma#gamma}");
+  fHPionEtaPhi->SetXTitle("#eta_{#gamma#gamma}");
+  fHPionEtaPhi->SetYTitle("#varphi_{#gamma#gamma}");
   fOutput->Add(fHPionEtaPhi);
-  fHPionMggPt = new TH2F("hPionMggPt","",100,0,2,100,0,20.0);
+  fHPionMggPt = new TH2F("hPionMggPt","",1000,0,2,100,0,20.0);
   fHPionMggPt->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
   fHPionMggPt->SetYTitle("p_{T}^{#gamma#gamma} [GeV/c]");
   fOutput->Add(fHPionMggPt);
-  fHPionMggAsym = new TH2F("hPionMggAsym","",100,0,2,100,0,1);
+  fHPionMggAsym = new TH2F("hPionMggAsym","",1000,0,2,100,0,1);
   fHPionMggAsym->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
   fHPionMggAsym->SetYTitle("Z_{#gamma#gamma} [GeV]");
   fOutput->Add(fHPionMggAsym);
-  fHPionMggDgg = new TH2F("hPionMggAsym","",100,0,2,100,0,10);
+  fHPionMggDgg = new TH2F("hPionMggDgg","",1000,0,2,100,0,10);
   fHPionMggDgg->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
   fHPionMggDgg->SetYTitle("opening angle [grad]");
   fOutput->Add(fHPionMggDgg);
@@ -202,7 +210,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,6,7,8,9,10,12.5,15,20,25,50};
   fPtRanges = new TAxis(nbins-1,xbins);
   for (Int_t i = 0; i<=nbins; ++i) {
-    fHPionInvMasses[i] = new TH1F(Form("hPionInvMass%d",i),"",100,0,2);
+    fHPionInvMasses[i] = new TH1F(Form("hPionInvMass%d",i),"",1000,0,2);
     fHPionInvMasses[i]->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
     if (i==0)
       fHPionInvMasses[i]->SetTitle(Form("0 < p_{T}^{#gamma#gamma} <%.1f",xbins[0]));
@@ -360,7 +368,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     AliDebug(2,Form("fAodCells    set: %p", fAodCells));
   }
 
-  //ClusterAfterburner();
+  if (fDoAfterburner)
+    ClusterAfterburner();
 
   FillCellHists();
   FillClusHists();
@@ -421,6 +430,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
     fHCellH->Fill(cellMaxE);
     cellMeanE /= ncells;
     fHCellM->Fill(cellMeanE);
+    fHCellM2->Fill(cellMeanE*ncells/24/48/4); //hard-coded but there is a way to figure out from geometry
     for (Int_t i=0; i<4; ++i) 
       fHCellMult[i]->Fill(cellModCount[i]);
   }
@@ -461,6 +471,28 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
       fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
       fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
+      if (fNtuple) {
+        Float_t vals[18];
+        vals[0]  = InputEvent()->GetRunNumber();
+        vals[1]  = InputEvent()->GetBunchCrossNumber();
+        vals[2]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
+        vals[3]  = clusterVec.Pt();
+        vals[4]  = clusterVec.E();
+        vals[5]  = GetMaxCellEnergy(clus);
+        vals[6]  = clus->GetNCells();
+        vals[7]  = clus->GetDistanceToBadChannel();
+        vals[8]  = clus->GetDispersion();
+        vals[9]  = clus->GetM20();
+        vals[10] = clus->GetM02();
+        vals[11] = clus->Chi2();
+        vals[12] = clus->GetEmcCpvDistance();
+        vals[13] = clusterEcc;
+        vals[14] = GetMaxCellEnergy(clus)/clus->E();
+        vals[15] = maxAxis;
+        vals[16] = clusterVec.Eta();
+        vals[17] = clusterVec.Phi();
+        fNtuple->Fill(vals);
+      }
     }
   }
 }
@@ -491,6 +523,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         continue;
       if (clus1->E()<0.010)
         continue;
+      if (clus1->GetNCells()<fNminCells)
+        continue;
       clus1->GetMomentum(clusterVec1,vertex);
       for (Int_t j = i+1; j<nclus; ++j) {
         AliVCluster *clus2 = static_cast<AliVCluster*>(clusters->At(j));
@@ -499,6 +533,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         if (!clus2->IsEMCAL()) 
           continue;
         if (clus2->E()<0.010)
+          continue;
+        if (clus2->GetNCells()<fNminCells)
           continue;
         clus2->GetMomentum(clusterVec2,vertex);
         pionVec = clusterVec1 + clusterVec2;
@@ -511,38 +547,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
           fHPionMggDgg->Fill(pionVec.M(),pionOpeningAngle); 
           Int_t bin = fPtRanges->FindBin(pionVec.Pt());
           fHPionInvMasses[bin]->Fill(pionVec.M());
-        }
-
-        if (fNtuple) {
-          Double_t mass = pionVec.M();
-          if (mass>0.08 && mass<0.2) {
-            Float_t vals[24];
-            vals[0]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
-            vals[1]  = mass;
-            vals[2]  = pionVec.Pt();
-            vals[3]  = clusterVec1.E();
-            vals[4]  = clusterVec2.E();
-            vals[5]  = GetMaxCellEnergy(clus1);
-            vals[6]  = GetMaxCellEnergy(clus2);
-            vals[7]  = clus1->GetNCells();
-            vals[8]  = clus2->GetNCells();
-            vals[9]  = clus1->GetDistanceToBadChannel();
-            vals[10] = clus2->GetDistanceToBadChannel();
-            vals[11] = clus1->GetDispersion();
-            vals[12] = clus2->GetDispersion();
-            vals[13] = clus1->GetM20();
-            vals[14] = clus2->GetM20();
-            vals[15] = clus1->GetM02();
-            vals[16] = clus2->GetM02();
-            vals[17] = clus1->Chi2();
-            vals[18] = clus2->Chi2();
-            vals[19] = clus1->GetEmcCpvDistance();
-            vals[20] = clus2->GetEmcCpvDistance();
-            vals[21] = TMath::Abs(clusterVec1.Phi()-clusterVec2.Phi());
-            vals[22] = TMath::Abs(clusterVec1.Eta()-clusterVec2.Eta());
-            vals[23] = pionOpeningAngle;
-            fNtuple->Fill(vals);
-          }
         }
       }
     }
