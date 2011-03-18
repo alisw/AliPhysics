@@ -72,7 +72,10 @@ class AliFlowEventSimple: public TObject {
   void AddV2( Double_t v2 );
   void AddV3( Double_t v3 );
   void AddV4( Double_t v4 );
-  void AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4 );
+  void AddV5( Double_t v5 );
+  void AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4, Double_t v5 );
+  void AddFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4, Double_t v5,
+               Double_t rp1, Double_t rp2, Double_t rp3, Double_t rp4, Double_t rp5 );
   void AddV2( TF1* ptDepV2 );
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();

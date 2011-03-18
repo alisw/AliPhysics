@@ -59,7 +59,7 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 // SETTING THE CUTS
 
 //---------Data selection----------
-//kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet, kPMD
+//kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
 AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
 AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 

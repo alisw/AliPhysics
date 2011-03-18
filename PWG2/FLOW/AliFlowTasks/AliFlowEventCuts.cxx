@@ -91,7 +91,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
   fMeanPtCuts(NULL),
-  fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts2010()),
+  fStandardTPCcuts(AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts2010()),
   fStandardGlobalCuts(AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()),
   fCutPrimaryVertexX(kFALSE),
   fPrimaryVertexXmax(INT_MAX),
@@ -383,14 +383,14 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
 
   if (fRefMultMethod==kTPConly && !fRefMultCuts)
   {
-    fRefMultCuts = AliFlowTrackCuts::GetStandardTPCOnlyTrackCuts();
+    fRefMultCuts = AliFlowTrackCuts::GetStandardTPCStandaloneTrackCuts();
     fRefMultCuts->SetEtaRange(-0.8,0.8);
     fRefMultCuts->SetPtMin(0.15);
   }
   else if (fRefMultMethod==kSPDtracklets && !fRefMultCuts)
   {
     fRefMultCuts = new AliFlowTrackCuts("tracklet refmult cuts");
-    fRefMultCuts->SetParamType(AliFlowTrackCuts::kESD_SPDtracklet);
+    fRefMultCuts->SetParamType(AliFlowTrackCuts::kSPDtracklet);
     fRefMultCuts->SetEtaRange(-0.8,0.8);
   }
   else if (fRefMultMethod==kV0)
