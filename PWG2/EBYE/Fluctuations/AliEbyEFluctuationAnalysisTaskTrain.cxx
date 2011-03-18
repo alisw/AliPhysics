@@ -65,7 +65,7 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserCreateOutputObjects() {
   fOutputList->Add(fHistEventStats);
 
   //ESD analysis
-  if(fAnalysisType == "ESD") {
+  if(fAnalysisType.CompareTo("ESD") == 0 ) {
     fHistCentrality = new TH1F("fHistCentrality",";Centrality bin;Events",
 			       20,0.5,20.5);
     fOutputList->Add(fHistCentrality);
@@ -74,7 +74,7 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserCreateOutputObjects() {
     histName = "fHistNMult";
     fHistNMult = new TH1F(histName.Data(), 
 			  ";N_{mult.}",
-			  500,0,3000);
+			  800,0,4000);
     fOutputList->Add(fHistNMult);
 
     histName = "fHistNPlusNMinus";
@@ -83,11 +83,11 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserCreateOutputObjects() {
 				2000,0.5,2000.5,2000,0.5,2000.5);  
     fOutputList->Add(fHistNPlusNMinus);
   }//ESD analysis
-  else if(fAnalysisType == "MC") {
+  else if(fAnalysisType.CompareTo("MC") == 0) {
     TString histName = "fHistNMultMC";
     fHistNMultMC = new TH1F(histName.Data(), 
 			    ";N_{mult.}",
-			    600,0,6000);
+			    800,0,8000);
     fOutputList->Add(fHistNMultMC);
     
     histName = "fHistNPlusNMinusMC";
@@ -109,7 +109,7 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
 
   // Post output data.
   //ESD analysis
-  if(fAnalysisType == "ESD") {
+  if(fAnalysisType.CompareTo("ESD") == 0) {
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!fESD) {
       printf("ERROR: fESD not available\n");
@@ -121,7 +121,7 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
     //Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
     //if(isSelected) {
       fHistEventStats->Fill(2); //triggered + centrality
-      //Printf("Event accepted");
+      
 
       //Centrality stuff
       AliCentrality *centrality = fESD->GetCentrality();
@@ -130,7 +130,7 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
       if(centrality->IsEventInCentralityClass(fCentralityPercentileMin,
 					      fCentralityPercentileMax,
 					      fCentralityEstimator.Data())) {
-	if(fAnalysisMode = "TPC") {
+	if(fAnalysisMode.CompareTo("TPC") == 0 ) {
 	  const AliESDVertex *vertex = fESD->GetPrimaryVertexTPC();
 	  if(vertex) {
 	    if(vertex->GetNContributors() > 0) {
@@ -142,77 +142,65 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
 		      fHistEventStats->Fill(4); //analyzed events
 		      
 		      Printf("Centrality percentile: %lf - Centrality: %d - Total tracks: %d",
-			     centrality->GetCentralityPercentile(fCentralityEstimator.Data()),
-			     nCentrality,fESD->GetNumberOfTracks());
+                             centrality->GetCentralityPercentile(fCentralityEstimator.Data()),
+                             nCentrality,fESD->GetNumberOfTracks());
 		      
+
 		      Int_t nAcceptedTracks = 0;
-		      //TObjArray *gTrackArray = 0;
-		      //if(fESDtrackCuts)
-		      //gTrackArray = fESDtrackCuts->GetAcceptedTracks(fESD,kTRUE);
-		      //if(gTrackArray) {
-		      //nAcceptedTracks = gTrackArray->GetEntries();
+		      
 		      nAcceptedTracks = fESD->GetNumberOfTracks();
 		      AliESDtrack* track = 0;
-
+		      
 		      Float_t dcaXY = 0.0, dcaZ = 0.0;
-
-		      // Track loop to fill a pT spectrum
-		      for (Int_t iTracks = 0; iTracks < nAcceptedTracks; iTracks++) {
-			//track = dynamic_cast<AliESDtrack *>(gTrackArray->At(iTracks));
-			track = dynamic_cast<AliESDtrack *>(fESD->GetTrack(iTracks));
-			if (!track) {
-			  printf("ERROR: Could not receive track %d\n", iTracks);
-			  continue;
-			}
-
-			AliESDtrack *tpcOnlyTrack = new AliESDtrack();
-			
-			// only true if we have a tpc track
-			if (!track->FillTPCOnlyTrack(*tpcOnlyTrack)) {
+		      
+		      for (Int_t iTracks = 0; iTracks < nAcceptedTracks; iTracks++) 
+			{
+			  track = dynamic_cast<AliESDtrack *>(fESD->GetTrack(iTracks));
+			  if (!track) {
+			    printf("ERROR: Could not receive track %d\n", iTracks);
+			    continue;
+			  }
+			  
+			  AliESDtrack *tpcOnlyTrack = new AliESDtrack();
+			  
+			  if (!track->FillTPCOnlyTrack(*tpcOnlyTrack)) {
+			    delete tpcOnlyTrack;
+			    continue;
+			  }
+			  
+			  tpcOnlyTrack->GetImpactParameters(dcaXY,dcaZ);
+			  			  
+			  Int_t nClustersITS = track->GetITSclusters(0x0);
+			  Int_t nClustersTPC = track->GetTPCclusters(0x0);
+			  
+			  Float_t chi2PerClusterITS = -1;
+			  if (nClustersITS!=0)
+			    chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
+			  Float_t chi2PerClusterTPC = -1;
+			  if (nClustersTPC!=0)
+			    chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
+			  
+			  //	
+			  
+			  if(nClustersTPC < fMinNumberOfTPCClusters) continue;
+			  if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) continue;
+			  if(TMath::Abs(dcaXY) > fMaxDCAxy) continue;
+			  if(TMath::Abs(dcaZ) > fMaxDCAz) continue;
+			  
+			  Short_t gCharge = tpcOnlyTrack->Charge();
+			  if(gCharge > 0) nPlus += 1;
+			  if(gCharge < 0) nMinus += 1;
 			  delete tpcOnlyTrack;
-			  return;
-			}
-			
-			tpcOnlyTrack->GetImpactParameters(dcaXY,dcaZ);
-			
-			//==============================================================//
-			Int_t nClustersITS = track->GetITSclusters(0x0);
-			Int_t nClustersTPC = track->GetTPCclusters(0x0);
+			} // track loop
+		      
+		      if( nPlus == 0 && nMinus == 0) return;
 
-			Float_t chi2PerClusterITS = -1;
-			if (nClustersITS!=0)
-			  chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
-			Float_t chi2PerClusterTPC = -1;
-			if (nClustersTPC!=0)
-			  chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);
-			
-			//Printf("TPC clusters: %d - %f === dca: %lf %lf",nClustersTPC, chi2PerClusterTPC,dcaXY,dcaZ);
-
-			if(nClustersTPC < fMinNumberOfTPCClusters) continue;
-			if(chi2PerClusterTPC > fMaxChi2PerTPCCluster) continue;
-			if(TMath::Abs(dcaXY) > fMaxDCAxy) continue;
-			if(TMath::Abs(dcaZ) > fMaxDCAz) continue;
-			//==============================================================//
-
-			//if(fESDtrackCuts) {  
-			//AliESDtrack *tpcOnlyTrack = fESDtrackCuts->GetTPCOnlyTrack(fESD,iTracks);  
-			//if(!tpcOnlyTrack) continue;  
-			    
-			//if(!fESDtrackCuts->AcceptTrack(tpcOnlyTrack)) continue;  
-			//}//ESD track cuts object
-
-			Short_t gCharge = tpcOnlyTrack->Charge();
-			if(gCharge > 0) nPlus += 1;
-			if(gCharge < 0) nMinus += 1;
-		      }//track loop
-		      //}//TObjArray valid object
-		      //if((nCentrality >= 1)&&(nCentrality <= 20)) {
-		      cout<<"=========NPlus: "<<nPlus<<"=========NMinus: "<<nMinus<<endl;
-		      //Printf("===NPlus: %d - NMinus: %d===",nPlus,nMinus);
+		      //  cout<<"=========NPlus: "<<nPlus<<"=========NMinus: "<<nMinus<<endl;
 		      fHistCentrality->Fill(nCentrality);
 		      fHistNPlusNMinus->Fill(nPlus,nMinus);
 		      fHistNMult->Fill(nPlus+nMinus);
-		      //}
+		      
+		      
 		    }//Vz cut
 		  }//Vy cut
 		}//Vx cut
@@ -221,11 +209,11 @@ void AliEbyEFluctuationAnalysisTaskTrain::UserExec(Option_t *) {
 	  }//valid vertex
 	}//TPC analysis mode
       }//centrality
-	//}//physics selection
+      //}//physics selection
   }//ESD analysis level
   
-  //MC analysis
-  if(fAnalysisType == "MC") {
+      //MC analysis
+  if(fAnalysisType.CompareTo("MC") == 0 ) {
     AliMCEvent* mcEvent = MCEvent();
     if (!mcEvent) {
       Printf("ERROR: Could not retrieve MC event");
