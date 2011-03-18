@@ -236,10 +236,10 @@ void AliPerformanceTPC::Init()
    Double_t minTPCTrackHisto[10]={ 0.,   0.,  0., -3*scaleDCA, -3.*scaleDCA, -1.5, 0.,             ptMin,  -1.5, -0.5 };
    Double_t maxTPCTrackHisto[10]={ 160., 5., 1.2, 3*scaleDCA,  3.*scaleDCA,  1.5, 2.*TMath::Pi(), ptMax,    1.5,  1.5 };
   
-  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge/pt:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
+  //fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge/pt:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
+  fTPCTrackHisto = new THnSparseF("fTPCTrackHisto","nClust:chi2PerClust:nClust/nFindableClust:DCAr:DCAz:eta:phi:pt:charge:vertStatus",10,binsTPCTrackHisto,minTPCTrackHisto,maxTPCTrackHisto);
   fTPCTrackHisto->SetBinEdges(7,binsPt);
   //fTPCTrackHisto->SetBinEdges(8,binsCOverPt);
-
   fTPCTrackHisto->GetAxis(0)->SetTitle("nClust");
   fTPCTrackHisto->GetAxis(1)->SetTitle("chi2PerClust");
   fTPCTrackHisto->GetAxis(2)->SetTitle("nClust/nFindableClust");
