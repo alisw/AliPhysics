@@ -65,7 +65,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fLoadCalib(0),
     fLoadPed(0),
     fAttachClusters(0),
-    fRecalibOnly(0)
+    fRecalibOnly(0),
+    fSubBackground(0)
 { 
   // Constructor
 }
@@ -92,12 +93,13 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fLoadCalib(0),
     fLoadPed(0),
     fAttachClusters(0),
-    fRecalibOnly(0)
+    fRecalibOnly(0),
+    fSubBackground(0)
 { 
   // Constructor
 
-  fBranchNames     = "ESD:AliESDHeader.,EMCALCells.,Tracks AOD:header,emcalCells";
-  for(Int_t i = 0; i < 10; ++i) 
+  fBranchNames     = "ESD:AliESDHeader.,EMCALCells. AOD:header,emcalCells";
+  for(Int_t i = 0; i < 12; ++i) 
     fGeomMatrix[i] = 0;
 }
 
@@ -151,192 +153,93 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
     return;
   }
 
-  if (esdevent) {
-    FillDigitsArray(esdevent);
-    if (fRecalibOnly) {
-      UpdateCells(esdevent);
-      return; // not requested to run clusterizer
-    }
-  }  else {
-    FillDigitsArray(aodevent);
-    if (fRecalibOnly) {
-      UpdateCells(aodevent);
-      return; // not requested to run clusterizer
-    }
+  FillDigitsArray();
+
+  if (fRecalibOnly) {
+    UpdateCells();
+    return; // not requested to run clusterizer
   }
 
-  // clusterize
-  fClusterizer->Digits2Clusters("");
+  Clusterize();
+  UpdateCells();
+  UpdateClusters();
 
-  if (esdevent) {
-    UpdateCells(esdevent);
-    UpdateClusters(esdevent);
-  } else {
-    UpdateCells(aodevent);
-    UpdateClusters(aodevent);
-  }
   if (fOutputAODBranch)
-    RecPoints2AODClusters(fOutputAODBranch);
+    RecPoints2Clusters(fOutputAODBranch);
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliAODEvent *event)
+void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
 {
-  // Update cells in case re-calibration was done.
+  // Clusterize
 
-  if (!fCalibData)
-    return;
-
-  AliAODCaloCells *cells = event->GetEMCALCells();
-  Int_t ncells = cells->GetNumberOfCells();
-  for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-    Double_t cellAmplitude=0, cellTime=0;
-    Short_t cellNumber=0;
-    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
-      break;
-    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(idigit));
-    cellAmplitude = digit->GetCalibAmp();
-    cells->SetCell(icell, cellNumber, cellAmplitude, cellTime);
-    idigit++;
+  if (fSubBackground) {
+    fClusterizer->SetInputCalibrated(kTRUE);   
+    fClusterizer->SetCalibrationParameters(0);
+  }
+  fClusterizer->Digits2Clusters("");
+  if (fSubBackground) {
+    fClusterizer->SetInputCalibrated(kFALSE);   
+    fClusterizer->SetCalibrationParameters(fCalibData);
   }
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::UpdateCells(AliESDEvent *event)
-{
-  // Update cells in case re-calibration was done.
-
-  if (!fCalibData)
-    return;
-
-  AliESDCaloCells *cells = event->GetEMCALCells();
-  Int_t ncells = cells->GetNumberOfCells();
-  for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-    Double_t cellAmplitude=0, cellTime=0;
-    Short_t cellNumber=0;
-    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
-      break;
-    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(idigit));
-    cellAmplitude = digit->GetCalibAmp();
-    cells->SetCell(icell, cellNumber, cellAmplitude, cellTime);
-    idigit++;
-  }
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters(AliAODEvent *event)
-{
-  // Update cells in case re-calibration was done.
-
-  if (!fAttachClusters)
-    return;
-
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
-  if (!clus)
-    return;
-
-  Int_t nents = clus->GetEntries();
-  for (Int_t i=0;i<nents;++i) {
-    AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->At(i));
-    if (!c)
-      continue;
-    if (c->IsEMCAL())
-      clus->RemoveAt(i);
-  }
-  clus->Compress();
-  RecPoints2AODClusters(clus);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters(AliESDEvent *event)
-{
-  // Update cells in case re-calibration was done.
-
-  if (!fAttachClusters)
-    return;
-
-  TClonesArray *clus = dynamic_cast<TClonesArray*>(event->FindListObject("CaloClusters"));
-  if (!clus)
-    return;
-
-  Int_t nents = clus->GetEntries();
-  for (Int_t i=0;i<nents;++i) {
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
-    if (!c)
-      continue;
-    if (c->IsEMCAL())
-      clus->RemoveAt(i);
-  }
-  clus->Compress();
-  RecPoints2ESDClusters(clus);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray(AliAODEvent *event)
+void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 {
   // Fill digits from cells.
 
   fDigitsArr->Clear("C");
-  AliAODCaloCells *cells = event->GetEMCALCells();
+  AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+  Double_t avgE = 0; // for background subtraction
   Int_t ncells = cells->GetNumberOfCells();
-  if (ncells>fDigitsArr->GetSize())
-    fDigitsArr->Expand(2*ncells);
   for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
     Double_t cellAmplitude=0, cellTime=0;
     Short_t cellNumber=0;
     if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
       break;
-    AliEMCALDigit *digit = (AliEMCALDigit*) fDigitsArr->New(idigit);
+    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
     digit->SetId(cellNumber);
-    digit->SetAmplitude(cellAmplitude);
     digit->SetTime(cellTime);
     digit->SetTimeR(cellTime);
     digit->SetIndexInList(idigit);
     digit->SetType(AliEMCALDigit::kHG);
-    if (fRecalibOnly) {
+    if (fRecalibOnly||fSubBackground) {
       Double_t energy = fClusterizer->Calibrate(cellAmplitude,cellTime,cellNumber);
-      digit->SetCalibAmp(energy);
+      digit->SetAmplitude(energy);
+      avgE += energy;
+    } else {
+      digit->SetAmplitude(cellAmplitude);
     }
     idigit++;
   }
-  fDigitsArr->Sort();
-}
 
-//________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray(AliESDEvent *event)
-{
-  // Fill digits from cells.
-
-  fDigitsArr->Clear("C");
-  AliESDCaloCells *cells = event->GetEMCALCells();
-  Int_t ncells = cells->GetNumberOfCells();
-  if (ncells>fDigitsArr->GetSize())
-    fDigitsArr->Expand(2*ncells);
-  for (Int_t icell = 0, idigit = 0; icell < ncells; ++icell) {
-    Double_t cellAmplitude=0, cellTime=0;
-    Short_t cellNumber=0;
-    if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
-      break;
-    AliEMCALDigit *digit = (AliEMCALDigit*) fDigitsArr->New(idigit);
-    digit->SetId(cellNumber);
-    digit->SetAmplitude(cellAmplitude);
-    digit->SetTime(cellTime);
-    digit->SetTimeR(cellTime);
-    digit->SetIndexInList(idigit);
-    digit->SetType(AliEMCALDigit::kHG);
-    if (fRecalibOnly) {
-      Double_t energy = fClusterizer->Calibrate(cellAmplitude,cellTime,cellNumber);
-      digit->SetCalibAmp(energy);
+  if (fSubBackground) {
+    avgE /= AliEMCALGeometry::GetInstance(fGeomName)->GetNumberOfSuperModules()*48*24;
+    Int_t ndigis = fDigitsArr->GetEntries();
+    for (Int_t i = 0; i < ndigis; ++i) {
+      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(i));
+      Double_t energy = digit->GetAmplitude() - avgE;
+      if (energy<=0.001) {
+        //fDigitsArr->RemoveAt(i);
+        digit->SetAmplitude(0);
+      } else {
+        digit->SetAmplitude(energy);
+      }
     }
-    idigit++;
   }
+  fDigitsArr->Compress();
   fDigitsArr->Sort();
 }
 
 //________________________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::RecPoints2AODClusters(TClonesArray *clus)
+void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
 {
   // Cluster energy, global position, cells and their amplitude fractions are restored.
+
+  Bool_t esdobjects = 0;
+  if (strcmp(clus->GetClass()->GetName(),"AliESDCaloCluster")==0)
+    esdobjects = 1;
 
   Int_t Ncls = fClusterArr->GetEntriesFast();
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
@@ -367,13 +270,11 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2AODClusters(TClonesArray *clu
     Float_t g[3];
     gpos.GetXYZ(g);
     
-    AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->New(nout++));
+    AliVCluster *c = static_cast<AliVCluster*>(clus->New(nout++));
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
     c->SetNCells(ncells_true);
-    c->SetCellsAbsId(absIds);
-    c->SetCellsAmplitudeFraction(ratios);
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);            //not yet implemented
     c->SetChi2(-1);                      //not yet implemented
@@ -384,6 +285,15 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2AODClusters(TClonesArray *clu
     c->SetM02(elipAxis[0]*elipAxis[0]) ;
     c->SetM20(elipAxis[1]*elipAxis[1]) ;
     c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
+    if (esdobjects) {
+      AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
+      cesd->SetCellsAbsId(absIds);
+      cesd->SetCellsAmplitudeFraction(ratios);
+    } else {
+      AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
+      caod->SetCellsAbsId(absIds);
+      caod->SetCellsAmplitudeFraction(ratios);
+    }
   }
  
   AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -392,79 +302,26 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2AODClusters(TClonesArray *clu
   if (!fRecoUtils)
     return;
 
+  AliAnalysisManager::GetAnalysisManager()->LoadBranch("Tracks");
   fRecoUtils->FindMatches(esdevent,clus);
   
-  Int_t Nclus = clus->GetEntries();
-  for(Int_t i=0; i < Nclus; ++i) {
-    AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->At(i));
-    Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-    if(trackIndex >= 0) {
-      Float_t dR, dZ;
-      fRecoUtils->GetMatchedResiduals(i,dR, dZ);
-      c->AddTrackMatched(0x0); //esdevent->GetTrack(trackIndex));
-      c->SetTrackDistance(dR,dZ); // not implemented
-      c->SetEmcCpvDistance(dR);
-      c->SetChi2(dZ);
-      if(DebugLevel() > 1) 
-        AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
+  if (!esdobjects) {
+    Int_t Nclus = clus->GetEntries();
+    for(Int_t i=0; i < Nclus; ++i) {
+      AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->At(i));
+      Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
+      if(trackIndex >= 0) {
+        Float_t dR, dZ;
+        fRecoUtils->GetMatchedResiduals(i,dR, dZ);
+        c->AddTrackMatched(0x0); //esdevent->GetTrack(trackIndex));
+        c->SetTrackDistance(dR,dZ); // not implemented
+        c->SetEmcCpvDistance(dR);
+        c->SetChi2(dZ);
+        if(DebugLevel() > 1) 
+          AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
+      }
     }
-  }
-}
-
-//________________________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::RecPoints2ESDClusters(TClonesArray *clus)
-{
-  // Cluster energy, global position, cells and their amplitude fractions are restored.
-
-  Int_t Ncls = fClusterArr->GetEntriesFast();
-  for (Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
-    AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
-    Int_t ncells_true = 0;
-    const Int_t ncells = recpoint->GetMultiplicity();
-    UShort_t   absIds[ncells];  
-    Double32_t ratios[ncells];
-    Int_t *dlist = recpoint->GetDigitsList();
-    Float_t *elist = recpoint->GetEnergiesList();
-    for (Int_t c = 0; c < ncells; ++c) {
-      AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
-      absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = elist[c]/digit->GetAmplitude();
-      if (ratios[ncells_true] < 0.001) 
-        continue;
-      ++ncells_true;
-    }
-
-    if (ncells_true < 1) {
-      AliWarning("Skipping cluster with no cells");
-      continue;
-    }
-
-    TVector3 gpos;
-    recpoint->GetGlobalPosition(gpos);
-    Float_t g[3] = {0};
-    gpos.GetXYZ(g);
-    
-    AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->New(nout++));
-    c->SetType(AliVCluster::kEMCALClusterv1);
-    c->SetE(recpoint->GetEnergy());
-    c->SetPosition(g);
-    c->SetNCells(ncells_true);
-    c->SetCellsAbsId(absIds);
-    c->SetCellsAmplitudeFraction(ratios);
-    c->SetDispersion(recpoint->GetDispersion());
-    c->SetEmcCpvDistance(-1);            //not yet implemented
-    c->SetChi2(-1);                      //not yet implemented
-    c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
-    c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
-    Float_t elipAxis[2];
-    recpoint->GetElipsAxis(elipAxis);
-    c->SetM02(elipAxis[0]*elipAxis[0]) ;
-    c->SetM20(elipAxis[1]*elipAxis[1]) ;
-    c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
-  }
-
-  if (fRecoUtils) {
-    fRecoUtils->FindMatches(InputEvent(),clus);
+  } else {
     Int_t Nclus = clus->GetEntries();
     for(Int_t i=0; i < Nclus; ++i) {
       AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
@@ -482,6 +339,57 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2ESDClusters(TClonesArray *clu
       }
     }
   }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALClusterizeFast::UpdateCells()
+{
+  // Update cells in case re-calibration was done.
+
+  if (!fCalibData&&!fSubBackground)
+    return;
+
+  AliVCaloCells *cells = InputEvent()->GetEMCALCells();
+  Int_t ncells = cells->GetNumberOfCells();
+  Int_t ndigis = fDigitsArr->GetEntries();
+
+  if (ncells!=ndigis) {
+    cells->DeleteContainer();
+    cells->CreateContainer(ndigis);
+  }
+  for (Int_t idigit = 0; idigit < ndigis; ++idigit) {
+    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(idigit));
+    Double_t cellAmplitude = digit->GetCalibAmp();
+    Short_t cellNumber = digit->GetId();
+    Double_t cellTime = digit->GetTime();
+    cells->SetCell(idigit, cellNumber, cellAmplitude, cellTime);
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
+{
+  // Update cells in case re-calibration was done.
+
+  if (!fAttachClusters)
+    return;
+
+  TClonesArray *clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
+  if (!clus)
+    clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClusters"));
+  if(!clus)
+    return;
+
+  Int_t nents = clus->GetEntries();
+  for (Int_t i=0;i<nents;++i) {
+    AliVCluster *c = static_cast<AliVCluster*>(clus->At(i));
+    if (!c)
+      continue;
+    if (c->IsEMCAL())
+      clus->RemoveAt(i);
+  }
+  clus->Compress();
+  RecPoints2Clusters(clus);
 }
 
 //________________________________________________________________________________________
