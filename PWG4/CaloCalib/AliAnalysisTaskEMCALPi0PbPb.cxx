@@ -474,7 +474,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       if (fNtuple) {
         Float_t vals[18];
         vals[0]  = InputEvent()->GetRunNumber();
-        vals[1]  = InputEvent()->GetBunchCrossNumber();
+        vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
         vals[2]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
         vals[3]  = clusterVec.Pt();
         vals[4]  = clusterVec.E();
