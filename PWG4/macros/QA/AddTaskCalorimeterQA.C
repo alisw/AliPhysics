@@ -2,7 +2,7 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                 PHOS  Yuri.Kharlov@cern.ch
 //
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE,TString outputFile = "", Bool_t oldAOD=kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t year = 2011, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE,TString outputFile = "", Bool_t oldAOD=kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -67,44 +67,67 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
-  cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");  
-  // Remove EMCAL hottest channels for first LHC10 periods 	
-  cu->SwitchOnBadChannelsRemoval();
-  // SM0
-  //cu->SetEMCALChannelStatus(0,3,13);  cu->SetEMCALChannelStatus(0,44,1); cu->SetEMCALChannelStatus(0,3,13); 
-  //cu->SetEMCALChannelStatus(0,20,7);  cu->SetEMCALChannelStatus(0,38,2);   
-  // SM1
-  //cu->SetEMCALChannelStatus(1,4,7);   cu->SetEMCALChannelStatus(1,4,13);  cu->SetEMCALChannelStatus(1,9,20); 
-  //cu->SetEMCALChannelStatus(1,14,15); cu->SetEMCALChannelStatus(1,23,16); cu->SetEMCALChannelStatus(1,32,23); 
-  //cu->SetEMCALChannelStatus(1,37,5);  cu->SetEMCALChannelStatus(1,40,1);  cu->SetEMCALChannelStatus(1,40,2);
-  //cu->SetEMCALChannelStatus(1,40,5);  cu->SetEMCALChannelStatus(1,41,0);  cu->SetEMCALChannelStatus(1,41,1);
-  //cu->SetEMCALChannelStatus(1,41,2);  cu->SetEMCALChannelStatus(1,41,4);
-  // SM2 	
-  //cu->SetEMCALChannelStatus(2,14,15); cu->SetEMCALChannelStatus(2,18,16); cu->SetEMCALChannelStatus(2,18,17); 
-  //cu->SetEMCALChannelStatus(2,18,18); cu->SetEMCALChannelStatus(2,18,20); cu->SetEMCALChannelStatus(2,18,21); 
-  //cu->SetEMCALChannelStatus(2,18,23); cu->SetEMCALChannelStatus(2,19,16); cu->SetEMCALChannelStatus(2,19,17); 
-  //cu->SetEMCALChannelStatus(2,19,19); cu->SetEMCALChannelStatus(2,19,20); cu->SetEMCALChannelStatus(2,19,21); 
-  //cu->SetEMCALChannelStatus(2,19,22);
-  //SM3
-  //cu->SetEMCALChannelStatus(3,4,7);
-	
-  //Recalibration
-  //cu->SwitchOnRecalibration();
-  //TFile * f = new TFile("RecalibrationFactors.root","read");
-  //cu->SetEMCALChannelRecalibrationFactors(0,(TH2F*)f->Get("EMCALRecalFactors_SM0"));
-  //cu->SetEMCALChannelRecalibrationFactors(1,(TH2F*)f->Get("EMCALRecalFactors_SM1"));
-  //cu->SetEMCALChannelRecalibrationFactors(2,(TH2F*)f->Get("EMCALRecalFactors_SM2"));
-  //cu->SetEMCALChannelRecalibrationFactors(3,(TH2F*)f->Get("EMCALRecalFactors_SM3"));
+  if(year==2010){
+    cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
+    cu->SwitchOnBadChannelsRemoval(); // just a trick
+  }
+  else {
+    cu->SetEMCALGeometryName("EMCAL_COMPLETEV1"); 
+    // Remove EMCAL hottest channels for LHC11 periods 	
+    cu->SwitchOnBadChannelsRemoval();
+
+    // SM0
+    cu->SetEMCALChannelStatus(0,12,16);  cu->SetEMCALChannelStatus(0,12,17); cu->SetEMCALChannelStatus(0,12,18); 
+    cu->SetEMCALChannelStatus(0,12,19);  cu->SetEMCALChannelStatus(0,12,20); cu->SetEMCALChannelStatus(0,12,21);
+    cu->SetEMCALChannelStatus(0,12,22);  cu->SetEMCALChannelStatus(0,12,23); 
+
+    cu->SetEMCALChannelStatus(0,13,16);  cu->SetEMCALChannelStatus(0,13,17); cu->SetEMCALChannelStatus(0,13,18); 
+    cu->SetEMCALChannelStatus(0,13,19);  cu->SetEMCALChannelStatus(0,13,20); cu->SetEMCALChannelStatus(0,13,21);
+    cu->SetEMCALChannelStatus(0,13,22);  cu->SetEMCALChannelStatus(0,13,23); 
+    
+    cu->SetEMCALChannelStatus(0,14,16);  cu->SetEMCALChannelStatus(0,14,17); cu->SetEMCALChannelStatus(0,14,18); 
+    cu->SetEMCALChannelStatus(0,14,19);  cu->SetEMCALChannelStatus(0,14,20); cu->SetEMCALChannelStatus(0,14,21);
+    cu->SetEMCALChannelStatus(0,14,22);  cu->SetEMCALChannelStatus(0,14,23); 
+    
+    cu->SetEMCALChannelStatus(0,15,16);  cu->SetEMCALChannelStatus(0,15,17); cu->SetEMCALChannelStatus(0,15,18); 
+    cu->SetEMCALChannelStatus(0,15,19);  cu->SetEMCALChannelStatus(0,15,20); cu->SetEMCALChannelStatus(0,15,21);
+    cu->SetEMCALChannelStatus(0,15,22);  cu->SetEMCALChannelStatus(0,15,23); 
+    
+    // SM1
+    cu->SetEMCALChannelStatus(1,4,13);   cu->SetEMCALChannelStatus(1,14,15); cu->SetEMCALChannelStatus(1,29,18); 
+    cu->SetEMCALChannelStatus(1,36,15);  cu->SetEMCALChannelStatus(1,40,2);  cu->SetEMCALChannelStatus(1,47,21);  
+  
+    // SM5 	
+    cu->SetEMCALChannelStatus(5,12,23);  cu->SetEMCALChannelStatus(5,14,7);   cu->SetEMCALChannelStatus(5,35,8); 
+ 
+    cu->SetEMCALChannelStatus(5,42,16);  cu->SetEMCALChannelStatus(5,42,17);  cu->SetEMCALChannelStatus(5,42,18); 
+    cu->SetEMCALChannelStatus(5,42,19);  cu->SetEMCALChannelStatus(5,42,20);  cu->SetEMCALChannelStatus(5,42,21); 
+    cu->SetEMCALChannelStatus(5,42,22);  cu->SetEMCALChannelStatus(5,42,23);  
+
+    cu->SetEMCALChannelStatus(5,43,16);  cu->SetEMCALChannelStatus(5,43,17);  cu->SetEMCALChannelStatus(5,43,18); 
+    cu->SetEMCALChannelStatus(5,43,19);  cu->SetEMCALChannelStatus(5,43,20);  cu->SetEMCALChannelStatus(5,43,21); 
+    cu->SetEMCALChannelStatus(5,43,22);  cu->SetEMCALChannelStatus(5,43,23);   
+    
+    //SM6
+    cu->SetEMCALChannelStatus(6,24,1);   cu->SetEMCALChannelStatus(6,32,14); 
+
+    //SM7
+    cu->SetEMCALChannelStatus(7,12,0);   cu->SetEMCALChannelStatus(7,12,2); 
+    cu->SetEMCALChannelStatus(7,13,0);   cu->SetEMCALChannelStatus(7,13,2); 
+    cu->SetEMCALChannelStatus(7,31,12);  cu->SetEMCALChannelStatus(7,31,13); 
+    cu->SetEMCALChannelStatus(7,31,14);  cu->SetEMCALChannelStatus(7,31,15); 
+
+    //SM8
+    cu->SetEMCALChannelStatus(8,24,11);   
+    
+    
+  }
 	
   cu->SetDebug(-1);
   if(kPrintSettings) cu->Print("");	
 	
   // ##### Analysis algorithm settings ####
-  //AliFiducialCut * fidCut = new AliFiducialCut();
-  //fidCut->DoCTSFiducialCut(kFALSE) ;
-  //fidCut->DoEMCALFiducialCut(kTRUE) ;
-  //fidCut->DoPHOSFiducialCut(kTRUE) ;	
-	
+ 	
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
@@ -119,9 +142,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
   emcalQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ;
   emcalQA->SetHistoEtaRangeAndNBins(-0.71, 0.71, 200) ;
-  emcalQA->SetNumberOfModules(10); 
+
+  if(year==2010){  
+    emcalQA->SetNumberOfModules(4); 
+    emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 200) ;
+    emcalQA->SetHistoXRangeAndNBins(-230,90,120);
+    emcalQA->SetHistoYRangeAndNBins(370,450,40);
+  }
+  else{            
+    emcalQA->SetNumberOfModules(10); 
+    emcalQA->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ;
+    emcalQA->SetHistoXRangeAndNBins(-600,90,200);
+    emcalQA->SetHistoYRangeAndNBins(100,450,100);
+  }
+  
   emcalQA->SetHistoMassRangeAndNBins(0., 1, 400) ;
   emcalQA->SetHistoAsymmetryRangeAndNBins(0., 1. , 10 );
   emcalQA->SetHistoPOverERangeAndNBins(0,10.,100);
@@ -131,8 +166,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Bool_t kP
   emcalQA->SetHistoRatioRangeAndNBins(0.,2.,100);
   emcalQA->SetHistoVertexDistRangeAndNBins(0.,500.,500);
   emcalQA->SetHistoNClusterCellRangeAndNBins(0,500,500);
-  emcalQA->SetHistoXRangeAndNBins(-230,90,120);
-  emcalQA->SetHistoYRangeAndNBins(370,450,40);
   emcalQA->SetHistoZRangeAndNBins(-400,400,200);
   emcalQA->SetHistoRRangeAndNBins(400,450,25);
   emcalQA->SetHistoV0SignalRangeAndNBins(0,5000,500);
