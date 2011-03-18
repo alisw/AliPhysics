@@ -22,11 +22,13 @@
 #pragma link C++ class AliFemtoV0Cut+;
 #pragma link C++ class AliFemtoXiCut+;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctn+;
+#pragma link C++ class AliFemtoCorrFctn3DLCMSSym+;
 #pragma link C++ class AliFemtoQinvCorrFctn+;
 #pragma link C++ class AliFemtoCorrFctnNonIdDR+;
 #pragma link C++ class AliFemtoCorrFctn3DSpherical+;
 #pragma link C++ class AliFemtoCorrFctn+;
 #pragma link C++ class AliFemtoBasicEventCut+;
+#pragma link C++ class AliFemtoEventCutEstimators+;
 #pragma link C++ class AliFemtoBasicTrackCut+;
 #pragma link C++ class AliFemtoDummyPairCut+;
 #pragma link C++ class AliFemtoCoulomb+;
