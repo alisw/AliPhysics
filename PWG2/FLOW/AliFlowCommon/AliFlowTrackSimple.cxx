@@ -217,6 +217,85 @@ void AliFlowTrackSimple::AddV4( Double_t v4,
   }
 }
 
+//----------------------------------------------------------------------- 
+void AliFlowTrackSimple::AddV5( Double_t v5,
+                                Double_t reactionPlaneAngle,
+                                Double_t precisionPhi,
+                                Int_t maxNumberOfIterations )
+{
+  //afterburner, adds v4, uses Newton-Raphson iteration
+  Double_t phi0=fPhi;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
+
+  for (Int_t i=0; i<maxNumberOfIterations; i++)
+  {
+    phiprev=fPhi; //store last value for comparison
+    f =  fPhi-phi0+0.4*v5*TMath::Sin(5.*(fPhi-reactionPlaneAngle));
+    fp = 1.0+2.0*v5*TMath::Cos(5.*(fPhi-reactionPlaneAngle)); //first derivative
+    fPhi -= f/fp;
+    if (TMath::AreEqualAbs(phiprev,fPhi,precisionPhi)) break;
+  }
+}
+
+//______________________________________________________________________________
+void AliFlowTrackSimple::AddFlow( Double_t v1,
+                                  Double_t v2,
+                                  Double_t v3,
+                                  Double_t v4,
+                                  Double_t v5,
+                                  Double_t rp1,
+                                  Double_t rp2,
+                                  Double_t rp3,
+                                  Double_t rp4,
+                                  Double_t rp5,
+                                  Double_t precisionPhi,
+                                  Int_t maxNumberOfIterations )
+{
+  //afterburner, adds v1,v2,v4 uses Newton-Raphson iteration
+  Double_t phi0=fPhi;
+  Double_t f=0.;
+  Double_t fp=0.;
+  Double_t phiprev=0.;
+
+  for (Int_t i=0; i<maxNumberOfIterations; i++)
+  {
+    phiprev=fPhi; //store last value for comparison
+    f =  fPhi-phi0
+        +2.0*  v1*TMath::Sin(    fPhi-rp1)
+        +      v2*TMath::Sin(2.*(fPhi-rp2))
+        +2./3.*v3*TMath::Sin(3.*(fPhi-rp3))
+        +0.5*  v4*TMath::Sin(4.*(fPhi-rp4))
+        +0.4*  v5*TMath::Sin(5.*(fPhi-rp5))
+        ;
+    fp =  1.0
+         +2.0*(
+           +v1*TMath::Cos(    fPhi-rp1)
+           +v2*TMath::Cos(2.*(fPhi-rp2))
+           +v3*TMath::Cos(3.*(fPhi-rp3))
+           +v4*TMath::Cos(4.*(fPhi-rp4))
+           +v5*TMath::Cos(5.*(fPhi-rp5))
+         ); //first derivative
+    fPhi -= f/fp;
+    if (TMath::AreEqualAbs(phiprev,fPhi,precisionPhi)) break;
+  }
+}
+
+//______________________________________________________________________________
+void AliFlowTrackSimple::AddFlow( Double_t v1,
+                                  Double_t v2,
+                                  Double_t v3,
+                                  Double_t v4,
+                                  Double_t v5,
+                                  Double_t rp,
+                                  Double_t precisionPhi,
+                                  Int_t maxNumberOfIterations )
+{
+  //afterburner, adds v1,v2,v4 uses Newton-Raphson iteration
+  AddFlow(v1,v2,v3,v4,v5,rp,rp,rp,rp,rp,precisionPhi,maxNumberOfIterations);
+}
+
 //______________________________________________________________________________
 void AliFlowTrackSimple::AddFlow( Double_t v1,
                                   Double_t v2,

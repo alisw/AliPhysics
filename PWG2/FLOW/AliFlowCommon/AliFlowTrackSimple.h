@@ -72,6 +72,10 @@ public:
               Double_t reactionPlaneAngle,
               Double_t precision,
               Int_t maxNumberOfIterations=100 );
+  void AddV5( Double_t v5,
+              Double_t reactionPlaneAngle,
+              Double_t precision,
+              Int_t maxNumberOfIterations=100 );
   void AddFlow( Double_t v1,
                 Double_t v2,
                 Double_t v3,
@@ -79,7 +83,27 @@ public:
                 Double_t reactionPlaneAngle,
                 Double_t precision,
                 Int_t maxNumberOfIterations=100 );
-    
+  void AddFlow( Double_t v1,
+                Double_t v2,
+                Double_t v3,
+                Double_t v4,
+                Double_t v5,
+                Double_t reactionPlaneAngle,
+                Double_t precision,
+                Int_t maxNumberOfIterations=100 );
+  void AddFlow( Double_t v1,
+                Double_t v2,
+                Double_t v3,
+                Double_t v4,
+                Double_t v5,
+                Double_t rp1,
+                Double_t rp2,
+                Double_t rp3,
+                Double_t rp4,
+                Double_t rp5,
+                Double_t precision,
+                Int_t maxNumberOfIterations=100 );
+
   const TBits* GetFlowBits() const {return &fFlowBits;}
 
   void  SetID(Int_t i) {fID=i;}

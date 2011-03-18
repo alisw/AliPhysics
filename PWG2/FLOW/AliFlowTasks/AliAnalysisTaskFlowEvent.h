@@ -94,7 +94,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   // setters for adding by hand flow values (afterburner)
   void SetAfterburnerOn(Bool_t b=kTRUE) {fAfterburnerOn=b;}
   void SetNonFlowNumberOfTrackClones(Int_t n) {fNonFlowNumberOfTrackClones=n;}
-  void SetFlow(Double_t v1, Double_t v2, Double_t v3, Double_t v4) {fV1=v1;fV2=v2;fV3=v3;fV4=v4;}
+  void SetFlow( Double_t v1, Double_t v2, Double_t v3=0.0, Double_t v4=0.0, Double_t v5=0.0)
+               {fV1=v1;fV2=v2;fV3=v3;fV4=v4;fV5=v5;}
   // end setters afterburner
 
  private:
@@ -159,6 +160,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fV2;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV3;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
+  Double_t  fV5;        // Add Flow. Must be in range [0,0.5].
     
   TRandom3* fMyTRandom3;     // TRandom3 generator
   // end afterburner

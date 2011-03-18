@@ -121,6 +121,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV2(0.),
   fV3(0.),
   fV4(0.),
+  fV5(0.),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -173,6 +174,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV2(0.),
   fV3(0.),
   fV4(0.),
+  fV5(0.),
   fMyTRandom3(NULL)
 {
   // Constructor
@@ -498,7 +500,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     if (!flowEvent->IsSetMCReactionPlaneAngle())
       flowEvent->SetMCReactionPlaneAngle(gRandom->Uniform(0.0,TMath::TwoPi()));
 
-    flowEvent->AddFlow(fV1,fV2,fV3,fV4);     //add flow
+    flowEvent->AddFlow(fV1,fV2,fV3,fV4,fV5);     //add flow
     flowEvent->CloneTracks(fNonFlowNumberOfTrackClones); //add nonflow by cloning tracks
   }
   //////////////////////////////////////////////////////////////////////////////
