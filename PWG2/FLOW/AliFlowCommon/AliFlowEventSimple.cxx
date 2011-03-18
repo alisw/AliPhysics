@@ -654,13 +654,38 @@ void AliFlowEventSimple::AddV4( Double_t v4 )
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4 )
+void AliFlowEventSimple::AddV5( Double_t v5 )
+{
+  //add v4 to all tracks wrt the reaction plane angle
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (track) track->AddV5(v5, fMCReactionPlaneAngle, fAfterBurnerPrecision);
+  }
+  SetUserModified();
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4, Double_t v5,
+                                  Double_t rp1, Double_t rp2, Double_t rp3, Double_t rp4, Double_t rp5 )
+{
+  //add flow to all tracks wrt the reaction plane angle, for all harmonic separate angle
+  for (Int_t i=0; i<fNumberOfTracks; i++)
+  {
+    AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
+    if (track) track->AddFlow(v1,v2,v3,v4,v5,rp1,rp2,rp3,rp4,rp5,fAfterBurnerPrecision);
+  }
+  SetUserModified();
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::AddFlow( Double_t v1, Double_t v2, Double_t v3, Double_t v4, Double_t v5 )
 {
   //add flow to all tracks wrt the reaction plane angle
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track) track->AddFlow(v1,v2,v3,v4,fMCReactionPlaneAngle, fAfterBurnerPrecision);
+    if (track) track->AddFlow(v1,v2,v3,v4,v5,fMCReactionPlaneAngle, fAfterBurnerPrecision);
   }
   SetUserModified();
 }

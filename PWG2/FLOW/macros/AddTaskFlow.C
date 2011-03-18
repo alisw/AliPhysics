@@ -12,6 +12,13 @@ Double_t minA = -0.9;
 Double_t maxA = -0.5;
 Double_t minB = 0.5;
 Double_t maxB = 0.9;
+/*
+//PMD As RP
+Double_t minB = 2.3;
+Double_t maxB = 3.1;
+Double_t minA = 3.1;
+Double_t maxA = 3.9;
+*/
 
 // AFTERBURNER
 Bool_t useAfterBurner=kFALSE;
@@ -62,7 +69,7 @@ Bool_t WEIGHTS[] = {kFALSE,kFALSE,kFALSE}; //Phi, v'(pt), v'(eta)
 // SETTING THE CUTS
 
 //---------Data selection----------
-//kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet, kPMD
+//kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
 AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
 AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
 
@@ -128,6 +135,13 @@ void AddTaskFlow(Float_t centrMin=-1,
     //cutsRP->SetRequireSigmaToVertex(kFALSE);
     cutsRP->SetAcceptKinkDaughters(kFALSE);
   }
+  if(rptype == AliFlowTrackCuts::kPMD) {
+    cutsRP->SetEtaRange(2.3,3.9);
+    cutsRP->SetPmdDetPlane(0);
+    cutsRP->SetPmdAdc(270);
+    cutsRP->SetPmdNcell(1);
+  }
+
 
   // POI TRACK CUTS:
   AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("poi cuts");
@@ -161,6 +175,13 @@ void AddTaskFlow(Float_t centrMin=-1,
     //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
     //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
   }
+  if(poitype == AliFlowTrackCuts::kPMD) {
+    cutsPOI->SetEtaRange(2.3,3.9);
+    cutsPOI->SetPmdDetPlane(0);
+    cutsPOI->SetPmdAdc(270);
+    cutsPOI->SetPmdNcell(1);
+  }
+
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
