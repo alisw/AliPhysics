@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE,Bool_t applyT0=kFALSE){
+AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -22,7 +22,6 @@ AliAnalysisTask *AddTaskTenderTOF(Float_t tofres = 80,Bool_t corrExpTimes=kFALSE
   //========= Attach TOF supply ======
   AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOFtender");
   TOFtender->SetTOFres(tofres);
-  TOFtender->SetApplyT0(applyT0);
   TOFtender->SetCorrectExpTimes(corrExpTimes);
   //TOFtender->SetTheorExpTimes(kTRUE);
   tender->AddSupply(TOFtender);
