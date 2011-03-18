@@ -32,7 +32,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetCentrality(const char *name)                { fCentVar = name;            }
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
   void         SetClusName(const char *name)                  { fClusName = name;           }
+  void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
+  void         SetNminCells(Int_t n)                          { fNminCells = n;             }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
 
@@ -55,6 +57,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fUseQualFlag;            // if true use quality flag for centrality
   TString                fClusName;               // cluster branch name (def="")
   Bool_t                 fDoNtuple;               // if true write out ntuple
+  Bool_t                 fDoAfterburner;          // if true run after burner
+  Int_t                  fNminCells;              // minimum number of cells attached to cluster
     // derived members (ie with ! after //)
   AliEMCALGeoUtils      *fGeom;                   //! geometry utils
   TList                 *fOutput;                 //!container of output histograms
@@ -79,7 +83,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH1F                 **fHCellMult;              //!histo for cell multiplicity in module
   TH1F                  *fHCellE;                 //!histo for cell energy
   TH1F                  *fHCellH;                 //!histo for highest cell energy
-  TH1F                  *fHCellM;                 //!histo for mean cell energy
+  TH1F                  *fHCellM;                 //!histo for mean cell energy (normalized to hit cells)
+  TH1F                  *fHCellM2;                //!histo for mean cell energy (normalized to all cells)
     // histograms for clusters
   TH1F                  *fHClustEccentricity;     //!histo for cluster eccentricity
   TH2F                  *fHClustEtaPhi;           //!histo for cluster eta vs. phi
