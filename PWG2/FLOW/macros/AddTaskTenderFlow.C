@@ -24,7 +24,6 @@ AliAnalysisTask* AddTaskTenderFlow( Float_t tofres = 80,
   //========= Attach TOF supply ======
   AliTOFTenderSupply *TOFtender = new AliTOFTenderSupply("TOFtender");
   TOFtender->SetTOFres(tofres);
-  TOFtender->SetApplyT0(applyT0);
   TOFtender->SetCorrectExpTimes(corrExpTimes);
   //TOFtender->SetTheorExpTimes(kTRUE);
   tender->AddSupply(TOFtender);
