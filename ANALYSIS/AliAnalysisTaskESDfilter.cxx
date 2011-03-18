@@ -973,11 +973,13 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
         delete track;
         continue;
       }
+      /*
       Double_t  fSigmaConstrainedMax = 5.;
       if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
 	delete track;
 	continue;
       }
+      */
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
     
