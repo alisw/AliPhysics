@@ -262,13 +262,14 @@ void AliTOFReconstructor::FillEventTimeWithTOF(AliESDEvent *event, AliESDpid *es
   if (!GetRecoParam()) AliFatal("cannot get TOF RECO params");
 
   Float_t tofResolution = GetRecoParam()->GetTimeResolution();// TOF time resolution in ps
-  AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID,fTOFcalib);
-  //AliTOFT0maker tofT0maker = AliTOFT0maker(esdPID,fTOFcalib);
+  AliTOFT0maker *tofT0maker = new AliTOFT0maker(esdPID);
   tofT0maker->SetTimeResolution(tofResolution);
   tofT0maker->ComputeT0TOF(event);
   tofT0maker->WriteInESD(event);
   tofT0maker->~AliTOFT0maker();
   delete tofT0maker;
+
+  esdPID->SetTOFResponse(event,(AliESDpid::EStartTimeType_t)GetRecoParam()->GetStartTimeType());
 
 }
 

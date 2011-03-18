@@ -46,7 +46,8 @@ AliTOFRecoParam::AliTOFRecoParam():
   fMaxChi2TRD(150.),
   fTimeResolution(80.),
   fTimeNSigma(5.),
-  fMaxDeltaTime(2)
+  fMaxDeltaTime(2),
+  fStartTimeType(1)// 1 -> AliESDpid::kTOF_T0
 {
   //
   // constructor
@@ -71,7 +72,8 @@ AliTOFRecoParam::AliTOFRecoParam(const AliTOFRecoParam &p):
   fMaxChi2TRD(p.fMaxChi2TRD),
   fTimeResolution(p.fTimeResolution),
   fTimeNSigma(p.fTimeNSigma),
-  fMaxDeltaTime(p.fMaxDeltaTime)
+  fMaxDeltaTime(p.fMaxDeltaTime),
+  fStartTimeType(p.fStartTimeType)
  { 
   //copy Ctor
 
@@ -104,6 +106,7 @@ AliTOFRecoParam& AliTOFRecoParam::operator=(const AliTOFRecoParam &p)
   fTimeResolution=p.fTimeResolution;
   fTimeNSigma=p.fTimeNSigma;   
   fMaxDeltaTime=p.fMaxDeltaTime;
+  fStartTimeType=p.fStartTimeType;
   return *this;
 }
 //_____________________________________________________________________________

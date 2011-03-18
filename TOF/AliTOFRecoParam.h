@@ -42,6 +42,7 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   Double_t  GetTimeResolution()    const  { return fTimeResolution;}
   Double_t  GetTimeNSigma()        const  { return fTimeNSigma;}
   Int_t     GetMaxDeltaTime()      const  { return fMaxDeltaTime;}
+  Int_t     GetStartTimeType()     const  { return fStartTimeType;}
 
   //Setters
 
@@ -63,6 +64,7 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   void  SetTimeNSigma(Double_t in)  {fTimeNSigma=in;}
   void  SetMaxDeltaTime(Int_t a)   {fMaxDeltaTime = a;}; // to set deltaTime [bin number]
   void  SetMaxDeltaTime(Float_t a) {fMaxDeltaTime = (Int_t)(a/AliTOFGeometry::TdcBinWidth());}; // to set deltaTime [ps]
+  void  SetStartTimeType(Int_t a) {fStartTimeType = a;};
 
   static   AliTOFRecoParam *GetPbPbparam();       // reco param for PbPb.
   static   AliTOFRecoParam *GetPPparam();         // reco param for PP
@@ -87,8 +89,9 @@ class AliTOFRecoParam : public AliDetectorRecoParam
   Int_t    fMaxDeltaTime; // max time difference in between two tof
                           // measurements for two neighbouring pads
                           // [number of bins]
+  Int_t fStartTimeType; // flag to set start_time to be used for TOF PID
 
-  ClassDef(AliTOFRecoParam, 4)
+  ClassDef(AliTOFRecoParam, 5)
 };
 
 #endif
