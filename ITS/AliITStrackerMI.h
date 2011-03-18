@@ -221,7 +221,7 @@ public:
   void SetCurrentEsdTrack(Int_t i) {fCurrentEsdTrack=i;}
   void FollowProlongationTree(AliITStrackMI * otrack, Int_t esdindex, Bool_t constrain);
   //
-  void   FlagFakes(TObjArray &itsTracks);
+  void   FlagFakes(const TObjArray &itsTracks);
   //
 protected:
   Bool_t ComputeRoad(AliITStrackMI* track,Int_t ilayer,Int_t idet,Double_t &zmin,Double_t &zmax,Double_t &ymin,Double_t &ymax) const;

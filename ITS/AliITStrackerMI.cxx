@@ -3899,7 +3899,7 @@ void  AliITStrackerMI::GetBestHypothesysMIP(TObjArray &itsTracks)
 } 
 
 //------------------------------------------------------------------------
-void AliITStrackerMI::FlagFakes(TObjArray &itsTracks)
+void AliITStrackerMI::FlagFakes(const TObjArray &itsTracks)
 {
   //
   // RS: flag those tracks which are suxpected to have fake clusters

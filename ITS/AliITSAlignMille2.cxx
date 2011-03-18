@@ -3865,7 +3865,7 @@ Bool_t AliITSAlignMille2::FixedOrphans() const
 }
 
 //________________________________________________________________________________________________________
-void AliITSAlignMille2::ConvertParamsToGlobal()
+void AliITSAlignMille2::ConvertParamsToGlobal() const
 {
   // convert params in local frame to global one
   double pars[AliITSAlignMille2Module::kMaxParGeom];
@@ -3879,7 +3879,7 @@ void AliITSAlignMille2::ConvertParamsToGlobal()
 }
 
 //________________________________________________________________________________________________________
-void AliITSAlignMille2::ConvertParamsToLocal()
+void AliITSAlignMille2::ConvertParamsToLocal() const
 {
   // convert params in global frame to local one
   double pars[AliITSAlignMille2Module::kMaxParGeom];

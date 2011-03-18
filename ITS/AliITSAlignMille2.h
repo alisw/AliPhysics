@@ -93,8 +93,8 @@ class AliITSAlignMille2: public TObject
   AliAlignObjParams*        GetPrealignedObject(const Char_t* symname) const;
   AliAlignObjParams*        GetConstrRefObject(const Char_t* symname) const;
   //
-  void          ConvertParamsToGlobal();
-  void          ConvertParamsToLocal();
+  void          ConvertParamsToGlobal() const;
+  void          ConvertParamsToLocal()  const;
   //
   const Char_t* GetGeometryPath()                                   {return fGeometryPath.Data();}
   const Char_t* GetPreAlignmentPath()                               {return fPreDeltaPath.Data();}
