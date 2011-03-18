@@ -891,6 +891,8 @@ void AliITSDetTypeSim::SDigitsToDigits(Option_t* opt, Char_t* name){
     fLoader->TreeD()->Fill();
     ResetDigits();
   }
+
+  WriteFOSignals(); 
   fLoader->TreeD()->GetEntries();
   fLoader->TreeD()->AutoSave();
   fLoader->TreeD()->Reset();
@@ -1058,5 +1060,6 @@ void AliITSDetTypeSim::WriteFOSignals() {
   TTree *tree = fLoader->TreeD();
   AliITSFOSignalsSPD *foSignals = new AliITSFOSignalsSPD(*GetFOSignals()); 
   tree->GetUserInfo()->Add(foSignals);
+  fFOGenerator.ResetSignals();
 }
 

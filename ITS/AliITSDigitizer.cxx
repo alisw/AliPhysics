@@ -269,7 +269,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
         outgime->TreeD()->Fill();
 	fITS->ResetDigits();
     } // end for module
-    
+    fITS->WriteFOSignals(); 
     outgime->TreeD()->AutoSave();
     outgime->WriteDigits("OVERWRITE");
     outgime->UnloadDigits();

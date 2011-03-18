@@ -146,6 +146,9 @@ class AliITS : public AliDetector {
     virtual void   Digits2Raw();
     virtual Bool_t Raw2SDigits(AliRawReader*);
     
+    //===================== FO signals ================================
+    // Write FO signals in UserInfo of SDigits/Digits tree
+    void WriteFOSignals();
 
  protected:
     static const Int_t fgkNTYPES=3; //number of detector types

@@ -748,16 +748,10 @@ void AliITS::HitsToDigits(Int_t evNumber,Int_t bgrev,Int_t size,
   
   ClearModules();
  
-  // Add random noise to FO signals
-  if (all || det[0]) { // SPD present
-    fDetTypeSim->ProcessNoiseForFastOr();
-  }
-
   // Add Fast-OR signals to event (only one object per event)
   if (all || det[0]) { // SPD present
-    fDetTypeSim->WriteFOSignals();
+    WriteFOSignals();
   }
-
   
   fLoader->TreeD()->GetEntries();
   fLoader->TreeD()->AutoSave();
@@ -1010,7 +1004,6 @@ void AliITS::SDigitsToDigits(Option_t *opt){
     AliError("fDetTypeSim is 0!");
     return;
   }
-
   const char *all = strstr(opt,"All");
   const char *det[3] ={strstr(opt,"SPD"),strstr(opt,"SDD"),
 		       strstr(opt,"SSD")};
@@ -1023,13 +1016,9 @@ void AliITS::SDigitsToDigits(Option_t *opt){
   if(fSimuParam) fDetTypeSim->SetSimuParam(fSimuParam);
   fDetTypeSim->SDigitsToDigits(opt,(Char_t*)GetName());
 
-  // Add random noise to FO signals
-  if (all || det[0]) { // SPD present
-    fDetTypeSim->ProcessNoiseForFastOr();
-  }
   // Add Fast-OR signals to event (only one object per event)
   if (all || det[0]) { // SPD present
-    fDetTypeSim->WriteFOSignals();
+   WriteFOSignals();
   }
 }
 
@@ -1392,4 +1381,12 @@ void AliITS::UpdateInternalGeometry(){
 AliTriggerDetector* AliITS::CreateTriggerDetector() const {
   // create an AliITSTrigger object (and set trigger conditions as input)
   return new AliITSTrigger(fDetTypeSim->GetTriggerConditions());
+}
+//______________________________________________________________________
+void AliITS::WriteFOSignals(){
+// This method write FO signals in Digits tree both in Hits2Digits
+// or SDigits2Digits
+
+  fDetTypeSim->ProcessNoiseForFastOr();
+  fDetTypeSim->WriteFOSignals();
 }
