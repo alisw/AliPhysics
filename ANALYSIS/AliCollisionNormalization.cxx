@@ -21,7 +21,7 @@
 
 ClassImp(AliCollisionNormalization)
 
-const char * AliCollisionNormalization::fProcLabel[] = {"SD","DD","ND", "Unknown"};
+const char * AliCollisionNormalization::fgkProcLabel[] = {"SD","DD","ND", "Unknown"};
 
 AliCollisionNormalization::AliCollisionNormalization() :
   TObject(),
@@ -192,9 +192,9 @@ void AliCollisionNormalization::BookAllHistos(){
   TH1::AddDirectory(kFALSE);
 
   for(Int_t iproc = 0; iproc < kNProcs; iproc++){
-    fHistVzMCGen [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCGen")+ fProcLabel[iproc]      ,"Vz distribution of generated events vs rec multiplicity    ");
-    fHistVzMCRec [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCRec")+ fProcLabel[iproc]      ,"Vz distribution of reconstructed events vs rec multiplicity");
-    fHistVzMCTrg [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCTrg")+ fProcLabel[iproc]      ,"Vz distribution of triggered events vs rec multiplicity    ");    
+    fHistVzMCGen [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCGen")+ fgkProcLabel[iproc]      ,"Vz distribution of generated events vs rec multiplicity    ");
+    fHistVzMCRec [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCRec")+ fgkProcLabel[iproc]      ,"Vz distribution of reconstructed events vs rec multiplicity");
+    fHistVzMCTrg [iproc]      = (TH2F*) BookVzHisto(TString("fHistVzMCTrg")+ fgkProcLabel[iproc]      ,"Vz distribution of triggered events vs rec multiplicity    ");    
   }
   fHistVzData        = (TH2F*) BookVzHisto("fHistVzData"       ,"Vz distribution of triggered events vs rec multiplicity    ");
   fHistProcTypes     = new TH1F   ("fHistProcTypes", "Number of events in the different process classes", kNProcs, -0.5 , kNProcs-0.5);
@@ -362,7 +362,7 @@ Double_t AliCollisionNormalization::ComputeNint() {
 
   TH2* eTrig =    histVzMCTrg; 
   TH2* eTrigVtx = histVzMCRec; 
-  TH1* eTrigVtx_projx = eTrigVtx->ProjectionX("eTrigVtx_projx", 2, eTrigVtx->GetNbinsX()+1);
+  TH1* eTrigVtxProjx = eTrigVtx->ProjectionX("eTrigVtxProjx", 2, eTrigVtx->GetNbinsX()+1);
 
   // compute trigger and vertex efficiency
   TH2 * effVtxTrig = (TH2*) histVzMCRec->Clone("effVtxTrig");
@@ -372,7 +372,7 @@ Double_t AliCollisionNormalization::ComputeNint() {
   TH2 * correctedEvents = (TH2*) fHistVzData->Clone("correctedEvents");
   correctedEvents->Divide(effVtxTrig);
 
-  //  TH1 * correctedEvents = fHistVzData->ProjectionX("eTrigVtx_projx", 2, eTrigVtx->GetNbinsX()+1); 
+  //  TH1 * correctedEvents = fHistVzData->ProjectionX("eTrigVtxProjx", 2, eTrigVtx->GetNbinsX()+1); 
 
   // loop over vertex bins
   for (Int_t i = 1; i <= fHistVzData->GetNbinsX(); i++)
@@ -382,10 +382,10 @@ Double_t AliCollisionNormalization::ComputeNint() {
       
       // if (histVzMCRec->GetBinContent(i,1) == 0)
       //   continue;
-      if (!eTrigVtx_projx->GetBinContent(i) || !eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1))
+      if (!eTrigVtxProjx->GetBinContent(i) || !eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1))
         continue;
 
-      Double_t fZ = eTrigVtx_projx->Integral(0, eTrigVtx_projx->GetNbinsX()+1) / eTrigVtx_projx->GetBinContent(i) *
+      Double_t fZ = eTrigVtxProjx->Integral(0, eTrigVtxProjx->GetNbinsX()+1) / eTrigVtxProjx->GetBinContent(i) *
         eTrig->GetBinContent(i, 1) / eTrig->Integral(0, eTrig->GetNbinsX()+1, 1, 1);
 
       events *= fZ;
@@ -515,7 +515,7 @@ void AliCollisionNormalization::FillVzMCTrg(Float_t vz, Int_t ntrk, AliMCEvent *
 }
 
 
-Int_t AliCollisionNormalization::GetProcessType(AliMCEvent * mcEvt) {
+Int_t AliCollisionNormalization::GetProcessType(const AliMCEvent * mcEvt) {
 
   // Determine if the event was generated with pythia or phojet and return the process type
 
@@ -577,33 +577,33 @@ Double_t AliCollisionNormalization::GetProcessWeight(Int_t proc) {
   // compute efficiency, defined as the ratio XS in generator / XS
   // measured
 
-  Float_t ref_SD,  ref_DD,  ref_ND,  error_SD,  error_DD,  error_ND;
-  GetRelativeFractions(fReferenceXS,ref_SD,  ref_DD,  ref_ND,  error_SD,  error_DD,  error_ND);
+  Float_t refSD,  refDD,  refND,  errorSD,  errorDD,  errorND;
+  GetRelativeFractions(fReferenceXS,refSD,  refDD,  refND,  errorSD,  errorDD,  errorND);
 
   static Double_t total = fHistProcTypes->Integral();
   if (fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcUnknown)) > 0) {
     AliError("There were unknown processes!!!");
   }
-  static Double_t SD = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcSD))/total;
-  static Double_t DD = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcDD))/total;
-  static Double_t ND = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcND))/total;
+  static Double_t lSD = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcSD))/total;
+  static Double_t lDD = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcDD))/total;
+  static Double_t lND = fHistProcTypes->GetBinContent(fHistProcTypes->FindBin(kProcND))/total;
 
   if (fVerbose > 2) {
     AliInfo(Form("Total MC evts: %f",total));
-    AliInfo(Form(" Frac SD %4.4f", SD));
-    AliInfo(Form(" Frac DD %4.4f", DD));
-    AliInfo(Form(" Frac ND %4.4f", ND));
+    AliInfo(Form(" Frac SD %4.4f", lSD));
+    AliInfo(Form(" Frac DD %4.4f", lDD));
+    AliInfo(Form(" Frac ND %4.4f", lND));
   }
   
   switch(proc) {
   case kProcSD:
-    return ref_SD/SD;
+    return refSD/lSD;
     break;
   case kProcDD:
-    return ref_DD/DD;
+    return refDD/lDD;
     break;
   case kProcND:
-    return ref_ND/ND;
+    return refND/lND;
     break;
   default:
     AliError("Unknown process");
@@ -613,7 +613,7 @@ Double_t AliCollisionNormalization::GetProcessWeight(Int_t proc) {
 
 } 
 
-void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_SD, Float_t& ref_DD, Float_t& ref_ND, Float_t& error_SD, Float_t& error_DD, Float_t& error_ND)
+void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& refSD, Float_t& refDD, Float_t& refND, Float_t& errorSD, Float_t& errorDD, Float_t& errorND)
 {
   // Returns fraction of XS (SD, ND, DD) and corresponding error
   // Stolen from Jan Fiete's drawSystematics macro
@@ -633,23 +633,23 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
       {
       case -10: // Pythia default at 7 GeV, 50% error
 	AliInfo("PYTHIA x-sections");
-	ref_SD = 0.192637; error_SD = ref_SD * 0.5;
-	ref_DD = 0.129877; error_DD = ref_DD * 0.5;
-	ref_ND = 0.677486; error_ND = 0;
+	refSD = 0.192637; errorSD = refSD * 0.5;
+	refDD = 0.129877; errorDD = refDD * 0.5;
+	refND = 0.677486; errorND = 0;
 	break;
 	
       case -1: // Pythia default at 900 GeV, as test
 	AliInfo("PYTHIA x-sections");
-      ref_SD = 0.223788;
-      ref_DD = 0.123315;
-      ref_ND = 0.652897;
+      refSD = 0.223788;
+      refDD = 0.123315;
+      refND = 0.652897;
       break;
       
       case 0: // UA5
 	AliInfo("UA5 x-sections a la first paper");
-	ref_SD = 0.153; error_SD = 0.05;
-	ref_DD = 0.080; error_DD = 0.05;
-	ref_ND = 0.767; error_ND = 0;
+	refSD = 0.153; errorSD = 0.05;
+	refDD = 0.080; errorDD = 0.05;
+	refND = 0.767; errorND = 0;
 	break;
 	
       case 10: // UA5
@@ -658,9 +658,9 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
 	// ND: 0.688662
 	// SD: 0.188588 --> this should be 15.3
 	// DD: 0.122750
-	ref_SD = 0.224 * 0.153 / 0.189; error_SD = 0.023 * 0.224 / 0.189;
-	ref_DD = 0.095;                 error_DD = 0.06; 
-	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	refSD = 0.224 * 0.153 / 0.189; errorSD = 0.023 * 0.224 / 0.189;
+	refDD = 0.095;                 errorDD = 0.06; 
+	refND = 1.0 - refSD - refDD; errorND = 0;
 	break;
 	
       case 11: // UA5
@@ -669,22 +669,22 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
 	// ND: 0.783573
 	// SD: 0.151601 --> this should be 15.3
 	// DD: 0.064827
-	ref_SD = 0.191 * 0.153 / 0.152; error_SD = 0.023 * 0.191 / 0.152;
-	ref_DD = 0.095;                 error_DD = 0.06; 
-	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	refSD = 0.191 * 0.153 / 0.152; errorSD = 0.023 * 0.191 / 0.152;
+	refDD = 0.095;                 errorDD = 0.06; 
+	refND = 1.0 - refSD - refDD; errorND = 0;
 	break;
       case 2: // tel-aviv model
 	AliInfo("Tel-aviv model x-sections");
-	ref_SD = 0.171;
-	ref_DD = 0.094;
-	ref_ND = 1 - ref_SD - ref_DD;
+	refSD = 0.171;
+	refDD = 0.094;
+	refND = 1 - refSD - refDD;
 	break;
 	
       case 3: // durham model
 	AliInfo("Durham model x-sections");
-	ref_SD = 0.190;
-	ref_DD = 0.125;
-	ref_ND = 1 - ref_SD - ref_DD;
+	refSD = 0.190;
+	refDD = 0.125;
+	refND = 1 - refSD - refDD;
       break;
       default:
 	AliFatal(Form("Unknown origin %d, Energy %f", origin, fEnergy));
@@ -698,9 +698,9 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
       // ND: 0.705709
       // SD: 0.166590 --> this should be 15.9
       // DD: 0.127701
-      ref_SD = 0.217 * 0.159 / 0.167; error_SD = 0.024 * 0.217 / 0.167;
-      ref_DD = 0.075 * 1.43;          error_DD = 0.02 * 1.43; 
-      ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+      refSD = 0.217 * 0.159 / 0.167; errorSD = 0.024 * 0.217 / 0.167;
+      refDD = 0.075 * 1.43;          errorDD = 0.02 * 1.43; 
+      refND = 1.0 - refSD - refDD; errorND = 0;
       break;
     
       case 21: // E710, 1.8 TeV
@@ -708,16 +708,16 @@ void AliCollisionNormalization::GetRelativeFractions(Int_t origin, Float_t& ref_
 	// ND: 0.817462
 	// SD: 0.125506 --> this should be 15.9
 	// DD: 0.057032
-	ref_SD = 0.161 * 0.159 / 0.126; error_SD = 0.024 * 0.161 / 0.126;
-	ref_DD = 0.075 * 1.43;         error_DD = 0.02 * 1.43;
-	ref_ND = 1.0 - ref_SD - ref_DD; error_ND = 0;
+	refSD = 0.161 * 0.159 / 0.126; errorSD = 0.024 * 0.161 / 0.126;
+	refDD = 0.075 * 1.43;         errorDD = 0.02 * 1.43;
+	refND = 1.0 - refSD - refDD; errorND = 0;
 	break;
 	
       case 1: // data 1.8 TeV
 	AliInfo("??? x-sections");
-	ref_SD = 0.152;
-	ref_DD = 0.092;
-	ref_ND = 1 - ref_SD - ref_DD;
+	refSD = 0.152;
+	refDD = 0.092;
+	refND = 1 - refSD - refDD;
 	break;
       default:
 	AliFatal(Form("Unknown origin %d, Energy %f", origin, fEnergy));

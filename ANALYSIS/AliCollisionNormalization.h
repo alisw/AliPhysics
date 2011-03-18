@@ -57,7 +57,7 @@ public:
   TH1F *   GetHistProcTypes () { return fHistProcTypes    ; }
    
 
-  Int_t GetProcessType(AliMCEvent * mcEvt) ;
+  Int_t GetProcessType(const AliMCEvent * mcEvt) ;
   Double_t GetProcessWeight(Int_t proctype);
 
   void SetReferencsXS(Int_t ref) { fReferenceXS = ref;}
@@ -74,15 +74,15 @@ public:
 
   Long64_t Merge(TCollection* list);
 
-  Double_t GetInputEvents(){return fInputEvents;}   // number of Input Events 
-  Double_t GetPhysSelEvents(){return fPhysSelEvents;} // number of  Events after Physics Selection 
-  Double_t GetBgEvents(){return fBgEvents;}      // number of background events 
+  Double_t GetInputEvents() const {return fInputEvents;}   // number of Input Events 
+  Double_t GetPhysSelEvents() const {return fPhysSelEvents;} // number of  Events after Physics Selection 
+  Double_t GetBgEvents() const {return fBgEvents;}      // number of background events 
 
-  Double_t GetAllEvents(){return fAllEvents;}             // number of corrected events 
-  Double_t GetAllEventsZRange(){return fAllEventsZRange;}       // number of corrected events in z range
-  Double_t GetAllEventsZRangeMult1(){return fAllEventsZRangeMult1;}  // number of corrected events with multiplicity larger 1 in z range
-  Double_t GetAllEventsInBin0ZRange(){return fAllEventsInBin0ZRange;} // number of corrected events in bin0 in z range
-  Double_t GetTrigEffBin0(){return fTrigEffBin0;}                // trigger efficiency
+  Double_t GetAllEvents() const {return fAllEvents;}             // number of corrected events 
+  Double_t GetAllEventsZRange() const {return fAllEventsZRange;}       // number of corrected events in z range
+  Double_t GetAllEventsZRangeMult1() const{return fAllEventsZRangeMult1;}  // number of corrected events with multiplicity larger 1 in z range
+  Double_t GetAllEventsInBin0ZRange() const {return fAllEventsInBin0ZRange;} // number of corrected events in bin0 in z range
+  Double_t GetTrigEffBin0() const {return fTrigEffBin0;}                // trigger efficiency
 
 
 protected:
@@ -120,7 +120,7 @@ protected:
   Double_t fAllEventsInBin0ZRange; // number of corrected events in bin0 in z range
   Double_t fTrigEffBin0;  // trigger efficiency in Bin0
 
-  static const char * fProcLabel[] ; // labels of the different process types
+  static const char * fgkProcLabel[] ; // labels of the different process types
   
   ClassDef(AliCollisionNormalization, 4);
     
