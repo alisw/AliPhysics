@@ -133,7 +133,7 @@ TString makeString(){
   s+="-histogram TrackMultiplicity(250,0,5000) -size 1000 -expression trackcount ";
   s+="-histogram TrackEta(100,-2,2) -size 1000 -expression Track_eta -cut Track_TPCclus>0 ";
   s+="-histogram TrackTPCclus(200,0,200) -size 1000 -expression Track_TPCclus -cut Track_TPCclus>0 ";
-  s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus -cut Track_ITSclus>0 ";
+  s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus ";
   s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_TPCclus>0 ";
   s+="-histogram TrackDCAr(100,-50,50) -size 1000 -expression Track_DCAr -cut Track_TPCclus>0 ";
   s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_TPCclus>0 ";
