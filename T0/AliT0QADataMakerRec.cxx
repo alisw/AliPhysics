@@ -27,6 +27,7 @@
 #include <TH1F.h> 
 #include <TH2F.h> 
 #include <TDirectory.h>
+#include <TMath.h>
 // --- Standard library ---
 
 // --- AliRoot header files ---
@@ -50,7 +51,6 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
 		  "T0 Quality Assurance Data Maker"),
   fnEventCal(0),
   fnEventPhys(0)
-
 {
   // ctor
   for (Int_t i=0; i<6; i++) {
@@ -70,8 +70,9 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kT0),
       feffqtcPhys[i]=0;
 
    }
- for(Int_t ic=0; ic<24; ic++) 
-     fhTimeDiff[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
+
+  // for(Int_t ic=0; ic<24; ic++) 
+  // fhTimeDiff[ic] = new TH1F(Form("CFD1minCFD%d",ic+1),"CFD-CFD",100,-250,250);
 }
 
 
@@ -80,8 +81,6 @@ AliT0QADataMakerRec::AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fnEventCal(0),
   fnEventPhys(0)
-
-  
 {
   //copy ctor 
  SetName((const char*)qadm.GetName()) ; 
@@ -100,9 +99,9 @@ AliT0QADataMakerRec& AliT0QADataMakerRec::operator = (const AliT0QADataMakerRec&
 AliT0QADataMakerRec::~AliT0QADataMakerRec()
 {
   //destructor
-  for(Int_t ic=0; ic<24; ic++) {
-    if (fhTimeDiff[ic]) delete fhTimeDiff[ic];
-  }
+  //  for(Int_t ic=0; ic<24; ic++) {
+  ////    if (fhTimeDiff[ic]) delete fhTimeDiff[ic];
+  //  }
 }
 //____________________________________________________________________________
 void AliT0QADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list)
@@ -419,9 +418,13 @@ void AliT0QADataMakerRec::InitRaws()
 
    TH1F* fhOrCminOrATvdcOffcal= new TH1F("fhOrCminOrATvdcOffcal","T0_OR C - T0_OR ATVDC off laser",10000,-5000,5000);
    Add2RawsList( fhOrCminOrATvdcOffcal,218+250, expert, !image, !saveCorr);
-
-   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 60, -30, 30, 60, -30, 30);
+   
+   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
    Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ", 120, -30, 30, 120, -30, 30);
+   Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
+   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
+   Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
    
    const Char_t *triggers[6] = {"mean", "vertex","ORA","ORC","central","semi-central"};
    for (Int_t itr=0; itr<6; itr++) {
@@ -434,8 +437,6 @@ void AliT0QADataMakerRec::InitRaws()
     
 }
   
-
-
 //____________________________________________________________________________ 
 void AliT0QADataMakerRec::InitDigits()
 {
@@ -499,15 +500,17 @@ void AliT0QADataMakerRec::InitESDs()
 //____________________________________________________________________________
 void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
-
-	
+  Int_t  time[24] ;
+  for(Int_t i=0; i<24; i++) time[i] = 0;	  
+  
+  
   rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
   // Int_t refPointParam = GetRecoParam()->GetRefPoint();
   Int_t refpoint = 0;
   Int_t refPointParam = 0;
-  
+
   AliT0RawReader *start = new AliT0RawReader(rawReader);
   
   if (! start->Next())
@@ -560,7 +563,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	      GetRawsData(shift+ik+1) -> Fill(allData[ik+sideshift][iHt]);
 	      GetRawsData(210+shift)->Fill(ik+1, allData[ik+sideshift][iHt]);
 	      if(type == 8 ) feffC[ik]++;
-	      AliDebug(10,Form("%i CFD %i  data %s",ik, ik+sideshift,  GetRawsData(shift+ik+1)->GetName()));
+	      AliDebug(50,Form("%i CFD %i  data %s",ik, ik+sideshift,  GetRawsData(shift+ik+1)->GetName()));
 	      if(type == 7  ) {
 		nhitsPMT++;
 		feffPhysC[ik]++;
@@ -571,7 +574,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    if(allData[ik+12+sideshift][iHt] > 0) { 
 	      GetRawsData(shift+ik+24+1)->  Fill(allData[ik+12+sideshift][iHt]);
 	      GetRawsData(211+shift)->Fill(ik+1, allData[ik+12+sideshift][iHt]);
-	      AliDebug(10,Form("%i LED %i  data %s",ik, ik+12+sideshift,  GetRawsData(shift+ik+1+24)->GetName()));
+	      AliDebug(50,Form("%i LED %i  data %s",ik, ik+12+sideshift,  GetRawsData(shift+ik+1+24)->GetName()));
 	      if(type == 8  ) {
 		feffA[ik]++;
 	      }
@@ -589,15 +592,15 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 		Fill(allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
 	      GetRawsData(212+shift)->Fill(ik+1, allData[2*ik+sideshiftqtc+24][iHt]-allData[2*ik+sideshiftqtc+25][iHt]);
 	      if(type == 8) feffqtc[ik]++;
-	      AliDebug(10,Form("%i QTC %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+72)->GetName()));
+	      AliDebug(50,Form("%i QTC %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+72)->GetName()));
 
 	    }
 		if(allData[2*ik+sideshiftqtc+24][iHt] > 0) {
-		  AliDebug(10,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+96)->GetName()));
+		  AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+24,  GetRawsData(shift+ik+1+96)->GetName()));
  	      GetRawsData(shift+ik+96+1)->Fill(allData[2*ik+sideshiftqtc+24][iHt]);
 	    }
 	    if(allData[2*ik+sideshiftqtc+25][iHt] > 0) {
-	      AliDebug(10,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+25,  GetRawsData(shift+ik+1+120)->GetName()));
+	      AliDebug(50,Form("%i QT0 %i  data %s",ik, 2*ik+sideshiftqtc+25,  GetRawsData(shift+ik+1+120)->GetName()));
 	      GetRawsData(shift+ik+120+1)->Fill(allData[2*ik+sideshiftqtc+25][iHt]);
 	    }
 	  }
@@ -631,14 +634,14 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	    GetRawsData(218+shift)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
 	  }
 	if(allData[51][iHt]>0 && allData[52][iHt]>0) {
-	  AliDebug(10,Form("orA-orC phys tvdc all  %i  data %s", 219+shift,  GetRawsData(shift+219)->GetName()));
+	  AliDebug(50,Form("orA-orC phys tvdc all  %i  data %s", 219+shift,  GetRawsData(shift+219)->GetName()));
 	    GetRawsData(219+shift)->Fill((allData[52][iHt]-allData[51][iHt])*ch2cm);
 	}
 	for (Int_t itr=0; itr<6; itr++) {
 	  if (allData[trChannel[itr]][iHt] >0) {
 	     if(type == 7  )fNumTriggers[itr]++;
 	     if(type == 8  )fNumTriggersCal[itr]++;
-	     AliDebug(10,Form(" triggers %i  data %s", 170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
+	     AliDebug(50,Form(" triggers %i  data %s", 170+itr+shift,  GetRawsData(170+itr+shift)->GetName()));
 
 	    GetRawsData(170+itr+shift)->Fill(allData[trChannel[itr]][iHt]);
 	  }
@@ -650,7 +653,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	//mult trigger signals phys
 	//C side
 	if(allData[53][iHt]>0 && allData[54][iHt]>0) {
-	  AliDebug(10,Form(" mpdA %i  data %s", 201+shift,  GetRawsData(201+shift)->GetName()));
+	  AliDebug(50,Form(" mpdA %i  data %s", 201+shift,  GetRawsData(201+shift)->GetName()));
 
 	  GetRawsData(201+shift)->Fill(allData[53][iHt]-allData[54][iHt]);
 	  if(allData[56][iHt]>0) GetRawsData(202+shift)->Fill(allData[53][iHt]-allData[54][iHt]);
@@ -659,7 +662,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	
 	//A side 
 	if(allData[105][iHt]>0 && allData[106][iHt]>0) {
-	  AliDebug(10,Form(" mpdC %i  data %s", 204+shift,  GetRawsData(204+shift)->GetName()));
+	  AliDebug(50,Form(" mpdC %i  data %s", 204+shift,  GetRawsData(204+shift)->GetName()));
 
 	     GetRawsData(204+shift)->Fill(allData[105][iHt]-allData[106][iHt]);
 	     if(allData[56][iHt]>0) GetRawsData(205+shift)->Fill(allData[105][iHt]-allData[106][iHt]);
@@ -671,57 +674,37 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       GetRawsData(216)->Fill(nhitsOrC);
 
       //draw satellite
-      if (type == 7) {
-	if ( fnEventPhys < 1000) {
-	  for (Int_t ik=0; ik<12; ik++)
-	    {
-	      if(allData[ik+1][0]>0 && allData[1][0]>0)
-		fhTimeDiff[ik] -> Fill(allData[ik+1][0] - allData[1][0]);
-	    }
-	  for (Int_t ik=12; ik<24; ik++)
-	    {
-	      if(allData[ik+45][0]>0 && allData[57][0]>0)
-		fhTimeDiff[ik] -> Fill(allData[ik+45][0] - allData[57][0]);
-	    }
-	}
-	Int_t besttimeA=9999999;
-	Int_t besttimeC=9999999;
-	Int_t diff[24], time[24] ;
-	for (Int_t ik=0; ik<24; ik++) {time[ik]=0; diff[ik]=0;}     
-  	if( fnEventPhys ==1000) {
- 	  
-	    for (Int_t in=0; in<24; in++)  
-	      {
-		diff[in] = Int_t (fhTimeDiff[in]->GetMean());
-	      }
-	  }
-	
-	if( fnEventPhys > 1000) {
+      Int_t besttimeA=9999999;
+      Int_t besttimeC=9999999;
+      if(type == 7){	
+	if( fnEventPhys > 2000) {
 	  for (Int_t ipmt=0; ipmt<12; ipmt++){
-	    time[ipmt] = allData[ipmt+1][0] - diff[ipmt]  ;
-	    time[ipmt+12] = allData[ipmt+57][0]- diff[ipmt+12] ;
-	    if(time[ipmt] > 1 ) {
+	    if(allData[ipmt+1][0] > 1 ) {
+	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(ipmt+1)->GetMean());
 	      if(time[ipmt]<besttimeC)
 		besttimeC=time[ipmt]; //timeC
 	    }
 	  }
 	  for ( Int_t ipmt=12; ipmt<24; ipmt++){
-	    if(time[ipmt] > 1) {
+	    if(allData[ipmt+45][0] > 0) {
+	      time[ipmt] = allData[ipmt+45][0] - Int_t(GetRawsData(ipmt+1)->GetMean());
 	      if(time[ipmt]<besttimeA) 
 		besttimeA=time[ipmt]; //timeA
 	    }
 	  }
-	
-	  if(besttimeA<9999 &&besttimeC< 99999) {
-	    Float_t t0 = 24.4 * Float_t( besttimeA+besttimeC)/2.;
+	  
+	  if(besttimeA<99999 &&besttimeC< 99999) {
+	    Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
 	    Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
 	    GetRawsData(220)->Fill(0.001*ver, 0.001*(t0));
+	    if(allData[50][0] > 0)  GetRawsData(221)->Fill(0.001*ver, 0.001*(t0));
+	    if(allData[50][0] <= 0) GetRawsData(222)->Fill(0.001*ver, 0.001*(t0));
 	  }
 	} //event >100
       } //type 7
     } //next
-        
-
+  
+  
 
   delete start;
 }
@@ -821,3 +804,26 @@ void AliT0QADataMakerRec::MakeESDs(AliESDEvent * esd)
   if( orA<99 && orC<99) GetESDsData(2)-> Fill((orA-orC)/2.);
   
 }
+//____________________________________________________________________________
+
+/*
+void AliT0QADataMakerRec::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 
+{
+
+  const double window = 3.;  //fit window 
+ 
+  double meanEstimate, sigmaEstimate; 
+  int maxBin;
+  maxBin        =  hist->GetMaximumBin(); //position of maximum
+  meanEstimate  =  hist->GetBinCenter( maxBin); // mean of gaussian sitting in maximum
+  sigmaEstimate = hist->GetRMS();
+  TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
+  fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
+  hist->Fit("fit","RQ","Q");
+
+  mean  = (Float_t) fit->GetParameter(1);
+  sigma = (Float_t) fit->GetParameter(2);
+
+  delete fit;
+}
+*/
