@@ -287,7 +287,7 @@ void AliGenAmpt::Generate()
         TParticle *iparticle = (TParticle *)fParticles.At(i);
         if (!Stable(iparticle)) 
           continue;
-        kf        = iparticle->GetPdgCode();
+        kf        = TMath::Abs(iparticle->GetPdgCode());
         if (kf==92)
           continue;
         if (0) { // this turned out to be too cumbersome!
