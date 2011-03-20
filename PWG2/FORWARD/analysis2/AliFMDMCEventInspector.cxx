@@ -30,12 +30,20 @@
 #include "AliGenGeVSimEventHeader.h"
 #include "AliHeader.h"
 #include <TList.h>
+#include <TH2F.h>
+
 //====================================================================
 AliFMDMCEventInspector::AliFMDMCEventInspector()
   : AliFMDEventInspector(), 
     fHVertex(0),
     fHPhiR(0), 
-    fHB(0)
+    fHB(0),
+    fHBvsPart(0),
+    fHBvsBin(0),
+    fHBvsCent(0),
+    fHVzComp(0),
+    fHCentVsPart(0),
+    fHCentVsBin(0)
 {
   // 
   // Constructor 
@@ -47,7 +55,13 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const char* /* name */)
   : AliFMDEventInspector("fmdEventInspector"), 
     fHVertex(0),
     fHPhiR(0), 
-    fHB(0)
+    fHB(0),
+    fHBvsPart(0),
+    fHBvsBin(0),
+    fHBvsCent(0),
+    fHVzComp(0),
+    fHCentVsPart(0),
+    fHCentVsBin(0)
 {
   // 
   // Constructor 
@@ -62,7 +76,13 @@ AliFMDMCEventInspector::AliFMDMCEventInspector(const AliFMDMCEventInspector& o)
   : AliFMDEventInspector(o), 
     fHVertex(0),
     fHPhiR(0), 
-    fHB(0)
+    fHB(0),
+    fHBvsPart(0),
+    fHBvsBin(0),
+    fHBvsCent(0),
+    fHVzComp(0),
+    fHCentVsPart(0),
+    fHCentVsBin(0)
 {
   // 
   // Copy constructor 
@@ -108,10 +128,13 @@ AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
   //
   AliFMDEventInspector::Init(vtxAxis);
 
-  fHVertex = new TH1F("vertex", "True vertex distribution", 
-		      vtxAxis.GetNbins(), 
-		      vtxAxis.GetXmin(), 
-		      vtxAxis.GetXmax());
+  Int_t    maxPart = 450;
+  Int_t    maxBin  = 225;
+  Int_t    maxB    = 25;
+  Int_t    nVtx = vtxAxis.GetNbins();
+  Double_t lVtx = vtxAxis.GetXmin();
+  Double_t hVtx = vtxAxis.GetXmax();
+  fHVertex = new TH1F("vertex", "True vertex distribution", nVtx, lVtx, hVtx);
   fHVertex->SetXTitle("v_{z} [cm]");
   fHVertex->SetYTitle("# of events");
   fHVertex->SetFillColor(kGreen+1);
@@ -128,14 +151,67 @@ AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
   fHPhiR->SetDirectory(0);
   fList->Add(fHPhiR);
 
-  fHB = new TH1F("b", "Impact parameter", 125, 0, 25);
+  fHB = new TH1F("b", "Impact parameter", 5*maxB, 0, maxB);
   fHB->SetXTitle("b [fm]");
   fHB->SetYTitle("# of events");
   fHB->SetFillColor(kGreen+1);
   fHB->SetFillStyle(3001);
   fHB->SetDirectory(0);
   fList->Add(fHB);
+
+  fHBvsPart = new TH2F("bVsParticipants", "Impact parameter vs Participants",
+		       5*maxB, 0, maxB, maxPart, -.5, maxPart-.5);
+  fHBvsPart->SetXTitle("b [fm]");
+  fHBvsPart->SetYTitle("# of participants");
+  fHBvsPart->SetZTitle("Events");
+  fHBvsPart->SetDirectory(0);
+  fList->Add(fHBvsPart);
+
+  fHBvsBin = new TH2F("bVsBinary", "Impact parameter vs Binary Collisions",
+		       5*maxB, 0, maxB, maxBin, -.5, maxBin-.5);
+  fHBvsBin->SetXTitle("b [fm]");
+  fHBvsBin->SetYTitle("# of binary collisions");
+  fHBvsBin->SetZTitle("Events");
+  fHBvsBin->SetDirectory(0);
+  fList->Add(fHBvsBin);
   
+  fHBvsCent = new TH2F("bVsCentrality", "Impact parameter vs Centrality",
+		       5*maxB, 0, maxB, fCentAxis->GetNbins(), 
+		       fCentAxis->GetXbins()->GetArray());
+  fHBvsCent->SetXTitle("b [fm]");
+  fHBvsCent->SetYTitle("Centrality [%]");
+  fHBvsCent->SetZTitle("Event");
+  fHBvsCent->SetDirectory(0);
+  fList->Add(fHBvsCent);
+  
+  
+  fHVzComp = new TH2F("vzComparison", "v_{z} truth vs reconstructed",
+		      10*nVtx, lVtx, hVtx, 10*nVtx, lVtx, hVtx);
+  fHVzComp->SetXTitle("True v_{z} [cm]");
+  fHVzComp->SetYTitle("Reconstructed v_{z} [cm]");
+  fHVzComp->SetZTitle("Events");
+  fHVzComp->SetDirectory(0);
+  fList->Add(fHVzComp);
+
+  fHCentVsPart = new TH2F("centralityVsParticipans", 
+			  "# of participants vs Centrality",
+			  maxPart, -.5, maxPart-.5, fCentAxis->GetNbins(), 
+			  fCentAxis->GetXbins()->GetArray());
+  fHCentVsPart->SetXTitle("Participants");
+  fHCentVsPart->SetYTitle("Centrality [%]");
+  fHCentVsPart->SetZTitle("Event");
+  fHCentVsPart->SetDirectory(0);
+  fList->Add(fHCentVsPart);
+
+  fHCentVsBin = new TH2F("centralityVsBinary", 
+			 "# of binary collisions vs Centrality",
+			 maxBin, -.5, maxBin-.5, fCentAxis->GetNbins(), 
+			 fCentAxis->GetXbins()->GetArray());
+  fHCentVsBin->SetXTitle("Binary collisions");
+  fHCentVsBin->SetYTitle("Centrality [%]");
+  fHCentVsBin->SetZTitle("Event");
+  fHCentVsBin->SetDirectory(0);
+  fList->Add(fHCentVsBin);
 }
 
 //____________________________________________________________________
@@ -145,6 +221,8 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 				  UShort_t&         ivz, 
 				  Double_t&         vz,
 				  Double_t&         b,
+				  Int_t&            npart, 
+				  Int_t&            nbin,
 				  Double_t&         phiR)
 {
   // 
@@ -172,57 +250,69 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   //Assign MC only triggers : True NSD etc.
   AliHeader*               header          = event->Header();
   AliGenEventHeader*       genHeader       = header->GenEventHeader();
+  AliCollisionGeometry*    colGeometry     = 
+    dynamic_cast<AliCollisionGeometry*>(genHeader);
   AliGenPythiaEventHeader* pythiaHeader    = 
     dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
   AliGenDPMjetEventHeader* dpmHeader       = 
     dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
   AliGenGeVSimEventHeader* gevHeader       = 
     dynamic_cast<AliGenGeVSimEventHeader*>(genHeader);
-  AliGenHijingEventHeader* hijingHeader    = 
-    dynamic_cast<AliGenHijingEventHeader*>(genHeader);
   AliGenHerwigEventHeader* herwigHeader    = 
     dynamic_cast<AliGenHerwigEventHeader*>(genHeader);
+  // AliGenHijingEventHeader* hijingHeader    = 
+  //   dynamic_cast<AliGenHijingEventHeader*>(genHeader);
   // AliGenHydjetEventHeader* hydjetHeader    = 
   //   dynamic_cast<AliGenHydjetEventHeader*>(genHeader);
-  AliGenEposEventHeader*   eposHeader      = 
-    dynamic_cast<AliGenEposEventHeader*>(genHeader);
+  // AliGenEposEventHeader*   eposHeader      = 
+  //   dynamic_cast<AliGenEposEventHeader*>(genHeader);
   
   // Check if this is a single diffractive event 
-  Bool_t   sd = kFALSE;
-  Double_t phi = -1111;
-  b            = -1;
+  Bool_t   sd    = kFALSE;
+  Double_t phi   = -1111;
+  npart          = 0;
+  nbin           = 0;
+  b              = -1;
+  if (colGeometry) { 
+    b     = colGeometry->ImpactParameter();
+    phi   = colGeometry->ReactionPlaneAngle();
+    npart = (colGeometry->ProjectileParticipants() + 
+	     colGeometry->TargetParticipants());
+    nbin  = colGeometry->NN();
+  }
   if(pythiaHeader) {
     Int_t pythiaType = pythiaHeader->ProcessType();
     if (pythiaType==92 || pythiaType==93) sd = kTRUE;
-    b = pythiaHeader->GetImpactParameter();
+    b     = pythiaHeader->GetImpactParameter();
+    npart = 2; // Always 2 protons
+    nbin  = 1; // Always 1 binary collision 
   }
-  if(dpmHeader) {
+  if(dpmHeader) { // Also an AliCollisionGeometry 
     Int_t processType = dpmHeader->ProcessType();
     if (processType == 5 || processType == 6)  sd = kTRUE;
-    b    = dpmHeader->ImpactParameter();
-    phi  = dpmHeader->ReactionPlaneAngle();
-
   }
   if (gevHeader) { 
     phi  = gevHeader->GetEventPlane();
-  }
-  if (hijingHeader) { 
-    b    = hijingHeader->ImpactParameter();
-    phi  = hijingHeader->ReactionPlaneAngle();
   }
   if (herwigHeader) {
     Int_t processType = herwigHeader->ProcessType();
     // This is a guess 
     if (processType == 5 || processType == 6)  sd = kTRUE;
+    npart = 2; // Always 2 protons
+    nbin  = 1; // Always 1 binary collision 
   }
+  // if (hijingHeader) { 
+  // b    = hijingHeader->ImpactParameter();
+  // phi  = hijingHeader->ReactionPlaneAngle();
+  // }
   // if (hydjetHeader) {
   //   b    = hydjetHeader->ImpactParameter();
   //   phi  = hydjetHeader->ReactionPlaneAngle();
   // }
-  if (eposHeader) {
-    b    = eposHeader->ImpactParameter();
-    phi  = eposHeader->ReactionPlaneAngle();
-  }
+  // if (eposHeader) {
+  //   b    = eposHeader->ImpactParameter();
+  // phi  = eposHeader->ReactionPlaneAngle();
+  // }
 
   // Normalize event plane angle to [0,2pi]
   if (phi <= -1111) phiR = -1;
@@ -248,6 +338,8 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHVertex->Fill(vz);
   fHPhiR->Fill(phiR);
   fHB->Fill(b);
+  fHBvsPart->Fill(b, npart);
+  fHBvsBin->Fill(b, nbin);
 
   // Check for the vertex bin 
   ivz = fHEventsTr->GetXaxis()->FindBin(vz);
@@ -265,7 +357,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 }
 //____________________________________________________________________
 Bool_t
-AliFMDMCEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
+AliFMDMCEventInspector::ReadCentrality(const AliESDEvent* esd, 
+				       Double_t& cent, 
+				       UShort_t& qual) const
 {
   // 
   // Read centrality from event 
@@ -277,23 +371,33 @@ AliFMDMCEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
   // Return:
   //    False on error, true otherwise 
   //
+  cent = -1;
+  qual = 0;
   AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
-  if (centObj) {
-    // AliInfo(Form("Got centrality object %p with quality %d", 
-    //              centObj, centObj->GetQuality()));
-    // centObj->Print();
-    if (centObj->GetQuality() == 0x8) 
-      cent = centObj->GetCentralityPercentileUnchecked("V0M");  
-    else
-      cent = centObj->GetCentralityPercentile("V0M");        
-  }
-  // AliInfo(Form("Centrality is %f", cent));
-  fHCent->Fill(cent);
+  if (!centObj) return true;
+
+  qual = centObj->GetQuality();
+  if (qual == 0x8) // Ignore ZDC outliers 
+    cent = centObj->GetCentralityPercentileUnchecked("V0M");  
+  else
+    cent = centObj->GetCentralityPercentile("V0M");        
 
   return true;
 }
 
-  
+//____________________________________________________________________
+Bool_t
+AliFMDMCEventInspector::CompareResults(Double_t vz,    Double_t trueVz, 
+				       Double_t cent,  Double_t b,
+				       Int_t    npart, Int_t    nbin)
+{
+  fHVzComp->Fill(trueVz, vz);
+  fHBvsCent->Fill(b, cent);
+  fHCentVsPart->Fill(npart, cent);
+  fHCentVsBin->Fill(nbin, cent);
+
+  return true;
+}  
 //
 // EOF
 //

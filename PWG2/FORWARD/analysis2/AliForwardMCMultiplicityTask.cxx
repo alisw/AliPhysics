@@ -267,9 +267,12 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   Double_t vzMC     = 0;
   Double_t phiR     = 0;
   Double_t b        = 0;
+  Int_t    npart    = 0;
+  Int_t    nbin     = 0;
   // UInt_t   foundMC  = 
-  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, phiR);
-  
+  fEventInspector.ProcessMC(mcEvent, triggers, ivzMC, vzMC, b, 
+			    npart, nbin, phiR);
+  fEventInspector.CompareResults(vz, vzMC, cent, b, npart, nbin);
   
   //Store all events
   MarkEventForStore();
@@ -280,8 +283,14 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   //MarkEventForStore();
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
-  fMCAODFMD.SetTriggerBits(triggers);
+  fAODFMD.SetSNN(fEventInspector.GetEnergy());
+  fAODFMD.SetSystem(fEventInspector.GetCollisionSystem());
   fAODFMD.SetCentrality(cent);
+
+  fMCAODFMD.SetTriggerBits(triggers);
+  fMCAODFMD.SetSNN(fEventInspector.GetEnergy());
+  fMCAODFMD.SetSystem(fEventInspector.GetCollisionSystem());
+  fMCAODFMD.SetCentrality(cent);
   
   //All events should be stored - HHD
   //if (isAccepted) MarkEventForStore();

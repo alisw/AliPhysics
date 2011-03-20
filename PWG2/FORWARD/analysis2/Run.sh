@@ -5,8 +5,6 @@ nev=-1
 rebin=1
 vzmin=-10
 vzmax=10
-centlow=0
-centhigh=100
 batch=0
 gdb=0
 proof=0
@@ -177,7 +175,7 @@ fi
 if test $dopass2 -gt 0 ; then
     rotate ${output2}
 
-    args=(\(\".\",$nev,\"$type\",$centlow,$centhigh,$vzmin,$vzmax,$proof\))
+    args=(\(\".\",$nev,\"$type\",$cent,$vzmin,$vzmax,$proof\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi

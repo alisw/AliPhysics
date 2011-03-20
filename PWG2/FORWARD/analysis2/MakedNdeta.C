@@ -20,14 +20,13 @@
  *
  * @ingroup pwg2_forward_scripts
  */
-void MakedNdeta(const char* aoddir=".", 
-	        Int_t       nEvents=-1, 
-		const char* trig="INEL",
-		Float_t     centLow = 0,
-		Float_t     centHigh = 100,
-		Double_t    vzMin=-10,
-		Double_t    vzMax=10,
-	        Int_t       proof=0)
+void MakedNdeta(const char* aoddir   = ".", 
+	        Int_t       nEvents  = -1, 
+		const char* trig     = "INEL",
+		Bool_t      useCent  = false,
+		Double_t    vzMin    = -10,
+		Double_t    vzMax    = +10,
+	        Int_t       proof    = 0)
 {
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
@@ -61,10 +60,10 @@ void MakedNdeta(const char* aoddir=".",
   // --- Add tasks ---------------------------------------------------
   // Forward 
   gROOT->LoadMacro("AddTaskForwarddNdeta.C");
-  AddTaskForwarddNdeta(trig, vzMin, vzMax, centLow, centHigh, true);
+  AddTaskForwarddNdeta(trig, vzMin, vzMax, useCent, true);
   // Central
   gROOT->LoadMacro("AddTaskCentraldNdeta.C");
-  AddTaskCentraldNdeta(trig, vzMin, vzMax, centLow, centHigh);
+  AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent);
 
   
   // --- Run the analysis --------------------------------------------
