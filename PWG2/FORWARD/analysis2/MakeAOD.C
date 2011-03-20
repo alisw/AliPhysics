@@ -95,6 +95,7 @@ void MakeAOD(const char* esddir,
   // --- AOD output handler ------------------------------------------
   AliAODHandler* aodHandler   = new AliAODHandler();
   mgr->SetOutputEventHandler(aodHandler);
+  aodHandler->SetNeedsHeaderReplication();
   aodHandler->SetOutputFileName("AliAOD.root");
 
   // --- Add tasks ---------------------------------------------------
@@ -133,7 +134,7 @@ void MakeAOD(const char* esddir,
   mgr->SetSkipTerminate(false);
   // Some informative output 
   mgr->PrintStatus();
-  // mgr->SetDebugLevel(3);
+  if (proof) mgr->SetDebugLevel(3);
   if (mgr->GetDebugLevel() < 1 && !proof) 
     mgr->SetUseProgressBar(kTRUE,100);
 

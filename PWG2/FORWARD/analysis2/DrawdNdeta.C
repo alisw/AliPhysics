@@ -195,29 +195,94 @@ struct dNdetaDrawer
    * 
    * @param filename  File containing the data 
    */
-  void Run(const char* filename="forward_dndeta.C") 
+  void Run(const char* filename="forward_dndeta.root") 
   {
-    Double_t max = 0;
+    Double_t max = 0, rmax=0, amax=0;
 
-    if (!Open(filename, max)) return;
-    Info("Run", "Got data from %s with maximum %f", filename, max);
+    gStyle->SetPalette(1);
 
-    // Create our stack of results
-    THStack* results = fResults; // StackResults(max);
+    // --- Open input file -------------------------------------------
+    TFile* file = TFile::Open(filename, "READ");
+    if (!file) { 
+      Error("Open", "Cannot open %s", filename);
+      return;
+    }
+    // --- Get forward list ------------------------------------------
+    TList* forward = static_cast<TList*>(file->Get("ForwardResults"));
+    if (!forward) { 
+      Error("Open", "Couldn't find list ForwardResults");
+      return;
+    }
+    // --- Get information on the run --------------------------------
+    FetchInformation(forward);
+    // --- Set the macro pathand load other data script --------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+			     gROOT->GetMacroPath()));
+    gROOT->LoadMacro("OtherData.C");
 
-    // Create our stack of other results 
-    TMultiGraph* other = 0;
-    if (fShowOthers || fShowAlice) other = StackOther(max);
+    // --- Get the central results -----------------------------------
+    TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
+    if (!clusters) Warning("Open", "Couldn't find list CentralResults");
+
+    // --- Make our containtes ---------------------------------------
+    fResults   = new THStack("results", "Results");
+    fRatios    = new THStack("ratios",  "Ratios");
+    fLeftRight = new THStack("asymmetry", "Left-right asymmetry");
+    fOthers    = new TMultiGraph();
     
-    Double_t smax = 0;
-    THStack* ratios = 0;
-    if (fShowRatios) ratios = StackRatios(other, smax);
+    // --- Loop over input data --------------------------------------
+    FetchResults(forward,  "Forward", max, rmax, amax);
+    FetchResults(clusters, "Central", max, rmax, amax);
 
-    Double_t amax = 0;
-    THStack* leftright = 0;
-    if (fShowLeftRight) leftright = StackLeftRight(amax);
+    // --- Get trigger information -----------------------------------
+    TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
+    if (sums) {
+      TList* all = static_cast<TList*>(sums->FindObject("all"));
+      if (all) {
+	fTriggers = FetchResult(all, "triggers");
+	if (!fTriggers) all->ls();
+      }
+      else  {
+	Warning("Run", "List all not found in ForwardSums");
+	sums->ls();
+      }
+    }
+    else { 
+      Warning("Run", "No ForwardSums directory found in %s", file->GetName());
+      file->ls();
+    }
+    
+    // --- Check our stacks ------------------------------------------
+    if (!fResults->GetHists() || 
+	fResults->GetHists()->GetEntries() <= 0) { 
+      Error("Run", "No histograms in result stack!");
+      return;
+    }
+    if (!fOthers->GetListOfGraphs() || 
+	fOthers->GetListOfGraphs()->GetEntries() <= 0) { 
+      Warning("Run", "No other data found - disabling that");
+      fShowOthers = false;
+    }
+    if (!fRatios->GetHists() || 
+	fRatios->GetHists()->GetEntries() <= 0) { 
+      Warning("Run", "No ratio data found - disabling that");
+      // fRatios->ls();
+      fShowRatios = false;
+    }
+    if (!fLeftRight->GetHists() || 
+	fLeftRight->GetHists()->GetEntries() <= 0) { 
+      Warning("Run", "No left/right data found - disabling that");
+      // fLeftRight->ls();
+      fShowLeftRight = false;
+    }
+    
+    // --- Close the input file --------------------------------------
+    file->Close();
 
-    Plot(results, other, max, ratios, smax, leftright, amax);
+    
+
+    // --- Plot results ----------------------------------------------
+    Plot(max, rmax, amax);
   }
 
   //__________________________________________________________________
@@ -236,6 +301,8 @@ struct dNdetaDrawer
       fSysString  = static_cast<TNamed*>(results->FindObject("sys"));
     if (!fVtxAxis)
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
+    if (!fCentAxis) 
+      fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
     if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
     if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
     if (!fSysString)  fSysString  = new TNamed("sys", "unknown");
@@ -245,246 +312,258 @@ struct dNdetaDrawer
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
 
+    TString centTxt;
+    if (fCentAxis) { 
+      Int_t nCent = fCentAxis->GetNbins();
+      centTxt = Form("\n   Centrality: %d bins", nCent);
+      for (Int_t i = 0; i <= nCent; i++) 
+	centTxt.Append(Form("%c%d", i == 0 ? ' ' : ',', 
+			    fCentAxis->GetXbins()->At(i)));
+    }
     Info("FetchInformation", 
 	 "Initialized for\n"
 	 "   Trigger:    %s  (%d)\n"
 	 "   sqrt(sNN):  %s  (%dGeV)\n"
 	 "   System:     %s  (%d)\n"
-	 "   Vz range:   %s  (%f,%f)",
+	 "   Vz range:   %s  (%f,%f)%s",
 	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
 	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
 	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
-	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax());
+	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
+	 centTxt.Data());
   }
+  //__________________________________________________________________
+  TMultiGraph* FetchOthers(UShort_t centLow, UShort_t centHigh)
+  {
+    TMultiGraph* thisOther = 0;
+    if (!fShowOthers && !fShowAlice) return 0;
+
+    Bool_t   onlya = (fShowOthers ? false : true);
+    UShort_t sys   = (fSysString  ? fSysString->GetUniqueID() : 0);
+    UShort_t trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
+    UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
+    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d,%d,%d,%d);",
+					     sys,snn,trg,
+					     centLow,centHigh,onlya));
+    if (!ret) { 
+      Warning("FetchResults", "No other data found for sys=%d, sNN=%d, "
+	      "trigger=%d %d%%-%d%% central %s", 
+	      sys, snn, trg, centLow, centHigh, 
+	      onlya ? " (ALICE results)" : "all");
+      return 0;
+    }
+    thisOther = reinterpret_cast<TMultiGraph*>(ret);
     
+    return thisOther;
+  }
   //__________________________________________________________________
   /** 
-   * Open input file, and find data 
+   * Get the results from the top-level list 
    * 
-   * @param filename File name
-   * 
-   * @return true on success 
+   * @param list  List 
+   * @param name  name 
+   * @param max   On return, maximum of data 
+   * @param rmax  On return, maximum of ratios
+   * @param amax  On return, maximum of left-right comparisons
    */
-  Bool_t Open(const char* filename, Double_t& max)
+  void FetchResults(const TList* list, 
+		    const char*  name, 
+		    Double_t&    max,
+		    Double_t&    rmax,
+		    Double_t&    amax)
   {
-    TFile* file = TFile::Open(filename, "READ");
-    if (!file) { 
-      Error("Open", "Cannot open %s", filename);
-      return false;
+    UShort_t n = fCentAxis ? fCentAxis->GetNbins() : 0;
+    if (n == 0) {
+      TList* all = static_cast<TList*>(list->FindObject("all"));
+      if (!all)
+	Error("FetchResults", "Couldn't find list 'all' in %s", 
+	      list->GetName());
+      else 
+	FetchResults(all, name, FetchOthers(0,0), -1, 0, max, rmax, amax);
+      return;
     }
     
-    TList* results = static_cast<TList*>(file->Get("ForwardResults"));
-    if (!results) { 
-      Error("Open", "Couldn't find list ForwardResults");
-      return false;
+    Int_t   nCol = gStyle->GetNumberOfColors();
+    for (UShort_t i = 0; i < n; i++) { 
+      UShort_t centLow  = fCentAxis->GetXbins()->At(i);
+      UShort_t centHigh = fCentAxis->GetXbins()->At(i+1);
+      TString  lname    = Form("cent%03d_%03d", centLow, centHigh);
+      TList*   thisCent = static_cast<TList*>(list->FindObject(lname));
+
+      Float_t fc   = (centLow+double(centHigh-centLow)/2) / 100;
+      Int_t   icol = TMath::Min(nCol-1,int(fc * nCol + .5));
+      Int_t   col  = gStyle->GetColorPalette(icol);
+      Info("FetchResults","Centrality %d-%d color index %d (=%d*%f) -> %d", 
+	   centLow, centHigh, icol, nCol, fc, col);
+
+      TString centTxt = Form("%3d%%-%3d%% central", centLow, centHigh);
+      if (!thisCent)
+	Error("FetchResults", "Couldn't find list '%s' in %s", 
+	      lname.Data(), list->GetName());
+      else 
+	FetchResults(thisCent, name, FetchOthers(centLow, centHigh), 
+		     col, centTxt.Data(), max, rmax, amax);
     }
-
-    // Get information on the run 
-    FetchInformation(results);
-
-    TList* clusters = static_cast<TList*>(file->Get("CentralResults"));
-    if (!clusters) Warning("Open", "Couldn't find list CentralResults");
-
-    fResults   = new THStack("results", "Results");
-    FetchResults(fResults, results,  "Forward", max);
-    FetchResults(fResults, clusters, "Central", max);
-
-    TList* sums = static_cast<TList*>(file->Get("ForwardSums"));
-    if (sums) fTriggers = FetchResult(sums, "triggers");
-    
-    file->Close();
-
-    return true;
+  } 
+  //__________________________________________________________________
+  void SetAttributes(TH1* h, Int_t color)
+  {
+    if (!h) return;
+    if (color < 0) return;
+    h->SetLineColor(color);
+    h->SetMarkerColor(color);
+    h->SetFillColor(color);
   }
   //__________________________________________________________________
-  void FetchResults(THStack* stack, const TList* list, const char* name, 
-		    Double_t& max)
+  void SetAttributes(TGraph* g, Int_t color)
+  {
+    if (!g) return;
+    if (color < 0) return;
+    g->SetLineColor(color);
+    g->SetMarkerColor(color);
+    g->SetFillColor(color);
+  }
+  //__________________________________________________________________
+  void ModifyTitle(TNamed* h, const char* centTxt)
+  {
+    if (!centTxt || !h) return;
+    h->SetTitle(Form("%s, %s", h->GetTitle(), centTxt));
+  }
+
+  //__________________________________________________________________
+  /** 
+   * Fetch results for a particular centrality bin
+   * 
+   * @param list       List 
+   * @param name       Name 
+   * @param centLow    Low cut on centrality 
+   * @param centHigh   high cut on centrality 
+   * @param max        On return, data maximum
+   * @param rmax       On return, ratio maximum 
+   * @param amax       On return, left-right maximum 
+   */
+  void FetchResults(const TList* list, 
+		    const char*  name, 
+		    TMultiGraph* thisOther,
+		    Int_t        color,
+		    const char*  centTxt,
+		    Double_t&    max,
+		    Double_t&    rmax,
+		    Double_t&    amax)
   {
     TH1* dndeta      = FetchResult(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchResult(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchResult(list, "dndetaTruth");
     TH1* dndetaSym   = 0;
     TH1* dndetaMCSym = 0;
+    TH1* tracks      = FetchResult(list, "tracks");
+    SetAttributes(dndeta,     color);
+    SetAttributes(dndetaMC,   color+2);
+    SetAttributes(dndetaTruth,color);
+    SetAttributes(dndetaSym,  color);
+    SetAttributes(dndetaMCSym,color+2);
+    SetAttributes(tracks,     color+3);
+    ModifyTitle(dndeta,     centTxt);
+    ModifyTitle(dndetaMC,   centTxt);
+    ModifyTitle(dndetaTruth,centTxt);
+    ModifyTitle(dndetaSym,  centTxt);
+    ModifyTitle(dndetaMCSym,centTxt);
+    ModifyTitle(tracks,     centTxt);
+      
 
-    max = TMath::Max(max, AddHistogram(stack, dndetaTruth, "e5 p"));
-    max = TMath::Max(max, AddHistogram(stack, dndetaMC,    "", dndetaMCSym));
-    max = TMath::Max(max, AddHistogram(stack, dndeta,      "", dndetaSym));
+    max = TMath::Max(max, AddHistogram(fResults, dndetaTruth, "e5 p"));
+    max = TMath::Max(max, AddHistogram(fResults, dndetaMC,    dndetaMCSym));
+    max = TMath::Max(max, AddHistogram(fResults, dndeta,      dndetaSym));
+    max = TMath::Max(max, AddHistogram(fResults, tracks));
     
-    Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
-	 dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
+    // Info("FetchResults", "Got %p, %p, %p from %s with name %s, max=%f", 
+    //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
 
-    if (dndetaMCSym) fNumerators.Add(dndetaMCSym);
-    if (dndetaMC)    fNumerators.Add(dndetaMC);
-    if (dndetaSym)   fNumerators.Add(dndetaSym);
-    if (dndeta)      fNumerators.Add(dndeta);
-    if (dndetaTruth) fDenominators.Add(dndetaTruth);
-  }
-  //__________________________________________________________________
-  /** 
-   * Make a histogram stack of results 
-   * 
-   * @param max On return, the maximum value in the stack 
-   * 
-   * @return Newly allocated stack
-   */
-  TMultiGraph* StackOther(Double_t& max)
-  {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/OtherData.C");
-    Int_t    error = 0;
-    Bool_t   onlya = (fShowOthers ? false : true);
-    Int_t    trg   = (fTrigString ? fTrigString->GetUniqueID() : 0);
-    UShort_t snn   = (fSNNString  ? fSNNString->GetUniqueID() : 0);
-    Long_t   ret   = gROOT->ProcessLine(Form("GetData(%d,%d,%d);",
-					     snn,trg,onlya));
-    if (error) { 
-      Error("StackOther", "Failed to execute GetData(%d,%d,%d)", 
-	    snn, trg, onlya);
-      return 0;
-    }
-    if (!ret) { 
-      Warning("StackOther", "No other data found for sNN=%d, trigger=%d", 
-	      snn, trg);
-      return 0;
-    }
-    TMultiGraph* other = reinterpret_cast<TMultiGraph*>(ret);
-
-    TGraphAsymmErrors* o      = 0;
-    TIter              next(other->GetListOfGraphs());
-    while ((o = static_cast<TGraphAsymmErrors*>(next()))) {
-      max = TMath::Max(max, TMath::MaxElement(o->GetN(), o->GetY()));
-      fDenominators.Add(o);
+    if (fShowLeftRight) {
+      fLeftRight->Add(Asymmetry(dndeta,    amax));
+      fLeftRight->Add(Asymmetry(dndetaMC,  amax));
+      fLeftRight->Add(Asymmetry(tracks,    amax));
     }
 
-    return other;
-  }
-  //__________________________________________________________________
-  /** 
-   * Make a histogram stack of ratios of results to other data
-   * 
-   * @param max On return, the maximum value in the stack 
-   * 
-   * @return Newly allocated stack
-   */
-  THStack* StackRatios(TMultiGraph* others, Double_t& max) 
-  {
-    THStack* ratios = new THStack("ratios", "Ratios");
-
-    if (others) {
-      TObject* ua5_1  = 0;
-      TObject* ua5_2  = 0;
-      TObject* alice  = 0;
-      TObject* cms    = 0;
-      TObject* denom  = 0;
-      TIter    nextD(&fDenominators);
-      while ((denom = nextD())) {
-	TIter nextN(&fNumerators);
-	TObject* numer = 0;
-	while ((numer = nextN())) { 
-	  ratios->Add(Ratio(numer, denom, max));
-	}
-	TString oName(denom->GetName());
-	oName.ToLower();
-	if (oName.Contains("ua5"))  { 
-	  if (ua5_1) ua5_2 = denom; 
-	  else       ua5_1 = denom; 
-	}
-	if (oName.Contains("alice")) alice = denom;
-	if (oName.Contains("cms"))   cms   = denom;
+    if (thisOther) {
+      TIter next(thisOther->GetListOfGraphs());
+      TGraph* g = 0;
+      while ((g = static_cast<TGraph*>(next()))) {
+	fRatios->Add(Ratio(dndeta,    g, rmax));
+	fRatios->Add(Ratio(dndetaSym, g, rmax));
+	SetAttributes(g, color);
+	ModifyTitle(g, centTxt);
+	if (!fOthers->GetListOfGraphs() || 
+	    !fOthers->GetListOfGraphs()->FindObject(g->GetName()))
+	  fOthers->Add(g);
       }
-      if (ua5_1 && alice) ratios->Add(Ratio(alice, ua5_1, max));
-      if (ua5_2 && alice) ratios->Add(Ratio(alice, ua5_2, max));
-      if (cms   && alice) ratios->Add(Ratio(alice, cms,   max));
+      // fOthers->Add(thisOther);
     }
-    // Check if we have ratios 
-    if (!ratios->GetHists() || 
-	(ratios->GetHists()->GetEntries() <= 0)) { 
-      delete ratios; 
-      ratios = 0; 
+    if (tracks) { 
+      if (!fRatios->GetHists()->FindObject(tracks->GetName()))
+	fRatios->Add(Ratio(dndeta, tracks, rmax));
     }
-    return ratios;
-  }
-  //__________________________________________________________________
-  /** 
-   * Make a histogram stack of the left-right asymmetry 
-   * 
-   * @param max On return, the maximum value in the stack 
-   * 
-   * @return Newly allocated stack
-   */
-  THStack* StackLeftRight(Double_t& max)
-  {
-    THStack* ret = new THStack("leftright", "Left-right asymmetry");
-    // ret->Add(Asymmetry(fForward,    max));
-    // ret->Add(Asymmetry(fForwardMC,  max));
 
-    if (!ret->GetHists() || 
-	(ret->GetHists()->GetEntries() <= 0)) { 
-      delete ret; 
-      ret = 0; 
+    if (dndetaTruth) { 
+      fRatios->Add(Ratio(dndeta,      dndetaTruth, rmax));
+      fRatios->Add(Ratio(dndetaSym,   dndetaTruth, rmax));
+      fRatios->Add(Ratio(dndetaMC,    dndetaTruth, rmax));
+      fRatios->Add(Ratio(dndetaMCSym, dndetaTruth, rmax));
     }
-    return ret;
   }
   //__________________________________________________________________
   /** 
    * Plot the results
-   * 
-   * @param results    Results
-   * @param others     Other data
    * @param max        Max value 
-   * @param ratios     Stack of ratios (optional)
    * @param rmax       Maximum diviation from 1 of ratios 
-   * @param leftright  Stack of left-right asymmetry (optional)	 
    * @param amax       Maximum diviation from 1 of asymmetries 
    */
-  void Plot(THStack*     results,    
-	    TMultiGraph* others, 
-	    Double_t     max, 
-	    THStack*     ratios,     
+  void Plot(Double_t     max, 
 	    Double_t     rmax,
-	    THStack*     leftright, 
 	    Double_t     amax)
   {
     gStyle->SetOptTitle(0);
     gStyle->SetTitleFont(132, "xyz");
     gStyle->SetLabelFont(132, "xyz");
     
-    Int_t    h = 800;
-    Int_t    w = 800; // h / TMath::Sqrt(2);
-    if (!ratios) w *= 1.4;
-    if (!leftright) w *= 1.4;
+    Int_t    h  = 800;
+    Int_t    w  = 800; // h / TMath::Sqrt(2);
+    Double_t y1 = 0;
+    Double_t y2 = 0;
+    Double_t y3 = 0;
+    if (!fShowRatios)    w  *= 1.4;
+    else                 y1 =  0.3;
+    if (!fShowLeftRight) w  *= 1.4;
+    else { 
+      Double_t y11 = y1;
+      y1 = (y11 > 0.0001 ? 0.4 : 0.2);
+      y2 = (y11 > 0.0001 ? y11 : 0.2);
+    }
     TCanvas* c = new TCanvas("Results", "Results", w, h);
     c->SetFillColor(0);
     c->SetBorderSize(0);
     c->SetBorderMode(0);
 
-    Double_t y1 = 0;
-    Double_t y2 = 0;
-    Double_t y3 = 0;
-    if (ratios)    y1 = 0.3;
-    if (leftright) { 
-      if (y1 > 0.0001) {
-	y2 = 0.2;
-	y1 = 0.4;
-      }
-      else {
-	y1 = 0.2;
-	y2 = y1;
-      }
-    }
-    PlotResults(results, others, max, y1);
+#if 0
+    Info("Plot", "y1=%f, y2=%f, y3=%f extra: %s %s", 
+	 y1, y2, y2, (fShowRatios ? "ratios" : ""), 
+	 (fShowLeftRight ? "right/left" : ""));
+#endif
+    PlotResults(max, y1);
     c->cd();
 
-    PlotRatios(ratios, rmax, y2, y1);
+    PlotRatios(rmax, y2, y1);
     c->cd( );
 
-    PlotLeftRight(leftright, amax, y3, y2);
+    PlotLeftRight(amax, y3, y2);
     c->cd();
 
     
     Int_t   vMin = fVtxAxis->GetXmin();
     Int_t   vMax = fVtxAxis->GetXmax();    
     TString trg(fTrigString->GetTitle());
-    Int_t   nev  = fTriggers->GetBinContent(fTriggers->GetNbinsX());
+    Int_t   nev  = 0;
+    if (fTriggers) nev = fTriggers->GetBinContent(fTriggers->GetNbinsX());
     trg          = trg.Strip(TString::kBoth);
     TString base(Form("dndeta_%s_%s_%s_%c%02d%c%02dcm_%09dev",
 		      fSysString->GetTitle(), 
@@ -499,15 +578,54 @@ struct dNdetaDrawer
   }
   //__________________________________________________________________
   /** 
+   * Build main legend 
+   * 
+   * @param x1 
+   * @param y1 
+   * @param x2 
+   * @param y2 
+   */
+  void BuildLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2)
+  {
+    TLegend* l = new TLegend(x1,y1,x2,y2);
+    l->SetNColumns(2);
+    l->SetFillColor(0);
+    l->SetFillStyle(0);
+    l->SetBorderSize(0);
+    l->SetTextFont(132);
+
+    TIter    next(fResults->GetHists());
+    TObject* hist = 0;
+    while ((hist = next())) { 
+      TString n(hist->GetTitle());
+      if (n.Contains("mirrored")) continue;
+      l->AddEntry(hist, hist->GetTitle(), "pl");
+    }
+    TIter nexto(fOthers->GetListOfGraphs());
+    while ((hist = nexto())) { 
+      TString n(hist->GetTitle());
+      if (n.Contains("mirrored")) continue;
+      l->AddEntry(hist, hist->GetTitle(), "pl");
+    }
+    TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
+    d1->SetLineColor(kBlack);
+    d1->SetMarkerColor(kBlack);
+    d1->SetMarkerStyle(20);
+    TLegendEntry* d2 = l->AddEntry("d2", "Mirrored data", "lp");
+    d2->SetLineColor(kBlack);
+    d2->SetMarkerColor(kBlack);
+    d2->SetMarkerStyle(24);
+    
+    l->Draw();
+  }
+  //__________________________________________________________________
+  /** 
    * Plot the results
    *    
-   * @param results   Results
-   * @param others    Other data
    * @param max       Maximum 
    * @param yd        Bottom position of pad 
    */
-  void PlotResults(THStack* results, TMultiGraph* others, 
-		   Double_t max, Double_t yd) 
+  void PlotResults(Double_t max, Double_t yd) 
   {
     // Make a sub-pad for the result itself
     TPad* p1 = new TPad("p1", "p1", 0, yd, 1.0, 1.0, 0, 0, 0);
@@ -522,34 +640,36 @@ struct dNdetaDrawer
     p1->Draw();
     p1->cd();
     
-    Info("PlotResults", "Plotting results with max=%f", max);
-    results->ls();
-    results->SetMaximum(1.15*max);
-    results->SetMinimum(yd > 0.00001 ? -0.1 : 0);
+    // Info("PlotResults", "Plotting results with max=%f", max);
+    fResults->SetMaximum(1.15*max);
+    fResults->SetMinimum(yd > 0.00001 ? -0.1 : 0);
 
-    FixAxis(results, 1/(1-yd)/1.7, "#frac{1}{N} #frac{dN_{ch}}{d#eta}");
+    FixAxis(fResults, 1/(1-yd)/1.7, "#frac{1}{N} #frac{dN_{ch}}{d#eta}");
 
     p1->Clear();
-    results->DrawClone("nostack e1");
+    fResults->DrawClone("nostack e1");
 
-    fRangeParam->fSlave1Axis = results->GetXaxis();
+    fRangeParam->fSlave1Axis = fResults->GetXaxis();
     fRangeParam->fSlave1Pad  = p1;
 
     // Draw other data
-    if (others) {
+    if (fShowOthers || fShowAlice) {
       TGraphAsymmErrors* o      = 0;
-      TIter              nextG(others->GetListOfGraphs());
+      TIter              nextG(fOthers->GetListOfGraphs());
       while ((o = static_cast<TGraphAsymmErrors*>(nextG())))
         o->DrawClone("same p");
     }
 
     // Make a legend in the main result pad
+    BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
+#if 0
     TLegend* l = p1->BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
     l->SetNColumns(2);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
     l->SetTextFont(132);
+#endif
 
     // Put a title on top
     TLatex* tit = new TLatex(0.10, 0.95, fTitle.Data());
@@ -574,7 +694,8 @@ struct dNdetaDrawer
     tt->Draw();
 
     // Put number of accepted events on the plot
-    Int_t nev = fTriggers->GetBinContent(fTriggers->GetNbinsX());
+    Int_t nev = 0;
+    if (fTriggers) nev = fTriggers->GetBinContent(fTriggers->GetNbinsX());
     TLatex* et = new TLatex(.93, .83, Form("%d events", nev));
     et->SetNDC();
     et->SetTextFont(132);
@@ -591,7 +712,7 @@ struct dNdetaDrawer
     }
     // results->Draw("nostack e1 same");
 
-    fRangeParam->fSlave1Axis = FindXAxis(p1, results->GetName());
+    fRangeParam->fSlave1Axis = FindXAxis(p1, fResults->GetName());
     fRangeParam->fSlave1Pad  = p1;
 
 
@@ -619,14 +740,14 @@ struct dNdetaDrawer
   /** 
    * Plot the ratios 
    * 
-   * @param ratios  Ratios to plot (if any)
    * @param max     Maximum diviation from 1 
    * @param y1      Lower y coordinate of pad
    * @param y2      Upper y coordinate of pad
    */
-  void PlotRatios(THStack* ratios, Double_t max, Double_t y1, Double_t y2) 
+  void PlotRatios(Double_t max, Double_t y1, Double_t y2) 
   {
-    if (!ratios) return;
+    if (!fShowRatios) return;
+
     bool isBottom = (y1 < 0.0001);
     Double_t yd = y2 - y1;
     // Make a sub-pad for the result itself
@@ -641,12 +762,12 @@ struct dNdetaDrawer
     p2->cd();
 
     // Fix up axis
-    FixAxis(ratios, 1/yd/1.7, "Ratios", 7);
+    FixAxis(fRatios, 1/yd/1.7, "Ratios", 7);
 
-    ratios->SetMaximum(1+TMath::Max(.22,1.05*max));
-    ratios->SetMinimum(1-TMath::Max(.32,1.05*max));
+    fRatios->SetMaximum(1+TMath::Max(.22,1.05*max));
+    fRatios->SetMinimum(1-TMath::Max(.32,1.05*max));
     p2->Clear();
-    ratios->DrawClone("nostack e1");
+    fRatios->DrawClone("nostack e1");
 
     
     // Make a legend
@@ -672,15 +793,15 @@ struct dNdetaDrawer
     band->DrawClone("X L same");
     
     // Replot the ratios on top
-    ratios->DrawClone("nostack e1 same");
+    fRatios->DrawClone("nostack e1 same");
 
     if (isBottom) {
-      fRangeParam->fMasterAxis = FindXAxis(p2, ratios->GetName());
+      fRangeParam->fMasterAxis = FindXAxis(p2, fRatios->GetName());
       p2->AddExec("range", Form("RangeExec((dNdetaDrawer::RangeParam*)%p)", 
 				fRangeParam));
     }
     else { 
-      fRangeParam->fSlave2Axis = FindXAxis(p2, ratios->GetName());
+      fRangeParam->fSlave2Axis = FindXAxis(p2, fRatios->GetName());
       fRangeParam->fSlave2Pad  = p2;
     }
   }
@@ -688,15 +809,14 @@ struct dNdetaDrawer
   /** 
    * Plot the asymmetries
    * 
-   * @param ratios  Asymmetries to plot (if any)
    * @param max     Maximum diviation from 1 
    * @param y1      Lower y coordinate of pad
    * @param y2      Upper y coordinate of pad
    */
-  void PlotLeftRight(THStack* leftright, Double_t max, 
-		     Double_t y1, Double_t y2) 
+  void PlotLeftRight(Double_t max, Double_t y1, Double_t y2) 
   {
-    if (!leftright) return;
+    if (!fShowLeftRight) return;
+
     bool isBottom = (y1 < 0.0001);
     Double_t yd = y2 - y1;
     // Make a sub-pad for the result itself
@@ -711,22 +831,22 @@ struct dNdetaDrawer
     p3->cd();
 
     TH1* dummy = 0;
-    if (leftright->GetHists()->GetEntries() == 1) { 
+    if (fLeftRight->GetHists()->GetEntries() == 1) { 
       // Add dummy histogram
       dummy = new TH1F("dummy","", 10, -6, 6);
       dummy->SetLineColor(0);
       dummy->SetFillColor(0);
       dummy->SetMarkerColor(0);
-      leftright->Add(dummy);
+      fLeftRight->Add(dummy);
     }
 
     // Fix up axis
-    FixAxis(leftright, 1/yd/1.7, "Right/Left", 4);
+    FixAxis(fLeftRight, 1/yd/1.7, "Right/Left", 4);
 
-    leftright->SetMaximum(1+TMath::Max(.12,1.05*max));
-    leftright->SetMinimum(1-TMath::Max(.15,1.05*max));
+    fLeftRight->SetMaximum(1+TMath::Max(.12,1.05*max));
+    fLeftRight->SetMinimum(1-TMath::Max(.15,1.05*max));
     p3->Clear();
-    leftright->DrawClone("nostack e1");
+    fLeftRight->DrawClone("nostack e1");
 
     
     // Make a legend
@@ -762,14 +882,14 @@ struct dNdetaDrawer
     band->Draw("3 same");
     band->DrawClone("X L same");
 
-    leftright->DrawClone("nostack e1 same");
+    fLeftRight->DrawClone("nostack e1 same");
     if (isBottom) {
-      fRangeParam->fMasterAxis = FindXAxis(p3, leftright->GetName());
+      fRangeParam->fMasterAxis = FindXAxis(p3, fLeftRight->GetName());
       p3->AddExec("range", Form("RangeExec((dNdetaDrawer::RangeParam*)%p)", 
 				fRangeParam));
     }
     else { 
-      fRangeParam->fSlave2Axis = FindXAxis(p3, leftright->GetName());
+      fRangeParam->fSlave2Axis = FindXAxis(p3, fLeftRight->GetName());
       fRangeParam->fSlave2Pad  = p3;
     }
   }
@@ -791,14 +911,7 @@ struct dNdetaDrawer
   {
     if (!list) return 0;
     
-    TList* all = static_cast<TList*>(list->FindObject("all"));
-    if (!all) { 
-      Warning("GetResult", "No 'all' list find in %s", list->GetName());
-      // list->ls();
-      return 0;
-    }
-
-    TH1* ret = static_cast<TH1*>(all->FindObject(name));
+    TH1* ret = static_cast<TH1*>(list->FindObject(name));
     if (!ret) {
       // all->ls();
       Warning("GetResult", "Histogram %s not found", name);
@@ -816,7 +929,7 @@ struct dNdetaDrawer
    * 
    * @return Maximum of histogram 
    */
-  Double_t AddHistogram(THStack* stack, TH1* hist, Option_t* option) const 
+  Double_t AddHistogram(THStack* stack, TH1* hist, Option_t* option="") const 
   {
     // Check if we have input 
     if (!hist) return 0;
@@ -824,7 +937,10 @@ struct dNdetaDrawer
     // Rebin if needed 
     Rebin(hist);
 
+    // Info("AddHistogram", "Adding %s to %s", 
+    //      hist->GetName(), stack->GetName());
     stack->Add(hist, option);
+    // stack->ls();
     return hist->GetMaximum();
   }
   //__________________________________________________________________
@@ -838,8 +954,8 @@ struct dNdetaDrawer
    * 
    * @return Maximum of histogram 
    */
-  Double_t AddHistogram(THStack* stack, TH1* hist, Option_t* option, 
-			TH1*& sym) const 
+  Double_t AddHistogram(THStack* stack, TH1* hist, TH1*& sym,
+			Option_t* option="") const 
   {
     // Check if we have input 
     if (!hist) return 0;
@@ -852,6 +968,8 @@ struct dNdetaDrawer
     sym = Symmetrice(hist);
     stack->Add(sym, option);
 
+    // Info("AddHistogram", "Adding %s and %s to %s", 
+    //      hist->GetName(), sym->GetName(), stack->GetName());
     return hist->GetMaximum();
   }
 
@@ -990,6 +1108,7 @@ struct dNdetaDrawer
     // Double_t dBin  = (high - low) / oBins;
     // Int_t    tBins = Int_t(2*high/dBin+.5);
     // ret->SetBins(tBins, -high, high);
+    ret->SetDirectory(0);
     ret->Reset();
     ret->SetTitle(Form("%s (+/-)", h->GetTitle()));
     ret->SetYTitle("Right/Left");
@@ -1134,6 +1253,7 @@ struct dNdetaDrawer
     ret->SetMarkerStyle(g->GetMarkerStyle());
     ret->SetMarkerColor(h->GetMarkerColor());
     ret->SetMarkerSize(0.9*g->GetMarkerSize());
+    ret->SetDirectory(0);
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[g->GetN()-1];
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
@@ -1178,6 +1298,7 @@ struct dNdetaDrawer
     t1->Divide(h2);
     t1->SetMarkerColor(h1->GetMarkerColor());
     t1->SetMarkerStyle(h2->GetMarkerStyle());
+    t1->SetDirectory(0);
     max = TMath::Max(RatioMax(t1), max);
     return t1;
   }
@@ -1218,6 +1339,7 @@ struct dNdetaDrawer
     h->SetMarkerStyle(g2->GetMarkerStyle());
     h->SetMarkerColor(g1->GetMarkerColor());
     h->SetMarkerSize(0.9*g2->GetMarkerSize());
+    h->SetDirectory(0);
 
     Double_t low  = g2->GetX()[0];
     Double_t high = g2->GetX()[g2->GetN()-1];
@@ -1282,11 +1404,18 @@ struct dNdetaDrawer
   void FixAxis(THStack* stack, Double_t s, const char* ytitle,
                Int_t ynDiv=210, Bool_t force=true)
   {
+    if (!stack) { 
+      Warning("FixAxis", "No stack passed for %s!", ytitle);
+      return;
+    }
     if (force) stack->Draw("nostack e1");
 
     TH1* h = stack->GetHistogram();
-    if (!h) return;
-
+    if (!h) { 
+      Warning("FixAxis", "Stack %s has no histogram", stack->GetName());
+      return;
+    }
+    
     h->SetXTitle("#eta");
     h->SetYTitle(ytitle);
     TAxis* xa = h->GetXaxis();
@@ -1297,6 +1426,11 @@ struct dNdetaDrawer
       xa->SetTitleSize(s*xa->GetTitleSize());
       xa->SetLabelSize(s*xa->GetLabelSize());
       xa->SetTickLength(s*xa->GetTickLength());
+
+      if (stack != fResults) {
+	TAxis* rxa = fResults->GetXaxis();
+	xa->Set(rxa->GetNbins(), rxa->GetXmin(), rxa->GetXmax());
+      }
     }
     if (ya) {
       ya->SetTitle(ytitle);
@@ -1313,31 +1447,24 @@ struct dNdetaDrawer
 
 
   //__________________________________________________________________
-  Bool_t      fShowOthers;   // Show other data
-  Bool_t      fShowAlice;    // Show ALICE published data
-  Bool_t      fShowRatios;   // Show ratios 
-  Bool_t      fShowLeftRight;// Show asymmetry 
-  UShort_t    fRebin;        // Rebinning factor 
-  Bool_t      fCutEdges;     // Whether to cut edges
-  TString     fTitle;        // Title on plot
-  TNamed*     fTrigString;   // Trigger string (read, or set)
-  TNamed*     fSNNString;    // Energy string (read, or set)
-  TNamed*     fSysString;    // Collision system string (read or set)
-  TAxis*      fVtxAxis;      // Vertex cuts (read or set)
-  TList       fNumerators;   // Numerators in ratios 
-  TList       fDenominators; // Denominators in ratios 
-  THStack*    fResults;      // Stack of results 
-  THStack*    fRatios;       // Stack of ratios 
-  // TH1*        fForward;      // Results
-  // TH1*        fForwardMC;    // MC results
-  // TH1*        fForwardHHD;   // Old results
-  // TH1*        fTruth;        // MC truth
-  // TH1*        fCentral;      // Central region data
-  // TH1*        fForwardSym;   // Symmetric extension
-  // TH1*        fForwardMCSym; // Symmetric extension
-  // TH1*        fForwardHHDSym;// Symmetric extension
-  TH1*        fTriggers;     // Number of triggers
-  RangeParam* fRangeParam;   // Parameter object for range zoom 
+  Bool_t       fShowOthers;   // Show other data
+  Bool_t       fShowAlice;    // Show ALICE published data
+  Bool_t       fShowRatios;   // Show ratios 
+  Bool_t       fShowLeftRight;// Show asymmetry 
+  UShort_t     fRebin;        // Rebinning factor 
+  Bool_t       fCutEdges;     // Whether to cut edges
+  TString      fTitle;        // Title on plot
+  TNamed*      fTrigString;   // Trigger string (read, or set)
+  TNamed*      fSNNString;    // Energy string (read, or set)
+  TNamed*      fSysString;    // Collision system string (read or set)
+  TAxis*       fVtxAxis;      // Vertex cuts (read or set)
+  TAxis*       fCentAxis;     // Centrality axis
+  THStack*     fResults;      // Stack of results 
+  THStack*     fRatios;       // Stack of ratios 
+  THStack*     fLeftRight;    // Left-right asymmetry
+  TMultiGraph* fOthers;       // Older data 
+  TH1*         fTriggers;     // Number of triggers
+  RangeParam*  fRangeParam;   // Parameter object for range zoom 
   
 };
 

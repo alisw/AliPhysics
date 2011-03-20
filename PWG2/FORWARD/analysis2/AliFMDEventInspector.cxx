@@ -41,13 +41,15 @@ AliFMDEventInspector::AliFMDEventInspector()
     fHType(0),
     fHWords(0),
     fHCent(0),
+    fHCentVsQual(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
     fEnergy(0),
     fField(999), 
     fCollisionSystem(kUnknown),
-    fDebug(0)
+    fDebug(0),
+    fCentAxis(0)
 {
   // 
   // Constructor 
@@ -63,13 +65,15 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fHType(0),
     fHWords(0),
     fHCent(0),
+    fHCentVsQual(0),
     fLowFluxCut(1000),
     fMaxVzErr(0.2),
     fList(0),
     fEnergy(0),
     fField(999), 
     fCollisionSystem(kUnknown),
-    fDebug(0)
+    fDebug(0),
+    fCentAxis(0)
 {
   // 
   // Constructor 
@@ -88,13 +92,15 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fHType(o.fHType),
     fHWords(o.fHWords),
     fHCent(o.fHCent),
+    fHCentVsQual(o.fHCentVsQual),
     fLowFluxCut(o.fLowFluxCut),
     fMaxVzErr(o.fMaxVzErr),
     fList(o.fList),
     fEnergy(o.fEnergy),
     fField(o.fField), 
     fCollisionSystem(o.fCollisionSystem),
-    fDebug(0)
+    fDebug(0),
+    fCentAxis(0)
 {
   // 
   // Copy constructor 
@@ -110,12 +116,6 @@ AliFMDEventInspector::~AliFMDEventInspector()
   // 
   // Destructor 
   //
-  if (fHEventsTr)    delete fHEventsTr;
-  if (fHEventsTrVtx) delete fHEventsTrVtx;
-  if (fHTriggers)    delete fHTriggers;  
-  if (fHType)        delete fHType;
-  if (fHWords)       delete fHWords;
-  if (fHCent)        delete fHCent;
   if (fList)         delete fList;
 }
 //____________________________________________________________________
@@ -138,6 +138,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   fHType             = o.fHType;
   fHWords            = o.fHWords;
   fHCent             = o.fHCent;
+  fHCentVsQual       = o.fHCentVsQual;
   fLowFluxCut        = o.fLowFluxCut;
   fMaxVzErr          = o.fMaxVzErr;
   fDebug             = o.fDebug;
@@ -153,6 +154,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
     if (fHType)        fList->Add(fHType);
     if (fHWords)       fList->Add(fHWords);
     if (fHCent)        fList->Add(fHCent);
+    if (fHCentVsQual)  fList->Add(fHCentVsQual);
   }
   return *this;
 }
@@ -199,6 +201,13 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   // Parameters:
   //   vtxAxis Vertex axis in use 
   //
+  
+  // -1.5 -0.5 0.5 1.5 ... 89.5 ... 100.5
+  // ----- 92 number --------- ---- 1 ---
+  TArrayD limits(93);
+  for (Int_t i = 0; i < 92; i++) limits[i] = -1.5 + i;
+  
+  fCentAxis  = new TAxis(limits.GetSize()-1, limits.GetArray());
   fHEventsTr = new TH1I("nEventsTr", "Number of events w/trigger", 
 			vtxAxis.GetNbins(), 
 			vtxAxis.GetXmin(), 
@@ -261,7 +270,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHWords->SetBit(TH1::kCanRebin);
   fList->Add(fHWords);
 
-  fHCent = new TH1F("cent", "Centrality", 101, -1.5, 100.5);
+  fHCent = new TH1F("cent", "Centrality", limits.GetSize()-1,limits.GetArray());
   fHCent->SetFillColor(kBlue+1);
   fHCent->SetFillStyle(3001);
   fHCent->SetStats(0);
@@ -269,6 +278,18 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHCent->SetXTitle("Centrality [%]");
   fHCent->SetYTitle("Events");
   fList->Add(fHCent);
+
+  fHCentVsQual = new TH2F("centVsQuality", "Quality vs Centrality", 
+			  5, 0, 5, limits.GetSize()-1, limits.GetArray());
+  fHCentVsQual->SetXTitle("Quality");
+  fHCentVsQual->SetYTitle("Centrality [%]");
+  fHCentVsQual->SetZTitle("Events");
+  fHCentVsQual->GetXaxis()->SetBinLabel(1, "OK");
+  fHCentVsQual->GetXaxis()->SetBinLabel(2, "Outside v_{z} cut");
+  fHCentVsQual->GetXaxis()->SetBinLabel(3, "V0 vs SPD outlier");
+  fHCentVsQual->GetXaxis()->SetBinLabel(4, "V0 vs TPC outlier");
+  fHCentVsQual->GetXaxis()->SetBinLabel(5, "V0 vs ZDC outlier");
+  fList->Add(fHCentVsQual);
 }
 
 //____________________________________________________________________
@@ -338,10 +359,17 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   fHType->Fill(lowFlux ? 0 : 1);
   
   // --- Read centrality information 
-  cent = -10;
-  if (!ReadCentrality(event, cent)) {
+  cent          = -10;
+  UShort_t qual = 0;
+  if (!ReadCentrality(event, cent, qual)) {
     if (fDebug > 3) 
       AliWarning("Failed to get centrality");
+  }
+  fHCent->Fill(cent);
+  if (qual == 0) fHCentVsQual->Fill(0., cent);
+  else { 
+    for (UShort_t i = 0; i < 4; i++) 
+      if (qual & (1 << i)) fHCentVsQual->Fill(Double_t(i+1), cent);
   }
 
   // --- Get the vertex information ----------------------------------
@@ -380,7 +408,9 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
 
 //____________________________________________________________________
 Bool_t
-AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
+AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, 
+				     Double_t& cent, 
+				     UShort_t& qual) const
 {
   // 
   // Read centrality from event 
@@ -392,15 +422,16 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent* esd, Double_t& cent)
   // Return:
   //    False on error, true otherwise 
   //
+  cent = -1;
+  qual = 0;
   AliCentrality* centObj = const_cast<AliESDEvent*>(esd)->GetCentrality();
-  if (centObj) {
-    // AliInfo(Form("Got centrality object %p with quality %d", 
-    //              centObj, centObj->GetQuality()));
-    // centObj->Print();
-    cent = centObj->GetCentralityPercentile("V0M");  
-  }
-  // AliInfo(Form("Centrality is %f", cent));
-  fHCent->Fill(cent);
+  if (!centObj)  return true;
+
+  // AliInfo(Form("Got centrality object %p with quality %d", 
+  //              centObj, centObj->GetQuality()));
+  // centObj->Print();
+  cent = centObj->GetCentralityPercentile("V0M");  
+  qual = centObj->GetQuality();
 
   return true;
 }

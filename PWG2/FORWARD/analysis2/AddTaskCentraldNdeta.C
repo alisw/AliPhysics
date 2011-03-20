@@ -9,11 +9,11 @@
  * 
  */
 AliAnalysisTask*
-AddTaskCentraldNdeta(const char* trig="INEL", 
-		     Double_t vzMin=-10, 
-		     Double_t vzMax=10, 
-		     Float_t centLow=0, 
-		     Float_t centHigh=100)
+AddTaskCentraldNdeta(const char* trig     = "INEL", 
+		     Double_t    vzMin    = -10, 
+		     Double_t    vzMax    = +10, 
+		     Bool_t      useCent  = false,
+		     Bool_t      cutEdges = false)
 {
   // analysis manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
@@ -23,16 +23,12 @@ AddTaskCentraldNdeta(const char* trig="INEL",
   AliCentraldNdetaTask* task = new AliCentraldNdetaTask("Central");
   task->SetVertexRange(vzMin, vzMax);
   task->SetTriggerMask(trig);
-  // task->SetUseShapeCorrection(false);
-  task->AddCentralityBin( 0,  0); // All bin - integrate over centrality
-  task->AddCentralityBin( 0,  5);
-  task->AddCentralityBin( 5, 10);
-  task->AddCentralityBin(10, 20);
-  task->AddCentralityBin(20, 30);
-  task->AddCentralityBin(30, 40);
-  task->AddCentralityBin(40, 50);
-  task->AddCentralityBin(50, 60);
-  task->AddCentralityBin(60,100);
+  task->SetCutEdges(cutEdges);
+  task->SetUseShapeCorrection(false);
+  if (useCent) {
+    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+    task->SetCentralityAxis(11, bins);
+  }
   mgr->AddTask(task);
 
   // create containers for input/output
