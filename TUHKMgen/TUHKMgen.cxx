@@ -121,10 +121,8 @@ TUHKMgen::TUHKMgen() :
   fHydjetParams.fIanglu=0;  
 */
 
-  if(strlen(Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")))<255)   
-    strncpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")), 256);
-  if(strlen(Form("%s/TUHKMgen/UHKM/tabledecay.txt",gSystem->Getenv("ALICE_ROOT")))<255)
-    strncpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")), 256);
+  strncpy(fParticleFilename, Form("%s/TUHKMgen/UHKM/particles.data", gSystem->Getenv("ALICE_ROOT")), 255);
+  strncpy(fDecayFilename, Form("%s/TUHKMgen/UHKM/tabledecay.txt", gSystem->Getenv("ALICE_ROOT")), 255);
   for(Int_t i=0; i<500; i++) {
     fStableFlagPDG[i] = 0;
     fStableFlagStatus[i] = kFALSE;
