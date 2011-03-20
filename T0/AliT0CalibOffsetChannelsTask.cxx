@@ -11,14 +11,13 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
-#include "AliT0CalibSeasonTimeShift.h"
 #include "AliT0CalibOffsetChannelsTask.h"
 
-#include "AliCDBMetaData.h"
-#include "AliCDBId.h"
-#include "AliCDBEntry.h"
-#include "AliCDBManager.h"
-#include "AliCDBStorage.h"
+//#include "AliCDBMetaData.h"
+//#include "AliCDBId.h"
+//#include "AliCDBEntry.h"
+//#include "AliCDBManager.h"
+//#include "AliCDBStorage.h"
 
 // Task should calculate channels offset 
 // Authors: Alla 
@@ -26,47 +25,62 @@
 ClassImp(AliT0CalibOffsetChannelsTask)
 //________________________________________________________________________
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask() 
-  : AliAnalysisTaskSE(),  fESD(0), fTzeroObject(0),fRunNumber(0)
+  : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
+  fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
+  fRunNumber(0)
 {
   // Constructor
 
+  for( int ip=0; ip < 24; ip++){
+    fTimeDiff[ip] = 0;
+    fCFD[ip]      = 0;
+  }
+
   // Define input and output slots here
   // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TObjArray::Class());
-  fTzeroObject = new TObjArray(0);
-  fTzeroObject->SetOwner(kTRUE);
-  // Output slot #0 id reserved by the base class for AOD
-  // Output slot #1 writes into a TH1 container
-  // DefineOutput(1, TList::Class());
+  //  DefineInput(0,  TChain::Class());
+  //  DefineOutput(1, TObjArray::Class());
 }
 
 
 //________________________________________________________________________
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name) 
-  : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),fRunNumber(0)
+  : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),
+  fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
+  fRunNumber(0)
 {
   // Constructor
-  
+ 
+  for( int ip=0; ip < 24; ip++){
+    fTimeDiff[ip] = 0;
+    fCFD[ip]      = 0;
+  }
+ 
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   DefineOutput(1, TObjArray::Class());
   // Output slot #0 id reserved by the base class for AOD
   // Output slot #1 writes into a TH1 container
-  // DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
 AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask() 
 {
   // Destructor
- printf("AliT0CalibOffsetChannels~AliT0CalibOffsetChannels() ");
- if( fTzeroObject )fTzeroObject->Delete();
+  // printf("AliT0CalibOffsetChannels~AliT0CalibOffsetChannels() ");
+  delete fTzeroORA;
+  delete fTzeroORC;
+  delete fResolution;
+  delete fTzeroORAplusORC;
+  delete [] fTimeDiff;
+  delete [] fCFD;
+
+  delete fTzeroObject;
 }
 
 //________________________________________________________________________
-void AliT0CalibOffsetChannelsTask::ConnectInputData(Option_t *) {
+/*void AliT0CalibOffsetChannelsTaskX::ConnectInputData(Option_t *) {
   //
   //
   //
@@ -85,20 +99,37 @@ void AliT0CalibOffsetChannelsTask::ConnectInputData(Option_t *) {
     }
   }
 }
-
+*/
 //________________________________________________________________________
 void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
 {
   // Create histograms
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",300, -300, 300);
-    fCFD[i]   = new TH1F("CFD","CFD",500, 6000, 7000);
+    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
   }
-  fTzeroObject = new TObjArray(0);
+
+  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-2000,2000);   //or A plus or C 
+  fResolution      = new TH1F("fResolution","fResolution",400,-2000,2000);// or A minus or C spectrum
+  fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",400,-2000,2000);// or A spectrum
+  fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",400,-2000,2000);// or C spectrum
+
+  
+  fTzeroObject     = new TObjArray(0);
   fTzeroObject->SetOwner(kTRUE);
- 
+  
+  for (Int_t i=0; i<24; i++)
+    fTzeroObject->AddAtAndExpand(fTimeDiff[i],i);
+
+  for (Int_t i=0; i<24; i++)
+    fTzeroObject->AddAtAndExpand(fCFD[i],i+24); //24 - 48
+
+  fTzeroObject->AddAtAndExpand(fTzeroORAplusORC, 48);
+  fTzeroObject->AddAtAndExpand(fResolution, 49);
+  fTzeroObject->AddAtAndExpand(fTzeroORA, 50);
+  fTzeroObject->AddAtAndExpand(fTzeroORC, 51);
+
   PostData(1, fTzeroObject);
- 
   // Called once
 }
 
@@ -115,6 +146,8 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     return;
   }
 
+  fRunNumber =  fESD->GetRunNumber() ; 
+
   const Double32_t* time = fESD->GetT0time();
   for (Int_t i=0; i<12; i++) {
     if( time[i]>1 ){
@@ -130,21 +163,23 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
 	fTimeDiff[i]->Fill( time[i]-time[12]);
     }
   }
-  fRunNumber =  fESD->GetRunNumber() ; 
-  
-  // printf("%lf   %lf  %lf\n",orA,orC,time);
+  const Double32_t* mean = fESD->GetT0TOF();
+  Double32_t meanTOF = mean[0] + 100000. ;
+  Double32_t orA = mean[1] + 100000.;
+  Double32_t orC = mean[2] + 100000.;
+ 
+  if(orA<9999) fTzeroORA->Fill(orA);
+  if(orC<9999) fTzeroORC->Fill(orC);
+  if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
+  if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
+
+  //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);
 }      
  //________________________________________________________________________
 void AliT0CalibOffsetChannelsTask::Terminate(Option_t *) 
 {
   
-  // Called once at the end of the query
-  for (Int_t i=0; i<24; i++)
-    fTzeroObject->AddAtAndExpand(fTimeDiff[i],i);
-
-  for (Int_t i=24; i<48; i++)
-    fTzeroObject->AddAtAndExpand(fCFD[i],i);
-
+   // Called once at the end of the query
 }
-
+ 

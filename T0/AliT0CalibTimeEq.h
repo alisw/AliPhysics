@@ -24,9 +24,8 @@ class AliT0CalibTimeEq: public TNamed {
   virtual void  Print(Option_t* option= "") const; 
   
   Bool_t ComputeOnlineParams(const char* filePhys);
-  Bool_t ComputeOfflineParams(const char* filePhys);
-
-  Float_t  GetCFDvalue(Int_t channel,Int_t number)        const {return fCFDvalue[channel][number];}
+  Bool_t ComputeOfflineParams(const char* filePhys, Float_t *timecdb, Int_t badpmt);
+  Float_t  GetCFDvalue(Int_t channel,Int_t number)  const {return fCFDvalue[channel][number];}
   Float_t* GetCFDvalue()          const {return (float*)fCFDvalue;}
   Float_t  GetTimeEq(Int_t channel)        const {return fTimeEq[channel];}
   Float_t* GetTimeEq()          const {return (float*)fTimeEq;}

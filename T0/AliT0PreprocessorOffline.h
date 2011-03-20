@@ -16,12 +16,18 @@ class AliT0PreprocessorOffline: public TNamed
   AliT0PreprocessorOffline();  
   virtual ~AliT0PreprocessorOffline();
   void	CalibOffsetChannels(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
- 
+  void	CalibT0sPosition(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
+  void  Process(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
   private:
-	AliT0PreprocessorOffline(const AliT0PreprocessorOffline & proc); // copy constructor	
-	AliT0PreprocessorOffline& operator=(const AliT0PreprocessorOffline&); //operator
+  AliT0PreprocessorOffline(const AliT0PreprocessorOffline & proc); // copy constructor	
+  AliT0PreprocessorOffline& operator=(const AliT0PreprocessorOffline&); //operator
+  Int_t startRun;                         // start Run - used to make fast selection in THnSparse
+  Int_t endRun;                           // end   Run - used to make fast selection in THnSparse
+  Int_t startTime;                        // startTime - used to make fast selection in THnSparse
+  Int_t endTime;                          // endTime   - used to make fast selection in THnSparse
+  TString  ocdbStorage;                   // path to the OCDB storage
  
-	ClassDef(AliT0PreprocessorOffline, 1)
+  ClassDef(AliT0PreprocessorOffline, 1)
 };
 
 
