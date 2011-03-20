@@ -502,8 +502,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 {
   Int_t  time[24] ;
   for(Int_t i=0; i<24; i++) time[i] = 0;	  
-  
-  
+    
   rawReader->Reset() ; 
   //fills QA histos for RAW
   Int_t shift=0;
@@ -680,14 +679,15 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	if( fnEventPhys > 2000) {
 	  for (Int_t ipmt=0; ipmt<12; ipmt++){
 	    if(allData[ipmt+1][0] > 1 ) {
-	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(ipmt+1)->GetMean());
+	      //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
+	      time[ipmt] = allData[ipmt+1][0] - 2500;
 	      if(time[ipmt]<besttimeC)
 		besttimeC=time[ipmt]; //timeC
 	    }
 	  }
 	  for ( Int_t ipmt=12; ipmt<24; ipmt++){
 	    if(allData[ipmt+45][0] > 0) {
-	      time[ipmt] = allData[ipmt+45][0] - Int_t(GetRawsData(ipmt+1)->GetMean());
+	      time[ipmt] = allData[ipmt+45][0] - 2500;
 	      if(time[ipmt]<besttimeA) 
 		besttimeA=time[ipmt]; //timeA
 	    }
