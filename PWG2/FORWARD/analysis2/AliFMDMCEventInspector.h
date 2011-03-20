@@ -5,6 +5,7 @@
 #define ALIFMDMCEVENTINSPECTOR_H
 #include "AliFMDEventInspector.h"
 class AliMCEvent;
+class TH2F;
 
 /** 
  * This class inspects the event 
@@ -83,7 +84,22 @@ public:
 		   UShort_t&         ivz, 
 		   Double_t&         vz,
 		   Double_t&         b,
+		   Int_t&            npart, 
+		   Int_t&            nbin,
 		   Double_t&         phiR);
+  /** 
+   * Compare the result of analysing the ESD for 
+   * the inclusive charged particle density to analysing 
+   * MC truth 
+   * 
+   * @param esd 
+   * @param mc 
+   * 
+   * @return 
+   */
+  virtual Bool_t CompareResults(Double_t vz,    Double_t trueVz, 
+				Double_t cent,  Double_t b,
+				Int_t    npart, Int_t    nbin);
 protected:
   /** 
    * Read centrality from event 
@@ -93,12 +109,19 @@ protected:
    * 
    * @return False on error, true otherwise 
    */
-  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent);
+  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent,
+				UShort_t& qual) const;
 
-  TH1F* fHVertex; // Histogram of vertex 
-  TH1F* fHPhiR;   // Histogram of event plane 
-  TH1F* fHB;      // Histogram of impact parameter 
-  ClassDef(AliFMDMCEventInspector,1); // Inspect the event 
+  TH1F* fHVertex;  // Histogram of vertex 
+  TH1F* fHPhiR;    // Histogram of event plane 
+  TH1F* fHB;       // Histogram of impact parameter 
+  TH2F* fHBvsPart; // Impact parameter vs # participants 
+  TH2F* fHBvsBin;  // Impact parameter vs # participants 
+  TH2F* fHBvsCent; // Impact parameter vs centrality
+  TH2F* fHVzComp;  // True vs reconstructed vz
+  TH2F* fHCentVsPart; // Centrality versus # participants 
+  TH2F* fHCentVsBin;  // Centrality versus # binary collisions 
+  ClassDef(AliFMDMCEventInspector,2); // Inspect the event 
 };
 
 #endif

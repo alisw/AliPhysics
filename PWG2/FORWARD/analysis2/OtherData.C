@@ -585,6 +585,7 @@ TGraphAsymmErrors* CMSNsd7000()
 /** 
  * Get a multi graph of data for a given energy and trigger type 
  * 
+ * @param sys    Collision system (1: pp, 2: PbPb)
  * @param energy Energy in GeV (900, 2360, 7000)
  * @param type   Bit pattern of trigger type 
  *   - 0x1 INEL 
@@ -596,63 +597,94 @@ TGraphAsymmErrors* CMSNsd7000()
  * @ingroup pwg2_forward_otherdata
  */
 TMultiGraph* 
-GetData(Int_t energy, Int_t type, bool aliceOnly=false)
+GetData(UShort_t sys, 
+	UShort_t energy,
+	UShort_t type=0x1, 
+	UShort_t centLow=0, 
+	UShort_t centHigh=0, 
+	bool     aliceOnly=false)
 {
-  TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d", energy, type),"");
+  TMultiGraph* mp = new TMultiGraph(Form("dndeta_%dGeV_%d_%03d_%03d", 
+					 energy, type, centLow, centHigh),"");
   TString tn;
   TString en;
-  if (TMath::Abs(energy-900) < 10) {
-    en.Append(" #sqrt{s}=900GeV");
-    if (type & 0x1) { 
-      tn.Append(" INEL");
-      if (!aliceOnly) mp->Add(UA5Inel(false));
-      if (!aliceOnly) mp->Add(UA5Inel(true));
-      mp->Add(AliceCentralInel900());
-    }      
-    if (type & 0x4) { 
-      tn.Append(" NSD");
-      if (!aliceOnly) mp->Add(UA5Nsd(false));
-      if (!aliceOnly) mp->Add(UA5Nsd(true));
-      mp->Add(AliceCentralNsd900());
-      if (!aliceOnly) mp->Add(CMSNsd900());
+  TString sn;
+  TString cn;
+  if (sys == 1) { 
+    sn = ", pp(p#bar{p})";
+    if (energy < 1000) 
+      en = Form(", #sqrt{s}=%dGeV", energy);
+    else 
+      en = Form(", #sqrt{s}=%f4.2TeV", float(energy)/1000);
+    if (!(type & 0x7)) 
+      Warning("GetData", "Unknown trigger mask 0x%x", type);
+
+    if (TMath::Abs(energy-900) < 10) {
+      if (type & 0x1) { 
+	tn.Append(" INEL");
+	if (!aliceOnly) mp->Add(UA5Inel(false));
+	if (!aliceOnly) mp->Add(UA5Inel(true));
+	mp->Add(AliceCentralInel900());
+      }      
+      if (type & 0x4) { 
+	tn.Append(" NSD");
+	if (!aliceOnly) mp->Add(UA5Nsd(false));
+	if (!aliceOnly) mp->Add(UA5Nsd(true));
+	mp->Add(AliceCentralNsd900());
+	if (!aliceOnly) mp->Add(CMSNsd900());
+      }
+      if (type & 0x2) { 
+	tn.Append(" INEL>0");
+	mp->Add(AliceCentralInelGt900());
+      }
     }
-    if (type & 0x2) { 
-      tn.Append(" INEL>0");
-      mp->Add(AliceCentralInelGt900());
+    else if (TMath::Abs(energy-2360) < 10) {
+      if (type & 0x1) { 
+	tn.Append(" INEL");
+	mp->Add(AliceCentralInel2360());
+      }
+      if (type & 0x4) { 
+	tn.Append(" NSD");
+	mp->Add(AliceCentralNsd2360());
+	if (!aliceOnly) mp->Add(CMSNsd2360());
+      }
+      if (type & 0x2) { 
+	tn.Append(" INEL>0");
+	mp->Add(AliceCentralInelGt2360());
+      }
     }
+    else if (TMath::Abs(energy-7000) < 10) {
+      if (type & 0x1) { 
+	tn.Append(" INEL");
+      }
+      if (type & 0x4) { 
+	tn.Append(" NSD");
+	if (!aliceOnly) mp->Add(CMSNsd7000());
+      }
+      if (type & 0x2) { 
+	tn.Append(" INEL>0");
+	mp->Add(AliceCentralInelGt7000());
+      }
+    }
+    else 
+      Warning("GetData", "No other results for sys=%d, energy=%d",
+	      sys, energy);
   }
-  if (TMath::Abs(energy-2360) < 10) {
-    en.Append(" #sqrt{s}=2.36TeV");
-    if (type & 0x1) { 
-      tn.Append(" INEL");
-      mp->Add(AliceCentralInel2360());
-    }
-    if (type & 0x4) { 
-      tn.Append(" NSD");
-      mp->Add(AliceCentralNsd2360());
-      if (!aliceOnly) mp->Add(CMSNsd2360());
-    }
-    if (type & 0x1) { 
-      tn.Append(" INEL>0");
-      mp->Add(AliceCentralInelGt2360());
-    }
+  else if (sys == 2) { 
+    // Nothing for PbPb so far 
+    cn = Form(", %d%%-%d%% central", centLow, centHigh);
+    sn = ", PbPb";
+    if (energy < 1000) 
+      en = Form(", #sqrt{s_{NN}}=%dGeV", energy);
+    else 
+      en = Form(", #sqrt{s_{NN}}=%f4.2TeV", float(energy)/1000);
+    Warning("GetData", "No other data for PbP b yet");
   }
-  if (TMath::Abs(energy-7000) < 10) {
-    en.Append(" #sqrt{s}=7TeV");
-    if (type & 0x1) { 
-      tn.Append(" INEL");
-    }
-    if (type & 0x4) { 
-      tn.Append(" NSD");
-      if (!aliceOnly) mp->Add(CMSNsd7000());
-    }
-    if (type & 0x1) { 
-      tn.Append(" INEL>0");
-      mp->Add(AliceCentralInelGt7000());
-    }
-  }
-  mp->SetTitle(Form("1/N dN_{ch}/d#eta, pp(p#bar{p}), %s, %s", 
-		    en.Data(), tn.Data()));
+  else 
+    Warning("GetData", "Unknown system %d", sys);
+  TString tit(Form("1/N dN_{ch}/d#eta%s%s%s%s", 
+		   sn.Data(), en.Data(), tn.Data(), cn.Data()));
+  mp->SetTitle(tit.Data());
   if (!mp->GetListOfGraphs() || mp->GetListOfGraphs()->GetEntries() <= 0) {
     delete mp;
     mp = 0;
@@ -671,9 +703,14 @@ GetData(Int_t energy, Int_t type, bool aliceOnly=false)
  * @ingroup pwg2_forward_otherdata
  */
 void
-OtherData(Int_t energy=900, Int_t type=0x1, bool aliceOnly=false)
+OtherData(UShort_t sys=1, 
+	      UShort_t energy=900, 
+	      UShort_t type=0x1, 
+	      UShort_t centLow=0, 
+	      UShort_t centHigh=5, 
+	      bool     aliceOnly=false)
 {
-  TMultiGraph* mp = GetData(energy, type, aliceOnly);
+  TMultiGraph* mp = GetData(sys, energy, type, centLow, centHigh, aliceOnly);
   if (!mp) return;
 
   gStyle->SetTitleX(0.1);

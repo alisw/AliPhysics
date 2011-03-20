@@ -289,6 +289,10 @@ protected:
      * @param nEvents Number of events 
      */
     void ScaleHistograms(TList* dir, Int_t nEvents);
+    /** 
+     * Create Poisson histograms 
+     */
+    void ResetPoissonHistos();
     TH2D*     fEvsN;         // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;         // Correlation of Eloss vs corrected Nch
     TProfile* fEtaVsN;       // Average uncorrected Nch vs eta
@@ -296,13 +300,13 @@ protected:
     TProfile* fCorr;         // Average correction vs eta
     TH2D*     fDensity;      // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
-    TH2D*     fTotalStrips;  //! Total number of strips in a region
-    TH2D*     fEmptyStrips;  //! Total number of strips in a region
-    TH2D*     fBasicHits  ;  //! Total number basic hits in a region
+    TH2D*     fTotalStrips;  // Total number of strips in a region
+    TH2D*     fEmptyStrips;  // Total number of strips in a region
+    TH2D*     fBasicHits  ;  // Total number basic hits in a region
     TH2D*     fEmptyVsTotal; // # of empty strips vs total number of strips 
     
     
-    ClassDef(RingHistos,1);
+    ClassDef(RingHistos,3);
   };
   /** 
    * Get the ring histogram container 

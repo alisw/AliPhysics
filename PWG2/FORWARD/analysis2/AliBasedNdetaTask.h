@@ -4,11 +4,13 @@
 #ifndef ALIBASEDNDETATASK_H
 #define ALIBASEDNDETATASK_H
 #include <AliAnalysisTaskSE.h>
+class TAxis;
 class TList;
 class TH2D;
 class TH1D;
 class AliAODEvent;
 class AliAODForwardMult;
+class TObjArray;
 
 /**
  * Task to determine the 
@@ -39,13 +41,6 @@ public:
    * @name Task configuration 
    */
   /** 
-   * Add a centrality bin 
-   * 
-   * @param low  Low cut
-   * @param high High cut
-   */
-  void AddCentralityBin(Short_t low, Short_t high);
-  /** 
    * Set the vertex range to use 
    * 
    * @param min Minimum (in centermeter)
@@ -70,6 +65,18 @@ public:
    * @param mask trigger mask 
    */
   void SetTriggerMask(const char* mask);
+  /** 
+   * Set the centrality bins to use. 
+   * 
+   * @code 
+   *   UShort_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+   *   task->SetCentralityBins(11, bins);
+   * @endcode 
+   * 
+   * @param n     Number of bins (elements in @a bins minus 1)
+   * @param bins  Bin limits 
+   */
+  void SetCentralityAxis(UShort_t n, Short_t* bins);
   /** 
    * Trigger efficiency for selected trigger(s)
    * 
@@ -198,6 +205,13 @@ protected:
    * @return Retrieved histogram or null
    */
   virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
+  /** 
+   * Add a centrality bin 
+   * 
+   * @param low  Low cut
+   * @param high High cut
+   */
+  void AddCentralityBin(UShort_t at, Short_t low, Short_t high);
   /** 
    * Make a centrality bin 
    * 
@@ -391,11 +405,12 @@ protected:
   Bool_t          fCorrEmpty;    // Correct for empty bins 
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH1*            fShapeCorr;    // Shape correction 
-  TList*          fListOfCentralities; // Centrality bins 
+  TObjArray*      fListOfCentralities; // Centrality bins 
   Bool_t          fUseShapeCorr; // Whether to use shape correction
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
   TH1D*           fCent;         // Centrality distribution 
+  TAxis*          fCentAxis;     // Centrality axis
 
   ClassDef(AliBasedNdetaTask,2); // Determine multiplicity in base area
 };

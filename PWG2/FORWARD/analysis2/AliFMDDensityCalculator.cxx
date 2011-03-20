@@ -72,6 +72,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
   //    name Name of object
   //
   fRingHistos.SetName(GetName());
+  fRingHistos.SetOwner();
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
   fRingHistos.Add(new RingHistos(2, 'O'));
@@ -205,7 +206,10 @@ AliFMDDensityCalculator::GetRingHistos(UShort_t d, Char_t r) const
   case 2: idx = 1 + (r == 'I' || r == 'i' ? 0 : 1); break;
   case 3: idx = 3 + (r == 'I' || r == 'i' ? 0 : 1); break;
   }
-  if (idx < 0 || idx >= fRingHistos.GetEntries()) return 0;
+  if (idx < 0 || idx >= fRingHistos.GetEntries()) {
+    AliWarning(Form("Index %d of FMD%d%c out of range", idx, d, r));
+    return 0;
+  }
   
   return static_cast<RingHistos*>(fRingHistos.At(idx));
 }
@@ -256,9 +260,12 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       UShort_t    nt= (q == 0 ? 512 : 256);
       TH2D*       h = hists.Get(d,r);
       RingHistos* rh= GetRingHistos(d,r);
-      rh->fEmptyStrips->Reset();
-      rh->fTotalStrips->Reset();
-      rh->fBasicHits->Reset();
+      if (!rh) { 
+	AliError(Form("No ring histogram found for FMD%d%c", d, r));
+	fRingHistos.ls();
+	return false;
+      }
+      rh->ResetPoissonHistos();
       
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
@@ -854,61 +861,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fEmptyVsTotal->SetDirectory(0);
   fEmptyVsTotal->SetXTitle("Total # strips");
   fEmptyVsTotal->SetYTitle("Empty # strips");
-  fEmptyVsTotal->SetZTitle("Correlation");
-  
-  //Inserted by HHD
-  
-  //Float_t nbinlimitsFMD3I[8] =  {-3.4,-3.2,-3,-2.8,-2.6,-2.4,-2.2,-2};
-  Int_t nbins = 40;
-  /*if(fName.Contains("FMD1I")) nbins = 7;
-  if(fName.Contains("FMD2I")) nbins = 8;
-  if(fName.Contains("FMD2O")) nbins = 4;
-  if(fName.Contains("FMD3I")) nbins = 8;
-  if(fName.Contains("FMD3O")) nbins = 4;*/
-  Float_t lowlimit = -4, highlimit = 6;
-  /*if(fName.Contains("FMD1I")) {lowlimit = 3.6; highlimit = 5;}
-  if(fName.Contains("FMD2I")) {lowlimit = 2.2; highlimit = 3.8;}
-  if(fName.Contains("FMD2O")) {lowlimit = 1.6; highlimit = 2.4;} 
-  if(fName.Contains("FMD3I")) {lowlimit = -2.4; highlimit = -1.6;}
-  if(fName.Contains("FMD3O")) {lowlimit = -3.5; highlimit = -2.1;} 
-  
-  std::cout<<nbins<<"   "<<lowlimit<<"    "<<highlimit<<std::endl;
-  */
-  fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
-			  Form("Total number of strips in %s", fName.Data()), 
-			  nbins, 
-			  lowlimit,
-			  highlimit, 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
-			  0, 2*TMath::Pi());
-  fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
-			  Form("Empty number of strips in %s", fName.Data()), 
-			  nbins, 
-			  lowlimit,
-			  highlimit, 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
-			  0, 2*TMath::Pi());
-  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
-			  Form("Basic number of hits in %s", fName.Data()), 
-			  200, 
-			  -4, 
-			  6, 
-			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
-			  0, 2*TMath::Pi());
-  
-  fTotalStrips->SetDirectory(0);
-  fEmptyStrips->SetDirectory(0);
-  fBasicHits->SetDirectory(0);
-  fTotalStrips->SetXTitle("#eta");
-  fEmptyStrips->SetXTitle("#eta");
-  fBasicHits->SetXTitle("#eta");
-  fTotalStrips->SetYTitle("#varphi [radians]");
-  fEmptyStrips->SetYTitle("#varphi [radians]");
-  fBasicHits->SetYTitle("#varphi [radians]");
-  fTotalStrips->Sumw2();
-  fEmptyStrips->Sumw2();
-  fBasicHits->Sumw2();
-  
+  fEmptyVsTotal->SetZTitle("Correlation");  
 }
 //____________________________________________________________________
 AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
@@ -987,7 +940,71 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
   if (fEmptyStrips)    delete fEmptyStrips;
 }
 
-  //____________________________________________________________________
+//____________________________________________________________________
+void
+AliFMDDensityCalculator::RingHistos::ResetPoissonHistos()
+{
+  if (fTotalStrips) { 
+    fTotalStrips->Reset();
+    fEmptyStrips->Reset();
+    fBasicHits->Reset();
+    return;
+  }
+  //Inserted by HHD
+  
+  //Float_t nbinlimitsFMD3I[8] =  {-3.4,-3.2,-3,-2.8,-2.6,-2.4,-2.2,-2};
+  Int_t nbins = 40;
+  /*if(fName.Contains("FMD1I")) nbins = 7;
+  if(fName.Contains("FMD2I")) nbins = 8;
+  if(fName.Contains("FMD2O")) nbins = 4;
+  if(fName.Contains("FMD3I")) nbins = 8;
+  if(fName.Contains("FMD3O")) nbins = 4;*/
+  Float_t lowlimit = -4, highlimit = 6;
+  /*if(fName.Contains("FMD1I")) {lowlimit = 3.6; highlimit = 5;}
+  if(fName.Contains("FMD2I")) {lowlimit = 2.2; highlimit = 3.8;}
+  if(fName.Contains("FMD2O")) {lowlimit = 1.6; highlimit = 2.4;} 
+  if(fName.Contains("FMD3I")) {lowlimit = -2.4; highlimit = -1.6;}
+  if(fName.Contains("FMD3O")) {lowlimit = -3.5; highlimit = -2.1;} 
+  
+  std::cout<<nbins<<"   "<<lowlimit<<"    "<<highlimit<<std::endl;
+  */
+  fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
+			  Form("Total number of strips in %s", fName.Data()), 
+			  nbins, 
+			  lowlimit,
+			  highlimit, 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
+			  0, 2*TMath::Pi());
+  fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
+			  Form("Empty number of strips in %s", fName.Data()), 
+			  nbins, 
+			  lowlimit,
+			  highlimit, 
+			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
+			  0, 2*TMath::Pi());
+  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
+			  Form("Basic number of hits in %s", fName.Data()), 
+			  200, 
+			  -4, 
+			  6, 
+			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
+			  0, 2*TMath::Pi());
+  
+  fTotalStrips->SetDirectory(0);
+  fEmptyStrips->SetDirectory(0);
+  fBasicHits->SetDirectory(0);
+  fTotalStrips->SetXTitle("#eta");
+  fEmptyStrips->SetXTitle("#eta");
+  fBasicHits->SetXTitle("#eta");
+  fTotalStrips->SetYTitle("#varphi [radians]");
+  fEmptyStrips->SetYTitle("#varphi [radians]");
+  fBasicHits->SetYTitle("#varphi [radians]");
+  fTotalStrips->Sumw2();
+  fEmptyStrips->Sumw2();
+  fBasicHits->Sumw2();
+}
+
+//____________________________________________________________________
 void
 AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
 {

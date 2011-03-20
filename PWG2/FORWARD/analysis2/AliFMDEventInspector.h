@@ -9,6 +9,7 @@ class TH2D;
 class TH1D;
 class TH1I;
 class TH1F;
+class TH2F;
 class TAxis;
 class TList;
 
@@ -234,7 +235,8 @@ protected:
    * 
    * @return False on error, true otherwise 
    */
-  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent);
+  virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent,
+				UShort_t& qual) const;
 
   TH1I*    fHEventsTr;    //! Histogram of events w/trigger
   TH1I*    fHEventsTrVtx; //! Events w/trigger and vertex 
@@ -242,6 +244,7 @@ protected:
   TH1I*    fHType;        //! Type (low/high flux) of event
   TH1I*    fHWords;       //! Trigger words 
   TH1F*    fHCent;        //! Centrality 
+  TH2F*    fHCentVsQual;  //! Centrality vs quality 
   Int_t    fLowFluxCut;   //  Low flux cut
   Double_t fMaxVzErr;     //  Maximum error on v_z
   TList*   fList;         //! Histogram container 
@@ -249,7 +252,8 @@ protected:
   Short_t  fField;        // L3 magnetic field [kG]
   UShort_t fCollisionSystem; //  Collision system
   Int_t    fDebug;        //  Debug level 
-  ClassDef(AliFMDEventInspector,2); // Inspect the event 
+  TAxis*   fCentAxis;     // Centrality axis used in histograms
+  ClassDef(AliFMDEventInspector,3); // Inspect the event 
 };
 
 #endif
