@@ -33,6 +33,7 @@
 #include "event.h"
 #include "TFile.h"
 #include "TString.h"
+#include "TMath.h"
 #include "AliLog.h"
 #include "AliITSNoiseSSDv2.h"
 #include "AliITSPedestalSSDv2.h"
@@ -642,9 +643,9 @@ Bool_t AliITSHandleDaSSD::RelocateModules()
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::AddFeromCm(AliITSModuleDaSSD *const module)
-// Restore the original signal value adding CM calculated and subtracted in ferom
+Bool_t AliITSHandleDaSSD::AddFeromCm(const AliITSModuleDaSSD *const module)
 {
+// Restore the original signal value adding CM calculated and subtracted in ferom
   AliITSChannelDaSSD *strip;
   Short_t            *signal, *cmferom;
 
@@ -676,7 +677,7 @@ Bool_t AliITSHandleDaSSD::AddFeromCm(AliITSModuleDaSSD *const module)
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::CalculatePedestal(AliITSModuleDaSSD *const module)
+Bool_t AliITSHandleDaSSD::CalculatePedestal(const AliITSModuleDaSSD *const module)
 {
 // Calculates Pedestal
   AliITSChannelDaSSD *strip;
@@ -725,7 +726,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedestal(AliITSModuleDaSSD *const module)
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::CalculateNoise(AliITSModuleDaSSD *const module)
+Bool_t AliITSHandleDaSSD::CalculateNoise(const AliITSModuleDaSSD *const module)
 {
 // Calculates Noise
   AliITSChannelDaSSD *strip;
@@ -1224,8 +1225,8 @@ Bool_t AliITSHandleDaSSD::AdDataPresent(const Int_t ddl, const Int_t ad) const
 
 //___________________________________________________________________________________________
 Bool_t AliITSHandleDaSSD::SaveEqSlotCalibrationData(const Int_t ddl, const Int_t ad, const Char_t *fname) const
-// Saves calibration files for selected equipment (DDL)
 {
+// Saves calibration files for selected equipment (DDL)
   fstream    feefile;
   Int_t      zsml, offsetml;
   ULong_t    zsth, offset, zsoffset;
@@ -1378,7 +1379,7 @@ ULong_t AliITSHandleDaSSD::OffsetValue(const UChar_t ddl, const UChar_t ad, cons
 
 
 //______________________________________________________________________________
-ULong_t AliITSHandleDaSSD::ZsThreshold(AliITSChannelDaSSD *strip) const
+ULong_t AliITSHandleDaSSD::ZsThreshold(const AliITSChannelDaSSD *strip) const
 { 
 // Calculate the value of zero suppression threshold to be upload to FEROM
   ULong_t zs;
@@ -1490,7 +1491,7 @@ Int_t AliITSHandleDaSSD::CheckOffChips() const
 
 
 //______________________________________________________________________________
-Bool_t AliITSHandleDaSSD::CalculatePedNoiseW(AliITSModuleDaSSD *const module)
+Bool_t AliITSHandleDaSSD::CalculatePedNoiseW(const AliITSModuleDaSSD *const module)
 {
 // Calculates Pedestal and Noise using Welford algorithm
   AliITSChannelDaSSD *strip;

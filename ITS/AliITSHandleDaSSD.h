@@ -10,8 +10,6 @@
 #include "TObject.h"
 #include "TArrayS.h"
 #include "AliITSModuleDaSSD.h"
-#include "AliITSBadChannelsSSDv2.h"
-#include "AliITSNoiseSSDv2.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 ///
@@ -22,6 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
+
+class AliITSBadChannelsSSDv2;
+class AliITSNoiseSSDv2;
 
 class AliITSHandleDaSSD : public TObject {
   public :
@@ -80,14 +81,14 @@ class AliITSHandleDaSSD : public TObject {
     Int_t   ReadCalibrationDataFile (char* fileName, const Long_t eventsnumber);
     virtual Int_t   ReadModuleRawData (const Int_t modulesnumber);  
 
-    virtual Bool_t  CalculatePedestal(AliITSModuleDaSSD *const module);
-    virtual Bool_t  CalculateNoise(AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculatePedestal(const AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculateNoise(const AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoiseCM(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateCM(AliITSModuleDaSSD *const module);
-    virtual Bool_t  CalculatePedNoiseW(AliITSModuleDaSSD *const module);
+    virtual Bool_t  CalculatePedNoiseW(const AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateCMW(AliITSModuleDaSSD *const module);
     virtual Bool_t  CalculateNoiseCMW(AliITSModuleDaSSD *const module);
-    virtual Bool_t  AddFeromCm(AliITSModuleDaSSD *const module);
+    virtual Bool_t  AddFeromCm(const AliITSModuleDaSSD *const module);
     virtual Bool_t  ProcessRawData(const Int_t nmread = fgkNumberOfSSDModulesPerDdl,  const Bool_t usewelford = kTRUE);
     virtual Bool_t  RelocateModules();
     virtual Bool_t  AllocateSimulatedModules(const Int_t copymodind = 0);
@@ -101,7 +102,7 @@ class AliITSHandleDaSSD : public TObject {
     ULong_t OffsetValue(const AliITSChannelDaSSD *strip, const UChar_t ddl = 0, const UChar_t ad = 0, 
                                  const UChar_t adc = 0, const Int_t strn = -1) const;
     ULong_t OffsetValue(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
-    ULong_t ZsThreshold(AliITSChannelDaSSD *strip) const;
+    ULong_t ZsThreshold(const AliITSChannelDaSSD *strip) const;
     ULong_t ZsThreshold(const UChar_t ddl, const UChar_t ad, const UChar_t adc, const Int_t strn) const;
     
     virtual void    Reset();
@@ -169,4 +170,3 @@ class AliITSHandleDaSSD : public TObject {
 };
 
 #endif
-

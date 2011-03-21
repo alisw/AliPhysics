@@ -28,7 +28,8 @@
 using namespace std;
 
 
-struct ConfigStruct {
+class ConfigStruct {
+public:
   Int_t    fNModuleProcess;
   string   fSsdDdlMap;
   string   fBadChannels;
@@ -43,6 +44,7 @@ Bool_t ReadDAConfigurationFile(const Char_t *configfname, AliITSHandleDaSSD *con
 
 int main( int argc, char** argv )
 {
+// Implements SSD DA executable.
   const Char_t       *configfname = "ssddaconfig.txt";
   const Char_t       *bcfname = "badchannels.root"; 
   const Char_t       *ddlmfname = "ssdddlmap.txt";
@@ -141,6 +143,7 @@ int main( int argc, char** argv )
 //__________________________________________________________________________________________
 Int_t SaveEquipmentCalibrationData(const AliITSHandleDaSSD  *ssddaldc, const Char_t  *fprefix)
 {
+// Saves the files with Offset correction and ZS threshold.
   TString feefilename;
   Int_t count = 0, status;
   for (Int_t ddli = 0; ddli < 16; ddli++) {
