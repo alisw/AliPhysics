@@ -30,9 +30,9 @@ public:
   virtual void           Process(AliESDEvent *event);
   virtual Long64_t       Merge(TCollection *const li);
   virtual void           Analyze();
-  static Bool_t          IsLaser      (const AliESDEvent *const event);
-  static Bool_t          IsCosmics    (const AliESDEvent *const event);
-  static Bool_t          IsBeam       (const AliESDEvent *const event);
+  //static Bool_t          IsLaser      (const AliESDEvent *const event) const;
+  //static Bool_t          IsCosmics    (const AliESDEvent *const event) const;
+  //static Bool_t          IsBeam       (const AliESDEvent *const event) const;
   void                   ProcessLaser (AliESDEvent *event);
   void                   ProcessCosmic(const AliESDEvent *const event);
   void                   ProcessBeam  (const AliESDEvent *const event);
@@ -59,8 +59,8 @@ public:
   TObjArray* GetAlignTRDTPC() const {return fAlignTRDTPC;}              // alignemnt array TRD TPC match
   TObjArray* GetAlignTOFTPC() const {return fAlignTOFTPC;}              // alignemnt array TOF TPC match
 
-  THnSparse * GetTPCVertexHisto(Int_t index) { return fTPCVertex[index%12];}
-  THnSparse * GetTPCVertexHistoCorrelation(Int_t index) { return fTPCVertexCorrelation[index%5];}
+  THnSparse * GetTPCVertexHisto(Int_t index) const { return fTPCVertex[index%12];}
+  THnSparse * GetTPCVertexHistoCorrelation(Int_t index) const { return fTPCVertexCorrelation[index%5];}
 
   THnSparse*  GetResHistoTPCCE(Int_t index) const { return (index<5) ? fResHistoTPCCE[index]:0;}        //TPC-CE    matching map
   THnSparse*  GetResHistoTPCITS(Int_t index) const { return (index<5) ? fResHistoTPCITS[index]:0;}        //TPC-ITS    matching map

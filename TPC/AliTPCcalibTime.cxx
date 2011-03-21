@@ -366,27 +366,30 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   delete fAlignTOFTPC;
 }
 
-Bool_t AliTPCcalibTime::IsLaser(const AliESDEvent *const /*event*/){
-  //
-  // Indicator is laser event not yet implemented  - to be done using trigger info or event specie
-  //
-  return kTRUE; //More accurate creteria to be added
-}
-Bool_t AliTPCcalibTime::IsCosmics(const AliESDEvent *const /*event*/){
-  //
-  // Indicator is cosmic event not yet implemented - to be done using trigger info or event specie
-  //
+// Bool_t AliTPCcalibTime::IsLaser(const AliESDEvent *const /*event*/) const{
+//   //
+//   // Indicator is laser event not yet implemented  - to be done using trigger info or event specie
+//   //
+//   return kTRUE; //More accurate creteria to be added
+// }
+// Bool_t AliTPCcalibTime::IsCosmics(const AliESDEvent *const /*event*/){
+//   //
+//   // Indicator is cosmic event not yet implemented - to be done using trigger info or event specie
+//   //
 
-  return kTRUE; //More accurate creteria to be added
-}
-Bool_t AliTPCcalibTime::IsBeam(const AliESDEvent *const /*event*/){
-  //
-  // Indicator is physic event not yet implemented - to be done using trigger info or event specie
-  //
+//   return kTRUE; //More accurate creteria to be added
+// }
+// Bool_t AliTPCcalibTime::IsBeam(const AliESDEvent *const /*event*/) const{
+//   //
+//   // Indicator is physic event not yet implemented - to be done using trigger info or event specie
+//   //
 
-  return kTRUE; //More accurate creteria to be added
-}
+//   return kTRUE; //More accurate creteria to be added
+// }
 void AliTPCcalibTime::ResetCurrent(){
+  //
+  //ResetCurrent
+  //
   fDz=0; //Reset current dz
 }
 
@@ -399,9 +402,12 @@ void AliTPCcalibTime::Process(AliESDEvent *event){
   if(!event) return;
   if (event->GetNumberOfTracks()<2) return;
   ResetCurrent();
-  if(IsLaser  (event)) ProcessLaser (event);
-  if(IsCosmics(event)) ProcessCosmic(event);
-  if(IsBeam   (event)) ProcessBeam  (event);
+  //if(IsLaser  (event)) 
+  ProcessLaser (event);
+  //if(IsCosmics(event)) 
+  ProcessCosmic(event);
+  //if(IsBeam   (event)) 
+  ProcessBeam  (event);
 }
 
 void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
