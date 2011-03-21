@@ -26,8 +26,17 @@ public:
 
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
+  virtual Float_t  GetTPCClusterInfo(Int_t /*nNeighbours*/, Int_t /*type*/, Int_t /*row0*/=0, Int_t /*row1*/=159) const {return 0.;}
   virtual UShort_t GetTPCNcls() const { return 0;}
-  virtual Double_t GetTPCsignal() const { return 0.; }
+  virtual UShort_t GetTPCNclsF() const { return 0;}
+  
+  //pid info
+  virtual Double_t  GetITSsignal()       const {return 0.;}
+  virtual Double_t  GetTPCsignal()       const {return 0.;}
+  virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
+  virtual Double_t  GetTPCmomentum()     const {return 0.;}
+  virtual Double_t  GetTOFsignal()       const {return 0.;}
+  
   virtual ULong_t  GetStatus() const = 0;
   virtual Bool_t   GetXYZ(Double_t *p) const = 0;
   virtual Double_t GetBz() const;
