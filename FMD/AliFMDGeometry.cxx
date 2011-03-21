@@ -161,6 +161,13 @@ AliFMDGeometry::AliFMDGeometry(const char* )
   // Parameters:
   //    name Not used
   //
+  fInner = new AliFMDRing('I');
+  fOuter = new AliFMDRing('O');
+  fFMD1  = new AliFMD1(fInner);
+  fFMD2  = new AliFMD2(fInner, fOuter);
+  fFMD3  = new AliFMD3(fInner, fOuter);
+  fIsInitialized = kFALSE;
+  fActive.Reset(-1);
 }
 
 //____________________________________________________________________
