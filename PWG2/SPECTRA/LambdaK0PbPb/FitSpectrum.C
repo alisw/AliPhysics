@@ -5,7 +5,7 @@ void FitSpectrum(const char* filename, const char * listName = "clambdak0Histo_0
   InitAndLoadLibs();
 
   // Load Lee's Macro
-  gROOT->LoadMacro("FitControl.h+g");
+  gROOT->LoadMacro("AliMassFitControl.h+g");
   gROOT->LoadMacro("PtMassAna2.C");
   gROOT->LoadMacro("MultYields2.C");
 
