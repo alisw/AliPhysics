@@ -1,4 +1,4 @@
-#include "FitControl.h"
+#include "AliMassFitControl.h"
 
 // Two functions now.
 // MultYields3 takes a 3D histogram and calls the 2D function MultYields2
@@ -66,104 +66,104 @@ TString title[1]={"MinimumBias"};
   /////  LAMBDA and LAMBDA+ANTILAMBDA (Combination)
 
   if(particleMode == 1 || particleMode == 3){ // Lambda or Lambda+Anti-Lambda
-  //  controllerArray->AddLast(new FitControl(0.1,0.2, 1,2));
-  //  controllerArray->AddLast(new FitControl(0.2,0.3, 1,2));
-  //  controllerArray->AddLast(new FitControl(0.3,0.4, 1,1, 1.096,1.16))
-  //  controllerArray->AddLast(new FitControl(0.4,0.5, 2,1, 1.095,1.15));
-  //  controllerArray->AddLast(new FitControl(0.5,0.6, 2,1, 1.095,1.15));
-  //  controllerArray->AddLast(new FitControl(0.6,0.7, 2,1, 1.095,1.15));
-  //  controllerArray->AddLast(new FitControl(0.7,0.8, 2,1, 1.095,1.15));
-      controllerArray->AddLast(new FitControl(0.8,1.0, 2,1, 1.095,1.15));
-      controllerArray->AddLast(new FitControl(1.0,1.2, 2,1, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(1.2,1.4, 2,1));
-      controllerArray->AddLast(new FitControl(1.4,1.6, 2,1));
-      controllerArray->AddLast(new FitControl(1.6,1.8, 2,1));
-      controllerArray->AddLast(new FitControl(1.8,2.0, 2,1));
-      controllerArray->AddLast(new FitControl(2.0,2.2, 2,1, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(2.2,2.4, 2,1, 1.095,1.16));
-      controllerArray->AddLast(new FitControl(2.4,2.6, 2,1, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(2.6,2.8, 1,2, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(2.8,3.0, 1,2, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(3.0,3.5, 1,2, 1.098,1.16));
-      controllerArray->AddLast(new FitControl(3.5,4.0, 1,2, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(4.0,4.5, 1,2, 1.095,1.17));
-      controllerArray->AddLast(new FitControl(4.5,5.0, 1,2, 1.095,1.165));
-      controllerArray->AddLast(new FitControl(5.0,5.5, 1,2, 1.095,1.17));
- //     controllerArray->AddLast(new FitControl(5.5,6.0, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(6.0,6.5, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(6.5,7.0, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(7.0,7.5, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(7.5,8.0, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(8.0,9.0, 1,2, 1.095,1.17));
- //   controllerArray->AddLast(new FitControl(9.0,10.0, 1,2, 1.090,1.17));
- //   controllerArray->AddLast(new FitControl(10.0,12.0, 1,2, 1.082,1.165));
+  //  controllerArray->AddLast(new AliMassFitControl(0.1,0.2, 1,2));
+  //  controllerArray->AddLast(new AliMassFitControl(0.2,0.3, 1,2));
+  //  controllerArray->AddLast(new AliMassFitControl(0.3,0.4, 1,1, 1.096,1.16))
+  //  controllerArray->AddLast(new AliMassFitControl(0.4,0.5, 2,1, 1.095,1.15));
+  //  controllerArray->AddLast(new AliMassFitControl(0.5,0.6, 2,1, 1.095,1.15));
+  //  controllerArray->AddLast(new AliMassFitControl(0.6,0.7, 2,1, 1.095,1.15));
+  //  controllerArray->AddLast(new AliMassFitControl(0.7,0.8, 2,1, 1.095,1.15));
+      controllerArray->AddLast(new AliMassFitControl(0.8,1.0, 2,1, 1.095,1.15));
+      controllerArray->AddLast(new AliMassFitControl(1.0,1.2, 2,1, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(1.2,1.4, 2,1));
+      controllerArray->AddLast(new AliMassFitControl(1.4,1.6, 2,1));
+      controllerArray->AddLast(new AliMassFitControl(1.6,1.8, 2,1));
+      controllerArray->AddLast(new AliMassFitControl(1.8,2.0, 2,1));
+      controllerArray->AddLast(new AliMassFitControl(2.0,2.2, 2,1, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(2.2,2.4, 2,1, 1.095,1.16));
+      controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 2,1, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 1,2, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 1,2, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(3.0,3.5, 1,2, 1.098,1.16));
+      controllerArray->AddLast(new AliMassFitControl(3.5,4.0, 1,2, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 1,2, 1.095,1.17));
+      controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 1,2, 1.095,1.165));
+      controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 1,2, 1.095,1.17));
+ //     controllerArray->AddLast(new AliMassFitControl(5.5,6.0, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(6.0,6.5, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(6.5,7.0, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(7.0,7.5, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(7.5,8.0, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(8.0,9.0, 1,2, 1.095,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(9.0,10.0, 1,2, 1.090,1.17));
+ //   controllerArray->AddLast(new AliMassFitControl(10.0,12.0, 1,2, 1.082,1.165));
  }
   /// ANTI LAMBDA ---->
   else if (particleMode == 2){ // Anti-Lambdas
-  controllerArray->AddLast(new FitControl(0.3,0.4, 2,1, 1.095,1.15));
-  controllerArray->AddLast(new FitControl(0.4,0.5, 2,1, 1.095,1.15));
-  controllerArray->AddLast(new FitControl(0.5,0.6, 2,1, 1.095,1.15));
-  controllerArray->AddLast(new FitControl(0.6,0.7, 2,1, 1.095,1.15));
-  controllerArray->AddLast(new FitControl(0.7,0.8, 2,1, 1.090,1.15));
-  controllerArray->AddLast(new FitControl(0.8,1.0, 2,1, 1.095,1.15));
-  controllerArray->AddLast(new FitControl(1.0,1.2, 2,1, 1.090,1.17));
-  controllerArray->AddLast(new FitControl(1.2,1.4, 2,1, 1.090,1.16));
-  controllerArray->AddLast(new FitControl(1.4,1.6, 2,1, 1.090,1.17));
-  controllerArray->AddLast(new FitControl(1.6,1.8, 2,1, 1.090,1.17));
-  controllerArray->AddLast(new FitControl(1.8,2.0, 2,1, 1.090,1.17));
-  controllerArray->AddLast(new FitControl(2.0,2.2, 2,1, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(2.2,2.4, 2,1, 1.095,1.16));
-  controllerArray->AddLast(new FitControl(2.4,2.6, 1,1, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(2.6,2.8, 1,2, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(2.8,3.0, 1,2, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(3.0,3.5, 1,2, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(3.5,4.0, 1,2, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(4.0,4.5, 1,2, 1.090,1.17));
-  controllerArray->AddLast(new FitControl(4.5,5.0, 0,4, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(5.0,5.5, 0,4, 1.095,1.17));
-  controllerArray->AddLast(new FitControl(5.5,6.0, 0,6, 1.085,1.17));
+  controllerArray->AddLast(new AliMassFitControl(0.3,0.4, 2,1, 1.095,1.15));
+  controllerArray->AddLast(new AliMassFitControl(0.4,0.5, 2,1, 1.095,1.15));
+  controllerArray->AddLast(new AliMassFitControl(0.5,0.6, 2,1, 1.095,1.15));
+  controllerArray->AddLast(new AliMassFitControl(0.6,0.7, 2,1, 1.095,1.15));
+  controllerArray->AddLast(new AliMassFitControl(0.7,0.8, 2,1, 1.090,1.15));
+  controllerArray->AddLast(new AliMassFitControl(0.8,1.0, 2,1, 1.095,1.15));
+  controllerArray->AddLast(new AliMassFitControl(1.0,1.2, 2,1, 1.090,1.17));
+  controllerArray->AddLast(new AliMassFitControl(1.2,1.4, 2,1, 1.090,1.16));
+  controllerArray->AddLast(new AliMassFitControl(1.4,1.6, 2,1, 1.090,1.17));
+  controllerArray->AddLast(new AliMassFitControl(1.6,1.8, 2,1, 1.090,1.17));
+  controllerArray->AddLast(new AliMassFitControl(1.8,2.0, 2,1, 1.090,1.17));
+  controllerArray->AddLast(new AliMassFitControl(2.0,2.2, 2,1, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(2.2,2.4, 2,1, 1.095,1.16));
+  controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 1,1, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 1,2, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 1,2, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(3.0,3.5, 1,2, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(3.5,4.0, 1,2, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 1,2, 1.090,1.17));
+  controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 0,4, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 0,4, 1.095,1.17));
+  controllerArray->AddLast(new AliMassFitControl(5.5,6.0, 0,6, 1.085,1.17));
   } // end if anti-Lambda
   else if (particleMode == 0){ // K0s case
-      //controllerArray->AddLast(new FitControl(0.1,0.2, 1,2, 0.44,0.56));
-      //controllerArray->AddLast(new FitControl(0.2,0.3, 1,2, 0.44,0.56));
-      //controllerArray->AddLast(new FitControl(0.3,0.4, 1,1, 0.442,0.559));
-      //controllerArray->AddLast(new FitControl(0.4,0.5, 1,1, 0.44,0.56));
-      //controllerArray->AddLast(new FitControl(0.5,0.6, 1,1, 0.442,0.559));
-      //controllerArray->AddLast(new FitControl(0.6,0.7, 1,1, 0.442,0.558));
-      //controllerArray->AddLast(new FitControl(0.7,0.8, 1,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(0.8,1.0, 2,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(1.0,1.2, 2,1, 0.45,0.56));
-      controllerArray->AddLast(new FitControl(1.2,1.4, 2,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(1.4,1.6, 2,1, 0.45,0.56));
-      controllerArray->AddLast(new FitControl(1.6,1.8, 2,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(1.8,2.0, 1,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(2.0,2.2, 1,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(2.2,2.4, 1,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(2.4,2.6, 1,1, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(2.6,2.8, 1,2, 0.44,0.54));
-      controllerArray->AddLast(new FitControl(2.8,3.0, 1,2, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(3.0,3.5, 1,2, 0.44,0.56));
-      controllerArray->AddLast(new FitControl(3.5,4.0, 1,2, 0.46,0.56));
-      controllerArray->AddLast(new FitControl(4.0,4.5, 1,2, 0.46,0.56));
-      controllerArray->AddLast(new FitControl(4.5,5.0, 1,2, 0.418,0.52));
-      //controllerArray->AddLast(new FitControl(5.0,5.5, 0,4, 0.418,0.53));
-//      controllerArray->AddLast(new FitControl(5.5,6.0, 1,4, 0.418,0.54));
-//      controllerArray->AddLast(new FitControl(6.0,6.5, 1,4, 0.418,0.56));
-      //controllerArray->AddLast(new FitControl(6.5,7.0, 0,4, 0.418,0.578));
+      //controllerArray->AddLast(new AliMassFitControl(0.1,0.2, 1,2, 0.44,0.56));
+      //controllerArray->AddLast(new AliMassFitControl(0.2,0.3, 1,2, 0.44,0.56));
+      //controllerArray->AddLast(new AliMassFitControl(0.3,0.4, 1,1, 0.442,0.559));
+      //controllerArray->AddLast(new AliMassFitControl(0.4,0.5, 1,1, 0.44,0.56));
+      //controllerArray->AddLast(new AliMassFitControl(0.5,0.6, 1,1, 0.442,0.559));
+      //controllerArray->AddLast(new AliMassFitControl(0.6,0.7, 1,1, 0.442,0.558));
+      //controllerArray->AddLast(new AliMassFitControl(0.7,0.8, 1,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(0.8,1.0, 2,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(1.0,1.2, 2,1, 0.45,0.56));
+      controllerArray->AddLast(new AliMassFitControl(1.2,1.4, 2,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(1.4,1.6, 2,1, 0.45,0.56));
+      controllerArray->AddLast(new AliMassFitControl(1.6,1.8, 2,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(1.8,2.0, 1,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(2.0,2.2, 1,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(2.2,2.4, 1,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 1,1, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 1,2, 0.44,0.54));
+      controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 1,2, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(3.0,3.5, 1,2, 0.44,0.56));
+      controllerArray->AddLast(new AliMassFitControl(3.5,4.0, 1,2, 0.46,0.56));
+      controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 1,2, 0.46,0.56));
+      controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 1,2, 0.418,0.52));
+      //controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 0,4, 0.418,0.53));
+//      controllerArray->AddLast(new AliMassFitControl(5.5,6.0, 1,4, 0.418,0.54));
+//      controllerArray->AddLast(new AliMassFitControl(6.0,6.5, 1,4, 0.418,0.56));
+      //controllerArray->AddLast(new AliMassFitControl(6.5,7.0, 0,4, 0.418,0.578));
   }  else if (particleMode == 4) { //Xi case
-    //controllerArray->AddLast(new FitControl(0.5,0.7, 1,1, 1.28,1.45)); //signal not visible with 
-    controllerArray->AddLast(new FitControl(0.7,0.9, 1,1, 1.285,1.45));
-    controllerArray->AddLast(new FitControl(0.9,1.1, 1,1, 1.285,1.45));
-    controllerArray->AddLast(new FitControl(1.1,1.3, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(1.3,1.5, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(1.5,1.7, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(1.7,2.0, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(2.0,2.5, 1,1, 1.27,1.44));
-    controllerArray->AddLast(new FitControl(2.5,3.0, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(3.0,3.5, 1,1, 1.27,1.44));
-    controllerArray->AddLast(new FitControl(3.5,4.0, 1,1, 1.27,1.45));
-    controllerArray->AddLast(new FitControl(4.0,4.5, 2,1, 1.27,1.44));
-    controllerArray->AddLast(new FitControl(4.5,5.0, 2,1, 1.27,1.45));
+    //controllerArray->AddLast(new AliMassFitControl(0.5,0.7, 1,1, 1.28,1.45)); //signal not visible with 
+    controllerArray->AddLast(new AliMassFitControl(0.7,0.9, 1,1, 1.285,1.45));
+    controllerArray->AddLast(new AliMassFitControl(0.9,1.1, 1,1, 1.285,1.45));
+    controllerArray->AddLast(new AliMassFitControl(1.1,1.3, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(1.3,1.5, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(1.5,1.7, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(1.7,2.0, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(2.0,2.5, 1,1, 1.27,1.44));
+    controllerArray->AddLast(new AliMassFitControl(2.5,3.0, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(3.0,3.5, 1,1, 1.27,1.44));
+    controllerArray->AddLast(new AliMassFitControl(3.5,4.0, 1,1, 1.27,1.45));
+    controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 2,1, 1.27,1.44));
+    controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 2,1, 1.27,1.45));
   }
   controllerArray->Sort();
 
