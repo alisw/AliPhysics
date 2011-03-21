@@ -63,8 +63,12 @@
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
+//#include "AliESDCentrality.h"
+#include "AliMultiplicity.h"
 
 #include "AliTRDcheckESD.h"
+#include <iostream>
+using namespace std;
 
 ClassImp(AliTRDcheckESD)
 
@@ -125,7 +129,7 @@ AliTRDcheckESD::~AliTRDcheckESD()
 {
 // Destructor
   if(fHistos){
-    if(fHistos->IsOwner()) fHistos->Delete();
+    //fHistos->Delete();
     delete fHistos;
   }
   if(fResults){
@@ -149,15 +153,24 @@ void AliTRDcheckESD::MakeSummary(){
   //
   // Draw summary plots for the ESDcheck task
   //
-  TCanvas *cOut = new TCanvas("trackingSummary", "Tracking summary for the ESD task", 1600, 1200);
-  cOut->cd();
-  GetRefFigure(4);
-  cOut->SaveAs("trackingSummary.gif");
 
-  cOut = new TCanvas("pidSummary", "PID summary for the ESD task", 1600, 1200);
+  
+  TCanvas *cOut=0x0;
+  cOut = new TCanvas("trackingSummary", "Tracking summary for the ESD task", 1600, 1200);
   cOut->cd();
   GetRefFigure(5);
+  cOut->SaveAs("trackingSummary.gif");
+  
+  cOut = new TCanvas("pidSummary", "PID summary for the ESD task", 1600, 1200);
+  cOut->cd();
+  GetRefFigure(6);
   cOut->SaveAs("pidSummary.gif");
+
+  cOut = new TCanvas("centSummary", "Centrality summary for the ESD task", 1600, 1200);
+  cOut->cd();
+  GetRefFigure(7);
+  cOut->SaveAs("centSummary.gif");
+    
 }
 
 //____________________________________________________________________
@@ -179,26 +192,26 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
   }
 
   const Char_t *title[20];
-  Float_t nada(0.0);
+  //  Float_t nada(0.0);
   TH1 *hF(NULL);
-  TH1 *hFeffP(NULL); TH1 *hFeffN(NULL);
-  TH2 *h2F(NULL); TH2 *h2Feff(NULL);
-  TH2 *h2FtpcP(NULL); TH2 *h2FtpcN(NULL);
-  TH2 *h2FtrdP(NULL); TH2 *h2FtrdN(NULL);
-  TH3 *h3F(NULL);
+  //  TH1 *hFeffP(NULL); TH1 *hFeffN(NULL);
+  //  TH2 *h2F(NULL); TH2 *h2Feff(NULL);
+  //  TH2 *h2FtpcP(NULL); TH2 *h2FtpcN(NULL);
+  //  TH2 *h2FtrdP(NULL); TH2 *h2FtrdN(NULL);
+  //  TH3 *h3F(NULL);
   if((hF=(TH1S*)gROOT->FindObject("hFcheckESD"))) delete hF;
   TLegend *leg(NULL);
   TList *l(NULL); TVirtualPad *pad(NULL);
   TGraphErrors *g(NULL);TGraphAsymmErrors *ga(NULL);
   TObjArray *arr(NULL);
-  TProfile2D *hProf2D(NULL);
-  TProfile *hProf(NULL);
+  //  TProfile2D *hProf2D(NULL);
+  //  TProfile *hProf(NULL);
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
   lat->SetTextColor(2);
   TLine line;
   TTimeStamp now;
-  TF1* fitFunc(NULL);
+  //  TF1* fitFunc(NULL);
   switch(ifig){
   case kNCl: // number of clusters/track
     if(!(arr = (TObjArray*)fResults->At(kNCl))) return kFALSE;
@@ -206,7 +219,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     leg = new TLegend(.83, .7, .99, .96);
     leg->SetHeader("Species");
     leg->SetBorderSize(0); leg->SetFillStyle(0);
-    for(Int_t ig(0); ig<fgkNgraph[kNCl]; ig++){
+    for(Int_t ig(0); ig<fgkNgraph[kNCl-1]; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
       if(!g->GetN()) continue;
       g->Draw(ig?"pc":"apc"); leg->AddEntry(g, g->GetTitle(), "pl");
@@ -234,7 +247,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     hF->GetXaxis()->SetMoreLogLabels();
     hF->GetYaxis()->CenterTitle(1);
     hF->Draw("p");
-    for(Int_t ig(0); ig<fgkNgraph[kTRDstat]; ig++){
+    for(Int_t ig(0); ig<fgkNgraph[kTRDstat-1]; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) return kFALSE;
       g->Draw("pl"); leg->AddEntry(g, title[ig], "pl");
       //PutTrendValue(name[id], g->GetMean(2));
@@ -252,7 +265,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     hF = new TH1S("hFcheckESD", ";layer;#Delta E", 6, -0.5, 5.5);
     hF->SetMaximum(1.3);hF->SetMinimum(-.3);
     hF->Draw("p");
-    for(Int_t ig(0); ig<fgkNgraph[kTRDmom]; ig++){
+    for(Int_t ig(0); ig<fgkNgraph[kTRDmom-1]; ig++){
       if(!(ga = (TGraphAsymmErrors*)arr->At(ig))) return kFALSE;
       ga->Draw("pl"); leg->AddEntry(ga, title[ig], "pl");
       //PutTrendValue(name[id], g->GetMean(2));
@@ -271,7 +284,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     hF->GetXaxis()->SetTitleOffset(1.2);
     hF->GetYaxis()->CenterTitle();
     hF->Draw("p");
-    //for(Int_t ig(0); ig<fgkNgraph[kPtRes]/2; ig++){
+    //for(Int_t ig(0); ig<fgkNgraph[kPtRes-1]/2; ig++){
     for(Int_t ig(2); ig<6; ig++){
       if(!(g = (TGraphErrors*)arr->At(ig))) continue;
       if(!g->GetN()) continue;
@@ -293,7 +306,7 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
     leg->SetTextSize(0.03813559);
     {
       Int_t nPlots(0);
-      //for(Int_t ig(fgkNgraph[kPtRes]/2); ig<fgkNgraph[kPtRes]; ig++){
+      //for(Int_t ig(fgkNgraph[kPtRes-1]/2); ig<fgkNgraph[kPtRes-1]; ig++){
       for(Int_t ig(12); ig<16; ig++){
         if(!(g = (TGraphErrors*)arr->At(ig))) continue;
         if(!g->GetN()) continue;
@@ -305,453 +318,18 @@ Bool_t AliTRDcheckESD::GetRefFigure(Int_t ifig)
       if(nPlots) leg->Draw();
     }
     break;
-  case 4:            // plot a 3x3 canvas with tracking related histograms
-    gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
-    gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
-    gPad->Divide(3,3,0.,0.);
-    l=gPad->GetListOfPrimitives();
-    // eta-phi distr. for positive TPC tracks
-    pad = ((TVirtualPad*)l->At(0)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE); 
-    h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos));
-    h2FtpcP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-    h2FtpcP->SetStats(kFALSE);
-    h2FtpcP->GetXaxis()->SetTitle("#eta");
-    h2FtpcP->GetXaxis()->CenterTitle();
-    h2FtpcP->GetXaxis()->SetTitleSize(0.07);
-    h2FtpcP->GetXaxis()->SetTitleOffset(0.8);
-    h2FtpcP->GetXaxis()->SetLabelSize(0.05);
-    h2FtpcP->GetYaxis()->SetTitle("detector #varphi");
-    h2FtpcP->GetYaxis()->CenterTitle();
-    h2FtpcP->GetYaxis()->SetTitleSize(0.07);
-    h2FtpcP->GetYaxis()->SetTitleOffset(0.8);
-    h2FtpcP->GetYaxis()->SetLabelSize(0.05);
-    h2FtpcP->SetTitle("");
-    h2FtpcP->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TPC positive ref. tracks");
-    //-----------------
-    // eta-phi distr. for negative TPC tracks
-    pad = ((TVirtualPad*)l->At(1)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg));
-    h2FtpcN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-    h2FtpcN->SetStats(kFALSE);
-    h2FtpcN->GetXaxis()->SetTitle("#eta");
-    h2FtpcN->GetXaxis()->CenterTitle();
-    h2FtpcN->GetXaxis()->SetTitleSize(0.07);
-    h2FtpcN->GetXaxis()->SetTitleOffset(0.8);
-    h2FtpcN->GetXaxis()->SetLabelSize(0.05);
-    h2FtpcN->GetYaxis()->SetTitle("detector #varphi");
-    h2FtpcN->GetYaxis()->CenterTitle();
-    h2FtpcN->GetYaxis()->SetTitleSize(0.07);
-    h2FtpcN->GetYaxis()->SetTitleOffset(0.8);
-    h2FtpcN->GetYaxis()->SetLabelSize(0.05);
-    h2FtpcN->SetTitle("");
-    h2FtpcN->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TPC negative ref. tracks");
-    // eta-phi distr. for positive TRD tracks
-    pad = ((TVirtualPad*)l->At(3)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos));
-    h2FtrdP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-    h2FtrdP->SetStats(kFALSE);
-    h2FtrdP->GetXaxis()->SetTitle("#eta");
-    h2FtrdP->GetXaxis()->CenterTitle();
-    h2FtrdP->GetXaxis()->SetTitleSize(0.07);
-    h2FtrdP->GetXaxis()->SetTitleOffset(0.8);
-    h2FtrdP->GetXaxis()->SetLabelSize(0.05);
-    h2FtrdP->GetYaxis()->SetTitle("detector #varphi");
-    h2FtrdP->GetYaxis()->CenterTitle();
-    h2FtrdP->GetYaxis()->SetTitleSize(0.07);
-    h2FtrdP->GetYaxis()->SetTitleOffset(0.8);
-    h2FtrdP->GetYaxis()->SetLabelSize(0.05);
-    h2FtrdP->SetMaximum(h2FtpcP->GetMaximum());
-    h2FtrdP->SetTitle("");
-    h2FtrdP->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD positive ref. tracks");
-    //-----------------
-    // eta-phi distr. for negative TRD tracks
-    pad = ((TVirtualPad*)l->At(4)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg));
-    h2FtrdN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-    h2FtrdN->SetStats(kFALSE);
-    h2FtrdN->GetXaxis()->SetTitle("#eta");
-    h2FtrdN->GetXaxis()->CenterTitle();
-    h2FtrdN->GetXaxis()->SetTitleSize(0.07);
-    h2FtrdN->GetXaxis()->SetTitleOffset(0.8);
-    h2FtrdN->GetXaxis()->SetLabelSize(0.05);
-    h2FtrdN->GetYaxis()->SetTitle("detector #varphi");
-    h2FtrdN->GetYaxis()->CenterTitle();
-    h2FtrdN->GetYaxis()->SetTitleSize(0.07);
-    h2FtrdN->GetYaxis()->SetTitleOffset(0.8);
-    h2FtrdN->GetYaxis()->SetLabelSize(0.05);
-    h2FtrdN->SetMaximum(h2FtpcN->GetMaximum());
-    h2FtrdN->SetTitle("");
-    h2FtrdN->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD negative ref. tracks");
-    // eta-phi efficiency for positive TRD tracks
-    pad = ((TVirtualPad*)l->At(6)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h2Feff = (TH2F*)h2FtrdP->Clone();
-    h2Feff->Reset();
-    h2Feff->SetStats(kFALSE);
-    h2Feff->Divide(h2FtrdP, h2FtpcP);
-    h2Feff->GetXaxis()->SetTitle("#eta");
-    h2Feff->GetXaxis()->CenterTitle();
-    h2Feff->GetXaxis()->SetTitleSize(0.07);
-    h2Feff->GetXaxis()->SetTitleOffset(0.8);
-    h2Feff->GetXaxis()->SetLabelSize(0.05);
-    h2Feff->GetYaxis()->SetTitle("detector #varphi");
-    h2Feff->GetYaxis()->CenterTitle();
-    h2Feff->GetYaxis()->SetTitleSize(0.07);
-    h2Feff->GetYaxis()->SetTitleOffset(0.8);
-    h2Feff->GetYaxis()->SetLabelSize(0.05);
-    h2Feff->SetMaximum(1.0);
-    h2Feff->SetTitle("");
-    h2Feff->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "Efficiency positive tracks");
-    // eta-phi efficiency for negative TRD tracks
-    pad = ((TVirtualPad*)l->At(7)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    h2Feff = (TH2F*)h2FtrdN->Clone();
-    h2Feff->Reset();
-    h2Feff->SetStats(kFALSE);
-    h2Feff->Divide(h2FtrdN, h2FtpcN);
-    h2Feff->GetXaxis()->SetTitle("#eta");
-    h2Feff->GetXaxis()->CenterTitle();
-    h2Feff->GetXaxis()->SetTitleSize(0.07);
-    h2Feff->GetXaxis()->SetTitleOffset(0.8);
-    h2Feff->GetXaxis()->SetLabelSize(0.05);
-    h2Feff->GetYaxis()->SetTitle("detector #varphi");
-    h2Feff->GetYaxis()->CenterTitle();
-    h2Feff->GetYaxis()->SetTitleSize(0.07);
-    h2Feff->GetYaxis()->SetTitleOffset(0.8);
-    h2Feff->GetYaxis()->SetLabelSize(0.05);
-    h2Feff->SetMaximum(1.0);
-    h2Feff->SetTitle("");
-    h2Feff->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "Efficiency negative tracks");
-    
-    // <ntracklets> vs (phi,eta)
-    pad = ((TVirtualPad*)l->At(2)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(6.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
-    // TPC-TRD matching efficiency vs pt
-    pad = ((TVirtualPad*)l->At(5)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
-    pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    hFeffP = EfficiencyTRD(1);
-    hFeffN = EfficiencyTRD(-1);
-    h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.1);
-    h2F->SetStats(kFALSE);
-    h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("TRD-TPC matching efficiency");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
-    line.SetLineStyle(2);
-    line.SetLineWidth(2);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
-    hFeffP->SetMarkerStyle(20);
-    hFeffP->SetMarkerColor(2);
-    hFeffN->SetMarkerStyle(22);
-    hFeffN->SetMarkerColor(4);
-    hFeffP->Draw("same");
-    hFeffN->Draw("same");
-    leg=new TLegend(0.65, 0.2, 0.95, 0.4);
-    leg->SetFillColor(0);
-    leg->AddEntry(hFeffP, "positives", "p");
-    leg->AddEntry(hFeffN, "negatives", "p");
-    leg->Draw();
-    // create trending values for the TPC-TRD matching efficiency
-    // fit the efficiency histos with a constant in the range [1.0,1.5] GeV/c
-    fitFunc = new TF1("constantFunc","[0]",1.0,1.5);
-    hFeffP->Fit(fitFunc,"Q0","",1.0,1.5);
-    PutTrendValue("TrackingEffPos1GeV", fitFunc->GetParameter(0));
-    PutTrendValue("TrackingEffPos1GeVErr", fitFunc->GetParError(0));
-    hFeffN->Fit(fitFunc,"Q0","",1.0,1.5);
-    PutTrendValue("TrackingEffNeg1GeV", fitFunc->GetParameter(0));
-    PutTrendValue("TrackingEffNeg1GeVErr", fitFunc->GetParError(0));
-    // Nclusters per TRD track
-    pad = ((TVirtualPad*)l->At(8)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.12);
-    pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    pad->SetLogz();
-    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD)))) break;
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("p [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("#clusters per TRD track");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->Draw("colz");
+  case 5: // plot a 3x3 canvas with tracking related histograms
+    PlotTrackingSummary(0);
     break;
-  case 5:            // plot a 3x3 canvas with PID related histograms
-    gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
-    gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
-    gPad->Divide(3,3,0.,0.);
-    l=gPad->GetListOfPrimitives();
-    // eta-phi distr. for <Qtot> in layer 0
-    pad = ((TVirtualPad*)l->At(0)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+0)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 0");
-    // eta-phi distr. for <Qtot> in layer 1
-    pad = ((TVirtualPad*)l->At(3)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+1)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 1");
-    // eta-phi distr. for <Qtot> in layer 2
-    pad = ((TVirtualPad*)l->At(6)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+2)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 2");
-    // eta-phi distr. for <Qtot> in layer 3
-    pad = ((TVirtualPad*)l->At(1)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+3)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 3");
-    // eta-phi distr. for <Qtot> in layer 4
-    pad = ((TVirtualPad*)l->At(4)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+4)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 4");
-    // eta-phi distr. for <Qtot> in layer 5
-    pad = ((TVirtualPad*)l->At(7)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+5)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(25.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <Q_{tot}> Layer 5");
-    // PH versus slice number
-    pad = ((TVirtualPad*)l->At(2)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice)))) break;
-    hF = Proj2D((TH2F*)h2F);
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw("colz");
-    hF->SetLineWidth(2);
-    hF->Draw("same");
-    // Qtot vs P
-    pad = ((TVirtualPad*)l->At(5)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    pad->SetLogz();
-    if(!(h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP)))) break;
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("P [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetRangeUser(0.0,100.0);
-    h2F->GetYaxis()->SetTitle("Q_{tot}");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw("colz");
-    // create trending value for the average Qtot at 1 GeV/c
-    hProf = h2F->ProfileX("profileQtot",1,h2F->GetYaxis()->FindBin(40.));
-    PutTrendValue("AvQtot1GeV", hProf->GetBinContent(hProf->GetXaxis()->FindBin(1.)));
-    PutTrendValue("AvQtot1GeVErr", hProf->GetBinError(hProf->GetXaxis()->FindBin(1.)));
-    // PH versus slice number for TPC pions and electrons
-    pad = ((TVirtualPad*)l->At(8)); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions)))) break;
-    if(!(h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons)))) break;
-    hFeffP = Proj2D((TH2F*)h2FtrdP);
-    hFeffN = Proj2D((TH2F*)h2FtrdN);
-    h2F = new TH2F("PHvsSlice","",10,h2FtrdN->GetXaxis()->GetXmin(),h2FtrdN->GetXaxis()->GetXmax(),
-		   10,h2FtrdN->GetYaxis()->GetXmin(),h2FtrdN->GetYaxis()->GetXmax());
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
-    hFeffN->SetLineWidth(2);
-    hFeffN->SetLineColor(2);
-    hFeffP->SetLineWidth(2);
-    hFeffP->SetLineColor(4);
-    hFeffN->Draw("same");
-    hFeffP->Draw("same");
-    leg=new TLegend(0.65, 0.8, 0.95, 0.95);
-    leg->SetFillColor(0);
-    leg->AddEntry(hFeffP, "TPC pions", "l");
-    leg->AddEntry(hFeffN, "TPC electrons", "l");
-    leg->Draw();
-    break;    
+    
+  case 6: // plot a 3x3 canvas with PID related histograms
+    PlotPidSummary(0);
+    break;
+
+  case 7: // plot a 3x3 canvas with centrality dependence histograms
+    PlotCentSummary();
+    break;
+
   }
   return kTRUE;
 }
@@ -792,7 +370,23 @@ void AliTRDcheckESD::UserExec(Option_t *){
   // fill the uncutted number of tracks
   h = (TH1I*)fHistos->At(kNTracksAll);
   h->Fill(fESD->GetNumberOfTracks());
+
+
+  const AliMultiplicity* mult=fESD->GetMultiplicity();
+  Double_t itsNTracklets = mult->GetNumberOfTracklets();
+     
+  if(itsNTracklets<1) return;
   
+  Double_t multLimits[6] = {0.0, 700., 1400., 2100., 2800., 3500.};
+  Int_t centralityClass = 0;
+  for(Int_t iCent=1; iCent<=5; ++iCent) {
+    if(itsNTracklets>multLimits[iCent-1] && itsNTracklets<multLimits[iCent])
+      centralityClass=iCent;
+  }
+  
+  if(centralityClass == 0) return;
+  h = (TH1F*)fHistos->At(kSPDMult); h->Fill(itsNTracklets);
+    
   // counters for number of tracks in acceptance&DCA and for those with a minimum of TPC clusters
   Int_t nTracksAcc=0;
   Int_t nTracksTPC=0;
@@ -895,14 +489,16 @@ void AliTRDcheckESD::UserExec(Option_t *){
       h = (TH1F*)fHistos->At(kPt3pos); h->Fill(pt);
       // fill eta-phi map of TPC positive ref. tracks
       if(localCoordGood && localMomGood && esdTrack->GetP()>0.5) {
-        hhh = (TH3F*)fHistos->At(kTPCRefTracksPos); hhh->Fill(eta, localSagitaPhi, pt);
+	hhh = (TH3F*)fHistos->At(kTPCRefTracksPos); hhh->Fill(eta, localSagitaPhi, pt);
+        hhh = (TH3F*)fHistos->At(kTPCRefTracksPos+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
       }
     }
     if(esdTrack->Charge()<0) {
       h = (TH1F*)fHistos->At(kPt3neg); h->Fill(pt);
       // fill eta-phi map of TPC negative ref. tracks
       if(localCoordGood && localMomGood && esdTrack->GetP()>0.5) {
-        hhh = (TH3F*)fHistos->At(kTPCRefTracksNeg); hhh->Fill(eta, localSagitaPhi, pt);
+	hhh = (TH3F*)fHistos->At(kTPCRefTracksNeg); hhh->Fill(eta, localSagitaPhi, pt);
+        hhh = (TH3F*)fHistos->At(kTPCRefTracksNeg+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
       }
     }
     // TPC dE/dx vs P
@@ -917,27 +513,57 @@ void AliTRDcheckESD::UserExec(Option_t *){
       if(esdTrack->Charge()>0) {
         h = (TH1F*)fHistos->At(kPt4pos); h->Fill(pt);
 	// fill eta-phi map of TRD positive ref. tracks
-	if(localCoordGood && localMomGood && esdTrack->GetP()>0.5) {
-          hhh = (TH3F*)fHistos->At(kTRDRefTracksPos); hhh->Fill(eta, localSagitaPhi, pt);
+	if(localCoordGood && localMomGood && pt>0.3) {
+	  hhh = (TH3F*)fHistos->At(kTRDRefTracksPos); hhh->Fill(eta, localSagitaPhi, pt);
+          hhh = (TH3F*)fHistos->At(kTRDRefTracksPos+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+	  if(nTRDtrkl==4) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksPos4); hhh->Fill(eta, localSagitaPhi, pt);
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksPos4+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+	  }
+	  if(nTRDtrkl==5) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksPos5); hhh->Fill(eta, localSagitaPhi, pt);
+            hhh = (TH3F*)fHistos->At(kTRDRefTracksPos5+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+          }
+	  if(nTRDtrkl==6) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksPos6); hhh->Fill(eta, localSagitaPhi, pt);
+            hhh = (TH3F*)fHistos->At(kTRDRefTracksPos6+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+          }
         }
       }
       if(esdTrack->Charge()<0) {
         h = (TH1F*)fHistos->At(kPt4neg); h->Fill(pt);
 	// fill eta-phi map of TRD negative ref. tracks
-	if(localCoordGood && localMomGood && esdTrack->GetP()>0.5) {
-          hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg); hhh->Fill(eta, localSagitaPhi, pt);
+	if(localCoordGood && localMomGood && pt>0.3) {
+	  hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg); hhh->Fill(eta, localSagitaPhi, pt);
+          hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+	  if(nTRDtrkl==4) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg4); hhh->Fill(eta, localSagitaPhi, pt);
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg4+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+	  }
+	  if(nTRDtrkl==5) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg5); hhh->Fill(eta, localSagitaPhi, pt);
+            hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg5+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+          }
+	  if(nTRDtrkl==6) {
+	    hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg6); hhh->Fill(eta, localSagitaPhi, pt);
+            hhh = (TH3F*)fHistos->At(kTRDRefTracksNeg6+centralityClass); hhh->Fill(eta, localSagitaPhi, pt);
+          }
         }
       }
       TProfile2D *h2d;
       // fill eta-phi map of TRD negative ref. tracks
-      if(localCoordGood && localMomGood && esdTrack->GetP()>0.5) {
-        h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvNtrkl); h2d->Fill(eta, localSagitaPhi, (Float_t)nTRDtrkl);
+      if(localCoordGood && localMomGood && pt>0.3) {
+	h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvNtrkl); h2d->Fill(eta, localSagitaPhi, (Float_t)nTRDtrkl);
+        h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvNtrkl+centralityClass); h2d->Fill(eta, localSagitaPhi, (Float_t)nTRDtrkl);
 	h2d = (TProfile2D*)fHistos->At(kTRDEtaDeltaPhiAvNtrkl); h2d->Fill(eta, localPhi-localSagitaPhi, (Float_t)nTRDtrkl);
+	h2d = (TProfile2D*)fHistos->At(kTRDEtaDeltaPhiAvNtrkl+centralityClass); h2d->Fill(eta, localPhi-localSagitaPhi, (Float_t)nTRDtrkl);
       }
       // ntracklets/track vs P
       h = (TH2F*)fHistos->At(kNTrackletsTRD); h->Fill(esdTrack->GetP(), nTRDtrkl);
+      h = (TH2F*)fHistos->At(kNTrackletsTRD+centralityClass); h->Fill(esdTrack->GetP(), nTRDtrkl);
       // ntracklets/track vs P
       h = (TH2F*)fHistos->At(kNClsTrackTRD); h->Fill(esdTrack->GetP(), esdTrack->GetTRDncls());
+      h = (TH2F*)fHistos->At(kNClsTrackTRD+centralityClass); h->Fill(esdTrack->GetP(), esdTrack->GetTRDncls());
       // TPC pid ------------------------------------------------
       Double_t pionSigmas = fESDpid->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
       Double_t protonSigmas = fESDpid->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
@@ -956,29 +582,37 @@ void AliTRDcheckESD::UserExec(Option_t *){
       // --------------------------------------------------------
       // (slicePH,sliceNo) distribution and Qtot from slices
       for(Int_t iPlane=0; iPlane<6; iPlane++) {
-        Float_t qtot=0;
-        for(Int_t iSlice=0; iSlice<8; iSlice++) {
+        Float_t qtot=esdTrack->GetTRDslice(iPlane, 0);
+        for(Int_t iSlice=1; iSlice<8; iSlice++) {
 	  if(esdTrack->GetTRDslice(iPlane, iSlice)>20.) {
 	    h = (TH2F*)fHistos->At(kPHSlice); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
+	    h = (TH2F*)fHistos->At(kPHSlice+centralityClass); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
 	    if(isTPCElectron) {
 	      h = (TH2F*)fHistos->At(kPHSliceTPCelectrons); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
+	      h = (TH2F*)fHistos->At(kPHSliceTPCelectrons+centralityClass); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
 	      h = (TH2F*)fHistos->At(kTPCdedxElectrons); h->Fill(esdTrack->GetP(), esdTrack->GetTPCsignal());
+	      h = (TH2F*)fHistos->At(kTPCdedxElectrons+centralityClass); h->Fill(esdTrack->GetP(), esdTrack->GetTPCsignal());
 	    }
 	    if(isTPCPion) {
 	      h = (TH2F*)fHistos->At(kPHSliceTPCpions); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
+	      h = (TH2F*)fHistos->At(kPHSliceTPCpions+centralityClass); h->Fill(iSlice, esdTrack->GetTRDslice(iPlane, iSlice));
 	      h = (TH2F*)fHistos->At(kTPCdedxPions); h->Fill(esdTrack->GetP(), esdTrack->GetTPCsignal());
+	      h = (TH2F*)fHistos->At(kTPCdedxPions+centralityClass); h->Fill(esdTrack->GetP(), esdTrack->GetTPCsignal());
 	    }
-	    qtot += esdTrack->GetTRDslice(iPlane, iSlice);
+	    //qtot += esdTrack->GetTRDslice(iPlane, iSlice);
 	  }
         }
         // Qtot>100 to avoid noise
         if(qtot>100.) {
-          h = (TH2F*)fHistos->At(kQtotP); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*qtot);
+	  h = (TH2F*)fHistos->At(kQtotP); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*qtot);
+          h = (TH2F*)fHistos->At(kQtotP+centralityClass); h->Fill(esdTrack->GetTRDmomentum(iPlane), fgkQs*qtot);
 	}
 	// Qtot>100 to avoid noise
 	// fgkQs*Qtot<40. so that the average will give a value close to the peak
 	if(localCoordGood && localMomGood && qtot>100. && fgkQs*qtot<40.) {
 	  h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvQtot+iPlane);
+	  h2d->Fill(eta, localSagitaPhi, fgkQs*qtot);
+	  h2d = (TProfile2D*)fHistos->At(kTRDEtaPhiAvQtot+6*centralityClass+iPlane);
 	  h2d->Fill(eta, localSagitaPhi, fgkQs*qtot);
 	}
       }
@@ -1264,7 +898,7 @@ TObjArray* AliTRDcheckESD::Histos()
   // dE/dx vs P for TPC reference tracks
   if(!(h = (TH2F*)gROOT->FindObject("hTPCDedx"))){
     h = new TH2F("hTPCDedx", Form("TPC dE/dx vs P, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 120, 0,600.);
+		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 150, 0, 150.);
   } else h->Reset();
   fHistos->AddAt(h, kTPCDedx);
   
@@ -1288,64 +922,86 @@ TObjArray* AliTRDcheckESD::Histos()
 		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz), 157, 0, 6.28, 160, 0, 160.);
   } else h->Reset();
   fHistos->AddAt(h, kPhiNclsTPC);
-  
+
+  // SPD multiplicity distribution
+  if(!(h = (TH1F*)gROOT->FindObject("hSPDMult"))){
+    h = new TH1F("hSPDMult", "SPD multiplicity", 10000, -0.5, 9999.5);
+  } else h->Reset();
+  fHistos->AddAt(h, kSPDMult);
+
   // Ntracklets/track vs P for TRD reference tracks
   Double_t binsP[19] = {0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.7, 2.0,
 			2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 9.0, 12.0};
-  if(!(h = (TH2F*)gROOT->FindObject("hNTrackletsTRD"))){
-    h = new TH2F("hNTrackletsTRD", Form("TRD Ntracklets/track vs. P, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 7, -0.5, 6.5);
-  } else h->Reset();
-  fHistos->AddAt(h, kNTrackletsTRD);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hNTrackletsTRD_cent%d",iCent+1)))){
+      h = new TH2F(Form("hNTrackletsTRD_cent%d",iCent+1), Form("TRD Ntracklets/track vs. P, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+							       iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 7, -0.5, 6.5);
+    } else h->Reset();
+    fHistos->AddAt(h, kNTrackletsTRD+iCent);
+  }
   
   // Nclusters/track vs P for TRD reference tracks
-  if(!(h = (TH2F*)gROOT->FindObject("hNClsTrackTRD"))){
-    h = new TH2F("hNClsTrackTRD", Form("TRD Nclusters/track vs. P, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 180, 0., 180.);
-  } else h->Reset();
-  fHistos->AddAt(h, kNClsTrackTRD);
-  
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hNClsTrackTRD_cent%d",iCent+1)))){
+      h = new TH2F(Form("hNClsTrackTRD_cent%d",iCent+1), Form("TRD Nclusters/track vs. P, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+							      iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 300, 0., 300.);
+    } else h->Reset();
+    fHistos->AddAt(h, kNClsTrackTRD+iCent);
+  }  
+
   // <PH> vs slice number for TRD reference tracklets
-  if(!(h = (TH2F*)gROOT->FindObject("hPHSlice"))){
-    h = new TH2F("hPHSlice", Form("<PH> vs sliceNo, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 200, 0., 2000.);
-  } else h->Reset();
-  fHistos->AddAt(h, kPHSlice);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hPHSlice_cent%d",iCent+1)))){
+      h = new TH2F(Form("hPHSlice_cent%d",iCent+1), Form("<PH> vs sliceNo, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+				    iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 200, 0., 2000.);
+    } else h->Reset();
+    fHistos->AddAt(h, kPHSlice+iCent);
+  }
 
   // <PH> vs slice number for TRD reference tracklets, from TPC pions
-  if(!(h = (TH2F*)gROOT->FindObject("hPHSliceTPCpions"))){
-    h = new TH2F("hPHSliceTPCpions", Form("<PH> vs sliceNo, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, TPC pions",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 100, 0., 2000.);
-  } else h->Reset();
-  fHistos->AddAt(h, kPHSliceTPCpions);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hPHSliceTPCpions_cent%d",iCent+1)))){
+      h = new TH2F(Form("hPHSliceTPCpions_cent%d",iCent+1), Form("<PH> vs sliceNo, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, TPC pions",
+								 iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 100, 0., 2000.);
+    } else h->Reset();
+    fHistos->AddAt(h, kPHSliceTPCpions+iCent);
+  }
 
   // TPC dE/dx vs P for TRD reference tracks, pions
-  if(!(h = (TH2F*)gROOT->FindObject("hTPCdedxPions"))){
-    h = new TH2F("hTPCdedxPions", Form("TPC dE/dx vs P, TPC pions, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 100, 0,100.);
-  } else h->Reset();
-  fHistos->AddAt(h, kTPCdedxPions);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hTPCdedxPions_cent%d",iCent+1)))){
+      h = new TH2F(Form("hTPCdedxPions_cent%d",iCent+1), Form("TPC dE/dx vs P, TPC pions, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+					 iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 100, 0,100.);
+    } else h->Reset();
+    fHistos->AddAt(h, kTPCdedxPions+iCent);
+  }
 
   // <PH> vs slice number for TRD reference tracklets, from TPC electrons
-  if(!(h = (TH2F*)gROOT->FindObject("hPHSliceTPCelectrons"))){
-    h = new TH2F("hPHSliceTPCelectrons", Form("<PH> vs sliceNo, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, TPC electrons",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 100, 0., 2000.);
-  } else h->Reset();
-  fHistos->AddAt(h, kPHSliceTPCelectrons);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hPHSliceTPCelectrons_cent%d",iCent+1)))){
+      h = new TH2F(Form("hPHSliceTPCelectrons_cent%d",iCent+1), Form("<PH> vs sliceNo, centrality %d,|#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, TPC electrons",
+						iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 8, -0.5, 7.5, 100, 0., 2000.);
+    } else h->Reset();
+    fHistos->AddAt(h, kPHSliceTPCelectrons+iCent);
+  }
 
   // TPC dE/dx vs P for TRD reference tracks, electrons
-  if(!(h = (TH2F*)gROOT->FindObject("hTPCdedxElectrons"))){
-    h = new TH2F("hTPCdedxElectrons", Form("TPC dE/dx vs P, TPC electrons, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 100, 0,100.);
-  } else h->Reset();
-  fHistos->AddAt(h, kTPCdedxElectrons);
-  
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hTPCdedxElectrons_cent%d",iCent+1)))){
+      h = new TH2F(Form("hTPCdedxElectrons_cent%d",iCent+1), Form("TPC dE/dx vs P, TPC electrons, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+					     iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, 0.1,10.1, 100, 0,100.);
+    } else h->Reset();
+    fHistos->AddAt(h, kTPCdedxElectrons+iCent);
+  }
+
   // Qtot vs P for TRD reference tracklets
-  if(!(h = (TH2F*)gROOT->FindObject("hQtotP"))){
-    h = new TH2F("hQtotP", Form("Qtot(from slices) vs P, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 400, 0., 200);
-  } else h->Reset();
-  fHistos->AddAt(h, kQtotP);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH2F*)gROOT->FindObject(Form("hQtotP_cent%d",iCent+1)))){
+      h = new TH2F(Form("hQtotP_cent%d",iCent+1), Form("Qtot(from slices) vs P, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+				  iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 18, binsP, 400, 0., 20);
+    } else h->Reset();
+    fHistos->AddAt(h, kQtotP+iCent);
+  }
   
   // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
   if(!(h = (TH3F*)gROOT->FindObject("hPropagXYvsP"))){
@@ -1366,55 +1022,124 @@ TObjArray* AliTRDcheckESD::Histos()
   Float_t phiBinLimits[151];
   for(Int_t i=0; i<151; i++) phiBinLimits[i] = -1.1*TMath::Pi() + i*2.2*TMath::Pi()/150.;
   // (eta,detector phi,P) distribution of reference TPC positive tracks
-  if(!(h = (TH3F*)gROOT->FindObject("hTPCRefTracksPos"))){
-    h = new TH3F("hTPCRefTracksPos", Form("(#eta,detector #varphi,p) for TPC positive reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
-  } else h->Reset();
-  fHistos->AddAt(h, kTPCRefTracksPos);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTPCRefTracksPos_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTPCRefTracksPos_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TPC positive reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+					    iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTPCRefTracksPos+iCent);
+  }
   
   // (eta,detector phi,P) distribution of reference TPC negative tracks
-  if(!(h = (TH3F*)gROOT->FindObject("hTPCRefTracksNeg"))){
-    h = new TH3F("hTPCRefTracksNeg", Form("(#eta,detector #varphi,p) for TPC negative reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
-  } else h->Reset();
-  fHistos->AddAt(h, kTPCRefTracksNeg);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTPCRefTracksNeg_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTPCRefTracksNeg_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TPC negative reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d",
+					    iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTPCRefTracksNeg+iCent);
+  }
   
   // (eta,detector phi,P) distribution of reference TRD positive tracks
-  if(!(h = (TH3F*)gROOT->FindObject("hTRDRefTracksPos"))){
-    h = new TH3F("hTRDRefTracksPos", Form("(#eta,detector #varphi,p) for TRD positive reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
-  } else h->Reset();
-  fHistos->AddAt(h, kTRDRefTracksPos);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksPos_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksPos_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD positive reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+					    iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksPos+iCent);
+  }
   
   // (eta,detector phi,P) distribution of reference TRD negative tracks
-  if(!(h = (TH3F*)gROOT->FindObject("hTRDRefTracksNeg"))){
-    h = new TH3F("hTRDRefTracksNeg", Form("(#eta,detector #varphi,p) for TRD negative reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
-  } else h->Reset();
-  fHistos->AddAt(h, kTRDRefTracksNeg);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksNeg_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksNeg_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD negative reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+					    iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksNeg+iCent);
+  }
+
+  // (eta,detector phi,P) distribution of reference TRD positive tracks with 4 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksPos4_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksPos4_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD positive reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+								 iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksPos4+iCent);
+  }
+
+  // (eta,detector phi,P) distribution of reference TRD positive tracks with 5 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksPos5_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksPos5_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD positive reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+								  iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksPos5+iCent);
+  }
+
+  // (eta,detector phi,P) distribution of reference TRD positive tracks with 6 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksPos6_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksPos6_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD positive reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+                                                                  iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksPos6+iCent);
+  }
   
+  // (eta,detector phi,P) distribution of reference TRD negative tracks with 4 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksNeg4_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksNeg4_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD negative reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+								 iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksNeg4+iCent);
+  }
+
+  // (eta,detector phi,P) distribution of reference TRD negative tracks with 5 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksNeg5_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksNeg5_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD negative reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+								  iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksNeg5+iCent);
+  }
+
+  // (eta,detector phi,P) distribution of reference TRD negative tracks with 6 tracklets
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TH3F*)gROOT->FindObject(Form("hTRDRefTracksNeg6_cent%d",iCent+1)))){
+      h = new TH3F(Form("hTRDRefTracksNeg6_cent%d",iCent+1), Form("(#eta,detector #varphi,p) for TRD negative reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+                                                                  iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, etaBinLimits, 150, phiBinLimits, 32, binPtLimits);
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDRefTracksNeg6+iCent);
+  }
+
+
   // (eta,detector phi) profile of average number of TRD tracklets/track
-  if(!(h = (TProfile2D*)gROOT->FindObject("hTRDEtaPhiAvNtrkl"))){
-    h = new TProfile2D("hTRDEtaPhiAvNtrkl", Form("<Ntracklets/track> vs (#eta,detector #varphi) for TRD reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
-  } else h->Reset();
-  fHistos->AddAt(h, kTRDEtaPhiAvNtrkl);
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TProfile2D*)gROOT->FindObject(Form("hTRDEtaPhiAvNtrkl_cent%d",iCent+1)))){
+      h = new TProfile2D(Form("hTRDEtaPhiAvNtrkl_cent%d",iCent+1), Form("<Ntracklets/track> vs (#eta,detector #varphi) for TRD reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+						   iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+    } else h->Reset();
+    fHistos->AddAt(h, kTRDEtaPhiAvNtrkl+iCent);
+  }
 
   // (eta,delta phi) profile of average number of TRD tracklets/track
-  if(!(h = (TProfile2D*)gROOT->FindObject("hTRDEtaDeltaPhiAvNtrkl"))){
-    h = new TProfile2D("hTRDEtaDeltaPhiAvNtrkl", Form("<Ntracklets/track> vs (#eta, #Delta#varphi) for TRD reference tracks, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		 fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
-  } else h->Reset();
-  fHistos->AddAt(h, kTRDEtaDeltaPhiAvNtrkl);
-  
-  // (eta, detector phi) profile of average tracklet Qtot from slices
-  for(Int_t iLayer=0;iLayer<6;iLayer++) {
-    if(!(h = (TProfile2D*)gROOT->FindObject(Form("hTRDEtaPhiAvQtot_Layer%d",iLayer)))) {
-      h = new TProfile2D(Form("hTRDEtaPhiAvQtot_Layer%d",iLayer),
-			 Form("<Q_{tot}> vs (#eta, detector #varphi) for TRD reference tracks (layer %d), |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
-		              iLayer, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    if(!(h = (TProfile2D*)gROOT->FindObject(Form("hTRDEtaDeltaPhiAvNtrkl_cent%d",iCent+1)))){
+      h = new TProfile2D(Form("hTRDEtaDeltaPhiAvNtrkl_cent%d",iCent+1), Form("<Ntracklets/track> vs (#eta, #Delta#varphi) for TRD reference tracks, centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+							iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 50, -0.4*TMath::Pi(), 0.4*TMath::Pi());
     } else h->Reset();
-    fHistos->AddAt(h, kTRDEtaPhiAvQtot+iLayer);
+    fHistos->AddAt(h, kTRDEtaDeltaPhiAvNtrkl+iCent);
+  }  
+
+  // (eta, detector phi) profile of average tracklet Qtot from slices
+  for(Int_t iCent=0; iCent<=5; ++iCent) {
+    for(Int_t iLayer=0;iLayer<6;iLayer++) {
+      if(!(h = (TProfile2D*)gROOT->FindObject(Form("hTRDEtaPhiAvQtot_Layer%d_cent%d",iLayer,iCent+1)))) {
+	h = new TProfile2D(Form("hTRDEtaPhiAvQtot_Layer%d_cent%d",iLayer,iCent+1),
+			   Form("<Q_{tot}> vs (#eta, detector #varphi) for TRD reference tracks (layer %d), centrality %d, |#eta|<%.1f and pt>%.1f, |DCAxy|<%.1f, |DCAz|<%.1f, TPC nclusters>%d, nTRDtracklets#geq1",
+				iLayer, iCent+1, fgkEta, fgkPt, fgkTrkDCAxy, fgkTrkDCAz, fgkNclTPC), 100, -1.0, 1.0, 150, -1.1*TMath::Pi(), 1.1*TMath::Pi());
+      } else h->Reset();
+      fHistos->AddAt(h, kTRDEtaPhiAvQtot+iCent*6+iLayer);
+    }
   }
 
   return fHistos;
@@ -1461,7 +1186,7 @@ Bool_t AliTRDcheckESD::PutTrendValue(const Char_t *name, Double_t val)
 //____________________________________________________________________
 void AliTRDcheckESD::Terminate(Option_t *)
 {
-// Steer post-processing 
+  // Steer post-processing 
   if(!fHistos){
     fHistos = dynamic_cast<TObjArray *>(GetOutputData(1));
     if(!fHistos){
@@ -1470,9 +1195,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
     }
   }
 
+  //  fNRefFigures = 15;
+  //  return;
+
   const Char_t *name[kNrefs] = {
     "Ncl", "Eff", "Eloss", "PtResDCA"
   };
+
   TObjArray *arr(NULL); TGraph *g(NULL);
   if(!fResults){
     fResults = new TObjArray(kNrefs);
@@ -1481,9 +1210,9 @@ void AliTRDcheckESD::Terminate(Option_t *)
     for(Int_t iref(0); iref<kNrefs; iref++){
       fResults->AddAt(arr = new TObjArray(fgkNgraph[iref]), iref);
       arr->SetName(name[iref]);  arr->SetOwner();
-      switch(iref){
+      switch(iref+1){
       case kNCl:
-        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+	for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
           arr->AddAt(g = new TGraphErrors(), ig);
           g->SetLineColor(ig+1); 
           g->SetMarkerColor(ig+1); 
@@ -1498,7 +1227,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
         }
         break;
       case kTRDmom:
-        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+	for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
           arr->AddAt(g = new TGraphAsymmErrors(), ig);
           g->SetLineColor(ig+1); 
           g->SetMarkerColor(ig+1); 
@@ -1506,7 +1235,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
         }
         break;
       case kPtRes:
-        for(Int_t idx(0); idx<AliPID::kSPECIES; idx++){
+	for(Int_t idx(0); idx<AliPID::kSPECIES; idx++){
           Int_t ig(2*idx);
           arr->AddAt(g = new TGraphErrors(), ig);
           g->SetLineColor(kRed-idx); 
@@ -1533,7 +1262,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
         }
         break;
       default:
-        for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
+	for(Int_t ig(0); ig<fgkNgraph[iref]; ig++){
           arr->AddAt(g = new TGraphErrors(), ig);
           g->SetLineColor(ig+1); 
           g->SetMarkerColor(ig+1); 
@@ -1551,12 +1280,14 @@ void AliTRDcheckESD::Terminate(Option_t *)
   if(!(h2 = (TH2I*)fHistos->At(kNCl))) return;
   ax = h2->GetXaxis();
   arr = (TObjArray*)fResults->At(kNCl);
+  
   // All tracks
   h1[0] = h2->ProjectionX("Ncl_px");
   TGraphErrors *ge=(TGraphErrors*)arr->At(0);
   for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
     ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
   }
+  
   // All charged tracks
   TH1 *hNclCh[2] = {(TH1D*)h1[0]->Clone("NEG"), (TH1D*)h1[0]->Clone("POS")};
   hNclCh[0]->Reset();hNclCh[1]->Reset();
@@ -1570,6 +1301,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), hNclCh[0]->GetBinContent(ib));
     }
   }
+  
   if(Int_t(hNclCh[1]->GetEntries())){
     ge=(TGraphErrors*)arr->At(2);
     for(Int_t ib=2; ib<=ax->GetNbins(); ib++){
@@ -1585,12 +1317,13 @@ void AliTRDcheckESD::Terminate(Option_t *)
       ge->SetPoint(ib-2, ax->GetBinCenter(ib), h1[0]->GetBinContent(ib));
     }
   }
+  
   fNRefFigures = 1;
 
   // EFFICIENCY
   // geometrical efficiency
   if(!(h2 = (TH2I*)fHistos->At(kTRDstat))) return;
-  arr = (TObjArray*)fResults->At(kTRDstat);
+  arr = (TObjArray*)fResults->At(kTRDstat-1);
   h1[0] = h2->ProjectionX("checkESDx0", kTPCout, kTPCout);
   h1[1] = h2->ProjectionX("checkESDx1", kTRDin, kTRDin);
   Process(h1, (TGraphErrors*)arr->At(0));
@@ -1612,7 +1345,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
 
   // ENERGY LOSS
   if(!(h2 = dynamic_cast<TH2I*>(fHistos->At(kTRDmom)))) return;
-  arr = (TObjArray*)fResults->At(kTRDmom);
+  arr = (TObjArray*)fResults->At(kTRDmom-1);
   TGraphAsymmErrors *g06 = (TGraphAsymmErrors*)arr->At(0), *g09 = (TGraphAsymmErrors*)arr->At(1);
   ax=h2->GetXaxis();
   const Int_t nq(4);
@@ -1635,7 +1368,7 @@ void AliTRDcheckESD::Terminate(Option_t *)
   // Pt RESOLUTION @ DCA
   TH3S* h3(NULL); TGraphErrors *gg[2] = {NULL,NULL};
   if(!(h3 = dynamic_cast<TH3S*>(fHistos->At(kPtRes)))) return;
-  arr = (TObjArray*)fResults->At(kPtRes);
+  arr = (TObjArray*)fResults->At(kPtRes-1);
   TAxis *az(h3->GetZaxis());
   for(Int_t i(0); i<AliPID::kSPECIES; i++){
     Int_t idx(2*i);
@@ -1652,11 +1385,12 @@ void AliTRDcheckESD::Terminate(Option_t *)
   }
   fNRefFigures++;
   
-  // 3x3 tracking summary canvas
   fNRefFigures++;
-  // 3x3 PID summary canvas
+  // 3x3 tracking summary canvases for every centrality class
   fNRefFigures++;
-  // 3x4 PID summary canvas (TRD Qtot for TPC pions and protons)
+  // 3x3 PID summary canvases for every centrality class
+  fNRefFigures++;
+  // 3x3 for centrality dependent pictures
   fNRefFigures++;
 }
 
@@ -1762,9 +1496,15 @@ TH1F* AliTRDcheckESD::Proj2D(TH2F* hist) {
     if(gROOT->FindObject("projection"))
       delete gROOT->FindObject("projection");
     hD = (TH1D*)hist->ProjectionY("projection",iBin,iBin);
-    if(hD->Integral()>1) {
+    hD->Rebin(4);
+    if(hD->Integral()>10) {
       fitLandau->SetParameter(1, hD->GetBinCenter(hD->GetMaximumBin()));
-      hD->Fit(fitLandau, "MEQ0", "", 0., 2.0*hD->GetBinCenter(hD->GetMaximumBin()));
+      fitLandau->SetParLimits(1, 10., 1000.);
+      fitLandau->SetParameter(0, 1000.);
+      fitLandau->SetParLimits(0, 1., 1000000.);
+      fitLandau->SetParameter(2, 200.);
+      fitLandau->SetParLimits(2, 10., 1000.);
+      hD->Fit(fitLandau, "Q0", "", 0., 2.0*hD->GetBinCenter(hD->GetMaximumBin()));
       hProjection->SetBinContent(iBin, fitLandau->GetParameter(1));
       hProjection->SetBinError(iBin, fitLandau->GetParError(1));
     }
@@ -1815,8 +1555,8 @@ TH2F* AliTRDcheckESD::Proj3D(TH3F* hist, TH2F* accMap, Int_t zbinLow, Int_t zbin
 	  projHisto->SetBinContent(iX, iY, projHisto->GetBinContent(iX, iY)+hist->GetBinContent(iX,iY,iZ));
 	// count only the entries which are inside the acceptance map
 	if(accMap && maxAcc>0) { 
-	  if(accMap->GetBinContent(iX,iY)/maxAcc>kMinAccFraction)
-	    entries+=hist->GetBinContent(iX,iY,iZ);
+	  if(accMap->GetBinContent(iX,iY)>0.0)
+	  entries+=hist->GetBinContent(iX,iY,iZ);
 	}
 	else    // no acc. cut
 	  entries+=hist->GetBinContent(iX,iY,iZ);
@@ -1826,24 +1566,15 @@ TH2F* AliTRDcheckESD::Proj3D(TH3F* hist, TH2F* accMap, Int_t zbinLow, Int_t zbin
   return projHisto;
 }
 //____________________________________________________________________
-TH1F* AliTRDcheckESD::EfficiencyTRD(Short_t positives) {
+TH1F* AliTRDcheckESD::EfficiencyTRD(TH3F* tpc3D, TH3F* trd3D, Bool_t useAcceptance) {
   //
   // Calculate the TRD-TPC matching efficiency as function of pt
   //
-  TH3F* tpc3D(NULL); TH3F* trd3D(NULL);
-  if(positives>0) {      // get the histos for positive tracks  
-    if(!(tpc3D = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos)))) return 0x0;
-    if(!(trd3D = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos)))) return 0x0;
-  }
-  else {      // get the histos for positive tracks
-    if(!(tpc3D = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg)))) return 0x0;
-    if(!(trd3D = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg)))) return 0x0;
-  }
-  
+ 
   Int_t nBinsZ = trd3D->GetZaxis()->GetNbins();
   // project everything on the eta-phi map to obtain an acceptance map (make sure there is enough statistics)
   Float_t nada = 0.;
-  TH2F *trdAcc = (TH2F*)Proj3D(trd3D, 0x0, 1, nBinsZ, nada)->Clone();
+  TH2F *trdAcc = (useAcceptance ? (TH2F*)Proj3D(trd3D, 0x0, 1, nBinsZ, nada)->Clone(): 0x0);
   // get the bin limits from the Z axis of 3D histos
   Float_t *ptBinLimits = new Float_t[nBinsZ+1];
   for(Int_t i=1; i<=nBinsZ; i++) {
@@ -1859,14 +1590,590 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(Short_t positives) {
     Float_t ratio = 0;
     if(tpcEntries>0) ratio = trdEntries/tpcEntries;
     Float_t error = 0;
-    if(tpcEntries>0 && trdEntries>0) 
-      error = ratio*TMath::Sqrt((1.0/tpcEntries)+(1.0/trdEntries));
+    if(tpcEntries>0 && trdEntries>0 && (tpcEntries-trdEntries)>=0.0) 
+      error = TMath::Sqrt(trdEntries*(tpcEntries-trdEntries)/tpcEntries/tpcEntries/tpcEntries);
     if(ratio>0.0) {
       efficiency->SetBinContent(i,ratio);
       efficiency->SetBinError(i,error);
     }
   }     // end loop over Z bins
   
-  efficiency->SetLineColor((positives>0 ? 2 : 4));
   return efficiency;
+}
+
+
+//_________________________________________________________________
+void AliTRDcheckESD::PlotCentSummary() {
+
+  TLatex* lat=new TLatex();
+  lat->SetTextSize(0.06);
+  lat->SetTextColor(2);
+
+  gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
+  gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
+  gPad->Divide(3,3,0.,0.);
+  TList* l=gPad->GetListOfPrimitives();
+  TVirtualPad* pad=0x0;  
+
+  Int_t padsForEffs[5] = {0,3,6,1,4};
+  for(Int_t iCent=1; iCent<6; ++iCent) {
+    // TPC-TRD matching efficiencies
+    pad = ((TVirtualPad*)l->At(padsForEffs[iCent-1])); pad->cd();
+    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
+    pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+    TH1F* hFeffP = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
+				 dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+iCent)), kTRUE);
+    TH1F* hFeffN = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
+				 dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+iCent)), kTRUE);
+    TH1F* hFeffP4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+iCent)), kTRUE);
+    TH1F* hFeffN4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+iCent)), kTRUE);
+    TH1F* hFeffP5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+iCent)), kTRUE);
+    TH1F* hFeffN5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+iCent)), kTRUE);
+    TH1F* hFeffP6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+iCent)), kTRUE);
+    TH1F* hFeffN6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
+				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+iCent)), kTRUE);
+  
+    TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
+    h2F->SetStats(kFALSE);
+    h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    h2F->GetXaxis()->SetTitleOffset(0.8); 
+    h2F->GetXaxis()->SetTitleSize(0.07);
+    h2F->GetXaxis()->CenterTitle();
+    h2F->GetXaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->SetTitle("TRD-TPC matching efficiency");
+    h2F->GetYaxis()->SetTitleOffset(0.8); 
+    h2F->GetYaxis()->SetTitleSize(0.07);
+    h2F->GetYaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->CenterTitle();
+    h2F->Draw();
+    TLine line;
+    line.SetLineStyle(2);
+    line.SetLineWidth(2);
+    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
+    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+    line.SetLineStyle(1);
+    line.SetLineWidth(1);
+    line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
+    hFeffP->SetMarkerStyle(24);
+    hFeffP->SetMarkerColor(2);
+    hFeffP->SetLineColor(2);
+    hFeffP4->SetMarkerStyle(25);
+    hFeffP4->SetMarkerColor(2);
+    hFeffP4->SetLineColor(2);
+    hFeffP5->SetMarkerStyle(26);
+    hFeffP5->SetMarkerColor(2);
+    hFeffP5->SetLineColor(2);
+    hFeffP6->SetMarkerStyle(27);
+    hFeffP6->SetMarkerColor(2);
+    hFeffP6->SetLineColor(2);
+    hFeffN->SetMarkerStyle(24);
+    hFeffN->SetMarkerColor(4);
+    hFeffN->SetLineColor(4);
+    hFeffN4->SetMarkerStyle(25);
+    hFeffN4->SetMarkerColor(4);
+    hFeffN4->SetLineColor(4);
+    hFeffN5->SetMarkerStyle(26);
+    hFeffN5->SetMarkerColor(4);
+    hFeffN5->SetLineColor(4);
+    hFeffN6->SetMarkerStyle(27);
+    hFeffN6->SetMarkerColor(4);
+    hFeffN6->SetLineColor(4);
+    hFeffP->Draw("same");
+    hFeffN->Draw("same");
+    hFeffP4->Draw("same");
+    hFeffN4->Draw("same");
+    hFeffP5->Draw("same");
+    hFeffN5->Draw("same");
+    hFeffP6->Draw("same");
+    hFeffN6->Draw("same");
+    
+    TLegend* leg=new TLegend(0.65, 0.18, 0.95, 0.5);
+    leg->SetFillColor(0);
+    leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
+    leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
+    leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
+    leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
+    leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
+    leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
+    leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
+    leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+    
+    leg->Draw();
+    lat->DrawLatex(0.25, 1.2, Form("Centrality class %d", iCent));
+  }
+
+  // TPC-TRD matching efficiencies
+  pad = ((TVirtualPad*)l->At(2)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
+  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+
+  TH2F* h2F[6]; TH1D* proj[6];
+  TLegend* leg=new TLegend(0.2, 0.7, 0.5, 0.95);
+  leg->SetFillColor(0);
+  for(Int_t iCent=0; iCent<6; ++iCent) {
+    h2F[iCent] = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD+iCent));
+    proj[iCent] = h2F[iCent]->ProjectionY(Form("projCent%d",iCent));
+    proj[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
+    Double_t maximum = proj[iCent]->GetMaximum();
+    if(maximum>1.0)
+      proj[iCent]->Scale(1.0/maximum);
+    proj[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
+    proj[iCent]->SetStats(kFALSE);
+    proj[iCent]->Draw(iCent==0 ? "" : "same");
+    leg->AddEntry(proj[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+  }
+  leg->Draw();
+
+  // Qtot vs P
+  pad = ((TVirtualPad*)l->At(5)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
+  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+
+  TH1D* projQ[6];
+  TLegend* leg2=new TLegend(0.6, 0.7, 0.9, 0.95);
+  leg2->SetFillColor(0);
+  for(Int_t iCent=0; iCent<6; ++iCent) {  
+    h2F[iCent] = dynamic_cast<TH2F*>(fHistos->At(kQtotP+iCent));
+    projQ[iCent] = h2F[iCent]->ProjectionY(Form("projQCent%d",iCent), h2F[iCent]->GetXaxis()->FindBin(1.01), h2F[iCent]->GetXaxis()->FindBin(1.5));
+    projQ[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
+    Double_t maximum = projQ[iCent]->GetMaximum();
+    if(maximum>1.0)
+      projQ[iCent]->Scale(1.0/maximum);
+    projQ[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
+    projQ[iCent]->GetXaxis()->SetRangeUser(0.0,9.999);
+    projQ[iCent]->SetStats(kFALSE);
+    projQ[iCent]->Draw(iCent==0 ? "" : "same");
+    leg2->AddEntry(projQ[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+  }
+  leg2->Draw();
+
+}
+
+
+//_________________________________________________________________
+void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
+
+  TLatex *lat=new TLatex();
+  lat->SetTextSize(0.07);
+  lat->SetTextColor(2);
+  gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
+  gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
+  gPad->Divide(3,3,0.,0.);
+  TList* l=gPad->GetListOfPrimitives();
+  // eta-phi distr. for positive TPC tracks
+  TVirtualPad* pad = ((TVirtualPad*)l->At(0)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TH3F* h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass));
+  Float_t nada=0.0;
+  TH2F* h2FtpcP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+  h2FtpcP->SetStats(kFALSE);
+  h2FtpcP->GetXaxis()->SetTitle("#eta");
+  h2FtpcP->GetXaxis()->CenterTitle();
+  h2FtpcP->GetXaxis()->SetTitleSize(0.07);
+  h2FtpcP->GetXaxis()->SetTitleOffset(0.8);
+  h2FtpcP->GetXaxis()->SetLabelSize(0.05);
+  h2FtpcP->GetYaxis()->SetTitle("detector #varphi");
+  h2FtpcP->GetYaxis()->CenterTitle();
+  h2FtpcP->GetYaxis()->SetTitleSize(0.07);
+  h2FtpcP->GetYaxis()->SetTitleOffset(0.8);
+  h2FtpcP->GetYaxis()->SetLabelSize(0.05);
+  h2FtpcP->SetTitle("");
+  h2FtpcP->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "TPC positive ref. tracks");
+  //-----------------
+  // eta-phi distr. for negative TPC tracks
+  pad = ((TVirtualPad*)l->At(1)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass));
+  TH2F* h2FtpcN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+  h2FtpcN->SetStats(kFALSE);
+  h2FtpcN->GetXaxis()->SetTitle("#eta");
+  h2FtpcN->GetXaxis()->CenterTitle();
+  h2FtpcN->GetXaxis()->SetTitleSize(0.07);
+  h2FtpcN->GetXaxis()->SetTitleOffset(0.8);
+  h2FtpcN->GetXaxis()->SetLabelSize(0.05);
+  h2FtpcN->GetYaxis()->SetTitle("detector #varphi");
+  h2FtpcN->GetYaxis()->CenterTitle();
+  h2FtpcN->GetYaxis()->SetTitleSize(0.07);
+  h2FtpcN->GetYaxis()->SetTitleOffset(0.8);
+  h2FtpcN->GetYaxis()->SetLabelSize(0.05);
+  h2FtpcN->SetTitle("");
+  h2FtpcN->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "TPC negative ref. tracks");
+  //----------------------------------------------
+  // eta-phi distr. for positive TRD tracks
+  pad = ((TVirtualPad*)l->At(3)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass));
+  TH2F* h2FtrdP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+  h2FtrdP->SetStats(kFALSE);
+  h2FtrdP->GetXaxis()->SetTitle("#eta");
+  h2FtrdP->GetXaxis()->CenterTitle();
+  h2FtrdP->GetXaxis()->SetTitleSize(0.07);
+  h2FtrdP->GetXaxis()->SetTitleOffset(0.8);
+  h2FtrdP->GetXaxis()->SetLabelSize(0.05);
+  h2FtrdP->GetYaxis()->SetTitle("detector #varphi");
+  h2FtrdP->GetYaxis()->CenterTitle();
+  h2FtrdP->GetYaxis()->SetTitleSize(0.07);
+  h2FtrdP->GetYaxis()->SetTitleOffset(0.8);
+  h2FtrdP->GetYaxis()->SetLabelSize(0.05);
+  h2FtrdP->SetMaximum(h2FtpcP->GetMaximum());
+  h2FtrdP->SetTitle("");
+  h2FtrdP->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "TRD positive ref. tracks");
+  //--------------------------------------------
+  // eta-phi distr. for negative TRD tracks
+  pad = ((TVirtualPad*)l->At(4)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass));
+  TH2F* h2FtrdN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+  h2FtrdN->SetStats(kFALSE);
+  h2FtrdN->GetXaxis()->SetTitle("#eta");
+  h2FtrdN->GetXaxis()->CenterTitle();
+  h2FtrdN->GetXaxis()->SetTitleSize(0.07);
+  h2FtrdN->GetXaxis()->SetTitleOffset(0.8);
+  h2FtrdN->GetXaxis()->SetLabelSize(0.05);
+  h2FtrdN->GetYaxis()->SetTitle("detector #varphi");
+  h2FtrdN->GetYaxis()->CenterTitle();
+  h2FtrdN->GetYaxis()->SetTitleSize(0.07);
+  h2FtrdN->GetYaxis()->SetTitleOffset(0.8);
+  h2FtrdN->GetYaxis()->SetLabelSize(0.05);
+  h2FtrdN->SetMaximum(h2FtpcN->GetMaximum());
+  h2FtrdN->SetTitle("");
+  h2FtrdN->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "TRD negative ref. tracks");
+  //----------------------------------------------
+  // eta-phi efficiency for positive TRD tracks
+  pad = ((TVirtualPad*)l->At(6)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TH2F* h2Feff = (TH2F*)h2FtrdP->Clone();
+  h2Feff->Reset();
+  h2Feff->SetStats(kFALSE);
+  h2Feff->Divide(h2FtrdP, h2FtpcP);
+  h2Feff->GetXaxis()->SetTitle("#eta");
+  h2Feff->GetXaxis()->CenterTitle();
+  h2Feff->GetXaxis()->SetTitleSize(0.07);
+  h2Feff->GetXaxis()->SetTitleOffset(0.8);
+  h2Feff->GetXaxis()->SetLabelSize(0.05);
+  h2Feff->GetYaxis()->SetTitle("detector #varphi");
+  h2Feff->GetYaxis()->CenterTitle();
+  h2Feff->GetYaxis()->SetTitleSize(0.07);
+  h2Feff->GetYaxis()->SetTitleOffset(0.8);
+  h2Feff->GetYaxis()->SetLabelSize(0.05);
+  h2Feff->SetMaximum(1.0);
+  h2Feff->SetTitle("");
+  h2Feff->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "Efficiency positive tracks");
+  //-------------------------------------------------
+  // eta-phi efficiency for negative TRD tracks
+  pad = ((TVirtualPad*)l->At(7)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  h2Feff = (TH2F*)h2FtrdN->Clone();
+  h2Feff->Reset();
+  h2Feff->SetStats(kFALSE);
+  h2Feff->Divide(h2FtrdN, h2FtpcN);
+  h2Feff->GetXaxis()->SetTitle("#eta");
+  h2Feff->GetXaxis()->CenterTitle();
+  h2Feff->GetXaxis()->SetTitleSize(0.07);
+  h2Feff->GetXaxis()->SetTitleOffset(0.8);
+  h2Feff->GetXaxis()->SetLabelSize(0.05);
+  h2Feff->GetYaxis()->SetTitle("detector #varphi");
+  h2Feff->GetYaxis()->CenterTitle();
+  h2Feff->GetYaxis()->SetTitleSize(0.07);
+  h2Feff->GetYaxis()->SetTitleOffset(0.8);
+  h2Feff->GetYaxis()->SetLabelSize(0.05);
+  h2Feff->SetMaximum(1.0);
+  h2Feff->SetTitle("");
+  h2Feff->Draw("colz");
+  lat->DrawLatex(-0.9, 3.6, "Efficiency negative tracks");
+  //-----------------------------------------------------
+  // <ntracklets> vs (phi,eta)
+  pad = ((TVirtualPad*)l->At(2)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TProfile2D* hProf2D;
+  if((hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl+centralityClass)))) {
+    hProf2D->SetStats(kFALSE);
+    hProf2D->SetTitle("");
+    hProf2D->GetXaxis()->SetTitle("#eta");
+    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
+    hProf2D->GetXaxis()->SetTitleSize(0.07);
+    hProf2D->GetXaxis()->CenterTitle();
+    hProf2D->GetXaxis()->SetLabelSize(0.05);
+    hProf2D->GetYaxis()->SetTitle("detector #varphi");
+    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
+    hProf2D->GetYaxis()->SetTitleSize(0.07);
+    hProf2D->GetYaxis()->SetLabelSize(0.05);
+    hProf2D->GetYaxis()->CenterTitle();
+    hProf2D->SetMinimum(0.);
+    hProf2D->SetMaximum(6.);
+    hProf2D->Draw("colz");
+    lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
+  }
+  //---------------------------------------------------------
+  // TPC-TRD matching efficiency vs pt
+  pad = ((TVirtualPad*)l->At(5)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
+  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TH1F* hFeffP = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
+			       dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass)), kTRUE);
+  TH1F* hFeffN = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
+			       dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass)), kTRUE);
+  TH1F* hFeffP4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+centralityClass)), kTRUE);
+  TH1F* hFeffN4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+centralityClass)), kTRUE);
+  TH1F* hFeffP5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+centralityClass)), kTRUE);
+  TH1F* hFeffN5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+centralityClass)), kTRUE);
+  TH1F* hFeffP6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+centralityClass)), kTRUE);
+  TH1F* hFeffN6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
+				dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+centralityClass)), kTRUE);
+  
+  TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
+  h2F->SetStats(kFALSE);
+  h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+  h2F->GetXaxis()->SetTitleOffset(0.8); 
+  h2F->GetXaxis()->SetTitleSize(0.07);
+  h2F->GetXaxis()->CenterTitle();
+  h2F->GetXaxis()->SetLabelSize(0.05);
+  h2F->GetYaxis()->SetTitle("TRD-TPC matching efficiency");
+  h2F->GetYaxis()->SetTitleOffset(0.8); 
+  h2F->GetYaxis()->SetTitleSize(0.07);
+  h2F->GetYaxis()->SetLabelSize(0.05);
+  h2F->GetYaxis()->CenterTitle();
+  h2F->Draw();
+  TLine line;
+  line.SetLineStyle(2);
+  line.SetLineWidth(2);
+  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
+  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+  line.SetLineStyle(1);
+  line.SetLineWidth(1);
+  line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
+  hFeffP->SetMarkerStyle(24);
+  hFeffP->SetMarkerColor(2);
+  hFeffP->SetLineColor(2);
+  hFeffP4->SetMarkerStyle(25);
+  hFeffP4->SetMarkerColor(2);
+  hFeffP4->SetLineColor(2);
+  hFeffP5->SetMarkerStyle(26);
+  hFeffP5->SetMarkerColor(2);
+  hFeffP5->SetLineColor(2);
+  hFeffP6->SetMarkerStyle(27);
+  hFeffP6->SetMarkerColor(2);
+  hFeffP6->SetLineColor(2);
+  hFeffN->SetMarkerStyle(24);
+  hFeffN->SetMarkerColor(4);
+  hFeffN->SetLineColor(4);
+  hFeffN4->SetMarkerStyle(25);
+  hFeffN4->SetMarkerColor(4);
+  hFeffN4->SetLineColor(4);
+  hFeffN5->SetMarkerStyle(26);
+  hFeffN5->SetMarkerColor(4);
+  hFeffN5->SetLineColor(4);
+  hFeffN6->SetMarkerStyle(27);
+  hFeffN6->SetMarkerColor(4);
+  hFeffN6->SetLineColor(4);
+  hFeffP->Draw("same");
+  hFeffN->Draw("same");
+  hFeffP4->Draw("same");
+  hFeffN4->Draw("same");
+  hFeffP5->Draw("same");
+  hFeffN5->Draw("same");
+  hFeffP6->Draw("same");
+  hFeffN6->Draw("same");
+ 
+  TLegend* leg=new TLegend(0.65, 0.18, 0.95, 0.5);
+  leg->SetFillColor(0);
+  leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
+  leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
+  leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
+  leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
+  leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
+  leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
+  leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
+  leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+
+  leg->Draw();
+  
+  //--------------------------------------------------------------
+  // Nclusters per TRD track
+  pad = ((TVirtualPad*)l->At(8)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.12);
+  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  pad->SetLogz();
+  if((h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD+centralityClass)))) {
+    h2F->SetStats(kFALSE);
+    h2F->SetTitle("");
+    h2F->GetYaxis()->SetRangeUser(0.0, 199.);
+    h2F->GetXaxis()->SetTitle("p [GeV/c]");
+    h2F->GetXaxis()->SetTitleOffset(0.8); 
+    h2F->GetXaxis()->SetTitleSize(0.07);
+    h2F->GetXaxis()->CenterTitle();
+    h2F->GetXaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->SetTitle("#clusters per TRD track");
+    h2F->GetYaxis()->SetTitleOffset(0.8); 
+    h2F->GetYaxis()->SetTitleSize(0.07);
+    h2F->GetYaxis()->CenterTitle();
+    h2F->GetYaxis()->SetLabelSize(0.05);
+    h2F->Draw("colz");
+  }
+}
+
+
+//_________________________________________________________________
+void AliTRDcheckESD::PlotPidSummary(Int_t centralityClass) {
+
+  TLatex *lat=new TLatex();
+  lat->SetTextSize(0.07);
+  lat->SetTextColor(2);
+  gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
+  gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
+  gPad->Divide(3,3,0.,0.);
+  TList* l=gPad->GetListOfPrimitives();
+  // eta-phi distr. for <Qtot> in layer 0
+  TVirtualPad* pad;
+  TProfile2D* hProf2D;
+  for(Int_t iLayer=0; iLayer<6; ++iLayer) {
+    pad = ((TVirtualPad*)l->At((iLayer<3 ? iLayer*3 : (iLayer-3)*3+1))); pad->cd();
+    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+    pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+    pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+6*centralityClass+iLayer)))) break;
+    hProf2D->SetStats(kFALSE);
+    hProf2D->SetTitle("");
+    hProf2D->GetXaxis()->SetTitle("#eta");
+    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
+    hProf2D->GetXaxis()->SetTitleSize(0.07);
+    hProf2D->GetXaxis()->CenterTitle();
+    hProf2D->GetXaxis()->SetLabelSize(0.05);
+    hProf2D->GetYaxis()->SetTitle("detector #varphi");
+    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
+    hProf2D->GetYaxis()->SetTitleSize(0.07);
+    hProf2D->GetYaxis()->SetLabelSize(0.05);
+    hProf2D->GetYaxis()->CenterTitle();
+    hProf2D->SetMinimum(0.);
+    hProf2D->SetMaximum(10.);
+    hProf2D->Draw("colz");
+    lat->DrawLatex(-0.9, 3.6, Form("TRD <Q_{tot}> Layer %d", iLayer));
+  }
+    
+  // PH versus slice number
+  pad = ((TVirtualPad*)l->At(2)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TH2F* h2F;
+  TH1F* hF;
+  if((h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice+centralityClass)))) {
+    hF = Proj2D((TH2F*)h2F);
+    h2F->SetStats(kFALSE);
+    h2F->SetTitle("");
+    h2F->GetXaxis()->SetTitle("slice");
+    h2F->GetXaxis()->SetTitleOffset(0.8); 
+    h2F->GetXaxis()->SetTitleSize(0.07);
+    h2F->GetXaxis()->CenterTitle();
+    h2F->GetXaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->SetTitle("PH");
+    h2F->GetYaxis()->SetTitleOffset(0.8); 
+    h2F->GetYaxis()->SetTitleSize(0.07);
+    h2F->GetYaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->CenterTitle();
+    h2F->Draw("colz");
+    hF->SetLineWidth(2);
+    hF->Draw("same");
+  }
+
+  // Qtot vs P
+  pad = ((TVirtualPad*)l->At(5)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  pad->SetLogz();
+  if((h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP+centralityClass)))) {
+    h2F->SetStats(kFALSE);
+    h2F->SetTitle("");
+    h2F->GetXaxis()->SetTitle("P [GeV/c]");
+    h2F->GetXaxis()->SetTitleOffset(0.8); 
+    h2F->GetXaxis()->SetTitleSize(0.07);
+    h2F->GetXaxis()->CenterTitle();
+    h2F->GetXaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->SetRangeUser(0.0,100.0);
+    h2F->GetYaxis()->SetTitle("Q_{tot}");
+    h2F->GetYaxis()->SetTitleOffset(0.8); 
+    h2F->GetYaxis()->SetTitleSize(0.07);
+    h2F->GetYaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->CenterTitle();
+    h2F->GetYaxis()->SetRangeUser(0.0,20.0);
+    h2F->Draw("colz");
+  }
+
+  // PH versus slice number for TPC pions and electrons
+  /*
+  pad = ((TVirtualPad*)l->At(8)); pad->cd();
+  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
+  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  TH2F* h2FtrdP;
+  TH2F* h2FtrdN;
+  TH1F* hFeffP;
+  TH1F* hFeffN;
+  if((h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions+centralityClass-1))) && 
+     (h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons+centralityClass-1)))) {
+    hFeffP = Proj2D((TH2F*)h2FtrdP);
+    hFeffN = Proj2D((TH2F*)h2FtrdN);
+    h2F = new TH2F("PHvsSlice","",10,h2FtrdN->GetXaxis()->GetXmin(),h2FtrdN->GetXaxis()->GetXmax(),
+		   10,h2FtrdN->GetYaxis()->GetXmin(),h2FtrdN->GetYaxis()->GetXmax());
+    h2F->SetStats(kFALSE);
+    h2F->SetTitle("");
+    h2F->GetXaxis()->SetTitle("slice");
+    h2F->GetXaxis()->SetTitleOffset(0.8); 
+    h2F->GetXaxis()->SetTitleSize(0.07);
+    h2F->GetXaxis()->CenterTitle();
+    h2F->GetXaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->SetTitle("PH");
+    h2F->GetYaxis()->SetTitleOffset(0.8); 
+    h2F->GetYaxis()->SetTitleSize(0.07);
+    h2F->GetYaxis()->SetLabelSize(0.05);
+    h2F->GetYaxis()->CenterTitle();
+    h2F->Draw();
+    hFeffN->SetLineWidth(2);
+    hFeffN->SetLineColor(2);
+    hFeffP->SetLineWidth(2);
+    hFeffP->SetLineColor(4);
+    hFeffN->Draw("same");
+    hFeffP->Draw("same");
+    TLegend* leg=new TLegend(0.65, 0.8, 0.95, 0.95);
+    leg->SetFillColor(0);
+    leg->AddEntry(hFeffP, "TPC pions", "l");
+    leg->AddEntry(hFeffN, "TPC electrons", "l");
+    leg->Draw();
+    }
+  */
 }

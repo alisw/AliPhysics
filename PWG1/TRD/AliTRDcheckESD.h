@@ -37,7 +37,7 @@ public:
     ,kCollision = BIT(1)  // 
   };
   enum ETRDcheckESDhistos {
-    kNCl = 0                // number of clusters per track
+    kNCl = 1                // number of clusters per track
    ,kTRDstat                // TRD tracks status
    ,kTRDmom                 // TRD track momentum
    ,kPtRes                  // Pt resolution @ vertex for TRD
@@ -62,26 +62,33 @@ public:
    ,kEtaPhi                 // (eta,phi) distrib. for tracks after the cuts from kPt3pos or kPt3neg
    ,kEtaNclsTPC             // (TPC_Ncls,eta) distrib. for tracks after the cuts from kPt3pos or kPt3neg
    ,kPhiNclsTPC             // (TPC_Ncls,phi) distrib. for tracks after the cuts from kPt3pos or kPt3neg
+   ,kSPDMult                // SPD multiplicity
    ,kNTrackletsTRD          // (TRD tracklets per track, P) distribution, after cuts from kPt4pos or kPt4neg
-   ,kNClsTrackTRD           // (TRD clusters per track, P) distribution, after cuts from kPt4pos or kPt4neg
-   ,kPHSlice                // (slicePH,sliceNo) distribution, after cuts from kPt4pos or kPt4neg
-   ,kPHSliceTPCpions        // (slicePH,sliceNo) distribution for TPC pions, after cuts from kPt4pos or kPt4neg 
-   ,kTPCdedxPions           // (TPC dedx,P) for selected TPC pions
-   ,kPHSliceTPCelectrons    // (slicePH,sliceNo) distribution for TPC electrons, after cuts from kPt4pos or kPt4neg
-   ,kTPCdedxElectrons       // (TPC dedx,P) for selected TPC electrons
-   ,kQtotP                  // (total Q from slices, momentum) distribution, after cuts from kPt4pos or kPt4neg
-   ,kPropagXYvsP            // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
+   ,kNClsTrackTRD=kNTrackletsTRD+6    // (TRD clusters per track, P) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPHSlice=kNClsTrackTRD+6         // (slicePH,sliceNo) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPHSliceTPCpions=kPHSlice+6      // (slicePH,sliceNo) distribution for TPC pions, after cuts from kPt4pos or kPt4neg 
+   ,kTPCdedxPions=kPHSliceTPCpions+6     // (TPC dedx,P) for selected TPC pions
+   ,kPHSliceTPCelectrons=kTPCdedxPions+6    // (slicePH,sliceNo) distribution for TPC electrons, after cuts from kPt4pos or kPt4neg
+   ,kTPCdedxElectrons=kPHSliceTPCelectrons+6   // (TPC dedx,P) for selected TPC electrons
+   ,kQtotP=kTPCdedxElectrons+6              // (total Q from slices, momentum) distribution, after cuts from kPt4pos or kPt4neg
+   ,kPropagXYvsP=kQtotP+6       // (X,Y,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
    ,kPropagRZvsP            // (R,Z,momentum) distribution after AliESDtrack::PropagateTo(r=300.)
    ,kTPCRefTracksPos        // (eta,detector phi,Pt) distribution of reference TPC positive tracks (fulfill cuts from kPt3pos)
-   ,kTPCRefTracksNeg        // (eta,detector phi,Pt) distribution of reference TPC negative tracks (fulfill cuts from kPt3neg)
-   ,kTRDRefTracksPos        // (eta,detector phi,Pt) distribution of reference TRD positive tracks (fulfill cuts from kPt4pos)
-   ,kTRDRefTracksNeg        // (eta,detector phi,Pt) distribution of reference TRD negative tracks (fulfill cuts from kPt4neg)
-   ,kTRDEtaPhiAvNtrkl       // (eta, detector phi) profile of average number of tracklets
-   ,kTRDEtaDeltaPhiAvNtrkl  // (eta, delta-phi) profile of average number of tracklets
-                            // delta-phi is the angle made by the track with the normal to the chamber entrance plane
-   ,kTRDEtaPhiAvQtot        // (eta, detector phi) profile of total tracklet charge from slices			    
-   ,kNhistos = 49 // number of histograms
-   ,kNrefs   = 7  // number of reference plots
+   ,kTPCRefTracksNeg=kTPCRefTracksPos+6    // (eta,detector phi,Pt) distribution of reference TPC negative tracks (fulfill cuts from kPt3neg)
+   ,kTRDRefTracksPos=kTPCRefTracksNeg+6        // (eta,detector phi,Pt) distribution of reference TRD positive tracks (fulfill cuts from kPt4pos)
+   ,kTRDRefTracksNeg=kTRDRefTracksPos+6        // (eta,detector phi,Pt) distribution of reference TRD negative tracks (fulfill cuts from kPt4neg)
+   ,kTRDRefTracksPos4=kTRDRefTracksNeg+6        // (eta,detector phi,Pt) distribution of reference TRD positive tracks with 4 tracklets (fulfill cuts from kPt4pos)
+   ,kTRDRefTracksNeg4=kTRDRefTracksPos4+6        // (eta,detector phi,Pt) distribution of reference TRD negative tracks with 4 tracklets (fulfill cuts from kPt4neg)
+   ,kTRDRefTracksPos5=kTRDRefTracksNeg4+6
+   ,kTRDRefTracksNeg5=kTRDRefTracksPos5+6
+   ,kTRDRefTracksPos6=kTRDRefTracksNeg5+6
+   ,kTRDRefTracksNeg6=kTRDRefTracksPos6+6
+   ,kTRDEtaPhiAvNtrkl=kTRDRefTracksNeg6+6       // (eta, detector phi) profile of average number of tracklets
+   ,kTRDEtaDeltaPhiAvNtrkl=kTRDEtaPhiAvNtrkl+6  // (eta, delta-phi) profile of average number of tracklets
+                                         // delta-phi is the angle made by the track with the normal to the chamber entrance plane
+   ,kTRDEtaPhiAvQtot=kTRDEtaDeltaPhiAvNtrkl+6      // (eta, detector phi) profile of total tracklet charge from slices			    
+   ,kNhistos = kTRDEtaPhiAvQtot+36      // number of histograms
+   ,kNrefs   = 4  // number of reference plots
   };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
@@ -114,6 +121,10 @@ private:
   static const Float_t fgkxTOF; // start radial position of TOF
   static const UChar_t fgkNgraph[kNrefs]; // number of graphs/ref plot
 
+  void PlotTrackingSummary(Int_t centralityClass=1);     // 1 <= centralityClass <= 5; 0-all centrality classes together
+  void PlotPidSummary(Int_t centralityClass=1);     // 1 <= centralityClass <= 5; 0-all centrality classes together
+  void PlotCentSummary();  // centrality dependent plots
+
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
   Int_t         Pdg2Idx(Int_t pdg) const;
@@ -122,7 +133,7 @@ private:
   void          PrintStatus(ULong_t s);
   TH2F*         Proj3D(TH3F* hist, TH2F* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
   TH1F*         Proj2D(TH2F* hist);
-  TH1F*         EfficiencyTRD(Short_t positives=1);
+  TH1F*         EfficiencyTRD(TH3F* tpc3D, TH3F* trd3D, Bool_t useAcceptance=kTRUE);
   
   Int_t            fStatus;            // bit mask for controlling the task
   Int_t            fNRefFigures;       // number of current ref plots
@@ -144,6 +155,6 @@ private:
   
   static const Float_t fgkQs;      // scale for the total charge
 
-  ClassDef(AliTRDcheckESD, 5)          // user oriented TRD analysis based on ESD-MC data
+  ClassDef(AliTRDcheckESD, 6)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif
