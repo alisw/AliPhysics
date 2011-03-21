@@ -41,8 +41,8 @@ class AliESDv0KineCuts : public TObject{
   AliESDv0KineCuts &operator=(const AliESDv0KineCuts &ref);
 
   // main selection function - called once per V0 candidate
-  Bool_t const ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t const ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN);
+  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
+  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN);
 
   // must be called by the user
   void SetEvent(AliESDEvent* const event);
@@ -125,20 +125,20 @@ class AliESDv0KineCuts : public TObject{
   };
   
 
-  Int_t  const PreselectV0(AliESDv0* const v0);
+  Int_t  PreselectV0(AliESDv0* const v0);
 
-  Bool_t const CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t const CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t const CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id);
+  Bool_t CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
+  Bool_t CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
+  Bool_t CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id);
 
-  Bool_t const V0CutsCommon(AliESDv0 * const v0);
-  Bool_t const SingleTrackCuts(AliESDv0 * const v0);
-  void   const Armenteros(AliESDv0* const v0, Float_t val[2]);
-  Bool_t const CheckSigns(AliESDv0* const v0);
+  Bool_t V0CutsCommon(AliESDv0 * const v0);
+  Bool_t SingleTrackCuts(AliESDv0 * const v0);
+  void   Armenteros(AliESDv0* const v0, Float_t val[2]);
+  Bool_t CheckSigns(AliESDv0* const v0);
 
-  Double_t const PsiPair(AliESDv0* const v0);
-  Bool_t   const GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]);
-  Bool_t   const GetHelixCenter(AliESDtrack * const track, Double_t b, Int_t charge, Double_t center[2]);
+  Double_t PsiPair(AliESDv0* const v0);
+  Bool_t   GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]);
+  Bool_t   GetHelixCenter(AliESDtrack * const track, Double_t b, Int_t charge, Double_t center[2]);
 
  protected:
   void Copy(TObject &ref) const;

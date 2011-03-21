@@ -180,7 +180,7 @@ void AliESDv0KineCuts::Copy(TObject &ref) const {
   
 }
 //____________________________________________________________________
-Bool_t const AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
+Bool_t AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
   //
   // main user function
   //
@@ -215,7 +215,7 @@ Bool_t const AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t
   return kFALSE;
 }
 //____________________________________________________________________
-Bool_t const AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN){
+Bool_t AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN){
   //
   // main user function, simplified if the V0 identity is not necessary
   //
@@ -231,7 +231,7 @@ Bool_t const AliESDv0KineCuts::ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t 
 
 }
 //____________________________________________________________________
-Int_t  const AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
+Int_t  AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
   //
   // Make a preselection (exclusive) of the V0 cadidates based on
   // Armenteros plot
@@ -302,7 +302,7 @@ Int_t  const AliESDv0KineCuts::PreselectV0(AliESDv0* const v0){
   return kUndef;
 }
 //____________________________________________________________________
-Bool_t const AliESDv0KineCuts::SingleTrackCuts(AliESDv0 * const v0){
+Bool_t AliESDv0KineCuts::SingleTrackCuts(AliESDv0 * const v0){
   //
   // apply single track cuts
   // correct sign not relevat here
@@ -346,7 +346,7 @@ Bool_t const AliESDv0KineCuts::SingleTrackCuts(AliESDv0 * const v0){
   return kTRUE;
 }
 //____________________________________________________________________
-Bool_t  const AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
+Bool_t  AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
   //
   // process the gamma conversion candidate
   //
@@ -433,7 +433,7 @@ Bool_t  const AliESDv0KineCuts::CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_
   return kTRUE;
 }
 //____________________________________________________________________
-Bool_t  const AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
+Bool_t  AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN){
   //
   // process the K0 candidate
   //
@@ -510,7 +510,7 @@ Bool_t  const AliESDv0KineCuts::CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &
   return kTRUE;
 }
 //____________________________________________________________________
-Bool_t  const AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id){
+Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id){
   //
   // process teh Lambda and Anti-Lambda candidate
   //
@@ -653,7 +653,7 @@ Bool_t  const AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int
   return kTRUE;
 }
 //____________________________________________________________________
-Bool_t const AliESDv0KineCuts::V0CutsCommon(AliESDv0 * const v0){
+Bool_t AliESDv0KineCuts::V0CutsCommon(AliESDv0 * const v0){
   //
   // V0 cuts common to all V0s
   //
@@ -673,7 +673,7 @@ Bool_t const AliESDv0KineCuts::V0CutsCommon(AliESDv0 * const v0){
   return kTRUE;
 }
 //____________________________________________________________________
-void const AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]){
+void AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]){
   //
   // computes the Armenteros variables for given V0
   // fills the histogram
@@ -709,7 +709,7 @@ void const AliESDv0KineCuts::Armenteros(AliESDv0* const v0, Float_t val[2]){
   val[1] = qt;
 }
 //____________________________________________________________________
-Bool_t const AliESDv0KineCuts::CheckSigns(AliESDv0* const v0){
+Bool_t AliESDv0KineCuts::CheckSigns(AliESDv0* const v0){
   //
   // check wheter the sign was correctly applied to 
   // V0 daughter tracks
@@ -739,7 +739,7 @@ Bool_t const AliESDv0KineCuts::CheckSigns(AliESDv0* const v0){
   return correct;
 }
 //________________________________________________________________
-Double_t const AliESDv0KineCuts::PsiPair(AliESDv0* const v0) {
+Double_t AliESDv0KineCuts::PsiPair(AliESDv0* const v0) {
   //
   // Angle between daughter momentum plane and plane 
   // 
@@ -810,7 +810,7 @@ Double_t const AliESDv0KineCuts::PsiPair(AliESDv0* const v0) {
   return psiPair; 
 }
 //___________________________________________________________________
-Bool_t const AliESDv0KineCuts::GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]){
+Bool_t AliESDv0KineCuts::GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]){
   //
   // recalculate the gamma conversion XY postition
   //
@@ -842,7 +842,7 @@ Bool_t const AliESDv0KineCuts::GetConvPosXY(AliESDtrack * const ptrack, AliESDtr
   return 1;
 }
 //___________________________________________________________________
-Bool_t const AliESDv0KineCuts::GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t charge, Double_t center[2]){
+Bool_t AliESDv0KineCuts::GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t charge, Double_t center[2]){
   //
   // computes the center of the track helix
   //
