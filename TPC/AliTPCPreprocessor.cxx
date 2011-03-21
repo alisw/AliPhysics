@@ -738,23 +738,63 @@ UInt_t AliTPCPreprocessor::ExtractPedestals(Int_t sourceFXS)
 // inner sectors
     for (Int_t sector=0; sector<nSectors/2; sector++) {
        if (foundSectorsPed[sector] < 1 ) {
-          AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
-	  calPadPed->SetCalROC(rocOCDB,sector);
+          if (calPadPedOCDB) {
+            AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
+	    calPadPed->SetCalROC(rocOCDB,sector);
+	  } else {
+	    const int mess_length=100;
+            char message[mess_length];
+	    snprintf(message,mess_length,"Missing pedestals for sector %d - also not available from previous OCDB entry.\n",
+	             sector);
+	    Log (message);
+	    result = 2;
+	  }
        }
        if (foundSectorsRMS[sector] < 1 ) {
-          AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
-	  calPadRMS->SetCalROC(rocOCDB,sector);
+          if (calPadRMSOCDB) {
+            AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
+	    calPadRMS->SetCalROC(rocOCDB,sector);
+	  } else {
+	    const int mess_length=100;
+            char message[mess_length];
+	    snprintf(message,mess_length,"Missing pedestal RMS for sector %d - also not available from previous OCDB entry.\n",
+	             sector);
+	    Log (message);
+	    result = 2;
+	  }       
        }
     }
+
 // outer sectors -- two updates needed
+
     for (Int_t sector=nSectors/2; sector<nSectors; sector++) {
        if (foundSectorsPed[sector] < 2 ) {
-          AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
-	  calPadPed->SetCalROC(rocOCDB,sector);
+          if (calPadPedOCDB) {
+            AliTPCCalROC *rocOCDB=calPadPedOCDB->GetCalROC(sector);
+	    calPadPed->SetCalROC(rocOCDB,sector);
+	  } else {
+	    const int mess_length=100;
+            char message[mess_length];
+	    snprintf(message,mess_length,"Missing pedestals for sector %d - also not available from previous OCDB entry.\n",
+	             sector);
+	    Log (message);
+	    result = 2;
+	  }
+
        }
        if (foundSectorsRMS[sector] < 2 ) {
-          AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
-	  calPadRMS->SetCalROC(rocOCDB,sector);
+          if (calPadRMSOCDB) {
+            AliTPCCalROC *rocOCDB=calPadRMSOCDB->GetCalROC(sector);
+	    calPadRMS->SetCalROC(rocOCDB,sector);
+	  } else {
+	    const int mess_length=100;
+            char message[mess_length];
+	    snprintf(message,mess_length,"Missing pedestal RMS for sector %d - also not available from previous OCDB entry.\n",
+	             sector);
+	    Log (message);
+	    result = 2;
+	  }       
+
        }       
     }
 
@@ -961,7 +1001,7 @@ if (pulserObjectsOCDB) {
   }
   pulserObjects->Delete();
   delete pulserObjects;
-  pulserObjectsOCDB->Delete();
+  if (pulserObjectsOCDB) pulserObjectsOCDB->Delete();
   delete pulserObjectsOCDB;
 
   return result;
@@ -1383,6 +1423,7 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
 
 // extract list of active DDLs
 
+ if (dcsMap) {
   Bool_t found; 
   TString arrDDL(kNumDDL);
   arrDDL.Append('x',kNumDDL);
@@ -1413,7 +1454,10 @@ UInt_t AliTPCPreprocessor::ExtractAltro(Int_t sourceFXS, TMap* dcsMap)
   activeDDL->Add(key,ddlArray);
   altroObjects->Add(activeDDL);
   changed=true;
-  
+ } else {
+   Log ("ExtractAltro: No DCS map available. Active DDL list cannot be obtained.");
+   result = 3;
+ }        
 
 // extract Altro configuration files
 
