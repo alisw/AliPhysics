@@ -60,7 +60,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fDoAfterburner;          // if true run after burner
   Int_t                  fNminCells;              // minimum number of cells attached to cluster
     // derived members (ie with ! after //)
-  AliEMCALGeoUtils      *fGeom;                   //! geometry utils
+  ULong64_t              fNEvs;                   //!accepted events 
+  AliEMCALGeoUtils      *fGeom;                   //!geometry utils
   TList                 *fOutput;                 //!container of output histograms
   AliESDEvent           *fEsdEv;                  //!pointer to input esd event
   AliAODEvent           *fAodEv;                  //!pointer to input aod event

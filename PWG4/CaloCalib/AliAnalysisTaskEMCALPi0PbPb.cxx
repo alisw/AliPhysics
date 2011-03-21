@@ -36,6 +36,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fDoNtuple(0),
     fDoAfterburner(0),
     fNminCells(1),
+    fNEvs(0),
     fGeom(0),
     fOutput(0),
     fEsdEv(0),
@@ -273,6 +274,9 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   fHCentQual->Fill(cent);
   fHCuts->Fill(cut++);
 
+  // count number of accepted events
+  ++fNEvs;
+
   if (fEsdEv) {
     am->LoadBranch("PrimaryVertex.");
     am->LoadBranch("SPDVertex.");
@@ -388,6 +392,8 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
     if (f) 
       fNtuple->Write();
   }
+
+  AliInfo(Form("\nAccepted %lld events", fNEvs));
 }
 
 //________________________________________________________________________
@@ -474,6 +480,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
         Float_t vals[17];
         vals[0]  = InputEvent()->GetRunNumber();
         vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
+        if (vals[1]<1) 
+          vals[1] = fNEvs;
         vals[2]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
         vals[3]  = clusterVec.Pt();
         vals[4]  = clusterVec.E();
