@@ -40,7 +40,10 @@ AliHLTCaloSharedMemoryInterfacev2::AliHLTCaloSharedMemoryInterfacev2(TString det
 									//	fSpecification(0)
 {
    // See header file for class documentation
-   
+  for(Int_t i = 0; i < 32; i++)
+    {
+      fMapperPtr[i] = 0;
+    }
 }
 
 AliHLTCaloSharedMemoryInterfacev2::~AliHLTCaloSharedMemoryInterfacev2()

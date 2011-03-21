@@ -55,6 +55,7 @@ AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString
   fSpecificationMapPtr(0)
 {  
   //see header file for class documentation
+  fFilepath[0] = '\0';
 }
 
 

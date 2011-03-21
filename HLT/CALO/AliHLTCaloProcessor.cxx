@@ -28,9 +28,12 @@ AliHLTCaloProcessor::AliHLTCaloProcessor():AliHLTProcessor(),
 					   fModuleID(2), 
 					   fPrintInfoModule(0), 
 					   fPrintInfoFrequncyModule(1000), 
-					   fRunNumber(0)
+					   fRunNumber(0) 
 {
   //  ScanRunNumberFromFile();
+  lineNumber[0] = '\0';
+  fFilepath[0] = '\0';
+  fMessage[0] = '\0';
 }
 
 
@@ -42,41 +45,41 @@ AliHLTCaloProcessor::~AliHLTCaloProcessor()
 
  
 bool 
-AliHLTCaloProcessor::CheckFileLog(const char *origin,   const char *filename,  const char *opt)
+AliHLTCaloProcessor::CheckFileLog(const char */*origin*/,   const char */*filename*/,  const char */*opt*/)
 {
-  sprintf(fFilepath, "%s/%s", getenv("PWD"), filename);
-  FILE *fp = fopen(filename, opt);
+  // sprintf(fFilepath, "%s/%s", getenv("PWD"), filename);
+  // FILE *fp = fopen(filename, opt);
 
-  if(fp == 0)
-    {
-      //      if( (opt == "w")  || (opt == "a")) \\OD
-      if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
-	{
-	  sprintf(fMessage, "for writing  please check that the directory exists and that you have write access to it"  );
-	}
-      else
-	{
-	  sprintf(fMessage, "for reading  please check that the directory exists and that you have read access to it"  );
-	}
-     Logging(kHLTLogFatal, origin , "cannot open file" , "Was not able to open file %s  %s", fFilepath, fMessage);
-     return false;
-    }
-  else
-    {
-      //      if( (opt == "w")  || (opt == "a")) \\OD
-      if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
-	{
-	  sprintf(fMessage, "for writing" );
-	}
-      else
-	{
-	  sprintf(fMessage, "for reading");
-	}
-      //    Logging(kHLTLogInfo, origin , "opening file" , "Sucessfully opening %s  %s", fFilepath, fMessage);
-      fclose(fp); 
-      return true;
-    }
-  
+  // if(fp == 0)
+  //   {
+  //     //      if( (opt == "w")  || (opt == "a")) \\OD
+  //     if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
+  // 	{
+  // 	  sprintf(fMessage, "for writing  please check that the directory exists and that you have write access to it"  );
+  // 	}
+  //     else
+  // 	{
+  // 	  sprintf(fMessage, "for reading  please check that the directory exists and that you have read access to it"  );
+  // 	}
+  //    Logging(kHLTLogFatal, origin , "cannot open file" , "Was not able to open file %s  %s", fFilepath, fMessage);
+  //    return false;
+  //   }
+  // else
+  //   {
+  //     //      if( (opt == "w")  || (opt == "a")) \\OD
+  //     if( (!strcmp(opt,"w"))  || (!strcmp(opt,"a")))
+  // 	{
+  // 	  sprintf(fMessage, "for writing" );
+  // 	}
+  //     else
+  // 	{
+  // 	  sprintf(fMessage, "for reading");
+  // 	}
+  //     //    Logging(kHLTLogInfo, origin , "opening file" , "Sucessfully opening %s  %s", fFilepath, fMessage);
+  //     fclose(fp); 
+  //     return true;
+  //   }
+  return false;
 }
 
  
