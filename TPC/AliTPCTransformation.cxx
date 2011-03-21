@@ -197,6 +197,9 @@ AliTPCTransformation::AliTPCTransformation(const AliTPCTransformation&trafo):
   fFormulaY(0),       // y formula - pointer to the function
   fFormulaZ(0)       // z formula - pointer to the function
 {
+  //
+  // comment are above
+  //
   if (trafo.fNameX) fNameX = new TString(*(trafo.fNameX)); 
   if (trafo.fNameY) fNameY = new TString(*(trafo.fNameY)); 
   if (trafo.fNameZ) fNameZ = new TString(*(trafo.fNameZ)); 
@@ -251,6 +254,8 @@ Bool_t AliTPCTransformation::Init(){
 
 TBits * AliTPCTransformation::BitsSide(Bool_t aside){
   //
+  // Set bits for given side
+  //
   TBits * bits = new TBits(72);
   for (Int_t i=0; i<72;i++){
     if (i%36<18 && aside) (*bits)[i]=kTRUE;
@@ -263,7 +268,7 @@ TBits * AliTPCTransformation::BitsSide(Bool_t aside){
 
 TBits * AliTPCTransformation::BitsAll(){
   //
-  //
+  // Set all bits to kTRUE
   //
   TBits * bits = new TBits(72);
   for (Int_t i=0; i<72;i++){
@@ -362,7 +367,7 @@ Double_t AliTPCTransformation::GetDeltaXYZ(Int_t coord, Int_t volID, Double_t pa
 
 
 
-Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, const Double_t * const param){
   //
   // Scaling and shift of TPC radius
   // xyz[0..2] - global xyz of point 
@@ -382,7 +387,7 @@ Double_t  AliTPCTransformation::TPCscalingRPol(Double_t *xyz, Double_t * param){
 }
 
 
-Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, const Double_t * const param){
   //
   //
   // Scaling and shift of TPC radius
@@ -394,7 +399,7 @@ Double_t  AliTPCTransformation::TPCscalingZDrift(Double_t *xyz, Double_t * param
   return deltaZ*xyz[3];
 }
 
-Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, Double_t * /*param*/){
+Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, const Double_t * const /*param*/){
   //
   //
   // Z shift because time 0 offset
@@ -408,7 +413,7 @@ Double_t  AliTPCTransformation::TPCscalingZDriftT0(Double_t *xyz, Double_t * /*p
 }
 
 
-Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, const Double_t * const param){
   //
   //
   // Scaling and shift of TPC radius
@@ -423,7 +428,7 @@ Double_t  AliTPCTransformation::TPCscalingZDriftGy(Double_t *xyz, Double_t * par
 
 
 
-Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, Double_t * param){
+Double_t  AliTPCTransformation::TPCscalingPhiLocal(Double_t *xyz, const Double_t * const param){
   //
   //
   // Scaling if the local y -phi
@@ -458,7 +463,7 @@ Double_t  AliTPCTransformation::TPClocalRPhiEdge(Double_t *xyz, const Double_t *
 }
 
 
-Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, Double_t * param){
+Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, const Double_t * const param){
   //
   // inner field cage r distorion - proportinal to 1 over distance to the IFC
   // param[0] - drift polynom order
@@ -472,7 +477,7 @@ Double_t       AliTPCTransformation::TPCscalingRIFC(Double_t *xyz, Double_t * pa
   return xyz[3]*value;
 }
 
-Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, Double_t * param){
+Double_t       AliTPCTransformation::TPCscalingROFC(Double_t *xyz, const Double_t * const param){
   //
   // outer field cage r distorion - proportinal to 1 over distance to the OFC
   // param[0] - drift polynom order

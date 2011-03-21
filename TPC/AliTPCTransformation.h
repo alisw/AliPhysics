@@ -1,6 +1,17 @@
 #ifndef ALITPCTRANSFORMATION_H
 #define ALITPCTRANSFORMATION_H
 
+//-------------------------------------------------------
+//                       TPC transformations
+//   
+//
+//   Origin: marian.ivanov@cern.ch
+//           Code is not used anymore for the TPC corrections
+//           Obsolete - will be removed soon 
+// 
+//-------------------------------------------------------
+
+
 #include "TNamed.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
@@ -56,17 +67,17 @@ public:
   // predefined formulas
   //
   static  Int_t          BuildBasicFormulas(); //build list of basic formulas
-  static  Double_t       TPCscalingRPol(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingZDrift(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingZDriftGy(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingZDriftT0(Double_t *xyz, Double_t * param);
-  static  Double_t       TPCscalingPhiLocal(Double_t *xyz, Double_t * param);
+  static  Double_t       TPCscalingRPol(Double_t *xyz, const Double_t * const param);
+  static  Double_t       TPCscalingZDrift(Double_t *xyz, const Double_t * const param);
+  static  Double_t       TPCscalingZDriftGy(Double_t *xyz, const Double_t * const param);
+  static  Double_t       TPCscalingZDriftT0(Double_t *xyz, const Double_t * const param);
+  static  Double_t       TPCscalingPhiLocal(Double_t *xyz, const Double_t * const param);
   static  Double_t       TPClocalRPhiEdge(Double_t *xyz, const Double_t *const param);
   //
   // TPC Field cage + ROC misalingment induced distortion
   //
-  static  Double_t       TPCscalingRIFC(Double_t *xyz, Double_t * param); // inner field cage r distorion
-  static  Double_t       TPCscalingROFC(Double_t *xyz, Double_t * param); // outer field cage r distorion
+  static  Double_t       TPCscalingRIFC(Double_t *xyz, const Double_t * const param); // inner field cage r distorion
+  static  Double_t       TPCscalingROFC(Double_t *xyz, const Double_t * const param); // outer field cage r distorion
   //
   // TPC field cage + ROC misalignemnt induced distortion
   //
