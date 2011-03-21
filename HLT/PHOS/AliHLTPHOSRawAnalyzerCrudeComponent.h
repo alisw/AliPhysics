@@ -19,7 +19,7 @@ class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponent
   AliHLTPHOSRawAnalyzerCrudeComponent();
   virtual ~AliHLTPHOSRawAnalyzerCrudeComponent();
   AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & );
-  AliHLTPHOSRawAnalyzerCrudeComponent & operator = (const AliHLTPHOSRawAnalyzerCrudeComponent)
+  AliHLTPHOSRawAnalyzerCrudeComponent & operator = (const AliHLTPHOSRawAnalyzerCrudeComponent&)
   {
     return *this;
   };

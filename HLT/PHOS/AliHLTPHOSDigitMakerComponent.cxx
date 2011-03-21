@@ -163,14 +163,18 @@ AliHLTPHOSDigitMakerComponent::DoEvent(const AliHLTComponentEventData& evtData, 
       {
 	 AliHLTPHOSMapper mapper;
 	 Int_t module = mapper.GetModuleFromSpec(iter->fSpecification);
-	 for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
-	 {
-	    for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
-	    {
-		fDigitMakerPtr->SetGain(x, z, fCalibData->GetHighLowRatioEmc(5-module, z+1, x+1), fCalibData->GetADCchannelEmc(5-module, z+1, x+1));
-	    }
+	 if(module >= 0 && module < 5)
+	   {
+	     for(Int_t x = 0; x < fCaloConstants->GetNXCOLUMNSMOD(); x++)
+	       {
+		 for(Int_t z = 0; z < fCaloConstants->GetNZROWSMOD(); z++)
+		   {
+		     fDigitMakerPtr->SetGain(x, z, fCalibData->GetHighLowRatioEmc(5-module, z+1, x+1), fCalibData->GetADCchannelEmc(5-module, z+1, x+1));
+		   }
+	       }
+	     fGainsInitialised = true;
 	 }
-	 fGainsInitialised = true;
+
       }
 
       specification |= iter->fSpecification;

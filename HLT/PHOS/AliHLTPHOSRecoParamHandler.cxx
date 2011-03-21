@@ -46,11 +46,12 @@ Float_t AliHLTPHOSRecoParamHandler::GetCorrectedEnergy ( Float_t e )
 void AliHLTPHOSRecoParamHandler::FillParameters()
 {
    //See header file for class documentation
-   if(fRecoParamPtr)
+  AliPHOSRecoParam *tmp = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr);
+   if(tmp)
    {
-      fLogWeight = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCLogWeight();
-      fRecPointMemberThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCMinE();
-      fRecPointThreshold = dynamic_cast<AliPHOSRecoParam*>(fRecoParamPtr)->GetEMCClusteringThreshold();
+      fLogWeight = tmp->GetEMCLogWeight();
+      fRecPointMemberThreshold = tmp->GetEMCMinE();
+      fRecPointThreshold = tmp->GetEMCClusteringThreshold();
    }
 }
 
