@@ -14,15 +14,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "AliGlauberNucleus.h"
-
 #include <Riostream.h>
-class TNamed;
+#include <TNamed.h>
+
 class TObjArray;
 class TNtuple;
-class TArray;
 
 class AliGlauberMC : public TNamed {
 public:
+   enum EdNdEtaType { kSimple,
+                      kNBD,
+                      kNBDSV,
+                      kTwoNBD,
+                      kGBW,
+                      kNone };
+
    AliGlauberMC(Option_t* NA = "Pb", Option_t* NB = "Pb", Double_t xsect = 64);
    virtual     ~AliGlauberMC();
    AliGlauberMC(const AliGlauberMC& in);
@@ -34,20 +40,12 @@ public:
    Bool_t       CalcEvent(Double_t bgen);
 
    //various ways to calculate multiplicity
-   Double_t     GetdNdEta(    Double_t nnp=8.0,
-                              Double_t x=0.13 ) const;
-   Double_t     GetdNdEtaGBW( Double_t delta=0.79,
-                              Double_t lambda=0.288,
-                              Double_t snn=30.25 ) const;
-   Double_t	GetdNdEtaNBD(     Int_t k=3,
-                              Double_t nmean = 4,
-                              Double_t beta = 0.13 ) const;
-   Double_t	GetdNdEtaTwoNBD(  Int_t k1=3,
-                              Double_t nmean1=4,
-                              Int_t k2=2,
-                              Double_t nmean2=11,
-                              Double_t alpha=0.4,
-                              Double_t beta=0.13 ) const;
+   Double_t GetdNdEta() const;
+   Double_t GetdNdEtaSimple( const Double_t* param ) const;
+   Double_t GetdNdEtaGBW(    const Double_t* param ) const;
+   Double_t	GetdNdEtaNBD(    const Double_t* param ) const;
+   Double_t	GetdNdEtaNBDSV(  const Double_t* param ) const;
+   Double_t	GetdNdEtaTwoNBD( const Double_t* param ) const;
 
    Double_t     GetEccentricity()    const;
    Double_t     GetEccentricityColl()      const;
@@ -74,13 +72,12 @@ public:
    void         Reset();
    static Double_t	NegativeBinomialDistribution(Int_t x, Int_t k, Double_t nmean);
    Int_t  NegativeBinomialRandom(Int_t k, Double_t nmean) const;
+   Int_t  NegativeBinomialRandomSV(Double_t nbar, Double_t k) const;
    Int_t  DoubleNegativeBinomialRandom(Int_t k1, Double_t nmean1, Int_t k2, Double_t nmean2, Double_t alpha) const;
+   Double_t* GetdNdEtaParam() {return fdNdEtaParam;}
+   void      SetdNdEtaType(EdNdEtaType method) {fMultType=method;}
    void   SetBmin(Double_t bmin)      {fBMin = bmin;}
    void   SetBmax(Double_t bmax)      {fBMax = bmax;}
-   void   SetdNdEtaParam( Double_t nnp = 8., Double_t x = 0.13);
-   void   SetdNdEtaGBWParam( Double_t delta = 0.79, Double_t lambda = 0.288, Double_t snn = 30.25);
-   void   SetdNdEtaNBDParam(Double_t k=3, Double_t nmean=4, Double_t beta=0.13);
-   void   SetdNdEtaTwoNBDParam(Double_t alpha = 0.4, Double_t k1 = 3, Double_t nmean1 = 4., Double_t k2 = 2., Double_t nmean2 = 11., Double_t beta=0.13);
    void   SetMinDistance(Double_t d)  {fANucleus.SetMinDist(d); fBNucleus.SetMinDist(d);}
    void   SetDoPartProduction(Bool_t b) { fDoPartProd = b; }
    void   Setr(Double_t r)  {fANucleus.SetR(r); fBNucleus.SetR(r);}
@@ -133,10 +130,8 @@ private:
    Int_t        fTotalEvents;    //All events within selected impact parameter range
    Double_t     fBMin;           //Minimum impact parameter to be generated
    Double_t     fBMax;           //Maximum impact parameter to be generated
-   Double_t	fdNdEtaParam[2];	   //Parameters: nnp, x
-   Double_t     fdNdEtaGBWParam[3];  //Parameters: delta, lambda, snn
-   Double_t     fdNdEtaNBDParam[3];       //Parameters:  k, nmean, beta
-   Double_t     fdNdEtaTwoNBDParam[6];    //Parameters: k1, nmean1, k2, nmean2, alpha, beta
+   Double_t	    fdNdEtaParam[10];//Parameters for multiplicity calculation: meaning depends on method selection
+   EdNdEtaType fMultType;//mutliplicity method selection  
    Int_t        fMaxNpartFound;  //Largest value of Npart obtained
    Int_t        fNpart;          //Number of wounded (participating) nucleons in current event
    Int_t        fNcoll;          //Number of binary collisions in current event
