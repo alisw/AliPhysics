@@ -455,6 +455,12 @@ void Parser::ReadInput()
 	  // 	  }
 	  (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
 
+	  delete [] tFather;
+	  delete [] tDaughter1;
+	  delete [] tDaughter2;
+	  delete [] tDaughter3;
+	  delete [] tBRatio;
+
 	  delete newChannel;
 	}
       
@@ -515,11 +521,11 @@ void Parser::ReadInput()
 	  // 	      < mDB->GetParticleType(tFather)->GetMass())
 	  (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
 
-	  delete tFather;
-	  delete tDaughter1;
-	  delete tDaughter2;
-	  delete tDaughter3;
-	  delete tBRatio;
+	  delete [] tFather;
+	  delete [] tDaughter1;
+	  delete [] tDaughter2;
+	  delete [] tDaughter3;
+	  delete [] tBRatio;
 	}
     }
 
