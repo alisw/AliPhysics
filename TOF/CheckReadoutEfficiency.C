@@ -29,6 +29,7 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
   TH1F *data = (TH1F *)cdbe->GetObject();
 
   TH2F *hEfficiencyMap = new TH2F("hEfficiencyMap", "Readout efficiency map;sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH1F *hEfficiencyFlag = new TH1F("hEfficiencyFlag", "Readout efficiency flag;index;flag", 157248, 0., 157248.);
 
   AliTOFcalibHisto calib;
   calib.LoadCalibHisto();
@@ -44,13 +45,15 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
     fea = padx / 12;
     hitmapx = sector + ((Double_t)(3 - fea) + 0.5) / 4.;
     hitmapy = sectorStrip;
-
     hEfficiencyMap->Fill(hitmapx, hitmapy, efficiency / 24.);
+    if (efficiency >= 0.95)
+      hEfficiencyFlag->SetBinContent(i + 1, 1);
   }
 
   hEfficiencyMap->DrawCopy("colz");
   TFile *fout = TFile::Open("CheckReadoutEfficiency.root", "RECREATE");
   hEfficiencyMap->Write();
+  hEfficiencyFlag->Write();
   fout->Close();
 
 }
