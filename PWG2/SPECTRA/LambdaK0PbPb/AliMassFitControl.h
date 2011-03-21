@@ -1,5 +1,5 @@
-#ifndef ALIMASSFITCONTROL
-#define ALIMASSFITCONTROL
+#ifndef ALIMASSFITCONTROL_H
+#define ALIMASSFITCONTROL_H
 #include "TMath.h"
 
 //-------------------------------------------------------------------------
@@ -44,22 +44,22 @@ class AliMassFitControl : public TObject {
     return 0;
   };
 
-  const Int_t RebinFactor(){return fRebinFactor;};
-  const Int_t BinLower(){return fBinLower;};
-  const Int_t BinUpper(){return fBinUpper;};
-  const Double_t PtUpper(){return fPtUpper;};
-  const Double_t PtLower(){return fPtLower;};
-  const Double_t MinMass(){return fMinMass;};
-  const Double_t MaxMass(){return fMaxMass;};
+  Int_t RebinFactor() const {return fRebinFactor;};
+  Int_t BinLower() const {return fBinLower;};
+  Int_t BinUpper() const {return fBinUpper;};
+  Double_t PtUpper() const {return fPtUpper;};
+  Double_t PtLower() const {return fPtLower;};
+  Double_t MinMass() const {return fMinMass;};
+  Double_t MaxMass() const {return fMaxMass;};
 
 
-  const Bool_t FixedQuad(){if(fPolyOrder < 2) {return kTRUE;}
+  Bool_t FixedQuad() const {if(fPolyOrder < 2) {return kTRUE;}
   else {return kFALSE;};
   };
-  const Bool_t FixedLin(){if(fPolyOrder < 1) {return kTRUE;}
+  Bool_t FixedLin() const {if(fPolyOrder < 1) {return kTRUE;}
   else {return kFALSE;};
   };
-  const Double_t DPt(){return fPtUpper-fPtLower;};
+  Double_t DPt() const {return fPtUpper-fPtLower;};
   void CalcBinLimits(Int_t BinsPerGeV){
     fBinLower = TMath::Nint(1.+fPtLower*BinsPerGeV);
     fBinUpper = TMath::Nint(fPtUpper*BinsPerGeV);
