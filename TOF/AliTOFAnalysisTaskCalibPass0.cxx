@@ -611,7 +611,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   Float_t tofReso[fgkMaxNumberOfPoints];
   Float_t t0Spread[fgkMaxNumberOfPoints];
   for (Int_t ipoint = 0; ipoint < nPoints; ipoint++) {
-    timestamp[ipoint] = time[ipoint] + (Float_t)startTimestamp;
+    timestamp[ipoint] = (UInt_t)time[ipoint] + startTimestamp;
     t0[ipoint] = timeZeroMean[ipoint];
     tofReso[ipoint] = timeZeroSigma[ipoint];
     t0Spread[ipoint] = vertexSigma[ipoint] / 2.99792457999999984e-02;
