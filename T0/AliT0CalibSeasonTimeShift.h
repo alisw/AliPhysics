@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////
 
 #include "TNamed.h"
-
+class TH1F;
 class AliT0CalibSeasonTimeShift: public TNamed {
 
  public:
@@ -31,9 +31,10 @@ class AliT0CalibSeasonTimeShift: public TNamed {
   Float_t *GetT0Means() { return fMeanPar;}
   Float_t *GetT0Sigmas() { return fSigmaPar;};
  
-  void SetT0Par(Float_t par[4],Float_t spar[4] );
-  void SetT0Par(const char* filePhys );
-   
+  Bool_t SetT0Par(Float_t par[4],Float_t spar[4] );
+  Bool_t SetT0Par(const char* filePhys );
+  void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma); 
+
  protected:
   Float_t  fMeanPar[4];     
 // [0] (T0A+T0C)/2; 

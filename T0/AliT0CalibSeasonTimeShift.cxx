@@ -91,19 +91,24 @@ void  AliT0CalibSeasonTimeShift::Print(Option_t*) const
 } 
 
 //________________________________________________________________
-void  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
+Bool_t  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
 {
-  for (Int_t i=0; i<4; i++)
+  Bool_t ok=false;
+ for (Int_t i=0; i<4; i++)
     {
       fMeanPar[i] = par[i];
       fSigmaPar[i] = spar[i];
+      if ( fSigmaPar[i] == 0 ||  fSigmaPar[i] > 500) ok = false;
     }
-
+ return ok;
 }
 
 //________________________________________________________________
-void AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
+Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
 {
+  // compute online equalized time
+  Float_t mean, sigma;
+  Bool_t ok=false;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -112,26 +117,49 @@ void AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys)
   else
     {
       gFile->ls();
- 
-      TString histname[4]={"meanAC", "meanA", "meanC", "resolution"};
-       for (Int_t i=0; i<4; i++)
+    TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
+    // dr->Dump();
+    TObjArray * TzeroObj = (TObjArray*) dr->Get("fTzeroObject");
+    TString histname[4]={"fTzeroORAplusORC", "fTzeroORA", "fTzeroORC",  "fResolution"};
+    for (Int_t i=0; i<4; i++)
 	{
-	  TH1F *cfd = (TH1F*) gFile->Get(histname[i].Data());
+	  TH1F *cfd = (TH1F*)TzeroObj->FindObject( histname[i].Data());
+	  gFile->Get(histname[i].Data());
 	  if(!cfd) AliWarning(Form("no histograms collected for %s", histname[i].Data()));
 	  if(cfd) {
-	    TF1 *g = new TF1("g", "gaus",-2,2);
-	    cfd->Fit("g"," ","Q",-2,2);
-	    Double_t par[3];
-	    g->GetParameters(&par[0]);
-	    fMeanPar[i] = par[1];
-	    fSigmaPar[i]=par[2];
-
+	    GetMeanAndSigma(cfd, mean, sigma);
+	    if (sigma == 0 || sigma > 500) ok = false;
+	    else
+	      { 
+		fMeanPar[i] = mean;
+		fSigmaPar[i] = sigma;
+		ok=true;
+	      }
 	  }
 	} 
-
-	  gFile->Close();
-	  delete gFile;
-	  
+    
+    gFile->Close();
+    delete gFile;
+    
     }
-  
+  return ok;
+}
+//________________________________________________________________________
+void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Float_t &sigma) {
+
+  const double window = 5.;  //fit window 
+ 
+  double meanEstimate, sigmaEstimate; 
+  int maxBin;
+  maxBin        =  hist->GetMaximumBin(); //position of maximum
+  meanEstimate  =  hist->GetBinCenter( maxBin); // mean of gaussian sitting in maximum
+  sigmaEstimate = hist->GetRMS();
+  TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
+  fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
+  hist->Fit("fit","R");
+
+  mean  = (Float_t) fit->GetParameter(1);
+  sigma = (Float_t) fit->GetParameter(2);
+
+  delete fit;
 }
