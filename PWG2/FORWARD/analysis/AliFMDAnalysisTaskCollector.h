@@ -12,9 +12,9 @@ class AliESDEvent;
 class TChain;
 class AliAODEvent;
 class AliFMDAnaParameters;
-
-
-
+//
+//Class to fit energy distributions in the FMD
+//
 class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
 {
  public:
@@ -22,7 +22,7 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
   AliFMDAnalysisTaskCollector(const char* name);
   AliFMDAnalysisTaskCollector(const AliFMDAnalysisTaskCollector& o) : 
     AliAnalysisTaskSE(),
-    fDebug(o.fDebug),
+    //    fDebug(o.fDebug),
     fOutputList(o.fOutputList),
     fArray(o.fArray),
     fZvtxDist(o.fZvtxDist),
@@ -43,21 +43,21 @@ class AliFMDAnalysisTaskCollector : public AliAnalysisTaskSE
   virtual void SetDebugLevel(Int_t level) {fDebug = level;}
   virtual void Terminate(Option_t */*option*/);
   void ReadFromFile(const Char_t* filename, Bool_t store=kFALSE, Int_t speciesOption = 0);
-  static Double_t  TripleLandau(Double_t *x, Double_t *par);
+  static Double_t  TripleLandau(const Double_t *x, Double_t *par);
   TF1* FitEnergyDistribution(TH1F* hEnergy, Int_t speciesOption);
 
 private:
   void          GetVertex(Double_t* vertexXYZ); 
-  Int_t         fDebug;        //  Debug flag
-  TList*        fOutputList;
-  TObjArray*    fArray;
-  TH1F*         fZvtxDist;
-  Int_t         fEvents;
-  Int_t         fEmptyEvents;
-  Float_t       fClusters;
-  Float_t       fClustersEmpty;
-  Bool_t        fFirstEvent;
-  AliFMDAnaParameters* fParam;
+  //Int_t         fDebug;        //  Debug flag
+  TList*        fOutputList;     //Output list
+  TObjArray*    fArray;          //Array for storage
+  TH1F*         fZvtxDist;       //Dist of z vertex
+  Int_t         fEvents;         //Number of events
+  Int_t         fEmptyEvents;    //Number of events with empty trigger
+  Float_t       fClusters;       //Number of clusters
+  Float_t       fClustersEmpty;  //Number of clusters in empty events
+  Bool_t        fFirstEvent;     //Have we had events yet ?
+  AliFMDAnaParameters* fParam;   //The parameters class for IO
 
   ClassDef(AliFMDAnalysisTaskCollector, 1); // Analysis task for FMD analysis
 };

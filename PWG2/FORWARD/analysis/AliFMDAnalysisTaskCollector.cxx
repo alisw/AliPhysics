@@ -51,8 +51,9 @@
 ClassImp(AliFMDAnalysisTaskCollector)
 
 //____________________________________________________________________
-Double_t  AliFMDAnalysisTaskCollector::TripleLandau(Double_t *x, Double_t *par) {
-  
+Double_t  AliFMDAnalysisTaskCollector::TripleLandau(const Double_t *x, Double_t *par) {
+  //A convolution of three landaus to fit three MIP peaks
+
   Double_t energy        = x[0];
   Double_t constant = par[0];
   Double_t mpv      = par[1];
@@ -69,7 +70,7 @@ Double_t  AliFMDAnalysisTaskCollector::TripleLandau(Double_t *x, Double_t *par) 
 //____________________________________________________________________
 
 AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
-: fDebug(0),
+  : //fDebug(0),
   fOutputList(0),
   fArray(0),
   fZvtxDist(0),
@@ -87,7 +88,7 @@ AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector()
 //____________________________________________________________________
 AliFMDAnalysisTaskCollector::AliFMDAnalysisTaskCollector(const char* name):
     AliAnalysisTaskSE(name),
-    fDebug(0),
+    //fDebug(0),
     fOutputList(0),
     fArray(0),
     fZvtxDist(0),
@@ -163,7 +164,7 @@ void AliFMDAnalysisTaskCollector::UserCreateOutputObjects()
 //____________________________________________________________________
 void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 {
-  
+  //Collect data for fitting
   AliESDEvent* esd = (AliESDEvent*)InputEvent();
   AliESD* old = esd->GetAliESDOld();
   if (old) {
@@ -219,7 +220,7 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
   if(empty)
     std::cout<<spdMult->GetNumberOfSingleClusters()<<"  "<<spdMult->GetNumberOfTracklets()<<std::endl;
   
-  TH1F* Edist = 0;
+  TH1F* edist = 0;
   TH1F* emptyEdist = 0;
   TH1F* ringEdist = 0;
   for(UShort_t det=1;det<=3;det++) {
@@ -245,8 +246,8 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 	  
       	  //	  std::cout<<det<<"  "<<ring<<"   "<<sec<<"    "<<strip<<"   "<<vertex[2]<<"   "<<eta<<"   "<<nEta<<std::endl;
 	  if(physics) {
-	    Edist = (TH1F*)fOutputList->FindObject(Form("FMD%d%c_etabin%d",det,ring,nEta));	  
-	    Edist->Fill(mult);
+	    edist = (TH1F*)fOutputList->FindObject(Form("FMD%d%c_etabin%d",det,ring,nEta));	  
+	    edist->Fill(mult);
 	    ringEdist->Fill(mult);
 	  }
 	  else if(empty) {
@@ -270,6 +271,8 @@ void AliFMDAnalysisTaskCollector::UserExec(Option_t */*option*/)
 //____________________________________________________________________
   
 void AliFMDAnalysisTaskCollector::Terminate(Option_t */*option*/) {
+  //Terminate
+  
   std::cout<<"Analysed "<<fEvents<<" events and "<<fEmptyEvents<<" empty"<<std::endl;
   std::cout<<fClusters / fEvents << " clusters per physics event and "<<fClustersEmpty / fEmptyEvents<< " clusters per empty event"<<std::endl;
 
@@ -313,10 +316,10 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   
   TList* list = (TList*)fin.Get("energyDist");
   
-  AliFMDAnaCalibEnergyDistribution* EnergyDist = new AliFMDAnaCalibEnergyDistribution();
+  AliFMDAnaCalibEnergyDistribution* energyDist = new AliFMDAnaCalibEnergyDistribution();
   
-  EnergyDist->SetNetaBins(pars->GetNetaBins());
-  EnergyDist->SetEtaLimits(pars->GetEtaMin(),pars->GetEtaMax());
+  energyDist->SetNetaBins(pars->GetNetaBins());
+  energyDist->SetEtaLimits(pars->GetEtaMin(),pars->GetEtaMax());
   
   TF1* fitFunc = 0;
   
@@ -334,15 +337,15 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
 	fitFunc->Write(Form("FMD%d%c_fitfunc",det,ringChar),TObject::kWriteDelete);
       
       
-      EnergyDist->SetEmptyEnergyDistribution(det,ringChar,hEmptyEdist);
-      EnergyDist->SetRingEnergyDistribution(det,ringChar,hRingEdist);
+      energyDist->SetEmptyEnergyDistribution(det,ringChar,hEmptyEdist);
+      energyDist->SetRingEnergyDistribution(det,ringChar,hRingEdist);
       for(Int_t nEta = 0; nEta < pars->GetNetaBins(); nEta++) {
 	TH1F* hEdist = (TH1F*)list->FindObject(Form("FMD%d%c_etabin%d",det,ringChar,nEta));
 	
 	fitFunc = FitEnergyDistribution(hEdist, speciesOption) ;
 	if(fitFunc)
 	  fitFunc->Write(Form("FMD%d%c_etabin%d_fitfunc",det,ringChar,nEta),TObject::kWriteDelete);
-	EnergyDist->SetEnergyDistribution(det,ringChar,nEta,hEdist);
+	energyDist->SetEnergyDistribution(det,ringChar,nEta,hEdist);
 	
       }
       
@@ -355,7 +358,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
   
   if(store) {
     TFile fcalib(pars->GetPath(pars->GetEdistID() ),"RECREATE");
-    EnergyDist->Write(AliFMDAnaParameters::GetEdistID());
+    energyDist->Write(AliFMDAnaParameters::GetEdistID());
     fcalib.Close();
   }
 
@@ -364,6 +367,7 @@ void AliFMDAnalysisTaskCollector::ReadFromFile(const Char_t* filename, Bool_t st
 }
 //____________________________________________________________________
 TF1* AliFMDAnalysisTaskCollector::FitEnergyDistribution(TH1F* hEnergy, Int_t /*speciesOption*/) {
+  //Fit energy distribution
   AliFMDAnaParameters* pars = AliFMDAnaParameters::Instance();
   TF1* fitFunc = 0;
   if(hEnergy->GetEntries() != 0) {
