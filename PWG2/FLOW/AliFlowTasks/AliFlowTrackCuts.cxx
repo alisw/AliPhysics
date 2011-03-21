@@ -1227,16 +1227,16 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
   {
     case AliPID::kPion:
       return ( (s[2]<0.015) && (s[2]>-0.015) &&
-               (s[3]>0.025) && (s[3]<-0.025) &&
-               (s[4]>0.03) && (s[4]<-0.03) );
+               (s[3]>0.025) &&
+               (s[4]>0.03) );
     case AliPID::kKaon:
       return ( (s[3]<0.015) && (s[3]>-0.015) &&
-               (s[2]>0.03) && (s[2]<-0.03) &&
-               (s[4]<-0.03) && (s[4]>0.03) );
+               (s[2]<-0.03) &&
+               (s[4]>0.03) );
     case AliPID::kProton:
       return ( (s[4]<0.015) && (s[2]>-0.015) &&
-               (s[3]<-0.025) && (s[3]>0.025) &&
-               (s[2]<-0.025) && (s[2]>0.025) );
+               (s[3]<-0.025) &&
+               (s[2]<-0.025) );
     default:
       return kFALSE;
   }

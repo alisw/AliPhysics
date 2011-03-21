@@ -61,6 +61,11 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA():
   fTPCsignalPimc(NULL),
   fTPCsignalKmc(NULL),
   fTPCsignalPmc(NULL),
+  fTOFtime(NULL),
+  fTOFtimeE(NULL),
+  fTOFtimePi(NULL),
+  fTOFtimeK(NULL),
+  fTOFtimeP(NULL),
   fTOFbeta(NULL),
   fTOFbetaE(NULL),
   fTOFbetaPi(NULL),
@@ -170,6 +175,11 @@ AliAnalysisTaskPIDflowQA:: AliAnalysisTaskPIDflowQA(const char *name):
   fTPCsignalPimc(NULL),
   fTPCsignalKmc(NULL),
   fTPCsignalPmc(NULL),
+  fTOFtime(NULL),
+  fTOFtimeE(NULL),
+  fTOFtimePi(NULL),
+  fTOFtimeK(NULL),
+  fTOFtimeP(NULL),
   fTOFbeta(NULL),
   fTOFbetaE(NULL),
   fTOFbetaPi(NULL),
@@ -365,6 +375,17 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
     fOutputList->Add(fTPCsignalKmc);
     fOutputList->Add(fTPCsignalPmc);
   }
+
+  fTOFtime=new TH2F("fTOFtime",";p[GeV/c];#time",kPBins,binsPDummy,1000, 0.4, 1.1);//
+  fOutputList->Add(fTOFtime);
+  fTOFtimeE=new TH2F("fTOFtimeE",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFtimePi=new TH2F("fTOFtimePi",";p [GeV/c];#time-#time_{#pi}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFtimeK=new TH2F("fTOFtimeK",";p [GeV/c];#time-#time_{K}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  fTOFtimeP=new TH2F("fTOFtimeP",";p [GeV/c];#time-#time_{p}",kPBins,binsPDummy,500, -0.25, 0.25);//
+  //fOutputList->Add(fTOFtimeE);
+  //fOutputList->Add(fTOFtimePi);
+  //fOutputList->Add(fTOFtimeK);
+  //fOutputList->Add(fTOFtimeP);
 
   fTOFbeta=new TH2F("fTOFbeta",";p[GeV/c];#beta",kPBins,binsPDummy,1000, 0.4, 1.1);//
   fOutputList->Add(fTOFbeta);
