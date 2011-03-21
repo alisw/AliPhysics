@@ -52,6 +52,12 @@ private:
   TH2F* fTPCsignalKmc;//!TPC PID signal as function of p for K+
   TH2F* fTPCsignalPmc;//!TPC PID signal as function of p for p
 
+  TH2F* fTOFtime;//!vs time
+  TH2F* fTOFtimeE;//!vs time
+  TH2F* fTOFtimePi;//!vs time
+  TH2F* fTOFtimeK;//!vs time
+  TH2F* fTOFtimeP;//!vs time
+
   TH2F* fTOFbeta;//!vs beta
   TH2F* fTOFbetaE;//!vs beta
   TH2F* fTOFbetaPi;//!vs beta

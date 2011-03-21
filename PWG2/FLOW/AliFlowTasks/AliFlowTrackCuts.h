@@ -203,7 +203,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();
   void InitPIDcuts();
-  void InitESDcuts() {if (!fAliESDtrackCuts) fAliESDtrackCuts=new AliESDtrackCuts();}
+  void InitESDcuts() {if (!fAliESDtrackCuts) {fAliESDtrackCuts=new AliESDtrackCuts();}}
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(AliESDtrack* track); 
   void SetPriors(); // set my favourite priors
