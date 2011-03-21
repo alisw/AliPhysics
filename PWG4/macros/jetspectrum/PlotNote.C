@@ -48,6 +48,7 @@ void ScaleH1(TH1* h,char* cX = "",char* cY = "",Float_t fScale = 1,Bool_t bWidth
 void SetStyleH1(TH1 *h,Int_t color = 0,Int_t fillStyle = 0,Int_t markerStyle = 0);
 void ScaleH2(TH2* h,char* cX = "",char* cY = "",char* cZ = "",Float_t fScale = 1,Bool_t bWidth = true);
 TH1F* GetPythia8Spectrum(const char *cHist,const char *cPythia,Float_t deta,Int_t iRebin = 1,Int_t iMask = 0);
+TF1* FitLHSgaus(TH1D *hDeltaPt, double &sigma, double &sigma_error, double &mean);
 const char *cPrintMask = "110116_%s.eps";
 void set_plot_style();
 TCanvas *cTmp = 0;
@@ -772,7 +773,7 @@ Int_t PlotJetBFluctuations(){
   const int nCen = 4;
   const Float_t fCentLo[nCen] = {0,10,30,50};
   const Float_t fCentUp[nCen] = {10,30,50,80};
-  TH2F *hFrame = new TH2F("hFrame",";#delta p_{T} (GeV/c);Probability/GeV",200,-70,70,100,1E-5,5); 
+  TH2F *hFrame = new TH2F("hFrame",";#delta p_{T} (GeV/c);Probability/GeV",200,-70,70,100,1E-5,50); 
   hFrame->SetTitleOffset(1.5,"Y");
   hFrame->SetTitleOffset(1.5,"X");
   hFrame->SetLabelSize(hFrame->GetLabelSize("Y")*0.9,"Y");
@@ -787,15 +788,16 @@ Int_t PlotJetBFluctuations(){
   TCanvas *c1 = new TCanvas("c11","c1",600,600);
   c1->SetLogy();
 
-  TFile::SetCacheFileDir("/tmp/");
+  //  TFile::SetCacheFileDir("/tmp/");
 
   // Martha, single particle jets
-  TFile *fM = TFile::Open("http://qgp.uni-muenster.de/~stevero/tmp/jets/PWG4_JetTasksOutput_AOD_EmbeddingSingleTrack.root","CACHEREAD");
+  TFile *fM = TFile::Open("~/alice/jets/macros/corrections/tmp/MV_PWG4_JetTasksOutput_AOD_EmbeddingSingleTrack.root");
   TH1D *hDeltaPtM[nCen] = {0};
+  TString sDeltaPtM = "";
 
   // select 
-  Float_t fMinPtM = 40;
-  Float_t fMaxPtM = 80;
+  Float_t fMinPtM = 20;
+  Float_t fMaxPtM = 40;
   int iB = 2;
 
   /*
@@ -805,11 +807,9 @@ Int_t PlotJetBFluctuations(){
     3: 50-80%
   */
 
-
-
-
   for(int ic = 0;ic < nCen;ic++){
     tmpName = Form("PWG4_BkgFluctCent%dB%d",ic,iB);
+    sDeltaPtM = Form("anti-k_{T} embedded tracks %2.0f-%2.0f GeV (MV)",fMinPtM,fMaxPtM);
     TDirectory *dir = (TDirectory*)fM->Get(tmpName.Data());
     if(!dir)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
     tmpName = Form("taskBkgFluctCent%dB%d",ic,iB);
@@ -822,7 +822,7 @@ Int_t PlotJetBFluctuations(){
     hDeltaPtM[ic]->Rebin(10);
     Float_t fScale = hDeltaPtM[ic]->Integral("width");
     if(fScale)hDeltaPtM[ic]->Scale(1./fScale);
-    hDeltaPtM[ic]->SetMarkerStyle(kFullSquare);
+    hDeltaPtM[ic]->SetMarkerStyle(33);
     hDeltaPtM[ic]->SetMarkerColor(kGreen+2);
     hDeltaPtM[ic]->SetLineColor( hDeltaPtM[ic]->GetMarkerColor());
   }    
@@ -831,7 +831,7 @@ Int_t PlotJetBFluctuations(){
   
   TH1D *hBiaL[nCen];
 
-  TFile *fL = TFile::Open("~/alice/jets/macros/corrections/tmp/pwg4plots.root");
+  TFile *fL = TFile::Open("~/alice/jets/macros/corrections/tmp/2011-03-20_lcm_pw4plots.root");
 
   for(int ic = 0;ic < nCen;ic++){
     if(iB==1)tmpName = "BiA sa antikt centrality";
@@ -850,10 +850,12 @@ Int_t PlotJetBFluctuations(){
   }
   
   TH1D *hBiaRC[nCen];
+  TString sBiaRC = "";
 
   for(int ic = 0;ic < nCen;ic++){
-    if(iB==1)tmpName = "BiA sa RC centrality";
-    else if (iB==2)tmpName = "BiA va RC centrality";
+    if(iB==1)tmpName = "BiA sa RC skip0 centrality";
+    else if (iB==2)tmpName = "BiA va RC skip0 centrality";
+    sBiaRC = "BiA RC";
     TH2F *h2Tmp = (TH2F*)fL->Get(tmpName.Data());
     if(!h2Tmp)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
     Int_t ibLo = h2Tmp->GetXaxis()->FindBin(fCentLo[ic]);
@@ -865,6 +867,26 @@ Int_t PlotJetBFluctuations(){
     hBiaRC[ic]->SetMarkerStyle(kFullCircle);
     hBiaRC[ic]->SetMarkerColor(kRed);
     hBiaRC[ic]->SetLineColor( hBiaRC[ic]->GetMarkerColor());
+  }
+
+
+  TH1D *hBiaRC2[nCen];
+  TString sBiaRC2;
+  for(int ic = 0;ic < nCen;ic++){
+    if(iB==1)tmpName = "BiA sa RC skip2 centrality";
+    else if (iB==2)tmpName = "BiA va RC skip2 centrality";
+    sBiaRC2 = "BiA RC (excl. 2 leading jets)";
+    TH2F *h2Tmp = (TH2F*)fL->Get(tmpName.Data());
+    if(!h2Tmp)Printf("Line:%d %s not found",__LINE__,tmpName.Data());
+    Int_t ibLo = h2Tmp->GetXaxis()->FindBin(fCentLo[ic]);
+    Int_t ibUp = h2Tmp->GetXaxis()->FindBin(fCentUp[ic])-1;
+    Printf("Line:%d bin %d - %d",__LINE__,ibLo,ibUp);
+    hBiaRC2[ic] = h2Tmp->ProjectionY(Form("hBiaRC2%d",ic),ibLo,ibUp,"E");
+    Float_t fScale =  hBiaRC2[ic]->Integral("width");
+    if(fScale)  hBiaRC2[ic]->Scale(1./fScale);
+    hBiaRC2[ic]->SetMarkerStyle(kOpenCircle);
+    hBiaRC2[ic]->SetMarkerColor(kRed);
+    hBiaRC2[ic]->SetLineColor( hBiaRC2[ic]->GetMarkerColor());
   }
 
 
@@ -900,8 +922,8 @@ Int_t PlotJetBFluctuations(){
   h2RhoVsMult->Draw("colz");
   txt->Draw();
   txt->DrawLatex(100,180,"LHC 2010 Pb+Pb Run #sqrt{s_{NN}} = 2.76 TeV");
-  txt2->DrawLatex(800,150,"ALICE Performance");
-  txt2->DrawLatex(800,140,"01/03/2011");
+  //  txt2->DrawLatex(800,150,"ALICE Performance");
+  //  txt2->DrawLatex(800,140,"01/03/2011");
   c1->Update();
   c1->SaveAs(Form("rhovsmult_B%d.%s",iB,printType.Data()));
   if(getchar()=='q')return 1;
@@ -921,9 +943,9 @@ Int_t PlotJetBFluctuations(){
   h2RhoVsCent->SetTitleSize(h2RhoVsCent->GetTitleSize("X")*0.7,"X");
   h2RhoVsCent->SetAxisRange(3,200,"Y");
   h2RhoVsCent->Draw("colz");
-  txt->DrawLatex(20,180,"LHC 2010 Pb+Pb Run #sqrt{s_{NN}} = 2.76 TeV");
-  txt2->DrawLatex(50,150,"ALICE Performance");
-  txt2->DrawLatex(50,140,"01/03/2011");
+  //  txt->DrawLatex(20,180,"LHC 2010 Pb+Pb Run #sqrt{s_{NN}} = 2.76 TeV");
+  //  txt2->DrawLatex(50,150,"ALICE Performance");
+  //  txt2->DrawLatex(50,140,"01/03/2011");
   c1->Update();
   c1->SaveAs(Form("rhovscent_B%d.%s",iB,printType.Data()));
   if(getchar()=='q')return 1;
@@ -935,11 +957,13 @@ Int_t PlotJetBFluctuations(){
 
   // the embbedded jets, carefull, take only above 60 GeV
   // c = all jets, d = leading jets, e = single tracks
-  TFile *fB1 = TFile::Open("~/alice/jets/macros/corrections/tmp/PWG4_JetTasksOutput_e.root");
+  TFile *fB1 = TFile::Open("~/alice/jets/macros/corrections/tmp/Bastian_merged_jetemb_110304dg.root");
   TH1D *hDeltaPtB1[nCen] = {0};
+  TString sDeltaPtB1 = "";
   for(int ic = 0;ic < nCen;ic++){
     tmpName = Form("PWG4_JetResponse_%s_%s%02d_B%d_Filter00256_Cut%05d_Skip00","clusters", "ANTIKT", (Int_t)(0.4*10), iB, (Int_t)(0.15*1000));
     TDirectoryFile *df = dynamic_cast<TDirectoryFile*> (fB1->Get(tmpName.Data()));
+    sDeltaPtB1 = Form("anti-k_{T} embedded jet %2.0f-%2.0f GeV",fMinPtB,fMaxPtB);
     if(!df)Printf("%d %s not found",__LINE__,tmpName.Data());
     tmpName.ReplaceAll("PWG4_JetResponse","jetresponse");
     TList *list        = dynamic_cast<TList*> (df->Get(tmpName.Data()));
@@ -959,13 +983,46 @@ Int_t PlotJetBFluctuations(){
   }
 
 
+  TFile *fB2 = TFile::Open("~/alice/jets/macros/corrections/tmp/Bastian_merged_trackemb_110304h.root");
+  TH1D *hDeltaPtB2[nCen] = {0};
+  TString sDeltaPtB2 = "";
+  for(int ic = 0;ic < nCen;ic++){
+    tmpName = Form("PWG4_JetResponse_%s_%s%02d_B%d_Filter00256_Cut%05d_Skip00","clusters", "ANTIKT", (Int_t)(0.4*10), iB, (Int_t)(0.15*1000));
+    TDirectoryFile *df = dynamic_cast<TDirectoryFile*> (fB2->Get(tmpName.Data()));
+    if(!df)Printf("%d %s not found",__LINE__,tmpName.Data());
+    sDeltaPtB2 = Form("anti-k_{T} embedded track %2.0f-%2.0f GeV BB",fMinPtB,fMaxPtB);
+    tmpName.ReplaceAll("PWG4_JetResponse","jetresponse");
+    TList *list        = dynamic_cast<TList*> (df->Get(tmpName.Data()));
+    if(!list)Printf("%d %s not found",__LINE__,tmpName.Data());
+    tmpName = Form("pt_smearing%d",ic+1);
+    TH2F *hTmp = (TH2F*)list->FindObject(tmpName.Data());
+    if(!hTmp)Printf("%d %s not found",__LINE__,tmpName.Data());
+    int ibLo = hTmp->GetYaxis()->FindBin(fMinPtB);
+    int ibUp = hTmp->GetYaxis()->FindBin(fMaxPtB)-1;
+    hDeltaPtB2[ic] = hTmp->ProjectionX(Form("fHistDeltaPtB2_c%d",ic),ibLo,ibUp,"E");
+    hDeltaPtB2[ic]->SetMarkerStyle(33);
+    hDeltaPtB2[ic]->SetMarkerColor(kBlue+4);
+    hDeltaPtB2[ic]->SetLineColor(hDeltaPtB2[ic]->GetMarkerColor());
+    hDeltaPtB2[ic]->Rebin(2);
+    Float_t fScale =  hDeltaPtB2[ic]->Integral("width");
+    if(fScale)  hDeltaPtB2[ic]->Scale(1./fScale);
+  }
+
+
+
   c1->SetLogy();
   c1->SetMargin(0.15,0.05,0.2,0.05);
 
   TF1 *gaus = new TF1("gaus","gaus",-60,2);
   TF1 *gaus2 = new TF1("gaus2","gaus",-60,2);
+  Double_t mean = 0;
+  Double_t sigma = 0;
+  Double_t sigma_err = 0;
+  TF1* tmpGaus = 0;
+
+
   for(int ic = 0;ic < nCen;ic++){
-    TLegend *leg1 = new TLegend(0.2,0.78,0.3,0.93);
+    TLegend *leg1 = new TLegend(0.2,0.65,0.3,0.93);
     leg1->SetHeader(Form("Pb+Pb %2.0f-%2.0f%% R = 0.4 (B%d)",fCentLo[ic],fCentUp[ic],iB));
     leg1->SetFillColor(0);
     leg1->SetTextFont(gStyle->GetTextFont());
@@ -978,30 +1035,56 @@ Int_t PlotJetBFluctuations(){
     leg1->AddEntry(hBiaL[ic],Form("BiA anti-k_{T}"),"P");
     */
 
+    
+    hBiaRC2[ic]->DrawCopy("psame");
+    tmpGaus = FitLHSgaus(hBiaRC2[ic],sigma,sigma_err,mean);
+    tmpGaus->SetRange(-40,40);
+    tmpGaus->SetLineColor( hBiaRC2[ic]->GetLineColor());
+    tmpGaus->SetLineStyle(kDashed);
+    tmpGaus->Draw("same");
+    leg1->AddEntry(hBiaRC2[ic],sBiaRC2.Data(),"P");
+    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    
     hBiaRC[ic]->DrawCopy("psame");
-    gaus->SetLineColor(hBiaRC[ic]->GetLineColor());
-    hBiaRC[ic]->Fit(gaus,"R0");
-    gaus->SetRange(-40.,40.);
-    gaus->Draw("same");
-    leg1->AddEntry(hBiaRC[ic],Form("BiA random cones (excl. leading jets)"),"P");
-    leg1->AddEntry(gaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",gaus->GetParameter(1),gaus->GetParameter(2)),"L");
+    tmpGaus = FitLHSgaus(hBiaRC[ic],sigma,sigma_err,mean);
+    tmpGaus->SetRange(-40,40);
+    tmpGaus->SetLineColor( hBiaRC[ic]->GetLineColor());
+    tmpGaus->Draw("same");
+    leg1->AddEntry(hBiaRC[ic],sBiaRC.Data(),"P");
+    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+    
+    hDeltaPtB1[ic]->Draw("psame");
+    tmpGaus = FitLHSgaus(hDeltaPtB1[ic],sigma,sigma_err,mean);
+    tmpGaus->SetRange(-40,40);
+    tmpGaus->SetLineColor( hDeltaPtB1[ic]->GetLineColor());
+    tmpGaus->Draw("same");
+    leg1->AddEntry(hDeltaPtB1[ic],sDeltaPtB1.Data(),"P");
+    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
 
 
-
-    //    hDeltaPtB1[ic]->Draw("psame");
-
+    hDeltaPtB2[ic]->Draw("psame");
+    tmpGaus = FitLHSgaus(hDeltaPtB2[ic],sigma,sigma_err,mean);
+    tmpGaus->SetRange(-40,40);
+    tmpGaus->SetLineColor( hDeltaPtB2[ic]->GetLineColor());
+    tmpGaus->Draw("same");
+    leg1->AddEntry(hDeltaPtB2[ic],sDeltaPtB2.Data(),"P");
+    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
     
     hDeltaPtM[ic]->DrawCopy("psame");
-    gaus2->SetLineColor(hDeltaPtM[ic]->GetLineColor());
-    hDeltaPtM[ic]->Fit(gaus2,"R0");
-    gaus2->SetRange(-40.,40.);
-    //    gaus2->Draw("same");
-    leg1->AddEntry(hDeltaPtM[ic],Form("anti-k_{T} single tracks %2.0f-%2.0f GeV",fMinPtM,fMaxPtM),"P");
+    tmpGaus = FitLHSgaus(hDeltaPtM[ic],sigma,sigma_err,mean);
+    tmpGaus->SetRange(-40,40);
+    tmpGaus->SetLineColor( hDeltaPtM[ic]->GetLineColor());
+    tmpGaus->Draw("same");
+    leg1->AddEntry(hDeltaPtM[ic],sDeltaPtM.Data(),"P");
+    leg1->AddEntry(tmpGaus,Form("LHS Gaus fit: #mu = %2.2f, #sigma = %2.2f",mean,sigma),"L");
+
     leg1->Draw();
+
+
     txt2->SetNDC();
-    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
+    //    txt2->DrawLatex(0.5,0.97,"ALICE Performance 01/03/2011");
     c1->Update();
-    c1->SaveAs(Form("deltaPt_B%d_cen%02d.%s",iB,ic,printType.Data()));
+    c1->SaveAs(Form("deltaPt_pT_%d_%d_B%d_cen%02d.%s",(Int_t)fMinPtM,(Int_t)fMaxPtM,iB,ic,printType.Data()));
     if(getchar()=='q')return 1;
 
 
@@ -1148,12 +1231,14 @@ void ScaleNevent(TH1* h,TFile *fIn,Int_t iCond,Int_t iMC,Int_t iCen){
 
 TF1* FitLHSgaus(TH1D *hDeltaPt, double &sigma, double &sigma_error, double &mean)
 {
-  hDeltaPt->Fit("gaus",-50.,0.);
-  TF1 *f1 = hDeltaPt->GetFunction("gaus");
+
+  TF1 *f1 = new TF1("LHSgaus","gaus");
+  f1->SetParameters(1,0,11);
+  hDeltaPt->Fit(f1,"R0","",-50.,0.);
+  //  f1 = hDeltaPt->GetFunction("gaus");
   sigma = f1->GetParameter(2);
   mean = f1->GetParameter(1);
-  hDeltaPt->Fit("gaus","""","""",mean-3.*sigma,0.);
-  f1 =  hDeltaPt->GetFunction("gaus");
+  hDeltaPt->Fit(f1,"R0","",mean-3.*sigma,mean+0.3*sigma);
   mean = f1->GetParameter(1);
   sigma = f1->GetParameter(2);
   sigma_error = f1->GetParError(2);
