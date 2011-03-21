@@ -31,6 +31,7 @@
 #include "AliAODEvent.h"
 #include "AliVCuts.h"
 #include "AliMCEvent.h"
+#include "AliAODpidUtil.h"
 
 ClassImp(AliAODInputHandler)
 
@@ -42,6 +43,7 @@ AliAODInputHandler::AliAODInputHandler() :
     fEvent(0),
     fMCEvent(new AliMCEvent()),
     fFriends(new TList()),
+    fAODpidUtil(0x0),
     fMergeEvents(kFALSE),
     fFriendsConnected(kFALSE),
     fFileToMerge(0),
@@ -59,6 +61,7 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
   fEvent(0),
   fMCEvent(new AliMCEvent()),
   fFriends(new TList()),
+  fAODpidUtil(0x0),
   fMergeEvents(kFALSE),
   fFriendsConnected(kFALSE),
   fFileToMerge(0),
@@ -83,6 +86,7 @@ AliAODInputHandler::~AliAODInputHandler()
     delete fHistStatistics[1];
     fHistStatistics[1] = 0;
   }
+  delete fAODpidUtil;
 }
 
 //______________________________________________________________________________
@@ -237,5 +241,16 @@ void AliAODInputHandler::ConnectFriends()
 	}
     }
     fFriendsConnected = kTRUE;
+}
+
+//______________________________________________________________________________
+void AliAODInputHandler::CreatePIDResponse(Bool_t isMC/*=kFALSE*/)
+{
+  //
+  // create the pid response object if it does not exist yet
+  //
+  if (fAODpidUtil) return;
+  fAODpidUtil=new AliAODpidUtil(isMC);
+  
 }
 

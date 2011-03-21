@@ -9,25 +9,24 @@
 //                    Combined PID class
 //                    for the AOD class
 //   Origin: Rosa Romita, GSI, r.romita@gsi.de 
+//   Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
 //-------------------------------------------------------
 #include <Rtypes.h>
 #include <TMatrixD.h>
 #include "AliAODTrack.h" // Needed for inline functions
 #include "AliAODPid.h" // Needed for inline functions
-#include "AliTPCPIDResponse.h"
-#include "AliITSPIDResponse.h"
-#include "AliTOFPIDResponse.h"
-#include "AliTRDPIDResponse.h"
 //#include "HMPID/AliHMPID.h"
 
+#include "AliPIDResponse.h"
+
 class AliAODEvent;
+class AliVParticle;
 
-class AliAODpidUtil {
+class AliAODpidUtil : public AliPIDResponse  {
 public:
-
-  AliAODpidUtil(Bool_t isMC = kFALSE): fRange(5.), fTPCResponse(), fITSResponse(isMC), fTOFResponse(), fTRDResponse() {;}
+  //TODO: isMC???
+  AliAODpidUtil(Bool_t isMC = kFALSE): AliPIDResponse(isMC), fRange(5.) {;}
   virtual ~AliAODpidUtil() {;}
-
 
   Int_t MakePID(AliAODTrack *track,Double_t *p) const;
   void MakeTPCPID(const AliAODTrack *track,Double_t *p) const;
@@ -36,23 +35,25 @@ public:
   //  void MakeHMPIDPID(AliESDtrack *track);
   void MakeTRDPID(const AliAODTrack *track,Double_t *p) const;
 
-  Float_t NumberOfSigmasTPC(const AliAODTrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTOF(const AliAODTrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasITS(const AliAODTrack *track, AliPID::EParticleType type) const;
-
-  AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
-  AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
-  AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
-
+  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const;
+  
 private:
   Float_t           fRange;          // nSigma max in likelihood
-  AliTPCPIDResponse fTPCResponse;    // TPC Response
-  AliITSPIDResponse fITSResponse;    // ITS Response
-  AliTOFPIDResponse fTOFResponse;    // TOF Response
-  AliTRDPIDResponse fTRDResponse;    // TRD Response
   
-  ClassDef(AliAODpidUtil,1)  // PID calculation class
+  ClassDef(AliAODpidUtil,2)  // PID calculation class
 };
+
+inline Float_t AliAODpidUtil::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {
+  AliAODTrack *track=(AliAODTrack*)vtrack;
+  Double_t times[AliPID::kSPECIES];
+  Double_t sigmaTOFPid[AliPID::kSPECIES];
+  AliAODPid *pidObj = track->GetDetPid();
+  if (!pidObj) return -999.;
+  pidObj->GetIntegratedTimes(times);
+  pidObj->GetTOFpidResolution(sigmaTOFPid);
+  if (sigmaTOFPid[type]>0) return (pidObj->GetTOFsignal() - times[type])/sigmaTOFPid[type];
+  else return (pidObj->GetTOFsignal() - times[type])/fTOFResponse.GetExpectedSigma(track->P(),times[type],AliPID::ParticleMass(type));
+}
 
 #endif
 

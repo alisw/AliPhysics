@@ -39,6 +39,7 @@
 #include "AliRunTag.h"
 #include "AliEventTag.h"
 #include "AliLog.h"
+#include "AliESDpid.h"
 
 ClassImp(AliESDInputHandler)
 
@@ -72,6 +73,7 @@ AliESDInputHandler::~AliESDInputHandler()
 {
   //  destructor
   if (fRunTag) delete fRunTag;
+  delete fESDpid;
 }
 
 //______________________________________________________________________________
@@ -484,3 +486,15 @@ TObject *AliESDInputHandler::GetStatistics(Option_t *option) const
    if (opt=="BIN0") return fEventCuts->GetStatistics("BIN0");
    else return fEventCuts->GetStatistics("ALL");
 }   
+
+//______________________________________________________________________________
+void AliESDInputHandler::CreatePIDResponse(Bool_t isMC/*=kFALSE*/)
+{
+  //
+  // create the pid response object if it does not exist yet
+  //
+  if (fESDpid) return;
+  fESDpid=new AliESDpid(isMC);
+
+}
+

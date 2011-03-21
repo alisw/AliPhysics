@@ -17,6 +17,8 @@ class TList;
 class AliMCEvent;
 class TH2F;
 class AliMCEvent;
+class AliAODpidUtil;
+class AliPIDResponse;
 
 
 class AliAODInputHandler : public AliInputEventHandler {
@@ -42,6 +44,12 @@ class AliAODInputHandler : public AliInputEventHandler {
     Bool_t               GetMergeEvents() const {return fMergeEvents;}
     AliAODEvent*         GetEventToMerge() {return fAODEventToMerge;}
     void                 SetMergeOffset(Int_t ioff) {fMergeOffset = ioff;}
+  
+    //PID response
+    virtual AliPIDResponse* GetPIDResponse() {return (AliPIDResponse*)fAODpidUtil;}
+    virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
+    AliAODpidUtil *GetAODpidUtil() const { return fAODpidUtil; }
+  
  private:
     void ConnectFriends();
     AliAODInputHandler(const AliAODInputHandler& handler);             
@@ -49,7 +57,9 @@ class AliAODInputHandler : public AliInputEventHandler {
  private:
     AliAODEvent    *fEvent;   //! Pointer to the event
     AliMCEvent     *fMCEvent; //! Pointer to the MCEvent
-    TList          *fFriends; //  List of friend trees 
+    TList          *fFriends; //  List of friend trees
+    AliAODpidUtil  *fAODpidUtil; //! Pointer to PID information
+  
 // Support for merged events
     Bool_t          fMergeEvents;     // Flag for event merging
     Bool_t          fFriendsConnected;// Friends are connected

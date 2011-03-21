@@ -20,6 +20,7 @@ class TMap;
 class AliESDfriend;
 class AliESDpid;
 class AliESDEvent;
+class AliPIDResponse;
 
 
 class AliESDInputHandler : public AliInputEventHandler {
@@ -49,8 +50,6 @@ class AliESDInputHandler : public AliInputEventHandler {
     void                 SetReadHLT()            {fUseHLT = kTRUE;}
     // Friends&Co
     AliESDfriend        *GetESDfriend()    const {return fFriend;}
-    AliESDpid           *GetESDpid()       const {return fESDpid;}
-    void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
     void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
     void                 SetFriendFileName(const char *fname)  {fFriendFileName = fname;}
     // Tag analysis
@@ -59,6 +58,13 @@ class AliESDInputHandler : public AliInputEventHandler {
     const AliEventTag   *GetEventTag() const     {return fEventTag;}
     // Get the statistics object (currently TH2). Option can be BIN0.
     virtual TObject     *GetStatistics(Option_t *option="") const;
+
+    //PID response
+    virtual AliPIDResponse* GetPIDResponse() {return (AliPIDResponse*)fESDpid;}
+    virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
+    AliESDpid           *GetESDpid()       const {return fESDpid;}
+    void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
+  
  private:
     AliESDInputHandler(const AliESDInputHandler& handler);             
     AliESDInputHandler& operator=(const AliESDInputHandler& handler);  

@@ -33,7 +33,7 @@ class AliVTrack;
 class AliTRDPIDResponse : public TObject {
   public:
     enum ETRDPIDResponseStatus {
-      kIsOwner = BIT(14),
+      kIsOwner = BIT(14)
     };
     enum ETRDPIDResponseDef {
       kNlayer = 6

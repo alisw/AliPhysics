@@ -565,3 +565,58 @@ Bool_t AliAODTrack::GetPxPyPz(Double_t p[3]) const
   p[0]=Px(); p[1]=Py(); p[2]=Pz();
   return kTRUE;
 }
+
+//______________________________________________________________________________
+Float_t AliAODTrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/, Int_t row0, Int_t row1) const
+{
+  //
+  // TPC cluster information
+  // type 0: get fraction of found/findable clusters with neighbourhood definition
+  //      1: findable clusters with neighbourhood definition
+  //      2: found clusters
+  //
+  // definition of findable clusters:
+  //            a cluster is defined as findable if there is another cluster
+  //           within +- nNeighbours pad rows. The idea is to overcome threshold
+  //           effects with a very simple algorithm.
+  //
+  
+  if (type==2) return fTPCClusterMap.CountBits();
+  
+  Int_t found=0;
+  Int_t findable=0;
+  Int_t last=-nNeighbours;
+  
+  for (Int_t i=row0; i<row1; ++i){
+    //look to current row
+    if (fTPCClusterMap[i]) {
+      last=i;
+      ++found;
+      ++findable;
+      continue;
+    }
+    //look to nNeighbours before
+    if ((i-last)<=nNeighbours) {
+      ++findable;
+      continue;
+    }
+    //look to nNeighbours after
+    for (Int_t j=i+1; j<i+1+nNeighbours; ++j){
+      if (fTPCClusterMap[j]){
+        ++findable;
+        break;
+      }
+    }
+  }
+  if (type==1) return findable;
+  
+  if (type==0){
+    Float_t fraction=0;
+    if (findable>0)
+      fraction=(Float_t)found/(Float_t)findable;
+    else
+      fraction=0;
+    return fraction;
+  }
+  return 0;  // undefined type - default value
+}

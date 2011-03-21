@@ -210,6 +210,8 @@ class AliAODTrack : public AliVTrack {
   UInt_t  GetFilterMap(){return fFilterMap;}
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
+  Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
@@ -217,6 +219,14 @@ class AliAODTrack : public AliVTrack {
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
 
+  //pid signal interface
+  Double_t  GetITSsignal()       const { return fDetPid?fDetPid->GetITSsignal():0.;    }
+  Double_t  GetTPCsignal()       const { return fDetPid?fDetPid->GetTPCsignal():0.;    }
+  UShort_t  GetTPCsignalN()      const { return fDetPid?fDetPid->GetTPCsignalN():0;    }
+  Double_t  GetTPCmomentum()     const { return fDetPid?fDetPid->GetTPCmomentum():0.;  }
+  Double_t  GetTOFsignal()       const { return fDetPid?fDetPid->GetTOFsignal():0.; }
+  
+  
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
   
