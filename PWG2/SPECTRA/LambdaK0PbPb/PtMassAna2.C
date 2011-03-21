@@ -1,4 +1,4 @@
-#include "FitControl.h"
+#include "AliMassFitControl.h"
 
 // Function for fitting back ground away from peak
 Float_t quad(Double_t *x, Double_t *par){
@@ -53,7 +53,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   cout << "Debug info. Particle: " << part << endl;
 
   Float_t xxlo, xxhi; //Exclusion limits for fitting
-  // FUTURE - these can also be part of FitControl to allow different regions
+  // FUTURE - these can also be part of AliMassFitControl to allow different regions
   // in different bins
   Float_t NSigmaEx=4.0;  // Number of sigma to exclude from bkgd fit
   Float_t NSigmaInt=3.5; // Number of sigma to integrate histo over
@@ -85,7 +85,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   Float_t defMnLo, defMnHi;
   if (part=="K0"){
     // FUTURE: xmin, xmax define the range considered in fit so could go into
-    // FitControl
+    // AliMassFitControl
     //xmin=0.418;
     //xmax=0.578;
     //    xxlo=0.46;xxhi=0.53;
@@ -169,10 +169,10 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
   //  Float_t BinPtEdges[NBins+1]={0.0,0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0,5.5,6.0,6.5,7.0};
 
   Int_t BinLo, BinHi; //For pt bins
-  // **** Main loop over the FitControllers ****
+  // **** Main loop over the AliMassFitControllers ****
   TIter controlIter(ControlArray);
-  FitControl *controller;
-  while (controller=(FitControl*)controlIter.Next()) { 
+  AliMassFitControl *controller;
+  while (controller=(AliMassFitControl*)controlIter.Next()) { 
     controller->CalcBinLimits(20); //This BinsPerGeV argument should be calculated from the data
     //Had to introduce this Nint fn otherwise got inconsistencies after type implicit conversion
     //    BinLo=TMath::Nint(1.+BinPtEdges[N]*20.); //cout << "BinLo: " << BinLo << ", " << 1+BinPtEdges[N]*20. << endl;
@@ -293,7 +293,7 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode, const Int_t NControl, TObjArray *Cont
     BinPtEdges[N]=controller->PtLower();
     //    BinPtEdges(N+1)=controller->PtUpper();
   }
-    BinPtEdges[NBinsArrays-1]=((FitControl*)ControlArray->Last())->PtUpper();
+    BinPtEdges[NBinsArrays-1]=((AliMassFitControl*)ControlArray->Last())->PtUpper();
 //     for (Int_t jj=0;jj<NBinsArrays;jj++){
 //       cout << "BinPtEdges " << jj << " = " << BinPtEdges[jj] << endl;
 //       cout << "Mean " << jj << " = " << mean[jj] << endl;
