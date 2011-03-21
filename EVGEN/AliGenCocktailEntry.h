@@ -44,7 +44,7 @@ class AliGenCocktailEntry : public TNamed
     TFormula* fFormula;         // Formula to calculate number of signals per event    
     void Copy(TObject&) const;
  private:
-    ClassDef(AliGenCocktailEntry,1) // Generator entry of AliGenCocktail
+    ClassDef(AliGenCocktailEntry, 2) // Generator entry of AliGenCocktail
 };
 #endif
 
