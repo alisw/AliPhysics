@@ -161,7 +161,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHCellM->SetXTitle("#LT E_{cell}#GT [GeV]");
   fOutput->Add(fHCellM);
   fHCellM2 = new TH1F ("fHCellMeanEperAllCells","",250,0.,1);
-  fHCellM2->SetXTitle("1/N_{cells} #Sum E_{cell} [GeV]");
+  fHCellM2->SetXTitle("1/N_{cells} #Sigma E_{cell} [GeV]");
   fOutput->Add(fHCellM2);
 
   // histograms for clusters
@@ -442,7 +442,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
   // Fill histograms related to cluster properties.
   Double_t clusterEcc = 0;
 
-
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
@@ -472,7 +471,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
       fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
       if (fNtuple) {
-        Float_t vals[18];
+        Float_t vals[17];
         vals[0]  = InputEvent()->GetRunNumber();
         vals[1]  = (((UInt_t)InputEvent()->GetOrbitNumber()  << 12) | (UInt_t)InputEvent()->GetBunchCrossNumber()); 
         vals[2]  = InputEvent()->GetCentrality()->GetCentralityPercentileUnchecked(fCentVar);
@@ -487,10 +486,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
         vals[11] = clus->Chi2();
         vals[12] = clus->GetEmcCpvDistance();
         vals[13] = clusterEcc;
-        vals[14] = GetMaxCellEnergy(clus)/clus->E();
-        vals[15] = maxAxis;
-        vals[16] = clusterVec.Eta();
-        vals[17] = clusterVec.Phi();
+        vals[14] = maxAxis;
+        vals[15] = clusterVec.Eta();
+        vals[16] = clusterVec.Phi();
         fNtuple->Fill(vals);
       }
     }
