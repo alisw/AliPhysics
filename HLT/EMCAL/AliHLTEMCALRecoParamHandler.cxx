@@ -55,9 +55,9 @@ void AliHLTEMCALRecoParamHandler::FillParameters()
       AliEMCALRecParam *tmp = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr);
       if(tmp)
 	{
-	  fLogWeight = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetW0(); 
-	  fRecPointMemberThreshold = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetMinECut();
-	  fRecPointThreshold = dynamic_cast<AliEMCALRecParam*>(fRecoParamPtr)->GetClusteringThreshold();
+	  fLogWeight = tmp->GetW0(); 
+	  fRecPointMemberThreshold = tmp->GetMinECut();
+	  fRecPointThreshold = tmp->GetClusteringThreshold();
 	}
    }
 }
