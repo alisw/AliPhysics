@@ -106,7 +106,7 @@ public:
   Float_t  GetPhiFromSector(UShort_t det, Char_t ring, UShort_t sec) const;
   Float_t  GetEtaFromStrip(UShort_t det, Char_t ring, UShort_t sec, UShort_t strip, Float_t zvtx) const;
   Float_t  GetStripLength(Char_t ring, UShort_t strip)  ;
-  Float_t  GetBaseStripLength(Char_t ring, UShort_t strip)  ;
+  Float_t  GetBaseStripLength(Char_t ring, UShort_t strip) const  ;
   Float_t  GetMaxR(Char_t ring) const;
   Float_t  GetMinR(Char_t ring) const;
   void     SetBackgroundPath(const Char_t* bgpath) {fBackgroundPath = bgpath;}
@@ -125,16 +125,16 @@ public:
   void     SetRunBFCorrelation(Bool_t runBFcor) { fRunBFCorrelation = runBFcor;  }
   void     SetRunMultiplicity(Bool_t runMultiplicity) { fRunMultiplicity = runMultiplicity;  }
   
-  Bool_t   GetRunDndeta()        {return fRunDndeta;}
-  Bool_t   GetRunBFCorrelation() {return fRunBFCorrelation;}
-  Bool_t   GetRunMultiplicity()  {return fRunMultiplicity;}
+  Bool_t   GetRunDndeta() const        {return fRunDndeta;}
+  Bool_t   GetRunBFCorrelation() const {return fRunBFCorrelation;}
+  Bool_t   GetRunMultiplicity() const {return fRunMultiplicity;}
 
   //Bool_t   IsEventTriggered(const AliESDEvent *esd) ;
   Bool_t   IsEventTriggered(Trigger trigger) ;
   void     SetTriggerStatus(const AliESDEvent *esd) ;
   void     SetEnergy(Energy energy) {fEnergy = energy;}
   void     SetEnergy(Float_t cmsNNGeV);
-  Energy   GetEnergy() {return fEnergy;}
+  Energy   GetEnergy() const {return fEnergy;}
   void     SetMagField(MagField magfield) {fMagField = magfield;}
   void     SetMagField(Float_t bkG);
   const char*    GetPath(const char* species) const;
@@ -155,7 +155,7 @@ public:
   void     SetLowSPDLimit(Float_t cut) {fSPDlowLimit = cut;}
   void     SetHighSPDLimit(Float_t cut) {fSPDhighLimit = cut;}
   void     SetCentralTriggerSelection(Bool_t selection) {fCentralSelection = selection;}
-  Bool_t   SharingEffPresent() {return fSharingObjectPresent;}
+  Bool_t   SharingEffPresent() const {return fSharingObjectPresent;}
   Int_t    GetFirstEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
   Int_t    GetLastEtaBinToInclude(Int_t vtxbin, Int_t det, Char_t ring) ;
   void     SetUseInternalNSDTrigger(Bool_t internalNSD) {fUseBuiltInNSD = internalNSD;}

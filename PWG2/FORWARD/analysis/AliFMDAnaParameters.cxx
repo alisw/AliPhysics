@@ -245,7 +245,7 @@ void AliFMDAnaParameters::InitEventSelectionEff() {
 //____________________________________________________________________
 
 void AliFMDAnaParameters::InitSharingEff() {
-  
+  //Initialize the sharing efficiency
   fSharingObjectPresent = kTRUE;
   TFile* fin = TFile::Open(GetPath(fgkSharingEffID));
 			    
@@ -263,7 +263,7 @@ void AliFMDAnaParameters::InitSharingEff() {
 }
 //____________________________________________________________________
 void AliFMDAnaParameters::FindEtaLimits() {
-
+  //Find eta limits for analysis
   fEtaLowBinLimits.SetBins(4,0,4,2,0,2,GetNvtxBins(),0,GetNvtxBins());
   fEtaHighBinLimits.SetBins(4,0,4,2,0,2,GetNvtxBins(),0,GetNvtxBins());
   for(Int_t det=0; det<=3;det++) {
@@ -282,6 +282,7 @@ void AliFMDAnaParameters::FindEtaLimits() {
 //____________________________________________________________________
 void AliFMDAnaParameters::SetEnergy(Float_t cmsNNGeV) 
 {
+  //Set energy
   if (TMath::Abs(cmsNNGeV - 900.)   < 10)  fEnergy = k900;
   if (TMath::Abs(cmsNNGeV - 2400.)  < 10)  fEnergy = k2400;
   if (TMath::Abs(cmsNNGeV - 2750.)  < 10)  fEnergy = k2750;
@@ -293,6 +294,7 @@ void AliFMDAnaParameters::SetEnergy(Float_t cmsNNGeV)
 //____________________________________________________________________
 void AliFMDAnaParameters::SetMagField(Float_t bkG) 
 {
+  //Set magnetic field
   if (TMath::Abs(bkG - 5.) < 1 ) fMagField = k5G;
   if (TMath::Abs(bkG + 5.) < 1 ) fMagField = k5Gnegative;
   if (TMath::Abs(bkG) < 1)       fMagField = k0G;
@@ -300,6 +302,7 @@ void AliFMDAnaParameters::SetMagField(Float_t bkG)
 //____________________________________________________________________
 void AliFMDAnaParameters::SetCollisionSystem(const TString& sys) 
 {
+  //Set the collision system
   TString s(sys);
   s.ToLower();
   if      (s.Contains("p-p")   || s.Contains("pp"))   fSpecies = kPP; 
@@ -310,7 +313,7 @@ void AliFMDAnaParameters::SetCollisionSystem(const TString& sys)
 //____________________________________________________________________
 void AliFMDAnaParameters::SetParametersFromESD(AliESDEvent* esd) 
 {
-
+  //Set the parameters from the ESD header information
 
   SetCollisionSystem(esd->GetBeamType());
 
@@ -400,16 +403,16 @@ void AliFMDAnaParameters::PrintStatus(Bool_t showpaths) const
     datastring.Form("Unknown"); break ;
   }
   
-  TString InelString;
-  if(fInelGtZero) InelString = "INEL > 0";
-  else InelString = "INEL";
+  TString inelString;
+  if(fInelGtZero) inelString = "INEL > 0";
+  else inelString = "INEL";
   
   std::cout<<"Energy       = "<<energystring.Data()<<std::endl;
   std::cout<<"Trigger      = "<<triggerstring.Data()<<std::endl;
   std::cout<<"Mag Field    = "<<magstring.Data()<<std::endl;
   std::cout<<"Coll System  = "<<collsystemstring.Data()<<std::endl;
   std::cout<<"Data origin  = "<<datastring.Data()<<std::endl;
-  std::cout<<"Basic trigger: "<<InelString.Data()<<std::endl;
+  std::cout<<"Basic trigger: "<<inelString.Data()<<std::endl;
 
   if (showpaths) {
     TString bg = GetPath(fgkBackgroundID);
@@ -676,7 +679,7 @@ Float_t AliFMDAnaParameters::GetEventSelectionEfficiency(Int_t vtxbin) {
 }
 //_____________________________________________________________________
 Float_t AliFMDAnaParameters::GetVtxSelectionEffFromMC() {
-
+  //Get the vtx selection from MC calculation
    if(!fIsInit) {
     AliWarning("Not initialized yet. Call Init() to remedy");
     return 0;
@@ -1048,7 +1051,7 @@ AliFMDAnaParameters::GetStripLength(Char_t ring, UShort_t strip)
 }
 //____________________________________________________________________
 Float_t 
-AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)  
+AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip) const  
 {  
   //Get length of strip assuming that corners are not cut away
   Float_t rad             = GetMaxR(ring)-GetMinR(ring);
@@ -1064,6 +1067,7 @@ AliFMDAnaParameters::GetBaseStripLength(Char_t ring, UShort_t strip)
 //____________________________________________________________________
 Int_t    AliFMDAnaParameters::GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring)
 {
+  //Get the first eta bin from the bg map
   TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
   
   if(det == 0) return hBg->GetXaxis()->FindBin(-1.95);
@@ -1091,6 +1095,7 @@ Int_t    AliFMDAnaParameters::GetFirstEtaBinFromMap(Int_t vtxbin, Int_t det, Cha
 //____________________________________________________________________
 Int_t    AliFMDAnaParameters::GetLastEtaBinFromMap(Int_t vtxbin, Int_t det, Char_t ring)
 {
+  //Get the last eta bin from the map
   TH2F* hBg = GetBackgroundCorrection(det,ring,vtxbin);
   Int_t lastbin=-1;
   Int_t nNonZeroLast = 0;
