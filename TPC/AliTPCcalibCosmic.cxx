@@ -27,28 +27,7 @@
     3.Simple example
     // To make cosmic scan the user interaction neccessary
     //
-    .x ~/UliStyle.C
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libTPCcalib");
-    TFile fcalib("CalibObjects.root");
-    TObjArray * array = (TObjArray*)fcalib.Get("TPCCalib");
-    AliTPCcalibCosmic * cosmic = ( AliTPCcalibCosmic *)array->FindObject("cosmicTPC");
-    
-
-    //
-    //
-    gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-    gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-    AliXRDPROOFtoolkit tool;
-    TChain * chainCosmic = tool.MakeChainRandom("cosmicF.txt","Track0",0,10000);
-    //
-    TCut cutITSN="min(Orig0.fITSncls,Orig1.fITSncls)>2";
-    TCut cutTPCN="min(Orig0.fTPCncls,Orig1.fTPCncls)>120";
-
-    chainCosmic->Draw(">>listITS",cutITSN+cutTPCN,"entryList");
-    TEntryList *elistITS = (TEntryList*)gDirectory->Get("listITS");
-    chainCosmic->SetEntryList(elistITS);
-    
+     
   */
 
 
@@ -109,6 +88,9 @@ AliTPCcalibCosmic::AliTPCcalibCosmic()
    fCutMinDir(-0.99),   // direction vector products
    fCosmicTree(0)      // tree with cosmic data
 {  
+  //
+  // CONSTRUCTOR - SEE COMMENTS ABOVE
+  //
   AliInfo("Default Constructor");    
   for (Int_t ihis=0; ihis<6;ihis++){
     fHistoDelta[ihis]=0;
@@ -136,6 +118,9 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
    fCutMinDir(-0.99),  // direction vector products
    fCosmicTree(0)      // tree with cosmic data
 {  
+  //
+  // cONSTRUCTOR - SEE COMENTS ABOVE
+  //
   SetName(name);
   SetTitle(title);
 
@@ -153,7 +138,7 @@ AliTPCcalibCosmic::AliTPCcalibCosmic(const Text_t *name, const Text_t *title)
 
 AliTPCcalibCosmic::~AliTPCcalibCosmic(){
   //
-  //
+  // destructor
   //
   for (Int_t ihis=0; ihis<6;ihis++){
     delete fHistoDelta[ihis];
@@ -310,7 +295,7 @@ void AliTPCcalibCosmic::Init(){
 
 void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
   //
-  //
+  // merge the content of the cosmic componentnts
   //
   for (Int_t ivar=0; ivar<6;ivar++){
     if (fHistoDelta[ivar] && cosmic->fHistoDelta[ivar]){
@@ -342,7 +327,7 @@ void AliTPCcalibCosmic::Add(const AliTPCcalibCosmic* cosmic){
 
 void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   //
-  //
+  // Process of the ESD event  - fill calibration components
   //
   if (!event) {
     Printf("ERROR: ESD not available");
@@ -481,72 +466,7 @@ void AliTPCcalibCosmic::FillHistoPerformance(const AliExternalTrackParam *par0, 
   
 }
 
-void AliTPCcalibCosmic::MaterialBudgetDump(AliExternalTrackParam *const par0, AliExternalTrackParam *const par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *const seed0,  AliTPCseed *const seed1, AliExternalTrackParam *const param0Combined, AliExternalTrackParam *const param1Combined){
-  //
-  // matrial budget AOD dump
-  //
-  // par0,par1       - parameter of tracks at DCA 0
-  // inner0,inner1   - parameter of tracks at the TPC entrance
-  // seed0, seed1    - detailed track information
-  // param0Combined  - Use combined track parameters for binning
-  // param1Combined  - 
-  Double_t p0In = inner0->GetP(); 
-  Double_t p1In = inner1->GetP(); 
-  Double_t p0V  = par0->GetP(); 
-  Double_t p1V  = par1->GetP(); 
-  //
-  Double_t pt0In = inner0->Pt(); 
-  Double_t pt1In = inner1->Pt(); 
-  Double_t pt0V  = par0->Pt(); 
-  Double_t pt1V  = par1->Pt(); 
-  Int_t ncl0 = seed0->GetNumberOfClusters();
-  Int_t ncl1 = seed1->GetNumberOfClusters();
-  Int_t nclmin=TMath::Min(ncl0,ncl1);
-  Double_t sign = (param0Combined->GetSigned1Pt()>0) ? 1:-1.;
-  //
-  TTreeSRedirector * pcstream =  GetDebugStreamer();
-  if (pcstream){
-    (*pcstream)<<"material"<<
-      "run="<<fRun<<              //  run number
-      "event="<<fEvent<<          //  event number
-      "time="<<fTime<<            //  time stamp of event
-      "trigger="<<fTrigger<<      //  trigger
-      "triggerClass="<<&fTriggerClass<<      //  trigger
-      "mag="<<fMagF<<             //  magnetic field
-      "sign="<<sign<<             // sign of the track
-      //
-      "ncl0="<<ncl0<<
-      "ncl1="<<ncl1<<
-      "nclmin="<<nclmin<<
-      //
-      "p0In="<<p0In<<
-      "p1In="<<p1In<<
-      "p0V="<<p0V<<
-      "p1V="<<p1V<<
-      "pt0In="<<pt0In<<
-      "pt1In="<<pt1In<<
-      "pt0V="<<pt0V<<
-      "pt1V="<<pt1V<<
-      "p0.="<<par0<<
-      "p1.="<<par1<<
-      "up0.="<<param0Combined<<
-      "up1.="<<param1Combined<<
-      "\n";
-  }
-  
-}
-
-void AliTPCcalibCosmic::Analyze() {
-
-  fMIPvalue = CalculateMIPvalue(fDeDxMIP);
-
-  return;
-
-}
-
-
-
-void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
+void AliTPCcalibCosmic::FindPairs(const AliESDEvent *event){
   //
   // Find cosmic pairs
   // 
@@ -712,7 +632,6 @@ void AliTPCcalibCosmic::FindPairs(AliESDEvent *event) {
 	if (isCrossI) cross+=1; 
 	if (isCrossO) cross+=1; 
 	FillHistoPerformance(&param0, &param1, ip0, ip1, seed0, seed1,par0U, cross);
-	MaterialBudgetDump(&param0, &param1, ip0, ip1, seed0, seed1,par0U,par1U);
 	if (cstream) {
 	  (*cstream) << "Track0" <<
 	    "run="<<fRun<<              //  run number
@@ -822,6 +741,9 @@ void  AliTPCcalibCosmic::FillAcordeHist(AliESDtrack *upperTrack) {
 
 
 Long64_t AliTPCcalibCosmic::Merge(TCollection *const li) {
+  //
+  // component merging
+  //
 
   TIterator* iter = li->MakeIterator();
   AliTPCcalibCosmic* cal = 0;
@@ -845,7 +767,7 @@ Long64_t AliTPCcalibCosmic::Merge(TCollection *const li) {
 }
 
 
-Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1){
+Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1) const{
   //
   //
   /*
@@ -879,6 +801,9 @@ Bool_t  AliTPCcalibCosmic::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPa
 
 
 Double_t AliTPCcalibCosmic::CalculateMIPvalue(TH1F * hist) {
+  //
+  // Calculate the MIP value - gaussian fit used
+  //
 
   TF1 * funcDoubleGaus = new TF1("funcDoubleGaus", "gaus(0)+gaus(3)",0,1000);
   funcDoubleGaus->SetParameters(hist->GetEntries()*0.75,hist->GetMean()/1.3,hist->GetMean()*0.10,
@@ -952,7 +877,7 @@ void AliTPCcalibCosmic::BinLogX(TH1 *const h) {
 
 AliExternalTrackParam *AliTPCcalibCosmic::MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1){
   //
-  // 
+  // Make a atrack using the kalman update of track0 and track1
   //
   AliExternalTrackParam *par1R= new AliExternalTrackParam(*track1);
   par1R->Rotate(track0->GetAlpha());
@@ -1065,7 +990,7 @@ void AliTPCcalibCosmic::UpdateTrack(AliExternalTrackParam &track1, const AliExte
 
 
 
-void AliTPCcalibCosmic::FindCosmicPairs(AliESDEvent * event){
+void AliTPCcalibCosmic::FindCosmicPairs(const AliESDEvent * event) {
   //
   // find cosmic pairs trigger by random trigger
   //

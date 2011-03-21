@@ -20,15 +20,14 @@ public:
   
   virtual void      Process(AliESDEvent *event);
   virtual Long64_t  Merge(TCollection *const li);
-  virtual void      Analyze();
   void              Add(const AliTPCcalibCosmic* cosmic);
   //
   //
   void              Init();
-  void              FindPairs(AliESDEvent *event);
-  void              FindCosmicPairs(AliESDEvent * event);
+  void              FindPairs(const AliESDEvent *event);
+  void              FindCosmicPairs(const AliESDEvent * event);
 
-  Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
+  Bool_t            IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1) const;
   static void       CalculateBetheParams(TH2F *hist, Double_t * initialParam);
   static Double_t   CalculateMIPvalue(TH1F * hist);
   AliExternalTrackParam *MakeTrack(const AliExternalTrackParam *track0, const AliExternalTrackParam *track1);
@@ -37,7 +36,6 @@ public:
   void UpdateTrack(AliExternalTrackParam &track0, const AliExternalTrackParam &track1);
   //
   void FillHistoPerformance(const AliExternalTrackParam *par0, const AliExternalTrackParam *par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *seed0,  AliTPCseed *seed1, const AliExternalTrackParam *param0Combined, Int_t cross);
-  void MaterialBudgetDump(AliExternalTrackParam *const par0, AliExternalTrackParam *const par1, const AliExternalTrackParam *inner0, const AliExternalTrackParam *inner1, AliTPCseed *const seed0,  AliTPCseed *const seed1, AliExternalTrackParam *const param0Combined, AliExternalTrackParam *const param1Combined);
   static void MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstream, const TObjArray * corrArray, Int_t step, Int_t run);
   TTree * GetCosmicTree() const {return fCosmicTree;}
   //
