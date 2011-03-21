@@ -1,0 +1,14 @@
+# this list will set as problematics:
+# - all channels of crate-39
+# - all channels of TRM-04 crate-41
+# - all channels of chain-A TRM-07 crate-04
+# - all channels of TDC-04 chain-B TRM-09 crate-07
+# - channel-03 TDC-02 chain-A TRM-04 crate-00
+39
+41 4
+4 7 0
+7 9 1 4
+0 4 0 2 3
+# invalid entries inserted on purpose
+78
+54 4 0 1 5 6

@@ -1,24 +1,24 @@
-CheckReadoutEfficiency(Int_t run)
+CheckProblematic(Int_t run, const Char_t *dbString = "raw://")
 {
 
   TGrid::Connect("alien");
   AliCDBManager *cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("raw://");
+  cdb->SetDefaultStorage(dbString);
   cdb->SetRun(run);
-  AliCDBEntry *cdbe = cdb->Get("TOF/Calib/ReadoutEfficiency");
-  CheckReadoutEfficiency(cdbe);
+  AliCDBEntry *cdbe = cdb->Get("TOF/Calib/Problematic");
+  CheckProblematic(cdbe);
 
 }
 
-CheckReadoutEfficiency(const Char_t *fileName)
+CheckProblematic(const Char_t *fileName)
 {
 
   TFile *file = TFile::Open(fileName);
   AliCDBEntry *cdbe = (AliCDBEntry *)file->Get("AliCDBEntry");
-  CheckReadoutEfficiency(cdbe);
+  CheckProblematic(cdbe);
 }
 
-CheckReadoutEfficiency(AliCDBEntry *cdbe)
+CheckProblematic(AliCDBEntry *cdbe)
 {
 
   if (!cdbe) {
@@ -26,9 +26,9 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
     return;
   }
 
-  TH1F *data = (TH1F *)cdbe->GetObject();
+  TH1C *data = (TH1C *)cdbe->GetObject();
 
-  TH2F *hEfficiencyMap = new TH2F("hEfficiencyMap", "Readout efficiency map;sector;strip", 72, 0., 18., 91, 0., 91.);
+  TH2F *hProblematicMap = new TH2F("hProblematicMap", "Problematic map;sector;strip", 72, 0., 18., 91, 0., 91.);
 
   AliTOFcalibHisto calib;
   calib.LoadCalibHisto();
@@ -37,7 +37,7 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
   Int_t sector, sectorStrip, padx, fea;
   Float_t efficiency, hitmapx, hitmapy;
   for (Int_t i = 0; i <  data->GetNbinsX(); i++) {
-    efficiency = data->GetBinContent(i + 1);
+    if (data->GetBinContent(i + 1) == 0) continue;
     sector = calib.GetCalibMap(AliTOFcalibHisto::kSector, i);
     sectorStrip = calib.GetCalibMap(AliTOFcalibHisto::kSectorStrip, i);
     padx = calib.GetCalibMap(AliTOFcalibHisto::kPadX, i);
@@ -45,12 +45,12 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
     hitmapx = sector + ((Double_t)(3 - fea) + 0.5) / 4.;
     hitmapy = sectorStrip;
 
-    hEfficiencyMap->Fill(hitmapx, hitmapy, efficiency / 24.);
+    hProblematicMap->Fill(hitmapx, hitmapy);
   }
 
-  hEfficiencyMap->DrawCopy("colz");
-  TFile *fout = TFile::Open("CheckReadoutEfficiency.root", "RECREATE");
-  hEfficiencyMap->Write();
+  hProblematicMap->DrawCopy("colz");
+  TFile *fout = TFile::Open("CheckProblematic.root", "RECREATE");
+  hProblematicMap->Write();
   fout->Close();
 
 }
