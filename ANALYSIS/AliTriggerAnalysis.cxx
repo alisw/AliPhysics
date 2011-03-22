@@ -64,6 +64,7 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistZDC(0),    
   fHistTDCZDC(0),    
   fHistTimeZDC(0),    
+  fHistTimeCorrZDC(0),    
   fHistFMDA(0),    
   fHistFMDC(0),   
   fHistFMDSingle(0),
@@ -118,6 +119,11 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
     delete fHistTimeZDC;
     fHistTimeZDC = 0;
   }
+  if (fHistTimeCorrZDC)
+  {
+    delete fHistTimeCorrZDC;
+    fHistTimeCorrZDC = 0;
+  }
 
   if (fHistFMDA)
   {
@@ -171,6 +177,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   fHistTDCZDC = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
   fHistTimeZDC = new TH2F("fHistTimeZDC", "ZDC;TDC timing A+C vs C-A; events", 120,-30,30,120,-600,-540);
+  fHistTimeCorrZDC = new TH2F("fHistTimeCorrZDC", "ZDC;Corrected TDC timing A+C vs C-A; events", 120,-30,30,120,-100,-40);
   
   // TODO check limits
   fHistFMDA = new TH1F("fHistFMDA", "FMDA;combinations above threshold;events", 102, -1.5, 100.5);
@@ -1006,16 +1013,34 @@ Bool_t AliTriggerAnalysis::ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHi
     const Float_t refDelta = -2.1;
     const Float_t sigmaSum = 3.25;
     const Float_t sigmaDelta = 2.25;
+
+    // Cuts for the new corrected TDC values
+    const Float_t refSumCorr = -65.5;
+    const Float_t sigmaSumCorr = 6.0;
+    const Float_t sigmaDeltaCorr = 1.2;
+
     for(Int_t i = 0; i < 4; ++i) {
       if (esdZDC->GetZDCTDCData(10,i) != 0) {
 	Float_t tdcC = 0.025*(esdZDC->GetZDCTDCData(10,i)-esdZDC->GetZDCTDCData(14,i)); 
+	Float_t tdcCcorr = esdZDC->GetZDCTDCCorrected(10,i); 
 	for(Int_t j = 0; j < 4; ++j) {
 	  if (esdZDC->GetZDCTDCData(12,j) != 0) {
 	    Float_t tdcA = 0.025*(esdZDC->GetZDCTDCData(12,j)-esdZDC->GetZDCTDCData(14,j));
-	    if(fillHists) fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
-	    if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
-		 (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
-	      zdcAccept = kTRUE;
+	    Float_t tdcAcorr = esdZDC->GetZDCTDCCorrected(12,j);
+	    if(fillHists) {
+	      fHistTimeZDC->Fill(tdcC-tdcA,tdcC+tdcA);
+	      fHistTimeCorrZDC->Fill(tdcCcorr-tdcAcorr,tdcCcorr+tdcAcorr);
+	    }
+	    if (esdZDC->TestBit(AliESDZDC::kCorrectedTDCFilled)) {
+	      if (((tdcCcorr-tdcAcorr-refDelta)*(tdcCcorr-tdcAcorr-refDelta)/(sigmaDeltaCorr*sigmaDeltaCorr) +
+		   (tdcCcorr+tdcAcorr-refSumCorr)*(tdcCcorr+tdcAcorr-refSumCorr)/(sigmaSumCorr*sigmaSumCorr))< 1.0)
+		zdcAccept = kTRUE;
+	    }
+	    else {
+	      if (((tdcC-tdcA-refDelta)*(tdcC-tdcA-refDelta)/(sigmaDelta*sigmaDelta) +
+		   (tdcC+tdcA-refSum)*(tdcC+tdcA-refSum)/(sigmaSum*sigmaSum))< 1.0)
+		zdcAccept = kTRUE;
+	    }
 	  }
 	}
       }
@@ -1141,7 +1166,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 11;
+  const Int_t nHists = 12;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -1157,6 +1182,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[n++].Add(entry->fHistZDC);
     collections[n++].Add(entry->fHistTDCZDC);
     collections[n++].Add(entry->fHistTimeZDC);
+    collections[n++].Add(entry->fHistTimeCorrZDC);
     collections[n++].Add(entry->fHistFMDA);
     collections[n++].Add(entry->fHistFMDC);
     collections[n++].Add(entry->fHistFMDSingle);
@@ -1197,6 +1223,10 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     fHistTimeZDC->Merge(&collections[n++]);
   else
     n++;
+  if (fHistTimeCorrZDC)
+    fHistTimeCorrZDC->Merge(&collections[n++]);
+  else
+    n++;
   fHistFMDA->Merge(&collections[n++]);
   fHistFMDC->Merge(&collections[n++]);
   fHistFMDSingle->Merge(&collections[n++]);
@@ -1234,6 +1264,8 @@ void AliTriggerAnalysis::SaveHistograms() const
   else Printf("Cannot save fHistTDCZDC");
   if (fHistTimeZDC) fHistTimeZDC->Write();
   else Printf("Cannot save fHistTimeZDC");
+  if (fHistTimeCorrZDC) fHistTimeCorrZDC->Write();
+  else Printf("Cannot save fHistTimeCorrZDC");
   if (fHistFMDA) fHistFMDA->Write();
   else Printf("Cannot save fHistFMDA");
   if (fHistFMDC) fHistFMDC->Write();

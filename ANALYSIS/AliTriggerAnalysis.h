@@ -116,6 +116,7 @@ class AliTriggerAnalysis : public TObject
     TH1F* fHistZDC;            //histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
     TH1F* fHistTDCZDC;         // histograms that histogram the criterion the cut is applied on: TDC bits (32 bins)
     TH2F* fHistTimeZDC;        // histograms that histogram the criterion the cut is applied on: ZDC TDC timing
+    TH2F* fHistTimeCorrZDC;    // histograms that histogram the criterion the cut is applied on: ZDC Corrected TDC timing
     TH1F* fHistFMDA;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1F* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1F* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
@@ -126,7 +127,7 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 12)
+    ClassDef(AliTriggerAnalysis, 13)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
