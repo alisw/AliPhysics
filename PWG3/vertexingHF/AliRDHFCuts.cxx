@@ -46,7 +46,7 @@ AliAnalysisCuts(name,title),
 fMinVtxType(3),
 fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
-fMaxVtxZ(1e6),
+fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
 fTriggerMask(0),
 fTriggerClass("CINT1"),
@@ -261,7 +261,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
     fWhyRejection=6;
     return kFALSE;
-  }
+  } 
 
   // switch to settings for 1-pad cls in TPC
   if(fPidHF) {
