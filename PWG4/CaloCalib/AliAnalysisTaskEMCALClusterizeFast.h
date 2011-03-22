@@ -56,7 +56,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           FillDigitsArray();
   virtual void           Init();
   virtual void           RecPoints2Clusters(TClonesArray *clus);
-  virtual void           SubBackground();
   virtual void           UpdateCells();
   virtual void           UpdateClusters();
 
