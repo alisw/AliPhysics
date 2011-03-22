@@ -19,7 +19,7 @@
 // 7. change the way of delta phi cut for UE study due to memory issue (reduce histograms)
 
 // --- ROOT system ---
-class TH3D;
+//class TH3D;
 
 // --- Analysis system ---
 #include "AliAnaPartCorrBaseClass.h"
@@ -126,12 +126,14 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtHbpUeRightCharged  ;      //! Trigger particle -underlying charged hadron momentim HBP histogram  
 
   //for pout and kt extraction
-  TH3D * fhPoutPtTrigPtAssoc  ; // Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
-  TH3D * fhUePoutPtTrigPtAssoc  ; // UE Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
+  TH2F * fhPtTrigPout  ; // Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
+  TH2F * fhPtAssocDeltaPhi  ; // Pout =associated pt*sin(delta phi) distribution
+ // TH3D * fhUePoutPtTrigPtAssoc  ; // UE Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
   TH2F * fhPtTrigCharged ; //trigger and correlated particl pt, to be used for mean value for kt	
   
   //if different multiplicity analysis asked
-  TH3D ** fhTrigDeltaPhiDeltaEtaCharged ; //! differences of eta and phi between trigger and charged hadrons
+  TH2F ** fhTrigDeltaPhiCharged ; //! differences of phi between trigger and charged hadrons
+  TH2F ** fhTrigDeltaEtaCharged ; //! differences of eta between trigger and charged hadrons
   TH2F ** fhTrigCorr  ;    //! Trigger particle -charged hadron momentim imbalance histogram
   TH2F ** fhTrigUeCorr  ;    //! Trigger particle -UE charged hadron momentim imbalance histogram
   
@@ -165,7 +167,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F * fhPtImbalanceDecayNeutral ; //! Trigger particle (decay from pi0)-neutral hadron momentim imbalance histogram  
   
 	
-  ClassDef(AliAnaParticleHadronCorrelation,5)
+  ClassDef(AliAnaParticleHadronCorrelation,6)
 } ;
  
 
