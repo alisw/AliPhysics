@@ -28,6 +28,8 @@ public:
   //  void Browse(TBrowser *b); 
   virtual void Print(Option_t* option = "") const;
 
+  void Set(TParticle* p);
+
   Double_t Eta() const; 
   Double_t Pt()  const; 
   Double_t Phi() const;
@@ -53,6 +55,7 @@ public:
   void SetForSubevent(Int_t i); 
   void ResetFlowTags() {fFlowBits.ResetAllBits();}
   void ResetSubEventTags() {fSubEventBits.ResetAllBits();}
+  void Clear(Option_t* o="");
   
   void ResolutionPt(Double_t resolution);
 

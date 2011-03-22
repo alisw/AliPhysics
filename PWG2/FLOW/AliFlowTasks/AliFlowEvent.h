@@ -30,10 +30,12 @@ public:
   enum KineSource { kNoKine, kESDkine, kMCkine };
 
   AliFlowEvent();
+  AliFlowEvent(Int_t n);
   AliFlowEvent(const AliFlowEvent& event);
   AliFlowEvent& operator=(const AliFlowEvent& event);
   virtual  ~AliFlowEvent() {}
 
+  //deprecated
   AliFlowEvent( const AliMCEvent* anInput,
                 const AliCFManager* rpCFManager=NULL,
                 const AliCFManager* poiCFManager=NULL ); //use CF(2x)
@@ -57,18 +59,26 @@ public:
   AliFlowEvent( const AliESDEvent* anInput,
                 const TH2F* anInputFMDhist,
                 const AliCFManager* poiCFManager );
-  AliFlowEvent( AliFlowTrackCuts* rpCuts,
-                AliFlowTrackCuts* poiCuts );
   //pmd
   AliFlowEvent( const AliESDEvent* anInput,
                 const AliESDPmdTrack *pmdtracks,
                 const AliCFManager* poiCFManager );
   //pmd
+  //end of deprecated
+
+  AliFlowEvent( AliFlowTrackCuts* rpCuts,
+                AliFlowTrackCuts* poiCuts );
+  
+  void Fill( AliFlowTrackCuts* rpCuts,
+             AliFlowTrackCuts* poiCuts );
 
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
   using AliFlowEventSimple::SetMCReactionPlaneAngle;
 
   AliFlowTrack* GetTrack( Int_t i );
+
+protected:
+  AliFlowTrack* ReuseTrack( Int_t i);
 
   ClassDef(AliFlowEvent,1)
 };

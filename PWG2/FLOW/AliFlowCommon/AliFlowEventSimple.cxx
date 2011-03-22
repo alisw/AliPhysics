@@ -134,9 +134,9 @@ AliFlowEventSimple::~AliFlowEventSimple()
   //destructor
   if (fTrackCollection) fTrackCollection->Delete();
   delete fTrackCollection;
-  if (fNumberOfTracksWrap) delete fNumberOfTracksWrap;
-  if (fNumberOfRPsWrap) delete fNumberOfRPsWrap;
-  if (fMCReactionPlaneAngleWrap) delete fMCReactionPlaneAngleWrap;
+  delete fNumberOfTracksWrap;
+  delete fNumberOfRPsWrap;
+  delete fMCReactionPlaneAngleWrap;
 }
 
 //-----------------------------------------------------------------------
@@ -181,8 +181,13 @@ AliFlowTrackSimple* AliFlowEventSimple::GetTrack(Int_t i)
 //-----------------------------------------------------------------------
 void AliFlowEventSimple::AddTrack( AliFlowTrackSimple* track )
 {
-  //add a track
-  fTrackCollection->AddLast(track);
+  //add a track, delete the old one if necessary
+  if (fNumberOfTracks < fTrackCollection->GetEntriesFast())
+  {
+    TObject* o = fTrackCollection->At(fNumberOfTracks);
+    if (o) delete o;
+  }
+  fTrackCollection->AddAtAndExpand(track,fNumberOfTracks);
   fNumberOfTracks++;
 }
 
@@ -769,9 +774,10 @@ Int_t AliFlowEventSimple::CleanUpDeadTracks()
   for (Int_t i=0; i<fNumberOfTracks; i++)
   {
     AliFlowTrackSimple* track = static_cast<AliFlowTrackSimple*>(fTrackCollection->At(i));
-    if (track->IsDead()) {delete track;ncleaned++;}
+    if (track->IsDead()) {delete track;track=NULL;ncleaned++;}
   }
   fTrackCollection->Compress(); //clean up empty slots
+  fNumberOfTracks-=ncleaned; //update number of tracks
   return ncleaned;
 }
 
@@ -787,4 +793,17 @@ TF1* AliFlowEventSimple::SimplePtSpectrum()
 {
   //return a standard pt spectrum, user has to clean up!
   return new TF1("StandardPtSpectrum","x*TMath::Exp(-pow(0.13957*0.13957+x*x,0.5)/0.4)",0.1,10.);
+}
+
+//_____________________________________________________________________________
+void AliFlowEventSimple::ClearFast()
+{
+  //clear the counter without deleting allocated objects so they can be reused
+  fReferenceMultiplicity = 0;
+  fNumberOfTracks = 0;
+  fNumberOfRPs = 0;
+  fMCReactionPlaneAngle = 0.0;
+  fMCReactionPlaneAngleIsSet = kFALSE;
+  fAfterBurnerPrecision = 0.001;
+  fUserModified = kFALSE;
 }
