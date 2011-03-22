@@ -338,12 +338,14 @@ Bool_t AliESDpid::CheckTOFMatching(AliESDtrack *track) const{
     return status;
 }
 //_________________________________________________________________________
-void AliESDpid::SetTOFResponse(AliESDEvent *event,EStartTimeType_t option){
+void AliESDpid::SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option){
   //
   // Set TOF response function
   // Input option for event_time used
   //
 
+    AliESDEvent *event=(AliESDEvent*)vevent;
+  
     Float_t t0spread = 0.; //event->GetEventTimeSpread();
     if(t0spread < 10) t0spread = 80;
 

@@ -9,22 +9,25 @@
 //                    Combined PID class
 //           for the Event Summary Data class
 //   Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch 
+//   Modified: Jens Wiechula, Uni Tuebingen, jens.wiechula@cern.ch
 //-------------------------------------------------------
 #include <Rtypes.h>
 #include "AliESDtrack.h" // Needed for inline functions
-#include "AliTPCPIDResponse.h"
-#include "AliITSPIDResponse.h"
-#include "AliTOFPIDResponse.h"
-#include "AliTRDPIDResponse.h"
+
 //#include "HMPID/AliHMPID.h"
 //#include "TRD/AliTRDpidESD.h"
 
-class AliESDEvent;
+#include "AliPIDResponse.h"
 
-class AliESDpid: public TObject {
+class AliESDEvent;
+class AliVEvent;
+class AliVParticle;
+
+class AliESDpid : public AliPIDResponse  {
 public:
-  AliESDpid(Bool_t forMC=kFALSE): fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean), fTPCResponse(), fITSResponse(forMC), fTOFResponse(), fTRDResponse(){;}
+  AliESDpid(Bool_t forMC=kFALSE): AliPIDResponse(forMC), fRange(5.), fRangeTOFMismatch(5.), fITSPIDmethod(kITSTruncMean) {;}
   virtual ~AliESDpid() {}
+  
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
   void MakeTPCPID(AliESDtrack *track) const;
   void MakeITSPID(AliESDtrack *track) const;
@@ -36,18 +39,11 @@ public:
 
   enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
-
-  Float_t NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const;
-  Float_t NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
-  Float_t NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const;
-
-  AliITSPIDResponse &GetITSResponse() {return fITSResponse;}
-  AliTPCPIDResponse &GetTPCResponse() {return fTPCResponse;}
-  AliTOFPIDResponse &GetTOFResponse() {return fTOFResponse;}
-  AliTRDPIDResponse &GetTRDResponse() {return fTRDResponse;}
-
-  enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
-  void SetTOFResponse(AliESDEvent *event,EStartTimeType_t option);
+  
+  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t timeZeroTOF) const;
+  virtual Float_t NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type) const {return NumberOfSigmasTOF(vtrack,type,0); }
+  
+  void SetTOFResponse(AliVEvent *vevent,EStartTimeType_t option);
 
   void SetNMaxSigmaTOFTPCMismatch(Float_t range) {fRangeTOFMismatch=range;}
   Float_t GetNMaxSigmaTOFTPCMismatch() const {return fRangeTOFMismatch;}
@@ -56,42 +52,18 @@ private:
   Float_t           fRange;          // nSigma max in likelihood
   Float_t           fRangeTOFMismatch; // nSigma max for TOF matching with TPC
   ITSPIDmethod      fITSPIDmethod;   // 0 = trunc mean; 1 = likelihood 
-  AliTPCPIDResponse fTPCResponse;
-  AliITSPIDResponse fITSResponse;
-  AliTOFPIDResponse fTOFResponse;
-  // AliHMPIDPIDResponse fHMPIDResponse;
-  AliTRDPIDResponse fTRDResponse;
 
   ClassDef(AliESDpid,6)  // PID calculation class
 };
 
-inline Float_t AliESDpid::NumberOfSigmasTPC(const AliESDtrack *track, AliPID::EParticleType type) const {
-  Double_t mom = track->GetP();
-  const AliExternalTrackParam *in = track->GetInnerParam();
-  if (in)
-    mom = in->GetP();
-  return fTPCResponse.GetNumberOfSigmas(mom,track->GetTPCsignal(),track->GetTPCsignalN(),type); 
-}
 
-inline Float_t AliESDpid::NumberOfSigmasTOF(const AliESDtrack *track, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const {
+inline Float_t AliESDpid::NumberOfSigmasTOF(const AliVParticle *vtrack, AliPID::EParticleType type, const Float_t /*timeZeroTOF*/) const {
+  AliESDtrack *track=(AliESDtrack*)vtrack;
   Double_t times[AliPID::kSPECIES];
   track->GetIntegratedTimes(times);
   return (track->GetTOFsignal() - fTOFResponse.GetStartTime(track->GetP()) - times[type])/fTOFResponse.GetExpectedSigma(track->GetP(),times[type],AliPID::ParticleMass(type));
 }
 
-inline Float_t AliESDpid::NumberOfSigmasITS(const AliESDtrack *track, AliPID::EParticleType type) const {
-  ULong_t trStatus=track->GetStatus();
-  Float_t dEdx=track->GetITSsignal();
-  UChar_t clumap=track->GetITSClusterMap();
-  Int_t nPointsForPid=0;
-  for(Int_t i=2; i<6; i++){
-    if(clumap&(1<<i)) ++nPointsForPid;
-  }
-  Float_t mom=track->P();
-  Bool_t isSA=kTRUE;
-  if(trStatus&AliESDtrack::kTPCin) isSA=kFALSE;
-  return fITSResponse.GetNumberOfSigmas(mom,dEdx,type,nPointsForPid,isSA);
-}
 #endif
 
 
