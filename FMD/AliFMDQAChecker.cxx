@@ -112,7 +112,10 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
   Double_t max     = 0;
   Double_t min     = 10000;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ;
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))
+	->IsEventSpecieSet(AliRecoParam::ConvertIndex(specie))) 
+      continue;
+    // if (!AliQAv1::Instance()->IsEventSpecieSet(specie)) continue ;
     
     if(!list[specie]) continue;
 
@@ -150,8 +153,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), 
 				AliQAv1::GetTaskName(task).Data(), 
 				AliRecoParam::GetEventSpecieName(specie)); 
-    if (!fImage[specie]) 
-      fImage[specie] = new TCanvas(title, title) ;
+    if (!fImage[specie]) fImage[specie] = new TCanvas(title, title) ;
     fImage[specie]->Clear() ; 
     fImage[specie]->SetTitle(title) ; 
     fImage[specie]->cd() ; 
