@@ -525,6 +525,8 @@ void Parser::ReadInput()
 	  delete [] tDaughter2;
 	  delete [] tDaughter3;
 	  delete [] tBRatio;
+
+	  delete newChannel;
 	}
     }
 
@@ -717,6 +719,7 @@ void Parser::ReadShare()
 		  {
 		    (mDB->GetParticleType(tFather))->AddDecayChannel(*newChannel);
 		    PRINT_DEBUG_2("Added channel " << newChannel << " " << mDB->GetParticleTypeIndex(tFather) << " " << mDB->GetParticleTypeIndex(tDaughter1) << " " << mDB->GetParticleTypeIndex(tDaughter2));
+		    delete newChannel;
 		  }
 		else 
 		  {

@@ -311,12 +311,16 @@ Event::DecayParticles()
 #ifdef _NO_THREE_BODY_DECAYS_
 	    if (tPart3){
 	      tCount++;
+	      if (tPart1) delete tPart1;
+	      if (tPart2) delete tPart2;
 	      continue;
 	    }
 #endif
 #ifdef _OMIT_TWO_BODY_
 	    if (tPart1 && tPart2 && !tPart3){
 	      tCount++;
+	      delete tPart1;
+	      delete tPart2;
 	      continue;
 	    }
 #endif

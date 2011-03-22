@@ -40,7 +40,10 @@ Integrator::Integrator(int aNpart)
   kFmToGev  = 0.197326960277;				/*MCH updated: kFmToGev  = 0.197;*/
   ReadParameters();
 
-  PRINT_MESSAGE("Hash for these parameters is: " << ParameterHash());
+  char *tHash;
+  tHash = ParameterHash();
+
+  PRINT_MESSAGE("Hash for these parameters is: " << tHash);
   
   mNPart = aNpart;
   kTwoPi2 = TMath::Pi()*TMath::Pi()*2*2;		/*MCH*/
@@ -50,6 +53,8 @@ Integrator::Integrator(int aNpart)
   mRandom->SetSeed(41321);
 
   mFOHS = new Hypersurface(mFOHSlocation.Data());				/*MCH*/
+
+  free (tHash);
 }
 
 double Integrator::CalcBE(double aX)
