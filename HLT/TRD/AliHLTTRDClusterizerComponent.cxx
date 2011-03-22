@@ -188,7 +188,6 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
   fReconstructor->SetClusters(0x0);
   delete fReconstructor;
   fReconstructor = 0x0;
-  return 0;
 
   if (fRecoParam)
     {
@@ -196,6 +195,8 @@ int AliHLTTRDClusterizerComponent::DoDeinit()
       delete fRecoParam;
       fRecoParam = 0;
     }
+
+  return 0;
 }
 
 int AliHLTTRDClusterizerComponent::DoEvent( const AliHLTComponentEventData& evtData, 

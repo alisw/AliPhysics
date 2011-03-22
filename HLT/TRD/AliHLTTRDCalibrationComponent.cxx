@@ -568,12 +568,11 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   coefdrift->SetName("coefdrift");
   coefdriftsecond->SetName("coefdriftsecond");
   coeft0->SetName("coeft0");
-  if(coefgain) fAfterRunArray->Add(coefgain);
-  if(coefprf) fAfterRunArray->Add(coefprf);
-  if(coefdrift) fAfterRunArray->Add(coefdrift);
-  if(coefdriftsecond) fAfterRunArray->Add(coefdriftsecond);
-  if(coeft0) fAfterRunArray->Add(coeft0);
-  
+  fAfterRunArray->Add(coefgain);
+  fAfterRunArray->Add(coefprf);
+  fAfterRunArray->Add(coefdrift);
+  fAfterRunArray->Add(coefdriftsecond);
+  fAfterRunArray->Add(coeft0);
 
   if(coefgain||coefprf||coefdrift||coeft0||coefdriftsecond) {
     PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
