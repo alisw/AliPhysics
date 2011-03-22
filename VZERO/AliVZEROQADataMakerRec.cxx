@@ -391,7 +391,7 @@ void AliVZEROQADataMakerRec::InitESDs()
 
     h2d = new TH2D("H2D_TimeV0A_V0C", "Mean Time in V0C versus V0A;Time V0A [ns];Time V0C [ns]", 
   		150, kTimeMin,kTimeMax,150,kTimeMin,kTimeMax) ;  
-    Add2RawsList(h2d,kTimeV0AV0C, expert, image, !saveCorr);   iHisto++;
+    Add2RawsList(h2d,kTimeV0AV0C, !expert, image, !saveCorr);   iHisto++;
 	
  	// Creation of Flag versus LHC Clock histograms 
 
