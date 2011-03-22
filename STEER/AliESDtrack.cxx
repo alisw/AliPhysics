@@ -1169,8 +1169,12 @@ Double_t AliESDtrack::M() const
 {
   // Returns the assumed mass
   // (the pion mass, if the particle can't be identified properly).
-
-  AliWarning("This is the ESD mass. Use it with care !"); 
+  static Bool_t printerr=kTRUE;
+  if (printerr) {
+     AliWarning("WARNING !!! ... THIS WILL BE PRINTED JUST ONCE !!!");
+     printerr = kFALSE;
+     AliWarning("This is the ESD mass. Use it with care !"); 
+  }
   return GetMass(); 
 }
   
