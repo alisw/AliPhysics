@@ -31,3 +31,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( EINCLUDE  PWG2/DIFFRACTIVE ITS PWG1/ITS )
 
+set ( DHDR set PWG2diffractiveLinkDef.h )
