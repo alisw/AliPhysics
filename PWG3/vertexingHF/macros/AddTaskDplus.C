@@ -40,11 +40,12 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
   
   AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,prodcuts,storeNtuple);
   dplusTask->SetReadMC(readMC);
-  dplusTask->SetDoLikeSign(kTRUE);
+  dplusTask->SetDoLikeSign(kFALSE);
   //  dplusTask->SetUseTPCpid(kTRUE);
   //dplusTask->SetUseTOFpid(kTRUE);
   dplusTask->SetDebugLevel(0);
   dplusTask->SetMassLimits(0.2);
+  dplusTask->SetUseBit(kTRUE);
   mgr->AddTask(dplusTask);
   
   // Create containers for input/output 

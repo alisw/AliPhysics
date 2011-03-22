@@ -617,18 +617,88 @@ Float_t AliRDHFCuts::GetCentrality(AliAODEvent* aodEvent,AliRDHFCuts::ECentralit
   AliAODHeader *header=aodEvent->GetHeader();
   AliCentrality *centrality=header->GetCentralityP();
   Float_t cent=-999.;
+  Bool_t isSelRun=kFALSE;
+  Int_t selRun[5]={138364, 138826, 138828, 138836, 138871};
   if(!centrality) return cent;
   else{
-    if (estimator==kCentV0M) cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+    if (estimator==kCentV0M){
+      cent=(Float_t)(centrality->GetCentralityPercentile("V0M"));
+      if(cent<0){
+	Int_t quality = centrality->GetQuality();
+	if(quality<=1){
+	  cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
+	}else{
+	  Int_t runnum=aodEvent->GetRunNumber();
+	  for(Int_t ir=0;ir<5;ir++){
+	    if(runnum==selRun[ir]){
+	      isSelRun=kTRUE;
+	      break;
+	    }
+	  }
+	  if((quality==8||quality==9)&&isSelRun)cent=(Float_t)centrality->GetCentralityPercentileUnchecked("V0M");
+	}
+      }
+    }
     else {
-      if (estimator==kCentTRK) cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+      if (estimator==kCentTRK) {
+	cent=(Float_t)(centrality->GetCentralityPercentile("TRK"));
+	if(cent<0){
+	  Int_t quality = centrality->GetQuality();
+	  if(quality<=1){
+	    cent=(Float_t)centrality->GetCentralityPercentileUnchecked("TRK");
+	  }else{
+	    Int_t runnum=aodEvent->GetRunNumber();
+	    for(Int_t ir=0;ir<5;ir++){
+	      if(runnum==selRun[ir]){
+		isSelRun=kTRUE;
+		break;
+	      }
+	    }
+	    if((quality==8||quality==9)&&isSelRun)cent=(Float_t)centrality->GetCentralityPercentileUnchecked("TRK");
+	  }
+	}
+      }
       else{
-	if (estimator==kCentTKL) cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+	if (estimator==kCentTKL){
+	  cent=(Float_t)(centrality->GetCentralityPercentile("TKL"));
+	  if(cent<0){
+	    Int_t quality = centrality->GetQuality();
+	    if(quality<=1){
+	      cent=(Float_t)centrality->GetCentralityPercentileUnchecked("TKL");
+	    }else{
+	      Int_t runnum=aodEvent->GetRunNumber();
+	      for(Int_t ir=0;ir<5;ir++){
+		if(runnum==selRun[ir]){
+		  isSelRun=kTRUE;
+		  break;
+	    }
+	      }
+	      if((quality==8||quality==9)&&isSelRun)cent=(Float_t)centrality->GetCentralityPercentileUnchecked("TKL");
+	    }   
+	  }
+	}
 	else{
-	  if (estimator==kCentCL1) cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+	  if (estimator==kCentCL1){
+	    cent=(Float_t)(centrality->GetCentralityPercentile("CL1"));
+	    if(cent<0){
+	      Int_t quality = centrality->GetQuality();
+	      if(quality<=1){
+		cent=(Float_t)centrality->GetCentralityPercentileUnchecked("CL1");
+	      }else{
+		Int_t runnum=aodEvent->GetRunNumber();
+		for(Int_t ir=0;ir<5;ir++){
+		  if(runnum==selRun[ir]){
+		    isSelRun=kTRUE;
+		    break;
+		  }
+		}
+		if((quality==8||quality==9)&&isSelRun)cent=(Float_t)centrality->GetCentralityPercentileUnchecked("CL1");
+	      }
+	    }
+	  }
 	  else {
 	    AliWarning("Centrality estimator not valid");
-
+	    
 	  }
 	}
       }

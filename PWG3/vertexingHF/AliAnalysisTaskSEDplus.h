@@ -43,6 +43,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
   void SetBinWidth(Float_t w);
+  void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
   
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
@@ -111,9 +112,10 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Bool_t fFillNtuple;   // flag for filling ntuple
   Bool_t fReadMC;    //flag for access to MC
   Bool_t fUseStrangeness;//flag to enhance strangeness in MC to fit to data
+  Bool_t fUseBit;      //flag to use bitmask
   Bool_t fDoLS;      //flag to do LS analysis
   
-  ClassDef(AliAnalysisTaskSEDplus,10); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSEDplus,11); // AliAnalysisTaskSE for the MC association of heavy-flavour decay candidates
 };
 
 #endif
