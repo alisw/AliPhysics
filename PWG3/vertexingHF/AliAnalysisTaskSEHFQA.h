@@ -41,10 +41,16 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
   //setters
   void SetReadMC(Bool_t mcflag){fReadMC=mcflag;}
   void SetSimpleMode(Bool_t flag){fSimpleMode=flag;}
+  void SetTrackOn(Bool_t trackon=kTRUE){fOnOff[0]=trackon;}
+  void SetPIDOn(Bool_t pidon=kTRUE){fOnOff[1]=pidon;}
+  void SetCentralityOn(Bool_t centron=kTRUE){fOnOff[2]=centron;}
 
   //getters
   AliRDHFCuts* GetCutObject() const {return fCuts;}
   DecChannel GetDecayChannel()const {return fDecayChannel;}
+  Bool_t GetTrackStatus() const {return fOnOff[0];}
+  Bool_t GetPIDStatus() const {return fOnOff[1];}
+  Bool_t GetCentralityStatus() const {return fOnOff[2];}
 
  private:
   AliAnalysisTaskSEHFQA(const AliAnalysisTaskSEHFQA &source);
@@ -59,9 +65,11 @@ class AliAnalysisTaskSEHFQA : public AliAnalysisTaskSE
  AliRDHFCuts* fCuts;       // object containing cuts
  AliRDHFCuts::ECentrality fEstimator; //2nd estimator for centrality
  Bool_t fReadMC;           // flag to read MC
- Bool_t fSimpleMode;       // if true, don't do candidates (much faster in PbPb) 
- ClassDef(AliAnalysisTaskSEHFQA,4); //AnalysisTaskSE for the quality assurance of HF in hadrons
+ Bool_t fSimpleMode;       // if true, don't do candidates (much faster in PbPb)
+ Bool_t fOnOff[3];         // on-off the QA on tracks (0), PID (1), centrality (2) -- default is {kTRUE,kTRUE,kTRUE}
+ ClassDef(AliAnalysisTaskSEHFQA,5); //AnalysisTaskSE for the quality assurance of HF in hadrons
 
 };
 
 #endif
+

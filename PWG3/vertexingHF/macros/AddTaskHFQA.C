@@ -16,6 +16,8 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
     stdcuts=kTRUE;
   }
 
+  Bool_t onoff[3]={kTRUE,kTRUE,kTRUE};
+
   AliRDHFCuts *analysiscuts=0x0;
 
   TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",inname="input",suffix="",cutsobjname="",centr="";
@@ -106,6 +108,9 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   taskQA->SetReadMC(readMC);
   taskQA->SetSimpleMode(simplemode); // set to kTRUE to go faster in PbPb
+  taskQA->SetTrackOn(onoff[0]);
+  taskQA->SetPIDOn(onoff[1]);
+  taskQA->SetCentralityOn(onoff[2]);
   mgr->AddTask(taskQA);
 
   //
@@ -117,19 +122,20 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   mgr->ConnectOutput(taskQA,1,coutput1);
 
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(out2name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //PID
-  mgr->ConnectOutput(taskQA,2,coutput2);
+  if(onoff[1]) mgr->ConnectOutput(taskQA,2,coutput2);
 
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(out3name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
-  mgr->ConnectOutput(taskQA,3,coutput3);
+  if(onoff[0]) mgr->ConnectOutput(taskQA,3,coutput3);
 
   AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(out4name,AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
   mgr->ConnectOutput(taskQA,4,coutput4);
 
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
-  mgr->ConnectOutput(taskQA,5,coutput5);
+  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(out5name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of centrality
+  if(onoff[2]) mgr->ConnectOutput(taskQA,5,coutput5);
 
-  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of tracks
-  mgr->ConnectOutput(taskQA,6,coutput6);
+  AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //quality of centrality
+  if(onoff[2]) mgr->ConnectOutput(taskQA,6,coutput6);
 
  return taskQA;
 }
+

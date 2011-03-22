@@ -73,6 +73,7 @@ AliAnalysisTaskSE(),
   fFillNtuple(kFALSE),
   fReadMC(kFALSE),
   fUseStrangeness(kFALSE),
+  fUseBit(kTRUE),
   fDoLS(kFALSE)
 {
    // Default constructor
@@ -101,6 +102,7 @@ fCounter(0),
 fFillNtuple(fillNtuple),
 fReadMC(kFALSE),
 fUseStrangeness(kFALSE),
+fUseBit(kTRUE),
 fDoLS(kFALSE)
 {
   // 
@@ -288,135 +290,101 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
   //
   // Fill the Like Sign histograms
   //
-
-  //count pos/neg tracks
-  Int_t nPosTrks=0,nNegTrks=0;
- //counter for particles passing single particle cuts
-  Int_t nspcplus=0;
-  Int_t nspcminus=0;
-
-  for(Int_t it=0;it<aod->GetNumberOfTracks();it++) {
-    AliAODTrack *track = aod->GetTrack(it);
-    if(track->Charge()>0){
-      nPosTrks++;
-      if(track->Pt()>=0.4){
-	nspcplus++;
-      }
-    }
-    if(track->Charge()<0)
-      {
-	nNegTrks++;
-	if(track->Pt()>=0.4){
-	  nspcminus++;
-	}
-      }
-  }
-
-  Int_t nOStriplets = arrayOppositeSign->GetEntriesFast();
-
-  Int_t nDplusLS=0;
-  Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
-  Int_t index; 
-
-  for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
-    AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod))nDplusLS++;
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
-  }
-
- Float_t wei2=0;
- if(nLikeSign!=0)wei2 = (Float_t)nOStriplets/(Float_t)nLikeSign;
- Float_t wei3=0;
- if(nDplusLS!=0)wei3 = (Float_t)nDplusOS/(Float_t)nDplusLS;
-
- // loop over like sign candidates
-  for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
-    AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
-    Bool_t unsetvtx=kFALSE;
-    if(!d->GetOwnPrimaryVtx()) {
-      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
-      unsetvtx=kTRUE;
-    }
- 
-    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)){
-
-      //set tight cuts values
-      Int_t iPtBin=-1;
-      Double_t ptCand = d->Pt();
-      for(Int_t ibin=0;ibin<fNPtBins&&iPtBin<0&&ptCand>fArrayBinLimits[0]&&ptCand<fArrayBinLimits[fNPtBins];ibin++){
-      	if(ptCand<fArrayBinLimits[ibin+1])iPtBin=ibin;
-      }
-      
-      if(iPtBin<0){
-	return;
-      }
-
-      Int_t passTightCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
-
-      Int_t sign= d->GetCharge();
-      Float_t wei=1;
-      Float_t wei4=1;
-      if(sign>0&&nPosTrks>2&&nspcplus>2) {  //wei* should be automatically protected, since to get a triplet there must be at least 3 good tracks in the event
-	
-      	wei=3.*(Float_t)nNegTrks/((Float_t)nPosTrks-2.);
-	wei4=3.*(Float_t)nspcminus/((Float_t)nspcplus-2.);
-      }
-      
-      if(sign<0&&nNegTrks>2&&nspcminus>2){     
- 	wei=3.*(Float_t)nPosTrks/((Float_t)nNegTrks-2.);
-	wei4=3.*(Float_t)nspcplus/((Float_t)nspcminus-2.);
-
-      }
-
-      Float_t invMass = d->InvMassDplus();
-      Double_t dlen=d->DecayLength();
-      Double_t cosp=d->CosPointingAngle();
-      Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-     Double_t dca=d->GetDCA();   
-     Double_t sigvert=d->GetSigmaVert();   
-     Double_t ptmax=0;
-     for(Int_t i=0;i<3;i++){
-       if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
-     }
-     
-      index=GetLSHistoIndex(iPtBin);
-      fMassHistLS[index]->Fill(invMass,wei);
-      fMassHistLS[index+1]->Fill(invMass);
-      fMassHistLS[index+2]->Fill(invMass,wei2);
-      fMassHistLS[index+3]->Fill(invMass,wei3);
-      fMassHistLS[index+4]->Fill(invMass,wei4);
-      
-      Int_t indexcut=GetHistoIndex(iPtBin);
-      fCosPHistLS[indexcut]->Fill(cosp);
-      fDLenHistLS[indexcut]->Fill(dlen);
-      fSumd02HistLS[indexcut]->Fill(sumD02);
-      fSigVertHistLS[indexcut]->Fill(sigvert);
-      fPtMaxHistLS[indexcut]->Fill(ptmax);
-      fDCAHistLS[indexcut]->Fill(dca);
-      
-      if(passTightCuts){
-	fMassHistLSTC[index]->Fill(invMass,wei);
-	fMassHistLSTC[index+1]->Fill(invMass);
-	fMassHistLSTC[index+2]->Fill(invMass,wei2);
-	fMassHistLSTC[index+3]->Fill(invMass,wei3);
-	fMassHistLSTC[index+4]->Fill(invMass,wei4);
-      }
-    }
-    if(unsetvtx) d->UnsetOwnPrimaryVtx();
-  }
+  printf("started LS\n");
+  Bool_t fPlotVariables=kTRUE;
+  //histograms for like sign
+  Int_t nbins=GetNBinsHistos();;
+  TH1F *histLSPlus = new TH1F("LSPlus","LSPlus",nbins,fLowmasslimit,fUpmasslimit);
+  TH1F *histLSMinus = new TH1F("LSMinus","LSMinus",nbins,fLowmasslimit,fUpmasslimit);
   
-  //printf("------------ N. of positive tracks in Event ----- %d \n", nPosTrks);
-  //printf("------------ N. of negative tracks in Event ----- %d \n", nNegTrks);
+  Int_t nPosTrks=0,nNegTrks=0;
+  Int_t nOStriplets = arrayOppositeSign->GetEntriesFast();
+  Int_t nDplusLS=0;
+  Int_t nDminusLS=0;
+  Int_t nLikeSign = arrayLikeSign->GetEntriesFast();
+  Int_t index=0; 
+  
+  // loop over like sign candidates
+  for(Int_t iLikeSign = 0; iLikeSign < nLikeSign; iLikeSign++) {
+    AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)arrayLikeSign->UncheckedAt(iLikeSign);
+    if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts))continue;
+    Bool_t unsetvtx=kFALSE;
+    if(!d->GetOwnPrimaryVtx()) {
+      d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
+      unsetvtx=kTRUE;
+    }
+    
+    //    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)){
+    fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
+    Int_t passTightCuts=fRDCutsAnalysis->GetIsSelectedCuts();
+    if(passTightCuts>0){
+      
+      Double_t ptCand = d->Pt();
+      Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);
+      if(iPtBin<0)continue;
+      
+      Int_t sign= d->GetCharge();
+      Float_t invMass = d->InvMassDplus();
+      
+      index=GetLSHistoIndex(iPtBin);
+      fMassHistLS[index+1]->Fill(invMass);
+      if(sign>0){
+	histLSPlus->Fill(invMass);
+	nDplusLS++;
+      }else{
+	histLSMinus->Fill(invMass);
+	nDminusLS++;
+      }
+      if(fPlotVariables){
+	Double_t dlen=d->DecayLength();
+	Double_t cosp=d->CosPointingAngle();
+	Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+	Double_t dca=d->GetDCA();   
+	Double_t sigvert=d->GetSigmaVert();   
+	Double_t ptmax=0;
+	for(Int_t i=0;i<3;i++){
+	  if(d->PtProng(i)>ptmax)ptmax=d->PtProng(i);
+	}
+	fCosPHistLS[iPtBin]->Fill(cosp);
+	fDLenHistLS[iPtBin]->Fill(dlen);
+	fSumd02HistLS[iPtBin]->Fill(sumD02);
+	fSigVertHistLS[iPtBin]->Fill(sigvert);
+	fPtMaxHistLS[iPtBin]->Fill(ptmax);
+	fDCAHistLS[iPtBin]->Fill(dca);
+      }
+    }
+    if(unsetvtx) d->UnsetOwnPrimaryVtx();
+  }
+  //wei:normalized to the number of combinations (production)
+  //wei2:normalized to the number of  LS/OS (production)
+  //wei3:normalized to the number of  LS/OS (analysis)
+  //wei4:normalized to the number of combinations (analysis)
+  Float_t wei2=0;
+  if(nLikeSign!=0)wei2 = (Float_t)nOStriplets/(Float_t)nLikeSign;
+  Float_t wei3=0;
+  if(nDplusLS!=0)wei3 = (Float_t)nDplusOS/(Float_t)nDplusLS;
+  Float_t weiplus=1.,weiminus=1.;
+  Float_t wei4plus=1.,wei4minus=1.;
+  //wei* should be automatically protected, since to get a triplet there must be at least 3 good tracks in the event
+  if(nPosTrks>2)weiplus=3.*(Float_t)nNegTrks/((Float_t)nPosTrks-2.);
+  if(nDplusLS>2)wei4plus=3.*(Float_t)nDminusLS/((Float_t)nDplusLS-2.);
+  if(nNegTrks>2)weiminus=3.*(Float_t)nPosTrks/((Float_t)nNegTrks-2.);
+  if(nDminusLS>2)wei4minus=3.*(Float_t)nDplusLS/((Float_t)nDminusLS-2.);
 
-  //  printf("LS analysis...done\n");
+  fMassHistLS[index]->Add(histLSPlus,weiplus);
+  fMassHistLS[index]->Add(histLSMinus,weiminus);
+  fMassHistLS[index+2]->Add(histLSPlus,wei2);
+  fMassHistLS[index+2]->Add(histLSMinus,wei2);
+  fMassHistLS[index+3]->Add(histLSPlus,wei3);
+  fMassHistLS[index+3]->Add(histLSMinus,wei3);
+  fMassHistLS[index+4]->Add(histLSPlus,wei4plus);
+  fMassHistLS[index+4]->Add(histLSMinus,wei4minus);
 
+  delete histLSPlus;histLSPlus=0;
+  delete histLSMinus;histLSMinus=0;
+  
+  if(fDebug>1) printf("LS analysis terminated\n");  
 }
-
 
 //__________________________________________
 void AliAnalysisTaskSEDplus::Init(){
@@ -709,7 +677,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   }
   
   
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",8,-0.5,7.5);
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",9,-0.5,8.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with PbPb HM trigger");
@@ -718,6 +686,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after loose cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"no. of D+ after tight cuts");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
 
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);
   
@@ -859,7 +828,10 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
     fHistNEvents->Fill(4);
-    
+    if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){
+      fHistNEvents->Fill(8);
+      continue;
+    }
     Bool_t unsetvtx=kFALSE;
     if(!d->GetOwnPrimaryVtx()){
       d->SetOwnPrimaryVtx(vtx1);
