@@ -44,12 +44,18 @@
 ClassImp(AliFlowEvent)
 
 //-----------------------------------------------------------------------
-
 AliFlowEvent::AliFlowEvent():
   AliFlowEventSimple()
 {
   //ctor
   cout << "AliFlowEvent: Default constructor to be used only by root for io" << endl;
+}
+
+//-----------------------------------------------------------------------
+AliFlowEvent::AliFlowEvent(Int_t n):
+  AliFlowEventSimple(n)
+{
+  //ctor
 }
 
 //-----------------------------------------------------------------------
@@ -586,6 +592,110 @@ AliFlowEvent::AliFlowEvent( const AliESDEvent* anInput,
     }
   }
 
+}
+
+//-----------------------------------------------------------------------
+void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
+                         AliFlowTrackCuts* poiCuts )
+{
+  //Fills the event from a vevent: AliESDEvent,AliAODEvent,AliMCEvent
+  //the input data needs to be attached to the cuts
+  //we have two cases, if we're cutting the same collection of tracks
+  //(same param type) then we can have tracks that are both rp and poi
+  //in the other case we want to have two exclusive sets of rps and pois
+  //e.g. one tracklets, the other PMD or global - USER IS RESPOSIBLE
+  //FOR MAKING SURE THEY DONT OVERLAP OR ELSE THE SAME PARTICLE WILL BE
+  //TAKEN TWICE
+
+  ClearFast();
+
+  if (!rpCuts || !poiCuts) return;
+  AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
+  AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
+  AliFlowTrack* pTrack=NULL;
+
+  if (sourceRP==sourcePOI)
+  {
+    //loop over tracks
+    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
+    {
+      //get input object (particle)
+      TObject* particle = rpCuts->GetInputObject(i);
+
+      Bool_t rp = rpCuts->IsSelected(particle,i);
+      Bool_t poi = poiCuts->IsSelected(particle,i);
+      
+      if (!(rp||poi)) continue;
+
+      //make new AliFLowTrack
+      if (rp)
+      {
+        pTrack = ReuseTrack(fNumberOfTracks);
+        if (!rpCuts->FillFlowTrack(pTrack)) continue;
+        pTrack->TagRP(); fNumberOfRPs++;
+        if (poi) pTrack->TagPOI();
+      }
+      else if (poi)
+      {
+        pTrack = ReuseTrack(fNumberOfTracks);
+        if (!poiCuts->FillFlowTrack(pTrack)) continue;
+        pTrack->TagPOI();
+      }
+      
+      //store the index of the ESD track for AODs and ESDs
+      //TODO: should be moved to AliFlowTrackCuts
+      Int_t trackID = -1;
+      AliVTrack *toGetfID = dynamic_cast<AliVTrack*> (particle);
+      if (toGetfID) trackID = toGetfID->GetID();
+      pTrack->SetID(trackID);
+      fNumberOfTracks++;
+    }//end of while (i < numberOfTracks)
+  }
+  else if (sourceRP!=sourcePOI)
+  {
+    //here we have two different sources of particles, so we fill
+    //them independently
+    //RP
+    for (Int_t i=0; i<rpCuts->GetNumberOfInputObjects(); i++)
+    {
+      TObject* particle = rpCuts->GetInputObject(i);
+      Bool_t rp = rpCuts->IsSelected(particle,i);
+      if (!rp) continue;
+      pTrack = ReuseTrack(fNumberOfTracks);
+      if (!rpCuts->FillFlowTrack(pTrack)) continue;
+      pTrack->TagRP();
+      fNumberOfRPs++;
+      fNumberOfTracks++;
+    }
+    //POI
+    for (Int_t i=0; i<poiCuts->GetNumberOfInputObjects(); i++)
+    {
+      TObject* particle = poiCuts->GetInputObject(i);
+      Bool_t poi = poiCuts->IsSelected(particle,i);
+      if (!poi) continue;
+      pTrack = ReuseTrack(fNumberOfTracks);
+      if (!poiCuts->FillFlowTrack(pTrack)) continue;
+      pTrack->TagPOI();
+      fNumberOfTracks++;
+    }
+  }
+}
+
+//-----------------------------------------------------------------------
+AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)
+{
+  //try to reuse an existing track, if empty, make new one
+  AliFlowTrack* pTrack = static_cast<AliFlowTrack*>(fTrackCollection->At(i));
+  if (pTrack)
+  {
+    pTrack->Clear();
+  }
+  else 
+  {
+    pTrack = new AliFlowTrack();
+    fTrackCollection->Add(pTrack);
+  }
+  return pTrack;
 }
 
 //-----------------------------------------------------------------------

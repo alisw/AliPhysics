@@ -29,6 +29,8 @@ public:
   AliFlowTrack(const AliFlowTrack& aTrack);
   virtual  ~AliFlowTrack();
   virtual AliFlowTrack* Clone(const char* option="") const;
+
+  void Set(const AliVParticle* p);
  
   void SetSource( trackSource s )
                   { fTrackSourceBits.SetBitNumber(UInt_t(s),kTRUE); }

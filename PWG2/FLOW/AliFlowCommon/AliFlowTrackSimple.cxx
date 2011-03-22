@@ -79,6 +79,18 @@ AliFlowTrackSimple::AliFlowTrackSimple( TParticle* p ):
 }
 
 //-----------------------------------------------------------------------
+void AliFlowTrackSimple::Set(TParticle* p)
+{
+  //set from a TParticle
+  fEta = p->Eta();
+  fPt = p->Pt();
+  fPhi = p->Phi();
+  fTrackWeight = 1.;
+  TParticlePDG* ppdg = p->GetPDG();
+  fCharge = TMath::Nint(ppdg->Charge()/3.0);
+}
+
+//-----------------------------------------------------------------------
 AliFlowTrackSimple::AliFlowTrackSimple(const AliFlowTrackSimple& aTrack):
   TObject(aTrack),
   fEta(aTrack.fEta),
@@ -344,4 +356,18 @@ void AliFlowTrackSimple::Print( Option_t* /*option*/ ) const
     if (InSubevent(i)) printf(", subevent %i",i);
   }
   printf("\n");
+}
+
+//______________________________________________________________________________
+void AliFlowTrackSimple::Clear(Option_t*)
+{
+  //clear track
+  fEta=0.0;
+  fPt=0.0;
+  fPhi=0.0;
+  fTrackWeight=1.0;
+  fCharge=0;
+  fFlowBits.ResetAllBits();
+  fSubEventBits.ResetAllBits();
+  fID=-1;
 }

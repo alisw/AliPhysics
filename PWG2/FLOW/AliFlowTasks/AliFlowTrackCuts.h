@@ -156,6 +156,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliVParticle* GetTrack() const {return fTrack;}
   AliMCParticle* GetMCparticle() const {return fMCparticle;}
   AliFlowTrack* MakeFlowTrack() const;
+  Bool_t FillFlowTrack(AliFlowTrack* track) const;
   Bool_t IsPhysicalPrimary() const; 
   static Bool_t IsPhysicalPrimary(AliMCEvent* p, Int_t label, Bool_t requiretransported=kTRUE); 
   
@@ -199,6 +200,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliFlowTrack* MakeFlowTrackPMDtrack() const;
   AliFlowTrack* MakeFlowTrackV0() const;
   AliFlowTrack* MakeFlowTrackVParticle() const;
+  Bool_t FillFlowTrackVParticle(AliFlowTrack* t) const;
+  Bool_t FillFlowTrackGeneric(AliFlowTrack* t) const;
   void HandleESDtrack(AliESDtrack* track);
   void HandleVParticle(AliVParticle* track);
   void DefineHistograms();

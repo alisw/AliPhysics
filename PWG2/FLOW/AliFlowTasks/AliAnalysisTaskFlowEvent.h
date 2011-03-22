@@ -161,6 +161,8 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fV3;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV5;        // Add Flow. Must be in range [0,0.5].
+
+  AliFlowEvent* fFlowEvent; //flowevent
     
   TRandom3* fMyTRandom3;     // TRandom3 generator
   // end afterburner

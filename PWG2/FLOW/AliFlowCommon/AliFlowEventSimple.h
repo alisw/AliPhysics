@@ -79,6 +79,7 @@ class AliFlowEventSimple: public TObject {
   void AddV2( TF1* ptDepV2 );
   void DefineDeadZone( Double_t etaMin, Double_t etaMax, Double_t phiMin, Double_t phiMax );
   Int_t CleanUpDeadTracks();
+  void ClearFast();
  
   static TF1* SimplePtSpectrum();
   static TF1* SimplePtDepV2();
@@ -97,8 +98,9 @@ class AliFlowEventSimple: public TObject {
                          Double_t etaMin=-1.0,
                          Double_t etaMax= 1.0 );
 
+  //data members
   TObjArray*              fTrackCollection;           //-> collection of tracks
-  Int_t                   fReferenceMultiplicity;           // reference multiplicity
+  Int_t                   fReferenceMultiplicity;     // reference multiplicity
   Int_t                   fNumberOfTracks;            // number of tracks
   Int_t                   fNumberOfRPs;               // number of tracks that have passed the RP selection
   Double_t                fMCReactionPlaneAngle;      // the angle of the reaction plane from the MC truth
