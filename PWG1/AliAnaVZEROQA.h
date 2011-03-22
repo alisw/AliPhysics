@@ -30,8 +30,6 @@ class AliAnaVZEROQA : public AliAnalysisTaskSE
 		      Int_t nBinsY, Double_t yMin, Double_t yMax,
 		      const char* xLabel = NULL, const char* yLabel = NULL);
 
-  Float_t CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;
-  
  private:
 
   TList* fListOfHistos;   // List of output histos
@@ -67,7 +65,6 @@ class AliAnaVZEROQA : public AliAnalysisTaskSE
   TH1F *fV0multC;         // Mutiplicity in V0C
   TH1F *fV0ampl;          // ADC spectra for both rings
 
-  TH2F *fhTimePMTCorr;    // Corrected time per PMT
   TH2F *fhEvents;         // Event statistics histogram
 
   TH2F *fhVtxXYBB;        // XY vertex for beam-beam events
