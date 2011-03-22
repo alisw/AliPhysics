@@ -127,6 +127,8 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   //slot #1
   OpenFile(1);
   fOutput = new TList();
+  fOutput->SetOwner();
+  
   //
   // Booking rec points related histograms
   //0
@@ -181,7 +183,7 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   //
 
   // 11
-  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",300,0,12000);
+  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",500,0,500);
   hTracklets->SetXTitle("# Tracklets");
   fOutput->AddLast(hTracklets);
   //12
