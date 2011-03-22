@@ -1421,8 +1421,8 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       AliError(Form("Bad tower coordinate drow=%f, where drow >= 23.5 || drow<-0.5; org: %f", drow, droworg));
       return;
     }
-    if (sm > 11 || sm <0) {
-      AliError(Form("Bad SM number sm=%d, where sm > 11 || sm<0", sm));
+    if (sm > 3 || sm < 0) {
+      AliError(Form("Bad SM number sm=%d, where sm > 4 || sm < 0", sm));
       return;
     }    
     
