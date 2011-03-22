@@ -63,7 +63,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	}
 
 	TFile* fileCuts = new TFile(cutFile);
-	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("DplustoKpipiCuts");
+	AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
 	//  for now the binning is the same than for all D's
@@ -117,7 +117,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
-	const Int_t nvar   = 13 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
+	const Int_t nvar   = 14 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 // 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
 // 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
 // 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
@@ -176,6 +176,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	iBin[10]=nbin10;
 	iBin[11]=nbin11;
 	iBin[12]=nbin12;
+	iBin[13]=nbin13;
 	
 	
 	//arrays for lower bounds :
@@ -192,6 +193,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	Double_t *binLim10=new Double_t[iBin[10]+1];
 	Double_t *binLim11=new Double_t[iBin[11]+1];
 	Double_t *binLim12=new Double_t[iBin[12]+1];
+	Double_t *binLim13=new Double_t[iBin[13]+1];
 
 	// checking limits
 	/*
@@ -365,7 +367,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
         container -> SetStepTitle(6, "RecoAcc");
 	container -> SetStepTitle(7, "RecoITSCluster");
 	container -> SetStepTitle(8, "RecoCuts");
-	container -> SetStepTitle(8, "RecoPID");
+	container -> SetStepTitle(9, "RecoPID");
 
         container -> SetVarTitle(ipt,"pt");
 	container -> SetVarTitle(iy,"y");
@@ -459,8 +461,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetSign(isSign);
-	task->SetCentralitySelection(kTRUE);
-
+	task->SetCentralitySelection(kFALSE);
+	task->SetFakeSelection(0);
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
