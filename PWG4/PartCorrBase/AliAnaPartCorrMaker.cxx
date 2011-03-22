@@ -299,6 +299,9 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
 	  if(tca) tca->Clear("C");
   }
   
+  //Set geometry matrices before filling arrays, in case recalibration/position calculation etc is needed
+  fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
+
   //Tell the reader to fill the data in the 3 detector lists
   Bool_t ok = fReader->FillInputEvent(iEntry, currentFileName);
   if(!ok){
@@ -306,12 +309,9 @@ void AliAnaPartCorrMaker::ProcessEvent(const Int_t iEntry, const char * currentF
 	  return ;
   }
 	
-  fCaloUtils->SetGeometryTransformationMatrices(fReader->GetInputEvent());	
-  
   //Magic line to write events to file
   if(fReader->WriteDeltaAODToFile())AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 
-  
   //printf(">>>>>>>>>> BEFORE >>>>>>>>>>>\n");
   //gObjectTable->Print();
   //Loop on analysis algorithms
