@@ -311,7 +311,7 @@ AliH2F *  AliDigits::GenerHisto()
   //
   //make digits histo 
   char ch[30];
-  sprintf(ch,"Segment_%d ",GetID());
+  snprintf(ch,30, "Segment_%d ",GetID());
   if ( (fNrows<1)|| (fNcols<1)) {
     return 0;
   }
@@ -367,6 +367,7 @@ void AliDigits::ExpandBuffer1()
     }else 
       if (row>fNrows){
 	Invalidate();
+	delete [] buf;
 	return;
       }      
   }

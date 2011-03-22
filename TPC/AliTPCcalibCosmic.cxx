@@ -349,7 +349,6 @@ void AliTPCcalibCosmic::Process(AliESDEvent *event) {
   //if (!isOK) return;
   // Work around
   FindCosmicPairs(event);
-  return;
   const AliMultiplicity *multiplicity = event->GetMultiplicity();
   Int_t ntracklets = multiplicity->GetNumberOfTracklets();
   if (ntracklets>6) return; // filter out "normal" event with high multiplicity
