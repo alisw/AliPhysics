@@ -34,6 +34,9 @@ const Int_t    minITSClusters = 5;
 
 const Float_t centmin = 0.;
 const Float_t centmax = 100.;
+const Float_t fakemin = -0.5;
+const Float_t fakemax = 2.5.;
+
 
 //----------------------------------------------------
 
@@ -108,6 +111,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	UInt_t id0pi2  = 10;
 	UInt_t iz  = 11;
 	UInt_t icent = 12;
+	UInt_t ifake = 13;
 
 	const Double_t phimax = 2*TMath::Pi();
 
@@ -152,6 +156,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	const Int_t nbin10  = 100 ; //bins in d0pi2
 	const Int_t nbin11  = 60 ; //bins in z vertex
 	const Int_t nbin12 = 10; //bins in centrality
+	const Int_t nbin13 = 3;  //bins in fake
 	
 	//arrays for the number of bins in each dimension
 	Int_t iBin[nvar];
@@ -281,9 +286,16 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 		//		Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim12[i]));
 	}
 
+	// centrality
 	for(Int_t i=0; i<=nbin12; i++) {
 	  binLim12[i]=(Double_t)centmin  + (centmax-centmin)/nbin12 * (Double_t)i;
 	}
+
+	// fake
+	for(Int_t i=0; i<=nbin13; i++) {
+	  binLim13[i]=(Double_t)fakemin  + (fakemax-fakemin)/nbin13 * (Double_t)i;
+	}
+
 	
 
 	// debugging printings
@@ -340,6 +352,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	container -> SetBinLimits(iz,binLim11);
 	printf("cent\n");
 	container -> SetBinLimits(icent,binLim12);
+	printf("fake\n");
+	container -> SetBinLimits(ifake,binLim13);
 	
 	
 	container -> SetStepTitle(0, "MCLimAcc");
@@ -366,6 +380,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	container -> SetVarTitle(id0pi2, "d0pi2");
 	container -> SetVarTitle(iz, "z");
 	container -> SetVarTitle(icent, "centrality");
+	container -> SetVarTitle(ifake, "fake");
 
 
 	//CREATE THE  CUTS -----------------------------------------------
@@ -456,6 +471,9 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(const char* cutFile = "./Dplust
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
+	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
+	Printf("***************END CONTAINER SETTINGS *****************\n");
+
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
         //-----------------------------------------------------------//

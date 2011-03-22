@@ -117,8 +117,14 @@ Bool_t AliCFVertexingHF3Prong::SetRecoCandidateParam(AliAODRecoDecayHF *recoCand
   Int_t mcLabel = fRecoCandidate->MatchToMC(pdgCand,fmcArray,3,pdgDaughter);  
   if (mcLabel == -1) return bSignAssoc;
 
-  if ((fRecoCandidate->NumberOfFakeDaughters()>0)&&(fFakeSelection==1)) return bSignAssoc;
-  if ((fRecoCandidate->NumberOfFakeDaughters()==0)&&(fFakeSelection==2)) return bSignAssoc;
+  if (fRecoCandidate->NumberOfFakeDaughters()>0){
+	  fFake = 0;    // fake candidate
+	  if (fFakeSelection==1) return bSignAssoc;
+  }
+  if (fRecoCandidate->NumberOfFakeDaughters()==0){
+	  fFake = 2;    // non-fake candidate
+	  if (fFakeSelection==2) return bSignAssoc;
+  }
   
   SetMCLabel(mcLabel);
   fmcPartCandidate = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fmcLabel));
@@ -293,6 +299,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
   vectorMC[10] = 0.;   // imppar2, dummy value, meaningless in MC, in micron
   vectorMC[11] = fzMCVertex;    // z of reconstructed of primary vertex
   vectorMC[12] = fCentValue; // reconstructed centrality value 
+  vectorMC[13] = 1.;           // always filling with 1 at MC level 
 
 
   bGenValues = kTRUE;
@@ -370,6 +377,7 @@ Bool_t AliCFVertexingHF3Prong::GetRecoValuesFromCandidate(Double_t *vectorReco) 
   vectorReco[10] = decay3->Getd0Prong(daughtSorted[2]);
   vectorReco[11] = fzPrimVertex;    // z of reconstructed of primary vertex
   vectorReco[12] = fCentValue; //reconstructed centrality value
+  vectorReco[13] = fFake;      // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
 
 
   bFillRecoValues = kTRUE;

@@ -230,42 +230,42 @@ void AliCFTaskVertexingHF::Init()
 	switch (fDecayChannel){
 	case 2:{
 		copyfCuts = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-		fNvar = 14;
+		fNvar = 15;
 		fPartName="D0";
 		fDauNames="K+pi";
 		break;
 	}
 	case 21:{ 
 		copyfCuts = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-		fNvar = 14;
+		fNvar = 15;
 		fPartName="Dstar";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 31:{
 		copyfCuts = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="Dplus";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 32:{
 		copyfCuts = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="Lambdac";
 		fDauNames="p+K+pi";
 		break;
 	}
 	case 33:{
 		copyfCuts = new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
-		fNvar = 13;
+		fNvar = 14;
 		fPartName="Ds";
 		fDauNames="K+K+pi";
 		break;
 	}
 	case 4:{
 		copyfCuts = new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
-		fNvar = 14;
+		fNvar = 15;
 		fPartName="D0";
 		fDauNames="K+pi+pi+pi";
 		break;

@@ -57,7 +57,8 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fCentValue(0.),
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
-	fFakeSelection(0)
+	fFakeSelection(0),
+	fFake(1.) // setting to MC value
 {
 	//
 	// constructor
@@ -88,7 +89,8 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fCentValue(0.),
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
-	fFakeSelection(0)
+	fFakeSelection(0),
+	fFake(1.) // setting to MC value
 {
 	//
 	// constructor with mcArray
@@ -146,6 +148,7 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fProngs=c.fProngs;
 		fCentValue=c.fCentValue;
 		fFakeSelection=c.fFakeSelection;
+		fFake=c.fFake;
 		if (fProngs > 0){
 			fLabelArray = new Int_t[fProngs];
                         fPtAccCut = new Float_t[fProngs];
@@ -181,7 +184,8 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fCentValue(c.fCentValue),
 	fPtAccCut(0x0),
 	fEtaAccCut(0x0),
-	fFakeSelection(0)
+	fFakeSelection(c.fFakeSelection),
+	fFake(c.fFake) 
 {  
 	//
 	//copy constructor
