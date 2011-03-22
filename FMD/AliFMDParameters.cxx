@@ -1063,8 +1063,8 @@ AliFMDParameters::Hardware2Detector(UShort_t  ddl,       UShort_t addr,
 }
 //____________________________________________________________________
 Bool_t 
-AliFMDParameters::Hardware2Detector(UShort_t    ddl,       UShort_t   board,
-				    UShort_t    chip,      UShort_t   chan,
+AliFMDParameters::Hardware2Detector(UShort_t  ddl,       UShort_t   board,
+				    UShort_t  chip,      UShort_t   chan,
 				    UShort_t  timebin,   
 				    UShort_t& det,       Char_t&   ring, 
 				    UShort_t& sec,       Short_t& str,
@@ -1088,11 +1088,24 @@ AliFMDParameters::Hardware2Detector(UShort_t    ddl,       UShort_t   board,
   // Return:
   //    @c true on success, false otherwise 
   //
-  if (!fAltroMap) return kFALSE;
-  if (fAltroMap->DDL2Detector(ddl) < 0) return kFALSE;
-  Short_t stripBase = 0;
-  if (!fAltroMap->Channel2StripBase(board,chip,chan, ring, sec, stripBase)) 
+  if (!fAltroMap) {
+    AliFMDDebug(1, ("No ALTRO map available"));
     return kFALSE;
+  }
+  if (fAltroMap->DDL2Detector(ddl) < 0) { 
+    AliFMDDebug(1, ("Invalid DDL number %d", ddl));
+    return kFALSE;
+  }
+  det = fAltroMap->DDL2Detector(ddl);
+  Short_t stripBase = 0;
+  if (!fAltroMap->Channel2StripBase(board,chip,chan, ring, sec, stripBase)) {
+    AliFMDDebug(1, ("Failed to translate  "
+		    "%d/0x%02x/0x%x/0x%x/%04d -> "
+		    "FMD%d%c[%2d,%3d] to detector", 
+		    ddl, board, chip, chan, timebin, 
+		    det, ring, sec, stripBase));
+    return kFALSE;
+  }
   UShort_t preSamples = GetPreSamples(det, ring, sec, stripBase);
   UShort_t sampleRate = GetSampleRate(det, ring, sec, stripBase);
   Short_t stripOff = 0;
@@ -1133,7 +1146,10 @@ AliFMDParameters::Detector2Hardware(UShort_t  det,        Char_t    ring,
   // Return:
   //    @c true on success, false otherwise 
   //
-  if (!fAltroMap) return kFALSE;
+  if (!fAltroMap) { 
+    AliFMDDebug(1, ("No ALTRO map available"));
+    return kFALSE;
+  }
   UShort_t preSamples = GetPreSamples(det, ring, sec, str);
   UShort_t sampleRate = GetSampleRate(det, ring, sec, str);
   UShort_t strip      = str - GetMinStrip(det,ring,sec,str);

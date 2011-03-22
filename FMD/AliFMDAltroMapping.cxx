@@ -184,6 +184,11 @@ AliFMDAltroMapping::Timebin2Strip(UShort_t  sec,
   sample     =  (t % sampleRate);
   t          -= sample;
   stripOff   =  (sec % 2 ? -1 : 1) * t / sampleRate;
+#if 0
+  AliInfo(Form("[%2d],%4d -> %d * (%4d - %d)-((%4d - %d) %% %d) / %d = %3d,%d",
+	       sec,timebin, (sec % 2 ? -1 : 1), timebin, preSamples, 
+	       timebin, preSamples, sampleRate, sampleRate, stripOff, sample));
+#endif
 }
 
 //____________________________________________________________________
@@ -206,24 +211,24 @@ AliFMDAltroMapping::Hardware2Detector(UShort_t  ddl,     UShort_t    board,
   if (!Channel2StripBase(board, altro, chan, ring, sec, baseStrip)) 
     return kFALSE;
   Timebin2Strip(sec, timebin, preSamples, sampleRate, stripOffset, sam);
-#if 0
-  AliFMDDebug(1, ("0x%x/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%2d,%3d]-%d "
-		  "(pre=%d,rate=%d,base=%3d,off=%3d)", 
-		  ddl, 
-		  board, 
-		  altro, 
-		  chan, 
-		  timebin, 
-		  det, 
-		  ring, 
-		  sec, 
-		  str, 
-		  sam,
-		  preSamples, 
-		  sampleRate,
-		  baseStrip, 
-		  stripOffset));
-#endif
+  {
+    AliFMDDebug(50, ("0x%x/0x%02x/0x%x/0x%x/%04d -> FMD%d%c[%2d,%3d]-%d "
+		    "(pre=%d,rate=%d,base=%3d,off=%3d)", 
+		     ddl, 
+		     board, 
+		     altro, 
+		     chan, 
+		     timebin, 
+		     det, 
+		     ring, 
+		     sec, 
+		     str, 
+		     sam,
+		     preSamples, 
+		     sampleRate,
+		     baseStrip, 
+		     stripOffset));
+  }
   str = baseStrip + stripOffset;
   return kTRUE;
 }
@@ -400,8 +405,23 @@ AliFMDAltroMapping::Strip2Timebin(UShort_t sec, UShort_t strip,
   //    the timebin corresponding to the passed strip 
   //
   UShort_t timebin = preSamples;
-  if (sec % 2)  timebin += (127 - (strip % 128)) * sampleRate;
-  else          timebin += (strip % 128) * sampleRate;
+  if (sec % 2)  {
+    timebin += (127 - (strip % 128)) * sampleRate;
+#if 0
+    AliInfo(Form("[%2d,%3d]-%d (%d)-> %d + (127 - (%d %% 128)) * %d + %d = %d", 
+		 sec, strip, sam, (strip % 128), 
+		 preSamples, strip, sampleRate, sam,
+		 timebin+sam));
+#endif
+  }
+  else  {
+    timebin += (strip % 128) * sampleRate;
+#if 0
+    AliInfo(Form("[%2d,%3d]-%d (%d)-> %d + (%d %% 128) * %d + %d = %d", 
+		 sec, strip, sam, (strip % 128), 
+		 preSamples, strip, sampleRate, sam, timebin+sam));
+#endif
+  }
   timebin += sam;
   return timebin;
 }

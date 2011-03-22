@@ -65,7 +65,7 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
   
   // Double_t* rv = new Double_t[AliRecoParam::kNSpecies] ; 
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
-    Int_t count   = 0;
+    // Int_t count   = 0;
     rv[specie]    = 0.; 
 
     if (!AliQAv1::Instance()->IsEventSpecieSet(specie) ) 
@@ -88,7 +88,7 @@ void AliFMDQAChecker::Check(Double_t*                   rv,
       if(what == AliQAv1::kREC) 
 	rv[specie] += (hist->GetMean() > 0 ? 1 : 0);
     } // for (int i ...)
-    if (count != 0) rv[specie] /= count;
+    // if (count != 0) rv[specie] /= count;
   }
   // return rv;
 }
