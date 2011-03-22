@@ -5,12 +5,12 @@ class AliAnalysisAlien;
 AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode);
 
 // Collision type: 0 = p-p   1 = Pb-Pb
-Int_t  iCollisionType = 1;
-Int_t runNumbers[5] = {137844};
+Int_t  iCollisionType = 0;
+Int_t runNumbers[5] = {145384};
 
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 1;
+Bool_t doCentrality   = 0;
 Bool_t doQAsym        = 1;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVertex       = 1;
@@ -18,33 +18,36 @@ Bool_t doSPD          = 1;   // needs RP
 Bool_t doTPC          = 1;
 Bool_t doSDD          = 1;   // needs RP
 Bool_t doSSDdEdx      = 1;
-// new 
-Bool_t doTRD          = 1;
+
+Bool_t doTRD          = 0;
 Bool_t doITS          = 1;
+Bool_t doITSsaTracks  = 1;   // new
+Bool_t doITSalign     = 0;   // new (try to load geom)
 Bool_t doCALO         = 1;
 Bool_t doMUONTrig     = 1;
 Bool_t doImpParRes    = 1;
 Bool_t doMUON         = 1;
 Bool_t doTOF          = 1;
 Bool_t doHMPID        = 1;
-Bool_t doZDC          = 1;
+Bool_t doT0           = 1; // new
+Bool_t doZDC          = 0;
 
 Bool_t doMUONEff      = 0;   // NEEDS geometry
 Bool_t doV0           = 0;   // NEEDS MCtruth 
 
 TString     train_name         = "QA";      // QA local folder name
-TString     train_tag          = "_Pb-Pb_";        // Train special tag appended to 
+TString     train_tag          = (iCollisionType)?"_Pb-Pb":"_p-p";        // Train special tag appended to 
                                             // visible name. ("sim", "pp", ...)
                // Name in train page (DON'T CHANGE)
 TString     visible_name       = Form("QA$2_$3%s", train_tag.Data()); //# FIXED #
-TString     job_comment        = "PWG1 QA train "; // Can add observations here
+TString     job_comment        = "PWG1 QA train(no TRD, no ZDC)"; // Can add observations here
                // Job tag (DON'T CHANGE)
 TString     job_tag            = Form("%s: %s", visible_name.Data(), job_comment.Data());
                // Package versions - Modify as needed
-TString     root_version       = "v5-27-06c";
-TString     aliroot_version    = "v4-21-15-AN";
+TString     root_version       = "v5-28-00a";
+TString     aliroot_version    = "v4-21-17b-AN";
                // Production directory - change as needed for test mode
-TString     grid_datadir       = "/alice/data/2010/LHC10h";
+TString     grid_datadir       = "/alice/data/2011/LHC11a";
                // Work directory in GRID (DON'T CHANGE)
 TString     grid_workdir       = "/alice/cern.ch/user/a/alidaq/QA/QA$2";
                // Job splitting
@@ -54,7 +57,7 @@ Int_t       debug_level        = 1;        // Debugging
                // File merging
 Int_t       maxMergeFiles      = 10;       // Max files to merge in a chunk
                // Data pattern - change as needed for test mode
-TString     data_pattern       = "*ESDs/pass1/*ESDs.root";
+TString     data_pattern       = "*ESDs/Pass1/*ESDs.root";
                // Output directory (DON'T CHANGE)
 TString     alien_outdir       = "$1/QA$2";
                // Input collection (production mode)
@@ -102,13 +105,18 @@ void PilotAnalysis(const char *plugin_mode = "full")
   out << "   doSSDdEdx       = " << doSSDdEdx << ";" << endl;
   out << "   doTPC           = " << doTPC << ";" << endl;
   out << "   doTRD           = " << doTRD << ";" << endl;
+  out << "   doITS           = " << doITS << ";" << endl;
+  out << "   doITSsaTracks   = " << doITSsaTracks << ";" << endl;
+  out << "   doITSalign      = " << doITSalign << ";" << endl;
   out << "   doZDC           = " << doZDC << ";" << endl;
   out << "   doImpParRes     = " << doImpParRes << ";" << endl;
   out << "   doMUON          = " << doMUON << ";" << endl;
   out << "   doTOF           = " << doTOF << ";" << endl;
   out << "   doHMPID         = " << doHMPID << ";" << endl;
+  out << "   doZDC           = " << doZDC << ";" << endl;
+  out << "   doT0            = " << doT0 << ";" << endl;
   out << "   doEventStat     = " << doEventStat << ";" << endl;
-  out << "   doCentrality    = " << doCentrality << ";" << endl;
+  if (iCollisionType) out << "   doCentrality    = " << doCentrality << ";" << endl;
   out << "}" << endl;
   out.close();
   
@@ -118,7 +126,6 @@ void PilotAnalysis(const char *plugin_mode = "full")
   // Create manager
   AliAnalysisManager *mgr  = new AliAnalysisManager("PilotAnalysis", "Production train");
   mgr->SetNSysInfo(100);
-  mgr->SetDebugLevel(1);
   // Input handler
   AliESDInputHandlerRP *esdHandler = new AliESDInputHandlerRP();
   esdHandler->SetReadFriends(kTRUE);
@@ -148,11 +155,10 @@ void LoadLibraries()
   gSystem->Load("libPWG0dep.so");
   gSystem->Load("libPWG0selectors.so");
   gSystem->Load("libPWG1.so");
-  gSystem->Load("libPWG2.so");
-  gSystem->Load("libPWG2forward.so");
 
   if (doCALO) {
      gSystem->Load("libEMCALUtils");
+     gSystem->Load("libPHOSUtils");
      gSystem->Load("libPWG4PartCorrBase");
      gSystem->Load("libPWG4PartCorrDep");
   }  
@@ -194,11 +200,13 @@ void AddAnalysisTasks()
   // Centrality (A. Toia)
   //
   if (doCentrality) {
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-// J.Thaeder
-//     gROOT->LoadMacro("$ALICE_ROOT/PWG1/Centrality/AddTaskHIMultCorr.C");
-//     AliAnalysisTaskHIMultCorr *taskHIcentrality = AddTaskHIMultCorr();
+     if (!iCollisionType) {
+        printf("Disabling centrality task for p-p\n");
+        doCentrality = kFALSE;
+     } else {           
+        gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+        AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+     }   
   }   
   
   // Vertexing (A. Dainese)
@@ -281,6 +289,17 @@ void AddAnalysisTasks()
       }
   }
   //
+  // ITS saTracks, align (F.Prino)
+  //
+  if (doITSsaTracks) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskITSsaTracks.C");
+     AliAnalysisTaskITSsaTracks *itssaTracks = AddTaskITSsaTracks(kFALSE,kFALSE);
+  }   
+  if (doITSalign) {
+     gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskITSAlign.C");
+     AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2011);
+  }   
+  //
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(doTRD) {
@@ -309,7 +328,7 @@ void AddAnalysisTasks()
 
   if(doCALO) {
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/QA/AddTaskCalorimeterQA.C");
-      AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", kTRUE, kFALSE);
+      AliAnalysisTaskParticleCorrelation *taskCaloQA = AddTaskCalorimeterQA("ESD", 2011, kFALSE, kFALSE);
       taskCaloQA->SetDebugLevel(0);
   }
 
@@ -374,6 +393,11 @@ void AddAnalysisTasks()
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/HMPID/AddTaskHmpidQA.C");
     AliAnalysisTaskSE* taskhmpidqa= AddTaskHmpidQA(kFALSE);
   }      
+  // T0 QA (Alla Mayevskaya
+  if (doT0) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG1/T0/AddTaskT0QA.C");
+    AliT0AnalysisTaskQA* tast0qa= AddTaskT0QA();
+  }      
 }
 
 //______________________________________________________________________________
@@ -391,10 +415,9 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
       plugin->AddDataFile(data_collection);
    }   
    plugin->SetJobTag(job_tag);
-   plugin->SetNtestFiles(10);
+   plugin->SetNtestFiles(1);
    plugin->SetCheckCopy(kFALSE);
    plugin->SetMergeDirName(mergeDirName);
-//   plugin->SetOneStageMerging(kTRUE);
 // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
    plugin->SetROOTVersion(root_version);
@@ -407,7 +430,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetDataPattern(data_pattern);
 // ...then add run numbers to be considered
 //   if (!iAODanalysis) plugin->SetRunRange(run_range[0], run_range[1]);
-//   plugin->SetOutputSingleFolder("output");
+//   plugin->SetOutputSingleFolder("outpu$ALICE_ROOT/PWG1/T0/Addt");
    if (!useProductionMode) {
       plugin->SetRunPrefix("000");
       plugin->SetOutputToRunNo();
@@ -436,12 +459,11 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
    plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");
    
-   plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so libPWG2.so \
-                              libPWG2forward.so libEMCALUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
+   plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so \
+                              libEMCALUtils.so libPHOSUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
                               libPWG3base.so libPWG3muon.so libPWG3muondep.so");
      
 // Declare the output file names separated by blancs.
-// (can be like: file.root or file.root@ALICE::Niham::File)
    plugin->SetDefaultOutputs();
    plugin->SetMaxMergeFiles(maxMergeFiles);
    plugin->SetNrunsPerMaster(1);
@@ -462,7 +484,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
 //   plugin->SetMaxInitFailed(5);
 // Optionally modify the number of replicas
-   plugin->SetNumberOfReplicas(4);
+   plugin->SetNumberOfReplicas(5);
 // Optionally resubmit threshold.
 //   plugin->SetMasterResubmitThreshold(90);
 // Optionally set time to live (default 30000 sec)
