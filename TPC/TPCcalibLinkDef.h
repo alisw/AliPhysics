@@ -27,7 +27,6 @@
 #pragma link C++ class AliTPCcalibCosmic+;
 #pragma link C++ class AliTPCcalibTime+;
 #pragma link C++ class AliTPCcalibTimeGain+;
-#pragma link C++ class AliTPCcalibUnlinearity+;
 #pragma link C++ class AliTPCcalibPID+;
 #pragma link C++ class AliTPCMisAligner+;
 #pragma link C++ class AliTPCcalibTrigger+;
