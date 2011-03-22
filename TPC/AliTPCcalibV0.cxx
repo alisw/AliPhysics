@@ -103,10 +103,9 @@ void  AliTPCcalibV0::ProcessESD(AliESDEvent *esd, AliStack *stack){
   if (TMath::Abs(AliTracker::GetBz())<1) return;  
   DumpToTree(esd);
   DumpToTreeHPT(esd);
-  return;
   //
-  MakeV0s();
   if (stack) {
+    MakeV0s();
     fStack = stack;
     MakeMC();
   }else{
@@ -1016,7 +1015,6 @@ void AliTPCcalibV0::MakeV0s(){
   }
   ProcessV0(1);
   fV0s->Clear();
-  return;
   //
   // combinatorial
   //

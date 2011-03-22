@@ -265,7 +265,7 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
       Double_t slopeAE=f1->GetParError(1); 
       Double_t chi2A=f1->GetChisquare()/f1->GetNumberFreeParameters();
       profAC->Fit("pol1","QNR","QNR",-1.1,-0.1);
-      if (!f1) f1=(TF1*)gROOT->FindObject("pol1");
+      f1=(TF1*)gROOT->FindObject("pol1");
       Double_t offsetC=f1->GetParameter(0);
       Double_t slopeC=f1->GetParameter(1); 
       Double_t offsetCE=f1->GetParError(0);
@@ -320,10 +320,9 @@ void  AliTPCExBEffectiveSector::MakeResidualMap(THnSparse * hisInput, const char
 	  if (!fgaus) {	    
 	    his->Fit("gaus","Q","goff");
 	    fgaus= (TF1*)((his->GetListOfFunctions()->FindObject("gaus"))->Clone());
-	    fgaus->SetName("gausk");
 	  }
-	  if (fgaus) his->Fit(fgaus,"Q","goff");
-	  if (fgaus){
+	  if (fgaus) {
+	    his->Fit(fgaus,"Q","goff");
 	    meanG=fgaus->GetParameter(1);
 	    rmsG=fgaus->GetParameter(2);
 	  }

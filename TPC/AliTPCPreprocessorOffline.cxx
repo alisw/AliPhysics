@@ -385,7 +385,13 @@ TGraphErrors* AliTPCPreprocessorOffline::FilterGraphMedianAbs(TGraphErrors * gra
   Double_t *erry=new Double_t[npoints0];
   //
   //
-  if (npoints0<kMinPoints) return 0;
+  if (npoints0<kMinPoints) {
+    delete []outx;
+    delete []outy;
+    delete []errx;
+    delete []erry;
+    return 0;
+  }
   for (Int_t iter=0; iter<3; iter++){
     npoints=0;
     for (Int_t ipoint=0; ipoint<npoints0; ipoint++){
@@ -432,6 +438,10 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       THnSparse* newHist=hist->Projection(4,dim);
       newHist->SetName(name);
       TGraphErrors* graph=AliTPCcalibBase::FitSlices(newHist,2,0,400,100,0.05,0.95, kTRUE);
+      if (!graph) {
+	printf("Graph =%s filtered out\n", name.Data());
+	continue;
+      }
       printf("name=%s graph=%i, N=%i\n", name.Data(), graph==0, graph->GetN());
       Int_t pos=name.Index("_");
       name=name(pos,name.Capacity()-pos);
@@ -440,10 +450,6 @@ void AliTPCPreprocessorOffline::AddHistoGraphs(  TObjArray * vdriftArray, AliTPC
       graphName.ToUpper();
       //
       graph = FilterGraphDrift(graph, kErrSigmaCut, kMedianCutAbs);
-      if (!graph) {
-	printf("Graph =%s filtered out\n", name.Data());
-	continue;
-      }
       //
       if (graph){
         graph->SetMarkerStyle(i%8+20);
@@ -550,9 +556,9 @@ void AliTPCPreprocessorOffline::AddLaserGraphs(  TObjArray * vdriftArray, AliTPC
   // add graphs for laser
   //
   const Double_t delayL0L1 = 0.071;  //this is hack for 1/2 weeks
-  THnSparse *hisN=0;
+  //THnSparse *hisN=0;
   TGraphErrors *grLaser[6]={0,0,0,0,0,0};
-  hisN = timeDrift->GetHistVdriftLaserA(0);
+  //hisN = timeDrift->GetHistVdriftLaserA(0);
   if (timeDrift->GetHistVdriftLaserA(0)){
     grLaser[0]=MakeGraphFilter0(timeDrift->GetHistVdriftLaserA(0),0,2,5,delayL0L1);
     grLaser[0]->SetName("GRAPH_MEAN_DELAY_LASER_ALL_A");
@@ -1169,9 +1175,11 @@ void AliTPCPreprocessorOffline::MakeQAPlot(Float_t  FPtoMIPratio) {
  	fGraphCosmic->GetY()[i] *= FPtoMIPratio;	
       }
     }
-    fGraphCosmic->Draw("lp");
-    grfFitCosmic->SetLineColor(2);
-    grfFitCosmic->Draw("lu");
+    fGraphCosmic->Draw("lp"); 
+    if (grfFitCosmic) {
+      grfFitCosmic->SetLineColor(2);
+      grfFitCosmic->Draw("lu");
+    }
     fGainArray->AddLast(gainHistoCosmic);
     //fGainArray->AddLast(canvasCosmic->Clone());
     delete canvasCosmic;    
@@ -1268,8 +1276,17 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
   AliTPCcalibTime  *calibTime= (AliTPCcalibTime*) f.Get("calibTime");
   if (!calibTime) return;
   TTreeSRedirector *pcstream = new TTreeSRedirector("meanITSVertex.root");
+  //
   Int_t ihis=0;
   THnSparse *his = calibTime->GetResHistoTPCITS(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("ITS%s",hname[ihis]),run,85.,ihis,5);
+  }
+  ihis=1;
+  his = calibTime->GetResHistoTPCITS(ihis);
   if (his){
     his->GetAxis(1)->SetRangeUser(-1.1,1.1);
     his->GetAxis(2)->SetRange(0,1000000);
@@ -1299,6 +1316,33 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
     his->GetAxis(2)->SetRange(0,1000000);
     his->GetAxis(3)->SetRangeUser(-0.35,0.35);
     AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+
+  }
+  ihis=1;
+  his = calibTime->GetResHistoTPCvertex(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("Vertex%s",hname[ihis]),run,0.,ihis,5);
+
+  }
+  ihis=0;
+  his = calibTime->GetResHistoTPCTOF(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TOF%s",hname[ihis]),run,0.,ihis,10);
+
+  }
+  ihis=0;
+  his = calibTime->GetResHistoTPCTRD(ihis);
+  if (his){
+    his->GetAxis(1)->SetRangeUser(-1.1,1.1);
+    his->GetAxis(2)->SetRange(0,1000000);
+    his->GetAxis(3)->SetRangeUser(-0.35,0.35);
+    AliTPCCorrection::MakeDistortionMap(his,pcstream, Form("TRD%s",hname[ihis]),run,0.,ihis,10);
 
   }
   delete pcstream;
@@ -1463,7 +1507,7 @@ void AliTPCPreprocessorOffline::CreateAlignTime(TString fstring, TVectorD paramC
   rAngles[2]=paramC[index+1]*0.001; rAngles[6] =-paramC[index+1]*0.001;
   matrixGlobal->SetRotation(rAngles);
   //
-  AliTPCCalibGlobalMisalignment *fitAlignTime  =new  AliTPCCalibGlobalMisalignment;
+  AliTPCCalibGlobalMisalignment *fitAlignTime  =0;
   fitAlignTime  =new  AliTPCCalibGlobalMisalignment;
   fitAlignTime->SetName("FitAlignTime");
   fitAlignTime->SetTitle("FitAlignTime");

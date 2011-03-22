@@ -1520,6 +1520,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
       } //loop over parameters
     } // dump results
   }//loop tracks
+  delete [] distortions;
 }
 
 
