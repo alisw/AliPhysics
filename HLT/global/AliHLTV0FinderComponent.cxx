@@ -138,6 +138,9 @@ int AliHLTV0FinderComponent::DoInit(int argc, const char** argv)
   if (argc)
     res = ConfigureFromArgumentString(argc, argv);
 
+  fV0s.clear();
+  fV0s.push_back(0); //Number of v0s.
+
   return res;
 }
 
@@ -203,13 +206,19 @@ int AliHLTV0FinderComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/
   //Initialize KF package.
   AliKFParticle::SetField(GetBz());
 
+  // no output if there is no vertex information
   if (!ReadPrimaryVertex())
     return 0;
 
-  if (!ReadTracks())
-    return 0;
+  // start from clean array
+  // the output block contains at least the number of pairs even
+  // if this is zero
+  fV0s.clear();
+  fV0s.push_back(0); //Number of v0s.
 
-  FindV0s();
+  if (ReadTracks()) {
+    FindV0s();
+  }
 
   return DoOutput();
 }
@@ -327,9 +336,6 @@ void AliHLTV0FinderComponent::FindV0s()
   if (fPrimaryVtx.GetNContributors() < 3)
     return;
 
-  fV0s.clear();
-  fV0s.push_back(0); //Number of v0s.
-
   for (int iTr = 0, ei = fTrackInfos.size(); iTr < ei; ++iTr) {
     AliHLTTrackInfo& info = fTrackInfos[iTr];
     if (info.fParticle.GetQ() > 0)
@@ -396,10 +402,12 @@ void AliHLTV0FinderComponent::FindV0s()
 int AliHLTV0FinderComponent::DoOutput()
 {
   //Save V0s' track pairs' indices.
-  if (!fV0s.size() || !fV0s[0]) {
-    HLTInfo("No v0s were found");
+  if (!fV0s.size()) {
+    HLTError("internal data mismatch of output structure");
     return 0;
   }
+
+  HLTInfo("Number of v0 candidates: %d", fV0s[0]);
 
   //Indices of primary tracks.
   return PushBack(&fV0s[0], fV0s.size() * sizeof(int),
