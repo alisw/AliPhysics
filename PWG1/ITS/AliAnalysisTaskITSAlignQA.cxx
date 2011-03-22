@@ -57,6 +57,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fDoSSDResiduals(kTRUE),
   fDoSDDdEdxCalib(kTRUE),
   fUseITSsaTracks(kFALSE),
+  fLoadGeometry(kFALSE),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPt(0.5),
@@ -102,7 +103,8 @@ AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
 //___________________________________________________________________________
 void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   //
-  LoadGeometryFromOCDB();
+
+  if(fLoadGeometry) LoadGeometryFromOCDB();
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -122,6 +124,7 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   if(fDoSDDResiduals || fDoSDDdEdxCalib) CreateSDDHistos();
   if(fDoSSDResiduals) CreateSSDHistos();
 
+  PostData(1,fOutput);
 }
 
 //___________________________________________________________________________
@@ -280,7 +283,11 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       FitAndFillSPD(1,array,npts,track);
       FitAndFillSPD(2,array,npts,track);
     }
-    if(fDoSDDResiduals || fDoSDDdEdxCalib) FitAndFillSDD(array,npts,track);
+    if(fDoSDDResiduals || fDoSDDdEdxCalib){
+      FitAndFillSDDrphi(array,npts,track);
+      FitAndFillSDDz(3,array,npts,track);
+      FitAndFillSDDz(4,array,npts,track);
+    }
     if(fDoSSDResiduals){ 
       FitAndFillSSD(5,array,npts,track);
       FitAndFillSSD(6,array,npts,track);
@@ -343,8 +350,8 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSPD(Int_t iLayer, const AliTrackPointA
   }    
 }
 //___________________________________________________________________________
-void AliAnalysisTaskITSAlignQA::FitAndFillSDD(const AliTrackPointArray *array, Int_t npts, AliESDtrack * track){
-  // fit track and fills histos for SDD
+void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *array, Int_t npts, AliESDtrack * track){
+  // fit track and fills histos for SDD along rphi (drift coord.)
   Double_t dedx[4];
   track->GetITSdEdxSamples(dedx);
 
@@ -394,9 +401,51 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDD(const AliTrackPointArray *array, I
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSDD[ip]-kNSPDmods;
       fHistSDDResidX[index]->Fill(track->Pt(),resLoc[0]);
-      fHistSDDResidZ[index]->Fill(track->Pt(),resLoc[2]);
       fHistSDDResidXvsX[index]->Fill(xLocSDD[ip],resLoc[0]);
       fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
+    }
+  }
+}
+//___________________________________________________________________________
+void AliAnalysisTaskITSAlignQA::FitAndFillSDDz(Int_t iLayer, const AliTrackPointArray *array, Int_t npts, AliESDtrack * track){
+  // fit track and fills histos for SDD along z
+
+  fFitter->AttachPoints(array,0, npts-1); 
+  Int_t iPtSDD[4],modIdSDD[4];
+  Double_t xLocSDD[4],zLocSDD[4];
+  Int_t nPtSDD=0;
+  Double_t resGlo[3],resLoc[3];
+  Float_t  posGloF[3];
+  Double_t posGlo[3],posLoc[3];
+  for(Int_t ipt=0; ipt<npts; ipt++) {
+    AliTrackPoint point;
+    Int_t modId;
+    array->GetPoint(point,ipt);
+    Int_t volId = point.GetVolumeID();
+    Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
+    if(layerId==iLayer){
+      modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
+      iPtSDD[nPtSDD] = ipt;
+      modIdSDD[nPtSDD] = modId;
+      point.GetXYZ(posGloF);
+      for(Int_t icoor=0;icoor<3;icoor++) posGlo[icoor]=posGloF[icoor];
+      AliITSgeomTGeo::GlobalToLocal(modId,posGlo,posLoc);
+      xLocSDD[nPtSDD]=posLoc[0];
+      zLocSDD[nPtSDD]=posLoc[2];
+      ++nPtSDD;
+      fFitter->SetCovIScale(ipt,1e-4); // scaling for inverted errors of SDD
+    }
+  }
+  if(nPtSDD>0){
+    fFitter->Fit(track->Charge(),track->Pt(),0.);
+    Double_t chi2=fFitter->GetChi2NDF();
+    if ( chi2<0 || chi2>1e4 ) return; // fit failed, abandon this track
+    for (Int_t ip=0; ip<nPtSDD;ip++) {
+      fFitter->GetResiduals(resGlo,iPtSDD[ip]);
+      TGeoHMatrix *mcurr = AliITSgeomTGeo::GetMatrix(modIdSDD[ip]);
+      mcurr->MasterToLocalVect(resGlo,resLoc);
+      Int_t index=modIdSDD[ip]-kNSPDmods;
+      fHistSDDResidZ[index]->Fill(track->Pt(),resLoc[2]);
       fHistSDDResidZvsX[index]->Fill(xLocSDD[ip],resLoc[2]);
       fHistSDDResidZvsZ[index]->Fill(zLocSDD[ip],resLoc[2]);
     }

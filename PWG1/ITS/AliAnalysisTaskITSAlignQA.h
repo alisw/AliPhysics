@@ -56,10 +56,13 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
     SetDoAllResiduals();
     fDoSDDdEdxCalib=kTRUE;    
   }
-
   void SetUseITSstandaloneTracks(Bool_t use){
     fUseITSsaTracks=use;
   }
+  void SetLoadGeometryFromOCDB(Bool_t opt){
+    fLoadGeometry=opt;
+  }
+
   void SetMinITSPoints(Int_t minp=3){
     fMinITSpts=minp;
   }
@@ -82,7 +85,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void     CreateSSDHistos();
 
   void     FitAndFillSPD(Int_t iLayer, const AliTrackPointArray *array, Int_t npts, AliESDtrack * track);
-  void     FitAndFillSDD(const AliTrackPointArray *array, Int_t npts, AliESDtrack * track);
+  void     FitAndFillSDDrphi(const AliTrackPointArray *array, Int_t npts, AliESDtrack * track);
+  void     FitAndFillSDDz(Int_t iLayer, const AliTrackPointArray *array, Int_t npts, AliESDtrack * track);
   void     FitAndFillSSD(Int_t iLayer, const AliTrackPointArray *array, Int_t npts, AliESDtrack * track);
   void     SetPtBinLimits(Int_t nBins, Double_t* xbins){
     fNPtBins=nBins;
@@ -126,6 +130,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fDoSSDResiduals;   // Flag to enable histos of SSD residuals
   Bool_t   fDoSDDdEdxCalib;   // Flag to enable histos for SDD dE/dx calibration
   Bool_t   fUseITSsaTracks;   // Flag for using standalone ITS tracks
+  Bool_t   fLoadGeometry;     // Flag to control the loading of geometry from OCDB
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
   Int_t    fMinTPCpts;        // Minimum number of TPC points per track
   Float_t  fMinPt;            // Minimum pt to accept tracks
@@ -136,7 +141,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
 
-  ClassDef(AliAnalysisTaskITSAlignQA,1);
+  ClassDef(AliAnalysisTaskITSAlignQA,2);
 };
 
 
