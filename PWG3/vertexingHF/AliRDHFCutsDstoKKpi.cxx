@@ -327,7 +327,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
   //
 
   if(!fCutsRD){
-    cout<<"Cut matrice not inizialized. Exit..."<<endl;
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
     return 0;
   }
   //PrintAll();
@@ -350,18 +350,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
 
 
-  // PID selection
-  Int_t returnvaluePID=3;  
-  if(selectionLevel==AliRDHFCuts::kAll || 
-     selectionLevel==AliRDHFCuts::kCandidate ||     
-     selectionLevel==AliRDHFCuts::kPID) {
-    returnvaluePID = IsSelectedPID(d);
-  }
-  if(returnvaluePID==0)return 0;
-  Bool_t okPidDsKKpi=returnvaluePID&1;
-  Bool_t okPidDspiKK=returnvaluePID&2;
  
-  Int_t returnvalueCuts=15;
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
      selectionLevel==AliRDHFCuts::kCandidate) {
@@ -369,24 +358,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     AliAODVertex *origownvtx=0x0;
     AliAODVertex *recvtx=0x0;
     if(fRemoveDaughtersFromPrimary) {
-      if(!aod) {
-	AliError("Can not remove daughters from vertex without AOD event");
-	return 0;
-      }
-      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-      recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
-      if(!recvtx){
-	AliDebug(2,"Removal of daughter tracks failed");
-	//recvtx=d->GetPrimaryVtx();
-	if(origownvtx){
-	  delete origownvtx;
-	  origownvtx=NULL;
-	}
-	return 0;
-      }
-      //set recalculed primary vertex
-      d->SetOwnPrimaryVtx(recvtx);
-      delete recvtx; recvtx=NULL;
+      if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
     }
 
     Int_t okDsKKpi=1;
@@ -396,32 +368,22 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     Double_t pt=d->Pt();
     Int_t ptbin=PtBin(pt);
-
+    if (ptbin==-1) {
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
+ 
     Double_t mDsPDG = TDatabasePDG::Instance()->GetParticle(431)->Mass();
     Double_t mDsKKpi=d->InvMassDsKKpi();
     Double_t mDspiKK=d->InvMassDspiKK();
     if(TMath::Abs(mDsKKpi-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDsKKpi = 0;
     if(TMath::Abs(mDspiKK-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDspiKK = 0;
-    if(!okDsKKpi && !okDspiKK) returnvalueCuts=0;
-    if(okPidDsKKpi && !okDsKKpi)  returnvalueCuts=0;
-    if(okPidDspiKK && !okDspiKK) returnvalueCuts=0;
+    if(!okDsKKpi && !okDspiKK){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
 
-    //single track
-    if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || 
-       TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) returnvalueCuts=0;
-    if(okDsKKpi){
-      if(TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(1,ptbin)] || 
-	 TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(3,ptbin)]) okDsKKpi=0;
-      if(TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)] || 
-	 TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) okDsKKpi=0;
-    }
-    if(okDspiKK){
-      if(TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)] || 
-	 TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) okDspiKK=0;
-      if(TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(1,ptbin)] || 
-	 TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(3,ptbin)]) okDspiKK=0;
-    }
-    if(!okDsKKpi && !okDspiKK) returnvalueCuts=0;
+
 
     // cuts on resonant decays (via Phi or K0*)
     Double_t mPhiPDG = TDatabasePDG::Instance()->GetParticle(333)->Mass();
@@ -440,35 +402,101 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       if(TMath::Abs(mass12phi-mPhiPDG)<fCutsRD[GetGlobalIndex(12,ptbin)]) okMassPhi=1;
       if(!okMassPhi && !okMassK0star) okDspiKK=0;
     }
-    if(!okDsKKpi && !okDspiKK) returnvalueCuts=0;
+    if(!okDsKKpi && !okDspiKK){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
 
     // Cuts on track pairs
-    for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)])  returnvalueCuts=0;
+    for(Int_t i=0;i<3;i++){
+      if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]){
+	CleanOwnPrimaryVtx(d,origownvtx);
+	return 0;
+      }
+    }
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)] || 
-       d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) returnvalueCuts=0;
+       d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
 
 
+
+    //single track
+    if(TMath::Abs(d->Pt2Prong(1)) < fCutsRD[GetGlobalIndex(1,ptbin)]*fCutsRD[GetGlobalIndex(1,ptbin)] || 
+       TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
+
+    if(okDsKKpi){
+      if(TMath::Abs(d->Pt2Prong(0)) < fCutsRD[GetGlobalIndex(1,ptbin)]*fCutsRD[GetGlobalIndex(1,ptbin)] || 
+	 TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(3,ptbin)]) okDsKKpi=0;
+      if(TMath::Abs(d->Pt2Prong(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || 
+	 TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(4,ptbin)]) okDsKKpi=0;
+    }
+    if(okDspiKK){
+      if(TMath::Abs(d->Pt2Prong(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]*fCutsRD[GetGlobalIndex(2,ptbin)] || 
+	 TMath::Abs(d->Getd0Prong(0))<fCutsRD[GetGlobalIndex(4,ptbin)]) okDspiKK=0;
+      if(TMath::Abs(d->Pt2Prong(2)) < fCutsRD[GetGlobalIndex(1,ptbin)]*fCutsRD[GetGlobalIndex(1,ptbin)] || 
+	 TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(3,ptbin)]) okDspiKK=0;
+    }
+    if(!okDsKKpi && !okDspiKK){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
+
+       
     // Cuts on candidate triplet
-    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) returnvalueCuts=0;
-    if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) returnvalueCuts=0;
-    if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && 
-       TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && 
-       TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]) returnvalueCuts=0;
-    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)])returnvalueCuts=0;
+
+    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
+
+    if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx); 
+      return 0;
+    }
+     
+    if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
+       d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
+       d->Pt2Prong(2)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)]) {
+      CleanOwnPrimaryVtx(d,origownvtx); 
+      return 0;
+    }
+
+    if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
+
+
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)])returnvalueCuts=0;
+    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]){
+      CleanOwnPrimaryVtx(d,origownvtx);
+      return 0;
+    }
 
      // unset recalculated primary vertex when not needed any more
-    if(origownvtx) {
-      d->SetOwnPrimaryVtx(origownvtx);
-      delete origownvtx;
-      origownvtx=NULL;
-    } else if(fRemoveDaughtersFromPrimary) {
-      d->UnsetOwnPrimaryVtx();
-      AliDebug(3,"delete new vertex\n");
-    }
+    CleanOwnPrimaryVtx(d,origownvtx);
    
-    if(returnvalueCuts == 0) return 0;
+
+    // PID selection
+    Int_t returnvaluePID=3;  
+    if(selectionLevel==AliRDHFCuts::kAll || 
+       selectionLevel==AliRDHFCuts::kCandidate ||     
+       selectionLevel==AliRDHFCuts::kPID) {
+      returnvaluePID = IsSelectedPID(d);
+      fIsSelectedPID=returnvaluePID;
+    }
+    if(returnvaluePID==0)return 0;
+
+    Bool_t okPidDsKKpi=returnvaluePID&1;
+    Bool_t okPidDspiKK=returnvaluePID&2;
+    if(okPidDsKKpi && !okDsKKpi)  return 0;
+    if(okPidDspiKK && !okDspiKK) return 0;
+
     Int_t returnvalue=0;
     if(okDsKKpi) returnvalue+=1;
     if(okDspiKK) returnvalue+=2;
@@ -477,7 +505,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     return returnvalue;
   }
-  return returnvalueCuts;
+  return 15;
 
 }
 //---------------------------------------------------------------------------
