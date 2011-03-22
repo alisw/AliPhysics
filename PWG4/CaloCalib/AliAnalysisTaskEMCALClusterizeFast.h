@@ -52,13 +52,13 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetSubBackground(Bool_t b)                  { fSubBackground       = b     ; }
 
  protected:
-  void                   Clusterize();
-  void                   FillDigitsArray();
-  void                   Init();
-  void                   RecPoints2Clusters(TClonesArray *clus);
-  void                   SubBackground();
-  void                   UpdateCells();
-  void                   UpdateClusters();
+  virtual void           Clusterize();
+  virtual void           FillDigitsArray();
+  virtual void           Init();
+  virtual void           RecPoints2Clusters(TClonesArray *clus);
+  virtual void           SubBackground();
+  virtual void           UpdateCells();
+  virtual void           UpdateClusters();
 
   Int_t                  fRun;              //!run number
   TClonesArray          *fDigitsArr;        //!digits array
