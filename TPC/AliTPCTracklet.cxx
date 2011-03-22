@@ -126,7 +126,6 @@ AliTPCTracklet& AliTPCTracklet::operator=(const AliTPCTracklet &t) {
   ////
   if (this!=&t) {
     fNClusters=t.fNClusters;
-    fNStoredClusters=fNStoredClusters;
     delete fClusters;
     if (t.fClusters) {
       fClusters=new AliTPCclusterMI[t.fNStoredClusters];

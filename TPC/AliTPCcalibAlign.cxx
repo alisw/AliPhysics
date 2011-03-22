@@ -128,7 +128,6 @@
 #include "AliTPCseed.h"
 #include "AliTracker.h"
 #include "TClonesArray.h"
-#include "AliExternalComparison.h"
 #include "AliLog.h"
 #include "TFile.h"
 #include "TProfile.h"
@@ -859,6 +858,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   //
   // Process function to fill fitters
   //
+  if (!seed) return;
   Double_t t1[10],t2[10];
   Double_t &x1=t1[0], &y1=t1[1], &z1=t1[3], &dydx1=t1[2], &dzdx1=t1[4];
   Double_t &x2=t2[0], &y2=t2[1], &z2=t2[3], &dydx2=t2[2], &dzdx2=t2[4];
@@ -913,7 +913,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
   Int_t acceptLinear =   AcceptTracklet(parLine1,parLine2);
 
 
-  if (fStreamLevel>1 && seed){
+  if (fStreamLevel>1){
     TTreeSRedirector *cstream = GetDebugStreamer();
     if (cstream){
       static TVectorD vec1(5);
@@ -954,7 +954,7 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
     // use Linear fit
     //
     if (nl1>10 && nl2>10 &&(acceptLinear==0)){
-      if (seed) ProcessDiff(tp1,tp2, seed,s1,s2);
+      ProcessDiff(tp1,tp2, seed,s1,s2);
       if (TMath::Abs(parLine1[2])<0.8 &&TMath::Abs(parLine1[2])<0.8 ){ //angular cut
 	FillHisto(parLine1,parLine2,s1,s2);  
 	ProcessAlign(parLine1,parLine2,s1,s2);
@@ -971,11 +971,9 @@ void AliTPCcalibAlign::ProcessTracklets(const AliExternalTrackParam &tp1,
     //
     // use Kalman if mag field
     //
-    if (seed) {
-      ProcessDiff(tp1,tp2, seed,s1,s2);
-      FillHisto((AliExternalTrackParam*)&tp1,(AliExternalTrackParam*)&tp2,s1,s2);
-      FillHisto((AliExternalTrackParam*)&tp2,(AliExternalTrackParam*)&tp1,s2,s1);
-    }
+    ProcessDiff(tp1,tp2, seed,s1,s2);
+    FillHisto((AliExternalTrackParam*)&tp1,(AliExternalTrackParam*)&tp2,s1,s2);
+    FillHisto((AliExternalTrackParam*)&tp2,(AliExternalTrackParam*)&tp1,s2,s1);
     FillHisto(t1,t2,s1,s2);  
     ProcessAlign(t1,t2,s1,s2);
   }
@@ -993,88 +991,6 @@ void AliTPCcalibAlign::ProcessAlign(Double_t * t1,
   ++fPoints[GetIndex(s1,s2)];
 }
 
-void AliTPCcalibAlign::ProcessTree(TTree * chainTracklet, AliExternalComparison *comp){
-  //
-  // Process the debug streamer tree
-  // Possible to modify selection criteria
-  // Used with entry list
-  //
-  TTreeSRedirector * cstream = new TTreeSRedirector("aligndump.root");
-
-  AliTPCcalibAlign *align = this;
-  //
-  TVectorD * vec1 = 0;
-  TVectorD * vec2 = 0;
-  AliExternalTrackParam * tp1 = 0;
-  AliExternalTrackParam * tp2 = 0;  
-  Int_t      s1 = 0;
-  Int_t      s2 = 0;				
-  Int_t npoints =0;
-  {
-    Int_t entries=chainTracklet->GetEntries();
-    for (Int_t i=0; i< entries; i++){
-      chainTracklet->GetBranch("tp1.")->SetAddress(&tp1);
-      chainTracklet->GetBranch("tp2.")->SetAddress(&tp2);
-      chainTracklet->GetBranch("v1.")->SetAddress(&vec1);
-      chainTracklet->GetBranch("v2.")->SetAddress(&vec2);
-      chainTracklet->GetBranch("s1")->SetAddress(&s1);
-      chainTracklet->GetBranch("s2")->SetAddress(&s2);      
-      chainTracklet->GetEntry(i);
-      if (!vec1) continue;
-      if (!vec2) continue;
-      if (!tp1) continue;
-      if (!tp2) continue;
-      if (!vec1->GetMatrixArray()) continue;
-      if (!vec2->GetMatrixArray()) continue;
-      // make a local copy
-      AliExternalTrackParam par1(*tp1);
-      AliExternalTrackParam par2(*tp2);
-      TVectorD svec1(*vec1);
-      TVectorD svec2(*vec2);
-      //
-      if (s1==s2) continue;
-      if (i%100==0) printf("%d\t%d\t%d\t%d\t\n",i, npoints,s1,s2);
-      AliExternalTrackParam  cpar1(par1);
-      AliExternalTrackParam  cpar2(par2);      
-      Constrain1Pt(cpar1,par2,fNoField);
-      Constrain1Pt(cpar2,par1,fNoField);
-      Bool_t acceptComp = kFALSE;
-      if (comp) acceptComp=comp->AcceptPair(&par1,&par2);
-      if (comp) acceptComp&=comp->AcceptPair(&cpar1,&cpar2);
-      //
-      Int_t reject =   align->AcceptTracklet(par1,par2);
-      Int_t rejectC =align->AcceptTracklet(cpar1,cpar2); 
-
-      if (1||fStreamLevel>0){
-	(*cstream)<<"Tracklet"<<
-	  "s1="<<s1<<
-	  "s2="<<s2<<
-	  "reject="<<reject<<
-	  "rejectC="<<rejectC<<
-	  "acceptComp="<<acceptComp<<
-	  "tp1.="<<&par1<<
-	  "tp2.="<<&par2<<	
-	  "ctp1.="<<&cpar1<<
-	  "ctp2.="<<&cpar2<<
-	  "v1.="<<&svec1<<
-	  "v2.="<<&svec2<<
-	  "\n";
-      }
-      //
-      if (fNoField){
-	//
-	//
-      }
-      if (acceptComp) comp->Process(&cpar1,&cpar2);
-      //
-      if (reject>0 || rejectC>0) continue;
-      npoints++;
-      align->ProcessTracklets(cpar1,cpar2,0,s1,s2);
-      align->ProcessTracklets(cpar2,cpar1,0,s2,s1); 
-    }
-  }
-  delete cstream;
-}
 
 
 Int_t AliTPCcalibAlign::AcceptTracklet(const AliExternalTrackParam &p1,
@@ -1811,7 +1727,7 @@ void AliTPCcalibAlign::FillHisto(AliExternalTrackParam *tp1,
   // Track2-Track1
   if (s2<s1) return;//
   const Double_t kEpsilon=0.001;
-  Double_t x[8]={0,0,0,0,0,0,0,0};
+  Double_t x[9]={0,0,0,0,0,0,0,0,0};
   AliExternalTrackParam p1(*tp1);
   AliExternalTrackParam p2(*tp2);
   if (s1%18==s2%18) {
@@ -1986,7 +1902,7 @@ TGraphErrors * AliTPCcalibAlign::MakeGraph(Int_t sec0, Int_t sec1, Int_t dsec,
   }
   TGraphErrors *gr = new TGraphErrors(npoints,xsec,ysec,0,0);
   Char_t name[1000];
-  sprintf(name,"Mat[%d,%d]  Type=%d",i0,i1,type);
+  snprintf(name,100,"Mat[%d,%d]  Type=%d",i0,i1,type);
   gr->SetName(name);
   return gr;
 }

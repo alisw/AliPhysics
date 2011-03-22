@@ -18,7 +18,6 @@ class TObjArray;
 class TTree;
 
 #include "AliTPCcalibBase.h"
-class AliExternalComparison;
 class AliExternalTrackParam;
 class AliTPCPointCorrection;
 class AliTPCseed;
@@ -97,7 +96,6 @@ public:
 		 TLinearFitter *fitter) const;
   void Process9(const Double_t *const t1, const Double_t *const t2, TLinearFitter *fitter) const;
   void Process6(const Double_t *const t1, const Double_t *const t2, TLinearFitter *fitter) const;
-  void ProcessTree(TTree * tree, AliExternalComparison *comp=0);
   void GlobalAlign6(Int_t minPoints, Float_t sysError, Int_t niter);
   //
   // Cluster comparison Part
