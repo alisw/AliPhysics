@@ -46,17 +46,22 @@ class AliAODv0;
 #include "AliAODcascade.h"
 #include "AliAnalysisTaskSigma1385.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDpid.h"
+#include "AliTOFT0maker.h"
+#include "AliTOFcalib.h"
+#include "AliCDBManager.h"
+#include "AliESDtrackCuts.h"
 
 ClassImp(AliAnalysisTaskSigma1385)
 
 //________________________________________________________________________
 AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
-   : AliAnalysisTaskSE(), fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"),
-     fListHistCascade(0), fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0),
-
+   : AliAnalysisTaskSE(),
+     
      //-------------------------------- For PID
-     isMC(0),
-     fIsMC(isMC),
+     
+     fisMC(0),
+     fIsMC(fisMC),
      fCheckITS(kTRUE),
      fCheckTPC(kTRUE),
      fCheckTOF(kTRUE),
@@ -69,14 +74,19 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
      fESDpid(0x0),
      fTOFmaker(0x0),
      fTOFcalib(0x0),
-     fTOFcalibrateESD(!isMC),
+     fTOFcalibrateESD(!fisMC),
      fTOFcorrectTExp(kTRUE),
      fTOFuseT0(kTRUE),
-     fTOFtuneMC(isMC),
+     fTOFtuneMC(fisMC),
      fTOFresolution(100.0),
      fMinTOF(-2.5),
      fMaxTOF(3.5),
-     fLastRun(-1)
+     fLastRun(-1),
+     fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"), fListHistCascade(0), 
+     fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), 
+     fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0)
+ 
+
 
      //--------------------------------
 
@@ -88,13 +98,13 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385()
 
 //________________________________________________________________________
 AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
-   : AliAnalysisTaskSE(name), fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"),
-     fListHistCascade(0), fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0),
+   : AliAnalysisTaskSE(name),
+       
 
      //-------------------------------- For PID
 
-     isMC(0),
-     fIsMC(isMC),
+     fisMC(0),
+     fIsMC(fisMC),
      fCheckITS(kTRUE),
      fCheckTPC(kTRUE),
      fCheckTOF(kTRUE),
@@ -107,14 +117,17 @@ AliAnalysisTaskSigma1385::AliAnalysisTaskSigma1385(const char *name)
      fESDpid(0x0),
      fTOFmaker(0x0),
      fTOFcalib(0x0),
-     fTOFcalibrateESD(!isMC),
+     fTOFcalibrateESD(!fisMC),
      fTOFcorrectTExp(kTRUE),
      fTOFuseT0(kTRUE),
-     fTOFtuneMC(isMC),
+     fTOFtuneMC(fisMC),
      fTOFresolution(100.0),
      fMinTOF(-2.5),
      fMaxTOF(3.5),
-     fLastRun(-1)
+     fLastRun(-1),
+     fAnalysisType("ESD"), fCollidingSystems(0), fDataType("REAL"), fListHistCascade(0), 
+     fHistEventMultiplicity(0), fHistEventMultiplicityRAVS(0), 
+     fNtuple1(0), fNtuple2(0), fNtuple3(0), fNtuple4(0)
 
      //--------------------------------
 {
@@ -198,7 +211,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    }
 
    AliStack* stack = 0;
-   if (fDataType == "SIM") {stack = mcEvent->Stack(); fIsMC = 1; isMC = 1;}
+   if (fDataType == "SIM") {stack = mcEvent->Stack(); fIsMC = 1; fisMC = 1;}
 
    AliESDEvent *lESDevent = 0x0;
    AliAODEvent *lAODevent = 0x0;
@@ -293,7 +306,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
    //Some Quantities to characterize the event
 
    Double_t b = lESDevent->GetMagneticField();
-   Int_t TrackNumber = lESDevent->GetNumberOfTracks();
+   Int_t trackNumber = lESDevent->GetNumberOfTracks();
 
 
    //---------------------------
@@ -380,7 +393,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
       Double_t lambdaMass = 0;
       Float_t lambdaP = 0;
       Float_t lambdaPt = 0;
-      Float_t LambdaDCA = 0; // DCA between Lambda and Primary Vertex
+      Float_t lambdaDCA = 0; // DCA between Lambda and Primary Vertex
       Double_t v0cospointangle = 0;
       Float_t v0daughtersDCA = 0;
 
@@ -393,7 +406,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
       AliESDtrack *nTrackXi     = lESDevent->GetTrack(lIdxNegXi);
 
       // Filter like-sign V0
-      if (pTrackXi->GetSign() == nTrackXi->GetSign()) continue;
+      if ( (TMath::Abs(pTrackXi->GetSign()) - TMath::Abs(nTrackXi->GetSign()) ) < 0.1) continue;
 
       // WARNING: the following selections cannot be done for AOD yet...
 
@@ -401,7 +414,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
       v->ChangeMassHypothesis(kLambda0); // the v0 must be Lambda
 
 
-      if ((TMath::Abs(v->GetEffMass() - massLambda)) < 0.1) {
+      if ((TMath::Abs(v->GetEffMass() - massLambda)) < 0.2) {
 
          if (!(pTrackXi->GetStatus() & AliESDtrack::kTPCrefit))  continue;
          if (!(nTrackXi->GetStatus() & AliESDtrack::kTPCrefit))  continue;
@@ -410,7 +423,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
          if ((pTrackXi->GetTPCNcls()) < 70) continue;
          if ((nTrackXi->GetTPCNcls()) < 70) continue;
 
-         strness = 1; lambdaMass = v->GetEffMass(); lambdaP = v->P(); lambdaPt = v->Pt(); LambdaDCA = v->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex); v0cospointangle = v->GetV0CosineOfPointingAngle(); v0daughtersDCA = v->GetDcaV0Daughters();
+         strness = 1; lambdaMass = v->GetEffMass(); lambdaP = v->P(); lambdaPt = v->Pt(); lambdaDCA = v->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex); v0cospointangle = v->GetV0CosineOfPointingAngle(); v0daughtersDCA = v->GetDcaV0Daughters();
 
 
 
@@ -421,7 +434,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
 
 
-      if ((TMath::Abs(v->GetEffMass() - massLambda)) < 0.1) {
+      if ((TMath::Abs(v->GetEffMass() - massLambda)) < 0.2) {
 
          if (!(pTrackXi->GetStatus() & AliESDtrack::kTPCrefit))  continue;
          if (!(nTrackXi->GetStatus() & AliESDtrack::kTPCrefit))  continue;
@@ -430,7 +443,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
          if ((pTrackXi->GetTPCNcls()) < 70) continue;
          if ((nTrackXi->GetTPCNcls()) < 70) continue;
 
-         Int_t temp = strness + 1; strness = -1 * temp; lambdaMass = v->GetEffMass(); lambdaP = v->P(); lambdaPt = v->Pt(); LambdaDCA = v->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex); v0cospointangle = v->GetV0CosineOfPointingAngle(); v0daughtersDCA = v->GetDcaV0Daughters();
+         Int_t temp = strness + 1; strness = -1 * temp; lambdaMass = v->GetEffMass(); lambdaP = v->P(); lambdaPt = v->Pt(); lambdaDCA = v->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex); v0cospointangle = v->GetV0CosineOfPointingAngle(); v0daughtersDCA = v->GetDcaV0Daughters();
 
 
       }
@@ -462,8 +475,8 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
          IsSelected(btrk);
 
 
-         Int_t BachCharge = btrk->Charge();
-         Float_t PionDCA = TMath::Abs(btrk->GetD(xPrimaryVertex, yPrimaryVertex, b)); // DCA between Bachelor and Primary Vertex
+         Int_t bachCharge = btrk->Charge();
+         Float_t pionDCA = TMath::Abs(btrk->GetD(xPrimaryVertex, yPrimaryVertex, b)); // DCA between Bachelor and Primary Vertex
 
          Double_t bachphi = btrk->Phi();
          Double_t bachtheta = btrk->Theta();
@@ -488,7 +501,7 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
 
 
-         Bool_t MCtrue = 0;
+         Short_t mcTrue=0;
          if (fDataType == "SIM") {
 
             Int_t pLabel    = TMath::Abs(pTrackXi->GetLabel());
@@ -525,7 +538,10 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
 
                   if ((motherpLabel == mothernLabel) && (grandmother == motherbachLabel) &&
                       ((TMath::Abs(stack->Particle(grandmother)->GetPdgCode()) == 3114) ||
-                       (TMath::Abs(stack->Particle(grandmother)->GetPdgCode()) == 3224))) MCtrue = 1;
+                       (TMath::Abs(stack->Particle(grandmother)->GetPdgCode()) == 3224))) mcTrue = 1;
+		       
+		  if( (motherpLabel == mothernLabel) && (grandmother == motherbachLabel) &&
+			 (TMath::Abs(stack->Particle(grandmother)->GetPdgCode())==3312) ) mcTrue = 2;
 
                }
 
@@ -552,28 +568,28 @@ void AliAnalysisTaskSigma1385::UserExec(Option_t *)
          Float_t   lP     = xi->P();
 
          // Support variables for invariant mass calculation
-         TLorentzVector Lambda, Pion, Sigma;
-         Double_t Elambda = TMath::Sqrt(lLambdaMomX * lLambdaMomX + lLambdaMomY * lLambdaMomY + lLambdaMomZ * lLambdaMomZ + lambdaMass * lambdaMass);
-         Double_t Epion = TMath::Sqrt(lBachMomX * lBachMomX + lBachMomY * lBachMomY + lBachMomZ * lBachMomZ + bachmass * bachmass) ;
+         TLorentzVector lambda, pion, sigma;
+         Double_t eLambda = TMath::Sqrt(lLambdaMomX * lLambdaMomX + lLambdaMomY * lLambdaMomY + lLambdaMomZ * lLambdaMomZ + lambdaMass * lambdaMass);
+         Double_t ePion = TMath::Sqrt(lBachMomX * lBachMomX + lBachMomY * lBachMomY + lBachMomZ * lBachMomZ + bachmass * bachmass) ;
 
-         Lambda.SetPxPyPzE(lLambdaMomX, lLambdaMomY, lLambdaMomZ, Elambda);
-         Pion.SetPxPyPzE(lBachMomX, lBachMomY, lBachMomZ, Epion);
+         lambda.SetPxPyPzE(lLambdaMomX, lLambdaMomY, lLambdaMomZ, eLambda);
+         pion.SetPxPyPzE(lBachMomX, lBachMomY, lBachMomZ, ePion);
 
-         Sigma = Lambda + Pion;
+         sigma = lambda + pion;
 
          Double_t openingangle, invmass = 0;
 
          openingangle = TMath::ACos((lBachMomX * lLambdaMomX + lBachMomY * lLambdaMomY + lBachMomZ * lLambdaMomZ) / ((TMath::Sqrt(lBachMomX * lBachMomX + lBachMomY * lBachMomY + lBachMomZ * lBachMomZ)) * (TMath::Sqrt(lLambdaMomX * lLambdaMomX + lLambdaMomY * lLambdaMomY +
                                     lLambdaMomZ * lLambdaMomZ))));
 
-         invmass = Sigma.M();
+         invmass = sigma.M();
 
 
-         fNtuple1->Fill(TrackNumber);
-         fNtuple2->Fill((1.*strness), LambdaDCA, v0cospointangle, v0daughtersDCA , lambdaP, lambdaPt, lambdaMass);
-         //fNtuple3->Fill((1.*BachCharge), PionDCA, bachp, bachpt, bachphi, bachtheta, okTrack[1], okTrack[2]);
-         fNtuple3->Fill((1.*BachCharge), PionDCA, bachp, bachpt, bachphi, bachtheta, fOkTrack[1], fOkTrack[2]);
-         fNtuple4->Fill(dca, (1.*MCtrue), lPhi, lTheta, lEta, lRapXi, lPt, lP, openingangle, invmass);
+         fNtuple1->Fill(trackNumber);
+         fNtuple2->Fill((1.*strness), lambdaDCA, v0cospointangle, v0daughtersDCA , lambdaP, lambdaPt, lambdaMass);
+         //fNtuple3->Fill((1.*bachCharge), pionDCA, bachp, bachpt, bachphi, bachtheta, okTrack[1], okTrack[2]);
+         fNtuple3->Fill((1.*bachCharge), pionDCA, bachp, bachpt, bachphi, bachtheta, fOkTrack[1], fOkTrack[2]);
+         fNtuple4->Fill(dca, (1.*mcTrue), lPhi, lTheta, lEta, lRapXi, lPt, lP, openingangle, invmass);
 
          ncasc++;
 
