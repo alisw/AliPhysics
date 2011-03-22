@@ -234,9 +234,10 @@ public:
   Double_t GetTPCsignal() const {return fTPCsignal;}
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
+  Double_t GetTPCmomentum() const {return fIp?fIp->GetP():GetP();}
   Double_t GetTPCchi2() const {return fTPCchi2;}
   Double_t GetTPCchi2Iter1() const {return fTPCchi2Iter1;}
-  UShort_t   GetTPCclusters(Int_t *idx) const;
+  UShort_t GetTPCclusters(Int_t *idx) const;
   Double_t GetTPCdensity(Int_t row0, Int_t row1) const;
   Int_t   GetTPCLabel() const {return fTPCLabel;}
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
