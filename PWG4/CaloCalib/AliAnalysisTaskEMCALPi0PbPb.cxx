@@ -414,7 +414,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillCellHists()
       return;
 
     for (Int_t i = 0; i<ncells; ++i ) {
-      Int_t absID    = cells->GetCellNumber(i);
+      Int_t absID    = TMath::Abs(cells->GetCellNumber(i));
       Double_t cellE = cells->GetAmplitude(i);
       fHCellE->Fill(cellE);
       if (cellE>cellMaxE) 
@@ -614,13 +614,12 @@ void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
   for (Int_t i = 0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
     Int_t nc = clus->GetNCells();
-    Double_t oldE = clus->E();
     Double_t clusE = 0;
     Short_t nc2 = 0;
     UShort_t ids[100] = {0};
     Double_t fra[100] = {0};
     for (Int_t j = 0; j<nc; ++j) {
-      Short_t id = clus->GetCellAbsId(j);
+      Short_t id = TMath::Abs(clus->GetCellAbsId(j));
       Double_t cen = cells->GetCellAmplitude(id);
       clusE += cen;
       if (cen>0) {
@@ -645,14 +644,9 @@ void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
       aodclus->SetCellsAmplitudeFraction(fra);
       aodclus->SetCellsAbsId(ids);
     }
-    cout << i << " " << clusE << " " << oldE << endl;
   }
-
   clusters->Compress();
 }
-
-// virtual void     AddAt(TObject *obj, Int_t idx);
-//   virtual TObject *RemoveAt(Int_t idx);
 
 //________________________________________________________________________
 Double_t  AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster)
@@ -663,13 +657,13 @@ Double_t  AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(AliVCluster *cluster)
   Int_t ncells = cluster->GetNCells();
   if (fEsdCells) {
     for (Int_t i=0; i<ncells; i++) {
-      Double_t e = fEsdCells->GetCellAmplitude(cluster->GetCellAbsId(i));
+      Double_t e = fEsdCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
       if (e>maxe)
         maxe = e;
     }
   } else {
     for (Int_t i=0; i<ncells; i++) {
-      Double_t e = fAodCells->GetCellAmplitude(cluster->GetCellAbsId(i));
+      Double_t e = fAodCells->GetCellAmplitude(TMath::Abs(cluster->GetCellAbsId(i)));
       if (e>maxe)
         maxe = e;
     }
@@ -704,8 +698,8 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(AliVCluster *cluster, Double_t& sigma
 
   TVector3 pos;
   for(Int_t j=0; j<ncells; ++j) {
-    fGeom->GetGlobal(cluster->GetCellAbsId(j),pos);
-    Int_t id = cluster->GetCellAbsId(j);
+    Int_t id = TMath::Abs(cluster->GetCellAbsId(j));
+    fGeom->GetGlobal(id,pos);
     Double_t cellen = cells->GetCellAmplitude(id);
     Xc  += cellen*pos.X();
     Yc  += cellen*pos.Y();    
