@@ -564,11 +564,11 @@ void AliAnalysisTaskDDMeson::CalcBit(TH1I *hc, Double_t tot[]) const
 
   //---
   char fullname[5][20];
-  strcpy(fullname[0],"V0A-ONLY");
-  strcpy(fullname[1],"V0C-ONLY");
-  strcpy(fullname[2],"V0A & V0C");
-  strcpy(fullname[3],"!V0A & !V0C");
-  strcpy(fullname[4],"TOTAL");
+  strncpy(fullname[0],"V0A-ONLY",8);
+  strncpy(fullname[1],"V0C-ONLY",8);
+  strncpy(fullname[2],"V0A & V0C",9);
+  strncpy(fullname[3],"!V0A & !V0C",11);
+  strncpy(fullname[4],"TOTAL",5);
 
   for(Int_t ii=0;ii<5;ii++){
     printf("xlulog %s CTP-L0: %s\tTOT: %10.0f\n",fOpt.Data(), fullname[ii],tot[ii]);
@@ -631,9 +631,14 @@ void AliAnalysisTaskDDMeson::SPDLoadGeom() const
   man->SetSpecificStorage("GRP/Geometry/Data",cdbpath);
   
   AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
-  AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
-  AliGeomManager::ApplyAlignObjsFromCDB("ITS"); 
-  printf("xlulog DDMeson %s Geom Loaded for run %d !\n", fOpt.Data(), fRun);
+  if (obj != NULL) {
+    AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
+    AliGeomManager::ApplyAlignObjsFromCDB("ITS"); 
+    printf("xlulog DDMeson %s Geom Loaded for run %d !\n", fOpt.Data(), fRun);
+  }
+  else {
+    printf("xlulog DDMeson %s was unable to load Geom for run %d !\n", fOpt.Data(), fRun);
+  }
 }
 
 Bool_t AliAnalysisTaskDDMeson::SPDLoc2Glo(const Int_t id, const Double_t *loc, Double_t *glo) const 
