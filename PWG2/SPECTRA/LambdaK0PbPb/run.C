@@ -210,7 +210,7 @@ TChain * GetAnalysisChain(const char * incollection){
 
 void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
   // Loads libs and par files + custom task and classes (the order is important)
-  listToLoad->Add(new TObjString("$ALICE_ROOT/STEER/AliCentrality.cxx")); // FIXME: why do I have to load it?!?
+  // listToLoad->Add(new TObjString("$ALICE_ROOT/STEER/AliCentrality.cxx")); // FIXME: why do I have to load it?!?
   listToLoad->Add(new TObjString("AliAnalysisCentralitySelector.cxx"));
   listToLoad->Add(new TObjString("AliAnalysisTaskPerformanceStrange.cxx"));
 
