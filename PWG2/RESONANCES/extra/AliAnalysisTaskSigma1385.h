@@ -11,17 +11,12 @@ class TList;
 class TH1F;
 class TNtuple;
 class AliESDcascade;
+class AliESDpid;
+class AliTOFT0maker;
+class AliTOFcalib;
+class AliCDBManager;
+class AliESDtrackCuts;
 
-//-------------------------------- For PID
-
-
-#include  "AliESDpid.h"
-#include  "AliTOFT0maker.h"
-#include  "AliTOFcalib.h"
-#include  "AliCDBManager.h"
-#include  "AliESDtrackCuts.h"
-
-//-------------------------------
 
 #include "TString.h"
 #include "AliAnalysisTaskSE.h"
@@ -46,11 +41,6 @@ public:
    void IsSelected(AliESDtrack* track);
 
 
-
-
-//-------------------------------- For Alberto's PID
-
-
    void             SetCheckITS(Bool_t yn = kTRUE) {fCheckITS = yn;}
    void             SetCheckTPC(Bool_t yn = kTRUE) {fCheckTPC = yn;}
    void             SetCheckTOF(Bool_t yn = kTRUE) {fCheckTOF = yn;}
@@ -72,29 +62,10 @@ public:
    void             SetTOFrange(Double_t v1, Double_t v2) {fMinTOF = v1; fMaxTOF = v2;}
 
 
-//-------------------------------
-
-private:
-
-   TString fAnalysisType;            // "ESD" or "AOD" analysis type
-   Short_t fCollidingSystems;        // 0 = pp collisions or 1 = AA collisions
-   TString fDataType;          // "REAL" or "SIM" data type
-
-   TList  *fListHistCascade;      //! List of Cascade histograms
-   TH1F    *fHistEventMultiplicity;
-   TH1F    *fHistEventMultiplicityRAVS;  //event rejected after vertex selection
-   TNtuple *fNtuple1;
-   TNtuple *fNtuple2;
-   TNtuple *fNtuple3;
-   TNtuple *fNtuple4;
-
-
-
-//-------------------------------- For PID
 
 protected:
 
-   Bool_t           isMC;
+   Bool_t           fisMC;             //  switch for MC analysis (support member)
    Bool_t           fIsMC;             //  switch for MC analysis
    Bool_t           fCheckITS;         //  switch for ITS dE/dx check
    Bool_t           fCheckTPC;         //  switch for TPC dE/dx check
@@ -123,7 +94,21 @@ protected:
    Int_t            fLastRun;          //  last run number
    Bool_t           fOkTrack[5];       //  utility variable to know track selection success
 
-//-------------------------------
+
+private:
+
+   TString fAnalysisType;                  // "ESD" or "AOD" analysis type
+   Short_t fCollidingSystems;              // 0 = pp collisions or 1 = AA collisions
+   TString fDataType;                      // "REAL" or "SIM" data type
+  
+   TList   *fListHistCascade;               //! List of Cascade histograms
+   TH1F    *fHistEventMultiplicity;        // event multiplicity
+   TH1F    *fHistEventMultiplicityRAVS;    //event rejected after vertex selection
+   TNtuple *fNtuple1;                      // ntuple with general quantities
+   TNtuple *fNtuple2;                      // ntuple with Lambda related quantities
+   TNtuple *fNtuple3;                      // ntuple with bachelor related quantities
+   TNtuple *fNtuple4;                      // ntuple with Sigma1385 related quantities
+   
 
 
    AliAnalysisTaskSigma1385(const AliAnalysisTaskSigma1385&);            // not implemented
