@@ -1,17 +1,17 @@
+void runGlauberMC()
 {
   //load libraries
- gSystem->Load("libPWG2flowTools");
- //  gSystem->SetBuildDir("/tmp");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleon.cxx+");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberNucleus.cxx+");
- //  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/AliFlowTools/glauberMC/AliGlauberMC.cxx+");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libTree");
+  gSystem->Load("libPWG2flowTools");
 
   //set the random seed from current time
   TTimeStamp time;
-  Int_t seed = time->GetSec();
+  Int_t seed = time.GetSec();
   gRandom->SetSeed(seed);
 
-  Int_t nevents = 1000; // number of events to simulate 
+  Int_t nevents = 1000000; // number of events to simulate 
   // supported systems are e.g. "p", "d", "Si", "Au", "Pb", "U" 
   Option_t *sysA="Pb"; 
   Option_t *sysB="Pb";
@@ -30,14 +30,20 @@
   mcg.SetMinDistance(mind);
   mcg.Setr(r);
   mcg.Seta(a);
-  mcg.SetDoPartProduction(kFALSE);
-  //mcg.SetDoPartProduction(kTRUE);
+  mcg.SetDoPartProduction(kTRUE);
+  
+  //////////////////
+  mcg.SetdNdEtaType(AliGlauberMC::kNBDSV);
+  mcg.GetdNdEtaParam()[0] = 2.49;    //npp
+  mcg.GetdNdEtaParam()[1] = 1.7;  //ratioSgm2Mu
+  mcg.GetdNdEtaParam()[2] = 0.13; //xhard
+  //////////////////
+
   mcg.Run(nevents);
 
-  TNtuple  *nt=mcg.GetNtuple();
+  TNtuple  *nt = mcg.GetNtuple();
   TFile out(fname,"recreate",fname,9);
   if(nt) nt->Write();
-  printf("total cross section with a nucleon-nucleon cross section \t%f is \t%f",signn,mcg.GetTotXSect());
+  printf("total cross section with a nucleon-nucleon cross section %.4f is %.4f\n\n",signn,mcg.GetTotXSect());
   out.Close();
-
 }
