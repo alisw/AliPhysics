@@ -258,11 +258,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   if(vertex->GetNContributors()<fMinVtxContr) return kFALSE; 
 
-  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) return kFALSE;
+  if(TMath::Abs(vertex->GetZ())>fMaxVtxZ) {
+    fWhyRejection=6;
+    return kFALSE;
+  }
 
   // switch to settings for 1-pad cls in TPC
   if(fPidHF) {
-    if(event->GetRunNumber()>121693 && event->GetRunNumber()<136851) 
+    if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
+       event->GetRunNumber()>139517)
       fPidHF->SetOnePad(kTRUE);
     if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) 
       fPidHF->SetPbPb(kTRUE);
