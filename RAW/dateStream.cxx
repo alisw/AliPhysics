@@ -767,7 +767,8 @@ void parseGdc( char * const line ) {
 		 lineNmb );
 	exit( 1 );
       }
-      if ( sscanf( idNum, "%d", (int*)&currGdcId ) != 1 ) {
+      int inCurrGdcId;
+      if ( sscanf( idNum, "%d", &inCurrGdcId ) != 1 ) {
 	fprintf( stderr,
 		 "%s: line:%d GDC declaration, numeric ID needed (%s)",
 		 myName,
@@ -775,6 +776,7 @@ void parseGdc( char * const line ) {
 		 idNum );
 	exit( 1 );
       }
+      currGdcId = (eventGdcIdType)inCurrGdcId;
       DBG_VERBOSE printf( "%d)     GDC - ID:%d\n",
 			  lineNmb,
 			  currGdcId );
