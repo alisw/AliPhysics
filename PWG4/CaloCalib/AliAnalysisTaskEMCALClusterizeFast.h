@@ -51,10 +51,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetRecalibrateCellsOnly(Bool_t b)           { fRecalibOnly         = b     ; }
   void                   SetSubBackground(Bool_t b)                  { fSubBackground       = b     ; }
 
- private:
-  AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
-  AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
-
+ protected:
   void                   Clusterize();
   void                   FillDigitsArray();
   void                   Init();
@@ -85,6 +82,10 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fAttachClusters;   // attach clusters to input event (AOD or ESD)
   Bool_t                 fRecalibOnly;      // only recalibrate cells if true (def=off)
   Bool_t                 fSubBackground;    // subtract background if true (def=off)
+
+ private:
+  AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
+  AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
   ClassDef(AliAnalysisTaskEMCALClusterizeFast, 5);
 };
