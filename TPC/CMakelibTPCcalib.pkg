@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx AliTPCCalPadRegion.cxx AliTPCFitPad.cxx  AliTPCcalibAlign.cxx AliTPCcalibAlignment.cxx AliTPCcalibV0.cxx AliTPCCalibKr.cxx  AliTPCAnalysisTaskcalib.cxx AliTPCCalibKrTask.cxx AliTPCcalibLaser.cxx AliTPCcalibCosmic.cxx AliTPCcalibCalib.cxx   AliTPCcalibTime.cxx AliTPCcalibUnlinearity.cxx AliTPCcalibPID.cxx AliTPCcalibTimeGain.cxx AliTPCMisAligner.cxx AliTPCcalibTrigger.cxx AliTPCcalibMaterial.cxx AliTPCPreprocessorOffline.cxx  AliTPCkalmanAlign.cxx AliTPCcalibSummary.cxx AliTPCcalibGainMult.cxx)
+set ( SRCS  AliTPCcalibTracksCuts.cxx   AliTPCcalibTracks.cxx   AliTPCcalibTracksGain.cxx AliTPCCalPadRegion.cxx AliTPCFitPad.cxx  AliTPCcalibAlign.cxx AliTPCcalibAlignment.cxx AliTPCcalibV0.cxx AliTPCCalibKr.cxx  AliTPCAnalysisTaskcalib.cxx AliTPCCalibKrTask.cxx AliTPCcalibLaser.cxx AliTPCcalibCosmic.cxx AliTPCcalibCalib.cxx   AliTPCcalibTime.cxx  AliTPCcalibPID.cxx AliTPCcalibTimeGain.cxx AliTPCMisAligner.cxx AliTPCcalibTrigger.cxx AliTPCcalibMaterial.cxx AliTPCPreprocessorOffline.cxx  AliTPCkalmanAlign.cxx AliTPCcalibSummary.cxx AliTPCcalibGainMult.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
