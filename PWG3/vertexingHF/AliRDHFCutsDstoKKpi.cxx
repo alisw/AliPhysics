@@ -445,7 +445,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       CleanOwnPrimaryVtx(d,origownvtx);
       return 0;
     }
-
        
     // Cuts on candidate triplet
 
@@ -494,16 +493,16 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     Bool_t okPidDsKKpi=returnvaluePID&1;
     Bool_t okPidDspiKK=returnvaluePID&2;
-    if(okPidDsKKpi && !okDsKKpi)  return 0;
-    if(okPidDspiKK && !okDspiKK) return 0;
-
-    Int_t returnvalue=0;
-    if(okDsKKpi) returnvalue+=1;
-    if(okDspiKK) returnvalue+=2;
-    if(okMassPhi) returnvalue+=4;
-    if(okMassK0star) returnvalue+=8;
-
-    return returnvalue;
+    if((okPidDsKKpi && okDsKKpi)||(okPidDspiKK && okDspiKK)){
+      Int_t returnvalue=0;
+      if(okDsKKpi) returnvalue+=1;
+      if(okDspiKK) returnvalue+=2;
+      if(okMassPhi) returnvalue+=4;
+      if(okMassK0star) returnvalue+=8;
+      return returnvalue;
+    }else{
+      return 0;
+    }
   }
   return 15;
 
