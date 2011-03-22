@@ -13,13 +13,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
-
 /////////////////////////////////////////////////////////////
 //
 // Class for cuts on AOD reconstructed D0->Kpipipi
 //
-// Author: r.romita@gsi.de, andrea.dainese@pd.infn.it
+// Author: r.romita@gsi.de, andrea.dainese@pd.infn.it,
+//	   fabio.colamaria@ba.infn.it
 /////////////////////////////////////////////////////////////
 
 #include <TDatabasePDG.h>
@@ -29,6 +28,7 @@
 #include "AliAODRecoDecayHF4Prong.h"
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
+#include "AliAODPidHF.h"
 
 ClassImp(AliRDHFCutsD0toKpipipi)
 
@@ -205,8 +205,8 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
      selectionLevel==AliRDHFCuts::kCandidate) {
 
     Int_t ptbin=PtBin(d->Pt());
-    
-    Int_t okD0=1,okD0bar=1;    
+  
+    Int_t okD0=1,okD0bar=1;       
     Double_t mD0[2],mD0bar[2];
     Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
@@ -218,7 +218,10 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
        TMath::Abs(mD0bar[1]-mD0PDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) okD0bar = 0;
     if(!okD0 && !okD0bar) return 0;
     
-    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
+    if(d->GetDCA() > fCutsRD[GetGlobalIndex(1,ptbin)]
+       || d->GetDCA(3) > fCutsRD[GetGlobalIndex(1,ptbin)]
+       || d->GetDCA(2) > fCutsRD[GetGlobalIndex(1,ptbin)]
+       || d->GetDCA(5) > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
     if(d->GetDist12toPrim() < fCutsRD[GetGlobalIndex(2,ptbin)]) return 0;
     if(d->GetDist3toPrim() < fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;
     if(d->GetDist4toPrim() < fCutsRD[GetGlobalIndex(4,ptbin)]) return 0;
@@ -231,6 +234,247 @@ Int_t AliRDHFCutsD0toKpipipi::IsSelected(TObject* obj,Int_t selectionLevel) {
     if (okD0 && okD0bar) returnvalue=3; //cuts passed as D0 and D0bar
   }
 
+  // selection on PID (from AliAODPidHF)
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kPID) {
+
+    Int_t selD01 = D01Selected(d,AliRDHFCuts::kCandidate);
+    Int_t selD02 = D02Selected(d,AliRDHFCuts::kCandidate);  
+    Int_t selD0bar1 = D0bar1Selected(d,AliRDHFCuts::kCandidate);
+    Int_t selD0bar2 = D0bar2Selected(d,AliRDHFCuts::kCandidate);
+
+    Int_t d01PID = 0, d02PID = 0, d0bar1PID = 0, d0bar2PID = 0;
+    returnvalue = IsSelectedFromPID(d, &d01PID, &d02PID, &d0bar1PID, &d0bar2PID);  //This returnvalue is dummy! Now it's modified as it must be!
+
+returnvalue = 0;
+
+    if((selD01 == 1 && d01PID == 1)||(selD02 == 1 && d02PID == 1)||(selD0bar1 == 1 && d0bar1PID == 1)||(selD0bar2 == 1 && d0bar2PID == 1)) returnvalue = 1;
+  }
+
+  return returnvalue;
+}
+
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpipipi::IsSelectedFromPID(AliAODRecoDecayHF4Prong *d, Int_t *hyp1, Int_t *hyp2, Int_t *hyp3, Int_t *hyp4) {
+  //
+  // Apply selection (using AliAODPidHF methods)
+  // Mass hypothesis true if each particle is at least compatible with specie of hypothesis
+  // 
+
+  Int_t output=0;
+
+  Int_t matchK[4], matchPi[4];
+  Double_t ptlimit[2] = {0.6,0.8};
+  AliAODTrack* trk[4];
+  trk[0] = (AliAODTrack*)d->GetDaughter(0);
+  trk[1] = (AliAODTrack*)d->GetDaughter(1);
+  trk[2] = (AliAODTrack*)d->GetDaughter(2);
+  trk[3] = (AliAODTrack*)d->GetDaughter(3);
+//  if(!trk[0] || !trk[1] || !trk[2] || !trk[3]) {          //REMOVED (needs also AliAODEvent to be passed, here and in IsSelected method)
+//    trk[0]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(0)]);
+//    trk[1]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(1)]);
+//    trk[2]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(2)]);
+//    trk[3]=aodIn->GetTrack(trkIDtoEntry[d->GetProngID(3)]);}
+
+  AliAODPidHF* PidObj = new AliAODPidHF();
+  PidObj->SetAsym(kTRUE);
+  PidObj->SetPLimit(ptlimit);
+  PidObj->SetSigma(0,2.);  //TPC sigma, in three pT ranges
+  PidObj->SetSigma(1,1.);
+  PidObj->SetSigma(2,0.);  
+  PidObj->SetSigma(3,2.);  //TOF sigma, whole pT range
+  PidObj->SetTPC(kTRUE);
+  PidObj->SetTOF(kTRUE);
+   
+  for(Int_t ii=0; ii<4; ii++) {
+    PidObj->SetSigma(0,2.);
+    matchK[ii] = PidObj->MatchTPCTOF(trk[ii],1,3,kTRUE); //arguments: track, mode, particle#, compatibility allowed
+    PidObj->SetSigma(0,2.);
+    matchPi[ii] = PidObj->MatchTPCTOF(trk[ii],1,2,kTRUE); 
+  }
+
+  //Rho invariant mass under various hypotheses (to be matched with PID infos in order to accet the candidate)
+  Int_t d01rho03 = 0, d01rho23 = 0, d02rho01 = 0, d02rho12 = 0, d0bar1rho12 = 0, d0bar1rho23 = 0, d0bar2rho01 = 0, d0bar2rho03 = 0;
+  if(TMath::Abs(0.775 - d->InvMassRho(0,3))<0.1)  {d01rho03 = 1; d0bar2rho03 = 1;}
+  if(TMath::Abs(0.775 - d->InvMassRho(2,3))<0.1)  {d01rho23 = 1; d0bar1rho23 = 1;}
+  if(TMath::Abs(0.775 - d->InvMassRho(0,1))<0.1)  {d02rho01 = 1; d0bar2rho01 = 1;}
+  if(TMath::Abs(0.775 - d->InvMassRho(1,2))<0.1)  {d02rho12 = 1; d0bar1rho12 = 1;}
+  Int_t d01rho = 0, d02rho = 0, d0bar1rho = 0, d0bar2rho = 0;
+  if(d01rho03==1||d01rho23==1) d01rho = 1;
+  if(d02rho01==1||d02rho12==1) d02rho = 1;
+  if(d0bar1rho12==1||d0bar1rho23==1) d0bar1rho = 1;
+  if(d0bar2rho01==1||d0bar2rho03==1) d0bar2rho = 1;
+
+  //This way because there could be multiple hypotheses accepted
+  if(d01rho==1 && (matchK[1]>=0 && matchPi[0]>=0 && matchPi[2]>=0 && matchPi[3]>=0)) {*hyp1 = 1; output = 1;} //d01 hyp
+  if(d02rho==1 && (matchK[3]>=0 && matchPi[0]>=0 && matchPi[1]>=0 && matchPi[2]>=0)) {*hyp2 = 1; output = 1;} //d02 hyp
+  if(d0bar1rho==1 && (matchK[0]>=0 && matchPi[1]>=0 && matchPi[2]>=0 && matchPi[3]>=0)) {*hyp3 = 1; output = 1;} //d0bar1 hyp
+  if(d0bar2rho==1 && (matchK[2]>=0 && matchPi[0]>=0 && matchPi[1]>=0 && matchPi[3]>=0)) {*hyp4 = 1; output = 1;} //d0bar2 hyp
+
+  return output;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpipipi::D01Selected(TObject* obj,Int_t selectionLevel) {
+  //
+  // Apply selection
+  //
+
+  if(!fCutsRD){
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
+    return 0;
+  }
+  //PrintAll();
+  AliAODRecoDecayHF4Prong* d=(AliAODRecoDecayHF4Prong*)obj;
+
+  if(!d){
+    cout<<"AliAODRecoDecayHF4Prong null"<<endl;
+    return 0;
+  }
+
+  Int_t returnvalue=0;
+
+  // selection on candidate
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate) {
+
+    Int_t ptbin=PtBin(d->Pt());
+    
+    Double_t mD0[2];
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+    d->InvMassD0(mD0);
+    if(TMath::Abs(mD0[0]-mD0PDG) < fCutsRD[GetGlobalIndex(0,ptbin)]) returnvalue = 1;
+  }
+
   return returnvalue;
 }
 //---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpipipi::D02Selected(TObject* obj,Int_t selectionLevel) {
+  //
+  // Apply selection
+  //
+
+  if(!fCutsRD){
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
+    return 0;
+  }
+  //PrintAll();
+  AliAODRecoDecayHF4Prong* d=(AliAODRecoDecayHF4Prong*)obj;
+
+  if(!d){
+    cout<<"AliAODRecoDecayHF4Prong null"<<endl;
+    return 0;
+  }
+
+  Int_t returnvalue=0;
+
+  // selection on candidate
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate) {
+
+    Int_t ptbin=PtBin(d->Pt());
+      
+    Double_t mD0[2];
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+    d->InvMassD0(mD0);
+    if(TMath::Abs(mD0[1]-mD0PDG) < fCutsRD[GetGlobalIndex(0,ptbin)]) returnvalue = 1;
+  }
+
+  return returnvalue;
+}//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpipipi::D0bar1Selected(TObject* obj,Int_t selectionLevel) {
+  //
+  // Apply selection
+  //
+
+  if(!fCutsRD){
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
+    return 0;
+  }
+  //PrintAll();
+  AliAODRecoDecayHF4Prong* d=(AliAODRecoDecayHF4Prong*)obj;
+
+  if(!d){
+    cout<<"AliAODRecoDecayHF4Prong null"<<endl;
+    return 0;
+  }
+
+  Int_t returnvalue=0;
+
+  // selection on candidate
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate) {
+
+    Int_t ptbin=PtBin(d->Pt());
+ 
+    Double_t mD0bar[2];
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+    d->InvMassD0bar(mD0bar);
+    if(TMath::Abs(mD0bar[0]-mD0PDG) < fCutsRD[GetGlobalIndex(0,ptbin)]) returnvalue = 1;
+  }
+
+  return returnvalue;
+}
+//---------------------------------------------------------------------------
+Int_t AliRDHFCutsD0toKpipipi::D0bar2Selected(TObject* obj,Int_t selectionLevel) {
+  //
+  // Apply selection
+  //
+
+  if(!fCutsRD){
+    cout<<"Cut matrix not inizialized. Exit..."<<endl;
+    return 0;
+  }
+  //PrintAll();
+  AliAODRecoDecayHF4Prong* d=(AliAODRecoDecayHF4Prong*)obj;
+
+  if(!d){
+    cout<<"AliAODRecoDecayHF4Prong null"<<endl;
+    return 0;
+  }
+
+  Int_t returnvalue=0;
+
+  // selection on candidate
+  if(selectionLevel==AliRDHFCuts::kAll || 
+     selectionLevel==AliRDHFCuts::kCandidate) {
+
+    Int_t ptbin=PtBin(d->Pt());
+    
+    Double_t mD0bar[2];
+    Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+
+    d->InvMassD0bar(mD0bar);
+    if(TMath::Abs(mD0bar[1]-mD0PDG) < fCutsRD[GetGlobalIndex(0,ptbin)]) returnvalue = 1;
+  }
+
+  return returnvalue;
+}
+//---------------------------------------------------------------------------
+Bool_t AliRDHFCutsD0toKpipipi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
+{
+  //
+  // Checking if D0 is in fiducial acceptance region 
+  //
+
+  if(pt > 5.) {
+    // applying cut for pt > 5 GeV
+    AliDebug(4,Form("pt of D0 = %f (> 5), cutting at |y| < 0.8\n",pt)); 
+    if (TMath::Abs(y) > 0.8){
+      return kFALSE;
+    }
+  } else {
+    // appliying smooth cut for pt < 5 GeV
+    Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5; 
+    Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;		
+    AliDebug(4,Form("pt of D0 = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY)); 
+    if (y < minFiducialY || y > maxFiducialY){
+      return kFALSE;
+    }
+  }
+
+  return kTRUE;
+}
+
