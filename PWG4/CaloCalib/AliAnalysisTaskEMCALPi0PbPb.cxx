@@ -207,8 +207,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fHPionMggDgg->SetXTitle("M_{#gamma#gamma} [GeV/c^{2}]");
   fHPionMggDgg->SetYTitle("opening angle [grad]");
   fOutput->Add(fHPionMggDgg);
-  const Int_t nbins = 19; 
-  Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,6,7,8,9,10,12.5,15,20,25,50};
+  const Int_t nbins = 20; 
+  Double_t xbins[nbins] = {0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,6,7,8,9,10,12.5,15,20,25,50};
   fPtRanges = new TAxis(nbins-1,xbins);
   for (Int_t i = 0; i<=nbins; ++i) {
     fHPionInvMasses[i] = new TH1F(Form("hPionInvMass%d",i),"",1000,0,2);
