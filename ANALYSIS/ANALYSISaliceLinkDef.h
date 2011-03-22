@@ -37,6 +37,7 @@
 #pragma link C++ class AliCentralitySelectionTask+;
 #pragma link C++ class AliAnalysisTaskStat+;
 #pragma link C++ class AliMultiInputEventHandler+;
+#pragma link C++ class AliAnalysisTaskPIDResponse+;
 
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
