@@ -39,6 +39,13 @@ AliFlowTrack::AliFlowTrack(const AliVParticle* p):
   fTrackSourceBits()
 {
   //constructor 
+  Set(p);
+}
+
+//-----------------------------------------------------------------------
+void AliFlowTrack::Set(const AliVParticle* p)
+{
+  //set from an AliVParticle
   SetPhi(p->Phi());
   SetEta(p->Eta());
   SetPt(p->Pt());

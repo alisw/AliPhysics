@@ -536,9 +536,11 @@ Bool_t AliFlowTrackCuts::PassesCuts(AliVParticle* vparticle)
   AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*>(vparticle);
   AliAODTrack* aodTrack = NULL;
   if (esdTrack)
+  {
     //for an ESD track we do some magic sometimes like constructing TPC only parameters
     //or doing some hybrid, handle that here
     HandleESDtrack(esdTrack);
+  }
   else
   {
     HandleVParticle(vparticle);
@@ -849,6 +851,116 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPri
   cuts->fAliESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(selPrimaries);
   cuts->SetParamType(kGlobal);
   return cuts;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::FillFlowTrackGeneric(AliFlowTrack* flowtrack) const
+{
+  //fill a flow track from tracklet,vzero,pmd,...
+  TParticle *tmpTParticle=NULL;
+  AliMCParticle* tmpAliMCParticle=NULL;
+  switch (fParamMix)
+  {
+    case kPure:
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      break;
+    case kTrackWithMCkine:
+      if (!fMCparticle) return kFALSE;
+      flowtrack->SetPhi( fMCparticle->Phi() );
+      flowtrack->SetEta( fMCparticle->Eta() );
+      flowtrack->SetPt( fMCparticle->Pt() );
+      break;
+    case kTrackWithMCpt:
+      if (!fMCparticle) return kFALSE;
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      flowtrack->SetPt(fMCparticle->Pt());
+      break;
+    case kTrackWithPtFromFirstMother:
+      if (!fMCparticle) return kFALSE;
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      tmpTParticle = fMCparticle->Particle();
+      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+      flowtrack->SetPt(tmpAliMCParticle->Pt());
+      break;
+    default:
+      flowtrack->SetPhi(fTrackPhi);
+      flowtrack->SetEta(fTrackEta);
+      break;
+  }
+  flowtrack->SetSource(AliFlowTrack::kFromTracklet);
+  return kTRUE;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
+{
+  //fill flow track from AliVParticle (ESD,AOD,MC)
+  if (!fTrack) return kFALSE;
+  TParticle *tmpTParticle=NULL;
+  AliMCParticle* tmpAliMCParticle=NULL;
+  AliExternalTrackParam* externalParams=NULL;
+  AliESDtrack* esdtrack=NULL;
+  switch(fParamMix)
+  {
+    case kPure:
+      flowtrack->Set(fTrack);
+      break;
+    case kTrackWithMCkine:
+      flowtrack->Set(fMCparticle);
+      break;
+    case kTrackWithMCPID:
+      flowtrack->Set(fTrack);
+      //flowtrack->setPID(...) from mc, when implemented
+      break;
+    case kTrackWithMCpt:
+      if (!fMCparticle) return kFALSE;
+      flowtrack->Set(fTrack);
+      flowtrack->SetPt(fMCparticle->Pt());
+      break;
+    case kTrackWithPtFromFirstMother:
+      if (!fMCparticle) return kFALSE;
+      flowtrack->Set(fTrack);
+      tmpTParticle = fMCparticle->Particle();
+      tmpAliMCParticle = static_cast<AliMCParticle*>(fMCevent->GetTrack(tmpTParticle->GetFirstMother()));
+      flowtrack->SetPt(tmpAliMCParticle->Pt());
+      break;
+    case kTrackWithTPCInnerParams:
+      esdtrack = dynamic_cast<AliESDtrack*>(fTrack);
+      if (!esdtrack) return kFALSE;
+      externalParams = const_cast<AliExternalTrackParam*>(esdtrack->GetTPCInnerParam());
+      if (!externalParams) return kFALSE;
+      flowtrack->Set(externalParams);
+      break;
+    default:
+      flowtrack->Set(fTrack);
+      break;
+  }
+  if (fParamType==kMC) flowtrack->SetSource(AliFlowTrack::kFromMC);
+  else if (dynamic_cast<AliESDtrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromESD);
+  else if (dynamic_cast<AliAODTrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromAOD);
+  else if (dynamic_cast<AliMCParticle*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromMC);
+  return kTRUE;
+}
+
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::FillFlowTrack(AliFlowTrack* track) const
+{
+  //fill a flow track constructed from whatever we applied cuts on
+  //return true on success
+  switch (fParamType)
+  {
+    case kSPDtracklet:
+      return FillFlowTrackGeneric(track);
+    case kPMD:
+      return FillFlowTrackGeneric(track);
+    case kV0:
+      return FillFlowTrackGeneric(track);
+    default:
+      return FillFlowTrackVParticle(track);
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -1310,12 +1422,12 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 }
 
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesTOFpidCut(const AliESDtrack* /*track*/) const
+Bool_t AliFlowTrackCuts::PassesTOFpidCut(const AliESDtrack* track) const
 {
   //check if passes PID cut using default TOF pid
-  //Double_t pidTOF[AliPID::kSPECIES];
-  //track->GetTOFpid(pidTOF);
-  //if (pidTOF[fParticleID]>=fParticleProbability) return kTRUE;
+  Double_t pidTOF[AliPID::kSPECIES];
+  track->GetTOFpid(pidTOF);
+  if (pidTOF[fParticleID]>=fParticleProbability) return kTRUE;
   return kFALSE;
 }
 
