@@ -38,14 +38,15 @@ file (GLOB SRCS10 "TRD/info/*.cxx" )
 file (GLOB SRCS11 "background/*.cxx" )
 file (GLOB SRCS12 "Centrality/*.cxx" )
 file (GLOB SRCS13 "ZDC/*.cxx" )
+file (GLOB SRCS14 "T0/*.cxx" )
 
-list(APPEND SRCS ${SRCS1} ${SRCS2} ${SRCS3} ${SRCS4} ${SRCS5} ${SRCS6} ${SRCS7} ${SRCS8} ${SRCS9} ${SRCS10} ${SRCS11} ${SRCS12} ${SRCS13})
+list(APPEND SRCS ${SRCS1} ${SRCS2} ${SRCS3} ${SRCS4} ${SRCS5} ${SRCS6} ${SRCS7} ${SRCS8} ${SRCS9} ${SRCS10} ${SRCS11} ${SRCS12} ${SRCS13} ${SRCS14})
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG1LinkDef.h)
 
-set ( EINCLUDE  STEER TPC ITS TRD TOF TRD/Cal ANALYSIS/Tender ANALYSIS PWG1/comparison PWG1/cosmic PWG1/global PWG1/tender PWG1/ITS PWG1/TPC PWG1/TOF PWG1/TRD PWG1/TRD/info PWG1/background PWG1/Centrality HMPID)
+set ( EINCLUDE  STEER TPC ITS TRD TOF TRD/Cal ANALYSIS/Tender ANALYSIS PWG1/comparison PWG1/cosmic PWG1/global PWG1/tender PWG1/ITS PWG1/TPC PWG1/TOF PWG1/TRD PWG1/TRD/info PWG1/background PWG1/Centrality HMPID PWG1/ZDC PWG1/T0)
 
   if( ALICE_TARGET STREQUAL "win32gcc")
 	
