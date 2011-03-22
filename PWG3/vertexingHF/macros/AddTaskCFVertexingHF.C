@@ -27,6 +27,8 @@ const Int_t    minITSClusters = 5;
 
 const Float_t centmin = 0.;
 const Float_t centmax = 100.;
+const Float_t fakemin = -0.5;
+const Float_t fakemax = 2.5.;
 
 //----------------------------------------------------
 
@@ -94,12 +96,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	UInt_t iphi  = 11;
 	UInt_t iz  = 12;
 	UInt_t icent = 13;
+	UInt_t ifake = 14;
 
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
-	const Int_t nvar   = 14 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
+	const Int_t nvar   = 15 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
 
 	//Setting the bins: pt, ptPi, and ptK are considered seprately because for them you can either define the binning by hand, or using the cuts file
 
@@ -107,6 +110,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Int_t iBin[nvar];
 
 	//OPTION 1: defining the pt, ptPi, ptK bins by hand...		
+	/*
 	const Int_t nbin0_0_6  = 6 ; //bins in pt from 0 to 6 GeV
 	const Int_t nbin0_6_8  = 1 ; //bins in pt from 6 to 8 GeV
 	const Int_t nbin0_8_16  = 2 ; //bins in pt from 8 to 16 GeV
@@ -171,23 +175,27 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
 	}
 	for(Int_t i=0; i<=nbin4_16_24; i++) binLim4[i+nbin4_0_6+nbin4_6_8+nbin4_8_16]=(Double_t)ptmin_16_24 + (ptmax_16_24-ptmin_16_24)/nbin4_16_24*(Double_t)i ; 
+	*/
 	
 	//OPTION 2: ...or from the cuts file
 
-	//const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
-	//iBin[0]=nbin0;
- 	//iBin[3]=nbin0;
- 	//iBin[4]=nbin0;
+	const Int_t nbin0 = cutsD0toKpi->GetNPtBins(); // bins in pT
+	iBin[0]=nbin0;
+ 	iBin[3]=nbin0;
+ 	iBin[4]=nbin0;
+	Double_t *binLim0=new Double_t[iBin[0]+1];
+	Double_t *binLim3=new Double_t[iBin[3]+1];
+	Double_t *binLim4=new Double_t[iBin[4]+1];
 	// values for bin lower bounds
-	//Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
-	//for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
-	//	binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//	binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//	binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
-	//}
-	//for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
+	Float_t* floatbinLim0 = cutsD0toKpi->GetPtBinLimits();
+	for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
+		binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim3[ibin0] = (Double_t)floatbinLim0[ibin0];
+		binLim4[ibin0] = (Double_t)floatbinLim0[ibin0];
+	}
+	for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
 
-	//printf("pT: nbin (from cuts file) = %d\n",nbin0);
+	printf("pT: nbin (from cuts file) = %d\n",nbin0);
 
 	// defining now the binning for the other variables:
 
@@ -202,6 +210,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbin11  = 20 ; //bins in Phi
 	const Int_t nbin12  = 60 ; //bins in z vertex
 	const Int_t nbin13 = 10;  //bins in centrality
+	const Int_t nbin14 = 3;  //bins in fake
 
 	iBin[1]=nbin1;
 	iBin[2]=nbin2;
@@ -214,6 +223,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	iBin[11]=nbin11;
 	iBin[12]=nbin12;
 	iBin[13]=nbin13;
+	iBin[14]=nbin14;
 	
 	//arrays for lower bounds :
 	Double_t *binLim1=new Double_t[iBin[1]+1];
@@ -227,6 +237,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Double_t *binLim11=new Double_t[iBin[11]+1];
 	Double_t *binLim12=new Double_t[iBin[12]+1];
 	Double_t *binLim13=new Double_t[iBin[13]+1];
+	Double_t *binLim14=new Double_t[iBin[14]+1];
 
 	// y
 	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
@@ -260,8 +271,14 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		binLim12[i]=(Double_t)zmin  + (zmax-zmin)  /nbin12*(Double_t)i ;
 	}
 
+	// centrality
 	for(Int_t i=0; i<=nbin13; i++) {
 	  binLim13[i]=(Double_t)centmin  + (centmax-centmin)/nbin13 * (Double_t)i;
+	}
+
+	// fake
+	for(Int_t i=0; i<=nbin14; i++) {
+	  binLim14[i]=(Double_t)fakemin  + (fakemax-fakemin)/nbin14 * (Double_t)i;
 	}
 
 	//one "container" for MC
@@ -306,6 +323,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	container -> SetBinLimits(iz,binLim12);
 	printf("cent\n");
 	container -> SetBinLimits(icent,binLim13);
+	printf("fake\n");
+	container -> SetBinLimits(ifake,binLim14);
 	
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
@@ -332,6 +351,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	container -> SetVarTitle(iphi, "phi");
 	container -> SetVarTitle(iz, "z");
 	container -> SetVarTitle(icent, "centrality");
+	container -> SetVarTitle(ifake, "fake");
 
 
 	//CREATE THE  CUTS -----------------------------------------------
@@ -411,7 +431,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetUseWeight(kFALSE);
 	task->SetSign(isSign);
 	task->SetCentralitySelection(kFALSE);
-	task->SetFakesSelection(0);
+	task->SetFakeSelection(0);
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
@@ -423,6 +443,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
+	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());
 	Printf("***************END CONTAINER SETTINGS *****************\n");
 
         //-----------------------------------------------------------//

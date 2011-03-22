@@ -100,8 +100,8 @@ public:
 	void SetCentralitySelection(Bool_t centSelec = kTRUE) {fCentralitySelection = centSelec;}   
 	Bool_t GetCentralitySelection() {return fCentralitySelection;} 
 
-	void SetFakesSelection(Int_t fakeSel = 0) {fFakeSelection=fakeSel;}
-	Int_t GetFakesSelection(){return fFakeSelection;}
+	void SetFakeSelection(Int_t fakeSel = 0) {fFakeSelection=fakeSel;}
+	Int_t GetFakeSelection(){return fFakeSelection;}
 	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
