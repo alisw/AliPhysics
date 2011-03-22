@@ -358,18 +358,18 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
 
   fOutputList = new TList();
   fOutputList->SetOwner();
-  fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",501,0,101);
-  fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",501,0,101);
-  fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",501,0,101);
-  fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",501,0,101);
-  fHOutCentCL0     = new TH1F("fHOutCentCL0","fHOutCentCL0; Centrality SPD inner",501,0,101);
-  fHOutCentCL1     = new TH1F("fHOutCentCL1","fHOutCentCL1; Centrality SPD outer",501,0,101);
-  fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",501,0,101);
-  fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",501,0,101);
-  fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",501,0,101);
-  fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0 vs Cent SPD",501,0,101,501,0,101);
-  fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0 vs Cent TPC",501,0,101,501,0,101);
-  fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC vs Cent SPD",501,0,101,501,0,101);
+  fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
+  fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
+  fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
+  fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
+  fHOutCentCL0     = new TH1F("fHOutCentCL0","fHOutCentCL0; Centrality SPD inner",505,0,101);
+  fHOutCentCL1     = new TH1F("fHOutCentCL1","fHOutCentCL1; Centrality SPD outer",505,0,101);
+  fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",505,0,101);
+  fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",505,0,101);
+  fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",505,0,101);
+  fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0 vs Cent SPD",505,0,101,505,0,101);
+  fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0 vs Cent TPC",505,0,101,505,0,101);
+  fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC vs Cent SPD",505,0,101,505,0,101);
 
   fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,25000);
   fHOutMultV0R = new TH1F("fHOutMultV0R","fHOutMultV0R; Multiplicity V0",30000,0,30000);
@@ -386,13 +386,13 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
   fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
 
-  fHOutCentV0M_qual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",501,0,100);
-  fHOutCentTRK_qual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",501,0,100);
-  fHOutCentCL1_qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",501,0,100);
+  fHOutCentV0M_qual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
+  fHOutCentTRK_qual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
+  fHOutCentCL1_qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
 
-  fHOutCentV0M_qual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",101,-0.1,100.1);
-  fHOutCentTRK_qual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",101,-0.1,100.1);
-  fHOutCentCL1_qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",101,-0.1,100.1);
+  fHOutCentV0M_qual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
+  fHOutCentTRK_qual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
+  fHOutCentCL1_qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
 
   fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 10,-0.5,9.5);
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
@@ -898,9 +898,9 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber) const
 void AliCentralitySelectionTask::MyInitScaleFactor () 
 {
 // Initialize the scaling factors
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) V0MScaleFactor[i] = 0.0;
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) SPDScaleFactor[i] = 0.0;
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) TPCScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) V0MScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) SPDScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) TPCScaleFactor[i] = 0.0;
   
   // scale factors determined from <V0 charge> on a run-by-run basis
    V0MScaleFactor[310] = 1.;
@@ -1083,7 +1083,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
 
 
   // set all missing values to the value of the run before it ....
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) {    
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
     if (V0MScaleFactor[i] == 0.0) {     
       if (i==0) {
 	V0MScaleFactor[i] = 1.00;
@@ -1099,7 +1099,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
     }
   } // end loop over checking all run-numbers 
 
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) {    
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
     if (SPDScaleFactor[i] == 0.0) {     
       if (i==0) {
 	SPDScaleFactor[i] = 1.00;
@@ -1114,7 +1114,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
     }
   } 
 
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) {    
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
     if (TPCScaleFactor[i] == 0.0) {     
       if (i==0) {
 	TPCScaleFactor[i] = 1.00;
@@ -1130,7 +1130,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
   } 
   
 
-  //    for (int i=0; i<(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactor[i] << " for Run " << i+fLowRunN << endl;
+  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactor[i] << " for Run " << i+fLowRunN << endl;
   
   return;
 
@@ -1145,7 +1145,7 @@ void AliCentralitySelectionTask::MyInitScaleFactorMC()
   // scale factors determined from <V0 charge> on a run-by-run basis
   V0MScaleFactorMC[0] = 0.75108;
   // set all missing values to the value of the run before it ....
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) {    
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
     if (V0MScaleFactorMC[i] == 0.0) {     
       if (i==0) {
 	V0MScaleFactorMC[i] = 1.00;
@@ -1162,7 +1162,7 @@ void AliCentralitySelectionTask::MyInitScaleFactorMC()
   } // end loop over checking all run-numbers 
 
 
-  //    for (int i=0; i<(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactorMC[i] << " for Run " << i+fLowRunN << endl;
+  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactorMC[i] << " for Run " << i+fLowRunN << endl;
   
   return;
 
