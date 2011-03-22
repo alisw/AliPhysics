@@ -525,7 +525,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
   fClusterizer->SetTimeMin               ( fRecParam->GetTimeMin()             );
   fClusterizer->SetTimeMax               ( fRecParam->GetTimeMax()             );
   fClusterizer->SetInputCalibrated       ( kTRUE                               );
-    
+  fClusterizer->SetJustClusters          ( kTRUE                               );  
   //In case of unfolding after clusterization is requested, set the corresponding parameters
   if(fRecParam->GetUnfold()){
     Int_t i=0;
