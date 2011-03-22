@@ -507,8 +507,8 @@ C       BY THE ANGLE PHI  FOR EACH COLLISION.******************
 C
         BB=SQRT(BMIN**2+RANART(NSEED)*(BMAX**2-BMIN**2))
 cbz6/28/99 flow1
-c        PHI=2.0*HIPR1(40)*RANART(NSEED)
-        PHI=0.
+        PHI=2.0*HIPR1(40)*RANART(NSEED)
+c        PHI=0.
 cbz6/28/99 flow1 end
         BBX=BB*COS(PHI)
         BBY=BB*SIN(PHI)
