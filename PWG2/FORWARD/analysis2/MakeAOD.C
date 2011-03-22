@@ -63,13 +63,13 @@ void MakeAOD(const char* esddir,
 				  // "AliESDVZERO " 
 				  "AliESDTZERO " 
 				  "TPCVertex " 
-				  // "SPDVertex "
+				  //"SPDVertex "
 				  // "PrimaryVertex "
 				  // "AliMultiplicity "
 				  "PHOSTrigger "
 				  "EMCALTrigger "
-				  "SPDPileupVertices " 
-				  "TrkPileupVertices " 
+				  //"SPDPileupVertices " 
+				  //"TrkPileupVertices " 
 				  // "Tracks "
 				  "MuonTracks " 
 				  "PmdTracks "
@@ -102,7 +102,7 @@ void MakeAOD(const char* esddir,
   // Physics selection 
   gROOT->LoadMacro("AddTaskPhysicsSelection.C");
   // test HHD
-  AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
+  AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
 
 #if 0
   // Centrality 
@@ -114,7 +114,9 @@ void MakeAOD(const char* esddir,
 #endif
   if(centrality) {
     gROOT->LoadMacro("AddTaskCentrality.C");
-    AddTaskCentrality();
+    AliCentralitySelectionTask* centtask = AddTaskCentrality();
+    if(mc)
+      centtask->SetMCInput();
   }
   // FMD 
   gROOT->LoadMacro("AddTaskFMD.C");
