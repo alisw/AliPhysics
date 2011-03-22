@@ -32,6 +32,10 @@
 Particle::Particle()
 {
   mPartType  = 0;
+  px = 0; py = 0; pz = 0;
+  rx = 0; ry = 0; rz = 0; rt = 0;
+  mDecayed = 0;
+  mHasFather = -1;
 }
 
 Particle::Particle(double aRapidity, double aPt, double aPhip, 
