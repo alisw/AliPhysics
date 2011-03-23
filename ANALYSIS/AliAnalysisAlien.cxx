@@ -20,6 +20,8 @@
 // a personalized JDL, finding and creating a dataset.
 //==============================================================================
 
+#include "AliAnalysisAlien.h"
+
 #include "Riostream.h"
 #include "TEnv.h"
 #include "TBits.h"
@@ -41,7 +43,7 @@
 #include "AliAnalysisManager.h"
 #include "AliVEventHandler.h"
 #include "AliAnalysisDataContainer.h"
-#include "AliAnalysisAlien.h"
+#include "AliMultiInputEventHandler.h"
 
 ClassImp(AliAnalysisAlien)
 
@@ -2980,8 +2982,14 @@ void AliAnalysisAlien::WriteAnalysisFile()
       if (mgr->GetMCtruthEventHandler()) TObject::SetBit(AliAnalysisGrid::kUseMC);
       handler = (TObject*)mgr->GetInputEventHandler();
       if (handler) {
-         if (handler->InheritsFrom("AliESDInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseESD);
-         if (handler->InheritsFrom("AliAODInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseAOD);
+         if (handler->InheritsFrom("AliMultiInputEventHandler")) {
+            AliMultiInputEventHandler *multiIH = (AliMultiInputEventHandler*)handler;
+            if (multiIH->GetFirstInputEventHandler()->InheritsFrom("AliESDInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseESD);
+            if (multiIH->GetFirstInputEventHandler()->InheritsFrom("AliAODInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseAOD);
+         } else {
+            if (handler->InheritsFrom("AliESDInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseESD);
+            if (handler->InheritsFrom("AliAODInputHandler")) TObject::SetBit(AliAnalysisGrid::kUseAOD);
+         }
       }
       TDirectory *cdir = gDirectory;
       TFile *file = TFile::Open(analysisFile, "RECREATE");
