@@ -162,7 +162,7 @@ void compare_HLT_offline_local( TString file
   //on the form $DIR/AliESDs.root
   else if(file.Contains(".txt")){
     gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
-    chain=CreateESDChain(file.Data());
+    chain=CreateESDChain(file.Data(),200);
   }
   
   else if(!file){
