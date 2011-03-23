@@ -6,8 +6,8 @@
 //As written this requires an xml script tag.xml in the ~/et directory on the grid to submit jobs
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="sim", // "sim" or "real" etc.
-	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
-	       const char *det = "EMCAL") // "PHOS" or "EMCAL"
+	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
+	       const char *det = "PHOS") // "PHOS" or "EMCAL"
 {
   TStopwatch timer;
   timer.Start();
@@ -50,6 +50,10 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
   gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
+
+   gInterpreter->GenerateDictionary("std::map<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;map")  ;
+   gInterpreter->GenerateDictionary("std::pair<int, AliPhysicsSelection*>", "AliPhysicsSelection.h;utility");
+
 
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
