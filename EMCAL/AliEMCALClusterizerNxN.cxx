@@ -67,14 +67,14 @@ ClassImp(AliEMCALClusterizerNxN)
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN()
-: AliEMCALClusterizer(), fNRowDiff(1), fNColDiff(1)
+  : AliEMCALClusterizer(), fNRowDiff(1), fNColDiff(1), fEnergyGrad(0)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
 }
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
-  : AliEMCALClusterizer(geometry), fNRowDiff(1), fNColDiff(1)
+  : AliEMCALClusterizer(geometry), fNRowDiff(1), fNColDiff(1), fEnergyGrad(0)
 {
   // ctor with the indication of the file where header Tree and digits Tree are stored
   // use this contructor to avoid usage of Init() which uses runloader
@@ -83,7 +83,7 @@ AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry)
 
 //____________________________________________________________________________
 AliEMCALClusterizerNxN::AliEMCALClusterizerNxN(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * caloped)
-: AliEMCALClusterizer(geometry, calib, caloped), fNRowDiff(1), fNColDiff(1)
+: AliEMCALClusterizer(geometry, calib, caloped), fNRowDiff(1), fNColDiff(1), fEnergyGrad(0)
 {
   // ctor, geometry and calibration are initialized elsewhere.
 }
@@ -167,6 +167,11 @@ Int_t AliEMCALClusterizerNxN::AreNeighbours(AliEMCALDigit * d1, AliEMCALDigit * 
   // The order of d1 and d2 is important: first (d1) should be a digit already in a cluster 
   //                                      which is compared to a digit (d2)  not yet in a cluster  
   
+  if (fEnergyGrad) { //false by default
+    if (d2->GetCalibAmp()>d1->GetCalibAmp())
+      return 3; // energy of neighboring cell should be smaller in order to become a neighbor
+  }
+
   Int_t nSupMod1=0, nModule1=0, nIphi1=0, nIeta1=0, iphi1=0, ieta1=0;
   Int_t nSupMod2=0, nModule2=0, nIphi2=0, nIeta2=0, iphi2=0, ieta2=0;
   Int_t rowdiff=0, coldiff=0;
@@ -255,8 +260,8 @@ void AliEMCALClusterizerNxN::MakeClusters()
     { // scan over the list of digitsC
       Float_t dEnergyCalibrated = digit->GetCalibAmp();
 
-      if (fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > 0.0) // no threshold!
-      {
+      if (fGeom->CheckAbsCellId(digit->GetId()) && dEnergyCalibrated > fMinECut) // no threshold by default!
+      {                                                                          // needs to be set in OCDB!
         if (dEnergyCalibrated > dMaxEnergyDigit) 
         {
           dMaxEnergyDigit = dEnergyCalibrated;

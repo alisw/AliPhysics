@@ -41,6 +41,8 @@ public:
   void SetNColDiff(Int_t nd) { fNColDiff = nd; }
   Int_t GetNRowDiff() const { return fNRowDiff; } 
   Int_t GetNColDiff() const { return fNColDiff; } 
+  void SetEnergyGrad(Bool_t b) { fEnergyGrad= b; }
+  Bool_t GetEnergyGrad() const { return fEnergyGrad; }
 
 protected:
 
@@ -52,8 +54,9 @@ private:
 
   Int_t  fNRowDiff;  //how many neighbors to consider along row (phi)
   Int_t  fNColDiff;  //how many neighbors to consider along col (eta)
+  Bool_t fEnergyGrad; //if true only cluster if neighboring cell has less energy
 
-  ClassDef(AliEMCALClusterizerNxN,3)   // Clusterizer implementation version 1
+  ClassDef(AliEMCALClusterizerNxN,4)   // Clusterizer implementation version 1
 };
 
 #endif // AliEMCALCLUSTERIZERNXN_H
