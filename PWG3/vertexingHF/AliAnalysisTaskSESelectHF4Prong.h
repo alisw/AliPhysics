@@ -21,12 +21,10 @@
 #include <TChain.h>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAODEvent.h"
-#include "AliAnalysisManager.h"
-#include "AliAnalysisVertexingHF.h"
-#include "AliRDHFCuts.h"
 #include "AliRDHFCutsD0toKpipipi.h"
-
+class AliAODEvent;
+class AliAnalysisManager;
+class AliRDHFCuts;
 
 class AliAnalysisTaskSESelectHF4Prong : public AliAnalysisTaskSE
 {
@@ -51,9 +49,9 @@ class AliAnalysisTaskSESelectHF4Prong : public AliAnalysisTaskSE
   TClonesArray *fVerticesHFTClArr;     //! Array of heavy-flavour vertices
   TClonesArray *fCharm4ProngTClArr;        //! Array of D0->K3pi
 
-  Double_t fmassD0[2];
-  Double_t fmassD0bar[2];
-  Int_t fSelected;
+  Double_t fmassD0[2];				//! Array with invariant masses tor D0 hypotheses
+  Double_t fmassD0bar[2];			//! Array with invariant masses tor D0bar hypotheses
+  Int_t fSelected;				//! Flag for selection of candidate
 
   TList *fOutput;                             //! list send on output slot 1
   TList *fOutput2;                            //! list send on output slot 2
@@ -63,46 +61,46 @@ class AliAnalysisTaskSESelectHF4Prong : public AliAnalysisTaskSE
   TList *fOutputC;                            //! list send on output slot 6
 
   //output histograms
-  TH1F *fhInvMassD0Sum_10Mev_Bin1;                        //! Invariant mass D01+D02 (good hyp) _10Mev BIN1
-  TH1F *fhInvMassD0barSum_10Mev_Bin1;                     //! Invariant mass D0bar1+D0bar2 (good hyp) _10Mev
-  TH1F *fhInvMassSumAll_10Mev_Bin1;                       //! Invariant mass superimpose (good hyp only)_10Mev
-  TH1F *fhInvMassD0Sum_5Mev_Bin1;                         //! Invariant mass D01+D02 (good hyp) _5Mev
-  TH1F *fhInvMassD0barSum_5Mev_Bin1;                      //! Invariant mass D0bar1+D0bar2 (good hyp) _5Mev
-  TH1F *fhInvMassSumAll_5Mev_Bin1;                        //! Invariant mass superimpose (good hyp only)_5Mev
+  TH1F *fhInvMassD0Sum10MevBin1;                        //! Invariant mass D01+D02 (good hyp) 10Mev BIN1
+  TH1F *fhInvMassD0barSum10MevBin1;                     //! Invariant mass D0bar1+D0bar2 (good hyp) 10Mev
+  TH1F *fhInvMassSumAll10MevBin1;                       //! Invariant mass superimpose (good hyp only)10Mev
+  TH1F *fhInvMassD0Sum5MevBin1;                         //! Invariant mass D01+D02 (good hyp) 5Mev
+  TH1F *fhInvMassD0barSum5MevBin1;                      //! Invariant mass D0bar1+D0bar2 (good hyp) 5Mev
+  TH1F *fhInvMassSumAll5MevBin1;                        //! Invariant mass superimpose (good hyp only)5Mev
 
-  TH1F *fhInvMassD0Sum_10Mev_Bin2;                        //! Invariant mass D01+D02 (good hyp) _10Mev BIN2
-  TH1F *fhInvMassD0barSum_10Mev_Bin2;                     //! Invariant mass D0bar1+D0bar2 (good hyp) _10Mev
-  TH1F *fhInvMassSumAll_10Mev_Bin2;                       //! Invariant mass superimpose (good hyp only)_10Mev
-  TH1F *fhInvMassD0Sum_5Mev_Bin2;                         //! Invariant mass D01+D02 (good hyp) _5Mev
-  TH1F *fhInvMassD0barSum_5Mev_Bin2;                      //! Invariant mass D0bar1+D0bar2 (good hyp) _5Mev
-  TH1F *fhInvMassSumAll_5Mev_Bin2;                        //! Invariant mass superimpose (good hyp only)_5Mev
+  TH1F *fhInvMassD0Sum10MevBin2;                        //! Invariant mass D01+D02 (good hyp) 10Mev BIN2
+  TH1F *fhInvMassD0barSum10MevBin2;                     //! Invariant mass D0bar1+D0bar2 (good hyp) 10Mev
+  TH1F *fhInvMassSumAll10MevBin2;                       //! Invariant mass superimpose (good hyp only)10Mev
+  TH1F *fhInvMassD0Sum5MevBin2;                         //! Invariant mass D01+D02 (good hyp) 5Mev
+  TH1F *fhInvMassD0barSum5MevBin2;                      //! Invariant mass D0bar1+D0bar2 (good hyp) 5Mev
+  TH1F *fhInvMassSumAll5MevBin2;                        //! Invariant mass superimpose (good hyp only)5Mev
 
-  TH1F *fhInvMassD0Sum_10Mev_Bin3;                        //! Invariant mass D01+D02 (good hyp) _10Mev BIN3
-  TH1F *fhInvMassD0barSum_10Mev_Bin3;                     //! Invariant mass D0bar1+D0bar2 (good hyp) _10Mev
-  TH1F *fhInvMassSumAll_10Mev_Bin3;                       //! Invariant mass superimpose (good hyp only)_10Mev
-  TH1F *fhInvMassD0Sum_5Mev_Bin3;                         //! Invariant mass D01+D02 (good hyp) _5Mev
-  TH1F *fhInvMassD0barSum_5Mev_Bin3;                      //! Invariant mass D0bar1+D0bar2 (good hyp) _5Mev
-  TH1F *fhInvMassSumAll_5Mev_Bin3;                        //! Invariant mass superimpose (good hyp only)_5Mev
+  TH1F *fhInvMassD0Sum10MevBin3;                        //! Invariant mass D01+D02 (good hyp) 10Mev BIN3
+  TH1F *fhInvMassD0barSum10MevBin3;                     //! Invariant mass D0bar1+D0bar2 (good hyp) 10Mev
+  TH1F *fhInvMassSumAll10MevBin3;                       //! Invariant mass superimpose (good hyp only)10Mev
+  TH1F *fhInvMassD0Sum5MevBin3;                         //! Invariant mass D01+D02 (good hyp) 5Mev
+  TH1F *fhInvMassD0barSum5MevBin3;                      //! Invariant mass D0bar1+D0bar2 (good hyp) 5Mev
+  TH1F *fhInvMassSumAll5MevBin3;                        //! Invariant mass superimpose (good hyp only)5Mev
 
-  TH1F *fhInvMassD0Sum_10Mev_Bin4;                        //! Invariant mass D01+D02 (good hyp) _10Mev BIN4
-  TH1F *fhInvMassD0barSum_10Mev_Bin4;                     //! Invariant mass D0bar1+D0bar2 (good hyp) _10Mev
-  TH1F *fhInvMassSumAll_10Mev_Bin4;                       //! Invariant mass superimpose (good hyp only)_10Mev
-  TH1F *fhInvMassD0Sum_5Mev_Bin4;                         //! Invariant mass D01+D02 (good hyp) _5Mev
-  TH1F *fhInvMassD0barSum_5Mev_Bin4;                      //! Invariant mass D0bar1+D0bar2 (good hyp) _5Mev
-  TH1F *fhInvMassSumAll_5Mev_Bin4;                        //! Invariant mass superimpose (good hyp only)_5Mev
+  TH1F *fhInvMassD0Sum10MevBin4;                        //! Invariant mass D01+D02 (good hyp) 10Mev BIN4
+  TH1F *fhInvMassD0barSum10MevBin4;                     //! Invariant mass D0bar1+D0bar2 (good hyp) 10Mev
+  TH1F *fhInvMassSumAll10MevBin4;                       //! Invariant mass superimpose (good hyp only)10Mev
+  TH1F *fhInvMassD0Sum5MevBin4;                         //! Invariant mass D01+D02 (good hyp) 5Mev
+  TH1F *fhInvMassD0barSum5MevBin4;                      //! Invariant mass D0bar1+D0bar2 (good hyp) 5Mev
+  TH1F *fhInvMassSumAll5MevBin4;                        //! Invariant mass superimpose (good hyp only)5Mev
 
-  TH1F *fhInvMassD0Sum_10Mev_Bin5;                        //! Invariant mass D01+D02 (good hyp) _10Mev BIN5
-  TH1F *fhInvMassD0barSum_10Mev_Bin5;                     //! Invariant mass D0bar1+D0bar2 (good hyp) _10Mev
-  TH1F *fhInvMassSumAll_10Mev_Bin5;                       //! Invariant mass superimpose (good hyp only)_10Mev
-  TH1F *fhInvMassD0Sum_5Mev_Bin5;                         //! Invariant mass D01+D02 (good hyp) _5Mev
-  TH1F *fhInvMassD0barSum_5Mev_Bin5;                      //! Invariant mass D0bar1+D0bar2 (good hyp) _5Mev
-  TH1F *fhInvMassSumAll_5Mev_Bin5;                        //! Invariant mass superimpose (good hyp only)_5Mev
+  TH1F *fhInvMassD0Sum10MevBin5;                        //! Invariant mass D01+D02 (good hyp) 10Mev BIN5
+  TH1F *fhInvMassD0barSum10MevBin5;                     //! Invariant mass D0bar1+D0bar2 (good hyp) 10Mev
+  TH1F *fhInvMassSumAll10MevBin5;                       //! Invariant mass superimpose (good hyp only)10Mev
+  TH1F *fhInvMassD0Sum5MevBin5;                         //! Invariant mass D01+D02 (good hyp) 5Mev
+  TH1F *fhInvMassD0barSum5MevBin5;                      //! Invariant mass D0bar1+D0bar2 (good hyp) 5Mev
+  TH1F *fhInvMassSumAll5MevBin5;                        //! Invariant mass superimpose (good hyp only)5Mev
 
-  TH1F *fhInvMassMultipleOnly_Bin1;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin1
-  TH1F *fhInvMassMultipleOnly_Bin2;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin2
-  TH1F *fhInvMassMultipleOnly_Bin3;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin3
-  TH1F *fhInvMassMultipleOnly_Bin4;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin4
-  TH1F *fhInvMassMultipleOnly_Bin5;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin5
+  TH1F *fhInvMassMultipleOnlyBin1;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin1
+  TH1F *fhInvMassMultipleOnlyBin2;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin2
+  TH1F *fhInvMassMultipleOnlyBin3;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin3
+  TH1F *fhInvMassMultipleOnlyBin4;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin4
+  TH1F *fhInvMassMultipleOnlyBin5;			  //! Invariant mass superimpose good hyp only for multiple hyps accepted Bin5
 
   TH2F *fScatterP4PID;					  //! K momentum vs like sign Pi momentum after PID
   TH2F *fPtVsY;						  //! Pt vs Y of selected candidates (by PPR cuts)
@@ -120,11 +118,11 @@ class AliAnalysisTaskSESelectHF4Prong : public AliAnalysisTaskSE
   TH1F *fCutPt;				       	       //! Candidate D0 Pt
   TH1F *fCutY;				       	       //! Candidate D0 Y
   TH1F *fPIDSel;				       //! PID Selected
-  TH1F *fPIDSel_Bin1;			               //! PID Selected Bin1
-  TH1F *fPIDSel_Bin2;			               //! PID Selected Bin2
-  TH1F *fPIDSel_Bin3;			               //! PID Selected Bin3
-  TH1F *fPIDSel_Bin4;			               //! PID Selected Bin4
-  TH1F *fPIDSel_Bin5;			               //! PID Selected Bin5
+  TH1F *fPIDSelBin1;			               //! PID Selected Bin1
+  TH1F *fPIDSelBin2;			               //! PID Selected Bin2
+  TH1F *fPIDSelBin3;			               //! PID Selected Bin3
+  TH1F *fPIDSelBin4;			               //! PID Selected Bin4
+  TH1F *fPIDSelBin5;			               //! PID Selected Bin5
   TH1F *fMultipleHyps;				       //! Multiple hypotesis accepted counter
   TH1F *fMultipleHypsType;			       //! Multiple hypotesis accepted counter
 
@@ -132,9 +130,7 @@ class AliAnalysisTaskSESelectHF4Prong : public AliAnalysisTaskSE
  
   AliRDHFCutsD0toKpipipi *fCuts;			//! Cuts container
 
-  AliAnalysisVertexingHF *fVHF; 	// analysis (used to pass the cuts)
-
-  ClassDef(AliAnalysisTaskSESelectHF4Prong,2); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
+  ClassDef(AliAnalysisTaskSESelectHF4Prong,3); // AliAnalysisTaskSE for the reconstruction of heavy-flavour decay candidates
 };
 
 #endif
