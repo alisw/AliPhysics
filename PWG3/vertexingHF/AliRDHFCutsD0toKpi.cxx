@@ -236,6 +236,9 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       if(fRemoveDaughtersFromPrimary) {
 	if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
       }
+      if(fUseMCVertex) {
+	if(!SetMCPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
+      }
       
       
       Double_t pt=d->Pt();

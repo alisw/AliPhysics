@@ -305,11 +305,19 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
 
   AliAODVertex *vtxAODNew = new AliAODVertex(pos,cov,chi2perNDF);
 
+  RecalculateImpPars(vtxAODNew,aod);
+
+  return vtxAODNew;
+}
+//-----------------------------------------------------------------------------------
+void AliAODRecoDecayHF::RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent* aod) {
+  //
   // now recalculate the daughters impact parameters
+  //
   AliExternalTrackParam *etp = 0;
   Double_t dz[2],covdz[3];
-  for(Int_t i=0; i<ndg; i++) {
-    t = (AliAODTrack*)GetDaughter(i);
+  for(Int_t i=0; i<GetNDaughters(); i++) {
+    AliAODTrack *t = (AliAODTrack*)GetDaughter(i);
     etp = new AliExternalTrackParam(t);
     if(etp->PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
       fd0[i]    = dz[0];
@@ -318,12 +326,8 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
     delete etp; etp=NULL;
   }
 
-  return vtxAODNew;
+  return;
 }
-
-
-
-
 //-----------------------------------------------------------------------------------
 void AliAODRecoDecayHF::Misalign(TString misal) {
   //

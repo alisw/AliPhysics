@@ -36,6 +36,7 @@
 #include "AliCentrality.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliAODMCHeader.h"
 #include "AliRDHFCuts.h"
 
 ClassImp(AliRDHFCuts)
@@ -65,6 +66,7 @@ fUsePID(kFALSE),
 fPidHF(0),
 fWhyRejection(0),
 fRemoveDaughtersFromPrimary(kFALSE),
+fUseMCVertex(kFALSE),
 fOptPileup(0),
 fMinContrPileup(3),
 fMinDzPileup(0.6),
@@ -106,6 +108,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fPidHF(0),
   fWhyRejection(source.fWhyRejection),
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
+  fUseMCVertex(source.fUseMCVertex),
   fOptPileup(source.fOptPileup),
   fMinContrPileup(source.fMinContrPileup),
   fMinDzPileup(source.fMinDzPileup),
@@ -156,6 +159,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   SetPidHF(source.GetPidHF());
   fWhyRejection=source.fWhyRejection;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
+  fUseMCVertex=source.fUseMCVertex;
   fOptPileup=source.fOptPileup;
   fMinContrPileup=source.fMinContrPileup;
   fMinDzPileup=source.fMinDzPileup;
@@ -812,6 +816,51 @@ Bool_t AliRDHFCuts::RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
   }
   //set recalculed primary vertex
   d->SetOwnPrimaryVtx(recvtx);
+  delete recvtx; recvtx=NULL;
+
+  return kTRUE;
+}
+//--------------------------------------------------------------------------
+Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
+				    AliAODVertex *origownvtx,AliAODVertex *recvtx) const
+{
+  //
+  // Recalculate primary vertex without daughters
+  //
+
+  if(!aod) {
+    AliError("Can not get MC vertex without AOD event");
+    return kFALSE;
+  }   
+
+  // load MC header
+  AliAODMCHeader *mcHeader = 
+    (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) {
+    AliError("Can not get MC vertex without AODMCHeader event");
+    return kFALSE;
+  }
+
+
+  if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+
+  Double_t pos[3];
+  mcHeader->GetVertex(pos);
+  recvtx=new AliAODVertex(pos);
+
+  if(!recvtx){
+    AliDebug(2,"Removal of daughter tracks failed");
+    if(origownvtx){
+      delete origownvtx;
+      origownvtx=NULL;
+    }
+    return kFALSE;
+  }
+  //set recalculed primary vertex
+  d->SetOwnPrimaryVtx(recvtx);
+
+  d->RecalculateImpPars(recvtx,aod);
+
   delete recvtx; recvtx=NULL;
 
   return kTRUE;
