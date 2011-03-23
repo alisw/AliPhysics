@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPIDResponse()
+AliAnalysisTask *AddTaskPIDResponse(Bool_t isMC=kFALSE, Bool_t autoMCesd=kTRUE)
 {
 // Macro to connect a centrality selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -7,8 +7,7 @@ AliAnalysisTask *AddTaskPIDResponse()
     return 0x0;
   }
 
-  Bool_t isMC=kFALSE;
-  if (mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()) {
+  if ( autoMCesd && (mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()) ) {
     isMC=mgr->GetMCtruthEventHandler()!=0x0;
   }
   
