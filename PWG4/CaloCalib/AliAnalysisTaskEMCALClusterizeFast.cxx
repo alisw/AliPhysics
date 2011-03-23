@@ -98,7 +98,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
 { 
   // Constructor
 
-  fBranchNames     = "ESD:AliESDHeader.,EMCALCells. AOD:header,emcalCells";
+  fBranchNames     = "ESD:AliESDHeader.,AliESDRun.,EMCALCells. AOD:header,emcalCells";
   for(Int_t i = 0; i < 12; ++i) 
     fGeomMatrix[i] = 0;
 }
@@ -396,7 +396,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
 void AliAnalysisTaskEMCALClusterizeFast::Init()
 {
   //Select clusterization/unfolding algorithm and set all the needed parameters
-  
+
   AliVEvent * event = InputEvent();
   if (!event) {
     AliWarning("Event not available!!!");
@@ -413,12 +413,6 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     fUnfolder = new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut());
     return;
   }
-
-  AliCDBManager *cdb = AliCDBManager::Instance();
-  if (!cdb->IsDefaultStorageSet() && !fOCDBpath.IsNull())
-    cdb->SetDefaultStorage(fOCDBpath);
-  if (fRun!=cdb->GetRun())
-    cdb->SetRun(fRun);
 
   AliEMCALGeometry *geometry = AliEMCALGeometry::GetInstance(fGeomName);
   if (!geometry) {
@@ -478,6 +472,15 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
   }
   fClusterizer->InitParameters(fRecParam);
+
+  if ((!fCalibData&&fLoadCalib) || (!fPedestalData&&fLoadPed)) {
+    AliCDBManager *cdb = AliCDBManager::Instance();
+    if (!cdb->IsDefaultStorageSet() && !fOCDBpath.IsNull())
+      cdb->SetDefaultStorage(fOCDBpath);
+    if (fRun!=cdb->GetRun())
+      cdb->SetRun(fRun);
+  }
+
   if (!fCalibData&&fLoadCalib) {
     AliCDBEntry *entry = static_cast<AliCDBEntry*>(AliCDBManager::Instance()->Get("EMCAL/Calib/Data"));
     if (entry) 
