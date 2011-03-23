@@ -37,7 +37,7 @@ public:
    *
    * @param name Name of task - ignored
    */
-  AliCentraldNdetaTask(const char* name) 
+  AliCentraldNdetaTask(const char* name);
   /**
    * Destructor
    * 
