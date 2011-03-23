@@ -283,6 +283,7 @@ Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t module, UShort_t char
     }
     if (size>0) {
       if(size>1) AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
+      if(size > kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY ) return 0; // such clusters are rejected. Temporary fix. not clear why....`
       fClusterList[module]->Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, GetClusterWidthZ(), GetClusterWidthPhi(), GetClusterType(size), fCharge,fLabels);
       fCharge=0;
       for(Int_t i=0; i<10; i++) fLabels[i]=-5;
