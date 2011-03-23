@@ -1,10 +1,21 @@
 /**
+ * @file   ForwardAODConfig.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 13:56:02 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
+ * 
+ */
+/**
  * Configuration script for forward multiplicity task.  
  *
  * You can copy this to your working directory or to some other
  * directory up-front in your ROOT macro path, and edit it to suit your
  * needs.
  * 
+ * @ingroup pwg2_forward_aod
  */
 void
 ForwardAODConfig(AliForwardMultiplicityBase* task)

@@ -3,6 +3,16 @@
 // Wraps AliFMDEnergyFitter 
 #ifndef ALIFMDENERGYFITTERTASK_H
 #define ALIFMDENERGYFITTERTASK_H
+/**
+ * @file   AliFMDEnergyFitterTask.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:02:39 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_eloss
+ * 
+ */
 #include <AliAnalysisTaskSE.h>
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
@@ -29,6 +39,7 @@ class TTree;
  *   - None
  * 
  * @ingroup pwg2_forward_tasks
+ * @ingroup pwg2_forward_eloss
  * 
  */
 class AliFMDEnergyFitterTask : public AliAnalysisTaskSE

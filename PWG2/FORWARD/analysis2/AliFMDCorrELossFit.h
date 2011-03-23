@@ -3,6 +3,16 @@
 // These are generated from Monte-Carlo or real ESDs. 
 #ifndef ALIFMDCORRELOSSFIT_H
 #define ALIFMDCORRELOSSFIT_H
+/**
+ * @file   AliFMDCorrELossFit.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:01:15 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_eloss
+ * 
+ */
 #include <TObject.h>
 #include <TAxis.h>
 #include <TObjArray.h>
@@ -20,6 +30,7 @@ class TBrowser;
  * These are generated from Monte-Carlo or real ESDs. 
  *
  * @ingroup pwg2_forward_corr
+ * @ingroup pwg2_forward_eloss
  */
 class AliFMDCorrELossFit : public TObject 
 {

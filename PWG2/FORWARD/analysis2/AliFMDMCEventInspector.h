@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDMCEVENTINSPECTOR_H
 #define ALIFMDMCEVENTINSPECTOR_H
+/**
+ * @file   AliFMDMCEventInspector.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:40 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include "AliFMDEventInspector.h"
 class AliMCEvent;
 class TH2F;
@@ -24,6 +34,8 @@ class TH2F;
  *   - None
  *
  * @ingroup pwg2_forward_algo 
+ * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDMCEventInspector : public AliFMDEventInspector
 {
@@ -69,13 +81,13 @@ public:
    * 
    * @param event     Input event 
    * @param triggers  On return, the triggers fired 
-   * @param lowFlux   On return, true if the event is considered a low-flux 
-   *                  event (according to the setting of fLowFluxCut) 
    * @param ivz       On return, the found vertex bin (1-based).  A zero
    *                  means outside of the defined vertex range
    * @param vz        On return, the z position of the interaction
-   * @param cent      On return, the centrality (in percent) or < 0 
-   *                  if not found
+   * @param b         On return, impact parameter [fm] (if available)
+   * @param npart     On return, number of participants (if available)
+   * @param nbin      On return, number of binary collisions (if available)
+   * @param phiR      On return, reaction plane angle (if available)
    * 
    * @return 0 (or kOk) on success, otherwise a bit mask of error codes 
    */
@@ -92,10 +104,14 @@ public:
    * the inclusive charged particle density to analysing 
    * MC truth 
    * 
-   * @param esd 
-   * @param mc 
+   * @param vz       Found @f$ v_z@f$
+   * @param trueVz   True  @f$ v_z@f$
+   * @param cent     Centrality
+   * @param b        Impact parameter (if available)
+   * @param npart    Number of participants (if available)
+   * @param nbin     Number of binary collisions (if available)
    * 
-   * @return 
+   * @return true
    */
   virtual Bool_t CompareResults(Double_t vz,    Double_t trueVz, 
 				Double_t cent,  Double_t b,
@@ -106,6 +122,7 @@ protected:
    * 
    * @param esd  Event 
    * @param cent On return, the centrality or negative if not found
+   * @param qual Quality flag 
    * 
    * @return False on error, true otherwise 
    */

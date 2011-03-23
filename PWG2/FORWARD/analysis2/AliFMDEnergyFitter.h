@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDENERGYFITTER_H
 #define ALIFMDENERGYFITTER_H
+/**
+ * @file   AliFMDEnergyFitter.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:02:23 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_eloss
+ */
 #include <TNamed.h>
 #include <TH1D.h>
 #include <TAxis.h>
@@ -31,6 +41,7 @@ class TArrayD;
  *
  *
  * @ingroup pwg2_forward_algo
+ * @ingroup pwg2_forward_eloss
  */
 class AliFMDEnergyFitter : public TNamed
 {

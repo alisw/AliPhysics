@@ -3,18 +3,22 @@
 // 
 #ifndef ALIFORWARDCORRECTIONMANAGER_H
 #define ALIFORWARDCORRECTIONMANAGER_H
+/**
+ * @file   AliForwardCorrectionManager.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:04:27 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <TObject.h>
-// #include "AliFMDCorrELossFit.h"
 #include "AliFMDCorrSecondaryMap.h"
-// #include "AliFMDCorrDoubleHit.h"
-// #include "AliFMDCorrVertexBias.h"
-// #include "AliFMDCorrMergingEfficiency.h"
-// #include "AliFMDCorrAcceptance.h"
 #include <TString.h>
 class TFile;
 class TBrowser;
 class AliFMDCorrELossFit;
-// class AliFMDCorrSecondaryMap;
 class AliFMDCorrDoubleHit;
 class AliFMDCorrVertexBias;
 class AliFMDCorrMergingEfficiency;
@@ -28,6 +32,7 @@ class AliFMDCorrAcceptance;
  * of this type.
  * 
  * @ingroup pwg2_forward_corr 
+ * @ingroup pwg2_forward_aod
  */
 class AliForwardCorrectionManager : public TObject
 {

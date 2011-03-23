@@ -1,3 +1,14 @@
+/**
+ * @file   TrainSetup.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:12:00 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * 
+ */
+
 #ifndef __CINT__
 #include <fstream>
 
@@ -32,32 +43,130 @@ class AliAnalysisManager;
 #endif
 
 //====================================================================
+/** 
+ * Generic set-up of an analysis train using the grid-handler (AliEn plugin). 
+ * 
+ * Users should define a class that derives from this.  The class
+ * should implement the member function CreateTasks to add needed
+ * tasks to the train
+ * 
+ * @code 
+ * // MyTrain.C 
+ * class MyTrain : public TrainSetup
+ * {
+ * public:
+ *   MyTrain(Bool_t   dateTime = false, 
+ *           UShort_t year     = 0, 
+ *           UShort_t month    = 0, 
+ *           UShort_t day      = 0, 
+ *           UShort_t hour     = 0, 
+ *           UShort_t min      = 0) 
+ *     : TrainSetup("My train", dateTime, year, month, day, hour, min)
+ *   {}
+ *   void Run(const char* type, const char* mode, const char* oper, 
+ *            Int_t nEvents=-1, Bool_t mc=false,
+ *            Bool_t usePar=false)
+ *   {
+ *     Exec(type, mode, oper, nEvents, mc, usePar);
+ *   }
+ * protected:
+ *   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+ *   {
+ *     AliAnalysisManager::SetCommonFileName("my_analysis.root");
+ *     LoadLibrary("MyAnalysis", mode, par, true);
+ *     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
+ *     gROOT->Macro("MyAnalysis.C");
+ *   }
+ * };
+ * @endcode 
+ * 
+ * This can then be run like 
+ * 
+ * @verbatim 
+ * > aliroot 
+ * Root> .L TrainSetup.C 
+ * Root> .L MyTrain.C 
+ * Root> MyTrain t;
+ * Root> t.Run();
+ * @endverbatim 
+ * 
+ * or as a script 
+ * 
+ * @code 
+ * {
+ *   gROOT->LoadMacro("TrainSetup.C");
+ *   gROOT->LoadMacro("MyTrain.C");
+ *   MyTrain t;
+ *   t.Run();
+ * }
+ * @endcode 
+ * 
+ * To byte compile this, you need to load the analsys libraries first 
+ *
+ * @verbatim 
+ * > aliroot 
+ * Root> gSystem->Load("libANALYSIS.so");
+ * Root> gSystem->Load("libANALYSISalice.so");
+ * Root> gROOT->LoadMacro("TrainSetup.C++");
+ * @endverbatim 
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * 
+ */
 struct TrainSetup
 {
+  /** 
+   * Data type to process 
+   */
   enum EType { 
+    /** Event Summary Data */
     kESD, 
+    /** Analysis Object Data */
     kAOD
   };
+  /**
+   * How to run the analysis
+   * 
+   */
   enum EMode {
+    /** Locally */ 
     kLocal = 1, 
+    /** In PROOF(-Lite) cluster */
     kProof, 
+    /** On the Grid */
     kGrid 
   };
+  /**
+   * What stage of the analysis to run 
+   * 
+   */
   enum EOper { 
+    /** Testing.  Local processing, a single copied from Grid */
     kTest, 
+    /** Off-line */
     kOffline, 
+    /** Submit to queue */
     kSubmit, 
+    /** Merge and terminate */
     kTerminate, 
+    /** Full run */
     kFull
   };
 
   //__________________________________________________________________
   /** 
-   * Constructor
+   * Constructor 
    * 
-    * @param name Name of analysis 
+   * @param name         Name of analysis (free-form)
+   * @param useDateTime  Whether to append date and time to the name 
+   * @param year         Year - if not specified, taken from current date
+   * @param month        Month - if not specified, taken from current date 
+   * @param day          Day - if not specified, taken from current date 
+   * @param hour         Hour - if not specified, taken from current time  
+   * @param min          Minute - if not specified, taken from current time  
    */
-  TrainSetup(const char* name, UShort_t year=0, UShort_t month=0, 
+  TrainSetup(const char* name, Bool_t useDateTime=true, 
+	     UShort_t year=0, UShort_t month=0, 
 	     UShort_t day=0, UShort_t hour=0, UShort_t min=0) 
     : fName(name),
       fRootVersion("v5-28-00a"),
@@ -82,16 +191,18 @@ struct TrainSetup
       p++;
     }
 
-    if (year == 0 || month == 0 || day == 0) {
-      TDatime now;
-      year  = now.GetYear();
-      month = now.GetMonth();
-      day   = now.GetDay();
-      hour  = now.GetHour();
-      min   = now.GetMinute();
+    if (useDateTime) { 
+      if (year == 0 || month == 0 || day == 0) {
+	TDatime now;
+	year  = now.GetYear();
+	month = now.GetMonth();
+	day   = now.GetDay();
+	hour  = now.GetHour();
+	min   = now.GetMinute();
+      }
+      fEscapedName.Append(Form("_%04d%02d%02d_%02d%02d", 
+			       year, month, day, hour, min));
     }
-    fEscapedName.Append(Form("_%04d%02d%02d_%02d%02d", 
-			     year, month, day, hour, min));
 
   }
 
@@ -199,23 +310,89 @@ struct TrainSetup
   }
 
   //__________________________________________________________________
+  /** 
+   * Set ROOT version to use 
+   * 
+   * @param v 
+   */
   void SetROOTVersion(const char* v)    { fRootVersion = v; }
+  //__________________________________________________________________
+  /** 
+   * Set AliROOT version to use 
+   * 
+   * @param v 
+   */
   void SetAliROOTVersion(const char* v) { fAliRootVersion = v; }
+  //__________________________________________________________________
+  /** 
+   * Set the proof server URL
+   * 
+   * @param s 
+   */
   void SetProofServer(const char* s)    { fProofServer = s; }
+  //__________________________________________________________________
+  /** 
+   * Set the GRID/Local data dir 
+   * 
+   * @param d 
+   */
   void SetDataDir(const char* d)        { fDataDir = d; }
+  //__________________________________________________________________
+  /** 
+   * Set the PROOF data set 
+   * 
+   * @param d 
+   */
   void SetDataSet(const char* d)        { fDataSet = d; }
+  //__________________________________________________________________
+  /** 
+   * Set the XML file to use 
+   * 
+   * @param x 
+   */
   void SetXML(const char* x)            { fXML = x; }
+  //__________________________________________________________________
+  /** 
+   * Set how many replicas of the output we want 
+   * 
+   * @param n 
+   */
   void SetNReplica(Int_t n)             { fNReplica = n; }
+  //__________________________________________________________________
+  /** 
+   * Add a source file to be copied and byte compiled on slaves 
+   * 
+   * @param src          Sources 
+   * @param addToExtra   If false, do not copy 
+   */
   void AddSource(const char* src, bool addToExtra=true) 
   { 
     fListOfSources.Add(new TObjString(src)); 
     if (addToExtra) AddExtraFile(src); // Source code isn't copied!
   }
+  //__________________________________________________________________
+  /** 
+   * Add binary data to be uploaded to slaves 
+   * 
+   * @param lib Name of binary file 
+   */
   void AddLibrary(const char* lib) { fListOfLibraries.Add(new TObjString(lib));}
+  //__________________________________________________________________
+  /** 
+   * Add a run to be analysed
+   *  
+   * @param run Run number
+   */
   void AddRun(Int_t run) 
   {
     Int_t i = fRunNumbers.fN; fRunNumbers.Set(i+1); fRunNumbers[i] = run;
   }
+  //__________________________________________________________________
+  /** 
+   * Read run numbers from a file 
+   * 
+   * @param filename File name 
+   */
   void ReadRunNumbers(const char* filename)
   {
     std::ifstream file(filename);
@@ -232,6 +409,12 @@ struct TrainSetup
     }
     file.close();
   }
+  //__________________________________________________________________
+  /** 
+   * Add an extra file to be uploaded to slave 
+   * 
+   * @param file Extra file to be uploaded 
+   */
   void AddExtraFile(const char* file)
   {
     fListOfExtras.Add(new TObjString(file));
@@ -348,14 +531,48 @@ protected:
   /** 
    * Run this analysis 
    * 
-   * @param type Type of input for analysis  (kESD, kAOD)
-   * @param mode Mode of job (kLocal, kProof, kGrid)
-   * @param oper Operation 
-   * @param mc   Whether to connect MC data 
-   * @param dbg  Debug level
+   * @param type    Type of input for analysis  (kESD, kAOD)
+   * @param mode    Mode of job (kLocal, kProof, kGrid)
+   * @param oper    Operation 
+   * @param nEvents Number of events to analyse (<0 means all)
+   * @param mc      Whether to connect MC data 
+   * @param usePar  Whether to use PARs  
+   * @param dbg     Debug level
    */
-  void Exec(EType type, EMode mode, EOper oper, Int_t nEvents, 
-	    Bool_t mc, Bool_t usePar, Int_t dbg=0)
+  void Exec(const char*  type, 
+	    const char*  mode="GRID", 
+	    const char*  oper="FULL", 
+	    Int_t        nEvents=-1, 
+	    Bool_t       mc=false, 
+	    Bool_t       usePar=false, 
+	    Int_t        dbg=0)
+  {
+    EType eType = ParseType(type);
+    EMode eMode = ParseMode(mode);
+    EOper eOper = ParseOperation(oper);
+
+    Exec(eType, eMode, eOper, nEvents, mc, usePar, dbg);
+  }
+
+  //__________________________________________________________________
+  /** 
+   * Run this analysis 
+   * 
+   * @param type    Type of input for analysis  (kESD, kAOD)
+   * @param mode    Mode of job (kLocal, kProof, kGrid)
+   * @param oper    Operation 
+   * @param nEvents Number of events to analyse (<0 means all)
+   * @param mc      Whether to connect MC data 
+   * @param usePar  Whether to use PARs  
+   * @param dbg     Debug level
+   */
+  void Exec(EType  type, 
+	    EMode  mode, 
+	    EOper  oper, 
+	    Int_t  nEvents, 
+	    Bool_t mc, 
+	    Bool_t usePar, 
+	    Int_t  dbg=0)
   {
     if (mode == kProof) usePar    = true;
 
@@ -405,9 +622,12 @@ protected:
    // --- AOD output handler -----------------------------------------
     mgr->SetOutputEventHandler(CreateOutputHandler(type));
     
+    // --- Include analysis macro path in search path ----------------
+    gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/ANALYSIS/macros",
+			     gROOT->GetMacroPath()));
+
     // --- Physics selction ------------------------------------------
-    gROOT->Macro(Form("$ALICE_ROOT/ANALYSIS/macros/"
-		      "AddTaskPhysicsSelection.C(%d)", mc));
+    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
     mgr->RegisterExtraFile("event_stat.root");
     
     // --- Create tasks ----------------------------------------------
@@ -415,8 +635,7 @@ protected:
 
     // --- Create Grid handler ----------------------------------------
     // _must_ be done after all tasks has been added
-    mgr->SetGridHandler(CreateGridHandler(mode, oper));
-    
+    mgr->SetGridHandler(CreateGridHandler(type, mode, oper));
     
     // --- Create the chain ------------------------------------------
     TChain* chain = CreateChain(type, mode, oper);
@@ -472,11 +691,13 @@ protected:
   /** 
    * Create a grid handler 
    * 
+   * @param type Data type
+   * @param mode Run mode 
    * @param oper Operation 
    * 
    * @return Grid handler 
    */
-  AliAnalysisAlien* CreateGridHandler(EMode mode, EOper oper)
+  AliAnalysisAlien* CreateGridHandler(EType type, EMode mode, EOper oper)
   {
     if (mode != kGrid) return 0;
 
@@ -510,8 +731,12 @@ protected:
     plugin->SetGridDataDir(fDataDir);
 
     // Data search patterns 
-    plugin->SetRunPrefix("000");
-    plugin->SetDataPattern(Form("*ESDs/pass%d/*/*ESDs.root", fESDPass));
+    if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())
+      plugin->SetRunPrefix("");
+    else
+      plugin->SetRunPrefix("000");
+    plugin->SetDataPattern(Form("*ESDs/pass%d/*/*%s.root", 
+				fESDPass, type == kESD ? "ESDs" : "AOD"));
 
     // Add the run numbers 
     for (Int_t i = 0; i < fRunNumbers.fN; i++) {
@@ -651,7 +876,8 @@ protected:
   /** 
    * Create input handler 
    * 
-   * @param type 
+   * @param type  Run type (ESD or AOD)
+   * @param mc    Assume monte-carlo input 
    * 
    * @return 
    */
@@ -686,8 +912,9 @@ protected:
   /** 
    * Create analysis tasks 
    * 
-   * @param mgr Manager
-   * @param par Whether to use pars 
+   * @param mode Run mode
+   * @param mgr  Manager
+   * @param par  Whether to use pars 
    */
   virtual void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)=0;
   //__________________________________________________________________
@@ -760,7 +987,8 @@ protected:
   /** 
    * Load common libraries 
    * 
-   * @param mode Running mode 
+   * @param mode Running mode			
+   * @param par  If true, load as PARs 
    * 
    * @return true on success 
    */
@@ -793,6 +1021,7 @@ protected:
    * 
    * @param what What library to load
    * @param mode Mode (local, proof, grid)
+   * @param par  If true, load as PAR
    * @param rec  If true, also load on slaves
    * 
    * @return true on success 
@@ -1056,13 +1285,12 @@ protected:
   }
   //__________________________________________________________________
   /** 
+   * Create a chain of data 
    * 
+   * @param type Type of data
+   * @param mode Operation mode 
    * 
-   * @param type 
-   * @param mode 
-   * @param oper 
-   * 
-   * @return 
+   * @return TChain of data 
    */    
   TChain* CreateChain(EType type, EMode mode, EOper /* oper */)
   {
@@ -1119,23 +1347,53 @@ protected:
 };
 
 //====================================================================
+/**
+ * Analysis train to make Forward and Central multiplicity
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_aod
+ */
 class ForwardPass1 : public TrainSetup
 {
 public:
-  ForwardPass1(UShort_t sys   = 0, 
-	       UShort_t sNN   = 0, 
-	       Short_t  field = 0, 
-	       UShort_t year  = 0, 
-	       UShort_t month = 0, 
-	       UShort_t day   = 0, 
-	       UShort_t hour  = 0, 
-	       UShort_t min   = 0) 
-    : TrainSetup("Forward d2Ndetadphi pass1",
+  /** 
+   * Constructor.  Date and time must be specified when running this
+   * in Termiante mode on Grid
+   * 
+   * @param dateTime Append date and time to name 
+   * @param sys      Collision system (1: pp, 2: PbPb)
+   * @param sNN      Center of mass energy [GeV]
+   * @param field    L3 magnetic field - one of {-5,0,+5} kG
+   * @param year     Year     - if not specified, current year
+   * @param month    Month    - if not specified, current month
+   * @param day      Day      - if not specified, current day
+   * @param hour     Hour     - if not specified, current hour
+   * @param min      Minutes  - if not specified, current minutes
+   */
+  ForwardPass1(UShort_t sys      = 0, 
+	       UShort_t sNN      = 0, 
+	       Bool_t   dateTime = false, 
+	       Short_t  field    = 0, 
+	       UShort_t year     = 0, 
+	       UShort_t month    = 0, 
+	       UShort_t day      = 0, 
+	       UShort_t hour     = 0, 
+	       UShort_t min      = 0) 
+    : TrainSetup("Forward d2Ndetadphi pass1", dateTime, 
 		 year, month, day, hour, min),
       fSys(sys), 
       fSNN(sNN), 
       fField(field)
   {}
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
   void Run(const char* mode, const char* oper, 
 	   Int_t nEvents=-1, Bool_t mc=false,
 	   Bool_t usePar=false)
@@ -1145,17 +1403,44 @@ public:
     
     Run(eMode, eOper, nEvents, mc, usePar);
   }
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, Bool_t usePar = false)
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
+	   Bool_t usePar = false)
   {
     Exec(kESD, mode, oper, nEvents, mc, usePar);
   }
+  /** 
+   * Create the tasks 
+   * 
+   * @param mode Processing mode
+   * @param par  Whether to use par files 
+   * @param mgr  Analysis manager 
+   */
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
+    // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward.root");
+
+    // --- Load libraries/pars ---------------------------------------
     LoadLibrary("PWG2forward2", mode, par, true);
+    
+    // --- Set load path ---------------------------------------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
+			     gROOT->GetMacroPath()));
+
+    // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
-    gROOT->ProcessLine(Form("AddTaskFMD(%d,%d,%d,%d)", mc, fSys, fSNN, fField));
+
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskForwardMult(%d,%d,%d,%d).C", mc, fSys, fSNN, fField));
   }
 private:
   UShort_t fSys;
@@ -1163,42 +1448,100 @@ private:
   Short_t  fField;
 };
 //====================================================================
+/**
+ * Analysis train to make @f$ dN/d\eta@f$
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_dndeta
+ */
 class ForwardPass2 : public TrainSetup
 {
 public:
+  /** 
+   * Constructor.  Date and time must be specified when running this
+   * in Termiante mode on Grid
+   * 
+   * @param trig     Trigger to use 
+   * @param vzMin    Least @f$ v_z@f$
+   * @param vzMax    Largest @f$ v_z@f$
+   * @param dateTime Append date and time to name 
+   * @param year     Year     - if not specified, current year
+   * @param month    Month    - if not specified, current month
+   * @param day      Day      - if not specified, current day
+   * @param hour     Hour     - if not specified, current hour
+   * @param min      Minutes  - if not specified, current minutes
+   */
   ForwardPass2(const char* trig="INEL", 
 	       Double_t    vzMin=-10, 
 	       Double_t    vzMax=10, 
+	       Bool_t      dateTime=false,
 	       UShort_t    year  = 0, 
 	       UShort_t    month = 0, 
 	       UShort_t    day   = 0, 
 	       UShort_t    hour  = 0, 
 	       UShort_t    min   = 0) 
-    : TrainSetup("Forward d2Ndetadphi pass2",
+    : TrainSetup("Forward d2Ndetadphi pass2", dateTime,
 		 year, month, day, hour, min),
       fTrig(trig), 
       fVzMin(vzMin), 
       fVzMax(vzMax)
   {}
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
   void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false)
+	   Int_t nEvents=-1, Bool_t mc=false, Bool_t usePar=false)
   {
     EMode eMode = ParseMode(mode);
     EOper eOper = ParseOperation(oper);
     
-    Run(eMode, eOper, nEvents, mc);
+    Run(eMode, eOper, nEvents, mc, usePar);
   }
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false)
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false,
+	   Bool_t usePar=false)
   {
-    Exec(kESD, mode, oper, nEvents, mc, true);
+    Exec(kESD, mode, oper, nEvents, mc, usePar);
   }
+  /** 
+   * Create the tasks 
+   * 
+   * @param mode Processing mode
+   * @param par  Whether to use par files 
+   * @param mgr  Analysis manager 
+   */
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
+    // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
+
+    // --- Load libraries/pars ---------------------------------------
     LoadLibrary("PWG2forward2", mode, par, true);
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwarddNdeta.C");
-    gROOT->ProcessLine(Form("AddTaskForwarddNdeta(\"%s\",%f,%f)",
-			    fTrig.Data(), fVzMin, fVzMax));
+    
+    // --- Set load path ---------------------------------------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
+			     gROOT->GetMacroPath()));
+
+    // --- Check if this is MC ---------------------------------------
+    Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
+
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskForwarddNdeta.C(\"%s\",%f,%f)",
+		      fTrig.Data(), fVzMin, fVzMax));
   }
 private:
   TString fTrig;
@@ -1206,17 +1549,42 @@ private:
   Double_t fVzMax;
 };
 //====================================================================
+/**
+ * Analysis train to do energy loss fits
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ */
 class ForwardELoss : public TrainSetup
 {
 public:
-  ForwardELoss(UShort_t year  = 0, 
+  /** 
+   * Constructor.  Date and time must be specified when running this
+   * in Termiante mode on Grid
+   * 
+   * @param dateTime Append date and time to name 
+   * @param year     Year
+   * @param month    Month 
+   * @param day      Day
+   * @param hour     Hour 
+   * @param min      Minutes
+   */
+  ForwardELoss(Bool_t   dateTime, 
+	       UShort_t year  = 0, 
 	       UShort_t month = 0, 
 	       UShort_t day   = 0, 
 	       UShort_t hour  = 0, 
 	       UShort_t min   = 0) 
-    : TrainSetup("Forward energy loss",
+    : TrainSetup("Forward energy loss", dateTime, 
 		 year, month, day, hour, min) 
   {}
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   */
   void Run(const char* mode, const char* oper, 
 	   Int_t nEvents=-1, Bool_t mc=false)
   {
@@ -1225,19 +1593,42 @@ public:
     
     Run(eMode, eOper, nEvents, mc);
   }
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   */
   void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false)
   {
     Exec(kESD, mode, oper, nEvents, mc, true);
   }
+  /** 
+   * Create the tasks 
+   * 
+   * @param mode Processing mode
+   * @param par  Whether to use par files 
+   * @param mgr  Analysis manager 
+   */
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
   {
-    // --- Forward multiplicity ---------------------------------------
+    // --- Output file name ------------------------------------------
     AliAnalysisManager::SetCommonFileName("forward_eloss.root");
 
+    // --- Load libraries/pars ---------------------------------------
     LoadLibrary("PWG2forward2", mode, par, true);
+    
+    // --- Set load path ---------------------------------------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
+			     gROOT->GetMacroPath()));
+
+    // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
-    gROOT->Macro(Form("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMDEloss.C(%d)",
-		      mc));
+
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskForwardMultEloss.C(%d)", mc));
   }
 };
   

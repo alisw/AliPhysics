@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDMCSHARINGFILTER_H
 #define ALIFMDMCSHARINGFILTER_H
+/**
+ * @file   AliFMDMCSharingFilter.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:47 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include "AliFMDSharingFilter.h"
 class AliMCEvent;
 
@@ -29,6 +39,7 @@ class AliMCEvent;
  *
  * @ingroup pwg2_forward_algo
  * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDMCSharingFilter : public AliFMDSharingFilter
 {

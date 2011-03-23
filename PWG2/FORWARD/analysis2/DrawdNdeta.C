@@ -1,7 +1,15 @@
 /**
- * Script to visualise the dN/deta 
+ * @file   DrawdNdeta.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:07:10 2011
+ * 
+ * @brief  Script to visualise the dN/deta 
  *
- * This script is independent of any AliROOT code - and should stay that way. 
+ * This script is independent of any AliROOT code - and should stay
+ * that way.
+ * 
+ * 
+ * @ingroup pwg2_forward_dndeta
  */
 #include <TH1.h>
 #include <THStack.h>
@@ -26,6 +34,8 @@
 /**
  * Class to draw dN/deta results 
  * 
+ * @ingroup pwg2_forward_tasks_dndeta
+ * @ingroup pwg2_forward_dndeta
  */
 struct dNdetaDrawer 
 {
@@ -57,14 +67,7 @@ struct dNdetaDrawer
       fSNNString(0),		// TNamed*
       fSysString(0),		// TNamed*
       fVtxAxis(0),		// TAxis*
-      // fForward(0),		// TH1*
-      // fForwardMC(0),		// TH1*
-      // fForwardHHD(0),	// TH1*
-      // fTruth(0),		// TH1*
-      // fCentral(0),		// TH1*
-      // fForwardSym(0),	// TH1*
-      // fForwardMCSym(0),	// TH1*
-      // fForwardHHDSym(0),	// TH1*
+      fCentAxis(0),             // TAxis*
       fTriggers(0),		// TH1*
       fRangeParam(0)
 
@@ -76,6 +79,24 @@ struct dNdetaDrawer
     fRangeParam->fSlave2Axis = 0;
     fRangeParam->fSlave2Pad  = 0;
   }
+  //__________________________________________________________________
+  virtual ~dNdetaDrawer()
+  {
+    if (fRatios  && fRatios->GetHists())  fRatios->GetHists()->Delete();
+    if (fResults && fResults->GetHists()) fResults->GetHists()->Delete();
+
+    if (fTrigString) { delete fTrigString; fTrigString = 0; }
+    if (fSNNString)  { delete fSNNString;  fSNNString  = 0; }
+    if (fSysString)  { delete fSysString;  fSysString  = 0; }
+    if (fVtxAxis)    { delete fVtxAxis;    fVtxAxis    = 0; }
+    if (fCentAxis)   { delete fCentAxis;   fCentAxis   = 0; }
+    if (fResults)    { delete fResults;    fResults    = 0; }
+    if (fRatios)     { delete fRatios;     fRatios     = 0; }
+    if (fOthers)     { delete fOthers;     fOthers     = 0; }
+    if (fTriggers)   { delete fTriggers;   fTriggers   = 0; } 
+    fRangeParam = 0;
+  }
+
   //==================================================================
   /** 
    * @{ 
@@ -318,7 +339,7 @@ struct dNdetaDrawer
       centTxt = Form("\n   Centrality: %d bins", nCent);
       for (Int_t i = 0; i <= nCent; i++) 
 	centTxt.Append(Form("%c%d", i == 0 ? ' ' : ',', 
-			    fCentAxis->GetXbins()->At(i)));
+			    int(fCentAxis->GetXbins()->At(i))));
     }
     Info("FetchInformation", 
 	 "Initialized for\n"
@@ -410,18 +431,18 @@ struct dNdetaDrawer
   {
     if (!h) return;
     if (color < 0) return;
-    h->SetLineColor(color);
+    // h->SetLineColor(color);
     h->SetMarkerColor(color);
-    h->SetFillColor(color);
+    // h->SetFillColor(color);
   }
   //__________________________________________________________________
   void SetAttributes(TGraph* g, Int_t color)
   {
     if (!g) return;
     if (color < 0) return;
-    g->SetLineColor(color);
+    // g->SetLineColor(color);
     g->SetMarkerColor(color);
-    g->SetFillColor(color);
+    // g->SetFillColor(color);
   }
   //__________________________________________________________________
   void ModifyTitle(TNamed* h, const char* centTxt)
@@ -436,8 +457,9 @@ struct dNdetaDrawer
    * 
    * @param list       List 
    * @param name       Name 
-   * @param centLow    Low cut on centrality 
-   * @param centHigh   high cut on centrality 
+   * @param thisOther  Other graphs 
+   * @param color      Color 
+   * @param centTxt    Centrality text
    * @param max        On return, data maximum
    * @param rmax       On return, ratio maximum 
    * @param amax       On return, left-right maximum 
@@ -457,6 +479,7 @@ struct dNdetaDrawer
     TH1* dndetaSym   = 0;
     TH1* dndetaMCSym = 0;
     TH1* tracks      = FetchResult(list, "tracks");
+    if (tracks) tracks->SetTitle("ALICE Tracks");
     SetAttributes(dndeta,     color);
     SetAttributes(dndetaMC,   color+2);
     SetAttributes(dndetaTruth,color);
@@ -494,13 +517,16 @@ struct dNdetaDrawer
 	SetAttributes(g, color);
 	ModifyTitle(g, centTxt);
 	if (!fOthers->GetListOfGraphs() || 
-	    !fOthers->GetListOfGraphs()->FindObject(g->GetName()))
+	    !fOthers->GetListOfGraphs()->FindObject(g->GetName())) {
+	  max = TMath::Max(max,TMath::MaxElement(g->GetN(), g->GetY()));
 	  fOthers->Add(g);
+	}
       }
       // fOthers->Add(thisOther);
     }
     if (tracks) { 
-      if (!fRatios->GetHists()->FindObject(tracks->GetName()))
+      if (!fRatios->GetHists() || 
+	  !fRatios->GetHists()->FindObject(tracks->GetName()))
 	fRatios->Add(Ratio(dndeta, tracks, rmax));
     }
 
@@ -537,17 +563,18 @@ struct dNdetaDrawer
     else { 
       Double_t y11 = y1;
       y1 = (y11 > 0.0001 ? 0.4 : 0.2);
-      y2 = (y11 > 0.0001 ? y11 : 0.2);
+      y2 = (y11 > 0.0001 ? 0.2 : 0.3);
     }
     TCanvas* c = new TCanvas("Results", "Results", w, h);
     c->SetFillColor(0);
     c->SetBorderSize(0);
     c->SetBorderMode(0);
 
-#if 0
+#if 1
     Info("Plot", "y1=%f, y2=%f, y3=%f extra: %s %s", 
 	 y1, y2, y2, (fShowRatios ? "ratios" : ""), 
 	 (fShowLeftRight ? "right/left" : ""));
+    Info("Plot", "Maximum is %f", max);
 #endif
     PlotResults(max, y1);
     c->cd();
@@ -563,7 +590,7 @@ struct dNdetaDrawer
     Int_t   vMax = fVtxAxis->GetXmax();    
     TString trg(fTrigString->GetTitle());
     Int_t   nev  = 0;
-    if (fTriggers) nev = fTriggers->GetBinContent(fTriggers->GetNbinsX());
+    if (fTriggers) nev = fTriggers->GetBinContent(1);
     trg          = trg.Strip(TString::kBoth);
     TString base(Form("dndeta_%s_%s_%s_%c%02d%c%02dcm_%09dev",
 		      fSysString->GetTitle(), 
@@ -580,12 +607,15 @@ struct dNdetaDrawer
   /** 
    * Build main legend 
    * 
-   * @param x1 
-   * @param y1 
-   * @param x2 
-   * @param y2 
+   * @param stack   Stack to include 
+   * @param mg      (optional) Multi graph to include 
+   * @param x1      Lower X coordinate in the range [0,1]
+   * @param y1      Lower Y coordinate in the range [0,1]
+   * @param x2      Upper X coordinate in the range [0,1]
+   * @param y2 	    Upper Y coordinate in the range [0,1]
    */
-  void BuildLegend(Double_t x1, Double_t y1, Double_t x2, Double_t y2)
+  void BuildLegend(THStack* stack, TMultiGraph* mg, 
+		   Double_t x1, Double_t y1, Double_t x2, Double_t y2)
   {
     TLegend* l = new TLegend(x1,y1,x2,y2);
     l->SetNColumns(2);
@@ -594,18 +624,20 @@ struct dNdetaDrawer
     l->SetBorderSize(0);
     l->SetTextFont(132);
 
-    TIter    next(fResults->GetHists());
+    TIter    next(stack->GetHists());
     TObject* hist = 0;
     while ((hist = next())) { 
       TString n(hist->GetTitle());
       if (n.Contains("mirrored")) continue;
       l->AddEntry(hist, hist->GetTitle(), "pl");
     }
-    TIter nexto(fOthers->GetListOfGraphs());
-    while ((hist = nexto())) { 
-      TString n(hist->GetTitle());
-      if (n.Contains("mirrored")) continue;
-      l->AddEntry(hist, hist->GetTitle(), "pl");
+    if (mg) {
+      TIter nexto(mg->GetListOfGraphs());
+      while ((hist = nexto())) { 
+	TString n(hist->GetTitle());
+	if (n.Contains("mirrored")) continue;
+	l->AddEntry(hist, hist->GetTitle(), "pl");
+      }
     }
     TLegendEntry* d1 = l->AddEntry("d1", "Data", "lp");
     d1->SetLineColor(kBlack);
@@ -661,7 +693,7 @@ struct dNdetaDrawer
     }
 
     // Make a legend in the main result pad
-    BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
+    BuildLegend(fResults, fOthers, .15,p1->GetBottomMargin()+.01,.90,.35);
 #if 0
     TLegend* l = p1->BuildLegend(.15,p1->GetBottomMargin()+.01,.90,.35);
     l->SetNColumns(2);
@@ -672,6 +704,7 @@ struct dNdetaDrawer
 #endif
 
     // Put a title on top
+    fTitle.ReplaceAll("@", " ");
     TLatex* tit = new TLatex(0.10, 0.95, fTitle.Data());
     tit->SetNDC();
     tit->SetTextFont(132);
@@ -695,7 +728,7 @@ struct dNdetaDrawer
 
     // Put number of accepted events on the plot
     Int_t nev = 0;
-    if (fTriggers) nev = fTriggers->GetBinContent(fTriggers->GetNbinsX());
+    if (fTriggers) nev = fTriggers->GetBinContent(1);
     TLatex* et = new TLatex(.93, .83, Form("%d events", nev));
     et->SetNDC();
     et->SetTextFont(132);
@@ -771,6 +804,9 @@ struct dNdetaDrawer
 
     
     // Make a legend
+    BuildLegend(fRatios, 0, .15,p2->GetBottomMargin()+.01,.9,
+		isBottom ? .6 : .4);
+#if 0
     TLegend* l2 = p2->BuildLegend(.15,p2->GetBottomMargin()+.01,.9,
 				  isBottom ? .6 : .4);
     l2->SetNColumns(2);
@@ -778,7 +814,7 @@ struct dNdetaDrawer
     l2->SetFillStyle(0);
     l2->SetBorderSize(0);
     l2->SetTextFont(132);
-
+#endif
     // Make a nice band from 0.9 to 1.1
     TGraphErrors* band = new TGraphErrors(2);
     band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
@@ -830,16 +866,6 @@ struct dNdetaDrawer
     p3->Draw();
     p3->cd();
 
-    TH1* dummy = 0;
-    if (fLeftRight->GetHists()->GetEntries() == 1) { 
-      // Add dummy histogram
-      dummy = new TH1F("dummy","", 10, -6, 6);
-      dummy->SetLineColor(0);
-      dummy->SetFillColor(0);
-      dummy->SetMarkerColor(0);
-      fLeftRight->Add(dummy);
-    }
-
     // Fix up axis
     FixAxis(fLeftRight, 1/yd/1.7, "Right/Left", 4);
 
@@ -856,19 +882,7 @@ struct dNdetaDrawer
     l2->SetFillStyle(0);
     l2->SetBorderSize(0);
     l2->SetTextFont(132);
-#ifndef __CINT__
-    if (dummy) {
-      TList* prims = l2->GetListOfPrimitives();
-      TIter next(prims);
-      TLegendEntry* o = 0;
-      while ((o = static_cast<TLegendEntry*>(next()))) { 
-	TString lbl(o->GetLabel());
-	if (lbl != "dummy") continue; 
-	prims->Remove(o);
-	break;
-      }
-    }
-#endif
+
     // Make a nice band from 0.9 to 1.1
     TGraphErrors* band = new TGraphErrors(2);
     band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
@@ -978,7 +992,6 @@ struct dNdetaDrawer
    * Rebin a histogram 
    * 
    * @param h     Histogram to rebin
-   * @param rebin Rebinning factor 
    * 
    * @return 
    */
@@ -1206,31 +1219,57 @@ struct dNdetaDrawer
   /** 
    * Make the ratio of h1 to h2 
    * 
-   * @param h1 First histogram (numerator) 
-   * @param h2 Second histogram (denominator)
+   * @param o1  First object (numerator) 
+   * @param o2  Second object (denominator)
+   * @param max Maximum diviation from 1 
    * 
-   * @return h1 / h2
+   * @return o1 / o2
    */
   TH1* Ratio(const TObject* o1, const TObject* o2, Double_t& max) const
   {
+    TH1* r = 0;
     const TH1* h1 = dynamic_cast<const TH1*>(o1); 
     if (h1) { 
+      // Info("Ratio", "First is a TH1");
       const TH1* h2 = dynamic_cast<const TH1*>(o2); 
-      if (h2) return Ratio(h1,h2,max);
+      if (h2) { 
+	// Info("Ratio", "Second is a TH1");
+	r = RatioHH(h1,h2,max);
+      }
+      else {
+	const TGraph* g2 = dynamic_cast<const TGraph*>(o2);
+	if (g2) { 
+	  // Info("Ratio", "Second os a TGraph");
+	  r = RatioHG(h1,g2,max);      
+	}
+      }
+    }
+    else {
+      const TGraphAsymmErrors* g1 = dynamic_cast<const TGraphAsymmErrors*>(o1);
+      if (g1) { 
+	// Info("Ratio", "First is a TGraphAsymmErrors");
+	const TGraphAsymmErrors* g2 = 
+	  dynamic_cast<const TGraphAsymmErrors*>(o2);
+	if (g2) {
+	  // Info("Ratio", "Second is a TGraphAsymmErrors");
+	  r = RatioGG(g1, g2, max);
+	}
+      }
+    }
+    if (!r) {
+      Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
+	      o1->ClassName(), o1->GetName(), o2->ClassName(), o2->GetName());
+      return 0;
+    }
+    // Check that the histogram isn't empty
+    if (r->GetEntries() <= 0) { 
+      delete r; 
+      r = 0; 
+    }
+    // for (Int_t bin = 1; bin <= r->GetNbinsX(); bin++) 
+    //   if (r->GetBinContent(bin) != 0) return r;
       
-      const TGraph* g2 = dynamic_cast<const TGraph*>(o2);
-      if (g2) return Ratio(h1,g2,max);      
-    }
-    
-    const TGraphAsymmErrors* g1 = dynamic_cast<const TGraphAsymmErrors*>(o1);
-    if (g1) { 
-      const TGraphAsymmErrors* g2 = dynamic_cast<const TGraphAsymmErrors*>(o2);
-      if (g2) return Ratio(g1, g2, max);
-    }
-
-    Warning("Ratio", "Don't know how to divide a %s (%s) with a %s (%s)", 
-	    o1->ClassName(), o1->GetName(), o2->ClassName(), o2->GetName());
-    return 0;
+    return r;
   }
   //__________________________________________________________________
   /** 
@@ -1239,10 +1278,11 @@ struct dNdetaDrawer
    * 
    * @param h  Numerator 
    * @param g  Divisor 
+   * @param max Maximum diviation from 1 
    * 
    * @return h/g 
    */
-  TH1* Ratio(const TH1* h, const TGraph* g, Double_t& max) const 
+  TH1* RatioHG(const TH1* h, const TGraph* g, Double_t& max) const 
   {
     if (!h || !g) return 0;
 
@@ -1250,9 +1290,12 @@ struct dNdetaDrawer
     ret->SetName(Form("%s_over_%s", h->GetName(), g->GetName()));
     ret->SetTitle(Form("%s / %s", h->GetTitle(), g->GetTitle()));
     ret->Reset();
-    ret->SetMarkerStyle(g->GetMarkerStyle());
-    ret->SetMarkerColor(h->GetMarkerColor());
-    ret->SetMarkerSize(0.9*g->GetMarkerSize());
+    ret->SetMarkerStyle(h->GetMarkerStyle());
+    ret->SetMarkerColor(g->GetMarkerColor());
+    ret->SetMarkerSize(0.9*h->GetMarkerSize());
+    // ret->SetMarkerStyle(g->GetMarkerStyle());
+    // ret->SetMarkerColor(h->GetMarkerColor());
+    // ret->SetMarkerSize(0.9*g->GetMarkerSize());
     ret->SetDirectory(0);
     Double_t xlow  = g->GetX()[0];
     Double_t xhigh = g->GetX()[g->GetN()-1];
@@ -1271,11 +1314,7 @@ struct dNdetaDrawer
       ret->SetBinContent(i, c / f);
       ret->SetBinError(i, h->GetBinError(i) / f);
     }
-    if (ret->GetEntries() <= 0) { 
-      delete ret; 
-      ret = 0; 
-    }
-    else 
+    if (ret->GetEntries() > 0) 
       max = TMath::Max(RatioMax(ret), max);
     return ret;
   }
@@ -1285,10 +1324,11 @@ struct dNdetaDrawer
    * 
    * @param h1 First histogram (numerator) 
    * @param h2 Second histogram (denominator)
+   * @param max Maximum diviation from 1 
    * 
    * @return h1 / h2
    */
-  TH1* Ratio(const TH1* h1, const TH1* h2, Double_t& max) const
+  TH1* RatioHH(const TH1* h1, const TH1* h2, Double_t& max) const
   {
     if (!h1 || !h2) return 0;
     TH1* t1 = static_cast<TH1*>(h1->Clone(Form("%s_%s", 
@@ -1296,8 +1336,11 @@ struct dNdetaDrawer
 					       h2->GetName())));
     t1->SetTitle(Form("%s / %s", h1->GetTitle(), h2->GetTitle()));
     t1->Divide(h2);
-    t1->SetMarkerColor(h1->GetMarkerColor());
-    t1->SetMarkerStyle(h2->GetMarkerStyle());
+    // t1->SetMarkerColor(h1->GetMarkerColor());
+    // t1->SetMarkerStyle(h2->GetMarkerStyle());
+    t1->SetMarkerColor(h2->GetMarkerColor());
+    t1->SetMarkerStyle(h1->GetMarkerStyle());
+    t1->SetMarkerSize(0.9*h1->GetMarkerSize());
     t1->SetDirectory(0);
     max = TMath::Max(RatioMax(t1), max);
     return t1;
@@ -1308,11 +1351,12 @@ struct dNdetaDrawer
    * 
    * @param g1 Numerator 
    * @param g2 Denominator
+   * @param max Maximum diviation from 1 
    * 
    * @return g1 / g2 in a histogram 
    */
-  TH1* Ratio(const TGraphAsymmErrors* g1, 
-	     const TGraphAsymmErrors* g2, Double_t& max) const
+  TH1* RatioGG(const TGraphAsymmErrors* g1, 
+	       const TGraphAsymmErrors* g2, Double_t& max) const
   {
     Int_t    nBins = g1->GetN();
     TArrayF  bins(nBins+1);
@@ -1336,9 +1380,12 @@ struct dNdetaDrawer
     else {
       h = new TH1F(name.Data(), title.Data(), nBins, bins.fArray);
     }
-    h->SetMarkerStyle(g2->GetMarkerStyle());
-    h->SetMarkerColor(g1->GetMarkerColor());
-    h->SetMarkerSize(0.9*g2->GetMarkerSize());
+    h->SetMarkerStyle(g1->GetMarkerStyle());
+    h->SetMarkerColor(g2->GetMarkerColor());
+    h->SetMarkerSize(0.9*g1->GetMarkerSize());
+    // h->SetMarkerStyle(g2->GetMarkerStyle());
+    // h->SetMarkerColor(g1->GetMarkerColor());
+    // h->SetMarkerSize(0.9*g2->GetMarkerSize());
     h->SetDirectory(0);
 
     Double_t low  = g2->GetX()[0];
@@ -1525,6 +1572,22 @@ void RangeExec(dNdetaDrawer::RangeParam* p)
 }
 
 //=== Steering function ==============================================  
+/** 
+ * Draw @f$ dN/d\eta@f$ 
+ * 
+ * @param filename  File name 
+ * @param flags     Flags 
+ * @param title     Title 
+ * @param rebin     Rebinning factor 
+ * @param cutEdges  Whether to cut edges when rebinning
+ * @param sNN       (optional) Collision energy [GeV]
+ * @param sys       (optional) Collision system (1: pp, 2: PbPb)
+ * @param trg       (optional) Trigger (1: INEL, 2: INEL>0, 4: NSD)   
+ * @param vzMin     Least @f$ v_z@f$
+ * @param vzMax     Largest @f$ v_z@f$
+ *
+ * @ingroup pwg2_forward_dndeta
+ */
 void
 DrawdNdeta(const char* filename="forward_dndeta.root", 
 	   Int_t       flags=0xf,
@@ -1533,11 +1596,12 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
 	   Bool_t      cutEdges=false,
 	   UShort_t    sNN=0, 
 	   UShort_t    sys=0,
-	   UShort_t    trg=1,
+	   UShort_t    trg=0,
 	   Float_t     vzMin=999, 
 	   Float_t     vzMax=-999)
 {
-  dNdetaDrawer d;
+  dNdetaDrawer* pd = new dNdetaDrawer;
+  dNdetaDrawer& d = *pd;
   d.SetRebin(rebin);
   d.SetCutEdges(cutEdges);
   d.SetTitle(title);

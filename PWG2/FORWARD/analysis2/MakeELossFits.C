@@ -1,13 +1,18 @@
 /**
- * @file 
+ * @file   MakeELossFits.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:08:14 2011
  * 
- * @ingroup pwg2_forward_scripts
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_eloss
  */
 /** 
  * Run a pass on ESD data to produce the energ loss fits 
  * 
  *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_eloss
  */
 void MakeELossFits(const char* esddir, 
 		   Int_t       nEvents=1000, 

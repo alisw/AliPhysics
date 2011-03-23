@@ -1,3 +1,13 @@
+/**
+ * @file   AddTaskCopyHeader.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:13:43 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
+ */
 #include "AliAnalysisTaskSE.h"
 #include "AliInputEventHandler.h"
 #include "AliESDEvent.h"
@@ -6,6 +16,12 @@
 #include "AliAnalysisManager.h"
 #include <TROOT.h>
 
+/**
+ * Task to copy header from ESD to AOD 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
+ * @ingroup pwg2_forward_aod
+ */
 class CopyHeaderTask : public AliAnalysisTaskSE
 {
 public:
@@ -88,12 +104,17 @@ void
 CopyHeaderTask::Terminate(Option_t*)
 {}
 
+/** 
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 void
 AddTaskCopyHeader()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskFMD", "No analysis manager to connect to.");
+    Error("AddTaskCopyHeader", "No analysis manager to connect to.");
     return;
   }   
   

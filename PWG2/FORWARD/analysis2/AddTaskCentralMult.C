@@ -1,11 +1,12 @@
 /**
- * @file   AddCentralMultTask.C
+ * @file   AddTaskCentralMult.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Fri Jan 28 10:22:26 2011
  * 
  * @brief Class and script to add a multiplicity task for the central
  *        @f$\eta@f$ region
  * 
+ * @ingroup pwg2_forward_scripts_tasks
  * 
  */
 #include <AliAnalysisTaskSE.h>
@@ -73,6 +74,8 @@ class TH1D;
  *
  * Only minimum bias events with a @f$v_z@f$ within the defined cut
  * are analysed.
+ *
+ * @ingroup pwg2_forward_aod
  */
 class CentralMultTask : public AliAnalysisTaskSE
 {
@@ -120,7 +123,7 @@ public:
    */
   virtual void UserExec(Option_t* option);
   /** 
-   * Called at end of event processing.. 
+   * Called at end of event processing.
    *
    * This is called once in the master 
    * 
@@ -132,6 +135,7 @@ protected:
    * Check if this event is within cuts
    * 
    * @param esd Event
+   * @param vz  Vertex @f$ z@f$ coordinate 
    * 
    * @return true if this event is to be considered
    */

@@ -13,6 +13,18 @@
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 
+ClassDef(AliCentraldNdetaTask)
+#ifdef DOXY_INPUT
+;
+#endif
+
+//____________________________________________________________________
+AliCentraldNdetaTask::AliCentraldNdetaTask(const char*)
+  : AliBasedNdetaTask("Central") 
+{ 
+  fSymmetrice = false; 
+  fCorrEmpty  = false;
+}
 
 //____________________________________________________________________
 TH2D*

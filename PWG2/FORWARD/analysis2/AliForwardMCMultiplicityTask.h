@@ -3,6 +3,16 @@
 // 
 #ifndef ALIFORWARDMCMULTIPLICITYTASK_H
 #define ALIFORWARDMCMULTIPLICITYTASK_H
+/**
+ * @file   AliForwardMCMultiplicityTask.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:06:13 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
 #include "AliFMDMCEventInspector.h"
@@ -35,6 +45,7 @@ class TList;
  * 
  * @ingroup pwg2_forward_tasks
  * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  * 
  */
 class AliForwardMCMultiplicityTask : public AliForwardMultiplicityBase

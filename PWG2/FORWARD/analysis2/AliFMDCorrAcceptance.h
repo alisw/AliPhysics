@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDCORRACCEPTANCE_H
 #define ALIFMDCORRACCEPTANCE_H
+/**
+ * @file   AliFMDCorrAcceptance.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:00:40 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_corr
+ * 
+ */
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>

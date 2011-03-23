@@ -6,6 +6,16 @@
 //
 #ifndef ALIFMDSHARINGFILTER_H
 #define ALIFMDSHARINGFILTER_H
+/**
+ * @file   AliFMDSharingFilter.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:57 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <TNamed.h>
 #include <TH2.h>
 #include <TList.h>
@@ -38,6 +48,7 @@ class TH2;
  * 
  *
  * @ingroup pwg2_forward_algo 
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDSharingFilter : public TNamed
 {

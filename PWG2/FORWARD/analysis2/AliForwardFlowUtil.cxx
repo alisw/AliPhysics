@@ -17,10 +17,12 @@ ClassImp(AliForwardFlowUtil)
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil() : 
   fList(0),
-  fZvertex(0) {} 
+  fZvertex(0) 
+{ 
   //
   // Default Constructor
   //
+}
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil(TList* outputList) :
   fList(0),

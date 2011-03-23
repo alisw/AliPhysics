@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDCORRVERTEXBIAS_H
 #define ALIFMDCORRVERTEXBIAS_H
+/**
+ * @file   AliFMDCorrVertexBias.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:01:56 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_corr
+ */
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>

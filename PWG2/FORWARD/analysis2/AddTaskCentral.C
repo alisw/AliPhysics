@@ -1,17 +1,18 @@
-/** 
- * @defgroup pwg2_forward_scripts Scripts used in the analysis
- *
- * @ingroup pwg2_forward
- */
 /**
- * @file 
- * @ingroup pwg2_forward_scripts
+ * @file   AddTaskCentral.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:13:25 2011
  * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
  */
+
 /**
- * This is the macro to include the Forward multiplicity in a train.  
+ * This is the macro to include the Central multiplicity in a train.  
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_aod
  */
 AliAnalysisTask* AddTaskCentral(UShort_t sys=0, UShort_t sNN=0, 
 				Short_t field=0)

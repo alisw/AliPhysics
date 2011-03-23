@@ -1,7 +1,13 @@
+//____________________________________________________________________
+/**
+ * @defgroup pwg2_forward_otherdata  External data 
+ *
+ * @ingroup pwg2_forward_scripts
+ */
 /**
  * @file 
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_script_otherdata
  */
 #include <TGraphAsymmErrors.h>
 #include <TMultiGraph.h>
@@ -12,52 +18,93 @@
 
 //____________________________________________________________________
 /**
- * @defgroup pwg2_forward_otherdata  External data 
- *
- * @ingroup pwg2_forward_scripts
- */
-//____________________________________________________________________
-/**
  * Values used 
  * 
  * @ingroup pwg2_forward_otherdata 
  */
 enum { 
+  UA5, 
+  CMS, 
+  ALICE, 
+  INEL, 
+  INELGt0, 
+  NSD
+};
+enum { 
+  /** Style used for UA5 data */
+  UA5Style   = 21, 
+  /** Style used for CMS data */
+  CMSStyle   = 29, 
+  /** Style used for ALICE published data */
+  ALICEStyle = 27,
   /** Color used for UA5 data */
   UA5Color   = kBlue+1,
   /** Color used for CMS data */
   CMSColor   = kGreen+1,
   /** Color used for ALICE data */
   ALICEColor = kMagenta+1,
+}; 
+enum { 
   /** Marker style INEL data */
-  INELStyle  = 22,
+  INELStyle   = 22,
   /** Marker style INEL>0 data */
-  INELGtStyle= 29,
+  INELGt0Style= 29,
   /** Marker style NSD data */
-  NSDStyle   = 23,
-  /** Colour offset for mirror data */
+  NSDStyle    = 23,
+  /** Color used for UA5 data */
+  INELColor   = kBlue+1,
+  /** Color used for CMS data */
+  INELGt0Color = kGreen+1,
+  /** Color used for ALICE data */
+  NSDColor     = kMagenta+1
+};
+enum {
+  /** Style offset for mirror data */
   MirrorOff  = 4
 };
 
 //____________________________________________________________________
 /** 
- * Set graph attributes 
+ * Set graph attributes based on trigger type and experiment. 
  * 
  * @param g        Graph
- * @param marker   Marker style 
- * @param color    Marker and line color
+ * @param trig     Trigger (INEL, INEL>0, NSD)
+ * @param exp      Experiment 
+ * @param mirror   True if mirrored data 
  * @param name     Name of graph 
  * @param title    Title of graph 
  * 
  * @ingroup pwg2_forward_otherdata
  */
 void
-SetGraphAttributes(TGraph* g, Int_t marker, Int_t color,
+SetGraphAttributes(TGraph* g, Int_t trig, Int_t exp, bool mirror,
 		   const Char_t* name, const Char_t* title)
 {
+  Int_t color = 0;
+  switch (exp) { 
+  case UA5:   color = UA5Color;   break;
+  case CMS:   color = CMSColor;   break;
+  case ALICE: color = ALICEColor; break;
+  }
+  Int_t style = 0;
+  switch (exp) { 
+  case UA5:   style = UA5Style;   break;
+  case CMS:   style = CMSStyle;   break;
+  case ALICE: style = ALICEStyle; break;
+  }
+  Float_t size = g->GetMarkerSize();
+  switch (style) {
+  case 21: 
+  case 25: size *= 0.8; break;
+  case 27: size *= 1.4; break;
+  }
+    
+  if (mirror) style += MirrorOff;
+
   g->SetName(name);
   g->SetTitle(title);
-  g->SetMarkerStyle(marker);
+  g->SetMarkerStyle(style);
+  g->SetMarkerSize(size);
   g->SetMarkerColor(color);
   g->SetLineColor(color);
   g->SetFillColor(0);
@@ -113,8 +160,8 @@ TGraphAsymmErrors* UA5Nsd(Bool_t mirrored=false)
 
   TGraphAsymmErrors* g  = new TGraphAsymmErrors(19,x, y, exm, exp, eym, eyp);
   TGraphAsymmErrors* gm = new TGraphAsymmErrors(19,xm,ym,exmm,expm,eymm,eypm);
-  SetGraphAttributes(g,  NSDStyle, UA5Color,"ua5_nsd",         "UA5 NSD");
-  SetGraphAttributes(gm, NSDStyle+MirrorOff, UA5Color,"ua5_nsd_mirrored",
+  SetGraphAttributes(g,  NSD, UA5, false,"ua5_nsd",         "UA5 NSD");
+  SetGraphAttributes(gm, NSD, UA5, true,"ua5_nsd_mirrored",
 		     "UA5 NSD (mirrored)");
 
   return (mirrored ? gm : g);
@@ -166,8 +213,8 @@ TGraphAsymmErrors* UA5Inel(Bool_t mirrored=false)
   TGraphAsymmErrors* g  = new TGraphAsymmErrors(np,x, y, exm, exp, eym, eyp);
   TGraphAsymmErrors* gm = new TGraphAsymmErrors(np,xm,ym,exmm,expm,eymm,eypm);
 
-  SetGraphAttributes(g,  INELStyle, UA5Color, "ua5_inel", "UA5 INEL");
-  SetGraphAttributes(gm, INELStyle+MirrorOff, UA5Color, "ua5_inel_mirrored", 
+  SetGraphAttributes(g,  INEL, UA5, false, "ua5_inel", "UA5 INEL");
+  SetGraphAttributes(gm, INEL, UA5, true, "ua5_inel_mirrored", 
 		     "UA5 INEL (mirrored)");
   
   return (mirrored ? gm : g);
@@ -215,7 +262,7 @@ TGraphAsymmErrors* AliceCentralInel900()
     eyp[i] += 0.02;
   }
   g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, INELStyle, ALICEColor, "alice_inel", 
+  SetGraphAttributes(g, INEL, ALICE, false, "alice_inel", 
 		     "ALICE INEL (publ.)");
 
   return g;
@@ -261,7 +308,7 @@ TGraphAsymmErrors* AliceCentralInelGt900()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, INELGtStyle, ALICEColor, "alice_inelgt900", 
+  SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt900", 
 		     "ALICE INEL>0 (publ.)");
   return g;
 
@@ -303,7 +350,7 @@ TGraphAsymmErrors* AliceCentralInelGt2360()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, INELGtStyle, ALICEColor, "alice_inelgt2360", 
+  SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt2360", 
 		     "ALICE INEL>0 (publ.)");
   return g;
 }
@@ -345,7 +392,7 @@ TGraphAsymmErrors* AliceCentralInelGt7000()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, INELGtStyle, ALICEColor, "alice_inelgt7000", 
+  SetGraphAttributes(g, INELGt0, ALICE, false, "alice_inelgt7000", 
 		     "ALICE INEL>0 (publ.)");
   return g;
 }
@@ -394,7 +441,7 @@ TGraphAsymmErrors* AliceCentralNsd900()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, ALICEColor, "alice_nsd", "ALICE NSD (publ.)");
+  SetGraphAttributes(g, NSD, ALICE, false, "alice_nsd", "ALICE NSD (publ.)");
 
   return g;
 }
@@ -443,7 +490,7 @@ TGraphAsymmErrors* AliceCentralInel2360()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, ALICEColor, "alice_inel2360", 
+  SetGraphAttributes(g, NSD, ALICE, false, "alice_inel2360", 
 		     "ALICE INEL (publ.)");
   return g;
 }
@@ -493,7 +540,7 @@ TGraphAsymmErrors* AliceCentralNsd2360()
   }
 
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, ALICEColor, "alice_nsd2360", 
+  SetGraphAttributes(g, NSD, ALICE, false, "alice_nsd2360", 
 		     "ALICE NSD (publ.)");
   return g;
 }
@@ -522,7 +569,7 @@ TGraphAsymmErrors* CMSNsd900()
   double eyp[] = { 0.13, 0.14, 0.13, 0.13, 0.13, 0.13, 0.13, 0.13, 0.14, 0.13 };
   const int np = 10;
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, CMSColor, "cms_nsd900", "CMS NSD");
+  SetGraphAttributes(g, NSD, CMS, false, "cms_nsd900", "CMS NSD");
 
   return g;
 }
@@ -550,7 +597,7 @@ TGraphAsymmErrors* CMSNsd2360()
   double eyp[] = { 0.17, 0.18, 0.17, 0.17, 0.16, 0.16, 0.17, 0.17, 0.18, 0.17 };
   const int np = 10;
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, CMSColor, "cms_nsd2360", "CMS NSD");
+  SetGraphAttributes(g, NSD, CMS, false, "cms_nsd2360", "CMS NSD");
   return g;
 }
 
@@ -577,7 +624,7 @@ TGraphAsymmErrors* CMSNsd7000()
   double eyp[] = { 0.25, 0.25, 0.24, 0.24, 0.23, 0.23, 0.24, 0.24, 0.25, 0.25 };
   const int np = 10;
   TGraphAsymmErrors* g = new TGraphAsymmErrors(np, x, y, exm, exp, eym, eyp);
-  SetGraphAttributes(g, NSDStyle, CMSColor, "cms_nsd7000", "CMS NSD");
+  SetGraphAttributes(g, NSD, CMS, false, "cms_nsd7000", "CMS NSD");
   return g;
 }
 
@@ -591,6 +638,9 @@ TGraphAsymmErrors* CMSNsd7000()
  *   - 0x1 INEL 
  *   - 0x2 INEL>0
  *   - 0x4 NSD 
+ * @param centLow   Low centrality cut (only for PbPB)
+ * @param centHigh  High centrality cut (only for PbPB)
+ * @param aliceOnly Only return other ALICE data
  * 
  * @return A multi graph with the selected data. 
  * 
@@ -697,8 +747,15 @@ GetData(UShort_t sys,
  * Plot external data for a given selection of energy and trigger type
  * (see GetData)
  * 
- * @param energy  Energy in GeV
- * @param type    Trigger type bit mask 
+ * @param sys    Collision system (1: pp, 2: PbPb)
+ * @param energy Energy in GeV (900, 2360, 7000)
+ * @param type   Bit pattern of trigger type 
+ *   - 0x1 INEL 
+ *   - 0x2 INEL>0
+ *   - 0x4 NSD 
+ * @param centLow   Low centrality cut (only for PbPB)
+ * @param centHigh  High centrality cut (only for PbPB)
+ * @param aliceOnly Only return other ALICE data
  * 
  * @ingroup pwg2_forward_otherdata
  */
