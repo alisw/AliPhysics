@@ -179,8 +179,10 @@ void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
   }
   fClusterizer->Digits2Clusters("");
   if (fSubBackground) {
-    fClusterizer->SetInputCalibrated(kFALSE);   
-    fClusterizer->SetCalibrationParameters(fCalibData);
+    if (fCalibData) {
+      fClusterizer->SetInputCalibrated(kFALSE);   
+      fClusterizer->SetCalibrationParameters(fCalibData);
+    }
   }
 }
 
