@@ -233,7 +233,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       //recalculate vertex w/o daughters
       AliAODVertex *origownvtx=0x0;
       AliAODVertex *recvtx=0x0;
-      if(fRemoveDaughtersFromPrimary) {
+      if(fRemoveDaughtersFromPrimary && !fUseMCVertex) {
 	if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
       }
       if(fUseMCVertex) {
