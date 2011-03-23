@@ -246,12 +246,13 @@ void AliTRDtrackletOflHelper::FindSolidCls(Bool_t *mark, Int_t *q)
 //  Find clusters produced by large fluctuations of energy deposits
 //  Largest charge and well separation from neighbors
 
-  Int_t idx[AliTRDseedV1::kNtb];
-  TMath::Sort(Int_t(AliTRDseedV1::kNtb), q, idx, kTRUE);
+  Int_t ntb(AliTRDseedV1::kNtb);
+  Int_t idx[ntb+1];
+  TMath::Sort(ntb, q, idx, kTRUE);
   Int_t qmax = Int_t(0.3*q[idx[0]]);
   mark[0] = kFALSE;
-  for(Int_t icl(AliTRDseedV1::kNtb-5); icl<AliTRDseedV1::kNtb; icl++) mark[icl] = kFALSE;
-  for(Int_t icl(0); icl<AliTRDseedV1::kNtb; icl++){
+  for(Int_t icl(ntb-5); icl<ntb; icl++) mark[icl] = kFALSE;
+  for(Int_t icl(0); icl<ntb; icl++){
     Int_t jcl(idx[icl]);
     if(!mark[jcl]) continue;
     if(q[jcl-1]>q[jcl] || q[jcl+1]>q[jcl]){
@@ -480,7 +481,7 @@ Int_t AliTRDtrackletOflHelper::Segmentation(Int_t n, Double_t *x, Double_t *y, I
   Int_t ng(0),
         nc(0);
   Double_t xx[kBuffer], dy;
-  Int_t idx[kBuffer], jdx[kBuffer], kdx[kBuffer];
+  Int_t idx[kBuffer+1], jdx[kBuffer], kdx[kBuffer];
   TMath::Sort(n, y, idx);
   for(Int_t iy(0); iy<n; iy++){
     dy = iy>0?(TMath::Abs(y[idx[iy-1]]-y[idx[iy]])):0.;
