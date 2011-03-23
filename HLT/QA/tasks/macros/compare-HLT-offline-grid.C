@@ -24,16 +24,17 @@
  * @author Hege.Erdal@student.uib.no, Kalliopi.Kanaki@ift.uib.no
  */
 
-void compare_HLT_offline_grid(TString runNumber, 
-                              TString dataDir, 
-			      TString gridWorkingDir, 
-			      TString gridOutputDir, 
-			      const char* mode = "full", 
-			      const char* detectorTask="global",
-			      TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/",
-			      TString beamType="p-p",
-			      bool fUseHLTTrigger=kFALSE,
-			      Long64_t nEvents=1234567890
+void compare_HLT_offline_grid( TString runNumber
+                              ,TString dataDir
+			      ,TString gridWorkingDir
+			      ,TString gridOutputDir
+			      ,const char* mode = "full"
+			      ,const char* detectorTask="global"
+			      ,TString taskFolder="$ALICE_ROOT/HLT/QA/tasks/"
+			      ,TString beamType="p-p"
+			      ,TString options="event-off event-hlt track-off track-hlt"
+			      ,bool fUseHLTTrigger=kFALSE
+			      ,Long64_t nEvents=1234567890
 			     )
 {
  
@@ -59,7 +60,7 @@ void compare_HLT_offline_grid(TString runNumber,
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
 
   
-  Bool_t bAll=kFALSE, bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;
+  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -90,13 +91,6 @@ void compare_HLT_offline_grid(TString runNumber,
 	   bCB = kTRUE;
 	   continue;
 	 }  
-	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	    bPHOS   = kTRUE;
-	    bEMCAL  = kTRUE;
-	    bGLOBAL = kTRUE;
-	    bAll    = kTRUE;
-	    continue;
-         }
          else break;
     }
   }
@@ -209,7 +203,8 @@ void compare_HLT_offline_grid(TString runNumber,
      if(beamType.Contains("Pb-Pb")){
         gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
         AliCentralitySelectionTask *taskCentrality = AddTaskCentrality(); 
-     }   
+     }  
+     taskCB->SetOptions(options); 
      AliAnalysisDataContainer *coutputCB =  mgr->CreateContainer("esd_thnsparse",TList::Class(), AliAnalysisManager::kOutputContainer, "HLT-OFFLINE-CentralBarrel-comparison.root");       
      mgr->ConnectInput(taskCB,0,mgr->GetCommonInputContainer());
      mgr->ConnectOutput(taskCB,1,coutputCB);

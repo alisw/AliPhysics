@@ -23,8 +23,8 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   
   // check the versions available on alien with the command 'packages'
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-27-06d");
-  plugin->SetAliROOTVersion("v4-21-16-AN");
+  plugin->SetROOTVersion("v5-28-00a");
+  plugin->SetAliROOTVersion("v4-21-18-AN");
   
   cout << "===========================================================================================" << endl;
   cout << "  " << endl;
@@ -50,7 +50,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetGridOutputDir(gridOutputDir);   // relative to working dir
   plugin->SetOverwriteMode();                // overwrites the contents of the working and output directory
   
-  Bool_t bTPC=kFALSE, bPHOS=kFALSE, bEMCAL=kFALSE, bITS=kFALSE, bGLOBAL=kFALSE, bD0=kFALSE, bCB=kFALSE;
+  Bool_t bTPC = kFALSE, bPHOS = kFALSE, bEMCAL = kFALSE, bGLOBAL = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -73,10 +73,6 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   	    bEMCAL = kTRUE;
 	    continue;
          }         
-	 if(argument.CompareTo("its", TString::kIgnoreCase)==0){
-  	    bITS = kTRUE;
-	    continue;
-         }	
 	 if(argument.CompareTo("global", TString::kIgnoreCase)==0){
   	    bGLOBAL = kTRUE;
 	    continue;
@@ -89,16 +85,6 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   	    bCB = kTRUE;
 	    continue;
          }  
-	 if(argument.CompareTo("all",TString::kIgnoreCase)==0){
-	    bTPC    = kTRUE;
-	    bPHOS   = kTRUE;
-	    bEMCAL  = kTRUE;
-	    bITS    = kTRUE;
-	    bGLOBAL = kTRUE;
-	    bD0     = kTRUE;
-	    bCB     = kTRUE;
-	    continue;
-         }
          else break;
     }
   }
@@ -108,11 +94,6 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
     plugin->SetAnalysisSource("AliAnalysisTaskHLTTPC.cxx");  
     plugin->SetAdditionalLibs("AliAnalysisTaskHLTTPC.h AliAnalysisTaskHLTTPC.cxx");
     plugin->SetOutputFiles("HLT-OFFLINE-TPC-comparison.root");    
-  }
-  if(bITS){  
-    plugin->SetAnalysisSource("AliAnalysisTaskHLTITS.cxx");  
-    plugin->SetAdditionalLibs("AliAnalysisTaskHLTITS.h AliAnalysisTaskHLTITS.cxx");
-    plugin->SetOutputFiles("HLT-OFFLINE-ITS-comparison.root");    
   }
   if(bPHOS && bEMCAL) {
     plugin->AddIncludePath("-I$ROOTSYS -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/RAW -I$ALICE_ROOT/STEER -I$ALICE_ROOT/PHOS -I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/HLT/BASE/util -I$ALICE_ROOT/HLT/global/physics");
@@ -155,8 +136,10 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
   
   // Optionally set a name for the generated analysis macro (default MyAnalysis.C)
-  plugin->SetAnalysisMacro("runComparison.C");
-  plugin->SetExecutable("comparison.sh");
+  plugin->SetAnalysisMacro(Form("%s.C",detectorTask));
+  
+  //plugin->SetExecutable("comparison.sh");
+  plugin->SetExecutable(Form("%s.sh",detectorTask));
 
   plugin->SetSplitMaxInputFileNumber(100);
   
@@ -172,7 +155,7 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   plugin->SetInputFormat("xml-single");
  
   // Optionally modify the name of the generated JDL (default analysis.jdl)
-  plugin->SetJDLName("analysis.jdl");
+  plugin->SetJDLName(Form("%s.jdl",detectorTask));
  
   // Optionally modify job price (default 1)
   plugin->SetPrice(1);
@@ -180,5 +163,12 @@ AliAnalysisGrid* CreateAlienHandler(TString runNumber, TString dataDir, TString 
   // Optionally modify split mode (default 'se')
   plugin->SetSplitMode("se");
   
+  // comment out the next line when using the "terminate" option, unless
+  // you want separate merged files for each run
+  //plugin->SetMergeViaJDL();
+
+  //plugin->SetOneStageMerging(kFALSE);
+  //plugin->SetMaxMergeStages(2);
+
   return plugin;
 }
