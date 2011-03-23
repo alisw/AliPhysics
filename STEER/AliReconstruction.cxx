@@ -296,13 +296,15 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fNspecie(0),
   fSspecie(0),
   fNhighPt(0),
-  fShighPt(0)
+  fShighPt(0),
+  fUpgradeModule("") 
 {
 // create reconstruction object with default parameters
   gGeoManager = NULL;
   
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
+    fUpgradeMask[iDet]=kFALSE;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
   }
@@ -409,7 +411,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fNspecie(0),
   fSspecie(0),
   fNhighPt(0),
-  fShighPt(0)
+  fShighPt(0),
+  fUpgradeModule("")
 {
 // copy constructor
 
@@ -418,6 +421,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   }
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     fReconstructor[iDet] = NULL;
+    fUpgradeMask[iDet] = kFALSE;
     fLoader[iDet] = NULL;
     fTracker[iDet] = NULL;
   }  
@@ -511,6 +515,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRecoParam = rec.fRecoParam;
 
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    fUpgradeMask[iDet] = kFALSE;
     delete fReconstructor[iDet]; fReconstructor[iDet] = NULL;
     delete fLoader[iDet]; fLoader[iDet] = NULL;
     delete fTracker[iDet]; fTracker[iDet] = NULL;
@@ -570,6 +575,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fSspecie = 0;
   fNhighPt = 0;
   fShighPt = 0;
+  fUpgradeModule="";
 
   return *this;
 }
@@ -852,6 +858,15 @@ void AliReconstruction::SetCDBLock() {
   AliCDBManager::Instance()->SetLock(1);
 }
 
+//_____________________________________________________________________________
+void AliReconstruction::MatchUpgradeDetector() {
+  // Translates detector name in a boolean.
+  // The boolean is used in GetReconstructor to load the 
+  // upgrade reconstructor instead of the standard one.
+   for(Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    if(fUpgradeModule.Contains(fgkDetectorName[iDet])) fUpgradeMask[iDet]=kTRUE;
+   }
+}
 //_____________________________________________________________________________
 Bool_t AliReconstruction::MisalignGeometry(const TString& detectors)
 {
@@ -3082,6 +3097,14 @@ AliReconstructor* AliReconstruction::GetReconstructor(Int_t iDet)
   if (pluginHandler && (pluginHandler->LoadPlugin() == 0)) {
     reconstructor = (AliReconstructor*) pluginHandler->ExecPlugin(0);
   }
+
+   // check if the upgrade reconstructor should be used instead of the standard one
+  if(fUpgradeMask[iDet]) {
+    if(reconstructor) delete reconstructor;
+    TClass *cl = new TClass(Form("Ali%sUpgradeReconstructor",fgkDetectorName[iDet]));
+    reconstructor = (AliReconstructor*)(cl->New());
+   }
+
   if (reconstructor) {
     TObject* obj = fOptions.FindObject(detName.Data());
     if (obj) reconstructor->SetOption(obj->GetTitle());

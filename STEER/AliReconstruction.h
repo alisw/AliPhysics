@@ -163,6 +163,10 @@ public:
   };
   static Int_t   GetDetIndex(const char * detector);
 
+  // Upgrade
+ void SetUpgradeModule(const char* detectors)  {fUpgradeModule = detectors; MatchUpgradeDetector() ; }
+ void MatchUpgradeDetector();
+
 protected:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
@@ -334,6 +338,10 @@ private:
   Int_t fSspecie; //! Number of events, sampled from fNspecie
   Int_t fNhighPt; //! Number of events, selected by IsHighPt 
   Int_t fShighPt; //! Number of events, sampled from fNhighPt
+ 
+  // Upgrade detector reconstruction
+  TString fUpgradeModule;
+  Bool_t  fUpgradeMask[kNDetectors];
 
   ClassDef(AliReconstruction, 39)      // class for running the reconstruction
 };

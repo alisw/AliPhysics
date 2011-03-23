@@ -100,6 +100,7 @@ const char* AliReconstructor::GetDetectorName() const
   detName = GetName();
   detName.Remove(0, 3);
   detName.Remove(detName.Index("Reconstructor"));
+  detName.ReplaceAll("Upgrade","");
   return detName.Data();
 }
 
