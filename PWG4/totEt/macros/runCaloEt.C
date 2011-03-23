@@ -7,7 +7,7 @@
 void runCaloEt(bool submit = false, // true or false 
 	       const char *dataType="sim", // "sim" or "real" etc.
 	       const char *pluginRunMode="full", // "test" or "full" or "terminate"
-	       const char *det = "PHOS") // "PHOS" or "EMCAL"
+	       const char *det = "EMCAL") // "PHOS" or "EMCAL"
 {
   TStopwatch timer;
   timer.Start();
@@ -118,6 +118,7 @@ void runCaloEt(bool submit = false, // true or false
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
   
   AliPhysicsSelectionTask *physicsSelectionTask = AddTaskPhysicsSelection(isMc);//isMC is true when processing monte carlo
+
   if(isPb){	 
     gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     gROOT->ProcessLine(".L AliCentralitySelectionTask.cxx++g");
@@ -134,11 +135,6 @@ void runCaloEt(bool submit = false, // true or false
   //____________________________________________//
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,1,coutput1);
-
-
-    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("out2", TList::Class(), AliAnalysisManager::kOutputContainer,"event_stat.root");
-    mgr->ConnectInput(physicsSelectionTask,0,cinput1);
-    mgr->ConnectOutput(physicsSelectionTask,1,coutput1);
   
   mgr->SetDebugLevel(0);
   
