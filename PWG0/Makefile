@@ -50,10 +50,27 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_PWG0base)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-ifeq ($(ARCH),macosx)
-	@$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ -o $@
+ifeq ($(PLATFORM),macosx)
+# We need to make both the .dylib and the .so
+		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
+ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
+ifeq ($(MACOSX_MINOR),4)
+		ln -sf $@ $(subst .$(DllSuf),.so,$@)
 else
-	@$(LD) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
+		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
+endif
+endif
+else
+ifeq ($(PLATFORM),win32)
+		bindexplib $* $^ > $*.def
+		lib -nologo -MACHINE:IX86 $^ -def:$*.def \
+		   $(OutPutOpt)$(EVENTLIB)
+		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
+		   $(OutPutOpt)$@
+else
+		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+endif
 endif
 	@chmod a+x $@
 	@echo "done"
