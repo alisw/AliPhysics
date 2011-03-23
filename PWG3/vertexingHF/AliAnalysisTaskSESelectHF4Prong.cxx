@@ -58,47 +58,48 @@ AliAnalysisTaskSESelectHF4Prong::AliAnalysisTaskSESelectHF4Prong():
 AliAnalysisTaskSE(),
 fVerticesHFTClArr(0),
 fCharm4ProngTClArr(0),
+fSelected(0),
 fOutput(0),
 fOutput2(0),
 fOutput3(0),
 fOutput4(0),
 fOutput5(0),
 fOutputC(0),
-fhInvMassD0Sum_10Mev_Bin1(0),
-fhInvMassD0barSum_10Mev_Bin1(0),
-fhInvMassSumAll_10Mev_Bin1(0),
-fhInvMassD0Sum_5Mev_Bin1(0),
-fhInvMassD0barSum_5Mev_Bin1(0),
-fhInvMassSumAll_5Mev_Bin1(0),
-fhInvMassD0Sum_10Mev_Bin2(0),
-fhInvMassD0barSum_10Mev_Bin2(0),
-fhInvMassSumAll_10Mev_Bin2(0),
-fhInvMassD0Sum_5Mev_Bin2(0),
-fhInvMassD0barSum_5Mev_Bin2(0),
-fhInvMassSumAll_5Mev_Bin2(0),
-fhInvMassD0Sum_10Mev_Bin3(0),
-fhInvMassD0barSum_10Mev_Bin3(0),
-fhInvMassSumAll_10Mev_Bin3(0),
-fhInvMassD0Sum_5Mev_Bin3(0),
-fhInvMassD0barSum_5Mev_Bin3(0),
-fhInvMassSumAll_5Mev_Bin3(0),
-fhInvMassD0Sum_10Mev_Bin4(0),
-fhInvMassD0barSum_10Mev_Bin4(0),
-fhInvMassSumAll_10Mev_Bin4(0),
-fhInvMassD0Sum_5Mev_Bin4(0),
-fhInvMassD0barSum_5Mev_Bin4(0),
-fhInvMassSumAll_5Mev_Bin4(0),
-fhInvMassD0Sum_10Mev_Bin5(0),
-fhInvMassD0barSum_10Mev_Bin5(0),
-fhInvMassSumAll_10Mev_Bin5(0),
-fhInvMassD0Sum_5Mev_Bin5(0),
-fhInvMassD0barSum_5Mev_Bin5(0),
-fhInvMassSumAll_5Mev_Bin5(0),
-fhInvMassMultipleOnly_Bin1(0),
-fhInvMassMultipleOnly_Bin2(0),
-fhInvMassMultipleOnly_Bin3(0),
-fhInvMassMultipleOnly_Bin4(0),
-fhInvMassMultipleOnly_Bin5(0),
+fhInvMassD0Sum10MevBin1(0),
+fhInvMassD0barSum10MevBin1(0),
+fhInvMassSumAll10MevBin1(0),
+fhInvMassD0Sum5MevBin1(0),
+fhInvMassD0barSum5MevBin1(0),
+fhInvMassSumAll5MevBin1(0),
+fhInvMassD0Sum10MevBin2(0),
+fhInvMassD0barSum10MevBin2(0),
+fhInvMassSumAll10MevBin2(0),
+fhInvMassD0Sum5MevBin2(0),
+fhInvMassD0barSum5MevBin2(0),
+fhInvMassSumAll5MevBin2(0),
+fhInvMassD0Sum10MevBin3(0),
+fhInvMassD0barSum10MevBin3(0),
+fhInvMassSumAll10MevBin3(0),
+fhInvMassD0Sum5MevBin3(0),
+fhInvMassD0barSum5MevBin3(0),
+fhInvMassSumAll5MevBin3(0),
+fhInvMassD0Sum10MevBin4(0),
+fhInvMassD0barSum10MevBin4(0),
+fhInvMassSumAll10MevBin4(0),
+fhInvMassD0Sum5MevBin4(0),
+fhInvMassD0barSum5MevBin4(0),
+fhInvMassSumAll5MevBin4(0),
+fhInvMassD0Sum10MevBin5(0),
+fhInvMassD0barSum10MevBin5(0),
+fhInvMassSumAll10MevBin5(0),
+fhInvMassD0Sum5MevBin5(0),
+fhInvMassD0barSum5MevBin5(0),
+fhInvMassSumAll5MevBin5(0),
+fhInvMassMultipleOnlyBin1(0),
+fhInvMassMultipleOnlyBin2(0),
+fhInvMassMultipleOnlyBin3(0),
+fhInvMassMultipleOnlyBin4(0),
+fhInvMassMultipleOnlyBin5(0),
 fScatterP4PID(0),
 fPtVsY(0),
 fPtVsYAll(0),
@@ -114,16 +115,15 @@ fCutCosinePoint(0),
 fCutPt(0),
 fCutY(0),
 fPIDSel(0),
-fPIDSel_Bin1(0),
-fPIDSel_Bin2(0),
-fPIDSel_Bin3(0),
-fPIDSel_Bin4(0),
-fPIDSel_Bin5(0),
+fPIDSelBin1(0),
+fPIDSelBin2(0),
+fPIDSelBin3(0),
+fPIDSelBin4(0),
+fPIDSelBin5(0),
 fMultipleHyps(0),
 fMultipleHypsType(0),
 fPtSel(0),
-fCuts(0),
-fVHF(0)
+fCuts(0)
 {
   // Default constructor
 }
@@ -133,47 +133,48 @@ AliAnalysisTaskSESelectHF4Prong::AliAnalysisTaskSESelectHF4Prong(const char *nam
 AliAnalysisTaskSE(name),
 fVerticesHFTClArr(0),
 fCharm4ProngTClArr(0),
+fSelected(0),
 fOutput(0),
 fOutput2(0),
 fOutput3(0),
 fOutput4(0),
 fOutput5(0),
 fOutputC(0),
-fhInvMassD0Sum_10Mev_Bin1(0),
-fhInvMassD0barSum_10Mev_Bin1(0),
-fhInvMassSumAll_10Mev_Bin1(0),
-fhInvMassD0Sum_5Mev_Bin1(0),
-fhInvMassD0barSum_5Mev_Bin1(0),
-fhInvMassSumAll_5Mev_Bin1(0),
-fhInvMassD0Sum_10Mev_Bin2(0),
-fhInvMassD0barSum_10Mev_Bin2(0),
-fhInvMassSumAll_10Mev_Bin2(0),
-fhInvMassD0Sum_5Mev_Bin2(0),
-fhInvMassD0barSum_5Mev_Bin2(0),
-fhInvMassSumAll_5Mev_Bin2(0),
-fhInvMassD0Sum_10Mev_Bin3(0),
-fhInvMassD0barSum_10Mev_Bin3(0),
-fhInvMassSumAll_10Mev_Bin3(0),
-fhInvMassD0Sum_5Mev_Bin3(0),
-fhInvMassD0barSum_5Mev_Bin3(0),
-fhInvMassSumAll_5Mev_Bin3(0),
-fhInvMassD0Sum_10Mev_Bin4(0),
-fhInvMassD0barSum_10Mev_Bin4(0),
-fhInvMassSumAll_10Mev_Bin4(0),
-fhInvMassD0Sum_5Mev_Bin4(0),
-fhInvMassD0barSum_5Mev_Bin4(0),
-fhInvMassSumAll_5Mev_Bin4(0),
-fhInvMassD0Sum_10Mev_Bin5(0),
-fhInvMassD0barSum_10Mev_Bin5(0),
-fhInvMassSumAll_10Mev_Bin5(0),
-fhInvMassD0Sum_5Mev_Bin5(0),
-fhInvMassD0barSum_5Mev_Bin5(0),
-fhInvMassSumAll_5Mev_Bin5(0),
-fhInvMassMultipleOnly_Bin1(0),
-fhInvMassMultipleOnly_Bin2(0),
-fhInvMassMultipleOnly_Bin3(0),
-fhInvMassMultipleOnly_Bin4(0),
-fhInvMassMultipleOnly_Bin5(0),
+fhInvMassD0Sum10MevBin1(0),
+fhInvMassD0barSum10MevBin1(0),
+fhInvMassSumAll10MevBin1(0),
+fhInvMassD0Sum5MevBin1(0),
+fhInvMassD0barSum5MevBin1(0),
+fhInvMassSumAll5MevBin1(0),
+fhInvMassD0Sum10MevBin2(0),
+fhInvMassD0barSum10MevBin2(0),
+fhInvMassSumAll10MevBin2(0),
+fhInvMassD0Sum5MevBin2(0),
+fhInvMassD0barSum5MevBin2(0),
+fhInvMassSumAll5MevBin2(0),
+fhInvMassD0Sum10MevBin3(0),
+fhInvMassD0barSum10MevBin3(0),
+fhInvMassSumAll10MevBin3(0),
+fhInvMassD0Sum5MevBin3(0),
+fhInvMassD0barSum5MevBin3(0),
+fhInvMassSumAll5MevBin3(0),
+fhInvMassD0Sum10MevBin4(0),
+fhInvMassD0barSum10MevBin4(0),
+fhInvMassSumAll10MevBin4(0),
+fhInvMassD0Sum5MevBin4(0),
+fhInvMassD0barSum5MevBin4(0),
+fhInvMassSumAll5MevBin4(0),
+fhInvMassD0Sum10MevBin5(0),
+fhInvMassD0barSum10MevBin5(0),
+fhInvMassSumAll10MevBin5(0),
+fhInvMassD0Sum5MevBin5(0),
+fhInvMassD0barSum5MevBin5(0),
+fhInvMassSumAll5MevBin5(0),
+fhInvMassMultipleOnlyBin1(0),
+fhInvMassMultipleOnlyBin2(0),
+fhInvMassMultipleOnlyBin3(0),
+fhInvMassMultipleOnlyBin4(0),
+fhInvMassMultipleOnlyBin5(0),
 fScatterP4PID(0),
 fPtVsY(0),
 fPtVsYAll(0),
@@ -189,16 +190,15 @@ fCutCosinePoint(0),
 fCutPt(0),
 fCutY(0),
 fPIDSel(0),
-fPIDSel_Bin1(0),
-fPIDSel_Bin2(0),
-fPIDSel_Bin3(0),
-fPIDSel_Bin4(0),
-fPIDSel_Bin5(0),
+fPIDSelBin1(0),
+fPIDSelBin2(0),
+fPIDSelBin3(0),
+fPIDSelBin4(0),
+fPIDSelBin5(0),
 fMultipleHyps(0),
 fMultipleHypsType(0),
 fPtSel(0),
-fCuts(0),
-fVHF(0)
+fCuts(0)
 {
   // Standard constructor
    
@@ -252,10 +252,6 @@ AliAnalysisTaskSESelectHF4Prong::~AliAnalysisTaskSESelectHF4Prong()
     delete fCuts;
     fCuts = 0;
   }
-  if (fVHF) {
-    delete fVHF;
-    fVHF = 0;
-  }
 
 }  
 
@@ -302,180 +298,180 @@ void AliAnalysisTaskSESelectHF4Prong::UserCreateOutputObjects()
   fOutputC = new TList();
   fOutputC->SetOwner();
 
-  fhInvMassD0Sum_10Mev_Bin1 = new TH1F("fhInvMassD0Sum_10Mev_Bin1", "D0 invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0Sum_10Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_10Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassD0Sum_10Mev_Bin1);
+  fhInvMassD0Sum10MevBin1 = new TH1F("fhInvMassD0Sum10MevBin1", "D0 invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0Sum10MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum10MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassD0Sum10MevBin1);
 
-  fhInvMassD0barSum_10Mev_Bin1 = new TH1F("fhInvMassD0barSum_10Mev_Bin1", "D0bar invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0barSum_10Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_10Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassD0barSum_10Mev_Bin1);
+  fhInvMassD0barSum10MevBin1 = new TH1F("fhInvMassD0barSum10MevBin1", "D0bar invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0barSum10MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum10MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassD0barSum10MevBin1);
 
-  fhInvMassSumAll_10Mev_Bin1 = new TH1F("fhInvMassSumAll_10Mev_Bin1", "D0/D0bar invariant mass Bin1 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassSumAll_10Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_10Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassSumAll_10Mev_Bin1);
+  fhInvMassSumAll10MevBin1 = new TH1F("fhInvMassSumAll10MevBin1", "D0/D0bar invariant mass Bin1 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassSumAll10MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll10MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassSumAll10MevBin1);
 
-  fhInvMassD0Sum_5Mev_Bin1 = new TH1F("fhInvMassD0Sum_5Mev_Bin1", "D0 invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0Sum_5Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_5Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassD0Sum_5Mev_Bin1);
+  fhInvMassD0Sum5MevBin1 = new TH1F("fhInvMassD0Sum5MevBin1", "D0 invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0Sum5MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum5MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassD0Sum5MevBin1);
 
-  fhInvMassD0barSum_5Mev_Bin1 = new TH1F("fhInvMassD0barSum_5Mev_Bin1", "D0bar invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0barSum_5Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_5Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassD0barSum_5Mev_Bin1);
+  fhInvMassD0barSum5MevBin1 = new TH1F("fhInvMassD0barSum5MevBin1", "D0bar invariant mass Bin1 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0barSum5MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum5MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassD0barSum5MevBin1);
 
-  fhInvMassSumAll_5Mev_Bin1 = new TH1F("fhInvMassSumAll_5Mev_Bin1", "D0/D0bar invariant mass Bin1 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassSumAll_5Mev_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_5Mev_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassSumAll_5Mev_Bin1);
+  fhInvMassSumAll5MevBin1 = new TH1F("fhInvMassSumAll5MevBin1", "D0/D0bar invariant mass Bin1 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassSumAll5MevBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll5MevBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassSumAll5MevBin1);
 
-  fhInvMassD0Sum_10Mev_Bin2 = new TH1F("fhInvMassD0Sum_10Mev_Bin2", "D0 invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0Sum_10Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_10Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassD0Sum_10Mev_Bin2);
+  fhInvMassD0Sum10MevBin2 = new TH1F("fhInvMassD0Sum10MevBin2", "D0 invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0Sum10MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum10MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassD0Sum10MevBin2);
 
-  fhInvMassD0barSum_10Mev_Bin2 = new TH1F("fhInvMassD0barSum_10Mev_Bin2", "D0bar invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0barSum_10Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_10Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassD0barSum_10Mev_Bin2);
+  fhInvMassD0barSum10MevBin2 = new TH1F("fhInvMassD0barSum10MevBin2", "D0bar invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0barSum10MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum10MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassD0barSum10MevBin2);
 
-  fhInvMassSumAll_10Mev_Bin2 = new TH1F("fhInvMassSumAll_10Mev_Bin2", "D0/D0bar invariant mass Bin2 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassSumAll_10Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_10Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassSumAll_10Mev_Bin2);
+  fhInvMassSumAll10MevBin2 = new TH1F("fhInvMassSumAll10MevBin2", "D0/D0bar invariant mass Bin2 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassSumAll10MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll10MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassSumAll10MevBin2);
 
-  fhInvMassD0Sum_5Mev_Bin2 = new TH1F("fhInvMassD0Sum_5Mev_Bin2", "D0 invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0Sum_5Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_5Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassD0Sum_5Mev_Bin2);
+  fhInvMassD0Sum5MevBin2 = new TH1F("fhInvMassD0Sum5MevBin2", "D0 invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0Sum5MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum5MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassD0Sum5MevBin2);
 
-  fhInvMassD0barSum_5Mev_Bin2 = new TH1F("fhInvMassD0barSum_5Mev_Bin2", "D0bar invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0barSum_5Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_5Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassD0barSum_5Mev_Bin2);
+  fhInvMassD0barSum5MevBin2 = new TH1F("fhInvMassD0barSum5MevBin2", "D0bar invariant mass Bin2 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0barSum5MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum5MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassD0barSum5MevBin2);
 
-  fhInvMassSumAll_5Mev_Bin2 = new TH1F("fhInvMassSumAll_5Mev_Bin2", "D0/D0bar invariant mass Bin2 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassSumAll_5Mev_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_5Mev_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassSumAll_5Mev_Bin2);
+  fhInvMassSumAll5MevBin2 = new TH1F("fhInvMassSumAll5MevBin2", "D0/D0bar invariant mass Bin2 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassSumAll5MevBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll5MevBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassSumAll5MevBin2);
 
-  fhInvMassD0Sum_10Mev_Bin3 = new TH1F("fhInvMassD0Sum_10Mev_Bin3", "D0 invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0Sum_10Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_10Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassD0Sum_10Mev_Bin3);
+  fhInvMassD0Sum10MevBin3 = new TH1F("fhInvMassD0Sum10MevBin3", "D0 invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0Sum10MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum10MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassD0Sum10MevBin3);
 
-  fhInvMassD0barSum_10Mev_Bin3 = new TH1F("fhInvMassD0barSum_10Mev_Bin3", "D0bar invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0barSum_10Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_10Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassD0barSum_10Mev_Bin3);
+  fhInvMassD0barSum10MevBin3 = new TH1F("fhInvMassD0barSum10MevBin3", "D0bar invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0barSum10MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum10MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassD0barSum10MevBin3);
 
-  fhInvMassSumAll_10Mev_Bin3 = new TH1F("fhInvMassSumAll_10Mev_Bin3", "D0/D0bar invariant mass Bin3 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassSumAll_10Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_10Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassSumAll_10Mev_Bin3);
+  fhInvMassSumAll10MevBin3 = new TH1F("fhInvMassSumAll10MevBin3", "D0/D0bar invariant mass Bin3 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassSumAll10MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll10MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassSumAll10MevBin3);
 
-  fhInvMassD0Sum_5Mev_Bin3 = new TH1F("fhInvMassD0Sum_5Mev_Bin3", "D0 invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0Sum_5Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_5Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassD0Sum_5Mev_Bin3);
+  fhInvMassD0Sum5MevBin3 = new TH1F("fhInvMassD0Sum5MevBin3", "D0 invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0Sum5MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum5MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassD0Sum5MevBin3);
 
-  fhInvMassD0barSum_5Mev_Bin3 = new TH1F("fhInvMassD0barSum_5Mev_Bin3", "D0bar invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0barSum_5Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_5Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassD0barSum_5Mev_Bin3);
+  fhInvMassD0barSum5MevBin3 = new TH1F("fhInvMassD0barSum5MevBin3", "D0bar invariant mass Bin3 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0barSum5MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum5MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassD0barSum5MevBin3);
 
-  fhInvMassSumAll_5Mev_Bin3 = new TH1F("fhInvMassSumAll_5Mev_Bin3", "D0/D0bar invariant mass Bin3 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassSumAll_5Mev_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_5Mev_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassSumAll_5Mev_Bin3);
+  fhInvMassSumAll5MevBin3 = new TH1F("fhInvMassSumAll5MevBin3", "D0/D0bar invariant mass Bin3 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassSumAll5MevBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll5MevBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassSumAll5MevBin3);
 
-  fhInvMassD0Sum_10Mev_Bin4 = new TH1F("fhInvMassD0Sum_10Mev_Bin4", "D0 invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0Sum_10Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_10Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassD0Sum_10Mev_Bin4);
+  fhInvMassD0Sum10MevBin4 = new TH1F("fhInvMassD0Sum10MevBin4", "D0 invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0Sum10MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum10MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassD0Sum10MevBin4);
 
-  fhInvMassD0barSum_10Mev_Bin4 = new TH1F("fhInvMassD0barSum_10Mev_Bin4", "D0bar invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0barSum_10Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_10Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassD0barSum_10Mev_Bin4);
+  fhInvMassD0barSum10MevBin4 = new TH1F("fhInvMassD0barSum10MevBin4", "D0bar invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0barSum10MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum10MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassD0barSum10MevBin4);
 
-  fhInvMassSumAll_10Mev_Bin4 = new TH1F("fhInvMassSumAll_10Mev_Bin4", "D0/D0bar invariant mass Bin4 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassSumAll_10Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_10Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassSumAll_10Mev_Bin4);
+  fhInvMassSumAll10MevBin4 = new TH1F("fhInvMassSumAll10MevBin4", "D0/D0bar invariant mass Bin4 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassSumAll10MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll10MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassSumAll10MevBin4);
 
-  fhInvMassD0Sum_5Mev_Bin4 = new TH1F("fhInvMassD0Sum_5Mev_Bin4", "D0 invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0Sum_5Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_5Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassD0Sum_5Mev_Bin4);
+  fhInvMassD0Sum5MevBin4 = new TH1F("fhInvMassD0Sum5MevBin4", "D0 invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0Sum5MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum5MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassD0Sum5MevBin4);
 
-  fhInvMassD0barSum_5Mev_Bin4 = new TH1F("fhInvMassD0barSum_5Mev_Bin4", "D0bar invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0barSum_5Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_5Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassD0barSum_5Mev_Bin4);
+  fhInvMassD0barSum5MevBin4 = new TH1F("fhInvMassD0barSum5MevBin4", "D0bar invariant mass Bin4 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0barSum5MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum5MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassD0barSum5MevBin4);
 
-  fhInvMassSumAll_5Mev_Bin4 = new TH1F("fhInvMassSumAll_5Mev_Bin4", "D0/D0bar invariant mass Bin4 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassSumAll_5Mev_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_5Mev_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassSumAll_5Mev_Bin4);
+  fhInvMassSumAll5MevBin4 = new TH1F("fhInvMassSumAll5MevBin4", "D0/D0bar invariant mass Bin4 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassSumAll5MevBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll5MevBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassSumAll5MevBin4);
 
-  fhInvMassD0Sum_10Mev_Bin5 = new TH1F("fhInvMassD0Sum_10Mev_Bin5", "D0 invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0Sum_10Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_10Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassD0Sum_10Mev_Bin5);
+  fhInvMassD0Sum10MevBin5 = new TH1F("fhInvMassD0Sum10MevBin5", "D0 invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0Sum10MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum10MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassD0Sum10MevBin5);
 
-  fhInvMassD0barSum_10Mev_Bin5 = new TH1F("fhInvMassD0barSum_10Mev_Bin5", "D0bar invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassD0barSum_10Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_10Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassD0barSum_10Mev_Bin5);
+  fhInvMassD0barSum10MevBin5 = new TH1F("fhInvMassD0barSum10MevBin5", "D0bar invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassD0barSum10MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum10MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassD0barSum10MevBin5);
 
-  fhInvMassSumAll_10Mev_Bin5 = new TH1F("fhInvMassSumAll_10Mev_Bin5", "D0/D0bar invariant mass Bin5 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
-  fhInvMassSumAll_10Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_10Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassSumAll_10Mev_Bin5);
+  fhInvMassSumAll10MevBin5 = new TH1F("fhInvMassSumAll10MevBin5", "D0/D0bar invariant mass Bin5 (good hyps); Inv. mass [GeV]; Entries/10 MeV",60,1.6,2.2);
+  fhInvMassSumAll10MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll10MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassSumAll10MevBin5);
 
-  fhInvMassD0Sum_5Mev_Bin5 = new TH1F("fhInvMassD0Sum_5Mev_Bin5", "D0 invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0Sum_5Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0Sum_5Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassD0Sum_5Mev_Bin5);
+  fhInvMassD0Sum5MevBin5 = new TH1F("fhInvMassD0Sum5MevBin5", "D0 invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0Sum5MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0Sum5MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassD0Sum5MevBin5);
 
-  fhInvMassD0barSum_5Mev_Bin5 = new TH1F("fhInvMassD0barSum_5Mev_Bin5", "D0bar invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassD0barSum_5Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassD0barSum_5Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassD0barSum_5Mev_Bin5);
+  fhInvMassD0barSum5MevBin5 = new TH1F("fhInvMassD0barSum5MevBin5", "D0bar invariant mass Bin5 (good hyp); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassD0barSum5MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassD0barSum5MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassD0barSum5MevBin5);
 
-  fhInvMassSumAll_5Mev_Bin5 = new TH1F("fhInvMassSumAll_5Mev_Bin5", "D0/D0bar invariant mass Bin5 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
-  fhInvMassSumAll_5Mev_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassSumAll_5Mev_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassSumAll_5Mev_Bin5);
+  fhInvMassSumAll5MevBin5 = new TH1F("fhInvMassSumAll5MevBin5", "D0/D0bar invariant mass Bin5 (good hyps); Inv. mass [GeV]; Entries/5 MeV",120,1.6,2.2);
+  fhInvMassSumAll5MevBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassSumAll5MevBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassSumAll5MevBin5);
 
-  fhInvMassMultipleOnly_Bin1 = new TH1F("fhInvMassMultipleOnly_Bin1", "D0/D0bar invariant mass Bin1 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
-  fhInvMassMultipleOnly_Bin1->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassMultipleOnly_Bin1->SetMinimum(0);
-  fOutput->Add(fhInvMassMultipleOnly_Bin1);
+  fhInvMassMultipleOnlyBin1 = new TH1F("fhInvMassMultipleOnlyBin1", "D0/D0bar invariant mass Bin1 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
+  fhInvMassMultipleOnlyBin1->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassMultipleOnlyBin1->SetMinimum(0);
+  fOutput->Add(fhInvMassMultipleOnlyBin1);
 
-  fhInvMassMultipleOnly_Bin2 = new TH1F("fhInvMassMultipleOnly_Bin2", "D0/D0bar invariant mass Bin2 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
-  fhInvMassMultipleOnly_Bin2->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassMultipleOnly_Bin2->SetMinimum(0);
-  fOutput2->Add(fhInvMassMultipleOnly_Bin2);
+  fhInvMassMultipleOnlyBin2 = new TH1F("fhInvMassMultipleOnlyBin2", "D0/D0bar invariant mass Bin2 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
+  fhInvMassMultipleOnlyBin2->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassMultipleOnlyBin2->SetMinimum(0);
+  fOutput2->Add(fhInvMassMultipleOnlyBin2);
 
-  fhInvMassMultipleOnly_Bin3 = new TH1F("fhInvMassMultipleOnly_Bin3", "D0/D0bar invariant mass Bin3 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
-  fhInvMassMultipleOnly_Bin3->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassMultipleOnly_Bin3->SetMinimum(0);
-  fOutput3->Add(fhInvMassMultipleOnly_Bin3);
+  fhInvMassMultipleOnlyBin3 = new TH1F("fhInvMassMultipleOnlyBin3", "D0/D0bar invariant mass Bin3 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
+  fhInvMassMultipleOnlyBin3->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassMultipleOnlyBin3->SetMinimum(0);
+  fOutput3->Add(fhInvMassMultipleOnlyBin3);
 
-  fhInvMassMultipleOnly_Bin4 = new TH1F("fhInvMassMultipleOnly_Bin4", "D0/D0bar invariant mass Bin4 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
-  fhInvMassMultipleOnly_Bin4->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassMultipleOnly_Bin4->SetMinimum(0);
-  fOutput4->Add(fhInvMassMultipleOnly_Bin4);
+  fhInvMassMultipleOnlyBin4 = new TH1F("fhInvMassMultipleOnlyBin4", "D0/D0bar invariant mass Bin4 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
+  fhInvMassMultipleOnlyBin4->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassMultipleOnlyBin4->SetMinimum(0);
+  fOutput4->Add(fhInvMassMultipleOnlyBin4);
 
-  fhInvMassMultipleOnly_Bin5 = new TH1F("fhInvMassMultipleOnly_Bin5", "D0/D0bar invariant mass Bin5 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
-  fhInvMassMultipleOnly_Bin5->Sumw2(); //Create structure to store sum of squares of weights
-  fhInvMassMultipleOnly_Bin5->SetMinimum(0);
-  fOutput5->Add(fhInvMassMultipleOnly_Bin5);
+  fhInvMassMultipleOnlyBin5 = new TH1F("fhInvMassMultipleOnlyBin5", "D0/D0bar invariant mass Bin5 (good hyps) - Multple hyps accepted only; Inv. mass [GeV]; Entries/10 MeV",120,1.6,2.2);
+  fhInvMassMultipleOnlyBin5->Sumw2(); //Create structure to store sum of squares of weights
+  fhInvMassMultipleOnlyBin5->SetMinimum(0);
+  fOutput5->Add(fhInvMassMultipleOnlyBin5);
 
   fScatterP4PID = new TH2F("fScatterP4PID", "Transverse momentum of K vs l-s Pi (D0 + D0bar); Pt of K [GeV/c]; Pt of Pi [GeV/c]",500,0.,5.,500,0.,5.);
   fScatterP4PID->SetMinimum(0);
@@ -539,35 +535,35 @@ void AliAnalysisTaskSESelectHF4Prong::UserCreateOutputObjects()
   fPIDSel->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
   fPIDSel->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
-  fPIDSel_Bin1 = new TH1F("fPIDSel_Bin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
-  fPIDSel_Bin1->SetMinimum(0);
-  fPIDSel_Bin1->GetXaxis()->SetBinLabel(1,"D0allhyp All");
-  fPIDSel_Bin1->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
-  fPIDSel_Bin1->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
+  fPIDSelBin1 = new TH1F("fPIDSelBin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
+  fPIDSelBin1->SetMinimum(0);
+  fPIDSelBin1->GetXaxis()->SetBinLabel(1,"D0allhyp All");
+  fPIDSelBin1->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
+  fPIDSelBin1->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
-  fPIDSel_Bin2 = new TH1F("fPIDSel_Bin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
-  fPIDSel_Bin2->SetMinimum(0);
-  fPIDSel_Bin2->GetXaxis()->SetBinLabel(1,"D0allhyp All");
-  fPIDSel_Bin2->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
-  fPIDSel_Bin2->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
+  fPIDSelBin2 = new TH1F("fPIDSelBin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
+  fPIDSelBin2->SetMinimum(0);
+  fPIDSelBin2->GetXaxis()->SetBinLabel(1,"D0allhyp All");
+  fPIDSelBin2->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
+  fPIDSelBin2->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
-  fPIDSel_Bin3 = new TH1F("fPIDSel_Bin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
-  fPIDSel_Bin3->SetMinimum(0);
-  fPIDSel_Bin3->GetXaxis()->SetBinLabel(1,"D0allhyp All");
-  fPIDSel_Bin3->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
-  fPIDSel_Bin3->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
+  fPIDSelBin3 = new TH1F("fPIDSelBin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
+  fPIDSelBin3->SetMinimum(0);
+  fPIDSelBin3->GetXaxis()->SetBinLabel(1,"D0allhyp All");
+  fPIDSelBin3->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
+  fPIDSelBin3->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
-  fPIDSel_Bin4 = new TH1F("fPIDSel_Bin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
-  fPIDSel_Bin4->SetMinimum(0);
-  fPIDSel_Bin4->GetXaxis()->SetBinLabel(1,"D0allhyp All");
-  fPIDSel_Bin4->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
-  fPIDSel_Bin4->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
+  fPIDSelBin4 = new TH1F("fPIDSelBin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
+  fPIDSelBin4->SetMinimum(0);
+  fPIDSelBin4->GetXaxis()->SetBinLabel(1,"D0allhyp All");
+  fPIDSelBin4->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
+  fPIDSelBin4->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
-  fPIDSel_Bin5 = new TH1F("fPIDSel_Bin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
-  fPIDSel_Bin5->SetMinimum(0);
-  fPIDSel_Bin5->GetXaxis()->SetBinLabel(1,"D0allhyp All");
-  fPIDSel_Bin5->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
-  fPIDSel_Bin5->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
+  fPIDSelBin5 = new TH1F("fPIDSelBin1", "Ratio of D0 selected by PID for Correction",3,0.,3.);
+  fPIDSelBin5->SetMinimum(0);
+  fPIDSelBin5->GetXaxis()->SetBinLabel(1,"D0allhyp All");
+  fPIDSelBin5->GetXaxis()->SetBinLabel(2,"D0allhyp PID");
+  fPIDSelBin5->GetXaxis()->SetBinLabel(3,"D0allhyp PID (hypok)");
 
   fMultipleHyps = new TH1F("fMultipleHyps", "N. of hyp. accepted for each candidate (accounted N. times)",8,0.,8.);
   fMultipleHyps->SetMinimum(0);
@@ -595,11 +591,11 @@ void AliAnalysisTaskSESelectHF4Prong::UserCreateOutputObjects()
   fOutputC->Add(fMultipleHypsType);
 
   fOutputC->Add(fPIDSel);
-  fOutput->Add(fPIDSel_Bin1);
-  fOutput2->Add(fPIDSel_Bin2);
-  fOutput3->Add(fPIDSel_Bin3);
-  fOutput4->Add(fPIDSel_Bin4);
-  fOutput5->Add(fPIDSel_Bin5);
+  fOutput->Add(fPIDSelBin1);
+  fOutput2->Add(fPIDSelBin2);
+  fOutput3->Add(fPIDSelBin3);
+  fOutput4->Add(fPIDSelBin4);
+  fOutput5->Add(fPIDSelBin5);
 
   fPtSel = new TH1F("fPtSel", "Pt of candidates accepted; Pt [GeV/c]; Entries/10 MeV",2000,0.,20.);
   fPtSel->SetMinimum(0);
@@ -732,11 +728,11 @@ void AliAnalysisTaskSESelectHF4Prong::UserExec(Option_t */*option*/)
    if(fSelected==1||fSelected==2||fSelected==3) {
       fPtVsY->Fill(ptPart,yPart);
       fPIDSel->Fill(0);
-        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSel_Bin1->Fill(0);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSel_Bin2->Fill(0);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSel_Bin3->Fill(0);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSel_Bin4->Fill(0);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSel_Bin5->Fill(0);
+        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSelBin1->Fill(0);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSelBin2->Fill(0);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSelBin3->Fill(0);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSelBin4->Fill(0);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSelBin5->Fill(0);
         }
       
 
@@ -771,11 +767,11 @@ void AliAnalysisTaskSESelectHF4Prong::UserExec(Option_t */*option*/)
    //number of CANDIDATES (regardless of hypotheses) passing PPR + PID - PAY ATTENTION: hypoth. for PID and PPR may not be the same!
    if (pidSelection > 0) {
         fPIDSel->Fill(1);
-        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSel_Bin1->Fill(1);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSel_Bin2->Fill(1);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSel_Bin3->Fill(1);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSel_Bin4->Fill(1);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSel_Bin5->Fill(1);
+        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSelBin1->Fill(1);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSelBin2->Fill(1);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSelBin3->Fill(1);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSelBin4->Fill(1);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSelBin5->Fill(1);
       }
    
 	   //number of hypoteses accepted per candidate after PPR
@@ -793,11 +789,11 @@ void AliAnalysisTaskSESelectHF4Prong::UserExec(Option_t */*option*/)
    //number of CANDIDATES (regardless of hypotheses) passing PPR + PID - PAY ATTENTION: hypoth. for PID and PPR must match (at least one)!
    if (hypD01 == 1 || hypD02 == 1 || hypD0bar1 == 1 || hypD0bar2 == 1) {
         fPIDSel->Fill(2);
-        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSel_Bin1->Fill(2);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSel_Bin2->Fill(2);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSel_Bin3->Fill(2);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSel_Bin4->Fill(2);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSel_Bin5->Fill(2);
+        if (ptPart >= ptBinH[0] && ptPart < ptBinH[1]) 	    fPIDSelBin1->Fill(2);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fPIDSelBin2->Fill(2);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fPIDSelBin3->Fill(2);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fPIDSelBin4->Fill(2);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fPIDSelBin5->Fill(2);
       }
 
 	   //number of hypoteses accepted per candidate after PPR and PID
@@ -826,35 +822,35 @@ void AliAnalysisTaskSESelectHF4Prong::UserExec(Option_t */*option*/)
    if (ptPart > ptBinH[0]) {
       // D01 hyp.
       if(hypD01==1) {
-        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnly_Bin1->Fill(fmassD0[0]);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnly_Bin2->Fill(fmassD0[0]);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnly_Bin3->Fill(fmassD0[0]);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnly_Bin4->Fill(fmassD0[0]);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnly_Bin5->Fill(fmassD0[0]);
+        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnlyBin1->Fill(fmassD0[0]);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnlyBin2->Fill(fmassD0[0]);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnlyBin3->Fill(fmassD0[0]);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnlyBin4->Fill(fmassD0[0]);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnlyBin5->Fill(fmassD0[0]);
        }
       // D02 hyp.
       if(hypD02==1) {
-        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnly_Bin1->Fill(fmassD0[1]);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnly_Bin2->Fill(fmassD0[1]);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnly_Bin3->Fill(fmassD0[1]);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnly_Bin4->Fill(fmassD0[1]);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnly_Bin5->Fill(fmassD0[1]);
+        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnlyBin1->Fill(fmassD0[1]);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnlyBin2->Fill(fmassD0[1]);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnlyBin3->Fill(fmassD0[1]);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnlyBin4->Fill(fmassD0[1]);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnlyBin5->Fill(fmassD0[1]);
        }
       // D0bar1 hyp.
       if(hypD0bar1==1) {
-	if (ptPart < ptBinH[1]) 	 	    	    fhInvMassMultipleOnly_Bin1->Fill(fmassD0bar[0]);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnly_Bin2->Fill(fmassD0bar[0]);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnly_Bin3->Fill(fmassD0bar[0]);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnly_Bin4->Fill(fmassD0bar[0]);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnly_Bin5->Fill(fmassD0bar[0]); 
+	if (ptPart < ptBinH[1]) 	 	    	    fhInvMassMultipleOnlyBin1->Fill(fmassD0bar[0]);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnlyBin2->Fill(fmassD0bar[0]);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnlyBin3->Fill(fmassD0bar[0]);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnlyBin4->Fill(fmassD0bar[0]);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnlyBin5->Fill(fmassD0bar[0]); 
        } 
       // D0bar2 hyp.
       if(hypD0bar2==1) {
-        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnly_Bin1->Fill(fmassD0bar[1]);
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnly_Bin2->Fill(fmassD0bar[1]);
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnly_Bin3->Fill(fmassD0bar[1]);
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnly_Bin4->Fill(fmassD0bar[1]);
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnly_Bin5->Fill(fmassD0bar[1]);
+        if (ptPart < ptBinH[1]) 	 		    fhInvMassMultipleOnlyBin1->Fill(fmassD0bar[1]);
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) fhInvMassMultipleOnlyBin2->Fill(fmassD0bar[1]);
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) fhInvMassMultipleOnlyBin3->Fill(fmassD0bar[1]);
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) fhInvMassMultipleOnlyBin4->Fill(fmassD0bar[1]);
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5]) fhInvMassMultipleOnlyBin5->Fill(fmassD0bar[1]);
        }
      }
 
@@ -871,101 +867,101 @@ void AliAnalysisTaskSESelectHF4Prong::UserExec(Option_t */*option*/)
       if(hypD01==1) {
 	fPtSel->Fill(ptPart);
         fScatterP4PID->Fill(trk1->Pt(),trk3->Pt());
-        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0Sum_10Mev_Bin1->Fill(fmassD0[0]);
-			         	 	  	  fhInvMassD0Sum_5Mev_Bin1->Fill(fmassD0[0]);
-	                                 		  fhInvMassSumAll_10Mev_Bin1->Fill(fmassD0[0]);
-        	                         		  fhInvMassSumAll_5Mev_Bin1->Fill(fmassD0[0]);}
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0Sum_10Mev_Bin2->Fill(fmassD0[0]);
-				      	 	  	     fhInvMassD0Sum_5Mev_Bin2->Fill(fmassD0[0]);
-	                          	     		     fhInvMassSumAll_10Mev_Bin2->Fill(fmassD0[0]);
-        	              	            		     fhInvMassSumAll_5Mev_Bin2->Fill(fmassD0[0]);}
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0Sum_10Mev_Bin3->Fill(fmassD0[0]);
-			   	       	  	  	     fhInvMassD0Sum_5Mev_Bin3->Fill(fmassD0[0]);
-                          		      	  	     fhInvMassSumAll_10Mev_Bin3->Fill(fmassD0[0]);
-                          	      		  	     fhInvMassSumAll_5Mev_Bin3->Fill(fmassD0[0]);}
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0Sum_10Mev_Bin4->Fill(fmassD0[0]);
-			   	       	  	  	     fhInvMassD0Sum_5Mev_Bin4->Fill(fmassD0[0]);
-                          		      	  	     fhInvMassSumAll_10Mev_Bin4->Fill(fmassD0[0]);
-                          	      		  	     fhInvMassSumAll_5Mev_Bin4->Fill(fmassD0[0]);}
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0Sum_10Mev_Bin5->Fill(fmassD0[0]);
-				         			fhInvMassD0Sum_5Mev_Bin5->Fill(fmassD0[0]);
-			                 			fhInvMassSumAll_10Mev_Bin5->Fill(fmassD0[0]);
-			                 			fhInvMassSumAll_5Mev_Bin5->Fill(fmassD0[0]);} 
+        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0Sum10MevBin1->Fill(fmassD0[0]);
+			         	 	  	  fhInvMassD0Sum5MevBin1->Fill(fmassD0[0]);
+	                                 		  fhInvMassSumAll10MevBin1->Fill(fmassD0[0]);
+        	                         		  fhInvMassSumAll5MevBin1->Fill(fmassD0[0]);}
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0Sum10MevBin2->Fill(fmassD0[0]);
+				      	 	  	     fhInvMassD0Sum5MevBin2->Fill(fmassD0[0]);
+	                          	     		     fhInvMassSumAll10MevBin2->Fill(fmassD0[0]);
+        	              	            		     fhInvMassSumAll5MevBin2->Fill(fmassD0[0]);}
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0Sum10MevBin3->Fill(fmassD0[0]);
+			   	       	  	  	     fhInvMassD0Sum5MevBin3->Fill(fmassD0[0]);
+                          		      	  	     fhInvMassSumAll10MevBin3->Fill(fmassD0[0]);
+                          	      		  	     fhInvMassSumAll5MevBin3->Fill(fmassD0[0]);}
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0Sum10MevBin4->Fill(fmassD0[0]);
+			   	       	  	  	     fhInvMassD0Sum5MevBin4->Fill(fmassD0[0]);
+                          		      	  	     fhInvMassSumAll10MevBin4->Fill(fmassD0[0]);
+                          	      		  	     fhInvMassSumAll5MevBin4->Fill(fmassD0[0]);}
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0Sum10MevBin5->Fill(fmassD0[0]);
+				         			fhInvMassD0Sum5MevBin5->Fill(fmassD0[0]);
+			                 			fhInvMassSumAll10MevBin5->Fill(fmassD0[0]);
+			                 			fhInvMassSumAll5MevBin5->Fill(fmassD0[0]);} 
      }
       // D02 hyp.
       if(hypD02==1) {
 	fPtSel->Fill(ptPart);
         fScatterP4PID->Fill(trk3->Pt(),trk1->Pt());
-        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0Sum_10Mev_Bin1->Fill(fmassD0[1]);
-			         	 	  	  fhInvMassD0Sum_5Mev_Bin1->Fill(fmassD0[1]);
-	                                 		  fhInvMassSumAll_10Mev_Bin1->Fill(fmassD0[1]);
-        	                         		  fhInvMassSumAll_5Mev_Bin1->Fill(fmassD0[1]);}
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0Sum_10Mev_Bin2->Fill(fmassD0[1]);
-				      	 	  	     fhInvMassD0Sum_5Mev_Bin2->Fill(fmassD0[1]);
-	                          	     		     fhInvMassSumAll_10Mev_Bin2->Fill(fmassD0[1]);
-        	              	            		     fhInvMassSumAll_5Mev_Bin2->Fill(fmassD0[1]);}
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0Sum_10Mev_Bin3->Fill(fmassD0[1]);
-			   	       	  	  	     fhInvMassD0Sum_5Mev_Bin3->Fill(fmassD0[1]);
-                          		      	  	     fhInvMassSumAll_10Mev_Bin3->Fill(fmassD0[1]);
-                          	      		  	     fhInvMassSumAll_5Mev_Bin3->Fill(fmassD0[1]);}
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0Sum_10Mev_Bin4->Fill(fmassD0[1]);
-			   	       	  	  	     fhInvMassD0Sum_5Mev_Bin4->Fill(fmassD0[1]);
-                          		      	  	     fhInvMassSumAll_10Mev_Bin4->Fill(fmassD0[1]);
-                          	      		  	     fhInvMassSumAll_5Mev_Bin4->Fill(fmassD0[1]);}
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0Sum_10Mev_Bin5->Fill(fmassD0[1]);
-				        			 fhInvMassD0Sum_5Mev_Bin5->Fill(fmassD0[1]);
-			                 			 fhInvMassSumAll_10Mev_Bin5->Fill(fmassD0[1]);
-			                			 fhInvMassSumAll_5Mev_Bin5->Fill(fmassD0[1]);}
+        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0Sum10MevBin1->Fill(fmassD0[1]);
+			         	 	  	  fhInvMassD0Sum5MevBin1->Fill(fmassD0[1]);
+	                                 		  fhInvMassSumAll10MevBin1->Fill(fmassD0[1]);
+        	                         		  fhInvMassSumAll5MevBin1->Fill(fmassD0[1]);}
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0Sum10MevBin2->Fill(fmassD0[1]);
+				      	 	  	     fhInvMassD0Sum5MevBin2->Fill(fmassD0[1]);
+	                          	     		     fhInvMassSumAll10MevBin2->Fill(fmassD0[1]);
+        	              	            		     fhInvMassSumAll5MevBin2->Fill(fmassD0[1]);}
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0Sum10MevBin3->Fill(fmassD0[1]);
+			   	       	  	  	     fhInvMassD0Sum5MevBin3->Fill(fmassD0[1]);
+                          		      	  	     fhInvMassSumAll10MevBin3->Fill(fmassD0[1]);
+                          	      		  	     fhInvMassSumAll5MevBin3->Fill(fmassD0[1]);}
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0Sum10MevBin4->Fill(fmassD0[1]);
+			   	       	  	  	     fhInvMassD0Sum5MevBin4->Fill(fmassD0[1]);
+                          		      	  	     fhInvMassSumAll10MevBin4->Fill(fmassD0[1]);
+                          	      		  	     fhInvMassSumAll5MevBin4->Fill(fmassD0[1]);}
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0Sum10MevBin5->Fill(fmassD0[1]);
+				        			 fhInvMassD0Sum5MevBin5->Fill(fmassD0[1]);
+			                 			 fhInvMassSumAll10MevBin5->Fill(fmassD0[1]);
+			                			 fhInvMassSumAll5MevBin5->Fill(fmassD0[1]);}
      }
       // D0bar1 hyp.
       if(hypD0bar1==1) {
 	fPtSel->Fill(ptPart);
         fScatterP4PID->Fill(trk0->Pt(),trk2->Pt());
-        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0barSum_10Mev_Bin1->Fill(fmassD0bar[0]);
-			         	 	  	  fhInvMassD0barSum_5Mev_Bin1->Fill(fmassD0bar[0]);
-                             		    		  fhInvMassSumAll_10Mev_Bin1->Fill(fmassD0bar[0]);
-                                 			  fhInvMassSumAll_5Mev_Bin1->Fill(fmassD0bar[0]);}
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0barSum_10Mev_Bin2->Fill(fmassD0bar[0]);
-				      	 	  	     fhInvMassD0barSum_5Mev_Bin2->Fill(fmassD0bar[0]);
-                           	     	 	  	     fhInvMassSumAll_10Mev_Bin2->Fill(fmassD0bar[0]);
-                       	            	 		     fhInvMassSumAll_5Mev_Bin2->Fill(fmassD0bar[0]);}
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0barSum_10Mev_Bin3->Fill(fmassD0bar[0]);
-			   	         	 	     fhInvMassD0barSum_5Mev_Bin3->Fill(fmassD0bar[0]);
-                          	      	 		     fhInvMassSumAll_10Mev_Bin3->Fill(fmassD0bar[0]);
-                          	      	 		     fhInvMassSumAll_5Mev_Bin3->Fill(fmassD0bar[0]);}
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0barSum_10Mev_Bin4->Fill(fmassD0bar[0]);
-			   	         	 	     fhInvMassD0barSum_5Mev_Bin4->Fill(fmassD0bar[0]);
-                          	      	 		     fhInvMassSumAll_10Mev_Bin4->Fill(fmassD0bar[0]);
-                          	      	 		     fhInvMassSumAll_5Mev_Bin4->Fill(fmassD0bar[0]);}
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0barSum_10Mev_Bin5->Fill(fmassD0bar[0]);
-				         			fhInvMassD0barSum_5Mev_Bin5->Fill(fmassD0bar[0]);
-			                 			fhInvMassSumAll_10Mev_Bin5->Fill(fmassD0bar[0]);
-			                 			fhInvMassSumAll_5Mev_Bin5->Fill(fmassD0bar[0]);}   
+        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0barSum10MevBin1->Fill(fmassD0bar[0]);
+			         	 	  	  fhInvMassD0barSum5MevBin1->Fill(fmassD0bar[0]);
+                             		    		  fhInvMassSumAll10MevBin1->Fill(fmassD0bar[0]);
+                                 			  fhInvMassSumAll5MevBin1->Fill(fmassD0bar[0]);}
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0barSum10MevBin2->Fill(fmassD0bar[0]);
+				      	 	  	     fhInvMassD0barSum5MevBin2->Fill(fmassD0bar[0]);
+                           	     	 	  	     fhInvMassSumAll10MevBin2->Fill(fmassD0bar[0]);
+                       	            	 		     fhInvMassSumAll5MevBin2->Fill(fmassD0bar[0]);}
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0barSum10MevBin3->Fill(fmassD0bar[0]);
+			   	         	 	     fhInvMassD0barSum5MevBin3->Fill(fmassD0bar[0]);
+                          	      	 		     fhInvMassSumAll10MevBin3->Fill(fmassD0bar[0]);
+                          	      	 		     fhInvMassSumAll5MevBin3->Fill(fmassD0bar[0]);}
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0barSum10MevBin4->Fill(fmassD0bar[0]);
+			   	         	 	     fhInvMassD0barSum5MevBin4->Fill(fmassD0bar[0]);
+                          	      	 		     fhInvMassSumAll10MevBin4->Fill(fmassD0bar[0]);
+                          	      	 		     fhInvMassSumAll5MevBin4->Fill(fmassD0bar[0]);}
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0barSum10MevBin5->Fill(fmassD0bar[0]);
+				         			fhInvMassD0barSum5MevBin5->Fill(fmassD0bar[0]);
+			                 			fhInvMassSumAll10MevBin5->Fill(fmassD0bar[0]);
+			                 			fhInvMassSumAll5MevBin5->Fill(fmassD0bar[0]);}   
      } 
       // D0bar2 hyp.
       if(hypD0bar2==1) {
 	fPtSel->Fill(ptPart);
         fScatterP4PID->Fill(trk2->Pt(),trk0->Pt());
-        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0barSum_10Mev_Bin1->Fill(fmassD0bar[1]);
-			         	 	  	  fhInvMassD0barSum_5Mev_Bin1->Fill(fmassD0bar[1]);
-                             		    		  fhInvMassSumAll_10Mev_Bin1->Fill(fmassD0bar[1]);
-                                 			  fhInvMassSumAll_5Mev_Bin1->Fill(fmassD0bar[1]);}
-        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0barSum_10Mev_Bin2->Fill(fmassD0bar[1]);
-				      	 	  	     fhInvMassD0barSum_5Mev_Bin2->Fill(fmassD0bar[1]);
-                           	     	 	  	     fhInvMassSumAll_10Mev_Bin2->Fill(fmassD0bar[1]);
-                       	            	 		     fhInvMassSumAll_5Mev_Bin2->Fill(fmassD0bar[1]);}
-        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0barSum_10Mev_Bin3->Fill(fmassD0bar[1]);
-			   	         	 	     fhInvMassD0barSum_5Mev_Bin3->Fill(fmassD0bar[1]);
-                          	      	 		     fhInvMassSumAll_10Mev_Bin3->Fill(fmassD0bar[1]);
-                          	      	 		     fhInvMassSumAll_5Mev_Bin3->Fill(fmassD0bar[1]);}
-        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0barSum_10Mev_Bin4->Fill(fmassD0bar[1]);
-			   	         	 	     fhInvMassD0barSum_5Mev_Bin4->Fill(fmassD0bar[1]);
-                          	      	 		     fhInvMassSumAll_10Mev_Bin4->Fill(fmassD0bar[1]);
-                          	      	 		     fhInvMassSumAll_5Mev_Bin4->Fill(fmassD0bar[1]);}
-        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0barSum_10Mev_Bin5->Fill(fmassD0bar[1]);
-				         			fhInvMassD0barSum_5Mev_Bin5->Fill(fmassD0bar[1]);
-			                 			fhInvMassSumAll_10Mev_Bin5->Fill(fmassD0bar[1]);
-			                 			fhInvMassSumAll_5Mev_Bin5->Fill(fmassD0bar[1]);} 
+        if (ptPart < ptBinH[1]) 	 		 {fhInvMassD0barSum10MevBin1->Fill(fmassD0bar[1]);
+			         	 	  	  fhInvMassD0barSum5MevBin1->Fill(fmassD0bar[1]);
+                             		    		  fhInvMassSumAll10MevBin1->Fill(fmassD0bar[1]);
+                                 			  fhInvMassSumAll5MevBin1->Fill(fmassD0bar[1]);}
+        else if (ptPart >= ptBinH[1] && ptPart < ptBinH[2]) {fhInvMassD0barSum10MevBin2->Fill(fmassD0bar[1]);
+				      	 	  	     fhInvMassD0barSum5MevBin2->Fill(fmassD0bar[1]);
+                           	     	 	  	     fhInvMassSumAll10MevBin2->Fill(fmassD0bar[1]);
+                       	            	 		     fhInvMassSumAll5MevBin2->Fill(fmassD0bar[1]);}
+        else if (ptPart >= ptBinH[2] && ptPart < ptBinH[3]) {fhInvMassD0barSum10MevBin3->Fill(fmassD0bar[1]);
+			   	         	 	     fhInvMassD0barSum5MevBin3->Fill(fmassD0bar[1]);
+                          	      	 		     fhInvMassSumAll10MevBin3->Fill(fmassD0bar[1]);
+                          	      	 		     fhInvMassSumAll5MevBin3->Fill(fmassD0bar[1]);}
+        else if (ptPart >= ptBinH[3] && ptPart < ptBinH[4]) {fhInvMassD0barSum10MevBin4->Fill(fmassD0bar[1]);
+			   	         	 	     fhInvMassD0barSum5MevBin4->Fill(fmassD0bar[1]);
+                          	      	 		     fhInvMassSumAll10MevBin4->Fill(fmassD0bar[1]);
+                          	      	 		     fhInvMassSumAll5MevBin4->Fill(fmassD0bar[1]);}
+        else if (ptPart >= ptBinH[4] && ptPart < ptBinH[5])	{fhInvMassD0barSum10MevBin5->Fill(fmassD0bar[1]);
+				         			fhInvMassD0barSum5MevBin5->Fill(fmassD0bar[1]);
+			                 			fhInvMassSumAll10MevBin5->Fill(fmassD0bar[1]);
+			                 			fhInvMassSumAll5MevBin5->Fill(fmassD0bar[1]);} 
      }
    }
 
@@ -1033,36 +1029,36 @@ void AliAnalysisTaskSESelectHF4Prong::Terminate(Option_t */*option*/)
     return;
   }
 
-  fhInvMassD0Sum_10Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_10Mev_Bin1"));
-  fhInvMassD0barSum_10Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_10Mev_Bin1"));
-  fhInvMassSumAll_10Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_10Mev_Bin1"));
-  fhInvMassD0Sum_5Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_5Mev_Bin1"));
-  fhInvMassD0barSum_5Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_5Mev_Bin1"));
-  fhInvMassSumAll_5Mev_Bin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_5Mev_Bin1"));
-  fhInvMassD0Sum_10Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_10Mev_Bin2"));
-  fhInvMassD0barSum_10Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_10Mev_Bin2"));
-  fhInvMassSumAll_10Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_10Mev_Bin2"));
-  fhInvMassD0Sum_5Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_5Mev_Bin2"));
-  fhInvMassD0barSum_5Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_5Mev_Bin2"));
-  fhInvMassSumAll_5Mev_Bin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_5Mev_Bin2"));
-  fhInvMassD0Sum_10Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_10Mev_Bin3"));
-  fhInvMassD0barSum_10Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_10Mev_Bin3"));
-  fhInvMassSumAll_10Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_10Mev_Bin3"));
-  fhInvMassD0Sum_5Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_5Mev_Bin3"));
-  fhInvMassD0barSum_5Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_5Mev_Bin3"));
-  fhInvMassSumAll_5Mev_Bin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_5Mev_Bin3"));
-  fhInvMassD0Sum_10Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_10Mev_Bin4"));
-  fhInvMassD0barSum_10Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_10Mev_Bin4"));
-  fhInvMassSumAll_10Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_10Mev_Bin4"));
-  fhInvMassD0Sum_5Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_5Mev_Bin4"));
-  fhInvMassD0barSum_5Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_5Mev_Bin4"));
-  fhInvMassSumAll_5Mev_Bin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_5Mev_Bin4"));
-  fhInvMassD0Sum_10Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_10Mev_Bin5"));
-  fhInvMassD0barSum_10Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_10Mev_Bin5"));
-  fhInvMassSumAll_10Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_10Mev_Bin5"));
-  fhInvMassD0Sum_5Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum_5Mev_Bin5"));
-  fhInvMassD0barSum_5Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum_5Mev_Bin5"));
-  fhInvMassSumAll_5Mev_Bin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll_5Mev_Bin5"));
+  fhInvMassD0Sum10MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum10MevBin1"));
+  fhInvMassD0barSum10MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum10MevBin1"));
+  fhInvMassSumAll10MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll10MevBin1"));
+  fhInvMassD0Sum5MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum5MevBin1"));
+  fhInvMassD0barSum5MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum5MevBin1"));
+  fhInvMassSumAll5MevBin1 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll5MevBin1"));
+  fhInvMassD0Sum10MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum10MevBin2"));
+  fhInvMassD0barSum10MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum10MevBin2"));
+  fhInvMassSumAll10MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll10MevBin2"));
+  fhInvMassD0Sum5MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum5MevBin2"));
+  fhInvMassD0barSum5MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum5MevBin2"));
+  fhInvMassSumAll5MevBin2 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll5MevBin2"));
+  fhInvMassD0Sum10MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum10MevBin3"));
+  fhInvMassD0barSum10MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum10MevBin3"));
+  fhInvMassSumAll10MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll10MevBin3"));
+  fhInvMassD0Sum5MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum5MevBin3"));
+  fhInvMassD0barSum5MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum5MevBin3"));
+  fhInvMassSumAll5MevBin3 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll5MevBin3"));
+  fhInvMassD0Sum10MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum10MevBin4"));
+  fhInvMassD0barSum10MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum10MevBin4"));
+  fhInvMassSumAll10MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll10MevBin4"));
+  fhInvMassD0Sum5MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum5MevBin4"));
+  fhInvMassD0barSum5MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum5MevBin4"));
+  fhInvMassSumAll5MevBin4 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll5MevBin4"));
+  fhInvMassD0Sum10MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum10MevBin5"));
+  fhInvMassD0barSum10MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum10MevBin5"));
+  fhInvMassSumAll10MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll10MevBin5"));
+  fhInvMassD0Sum5MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0Sum5MevBin5"));
+  fhInvMassD0barSum5MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassD0barSum5MevBin5"));
+  fhInvMassSumAll5MevBin5 = dynamic_cast<TH1F*>(fOutput->FindObject("fhInvMassSumAll5MevBin5"));
 
   fScatterP4PID = dynamic_cast<TH2F*>(fOutput->FindObject("fScatterP4PID"));
   fPtVsY = dynamic_cast<TH2F*>(fOutputC->FindObject("fPtVsY"));
@@ -1082,10 +1078,10 @@ void AliAnalysisTaskSESelectHF4Prong::Terminate(Option_t */*option*/)
   fCutPt = dynamic_cast<TH1F*>(fOutputC->FindObject("fCutPt"));
   fCutY = dynamic_cast<TH1F*>(fOutputC->FindObject("fCutY"));
   fPIDSel = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel"));
-  fPIDSel_Bin1 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel_Bin1"));
-  fPIDSel_Bin2 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel_Bin2"));
-  fPIDSel_Bin3 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel_Bin3"));
-  fPIDSel_Bin4 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel_Bin4"));
-  fPIDSel_Bin5 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSel_Bin5"));
+  fPIDSelBin1 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSelBin1"));
+  fPIDSelBin2 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSelBin2"));
+  fPIDSelBin3 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSelBin3"));
+  fPIDSelBin4 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSelBin4"));
+  fPIDSelBin5 = dynamic_cast<TH1F*>(fOutputC->FindObject("fPIDSelBin5"));
 }
 
