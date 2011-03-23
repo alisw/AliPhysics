@@ -503,6 +503,7 @@ Float_t AliAnalysisHadEtCorrections::GetNotIDCorrectionNoPID(const float pT){//G
   else{return 0.0;}
 }
 void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all corrections
+  //This is primarily for cross checking that the results we get from the macro that fills this class, GetCorrections.C, are sane
   cout<<"======================================================================="<<endl;
   cout<<"                   Report from "<<GetName()<<endl;
   cout<<"======================================================================="<<endl;
