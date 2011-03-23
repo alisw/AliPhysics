@@ -693,7 +693,7 @@ AliFlowTrack* AliFlowEvent::ReuseTrack(Int_t i)
   else 
   {
     pTrack = new AliFlowTrack();
-    fTrackCollection->Add(pTrack);
+    fTrackCollection->AddAtAndExpand(pTrack,i);
   }
   return pTrack;
 }
