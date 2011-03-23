@@ -235,15 +235,16 @@ void AliTRDresolution::UserExec(Option_t *opt)
 }
 
 //________________________________________________________
-Bool_t AliTRDresolution::Pulls(Double_t dyz[2], Double_t cov[3], Double_t tilt) const
+Bool_t AliTRDresolution::Pulls(Double_t* /*dyz[2]*/, Double_t* /*cov[3]*/, Double_t /*tilt*/) const
 {
 // Helper function to calculate pulls in the yz plane 
 // using proper tilt rotation
 // Uses functionality defined by AliTRDseedV1.
 
+  return kTRUE;
+/*
   Double_t t2(tilt*tilt);
   // exit door until a bug fix is found for AliTRDseedV1::GetCovSqrt
-  return kTRUE;
 
   // rotate along pad
   Double_t cc[3];
@@ -259,6 +260,7 @@ Bool_t AliTRDresolution::Pulls(Double_t dyz[2], Double_t cov[3], Double_t tilt) 
   dyz[0] = invsqr[0]*tmp + invsqr[1]*dyz[1];
   dyz[1] = invsqr[1]*tmp + invsqr[2]*dyz[1];
   return kTRUE;
+*/
 }
 
 //________________________________________________________
@@ -511,7 +513,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 
   Int_t sgm[3];
   Double_t cov[3], covR[7]/*, sqr[3], inv[3]*/;
-  Double_t pt, phi, tht, x, dx, dy[2], dz[2];
+  Double_t pt, phi, tht, x, y, z, dx, dy[2], dz[2];
   AliTRDseedV1 *fTracklet(NULL);  
   for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
     if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
@@ -520,13 +522,15 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     sgm[0] = AliTRDgeometry::GetSector(sgm[2]);
     sgm[1] = sgm[0] * AliTRDgeometry::kNstack + AliTRDgeometry::GetStack(sgm[2]);
     x   = fTracklet->GetX();
+    y   = fTracklet->GetY();
+    z   = fTracklet->GetZ();
     dx  = fTracklet->GetX0() - x;
     pt  = fTracklet->GetPt();
     phi = fTracklet->GetYref(1);
     tht = fTracklet->GetZref(1);
     // compute dy and dz
-    dy[0]= fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - fTracklet->GetY();
-    dz[0]= fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - fTracklet->GetZ();
+    dy[0]= fTracklet->GetYref(0)-dx*fTracklet->GetYref(1) - y;
+    dz[0]= fTracklet->GetZref(0)-dx*fTracklet->GetZref(1) - z;
     Double_t tilt(fTracklet->GetTilt())
             ,t2(tilt*tilt)
             ,corr(1./(1. + t2))
@@ -557,13 +561,23 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
 
     if(DebugLevel()>=1){
       UChar_t err(fTracklet->GetErrorMsg());
+      Double_t yt = fTracklet->GetYref(0),
+               ytx= fTracklet->GetYref(0)-dx*fTracklet->GetYref(1);
+      Int_t ncl = fTracklet->GetN();
       (*DebugStream()) << "tracklet"
         <<"pt="  << pt
+        <<"yt="  << yt
+        <<"ytx=" << ytx
         <<"phi=" << phi
         <<"tht=" << tht
         <<"det=" << sgm[2]
-        <<"dy0="  << dy[0]
-        <<"dz0="  << dz[0]
+        <<"n="   << ncl
+        <<"x="   << x
+        <<"y="   << y
+        <<"z="   << z
+        <<"dx="  << dx
+        <<"dy0=" << dy[0]
+        <<"dz0=" << dz[0]
         <<"dy="  << dy[1]
         <<"dz="  << dz[1]
         <<"dphi="<< dphi
@@ -768,6 +782,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
 
   if(track) fkTrack = track;
   return NULL;
+/*
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
     return NULL;
@@ -925,6 +940,7 @@ TH1* AliTRDresolution::PlotTrackOut(const AliTRDtrackV1 *track)
       << "\n";
   }
   return h;
+*/  
 }
 
 //________________________________________________________
@@ -3360,7 +3376,7 @@ Bool_t AliTRDresolution::LoadCorrection(const Char_t *file)
   TString fileList;
   FILE *filePtr = fopen(file, "rt");
   if(!filePtr){
-    AliError(Form("Couldn't open correction list \"%s\". Use cluster position as in reconstruction.", file));
+    AliWarning(Form("Couldn't open correction list \"%s\". Use cluster position as in reconstruction.", file));
     SetLoadCorrection();
     return kFALSE;
   }
