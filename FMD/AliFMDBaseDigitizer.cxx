@@ -622,7 +622,7 @@ AliFMDBaseDigitizer::MakeOutputTree(AliLoader* loader)
 
 //____________________________________________________________________
 void
-AliFMDBaseDigitizer::StoreDigits(AliLoader* loader)
+AliFMDBaseDigitizer::StoreDigits(const AliLoader* loader)
 {
   // Write the digits to disk 
   AliFMDDebug(5, ("Storing %d digits",   fFMD->Digits()->GetEntries()));

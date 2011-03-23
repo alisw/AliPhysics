@@ -251,7 +251,7 @@ protected:
   virtual TTree* MakeOutputTree(AliLoader* loader);
   /** Store the data using the loader 
       @param loader The loader */
-  virtual void StoreDigits(AliLoader* loader);
+  virtual void StoreDigits(const AliLoader* loader);
 
   AliFMD*         fFMD;              // Detector object 
   AliRunLoader*   fRunLoader;	     //! Run loader
