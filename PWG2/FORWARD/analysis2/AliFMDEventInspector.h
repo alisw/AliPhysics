@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDEVENTINSPECTOR_H
 #define ALIFMDEVENTINSPECTOR_H
+/**
+ * @file   AliFMDEventInspector.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:02:48 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <TNamed.h>
 class AliESDEvent;
 class TH2D;
@@ -30,6 +40,7 @@ class TList;
  *   - None
  *
  * @ingroup pwg2_forward_algo 
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDEventInspector : public TNamed
 {
@@ -232,6 +243,7 @@ protected:
    * 
    * @param esd  Event 
    * @param cent On return, the centrality or negative if not found
+   * @param qual On return, centrality quality flag
    * 
    * @return False on error, true otherwise 
    */

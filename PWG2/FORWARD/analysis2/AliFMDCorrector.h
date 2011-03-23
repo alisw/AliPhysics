@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDCORRECTOR_H
 #define ALIFMDCORRECTOR_H
+/**
+ * @file   AliFMDCorrector.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:01:02 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_aod
+ * 
+ */
 #include <TNamed.h>
 #include <TList.h>
 #include "AliForwardUtil.h"
@@ -31,6 +41,7 @@ class TH2D;
  *   - AliFMDCorrMergingEfficiency
  *
  * @ingroup pwg2_forward_algo 
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDCorrector : public TNamed
 {

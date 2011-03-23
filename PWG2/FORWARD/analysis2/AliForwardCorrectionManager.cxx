@@ -909,7 +909,7 @@ AliForwardCorrectionManager::Browse(TBrowser* b)
   if (fAcceptance)	  b->Add(fAcceptance,        "Acceptance corr");
 }
 
-#if 1
+#ifndef DOXY_INPUT
 //______________________________________________________________________________
 void AliForwardCorrectionManager::Streamer(TBuffer &R__b)
 {

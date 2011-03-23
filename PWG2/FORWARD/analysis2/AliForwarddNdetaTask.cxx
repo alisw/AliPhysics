@@ -170,6 +170,7 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
 void
 AliForwarddNdetaTask::CentralityBin::End(TList*      sums, 
 					 TList*      results,
+					 UShort_t    scheme,
 					 const TH1*  shapeCorr, 
 					 Double_t    trigEff,
 					 Bool_t      symmetrice,
@@ -178,25 +179,29 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 Bool_t      cutEdges, 
 					 Double_t    vzMin, 
 					 Double_t    vzMax, 
-					 Int_t       triggerMask)
+					 Int_t       triggerMask,
+					 Int_t       color,
+					 Int_t       marker)
 {
-  AliBasedNdetaTask::CentralityBin::End(sums, results, shapeCorr, trigEff, 
+  AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
+					shapeCorr, trigEff, 
 					symmetrice, rebin, corrEmpty, cutEdges,
-					vzMin, vzMax, triggerMask);
+					vzMin, vzMax, triggerMask,
+					color, marker);
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
 
   if (!fSumPrimary) return;
-  Int_t n           = (triggerMask == AliAODForwardMult::kNSD ? 
-		       Int_t(fTriggers->GetBinContent(kMCNSD)) : 
-		       Int_t(fTriggers->GetBinContent(kAll)));
+  Int_t n = (triggerMask == AliAODForwardMult::kNSD ? 
+	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
+	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));
 
     
   TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,
 					       fSumPrimary->GetNbinsY(),"e");
   dndetaTruth->Scale(1./n, "width");
 
-  SetHistogramAttributes(dndetaTruth, kBlue+3, 22, "Monte-Carlo truth");
+  SetHistogramAttributes(dndetaTruth, color-2, marker+4, "Monte-Carlo truth");
     
   fOutput->Add(dndetaTruth);
   fOutput->Add(Rebin(dndetaTruth, rebin, cutEdges));

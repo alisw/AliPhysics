@@ -3,6 +3,16 @@
 // 
 #ifndef ALIFORWARDMCCORRECTIONS_H
 #define ALIFORWARDMCCORRECTIONS_H
+/**
+ * @file   AliForwardMCCorrectionsTask.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:05:51 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <AliAnalysisTaskSE.h>
 #include <AliESDFMD.h>
 #include <TH1I.h>
@@ -29,6 +39,7 @@ class TTree;
  * 
  * @ingroup pwg2_forward_tasks
  * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  * 
  */
 class AliForwardMCCorrectionsTask : public AliAnalysisTaskSE
@@ -112,8 +123,8 @@ public:
    * Set the eta axis to use
    * 
    * @param nBins Number of bins
-   * @param vzMin Least @f$\eta@f$ 
-   * @param vzMax Largest @f$\eta@f$ 
+   * @param etaMin Least @f$\eta@f$ 
+   * @param etaMax Largest @f$\eta@f$ 
    */
   void SetEtaAxis(Int_t nBins, Double_t etaMin, Double_t etaMax=-1000000);
   /** 

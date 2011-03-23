@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDMCDENSITYCALCULATOR_H
 #define ALIFMDMCDENSITYCALCULATOR_H
+/**
+ * @file   AliFMDMCDensityCalculator.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:27 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include "AliFMDDensityCalculator.h"
 #include <TList.h>
 #include "AliForwardUtil.h"
@@ -27,6 +37,7 @@ class TProfile2D;
  *
  * @ingroup pwg2_forward_algo
  * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDMCDensityCalculator : public AliFMDDensityCalculator
 {
@@ -107,10 +118,8 @@ public:
   /** 
    * Calculate the charged particle density from the MC track references. 
    * 
-   * @param event  MC event
+   * @param fmd    FMD ESD event structure
    * @param hists  Histograms to fill
-   * @param vz     Interaction z coordinate @f$ v_z@f$
-   * @param vtxBin bin corresponding to @f$ v_z@f$
    * 
    * @return true on success
    */

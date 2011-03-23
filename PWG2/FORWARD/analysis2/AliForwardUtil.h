@@ -4,6 +4,16 @@
 //
 #ifndef ALIFORWARDUTIL_H
 #define ALIFORWARDUTIL_H
+/**
+ * @file   AliForwardUtil.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:06:54 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward 
+ */
 #include <TObject.h>
 #include <TString.h>
 #include <TObjArray.h>
@@ -22,14 +32,14 @@ class AliESDEvent;
 class AliForwardUtil : public TObject
 {
 public:
-    /** 
-     * Get the standard color for a ring  
-     *
-     * @param d Detector
-     * @param r Ring 
-     * 
-     * @return 
-     */
+  /** 
+   * Get the standard color for a ring  
+   *
+   * @param d Detector
+   * @param r Ring 
+   * 
+   * @return 
+   */
   static Color_t RingColor(UShort_t d, Char_t r)
   { 
     return ((d == 1 ? kRed : (d == 2 ? kGreen : kBlue))

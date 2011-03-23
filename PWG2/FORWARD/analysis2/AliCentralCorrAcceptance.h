@@ -4,6 +4,16 @@
 //
 #ifndef ALICENTRALCORRACCEPTANCE_H
 #define ALICENTRALCORRACCEPTANCE_H
+/**
+ * @file   AliCentralCorrAcceptance.h
+ * @author Hans Hjersing Dalsgaard 
+ * @date   Wed Mar 23 13:58:33 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_corr
+ */
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>
@@ -49,8 +59,6 @@ public:
   /** 
    * Get the acceptance correction @f$ a_{r,v}@f$ 
    *
-   * @param d  Detector number (1-3)
-   * @param r  Ring identifier (I or O)
    * @param v  Primary interaction point @f$z@f$ coordinate
    * 
    * @return The correction @f$ a_{r,v}@f$ 
@@ -59,8 +67,6 @@ public:
   /** 
    * Get the acceptance correction @f$ a_{r,v}@f$ 
    *
-   * @param d  Detector number (1-3)
-   * @param r  Ring identifier (I or O)
    * @param b  Bin corresponding to the primary interaction point 
    *           @f$z@f$ coordinate (1 based)
    * 
@@ -83,8 +89,6 @@ public:
    * Set the acceptance correction @f$ a_{r,v}(\eta)@f$.
    * Note, that the object takes ownership of the passed pointer.
    * 
-   * @param d    Detector number (1-3)
-   * @param r    Ring identifier (I or O)
    * @param v    Primary interaction point @f$z@f$ coordinate  
    * @param h    @f$ a_{r,v}(\eta)@f$ 
    * 
@@ -95,8 +99,6 @@ public:
    * Set the acceptance correction @f$ a_{r,v}(\eta)@f$ 
    * Note, that the object takes ownership of the passed pointer.
    * 
-   * @param d    Detector number (1-3)
-   * @param r    Ring identifier (I or O)
    * @param b    Bin corresponding to the primary interaction point 
    *             @f$z@f$ coordinate  (1 based)
    * @param h    @f$ a_{r,v}(\eta)@f$ 

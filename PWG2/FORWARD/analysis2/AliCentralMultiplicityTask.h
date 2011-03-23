@@ -4,6 +4,16 @@
 // 
 #ifndef ALICENTRALMULTIPLICITYTASK_H
 #define ALICENTRALMULTIPLICITYTASK_H
+/**
+ * @file   AliCentralMultiplicityTask.h
+ * @author Hans Hjersing Dalsgaard
+ * @date   Wed Mar 23 14:00:03 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_aod
+ * 
+ */
 #include <AliAnalysisTaskSE.h>
 #include "AliForwardUtil.h"
 #include "AliAODCentralMult.h"
@@ -15,25 +25,6 @@ class TH2D;
 class TList;
 class TTree;
 
-
-/** 
- * @mainpage ALICE PWG2 Forward Multiplcity Analysis 
- */
-/** 
- * @defgroup pwg2_forward PWG2 Forward analysis
- *
- * Code to do the multiplicity analysis in the central pseudo-rapidity
- * regions
- *
- */
-/** 
- * @defgroup pwg2_forward_tasks Tasks
- *
- * Code to do the multiplicity analysis in the central pseudo-rapidity
- * regions
- *
- * @ingroup pwg2_forward 
- */
 /** 
  * Class that calculates the multiplicity in the
  * central region event-by-event
@@ -49,6 +40,7 @@ class TTree;
  * @par Corrections used 
  * 
  * @ingroup pwg2_forward_tasks
+ * @ingroup pwg2_forward_aod
  * 
  */
 class AliCentralMultiplicityTask : public AliAnalysisTaskSE

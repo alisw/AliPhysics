@@ -1,29 +1,34 @@
 /**
- * @file 
+ * @file   MakedNdeta.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 09:41:56 2011
  * 
- * @ingroup pwg2_forward_scripts
+ * @brief  Run second pass analysis - make @f$ dN/d\eta@f$
+ * 
+ * @ingroup pwg2_forward_scripts_makers
  */
-
 /** 
- * Run first pass of the analysis - that is read in ESD and produce AOD
+ * Run second pass analysis - make @f$ dN/d\eta@f$
  * 
- * @param esddir    ESD input directory. Any file matching the pattern 
- *                  *AliESDs*.root are added to the chain 
- * @param nEvents   Number of events to process.  If 0 or less, then 
- *                  all events are analysed
- * @param proof     Run in proof mode 
- * @param mc        Run over MC data
+ * @param aoddir     AOD input directory. Any file matching the pattern 
+ *                   *AliAODs*.root are added to the chain 
+ * @param nEvents    Number of events to process.  If 0 or less, then 
+ *                   all events are analysed
+ * @param trig       Trigger to use 
+ * @param useCent    Whether to use centrality or not 
+ * @param scheme     Normalisation scheme 
+ * @param vzMin      Least @f$ v_z@f$ (centimeter)
+ * @param vzMax      Largest @f$ v_z@f$ (centimeter)
+ * @param proof      If larger then 1, run in PROOF-Lite mode with this 
+ *                   many number of workers. 
  *
- * If PROOF mode is selected, then Terminate will be run on the master node 
- * in any case. 
- * 
- *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_dndeta
  */
 void MakedNdeta(const char* aoddir   = ".", 
 	        Int_t       nEvents  = -1, 
 		const char* trig     = "INEL",
 		Bool_t      useCent  = false,
+		const char* scheme   = 0,
 		Double_t    vzMin    = -10,
 		Double_t    vzMax    = +10,
 	        Int_t       proof    = 0)
@@ -60,10 +65,10 @@ void MakedNdeta(const char* aoddir   = ".",
   // --- Add tasks ---------------------------------------------------
   // Forward 
   gROOT->LoadMacro("AddTaskForwarddNdeta.C");
-  AddTaskForwarddNdeta(trig, vzMin, vzMax, useCent, true);
+  AddTaskForwarddNdeta(trig, vzMin, vzMax, useCent, scheme, true);
   // Central
   gROOT->LoadMacro("AddTaskCentraldNdeta.C");
-  AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent);
+  AddTaskCentraldNdeta(trig, vzMin, vzMax, useCent, scheme);
 
   
   // --- Run the analysis --------------------------------------------

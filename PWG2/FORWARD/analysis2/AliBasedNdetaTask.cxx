@@ -29,11 +29,11 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fTriggerEff(1),
     fShapeCorr(0),
     fListOfCentralities(0),
-    fUseShapeCorr(true),
     fSNNString(0),
     fSysString(0),
     fCent(0),
-    fCentAxis(0)
+    fCentAxis(0),
+    fNormalizationScheme(kFull)
 {
   // 
   // Constructor
@@ -55,11 +55,11 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fTriggerEff(1),
     fShapeCorr(0),
     fListOfCentralities(0),
-    fUseShapeCorr(true),
     fSNNString(0),
     fSysString(0),
     fCent(0),
-    fCentAxis(0)
+    fCentAxis(0),
+    fNormalizationScheme(kFull)
 {
   // 
   // Constructor
@@ -86,11 +86,11 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fTriggerEff(o.fTriggerEff),
     fShapeCorr(o.fShapeCorr),
     fListOfCentralities(o.fListOfCentralities),
-    fUseShapeCorr(o.fUseShapeCorr),
     fSNNString(o.fSNNString),
     fSysString(o.fSysString),
     fCent(o.fCent),
-    fCentAxis(o.fCentAxis)
+    fCentAxis(o.fCentAxis),
+    fNormalizationScheme(o.fNormalizationScheme)
 {}
 
 //____________________________________________________________________
@@ -160,6 +160,34 @@ AliBasedNdetaTask::MakeCentralityBin(const char* name,
   //
   return new CentralityBin(name, low, high);
 }
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetNormalizationScheme(const char* what)
+{
+  // 
+  // Set normalisation scheme 
+  // 
+  UShort_t    scheme = 0;
+  TString     twhat(what);
+  twhat.ToUpper();
+  TObjString* opt;
+  TIter       next(twhat.Tokenize(" ,|"));
+  while ((opt = static_cast<TObjString*>(next()))) { 
+    TString s(opt->GetString());
+    if      (s.IsNull()) continue;
+    if      (s.CompareTo("EVENT")     == 0) scheme |= kEventLevel;
+    else if (s.CompareTo("ALTEVENT")  == 0) scheme |= kAltEventLevel;
+    else if (s.CompareTo("SHAPE")     == 0) scheme |= kShape;
+    else if (s.CompareTo("BACKGROUND")== 0) scheme |= kBackground;
+    else if (s.CompareTo("FULL")      == 0) scheme |= kFull;
+    else if (s.CompareTo("ALTFULL")   == 0) scheme |= kAltFull;
+    else if (s.CompareTo("NONE")      == 0) scheme |= kNone;
+    else 
+      Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
+  }
+  SetNormalizationScheme(scheme);
+}
+
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::SetTriggerMask(const char* mask)
@@ -282,7 +310,8 @@ AliBasedNdetaTask::UserExec(Option_t *)
   TH2D* dataMC = GetHistogram(aod, true);
 
   // Loop over centrality bins 
-  CentralityBin* allBin = static_cast<CentralityBin*>(fListOfCentralities->At(0));
+  CentralityBin* allBin = 
+    static_cast<CentralityBin*>(fListOfCentralities->At(0));
   allBin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, data, dataMC);
   
   // Find this centrality bin 
@@ -292,7 +321,8 @@ AliBasedNdetaTask::UserExec(Option_t *)
     if (icent >= 1 && icent <= fCentAxis->GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin)
-      thisBin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, data, dataMC);
+      thisBin->ProcessEvent(forward, fTriggerMask, fVtxMin, fVtxMax, 
+			    data, dataMC);
   }
 
   // Here, we get the update 
@@ -470,9 +500,9 @@ AliBasedNdetaTask::Terminate(Option_t *)
   TIter next(fListOfCentralities);
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) 
-    bin->End(fSums, fOutput, fUseShapeCorr ? fShapeCorr : 0, fTriggerEff,
+    bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
 	     fSymmetrice, fRebin, fCorrEmpty, fCutEdges, 
-	     fVtxMin, fVtxMax, fTriggerMask);
+	     fVtxMin, fVtxMax, fTriggerMask, GetColor(), GetMarker());
 
   // Output collision energy string 
   if (fSNNString) fOutput->Add(fSNNString->Clone());
@@ -498,7 +528,17 @@ AliBasedNdetaTask::Terminate(Option_t *)
   // Output trigger efficiency and shape correction 
   fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
   if (fShapeCorr) fOutput->Add(fShapeCorr);
+
+  TString tscheme;
+  if (fNormalizationScheme & kEventLevel)    tscheme.Append("EVENTLEVEL,");
+  if (fNormalizationScheme & kAltEventLevel) tscheme.Append("ALTEVENTLEVEL,");
+  if (fNormalizationScheme & kBackground)    tscheme.Append("BACKGROUND,");
+  if (fNormalizationScheme & kShape)         tscheme.Append("SHAPE,");
   
+  TNamed* scheme = new TNamed("scheme", tscheme.Data()); 
+  scheme->SetUniqueID(fNormalizationScheme); 
+  fOutput->Add(scheme);
+
   PostData(2, fOutput);
 }
 //________________________________________________________________________
@@ -791,23 +831,8 @@ AliBasedNdetaTask::CentralityBin::CreateOutputObjects(TList* dir)
   fSums->SetOwner();
   dir->Add(fSums);
 
-  fTriggers = new TH1D("triggers", "Number of triggers", 
-		       kAccepted, 1, kAccepted);
-  fTriggers->SetYTitle("# of events");
-  fTriggers->GetXaxis()->SetBinLabel(kAll,         "All events");
-  fTriggers->GetXaxis()->SetBinLabel(kB,           "w/B trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kA,           "w/A trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kC,           "w/C trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kE,           "w/E trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kMB,          "w/Collision trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kWithVertex,  "w/Vertex");
-  fTriggers->GetXaxis()->SetBinLabel(kWithTrigger, "w/Selected trigger");
-  fTriggers->GetXaxis()->SetBinLabel(kPileUp,      "w/Pileup");
-  fTriggers->GetXaxis()->SetBinLabel(kAccepted,    "Accepted by cut");
-  fTriggers->GetXaxis()->SetNdivisions(kAccepted, false);
-  fTriggers->SetFillColor(kRed+1);
-  fTriggers->SetFillStyle(3001);
-  fTriggers->SetStats(0);
+  fTriggers = AliAODForwardMult::MakeTriggerHistogram("triggers");
+  fTriggers->SetDirectory(0);
   fSums->Add(fTriggers);
 }
 //____________________________________________________________________
@@ -851,46 +876,9 @@ AliBasedNdetaTask::CentralityBin::CheckEvent(const AliAODForwardMult* forward,
   //    true if the event is to be used 
   //
   if (!forward) return false;
-  
-  // Check the centrality class unless this is the 'all' bin 
-  // if (!IsAllBin()) { 
-  //   Double_t centrality = forward->GetCentrality();
-  //  if (centrality < fLow || centrality >= fHigh) return false;
-  // }
-  
-  fTriggers->AddBinContent(kAll);
-  if (forward->IsTriggerBits(AliAODForwardMult::kB)) 
-    fTriggers->AddBinContent(kB);
-  if (forward->IsTriggerBits(AliAODForwardMult::kA)) 
-    fTriggers->AddBinContent(kA);
-  if (forward->IsTriggerBits(AliAODForwardMult::kC)) 
-    fTriggers->AddBinContent(kC);
-  if (forward->IsTriggerBits(AliAODForwardMult::kE)) 
-    fTriggers->AddBinContent(kE);
-  if (forward->IsTriggerBits(AliAODForwardMult::kInel)) 
-    fTriggers->AddBinContent(kMB);
-  if (forward->IsTriggerBits(AliAODForwardMult::kMCNSD)) 
-    fTriggers->AddBinContent(kMCNSD);
-  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) 
-    fTriggers->AddBinContent(kPileUp);
-  
-  // Check if we have an event of interest. 
-  if (!forward->IsTriggerBits(triggerMask)) return false;
-  
-  //Check for pileup
-  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return false;
-  
-  fTriggers->AddBinContent(kWithTrigger);
-  
-  // Check that we have a valid vertex
-  if (!forward->HasIpZ()) return false;
-  fTriggers->AddBinContent(kWithVertex);
 
-  // Check that vertex is within cuts 
-  if (!forward->InRange(vzMin, vzMax)) return false;
-  fTriggers->AddBinContent(kAccepted);
-  
-  return true;
+  // We do not check for centrality here - it's already done 
+  return forward->CheckEvent(triggerMask, vzMin, vzMax, 0, 0, fTriggers);
 }
   
   
@@ -924,6 +912,7 @@ AliBasedNdetaTask::CentralityBin::ProcessEvent(const AliAODForwardMult* forward,
 void 
 AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
 				      TList*      results,
+				      UShort_t    scheme,
 				      const TH1*  shapeCorr, 
 				      Double_t    trigEff,
 				      Bool_t      symmetrice,
@@ -932,7 +921,9 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      Bool_t      cutEdges, 
 				      Double_t    vzMin, 
 				      Double_t    vzMax, 
-				      Int_t       triggerMask) 
+				      Int_t       triggerMask,
+				      Int_t       color, 
+				      Int_t       marker) 
 {
   // 
   // End of processing 
@@ -964,7 +955,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 
   fSum      = static_cast<TH2D*>(fSums->FindObject(GetName()));
   fSumMC    = static_cast<TH2D*>(fSums->FindObject(Form("%sMC", GetName())));
-  fTriggers = static_cast<TH1D*>(fSums->FindObject("triggers"));
+  fTriggers = static_cast<TH1I*>(fSums->FindObject("triggers"));
 
   if (!fTriggers) { 
     AliError("Couldn't find histogram 'triggers' in list");
@@ -974,16 +965,17 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     AliError(Form("Couldn't find histogram '%s' in list", GetName()));
     return;
   }
-  
-  Int_t nAll        = Int_t(fTriggers->GetBinContent(kAll));
-  Int_t nB          = Int_t(fTriggers->GetBinContent(kB));
-  Int_t nA          = Int_t(fTriggers->GetBinContent(kA));
-  Int_t nC          = Int_t(fTriggers->GetBinContent(kC));
-  Int_t nE          = Int_t(fTriggers->GetBinContent(kE));
-  Int_t nMB         = Int_t(fTriggers->GetBinContent(kMB));
-  Int_t nTriggered  = Int_t(fTriggers->GetBinContent(kWithTrigger));
-  Int_t nWithVertex = Int_t(fTriggers->GetBinContent(kWithVertex));
-  Int_t nAccepted   = Int_t(fTriggers->GetBinContent(kAccepted));
+
+  TH1I& t = *fTriggers;
+  Int_t nAll        = Int_t(t.GetBinContent(AliAODForwardMult::kBinAll));
+  Int_t nB          = Int_t(t.GetBinContent(AliAODForwardMult::kBinB));
+  Int_t nA          = Int_t(t.GetBinContent(AliAODForwardMult::kBinA));
+  Int_t nC          = Int_t(t.GetBinContent(AliAODForwardMult::kBinC));
+  Int_t nE          = Int_t(t.GetBinContent(AliAODForwardMult::kBinE));
+  Int_t nMB         = Int_t(t.GetBinContent(AliAODForwardMult::kBinInel));
+  Int_t nTriggered  = Int_t(t.GetBinContent(AliAODForwardMult::kWithTrigger));
+  Int_t nWithVertex = Int_t(t.GetBinContent(AliAODForwardMult::kWithVertex));
+  Int_t nAccepted   = Int_t(t.GetBinContent(AliAODForwardMult::kAccepted));
   Int_t nGood       = nB - nA - nC + 2 * nE;
 
   
@@ -1005,7 +997,6 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // Scaling 
   //  N_A + N_A/N_V (N_T - N_V) = N_A + N_A/N_V*N_T - N_A 
   //                            = N_A/N_V * N_T 
-  // 
   // where 
   //    N_A = nAccepted 
   //    N_V = nWithVertex 
@@ -1015,17 +1006,38 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // where 
   //    E_V=N_V/N_T is the vertex efficiency from data 
   // 
+  // If we calculate the number of events with no vertex as 
+  // (N_T - N_A), we get 
+  //  
+  //  N_A + N_A/N_V (N_T - N_A) = N_A (1 + 1/N_V (N_T - N_A))
+  //                            = N_A (1 + N_T/N_V - N_A/N_V)
+  //                            = N_A (1 + 1/E_V - N_A/N_V)
+  // 
   // Double_t alpha    = Double_t(nAccepted) / nWithVertex;
   // Double_t vNorm    = nAccepted + alpha*(nTriggered - nWithVertex);
-  AliInfo(Form("Calculating event normalisation as "
-	       "1 / trigEff * nAccepted * nTriggered / nWithVertex "
-	       "= 1/%f * %d * %d / %d = %f",
-	       trigEff, nAccepted, nTriggered, nWithVertex,
-	       1. / trigEff * nAccepted * double(nTriggered) / nWithVertex));
-  Double_t vNorm    = double(nWithVertex) / double(nTriggered);
-  Double_t vtxEff   = vNorm;
-  Double_t ntotal   = vtxEff * trigEff;
-  
+  Double_t ntotal = 1;
+  Double_t vtxEff = double(nWithVertex) / double(nTriggered);;
+  Bool_t   shape  = (scheme & kShape);
+  if     (scheme & kEventLevel) {
+    AliInfo(Form("Calculating event normalisation as "
+		 "1 / trigEff * nAccepted * nTriggered / nWithVertex "
+		 "= 1/%f * %d * %d / %d = %f",
+		 trigEff, nAccepted, nTriggered, nWithVertex,
+		 1. / trigEff * nAccepted * double(nTriggered) / nWithVertex));
+    ntotal = vtxEff * trigEff;
+  }
+  else if (scheme & kAltEventLevel) {
+    AliInfo(Form("Calculating event normalisation as " 
+		 "1 / trigEff * nAccepted * (1 + nTriggered / nWithVertex - "
+		 "nAccepted / nWithVertex) = "
+		 "1/ %f * %d (1 + %d / %d - %d / %d) = %f", 
+		 trigEff, nAccepted, nTriggered, nWithVertex, 
+		 nAccepted, nWithVertex, 
+		 1/trigEff * nAccepted * (1 + double(nTriggered)/nWithVertex - 
+					double(nAccepted) / nWithVertex)));
+    ntotal = trigEff * 1 / (1 + double(nTriggered)/nWithVertex - 
+			    double(nAccepted) / nWithVertex);
+  }
 
   AliInfo(Form("Total of %9d events for %s\n"
 	       "                   of these %9d are triggered minimum bias\n"
@@ -1053,7 +1065,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   norm->SetDirectory(0);
 
   // Scale by shape correction 
-  if(shapeCorr) fSum->Divide(shapeCorr);
+  if(shape && shapeCorr) fSum->Divide(shapeCorr);
   else AliInfo("No shape correction specified, or disabled");
   
   // Project on X axis 
@@ -1067,8 +1079,9 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   // Scale by the vertex efficiency 
   dndeta->Scale(ntotal, "width");
   
-  SetHistogramAttributes(dndeta, kRed+1, 20, Form("ALICE %s", name));
-  SetHistogramAttributes(norm, kRed+1,20,Form("ALICE %s normalisation", name)); 
+  SetHistogramAttributes(dndeta, color, marker, Form("ALICE %s", name));
+  SetHistogramAttributes(norm,   color, marker, Form("ALICE %s normalisation", 
+						     name)); 
 
   fOutput->Add(fTriggers->Clone());
   if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
@@ -1087,12 +1100,13 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     // Normalize to the acceptance 
     dndetaMC->Divide(normMC);
     // Scale by the vertex efficiency 
-    dndetaMC->Scale(vNorm, "width");
+    dndetaMC->Scale(ntotal, "width");
     normMC->Scale(1. / nAccepted);
 
-    SetHistogramAttributes(dndetaMC, kRed+3, 21, Form("ALICE %s (MC)",name));
-    SetHistogramAttributes(normMC, kRed+3, 21, Form("ALICE %s (MC) "
-						    "normalisation",name)); 
+    SetHistogramAttributes(dndetaMC, color+2, marker, 
+			   Form("ALICE %s (MC)",name));
+    SetHistogramAttributes(normMC,   color+2, marker, 
+			   Form("ALICE %s (MC) normalisation",name)); 
 
     fOutput->Add(dndetaMC);
     if (symmetrice)   fOutput->Add(Symmetrice(dndetaMC));    
@@ -1103,9 +1117,10 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     if (symmetrice)   
       fOutput->Add(Symmetrice(Rebin(dndetaMC, rebin, cutEdges)));
   }
-  if (!IsAllBin()) return;
 
   // Temporary stuff 
+  if (!IsAllBin()) return;
+
   TFile* forward = TFile::Open("forward.root", "READ");
   if (!forward)  { 
     AliWarning(Form("No forward.root file found"));
@@ -1134,8 +1149,8 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
       if (shapeCorrProj) oEta->Divide(shapeCorrProj);
       oEta->Scale(ntotal/nAccepted, "width");
       oEta->SetDirectory(0);
-      oEta->SetMarkerStyle(21);
-      oEta->SetMarkerColor(kCyan+3);
+      oEta->SetMarkerStyle(marker+4);
+      oEta->SetMarkerColor(color+5);
       fOutput->Add(oEta);
       fOutput->Add(Rebin(oEta, rebin, false));
     }
@@ -1160,8 +1175,8 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
       if (shapeCorrProj) oEta->Divide(shapeCorrProj);
       oEta->Scale(ntotal/nAccepted, "width");
       oEta->SetDirectory(0);
-      oEta->SetMarkerStyle(22);
-      oEta->SetMarkerColor(kMagenta+2);
+      oEta->SetMarkerStyle(marker);
+      oEta->SetMarkerColor(color+5);
       fOutput->Add(oEta);
       fOutput->Add(Rebin(oEta, rebin, false));
     }

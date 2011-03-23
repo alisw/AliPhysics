@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDMCCORRECTOR_H
 #define ALIFMDMCCORRECTOR_H
+/**
+ * @file   AliFMDMCCorrector.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:15 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include "AliFMDCorrector.h"
 #include <TList.h>
 class TProfile2D;
@@ -33,6 +43,7 @@ class TH2;
  *
  * @ingroup pwg2_forward_algo
  * @ingroup pwg2_forward_mc
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDMCCorrector : public AliFMDCorrector
 {

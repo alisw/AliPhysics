@@ -19,6 +19,7 @@ others=0
 published=1
 ratios=1
 asymm=1 
+scheme="full"
 dopass1=0
 dopass2=0
 dopass3=0
@@ -57,12 +58,24 @@ Options:
 	-J,--show-published	Show ALICE published data   ($published)
 	-R,--show-ratios	Show ratios to other data   ($ratios)
 	-Z,--show-asymmetry	Show asymmetry 		    ($asymm)
+	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
+	-T,--title STRING       Title on plots              ($tit)
 
 TYPE is a comma or space separated list of 
  
   INEL	      Inelastic triggers (V0A|V0C|SPD)
   INEL>0      As above + N_ch > 0 in -0.5<eta<+0.5
   NSD         Non-single diffractive ((VOA&VOC)|N_ch > 5 -1.9<eta<+1.9)
+
+SCHEME is a comma or space separated list of 
+
+  NONE          No event-level normalization except trivial one 
+  EVENTLEVEL    Event-level normalization 
+  ALTEVENTLEVEL Event-level normalization (alternative version)
+  BACKGROUND    Not implemented yet 
+  SHAPE         Shape correction 
+  FULL          Same as EVENTLEVEL,BACKGROUND,SHAPE
+  ALTFULL       Same as ALTEVENTLEVEL,BACKGROUND,SHAPE
 
 If NWORKERS is 0, then the analysis will be run in local mode. 
 EOF
@@ -120,6 +133,8 @@ while test $# -gt 0 ; do
 	-J|--show-published)  published=`toggle $published`	;;
 	-R|--show-ratios)     ratios=`toggle $ratios`	;;
 	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
+	-S|--scheme)          scheme=`echo $2 | tr ' ' ','` ; shift ;;
+	-T|--title)           tit=$2 ; shift ;; 
 	-t|--type)           
 	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    type=$2
@@ -175,7 +190,7 @@ fi
 if test $dopass2 -gt 0 ; then
     rotate ${output2}
 
-    args=(\(\".\",$nev,\"$type\",$cent,$vzmin,$vzmax,$proof\))
+    args=(\(\".\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi
@@ -200,7 +215,7 @@ if test $dopass3 -gt 0 ; then
     if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
     if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
 
-    args=(\(\"${output2}\"\,${flags},\"\",$rebin \))
+    args=(\(\"${output2}\"\,${flags},\"$tit\",$rebin \))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
 	args=(\(\"${output1}\"\))
     fi
