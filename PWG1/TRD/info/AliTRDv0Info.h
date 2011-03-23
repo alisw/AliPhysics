@@ -38,29 +38,29 @@ public:
   enum ETRDv0Info{
     kNV0param = 10
     ,kNlayer   = AliTRDgeometry::kNlayer
-    ,kNDetectors = 3//TPC, TOF, ITS (TOF and ITS not implemented yet)
-    ,kNDaughters = 2//for positive and negative track
-    ,kNDecays = 4//number of decay types considered for reference data (conversions, K0s, Lambda, Anti-Lambda)  
     ,kNMomBins = 2//number of different momentum bins to consider for different cuts; first example: below /above 2.5 GeV-> to be refined!
     ,kNArmenteros = 2//number of Armenteros-Polanski parameters
   };
 
   enum EDaughter{  
     kNeg = 0
-    ,kPos = 1
+    ,kPos
+    ,kNDaughters  //for positive and negative track
   };
 
   enum EDecayType{
     kGamma = 0
-    ,kK0s = 1
-    ,kLambda = 2
-    ,kAntiLambda = 3
+    ,kK0s
+    ,kLambda
+    ,kAntiLambda
+    ,kNDecays     //number of decay types considered for reference data (conversions, K0s, Lambda, Anti-Lambda)
   };
 
   enum EDetector{
     kTPC = 0
-    ,kTOF = 1
-    ,kITS = 2
+    ,kTOF
+    ,kITS
+    ,kNDetectors  //TPC, TOF, ITS (TOF and ITS not implemented yet)
   };
 
 

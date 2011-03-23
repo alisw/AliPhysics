@@ -1615,6 +1615,7 @@ void AliTRDcheckESD::PlotCentSummary() {
   TList* l=gPad->GetListOfPrimitives();
   TVirtualPad* pad=0x0;  
 
+  TH3F *h3(NULL), *h3p(NULL), *h3n(NULL);
   Int_t padsForEffs[5] = {0,3,6,1,4};
   for(Int_t iCent=1; iCent<6; ++iCent) {
     // TPC-TRD matching efficiencies
@@ -1622,22 +1623,33 @@ void AliTRDcheckESD::PlotCentSummary() {
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
     pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    TH1F* hFeffP = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
-				 dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+iCent)), kTRUE);
-    TH1F* hFeffN = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
-				 dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+iCent)), kTRUE);
-    TH1F* hFeffP4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+iCent)), kTRUE);
-    TH1F* hFeffN4 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+iCent)), kTRUE);
-    TH1F* hFeffP5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+iCent)), kTRUE);
-    TH1F* hFeffN5 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+iCent)), kTRUE);
-    TH1F* hFeffP6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+iCent)), kTRUE);
-    TH1F* hFeffN6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)),
-				  dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+iCent)), kTRUE);
+    //
+    if(!(h3p = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)))) continue;
+    if(!(h3n = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+iCent)))) continue;
+    // =============================================
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+iCent)))) continue;
+    TH1F* hFeffP = EfficiencyTRD(h3p, h3, kTRUE);
+    //
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+iCent)))) continue;
+    TH1F* hFeffN = EfficiencyTRD(h3n, h3, kTRUE);
+    // =============================================
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos4+iCent)))) continue;
+    TH1F* hFeffP4 = EfficiencyTRD(h3p, h3, kTRUE);
+    //
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg4+iCent)))) continue;
+    TH1F* hFeffN4 = EfficiencyTRD(h3n, h3, kTRUE);
+    // =============================================
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos5+iCent)))) continue;
+    TH1F* hFeffP5 = EfficiencyTRD(h3p, h3, kTRUE);
+    //
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg5+iCent)))) continue;
+    TH1F* hFeffN5 = EfficiencyTRD(h3n, h3, kTRUE);
+    // =============================================
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos6+iCent)))) continue;
+    TH1F* hFeffP6 = EfficiencyTRD(h3p, h3, kTRUE);
+    //
+    if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+iCent)))) continue;
+    TH1F* hFeffN6 = EfficiencyTRD(h3n, h3, kTRUE);
   
     TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
     h2F->SetStats(kFALSE);

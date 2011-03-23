@@ -1599,6 +1599,7 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
 	// Project centrality of the 2 histograms
 	//TH2 *hProjCentX = dynamic_cast<TH2 *>(hPhx->Project3D("yx")),
 	TH2 *hProjCentT = dynamic_cast<TH2 *>(hPht->Project3D("yx"));
+  if(!hProjCentT) return kFALSE;
 	//hProjCentX->SetName("hProjCentX");
 	hProjCentT->SetName("hProjCentT");
 	// Draw 2D histogram versus time on pad 2
