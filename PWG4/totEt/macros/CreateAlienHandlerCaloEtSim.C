@@ -17,7 +17,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
    plugin->SetROOTVersion("v5-28-00a");
-   plugin->SetAliROOTVersion("v4-21-17b-AN");
+   plugin->SetAliROOTVersion("v4-21-18a-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -58,9 +58,9 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
 
   // No need for output file names. Procedure is automatic. <-- not true
-  plugin->SetDefaultOutputs(kFALSE);
+  //plugin->SetDefaultOutputs(kFALSE);
   //plugin->SetOutputFiles(outputName.Data());
-  plugin->SetOutputFiles("Et.ESD.sim.EMCAL.root event_stat.root");
+  //plugin->SetOutputFiles("Et.ESD.sim.EMCAL.root event_stat.root");
   // No need define the files to be archived. Note that this is handled automatically by the plugin.
   //   plugin->SetOutputArchive("log_archive.zip:stdout,stderr");
   // Set a name for the generated analysis macro (default MyAnalysis.C) Make this unique !
@@ -71,7 +71,7 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   plugin->SetMaxInitFailed(5);
   // Optionally resubmit threshold.
-  plugin->SetMasterResubmitThreshold(90);
+  //plugin->SetMasterResubmitThreshold(10);
   // Optionally set time to live (default 30000 sec)
   plugin->SetTTL(20000);
   // Optionally set input format (default xml-single)
