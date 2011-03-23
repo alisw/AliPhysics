@@ -8,14 +8,14 @@
 #include "PhysicalConstants.h"  // from StarClassLibrary
 
 // the strangeness guys used a different naming system (of course)
-static const double M_LAMBDA        = kLambdaMassC2;
-static const double M_KAON_0_SHORT  = kKaon0ShortMassC2;
-static const double M_PROTON        = kProtonMassC2;
-static const double M_PION_PLUS     = kPionPlusMassC2;
-static const double M_PION_MINUS    = kPionMinusMassC2;
-static const double M_XI_MINUS      = kXiMinusMassC2;
-static const double M_OMEGA_MINUS   = 1672.45;
-static const double M_KAON_MINUS    = 493.677;
-static const double M_KAON_PLUS     = 493.677;
+static const double kMLAMBDA        = kLambdaMassC2;
+static const double kMKAON0SHORT  = kKaon0ShortMassC2;
+static const double kMPROTON        = kProtonMassC2;
+static const double kMPIONPLUS     = kPionPlusMassC2;
+static const double kMPIONMINUS    = kPionMinusMassC2;
+static const double kMXIMINUS      = kXiMinusMassC2;
+static const double kMOMEGAMINUS   = 1672.45;
+static const double kMKAONMINUS    = 493.677;
+static const double kMKAONPLUS     = 493.677;
 
 #endif
