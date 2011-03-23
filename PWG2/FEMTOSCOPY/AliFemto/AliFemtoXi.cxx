@@ -39,10 +39,10 @@ void AliFemtoXi::UpdateXi(){
    fPtotXi = fMomXi.Mag();
    fPtBac  = MomBac().Perp();
    fPtotBac= MomBac().Mag();
-   fEXi= ::sqrt(fPtotXi*fPtotXi+M_XI_MINUS*M_XI_MINUS);
-   fEOmega= ::sqrt(fPtotXi*fPtotXi+M_OMEGA_MINUS*M_OMEGA_MINUS);
-   fEBacPion = ::sqrt(PtotBac()*PtotBac()+M_PION_MINUS*M_PION_MINUS);
-   fEBacKaon = ::sqrt(PtotBac()*PtotBac()+M_KAON_MINUS*M_KAON_MINUS);
+   fEXi= ::sqrt(fPtotXi*fPtotXi+kMXIMINUS*kMXIMINUS);
+   fEOmega= ::sqrt(fPtotXi*fPtotXi+kMOMEGAMINUS*kMOMEGAMINUS);
+   fEBacPion = ::sqrt(PtotBac()*PtotBac()+kMPIONMINUS*kMPIONMINUS);
+   fEBacKaon = ::sqrt(PtotBac()*PtotBac()+kMKAONMINUS*kMKAONMINUS);
 
    tMomV0AlongXi  =  MomV0()*fMomXi / ::sqrt(::pow(fPtotXi,2));
    tMomBacAlongXi =  MomBac()*fMomXi / ::sqrt(::pow(fPtotXi,2));
@@ -53,10 +53,10 @@ void AliFemtoXi::UpdateXi(){
    fMassOmega = ::sqrt(::pow(EBacKaon()+ELambda(),2)-::pow(fPtotXi,2));
 
    fRapXi = 0.5*::log( (EXi()+fMomXi.z()) / (EXi()-fMomXi.z()) );
-   fCTauXi = M_XI_MINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
+   fCTauXi = kMXIMINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
    
    fRapOmega = 0.5*::log( (EOmega()+fMomXi.z()) / (EOmega()-fMomXi.z()) );// eO,
-   fCTauOmega = M_OMEGA_MINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
+   fCTauOmega = kMOMEGAMINUS*(fDecayLengthXi) / ::sqrt( ::pow((double)fMomXi.Mag(),2.) );
 }
 // -----------------------------------------------------------------------
 #ifdef __ROOT__

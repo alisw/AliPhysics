@@ -175,8 +175,8 @@ public:
 #endif
 
 protected:
-    AliFmThreeVector<T> mThreeVector; // The spatial three-vector
-    T	             mX4;             // The fourth components
+    AliFmThreeVector<T> fThreeVector; // The spatial three-vector
+    T	             fX4;             // The fourth components
 #ifdef __ROOT__
   ClassDef(AliFmLorentzVector,3)
 #endif
@@ -187,7 +187,7 @@ protected:
 //
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(T ax, T ay, T az, T at)
-    : mThreeVector(ax, ay, az), mX4(at) { /* nop */ }
+    : fThreeVector(ax, ay, az), fX4(at) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::~AliFmLorentzVector() { /* nopt */ }    
@@ -195,13 +195,13 @@ AliFmLorentzVector<T>::~AliFmLorentzVector() { /* nopt */ }
 template<class T>
 const AliFmThreeVector<T>& AliFmLorentzVector<T>::vect() const 
 {
-    return mThreeVector;
+    return fThreeVector;
 }
 
 template<class T>
 T AliFmLorentzVector<T>::m2() const
 {
-    return (mX4*mX4 - mThreeVector*mThreeVector);    
+    return (fX4*fX4 - fThreeVector*fThreeVector);    
 }
 
 template<class T>
@@ -240,78 +240,78 @@ T AliFmLorentzVector<T>::mt() const
 }
 
 template<class T>
-void AliFmLorentzVector<T>::SetPx(T ax) {mThreeVector.SetX(ax);}
+void AliFmLorentzVector<T>::SetPx(T ax) {fThreeVector.SetX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetPy(T ay) {mThreeVector.SetY(ay);}
+void AliFmLorentzVector<T>::SetPy(T ay) {fThreeVector.SetY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetPz(T az) {mThreeVector.SetZ(az);}
+void AliFmLorentzVector<T>::SetPz(T az) {fThreeVector.SetZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetX(T ax) {mThreeVector.SetX(ax);}
+void AliFmLorentzVector<T>::SetX(T ax) {fThreeVector.SetX(ax);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetY(T ay) {mThreeVector.SetY(ay);}
+void AliFmLorentzVector<T>::SetY(T ay) {fThreeVector.SetY(ay);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetZ(T az) {mThreeVector.SetZ(az);}
+void AliFmLorentzVector<T>::SetZ(T az) {fThreeVector.SetZ(az);}
 
 template<class T>
-void AliFmLorentzVector<T>::SetT(T at) {mX4 = at;}
+void AliFmLorentzVector<T>::SetT(T at) {fX4 = at;}
 
 template<class T>
-void AliFmLorentzVector<T>::SetE(T ae) {mX4 = ae;}
+void AliFmLorentzVector<T>::SetE(T ae) {fX4 = ae;}
 
 template<class T>
-T AliFmLorentzVector<T>::x() const {return mThreeVector.x();}
+T AliFmLorentzVector<T>::x() const {return fThreeVector.x();}
 
 template<class T>
-T AliFmLorentzVector<T>::y() const {return mThreeVector.y();}
+T AliFmLorentzVector<T>::y() const {return fThreeVector.y();}
 
 template<class T>
-T AliFmLorentzVector<T>::z() const {return mThreeVector.z();}
+T AliFmLorentzVector<T>::z() const {return fThreeVector.z();}
 
 template<class T>
-T AliFmLorentzVector<T>::px() const {return mThreeVector.x();}
+T AliFmLorentzVector<T>::px() const {return fThreeVector.x();}
 
 template<class T>
-T AliFmLorentzVector<T>::py() const {return mThreeVector.y();}
+T AliFmLorentzVector<T>::py() const {return fThreeVector.y();}
 
 template<class T>
-T AliFmLorentzVector<T>::pz() const {return mThreeVector.z();}
+T AliFmLorentzVector<T>::pz() const {return fThreeVector.z();}
 
 template<class T>
-T AliFmLorentzVector<T>::e() const {return mX4;}
+T AliFmLorentzVector<T>::e() const {return fX4;}
 
 template<class T>
-T AliFmLorentzVector<T>::t() const {return mX4;}
+T AliFmLorentzVector<T>::t() const {return fX4;}
 
 template<class T>
-T AliFmLorentzVector<T>::Perp() const {return mThreeVector.Perp();}
+T AliFmLorentzVector<T>::Perp() const {return fThreeVector.Perp();}
 
 template<class T>
-T AliFmLorentzVector<T>::Perp2() const {return mThreeVector.Perp2();}
+T AliFmLorentzVector<T>::Perp2() const {return fThreeVector.Perp2();}
 
 template<class T>
-T AliFmLorentzVector<T>::PseudoRapidity() const {return mThreeVector.PseudoRapidity();}
+T AliFmLorentzVector<T>::PseudoRapidity() const {return fThreeVector.PseudoRapidity();}
 
 template<class T>
-T AliFmLorentzVector<T>::Phi() const {return mThreeVector.Phi();}
+T AliFmLorentzVector<T>::Phi() const {return fThreeVector.Phi();}
 
 template<class T>
-T AliFmLorentzVector<T>::Theta() const {return mThreeVector.Theta();}
+T AliFmLorentzVector<T>::Theta() const {return fThreeVector.Theta();}
 
 template<class T>
-T AliFmLorentzVector<T>::CosTheta() const {return mThreeVector.CosTheta();}
+T AliFmLorentzVector<T>::CosTheta() const {return fThreeVector.CosTheta();}
 
 template<class T>
 T AliFmLorentzVector<T>::operator() (size_t i) const
 {
     if (i < 3)
-        return mThreeVector(i);
+        return fThreeVector(i);
     else if (i == 3)
-        return mX4;
+        return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");  
@@ -326,16 +326,16 @@ template<class T>
 T& AliFmLorentzVector<T>::operator() (size_t i)
 {
     if (i < 3)
-        return mThreeVector(i);
+        return fThreeVector(i);
     else if (i == 3)
-        return mX4;
+        return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmLorentzVector<T>::operator(): bad index");  
 #else
       cerr << "AliFmLorentzVector<T>::operator(): bad index." << endl;
 #endif
-      return mX4;
+      return fX4;
     }
 }
 
@@ -343,9 +343,9 @@ template<class T>
 T AliFmLorentzVector<T>::operator[] (size_t i) const
 {
     if (i < 3)
-        return mThreeVector[i];
+        return fThreeVector[i];
     else if (i == 3)
-        return mX4;
+        return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
@@ -360,29 +360,29 @@ template<class T>
 T& AliFmLorentzVector<T>::operator[] (size_t i)
 {
     if (i < 3)
-        return mThreeVector[i];
+        return fThreeVector[i];
     else if (i == 3)
-        return mX4;
+        return fX4;
     else {
 #ifndef ST_NO_EXCEPTIONS
       throw out_of_range("AliFmLorentzVector<T>::operator[]: bad index"); 
 #else
       cerr << "AliFmLorentzVector<T>::operator[]: bad index." << endl;
 #endif
-      return mX4;
+      return fX4;
     }
 }
 
 template<class T>
 T AliFmLorentzVector<T>::Rapidity() const
 {
-    return 0.5*::log((mX4+mThreeVector.z())/(mX4-mThreeVector.z())+1e-20);
+    return 0.5*::log((fX4+fThreeVector.z())/(fX4-fThreeVector.z())+1e-20);
 }
 
 template<class T>
 AliFmLorentzVector<T> AliFmLorentzVector<T>::operator- ()
 {
-    return AliFmLorentzVector<T>(-mX4,-mThreeVector);
+    return AliFmLorentzVector<T>(-fX4,-fThreeVector);
 }
 
 template<class T>
@@ -394,16 +394,16 @@ AliFmLorentzVector<T> AliFmLorentzVector<T>::operator+ ()
 template<class T>
 AliFmLorentzVector<T>& AliFmLorentzVector<T>::operator*= (double c)
 {
-    mThreeVector *= c;
-    mX4 *= c;
+    fThreeVector *= c;
+    fX4 *= c;
     return *this;
 }
 
 template<class T>
 AliFmLorentzVector<T>& AliFmLorentzVector<T>::operator/= (double c)
 {
-    mThreeVector /= c;
-    mX4 /= c;
+    fThreeVector /= c;
+    fX4 /= c;
     return *this;
 }
 
@@ -413,17 +413,17 @@ AliFmLorentzVector<T>& AliFmLorentzVector<T>::operator/= (double c)
 template<class T>
 template<class X>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmThreeVector<X> &vec, T at)
-	: mThreeVector(vec), mX4(at) { /* nop */ }
+	: fThreeVector(vec), fX4(at) { /* nop */ }
 
 template<class T>
 template<class X>
 AliFmLorentzVector<T>::AliFmLorentzVector(T at, const AliFmThreeVector<X> &vec)
-	: mThreeVector(vec), mX4(at) { /* nop */ }
+	: fThreeVector(vec), fX4(at) { /* nop */ }
 
 template<class T>
 template<class X>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmLorentzVector<X> &vec)
-	: mThreeVector(vec.vect()), mX4(vec.t()) { /* nop */ }
+	: fThreeVector(vec.vect()), fX4(vec.t()) { /* nop */ }
 
 template<class T>
 template<class X>
@@ -442,7 +442,7 @@ template<class T>
 template<class X>
 void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<X>& v)
 {
-    mThreeVector = v;
+    fThreeVector = v;
 }
 
 template<class T>
@@ -450,8 +450,8 @@ template<class X>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator=(const AliFmLorentzVector<X>& vec)
 {
-    mThreeVector = vec.vect();
-    mX4 = vec.t();
+    fThreeVector = vec.vect();
+    fX4 = vec.t();
     return *this;
 }
 
@@ -460,7 +460,7 @@ template<class X>
 bool
 AliFmLorentzVector<T>::operator== (const AliFmLorentzVector<X>& v) const
 {
-    return (mThreeVector == v.vect()) && (mX4 == v.t());
+    return (fThreeVector == v.vect()) && (fX4 == v.t());
 }
 
 template<class T>
@@ -476,8 +476,8 @@ template<class X>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator+= (const AliFmLorentzVector<X>& v)
 {
-    mThreeVector += v.vect();
-    mX4 += v.t();
+    fThreeVector += v.vect();
+    fX4 += v.t();
     return *this;
 }
 
@@ -486,8 +486,8 @@ template<class X>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator-= (const AliFmLorentzVector<X>& v)
 {
-    mThreeVector -= v.vect();
-    mX4 -= v.t();
+    fThreeVector -= v.vect();
+    fX4 -= v.t();
     return *this;
 }
 
@@ -496,27 +496,27 @@ AliFmLorentzVector<T>::operator-= (const AliFmLorentzVector<X>& v)
 
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmThreeVector<float> &vec, T t)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+	: fThreeVector(vec), fX4(t) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmThreeVector<double> &vec, T t)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+	: fThreeVector(vec), fX4(t) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(T t, const AliFmThreeVector<float> &vec)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+	: fThreeVector(vec), fX4(t) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(T t, const AliFmThreeVector<double> &vec)
-	: mThreeVector(vec), mX4(t) { /* nop */ }
+	: fThreeVector(vec), fX4(t) { /* nop */ }
 
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmLorentzVector<float> &vec)
-	: mThreeVector(vec.vect()), mX4(vec.t()) { /* nop */ }
+	: fThreeVector(vec.vect()), fX4(vec.t()) { /* nop */ }
     
 template<class T>
 AliFmLorentzVector<T>::AliFmLorentzVector(const AliFmLorentzVector<double> &vec)
-	: mThreeVector(vec.vect()), mX4(vec.t()) { /* nop */ }
+	: fThreeVector(vec.vect()), fX4(vec.t()) { /* nop */ }
     
 template<class T>
 AliFmLorentzVector<T>
@@ -545,21 +545,21 @@ AliFmLorentzVector<T>::boost(const AliFmLorentzVector<double>& pframe) const
 template<class T>
 void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<float>& v)
 {
-    mThreeVector = v;
+    fThreeVector = v;
 }
 
 template<class T>
 void AliFmLorentzVector<T>::SetVect(const AliFmThreeVector<double>& v)
 {
-    mThreeVector = v;
+    fThreeVector = v;
 }
 
 template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator=(const AliFmLorentzVector<float>& vec)
 {
-    mThreeVector = vec.vect();
-    mX4 = vec.t();
+    fThreeVector = vec.vect();
+    fX4 = vec.t();
     return *this;
 }
 
@@ -567,8 +567,8 @@ template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator=(const AliFmLorentzVector<double>& vec)
 {
-    mThreeVector = vec.vect();
-    mX4 = vec.t();
+    fThreeVector = vec.vect();
+    fX4 = vec.t();
     return *this;
 }
 
@@ -576,14 +576,14 @@ template<class T>
 bool
 AliFmLorentzVector<T>::operator== (const AliFmLorentzVector<float>& v) const
 {
-    return (this->vect() == v.vect()) && (mX4 == v.t());
+    return (this->vect() == v.vect()) && (fX4 == v.t());
 }
 
 template<class T>
 bool
 AliFmLorentzVector<T>::operator== (const AliFmLorentzVector<double>& v) const
 {
-    return (mThreeVector == v.vect()) && (mX4 == v.t());
+    return (fThreeVector == v.vect()) && (fX4 == v.t());
 }
 
 template<class T>
@@ -604,8 +604,8 @@ template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator+= (const AliFmLorentzVector<float>& v)
 {
-    mThreeVector += v.vect();
-    mX4 += v.t();
+    fThreeVector += v.vect();
+    fX4 += v.t();
     return *this;
 }
 
@@ -613,8 +613,8 @@ template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator+= (const AliFmLorentzVector<double>& v)
 {
-    mThreeVector += v.vect();
-    mX4 += v.t();
+    fThreeVector += v.vect();
+    fX4 += v.t();
     return *this;
 }
 
@@ -622,8 +622,8 @@ template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator-= (const AliFmLorentzVector<float>& v)
 {
-    mThreeVector -= v.vect();
-    mX4 -= v.t();
+    fThreeVector -= v.vect();
+    fX4 -= v.t();
     return *this;
 }
 
@@ -631,8 +631,8 @@ template<class T>
 AliFmLorentzVector<T>&
 AliFmLorentzVector<T>::operator-= (const AliFmLorentzVector<double>& v)
 {
-    mThreeVector -= v.vect();
-    mX4 -= v.t();
+    fThreeVector -= v.vect();
+    fX4 -= v.t();
     return *this;
 }
 
