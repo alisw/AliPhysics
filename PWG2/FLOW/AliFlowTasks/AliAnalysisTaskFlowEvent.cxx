@@ -214,6 +214,7 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   // Destructor
   //
   delete fMyTRandom3;
+  delete fFlowEvent;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
 
