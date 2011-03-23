@@ -86,8 +86,8 @@ RunViaPlugin(const Char_t* runMode="",
     
     
     // FMD 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskFMD.C");
-    AddTaskFMD(mc);
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwardMult.C");
+    AddTaskForwardMult(mc);
     anaName = "FMD_AOD";
   }
   else if (swhat.Contains("eloss")) { 

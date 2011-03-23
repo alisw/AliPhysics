@@ -3,6 +3,16 @@
 //
 #ifndef ALIFMDDENSITYCALCULATOR_H
 #define ALIFMDDENSITYCALCULATOR_H
+/**
+ * @file   AliFMDDensityCalculator.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:02:09 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <TNamed.h>
 #include <TList.h>
 #include <TArrayI.h>
@@ -30,6 +40,7 @@ class AliFMDCorrELossFit;
  *   - AliFMDDeadCorrection 
  *
  * @ingroup pwg2_forward_algo
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDDensityCalculator : public TNamed
 {
@@ -111,7 +122,7 @@ public:
    * number of particles that has hit within a region.  If this is true, 
    * then the average charge particle density is given by 
    * @f[
-   *  \lamda = -\log\left(\frac{N_e}{N_t}\right)
+   *  \lambda = -\log\left(\frac{N_e}{N_t}\right)
    * @f]
    * where $N_e$ is the number of strips within the region that has no
    * hits over threshold, and $N_t$ is the total number of strips in the 

@@ -3,13 +3,26 @@
 //
 #ifndef ALIFORWARDDNDETATASK_H
 #define ALIFORWARDDNDETATASK_H
+/**
+ * @file   AliForwarddNdetaTask.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:04:54 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_dndeta
+ */
 #include "AliBasedNdetaTask.h"
 class TList;
 class TH2D;
 class TH1D;
 
 /**
- * Task to determine the 
+ * Tasks to determine @f$ dN/d\eta@f$ in the forward regions
+ *
+ * @ingroup pwg2_forward_tasks_dndeta
+ * @ingroup pwg2_forward_dndeta
  */
 class AliForwarddNdetaTask : public AliBasedNdetaTask
 {
@@ -23,7 +36,6 @@ public:
    * Constructor
    * 
    * @param name    Name of task 
-   * @param maxVtx  Set @f$v_z@f$ range
    */
   AliForwarddNdetaTask(const char* name);
   /**
@@ -127,6 +139,7 @@ protected:
      * 
      * @param sums        List of sums
      * @param results     Output list of results
+     * @param scheme      Normalisation scheme options
      * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
@@ -136,9 +149,12 @@ protected:
      * @param vzMin       Minimum IP z coordinate
      * @param vzMax 	  Maximum IP z coordinate
      * @param triggerMask Trigger mask 
+     * @param color       Marker colour 
+     * @param marker      Marker style 
      */
     virtual void End(TList*      sums, 
 		     TList*      results,
+		     UShort_t    scheme,
 		     const TH1*  shapeCorr, 
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
@@ -147,7 +163,9 @@ protected:
 		     Bool_t      cutEdges, 
 		     Double_t    vzMin, 
 		     Double_t    vzMax, 
-		     Int_t       triggerMask);
+		     Int_t       triggerMask,
+		     Int_t       color, 
+		     Int_t       marker);
   protected: 
     TH2D*           fSumPrimary;    //  Sum of primary histograms
     ClassDef(CentralityBin,1); // A centrality bin     

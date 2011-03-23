@@ -3,24 +3,33 @@
  *
  * @ingroup pwg2_forward
  */
-/**
- * @file 
+/** 
+ * @defgroup pwg2_forward_scripts_tasks Scripts to add tasks to manager 
  * @ingroup pwg2_forward_scripts
+ */
+/**
+ * @file   AddTaskForwardMult.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:13:54 2011
  * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
  */
 /**
  * This is the macro to include the Forward multiplicity in a train.  
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_aod
  */
 AliAnalysisTask*
-AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
+AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 {
   gSystem->Load("libPWG2forward2");
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskFMD", "No analysis manager to connect to.");
+    Error("AddTaskForwardMult", "No analysis manager to connect to.");
     return NULL;
   }   
 
@@ -38,10 +47,10 @@ AddTaskFMD(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
   const char* config = gSystem->Which(gROOT->GetMacroPath(),
 				      "ForwardAODConfig.C");
   if (!config) 
-    Warning("AddTaskFMD", "ForwardAODConfig.C not found in %s",
+    Warning("AddTaskForwardMult", "ForwardAODConfig.C not found in %s",
 	    gROOT->GetMacroPath());
   else {
-    Info("AddTaskFMD", 
+    Info("AddTaskForwardMult", 
 	 "Loading configuration of '%s' from %s",
 	 task->ClassName(), config);
     gROOT->Macro(Form("%s((AliForwardMultiplicityBase*)%p)", config, task));

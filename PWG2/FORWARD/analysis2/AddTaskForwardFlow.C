@@ -1,3 +1,29 @@
+/**
+ * @file   AddTaskForwardFlow.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:14:17 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
+ */
+/** 
+ * @defgroup pwg2_forward_flow Flow 
+ * @ingroup pwg2_forward_topical
+ */
+/** 
+ * Add Flow task to train 
+ * 
+ * @param type 
+ * @param etabins 
+ * @param zVertex 
+ * @param addFlow 
+ * @param addFType 
+ * @param addFOrder 
+ *
+ * @ingroup pwg2_forward_flow
+ */
 void AddTaskForwardFlow(TString type = "", 
                         Int_t etabins = 40,
                         Int_t zVertex = 2,

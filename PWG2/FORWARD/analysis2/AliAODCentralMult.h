@@ -3,6 +3,16 @@
 //
 #ifndef ALIAODCENTRALMULT_H
 #define ALIAODCENTRALMULT_H
+/**
+ * @file   AliAODCentralMult.h
+ * @author Hans Hjersing Dalsgaard
+ * @date   Wed Mar 23 13:57:24 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_aod
+ * 
+ */
 #include <TObject.h>
 #include <TH2D.h>
 class TBrowser;
@@ -21,8 +31,10 @@ class TBrowser;
  * the vertex efficiency.  This simply boils down to defining a 2D
  * histogram and summing the event histograms in that histogram.  One
  * should of course also do proper book-keeping of the accepted event.
+ *
+ * @ingroup pwg2_forward
+ * @ingroup pwg2_forward_aod
  */
-
 class AliAODCentralMult : public TObject
 {
 public:
@@ -63,10 +75,11 @@ public:
   TH2D& GetHistogram() { return fHist; } // Get histogram 
   /**
    * Clear Object between events
-   * @param t option
+   *
+   * @param opt option (not used)
    *
    */
-  void Clear(Option_t*);
+  void Clear(Option_t* opt);
   /** 
    * browse this object 
    * 

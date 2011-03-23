@@ -3,6 +3,16 @@
 //
 #ifndef ALIAODFORWARDMULT_H
 #define ALIAODFORWARDMULT_H
+/**
+ * @file   AliAODForwardMult.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 13:58:00 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_aod
+ * 
+ */
 #include <TObject.h>
 #include <TH2D.h>
 class TBrowser;
@@ -87,6 +97,7 @@ class TH1I;
  * like flow, event-plane, centrality, and so on. 
  *
  * @ingroup pwg2_forward 
+ * @ingroup pwg2_forward_aod
  */
 class AliAODForwardMult : public TObject
 {
@@ -311,7 +322,17 @@ public:
    */
   const Char_t* GetName() const { return (fIsMC ? "ForwardMC" : "Forward"); }
   /** 
-   * Check if event meets the passses requirements 
+   * Check if event meets the passses requirements.   
+   *
+   * It returns true if @e all of the following is true 
+   *
+   * - The trigger is within the bit mask passed.
+   * - The vertex is within the specified limits. 
+   * - The centrality is within the specified limits, or if lower
+   *   limit is equal to or larger than the upper limit.
+   * 
+   * If a histogram is passed in the last parameter, then that
+   * histogram is filled with the trigger bits. 
    * 
    * @param triggerMask  Trigger mask
    * @param vzMin        Minimum @f$ v_z@f$ (in centimeters)
@@ -335,13 +356,17 @@ public:
    */
   static const Char_t* GetTriggerString(UInt_t mask);
   /** 
-   * Make a histogram to record triggers in 
+   * Make a histogram to record triggers in. 
+   *
+   * The bins defined by the trigger enumeration in this class.  One
+   * can use this enumeration to retrieve the number of triggers for
+   * each class.
    * 
    * @param name Name of the histogram 
    * 
    * @return Newly allocated histogram 
    */
-  static TH1I* MakeTriggerHistogram(const char* name);
+  static TH1I* MakeTriggerHistogram(const char* name="triggers");
 protected: 
   Bool_t  fIsMC;     // Whether this is from MC 
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event

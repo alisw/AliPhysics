@@ -1,4 +1,14 @@
 /**
+ * @file   MakeFlow.C
+ * @author Alexander Hansen 
+ * @date   Wed Mar 23 12:11:33 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * 
+ */
+/**
  * Script to analyse AOD input for flow
  * 
  * Takes either a single (AOD) .root file as input or a .txt
@@ -10,7 +20,8 @@
  * 
  * @par Outputs: 
  * - 
- * 
+ *
+ * @ingroup pwg2_forward_flow
  */
 void MakeFlow(TString data      = "", 
 	      Int_t   nevents   = 0, 

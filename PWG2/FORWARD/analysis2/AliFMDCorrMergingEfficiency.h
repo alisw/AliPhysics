@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDCORRMERGINGEFFICIENCY_H
 #define ALIFMDCORRMERGINGEFFICIENCY_H
+/**
+ * @file   AliFMDCorrMergingEfficiency.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:01:28 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_corr
+ */
 #include <TObject.h>
 #include <TObjArray.h>
 #include <TAxis.h>

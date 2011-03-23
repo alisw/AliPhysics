@@ -3,21 +3,84 @@
 //
 #ifndef ALIBASEDNDETATASK_H
 #define ALIBASEDNDETATASK_H
+/**
+ * @file   AliBasedNdetaTask.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 13:58:12 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwg2_forward_dndeta
+ * 
+ */
 #include <AliAnalysisTaskSE.h>
 class TAxis;
 class TList;
 class TH2D;
 class TH1D;
+class TH1I;
 class AliAODEvent;
 class AliAODForwardMult;
 class TObjArray;
 
+/** 
+ * @defgroup pwg2_forward_tasks_dndeta dN/deta tasks 
+ * @ingroup pwg2_forward_tasks 
+ */
 /**
- * Task to determine the 
+ * @defgroup pwg2_forward_dndeta dN/deta
+ *
+ * @f$ dN/d\eta@f$ code 
+ *
+ * @ingroup pwg2_forward_topical
+ */
+/**
+ * Base class for tasks to determine @f$ dN/d\eta@f$ 
+ *
+ * @ingroup pwg2_forward_tasks_dndeta
+ * @ingroup pwg2_forward_dndeta
  */
 class AliBasedNdetaTask : public AliAnalysisTaskSE
 {
 public:
+  /** 
+   * Bit mask values of the normalisation scheme 
+   */
+  enum {
+    /** Only normalize to accepted events */
+    kNone = 0,
+    /** 
+     * Do the full normalisation 
+     * @f[ 
+     *   N = \frac{1}{\epsilon_X}(N_A-N_A/N_V(N_T-N_V)) = 
+     *       \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}N_A
+     * @f]
+     */
+    kEventLevel = 0x1,
+    /** 
+     * Do the alternative event normalisation, 
+     * @f[
+     *   N' = \frac{1}{\epsilon_X}(N_A-N_A/N_V(N_T-N_A))
+     * @f]
+     */
+    kAltEventLevel = 0x2, 
+    /** 
+     * Do the shape correction
+     */
+    kShape = 0x4, 
+    /** 
+     * Correct for background events (A+C-E). Not implemented yet
+     */
+    kBackground = 0x8,
+    /**
+     * Do the full correction
+     */
+    kFull = kEventLevel | kShape | kBackground,
+    /** 
+     * Do the full correction, using the alternative event-level normalisation. 
+     */
+    kAltFull = kAltEventLevel | kShape | kBackground
+  };
   /** 
    * Constructor 
    * 
@@ -27,7 +90,6 @@ public:
    * Constructor
    * 
    * @param name    Name of task 
-   * @param maxVtx  Set @f$v_z@f$ range
    */
   AliBasedNdetaTask(const char* name);
   /**
@@ -78,9 +140,9 @@ public:
    */
   void SetCentralityAxis(UShort_t n, Short_t* bins);
   /** 
-   * Trigger efficiency for selected trigger(s)
+   * Whether to cut edges when merging 
    * 
-   * @param e Trigger efficiency 
+   * @param cut If true, cut edges 
    */
   void SetCutEdges(Bool_t cut) {fCutEdges = cut;}
   /** 
@@ -97,11 +159,20 @@ public:
    */
   void SetShapeCorrection(const TH1* h);
   /** 
-   * Set whether to use the shape correction 
-   *
-   * @param use  whether to use the shape correction 
+   * Setthe normalisation scheme to use 
+   * 
+   * @param scheme Normalisation scheme 
    */
-  void SetUseShapeCorrection(Bool_t use) { fUseShapeCorr = use; }
+  void SetNormalizationScheme(UShort_t scheme) 
+  {
+    fNormalizationScheme = scheme; 
+  }
+  /** 
+   * Space, pipe, or comma separated list of options
+   * 
+   * @param what List of options 
+   */
+  void SetNormalizationScheme(const char* what);
   /** 
    * Load the normalization data - done automatically if not set from outside
    * 
@@ -132,14 +203,14 @@ public:
    */
   virtual void UserExec(Option_t* option);
   /** 
-   * Called at end of event processing.. 
+   * Called at end of event processing.
    *
    * This is called once in the master 
    * 
    * @param option Not used 
    */
   virtual void Terminate(Option_t* option);
-  /** @} */
+  /* @} */
 
   /** 
    * @{ 
@@ -148,7 +219,9 @@ public:
   /** 
    * Make a copy of the input histogram and rebin that histogram
    * 
-   * @param h  Histogram to rebin
+   * @param h         Histogram to rebin
+   * @param rebin     Rebinning factor 
+   * @param cutEdges  Whether to cut edges when rebinning
    * 
    * @return New (rebinned) histogram
    */
@@ -168,6 +241,7 @@ public:
    * @param name      New name 
    * @param firstbin  First bin to use 
    * @param lastbin   Last bin to use
+   * @param corr      Whether to do corrections or not 
    * @param error     Whether to calculate errors
    * 
    * @return Newly created histogram or null
@@ -206,8 +280,21 @@ protected:
    */
   virtual TH2D* GetHistogram(const AliAODEvent* aod, Bool_t mc=false) = 0;
   /** 
+   * Get the colour to use for markers
+   * 
+   * @return Marker colour 
+   */
+  virtual Int_t GetColor() const { return kRed+1; }
+  /** 
+   * Get the marker style 
+   * 
+   * @return Marker style 
+   */
+  virtual Int_t GetMarker() const { return 20; }
+  /** 
    * Add a centrality bin 
    * 
+   * @param at   Where in the list to add this bin 
    * @param low  Low cut
    * @param high High cut
    */
@@ -223,29 +310,13 @@ protected:
    */
   virtual CentralityBin* MakeCentralityBin(const char* name, Short_t low, 
 					   Short_t high) const;
-  /** 
-   * Trigger histogram bins 
-   */
-  enum { 
-    kAll        = 1, 
-    kB          = 2, 
-    kA          = 3, 
-    kC          = 4, 
-    kE          = 5,
-    kMB         = 6,
-    kPileUp     = 7,
-    kWithTrigger= 8,
-    kWithVertex = 9,
-    kAccepted   = 10,
-    kMCNSD      = 11
-  };
   /**
    * Calculations done per centrality 
    * 
    */
   struct CentralityBin : public TNamed
   {
-    /** 
+    /** dN
      * Constructor 
      */
     CentralityBin();
@@ -304,14 +375,17 @@ protected:
      * @param mc          MC histogram
      */
     virtual void ProcessEvent(const AliAODForwardMult* forward, 
-			      Int_t triggerMask,
-			      Double_t vzMin, Double_t vzMax, 
-			      const TH2D* data, const TH2D* mc);
+			      Int_t                    triggerMask,
+			      Double_t                 vzMin, 
+			      Double_t                 vzMax, 
+			      const TH2D*              data, 
+			      const TH2D*              mc);
     /** 
      * End of processing 
      * 
      * @param sums        List of sums
      * @param results     Output list of results
+     * @param scheme      Normalisation scheme options
      * @param shapeCorr   Shape correction or nil
      * @param trigEff     Trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
@@ -321,9 +395,12 @@ protected:
      * @param vzMin       Minimum IP z coordinate
      * @param vzMax 	  Maximum IP z coordinate
      * @param triggerMask Trigger mask 
+     * @param color       Base colour for markers 
+     * @param marker      Marker style 
      */
     virtual void End(TList*      sums, 
 		     TList*      results,
+		     UShort_t    scheme,
 		     const TH1*  shapeCorr, 
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
@@ -332,7 +409,9 @@ protected:
 		     Bool_t      cutEdges, 
 		     Double_t    vzMin, 
 		     Double_t    vzMax, 
-		     Int_t       triggerMask);
+		     Int_t       triggerMask,
+		     Int_t       color,
+		     Int_t       marker);
     /**
      * @{
      * @name Access histograms
@@ -358,13 +437,13 @@ protected:
      * 
      * @return Trigger histogram
      */
-    const TH1D* GetTriggers() const { return fTriggers; } 
+    const TH1I* GetTriggers() const { return fTriggers; } 
     /** 
      * Get trigger histogram
      * 
      * @return Trigger histogram 
      */
-    TH1D* GetTrigggers() { return fTriggers; }
+    TH1I* GetTrigggers() { return fTriggers; }
     /** @} */
   protected:
     /** 
@@ -377,18 +456,22 @@ protected:
     /** 
      * Check the trigger, vertex, and centrality
      * 
-     * @param aod Event input 
+     * @param forward Event input 
+     * @param triggerMask  The used trigger mask 
+     * @param vzMin        Least @f$ v_z@f$
+     * @param vzMax        Largest @f$ v_z@f$
      * 
      * @return true if the event is to be used 
      */
     virtual Bool_t CheckEvent(const AliAODForwardMult* forward, 
-			      Int_t triggerMask,
-			      Double_t vzMin, Double_t vzMax);
+			      Int_t                    triggerMask,
+			      Double_t                 vzMin, 
+			      Double_t vzMax);
     TList*   fSums;      // Output list 
     TList*   fOutput;    // Output list 
     TH2D*    fSum;       // Sum histogram
     TH2D*    fSumMC;     // MC sum histogram
-    TH1D*    fTriggers;  // Trigger histogram 
+    TH1I*    fTriggers;  // Trigger histogram 
     UShort_t fLow;       // Lower limit (inclusive)
     UShort_t fHigh;      // Upper limit (exclusive)
 
@@ -406,13 +489,12 @@ protected:
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH1*            fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 
-  Bool_t          fUseShapeCorr; // Whether to use shape correction
   TNamed*         fSNNString;    // sqrt(s_NN) string 
   TNamed*         fSysString;    // Collision system string 
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
-
-  ClassDef(AliBasedNdetaTask,2); // Determine multiplicity in base area
+  UShort_t        fNormalizationScheme; // Normalization scheme
+  ClassDef(AliBasedNdetaTask,3); // Determine multiplicity in base area
 };
 
 #endif

@@ -1,24 +1,32 @@
-/**
- * @file 
- * 
+/** 
+ * @defgroup pwg2_forward_scripts_makers Maker scripts 
  * @ingroup pwg2_forward_scripts
  */
-
+/**
+ * @file   MakeAOD.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 09:40:10 2011
+ * 
+ * @brief  Run first pass of the analysis - AOD generation
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ */
 /** 
  * Run first pass of the analysis - that is read in ESD and produce AOD
  * 
- * @param esddir    ESD input directory. Any file matching the pattern 
- *                  *AliESDs*.root are added to the chain 
- * @param nEvents   Number of events to process.  If 0 or less, then 
- *                  all events are analysed
- * @param proof     Run in proof mode 
- * @param mc        Run over MC data
+ * @param esddir     ESD input directory. Any file matching the pattern 
+ *                   *AliESDs*.root are added to the chain 
+ * @param nEvents    Number of events to process.  If 0 or less, then 
+ *                   all events are analysed
+ * @param proof      If larger then 1, run in PROOF-Lite mode with this 
+ *                   many number of workers. 
+ * @param mc         Data is assumed to be from simulations  
+ * @param centrality Whether to use centrality or not 
  *
  * If PROOF mode is selected, then Terminate will be run on the master node 
  * in any case. 
- * 
  *
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_aod
  */
 void MakeAOD(const char* esddir, 
 	     Int_t       nEvents=-1, 
@@ -56,33 +64,6 @@ void MakeAOD(const char* esddir,
 
   // --- ESD input handler -------------------------------------------
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  esdHandler->SetInactiveBranches(// "AliESDRun " 
-				  // "AliESDHeader "
-				  // "AliESDZDC "
-				  // "AliESDFMD "
-				  // "AliESDVZERO " 
-				  "AliESDTZERO " 
-				  "TPCVertex " 
-				  //"SPDVertex "
-				  // "PrimaryVertex "
-				  // "AliMultiplicity "
-				  "PHOSTrigger "
-				  "EMCALTrigger "
-				  //"SPDPileupVertices " 
-				  //"TrkPileupVertices " 
-				  // "Tracks "
-				  "MuonTracks " 
-				  "PmdTracks "
-				  "TrdTracks "
-				  "V0s " 
-				  "Cascades " 
-				  "Kinks " 
-				  "CaloClusters "
-				  "EMCALLCells "
-				  "PHOSCells "
-				  "AliRawDataErrorLogs "
-				  "ALIESDCACORDE " 
-				  "HLTGlobalTrigger");
   mgr->SetInputEventHandler(esdHandler);      
        
   // --- Monte Carlo handler -----------------------------------------
@@ -101,8 +82,7 @@ void MakeAOD(const char* esddir,
   // --- Add tasks ---------------------------------------------------
   // Physics selection 
   gROOT->LoadMacro("AddTaskPhysicsSelection.C");
-  // test HHD
-  AddTaskPhysicsSelection(mc, kTRUE, kTRUE);
+  AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
 
 #if 0
   // Centrality 
@@ -114,13 +94,11 @@ void MakeAOD(const char* esddir,
 #endif
   if(centrality) {
     gROOT->LoadMacro("AddTaskCentrality.C");
-    AliCentralitySelectionTask* centtask = AddTaskCentrality();
-    if(mc)
-      centtask->SetMCInput();
+    AddTaskCentrality();
   }
   // FMD 
-  gROOT->LoadMacro("AddTaskFMD.C");
-  AddTaskFMD(mc);
+  gROOT->LoadMacro("AddTaskForwardMult.C");
+  AddTaskForwardMult(mc);
 
   // Central 
   gROOT->LoadMacro("AddTaskCentral.C");

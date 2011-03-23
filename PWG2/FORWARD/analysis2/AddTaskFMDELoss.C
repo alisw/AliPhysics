@@ -1,17 +1,22 @@
-/** 
- * @defgroup pwg2_forward_scripts Scripts used in the analysis
- *
- * @ingroup pwg2_forward
+/**
+ * @file   AddTaskFMDELoss.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 12:14:03 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_scripts_tasks
  */
 /**
- * @file 
- * @ingroup pwg2_forward_scripts
- * 
+ * @defgroup pwg2_forward_eloss Energy Loss Fits
+ * @ingroup pwg2_forward_topical
  */
+
 /**
  * This is the macro to include the FMD energy fitter in a train.  
  * 
- * @ingroup pwg2_forward_scripts
+ * @ingroup pwg2_forward_eloss
  */
 AliAnalysisTask*
 AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
@@ -20,7 +25,7 @@ AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskFMD", "No analysis manager to connect to.");
+    Error("AddTaskFMDELoss", "No analysis manager to connect to.");
     return NULL;
   }   
   

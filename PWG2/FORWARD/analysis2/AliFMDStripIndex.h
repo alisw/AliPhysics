@@ -14,6 +14,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+/**
+ * @file   AliFMDStripIndex.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:04:10 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_mc
+ */
 
 // Struct to encode a strip address into one integer
 // developed by Christian Holm Christensen (cholm@nbi.dk).
@@ -25,6 +35,12 @@
 // Added by Hans H. Dalsgaard (hans.dalsgaard@cern.ch) 
 
 
+/** 
+ * Functions to encode/decode strip address from User ID in a
+ * track-reference
+ * 
+ * @ingroup pwg2_forward_mc 
+ */
 class AliFMDStripIndex
 {
 public:

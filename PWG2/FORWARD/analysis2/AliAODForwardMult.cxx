@@ -21,7 +21,7 @@
 #include <TObjString.h>
 
 ClassImp(AliAODForwardMult)
-#if 0 
+#ifdef DOXY_INPUT
 ; // For Emacs 
 #endif
 
@@ -195,6 +195,19 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
 TH1I*
 AliAODForwardMult::MakeTriggerHistogram(const char* name) 
 {
+  // 
+  // Make a histogram to record triggers in. 
+  //
+  // The bins defined by the trigger enumeration in this class.  One
+  // can use this enumeration to retrieve the number of triggers for
+  // each class.
+  // 
+  // Parameters:
+  //    name Name of the histogram 
+  // 
+  // Return:
+  //    Newly allocated histogram 
+  //
   TH1I* ret = new TH1I(name, "Triggers", kAccepted+1, -.5, kAccepted+.5);
   ret->SetYTitle("Events");
   ret->SetFillColor(kRed+1);
@@ -225,7 +238,30 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
 			      UShort_t cMin,  UShort_t cMax, 
 			      TH1*     hist) const
 {
-
+  // 
+  // Check if event meets the passses requirements.   
+  //
+  // It returns true if @e all of the following is true 
+  //
+  // - The trigger is within the bit mask passed.
+  // - The vertex is within the specified limits. 
+  // - The centrality is within the specified limits, or if lower
+  //   limit is equal to or larger than the upper limit.
+  // 
+  // If a histogram is passed in the last parameter, then that
+  // histogram is filled with the trigger bits. 
+  // 
+  // Parameters:
+  //    triggerMask  Trigger mask
+  //    vzMin        Minimum @f$ v_z@f$ (in centimeters)
+  //    vzMax        Maximum @f$ v_z@f$ (in centimeters) 
+  //    cMin         Minimum centrality (in percent)
+  //    cMax         Maximum centrality (in percent)
+  //    hist         Histogram to fill 
+  // 
+  // Return:
+  //    @c true if the event meets the requirements 
+  //
   if (cMin < cMax && (cMin > fCentrality || cMax <= fCentrality)) return false;
 
   if (hist) { 

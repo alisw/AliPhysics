@@ -4,6 +4,16 @@
 //
 #ifndef ALIFMDHISTCOLLECTOR_H
 #define ALIFMDHISTCOLLECTOR_H
+/**
+ * @file   AliFMDHistCollector.h
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 14:03:01 2011
+ * 
+ * @brief  
+ * 
+ * 
+ * @ingroup pwg2_forward_aod
+ */
 #include <TNamed.h>
 #include <TList.h>
 #include <TArrayI.h>
@@ -26,6 +36,7 @@ class TH2D;
  *   - AliFMDCorrSecondaryMap
  *
  * @ingroup pwg2_forward_algo
+ * @ingroup pwg2_forward_aod
  */
 class AliFMDHistCollector : public TNamed
 {
@@ -55,15 +66,15 @@ public:
      *             \frac{1}{e_1^2}+\frac{1}{e_2^2}}
      * @f]
      * @f[
-     *   e = \sqrt{\frac{1}{\frac{1}{e_1^2}+\frac{1}{e_2^2}}
+     *   e = \sqrt{\frac{1}{\frac{1}{e_1^2}+\frac{1}{e_2^2}}}
      * @f]
      */
     kWeightedMean, 
     /** 
      * @f[
      *     c = \left\{\begin{array}{cl}
-     *          c_1 & \text{if $e_1 < e_2} \\
-     *          c_2 & \text{otherwise}\end{array}\right.
+     *          c_1 & \mbox{if $e_1 < e_2$} \\
+     *          c_2 & \mbox{otherwise}\end{array}\right.
      * @f]
      */
     kLeastError
@@ -150,7 +161,8 @@ public:
   /** 
    * Intialise 
    * 
-   * @param vtxAxis  Vertex axis 
+   * @param vtxAxis  @f$ v_z@f$ axis 
+   * @param etaAxis  @f$ \eta@f$ axis 
    */  
   virtual void Init(const TAxis& vtxAxis,
 		    const TAxis& etaAxis);
