@@ -15,6 +15,7 @@ class AliCFManager;
 class AliFlowEventCuts;
 class AliFlowTrackCuts;
 class AliFlowEventSimpleMaker;
+class AliFlowEvent;
 class TList;
 class TRandom3;
 class AliAnalysisTaskSE;
