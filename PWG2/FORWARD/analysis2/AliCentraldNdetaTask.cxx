@@ -13,7 +13,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODCentralMult.h"
 
-ClassDef(AliCentraldNdetaTask)
+ClassImp(AliCentraldNdetaTask)
 #ifdef DOXY_INPUT
 ;
 #endif
