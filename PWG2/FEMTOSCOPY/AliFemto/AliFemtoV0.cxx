@@ -173,12 +173,12 @@ void AliFemtoV0::UpdateV0(){
    fPtotPos= fMomPos.Mag();
    fPtNeg  = fMomNeg.Perp();
    fPtotNeg= fMomNeg.Mag();
-   fELambda= ::sqrt(fPtotV0*fPtotV0+M_LAMBDA*M_LAMBDA);
-   fEK0Short= ::sqrt(fPtotV0*fPtotV0+M_KAON_0_SHORT*M_KAON_0_SHORT);
-   fEPosProton = ::sqrt(fPtotPos*fPtotPos+M_PROTON*M_PROTON);
-   fENegProton = ::sqrt(fPtotNeg*fPtotNeg+M_PROTON*M_PROTON);
-   fEPosPion = ::sqrt(fPtotPos*fPtotPos+M_PION_PLUS*M_PION_PLUS);
-   fENegPion = ::sqrt(fPtotNeg*fPtotNeg+M_PION_MINUS*M_PION_MINUS);
+   fELambda= ::sqrt(fPtotV0*fPtotV0+kMLAMBDA*kMLAMBDA);
+   fEK0Short= ::sqrt(fPtotV0*fPtotV0+kMKAON0SHORT*kMKAON0SHORT);
+   fEPosProton = ::sqrt(fPtotPos*fPtotPos+kMPROTON*kMPROTON);
+   fENegProton = ::sqrt(fPtotNeg*fPtotNeg+kMPROTON*kMPROTON);
+   fEPosPion = ::sqrt(fPtotPos*fPtotPos+kMPIONPLUS*kMPIONPLUS);
+   fENegPion = ::sqrt(fPtotNeg*fPtotNeg+kMPIONMINUS*kMPIONMINUS);
   
    tMomNegAlongV0 =  fMomNeg*fMomV0 / ::sqrt(::pow(fPtotV0,2));
    tMomPosAlongV0 =  fMomPos*fMomV0 / ::sqrt(::pow(fPtotV0,2));
@@ -190,10 +190,10 @@ void AliFemtoV0::UpdateV0(){
    fMassK0Short = ::sqrt(::pow(fENegPion+fEPosPion,2)-::pow(fPtotV0,2));
 
    fRapLambda = 0.5*::log( (fELambda+fMomV0.z()) / (fELambda-fMomV0.z()) );
-   fCTauLambda = M_LAMBDA*(fDecayLengthV0) / ::sqrt( ::pow((double)fMomV0.Mag(),2.) );
+   fCTauLambda = kMLAMBDA*(fDecayLengthV0) / ::sqrt( ::pow((double)fMomV0.Mag(),2.) );
    
    fRapK0Short = 0.5*::log( (fEK0Short+fMomV0.z()) / (fEK0Short-fMomV0.z()) );
-   fCTauK0Short = M_KAON_0_SHORT*(fDecayLengthV0) / ::sqrt( ::pow((double)fMomV0.Mag(),2.) );
+   fCTauK0Short = kMKAON0SHORT*(fDecayLengthV0) / ::sqrt( ::pow((double)fMomV0.Mag(),2.) );
 
 }
 // -----------------------------------------------------------------------
