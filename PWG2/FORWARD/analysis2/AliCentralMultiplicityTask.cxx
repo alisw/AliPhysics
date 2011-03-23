@@ -43,6 +43,9 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
   // Constructor 
   //   
   DefineOutput(1, TList::Class());
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "SPDVertex.,PrimaryVertex.";
 }
 //____________________________________________________________________
 AliCentralMultiplicityTask::AliCentralMultiplicityTask() 
