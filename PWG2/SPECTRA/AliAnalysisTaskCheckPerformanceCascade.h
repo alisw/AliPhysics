@@ -82,7 +82,8 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
 		// - Histos 
 	TH1F	*fHistMCTrackMultiplicity;	//! MC Track multiplicity (gen. primaries)
                 // - Resolution of the multiplicity estimator
-        TH2F    *f2dHistRecoMultVsMCMult;       //! resolution of the multiplicity estimator (based on primary tracks)
+        TH2F    *f2dHistRecoPrimTrckMultVsMCMult;       //! resolution of the multiplicity estimator (based on primary tracks)
+        TH2F    *f2dHistRecoEstimateMultVsMCMult;       //! resolution of the multiplicity estimator (based on ESDEvent::EstimateMultiplicity)
 	
 	
 	// proton
@@ -245,6 +246,13 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
         TH2F    *f2dHistAsMCResPhiOmegaMinus;           //! resolution in azimuth Phi = f(gen. Pt), for Omega-
         TH2F    *f2dHistAsMCResPhiOmegaPlus;            //! resolution in azimuth Phi = f(gen. Pt), for Omega+
         
+        // - Correlation in Pt between the cascade and its (anti)proton daughter
+        TH2F    *f2dHistAsMCPtProtonVsPtXiMinus;        //! Pt(p) Vs Pt(XiMinus), for a associated-to-reco cascade
+        TH2F    *f2dHistAsMCPtAntiProtonVsPtXiPlus;     //! Pt(anti-p) Vs Pt(XiPlus), for a associated-to-reco cascade
+        TH2F    *f2dHistAsMCPtProtonVsPtOmegaMinus;     //! Pt(p) Vs Pt(OmegaMinus), for a associated-to-reco cascade
+        TH2F    *f2dHistAsMCPtAntiProtonVsPtOmegaPlus;  //! Pt(anti-p) Vs Pt(OmegaPlus), for a associated-to-reco cascade
+        
+        
         
         // - Compilation of all PID plots (3D = casc. transv. momemtum Vs Casc Eff mass Vs Y), stored into an AliCFContainer
 	AliCFContainer  *fCFContCascadePIDAsXiMinus;      //! for Xi-   : Container to store any 3D histos with the different PID flavours
@@ -258,7 +266,7 @@ class AliAnalysisTaskCheckPerformanceCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckPerformanceCascade(const AliAnalysisTaskCheckPerformanceCascade&);            // not implemented
   AliAnalysisTaskCheckPerformanceCascade& operator=(const AliAnalysisTaskCheckPerformanceCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 5);
+  ClassDef(AliAnalysisTaskCheckPerformanceCascade, 6);
 };
 
 #endif

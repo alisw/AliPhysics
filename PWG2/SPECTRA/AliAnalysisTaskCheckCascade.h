@@ -104,6 +104,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
         TH1F    *fHistTrackMultiplicityForTrigEvt;                //! Track multiplicity distribution (without any cut = include ITS stand-alone + global tracks)
         TH1F    *fHistTPCrefitTrackMultiplicityForTrigEvt;        //! Track multiplicity distribution for tracks with TPCrefit
         TH1F    *fHistPrimaryTrackMultiplicityForTrigEvt;         //! Track multiplicity distribution for the primary tracks (See fESDtrackCuts)
+        TH1F    *fHistEstimateITSTPCMultiplicityForTrigEvt;       //! (ITS+TPC tracks + SPD tracklets) multiplicity estimation from Ruben's work
         
         // - General histos (filled for any triggered event + (|z(prim. vtx)| < 10 cm ) )
         TH1F    *fHistCascadeMultiplicityForTrigEvtAndZprimVtx;   //! Cascade multiplicity distribution
@@ -243,7 +244,7 @@ class AliAnalysisTaskCheckCascade : public AliAnalysisTaskSE {
   AliAnalysisTaskCheckCascade(const AliAnalysisTaskCheckCascade&);            // not implemented
   AliAnalysisTaskCheckCascade& operator=(const AliAnalysisTaskCheckCascade&); // not implemented
   
-  ClassDef(AliAnalysisTaskCheckCascade, 12);
+  ClassDef(AliAnalysisTaskCheckCascade, 13);
 };
 
 #endif
