@@ -107,8 +107,8 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
   		FORWARD/analysis2/AddTaskCentral.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
-                FORWARD/analysis2/AddTaskFMD.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
+                FORWARD/analysis2/AddTaskForwardMult.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
 		FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
@@ -117,8 +117,6 @@ install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
                 FORWARD/analysis2/OtherData.C
-                FORWARD/analysis2/Pass1.C
-                FORWARD/analysis2/Pass2.C
 		FORWARD/analysis2/TrainSetup.C
            DESTINATION PWG2/FORWARD/analysis2 )
 
