@@ -131,12 +131,17 @@ class AliRDHFCuts : public AliAnalysisCuts
   Int_t GetIsSelectedCuts() const {return fIsSelectedCuts;}
   Int_t GetIsSelectedPID() const  {return fIsSelectedPID;}
 
+  void SetUseMCVertex() { fUseMCVertex=kTRUE; }
+  Bool_t GetUseMCVertex() const { return fUseMCVertex; }
+
  protected:
 
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
   void SetNVars(Int_t nVars){fnVars=nVars;}
 
   Bool_t RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,AliAODVertex *origownvtx,AliAODVertex *recvtx) const;
+  Bool_t SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
+			 AliAODVertex *origownvtx,AliAODVertex *recvtx) const;
   void   CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODVertex *origownvtx) const;
 
   // cuts on the event
@@ -164,6 +169,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   AliAODPidHF *fPidHF; // PID for heavy flavours manager
   Int_t fWhyRejection; // used to code the step at which candidate was rejected
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
+  Bool_t fUseMCVertex; // use MC primary vertex 
   Int_t  fOptPileup;      // option for pielup selection
   Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
@@ -180,7 +186,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
 
-  ClassDef(AliRDHFCuts,12);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,13);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
