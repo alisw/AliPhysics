@@ -60,10 +60,13 @@ public:
   virtual Bool_t IsIsolated() const      { return fIsolated ; }
   virtual void   SetIsolated(Bool_t iso) { fIsolated = iso ; }
 
+  virtual Bool_t IsLeadingParticle() const                { return fLeadingParticle ; }
+  virtual void   SetLeadingParticle(Bool_t leadPart)      { fLeadingParticle = leadPart ; }
   virtual void   Print(Option_t* /*option*/) const;
   
  private:
-  Bool_t         fIsolated ;        //Particle is isolated or not  
+  Bool_t         fIsolated ;         //Particle is isolated or not 
+  Bool_t         fLeadingParticle ; //Particle is leading or not 
   TString        fLeadingDetector;  // Detector where leading particle was measured.
   TLorentzVector fLeading;          // Leading Particle 4-momentum vector
   TLorentzVector fCorrJet;          // Jet  4-momentum vector
@@ -71,7 +74,7 @@ public:
   TRef           fRefJet;           // Reference to jet found with JETAN and correlated with particle
   TList   *      fListOfObjArrays ; // List with correlation reference arrays
   
-  ClassDef(AliAODPWG4ParticleCorrelation, 3);
+  ClassDef(AliAODPWG4ParticleCorrelation, 4);
 };
 
 

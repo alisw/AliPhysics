@@ -33,6 +33,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 //______________________________________________________________________________
  AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation() :
    AliAODPWG4Particle(), fIsolated(kFALSE),
+   fLeadingParticle(kTRUE),
    fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
    fListOfObjArrays(new TList)
 {
@@ -43,6 +44,7 @@ ClassImp(AliAODPWG4ParticleCorrelation)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double_t py, Double_t pz, Double_t e):
   AliAODPWG4Particle(), fIsolated(kFALSE),
+  fLeadingParticle(kTRUE),
   fLeadingDetector(""),  fLeading(), fCorrJet(),
   fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
@@ -55,6 +57,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(Double_t px, Double
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p):
   AliAODPWG4Particle(p), fIsolated(kFALSE),
+  fLeadingParticle(kTRUE),
   fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(), fRefJet(0),  fListOfObjArrays(new TList)
 {
   // constructor
@@ -65,6 +68,7 @@ AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(TLorentzVector & p)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(AliAODPWG4Particle & p):
   AliAODPWG4Particle(p), fIsolated(kFALSE),
+  fLeadingParticle(kTRUE),
   fLeadingDetector(""),  fLeading(), fCorrJet(), fCorrBkg(),fRefJet(0),   fListOfObjArrays(new TList)
 {
   // constructor
@@ -99,6 +103,7 @@ void AliAODPWG4ParticleCorrelation::Clear(const Option_t* /*opt*/)
 //______________________________________________________________________________
 AliAODPWG4ParticleCorrelation::AliAODPWG4ParticleCorrelation(const AliAODPWG4ParticleCorrelation& part) :
   AliAODPWG4Particle(part), fIsolated(part.fIsolated),
+  fLeadingParticle(part.fLeadingParticle),
   fLeadingDetector(part.fLeadingDetector), fLeading(part.fLeading),  
   fCorrJet(part.fCorrJet), fCorrBkg(part.fCorrBkg), fRefJet(part.fRefJet),   
   fListOfObjArrays(new TList)
