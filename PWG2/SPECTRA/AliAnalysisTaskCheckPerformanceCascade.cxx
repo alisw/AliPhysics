@@ -73,7 +73,7 @@ AliAnalysisTaskCheckPerformanceCascade::AliAnalysisTaskCheckPerformanceCascade()
 fListHistCascade(0),
     fHistMCTrackMultiplicity(0), 
        // - Resolution of the multiplicity estimator
-    f2dHistRecoMultVsMCMult(0),
+    f2dHistRecoPrimTrckMultVsMCMult(0), f2dHistRecoEstimateMultVsMCMult(0),
 
     fHistEtaGenProton(0),
     fHistEtaGenAntiProton(0),
@@ -208,7 +208,13 @@ fListHistCascade(0),
     f2dHistAsMCResPhiXiPlus(0),
     f2dHistAsMCResPhiOmegaMinus(0),
     f2dHistAsMCResPhiOmegaPlus(0),
-                               
+
+        // - Correlation in Pt between the cascade and its (anti)proton daughter
+    f2dHistAsMCPtProtonVsPtXiMinus(0),
+    f2dHistAsMCPtAntiProtonVsPtXiPlus(0),
+    f2dHistAsMCPtProtonVsPtOmegaMinus(0),
+    f2dHistAsMCPtAntiProtonVsPtOmegaPlus(0),
+
     fCFContCascadePIDAsXiMinus(0),
     fCFContCascadePIDAsXiPlus(0),
     fCFContCascadePIDAsOmegaMinus(0),
@@ -243,7 +249,7 @@ AliAnalysisTaskCheckPerformanceCascade::AliAnalysisTaskCheckPerformanceCascade(c
 fListHistCascade(0),
     fHistMCTrackMultiplicity(0), 
        // - Resolution of the multiplicity estimator
-    f2dHistRecoMultVsMCMult(0),
+    f2dHistRecoPrimTrckMultVsMCMult(0), f2dHistRecoEstimateMultVsMCMult(0),
 
     fHistEtaGenProton(0),
     fHistEtaGenAntiProton(0),
@@ -379,6 +385,12 @@ fListHistCascade(0),
     f2dHistAsMCResPhiOmegaMinus(0),
     f2dHistAsMCResPhiOmegaPlus(0),
 
+        // - Correlation in Pt between the cascade and its (anti)proton daughter
+    f2dHistAsMCPtProtonVsPtXiMinus(0),
+    f2dHistAsMCPtAntiProtonVsPtXiPlus(0),
+    f2dHistAsMCPtProtonVsPtOmegaMinus(0),
+    f2dHistAsMCPtAntiProtonVsPtOmegaPlus(0),
+
     fCFContCascadePIDAsXiMinus(0),
     fCFContCascadePIDAsXiPlus(0),
     fCFContCascadePIDAsOmegaMinus(0),
@@ -395,26 +407,28 @@ fListHistCascade(0),
         
         for(Int_t iAlephIdx   = 0; iAlephIdx   < 5; iAlephIdx++   ) { fAlephParameters [iAlephIdx]    = -1.; }
         
-        // Extra Loose
-//         fV0Sels[0] =  33.  ;  // max allowed chi2
-//         fV0Sels[1] =   0.01;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-//         fV0Sels[2] =   0.01;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-//         fV0Sels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-//         fV0Sels[4] =   0.0 ;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-//         fV0Sels[5] =   0.2 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-//         fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
-//         
-//         fCascSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-//         fCascSels[1] =   0.02 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-//         fCascSels[2] =   0.008;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-//         fCascSels[3] =   0.01 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-//         fCascSels[4] =   0.5  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-//         fCascSels[5] =   0.98 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-//         fCascSels[6] =   0.2  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-//         fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+        // New Loose : 1st step for the 7 TeV pp analysis
         
-        // Hyper Loose
+        fV0Sels[0] =  33.  ;  // max allowed chi2
+        fV0Sels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+        fV0Sels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+        fV0Sels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+        fV0Sels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+        fV0Sels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
         
+        fCascSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
+        fCascSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+        fCascSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+        fCascSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+        fCascSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+        fCascSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+        fCascSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
+        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+        
+        
+        // Hyper Loose "à la 900 GeV 2009 data", with lower cosine of pointing angle for Xi (0.95 down to 0.82) = 900 GeV paper
+        /*
         fV0Sels[0] =  33.  ;  // max allowed chi2
         fV0Sels[1] =   0.001; // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
         fV0Sels[2] =   0.001; // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
@@ -431,7 +445,7 @@ fListHistCascade(0),
         fCascSels[5] =   0.82 ;  //FIXME min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
         fCascSels[6] =   0.1  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
         fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-        
+        */
         
         //New default vtxR (http://alisoft.cern.ch/viewvc?view=rev&root=AliRoot&revision=40955, 5 May 2010)        
         /*
@@ -614,9 +628,14 @@ if( !fPaveTextBookKeeping){
   }
   
     // - Resolution of the multiplicity estimator
-  if(! f2dHistRecoMultVsMCMult){
-       f2dHistRecoMultVsMCMult = new TH2F("f2dHistRecoMultVsMCMult", "Resolution of the multiplicity estimator (prim. tracks); Reco Multiplicity (prim. tracks); MC multiplicity (gen. part.)", 150, 0., 150., 150, 0., 150.);
-       fListHistCascade->Add(f2dHistRecoMultVsMCMult);
+  if(! f2dHistRecoPrimTrckMultVsMCMult){
+       f2dHistRecoPrimTrckMultVsMCMult = new TH2F("f2dHistRecoPrimTrckMultVsMCMult", "Resolution of the multiplicity estimator (prim. tracks in |#eta| < 0.8); Reco Multiplicity (prim. tracks); MC multiplicity (gen. part. in |#eta| < 0.8)", 120, 0., 120., 300, 0., 300.);
+       fListHistCascade->Add(f2dHistRecoPrimTrckMultVsMCMult);
+  }
+  
+  if(! f2dHistRecoEstimateMultVsMCMult){
+       f2dHistRecoEstimateMultVsMCMult = new TH2F("f2dHistRecoEstimateMultVsMCMult", "Resolution of the multiplicity estimator (EstimateMult. in |#eta| < 1.0); Reco Multiplicity (tr(ITS-TPC)+ITSsa+tracklets); MC multiplicity (gen. part. in |#eta| < 1.0)", 160, 0., 160., 300, 0., 300.);
+       fListHistCascade->Add(f2dHistRecoEstimateMultVsMCMult);
   }
   
   if (!fHistEtaGenProton) {
@@ -706,12 +725,12 @@ if( !fPaveTextBookKeeping){
   // II - Xi+ 
   // - Pseudo-Rapidity distribution
   if (!fHistEtaGenCascXiPlus) {
-     fHistEtaGenCascXiPlus = new TH1F("fHistEtaGenCascXiPlus", "#eta of any gen. #Xi^{+};#eta;Number of Casc", 200, -10, 10);
+     fHistEtaGenCascXiPlus = new TH1F("fHistEtaGenCascXiPlus", "#eta of any gen. #bar{#Xi}^{+};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascXiPlus);
   }
   
   if (!f2dHistGenPtVsGenYGenXiPlus) {
-     f2dHistGenPtVsGenYGenXiPlus = new TH2F("f2dHistGenPtVsGenYGenXiPlus", "MC P_{t} Vs MC Y of Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistGenPtVsGenYGenXiPlus = new TH2F("f2dHistGenPtVsGenYGenXiPlus", "MC P_{t} Vs MC Y of Gen #bar{#Xi}^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistGenPtVsGenYGenXiPlus);
   }
   
@@ -719,12 +738,12 @@ if( !fPaveTextBookKeeping){
   // - Info at the generation level of multi-strange particle
   
   if (!fHistThetaGenCascXiPlus) {
-     fHistThetaGenCascXiPlus = new TH1F("fHistThetaGenCascXiPlus", "#theta of gen. #Xi^{+};#theta;Number of Casc.", 200, -10, 190);
+     fHistThetaGenCascXiPlus = new TH1F("fHistThetaGenCascXiPlus", "#theta of gen. #bar{#Xi}^{+};#theta;Number of Casc.", 200, -10, 190);
      fListHistCascade->Add(fHistThetaGenCascXiPlus);
   }
  
   if (!f2dHistGenPtVsGenYFdblXiPlus) {
-     f2dHistGenPtVsGenYFdblXiPlus = new TH2F("f2dHistGenPtVsGenYFdblXiPlus", "MC P_{t} Vs MC Y of findable Gen #Xi^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistGenPtVsGenYFdblXiPlus = new TH2F("f2dHistGenPtVsGenYFdblXiPlus", "MC P_{t} Vs MC Y of findable Gen #bar{#Xi}^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistGenPtVsGenYFdblXiPlus);
   }
   
@@ -838,12 +857,12 @@ if( !fPaveTextBookKeeping){
   // IV - Omega+ 
   // - Pseudo-Rapidity distribution
   if (!fHistEtaGenCascOmegaPlus) {
-     fHistEtaGenCascOmegaPlus = new TH1F("fHistEtaGenCascOmegaPlus", "#eta of any gen. #Omega^{+};#eta;Number of Casc", 200, -10, 10);
+     fHistEtaGenCascOmegaPlus = new TH1F("fHistEtaGenCascOmegaPlus", "#eta of any gen. #bar{#Omega}^{+};#eta;Number of Casc", 200, -10, 10);
      fListHistCascade->Add(fHistEtaGenCascOmegaPlus);
   }
   
   if (!f2dHistGenPtVsGenYGenOmegaPlus) {
-     f2dHistGenPtVsGenYGenOmegaPlus = new TH2F("f2dHistGenPtVsGenYGenOmegaPlus", "MC P_{t} Vs MC Y of Gen #Omega^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistGenPtVsGenYGenOmegaPlus = new TH2F("f2dHistGenPtVsGenYGenOmegaPlus", "MC P_{t} Vs MC Y of Gen #bar{#Omega}^{+} ;Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistGenPtVsGenYGenOmegaPlus);
   }
   
@@ -852,12 +871,12 @@ if( !fPaveTextBookKeeping){
   // - Info at the generation level of multi-strange particle
   
   if (!fHistThetaGenCascOmegaPlus) {
-     fHistThetaGenCascOmegaPlus = new TH1F("fHistThetaGenCascOmegaPlus", "#theta of gen. #Omega^{+};#theta;Number of Casc.", 200, -10, 190);
+     fHistThetaGenCascOmegaPlus = new TH1F("fHistThetaGenCascOmegaPlus", "#theta of gen. #bar{#Omega}^{+};#theta;Number of Casc.", 200, -10, 190);
      fListHistCascade->Add(fHistThetaGenCascOmegaPlus);
   }
  
   if (!f2dHistGenPtVsGenYFdblOmegaPlus) {
-     f2dHistGenPtVsGenYFdblOmegaPlus = new TH2F("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #Omega^{+}; Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistGenPtVsGenYFdblOmegaPlus = new TH2F("f2dHistGenPtVsGenYFdblOmegaPlus", "MC P_{t} Vs MC Y of findable Gen #bar{#Omega}^{+}; Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistGenPtVsGenYFdblOmegaPlus);
   }
 
@@ -913,7 +932,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (! fHistMassXiPlus) {
-	  fHistMassXiPlus = new TH1F("fHistMassXiPlus","#Xi^{+} candidates;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
+	  fHistMassXiPlus = new TH1F("fHistMassXiPlus","#bar{#Xi}^{+} candidates;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
 	  fListHistCascade->Add(fHistMassXiPlus);
   }
 
@@ -923,7 +942,7 @@ if( !fPaveTextBookKeeping){
   }
  
   if (! fHistMassOmegaPlus) {
-	  fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#Omega^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
+	  fHistMassOmegaPlus = new TH1F("fHistMassOmegaPlus","#bar{#Omega}^{+} candidates;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
 	  fListHistCascade->Add(fHistMassOmegaPlus);
   }
   
@@ -937,7 +956,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (! fHistMassWithCombPIDXiPlus) {
-    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#Xi^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
+    fHistMassWithCombPIDXiPlus = new TH1F("fHistMassWithCombPIDXiPlus","#bar{#Xi}^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
     fListHistCascade->Add(fHistMassWithCombPIDXiPlus);
   }
 
@@ -947,7 +966,7 @@ if( !fPaveTextBookKeeping){
   }
  
   if (! fHistMassWithCombPIDOmegaPlus) {
-	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#Omega^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
+	fHistMassWithCombPIDOmegaPlus = new TH1F("fHistMassWithCombPIDOmegaPlus","#bar{#Omega}^{+} candidates, with Bach. comb. PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassWithCombPIDOmegaPlus);
   }
   
@@ -971,7 +990,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (! fHistMassWithMcPIDXiPlus) {
-    fHistMassWithMcPIDXiPlus = new TH1F("fHistMassWithMcPIDXiPlus","#Xi^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
+    fHistMassWithMcPIDXiPlus = new TH1F("fHistMassWithMcPIDXiPlus","#bar{#Xi}^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
     fListHistCascade->Add(fHistMassWithMcPIDXiPlus);
   }
 
@@ -981,7 +1000,7 @@ if( !fPaveTextBookKeeping){
   }
  
   if (! fHistMassWithMcPIDOmegaPlus) {
-	fHistMassWithMcPIDOmegaPlus = new TH1F("fHistMassWithMcPIDOmegaPlus","#Omega^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
+	fHistMassWithMcPIDOmegaPlus = new TH1F("fHistMassWithMcPIDOmegaPlus","#bar{#Omega}^{+} candidates, with Bach. MC PID;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
     fListHistCascade->Add(fHistMassWithMcPIDOmegaPlus);
   }
   
@@ -994,7 +1013,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (! fHistAsMCMassXiPlus) {
-	  fHistAsMCMassXiPlus = new TH1F("fHistAsMCMassXiPlus","#Xi^{+} candidates associated to MC;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
+	  fHistAsMCMassXiPlus = new TH1F("fHistAsMCMassXiPlus","#bar{#Xi}^{+} candidates associated to MC;M( #bar{#Lambda}^{0} , #pi^{+} ) (GeV/c^{2});Counts",400,1.2,2.0);
 	  fListHistCascade->Add(fHistAsMCMassXiPlus);
   }
 
@@ -1004,7 +1023,7 @@ if( !fPaveTextBookKeeping){
   }
  
   if (! fHistAsMCMassOmegaPlus) {
-	  fHistAsMCMassOmegaPlus = new TH1F("fHistAsMCMassOmegaPlus","#Omega^{+} candidates associated to MC;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
+	  fHistAsMCMassOmegaPlus = new TH1F("fHistAsMCMassOmegaPlus","#bar{#Omega}^{+} candidates associated to MC;M( #bar{#Lambda}^{0} , K^{+} ) (GeV/c^{2});Counts", 500,1.5,2.5);
 	  fListHistCascade->Add(fHistAsMCMassOmegaPlus);
   }
   
@@ -1018,7 +1037,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!f2dHistAsMCandCombPIDGenPtVsGenYXiPlus) {
-     f2dHistAsMCandCombPIDGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of #Xi^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistAsMCandCombPIDGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of #bar{#Xi}^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYXiPlus);
   }
   
@@ -1028,7 +1047,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus) {
-     f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of #Omega^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
+     f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of #bar{#Omega}^{+} (associated+Bach.PID); Pt_{MC} (GeV/c); Y_{MC}", 200, 0., 10., 220, -1.1, 1.1);
      fListHistCascade->Add(f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus);
   }
   
@@ -1041,7 +1060,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!f2dHistAsMCGenPtVsGenYXiPlus) {
-	  f2dHistAsMCGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of gen. #Xi^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 220, -1.1, 1.1);
+	  f2dHistAsMCGenPtVsGenYXiPlus = new TH2F("f2dHistAsMCGenPtVsGenYXiPlus", "MC P_{t} Vs MC Y of gen. #bar{#Xi}^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 220, -1.1, 1.1);
 	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYXiPlus );
   }
   
@@ -1051,7 +1070,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!f2dHistAsMCGenPtVsGenYOmegaPlus) {
-	  f2dHistAsMCGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of gen. #Omega^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 220, -1.1, 1.1);
+	  f2dHistAsMCGenPtVsGenYOmegaPlus = new TH2F("f2dHistAsMCGenPtVsGenYOmegaPlus", "MC P_{t} Vs MC Y of gen. #bar{#Omega}^{+} (associated);Pt_{MC} (GeV/c); Rapidity, Y_{MC}",200, 0., 10., 220, -1.1, 1.1);
 	  fListHistCascade->Add(f2dHistAsMCGenPtVsGenYOmegaPlus );
   } 
   
@@ -1063,7 +1082,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!fHistAsMCGenEtaXiPlus) {
-	  fHistAsMCGenEtaXiPlus = new TH1F("fHistAsMCGenEtaXiPlus", "#eta of gen. #Xi^{+} (associated);#eta;Number of Casc", 100, -5, 5);
+	  fHistAsMCGenEtaXiPlus = new TH1F("fHistAsMCGenEtaXiPlus", "#eta of gen. #bar{#Xi}^{+} (associated);#eta;Number of Casc", 100, -5, 5);
 	  fListHistCascade->Add( fHistAsMCGenEtaXiPlus );
   }
   
@@ -1073,7 +1092,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if (!fHistAsMCGenEtaOmegaPlus) {
-	  fHistAsMCGenEtaOmegaPlus = new TH1F("fHistAsMCGenEtaOmegaPlus", "#eta of gen. #Omega^{+} (associated);#eta;Number of Casc", 100, -5, 5);
+	  fHistAsMCGenEtaOmegaPlus = new TH1F("fHistAsMCGenEtaOmegaPlus", "#eta of gen. #bar{#Omega}^{+} (associated);#eta;Number of Casc", 100, -5, 5);
 	  fListHistCascade->Add( fHistAsMCGenEtaOmegaPlus );
   }
   
@@ -1087,7 +1106,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResPtXiPlus) {
-	  f2dHistAsMCResPtXiPlus = new TH2F( "f2dHistAsMCResPtXiPlus", "Resolution in Pt reconstruction for #Xi^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtXiPlus = new TH2F( "f2dHistAsMCResPtXiPlus", "Resolution in Pt reconstruction for #bar{#Xi}^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtXiPlus);
   }
   
@@ -1097,7 +1116,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResPtOmegaPlus) {
-	  f2dHistAsMCResPtOmegaPlus = new TH2F( "f2dHistAsMCResPtOmegaPlus", "Resolution in Pt reconstruction for #Omega^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
+	  f2dHistAsMCResPtOmegaPlus = new TH2F( "f2dHistAsMCResPtOmegaPlus", "Resolution in Pt reconstruction for #bar{#Omega}^{+}; Pt_{MC} (GeV/c); (Pt_{reco} - Pt_{MC}) / Pt_{MC}", 200, 0., 10., 200, -0.1, 0.1);
 	  fListHistCascade->Add(f2dHistAsMCResPtOmegaPlus);
   }
   
@@ -1109,7 +1128,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResRXiPlus) {
-	  f2dHistAsMCResRXiPlus = new TH2F( "f2dHistAsMCResRXiPlus", "Resolution in transv. position for #Xi^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResRXiPlus = new TH2F( "f2dHistAsMCResRXiPlus", "Resolution in transv. position for #bar{#Xi}^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResRXiPlus);
   }
   
@@ -1119,7 +1138,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResROmegaPlus) {
-	  f2dHistAsMCResROmegaPlus = new TH2F( "f2dHistAsMCResROmegaPlus", "Resolution in transv. position for #Omega^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
+	  f2dHistAsMCResROmegaPlus = new TH2F( "f2dHistAsMCResROmegaPlus", "Resolution in transv. position for #bar{#Omega}^{+}; R_{MC} (cm); (R_{reco} - R_{MC}) / R_{MC}", 450, 0., 45.0, 240, -0.3, 0.3);
 	  fListHistCascade->Add(f2dHistAsMCResROmegaPlus);
   }
   
@@ -1131,7 +1150,7 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResPhiXiPlus) {
-          f2dHistAsMCResPhiXiPlus = new TH2F( "f2dHistAsMCResPhiXiPlus", "Resolution in #phi for #Xi^{+}; Pt_{MC} (GeV/c); #phi(MC) - #phi(reco)   (deg)", 200, 0., 10., 60, -30., 30.);
+          f2dHistAsMCResPhiXiPlus = new TH2F( "f2dHistAsMCResPhiXiPlus", "Resolution in #phi for #bar{#Xi}^{+}; Pt_{MC} (GeV/c); #phi(MC) - #phi(reco)   (deg)", 200, 0., 10., 60, -30., 30.);
           fListHistCascade->Add(f2dHistAsMCResPhiXiPlus);
   }
   
@@ -1141,9 +1160,33 @@ if( !fPaveTextBookKeeping){
   }
   
   if(! f2dHistAsMCResPhiOmegaPlus) {
-          f2dHistAsMCResPhiOmegaPlus = new TH2F( "f2dHistAsMCResPhiOmegaPlus", "Resolution in #phi for #Omega^{+}; Pt_{MC} (GeV/c); #phi(MC) - #phi(reco)   (deg)", 200, 0., 10., 60, -30., 30.);
+          f2dHistAsMCResPhiOmegaPlus = new TH2F( "f2dHistAsMCResPhiOmegaPlus", "Resolution in #phi for #bar{#Omega}^{+}; Pt_{MC} (GeV/c); #phi(MC) - #phi(reco)   (deg)", 200, 0., 10., 60, -30., 30.);
           fListHistCascade->Add(f2dHistAsMCResPhiOmegaPlus);
   }
+  
+  
+                // - Correlation in Pt between the cascade and its (anti)proton daughter
+  if(! f2dHistAsMCPtProtonVsPtXiMinus) {
+        f2dHistAsMCPtProtonVsPtXiMinus = new TH2F( "f2dHistAsMCPtProtonVsPtXiMinus", "Correlation Pt(p) Vs Pt(#Xi^{-}), associated to MC; Pt_{MC}(p) (GeV/c); Pt_{MC}(#Xi^{-}) (GeV/c)", 100, 0., 10., 100, 0., 10.);
+        fListHistCascade->Add(f2dHistAsMCPtProtonVsPtXiMinus);
+  }
+  
+  if(! f2dHistAsMCPtAntiProtonVsPtXiPlus) {
+        f2dHistAsMCPtAntiProtonVsPtXiPlus = new TH2F( "f2dHistAsMCPtAntiProtonVsPtXiPlus", "Correlation Pt(#bar{p}) Vs Pt(#bar{#Xi}^{+}), associated to MC; Pt_{MC}(#bar{p}) (GeV/c); Pt_{MC}(#bar{#Xi}^{+}) (GeV/c)", 100, 0., 10., 100, 0., 10.);
+        fListHistCascade->Add(f2dHistAsMCPtAntiProtonVsPtXiPlus);
+  }
+  
+  if(! f2dHistAsMCPtProtonVsPtOmegaMinus) {
+        f2dHistAsMCPtProtonVsPtOmegaMinus = new TH2F( "f2dHistAsMCPtProtonVsPtOmegaMinus", "Correlation Pt(p) Vs Pt(#Omega^{-}), associated to MC; Pt_{MC}(p) (GeV/c); Pt_{MC}(#Omega^{-}) (GeV/c)", 100, 0., 10., 100, 0., 10.);
+        fListHistCascade->Add(f2dHistAsMCPtProtonVsPtOmegaMinus);
+  }
+  
+  
+  if(! f2dHistAsMCPtAntiProtonVsPtOmegaPlus) {
+        f2dHistAsMCPtAntiProtonVsPtOmegaPlus = new TH2F( "f2dHistAsMCPtAntiProtonVsPtOmegaPlus", "Correlation Pt(#bar{p}) Vs Pt(#bar{#Omega}^{+}), associated to MC; Pt_{MC}(#bar{p}) (GeV/c); Pt_{MC}(#bar{#Omega}^{+}) (GeV/c)", 100, 0., 10., 100, 0., 10.);
+        fListHistCascade->Add(f2dHistAsMCPtAntiProtonVsPtOmegaPlus);
+  }
+  
   
   
                 // - PID container
@@ -1154,7 +1197,7 @@ if(! fCFContCascadePIDAsXiMinus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 200;
-  lNbBinsPerVar[1] = 400;
+  lNbBinsPerVar[1] = 75;
   lNbBinsPerVar[2] = 44;
   lNbBinsPerVar[3] = 250;
    
@@ -1162,9 +1205,9 @@ if(! fCFContCascadePIDAsXiMinus)  {
   fCFContCascadePIDAsXiMinus = new AliCFContainer("fCFContCascadePIDAsXiMinus","Pt_{cascade} Vs M_{#Xi^{-} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   //setting the bin limits (valid  for v4-18-10-AN)
-  fCFContCascadePIDAsXiMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
-  fCFContCascadePIDAsXiMinus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
-  fCFContCascadePIDAsXiMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
+  fCFContCascadePIDAsXiMinus->SetBinLimits(0,   0.0  ,  10.0  );        // Pt(Cascade)
+  fCFContCascadePIDAsXiMinus->SetBinLimits(1,   1.25 ,   1.40 );        // Xi Effective mass
+  fCFContCascadePIDAsXiMinus->SetBinLimits(2,  -1.1  ,   1.1  );        // Rapidity
   if(fCollidingSystems) 
 	fCFContCascadePIDAsXiMinus->SetBinLimits(3, 0.0, 20000.0  );    // nTrackPrimaryMultiplicity
   else
@@ -1196,18 +1239,18 @@ if(! fCFContCascadePIDAsXiPlus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 200;
-  lNbBinsPerVar[1] = 400;
+  lNbBinsPerVar[1] = 75;
   lNbBinsPerVar[2] = 44;
   lNbBinsPerVar[3] = 250;
    
   
-  fCFContCascadePIDAsXiPlus = new AliCFContainer("fCFContCascadePIDAsXiPlus","Pt_{cascade} Vs M_{#Xi^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  fCFContCascadePIDAsXiPlus = new AliCFContainer("fCFContCascadePIDAsXiPlus","Pt_{cascade} Vs M_{#bar{#Xi}^{+} candidates} Vs Y_{#Xi}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
   //setting the bin limits (valid  for v4-18-10-AN)
-  fCFContCascadePIDAsXiPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
-  fCFContCascadePIDAsXiPlus->SetBinLimits(1,   1.2  ,   2.0 );	// Xi Effective mass
-  fCFContCascadePIDAsXiPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
+  fCFContCascadePIDAsXiPlus->SetBinLimits(0,   0.0  ,  10.0  );         // Pt(Cascade)
+  fCFContCascadePIDAsXiPlus->SetBinLimits(1,   1.25 ,   1.40 );         // Xi Effective mass
+  fCFContCascadePIDAsXiPlus->SetBinLimits(2,  -1.1  ,   1.1  );         // Rapidity
   if(fCollidingSystems) 
 	fCFContCascadePIDAsXiPlus->SetBinLimits(3, 0.0, 20000.0  );    // nTrackPrimaryMultiplicity
   else
@@ -1240,7 +1283,7 @@ if(! fCFContCascadePIDAsOmegaMinus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4] = {0};
   lNbBinsPerVar[0] = 200;
-  lNbBinsPerVar[1] = 500;
+  lNbBinsPerVar[1] = 60;
   lNbBinsPerVar[2] = 44;
   lNbBinsPerVar[3] = 250;
    
@@ -1249,9 +1292,9 @@ if(! fCFContCascadePIDAsOmegaMinus)  {
   
   
   //setting the bin limits (valid  for v4-18-10-AN)
-  fCFContCascadePIDAsOmegaMinus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
-  fCFContCascadePIDAsOmegaMinus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
-  fCFContCascadePIDAsOmegaMinus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(0,   0.0  ,  10.0  );     // Pt(Cascade)
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(1,   1.62 ,   1.74 );     // Omega Effective mass
+  fCFContCascadePIDAsOmegaMinus->SetBinLimits(2,  -1.1  ,   1.1  );     // Rapidity
   if(fCollidingSystems) 
 	fCFContCascadePIDAsOmegaMinus->SetBinLimits(3, 0.0, 20000.0  );    // nTrackPrimaryMultiplicity
   else
@@ -1283,18 +1326,18 @@ if(! fCFContCascadePIDAsOmegaPlus)  {
   //array for the number of bins in each dimension :
   Int_t lNbBinsPerVar[4]= {0};
   lNbBinsPerVar[0] = 200;
-  lNbBinsPerVar[1] = 500;
+  lNbBinsPerVar[1] = 60;
   lNbBinsPerVar[2] = 44;
   lNbBinsPerVar[3] = 250;
    
   
-  fCFContCascadePIDAsOmegaPlus = new AliCFContainer("fCFContCascadePIDAsOmegaPlus","Pt_{cascade} Vs M_{#Omega^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
+  fCFContCascadePIDAsOmegaPlus = new AliCFContainer("fCFContCascadePIDAsOmegaPlus","Pt_{cascade} Vs M_{#bar{#Omega}^{+} candidates} Vs Y_{#Omega}", lNbSteps, lNbVariables, lNbBinsPerVar );
   
   
   //setting the bin limits (valid  for v4-18-10-AN)
-  fCFContCascadePIDAsOmegaPlus->SetBinLimits(0,   0.0  ,  10.0 );	// Pt(Cascade)
-  fCFContCascadePIDAsOmegaPlus->SetBinLimits(1,   1.5  ,   2.5 );	// Omega Effective mass
-  fCFContCascadePIDAsOmegaPlus->SetBinLimits(2,  -1.1  ,   1.1 );	// Rapidity
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(0,   0.0  ,  10.0  );      // Pt(Cascade)
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(1,   1.62 ,   1.74 );      // Omega Effective mass
+  fCFContCascadePIDAsOmegaPlus->SetBinLimits(2,  -1.1  ,   1.1  );      // Rapidity
   if(fCollidingSystems) 
 	fCFContCascadePIDAsOmegaPlus->SetBinLimits(3, 0.0, 20000.0  );    // nTrackPrimaryMultiplicity
   else
@@ -1438,11 +1481,27 @@ if(! fCFContAsCascadeCuts){
   fCFContAsCascadeCuts->SetBinLimits(16, -10.0  , 10.0  );	// BestPrimaryVtxPosZ
   if(fCollidingSystems){
   	fCFContAsCascadeCuts->SetBinLimits(17,   0.0, 10000.0  );    // nTrackPrimaryMultiplicity
-  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 10000.0  );    // SPDTrackletsMultiplicity
+  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 10000.0  );    // nITSandTPCtracksAndSPDtracklets
   }
   else{  
-  	fCFContAsCascadeCuts->SetBinLimits(17,   0.0, 250.0  );     // nTrackPrimaryMultiplicity
-  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 200.0  );     // SPDTrackletsMultiplicity
+  	//fCFContAsCascadeCuts->SetBinLimits(17,   0.0, 250.0  );     // nTrackPrimaryMultiplicity
+        Double_t *lBinLim17  = new Double_t[ lNbBinsPerVar[17]+1 ];
+                lBinLim17[0] = 0;       lBinLim17[10] = 10;      lBinLim17[20] = 24;     lBinLim17[30] = 45;    lBinLim17[40] = 95;    lBinLim17[50] = 250;
+                lBinLim17[1] = 1;       lBinLim17[11] = 11;      lBinLim17[21] = 25;     lBinLim17[31] = 50;    lBinLim17[41] = 100;
+                lBinLim17[2] = 2;       lBinLim17[12] = 13;      lBinLim17[22] = 27;     lBinLim17[32] = 55;    lBinLim17[42] = 105;
+                lBinLim17[3] = 3;       lBinLim17[13] = 14;      lBinLim17[23] = 30;     lBinLim17[33] = 60;    lBinLim17[43] = 110;
+                lBinLim17[4] = 4;       lBinLim17[14] = 15;      lBinLim17[24] = 31;     lBinLim17[34] = 65;    lBinLim17[44] = 115;
+                lBinLim17[5] = 5;       lBinLim17[15] = 16;      lBinLim17[25] = 32;     lBinLim17[35] = 70;    lBinLim17[45] = 120;
+                lBinLim17[6] = 6;       lBinLim17[16] = 20;      lBinLim17[26] = 33;     lBinLim17[36] = 75;    lBinLim17[46] = 125;
+                lBinLim17[7] = 7;       lBinLim17[17] = 21;      lBinLim17[27] = 34;     lBinLim17[37] = 80;    lBinLim17[47] = 130;
+                lBinLim17[8] = 8;       lBinLim17[18] = 22;      lBinLim17[28] = 35;     lBinLim17[38] = 85;    lBinLim17[48] = 135;
+                lBinLim17[9] = 9;       lBinLim17[19] = 23;      lBinLim17[29] = 40;     lBinLim17[39] = 90;    lBinLim17[49] = 140;
+                
+                fCFContAsCascadeCuts -> SetBinLimits(17,  lBinLim17 );            // nTrackPrimaryMultiplicity : 0 to 250	
+        delete [] lBinLim17;     
+          
+
+  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 200.0  );     // nITSandTPCtracksAndSPDtracklets
   }
   fCFContAsCascadeCuts->SetBinLimits(19,  68.0  ,164.0  );	// BachTPCClusters
   
@@ -1469,11 +1528,11 @@ if(! fCFContAsCascadeCuts){
   fCFContAsCascadeCuts->SetBinLimits(16, -10.0  , 10.0  );	// BestPrimaryVtxPosZ
   if(fCollidingSystems){
   	fCFContAsCascadeCuts->SetBinLimits(17,   0.0, 10000.0  );    // nTrackPrimaryMultiplicity
-  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 10000.0  );    // SPDTrackletsMultiplicity
+  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 10000.0  );    // nITSandTPCtracksAndSPDtracklets
   }
   else{  
   	fCFContAsCascadeCuts->SetBinLimits(17,   0.0, 250.0  );     // nTrackPrimaryMultiplicity
-  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 200.0  );     // SPDTrackletsMultiplicity
+  	fCFContAsCascadeCuts->SetBinLimits(18,   0.0, 200.0  );     // nITSandTPCtracksAndSPDtracklets
   }
   fCFContAsCascadeCuts->SetBinLimits(19,  25.0  ,165.0  );	// BachTPCClusters
   */
@@ -1512,7 +1571,7 @@ if(! fCFContAsCascadeCuts){
   fCFContAsCascadeCuts->SetVarTitle(16, "Z-position(BestPrimVtx) (cm)");
   
   fCFContAsCascadeCuts->SetVarTitle(17, "Primary Track Multiplicity");
-  fCFContAsCascadeCuts->SetVarTitle(18, "SPD tracklets Multiplicity");
+  fCFContAsCascadeCuts->SetVarTitle(18, "(ITS+TPC tracks + SPD tracklets) Multiplicity");
   fCFContAsCascadeCuts->SetVarTitle(19, "Bach.TPC Clusters");
   
   fListHistCascade->Add(fCFContAsCascadeCuts);
@@ -1653,7 +1712,7 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
                 }
                 // FIXME : quality selection regarding pile-up rejection 
                 if(fkRejectEventPileUp) {
-                        if(lESDevent->IsPileupFromSPD() ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
+                        if(lESDevent->IsPileupFromSPDInMultBins() ){// minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  -> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
                                 AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
                                 PostData(1, fListHistCascade); 
                                 return; 
@@ -1687,15 +1746,22 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
 	
   
   Int_t   nNumberOfMCPrimaries       = -1;
-  Int_t   nMCPrimariesInAcceptance   =  0;
-  Int_t   nTrackPrimaryMultiplicity  = -1;
+  Int_t   nMCPrimariesInEtaBelow0p8  =  0;
+  Int_t   nMCPrimariesInEtaBelow1p0  =  0;
   
+  Int_t   nTrackPrimaryMultiplicity        = -1;
+  Int_t   nSPDTracklets                    =  0; // AliESDEvent::EstimateMultiplicity will re-initialise the value to 0
+  Int_t   nITSandTPCtracksAndSPDtracklets  =  0; // AliESDEvent::EstimateMultiplicity will re-initialise the value to 0
+  Int_t   nTracksITSSApure                 =  0; // AliESDEvent::EstimateMultiplicity will re-initialise the value to 0
   
         nNumberOfMCPrimaries       = lMCstack->GetNprimary();
-        nTrackPrimaryMultiplicity  = fESDtrackCuts->CountAcceptedTracks(lESDevent);
-
         if(nNumberOfMCPrimaries < 1) return;
-    
+        
+        nTrackPrimaryMultiplicity  = fESDtrackCuts->CountAcceptedTracks(lESDevent);
+        //EstimateMultiplicity(Int_t &tracklets, Int_t &trITSTPC, Int_t &trITSSApure, Double_t eta, Bool_t useDCAFlag,Bool_t useV0Flag)
+        lESDevent->EstimateMultiplicity( nSPDTracklets, nITSandTPCtracksAndSPDtracklets, nTracksITSSApure, 1.0, kTRUE, kTRUE);
+
+
         fHistMCTrackMultiplicity->Fill( nNumberOfMCPrimaries );
     
 //_____________________________________________________________________________	
@@ -1710,12 +1776,16 @@ void AliAnalysisTaskCheckPerformanceCascade::UserExec(Option_t *)
                 Printf("MC Primary loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
                 continue;
         }
-       
-        if( TMath::Abs( lCurrentParticle->Eta() ) > 0.8 ) continue;
-        nMCPrimariesInAcceptance++;
+        
+        Double_t lEtaCurrentParticle = TMath::Abs( lCurrentParticle->Eta() );
+        if( lEtaCurrentParticle < 1.0 ){
+                nMCPrimariesInEtaBelow1p0++;
+                if( lEtaCurrentParticle < 0.8 ) nMCPrimariesInEtaBelow0p8++;
+        }
     }
     
-    f2dHistRecoMultVsMCMult->Fill( nTrackPrimaryMultiplicity, nMCPrimariesInAcceptance );
+    f2dHistRecoPrimTrckMultVsMCMult->Fill( nTrackPrimaryMultiplicity,       nMCPrimariesInEtaBelow0p8 );
+    f2dHistRecoEstimateMultVsMCMult->Fill( nITSandTPCtracksAndSPDtracklets, nMCPrimariesInEtaBelow1p0 );
 
 
    // For proton
@@ -2159,12 +2229,12 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 
         // 3.1.A - Combined PID
 	// Reasonable guess for the priors for the cascade track sample (e-, mu, pi, K, p)
-	Double_t lPriorsGuessXi[5]    = {0, 0, 2, 0, 1};
-	Double_t lPriorsGuessOmega[5] = {0, 0, 1, 1, 1};
+	Double_t lPriorsGuessXi[10]    = {0, 0, 2, 0, 1,  0,0,0,0,0};
+	Double_t lPriorsGuessOmega[10] = {0, 0, 1, 1, 1,  0,0,0,0,0};
 	
 	// Combined VO-positive-daughter PID
-	AliPID pPidXi;		pPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID pPidOmega;	pPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID pPidXi;         pPidXi.SetPriors(    lPriorsGuessXi    , kTRUE); // kTRUE = for charged particle PID
+	AliPID pPidOmega;      pPidOmega.SetPriors( lPriorsGuessOmega , kTRUE); // kTRUE = for charged particle PID
 		
 	if( pTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10] = {0.}; pTrackXi->GetESDpid(r);
@@ -2206,8 +2276,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	
 	
 	// Combined VO-negative-daughter PID
-	AliPID nPidXi;		nPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID nPidOmega;	nPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID nPidXi;         nPidXi.SetPriors(    lPriorsGuessXi    , kTRUE); // kTRUE = for charged particle PID
+	AliPID nPidOmega;      nPidOmega.SetPriors( lPriorsGuessOmega , kTRUE); // kTRUE = for charged particle PID
 		
 	if( nTrackXi->IsOn(AliESDtrack::kESDpid) ){  // Combined PID exists
 		Double_t r[10] = {0.}; nTrackXi->GetESDpid(r);
@@ -2248,8 +2318,8 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 	
 		
 	// Combined bachelor PID
-	AliPID bachPidXi;	bachPidXi.SetPriors(    lPriorsGuessXi    );
-	AliPID bachPidOmega;	bachPidOmega.SetPriors( lPriorsGuessOmega );
+	AliPID bachPidXi;      bachPidXi.SetPriors(    lPriorsGuessXi    , kTRUE); // kTRUE = for charged particle PID
+	AliPID bachPidOmega;   bachPidOmega.SetPriors( lPriorsGuessOmega , kTRUE); // kTRUE = for charged particle PID
 	
         Double_t ppionBach = 0.0, pkaonBach = 0.0;
         
@@ -2480,6 +2550,9 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
         Double_t lmcPt             = mcMotherBach->Pt();
         Double_t lmcRapCasc        = 0.5*TMath::Log( (mcMotherBach->Energy() + mcMotherBach->Pz()) / 
                                                      (mcMotherBach->Energy() - mcMotherBach->Pz() +1.e-13) );
+        Double_t lmcPtBaryon       = (mcNegV0Dghter->GetPdgCode() == -2212 ) ? mcNegV0Dghter->Pt() : mcPosV0Dghter->Pt(); // spot the baryon daughter : pbar or p
+        
+        
         Double_t lmcEta            = mcMotherBach->Eta();
         Double_t lmcTransvRadius   = mcBach->R(); // to get the decay point of Xi, = the production vertex of Bachelor ...
         
@@ -2502,16 +2575,19 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		f2dHistAsMCResPtXiMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResRXiMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiXiMinus      ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCPtProtonVsPtXiMinus->Fill( lmcPtBaryon, lmcPt );
 	}
 	
 	else if( lChargeXi > 0 && lAssoXiPlus){	
-		fHistAsMCMassXiPlus	      ->Fill( lInvMassXiPlus   );
-		if(lIsBachelorPion)	f2dHistAsMCandCombPIDGenPtVsGenYXiPlus->Fill( lmcPt, lmcRapCasc );
-		f2dHistAsMCGenPtVsGenYXiPlus  ->Fill( lmcPt, lmcRapCasc);
-		fHistAsMCGenEtaXiPlus         ->Fill( lmcEta           );
-		f2dHistAsMCResPtXiPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
-		f2dHistAsMCResRXiPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
-                f2dHistAsMCResPhiXiPlus       ->Fill( lmcPt, lDeltaPhiMcReco );
+                fHistAsMCMassXiPlus	                ->Fill( lInvMassXiPlus   );
+                if(lIsBachelorPion)	f2dHistAsMCandCombPIDGenPtVsGenYXiPlus->Fill( lmcPt, lmcRapCasc );
+                f2dHistAsMCGenPtVsGenYXiPlus            ->Fill( lmcPt, lmcRapCasc);
+                fHistAsMCGenEtaXiPlus                   ->Fill( lmcEta           );
+                f2dHistAsMCResPtXiPlus                  ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
+                f2dHistAsMCResRXiPlus                   ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
+                f2dHistAsMCResPhiXiPlus                 ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCPtAntiProtonVsPtXiPlus       ->Fill( lmcPtBaryon, lmcPt );
+    
 	}
 	
 	else if( lChargeXi < 0 && lAssoOmegaMinus){	
@@ -2522,16 +2598,18 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 		f2dHistAsMCResPtOmegaMinus       ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
 		f2dHistAsMCResROmegaMinus        ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
                 f2dHistAsMCResPhiOmegaMinus      ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCPtProtonVsPtOmegaMinus->Fill( lmcPtBaryon, lmcPt );
 	}
 	
 	else if( lChargeXi > 0 && lAssoOmegaPlus){	
-		fHistAsMCMassOmegaPlus           ->Fill( lInvMassOmegaPlus );
-		if(lIsBachelorKaon)	f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus->Fill( lmcPt, lmcRapCasc );
-		f2dHistAsMCGenPtVsGenYOmegaPlus  ->Fill( lmcPt, lmcRapCasc   );
-		fHistAsMCGenEtaOmegaPlus         ->Fill( lmcEta            );
-		f2dHistAsMCResPtOmegaPlus        ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
-		f2dHistAsMCResROmegaPlus         ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
-                f2dHistAsMCResPhiOmegaPlus       ->Fill( lmcPt, lDeltaPhiMcReco );
+                fHistAsMCMassOmegaPlus                  ->Fill( lInvMassOmegaPlus );
+                if(lIsBachelorKaon)	f2dHistAsMCandCombPIDGenPtVsGenYOmegaPlus->Fill( lmcPt, lmcRapCasc );
+                f2dHistAsMCGenPtVsGenYOmegaPlus         ->Fill( lmcPt, lmcRapCasc );
+                fHistAsMCGenEtaOmegaPlus                ->Fill( lmcEta            );
+                f2dHistAsMCResPtOmegaPlus               ->Fill( lmcPt,           (lrecoPt - lmcPt)/ lmcPt );
+                f2dHistAsMCResROmegaPlus                ->Fill( lmcTransvRadius, (lrecoTransvRadius - lmcTransvRadius)/ lmcTransvRadius    );
+                f2dHistAsMCResPhiOmegaPlus              ->Fill( lmcPt, lDeltaPhiMcReco );
+                f2dHistAsMCPtAntiProtonVsPtOmegaPlus    ->Fill( lmcPtBaryon, lmcPt );
         }
         
         
@@ -2555,8 +2633,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
         Double_t lDcaPosToPrimVertexXi      = -1.;
         Double_t lDcaNegToPrimVertexXi      = -1.;
 
-        Int_t    nTrackWithTPCrefitMultiplicity  =  0;
-        Int_t    lSPDTrackletsMultiplicity       = -1;
+        //Int_t    nTrackWithTPCrefitMultiplicity  =  0;
 
         
         // 6.2 - Definition of the needed variables
@@ -2597,14 +2674,11 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
         
         
         
-        nTrackWithTPCrefitMultiplicity  = DoESDTrackWithTPCrefitMultiplicity(lESDevent);  // FIXME : variable which is not used anymore at the moment ... 
+        //nTrackWithTPCrefitMultiplicity  = DoESDTrackWithTPCrefitMultiplicity(lESDevent);  // FIXME : variable which is not used anymore at the moment ... 
                                                                                           //    ->  keep it while the task is still under development.
         
         
-        const AliMultiplicity *lAliMult = lESDevent->GetMultiplicity();
-        lSPDTrackletsMultiplicity       = lAliMult->GetNumberOfTracklets();
         
-
         // 6.3 - Filling the AliCFContainer (optimisation of topological selections + systematics)
         Double_t lContainerCutVars[20] = {0.0};
 
@@ -2624,7 +2698,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
 
         lContainerCutVars[16] = lBestPrimaryVtxPos[2];
         lContainerCutVars[17] = nTrackPrimaryMultiplicity;       // FIXME : nTrackPrimaryMultiplicity not checked for AOD ...
-        lContainerCutVars[18] = lSPDTrackletsMultiplicity;       // FIXME : SPDTrackletsMultiplicity is not available for AOD ... 
+        lContainerCutVars[18] = nITSandTPCtracksAndSPDtracklets; // FIXME : nITSandTPCtracksAndSPDtracklets is not available for AOD ... 
         lContainerCutVars[19] = lBachTPCClusters;                // FIXME : BachTPCClusters          is not available for AOD ... 
 
         // All cases should be covered below
@@ -2649,7 +2723,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
                 lContainerCutVars[12] = lInvMassOmegaMinus;
                 lContainerCutVars[14] = -1.;
                 lContainerCutVars[15] = lmcRapCasc;
-                        if( lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC )    
+                        if( lIsBachelorKaonForTPC   && lIsPosProtonForTPC    && lIsNegPionForTPC  && (TMath::Abs( lInvMassXiMinus-1.3217 ) > 0.008) )    
                                 fCFContAsCascadeCuts->Fill(lContainerCutVars,2); // for Omega-
         }
 	if( lChargeXi > 0 && lAssoOmegaPlus  ){
@@ -2657,7 +2731,7 @@ for (Int_t iXi = 0; iXi < ncascades; iXi++)
                 lContainerCutVars[12] = lInvMassOmegaPlus;
                 lContainerCutVars[14] = -1.;
                 lContainerCutVars[15] = lmcRapCasc;
-                        if( lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC )    
+                        if( lIsBachelorKaonForTPC   && lIsNegProtonForTPC    && lIsPosPionForTPC && (TMath::Abs( lInvMassXiPlus-1.3217 ) > 0.008) )    
                                 fCFContAsCascadeCuts->Fill(lContainerCutVars,3); // for Omega+
         }
         
