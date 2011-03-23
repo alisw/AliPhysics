@@ -113,6 +113,7 @@ void AliTender::ConnectInputData(Option_t* option)
      AliWarning("AliTaskCDBconnect: Could not set run from path");
   } else {
      fRun = run;
+     fRunChanged = kTRUE;
      printf("AliTender: #### Setting run to: %d\n", fRun);
      fCDB->SetRun(fRun);
   }   
