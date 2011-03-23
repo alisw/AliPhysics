@@ -192,6 +192,73 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
 }
   
 //____________________________________________________________________
+TH1I*
+AliAODForwardMult::MakeTriggerHistogram(const char* name) 
+{
+  TH1I* ret = new TH1I(name, "Triggers", kAccepted+1, -.5, kAccepted+.5);
+  ret->SetYTitle("Events");
+  ret->SetFillColor(kRed+1);
+  ret->SetFillStyle(3001);
+  ret->GetXaxis()->SetBinLabel(kBinAll,         "All events");
+  ret->GetXaxis()->SetBinLabel(kBinB,           "w/B trigger");
+  ret->GetXaxis()->SetBinLabel(kBinA,           "w/A trigger");
+  ret->GetXaxis()->SetBinLabel(kBinC,           "w/C trigger");
+  ret->GetXaxis()->SetBinLabel(kBinE,           "w/E trigger");
+  ret->GetXaxis()->SetBinLabel(kBinInel,        "Minimum Bias");
+  ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "INEL>0");
+  ret->GetXaxis()->SetBinLabel(kBinNSD,         "NSD");
+  ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
+  ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
+  ret->GetXaxis()->SetBinLabel(kWithVertex,     "w/Vertex");
+  ret->GetXaxis()->SetBinLabel(kWithTrigger,    "w/Selected trigger");
+  ret->GetXaxis()->SetBinLabel(kAccepted,       "Accepted by cut");
+  ret->GetXaxis()->SetNdivisions(kAccepted, false);
+  ret->SetStats(0);
+
+  return ret;
+}
+
+//____________________________________________________________________
+Bool_t
+AliAODForwardMult::CheckEvent(Int_t    triggerMask,
+			      Double_t vzMin, Double_t vzMax,
+			      UShort_t cMin,  UShort_t cMax, 
+			      TH1*     hist) const
+{
+
+  if (cMin < cMax && (cMin > fCentrality || cMax <= fCentrality)) return false;
+
+  if (hist) { 
+    hist->AddBinContent(kBinAll);
+    if (IsTriggerBits(kB))        hist->AddBinContent(kBinB);
+    if (IsTriggerBits(kA))        hist->AddBinContent(kBinA);
+    if (IsTriggerBits(kC))        hist->AddBinContent(kBinC);
+    if (IsTriggerBits(kE))        hist->AddBinContent(kBinE);
+    if (IsTriggerBits(kInel))     hist->AddBinContent(kBinInel);
+    if (IsTriggerBits(kInelGt0))  hist->AddBinContent(kBinInelGt0);
+    if (IsTriggerBits(kNSD))      hist->AddBinContent(kBinNSD);
+    if (IsTriggerBits(kPileUp))   hist->AddBinContent(kBinPileUp);
+    if (IsTriggerBits(kMCNSD))    hist->AddBinContent(kBinMCNSD);
+  }
+  // Check if we have an event of interest. 
+  if (!IsTriggerBits(triggerMask)) return false;
+  
+  // Check for pileup
+  if (IsTriggerBits(kPileUp)) return false;
+  if (hist) hist->AddBinContent(kWithTrigger);
+  
+  // Check that we have a valid vertex
+  if (!HasIpZ()) return false;
+  if (hist) hist->AddBinContent(kWithVertex);
+
+  // Check that vertex is within cuts 
+  if (!InRange(vzMin, vzMax)) return false;
+  if (hist) hist->AddBinContent(kAccepted);
+  
+  return true;
+}
+
+//____________________________________________________________________
 void
 AliAODForwardMult::Print(Option_t* option) const
 {

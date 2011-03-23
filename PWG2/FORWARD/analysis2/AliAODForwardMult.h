@@ -6,6 +6,7 @@
 #include <TObject.h>
 #include <TH2D.h>
 class TBrowser;
+class TH1I;
 /**
  * Class that contains the forward multiplicity data per event 
  *
@@ -115,6 +116,24 @@ public:
     /** true NSD from MC */
     kMCNSD    = 0x400    
     
+  };
+  /** 
+   * Bin numbers in trigger histograms 
+   */
+  enum { 
+    kBinAll=1,
+    kBinInel, 
+    kBinInelGt0, 
+    kBinNSD, 
+    kBinA, 
+    kBinB, 
+    kBinC, 
+    kBinE,
+    kBinPileUp, 
+    kBinMCNSD,
+    kWithTrigger, 
+    kWithVertex, 
+    kAccepted
   };
   /** 
    * Default constructor 
@@ -292,6 +311,22 @@ public:
    */
   const Char_t* GetName() const { return (fIsMC ? "ForwardMC" : "Forward"); }
   /** 
+   * Check if event meets the passses requirements 
+   * 
+   * @param triggerMask  Trigger mask
+   * @param vzMin        Minimum @f$ v_z@f$ (in centimeters)
+   * @param vzMax        Maximum @f$ v_z@f$ (in centimeters) 
+   * @param cMin         Minimum centrality (in percent)
+   * @param cMax         Maximum centrality (in percent)
+   * @param hist         Histogram to fill 
+   * 
+   * @return @c true if the event meets the requirements 
+   */
+  Bool_t CheckEvent(Int_t    triggerMask=kInel,
+		    Double_t vzMin=-10, Double_t vzMax=10,
+		    UShort_t cMin=0,    UShort_t cMax=100, 
+		    TH1*     hist=0) const;
+  /** 
    * Get a string correspondig to the trigger mask
    * 
    * @param mask Trigger mask 
@@ -299,6 +334,14 @@ public:
    * @return Static string (copy before use)
    */
   static const Char_t* GetTriggerString(UInt_t mask);
+  /** 
+   * Make a histogram to record triggers in 
+   * 
+   * @param name Name of the histogram 
+   * 
+   * @return Newly allocated histogram 
+   */
+  static TH1I* MakeTriggerHistogram(const char* name);
 protected: 
   Bool_t  fIsMC;     // Whether this is from MC 
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
