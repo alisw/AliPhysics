@@ -25,7 +25,6 @@ ClassImp(AliAnalysisTaskEMCALPi0PbPb)
 //________________________________________________________________________
 AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name) 
   : AliAnalysisTaskSE(name),
-    fAsymMax(1),
     fCentVar("V0M"),
     fCentFrom(0),
     fCentTo(100),
@@ -35,7 +34,10 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fClusName(),
     fDoNtuple(0),
     fDoAfterburner(0),
+    fAsymMax(1),
     fNminCells(1),
+    fMinErat(0),
+    fMinEcc(0),
     fNEvs(0),
     fGeom(0),
     fOutput(0),
@@ -393,7 +395,7 @@ void AliAnalysisTaskEMCALPi0PbPb::Terminate(Option_t *)
       fNtuple->Write();
   }
 
-  AliInfo(Form("\nAccepted %lld events", fNEvs));
+  AliInfo(Form("\n%s: Accepted %lld events", GetName(), fNEvs));
 }
 
 //________________________________________________________________________
@@ -469,7 +471,7 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
       GetSigma(clus,maxAxis,minAxis);
       if (maxAxis > 0)
         clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
-
+      clus->SetChi2(clusterEcc); // store ecc in chi2
       fHClustEccentricity->Fill(clusterEcc); 
       fHClustEtaPhi->Fill(clusterVec.Eta(),clusterVec.Phi());
       fHClustEnergyPt->Fill(clusterVec.E(),clusterVec.Pt());
@@ -531,6 +533,10 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         continue;
       if (clus1->GetNCells()<fNminCells)
         continue;
+      if (GetMaxCellEnergy(clus1)/clus1->E()<fMinErat)
+        continue;
+      if (clus1->Chi2()<fMinEcc)
+        continue;
       clus1->GetMomentum(clusterVec1,vertex);
       for (Int_t j = i+1; j<nclus; ++j) {
         AliVCluster *clus2 = static_cast<AliVCluster*>(clusters->At(j));
@@ -541,6 +547,10 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         if (clus2->E()<0.010)
           continue;
         if (clus2->GetNCells()<fNminCells)
+          continue;
+        if (GetMaxCellEnergy(clus2)/clus2->E()<fMinErat)
+          continue;
+        if (clus2->Chi2()<fMinEcc)
           continue;
         clus2->GetMomentum(clusterVec2,vertex);
         pionVec = clusterVec1 + clusterVec2;

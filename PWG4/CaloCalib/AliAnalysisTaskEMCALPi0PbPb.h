@@ -34,6 +34,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetClusName(const char *name)                  { fClusName = name;           }
   void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
+  void         SetMinEcc(Double_t ecc)                        { fMinEcc = ecc;              }
+  void         SetMinErat(Double_t erat)                      { fMinErat = erat;            }
   void         SetNminCells(Int_t n)                          { fNminCells = n;             }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag = b;           }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
@@ -48,7 +50,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         GetSigma(AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin);
 
     // input members
-  Double_t               fAsymMax;                // energy asymmetry max (def=1)
   TString                fCentVar;                // variable for centrality determination
   Double_t               fCentFrom;               // min centrality (def=0)
   Double_t               fCentTo;                 // max centrality (def=100)
@@ -58,7 +59,10 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TString                fClusName;               // cluster branch name (def="")
   Bool_t                 fDoNtuple;               // if true write out ntuple
   Bool_t                 fDoAfterburner;          // if true run after burner
-  Int_t                  fNminCells;              // minimum number of cells attached to cluster
+  Double_t               fAsymMax;                // maximum energy asymmetry (def=1)
+  Int_t                  fNminCells;              // minimum number of cells attached to cluster (def=1)
+  Double_t               fMinErat;                // minimum emax/ec ratio (def=0)
+  Double_t               fMinEcc;                 // minimum eccentricity (def=0)
     // derived members (ie with ! after //)
   ULong64_t              fNEvs;                   //!accepted events 
   AliEMCALGeoUtils      *fGeom;                   //!geometry utils
