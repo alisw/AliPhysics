@@ -40,6 +40,9 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
 {
   // Set our persistent pointer 
   fCorrManager = &AliForwardCorrectionManager::Instance();
+  fBranchNames = 
+    "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,"
+    "AliESDFMD.,SPDVertex.,PrimaryVertex.";
 }
 
 //____________________________________________________________________
