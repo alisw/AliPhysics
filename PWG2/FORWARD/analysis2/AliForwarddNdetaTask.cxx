@@ -141,6 +141,18 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
     Double_t centrality = forward->GetCentrality();
     if (centrality < fLow || centrality >= fHigh) return;
   }
+  
+  if (!fSumPrimary) { 
+    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
+    fSumPrimary->SetDirectory(0);
+    fSumPrimary->Reset();
+    fSums->Add(fSumPrimary);
+  }
+  if (triggerMask == AliAODForwardMult::kInel ||
+      (triggerMask == AliAODForwardMult::kNSD && 
+       forward->IsTriggerBits(AliAODForwardMult::kMCNSD)))
+    fSumPrimary->Add(primary);
+  
   // Check if we have an event of interest. 
   if (!forward->IsTriggerBits(triggerMask)) return;
   
@@ -153,17 +165,8 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
   // Check that vertex is within cuts 
   if (!forward->InRange(vzMin, vzMax)) return;
 
-  if (!fSumPrimary) { 
-    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
-    fSumPrimary->SetDirectory(0);
-    fSumPrimary->Reset();
-    fSums->Add(fSumPrimary);
-  }
-
-  if (triggerMask == AliAODForwardMult::kInel ||
-      (triggerMask == AliAODForwardMult::kNSD && 
-       forward->IsTriggerBits(AliAODForwardMult::kMCNSD)))
-    fSumPrimary->Add(primary);
+  
+  
 }
 
 //________________________________________________________________________
