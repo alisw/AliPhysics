@@ -228,7 +228,7 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
   return correction;
 
 }
-Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC){
+Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const{
   //we calculate factors for each value and then multiply them to get the overall bounds
   //neutral corrections, pt cut, pid, efficiency, background
   float neutral = 1.0;
