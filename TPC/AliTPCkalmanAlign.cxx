@@ -919,6 +919,7 @@ void AliTPCkalmanAlign::FitCE(){
     TCut cutSector=Form("(sector%%36)==%d",isec);
     strFitLX = TStatToolkit::FitPlane(chain,"deltaT-CEG.fElements-CELX.fElements", fstringL.Data(),cutSector+cutAll+"abs(deltaT-CEG.fElements-CELX.fElements)<0.4", chi2,npoints,vecL[isec],covar,-1,0, 10000000, kFALSE);
     printf("sec=%d\tchi2=%f\n",isec,TMath::Sqrt(chi2/npoints));
+    delete strFitLX;
     //
     TString fitL=Form("((sector%%36)==%d)++((sector%%36)==%d)*(sector<36)++((sector%%36)==%d)*(lx-133)/100.++((sector%%36)==%d)*(sector<36)*(lx-133)/100.++((sector%%36)==%d)*(ly)/100.++((sector%%36)==%d)*(sector<36)*(ly)/100.",isec,isec,isec,isec,isec,isec);
     if (isec<18) padFitTmpCE=AliTPCCalPad::CreateCalPadFit(fitL.Data(),vecL[isec],dummy);

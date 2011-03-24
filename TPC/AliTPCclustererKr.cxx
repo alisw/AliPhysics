@@ -443,8 +443,9 @@ Int_t AliTPCclustererKr::FinderIO(AliRawReader* rawReader)
   // Krypton cluster finder for the TPC raw data
   // this method is unsing AliAltroRawStreamV3
   // fParam must be defined before
-  
-  if(rawReader)fRawData=kTRUE; //set flag to data
+  if (!rawReader) return 1;
+  //
+  fRawData=kTRUE; //set flag to data
   
   if (!fOutput) {
     Error("Digits2Clusters", "output tree not initialised");

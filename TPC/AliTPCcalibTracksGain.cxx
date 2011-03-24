@@ -407,12 +407,6 @@ AliTPCcalibTracksGain::AliTPCcalibTracksGain(const char* name, const char* title
    //
    fTotalTracks     = 0;
    fAcceptedTracks  = 0;
-   // this will be gone for the a new ROOT version > v5-17-05
-   for (UInt_t i = 0; i < 36; i++) {
-      fNShortClusters[i]  = 0;
-      fNMediumClusters[i] = 0;
-      fNLongClusters[i]   = 0;
-   }
 }
 
 AliTPCcalibTracksGain::~AliTPCcalibTracksGain() {
@@ -580,12 +574,6 @@ void AliTPCcalibTracksGain::Add(AliTPCcalibTracksGain* cal) {
   if (cal->fDFitter1T->GetNpoints()>0) fDFitter1T->Add(cal->fDFitter1T);
   if (cal->fDFitter2T->GetNpoints()>0) fDFitter2T->Add(cal->fDFitter2T);
    //
-   // this will be gone for the a new ROOT version > v5-17-05
-   for (UInt_t iSegment = 0; iSegment < 36; iSegment++) {
-      fNShortClusters[iSegment] += cal->fNShortClusters[iSegment];
-      fNMediumClusters[iSegment] += cal->fNMediumClusters[iSegment];
-      fNLongClusters[iSegment] += cal->fNLongClusters[iSegment];
-   }
    
    // just for debugging, remove me
    fTotalTracks += cal->fTotalTracks;
@@ -694,13 +682,6 @@ void AliTPCcalibTracksGain::AddCluster(AliTPCclusterMI* cluster, Float_t /*momen
    fitter=fSingleSectorFitter->GetFitter(0, padType);
    fitter->AddPoint(xx, q);
 
-   // this will be gone for the a new ROOT version > v5-17-05
-   if (padType == kShortPads)
-      fNShortClusters[segment]++;
-   if (padType == kMediumPads)
-      fNMediumClusters[segment]++;
-   if (padType == kLongPads)
-      fNLongClusters[segment]++;
 }
 
 void AliTPCcalibTracksGain::Evaluate(Bool_t robust, Double_t frac) {
@@ -902,31 +883,9 @@ void AliTPCcalibTracksGain::GetErrors(UInt_t segment, UInt_t padType, UInt_t fit
    //
 
    GetFitter(segment, padType, fitType)->GetErrors(fitError);
-   fitError *= TMath::Sqrt(GetRedChi2(segment, padType, fitType));
+   //fitError *= TMath::Sqrt(GetRedChi2(segment, padType, fitType));
 }
 
-Double_t AliTPCcalibTracksGain::GetRedChi2(UInt_t segment, UInt_t padType, UInt_t fitType) {
-   //
-   // Returns the reduced chi^2 value for the specified segment, padType and fitType.
-   // padType is one of kShortPads, kMediumPads, kLongPads. fitType is one of kSimpleFitter, kSqrtFitter, kLogFitter.
-   // Note: The fitter has to be evaluated first!
-   //
-
-   // this will be gone for the a new ROOT version > v5-17-05
-   Int_t lNClusters = 0;
-   switch (padType) {
-      case kShortPads:
-         lNClusters = fNShortClusters[segment];
-         break;
-      case kMediumPads:
-         lNClusters = fNMediumClusters[segment];
-         break;
-      case kLongPads:
-         lNClusters = fNLongClusters[segment];
-         break;
-   }
-   return GetFitter(segment, padType, fitType)->GetChisquare()/(lNClusters - 8);
-}
 
 void AliTPCcalibTracksGain::GetCovarianceMatrix(UInt_t segment, UInt_t padType, UInt_t fitType, TMatrixD& covMatrix) {
    //

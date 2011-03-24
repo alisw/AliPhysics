@@ -347,10 +347,10 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     fResHistoTPCvertex[i]=0;
   }
 
-  if (fTPCVertex) {
+  if (fTPCVertex[0]) {
     for (Int_t i=0;i<12;i++)  delete fTPCVertex[i];
   }
-  if (fTPCVertexCorrelation) {
+  if (fTPCVertexCorrelation[0]) {
     for (Int_t i=0;i<5;i++)  delete fTPCVertexCorrelation[i];
   }
   
@@ -1030,7 +1030,7 @@ THnSparse* AliTPCcalibTime::GetHistoDrift(const char* name) const
   THnSparse* newHist=new THnSparseF(newName,"HistVdrift;time;p/T ratio;Vdrift;run",4,fBinsVdrift,fXminVdrift,fXmaxVdrift);
   THnSparse* addHist=NULL;
   while((addHist=(THnSparseF*)iterator->Next())){
-  if(!addHist) continue;
+    //  if(!addHist) continue;
     TString histName=addHist->GetName();
     if(!histName.Contains(newName)) continue;
     addHist->Print();
@@ -1129,7 +1129,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
     }
       
-    if (fTPCVertex && cal->fTPCVertex) 
+    if (fTPCVertex[0] && cal->fTPCVertex[0]) 
       for (Int_t imeas=0; imeas<12; imeas++){
 	if (fTPCVertex[imeas] && cal->fTPCVertex[imeas]) fTPCVertex[imeas]->Add(cal->fTPCVertex[imeas]);
       }
@@ -1178,7 +1178,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     iterator->Reset();
     THnSparse* addHist=NULL;
     if ((fMemoryMode>1)) while((addHist=(THnSparseF*)iterator->Next())){
-      if(!addHist) continue;
+      //      if(!addHist) continue;
       addHist->Print();
       THnSparse* localHist=(THnSparseF*)fArrayDz->FindObject(addHist->GetName());
       if(!localHist){

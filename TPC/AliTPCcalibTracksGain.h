@@ -90,7 +90,6 @@ public:
   void            Evaluate(Bool_t robust = kFALSE, Double_t frac = -1.);
   Bool_t            GetParameters(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitParam);
   void            GetErrors(UInt_t segment, UInt_t padType, UInt_t fitType, TVectorD &fitError);
-  Double_t        GetRedChi2(UInt_t segment, UInt_t padType, UInt_t fitType);
   void            GetCovarianceMatrix(UInt_t segment, UInt_t padType, UInt_t fitType, TMatrixD& covMatrix);
   //
   //
@@ -143,9 +142,6 @@ public:
   //
   UInt_t          fTotalTracks;         // just for debugging
   UInt_t          fAcceptedTracks;      // just for debugging
-  UInt_t          fNShortClusters[36];   // number of clusters registered on short pads
-  UInt_t          fNMediumClusters[36];  // number of clusters registered on medium pads
-  UInt_t          fNLongClusters[36];    // number of clusters registered on long pads
   //
   //
   //

@@ -55,7 +55,9 @@ AliTPCtrackerRow::AliTPCtrackerRow():
   fClusters2(0),
   fN2(0),
   fN(0),
-  fX(0.)
+  fClusters(),
+  fIndex(),
+  fX(0.)  
 {
   //
   // default constructor
@@ -194,7 +196,7 @@ void AliTPCtrackerRow::SetFastCluster(Int_t i, Short_t cl){
   //
   // Set cluster info for fast navigation
   //
-  if (i>510|| i<0){
+  if (i>=510|| i<0){
   }else{
     fFastCluster[i]=cl;
   }

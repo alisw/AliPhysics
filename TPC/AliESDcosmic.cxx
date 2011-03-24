@@ -150,6 +150,7 @@ void AliESDcosmic::DumpToTree(){
   //
   TTreeSRedirector * cstream = fDebugStreamer;
   if (!cstream) return;
+  if (!fESD) return;
   Int_t ntracks0 =fESD->GetNumberOfTracks(); 
   Int_t ntracks  = (fTracksAcorde) ? fTracksAcorde->GetEntries():0;
   Float_t mag = fESD->GetMagneticField();

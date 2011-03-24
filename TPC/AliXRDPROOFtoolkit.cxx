@@ -359,16 +359,16 @@ Bool_t  AliXRDPROOFtoolkit::FilterList(const char*inputList, const char*fileList
     for (Int_t i=0; i<array->GetEntries(); i+=2){
       char fname[1000];
       if (!isZip){
-	sprintf(fname, "%s/%s",dirname,array->At(i)->GetName());
+	snprintf(fname,1000, "%s/%s",dirname,array->At(i)->GetName());
         if (((TObjString*)array->At(i))->String().Contains("*")){
-	  sprintf(fname, "%s", currentFile.Data());
+	  snprintf(fname,1000, "%s", currentFile.Data());
 	}
       }
       if (isZip) {
 	const char * fileName   =  gSystem->BaseName(currentFile.Data());
 	TString fstring=fileName;
 	fstring[fstring.First("#")]=0;
-	sprintf(fname, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
+	snprintf(fname,1000, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
 	printf(fname, "To check %s%s#%s\n",dirname,fstring.Data(),array->At(i)->GetName());
       }
 
@@ -444,7 +444,7 @@ Bool_t  AliXRDPROOFtoolkit::FilterListZip(const char*inputList, const char*fileL
     for (Int_t i=0; i<array->GetEntries(); i+=2){
       char fname[1000];
       //if (isZip) sprintf(fname,
-      sprintf(fname, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
+      snprintf(fname,1000, "%s/%s#%s",dirname,fstring.Data(),array->At(i)->GetName());
       printf(fname, "To check %s%s#%s\n",dirname,fstring.Data(),array->At(i)->GetName());
       //cout <<"\n arguments: "<< array->At(i+1)->GetName()<<" "<<checkLevel<<endl;
       Int_t cstatus = CheckTreeInFile(fname, array->At(i+1)->GetName(), checkLevel,0);
@@ -488,8 +488,8 @@ Bool_t  AliXRDPROOFtoolkit::XRDCopyDir(const char * idir, const char * files, co
   char outfile[1000];
   Bool_t succes=kTRUE;
   for (Int_t ifile =0; ifile<nfiles; ifile++){
-    sprintf(infile,"%s/%s", idir, array->At(ifile)->GetName());
-    sprintf(outfile,"%s/%s", odir, array->At(ifile)->GetName());
+    snprintf(infile,1000,"%s/%s", idir, array->At(ifile)->GetName());
+    snprintf(outfile,1000,"%s/%s", odir, array->At(ifile)->GetName());
     printf("%s - %s\n",infile, outfile);
     Bool_t result = TFile::Cp(infile,outfile); 
     succes &= result;
