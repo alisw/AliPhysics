@@ -143,13 +143,22 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   
   //
   fListQA=new TList;
+  fListQA->SetOwner();
+  
   fListQAits=new TList;
+  fListQAits->SetOwner();
   fListQAits->SetName("ITS");
+  
   fListQAtpc=new TList;
+  fListQAtpc->SetOwner();
   fListQAtpc->SetName("TPC");
+  
   fListQAtrd=new TList;
+  fListQAtrd->SetOwner();
   fListQAtrd->SetName("TRD");
+  
   fListQAtof=new TList;
+  fListQAtof->SetOwner();
   fListQAtof->SetName("TOF");
   
   fListQA->Add(fListQAits);
