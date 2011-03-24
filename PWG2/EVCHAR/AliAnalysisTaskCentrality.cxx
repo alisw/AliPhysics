@@ -424,7 +424,7 @@ void AliAnalysisTaskCentrality::UserExec(Option_t */*option*/)
 
     AliVEvent* event = InputEvent();
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
-    
+    if (!esd) return;
       fNev++;
 
       fNTracks    = event->GetNumberOfTracks();     
