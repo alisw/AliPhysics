@@ -19,22 +19,26 @@
 Double_t LangausFun(Double_t *x, Double_t *par);
 
 
-void PlotOutputQAtrainSDD(TString option="local", 
-			  TString fileName="QAresults.root", 
+void PlotOutputQAtrainSDD(TString option="local",
 			  Int_t nRun=0,
-			  Int_t year=2010, 
-			  TString period="LHC10e"){
+			  TString period="LHC11a",
+			  TString qaTrain="",
+			  TString fileName="QAresults.root"){
 
   gStyle->SetOptStat(0);
   //  gStyle->SetOptTitle(0);
   TFile *f;
   TString path;
+  Int_t year=2011;
+  if(period.Contains("LHC10")) year=2010;
+  else if(period.Contains("LHC09")) year=2009;
 
   if(option.Contains("local")){
     f=new TFile(fileName.Data());
   }else{
     TGrid::Connect("alien:");
     path=Form("/alice/data/%d/%s/%09d/ESDs/",year,period.Data(),nRun);
+    printf("search in path %s\n",path.Data());
     if(!gGrid||!gGrid->IsConnected()) {
       printf("gGrid not found! exit macro\n");
       return;
@@ -46,25 +50,48 @@ void PlotOutputQAtrainSDD(TString option="local",
       return;
     }
     printf("================>%d files found\n", nFiles);
-    Int_t theFile=0;
-    Int_t maxVer=0;
-    if (nFiles > 1){
+    if(qaTrain.Length()>0){
+      Int_t found=kFALSE;
       for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
-	fileName=Form("%s",gr->GetKey(iFil,"turl"));
-	TString cutFilename=fileName.ReplaceAll("/QAresults.root","");
-	Int_t last=cutFilename.Sizeof()-3;
-	cutFilename.Remove(0,last);
-	Int_t qaver=atoi(cutFilename.Data());
-	if(qaver>maxVer){
-	  maxVer=qaver;
-	  theFile=iFil;
+ 	fileName=Form("%s",gr->GetKey(iFil,"turl"));
+	TString isMerged=fileName;
+	isMerged.Remove(isMerged.Sizeof()-16); 
+	isMerged.Remove(0,isMerged.Sizeof()-5);
+	if(!isMerged.Contains("QA")) continue;
+	if(fileName.Contains(qaTrain.Data())){
+	  found=kTRUE;
+	  break;
 	}
       }
+      if(!found){
+	printf(" File from %s train not found\n",qaTrain.Data());
+	return;
+      }
+    }else{
+      Int_t theFile=0;
+      Int_t maxVer=0;
+      if (nFiles > 1){
+	for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
+	  fileName=Form("%s",gr->GetKey(iFil,"turl"));
+	  TString isMerged=fileName;
+	  isMerged.Remove(isMerged.Sizeof()-16); 
+	  isMerged.Remove(0,isMerged.Sizeof()-5);
+	  if(!isMerged.Contains("QA")) continue;
+	  TString cutFilename=fileName.ReplaceAll("/QAresults.root","");
+	  Int_t last=cutFilename.Sizeof()-3;
+	  cutFilename.Remove(0,last);
+	  Int_t qaver=atoi(cutFilename.Data());
+	  if(qaver>maxVer){
+	    maxVer=qaver;
+	    theFile=iFil;
+	  }
+	}
+      }
+      fileName=Form("%s",gr->GetKey(theFile,"turl"));
     }
-    fileName=Form("%s",gr->GetKey(theFile,"turl"));
     f=TFile::Open(fileName.Data());
   }
-
+  return;
   TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
   if(!df){
     printf("SDD_Performance MISSING -> Exit\n");
@@ -127,7 +154,7 @@ void PlotOutputQAtrainSDD(TString option="local",
     printf("Number of Triggered Events = %d\n",nTrigEvents);
     nEvents=nTrigEvents;
   }else{
-    printf("No request on the trigger done whenrunning the task\n");
+    printf("No request on the trigger done when running the task\n");
   }
   Int_t bestMod=0;
   for(Int_t iMod=0; iMod<260;iMod++){
@@ -164,7 +191,7 @@ void PlotOutputQAtrainSDD(TString option="local",
     Float_t tpsN=0.;
     Float_t erpsN=0.;
     Float_t etpsN=0.;
-    if(ga>0){
+    if(ga>0 && nEvents>0){
       rpsN=rps/ga/(Float_t)nEvents;
       tpsN=tps/ga/(Float_t)nEvents;
       erpsN=TMath::Sqrt(rps)/ga/(Float_t)nEvents;
@@ -189,6 +216,8 @@ void PlotOutputQAtrainSDD(TString option="local",
       h2dmodT4N->SetBinContent(iDet,iLad,tpsN);
     }
   }
+  if(nEvents<1) return;
+
   gStyle->SetPalette(1);
 
   if(hmodR->GetEntries()>0){

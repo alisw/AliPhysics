@@ -26,8 +26,7 @@ void MakePlots(TString ntupleFileName);
 
 void TrendQAtrainSDD(TString period,
 		     TString recoPass,
-		     TString qaTrain1,
-		     TString qaTrain2,
+		     TString qaTrain="QA",
 		     Int_t firstRun=0,
 		     Int_t lastRun=999999999,
 		     TString fileName="QAresults.root"){
@@ -41,11 +40,11 @@ void TrendQAtrainSDD(TString period,
   else if(period.Contains("LHC10")) year=2010;
   else if(period.Contains("LHC11")) year=2011;
 
-  TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain1.Data());
+  TString outFilNam=Form("TrendingSDD_%s_%s_%s.root",period.Data(),recoPass.Data(),qaTrain.Data());
 
 
-  const Int_t nVariables=27;
-  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:fracTrackWithClu1:errfracTrackWithClu1:fracTrackWithClu2:errfracTrackWithClu2:fracTrackWithClu3:errfracTrackWithClu3:fracTrackWithClu4:errfracTrackWithClu4:fracTrackWithClu5:errfracTrackWithClu5:fracTrackWithClu6:errfracTrackWithClu6:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5");
+  const Int_t nVariables=31;
+  TNtuple* ntsdd=new TNtuple("ntsdd","SDD trending","nrun:fracTrackWithClu1:errfracTrackWithClu1:fracTrackWithClu2:errfracTrackWithClu2:fracTrackWithClu3:errfracTrackWithClu3:fracTrackWithClu4:errfracTrackWithClu4:fracTrackWithClu5:errfracTrackWithClu5:fracTrackWithClu6:errfracTrackWithClu6:meanTrPts3:errmeanTrPts3:meanTrPts4:errmeanTrPts4:minDrTime:errminDrTime:meanDrTime:errmeanDrTime:fracExtra:errfracExtra:meandEdxTB0:errmeandEdxTB0:meandEdxTB5:errmeandEdxTB5:nMod95:nMod80:nMod60:nModEmpty");
   Float_t xnt[nVariables];
 
   TBits* readRun=new TBits(999999);
@@ -87,7 +86,7 @@ void TrendQAtrainSDD(TString period,
     return;
   }
 
-  TString  path=Form("/alice/data/%d/%s/",year,period.Data(),recoPass.Data());
+  TString  path=Form("/alice/data/%d/%s/",year,period.Data());
   TGridResult *gr = gGrid->Query(path,fileName);
   Int_t nFiles = gr->GetEntries();
   printf("================>%d files found\n", nFiles);
@@ -98,10 +97,7 @@ void TrendQAtrainSDD(TString period,
     for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
       TString fileNameLong=Form("%s",gr->GetKey(iFil,"turl"));
       if(!fileNameLong.Contains(recoPass.Data())) continue;
-      if(!fileNameLong.Contains(qaTrain1.Data()) &&
-	 !fileNameLong.Contains(qaTrain2.Data())) continue;
-      if(!fileNameLong.Contains(Form("%s/%s",qaTrain1.Data(),fileName.Data())) &&
-	 !fileNameLong.Contains(Form("%s/%s",qaTrain2.Data(),fileName.Data()))) continue;
+      if(!fileNameLong.Contains(qaTrain.Data())) continue;
       TString runNumber=fileNameLong;
       runNumber.ReplaceAll(Form("alien:///alice/data/%d/%s/",year,period.Data()),"");
       runNumber.Remove(9,runNumber.Sizeof());
@@ -113,6 +109,14 @@ void TrendQAtrainSDD(TString period,
       }
       if(iRun<firstRun) continue;
       if(iRun>lastRun) continue;
+
+      TString isMerged=fileNameLong;
+      isMerged.Remove(isMerged.Sizeof()-16); 
+      isMerged.Remove(0,isMerged.Sizeof()-5);
+      if(!isMerged.Contains("QA")) continue;
+      printf("Open File %s  Run %d\n",fileNameLong.Data(),iRun);
+
+
 
       TFile* f=TFile::Open(fileNameLong.Data());  
 
@@ -156,7 +160,7 @@ void TrendQAtrainSDD(TString period,
       if(nTrigEvents>0){ 
 	nEvents=nTrigEvents;
       }
-
+      if(nTotEvents==0) continue;
       Int_t nModGood3=0;
       Int_t nModGood4=0;
       Int_t nModBadAn=0;
@@ -184,6 +188,31 @@ void TrendQAtrainSDD(TString period,
 	    nModGood4++;
 	  }
 	}
+      }
+
+      TH1F* hapmod=(TH1F*)l->FindObject("hAllPmod");
+      TH1F* hgpmod=(TH1F*)l->FindObject("hGoodPmod");
+      //     TH1F* hmpmod=(TH1F*)l->FindObject("hMissPmod");
+      TH1F* hbrmod=(TH1F*)l->FindObject("hBadRegmod");
+      TH1F* hskmod=(TH1F*)l->FindObject("hSkippedmod");
+      TH1F* hoamod=(TH1F*)l->FindObject("hOutAccmod");
+      TH1F* hnrmod=(TH1F*)l->FindObject("hNoRefitmod");
+      Int_t nBelow95=0;
+      Int_t nBelow80=0;
+      Int_t nBelow60=0;
+      Int_t nZeroP=0;
+      for(Int_t imod=0; imod<260;imod++){
+	Float_t numer=hgpmod->GetBinContent(imod+1)+hbrmod->GetBinContent(imod+1)+hoamod->GetBinContent(imod+1)+hnrmod->GetBinContent(imod+1)+hskmod->GetBinContent(imod+1);
+	Float_t denom=hapmod->GetBinContent(imod+1);
+	if(denom>0){
+	  Float_t eff=numer/denom;
+	  if(eff<0.95) nBelow95++;
+	  if(eff<0.80) nBelow80++;
+	  if(eff<0.60) nBelow60++;
+	}
+	if(hmodT->GetBinContent(imod+1)<1.){
+	  nZeroP++;
+	}	
       }
 
       TH1F* htimT=(TH1F*)l->FindObject("hDrTimTPAll");
@@ -247,7 +276,10 @@ void TrendQAtrainSDD(TString period,
       xnt[index++]=hSigTim0->GetMeanError();
       xnt[index++]=hSigTim5->GetMean();
       xnt[index++]=hSigTim5->GetMeanError();
-      
+      xnt[index++]=(Float_t)nBelow95;
+      xnt[index++]=(Float_t)nBelow80;
+      xnt[index++]=(Float_t)nBelow60;
+      xnt[index++]=(Float_t)nZeroP;
       ntsdd->Fill(xnt);
     }
   }
@@ -277,7 +309,8 @@ void MakePlots(TString ntupleFileName){
   Float_t fracTrackWithClu5,fracTrackWithClu6,errfracTrackWithClu5,errfracTrackWithClu6;
   Float_t fracExtra,errfracExtra;
   Float_t meandEdxTB0,errmeandEdxTB0,meandEdxTB5,errmeandEdxTB5;
-
+  Float_t nMod95,nMod80,nMod60,nModEmpty;
+  
   ntsdd->SetBranchAddress("nrun",&nrun);
   ntsdd->SetBranchAddress("fracTrackWithClu1",&fracTrackWithClu1);
   ntsdd->SetBranchAddress("errfracTrackWithClu1",&errfracTrackWithClu1);
@@ -291,6 +324,10 @@ void MakePlots(TString ntupleFileName){
   ntsdd->SetBranchAddress("errfracTrackWithClu5",&errfracTrackWithClu5);
   ntsdd->SetBranchAddress("fracTrackWithClu6",&fracTrackWithClu6);
   ntsdd->SetBranchAddress("errfracTrackWithClu6",&errfracTrackWithClu6);
+  ntsdd->SetBranchAddress("nMod95",&nMod95);
+  ntsdd->SetBranchAddress("nMod80",&nMod80);
+  ntsdd->SetBranchAddress("nMod60",&nMod60);
+  ntsdd->SetBranchAddress("nModEmpty",&nModEmpty);
 
   ntsdd->SetBranchAddress("meanTrPts3",&meanTrPts3);
   ntsdd->SetBranchAddress("errmeanTrPts3",&errmeanTrPts3);
@@ -321,6 +358,10 @@ void MakePlots(TString ntupleFileName){
   TH1F* histoTrackClu5=new TH1F("histoTrackClu5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
   TH1F* histoTrackClu6=new TH1F("histoTrackClu6","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
 
+  TH1F* histoNmodEffBelow95=new TH1F("histoNmodEffBelow95","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoNmodEffBelow80=new TH1F("histoNmodEffBelow80","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoNmodEffBelow60=new TH1F("histoNmodEffBelow60","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
+  TH1F* histoNmodEmpty=new TH1F("histoNmodEmpty","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
 
   for(Int_t i=0; i<ntsdd->GetEntries();i++){
     ntsdd->GetEvent(i);
@@ -363,6 +404,19 @@ void MakePlots(TString ntupleFileName){
     histodEdxTB5->SetBinContent(i+1,meandEdxTB5);
     histodEdxTB5->SetBinError(i+1,errmeandEdxTB5);
     histodEdxTB5->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+
+    histoNmodEffBelow95->SetBinContent(i+1,nMod95);
+    histoNmodEffBelow95->SetBinError(i+1,0.0001);
+    histoNmodEffBelow95->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoNmodEffBelow80->SetBinContent(i+1,nMod80);
+    histoNmodEffBelow80->SetBinError(i+1,0.0001);
+    histoNmodEffBelow80->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoNmodEffBelow60->SetBinContent(i+1,nMod60);
+    histoNmodEffBelow60->SetBinError(i+1,0.0001);
+    histoNmodEffBelow60->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
+    histoNmodEmpty->SetBinContent(i+1,nModEmpty);
+    histoNmodEmpty->SetBinError(i+1,0.0001);
+    histoNmodEmpty->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrun));
   }
 
   gStyle->SetOptStat(0);
@@ -466,6 +520,17 @@ void MakePlots(TString ntupleFileName){
   leg3->SetFillStyle(0);
   leg3->Draw();
   c5->Update();
+
+  TCanvas* c6=new TCanvas("c6","Modules with low eff",800,1000);
+  c6->Divide(1,4);
+  c6->cd(1);
+  histoNmodEffBelow95->Draw("E");
+  c6->cd(2);
+  histoNmodEffBelow80->Draw("E");
+  c6->cd(3);
+  histoNmodEffBelow60->Draw("E");
+  c6->cd(4);
+  histoNmodEmpty->Draw("E");
 
 }
 
