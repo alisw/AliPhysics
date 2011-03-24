@@ -181,12 +181,6 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange()
     fHistArmenterosPodolanski(0),
     // ------------------------------------------------------
 
-    // kontrola pre |pz/pt| histograms  ---------------------
-    fHistPzPtBeforeK0s(0),
-    fHistPzPtAfterK0s(0),
-    fHistPzPtBeforeLambda(0),
-    fHistPzPtAfterLambda(0),
-    // ------------------------------------------------------
 
     // PID histograms  --------------------------------------
     fHistNsigmaPosPionAntiLambda(0),
@@ -412,12 +406,6 @@ AliAnalysisTaskPerformanceStrange::AliAnalysisTaskPerformanceStrange(const char 
     fHistArmenterosPodolanski(0),
     // ------------------------------------------------------
 
-    // kontrola pre |pz/pt| histograms  ---------------------
-    fHistPzPtBeforeK0s(0),
-    fHistPzPtAfterK0s(0),
-    fHistPzPtBeforeLambda(0),
-    fHistPzPtAfterLambda(0),
-    // ------------------------------------------------------
 
     // PID histograms  --------------------------------------
     fHistNsigmaPosPionAntiLambda(0),
@@ -687,7 +675,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fListHist->Add(fHistNumberEvents);
 
   // Multiplicity:
-  fHistTrackPerEvent           = new TH1F("h1TrackPerEvent", "Tracks per event;Number of Tracks;Number of Events",1000,0,1000);
+  fHistTrackPerEvent           = new TH1F("h1TrackPerEvent", "Tracks per event;Number of Tracks;Number of Events",20000,0,20000);
   fListHist->Add(fHistTrackPerEvent);
 
   fHistTrackletPerEvent       = new TH1F("h1TrackletPerEvent", "Number of tracklets;Number of tracklets per events;Number of events",1000,0,1000);
@@ -746,13 +734,13 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistDcaNegToPrimVertexZoom  = new TH2F("h2DcaNegToPrimVertexZoom", "Negative V0 daughter;dca(cm);Status",100,0,0.1,2,-0.5,1.5);
   fListHist->Add(fHistDcaNegToPrimVertexZoom);
 
-  fHistRadiusV0                = new TH2F("h2RadiusV0", "Radius;Radius(cm);Status",1200,0,120,2,-0.5,1.5);
+  fHistRadiusV0                = new TH2F("h2RadiusV0", "Radius;Radius(cm);Status",5000,0,500,2,-0.5,1.5);
   fListHist->Add(fHistRadiusV0);
 
   fHistDecayLengthV0           = new TH2F("h2DecayLengthV0", "V0s decay Length;decay length(cm);Status", 240, 0, 120,2,-0.5,1.5);
   fListHist->Add(fHistDecayLengthV0);
 
-  fHistDcaV0Daughters          = new TH2F("h2DcaV0Daughters", "DCA between daughters;dca(cm);Status", 160, 0, 4,2,-0.5,1.5);
+  fHistDcaV0Daughters          = new TH2F("h2DcaV0Daughters", "DCA between daughters;dca(cm);Status", 400, 0, 4,2,-0.5,1.5);
   fListHist->Add(fHistDcaV0Daughters);
 
   fHistChi2                    = new TH2F("h2Chi2", "V0s chi2;chi2;Status", 33, 0, 33,2,-0.5,1.5);
@@ -761,7 +749,7 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistCosPointAngle           = new TH2F("h2CosPointAngle", "Cosine of V0's pointing angle", 100,0,1,2,-0.5,1.5);
   fListHist->Add(fHistCosPointAngle);
 
-  fHistCosPointAngleZoom       = new TH2F("h2CosPointAngleZoom", "Cosine of V0's pointing angle", 100,0.9,1,2,-0.5,1.5);
+  fHistCosPointAngleZoom       = new TH2F("h2CosPointAngleZoom", "Cosine of V0's pointing angle", 1000,0.9,1,2,-0.5,1.5);
   fListHist->Add(fHistCosPointAngleZoom);
 
   fHistProdRadius              = new TH2F("h2ProdRadius", "Production position;x (cm);y (cm)", 100,-50,50,100,-50,50);
@@ -825,18 +813,6 @@ void AliAnalysisTaskPerformanceStrange::UserCreateOutputObjects()
   fHistArmenterosPodolanski     = new TH2F("h2ArmenterosPodolanski","Armenteros-Podolanski phase space;#alpha;p_{t} arm",100,-1.0,1.0,50,0,0.5);
   fListHist->Add(fHistArmenterosPodolanski);
 
-  // Kontrola pre |pz/pt| histograms:
-  fHistPzPtBeforeK0s	= new TH1F("h1PzPtBeforeK0s","K0s; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtBeforeK0s);
-
-  fHistPzPtAfterK0s	= new TH1F("h1PzPtAfterK0s","K0s; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtAfterK0s);
-
-  fHistPzPtBeforeLambda	= new TH1F("h1PzPtBeforeLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtBeforeLambda);
-
-  fHistPzPtAfterLambda	= new TH1F("h1PzPtAfterLambda","#Lambda^{0}; Abs(pz/pt); count",1000,0,10);
-  fListHist->Add(fHistPzPtAfterLambda);
 
   // PID histograms:
   fHistNsigmaPosPionAntiLambda   = new TH1F("h1NsigmaPosPionAntiLambda", "Positive daughter of Antilambda;NsigmaPion;Counts",25,0,5);
@@ -2042,12 +2018,23 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	lIndexNegMother = lMCESDPartNeg->GetFirstMother();
 	
 	if (lIndexPosMother == -1) {
-        if (negPiKF) delete negPiKF; negPiKF=NULL;
-	if (posPiKF) delete posPiKF; posPiKF=NULL;
-	if (posPKF)  delete posPKF;  posPKF=NULL;
-	if (negAPKF) delete negAPKF; negAPKF=NULL;  
-	continue;
-    }
+
+
+					lPdgcodeMother = 0;
+					lIndexMotherOfMother = 0;
+					mcPosX = 0;
+					mcPosY = 0;
+					mcPosZ = 0;
+					mcPosR = 0;
+					mcPosMotherX = 0;
+					mcPosMotherY = 0;
+					mcPosMotherZ = 0;
+					mcPosMotherR = 0;
+					mcMotherPt = 1;
+					}
+
+		else {
+
 	TParticle  *lMCESDMother    = stack->Particle(lIndexPosMother);
 	if (!lMCESDMother) {
         if (negPiKF) delete negPiKF; negPiKF=NULL;
@@ -2082,7 +2069,7 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 	
 	mcMotherPt   = lMCESDMother->Pt();
       }
-
+     }
     } // end ESD condition
 
 
@@ -2500,18 +2487,9 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     // K0s associated histograms in |rap| < lCutRap:
 
-////////////////////////////
-    if ( lCheckPIDK0sPosDaughter && lCheckPIDK0sNegDaughter
-	 && (lChi2KFK0s < cutChi2KF)) fHistPzPtBeforeK0s->Fill(TMath::Abs(lPzK0s/lPtK0s));
-/////////////////////////////
 
     if ( lCheckPIDK0sPosDaughter && lCheckPIDK0sNegDaughter
 	 && (lChi2KFK0s < cutChi2KF) && (TMath::Abs(lPzK0s/lPtK0s)<0.7) )     {
-
-
-
-	fHistPzPtAfterK0s->Fill(TMath::Abs(lPzK0s/lPtK0s));
-
 
       
       fHistChi2KFAfterCutK0s->Fill(lChi2KFK0s,lOnFlyStatus);
@@ -2567,18 +2545,11 @@ void AliAnalysisTaskPerformanceStrange::UserExec(Option_t *)
 
     // Associated Lambda histograms in |rap| < lCutRap
 
-////////////////////////len koly kontrole Abs(Pz/Pt)
-    if ( lCheckPIDLambdaPosDaughter && lCheckPIDLambdaNegDaughter
-	 && (lChi2KFLambda < cutChi2KF)) fHistPzPtBeforeLambda->Fill(TMath::Abs(lPzLambda/lPtLambda)); 
-////////////////////////
 
     if ( lCheckPIDLambdaPosDaughter && lCheckPIDLambdaNegDaughter
 	 && (lChi2KFLambda < cutChi2KF) && (TMath::Abs(lPzLambda/lPtLambda)<0.7) )  {
 
- 
-
-
-	fHistPzPtAfterLambda->Fill(TMath::Abs(lPzLambda/lPtLambda));      
+    
 
       fHistChi2KFAfterCutLambda->Fill(lChi2KFLambda,lOnFlyStatus);
 
