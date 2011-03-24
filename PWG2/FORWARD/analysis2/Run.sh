@@ -28,8 +28,12 @@ pass2=MakedNdeta.C
 pass3=DrawdNdeta.C++g
 output1=forward.root
 output2=forward_dndeta.root
+outputs1="${output1} AliAOD.root event_stat.root EventStat_temp.root"
+outputs2="${output2}"
 gdb_script=$ALICE_ROOT/PWG2/FORWARD/analysis2/gdb_cmds
 max_rotate=10
+name=`date +analysis%Y%m%d_%H%M`
+pass2dir=./
 
 usage()
 {
@@ -60,6 +64,7 @@ Options:
 	-Z,--show-asymmetry	Show asymmetry 		    ($asymm)
 	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
 	-T,--title STRING       Title on plots              ($tit)
+	-N,--name STRING        Name of analysis            ($name)
 
 TYPE is a comma or space separated list of 
  
@@ -70,15 +75,24 @@ TYPE is a comma or space separated list of
 SCHEME is a comma or space separated list of 
 
   NONE          No event-level normalization except trivial one 
-  EVENTLEVEL    Event-level normalization 
-  ALTEVENTLEVEL Event-level normalization (alternative version)
+  EVENT         Event-level normalization 
   BACKGROUND    Not implemented yet 
   SHAPE         Shape correction 
-  FULL          Same as EVENTLEVEL,BACKGROUND,SHAPE
-  ALTFULL       Same as ALTEVENTLEVEL,BACKGROUND,SHAPE
+  TRIGGER       Trigger efficiency 
+  FULL          Same as EVENTLEVEL,BACKGROUND,SHAPE,TRIGGER
 
 If NWORKERS is 0, then the analysis will be run in local mode. 
 EOF
+}
+
+test_ralien()
+{
+    aliroot -l -b <<EOF > /dev/null 2>&1
+int ret = gSystem->Load("libRAliEn");
+gApplication->Terminate(ret);
+EOF
+    ret=$?
+    return $ret
 }
 
 toggle()
@@ -127,6 +141,8 @@ while test $# -gt 0 ; do
 	                      pass2=scripts/ExtractELoss.C
 	                      pass3=scripts/DrawAnaELoss.C 
 	                      output1=forward_eloss.root 
+			      outputs1="${output1} event_stat.root EventStat_temp.root"
+			      outputs2=""
 			      dopass2=1 
 			      ;;
 	-O|--show-older)      others=`toggle $others`	;;
@@ -135,6 +151,7 @@ while test $# -gt 0 ; do
 	-Z|--show-asymmetry)  asymm=`toggle $asymm`	;;
 	-S|--scheme)          scheme=`echo $2 | tr ' ' ','` ; shift ;;
 	-T|--title)           tit=$2 ; shift ;; 
+	-N|--name)            name=$2 ; shift ;; 
 	-t|--type)           
 	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    type=$2
@@ -143,6 +160,11 @@ while test $# -gt 0 ; do
     esac
     shift
 done 
+
+if test "x$name" != "x" && test_ralien ; then 
+    echo "AliEn plug-in available - output will be in $name"
+    pass2dir=${name}/
+fi
 
 if test $nev -lt 0 ; then 
     base=dndeta_xxxxxxx
@@ -162,37 +184,41 @@ if test $batch -gt 0 ; then
     echo "redir=$redir"
 fi 
 if test $dopass1 -gt 0 ; then 
-    rotate AliAOD.root
-    rotate ${output1}
+    for i in ${outputs1} ; do 
+	rotate ${pass2dir}${i}
+    done
 
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x ${gdb_script} --args"
     fi
     echo "Running aliroot ${opts} ${opts1} ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) $redir"
     if test $batch -gt 0 ; then 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent\) 2>&1 | tee ${base}.log
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent,\"${name}\"\) 2>&1 | tee ${base}.log
     else 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent\)
+	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent,\"${name}\"\)
     fi
     fail=$?
     if  test $fail -gt 0  ; then 
         echo "Return value $fail not 0" ; exit $fail 
     fi
-    if test ! -f ${output1} ; then 
-	echo "$output1 not made" ; exit 1; 
-    fi
-    if test ! -f AliAOD.root ; then 
-	echo "No AOD creates" ; exit 1;
-    fi
+    for i in ${outputs1} ; do 
+	if test ! -f ${pass2dir}${i} ; then 
+	    echo "File ${i} in ${pass2dir} not generated"
+	    exit 1
+	fi
+	ls -l ${pass2dir}/${i}
+    done
     echo "Pass 1 done"
 fi
 
 if test $dopass2 -gt 0 ; then
-    rotate ${output2}
+    for i in ${outputs2} ; do 
+	rotate ${pass2dir}${i} 
+    done 
 
-    args=(\(\".\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof\))
+    args=(\(\"${pass2dir}\",$nev,\"$type\",$cent,\"$scheme\",$vzmin,$vzmax,$proof,\"$name\"\))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
-	args=(\(\"${output1}\"\))
+	args=(\(\"${pass2dir}${output1}\"\))
     fi
     echo We are Running aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
     aliroot ${opts} ${opts1} ${ana}/${pass2}${args}
@@ -201,9 +227,13 @@ if test $dopass2 -gt 0 ; then
     if test $fail -gt 0 ; then 
 	echo "Return value $fail not 0" ; exit $fail 
     fi
-    if test ! -f ${output2} ; then 
-	echo "$output2 not made" ; exit 1; 
-    fi
+    for i in ${outputs2} ; do 
+	if test ! -f ${pass2dir}${i} ; then 
+	    echo "File ${i} in ${pass2dir} not generated"
+	    exit 1
+	fi
+	ls -l ${pass2dir}/${i}
+    done
     echo "Pass 2 done"
 fi
 
@@ -215,9 +245,9 @@ if test $dopass3 -gt 0 ; then
     if test $ratios    -gt 0 ; then let flags=$(($flags|0x4)); fi
     if test $asymm     -gt 0 ; then let flags=$(($flags|0x8)); fi
 
-    args=(\(\"${output2}\"\,${flags},\"$tit\",$rebin \))
+    args=(\(\"${pass2dir}${output2}\"\,${flags},\"$tit\",$rebin \))
     if test "x$pass1" = "xMakeELossFits.C" ; then 
-	args=(\(\"${output1}\"\))
+	args=(\(\"${pass2dir}${output1}\"\))
     fi
     
     echo "Running aliroot ${opts} ${opts1} ${ana}/${pass3}${args}"

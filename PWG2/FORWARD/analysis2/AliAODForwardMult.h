@@ -125,8 +125,9 @@ public:
     /** pileup from SPD */
     kPileUp   = 0x200,    
     /** true NSD from MC */
-    kMCNSD    = 0x400    
-    
+    kMCNSD    = 0x400,    
+    /** Offline MB triggered */
+    kOffline  = 0x800
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -142,6 +143,7 @@ public:
     kBinE,
     kBinPileUp, 
     kBinMCNSD,
+    kBinOffline,
     kWithTrigger, 
     kWithVertex, 
     kAccepted
@@ -389,7 +391,7 @@ AliAODForwardMult::InRange(Float_t low, Float_t high) const
 inline Bool_t 
 AliAODForwardMult::IsTriggerBits(UInt_t bits) const 
 { 
-  return HasTrigger() && ((fTriggers & bits) != 0); 
+  return HasTrigger() && ((fTriggers & bits) == bits); 
 }
 
 #endif

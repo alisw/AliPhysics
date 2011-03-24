@@ -33,7 +33,9 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fSysString(0),
     fCent(0),
     fCentAxis(0),
-    fNormalizationScheme(kFull)
+    fNormalizationScheme(kFull), 
+    fSchemeString(0), 
+    fTriggerString(0)
 {
   // 
   // Constructor
@@ -59,12 +61,20 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fSysString(0),
     fCent(0),
     fCentAxis(0),
-    fNormalizationScheme(kFull)
+    fNormalizationScheme(kFull), 
+    fSchemeString(0),
+    fTriggerString(0)
 {
   // 
   // Constructor
   // 
   fListOfCentralities = new TObjArray(1);
+  
+  // Set the normalisation scheme 
+  SetNormalizationScheme(kFull);
+
+  // Set the trigger mask
+  SetTriggerMask(AliAODForwardMult::kInel);
 
   // Output slot #1 writes into a TH1 container
   DefineOutput(1, TList::Class()); 
@@ -90,7 +100,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fSysString(o.fSysString),
     fCent(o.fCent),
     fCentAxis(o.fCentAxis),
-    fNormalizationScheme(o.fNormalizationScheme)
+    fNormalizationScheme(o.fNormalizationScheme), 
+    fSchemeString(o.fSchemeString), 
+    fTriggerString(o.fTriggerString)
 {}
 
 //____________________________________________________________________
@@ -175,19 +187,43 @@ AliBasedNdetaTask::SetNormalizationScheme(const char* what)
   while ((opt = static_cast<TObjString*>(next()))) { 
     TString s(opt->GetString());
     if      (s.IsNull()) continue;
-    if      (s.CompareTo("EVENT")     == 0) scheme |= kEventLevel;
-    else if (s.CompareTo("ALTEVENT")  == 0) scheme |= kAltEventLevel;
-    else if (s.CompareTo("SHAPE")     == 0) scheme |= kShape;
-    else if (s.CompareTo("BACKGROUND")== 0) scheme |= kBackground;
-    else if (s.CompareTo("FULL")      == 0) scheme |= kFull;
-    else if (s.CompareTo("ALTFULL")   == 0) scheme |= kAltFull;
-    else if (s.CompareTo("NONE")      == 0) scheme |= kNone;
+    Bool_t add = true;
+    switch (s[0]) { 
+    case '-': add = false; // Fall through 
+    case '+': s.Remove(0,1);  // Remove character 
+    }
+    UShort_t bit = 0;
+    if      (s.CompareTo("EVENT")     == 0) bit = kEventLevel;
+    else if (s.CompareTo("SHAPE")     == 0) bit = kShape;
+    else if (s.CompareTo("BACKGROUND")== 0) bit = kBackground;
+    else if (s.CompareTo("TRIGGER")   == 0) bit = kTriggerEfficiency;
+    else if (s.CompareTo("FULL")      == 0) bit = kFull;
+    else if (s.CompareTo("NONE")      == 0) bit = kNone;
     else 
       Warning("SetNormalizationScheme", "Unknown option %s", s.Data());
+    if (add) scheme |= bit;
+    else     scheme ^= bit;
   }
   SetNormalizationScheme(scheme);
 }
-
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetNormalizationScheme(UShort_t scheme) 
+{
+  fNormalizationScheme = scheme; 
+  TString tit = "";
+  if (scheme == kFull) tit = "FULL"; 
+  else {
+    if (scheme & kEventLevel)        tit.Append("EVENT ");
+    if (scheme & kShape)             tit.Append("SHAPE ");
+    if (scheme & kBackground)        tit.Append("BACKGROUND ");
+    if (scheme & kTriggerEfficiency) tit.Append("TRIGGER");
+  }
+  tit = tit.Strip(TString::kBoth);
+  if (!fSchemeString) fSchemeString = new TNamed("scheme", "");
+  fSchemeString->SetTitle(tit);
+  fSchemeString->SetUniqueID(fNormalizationScheme);
+}
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::SetTriggerMask(const char* mask)
@@ -214,6 +250,17 @@ AliBasedNdetaTask::SetTriggerMask(const char* mask)
   }
   if (trgMask == 0) trgMask = 1;
   SetTriggerMask(trgMask);
+}
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::SetTriggerMask(UShort_t mask) 
+{ 
+  fTriggerMask = mask; 
+  TString tit(AliAODForwardMult::GetTriggerString(mask));
+  tit = tit.Strip(TString::kBoth);
+  if (!fTriggerString) fTriggerString = new TNamed("trigger", "");
+  fTriggerString->SetTitle(tit);
+  fTriggerString->SetUniqueID(fTriggerMask);
 }
 
 //________________________________________________________________________
@@ -338,6 +385,11 @@ AliBasedNdetaTask::UserExec(Option_t *)
     fSysString->SetTitle(AliForwardUtil::CollisionSystemString(sys));
     fSysString->SetUniqueID(sys);
     fSums->Add(fSysString);
+
+    fSums->Add(fSchemeString);
+    fSums->Add(fTriggerString);
+
+    // Print();
   }
   
   PostData(1, fSums);
@@ -476,7 +528,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   //
   // Draw result to screen, or perform fitting, normalizations Called
   // once at the end of the query
-        
+
   fSums = dynamic_cast<TList*> (GetOutputData(1));
   if(!fSums) {
     AliError("Could not retrieve TList fSums"); 
@@ -487,14 +539,18 @@ AliBasedNdetaTask::Terminate(Option_t *)
   fOutput->SetName(Form("%s_result", GetName()));
   fOutput->SetOwner();
 
-  fSNNString = static_cast<TNamed*>(fSums->FindObject("sNN"));
-  fSysString = static_cast<TNamed*>(fSums->FindObject("sys"));
-  fCentAxis  = static_cast<TAxis*>(fSums->FindObject("centAxis"));
+  fSNNString     = static_cast<TNamed*>(fSums->FindObject("sNN"));
+  fSysString     = static_cast<TNamed*>(fSums->FindObject("sys"));
+  fCentAxis      = static_cast<TAxis*>(fSums->FindObject("centAxis"));
+  fSchemeString  = static_cast<TNamed*>(fSums->FindObject("scheme"));
+  fTriggerString = static_cast<TNamed*>(fSums->FindObject("trigger"));
 
   if(fSysString && fSNNString && 
      fSysString->GetUniqueID() == AliForwardUtil::kPP)
     LoadNormalizationData(fSysString->GetUniqueID(),
 			  fSNNString->GetUniqueID());
+  // Print before we loop
+  Print();
 
   // Loop over centrality bins 
   TIter next(fListOfCentralities);
@@ -514,10 +570,10 @@ AliBasedNdetaTask::Terminate(Option_t *)
   if (fCentAxis) fOutput->Add(fCentAxis);
 
   // Output trigger string 
-  TNamed* trigString = 
-    new TNamed("trigString", AliAODForwardMult::GetTriggerString(fTriggerMask));
-  trigString->SetUniqueID(fTriggerMask);
-  fOutput->Add(trigString);
+  if (fTriggerString) fOutput->Add(fTriggerString->Clone());
+  
+  // Normalization string 
+  if (fSchemeString) fOutput->Add(fSchemeString->Clone());
 
   // Output vertex axis 
   TAxis* vtxAxis = new TAxis(1,fVtxMin,fVtxMax);
@@ -528,16 +584,6 @@ AliBasedNdetaTask::Terminate(Option_t *)
   // Output trigger efficiency and shape correction 
   fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
   if (fShapeCorr) fOutput->Add(fShapeCorr);
-
-  TString tscheme;
-  if (fNormalizationScheme & kEventLevel)    tscheme.Append("EVENTLEVEL,");
-  if (fNormalizationScheme & kAltEventLevel) tscheme.Append("ALTEVENTLEVEL,");
-  if (fNormalizationScheme & kBackground)    tscheme.Append("BACKGROUND,");
-  if (fNormalizationScheme & kShape)         tscheme.Append("SHAPE,");
-  
-  TNamed* scheme = new TNamed("scheme", tscheme.Data()); 
-  scheme->SetUniqueID(fNormalizationScheme); 
-  fOutput->Add(scheme);
 
   PostData(2, fOutput);
 }
@@ -585,6 +631,49 @@ AliBasedNdetaTask::LoadNormalizationData(UShort_t sys, UShort_t energy)
   // Print - out
   if (shapeCor && eff) AliInfo("Loaded objects for normalization.");
 }
+
+
+//________________________________________________________________________
+void 
+AliBasedNdetaTask::Print(Option_t*) const
+{
+  // 
+  // Print information 
+  // 
+  std::cout << this->ClassName() << ": " << this->GetName() << "\n"
+	    << std::boolalpha 
+	    << " Trigger:              " << (fTriggerString ? 
+					     fTriggerString->GetTitle() :
+					     "none") << "\n"
+	    << " Vertex range:         [" << fVtxMin << ":" << fVtxMax << "]\n"
+	    << " Rebin factor:         " << fRebin << "\n" 
+	    << " Cut edges:            " << fCutEdges << "\n"
+	    << " Symmertrice:          " << fSymmetrice << "\n"
+	    << " Correct for empty:    " << fCorrEmpty << "\n"
+	    << " Normalization scheme: " << (fSchemeString ? 
+					     fSchemeString->GetTitle() : 
+					     "none") <<"\n"
+	    << " Trigger efficiency:   " << fTriggerEff << "\n" 
+	    << " Shape correction:     " << (fShapeCorr ? 
+					   fShapeCorr->GetName() : 
+					   "none") << "\n"
+	    << " sqrt(s_NN):           " << (fSNNString ? 
+					     fSNNString->GetTitle() : 
+					   "unknown") << "\n"
+	    << " Collision system:     " << (fSysString ? 
+					     fSysString->GetTitle() : 
+					   "unknown") << "\n"
+	    << " Centrality bins:      " << (fCentAxis ? "" : "none");
+  if (fCentAxis) { 
+    Int_t           nBins = fCentAxis->GetNbins();
+    const Double_t* bins  = fCentAxis->GetXbins()->GetArray();
+    for (Int_t i = 0; i <= nBins; i++) 
+      std::cout << (i==0 ? "" : "-") << bins[i];
+  }
+  std::cout << std::noboolalpha << std::endl;
+  
+}
+
 //________________________________________________________________________
 TH1D*
 AliBasedNdetaTask::Rebin(const TH1D* h, Int_t rebin, Bool_t cutEdges)
@@ -967,16 +1056,16 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   }
 
   TH1I& t = *fTriggers;
-  Int_t nAll        = Int_t(t.GetBinContent(AliAODForwardMult::kBinAll));
-  Int_t nB          = Int_t(t.GetBinContent(AliAODForwardMult::kBinB));
-  Int_t nA          = Int_t(t.GetBinContent(AliAODForwardMult::kBinA));
-  Int_t nC          = Int_t(t.GetBinContent(AliAODForwardMult::kBinC));
-  Int_t nE          = Int_t(t.GetBinContent(AliAODForwardMult::kBinE));
-  Int_t nMB         = Int_t(t.GetBinContent(AliAODForwardMult::kBinInel));
-  Int_t nTriggered  = Int_t(t.GetBinContent(AliAODForwardMult::kWithTrigger));
-  Int_t nWithVertex = Int_t(t.GetBinContent(AliAODForwardMult::kWithVertex));
-  Int_t nAccepted   = Int_t(t.GetBinContent(AliAODForwardMult::kAccepted));
-  Int_t nGood       = nB - nA - nC + 2 * nE;
+  Double_t nAll        = t.GetBinContent(AliAODForwardMult::kBinAll);
+  Double_t nB          = t.GetBinContent(AliAODForwardMult::kBinB);
+  Double_t nA          = t.GetBinContent(AliAODForwardMult::kBinA);
+  Double_t nC          = t.GetBinContent(AliAODForwardMult::kBinC);
+  Double_t nE          = t.GetBinContent(AliAODForwardMult::kBinE);
+  Double_t nOffline    = t.GetBinContent(AliAODForwardMult::kBinOffline);
+  Double_t nTriggered  = t.GetBinContent(AliAODForwardMult::kWithTrigger);
+  Double_t nWithVertex = t.GetBinContent(AliAODForwardMult::kWithVertex);
+  Double_t nAccepted   = t.GetBinContent(AliAODForwardMult::kAccepted);
+  Double_t nGood       = nB - nA - nC + 2 * nE;
 
   
   if (nTriggered <= 0.1) { 
@@ -989,74 +1078,94 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   }
   if (nGood <= 0.1) { 
     AliWarning(Form("Number of good events=%d=%d-%d-%d+2*%d<=0",
-		    nGood, nB, nA, nC, nE));
-    nGood = nMB;
+		    Int_t(nGood), Int_t(nB), Int_t(nA), Int_t(nC), Int_t(nE)));
+    nGood = nTriggered;
   }
 
 
   // Scaling 
+  // 
   //  N_A + N_A/N_V (N_T - N_V) = N_A + N_A/N_V*N_T - N_A 
   //                            = N_A/N_V * N_T 
+  // or with beta 
+  //
+  //  N_A + N_A/N_V (N_T - N_V - beta) = 
+  //     N_A (1 + N_T/N_V - 1 - beta/N_V)
+  //     N_A (N_T / N_V - beta/N_V)
+  // 
   // where 
+  // 
   //    N_A = nAccepted 
   //    N_V = nWithVertex 
   //    N_T = nTriggered 
+  // 
   // so that the normalisation is simply 
+  // 
   //    N_A / E_V 
-  // where 
-  //    E_V=N_V/N_T is the vertex efficiency from data 
   // 
-  // If we calculate the number of events with no vertex as 
-  // (N_T - N_A), we get 
-  //  
-  //  N_A + N_A/N_V (N_T - N_A) = N_A (1 + 1/N_V (N_T - N_A))
-  //                            = N_A (1 + N_T/N_V - N_A/N_V)
-  //                            = N_A (1 + 1/E_V - N_A/N_V)
+  // or 
   // 
-  // Double_t alpha    = Double_t(nAccepted) / nWithVertex;
-  // Double_t vNorm    = nAccepted + alpha*(nTriggered - nWithVertex);
-  Double_t ntotal = 1;
-  Double_t vtxEff = double(nWithVertex) / double(nTriggered);;
+  //    N_A (1 / E_V - beta / N_V)
+  // 
+  // with 
+  // 
+  //    E_V = N_V / N_T
+  // 
+  Double_t ntotal = nAccepted;
+  Double_t scaler = 1;
+  Double_t vtxEff = nWithVertex /nTriggered;
+  Double_t beta   = nA + nC - 2*nE;
   Bool_t   shape  = (scheme & kShape);
-  if     (scheme & kEventLevel) {
-    AliInfo(Form("Calculating event normalisation as "
-		 "1 / trigEff * nAccepted * nTriggered / nWithVertex "
-		 "= 1/%f * %d * %d / %d = %f",
-		 trigEff, nAccepted, nTriggered, nWithVertex,
-		 1. / trigEff * nAccepted * double(nTriggered) / nWithVertex));
-    ntotal = vtxEff * trigEff;
+  if (scheme & kEventLevel) {
+    ntotal = nAccepted / vtxEff;
+    scaler = vtxEff;
+    AliInfo(Form("Calculating event normalisation as\n"
+		 " N = N_A * N_T / N_V = %d * %d / %d = %f",
+		 Int_t(nAccepted), Int_t(nTriggered), Int_t(nWithVertex), 
+		 ntotal));
+	    
+    if (scheme & kBackground) {
+      AliInfo(Form("Correcting for background\n" 
+		   " beta = N_a + N_c + 2N_e = %d + %d - 2 * %d = %d", 
+		   Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta)));
+      ntotal -= nAccepted * beta / nWithVertex;
+      scaler -= (beta > 0 ? nWithVertex / beta : 0);
+      AliInfo(Form("Calculating event normalisation as\n"
+		   " N = N - N_A * beta / N_V = %f - %d * %d / %d = %f",
+		   nAccepted / vtxEff, Int_t(nAccepted), Int_t(beta), 
+		   Int_t(nWithVertex), ntotal));
+    }
   }
-  else if (scheme & kAltEventLevel) {
-    AliInfo(Form("Calculating event normalisation as " 
-		 "1 / trigEff * nAccepted * (1 + nTriggered / nWithVertex - "
-		 "nAccepted / nWithVertex) = "
-		 "1/ %f * %d (1 + %d / %d - %d / %d) = %f", 
-		 trigEff, nAccepted, nTriggered, nWithVertex, 
-		 nAccepted, nWithVertex, 
-		 1/trigEff * nAccepted * (1 + double(nTriggered)/nWithVertex - 
-					double(nAccepted) / nWithVertex)));
-    ntotal = trigEff * 1 / (1 + double(nTriggered)/nWithVertex - 
-			    double(nAccepted) / nWithVertex);
+  if (scheme & kTriggerEfficiency) {
+    AliInfo(Form("Correcting normalisation for trigger efficiency:\n"
+		 "  N = 1 / E_X * N = 1 / %f * %d = %f", 
+		 trigEff, Int_t(ntotal), ntotal / trigEff));
+    ntotal /= trigEff * (shape ? trigEff : 1);
+    scaler *= trigEff * (shape ? trigEff : 1);
   }
 
-  AliInfo(Form("Total of %9d events for %s\n"
-	       "                   of these %9d are triggered minimum bias\n"
-	       "                   of these %9d has a %s trigger\n" 
-	       "                   of these %9d has a vertex\n" 
-	       "                   of these %9d were in [%+4.1f,%+4.1f]cm\n"
-	       "                   Triggers by type:\n"
-	       "                     B   = %9d\n"
-	       "                     A|C = %9d (%9d+%-9d)\n"
-	       "                     E   = %9d\n"
-	       "                   Implies %9d good triggers\n"
-	       "                   Vertex efficiency:      %f\n"
-	       "                   Trigger efficiency:     %f\n"
-	       "                   Total number of events: %f\n",
-	       nAll, GetTitle(), nMB, nTriggered, 
+  AliInfo(Form("\n"
+	       " Total of        %9d events for %s\n"
+	       "  of these       %9d have an offline trigger\n"
+	       "  of these N_T = %9d has a %s trigger\n" 
+	       "  of these N_V = %9d has a vertex\n" 
+	       "  of these N_A = %9d were in [%+4.1f,%+4.1f]cm\n"
+	       "  Triggers by hardware type:\n"
+	       "    N_b   =  %9d\n"
+	       "    N_ac  =  %9d (%d+%d)\n"
+	       "    N_e   =  %9d\n"
+	       "  Implies    %9d good triggers\n"
+	       "  Vertex efficiency:          %f\n"
+	       "  Trigger efficiency:         %f\n"
+	       "  Total number of events: N = %f\n"
+	       "  Scaler (N_A/N):             %f",
+	       Int_t(nAll), GetTitle(), Int_t(nOffline), 
+	       Int_t(nTriggered), 
 	       AliAODForwardMult::GetTriggerString(triggerMask),
-	       nWithVertex, nAccepted,
+	       Int_t(nWithVertex), Int_t(nAccepted),
 	       vzMin, vzMax, 
-	       nB, nA+nC, nA, nC, nE, nGood, vtxEff, trigEff, ntotal));
+	       Int_t(nB), Int_t(nA+nC), Int_t(nA), Int_t(nC), Int_t(nE), 
+	       Int_t(nGood), vtxEff, trigEff, ntotal, scaler));
   
   const char* name = GetName();
   
@@ -1065,7 +1174,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   norm->SetDirectory(0);
 
   // Scale by shape correction 
-  if(shape && shapeCorr) fSum->Divide(shapeCorr);
+  if (shape && shapeCorr) fSum->Divide(shapeCorr);
   else AliInfo("No shape correction specified, or disabled");
   
   // Project on X axis 
@@ -1077,7 +1186,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
   dndeta->Divide(norm);
   
   // Scale by the vertex efficiency 
-  dndeta->Scale(ntotal, "width");
+  dndeta->Scale(scaler, "width");
   
   SetHistogramAttributes(dndeta, color, marker, Form("ALICE %s", name));
   SetHistogramAttributes(norm,   color, marker, Form("ALICE %s normalisation", 
