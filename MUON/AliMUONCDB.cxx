@@ -48,13 +48,13 @@
 #include "AliMUONRecoParam.h"
 #include "AliMUONRegionalTriggerConfig.h"
 #include "AliMUONRejectList.h"
+#include "AliMUONTrackerData.h"
 #include "AliMUONTrackerIO.h"
 #include "AliMUONTriggerEfficiencyCells.h"
 #include "AliMUONTriggerLut.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVStore.h"
-
 
 #include "AliMpCDB.h"
 #include "AliMpConstants.h"
@@ -81,6 +81,7 @@
 #include <Riostream.h>
 #include <TArrayI.h>
 #include <TClass.h>
+#include <TFile.h>
 #include <TH1F.h>
 #include <TList.h>
 #include <TMap.h>
@@ -93,6 +94,7 @@
 #include <TGeoGlobalMagField.h>
 #include <TClonesArray.h>
 #include <sstream>
+#include <set>
 
 namespace
 {
@@ -1645,3 +1647,166 @@ AliMUONCDB::ShowConfig(Bool_t withStatusMap)
   delete cd;
   delete statusMaker;  
 }
+
+//______________________________________________________________________________
+void AliMUONCDB::ReadIntegers(const char* filename, std::vector<int>& integers)
+{
+  /// Read integers from filename, where integers are either
+  /// separated by "," or by return carriage
+  ifstream in(gSystem->ExpandPathName(filename));
+  int i;
+  
+  std::set<int> runset;
+  
+  char line[10000];
+  
+  in.getline(line,10000,'\n');
+  
+  TString sline(line);
+  
+  if (sline.Contains(","))
+  {
+    TObjArray* a = sline.Tokenize(",");
+    TIter next(a);
+    TObjString* s;
+    while ( ( s = static_cast<TObjString*>(next()) ) )
+    {
+      runset.insert(s->String().Atoi());
+    }
+    delete a;
+  }
+  else
+  {
+    runset.insert(sline.Atoi());
+    
+    while ( in >> i )
+    {
+      runset.insert(i);
+    }
+  }
+  
+  for ( std::set<int>::const_iterator it = runset.begin(); it != runset.end(); ++it ) 
+  {
+    integers.push_back((*it)); 
+  }
+  
+  std::sort(integers.begin(),integers.end());
+}
+
+//______________________________________________________________________________
+void AliMUONCDB::ShowFaultyBusPatches(const char* runlist, double occLimit,
+                                      const char* outputBaseName,
+                                      const char* ocdbPath)
+{
+  /// Shows the list of bus patches above a given occupancy limit,
+  /// for each run in the runlist
+  
+  AliLog::GetRootLogger()->SetGlobalLogLevel(AliLog::kError);
+  
+  //  AliLog::SetPrintType(AliLog::kInfo,kFALSE);
+  //  AliLog::SetPrintType(AliLog::kWarning,kFALSE);
+  //  gErrorIgnoreLevel=kError; // to avoid all the TAlienFile::Open messages...
+  
+  AliCDBManager* man = AliCDBManager::Instance();
+  
+  man->SetDefaultStorage(ocdbPath);
+  
+  Bool_t first(kTRUE);
+  
+  std::vector<int> runnumbers;
+  
+  ReadIntegers(runlist,runnumbers);
+  
+  AliMUON2DMap bpValues(kFALSE);
+  
+  std::ofstream outfile(Form("%s.txt",outputBaseName));
+  
+  for ( unsigned int i = 0 ; i < runnumbers.size(); ++i )
+  {
+    int runNumber = runnumbers[i];
+    
+    man->SetRun(runNumber);
+    
+    if ( first ) 
+    {
+      AliMpCDB::LoadAll();  
+      first = kFALSE;
+    }
+    
+    AliCDBEntry* e = man->Get("MUON/Calib/OccupancyMap",runNumber);
+    
+    AliMUONVStore* occmap = static_cast<AliMUONVStore*>(e->GetObject());
+    
+    AliMUONTrackerData td("occ","occ",*occmap);
+    
+    TIter nextBP(AliMpDDLStore::Instance()->CreateBusPatchIterator());
+    AliMpBusPatch* bp;
+    std::set<int> buspatches;
+    Double_t sumn = 1000.0;
+    
+    while ( ( bp = static_cast<AliMpBusPatch*>(nextBP()) ) )
+    {      
+      Double_t occ = td.BusPatch(bp->GetId(),2);
+      
+      if (occ>occLimit) 
+      {
+        buspatches.insert(bp->GetId());
+        
+        AliMUONVCalibParam* param = static_cast<AliMUONVCalibParam*>(bpValues.FindObject(bp->GetId()));
+        
+        if (!param)
+        {
+          param = new AliMUONCalibParamND(5, 1, bp->GetId(), 0);
+          bpValues.Add(param);
+          
+          Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(bp->GetId());
+          AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+          
+          Int_t nchannels(0);
+          
+          for ( Int_t imanu = 0; imanu < bp->GetNofManus(); ++imanu ) 
+          {
+            Int_t manuId = bp->GetManuId(imanu);
+            nchannels += de->NofChannelsInManu(manuId);
+          }
+          
+          param->SetValueAsDouble(0,2,sumn);
+          param->SetValueAsDouble(0,3,nchannels);
+          param->SetValueAsDouble(0,4,1);          
+        }
+        
+        Double_t sumw = sumn*(param->ValueAsDouble(0)/sumn+1.0/runnumbers.size());
+        Double_t sumw2 = 0.0; //(sumn-1)*ey*ey+sumw*sumw/sumn;
+        
+        param->SetValueAsDouble(0,0,sumw);
+        param->SetValueAsDouble(0,1,sumw2);
+        
+      }
+    }
+    
+    outfile << Form("RUN %09d",runNumber);
+    
+    for ( std::set<int>::const_iterator bit = buspatches.begin(); bit != buspatches.end(); ++bit )
+    {
+      outfile << Form(" %4d",*bit);
+    }
+    outfile << endl;
+  }
+  
+  outfile.close();
+  
+  const char* name = "BPfailureRate";
+  
+  AliMUONTrackerData* mpData = new AliMUONTrackerData(name,name,bpValues,2);
+  mpData->SetDimensionName(0,name);
+  
+  TFile f(Form("%s.root",outputBaseName),"recreate");
+  mpData->Write();
+  f.Close();
+  
+  cout << Form("Results are in %s.txt and %s.root",outputBaseName,outputBaseName) << endl;
+  
+  gSystem->Exec(Form("cat %s.txt",outputBaseName));
+  
+}
+

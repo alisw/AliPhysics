@@ -100,15 +100,14 @@ fIsOwnerOfData(kTRUE)
   else
   {
     Int_t startOfValidity;
-  AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
+    AliMUONVStore* store = CreateStore(runNumber,ocdbPath,type,startOfValidity);
     AliDebug(1,Form("runNumber=%d ocdbPath=%s type=%s startOfValidity=%d store=%p",
                     runNumber,ocdbPath,type,startOfValidity,store));
     if ( store )
     {
       fData = CreateData(type,*store,startOfValidity);
-    }  
-    
-    delete store;
+    }
+    // we do not delete the store, as it's supposedly part of the OCDB cache...
   }
   
   AliCDBManager::Instance()->SetDefaultStorage(storage);
@@ -482,6 +481,7 @@ AliMUONTrackerConditionDataMaker::CreateStore(Int_t runNumber,
     if ( ocdb ) 
     {
       store = AliMUONCalibrationData::CreateOccupancyMap(runNumber,&startOfValidity);
+      if (store) store = static_cast<AliMUONVStore*>(store->Clone());
     }
     else
     {

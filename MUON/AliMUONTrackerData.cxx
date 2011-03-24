@@ -253,7 +253,7 @@ fNofEventsPerDDL(0x0)
 
 //_____________________________________________________________________________
 AliMUONTrackerData::AliMUONTrackerData(const char* name, const char* title,
-                                       const AliMUONVStore& deValues, Int_t val)
+                                       const AliMUONVStore& deOrBpValues, Int_t val)
 : AliMUONVTrackerData(name,title),
 fIsSingleEvent(kFALSE),
 fChannelValues(0x0),
@@ -278,18 +278,13 @@ fIsPCBLevelEnabled(kFALSE),
 fNofDDLs(0),
 fNofEventsPerDDL(0x0)
 {  
-  /// ctor with values at the detection element level
+  /// ctor with values at the detection element OR bus patch level
   /// In this case, we force fIsChannelLevelEnabled = fIsManuLevelEnabled = kFALSE
   /// ctor
   
-  if (deValues.GetSize()==0)
+  if (deOrBpValues.GetSize()==0)
   {
     AliFatal("Cannot create a tracker data from nothing in that case !");
-  }
-  
-  if ( val != 1 ) 
-  {
-    AliFatal("Wrong parameter. For DE, must be 1");
   }
   
   if ( !AliMpDDLStore::Instance(kFALSE) && !AliMpManuStore::Instance(kFALSE) )
@@ -297,6 +292,27 @@ fNofEventsPerDDL(0x0)
     AliError("Cannot work without (full) mapping");
     return;
   }
+  
+  if ( val == 1 ) 
+  {
+    BuildFromDEStore(deOrBpValues);
+  }
+  else if ( val == 2 )
+  {
+    BuildFromBPStore(deOrBpValues);
+  }
+  else
+  {
+    AliFatal("Wrong parameter. Must be 1 or 2");
+  }
+  
+  
+}
+
+//_____________________________________________________________________________
+void AliMUONTrackerData::BuildFromDEStore(const AliMUONVStore& deValues)
+{
+  /// Fill internals from a store of values at the detection element level
   
   TIter next(deValues.CreateIterator());
   AliMUONVCalibParam* m = static_cast<AliMUONVCalibParam*>(next());
@@ -326,7 +342,7 @@ fNofEventsPerDDL(0x0)
   while ( ( external = static_cast<AliMUONVCalibParam*>(next()) ) )
   {
     Int_t detElemId = external->ID0();
-
+    
     AliMpDetElement* mpde = AliMpDDLStore::Instance()->GetDetElement(detElemId,kFALSE);
     
     if (!mpde)
@@ -338,7 +354,7 @@ fNofEventsPerDDL(0x0)
     Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
     AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
     AliMUONVCalibParam* de = DetectionElementParam(detElemId,kTRUE);
-
+    
     AliMUONVCalibParam* wec = new AliMUONCalibParamND(external->Dimension()-1,1,detElemId,0,0);
     // as external, but without event count
     wec->SetValueAsDouble(0,0,external->ValueAsDouble(0,0));
@@ -383,7 +399,104 @@ fNofEventsPerDDL(0x0)
   }  
   
   UpdateNumberOfEvents(&nevents);
+}
+
+//_____________________________________________________________________________
+void AliMUONTrackerData::BuildFromBPStore(const AliMUONVStore& bpValues)
+{
+  /// Fill internals from a store of values at the bus patch level
   
+  fIsBustPatchLevelEnabled = kTRUE;
+  
+  TIter next(bpValues.CreateIterator());
+  AliMUONVCalibParam* m = static_cast<AliMUONVCalibParam*>(next());
+  
+  Int_t dimension = ( m->Dimension() - fgkExtraDimension - fgkVirtualExtraDimension ) / 2;
+  
+  fDimension = External2Internal(dimension)+fgkExtraDimension;
+  
+  fDimensionNames = new TObjArray(fDimension+fgkVirtualExtraDimension);
+  fExternalDimensionNames = new TObjArray(dimension);
+  fExternalDimension = dimension;
+  fHistogramming = new Int_t[fExternalDimension];
+  memset(fHistogramming,0,fExternalDimension*sizeof(Int_t)); // histogramming is off by default. Use MakeHistogramForDimension to turn it on.
+  
+  fExternalDimensionNames->SetOwner(kTRUE);
+  fDimensionNames->SetOwner(kTRUE);  
+  fDimensionNames->AddAt(new TObjString("occ"),IndexOfOccupancyDimension());
+  fDimensionNames->AddAt(new TObjString("N"),IndexOfNumberDimension());
+  fDimensionNames->AddAt(new TObjString("n"),NumberOfDimensions()-fgkVirtualExtraDimension);
+  Clear();
+  TArrayI nevents(AliDAQ::NumberOfDdls("MUONTRK"));
+  AssertStores();
+  
+  next.Reset();
+  AliMUONVCalibParam* external;
+  
+  while ( ( external = static_cast<AliMUONVCalibParam*>(next()) ) )
+  {
+    Int_t busPatchId = external->ID0();
+    
+    AliMpBusPatch* mpbp = AliMpDDLStore::Instance()->GetBusPatch(busPatchId,kFALSE);
+    
+    if (!mpbp)
+    {
+      AliError(Form("Got an invalid buspatchId (%d) from external store",busPatchId));
+      continue;
+    }
+    
+    Int_t detElemId = AliMpDDLStore::Instance()->GetDEfromBus(busPatchId);
+    Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
+    AliMUONVCalibParam* chamber = ChamberParam(chamberId,kTRUE);
+    AliMUONVCalibParam* de = DetectionElementParam(detElemId,kTRUE);
+    AliMUONVCalibParam* bp = BusPatchParam(busPatchId,kTRUE);
+    
+    AliMUONVCalibParam* wec = new AliMUONCalibParamND(external->Dimension()-1,1,busPatchId,0,0);
+    // as external, but without event count
+    wec->SetValueAsDouble(0,0,external->ValueAsDouble(0,0));
+    wec->SetValueAsDouble(0,1,external->ValueAsDouble(0,1));
+    wec->SetValueAsDouble(0,2,external->ValueAsDouble(0,2));
+    wec->SetValueAsDouble(0,3,external->ValueAsDouble(0,3));
+    
+    Int_t n1 = bp->ValueAsInt(0,IndexOfNumberDimension());
+    Int_t n2 = external->ValueAsInt(0,IndexOfNumberDimension());
+    if  ( n1 != n2 )
+    {
+      AliError(Form("Incoherent number of dimensions for BP%d : %d vs %d",
+                    busPatchId,n1,n2));
+      continue;
+    }
+    
+    Int_t nevt = external->ValueAsInt(0,4);
+    
+    Int_t ddl = mpbp->GetDdlId();
+    
+    if ( nevents[ddl] == 0 ) 
+    {
+      nevents[ddl] = nevt;
+    }
+    else
+    {
+      if ( nevents.At(ddl) != nevt ) 
+      {
+        AliError(Form("Nevt mismatch for BP %5d  DDL %d : %d vs %d",
+                      busPatchId,ddl,nevents.At(ddl),nevt));
+        continue;
+      }
+    }
+    
+    for ( Int_t i = 0; i < wec->Dimension()-1; ++i ) 
+    {
+      bp->SetValueAsDouble(0,i,bp->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      de->SetValueAsDouble(0,i,de->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+      
+      chamber->SetValueAsDouble(0,i,chamber->ValueAsDouble(0,i) + wec->ValueAsDouble(0,i));
+    }    
+    delete wec;
+  }  
+  
+  UpdateNumberOfEvents(&nevents);  
 }
 
 //_____________________________________________________________________________

@@ -33,7 +33,7 @@ public:
                      const AliMUONVStore& manuValues);
 
   AliMUONTrackerData(const char* name, const char* title,
-                     const AliMUONVStore& deValues, Int_t val);
+                     const AliMUONVStore& deOrBpValues, Int_t val);
 
   AliMUONTrackerData(const char* name, const char* title,
                      const AliMUONRejectList& rejectList);
@@ -142,6 +142,10 @@ public:
   
 private:
     
+  void BuildFromDEStore(const AliMUONVStore& deStore);
+
+  void BuildFromBPStore(const AliMUONVStore& bpStore);
+
   void FillHisto(Int_t detElemId, Int_t manuId, Int_t manuChannel,
                  Int_t dim, Double_t value);
 

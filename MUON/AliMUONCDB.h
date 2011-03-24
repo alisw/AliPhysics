@@ -13,6 +13,7 @@
 
 #include <TString.h>
 #include "AliCDBRunRange.h"
+#include <vector>
 
 class AliMUONVStore;
 class TMap;
@@ -57,9 +58,16 @@ namespace AliMUONCDB
   
   void Plot(const AliMUONVStore& store, const char* name, Int_t nbins=512);
 
+  void ReadIntegers(const char* filename, std::vector<int>& integers);
+
   void ShowConfig(Bool_t withStatusMap=kFALSE);
   
   void ShowCapacitances();
+  
+  void ShowFaultyBusPatches(const char* runlist, 
+                            double occLimit=0.1,
+                            const char* outputBaseName="faulty.buspatches",
+                            const char* ocdbPath="raw://");
   
   void WriteToCDB(const char* calibpath, TObject* object,
                   Int_t startRun, Int_t endRun, Bool_t defaultValues);
