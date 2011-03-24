@@ -139,6 +139,7 @@ void AliAnalysisTaskPIDResponse::UserCreateOutputObjects()
   //pid response object
   inputHandler->CreatePIDResponse(fIsMC);
   fPIDResponse=inputHandler->GetPIDResponse();
+  if (!fPIDResponse) AliFatal("PIDResponse object was not created");
   
   //
   fListQA=new TList;
@@ -268,7 +269,6 @@ void AliAnalysisTaskPIDResponse::SetTPCPidResponseMaster()
   TFile f(fileName.Data());
   if (f.IsOpen() && !f.IsZombie()){
     fArrPidResponseMaster=dynamic_cast<TObjArray*>(f.Get("TPCPIDResponse"));
-    fArrPidResponseMaster->SetOwner();
     f.Close();
   }
 
@@ -276,6 +276,7 @@ void AliAnalysisTaskPIDResponse::SetTPCPidResponseMaster()
     AliFatal("Could not retrieve the TPC pid response");
     return;
   }
+  fArrPidResponseMaster->SetOwner();
 }
 
 //______________________________________________________________________________
