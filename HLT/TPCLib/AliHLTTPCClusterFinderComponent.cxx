@@ -920,10 +920,22 @@ void AliHLTTPCClusterFinderComponent::GetOCDBObjectDescription( TMap* const targ
   if (!targetMap) return;
   
   // OCDB entries for component arguments
-  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinder32Bit"),    new TObjString("component arguments, empty at the moment"));
-  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderPacked"),   new TObjString("component arguments, empty at the moment"));
-  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderUnpacked"), new TObjString("component arguments, empty at the moment"));
-  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderDecoder"),  new TObjString("component arguments, empty at the moment"));
+  switch(fModeSwitch){
+  case kClusterFinderPacked:
+    // deprecated but kept for a short while to support porting to release
+    targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderPacked"),   new TObjString("component arguments, empty at the moment"));
+    break;
+  case kClusterFinderUnpacked:
+    targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderUnpacked"), new TObjString("component arguments, empty at the moment"));
+    break;
+  case kClusterFinderDecoder:
+    // deprecated but kept for a short while to support porting to release
+    targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinderDecoder"),  new TObjString("component arguments, empty at the moment"));
+    break;
+  case kClusterFinder32Bit: 
+    targetMap->Add(new TObjString("HLT/ConfigTPC/TPCClusterFinder32Bit"),    new TObjString("component arguments, empty at the moment"));
+    break;
+  }
   
   // OCDB entries to be fetched by the TAXI (access via the AliTPCcalibDB class)
   targetMap->Add(new TObjString("TPC/Calib/Parameters"),    new TObjString("unknown content"));
