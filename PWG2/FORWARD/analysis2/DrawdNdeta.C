@@ -1234,6 +1234,8 @@ struct dNdetaDrawer
    */
   TH1* Ratio(const TObject* o1, const TObject* o2, Double_t& max) const
   {
+    if (!o1 || !o2) return 0;
+
     TH1* r = 0;
     const TH1* h1 = dynamic_cast<const TH1*>(o1); 
     if (h1) { 

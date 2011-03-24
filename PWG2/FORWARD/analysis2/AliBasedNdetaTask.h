@@ -376,6 +376,67 @@ protected:
 			      const TH2D*              data, 
 			      const TH2D*              mc);
     /** 
+     * Calculate the Event-Level normalization. 
+     * 
+     * The full event level normalization for trigger @f$X@f$ is given by 
+     * @f{eqnarray*}{
+     *    N &=& \frac{1}{\epsilon_X}
+     *          \left(N_A+\frac{N_A}{N_V}(N_{-V}-\beta)\right)\\
+     *      &=& \frac{1}{\epsilon_X}N_A
+     *          \left(1+\frac{1}{N_V}(N_T-N_V-\beta)\right)\\
+     *      &=& \frac{1}{\epsilon_X}N_A
+     *          \left(1+\frac{N_T}{N_V}-1-\frac{\beta}{N_V}\right)\\
+     *      &=& \frac{1}{\epsilon_X}N_A
+     *          \left(\frac{1}{\epsilon_V}-\frac{\beta}{N_V}\right)
+     * @f}
+     * where 
+     *
+     * - @f$\epsilon_X=\frac{N_{T,X}}{N_X}@f$ is the trigger
+     *   efficiency evaluated in simulation.
+     * - @f$\epsilon_V=\frac{N_V}{N_T}@f$ is the vertex efficiency 
+     *   evaluated from the data 
+     * - @f$N_X@f$ is the Monte-Carlo truth number of events of type 
+     *   @f$X@f$. 
+     * - @f$N_{T,X}@f$ is the Monte-Carlo truth number of events of type 
+     *   @f$X@f$ which was also triggered as such. 
+     * - @f$N_T@f$ is the number of data events that where triggered 
+     *   as type @f$X@f$ and had a collision trigger (CINT1B)
+     * - @f$N_V@f$ is the number of data events that where triggered
+     *   as type @f$X@f$, had a collision trigger (CINT1B), and had 
+     *   a vertex. 
+     * - @f$N_{-V}@f$ is the number of data events that where triggered
+     *   as type @f$X@f$, had a collision trigger (CINT1B), but no
+     *   vertex. 
+     * - @f$N_A@f$ is the number of data events that where triggered
+     *   as type @f$X@f$, had a collision trigger (CINT1B), and had 
+     *   a vertex in the selected range. 
+     * - @f$\beta=N_a+N_c-N_e@f$ is the number of control triggers that 
+     *   were also triggered as type @f$X@f$. 
+     * - @f$N_a@f$ Number of beam-empty events also triggered as type 
+     *   @f$X@f$ events (CINT1-A or CINT1-AC). 
+     * - @f$N_c@f$ Number of empty-beam events also triggered as type 
+     *   @f$X@f$ events (CINT1-C). 
+     * - @f$N_e@f$ Number of empty-empty events also triggered as type 
+     *   @f$X@f$ events (CINT1-E). 
+     * 
+     * Note, that if @f$ \beta \ll N_A@f$ the last term can be ignored, and 
+     * the expression simplyfies to  
+     * @f[
+     *  N = \frac{1}{\epsilon_X}\frac{1}{\epsilon_V}N_A
+     * @f]
+     *
+     * @param t       Histogram of triggers 
+     * @param scheme  Normalisation scheme 
+     * @param trgEff  Trigger efficiency 
+     * @param ntotal  On return, the total number of events to normalise to.
+     * 
+     * @return @f$N_A/N@f$ or negative number in case of errors. 
+     */
+    virtual Double_t Normalization(const TH1I& t, 
+				   UShort_t    scheme,
+				   Double_t    trgEff,
+				   Double_t&   ntotal) const;
+    /** 
      * End of processing 
      * 
      * @param sums        List of sums
@@ -387,8 +448,6 @@ protected:
      * @param rebin       Whether to rebin the results
      * @param corrEmpty   Whether to correct for empty bins
      * @param cutEdges    Whether to cut edges when rebinning
-     * @param vzMin       Minimum IP z coordinate
-     * @param vzMax 	  Maximum IP z coordinate
      * @param triggerMask Trigger mask 
      * @param color       Base colour for markers 
      * @param marker      Marker style 
@@ -402,8 +461,6 @@ protected:
 		     Int_t       rebin, 
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
-		     Double_t    vzMin, 
-		     Double_t    vzMax, 
 		     Int_t       triggerMask,
 		     Int_t       color,
 		     Int_t       marker);

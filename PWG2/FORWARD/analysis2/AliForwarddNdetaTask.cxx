@@ -141,32 +141,24 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
     Double_t centrality = forward->GetCentrality();
     if (centrality < fLow || centrality >= fHigh) return;
   }
-  
+
+  // translate rea trigger mask to MC trigger mask
+  Int_t mask = AliAODForwardMult::kB;
+  if (triggerMask == AliAODForwardMult::kNSD)
+    mask = AliAODForwardMult::kMCNSD;
+
+  // Now use our normal check, but with the new mask 
+  if (!forward->CheckEvent(mask, vzMin, vzMax, 0, 0, 0)) return;
+
+  // Create sum histogram 
   if (!fSumPrimary) { 
     fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
     fSumPrimary->SetDirectory(0);
     fSumPrimary->Reset();
     fSums->Add(fSumPrimary);
   }
-  if (triggerMask == AliAODForwardMult::kInel ||
-      (triggerMask == AliAODForwardMult::kNSD && 
-       forward->IsTriggerBits(AliAODForwardMult::kMCNSD)))
-    fSumPrimary->Add(primary);
-  
-  // Check if we have an event of interest. 
-  if (!forward->IsTriggerBits(triggerMask)) return;
-  
-  //Check for pileup
-  if (forward->IsTriggerBits(AliAODForwardMult::kPileUp)) return;
-  
-  // Check that we have a valid vertex
-  if (!forward->HasIpZ()) return;
 
-  // Check that vertex is within cuts 
-  if (!forward->InRange(vzMin, vzMax)) return;
-
-  
-  
+  fSumPrimary->Add(primary);
 }
 
 //________________________________________________________________________
@@ -180,8 +172,6 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 Int_t       rebin, 
 					 Bool_t      corrEmpty, 
 					 Bool_t      cutEdges, 
-					 Double_t    vzMin, 
-					 Double_t    vzMax, 
 					 Int_t       triggerMask,
 					 Int_t       color,
 					 Int_t       marker)
@@ -189,7 +179,7 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
 					shapeCorr, trigEff, 
 					symmetrice, rebin, corrEmpty, cutEdges,
-					vzMin, vzMax, triggerMask,
+					triggerMask,
 					color, marker);
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
@@ -198,8 +188,8 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
   Int_t n = (triggerMask == AliAODForwardMult::kNSD ? 
 	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
 	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));
+  AliInfo(Form("Normalising MC truth to %d", n));
 
-    
   TH1D* dndetaTruth = fSumPrimary->ProjectionX("dndetaTruth",1,
 					       fSumPrimary->GetNbinsY(),"e");
   dndetaTruth->Scale(1./n, "width");

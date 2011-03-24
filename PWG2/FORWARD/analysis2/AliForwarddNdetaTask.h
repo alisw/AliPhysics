@@ -146,8 +146,6 @@ protected:
      * @param rebin       Whether to rebin the results
      * @param corrEmpty   Whether to correct for empty bins
      * @param cutEdges    Whether to cut edges when rebinning
-     * @param vzMin       Minimum IP z coordinate
-     * @param vzMax 	  Maximum IP z coordinate
      * @param triggerMask Trigger mask 
      * @param color       Marker colour 
      * @param marker      Marker style 
@@ -161,8 +159,6 @@ protected:
 		     Int_t       rebin, 
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
-		     Double_t    vzMin, 
-		     Double_t    vzMax, 
 		     Int_t       triggerMask,
 		     Int_t       color, 
 		     Int_t       marker);
