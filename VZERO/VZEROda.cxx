@@ -68,16 +68,16 @@ int main(int argc, char **argv) {
   
   // Online values (using FEE channel numbering), 
   // stored into local V0_Pedestals.dat:
-  Double_t ADCmean[128];
-  Double_t ADCsigma[128];
-  Double_t PEDmean[128];
-  Double_t PEDsigma[128];
+  Double_t adcMean[128];
+  Double_t adcSigma[128];
+  Double_t pedMean[128];
+  Double_t pedSigma[128];
   // Offline values(same but ordered as in aliroot for offliners)
   // stored into V0_Ped_Width_Gain.dat: 
-  Double_t ADCmean_Off[128];
-  Double_t ADCsigma_Off[128];
-  Double_t PEDmean_Off[128];
-  Double_t PEDsigma_Off[128];
+  Double_t adcMeanOff[128];
+  Double_t adcSigmaOff[128];
+  Double_t pedMeanOff[128];
+  Double_t pedSigmaOff[128];
        
 //___________________________________________________
 // Get cuts from V00DA.config file
@@ -115,19 +115,19 @@ int main(int argc, char **argv) {
 //___________________________________________________
 // Book HISTOGRAMS - dynamics of p-p collisions -
       
-  char     ADCname[6]; 
-  char     PEDname[6]; 
+  char     adcName[6]; 
+  char     pedName[6]; 
   TH1F     *hADCname[128];
   TH1F     *hPEDname[128];  
   
   char  texte[12];
   for (Int_t i=0; i<128; i++) {
-       sprintf(ADCname,"hADC%d",i);
+       sprintf(adcName,"hADC%d",i);
        sprintf(texte,"ADC cell%d",i);
-       hADCname[i]  = new TH1F(ADCname,texte,1024,-0.5, 1023.5);
-       sprintf(PEDname,"hPED%d",i);
+       hADCname[i]  = new TH1F(adcName,texte,1024,-0.5, 1023.5);
+       sprintf(pedName,"hPED%d",i);
        sprintf(texte,"PED cell%d",i);
-       hPEDname[i]  = new TH1F(PEDname,texte,1024,-0.5, 1023.5);
+       hPEDname[i]  = new TH1F(pedName,texte,1024,-0.5, 1023.5);
   }
 //___________________________________________________ 
 
@@ -164,8 +164,8 @@ int main(int argc, char **argv) {
   monitorSetNoWaitNetworkTimeout(1000);
   
   /* init counters on events */
-  int nevents_physics=0;
-  int nevents_total=0;
+  int neventsPhysics=0;
+  int neventsTotal=0;
 
   /* loop on events (infinite) */
   for(;;) {
@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
            break;
       
       case PHYSICS_EVENT:
-           nevents_physics++;
+           neventsPhysics++;
  	     		 
 	   AliRawReader *rawReader = new AliRawReaderDate((void*)event);
   
@@ -216,15 +216,15 @@ int main(int argc, char **argv) {
 		}
 		if(nFlag == 0){       // Fill 64*2 pedestal histograms  - 2 integrators -
 		   for(Int_t j=kClockMin;j <= kClockMax;j++){
-		       Int_t Integrator = rawStream->GetIntegratorFlag(i,j);
+		       Int_t integrator = rawStream->GetIntegratorFlag(i,j);
 		       Float_t pedestal = (float)(rawStream->GetPedestal(i,j));
-		       hPEDname[i + 64 * Integrator]->Fill(pedestal);
+		       hPEDname[i + 64 * integrator]->Fill(pedestal);
 		   }	
 		} 
 		if((rawStream->GetBBFlag(i,10)) || (rawStream->GetBGFlag(i,10))){ // Charge
-		    Int_t Integrator = rawStream->GetIntegratorFlag(i,10);
+		    Int_t integrator = rawStream->GetIntegratorFlag(i,10);
 		    Float_t charge = (float)(rawStream->GetADC(i));   // Fill 64*2 ADCmax histograms 
-		    hADCname[i + 64 * Integrator]->Fill(charge);
+		    hADCname[i + 64 * integrator]->Fill(charge);
 		}   			   
              } 
 	   }   
@@ -234,7 +234,7 @@ int main(int argc, char **argv) {
            rawReader = 0x0;	     	 						         
       } // end of switch on event type 
 	
-      nevents_total++;
+      neventsTotal++;
       /* free resources */
       free(event);
 	
@@ -246,7 +246,7 @@ int main(int argc, char **argv) {
 
   }  // loop over events
   
-  printf("%d physics events processed\n",nevents_physics);
+  printf("%d physics events processed\n",neventsPhysics);
     
 //___________________________________________________________________________
 //  Computes mean values, converts FEE channels into Offline AliRoot channels
@@ -254,34 +254,34 @@ int main(int argc, char **argv) {
 	
   for(Int_t i=0; i<128; i++) {
       hPEDname[i]->GetXaxis()->SetRange(0,kHighCut);
-      PEDmean[i]  = hPEDname[i]->GetMean(); 
-      PEDsigma[i] = hPEDname[i]->GetRMS(); 
+      pedMean[i]  = hPEDname[i]->GetMean(); 
+      pedSigma[i] = hPEDname[i]->GetRMS(); 
       hADCname[i]->GetXaxis()->SetRange(kLowCut,1024);
-      ADCmean[i]  = hADCname[i]->GetMean();
-      ADCsigma[i] = hADCname[i]->GetRMS(); 
-//      printf(" i = %d, %.3f %.3f %.3f %.3f\n",i,PEDmean[i],PEDsigma[i],ADCmean[i],ADCsigma[i]);
-      fprintf(fpLocal," %.3f %.3f %.3f %.3f\n",PEDmean[i],PEDsigma[i],
-                                               ADCmean[i],ADCsigma[i]);
+      adcMean[i]  = hADCname[i]->GetMean();
+      adcSigma[i] = hADCname[i]->GetRMS(); 
+//      printf(" i = %d, %.3f %.3f %.3f %.3f\n",i,pedMean[i],pedSigma[i],adcMean[i],adcSigma[i]);
+      fprintf(fpLocal," %.3f %.3f %.3f %.3f\n",pedMean[i],pedSigma[i],
+                                               adcMean[i],adcSigma[i]);
       if (i < 64) {
           Int_t j = GetOfflineChannel(i);     
-          PEDmean_Off[j]  = PEDmean[i];
-          PEDsigma_Off[j] = PEDsigma[i];
-          ADCmean_Off[j]  = ADCmean[i];
-          ADCsigma_Off[j] = ADCsigma[i]; }
+          pedMeanOff[j]  = pedMean[i];
+          pedSigmaOff[j] = pedSigma[i];
+          adcMeanOff[j]  = adcMean[i];
+          adcSigmaOff[j] = adcSigma[i]; }
       else{
           Int_t j = GetOfflineChannel(i-64);     
-          PEDmean_Off[j+64]  = PEDmean[i];
-          PEDsigma_Off[j+64] = PEDsigma[i];
-          ADCmean_Off[j+64]  = ADCmean[i];
-          ADCsigma_Off[j+64] = ADCsigma[i];
+          pedMeanOff[j+64]  = pedMean[i];
+          pedSigmaOff[j+64] = pedSigma[i];
+          adcMeanOff[j+64]  = adcMean[i];
+          adcSigmaOff[j+64] = adcSigma[i];
       }
   }
   
   for(Int_t j=0; j<128; j++) {
-//      printf(" j = %d, %.3f %.3f %.3f %.3f\n",j,PEDmean_Off[j],PEDsigma_Off[j],
-//                                                ADCmean_Off[j],ADCsigma_Off[j]);
-      fprintf(fp," %.3f %.3f %.3f %.3f\n",PEDmean_Off[j],PEDsigma_Off[j],
-                                          ADCmean_Off[j],ADCsigma_Off[j]);				       
+//      printf(" j = %d, %.3f %.3f %.3f %.3f\n",j,pedMeanOff[j],pedSigmaOff[j],
+//                                                adcMeanOff[j],adcSigmaOff[j]);
+      fprintf(fp," %.3f %.3f %.3f %.3f\n",pedMeanOff[j],pedSigmaOff[j],
+                                          adcMeanOff[j],adcSigmaOff[j]);				       
   }
    
 //________________________________________________________________________
