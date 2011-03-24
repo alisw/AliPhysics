@@ -170,8 +170,13 @@ void AliAnalysisTaskDiHadron::ConnectInputData(Option_t *){
    if (!tree&&fDEBUG) {Printf("ERROR: Could not read chain from input slot 0");} 
   else {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-    if (!esdH&&fDEBUG) Printf("ERROR: Could not get ESDInputHandler");
-    else fESD = esdH->GetEvent();
+    
+    if (!esdH){
+      if(fDEBUG)Printf("ERROR: Could not get ESDInputHandler");
+    }
+    else{ 
+      fESD = esdH->GetEvent();
+    }
     
     //MC Data handler (so one can calcualte eff)
     AliMCEventHandler *mcH = dynamic_cast<AliMCEventHandler*>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
@@ -216,8 +221,9 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   for(int imc=0;imc<=1;imc++){//MC loop
     if(imc==1&&!fMCHistos) continue;
     //Create the histograms
-    sprintf(histname,"fHistMult%s",cmc1[imc]);
-    sprintf(histtitle,"Multiplicity%s",cmc2[imc]);
+    Int_t buffersize = 256;
+    snprintf(histname,buffersize,"fHistMult%s",cmc1[imc]);
+    snprintf(histtitle,buffersize,"Multiplicity%s",cmc2[imc]);
     fHistMult[imc]=new TH1F(histname,histtitle,2000,-0.5,1999.5);
     fHistMult[imc]->Sumw2();
     fHistMult[imc]->GetXaxis()->SetTitle("Number of tracks");
@@ -704,8 +710,8 @@ Int_t AliAnalysisTaskDiHadron::TrackCuts(const AliESDEvent *rESD, Float_t *rPt, 
     if(fDCA2D==1&&(sb[0]*sb[0]/fMaxDCAXY/fMaxDCAXY+sb[1]*sb[1]/fMaxDCAZ/fMaxDCAZ)>1)continue;
     if(fDCA2D==2&&(0.35+0.42*std::pow(double(sPt),-0.9))<(sb[0]*sb[0]))continue;
     if(eSDtrack->GetKinkIndex(0)>0)continue;//removes kinked tracks
-    if(!eSDtrack->GetStatus()&AliESDtrack::kTPCrefit&&fTPCRefit)continue;//refit in TPC
-    if((fITSRefit==1||(fITSRefit==2&&sPt>5))&&!eSDtrack->GetStatus()&AliESDtrack::kITSrefit)continue;//refit of its tracks either for none,all, or >5 GeV/c
+    if(!eSDtrack->GetStatus()&&AliESDtrack::kTPCrefit&&fTPCRefit)continue;//refit in TPC
+    if((fITSRefit==1||(fITSRefit==2&&sPt>5))&&!eSDtrack->GetStatus()&&AliESDtrack::kITSrefit)continue;//refit of its tracks either for none,all, or >5 GeV/c
     if(fSPDCut&&!eSDtrack->HasPointOnITSLayer(0)&&!eSDtrack->HasPointOnITSLayer(1))continue;
     rPt[rGoodTracks[0]]=sPt;
     rEta[rGoodTracks[0]]=sEta;
