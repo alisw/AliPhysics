@@ -102,10 +102,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     return 0;
   }
   fCentBin= -1;
+  fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
   if(fDataSet==20100){//If this is Pb+Pb
     AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<20) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   //for PID
   AliESDpid *pID = new AliESDpid();
@@ -119,6 +121,7 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
     TObjArray* list = NULL;
     switch(cutset){
     case 0:
+      //cout<<"Using ITS+TPC tracks"<<endl;
       cutName = strTPCITS;
       list = fEsdtrackCutsITSTPC->GetAcceptedTracks(realEvent);
       isTPC = true;
@@ -195,6 +198,11 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    corrNotID = fCorrections->GetNotIDConstCorrectionITS();
 	    corrNoID = fCorrections->GetNotIDConstCorrectionITSNoID();
 	  }
+	  FillHisto2D("fbkgdVsCentralityBin",fCentBin,corrBkgd,1.0);
+	  FillHisto2D("fnotIDVsCentralityBin",fCentBin,corrNotID,1.0);
+	  FillHisto2D("fpTcutVsCentralityBin",fCentBin,fCorrections->GetpTCutCorrectionTPC(),1.0);
+	  if(fCorrHadEtFullAcceptanceTPC>0.0) FillHisto2D("fneutralVsCentralityBin",fCentBin,1.0/fCorrHadEtFullAcceptanceTPC,1.0);
+	  if(fCorrections->GetNeutralCorrection()>0.0) FillHisto2D("ConstantCorrectionsVsCentralityBin",fCentBin,1.0/fCorrections->GetNeutralCorrection(),1.0);
 	  Float_t et = 0.0;
 	  Float_t etNoID = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	  Float_t etpartialcorrected = 0.0;
@@ -210,7 +218,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionPion(track->Pt(),fCentBin);}
 	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionPion(track->Pt());}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
-	      
+	    //cout<<"et partial corrected pion = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
+	    if(corrEff>0.0)FillHisto2D("feffPionVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),et);
 	      FillHisto2D(Form("EtDataCorrected%sPiPlus",cutName->Data()),track->Pt(),track->Eta(),etpartialcorrected);
@@ -226,6 +235,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
 	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionKaon(track->Pt(),fCentBin);}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
+	    //cout<<"et partial corrected kaon = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
+	    if(corrEff>0.0)FillHisto2D("feffKaonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sKPlus",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -242,6 +253,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(cutset==0){corrEff = fCorrections->GetTPCEfficiencyCorrectionProton(track->Pt(),fCentBin);}
 	    //else{corrEff = fCorrections->GetITSEfficiencyCorrectionProton(track->Pt());}
 	    etpartialcorrected = et*corrBkgd*corrEff*corrNotID;
+	    //cout<<"et partial corrected proton = "<<et<<" "<<corrBkgd<<" "<<corrEff<<" "<<corrNotID<<endl;
+	    if(corrEff>0.0)FillHisto2D("feffProtonVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	      
 	    if(track->Charge()>0.0){
 	      FillHisto2D(Form("EtDataRaw%sProton",cutName->Data()),track->Pt(),track->Eta(),et);
@@ -262,6 +275,8 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    et = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
 	    Float_t etProton = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
 	    Float_t etKaon = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
+	    //cout<<"et partial corrected unidentified = "<<et<<" "<<corrBkgd<<" "<<corrEffNoID<<" "<<corrNotID<<endl;
+	    if(corrEff>0.0)FillHisto2D("feffHadronVsCentralityBin",fCentBin,1.0/corrEff,1.0);
 	    etpartialcorrected = et*corrBkgd*corrEffNoID*corrNotID;
 	    etpartialcorrectedPion = et*corrBkgd*corrEffNoID;
 	    etpartialcorrectedProton = etProton*corrBkgd*corrEffNoID;
@@ -282,56 +297,56 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
       }
     delete list;
   }
-  if(GetCorrectedHadEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
-  if(GetCorrectedTotEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceTPCAssumingPion()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingPion",GetCorrectedHadEtFullAcceptanceTPCAssumingPion(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceTPCAssumingProton()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingProton",GetCorrectedHadEtFullAcceptanceTPCAssumingProton(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceTPCAssumingKaon()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingKaon",GetCorrectedHadEtFullAcceptanceTPCAssumingKaon(),1.0);
-  if(GetCorrectedHadEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceTPC",GetCorrectedHadEtEMCALAcceptanceTPC(),1.0);
-  if(GetCorrectedTotEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceTPC",GetCorrectedTotEtEMCALAcceptanceTPC(),1.0);
-  if(GetCorrectedHadEtPHOSAcceptanceTPC()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceTPC",GetCorrectedHadEtPHOSAcceptanceTPC(),1.0);
-  if(GetCorrectedTotEtPHOSAcceptanceTPC()>0.0)FillHisto1D("RecoTotEtPHOSAcceptanceTPC",GetCorrectedTotEtPHOSAcceptanceTPC(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoHadEtFullAcceptanceTPCNoPID",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedTotEtFullAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoTotEtFullAcceptanceTPCNoPID",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedHadEtEMCALAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceTPCNoPID",GetCorrectedHadEtEMCALAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedTotEtEMCALAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceTPCNoPID",GetCorrectedTotEtEMCALAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedHadEtPHOSAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceTPCNoPID",GetCorrectedHadEtPHOSAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedTotEtPHOSAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoTotEtPHOSAcceptanceTPCNoPID",GetCorrectedTotEtPHOSAcceptanceTPCNoPID(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceITS()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITS",GetCorrectedHadEtFullAcceptanceITS(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceITSAssumingPion()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingPion",GetCorrectedHadEtFullAcceptanceITSAssumingPion(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceITSAssumingProton()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingProton",GetCorrectedHadEtFullAcceptanceITSAssumingProton(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceITSAssumingKaon()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon",GetCorrectedHadEtFullAcceptanceITSAssumingKaon(),1.0);
-  if(GetCorrectedTotEtFullAcceptanceITS()>0.0)FillHisto1D("RecoTotEtFullAcceptanceITS",GetCorrectedTotEtFullAcceptanceITS(),1.0);
-  if(GetCorrectedHadEtEMCALAcceptanceITS()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceITS",GetCorrectedHadEtEMCALAcceptanceITS(),1.0);
-  if(GetCorrectedTotEtEMCALAcceptanceITS()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceITS",GetCorrectedTotEtEMCALAcceptanceITS(),1.0);
-  if(GetCorrectedHadEtPHOSAcceptanceITS()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceITS",GetCorrectedHadEtPHOSAcceptanceITS(),1.0);
-  if(GetCorrectedTotEtPHOSAcceptanceITS()>0.0)FillHisto1D("RecoTotEtPHOSAcceptanceITS",GetCorrectedTotEtPHOSAcceptanceITS(),1.0);
-  if(GetCorrectedHadEtFullAcceptanceITSNoPID()>0.0)FillHisto1D("RecoHadEtFullAcceptanceITSNoPID",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
-  if(GetCorrectedTotEtFullAcceptanceITSNoPID()>0.0)FillHisto1D("RecoTotEtFullAcceptanceITSNoPID",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
-  if(GetCorrectedHadEtEMCALAcceptanceITSNoPID()>0.0)FillHisto1D("RecoHadEtEMCALAcceptanceITSNoPID",GetCorrectedHadEtEMCALAcceptanceITSNoPID(),1.0);
-  if(GetCorrectedTotEtEMCALAcceptanceITSNoPID()>0.0)FillHisto1D("RecoTotEtEMCALAcceptanceITSNoPID",GetCorrectedTotEtEMCALAcceptanceITSNoPID(),1.0);
-  if(GetCorrectedHadEtPHOSAcceptanceITSNoPID()>0.0)FillHisto1D("RecoHadEtPHOSAcceptanceITSNoPID",GetCorrectedHadEtPHOSAcceptanceITSNoPID(),1.0);
-  if(GetCorrectedTotEtPHOSAcceptanceITSNoPID()>0.0)FillHisto1D("RecoTotEtPHOSAcceptanceITSNoPID",GetCorrectedTotEtPHOSAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+  if(GetCorrectedTotEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceTPCAssumingPion()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingPion",GetCorrectedHadEtFullAcceptanceTPCAssumingPion(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceTPCAssumingProton()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingProton",GetCorrectedHadEtFullAcceptanceTPCAssumingProton(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceTPCAssumingKaon()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPCAssumingKaon",GetCorrectedHadEtFullAcceptanceTPCAssumingKaon(),1.0);
+  if(GetCorrectedHadEtEMCALAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtEMCALAcceptanceTPC",GetCorrectedHadEtEMCALAcceptanceTPC(),1.0);
+  if(GetCorrectedTotEtEMCALAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtEMCALAcceptanceTPC",GetCorrectedTotEtEMCALAcceptanceTPC(),1.0);
+  if(GetCorrectedHadEtPHOSAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtPHOSAcceptanceTPC",GetCorrectedHadEtPHOSAcceptanceTPC(),1.0);
+  if(GetCorrectedTotEtPHOSAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtPHOSAcceptanceTPC",GetCorrectedTotEtPHOSAcceptanceTPC(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPCNoPID",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedTotEtFullAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtFullAcceptanceTPCNoPID",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedHadEtEMCALAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtEMCALAcceptanceTPCNoPID",GetCorrectedHadEtEMCALAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedTotEtEMCALAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtEMCALAcceptanceTPCNoPID",GetCorrectedTotEtEMCALAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedHadEtPHOSAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtPHOSAcceptanceTPCNoPID",GetCorrectedHadEtPHOSAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedTotEtPHOSAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtPHOSAcceptanceTPCNoPID",GetCorrectedTotEtPHOSAcceptanceTPCNoPID(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceITS",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceITSAssumingPion()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingPion",GetCorrectedHadEtFullAcceptanceITSAssumingPion(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceITSAssumingProton()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingProton",GetCorrectedHadEtFullAcceptanceITSAssumingProton(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceITSAssumingKaon()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon",GetCorrectedHadEtFullAcceptanceITSAssumingKaon(),1.0);
+  if(GetCorrectedTotEtFullAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtFullAcceptanceITS",GetCorrectedTotEtFullAcceptanceITS(),1.0);
+  if(GetCorrectedHadEtEMCALAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtEMCALAcceptanceITS",GetCorrectedHadEtEMCALAcceptanceITS(),1.0);
+  if(GetCorrectedTotEtEMCALAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtEMCALAcceptanceITS",GetCorrectedTotEtEMCALAcceptanceITS(),1.0);
+  if(GetCorrectedHadEtPHOSAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtPHOSAcceptanceITS",GetCorrectedHadEtPHOSAcceptanceITS(),1.0);
+  if(GetCorrectedTotEtPHOSAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtPHOSAcceptanceITS",GetCorrectedTotEtPHOSAcceptanceITS(),1.0);
+  if(GetCorrectedHadEtFullAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceITSNoPID",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedTotEtFullAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtFullAcceptanceITSNoPID",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedHadEtEMCALAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtEMCALAcceptanceITSNoPID",GetCorrectedHadEtEMCALAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedTotEtEMCALAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtEMCALAcceptanceITSNoPID",GetCorrectedTotEtEMCALAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedHadEtPHOSAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtPHOSAcceptanceITSNoPID",GetCorrectedHadEtPHOSAcceptanceITSNoPID(),1.0);
+  if(GetCorrectedTotEtPHOSAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtPHOSAcceptanceITSNoPID",GetCorrectedTotEtPHOSAcceptanceITSNoPID(),1.0);
 
-  if(GetRawEtFullAcceptanceTPC()>0.0)FillHisto1D("RecoRawEtFullAcceptanceTPC",GetRawEtFullAcceptanceTPC(),1.0);
-  if(GetRawEtEMCALAcceptanceTPC()>0.0)FillHisto1D("RecoRawEtEMCALAcceptanceTPC",GetRawEtEMCALAcceptanceTPC(),1.0);
-  if(GetRawEtPHOSAcceptanceTPC()>0.0)FillHisto1D("RecoRawEtPHOSAcceptanceTPC",GetRawEtPHOSAcceptanceTPC(),1.0);
-  if(GetRawEtFullAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoRawEtFullAcceptanceTPCNoPID",GetRawEtFullAcceptanceTPCNoPID(),1.0);
-  if(GetRawEtEMCALAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoRawEtEMCALAcceptanceTPCNoPID",GetRawEtEMCALAcceptanceTPCNoPID(),1.0);
-  if(GetRawEtPHOSAcceptanceTPCNoPID()>0.0)FillHisto1D("RecoRawEtPHOSAcceptanceTPCNoPID",GetRawEtPHOSAcceptanceTPCNoPID(),1.0);
-  if(GetRawEtFullAcceptanceITS()>0.0)FillHisto1D("RecoRawEtFullAcceptanceITS",GetRawEtFullAcceptanceITS(),1.0);
-  if(GetRawEtEMCALAcceptanceITS()>0.0)FillHisto1D("RecoRawEtEMCALAcceptanceITS",GetRawEtEMCALAcceptanceITS(),1.0);
-  if(GetRawEtPHOSAcceptanceITS()>0.0)FillHisto1D("RecoRawEtPHOSAcceptanceITS",GetRawEtPHOSAcceptanceITS(),1.0);
-  if(GetRawEtFullAcceptanceITSNoPID()>0.0)FillHisto1D("RecoRawEtFullAcceptanceITSNoPID",GetRawEtFullAcceptanceITSNoPID(),1.0);
-  if(GetRawEtEMCALAcceptanceITSNoPID()>0.0)FillHisto1D("RecoRawEtEMCALAcceptanceITSNoPID",GetRawEtEMCALAcceptanceITSNoPID(),1.0);
-  if(GetRawEtPHOSAcceptanceITSNoPID()>0.0)FillHisto1D("RecoRawEtPHOSAcceptanceITSNoPID",GetRawEtPHOSAcceptanceITSNoPID(),1.0);
+  if(GetRawEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtFullAcceptanceTPC",GetRawEtFullAcceptanceTPC(),1.0);
+  if(GetRawEtEMCALAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtEMCALAcceptanceTPC",GetRawEtEMCALAcceptanceTPC(),1.0);
+  if(GetRawEtPHOSAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtPHOSAcceptanceTPC",GetRawEtPHOSAcceptanceTPC(),1.0);
+  if(GetRawEtFullAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtFullAcceptanceTPCNoPID",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+  if(GetRawEtEMCALAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtEMCALAcceptanceTPCNoPID",GetRawEtEMCALAcceptanceTPCNoPID(),1.0);
+  if(GetRawEtPHOSAcceptanceTPCNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtPHOSAcceptanceTPCNoPID",GetRawEtPHOSAcceptanceTPCNoPID(),1.0);
+  if(GetRawEtFullAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtFullAcceptanceITS",GetRawEtFullAcceptanceITS(),1.0);
+  if(GetRawEtEMCALAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtEMCALAcceptanceITS",GetRawEtEMCALAcceptanceITS(),1.0);
+  if(GetRawEtPHOSAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtPHOSAcceptanceITS",GetRawEtPHOSAcceptanceITS(),1.0);
+  if(GetRawEtFullAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtFullAcceptanceITSNoPID",GetRawEtFullAcceptanceITSNoPID(),1.0);
+  if(GetRawEtEMCALAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtEMCALAcceptanceITSNoPID",GetRawEtEMCALAcceptanceITSNoPID(),1.0);
+  if(GetRawEtPHOSAcceptanceITSNoPID()>0.0 && fGoodEvent)FillHisto1D("RecoRawEtPHOSAcceptanceITSNoPID",GetRawEtPHOSAcceptanceITSNoPID(),1.0);
   if(fCentBin>-1){//if we have Pb+Pb and found a centrality bin
-    if(GetCorrectedHadEtFullAcceptanceTPC()>0.0)FillHisto1D(Form("RecoHadEtFullAcceptanceTPCCB%i",fCentBin),GetCorrectedHadEtFullAcceptanceTPC(),1.0);
-    if(GetCorrectedTotEtFullAcceptanceTPC()>0.0)FillHisto1D(Form("RecoTotEtFullAcceptanceTPCCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPC(),1.0);
-    if(GetCorrectedHadEtFullAcceptanceITS()>0.0)FillHisto1D(Form("RecoHadEtFullAcceptanceITSCB%i",fCentBin),GetCorrectedHadEtFullAcceptanceITS(),1.0);
-    if(GetCorrectedTotEtFullAcceptanceITS()>0.0)FillHisto1D(Form("RecoTotEtFullAcceptanceITSCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceITS(),1.0);
-    if(GetRawEtFullAcceptanceTPC()>0.0)         FillHisto1D(Form("RecoRawEtFullAcceptanceTPCCB%i",fCentBin),GetRawEtFullAcceptanceTPC(),1.0);
-    if(GetRawEtFullAcceptanceITS()>0.0)         FillHisto1D(Form("RecoRawEtFullAcceptanceITSCB%i",fCentBin),GetRawEtFullAcceptanceITS(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D(Form("RecoHadEtFullAcceptanceTPCCB%i",fCentBin),GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+    if(GetCorrectedTotEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D(Form("RecoTotEtFullAcceptanceTPCCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    if(GetCorrectedHadEtFullAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D(Form("RecoHadEtFullAcceptanceITSCB%i",fCentBin),GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    if(GetCorrectedTotEtFullAcceptanceITS()>0.0 && fGoodEvent)FillHisto1D(Form("RecoTotEtFullAcceptanceITSCB%i",fCentBin),GetCorrectedTotEtFullAcceptanceITS(),1.0);
+    if(GetRawEtFullAcceptanceTPC()>0.0 && fGoodEvent)         FillHisto1D(Form("RecoRawEtFullAcceptanceTPCCB%i",fCentBin),GetRawEtFullAcceptanceTPC(),1.0);
+    if(GetRawEtFullAcceptanceITS()>0.0 && fGoodEvent)         FillHisto1D(Form("RecoRawEtFullAcceptanceITSCB%i",fCentBin),GetRawEtFullAcceptanceITS(),1.0);
   }
   delete pID;
   delete strTPC;
@@ -630,7 +645,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
 	  if(fDataSet==20100 && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
 	    Int_t width = 5;
-	    if(fNCentBins<20) width = 10;
+	    if(fNCentBins<21) width = 10;
 	    for(Int_t i=0;i<fNCentBins;i++){
 	      snprintf(histoname,200,"Reco%s%sAcceptance%s%sCB%i",et->Data(),acceptance->Data(),detector->Data(),partid->Data(),i);
 	      snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s for centrality %i-%i",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data(),i*width,(i+1)*width);
@@ -648,6 +663,19 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingPion","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming pions","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
   CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingProton","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming protons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
   CreateHisto1D("RecoHadEtFullAcceptanceITSAssumingKaon","Reconstructing E_{T}^{had} with full acceptance for p_{T}>0.10 GeV/c assuming kaons","Reconstructed E_{T}^{had}","dN_{eve}/dE_{T}^{had}",nbinsEt*2,minEt,maxEt);
+
+  //Cross checks that corrections are applied correctly
+  if(fDataSet==20100){
+    CreateHisto2D("fbkgdVsCentralityBin","f_{bkgd} vs centrality bin","centrality bin","f_{bkgd}",21,-1.5,19.5,200,0.7,1.05);//
+    CreateHisto2D("feffPionVsCentralityBin","Pion efficiency vs centrality bin","centrality bin","pion efficiency",21,-1.5,19.5,200,0,1.2);//
+    CreateHisto2D("feffHadronVsCentralityBin","Hadron efficiency vs centrality bin","centrality bin","hadron efficiency",21,-1.5,19.5,200,0,1.2);//
+    CreateHisto2D("feffKaonVsCentralityBin","Kaon efficiency vs centrality bin","centrality bin","kaon efficiency",21,-1.5,19.5,200,0,1.2);//
+    CreateHisto2D("feffProtonVsCentralityBin","Proton efficiency vs centrality bin","centrality bin","proton efficiency",21,-1.5,19.5,200,0,1.2);//
+    CreateHisto2D("fnotIDVsCentralityBin","f_{notID} vs centrality bin","centrality bin","f_{notID}",21,-1.5,19.5,50,0.95,1.05);//
+    CreateHisto2D("fpTcutVsCentralityBin","f_{pTcut} vs centrality bin","centrality bin","f_{pTcut}",21,-1.5,19.5,50,0.95,1.05);
+    CreateHisto2D("fneutralVsCentralityBin","f_{neutral} vs centrality bin","centrality bin","f_{neutral}",21,-1.5,19.5,50,0.5,1.00);
+    CreateHisto2D("ConstantCorrectionsVsCentralityBin","constant corrections vs centrality bin","centrality bin","constant corrections",21,-1.5,19.5,50,0.5,1.00);
+  }
 
   delete sTPC;
   delete sITS;
