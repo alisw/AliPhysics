@@ -50,14 +50,14 @@ public:
     TH1D *GetNotIDCorrectionTPC() const {return fnotIDTPC;}
     TH1D *GetNotIDCorrectionITS() const {return fnotIDITS;}
     TH1D *GetNotIDCorrectionNoPID() const {return fnotIDNoID;}
-    TH1D *GetEfficiencyPionTPC() const {return fEfficiencyPionTPC;}
-    TH1D *GetEfficiencyKaonTPC() const {return fEfficiencyKaonTPC;}
-    TH1D *GetEfficiencyProtonTPC() const {return fEfficiencyProtonTPC;}
-    TH1D *GetEfficiencyHadronTPC() const {return fEfficiencyHadronTPC;}
-    TH1D *GetEfficiencyPionITS() const {return fEfficiencyPionITS;}
-    TH1D *GetEfficiencyKaonITS() const {return fEfficiencyKaonITS;}
-    TH1D *GetEfficiencyProtonITS() const {return fEfficiencyProtonITS;}
-    TH1D *GetEfficiencyHadronITS() const {return fEfficiencyHadronITS;}
+    TH1D *GetEfficiencyPionTPC(const int cb = -1);// const {return fEfficiencyPionTPC;}
+    TH1D *GetEfficiencyKaonTPC(const int cb = -1);// const {return fEfficiencyKaonTPC;}
+    TH1D *GetEfficiencyProtonTPC(const int cb = -1);// const {return fEfficiencyProtonTPC;}
+    TH1D *GetEfficiencyHadronTPC(const int cb = -1);// const {return fEfficiencyHadronTPC;}
+    TH1D *GetEfficiencyPionITS(const int cb = -1);// const {return fEfficiencyPionITS;}
+    TH1D *GetEfficiencyKaonITS(const int cb = -1);// const {return fEfficiencyKaonITS;}
+    TH1D *GetEfficiencyProtonITS(const int cb = -1);// const {return fEfficiencyProtonITS;}
+    TH1D *GetEfficiencyHadronITS(const int cb = -1);// const {return fEfficiencyHadronITS;}
     TH1D *GetBackgroundCorrectionTPC() const {return fBackgroundTPC;}
     TH1D *GetBackgroundCorrectionITS() const {return fBackgroundITS;}
 
@@ -128,6 +128,10 @@ public:
     void SetEfficiencyHadronITS(TH1D *histo, const int cb);
     void SetBackgroundCorrectionTPC(const TH1D *histo){fBackgroundTPC=(TH1D*) histo;}
     void SetBackgroundCorrectionITS(const TH1D *histo){fBackgroundITS=(TH1D*) histo;}
+    void SetEfficiencyErrorLowBound(const Float_t val){fEfficiencyErrorLow=val;}
+    void SetEfficiencyErrorHighBound(const Float_t val){fEfficiencyErrorHigh=val;}
+    void SetBackgroundErrorLowBound(const Float_t val){fBackgroundErrorLow=val;}
+    void SetBackgroundErrorHighBound(const Float_t val){fBackgroundErrorHigh=val;}
     void IsEMCal(Bool_t val){fIsEMCal=val;}
     void IsData(Bool_t val){fIsData=val;}
     void SetDataSet(Int_t val){fDataSet=val;}
@@ -137,6 +141,7 @@ public:
 
     //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
     Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const;
+    Float_t GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC);
 
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor
@@ -188,6 +193,10 @@ protected:
     TH1D *fEfficiencyHadronITS;//efficiency correction for unidentified hadrons in the ITS
     TObjArray *fEfficiencyTPC;//TList containing efficiencies for ITS standalone tracks for different centrality bins
     TObjArray *fEfficiencyITS;//TList containing efficiencies for ITS standalone tracks for different centrality bins
+    Float_t fEfficiencyErrorLow;//Relative error on efficiency, lower bound
+    Float_t fEfficiencyErrorHigh;//Relative error on efficiency, upper bound
+    Float_t fBackgroundErrorLow;//Relative error on efficiency, lower bound
+    Float_t fBackgroundErrorHigh;//Relative error on efficiency, upper bound
     TH1D *fBackgroundTPC;//background correction for the TPC
     TH1D *fBackgroundITS;//background correction for the ITS
     Bool_t fIsEMCal;//boolean to keep track of whether this is for EMCal or PHOS acceptance
