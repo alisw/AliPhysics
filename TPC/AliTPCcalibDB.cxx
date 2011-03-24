@@ -294,7 +294,7 @@ AliCDBEntry* AliTPCcalibDB::GetCDBEntry(const char* cdbPath)
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(cdbPath, fRun); 
   if (!entry) 
   { 
-    sprintf(chinfo,"AliTPCcalibDB: Failed to get entry:\t%s ", cdbPath);
+    snprintf(chinfo,1000,"AliTPCcalibDB: Failed to get entry:\t%s ", cdbPath);
     AliError(chinfo); 
     return 0; 
   }
@@ -1927,7 +1927,7 @@ AliTPCCalPad* AliTPCcalibDB::MakeDeadMap(Double_t notInMap, const char* nameMapp
   TFile *fileMapping = new TFile(nameMappingFile, "read");
   AliTPCmapper *mapping = (AliTPCmapper*) fileMapping->Get("tpcMapping");
   if (!mapping) {
-    sprintf(chinfo,"Failed to get mapping object from %s.  ...\n", nameMappingFile);
+    snprintf(chinfo,1000,"Failed to get mapping object from %s.  ...\n", nameMappingFile);
     AliError (chinfo);
     return 0;
   }

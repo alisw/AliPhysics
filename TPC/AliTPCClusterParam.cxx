@@ -444,7 +444,7 @@ void AliTPCClusterParam::FitResolQ(TTree * tree, Int_t dim, Int_t type, Float_t 
  TString varVal;
   varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
-  sprintf(varVal0,"Resol:AngleM:Zm");
+  snprintf(varVal0,100,"Resol:AngleM:Zm");
   //
  TString varErr;
   varErr="Sigma:AngleS:Zs";
@@ -511,7 +511,7 @@ void AliTPCClusterParam::FitResolQPar(TTree * tree, Int_t dim, Int_t type, Float
  TString varVal;
   varVal="Resol:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
-  sprintf(varVal0,"Resol:AngleM:Zm");
+  snprintf(varVal0,100,"Resol:AngleM:Zm");
   //
  TString varErr;
   varErr="Sigma:AngleS:Zs";
@@ -698,7 +698,7 @@ void AliTPCClusterParam::FitRMSQ(TTree * tree, Int_t dim, Int_t type, Float_t *p
  TString varVal;
   varVal="RMSm:AngleM/sqrt(QMean):Zm/QMean";
   char varVal0[100];
-  sprintf(varVal0,"RMSm:AngleM:Zm");
+  snprintf(varVal0,100,"RMSm:AngleM:Zm");
   //
  TString varErr;
   varErr="sqrt((1./(100.*sqrt(12.))^2)+RMSe0^2):AngleS:Zs";
@@ -1155,19 +1155,19 @@ void AliTPCClusterParam::Test(TTree * tree, const char *output){
       char hcut1[300];
       char hexp1[300];
       //
-      sprintf(hname1,"Delta0 Dir %d Pad %d",idim,ipad);
-      sprintf(hcut1,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
-      sprintf(hexp1,"(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol>>%s",hname1);
+      snprintf(hname1,300,"Delta0 Dir %d Pad %d",idim,ipad);
+      snprintf(hcut1,300,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
+      snprintf(hexp1,300,"(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol>>%s",hname1);
       TH1F  his1DRel0(hname1, hname1, 100,-0.2, 0.2);
-      sprintf(hname1,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
+      snprintf(hname1,1000,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
       tree->Draw(hexp1,hcut1,"");
       his1DRel0.Write();
       //
-      sprintf(hname1,"Delta0Par Dir %d Pad %d",idim,ipad);
-      sprintf(hcut1,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
-      sprintf(hexp1,"(Resol-AliTPCClusterParam::SGetError0Par(Dim,Pad,Zm,AngleM))/Resol>>%s",hname1);
+      snprintf(hname1,300,"Delta0Par Dir %d Pad %d",idim,ipad);
+      snprintf(hcut1,300,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
+      snprintf(hexp1,300,"(Resol-AliTPCClusterParam::SGetError0Par(Dim,Pad,Zm,AngleM))/Resol>>%s",hname1);
       TH1F  his1DRel0Par(hname1, hname1, 100,-0.2, 0.2);
-      sprintf(hname1,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
+      snprintf(hname1,300,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
       tree->Draw(hexp1,hcut1,"");
       his1DRel0Par.Write();
       //
@@ -1182,19 +1182,19 @@ void AliTPCClusterParam::Test(TTree * tree, const char *output){
       char hcut1[300];
       char hexp1[300];
       //
-      sprintf(hname1,"2DDelta0 Dir %d Pad %d",idim,ipad);
-      sprintf(hcut1,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
-      sprintf(hexp1,"(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol:AngleM:Zm>>%s",hname1);
+      snprintf(hname1,300,"2DDelta0 Dir %d Pad %d",idim,ipad);
+      snprintf(hcut1,300,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
+      snprintf(hexp1,300,"(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol:AngleM:Zm>>%s",hname1);
       TProfile2D  profDRel0(hname1, hname1, 6,0,250,6,0,1);
-      sprintf(hname1,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
+      snprintf(hname1,300,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
       tree->Draw(hexp1,hcut1,"");
       profDRel0.Write();
       //
-      sprintf(hname1,"2DDelta0Par Dir %d Pad %d",idim,ipad);
-      sprintf(hcut1,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
-      sprintf(hexp1,"(Resol-AliTPCClusterParam::SGetError0Par(Dim,Pad,Zm,AngleM))/Resol:AngleM:Zm>>%s",hname1);
+      snprintf(hname1,300,"2DDelta0Par Dir %d Pad %d",idim,ipad);
+      snprintf(hcut1,300,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
+      snprintf(hexp1,300,"(Resol-AliTPCClusterParam::SGetError0Par(Dim,Pad,Zm,AngleM))/Resol:AngleM:Zm>>%s",hname1);
       TProfile2D profDRel0Par(hname1, hname1,6,0,250,6,0,1);
-      sprintf(hname1,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
+      snprintf(hname1,300,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
       tree->Draw(hexp1,hcut1,"");
       profDRel0Par.Write();
       //

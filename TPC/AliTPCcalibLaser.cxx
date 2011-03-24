@@ -3135,7 +3135,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
     memcpy(smZ, chain->GetV1(), entries*sizeof(Double_t));
     //
     //
-    sprintf(grnamefull,"Side_%d_Bundle_%d_Rod_%d_Beam_%d",
+    snprintf(grnamefull,1000,"Side_%d_Bundle_%d_Rod_%d_Beam_%d",
 	    ltrp->GetSide(),  ltrp->GetBundle(), ltrp->GetRod(), ltrp->GetBeam());
     // store data  
     // phi
@@ -3156,7 +3156,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
     pphi[0] = fp.GetParameter(0);                          // offset
     pphi[1] = fp.GetParameter(1);                          // slope
     pphi[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
-    sprintf(grname,"phi_id%d",id);
+    snprintf(grname,1000,"phi_id%d",id);
     grphi->SetName(grname);  grphi->SetTitle(grnamefull);
     grphi->GetXaxis()->SetTitle("b_{z} (T)");
     grphi->GetYaxis()->SetTitle("#Delta r#phi (cm)");
@@ -3174,7 +3174,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
     pphiP[0] = fp.GetParameter(0);                          // offset
     pphiP[1] = fp.GetParameter(1);                          // slope
     pphiP[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
-    sprintf(grname,"phiP_id%d",id);
+    snprintf(grname,1000,"phiP_id%d",id);
     grphiP->SetName(grname);  grphiP->SetTitle(grnamefull);
     grphiP->GetXaxis()->SetTitle("b_{z} (T)");
     grphiP->GetYaxis()->SetTitle("#Delta #phi (rad)");
@@ -3192,7 +3192,7 @@ void AliTPCcalibLaser::DumpScanInfo(TTree * chain, const char * cutUser){
     pmZ[0] = fp.GetParameter(0);                          // offset
     pmZ[1] = fp.GetParameter(1);                          // slope
     pmZ[2] = TMath::Sqrt(fp.GetChisquare()/(entries-2.));  // normalized chi2
-    sprintf(grname,"mZ_id%d",id);
+    snprintf(grname,1000,"mZ_id%d",id);
     grmZ->SetName(grname);  grmZ->SetTitle(grnamefull);
     grmZ->GetXaxis()->SetTitle("b_{z} (T)");
     grmZ->GetYaxis()->SetTitle("#Delta z (cm)");

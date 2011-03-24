@@ -508,8 +508,8 @@ TH2S* AliTPCCalibSignal::GetHisto(Int_t sector, TObjArray *arr, /*FOLD00*/
     // if we are forced and histogram doesn't yes exist create it
     Char_t name[255], title[255];
 
-    sprintf(name,"hCalib%s%.2d",type,sector);
-    sprintf(title,"%s calibration histogram sector %.2d",type,sector);
+    snprintf(name,255,"hCalib%s%.2d",type,sector);
+    snprintf(title,255,"%s calibration histogram sector %.2d",type,sector);
 
     // new histogram with Q calib information. One value for each pad!
     TH2S* hist = new TH2S(name,title,

@@ -1007,7 +1007,7 @@ AliTPCkalmanFit *  AliTPCkalmanFit::Test(Int_t ntracks){
 	if (ipar0+ipar1==0) continue;
 	Double_t param = (gRandom->Rndm()-0.5)*0.5;  // generate random parameters
 	char tname[100];
-	sprintf(tname,"tscalingR%d%dSide%d",ipar0,ipar1,iside);
+	snprintf(tname,100,"tscalingR%d%dSide%d",ipar0,ipar1,iside);
 	transformation = new AliTPCTransformation(tname,AliTPCTransformation::BitsSide(iside),"TPCscalingRPol",0,0,1);
 	transformation->SetParams(0,5*0.25,0,&fpar);
 	kalmanFit0->AddCalibration(transformation);
@@ -1296,20 +1296,20 @@ void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug, const char *treeNam
 	      AliTPCTransformation * transform = (AliTPCTransformation *)fCalibration->At(icalib);
 	      char tname[1000];
 	      //
-	      sprintf(tname,"dx%s=",transform->GetName());
+	      snprintf(tname,1000,"dx%s=",transform->GetName());
 	      adx[icalib] =dxdydz(icalib,0); 
 	      cstream<<tname<<adx[icalib];
-	      sprintf(tname,"dy%s=",transform->GetName());
+	      snprintf(tname,1000,"dy%s=",transform->GetName());
 	      ady[icalib] =dxdydz(icalib,1); 
 	      cstream<<tname<<ady[icalib];
-	      sprintf(tname,"dz%s=",transform->GetName());
+	      snprintf(tname,1000,"dz%s=",transform->GetName());
 	      adz[icalib] =dxdydz(icalib,2); 
 	      cstream<<tname<<adz[icalib];
 	      //
-	      sprintf(tname,"dr%s=",transform->GetName());
+	      snprintf(tname,1000,"dr%s=",transform->GetName());
 	      adr[icalib] =dxdydz(icalib,3); 
 	      cstream<<tname<<adr[icalib];
-	      sprintf(tname,"rdphi%s=",transform->GetName());
+	      snprintf(tname,1000,"rdphi%s=",transform->GetName());
 	      adrphi[icalib] =dxdydz(icalib,4); 
 	      cstream<<tname<<adrphi[icalib];
 	    }

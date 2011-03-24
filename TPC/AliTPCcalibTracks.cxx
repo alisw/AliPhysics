@@ -976,10 +976,10 @@ void AliTPCcalibTracks::MakeResPlotsQTree(Int_t minEntries, const char* pathName
                   // these histograms are delta histograms for given direction, padSize, chargeBin,
                   // angleBin and driftLengthBin
                   // later on they will be fitted with a gausian, its sigma is the resoltuion...
-                  sprintf(name,"%s, zCenter: %f, angleCenter: %f", hres->GetName(), zCenter, angleCenter);
+                  snprintf(name,200,"%s, zCenter: %f, angleCenter: %f", hres->GetName(), zCenter, angleCenter);
                   // TH1D * projectionRes = new TH1D(name, name, zAxisDelta->GetNbins(), zAxisDelta->GetXmin(), zAxisDelta->GetXmax());
                   projectionRes->SetNameTitle(name, name);
-                  sprintf(name,"%s, zCenter: %f, angleCenter: %f", hrms->GetName(),zCenter,angleCenter);
+                  snprintf(name,200,"%s, zCenter: %f, angleCenter: %f", hrms->GetName(),zCenter,angleCenter);
                   // TH1D * projectionRms =  new TH1D(name, name, zAxisDelta->GetNbins(), zAxisRms->GetXmin(), zAxisRms->GetXmax());
                   projectionRms->SetNameTitle(name, name);
                   
