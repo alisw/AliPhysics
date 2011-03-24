@@ -72,7 +72,7 @@ AliAnalysisTaskPIDResponse::AliAnalysisTaskPIDResponse(const char* name):
 AliAnalysisTaskSE(name),
 fIsMC(kFALSE),
 fTOFTimeZeroTypeUser(-1),
-fTOFTimeZeroType(-1),
+fTOFTimeZeroType(AliPIDResponse::kBest_T0),
 fTOFres(100.),
 fPIDResponse(0x0),
 fListQA(0x0),
