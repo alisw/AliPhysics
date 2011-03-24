@@ -34,16 +34,6 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 
-  // --- Fix up physics selection to give proper A,C, and E triggers -
-  AliInputEventHandler* ih =
-    static_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
-  AliPhysicsSelection* ps = 
-    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
-
-  // Ignore trigger class when selecting events.  This mean that we
-  // get offline+(A,C,E) events too
-  ps->SetSkipTriggerClassSelection(true);
-  
   // --- Make our object ---------------------------------------------
   AliForwarddNdetaTask* task = new AliForwarddNdetaTask("Forward");
   // Set the vertex range to use 
