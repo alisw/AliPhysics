@@ -59,7 +59,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
   if (runMode == kMyRunModeGRID) {
     // Create and configure the alien handler plugin
     TGrid::Connect("alien://");// Why do I need this? Without a get a bus error...
-    //    gROOT->LoadMacro("CreateAlienHandler.C");
+        gROOT->LoadMacro("CreateAlienHandler.C");
     AliAnalysisGrid *alienHandler = CreateAlienHandler(data, listToLoad, gridMode, isMC);  
     if (!alienHandler) {
       cout << "Cannot create alien handler" << endl;    
@@ -141,7 +141,7 @@ void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t
     //    chain->Print();
     mgr->StartAnalysis("local",chain,nev);
   } else if (runMode == kMyRunModeCAF) {
-    mgr->StartAnalysis("proof",TString(passOrPath)+TString(data)+"#esdTree",nev);
+    mgr->StartAnalysis("proof",TString(passOrPath)+"#esdTree",nev);
   } else if (runMode == kMyRunModeGRID) {
     mgr->StartAnalysis("grid");
   } else {
@@ -220,10 +220,10 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
     
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
       Char_t* alienuser = gSystem->Getenv("alien_API_USER");
-      TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : “alice-caf.cern.ch”, workers>0 ? Form("workers=%d",workers) : "");
+      TProof * p = TProof::Open(alienuser!=0 ? Form("%s@alice-caf.cern.ch",alienuser) : "alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
       //TProof * p = TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");    
       p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE); // avoid submerging
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-16-AN");
+      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-18-AN");
 
 
       // Enable the needed package

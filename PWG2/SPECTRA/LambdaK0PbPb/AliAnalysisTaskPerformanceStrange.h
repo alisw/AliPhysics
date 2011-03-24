@@ -158,12 +158,6 @@ class AliAnalysisTaskPerformanceStrange : public AliAnalysisTaskSE {
   TH2F        *fHistArmenterosPodolanski;         //! Armenteros-Podolanski
   // ------------------------------------------------------
 
-  // Kontrola pre |pz/pt| histograms  ---------------------
-  TH1F        *fHistPzPtBeforeK0s;
-  TH1F        *fHistPzPtAfterK0s;
-  TH1F        *fHistPzPtBeforeLambda;
-  TH1F        *fHistPzPtAfterLambda;
-  // ------------------------------------------------------
 
   // PID histograms  --------------------------------------
   TH1F        *fHistNsigmaPosPionAntiLambda;      //! Sigma positive pion
