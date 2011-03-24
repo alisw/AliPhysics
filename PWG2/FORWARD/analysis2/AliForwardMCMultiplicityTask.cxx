@@ -281,6 +281,8 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   if (found & AliFMDEventInspector::kNoEvent)    isAccepted = false; // return;
   if (found & AliFMDEventInspector::kNoTriggers) isAccepted = false; // return;
   //MarkEventForStore();
+  // Always set the B trigger - each MC event _is_ a collision 
+  triggers |= AliAODForwardMult::kB;
   // Set trigger bits, and mark this event for storage 
   fAODFMD.SetTriggerBits(triggers);
   fAODFMD.SetSNN(fEventInspector.GetEnergy());
