@@ -41,8 +41,8 @@ class AliESDv0KineCuts : public TObject{
   AliESDv0KineCuts &operator=(const AliESDv0KineCuts &ref);
 
   // main selection function - called once per V0 candidate
-  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN);
+  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const;
+  Bool_t ProcessV0(AliESDv0* const v0, Int_t &pdgP, Int_t &pdgN) const;
 
   // must be called by the user
   void SetEvent(AliESDEvent* const event);
@@ -125,27 +125,27 @@ class AliESDv0KineCuts : public TObject{
   };
   
 
-  Int_t  PreselectV0(AliESDv0* const v0);
+  Int_t  PreselectV0(AliESDv0* const v0) const;
 
-  Bool_t CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN);
-  Bool_t CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id);
+  Bool_t CaseGamma(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const;
+  Bool_t CaseK0(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN) const;
+  Bool_t CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pdgP, Int_t &pdgN, Int_t id) const;
 
-  Bool_t V0CutsCommon(AliESDv0 * const v0);
-  Bool_t SingleTrackCuts(AliESDv0 * const v0);
-  void   Armenteros(AliESDv0* const v0, Float_t val[2]);
-  Bool_t CheckSigns(AliESDv0* const v0);
+  Bool_t V0CutsCommon(AliESDv0 * const v0) const;
+  Bool_t SingleTrackCuts(AliESDv0 * const v0) const;
+  void   Armenteros(AliESDv0* const v0, Float_t val[2]) const;
+  Bool_t CheckSigns(AliESDv0* const v0) const;
 
-  Double_t PsiPair(AliESDv0* const v0);
-  Bool_t   GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]);
-  Bool_t   GetHelixCenter(AliESDtrack * const track, Double_t b, Int_t charge, Double_t center[2]);
+  Double_t PsiPair(AliESDv0* const v0) const;
+  Bool_t   GetConvPosXY(AliESDtrack * const ptrack, AliESDtrack * const ntrack, Double_t convpos[2]) const;
+  Bool_t   GetHelixCenter(AliESDtrack * const track, Double_t b, Int_t charge, Double_t center[2]) const;
 
  protected:
   void Copy(TObject &ref) const;
 
  private:
 
-  AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec);
+  AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const;
   void      SetCuts();                          // setup cuts for selected fMode and fType, see source file for details
   Bool_t    GammaEffCuts(AliESDv0 * const v0);  // set of cuts optimized for high gamma efficiency
 
