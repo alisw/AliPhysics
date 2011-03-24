@@ -156,6 +156,7 @@ void AliPerformanceTPC::Init()
     binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
   }
 
+  /*
   const Int_t  nCOverPtBins = 80;
   Double_t coverptMin = -10, coverptMax = 10;
   Double_t *binsCOverPtP = 0;
@@ -165,6 +166,7 @@ void AliPerformanceTPC::Init()
     binsCOverPt[nCOverPtBins - i] = binsCOverPtP[nCOverPtBins/2  - i];
     binsCOverPt[i] = 0 - binsCOverPtP[nCOverPtBins/2  - i];
  }
+ */
 
   /*
   Int_t nPtBins = 31;
@@ -264,7 +266,7 @@ void AliPerformanceTPC::Init()
   // init folder
   fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
 
-  delete []binsCOverPt;
+  //delete []binsCOverPt;
 }
 
 
@@ -404,7 +406,7 @@ void AliPerformanceTPC::ProcessTPCITS(AliStack* const stack, AliESDtrack *const 
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[0]) > fCutsRC->GetMaxDCAToVertexXY()) return;
   if(!fCutsRC->GetDCAToVertex2D() && TMath::Abs(dca[1]) > fCutsRC->GetMaxDCAToVertexZ()) return;
 
-  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,qpt,vertStatus};
+  Double_t vTPCTrackHisto[10] = {nClust,chi2PerCluster,clustPerFindClust,dca[0],dca[1],eta,phi,pt,q,vertStatus};
   fTPCTrackHisto->Fill(vTPCTrackHisto); 
  
   //
