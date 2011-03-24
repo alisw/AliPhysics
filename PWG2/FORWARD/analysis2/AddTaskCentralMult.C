@@ -1,5 +1,5 @@
 /**
- * @file   AddTaskCentral.C
+ * @file   AddTaskCentralMult.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Wed Mar 23 12:13:25 2011
  * 
@@ -14,14 +14,14 @@
  * 
  * @ingroup pwg2_forward_aod
  */
-AliAnalysisTask* AddTaskCentral(UShort_t sys=0, UShort_t sNN=0, 
-				Short_t field=0)
+AliAnalysisTask* 
+AddTaskCentralMult(UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
 {
   gSystem->Load("libPWG2forward2");
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskCentral", "No analysis manager to connect to.");
+    Error("AddTaskCentralMult", "No analysis manager to connect to.");
     return NULL;
   }   
 

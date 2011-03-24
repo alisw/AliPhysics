@@ -222,6 +222,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name)
   ret->GetXaxis()->SetBinLabel(kBinNSD,         "NSD");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
+  ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
   ret->GetXaxis()->SetBinLabel(kWithVertex,     "w/Vertex");
   ret->GetXaxis()->SetBinLabel(kWithTrigger,    "w/Selected trigger");
   ret->GetXaxis()->SetBinLabel(kAccepted,       "Accepted by cut");
@@ -266,18 +267,19 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
 
   if (hist) { 
     hist->AddBinContent(kBinAll);
-    if (IsTriggerBits(kB))        hist->AddBinContent(kBinB);
-    if (IsTriggerBits(kA))        hist->AddBinContent(kBinA);
-    if (IsTriggerBits(kC))        hist->AddBinContent(kBinC);
-    if (IsTriggerBits(kE))        hist->AddBinContent(kBinE);
-    if (IsTriggerBits(kInel))     hist->AddBinContent(kBinInel);
-    if (IsTriggerBits(kInelGt0))  hist->AddBinContent(kBinInelGt0);
-    if (IsTriggerBits(kNSD))      hist->AddBinContent(kBinNSD);
-    if (IsTriggerBits(kPileUp))   hist->AddBinContent(kBinPileUp);
-    if (IsTriggerBits(kMCNSD))    hist->AddBinContent(kBinMCNSD);
+    if (IsTriggerBits(kB|triggerMask))  hist->AddBinContent(kBinB);
+    if (IsTriggerBits(kA|triggerMask))  hist->AddBinContent(kBinA);
+    if (IsTriggerBits(kC|triggerMask))  hist->AddBinContent(kBinC);
+    if (IsTriggerBits(kE|triggerMask))  hist->AddBinContent(kBinE);
+    if (IsTriggerBits(kB|kInel))        hist->AddBinContent(kBinInel);
+    if (IsTriggerBits(kB|kInelGt0))     hist->AddBinContent(kBinInelGt0);
+    if (IsTriggerBits(kB|kNSD))         hist->AddBinContent(kBinNSD);
+    if (IsTriggerBits(kPileUp))         hist->AddBinContent(kBinPileUp);
+    if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
+    if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);
   }
   // Check if we have an event of interest. 
-  if (!IsTriggerBits(triggerMask)) return false;
+  if (!IsTriggerBits(triggerMask|kB)) return false;
   
   // Check for pileup
   if (IsTriggerBits(kPileUp)) return false;

@@ -10,6 +10,12 @@
 /** 
  * Run second pass analysis - make @f$ dN/d\eta@f$
  * 
+ * If the ROOT AliEn interface library (libRAliEn) can be loaded, 
+ * and the parameter @a name is not empty, then use the plugin to do
+ * the analysis.  Note that in this case, the output is placed 
+ * in a sub-directory named by @a name after escaping spaces and special 
+ * characters 
+ * 
  * @param aoddir     AOD input directory. Any file matching the pattern 
  *                   *AliAODs*.root are added to the chain 
  * @param nEvents    Number of events to process.  If 0 or less, then 
@@ -21,6 +27,8 @@
  * @param vzMax      Largest @f$ v_z@f$ (centimeter)
  * @param proof      If larger then 1, run in PROOF-Lite mode with this 
  *                   many number of workers. 
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
  *
  * @ingroup pwg2_forward_dndeta
  */
@@ -31,8 +39,25 @@ void MakedNdeta(const char* aoddir   = ".",
 		const char* scheme   = 0,
 		Double_t    vzMin    = -10,
 		Double_t    vzMax    = +10,
-	        Int_t       proof    = 0)
+	        Int_t       proof    = 0,
+		const char* name     = 0)
 {
+  if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			     "$ALICE_ROOT/ANALYSIS/macros",
+			     gROOT->GetMacroPath()));
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gROOT->LoadMacro("TrainSetup.C+");
+    MakedNdetaTrain t(name, trig, vzMin, vzMax, scheme, useCent, false);
+    t.SetDataDir(aoddir);
+    t.SetDataSet("");
+    t.SetAllowOverwrite(true);
+    t.SetProofServer(Form("workers=%d",proof));
+    t.Run(proof > 0 ? "PROOF" : "LOCAL", "FULL", nEvents, proof > 0);
+    return;
+  }
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
@@ -54,8 +79,7 @@ void MakedNdeta(const char* aoddir   = ".",
 			   gROOT->GetMacroPath()));
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Train", 
-						    "Forward dN/deta");
+  AliAnalysisManager *mgr  = new AliAnalysisManager(name, "Forward dN/deta");
   AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
 
   // --- ESD input handler -------------------------------------------
@@ -91,6 +115,7 @@ void MakedNdeta(const char* aoddir   = ".",
   mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();
+#endif
 }
 //
 // EOF

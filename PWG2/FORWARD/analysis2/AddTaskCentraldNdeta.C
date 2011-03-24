@@ -33,7 +33,7 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
 {
   // --- Analysis manager --------------------------------------------
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  
+
   // --- Make our object ---------------------------------------------
   AliCentraldNdetaTask* task = new AliCentraldNdetaTask("Central");
   // Set the vertex range to use 
@@ -44,20 +44,18 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
   task->SetCutEdges(cutEdges);
   // Bit mask of 
   // 
-  //    kNone           Normalise to accepted events 
-  //    kEventLevel     Normalise to all events in selected range 
-  //    kAltEventLevel  Normalise to all events in selected range 
-  //    kBackground     Also correct for background triggers 
-  //    kShape          Correct shape 
+  //    kNone               Normalise to accepted events 
+  //    kEventLevel         Normalise to all events in selected range 
+  //    kBackground         Also correct for background triggers 
+  //    kTriggerEfficiency  Correct for trigger efficiency 
+  //    kShape              Correct shape 
   // 
-  // kNone, kEventLevel, and kAltEventLevel are mutually exclusive.
-  // If neither kEventLevel, nor kAltEventLevel is specified, then
-  // kNone is assumed.  kBackground (when implemented) only makes
-  // sense with kEventLevel and kAltEventLevel.  Furthermore, there
+  // kNone and kEventLevel are mutually exclusive.  If kEventLevel is
+  // not specified, then kNone is assumed.  kBackground only makes
+  // sense with kEventLevel. Furthermore, there
   // are some constants that encode the common cases
   //     
-  //    kFull    = kEventLevel |  kBackground | kShape 
-  //    kAltFull = kAltEventLevel |  kBackground | kShape 
+  //    kFull    = kEventLevel |  kBackground | kShape | kTriggerEfficiency
   // 
   // Default is kFull
   task->SetNormalizationScheme(AliBasedNdetaTask::kFull);

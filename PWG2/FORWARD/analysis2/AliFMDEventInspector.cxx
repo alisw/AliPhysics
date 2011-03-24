@@ -234,7 +234,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fList->Add(fHEventsTrVtx);
 
       
-  fHTriggers = new TH1I("triggers", "Triggers", 10, 0, 10);
+  fHTriggers = new TH1I("triggers", "Triggers", kOffline+1, 0, kOffline+1);
   fHTriggers->SetFillColor(kRed+1);
   fHTriggers->SetFillStyle(3001);
   fHTriggers->SetStats(0);
@@ -248,7 +248,8 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHTriggers->GetXaxis()->SetBinLabel(kC      +1,"C");
   fHTriggers->GetXaxis()->SetBinLabel(kE      +1,"E");
   fHTriggers->GetXaxis()->SetBinLabel(kPileUp +1,"Pileup");
-  fHTriggers->GetXaxis()->SetBinLabel(kMCNSD  +1,"nsd");
+  fHTriggers->GetXaxis()->SetBinLabel(kMCNSD  +1,"NSD_{MC}");
+  fHTriggers->GetXaxis()->SetBinLabel(kOffline+1,"Offline");
   fList->Add(fHTriggers);
 
   fHType = new TH1I("type", Form("Event type (cut: SPD mult>%d)", 
@@ -473,14 +474,13 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
   // on the AliPhysicsSelection obejct.  If we called the latter
   // then the AliPhysicsSelection object would overcount by a 
   // factor of 2! :-(
-  Bool_t inel = ih->IsEventSelected();
-  if (inel) { 
+  Bool_t offline = ih->IsEventSelected();
+  if (offline) {
+    triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
-    fHTriggers->Fill(kInel+0.5);
-  }
+    fHTriggers->Fill(kOffline+0.5);
 
-  // If this is inel, see if we have a tracklet 
-  if (inel) { 
+    // If this is inel, see if we have a tracklet 
     const AliMultiplicity* spdmult = esd->GetMultiplicity();
     if (!spdmult) {
       AliWarning("No SPD multiplicity");
@@ -493,7 +493,6 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
       for (Int_t j = 0; j < n; j++) { 
 	if(TMath::Abs(spdmult->GetEta(j)) < 1) { 
 	  triggers |= AliAODForwardMult::kInelGt0;
-	  fHTriggers->Fill(kInelGt0+.5);
 	  break;
 	}
       }
@@ -502,16 +501,17 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
 
   // Analyse some trigger stuff 
   AliTriggerAnalysis ta;
-  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) {
+  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
     triggers |= AliAODForwardMult::kNSD;
-    fHTriggers->Fill(kNSD+.5);
-  }
+ 
+    
   //Check pileup
   Bool_t pileup =  esd->IsPileupFromSPD(3,0.8);
   if (pileup) {
     triggers |= AliAODForwardMult::kPileUp;
     fHTriggers->Fill(kPileUp+.5);
   }
+
     
   // Get trigger stuff 
   TString trigStr = esd->GetFiredTriggerClasses();
@@ -519,7 +519,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
   fHWords->Fill(trigStr.Data(), 1);
 #if 0
   if (trigStr.Contains("MB1") || trigStr.Contains("MBBG3"))
-      triggers |= AliAOODForwardMult::kB;
+    triggers |= AliAOODForwardMult::kB;
   if (trigStr.Contains("COTA")) 
     triggers |= AliAODForwardMult::kA;
   if (trigStr.Contains("COTC")) 
@@ -530,12 +530,14 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     fHTriggers->Fill(kEmpty+.5);
   }
 
-  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL")) {
+  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL") ||
+      trigStr.Contains("CINT1-AC_NOPF-ALLNOTRD")) {
     triggers |= AliAODForwardMult::kA;
     fHTriggers->Fill(kA+.5);
   }
 
-  if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL")) {
+  if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL") || 
+      trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")) {
     triggers |= AliAODForwardMult::kB;
     fHTriggers->Fill(kB+.5);
   }
@@ -546,11 +548,23 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     fHTriggers->Fill(kC+.5);
   }
 
-  if (trigStr.Contains("CINT1-E-NOPF-ALL")) {
+  if (trigStr.Contains("CINT1-E-NOPF-ALL") ||
+      trigStr.Contains("CINT1-E-NOPF-ALLNOTRD")) {
     triggers |= AliAODForwardMult::kE;
     fHTriggers->Fill(kE+.5);
   }
 
+  if (triggers & AliAODForwardMult::kB) {
+    if (triggers & AliAODForwardMult::kInel) 
+      fHTriggers->Fill(kInel);
+    
+    if (triggers & AliAODForwardMult::kInelGt0)
+      fHTriggers->Fill(kInelGt0+.5);
+    
+    if (triggers & AliAODForwardMult::kNSD)
+      fHTriggers->Fill(kNSD+.5);
+  }
+  
   return kTRUE;
 }
 //____________________________________________________________________
@@ -583,8 +597,7 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
 		      vertex->GetNContributors())); }
     vz = 0;
     return kFALSE;
-  }
-
+  } 
   // Check that the uncertainty isn't too large 
   if (vertex->GetZRes() > fMaxVzErr) { 
     if (fDebug > 2) {
@@ -592,12 +605,12 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent* esd, Double_t& vz)
 		      vertex->GetZRes(), fMaxVzErr)); }
     return kFALSE;
   }
-
+  
   // Get the z coordiante 
   vz = vertex->GetZ();
   return kTRUE;
 }
-
+  
 //____________________________________________________________________
 Bool_t
 AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
@@ -619,7 +632,7 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
     AliForwardUtil::ParseCollisionSystem(esd->GetBeamType());
   fEnergy          = 
     AliForwardUtil::ParseCenterOfMassEnergy(fCollisionSystem,	
-					      2 * esd->GetBeamEnergy());
+					    2 * esd->GetBeamEnergy());
   fField           = 
     AliForwardUtil::ParseMagneticField(esd->GetMagneticField());
   

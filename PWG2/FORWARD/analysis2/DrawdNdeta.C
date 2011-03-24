@@ -64,6 +64,7 @@ struct dNdetaDrawer
       fCutEdges(false),		// Bool_t
       fTitle(""),		// TString
       fTrigString(0),		// TNamed*
+      fNormString(0),           // TNamed*
       fSNNString(0),		// TNamed*
       fSysString(0),		// TNamed*
       fVtxAxis(0),		// TAxis*
@@ -315,7 +316,9 @@ struct dNdetaDrawer
   void FetchInformation(const TList* results)
   {
     if (!fTrigString) 
-      fTrigString = static_cast<TNamed*>(results->FindObject("trigString"));
+      fTrigString = static_cast<TNamed*>(results->FindObject("trigger"));
+    if (!fNormString) 
+      fNormString = static_cast<TNamed*>(results->FindObject("scheme"));
     if (!fSNNString) 
       fSNNString  = static_cast<TNamed*>(results->FindObject("sNN"));
     if (!fSysString) 
@@ -324,7 +327,8 @@ struct dNdetaDrawer
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
     if (!fCentAxis) 
       fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
-    if (!fTrigString) fTrigString = new TNamed("trigString", "unknown");
+    if (!fTrigString) fTrigString = new TNamed("trigger", "unknown");
+    if (!fNormString) fNormString = new TNamed("scheme", "unknown");
     if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
     if (!fSysString)  fSysString  = new TNamed("sys", "unknown");
     if (!fVtxAxis) { 
@@ -333,24 +337,27 @@ struct dNdetaDrawer
       fVtxAxis->SetTitle("v_{z} range unspecified");
     }
 
-    TString centTxt;
+    TString centTxt("none");
     if (fCentAxis) { 
       Int_t nCent = fCentAxis->GetNbins();
-      centTxt = Form("\n   Centrality: %d bins", nCent);
+      centTxt = Form("%d bins", nCent);
       for (Int_t i = 0; i <= nCent; i++) 
-	centTxt.Append(Form("%c%d", i == 0 ? ' ' : ',', 
+	centTxt.Append(Form("%c%d", i == 0 ? ' ' : '-', 
 			    int(fCentAxis->GetXbins()->At(i))));
     }
     Info("FetchInformation", 
 	 "Initialized for\n"
-	 "   Trigger:    %s  (%d)\n"
-	 "   sqrt(sNN):  %s  (%dGeV)\n"
-	 "   System:     %s  (%d)\n"
-	 "   Vz range:   %s  (%f,%f)%s",
+	 "   Trigger:       %-30s  (%d)\n"
+	 "   sqrt(sNN):     %-30s  (%dGeV)\n"
+	 "   System:        %-30s  (%d)\n"
+	 "   Vz range:      %-30s  (%f,%f)\n"
+	 "   Normalization: %-30s  (%d)\n"
+	 "   Centrality:    %s",
 	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
 	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
 	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
 	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
+	 fNormString->GetTitle(), fNormString->GetUniqueID(),
 	 centTxt.Data());
   }
   //__________________________________________________________________
@@ -1502,6 +1509,7 @@ struct dNdetaDrawer
   Bool_t       fCutEdges;     // Whether to cut edges
   TString      fTitle;        // Title on plot
   TNamed*      fTrigString;   // Trigger string (read, or set)
+  TNamed*      fNormString;   // Normalisation string (read, or set)
   TNamed*      fSNNString;    // Energy string (read, or set)
   TNamed*      fSysString;    // Collision system string (read or set)
   TAxis*       fVtxAxis;      // Vertex cuts (read or set)
