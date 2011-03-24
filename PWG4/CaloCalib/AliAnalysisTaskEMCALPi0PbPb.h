@@ -31,6 +31,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetAsymMax(Double_t asymMax)                   { fAsymMax = asymMax;         }
   void         SetCentrality(const char *name)                { fCentVar = name;            }
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
+  void         SetMinClusEnergy(Double_t e)                   { fMinE = e;                  }
   void         SetClusName(const char *name)                  { fClusName = name;           }
   void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple = b;              }
@@ -61,6 +62,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fDoAfterburner;          // if true run after burner
   Double_t               fAsymMax;                // maximum energy asymmetry (def=1)
   Int_t                  fNminCells;              // minimum number of cells attached to cluster (def=1)
+  Double_t               fMinE;                   // minimum cluster energy (def=0.1)
   Double_t               fMinErat;                // minimum emax/ec ratio (def=0)
   Double_t               fMinEcc;                 // minimum eccentricity (def=0)
     // derived members (ie with ! after //)
@@ -102,7 +104,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TH2F                  *fHPionMggPt;             //!histo for pion mass vs. pT
   TH2F                  *fHPionMggAsym;           //!histo for pion mass vs. asym
   TH2F                  *fHPionMggDgg;            //!histo for pion mass vs. opening angle
-  TH1F                  *fHPionInvMasses[20];     //!histos for invariant mass plots 
+  TH1F                  *fHPionInvMasses[21];     //!histos for invariant mass plots 
 
  private:
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
