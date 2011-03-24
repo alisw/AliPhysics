@@ -36,6 +36,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fDoAfterburner(0),
     fAsymMax(1),
     fNminCells(1),
+    fMinE(0.100),
     fMinErat(0),
     fMinEcc(0),
     fNEvs(0),
@@ -286,6 +287,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   } else {
     fAodEv = dynamic_cast<AliAODEvent*>(InputEvent());
     am->LoadBranch("vertices");
+    if (!fAodEv) return;
   }
 
   const AliVVertex *vertex = InputEvent()->GetPrimaryVertex();
@@ -529,13 +531,13 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
         continue;
       if (!clus1->IsEMCAL()) 
         continue;
-      if (clus1->E()<0.010)
+      if (clus1->E()<fMinE)
         continue;
       if (clus1->GetNCells()<fNminCells)
         continue;
       if (GetMaxCellEnergy(clus1)/clus1->E()<fMinErat)
         continue;
-      if (clus1->Chi2()<fMinEcc)
+      if (clus1->Chi2()<fMinEcc) // eccentricity cut
         continue;
       clus1->GetMomentum(clusterVec1,vertex);
       for (Int_t j = i+1; j<nclus; ++j) {
@@ -544,13 +546,13 @@ void AliAnalysisTaskEMCALPi0PbPb::FillPionHists()
           continue;
         if (!clus2->IsEMCAL()) 
           continue;
-        if (clus2->E()<0.010)
+        if (clus2->E()<fMinE)
           continue;
         if (clus2->GetNCells()<fNminCells)
           continue;
         if (GetMaxCellEnergy(clus2)/clus2->E()<fMinErat)
           continue;
-        if (clus2->Chi2()<fMinEcc)
+        if (clus2->Chi2()<fMinEcc) // eccentricity cut
           continue;
         clus2->GetMomentum(clusterVec2,vertex);
         pionVec = clusterVec1 + clusterVec2;
@@ -625,7 +627,6 @@ void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
     Int_t nc = clus->GetNCells();
     Double_t clusE = 0;
-    Short_t nc2 = 0;
     UShort_t ids[100] = {0};
     Double_t fra[100] = {0};
     for (Int_t j = 0; j<nc; ++j) {
@@ -641,7 +642,8 @@ void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
       clusters->RemoveAt(i);
       continue;
     }
-    for (Int_t j = 0; j<nc2; ++j) {
+
+    for (Int_t j = 0; j<nc; ++j) {
       Short_t id = ids[j];
       Double_t cen = cells->GetCellAmplitude(id);
       fra[j] = cen/clusE;
@@ -650,7 +652,7 @@ void  AliAnalysisTaskEMCALPi0PbPb::ClusterAfterburner()
     AliAODCaloCluster *aodclus = dynamic_cast<AliAODCaloCluster*>(clus);
     if (aodclus) {
       aodclus->Clear("");
-      aodclus->SetNCells(nc2);
+      aodclus->SetNCells(nc);
       aodclus->SetCellsAmplitudeFraction(fra);
       aodclus->SetCellsAbsId(ids);
     }
