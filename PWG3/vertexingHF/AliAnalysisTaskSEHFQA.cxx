@@ -261,15 +261,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hTOFtimeKaonHyptimeAC";
     TH2F* hTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
 
-    hname="hTOFsigmaK160";
-    TH2F* hTOFsigmaK160=new TH2F(hname.Data(),"(TOFsignal-timeK)/160 ps;p[GeV/c];(TOFsignal-timeK)/160 ps",200,0.,4.,100,-5,5);
-
-    hname="hTOFsigmaPion160";
-    TH2F* hTOFsigmaPion160=new TH2F(hname.Data(),"(TOFsignal-time#pi)/160 ps;p[GeV/c];(TOFsignal-time#pi)/160 ps",200,0.,4.,100,-5,5);
-
-    hname="hTOFsigmaProton160";
-    TH2F* hTOFsigmaProton160=new TH2F(hname.Data(),"(TOFsignal-timep)/160 ps;p[GeV/c];(TOFsignal-time p)/160 ps",200,0.,4.,100,-5,5);
-
     hname="hTOFsigmaKSigPid";
     TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",200,0.,4.,100,-5,5);
 
@@ -313,9 +304,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->Add(hTOFtime);
     fOutputPID->Add(hTOFtimeKaonHyptime);
     fOutputPID->Add(hTOFtimeKaonHyptimeAC);
-    fOutputPID->Add(hTOFsigmaK160);
-    fOutputPID->Add(hTOFsigmaPion160);
-    fOutputPID->Add(hTOFsigmaProton160);
     fOutputPID->Add(hTOFsigmaKSigPid);
     fOutputPID->Add(hTOFsigmaPionSigPid);
     fOutputPID->Add(hTOFsigmaProtonSigPid);
@@ -678,14 +666,14 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       Int_t secondCent = (Int_t)(secondCentf+0.5);
       Int_t mincent=stdCent-stdCent%10;
       if(stdCentf==-1) {
-	mincent=-1; 
+	mincent=-10; 
 	stdCent=-1;
       }
       ((AliCounterCollection*)fOutputCounters->FindObject("stdEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
       mincent=secondCent-secondCent%10;
       if(secondCentf==-1) {
-	mincent=-1;
+	mincent=-10;
 	secondCent=-1;
       }
       ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
@@ -742,11 +730,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	  ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(pid->GetTOFsignal());
 	  if (pid->GetTOFsignal()< 0) ((TH1F*)fOutputPID->FindObject("hTOFsig"))->Fill(-1);
 
-	  // test a "simple" 160 ps TOF sigma PID
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaK160"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kKaon])/160);
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaPion160"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kPion])/160);
-	  ((TH2F*)fOutputPID->FindObject("hTOFsigmaProton160"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kProton])/160);
-      
+	  
 	  // test TOF sigma PID
 	  if (tofRes[2] != 0.) {   // protection against 'old' AODs...
 	    ((TH2F*)fOutputPID->FindObject("hTOFsigmaKSigPid"))->Fill(track->P(),(pid->GetTOFsignal()-times[AliPID::kKaon])/tofRes[3]);
