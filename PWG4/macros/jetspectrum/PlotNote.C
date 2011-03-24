@@ -771,7 +771,8 @@ Int_t PlotJetBFluctuations(){
   // plot the diffent background estimates
 
   const int nCen = 4;
-  const Float_t fCentLo[nCen] = {0,10,30,50};
+  const Float_t nColl[nCen] = {1502,742.5,250,46.6};
+   const Float_t fCentLo[nCen] = {0,10,30,50};
   const Float_t fCentUp[nCen] = {10,30,50,80};
   TH2F *hFrame = new TH2F("hFrame",";#delta p_{T} (GeV/c);Probability/GeV",200,-70,70,100,1E-5,50); 
   hFrame->SetTitleOffset(1.5,"Y");
@@ -1089,6 +1090,58 @@ Int_t PlotJetBFluctuations(){
 
 
   }
+
+
+
+  // now plot different centralities on one plot
+  bool bFirst = true;
+  hFrame->DrawCopy();
+  TLegend *leg2 = new TLegend(0.2,0.65,0.3,0.93);
+  leg2->SetHeader(Form("%s R = 0.4 (B%d)",sBiaRC2.Data(),iB));
+  TH1D **hTmp1 = hBiaRC2;
+  TString tmpName = "BiARC2";
+  leg2->SetFillColor(0);
+  leg2->SetTextFont(gStyle->GetTextFont());
+  leg2->SetTextSize(gStyle->GetTextSize()*0.6);
+  leg2->SetBorderSize(0);
+  hFrame->DrawCopy();
+
+
+  for(int ic = 0;ic<nCen;ic++){
+    int iColor = hTmp1[ic]->GetMarkerColor()-4+2*ic;
+    hTmp1[ic]->SetLineColor(iColor);
+    hTmp1[ic]->SetMarkerColor(iColor);
+    if(bFirst){
+      hTmp1[ic]->Draw("psame");
+      bFirst = false;
+    }≤
+    else{
+      hTmp1[ic]->Draw("psame");
+    }
+    leg2->AddEntry(hTmp1[ic],Form("%2.0f-%2.0f%%",fCentLo[ic],fCentUp[ic]),"P");
+    
+  }
+  leg2->Draw("same");
+  c1->Update();
+  c1->SaveAs(Form("deltaPt_cent_%s_B%d.%s",tmpName.Data(),iB,printType.Data()));
+  if(getchar()=='q')return;
+
+  bFirst = true;
+  for(int ic = nCen-1;ic>=0;ic--){
+    hTmp1[ic]->Scale(1./nColl[ic]);
+    hTmp1[ic]->SetMinimum(1E-8);
+    if(bFirst){
+      hTmp1[ic]->Draw("p");
+      bFirst = false;
+    }≤
+    else{
+      hTmp1[ic]->Draw("psame");
+    }
+    
+  }
+  leg2->Draw("same");
+  c1->Update();
+  c1->SaveAs(Form("deltaPt_cent_ncoll_%s_B%d.%s",tmpName.Data(),iB,printType.Data()));
 
 
 
