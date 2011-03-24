@@ -62,6 +62,10 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fEfficiencyHadronITS(0)
 							   ,fEfficiencyTPC(0)
 							   ,fEfficiencyITS(0)
+							   ,fEfficiencyErrorLow(0)
+							   ,fEfficiencyErrorHigh(0)
+							   ,fBackgroundErrorLow(0)
+							   ,fBackgroundErrorHigh(0)
 							   ,fBackgroundTPC(0)
 							   ,fBackgroundITS(0)
 							   ,fIsEMCal(kTRUE)
@@ -150,6 +154,10 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
 											      ,fEfficiencyHadronITS(0)
 											      ,fEfficiencyTPC(0)
 											      ,fEfficiencyITS(0)
+											      ,fEfficiencyErrorLow(g->fEfficiencyErrorLow)
+											      ,fEfficiencyErrorHigh(g->fEfficiencyErrorHigh)
+											      ,fBackgroundErrorLow(g->fBackgroundErrorLow)
+											      ,fBackgroundErrorHigh(g->fBackgroundErrorHigh)
 											      ,fBackgroundTPC(0)
 											      ,fBackgroundITS(0)
 											      ,fIsEMCal(g->fIsEMCal)
@@ -216,9 +224,38 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
   if(totEt) cout<<"total et";
   else{cout<<"hadronic et";}
   cout<<" with the pt cut off "<<ptcut<<" for "<<type<<" acceptance to "<<correction<<endl;
-  //cout<<"Acceptance "<<acceptance<<" neutral "<<neutral<<" ptcorr "<<ptcorr<<endl;
+  //cout<<" Acceptance "<<acceptance<<" neutral "<<neutral<<" ptcorr "<<ptcorr<<endl;
   return correction;
 
+}
+Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC){
+  //we calculate factors for each value and then multiply them to get the overall bounds
+  //neutral corrections, pt cut, pid, efficiency, background
+  float neutral = 1.0;
+  float ptcut = 1.0;
+  float pid = 1.0;
+  float efficiency = 1.0;
+  float background = 1.0;
+  if(isLowBound){//is lower bound
+    if(isHadronic) neutral= fNeutralCorrectionLow/fNeutralCorrection;
+    else{neutral = fNotHadronicCorrectionLow/fNotHadronicCorrection;}
+    if(isTPC) ptcut = ffpTcutCorrectionTPCLow/fpTcutCorrectionTPC;
+    else{ptcut = ffpTcutCorrectionITSLow/fpTcutCorrectionITS;}
+    pid = fNotIDConstTPCLow/fNotIDConstTPC;
+    efficiency = fEfficiencyErrorLow;
+    background = fBackgroundErrorLow;
+  }
+  else{//is higher bound
+    if(isHadronic) neutral= fNeutralCorrectionHigh/fNeutralCorrection;
+    else{neutral= fNotHadronicCorrectionHigh/fNotHadronicCorrection;}
+    if(isTPC) ptcut = ffpTcutCorrectionTPCHigh/fpTcutCorrectionTPC;
+    else{ptcut = ffpTcutCorrectionITSHigh/fpTcutCorrectionITS;}
+    pid = fNotIDConstTPCHigh/fNotIDConstTPC;
+    efficiency = fEfficiencyErrorHigh;
+    background = fBackgroundErrorHigh;
+  }
+  //cout<<"neutral "<<neutral<<" ptcut "<<ptcut<<" pid "<<pid<<" efficiency "<<efficiency<<" background "<<background<<" overall "<<neutral*ptcut*pid*efficiency*background<<endl;
+  return neutral*ptcut*pid*efficiency*background*et;
 }
 // AliAnalysisHadEtCorrections & operator = (const AliAnalysisHadEtCorrections & g) {
 
@@ -253,6 +290,38 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 //   fBackgroundTPC = g->fBackgroundTPC;
 //   fBackgroundITS = g->fBackgroundITS;
 // }
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyPionTPC(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyPionTPC;}
+  else{return (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyKaonTPC(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyKaonTPC;}
+  else{return (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyProtonTPC(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyProtonTPC;}
+  else{return (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyHadronTPC(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyHadronTPC;}
+  else{return (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyPionITS(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyPionITS;}
+  else{return (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyKaonITS(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyKaonITS;}
+  else{return (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",cb));}
+}
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyProtonITS(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyProtonITS;}
+  else{return (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",cb));}
+}//Proton
+TH1D *AliAnalysisHadEtCorrections::GetEfficiencyHadronITS(const int cb){//Get centrality dependent efficiency
+  if(cb==-1){return fEfficiencyHadronITS;}
+  else{return (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",cb));}
+}
 Float_t AliAnalysisHadEtCorrections::GetTPCEfficiencyCorrectionPion(const float pT, const int cb){//Get the efficiency for reconstructing a pion in the TPC
   float eff = -1.0;
   if(cb ==-1){//pp
@@ -579,49 +648,49 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
 
   if(fDataSet==20100){//if Pb+Pb
     cout<<"Efficiency histogram for TPC tracks for hadrons is set for centrality bins ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyHadronTPC%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        pions                              ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyPionTPC%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        kaons                              ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyKaonTPC%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        protons                            ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyTPC->FindObject(Form("fEfficiencyProtonTPC%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                         ITS            hadrons                            ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyHadronITS%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        pions                              ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyPionITS%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        kaons                              ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyKaonITS%i",i));
       if(histo) cout<<i<<" ";
     }
     cout<<endl;
     cout<<"                                        protons                            ";
-    for(int i = 0;i<=20;i++){
+    for(int i = 0;i<=21;i++){
       TH1D *histo = (TH1D*) fEfficiencyITS->FindObject(Form("fEfficiencyProtonITS%i",i));
       if(histo) cout<<i<<" ";
     }
