@@ -16,6 +16,7 @@
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TProfile.h>
 #include <TChain.h>
 #include <TGeoGlobalMagField.h>
 #include "AliESDInputHandlerRP.h"
@@ -94,6 +95,12 @@ AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
     if(fHistSDDDrTimeAll[i]){ delete fHistSDDDrTimeAll[i]; fHistSDDDrTimeAll[i]=0;}
     if(fHistSDDDrTimeExtra[i]){ delete fHistSDDDrTimeExtra[i]; fHistSDDDrTimeExtra[i]=0;}
     if(fHistSDDDrTimeAttac[i]){ delete fHistSDDDrTimeAttac[i]; fHistSDDDrTimeAttac[i]=0;}
+    for (int ix=2;ix--;) {
+      if (fHProfSDDResidXvsXD[i][ix]) delete fHProfSDDResidXvsXD[i][ix]; fHProfSDDResidXvsXD[i][ix] = 0;
+      if (fHProfSDDResidXvsZ[i][ix])  delete fHProfSDDResidXvsZ[i][ix];  fHProfSDDResidXvsZ[i][ix]  = 0;
+      if (fHProfSDDDrTimevsXD[i][ix]) delete fHProfSDDDrTimevsXD[i][ix]; fHProfSDDDrTimevsXD[i][ix] = 0;
+      if (fHProfSDDDrTimevsZ[i][ix])  delete fHProfSDDDrTimevsZ[i][ix];  fHProfSDDDrTimevsZ[i][ix]  = 0;
+    }
   }
   if(fFitter){
     delete fFitter;
@@ -156,15 +163,15 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
 
   for(Int_t iMod=0; iMod<kNSDDmods; iMod++){
     if(fDoSDDResiduals){
-      fHistSDDResidX[iMod] = new TH2F(Form("hSDDResidX%d",iMod),
-				      Form("hSDDResidX%d",iMod),
+      fHistSDDResidX[iMod] = new TH2F(Form("hSDDResidX%d",iMod+kNSPDmods),
+				      Form("hSDDResidX%d",iMod+kNSPDmods),
 				      fNPtBins,fPtBinLimits,
 				      300,-0.15,0.15);
       fHistSDDResidX[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidX[iMod]);
       
-      fHistSDDResidZ[iMod] = new TH2F(Form("hSDDResidZ%d",iMod),
-				      Form("hSDDResidZ%d",iMod),
+      fHistSDDResidZ[iMod] = new TH2F(Form("hSDDResidZ%d",iMod+kNSPDmods),
+				      Form("hSDDResidZ%d",iMod+kNSPDmods),
 				      fNPtBins,fPtBinLimits,
 				      200,-0.1,0.1);
       fHistSDDResidZ[iMod]->Sumw2();
@@ -193,6 +200,32 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
 					 10,-3.8,3.8,200,-0.1,0.1);   
       fHistSDDResidZvsZ[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidZvsZ[iMod]);
+      //
+      for (int ix=0;ix<2;ix++) { // profile histos per side
+	//
+	char* hnm = Form("hpSDDResXvsXD%d_%d",iMod+kNSPDmods,ix);
+	int nbX = 50, nbZ = 20, nbXOffs = 2, nbZOffs = 2;
+	double xRange = 3.5085e4, zRange = 7.5264e4, xOffs = nbXOffs*xRange/nbX, zOffs = nbZOffs*zRange/nbZ;
+	fHProfSDDResidXvsXD[iMod][ix] = new TProfile(hnm, hnm, nbX+2*nbXOffs, -xOffs, xRange + xOffs);
+	fHProfSDDResidXvsXD[iMod][ix]->Sumw2();
+	fOutput->Add(fHProfSDDResidXvsXD[iMod][ix]);
+	//
+	hnm = Form("hpSDDDrTimevsXD%d_%d",iMod+kNSPDmods,ix);
+	fHProfSDDDrTimevsXD[iMod][ix] = new TProfile(hnm, hnm, nbX+2*nbXOffs, -xOffs, xRange + xOffs);
+	fHProfSDDDrTimevsXD[iMod][ix]->Sumw2();
+	fOutput->Add(fHProfSDDDrTimevsXD[iMod][ix]);
+	//
+	hnm = Form("hpSDDResXvsZ%d_%d",iMod+kNSPDmods,ix);
+	fHProfSDDResidXvsZ[iMod][ix] = new TProfile(hnm, hnm, nbZ+2*nbZOffs, -(0.5*zRange+zOffs),(0.5*zRange+zOffs));
+	fHProfSDDResidXvsZ[iMod][ix]->Sumw2();
+	fOutput->Add(fHProfSDDResidXvsZ[iMod][ix]);
+	//
+	hnm = Form("hpSDDDrTimevsZ%d_%d",iMod+kNSPDmods,ix);
+	fHProfSDDDrTimevsZ[iMod][ix] = new TProfile(hnm, hnm, nbZ+2*nbZOffs, -(0.5*zRange+zOffs),(0.5*zRange+zOffs));
+	fHProfSDDDrTimevsZ[iMod][ix]->Sumw2();
+	fOutput->Add(fHProfSDDDrTimevsZ[iMod][ix]);
+	//
+      }
     }
 
     if(fDoSDDdEdxCalib){
@@ -356,13 +389,14 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
   track->GetITSdEdxSamples(dedx);
 
   fFitter->AttachPoints(array,0, npts-1); 
-  Int_t iPtSDD[4],modIdSDD[4];
-  Double_t xLocSDD[4],zLocSDD[4];
+  Int_t iPtSDD[4],modIdSDD[4],modSide[4];
+  Double_t xLocSDD[4],zLocSDD[4],drTime[4];
   Int_t nPtSDD=0;
   Int_t nPtSSDSPD=0;
   Double_t resGlo[3],resLoc[3];
   Float_t  posGloF[3];
   Double_t posGlo[3],posLoc[3];
+
   for(Int_t ipt=0; ipt<npts; ipt++) {
     AliTrackPoint point;
     Int_t modId;
@@ -370,16 +404,17 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
     Int_t volId = point.GetVolumeID();
     Int_t layerId = AliGeomManager::VolUIDToLayer(volId,modId);
     if(layerId==3 || layerId==4){
-      Float_t drTime=point.GetDriftTime();
+      drTime[nPtSDD] = point.GetDriftTime();
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
       Int_t index=modId-kNSPDmods;
-      fHistSDDDrTimeAll[index]->Fill(drTime);
-      if(point.IsExtra()) fHistSDDDrTimeExtra[index]->Fill(drTime);
-      else fHistSDDDrTimeAttac[index]->Fill(drTime);
+      fHistSDDDrTimeAll[index]->Fill(drTime[nPtSDD]);
+      if(point.IsExtra()) fHistSDDDrTimeExtra[index]->Fill(drTime[nPtSDD]);
+      else fHistSDDDrTimeAttac[index]->Fill(drTime[nPtSDD]);
       Float_t dedxLay=dedx[layerId-3];
-      if(dedxLay>1.) fHistSDDdEdxvsDrTime[index]->Fill(drTime,dedxLay);
+      if(dedxLay>1.) fHistSDDdEdxvsDrTime[index]->Fill(drTime[nPtSDD],dedxLay);
       iPtSDD[nPtSDD] = ipt;
       modIdSDD[nPtSDD] = modId;
+      modSide[nPtSDD] = point.GetClusterType()&BIT(16) ? 0:1; 
       point.GetXYZ(posGloF);
       for(Int_t icoor=0;icoor<3;icoor++) posGlo[icoor]=posGloF[icoor];
       AliITSgeomTGeo::GlobalToLocal(modId,posGlo,posLoc);
@@ -403,6 +438,16 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       fHistSDDResidX[index]->Fill(track->Pt(),resLoc[0]);
       fHistSDDResidXvsX[index]->Fill(xLocSDD[ip],resLoc[0]);
       fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
+      //
+      double cf = modSide[ip] ? 1.e4:-1.e4;
+      double xMeas = cf*xLocSDD[0];            // measured coordinate in microns
+      double xRes  = cf*resLoc[0];             // X residual in microns
+      double xDriftTrue  = 3.5085e4 - (xMeas + xRes);   // "true" drift distance
+      //
+      fHProfSDDResidXvsXD[index][modSide[ip]]->Fill(xDriftTrue, xRes);
+      fHProfSDDResidXvsZ[index][modSide[ip]]->Fill(zLocSDD[ip], xRes);
+      fHProfSDDDrTimevsXD[index][modSide[ip]]->Fill(xDriftTrue, drTime[ip]);
+      fHProfSDDDrTimevsZ[index][modSide[ip]]->Fill(zLocSDD[ip], drTime[ip]);      
     }
   }
 }
