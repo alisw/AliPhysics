@@ -41,7 +41,18 @@ Float_t AliAnalysisHadEt::fgPtAxis[117]=
   1.25, 1.3,1.35,1.40,1.45, 1.50, 1.55, 1.6,1.65, 1.7, 1.75, 1.8,1.85, 1.9,1.95,
    2.0, 2.2, 2.4, 2.6, 2.8, 3.00, 3.20, 3.4, 3.6, 3.8, 4.00, 4.2, 4.4, 4.6, 4.8,
    5.0, 5.5, 6.0, 6.5, 7.0, 7.50, 8.00, 8.5, 9.0, 9.5, 10.0,12.0,14.0,16.0,18.0,
-  20.0,25.0,30.0,35.0,40.0, 45.0, 50.0}; 
+  20.0,25.0,30.0,35.0,40.0, 45.0, 50.0};
+Float_t AliAnalysisHadEt::fgResAxis[81] = {-0.150,-0.140,-0.130,-0.120,-0.110,-0.100,-0.090,-0.080,-0.070,-0.060,
+					   -0.050,-0.045,-0.040,-0.035,-0.030,-0.025,-0.024,-0.023,-0.022,-0.021,
+					   -0.020,-0.019,-0.018,-0.017,-0.016,-0.015,-0.014,-0.013,-0.012,-0.011,
+					   -0.010,-0.009,-0.008,-0.007,-0.006,-0.005,-0.004,-0.003,-0.002,-0.001,
+					   -0.000,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,
+					   0.010,0.011,0.012,0.013,0.014,0.015,0.016,0.017,0.018,0.019,
+					   0.020,0.021,0.022,0.023,0.024,0.025,0.030,0.035,0.040,0.045,
+					   0.050,0.060,0.070,0.080,0.090,0.100,0.110,0.120,0.130,0.140,
+					   0.150,};
+// Float_t AliAnalysisHadEt::fgResAxis[31] = {-0.15,-0.14,-0.13,-0.12,-0.11,-0.1,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15};
+Int_t AliAnalysisHadEt::fgNumOfResBins = 80;
 
 
 AliAnalysisHadEt::AliAnalysisHadEt() : AliAnalysisEtCommon()
@@ -57,6 +68,7 @@ AliAnalysisHadEt::AliAnalysisHadEt() : AliAnalysisEtCommon()
 				     ,fChargedMultiplicity(0)
 				     ,fNeutralMultiplicity(0)
 				     ,fhistoList(0)
+				     ,fGoodEvent(0)
 {//default constructor
 
 }
@@ -107,6 +119,42 @@ void AliAnalysisHadEt::CreateEtaPtHisto2D(TString name, TString title)
   histo->SetYTitle("#eta");
   histo->SetXTitle("p_{T}");
   histo->SetZTitle("E_{T}");
+  histo->Sumw2();
+  fhistoList->Add(histo);
+  delete histoname;
+  delete histotitle;
+    
+}
+void AliAnalysisHadEt::CreateResolutionPtHisto2D(TString name, TString title, TString xtitle, TString ytitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+  TString *histoname   = new TString();
+  TString *histotitle   = new TString();
+
+  histoname->Append(name);
+  histotitle->Append(title);
+
+  //TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),fgNumOfPtBins, fgPtAxis, fgNumOfResBins, fgResAxis);
+  TH2F *histo = new TH2F(histoname->Data(),histotitle->Data(),fgNumOfPtBins, fgPtAxis, fgNumOfResBins, fgResAxis);
+  histo->SetYTitle(ytitle);
+  histo->SetXTitle(xtitle);
+  histo->SetZTitle("Number of entries");
+  histo->Sumw2();
+  fhistoList->Add(histo);
+  delete histoname;
+  delete histotitle;
+    
+}
+void AliAnalysisHadEt::CreatePtHisto1D(TString name, TString title, TString xtitle, TString ytitle)
+{     //creates a 2-d histogram in eta and phi and adds it to the list of histograms to be saved
+  TString *histoname   = new TString();
+  TString *histotitle   = new TString();
+
+  histoname->Append(name);
+  histotitle->Append(title);
+
+  TH1F *histo = new TH1F(histoname->Data(),histotitle->Data(),fgNumOfPtBins, fgPtAxis);
+  histo->SetYTitle(ytitle);
+  histo->SetXTitle(xtitle);
   histo->Sumw2();
   fhistoList->Add(histo);
   delete histoname;
@@ -253,7 +301,11 @@ Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge
       return (TMath::Sqrt(p*p + AliAnalysisEtCommon::fgProtonMass*AliAnalysisEtCommon::fgProtonMass) - AliAnalysisEtCommon::fgProtonMass) * TMath::Sin(theta);
     }
   }
-  cerr<<"Uh-oh!  Et not set properly!"<<endl;
+  //cerr<<"Uh-oh!  Et not set properly!"<<endl;
   return 0.0;
 }
 
+Float_t AliAnalysisHadEt::TrueP(float pTrec){
+  if(pTrec>1.0) return pTrec;
+  return pTrec/(1-599.334*pTrec+7285.15*pTrec*pTrec)+pTrec;
+}
