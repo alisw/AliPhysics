@@ -99,7 +99,7 @@ protected:
     void FillHisto1D(TString histname, Float_t x, Float_t weight);
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
     Bool_t GoodEvent() const {return fGoodEvent;}
-    Float_t TrueP(float pTrec);
+    Float_t TrueP(float pTrec) const;
 
     Float_t Et(TParticle *part, float mass = -1000);
     Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const;

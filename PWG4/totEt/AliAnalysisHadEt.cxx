@@ -305,7 +305,7 @@ Float_t AliAnalysisHadEt::Et(Float_t p, Float_t theta, Int_t pid, Short_t charge
   return 0.0;
 }
 
-Float_t AliAnalysisHadEt::TrueP(float pTrec){
+Float_t AliAnalysisHadEt::TrueP(float pTrec) const {
   if(pTrec>1.0) return pTrec;
   return pTrec/(1-599.334*pTrec+7285.15*pTrec*pTrec)+pTrec;
 }

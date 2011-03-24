@@ -141,7 +141,7 @@ public:
 
     //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
     Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const;
-    Float_t GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC);
+    Float_t GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const;
 
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor
