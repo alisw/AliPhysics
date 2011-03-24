@@ -15,6 +15,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TProfile;
 class TTree;
 class TString;
 class AliESDEvent;
@@ -110,8 +111,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
   TH2F*  fHistSPDResidX[kNSPDmods];       //! histos of SPD residuals along Xloc vs. Pt
   TH2F*  fHistSPDResidZ[kNSPDmods];       //! histos of SPD residuals along Zloc vs. Pt
-  TH2F*  fHistSDDResidX[kNSSDmods];       //! histos of SDD residuals along Xloc vs. Pt
-  TH2F*  fHistSDDResidZ[kNSSDmods];       //! histos of SDD residuals along Zloc vs. Pt
+  TH2F*  fHistSDDResidX[kNSDDmods];       //! histos of SDD residuals along Xloc vs. Pt
+  TH2F*  fHistSDDResidZ[kNSDDmods];       //! histos of SDD residuals along Zloc vs. Pt
   TH2F*  fHistSSDResidX[kNSSDmods];       //! histos of SSD residuals along Xloc vs. Pt
   TH2F*  fHistSSDResidZ[kNSSDmods];       //! histos of SSD residuals along Zloc vs. Pt
 
@@ -123,8 +124,13 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   TH1F*  fHistSDDDrTimeAll[kNSDDmods];    //! histos of SDD drift time (all clusters)
   TH1F*  fHistSDDDrTimeExtra[kNSDDmods];  //! histos of SDD drift time (extra clusters)
   TH1F*  fHistSDDDrTimeAttac[kNSDDmods];  //! histos of SDD drift time (attached clusters)
-  
-
+  //
+  // RS
+  TProfile* fHProfSDDResidXvsXD[kNSDDmods][2]; // ! profile histos of SDD residuals along Xloc vs. Drift distance, each side separately
+  TProfile* fHProfSDDDrTimevsXD[kNSDDmods][2]; // ! profile histos of SDD drift time vs. Drift distance, each side separately
+  TProfile* fHProfSDDResidXvsZ[kNSDDmods][2];  // ! profile histos of SDD residuals along Xloc vs. Z (anode), each side separately
+  TProfile* fHProfSDDDrTimevsZ[kNSDDmods][2];  // ! profile histos of SDD drift time vs. Z (anode), each side separately
+  //
   Bool_t   fDoSPDResiduals;   // Flag to enable histos of SPD residuals
   Bool_t   fDoSDDResiduals;   // Flag to enable histos of SDD residuals
   Bool_t   fDoSSDResiduals;   // Flag to enable histos of SSD residuals
@@ -141,7 +147,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
 
-  ClassDef(AliAnalysisTaskITSAlignQA,2);
+  ClassDef(AliAnalysisTaskITSAlignQA,3);
 };
 
 
