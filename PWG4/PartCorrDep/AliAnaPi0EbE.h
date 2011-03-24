@@ -100,12 +100,12 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   Float_t fHistoSSMin;             // Shower Shape parameter position minimum value
 	  
   TH1F * fhPtPi0   ;         //! Number of identified  pi0
-  TH3F * fhPtEtaPhiPi0  ;    //! pt vs eta phi of identified  pi0
-  TH3F * fhPtEtaPhiBkg  ;    //! pt vs eta phi of discarded pairs  
+/*   TH3F * fhPtEtaPhiPi0  ;    //! pt vs eta phi of identified  pi0 */
+/*   TH3F * fhPtEtaPhiBkg  ;    //! pt vs eta phi of discarded pairs   */
   TH2F * fhPtDispPi0 ;       //! pt vs disp of pi0 pairs
   TH2F * fhPtDispBkg ;       //! pt vs disp of discarded pairs
-  TH3F * fhPtLambdaPi0 ;     //! pt vs lambda0 vs lambda1 of pi0 pairs
-  TH3F * fhPtLambdaBkg ;     //! pt vs lambda0 vs lambda1 of discarded pairs
+/*   TH3F * fhPtLambdaPi0 ;     //! pt vs lambda0 vs lambda1 of pi0 pairs */
+/*   TH3F * fhPtLambdaBkg ;     //! pt vs lambda0 vs lambda1 of discarded pairs */
 
   //MC
   TH1F * fhPtMCNoPi0;   //! Number of identified pi0, not coming from pi0
