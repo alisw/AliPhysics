@@ -835,7 +835,7 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
   AliVertexerTracks vertexer(evt->GetMagneticField());
   if(evt->GetNumberOfTracks()<500) {
     vertexer.SetITSMode(); // defaults
-    vertexer.SetMinClusters(4); // default is 5
+    vertexer.SetMinClusters(3); // default is 5
   } else { 
     vertexer.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1);// PbPb
   } 
