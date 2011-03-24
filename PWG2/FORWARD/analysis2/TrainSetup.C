@@ -961,6 +961,7 @@ protected:
    * Create physics selection , and add to manager
    * 
    * @param mc Whether this is for MC 
+   * @param mgr Manager
    */
   virtual void CreatePhysicsSelection(Bool_t mc,
 				      AliAnalysisManager* mgr)
@@ -1301,14 +1302,23 @@ protected:
       TString name(file->GetName());
     
       // Ignore special links 
-      if (name == "." || name == "..") continue;
+      if (name == "." || name == "..") { 
+	Info("ScanDirectory", "Ignoring %s", name.Data());
+	continue;
+      }
+      Info("ScanDirectory", "Looking at %s", name.Data());
 
       // Check if this is a directory 
       if (file->IsDirectory()) { 
-	if (recursive) 
+	if (recursive) {
           if (ScanDirectory(static_cast<TSystemDirectory*>(file),
 			    chain,type,recursive))
-	    ret = true;;
+	    ret = true;
+	}
+	else 
+	  Info("ScanDirectory", 
+	       "%s is a directory but we're not scanning recusively",	
+	       name.Data());
         continue;
       }
     
@@ -1515,10 +1525,12 @@ public:
    * Constructor.  Date and time must be specified when running this
    * in Termiante mode on Grid
    * 
-   * @param dateTime Append date and time to name 
+   * @param name     Name of train (free form)
    * @param sys      Collision system (1: pp, 2: PbPb)
    * @param sNN      Center of mass energy [GeV]
    * @param field    L3 magnetic field - one of {-5,0,+5} kG
+   * @param useCent  Whether to use centrality 
+   * @param dateTime Append date and time to name 
    * @param year     Year     - if not specified, current year
    * @param month    Month    - if not specified, current month
    * @param day      Day      - if not specified, current day
@@ -1612,6 +1624,7 @@ protected:
    * Create physics selection , and add to manager
    * 
    * @param mc Whether this is for MC 
+   * @param mgr Manager 
    */
   void CreatePhysicsSelection(Bool_t mc,
 			      AliAnalysisManager* mgr)
@@ -1650,6 +1663,7 @@ public:
    * Constructor.  Date and time must be specified when running this
    * in Termiante mode on Grid
    * 
+   * @param name     Name of train (free form)
    * @param trig     Trigger to use 
    * @param vzMin    Least @f$ v_z@f$
    * @param vzMax    Largest @f$ v_z@f$
@@ -1687,7 +1701,6 @@ public:
    * @param mode     Mode
    * @param oper     Operation
    * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
    */
   void Run(const char* mode, const char* oper, 
@@ -1701,7 +1714,6 @@ public:
    * @param mode     Mode
    * @param oper     Operation
    * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
    */
   void Run(EMode mode, EOper oper, Int_t nEvents=-1, 
@@ -1740,7 +1752,6 @@ protected:
    * 
    * @param mode Processing mode
    * @param par  Whether to use par files 
-   * @param mgr  Analysis manager 
    */
   void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager*)
   {
