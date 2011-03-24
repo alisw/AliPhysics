@@ -35,7 +35,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  virtual void  SetDebugLevel(Int_t level) {fDebug = level;}
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
@@ -54,7 +53,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t MyGetScaleFactorMC(Int_t runnumber) const; 
   void MyInitScaleFactorMC();
 
-  Int_t    fDebug;	   	// Debug flag
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
   TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
@@ -65,10 +63,10 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Int_t    fHighRunN;           // last run
   Bool_t   fUseScaling;         // flag to use scaling 
   Bool_t   fUseCleaning;        // flag to use cleanin  
-  Float_t V0MScaleFactor[2667]; // number of runs in PbPb 2010
-  Float_t SPDScaleFactor[2667]; // number of runs in PbPb 2010
-  Float_t TPCScaleFactor[2667]; // number of runs in PbPb 2010
-  Float_t V0MScaleFactorMC[2667]; // number of runs in PbPb 2010
+  Float_t  fV0MScaleFactor[2667];   // number of runs in PbPb 2010
+  Float_t  fSPDScaleFactor[2667];   // number of runs in PbPb 2010
+  Float_t  fTPCScaleFactor[2667];   // number of runs in PbPb 2010
+  Float_t  fV0MScaleFactorMC[2667]; // number of runs in PbPb 2010
 
   AliESDtrackCuts* fTrackCuts;  //! optional track cuts
 
@@ -127,13 +125,13 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0MvsTRK;    //control histogram for multiplicity
   TH2F *fHOutMultTRKvsCL1;    //control histogram for multiplicity
 
-  TH1F *fHOutCentV0M_qual1     ;    //control histogram for centrality quality 1
-  TH1F *fHOutCentTRK_qual1     ;    //control histogram for centrality quality 1
-  TH1F *fHOutCentCL1_qual1     ;    //control histogram for centrality quality 1
+  TH1F *fHOutCentV0Mqual1     ;    //control histogram for centrality quality 1
+  TH1F *fHOutCentTRKqual1     ;    //control histogram for centrality quality 1
+  TH1F *fHOutCentCL1qual1     ;    //control histogram for centrality quality 1
 
-  TH1F *fHOutCentV0M_qual2     ;    //control histogram for centrality quality 2
-  TH1F *fHOutCentTRK_qual2     ;    //control histogram for centrality quality 2
-  TH1F *fHOutCentCL1_qual2     ;    //control histogram for centrality quality 2
+  TH1F *fHOutCentV0Mqual2     ;    //control histogram for centrality quality 2
+  TH1F *fHOutCentTRKqual2     ;    //control histogram for centrality quality 2
+  TH1F *fHOutCentCL1qual2     ;    //control histogram for centrality quality 2
 
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;        //control histogram for vertex

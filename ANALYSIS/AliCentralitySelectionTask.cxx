@@ -73,7 +73,6 @@ ClassImp(AliCentralitySelectionTask)
 //________________________________________________________________________
 AliCentralitySelectionTask::AliCentralitySelectionTask():
 AliAnalysisTaskSE(),
-  fDebug(0),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fFile(0),
@@ -133,12 +132,12 @@ AliAnalysisTaskSE(),
   fHOutMultV0MvsCL1(0),
   fHOutMultV0MvsTRK(0),
   fHOutMultTRKvsCL1(0),
-  fHOutCentV0M_qual1(0),
-  fHOutCentTRK_qual1(0),
-  fHOutCentCL1_qual1(0),
-  fHOutCentV0M_qual2(0),
-  fHOutCentTRK_qual2(0),
-  fHOutCentCL1_qual2(0),
+  fHOutCentV0Mqual1(0),
+  fHOutCentTRKqual1(0),
+  fHOutCentCL1qual1(0),
+  fHOutCentV0Mqual2(0),
+  fHOutCentTRKqual2(0),
+  fHOutCentCL1qual2(0),
   fHOutQuality(0),
   fHOutVertex(0)
 {   
@@ -148,10 +147,10 @@ AliAnalysisTaskSE(),
   fHighRunN=139517;
 
   for (Int_t i=0; i < 2667; i++) {
-    V0MScaleFactor[i]=0.0;
-    SPDScaleFactor[i]=0.0;
-    TPCScaleFactor[i]=0.0;
-    V0MScaleFactorMC[i]=0.0;
+    fV0MScaleFactor[i]=0.0;
+    fSPDScaleFactor[i]=0.0;
+    fTPCScaleFactor[i]=0.0;
+    fV0MScaleFactorMC[i]=0.0;
   }
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
@@ -162,7 +161,6 @@ AliAnalysisTaskSE(),
 //________________________________________________________________________
 AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   AliAnalysisTaskSE(name),
-  fDebug(0),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
   fFile(0),
@@ -222,12 +220,12 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultV0MvsCL1(0),
   fHOutMultV0MvsTRK(0),
   fHOutMultTRKvsCL1(0),
-  fHOutCentV0M_qual1(0),
-  fHOutCentTRK_qual1(0),
-  fHOutCentCL1_qual1(0),
-  fHOutCentV0M_qual2(0),
-  fHOutCentTRK_qual2(0),
-  fHOutCentCL1_qual2(0),
+  fHOutCentV0Mqual1(0),
+  fHOutCentTRKqual1(0),
+  fHOutCentCL1qual1(0),
+  fHOutCentV0Mqual2(0),
+  fHOutCentTRKqual2(0),
+  fHOutCentCL1qual2(0),
   fHOutQuality(0),
   fHOutVertex(0)
 {
@@ -238,10 +236,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   AliInfo("Centrality Selection enabled.");
   DefineOutput(1, TList::Class());
   for (Int_t i=0; i<2667; i++) {
-    V0MScaleFactor[i]=0.0;
-    SPDScaleFactor[i]=0.0;
-    TPCScaleFactor[i]=0.0;
-    V0MScaleFactorMC[i]=0.0;
+    fV0MScaleFactor[i]=0.0;
+    fSPDScaleFactor[i]=0.0;
+    fTPCScaleFactor[i]=0.0;
+    fV0MScaleFactorMC[i]=0.0;
   }
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
@@ -262,7 +260,6 @@ AliCentralitySelectionTask& AliCentralitySelectionTask::operator=(const AliCentr
 //________________________________________________________________________
 AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelectionTask& ana):
   AliAnalysisTaskSE(ana),
-  fDebug(ana.fDebug),	  
   fAnalysisInput(ana.fDebug),
   fIsMCInput(ana.fIsMCInput),
   fFile(ana.fFile),
@@ -322,21 +319,21 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultV0MvsCL1(ana.fHOutMultV0MvsCL1),
   fHOutMultV0MvsTRK(ana.fHOutMultV0MvsTRK),
   fHOutMultTRKvsCL1(ana.fHOutMultTRKvsCL1),
-  fHOutCentV0M_qual1(ana.fHOutCentV0M_qual1),
-  fHOutCentTRK_qual1(ana.fHOutCentTRK_qual1),
-  fHOutCentCL1_qual1(ana.fHOutCentCL1_qual1),
-  fHOutCentV0M_qual2(ana.fHOutCentV0M_qual2),
-  fHOutCentTRK_qual2(ana.fHOutCentTRK_qual2),
-  fHOutCentCL1_qual2(ana.fHOutCentCL1_qual2),
+  fHOutCentV0Mqual1(ana.fHOutCentV0Mqual1),
+  fHOutCentTRKqual1(ana.fHOutCentTRKqual1),
+  fHOutCentCL1qual1(ana.fHOutCentCL1qual1),
+  fHOutCentV0Mqual2(ana.fHOutCentV0Mqual2),
+  fHOutCentTRKqual2(ana.fHOutCentTRKqual2),
+  fHOutCentCL1qual2(ana.fHOutCentCL1qual2),
   fHOutQuality(ana.fHOutQuality),
   fHOutVertex(ana.fHOutVertex)
 {
   // Copy Constructor	
     for (Int_t i=0; i<2667; i++) {
-	V0MScaleFactor[i]=0.0;
-	SPDScaleFactor[i]=0.0;
-	TPCScaleFactor[i]=0.0;
-	V0MScaleFactorMC[i]=0.0;
+	fV0MScaleFactor[i]=0.0;
+	fSPDScaleFactor[i]=0.0;
+	fTPCScaleFactor[i]=0.0;
+	fV0MScaleFactorMC[i]=0.0;
     }
 
 }
@@ -386,13 +383,13 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
   fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
 
-  fHOutCentV0M_qual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
-  fHOutCentTRK_qual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
-  fHOutCentCL1_qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
+  fHOutCentV0Mqual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
+  fHOutCentTRKqual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
+  fHOutCentCL1qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
 
-  fHOutCentV0M_qual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
-  fHOutCentTRK_qual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
-  fHOutCentCL1_qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
+  fHOutCentV0Mqual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
+  fHOutCentTRKqual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
+  fHOutCentCL1qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
 
   fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 10,-0.5,9.5);
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
@@ -423,12 +420,12 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutMultV0MvsCL1);
   fOutputList->Add(  fHOutMultV0MvsTRK);
   fOutputList->Add(  fHOutMultTRKvsCL1);
-  fOutputList->Add(  fHOutCentV0M_qual1 );
-  fOutputList->Add(  fHOutCentTRK_qual1 );
-  fOutputList->Add(  fHOutCentCL1_qual1 );                   
-  fOutputList->Add(  fHOutCentV0M_qual2 );
-  fOutputList->Add(  fHOutCentTRK_qual2 );
-  fOutputList->Add(  fHOutCentCL1_qual2 );
+  fOutputList->Add(  fHOutCentV0Mqual1 );
+  fOutputList->Add(  fHOutCentTRKqual1 );
+  fOutputList->Add(  fHOutCentCL1qual1 );                   
+  fOutputList->Add(  fHOutCentV0Mqual2 );
+  fOutputList->Add(  fHOutCentTRKqual2 );
+  fOutputList->Add(  fHOutCentCL1qual2 );
   fOutputList->Add(  fHOutQuality );
   fOutputList->Add(  fHOutVertex );
 
@@ -537,12 +534,12 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	for(UShort_t sec =0; sec < nsec;  sec++)  {
 	  for(UShort_t strip = 0; strip < nstr; strip++) {
 	    
-	    Float_t FMDmult = fmd->Multiplicity(det,ring,sec,strip);
-	    if(FMDmult == 0 || FMDmult == AliESDFMD::kInvalidMult) continue;
+	    Float_t fmdMult = fmd->Multiplicity(det,ring,sec,strip);
+	    if(fmdMult == 0 || fmdMult == AliESDFMD::kInvalidMult) continue;
 	    
 	    Float_t nParticles=0;
 	    
-	    if(FMDmult > fFMDLowCut) {
+	    if(fmdMult > fFMDLowCut) {
 	      nParticles = 1.;
 	    }
 	    
@@ -586,17 +583,17 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Scaling for MC
   if (fIsMCInput) {
     fUseScaling=kFALSE;
-    Float_t temp_scalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
-    v0Corr  = Short_t((multV0A+multV0C)  * temp_scalefactorV0M);
+    Float_t tempScalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
+    v0Corr  = Short_t((multV0A+multV0C)  * tempScalefactorV0M);
   }
   // ***** Scaling for Data
   if (fUseScaling) {
-    Float_t temp_scalefactorV0M = MyGetScaleFactor(fCurrentRun,0);
-    Float_t temp_scalefactorSPD = MyGetScaleFactor(fCurrentRun,1);
-    Float_t temp_scalefactorTPC = MyGetScaleFactor(fCurrentRun,2);
-    v0Corr  = Short_t(v0Corr / temp_scalefactorV0M);
-    spdCorr = spdCorr / temp_scalefactorSPD;
-    nTracks = Int_t(nTracks / temp_scalefactorTPC);
+    Float_t tempScalefactorV0M = MyGetScaleFactor(fCurrentRun,0);
+    Float_t tempScalefactorSPD = MyGetScaleFactor(fCurrentRun,1);
+    Float_t tempScalefactorTPC = MyGetScaleFactor(fCurrentRun,2);
+    v0Corr  = Short_t(v0Corr / tempScalefactorV0M);
+    spdCorr = spdCorr / tempScalefactorSPD;
+    nTracks = Int_t(nTracks / tempScalefactorTPC);
   }
 
   // ***** Centrality Selection
@@ -680,13 +677,13 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     fHOutMultCL1->Fill(spdCorr);
     fHOutMultTRKvsCL1->Fill(nTracks,spdCorr);
   } else if (fQuality ==1) {
-    fHOutCentV0M_qual1->Fill(fCentV0M);
-    fHOutCentTRK_qual1->Fill(fCentTRK);
-    fHOutCentCL1_qual1->Fill(fCentCL1);
+    fHOutCentV0Mqual1->Fill(fCentV0M);
+    fHOutCentTRKqual1->Fill(fCentTRK);
+    fHOutCentCL1qual1->Fill(fCentCL1);
   } else {
-    fHOutCentV0M_qual2->Fill(fCentV0M);
-    fHOutCentTRK_qual2->Fill(fCentTRK);
-    fHOutCentCL1_qual2->Fill(fCentCL1);
+    fHOutCentV0Mqual2->Fill(fCentV0M);
+    fHOutCentTRKqual2->Fill(fCentTRK);
+    fHOutCentCL1qual2->Fill(fCentCL1);
   }
 
   PostData(1, fOutputList); 
@@ -793,7 +790,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 {
 // Clean outliers
   Float_t val= -0.143789 + 0.288874 * v0;
-  Float_t SPDsigma[101]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
+  Float_t spdSigma[101]={231.483, 189.446, 183.359, 179.923, 174.229, 170.309, 165.021, 
 			 160.84, 159.33, 154.453, 151.644, 148.337, 145.215, 142.353, 
 			 139.351, 136, 133.838, 129.885, 127.36, 125.032, 122.21, 120.3, 
 			 117.766, 114.77, 113.1, 110.268, 107.463, 105.293, 102.845, 
@@ -808,7 +805,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_
 			 15.7185, 15.3006, 14.7432, 14.4174, 14.0805, 13.7638, 13.7638, 
 			 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 13.7638, 18.0803, 18.0803};
 
-  if ( TMath::Abs(spd-val) > fOutliersCut*SPDsigma[cent] ) 
+  if ( TMath::Abs(spd-val) > fOutliersCut*spdSigma[cent] ) 
     return kTRUE;
   else 
     return kFALSE;
@@ -819,7 +816,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 {
 // Clean outliers
   Float_t val = -0.540691 + 0.128358 * v0;
-  Float_t TPCsigma[101]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
+  Float_t tpcSigma[101]={106.439, 89.2834, 86.7568, 85.3641, 83.379, 81.6093, 79.3189, 
 			 78.0616, 77.2167, 75.0021, 73.9957, 72.0926, 71.0442, 69.8395, 
 			 68.1169, 66.6676, 66.0038, 64.2284, 63.3845, 61.7439, 60.642, 
 			 59.5383, 58.3696, 57.0227, 56.0619, 54.7108, 53.8382, 52.3398, 
@@ -834,7 +831,7 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 			 8.67375, 8.43029, 8.34818, 8.33484, 8.40709, 8.3974, 8.32814, 
 			 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 8.32814, 12.351, 12.351};
 
-  if ( TMath::Abs(tracks-val) > fOutliersCut*TPCsigma[cent] ) 
+  if ( TMath::Abs(tracks-val) > fOutliersCut*tpcSigma[cent] ) 
     return kTRUE;
   else 
     return kFALSE;
@@ -870,11 +867,11 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactor(Int_t runnumber, Int_t flag
 
   Float_t scalefactor=0.0;
   if (flag==0)
-    scalefactor = V0MScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
+    scalefactor = fV0MScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
   else if (flag==1)
-    scalefactor = SPDScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
+    scalefactor = fSPDScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
   else if (flag==2)
-    scalefactor = TPCScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
+    scalefactor = fTPCScaleFactor[runnumber - fLowRunN]; // subtracting reference offset index
 
   return scalefactor;
 
@@ -889,7 +886,7 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber) const
     return 0.0;
   }
 
-  Float_t scalefactor= V0MScaleFactorMC[runnumber - fLowRunN]; // subtracting reference offset index
+  Float_t scalefactor= fV0MScaleFactorMC[runnumber - fLowRunN]; // subtracting reference offset index
   return scalefactor;
 
 }
@@ -898,200 +895,200 @@ Float_t AliCentralitySelectionTask::MyGetScaleFactorMC(Int_t runnumber) const
 void AliCentralitySelectionTask::MyInitScaleFactor () 
 {
 // Initialize the scaling factors
-  for (int i=0; i<=(fHighRunN-fLowRunN); i++) V0MScaleFactor[i] = 0.0;
-  for (int i=0; i<=(fHighRunN-fLowRunN); i++) SPDScaleFactor[i] = 0.0;
-  for (int i=0; i<=(fHighRunN-fLowRunN); i++) TPCScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) fV0MScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) fSPDScaleFactor[i] = 0.0;
+  for (int i=0; i<=(fHighRunN-fLowRunN); i++) fTPCScaleFactor[i] = 0.0;
   
   // scale factors determined from <V0 charge> on a run-by-run basis
-   V0MScaleFactor[310] = 1.;
-   V0MScaleFactor[311] = 1.;
-   V0MScaleFactor[514] = 1.0046;
-   V0MScaleFactor[515] = 0.983535;
-   V0MScaleFactor[579] = 0.988185;
-   V0MScaleFactor[580] = 0.983351;
-   V0MScaleFactor[581] = 0.989013;
-   V0MScaleFactor[583] = 0.990056;
-   V0MScaleFactor[588] = 0.974438;
-   V0MScaleFactor[589] = 0.981572;
-   V0MScaleFactor[590] = 0.989316;
-   V0MScaleFactor[592] = 0.98345;
-   V0MScaleFactor[688] = 0.993647;
-   V0MScaleFactor[690] = 0.994758;
-   V0MScaleFactor[693] = 0.989569;
-   V0MScaleFactor[698] = 0.993119;
-   V0MScaleFactor[744] = 0.989583;
-   V0MScaleFactor[757] = 0.990377;
-   V0MScaleFactor[787] = 0.990176;
-   V0MScaleFactor[788] = 0.98723;
-   V0MScaleFactor[834] = 1.00403;
-   V0MScaleFactor[835] = 0.994376;
-   V0MScaleFactor[840] = 0.99759;
-   V0MScaleFactor[842] = 1.01031;
-   V0MScaleFactor[900] = 0.996216;
-   V0MScaleFactor[901] = 0.994205;
-   V0MScaleFactor[992] = 0.998479;
-   V0MScaleFactor[997] = 1.00078;
-   V0MScaleFactor[1299] = 1.00515;
-   V0MScaleFactor[1303] = 1.00094;
-   V0MScaleFactor[1339] = 0.986596;
-   V0MScaleFactor[1346] = 0.972226;
-   V0MScaleFactor[1349] = 0.960358;
-   V0MScaleFactor[1350] = 0.970023;
-   V0MScaleFactor[1374] = 1.00575;
-   V0MScaleFactor[1545] = 1.00471;
-   V0MScaleFactor[1587] = 1.00611;
-   V0MScaleFactor[1588] = 1.00976;
-   V0MScaleFactor[1618] = 1.00771;
-   V0MScaleFactor[1682] = 1.01622;
-   V0MScaleFactor[1727] = 1.01305;
-   V0MScaleFactor[1728] = 1.00388;
-   V0MScaleFactor[1731] = 1.00673;
-   V0MScaleFactor[1732] = 1.00916;
-   V0MScaleFactor[1770] = 1.0092;
-   V0MScaleFactor[1773] = 1.00728;
-   V0MScaleFactor[1786] = 1.01655;
-   V0MScaleFactor[1787] = 1.00672;
-   V0MScaleFactor[1801] = 0.983339;
-   V0MScaleFactor[1802] = 1.00754;
-   V0MScaleFactor[1811] = 1.00608;
-   V0MScaleFactor[1815] = 1.01227;
-   V0MScaleFactor[1879] = 0.99907;
-   V0MScaleFactor[1881] = 0.995696;
-   V0MScaleFactor[2186] = 1.00559;
-   V0MScaleFactor[2187] = 1.00631;
-   V0MScaleFactor[2254] = 1.01512;
-   V0MScaleFactor[2256] = 0.998727;
-   V0MScaleFactor[2321] = 1.00701;
-   SPDScaleFactor[310] = 1.00211;
-   SPDScaleFactor[311] = 1.00067;
-   SPDScaleFactor[514] = 1.02268;
-   SPDScaleFactor[515] = 0.994902;
-   SPDScaleFactor[579] = 1.00215;
-   SPDScaleFactor[580] = 0.993421;
-   SPDScaleFactor[581] = 1.00129;
-   SPDScaleFactor[583] = 1.00242;
-   SPDScaleFactor[588] = 0.984762;
-   SPDScaleFactor[589] = 0.994355;
-   SPDScaleFactor[590] = 1.00073;
-   SPDScaleFactor[592] = 0.995889;
-   SPDScaleFactor[688] = 0.994532;
-   SPDScaleFactor[690] = 0.998307;
-   SPDScaleFactor[693] = 0.994052;
-   SPDScaleFactor[698] = 0.993224;
-   SPDScaleFactor[744] = 0.993279;
-   SPDScaleFactor[757] = 0.992494;
-   SPDScaleFactor[787] = 0.992678;
-   SPDScaleFactor[788] = 0.996563;
-   SPDScaleFactor[834] = 1.01116;
-   SPDScaleFactor[835] = 0.993108;
-   SPDScaleFactor[840] = 0.997574;
-   SPDScaleFactor[842] = 1.01829;
-   SPDScaleFactor[900] = 0.999438;
-   SPDScaleFactor[901] = 0.995849;
-   SPDScaleFactor[992] = 0.999227;
-   SPDScaleFactor[997] = 1.00575;
-   SPDScaleFactor[1299] = 0.99877;
-   SPDScaleFactor[1303] = 0.999682;
-   SPDScaleFactor[1339] = 0.978198;
-   SPDScaleFactor[1346] = 0.964178;
-   SPDScaleFactor[1349] = 0.959439;
-   SPDScaleFactor[1350] = 0.956945;
-   SPDScaleFactor[1374] = 0.994434;
-   SPDScaleFactor[1545] = 1.0016;
-   SPDScaleFactor[1587] = 1.00153;
-   SPDScaleFactor[1588] = 1.00698;
-   SPDScaleFactor[1618] = 1.00554;
-   SPDScaleFactor[1682] = 1.0123;
-   SPDScaleFactor[1727] = 1.011;
-   SPDScaleFactor[1728] = 1.00143;
-   SPDScaleFactor[1731] = 1.00486;
-   SPDScaleFactor[1732] = 1.00646;
-   SPDScaleFactor[1770] = 1.00515;
-   SPDScaleFactor[1773] = 1.00485;
-   SPDScaleFactor[1786] = 1.01215;
-   SPDScaleFactor[1787] = 1.00419;
-   SPDScaleFactor[1801] = 0.983327;
-   SPDScaleFactor[1802] = 1.00529;
-   SPDScaleFactor[1811] = 1.00367;
-   SPDScaleFactor[1815] = 1.01045;
-   SPDScaleFactor[1879] = 0.996374;
-   SPDScaleFactor[1881] = 0.988827;
-   SPDScaleFactor[2186] = 1.00354;
-   SPDScaleFactor[2187] = 1.00397;
-   SPDScaleFactor[2254] = 1.01138;
-   SPDScaleFactor[2256] = 0.996641;
-   SPDScaleFactor[2321] = 1.00357;
-   TPCScaleFactor[310] = 1.00434;
-   TPCScaleFactor[311] = 1.0056;
-   TPCScaleFactor[514] = 1.02185;
-   TPCScaleFactor[515] = 1.0036;
-   TPCScaleFactor[579] = 1.00607;
-   TPCScaleFactor[580] = 1.00183;
-   TPCScaleFactor[581] = 1.00693;
-   TPCScaleFactor[583] = 1.00746;
-   TPCScaleFactor[588] = 0.990524;
-   TPCScaleFactor[589] = 0.998582;
-   TPCScaleFactor[590] = 1.00618;
-   TPCScaleFactor[592] = 1.00088;
-   TPCScaleFactor[688] = 1.00598;
-   TPCScaleFactor[690] = 1.00658;
-   TPCScaleFactor[693] = 1.00144;
-   TPCScaleFactor[698] = 1.00279;
-   TPCScaleFactor[744] = 1.00122;
-   TPCScaleFactor[757] = 1.002;
-   TPCScaleFactor[787] = 0.997818;
-   TPCScaleFactor[788] = 0.994583;
-   TPCScaleFactor[834] = 1.01508;
-   TPCScaleFactor[835] = 1.00218;
-   TPCScaleFactor[840] = 1.00569;
-   TPCScaleFactor[842] = 1.01789;
-   TPCScaleFactor[900] = 1.00739;
-   TPCScaleFactor[901] = 1.00462;
-   TPCScaleFactor[992] = 1.00502;
-   TPCScaleFactor[997] = 1.00943;
-   TPCScaleFactor[1299] = 1.00438;
-   TPCScaleFactor[1303] = 0.996701;
-   TPCScaleFactor[1339] = 0.978641;
-   TPCScaleFactor[1346] = 0.968906;
-   TPCScaleFactor[1349] = 0.954311;
-   TPCScaleFactor[1350] = 0.958764;
-   TPCScaleFactor[1374] = 0.997899;
-   TPCScaleFactor[1545] = 0.992;
-   TPCScaleFactor[1587] = 0.992635;
-   TPCScaleFactor[1588] = 1.00207;
-   TPCScaleFactor[1618] = 1.00126;
-   TPCScaleFactor[1682] = 1.00324;
-   TPCScaleFactor[1727] = 1.00042;
-   TPCScaleFactor[1728] = 0.978881;
-   TPCScaleFactor[1731] = 0.999818;
-   TPCScaleFactor[1732] = 1.00109;
-   TPCScaleFactor[1770] = 0.99935;
-   TPCScaleFactor[1773] = 0.998531;
-   TPCScaleFactor[1786] = 0.999125;
-   TPCScaleFactor[1787] = 0.998479;
-   TPCScaleFactor[1801] = 0.9775;
-   TPCScaleFactor[1802] = 0.999095;
-   TPCScaleFactor[1811] = 0.998197;
-   TPCScaleFactor[1815] = 1.00413;
-   TPCScaleFactor[1879] = 0.990916;
-   TPCScaleFactor[1881] = 0.987241;
-   TPCScaleFactor[2186] = 1.00048;
-   TPCScaleFactor[2187] = 1.00057;
-   TPCScaleFactor[2254] = 1.00588;
-   TPCScaleFactor[2256] = 0.991503;
-   TPCScaleFactor[2321] = 1.00057;
+   fV0MScaleFactor[310] = 1.;
+   fV0MScaleFactor[311] = 1.;
+   fV0MScaleFactor[514] = 1.0046;
+   fV0MScaleFactor[515] = 0.983535;
+   fV0MScaleFactor[579] = 0.988185;
+   fV0MScaleFactor[580] = 0.983351;
+   fV0MScaleFactor[581] = 0.989013;
+   fV0MScaleFactor[583] = 0.990056;
+   fV0MScaleFactor[588] = 0.974438;
+   fV0MScaleFactor[589] = 0.981572;
+   fV0MScaleFactor[590] = 0.989316;
+   fV0MScaleFactor[592] = 0.98345;
+   fV0MScaleFactor[688] = 0.993647;
+   fV0MScaleFactor[690] = 0.994758;
+   fV0MScaleFactor[693] = 0.989569;
+   fV0MScaleFactor[698] = 0.993119;
+   fV0MScaleFactor[744] = 0.989583;
+   fV0MScaleFactor[757] = 0.990377;
+   fV0MScaleFactor[787] = 0.990176;
+   fV0MScaleFactor[788] = 0.98723;
+   fV0MScaleFactor[834] = 1.00403;
+   fV0MScaleFactor[835] = 0.994376;
+   fV0MScaleFactor[840] = 0.99759;
+   fV0MScaleFactor[842] = 1.01031;
+   fV0MScaleFactor[900] = 0.996216;
+   fV0MScaleFactor[901] = 0.994205;
+   fV0MScaleFactor[992] = 0.998479;
+   fV0MScaleFactor[997] = 1.00078;
+   fV0MScaleFactor[1299] = 1.00515;
+   fV0MScaleFactor[1303] = 1.00094;
+   fV0MScaleFactor[1339] = 0.986596;
+   fV0MScaleFactor[1346] = 0.972226;
+   fV0MScaleFactor[1349] = 0.960358;
+   fV0MScaleFactor[1350] = 0.970023;
+   fV0MScaleFactor[1374] = 1.00575;
+   fV0MScaleFactor[1545] = 1.00471;
+   fV0MScaleFactor[1587] = 1.00611;
+   fV0MScaleFactor[1588] = 1.00976;
+   fV0MScaleFactor[1618] = 1.00771;
+   fV0MScaleFactor[1682] = 1.01622;
+   fV0MScaleFactor[1727] = 1.01305;
+   fV0MScaleFactor[1728] = 1.00388;
+   fV0MScaleFactor[1731] = 1.00673;
+   fV0MScaleFactor[1732] = 1.00916;
+   fV0MScaleFactor[1770] = 1.0092;
+   fV0MScaleFactor[1773] = 1.00728;
+   fV0MScaleFactor[1786] = 1.01655;
+   fV0MScaleFactor[1787] = 1.00672;
+   fV0MScaleFactor[1801] = 0.983339;
+   fV0MScaleFactor[1802] = 1.00754;
+   fV0MScaleFactor[1811] = 1.00608;
+   fV0MScaleFactor[1815] = 1.01227;
+   fV0MScaleFactor[1879] = 0.99907;
+   fV0MScaleFactor[1881] = 0.995696;
+   fV0MScaleFactor[2186] = 1.00559;
+   fV0MScaleFactor[2187] = 1.00631;
+   fV0MScaleFactor[2254] = 1.01512;
+   fV0MScaleFactor[2256] = 0.998727;
+   fV0MScaleFactor[2321] = 1.00701;
+   fSPDScaleFactor[310] = 1.00211;
+   fSPDScaleFactor[311] = 1.00067;
+   fSPDScaleFactor[514] = 1.02268;
+   fSPDScaleFactor[515] = 0.994902;
+   fSPDScaleFactor[579] = 1.00215;
+   fSPDScaleFactor[580] = 0.993421;
+   fSPDScaleFactor[581] = 1.00129;
+   fSPDScaleFactor[583] = 1.00242;
+   fSPDScaleFactor[588] = 0.984762;
+   fSPDScaleFactor[589] = 0.994355;
+   fSPDScaleFactor[590] = 1.00073;
+   fSPDScaleFactor[592] = 0.995889;
+   fSPDScaleFactor[688] = 0.994532;
+   fSPDScaleFactor[690] = 0.998307;
+   fSPDScaleFactor[693] = 0.994052;
+   fSPDScaleFactor[698] = 0.993224;
+   fSPDScaleFactor[744] = 0.993279;
+   fSPDScaleFactor[757] = 0.992494;
+   fSPDScaleFactor[787] = 0.992678;
+   fSPDScaleFactor[788] = 0.996563;
+   fSPDScaleFactor[834] = 1.01116;
+   fSPDScaleFactor[835] = 0.993108;
+   fSPDScaleFactor[840] = 0.997574;
+   fSPDScaleFactor[842] = 1.01829;
+   fSPDScaleFactor[900] = 0.999438;
+   fSPDScaleFactor[901] = 0.995849;
+   fSPDScaleFactor[992] = 0.999227;
+   fSPDScaleFactor[997] = 1.00575;
+   fSPDScaleFactor[1299] = 0.99877;
+   fSPDScaleFactor[1303] = 0.999682;
+   fSPDScaleFactor[1339] = 0.978198;
+   fSPDScaleFactor[1346] = 0.964178;
+   fSPDScaleFactor[1349] = 0.959439;
+   fSPDScaleFactor[1350] = 0.956945;
+   fSPDScaleFactor[1374] = 0.994434;
+   fSPDScaleFactor[1545] = 1.0016;
+   fSPDScaleFactor[1587] = 1.00153;
+   fSPDScaleFactor[1588] = 1.00698;
+   fSPDScaleFactor[1618] = 1.00554;
+   fSPDScaleFactor[1682] = 1.0123;
+   fSPDScaleFactor[1727] = 1.011;
+   fSPDScaleFactor[1728] = 1.00143;
+   fSPDScaleFactor[1731] = 1.00486;
+   fSPDScaleFactor[1732] = 1.00646;
+   fSPDScaleFactor[1770] = 1.00515;
+   fSPDScaleFactor[1773] = 1.00485;
+   fSPDScaleFactor[1786] = 1.01215;
+   fSPDScaleFactor[1787] = 1.00419;
+   fSPDScaleFactor[1801] = 0.983327;
+   fSPDScaleFactor[1802] = 1.00529;
+   fSPDScaleFactor[1811] = 1.00367;
+   fSPDScaleFactor[1815] = 1.01045;
+   fSPDScaleFactor[1879] = 0.996374;
+   fSPDScaleFactor[1881] = 0.988827;
+   fSPDScaleFactor[2186] = 1.00354;
+   fSPDScaleFactor[2187] = 1.00397;
+   fSPDScaleFactor[2254] = 1.01138;
+   fSPDScaleFactor[2256] = 0.996641;
+   fSPDScaleFactor[2321] = 1.00357;
+   fTPCScaleFactor[310] = 1.00434;
+   fTPCScaleFactor[311] = 1.0056;
+   fTPCScaleFactor[514] = 1.02185;
+   fTPCScaleFactor[515] = 1.0036;
+   fTPCScaleFactor[579] = 1.00607;
+   fTPCScaleFactor[580] = 1.00183;
+   fTPCScaleFactor[581] = 1.00693;
+   fTPCScaleFactor[583] = 1.00746;
+   fTPCScaleFactor[588] = 0.990524;
+   fTPCScaleFactor[589] = 0.998582;
+   fTPCScaleFactor[590] = 1.00618;
+   fTPCScaleFactor[592] = 1.00088;
+   fTPCScaleFactor[688] = 1.00598;
+   fTPCScaleFactor[690] = 1.00658;
+   fTPCScaleFactor[693] = 1.00144;
+   fTPCScaleFactor[698] = 1.00279;
+   fTPCScaleFactor[744] = 1.00122;
+   fTPCScaleFactor[757] = 1.002;
+   fTPCScaleFactor[787] = 0.997818;
+   fTPCScaleFactor[788] = 0.994583;
+   fTPCScaleFactor[834] = 1.01508;
+   fTPCScaleFactor[835] = 1.00218;
+   fTPCScaleFactor[840] = 1.00569;
+   fTPCScaleFactor[842] = 1.01789;
+   fTPCScaleFactor[900] = 1.00739;
+   fTPCScaleFactor[901] = 1.00462;
+   fTPCScaleFactor[992] = 1.00502;
+   fTPCScaleFactor[997] = 1.00943;
+   fTPCScaleFactor[1299] = 1.00438;
+   fTPCScaleFactor[1303] = 0.996701;
+   fTPCScaleFactor[1339] = 0.978641;
+   fTPCScaleFactor[1346] = 0.968906;
+   fTPCScaleFactor[1349] = 0.954311;
+   fTPCScaleFactor[1350] = 0.958764;
+   fTPCScaleFactor[1374] = 0.997899;
+   fTPCScaleFactor[1545] = 0.992;
+   fTPCScaleFactor[1587] = 0.992635;
+   fTPCScaleFactor[1588] = 1.00207;
+   fTPCScaleFactor[1618] = 1.00126;
+   fTPCScaleFactor[1682] = 1.00324;
+   fTPCScaleFactor[1727] = 1.00042;
+   fTPCScaleFactor[1728] = 0.978881;
+   fTPCScaleFactor[1731] = 0.999818;
+   fTPCScaleFactor[1732] = 1.00109;
+   fTPCScaleFactor[1770] = 0.99935;
+   fTPCScaleFactor[1773] = 0.998531;
+   fTPCScaleFactor[1786] = 0.999125;
+   fTPCScaleFactor[1787] = 0.998479;
+   fTPCScaleFactor[1801] = 0.9775;
+   fTPCScaleFactor[1802] = 0.999095;
+   fTPCScaleFactor[1811] = 0.998197;
+   fTPCScaleFactor[1815] = 1.00413;
+   fTPCScaleFactor[1879] = 0.990916;
+   fTPCScaleFactor[1881] = 0.987241;
+   fTPCScaleFactor[2186] = 1.00048;
+   fTPCScaleFactor[2187] = 1.00057;
+   fTPCScaleFactor[2254] = 1.00588;
+   fTPCScaleFactor[2256] = 0.991503;
+   fTPCScaleFactor[2321] = 1.00057;
 
 
   // set all missing values to the value of the run before it ....
   for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
-    if (V0MScaleFactor[i] == 0.0) {     
+    if (fV0MScaleFactor[i] == 0.0) {     
       if (i==0) {
-	V0MScaleFactor[i] = 1.00;
+	fV0MScaleFactor[i] = 1.00;
       } else {
 	// search for last run number with non-zero value
 	for (int j=i-1;j>=0;j--) {
-	  if (V0MScaleFactor[j] != 0.0) {
-	    V0MScaleFactor[i] = V0MScaleFactor[j];
+	  if (fV0MScaleFactor[j] != 0.0) {
+	    fV0MScaleFactor[i] = fV0MScaleFactor[j];
 	    break;
 	  }
 	}
@@ -1100,13 +1097,13 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
   } // end loop over checking all run-numbers 
 
   for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
-    if (SPDScaleFactor[i] == 0.0) {     
+    if (fSPDScaleFactor[i] == 0.0) {     
       if (i==0) {
-	SPDScaleFactor[i] = 1.00;
+	fSPDScaleFactor[i] = 1.00;
       } else {
 	for (int j=i-1;j>=0;j--) {
-	  if (SPDScaleFactor[j] != 0.0) {
-	    SPDScaleFactor[i] = SPDScaleFactor[j];
+	  if (fSPDScaleFactor[j] != 0.0) {
+	    fSPDScaleFactor[i] = fSPDScaleFactor[j];
 	    break;
 	  }
 	}
@@ -1115,13 +1112,13 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
   } 
 
   for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
-    if (TPCScaleFactor[i] == 0.0) {     
+    if (fTPCScaleFactor[i] == 0.0) {     
       if (i==0) {
-	TPCScaleFactor[i] = 1.00;
+	fTPCScaleFactor[i] = 1.00;
       } else {
 	for (int j=i-1;j>=0;j--) {
-	  if (TPCScaleFactor[j] != 0.0) {
-	    TPCScaleFactor[i] = TPCScaleFactor[j];
+	  if (fTPCScaleFactor[j] != 0.0) {
+	    fTPCScaleFactor[i] = fTPCScaleFactor[j];
 	    break;
 	  }
 	}
@@ -1130,7 +1127,7 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
   } 
   
 
-  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactor[i] << " for Run " << i+fLowRunN << endl;
+  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << fV0MScaleFactor[i] << " for Run " << i+fLowRunN << endl;
   
   return;
 
@@ -1141,19 +1138,19 @@ void AliCentralitySelectionTask::MyInitScaleFactor ()
 void AliCentralitySelectionTask::MyInitScaleFactorMC() 
 {
 // Initialize the MC scaling factors
-  for (int i=0; i<(fHighRunN-fLowRunN); i++) V0MScaleFactorMC[i] = 0.0;
+  for (int i=0; i<(fHighRunN-fLowRunN); i++) fV0MScaleFactorMC[i] = 0.0;
   // scale factors determined from <V0 charge> on a run-by-run basis
-  V0MScaleFactorMC[0] = 0.75108;
+  fV0MScaleFactorMC[0] = 0.75108;
   // set all missing values to the value of the run before it ....
   for (int i=0; i<=(fHighRunN-fLowRunN); i++) {    
-    if (V0MScaleFactorMC[i] == 0.0) {     
+    if (fV0MScaleFactorMC[i] == 0.0) {     
       if (i==0) {
-	V0MScaleFactorMC[i] = 1.00;
+	fV0MScaleFactorMC[i] = 1.00;
       } else {
 	// search for last run number with non-zero value
 	for (int j=i-1;j>=0;j--) {
-	  if (V0MScaleFactorMC[j] != 0.0) {
-	    V0MScaleFactorMC[i] = V0MScaleFactorMC[j];
+	  if (fV0MScaleFactorMC[j] != 0.0) {
+	    fV0MScaleFactorMC[i] = fV0MScaleFactorMC[j];
 	    break;
 	  }
 	}
@@ -1162,7 +1159,7 @@ void AliCentralitySelectionTask::MyInitScaleFactorMC()
   } // end loop over checking all run-numbers 
 
 
-  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << V0MScaleFactorMC[i] << " for Run " << i+fLowRunN << endl;
+  //    for (int i=0; i<=(fHighRunN-fLowRunN); i++) cout << "Scale Factor = " << fV0MScaleFactorMC[i] << " for Run " << i+fLowRunN << endl;
   
   return;
 
