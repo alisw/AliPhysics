@@ -64,12 +64,11 @@ Float_t AliPHOSRecEmcManager::Dispersion(Float_t ei) const
   return ei;
 }
 
-Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t ai, Float_t ei, Float_t fi, Float_t& gi) const
+Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t ai, Float_t ei, Float_t, Float_t& gi) const
 {
   // Chi2 used in OneGam (one-gamma fitting).
   // gi is d(Chi2)/d(ai).
 
-  fi = 0 ; 
   Float_t da = ai - ei;
   Float_t d = ei; // we assume that sigma(E) = sqrt(E)
   gi = 2.*(ai-ei)/d;
@@ -78,10 +77,9 @@ Float_t AliPHOSRecEmcManager::OneGamChi2(Float_t ai, Float_t ei, Float_t fi, Flo
 
 }
 
-Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t ai, Float_t ei, Float_t fi, Float_t& gi) const
+Float_t AliPHOSRecEmcManager::TwoGamChi2(Float_t ai, Float_t ei, Float_t, Float_t& gi) const
 {
   // calculates chi^2
-  fi = 0 ; 
   Float_t da = ai - ei;
   Float_t d = ei; // we assume that sigma(E) = sqrt(E)
   gi = 2.*(ai-ei)/d;

@@ -565,9 +565,10 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     for(index = 0; index <fCpvLast-fCpvFirst; index ++)
       cpvExist[index] = kTRUE ;
   }
- else 
+  else {
+    if ( emcExist != 0) delete [] emcExist;
     return;
-  
+  }
   
   // Finds the smallest links and makes pairs of CPV and EMC clusters with smallest distance 
   TIter nextUp(fLinkUpArray) ;
@@ -610,7 +611,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 	  new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment(emcclu,nullpointer) ;
         else
           new ((*fTrackSegments)[fNTrackSegments]) AliPHOSTrackSegment(emcclu,0,track,dx,dz);
-	(dynamic_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
+	(static_cast<AliPHOSTrackSegment *>(fTrackSegments->At(fNTrackSegments)))->SetIndexInList(fNTrackSegments);
 	fNTrackSegments++;    
       } 
     }

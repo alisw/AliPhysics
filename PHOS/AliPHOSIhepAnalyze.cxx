@@ -791,13 +791,13 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
      AliError(Form("Could not obtain the Loader object !"));
      return ;
    }
-  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
      
   printf("\n=================== Event %10d ===================\n",nev);
   //16.03.2011: DP. Code below seems to be obsollete
   //Comment it to sutisfy Coverity
 /* 
+  AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   fRunLoader->GetEvent(nev);
   Int_t ntracks = fRunLoader->GetHeader()->GetNtrack();
