@@ -89,6 +89,8 @@ protected:
     Int_t fNeutralMultiplicity; /** Multiplicity of neutral particles in the event */
         
     void CreateEtaPtHisto2D(TString name, TString title);
+    void CreateResolutionPtHisto2D(TString name, TString title, TString xtitle, TString ytitle);
+    void CreatePtHisto1D(TString name, TString title, TString xtitle, TString ytitle);
     void CreateEtaHisto1D(TString name, TString title);
     void CreateHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh,Int_t ybins,Float_t ylow,Float_t yhigh);
     void CreateHisto1D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Float_t xlow,Float_t xhigh);
@@ -96,6 +98,8 @@ protected:
     void CreateIntHisto2D(TString name, TString title, TString xtitle, TString ytitle,Int_t xbins, Int_t xlow,Int_t xhigh,Int_t ybins,Int_t ylow,Int_t yhigh);
     void FillHisto1D(TString histname, Float_t x, Float_t weight);
     void FillHisto2D(TString histname, Float_t x, Float_t y, Float_t weight);
+    Bool_t GoodEvent() const {return fGoodEvent;}
+    Float_t TrueP(float pTrec);
 
     Float_t Et(TParticle *part, float mass = -1000);
     Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const;
@@ -106,8 +110,11 @@ protected:
     static Int_t fgnumOfEtaBins;//number of eta bins
     static Float_t fgPtAxis[117];//bins for pt axis of histograms
     static Int_t fgNumOfPtBins;//number of pt bins
+    static Float_t fgResAxis[81];//axis for resolution histograms
+    static Int_t fgNumOfResBins;//number of bins for resolution axis
     
 
+    Bool_t fGoodEvent;//boolean to keep track of whether or not this is a good event.
 
  private:
     //Declare it private to avoid compilation warning
