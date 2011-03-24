@@ -104,13 +104,13 @@ install ( DIRECTORY FORWARD/analysis2/scripts
 	  PATTERN ".so" EXCLUDE)
 
 # Install other scripts
-install ( FILES FORWARD/analysis2/AddTaskCentralMult.C
-  		FORWARD/analysis2/AddTaskCentral.C
+install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
+		FORWARD/analysis2/AddTaskCentralMult.C
+  		FORWARD/analysis2/AddTaskCentralTracks.C
                 FORWARD/analysis2/AddTaskCopyHeader.C
 		FORWARD/analysis2/AddTaskFMDELoss.C
                 FORWARD/analysis2/AddTaskForwardMult.C
 		FORWARD/analysis2/AddTaskForwarddNdeta.C
-		FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/DrawdNdeta.C
 		FORWARD/analysis2/ForwardAODConfig.C
                 FORWARD/analysis2/MakeAOD.C

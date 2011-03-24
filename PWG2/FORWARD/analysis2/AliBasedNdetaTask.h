@@ -58,28 +58,21 @@ public:
      */
     kEventLevel = 0x1,
     /** 
-     * Do the alternative event normalisation, 
-     * @f[
-     *   N' = \frac{1}{\epsilon_X}(N_A-N_A/N_V(N_T-N_A))
-     * @f]
-     */
-    kAltEventLevel = 0x2, 
-    /** 
      * Do the shape correction
      */
-    kShape = 0x4, 
+    kShape = 0x2, 
     /** 
      * Correct for background events (A+C-E). Not implemented yet
      */
-    kBackground = 0x8,
+    kBackground = 0x4,
+    /**
+     * Correct for the trigger efficiency from MC 
+     */
+    kTriggerEfficiency = 0x8,
     /**
      * Do the full correction
      */
-    kFull = kEventLevel | kShape | kBackground,
-    /** 
-     * Do the full correction, using the alternative event-level normalisation. 
-     */
-    kAltFull = kAltEventLevel | kShape | kBackground
+    kFull = kEventLevel | kShape | kBackground | kTriggerEfficiency,
   };
   /** 
    * Constructor 
@@ -120,7 +113,7 @@ public:
    * 
    * @param mask Trigger mask
    */
-  void SetTriggerMask(UShort_t mask) { fTriggerMask = mask; }
+  void SetTriggerMask(UShort_t mask);
   /** 
    * Set the trigger mask 
    * 
@@ -163,10 +156,7 @@ public:
    * 
    * @param scheme Normalisation scheme 
    */
-  void SetNormalizationScheme(UShort_t scheme) 
-  {
-    fNormalizationScheme = scheme; 
-  }
+  void SetNormalizationScheme(UShort_t scheme);
   /** 
    * Space, pipe, or comma separated list of options
    * 
@@ -181,7 +171,12 @@ public:
    */
   void LoadNormalizationData(UShort_t sys, UShort_t energy);  
   /** @} */
-
+  /** 
+   * Print information 
+   * 
+   * @param option Not used
+   */
+  void Print(Option_t* option="") const;
   /** @{ 
    *  @name Task interface 
    */
@@ -494,7 +489,9 @@ protected:
   TH1D*           fCent;         // Centrality distribution 
   TAxis*          fCentAxis;     // Centrality axis
   UShort_t        fNormalizationScheme; // Normalization scheme
-  ClassDef(AliBasedNdetaTask,3); // Determine multiplicity in base area
+  TNamed*         fSchemeString;     
+  TNamed*         fTriggerString; 
+  ClassDef(AliBasedNdetaTask,4); // Determine multiplicity in base area
 };
 
 #endif

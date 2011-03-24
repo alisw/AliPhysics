@@ -14,6 +14,15 @@
 /** 
  * Run first pass of the analysis - that is read in ESD and produce AOD
  * 
+ * If the ROOT AliEn interface library (libRAliEn) can be loaded, 
+ * and the parameter @a name is not empty, then use the plugin to do
+ * the analysis.  Note that in this case, the output is placed 
+ * in a sub-directory named by @a name after escaping spaces and special 
+ * characters 
+ *
+ * If PROOF mode is selected, then Terminate will be run on the master node 
+ * in any case. 
+ *
  * @param esddir     ESD input directory. Any file matching the pattern 
  *                   *AliESDs*.root are added to the chain 
  * @param nEvents    Number of events to process.  If 0 or less, then 
@@ -22,18 +31,35 @@
  *                   many number of workers. 
  * @param mc         Data is assumed to be from simulations  
  * @param centrality Whether to use centrality or not 
- *
- * If PROOF mode is selected, then Terminate will be run on the master node 
- * in any case. 
+ * @param name       Name of train - free form.  This will be the name
+ *                   of the output directory if the plug-in is used 
  *
  * @ingroup pwg2_forward_aod
  */
 void MakeAOD(const char* esddir, 
-	     Int_t       nEvents=-1, 
-	     Int_t       proof=0,
-	     Bool_t      mc=false,
-	     Bool_t      centrality=true )
+	     Int_t       nEvents    = -1, 
+	     Int_t       proof      = 0,
+	     Bool_t      mc         = false,
+	     Bool_t      centrality = true,
+	     const char* name       = 0)
 {
+  // --- Possibly use plug-in for this -------------------------------
+  if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			     "$ALICE_ROOT/ANALYSIS/macros",
+			     gROOT->GetMacroPath()));
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gROOT->LoadMacro("TrainSetup.C+");
+    MakeAODTrain t(name, 0, 0, 0, centrality, false);
+    t.SetDataDir(esddir);
+    t.SetDataSet("");
+    t.SetProofServer(Form("workers=%d",proof));
+    t.Run(proof > 0 ? "PROOF" : "LOCAL", "FULL", nEvents, mc, proof > 0);
+    return;
+  }
+
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
@@ -58,8 +84,7 @@ void MakeAOD(const char* esddir,
 			   gROOT->GetMacroPath()));
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Train", 
-						    "Forward multiplicity");
+  AliAnalysisManager *mgr  = new AliAnalysisManager(name, "Forward multiplicity");
   AliAnalysisManager::SetCommonFileName("forward.root");
 
   // --- ESD input handler -------------------------------------------
@@ -83,6 +108,15 @@ void MakeAOD(const char* esddir,
   // Physics selection 
   gROOT->LoadMacro("AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
+  // --- Fix up physics selection to give proper A,C, and E triggers -
+  AliInputEventHandler* ih =
+    static_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+  AliPhysicsSelection* ps = 
+    static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+  // Ignore trigger class when selecting events.  This mean that we
+  // get offline+(A,C,E) events too
+  ps->SetSkipTriggerClassSelection(true);
+  
 
 #if 0
   // Centrality 
@@ -101,8 +135,8 @@ void MakeAOD(const char* esddir,
   AddTaskForwardMult(mc);
 
   // Central 
-  gROOT->LoadMacro("AddTaskCentral.C");
-  AddTaskCentral();
+  gROOT->LoadMacro("AddTaskCentralMult.C");
+  AddTaskCentralMult();
   
   // --- Run the analysis --------------------------------------------
   TStopwatch t;

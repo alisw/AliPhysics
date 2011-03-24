@@ -36,6 +36,7 @@
 #include <AliESDInputHandler.h>
 #include <AliMCEventHandler.h>
 #include <AliVEventHandler.h>
+#include <AliPhysicsSelection.h>
 #else
 class TArrayI;
 class TChain;
@@ -101,13 +102,22 @@ class AliAnalysisManager;
  * }
  * @endcode 
  * 
- * To byte compile this, you need to load the analsys libraries first 
+ * To byte compile this, you need to 
+ * - load the ROOT AliEn library
+ * - load the analysis libraries 
+ * - add $ALICE_ROOT/include to header search 
+ * first 
  *
  * @verbatim 
  * > aliroot 
- * Root> gSystem->Load("libANALYSIS.so");
- * Root> gSystem->Load("libANALYSISalice.so");
- * Root> gROOT->LoadMacro("TrainSetup.C++");
+ * Root> gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+ * Root>                          "$ALICE_ROOT/ANALYSIS/macros",
+ * Root> 			  gROOT->GetMacroPath()));
+ * Root> gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+ * Root> gSystem->Load("libRAliEn");
+ * Root> gSystem->Load("libANALYSIS");
+ * Root> gSystem->Load("libANALYSISalice");
+ * Root> gROOT->LoadMacro("TrainSetup.C+");
  * @endverbatim 
  * 
  * @ingroup pwg2_forward_scripts_makers
@@ -182,7 +192,8 @@ struct TrainSetup
       fListOfExtras(),
       fNReplica(4),
       fESDPass(3),
-      fEscapedName(name)
+      fEscapedName(name),
+      fAllowOverwrite(kFALSE)
   {
     char  c[] = { ' ', '/', '@', 0 };
     char* p   = c;
@@ -417,8 +428,16 @@ struct TrainSetup
    */
   void AddExtraFile(const char* file)
   {
+    if (!file || file[0] == '\0') return;
     fListOfExtras.Add(new TObjString(file));
   }
+  //__________________________________________________________________
+  /** 
+   * Set whether to allow overwritting existing files/directories 
+   * 
+   * @param allow If true, allow overwritting files/directories
+   */
+  void SetAllowOverwrite(Bool_t allow) { fAllowOverwrite = allow; }
   //__________________________________________________________________
   /** 
    * Print the setup 
@@ -547,7 +566,7 @@ protected:
 	    Bool_t       usePar=false, 
 	    Int_t        dbg=0)
   {
-    EType eType = ParseType(type);
+    EType eType = ParseType(type, mc);
     EMode eMode = ParseMode(mode);
     EOper eOper = ParseOperation(oper);
 
@@ -581,13 +600,15 @@ protected:
     TString cwd = gSystem->WorkingDirectory();
     TString nam = EscapedName();
     if (oper != kTerminate) { 
-      if (!gSystem->AccessPathName(nam.Data())) {
+      if (!fAllowOverwrite && !gSystem->AccessPathName(nam.Data())) {
 	Error("Exec", "File/directory %s already exists", nam.Data());
 	return;
       }
-      if (gSystem->MakeDirectory(nam.Data())) {
-	Error("Exec", "Failed to make directory %s", nam.Data());
-	return;
+      if (gSystem->AccessPathName(nam.Data())) {
+	if (gSystem->MakeDirectory(nam.Data())) {
+	  Error("Exec", "Failed to make directory %s", nam.Data());
+	  return;
+	}
       }
     }
     else {
@@ -614,28 +635,31 @@ protected:
     if (mode == kLocal) mgr->SetUseProgressBar(kTRUE, 100);
    
     // --- ESD input handler ------------------------------------------
-    mgr->SetInputEventHandler(CreateInputHandler(type));
+    AliVEventHandler*  inputHandler = CreateInputHandler(type);
+    if (inputHandler) mgr->SetInputEventHandler(inputHandler);
     
-   // --- Monte-Carlo ------------------------------------------------
-    mgr->SetMCtruthEventHandler(CreateMCHandler(type,mc));
+    // --- Monte-Carlo ------------------------------------------------
+    AliVEventHandler*  mcHandler = CreateMCHandler(type,mc);
+    if (mcHandler) mgr->SetMCtruthEventHandler(mcHandler);
     
-   // --- AOD output handler -----------------------------------------
-    mgr->SetOutputEventHandler(CreateOutputHandler(type));
+    // --- AOD output handler -----------------------------------------
+    AliVEventHandler*  outputHandler = CreateOutputHandler(type);
+    if (outputHandler) mgr->SetOutputEventHandler(outputHandler);
     
     // --- Include analysis macro path in search path ----------------
     gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
 
     // --- Physics selction ------------------------------------------
-    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
-    mgr->RegisterExtraFile("event_stat.root");
+    CreatePhysicsSelection(mc, mgr);
     
     // --- Create tasks ----------------------------------------------
     CreateTasks(mode, usePar, mgr);
 
     // --- Create Grid handler ----------------------------------------
     // _must_ be done after all tasks has been added
-    mgr->SetGridHandler(CreateGridHandler(type, mode, oper));
+    AliAnalysisAlien* gridHandler = CreateGridHandler(type, mode, oper);
+    if (gridHandler) mgr->SetGridHandler(gridHandler);
     
     // --- Create the chain ------------------------------------------
     TChain* chain = CreateChain(type, mode, oper);
@@ -646,43 +670,67 @@ protected:
     // --- Initialise the train --------------------------------------
     if (!mgr->InitAnalysis())  {
       gSystem->ChangeDirectory(cwd.Data());
-      Fatal("Run","Failed initialise train");
+      Fatal("Run","Failed to initialise train");
     }
 
     // --- Show status -----------------------------------------------
     mgr->PrintStatus();
 
-    StartAnalysis(mgr, mode, chain, nEvents);
+    Long64_t ret = StartAnalysis(mgr, mode, chain, nEvents);
 
+    // Make sure we go back 
     gSystem->ChangeDirectory(cwd.Data());
-  }
 
-  void StartAnalysis(AliAnalysisManager* mgr, 
-		     EMode mode, 
-		     TChain* chain,
-		     Int_t nEvents)
+    if (ret < 0) Fatal("Exec", "Analysis failed");
+  }
+  //__________________________________________________________________
+  /** 
+   * Start the analysis 
+   * 
+   * @param mgr       Analysis manager
+   * @param mode      Run mode
+   * @param chain     Input data (local and proof only)
+   * @param nEvents   Number of events to analyse 
+   */
+  Long64_t StartAnalysis(AliAnalysisManager* mgr, 
+			 EMode               mode, 
+			 TChain*             chain,
+			 Int_t               nEvents)
   {
     // --- Run the analysis ------------------------------------------
     switch (mode) { 
     case kLocal: 
-      if (!chain) Fatal("Run", "No chain defined");
+      if (!chain) {
+	Error("StartAnalysis", "No chain defined");
+	return -1;
+      }
       if (nEvents < 0) nEvents = chain->GetEntries();
-      mgr->StartAnalysis(ModeString(mode), chain, nEvents);
-      break;
+      return mgr->StartAnalysis(ModeString(mode), chain, nEvents);
     case kProof: 
       if (fDataSet.IsNull()) {
-	if (!chain) Fatal("Run", "No chain defined");
+	if (!chain) { 
+	  Error("StartAnalysis", "No chain defined");
+	  return -1;
+	}
 	if (nEvents < 0) nEvents = chain->GetEntries();
-	mgr->StartAnalysis(ModeString(mode), chain, nEvents);
+	return mgr->StartAnalysis(ModeString(mode), chain, nEvents);
       }
-      else 
-	mgr->StartAnalysis(ModeString(mode), fDataSet);
-      break;
+      return mgr->StartAnalysis(ModeString(mode), fDataSet);
     case kGrid: 
-      mgr->StartAnalysis(ModeString(mode));
+      if (nEvents < 0)
+	return mgr->StartAnalysis(ModeString(mode));
+      return mgr->StartAnalysis(ModeString(mode), nEvents);
     }
+    // We should never get  here 
+    return -1;
   }
   //__________________________________________________________________
+  /** 
+   * Return the escaped name 
+   * 
+   * 
+   * @return Escaped name 
+   */
   const TString& EscapedName() const 
   {
     return fEscapedName;
@@ -697,7 +745,7 @@ protected:
    * 
    * @return Grid handler 
    */
-  AliAnalysisAlien* CreateGridHandler(EType type, EMode mode, EOper oper)
+  virtual AliAnalysisAlien* CreateGridHandler(EType type, EMode mode, EOper oper)
   {
     if (mode != kGrid) return 0;
 
@@ -818,7 +866,7 @@ protected:
     plugin->SetAnalysisMacro(Form("%s.C", name.Data()));
     
     // Maximum number of sub-jobs 
-    plugin->SetSplitMaxInputFileNumber(25);
+    // plugin->SetSplitMaxInputFileNumber(25);
     
     // Set the Time-To-Live 
     plugin->SetTTL(70000);
@@ -864,7 +912,7 @@ protected:
    * 
    * @return 
    */
-  AliVEventHandler* CreateInputHandler(EType type)
+  virtual AliVEventHandler* CreateInputHandler(EType type)
   {
     switch (type) {
     case kESD: return new AliESDInputHandler(); 
@@ -881,7 +929,7 @@ protected:
    * 
    * @return 
    */
-  AliVEventHandler* CreateMCHandler(EType type, bool mc)
+  virtual AliVEventHandler* CreateMCHandler(EType type, bool mc)
   {
     if (!mc || type != kESD) return 0;
     AliMCEventHandler* mcHandler = new AliMCEventHandler();
@@ -896,7 +944,7 @@ protected:
    * 
    * @return 
    */
-  AliVEventHandler* CreateOutputHandler(EType type)
+  virtual AliVEventHandler* CreateOutputHandler(EType type)
   {
     switch (type) { 
     case kESD: // Fall through 
@@ -907,6 +955,18 @@ protected:
     }
     }
     return 0;
+  }
+  //__________________________________________________________________
+  /** 
+   * Create physics selection , and add to manager
+   * 
+   * @param mc Whether this is for MC 
+   */
+  virtual void CreatePhysicsSelection(Bool_t mc,
+				      AliAnalysisManager* mgr)
+  {
+    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
+    mgr->RegisterExtraFile("event_stat.root");
   }
   //__________________________________________________________________
   /** 
@@ -944,12 +1004,21 @@ protected:
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
       
       // --- Now open connection to PROOF cluster --------------------
-      TProof::Open(Form("%s@%s", userName.Data(), fProofServer.Data()));
+      TString serv = "";
+      Bool_t  lite = false;
+      if (fProofServer.BeginsWith("workers=") || fProofServer.IsNull()) {
+	lite = true;
+	serv = fProofServer;
+      }
+      else 
+	serv = Form("%s@%s", userName.Data(), fProofServer.Data());
+      TProof::Open(serv);
       if (!gProof) { 
 	Error("Connect", "Failed to connect to Proof cluster %s as %s",
 	      fProofServer.Data(), userName.Data());
 	return false;
       }
+      if (lite) return true;
     }
 
     // --- Open a connection to the grid -----------------------------
@@ -958,6 +1027,7 @@ protected:
       // This is only fatal in grid mode 
       Error("Connect", "Failed to connect to AliEN");
       if (mode == kGrid) return false; 
+      return true;
     }
     if (mode == kGrid) return true;
 
@@ -1344,210 +1414,9 @@ protected:
   Int_t   fNReplica;         // Storage replication
   Int_t   fESDPass;
   TString fEscapedName;
+  Bool_t  fAllowOverwrite;
 };
 
-//====================================================================
-/**
- * Analysis train to make Forward and Central multiplicity
- * 
- * @ingroup pwg2_forward_scripts_makers
- * @ingroup pwg2_forward_aod
- */
-class ForwardPass1 : public TrainSetup
-{
-public:
-  /** 
-   * Constructor.  Date and time must be specified when running this
-   * in Termiante mode on Grid
-   * 
-   * @param dateTime Append date and time to name 
-   * @param sys      Collision system (1: pp, 2: PbPb)
-   * @param sNN      Center of mass energy [GeV]
-   * @param field    L3 magnetic field - one of {-5,0,+5} kG
-   * @param year     Year     - if not specified, current year
-   * @param month    Month    - if not specified, current month
-   * @param day      Day      - if not specified, current day
-   * @param hour     Hour     - if not specified, current hour
-   * @param min      Minutes  - if not specified, current minutes
-   */
-  ForwardPass1(UShort_t sys      = 0, 
-	       UShort_t sNN      = 0, 
-	       Bool_t   dateTime = false, 
-	       Short_t  field    = 0, 
-	       UShort_t year     = 0, 
-	       UShort_t month    = 0, 
-	       UShort_t day      = 0, 
-	       UShort_t hour     = 0, 
-	       UShort_t min      = 0) 
-    : TrainSetup("Forward d2Ndetadphi pass1", dateTime, 
-		 year, month, day, hour, min),
-      fSys(sys), 
-      fSNN(sNN), 
-      fField(field)
-  {}
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
-   */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t usePar=false)
-  {
-    EMode eMode = ParseMode(mode);
-    EOper eOper = ParseOperation(oper);
-    
-    Run(eMode, eOper, nEvents, mc, usePar);
-  }
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
-   */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
-	   Bool_t usePar = false)
-  {
-    Exec(kESD, mode, oper, nEvents, mc, usePar);
-  }
-  /** 
-   * Create the tasks 
-   * 
-   * @param mode Processing mode
-   * @param par  Whether to use par files 
-   * @param mgr  Analysis manager 
-   */
-  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
-  {
-    // --- Output file name ------------------------------------------
-    AliAnalysisManager::SetCommonFileName("forward.root");
-
-    // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
-    
-    // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
-			     gROOT->GetMacroPath()));
-
-    // --- Check if this is MC ---------------------------------------
-    Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
-
-    // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMult(%d,%d,%d,%d).C", mc, fSys, fSNN, fField));
-  }
-private:
-  UShort_t fSys;
-  UShort_t fSNN;
-  Short_t  fField;
-};
-//====================================================================
-/**
- * Analysis train to make @f$ dN/d\eta@f$
- * 
- * @ingroup pwg2_forward_scripts_makers
- * @ingroup pwg2_forward_dndeta
- */
-class ForwardPass2 : public TrainSetup
-{
-public:
-  /** 
-   * Constructor.  Date and time must be specified when running this
-   * in Termiante mode on Grid
-   * 
-   * @param trig     Trigger to use 
-   * @param vzMin    Least @f$ v_z@f$
-   * @param vzMax    Largest @f$ v_z@f$
-   * @param dateTime Append date and time to name 
-   * @param year     Year     - if not specified, current year
-   * @param month    Month    - if not specified, current month
-   * @param day      Day      - if not specified, current day
-   * @param hour     Hour     - if not specified, current hour
-   * @param min      Minutes  - if not specified, current minutes
-   */
-  ForwardPass2(const char* trig="INEL", 
-	       Double_t    vzMin=-10, 
-	       Double_t    vzMax=10, 
-	       Bool_t      dateTime=false,
-	       UShort_t    year  = 0, 
-	       UShort_t    month = 0, 
-	       UShort_t    day   = 0, 
-	       UShort_t    hour  = 0, 
-	       UShort_t    min   = 0) 
-    : TrainSetup("Forward d2Ndetadphi pass2", dateTime,
-		 year, month, day, hour, min),
-      fTrig(trig), 
-      fVzMin(vzMin), 
-      fVzMax(vzMax)
-  {}
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
-   */
-  void Run(const char* mode, const char* oper, 
-	   Int_t nEvents=-1, Bool_t mc=false, Bool_t usePar=false)
-  {
-    EMode eMode = ParseMode(mode);
-    EOper eOper = ParseOperation(oper);
-    
-    Run(eMode, eOper, nEvents, mc, usePar);
-  }
-  /** 
-   * Run this analysis 
-   * 
-   * @param mode     Mode
-   * @param oper     Operation
-   * @param nEvents  Number of events (negative means all)
-   * @param mc       If true, assume simulated events 
-   * @param usePar   If true, use PARs 
-   */
-  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false,
-	   Bool_t usePar=false)
-  {
-    Exec(kESD, mode, oper, nEvents, mc, usePar);
-  }
-  /** 
-   * Create the tasks 
-   * 
-   * @param mode Processing mode
-   * @param par  Whether to use par files 
-   * @param mgr  Analysis manager 
-   */
-  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
-  {
-    // --- Output file name ------------------------------------------
-    AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
-
-    // --- Load libraries/pars ---------------------------------------
-    LoadLibrary("PWG2forward2", mode, par, true);
-    
-    // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
-			     gROOT->GetMacroPath()));
-
-    // --- Check if this is MC ---------------------------------------
-    Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
-
-    // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwarddNdeta.C(\"%s\",%f,%f)",
-		      fTrig.Data(), fVzMin, fVzMax));
-  }
-private:
-  TString fTrig;
-  Double_t fVzMin;
-  Double_t fVzMax;
-};
 //====================================================================
 /**
  * Analysis train to do energy loss fits
@@ -1621,7 +1490,7 @@ public:
     LoadLibrary("PWG2forward2", mode, par, true);
     
     // --- Set load path ---------------------------------------------
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2"
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
 			     gROOT->GetMacroPath()));
 
     // --- Check if this is MC ---------------------------------------
@@ -1630,6 +1499,285 @@ public:
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMultEloss.C(%d)", mc));
   }
+};
+
+//====================================================================
+/**
+ * Analysis train to make Forward and Central multiplicity
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_aod
+ */
+class MakeAODTrain : public TrainSetup
+{
+public:
+  /** 
+   * Constructor.  Date and time must be specified when running this
+   * in Termiante mode on Grid
+   * 
+   * @param dateTime Append date and time to name 
+   * @param sys      Collision system (1: pp, 2: PbPb)
+   * @param sNN      Center of mass energy [GeV]
+   * @param field    L3 magnetic field - one of {-5,0,+5} kG
+   * @param year     Year     - if not specified, current year
+   * @param month    Month    - if not specified, current month
+   * @param day      Day      - if not specified, current day
+   * @param hour     Hour     - if not specified, current hour
+   * @param min      Minutes  - if not specified, current minutes
+   */
+  MakeAODTrain(const  char* name, 
+	       UShort_t     sys      = 0, 
+	       UShort_t     sNN      = 0, 
+	       Short_t      field    = 0, 
+	       Bool_t       useCent  = false, 
+	       Bool_t       dateTime = false, 
+	       UShort_t     year     = 0, 
+	       UShort_t     month    = 0, 
+	       UShort_t     day      = 0, 
+	       UShort_t     hour     = 0, 
+	       UShort_t     min      = 0) 
+    : TrainSetup(name, dateTime, 
+		 year, month, day, hour, min),
+      fSys(sys), 
+      fSNN(sNN), 
+      fField(field),
+      fUseCent(useCent)
+  {}
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(const char* mode, const char* oper, 
+	   Int_t nEvents=-1, Bool_t mc=false,
+	   Bool_t usePar=false)
+  {
+    Exec("ESD", mode, oper, nEvents, mc, usePar);
+  }
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
+	   Bool_t usePar = false)
+  {
+    Exec(kESD, mode, oper, nEvents, mc, usePar);
+  }
+protected:
+  /** 
+   * Create the tasks 
+   * 
+   * @param mode Processing mode
+   * @param par  Whether to use par files 
+   * @param mgr  Analysis manager 
+   */
+  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager* mgr)
+  {
+    // --- Output file name ------------------------------------------
+    AliAnalysisManager::SetCommonFileName("forward.root");
+
+    // --- Load libraries/pars ---------------------------------------
+    LoadLibrary("PWG2forward2", mode, par, true);
+    
+    // --- Set load path ---------------------------------------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+			     gROOT->GetMacroPath()));
+
+    // --- Check if this is MC ---------------------------------------
+    Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
+    
+    // --- Centrality ------------------------------------------------
+    if (fUseCent) gROOT->Macro("AddTaskCentrality.C");
+    
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d)", 
+		      mc, fSys, fSNN, fField));
+    AddExtraFile(gSystem->Which(gROOT->GetMacroPath(), "ForwardAODConfig.C"));
+
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskCentralMult.C(%d,%d,%d)", 
+		      fSys, fSNN, fField));
+  }
+  //__________________________________________________________________
+  /** 
+   * Create physics selection , and add to manager
+   * 
+   * @param mc Whether this is for MC 
+   */
+  void CreatePhysicsSelection(Bool_t mc,
+			      AliAnalysisManager* mgr)
+  {
+    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
+    mgr->RegisterExtraFile("event_stat.root");
+
+    // --- Get input event handler -----------------------------------
+    AliInputEventHandler* ih =
+      static_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+    
+    // --- Get Physics selection -------------------------------------
+    AliPhysicsSelection* ps = 
+      static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+
+    // --- Ignore trigger class when selecting events.  This means ---
+    // --- that we get offline+(A,C,E) events too --------------------
+    ps->SetSkipTriggerClassSelection(true);
+  }
+  UShort_t fSys;
+  UShort_t fSNN;
+  Short_t  fField;
+  Bool_t   fUseCent;
+};
+//====================================================================
+/**
+ * Analysis train to make @f$ dN/d\eta@f$
+ * 
+ * @ingroup pwg2_forward_scripts_makers
+ * @ingroup pwg2_forward_dndeta
+ */
+class MakedNdetaTrain : public TrainSetup
+{
+public:
+  /** 
+   * Constructor.  Date and time must be specified when running this
+   * in Termiante mode on Grid
+   * 
+   * @param trig     Trigger to use 
+   * @param vzMin    Least @f$ v_z@f$
+   * @param vzMax    Largest @f$ v_z@f$
+   * @param scheme   Normalisation scheme 
+   * @param useCent  Whether to use centrality 
+   * @param dateTime Append date and time to name 
+   * @param year     Year     - if not specified, current year
+   * @param month    Month    - if not specified, current month
+   * @param day      Day      - if not specified, current day
+   * @param hour     Hour     - if not specified, current hour
+   * @param min      Minutes  - if not specified, current minutes
+   */
+  MakedNdetaTrain(const char* name, 
+		  const char* trig="INEL", 
+		  Double_t    vzMin=-10, 
+		  Double_t    vzMax=10, 
+		  const char* scheme="FULL", 
+		  Bool_t      useCent=false,
+		  Bool_t      dateTime=false,
+		  UShort_t    year  = 0, 
+		  UShort_t    month = 0, 
+		  UShort_t    day   = 0, 
+		  UShort_t    hour  = 0, 
+		  UShort_t    min   = 0) 
+    : TrainSetup(name, dateTime, year, month, day, hour, min),
+      fTrig(trig), 
+      fVzMin(vzMin), 
+      fVzMax(vzMax),
+      fScheme(scheme),
+      fUseCent(useCent)
+  {}
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(const char* mode, const char* oper, 
+	   Int_t nEvents=-1, Bool_t usePar=false)
+  {
+    Exec("AOD", mode, oper, nEvents, false, usePar);
+  }
+  /** 
+   * Run this analysis 
+   * 
+   * @param mode     Mode
+   * @param oper     Operation
+   * @param nEvents  Number of events (negative means all)
+   * @param mc       If true, assume simulated events 
+   * @param usePar   If true, use PARs 
+   */
+  void Run(EMode mode, EOper oper, Int_t nEvents=-1, 
+	   Bool_t usePar=false)
+  {
+    Exec(kAOD, mode, oper, nEvents, false, usePar);
+  }
+  /** 
+   * Set the trigger to use (INEL, INEL>0, NSD)
+   * 
+   * @param trig Trigger to use 
+   */
+  void SetTrigger(const char* trig) { fTrig = trig; }
+  /** 
+   * Set the vertex range to accept 
+   * 
+   * @param min Minimum 
+   * @param max Maximum 
+   */
+  void SetVertexRange(Double_t min, Double_t max) { fVzMin=min; fVzMax=max; }
+  /** 
+   * Set the normalisation scheme 
+   * 
+   * @param scheme Normalisation scheme options 
+   */
+  void SetScheme(const char* scheme) { fScheme = scheme; }
+  /** 
+   * Whether to use centrality or not 
+   * 
+   * @param use To use the centrality 
+   */
+  void SetUseCentrality(Bool_t use) { fUseCent = use; }
+protected:
+  /** 
+   * Create the tasks 
+   * 
+   * @param mode Processing mode
+   * @param par  Whether to use par files 
+   * @param mgr  Analysis manager 
+   */
+  void CreateTasks(EMode mode, Bool_t par, AliAnalysisManager*)
+  {
+    // --- Output file name ------------------------------------------
+    AliAnalysisManager::SetCommonFileName("forward_dndeta.root");
+
+    // --- Load libraries/pars ---------------------------------------
+    LoadLibrary("PWG2forward2", mode, par, true);
+    
+    // --- Set load path ---------------------------------------------
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2",
+			     gROOT->GetMacroPath()));
+
+    // --- Add the task ----------------------------------------------
+    gROOT->Macro(Form("AddTaskForwarddNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
+		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
+
+    gROOT->Macro(Form("AddTaskCentraldNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
+		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
+  }
+  //__________________________________________________________________
+  /** 
+   * Do nothing 
+   * 
+   */
+  void CreatePhysicsSelection(Bool_t,AliAnalysisManager*) {}
+  /** 
+   * Crete output handler - we don't want one here. 
+   * 
+   * @return 0
+   */
+  AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  TString  fTrig;      // Trigger to use 
+  Double_t fVzMin;     // Least v_z
+  Double_t fVzMax;     // Largest v_z
+  TString  fScheme;    // Normalisation scheme 
+  Bool_t   fUseCent;   // Use centrality 
 };
   
 //____________________________________________________________________

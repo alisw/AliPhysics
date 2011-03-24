@@ -1,5 +1,5 @@
 /**
- * @file   AddTaskCentralMult.C
+ * @file   AddTaskCentralTracks.C
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Fri Jan 28 10:22:26 2011
  * 
@@ -587,7 +587,7 @@ CentralMultTask::Terminate(Option_t *)
 
 //========================================================================
 inline AliAnalysisTask*
-AddTaskCentralMult()
+AddTaskCentralTracks()
 {
   // analysis manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
