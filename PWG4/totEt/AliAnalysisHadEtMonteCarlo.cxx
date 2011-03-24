@@ -47,6 +47,7 @@ AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fInvestigatePiKP(0)
 							,fRequireITSHits(0)
 							,fBaryonEnhancement(0)
+							,fUseRecoPt(0)
 							,fPtSmearer(0)
 {
 }
@@ -75,10 +76,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
   }
   AliStack *stack = mcEvent->Stack();
   fCentBin= -1;
+  fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
   if(fDataSet==20100){//If this is Pb+Pb
     AliCentrality *centrality = realEvent->GetCentrality();
-    if(fNCentBins<20) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
+    if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
+    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
   }
   AnalyseEvent(ev);
 
@@ -262,136 +265,186 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  FillHisto1D(Form("UnidentifiedPIDs%s",cutName->Data()),mypid,1);
 		}
 		//...simulated
+		float myEtSim = Et(simPart);
+		float myEtReco = 0.0;
 		if(pdgCode == fgPiPlusCode){		
 		  float myEt = Et(simPart);
 		  float myEtP = Et(simPart,fgProtonMass);
 		  float myEtK = Et(simPart,fgKaonMass);
-		  FillHisto2D(Form("EtReconstructed%sPiPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sPiPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sPiPlusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgPiPlusCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sPiPlusAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sPiPlusAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
+		  FillHisto2D(Form("EtReconstructed%sPiPlus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sPiPlus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sPiPlusCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sPiPlusAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sPiPlusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  filled = true;
 		}
 		if(pdgCode == fgPiMinusCode){
 		  float myEt = Et(simPart);
 		  float myEtP = Et(simPart,fgProtonMass);
 		  float myEtK = Et(simPart,fgKaonMass);
-		  FillHisto2D(Form("EtReconstructed%sPiMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sPiMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sPiMinusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgPiMinusCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sPiMinusAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sPiMinusAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
+		  FillHisto2D(Form("EtReconstructed%sPiMinus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sPiMinus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sPiMinusCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sPiMinusAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sPiMinusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  filled = true;
 		}
 		if(pdgCode == fgKPlusCode){
 		  float myEt = Et(simPart);
 		  float myEtPi = Et(simPart,fgPionMass);
 		  float myEtP = Et(simPart,fgProtonMass);
-		  FillHisto2D(Form("EtReconstructed%sKPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sKPlus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sKPlusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgKPlusCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
-		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
+		  FillHisto2D(Form("EtReconstructed%sKPlus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sKPlus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sKPlusCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingKaon",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
+		  FillHisto2D(Form("EtReconstructed%sKPlusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  filled = true;
 		}
 		if(pdgCode == fgKMinusCode){
 		  float myEt = Et(simPart);
 		  float myEtPi = Et(simPart,fgPionMass);
 		  float myEtP = Et(simPart,fgProtonMass);
-		  FillHisto2D(Form("EtReconstructed%sKMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sKMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sKMinusCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgKMinusCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
-		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtP);
+		  FillHisto2D(Form("EtReconstructed%sKMinus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sKMinus",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sKMinusCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingKaon",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEtP);
+		  FillHisto2D(Form("EtReconstructed%sKMinusAssumingProton",cutName->Data()),pT,eta,myEtP);
 		  filled = true;
 		}
 		if(pdgCode == fgProtonCode){
 		  float myEt = Et(simPart);
 		  float myEtPi = Et(simPart,fgPionMass);
 		  float myEtK = Et(simPart,fgKaonMass);
-		  FillHisto2D(Form("EtReconstructed%sProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sProtonCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgProtonCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sProtonAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sProtonAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  FillHisto2D(Form("EtReconstructed%sProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sProtonCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sProtonAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sProtonAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sProtonAssumingProton",cutName->Data()),pT,eta,myEt);
 		  filled = true;
 
-		      if(fBaryonEnhancement){
-			float enhancement = ProtonBaryonEnhancement(track->Pt());
-			FillHisto2D(Form("EtReconstructed%sProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
-			FillHisto2D(Form("EtNReconstructed%sProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
-			FillHisto2D(Form("EtReconstructed%sProtonAssumingPionEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi*enhancement);
-		      }
+		  if(fBaryonEnhancement){
+		    float enhancement = ProtonBaryonEnhancement(track->Pt());
+		    FillHisto2D(Form("EtReconstructed%sProtonEnhanced",cutName->Data()),pT,eta,myEt*enhancement);
+		    FillHisto2D(Form("EtNReconstructed%sProtonEnhanced",cutName->Data()),pT,eta,myEt*enhancement);
+		    FillHisto2D(Form("EtReconstructed%sProtonAssumingPionEnhanced",cutName->Data()),pT,eta,myEtPi*enhancement);
+		  }
 
 		}
 		if(pdgCode == fgAntiProtonCode){
 		  float myEt = Et(simPart);
 		  float myEtPi = Et(simPart,fgPionMass);
 		  float myEtK = Et(simPart,fgKaonMass);
-		  FillHisto2D(Form("EtReconstructed%sAntiProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sAntiProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  if(fCentBin>=0){//if a centrality bin was defined
-		    FillHisto2D(Form("EtNReconstructed%sAntiProtonCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
-		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),simPart->Pt(),simPart->Eta(),myEt);
+		  myEtReco = Et(track->P(),track->Theta(),fgAntiProtonCode,track->Charge());
+		  float pT = simPart->Pt();
+		  float eta = simPart->Eta();
+		  if(fUseRecoPt){//Then we switch the pT and the Et
+		    myEt = myEtReco;
+		    pT = track->Pt();
+		    eta = track->Eta();
 		  }
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingKaon",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtK);
-		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
-		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingProton",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
+		  FillHisto2D(Form("EtReconstructed%sAntiProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sAntiProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),pT,eta,myEt);
+		  if(fCentBin>=0){//if a centrality bin was defined
+		    FillHisto2D(Form("EtNReconstructed%sAntiProtonCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		    FillHisto2D(Form("EtNReconstructed%sChargedHadronCB%i",cutName->Data(),fCentBin),pT,eta,myEt);
+		  }
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPion",cutName->Data()),pT,eta,myEtPi);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingKaon",cutName->Data()),pT,eta,myEtK);
+		  FillHisto2D(Form("EtReconstructed%sChargedHadronAssumingProton",cutName->Data()),pT,eta,myEt);
+		  FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingProton",cutName->Data()),pT,eta,myEt);
 		  filled = true;
 		  if(fBaryonEnhancement){
 			float enhancement = ProtonBaryonEnhancement(track->Pt());
-			FillHisto2D(Form("EtReconstructed%sAntiProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
-		    FillHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt*enhancement);
-		    FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPionEnhanced",cutName->Data()),simPart->Pt(),simPart->Eta(),myEtPi*enhancement);
+			FillHisto2D(Form("EtReconstructed%sAntiProtonEnhanced",cutName->Data()),pT,eta,myEt*enhancement);
+		    FillHisto2D(Form("EtNReconstructed%sAntiProtonEnhanced",cutName->Data()),pT,eta,myEt*enhancement);
+		    FillHisto2D(Form("EtReconstructed%sAntiProtonAssumingPionEnhanced",cutName->Data()),pT,eta,myEtPi*enhancement);
 		  }
 		}
 		if(pdgCode == fgEPlusCode){
@@ -412,6 +465,16 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    FillHisto2D(Form("EtReconstructed%sEMinus",cutName->Data()),simPart->Pt(),simPart->Eta(),myEt);
 		    filled = true;
 		}
+		if(myEtReco>0.0){FillHisto2D(Form("ETresolution%s",cutName->Data()),myEtReco,(myEtSim-myEtReco)/myEtReco,1.0);}
+		if(track->Pt()>0.0){FillHisto2D(Form("pTresolution%s",cutName->Data()),track->Pt(),(simPart->Pt() - track->Pt())/track->Pt(),1.0);}
+		if(track->P()>0.0){FillHisto2D(Form("presolution%s",cutName->Data()),track->P(),(simPart->P() - track->P())/track->P(),1.0);}
+		FillHisto1D(Form("pTsim%s",cutName->Data()),simPart->Pt(),1.0);
+		FillHisto1D(Form("pTrec%s",cutName->Data()),track->Pt(),1.0);
+		if(fCentBin!=-1){
+		  FillHisto1D(Form("pTsim%sCB%i",cutName->Data(),fCentBin),simPart->Pt(),1.0);
+		  FillHisto1D(Form("pTrec%sCB%i",cutName->Data(),fCentBin),track->Pt(),1.0);
+		}
+
 	      }
 	      
 	    }
@@ -424,45 +487,94 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    Int_t pdgCode =  mom->GetPDG(0)->PdgCode();
 		    if(pdgCode == fgLambdaCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughters",cutName->Data()),pT,eta,myEt);
 		      Float_t weight = LambdaWeight(mom->Pt());
 		      if(fBaryonEnhancement){
 			float enhancement = ProtonBaryonEnhancement(track->Pt());
 			weight = weight*enhancement;
 		      }
-		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sLambdaDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
 		    }
 		    if(pdgCode == fgAntiLambdaCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughters",cutName->Data()),pT,eta,myEt);
 		      Float_t weight = AntiLambdaWeight(mom->Pt());
 		      if(fBaryonEnhancement){
 			float enhancement = ProtonBaryonEnhancement(track->Pt());
 			weight = weight*enhancement;
 		      }
-		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sAntiLambdaDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
 		    }
 		    if(pdgCode == fgK0SCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sK0SDaughters",cutName->Data()),pT,eta,myEt);
 		      Float_t weight = K0Weight(mom->Pt());
-		      FillHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),track->Pt(),track->Eta(),myEt*weight);
+		      FillHisto2D(Form("EtReconstructed%sK0SDaughtersReweighted",cutName->Data()),pT,eta,myEt*weight);
 		    }
 		    if(pdgCode == fgXiCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myEt);
 		    }
 		    if(pdgCode == fgAntiXiCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myEt);
 		    }
 		    if(pdgCode == fgOmegaCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myEt);
 		    }
 		    if(pdgCode == fgXiCode){
 		      float myEt = Et(simPart);
-		      FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+		      float pT = simPart->Pt();
+		      float eta = simPart->Eta();
+		      if(fUseRecoPt){//Then we switch the pT and the Et
+			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			pT = track->Pt();
+			eta = track->Eta();
+		      }
+		      FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myEt);
 		    }
 
 		    if(mom->GetFirstMother()>0){
@@ -474,19 +586,47 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      
 			  if(pdgCodeGrandma == fgXiCode){
 			    float myEt = Et(simPart);
-			    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			    float pT = simPart->Pt();
+			    float eta = simPart->Eta();
+			    if(fUseRecoPt){//Then we switch the pT and the Et
+			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			      pT = track->Pt();
+			      eta = track->Eta();
+			    }
+			    FillHisto2D(Form("EtReconstructed%sXiDaughters",cutName->Data()),pT,eta,myEt);
 			  }
 			  if(pdgCodeGrandma == fgAntiXiCode){
 			    float myEt = Et(simPart);
-			    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			    float pT = simPart->Pt();
+			    float eta = simPart->Eta();
+			    if(fUseRecoPt){//Then we switch the pT and the Et
+			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			      pT = track->Pt();
+			      eta = track->Eta();
+			    }
+			    FillHisto2D(Form("EtReconstructed%sAntiXiDaughters",cutName->Data()),pT,eta,myEt);
 			  }
 			  if(pdgCodeGrandma == fgOmegaCode){
 			    float myEt = Et(simPart);
-			    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			    float pT = simPart->Pt();
+			    float eta = simPart->Eta();
+			    if(fUseRecoPt){//Then we switch the pT and the Et
+			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			      pT = track->Pt();
+			      eta = track->Eta();
+			    }
+			    FillHisto2D(Form("EtReconstructed%sOmegaDaughters",cutName->Data()),pT,eta,myEt);
 			  }
 			  if(pdgCodeGrandma == fgXiCode){
 			    float myEt = Et(simPart);
-			    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),track->Pt(),track->Eta(),myEt);
+			    float pT = simPart->Pt();
+			    float eta = simPart->Eta();
+			    if(fUseRecoPt){//Then we switch the pT and the Et
+			      myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
+			      pT = track->Pt();
+			      eta = track->Eta();
+			    }
+			    FillHisto2D(Form("EtReconstructed%sAntiOmegaDaughters",cutName->Data()),pT,eta,myEt);
 			  }
 
 			}
@@ -570,20 +710,21 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		Float_t pSmeared = momentum *  fPtSmearer->Gaus(1,0.005);//Gaussian centered around 1
 		fSimPiKPEtPtSmeared += Et(pSmeared,theta,pdgCode,charge);
 		//Efficiency smearing
-		float efficiency = 2.26545*TMath::Exp(-TMath::Power(9.99977e-01/part->Pt(),7.85488e-02));//simple rough efficiency from fitting curve
+		//to mock up the difference between TPC only tracks in p+p (~90% efficiency at high pT) and TPC+ITS tracks in Pb+Pb (about 70% efficiency at high pT) a factor of 7/9 was added in front
+		float efficiency = 7.0/9.0*2.26545*TMath::Exp(-TMath::Power(9.99977e-01/part->Pt(),7.85488e-02));//simple rough efficiency from fitting curve
 		if(fPtSmearer->Binomial(1,efficiency) ==1){
 		  fSimPiKPEtEfficiencySmeared += (1.0/efficiency)*myet;
 		}
 		//pT cut smeared
-		if(part->Pt()>0.10){fSimPiKPEtPtCutSmearedITS +=1.00645645*myet;}
-		if(part->Pt()>0.15){fSimPiKPEtPtCutSmearedTPC +=1.02000723*myet;}
+		if(part->Pt()>0.10){fSimPiKPEtPtCutSmearedITS +=1.00988*myet;}
+		if(part->Pt()>0.15){fSimPiKPEtPtCutSmearedTPC +=1.02994*myet;}
 		//PID smearing
-		fSimPiKPEtPIDSmearedNoID += 1.02679314*Et(momentum,theta,fgPiPlusCode,charge);
+		fSimPiKPEtPIDSmearedNoID += 1.03018015790601458*Et(momentum,theta,fgPiPlusCode,charge);
 		if(part->P()<1.0){//then the particle would have been ID'd
-		  fSimPiKPEtPIDSmeared += 1.0085942*myet;
+		  fSimPiKPEtPIDSmeared += 1.00918051514628582*myet;
 		}
 		else{//Then it would have been assumed to be a pion
-		  fSimPiKPEtPIDSmeared += 1.0085942*Et(momentum,theta,fgPiPlusCode,charge);
+		  fSimPiKPEtPIDSmeared += 1.00918051514628582*Et(momentum,theta,fgPiPlusCode,charge);
 		}
 	      }
 	    }
@@ -1061,26 +1202,34 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	    }
 	    //============neutrals===================================
 	    if(pdgCode == fgGammaCode){
-	      TParticle *mom = stack->Particle(part->GetFirstMother());
-	      Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
+	      TParticle *mom = NULL;
+	      Int_t pdgCodeMom = -99999999;
+	      float momEta = -30;
+	      float mompT = -5;
+	      if(part->GetFirstMother()){
+		mom = stack->Particle(part->GetFirstMother());
+		pdgCodeMom =  mom->GetPDG(0)->PdgCode();
+		momEta = mom->Eta();
+		mompT = mom->Pt();
+	      }
 	      //cout<<"I am a gamma and my mom is "<<mom->GetName()<<endl;
 	      //We want to separate the gammas by pi0, eta, omega0 but we don't want to double count energy so we get the et from the gamma daughter
 	      if(pdgCodeMom == fgEtaCode){
 		float myEt = Et(part);
 		fSimTotEt += myEt;
-		FillHisto2D("EtSimulatedEta",mom->Pt(),mom->Eta(),myEt);
+		FillHisto2D("EtSimulatedEta",mompT,momEta,myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fgPi0Code){
 		float myEt = Et(part);
 		fSimTotEt += myEt;
-		FillHisto2D("EtSimulatedPi0",mom->Pt(),mom->Eta(),myEt);
+		FillHisto2D("EtSimulatedPi0",mompT,momEta,myEt);
 		filled = true;
 	      }
 	      if(pdgCodeMom == fgOmega0Code){
 		float myEt = Et(part);
 		fSimTotEt += myEt;
-		FillHisto2D("EtSimulatedOmega0",mom->Pt(),mom->Eta(),myEt);
+		FillHisto2D("EtSimulatedOmega0",mompT,momEta,myEt);
 		filled = true;
 	      }
 	      if(!filled){
@@ -1176,7 +1325,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateEtaPtHisto2D("EtNSimulatedChargedHadron","Number of simulated charged hadrons");
   if(fDataSet==20100){//If this is Pb+Pb
     Int_t width = 5;
-    if(fNCentBins<20) width = 10;
+    if(fNCentBins<21) width = 10;
     for(Int_t i=0;i<fNCentBins;i++){
       CreateEtaPtHisto2D(Form("EtNSimulatedPiPlusCB%i",i),Form("Number of Simulated #pi^{+} for %i-%i central",i*width,(i+1)*width));
       CreateEtaPtHisto2D(Form("EtNSimulatedPiMinusCB%i",i),Form("Number of simulated #pi^{-} for %i-%i central",i*width,(i+1)*width));
@@ -1347,7 +1496,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     CreateEtaPtHisto2D(Form("EtNReconstructed%sChargedHadron",cutName->Data()),"Reconstructed E_{T} from charged hadrons");
     if(fDataSet==20100){//If this is Pb+Pb
       Int_t width = 5;
-      if(fNCentBins<20) width = 10;
+      if(fNCentBins<21) width = 10;
       for(Int_t j=0;j<fNCentBins;j++){
 	CreateEtaPtHisto2D(Form("EtNReconstructed%sPiPlusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from #pi^{+} for %i-%i central",j*width,(j+1)*width));
 	CreateEtaPtHisto2D(Form("EtNReconstructed%sPiMinusCB%i",cutName->Data(),j),Form("Reconstructed E_{T} from #pi^{-} for %i-%i central",j*width,(j+1)*width));
@@ -1495,10 +1644,11 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   if(fDataSet==20100){
     Int_t width = 5;
-    if(fNCentBins<20) width = 10;
+    if(fNCentBins<21) width = 10;
     for(Int_t j=0;j<fNCentBins;j++){
       CreateHisto1D(Form("SimTotEtCB%i",j),Form("Simulated Total E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
       CreateHisto1D(Form("SimHadEtCB%i",j),Form("Simulated Hadronic E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
+      CreateHisto1D(Form("SimPiKPEtCB%i",j),Form("Simulated #pi,K,p E_{T} for %i-%i central",j*width,(j+1)*width),"Simulated #pi,K,p E_{T}","Number of events",nbinsEt,minEt,maxEt);
     }
   }
 
@@ -1512,7 +1662,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
     snprintf(histotitle,200,"Simulated (true-smeared)/true for 0.5 percent momentum smearing");
     snprintf(ytitle,50,"(true-smeared)/true");
     snprintf(xtitle,50,"true p, K, p E_{T}");
-    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff/10.0,etDiff/10.0);
+    CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt,minEt,maxEt,nbinsEt,-etDiff,etDiff);
     snprintf(histoname,200,"SimPiKPEtPtSmeared");
     snprintf(histotitle,200,"Simulated E_{T} for 0.5 percent momentum smearing");
     snprintf(ytitle,50,"Number of events");
@@ -1600,6 +1750,33 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   delete sEMCAL;
   delete sPHOS;
   CreateIntHisto1D("NEvents","Number of events","number of events","Number of events",1,0,1);
+  CreateResolutionPtHisto2D("presolutionTPC","p resolution","p^{rec}","(p^{sim}-p^{rec})/p^{rec}");
+  CreateResolutionPtHisto2D("pTresolutionTPC","p_{T} resolution","p_{T}^{rec}","(p_{T}^{sim}-p_{T}^{rec})/p_{T}^{rec}");
+  CreateResolutionPtHisto2D("ETresolutionTPC","E_{T} resolution","E_{T}^{rec}","(E_{T}^{sim}-E_{T}^{rec})/E_{T}^{rec}");
+  CreateResolutionPtHisto2D("pTresolutionTPCITS","p_{T} resolution","p_{T}^{rec}","(p_{T}^{sim}-p_{T}^{rec})/p_{T}^{rec}");
+  CreateResolutionPtHisto2D("ETresolutionTPCITS","E_{T} resolution","E_{T}^{rec}","(E_{T}^{sim}-E_{T}^{rec})/E_{T}^{rec}");
+  CreateResolutionPtHisto2D("presolutionTPCITS","p resolution","p^{rec}","(p^{sim}-p^{rec})/p^{rec}");
+  CreateResolutionPtHisto2D("pTresolutionITS","p_{T} resolution","p_{T}^{rec}","(p_{T}^{sim}-p_{T}^{rec})/p_{T}^{rec}");
+  CreateResolutionPtHisto2D("ETresolutionITS","E_{T} resolution","E_{T}^{rec}","(E_{T}^{sim}-E_{T}^{rec})/E_{T}^{rec}");
+  CreateResolutionPtHisto2D("presolutionITS","p resolution","p^{rec}","(p^{sim}-p^{rec})/p^{rec}");
+  CreatePtHisto1D("pTsimITS","p_{T}^{sim}","p_{T}^{sim}","Number of particles");
+  CreatePtHisto1D("pTsimTPC","p_{T}^{sim}","p_{T}^{sim}","Number of particles");
+  CreatePtHisto1D("pTsimTPCITS","p_{T}^{sim}","p_{T}^{sim}","Number of particles");
+  CreatePtHisto1D("pTrecITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
+  CreatePtHisto1D("pTrecTPC","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
+  CreatePtHisto1D("pTrecTPCITS","p_{T}^{rec}","p_{T}^{rec}","Number of particles");
+  if(fDataSet==20100){
+    Int_t width = 5;
+    if(fNCentBins<21) width = 10;
+    for(Int_t j=0;j<fNCentBins;j++){
+      CreatePtHisto1D(Form("pTsimITSCB%i",j),Form("p_{T}^{sim} for %i-%i central",j*width,(j+1)*width),"p_{T}^{sim}","Number of particles");
+      CreatePtHisto1D(Form("pTsimTPCITSCB%i",j),Form("p_{T}^{sim} for %i-%i central",j*width,(j+1)*width),"p_{T}^{sim}","Number of particles");
+      CreatePtHisto1D(Form("pTsimTPCCB%i",j),Form("p_{T}^{sim} for %i-%i central",j*width,(j+1)*width),"p_{T}^{sim}","Number of particles");
+      CreatePtHisto1D(Form("pTrecITSCB%i",j),Form("p_{T}^{rec} for %i-%i central",j*width,(j+1)*width),"p_{T}^{rec}","Number of particles");
+      CreatePtHisto1D(Form("pTrecTPCITSCB%i",j),Form("p_{T}^{rec} for %i-%i central",j*width,(j+1)*width),"p_{T}^{rec}","Number of particles");
+      CreatePtHisto1D(Form("pTrecTPCCB%i",j),Form("p_{T}^{rec} for %i-%i central",j*width,(j+1)*width),"p_{T}^{rec}","Number of particles");
+    }
+  }
 
 }
 
