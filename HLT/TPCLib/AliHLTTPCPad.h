@@ -327,12 +327,12 @@ public:
   /**
    * Adds cluster candidate to the fClusterCandidates.
    */
-  void AddClusterCandidate(AliHLTTPCClusters candidate);
+  void AddClusterCandidate(const AliHLTTPCClusters& candidate);
 
   /**
    * Adds the digits belonging to the candidate.
    */
-  void AddCandidateDigits(vector<AliHLTTPCDigitData> candidateDigits);
+  void AddCandidateDigits(const vector<AliHLTTPCDigitData>& candidateDigits);
 
   
   /**

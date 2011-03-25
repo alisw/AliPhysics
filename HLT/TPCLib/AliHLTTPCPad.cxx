@@ -660,12 +660,12 @@ void AliHLTTPCPad::ZeroSuppress(Double_t nRMS, Int_t threshold, Int_t reqMinPoin
   }
 }
 
-void AliHLTTPCPad::AddClusterCandidate(AliHLTTPCClusters candidate){
+void AliHLTTPCPad::AddClusterCandidate(const AliHLTTPCClusters& candidate){
   fClusterCandidates.push_back(candidate);
   fUsedClusterCandidates.push_back(0);
 }
 
-void AliHLTTPCPad::AddCandidateDigits(vector<AliHLTTPCDigitData> candidateDigits){
+void AliHLTTPCPad::AddCandidateDigits(const vector<AliHLTTPCDigitData>& candidateDigits){
   fCandidateDigitsVector.push_back(candidateDigits); 
 }
 
