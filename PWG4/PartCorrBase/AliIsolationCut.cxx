@@ -91,8 +91,8 @@ void AliIsolationCut::InitParameters()
   fPtThreshold    = 1.  ; 
   fSumPtThreshold = 0.5 ; 
   fPtFraction     = 0.1 ; 
-  fPartInCone     = kNeutralAndCharged;
-  fICMethod       = kPtThresIC; // 0 pt threshol method, 1 cone pt sum method
+  fPartInCone     = kOnlyCharged;
+  fICMethod       = kSumPtFracIC; // 0 pt threshol method, 1 cone pt sum method
   
 }
 
@@ -100,7 +100,7 @@ void AliIsolationCut::InitParameters()
 void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * const plNe, AliCaloTrackReader * const reader, 
 					const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
 					const TString & aodArrayRefName,
-					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
+					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated, Bool_t &leading) const
 {  
   //Search in cone around a candidate particle if it is isolated 
   Float_t phiC  = pCandidate->Phi() ;
@@ -115,6 +115,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   nfrac     = 0 ;
   coneptsum = 0.; 
   isolated  = kFALSE;
+  leading = kTRUE;
 
   //Initialize the array with refrences
   TObjArray * refclusters = 0x0;
@@ -142,6 +143,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
+	leading = kFALSE;
         if(bFillAOD && reftracks) {
           reftracks->Clear(); 
           delete reftracks;
@@ -219,6 +221,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
         nfrac     = -1;
         coneptsum = -1;
         isolated  = kFALSE;
+	leading = kFALSE;
         if(bFillAOD){
           if(reftracks){  
             reftracks  ->Clear();
@@ -281,7 +284,8 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   }
   else if( fICMethod == kSumPtFracIC){
     //when the fPtFraction*ptC < fSumPtThreshold then consider the later case
-    if(coneptsum < fPtFraction*ptC && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
+    if(fPtFraction*ptC < fSumPtThreshold  && coneptsum < fSumPtThreshold) isolated  =  kTRUE ;
+    if(fPtFraction*ptC > fSumPtThreshold  && coneptsum < fPtFraction*ptC) isolated  =  kTRUE ;
   }
   
 }

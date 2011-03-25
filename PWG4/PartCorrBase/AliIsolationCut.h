@@ -49,7 +49,7 @@ class AliIsolationCut : public TObject {
 
   void MakeIsolationCut(TObjArray * const plCTS, TObjArray * const plNe, AliCaloTrackReader * const reader, 
 			const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString &aodObjArrayName,
-			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
+			Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated, Bool_t & leading) const ;  
   
   void Print(const Option_t * opt)const;
   
