@@ -15,6 +15,7 @@
 /* $Id: $ */
 //_________________________________________________________________________
 // class to extract omega(782)->pi0+gamma->3gamma
+//  Mar. 22, 2011: Additional method, espeically for EMCAL. A high E cluster is assumpted as pi0 (two photons are overlapped) without unfolding
 //
 //-- Author: Renzhuo Wan (IOPP-Wuhan, China)
 //_________________________________________________________________________
@@ -46,7 +47,7 @@ fInputAODPi0(0), fInputAODGammaName(""),
 fEventsList(0x0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
 fNmaxMixEv(0), fVtxZCut(0), fCent(0), fRp(0), 
 fPi0Mass(0),fPi0MassWindow(0),fPi0OverOmegaPtCut(0),
-fGammaOverOmegaPtCut(0),
+fGammaOverOmegaPtCut(0), fEOverlapCluster(0),
 fhEtalon(0),
 fRealOmega0(0), fMixAOmega0(0),
 fMixBOmega0(0), fMixCOmega0(0),
@@ -54,6 +55,7 @@ fRealOmega1(0), fMixAOmega1(0),
 fMixBOmega1(0), fMixCOmega1(0),
 fRealOmega2(0), fMixAOmega2(0),
 fMixBOmega2(0), fMixCOmega2(0),
+fhFakeOmega(0),
 fhOmegaPriPt(0)
 {
  //Default Ctor
@@ -172,13 +174,15 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
  fNCentBin=1;               
  fNRpBin=1;                 
  fNBadChDistBin=3;          
- fNpid=9;                   
+ fNpid=1;                   
  fNmaxMixEv=8;              
  
  fPi0Mass=0.1348;             
  fPi0MassWindow=0.015;       
  fPi0OverOmegaPtCut=0.8;   
  fGammaOverOmegaPtCut=0.2; 
+ 
+ fEOverlapCluster=6;
 }
 
 
@@ -240,7 +244,9 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
   fMixAOmega2 =new TH2F*[ndim];
   fMixBOmega2 =new TH2F*[ndim];
   fMixCOmega2 =new TH2F*[ndim];
-  
+ 
+  fhFakeOmega = new TH2F*[fNCentBin];
+ 
   for(Int_t i=0;i<fNVtxZBin;i++){
     for(Int_t j=0;j<fNCentBin;j++){
       for(Int_t k=0;k<fNRpBin;k++){ //at event level
@@ -338,7 +344,14 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
       }
     }  
   }
-  
+
+  for(Int_t i=0;i<fNCentBin;i++){
+     snprintf(key,buffersize, "fhFakeOmega%d",i);
+     snprintf(title,buffersize,"FakePi0(high pt cluster)+Gamma with Centrality%d",i);
+     fhFakeOmega[i] = (TH2F*)fhEtalon->Clone(key);
+     fhFakeOmega[i]->SetTitle(title);
+     outputContainer->Add(fhFakeOmega[i]); 
+  }
   if(IsDataMC()){
     snprintf(key,buffersize, "%sOmegaPri",detector);
     snprintf(title,buffersize,"primary #omega in %s",detector);
@@ -444,8 +457,12 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   if(ivtxzbin>=fNVtxZBin)return;
   
   //centrality
-  Int_t icentbin=0;
-  
+  Int_t currentCentrality = GetEventCentrality();
+  if(currentCentrality == -1) return;
+  Int_t optCent = GetReader()->GetCentralityOpt();
+  Int_t icentbin=currentCentrality/(optCent/fNCentBin) ; //GetEventCentrality();
+ 
+  printf("-------------- %d  %d  %d  ",currentCentrality, optCent, icentbin);
   //reaction plane
   Int_t irpbin=0;
   
@@ -607,7 +624,31 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   for(Int_t i=0;i<nphotons;i++){
     AliAODPWG4Particle *ph1 = (AliAODPWG4Particle*) (aodGamma->At(i)); 
     TLorentzVector vph1(ph1->Px(),ph1->Py(),ph1->Pz(),ph1->E());
-    
+    //interrupt here...................
+    //especially for EMCAL
+    //we suppose the high pt clusters are overlapped pi0   
+
+    for(Int_t j=i+1;j<nphotons;j++){
+        AliAODPWG4Particle *ph2 = (AliAODPWG4Particle*) (aodGamma->At(j));
+        TLorentzVector fakePi0, fakeOmega, vph;
+
+        if(ph1->E() > fEOverlapCluster && ph1->E() > ph2->E()) {
+           fakePi0.SetPxPyPzE(ph1->Px(),ph1->Py(),ph1->Pz(),TMath::Sqrt(ph1->Px()*ph1->Px()+ph1->Py()*ph1->Py()+ph1->Pz()*ph1->Pz()+0.135*0.135));
+           vph.SetPxPyPzE(ph2->Px(),ph2->Py(),ph2->Pz(),ph2->E());
+        }
+        else if(ph2->E() > fEOverlapCluster && ph2->E() > ph1->E()) {
+           fakePi0.SetPxPyPzE(ph2->Px(),ph2->Py(),ph2->Pz(),TMath::Sqrt(ph2->Px()*ph2->Px()+ph2->Py()*ph2->Py()+ph2->Pz()*ph2->Pz()+0.135*0.135));
+           vph.SetPxPyPzE(ph1->Px(), ph1->Py(),ph1->Pz(),ph1->E());
+        }
+        else continue;
+
+        fakeOmega=fakePi0+vph;
+        for(Int_t ii=0;ii<fNCentBin;ii++){ 
+           fhFakeOmega[icentbin]->Fill(fakeOmega.Pt(), fakeOmega.M());
+        }
+    }//j
+
+    //continue ................
     Int_t nMixed = fEventsList[curEventBin]->GetSize();
     for(Int_t ie=0;ie<nMixed;ie++){
       TClonesArray* ev2= (TClonesArray*) (fEventsList[curEventBin]->At(ie));
