@@ -142,6 +142,16 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
     if (centrality < fLow || centrality >= fHigh) return;
   }
 
+  // Create sum histogram 
+  if (!fSumPrimary) { 
+    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
+    fSumPrimary->SetDirectory(0);
+    fSumPrimary->Reset();
+    fSums->Add(fSumPrimary);
+  }
+  if (triggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(triggerMask|AliAODForwardMult::kB)) 
+    fSumPrimary->Add(primary);
+  
   // translate rea trigger mask to MC trigger mask
   Int_t mask = AliAODForwardMult::kB;
   if (triggerMask == AliAODForwardMult::kNSD)
@@ -150,15 +160,7 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
   // Now use our normal check, but with the new mask 
   if (!forward->CheckEvent(mask, vzMin, vzMax, 0, 0, 0)) return;
 
-  // Create sum histogram 
-  if (!fSumPrimary) { 
-    fSumPrimary = static_cast<TH2D*>(primary->Clone("truth"));
-    fSumPrimary->SetDirectory(0);
-    fSumPrimary->Reset();
-    fSums->Add(fSumPrimary);
-  }
-
-  fSumPrimary->Add(primary);
+  
 }
 
 //________________________________________________________________________
