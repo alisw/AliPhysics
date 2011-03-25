@@ -191,8 +191,9 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   if(fDEBUG)Printf("Output");
   fOutput=new TList();
   fOutput->SetName(GetName());
-  char histname[100];
-  char histtitle[200];
+  const Int_t buffersize = 256;
+  char histname[buffersize];
+  char histtitle[buffersize];
   int nptbins=fNAPtBins;
   int lptbins=0;
   const char *cmc1[2]={"","_MC"};
@@ -221,7 +222,6 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
   for(int imc=0;imc<=1;imc++){//MC loop
     if(imc==1&&!fMCHistos) continue;
     //Create the histograms
-    Int_t buffersize = 256;
     snprintf(histname,buffersize,"fHistMult%s",cmc1[imc]);
     snprintf(histtitle,buffersize,"Multiplicity%s",cmc2[imc]);
     fHistMult[imc]=new TH1F(histname,histtitle,2000,-0.5,1999.5);
@@ -233,8 +233,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
     for(int imult=0;imult<fNCentBins;imult++){//loop for multiplicity bins
       
       //Histograms that are independent of the trigger
-      sprintf(histname,"fHistPt_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T} Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPt_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T} Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPt[imult][imc]=new TH1F(histname,histtitle,nptbins,fPtAssocArray);
       fHistPt[imult][imc]->Sumw2();
       fHistPt[imult][imc]->GetXaxis()->SetTitle("p_{T}");
