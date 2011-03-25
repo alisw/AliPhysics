@@ -472,6 +472,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetNVar(fNvar);
 	cfVtxHF->SetFakeSelection(fFakeSelection);
 
+	// switch-off the trigger class selection (doesn't work for MC)
+	fCuts->SetTriggerClass("");
+
+
 	if (fCentralitySelection)
 	  if(fCuts->IsEventSelectedInCentrality(aodEvent)!=0) {
   	    delete[] containerInput;
