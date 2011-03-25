@@ -144,6 +144,7 @@ protected:
      * @param trigEff     Trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
      * @param rebin       Whether to rebin the results
+     * @param rootProj    If true, use TH2::ProjectionX
      * @param corrEmpty   Whether to correct for empty bins
      * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
@@ -157,6 +158,7 @@ protected:
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
+		     Bool_t      rootProj,
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,

@@ -1521,7 +1521,7 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskForwardMultEloss.C(%d)", mc));
+    gROOT->Macro(Form("AddTaskFMDEloss.C(%d)", mc, fUseCent));
   }
   /** 
    * Crete output handler - we don't want one here. 
@@ -1529,6 +1529,7 @@ protected:
    * @return 0
    */
   AliVEventHandler* CreateOutputHandler(EType) { return 0; }
+  Bool_t fUseCent;
 };
 
 //====================================================================

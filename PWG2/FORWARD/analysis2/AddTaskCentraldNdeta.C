@@ -42,6 +42,10 @@ AddTaskCentraldNdeta(const char* trig     = "INEL",
   task->SetTriggerMask(trig);
   // Whether to cut edges when re-binning 
   task->SetCutEdges(cutEdges);
+  // Whether to correct for empty bins when projecting 
+  task->SetCorrEmpty(false);
+  // Whether to use TH2::ProjectionX 
+  task->SetUseROOTProjectX(false);
   // Bit mask of 
   // 
   //    kNone               Normalise to accepted events 

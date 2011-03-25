@@ -16,7 +16,6 @@
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
 #include "AliFMDEventInspector.h"
-#include "AliFMDEnergyFitter.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
@@ -107,12 +106,6 @@ public:
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
   /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  AliFMDEnergyFitter& GetEnergyFitter() { return fEnergyFitter; }
-  /**
    * Get reference to the SharingFilter algorithm 
    * 
    * @return Reference to AliFMDSharingFilter object 
@@ -142,12 +135,6 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
-  /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  const AliFMDEnergyFitter& GetEnergyFitter() const { return fEnergyFitter; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -194,7 +181,6 @@ protected:
   AliAODForwardMult      fAODFMD;       // Output object
 
   AliFMDEventInspector    fEventInspector;    // Algorithm
-  AliFMDEnergyFitter      fEnergyFitter;      // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
   AliFMDCorrector         fCorrections;       // Algorithm

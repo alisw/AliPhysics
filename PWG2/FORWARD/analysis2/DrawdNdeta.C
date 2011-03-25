@@ -327,6 +327,8 @@ struct dNdetaDrawer
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
     if (!fCentAxis) 
       fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
+
+    TNamed* options = static_cast<TAxis*>(results->FindObject("options"));
     if (!fTrigString) fTrigString = new TNamed("trigger", "unknown");
     if (!fNormString) fNormString = new TNamed("scheme", "unknown");
     if (!fSNNString)  fSNNString  = new TNamed("sNN", "unknown");
@@ -352,13 +354,14 @@ struct dNdetaDrawer
 	 "   System:        %-30s  (%d)\n"
 	 "   Vz range:      %-30s  (%f,%f)\n"
 	 "   Normalization: %-30s  (%d)\n"
-	 "   Centrality:    %s",
+	 "   Centrality:    %s\n"
+	 "   Options:       %s",
 	 fTrigString->GetTitle(), fTrigString->GetUniqueID(), 
 	 fSNNString->GetTitle(),  fSNNString->GetUniqueID(), 
 	 fSysString->GetTitle(),  fSysString->GetUniqueID(), 
 	 fVtxAxis->GetTitle(), fVtxAxis->GetXmin(), fVtxAxis->GetXmax(),
 	 fNormString->GetTitle(), fNormString->GetUniqueID(),
-	 centTxt.Data());
+	 centTxt.Data(), (options ? options->GetTitle() : "none"));
   }
   //__________________________________________________________________
   TMultiGraph* FetchOthers(UShort_t centLow, UShort_t centHigh)
