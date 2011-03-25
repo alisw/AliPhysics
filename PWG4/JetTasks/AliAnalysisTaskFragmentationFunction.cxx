@@ -1187,7 +1187,12 @@ void AliAnalysisTaskFragmentationFunction::AliFragFuncHistos::FillFF(Float_t tra
   // fill FF
  
   if(incrementJetPt && norm) fh1JetPt->Fill(jetPt,1/norm);
-  else if(incrementJetPt) fh1JetPt->Fill(jetPt); 
+  else if(incrementJetPt) fh1JetPt->Fill(jetPt);
+
+ // Added for proper normalization of FF background estimation
+  // when zero track are found in the background region
+  if(trackPt==-1.) return;
+ 
   if(norm)fh2TrackPt->Fill(jetPt,trackPt,1/norm);
   else fh2TrackPt->Fill(jetPt,trackPt);
   
@@ -4590,11 +4595,11 @@ void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxisWindow(Float
       Float_t trackEta = track->Eta();
       Float_t trackPhi = track->Phi();
 
-      if( ( phiTilted-radius >= 0 ) || ( phiTilted+radius <= 2*TMath::Pi()))
+      if( ( phiTilted-radius >= 0 ) && ( phiTilted+radius <= 2*TMath::Pi()))
 	{
 	  if((trackPhi<=phiTilted+radius) && 
 	     (trackPhi>=phiTilted-radius) &&
-	     (trackEta<=fTrackEtaMax)&&(trackEta>=-fTrackEtaMin)) // 0.9 and - 0.9
+	     (trackEta<=fTrackEtaMax)&&(trackEta>=fTrackEtaMin)) // 0.9 and - 0.9
 	    {
 	      outputlist->Add(track);
 	      sumPt += track->Pt();
@@ -4613,7 +4618,7 @@ void AliAnalysisTaskFragmentationFunction::GetTracksTiltedwrpJetAxisWindow(Float
       else if( phiTilted+radius > 2*TMath::Pi() )
 	{
 	  if((( trackPhi > phiTilted-radius ) ||
-	      ( trackPhi > radius-2*TMath::Pi()-phiTilted )) &&
+              ( trackPhi < phiTilted+radius-2*TMath::Pi() )) &&
 	     (( trackEta <= fTrackEtaMax ) && ( trackEta >= fTrackEtaMin ))) 
 	    {
 	      outputlist->Add(track);
@@ -4916,6 +4921,22 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistoutleading->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOutLJ)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+        // All cases included
+        if(nRecJetsCuts==1 && type==kBckgOutAJ)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+      }
       delete tracklistoutleading;
     }
   if(type==kBckgOutLJStat || type==kBckgOutAJStat)
@@ -4933,7 +4954,6 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	
 	Float_t jetPt   = jet->Pt();
 	Float_t trackPt = trackV->Pt();
-	
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
 	// Stat plots
@@ -4960,6 +4980,23 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistoutleadingStat->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOutLJStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactorLeading);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactorLeading);
+          }
+        // All cases included
+        if(nRecJetsCuts==1 && type==kBckgOutLJStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactorLeading);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactorLeading );
+          }
+      }
+
       delete tracklistoutleadingStat;
     }
 
@@ -4992,6 +5029,14 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistperp->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+         if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+      }
+
       delete tracklistperp;
     }
 
@@ -5023,6 +5068,13 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
         delete trackV;
       }
+      if(tracklistaside->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+         if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+      }
+
       delete tracklistaside;
     }
 
@@ -5041,7 +5093,6 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
         Float_t jetPt   = jet->Pt();
         Float_t trackPt = trackV->Pt();
-
         Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 
         if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt, normFactorASide);
@@ -5055,6 +5106,13 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
         delete trackV;
       }
+      if(tracklistasidew->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactorASide);
+         if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactorASide);
+      }
+
       delete tracklistasidew;
     }
 
@@ -5073,7 +5131,6 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
         Float_t jetPt   = jet->Pt();
         Float_t trackPt = trackV->Pt();
-
         Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 
         if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt, normFactorPerp);
@@ -5087,6 +5144,13 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 
         delete trackV;
       }
+      if(tracklistperpw->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactorPerp);
+         if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactorPerp);
+      }
+
       delete tracklistperpw;
     }
 
@@ -5126,6 +5190,23 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistout2jets->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOut2J)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+        // All cases included
+        if(nRecJetsCuts==2 && type==kBckgOutAJ)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+      }
+
     }
 
   if(type==kBckgOut2JStat || type==kBckgOutAJStat)
@@ -5137,7 +5218,6 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	
 	Float_t jetPt   = jet->Pt();
 	Float_t trackPt = trackV->Pt();
-	
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
 	if(type==kBckgOut2JStat)
@@ -5162,6 +5242,23 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistout2jetsStat->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOut2JStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactor2Jets);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactor2Jets);
+          }
+        // All cases included
+        if(nRecJetsCuts==2 && type==kBckgOutAJStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactor2Jets);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactor2Jets );
+          }
+      }
+
     }
 
   if(type==kBckgOut3J || type==kBckgOutAJ)
@@ -5180,10 +5277,10 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	
 	if(type==kBckgOut3J)
 	  {
-	    ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt );
+	    if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt );
 	    if(fIJMode) ijbckghistocuts->FillIntraJet( trackV, jet->MomentumVector() );
 	    
-	    ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt );
+	    if(fFFMode) ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt );
 	    if(fIJMode) ijbckghistoleading->FillIntraJet( trackV, leadTrackV );
 	    
 	    qabckghistocuts->FillTrackQA( trackV->Eta(), TVector2::Phi_0_2pi(trackV->Phi()), trackPt);
@@ -5192,14 +5289,32 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	// All cases included
 	if(nRecJetsCuts==3 && type==kBckgOutAJ)
 	  {
-	    ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt );
+	    if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt );
 	    if(fIJMode) ijbckghistocuts->FillIntraJet( trackV, jet->MomentumVector() );
 	    
-	    ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt );
+	    if(fFFMode) ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt );
 	    if(fIJMode) ijbckghistoleading->FillIntraJet( trackV, leadTrackV );
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistout3jets->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOut3J)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+        // All cases included
+        if(nRecJetsCuts==3 && type==kBckgOutAJ)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt );
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt );
+          }
+      }
+
+
     }
 
   if(type==kBckgOut3JStat || type==kBckgOutAJStat)
@@ -5211,15 +5326,14 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	
 	Float_t jetPt   = jet->Pt();
 	Float_t trackPt = trackV->Pt();
-	
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 
 	if(type==kBckgOut3JStat)
 	  {
-	    if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt,normFactor3Jets);
+	    if(fFFMode) ffbckghistocuts->FillFF( trackPt, jetPt, incrementJetPt, normFactor3Jets);
 	    if(fIJMode) ijbckghistocuts->FillIntraJet( trackV, jet->MomentumVector(), normFactor3Jets);
 	    
-	    if(fFFMode) ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt,normFactor3Jets);
+	    if(fFFMode) ffbckghistoleading->FillFF( trackPt, leadTrackPt , incrementJetPt, normFactor3Jets);
 	    if(fIJMode) ijbckghistoleading->FillIntraJet( trackV, leadTrackV, normFactor3Jets);
 	    
 	    //if(fQAMode&1) 	qabckghistocuts->FillTrackQA( trackEta, TVector2::Phi_0_2pi(trackPhi), trackPt);
@@ -5236,6 +5350,23 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 	  }
 	delete trackV;
       }
+      // Increment jet pt with one entry in case #tracks outside jets = 0
+      if(tracklistout3jetsStat->GetSize()==0) {
+         Float_t jetPt = jet->Pt();
+         Bool_t incrementJetPt = kTRUE;
+         if(type==kBckgOut3JStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactor3Jets);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactor3Jets);
+          }
+        // All cases included
+        if(nRecJetsCuts==3 && type==kBckgOutAJStat)
+          {
+            if(fFFMode) ffbckghistocuts->FillFF( -1., jetPt, incrementJetPt, normFactor3Jets);
+            if(fFFMode) ffbckghistoleading->FillFF( -1., leadTrackPt , incrementJetPt, normFactor3Jets );
+          }
+      }
+
     }
 
   if(type==kBckgClusters)
