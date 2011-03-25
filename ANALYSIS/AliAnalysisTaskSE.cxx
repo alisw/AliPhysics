@@ -179,8 +179,8 @@ void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
     if (fDebug > 1) printf("AnalysisTaskSE::ConnectInputData() \n");
 
    // Connect input handlers (multi input handler is handled)
-   ConnectMultiHandler();
-
+    ConnectMultiHandler();
+    
     if (fInputHandler) {
 	if ((fInputHandler->GetTree())->GetBranch("ESDfriend."))
 	    fESDfriend = ((AliESDInputHandler*)fInputHandler)->GetESDfriend();
@@ -211,10 +211,8 @@ void AliAnalysisTaskSE::CreateOutputObjects()
     if (aodIH) {
 	if (aodIH->GetMergeEvents()) merging = kTRUE;
     }
-    
 
     // Check if AOD replication has been required
-    
     if (handler) {
 	fOutputAOD   = handler->GetAOD();
 	fTreeA = handler->GetTree();
@@ -280,13 +278,12 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 		fgAODCaloClusters->SetName("caloClusters");
 		handler->AddBranch("TClonesArray", &fgAODCaloClusters);
 
-		fgAODEmcalCells = new AliAODCaloCells();
-		fgAODEmcalCells->SetName("emcalCells");
+		fgAODEmcalCells = new AliAODCaloCells("emcalCells","emcalCells",AliVCaloCells::kEMCALCell);
 		handler->AddBranch("AliAODCaloCells", &fgAODEmcalCells);
 
-		fgAODPhosCells = new AliAODCaloCells();
-		fgAODPhosCells->SetName("phosCells");
+		fgAODPhosCells = new AliAODCaloCells("phosCells","phosCells",AliVCaloCells::kPHOSCell);
 		handler->AddBranch("AliAODCaloCells", &fgAODPhosCells);
+		
 	    }
 	    if ((handler->NeedsMCParticlesBranchReplication() || merging) && !(fgAODMCParticles))	  
 	    {   
@@ -414,7 +411,8 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    if ((handler->NeedsMCParticlesBranchReplication() || merging) && (fgAODMCParticles))
 	    {
 		TClonesArray* mcParticles = (TClonesArray*) (aod->FindListObject("mcparticles"));
-		new (fgAODMCParticles) TClonesArray(*mcParticles);
+		if( mcParticles )
+		  new (fgAODMCParticles) TClonesArray(*mcParticles);
 	    }
 	    
 	    if ((handler->NeedsDimuonsBranchReplication() || merging) && (fgAODDimuons))
@@ -448,70 +446,119 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 		    }    
 		}
 	    }
-	    
 	    // Additional merging if needed
 	    if (merging) {
+	      Int_t nc;
+
 		// mcParticles
 		TClonesArray* mcparticles = (TClonesArray*) ((aodH->GetEventToMerge())->FindListObject("mcparticles"));
-		Int_t npart = mcparticles->GetEntries();
-		Int_t nc = fgAODMCParticles->GetEntries();
-		Int_t nc0 = nc;
-		
-		for (Int_t i = 0; i < npart; i++) {
+		if( mcparticles ){
+		  Int_t npart = mcparticles->GetEntries();
+		  nc = fgAODMCParticles->GetEntries();
+		  
+		  for (Int_t i = 0; i < npart; i++) {
 		    AliAODMCParticle* particle = (AliAODMCParticle*) mcparticles->At(i);
 		    new((*fgAODMCParticles)[nc++]) AliAODMCParticle(*particle);
-		}
-		
-		// tracks
-		TClonesArray* tracks = aodH->GetEventToMerge()->GetTracks();
-		Int_t ntr = tracks->GetEntries();
-		nc  = fgAODTracks->GetEntries();	
-		for (Int_t i = 0; i < ntr; i++) {
-		    AliAODTrack*    track = (AliAODTrack*) tracks->At(i);
-		    AliAODTrack* newtrack = new((*fgAODTracks)[nc++]) AliAODTrack(*track);
-		    newtrack->SetLabel(newtrack->GetLabel() + nc0);
+		  }
 		}
 
-		for (Int_t i = 0; i < nc; i++) 
-		{
-		    AliAODTrack* track = (AliAODTrack*) fgAODTracks->At(i);
-		    track->ResetBit(kIsReferenced);
-		    track->SetUniqueID(0);
-		}
-		
-		
-		// clusters
-		TClonesArray* clusters = aodH->GetEventToMerge()->GetCaloClusters();
-		Int_t ncl  = clusters->GetEntries();
-		nc         =  fgAODCaloClusters->GetEntries();
-		for (Int_t i = 0; i < ncl; i++) {
-		    AliAODCaloCluster*    cluster = (AliAODCaloCluster*) clusters->At(i);
-		    new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
-		}
-		// cells
-		AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
-		Int_t ncells  = cellsA->GetNumberOfCells();
-		nc = fgAODEmcalCells->GetNumberOfCells();
-		
-		for (Int_t i  = 0; i < ncells; i++) {
-		    Int_t cn  = cellsA->GetCellNumber(i);
-		    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
-		    if (pos >= 0) {
-			Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
-			fgAODEmcalCells->SetCell(pos, cn, amp);
-		    } else {
-			Double_t amp = cellsA->GetAmplitude(i);
-			fgAODEmcalCells->SetCell(nc++, cn, amp);
-			fgAODEmcalCells->Sort();
+		// tracks
+		TClonesArray* tracks = aodH->GetEventToMerge()->GetTracks();
+		if(tracks){
+		  Int_t ntr = tracks->GetEntries();
+		  nc  = fgAODTracks->GetEntries();	
+		  for (Int_t i = 0; i < ntr; i++) {
+		    AliAODTrack*    track = (AliAODTrack*) tracks->At(i);
+		    AliAODTrack* newtrack = new((*fgAODTracks)[nc++]) AliAODTrack(*track);
+		    newtrack->SetLabel(newtrack->GetLabel() + fgAODMCParticles->GetEntries());
+		  }
+		  
+		  for (Int_t i = 0; i < nc; i++) 
+		    {
+		      AliAODTrack* track = (AliAODTrack*) fgAODTracks->At(i);
+		      track->ResetBit(kIsReferenced);
+		      track->SetUniqueID(0);
 		    }
 		}
 		
+		// clusters
+		TClonesArray* clusters = aodH->GetEventToMerge()->GetCaloClusters();
+		if( clusters ){
+		  Int_t ncl  = clusters->GetEntries();
+		  nc         =  fgAODCaloClusters->GetEntries();
+		  for (Int_t i = 0; i < ncl; i++) {
+		    AliAODCaloCluster*    cluster = (AliAODCaloCluster*) clusters->At(i);
+		    new((*fgAODCaloClusters)[nc++]) AliAODCaloCluster(*cluster);
+		  }
+		}
+
+		// EMCAL cells
+		//*fgAODEmcalCells =  *(aod->GetEMCALCells()); // This will be valid after 10.Mar.2011.
+		{
+		  AliAODCaloCells* copycells = aod->GetEMCALCells();
+		  fgAODEmcalCells->CreateContainer(copycells->GetNumberOfCells());
+		  nc  = copycells->GetNumberOfCells();
+		  while( nc-- ){ fgAODEmcalCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
+		}
+		AliAODCaloCells* cellsA = aodH->GetEventToMerge()->GetEMCALCells();
+		if( cellsA ){
+		  Int_t ncells  = cellsA->GetNumberOfCells();
+		  nc = fgAODEmcalCells->GetNumberOfCells();
+		  for (Int_t i  = 0; i < ncells; i++) {
+		    Int_t cn  = cellsA->GetCellNumber(i);
+		    Int_t pos = fgAODEmcalCells->GetCellPosition(cn);
+		    if (pos >= 0) {
+		      Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
+		      fgAODEmcalCells->SetCell(pos, cn, amp);
+		    } else {
+		      AliAODCaloCells* copycells = new AliAODCaloCells(*fgAODEmcalCells);
+		      fgAODEmcalCells->CreateContainer(nc+1);
+		      Int_t nn = copycells->GetNumberOfCells();
+		      while( nn-- ){ fgAODEmcalCells->SetCell(nn,copycells->GetCellNumber(nn),copycells->GetAmplitude(nn)); }
+		      fgAODEmcalCells->SetCell(nc++,cn,cellsA->GetAmplitude(i));
+		      delete copycells;
+		    }
+		  }
+		  fgAODEmcalCells->Sort();
+		}
 		
+		// PHOS cells
+		//*fgAODPhosCells =  *(aod->GetPHOSCells()); // This will be valid after 10.Mar.2011.
+		{
+		  AliAODCaloCells* copycells = aod->GetPHOSCells();
+		  fgAODPhosCells->CreateContainer(copycells->GetNumberOfCells());
+		  nc  = copycells->GetNumberOfCells();
+		  while( nc-- ){ fgAODPhosCells->SetCell(nc,copycells->GetCellNumber(nc),copycells->GetAmplitude(nc)); }
+		}
+		AliAODCaloCells* cellsP = aodH->GetEventToMerge()->GetPHOSCells();
+		if( cellsP ){
+		  Int_t ncellsP  = cellsP->GetNumberOfCells();
+		  nc = fgAODPhosCells->GetNumberOfCells();
+		  
+		  for (Int_t i  = 0; i < ncellsP; i++) {
+		    Int_t cn  = cellsP->GetCellNumber(i);
+		    Int_t pos = fgAODPhosCells->GetCellPosition(cn);
+		    if (pos >= 0) {
+		      Double_t amp = cellsP->GetAmplitude(i) + fgAODPhosCells->GetAmplitude(pos);
+		      fgAODPhosCells->SetCell(pos, cn, amp);
+		    } else {
+		      AliAODCaloCells* copycells = new AliAODCaloCells(*fgAODPhosCells);
+		      fgAODPhosCells->CreateContainer(nc+1);
+		      Int_t nn = copycells->GetNumberOfCells();
+		      while( nn-- ){ fgAODPhosCells->SetCell(nn,copycells->GetCellNumber(nn),copycells->GetAmplitude(nn)); }
+		      fgAODPhosCells->SetCell(nc++,cn,cellsP->GetAmplitude(i));
+		      delete copycells;
+		    }
+		  }
+		  fgAODPhosCells->Sort();
+		}
+			
 	    } // merging
 	    
 	    handler->SetAODIsReplicated();
 	}
     }
+
 
 // Call the user analysis    
     if (!fMCEventHandler) {
@@ -525,7 +572,7 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 // Added protection in case the derived task is not an AOD producer.
     AliAnalysisDataSlot *out0 = GetOutputSlot(0);
     if (out0 && out0->IsConnected()) PostData(0, fTreeA);    
-    
+
     DisconnectMultiHandler();
 }
 
