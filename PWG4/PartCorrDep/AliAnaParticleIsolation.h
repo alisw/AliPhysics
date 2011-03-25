@@ -113,6 +113,9 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F * fhPtIso ;     //! Number of isolated particles
   TH2F * fhPhiIso ;    //! Phi of isolated particles
   TH2F * fhEtaIso ;    //! eta of isolated particles
+  TH1F * fhPtNoIso ;   //! Number of not isolated leading particles
+  TH1F * fhPtInvMassDecayIso ;   //! Number of isolated Pi0 decay particles (invariant mass tag)
+  TH1F * fhPtInvMassDecayNoIso ;   //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
   TH2F * fhConeSumPt ; //! Sum Pt in the cone
   TH2F * fhPtInCone ;  //! Particle Pt in the cone
   TH2F * fhFRConeSumPt ; //! Sum Pt in the forward region cone (phi +90)
@@ -167,7 +170,12 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F * fhPtThresIsolatedUnknown[5][5];  //! Isolated Unknown gamma with pt threshold 
   TH1F * fhPtFracIsolatedUnknown[5][5];   //! Isolated Unknown gamma with pt frac
   TH2F * fhPtSumIsolatedUnknown[5];       //! Isolated Unknown gamma with threshold on cone pt sume
-  
+
+  TH1F * fhPtNoIsoPi0Decay;  //! Number of not isolated leading Pi0Decay gamma 
+  TH1F * fhPtNoIsoPrompt;   //! Number of not isolated leading prompt gamma 
+  TH1F * fhPtIsoMCPhoton;  //! Number of isolated leading gamma 
+  TH1F * fhPtNoIsoMCPhoton;   //! Number of not isolated leading gamma 
+
   //Histograms settings
   Int_t   fHistoNPtSumBins; // Number of bins in PtSum histograms
   Float_t fHistoPtSumMax;   // PtSum maximum in histogram
