@@ -11,6 +11,7 @@
 
 #ifndef __CINT__
 #include <fstream>
+#include <iostream>
 
 #include <TAlienCollection.h>
 #include <TArrayI.h>
@@ -324,51 +325,57 @@ struct TrainSetup
   /** 
    * Set ROOT version to use 
    * 
-   * @param v 
+   * @param v Version string of ROOT 
    */
   void SetROOTVersion(const char* v)    { fRootVersion = v; }
   //__________________________________________________________________
   /** 
    * Set AliROOT version to use 
    * 
-   * @param v 
+   * @param v Version string of AliROOT 
    */
   void SetAliROOTVersion(const char* v) { fAliRootVersion = v; }
   //__________________________________________________________________
   /** 
-   * Set the proof server URL
+   * Set the PROOF server URL
    * 
-   * @param s 
+   * @param s PROOF server URL 
    */
   void SetProofServer(const char* s)    { fProofServer = s; }
   //__________________________________________________________________
   /** 
    * Set the GRID/Local data dir 
    * 
-   * @param d 
+   * @param d Directory with data 
    */
-  void SetDataDir(const char* d)        { fDataDir = d; }
+  void SetDataDir(const char* d) { fDataDir = d; }
   //__________________________________________________________________
   /** 
    * Set the PROOF data set 
    * 
-   * @param d 
+   * @param d PROOF registered data set 
    */
-  void SetDataSet(const char* d)        { fDataSet = d; }
+  void SetDataSet(const char* d) { fDataSet = d; }
   //__________________________________________________________________
   /** 
    * Set the XML file to use 
    * 
-   * @param x 
+   * @param x XML file 
    */
-  void SetXML(const char* x)            { fXML = x; }
+  void SetXML(const char* x) { fXML = x; }
   //__________________________________________________________________
   /** 
    * Set how many replicas of the output we want 
    * 
-   * @param n 
+   * @param n Number of replicas requested 
    */
-  void SetNReplica(Int_t n)             { fNReplica = n; }
+  void SetNReplica(Int_t n) { fNReplica = n; }
+  /** 
+   * Set the ESD pass to use 
+   * 
+   * @param pass Pass number 
+   */
+  void SetESDPass(Int_t pass) { fESDPass = pass; }
   //__________________________________________________________________
   /** 
    * Add a source file to be copied and byte compiled on slaves 
@@ -650,8 +657,8 @@ protected:
     gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/ANALYSIS/macros",
 			     gROOT->GetMacroPath()));
 
-    // --- Physics selction ------------------------------------------
-    CreatePhysicsSelection(mc, mgr);
+    // --- Physics selction - only for ESD ---------------------------
+    if (type == kESD) CreatePhysicsSelection(mc, mgr);
     
     // --- Create tasks ----------------------------------------------
     CreateTasks(mode, usePar, mgr);
@@ -745,7 +752,8 @@ protected:
    * 
    * @return Grid handler 
    */
-  virtual AliAnalysisAlien* CreateGridHandler(EType type, EMode mode, EOper oper)
+  virtual AliAnalysisAlien* 
+  CreateGridHandler(EType type, EMode mode, EOper oper)
   {
     if (mode != kGrid) return 0;
 
@@ -946,13 +954,14 @@ protected:
    */
   virtual AliVEventHandler* CreateOutputHandler(EType type)
   {
+    AliAODHandler* ret = new AliAODHandler();
     switch (type) { 
-    case kESD: // Fall through 
-    case kAOD: { 
-      AliAODHandler* ret = new AliAODHandler();
+    case kESD: 
       ret->SetOutputFileName("AliAOD.root");
-      return ret;
-    }
+      break;
+    case kAOD: 
+      ret->SetOutputFileName("AliAOD.pass2.root");
+      break;
     }
     return 0;
   }
@@ -1433,29 +1442,34 @@ protected:
  * 
  * @ingroup pwg2_forward_scripts_makers
  */
-class ForwardELoss : public TrainSetup
+class FMDELossTrain : public TrainSetup
 {
 public:
   /** 
    * Constructor.  Date and time must be specified when running this
    * in Termiante mode on Grid
    * 
-   * @param dateTime Append date and time to name 
+   * @param name     Name of train 
+   * @param useCent  Whether to use centrality or not 
+   * @param dateTime Append date and time to name
    * @param year     Year
    * @param month    Month 
    * @param day      Day
    * @param hour     Hour 
    * @param min      Minutes
    */
-  ForwardELoss(Bool_t   dateTime, 
-	       UShort_t year  = 0, 
-	       UShort_t month = 0, 
-	       UShort_t day   = 0, 
-	       UShort_t hour  = 0, 
-	       UShort_t min   = 0) 
-    : TrainSetup("Forward energy loss", dateTime, 
-		 year, month, day, hour, min) 
+  FMDELossTrain(const char* name  = "FMD Energy Loss",
+		Bool_t   useCent  = false,
+		Bool_t   dateTime = false, 
+		UShort_t year     = 0, 
+		UShort_t month    = 0, 
+		UShort_t day      = 0, 
+		UShort_t hour     = 0, 
+		UShort_t min      = 0) 
+    : TrainSetup(name, dateTime, year, month, day, hour, min), 
+      fUseCent(useCent)
   {}
+  //__________________________________________________________________
   /** 
    * Run this analysis 
    * 
@@ -1467,11 +1481,9 @@ public:
   void Run(const char* mode, const char* oper, 
 	   Int_t nEvents=-1, Bool_t mc=false)
   {
-    EMode eMode = ParseMode(mode);
-    EOper eOper = ParseOperation(oper);
-    
-    Run(eMode, eOper, nEvents, mc);
+    Exec("ESD", mode, oper, nEvents, mc);
   }
+  //__________________________________________________________________
   /** 
    * Run this analysis 
    * 
@@ -1484,6 +1496,8 @@ public:
   {
     Exec(kESD, mode, oper, nEvents, mc, true);
   }
+protected:
+  //__________________________________________________________________
   /** 
    * Create the tasks 
    * 
@@ -1509,12 +1523,30 @@ public:
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMultEloss.C(%d)", mc));
   }
+  /** 
+   * Crete output handler - we don't want one here. 
+   * 
+   * @return 0
+   */
+  AliVEventHandler* CreateOutputHandler(EType) { return 0; }
 };
 
 //====================================================================
 /**
  * Analysis train to make Forward and Central multiplicity
  * 
+ * To run, do 
+ * @code 
+ * gROOT->LoadMacro("TrainSetup.C");
+ * // Make train 
+ * MakeAODTrain t("My Analysis");
+ * // Set variaous parameters on the train 
+ * t.SetDataDir("/home/of/data");
+ * t.AddRun(118506)
+ * // Run it 
+ * t.Run("LOCAL", "FULL", -1, false, false);
+ * @endcode 
+ *
  * @ingroup pwg2_forward_scripts_makers
  * @ingroup pwg2_forward_aod
  */
@@ -1558,8 +1590,8 @@ public:
   /** 
    * Run this analysis 
    * 
-   * @param mode     Mode
-   * @param oper     Operation
+   * @param mode     Mode - see TrainSetup::EMode
+   * @param oper     Operation - see TrainSetup::EOperation
    * @param nEvents  Number of events (negative means all)
    * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
@@ -1573,8 +1605,8 @@ public:
   /** 
    * Run this analysis 
    * 
-   * @param mode     Mode
-   * @param oper     Operation
+   * @param mode     Mode - see TrainSetup::EMode
+   * @param oper     Operation - see TrainSetup::EOperation
    * @param nEvents  Number of events (negative means all)
    * @param mc       If true, assume simulated events 
    * @param usePar   If true, use PARs 
@@ -1629,16 +1661,19 @@ protected:
   void CreatePhysicsSelection(Bool_t mc,
 			      AliAnalysisManager* mgr)
   {
-    gROOT->Macro(Form("AddTaskPhysicsSelection.C(%d)", mc));
-    mgr->RegisterExtraFile("event_stat.root");
+    TrainSetup::CreatePhysicsSelection(mc, mgr);
 
     // --- Get input event handler -----------------------------------
     AliInputEventHandler* ih =
-      static_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+      dynamic_cast<AliInputEventHandler*>(mgr->GetInputEventHandler());
+    if (!ih) 
+      Fatal("CreatePhysicsSelection", "Couldn't get input handler (%p)", ih);
     
     // --- Get Physics selection -------------------------------------
     AliPhysicsSelection* ps = 
-      static_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+      dynamic_cast<AliPhysicsSelection*>(ih->GetEventSelection());
+    if (!ps) 
+      Fatal("CreatePhysicsSelection", "Couldn't get PhysicsSelection (%p)", ps);
 
     // --- Ignore trigger class when selecting events.  This means ---
     // --- that we get offline+(A,C,E) events too --------------------
@@ -1653,6 +1688,18 @@ protected:
 /**
  * Analysis train to make @f$ dN/d\eta@f$
  * 
+ * To run, do 
+ * @code 
+ * gROOT->LoadMacro("TrainSetup.C");
+ * // Make train 
+ * MakedNdetaTrain t("My Analysis");
+ * // Set variaous parameters on the train 
+ * t.SetDataDir("/home/of/data");
+ * t.AddRun(118506)
+ * // Run it 
+ * t.Run("LOCAL", "FULL", -1, false, false);
+ * @endcode 
+ *
  * @ingroup pwg2_forward_scripts_makers
  * @ingroup pwg2_forward_dndeta
  */
@@ -1698,8 +1745,8 @@ public:
   /** 
    * Run this analysis 
    * 
-   * @param mode     Mode
-   * @param oper     Operation
+   * @param mode     Mode - see TrainSetup::EMode
+   * @param oper     Operation - see TrainSetup::EOperation
    * @param nEvents  Number of events (negative means all)
    * @param usePar   If true, use PARs 
    */
@@ -1711,8 +1758,8 @@ public:
   /** 
    * Run this analysis 
    * 
-   * @param mode     Mode
-   * @param oper     Operation
+   * @param mode     Mode - see TrainSetup::EMode
+   * @param oper     Operation - see TrainSetup::EOperation
    * @param nEvents  Number of events (negative means all)
    * @param usePar   If true, use PARs 
    */
@@ -1772,12 +1819,6 @@ protected:
     gROOT->Macro(Form("AddTaskCentraldNdeta.C(\"%s\",%f,%f,%d,\"%s\")",
 		      fTrig.Data(), fVzMin, fVzMax, fUseCent, fScheme.Data()));
   }
-  //__________________________________________________________________
-  /** 
-   * Do nothing 
-   * 
-   */
-  void CreatePhysicsSelection(Bool_t,AliAnalysisManager*) {}
   /** 
    * Crete output handler - we don't want one here. 
    * 

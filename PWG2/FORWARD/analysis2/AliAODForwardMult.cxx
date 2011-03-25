@@ -19,7 +19,8 @@
 #include <iostream>
 #include <TMath.h>
 #include <TObjString.h>
-
+#include <TObjArray.h>
+#include "AliLog.h"
 ClassImp(AliAODForwardMult)
 #ifdef DOXY_INPUT
 ; // For Emacs 
@@ -230,6 +231,27 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name)
   ret->SetStats(0);
 
   return ret;
+}
+//____________________________________________________________________
+UInt_t 
+AliAODForwardMult::MakeTriggerMask(const char* what)
+{
+  UShort_t    trgMask = 0;
+  TString     trgs(what);
+  trgs.ToUpper();
+  TObjString* trg;
+  TIter       next(trgs.Tokenize(" ,|"));
+  while ((trg = static_cast<TObjString*>(next()))) { 
+    TString s(trg->GetString());
+    if      (s.IsNull()) continue;
+    if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
+    else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
+    else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
+    else 
+      AliWarningGeneral("MakeTriggerMask", 
+			Form("Unknown trigger %s", s.Data()));
+  }
+  return trgMask;
 }
 
 //____________________________________________________________________
