@@ -506,8 +506,8 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t 
     return ;
   }
   
-  TClonesArray *pSdigList[10]; 
-  
+  TClonesArray *pSdigList[8]; // is is the max number of layers allowed in the tracking 
+  for(Int_t il=0; il<8; il++) pSdigList[il]=0x0; 
   for(Int_t i=0;i<fNlayers;i++){ 
     pSdigList[i]=(TClonesArray*)(*pSDig)[i];
     if(pSdigList[i]->GetEntries()!=0) AliErrorClass("Some of sdigits lists is not empty");         //in principle those lists should be empty 
