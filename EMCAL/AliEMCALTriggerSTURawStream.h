@@ -45,19 +45,19 @@ private:
 
     AliRawReader* fRawReader;   // object for reading the raw data
 
-	UInt_t              	             fL1JetThreshold;
-	UInt_t              	           fL1GammaThreshold;
-	UShort_t                          fL0GammaPatchIndex[3100]; 
-	UShort_t                          fL1GammaPatchIndex[3100]; 
-	UShort_t                            fL1JetPatchIndex[200];
+	UInt_t              	             fL1JetThreshold;          //
+	UInt_t              	           fL1GammaThreshold;          //
+	UShort_t                          fL0GammaPatchIndex[3100];    //
+	UShort_t                          fL1GammaPatchIndex[3100];    //
+	UShort_t                            fL1JetPatchIndex[200];     //
 	
-	Int_t                                 fNL0GammaPatch;
-	Int_t                                   fNL1JetPatch;
-	Int_t                                 fNL1GammaPatch;
+	Int_t                                 fNL0GammaPatch;          //
+	Int_t                                   fNL1JetPatch;          //
+	Int_t                                 fNL1GammaPatch;          //
 	
-	Int_t                                     fGetRawData;
+	Int_t                                     fGetRawData;         //
 	
-	UInt_t                                          fADC[32][96];
+	UInt_t                                          fADC[32][96];  //
 	
     ClassDef(AliEMCALTriggerSTURawStream,1)   // class for reading EMCAL STU DDL raw data
 };

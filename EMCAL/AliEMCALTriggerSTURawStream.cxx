@@ -82,7 +82,8 @@ AliEMCALTriggerSTURawStream::~AliEMCALTriggerSTURawStream()
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::Reset()
 {
-	//
+	// Reset
+	
 	if (fRawReader) fRawReader->Reset();
 	
 	fNL0GammaPatch = 0;
@@ -154,15 +155,15 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	//////////////////////////////////////////////////////////
 	// FIXME: still not interpreted to be done with Jiri
 	
-	unsigned short TRU_L0_indexes[32][6];
+	unsigned short truL0indexes[32][6];
 	
 	// extraction from stream
 	for (Int_t index=0;index<6;index++)
 	{
 		for (Int_t tru_num=0;tru_num<16;tru_num++)
 		{
-			TRU_L0_indexes[2*tru_num  ][index] = ( word32[12+index*16+tru_num]      & 0xFFFF);
-			TRU_L0_indexes[2*tru_num+1][index] = ((word32[12+index*16+tru_num]>>16) & 0xFFFF);
+			truL0indexes[2*tru_num  ][index] = ( word32[12+index*16+tru_num]      & 0xFFFF);
+			truL0indexes[2*tru_num+1][index] = ((word32[12+index*16+tru_num]>>16) & 0xFFFF);
 		}
 	}
 
@@ -172,7 +173,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 		{
 			for (Int_t bit_num=0;bit_num<12;bit_num++)
 			{
-				if ((TRU_L0_indexes[tru_num][index] & (1 << bit_num)))
+				if ((truL0indexes[tru_num][index] & (1 << bit_num)))
 				{
 					Int_t idx = 12 * index + bit_num;
 										
@@ -188,15 +189,15 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 	// index des L1 gamma                                   //
 	//////////////////////////////////////////////////////////
 	
-	unsigned short TRU_L1_indexes[32][8];
+	unsigned short truL1indexes[32][8];
 	
 	// extraction from stream
 	for (Int_t index=0;index<8;index++)
 	{
 		for (Int_t tru_num=0;tru_num<16;tru_num++)
 		{
-			TRU_L1_indexes[2*tru_num  ][index] = ( word32[108+index*16+tru_num]      & 0xFFFF);
-			TRU_L1_indexes[2*tru_num+1][index] = ((word32[108+index*16+tru_num]>>16) & 0xFFFF);
+			truL1indexes[2*tru_num  ][index] = ( word32[108+index*16+tru_num]      & 0xFFFF);
+			truL1indexes[2*tru_num+1][index] = ((word32[108+index*16+tru_num]>>16) & 0xFFFF);
 		}
 	}	
 
@@ -210,7 +211,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 		{
 			for (Int_t bit_num=0; bit_num<12; bit_num++)
 			{
-				if ((TRU_L1_indexes[tru_num][index] & (1<<bit_num)) != 0)
+				if ((truL1indexes[tru_num][index] & (1<<bit_num)) != 0)
 				{
 					if (index<4) // Even
 					{
@@ -267,7 +268,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 //_____________________________________________________________________________
 Bool_t AliEMCALTriggerSTURawStream::GetL0GammaPatch(const Int_t i, Int_t& tru, Int_t& idx) const
 {
-	//
+	// L0 gamma patches sent to STU (original access to L0 patch indexes)
+	
 	if (i > fNL0GammaPatch) return kFALSE;
 	
 	tru =  fL0GammaPatchIndex[i] & 0x1F;
@@ -279,7 +281,8 @@ Bool_t AliEMCALTriggerSTURawStream::GetL0GammaPatch(const Int_t i, Int_t& tru, I
 //_____________________________________________________________________________
 Bool_t AliEMCALTriggerSTURawStream::GetL1GammaPatch(const Int_t i, Int_t& tru, Int_t& col, Int_t& row) const
 {
-	//
+	// L1 gamma patch indexes
+	
 	if (i > fNL1GammaPatch) return kFALSE;
 	
 	tru =  fL1GammaPatchIndex[i] & 0x1F;
@@ -292,7 +295,8 @@ Bool_t AliEMCALTriggerSTURawStream::GetL1GammaPatch(const Int_t i, Int_t& tru, I
 //_____________________________________________________________________________
 Bool_t AliEMCALTriggerSTURawStream::GetL1JetPatch(const Int_t i, Int_t& col, Int_t& row) const
 {
-	//
+	// L1 jet patch indexes
+	
 	if (i > fNL1JetPatch) return kFALSE;
 	
 	col =  fL1JetPatchIndex[i] & 0xFF;
@@ -304,14 +308,16 @@ Bool_t AliEMCALTriggerSTURawStream::GetL1JetPatch(const Int_t i, Int_t& col, Int
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::GetADC(Int_t iTRU, UInt_t ADC[])
 {
-	//
+	// Time sums
+	
 	for (Int_t i=0; i<96; i++) ADC[i] = fADC[iTRU][i];
 }
 
 //_____________________________________________________________________________
 void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 {
-	//
+	// Dump STU payload
+	
 	TString op = option;
 	
 	cout << "Jet Threshold: " << fL1JetThreshold << " Gamma threshold: " << fL1GammaThreshold << endl;
