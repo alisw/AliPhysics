@@ -43,12 +43,15 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
 
   void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed
 
+  void SetNCentBin(Int_t nbin){fNCentBin = nbin;}
   void SetNPID(Int_t pid) {fNpid=pid;} //N pid cut 
   void SetNVtxZ(Int_t vtx){fNVtxZBin=vtx;} //N vertex Z cut
+  void SetNDistToBadChannel(Int_t ndist){fNBadChDistBin = ndist;}
   void SetPi0MassPeakWidthCut(Double_t win){fPi0MassWindow=win;} 
 
   void SetPi0OverOmegaPtCut(Double_t cut){fPi0OverOmegaPtCut=cut;}
   void SetGammaOverOmegaPtCut(Double_t cut){fGammaOverOmegaPtCut=cut;}
+  void SetEOverlapCluster(Double_t e){fEOverlapCluster=e;}
   void ReadHistograms(TList * outputList);
 
   private:
@@ -72,6 +75,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   Double_t fPi0MassWindow;       //pi0 mass windows
   Double_t fPi0OverOmegaPtCut;   //pi0 Pt over omega pt cut
   Double_t fGammaOverOmegaPtCut; //gamma pt over omega pt cut
+  Double_t fEOverlapCluster;    //the pt when the two photons overlapped
 
   TH2F * fhEtalon;               //an etalon of 3D histograms
   TH2F **fRealOmega0;             //real omega IVM(asy, pt, m), with Asy_pi0<1 
@@ -86,9 +90,13 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   TH2F **fMixAOmega2;            //mixA omega IVM(asy, pt, m)
   TH2F **fMixBOmega2;            //mixB omega IVM(asy, pt, m)
   TH2F **fMixCOmega2;            //mixC omega IVM(asy, pt, m)
+
+  TH2F **fhFakeOmega;     //high pt clusters assumed as pi0 + another gamma 
+
   TH1F *fhOmegaPriPt;            //MC primary omega pt in 2pi and |y|<0.5
 
   ClassDef(AliAnaOmegaToPi0Gamma,2)
+
 } ;
 
 #endif 
