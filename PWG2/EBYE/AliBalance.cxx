@@ -335,9 +335,13 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       track = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
     else if(fAnalysisLevel == "MC")
       track = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-    Short_t charge = track->Charge();
-    if(charge > 0) fNp += 1.;
-    if(charge < 0) fNn += 1.;
+
+    if(track) {
+      Short_t charge = track->Charge();
+      if(charge > 0) fNp += 1.;
+      if(charge < 0) fNn += 1.;
+    }
+    else continue;
   }
   //Printf("Np: %lf - Nn: %lf",fNp,fNn);
 
@@ -350,10 +354,17 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pZ1 = track1->Pz();
-      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-				     TMath::Power(track1->M(),2));
+
+      Short_t charge1 = 0;
+      Double_t pZ1 = 0., energy1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	pZ1 = track1->Pz();
+	energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+			      TMath::Power(track1->M(),2));
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -361,19 +372,23 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pZ2 = track2->Pz();
-	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-				       TMath::Power(track2->M(),2));
 
-	Double_t rap1 = 0.5*log((energy1 + pZ1)/(energy1 - pZ1)); 
-	Double_t rap2 = 0.5*log((energy2 + pZ2)/(energy2 - pZ2)); 
-	Double_t dy = TMath::Abs(rap1 - rap2);
-	ibin = Int_t(dy/fP2Step);
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pZ2 = track2->Pz();
+	  Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+					 TMath::Power(track2->M(),2));
+	  
+	  Double_t rap1 = 0.5*log((energy1 + pZ1)/(energy1 - pZ1)); 
+	  Double_t rap2 = 0.5*log((energy2 + pZ2)/(energy2 - pZ2)); 
+	  Double_t dy = TMath::Abs(rap1 - rap2);
+	  ibin = Int_t(dy/fP2Step);
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 0
@@ -385,9 +400,16 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pZ1 = track1->Pz();
-      Double_t p1 = track1->P();
+
+      Short_t charge1 = 0;
+      Double_t pZ1 = 0., p1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	pZ1 = track1->Pz();
+	p1 = track1->P();
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -395,19 +417,23 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pZ2 = track2->Pz();
-	Double_t p2 = track2->P();
-	Double_t eta1 = 0.5*log((p1 + pZ1)/(p1 - pZ1)); 
-	Double_t eta2 = 0.5*log((p2 + pZ2)/(p2 - pZ2)); 
-	Double_t deta = TMath::Abs(eta1 - eta2);
-	ibin = Int_t(deta/fP2Step);
-	
-	if((charge1 > 0.)&&(charge2 > 0.)) fNpp[ibin] += 1.;
-	if((charge1 < 0.)&&(charge2 < 0.)) fNnn[ibin] += 1.;
-	if((charge1 > 0.)&&(charge2 < 0.)) fNpn[ibin] += 1.;
-	if((charge1 < 0.)&&(charge2 > 0.)) fNpn[ibin] += 1.;
-	//Printf("charge1: %d - eta1: %lf - charge2: %d - eta2: %lf - deta: %lf - ibin: %d - fNpp: %lf - fNnn: %lf - fNpn: %lf",charge1,eta1,charge2,eta2,deta,ibin,fNpp[ibin],fNnn[ibin],fNpn[ibin]);      
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pZ2 = track2->Pz();
+	  Double_t p2 = track2->P();
+	  Double_t eta1 = 0.5*log((p1 + pZ1)/(p1 - pZ1)); 
+	  Double_t eta2 = 0.5*log((p2 + pZ2)/(p2 - pZ2)); 
+	  Double_t deta = TMath::Abs(eta1 - eta2);
+	  ibin = Int_t(deta/fP2Step);
+	  
+	  if((charge1 > 0.)&&(charge2 > 0.)) fNpp[ibin] += 1.;
+	  if((charge1 < 0.)&&(charge2 < 0.)) fNnn[ibin] += 1.;
+	  if((charge1 > 0.)&&(charge2 < 0.)) fNpn[ibin] += 1.;
+	  if((charge1 < 0.)&&(charge2 > 0.)) fNpn[ibin] += 1.;
+	  //Printf("charge1: %d - eta1: %lf - charge2: %d - eta2: %lf - deta: %lf - ibin: %d - fNpp: %lf - fNnn: %lf - fNpn: %lf",charge1,eta1,charge2,eta2,deta,ibin,fNpp[ibin],fNnn[ibin],fNpn[ibin]);      
+	}
+	else continue;
       }
     }
   }//case 1
@@ -419,12 +445,19 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pX1 = track1->Px();
-      Double_t pY1 = track1->Py();
-      Double_t pZ1 = track1->Pz();
-      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-				     TMath::Power(track1->M(),2));
+
+      Short_t charge1 = 0;
+      Double_t pX1 = 0., pY1 = 0., pZ1 = 0., energy1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	pX1 = track1->Px();
+	pY1 = track1->Py();
+	pZ1 = track1->Pz();
+	energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+				       TMath::Power(track1->M(),2));
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -432,27 +465,31 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pX2 = track2->Px();
-	Double_t pY2 = track2->Py();
-	Double_t pZ2 = track2->Pz();
-	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-				       TMath::Power(track2->M(),2));
-  	Double_t eTot = energy1 + energy2;
-	Double_t pxTot = pX1 + pX2;
-	Double_t pyTot = pY1 + pY2;
-	Double_t pzTot = pZ1 + pZ2;
-	Double_t q0Tot = energy1 - energy2;
-	Double_t qzTot = pZ1 - pZ2;
-	Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
-	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
-	Double_t qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + TMath::Power(ptTot,2));
-	ibin = Int_t(qLong/fP2Step);
-	//cout<<ibin<<endl;
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pX2 = track2->Px();
+	  Double_t pY2 = track2->Py();
+	  Double_t pZ2 = track2->Pz();
+	  Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+					 TMath::Power(track2->M(),2));
+	  Double_t eTot = energy1 + energy2;
+	  Double_t pxTot = pX1 + pX2;
+	  Double_t pyTot = pY1 + pY2;
+	  Double_t pzTot = pZ1 + pZ2;
+	  Double_t q0Tot = energy1 - energy2;
+	  Double_t qzTot = pZ1 - pZ2;
+	  Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
+	  Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	  Double_t qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + TMath::Power(ptTot,2));
+	  ibin = Int_t(qLong/fP2Step);
+	  //cout<<ibin<<endl;
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 2
@@ -464,12 +501,19 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pX1 = track1->Px();
-      Double_t pY1 = track1->Py();
-      Double_t pZ1 = track1->Pz();
-      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-				     TMath::Power(track1->M(),2));
+
+      Short_t charge1 = 0;
+      Double_t pX1 = 0., pY1 = 0., pZ1 = 0., energy1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	pX1 = track1->Px();
+	pY1 = track1->Py();
+	pZ1 = track1->Pz();
+	energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+			      TMath::Power(track1->M(),2));
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -477,27 +521,31 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pX2 = track2->Px();
-	Double_t pY2 = track2->Py();
-	Double_t pZ2 = track2->Pz();
-	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-				       TMath::Power(track2->M(),2));
-	Double_t eTot = energy1 + energy2;
-	Double_t pxTot = pX1 + pX2;
-	Double_t pyTot = pY1 + pY2;
-	Double_t pzTot = pZ1 + pZ2;
-	Double_t qxTot = pX1 - pX2;
-	Double_t qyTot = pY1 - pY2;
-	Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
-	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
-	Double_t qOut = TMath::Sqrt(snn/(snn + TMath::Power(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
-	ibin = Int_t(qOut/fP2Step);
-	//cout<<ibin<<endl;
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pX2 = track2->Px();
+	  Double_t pY2 = track2->Py();
+	  Double_t pZ2 = track2->Pz();
+	  Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+					 TMath::Power(track2->M(),2));
+	  Double_t eTot = energy1 + energy2;
+	  Double_t pxTot = pX1 + pX2;
+	  Double_t pyTot = pY1 + pY2;
+	  Double_t pzTot = pZ1 + pZ2;
+	  Double_t qxTot = pX1 - pX2;
+	  Double_t qyTot = pY1 - pY2;
+	  Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
+	  Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	  Double_t qOut = TMath::Sqrt(snn/(snn + TMath::Power(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
+	  ibin = Int_t(qOut/fP2Step);
+	  //cout<<ibin<<endl;
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 3
@@ -509,11 +557,18 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pX1 = track1->Px();
-      Double_t pY1 = track1->Py();
-      //Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-      //TMath::Power(track1->M(),2));
+
+      Short_t charge1 = 0;
+      Double_t pX1 = 0., pY1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	Double_t pX1 = track1->Px();
+	Double_t pY1 = track1->Py();
+	//Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+	//TMath::Power(track1->M(),2));
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -521,24 +576,28 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pX2 = track2->Px();
-	Double_t pY2 = track2->Py();
-	//Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-	//TMath::Power(track2->M(),2));
-	//Double_t eTot = energy1 + energy2;
-	Double_t pxTot = pX1 + pX2;
-	Double_t pyTot = pY1 + pY2;
-	Double_t qxTot = pX1 - pX2;
-	Double_t qyTot = pY1 - pY2;
-	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
-	Double_t qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
-	ibin = Int_t(qSide/fP2Step);
-	//cout<<ibin<<endl;
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pX2 = track2->Px();
+	  Double_t pY2 = track2->Py();
+	  //Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+	  //TMath::Power(track2->M(),2));
+	  //Double_t eTot = energy1 + energy2;
+	  Double_t pxTot = pX1 + pX2;
+	  Double_t pyTot = pY1 + pY2;
+	  Double_t qxTot = pX1 - pX2;
+	  Double_t qyTot = pY1 - pY2;
+	  Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	  Double_t qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
+	  ibin = Int_t(qSide/fP2Step);
+	  //cout<<ibin<<endl;
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 4
@@ -550,12 +609,19 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t pX1 = track1->Px();
-      Double_t pY1 = track1->Py();
-      Double_t pZ1 = track1->Pz();
-      Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-				     TMath::Power(track1->M(),2));
+
+      Short_t charge1 = 0;
+      Double_t pX1 = 0., pY1 = 0., pZ1 = 0., energy1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	pX1 = track1->Px();
+	pY1 = track1->Py();
+	pZ1 = track1->Pz();
+	energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
+			      TMath::Power(track1->M(),2));
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -563,23 +629,27 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t pX2 = track2->Px();
-	Double_t pY2 = track2->Py();
-	Double_t pZ2 = track2->Pz();
-	Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-				       TMath::Power(track2->M(),2));
-	Double_t q0Tot = energy1 - energy2;
-	Double_t qxTot = pX1 - pX2;
-	Double_t qyTot = pY1 - pY2;
-	Double_t qzTot = pZ1 - pZ2;
-	Double_t qInv = TMath::Sqrt(TMath::Abs(-TMath::Power(q0Tot,2) +TMath::Power(qxTot,2) +TMath::Power(qyTot,2) +TMath::Power(qzTot,2)));
-	ibin = Int_t(qInv/fP2Step);
-	//cout<<ibin<<endl;
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t pX2 = track2->Px();
+	  Double_t pY2 = track2->Py();
+	  Double_t pZ2 = track2->Pz();
+	  Double_t energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
+					 TMath::Power(track2->M(),2));
+	  Double_t q0Tot = energy1 - energy2;
+	  Double_t qxTot = pX1 - pX2;
+	  Double_t qyTot = pY1 - pY2;
+	  Double_t qzTot = pZ1 - pZ2;
+	  Double_t qInv = TMath::Sqrt(TMath::Abs(-TMath::Power(q0Tot,2) +TMath::Power(qxTot,2) +TMath::Power(qyTot,2) +TMath::Power(qzTot,2)));
+	  ibin = Int_t(qInv/fP2Step);
+	  //cout<<ibin<<endl;
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 5	
@@ -591,8 +661,15 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
       else if(fAnalysisLevel == "MC")
 	track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
-      Short_t charge1 = track1->Charge();
-      Double_t phi1 = track1->Phi();
+
+      Short_t charge1 = 0;
+      Double_t phi1 = 0.;
+      if(track1) {
+	charge1 = track1->Charge();
+	phi1 = track1->Phi();
+      }
+      else continue;
+
       for(j = 0; j < i; j++) {
 	if(fAnalysisLevel == "ESD")
 	  track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
@@ -600,14 +677,18 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	  track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
 	else if(fAnalysisLevel == "MC")
 	  track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-	Short_t charge2 = track2->Charge();
-	Double_t phi2 = track2->Phi();
-	Double_t dphi = TMath::Abs(phi1 - phi2);
-	ibin = Int_t(dphi/fP2Step);
-	if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
-	if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
-	if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+
+	if(track2) {
+	  Short_t charge2 = track2->Charge();
+	  Double_t phi2 = track2->Phi();
+	  Double_t dphi = TMath::Abs(phi1 - phi2);
+	  ibin = Int_t(dphi/fP2Step);
+	  if((charge1 > 0)&&(charge2 > 0)) fNpp[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 < 0)) fNnn[ibin] += 1.;
+	  if((charge1 > 0)&&(charge2 < 0)) fNpn[ibin] += 1.;
+	  if((charge1 < 0)&&(charge2 > 0)) fNpn[ibin] += 1.;
+	}
+	else continue;
       }
     }
   }//case 6

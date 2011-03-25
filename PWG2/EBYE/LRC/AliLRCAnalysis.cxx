@@ -344,7 +344,7 @@ void AliLRCAnalysis::DrawHist( const int * const mDrawArray, bool drawPaveLabel,
     //TF1 *fit1 = profToDraw->GetFunction("pol1");
 
 	//draw fit line
-	TF1 *f1 = 0x0;
+	TF1 *f1 = 0;
 	if ( histType == 0 )	{
 		f1 = new TF1( "f1", "[0]+[1]*x", fxFitMin, fxFitMax);
 		f1->SetLineColor(kRed);
@@ -370,7 +370,8 @@ void AliLRCAnalysis::DrawHist( const int * const mDrawArray, bool drawPaveLabel,
 	}
 
 	profToDraw->DrawCopy();
-	f1->DrawCopy("same");
+	if(f1) f1->DrawCopy("same");
+	else return;
 	
 	x1 = profToDraw->GetXaxis()->GetXmin();
 	x2 = profToDraw->GetXaxis()->GetXmax();
