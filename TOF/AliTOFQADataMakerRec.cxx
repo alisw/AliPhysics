@@ -500,7 +500,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       fTOFRawStream.LoadRawDataBuffersV2(iDDL);
       
       //* get decoding error counters
-      fDecoderSummary = ( (AliTOFDecoderV2*) fTOFRawStream.GetDecoderV2() ) ->GetDecoderSummaryData();
+      fDecoderSummary = ( (AliTOFDecoderV2*) fTOFRawStream.GetDecoderV2() )->GetDecoderSummaryData();
       if ( (fDecoderSummary) && (fDecoderSummary ->GetErrorDetected()) ) {
 	Int_t errorSlotID=(Int_t) fDecoderSummary->GetErrorSlotID();
 	GetRawsData(18)->Fill(iDDL,errorSlotID);
@@ -547,7 +547,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	      chIndex=AliTOFGeometry::GetIndex(volumeID2);
 	      
 	      if (tofRawDatum->GetTOT()){	    
-		if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
+	       	if (!(fCalibData->GetNoiseStatus(chIndex)==AliTOFChannelOnlineStatusArray::kTOFNoiseBad)
 		    && (fCalibData->GetHWStatus(chIndex) == AliTOFChannelOnlineStatusArray::kTOFHWOk)) {//noise and enabled filter
 		  ntof[0]++; //counter for tof hits
 		  
@@ -559,7 +559,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  Int_t ddlACside=iDDL/36; // 0 or 1
 		  Int_t ddlPerSm=iDDL%4;
 		  
-		  if (volumeID2[0]>4 && volumeID2[0]<14){       //I side
+		  if (volumeID2[0]>4 && volumeID2[0]<14){       //O side
 		    if (ddlPerSm<2){ //A side
 		      ntof[1]++;
 		      GetRawsData(6)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
@@ -570,7 +570,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		      GetRawsData(13)->Fill( tofRawDatum->GetTOT()*tot2ns) ;
 		    }
 		  } else {                                    
-		    if (volumeID2[0]<5 || volumeID2[0]>13){   //O side
+		    if (volumeID2[0]<5 || volumeID2[0]>13){   //I side
 		      if (ddlPerSm<2){ //A side
 			ntof[2]++;
 			GetRawsData(7)->Fill( tofRawDatum->GetTOF()*tdc2ns) ;
@@ -826,10 +826,8 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
       
       if (fCalibData){
 	//set minima and maxima to allow log scale
-	Double_t yTimeMax = GetRawsData(5)->GetMaximum();
-	Double_t yTotMax = GetRawsData(10)->GetMaximum();
-	yTimeMax+=yTimeMax*0.1;
-	yTotMax+=+yTotMax*0.1;
+	Double_t yTimeMax = GetRawsData(5)->GetMaximum()*1.05;
+	Double_t yTotMax = GetRawsData(10)->GetMaximum()*1.05;
 	fLineExpTimeMin->SetY2(yTimeMax);
 	fLineExpTimeMax->SetY2(yTimeMax);
 	fLineExpTotMin->SetY2(yTotMax);
@@ -847,11 +845,6 @@ void AliTOFQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	    GetRawsData(j)->GetYaxis()->SetTitleSize(0.06);	  
 	  }
 	}
-	  
-	  GetRawsData(5)->GetYaxis()->SetRangeUser(0.1, yTimeMax);
-	GetRawsData(10)->GetYaxis()->SetRangeUser(0.1, yTotMax);
-	
-
 	//make up for all histos 
 	for(Int_t j=0;j<5;j++){
 	  GetRawsData(j)->SetMarkerColor(kBlue);
