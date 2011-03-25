@@ -61,9 +61,9 @@ AliITSUpgradeClusterFinder::AliITSUpgradeClusterFinder() :
   fNSectors = s->GetNSectors();
   delete s;
   fClusterList = new AliITSUpgradeClusterList*[fNSectors];  
- for(Int_t imod =0; imod < fNSectors; imod++){
-  fClusterList[imod] = new AliITSUpgradeClusterList();
-} 
+  for(Int_t imod =0; imod < fNSectors; imod++){
+    fClusterList[imod] = new AliITSUpgradeClusterList();
+  } 
 
   fChargeArray = new TObjArray();
   fChargeArray->SetOwner(kTRUE);
@@ -109,8 +109,8 @@ Int_t AliITSUpgradeClusterFinder::ProcessHit(Int_t module , UInt_t col, UInt_t r
   }
   // add hit
   AliITSUPixelModule *pix = new AliITSUPixelModule(module,col, row, charge, label);
-    fChargeArray->AddLast(pix);
-//  fChargeArray->AddLast(new TObjString(Form("%i %i %i %i %i %i",col,row,charge,label[0],label[1],label[2])));
+  fChargeArray->AddLast(pix);
+  //  fChargeArray->AddLast(new TObjString(Form("%i %i %i %i %i %i",col,row,charge,label[0],label[1],label[2])));
 
   fOldModule=module;
   fHitCol[fNhitsLeft]=col;
@@ -232,9 +232,9 @@ void AliITSUpgradeClusterFinder::PrintClusters(Int_t module) {
     printf("no cluster list entries. Exiting... \n");
     return;
   }
- // for (UInt_t c=0; c<fClusterList[layer]->GetNrEntries(); c++) {
-    //printf("layer  %d , z,y=%f,%f , size=%d , type=%d labels=%d %d %d (label printout to be implemented...)\n",layer,fClusterList[layer].GetColIndex(c),fClusterList[layer].GetRowIndex(c),fClusterList[layer].GetSizeIndex(c),fClusterList[layer].GetTypeIndex(c),999,999,999);  
- // }  
+  // for (UInt_t c=0; c<fClusterList[layer]->GetNrEntries(); c++) {
+  //printf("layer  %d , z,y=%f,%f , size=%d , type=%d labels=%d %d %d (label printout to be implemented...)\n",layer,fClusterList[layer].GetColIndex(c),fClusterList[layer].GetRowIndex(c),fClusterList[layer].GetSizeIndex(c),fClusterList[layer].GetTypeIndex(c),999,999,999);  
+  // }  
 }
 //___________________________________________________________________________________
 void AliITSUpgradeClusterFinder::NewEvent() {
@@ -243,8 +243,8 @@ void AliITSUpgradeClusterFinder::NewEvent() {
   //
   
   for (Int_t i=0; i<fNSectors; i++) {
-   fClusterList[i]->Clear();
- }
+    fClusterList[i]->Clear();
+  }
   //NewModule();
   fOldModule = -1;
 }
@@ -276,14 +276,13 @@ Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t module, UShort_t char
     memset(fClusterTypeArea,0,kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY*sizeof(Bool_t));
     fColSum=0;
     fRowSum=0;
-   UInt_t size = FindClusterRecu(fClusterTypeOrigCol,fClusterTypeOrigRow,charge);
+    UInt_t size = FindClusterRecu(fClusterTypeOrigCol,fClusterTypeOrigRow,charge);
     if(size==1){
       fCharge=GetPixelCharge(fColSum,fRowSum);
       AddLabelIndex(fColSum,fRowSum);
     }
     if (size>0) {
       if(size>1) AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
-      if(size > kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY ) return 0; // such clusters are rejected. Temporary fix. not clear why....`
       fClusterList[module]->Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, GetClusterWidthZ(), GetClusterWidthPhi(), GetClusterType(size), fCharge,fLabels);
       fCharge=0;
       for(Int_t i=0; i<10; i++) fLabels[i]=-5;
@@ -715,32 +714,32 @@ UInt_t AliITSUpgradeClusterFinder::GetPixelCharge(UInt_t col, UInt_t row){
   Int_t q=0;
   //AliInfo(Form(" entrate charge array %i ", fChargeArray->GetEntries()));
   for(Int_t entry =0; entry < fChargeArray->GetEntries(); entry++){
-/*    TObjString *s = (TObjString*)fChargeArray->At(entry);
-    TString name = s->GetString();
-    if(!name.Contains(Form("%i %i",col,row)))
-      continue;
-    AliInfo(Form(" 1 entry %i ", entry));
-    TObjArray *array = name.Tokenize(" ");
-    array->SetOwner(kTRUE);
-    AliInfo(Form(" 2 entry %i ", entry));
-    TString charge = ((TObjString*)array->At(2))->String();
+    /*    TObjString *s = (TObjString*)fChargeArray->At(entry);
+	  TString name = s->GetString();
+	  if(!name.Contains(Form("%i %i",col,row)))
+	  continue;
+	  AliInfo(Form(" 1 entry %i ", entry));
+	  TObjArray *array = name.Tokenize(" ");
+	  array->SetOwner(kTRUE);
+	  AliInfo(Form(" 2 entry %i ", entry));
+	  TString charge = ((TObjString*)array->At(2))->String();
     
-    TString rowS, colS;
-    rowS = ((TObjString*)array->At(0))->String();
-    colS = ((TObjString*)array->At(1))->String();
-    AliInfo(Form(" 3 prima del delete entry %i ", entry));
-    array->Clear();
-    delete array;
-    AliInfo(Form(" 4 dopo il delete  entry %i ", entry));
-    q=charge.Atoi();
-*/
+	  TString rowS, colS;
+	  rowS = ((TObjString*)array->At(0))->String();
+	  colS = ((TObjString*)array->At(1))->String();
+	  AliInfo(Form(" 3 prima del delete entry %i ", entry));
+	  array->Clear();
+	  delete array;
+	  AliInfo(Form(" 4 dopo il delete  entry %i ", entry));
+	  q=charge.Atoi();
+    */
     AliITSUPixelModule *pixMod = (AliITSUPixelModule*)fChargeArray->At(entry);
-  //  pixMod->PrintInfo();
+    //  pixMod->PrintInfo();
     if(col!=pixMod->GetCol())continue;
     if(row!=pixMod->GetRow())continue;
     q= pixMod->GetCharge();
 
-      }
+  }
   return q;
 }
 //____________________________________________________
@@ -751,25 +750,25 @@ void AliITSUpgradeClusterFinder::AddLabelIndex(UInt_t col, UInt_t row){
   //
 
   for(Int_t entry =0; entry < fChargeArray->GetEntries(); entry++){
-/*    TObjString *s = (TObjString*)fChargeArray->At(entry);
-    TString name = s->GetString();
-    if(!name.Contains(Form("%i %i",col,row)))
-      continue;
-    TObjArray *array = name.Tokenize(" ");
-    TString index[3];
-    Int_t label[3];
-    for(Int_t i=0; i<3; i++){
-      index[i]=((TObjString*)array->At(3+i))->String();
-      label[i]=index[i].Atoi();
+    /*    TObjString *s = (TObjString*)fChargeArray->At(entry);
+	  TString name = s->GetString();
+	  if(!name.Contains(Form("%i %i",col,row)))
+	  continue;
+	  TObjArray *array = name.Tokenize(" ");
+	  TString index[3];
+	  Int_t label[3];
+	  for(Int_t i=0; i<3; i++){
+	  index[i]=((TObjString*)array->At(3+i))->String();
+	  label[i]=index[i].Atoi();
 
-    }
-*/ 
-   AliITSUPixelModule *pix= (AliITSUPixelModule*)fChargeArray->At(entry);
-   if(col!=pix->GetCol())continue;
-   if(row!=pix->GetRow())continue;
+	  }
+    */ 
+    AliITSUPixelModule *pix= (AliITSUPixelModule*)fChargeArray->At(entry);
+    if(col!=pix->GetCol())continue;
+    if(row!=pix->GetRow())continue;
     Int_t label[3]={-1,-1,-1};
     for(Int_t i=0;i<3;i++){
-    label[i] = pix->GetLabels(i);
+      label[i] = pix->GetLabels(i);
     }   
     SetLabels(label);
   }
@@ -780,17 +779,30 @@ void AliITSUpgradeClusterFinder::SetLabels(Int_t label[3]){
   
   //Set the MC lables to the cluster
 
+  Int_t position=0; 
   Bool_t isAssigned[3]={kFALSE,kFALSE,kFALSE};
-
-  for(Int_t i=0; i<10; i++){
-    for(Int_t k=0; k<3; k++){
-      if(fLabels[i]!=label[k] && label[k]>-1 && fLabels[i]<0) {
-	if(!isAssigned[k]) {
-	  //  printf("assignign...\n.");
-	  //  printf("Assignign  fLabels[%i]=%i  label[%i]=%i \n",i,fLabels[i],k,label[k]);
-	  fLabels[i+k]=label[k];
+  for(Int_t k=0; k<3; k++){
+    if(label[k]<0) continue;
+    for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY; i++){
+      if(position>kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY) continue;
+      // if there is no label assigned and it is not present in previous labels
+      if(fLabels[position]<0) {
+        if(!isAssigned[k]) {
+	  fLabels[position]=label[k];
 	  isAssigned[k]=kTRUE;
 	}
+        position++;
+      }
+      else {
+	// check if this label has been already assigned, if this is the case, go to the next label[k]
+	if(fLabels[position]==label[k]) {
+	  isAssigned[k]=kTRUE;
+	  continue;
+	}
+	else {
+	  position++;
+	  continue;
+        } 
       }
     }
   }
@@ -849,60 +861,55 @@ void AliITSUpgradeClusterFinder::DigitsToRecPoints(const TObjArray *digList) {
     FinishEvent();
     for(Int_t module=0; module<fNSectors; module++){
 
-  //  printf(" module loop %i \n", module); 
-    for(UInt_t nClu = 0; nClu <  GetClusterCount(module); nClu++){
-      //printf(" nclu in getclustercount %i \n", nClu);
-      UShort_t charge = GetCharge(module, nClu);
-      recpnt.SetQ(charge);
-      recpnt.SetLayer(ilayer);
-      recpnt.SetModule(module);
-      Int_t *lab=GetLabels(module,nClu);
-      for(Int_t l=0; l<3; l++) {recpnt.SetLabel(lab[l],l);}
+      //  printf(" module loop %i \n", module); 
+      for(UInt_t nClu = 0; nClu <  GetClusterCount(module); nClu++){
+	//printf(" nclu in getclustercount %i \n", nClu);
+	UShort_t charge = GetCharge(module, nClu);
+	recpnt.SetQ(charge);
+	recpnt.SetLayer(ilayer);
+	recpnt.SetModule(module);
+	Int_t *lab=GetLabels(module,nClu);
+	for(Int_t l=0; l<3; l++) {recpnt.SetLabel(lab[l],l);}
 
-      //Bool_t check2;
-      //Double_t xcheck2=0.;
-      //Double_t ycheck2=0.;
-      //Double_t zcheck2=0.;
-      Double_t xzl2[2]={0.,0.};
-      Double_t xPixC2,zPixC2=0.;
+	Double_t xzl2[2]={0.,0.};
+	Double_t xPixC2,zPixC2=0.;
 
-      xPixC2 = GetClusterMeanRow(module, nClu);
-      zPixC2 = GetClusterMeanCol(module, nClu);
-      //cout << "zPixC2 "<< zPixC2 << endl;
-      xzl2[0] = xPixC2*(segmentation->GetCellSizeX(ilayer))+0.5*(segmentation-> GetCellSizeX(ilayer));
-      xzl2[1] = zPixC2*(segmentation->GetCellSizeZ(ilayer))+0.5*(segmentation->GetCellSizeZ(ilayer))-(segmentation->GetHalfLength(ilayer)); 
-      //cout << " vediamo che positione ha il recpoint !!!! zl = "<< xzl2[1] << endl;
-      //check2 = segmentation->DetToGlobal(ilayer,xzl2[0], xzl2[1],xcheck2,ycheck2,zcheck2);
-      recpnt.SetType(GetClusterType(module,nClu ));
-      recpnt.SetLocalCoord(xzl2[0],xzl2[1]); //temporary solution (no LocalToTrack Matrix)
-      //from global to tracking system coordinate
-      // global coordinate -> local coordinate getting alpha angle of the recpoint
-    /////
-      Double_t yclu1 = 0.;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
-      Double_t zclu1 = 0.;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
-     // Float_t xclg = xcheck2;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
-     // Float_t yclg = ycheck2;
-     // Float_t zclg = zcheck2;
-      Bool_t detr=kFALSE;
-      detr = segmentation->DetToTrack(ilayer,module, xzl2[0],xzl2[1], yclu1, zclu1);      
-//      printf( " det to track in clusterfinder il %i xl %f zl %f y track %f z track %f module %i \n", ilayer, xzl2[0] , xzl2[1] , yclu1, zclu1, module);      
+	xPixC2 = GetClusterMeanRow(module, nClu);
+	zPixC2 = GetClusterMeanCol(module, nClu);
+	//cout << "zPixC2 "<< zPixC2 << endl;
+	xzl2[0] = xPixC2*(segmentation->GetCellSizeX(ilayer))+0.5*(segmentation-> GetCellSizeX(ilayer));
+	xzl2[1] = zPixC2*(segmentation->GetCellSizeZ(ilayer))+0.5*(segmentation->GetCellSizeZ(ilayer))-(segmentation->GetHalfLength(ilayer)); 
+	//check2 = segmentation->DetToGlobal(ilayer,xzl2[0], xzl2[1],xcheck2,ycheck2,zcheck2);
+	recpnt.SetType(GetClusterType(module,nClu ));
+	recpnt.SetLocalCoord(xzl2[0],xzl2[1]); //temporary solution (no LocalToTrack Matrix)
+	//from global to tracking system coordinate
+	// global coordinate -> local coordinate getting alpha angle of the recpoint
+	/////
+	Double_t yclu1 = 0.;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
+	Double_t zclu1 = 0.;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
+	// Float_t xclg = xcheck2;//upgrade clusters global coordinate ( ITS official: GetX tracking coordinate)
+	// Float_t yclg = ycheck2;
+	// Float_t zclg = zcheck2;
+	Bool_t detr=kFALSE;
+	detr = segmentation->DetToTrack(ilayer,module, xzl2[0],xzl2[1], yclu1, zclu1);      
+	//      printf( " det to track in clusterfinder il %i xl %f zl %f y track %f z track %f module %i \n", ilayer, xzl2[0] , xzl2[1] , yclu1, zclu1, module);      
 
-//////////////////////////
-      recpnt.SetX(0.);
-      recpnt.SetY(yclu1);
-      recpnt.SetZ(zclu1);
+	//////////////////////////
+	recpnt.SetX(0.);
+	recpnt.SetY(yclu1);
+	recpnt.SetZ(zclu1);
       
       
-      Double_t xsize, zsize;
-      segmentation->GetSegmentation(ilayer,xsize, zsize);
-      recpnt.SetSigmaY2(xsize/TMath::Sqrt(12)*xsize/TMath::Sqrt(12));
-      recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
-      new(lrecp[nClusters++]) AliITSRecPointU(recpnt);
-      //Int_t idx = fRecPoints->GetEntries();
-      AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
+	Double_t xsize, zsize;
+	segmentation->GetSegmentation(ilayer,xsize, zsize);
+	recpnt.SetSigmaY2(xsize/TMath::Sqrt(12)*xsize/TMath::Sqrt(12));
+	recpnt.SetSigmaZ2(zsize/TMath::Sqrt(12)*zsize/TMath::Sqrt(12));
+	new(lrecp[nClusters++]) AliITSRecPointU(recpnt);
+	//Int_t idx = fRecPoints->GetEntries();
+	AliDebug(1,Form("recpoint : Nelectrons %f (entry %i)",recpnt.GetQ(),fRecPoints->GetEntries()));
     
-  }//cluster list entries
-  }//module
+      }//cluster list entries
+    }//module
   }//ilayer
   if(segmentation) delete segmentation;
 }

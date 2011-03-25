@@ -91,7 +91,7 @@ class AliITSUpgradeClusterFinder :public TObject{
   UInt_t   fRowSum; // used to determine the center of a cluster
   UShort_t fCharge;        // cluster charge 
   Int_t    fTmpLabel[3];   // label array to be kept temporarily during the clustering procedure
-  Int_t    fLabels[10];    // label array to be attached to the cluster
+  Int_t    fLabels[kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY];    // label array to be attached to the cluster
 
   UShort_t fClusterWidthMaxCol; //max column ID of the cluster
   UShort_t fClusterWidthMinCol; //min column ID of the cluster
