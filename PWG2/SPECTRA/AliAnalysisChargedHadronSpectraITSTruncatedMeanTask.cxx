@@ -959,7 +959,8 @@ void AliAnalysisChargedHadronSpectraITSTruncatedMeanTask::UserExec(Option_t *)
 			}		
 							
 		}
-	}		 
+	}
+	else return;
 	
 	if(!(isphysevent&&isgoodvertex&&isvxerteinZ))
 	{
