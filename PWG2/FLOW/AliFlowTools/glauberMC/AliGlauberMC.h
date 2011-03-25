@@ -58,6 +58,10 @@ public:
    Double_t     GetEpsilon3Coll()      const;
    Double_t     GetEpsilon4Coll()      const;
    Double_t     GetEpsilon5Coll()      const;
+   Double_t     GetPsi2()      const;
+   Double_t     GetPsi3()      const;
+   Double_t     GetPsi4()      const;
+   Double_t     GetPsi5()      const;
    Double_t     GetEccentricityPartColl()  const;
    Double_t     GetB()               const {return fBMC;}
    Double_t     GetBMin()            const {return fBMin;}
