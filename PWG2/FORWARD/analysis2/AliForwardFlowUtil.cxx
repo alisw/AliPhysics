@@ -45,11 +45,8 @@ Bool_t AliForwardFlowUtil::AODCheck(const AliAODForwardMult* aodfm) const
   // Parameters: 
   //  AliAODForwardMult: forward mult object with trigger and vertex info
   //
-  if (!aodfm->IsTriggerBits(AliAODForwardMult::kInel)) return kFALSE;
-  if (!aodfm->HasIpZ()) return kFALSE;
-  if (!aodfm->InRange(-fZvertex,fZvertex)) return kFALSE;
-
-  return kTRUE;
+  return aodfm->CheckEvent(AliAODForwardMult::kInel, -fZvertex, fZvertex, 
+			   0, 0);
 }
 //_____________________________________________________________________
 Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent) const

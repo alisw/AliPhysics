@@ -84,7 +84,8 @@ void MakeAOD(const char* esddir,
 			   gROOT->GetMacroPath()));
 
   // --- Creating the manager and handlers ---------------------------
-  AliAnalysisManager *mgr  = new AliAnalysisManager(name, "Forward multiplicity");
+  AliAnalysisManager *mgr  = new AliAnalysisManager(name, 
+						    "Forward multiplicity");
   AliAnalysisManager::SetCommonFileName("forward.root");
 
   // --- ESD input handler -------------------------------------------

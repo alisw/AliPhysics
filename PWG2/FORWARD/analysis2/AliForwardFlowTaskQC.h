@@ -62,7 +62,7 @@ public:
    * 
    * @todo Check if this shouldn't be UserCreateOutputObjects!
    */
-  virtual void CreateOutputObjects();
+  virtual void UserCreateOutputObjects();
   /**
    * Initialize the task
    *

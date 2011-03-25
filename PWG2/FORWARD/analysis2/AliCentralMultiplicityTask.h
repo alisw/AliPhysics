@@ -105,6 +105,12 @@ public:
    * @param use Whether to use secondary corrections 
    */
   virtual void SetUseSecondary(Bool_t use) { fUseSecondary = use; }
+  /** 
+   * Set whether to use the acceptance corrections 
+   * 
+   * @param use Whether to use acceptance corrections 
+   */
+  virtual void SetUseAcceptance(Bool_t use) { fUseAcceptance = use; }
 
   //__________________________________________________________________
   /**
@@ -269,6 +275,7 @@ protected:
   AliAODCentralMult      fAODCentral;     // Output object
   Manager                fManager;        //Manager object for corrections
   Bool_t                 fUseSecondary;   // Whether to secondary map
+  Bool_t                 fUseAcceptance;  // Whether to use acceptance corr.
   Bool_t                 fFirstEventSeen; // Have we seen first event     
   ClassDef(AliCentralMultiplicityTask,1)  // Forward multiplicity class
 };

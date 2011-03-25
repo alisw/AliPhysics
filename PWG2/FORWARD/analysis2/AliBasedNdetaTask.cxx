@@ -234,22 +234,7 @@ AliBasedNdetaTask::SetTriggerMask(const char* mask)
   // Parameters:
   //    mask Trigger mask
   //
-  UShort_t    trgMask = 0;
-  TString     trgs(mask);
-  trgs.ToUpper();
-  TObjString* trg;
-  TIter       next(trgs.Tokenize(" ,|"));
-  while ((trg = static_cast<TObjString*>(next()))) { 
-    TString s(trg->GetString());
-    if      (s.IsNull()) continue;
-    if      (s.CompareTo("INEL")  == 0) trgMask = AliAODForwardMult::kInel;
-    else if (s.CompareTo("INEL>0")== 0) trgMask = AliAODForwardMult::kInelGt0;
-    else if (s.CompareTo("NSD")   == 0) trgMask = AliAODForwardMult::kNSD;
-    else 
-      Warning("SetTriggerMask", "Unknown trigger %s", s.Data());
-  }
-  if (trgMask == 0) trgMask = 1;
-  SetTriggerMask(trgMask);
+  SetTriggerMask(AliAODForwardMult::MakeTriggerMask(mask));
 }
 //________________________________________________________________________
 void 
