@@ -28,16 +28,16 @@
 
 AliHLTEMCALRawAnalyzerLMSComponent  gAliHLTEMCALRawAnalyzerLMSComponent;
 
-AliHLTEMCALRawAnalyzerLMSComponent::AliHLTEMCALRawAnalyzerLMSComponent() : AliHLTEMCALRawAnalyzerComponent()
+AliHLTEMCALRawAnalyzerLMSComponent::AliHLTEMCALRawAnalyzerLMSComponent() : AliHLTEMCALRawAnalyzerComponent(kLMS)
 {
   // fAnalyzerPtr
-  fAnalyzerPtr = new AliCaloRawAnalyzerLMS();
+  //  fAnalyzerPtr = new AliCaloRawAnalyzerLMS();
 }
 
 
 AliHLTEMCALRawAnalyzerLMSComponent::~AliHLTEMCALRawAnalyzerLMSComponent()
 {
-  delete fAnalyzerPtr;
+  // delete fAnalyzerPtr;
 }
 
 

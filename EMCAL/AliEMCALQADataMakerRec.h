@@ -135,9 +135,10 @@ public:
 private:
  void ConvertProfile2H(TProfile * p, TH2 * histo) ; //change the profile plot to a 2D histogram
   
-  Int_t fFittingAlgorithm;             // select the fitting algorithm
-  AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
-  AliCaloRawAnalyzerLMS *fRawAnalyzerTRU;    // for signal fitting, for TRU
+ Int_t fFittingAlgorithm;             // select the fitting algorithm
+
+ AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
+ AliCaloRawAnalyzerLMS *fRawAnalyzerTRU;    // for signal fitting, for TRU
 
   int fSuperModules; //The number of SuperModules activated
   int fFirstPedestalSample; // first sample for pedestal calculation, in bunch

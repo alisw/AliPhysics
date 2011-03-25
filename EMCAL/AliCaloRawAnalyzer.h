@@ -19,25 +19,25 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
 //Base class for extraction 
 //of signal amplitude and peak position
 //From CALO Calorimeter RAW data
-
 #include "Rtypes.h"
 #include "TObject.h"
-#define MAXSAMPLES 1008 //CRAP PTH
+///#define MAXSAMPLES 1008 //CRAP PTH
 #include <vector>
 #include "AliCaloConstants.h"
+using namespace ALTRO;
+using namespace CALO;
 
-//using  namespace CaloConstants::FitAlgorithm;
-//using  CaloConstants::ReturnCodes;
 
 class AliCaloBunchInfo;
 #include "AliCaloFitResults.h"
 
 class  AliCaloRawAnalyzer : public TObject
 {
+  friend class AliCaloRawAnalyzerFactory;
+
  public:
   AliCaloRawAnalyzer(const char *name="AliCaloRawAnalyzer", const char *nameshort="RawAna");
   virtual ~AliCaloRawAnalyzer();
@@ -47,9 +47,11 @@ class  AliCaloRawAnalyzer : public TObject
   void PrintBunches( const std::vector<AliCaloBunchInfo> &bunchvector ) const;
   void PrintBunch( const AliCaloBunchInfo &bunch ) const ;
   
-  virtual int PreFitEvaluateSamples( const std::vector<AliCaloBunchInfo>  &bunchvector, 
+  int PreFitEvaluateSamples( const std::vector<AliCaloBunchInfo>  &bunchvector, 
 				     const UInt_t altrocfg1,  const UInt_t altrocfg2, Int_t & index, 
-				     Float_t & maxf, short & maxamp, short & maxampindex, Float_t & ped, int & first, int & last);
+				     Float_t & maxf, short & maxamp, short & maxampindex, 
+				    Float_t & ped, int & first, int & last, const int acut);
+  
   void SetTimeConstraint(const int min, const int max );
   void SetVerbose(bool verbose = true){ fVerbose = verbose; };
   void SetIsZeroSuppressed(const bool iszs = true) { fIsZerosupressed = iszs; } ;
@@ -79,20 +81,19 @@ class  AliCaloRawAnalyzer : public TObject
 
   void CalculateMeanAndRMS(const Int_t first, const Int_t last,
 			   Double_t & mean, Double_t & rms);
-
- protected:
-public: // PAI
-  short Max( const AliCaloBunchInfo *const bunch, int *const maxindex) const;
-  UShort_t Max(const UShort_t *data, const int length ) const;
-  bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
-  bool IsInTimeRange( const int maxindex ) const;
-  Float_t  ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t altrocfg1,  const UInt_t altrocfg2, double *outarray ) const;
-  int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude ) const;
-  virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
-  Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
+  void SetL1Phase(const Double_t phase) {fL1Phase = phase;};
   
-  Double_t fReversed[MAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
-
+protected:
+public: // PAI
+  short Max( const AliCaloBunchInfo *const bunch, int *const maxindex);
+  UShort_t Max(const UShort_t *data, const int length );
+  bool CheckBunchEdgesForMax( const AliCaloBunchInfo *const bunch) const;
+  bool IsInTimeRange( const int maxindex, const int maxtime, const int mintime );
+  Float_t  ReverseAndSubtractPed( const AliCaloBunchInfo *bunch, const UInt_t altrocfg1,  const UInt_t altrocfg2, double *outarray ) const;
+  int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude );
+  void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut);
+  Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
+  Double_t fReversed[ALTROMAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
   // private:
   int fMinTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
   int fMaxTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
@@ -103,14 +104,16 @@ public: // PAI
   int fNsamplePed;   //Number of samples used for pedestal calculation (first in bunch) 
   bool fIsZerosupressed; //Wether or not the data is zeros supressed, by default its assumed that the baseline is also subtracted if set to true
   bool fVerbose;     //Print debug information to std out if set to true
-
   char fName[256]; // Name of the algorithm
   char fNameShort[256]; // Abbrevation for the name
- 
-
   //  CaloConstants  fAlgo;
   Algo::fitAlgorithm fAlgo;
+  // FILE *fFp;
+  Double_t fL1Phase;
   
+  Double_t fAmp; // The amplitude in entities of ADC counts
+  Double_t fTof; // The amplitude in entities of ADC counts
+
   ClassDef(AliCaloRawAnalyzer, 2)  
 
 };

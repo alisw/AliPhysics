@@ -87,10 +87,15 @@ class AliHLTPHOSRawAnalyzer;
  */ 
 
 
+//#include "AliCaloConstants.h"
+
+//using namespace Algo;
+
+
 class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
-  AliHLTPHOSRawAnalyzerComponentv3(); /** Standard constructor */
+  AliHLTPHOSRawAnalyzerComponentv3( fitAlgorithm algo ); /** Standard constructor */
   virtual ~AliHLTPHOSRawAnalyzerComponentv3();
   virtual void GetInputDataTypes( vector <AliHLTComponentDataType>& list);/** interface function, see @ref AliHLTComponent for description */
   virtual AliHLTComponentDataType GetOutputDataType();/** interface function, see @ref AliHLTComponent for description */
@@ -106,6 +111,7 @@ class AliHLTPHOSRawAnalyzerComponentv3 : public AliHLTCaloRawAnalyzerComponentv3
   virtual void InitMapping(const int specification);
   
  private:
+  AliHLTPHOSRawAnalyzerComponentv3();
   AliHLTPHOSRawAnalyzerComponentv3(const AliHLTPHOSRawAnalyzerComponentv3 & );
   AliHLTPHOSRawAnalyzerComponentv3 & operator = (const AliHLTPHOSRawAnalyzerComponentv3 &);
   

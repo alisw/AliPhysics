@@ -34,6 +34,7 @@
 #include "TF1.h"
 #include "TGraph.h"
 
+
 using namespace std;
 
 
@@ -51,7 +52,7 @@ AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzer("Chi Square 
   
   fAlgo = Algo::kLMS;
   //comment
-  for(int i=0; i < MAXSAMPLES; i++)
+  for(int i=0; i < ALTROMAXSAMPLES; i++)
     {
       fXaxis[i] = i;
     }
@@ -99,7 +100,7 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	{
 	  int first = 0;
 	  int last = 0;
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last, fFitArrayCut);
 	  int nsamples =  last - first + 1;
 	  
 	  if( ( nsamples  )  >= fNsampleCut )
@@ -153,6 +154,7 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 	    }
 	  else
 	    {
+	      
 	      Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2
 	      return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,

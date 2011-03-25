@@ -1,11 +1,10 @@
-#ifndef ALICALORAWANALYZERNN_H
-#define ALICALORAWANALYZERNN_H
-
+#ifndef ALICALORAWANALYZERLMSOFFLINE_H
+#define ALICALORAWANALYZERLMSOFFLINE_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
  *                                                                        *
- * Primary Author: Per Thomas Hille <perthomas.hille@yale.edu>            *
+ * Primary Author: Per Thomas Hille <p.t.hille@fys.uio.no>                *
  *                                                                        *
  * Contributors are mentioned in the code where appropriate.              *
  * Please report bugs to p.t.hille@fys.uio.no                             *
@@ -18,35 +17,34 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-// Evaluation of peak position
-// and amplitude using Neural Networks (NN)
-// ------------------
+// Extraction of amplitude and peak position
+// FRom CALO raw data using
+// Chi square fit
 
 #include "AliCaloRawAnalyzer.h"
 
-class AliCaloBunchInfo;
-class AliCaloFitResults;
-class AliCaloNeuralFit;
+class AliCaloRawAnalyzerLMS;
 
 
-class  AliCaloRawAnalyzerNN : public AliCaloRawAnalyzer
+class  AliCaloRawAnalyzerLMSOffline : public AliCaloRawAnalyzer
 {
-  friend class AliCaloRawAnalyzerFactory;
- public:
-  // AliCaloRawAnalyzerNN();
-  virtual ~AliCaloRawAnalyzerNN();
-  virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
-				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-  //  virtual void SelectSubarray( const Double_t *fData, const int length, const short maxindex, int *const  first, int *const last ) const;
+  friend class  AliCaloRawAnalyzerFactory;
 
+ public:
+  //  AliCaloRawAnalyzerLMSOffline();
+  virtual ~AliCaloRawAnalyzerLMSOffline();
+  virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
+				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
+  Double_t  GetSmearFactor() {  return fSmearFactor; };
+   
  private:
-  AliCaloRawAnalyzerNN();
-  AliCaloRawAnalyzerNN( const AliCaloRawAnalyzerNN   & );
-  AliCaloRawAnalyzerNN   & operator = ( const  AliCaloRawAnalyzerNN  & );
-  AliCaloNeuralFit *fNeuralNet; // pointer to the class whick actually implements the Neural Network for EMCAL
-  Double_t fNNInput[5]; // The 5 input Neurons to the network ( mix bin + to samples on each side )
-  ClassDef( AliCaloRawAnalyzerNN, 1 )
+  AliCaloRawAnalyzerLMSOffline();
+  AliCaloRawAnalyzerLMSOffline(const AliCaloRawAnalyzerLMSOffline & );
+  AliCaloRawAnalyzerLMSOffline  & operator = (const AliCaloRawAnalyzerLMSOffline  &);
+  Int_t fNoiseThreshold;                // threshold to consider signal or noise
+  AliCaloRawAnalyzer *fRawAnalyzer;
+  Double_t fSmearFactor;
+  ClassDef(AliCaloRawAnalyzerLMSOffline, 2)
 
 };
 

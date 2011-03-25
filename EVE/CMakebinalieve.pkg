@@ -31,7 +31,7 @@ set ( CSRCS )
 set ( EINCLUDE )
 set ( ELIBSDIR )
 
-set ( ELIBS  EveBase EveDet MONITOR MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCfast TPCsim TPCrec TPCbase ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec BCM STRUCT T0base T0sim T0rec STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS THijing hijing THbtp TEPEMGEN FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase HLTbase XMLParser STAT)
+set ( ELIBS  EveBase EveDet MONITOR MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCfast TPCsim TPCrec TPCbase ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS THijing hijing THbtp TEPEMGEN FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase HLTbase XMLParser STAT)
 
 if(PYTHIA6)
   list (APPEND ELIBS EVGEN)

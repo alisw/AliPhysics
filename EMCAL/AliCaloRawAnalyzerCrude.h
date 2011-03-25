@@ -31,17 +31,29 @@
 class AliCaloFitResults;
 class AliCaloBunchInfo;
 
+//class AliEMCALQADataMakerRec
+
 class  AliCaloRawAnalyzerCrude : public  AliCaloRawAnalyzer
 {
+
+  //friend class AliEMCALQADataMakerRec;
+  friend class AliCaloRawAnalyzerFactory;
+  // friend class AliHLTPHOSRawAnalyzerCrudeComponent;
+  // friend class AliHLTEMCALRawAnalyzerCrudeComponent;
+
  public:
+   AliCaloRawAnalyzerCrude(); 
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				       const UInt_t altrocfg1,  const UInt_t altrocfg2 );
-   
-   AliCaloRawAnalyzerCrude();
-   virtual ~AliCaloRawAnalyzerCrude();
+  // AliCaloRawAnalyzerCrude();
+  virtual ~AliCaloRawAnalyzerCrude();
+ 
+ private:
+  //// AliCaloRawAnalyzerCrude();
 
-   ClassDef(AliCaloRawAnalyzerCrude, 1)  
-
+  ClassDef(AliCaloRawAnalyzerCrude, 1)  
+    
+    
 };
 
 #endif

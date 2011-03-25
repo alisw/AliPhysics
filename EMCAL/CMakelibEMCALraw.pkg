@@ -1,5 +1,5 @@
 #--------------------------------------------------------------------------------#
-# Package File for EMCALUtils                                                    #
+# Package File for EMCALbase                                                     #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -25,20 +25,16 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliEMCALGeoParams.cxx AliEMCALGeoUtils.cxx AliEMCALGeometry.cxx AliEMCALEMCGeometry.cxx AliEMCALShishKebabTrd1Module.cxx AliEMCALPIDUtils.cxx AliEMCALHistoUtilities.cxx AliEMCALRecoUtils.cxx AliEMCALTrack.cxx AliEMCALCalibTimeDepCorrection.cxx) 
+set ( SRCS   AliCaloRawAnalyzerFastFit.cxx AliCaloRawAnalyzerPeakFinder.cxx AliCaloRawAnalyzerLMSOffline.cxx AliCaloRawAnalyzerLMS.cxx AliCaloRawAnalyzerFakeALTRO.cxx AliCaloRawAnalyzerKStandard.cxx AliCaloRawAnalyzerNN.cxx AliCaloRawAnalyzerCrude.cxx AliCaloRawAnalyzerFactory.cxx AliCaloNeuralFit.cxx AliCaloPeakFinderVectors.cxx AliCaloFitSubarray.cxx AliCaloRawAnalyzer.cxx AliCaloBunchInfo.cxx AliCaloFitResults.cxx  AliCaloFastAltroFitv0.cxx SMcalib/AliEMCALCCUSBRawStream.cxx )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
-set(HDRS ${HDRS} AliCaloConstants.h)
+set ( DHDR EMCALrawLinkDef.h)
 
-set ( DHDR  EMCALUtilsLinkDef.h)
-
-set ( EXPORT AliEMCALGeoParams.h AliEMCALGeoUtils.h AliEMCALEMCGeometry.h AliEMCALShishKebabTrd1Module.h AliEMCALPIDUtils.h  AliEMCALGeometry.h AliEMCALRecoUtils.h AliEMCALTrack.h)
-
-set ( PACKCXXFLAGS "${CXXFLAGS} -D__EMCALUTIL__")
+set ( EINCLUDE PYTHIA6 RAW EVGEN THijing EMCAL/SMcalib)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
-		set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -L${ROOTLIBDIR} -lGeom -lSTEERBase -lESD -lAOD)
+					set ( PACKSOFLAGS  ${SOFLAGS} -lRAWDatabase -L${ROOTLIBDIR} -lVMC -lGeom -lMinuit)
 
 endif( ALICE_TARGET STREQUAL "win32gcc")

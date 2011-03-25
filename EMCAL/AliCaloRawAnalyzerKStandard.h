@@ -1,5 +1,5 @@
-#ifndef ALICALORAWANALYZERLMS_H
-#define ALICALORAWANALYZERLMS_H
+#ifndef ALICALORAWANALYZERSTANDARD_H
+#define ALICALORAWANALYZERSTANDARD_H
 /**************************************************************************
  * This file is property of and copyright by                              *
  * the Relativistic Heavy Ion Group (RHIG), Yale University, US, 2009     *
@@ -27,20 +27,26 @@
 #include "AliCaloConstants.h"
 
 using namespace ALTRO;
+using namespace EMCAL;
 
 class  TF1;
 class  TGraph;
 
-class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
+class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzer
 {
   friend class AliCaloRawAnalyzerFactory;
 
  public:
-  //  AliCaloRawAnalyzerLMS();
-  virtual ~AliCaloRawAnalyzerLMS();
+  //AliCaloRawAnalyzerKStandard();
+  virtual ~AliCaloRawAnalyzerKStandard();
   virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
   void PrintFitResult(const TF1 *f) const;
-  
+  static Double_t RawResponseFunction(Double_t *x, Double_t *par); 
+  void FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, 
+	      Float_t & chi2, Bool_t & fitDone) const ;
+ 
+  void FitParabola(const TGraph *gSig, Float_t & amp) const ;
+ 
   // shaper tau value, in time-bins, and flag for keeping tau fixed
   Float_t GetTau() const { return fTau;};
   void SetTau(Float_t f) { fTau = f; }; 
@@ -51,9 +57,9 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
   TF1 * GetFit() const { return fTf1; };
 
  private:
-  AliCaloRawAnalyzerLMS();
-  AliCaloRawAnalyzerLMS(const AliCaloRawAnalyzerLMS & );
-  AliCaloRawAnalyzerLMS  & operator = (const AliCaloRawAnalyzerLMS  &);
+  AliCaloRawAnalyzerKStandard();
+  AliCaloRawAnalyzerKStandard(const AliCaloRawAnalyzerKStandard & );
+  AliCaloRawAnalyzerKStandard  & operator = (const AliCaloRawAnalyzerKStandard  &);
  
   double fXaxis[ALTROMAXSAMPLES]; //Axis if time bins, ( used by TGraph )
   const double fkEulerSquared; //e^2 = 7.389056098930650227
@@ -62,7 +68,7 @@ class  AliCaloRawAnalyzerLMS : public AliCaloRawAnalyzer
   Float_t fTau; // shaper tau, in time bins
   Bool_t fFixTau; // flag if tau should be fix
 
-  ClassDef(AliCaloRawAnalyzerLMS, 2)
+  ClassDef(AliCaloRawAnalyzerKStandard, 2)
 
 };
 

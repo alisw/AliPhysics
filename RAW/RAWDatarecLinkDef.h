@@ -21,5 +21,4 @@
 #pragma link C++ class AliAltroRawStreamFast+;
 #pragma link C++ class AliRawHLTManager+;
 #pragma link C++ class AliAltroRawStreamV3+;
-#pragma link C++ class AliCaloFastAltroFitv0+;
 #endif

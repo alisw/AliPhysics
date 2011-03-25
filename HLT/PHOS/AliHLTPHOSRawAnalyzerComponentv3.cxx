@@ -19,8 +19,7 @@
 #include "AliHLTPHOSMapper.h"
 
 
-AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3() :
-   AliHLTCaloRawAnalyzerComponentv3("PHOS")
+AliHLTPHOSRawAnalyzerComponentv3::AliHLTPHOSRawAnalyzerComponentv3(  fitAlgorithm algo ) : AliHLTCaloRawAnalyzerComponentv3("PHOS", algo)
 {
   // See header file for class documentation
 //   InitMapping(0x1); //using 0x1 to avoid error message

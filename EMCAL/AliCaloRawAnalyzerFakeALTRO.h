@@ -18,10 +18,12 @@ class  TGraph;
 
 class  AliCaloRawAnalyzerFakeALTRO : public AliCaloRawAnalyzer
 {
+  friend class AliCaloRawAnalyzerFactory;
+
  public:
-           AliCaloRawAnalyzerFakeALTRO();
+  //AliCaloRawAnalyzerFakeALTRO();
   virtual ~AliCaloRawAnalyzerFakeALTRO();
-	
+  
   virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );
   void PrintFitResult(const TF1 *f) const;
   
@@ -35,10 +37,11 @@ class  AliCaloRawAnalyzerFakeALTRO : public AliCaloRawAnalyzer
   TF1 * GetFit() const { return fTf1; };
 
  private:
+  AliCaloRawAnalyzerFakeALTRO();
   AliCaloRawAnalyzerFakeALTRO(const AliCaloRawAnalyzerFakeALTRO & );
   AliCaloRawAnalyzerFakeALTRO  & operator = (const AliCaloRawAnalyzerFakeALTRO  &);
  
-  double fXaxis[MAXSAMPLES]; //Axis if time bins, ( used by TGraph )
+  double fXaxis[ALTROMAXSAMPLES]; //Axis if time bins, ( used by TGraph )
   const double fkEulerSquared; //e^2 = 7.389056098930650227
   TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
 

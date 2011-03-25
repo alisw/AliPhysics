@@ -31,7 +31,7 @@
 class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
 {
  public:
-  AliHLTEMCALRawAnalyzerComponent();
+  AliHLTEMCALRawAnalyzerComponent( fitAlgorithm algo );
   virtual ~AliHLTEMCALRawAnalyzerComponent();
   void GetInputDataTypes( vector <AliHLTComponentDataType>& list);
   AliHLTComponentDataType GetOutputDataType();
@@ -39,6 +39,7 @@ class  AliHLTEMCALRawAnalyzerComponent : public AliHLTCaloRawAnalyzerComponentv3
   virtual AliHLTComponent* Spawn() = 0; 
   
  private:
+  AliHLTEMCALRawAnalyzerComponent();
   AliHLTEMCALRawAnalyzerComponent(const AliHLTEMCALRawAnalyzerComponent & );
   AliHLTEMCALRawAnalyzerComponent & operator = (const AliHLTEMCALRawAnalyzerComponent  &);
   virtual void InitMapping( const int specification );

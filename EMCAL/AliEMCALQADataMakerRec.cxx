@@ -69,6 +69,8 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 #include "AliCaloRawAnalyzerPeakFinder.h"
 #include "AliCaloRawAnalyzerCrude.h"
 
+#include "AliCaloRawAnalyzerFactory.h"
+
 using namespace std;
 
 ClassImp(AliEMCALQADataMakerRec)
@@ -105,7 +107,11 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
 {
   // ctor
   SetFittingAlgorithm(fitAlgo);
-  fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  
+  //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  
+  fRawAnalyzerTRU =  ( AliCaloRawAnalyzerLMS*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
+  
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
@@ -146,7 +152,9 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(const AliEMCALQADataMakerRec& qad
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
   SetFittingAlgorithm(qadm.GetFittingAlgorithm());
-  fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  
+  //fRawAnalyzerTRU = new AliCaloRawAnalyzerLMS();
+  fRawAnalyzerTRU = (AliCaloRawAnalyzerLMS*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
@@ -883,7 +891,18 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 {
   //Set fitting algorithm and initialize it if this same algorithm was not set before.
   //printf("**** Set Algorithm , number %d ****\n",fitAlgo);
+
   
+  // fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
+  // fFittingAlgorithm = fitAlgo; 
+  
+  
+  //CRAP PTH
+  fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
+  fFittingAlgorithm = kLMS; 
+
+
+  /*
   if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
     //Do nothing, this same algorithm already set before.
     //printf("**** Algorithm already set before, number %d, %s ****\n",fitAlgo, fRawAnalyzer->GetName());
@@ -917,6 +936,7 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
 
   }
   return;
+  */
 }
 
 //_____________________________________________________________________________________

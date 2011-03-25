@@ -23,7 +23,6 @@
 #pragma link C++ class AliEMCALSimParam+;
 #pragma link C++ class AliEMCALQAChecker+;
 #pragma link C++ class AliEMCALSpaceFrame+;
-#pragma link C++ class AliEMCALCCUSBRawStream+;
 #pragma link C++ class AliEMCALBiasAPD+;
 #pragma link C++ class AliEMCALCalibAbs+;
 #pragma link C++ class AliEMCALCalibReference+;
@@ -40,15 +39,12 @@
 #pragma link C++ class AliEMCALTrigger+;
 #pragma link C++ class AliEMCALTriggerSTURawStream+;
 #pragma link C++ class AliEMCALRawUtils+;
-#pragma link C++ class AliCaloRawAnalyzerFastFit+;
-#pragma link C++ class AliCaloRawAnalyzerPeakFinder+;
 #pragma link C++ class AliEMCAL+;
 #pragma link C++ class AliEMCALTriggerDCSConfig+;
 #pragma link C++ class AliEMCALTriggerTRUDCSConfig+;
 #pragma link C++ class AliEMCALTriggerSTUDCSConfig+;
 #pragma link C++ class AliEMCALTriggerDCSConfigDB+;
 #pragma link C++ class AliEMCALTriggerRawDigitMaker+;
-#pragma link C++ class AliCaloRawAnalyzerFakeALTRO+;
 #pragma link C++ class AliEMCALTriggerRawDigit+;
 
 #endif

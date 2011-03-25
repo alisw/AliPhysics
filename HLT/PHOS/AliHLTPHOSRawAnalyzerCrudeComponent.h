@@ -11,7 +11,6 @@
  * See cxx source for full Copyright notice  */ 
 
 
-
 class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTPHOSRawAnalyzerComponentv3
 //class AliHLTPHOSRawAnalyzerCrudeComponent: public AliHLTCaloRawAnalyzerComponentv3
 {

@@ -31,7 +31,7 @@ set ( CSRCS )
 set ( EINCLUDE )
 set ( ELIBSDIR )
 
-set ( ELIBS  EveBase EveHLT EveDet MONITOR HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON TPCsim TPCrec TPCbase ITSbase ITSrec TRDbase TRDrec AliHLTTRD PHOSbase PHOSUtils EMCALbase EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase XMLParser STAT TOFbase TOFsim FMDbase FMDsim FMDrec PMDbase T0base)
+set ( ELIBS  EveBase EveHLT EveDet MONITOR HLTbase HLTrec AliHLTUtil AliHLTEve AliHLTTPC TPCcalib AliHLTRCU AliHLTMUON TPCsim TPCrec TPCbase ITSbase ITSrec TRDbase TRDrec AliHLTTRD PHOSbase PHOSUtils EMCALbase EMCALraw EMCALUtils EMCALrec EMCALsim TRIGGERbase VZERObase VZEROrec VZEROsim TRIGGERbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore STEER CDB AOD ESD STEERBase ANALYSISalice ANALYSIS FASTSIM microcern RAWDatasim RAWDatarec RAWDatabase XMLParser STAT TOFbase TOFsim FMDbase FMDsim FMDrec PMDbase T0base)
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${ROOTPLIBS} -lTreePlayer -lGeomPainter -lGed -lRGL -lEve ${SYSLIBS})
 

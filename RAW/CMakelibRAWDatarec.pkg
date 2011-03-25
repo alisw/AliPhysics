@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   AliFilter.cxx AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx AliRawReaderChain.cxx AliRawReaderDate.cxx AliRawReaderMemory.cxx AliRawHLTManager.cxx AliAltroRawStream.cxx AliCaloRawStream.cxx AliCaloRawStreamV3.cxx AliVMERawStream.cxx AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx AliAltroRawStreamV3.cxx AliCaloFastAltroFitv0.cxx)
+set ( SRCS   AliFilter.cxx AliRawReader.cxx AliRawReaderFile.cxx AliRawReaderRoot.cxx AliRawReaderChain.cxx AliRawReaderDate.cxx AliRawReaderMemory.cxx AliRawHLTManager.cxx AliAltroRawStream.cxx AliCaloRawStream.cxx AliCaloRawStreamV3.cxx AliVMERawStream.cxx AliAltroDecoder.cxx AliAltroData.cxx AliAltroBunch.cxx AliAltroRawStreamFast.cxx AliAltroRawStreamV3.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

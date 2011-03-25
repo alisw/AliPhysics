@@ -18,45 +18,37 @@
 
 
 #include "AliHLTPHOSRawAnalyzerCrudeComponent.h"
-#include "AliCaloRawAnalyzerCrude.h"
 
 AliHLTPHOSRawAnalyzerCrudeComponent gAliHLTPHOSRawAnalyzerCrudeComponent;
 
 //___________________________________________________________________________
-AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent()
+AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent() : AliHLTPHOSRawAnalyzerComponentv3(kCrude)
 {
-  fAnalyzerPtr = new AliCaloRawAnalyzerCrude();
-  fAnalyzerPtr->SetIsZeroSuppressed(true);
+
 } 
+
 
 //___________________________________________________________________________
 AliHLTPHOSRawAnalyzerCrudeComponent::~AliHLTPHOSRawAnalyzerCrudeComponent()
 {
-//   if(fAnalyzerPtr)
-//     {
-//       delete fAnalyzerPtr;
-//       fAnalyzerPtr = 0;
-//     }
+
 }
 
+
 //___________________________________________________________________________
-AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & ):AliHLTPHOSRawAnalyzerComponentv3()
+AliHLTPHOSRawAnalyzerCrudeComponent::AliHLTPHOSRawAnalyzerCrudeComponent(const AliHLTPHOSRawAnalyzerCrudeComponent & ):AliHLTPHOSRawAnalyzerComponentv3(kCrude)
 {
 
 }
+
 
 int
 AliHLTPHOSRawAnalyzerCrudeComponent::Deinit()
 {
-  
-  if(fAnalyzerPtr)
-    {
-      delete fAnalyzerPtr;
-      fAnalyzerPtr = 0;
-    }
   Logging(kHLTLogInfo, "HLT", "PHOS", ",AliHLTPHOSRawAnalyzerCrudeComponent Deinit");
   return 0;
 }
+
 
 //___________________________________________________________________________
 const char* 
@@ -64,6 +56,7 @@ AliHLTPHOSRawAnalyzerCrudeComponent::GetComponentID()
 {
   return "PhosRawCrude";
 }
+
 
 //___________________________________________________________________________
 AliHLTComponent*

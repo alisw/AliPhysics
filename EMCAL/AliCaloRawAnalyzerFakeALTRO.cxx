@@ -45,7 +45,7 @@ AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzer(
 						 fFixTau(kTRUE)
 {
   //comment
-  for(int i=0; i < MAXSAMPLES; i++)
+  for(int i=0; i < ALTROMAXSAMPLES; i++)
     {
       fXaxis[i] = i;
     }
@@ -92,7 +92,7 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 	{
 	  int first = 0;
 	  int last = 0;
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev, &first, &last, fFitArrayCut );
 	  int nsamples =  last - first + 1;
 	  
 	  if( ( nsamples  )  >= fNsampleCut )

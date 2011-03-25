@@ -466,7 +466,10 @@ void AliEMCALRecPoint::EvalAll(Float_t logWeight,TClonesArray * digits, const Bo
 	
   //Called last because it sets the global position of the cluster?
   //Do not call it when recalculating clusters out of standard reconstruction
-  if(!justClusters) EvalLocal2TrackingCSTransform();
+  if(!justClusters){ 
+    printf("NOT JUST CLUSTERS\n");
+    EvalLocal2TrackingCSTransform();
+  }
 
 }
 

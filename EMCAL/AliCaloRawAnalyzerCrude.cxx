@@ -28,7 +28,7 @@
 #include "TMath.h"
 using namespace std;
 
-#include "AliCaloConstants.h"
+//#include "AliCaloConstants.h"
 
 ClassImp(AliCaloRawAnalyzerCrude)  
 
@@ -68,7 +68,7 @@ AliCaloRawAnalyzerCrude::Evaluate(const vector<AliCaloBunchInfo> &bunchvector, c
 	  int first = 0;
 	  int last = 0;
 	  int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last, fFitArrayCut );
 
 	  Float_t chi2 = CalculateChi2(maxf, maxrev, first, last);
 	  Int_t ndf = last - first - 1; // nsamples - 2

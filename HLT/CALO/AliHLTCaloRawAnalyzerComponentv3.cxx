@@ -30,6 +30,13 @@
 #include "AliLog.h"
 #include "TStopwatch.h"
 
+#include "AliCaloRawAnalyzerFactory.h"
+
+//#include "AliCaloConstants.h"
+
+//#include "AliCaloRawAnalyzer.h"
+
+//using namespace Algo;
 
 #include <vector>
 using namespace std;
@@ -38,26 +45,29 @@ ClassImp(AliHLTCaloRawAnalyzerComponentv3);
 
 
 
-AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det):AliHLTCaloProcessor(),
-										AliHLTCaloConstantsHandler(det),
-										fAnalyzerPtr(0),
-										fMapperPtr(0),     
-										fCurrentSpec(-1),
-										fDebug(false),
-										fSanityInspectorPtr(0),
-										fRawReaderMemoryPtr(0),
-										fAltroRawStreamPtr(0),
-										fAlgorithm(0),  
-										fOffset(0),
-										fBunchSizeCut(0),
-										fMinPeakPosition(0),
-										fMaxPeakPosition(100),
-										fDoPushBadRawData(false),
-										fDoPushRawData(false),
-										fRawDataWriter(0)
+AliHLTCaloRawAnalyzerComponentv3::AliHLTCaloRawAnalyzerComponentv3(TString det, fitAlgorithm algo  ):AliHLTCaloProcessor(),
+												     AliHLTCaloConstantsHandler(det),
+												     fAnalyzerPtr(0),
+												     fMapperPtr(0),     
+												     fCurrentSpec(-1),
+												     fDebug(false),
+												     fSanityInspectorPtr(0),
+												     fRawReaderMemoryPtr(0),
+												     fAltroRawStreamPtr(0),
+												     fAlgorithm(0),  
+												     fOffset(0),
+												     fBunchSizeCut(0),
+												     fMinPeakPosition(0),
+												     fMaxPeakPosition(100),
+												     fDoPushBadRawData(false),
+												     fDoPushRawData(false),
+												     fRawDataWriter(0)
 									
 {
   //Constructor
+  
+  fAnalyzerPtr = AliCaloRawAnalyzerFactory::CreateAnalyzer(algo);
+  fAnalyzerPtr->SetIsZeroSuppressed(true);
   fSanityInspectorPtr = new AliHLTCaloSanityInspector();
   
   if( fDoPushRawData == true  )

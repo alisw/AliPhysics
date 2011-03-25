@@ -36,6 +36,8 @@
 #include "TFile.h"
 #include "AliCaloPeakFinderVectors.h"
 #include <iostream>
+//#include "AliEMCALRawUtils.h"
+
 using namespace std;
 
 
@@ -43,7 +45,7 @@ ClassImp( AliCaloRawAnalyzerPeakFinder )
 
 
 AliCaloRawAnalyzerPeakFinder::AliCaloRawAnalyzerPeakFinder() :AliCaloRawAnalyzer("Peak-Finder", "PF"),  
-							      fAmp(0),
+//    fAmp(0),
 							      fPeakFinderVectors(0),
 							      fRunOnAlien(false),
 							      fIsInitialized(false)
@@ -146,7 +148,7 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 	  int first = 0;
 	  int last = 0;
 	  short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();	  
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev, &first, &last);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev, &first, &last, fFitArrayCut);
 	  int nsamples =  last - first;
 
 	  if( ( nsamples  )  >= fNsampleCut ) // no if statement needed really; keep for readability
@@ -195,7 +197,9 @@ AliCaloRawAnalyzerPeakFinder::Evaluate( const vector<AliCaloBunchInfo> &bunchvec
 		  fAmp = maxf;
 		}
 	      
-	      tof = timebinOffset - 0.01*tof/fAmp; // clock ticks
+	      //      tof = timebinOffset - 0.01*tof/fAmp; // clock ticks
+	      tof = timebinOffset - 0.01*tof/fAmp - fL1Phase/TIMEBINWITH; // clock
+
 	      // use local-array time for chi2 estimate
 	      Float_t chi2 = CalculateChi2(fAmp, tof-timebinOffset+maxrev, first, last);
 	      Int_t ndf = last - first - 1; // nsamples - 2

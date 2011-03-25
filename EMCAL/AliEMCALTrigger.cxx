@@ -60,6 +60,9 @@
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRawUtils.h"
 #include "AliLog.h"
+#include "AliCaloConstants.h"
+
+using namespace CALO;
 
 ClassImp(AliEMCALTrigger)
 
@@ -637,7 +640,8 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
   Float_t maxtimeR2 = -1 ;
   Float_t maxtimeRn = -1 ;
   static AliEMCALRawUtils rawUtil;
-  Int_t nTimeBins = rawUtil.GetRawFormatTimeBins() ;
+  // Int_t nTimeBins = rawUtil.GetRawFormatTimeBins() ;
+  Int_t nTimeBins = TIMEBINS;  //changed by PTH
 
   //Set max of 2x2 amplitudes and select L0 trigger
   if(max2[0] > f2x2MaxAmp ){
@@ -664,9 +668,12 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
         fADCValuesHigh2x2 = new Int_t[nTimeBins];
       }
       //printf(" maxtimeR2 %12.5e (1)\n", maxtimeR2);
-      rawUtil.RawSampledResponse(maxtimeR2 * AliEMCALRawUtils::GetRawFormatTimeBin(), 
-      f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
-    
+      //  rawUtil.RawSampledResponse(maxtimeR2 * AliEMCALRawUtils::GetRawFormatTimeBin(), 
+      //				 f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+       
+      rawUtil.RawSampledResponse(maxtimeR2*TIMEBINMAX/TIMEBINS, 
+				 f2x2MaxAmp, fADCValuesHigh2x2, fADCValuesLow2x2) ; 
+      
     // Set Trigger Inputs, compare ADC time bins until threshold is attained
     // Set L0
       for(Int_t i = 0 ; i < nTimeBins ; i++){
@@ -706,9 +713,12 @@ void AliEMCALTrigger::SetTriggers(const TClonesArray * ampmatrix,const Int_t iSM
         fADCValuesHighnxn = new Int_t[nTimeBins];
         fADCValuesLownxn  = new Int_t[nTimeBins];
       }
-      rawUtil.RawSampledResponse(maxtimeRn * AliEMCALRawUtils::GetRawFormatTimeBin(), 
+      //  rawUtil.RawSampledResponse(maxtimeRn * AliEMCALRawUtils::GetRawFormatTimeBin(), 
+      //   fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
+      rawUtil.RawSampledResponse(maxtimeRn*TIMEBINMAX/TIMEBINS, 
       fnxnMaxAmp, fADCValuesHighnxn, fADCValuesLownxn) ;
-    
+
+
     //Set Trigger Inputs, compare ADC time bins until threshold is attained
     //SetL1 Low
       for(Int_t i = 0 ; i < nTimeBins ; i++){

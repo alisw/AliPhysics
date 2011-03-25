@@ -278,18 +278,24 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     //must be done here because, in constructor, option is not yet known
     fgRawUtils->SetOption(GetOption());
     
-    fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
-    fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
-    fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
+    //  fgRawUtils->SetRawFormatHighLowGainFactor(GetRecParam()->GetHighLowGainFactor());
+  
+    //   fgRawUtils->SetRawFormatOrder(GetRecParam()->GetOrderParameter());
+    //    fgRawUtils->SetRawFormatTau(GetRecParam()->GetTau());
     fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
     fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
     fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
     fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
     fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
-    fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
-    fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
+    
+    //fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
+    //fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
+    
+    //  fgRawUtils->SetTimeMin(-99999 );
+    //  fgRawUtils->SetTimeMax( 99999 );
     
     fgRawUtils->Raw2Digits(rawReader,fgDigitsArr,fPedestalData,digitsTrg,fTriggerData);
+    
   }//skip calibration event
   else{
     AliDebug(1," Calibration Event, skip!");

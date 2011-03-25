@@ -30,29 +30,29 @@
 AliHLTEMCALRawAnalyzerPeakFinderComponent  gAliHLTEMCALRawAnalyzerPeakFinderComponent;
 
 
-AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent()
+AliHLTEMCALRawAnalyzerPeakFinderComponent::AliHLTEMCALRawAnalyzerPeakFinderComponent (): AliHLTEMCALRawAnalyzerComponent(kPeakFinder)
 {
-
   // constructor
   //  fAnalyzerPtr = new    AliCaloRawAnalyzerPeakFinder();
-
 }
 
 
 AliHLTEMCALRawAnalyzerPeakFinderComponent::~AliHLTEMCALRawAnalyzerPeakFinderComponent()
 {
   // destructor
+  /*
   if (0 != fAnalyzerPtr)
     {
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
+  */
 }
 
 int
 AliHLTEMCALRawAnalyzerPeakFinderComponent::DoInit(int argc, const char** argv)
 {
-    fAnalyzerPtr = new AliCaloRawAnalyzerPeakFinder();
+  // fAnalyzerPtr = new AliCaloRawAnalyzerPeakFinder();
     return AliHLTCaloRawAnalyzerComponentv3::DoInit(argc, argv);
 }
 
@@ -61,11 +61,14 @@ int
 AliHLTEMCALRawAnalyzerPeakFinderComponent::DoDeinit()
 {
   //comment
+ 
+  /*
   if (0 != fAnalyzerPtr)
     {
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
+  */
 
   return AliHLTEMCALRawAnalyzerComponent::DoDeinit();
 }

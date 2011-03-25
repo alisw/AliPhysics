@@ -34,22 +34,24 @@ AliHLTEMCALRawAnalyzerCrudeComponent  gAliHLTEMCALRawAnalyzerCrudeComponent;
 
 
 //AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent : AliHLTEMCALRawAnalyzerComponent() 
-AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : AliHLTEMCALRawAnalyzerComponent()
+AliHLTEMCALRawAnalyzerCrudeComponent::AliHLTEMCALRawAnalyzerCrudeComponent() : AliHLTEMCALRawAnalyzerComponent( kCrude )
 {
   // constructor
   //  fAnalyzerPtr = new   AliHLTCaloRawAnalyzerCrude();
-  fAnalyzerPtr = new   AliCaloRawAnalyzerCrude();
+  // fAnalyzerPtr = new   AliCaloRawAnalyzerCrude();
 }
 
 
 AliHLTEMCALRawAnalyzerCrudeComponent::~AliHLTEMCALRawAnalyzerCrudeComponent()
 {
   // destructor
+  /*
   if (0 != fAnalyzerPtr)
     {
       delete fAnalyzerPtr;
       fAnalyzerPtr = 0;
     }
+  */
 }
 
 int 

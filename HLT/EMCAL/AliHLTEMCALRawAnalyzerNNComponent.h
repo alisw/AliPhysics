@@ -34,13 +34,14 @@ class  AliHLTEMCALRawAnalyzerNNComponent : public AliHLTEMCALRawAnalyzerComponen
 {
 
  public:
-  AliHLTEMCALRawAnalyzerNNComponent();
+  AliHLTEMCALRawAnalyzerNNComponent( );
   virtual ~AliHLTEMCALRawAnalyzerNNComponent();
   virtual const char* GetComponentID() ;
   virtual AliHLTComponent* Spawn();
   virtual int Deinit();
 
  private:
+  // AliHLTEMCALRawAnalyzerNNComponent();
   AliHLTEMCALRawAnalyzerNNComponent              (   const AliHLTEMCALRawAnalyzerNNComponent &,  TString det ); 
   AliHLTEMCALRawAnalyzerNNComponent & operator = (   const AliHLTEMCALRawAnalyzerNNComponent );
   //  AliEMCALRawAnalyzerNN *fRawAnalyzer;

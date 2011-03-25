@@ -45,6 +45,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 #include "Riostream.h"
 
+#include "AliCaloRawAnalyzerFactory.h"
+
 namespace
 {
 	const Int_t kSTUEqId = 4652;
@@ -77,8 +79,10 @@ fTriggerData(0x0)
       fGeometry =  AliEMCALGeometry::GetInstance(AliEMCALGeometry::GetDefaultGeometryName());
     }
   
-  fRawAnalyzer = new AliCaloRawAnalyzerFakeALTRO();
+  //  fRawAnalyzer = new AliCaloRawAnalyzerFakeALTRO ();
   
+  fRawAnalyzer =  (AliCaloRawAnalyzerFakeALTRO*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kFakeAltro);
+
   fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
   
   for (Int_t i=0; i<3072; i++) fRawDigitIndex[i] = -1;

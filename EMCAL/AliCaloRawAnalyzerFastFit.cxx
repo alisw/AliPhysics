@@ -84,7 +84,8 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	  int last = 0;
 	  int maxrev =  maxampindex -  bunchvector.at(index).GetStartBin();
 
-	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last);
+	  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(), maxrev , &first, &last, fFitArrayCut);
+
 	  int nsamples =  last - first + 1;
 
 	  if( ( nsamples  )  >= fNsampleCut )  

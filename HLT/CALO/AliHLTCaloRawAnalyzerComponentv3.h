@@ -99,7 +99,11 @@ class AliAltroRawStreamV3;
 
 #include "AliHLTCaloConstantsHandler.h"
 #include "AliHLTCaloProcessor.h"
+#include "AliCaloRawAnalyzer.h"
 
+
+#include "AliCaloConstants.h"
+using namespace Algo;
 
 class AliHLTCaloMapper;
 
@@ -109,7 +113,7 @@ class AliHLTCaloRawAnalyzerComponentv3 :  public AliHLTCaloProcessor, protected 
  public:
 
   /** Constructor must be initialized to specific calorimeter */
-  AliHLTCaloRawAnalyzerComponentv3(TString det);
+  AliHLTCaloRawAnalyzerComponentv3(TString det, fitAlgorithm algo );
   virtual ~AliHLTCaloRawAnalyzerComponentv3();
   virtual int DoInit(int argc =0, const char** argv  = 0) ;
   virtual int DoDeinit();

@@ -20,6 +20,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+
 //
 // Constants used by the HLT
 // ALICE Offlinw
@@ -29,7 +30,18 @@
 namespace CaloConstants
 {
   const int MAXHOSTS=20; // related to the emcal debug online display
+  const int TIMEBINS     = 256;       // number of sampling bins of the raw RO signal (we typically use 15-50; max is 1k+) 
+  const double TIMEBINWITH = 100E-9 ;   // each sample is 100 ns
+  const double TIMEBINMAX  =  TIMEBINS*TIMEBINWITH; 
+  //  const double TAU = 2.35;
+  //  const int  ORDER = 2;
   
+  const int OVERFLOWCUT = 950;
+ 
+  const double HGLGFACTOR = 16;
+  
+  // const double ECENTRALHIT = 0.85; //Percentage of total enegry contain in a single tower for a central hit 
+
   namespace ALTROConstants
   {
     const int ALTROMAXSAMPLES = 1008;    // The maximum number of samples of the ALTRO
@@ -44,7 +56,7 @@ namespace CaloConstants
     const int LOWGAIN     =   0;         // Mnemonic for Low Gain
     const int HG = HIGHGAIN;             // Abbrevation for HIGHGAIN
     const int LG = LOWGAIN;              // Abbrevation for LOWGAIN
- }
+  }
 
   //FEE constants common to PHOS EMCAL
   const int CSPSPERFEE       =   32;    // Charge Sensitive Preamplifiers (CSPs) per FEE
@@ -53,17 +65,30 @@ namespace CaloConstants
   
   namespace EMCALConstants
   {
-    const int NZROWSMOD      =  48;   // Number of rows per module
-    const int NXCOLUMNSMOD   =  24;   // Number of columns per module 
+    // const int NZROWSMOD      =  48;   // Number of rows per module
+    // const int NXCOLUMNSMOD   =  24;   // Number of columns per module 
+    const double ECENTRALHIT = 0.845678; //Percentage of total enegry contain in a single tower for a central hit  
+    
+    const int NZROWSMOD      =  24;   // Number of rows per module
+    const int NXCOLUMNSMOD   =  48;   // Number of columns per module 
+    
+    const int NROWSMOD     = NZROWSMOD;   // Number of rows per module
+    const int NCOLUMNSMOD  = NXCOLUMNSMOD;   // Number of columns per module 
+    
+    //   const int NZROWSMOD      =  24;   // Number of rows per module
+    //   const int NXCOLUMNSMOD   =  48;   // Number of columns per module 
+    
     const int NRCUSPERSECTOR = 4;     // Number of RCUs per sector
     const int NMODULES    =    10;    // Number of modules of the EMCAL detector
     const int NRCUSPERMODULE =  2 ;   // Number of RCUs per Module
     const int NFEECS         =  9;    // Number of Frontend cards per branch*/
     const int NZROWSRCU     =   48;   // Number of Rows per RCU
     const int NXCOLUMNSRCU  =   16;   // Number of columns per RCU
+    const int ORDER  = 2; // Order of shaping stages of the signal conditioning unit
+    const double TAU = 2.35;  // approximate shaping time
+    
   }
-  
-  
+
   namespace PHOSConstants
   {
     const int NZROWSMOD      =  56;   // Number of rows per module       
@@ -77,7 +102,7 @@ namespace CaloConstants
   namespace FitAlgorithm
   {
     enum fitAlgorithm { kStandard = 0, kCrude = 1, kPeakFinder = 2, kNeuralNet = 3, kFastFit= 4,
-			kLogFit = 5, kLMS = 6,  kNONE = 7}; // possible return values
+			kLogFit = 5, kLMS = 6,  kLMSOffline = 7, kFakeAltro = 9, kNONE = 8}; // possible return values
   }
 
   namespace ReturnCodes

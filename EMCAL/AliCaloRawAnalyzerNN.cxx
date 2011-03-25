@@ -63,6 +63,8 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
   // The eveluation of  Peak position and amplitude using the Neural Network
   if( bunchvector.size()  <=  0 )
     {
+      //  cout << __FILE__ << __LINE__<< " INVALID "<< endl;
+
       return AliCaloFitResults( Ret::kInvalid, Ret::kInvalid);
     } 
  
@@ -73,6 +75,7 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
   
   if( index   < 0 )
     {
+      //  cout << __FILE__ << __LINE__<< "INVALID !!!!!!" << endl;
       return AliCaloFitResults( Ret::kInvalid, Ret::kInvalid);
     }
   
@@ -82,13 +85,14 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 
   if(  maxf < fAmpCut  ||  ( maxamp - ped) > fOverflowCut  ) // (maxamp - ped) > fOverflowCut = Close to saturation (use low gain then)
     {
+      //   cout << __FILE__ << __LINE__<< ":  timebinOffset = " <<  timebinOffset  << "  maxf "<< maxf  << endl; 
       return  AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset);
     }
 
   int first = 0;
   int last = 0; 
   short maxrev = maxampindex  -  bunchvector.at(index).GetStartBin();
-  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev , &first, &last);
+  SelectSubarray( fReversed,  bunchvector.at(index).GetLength(),  maxrev , &first, &last, fFitArrayCut );
 
   Float_t chi2 = 0;
   Int_t ndf = 0;
@@ -98,6 +102,7 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	{
 	  chi2 = CalculateChi2(maxf, maxrev, first, last);
 	  ndf = last - first - 1; // nsamples - 2
+	  //	  cout << __FILE__ << __LINE__<< ":  timebinOffset = " <<  timebinOffset << "  maxf\t"<< maxf <<endl;
 	  return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
 				    timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 	}
@@ -116,6 +121,7 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
 	  // use local-array time for chi2 estimate
 	  chi2 = CalculateChi2(amp, tof-timebinOffset+maxrev, first, last);
 	  ndf = last - first - 1; // nsamples - 2
+	  //cout << __FILE__ << __LINE__<< ":  tof = " <<  tof << "   amp" << amp <<endl;
 	  return AliCaloFitResults( maxamp, ped , Ret::kFitPar, amp , tof, timebinOffset, chi2, ndf,
 				    Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
 
@@ -123,6 +129,8 @@ AliCaloRawAnalyzerNN::Evaluate( const vector<AliCaloBunchInfo> &bunchvector,
     }
   chi2 = CalculateChi2(maxf, maxrev, first, last);
   ndf = last - first - 1; // nsamples - 2
+  
+  // cout << __FILE__ << __LINE__<< ":  timebinOffset = " << timebinOffset <<  "   maxf ="<< maxf  << endl;
   return AliCaloFitResults( maxamp, ped, Ret::kCrude, maxf, timebinOffset,
 			    timebinOffset, chi2, ndf, Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) ); 
 

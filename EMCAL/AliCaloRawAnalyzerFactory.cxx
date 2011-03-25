@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -16,49 +18,63 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliHLTEMCALRawAnalyzerNNComponent.h"
+#include "AliCaloRawAnalyzerFactory.h"
+#include "AliCaloRawAnalyzerFastFit.h"
 #include "AliCaloRawAnalyzerNN.h"
+#include "AliCaloRawAnalyzerLMS.h"
+#include "AliCaloRawAnalyzerPeakFinder.h"
+#include "AliCaloRawAnalyzerCrude.h"
+#include "AliCaloRawAnalyzerLMSOffline.h"
+#include "AliCaloRawAnalyzerKStandard.h"
+#include "AliCaloRawAnalyzerFakeALTRO.h"
 
-//Evaluation of Amplitude and Peak position using Least Mean Square (NN) fit
-//-----------
-//-----------
-//-----------
-//-----------
-
-
-AliHLTEMCALRawAnalyzerNNComponent  gAliHLTEMCALRawAnalyzerNNComponent;
-
-AliHLTEMCALRawAnalyzerNNComponent::AliHLTEMCALRawAnalyzerNNComponent() : AliHLTEMCALRawAnalyzerComponent(kNeuralNet)
+AliCaloRawAnalyzerFactory::AliCaloRawAnalyzerFactory()
 {
-  // fAnalyzerPtr
-  //  fAnalyzerPtr = new AliCaloRawAnalyzerNN();
+
+}
+
+AliCaloRawAnalyzerFactory::~AliCaloRawAnalyzerFactory()
+{
+
+}
+
+AliCaloRawAnalyzer*
+AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
+{
+  switch ( algo) 
+    {
+    case  kFastFit:
+      return new  AliCaloRawAnalyzerFastFit();
+      break;
+    case kNeuralNet:
+      return new AliCaloRawAnalyzerNN();
+      break;
+    case kLMS:
+      //return new AliCaloRawAnalyzerLMS();
+      return new AliCaloRawAnalyzerLMSOffline();
+      break;
+    case kPeakFinder:
+      return new AliCaloRawAnalyzerPeakFinder();
+      break;
+    case kCrude:
+      return  new AliCaloRawAnalyzerCrude();
+      break;
+    case kLMSOffline:
+      return new AliCaloRawAnalyzerLMSOffline();
+      break;
+    case kStandard:
+      return new AliCaloRawAnalyzerKStandard();
+      break;
+    case kFakeAltro:
+      return  new AliCaloRawAnalyzerFakeALTRO();
+      break;
+    default:
+      return  new AliCaloRawAnalyzerCrude();
+      break;
+   }
 }
 
 
-AliHLTEMCALRawAnalyzerNNComponent::~AliHLTEMCALRawAnalyzerNNComponent()
-{
-  //  delete fAnalyzerPtr;
-}
 
 
 
-const char* 
-AliHLTEMCALRawAnalyzerNNComponent::GetComponentID()
-{
-  return "EmcalRawNN"; //NN= Neural Networks
-}
-
-
-
-AliHLTComponent* 
-AliHLTEMCALRawAnalyzerNNComponent::Spawn()
-{
-  return new AliHLTEMCALRawAnalyzerNNComponent();
-}
-
-
-int 
-AliHLTEMCALRawAnalyzerNNComponent::Deinit()
-{
-  return 0;
-}

@@ -29,9 +29,11 @@
 #include "AliHLTEMCALMapper.h"
 #include "AliHLTEMCALDefinitions.h"
 
+#include "AliCaloConstants.h"
 
+using namespace Algo;
 
-AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent() : AliHLTCaloRawAnalyzerComponentv3("EMCAL")
+AliHLTEMCALRawAnalyzerComponent::AliHLTEMCALRawAnalyzerComponent( fitAlgorithm algo ) : AliHLTCaloRawAnalyzerComponentv3("EMCAL", algo)
 {
   //fDebug = true;
   fDebug = false;
