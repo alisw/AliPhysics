@@ -77,15 +77,16 @@ class AliITSDigitUpgrade: public AliDigit {
 Int_t AliITSDigitUpgrade::Compare(const TObject *pObj) const
 {
   // Arguments: pObj - pointer to object to compare with
-  //   Returns: -1 if AbsPad less then in pObj, 1 if more and 0 if they are the same      
+  //        
 
-   if (fModule>((AliITSDigitUpgrade*)pObj)->GetModule())return 1;      
+  Int_t result = -1;
+   if (fModule>((AliITSDigitUpgrade*)pObj)->GetModule()) result=1;      
 
   else  if(fModule==((AliITSDigitUpgrade*)pObj)->GetModule()){
-   if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) return  0;
-   else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) return  1;
+   if     (fPixId==((AliITSDigitUpgrade*)pObj)->GetPixId()) result=0;
+   else if(fPixId >((AliITSDigitUpgrade*)pObj)->GetPixId()) result=1;
    }
-  else                                         return -1;
+  return result;
 }
 
 
