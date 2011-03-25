@@ -103,12 +103,6 @@ Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
 {
 	//
-	if (sizeof(times) < (sizeof(Int_t) * fNL0Times))
-	{
-		AliError("Array size too small!");
-		return kFALSE;
-	}
-	
 	for (Int_t i = 0; i < fNL0Times; i++) times[i] = fL0Times[i];
 	
 	return kTRUE;
