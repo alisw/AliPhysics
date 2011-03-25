@@ -170,17 +170,20 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 					 Double_t    trigEff,
 					 Bool_t      symmetrice,
 					 Int_t       rebin, 
+					 Bool_t      rootProj,
 					 Bool_t      corrEmpty, 
-					 Bool_t      cutEdges, 
+					 Bool_t      cutEdges,
 					 Int_t       triggerMask,
 					 Int_t       color,
 					 Int_t       marker)
 {
+  AliInfo(Form("In End of %s with corrEmpty=%d, cutEdges=%d, rootProj=%d", 
+	       GetName(), corrEmpty, cutEdges, rootProj));
   AliBasedNdetaTask::CentralityBin::End(sums, results, scheme, 
 					shapeCorr, trigEff, 
-					symmetrice, rebin, corrEmpty, cutEdges,
-					triggerMask,
-					color, marker);
+					symmetrice, rebin, 
+					rootProj, corrEmpty, cutEdges,
+					triggerMask, color, marker);
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
 

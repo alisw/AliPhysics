@@ -139,6 +139,19 @@ public:
    */
   void SetCutEdges(Bool_t cut) {fCutEdges = cut;}
   /** 
+   * Set whether to correct for empty bins when projecting on the X axis. 
+   * 
+   * @param use Whether to correct for empty bins 
+   */
+  void SetCorrEmpty(Bool_t use) { fCorrEmpty = use; }
+  /** 
+   * Set whether to use the ROOT TH2::ProjectionX method when
+   * projecting on the X axis.
+   * 
+   * @param use Whether to use TH2::ProjectionX
+   */
+  void SetUseROOTProjectX(Bool_t use) { fUseROOTProj = use; }
+  /** 
    * Trigger efficiency for selected trigger(s)
    * 
    * @param e Trigger efficiency 
@@ -245,6 +258,7 @@ public:
 			const char* name,
 			Int_t firstbin, 
 			Int_t lastbin, 
+			bool  useROOT=false,
 			bool  corr=true,
 			bool  error=true);
   /** 
@@ -437,6 +451,30 @@ protected:
 				   Double_t    trgEff,
 				   Double_t&   ntotal) const;
     /** 
+     * Generate the dN/deta result from input 
+     * 
+     * @param sum        Sum of 2D hists 
+     * @param postfix    Post fix on names
+     * @param rootProj   Whether to use ROOT TH2::ProjectionX
+     * @param corrEmpty  Correct for empty bins 
+     * @param shapeCorr  Shape correction to use 
+     * @param scaler     Event-level normalization scaler  
+     * @param symmetrice Whether to make symmetric extensions 
+     * @param rebin      Whether to rebin
+     * @param cutEdges   Whether to cut edges when rebinning 
+     */
+    virtual void MakeResult(const TH2D* sum,  
+			    const char* postfix, 
+			    bool        rootProj, 
+			    bool        corrEmpty,
+			    const TH1*  shapeCorr,
+			    Double_t    scaler,
+			    bool        symmetrice, 
+			    Int_t       rebin, 
+			    bool        cutEdges, 
+			    Int_t       color, 
+			    Int_t       marker);
+    /** 
      * End of processing 
      * 
      * @param sums        List of sums
@@ -446,6 +484,7 @@ protected:
      * @param trigEff     Trigger efficiency 
      * @param symmetrice  Whether to symmetrice the results
      * @param rebin       Whether to rebin the results
+     * @param rootProj    If true, use TH2::ProjectionX
      * @param corrEmpty   Whether to correct for empty bins
      * @param cutEdges    Whether to cut edges when rebinning
      * @param triggerMask Trigger mask 
@@ -459,6 +498,7 @@ protected:
 		     Double_t    trigEff,
 		     Bool_t      symmetrice,
 		     Int_t       rebin, 
+		     Bool_t      rootProj,
 		     Bool_t      corrEmpty, 
 		     Bool_t      cutEdges, 
 		     Int_t       triggerMask,
@@ -538,6 +578,7 @@ protected:
   Bool_t          fCutEdges;     // Whether to cut edges when rebinning
   Bool_t          fSymmetrice;   // Whether to symmetrice data 
   Bool_t          fCorrEmpty;    // Correct for empty bins 
+  Bool_t          fUseROOTProj;  // Whether to use ROOT's ProjectionX
   Double_t        fTriggerEff;   // Trigger efficiency for selected trigger(s)
   TH1*            fShapeCorr;    // Shape correction 
   TObjArray*      fListOfCentralities; // Centrality bins 

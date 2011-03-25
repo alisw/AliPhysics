@@ -16,7 +16,6 @@
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
 #include "AliFMDMCEventInspector.h"
-#include "AliFMDEnergyFitter.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
 #include "AliFMDMCCorrector.h"
@@ -111,12 +110,6 @@ public:
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
   /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  AliFMDEnergyFitter& GetEnergyFitter() { return fEnergyFitter; }
-  /**
    * Get reference to the SharingFilter algorithm 
    * 
    * @return Reference to AliFMDSharingFilter object 
@@ -146,12 +139,6 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
-  /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  const AliFMDEnergyFitter& GetEnergyFitter() const { return fEnergyFitter; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -202,7 +189,6 @@ protected:
   TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDMCEventInspector    fEventInspector;    // Algorithm
-  AliFMDEnergyFitter        fEnergyFitter;      // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm
   AliFMDMCCorrector         fCorrections;       // Algorithm

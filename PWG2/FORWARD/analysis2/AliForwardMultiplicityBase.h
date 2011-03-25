@@ -181,12 +181,6 @@ public:
    */
   virtual AliFMDEventInspector& GetEventInspector() = 0;
   /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  virtual AliFMDEnergyFitter& GetEnergyFitter() = 0;
-  /**
    * Get reference to the SharingFilter algorithm 
    * 
    * @return Reference to AliFMDSharingFilter object 
@@ -216,12 +210,6 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   virtual const AliFMDEventInspector& GetEventInspector() const = 0;
-  /**
-   * Get reference to the EnergyFitter algorithm 
-   * 
-   * @return Reference to AliFMDEnergyFitter object 
-   */
-  virtual const AliFMDEnergyFitter& GetEnergyFitter() const = 0;
   /**
    * Get reference to the SharingFilter algorithm 
    * 
