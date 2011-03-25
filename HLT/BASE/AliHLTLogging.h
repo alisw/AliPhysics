@@ -272,7 +272,7 @@ public:
    * @param bAppend    append to current content
    * @return const char string with the formatted message 
    */
-  static const char* BuildLogString(const char *format, va_list ap, bool bAppend=false);
+  static const char* BuildLogString(const char *format, va_list &ap, bool bAppend=false);
 
   /**
    * Set the log string from format specifier and from variable arguments.

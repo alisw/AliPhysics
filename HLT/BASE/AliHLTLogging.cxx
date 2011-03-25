@@ -241,7 +241,7 @@ int AliHLTLogging::AliMessage(AliHLTComponentLogSeverity severity,
 }
 #endif
 
-const char* AliHLTLogging::BuildLogString(const char *format, va_list ap, bool bAppend) 
+const char* AliHLTLogging::BuildLogString(const char *format, va_list &ap, bool bAppend) 
 {
   // see header file for class documentation
 
