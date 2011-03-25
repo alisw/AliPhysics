@@ -26,6 +26,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fCutEdges(false), 
     fSymmetrice(true),
     fCorrEmpty(true), 
+    fUseROOTProj(false),
     fTriggerEff(1),
     fShapeCorr(0),
     fListOfCentralities(0),
@@ -54,6 +55,7 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fCutEdges(false), 
     fSymmetrice(true),
     fCorrEmpty(true), 
+    fUseROOTProj(false),
     fTriggerEff(1),
     fShapeCorr(0),
     fListOfCentralities(0),
@@ -91,8 +93,9 @@ AliBasedNdetaTask::AliBasedNdetaTask(const AliBasedNdetaTask& o)
     fTriggerMask(o.fTriggerMask),// Int_t - Trigger mask 
     fRebin(o.fRebin),		// Int_t - Rebinning factor 
     fCutEdges(o.fCutEdges),	// Bool_t - Whether to cut edges when rebinning
-    fSymmetrice(true),
-    fCorrEmpty(true), 
+    fSymmetrice(o.fSymmetrice),
+    fCorrEmpty(o.fCorrEmpty), 
+    fUseROOTProj(o.fUseROOTProj),
     fTriggerEff(o.fTriggerEff),
     fShapeCorr(o.fShapeCorr),
     fListOfCentralities(o.fListOfCentralities),
@@ -417,6 +420,7 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
 			    const char* name,
 			    Int_t firstbin, 
 			    Int_t lastbin, 
+			    bool  useRoot,
 			    bool  corr,
 			    bool  error)
 {
@@ -434,9 +438,8 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
   //    Newly created histogram or null
   //
   if (!h) return 0;
-#if USE_ROOT_PROJECT
-  return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
-#endif
+  if (useRoot) 
+    return h->ProjectionX(name, firstbin, lastbin, (error ? "e" : ""));
   
   TAxis* xaxis = h->GetXaxis();
   TAxis* yaxis = h->GetYaxis();
@@ -486,6 +489,11 @@ AliBasedNdetaTask::ProjectX(const TH2D* h,
     } // for (ybin)
     if(content > 0 && nbins > 0) {
       Double_t factor = (corr ? Double_t(ybins) / nbins : 1);
+#if 0
+      AliWarningGeneral(ret->GetName(), 
+			Form("factor @ %d is %d/%d -> %f", 
+			     xbin, ybins, nbins, factor));
+#endif
       if (error) { 
 	// Calculate weighted average
 	ret->SetBinContent(xbin, content * factor);
@@ -542,7 +550,7 @@ AliBasedNdetaTask::Terminate(Option_t *)
   CentralityBin* bin = 0;
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->End(fSums, fOutput, fNormalizationScheme, fShapeCorr, fTriggerEff,
-	     fSymmetrice, fRebin, fCorrEmpty, fCutEdges, 
+	     fSymmetrice, fRebin, fUseROOTProj, fCorrEmpty, fCutEdges, 
 	     fTriggerMask, GetColor(), GetMarker());
 
   // Output collision energy string 
@@ -569,6 +577,14 @@ AliBasedNdetaTask::Terminate(Option_t *)
   // Output trigger efficiency and shape correction 
   fOutput->Add(new TParameter<Double_t>("triggerEff", fTriggerEff)); 
   if (fShapeCorr) fOutput->Add(fShapeCorr);
+
+  TNamed* options = new TNamed("options","");
+  TString str;
+  str.Append(Form("Edges %scut, ", fCutEdges ? "" : "not "));
+  str.Append(Form("Empty bins %scorrected for, ", fCorrEmpty ? "" : "not "));
+  str.Append(Form("TH2::ProjectionX %sused", fUseROOTProj ? "" : "not "));
+  options->SetTitle(str);
+  fOutput->Add(options);
 
   PostData(2, fOutput);
 }
@@ -640,6 +656,7 @@ AliBasedNdetaTask::Print(Option_t*) const
 	    << " Rebin factor:         " << fRebin << "\n" 
 	    << " Cut edges:            " << fCutEdges << "\n"
 	    << " Symmertrice:          " << fSymmetrice << "\n"
+	    << " Use TH2::ProjectionX: " << fUseROOTProj << "\n"
 	    << " Correct for empty:    " << fCorrEmpty << "\n"
 	    << " Normalization scheme: " << (fSchemeString ? 
 					     fSchemeString->GetTitle() : 
@@ -1037,14 +1054,27 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 		 ntotal, scaler));
 	    
     if (scheme & kBackground) {
-      AliInfo(Form("Correcting for background\n" 
-		   " beta = N_a + N_c + 2N_e = %d + %d - 2 * %d = %d", 
-		   Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta)));
+      //          1            E_V             E_V
+      //   s = --------- = ------------- = ------------ 
+      //        1 - beta   1 - beta E_V    1 - beta N_V 
+      //       ---  ----       --------        ---- ---
+      //       E_V  N_V          N_V           N_V  N_T 
+      // 
+      //          E_V
+      //     = ------------
+      //        1 - beta 
+      //            ----
+      //             N_T 
+      // 
       ntotal -= nAccepted * beta / nWithVertex;
-      scaler = 1. / (1. / vtxEff - beta / nWithVertex);
-	// scaler -= (beta > 0 ? nWithVertex / beta : 0);
+      // This one is direct and correct. 
+      // scaler = 1. / (1. / vtxEff - beta / nWithVertex);
+      // A simpler expresion
+      scaler /= (1 - beta / nTriggered); // 0.831631 -> 0.780689
       AliInfo(Form("Calculating event normalisation as\n"
+		   " beta = N_a + N_c + 2 N_e = %d + %d - 2 * %d = %d\n"
 		   " N = N - N_A * beta / N_V = %f - %d * %d / %d = %f (%f)",
+		   Int_t(nA), Int_t(nC), Int_t(nE), Int_t(beta),
 		   nAccepted / vtxEff, Int_t(nAccepted), Int_t(beta), 
 		   Int_t(nWithVertex), ntotal, scaler));
     }
@@ -1080,6 +1110,80 @@ AliBasedNdetaTask::CentralityBin::Normalization(const TH1I& t,
 
 //________________________________________________________________________
 void 
+AliBasedNdetaTask::CentralityBin::MakeResult(const TH2D* sum,  
+					     const char* postfix, 
+					     bool        rootProj, 
+					     bool        corrEmpty,
+					     const TH1*  shapeCorr,
+					     Double_t    scaler,
+					     bool        symmetrice, 
+					     Int_t       rebin, 
+					     bool        cutEdges, 
+					     Int_t       color, 
+					     Int_t       marker)
+{
+  // 
+  // Generate the dN/deta result from input 
+  // 
+  // Parameters: 
+  //     sum        Sum of 2D hists 
+  //     postfix    Post fix on names
+  //     rootProj   Whether to use ROOT TH2::ProjectionX
+  //     corrEmpty  Correct for empty bins 
+  //     shapeCorr  Shape correction to use 
+  //     scaler     Event-level normalization scaler  
+  //     symmetrice Whether to make symmetric extensions 
+  //     rebin      Whether to rebin
+  //     cutEdges   Whether to cut edges when rebinning 
+  //
+  TH2D* copy    = static_cast<TH2D*>(sum->Clone(Form("d2Ndetadphi%s%s", 
+						     GetName(), postfix)));
+  TH1D* accNorm = ProjectX(sum, Form("norm%s%s",GetName(), postfix), 0, 0, 
+			   rootProj, corrEmpty, false);
+  accNorm->SetDirectory(0);
+
+  // ---- Scale by shape correction ----------------------------------
+  if (shapeCorr) copy->Divide(shapeCorr);
+  else AliInfo("No shape correction specified, or disabled");
+  
+  // Normalize to the acceptance -
+  // dndeta->Divide(accNorm);
+  for (Int_t i = 1; i <= copy->GetNbinsX(); i++) { 
+    for (Int_t j = 1; j <= copy->GetNbinsY(); j++) { 
+      Double_t c = copy->GetBinContent(i, j);
+      Double_t e = copy->GetBinError(i, j);
+      Double_t a = accNorm->GetBinContent(i);
+      copy->SetBinContent(i, j, a <= 0 ? 0 : c / a);
+      copy->SetBinError(i, j, a <= 0 ? 0 : e / a);
+    }
+  }
+  // --- Event-level normalization -----------------------------------
+  copy->Scale(scaler);
+
+  // --- Project on X axis -------------------------------------------
+  TH1D* dndeta = ProjectX(copy, Form("dndeta%s%s",GetName(), postfix), 
+			  1, sum->GetNbinsY(), rootProj, corrEmpty);
+  dndeta->SetDirectory(0);
+  // Event-level normalization 
+  dndeta->Scale(1., "width");
+  copy->Scale(1., "width");
+
+  // --- Set some histogram attributes -------------------------------
+  SetHistogramAttributes(dndeta,  color, marker, Form("ALICE %s", GetName()));
+  SetHistogramAttributes(accNorm, color, marker, Form("ALICE %s normalisation", 
+						      GetName())); 
+
+  // --- Make symmetric extensions and rebinnings --------------------
+  if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
+  fOutput->Add(dndeta);
+  fOutput->Add(accNorm);
+  fOutput->Add(copy);
+  fOutput->Add(Rebin(dndeta, rebin, cutEdges));
+  if (symmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
+}  
+
+//________________________________________________________________________
+void 
 AliBasedNdetaTask::CentralityBin::End(TList*      sums, 
 				      TList*      results,
 				      UShort_t    scheme,
@@ -1087,6 +1191,7 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
 				      Double_t    trigEff,
 				      Bool_t      symmetrice,
 				      Int_t       rebin, 
+				      Bool_t      rootProj,
 				      Bool_t      corrEmpty, 
 				      Bool_t      cutEdges, 
 				      Int_t       triggerMask,
@@ -1132,23 +1237,6 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     return;
   }
 
-  // --- Get acceptance normalisation from underflow bins ------------
-  const char* name = GetName();
-  TH1D* accNorm = ProjectX(fSum, Form("norm%s",name), 0, 0, corrEmpty, false);
-  accNorm->SetDirectory(0);
-
-  // ---- Scale by shape correction ----------------------------------
-  if ((scheme & kShape) && shapeCorr) fSum->Divide(shapeCorr);
-  else AliInfo("No shape correction specified, or disabled");
-
-  // --- Project on X axis -------------------------------------------
-  TH1D* dndeta = ProjectX(fSum, Form("dndeta%s",name), 1, fSum->GetNbinsY(),
-			  corrEmpty);
-  dndeta->SetDirectory(0);
-  
-  // Normalize to the acceptance -
-  dndeta->Divide(accNorm);
-  
   // --- Get normalization scaler ------------------------------------
   Double_t ntotal = 0;
   Double_t epsilonT = trigEff;
@@ -1163,54 +1251,17 @@ AliBasedNdetaTask::CentralityBin::End(TList*      sums,
     AliError("Failed to calculate normalization - bailing out");
     return;
   }
-  // Event-level normalization 
-  dndeta->Scale(scaler, "width");
-
-  // --- Set some histogram attributes -------------------------------
-  SetHistogramAttributes(dndeta, color, marker, Form("ALICE %s", name));
-  SetHistogramAttributes(accNorm,   color, marker, Form("ALICE %s normalisation", 
-						     name)); 
-
-  // --- Make symmetric extensions and rebinnings --------------------
   fOutput->Add(fTriggers->Clone());
-  if (symmetrice)   fOutput->Add(Symmetrice(dndeta));
-  fOutput->Add(dndeta);
-  fOutput->Add(accNorm);
-  fOutput->Add(Rebin(dndeta, rebin, cutEdges));
-  if (symmetrice)   fOutput->Add(Symmetrice(Rebin(dndeta, rebin, cutEdges)));
+
+  // --- Make result and store ---------------------------------------
+  MakeResult(fSum, "", rootProj, corrEmpty, (scheme & kShape) ? shapeCorr : 0,
+	     scaler, symmetrice, rebin, cutEdges, color, marker);
 
   // --- Process result from TrackRefs -------------------------------
   if (fSumMC) { 
-    // Project onto eta axis - _ignoring_underflow_bins_!
-    TH1D* dndetaMC = ProjectX(fSumMC,Form("dndeta%sMC", name),1,
-			      fSum->GetNbinsY(), corrEmpty);
-    // Get acceptance normalisation from underflow bins 
-    TH1D* accNormMC   = ProjectX(fSumMC,Form("norm%sMC", name), 0, 0, 
-			      corrEmpty, false);
-    // Scale by shape correction
-    if ((scheme & kShape) && shapeCorr) fSum->Divide(shapeCorr);
-
-    // Normalize to the acceptance 
-    dndetaMC->Divide(accNormMC);
-
-    // Scale by the vertex efficiency 
-    dndetaMC->Scale(scaler, "width");
-
-    // Set hisotgram attributes
-    SetHistogramAttributes(dndetaMC, color+2, marker, 
-			   Form("ALICE %s (MC)",name));
-    SetHistogramAttributes(accNormMC,   color+2, marker, 
-			   Form("ALICE %s (MC) normalisation",name)); 
-
-    // Make symmetric extensions, rebinnings, and add to output
-    fOutput->Add(dndetaMC);
-    if (symmetrice)   fOutput->Add(Symmetrice(dndetaMC));    
-
-    fOutput->Add(accNormMC);
-    fOutput->Add(Rebin(dndetaMC, rebin, cutEdges));
-
-    if (symmetrice)   
-      fOutput->Add(Symmetrice(Rebin(dndetaMC, rebin, cutEdges)));
+    MakeResult(fSumMC, "MC", rootProj, corrEmpty, 
+	       (scheme & kShape) ? shapeCorr : 0,
+	       scaler, symmetrice, rebin, cutEdges, color+2, marker);
   }
 
   // Temporary stuff 

@@ -20,7 +20,6 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliFMDEventInspector.h"
-#include "AliFMDEnergyFitter.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
@@ -231,7 +230,6 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   else  
     std::cout << "  Correction manager not set yet" << std::endl;
   GetEventInspector()   .Print(option);
-  GetEnergyFitter()     .Print(option);    
   GetSharingFilter()    .Print(option);
   GetDensityCalculator().Print(option);
   GetCorrections()      .Print(option);

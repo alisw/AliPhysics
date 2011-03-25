@@ -35,7 +35,6 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
     fHistos(),
     fAODFMD(),
     fEventInspector(),
-    fEnergyFitter(),
     fSharingFilter(),
     fDensityCalculator(),
     fCorrections(),
@@ -55,7 +54,6 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
     fHistos(),
     fAODFMD(false),
     fEventInspector("event"),
-    fEnergyFitter("energy"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
     fCorrections("corrections"),
@@ -79,7 +77,6 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const AliForwardMultiplic
     fHistos(o.fHistos),
     fAODFMD(o.fAODFMD),
     fEventInspector(o.fEventInspector),
-    fEnergyFitter(o.fEnergyFitter),
     fSharingFilter(o.fSharingFilter),
     fDensityCalculator(o.fDensityCalculator),
     fCorrections(o.fCorrections),
@@ -112,7 +109,6 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
 
   fHData             = o.fHData;
   fEventInspector    = o.fEventInspector;
-  fEnergyFitter      = o.fEnergyFitter;
   fSharingFilter     = o.fSharingFilter;
   fDensityCalculator = o.fDensityCalculator;
   fCorrections       = o.fCorrections;
@@ -135,7 +131,6 @@ AliForwardMultiplicityTask::SetDebug(Int_t dbg)
   //    dbg Debug level
   //
   fEventInspector.SetDebug(dbg);
-  fEnergyFitter.SetDebug(dbg);
   fSharingFilter.SetDebug(dbg);
   fDensityCalculator.SetDebug(dbg);
   fCorrections.SetDebug(dbg);
@@ -163,7 +158,6 @@ AliForwardMultiplicityTask::InitializeSubs()
   fHData->SetDirectory(0);
   fList->Add(fHData);
 
-  fEnergyFitter.Init(*pe);
   fEventInspector.Init(*pv);
   fDensityCalculator.Init(*pe);
   fCorrections.Init(*pe);
@@ -193,7 +187,6 @@ AliForwardMultiplicityTask::UserCreateOutputObjects()
   ah->AddBranch("AliAODForwardMult", &obj);
 
   fEventInspector.DefineOutput(fList);
-  fEnergyFitter.DefineOutput(fList);
   fSharingFilter.DefineOutput(fList);
   fDensityCalculator.DefineOutput(fList);
   fCorrections.DefineOutput(fList);
@@ -258,13 +251,6 @@ AliForwardMultiplicityTask::UserExec(Option_t*)
   //  // Apply the sharing filter (or hit merging or clustering if you like)
   if (!fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD)) { 
     AliWarning("Sharing filter failed!");
-    return;
-  }
-
-  // Do the energy stuff 
-  if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
-				triggers & AliAODForwardMult::kEmpty)){
-    AliWarning("Energy fitter failed");
     return;
   }
 
@@ -343,7 +329,6 @@ AliForwardMultiplicityTask::Terminate(Option_t*)
   list->Add(dNdeta);
   list->Add(norm);
 
-  fEnergyFitter.Fit(list);
   fSharingFilter.ScaleHistograms(list,Int_t(hEventsTr->Integral()));
   fDensityCalculator.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));
   fCorrections.ScaleHistograms(list,Int_t(hEventsTrVtx->Integral()));

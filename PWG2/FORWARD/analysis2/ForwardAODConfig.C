@@ -34,32 +34,6 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
-  
-  // --- Energy Loss Fitter ------------------------------------------
-  // Set the eta axis to use - note, this overrides whatever is used
-  // by the rest of the algorithms - but only for the energy fitter
-  // algorithm. 
-  task->GetEnergyFitter().SetEtaAxis(200, -4, 6);
-  // Set maximum energy loss to consider 
-  task->GetEnergyFitter().SetMaxE(10); 
-  // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(300);
-  // Set whether to use increasing bin sizes 
-  task->GetEnergyFitter().SetUseIncreasingBins(true);
-  // Set whether to do fit the energy distributions 
-  task->GetEnergyFitter().SetDoFits(kFALSE);
-  // Set whether to make the correction object 
-  task->GetEnergyFitter().SetDoMakeObject(kFALSE);
-  // Set the low cut used for energy
-  task->GetEnergyFitter().SetLowCut(0.4);
-  // Set the number of bins to subtract from maximum of distributions
-  // to get the lower bound of the fit range
-  task->GetEnergyFitter().SetFitRangeBinWidth(4);
-  // Set the maximum number of landaus to try to fit (max 5)
-  task->GetEnergyFitter().SetNParticles(5);
-  // Set the minimum number of entries in the distribution before
-  // trying to fit to the data
-  task->GetEnergyFitter().SetMinEntries(1000);
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
