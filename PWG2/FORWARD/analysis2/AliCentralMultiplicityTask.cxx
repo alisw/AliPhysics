@@ -37,6 +37,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const char* name)
     fAODCentral(kFALSE),
     fManager(),
     fUseSecondary(true),
+    fUseAcceptance(true),
     fFirstEventSeen(false)
 {
   // 
@@ -55,6 +56,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask()
     fAODCentral(),
     fManager(),
     fUseSecondary(true),
+    fUseAcceptance(true),
     fFirstEventSeen(false)
 {
   // 
@@ -69,6 +71,7 @@ AliCentralMultiplicityTask::AliCentralMultiplicityTask(const AliCentralMultiplic
     fAODCentral(o.fAODCentral),
     fManager(o.fManager),
     fUseSecondary(o.fUseSecondary),
+    fUseAcceptance(o.fUseAcceptance),
     fFirstEventSeen(o.fFirstEventSeen)
 {
   //
@@ -82,11 +85,12 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   // 
   // Assignment operator 
   //
-  fData          = o.fData;
-  fList          = o.fList;
-  fAODCentral    = o.fAODCentral;
-  fManager       = o.fManager;
-  fUseSecondary  = o.fUseSecondary;
+  fData           = o.fData;
+  fList           = o.fList;
+  fAODCentral     = o.fAODCentral;
+  fManager        = o.fManager;
+  fUseSecondary   = o.fUseSecondary;
+  fUseAcceptance  = o.fUseAcceptance;
   fFirstEventSeen = o.fFirstEventSeen;
   return *this;
 }
@@ -138,7 +142,6 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
 		      inspector.GetEnergy(),
 		      inspector.GetField());
     
-    //std::cout<<inspector.GetCollisionSystem()<<"  "<<inspector.GetEnergy()<<"    "<<inspector.GetField()<<std::endl;
     AliInfo("Manager of corrections in AliCentralMultiplicityTask init");
     fFirstEventSeen = kTRUE;
   }
@@ -183,35 +186,38 @@ void AliCentralMultiplicityTask::UserExec(Option_t* /*option*/)
   
   
   // Corrections
-  TH2D* hSecMap     = 0;
   TH1D* hAcceptance = fManager.GetAcceptanceCorrection(vtxbin);
-  //if (fUseSecondary) 
-    hSecMap = fManager.GetSecMapCorrection(vtxbin);
+  TH2D* hSecMap     = fManager.GetSecMapCorrection(vtxbin);
   
-    //if (fUseSecondary && !hSecMap)
-  if (!hSecMap)                   AliFatal("No secondary map!");
-  if (!hAcceptance)               AliFatal("No acceptance!");
+  if (!hSecMap)     AliFatal("No secondary map!");
+  if (!hAcceptance) AliFatal("No acceptance!");
     
-  if (hSecMap) aodHist->Divide(hSecMap);
+  if (fUseSecondary && hSecMap) aodHist->Divide(hSecMap);
   
   for(Int_t nx = 1; nx <= aodHist->GetNbinsX(); nx++) {
     Float_t accCor = hAcceptance->GetBinContent(nx);
+    Float_t accErr = hAcceptance->GetBinError(nx);
     
     Bool_t etabinSeen = kFALSE;  
     for(Int_t ny = 1; ny <= aodHist->GetNbinsY(); ny++) {
+      // Get currrent value 
       Float_t aodValue = aodHist->GetBinContent(nx,ny);
+      Float_t aodErr   = aodHist->GetBinError(nx,ny);
+
+      // Set underflow bin
       Float_t secCor   = 0;
       if(hSecMap) secCor   = hSecMap->GetBinContent(nx,ny);
       if (secCor > 0.5) etabinSeen = kTRUE;
       if (aodValue < 0.000001) { aodHist->SetBinContent(nx,ny, 0); continue; }
+
+      if (!fUseAcceptance) continue; 
+
+      // Acceptance correction 
       if (accCor   < 0.000001) accCor = 1;
       Float_t aodNew   = aodValue / accCor ;
-      aodHist->SetBinContent(nx,ny, aodNew);
-      Float_t aodErr   = aodHist->GetBinError(nx,ny);
-      Float_t accErr   = hAcceptance->GetBinError(nx);
-      
       Float_t error    = aodNew*TMath::Sqrt(TMath::Power(aodErr/aodValue,2) +
 					    TMath::Power(accErr/accCor,2) );
+      aodHist->SetBinContent(nx,ny, aodNew);
       //test
       aodHist->SetBinError(nx,ny,error);
       aodHist->SetBinError(nx,ny,aodErr);

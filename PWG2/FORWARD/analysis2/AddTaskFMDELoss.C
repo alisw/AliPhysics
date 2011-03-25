@@ -19,7 +19,7 @@
  * @ingroup pwg2_forward_eloss
  */
 AliAnalysisTask*
-AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
+AddTaskFMDELoss(Bool_t mc, Bool_t useCent)
 {
   gSystem->Load("libPWG2forward2");
 
@@ -31,8 +31,8 @@ AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
   
   // --- Make the task and add it to the manager ---------------------
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
-  task->SetBLow(blow);
-  task->SetBLow(bhigh);
+  // task->SetBLow(blow);
+  // task->SetBLow(bhigh);
   mgr->AddTask(task);
   
   // --- Set parameters on the algorithms ----------------------------
@@ -48,7 +48,7 @@ AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
   // Set maximum energy loss to consider 
   task->GetEnergyFitter().SetMaxE(15); 
   // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(450);
+  task->GetEnergyFitter().SetNEbins(100);
   // Set whether to use increasing bin sizes 
   task->GetEnergyFitter().SetUseIncreasingBins(true);
   // Set whether to do fit the energy distributions 
@@ -65,16 +65,13 @@ AddTaskFMDELoss(Bool_t mc, Float_t blow=0, Float_t bhigh=100)
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data
   task->GetEnergyFitter().SetMinEntries(1000);
-  task->GetEnergyFitter().SetMaxRelativeParameterError(0.12);
-  task->GetEnergyFitter().SetMaxChi2PerNDF(10);
-  task->GetEnergyFitter().SetMinWeight(1e-5);
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 
   AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
   // Least weight to use 
   AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 5;
+  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
     
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();

@@ -105,7 +105,7 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC(const AliForwardFlowTaskQC& o) :
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________
-void AliForwardFlowTaskQC::CreateOutputObjects()
+void AliForwardFlowTaskQC::UserCreateOutputObjects()
 {
   //
   // Create output objects

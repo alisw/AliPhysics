@@ -30,7 +30,8 @@ void MakeFlow(TString data      = "",
 	      Int_t   zVertex   = 2,
 	      TString addFlow   = "",
               Int_t   addFType  = 0,
-              Int_t   addFOrder = 0)
+              Int_t   addFOrder = 0,
+	      Bool_t  proof     = false)
 {
   Bool_t proof = kFALSE;
 
@@ -46,28 +47,33 @@ void MakeFlow(TString data      = "",
     }
   }
 
+  // --- Set the macro path ------------------------------------------
+  gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			   "$ALICE_ROOT/ANALYSIS/macros",
+			   gROOT->GetMacroPath()));
+
   // --- Add to chain either AOD ------------------------------------
-  if (data.Length() <= 1) {
+  if (data.IsNull()) {
     AliError("You didn't add a data file");
     return;
   }
   TChain* chain = new TChain("aodTree");
 
-  if (data.Contains(".txt"))
-    MakeChain(data, chain);
+  if (data.Contains(".txt")) MakeChain(data, chain);
 
   if (data.Contains(".root")) {
-    if (!TFile::Open(data.Data())) {
+    TFile* test = TFile::Open(data.Data())
+    if (!test) {
       AliError(Form("AOD file %s not found", data.Data()));
       return;
     }
+    test->Close(); // Remember to close!
     chain->Add(data.Data());
   }
 
   // --- Initiate the event handlers --------------------------------
   AliAnalysisManager *mgr  = new AliAnalysisManager("Forward Flow", 
 						    "Flow in the forward region");
-  mgr->SetUseProgressBar(kTRUE, 10);
 
   // --- AOD input handler -------------------------------------------
   AliAODInputHandler *aodInputHandler = new AliAODInputHandler();
@@ -79,7 +85,7 @@ void MakeFlow(TString data      = "",
   aodOut->SetOutputFileName("AliAODs.Flow.root");
 
   // --- Add the tasks ---------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskForwardFlow.C");
+  gROOT->LoadMacro("AddTaskForwardFlow.C");
   AddTaskForwardFlow(type, etabins, zVertex, addFlow, addFType, addFOrder);
 
   // --- Run the analysis --------------------------------------------
@@ -89,6 +95,10 @@ void MakeFlow(TString data      = "",
     return;
   }
   mgr->PrintStatus();
+  // 
+  if (proof) mgr->SetDebugLevel(3);
+  if (mgr->GetDebugLevel() < 1 && !proof) 
+    mgr->SetUseProgressBar(kTRUE,nEvents < 10000 ? 10 : 100);
 
   t.Start();
   if (nevents == 0) mgr->StartAnalysis("local", chain);

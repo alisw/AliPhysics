@@ -15,11 +15,29 @@
  * @ingroup pwg2_forward_eloss
  */
 void MakeELossFits(const char* esddir, 
-		   Int_t       nEvents=1000, 
-		   Int_t       proof=0,
-		   Bool_t      mc=false,
-		   Bool_t      cent=false)
+		   Int_t       nEvents = 1000, 
+		   Int_t       proof   = 0,
+		   Bool_t      mc      = false,
+		   Bool_t      cent    = false,
+		   const char* name    = 0)
 {
+  // --- Possibly use plug-in for this -------------------------------
+  if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG2/FORWARD/analysis2:"
+			     "$ALICE_ROOT/ANALYSIS/macros",
+			     gROOT->GetMacroPath()));
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
+    gSystem->Load("libANALYSIS");
+    gSystem->Load("libANALYSISalice");
+    gROOT->LoadMacro("TrainSetup.C+");
+    FMDELossTrain t(name, cent, false);
+    t.SetDataDir(esddir);
+    t.SetDataSet("");
+    t.SetProofServer(Form("workers=%d",proof));
+    t.Run(proof > 0 ? "PROOF" : "LOCAL", "FULL", nEvents, mc, proof > 0);
+    return;
+  }
+
   // --- Libraries to load -------------------------------------------
   gROOT->Macro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C");
 
@@ -46,82 +64,31 @@ void MakeELossFits(const char* esddir,
 						    "Forward energy loss");
   AliAnalysisManager::SetCommonFileName("forward_eloss.root");
 
+  // --- ESD input handler -------------------------------------------
   AliESDInputHandler *esdHandler = new AliESDInputHandler();
-  esdHandler->SetInactiveBranches("AliESDACORDE "
-				  "AliRawDataErrorLogs "
-				  "CaloClusters "
-				  "Cascades "
-				  "EMCALCells "
-				  "EMCALTrigger "
-				  "Kinks "
-				  "Cascades "
-				  "MuonTracks "
-				  "TrdTracks "
-				  "CaloClusters "
-				  "HLTGlobalTrigger");
   mgr->SetInputEventHandler(esdHandler);      
-  
-  // AOD output handler
-  AliAODHandler* aodHandler   = new AliAODHandler();
-  mgr->SetOutputEventHandler(aodHandler);
-  aodHandler->SetOutputFileName("AliAODs.root");
+       
+  // --- Monte Carlo handler -----------------------------------------
+  if (mc) {
+    AliMCEventHandler* mcHandler = new AliMCEventHandler();
+    mgr->SetMCtruthEventHandler(mcHandler);
+    mcHandler->SetReadTR(true);    
+  }
 
   // --- Add tasks ---------------------------------------------------
   gROOT->LoadMacro("AddTaskPhysicsSelection.C");
   AddTaskPhysicsSelection(mc, kTRUE, kFALSE);
   
-  gROOT->LoadMacro("AddTaskCentrality.C");
-  AddTaskCentrality();
+  // Centrality 
+  if(cent) {
+    gROOT->LoadMacro("AddTaskCentrality.C");
+    AddTaskCentrality();
+  }
   
-  AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("fmdEnergyFitter");
-  mgr->AddTask(task);
-  
-  // --- Make the output container and connect it --------------------
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer* histOut = 
-    mgr->CreateContainer("Forward", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer,outputfile);
-  mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, histOut);
+  // FMD ELoss fitter 
+  gROOT->LoadMacro("AddTaskFMDELoss.C");
+  AddTaskFMDELoss(mc, cent);
 
-  // --- Set parameters on the algorithms ----------------------------
-  // Set the number of SPD tracklets for which we consider the event a
-  // low flux event
-  task->GetEventInspector().SetLowFluxCut(1000); 
-  // Set the maximum error on v_z [cm]
-  task->GetEventInspector().SetMaxVzErr(0.2);
-  // Set the eta axis to use - note, this overrides whatever is used
-  // by the rest of the algorithms - but only for the energy fitter
-  // algorithm. 
-  task->GetEnergyFitter().SetEtaAxis(200, -4, 6);
-  // Set maximum energy loss to consider 
-  task->GetEnergyFitter().SetMaxE(15); 
-  // Set number of energy loss bins 
-  task->GetEnergyFitter().SetNEbins(100);
-  // Set whether to use increasing bin sizes 
-  task->GetEnergyFitter().SetUseIncreasingBins(true);
-  // Set whether to do fit the energy distributions 
-  task->GetEnergyFitter().SetDoFits(kTRUE);
-  // Set whether to make the correction object 
-  task->GetEnergyFitter().SetDoMakeObject(kTRUE);
-  // Set the low cut used for energy
-  task->GetEnergyFitter().SetLowCut(0.4);
-  // Set the number of bins to subtract from maximum of distributions
-  // to get the lower bound of the fit range
-  task->GetEnergyFitter().SetFitRangeBinWidth(4);
-  // Set the maximum number of landaus to try to fit (max 5)
-  task->GetEnergyFitter().SetNParticles(5);
-  // Set the minimum number of entries in the distribution before
-  // trying to fit to the data
-  task->GetEnergyFitter().SetMinEntries(1000);
-  // --- Set limits on fits the energy -------------------------------
-  // Maximum relative error on parameters 
-  AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
-  // Least weight to use 
-  AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
-  // Maximum value of reduced chi^2 
-  AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
-  
   // --- Run the analysis --------------------------------------------
   TStopwatch t;
   if (!mgr->InitAnalysis()) {
@@ -131,11 +98,12 @@ void MakeELossFits(const char* esddir,
   // Some informative output 
   mgr->PrintStatus();
   // mgr->SetDebugLevel(3);
-  if (mgr->GetDebugLevel() < 1 && proof <= 0) mgr->SetUseProgressBar(kTRUE);
+  if (mgr->GetDebugLevel() < 1 && proof <= 0) 
+    mgr->SetUseProgressBar(kTRUE,100);
 
   // Run the train 
   t.Start();
-  Printf("=== RUNNING ANALYSIS ==================================");
+  Printf("=== RUNNING ANALYSIS on %9 events ========================",nEvents);
   mgr->StartAnalysis(proof > 0 ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();

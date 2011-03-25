@@ -30,6 +30,11 @@ AddTaskCentralMult(UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
   if(sys>0 && sNN > 0)
     task->GetManager().Init(sys, sNN, field);
   mgr->AddTask(task);
+  // --- Set options on task -----------------------------------------
+  // Whether to do correction for secondaries
+  task->SetUseSecondary(true);
+  // Whether to do correction for acceptance
+  task->SetUseAcceptance(true);
   
   // --- Make the output container and connect it --------------------
   TString outputfile = AliAnalysisManager::GetCommonFileName();

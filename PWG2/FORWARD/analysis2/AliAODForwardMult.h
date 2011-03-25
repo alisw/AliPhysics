@@ -183,11 +183,11 @@ public:
    */  
   TH2D& GetHistogram() { return fHist; } // Get histogram 
   /** 
-   * Get the trigger mask 
+   * Get the trigger bits 
    * 
-   * @return Trigger mask 
+   * @return Trigger bits 
    */
-  UInt_t GetTriggerMask() const { return fTriggers; } // Get triggers
+  UInt_t GetTriggerBits() const { return fTriggers; } // Get triggers
   /** 
    * Set the trigger mask 
    * 
@@ -369,6 +369,21 @@ public:
    * @return Newly allocated histogram 
    */
   static TH1I* MakeTriggerHistogram(const char* name="triggers");
+  /** 
+   * Utility function to make a trigger mask from the passed string. 
+   * 
+   * The string is a comma or space seperated list of case-insensitive
+   * strings
+   * 
+   * - INEL 
+   * - INEL>0
+   * - NSD 
+   * 
+   * @param what Which triggers to put in the mask. 
+   * 
+   * @return The generated trigger mask. 
+   */
+  static UInt_t MakeTriggerMask(const char* what);
 protected: 
   Bool_t  fIsMC;     // Whether this is from MC 
   TH2D    fHist;     // Histogram of d^2N_{ch}/(deta dphi) for this event
