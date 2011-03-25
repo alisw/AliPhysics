@@ -70,8 +70,11 @@ void SetTowerStatusMap(Int_t percent=0)
   char* objFormat = Form("%d percent of bad channels", percent);
   
   AliCaloCalibPedestal *caloped=new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
+  caloped->Init();
+
   TObjArray map = caloped->GetDeadMap();
   printf("MAP entries %d\n",map.GetEntries());
+
   TRandom rn;
   //for(Int_t iSM = 0; iSM < AliEMCALGeoParams::fgkEMCALModules; iSM ++){
 	for(Int_t iSM = 0; iSM < map.GetEntries(); iSM ++){
@@ -82,9 +85,9 @@ void SetTowerStatusMap(Int_t percent=0)
 				//printf("Bin (%d-%d) Content, before: %d ",i,j,((TH2D*)map[iSM])->GetBinContent(i, j));	
 			    
 				if(rn.Uniform(0,100) > percent)
-					((TH2D*)map[iSM])->SetBinContent(i, j, AliCaloCalibPedestal::kAlive);
+				  caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kAlive);
 				else{
-					((TH2D*)map[iSM])->SetBinContent(i, j, AliCaloCalibPedestal::kDead);
+					caloped->SetChannelStatus(iSM, i, j, AliCaloCalibPedestal::kDead);
 					ndead++;
 				}
 				//printf("; after: %d \n",((TH2D*)map[iSM])->GetBinContent(i, j));	
@@ -95,8 +98,6 @@ void SetTowerStatusMap(Int_t percent=0)
   }
 
   printf("--- total dead %d\n",caloped->GetDeadTowerCount());
-
-  caloped->SetDeadMap(map);
 
   //Store map into database
   
@@ -130,10 +131,8 @@ void SetTowerStatusMap(char * file = "map.txt")
   char* objFormat = Form("bad channels extracted from file %s", file);
   
   AliCaloCalibPedestal *caloped=new AliCaloCalibPedestal(AliCaloCalibPedestal::kEmCal);
-  TObjArray map = caloped->GetDeadMap();
-  printf("MAP entries %d\n",map.GetEntries());
-  
-  
+  caloped->Init();
+
   // Read parameter file line-by-line  
   ifstream f;
   f.open(file);
@@ -146,7 +145,7 @@ void SetTowerStatusMap(char * file = "map.txt")
       sscanf(string.Data(), "%d %d %d %d",&iSM,&icol,&irow,&istatus);
       cout<<"SM= "<<iSM<<", col= "<<icol<<", row= "<<irow<<", status="<<istatus<<endl;
       if(iSM==-1) continue;
-      ((TH2D*)map[iSM])->SetBinContent(icol, irow, istatus); 
+      caloped->SetChannelStatus(iSM, icol, irow, istatus);
       ndead++;
     }
   }
@@ -154,8 +153,6 @@ void SetTowerStatusMap(char * file = "map.txt")
   printf("--- dead %d\n",ndead-2);
   
   printf("--- total dead %d\n",caloped->GetDeadTowerCount());
-  
-  caloped->SetDeadMap(map);
   
   //Store map into database
   
