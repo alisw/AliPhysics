@@ -968,18 +968,11 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
       AliExternalTrackParam exParam;
       // take the B-field from the ESD, no 3D fieldMap available at this point
       Bool_t relate = false;
-      relate = track->RelateToVertex(vtxSPD,esd.GetMagneticField(),kVeryBig,&exParam);
+      relate = track->RelateToVertexTPC(vtxSPD,esd.GetMagneticField(),kVeryBig,&exParam);
       if(!relate){
         delete track;
         continue;
       }
-      /*
-      Double_t  fSigmaConstrainedMax = 5.;
-      if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax) {
-	delete track;
-	continue;
-      }
-      */
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
     
@@ -1005,7 +998,13 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
                                                             selectInfo);
     aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
-    aodTrack->SetChi2perNDF(Chi2perNDF(track));
+    Float_t ndf = track->GetTPCNcls()+1 - 5 ;
+    if(ndf>0){
+      aodTrack->SetChi2perNDF(track->GetTPCchi2()/ndf);
+    }
+    else{
+      aodTrack->SetChi2perNDF(-1);
+    }
     aodTrack->SetFlags(track->GetStatus());
     aodTrack->SetTPCPointsF(track->GetTPCNclsF());
 
