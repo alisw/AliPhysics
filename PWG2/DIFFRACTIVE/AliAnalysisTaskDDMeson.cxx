@@ -564,11 +564,14 @@ void AliAnalysisTaskDDMeson::CalcBit(TH1I *hc, Double_t tot[]) const
 
   //---
   char fullname[5][20];
-  strncpy(fullname[0],"V0A-ONLY",8);
-  strncpy(fullname[1],"V0C-ONLY",8);
-  strncpy(fullname[2],"V0A & V0C",9);
-  strncpy(fullname[3],"!V0A & !V0C",11);
-  strncpy(fullname[4],"TOTAL",5);
+  strncpy(fullname[0],"V0A-ONLY",19);
+  strncpy(fullname[1],"V0C-ONLY",19);
+  strncpy(fullname[2],"V0A & V0C",19);
+  strncpy(fullname[3],"!V0A & !V0C",19);
+  strncpy(fullname[4],"TOTAL",19);
+  for (Int_t ii=0;ii<5;ii++){
+    fullname[ii][19] = '\0';
+  }
 
   for(Int_t ii=0;ii<5;ii++){
     printf("xlulog %s CTP-L0: %s\tTOT: %10.0f\n",fOpt.Data(), fullname[ii],tot[ii]);
