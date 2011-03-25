@@ -838,14 +838,14 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int
 }
 
 //________________________________________________________________________
-Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t zdc, Float_t v0) const
+Bool_t AliCentralitySelectionTask::IsOutlierV0MZDC(Float_t /*zdc*/, Float_t /*v0*/) const
 {
 // Clean outliers
-  Float_t val1 = 6350. - 0.26 * v0;
-  Float_t val2 = 5580.;
-  if ((zdc >  val1) || (zdc > val2)) 
-    return kTRUE;
-  else 
+  // Float_t val1 = 6350. - 0.26 * v0;
+  // Float_t val2 = 5580.;
+  // if ((zdc >  val1) || (zdc > val2)) 
+  //   return kTRUE;
+  // else 
     return kFALSE;
 }
 
