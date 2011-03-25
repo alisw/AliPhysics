@@ -1061,6 +1061,34 @@ Double_t AliGlauberMC::GetEpsilon5Coll() const
 }
 
 //______________________________________________________________________________
+Double_t AliGlauberMC::GetPsi2() const
+{
+  return ((TMath::ATan(2*fMeanr2Sin2Phi/fMeanr2Cos2Phi)+TMath::Pi())/2);
+  //return ((TMath::Atan2(2*fMeanr2Sin2Phi/fMeanr2Cos2Phi)+TMath::Pi())/2);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetPsi3() const
+{
+  return ((TMath::ATan(2*fMeanr2Sin3Phi/fMeanr2Cos3Phi)+TMath::Pi())/3);
+  //return ((TMath::ATan2(2*fMeanr3Sin3Phi/fMeanr3Cos3Phi)+TMath::Pi())/3);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetPsi4() const
+{
+  return ((TMath::ATan(2*fMeanr2Sin4Phi/fMeanr2Cos4Phi)+TMath::Pi())/4);
+  //return ((TMath::ATan2(2*fMeanr4Sin4Phi/fMeanr4Cos4Phi)+TMath::Pi())/4);
+}
+
+//______________________________________________________________________________
+Double_t AliGlauberMC::GetPsi5() const
+{
+  return ((TMath::ATan(2*fMeanr2Sin5Phi/fMeanr2Cos5Phi)+TMath::Pi())/5);
+  //return ((TMath::ATan2(2*fMeanr5Sin5Phi/fMeanr5Cos5Phi)+TMath::Pi())/5);
+}
+
+//______________________________________________________________________________
 void AliGlauberMC::Run(Int_t nevents)
 {
   //example run
@@ -1070,10 +1098,7 @@ void AliGlauberMC::Run(Int_t nevents)
   if (fnt == 0)
   {
     fnt = new TNtuple(name,title,
-                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:"
-                      "VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:"
-                      "VarEPartColl:dNdEta1:dNdEta2:dNdEta:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:"
-                      "E2Coll:E3Coll:E4Coll:E5Coll" );
+                      "Npart:Ncoll:B:MeanX:MeanY:MeanX2:MeanY2:MeanXY:VarX:VarY:VarXY:MeanXSystem:MeanYSystem:MeanXA:MeanYA:MeanXB:MeanYB:VarE:VarEColl:VarEPart:VarEPartColl:dNdEta:dNdEtaGBW:dNdEtaNBD:dNdEtaTwoNBD:xsect:tAA:Epsl2:Epsl3:Epsl4:Epsl5:E2Coll:E3Coll:E4Coll:E5Coll:Psi2:Psi3:Psi4:Psi5");
     fnt->SetDirectory(0);
   }
   Int_t q = 0;
@@ -1089,7 +1114,7 @@ void AliGlauberMC::Run(Int_t nevents)
 
     q++;
     //Float_t v[27];
-    Float_t v[34];
+    Float_t v[39];
     v[0]  = GetNpart();
     v[1]  = GetNcoll();
     v[2]  = fBMC;
@@ -1137,6 +1162,10 @@ void AliGlauberMC::Run(Int_t nevents)
     v[31] = GetEpsilon3Coll();
     v[32] = GetEpsilon4Coll();
     v[33] = GetEpsilon5Coll();
+    v[35] = GetPsi2();
+    v[36] = GetPsi3();
+    v[37] = GetPsi4();
+    v[38] = GetPsi5();
     //always at the end
     fnt->Fill(v);
 
