@@ -562,8 +562,8 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       Double_t pX1 = 0., pY1 = 0.;
       if(track1) {
 	charge1 = track1->Charge();
-	Double_t pX1 = track1->Px();
-	Double_t pY1 = track1->Py();
+	pX1 = track1->Px();
+	pY1 = track1->Py();
 	//Double_t energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
 	//TMath::Power(track1->M(),2));
       }
