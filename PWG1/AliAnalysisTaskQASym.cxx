@@ -1108,7 +1108,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
 
   if(Entry()==0){
-    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+    AliESDEvent* esd = static_cast<AliESDEvent*>(event);
     if(esd){
       Printf("We are reading from ESD");
     }
@@ -1126,7 +1126,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 
 
   //check vertices
-  AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event);
+  AliESDEvent* esd = static_cast<AliESDEvent*>(event);
   Int_t nPileSPDVertices=1+esd->GetNumberOfPileupVerticesSPD(); // also SPD main vertex
   Int_t nPileTrkVertices=esd->GetNumberOfPileupVerticesTracks();
   fNVertexSPD->Fill(nPileSPDVertices);
@@ -1214,7 +1214,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     }
 
     AliVParticle *track = event->GetTrack(iTrack);
-    AliESDtrack *esdtrack =  dynamic_cast<AliESDtrack*>(track);
+    AliESDtrack *esdtrack =  static_cast<AliESDtrack*>(track);
     esdtrack->PropagateToDCA(event->GetPrimaryVertex(),
 			     event->GetMagneticField(), 10000.);
 
@@ -1230,9 +1230,9 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
     if(fTrackType==0){
       //Fill all histograms with global tracks
       tpcP = esdtrack;
-      phiIn = tpcP->Phi();
       if (!tpcP) continue;
       if (!fCuts->AcceptTrack(tpcP)) continue;
+      phiIn = tpcP->Phi();
     }
     else if(fTrackType==1){
       //Fill all histograms with ITS tracks
@@ -1253,7 +1253,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
       if (!tpcPin) continue;
       phiIn=tpcPin->Phi();
 
-      tpcP = AliESDtrackCuts::GetTPCOnlyTrack(dynamic_cast<AliESDEvent*>(event),esdtrack->GetID());
+      tpcP = AliESDtrackCuts::GetTPCOnlyTrack(static_cast<AliESDEvent*>(event),esdtrack->GetID());
       if (!tpcP) continue;
       if (!fCuts->AcceptTrack(tpcP)) continue;
       if(tpcP->GetNcls(1)>160)continue;//jacek's track cut
@@ -1528,7 +1528,7 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
 //       if(LeadingTrack==iTrack2) continue;
 
 //       AliVParticle *track2 = event->GetTrack(iTrack2);
-//       AliESDtrack* esdtrack2 =  dynamic_cast<AliESDtrack*>(track2);
+//       AliESDtrack* esdtrack2 =  static_cast<AliESDtrack*>(track2);
 //       if (!track2) {
 // 	Printf("ERROR: Could not receive track %d", iTrack);
 // 	continue;
