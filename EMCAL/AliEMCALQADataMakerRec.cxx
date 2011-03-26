@@ -893,14 +893,8 @@ void AliEMCALQADataMakerRec::SetFittingAlgorithm(Int_t fitAlgo)
   //printf("**** Set Algorithm , number %d ****\n",fitAlgo);
 
   
-  // fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
-  // fFittingAlgorithm = fitAlgo; 
-  
-  
-  //CRAP PTH
-  fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(kLMS);
-  fFittingAlgorithm = kLMS; 
-
+  fRawAnalyzer =  AliCaloRawAnalyzerFactory::CreateAnalyzer(fitAlgo);
+  fFittingAlgorithm = fitAlgo; 
 
   /*
   if(fitAlgo == fFittingAlgorithm && fRawAnalyzer) {
