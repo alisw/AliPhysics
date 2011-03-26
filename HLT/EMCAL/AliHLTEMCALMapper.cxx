@@ -17,14 +17,7 @@
  **************************************************************************/
 
 #include "AliHLTEMCALMapper.h"
-
-//#include "AliHLTEMCALConstant.h"
-// #include "AliHLTCaloConstant.h"
-
 #include "assert.h"
-
-//using namespace EmcalHLTConst;
-
 #include "AliHLTCaloConstants.h"
 
 using EMCAL::NXCOLUMNSMOD;
@@ -46,7 +39,7 @@ AliHLTEMCALMapper::~AliHLTEMCALMapper()
 {
 
 }
-  
+
 
 void 
 AliHLTEMCALMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
@@ -70,8 +63,8 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
   
   if(base !=0)
     {
-      sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
-      sprintf(fFilepath, "%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      snprintf(fFilepath,FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      snprintf(fFilepath, FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
 
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
@@ -140,7 +133,7 @@ AliHLTEMCALMapper::DDL2RcuMapFileName(const int ddlIndex) const //0=4608, 1=4607
       tmpSide  = 'C';
     }
   int tmprcuindex = ddlIndex%2;
-  sprintf(rname,"RCU%d%c.data",  tmprcuindex,  tmpSide );
+  snprintf(rname, FILEPATHMAXLENGTH, "RCU%d%c.data",  tmprcuindex,  tmpSide );
   //sprintf(rname,"RCU%d%c.data", ddlIndex/NRCUSPERSECTOR, tmpSide );
   return rname;
 }
