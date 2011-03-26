@@ -394,7 +394,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   
   //Do analysis and fill histograms
   if ( GetDebug() > 0) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Starting analysis.\n");
-    
+  
   // Access MC information in stack if requested, check that it exists.	
   AliStack * stack = 0x0;
   //TParticle * primary = 0x0;   
@@ -402,8 +402,8 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   //AliAODMCParticle * aodprimary = 0x0; 
   //TObjArray * pl = 0x0;
   Int_t NClusters = 0 ;
-    TLorentzVector momCluster ;
-
+  TLorentzVector momCluster ;
+  
   
   //Check if the stack is available when analysing MC data.
   if(IsDataMC()){
@@ -426,17 +426,17 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     }// is data and MC
   }	
   //Loop on stored AOD photons
-
+  
   TClonesArray *  clustArray = 0x0 ; 
   clustArray = GetAODCaloClusters() ;
   NClusters = clustArray->GetEntriesFast() ;    
   fhNClusters->Fill(NClusters) ;
-
+  
   if(GetDebug() > 0) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - aod branch entries %d\n", NClusters);
   
   for(Int_t iCluster = 0 ; iCluster < NClusters ; iCluster++){    
     Int_t input = 0 ;
-
+    
     AliAODCaloCluster * caloCluster =  (AliAODCaloCluster*) (clustArray->At(iCluster)) ;
     caloCluster->GetMomentum(momCluster,GetVertex(0)) ;
     AliAODPWG4Particle * aodCluster = new AliAODPWG4Particle(momCluster) ;
@@ -446,7 +446,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
     aodCluster->SetCaloLabel(caloCluster->GetID(),-1) ;
     aodCluster->SetDetector(fCalorimeter) ;
     aodCluster->SetTag(GetMCAnalysisUtils()->CheckOrigin(caloCluster->GetLabels(),caloCluster->GetNLabels(),GetReader(), aodCluster->GetInputFileIndex())) ;
-
+    
     if (GetDebug() > 3) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Cluster particle label = %d\n",labelCluster) ;
     
     //Fill Cluster histograms 
@@ -463,49 +463,49 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
       fhEtaPhiPtCluster->Fill(ptcluster,phicluster,etacluster) ;
       fhLambdaPtCluster->Fill(ptcluster,lambdaMainCluster) ;
       
-    //Play with the MC data if available
+      //Play with the MC data if available
       if(IsDataMC()){
-	
-	if(GetReader()->ReadStack() && !stack) return;
-	if(GetReader()->ReadAODMCParticles() && !mcparticles0) return;
-	
-	//Get the tag from AliMCAnalysisUtils for PID
-	Int_t tag = aodCluster->GetTag();
-	if (GetDebug() > 3) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Cluster particle tag= %d\n",tag) ;
-	if ( aodCluster->GetLabel() < 0){
-	  if(GetDebug() > 0) 
-	    printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Label is -1; problem in the MC ESD? ");
-	  continue;
-	}
-	
-	//Check if the tag matches one of the different particle types and fill the corresponding histograms
-	if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)&&!(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))) {
-	  fhLambdaPtPhoton->Fill(ptcluster,lambdaMainCluster) ;
-	}//kMCPhoton
-	
-	if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)) {     
-	  fhLambdaPtPi0->Fill(ptcluster,lambdaMainCluster) ;        
-	}
-	if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)) {
-	  fhLambdaPtPion->Fill(ptcluster,lambdaMainCluster) ;
-	}
-	
-	// Access MC information in stack if requested, check that it exists.
-	Int_t label = aodCluster->GetLabel();
-	if(label < 0) {
-	  printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
-	  continue;
-	}
+        
+        //if(GetReader()->ReadStack() && !stack) return;
+        //if(GetReader()->ReadAODMCParticles() && !mcparticles0) return;
+        
+        //Get the tag from AliMCAnalysisUtils for PID
+        Int_t tag = aodCluster->GetTag();
+        if (GetDebug() > 3) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Cluster particle tag= %d\n",tag) ;
+        if ( aodCluster->GetLabel() < 0){
+          if(GetDebug() > 0) 
+            printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - Label is -1; problem in the MC ESD? ");
+          continue;
+        }
+        
+        //Check if the tag matches one of the different particle types and fill the corresponding histograms
+        if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)&&!(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0))) {
+          fhLambdaPtPhoton->Fill(ptcluster,lambdaMainCluster) ;
+        }//kMCPhoton
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)) {     
+          fhLambdaPtPi0->Fill(ptcluster,lambdaMainCluster) ;        
+        }
+        if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPion)) {
+          fhLambdaPtPion->Fill(ptcluster,lambdaMainCluster) ;
+        }
+        
+        // Access MC information in stack if requested, check that it exists.
+        Int_t label = aodCluster->GetLabel();
+        if(label < 0) {
+          printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() *** bad label ***:  label %d \n", label);
+          continue;
+        }
       }
     }
   }
   
   Float_t fPtGener = 0 ;
-  if(IsDataMC()){
+  if(IsDataMC() && stack){
     TParticle* pGener = stack->Particle(0) ;
     fPtGener = pGener->Pt() ;
   }
-
+  
   
 }
 
