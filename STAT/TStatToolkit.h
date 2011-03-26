@@ -38,7 +38,10 @@ class TStatToolkit : public TObject
 
   static TGraph2D *  MakeStat2D(TH3 * his, Int_t delta0, Int_t delta1, Int_t type);
   static TGraph *  MakeStat1D(TH3 * his, Int_t delta1, Int_t type);
-
+  //
+  // Graph tools
+  //
+  static TGraph * MakeGraphSparse(TTree * tree, const char * expr="Entry", const char * cut="1");
   //
   // Fitting function
   //

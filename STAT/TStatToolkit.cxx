@@ -1173,3 +1173,55 @@ TString  TStatToolkit::MakeFitString(TString &input, TVectorD &param, TMatrixD &
   result+="-0.)";
   return result;
 }
+
+
+TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const char * cut){
+  //
+  // Make a sparse draw of the variables
+  //
+  const Int_t entries =  tree->Draw(expr,cut,"goff");
+  //  TGraph * graph = (TGraph*)gPad->GetPrimitive("Graph"); // 2D
+  TGraph * graph = new TGraph (entries, tree->GetV2(),tree->GetV1());
+  //
+  Int_t *index = new Int_t[entries];
+  TMath::Sort(entries,graph->GetX(),index,kFALSE);
+  
+  Double_t *VV = new Double_t[entries];
+
+  Double_t count = 0.5;
+  vector<Int_t> vrun;
+  VV[index[0]] = count;
+  vrun.push_back(graph->GetX()[index[0]]);
+  for(Int_t i=1;i<entries;i++){
+    if(graph->GetX()[index[i]]==graph->GetX()[index[i-1]])
+      VV[index[i]] = count; 
+    else if(graph->GetX()[index[i]]!=graph->GetX()[index[i-1]]){
+      count++;
+      VV[index[i]] = count;
+      vrun.push_back(graph->GetX()[index[i]]);
+    }
+  }
+  
+  const Int_t newNbins = int(count+0.5);
+  Double_t *newBins = new Double_t[newNbins+1];
+  for(Int_t i=0; i<=count+1;i++){
+    newBins[i] = i;
+  }
+  
+  TGraph *graphNew = new TGraph(entries,VV,graph->GetY());
+  graphNew->GetXaxis()->Set(newNbins,newBins);
+  
+  Char_t xName[50];
+  Double_t bin_unit = graphNew->GetXaxis()->GetNbins()/count;
+  for(Int_t i=0;i<count;i++){
+    snprintf(xName,50,"%d",vrun.at(i));
+    graphNew->GetXaxis()->SetBinLabel(i+1,xName);
+  }
+  graphNew->GetHistogram()->SetTitle("");
+  
+  delete [] VV;
+  delete [] index;
+  delete [] newBins;
+  return graphNew;
+}
+
