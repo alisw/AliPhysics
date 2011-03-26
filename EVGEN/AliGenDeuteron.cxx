@@ -356,7 +356,7 @@ void AliGenDeuteron::PushDeuteron(TParticle* parent1, TParticle* parent2)
 	Double_t energy = TMath::Sqrt(pN.Mag2() + kDeuteronMass*kDeuteronMass);
 	
 	// Add a new (anti)deuteron to current event stack
-	fCurStack->PushTrack(1, fCurStack->Particles()->IndexOf(parent1), fSign*kDeuteronPdg,
+	fCurStack->PushTrack(1, -1, fSign*kDeuteronPdg,
 	                 pN.X(), pN.Y(), pN.Z(), energy,
 	                 vN.X(), vN.Y(), vN.Z(), parent1->T(),
 	                 0., 0., 0., kPNCapture, fNtrk, 1., 0);
