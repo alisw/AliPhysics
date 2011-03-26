@@ -14,6 +14,9 @@
 #include "TNamed.h"
 
 class AliVEvent;
+class TBrowser;
+#include "TList.h"
+#include "TH1.h"
 #include "AliTriggerAnalysis.h"
 #include "AliFlowTrackCuts.h"
 
@@ -62,6 +65,11 @@ class AliFlowEventCuts : public TNamed {
   void SetRefMultCuts( AliFlowTrackCuts* cuts ) {fRefMultCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   void SetMeanPtCuts( AliFlowTrackCuts* cuts ) {fMeanPtCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   AliFlowTrackCuts* GetRefMultCuts() const {return fRefMultCuts;}
+  void DefineHistograms();
+  void SetQA() {DefineHistograms();}
+  TList* GetQA() const {return fQA;}
+  TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
+  TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}
 
   Int_t RefMult(AliVEvent* event);
   //Int_t GetRefMult() {return fRefMult;}
@@ -72,8 +80,12 @@ class AliFlowEventCuts : public TNamed {
                                                                fCutCentralityPercentile=kTRUE; }
   void SetCentralityPercentileMethod( refMultMethod m) {fCentralityPercentileMethod=m;}
   void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
+  
+  void Browse(TBrowser* b);
+  Long64_t Merge(TCollection* list);  
 
  private:
+  TList* fQA; //QA
   Bool_t fCutNumberOfTracks;//cut on # of tracks
   Int_t fNumberOfTracksMax;  //limits
   Int_t fNumberOfTracksMin;  //limits
@@ -110,7 +122,7 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutZDCtiming;   //cut on ZDC timing
   AliTriggerAnalysis fTrigAna; //trigger analysis object
 
-  ClassDef(AliFlowEventCuts,2)
+  ClassDef(AliFlowEventCuts,3)
 };
 
 #endif

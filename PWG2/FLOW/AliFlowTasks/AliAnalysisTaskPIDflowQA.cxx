@@ -558,46 +558,14 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 
   //fOutputList->Add(fESDpid);
 
-  TH1* h=NULL; 
-  h = static_cast<TH1*>(fCutsTOFPions->GetQA()->At(0));
-  h->SetName(Form("pion direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFKaons->GetQA()->At(0));
-  h->SetName(Form("kaon direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFProtons->GetQA()->At(0));
-  h->SetName(Form("proton direct %s",h->GetName()));
-  fOutputList->Add(fCutsTOFPions->GetQA()->At(0));
-  fOutputList->Add(fCutsTOFKaons->GetQA()->At(0));
-  fOutputList->Add(fCutsTOFProtons->GetQA()->At(0));
-
-  h = static_cast<TH1*>(fCutsTOFPions->GetQA()->At(1));
-  h->SetName(Form("pion direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFKaons->GetQA()->At(1));
-  h->SetName(Form("kaon direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFProtons->GetQA()->At(1));
-  h->SetName(Form("proton direct %s",h->GetName()));
-  fOutputList->Add(fCutsTOFPions->GetQA()->At(1));
-  fOutputList->Add(fCutsTOFKaons->GetQA()->At(1));
-  fOutputList->Add(fCutsTOFProtons->GetQA()->At(1));
-
-  h = static_cast<TH1*>(fCutsTOFPions->GetQA()->At(2));
-  h->SetName(Form("pion direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFKaons->GetQA()->At(2));
-  h->SetName(Form("kaon direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFProtons->GetQA()->At(2));
-  h->SetName(Form("proton direct %s",h->GetName()));
-  fOutputList->Add(fCutsTOFPions->GetQA()->At(2));
-  fOutputList->Add(fCutsTOFKaons->GetQA()->At(2));
-  fOutputList->Add(fCutsTOFProtons->GetQA()->At(2));
-
-  h = static_cast<TH1*>(fCutsTOFPions->GetQA()->At(3));
-  h->SetName(Form("pion direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFKaons->GetQA()->At(3));
-  h->SetName(Form("kaon direct %s",h->GetName()));
-  h = static_cast<TH1*>(fCutsTOFProtons->GetQA()->At(3));
-  h->SetName(Form("proton direct %s",h->GetName()));
-  fOutputList->Add(fCutsTOFPions->GetQA()->At(3));
-  fOutputList->Add(fCutsTOFKaons->GetQA()->At(3));
-  fOutputList->Add(fCutsTOFProtons->GetQA()->At(3));
+  fOutputList->Add(fCutsTPCElectrons);
+  fOutputList->Add(fCutsTPCPions);
+  fOutputList->Add(fCutsTPCKaons);
+  fOutputList->Add(fCutsTPCProtons);
+  fOutputList->Add(fCutsTOFElectrons);
+  fOutputList->Add(fCutsTOFPions);
+  fOutputList->Add(fCutsTOFKaons);
+  fOutputList->Add(fCutsTOFProtons);
 
   if (fUseDebugFile) fFile = fopen("debug.txt","w");
 
@@ -639,6 +607,16 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
   Int_t nTracks=fESD->GetNumberOfTracks();
 
   AliESDtrack *trackESD=0;
+
+  fCuts->SetEvent(fESD);
+  fCutsTPCElectrons->SetEvent(fESD);
+  fCutsTPCPions->SetEvent(fESD);
+  fCutsTPCKaons->SetEvent(fESD);
+  fCutsTPCProtons->SetEvent(fESD);
+  fCutsTOFElectrons->SetEvent(fESD);
+  fCutsTOFPions->SetEvent(fESD);
+  fCutsTOFKaons->SetEvent(fESD);
+  fCutsTOFProtons->SetEvent(fESD);
 
   for(int tr1=0; tr1<nTracks; tr1++)
   {
@@ -713,7 +691,7 @@ void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t pdgcode)
   const AliExternalTrackParam* innerParam = t->GetInnerParam();
   if (!innerParam) return;
   Double_t pinTPCglobal=innerParam->GetP();
-  Double_t tpcSignal =t ->GetTPCsignal();
+  Double_t tpcSignal =t->GetTPCsignal();
   Float_t p=innerParam->P();
   Float_t pt=innerParam->Pt();
   Float_t sigPion     = fESDpid->GetTPCResponse().GetExpectedSignal(pinTPCglobal, AliPID::kPion);
@@ -870,23 +848,6 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
     invbetadiff[i] = invbeta-invbetaHypothesis[i];
   }
 
-  /////////////simple cuts
-  Bool_t isPion   = ( (betadiff[2]<0.015) && (betadiff[2]>-0.015) &&
-                      (betadiff[3]>0.025) &&
-                      (betadiff[4]>0.03) );
-
-  Bool_t isKaon   = ( (betadiff[3]<0.015) && (betadiff[3]>-0.015) &&
-                      (betadiff[2]<-0.03) &&
-                      (betadiff[4]>0.03) );
-
-  Bool_t isProton = ( (betadiff[4]<0.015) && (betadiff[4]>-0.015) &&
-                      (betadiff[3]<-0.025) &&
-                      (betadiff[2]<-0.025) );
-
-  if (isPion)     fTOFbetaAfterPionCuts1->Fill(p,beta);
-  if (isKaon)     fTOFbetaAfterKaonCuts1->Fill(p,beta);
-  if (isProton)   fTOFbetaAfterProtonCuts1->Fill(p,beta);
-
   //responses
   fTOFbeta->Fill(p,beta);
   fTOFbetaE->Fill(p,betadiff[0]);
@@ -900,7 +861,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
   fTOFinvbetaK->Fill(p,invbetadiff[3]);
   fTOFinvbetaP->Fill(p,invbetadiff[4]);
 
-  if (fCutsTOFElectrons->PassesTOFbetaCut(track)) 
+  if (fCutsTOFElectrons->IsSelected(track)) 
   {
     fTOFbetaAfterElectronsCuts->Fill(p,beta);
     fTOFbetaEafter->Fill(p,beta-betaHypothesis[0]);
@@ -928,7 +889,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
       }
     }
   }
-  if (fCutsTOFPions->PassesTOFbetaCut(track)) 
+  if (fCutsTOFPions->IsSelected(track)) 
   {
     fTPCdedxAfterTOFpidPions->Fill(pinTPCglobal,tpcSignal);
     fTOFbetaAfterPionCuts->Fill(p,beta);
@@ -957,7 +918,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
       }
     }
   }
-  if (fCutsTOFKaons->PassesTOFbetaCut(track)) 
+  if (fCutsTOFKaons->IsSelected(track)) 
   {
     fTPCdedxAfterTOFpidKaons->Fill(pinTPCglobal,tpcSignal);
     fTOFbetaAfterKaonCuts->Fill(p,beta);
@@ -986,7 +947,7 @@ void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t pdgcode)
       }
     }
   }
-  if (fCutsTOFProtons->PassesTOFbetaCut(track)) 
+  if (fCutsTOFProtons->IsSelected(track)) 
   {
     fTPCdedxAfterTOFpidProtons->Fill(pinTPCglobal,tpcSignal);
     fTOFbetaAfterProtonCuts->Fill(p,beta);

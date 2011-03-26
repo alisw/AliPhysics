@@ -86,15 +86,14 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fCutsEvent(NULL),
   fCutsRP(NULL),
   fCutsPOI(NULL),
-  fQAInt(NULL),
-  fQADiff(NULL),
+  fQAList(NULL),
   fMinMult(0),
   fMaxMult(10000000),
   fMinA(-1.0),
   fMaxA(-0.01),
   fMinB(0.01),
   fMaxB(1.0),
-  fQA(kFALSE),
+  fQAon(kFALSE),
   fLoadCandidates(kFALSE),
   fNbinsMult(10000),
   fNbinsPt(100),   
@@ -140,15 +139,14 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fCutsEvent(NULL),
   fCutsRP(NULL),
   fCutsPOI(NULL),
-  fQAInt(NULL),
-  fQADiff(NULL),
+  fQAList(NULL),
   fMinMult(0),
   fMaxMult(10000000),
   fMinA(-1.0),
   fMaxA(-0.01),
   fMinB(0.01),
   fMaxB(1.0),
-  fQA(on),
+  fQAon(on),
   fLoadCandidates(bCandidates),
   fNbinsMult(10000),
   fNbinsPt(100),   
@@ -196,11 +194,7 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   // Define output slots here
   // Define here the flow event output
   DefineOutput(1, AliFlowEventSimple::Class());
-  if(on)
-  {
-    DefineOutput(2, TList::Class());
-    DefineOutput(3, TList::Class());
-  }
+  DefineOutput(2, TList::Class());
 
   // and for testing open an output file
   //  fOutputFile = new TFile("FlowEvents.root","RECREATE");
@@ -215,6 +209,10 @@ AliAnalysisTaskFlowEvent::~AliAnalysisTaskFlowEvent()
   //
   delete fMyTRandom3;
   delete fFlowEvent;
+  delete fCutsEvent;
+  delete fCutsRP;
+  delete fCutsPOI;
+  delete fQAList;
   // objects in the output list are deleted
   // by the TSelector dtor (I hope)
 
@@ -263,6 +261,15 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
 
   fFlowEvent = new AliFlowEvent(3000);
 
+  if (fQAon)
+  {
+    fQAList=new TList();
+    fQAList->SetName(Form("%s QA",GetName()));
+    if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA());
+    if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());
+    if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA());
+    PostData(2,fQAList);
+  }
 }
 
 //________________________________________________________________________
@@ -518,11 +525,6 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
   //fListHistos->Print();
   //fOutputFile->WriteObject(fFlowEvent,"myFlowEventSimple");
   PostData(1,fFlowEvent);
-  if (fQA)
-  {
-    PostData(2,fQAInt);
-    PostData(3,fQADiff);
-  }
 }
 
 //________________________________________________________________________

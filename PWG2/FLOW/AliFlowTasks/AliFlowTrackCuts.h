@@ -10,6 +10,7 @@
 #define ALIFLOWTRACKCUTS_H
 
 #include <TMatrix.h>
+#include <TList.h>
 #include "AliFlowTrackSimpleCuts.h"
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
@@ -17,7 +18,7 @@
 #include "AliPID.h"
 #include "AliESDpid.h"
 
-class TObjArray;
+class TBrowser;
 class AliVParticle;
 class AliMCParticle;
 class AliFlowTrack;
@@ -131,10 +132,14 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Double_t GetMinimalTPCdedx() const {return fMinimalTPCdedx;}
   Int_t GetPmdDetPlane()const {return fPmdDet; }
   Float_t GetPmdAdc()const {return fPmdAdc;}
-  Float_t GetPmdNcell() const {return fPmdNcell; }  
+  Float_t GetPmdNcell() const {return fPmdNcell; }
+  Float_t GetBeta(const AliESDtrack* t);
+  Float_t Getdedx(const AliESDtrack* t);
  
   void SetQA() {DefineHistograms();}
-  TObjArray* GetQA() const {return fQA;}
+  TList* GetQA() const {return fQA;}
+  TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
+  TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}  
 
   //MC stuff
   void SetCutMC( Bool_t b=kTRUE );
@@ -178,6 +183,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetTOFpidCuts(TMatrixF* mat) {fTOFpidCuts=new TMatrixF(*mat);}
   static const char* PIDsourceName(PIDsource s);
   AliESDpid& GetESDpid() {return fESDpid;}
+  void SetAllowTOFmismatch(Bool_t b=kTRUE) {fAllowTOFmismatch=b;}
+  Bool_t GetAllowTOFmismatch() const {return fAllowTOFmismatch;}
 
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
@@ -194,6 +201,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesTOFbetaCut(const AliESDtrack* track);  
   Bool_t PassesTOFbetaSimpleCut(const AliESDtrack* track);  
   Bool_t PassesTOFpidCut(const AliESDtrack* track) const;  
+
+  void Browse(TBrowser* b);
+  Long64_t Merge(TCollection* list);
 
  protected:
   AliFlowTrack* MakeFlowTrackSPDtracklet() const;
@@ -215,7 +225,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   //the cuts
   AliESDtrackCuts* fAliESDtrackCuts; //alianalysis cuts
-  TObjArray* fQA;                   //qa histograms go here
+  TList* fQA;                        //qa histograms go here
   Bool_t fCutMC;                     //do we cut on MC?
   Bool_t fCutMCprocessType;          //do we cut on mc process type?
   TMCProcess fMCprocessType;         //mc process type
@@ -275,6 +285,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   TMatrixF* fTOFpidCuts; //tof pid cuts
   AliPID::EParticleType fParticleID; //alipid
   Double_t fParticleProbability; //desired prob for a particle type
+  Bool_t fAllowTOFmismatch; //allow TPC mismatch
 
   // part added by F. Noferini
   static const Int_t fgkPIDptBin = 20; // pT bins for priors
@@ -284,7 +295,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,6)
+  ClassDef(AliFlowTrackCuts,7)
 };
 
 #endif
