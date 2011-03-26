@@ -9,32 +9,19 @@
 // effects in QC code because by default this correction is switched off).
 
 // Name of the merged, large statistics file obtained with the merging macros:
-TString mergedFileName = "outputCentralityTrain.root";
+TString mergedFileName = "output.root";
 // Final output file name holding correct final results for large statistics sample:
 TString outputFileName = "AnalysisResults.root";
-// Methods for which the flow analysis will be redone:
-const Int_t nMethods = 12;
-TString method[nMethods] = {"MCEP","SP","GFC","QC","FQD","LYZ1SUM","LYZ1PROD","LYZ2SUM","LYZ2PROD","LYZEP","MH","NL"};
-// Methods for which some settings can be modified before redoing Finish():
-// QC:
+
 Bool_t bApplyCorrectionForNUA = kFALSE; // apply correction for non-uniform acceptance
 Bool_t bApplyCorrectionForNUAVsM = kFALSE; // apply correction for non-uniform acceptance in each multiplicity bin independently
 Bool_t bPropagateErrorAlsoFromNIT = kFALSE; // propagate error also from non-isotropic terms
 Bool_t bMinimumBiasReferenceFlow = kTRUE; // store in CRH for reference flow the result obtained wihout rebinning in multiplicity (kTRUE)
 
-enum libModes {mLocal,mLocalSource};
-
-void redoFinish(TString type="ESD global", Int_t mode=mLocal)
+void redoFinish()
 {
-  // type: type of analysis can be ESD, AOD, MC, ....
-  //       (if type="" output files are from simulation 'on the fly')
-  // mode: if mode = mLocal: analyze data on your computer using aliroot
-  //       if mode = mLocalSource: analyze data on your computer using root + source files
+  LoadLibraries();
 
-  // Load needed libraries:
-  LoadLibrariesRF(mode);
-
-  // Accessing <mergedFileName>:
   TString mergedFileFullPathName(gSystem->pwd());
   mergedFileFullPathName+="/";
   mergedFileFullPathName+=mergedFileName.Data();
@@ -61,41 +48,21 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
   }
 
   // Access from <mergedFileName> the merged TDirectoryFile's for each method and from them the lists holding histograms:
-  for(Int_t i=0; i<nMethods; i++)
+  
+  TList* mergedFileKeys = mergedFile->GetListOfKeys();
+  for(Int_t i=0; i<mergedFileKeys->GetEntries(); i++)
   {
-    TString directoryName("");
-    TDirectory* directory = NULL;
-    cout<<endl;
-    // Form a file name for each method:
-    directoryName+="output";
-    directoryName+=method[i].Data();
-    directoryName+="analysis";
-    directoryName+=type.Data();
-    // Access this file:
-    directory = (TDirectory*)mergedFile->FindObjectAny(directoryName.Data());
-    // Form a list name for each method:
-    if(!directory)
-    {
-      cout<<" WARNING: Couldn't find a TDirectory "<<directoryName.Data()<<" in file "<<mergedFileName.Data()<<endl;
-      continue;
-    }
+    TDirectory* directory = dynamic_cast<TDirectory*>(mergedFile->Get(mergedFileKeys->At(i)->GetName()));
+    if (!directory) continue;
 
     TList* listTemp = directory->GetListOfKeys();
-    if (!listTemp)
-      {
-        cout<<" WARNING: Accessing TList from TDirectoryFile failed for method "<<method[i].Data()<<" !!!!"<<endl;
-        cout<<"          Did you actually specify "<<method[i].Data()<<" in the analysis?"<<endl;
-        cout<<endl;
-        continue;
-      }
-
     for (Int_t icent=0; icent<listTemp->GetEntries(); icent++)
     {
       TList* list = dynamic_cast<TList*>(directory->Get(listTemp->At(icent)->GetName()));
       if (!list) continue;
 
       ////////////////////
-      if(TString(list->GetName()).Contains("cobjMCEP"))
+      if(TString(list->GetName()).Contains("MCEP"))
       {
         AliFlowAnalysisWithMCEventPlane* mcep = new AliFlowAnalysisWithMCEventPlane();
         mcep->GetOutputHistograms(list);
@@ -104,7 +71,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // SP:
-      else if(TString(list->GetName()).Contains("cobjSP"))
+      else if(TString(list->GetName()).Contains("SP"))
       {
         AliFlowAnalysisWithScalarProduct* sp = new AliFlowAnalysisWithScalarProduct();
         sp->GetOutputHistograms(list);
@@ -113,7 +80,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // GFC:
-      else if(TString(list->GetName()).Contains("cobjGFC"))
+      else if(TString(list->GetName()).Contains("GFC"))
       {
         AliFlowAnalysisWithCumulants* gfc = new AliFlowAnalysisWithCumulants();
         gfc->GetOutputHistograms(list);
@@ -122,7 +89,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // QC:
-      else if(TString(list->GetName()).Contains("cobjQC"))
+      else if(TString(list->GetName()).Contains("QC"))
       {
         AliFlowAnalysisWithQCumulants* qc = new AliFlowAnalysisWithQCumulants();
         qc->GetOutputHistograms(list);
@@ -135,7 +102,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // FQD:
-      else if(TString(list->GetName()).Contains("cobjFQD"))
+      else if(TString(list->GetName()).Contains("FQD"))
       {
         AliFlowAnalysisWithFittingQDistribution* fqd = new AliFlowAnalysisWithFittingQDistribution();
         fqd->GetOutputHistograms(list);
@@ -144,7 +111,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // LYZ1SUM:
-      else if(TString(list->GetName()).Contains("cobjLYZ1SUM"))
+      else if(TString(list->GetName()).Contains("LYZ1SUM"))
       {
         AliFlowAnalysisWithLeeYangZeros* lyz1sum = new AliFlowAnalysisWithLeeYangZeros();
         lyz1sum->SetFirstRun(kTRUE);
@@ -155,7 +122,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // LYZ2SUM:
-      else if(TString(list->GetName()).Contains("cobjLYZ2SUM"))
+      else if(TString(list->GetName()).Contains("LYZ2SUM"))
       {
         AliFlowAnalysisWithLeeYangZeros* lyz2sum = new AliFlowAnalysisWithLeeYangZeros();
         lyz2sum->SetFirstRun(kFALSE);
@@ -166,7 +133,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // LYZ1PROD:
-      else if(TString(list->GetName()).Contains("cobjLYZ1PROD"))
+      else if(TString(list->GetName()).Contains("LYZ1PROD"))
       {
         AliFlowAnalysisWithLeeYangZeros* lyz1prod = new AliFlowAnalysisWithLeeYangZeros();
         lyz1prod->SetFirstRun(kTRUE);
@@ -177,7 +144,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // LYZ2PROD:
-      else if(TString(list->GetName()).Contains("cobjLYZ2PROD"))
+      else if(TString(list->GetName()).Contains("LYZ2PROD"))
       {
         AliFlowAnalysisWithLeeYangZeros* lyz2prod = new AliFlowAnalysisWithLeeYangZeros();
         lyz2prod->SetFirstRun(kFALSE);
@@ -188,7 +155,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // LYZEP:
-      else if(TString(list->GetName()).Contains("cobjLYZEP"))
+      else if(TString(list->GetName()).Contains("LYZEP"))
       {
         AliFlowAnalysisWithLYZEventPlane* lyzep = new AliFlowAnalysisWithLYZEventPlane();
         lyzep->GetOutputHistograms(list);
@@ -197,7 +164,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // MH:
-      else if(TString(list->GetName()).Contains("cobjMH"))
+      else if(TString(list->GetName()).Contains("MH"))
       {
         AliFlowAnalysisWithMixedHarmonics* mh = new AliFlowAnalysisWithMixedHarmonics();
         mh->GetOutputHistograms(list);
@@ -206,7 +173,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
       // NL:
-      else if(TString(list->GetName()).Contains("cobjNL"))
+      else if(TString(list->GetName()).Contains("NL"))
       {
         AliFlowAnalysisWithNestedLoops* nl = new AliFlowAnalysisWithNestedLoops();
         nl->GetOutputHistograms(list);
@@ -215,7 +182,7 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
         directory->Write(directory->GetName(),TObject::kSingleKey+TObject::kWriteDelete);
       }
     }//for icent
-  }// end of for(Int_t i=0;i<nMethods;i++)
+  }//
 
     // Close the final output file:
     delete mergedFile;
@@ -235,9 +202,8 @@ void redoFinish(TString type="ESD global", Int_t mode=mLocal)
 
 } // end of void redoFinish(Int_t mode=mLocal)
 
-void LoadLibrariesRF(const libModes mode)
+void LoadLibraries()
 {
-
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
@@ -247,69 +213,11 @@ void LoadLibrariesRF(const libModes mode)
   gSystem->Load("libXMLIO");
   gSystem->Load("libPhysics");
 
-  //----------------------------------------------------------
-  // >>>>>>>>>>> Local mode <<<<<<<<<<<<<<
-  //----------------------------------------------------------
-  if (mode==mLocal)
-  {
-    //--------------------------------------------------------
-    // If you want to use already compiled libraries
-    // in the aliroot distribution
-    //--------------------------------------------------------
-
-    //==================================================================================
-    //load needed libraries:
-    gSystem->AddIncludePath("-I$ROOTSYS/include");
-    //gSystem->Load("libTree");
-
-    // for AliRoot
-    gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-    gSystem->Load("libANALYSIS");
-    gSystem->Load("libPWG2flowCommon");
-    //cerr<<"libPWG2flowCommon loaded ..."<<endl;
-
-  }
-
-  else if (mode==mLocalSource)
-  {
-
-    // In root inline compile
-
-    // Constants
-    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonConstants.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZConstants.cxx+");
-
-    // Flow event
-    gROOT->LoadMacro("AliFlowCommon/AliFlowVector.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimple.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowTrackSimpleCuts.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowEventSimple.cxx+");
-
-    // Output histograms
-    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHist.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowCommonHistResults.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist1.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZHist2.cxx+");
-
-    // Functions needed for various methods
-    gROOT->LoadMacro("AliFlowCommon/AliCumulantsFunctions.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowLYZEventPlane.cxx+");
-
-    // Flow Analysis code for various methods
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMCEventPlane.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithScalarProduct.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLYZEventPlane.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithLeeYangZeros.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithCumulants.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithQCumulants.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithFittingQDistribution.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithMixedHarmonics.cxx+");
-    gROOT->LoadMacro("AliFlowCommon/AliFlowAnalysisWithNestedLoops.cxx+");
-
-    cout << "finished loading macros!" << endl;
-
-  } // end of else if (mode==mLocalSource)
-
+  // for AliRoot
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libPWG2flowCommon");
+  gSystem->Load("libPWG2flowTasks");
 } // end of void LoadLibrariesRF(const libModes mode)
 
 

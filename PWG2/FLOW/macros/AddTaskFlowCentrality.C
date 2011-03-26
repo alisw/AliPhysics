@@ -31,7 +31,7 @@ Double_t excludePhiMax = 0.;
 // use physics selection class
 Bool_t  UsePhysicsSelection = kTRUE;
 
-// QA
+// separate QA task
 Bool_t runQAtask=kFALSE;
 Bool_t FillQAntuple=kFALSE;
 Bool_t DoQAcorrelations=kFALSE;
@@ -76,11 +76,6 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
                             Float_t centrMax=100.,
                             TString fileNameBase="AnalysisResults" )
 {
-  TString centralityName("");
-  centralityName+=Form("%.0f",centrMin);
-  centralityName+="-";
-  centralityName+=Form("%.0f",centrMax);
-
   TString fileName(fileNameBase);
   fileName.Append(".root");
   //===========================================================================
@@ -101,7 +96,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   //cutsEvent->SetUseCentralityUnchecked();
   
   // RP TRACK CUTS:
-  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("rp cuts");
+  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("GlobalRP");
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,5.);
@@ -125,7 +120,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   cutsRP->SetMinimalTPCdedx(10.);
 
   // POI TRACK CUTS:
-  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("poi cuts");
+  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("GlobalPOI");
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
@@ -151,9 +146,17 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
   //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
   //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
+  //cutsPOI->SetAllowTOFmismatch(kFALSE);
   //iexample: francesco's tunig TPC Bethe Bloch for data:
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
+
+  TString outputSlotName("");
+  outputSlotName+=Form("%.0f",centrMin);
+  outputSlotName+="-";
+  outputSlotName+=Form("%.0f",centrMax);
+  outputSlotName+=" ";
+  outputSlotName+=cutsRP->GetName()
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
   if (useWeights) cout<<"Weights are used"<<endl;
@@ -219,7 +222,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 	break;
       }
       else {
-	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("cobjLYZ1SUM");
+	TList* fInputListLYZ2SUM = (TList*)fInputFileLYZ2SUM->Get("LYZ1SUM");
 	if (!fInputListLYZ2SUM) {cout<<"list is NULL pointer!"<<endl;}
       }
       cout<<"LYZ2SUM input file/list read..."<<endl;
@@ -236,7 +239,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
 	break;
       }
       else {
-	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("cobjLYZ1PROD");
+	TList* fInputListLYZ2PROD = (TList*)fInputFileLYZ2PROD->Get("LYZ1PROD");
 	if (!fInputListLYZ2PROD) {cout<<"list is NULL pointer!"<<endl;}
       }
       cout<<"LYZ2PROD input file/list read..."<<endl;
@@ -268,7 +271,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
       break;
     }
     else {
-      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("cobjLYZ2SUM");
+      TList* fInputListLYZEP = (TList*)fInputFileLYZEP->Get("LYZ2SUM");
       if (!fInputListLYZEP) {cout<<"list is NULL pointer!"<<endl;}
     }
     cout<<"LYZEP input file/list read..."<<endl;
@@ -421,7 +424,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   
   if (rptypestr == "FMD") {
     AliAnalysisDataContainer *coutputFMD = 
-      mgr->CreateContainer(Form("BackgroundCorrected_%s",centralityName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);
+      mgr->CreateContainer(Form("BackgroundCorrected_%s",outputSlotName.Data()), TList::Class(), AliAnalysisManager::kExchangeContainer);
     //input and output taskFMD     
     mgr->ConnectInput(taskfmd, 0, cinput1);
     mgr->ConnectOutput(taskfmd, 1, coutputFMD);
@@ -430,16 +433,22 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   }
   
   AliAnalysisDataContainer *coutputFE = 
-  mgr->CreateContainer(Form("cobjFlowEventSimple_%s",centralityName.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+  mgr->CreateContainer(Form("FlowEventSimple_%s",outputSlotName.Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
   mgr->ConnectInput(taskFE,0,cinput1); 
   mgr->ConnectOutput(taskFE,1,coutputFE);
-  
+
+  if (taskFE->GetQAon())
+  {
+    AliAnalysisDataContainer* coutputFEQA = 
+    mgr->CreateContainer(Form("QA %s",outputSlotName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:QA %s",fileName,rptypestr));
+    mgr->ConnectOutput(taskFE,2,coutputFEQA);
+  }
 
   // Create the output containers for the data produced by the analysis tasks
   // Connect to the input and output containers
   //===========================================================================
   if (useWeights) {    
-    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer(Form("cobjWeights_%s",centralityName.Data()),
+    AliAnalysisDataContainer *cinputWeights = mgr->CreateContainer(Form("Weights_%s",outputSlotName.Data()),
 								   TList::Class(),AliAnalysisManager::kInputContainer); 
   }
 
@@ -447,7 +456,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     TString outputSP = fileName;
     outputSP += ":outputSPanalysis";
     outputSP+= rptypestr;
-    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer(Form("cobjSP_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputSP = mgr->CreateContainer(Form("SP_%s",outputSlotName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputSP); 
     mgr->ConnectInput(taskSP,0,coutputFE); 
     mgr->ConnectOutput(taskSP,1,coutputSP); 
@@ -460,7 +469,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     TString outputLYZ1SUM = fileName;
     outputLYZ1SUM += ":outputLYZ1SUManalysis";
     outputLYZ1SUM+= rptypestr;
-    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("cobjLYZ1SUM_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputLYZ1SUM = mgr->CreateContainer(Form("LYZ1SUM_%s",outputSlotName.Data()), 
 								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1SUM); 
     mgr->ConnectInput(taskLYZ1SUM,0,coutputFE);
     mgr->ConnectOutput(taskLYZ1SUM,1,coutputLYZ1SUM);
@@ -469,19 +478,19 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     TString outputLYZ1PROD = fileName;
     outputLYZ1PROD += ":outputLYZ1PRODanalysis";
     outputLYZ1PROD+= rptypestr;
-    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("cobjLYZ1PROD_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputLYZ1PROD = mgr->CreateContainer(Form("LYZ1PROD_%s",outputSlotName.Data()), 
 								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ1PROD); 
     mgr->ConnectInput(taskLYZ1PROD,0,coutputFE); 
     mgr->ConnectOutput(taskLYZ1PROD,1,coutputLYZ1PROD);
   }
   if(LYZ2SUM) {
-    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUMin_%s",centralityName.Data()),
+    AliAnalysisDataContainer *cinputLYZ2SUM = mgr->CreateContainer(Form("LYZ2SUMin_%s",outputSlotName.Data()),
 								   TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2SUM = fileName;
     outputLYZ2SUM += ":outputLYZ2SUManalysis";
     outputLYZ2SUM+= rptypestr;
     
-    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("cobjLYZ2SUM_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputLYZ2SUM = mgr->CreateContainer(Form("LYZ2SUM_%s",outputSlotName.Data()), 
 								    TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2SUM); 
     mgr->ConnectInput(taskLYZ2SUM,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2SUM,1,cinputLYZ2SUM);
@@ -489,13 +498,13 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     cinputLYZ2SUM->SetData(fInputListLYZ2SUM);
   }
   if(LYZ2PROD) {
-    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PRODin_%s",centralityName.Data()),
+    AliAnalysisDataContainer *cinputLYZ2PROD = mgr->CreateContainer(Form("LYZ2PRODin_%s",outputSlotName.Data()),
 								    TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZ2PROD = fileName;
     outputLYZ2PROD += ":outputLYZ2PRODanalysis";
     outputLYZ2PROD+= rptypestr;
     
-    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("cobjLYZ2PROD_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputLYZ2PROD = mgr->CreateContainer(Form("LYZ2PROD_%s",outputSlotName.Data()), 
 								     TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZ2PROD); 
     mgr->ConnectInput(taskLYZ2PROD,0,coutputFE); 
     mgr->ConnectInput(taskLYZ2PROD,1,cinputLYZ2PROD);
@@ -503,13 +512,13 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     cinputLYZ2PROD->SetData(fInputListLYZ2PROD);
   }
   if(LYZEP) {
-    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer(Form("cobjLYZEPin_%s",centralityName.Data()),
+    AliAnalysisDataContainer *cinputLYZEP = mgr->CreateContainer(Form("LYZEPin_%s",outputSlotName.Data()),
 								 TList::Class(),AliAnalysisManager::kInputContainer);
     TString outputLYZEP = fileName;
     outputLYZEP += ":outputLYZEPanalysis";
     outputLYZEP+= rptypestr;
     
-    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("cobjLYZEP_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputLYZEP = mgr->CreateContainer(Form("LYZEP_%s",outputSlotName.Data()), 
 								  TList::Class(),AliAnalysisManager::kOutputContainer,outputLYZEP); 
     mgr->ConnectInput(taskLYZEP,0,coutputFE); 
     mgr->ConnectInput(taskLYZEP,1,cinputLYZEP);
@@ -521,7 +530,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputGFC += ":outputGFCanalysis";
     outputGFC+= rptypestr;
     
-    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("cobjGFC_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputGFC = mgr->CreateContainer(Form("GFC_%s",outputSlotName.Data()), 
 								TList::Class(),AliAnalysisManager::kOutputContainer,outputGFC); 
     mgr->ConnectInput(taskGFC,0,coutputFE); 
     mgr->ConnectOutput(taskGFC,1,coutputGFC);
@@ -535,7 +544,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputQC += ":outputQCanalysis";
     outputQC+= rptypestr;
 
-    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(Form("cobjQC_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputQC = mgr->CreateContainer(Form("QC_%s",outputSlotName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputQC); 
     mgr->ConnectInput(taskQC,0,coutputFE); 
     mgr->ConnectOutput(taskQC,1,coutputQC);
@@ -549,7 +558,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputFQD += ":outputFQDanalysis";
     outputFQD+= rptypestr;
     
-    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("cobjFQD_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputFQD = mgr->CreateContainer(Form("FQD_%s",outputSlotName.Data()), 
 								TList::Class(),AliAnalysisManager::kOutputContainer,outputFQD); 
     mgr->ConnectInput(taskFQD,0,coutputFE); 
     mgr->ConnectOutput(taskFQD,1,coutputFQD);
@@ -563,7 +572,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputMCEP += ":outputMCEPanalysis";
     outputMCEP+= rptypestr;
     
-    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("cobjMCEP_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputMCEP = mgr->CreateContainer(Form("MCEP_%s",outputSlotName.Data()), 
 								 TList::Class(),AliAnalysisManager::kOutputContainer,outputMCEP); 
     mgr->ConnectInput(taskMCEP,0,coutputFE);
     mgr->ConnectOutput(taskMCEP,1,coutputMCEP); 
@@ -573,7 +582,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputMH += ":outputMHanalysis";
     outputMH += rptypestr;
         
-    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("cobjMH_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputMH = mgr->CreateContainer(Form("MH_%s",outputSlotName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputMH); 
     mgr->ConnectInput(taskMH,0,coutputFE); 
     mgr->ConnectOutput(taskMH,1,coutputMH); 
@@ -587,7 +596,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     outputNL += ":outputNLanalysis";
     outputNL += rptypestr;
 
-    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("cobjNL_%s",centralityName.Data()), 
+    AliAnalysisDataContainer *coutputNL = mgr->CreateContainer(Form("NL_%s",outputSlotName.Data()), 
 							       TList::Class(),AliAnalysisManager::kOutputContainer,outputNL); 
     mgr->ConnectInput(taskNL,0,coutputFE);
     mgr->ConnectOutput(taskNL,1,coutputNL);
@@ -607,14 +616,14 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
     taskQAflow->SetDoCorrelations(DoQAcorrelations);
     mgr->AddTask(taskQAflow);
     
-    Printf("centralityName %s",centralityName.Data());
+    Printf("outputSlotName %s",outputSlotName.Data());
     TString taskQAoutputFileName(fileNameBase);
     taskQAoutputFileName.Append("_QA.root");
-    AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%s",centralityName.Data()),
+    AliAnalysisDataContainer* coutputQAtask = mgr->CreateContainer(Form("flowQA_%s",outputSlotName.Data()),
                                               TObjArray::Class(),
                                               AliAnalysisManager::kOutputContainer,
                                               taskQAoutputFileName);
-    AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%s",centralityName.Data()),
+    AliAnalysisDataContainer* coutputQAtaskTree = mgr->CreateContainer(Form("flowQAntuple_%s",outputSlotName.Data()),
                                               TNtuple::Class(),
                                               AliAnalysisManager::kOutputContainer,
                                               taskQAoutputFileName);
