@@ -167,7 +167,7 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   // 
 
   TLinearFitter *fitter = new TLinearFitter(3);
-  Double_t *x = new Double_t[3];
+  Double_t x[3]={0};
   Double_t y = 0;
   const Float_t kMaxDelta=0.5;
   
@@ -426,8 +426,8 @@ Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_
   //
   
   TVectorD paramA(3), paramC(3);
-  TLinearFitter *fitterA = new TLinearFitter(3);
-  TLinearFitter *fitterC = new TLinearFitter(3);
+  TLinearFitter *fitterA = 0;
+  TLinearFitter *fitterC = 0;
 
   fitterA = GetLinearFitter(3, 0, timeSec);
   fitterA->GetParameters(paramA);
@@ -440,8 +440,8 @@ Double_t AliTPCTempMap::GetTemperature(Double_t x, Double_t y, Double_t z, UInt_
   Double_t k = (fvalA-fvalC)/(2*247);
   Double_t tempValue = fvalC+(fvalA-fvalC)/2+k*z;
 
-  fitterA->~TLinearFitter();
-  fitterC->~TLinearFitter();
+  delete fitterA;
+  delete fitterC;
 
   return tempValue;
 

@@ -605,7 +605,7 @@ void AliTPCkalmanFit::AddCovariance(const char * varName, Double_t sigma){
   //
   //
   //
-  if (fCalibCovar) return;
+  if (!fCalibCovar) return;
   if (!fCalibration) return;
   if (!fCalibration->FindObject(varName)) return;
   Int_t ncalibs = fCalibration->GetEntries();
@@ -1319,5 +1319,10 @@ void AliTPCkalmanFit::MakeTreeTrans(TTreeSRedirector *debug, const char *treeNam
     }
     Printf("x0=%f finished",x[0]);
   }
-  
+  delete [] adx;//    = new Double_t[ncalibs];
+  delete [] ady;//    = new Double_t[ncalibs];
+  delete [] adz;//    = new Double_t[ncalibs];
+  delete [] adr;//    = new Double_t[ncalibs];
+  delete [] adrphi;// = new Double_t[ncalibs];
+
 }

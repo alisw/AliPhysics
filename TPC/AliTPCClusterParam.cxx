@@ -164,6 +164,7 @@ AliTPCClusterParam::AliTPCClusterParam():
   //
   fPosYcor[0]   = 0;   fPosYcor[1]   = 0;   fPosYcor[2]   = 0; 
   fPosZcor[0]   = 0;   fPosZcor[1]   = 0;   fPosZcor[2]   = 0; 
+  fErrorRMSSys[0]=0;   fErrorRMSSys[1]=0; 
 }
 
 AliTPCClusterParam::AliTPCClusterParam(const AliTPCClusterParam& param):
@@ -1159,7 +1160,7 @@ void AliTPCClusterParam::Test(TTree * tree, const char *output){
       snprintf(hcut1,300,"Dim==%d&&QMean<0&&Pad==%d",idim,ipad);
       snprintf(hexp1,300,"(Resol-AliTPCClusterParam::SGetError0(Dim,Pad,Zm,AngleM))/Resol>>%s",hname1);
       TH1F  his1DRel0(hname1, hname1, 100,-0.2, 0.2);
-      snprintf(hname1,1000,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
+      snprintf(hname1,300,"Dim==%d&&QMean<0&&Pad=%d",idim,ipad);
       tree->Draw(hexp1,hcut1,"");
       his1DRel0.Write();
       //

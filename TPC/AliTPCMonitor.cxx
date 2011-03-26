@@ -2071,8 +2071,8 @@ Int_t AliTPCMonitor::ExecProcess()
   if(event != 61)  return -1;
   
   TObject *select = gPad->GetSelected();
-  TString name=select->GetName();
   if(!select)  return -1;
+  TString name=select->GetName();
   if(!select->InheritsFrom("TH2")) {gPad->SetUniqueID(0);    return -1;  }
   if(       name=="hglobal"  || name=="SIDE A"  ) side = 0;
   else  if( name=="hglobal2" || name=="SIDE C"  ) side = 1;

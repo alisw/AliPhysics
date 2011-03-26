@@ -130,9 +130,10 @@ void AliTPCFast::Hits2Clusters(AliRunLoader* runLoader) const
   //---------------------------------------------------------------
   
   TTree *tH = loader->TreeH();
-  if (tH == 0x0)
+  if (tH == 0x0){
     AliFatal("Can not find TreeH in folder");
-
+    return;
+  }
   tpc->SetTreeAddress();
   
   Stat_t ntracks = tH->GetEntries();
@@ -389,9 +390,10 @@ void AliTPCFast::Hits2ExactClustersSector(AliRunLoader* runLoader,
   //---------------------------------------------------------------
   
   TTree *tH = loader->TreeH();
-  if (tH == 0x0)
+  if (tH == 0x0){
     AliFatal("Can not find TreeH in folder");
-
+    return;
+  }
   tpc->SetTreeAddress();
 
   Stat_t ntracks = tH->GetEntries();
