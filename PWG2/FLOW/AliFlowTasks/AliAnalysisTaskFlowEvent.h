@@ -66,12 +66,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   AliCFManager* GetCFManager1()           {return this->fCFManager1; }
   void          SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
   AliCFManager* GetCFManager2()           {return this->fCFManager2; }
-  void          SetQAList1(TList* list)   {this->fQAInt = list; }
-  TList*        GetQAList1()              {return this->fQAInt; }
-  void          SetQAList2(TList* list)   {this->fQADiff = list; }
-  TList*        GetQAList2()              {return this->fQADiff; }
-  void          SetQAOn(Bool_t kt)        {this->fQA = kt; }
-  Bool_t        GetQAOn()                 {return this->fQA; }
+  TList*        GetQAList()              {return fQAList; }
+  void          SetQAOn(Bool_t kt)        {fQAon = kt; }
+  Bool_t        GetQAOn()                 {return fQAon; }
 
   // setters for common constants
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }
@@ -114,8 +111,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   AliFlowEventCuts* fCutsEvent;     //event cuts
   AliFlowTrackCuts* fCutsRP;        //cuts for RPs
   AliFlowTrackCuts* fCutsPOI;       //cuts for POIs
-  TList*        fQAInt;             // QA histogram list
-  TList*        fQADiff;            // QA histogram list
+  TList*        fQAList;             // QA histogram list
   Int_t         fMinMult;           // Minimum multiplicity from tracks selected using CORRFW
   Int_t         fMaxMult;           // Maximum multiplicity from tracks selected using CORRFW 
   Double_t      fMinA;              // Minimum of eta range for subevent A
@@ -123,7 +119,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t      fMinB;              // Minimum of eta range for subevent B
   Double_t      fMaxB;              // Maximum of eta range for subevent B
 
-  Bool_t fQA;                       // flag to set the filling of the QA hostograms
+  Bool_t fQAon;                       // flag to set the filling of the QA hostograms
   Bool_t fLoadCandidates;           // true if reciving candidates collection
 
   // setters for common constants

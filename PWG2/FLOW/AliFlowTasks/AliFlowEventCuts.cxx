@@ -22,6 +22,9 @@
 
 #include <limits.h>
 #include <float.h>
+#include <TList.h>
+#include <TH1F.h>
+#include <TBrowser.h>
 #include "TMath.h"
 #include "TNamed.h"
 #include "AliVVertex.h"
@@ -40,6 +43,7 @@ ClassImp(AliFlowEventCuts)
 //-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts():
   TNamed(),
+  fQA(NULL),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
@@ -82,6 +86,7 @@ AliFlowEventCuts::AliFlowEventCuts():
 //-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   TNamed(name, title),
+  fQA(NULL),
   fCutNumberOfTracks(kFALSE),
   fNumberOfTracksMax(INT_MAX),
   fNumberOfTracksMin(INT_MIN),
@@ -124,6 +129,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
 ////-----------------------------------------------------------------------
 AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   TNamed(that),
+  fQA(NULL),
   fCutNumberOfTracks(that.fCutNumberOfTracks),
   fNumberOfTracksMax(that.fNumberOfTracksMax),
   fNumberOfTracksMin(that.fNumberOfTracksMin),
@@ -160,6 +166,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutZDCtiming(that.fCutZDCtiming),
   fTrigAna()
 {
+  if (that.fQA) DefineHistograms();
   //copy constructor 
   if (that.fRefMultCuts)
     fRefMultCuts = new AliFlowTrackCuts(*(that.fRefMultCuts));
@@ -177,6 +184,7 @@ AliFlowEventCuts::~AliFlowEventCuts()
   //dtor
   delete fMeanPtCuts;
   delete fRefMultCuts;
+  if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
 ////-----------------------------------------------------------------------
@@ -184,6 +192,22 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
 {
   //assignment
   if (this==&that) return *this;
+
+  if (that.fQA)
+  {
+    if (fQA)
+    {
+      fQA->Delete();
+      delete fQA;
+    }
+    fQA = static_cast<TList*>(that.fQA->Clone());
+  }
+  else
+  {
+    fQA->Delete();
+    delete fQA;
+    fQA=NULL;
+  }
 
   fCutNumberOfTracks=that.fCutNumberOfTracks;
   fNumberOfTracksMax=that.fNumberOfTracksMax;
@@ -312,7 +336,9 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
   if (fCutPrimaryVertexZ)
   {
     if (pvtxz < fPrimaryVertexZmin || pvtxz >= fPrimaryVertexZmax)
+    {
       return kFALSE;
+    }
   }
   if (fCutTPCmultiplicityOutliers)
   {
@@ -417,3 +443,48 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
   }
   return refmult;
 }
+//_____________________________________________________________________________
+void AliFlowEventCuts::DefineHistograms()
+{
+  Bool_t adddirstatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  if (!fQA) fQA = new TList();
+  fQA->SetName(Form("%s QA",GetName()));
+  TList* before = new TList();
+  before->SetName("before");
+  TList* after = new TList();
+  after->SetName("after");
+  fQA->Add(before);
+  fQA->Add(after);
+  before->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.));
+  after->Add(new TH1F("zvertex",";z;event cout",500,-15.,15.));
+  TH1::AddDirectory(adddirstatus);
+}
+
+//---------------------------------------------------------------//
+void AliFlowEventCuts::Browse(TBrowser* b)
+{
+  //some browsing capabilities
+  if (fQA) b->Add(fQA);
+}
+
+//---------------------------------------------------------------//
+Long64_t AliFlowEventCuts::Merge(TCollection* list)
+{
+  //merge
+  Int_t number=0;
+  AliFlowEventCuts* obj;
+  if (!list) return 0;
+  if (list->GetEntries()<1) return 0;
+  TIter next(list);
+  while ( (obj = dynamic_cast<AliFlowEventCuts*>(next())) )
+  {
+    if (obj==this) continue;
+    TList listwrapper;
+    listwrapper.Add(obj->GetQA());
+    fQA->Merge(&listwrapper);
+    number++;
+  }
+  return number;
+}
+

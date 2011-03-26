@@ -39,8 +39,8 @@
 #include <TMatrix.h>
 #include "TParticle.h"
 #include "TH2F.h"
-#include "TObjArray.h"
 #include "AliStack.h"
+#include "TBrowser.h"
 #include "AliMCEvent.h"
 #include "AliESDEvent.h"
 #include "AliVParticle.h"
@@ -116,7 +116,8 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
   fParticleID(AliPID::kPion),
-  fParticleProbability(.9)
+  fParticleProbability(.9),
+  fAllowTOFmismatch(kFALSE)
 {
   //io constructor 
   for ( Int_t i=0; i<5; i++ ) { fProbBayes[i]=0.0; }
@@ -182,7 +183,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
   fParticleID(AliPID::kPion),
-  fParticleProbability(.9)
+  fParticleProbability(.9),
+  fAllowTOFmismatch(kFALSE)
 {
   //constructor 
   SetName(name);
@@ -256,7 +258,8 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
   fParticleID(that.fParticleID),
-  fParticleProbability(that.fParticleProbability)
+  fParticleProbability(that.fParticleProbability),
+  fAllowTOFmismatch(that.fAllowTOFmismatch)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -342,6 +345,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
 
   fParticleID=that.fParticleID;
   fParticleProbability=that.fParticleProbability;
+  fAllowTOFmismatch=that.fAllowTOFmismatch;
   memcpy(fProbBayes,that.fProbBayes,sizeof(fProbBayes));
 
   return *this;
@@ -354,6 +358,7 @@ AliFlowTrackCuts::~AliFlowTrackCuts()
   delete fAliESDtrackCuts;
   delete fTPCpidCuts;
   delete fTOFpidCuts;
+  if (fQA) { fQA->SetOwner(); fQA->Delete(); delete fQA; }
 }
 
 //-----------------------------------------------------------------------
@@ -623,10 +628,10 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
 {
   //check cuts on ESD tracks
   Bool_t pass=kTRUE;
+  const AliExternalTrackParam* pout = track->GetOuterParam();
+  const AliExternalTrackParam* pin = track->GetInnerParam();
   if (fIgnoreTPCzRange)
   {
-    const AliExternalTrackParam* pin = track->GetOuterParam();
-    const AliExternalTrackParam* pout = track->GetInnerParam();
     if (pin&&pout)
     {
       Double_t zin = pin->GetZ();
@@ -670,6 +675,13 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (!fAliESDtrackCuts->IsSelected(track)) pass=kFALSE;
   }
  
+  Double_t beta = GetBeta(track);
+  Double_t dedx = Getdedx(track);
+  if (fQA)
+  {
+    if (pass) QAbefore(0)->Fill(track->GetP(),beta);
+    if (pass) QAbefore(1)->Fill(pin->GetP(),dedx);
+  }
   if (fCutPID)
   {
     switch (fPIDsource)    
@@ -700,6 +712,11 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
         break;
     }
   }    
+  if (fQA)
+  {
+    if (pass) QAafter(0)->Fill(track->GetP(),beta);
+    if (pass) QAafter(1)->Fill(pin->GetP(),dedx);
+  }
 
   return pass;
 }
@@ -938,10 +955,26 @@ Bool_t AliFlowTrackCuts::FillFlowTrackVParticle(AliFlowTrack* flowtrack) const
       flowtrack->Set(fTrack);
       break;
   }
-  if (fParamType==kMC) flowtrack->SetSource(AliFlowTrack::kFromMC);
-  else if (dynamic_cast<AliESDtrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromESD);
-  else if (dynamic_cast<AliAODTrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromAOD);
-  else if (dynamic_cast<AliMCParticle*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromMC);
+  if (fParamType==kMC) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(fTrack->GetLabel());
+  }
+  else if (dynamic_cast<AliESDtrack*>(fTrack))
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromESD);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliAODTrack*>(fTrack)) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromAOD);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
   return kTRUE;
 }
 
@@ -1055,10 +1088,26 @@ AliFlowTrack* AliFlowTrackCuts::MakeFlowTrackVParticle() const
       flowtrack = new AliFlowTrack(fTrack);
       break;
   }
-  if (fParamType==kMC) flowtrack->SetSource(AliFlowTrack::kFromMC);
-  else if (dynamic_cast<AliESDtrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromESD);
-  else if (dynamic_cast<AliAODTrack*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromAOD);
-  else if (dynamic_cast<AliMCParticle*>(fTrack)) flowtrack->SetSource(AliFlowTrack::kFromMC);
+  if (fParamType==kMC) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(fTrack->GetLabel());
+  }
+  else if (dynamic_cast<AliESDtrack*>(fTrack))
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromESD);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliAODTrack*>(fTrack)) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromAOD);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
+  else if (dynamic_cast<AliMCParticle*>(fTrack)) 
+  {
+    flowtrack->SetSource(AliFlowTrack::kFromMC);
+    flowtrack->SetID(static_cast<AliVTrack*>(fTrack)->GetID());
+  }
   return flowtrack;
 }
 
@@ -1219,22 +1268,35 @@ void AliFlowTrackCuts::DefineHistograms()
   //define qa histograms
   if (fQA) return;
   
-  Int_t kPBins=60;
-  Double_t binsPDummy[kPBins+1];
-  binsPDummy[0]=0.0;
-  for(int i=1; i<=kPBins+1; i++)
+  Int_t kNbinsP=60;
+  Double_t binsP[kNbinsP+1];
+  binsP[0]=0.0;
+  for(int i=1; i<=kNbinsP+1; i++)
   {
-    if(binsPDummy[i-1]+0.05<1.01)
-      binsPDummy[i]=binsPDummy[i-1]+0.05;
+    if(binsP[i-1]+0.05<1.01)
+      binsP[i]=binsP[i-1]+0.05;
     else
-      binsPDummy[i]=binsPDummy[i-1]+0.1;
+      binsP[i]=binsP[i-1]+0.1;
   }
 
-  fQA=new TObjArray(4);
-  fQA->Add(new TH2F("after TOFpidQA betadiffVSp",";p;#beta-#beta_{particle}",100,0,5,500,-0.25,0.25));
-  fQA->Add(new TH2F("after TOFpidQA betaVSp",";p;#beta",kPBins,binsPDummy,1000,0.4,1.1));
-  fQA->Add(new TH2F("before TOFpidQA betadiffVSp",";p;#beta-#beta_{particle}",100,0,5,500,-0.25,0.25));
-  fQA->Add(new TH2F("before TOFpidQA betaVSp",";p;#beta",kPBins,binsPDummy,1000,0.4,1.1));
+  Bool_t adddirstatus = TH1::AddDirectoryStatus();
+  TH1::AddDirectory(kFALSE);
+  fQA=new TList();
+  fQA->SetOwner();
+  fQA->SetName(Form("%s QA",GetName()));
+  TList* before = new TList();
+  before->SetOwner();
+  before->SetName("before");
+  TList* after = new TList();
+  after->SetOwner();
+  after->SetName("after");
+  fQA->Add(before);
+  fQA->Add(after);
+  before->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1));
+  after->Add(new TH2F("TOFbeta",";p [GeV/c];#beta",kNbinsP,binsP,1000,0.4,1.1));
+  before->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500));
+  after->Add(new TH2F("TPCdedx",";p [GeV/c];dEdx",kNbinsP,binsP,500,0,500));
+  TH1::AddDirectory(adddirstatus);
 }
 
 //-----------------------------------------------------------------------
@@ -1314,8 +1376,9 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
                      (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
-                     (track->GetIntegratedLength() > 365) && 
-                    !(track->GetStatus() & AliESDtrack::kTOFmismatch);
+                     (track->GetIntegratedLength() > 365);
+                    
+  if ((track->GetStatus() & AliESDtrack::kTOFmismatch) && !fAllowTOFmismatch) return kFALSE;
 
   if (!goodtrack) return kFALSE;
   
@@ -1346,13 +1409,25 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
                (s[2]<-0.03) &&
                (s[4]>0.03) );
     case AliPID::kProton:
-      return ( (s[4]<0.015) && (s[2]>-0.015) &&
+      return ( (s[4]<0.015) && (s[4]>-0.015) &&
                (s[3]<-0.025) &&
                (s[2]<-0.025) );
     default:
       return kFALSE;
   }
   return kFALSE;
+}
+
+//-----------------------------------------------------------------------
+Float_t AliFlowTrackCuts::GetBeta(const AliESDtrack* track)
+{
+  //get beta
+  const Float_t c = 2.99792457999999984e-02;  
+  Float_t p = track->GetP();
+  Float_t l = track->GetIntegratedLength();  
+  Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
+  Float_t timeTOF = track->GetTOFsignal()- trackT0; 
+  return l/timeTOF/c;
 }
 
 //-----------------------------------------------------------------------
@@ -1363,17 +1438,14 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
                      (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
-                     (track->GetIntegratedLength() > 365) && 
-                    !(track->GetStatus() & AliESDtrack::kTOFmismatch);
+                     (track->GetIntegratedLength() > 365);
+
+  if ((track->GetStatus() & AliESDtrack::kTOFmismatch) && !fAllowTOFmismatch) return kFALSE;
 
   if (!goodtrack) return kFALSE;
   
-  const Float_t c = 2.99792457999999984e-02;  
-  Float_t p = track->GetP();
-  Float_t l = track->GetIntegratedLength();  
-  Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
-  Float_t timeTOF = track->GetTOFsignal()- trackT0; 
-  Float_t beta = l/timeTOF/c;
+  Float_t beta = GetBeta(track);
+
   Double_t integratedTimes[5] = {-1.0,-1.0,-1.0,-1.0,-1.0};
   track->GetIntegratedTimes(integratedTimes);
 
@@ -1395,6 +1467,9 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
   }
 
   //signal to cut on
+  const Float_t c = 2.99792457999999984e-02;  
+  Float_t l = track->GetIntegratedLength();  
+  Float_t p = track->GetP();  
   Float_t betahypothesis = l/integratedTimes[pid]/c;
   Float_t betadiff = beta-betahypothesis;
 
@@ -1405,18 +1480,6 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
   Float_t max = (*fTOFpidCuts)(2,col);
 
   Bool_t pass = (betadiff>min && betadiff<max);
-  
-  if (fQA)
-  {
-    TH2F* qahistbetadiff = static_cast<TH2F*>(fQA->At(0));
-    TH2F* qahistbeta = static_cast<TH2F*>(fQA->At(1));
-    TH2F* qahistbetadiffbefore = static_cast<TH2F*>(fQA->At(2));
-    TH2F* qahistbetabefore = static_cast<TH2F*>(fQA->At(3));
-    if (pass&&qahistbetadiff) qahistbetadiff->Fill(p,betadiff);
-    if (pass&&qahistbeta) qahistbeta->Fill(p,beta);
-    if (qahistbetadiffbefore) qahistbetadiffbefore->Fill(p,betadiff);
-    if (qahistbetabefore) qahistbetabefore->Fill(p,beta);
-  }
   
   return pass;
 }
@@ -1448,6 +1511,13 @@ Bool_t AliFlowTrackCuts::PassesTPCpidCut(const AliESDtrack* track) const
   }
   if (probablity >= fParticleProbability) return kTRUE;
   return kFALSE;
+}
+
+//-----------------------------------------------------------------------
+Float_t AliFlowTrackCuts::Getdedx(const AliESDtrack* track)
+{
+  //get TPC dedx
+  return track->GetTPCsignal();
 }
 
 //-----------------------------------------------------------------------
@@ -2232,4 +2302,30 @@ Double_t AliFlowTrackCuts::GetPmdPhi(Float_t xPos, Float_t yPos)
   phi = phi*3.14159/180.;
   return   phi;
 }
+
 //---------------------------------------------------------------//
+void AliFlowTrackCuts::Browse(TBrowser* b)
+{
+  //some browsing capabilities
+  if (fQA) b->Add(fQA);
+}
+
+//---------------------------------------------------------------//
+Long64_t AliFlowTrackCuts::Merge(TCollection* list)
+{
+  //merge
+  Int_t number=0;
+  AliFlowTrackCuts* obj;
+  if (!list) return 0;
+  if (list->GetEntries()<1) return 0;
+  TIter next(list);
+  while ( (obj = dynamic_cast<AliFlowTrackCuts*>(next())) )
+  {
+    if (obj==this) continue;
+    TList listwrapper;
+    listwrapper.Add(obj->GetQA());
+    fQA->Merge(&listwrapper);
+    number++;
+  }
+  return number;
+}
