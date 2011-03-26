@@ -242,7 +242,6 @@ TLinearFitter *AliTPCTempMap::GetLinearFitter(Int_t type, Int_t side, UInt_t tim
   fitter->Eval();
   //fitter->EvalRobust(0.9); // Evaluates fitter
   
-  delete [] x;
 
   return fitter; 
 
