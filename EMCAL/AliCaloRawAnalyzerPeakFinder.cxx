@@ -251,24 +251,27 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
   //Loading of Peak-Finder  vectors from the 
   //Offline Condition Database  (OCDB)
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("EMCAL/Calib/PeakFinder/");
-  cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
-  entry->PrintMetaData();
-
-  if( entry != 0 )
-    {
-      AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
-      if( pfv == 0 )
-	{
-	  cout << __FILE__ << ":" << __LINE__ << "_ ERRROR " << endl;
-	}
   
-      CopyVectors( pfv );
-      
-      if( pfv != 0 )
-	{
-	  fIsInitialized = true;
-	}
+  if( entry != 0 )
+  {
+    
+    cout << __FILE__ << ":" << __LINE__ << ": Printing metadata !! " << endl;
+    entry->PrintMetaData();
+
+    AliCaloPeakFinderVectors  *pfv = (AliCaloPeakFinderVectors *)entry->GetObject(); 
+    if( pfv == 0 )
+    {
+      cout << __FILE__ << ":" << __LINE__ << "_ ERRROR " << endl;
     }
+    
+    CopyVectors( pfv );
+    
+    if( pfv != 0 )
+    {
+      fIsInitialized = true;
+    }
+  }
+  
 }
 
 
@@ -322,6 +325,10 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
 	      fclose (fp);
 	      fclose (fpc);
 	    }
+      
+      delete fp;
+      delete fpc;
+      
     }
   }
 }
