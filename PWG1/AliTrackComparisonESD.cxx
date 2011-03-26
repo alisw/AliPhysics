@@ -36,14 +36,16 @@
 #include "AliESDInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliEMCALGeometry.h"
+#include "AliCalorimeterUtils.h"
+#include "AliESDCaloCells.h"
 #include "TFile.h"
 #include "TSystem.h"
 #include "TTimeStamp.h"
 #include "AliHMPIDParam.h"
 //#include <TGeoHMatrix>
 #include "AliGeomManager.h"
-//#include "AliCDBManager.h"
-//#include "AliGRPManager.h"
+#include "AliCDBManager.h"
+#include "AliGRPManager.h"
 
 ClassImp(AliTrackComparisonESD)
 
@@ -55,15 +57,14 @@ AliTrackComparisonESD::AliTrackComparisonESD()
    fESDfriend(0),
    fCurrentRun(-1),
    fDebugOutputPath(""),
-   //   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
+   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
    fOutput(0),
    fEMCAL(0),
    fHMPID(0),
    fTOF(0),
    fGeom(0),
-   fCutX(10),
-   fCutY(10),
-   fCutZ(10)
+   fCutR(20),
+   fCaloUtil(0)
 {
   //
   // default constructor
@@ -80,15 +81,14 @@ AliTrackComparisonESD::AliTrackComparisonESD(const char *name)
    fESDfriend(0),
    fCurrentRun(-1),
    fDebugOutputPath(""),
-   //   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
+   fOcdbPath("local:///lustre/alice/alien/alice/data/2010/OCDB"),
    fOutput(0),
    fEMCAL(0),
    fHMPID(0),
    fTOF(0),
    fGeom(0),
-   fCutX(10),
-   fCutY(10),
-   fCutZ(10)
+   fCutR(20),
+   fCaloUtil(0)
 {
   //
   // Constructor
@@ -105,10 +105,13 @@ AliTrackComparisonESD::~AliTrackComparisonESD() {
   // destructor
   //
   printf("AliTrackComparisonESD::~AliTrackComparisonESD");
-  if(fOutput) delete fOutput; fOutput=0;
+
   if(fEMCAL)  delete fEMCAL;  fEMCAL=0;
   if(fHMPID)  delete fHMPID;  fHMPID=0;
   if(fTOF)    delete fTOF;    fTOF=0;
+  if(fOutput) fOutput->Delete();
+  //if(fOutput) delete fOutput;
+  if(fCaloUtil) delete fCaloUtil; fCaloUtil=0;
   for(Int_t i=0; i<4; i++)
     {
       if(fTransMatrix[i]) {delete fTransMatrix[i];fTransMatrix[i]=0;}
@@ -189,6 +192,10 @@ void AliTrackComparisonESD::CreateOutputObjects() {
     }
 
 
+  fCaloUtil = new AliCalorimeterUtils();
+  InitCaloUtil();
+
+
   PostData(0,fOutput);
 }
 
@@ -207,31 +214,31 @@ Bool_t AliTrackComparisonESD::SetupEvent() {
   else
     fCurrentRun = fESD->GetRunNumber();
 
-//   // OCDB
-//   printf("setting run to %d\n",fCurrentRun);
-//   AliCDBManager::Instance()->SetDefaultStorage(fOcdbPath.Data());
-//   AliCDBManager::Instance()->SetRun(fCurrentRun); 
+  // OCDB
+  printf("setting run to %d\n",fCurrentRun);
+  AliCDBManager::Instance()->SetDefaultStorage(fOcdbPath.Data());
+  AliCDBManager::Instance()->SetRun(fCurrentRun); 
 
-//   // magnetic field
-//   if ( !TGeoGlobalMagField::Instance()->GetField() ) {
-//     printf("Loading field map...\n");
-//     AliGRPManager grpMan;
-//     if( !grpMan.ReadGRPEntry() ) { 
-//       printf("Cannot get GRP entry\n"); 
-//       return kFALSE;
-//     }
-//     if( !grpMan.SetMagField() ) { 
-//       printf("Problem with magnetic field setup\n"); 
-//       return kFALSE;
-//     }
-//   }
+  // magnetic field
+  if ( !TGeoGlobalMagField::Instance()->GetField() ) {
+    printf("Loading field map...\n");
+    AliGRPManager grpMan;
+    if( !grpMan.ReadGRPEntry() ) { 
+      printf("Cannot get GRP entry\n"); 
+      return kFALSE;
+    }
+    if( !grpMan.SetMagField() ) { 
+      printf("Problem with magnetic field setup\n"); 
+      return kFALSE;
+    }
+  }
 
-//   // geometry
-//   printf("Loading geometry...\n");
-//   AliGeomManager::LoadGeometry();
-//   if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF PHOS EMCAL HMPID") ) {
-//     //printf("Problem with align objects\n");
-//   }
+  // geometry
+  printf("Loading geometry...\n");
+  AliGeomManager::LoadGeometry();
+  if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC TRD TOF PHOS EMCAL HMPID") ) {
+    //printf("Problem with align objects\n");
+  }
   fGeom =  AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");
   printf("%s\n",fGeom->GetName());
   if(!fGeom)
@@ -263,7 +270,7 @@ void AliTrackComparisonESD::Exec(Option_t *) {
 
 
   if ( fESDfriend->GetNumberOfTracks() <=0 ) {
-    //Printf("ERROR: fESDfriend Tracks not available");
+    Printf("ERROR: fESDfriend Tracks not available");
     return;
   }
 
@@ -302,7 +309,7 @@ void AliTrackComparisonESD::Exec(Option_t *) {
       if(!friendTrack) continue;
       //printf(" --- %d < %d || %p | %p -- %p \n", itr, fESDfriend->GetNumberOfTracks(), track, fESDfriend, friendTrack);
       ProcessTOF(track,friendTrack,vPos);
-      if(nclusters>0)ProcessEMCAL(track,friendTrack,clusters,vPos);
+      if(nclusters>0)ProcessEMCAL(track,friendTrack,clusters,cells,vPos);
       ProcessHMPID(track,friendTrack,vPos);
     }//End of track loop
 
@@ -332,18 +339,7 @@ void AliTrackComparisonESD::ProcessTOF(AliESDtrack *track, AliESDfriendTrack *fr
   //
   Int_t counter=0;
   for (Int_t ipoint=0;ipoint<npoints;ipoint++){
-    //cout<<"(npoints,ipoint) = ("<<npoints<<","<<ipoint<<")"<<endl;
     if(!points->GetPoint(point,ipoint)) continue;
-    //Float_t xyz[3];
-    //point.GetXYZ(xyz);
-    //Float_t r=10;
-    //Float_t r=TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
-
-    //printf("fVolumeID %d | LayerID %d\n",point.GetVolumeID(),AliGeomManager::VolUIDToLayer(point.GetVolumeID()));
-
-    //if (r<350) continue;
-    //if (r>400) continue;
-    //cout<<"r="<<r<<endl;
     if(AliGeomManager::VolUIDToLayer(point.GetVolumeID())==AliGeomManager::kTOF)
       {
 	counter++;
@@ -351,13 +347,17 @@ void AliTrackComparisonESD::ProcessTOF(AliESDtrack *track, AliESDfriendTrack *fr
       }
   }
   //Printf("# of track points in TOF: %d!\n",counter);
+  return;
 }
 
 //________________________________________________________________________
-void AliTrackComparisonESD::ProcessEMCAL(AliESDtrack *track, AliESDfriendTrack *friendTrack, TRefArray *clusters, Double_t *vPos){
+void AliTrackComparisonESD::ProcessEMCAL(AliESDtrack *track, AliESDfriendTrack *friendTrack, TRefArray *clusters, AliESDCaloCells *cells, Double_t *vPos){
   if(clusters->GetEntriesFast()==0) return;
 
   Double_t rEMCal = 438;
+  Double_t tmp=fCutR;
+  Int_t clsIndex=-1;
+  TVector3 clsV,trkV;
 
   AliExternalTrackParam *pTPC = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
   if(!pTPC) return;
@@ -368,6 +368,11 @@ void AliTrackComparisonESD::ProcessEMCAL(AliESDtrack *track, AliESDfriendTrack *
   if(!AliTracker::PropagateTrackToBxByBz(pTest, rEMCal , track->GetMass(), 1 , kFALSE,0.99,-1)) return;
   if(!pTest->GetXYZ(trPos)) return;
 
+  Double_t trPhi = TMath::ATan2(trPos[1],trPos[0])*TMath::RadToDeg();
+  //printf("trPhi = %5.3f | eta = %5.3f\n",trPhi,pTest->Eta());
+  if(trPhi<80 || trPhi>120) return;
+  if(TMath::Abs(pTest->Eta())>0.7) return;
+
   AliExternalTrackParam *p0=0;
   AliTrackPoint *p1=new AliTrackPoint();
   Int_t nclusters = clusters->GetEntries();
@@ -375,18 +380,37 @@ void AliTrackComparisonESD::ProcessEMCAL(AliESDtrack *track, AliESDfriendTrack *
     {
       AliESDCaloCluster *cluster = (AliESDCaloCluster*) clusters->At(icl);
       if(!cluster) continue;
+      if(fCaloUtil->ClusterContainsBadChannel("EMCAL",cluster->GetCellsAbsId(),cluster->GetNCells()) ) continue;
+      if(!fCaloUtil->CheckCellFiducialRegion(cluster,cells,NULL,0) ) continue;
+
       cluster->GetPosition(clPos);
-      if( TMath::Abs(clPos[0]-trPos[0])>fCutX || TMath::Abs(clPos[1]-trPos[1])>fCutY || TMath::Abs(clPos[2]-trPos[2]>fCutZ) ) continue;
-      
       p0 = pTPC;
-      //printf("cluster pos: (%5.3f,%5.3f,%5.3f,%5.3f)\n",clPos[0],clPos[1],clPos[2],TMath::Sqrt(clPos[0]*clPos[0]+clPos[1]*clPos[1]));
-      p1->SetXYZ(clPos[0],clPos[1],clPos[2],0);
-      //printf("Found EMCAL point!\n");
-      fEMCAL->AddTracks(p0,p1,track->GetMass(),cluster->E(),vPos);
+      clsV.SetXYZ(clPos[0],clPos[1],clPos[2]);
+      Double_t alpha = ((int)(clsV.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+      clsV.RotateZ(-alpha);
+      p0->Rotate(alpha);
+      if(!AliTrackerBase::PropagateTrackToBxByBz(p0,clsV.X(), track->GetMass(), 1,kFALSE,0.99,-1)) continue;
+      trkV.SetXYZ(p0->GetX(),p0->GetY(),p0->GetZ());
+      Double_t dist = TMath::Sqrt( TMath::Power(clsV.X()-trkV.X(),2)+TMath::Power(clsV.Y()-trkV.Y(),2)+TMath::Power(clsV.Z()-trkV.Z(),2) );
+      if(dist<tmp)
+	{                
+	  tmp=dist;
+	  clsIndex=icl;
+	}
     }
+      
+  if(clsIndex==-1) return;
+  AliESDCaloCluster *cluster = (AliESDCaloCluster*) clusters->At(clsIndex);
+  cluster->GetPosition(clPos);
+  //printf("cluster pos: (%5.3f,%5.3f,%5.3f,%5.3f)\n",clPos[0],clPos[1],clPos[2],TMath::Sqrt(clPos[0]*clPos[0]+clPos[1]*clPos[1]));
+  p1->SetXYZ(clPos[0],clPos[1],clPos[2],0);
+  //printf("Found EMCAL point!\n");
+  fEMCAL->AddTracks(pTPC,p1,track->GetMass(),track->P(),vPos);
+
 
   delete pTest;
   delete p1;
+  return;
 }
 
 //________________________________________________________________________
@@ -416,6 +440,7 @@ void AliTrackComparisonESD::ProcessHMPID(AliESDtrack *track, AliESDfriendTrack *
   //printf("Found HMPID point!\n");
   fHMPID->AddTracks(pTPC,p1,track->GetMass(),pHmp3,vPos);
   delete p1;
+  return;
 }
 
 
@@ -504,4 +529,54 @@ void AliTrackComparisonESD::RegisterDebugOutput(){
   //
   //
   //
+}
+
+//________________________________________________________________________
+void AliTrackComparisonESD::InitCaloUtil(){
+  cout<<"Initialize bad channel map!"<<endl;
+  fCaloUtil->InitEMCALGeometry();
+  fCaloUtil->SetNumberOfCellsFromEMCALBorder(1);
+  //fCaloUtil->SetNumberOfCellsFromPHOSBorder(2);
+  fCaloUtil->SwitchOnNoFiducialBorderInEMCALEta0();
+  fCaloUtil->SwitchOnBadChannelsRemoval();  
+  // SM0
+  fCaloUtil->SetEMCALChannelStatus(0,3,13);
+  fCaloUtil->SetEMCALChannelStatus(0,44,1); 
+  fCaloUtil->SetEMCALChannelStatus(0,3,13);
+  fCaloUtil->SetEMCALChannelStatus(0,20,7);  
+  fCaloUtil->SetEMCALChannelStatus(0,38,2);
+  // SM1
+  fCaloUtil->SetEMCALChannelStatus(1,4,7);
+  fCaloUtil->SetEMCALChannelStatus(1,4,13);  
+  fCaloUtil->SetEMCALChannelStatus(1,9,20);
+  fCaloUtil->SetEMCALChannelStatus(1,14,15);
+  fCaloUtil->SetEMCALChannelStatus(1,23,16);
+  fCaloUtil->SetEMCALChannelStatus(1,32,23);
+  fCaloUtil->SetEMCALChannelStatus(1,37,5);
+  fCaloUtil->SetEMCALChannelStatus(1,40,1);  
+  fCaloUtil->SetEMCALChannelStatus(1,40,2);
+  fCaloUtil->SetEMCALChannelStatus(1,40,5);
+  fCaloUtil->SetEMCALChannelStatus(1,41,0);  
+  fCaloUtil->SetEMCALChannelStatus(1,41,1);
+  fCaloUtil->SetEMCALChannelStatus(1,41,2); 
+  fCaloUtil->SetEMCALChannelStatus(1,41,4);
+  // SM2
+  fCaloUtil->SetEMCALChannelStatus(2,14,15);
+  fCaloUtil->SetEMCALChannelStatus(2,18,16);
+  fCaloUtil->SetEMCALChannelStatus(2,18,17);
+  fCaloUtil->SetEMCALChannelStatus(2,18,18);
+  fCaloUtil->SetEMCALChannelStatus(2,18,20);
+  fCaloUtil->SetEMCALChannelStatus(2,18,21);
+  fCaloUtil->SetEMCALChannelStatus(2,18,23);
+  fCaloUtil->SetEMCALChannelStatus(2,19,16);
+  fCaloUtil->SetEMCALChannelStatus(2,19,17);
+  fCaloUtil->SetEMCALChannelStatus(2,19,19);
+  fCaloUtil->SetEMCALChannelStatus(2,19,20);
+  fCaloUtil->SetEMCALChannelStatus(2,19,21);
+  fCaloUtil->SetEMCALChannelStatus(2,19,22);
+  //SM3
+  fCaloUtil->SetEMCALChannelStatus(3,4,7);
+  
+  fCaloUtil->Print("");
+  cout<<"Done initialization!"<<endl;
 }
