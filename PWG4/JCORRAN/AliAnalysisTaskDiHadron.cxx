@@ -241,81 +241,81 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistPt[imult][imc]->GetYaxis()->SetTitle("Counts");
       fOutput->Add(fHistPt[imult][imc]);
 
- //Histograms that are independent of the trigger
-      sprintf(histname,"fHistPtEff_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T} Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      //Histograms that are independent of the trigger
+      snprintf(histname,buffersize,"fHistPtEff_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T} Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPtEff[imult][imc]=new TH1F(histname,histtitle,1000,0,100);
       fHistPtEff[imult][imc]->Sumw2();
       fHistPtEff[imult][imc]->GetXaxis()->SetTitle("p_{T}");
       fHistPtEff[imult][imc]->GetYaxis()->SetTitle("Counts");
       fOutput->Add(fHistPtEff[imult][imc]);
       
-      sprintf(histname,"fHistPhi_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"#phi Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPhi_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"#phi Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPhi[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,nptbins,fPtAssocArray);
       fHistPhi[imult][imc]->Sumw2();
       fHistPhi[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhi[imult][imc]->GetYaxis()->SetTitle("P_{T}");
       fOutput->Add(fHistPhi[imult][imc]);
       
-      sprintf(histname,"fHistPhiPt_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T} weighted #phi Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPhiPt_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T} weighted #phi Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPhiPt[imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,nptbins,fPtAssocArray);
       fHistPhiPt[imult][imc]->Sumw2();
       fHistPhiPt[imult][imc]->GetXaxis()->SetTitle("#phi");
       fHistPhiPt[imult][imc]->GetYaxis()->SetTitle("P_{T}");
       fOutput->Add(fHistPhiPt[imult][imc]);
       
-      sprintf(histname,"fHistEta_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"#eta Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistEta_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"#eta Distribution of Tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistEta[imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,nptbins,fPtAssocArray);
       fHistEta[imult][imc]->Sumw2();
       fHistEta[imult][imc]->GetXaxis()->SetTitle("#eta");
       fHistEta[imult][imc]->GetYaxis()->SetTitle("P_{T}");
       fOutput->Add(fHistEta[imult][imc]);
       
-      sprintf(histname,"fHistEtaPt_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T} weighted #eta Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistEtaPt_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T} weighted #eta Distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistEtaPt[imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,nptbins,fPtAssocArray);
       fHistEtaPt[imult][imc]->Sumw2();
       fHistEtaPt[imult][imc]->GetXaxis()->SetTitle("#eta");
       fHistEtaPt[imult][imc]->GetYaxis()->SetTitle("P_{T}");
       fOutput->Add(fHistEtaPt[imult][imc]);
       
-      sprintf(histname,"fHistNEvents_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"Number of Events and Number Passing Cuts %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistNEvents_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"Number of Events and Number Passing Cuts %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistNEvents[imult][imc]=new TH1F(histname,histtitle,2,-0.5,1.5);
       fHistNEvents[imult][imc]->Sumw2();
       fHistNEvents[imult][imc]->GetXaxis()->SetTitle("Events,Passing Cuts");
       fHistNEvents[imult][imc]->GetYaxis()->SetTitle("Number of Events");
       fOutput->Add(fHistNEvents[imult][imc]);
       
-      sprintf(histname,"fHistNTrigger_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"Number of Triggers %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistNTrigger_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"Number of Triggers %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistNTrigger[imult][imc]=new TH1F(histname,histtitle,fNTPtBins,-0.5,fNTPtBins-0.5);
       fHistNTrigger[imult][imc]->Sumw2();
       fHistNTrigger[imult][imc]->GetXaxis()->SetTitle("Trigger Number");
       fHistNTrigger[imult][imc]->GetYaxis()->SetTitle("Number of Triggers");
       fOutput->Add(fHistNTrigger[imult][imc]);
       
-      sprintf(histname,"fHistNTriggerPt_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T} Weighted Number of Triggers %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistNTriggerPt_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T} Weighted Number of Triggers %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistNTriggerPt[imult][imc]=new TH1F(histname,histtitle,fNTPtBins,-0.5,fNTPtBins-0.5);
       fHistNTriggerPt[imult][imc]->Sumw2();
       fHistNTriggerPt[imult][imc]->GetXaxis()->SetTitle("Trigger Number");
       fHistNTriggerPt[imult][imc]->GetYaxis()->SetTitle("Number of Triggers");
       fOutput->Add(fHistNTriggerPt[imult][imc]);
       
-      sprintf(histname,"fHistNMix_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"Number of Mixed Events %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistNMix_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"Number of Mixed Events %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistNMix[imult][imc]=new TH1F(histname,histtitle,fNTPtBins,-0.5,fNTPtBins-0.5);
       fHistNMix[imult][imc]->Sumw2();
       fHistNMix[imult][imc]->GetXaxis()->SetTitle("Trigger Number");
       fHistNMix[imult][imc]->GetYaxis()->SetTitle("Number of Mixed Events");
       fOutput->Add(fHistNMix[imult][imc]);
       
-      sprintf(histname,"fHistPhiEta_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"#phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPhiEta_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"#phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPhiEta[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,nptbins,fPtAssocArray);
       fHistPhiEta[imult][imc]->Sumw2();
       fHistPhiEta[imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -323,8 +323,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistPhiEta[imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistPhiEta[imult][imc]);
       
-      sprintf(histname,"fHistPhiEtaPt_C%d%s",imult,cmc1[imc]);
-      sprintf(histtitle,"Pt Weighted #phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPhiEtaPt_C%d%s",imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"Pt Weighted #phi-#eta distribution of tracks %dMult%d%s",fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPhiEtaPt[imult][imc]=new TH3F(histname, histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,nptbins,fPtAssocArray);
       fHistPhiEtaPt[imult][imc]->Sumw2();
       fHistPhiEtaPt[imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -343,56 +343,56 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	
 	//Ones with no centrality binning
 	if(imult==0){
-	  sprintf(histname,"fHistMultTrig_P%d%s",i,cmc1[imc]);
-	  sprintf(histtitle,"Distrubition of number of tracks in triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistMultTrig_P%d%s",i,cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Distrubition of number of tracks in triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
 	  fHistMultTrig[i][imc]=new TH1F(histname,histtitle,2000,0,2000);
 	  fHistMultTrig[i][imc]->Sumw2();
 	  fHistMultTrig[i][imc]->GetXaxis()->SetTitle("Number of Tracks");
 	  fHistMultTrig[i][imc]->GetYaxis()->SetTitle("Counts");
 	  fOutput->Add(fHistMultTrig[i][imc]);
 	}
-	sprintf(histname,"fHistPtTrig_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"P_{T} distribution in triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistPtTrig_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"P_{T} distribution in triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistPtTrig[i][imult][imc]=new TH1F(histname,histtitle,nptbins,fPtAssocArray);
 	fHistPtTrig[i][imult][imc]->Sumw2();
 	fHistPtTrig[i][imult][imc]->GetXaxis()->SetTitle("p_{T}");
 	fHistPtTrig[i][imult][imc]->GetYaxis()->SetTitle("Counts");
 	fOutput->Add(fHistPtTrig[i][imult][imc]);
 	
-	sprintf(histname,"fHistPhiTrig_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistPhiTrig_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistPhiTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	fHistPhiTrig[i][imult][imc]->Sumw2();
 	fHistPhiTrig[i][imult][imc]->GetXaxis()->SetTitle("#phi");
 	fHistPhiTrig[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
 	fOutput->Add(fHistPhiTrig[i][imult][imc]);
 	
-	sprintf(histname,"fHistPhiTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"P_{T} Weighted Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistPhiTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"P_{T} Weighted Phi Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
 	fHistPhiTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	fHistPhiTrigPt[i][imult][imc]->Sumw2();
 	fHistPhiTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
 	fHistPhiTrigPt[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
 	fOutput->Add(fHistPhiTrigPt[i][imult][imc]);
 	
-	sprintf(histname,"fHistEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistEtaTrig[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	fHistEtaTrig[i][imult][imc]->Sumw2();
 	fHistEtaTrig[i][imult][imc]->GetXaxis()->SetTitle("#eta");
 	fHistEtaTrig[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
 	fOutput->Add(fHistEtaTrig[i][imult][imc]);
 	
-	sprintf(histname,"fHistEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"P_{T} Weighted Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"P_{T} Weighted Eta Distribution of triggered events with %3.1f<p_{T}^{Trig}<%3.1f%s",fPtTrigArray[i],fPtTrigArray[i+1],cmc2[imc]);
 	fHistEtaTrigPt[i][imult][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	fHistEtaTrigPt[i][imult][imc]->Sumw2();
 	fHistEtaTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#eta");
 	fHistEtaTrigPt[i][imult][imc]->GetYaxis()->SetTitle("p_{T}");
 	fOutput->Add(fHistEtaTrigPt[i][imult][imc]);
 	
-	sprintf(histname,"fHistPhiEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"#phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistPhiEtaTrig_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"#phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistPhiEtaTrig[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
 	fHistPhiEtaTrig[i][imult][imc]->Sumw2();
 	fHistPhiEtaTrig[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -400,29 +400,29 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	fHistPhiEtaTrig[i][imult][imc]->GetZaxis()->SetTitle("p_{T}");
 	fOutput->Add(fHistPhiEtaTrig[i][imult][imc]);
 
-	sprintf(histname,"fHistXEN_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Near-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistXEN_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Near-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistXEN[i][imult][imc]=new TH1F(histname,histtitle,fNXEBins,fXEArray);
 	fHistXEN[i][imult][imc]->Sumw2();
 	fHistXEN[i][imult][imc]->GetXaxis()->SetTitle("X_{E}");
 	fOutput->Add(fHistXEN[i][imult][imc]);
 
-	sprintf(histname,"fHistXENMixed_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Mixed Near-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistXENMixed_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Mixed Near-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistXENMix[i][imult][imc]=new TH1F(histname,histtitle,fNXEBins,fXEArray);
 	fHistXENMix[i][imult][imc]->Sumw2();
 	fHistXENMix[i][imult][imc]->GetXaxis()->SetTitle("X_{E}");
 	fOutput->Add(fHistXENMix[i][imult][imc]);
 	
-	sprintf(histname,"fHistXEA_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Away-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistXEA_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Away-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistXEA[i][imult][imc]=new TH1F(histname,histtitle,fNXEBins,fXEArray);
 	fHistXEA[i][imult][imc]->Sumw2();
 	fHistXEA[i][imult][imc]->GetXaxis()->SetTitle("X_{E}");
 	fOutput->Add(fHistXEA[i][imult][imc]);
 
-	sprintf(histname,"fHistXEAMixed_P%d_C%d%s",i,imult,cmc1[imc]);
-	sprintf(histtitle,"Mixed Away-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+	snprintf(histname,buffersize,"fHistXEAMixed_P%d_C%d%s",i,imult,cmc1[imc]);
+	snprintf(histtitle,buffersize,"Mixed Away-Side X_{E} distribution for %3.1f<p_{T}^{Lead}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
 	fHistXEAMix[i][imult][imc]=new TH1F(histname,histtitle,fNXEBins,fXEArray);
 	fHistXEAMix[i][imult][imc]->Sumw2();
 	fHistXEAMix[i][imult][imc]->GetXaxis()->SetTitle("X_{E}");
@@ -430,32 +430,32 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 
 	//signloop
 	for(int isign=0;isign<3;isign++){
-	  sprintf(histname,"fHistDeltaPhi_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"#Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhi_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"#Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaPhi[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhi[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhi[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhi[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaPhi[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaPhiPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"P_{T} Weighted #Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"P_{T} Weighted #Delta#phi Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaPhiPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhiPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaPhiPt[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaPhiMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"#Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"#Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaPhiMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
 	  fHistDeltaPhiMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaPhiMix[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaPhiMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"P_{T} Weighted #Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"P_{T} Weighted #Delta#phi Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinPhi,phiArray,lptbins,fPtAssocArray);
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaPhiMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#phi");
@@ -463,32 +463,32 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  fOutput->Add(fHistDeltaPhiMixPt[i][imult][isign][imc]);
 	  
 	  //etaNear
-	  sprintf(histname,"fHistDeltaEtaN_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Near-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaN_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Near-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaN[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaN[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaN[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaN[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaN[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaNPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Near-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaNPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Near-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaNPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaNPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaNPt[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaNMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Near-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaNMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Near-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaNMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaNMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaNMix[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaNMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Near-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaNMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Near-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaNMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
@@ -496,32 +496,32 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 	  fOutput->Add(fHistDeltaEtaNMixPt[i][imult][isign][imc]);
 	  
 	  //Away Eta
-	  sprintf(histname,"fHistDeltaEtaA_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Away-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaA_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Away-Side #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaA[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaA[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaA[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaA[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaA[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaAPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Away-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaAPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Away-Side P_{T} Weighted #Delta#eta Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaAPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaAPt[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaAPt[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaAMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Away-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaAMix_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Away-Side #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaAMix[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
 	  fHistDeltaEtaAMix[i][imult][isign][imc]->GetYaxis()->SetTitle("p_{T}");
 	  fOutput->Add(fHistDeltaEtaAMix[i][imult][isign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaEtaAMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
-	  sprintf(histtitle,"Away-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaAMixPt_P%d_C%d%s%s",i,imult,sign1[isign],cmc1[imc]);
+	  snprintf(histtitle,buffersize,"Away-Side P_{T} Weighted #Delta#eta Mixed Event Distribution with %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],sign2[isign],cmc2[imc]);
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]=new TH2F(histname,histtitle,fnBinEta,etaArray,lptbins,fPtAssocArray);
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]->Sumw2();
 	  fHistDeltaEtaAMixPt[i][imult][isign][imc]->GetXaxis()->SetTitle("#Delta#eta");
@@ -531,8 +531,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
 
       //====
 	}//end isignloop
-      sprintf(histname,"fHistDeltaPhiEta_P%d_C%d%s",i,imult,cmc1[imc]);
-      sprintf(histtitle,"#Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistDeltaPhiEta_P%d_C%d%s",i,imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"#Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistDeltaPhiEta[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEta[i][imult][imc]->Sumw2();
       fHistDeltaPhiEta[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -540,8 +540,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistDeltaPhiEta[i][imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistDeltaPhiEta[i][imult][imc]);
       
-      sprintf(histname,"fHistDeltaPhiEtaMix_P%d_C%d%s",i,imult,cmc1[imc]);
-      sprintf(histtitle,"#Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistDeltaPhiEtaMix_P%d_C%d%s",i,imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"#Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistDeltaPhiEtaMix[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaMix[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaMix[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -549,8 +549,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistDeltaPhiEtaMix[i][imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistDeltaPhiEtaMix[i][imult][imc]);
       
-      sprintf(histname,"fHistPhiEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T}-Weighted #phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistPhiEtaTrigPt_P%d_C%d%s",i,imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T}-Weighted #phi-#eta distribution in triggered events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistPhiEtaTrigPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistPhiEtaTrigPt[i][imult][imc]->Sumw2();
       fHistPhiEtaTrigPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -558,8 +558,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistPhiEtaTrigPt[i][imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistPhiEtaTrigPt[i][imult][imc]);
     
-      sprintf(histname,"fHistDeltaPhiEtaPt_P%d_C%d%s",i,imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T}-Weighted #Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistDeltaPhiEtaPt_P%d_C%d%s",i,imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T}-Weighted #Delta#phi-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistDeltaPhiEtaPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaPt[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -567,8 +567,8 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       fHistDeltaPhiEtaPt[i][imult][imc]->GetZaxis()->SetTitle("p_{T}");
       fOutput->Add(fHistDeltaPhiEtaPt[i][imult][imc]);
       
-      sprintf(histname,"fHistDeltaPhiEtaMixPt_P%d_C%d%s",i,imult,cmc1[imc]);
-      sprintf(histtitle,"P_{T}-Weighted #Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
+      snprintf(histname,buffersize,"fHistDeltaPhiEtaMixPt_P%d_C%d%s",i,imult,cmc1[imc]);
+      snprintf(histtitle,buffersize,"P_{T}-Weighted #Delta#phi-#Delta#eta from Mixed Events %3.1f<p_{T}^{Trig}<%3.1f %dMult%d%s",fPtTrigArray[i],fPtTrigArray[i+1],fCentArrayMin[imult],fCentArrayMax[imult],cmc2[imc]);
       fHistDeltaPhiEtaMixPt[i][imult][imc]=new TH3F(histname,histtitle,fnBinPhiEtaPhi,phiEtaArrayPhi,fnBinPhiEtaEta,phiEtaArrayEta,lptbins,fPtAssocArray);
       fHistDeltaPhiEtaMixPt[i][imult][imc]->Sumw2();
       fHistDeltaPhiEtaMixPt[i][imult][imc]->GetXaxis()->SetTitle("#phi");
@@ -579,48 +579,48 @@ void AliAnalysisTaskDiHadron::CreateOutputObjects(){
       //Three-Particle Histograms
       for(int ipt=0;ipt<fNAPt3Bins;ipt++){
 	for(int iSign=0;iSign<4;iSign++){
-	  sprintf(histname,"fHistDeltaPhiPhi_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Raw #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiPhi_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Raw #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaPhiPhi[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinPhi3,fdPhiMin,fdPhiMax,fnBinPhi3,fdPhiMin,fdPhiMax);
 	  fHistDeltaPhiPhi[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaPhiPhi[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#phi_{1}");
 	  fHistDeltaPhiPhi[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#phi_{2}");
 	  fOutput->Add(fHistDeltaPhiPhi[i][ipt][imult][iSign][imc]);
 	  
-	  sprintf(histname,"fHistDeltaPhiPhiMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Mixed #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiPhiMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Mixed #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaPhiPhiMix[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinPhi3,fdPhiMin,fdPhiMax,fnBinPhi3,fdPhiMin,fdPhiMax);
 	  fHistDeltaPhiPhiMix[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaPhiPhiMix[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#phi_{1}");
 	  fHistDeltaPhiPhiMix[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#phi_{2}");
 	  fOutput->Add(fHistDeltaPhiPhiMix[i][ipt][imult][iSign][imc]);
 
-	  sprintf(histname,"fHistDeltaPhiPhiSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Soft-Soft #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaPhiPhiSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Soft-Soft #Delta#phi-#Delta#phi %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaPhiPhiSS[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinPhi3,fdPhiMin,fdPhiMax,fnBinPhi3,fdPhiMin,fdPhiMax);
 	  fHistDeltaPhiPhiSS[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaPhiPhiSS[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#phi_{1}");
 	  fHistDeltaPhiPhiSS[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#phi_{2}");
 	  fOutput->Add(fHistDeltaPhiPhiSS[i][ipt][imult][iSign][imc]);
 
-	  sprintf(histname,"fHistDeltaEtaEta_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Raw #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+	  snprintf(histname,buffersize,"fHistDeltaEtaEta_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Raw #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
 	  fHistDeltaEtaEta[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#eta_{2}");
 	  fOutput->Add(fHistDeltaEtaEta[i][ipt][imult][iSign][imc]);
 
-sprintf(histname,"fHistDeltaEtaEtaMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Mixed #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+    snprintf(histname,buffersize,"fHistDeltaEtaEtaMix_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Mixed #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
 	  fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]->GetYaxis()->SetTitle("#Delta#eta_{2}");
 	  fOutput->Add(fHistDeltaEtaEtaMix[i][ipt][imult][iSign][imc]);
 
-sprintf(histname,"fHistDeltaEtaEtaSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
-	  sprintf(histtitle,"Soft-Soft #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
+    snprintf(histname,buffersize,"fHistDeltaEtaEtaSS_P%dp%d_C%d%s%s",i,ipt,imult,cmc1[imc],sign31[iSign]);
+	  snprintf(histtitle,buffersize,"Soft-Soft #Delta#eta-#Delta#eta %3.1f<p_{T}^{Trig}<%3.1f %3.2f<p_{T}^{Assoc}<%3.2f %dMult%d%s%s",fPtTrigArray[i],fPtTrigArray[i+1],fPtAssoc3Array1[ipt],fPtAssoc3Array2[ipt],fCentArrayMin[imult],fCentArrayMax[imult],sign32[iSign],cmc2[imc]);
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]=new TH2F(histname,histtitle,fnBinEta3,-etaEdge,etaEdge,fnBinEta3,-etaEdge,etaEdge);
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]->Sumw2();
 	  fHistDeltaEtaEtaSS[i][ipt][imult][iSign][imc]->GetXaxis()->SetTitle("#Delta#eta_{1}");
