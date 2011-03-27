@@ -123,6 +123,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
     fh1PtTracksIn[ij] = 0;
+    fh1PtTracksInLow[ij] = 0;
     fh1PtTracksLeadingIn[ij] = 0;
     fh2MultJetPt[ij] = 0;
     fh2NJetsPt[ij]  = 0;
@@ -209,6 +210,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
     fh1PtTracksIn[ij] = 0;
+    fh1PtTracksInLow[ij] = 0;
     fh1PtTracksLeadingIn[ij] = 0;
     fh2MultJetPt[ij] = 0;
     fh2NJetsPt[ij]  = 0;
@@ -404,10 +406,13 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
       fHistList->Add(fh1PtTracksIn[ij]);
 
+      fh1PtTracksInLow[ij] = new TH1F(Form("fh1PtTracks%sInLow",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),100,0.,10.);
+      fHistList->Add(fh1PtTracksInLow[ij]);
+
       fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
       fHistList->Add(fh1PtTracksLeadingIn[ij]);
 
-      fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+      fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),900,0.,900.);
       fHistList->Add(fh1SumPtTrack[ij]);
 
       fh2MultJetPt[ij]  = new TH2F(Form("fh2MultJetPt%s",cAdd.Data()),Form("%s jets p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),400,0,4000,nBinPt,binLimitsPt);
@@ -927,6 +932,7 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
     while((tmpTrack = (AliVParticle*)(trackIter->Next()))){
       Float_t tmpPt = tmpTrack->Pt();
       fh1PtTracksIn[iType]->Fill(tmpPt);
+      fh1PtTracksInLow[iType]->Fill(tmpPt);
       sumPt += tmpPt;
       Float_t tmpPhi = tmpTrack->Phi();
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
