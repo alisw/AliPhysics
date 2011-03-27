@@ -35,6 +35,7 @@ void PlotOutputQAtrainSDD(TString option="local",
 
   if(option.Contains("local")){
     f=new TFile(fileName.Data());
+    printf("Opened file %s\n",f->GetName());
   }else{
     TGrid::Connect("alien:");
     path=Form("/alice/data/%d/%s/%09d/ESDs/",year,period.Data(),nRun);
@@ -91,7 +92,7 @@ void PlotOutputQAtrainSDD(TString option="local",
     }
     f=TFile::Open(fileName.Data());
   }
-  return;
+
   TDirectoryFile* df=(TDirectoryFile*)f->Get("SDD_Performance");
   if(!df){
     printf("SDD_Performance MISSING -> Exit\n");
