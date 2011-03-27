@@ -107,7 +107,7 @@ Int_t       iPWG4UE            = 0;      // Underlying Event analysis
 Int_t       iPWG4LeadingUE     = 0;      // Underlying Event analysis
 Int_t       iPWG4CorrectionsUE = 0;      // Underlying Event analysis
 Int_t       iPWG4TmpSourceSara = 0;      // Underlying Event analysis not in svn
-Int_t       iPWG4Fragmentation = 0;      // Official Fragmentation
+Int_t       iPWG4Fragmentation = 1;      // Official Fragmentation
 Int_t       iPWG4JetChem       = 0;      // Jet chemistry 
 Int_t       iPWG4PtQAMC        = 0;      // Marta's QA tasks 
 Int_t       iPWG4PtTrackQA     = 0;      // Marta's QA tasks  
@@ -859,8 +859,24 @@ if(iPWG4JetSpectrum){
 
        }
        else{
-	 taskFrag = AddTaskFragmentationFunction(kDefaultJetBranch.Data(),"","","",kHighPtFilterMask);
-	 traskFrag->SetIJMode(0);
+         // Anti-kT
+         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 1);
+         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 2);
+         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 3);
+         taskFrag = AddTaskFragmentationFunction(1<<23,kHighPtFilterMask, 4);
+     
+         // UA1
+         taskFrag = AddTaskFragmentationFunction(1<<0,kHighPtFilterMask, 1); 
+
+         // SISCONE 
+         taskFrag = AddTaskFragmentationFunction(1<<28,kHighPtFilterMask, 1);
+         taskFrag = AddTaskFragmentationFunction(1<<29,kHighPtFilterMask, 1);
+         taskFrag = AddTaskFragmentationFunction(1<<30,kHighPtFilterMask, 1);
+
+         // Anti-kT B2 - B3
+         taskFrag = AddTaskFragmentationFunction(1<<26,kHighPtFilterMask, 1);
+         taskFrag = AddTaskFragmentationFunction(1<<27,kHighPtFilterMask, 1);
+
        }
        if (!taskFrag) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskFragmentationFunction cannot run for this train conditions - EXCLUDED");
    }

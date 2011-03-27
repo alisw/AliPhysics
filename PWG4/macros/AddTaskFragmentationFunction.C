@@ -66,7 +66,15 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
         // charged MC tracks and jets with acceptance cuts
 	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,1,150., eventClass, "_Skip02");
 
-	
+       if(iFlag&(1<<26)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip02");
+
+       if(iFlag&(1<<27)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,3,150.,eventClass, "_Skip02");	
+
+      // SISCONE 
+      if(iFlag&(1<<28)) ff = AddTaskFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,1,150.,eventClass);
+      if(iFlag&(1<<29)) ff = AddTaskFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,2,150.,eventClass);
+      if(iFlag&(1<<30)) ff = AddTaskFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,3,150.,eventClass);
+
 	return ff;
 }
 
@@ -228,12 +236,12 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetBckgMode();        // default: bgMode = 1
    task->SetBckgType();        // default: 0,1,2
    task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
-   task->SetIJMode();          // default: ijMode = 1
+   task->SetIJMode(0);          // default: ijMode = 1
    task->SetQAMode();          // default: qaMode = 3
    task->SetFFMode();          // default: ffMode = 1
-   task->SetDJMode();          // default: djMode = 1
-   task->SetEffMode();         // default: effMode = 1
-   task->SetPhiCorrMode();     // default: phiCorrMode = 1
+   task->SetDJMode(0);          // default: djMode = 1
+   task->SetEffMode(0);         // default: effMode = 1
+   task->SetPhiCorrMode(0);     // default: phiCorrMode = 1
    task->SetHighPtThreshold(); // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
