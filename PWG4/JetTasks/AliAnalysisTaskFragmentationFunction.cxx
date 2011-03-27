@@ -3142,6 +3142,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
   
   if(fMCEvent){
      AliGenEventHeader* genHeader = fMCEvent->GenEventHeader();
+    if(genHeader){
      AliGenPythiaEventHeader*  pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
      AliGenHijingEventHeader*  hijingGenHeader = 0x0;
 
@@ -3167,8 +3168,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
      }
 
      fh1Trials->Fill("#sum{ntrials}",fAvgTrials);
+    }
   }
-  
   
   //___ fetch jets __________________________________________________________________________
  
