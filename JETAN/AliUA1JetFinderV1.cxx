@@ -646,6 +646,9 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
    Int_t ndiv = 100;
 
    // jet energy and area arrays
+   Bool_t oldStatus = TH1::AddDirectoryStatus();
+   TH1::AddDirectory(kFALSE);
+
    for(Int_t mjet=0; mjet<nJ; mjet++){
      if(!fhEtJet[mjet]){ 
        fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
@@ -661,6 +664,7 @@ void AliUA1JetFinderV1::SubtractBackgCone(const Int_t& nIn, const Int_t&nJ,Float
    fhEtBackg->Reset();
    if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
    fhAreaBackg->Reset();
+   TH1::AddDirectory(oldStatus);
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
@@ -761,6 +765,9 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
 
    // jet energy and area arrays
    // jet energy and area arrays
+
+   Bool_t oldStatus = TH1::AddDirectoryStatus();
+   TH1::AddDirectory(kFALSE);
    for(Int_t mjet=0; mjet<nJ; mjet++){
      if(!fhEtJet[mjet]){ 
        fhEtJet[mjet] = new TH1F(Form("hEtJet%d", mjet),"et dist in eta ",ndiv,etamin,etamax);
@@ -776,6 +783,7 @@ void AliUA1JetFinderV1::SubtractBackgRatio(const Int_t& nIn, const Int_t&nJ, Flo
    fhEtBackg->Reset();
    if(!fhAreaBackg) fhAreaBackg = new TH1F("hAreaBackg","backg area dist in eta ",ndiv,etamin,etamax);
    fhAreaBackg->Reset();
+   TH1::AddDirectory(oldStatus);
 
    //fill energies
    for(Int_t jpart = 0; jpart < nIn; jpart++){ // loop for all particles in array
