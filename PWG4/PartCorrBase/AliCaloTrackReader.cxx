@@ -64,7 +64,7 @@ ClassImp(AliCaloTrackReader)
     fEMCALCells(0x0), fPHOSCells(0x0),
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
-    fFillEMCALCells(0),fFillPHOSCells(0),  
+    fFillEMCALCells(0),fFillPHOSCells(0),  fSelectEmbeddedClusters(kFALSE),
     fRemoveSuspiciousClusters(kFALSE), fSmearClusterEnergy(kFALSE), fRandom(),
 //    fSecondInputAODTree(0x0), fSecondInputAODEvent(0x0),
 //    fSecondInputFileName(""),fSecondInputFirstEvent(0), 
@@ -551,7 +551,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
 void AliCaloTrackReader::ResetLists() {
   //  Reset lists, called by the analysis maker 
 
-  if(fCTSTracks)     fCTSTracks     -> Clear();
+  if(fCTSTracks)       fCTSTracks     -> Clear();
   if(fEMCALClusters)   fEMCALClusters   -> Clear("C");
   if(fPHOSClusters)    fPHOSClusters    -> Clear("C");
 //  if(fEMCALCells) fEMCALCells -> Clear("");
@@ -796,8 +796,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
 //    else {
 //      if(energy > 2)printf("AliCaloTrackReader::FillInputEMCALAlgorithm() - Keep cluster: e %2.2f, Ncells %d, min Ncells %2.1f\n",energy,ncells,minNCells);
 //    }
-  }
+  }//Suspicious
   
+  if(fSelectEmbeddedClusters){
+    if(clus->GetNLabels()==0) return;
+    //else printf("Embedded cluster,  %d, n label %d label %d  \n",iclus,clus->GetNLabels(),clus->GetLabel());
+  }
   
   TLorentzVector momentum ;
   

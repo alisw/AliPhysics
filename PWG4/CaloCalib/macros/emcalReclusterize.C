@@ -18,7 +18,8 @@ enum anaModes {mLocal, mLocalCAF,mPROOF,mGRID};
 //Settings to read locally several files, only for "mLocal" mode
 //The different values are default, they can be set with environmental 
 //variables: INDIR, PATTERN, NFILES, respectivelly
-char * kInDir = "/Users/data/path/data/"; 
+char * kInDir = "/Users/Gustavo/Work/data/134908/pass1"; 
+//char * kInDir = "/Users/Gustavo/Work/data/137366/";
 char * kPattern = ""; // Data are in files kInDir/kPattern+i 
 Int_t kFile = 1; // Number of files
 //---------------------------------------------------------------------------
@@ -26,16 +27,17 @@ Int_t kFile = 1; // Number of files
 char * kXML = "collection.xml";
 //---------------------------------------------------------------------------
 
-const TString kInputData = "ESD"; //ESD, AOD, MC
+TString kInputData = "AOD"; //ESD, AOD, MC
 TString kTreeName = "esdTree";
 Bool_t kUsePhysSel = kFALSE;
+Bool_t kEmbed = kTRUE;
 
 void emcalReclusterize(Int_t mode=mLocal)
 {
   // Main
-  char cmd[200] ; 
-  sprintf(cmd, ".! rm -rf aod.root") ; 
-  gROOT->ProcessLine(cmd) ; 
+  //char cmd[200] ; 
+  //sprintf(cmd, ".! rm -rf outputAOD.root") ; 
+  //gROOT->ProcessLine(cmd) ; 
   //--------------------------------------------------------------------
   // Load analysis libraries
   // Look at the method below, 
@@ -66,10 +68,14 @@ void emcalReclusterize(Int_t mode=mLocal)
     
     // AOD output handler
     AliAODHandler* aodoutHandler   = new AliAODHandler();
-    aodoutHandler->SetOutputFileName("aod.root");
-    ////aodoutHandler->SetCreateNonStandardAOD();
+    aodoutHandler->SetOutputFileName("outputAOD.root");
+    if(kEmbed){
+      aodoutHandler->SetCreateNonStandardAOD();
+      kInputData = "AOD";
+    }
     mgr->SetOutputEventHandler(aodoutHandler);
     
+
     //input
     if(kInputData == "ESD")
     {
@@ -84,11 +90,16 @@ void emcalReclusterize(Int_t mode=mLocal)
       // AOD handler
       AliAODInputHandler *aodHandler = new AliAODInputHandler();
       mgr->SetInputEventHandler(aodHandler);
+      if(kEmbed){
+	aodHandler->SetMergeEvents(kTRUE);
+	aodHandler->AddFriend("AliAOD.root");
+      }
+      
       cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
       
     }
     
-    mgr->SetDebugLevel(1);
+    //mgr->SetDebugLevel(1);
     
     //-------------------------------------------------------------------------
     //Define task, put here any other task that you want to use.
@@ -116,7 +127,6 @@ void emcalReclusterize(Int_t mode=mLocal)
 //    
 //    mgr->ConnectInput  (clusterize, 0,  cinput1 );
 //    mgr->ConnectOutput (clusterize, 0, coutput1 );
-    
     
     //-----------------------
     // Run the analysis
