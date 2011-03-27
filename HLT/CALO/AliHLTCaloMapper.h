@@ -29,6 +29,8 @@
 #include "AliHLTLogging.h"
 #include "AliHLTCaloConstantsHandler.h"
 
+#define FILEPATHMAXLENGTH 1024
+
 class AliHLTCaloCoordinate;
 
 class AliHLTCaloMapper : public AliHLTCaloConstantsHandler, public AliHLTLogging
@@ -71,7 +73,7 @@ public:
 
   fAltromap *fHw2geomapPtr; //pointer to structure holding information about geometrical address 
 
-  char fFilepath[1024];
+  char fFilepath[FILEPATHMAXLENGTH];
 
 protected:
   float fCellSize;
