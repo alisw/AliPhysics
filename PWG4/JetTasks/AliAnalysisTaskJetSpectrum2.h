@@ -176,6 +176,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtIn[kJetTypes][kMaxJets+1];  //! Jet pt  
     TH1F*         fh1PtJetsIn[kJetTypes];  //! Jet pt for all jets
     TH1F*         fh1PtTracksIn[kJetTypes];  //! track pt for all tracks
+    TH1F*         fh1PtTracksInLow[kJetTypes];  //! track pt for all tracks
     TH1F*         fh1PtTracksLeadingIn[kJetTypes];  //! track pt for all tracks
     
     TH2F*         fh2MultJetPt[kJetTypes];  //! jet pt vs. mult
