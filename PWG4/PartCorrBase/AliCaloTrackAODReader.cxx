@@ -40,7 +40,7 @@ ClassImp(AliCaloTrackAODReader)
 
 //____________________________________________________________________________
 AliCaloTrackAODReader::AliCaloTrackAODReader() : 
-  AliCaloTrackReader()
+  AliCaloTrackReader(), fOrgInputEvent(0x0)
 {
   //Default Ctor
   
@@ -58,6 +58,27 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
 //	fSecondInputAODEvent->GetPrimaryVertex()->GetXYZ(v);
 //
 //}
+
+//____________________________________________________________________________
+AliCentrality* AliCaloTrackAODReader::GetCentrality() const {
+  // recover centrality object.
+  AliAODEvent* event    = dynamic_cast<AliAODEvent*> (fInputEvent);
+  AliAODEvent* orgevent = dynamic_cast<AliAODEvent*> (fOrgInputEvent);
+
+  if(event && !fSelectEmbeddedClusters) {
+    //Normal AOD event
+    return event->GetHeader()->GetCentralityP() ;
+  }
+  else if(fSelectEmbeddedClusters && fOrgInputEvent) {
+    // centrality in AOD from input, not in embedded event
+    // temporary fix until this object is copied to the output event in embedding analysis
+    return orgevent->GetHeader()->GetCentralityP();
+  }
+  else {
+    return 0x0 ; 
+  }
+}
+
 
 //____________________________________________________________________________
 void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent* aod, AliMCEvent* mc) {
@@ -92,6 +113,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
   if(tesd)   {
     SetInputEvent(aod);
     SetOutputEvent(aod);
+    fOrgInputEvent = input;
   }
   else if(taod){
     AliAODInputHandler* aodIH = dynamic_cast<AliAODInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -99,6 +121,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
 		  //Merged events, use output AOD.
 		  SetInputEvent(aod);
 		  SetOutputEvent(aod);
+      fOrgInputEvent = input;
 	  }
 	  else{
 		  SetInputEvent(input);

@@ -13,6 +13,8 @@
 //
 // -- Author: Gustavo Conesa (INFN-LNF)
 
+#include "AliAnalysisTaskSE.h"
+
 #include "AliAODEvent.h"
 #include "AliCaloTrackReader.h" 
 
@@ -23,14 +25,22 @@ public:
   AliCaloTrackAODReader() ; // ctor
   virtual ~AliCaloTrackAODReader() {;} //virtual dtor
   
-  AliCentrality* GetCentrality() const {
-    AliAODEvent* event = dynamic_cast<AliAODEvent*> (fInputEvent);	 
-    if(event) return event->GetHeader()->GetCentralityP() ; 
-    else      return 0x0                    ; }
-  
+private:
+  AliCaloTrackAODReader(const AliCaloTrackAODReader & ) ; // cpy ctor
+  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
+   
+public: 
+
+  AliCentrality* GetCentrality() const ;  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
-  ClassDef(AliCaloTrackAODReader,5)
+  AliVEvent* GetOriginalInputEvent() const { return fOrgInputEvent; }
+  
+private:
+  
+  AliVEvent *fOrgInputEvent; //! Original input event, not from filtering
+  
+  ClassDef(AliCaloTrackAODReader,6)
 } ;
 
 #endif //ALICALOTRACKAODREADER_H

@@ -140,6 +140,9 @@ public:
   void   SwitchOnPHOSCells()            { fFillPHOSCells = kTRUE   ; }
   void   SwitchOffPHOSCells()           { fFillPHOSCells = kFALSE  ; }
 
+  void   SwitchOnEmbeddedClustersSelection() { fSelectEmbeddedClusters = kTRUE   ; }
+  void   SwitchOffEmbeddedClustersSelection(){ fSelectEmbeddedClusters = kFALSE  ; }
+  
   // Filling/ filtering / detector information access methods
   virtual Bool_t FillInputEvent(const Int_t iEntry, const char *currentFileName)  ;
   virtual void   FillInputCTS() ;
@@ -233,7 +236,7 @@ public:
   //------------------------
   // Centrality
   //------------------------
-  virtual AliCentrality* GetCentrality()            const { return fInputEvent->GetCentrality() ; }
+  virtual AliCentrality* GetCentrality()            const { return fInputEvent->GetCentrality() ; } //Look in AOD reader, different there
   virtual void      SetCentralityClass(TString name)      { fCentralityClass   = name           ; }
   virtual void      SetCentralityOpt(Int_t opt)           { fCentralityOpt     = opt            ; }
   virtual TString   GetCentralityClass()            const { return fCentralityClass             ; }
@@ -277,6 +280,7 @@ public:
   virtual AliAODMCHeader*   GetAODMCHeader(Int_t input = 0)    const ;
 	
   virtual AliVEvent*        GetInputEvent()  const { return fInputEvent  ; }
+  virtual AliVEvent* GetOriginalInputEvent() const { return 0x0          ; }
   virtual AliAODEvent*      GetOutputEvent() const { return fOutputEvent ; }
   virtual AliMCEvent*       GetMC()          const { return fMC          ; }
   virtual AliMixedEvent*    GetMixedEvent()  const { return fMixedEvent  ; }
@@ -346,6 +350,7 @@ public:
   Bool_t           fFillPHOS;       // use data from PHOS
   Bool_t           fFillEMCALCells; // use data from EMCAL
   Bool_t           fFillPHOSCells;  // use data from PHOS
+  Bool_t           fSelectEmbeddedClusters;   // Use only simulated clusters that come from embedding.
   Bool_t           fRemoveSuspiciousClusters; // Remove high energy clusters with low number of cells
   Bool_t           fSmearClusterEnergy;       // Smear cluster energy, to be done only for simulated data to match real data
   Float_t          fSmearClusterParam[3];     // Smearing parameters
@@ -398,7 +403,7 @@ public:
   Int_t            fCentralityOpt;       // Option for the returned value of the centrality, possible options 5, 10, 100
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   
-  ClassDef(AliCaloTrackReader,27)
+  ClassDef(AliCaloTrackReader,28)
 } ;
 
 
