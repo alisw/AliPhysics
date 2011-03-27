@@ -182,6 +182,7 @@ void AliAnalysisTaskJets::UserCreateOutputObjects()
 
   // Histograms
   fListOfHistos = new TList();
+  fListOfHistos->SetOwner();
   fHistos       = new AliJetHistos();
   fHistos->AddHistosToList(fListOfHistos);
   
