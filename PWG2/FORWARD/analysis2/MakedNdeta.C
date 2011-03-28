@@ -115,7 +115,6 @@ void MakedNdeta(const char* aoddir   = ".",
   mgr->StartAnalysis(proof ? "proof" : "local", chain, nEvents);
   t.Stop();
   t.Print();
-#endif
 }
 //
 // EOF
