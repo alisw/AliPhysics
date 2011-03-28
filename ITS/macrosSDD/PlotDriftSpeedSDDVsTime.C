@@ -35,12 +35,19 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   TGrid::Connect("alien:",0,0,"t");
   Float_t errSpeed[260];
   FillErrors(errSpeed);
+  Int_t iAn=anode;
+  if(anode>256) iAn=anode-256;
+
   TString cmd=Form("gbbox find \"/alice/data/%d/OCDB/ITS/Calib/DriftSpeedSDD\" \"Run*.root\" > runSpeedAlien.txt",year);
   gSystem->Exec(cmd.Data());
   FILE* listruns=fopen("runSpeedAlien.txt","r");
   Char_t filnam[200],filnamalien[200];
   TGraphErrors** gvdrvstime=new TGraphErrors*[520];
   TGraphErrors** gvdrvsrun=new TGraphErrors*[520];
+  TGraphErrors** gstatusinjvstime=new TGraphErrors*[520];
+  TGraphErrors** gstatusinjvsrun=new TGraphErrors*[520];
+
+
   TGraph* gGoodInjVsRun=new TGraph(0);
   gGoodInjVsRun->SetName("gGoodInjVsRun");
   TGraph* gAverSpeedVsRun=new TGraph(0);
@@ -96,14 +103,24 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   gFracAverSpeedVsTimeL4->SetName("gFracAverSpeedVsIimeL4");
   
   for(Int_t iMod=0; iMod<260;iMod++){
-    gvdrvstime[iMod]=new TGraphErrors(0);    
-    gvdrvstime[iMod]->SetTitle(Form("Module %d",iMod+240));
-    gvdrvstime[iMod]->SetName(Form("gspmod%dt",iMod+240));
-    gvdrvsrun[iMod]=new TGraphErrors(0);    
-    gvdrvsrun[iMod]->SetTitle(Form("Module %d",iMod+240));
-    gvdrvsrun[iMod]->SetName(Form("gspmod%dr",iMod+240));
+    for(Int_t iSide=0; iSide<2; iSide++){
+      Int_t index=2*iMod+iSide;
+      gvdrvstime[index]=new TGraphErrors(0);    
+      gvdrvstime[index]->SetTitle(Form("Module %d Side %d",iMod+240,iSide));
+      gvdrvstime[index]->SetName(Form("gspmod%ds%dt",iMod+240,iSide));
+      gvdrvsrun[index]=new TGraphErrors(0);    
+      gvdrvsrun[index]->SetTitle(Form("Module %d Side %d",iMod+240,iSide));
+      gvdrvsrun[index]->SetName(Form("gspmod%ds%dr",iMod+240,iSide));
+      gstatusinjvstime[index]=new TGraphErrors(0);    
+      gstatusinjvstime[index]->SetTitle(Form("Module %d Side %d",iMod+240,iSide));
+      gstatusinjvstime[index]->SetName(Form("gstinmod%ds%dt",iMod+240,iSide));
+      gstatusinjvsrun[index]=new TGraphErrors(0);    
+      gstatusinjvsrun[index]->SetTitle(Form("Module %d Side %d",iMod+240,iSide));
+      gstatusinjvsrun[index]->SetName(Form("gstinmod%ds%dr",iMod+240,iSide));
+    }
   }
-  Float_t Edrift=(1800-45)/291/0.012;  
+
+  Float_t driftField=(1800-45)/291/0.012;  
   Int_t nrun,nrun2,nv,ns;
   UInt_t timeZero;
   if(year==2009) timeZero=1247762992;
@@ -149,31 +166,70 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     Float_t fracAverSpeed=0.;
     Float_t fracAverSpeedL3=0.;
     Float_t fracAverSpeedL4=0.;
-
-
-    Float_t timeday=0;
     
     AliITSDriftSpeedArraySDD *vdriftarr;
     AliITSDriftSpeedArraySDD *vdriftarr0;
     AliITSDriftSpeedArraySDD *vdriftarr1;
 
+    UInt_t timest=0;
+    Float_t timeday=0;
+    Bool_t goodTime=kFALSE;
+
+    for(Int_t iHyb=0; iHyb<520;iHyb++){
+      if(!goodTime){
+	vdriftarr=(AliITSDriftSpeedArraySDD*)drspSDD->At(iHyb);
+	Int_t statusInj=vdriftarr->GetInjectorStatus();
+	if(statusInj>0){
+	  timest=vdriftarr->GetTimestamp(0);
+	  if(timest>0 && timest>timeZero){
+	    timeday=float(timest-timeZero)/60./60./24.;
+	    goodTime=kTRUE;
+	  }
+	}
+      }
+    }
+
     for(Int_t iMod=0; iMod<260;iMod++){
-      Int_t index=-1;
-      if(anode<256) index=2*iMod;
-      else index=2*iMod+1;
-      vdriftarr=(AliITSDriftSpeedArraySDD*)drspSDD->At(index);
-	  
+
       Int_t i0=2*iMod;
       Int_t i1=1+2*iMod;
       vdriftarr0=(AliITSDriftSpeedArraySDD*)drspSDD->At(i0);
       vdriftarr1=(AliITSDriftSpeedArraySDD*)drspSDD->At(i1);
-	  
+
+
       Int_t statusInj0=vdriftarr0->GetInjectorStatus();
       Int_t statusInj1=vdriftarr1->GetInjectorStatus();
+      Int_t npt=gstatusinjvsrun[i0]->GetN();
+      gstatusinjvsrun[i0]->SetPoint(npt,(Float_t)nrun,statusInj0);
+      gstatusinjvsrun[i1]->SetPoint(npt,(Float_t)nrun,statusInj1);
+      gstatusinjvsrun[i0]->SetPointError(npt,0,0);
+      gstatusinjvsrun[i1]->SetPointError(npt,0,0);
+      if(goodTime){
+	Int_t npt=gstatusinjvstime[i0]->GetN();
+	gstatusinjvstime[i0]->SetPoint(npt,timeday,statusInj0);
+	gstatusinjvstime[i1]->SetPoint(npt,timeday,statusInj1);
+	gstatusinjvstime[i0]->SetPointError(npt,0,0);
+	gstatusinjvstime[i1]->SetPointError(npt,0,0);
+      }
+
+      Float_t vdrift0=vdriftarr0->GetDriftSpeed(0,iAn);
+      Float_t vdrift1=vdriftarr1->GetDriftSpeed(0,iAn);
+      Float_t mob=vdrift0*1.E5/driftField;  
+      Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
+      if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift0,temper);
+
       if(statusInj0>0){
 	iGoodInj++;
 	if(iMod<84)iGoodInjL3++;
 	else iGoodInjL4++;
+	Int_t npt=gvdrvsrun[i0]->GetN();
+	gvdrvsrun[i0]->SetPoint(npt,(Float_t)nrun,vdrift0);
+	gvdrvsrun[i0]->SetPointError(npt,0,errSpeed[iMod]);
+	if(goodTime){
+	  npt=gvdrvstime[i0]->GetN();
+	  gvdrvstime[i0]->SetPoint(npt,timeday,vdrift0);
+	  gvdrvstime[i0]->SetPointError(npt,0,errSpeed[iMod]);
+	}
       }
       else{ 
 	iAverSpeed++;
@@ -184,32 +240,21 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
 	iGoodInj++;
 	if(iMod<84)iGoodInjL3++;
 	else iGoodInjL4++;
+	Int_t npt=gvdrvsrun[i1]->GetN();
+	gvdrvsrun[i1]->SetPoint(npt,(Float_t)nrun,vdrift1);
+	gvdrvsrun[i1]->SetPointError(npt,0,errSpeed[iMod]);
+	if(goodTime){
+	  npt=gvdrvstime[i1]->GetN();
+	  gvdrvstime[i1]->SetPoint(npt,timeday,vdrift1);
+	  gvdrvstime[i1]->SetPointError(npt,0,errSpeed[iMod]);
+	}
       }else{
 	iAverSpeed++;
 	if(iMod<84)iAverSpeedL3++;
 	else iAverSpeedL4++;
       }
-	  
-      Int_t iAn=anode;
-      if(anode>256) iAn=anode-256;
-      Float_t vdrift=vdriftarr->GetDriftSpeed(0,iAn);
-      if(vdrift<4. || vdrift > 8.) continue;
-      if(statusInj0==0) continue;
-      Int_t npt=gvdrvsrun[iMod]->GetN();
-      gvdrvsrun[iMod]->SetPoint(npt,(Float_t)nrun,vdrift);
-      gvdrvsrun[iMod]->SetPointError(npt,0,errSpeed[iMod]);
-      
-      UInt_t timest=vdriftarr->GetTimestamp(0);
-      if(timest==0) continue;
-      if(timest<timeZero) continue;
-      timeday=float(timest-timeZero)/60./60./24.;
-      Float_t mob=vdrift*1.E5/Edrift;  
-      Float_t temper=293.15*TMath::Power((mob/1350.),-1/2.4); 
-      if(iMod==497-240) printf("Run %s   Time %d Day %f Speed=%f Temp=%f\n",filnam,timest,timeday,vdrift,temper);
-      npt=gvdrvstime[iMod]->GetN();
-      gvdrvstime[iMod]->SetPoint(npt,timeday,vdrift);
-      gvdrvstime[iMod]->SetPointError(npt,0,errSpeed[iMod]);
     }
+
     Int_t npt=gGoodInjVsRun->GetN();
     fracGoodInj=(Float_t)iGoodInj/(Float_t)totalgoodinj;
     fracGoodInjL3=(Float_t)iGoodInjL3/(Float_t)totalgoodinjL3;
@@ -259,7 +304,6 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
     gFracGoodInjVsTimeL4->SetPoint(npt,timeday,(Double_t)fracGoodInjL4);
     gFracAverSpeedVsTimeL4->SetPoint(npt,timeday,(Double_t)fracAverSpeedL4);
 
-	
     printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
     printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
     printf("Number of half-modules with drift speed from injectors L3 = %d\n",iGoodInjL3);
@@ -267,6 +311,21 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
 
     f->Close();
   }
+
+  Char_t filout[100];
+  sprintf(filout,"DriftSpVsTime_%d.root",year);
+  TFile *ofil=new TFile(filout,"recreate");
+  for(Int_t iHyb=0; iHyb<520;iHyb++){
+    gvdrvstime[iHyb]->Write();
+    gvdrvsrun[iHyb]->Write();
+    gstatusinjvstime[iHyb]->Write();
+    gstatusinjvsrun[iHyb]->Write();
+  }
+  gGoodInjVsRun->Write();
+  gGoodInjVsTime->Write();
+  gAverSpeedVsRun->Write();
+  gAverSpeedVsTime->Write();
+  ofil->Close();
 
   Int_t mod1=244-240;
   Int_t mod2=277-240;
@@ -283,36 +342,24 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   AliITSgeomTGeo::GetModuleId(mod2+240,lay2,lad2,det2);
   AliITSgeomTGeo::GetModuleId(mod3+240,lay3,lad3,det3);
   AliITSgeomTGeo::GetModuleId(mod4+240,lay4,lad4,det4);
-  Char_t filout[100];
-  sprintf(filout,"DriftSpVsTime_%d.root",year);
-  TFile *ofil=new TFile(filout,"recreate");
-  for(Int_t iMod=0; iMod<260;iMod++){
-    gvdrvstime[iMod]->Write();
-    gvdrvsrun[iMod]->Write();
-  }
-  gGoodInjVsRun->Write();
-  gGoodInjVsTime->Write();
-  gAverSpeedVsRun->Write();
-  gAverSpeedVsTime->Write();
-  ofil->Close();
 
   gStyle->SetOptTitle(0);
   TCanvas* c0=new TCanvas("c0","Vdrift vs. time");
   c0->SetGridx();
   c0->SetGridy();
-  gvdrvstime[mod1]->SetMarkerStyle(20);
-  gvdrvstime[mod2]->SetMarkerStyle(22);
-  gvdrvstime[mod2]->SetMarkerColor(2);
-  gvdrvstime[mod2]->SetLineColor(2);
-  gvdrvstime[mod3]->SetMarkerStyle(29);
-  gvdrvstime[mod3]->SetMarkerColor(3);
-  gvdrvstime[mod3]->SetLineColor(3);
-  gvdrvstime[mod4]->SetMarkerStyle(27);
-  gvdrvstime[mod4]->SetMarkerColor(4);
-  gvdrvstime[mod4]->SetLineColor(4);
-  gvdrvstime[mod1]->Draw("AP");
-  gvdrvstime[mod1]->SetMinimum(6.3);
-  gvdrvstime[mod1]->SetMaximum(6.75);
+  gvdrvstime[2*mod1]->SetMarkerStyle(20);
+  gvdrvstime[2*mod2]->SetMarkerStyle(22);
+  gvdrvstime[2*mod2]->SetMarkerColor(2);
+  gvdrvstime[2*mod2]->SetLineColor(2);
+  gvdrvstime[2*mod3]->SetMarkerStyle(29);
+  gvdrvstime[2*mod3]->SetMarkerColor(3);
+  gvdrvstime[2*mod3]->SetLineColor(3);
+  gvdrvstime[2*mod4]->SetMarkerStyle(27);
+  gvdrvstime[2*mod4]->SetMarkerColor(4);
+  gvdrvstime[2*mod4]->SetLineColor(4);
+  gvdrvstime[2*mod1]->Draw("AP");
+  gvdrvstime[2*mod1]->SetMinimum(6.3);
+  gvdrvstime[2*mod1]->SetMaximum(6.75);
   Char_t title[100];
   if(year==2009){
     sprintf(title,"Time (days since July 16th 2009)");
@@ -321,46 +368,46 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   }else{
     sprintf(title,"Time (days since January 1st 2011)");
   }
-  gvdrvstime[mod1]->GetXaxis()->SetTitle(title);
-  gvdrvstime[mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
-  gvdrvstime[mod2]->Draw("PSAME");
-  gvdrvstime[mod3]->Draw("PSAME");
-  gvdrvstime[mod4]->Draw("PSAME");
+  gvdrvstime[2*mod1]->GetXaxis()->SetTitle(title);
+  gvdrvstime[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
+  gvdrvstime[2*mod2]->Draw("PSAME");
+  gvdrvstime[2*mod3]->Draw("PSAME");
+  gvdrvstime[2*mod4]->Draw("PSAME");
   TLegend* leg=new TLegend(0.6,0.7,0.89,0.89);
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
-  TLegendEntry* lent=leg->AddEntry(gvdrvstime[mod1],Form("Lay %d Lad %d Det %d",lay1,lad1,det1),"P");
-  lent=leg->AddEntry(gvdrvstime[mod2],Form("Lay %d Lad %d Det %d",lay2,lad2,det2),"P");
+  TLegendEntry* lent=leg->AddEntry(gvdrvstime[2*mod1],Form("Lay %d Lad %d Det %d",lay1,lad1,det1),"P");
+  lent=leg->AddEntry(gvdrvstime[2*mod2],Form("Lay %d Lad %d Det %d",lay2,lad2,det2),"P");
   lent->SetTextColor(2);
-  lent=leg->AddEntry(gvdrvstime[mod3],Form("Lay %d Lad %d Det %d",lay3,lad3,det3),"P");
+  lent=leg->AddEntry(gvdrvstime[2*mod3],Form("Lay %d Lad %d Det %d",lay3,lad3,det3),"P");
   lent->SetTextColor(3);
-  lent=leg->AddEntry(gvdrvstime[mod4],Form("Lay %d Lad %d Det %d",lay4,lad4,det4),"P");
+  lent=leg->AddEntry(gvdrvstime[2*mod4],Form("Lay %d Lad %d Det %d",lay4,lad4,det4),"P");
   lent->SetTextColor(4);
   leg->Draw();
 
   TCanvas* c1=new TCanvas("c1","Vdrift vs. run");
   c1->SetGridx();
   c1->SetGridy();
-  gvdrvsrun[mod1]->SetMarkerStyle(20);
-  gvdrvsrun[mod2]->SetMarkerStyle(22);
-  gvdrvsrun[mod2]->SetMarkerColor(2);
-  gvdrvsrun[mod2]->SetLineColor(2);
-  gvdrvsrun[mod3]->SetMarkerStyle(29);
-  gvdrvsrun[mod3]->SetMarkerColor(3);
-  gvdrvsrun[mod3]->SetLineColor(3);
-  gvdrvsrun[mod4]->SetMarkerStyle(27);
-  gvdrvsrun[mod4]->SetMarkerColor(4);
-  gvdrvsrun[mod4]->SetLineColor(4);
-  gvdrvsrun[mod1]->Draw("AP");
-  gvdrvsrun[mod1]->SetMinimum(6.3);
-  gvdrvsrun[mod1]->SetMaximum(6.75);
+  gvdrvsrun[2*mod1]->SetMarkerStyle(20);
+  gvdrvsrun[2*mod2]->SetMarkerStyle(22);
+  gvdrvsrun[2*mod2]->SetMarkerColor(2);
+  gvdrvsrun[2*mod2]->SetLineColor(2);
+  gvdrvsrun[2*mod3]->SetMarkerStyle(29);
+  gvdrvsrun[2*mod3]->SetMarkerColor(3);
+  gvdrvsrun[2*mod3]->SetLineColor(3);
+  gvdrvsrun[2*mod4]->SetMarkerStyle(27);
+  gvdrvsrun[2*mod4]->SetMarkerColor(4);
+  gvdrvsrun[2*mod4]->SetLineColor(4);
+  gvdrvsrun[2*mod1]->Draw("AP");
+  gvdrvsrun[2*mod1]->SetMinimum(6.3);
+  gvdrvsrun[2*mod1]->SetMaximum(6.75);
 
-  gvdrvsrun[mod1]->GetXaxis()->SetTitle("Run number");
-  gvdrvsrun[mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
-  gvdrvsrun[mod2]->Draw("PSAME");
-  gvdrvsrun[mod3]->Draw("PSAME");
-  gvdrvsrun[mod4]->Draw("PSAME");
+  gvdrvsrun[2*mod1]->GetXaxis()->SetTitle("Run number");
+  gvdrvsrun[2*mod1]->GetYaxis()->SetTitle("Drift speed (#mum/ns)");
+  gvdrvsrun[2*mod2]->Draw("PSAME");
+  gvdrvsrun[2*mod3]->Draw("PSAME");
+  gvdrvsrun[2*mod4]->Draw("PSAME");
   leg->Draw();
 
 
@@ -382,9 +429,9 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   Double_t run1,run2,vdr1,vdr2;
   Int_t lay,lad,det;
   for(Int_t iMod=0; iMod<260; iMod++){
-    Int_t lastPoint=gvdrvsrun[iMod]->GetN()-1;
-    gvdrvsrun[iMod]->GetPoint(lastPoint,run2,vdr2);
-    gvdrvsrun[iMod]->GetPoint(lastPoint-1,run1,vdr1);
+    Int_t lastPoint=gvdrvsrun[2*iMod]->GetN()-1;
+    gvdrvsrun[2*iMod]->GetPoint(lastPoint,run2,vdr2);
+    gvdrvsrun[2*iMod]->GetPoint(lastPoint-1,run1,vdr1);
     Float_t diff=0.;
     if(vdr1>0.) diff=100*(vdr2-vdr1)/vdr1;
     AliITSgeomTGeo::GetModuleId(iMod+240,lay,lad,det);
