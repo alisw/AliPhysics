@@ -606,7 +606,8 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 // PID calculation. 
 
   if(track) fkTrack = track;
-  if(!fkTrack){
+  return NULL;
+/*  if(!fkTrack){
     AliDebug(4, "No Track defined.");
     return NULL;
   }
@@ -766,6 +767,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
       << "\n";
   }
   return h;
+*/
 }
 
 //________________________________________________________
