@@ -27,7 +27,7 @@ class AliITSUpgradeClusterList {
 
   void                   Clear();
   AliITSUpgradeClusterList*     Clone() const;
- Bool_t                 Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t labels[10]);
+ Bool_t                 Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t labels[12]);
 
   UInt_t   GetNrEntries() const {return fNrEntries;}
   Float_t  GetColIndex(UInt_t index);

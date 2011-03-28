@@ -105,11 +105,11 @@ AliITSUpgradeClusterListNode* AliITSUpgradeClusterList::CloneNode(AliITSUpgradeC
   else return new AliITSUpgradeClusterListNode(node->Col(),node->Row(),node->Size(),node->WidthZ(),node->WidthPhi(),node->Type(),node->Charge(),CloneNode(node->Next()));
 }
 //______________________________________________________________________________
-Bool_t AliITSUpgradeClusterList::Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t digLabels[10]) {
+Bool_t AliITSUpgradeClusterList::Insert(Float_t col, Float_t row, UShort_t size, UShort_t widthZ, UShort_t widthPhi, UShort_t type, UShort_t charge, Int_t digLabels[12]) {
   // insert a new node into the list (returns true if the node was not present before)
   fNrEntries++;
   AliITSUpgradeClusterListNode* node = new AliITSUpgradeClusterListNode(col,row,size,widthZ,widthPhi,type,charge,NULL);
-  for(Int_t i=0; i< size; i++) node->AddDigitLabel(digLabels[i]); // adding digit label to the cluster
+  for(Int_t i=0; i< 12; i++) node->AddDigitLabel(digLabels[i]); // adding digit label to the cluster
   if (fFirst==NULL) {
     fFirst = node;
   }

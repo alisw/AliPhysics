@@ -285,7 +285,7 @@ Int_t AliITSUpgradeClusterFinder::DoModuleClustering(Int_t module, UShort_t char
       if(size>1) AliDebug(2,Form("DoModuleClustering, size %i , labels :  %i  %i  %i \n",size,fLabels[0],fLabels[1],fLabels[2]));
       fClusterList[module]->Insert((Float_t)fColSum/size, (Float_t)fRowSum/size, size, GetClusterWidthZ(), GetClusterWidthPhi(), GetClusterType(size), fCharge,fLabels);
       fCharge=0;
-      for(Int_t i=0; i<10; i++) fLabels[i]=-5;
+      for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY; i++) fLabels[i]=-5;
     }
     if (fNhitsLeft==0) break;
   }
@@ -784,7 +784,7 @@ void AliITSUpgradeClusterFinder::SetLabels(Int_t label[3]){
   for(Int_t k=0; k<3; k++){
     if(label[k]<0) continue;
     for(Int_t i=0; i<kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY; i++){
-      if(position>kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY) continue;
+      if(position>=kMAXCLUSTERTYPESIDEZ*kMAXCLUSTERTYPESIDEY) continue;
       // if there is no label assigned and it is not present in previous labels
       if(fLabels[position]<0) {
         if(!isAssigned[k]) {
