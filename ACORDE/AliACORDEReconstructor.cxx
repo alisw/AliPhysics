@@ -139,6 +139,10 @@ void AliACORDEReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
     AcoHitSingle[module] = kTRUE;
     AcoHitMulti[module] = kTRUE;
   }  
+  if (!esd) {
+	AliError("NO ACORDE ESD branch found!");
+	return;
+}
   TString ActiveTriggerDetector = esd->GetFiredTriggerClasses();
   if (ActiveTriggerDetector.Contains("ASL")) fESDACORDE->SetACORDEBitPattern(AcoHitSingle);
   else if (ActiveTriggerDetector.Contains("AMU")) fESDACORDE->SetACORDEBitPattern(AcoHitMulti);
