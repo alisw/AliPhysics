@@ -80,7 +80,7 @@ void AliVtxTenderSupply::ProcessEvent()
   if ( (fDiamond->GetXRes())<2){ 
     AliVertexerTracks vertexer(event->GetMagneticField());
     vertexer.SetITSMode();
-    vertexer.SetMinClusters(4);
+    vertexer.SetMinClusters(3);
     vertexer.SetVtxStart(fDiamond);
     AliESDVertex *pvertex = vertexer.FindPrimaryVertex(event);
     event->SetPrimaryVertexTracks(pvertex);
