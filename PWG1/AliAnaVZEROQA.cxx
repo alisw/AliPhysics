@@ -299,13 +299,13 @@ void AliAnaVZEROQA::UserExec(Option_t */*option*/)
       if (i >= 32) {
 	fhTimeA->Fill(esdV0->GetTime(i));
 	fhWidthA->Fill(esdV0->GetWidth(i));
-	fhAdcWidthA->Fill(esdV0->GetAdc(i),esdV0->GetTime(i));
+	fhAdcWidthA->Fill(esdV0->GetAdc(i),esdV0->GetWidth(i));
 	fhAdcTimeA->Fill(esdV0->GetTime(i),esdV0->GetAdc(i));
       }
       else {
 	fhTimeC->Fill(esdV0->GetTime(i));
 	fhWidthC->Fill(esdV0->GetWidth(i));
-	fhAdcWidthC->Fill(esdV0->GetAdc(i),esdV0->GetTime(i));
+	fhAdcWidthC->Fill(esdV0->GetAdc(i),esdV0->GetWidth(i));
 	fhAdcTimeC->Fill(esdV0->GetTime(i),esdV0->GetAdc(i));
        }
       fhTimePMT->Fill(i,esdV0->GetTime(i));
