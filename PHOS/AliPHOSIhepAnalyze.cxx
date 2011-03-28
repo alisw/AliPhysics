@@ -782,9 +782,6 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
 {
   // Cumulative list of charged CPV impacts in event nev.
 
-  TList * fCpvImpacts ;
-  TBranch * branchCPVimpacts;
-
   AliPHOSLoader* please = dynamic_cast<AliPHOSLoader*>(fRunLoader->GetLoader("PHOSLoader"));
   if ( please == 0 )
    {
@@ -797,6 +794,9 @@ void AliPHOSIhepAnalyze::HitsCPV(Int_t nev)
   //16.03.2011: DP. Code below seems to be obsollete
   //Comment it to sutisfy Coverity
 /* 
+  TList * fCpvImpacts ;
+  TBranch * branchCPVimpacts;
+
   AliPHOSGeometry * phosgeom =  AliPHOSGeometry::GetInstance() ;
 
   fRunLoader->GetEvent(nev);
