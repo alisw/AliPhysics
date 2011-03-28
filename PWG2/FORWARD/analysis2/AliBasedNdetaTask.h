@@ -249,6 +249,7 @@ public:
    * @param name      New name 
    * @param firstbin  First bin to use 
    * @param lastbin   Last bin to use
+   * @param useROOT   Use TH2::ProjectionX instead of custom code 
    * @param corr      Whether to do corrections or not 
    * @param error     Whether to calculate errors
    * 
@@ -462,6 +463,8 @@ protected:
      * @param symmetrice Whether to make symmetric extensions 
      * @param rebin      Whether to rebin
      * @param cutEdges   Whether to cut edges when rebinning 
+     * @param color      Color of markers 
+     * @param marker     Marker style 
      */
     virtual void MakeResult(const TH2D* sum,  
 			    const char* postfix, 
