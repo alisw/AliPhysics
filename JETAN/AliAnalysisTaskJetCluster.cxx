@@ -1004,8 +1004,8 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
        }
        if(skip)continue;
        tmpRecC.SetBgEnergy(0,0); // this is use as temporary storage of the summed p_T below
-       if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nConeRan++]) AliAODJet(tmpRecC);
-       if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nCone++]) AliAODJet(tmpRecC);
+       if(fTCARandomConesOut)new ((*fTCARandomConesOut)[nCone++]) AliAODJet(tmpRecC);
+       if(fTCARandomConesOutRan)new ((*fTCARandomConesOutRan)[nConeRan++]) AliAODJet(tmpRecC);
      }// loop over random cones creation
 
   
@@ -1071,7 +1071,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	 }
        }
      }
-     if(!fTCARandomConesOutRan){
+     if(fTCARandomConesOutRan){
        for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
 	 AliAODJet* rC = (AliAODJet*)fTCARandomConesOutRan->At(ir);
 	 // same wit random

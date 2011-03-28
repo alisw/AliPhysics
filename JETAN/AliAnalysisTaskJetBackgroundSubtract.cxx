@@ -64,6 +64,8 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
   fh2CentvsSigma(0x0),
+  fh2MultvsRho(0x0),
+  fh2MultvsSigma(0x0),
   fh2ShiftEta(0x0),
   fh2ShiftPhi(0x0),
   fh2ShiftEtaLeading(0x0),
@@ -89,6 +91,8 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
   fh2CentvsSigma(0x0),
+  fh2MultvsRho(0x0),
+  fh2MultvsSigma(0x0),
   fh2ShiftEta(0x0),
   fh2ShiftPhi(0x0),
   fh2ShiftEtaLeading(0x0),
@@ -238,10 +242,15 @@ void AliAnalysisTaskJetBackgroundSubtract::UserCreateOutputObjects()
   //    
 
  
-    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density",100,0.,100.,100,0.,150.);
-    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs backgroun sigma",100,0.,100.,100,0.,150.);
+    fh2CentvsRho = new TH2F("fh2CentvsRho","centrality vs background density",100,0.,100.,2000,0.,200.);
+    fh2CentvsSigma = new TH2F("fh2CentvsSigma","centrality vs backgroun sigma",100,0.,100.,1000,0.,50.);
     fHistList->Add(fh2CentvsRho);
     fHistList->Add(fh2CentvsSigma);
+
+    fh2MultvsRho = new TH2F("fh2MultvsRho","mult vs background density",4000,0.,4000.,2000,0.,200.);
+    fh2MultvsSigma = new TH2F("fh2MultvsSigma","mult vs backgroun sigma",4000,0.,4000.,1000,0.,50.);
+    fHistList->Add(fh2MultvsRho);
+    fHistList->Add(fh2MultvsSigma);
 
    if(fSubtraction==k4Area){
     fh2ShiftEta = new TH2F("fh2ShiftEta","extended correction Eta",100,-0.9,0.9,100,-0.9,0.9);
@@ -366,6 +375,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
    Double_t meanarea = 0;
    TLorentzVector backgroundv;
    Float_t cent=0.;
+   
    if(fAODOut)cent = fAODOut->GetHeader()->GetCentrality();
    if(evBkg)sigma=evBkg->GetSigma(1); 
 
@@ -380,8 +390,24 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
      rho =RecalcRho(bkgClusters,meanarea);
    }
    if(fSubtraction==kRhoRC) rho=RhoRC(bkgClustersRC);
+
+   Float_t mult = 0;
+   for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
+    TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
+    if(jarray){
+      TString tmp(jarray->GetName());
+      if(tmp.Contains("cluster")){
+	mult = MultFromJetRefs(jarray);
+	if(mult>0)break;
+      }
+    }
+   }
+
    fh2CentvsRho->Fill(cent,rho);
    fh2CentvsSigma->Fill(cent,sigma);
+
+   fh2MultvsRho->Fill(mult,rho);
+   fh2MultvsSigma->Fill(mult,sigma);
    
    for(int iJB = 0;iJB<fInJetArrayList->GetEntries();iJB++){
     TClonesArray* jarray = (TClonesArray*)fInJetArrayList->At(iJB);
@@ -642,4 +668,19 @@ void AliAnalysisTaskJetBackgroundSubtract::PrintAODContents(){
     Printf("%s:%d >>>>>> Output",(char*)__FILE__,__LINE__);
     fAODOut->Print();
   }
+}
+
+Int_t AliAnalysisTaskJetBackgroundSubtract::MultFromJetRefs(TClonesArray* jets){
+  if(!jets)return 0;
+
+  Int_t refMult = 0;
+  for(int ij = 0;ij < jets->GetEntries();++ij){
+    AliAODJet* jet = (AliAODJet*)jets->At(ij);
+    if(!jet)continue;
+    TRefArray *refs = jet->GetRefTracks();
+    if(!refs)continue;
+    refMult += refs->GetEntries();
+  }
+  return refMult;
+
 }
