@@ -401,9 +401,11 @@ void PlotOutputQAtrainSDD(TString option="local",
   ceff0->Update();
 
   TH1F* heff=new TH1F("heff","",260,239.5,499.5);
+  TH1F* hfracskip=new TH1F("hfracskip","",260,239.5,499.5);
+
   for(Int_t imod=0; imod<260;imod++){
     Float_t numer=hgpmod->GetBinContent(imod+1)+hbrmod->GetBinContent(imod+1)+hoamod->GetBinContent(imod+1)+hnrmod->GetBinContent(imod+1);
-    Float_t denom=hapmod->GetBinContent(imod+1);
+    Float_t denom=hapmod->GetBinContent(imod+1)-hskmod->GetBinContent(imod+1);
     Float_t eff=0.;
     Float_t erreff=0.;
     if(denom>0){
@@ -412,10 +414,23 @@ void PlotOutputQAtrainSDD(TString option="local",
     }
     heff->SetBinContent(imod+1,eff);
     heff->SetBinError(imod+1,erreff);
+    Float_t numer2=hskmod->GetBinContent(imod+1);
+    Float_t denom2=hapmod->GetBinContent(imod+1);
+    Float_t frac=0.;
+    Float_t efrac=0.;
+    if(denom2>0.){
+      frac=numer2/denom2;
+      efrac=TMath::Sqrt(frac*(1-frac)/denom2);
+    }
+    hfracskip->SetBinContent(imod+1,frac);
+    hfracskip->SetBinError(imod+1,efrac);
+
   }
 
   printf("---- Modules with efficiency < 90%% ----\n");
-  TCanvas* ceff1=new TCanvas("ceff1","Efficiency",1000,600);
+  TCanvas* ceff1=new TCanvas("ceff1","Efficiency",1000,1000);
+  ceff1->Divide(1,2);
+  ceff1->cd(1);
   heff->Draw();
   heff->GetXaxis()->SetTitle("SDD Module Id");
   heff->GetYaxis()->SetTitle("Fraction of tracks with point in good region");
@@ -428,7 +443,11 @@ void PlotOutputQAtrainSDD(TString option="local",
       printf("Module %d - Layer %d Ladder %2d Det %d  -   Eff. %.3f\n",iMod,lay,lad,det,heff->GetBinContent(ibin));
     }
   }
-  ceff1->Update();
+  ceff1->cd(2);
+  hfracskip->Draw();
+  hfracskip->GetXaxis()->SetTitle("SDD Module Id");
+  hfracskip->GetYaxis()->SetTitle("Fraction of tracks with skipped SDD");
+  
 
   if(hgpxl){
     hgpxl->SetTitle("");
