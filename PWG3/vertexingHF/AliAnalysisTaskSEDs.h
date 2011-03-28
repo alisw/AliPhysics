@@ -30,7 +30,10 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* productioncuts, AliRDHFCutsDstoKKpi* analysiscuts);
   virtual ~AliAnalysisTaskSEDs();
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
-  void SetMassRange(Double_t rang=0.2){fMassRange=rang;}
+  void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
+  void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
+  void SetUseSelectionBit(Bool_t opt=kFALSE){ fUseSelectionBit=opt;}
+
   void SetInvMassBinSize(Double_t binsiz=0.002){fMassBinSize=binsiz;}
   void SetPtBins(Int_t n, Float_t* lim);
   void SetProductionCuts(AliRDHFCutsDstoKKpi* cuts){fProdCuts=cuts;}
@@ -56,13 +59,9 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TList*  fOutput;                    //! list send on output slot 0
   TH1F*   fHistNEvents;               //! hist. for No. of events  
   TH1F*   fChanHist[4];               //! hist. with KKpi and piKK candidates (sig,bkg,tot)
-  TH1F*   fChanHistCuts[4];           //! hist. with KKpi and piKK candidates analysis cuts
   TH1F*   fMassHist[4*kMaxPtBins];    //! hist. of mass spectra (sig,bkg,tot)
-  TH1F*   fMassHistCuts[4*kMaxPtBins];//! hist. of mass spectra (sig,bkg,tot) analysis cuts
   TH1F*   fMassHistPhi[3*kMaxPtBins];    //! hist. of mass spectra via phi (sig,bkg,tot)
-  TH1F*   fMassHistCutsPhi[3*kMaxPtBins];//! hist. of mass spectra via phi (sig,bkg,tot) analysis cuts
   TH1F*   fMassHistK0st[3*kMaxPtBins];    //! hist. of mass spectra via K0* (sig,bkg,tot)
-  TH1F*   fMassHistCutsK0st[3*kMaxPtBins];//! hist. of mass spectra via K0* (sig,bkg,tot) analysis cuts
   TH1F*   fCosPHist[4*kMaxPtBins];    //! hist. of cos pointing angle (sig,bkg,tot)
   TH1F*   fDLenHist[4*kMaxPtBins];    //! hist. of decay length (sig,bkg,tot)
   TH1F*   fSumd02Hist[4*kMaxPtBins];  //! hist. for sum d02 (Prod Cuts)
@@ -77,13 +76,12 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   TH2F*   fDalitzPhi[4*kMaxPtBins];   //! dalitz plot via phi (sig,bkg,tot)
   TH2F*   fDalitzK0st[4*kMaxPtBins];   //! dalitz plot via K0* (sig,bkg,tot)
   TH2F *fPtVsMass;    //! hist. of pt vs. mass (prod. cuts)
-  TH2F *fPtVsMassAC;  //! hist. of pt vs. mass (analysis cuts)
   TH2F *fYVsPt;       //! hist. of Y vs. Pt (prod. cuts)
-  TH2F *fYVsPtAC;     //! hist. of Y vs. Pt (analysis cuts)
   TH2F *fYVsPtSig;    //! hist. of Y vs. Pt (MC, only sig, prod. cuts)
-  TH2F *fYVsPtSigAC;    //! hist. of Y vs. Pt (MC, only sig, analysis cuts)
   
   Bool_t  fReadMC;                    //  flag for access to MC
+  Bool_t  fDoCutVarHistos;            //  flag to create and fill histos with distributions of cut variables
+  Bool_t  fUseSelectionBit;           // flag for useage of HasSelectionBit
   UChar_t fNPtBins;                   // number of Pt bins
   TList *fListCuts; //list of cuts
   Float_t fPtLimits[kMaxPtBins+1];    //  limits for pt bins
@@ -94,7 +92,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliRDHFCutsDstoKKpi *fProdCuts;     // Cuts for Analysis
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,7);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,8);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
