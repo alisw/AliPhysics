@@ -623,15 +623,21 @@ Double_t AliHLTMUONFullTracker::Angle(const AliHLTMUONRecHitStruct *v1, const Al
 {
   ///Angle of a straight line formed using v1 and v2
 
+  Double_t angle = 0.0;
+
   Float_t ptot2 = ((v1->fX * v1->fX) + (v1->fY * v1->fY) + (v1->fZ * v1->fZ))*
     ((v2->fX * v2->fX) + (v2->fY * v2->fY) + (v2->fZ * v2->fZ));
   if(ptot2 <= 0) {
-    return 0.0;
+    return 1.0e-4;
   } else {
     Float_t arg = ((v1->fX * v2->fX) + (v1->fY * v2->fY) + (v1->fZ * v2->fZ))/sqrt(ptot2);
     if(arg >  1.0) arg =  1.0;
     if(arg < -1.0) arg = -1.0;
-    return TMath::ACos(arg);
+    angle = TMath::ACos(arg);
+    if(TMath::AreEqualAbs(angle,0.0,1.0e-5))
+      return 1.0e-4 ;
+    else
+      return angle ;
     ///return acos(arg);
   }
   
@@ -847,6 +853,7 @@ Bool_t AliHLTMUONFullTracker::SlatTrackSeg()
 
 #ifdef PRINT_BACK
   HLTImportant("\nAliHLTMUONFullTracker::SlatTrackSeg()--Begin\n\n");
+  HLTImportant("\nAliHLTMUONFullTracker::SlatTrackSeg() : Total  number of Triggers : %d\n",fNofPoints[10]);
 #endif
   
 
@@ -1672,6 +1679,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   
 #ifdef PRINT_FRONT
   HLTImportant("\nAliHLTMUONFullTracker::QuadTrackSeg()--Begin\n\n");
+  HLTImportant("Number to back track segment found in St4 and 5 : %d\n",fNofbackTrackSeg);
 #endif
 
   for( Int_t ibackpoint=0;ibackpoint<fNofPoints[3];ibackpoint++){
@@ -1813,7 +1821,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
     }///for of back ch
     
     if(minAngle < minAngleWindow && indexMinAngleFront!=-1 
-       && indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1)){
+       && indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1) 
+       && fNofConnectedfrontTrackSeg[backIndex]<fgkMaxNofConnectedTracks ){
       
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[0] = ch0CellPoint[indexMinAngleFront];
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[1] = ch1CellPoint[indexMinAngleFront];
@@ -1829,6 +1838,12 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   Int_t nofNCfBackTrackSeg = 0;
   Int_t ncfBackTrackSeg[fgkMaxNofTracks];
   
+
+#ifdef PRINT_FRONT
+  HLTImportant("\tfNofConnected : %d, nofNCfBackTrackSeg : %d, fNoffrontTrackSeg : %d\n",
+	       fNofConnected,nofNCfBackTrackSeg,fNoffrontTrackSeg);
+#endif
+
   for( Int_t ibacktrackseg=0;ibacktrackseg<fNofbackTrackSeg;ibacktrackseg++)
     if(!isConnected[ibacktrackseg]) 
       ncfBackTrackSeg[nofNCfBackTrackSeg++] = ibacktrackseg;
@@ -1837,7 +1852,7 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
   
 
 #ifdef PRINT_FRONT
-  HLTImportant("\tfNofConnected : %d, nofNCfBackTrackSeg : %d\n",fNofConnected,nofNCfBackTrackSeg);
+  HLTImportant("\tfNofConnected : %d, nofNCfBackTrackSeg : %d, fNoffrontTrackSeg : %d\n",fNofConnected,nofNCfBackTrackSeg,fNoffrontTrackSeg);
   HLTImportant("\tfNofPoints[3] : %d, fNofPoints[2] : %d\n",fNofPoints[3],fNofPoints[2]);
   if(nofNCfBackTrackSeg==0){
     HLTImportant("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
@@ -1943,8 +1958,9 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
     }///backpoint loop
     
     if(minAngle < minAngleWindow && indexMinAngleFront!=-1 && 
-       indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1)){
-      
+       indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1)
+       && fNofConnectedfrontTrackSeg[backIndex]<fgkMaxNofConnectedTracks){
+
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[0] = ch0CellPoint[indexMinAngleFront];
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[1] = ch1CellPoint[indexMinAngleFront];
       if(isfrontpoint && !isbackpoint){
@@ -1971,7 +1987,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
       fNofConnected++;
 
 #ifdef PRINT_FRONT
-  HLTImportant("\tfNofConnected : %d, nofSNCfBackTrackSeg : %d\n",fNofConnected,nofSNCfBackTrackSeg);
+  HLTImportant("\tfNofConnected : %d, nofSNCfBackTrackSeg : %d, fNoffrontTrackSeg : %d\n",
+              fNofConnected,nofSNCfBackTrackSeg,fNoffrontTrackSeg);
   if(nofSNCfBackTrackSeg==0){
     HLTImportant("All fBackTrackSegs are connected with fFrontTrackSegs, no need to search further\n");
     HLTImportant("AliHLTMUONFullTracker::QuadTrackSeg()--End\n\n");
@@ -2065,7 +2082,8 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
     }///backpoint loop
     
     if(minAngle < minAngleWindow && indexMinAngleFront!=-1 && 
-       indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1)){
+       indexMinAngleBack!=-1 && fNoffrontTrackSeg<(fgkMaxNofTracks-1)
+       && fNofConnectedfrontTrackSeg[backIndex]<fgkMaxNofConnectedTracks){
 
       if(isfrontpoint){      
 	fFrontTrackSeg[fNoffrontTrackSeg].fIndex[0] = indexMinAngleFront;
@@ -2077,6 +2095,10 @@ Bool_t AliHLTMUONFullTracker::QuadTrackSeg()
 
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[2] = ch2CellPoint[indexMinAngleBack];
       fFrontTrackSeg[fNoffrontTrackSeg].fIndex[3] = ch3CellPoint[indexMinAngleBack];
+#ifdef PRINT_FRONT
+      HLTImportant("backIndex : %d, fNofConnectedfrontTrackSeg[backIndex] : %d, fNoffrontTrackSeg : %d",
+                  backIndex,fNofConnectedfrontTrackSeg[backIndex],fNoffrontTrackSeg);
+#endif
 
       fBackToFront[backIndex][fNofConnectedfrontTrackSeg[backIndex]++] = fNoffrontTrackSeg;
       fNoffrontTrackSeg++;
@@ -3214,9 +3236,9 @@ Bool_t AliHLTMUONFullTracker::ExtrapolateToOrigin()
     Sub(&p2,&p1,&pSeg2);
 
     if(thetaDev > 0)
-      pyz = (3.0*0.3/sin(Angle(&pSeg1,&pSeg2)));/// *  sqrt(x3*x3 + y3*y3)/z3 ;
+      pyz = (3.0*0.3/TMath::Sin(Angle(&pSeg1,&pSeg2)));/// *  sqrt(x3*x3 + y3*y3)/z3 ;
     else
-      pyz = -(3.0*0.3/sin(Angle(&pSeg1,&pSeg2)));/// *  sqrt(x3*x3 + y3*y3)/z3 ;
+      pyz = -(3.0*0.3/TMath::Sin(Angle(&pSeg1,&pSeg2)));/// *  sqrt(x3*x3 + y3*y3)/z3 ;
     
     nbSlope = (p2.fX - p1.fX)/(p2.fZ - p1.fZ); 
     bSlope = (p2.fY - p1.fY)/(p2.fZ - p1.fZ); 
