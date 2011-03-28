@@ -38,6 +38,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fFMD2oMax(0),
     fFMD3iMax(0),
     fFMD3oMax(0),
+    fEtaLumping(1), 
+    fPhiLumping(1),    
     fDebug(0)
 {
   // 
@@ -63,6 +65,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fFMD2oMax(0),
     fFMD3iMax(0),
     fFMD3oMax(0),
+    fEtaLumping(5), 
+    fPhiLumping(1),
     fDebug(0)
 {
   // 
@@ -113,6 +117,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fFMD2oMax(o.fFMD2oMax),
     fFMD3iMax(o.fFMD3iMax),
     fFMD3oMax(o.fFMD3oMax),
+    fEtaLumping(o.fEtaLumping), 
+    fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug)
 {
   // 
@@ -161,7 +167,8 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fFMD2oMax     = o.fFMD2oMax;
   fFMD3iMax     = o.fFMD3iMax;
   fFMD3oMax     = o.fFMD3oMax;
-
+  fEtaLumping   = o.fEtaLumping;
+  fPhiLumping   = o.fPhiLumping;
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
   TObject* obj = 0;
@@ -265,7 +272,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	fRingHistos.ls();
 	return false;
       }
-      rh->ResetPoissonHistos();
+      rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
@@ -293,45 +300,35 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  rh->fEtaVsM->Fill(eta, n);
 	  rh->fCorr->Fill(eta, c);
 	  
-	  //if (n < .9) rh->fEmptyStrips->Fill(eta,phi);
-	  if (n > 0.9) rh->fBasicHits->Fill(eta,phi);
+	  if (n > 0.9 && c > 0) rh->fBasicHits->Fill(eta,phi, 1./c);
+	  else                  rh->fEmptyStrips->Fill(eta,phi);
 	    
 	  h->Fill(eta,phi,n);
 	  rh->fDensity->Fill(eta,phi,n);
 	} // for t
       } // for s 
-      //std::cout<<rh->fTotalStrips->GetEntries()<<"  "<<rh->fEmptyStrips->GetEntries()<<std::endl;
-      // Loop over poisson histograms 
+
+
+      // --- Loop over poisson histograms ----------------------------
       for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) { 
 	for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
 	  Double_t eLossV   = h->GetBinContent(ieta, iphi);
-	  // Double_t eLossE   = h->GetBinError(ieta, iphi);
-	  Float_t eta       = h->GetXaxis()->GetBinCenter(ieta);
-	  Float_t phi       = h->GetYaxis()->GetBinCenter(iphi);
-	  Double_t empty    = rh->fEmptyStrips->GetBinContent(rh->fEmptyStrips->GetXaxis()->FindBin(eta),
-							      rh->fEmptyStrips->GetYaxis()->FindBin(phi)) ;
-	  Double_t total    = rh->fTotalStrips->GetBinContent(rh->fTotalStrips->GetXaxis()->FindBin(eta),
-							      rh->fTotalStrips->GetYaxis()->FindBin(phi));
-	  
-	  Double_t corr     = rh->fCorr->GetBinContent(rh->fCorr->GetXaxis()->FindBin(eta));
-	  
-	  
+	  Float_t  eta      = h->GetXaxis()->GetBinCenter(ieta);
+	  Float_t  phi      = h->GetYaxis()->GetBinCenter(iphi);
+	  Int_t    jeta     = rh->fEmptyStrips->GetXaxis()->FindBin(eta);
+	  Int_t    jphi     = rh->fEmptyStrips->GetYaxis()->FindBin(phi);
+	  Double_t empty    = rh->fEmptyStrips->GetBinContent(jeta, jphi);
+	  Double_t total    = rh->fTotalStrips->GetBinContent(jeta, jphi);
 	  Double_t hits     = rh->fBasicHits->GetBinContent(ieta,iphi);
-	  
-	  Double_t poissonV =  (total <= 0 || empty <= 0 ? 0 : 
-				-TMath::Log(empty / total));
-	  if(poissonV > 0)
-	    poissonV = (hits * poissonV) / (1 - TMath::Exp(-1*poissonV));
-	  if(corr > 0) {
-	    poissonV = poissonV / corr;
-	  }
-	  //else poissonV = 0;
-	  // if ( eLossV > 0)
-	  //  std::cout<<"event : "<<total<<"  "<<empty<<"  "<<hits<<"  "<<poissonV<<"  "<<eLossV<<std::endl;
+	  // Mean in region of interest 
+	  Double_t poissonM = (total <= 0 || empty <= 0 ? 0 : 
+			       -TMath::Log(empty / total));
+	  Double_t poissonV = 0;
+	  if(poissonM > 0)
+	    // Correct for counting statistics and weight by counts 
+	    poissonV = (hits * poissonM) / (1 - TMath::Exp(-1*poissonM));
 	  Double_t poissonE = 0 ;
 	  if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
-	  
-
 	  
 	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
 	  rh->fEmptyVsTotal->Fill(total, empty);
@@ -942,7 +939,9 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
 
 //____________________________________________________________________
 void
-AliFMDDensityCalculator::RingHistos::ResetPoissonHistos()
+AliFMDDensityCalculator::RingHistos::ResetPoissonHistos(const TH2D* h,
+							Int_t etaLumping,
+							Int_t phiLumping)
 {
   if (fTotalStrips) { 
     fTotalStrips->Reset();
@@ -952,43 +951,24 @@ AliFMDDensityCalculator::RingHistos::ResetPoissonHistos()
   }
   //Inserted by HHD
   
-  //Float_t nbinlimitsFMD3I[8] =  {-3.4,-3.2,-3,-2.8,-2.6,-2.4,-2.2,-2};
-  Int_t nbins = 40;
-  /*if(fName.Contains("FMD1I")) nbins = 7;
-  if(fName.Contains("FMD2I")) nbins = 8;
-  if(fName.Contains("FMD2O")) nbins = 4;
-  if(fName.Contains("FMD3I")) nbins = 8;
-  if(fName.Contains("FMD3O")) nbins = 4;*/
-  Float_t lowlimit = -4, highlimit = 6;
-  /*if(fName.Contains("FMD1I")) {lowlimit = 3.6; highlimit = 5;}
-  if(fName.Contains("FMD2I")) {lowlimit = 2.2; highlimit = 3.8;}
-  if(fName.Contains("FMD2O")) {lowlimit = 1.6; highlimit = 2.4;} 
-  if(fName.Contains("FMD3I")) {lowlimit = -2.4; highlimit = -1.6;}
-  if(fName.Contains("FMD3O")) {lowlimit = -3.5; highlimit = -2.1;} 
-  
-  std::cout<<nbins<<"   "<<lowlimit<<"    "<<highlimit<<std::endl;
-  */
+  Int_t    nEta    = h->GetNbinsX() / etaLumping;
+  Int_t    nEtaF   = h->GetNbinsX();
+  Double_t etaMin  = h->GetXaxis()->GetXmin();
+  Double_t etaMax  = h->GetXaxis()->GetXmax();
+  Int_t    nPhi    = h->GetNbinsY() / phiLumping;
+  Int_t    nPhiF   = h->GetNbinsY();
+  Double_t phiMin  = h->GetYaxis()->GetXmin();
+  Double_t phiMax  = h->GetYaxis()->GetXmax();
+
   fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
 			  Form("Total number of strips in %s", fName.Data()), 
-			  nbins, 
-			  lowlimit,
-			  highlimit, 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
-			  0, 2*TMath::Pi());
+			  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
   fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
 			  Form("Empty number of strips in %s", fName.Data()), 
-			  nbins, 
-			  lowlimit,
-			  highlimit, 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
-			  0, 2*TMath::Pi());
+			  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
   fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
 			  Form("Basic number of hits in %s", fName.Data()), 
-			  200, 
-			  -4, 
-			  6, 
-			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
-			  0, 2*TMath::Pi());
+			  nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
   
   fTotalStrips->SetDirectory(0);
   fEmptyStrips->SetDirectory(0);
@@ -1008,44 +988,6 @@ AliFMDDensityCalculator::RingHistos::ResetPoissonHistos()
 void
 AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
 {
-  /*if (fTotalStrips) delete fTotalStrips;
-  if (fEmptyStrips) delete fEmptyStrips;
-  if (fBasicHits) delete fBasicHits;
-  
-  fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
-			  Form("Total number of strips in %s", fName.Data()), 
-			  eAxis.GetNbins()/5., 
-			  eAxis.GetXmin(),
-			  eAxis.GetXmax(), 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 5), 
-			  0, 2*TMath::Pi());
-  fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
-			  Form("Empty number of strips in %s", fName.Data()), 
-			  eAxis.GetNbins()/5., 
-			  eAxis.GetXmin(), 
-			  eAxis.GetXmax(), 
-			  (fRing == 'I' || fRing == 'i' ? 5 : 10), 
-			  0, 2*TMath::Pi());
-  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
-			  Form("Basic number of hits in %s", fName.Data()), 
-			  eAxis.GetNbins(), 
-			  eAxis.GetXmin(), 
-			  eAxis.GetXmax(), 
-			  (fRing == 'I' || fRing == 'i' ? 20 : 40), 
-			  0, 2*TMath::Pi());
-  
-  fTotalStrips->SetDirectory(0);
-  fEmptyStrips->SetDirectory(0);
-  fBasicHits->SetDirectory(0);
-  fTotalStrips->SetXTitle("#eta");
-  fEmptyStrips->SetXTitle("#eta");
-  fBasicHits->SetXTitle("#eta");
-  fTotalStrips->SetYTitle("#varphi [radians]");
-  fEmptyStrips->SetYTitle("#varphi [radians]");
-  fBasicHits->SetYTitle("#varphi [radians]");
-  fTotalStrips->Sumw2();
-  fEmptyStrips->Sumw2();
-  fBasicHits->Sumw2();*/
 }
 
 //____________________________________________________________________

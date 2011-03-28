@@ -1274,7 +1274,7 @@ protected:
   //__________________________________________________________________
   /** 
    * Scan directory @a dir (possibly recursive) for tree files to add
-   * to the chain.  
+   * to the chain.    This does not follow sym-links
    * 
    * @param dir        Directory to scan
    * @param chain      Chain to add to
@@ -1300,8 +1300,10 @@ protected:
     // Get list of files, and go back to old working directory
     TString oldDir(gSystem->WorkingDirectory());
     TList* files = dir->GetListOfFiles();
-    gSystem->ChangeDirectory(oldDir);
-    if (!files) return false;
+    if (!files) { 
+      gSystem->ChangeDirectory(oldDir);
+      return false;
+    }
 
     // Sort list of files and check if we should add it 
     files->Sort();
@@ -1309,16 +1311,18 @@ protected:
     TSystemFile* file = 0;
     while ((file = static_cast<TSystemFile*>(next()))) {
       TString name(file->GetName());
-    
+      TString title(file->GetTitle());
+      TString full(gSystem->ConcatFileName(file->GetTitle(), name.Data()));
       // Ignore special links 
       if (name == "." || name == "..") { 
-	Info("ScanDirectory", "Ignoring %s", name.Data());
+	// Info("ScanDirectory", "Ignoring %s", name.Data());
 	continue;
       }
-      Info("ScanDirectory", "Looking at %s", name.Data());
 
+      Info("ScanDirectory", "Looking at %s", full.Data());
       // Check if this is a directory 
-      if (file->IsDirectory()) { 
+      if (file->IsDirectory(full.Data())) { 
+	Info("ScanDirectory", "%s is a directory", full.Data());
 	if (recursive) {
           if (ScanDirectory(static_cast<TSystemDirectory*>(file),
 			    chain,type,recursive))
@@ -1335,7 +1339,11 @@ protected:
       if (!name.EndsWith(".root")) continue;
 
       // If this file does not contain AliESDs, ignore 
-      if (!name.Contains(fnPattern)) continue;
+      if (!name.Contains(fnPattern)) { 
+	Info("ScanDirectory", "%s does not match pattern %s", 
+	     name.Data(), fnPattern.Data());
+	continue;
+      }
     
       // Get the path 
       TString fn(Form("%s/%s", file->GetTitle(), name.Data()));
@@ -1345,6 +1353,7 @@ protected:
       chain->Add(fn);
       ret = true;
     }
+    gSystem->ChangeDirectory(oldDir);
     return ret;
   }
   //__________________________________________________________________
@@ -1521,7 +1530,7 @@ protected:
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
 
     // --- Add the task ----------------------------------------------
-    gROOT->Macro(Form("AddTaskFMDEloss.C(%d)", mc, fUseCent));
+    gROOT->Macro(Form("AddTaskFMDEloss.C(%d,%d)", mc, fUseCent));
   }
   /** 
    * Crete output handler - we don't want one here. 

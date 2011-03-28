@@ -952,6 +952,7 @@ AliBasedNdetaTask::CentralityBin::CreateSums(const TH2D* data, const TH2D* mc)
   if (!mc) return;
 
   fSumMC = static_cast<TH2D*>(mc->Clone(Form("%sMC", GetName())));
+  fSumMC->SetTitle(Form("%s (MC)", fSumMC->GetTitle()));
   fSumMC->SetDirectory(0);
   fSumMC->Reset();
   fSums->Add(fSumMC);
