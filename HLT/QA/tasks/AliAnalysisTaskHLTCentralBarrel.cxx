@@ -47,7 +47,7 @@ ClassImp(AliAnalysisTaskHLTCentralBarrel)
 AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
 :AliAnalysisTaskSE()
   ,fUseHLTTrigger(kFALSE)
-  ,fUseCentrality(kFALSE)
+  ,fCentrality()
   ,fBeamType()
   ,fOutputList(0)
   ,fEventOFF(0)
@@ -69,7 +69,7 @@ AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel()
 AliAnalysisTaskHLTCentralBarrel::AliAnalysisTaskHLTCentralBarrel(const char *name)
 :AliAnalysisTaskSE(name)    
   ,fUseHLTTrigger(kFALSE)   
-  ,fUseCentrality(kFALSE)   
+  ,fCentrality()   
   ,fBeamType()
   ,fOutputList(0)
   ,fEventOFF(0)
@@ -99,39 +99,50 @@ void AliAnalysisTaskHLTCentralBarrel::UserCreateOutputObjects(){
   fOutputList = new TList();
   fOutputList->SetOwner();
   fOutputList->SetName(GetName());
-    
-  static const int sizeEvent = 6;
- 
-  int    binsEvent[sizeEvent] = {  50,  50, 250,   100,   100, 2 };
-  double minEvent [sizeEvent] = {  -1,  -1, -30,     0,     0, 0 };
-  double maxEvent [sizeEvent] = {   1,   1,  30, 10000, 10000, 2 };
   
-  fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
-  fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);
+  if(fBeamType.Contains("Pb")){ // in case of a Pb+Pb run the V0 centrality is added to the THnSparse  
+     static const int sizeEvent = 7;
+     // 			      0    1     2    3         4            5         6
+     // 			      x    y     z    #contr   mult  vertexStatus  V0centrality
+     int    binsEvent[sizeEvent] = { 100, 100,  60,   200,    200,    2,	    100 }; // binning
+     double minEvent [sizeEvent] = {  -1,  -1, -20,	0,      3,    0,  	      0 }; // min x
+     double maxEvent [sizeEvent] = {   1,   1,  20,  2000,   2000,    2,	    100 }; // max x    
+     fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
+     fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);
+  }
+  else {
+     static const int sizeEvent = 6;
+     // 			      0     1    2    3         4            5
+     // 			      x     y    z    #contr   mult    vertexStatus  
+     int    binsEvent[sizeEvent] = { 100,  100, 60,   200,     200, 	 2 }; // binning
+     double minEvent [sizeEvent] = {  -1,  -1, -20,     0,	 3,      0 }; // min x
+     double maxEvent [sizeEvent] = {   1,   1,  20,  2000,    2000,      2 }; // max x	 
+     fEventHLT = CreateEventTHnSparse("fEventHLT",sizeEvent,binsEvent,minEvent,maxEvent);
+     fEventOFF = CreateEventTHnSparse("fEventOFF",sizeEvent,binsEvent,minEvent,maxEvent);  
+  }
   
-  if(fBeamType.Contains("Pb")){
-     static const int sizeTrack = 15;
-     // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge DCArSG DCAzSG ITScl mult vertex status  vertexZ  centrality
-     Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  800,  400,    3,  400,  400,	 10,  2000,	2,	      250,	  100 };
-     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1,  -40, -100, -1.5, -100, -100,	  0,	 0,	0,	      -30,	    0 };
-     Double_t maxTrack [sizeTrack] = { 150, 200,   4,	3,   7,   40,  100,  1.5,  100,  100,	 10, 20000,	2,	      -30,	  100 };
-      
+  if(fBeamType.Contains("Pb")){ // in case of a Pb+Pb run the V0 centrality is added to the THnSparse
+     static const int sizeTrack = 13;
+     //                                 0    1     2    3   4      5    6     7       8      9    10              11          12            
+     // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge  ITScl mult vertex status  vertexZ	V0centrality
+     Int_t    binsTrack[sizeTrack] = { 200, 200, 200, 200, 200,  100,  100,    3,   10,  1000,     2,		 60,	 100 }; // binning
+     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -2,  -1,  -10,  -10, -1.5,    0,     3,     0,		-20,	   0 }; // min x
+     Double_t maxTrack [sizeTrack] = {   5, 200,   4,	2,   7,   10,  -10,  1.5,   10, 10000,     2,		 20,	 100 }; // max x       
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);
   }
   else {    
-     static const int sizeTrack = 14;
-     // 			       pt  TPCcl theta eta phi   DCAr  DCAz charge DCArSG DCAzSG ITScl mult vertex status  vertexZ  
-     Int_t    binsTrack[sizeTrack] = {1500, 200, 200, 200, 200,  800,  400,    3,  400,  400,	 10,  1000,	2,	      250 };
-     Double_t minTrack [sizeTrack] = {   0,   0,  -1,  -3,  -1,  -40, -100, -1.5, -100, -100,	  0,	 0,	0,	      -30 };
-     Double_t maxTrack [sizeTrack] = { 150, 200,   4,	3,   7,   40,  100,  1.5,  100,  100,	 10, 10000,	2,	      -30 };  
-     
+     static const int sizeTrack = 12;
+     //                                 0    1     2    3   4       5     6      7       8     9        10             11       
+     // 			       pt  TPCcl theta eta  phi   DCAr  DCAz  charge   ITScl  mult  vertex status   vertexZ  
+     Int_t    binsTrack[sizeTrack] = {200, 200, 200,  200,  200,  100,  100,      3,    10,  1000,     2,  	    60 }; // binning
+     Double_t minTrack [sizeTrack] = {  0,   0,  -1,   -2,   -1,  -10,  -10,   -1.5,     0,     3,     0,  	   -20 }; // min x
+     Double_t maxTrack [sizeTrack] = {  5, 200,   4,    2,    7,   10,   10,    1.5,    10, 10000,     2,  	    20 }; // max x  	  
      fTrackHLT = CreateTrackTHnSparse("fTrackHLT",sizeTrack,binsTrack,minTrack,maxTrack);
      fTrackOFF = CreateTrackTHnSparse("fTrackOFF",sizeTrack,binsTrack,minTrack,maxTrack);     
   }
   
   fTextBox = new TText();  
-
   fOutputList->Add(fEventOFF);
   fOutputList->Add(fEventHLT);
   fOutputList->Add(fTrackOFF);
@@ -178,22 +189,23 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
   Double_t bfield = esdOFF->GetMagneticField();
   Int_t nr_tracksOFF = 0;
   
-  if(esdOFF->GetEventSpecie()==16) return;
+  if(esdOFF->GetEventSpecie()==16) return; // skip calibration events
 
-  AliCentrality *cent = esdOFF->GetCentrality();
-    
-  for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
-      AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
-      if (!esdTrackOFF) continue;
-      if(!(esdTrackOFF->GetStatus()&AliESDtrack::kTPCin)) continue;
-      nr_tracksOFF++; 
+  if(fBeamType.Contains("Pb")){
+     fCentrality = esdOFF->GetCentrality(); 
+     // this information is only available from the offline ESD for 2011, the V0 info was not stored in the HLTesd (23.03.11,Kelly)
+     if(!fCentrality){
+        printf("Centrality pointer is empty\n");
+	return;
+     }
   }
-         
+               
   for(Int_t i=0; i<esdOFF->GetNumberOfTracks(); i++){
       
       AliESDtrack *esdTrackOFF = esdOFF->GetTrack(i);
       if (!esdTrackOFF) continue;
       if(!(esdTrackOFF->GetStatus()&AliESDtrack::kTPCin)) continue;
+      nr_tracksOFF++;
 
       //DCA calculations(from offline)
       Double_t x[3];
@@ -212,10 +224,9 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	 dca[0]=-99;
 	 dca[1]=-99;
       }
-      //else ?????? why doesn't it work with pp????
       esdTrackOFF->GetImpactParametersTPC(dca,cov);
 
-      Float_t DCAr =-99, DCAz = -99.;  
+      //Float_t DCAr =-99, DCAz = -99.;  
 
       if(fBeamType.Contains("Pb")){       
          Double_t trackOFF[] = {
@@ -227,14 +238,14 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         			  ,dca[0]			  
         			  ,dca[1]			  
         			  ,esdTrackOFF->Charge() 
-        			  ,DCAr 			  
-        			  ,DCAz 			  
+        			  //,DCAr 			  
+        			  //,DCAz 			  
         			  ,esdTrackOFF->GetNcls(0)
         			  ,nr_tracksOFF
         			  ,vertOFF->GetStatus()
         			  ,vertOFF->GetZ()
-        			  ,cent->GetCentralityPercentile("V0M")
-        		       };			       			      
+        			  ,fCentrality->GetCentralityPercentile("V0M")
+        		       }; 
         if(fOptions.Contains("track-off")) fTrackOFF->Fill(trackOFF);
       } else {
         Double_t trackOFF[] = {
@@ -246,8 +257,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         			  ,dca[0]			  
         			  ,dca[1]			  
         			  ,esdTrackOFF->Charge() 
-        			  ,DCAr 			  
-        			  ,DCAz 			  
+        			  //,DCAr 			  
+        			  //,DCAz 			  
         			  ,esdTrackOFF->GetNcls(0)
         			  ,nr_tracksOFF
         			  ,vertOFF->GetStatus()
@@ -257,36 +268,35 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
       }
   } // end of track loop
     
-  Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};
-  if(fOptions.Contains("event-off")) fEventOFF->Fill(eventOFF);  
-    
-  
+  if(fBeamType.Contains("Pb")){
+     Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus(),fCentrality->GetCentralityPercentile("V0M")};
+     if(fOptions.Contains("event-off")) fEventOFF->Fill(eventOFF);  
+  }
+  else {
+     Double_t eventOFF[] = { vertOFF->GetX(), vertOFF->GetY(), vertOFF->GetZ(), vertOFF->GetNContributors(), nr_tracksOFF, vertOFF->GetStatus()};
+     if(fOptions.Contains("event-off")) fEventOFF->Fill(eventOFF);
+  }
+  // Inspite of the different options to fill event or track properties, all the loops are being executed. 
+  // The options influence only whether the respective THnSparse is filled or not.
+  // Can definitely be improved to save processing time in unnecessary loops that won't fill anything at the end.   
   
   //======================================== HLT ==========================================//
 
   Int_t nr_tracksHLT = 0;  
-  if(esdHLT->GetEventSpecie()==16) return;
+  if(esdHLT->GetEventSpecie()==16) return; // skip calibration events
+  
   const AliESDVertex *vertHLT = esdHLT->GetPrimaryVertexTracks();
-  
-  for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){
-      AliESDtrack *esdTrackHLT = esdHLT->GetTrack(i);
-      if (!esdTrackHLT) continue;
-      if(!(esdTrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
-      nr_tracksHLT++; 
-  }
-  
-  Double_t eventHLT[] = { vertHLT->GetX(), vertHLT->GetY(), vertHLT->GetZ(), vertHLT->GetNContributors(), nr_tracksHLT, vertHLT->GetStatus()};
-  if(fOptions.Contains("event-hlt")) fEventHLT->Fill(eventHLT);  
-
+    
   for(Int_t i=0; i<esdHLT->GetNumberOfTracks(); i++){
       
       AliESDtrack *esdTrackHLT = esdHLT->GetTrack(i);
       if(!esdTrackHLT) continue;
       if(!(esdTrackHLT->GetStatus()&AliESDtrack::kTPCin)) continue;
+      nr_tracksHLT++; 
       
       //DCA calculations
-      Float_t DCAr=-99;
-      Float_t DCAz=-99;
+      //Float_t DCAr=-99; // for the DCA of the HLTesd
+      //Float_t DCAz=-99;
       Float_t dca[2];
       if(vertHLT->GetX()==0 && vertHLT->GetY()==0 && vertHLT->GetZ() ==0 ){
 	dca[0]=-99;
@@ -296,7 +306,7 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
 	//Calculating DCA "old" fashion
 	esdTrackHLT->GetDZ(esdHLT->GetPrimaryVertex()->GetXv(), esdHLT->GetPrimaryVertex()->GetYv(), esdHLT->GetPrimaryVertex()->GetZv(), bfield, dca);
 	// plotting the DCA calculated by Sergey 
-	esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
+	//esdTrackHLT->GetImpactParametersTPC(DCAr,DCAz);
       }
       
       if(fBeamType.Contains("Pb")){
@@ -309,13 +319,13 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
         		        ,dca[0] 		      
         		        ,dca[1] 		      
         		        ,esdTrackHLT->Charge()        
-        		        ,DCAr			      
-        		        ,DCAz			      
+        		        //,DCAr			      
+        		        //,DCAz			      
         		        ,esdTrackHLT->GetNcls(0)
         		        ,nr_tracksHLT
         		        ,vertHLT->GetStatus()
         		        ,vertHLT->GetZ()
-        		        ,cent->GetCentralityPercentile("V0M")
+        		        ,fCentrality->GetCentralityPercentile("V0M")
         		       };
         if(fOptions.Contains("track-hlt")) fTrackHLT->Fill(trackHLT);   
       } else {
@@ -328,8 +338,8 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
              		   	,dca[0] 		      
              		   	,dca[1] 		      
              		   	,esdTrackHLT->Charge()        
-             		   	,DCAr			      
-             		   	,DCAz			      
+             		   	//,DCAr			      
+             		   	//,DCAz			      
 	     		   	,esdTrackHLT->GetNcls(0)
 	     		   	,nr_tracksHLT
 	     		   	,vertHLT->GetStatus()
@@ -337,7 +347,17 @@ void AliAnalysisTaskHLTCentralBarrel::UserExec(Option_t *){
              		       };
         if(fOptions.Contains("track-hlt")) fTrackHLT->Fill(trackHLT);
       }   
-  }  // end of track loop             
+  }  // end of track loop  
+  
+  if(fBeamType.Contains("Pb")){
+     Double_t eventHLT[] = { vertHLT->GetX(), vertHLT->GetY(), vertHLT->GetZ(), vertHLT->GetNContributors(), nr_tracksHLT, vertHLT->GetStatus(),fCentrality->GetCentralityPercentile("V0M")};
+     if(fOptions.Contains("event-hlt")) fEventHLT->Fill(eventHLT);  
+  }
+  else{
+     Double_t eventHLT[] = { vertHLT->GetX(), vertHLT->GetY(), vertHLT->GetZ(), vertHLT->GetNContributors(), nr_tracksHLT, vertHLT->GetStatus()};
+     if(fOptions.Contains("event-hlt")) fEventHLT->Fill(eventHLT);
+  }
+             
   // Post output data.
   PostData(1, fOutputList);
 }
@@ -356,6 +376,7 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateEventTHnSparse(const char* na
   thn->GetAxis(3)->SetTitle("number of contributors");
   thn->GetAxis(4)->SetTitle("track multiplicity");
   thn->GetAxis(5)->SetTitle("vertex status"); 
+  if(fBeamType.Contains("Pb")) thn->GetAxis(6)->SetTitle("V0 centrality");
   return thn;
 }
 
@@ -371,9 +392,9 @@ THnSparseF* AliAnalysisTaskHLTCentralBarrel::CreateTrackTHnSparse(const char* na
   thn->GetAxis(5)->SetTitle("DCAr");
   thn->GetAxis(6)->SetTitle("DCAz");
   thn->GetAxis(7)->SetTitle("polarity");
-  thn->GetAxis(8)->SetTitle("DCArSG");
-  thn->GetAxis(9)->SetTitle("DCAzSG");
-  thn->GetAxis(10)->SetTitle("ITS clusters/track");  
+  //thn->GetAxis(8)->SetTitle("DCArSG");
+  //thn->GetAxis(9)->SetTitle("DCAzSG");
+  thn->GetAxis(8)->SetTitle("ITS clusters/track");  
   return thn;
 }
 

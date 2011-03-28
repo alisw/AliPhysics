@@ -18,6 +18,7 @@ class TList;
 class TText;
 class TString;
 class AliESDEvent;
+class AliCentrality;
 
 #include "THnSparse.h"
 #include "AliAnalysisTaskSE.h"
@@ -37,8 +38,6 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
 
     // function to select only HLT triggered events
     //void SetUseHLTTriggerDecision(Bool_t useHLT = kFALSE) { fUseHLTTrigger = useHLT;        }
-    // function to select centrality
-    void SetUseCentrality(Bool_t useCentrality = kFALSE)  { fUseCentrality = useCentrality; }    
     // function to set the beam type
     void SetBeamType(TString beamType) {  fBeamType = beamType; }    
     // function to create the THnSparse and name the axis
@@ -57,9 +56,9 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     /** assignment operator */
     AliAnalysisTaskHLTCentralBarrel& operator=(const AliAnalysisTaskHLTCentralBarrel&); 
                 
-    Bool_t fUseHLTTrigger;  // Use HLT Trigger Decision
-    Bool_t fUseCentrality;  // Include centrality
-    TString fBeamType;      // beam type, p-p, Pb-Pb, No beam
+    Bool_t fUseHLTTrigger;       // Use HLT Trigger Decision
+    AliCentrality *fCentrality;  // Centrality holder
+    TString fBeamType;           // beam type: p-p, Pb-Pb, No beam
     
     TList *fOutputList;  // list of output THnSparse objects
     
@@ -69,9 +68,8 @@ class AliAnalysisTaskHLTCentralBarrel : public AliAnalysisTaskSE {
     THnSparse *fTrackOFF; //! offline track properties
     THnSparse *fTrackHLT; //! HLT track properties
     
-    TString fOptions; //!
-
-    TText *fTextBox; //! TText box
+    TString fOptions; //! options for filling event and/or track properties for hlt and/or offline
+    TText *fTextBox; //! TText box containing run number info and date
     
     ClassDef(AliAnalysisTaskHLTCentralBarrel, 0);
 };
