@@ -34,11 +34,12 @@ class AliITSDriftSpeedSDD : public TObject {
     else return 0; }
 
   void PrintDriftSpeedParameters() const;
-
+  void SetDegreeofPoly(Int_t deg) {fPolDeg = deg>fgkMaxPolDeg ? fgkMaxPolDeg : deg;}
   Int_t GetDegreeofPoly() const {return fPolDeg;}
   Int_t GetEventNumber() const {return fEvNum;}
   UInt_t GetEventTimestamp() const {return fTimestamp;}
   Float_t GetDriftSpeedParameter(Int_t i) const {return fDriftSpeedParam[i];}
+  void    SetDriftSpeedParameter(Int_t i,Float_t par)  {if (i<=fPolDeg) fDriftSpeedParam[i] = par;}
   Double_t GetDriftSpeedAtAnode(Double_t nAnode) const{
     Double_t drSpeed=fDriftSpeedParam[fgkMaxPolDeg];
     for(Int_t i=fgkMaxPolDeg-1; i>=0; --i) drSpeed=fDriftSpeedParam[i]+nAnode*drSpeed;
