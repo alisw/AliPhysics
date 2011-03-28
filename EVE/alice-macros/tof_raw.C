@@ -1,4 +1,4 @@
-void tof_raw((Int_t newDecoder = 2)
+void tof_raw(Int_t newDecoder = 2)
 {
   AliRawReader *rawReader = AliEveEventManager::AssertRawReader();
 
