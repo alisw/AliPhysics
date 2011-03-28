@@ -308,7 +308,7 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
 	    {
 	      for(int m = 0; m < n ; m++ )
         {
-          fscanf(fp, "%lf\t", &fPFAmpVectors[i][j][m] );
+          fscanf(fp,  "%lf\t", &fPFAmpVectors[i][j][m] );
           fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
         }
 	      fscanf(fp,   "\n" );
@@ -322,12 +322,10 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
 	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
                                       fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
         
-	      fclose (fp);
-	      fclose (fpc);
 	    }
       
-      delete fp;
-      delete fpc;
+      if(fp) fclose (fp );
+      if(fpc)fclose (fpc);
       
     }
   }
