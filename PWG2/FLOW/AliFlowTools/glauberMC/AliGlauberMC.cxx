@@ -1063,29 +1063,29 @@ Double_t AliGlauberMC::GetEpsilon5Coll() const
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetPsi2() const
 {
-  return ((TMath::ATan(2*fMeanr2Sin2Phi/fMeanr2Cos2Phi)+TMath::Pi())/2);
-  //return ((TMath::Atan2(2*fMeanr2Sin2Phi/fMeanr2Cos2Phi)+TMath::Pi())/2);
+  return ((TMath::ATan2(fMeanr2Sin2Phi,fMeanr2Cos2Phi)+TMath::Pi())/2);
+  
 }
 
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetPsi3() const
 {
-  return ((TMath::ATan(2*fMeanr2Sin3Phi/fMeanr2Cos3Phi)+TMath::Pi())/3);
-  //return ((TMath::ATan2(2*fMeanr3Sin3Phi/fMeanr3Cos3Phi)+TMath::Pi())/3);
+  return ((TMath::ATan2(fMeanr2Sin3Phi,fMeanr2Cos3Phi)+TMath::Pi())/3);
+  //return ((TMath::ATan2(fMean32Sin3Phi,fMeanr3Cos3Phi)+TMath::Pi())/3);  
 }
 
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetPsi4() const
 {
-  return ((TMath::ATan(2*fMeanr2Sin4Phi/fMeanr2Cos4Phi)+TMath::Pi())/4);
-  //return ((TMath::ATan2(2*fMeanr4Sin4Phi/fMeanr4Cos4Phi)+TMath::Pi())/4);
+  return ((TMath::ATan2(fMeanr2Sin4Phi,fMeanr2Cos4Phi)+TMath::Pi())/4);
+  //return ((TMath::ATan2(fMeanr4Sin5Phi,fMeanr4Cos5Phi)+TMath::Pi())/5);
 }
 
 //______________________________________________________________________________
 Double_t AliGlauberMC::GetPsi5() const
 {
-  return ((TMath::ATan(2*fMeanr2Sin5Phi/fMeanr2Cos5Phi)+TMath::Pi())/5);
-  //return ((TMath::ATan2(2*fMeanr5Sin5Phi/fMeanr5Cos5Phi)+TMath::Pi())/5);
+  return ((TMath::ATan2(fMeanr2Sin5Phi,fMeanr2Cos5Phi)+TMath::Pi())/5);
+  //return ((TMath::ATan2(fMeanr5Sin5Phi,fMeanr5Cos5Phi)+TMath::Pi())/5);  
 }
 
 //______________________________________________________________________________
