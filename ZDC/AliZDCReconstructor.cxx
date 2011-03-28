@@ -629,7 +629,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sPMRef2[0] = pmRef[0]   - (corrCoeff1[23]*pmRefoot[1]+corrCoeff0[23]);
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
   }
-  else{
+  if(fPedSubMode==0 && fRecoMode==2){
     //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
     tZN1Corr[0] = adcZN1[0] - (corrCoeff1[0]*adcZN1oot[0]+corrCoeff0[0]);
     tZN1Corr[5] = adcZN1lg[0] - (corrCoeff1[kNch]*adcZN1ootlg[0]+corrCoeff0[kNch]);
@@ -645,6 +645,17 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     dZEM2Corr[0] = adcZEM[1]   - (corrCoeff1[11]*adcZEMoot[1]+corrCoeff0[11]);
     dZEM2Corr[1] = adcZEMlg[1] - (corrCoeff1[11+kNch]*adcZEMootlg[1]+corrCoeff0[11+kNch]);
     // *************************************************************************
+  }
+  else if(fPedSubMode==0 && fRecoMode==1){
+    //  **** p-p data taking 2011 -> temporary patch to overcome DA problem ****
+    tZN1Corr[0] = adcZN1[0] - meanPed[0];
+    tZN1Corr[5] = adcZN1lg[0] - meanPed[kNch];
+    //
+    dZEM1Corr[0] = adcZEM[0]   - meanPed[10];
+    dZEM1Corr[1] = adcZEMlg[0] - meanPed[10+kNch];
+    dZEM2Corr[0] = adcZEM[1]   - meanPed[11];
+    dZEM2Corr[1] = adcZEMlg[1] - meanPed[11+kNch];
+        // *************************************************************************
   }
     
   if(fRecoMode==1) // p-p data
