@@ -51,7 +51,7 @@ void MakeAOD(const char* esddir,
     gSystem->AddIncludePath("-I${ALICE_ROOT}/include");
     gSystem->Load("libANALYSIS");
     gSystem->Load("libANALYSISalice");
-    gROOT->LoadMacro("TrainSetup.C+");
+    gROOT->LoadMacro("TrainSetup.C+g");
     MakeAODTrain t(name, 0, 0, 0, centrality, false);
     t.SetDataDir(esddir);
     t.SetDataSet("");

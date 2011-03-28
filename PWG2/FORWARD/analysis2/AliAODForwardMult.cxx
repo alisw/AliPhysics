@@ -247,6 +247,10 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
     else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
     else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
+    else if (s.CompareTo("B")     == 0) trgMask |= AliAODForwardMult::kB;
+    else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
+    else if (s.CompareTo("C")     == 0) trgMask |= AliAODForwardMult::kC;
+    else if (s.CompareTo("E")     == 0) trgMask |= AliAODForwardMult::kE;
     else 
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));
@@ -308,11 +312,11 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
   if (hist) hist->AddBinContent(kWithTrigger);
   
   // Check that we have a valid vertex
-  if (!HasIpZ()) return false;
+  if (vzMin < vzMax && !HasIpZ()) return false;
   if (hist) hist->AddBinContent(kWithVertex);
 
   // Check that vertex is within cuts 
-  if (!InRange(vzMin, vzMax)) return false;
+  if (vzMin < vzMax && !InRange(vzMin, vzMax)) return false;
   if (hist) hist->AddBinContent(kAccepted);
   
   return true;
