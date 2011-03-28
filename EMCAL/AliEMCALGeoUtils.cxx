@@ -1370,16 +1370,18 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   
   if(gGeoManager){
     //Recover some stuff
-    
+
+    const Int_t nSMod = fEMCGeometry->GetNumberOfSuperModules();
+ 
     gGeoManager->cd("ALIC_1/XEN1_1");
     TGeoNode        *geoXEn1 = gGeoManager->GetCurrentNode();
-    TGeoNodeMatrix  *geoSM[4];        
-    TGeoVolume      *geoSMVol[4];     
-    TGeoShape       *geoSMShape[4];    
-    TGeoBBox        *geoBox[4];        
-    TGeoMatrix      *geoSMMatrix[4];       
+    TGeoNodeMatrix  *geoSM[nSMod];        
+    TGeoVolume      *geoSMVol[nSMod];     
+    TGeoShape       *geoSMShape[nSMod];    
+    TGeoBBox        *geoBox[nSMod];        
+    TGeoMatrix      *geoSMMatrix[nSMod];       
     
-    for(int iSM = 0; iSM < 4; iSM++) {  
+    for(int iSM = 0; iSM < nSMod; iSM++) {  
       geoSM[iSM]       = dynamic_cast<TGeoNodeMatrix *>(geoXEn1->GetDaughter(iSM));
       geoSMVol[iSM]    = geoSM[iSM]->GetVolume(); 
       geoSMShape[iSM]  = geoSMVol[iSM]->GetShape();
@@ -1421,8 +1423,8 @@ void AliEMCALGeoUtils::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       AliError(Form("Bad tower coordinate drow=%f, where drow >= 23.5 || drow<-0.5; org: %f", drow, droworg));
       return;
     }
-    if (sm > 3 || sm < 0) {
-      AliError(Form("Bad SM number sm=%d, where sm > 4 || sm < 0", sm));
+    if (sm >= nSMod || sm < 0) {
+      AliError(Form("Bad SM number sm=%d, where sm >= %d || sm < 0", nSupMod, sm));
       return;
     }    
     
