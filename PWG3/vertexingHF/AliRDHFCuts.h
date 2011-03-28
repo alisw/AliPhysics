@@ -139,10 +139,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetNPtBins(Int_t nptBins){fnPtBins=nptBins;}
   void SetNVars(Int_t nVars){fnVars=nVars;}
 
-  Bool_t RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,AliAODVertex *origownvtx,AliAODVertex *recvtx) const;
-  Bool_t SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
-			 AliAODVertex *origownvtx,AliAODVertex *recvtx) const;
-  void   CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODVertex *origownvtx) const;
+  Bool_t RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const;
+  Bool_t SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const;
+  void   CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,AliAODVertex *origownvtx) const;
 
   // cuts on the event
   Int_t fMinVtxType; // 0: not cut; 1: SPDZ; 2: SPD3D; 3: Tracks
