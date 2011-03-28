@@ -356,9 +356,12 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
      selectionLevel==AliRDHFCuts::kCandidate) {
     //recalculate vertex w/o daughters
     AliAODVertex *origownvtx=0x0;
-    AliAODVertex *recvtx=0x0;
     if(fRemoveDaughtersFromPrimary) {
-      if(!RecalcOwnPrimaryVtx(d,aod,origownvtx,recvtx)) return 0;
+      if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
+      if(!RecalcOwnPrimaryVtx(d,aod)) {
+	CleanOwnPrimaryVtx(d,aod,origownvtx);
+	return 0;
+      }
     }
 
     Int_t okDsKKpi=1;
@@ -369,7 +372,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     Double_t pt=d->Pt();
     Int_t ptbin=PtBin(pt);
     if (ptbin==-1) {
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
  
@@ -379,7 +382,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     if(TMath::Abs(mDsKKpi-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDsKKpi = 0;
     if(TMath::Abs(mDspiKK-mDsPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okDspiKK = 0;
     if(!okDsKKpi && !okDspiKK){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
@@ -403,20 +406,20 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       if(!okMassPhi && !okMassK0star) okDspiKK=0;
     }
     if(!okDsKKpi && !okDspiKK){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     // Cuts on track pairs
     for(Int_t i=0;i<3;i++){
       if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]){
-	CleanOwnPrimaryVtx(d,origownvtx);
+	CleanOwnPrimaryVtx(d,aod,origownvtx);
 	return 0;
       }
     }
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)] || 
        d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
@@ -425,7 +428,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     //single track
     if(TMath::Abs(d->Pt2Prong(1)) < fCutsRD[GetGlobalIndex(1,ptbin)]*fCutsRD[GetGlobalIndex(1,ptbin)] || 
        TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
@@ -442,43 +445,43 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 	 TMath::Abs(d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(3,ptbin)]) okDspiKK=0;
     }
     if(!okDsKKpi && !okDspiKK){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
        
     // Cuts on candidate triplet
 
     if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx); 
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
       return 0;
     }
      
     if(d->Pt2Prong(0)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
        d->Pt2Prong(1)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)] && 
        d->Pt2Prong(2)<fCutsRD[GetGlobalIndex(8,ptbin)]*fCutsRD[GetGlobalIndex(8,ptbin)]) {
-      CleanOwnPrimaryVtx(d,origownvtx); 
+      CleanOwnPrimaryVtx(d,aod,origownvtx); 
       return 0;
     }
 
     if(d->DecayLength2()<fCutsRD[GetGlobalIndex(7,ptbin)]*fCutsRD[GetGlobalIndex(7,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
 
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
     if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]){
-      CleanOwnPrimaryVtx(d,origownvtx);
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
       return 0;
     }
 
      // unset recalculated primary vertex when not needed any more
-    CleanOwnPrimaryVtx(d,origownvtx);
+    CleanOwnPrimaryVtx(d,aod,origownvtx);
    
 
     // PID selection

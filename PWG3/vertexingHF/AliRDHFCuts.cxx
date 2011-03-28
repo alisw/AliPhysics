@@ -793,8 +793,8 @@ void AliRDHFCuts::MakeTable() const {
   return;
 }
 //--------------------------------------------------------------------------
-Bool_t AliRDHFCuts::RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
-				      AliAODVertex *origownvtx,AliAODVertex *recvtx) const
+Bool_t AliRDHFCuts::RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,
+					AliAODEvent *aod) const
 {
   //
   // Recalculate primary vertex without daughters
@@ -802,27 +802,28 @@ Bool_t AliRDHFCuts::RecalcOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
 
   if(!aod) {
     AliError("Can not remove daughters from vertex without AOD event");
-    return kFALSE;
+    return 0;
   }   
-  if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-  recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
+  AliAODVertex *recvtx=d->RemoveDaughtersFromPrimaryVtx(aod);
   if(!recvtx){
     AliDebug(2,"Removal of daughter tracks failed");
-    if(origownvtx){
-      delete origownvtx;
-      origownvtx=NULL;
-    }
     return kFALSE;
   }
+  if(recvtx->GetNContributors()<1) {
+    AliDebug(2,"Removal of daughter tracks failed");
+    delete recvtx;
+    return kFALSE;
+  }
+
+
   //set recalculed primary vertex
   d->SetOwnPrimaryVtx(recvtx);
-  delete recvtx; recvtx=NULL;
+  delete recvtx;
 
   return kTRUE;
 }
 //--------------------------------------------------------------------------
-Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
-				    AliAODVertex *origownvtx,AliAODVertex *recvtx) const
+Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const
 {
   //
   // Recalculate primary vertex without daughters
@@ -841,19 +842,12 @@ Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
     return kFALSE;
   }
 
-
-  if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
-
   Double_t pos[3];
   mcHeader->GetVertex(pos);
-  recvtx=new AliAODVertex(pos);
+  AliAODVertex *recvtx=new AliAODVertex(pos);
 
   if(!recvtx){
     AliDebug(2,"Removal of daughter tracks failed");
-    if(origownvtx){
-      delete origownvtx;
-      origownvtx=NULL;
-    }
     return kFALSE;
   }
   //set recalculed primary vertex
@@ -861,25 +855,29 @@ Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod,
 
   d->RecalculateImpPars(recvtx,aod);
 
-  delete recvtx; recvtx=NULL;
+  delete recvtx;
 
   return kTRUE;
 }
 //--------------------------------------------------------------------------
-void AliRDHFCuts::CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,AliAODVertex *origownvtx) const
+void AliRDHFCuts::CleanOwnPrimaryVtx(AliAODRecoDecayHF *d,
+				     AliAODEvent *aod,
+				     AliAODVertex *origownvtx) const
 {
   //
   // Clean-up own primary vertex if needed
   //
 
-  if(origownvtx) {
-    d->SetOwnPrimaryVtx(origownvtx);
-    delete origownvtx;
-    origownvtx=NULL;
-  } else if(fRemoveDaughtersFromPrimary) {
+  if(fRemoveDaughtersFromPrimary) {
     d->UnsetOwnPrimaryVtx();
-    AliDebug(3,"delete new vertex\n");
+    if(origownvtx) {
+      d->SetOwnPrimaryVtx(origownvtx);
+      delete origownvtx;
+    }
+    d->RecalculateImpPars(d->GetPrimaryVtx(),aod);
   }
+
+  delete origownvtx;
 
   return;
 }
