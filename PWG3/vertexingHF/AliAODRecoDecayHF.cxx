@@ -263,7 +263,7 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
   Int_t ndg = GetNDaughters();
 
   vertexer->SetITSMode();
-  vertexer->SetMinClusters(4);
+  vertexer->SetMinClusters(3);
   vertexer->SetConstraintOff();
 
   if(title.Contains("WithConstraint")) {
