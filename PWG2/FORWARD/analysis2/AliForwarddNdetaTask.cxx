@@ -132,8 +132,8 @@ void
 AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult* 
 						    forward, 
 						    Int_t triggerMask,
-						    Double_t vzMin, 
-						    Double_t vzMax, 
+						    Double_t /*vzMin*/, 
+						    Double_t /*vzMax*/, 
 						    const TH2D* primary)
 { 
   // Check the centrality class unless this is the 'all' bin 
@@ -149,18 +149,16 @@ AliForwarddNdetaTask::CentralityBin::ProcessPrimary(const AliAODForwardMult*
     fSumPrimary->Reset();
     fSums->Add(fSumPrimary);
   }
-  if (triggerMask == AliAODForwardMult::kNSD && forward->IsTriggerBits(triggerMask|AliAODForwardMult::kB)) 
-    fSumPrimary->Add(primary);
   
-  // translate rea trigger mask to MC trigger mask
+  // translate real trigger mask to MC trigger mask
   Int_t mask = AliAODForwardMult::kB;
   if (triggerMask == AliAODForwardMult::kNSD)
     mask = AliAODForwardMult::kMCNSD;
 
-  // Now use our normal check, but with the new mask 
-  if (!forward->CheckEvent(mask, vzMin, vzMax, 0, 0, 0)) return;
+  // Now use our normal check, but with the new mask, except 
+  if (!forward->CheckEvent(mask, -1000, -1000, 0, 0, 0)) return;
 
-  
+  fSumPrimary->Add(primary);
 }
 
 //________________________________________________________________________
@@ -189,7 +187,11 @@ AliForwarddNdetaTask::CentralityBin::End(TList*      sums,
 
   fSumPrimary     = static_cast<TH2D*>(fSums->FindObject("truth"));
 
-  if (!fSumPrimary) return;
+  if (!fSumPrimary) { 
+    AliWarning("No MC truth histogram found");
+    fSums->ls();
+    return;
+  }
   Int_t n = (triggerMask == AliAODForwardMult::kNSD ? 
 	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinMCNSD)) : 
 	     Int_t(fTriggers->GetBinContent(AliAODForwardMult::kBinAll)));

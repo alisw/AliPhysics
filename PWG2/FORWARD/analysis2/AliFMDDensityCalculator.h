@@ -140,6 +140,16 @@ public:
    */
   void SetMultCut(Double_t cut) { fMultCut = cut; }
   /** 
+   * Set the luming factors used in the Poisson method
+   * 
+   * @param eta Must be 1 or larger 
+   * @param phi Must be 1 or larger 
+   */
+  void SetLumping(Int_t eta, Int_t phi) { 
+    fEtaLumping = (eta < 1 ? 1 : eta); 
+    fPhiLumping = (phi < 1 ? 1 : phi); 
+  }
+  /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
    * value of the fit range for the enery loss fits is returned.
@@ -303,18 +313,18 @@ protected:
     /** 
      * Create Poisson histograms 
      */
-    void ResetPoissonHistos();
-    TH2D*     fEvsN;         // Correlation of Eloss vs uncorrected Nch
-    TH2D*     fEvsM;         // Correlation of Eloss vs corrected Nch
-    TProfile* fEtaVsN;       // Average uncorrected Nch vs eta
-    TProfile* fEtaVsM;       // Average corrected Nch vs eta
-    TProfile* fCorr;         // Average correction vs eta
-    TH2D*     fDensity;      // Distribution inclusive Nch
+    void ResetPoissonHistos(const TH2D* h, Int_t etaLumping, Int_t phiLumping);
+    TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
+    TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
+    TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
+    TProfile* fEtaVsM;         // Average corrected Nch vs eta
+    TProfile* fCorr;           // Average correction vs eta
+    TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
-    TH2D*     fTotalStrips;  // Total number of strips in a region
-    TH2D*     fEmptyStrips;  // Total number of strips in a region
-    TH2D*     fBasicHits  ;  // Total number basic hits in a region
-    TH2D*     fEmptyVsTotal; // # of empty strips vs total number of strips 
+    TH2D*     fTotalStrips;    // Total number of strips in a region
+    TH2D*     fEmptyStrips;    // Total number of strips in a region
+    TH2D*     fBasicHits  ;    // Total number basic hits in a region
+    TH2D*     fEmptyVsTotal;   // # of empty strips vs total number of strips 
     
     
     ClassDef(RingHistos,3);
@@ -343,7 +353,10 @@ protected:
   TArrayI  fFMD2oMax;      //  Array of max weights 
   TArrayI  fFMD3iMax;      //  Array of max weights 
   TArrayI  fFMD3oMax;      //  Array of max weights 
+  Int_t    fEtaLumping;    //  How to lump eta bins for Poisson 
+  Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
+
 
   ClassDef(AliFMDDensityCalculator,2); // Calculate Nch density 
 };

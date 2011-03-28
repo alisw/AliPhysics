@@ -108,7 +108,7 @@ AliFMDMCDensityCalculator::CalculateMC(const AliESDFMD&        fmd,
   // Calculate the charged particle density from the MC track references. 
   // 
   // Parameters:
-  //    event  MC event
+  //    fmd    Forward MC event
   //    hists  Histograms to fill
   //    vz     Interaction z coordinate @f$ v_z@f$
   //    vtxBin bin corresponding to @f$ v_z@f$
