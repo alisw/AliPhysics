@@ -1170,7 +1170,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
   // event primary vertex
   AliVertexerTracks vertexer0(esd->GetMagneticField());
   vertexer0.SetITSMode();
-  vertexer0.SetMinClusters(4);  
+  vertexer0.SetMinClusters(3);  
   if(highMult) vertexer0.SetITSMode(0.1,0.1,0.5,5,1,3.,100.,1000.,3.,30.,1,1); 
   if(fUseDiamond) vertexer0.SetVtxStart(&diamond);
   vtxESDRec = (AliESDVertex*)vertexer0.FindPrimaryVertex(esd);
@@ -1256,7 +1256,7 @@ void AliAnalysisTaskSEImpParRes::UserExec(Option_t */*option*/)
     //Get specific primary vertex--Reconstructed primary vertex do not include the track considering.
     AliVertexerTracks vertexer(esd->GetMagneticField());
     vertexer.SetITSMode();
-    vertexer.SetMinClusters(4);
+    vertexer.SetMinClusters(3);
     if(fUseDiamond) vertexer.SetVtxStart(&diamond);
     skipped[0] = (Int_t)esdtrack->GetID();
     vertexer.SetSkipTracks(1,skipped);      
