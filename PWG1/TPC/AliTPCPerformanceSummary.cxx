@@ -48,7 +48,7 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
-void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* pcstream, Int_t run)
+void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* const pcstream, Int_t run)
 {
    // 
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -402,7 +402,7 @@ return 0;
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA R imperfections
@@ -492,7 +492,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA R imperfections for positive particles
@@ -581,7 +581,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC,
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA R imperfections for negative particles
@@ -668,7 +668,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC,
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse number of TPC clusters 
@@ -692,11 +692,11 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     static Double_t slopeCTPCncl=0;
     static Double_t slopeATPCnclErr=0;
     static Double_t slopeCTPCnclErr=0;  
+    //
     TH1* his1D=0;
-    //TH2* his2D=0;
-    TH3* his3D_0=0;
-    TH3* his3D_1=0;
-    TH3* his3D_2=0;
+    TH3* his3D0=0;
+    TH3* his3D1=0;
+    TH3* his3D2=0;
     TProfile* hprof=0;
     static TF1 *fpol1 = new TF1("fpol1","pol1");
     //
@@ -708,25 +708,25 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     pTPC->GetTPCTrackHisto()->GetAxis(7)->SetRangeUser(0.25,10);
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7")) {    
-        his3D_0 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7"));
-        his3D_0->GetYaxis()->SetRangeUser(-1,1);
-        his3D_0->GetZaxis()->SetRangeUser(0.25,10);
+        his3D0 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_0_5_7"));
+        his3D0->GetYaxis()->SetRangeUser(-1,1);
+        his3D0->GetZaxis()->SetRangeUser(0.25,10);
     }
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_1_5_7")) {    
-        his3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_1_5_7"));
-        his3D_1->GetYaxis()->SetRangeUser(-1,1);
-        his3D_1->GetZaxis()->SetRangeUser(0.25,10);
+        his3D1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_1_5_7"));
+        his3D1->GetYaxis()->SetRangeUser(-1,1);
+        his3D1->GetZaxis()->SetRangeUser(0.25,10);
     }
     if (pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_2_5_7")) {    
-        his3D_2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_2_5_7"));
-        his3D_2->GetYaxis()->SetRangeUser(-1,1);
-        his3D_2->GetZaxis()->SetRangeUser(0.25,10);
-        his3D_2->GetXaxis()->SetRangeUser(0.4,1.1);        
+        his3D2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_2_5_7"));
+        his3D2->GetYaxis()->SetRangeUser(-1,1);
+        his3D2->GetZaxis()->SetRangeUser(0.25,10);
+        his3D2->GetXaxis()->SetRangeUser(0.4,1.1);        
     }    
     
 
-    if (his3D_0 && !fgForceTHnSparse) { 
-         his1D = his3D_0->Project3D("x"); 
+    if (his3D0 && !fgForceTHnSparse) { 
+         his1D = his3D0->Project3D("x"); 
     } else {
          his1D = pTPC->GetTPCTrackHisto()->Projection(0);
     }
@@ -735,8 +735,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     rmsTPCncl= his1D->GetRMS();
     delete his1D;
     
-    if (his3D_1 && !fgForceTHnSparse) {
-         his1D = his3D_1->Project3D("x"); 
+    if (his3D1 && !fgForceTHnSparse) {
+         his1D = his3D1->Project3D("x"); 
     } else {
          his1D = pTPC->GetTPCTrackHisto()->Projection(1);
     }
@@ -745,8 +745,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     rmsTPCChi2= his1D->GetRMS();
     delete his1D;  
     
-   if (his3D_0 && !fgForceTHnSparse) {
-        hprof = (dynamic_cast<TH2*>(his3D_0->Project3D("xy")))->ProfileX(); 
+   if (his3D0 && !fgForceTHnSparse) {
+        hprof = (dynamic_cast<TH2*>(his3D0->Project3D("xy")))->ProfileX(); 
     } else {
         hprof = pTPC->GetTPCTrackHisto()->Projection(0,5)->ProfileX();
     }
@@ -763,8 +763,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     // findable clusters
     //
     
-   if (his3D_2 && !fgForceTHnSparse) {
-        his1D = his3D_2->Project3D("x"); 
+   if (his3D2 && !fgForceTHnSparse) {
+        his1D = his3D2->Project3D("x"); 
     } else {    
         pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0.4,1.1);
         his1D = pTPC->GetTPCTrackHisto()->Projection(2);
@@ -774,8 +774,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
     rmsTPCnclF= his1D->GetRMS();
     delete his1D;
     
-   if (his3D_2 && !fgForceTHnSparse) { 
-         his1D = (dynamic_cast<TH2*>(his3D_2->Project3D("xy")))->ProfileX(); 
+   if (his3D2 && !fgForceTHnSparse) { 
+         his1D = (dynamic_cast<TH2*>(his3D2->Project3D("xy")))->ProfileX(); 
     } else {    
         pTPC->GetTPCTrackHisto()->GetAxis(2)->SetRangeUser(0.4,1.1);
         his1D = pTPC->GetTPCTrackHisto()->Projection(2,5)->ProfileX();
@@ -825,7 +825,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeS
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA Z imperferctions (drift velocity)
@@ -911,7 +911,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDrift(const AliPerformanceTPC* pTPC, TTre
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA Z imperferctions (drift velocity)
@@ -998,7 +998,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftPos(const AliPerformanceTPC* pTPC, T
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA Z imperferctions (drift velocity)
@@ -1086,7 +1086,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, T
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse Gain
@@ -1229,7 +1229,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeGain(const AliPerformanceDEdx* pTPCgain, 
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse Primary Vertex Distribution and Multiplicities
@@ -1353,7 +1353,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeEvent(const AliPerformanceTPC* pTPC, TTre
 }
 
 //_____________________________________________________________________________
-Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream)
+Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream)
 {
     //
     // Analyse DCA R imperfections for positive particles
@@ -1377,60 +1377,60 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
     static Double_t mediumPtCNeg = 0;
     static Double_t highPtCNeg = 0;
 
-    TH3* his3D_1=0;
-    TH3* his3D_2=0;
+    TH3* his3D1=0;
+    TH3* his3D2=0;
     
     if (pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7")) {    
 
-      his3D_1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7"));
+      his3D1 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_pos_recvertex_3_5_7"));
 	
-      his3D_1->GetYaxis()->SetRangeUser(0.1,0.8);
+      his3D1->GetYaxis()->SetRangeUser(0.1,0.8);
       
-      his3D_1->GetZaxis()->SetRangeUser(0.25,10);
-      meanPtAPos = his3D_1->GetMean(3);
-      his3D_1->GetZaxis()->SetRangeUser(2,5);
-      mediumPtAPos = his3D_1->GetMean(3);
-      his3D_1->GetZaxis()->SetRangeUser(5,10);
-      highPtAPos = his3D_1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(0.25,10);
+      meanPtAPos = his3D1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(2,5);
+      mediumPtAPos = his3D1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(5,10);
+      highPtAPos = his3D1->GetMean(3);
       
-      his3D_1->GetYaxis()->SetRangeUser(-0.8,-0.1);
+      his3D1->GetYaxis()->SetRangeUser(-0.8,-0.1);
 
-      his3D_1->GetZaxis()->SetRangeUser(0.25,10);
-      meanPtCPos = his3D_1->GetMean(3);
-      his3D_1->GetZaxis()->SetRangeUser(2,5);
-      mediumPtCPos = his3D_1->GetMean(3);
-      his3D_1->GetZaxis()->SetRangeUser(5,10);
-      highPtCPos = his3D_1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(0.25,10);
+      meanPtCPos = his3D1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(2,5);
+      mediumPtCPos = his3D1->GetMean(3);
+      his3D1->GetZaxis()->SetRangeUser(5,10);
+      highPtCPos = his3D1->GetMean(3);
 
-      his3D_1->GetYaxis()->SetRangeUser(-1,1);
-      his3D_1->GetZaxis()->SetRangeUser(0.25,10);
+      his3D1->GetYaxis()->SetRangeUser(-1,1);
+      his3D1->GetZaxis()->SetRangeUser(0.25,10);
     }
 
 
     if (pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7")) {    
 
-      his3D_2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7"));
+      his3D2 = dynamic_cast<TH3*>(pTPC->GetHistos()->FindObject("h_tpc_track_neg_recvertex_3_5_7"));
 	
-      his3D_2->GetYaxis()->SetRangeUser(0.1,0.8);
+      his3D2->GetYaxis()->SetRangeUser(0.1,0.8);
 
-      his3D_2->GetZaxis()->SetRangeUser(0.25,10);
-      meanPtANeg = his3D_2->GetMean(3);
-      his3D_2->GetZaxis()->SetRangeUser(2,5);
-      mediumPtANeg = his3D_2->GetMean(3);
-      his3D_2->GetZaxis()->SetRangeUser(5,10);
-      highPtANeg = his3D_2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(0.25,10);
+      meanPtANeg = his3D2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(2,5);
+      mediumPtANeg = his3D2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(5,10);
+      highPtANeg = his3D2->GetMean(3);
       
-      his3D_2->GetYaxis()->SetRangeUser(-0.8,-0.1);
+      his3D2->GetYaxis()->SetRangeUser(-0.8,-0.1);
 
-      his3D_2->GetZaxis()->SetRangeUser(0.25,10);
-      meanPtCNeg = his3D_2->GetMean(3);
-      his3D_2->GetZaxis()->SetRangeUser(2,5);
-      mediumPtCNeg = his3D_2->GetMean(3);
-      his3D_2->GetZaxis()->SetRangeUser(5,10);
-      highPtCNeg = his3D_2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(0.25,10);
+      meanPtCNeg = his3D2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(2,5);
+      mediumPtCNeg = his3D2->GetMean(3);
+      his3D2->GetZaxis()->SetRangeUser(5,10);
+      highPtCNeg = his3D2->GetMean(3);
       
-      his3D_2->GetYaxis()->SetRangeUser(-1,1);
-      his3D_2->GetZaxis()->SetRangeUser(0.25,10);
+      his3D2->GetYaxis()->SetRangeUser(-1,1);
+      his3D2->GetZaxis()->SetRangeUser(0.25,10);
     }
 
 
@@ -1460,7 +1460,7 @@ Int_t AliTPCPerformanceSummary::AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSR
 
 //_____________________________________________________________________________
 
-Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream){
+Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream){
     //
     // Analyse DCA R imperfections for positive particles
     //
@@ -1474,9 +1474,9 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     static Double_t qOverPtC = 0;
 
     TH2* his2D=0;
-    TH1* his1D_1=0;
-    TH1* his1D_2=0;
-    TH1* his1D_3=0;
+    TH1* his1D1=0;
+    TH1* his1D2=0;
+    TH1* his1D3=0;
     TF1 *fp1 = new TF1("fp1","pol2",-1.0,1.0);
     TF1 *fp2 = new TF1("fp2","pol2",-1.0,1.0);
     TF1 *fp3 = new TF1("fp3","pol2",-1.0,1.0);
@@ -1485,29 +1485,29 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
 
       his2D = dynamic_cast<TH2*>(pTPC->GetHistos()->FindObject("h_tpc_track_all_recvertex_5_8"));
 
-      his1D_1 = his2D->ProjectionX();
-      his1D_1->Fit(fp1,"R");
+      his1D1 = his2D->ProjectionX();
+      his1D1->Fit(fp1,"R");
       if(fp1->GetParameter(2)!=0){
 	qOverPt = (-1.0)*(fp1->GetParameter(1)/(2.0*fp1->GetParameter(2)));
        }
       delete fp1;
-      delete his1D_1;
+      delete his1D1;
 
        his2D->GetYaxis()->SetRangeUser(0.1,0.8);
-       his1D_2 = his2D->ProjectionX();
-       his1D_2->Fit(fp2,"R");
+       his1D2 = his2D->ProjectionX();
+       his1D2->Fit(fp2,"R");
        if(fp2->GetParameter(2)!=0)
 	 qOverPtA = (-1.0)*(fp2->GetParameter(1)/(2.0*fp2->GetParameter(2)));
        delete fp2;
-       delete his1D_2;
+       delete his1D2;
      
        his2D->GetYaxis()->SetRangeUser(-0.8,-0.1);       
-       his1D_3 = his2D->ProjectionX();
-       his1D_3->Fit(fp3,"R");
+       his1D3 = his2D->ProjectionX();
+       his1D3->Fit(fp3,"R");
        if(fp3->GetParameter(2)!=0)
 	 qOverPtC = (-1.0)*(fp3->GetParameter(1)/(2.0*fp3->GetParameter(2)));
        delete fp3;
-       delete his1D_3;
+       delete his1D3;
        
       his2D->GetYaxis()->SetRangeUser(-1.0,1.0);
     }
@@ -1521,7 +1521,7 @@ Int_t AliTPCPerformanceSummary::AnalyzeChargeOverPt(const AliPerformanceTPC* pTP
     return 0;
 }
 
-void AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* pcstream)
+void AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream)
 {
  if ((pMatch == 0) or (0 == pcstream)) { printf("this will not work anyway..."); }
  printf("funtion not implemented");
