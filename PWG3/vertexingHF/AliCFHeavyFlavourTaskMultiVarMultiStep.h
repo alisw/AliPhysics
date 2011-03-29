@@ -77,25 +77,25 @@ class AliCFHeavyFlavourTaskMultiVarMultiStep : public AliAnalysisTaskSE {
   AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
 
   void     SetPDG(Int_t code) {fPDG = code; }     // defines the PDG code of searched HF
-  Double_t CosThetaStar(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const;  // returns cos(ThetaStar) of the D0 decay
-  Double_t CT(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const;            // returns cT of the D0 decay
+  Double_t CosThetaStar(const AliAODMCParticle* mcPart, const AliAODMCParticle* mcPartDaughter0, const AliAODMCParticle* mcPartDaughter1) const;  // returns cos(ThetaStar) of the D0 decay
+  Double_t CT(const AliAODMCParticle* mcPart, const AliAODMCParticle* mcPartDaughter0, const AliAODMCParticle* mcPartDaughter1) const;            // returns cT of the D0 decay
   void     SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
   Bool_t   GetFillFromGenerated() const {return fFillFromGenerated;}
-  Bool_t   GetGeneratedValuesFromMCParticle(AliAODMCParticle* mcPart, TClonesArray* mcArray, Double_t* vectorMC) const;
+  Bool_t   GetGeneratedValuesFromMCParticle(AliAODMCParticle* mcPart, const TClonesArray* mcArray, Double_t* vectorMC) const;
   void     SetMinITSClusters(Int_t minITSClusters) {fMinITSClusters = minITSClusters;}
   Int_t    GetMinITSClusters() const {return fMinITSClusters;}
-  Int_t    CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray) const;
+  Int_t    CheckOrigin(const AliAODMCParticle* mcPart, const TClonesArray* mcArray) const;
 
-  void SetKeepD0fromB(Bool_t keepD0fromB){fKeepD0fromB=keepD0fromB;}
-  Bool_t GetKeepD0fromB(){return fKeepD0fromB;}
+  void SetKeepD0fromB(Bool_t keepD0fromB) {fKeepD0fromB=keepD0fromB;}
+  Bool_t GetKeepD0fromB() const {return fKeepD0fromB;}
   void SetKeepD0fromBOnly(Bool_t keepD0fromBOnly){ fKeepD0fromBOnly=keepD0fromBOnly; }
-  Bool_t GetKeepD0fromBOnly(){ return fKeepD0fromBOnly;}
+  Bool_t GetKeepD0fromBOnly() const { return fKeepD0fromBOnly;}
   void SetUseWeight(Bool_t useWeight){fUseWeight=useWeight;}
   Bool_t GetUseWeight() const {return fUseWeight;}
   Double_t GetWeight(Float_t pt);
-  Double_t dNdptFit(Float_t pt, Double_t* par);
+  Double_t DodNdptFit(Float_t pt, const Double_t* par) const;
   void SetSign(Char_t isSign) {fSign = isSign;}
-  Char_t GetSign() {return fSign;}
+  Char_t GetSign() const {return fSign;}
 
  protected:
   Int_t           fPDG;         //  PDG code of searched V0's
