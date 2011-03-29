@@ -165,10 +165,12 @@ Bool_t AliAODInputHandler::Notify(const char* path)
               tmplist.Add(hBin0);
               if (fHistStatistics[1] && hBin0) fHistStatistics[1]->Merge(&tmplist);
            } else {
-             fHistStatistics[0] = static_cast<TH2F*>(hAll->Clone());
-             fHistStatistics[1] = static_cast<TH2F*>(hBin0->Clone());
-             fHistStatistics[0]->SetDirectory(0);
-             fHistStatistics[1]->SetDirectory(0);
+             if (hAll && hBin0) {
+                fHistStatistics[0] = static_cast<TH2F*>(hAll->Clone());
+                fHistStatistics[1] = static_cast<TH2F*>(hBin0->Clone());
+                fHistStatistics[0]->SetDirectory(0);
+                fHistStatistics[1]->SetDirectory(0);
+             }   
            }   
         }
         delete list;
