@@ -34,45 +34,13 @@
 #include "TF1.h"
 #include "TGraph.h"
 
-
 using namespace std;
 
-
-//#define BAD 4  //CRAP PTH
- 
 ClassImp( AliCaloRawAnalyzerLMS )
 
-
 AliCaloRawAnalyzerLMS::AliCaloRawAnalyzerLMS() : AliCaloRawAnalyzerFitter("Chi Square Fit", "LMS")
-//	 fkEulerSquared(7.389056098930650227),
-//						 fTf1(0)
-//		 fTau(2.35),
-//						 fFixTau(kTRUE)
 {
   fAlgo = Algo::kLMS;
-  //comment
-  
-  /*
-  for(int i=0; i < ALTROMAXSAMPLES; i++)
-    {
-      fXaxis[i] = i;
-    }
-  */
-  
-  //  fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
-  
-
-  /*
-  if (fFixTau) 
-    {
-    fTf1->FixParameter(2, fTau);
-    }
-  else 
-    {
-      fTf1->ReleaseParameter(2); // allow par. to vary
-      fTf1->SetParameter(2, fTau);
-    }
-  */
 }
 
 
@@ -81,14 +49,6 @@ AliCaloRawAnalyzerLMS::~AliCaloRawAnalyzerLMS()
   // delete fTf1;
 }
 
-
-/*
-void 
-AliCaloRawAnalyzerLMS::InitFormula( TF1* f)
-{
-  f = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
-}
-*/
 
 AliCaloFitResults
 AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
@@ -161,7 +121,6 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
 					  fTf1->GetChisquare(), 
 					  fTf1->GetNDF(),
 					  Ret::kDummy, AliCaloFitSubarray(index, maxrev, first, last) );
-				
 		//     delete graph;
 	
 	    }
@@ -179,18 +138,3 @@ AliCaloRawAnalyzerLMS::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, c
   
 }
 
-
-/*
-void 
-AliCaloRawAnalyzerLMS::PrintFitResult(const TF1 *f) const
-{
-  //comment
-  cout << endl;
-  cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
-  cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;
-  cout << __FILE__ << __LINE__ << "TOF = " << f->GetParameter(1) << ",.. !!!!" << endl;
-  cout << __FILE__ << __LINE__ << "NDF = " << f->GetNDF() << ",.. !!!!" << endl;
-  //  cout << __FILE__ << __LINE__ << "STATUS = " << f->GetStatus()  << ",.. !!!!" << endl << endl;
-  cout << endl << endl;
-}
-*/
