@@ -41,6 +41,10 @@ public:
    AliMultiInputEventHandler  *GetFirstMultiInputHandler();
 
    Option_t                   *GetDataType() const;
+   
+   //PID response
+   virtual AliPIDResponse* GetPIDResponse();
+   virtual void CreatePIDResponse(Bool_t isMC);
 
 protected:
 

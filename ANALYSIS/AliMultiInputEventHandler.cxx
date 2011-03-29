@@ -262,3 +262,26 @@ UInt_t  AliMultiInputEventHandler::IsEventSelected()
   
   return fIsSelectedResult;
 }
+
+//______________________________________________________________________________
+AliPIDResponse* AliMultiInputEventHandler::GetPIDResponse()
+{
+   // retrieve PID response
+   
+   AliInputEventHandler *firstIH = dynamic_cast<AliInputEventHandler*> (GetFirstInputEventHandler());
+   if (firstIH) {
+      return firstIH->GetPIDResponse();
+   }
+   
+   return 0x0;
+}
+   
+//______________________________________________________________________________
+void AliMultiInputEventHandler::CreatePIDResponse(Bool_t isMC)
+{
+   // create PID response
+   AliInputEventHandler *firstIH = dynamic_cast<AliInputEventHandler*> (GetFirstInputEventHandler());
+   if (firstIH) {
+      firstIH->CreatePIDResponse(isMC);
+   }
+}
