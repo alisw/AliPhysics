@@ -458,7 +458,7 @@ Bool_t AliAODHandler::FinishEvent()
     }       
   }  
   
-  if (fIsStandard) 
+  if (fIsStandard && fAODEvent) 
   {
     fAODEvent->ResetStd();    
   }
