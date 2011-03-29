@@ -136,6 +136,8 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 	AliAODMCParticle* mcPartDaughterD0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0ds));
 	AliAODMCParticle* mcPartDaughterPis = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1ds));
 
+	if(!mcPartDaughterD0 || !mcPartDaughterPis) return kFALSE;
+
 	Double_t vtx1[3] = {0,0,0};   // primary vertex		
 	Double_t vtx2daughter0[3] = {0,0,0};   // secondary vertex from daughter 0
 	Double_t vtx2daughter1[3] = {0,0,0};   // secondary vertex from daughter 1
@@ -147,6 +149,8 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 
 	AliAODMCParticle* mcPartDaughter0 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter0)); //D0
 	AliAODMCParticle* mcPartDaughter1 = dynamic_cast<AliAODMCParticle*>(fmcArray->At(daughter1)); //pis
+
+	if(!mcPartDaughter0 || !mcPartDaughter1) return kFALSE;
 
 	// getting vertex from daughters
 	mcPartDaughter0->XvYvZv(vtx2daughter0);  // cm

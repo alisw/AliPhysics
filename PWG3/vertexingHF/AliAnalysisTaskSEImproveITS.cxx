@@ -196,6 +196,7 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
   // The event loop
   //
   AliAODEvent *ev=dynamic_cast<AliAODEvent*>(InputEvent());
+  if(!ev) return;
   Double_t bz=ev->GetMagneticField();
 
   // Smear all tracks

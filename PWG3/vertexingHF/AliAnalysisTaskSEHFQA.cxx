@@ -602,6 +602,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       break; 
     }
   }
+
+
+  if(!aod) {delete [] pdgdaughters;return;}
+
   Bool_t isSimpleMode=fSimpleMode;
   if(!arrayProng) {
     AliInfo("Branch not found! The output will contain only trak related histograms\n");
@@ -630,10 +634,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       return;
     }
   }
-  if(!aod) {delete [] pdgdaughters;return;}
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
-  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) return;
+  if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {
+    delete [] pdgdaughters;
+    return;
+  }
 
   // count event
   fNEntries->Fill(0); 
