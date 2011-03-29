@@ -38,9 +38,11 @@ AliCaloRawAnalyzerFactory::~AliCaloRawAnalyzerFactory()
 
 }
 
+
 AliCaloRawAnalyzer*
 AliCaloRawAnalyzerFactory::CreateAnalyzer( const int algo )
 {
+  // return new AliCaloRawAnalyzerKStandard();
   switch ( algo) 
     {
     case  kFastFit:

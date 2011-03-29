@@ -93,6 +93,12 @@ public: // PAI
   int  SelectBunch( const std::vector<AliCaloBunchInfo> &bunchvector, short *const maxampbin, short *const maxamplitude );
   void SelectSubarray( const Double_t *date, const int length, const short maxindex, int *const  first, int *const last, const int cut);
   Float_t EvaluatePedestal(const UShort_t * const data, const int length ) const;
+  
+  Float_t GetTau() const           { return fTau;};
+  void SetTau( const Float_t tau ) { fTau =tau ;}; 
+  //Bool_t GetFixTau() const { return fFixTau; }; 
+  //void SetFixTau(Bool_t b) { fFixTau = b; }; 
+  
   Double_t fReversed[ALTROMAXSAMPLES]; //Reversed sequence of samples (pedestalsubtracted)
   // private:
   int fMinTimeIndex; //The timebin of the max signal value must be between fMinTimeIndex and fMaxTimeIndex
@@ -113,7 +119,10 @@ public: // PAI
   
   Double_t fAmp; // The amplitude in entities of ADC counts
   Double_t fTof; // The amplitude in entities of ADC counts
-
+  
+  Float_t fTau;
+  // Bool_t fFixTau; // flag if tau should be fix
+  
   ClassDef(AliCaloRawAnalyzer, 2)  
 
 };

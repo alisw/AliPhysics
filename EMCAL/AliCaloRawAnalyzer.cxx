@@ -49,7 +49,9 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
 // fFp(0), 
   fL1Phase(0),
   fAmp(0),
-  fTof(0)
+  fTof(0),
+  fTau( EMCAL::TAU )
+//  fFixTau(true)
 {
   //Comment 
   snprintf(fName, 256,"%s", name);

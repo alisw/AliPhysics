@@ -491,6 +491,9 @@ void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)
 {
   // fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer(  Algo::kStandard );
   fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( fitAlgo );
+  
+  //fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( kStandard );
+
   fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done, for the new methods
   fRawAnalyzer->SetOverflowCut ( OVERFLOWCUT );
   fRawAnalyzer->SetAmpCut(fNoiseThreshold);

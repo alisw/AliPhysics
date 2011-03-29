@@ -33,18 +33,20 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 using namespace std;
 
 
-#define BAD 4  //CRAP PTH
+//#define BAD 4  //CRAP PTH
  
 ClassImp( AliCaloRawAnalyzerFakeALTRO )
 
 
-AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzer("Chi Square Fit", "LMS"),
-						 fkEulerSquared(7.389056098930650227),
-						 fTf1(0),
-						 fTau(2.35),
-						 fFixTau(kTRUE)
+AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzerFitter("Chi Square Fit", "LMS")
+// fkEulerSquared(7.389056098930650227),
+//						 fTf1(0),
+//						 fTau(2.35),
+//						 fFixTau(kTRUE)
 {
   //comment
+
+  /*
   for(int i=0; i < ALTROMAXSAMPLES; i++)
     {
       fXaxis[i] = i;
@@ -58,16 +60,24 @@ AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzer(
     fTf1->ReleaseParameter(2); // allow par. to vary
     fTf1->SetParameter(2, fTau);
   }
- 
+  */
+  
 }
 
 
 AliCaloRawAnalyzerFakeALTRO::~AliCaloRawAnalyzerFakeALTRO()
 {
-  delete fTf1;
+  //delete fTf1;
 }
 
 
+/*
+void 
+AliCaloRawAnalyzerFakeALTRO::InitFormula( TF1* f)
+{
+  f = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
+}
+*/
 
 AliCaloFitResults
 AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
@@ -158,6 +168,8 @@ AliCaloRawAnalyzerFakeALTRO::Evaluate( const vector<AliCaloBunchInfo>  &bunchvec
 }
 
 
+
+/*
 void 
 AliCaloRawAnalyzerFakeALTRO::PrintFitResult(const TF1 *f) const
 {
@@ -170,4 +182,5 @@ AliCaloRawAnalyzerFakeALTRO::PrintFitResult(const TF1 *f) const
   //  cout << __FILE__ << __LINE__ << "STATUS = " << f->GetStatus()  << ",.. !!!!" << endl << endl;
   cout << endl << endl;
 }
+*/
 
