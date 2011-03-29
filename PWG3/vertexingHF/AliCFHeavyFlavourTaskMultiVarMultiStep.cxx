@@ -1149,11 +1149,11 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
         corr2->Draw("text");
       
 
-	TString projection_filename="CFtaskHFprojection";
-	if(fKeepD0fromBOnly) projection_filename+="_KeepD0fromBOnly";
-	else if(fKeepD0fromB) projection_filename+="_KeepD0fromB";
-	projection_filename+=".root";
-	TFile* file_projection = new TFile(projection_filename.Data(),"RECREATE");
+	TString projectionFilename="CFtaskHFprojection";
+	if(fKeepD0fromBOnly) projectionFilename+="_KeepD0fromBOnly";
+	else if(fKeepD0fromB) projectionFilename+="_KeepD0fromB";
+	projectionFilename+=".root";
+	TFile* fileProjection = new TFile(projectionFilename.Data(),"RECREATE");
 
         corr1->Write();
         corr2->Write();
@@ -1196,7 +1196,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::Terminate(Option_t*)
 	h104->Write("cosPointingAngle_step2");
 	h114->Write("phi_step2");
 
-	file_projection->Close();
+	fileProjection->Close();
 
     
 
@@ -1226,7 +1226,7 @@ void AliCFHeavyFlavourTaskMultiVarMultiStep::UserCreateOutputObjects() {
 }
 
 //___________________________________________________________________________
-Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CosThetaStar(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const {
+Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CosThetaStar(const AliAODMCParticle* mcPart, const AliAODMCParticle* mcPartDaughter0, const AliAODMCParticle* mcPartDaughter1) const {
 
 	//
 	// to calculate cos(ThetaStar) for generated particle
@@ -1258,7 +1258,7 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CosThetaStar(AliAODMCParticle* 
 	}
 	if (pdgprong0 == 211){
 		AliDebug(2,Form("pdgprong0 = %d, pdgprong1 = %d, switching...",pdgprong0,pdgprong1));
-		AliAODMCParticle* mcPartdummy = mcPartDaughter0;
+		const AliAODMCParticle* mcPartdummy = mcPartDaughter0;
 		mcPartDaughter0 = mcPartDaughter1;
 		mcPartDaughter1 = mcPartdummy;
 		pdgprong0 = TMath::Abs(mcPartDaughter0->GetPdgCode());
@@ -1291,7 +1291,7 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CosThetaStar(AliAODMCParticle* 
 	return cts;
 }
 //___________________________________________________________________________
-Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CT(AliAODMCParticle* mcPart, AliAODMCParticle* mcPartDaughter0, AliAODMCParticle* mcPartDaughter1) const {
+Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CT(const AliAODMCParticle* mcPart, const AliAODMCParticle* mcPartDaughter0, const AliAODMCParticle* mcPartDaughter1) const {
 
 	//
 	// to calculate cT for generated particle
@@ -1340,7 +1340,7 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::CT(AliAODMCParticle* mcPart, Al
 	return cT;
 }
 //________________________________________________________________________________
-Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(AliAODMCParticle* mcPart, TClonesArray* mcArray, Double_t* vectorMC) const {
+Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(AliAODMCParticle* mcPart, const TClonesArray* mcArray, Double_t* vectorMC) const {
 
 	// 
 	// collecting all the necessary info (pt, y, cosThetaStar, ptPi, ptKa, cT) from MC particle
@@ -1478,7 +1478,7 @@ Bool_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetGeneratedValuesFromMCParticle(
 	return isOk;
 }
 //_________________________________________________________________________________________________
-Int_t AliCFHeavyFlavourTaskMultiVarMultiStep::CheckOrigin(AliAODMCParticle* mcPart, TClonesArray* mcArray)const{
+Int_t AliCFHeavyFlavourTaskMultiVarMultiStep::CheckOrigin(const AliAODMCParticle* mcPart, const TClonesArray* mcArray)const{
 
 	//
 	// checking whether the very mother of the D0 is a charm or a bottom quark
@@ -1525,14 +1525,14 @@ Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::GetWeight(Float_t pt){
 	Double_t func1[4] = {0.322643,2.96275,2.30301,2.5};
 	Double_t func2[4] = {0.36609,1.94635,1.40463,2.5};
 
-	Double_t dndpt_func1 = dNdptFit(pt,func1);
-	Double_t dndpt_func2 = dNdptFit(pt,func2);
-	AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndpt_func1,dndpt_func2,dndpt_func1/dndpt_func2));
-	return dndpt_func1/dndpt_func2;
+	Double_t dndptFunc1 = DodNdptFit(pt,func1);
+	Double_t dndptFunc2 = DodNdptFit(pt,func2);
+	AliDebug(2,Form("pt = %f, FONLL = %f, Pythia = %f, ratio = %f",pt,dndptFunc1,dndptFunc2,dndptFunc1/dndptFunc2));
+	return dndptFunc1/dndptFunc2;
 }
 
 //__________________________________________________________________________________________________
-Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::dNdptFit(Float_t pt, Double_t* par){
+Double_t AliCFHeavyFlavourTaskMultiVarMultiStep::DodNdptFit(Float_t pt, const Double_t* par)const{
 
 	// 
 	// calculating dNdpt
