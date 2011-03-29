@@ -23,20 +23,17 @@
 #include "AliCaloRawAnalyzer.h"
 #include "AliCaloConstants.h"
 
-
 using namespace ALTRO;
 using namespace EMCAL;
 
 class  TF1;
 class  TGraph;
 
-
 class  AliCaloRawAnalyzerFitter : public AliCaloRawAnalyzer
 {
 public:
   AliCaloRawAnalyzerFitter( const char *name, const char *nameshort );
   virtual ~AliCaloRawAnalyzerFitter();
-  //  virtual void InitFormula( TF1*) = 0;
   Bool_t GetFixTau() const { return fFixTau; }; 
   void SetFixTau(Bool_t b) { fFixTau = b; };
   TF1 * GetFit() const { return fTf1; };
@@ -51,15 +48,7 @@ protected:
 private:
   AliCaloRawAnalyzerFitter(const AliCaloRawAnalyzerFitter & );
   AliCaloRawAnalyzerFitter  & operator = (const AliCaloRawAnalyzerFitter  &);
-
-  //  double fXaxis[ALTROMAXSAMPLES]; //Axis if time bins, ( used by TGraph )
-  //  const double fkEulerSquared; //e^2 = 7.389056098930650227
-  //  TF1 *fTf1;     // Analytical formula of the Semi Gaussian to be fitted
-  //  Bool_t fFixTau; // flag if tau should be fix
   AliCaloRawAnalyzerFitter();
-  
-  //  ClassDef(AliCaloRawAnalyzerFitter, 1)
-
 };
 
 #endif

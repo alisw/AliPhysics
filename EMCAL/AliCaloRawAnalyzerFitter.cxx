@@ -17,14 +17,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
 #include "AliCaloRawAnalyzerFitter.h"
 #include "TF1.h"
-
 #include <iostream>
+
 using std::cout;
 using std::endl;
 
-//ClassImp( AliCaloRawAnalyzerFitter)
 
 AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char *nameshort ) :AliCaloRawAnalyzer( name, nameshort), 
 											      fkEulerSquared(7.389056098930650227),
@@ -36,7 +36,6 @@ AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char 
       fXaxis[i] = i;
     }
 
-  // InitFormula(fTf1);
   fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
  
   if (fFixTau) 
@@ -60,13 +59,11 @@ AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
 void 
 AliCaloRawAnalyzerFitter::PrintFitResult(const TF1 *f) const
 {
-  //comment
   cout << endl;
   cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
   cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;
   cout << __FILE__ << __LINE__ << "TOF = " << f->GetParameter(1) << ",.. !!!!" << endl;
   cout << __FILE__ << __LINE__ << "NDF = " << f->GetNDF() << ",.. !!!!" << endl;
-  //  cout << __FILE__ << __LINE__ << "STATUS = " << f->GetStatus()  << ",.. !!!!" << endl << endl;
   cout << endl << endl;
 }
 
