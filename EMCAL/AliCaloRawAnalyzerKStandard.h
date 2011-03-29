@@ -30,6 +30,9 @@ class  AliCaloRawAnalyzerKStandard : public AliCaloRawAnalyzerFitter
 {
   friend class AliCaloRawAnalyzerFactory;
 
+  
+  
+
  public:
   virtual ~AliCaloRawAnalyzerKStandard();
   virtual AliCaloFitResults  Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, const UInt_t altrocfg1,  const UInt_t altrocfg2 );

@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-
+//
 // Extraction of amplitude and peak position
 // FRom CALO raw data using
 // least square fit for the
@@ -69,7 +69,7 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
   Int_t ndf = 0;
   Bool_t fitDone = kFALSE;
   int nsamples = PreFitEvaluateSamples( bunchlist, altrocfg1, altrocfg2, bunchIndex, ampEstimate, 
-					maxADC, timeEstimate, pedEstimate, first, last,   fAmpCut ); 
+					maxADC, timeEstimate, pedEstimate, first, last,   (int)fAmpCut ); 
   
   
   if (ampEstimate >= fAmpCut  ) 
@@ -108,7 +108,7 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
       time -= fL1Phase;
 
       return AliCaloFitResults( -99, -99, fAlgo , amp, time,
-				time, chi2, ndf, Ret::kDummy );
+				(int)time, chi2, ndf, Ret::kDummy );
      }
   return AliCaloFitResults( Ret::kInvalid, Ret::kInvalid );
 }
