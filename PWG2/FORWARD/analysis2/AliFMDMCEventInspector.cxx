@@ -21,6 +21,7 @@
 #include "AliCentrality.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
+#include "AliStack.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -31,6 +32,8 @@
 #include "AliHeader.h"
 #include <TList.h>
 #include <TH2F.h>
+#include <TParticle.h>
+#include <TMath.h>
 
 //====================================================================
 AliFMDMCEventInspector::AliFMDMCEventInspector()
@@ -282,6 +285,8 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   }
   if(pythiaHeader) {
     Int_t pythiaType = pythiaHeader->ProcessType();
+    // 92 and 93 are SD 
+    // 94 is DD 
     if (pythiaType==92 || pythiaType==93) sd = kTRUE;
     b     = pythiaHeader->GetImpactParameter();
     npart = 2; // Always 2 protons
@@ -289,6 +294,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   }
   if(dpmHeader) { // Also an AliCollisionGeometry 
     Int_t processType = dpmHeader->ProcessType();
+    // 1 & 4 are ND 
+    // 5 & 6 are SD 
+    // 7 is DD 
     if (processType == 5 || processType == 6)  sd = kTRUE;
   }
   if (gevHeader) { 
@@ -324,6 +332,9 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
     }
   }
 
+  // Do a check on particles
+  sd = IsSingleDiffractive(event->Stack());
+
   // Set NSD flag
   if(!sd) {
     triggers |= AliAODForwardMult::kMCNSD;
@@ -354,6 +365,105 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
 
   
   return kOk;
+}
+
+//____________________________________________________________________
+namespace {
+  Double_t rapidity(TParticle* p, Double_t mass)
+  {
+    Double_t pt = p->Pt();
+    Double_t pz = p->Pz();
+    Double_t ee = TMath::Sqrt(pt*pt+pz*pz+mass*mass);
+    if (TMath::Abs(ee - TMath::Abs(pz)) < 1e-9) return TMath::Sign(1e30, pz);
+    return .5 * TMath::Log((ee + pz) / (ee - pz)); 
+  }
+}
+
+//____________________________________________________________________
+Bool_t
+AliFMDMCEventInspector::IsSingleDiffractive(AliStack* stack,
+					    Double_t xiMin, 
+					    Double_t xiMax) const
+{
+  // Re-implementation of AliPWG0Helper::IsHadronLevelSingleDiffrative
+  // 
+  // This is re-implemented here to be indendent of the PWG0 library. 
+  TParticle* p1 = 0;     // Particle with least y 
+  TParticle* p2 = 0;     // Particle with largest y 
+  Double_t   y1 =  1e10; // y of p1 
+  Double_t   y2 = -1e10; // y of p2 
+  
+  // Loop over primaries 
+  for (Int_t i = 0; i < stack->GetNprimary(); i++) { 
+    TParticle* p = stack->Particle(i);
+    if (!p) continue;
+    
+    Int_t pdg = TMath::Abs(p->GetPdgCode());
+    Int_t c1  = p->GetFirstDaughter();
+    Int_t s   = p->GetStatusCode();
+    Int_t mfl = Int_t(pdg/TMath::Power(10,Int_t(TMath::Log10(pdg))));
+
+    // Select final state charm and beauty 
+    if (c1 > -1 || s != 1) mfl = 0; 
+
+    // Check if this is a primary, pi0, Sigma0, ???, or most
+    // significant digit is larger than or equal to 4
+    if (!(stack->IsPhysicalPrimary(i) || 
+	  pdg == 111  || 
+	  pdg == 3212 || 
+	  pdg == 3124 || 
+	  mfl >= 4)) continue;
+
+    Int_t m1 = p->GetFirstMother();
+    if (m1 > 0) { 
+      TParticle* pm1  = stack->Particle(m1);
+      Int_t      mpdg = TMath::Abs(pm1->GetPdgCode());
+      // Check if mother is a p0, Simga0, or ???
+      if (mpdg == 111 || mpdg == 3124 || mpdg == 3212) continue;
+    }
+    
+    // Calculate the rapidity of the particle 
+    Double_t mm = (pdg != 3124 ? p->GetMass() : 1.5195);
+    Double_t yy = rapidity(p, mm);
+    
+    // Check if the rapidity of this particle is further out than any
+    // of the preceding particles
+    if (yy < y1) { 
+      y1 = yy;
+      p1 = p;
+    }
+    if (yy > y2) { 
+      y2 = yy;
+      p2 = p;
+    }
+  }
+  if (!p1 || !p2) return false;
+  
+  // Calculate rapidities assuming protons 
+  y1            = TMath::Abs(rapidity(p1, 0.938));
+  y2            = TMath::Abs(rapidity(p2, 0.938));
+
+  // Check if both or just one is a proton
+  Int_t    pdg1 = p1->GetPdgCode();
+  Int_t    pdg2 = p2->GetPdgCode();
+  Int_t    arm  = -99999;
+  if (pdg1 == 2212 && pdg2 == 2212) 
+    arm = (y1 > y2 ? 0 : 1);
+  else if (pdg1 == 2212) 
+    arm = 0;
+  else if (pdg2 == 2212) 
+    arm = 1;
+  else 
+    return false;
+  
+  // Invariant masses 
+  Double_t m02s = 1 - 2 * p1->Energy() / fEnergy; 
+  Double_t m12s = 1 - 2 * p2->Energy() / fEnergy;
+  
+  if (arm == 0 && m02s > xiMin && m02s < xiMax) return true;
+  if (arm == 1 && m12s > xiMin && m12s < xiMax) return true;
+    
+  return false;
 }
 //____________________________________________________________________
 Bool_t

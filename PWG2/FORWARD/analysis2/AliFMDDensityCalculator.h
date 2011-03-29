@@ -327,7 +327,7 @@ protected:
     TH2D*     fEmptyVsTotal;   // # of empty strips vs total number of strips 
     
     
-    ClassDef(RingHistos,3);
+    ClassDef(RingHistos,4);
   };
   /** 
    * Get the ring histogram container 

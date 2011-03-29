@@ -16,6 +16,7 @@
 #include "AliFMDEventInspector.h"
 class AliMCEvent;
 class TH2F;
+class AliStack;
 
 /** 
  * This class inspects the event 
@@ -128,7 +129,18 @@ protected:
    */
   virtual Bool_t ReadCentrality(const AliESDEvent* esd, Double_t& cent,
 				UShort_t& qual) const;
-
+  /** 
+   * Check if the event is single diffractive 
+   * 
+   * @param stack  Stack of MC particles 
+   * @param xiMin  Lower cut off
+   * @param xiMax  Upper cut off 
+   * 
+   * @return 
+   */
+  Bool_t IsSingleDiffractive(AliStack* stack,
+			     Double_t xiMin=0, 
+			     Double_t xiMax=1./81) const;
   TH1F* fHVertex;  // Histogram of vertex 
   TH1F* fHPhiR;    // Histogram of event plane 
   TH1F* fHB;       // Histogram of impact parameter 
