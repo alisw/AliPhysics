@@ -282,7 +282,7 @@ void TStatToolkit::LTM(TH1F * his, TVectorD *param , Float_t fraction,  Bool_t v
   }
 }
 
-Double_t  TStatToolkit::FitGaus(TH1F* his, TVectorD *param, TMatrixD */*matrix*/, Float_t xmin, Float_t xmax, Bool_t verbose){
+Double_t  TStatToolkit::FitGaus(TH1* his, TVectorD *param, TMatrixD */*matrix*/, Float_t xmin, Float_t xmax, Bool_t verbose){
   //
   //  Fit histogram with gaussian function
   //  
