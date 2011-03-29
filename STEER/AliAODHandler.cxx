@@ -271,7 +271,11 @@ void AliAODHandler::StoreMCParticles(){
 	  TList* headerList = genCocktailHeader->GetHeaders();
 	  for(int i = headerList->GetEntries()-1;i>=0;--i){
 	      AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(i));
-	      SetMCHeaderInfo(mcHeader,headerEntry);
+         if (!headerEntry) {
+           AliFatal("AliGenEventHeader entry not found in the header list");
+         } else {   
+           SetMCHeaderInfo(mcHeader,headerEntry);
+         }  
 	  }
       }
       else{
