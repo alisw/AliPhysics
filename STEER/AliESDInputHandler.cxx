@@ -466,7 +466,7 @@ Int_t AliESDInputHandler::GetNFilesEmpty()
     
     Int_t iAcc = atoi(strtok(iTagInfo, ","));
     Int_t iRej = atoi(strtok(NULL, ","));
-    
+    free(iTagInfo);
     if ((iAcc == 0) && ((iRej+iAcc)>0))
       iFilesEmpty++;
   }
