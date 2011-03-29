@@ -19,29 +19,23 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-#include "AliCaloRawAnalyzer.h"
+#include "AliCaloRawAnalyzerFitter.h"
 #include "Rtypes.h"
 
 // Extraction of Amplitude and peak
 // position using specila algorithm
 // from Alexei Pavlinov
 
-
-class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzer
+class  AliCaloRawAnalyzerFastFit : public AliCaloRawAnalyzerFitter
 {
   friend class  AliCaloRawAnalyzerFactory;
  public:
-  //AliCaloRawAnalyzerFastFit();
   virtual ~AliCaloRawAnalyzerFastFit();
   virtual AliCaloFitResults Evaluate( const std::vector<AliCaloBunchInfo> &bunchvector, 
 				      const UInt_t altrocfg1,  const UInt_t altrocfg2 ); 
  private:
   AliCaloRawAnalyzerFastFit();
-  Double_t fXAxis[1008]; // Xaxis (time bins) corresponding to the ADC samples
-
   ClassDef( AliCaloRawAnalyzerFastFit, 1 )
-
-
 };
 
 #endif

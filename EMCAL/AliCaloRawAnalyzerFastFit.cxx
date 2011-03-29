@@ -31,26 +31,18 @@
 #include "TMath.h"
 #include <iostream>
 
-
 using namespace std;
-
 #include "AliCaloConstants.h"
-//using namespace CaloConstants::FitAlgorithm;
-//using namespace CaloConstants::ReturnCodes;
 
 ClassImp( AliCaloRawAnalyzerFastFit )
 
-AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzer("Fast Fit (Alexei)", "FF")
+
+AliCaloRawAnalyzerFastFit::AliCaloRawAnalyzerFastFit() : AliCaloRawAnalyzerFitter("Fast Fit (Alexei)", "FF")
 {
   // Comment
   fAlgo= Algo::kFastFit;
-
-  for(int i=0; i <  1008; i++)
-    {
-      fXAxis[i] = i;
-    }
-
 }
+
 
 AliCaloRawAnalyzerFastFit::~AliCaloRawAnalyzerFastFit()
 {
@@ -105,7 +97,7 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
 	      Double_t chi2 = 0;
 	      Double_t dTau = 2.35; // time-bin units
 	      
-	      AliCaloFastAltroFitv0::FastFit(fXAxis, ordered , nsamples,
+	      AliCaloFastAltroFitv0::FastFit(fXaxis, ordered , nsamples,
 					     eSignal, dTau, dAmp, eAmp, dTime0, eTime, chi2);
 	   
 	      Double_t dTimeMax = dTime0 + timebinOffset - (maxrev - first) // abs. t0
@@ -124,8 +116,4 @@ AliCaloRawAnalyzerFastFit::Evaluate( const vector<AliCaloBunchInfo> &bunchvector
     } // bunch index    
 
   return AliCaloFitResults( Ret::kInvalid , Ret::kInvalid );
-
-  //  return AliCaloFitResults( kInvalid , kInvalid, 
-  //			    kInvalid, kInvalid, kInvalid );
-  
 }
