@@ -71,7 +71,7 @@ void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, In
 void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
 {
 
-  Float_t *timecdb = 0;
+  Float_t *timecdb;
   Int_t badpmt=0;
   //Processing data from DAQ Physics run
   AliInfo("Processing Time Offset between channels");
