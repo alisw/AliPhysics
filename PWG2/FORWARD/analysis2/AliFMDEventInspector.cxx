@@ -530,30 +530,76 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers)
     fHTriggers->Fill(kEmpty+.5);
   }
 
-  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL") ||
-      trigStr.Contains("CINT1-AC_NOPF-ALLNOTRD")) {
+  // Check for B triggers
+  if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL")   ||   // Early pp
+      trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")  ||   // Late pp 
+      trigStr.Contains("CSMBB-ABCE-NOPF-ALL")    ||   // pp
+      trigStr.Contains("CMBACS2-B-NOPF-ALL")     ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBS2A-B-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBS2C-B-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBAC-B-NOPF-ALL")       ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBACS2-B-NOPF-ALLNOTRD")     // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
+      ) {
+    triggers |= AliAODForwardMult::kB;
+    fHTriggers->Fill(kB+.5);
+  }
+  
+  // Check for A triggers
+  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL")   ||   // Early pp
+      trigStr.Contains("CINT1-AC_NOPF-ALLNOTRD") ||   // Late pp
+      (trigStr.Contains("CSMBA-ABCE-NOPF-ALL") && 
+       !(triggers & AliAODForwardMult::kB))      ||   // pp
+      trigStr.Contains("CMBACS2-A-NOPF-ALL")     ||   // PbPb
+      // trigStr.Contains("C0SMH-A-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBS2A-A-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBS2C-A-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBAC-A-NOPF-ALL")       ||   // PbPb
+      // trigStr.Contains("C0SMH-A-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBACS2-A-NOPF-ALLNOTRD")     // PbPb
+      // trigStr.Contains("C0SMH-A-NOPF-ALLNOTRD")    // PbPb - high mult
+      ) {
     triggers |= AliAODForwardMult::kA;
     fHTriggers->Fill(kA+.5);
   }
 
-  if (trigStr.Contains("CINT1B-ABCE-NOPF-ALL") || 
-      trigStr.Contains("CINT1-B-NOPF-ALLNOTRD")) {
-    triggers |= AliAODForwardMult::kB;
-    fHTriggers->Fill(kB+.5);
-  }
-
-
-  if (trigStr.Contains("CINT1C-ABCE-NOPF-ALL")) {
+  // Check for C triggers
+  if (trigStr.Contains("CINT1C-ABCE-NOPF-ALL")   ||  // Early pp
+      (trigStr.Contains("CSMBC-ABCE-NOPF-ALL") && 
+       !(triggers & AliAODForwardMult::kB))      ||   // pp
+      trigStr.Contains("CMBACS2-C-NOPF-ALL")     ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBS2A-C-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBS2C-C-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBAC-C-NOPF-ALL")       ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBACS2-C-NOPF-ALLNOTRD")     // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
+      ) {
     triggers |= AliAODForwardMult::kC;
     fHTriggers->Fill(kC+.5);
   }
 
-  if (trigStr.Contains("CINT1-E-NOPF-ALL") ||
-      trigStr.Contains("CINT1-E-NOPF-ALLNOTRD")) {
+  // Check for E triggers 
+  if (trigStr.Contains("CINT1-E-NOPF-ALL")       ||   // Early pp 
+      trigStr.Contains("CINT1-E-NOPF-ALLNOTRD")  ||   // Late pp 
+      trigStr.Contains("CMBACS2-E-NOPF-ALL")     ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBS2A-E-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBS2C-E-NOPF-ALL")      ||   // PbPb
+      trigStr.Contains("CMBAC-E-NOPF-ALL")       ||   // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALL")    ||   // PbPb - high mult
+      trigStr.Contains("CMBACS2-E-NOPF-ALLNOTRD")     // PbPb
+      // trigStr.Contains("C0SMH-B-NOPF-ALLNOTRD")    // PbPb - high mult
+      ) {
     triggers |= AliAODForwardMult::kE;
     fHTriggers->Fill(kE+.5);
   }
 
+  // Now check - if we have a collision - for offline triggers and
+  // fill histogram.
   if (triggers & AliAODForwardMult::kB) {
     if (triggers & AliAODForwardMult::kInel) 
       fHTriggers->Fill(kInel);

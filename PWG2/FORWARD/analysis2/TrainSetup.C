@@ -229,11 +229,11 @@ struct TrainSetup
    */
   static EType ParseType(const char* type, Bool_t& mc)
   {
-    mc = false;
+    // mc = false;
     TString sType(type);
     sType.ToUpper();
     EType eType = kESD;
-    if      (sType.Contains("MC"))    mc    = true;
+    // if      (sType.Contains("MC"))    mc    = true;
     if      (sType.Contains("ESD"))   eType = kESD; 
     else if (sType.Contains("AOD"))   eType = kAOD;
     else 
@@ -452,13 +452,17 @@ struct TrainSetup
    */
   void Print() const 
   {
+    bool mc = AliAnalysisManager::GetAnalysisManager()
+      ->GetMCtruthEventHandler();
     std::cout << fName << " train setup\n"
+	      << std::boolalpha
 	      << "  ROOT version:         " << fRootVersion    << "\n"
 	      << "  AliROOT version:      " << fAliRootVersion << "\n"
 	      << "  Name of proof server: " << fProofServer    << "\n"
 	      << "  Grid Input directory: " << fDataDir        << "\n"
 	      << "  Proof data set name:  " << fDataSet        << "\n"
 	      << "  XML collection:       " << fXML            << "\n"
+	      << "  Monte-Carlo input:    " << mc              << "\n"
 	      << "  Storage replication:  " << fNReplica       << "\n"
 	      << "  Run numbers:          " << std::flush;
     for (Int_t i = 0; i < fRunNumbers.GetSize(); i++) 
@@ -491,7 +495,7 @@ struct TrainSetup
       std::cout << (first ? "" : ", ") << obj->GetName();
       first = false;
     }
-    std::cout << std::endl;
+    std::cout << std::noboolalpha << std::endl;
 
     AliAnalysisGrid* plugin = 
       AliAnalysisManager::GetAnalysisManager()->GetGridHandler();
@@ -573,6 +577,8 @@ protected:
 	    Bool_t       usePar=false, 
 	    Int_t        dbg=0)
   {
+    Info("Exec", "Doing exec with type=%s, mode=%s, oper=%s, events=%d "
+	 "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
     EType eType = ParseType(type, mc);
     EMode eMode = ParseMode(mode);
     EOper eOper = ParseOperation(oper);
@@ -600,6 +606,9 @@ protected:
 	    Bool_t usePar, 
 	    Int_t  dbg=0)
   {
+    Info("Exec", "Doing exec with type=%d, mode=%d, oper=%d, events=%d "
+	 "mc=%d, usePar=%d", type, mode, oper, nEvents, mc, usePar);
+
     if (mode == kProof) usePar    = true;
 
     if (!Connect(mode)) return;
@@ -669,7 +678,11 @@ protected:
     if (gridHandler) mgr->SetGridHandler(gridHandler);
     
     // --- Create the chain ------------------------------------------
-    TChain* chain = CreateChain(type, mode, oper);
+    TChain* chain = CreateChain(type, mode, oper, mc);
+    if (mode == kLocal && !chain) {
+      Error("Exec", "No chain defined in local mode!");
+      return;
+    }
 
     // --- Print setup -----------------------------------------------
     Print();
@@ -677,7 +690,8 @@ protected:
     // --- Initialise the train --------------------------------------
     if (!mgr->InitAnalysis())  {
       gSystem->ChangeDirectory(cwd.Data());
-      Fatal("Run","Failed to initialise train");
+      Error("Run","Failed to initialise train");
+      return;
     }
 
     // --- Show status -----------------------------------------------
@@ -688,7 +702,7 @@ protected:
     // Make sure we go back 
     gSystem->ChangeDirectory(cwd.Data());
 
-    if (ret < 0) Fatal("Exec", "Analysis failed");
+    if (ret < 0) Error("Exec", "Analysis failed");
   }
   //__________________________________________________________________
   /** 
@@ -939,7 +953,9 @@ protected:
    */
   virtual AliVEventHandler* CreateMCHandler(EType type, bool mc)
   {
-    if (!mc || type != kESD) return 0;
+    if (!mc)          return 0;
+    if (type != kESD) return 0;
+    Info("CreateMCHandler", "Making MC handler");
     AliMCEventHandler* mcHandler = new AliMCEventHandler();
     mcHandler->SetReadTR(true); 
     return mcHandler;
@@ -963,7 +979,7 @@ protected:
       ret->SetOutputFileName("AliAOD.pass2.root");
       break;
     }
-    return 0;
+    return ret;
   }
   //__________________________________________________________________
   /** 
@@ -1284,27 +1300,32 @@ protected:
    * @return true if any files where added 
    */
   Bool_t ScanDirectory(TSystemDirectory* dir, TChain* chain, 
-		       EType type, bool recursive)
+		       EType type, bool recursive, bool mc)
   {
     TString fnPattern;
     switch (type) { 
     case kESD:  fnPattern = "AliESD"; break;
     case kAOD:  fnPattern = "AliAOD"; break;
     }
-    Info("ScanDirectory", "Now investigating %s for %s", 
-	 dir->GetName(), fnPattern.Data());
 
     // Assume failure 
     Bool_t ret = false;
 
     // Get list of files, and go back to old working directory
     TString oldDir(gSystem->WorkingDirectory());
-    TList* files = dir->GetListOfFiles();
-    if (!files) { 
-      gSystem->ChangeDirectory(oldDir);
+    TList*  files = dir->GetListOfFiles();
+    if (!gSystem->ChangeDirectory(oldDir)) { 
+      Error("ScanDirectory", "Failed to go back to %s", oldDir.Data());
       return false;
     }
+    if (!files) return false;
 
+    TList toAdd;
+    toAdd.SetOwner();
+    Bool_t hasGAlice = (!mc ? true : false);
+    Bool_t hasKine   = (!mc ? true : false);
+    Bool_t hasTrRef  = (!mc ? true : false);
+    
     // Sort list of files and check if we should add it 
     files->Sort();
     TIter next(files);
@@ -1313,25 +1334,29 @@ protected:
       TString name(file->GetName());
       TString title(file->GetTitle());
       TString full(gSystem->ConcatFileName(file->GetTitle(), name.Data()));
+      if (dynamic_cast<TSystemDirectory*>(file)) full = title;
       // Ignore special links 
       if (name == "." || name == "..") { 
 	// Info("ScanDirectory", "Ignoring %s", name.Data());
 	continue;
       }
 
-      Info("ScanDirectory", "Looking at %s", full.Data());
+      FileStat_t fs;
+      if (gSystem->GetPathInfo(full.Data(), fs)) {
+	Warning("ScanDirectory", "Cannot stat %s (%s)", full.Data(),
+                gSystem->WorkingDirectory());
+	continue;
+      }
       // Check if this is a directory 
-      if (file->IsDirectory(full.Data())) { 
-	Info("ScanDirectory", "%s is a directory", full.Data());
+      if (file->IsDirectory(full)) { 
 	if (recursive) {
-          if (ScanDirectory(static_cast<TSystemDirectory*>(file),
-			    chain,type,recursive))
+	  // if (title[0] == '/') 
+	  TSystemDirectory* d = new TSystemDirectory(file->GetName(),
+						     full.Data());
+          if (ScanDirectory(d,chain,type,recursive,mc))
 	    ret = true;
+	  delete d;
 	}
-	else 
-	  Info("ScanDirectory", 
-	       "%s is a directory but we're not scanning recusively",	
-	       name.Data());
         continue;
       }
     
@@ -1340,19 +1365,38 @@ protected:
 
       // If this file does not contain AliESDs, ignore 
       if (!name.Contains(fnPattern)) { 
-	Info("ScanDirectory", "%s does not match pattern %s", 
-	     name.Data(), fnPattern.Data());
+	// Info("ScanDirectory", "%s does not match pattern %s", 
+	//      name.Data(), fnPattern.Data());
+	if (mc) { 
+	  if (name.CompareTo("galice.root") == 0)     hasGAlice = true;
+	  if (name.CompareTo("Kinematics.root") == 0) hasKine   = true;
+	  if (name.CompareTo("TrackRefs.root")  == 0) hasTrRef = true;
+	}
 	continue;
       }
     
-      // Get the path 
-      TString fn(Form("%s/%s", file->GetTitle(), name.Data()));
-
       // Add 
-      Info("ScanDirectory", "Adding %s", fn.Data());
-      chain->Add(fn);
-      ret = true;
+      // Info("ScanDirectory", "Adding %s", full.Data());
+      toAdd.Add(new TObjString(full));
     }
+
+    if (mc && toAdd.GetEntries() > 0 && 
+	(!hasGAlice || !hasKine || !hasTrRef)) { 
+      Warning("ScanDirectory", 
+	      "one or more of {galice,Kinematics,TrackRefs}.root missing from "
+	      "%s, not adding anything from this directory", 
+	      dir->GetTitle());
+      toAdd.Delete();
+    }
+
+    TIter nextAdd(&toAdd);
+    TObjString* s = 0;
+    while ((s = static_cast<TObjString*>(nextAdd()))) {
+      // Info("ScanDirectory", "Adding %s", s->GetString().Data());
+      chain->Add(s->GetString());
+    }
+    if (toAdd.GetEntries() > 0) ret = true;
+
     gSystem->ChangeDirectory(oldDir);
     return ret;
   }
@@ -1390,7 +1434,7 @@ protected:
    * 
    * @return TChain of data 
    */    
-  TChain* CreateChain(EType type, EMode mode, EOper /* oper */)
+  TChain* CreateChain(EType type, EMode mode, EOper /* oper */, Bool_t mc)
   {
     TString treeName;
     switch (type) { 
@@ -1407,12 +1451,15 @@ protected:
       if (fXML.IsNull()) {
 	chain = new TChain(treeName.Data());
 	TString dir(fDataDir);
+	if (dir == ".") dir = "";
 	if (!dir.BeginsWith("/")) dir = Form("../%s", dir.Data());
-	TSystemDirectory d(dir.Data(), dir.Data());
-	if (!ScanDirectory(&d, chain, type, true)) { 
+	TString savdir(gSystem->WorkingDirectory());
+	TSystemDirectory d(gSystem->BaseName(dir.Data()), dir.Data());
+	if (!ScanDirectory(&d, chain, type, true, mc)) { 
 	  delete chain;
 	  chain = 0;
 	}
+	gSystem->ChangeDirectory(savdir);
       }
       else 
 	chain = CreateChainFromXML(treeName.Data(), fXML.Data());
@@ -1610,6 +1657,8 @@ public:
 	   Int_t nEvents=-1, Bool_t mc=false,
 	   Bool_t usePar=false)
   {
+    Info("Run", "Running in mode=%s, oper=%s, events=%d, MC=%d, Par=%d", 
+	 mode, oper, nEvents, mc, usePar);
     Exec("ESD", mode, oper, nEvents, mc, usePar);
   }
   /** 
@@ -1624,6 +1673,8 @@ public:
   void Run(EMode mode, EOper oper, Int_t nEvents=-1, Bool_t mc=false, 
 	   Bool_t usePar = false)
   {
+    Info("Run", "Running in mode=%d, oper=%d, events=%d, MC=%d, Par=%d", 
+	 mode, oper, nEvents, mc, usePar);
     Exec(kESD, mode, oper, nEvents, mc, usePar);
   }
 protected:

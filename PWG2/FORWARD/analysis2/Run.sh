@@ -1,6 +1,7 @@
 #!/bin/bash 
 
 ana=$ALICE_ROOT/PWG2/FORWARD/analysis2
+esddir="."
 nev=-1
 rebin=1
 vzmin=-10
@@ -65,6 +66,7 @@ Options:
 	-S,--scheme SCHEME	Normalisation scheme	    ($scheme)
 	-T,--title STRING       Title on plots              ($tit)
 	-N,--name STRING        Name of analysis            ($name)
+	-I,--input-dir PATH     Path to input ESD data      ($esddir)
 
 TYPE is a comma or space separated list of 
  
@@ -152,6 +154,7 @@ while test $# -gt 0 ; do
 	-S|--scheme)          scheme=`echo $2 | tr ' ' ','` ; shift ;;
 	-T|--title)           tit=$2 ; shift ;; 
 	-N|--name)            name=$2 ; shift ;; 
+	-I|--input-dir)       esddir=$2 ; shift ;;
 	-t|--type)           
 	    #if test "x$type" = "x" ; then type=$2 ; else type="$type|$2"; fi
 	    type=$2
@@ -191,11 +194,11 @@ if test $dopass1 -gt 0 ; then
     if test $gdb -gt 0 ; then 
 	export PROOF_WRAPPERCMD="gdb -batch -x ${gdb_script} --args"
     fi
-    echo "Running aliroot ${opts} ${opts1} ${ana}/${pass1}\(\".\",$nev,$proof,$mc\) $redir"
+    echo "Running aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\)"
     if test $batch -gt 0 ; then 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent,\"${name}\"\) 2>&1 | tee ${base}.log
+	aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\) 2>&1 | tee ${base}.log
     else 
-	aliroot $opts $opts1 ${ana}/${pass1}\(\".\",$nev,$proof,$mc,$cent,\"${name}\"\)
+	aliroot $opts $opts1 ${ana}/${pass1}\(\"${esddir}\",$nev,$proof,$mc,$cent,\"${name}\"\)
     fi
     fail=$?
     if  test $fail -gt 0  ; then 
