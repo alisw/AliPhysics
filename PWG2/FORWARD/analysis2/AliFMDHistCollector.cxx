@@ -566,7 +566,7 @@ AliFMDHistCollector::Print(Option_t* /* option */) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDHistCollector: " << GetName() << '\n'
+  std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " # of cut bins:          " << fNCutBins << '\n'
 	    << ind << " Correction cut:         " << fCorrectionCut << '\n'
 	    << ind << " Merge method:           ";

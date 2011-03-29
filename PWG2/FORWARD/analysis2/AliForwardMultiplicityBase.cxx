@@ -218,7 +218,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   //    option Not used
   //
   
-  std::cout << "AliForwardMultiplicityBase: " << GetName() << "\n" 
+  std::cout << ClassName() << ": " << GetName() << "\n" 
 	    << "  Enable low flux code:   " << (fEnableLowFlux ? "yes" : "no") 
 	    << "\n"
 	    << "  Off-line trigger mask:  0x" 

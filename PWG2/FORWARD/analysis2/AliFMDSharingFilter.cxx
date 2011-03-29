@@ -532,7 +532,7 @@ AliFMDSharingFilter::Print(Option_t* /*option*/) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDSharingFilter: " << GetName() << '\n'
+  std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " Low cut:                " << fLowCut << '\n'
 	    << ind << " N xi factor:            " << fNXi    << '\n'
 	    << ind << " Use corrected angles:   " 
