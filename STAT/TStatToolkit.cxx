@@ -30,6 +30,8 @@
 #include "TChain.h"
 #include "TObjString.h"
 #include "TLinearFitter.h"
+#include "TGraph2D.h"
+#include "TGraph.h"
 
 //
 // includes neccessary for test functions
@@ -220,7 +222,7 @@ Int_t TStatToolkit::Freq(Int_t n, const Int_t *inlist
 }
 
 //___TStatToolkit__________________________________________________________________________
-void TStatToolkit::TruncatedMean(TH1F * his, TVectorD *param, Float_t down, Float_t up, Bool_t verbose){
+void TStatToolkit::TruncatedMean(const TH1 * his, TVectorD *param, Float_t down, Float_t up, Bool_t verbose){
   //
   //
   //
@@ -404,7 +406,7 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
   fitter.ClearPoints();
   TVectorD  par(3);
   TVectorD  sigma(3);
-  TMatrixD A(3,3);
+  TMatrixD matA(3,3);
   TMatrixD b(3,1);
   Float_t rms = TMath::RMS(nBins,arr);
   Float_t max = TMath::MaxElement(nBins,arr);
@@ -439,9 +441,9 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
       Float_t val = TMath::Log(Float_t(entriesI));
       fitter.AddPoint(&xcenter,val,error);
       if (npoints<3){
-	  A(npoints,0)=1;
-	  A(npoints,1)=xcenter;
-	  A(npoints,2)=xcenter*xcenter;
+	  matA(npoints,0)=1;
+	  matA(npoints,1)=xcenter;
+	  matA(npoints,2)=xcenter*xcenter;
 	  b(npoints,0)=val;
 	  meanCOG+=xcenter*entriesI;
 	  rms2COG +=xcenter*entriesI*xcenter;
@@ -456,9 +458,9 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
   if (npoints>=3){
       if ( npoints == 3 ){
 	  //analytic calculation of the parameters for three points
-	  A.Invert();
+	  matA.Invert();
 	  TMatrixD res(1,3);
-	  res.Mult(A,b);
+	  res.Mult(matA,b);
 	  par[0]=res(0,0);
 	  par[1]=res(0,1);
 	  par[2]=res(0,2);
@@ -516,7 +518,7 @@ Double_t  TStatToolkit::FitGaus(Float_t *arr, Int_t nBins, Float_t xMin, Float_t
 }
 
 
-Float_t TStatToolkit::GetCOG(Short_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, Float_t *rms, Float_t *sum)
+Float_t TStatToolkit::GetCOG(const Short_t *arr, Int_t nBins, Float_t xMin, Float_t xMax, Float_t *rms, Float_t *sum)
 {
     //
     //  calculate center of gravity rms and sum for array 'arr' with nBins an a x range xMin to xMax
@@ -1031,7 +1033,7 @@ TString* TStatToolkit::FitPlaneFixed(TTree *tree, const char* drawCommand, const
 
 
 
-Int_t TStatToolkit::GetFitIndex(TString fString, TString subString){
+Int_t TStatToolkit::GetFitIndex(const TString fString, const TString subString){
   //
   // fitString - ++ separated list of fits
   // substring - ++ separated list of the requiered substrings
@@ -1053,7 +1055,7 @@ Int_t TStatToolkit::GetFitIndex(TString fString, TString subString){
 }
 
 
-TString  TStatToolkit::FilterFit(TString &input, TString filter, TVectorD &param, TMatrixD & covar){
+TString  TStatToolkit::FilterFit(const TString &input, const TString filter, TVectorD &param, TMatrixD & covar){
   //
   // Filter fit expression make sub-fit
   //
@@ -1130,7 +1132,7 @@ void TStatToolkit::Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &
 
 
 
-void   TStatToolkit::Constrain1D(TString &input, TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma){
+void   TStatToolkit::Constrain1D(const TString &input, const TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma){
   //
   // constrain linear fit
   // input  - string description of fit function
@@ -1158,7 +1160,7 @@ void   TStatToolkit::Constrain1D(TString &input, TString filter, TVectorD &param
   }
 }
 
-TString  TStatToolkit::MakeFitString(TString &input, TVectorD &param, TMatrixD & covar){
+TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar){
   //
   //
   //
@@ -1186,18 +1188,18 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   Int_t *index = new Int_t[entries];
   TMath::Sort(entries,graph->GetX(),index,kFALSE);
   
-  Double_t *VV = new Double_t[entries];
+  Double_t *tempArray = new Double_t[entries];
 
   Double_t count = 0.5;
   vector<Int_t> vrun;
-  VV[index[0]] = count;
+  tempArray[index[0]] = count;
   vrun.push_back(graph->GetX()[index[0]]);
   for(Int_t i=1;i<entries;i++){
     if(graph->GetX()[index[i]]==graph->GetX()[index[i-1]])
-      VV[index[i]] = count; 
+      tempArray[index[i]] = count; 
     else if(graph->GetX()[index[i]]!=graph->GetX()[index[i-1]]){
       count++;
-      VV[index[i]] = count;
+      tempArray[index[i]] = count;
       vrun.push_back(graph->GetX()[index[i]]);
     }
   }
@@ -1208,18 +1210,17 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
     newBins[i] = i;
   }
   
-  TGraph *graphNew = new TGraph(entries,VV,graph->GetY());
+  TGraph *graphNew = new TGraph(entries,tempArray,graph->GetY());
   graphNew->GetXaxis()->Set(newNbins,newBins);
   
   Char_t xName[50];
-  Double_t bin_unit = graphNew->GetXaxis()->GetNbins()/count;
   for(Int_t i=0;i<count;i++){
     snprintf(xName,50,"%d",vrun.at(i));
     graphNew->GetXaxis()->SetBinLabel(i+1,xName);
   }
   graphNew->GetHistogram()->SetTitle("");
   
-  delete [] VV;
+  delete [] tempArray;
   delete [] index;
   delete [] newBins;
   return graphNew;
