@@ -517,7 +517,7 @@ void AliITSupgrade::Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t 
     AliITShit *hit = (AliITShit*)hits->At(iHit);
     Double_t xz[2];
 
-    Int_t module;
+    Int_t module=99;
     if(!fSegmentation->GlobalToDet(fSegmentation->GetLayerFromIdIndex(hit->GetModule()),hit->GetXG(),hit->GetYG(),hit->GetZG(),xz[0],xz[1],module)) continue;
     AliITSDigitUpgrade digit;
     digit.SetSignal(hit->GetIonization());

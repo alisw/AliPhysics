@@ -108,18 +108,21 @@ AliITStrackU::AliITStrackU(const AliITStrackU& t, Bool_t trackMI) :
     for(Int_t i=0;i<t.GetNumberOfMarked(nlay);i++){
       fCluMark[nlay][i]=t.fCluMark[nlay][i];
     }
+  }
+  for(Int_t nlay=0;nlay<fgMaxNLayer;nlay++){
+    fDy[nlay]=t.fDy[nlay]; fDz[nlay]=t.fDz[nlay];
+     fSigmaY[nlay]=t.fSigmaY[nlay]; fSigmaZ[nlay]=t.fSigmaZ[nlay]; fSigmaYZ[nlay]=t.fSigmaYZ[nlay];
     fClIndex[nlay]= t.fClIndex[nlay]; fNy[nlay]=t.fNy[nlay]; fNz[nlay]=t.fNz[nlay]; fNormQ[nlay]=t.fNormQ[nlay]; fNormChi2[nlay] = t.fNormChi2[nlay];
   } 
   
   if(trackMI){
     fLab = t.fLab;
     fFakeRatio = t.fFakeRatio;
-    for(Int_t i=0; i<fgMaxNLayer; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i];
-      fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; }
   }
-
+//  for(Int_t i=0; i<fgMaxNLayer; i++) {fDy[i]=t.fDy[i]; fDz[i]=t.fDz[i];
+//    fSigmaY[i]=t.fSigmaY[i]; fSigmaZ[i]=t.fSigmaZ[i]; fSigmaYZ[i]=t.fSigmaYZ[i]; 
+//  }
 }
-
 //____________________________________________________
 AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Double_t Zcoor, Double_t phi, Double_t tanlambda, Double_t curv, Int_t lab, Int_t nlay ):
   fNLayers(nlay),
@@ -127,7 +130,7 @@ AliITStrackU::AliITStrackU(Double_t alpha, Double_t radius, Double_t Ycoor, Doub
   fExpQ(40)
 {
   
-  for(Int_t i=0; i<fNLayers; i++) { fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; }
+  for(Int_t i=0; i<fgMaxNLayer; i++) { fClIndex[i]=-1; fNy[i]=0; fNz[i]=0; fNormQ[i]=0; fNormChi2[i]=1000; }
   // standard constructor. Used for ITSUpgrade standalone tracking
 
   // get the azimuthal angle of the detector containing the innermost
