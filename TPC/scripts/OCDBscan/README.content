@@ -1,0 +1,46 @@
+The content of the directory:
+
+Scripts for visualization - expert view:
+   *  gui     - invoke the Calibration viewer pad  view application  (AliTPCCalibViewerGUI.cxx)
+   *  guiTime - invoke the Calibration viewer time(trend) view application (AliTPCCalibViewerGUITime.cxx)
+
+README:
+   * README.content              - this file
+   * README.local                - readme for locl analysis
+   * jdl/HowTo-CalibSummary.txt  - readme for alien based analysis
+
+Scripts to create summary QA information on Alien -  jdl subdirectory (Marek):
+   * jdl files and scripts to make a sumary calibr info per run on alien
+   * see jdl/HowTo-CalibSummary.txt
+   * jdl/CalibSummary.jdl  
+   * jdl/runCalibSummary.sh  
+   * jdl/validation.sh
+   * jdl/ConfigOCDB.C  
+   * jdl/runCalibSummary.C  
+
+Scripts for creating summary information - local version (see README.local)
+   *  needed to test the new calibration before porting request and to check the residual calibration
+   *  guiEnv.sh           - setup the environment to run the scripts
+   *  makeCalibTreeRun.sh - create a summary calibration information per run
+   *  makeRunList.sh      - macro to create the run list of interest            
+   *  makeCalibTree.sh    - Obsolete script (to be confirmed)
+
+ROOT macros:
+   * CalibSummary.C  - main macro to create calibration summary information
+   * loadLibsREC.C   - load libraries in order to run application with plain root (obsolete?)
+   * ConfigOCDB.C    - setup the OCDB paths (to check the new calinration before porting good to use specific storages)
+                     - to be modified correspondingly
+   * guiAlias.C      - define  aliases of variables (obsolete)
+   * NimStyle.C      - default style to make a trend pictures
+   * makeChain.C     - make a combined tree form a chain
+      *  * input     - list of the calibTimeTrees[Run].root
+      *  * output    - sumary tree - calibTime.root            
+   * makeTPCTrendPlots.C  - macro to make a trend graphs
+      *  * input     - calibTime.root
+   * makeTPCRunPlots.C  - macro to make a run default plots
+      *  * input        - calPads_[Run].root and [run]/calibObjects.root 
+      *  * output       - set of the default run calibration plots 
+
+Obsolete: 
+   * makeDefaultPlots.C - splitted to makeTPCTrendPlots.C and makeTPCRunPlots.C   - to be removed soon
+

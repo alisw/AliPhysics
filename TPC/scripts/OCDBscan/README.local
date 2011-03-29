@@ -1,0 +1,82 @@
+ABOUT:
+Authors: Jens Wiechula 
+         Marian Ivanov (marian.ivanov@cern.ch)
+ 
+Scripts for viusalization and analysis of the TPC OCDB entries and visualization of trends.
+For visualization and analisys purposes root trees and queries on top of trees are used.
+
+Algorithm:
+1. Creation of the run lists.   (Expert operation) 
+2. Making a calibration trees.  (Expert operation)
+3. OCDB visualization analysis. (Non /software/ expert mode) 
+
+Requiroments:
+1. AliRoot installed.
+2. Alien   installed + valid alien certificate
+3. In some cases (only to speed up tree creation process) the batch farm can be used.  
+4. Alien configuration/jobs ( see jdl/HowTo-CalibSummary.txt)
+
+----------
+Quickstart
+-----------
+
+Do the following:
+1. Setup environment
+   1.a) gui dependend variables
+        export SCRIPTDIR=$ALICE_ROOT/TPC/scripts/OCDBscan
+            or your local scriptdir if you want to modify it
+        e.g:
+        export SCRIPTDIR=`pwd`/scripts
+        
+        export PATH=$SCRIPTDIR:$PATH
+	source $SCRIPTDIR/guiEnv.sh
+        
+   1.b) Modify your guiEnv.sh script in $SCRIPTDIR
+   1.c) Run: source guiEnv.sh debug    
+   1.d) Check the output of script. All checks has to be OK.
+     
+2. Run tree creation (Jens Wiechula scripts):
+   makeRunList.sh  -> creates the run.list file
+
+3. Run jobs example
+   //
+   bgroup=/bguiRUN
+   for arun in `cat run.list`; do
+	echo submitting jobs for run $arun
+        echo  $BATCHCOMMAND -g $bgroup -oo $GUI_OUTDIR/logs/out$arun.log -eo $GUI_OUTDIR/logs/err$arun.log  makeCalibTreeRun.sh $arun alien://///alice/cern.ch/user/m/miranov/OCDBscan/
+        $BATCHCOMMAND -g $bgroup -oo $GUI_OUTDIR/logs/out$arun.log -eo $GUI_OUTDIR/logs/err$arun.log  $SCRIPTDIR/makeCalibTreeRun.sh $arun alien://///alice/cern.ch/user/m/miranov/OCDBscan/
+   done;
+   
+
+4. Start the GUI browser. This should work always (even on your laptop). 
+guiTime
+
+
+----------------
+Customised setup
+----------------
+
+- Defining the OCDB directories (ConfigOCDB.C):
+Before starting the tree creation or gui the macro 'ConfigOCDB.C' is exectued. This macro should contain
+all the setup needed to point to the proper OCDB directories. If alien is used, alien needs also to be
+setup in the macro. Open the macro for examples.
+
+- General output information (guiEnv):
+In the 'guiEnv' script environment variables defining default output directories etc. See comments in the
+file for explanations.
+
+
+Troubleshouting:
+
+1. Check your environment.
+   source guiEnv.sh debug
+   1.a) If not execuitng check your $PATH
+   1.b) Check the output of script. All checks should be indicated OK.
+2. Modify environment if neccessary
+3. Missing ConfigOCDB.C macro. This macro is not provided by default.
+   It is setup specific. You should contact experts to get it.   
+4. Wrong ConfigOCDB.C macro, tests:
+   4.a) ls $SCRIPTDIR/ConfigOCDB.C  - file should exist
+   4.b) run ConfigOCDB.C macro in aliroot session. Check the output.
+
+In case of further problems, please inform authors.
