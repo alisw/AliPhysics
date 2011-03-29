@@ -5,11 +5,11 @@
 
 #include <TString.h>
 #include "AliPlaneEff.h"
-#include "AliLog.h"
 
 class AliITSsegmentation;
 class TF1;
 class AliITSgeom;
+class AliLog;
 
 ////////////////////////////////////////////////////
 //                                                //

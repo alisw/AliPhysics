@@ -26,9 +26,10 @@ class AliStack;
 class TTree;
 class TH1F;
 class TH2F;
+class AliPlaneEff;
+
 #include "AliTracker.h"
 #include "AliITSPlaneEffSPD.h"
-#include "AliPlaneEff.h"
 
 class AliITSTrackleterSPDEff : public  AliTracker
 {
@@ -47,13 +48,11 @@ public:
   // Main method to perform the trackleter and the SPD efficiency evaluation
   void Reconstruct(AliStack* pStack=0x0, TTree* tRef=0x0, Bool_t lbkg=kFALSE);
 
-  void SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b=kTRUE){  // method to study residual background:
-    if(b) {AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer)); 
-           SetLightBkgStudyInParallel(kFALSE);}
-    if(ilayer==0) fReflectClusterAroundZAxisForLayer0=b;                   // a rotation by 180degree around the Z axis  
-    else if(ilayer==1) fReflectClusterAroundZAxisForLayer1=b;              // (x->-x; y->-y) to all RecPoints on a 
-    else AliInfo("Nothing done: input argument (ilayer) either 0 or 1");   // given layer is applied. In such a way 
-  }                                                                        // you remove all the true tracklets.
+  void SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b=kTRUE);  // method to study residual background:
+                                                                           // a rotation by 180degree around the Z axis  
+                                                                           // (x->-x; y->-y) to all RecPoints on a 
+                                                                           // given layer is applied. In such a way 
+                                                                           // you remove all the true tracklets.
   void SetLightBkgStudyInParallel(Bool_t b = kTRUE); // if you set this on, then the estimation of the 
 						     // SPD efficiency is done as usual for data, but in 
 						     // parallel a light (i.e. without control histograms, etc.) 
@@ -255,15 +254,16 @@ protected:
   TH2F**        fhClustersInModuleLay1; //! distribution of cluster in the module Lay 1 (sub-chip scale)
   TH2F**        fhClustersInModuleLay2; //! distribution of cluster in the module Lay 2 (sub-chip scale)
 //
+  void Init(); // initialize pointers and allocate memory 
   Double_t GetRLayer(Int_t layer); // return average radius of layer (0,1) from Geometry
   Bool_t PrimaryTrackChecker(Int_t ipart,AliStack* stack=0x0);  // check if a MC particle is primary (need AliStack)
   Int_t DecayingTrackChecker(Int_t ipart,AliStack* stack=0x0);  // For a primary particle, check if it is stable (see cxx)
 // check if a MC particle is reconstructable
-  Bool_t IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,Float_t* vtx,AliStack* stack=0x0,TTree* ref=0x0);
+  Bool_t IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,const Float_t* vtx,const AliStack* stack=0x0,TTree* ref=0x0);
   void InitPredictionMC(); // allocate memory for cuts and MC data memebers
   void DeletePredictionMC(); // deallocate memory
   // method to locate a chip using current vtx and polar coordinate od tracklet w.r.t. to vtx (zVtx may not be given)
-  Bool_t FindChip(UInt_t &key, Int_t layer,  Float_t* vtx, Float_t thetaVtx, Float_t phiVtx, Float_t zVtx=999.); 
+  Bool_t FindChip(UInt_t &key, Int_t layer,const Float_t* vtx, Float_t thetaVtx, Float_t phiVtx, Float_t zVtx=999.); 
   // method to transform from Global Cilindrical coordinate to local (module) Cartesian coordinate
   Bool_t FromGloCilToLocCart(Int_t ilayer,Int_t idet, Double_t r, Double_t phi, Double_t z,
                            Float_t &xloc, Float_t &zloc);
@@ -272,8 +272,8 @@ protected:
   // this method gives you the intersections between a line and a circle (centred in the origin) 
   // using polar coordinates
   Bool_t FindIntersectionPolar(Double_t vtx[2],Double_t phiVtx, Double_t R,Double_t &phi);
-  Bool_t SetAngleRange02Pi(Double_t &angle); // set the range of angle in [0,2pi[ 
-  Bool_t SetAngleRange02Pi(Float_t  &angle) 
+  Bool_t SetAngleRange02Pi(Double_t &angle) const; // set the range of angle in [0,2pi[ 
+  Bool_t SetAngleRange02Pi(Float_t  &angle) const 
   {Double_t tmp=(Double_t)angle; Bool_t ret=SetAngleRange02Pi(tmp);angle=(Float_t)tmp;return ret;};  
   void CallWarningMC() const {if(!fMC) AliWarning("You can use this method only for MC! Call SetMC() first");}
   Bool_t SaveHists();

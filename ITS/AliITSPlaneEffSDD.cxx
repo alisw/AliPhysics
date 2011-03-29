@@ -60,10 +60,10 @@ AliITSPlaneEffSDD::AliITSPlaneEffSDD():
   fHisClusErrX(0),
   fHisClusErrZ(0){
   for (UInt_t i=0; i<kNModule*kNChip*kNWing*kNSubWing; i++){
+  // default constructor
     fFound[i]=0;
     fTried[i]=0;
   }
-  // default constructor
   AliDebug(1,Form("Calling default constructor"));
 }
 //______________________________________________________________________
@@ -529,6 +529,7 @@ return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliITSPlaneEffSDD::AddFromCDB(AliCDBId *cdbId) {
+// read efficiency values from CDB
 AliCDBEntry *cdbEntry=0;
 if (!cdbId) {
   if(!fInitCDBCalled)
@@ -900,6 +901,7 @@ return;
 }
 //__________________________________________________________
 void AliITSPlaneEffSDD::DeleteHistos() {
+ // delete the histograms and clean the memory
   if(fHisResX) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisResX[i];
     delete [] fHisResX; fHisResX=0;

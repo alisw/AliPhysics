@@ -136,6 +136,10 @@ fhClustersInModuleLay2(0)
 {
    // default constructor
 // from AliITSMultReconstructor
+  Init();
+}
+//______________________________________________________________________
+void AliITSTrackleterSPDEff::Init() {
   SetPhiWindowL2();
   SetZetaWindowL2();
   SetOnlyOneTrackletPerC2();
@@ -839,7 +843,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
   AliDebug(1,Form(("Eff. of method FindChip for Cluster on lay 2 = %d / %d"),nfClu2,ntClu2));
 }
 //____________________________________________________________________
-Bool_t AliITSTrackleterSPDEff::FindChip(UInt_t &key, Int_t layer,  Float_t* vtx, 
+Bool_t AliITSTrackleterSPDEff::FindChip(UInt_t &key, Int_t layer,const  Float_t* vtx, 
                                   Float_t thetaVtx, Float_t phiVtx, Float_t zVtx) {
 //
 // Input: a) layer number in the range [0,1]
@@ -1012,7 +1016,7 @@ phi=TMath::ATan2(pP[1],pP[0]);
 return kTRUE;
 }
 //___________________________________________________________
-Bool_t AliITSTrackleterSPDEff::SetAngleRange02Pi(Double_t &angle) {
+Bool_t AliITSTrackleterSPDEff::SetAngleRange02Pi(Double_t &angle) const {
 //
 //  simple method to reduce all angles (in rad)
 //  in range [0,2pi[
@@ -1852,7 +1856,7 @@ void AliITSTrackleterSPDEff::DeleteHistos() {
 }
 //_______________________________________________________________
 Bool_t AliITSTrackleterSPDEff::IsReconstructableAt(Int_t layer,Int_t iC,Int_t ipart,
-                                                   Float_t* vtx, AliStack *stack, TTree *ref) {
+                                                   const Float_t* vtx, const AliStack *stack, TTree *ref) {
 // This (private) method can be used only for MC events, where both AliStack and the TrackReference
 // are available. 
 // It is used to asses whether a tracklet prediction is reconstructable or not at the other layer
@@ -2131,4 +2135,16 @@ AliITSTrackleterSPDEff::SetLightBkgStudyInParallel(Bool_t b) {
     fPlaneEffBkg=0;
   }
 }
-
+//______________________________________________________________
+void AliITSTrackleterSPDEff::SetReflectClusterAroundZAxisForLayer(Int_t ilayer,Bool_t b){  
+//
+// method to study residual background:
+// Input b= KTRUE --> reflect the clusters 
+//      ilayer (either 0 or 1) --> which SPD layers should be reflected
+//
+    if(b) {AliInfo(Form("All clusters on layer %d will be rotated by 180 deg around z",ilayer));
+           SetLightBkgStudyInParallel(kFALSE);}
+    if(ilayer==0) fReflectClusterAroundZAxisForLayer0=b;                   // a rotation by 180degree around the Z axis  
+    else if(ilayer==1) fReflectClusterAroundZAxisForLayer1=b;              // (x->-x; y->-y) to all RecPoints on a 
+    else AliInfo("Nothing done: input argument (ilayer) either 0 or 1");   // given layer is applied. In such a way 
+  }                    

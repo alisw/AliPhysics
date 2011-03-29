@@ -6,7 +6,8 @@
 #include <TH1F.h>
 #include <TH2I.h>
 #include "AliITSPlaneEff.h"
-#include "AliCDBId.h"
+
+class AliCDBId;
 
 ///////////////////////////////////////////
 //                                       //

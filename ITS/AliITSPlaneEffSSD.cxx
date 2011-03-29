@@ -50,10 +50,10 @@ AliITSPlaneEffSSD::AliITSPlaneEffSSD():
   fHisClusErrX(0),
   fHisClusErrZ(0){
   for (UInt_t i=0; i<kNModule; i++){
+  // default constructor
     fFound[i]=0;
     fTried[i]=0;
   }
-  // default constructor
   AliDebug(1,Form("Calling default constructor"));
 }
 //______________________________________________________________________
@@ -366,6 +366,7 @@ return kTRUE;
 }
 //_____________________________________________________________________________
 Bool_t AliITSPlaneEffSSD::AddFromCDB(AliCDBId *cdbId) {
+// Read (actually add the statistics) plane eff. from Data Base
 AliCDBEntry *cdbEntry=0;
 if (!cdbId) {
   if(!fInitCDBCalled)
@@ -483,6 +484,7 @@ return;
 }
 //__________________________________________________________
 void AliITSPlaneEffSSD::DeleteHistos() {
+// Delete histograms and remove them from memory 
   if(fHisResX) {
     for (Int_t i=0; i<kNHisto; i++ ) delete fHisResX[i];
     delete [] fHisResX; fHisResX=0;
