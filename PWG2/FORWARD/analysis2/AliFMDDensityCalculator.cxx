@@ -364,7 +364,7 @@ AliFMDDensityCalculator::FindMaxWeight(const AliFMDCorrELossFit* cor,
     // AliWarning(Form("No energy loss fit for FMD%d%c at eta=%f", d, r, eta));
     return -1;
   }
-  return fit->FindMaxWeight();
+  return TMath::Min(Int_t(fMaxParticles), fit->FindMaxWeight());
 }
   
 //_____________________________________________________________________
@@ -714,10 +714,12 @@ AliFMDDensityCalculator::Print(Option_t* option) const
   char ind[gROOT->GetDirLevel()+3];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDDensityCalculator: " << GetName() << '\n'
+  std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " Multiplicity cut:       " << fMultCut << '\n'
-	    << ind << " Max(particles):         " << fMaxParticles 
-	    << std::endl;
+	    << ind << " Max(particles):         " << fMaxParticles << '\n'
+	    << ind << " Eta lumping:            " << fEtaLumping << '\n'
+	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
+	    << std::flush;
   TString opt(option);
   opt.ToLower();
   if (opt.Contains("nomax")) return;

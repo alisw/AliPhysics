@@ -342,7 +342,7 @@ AliFMDCorrector::Print(Option_t* /* option */) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDCorrector: " << GetName() <<  "\n"
+  std::cout << ind << ClassName() << ": " << GetName() <<  "\n"
             << std::boolalpha
             << ind << " Use secondary maps:     " << fUseSecondaryMap << "\n"
             << ind << " Use vertex bias:        " << fUseVertexBias << "\n"

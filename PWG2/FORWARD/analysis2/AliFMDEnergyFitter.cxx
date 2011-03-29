@@ -450,7 +450,7 @@ AliFMDEnergyFitter::Print(Option_t*) const
   char ind[gROOT->GetDirLevel()+1];
   for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
   ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << "AliFMDEnergyFitter: " << GetName() << '\n'
+  std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << ind << " Low cut:                " << fLowCut << " E/E_mip\n"
 	    << ind << " Max(particles):         " << fNParticles << '\n'
 	    << ind << " Min(entries):           " << fMinEntries << '\n'
