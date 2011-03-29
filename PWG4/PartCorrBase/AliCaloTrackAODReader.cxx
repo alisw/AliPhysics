@@ -69,7 +69,7 @@ AliCentrality* AliCaloTrackAODReader::GetCentrality() const {
     //Normal AOD event
     return event->GetHeader()->GetCentralityP() ;
   }
-  else if(fSelectEmbeddedClusters && fOrgInputEvent) {
+  else if(fSelectEmbeddedClusters && orgevent) {
     // centrality in AOD from input, not in embedded event
     // temporary fix until this object is copied to the output event in embedding analysis
     return orgevent->GetHeader()->GetCentralityP();
