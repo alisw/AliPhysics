@@ -22,47 +22,6 @@ Comments to be written here:
 
   AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime",0, 1213.9e+06, 1213.96e+06, 0.04e+04, 0.04e+04);
 
-2. How to interpret results
-
-3. Simple example
-
-  a) determine the required time range:
-
-  AliXRDPROOFtoolkit tool;
-  TChain * chain = tool.MakeChain("pass2.txt","esdTree",0,6000);
-  chain->Draw("GetTimeStamp()")
-
-  b) analyse calibration object on Proof in calibration train 
-
-  AliTPCcalibTime *calibTime = new AliTPCcalibTime("cosmicTime","cosmicTime", StartTimeStamp, EndTimeStamp, IntegrationTimeVdrift);
-
-  c) plot results
-  .x ~/NimStyle.C
-  gSystem->Load("libANALYSIS");
-  gSystem->Load("libTPCcalib");
-
-  TFile f("CalibObjectsTrain1.root");
-  AliTPCcalibTime *calib = (AliTPCcalibTime *)f->Get("calibTime");
-  calib->GetHistoDrift("all")->Projection(2,0)->Draw()
-  calib->GetFitDrift("all")->Draw("lp")
-
-4. Analysis using debug streamers.    
-
-  gSystem->AddIncludePath("-I$ALICE_ROOT/TPC/macros");
-  gROOT->LoadMacro("$ALICE_ROOT/TPC/macros/AliXRDPROOFtoolkit.cxx+")
-  AliXRDPROOFtoolkit tool;
-  TChain * chainTime = tool.MakeChainRandom("time.txt","trackInfo",0,10000);
-
-  AliXRDPROOFtoolkit::FilterList("timetpctpc.txt","* tpctpc",1) 
-  AliXRDPROOFtoolkit::FilterList("timetoftpc.txt","* toftpc",1) 
-  AliXRDPROOFtoolkit::FilterList("timeitstpc.txt","* itstpc",1) 
-  AliXRDPROOFtoolkit::FilterList("timelaser.txt","* laserInfo",1)  
-  TChain * chainTPCTPC = tool.MakeChainRandom("timetpctpc.txt.Good","tpctpc",0,10000); 
-  TChain * chainTPCITS = tool.MakeChainRandom("timeitstpc.txt.Good","itstpc",0,10000); 
-  TChain * chainTPCTOF = tool.MakeChainRandom("timetoftpc.txt.Good","toftpc",0,10000); 
-  TChain * chainLaser = tool.MakeChainRandom("timelaser.txt.Good","laserInfo",0,10000);
-  chainTime->Lookup();
-  chainLaser->Lookup();
 */
 
 #include "Riostream.h"
@@ -784,7 +743,9 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
 
 void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
   //
-  //
+  // Process beam data - calculates vartex
+  //                     from A side and C side
+  // Histogram the differences                 
   // 
   const Int_t kMinClusters  =80;
   const Int_t kMinTracks    =2;      // minimal number of tracks to define the vertex
@@ -1219,7 +1180,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
   return 0;
 }
 
-Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1){
+Bool_t  AliTPCcalibTime::IsPair(const AliExternalTrackParam *tr0, const AliExternalTrackParam *tr1){
   /*
   // 0. Same direction - OPOSITE  - cutDir +cutT    
   TCut cutDir("cutDir","dir<-0.99")
@@ -1256,7 +1217,7 @@ Bool_t  AliTPCcalibTime::IsPair(AliExternalTrackParam *tr0, AliExternalTrackPara
 
   return kTRUE;  
 }
-Bool_t AliTPCcalibTime::IsCross(AliESDtrack *const tr0, AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsCross(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
   //
   // check if the cosmic pair of tracks crossed A/C side
   // 
@@ -1266,7 +1227,7 @@ Bool_t AliTPCcalibTime::IsCross(AliESDtrack *const tr0, AliESDtrack *const tr1){
   return result;
 }
 
-Bool_t AliTPCcalibTime::IsSame(AliESDtrack *const tr0, AliESDtrack *const tr1){
+Bool_t AliTPCcalibTime::IsSame(const AliESDtrack *const tr0, const AliESDtrack *const tr1){
   // 
   // track crossing the CE
   // 0. minimal number of clusters 
@@ -1319,7 +1280,7 @@ Bool_t AliTPCcalibTime::IsSame(AliESDtrack *const tr0, AliESDtrack *const tr1){
 }
 
 
-void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event){
+void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event){
   //
   // Process  TPC tracks crossing CE
   //
@@ -1482,7 +1443,7 @@ void  AliTPCcalibTime::ProcessSame(AliESDtrack *const track, AliESDfriendTrack *
 
 }
 
-void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const esdFriend){
+void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const esdFriend){
   //
   // Process track - Update TPC-ITS alignment
   // Updates: 
@@ -1651,7 +1612,6 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
       "vRMS.="<<&vecRMS<<       // rms of deltas
       "vDelta.="<<&vecDelta<<   // delta in respect to median
       "vDeltaN.="<<&vecDeltaN<< // normalized delta in respect to median
-      "t.="<<track<<            // ful track - find proper cuts
       "a.="<<align<<            // current alignment
       "pITS.="<<&pITS<<         // track param ITS 
       "pITS2.="<<&pITS2<<       // track param ITS+TPC
@@ -1667,7 +1627,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, AliESDfriendTra
 
 
 
-void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
   //
   // Process track - Update TPC-TRD alignment
   // Updates: 
@@ -1822,7 +1782,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, AliESDfriendTra
 }
 
 
-void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, AliESDfriendTrack *const friendTrack){
+void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack){
   //
   //
   // Process track - Update TPC-TOF alignment

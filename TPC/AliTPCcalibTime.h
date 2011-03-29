@@ -3,10 +3,17 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
+/*
+Comments to be written here:
+What do we calibrate.
+  Time dependence of gain and drift velocity in order to account for changes in: temperature, pressure, gas composition.
+*/
+
 
 #include "AliTPCcalibBase.h"
-#include "THnSparse.h"           // Temporary
-#include "TH1D.h"                // Temporary make code compiling for HLT in the 
+//#include "THnSparse.h"           // Temporary
+//#include "TH1D.h"                // Temporary make code compiling for HLT in the 
+
 class TObjArray;
 class TH1F;
 class TH3F;
@@ -36,13 +43,13 @@ public:
   void                   ProcessLaser (AliESDEvent *event);
   void                   ProcessCosmic(const AliESDEvent *const event);
   void                   ProcessBeam  (const AliESDEvent *const event);
-  Bool_t                 IsPair(AliExternalTrackParam *tr0, AliExternalTrackParam *tr1);
-  Bool_t                 IsCross(AliESDtrack *const tr0, AliESDtrack *const tr1);
-  Bool_t                 IsSame (AliESDtrack *const tr0, AliESDtrack *const tr1);
-  void                   ProcessSame(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event);
-  void                   ProcessAlignITS(AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const ESDfriend);
-  void                   ProcessAlignTRD(AliESDtrack* const track, AliESDfriendTrack *const friendTrack);
-  void                   ProcessAlignTOF(AliESDtrack* const track, AliESDfriendTrack *const friendTrack);
+  Bool_t                 IsPair(const AliExternalTrackParam *tr0, const AliExternalTrackParam *tr1);
+  Bool_t                 IsCross(const AliESDtrack *const tr0, const AliESDtrack *const tr1);
+  Bool_t                 IsSame (const AliESDtrack *const tr0, const AliESDtrack *const tr1);
+  void                   ProcessSame(const AliESDtrack *const track, AliESDfriendTrack *const friendTrack, const AliESDEvent *const event);
+  void                   ProcessAlignITS(AliESDtrack *const track, const AliESDfriendTrack *const friendTrack, const AliESDEvent *const event, AliESDfriend *const ESDfriend);
+  void                   ProcessAlignTRD(AliESDtrack* const track, const AliESDfriendTrack *const friendTrack);
+  void                   ProcessAlignTOF(AliESDtrack* const track, const AliESDfriendTrack *const friendTrack);
 
   THnSparse*    GetHistVdriftLaserA(Int_t index=1) const {return fHistVdriftLaserA[index];};
   THnSparse*    GetHistVdriftLaserC(Int_t index=1) const {return fHistVdriftLaserC[index];};
@@ -102,7 +109,7 @@ protected:
   Int_t   fCutTracks;   // maximal number of tracks
  
 
-  TH1F* fCosmiMatchingHisto[10];
+  TH1F* fCosmiMatchingHisto[10];        // cosmic matching histogram
   //
   // distortion maps
   //
