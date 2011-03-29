@@ -63,8 +63,14 @@ void
 AliCaloRawAnalyzerPeakFinder::InitOCDB(bool alien) const
 {
   // Setting the default OCDB pathe depending on wether we work locally or on the GRID.
-  AliCDBManager::Instance()->SetDefaultStorage(  alien == true ? "alien://$ALICE_ROOT/OCDB" : "local://$ALICE_ROOT/OCDB");
-  AliCDBManager::Instance()->SetRun(100);
+  
+
+  //  if( AliCDBManager::Instance()->HasStorage("alien://$ALICE_ROOT/OCDB")  == false  &&  AliCDBManager::Instance()->HasStorage("local://$ALICE_ROOT/OCDB") == false )
+  if( !AliCDBManager::Instance()->IsDefaultStorageSet ())
+    {
+      AliCDBManager::Instance()->SetDefaultStorage(  alien == true ? "alien://$ALICE_ROOT/OCDB" : "local://$ALICE_ROOT/OCDB" );
+      AliCDBManager::Instance()->SetRun(100);
+    }
 }
 
 
