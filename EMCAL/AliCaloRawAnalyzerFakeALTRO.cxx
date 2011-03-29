@@ -36,7 +36,7 @@ ClassImp( AliCaloRawAnalyzerFakeALTRO )
 
 AliCaloRawAnalyzerFakeALTRO::AliCaloRawAnalyzerFakeALTRO() : AliCaloRawAnalyzerFitter("Chi Square Fit", "LMS")
 {
-  
+  fAlgo= Algo::kFakeAltro;
 }
 
 
