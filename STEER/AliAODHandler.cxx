@@ -705,8 +705,8 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
   // We don't encode process types for event cocktails yet
   // could be done e.g. by adding offsets depnding on the generator
 
-  mcHeader->AddGeneratorName(genHeader->GetName());
   if(!genHeader)return;
+  mcHeader->AddGeneratorName(genHeader->GetName());
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
     if (pythiaGenHeader) {
       mcHeader->SetEventType(pythiaGenHeader->ProcessType());
