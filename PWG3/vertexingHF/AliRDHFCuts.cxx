@@ -841,15 +841,16 @@ Bool_t AliRDHFCuts::SetMCPrimaryVtx(AliAODRecoDecayHF *d,AliAODEvent *aod) const
     AliError("Can not get MC vertex without AODMCHeader event");
     return kFALSE;
   }
-
   Double_t pos[3];
+  Double_t covmatrix[6]={0.,0.,0.,0.,0.,0.};
   mcHeader->GetVertex(pos);
-  AliAODVertex *recvtx=new AliAODVertex(pos);
+  AliAODVertex *recvtx=new AliAODVertex(pos,covmatrix);
 
   if(!recvtx){
     AliDebug(2,"Removal of daughter tracks failed");
     return kFALSE;
   }
+
   //set recalculed primary vertex
   d->SetOwnPrimaryVtx(recvtx);
 
