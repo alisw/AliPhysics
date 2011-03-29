@@ -22,7 +22,7 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
     
-    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* pcstream, Int_t run = -1); // called by WriteToFile
+    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
     
     static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
     
@@ -30,27 +30,27 @@ class AliTPCPerformanceSummary
     static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
     static Int_t ProduceTrends(const Char_t* infilelist, const Char_t* outfile);
     
-    static Bool_t getForceTHnSparse() { return fgForceTHnSparse; }
-    static void setForceTHnSparse(Bool_t forceSparse = kTRUE) { fgForceTHnSparse = forceSparse; }      
+    static Bool_t GetForceTHnSparse() { return fgForceTHnSparse; }
+    static void SetForceTHnSparse(Bool_t forceSparse = kTRUE) { fgForceTHnSparse = forceSparse; }      
   
     private:
     
-    static Bool_t fgForceTHnSparse;    
+    static Bool_t fgForceTHnSparse;   // force to use THnSparse 
     // save graphs to current directory
     
     static Int_t SaveGraph(TTree* tree, const Char_t* y, const Char_t* x, const Char_t* condition);
     
     // helper functions to extract parameter and write to TTreeSRedirector
-    static Int_t AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeDrift(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeDriftPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* pcstream);
-    static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
-    static void AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* pcstream);
+    static Int_t AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeDCARPhiPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeDCARPhiNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeNCL(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeDrift(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeDriftPos(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeDriftNeg(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeGain(const AliPerformanceDEdx* pTPCgain, TTreeSRedirector* const pcstream);
+    static Int_t AnalyzeEvent(const AliPerformanceTPC* pTPC, TTreeSRedirector* const pcstream);
+    static void AnalyzeMatch(const AliPerformanceMatch* pMatch, TTreeSRedirector* const pcstream);
     
     static Int_t AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
 
