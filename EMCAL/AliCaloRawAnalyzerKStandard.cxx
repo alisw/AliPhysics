@@ -35,68 +35,27 @@
 #include "TGraph.h"
 #include "TRandom.h"
 
-
 using namespace std;
 
-
-#define BAD 4  //CRAP PTH
- 
 ClassImp( AliCaloRawAnalyzerKStandard )
 
 
 AliCaloRawAnalyzerKStandard::AliCaloRawAnalyzerKStandard() : AliCaloRawAnalyzerFitter("Chi Square ( kStandard )", "KStandard")
-//						 fkEulerSquared(7.389056098930650227),
-//						 fTf1(0)
-//		 fTau(2.35),
-//						 fFixTau(kTRUE)
 {
   
   fAlgo = Algo::kStandard;
-  //comment
- 
-  /*
-  for(int i=0; i < ALTROMAXSAMPLES; i++)
-    {
-      fXaxis[i] = i;
-    }
-  */  
-
-  //  fTf1 = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
-
-  //  InitFormula(fTf1);
-
-  /*
-  if (fFixTau) 
-    {
-      fTf1->FixParameter(2, fTau);
-    }
-  else 
-    {
-      fTf1->ReleaseParameter(2); // allow par. to vary
-      fTf1->SetParameter(2, fTau);
-    }
-  */
 }
 
 
 AliCaloRawAnalyzerKStandard::~AliCaloRawAnalyzerKStandard()
 {
-  delete fTf1;
+  //  delete fTf1;
 }
 
-
-/*
-void 
-AliCaloRawAnalyzerKStandard::InitFormula( TF1* f)
-{
-  f = new TF1( "myformula", "[0]*((x - [1])/[2])^2*exp(-2*(x -[1])/[2])",  0, 30 ); 
-}
-*/
 
 AliCaloFitResults
 AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlist, const UInt_t altrocfg1,  const UInt_t altrocfg2 )
 {
-  
   Float_t pedEstimate  = 0;
   short maxADC = 0;
   Int_t first = 0;
@@ -109,8 +68,6 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
   Float_t chi2 = 0;
   Int_t ndf = 0;
   Bool_t fitDone = kFALSE;
-
-  
   int nsamples = PreFitEvaluateSamples( bunchlist, altrocfg1, altrocfg2, bunchIndex, ampEstimate, 
 					maxADC, timeEstimate, pedEstimate, first, last,   fAmpCut ); 
   
@@ -147,72 +104,24 @@ AliCaloRawAnalyzerKStandard::Evaluate( const vector<AliCaloBunchInfo>  &bunchlis
 	{ 
 	  amp += (0.5 - gRandom->Rndm()); 
 	}
-      //Int_t id = fGeom->GetAbsCellIdFromCellIndexes(in.GetModule(), in.GetRow(), in.GetColumn()) ;
-      // lowGain  = in.IsLowGain();
-     
       time = time * TIMEBINWITH; 
-      
-      /////////////!!!!!!!!!time -= in.GetL1Phase();
-
       time -= fL1Phase;
-
-      //    AliDebug(2,Form("id %d lowGain %d amp %g", id, lowGain, amp));
-      //  AddDigit(digitsArr, id, lowGain, amp, time, chi2, ndf); 
-      
 
       return AliCaloFitResults( -99, -99, fAlgo , amp, time,
 				time, chi2, ndf, Ret::kDummy );
-      
-      
-      //	AliCaloFitSubarray(index, maxrev, first, last));
-    
-    }
-  
-  
+     }
   return AliCaloFitResults( Ret::kInvalid, Ret::kInvalid );
 }
-
-
-/*
-void 
-AliCaloRawAnalyzerKStandard::PrintFitResult(const TF1 *f) const
-{
-  //comment
-  cout << endl;
-  cout << __FILE__ << __LINE__ << "Using this samplerange we get" << endl;
-  cout << __FILE__ << __LINE__ << "AMPLITUDE = " << f->GetParameter(0)/fkEulerSquared << ",.. !!!!" << endl;
-  cout << __FILE__ << __LINE__ << "TOF = " << f->GetParameter(1) << ",.. !!!!" << endl;
-  cout << __FILE__ << __LINE__ << "NDF = " << f->GetNDF() << ",.. !!!!" << endl;
-  //  cout << __FILE__ << __LINE__ << "STATUS = " << f->GetStatus()  << ",.. !!!!" << endl << endl;
-  cout << endl << endl;
-}
-*/
-
-
 
 	
 //____________________________________________________________________________ 
 void
  AliCaloRawAnalyzerKStandard::FitRaw(const Int_t firstTimeBin, const Int_t lastTimeBin, Float_t & amp, Float_t & time, Float_t & chi2, Bool_t & fitDone) const 
-{ // Fits the raw signal time distribution
-  
-  //--------------------------------------------------
-  //Do the fit, different fitting algorithms available
-  //--------------------------------------------------
-  
-  // fprintf(fp, "%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__ );
-
+{ 
+  // Fits the raw signal time distribution
   int nsamples = lastTimeBin - firstTimeBin + 1;
   fitDone = kFALSE;
-  
-  // switch(fFittingAlgorithm) 
-  //   {
-  //  case Algo::kStandard:
-  //    {
-  if (nsamples < 3) { return; } // nothing much to fit
-  //printf("Standard fitter \n");
-
-  // Create Graph to hold data we will fit 
+  if (nsamples < 3) { return; } 
   
   TGraph *gSig =  new TGraph( nsamples); 
  
@@ -225,18 +134,16 @@ void
   TF1 * signalF = new TF1("signal", RawResponseFunction, 0, TIMEBINS , 5);
   signalF->SetParameters(10.,5., TAU  ,ORDER,0.); //set all defaults once, just to be safe
   signalF->SetParNames("amp","t0","tau","N","ped");
-  signalF->FixParameter(2,TAU); // tau in units of time bin
-  signalF->FixParameter(3,ORDER); // order
-  signalF->FixParameter(4, 0); // pedestal should be subtracted when we get here 
+  signalF->FixParameter(2,TAU); 
+  signalF->FixParameter(3,ORDER); 
+  signalF->FixParameter(4, 0); 
   signalF->SetParameter(1, time);
   signalF->SetParameter(0, amp);
-  // set rather loose parameter limits
   signalF->SetParLimits(0, 0.5*amp, 2*amp );
   signalF->SetParLimits(1, time - 4, time + 4); 
       
   try {			
     gSig->Fit(signalF, "QROW"); // Note option 'W': equal errors on all points
-    // assign fit results
     amp  = signalF->GetParameter(0); 
     time = signalF->GetParameter(1);
     chi2 = signalF->GetChisquare();
@@ -247,56 +154,9 @@ void
     // stay with default amp and time in case of exception, i.e. no special action required
     fitDone = kFALSE;
   }
+
   delete signalF;
-      
-  //printf("Std   : Amp %f, time %g\n",amp, time);
   delete gSig; // delete TGraph
-      
-  //	break;
-  //    }//kStandard Fitter
-  //----------------------------
- 
-  /*
-    case Algo::kLogFit:
-    {
-    if (nsamples < 3) { return; } // nothing much to fit
-    //printf("LogFit \n");
-      
-    // Create Graph to hold data we will fit 
-    TGraph *gSigLog =  new TGraph( nsamples); 
-    for (int i=0; i<nsamples; i++) {
-    Int_t timebin = firstTimeBin + i;    
-    gSigLog->SetPoint(timebin, timebin, TMath::Log(fRawAnalyzer->GetReversed(timebin) ) ); 
-    }
-      
-    TF1 * signalFLog = new TF1("signalLog", RawResponseFunctionLog, 0,  TIMEBINS , 5);
-    signalFLog->SetParameters(2.3, 5.,TAU,ORDER,0.); //set all defaults once, just to be safe
-    signalFLog->SetParNames("amplog","t0","tau","N","ped");
-    signalFLog->FixParameter(2,TAU); // tau in units of time bin
-    signalFLog->FixParameter(3, ORDER); // order
-    signalFLog->FixParameter(4, 0); // pedestal should be subtracted when we get here 
-    signalFLog->SetParameter(1, time);
-    if (amp>=1) {
-    signalFLog->SetParameter(0, TMath::Log(amp));
-    }
-      
-    gSigLog->Fit(signalFLog, "QROW"); // Note option 'W': equal errors on all points
-      
-    // assign fit results
-    Double_t amplog = signalFLog->GetParameter(0); //Not Amp, but Log of Amp
-    amp = TMath::Exp(amplog);
-    time = signalFLog->GetParameter(1);
-    fitDone = kTRUE;
-      
-    delete signalFLog;
-    //printf("LogFit: Amp %f, time %g\n",amp, time);
-    delete gSigLog; 
-    break;
-    } //kLogFit 
-      //----------------------------	
-      //----------------------------
-      }//switch fitting algorithms
-  */
   return;
 }
 
@@ -358,34 +218,18 @@ AliCaloRawAnalyzerKStandard::FitParabola(const TGraph *gSig, Float_t & amp) cons
   
   Double_t diff = TMath::Abs(1-ymMaxY[0]/amp) ; 
   if (diff > 0.1) 
-    amp = ymMaxY[0] ; 
-  //printf("Yves   : Amp %f, time %g\n",amp, time);
-  //END YS
+    {
+      amp = ymMaxY[0] ; 
+    }
+
   return;
 }
-
 
 
 //__________________________________________________________________
 Double_t 
 AliCaloRawAnalyzerKStandard::RawResponseFunction(Double_t *x, Double_t *par)
 {
-  // Matches version used in 2007 beam test
-  //
-  // Shape of the electronics raw reponse:
-  // It is a semi-gaussian, 2nd order Gamma function of the general form
-  //
-  // xx = (t - t0 + tau) / tau  [xx is just a convenient help variable]
-  // F = A * (xx**N * exp( N * ( 1 - xx) )   for xx >= 0
-  // F = 0                                   for xx < 0 
-  //
-  // parameters:
-  // A:   par[0]   // Amplitude = peak value
-  // t0:  par[1]
-  // tau: par[2]
-  // N:   par[3]
-  // ped: par[4]
-  //
   Double_t signal = 0.;
   Double_t tau    = par[2];
   Double_t n      = par[3];
