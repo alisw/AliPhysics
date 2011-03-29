@@ -313,19 +313,20 @@ void AliAnalysisTaskSEDplus::LSAnalysis(TClonesArray *arrayOppositeSign,TClonesA
       d->SetOwnPrimaryVtx(vtx1); // needed to compute all variables
       unsetvtx=kTRUE;
     }
-    
+    Double_t ptCand = d->Pt();
+    Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);
+    if(iPtBin<0)continue;
+    Int_t sign= d->GetCharge();
+    if(sign>0){
+      nPosTrks++;
+    }else{
+      nNegTrks++;
+    }
     //    if(fRDCutsProduction->IsSelected(d,AliRDHFCuts::kCandidate,aod)){
     fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kCandidate,aod);
     Int_t passTightCuts=fRDCutsAnalysis->GetIsSelectedCuts();
     if(passTightCuts>0){
-      
-      Double_t ptCand = d->Pt();
-      Int_t iPtBin = fRDCutsAnalysis->PtBin(ptCand);
-      if(iPtBin<0)continue;
-      
-      Int_t sign= d->GetCharge();
       Float_t invMass = d->InvMassDplus();
-      
       index=GetLSHistoIndex(iPtBin);
       fMassHistLS[index+1]->Fill(invMass);
       if(sign>0){
