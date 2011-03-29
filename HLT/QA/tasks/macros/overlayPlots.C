@@ -58,7 +58,7 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
   TH1D    *g[nr_files];
   
   TCanvas *d = new TCanvas("d",Form("%s cut studies",option),1100,900);
-  d->Divide(4,3);
+  d->Divide(3,3);
   
   TLegend *l = new TLegend(0.6,0.6,0.8,0.8);
   l->SetFillColor(10);
@@ -66,7 +66,7 @@ void overlayPlots(string fi="files.txt", const char* option="HLT"/* or "OFF" */)
   
   char cut[100];  
    
-  for(int j=1; j<12; j++){ // not 13, last pad is empty (TODO)     
+  for(int j=1; j<10; j++){ // not 13, last pad is empty (TODO)     
      for(int i=0; i<nr_files; i++){ 
             
         ff[i] = TFile::Open(file[i].Data());   
