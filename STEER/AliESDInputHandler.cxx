@@ -416,6 +416,7 @@ Bool_t AliESDInputHandler::GetCutSummaryForChain(Int_t *aTotal,  Int_t *aAccepte
     
     Int_t iAcc = atoi(strtok(iTagInfo, ","));
     Int_t iRej = atoi(strtok(NULL, ","));
+    free(iTagInfo);
     
     iAccList += iAcc;
     iRejList += iRej;
