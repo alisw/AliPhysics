@@ -52,6 +52,7 @@ Printf("%s \n>>> Setting style",(char*)__FILE__);
  gSystem->Load("libVMC");
  gSystem->Load("libCGAL");
  gSystem->Load("libfastjet");
+
  gSystem->Load("libsiscone");
  gSystem->Load("libSISConePlugin");
  gSystem->Load("libSTEERBase");

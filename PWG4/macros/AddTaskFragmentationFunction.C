@@ -233,8 +233,6 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
    task->SetFFRadius();        // default: R = 0.4
    task->SetFFBckgRadius();    // default: R = 0.7
-   task->SetBckgMode();        // default: bgMode = 1
-   task->SetBckgType();        // default: 0,1,2
    task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
    task->SetIJMode(0);          // default: ijMode = 1
    task->SetQAMode();          // default: qaMode = 3
@@ -244,6 +242,15 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetPhiCorrMode(0);     // default: phiCorrMode = 1
    task->SetHighPtThreshold(); // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
+
+   task->SetBckgMode(1);        // default: bgMode = 1 
+   task->SetBckgType(AliAnalysisTaskFragmentationFunction::kBckgPerp,
+		     AliAnalysisTaskFragmentationFunction::kBckgOutLJStat,
+		     AliAnalysisTaskFragmentationFunction::kBckgClustersOutLeading,
+		     AliAnalysisTaskFragmentationFunction::kBckgClusters);  
+   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
+
+
 
    // Define histo bins
    task->SetFFHistoBins();

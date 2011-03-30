@@ -125,6 +125,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fh2RPCosDeltaRP(0x0),
   fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
+  fh3PhiWeights(0x0),
   fh3RPPhiTracks(0x0),
   fHistList(0x0)  
 {
@@ -226,6 +227,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2RPCosDeltaRP(0x0),
   fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
+  fh3PhiWeights(0x0),
   fh3RPPhiTracks(0x0),
   fHistList(0x0)
 {
@@ -1502,8 +1504,8 @@ Bool_t AliAnalysisTaskJetSpectrum2::CalculateReactionPlaneAngle(const TList *tra
     fh3RPPhiTracks->Fill(fCentrality,momentum,track->Phi());
     count[0]++;
 
-    //    Double_t phiweight=GetPhiWeight(track->Phi(),momentum);
-    Double_t phiweight=1; 
+    Double_t phiweight=GetPhiWeight(track->Phi(),momentum);
+    //    Double_t phiweight=1; 
     Double_t weight=2;
     if(track->Pt()<2){weight=track->Pt();}
     
@@ -1593,6 +1595,13 @@ Int_t AliAnalysisTaskJetSpectrum2::GetPhiBin(Double_t phi)
     phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
     if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
     return phibin;
+}
+
+
+
+Double_t AliAnalysisTaskJetSpectrum2::GetPhiWeight(Double_t phi,Double_t signedpt){
+  if(!fh3PhiWeights)return 1;
+  else return fh3PhiWeights->GetBinContent(fh3PhiWeights->GetXaxis()->FindBin(fCentrality),fh3PhiWeights->GetYaxis()->FindBin(signedpt),fh3PhiWeights->GetZaxis()->FindBin(phi));
 }
 
  //________________________________________________________________________

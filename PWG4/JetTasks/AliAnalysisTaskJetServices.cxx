@@ -455,7 +455,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       }
     }
 
-    if(cand&&esdVtxIn){
+    if(cand&&esdVtxIn&&iCl<5){
       fh2ESDTriggerCount->Fill(0.,kSelectedALICEVertexIn);
       fh2ESDTriggerCount->Fill(iCl,kSelectedALICEVertexIn);
       fh2ESDTriggerVtx->Fill(kSelectedALICEVertexIn*(iCl+1),zvtx);
@@ -505,7 +505,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	fh2TriggerVtx->Fill(kSelectedALICEVertexValid*(iCl+1),zvtx);
       }
     }
-    if(cand&&aodVtxIn){
+    if(cand&&aodVtxIn&&iCl<5){
       fh2TriggerCount->Fill(0.,kSelectedALICEVertexIn);
       fh2TriggerCount->Fill(iCl,kSelectedALICEVertexIn);
       fh2TriggerVtx->Fill(kSelectedALICEVertexIn*(iCl+1),zvtx);
