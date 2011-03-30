@@ -3673,7 +3673,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 		      
 		      if (it < jettracklist2->GetSize())
 			{ 
-			  Float_t trackPt2   = (dynamic_cast<AliVParticle*>(jettracklist2->At(it)))->Pt();
+			  Float_t trackPt2   = ((AliVParticle*)(jettracklist2->At(it)))->Pt();
 			  Float_t jetPt2     = jet2->Pt();
 			  
 			  Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
@@ -3864,8 +3864,8 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     
     for(Int_t ij=0; ij<nRecEffJets; ++ij){ 
     
-      AliAODJet* jet = dynamic_cast<AliAODJet*>(fJetsRecEff->At(ij));
-      
+      AliAODJet* jet = (AliAODJet*)(fJetsRecEff->At(ij));
+    
       if(ij==0){ // leading jet
 	
 	TList* jettracklistGen = new TList();
@@ -4947,7 +4947,9 @@ void AliAnalysisTaskFragmentationFunction::GetTracksOutOfNJetsStat(Int_t nCases,
 
   // Estimate jet and background areas
   Float_t* areaJet = new Float_t[nCases];
+  memset(areaJet, 0, sizeof(Float_t) * nCases);
   Float_t* areaJetLarge = new Float_t[nCases];
+  memset(areaJetLarge, 0, sizeof(Float_t) * nCases);
   Float_t areaFull = (fTrackEtaMax-fTrackEtaMin)*(fTrackPhiMax-fTrackPhiMin);
   Float_t areaOut = areaFull;
 
@@ -5216,7 +5218,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
       
       for(Int_t it=0; it<tracklistoutleading->GetSize(); ++it){
 	
-	AliVParticle* trackVP   = dynamic_cast<AliVParticle*>(tracklistoutleading->At(it));
+	AliVParticle* trackVP   = (AliVParticle*)(tracklistoutleading->At(it));
 	TLorentzVector* trackV  = new TLorentzVector(trackVP->Px(),trackVP->Py(),trackVP->Pz(),trackVP->P());
 	
 	Float_t jetPt   = jet->Pt();
