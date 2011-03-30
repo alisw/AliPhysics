@@ -25,5 +25,6 @@
 #pragma link C++ class AliAnalysisTaskNestedLoops+;
 #pragma link C++ class AliAnalysisTaskQAflow+;
 #pragma link C++ class AliAnalysisTaskPIDflowQA+;
+#pragma link C++ class AliAnalysisTaskQAPmdflow+;
 
 #endif
