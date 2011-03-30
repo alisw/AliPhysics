@@ -437,7 +437,7 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   mgr->ConnectInput(taskFE,0,cinput1); 
   mgr->ConnectOutput(taskFE,1,coutputFE);
 
-  if (taskFE->GetQAon())
+  if (taskFE->GetQAOn())
   {
     AliAnalysisDataContainer* coutputFEQA = 
     mgr->CreateContainer(Form("QA %s",outputSlotName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:QA %s",fileName,rptypestr));

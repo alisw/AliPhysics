@@ -264,6 +264,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
   if (fQAon)
   {
     fQAList=new TList();
+    fQAList->SetOwner();
     fQAList->SetName(Form("%s QA",GetName()));
     if (fCutsEvent->GetQA()) fQAList->Add(fCutsEvent->GetQA());
     if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());
