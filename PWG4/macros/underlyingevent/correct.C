@@ -423,9 +423,9 @@ void Compare(const char* fileName1, const char* fileName2, Int_t id, Int_t step1
   SetupRanges(h);
   SetupRanges(h2);
   
-  TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax, 6, 13);
+  TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax);
   //TH1* hist1 = h->GetUEHist(id)->GetUEHist(step1, region, ptLeadMin, ptLeadMax);
-  TH1* hist2 = h2->GetUEHist(id)->GetUEHist(step2, region, ptLeadMin, ptLeadMax, 6, 13);
+  TH1* hist2 = h2->GetUEHist(id)->GetUEHist(step2, region, ptLeadMin, ptLeadMax);
 
   //hist1->Scale(1.0 / hist1->Integral());
   //hist2->Scale(1.0 / hist2->Integral());
@@ -645,18 +645,21 @@ void correctData(const char* fileNameCorrections, const char* fileNameESD, const
   
   corr->ExtendTrackingEfficiency();
   
-  TFile::Open(contEnhancement);
-  contEncHist = (TH1*) gFile->Get("histo");
-  contEncHistFullRange = (TH1*) corr->GetUEHist(0)->GetTrackingEfficiency(1)->Clone("contEncHistFullRange");
-  
-  contEncHistFullRange->Reset();
-  for (Int_t i=1; i<=contEncHistFullRange->GetNbinsX(); i++)
+  if (contEnhancement)
   {
-    contEncHistFullRange->SetBinContent(i, 1);
-    if (i <= contEncHist->GetNbinsX() && contEncHist->GetXaxis()->GetBinCenter(i) < contEncUpTo && contEncHist->GetBinContent(i) > 0)
-      contEncHistFullRange->SetBinContent(i, contEncHist->GetBinContent(i));
+    TFile::Open(contEnhancement);
+    contEncHist = (TH1*) gFile->Get("histo");
+    contEncHistFullRange = (TH1*) corr->GetUEHist(0)->GetTrackingEfficiency(1)->Clone("contEncHistFullRange");
+    
+    contEncHistFullRange->Reset();
+    for (Int_t i=1; i<=contEncHistFullRange->GetNbinsX(); i++)
+    {
+      contEncHistFullRange->SetBinContent(i, 1);
+      if (i <= contEncHist->GetNbinsX() && contEncHist->GetXaxis()->GetBinCenter(i) < contEncUpTo && contEncHist->GetBinContent(i) > 0)
+        contEncHistFullRange->SetBinContent(i, contEncHist->GetBinContent(i));
+    }
+    corr->SetContaminationEnhancement((TH1F*) contEncHistFullRange);
   }
-  corr->SetContaminationEnhancement((TH1F*) contEncHistFullRange);
   
   esd->Correct(corr);
   esd->GetUEHist(2)->AdditionalDPhiCorrection(0);
