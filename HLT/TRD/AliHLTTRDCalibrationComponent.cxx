@@ -574,10 +574,8 @@ Int_t AliHLTTRDCalibrationComponent::EORCalibration()
   fAfterRunArray->Add(coefdriftsecond);
   fAfterRunArray->Add(coeft0);
 
-  if(coefgain||coefprf||coefdrift||coeft0||coefdriftsecond) {
-    PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
-  }
-
+  PushBack(fAfterRunArray, AliHLTTRDDefinitions::fgkEORCalibrationDataType);
+  
   // TString fileName="/tmp/CalibHistoDump_run";
   // fileName+=AliCDBManager::Instance()->GetRun();
   // fileName+=".root";
