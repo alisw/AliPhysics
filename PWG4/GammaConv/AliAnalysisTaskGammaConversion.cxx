@@ -2657,17 +2657,20 @@ void AliAnalysisTaskGammaConversion::ProcessGammasForNeutralMesonAnalysis(){
 
 ///__________________________________________________________________________________
 void AliAnalysisTaskGammaConversion::AddToAODBranch(TClonesArray * branch, AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2) {
-  
-  new((*branch)[branch->GetEntriesFast()])  AliAODConversionParticle(kfParticle, daughter1, daughter2);
-  AliAODConversionParticle * aodParticle = dynamic_cast<AliAODConversionParticle*>(branch->Last());
-  if(aodParticle) {
-    aodParticle->SetChi2(kfParticle->Chi2());
-    aodParticle->SetIMass(mass);
+  //Fill AOD with particles
+  if(branch) {
+    new((*branch)[branch->GetEntriesFast()])  AliAODConversionParticle(kfParticle, daughter1, daughter2);
+    AliAODConversionParticle * aodParticle = dynamic_cast<AliAODConversionParticle*>(branch->Last());
+    if(aodParticle) {
+      aodParticle->SetChi2(kfParticle->Chi2());
+      aodParticle->SetIMass(mass);
+    }
   }
 }
 
 ///__________________________________________________________________________________
 void AliAnalysisTaskGammaConversion::AddPionToAOD(AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2) {
+  //Add pions to AOD
   AddToAODBranch(fAODPi0, kfParticle, mass, daughter1, daughter2);
   TagDaughter(daughter1);
   TagDaughter(daughter2);
@@ -2677,6 +2680,7 @@ void AliAnalysisTaskGammaConversion::AddPionToAOD(AliKFParticle * kfParticle, Do
 
 ///__________________________________________________________________________________
 void AliAnalysisTaskGammaConversion::TagDaughter(Int_t gammaIndex) {
+  //Set conversion tag on pion daughters
   AliAODConversionParticle * daughter = dynamic_cast<AliAODConversionParticle*>(fAODGamma->At(gammaIndex));
   if(daughter) {
     daughter->SetTag(kTRUE);
@@ -2688,13 +2692,13 @@ void AliAnalysisTaskGammaConversion::TagDaughter(Int_t gammaIndex) {
 ///___________________________________________________________________________________
 void AliAnalysisTaskGammaConversion::FillAODWithConversionGammas(){
   // Fill AOD with reconstructed Gamma
-	
   for(Int_t gammaIndex=0;gammaIndex<fKFReconstructedGammasTClone->GetEntriesFast();gammaIndex++){
     AliKFParticle * gammakf = dynamic_cast<AliKFParticle*>(fKFReconstructedGammasTClone->At(gammaIndex));
-    AddToAODBranch(fAODGamma, gammakf, gammakf->GetMass(), fElectronv1[gammaIndex], fElectronv2[gammaIndex]);
+    if(gammakf) {
+      AddToAODBranch(fAODGamma, gammakf, gammakf->GetMass(), fElectronv1[gammaIndex], fElectronv2[gammaIndex]);
+    }
   }
 }
-
 
 /*
   void AliAnalysisTaskGammaConversion::ProcessConvPHOSGammasForNeutralMesonAnalysis(){
