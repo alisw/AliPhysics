@@ -335,6 +335,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetJetTypeRecEff(Int_t i){fJetTypeRecEff = i;}
 
   virtual void   SetBranchRecBackJets(const char* c){fBranchRecBackJets = c;}
+  virtual void   SetBranchRecBackClusters(const char* c){fBranchRecBckgClusters = c;}
   virtual void   SetBranchGenJets(const char* c){fBranchGenJets = c;}
   virtual void   SetBranchRecJets(const char* c){fBranchRecJets = c;}
 
@@ -359,8 +360,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
   virtual void   SetFFBckgRadius(Float_t r = 0.7) { fFFBckgRadius = r; }
   virtual void   SetBckgMode(Bool_t bg = 1) { fBckgMode = bg; }
-  virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2) 
-  { fBckgType[0] = bg0; fBckgType[1] = bg1; fBckgType[2] = bg2;}
+  virtual void   SetBckgType(Int_t bg0 = 0, Int_t bg1 = 1,Int_t bg2 = 2, Int_t bg3 = 3) 
+  { fBckgType[0] = bg0; fBckgType[1] = bg1; fBckgType[2] = bg2; fBckgType[3] = bg3; }
   virtual void   SetIJMode(Int_t ij = 1)      {fIJMode = ij;}
   virtual void   SetQAMode(Int_t qa = 3)      {fQAMode = qa;}
   virtual void   SetFFMode(Int_t ff = 1)      {fFFMode = ff;}
@@ -369,7 +370,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetPhiCorrMode(Int_t pc = 1) {fPhiCorrMode = pc;}
   virtual void   SetBckgSubMethod(Int_t bg = 0) {fBckgSubMethod = bg;}
 
-  virtual void   UseRecEffRecJetPtBins(Bool_t useRec = kTRUE) { fUseRecEffRecJetPtBins = useRec; }
+  virtual void   UseRecEffRecJetPtBins(Bool_t useRec = kFALSE)  { fUseRecEffRecJetPtBins = useRec; }
+  virtual void   UseResponseRecJetPtBins(Bool_t useRec = kTRUE) { fUseResponseRecJetPtBins = useRec; }
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
@@ -460,6 +462,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
 
   Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
+  void     GetClusterTracksOutOf1Jet(AliAODJet* jet, TList* outputlist, Double_t &normFactor);
+  void     GetClusterTracksMedian(TList* outputlist, Double_t &normFactor);
+
   void     FillBckgHistos(Int_t type, TList* inputtracklist, TList* inputjetlist, AliAODJet* jet, 
 			  Float_t leadTrackPt, TLorentzVector* leadTrackV, AliFragFuncHistos* ffbckghistocuts,
 			  AliFragFuncHistos* ffbckghistoleading,AliFragFuncIntraJetHistos* ijbckghistocuts, 
@@ -471,22 +476,24 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance};
   enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
-  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat, kBckgClusters, kBckgASide, kBckgASideWindow, kBckgPerpWindow};
+  enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat, kBckgClusters, 
+	kBckgClustersOutLeading, kBckgASide, kBckgASideWindow, kBckgPerpWindow};
 
  
  private:
   
   Int_t   GetListOfTracks(TList* list, Int_t type);
   Int_t	  GetListOfJets(TList* list, Int_t type);
-  Int_t   GetListOfBckgJets(/*TList *list, Int_t type*/);
+  Int_t   GetListOfBckgJets(TList *list, Int_t type);
 
   AliESDEvent* fESD;      // ESD event
   AliAODEvent* fAOD;      // AOD event
   //AliMCEvent*  fMCEvent;  // MC event
   
-  TString fBranchRecJets;       // branch name for reconstructed jets
-  TString fBranchRecBackJets;   // branch name for reconstructed background jets
-  TString fBranchGenJets;       // branch name for generated jets
+  TString fBranchRecJets;         // branch name for reconstructed jets
+  TString fBranchRecBackJets;     // branch name for reconstructed background jets
+  TString fBranchRecBckgClusters; // branch name for reconstructed background clusters 
+  TString fBranchGenJets;         // branch name for generated jets
   
   Int_t   fTrackTypeGen;        // type of generated tracks
   Int_t   fJetTypeGen;          // type of generated jets
@@ -523,7 +530,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fFFRadius;        // if radius > 0 construct FF from tracks within cone around jet axis, otherwise use trackRefs  
   Float_t fFFBckgRadius;    // compute background outside cone of this radius around jet axes
   Bool_t  fBckgMode;        // Set background subtraction mode
-  Int_t   fBckgType[3];        // Set background subtraction mode
+  Int_t   fBckgType[4];        // Set background subtraction mode
   Int_t   fIJMode;          // Set intrajet mode
   Int_t   fQAMode;          // QA mode: 0x00=0 none, 0x01=1 track qa, 0x10=2 track qa, 0x11=3 both
   Int_t   fFFMode;          // fragmentation function mode
@@ -531,7 +538,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Int_t   fEffMode;         // efficiency mode
   Int_t   fPhiCorrMode;     // track phi correlation mode
 
-  Bool_t  fUseRecEffRecJetPtBins; // bin track reconstruction efficiency in reconstructed/generated jet pt bins 
+  Bool_t  fUseRecEffRecJetPtBins;   // bin track reconstruction efficiency in reconstructed/generated jet pt bins 
+  Bool_t  fUseResponseRecJetPtBins; // bin track response matrix in reconstructed/generated jet pt bins 
 
   Float_t fAvgTrials;       // average number of trials per event
   
@@ -753,12 +761,15 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   // Background
   TH1F  *fh1OutLeadingMult;       //! background multiplicity outside leading jet
+  TH1F  *fh1OutLeadingStatMult;   //! background multiplicity outside leading jet (stat)
   TH1F  *fh1PerpMult;             //! background multiplicity perpendicular to the leading jet
   TH1F  *fh1ASideMult;            //! background multiplicity perpendicular to the leading jet
   TH1F  *fh1ASideWindowMult;      //! background multiplicity perpendicular to the leading jet
   TH1F  *fh1PerpWindowMult;       //! background multiplicity perpendicular to the leading jet
   TH1F  *fh1Out2JetsMult;         //! background multiplicity outside 2 jets
   TH1F  *fh1Out3JetsMult;         //! background multiplicity outside 3 jets
+  TH1F  *fh1MedianClustersMult;   //! background multiplicity median cluster
+  TH1F  *fh1OutClustersMult;      //! background multiplicity clusters outside leading jet
 
   AliFragFuncQATrackHistos* fQABckgHisto0RecCuts;  //! track QA: reconstructed tracks after cuts
   AliFragFuncQATrackHistos* fQABckgHisto0Gen;      //! track QA: generated tracks
@@ -766,6 +777,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncQATrackHistos* fQABckgHisto1Gen;      //! track QA: generated tracks
   AliFragFuncQATrackHistos* fQABckgHisto2RecCuts;  //! track QA: reconstructed tracks after cuts
   AliFragFuncQATrackHistos* fQABckgHisto2Gen;      //! track QA: generated tracks
+  AliFragFuncQATrackHistos* fQABckgHisto3RecCuts;  //! track QA: reconstructed tracks after cuts
+  AliFragFuncQATrackHistos* fQABckgHisto3Gen;      //! track QA: generated tracks
   
   AliFragFuncHistos*  fFFBckgHisto0RecCuts;       //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts 
   AliFragFuncHistos*  fFFBckgHisto0RecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
@@ -779,6 +792,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFBckgHisto2RecLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
   AliFragFuncHistos*  fFFBckgHisto2Gen;           //! Bckg (outside leading jet or 2 jets or more) FF generated tracks after cuts 
   AliFragFuncHistos*  fFFBckgHisto2GenLeading;    //! Bckg (outside leading jet or 2 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHisto3RecCuts;       //! Bckg (outside leading jet or 3 jets or more) FF reconstructed tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHisto3RecLeading;    //! Bckg (outside leading jet or 3 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt  
+  AliFragFuncHistos*  fFFBckgHisto3Gen;           //! Bckg (outside leading jet or 3 jets or more) FF generated tracks after cuts 
+  AliFragFuncHistos*  fFFBckgHisto3GenLeading;    //! Bckg (outside leading jet or 3 jets or more) FF reconstructed tracks after cuts: all reconstructed tracks pt / leading track pt
+
 
   AliFragFuncIntraJetHistos*  fIJBckgHisto0RecCuts;    //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto0RecLeading; //!
@@ -792,11 +810,16 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncIntraJetHistos*  fIJBckgHisto2RecLeading; //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto2Gen;        //!
   AliFragFuncIntraJetHistos*  fIJBckgHisto2GenLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto3RecCuts;    //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto3RecLeading; //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto3Gen;        //!
+  AliFragFuncIntraJetHistos*  fIJBckgHisto3GenLeading; //!
+
 
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
   Int_t                       fBckgSubMethod;   // Bckg method: 1 = leading jet excluded, 2 = 2 most energetic jets excluded        
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 9);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 10);
 };
 
 #endif

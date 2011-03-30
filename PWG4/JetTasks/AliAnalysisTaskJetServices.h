@@ -118,6 +118,8 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TH1F*         fh1PtHardTrials;     //! Number of trials 
     TH1F*         fh1SelectionInfoESD; //! Masks that satisfy fSelectionInfo
     TH1F*         fh1EventCutInfoESD;  //! Masks that satisfy fSelectionInfo
+    TH1F*         fh1CentralityESD;    //! centrality 
+    TH1F*         fh1Centrality;       //! centrality 
     TH2F*         fh2TriggerCount;     //! number of fire triggers in each case
     TH2F*         fh2ESDTriggerCount;  //! number of fire triggers in each case
     TH2F*         fh2TriggerVtx;       //! vtx. position vs. trigger decision
