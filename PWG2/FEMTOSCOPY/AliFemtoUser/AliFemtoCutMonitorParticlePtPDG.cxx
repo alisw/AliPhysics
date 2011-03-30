@@ -21,23 +21,6 @@ AliFemtoCutMonitorParticlePtPDG::AliFemtoCutMonitorParticlePtPDG():
   fMass(0.13957)
 {
   // Default constructor
-  fPtPDG = new TH2D("PtPDG", "PDG vs Pt",  5, .0, 5.0, 100, 0.1, 2.0);
-  ftpcHist=new TH2D("tpcHist","TPC dE/dX vs momentum",100,0.1,2.7,100,0.,6.);
-  fPtGoodPi = new TH1D("PtGoodPi", "good pions Pt",              100, 0.1, 2.0);
-  fPtRPi = new TH1D("PtRPi", "right pdg pions Pt",               100, 0.1, 2.0);
-  fPtFakePi = new TH1D("PtFakePi", "fake pions Pt",              100, 0.1, 2.0);
-  fPtGoodK = new TH1D("PtGoodK", "good kaons Pt",                100, 0.1, 2.0);
-  fPtRK = new TH1D("PtRK", "right pdg kaons Pt",                 100, 0.1, 2.0);
-  fPtFakeK = new TH1D("PtFakeK", "fake kaons Pt",                100, 0.1, 2.0); 
-  fPtGoodP = new TH1D("PtGoodP", "good protons Pt",              100, 0.1, 2.0);
-  fPtFakeP = new TH1D("PtFakeP", "fake protons Pt",              100, 0.1, 2.0); 
-  fPtRP = new TH1D("PtRP", "right pdg protons Pt",               100, 0.1, 2.0);   
-  
-  fPtContP = new TH1D("PtContP", "contamination Pt",               100, 0.1, 2.0);   
-  fPtContPi = new TH1D("PtContPi", "contamination Pt",               100, 0.1, 2.0);   
-  fPtContMup = new TH1D("PtContMup", "contamination Pt",               100, 0.1, 2.0);   
-  fPtContElp = new TH1D("PtContElp", "contamination Pt",               100, 0.1, 2.0);   
-
 }
 
 AliFemtoCutMonitorParticlePtPDG::AliFemtoCutMonitorParticlePtPDG(const char *aName, float aMass):
