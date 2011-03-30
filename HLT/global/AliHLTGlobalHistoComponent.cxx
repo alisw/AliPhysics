@@ -247,13 +247,13 @@ int AliHLTGlobalHistoComponent::FillTree(TTree* pTree, const AliHLTComponentEven
    	//fV0Variables.Fill("r", r); 
    	  
      } // end of loop over V0s
-  }
-  
+  } 
+  /* 
   if(iResult<0){
     // fill an empty event
     ResetVariables();
   }
-  
+  */  
   fEvent++;
   pTree->Fill();
   return iResult;
