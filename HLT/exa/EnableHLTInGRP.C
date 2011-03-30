@@ -1,4 +1,4 @@
-// $Id: $
+// $Id$
 
 #if !defined(__CINT__) || defined(__MAKECINT__)
 #include "Riostream.h"
