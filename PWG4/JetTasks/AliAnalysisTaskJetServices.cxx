@@ -94,6 +94,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(): AliAnalysisTaskSE(),
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
   fh1EventCutInfoESD(0),
+  fh1CentralityESD(0),
+  fh1Centrality(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -132,6 +134,8 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fh1PtHardTrials(0x0),
   fh1SelectionInfoESD(0x0),
   fh1EventCutInfoESD(0),
+  fh1CentralityESD(0),
+  fh1Centrality(0),
   fh2TriggerCount(0x0),
   fh2ESDTriggerCount(0x0),
   fh2TriggerVtx(0x0),
@@ -215,6 +219,13 @@ void AliAnalysisTaskJetServices::UserCreateOutputObjects()
     }
   }
   
+
+  fh1CentralityESD = new TH1F("fh1CentralityESD","cent",102,-0.5,101.5);
+  fHistList->Add(fh1CentralityESD);
+  
+  fh1Centrality = new TH1F("fh1Centrality","cent",102,-0.5,101.5);
+  fHistList->Add(fh1Centrality);
+
   fh2TriggerCount = new TH2F("fh2TriggerCount",";Trigger No.;constrained;Count",AliAnalysisHelperJetTasks::kTrigger,-0.5,AliAnalysisHelperJetTasks::kTrigger-0.5,kConstraints,-0.5,kConstraints-0.5); 
   fHistList->Add(fh2TriggerCount);
 
@@ -398,12 +409,14 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 
   // loop over all possible triggers for esd 
 
+  Float_t cent = 100;
+  if(aod)cent = aod->GetHeader()->GetCentrality();
+  if(cent<0)cent = 101;
   if(esd){
     const AliESDVertex *vtxESD = esd->GetPrimaryVertex();
     esdVtxValid = IsVertexValid(vtxESD);
     esdVtxIn = IsVertexIn(vtxESD);
     if(aodH&&physicsSelection&&fFilterAODCollisions&&aod){
-      Float_t cent = aod->GetHeader()->GetCentrality();
       if(fDebug)Printf("%s:%d Centrality %3.3f vtxin %d",(char*)__FILE__,__LINE__,cent,esdVtxIn);
       if(cent<=80&&esdVtxIn){
 	aodH->SetFillAOD(kTRUE);
@@ -441,6 +454,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
 	fh2ESDTriggerVtx->Fill(kSelectedALICEVertexValid*(iCl+1),zvtx);
       }
     }
+
     if(cand&&esdVtxIn){
       fh2ESDTriggerCount->Fill(0.,kSelectedALICEVertexIn);
       fh2ESDTriggerCount->Fill(iCl,kSelectedALICEVertexIn);
@@ -449,6 +463,12 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2ESDTriggerCount->Fill(iCl,kSelected);
       fh2ESDTriggerCount->Fill(0.,kSelected);
       AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+      if(esd->GetCentrality()){
+	Float_t tmpCent = 100;
+	tmpCent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+	if(tmpCent<0)tmpCent = 101;
+	fh1CentralityESD->Fill(tmpCent);
+      }
     }
   }
 
@@ -492,17 +512,13 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       fh2TriggerVtx->Fill(kSelected*(iCl+1),zvtx);
       fh2TriggerCount->Fill(iCl,kSelected);
       fh2TriggerCount->Fill(0.,kSelected);
-      if(fUseAODInput){
-	AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+      fh1Centrality->Fill(cent);
+      AliAnalysisHelperJetTasks::Selected(kTRUE,kTRUE);// select this event
+      if(fUseAODInput&&cent<=80){
 	if(fFilterAODCollisions&&aod){
-	  Float_t cent = aod->GetHeader()->GetCentrality();
-	  if(cent<=80){
-	    aodH->SetFillAOD(kTRUE);
-	  }
+	  aodH->SetFillAOD(kTRUE);
 	}
       }
-
-
     }    
   }
 
@@ -793,7 +809,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
   if(esd->GetCentrality()){
     cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
   }
-  if(cent>80)return 5;
+  if(cent>80||cent<0)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
   if(cent>10)return 2;
@@ -805,7 +821,7 @@ Int_t AliAnalysisTaskJetServices::GetEventClass(AliESDEvent *esd){
 Int_t AliAnalysisTaskJetServices::GetEventClass(AliAODEvent *aod){
 
   Float_t cent = aod->GetHeader()->GetCentrality();
-  if(cent>80)return 5;
+  if(cent>80||cent<0)return 5;
   if(cent>50)return 4;
   if(cent>30)return 3;
   if(cent>10)return 2;
