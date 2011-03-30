@@ -565,10 +565,6 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     for(index = 0; index <fCpvLast-fCpvFirst; index ++)
       cpvExist[index] = kTRUE ;
   }
-  else {
-    if ( emcExist != 0) delete [] emcExist;
-    return;
-  }
   
   // Finds the smallest links and makes pairs of CPV and EMC clusters with smallest distance 
   TIter nextUp(fLinkUpArray) ;
@@ -581,6 +577,7 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
 
     if(emcExist[linkUp->GetEmc()-fEmcFirst] != -1){
 
+      //array cpvExist[] should be non-zero as far as linkUp exists
       if(cpvExist[linkUp->GetCpv()-fCpvFirst]){ //CPV still exist
          Float_t dx,dz ;
          linkUp->GetXZ(dx,dz) ;
@@ -617,7 +614,8 @@ void  AliPHOSTrackSegmentMakerv1::MakePairs()
     }
   }
   delete [] emcExist ; 
-  delete [] cpvExist ; 
+  if(cpvExist)
+    delete [] cpvExist ; 
 }
 
 //____________________________________________________________________________
