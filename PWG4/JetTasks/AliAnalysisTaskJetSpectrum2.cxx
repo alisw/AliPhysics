@@ -22,6 +22,7 @@
  
 #include <TROOT.h>
 #include <TRandom.h>
+#include <TRandom3.h>
 #include <TSystem.h>
 #include <TInterpreter.h>
 #include <TChain.h>
@@ -79,6 +80,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fBranchBkgRec(""), 
   fBranchBkgGen(""), 
   fNonStdFile(""),
+  fRandomizer(0x0),
   fUseAODJetInput(kFALSE),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
@@ -93,6 +95,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fEventClass(0),
+  fRPSubeventMethod(0),
   fAvgTrials(1),
   fExternalWeight(1),    
   fJetRecEtaWindow(0.5),
@@ -100,6 +103,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fMinJetPt(0),
   fMinTrackPt(0.15),
   fDeltaPhiWindow(90./180.*TMath::Pi()),
+  fCentrality(100),
   fRPAngle(0),
   fMultRec(0),
   fMultGen(0),
@@ -110,11 +114,18 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fh1PtHardTrials(0x0),
   fh1ZVtx(0x0),
   fh1RP(0x0),
+  fh1Centrality(0x0),
   fh1TmpRho(0x0),
   fh2MultRec(0x0),
   fh2MultGen(0x0),
+  fh2RPSubevents(0x0),
+  fh2RPCentrality(0x0),
+  fh2RPDeltaRP(0x0),
+  fh2RPQxQy(0x0),
+  fh2RPCosDeltaRP(0x0),
   fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
+  fh3RPPhiTracks(0x0),
   fHistList(0x0)  
 {
   for(int i = 0;i < kMaxStep*2;++i){
@@ -122,6 +133,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   }
  
   for(int ij = 0;ij <kJetTypes;++ij){    
+    fFlagJetType[ij] = 1; // default = on
     fh1NJets[ij] = 0;
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
@@ -169,6 +181,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fBranchBkgRec(""),
   fBranchBkgGen(""),
   fNonStdFile(""),
+  fRandomizer(0x0),
   fUseAODJetInput(kFALSE),
   fUseAODTrackInput(kFALSE),
   fUseAODMCInput(kFALSE),
@@ -183,6 +196,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fEventClass(0),
+  fRPSubeventMethod(0),
   fAvgTrials(1),
   fExternalWeight(1),    
   fJetRecEtaWindow(0.5),
@@ -190,6 +204,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fMinJetPt(0),
   fMinTrackPt(0.15),
   fDeltaPhiWindow(90./180.*TMath::Pi()),
+  fCentrality(100),
   fRPAngle(0),
   fMultRec(0),
   fMultGen(0),
@@ -200,11 +215,18 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh1PtHardTrials(0x0),
   fh1ZVtx(0x0),
   fh1RP(0x0),
+  fh1Centrality(0x0),
   fh1TmpRho(0x0),
   fh2MultRec(0x0),
   fh2MultGen(0x0),
+  fh2RPSubevents(0x0),
+  fh2RPCentrality(0x0),
+  fh2RPDeltaRP(0x0),
+  fh2RPQxQy(0x0),
+  fh2RPCosDeltaRP(0x0),
   fh2PtFGen(0x0),
   fh2RelPtFGen(0x0),
+  fh3RPPhiTracks(0x0),
   fHistList(0x0)
 {
 
@@ -213,6 +235,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   }  
 
   for(int ij = 0;ij <kJetTypes;++ij){    
+    fFlagJetType[ij] = 1; // default = on
     fh1NJets[ij] = 0;
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
@@ -306,7 +329,7 @@ Bool_t AliAnalysisTaskJetSpectrum2::Notify()
 void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 {
 
-
+  
   // Connect the AOD
 
   if (fDebug > 1) printf("AnalysisTaskJetSpectrum2::UserCreateOutputObjects() \n");
@@ -314,26 +337,28 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   if(!fHistList)fHistList = new TList(); 
   PostData(1, fHistList); // post data in any case once
 
+  if(!fRandomizer)fRandomizer = new TRandom3(0);
+
   fHistList->SetOwner(kTRUE);
   Bool_t oldStatus = TH1::AddDirectoryStatus(); 
   TH1::AddDirectory(kFALSE);
 
   MakeJetContainer();
   fHistList->Add(fhnCorrelation);
-  fHistList->Add(fhnCorrelationPhiZRec);
+  if(fhnCorrelationPhiZRec)fHistList->Add(fhnCorrelationPhiZRec);
   for(int i = 0;i<kMaxStep*2;++i)fHistList->Add(fhnJetContainer[i]);
 
   //
   //  Histogram
     
-  const Int_t nBinPt = 320;
+  const Int_t nBinPt = 160;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
       binLimitsPt[iPt] = 0.0;
     }
     else {// 1.0
-      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 1.0;
+      binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.0;
     }
   }
   const Int_t nBinPhi = 90;
@@ -378,10 +403,29 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1RP = new TH1F("fh1RP","RP;#Psi",480,-180,360);
   fHistList->Add(fh1RP);
 
+  fh1Centrality = new TH1F("fh1Centrality","cent;cent (%)",101,-0.5,100.5);
+  fHistList->Add(fh1Centrality);
+
   fh2MultRec = new TH2F("fh2MultRec","multiplicity rec;# tracks;# jetrefs",400,-0.5,4000,400,0.,4000);
   fHistList->Add(fh2MultRec);
   fh2MultGen = new TH2F("fh2MultGen","multiplicity gen;# tracks;# jetrefs",400,-0.5,4000,400,0.,4000);
   fHistList->Add(fh2MultGen);
+
+  fh2RPSubevents = new TH2F("fh2RPSubevents" ,"Reaction Plane Angle" , 180, 0, TMath::Pi(), 180, 0, TMath::Pi());
+  fHistList->Add( fh2RPSubevents);
+
+  fh2RPCentrality = new TH2F("fh2RPCentrality" ,"Reaction Plane Angle" , 20, 0.,100., 180, 0, TMath::Pi());
+  fHistList->Add(fh2RPCentrality);
+
+  fh2RPDeltaRP   = new TH2F("fh2DeltaRP" ,"Delta Reaction Plane Angle" , 100, -TMath::Pi()/2, TMath::Pi()/2,20,0.,100.0);
+  fHistList->Add(fh2RPDeltaRP);
+
+  fh2RPQxQy      = new TH2F("fh2RPQxQy" ,"" , 100, -100,100,100,-100,100);
+  fHistList->Add(fh2RPQxQy);
+
+  fh2RPCosDeltaRP = new TH2F("fh2RPCosDeltaRP" ,"" , 20, 0.001,100.001,100,-1,1);
+  fHistList->Add(fh2RPCosDeltaRP);
+
 
   fh2PtFGen = new TH2F("fh2PtFGen",Form("%s vs. %s;p_{T,gen};p_{T,rec}",fBranchRec.Data(),fBranchGen.Data()),nBinPt,binLimitsPt,nBinPt,binLimitsPt);
   fHistList->Add(fh2PtFGen);
@@ -389,55 +433,61 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh2RelPtFGen = new TH2F("fh2RelPtFGen",";p_{T,gen};p_{T,rec}-p_{T,gen}/p_{T,Gen}",nBinPt,binLimitsPt,241,-2.41,2.41);
   fHistList->Add(fh2RelPtFGen);
 
-    for(int ij = 0;ij <kJetTypes;++ij){    
-      TString cAdd = "";
-      TString cJetBranch = "";
-      if(ij==kJetRec){
-	cAdd = "Rec";
-	cJetBranch = fBranchRec.Data();
-      }
-      else if (ij==kJetGen){
-	cAdd = "Gen";
-	cJetBranch = fBranchGen.Data();
-      }
-      else if (ij==kJetRecFull){
-	cAdd = "RecFull";
-	cJetBranch = fBranchRec.Data();
-      }
-      else if (ij==kJetGenFull){
-	cAdd = "GenFull";
-	cJetBranch = fBranchGen.Data();
-      }
+  fh3RPPhiTracks = new TH3F("fh3RPPhiTracks","Phi Tracks Pt Centrality", 10, 0.,100.,20,-5,5,180, 0, 2*TMath::Pi());
+  fHistList->Add(fh3RPPhiTracks);
+  
+  for(int ij = 0;ij <kJetTypes;++ij){    
+    TString cAdd = "";
+    TString cJetBranch = "";
+    if(ij==kJetRec){
+      cAdd = "Rec";
+      cJetBranch = fBranchRec.Data();
+    }
+    else if (ij==kJetGen){
+      cAdd = "Gen";
+      cJetBranch = fBranchGen.Data();
+    }
+    else if (ij==kJetRecFull){
+      cAdd = "RecFull";
+      cJetBranch = fBranchRec.Data();
+    }
+    else if (ij==kJetGenFull){
+      cAdd = "GenFull";
+      cJetBranch = fBranchGen.Data();
+    }
 
-      fh1NJets[ij] =new TH1F(Form("fh1N%sJets",cAdd.Data()),Form("N %s jets",cAdd.Data()),50,-0.5,49.5);
-      fHistList->Add(fh1NJets[ij]);
+    if(cJetBranch.Length()==0)fFlagJetType[ij] = 0;
+    if(!fFlagJetType[ij])continue;
 
-      fh1PtJetsIn[ij]  = new TH1F(Form("fh1PtJets%sIn",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
-      fHistList->Add(fh1PtJetsIn[ij]);
-
-      fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
-      fHistList->Add(fh1PtTracksIn[ij]);
-
-      fh1PtTracksInLow[ij] = new TH1F(Form("fh1PtTracks%sInLow",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),100,0.,10.);
-      fHistList->Add(fh1PtTracksInLow[ij]);
-
-      fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
-      fHistList->Add(fh1PtTracksLeadingIn[ij]);
-
-      fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),900,0.,900.);
-      fHistList->Add(fh1SumPtTrack[ij]);
-
-      fh2NJetsPt[ij]  = new TH2F(Form("fh2N%sJetsPt",cAdd.Data()),Form("Number of %s jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",cAdd.Data()),nBinPt,binLimitsPt,50,-0.5,49.5);
-      fHistList->Add(fh2NJetsPt[ij]);
-
-      fh2NTracksPt[ij]  = new TH2F(Form("fh2N%sTracksPt",cAdd.Data()),Form("Number of %s tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",cAdd.Data()),nBinPt,binLimitsPt,1000,0.,4000);
-      fHistList->Add(fh2NTracksPt[ij]);
-
-      fh3MultTrackPtRP[ij]  = new TH3F(Form("fh3MultTrackPtRP%s",
-					    cAdd.Data()),Form("%s track p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),400,0,4000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
-      fHistList->Add(fh3MultTrackPtRP[ij]);
-
-      fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
+    fh1NJets[ij] =new TH1F(Form("fh1N%sJets",cAdd.Data()),Form("N %s jets",cAdd.Data()),50,-0.5,49.5);
+    fHistList->Add(fh1NJets[ij]);
+    
+    fh1PtJetsIn[ij]  = new TH1F(Form("fh1PtJets%sIn",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+    fHistList->Add(fh1PtJetsIn[ij]);
+    
+    fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+    fHistList->Add(fh1PtTracksIn[ij]);
+    
+    fh1PtTracksInLow[ij] = new TH1F(Form("fh1PtTracks%sInLow",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),100,0.,10.);
+    fHistList->Add(fh1PtTracksInLow[ij]);
+    
+    fh1PtTracksLeadingIn[ij] = new TH1F(Form("fh1PtTracksLeading%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+    fHistList->Add(fh1PtTracksLeadingIn[ij]);
+    
+    fh1SumPtTrack[ij] = new TH1F(Form("fh1SumPtTrack%s",cAdd.Data()),Form("Sum %s track p_T;p_{T} (GeV/c)",cAdd.Data()),900,0.,900.);
+    fHistList->Add(fh1SumPtTrack[ij]);
+    
+    fh2NJetsPt[ij]  = new TH2F(Form("fh2N%sJetsPt",cAdd.Data()),Form("Number of %s jets above threshhold;p_{T,cut} (GeV/c);N_{jets}",cAdd.Data()),nBinPt,binLimitsPt,50,-0.5,49.5);
+    fHistList->Add(fh2NJetsPt[ij]);
+    
+    fh2NTracksPt[ij]  = new TH2F(Form("fh2N%sTracksPt",cAdd.Data()),Form("Number of %s tracks above threshhold;p_{T,cut} (GeV/c);N_{tracks}",cAdd.Data()),nBinPt,binLimitsPt,1000,0.,4000);
+    fHistList->Add(fh2NTracksPt[ij]);
+    
+    fh3MultTrackPtRP[ij]  = new TH3F(Form("fh3MultTrackPtRP%s",
+					  cAdd.Data()),Form("%s track p_T;# tracks;;p_{T} (GeV/c)",cAdd.Data()),400,0,4000,nBinPt,0,300,(Int_t)fNRPBins,-0.5,fNRPBins-0.5);
+    fHistList->Add(fh3MultTrackPtRP[ij]);
+    
+    fh2LeadingTrackPtTrackPhi[ij] = new TH2F(Form("fh2Leading%sTrackPtTrackPhi",cAdd.Data()),Form("phi of leading %s track;p_{T};#phi;",cAdd.Data()),
 					       nBinPt,binLimitsPt,nBinPhi,binLimitsPhi);
       fHistList->Add(fh2LeadingTrackPtTrackPhi[ij]);
 
@@ -657,6 +707,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   // second fill the correlation histograms, here we limit to the n-th leading jet in case of the reconstructed
 
 
+
   TList genJetsList;         // full acceptance
   TList genJetsListCut;      // acceptance cut
   TList recJetsList;         // full acceptance
@@ -675,6 +726,11 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   Double_t ptHard = 0; 
   Double_t nTrials = 1; // Trials for MC trigger 
   fh1Trials->Fill("#sum{ntrials}",fAvgTrials); 
+
+  // Getting some global properties
+  fCentrality = GetCentrality();
+  fh1Centrality->Fill(fCentrality);
+
 
   if((fAnalysisType&kAnaMCESD)==kAnaMCESD){
     // this is the part we only use when we have MC information
@@ -711,6 +767,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   nT = GetListOfTracks(&genParticles,fTrackTypeGen);
   if(fDebug>2)Printf("%s:%d Selected Gen tracks: %d %d",(char*)__FILE__,__LINE__,nT,genParticles.GetEntries());
 
+  CalculateReactionPlaneAngle(&recParticles);
+
   // Event control and counting ...  
   // MC
   fh1PtHard->Fill(ptHard,eventW);
@@ -726,8 +784,8 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   Int_t recMult1 = recParticles.GetEntries();
   Int_t genMult1 = genParticles.GetEntries();
 
-  Int_t recMult2 = MultFromJetRefs(aodRecJets);
-  Int_t genMult2 = MultFromJetRefs(aodGenJets);
+  Int_t recMult2 = MultFromJetRefs(aodBackRecJets);
+  Int_t genMult2 = MultFromJetRefs(aodBackGenJets);
 
   fh2MultRec->Fill(recMult1,recMult2);
   fh2MultGen->Fill(genMult1,genMult2);
@@ -765,6 +823,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   if(iType>=kJetTypes){
     return;
   }
+  if(!fFlagJetType[iType])return;
 
   Int_t refMult = fMultRec;
   if(iType==kJetGen||iType==kJetGenFull){
@@ -824,6 +883,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       // fill leading jets...
       AliVParticle *leadTrack = LeadingTrackFromJetRefs(jet);
       //      AliVParticle *leadTrack = LeadingTrackInCone(jet,&particlesList);
+      Int_t phiBin = GetPhiBin(phiJet-fRPAngle);
       if(ptJet>10){
 	if(ij<kMaxJets){
 	  fh2PhiEta[iType][ij]->Fill(phiJet,etaJet);
@@ -835,12 +895,12 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 	fh2EtaArea[iType][kMaxJets]->Fill(etaJet,jet->EffectiveAreaCharged());
       }
       if(ij<kMaxJets){
-	fh3MultPtRP[iType][ij]->Fill(refMult,ptJet,0);
+	fh3MultPtRP[iType][ij]->Fill(refMult,ptJet,phiBin);
 	fh2PhiPt[iType][ij]->Fill(phiJet,ptJet);
 	fh2EtaPt[iType][ij]->Fill(etaJet,ptJet);
 	if(leadTrack)fh2LTrackPtJetPt[iType][ij]->Fill(leadTrack->Pt(),ptJet);
       }
-      fh3MultPtRP[iType][kMaxJets]->Fill(refMult,ptJet,0);
+      fh3MultPtRP[iType][kMaxJets]->Fill(refMult,ptJet,phiBin);
       fh2PhiPt[iType][kMaxJets]->Fill(phiJet,ptJet);
       fh2EtaPt[iType][kMaxJets]->Fill(etaJet,ptJet);
       if(leadTrack)fh2LTrackPtJetPt[iType][kMaxJets]->Fill(leadTrack->Pt(),ptJet);
@@ -925,9 +985,11 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 
 void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType){
 
+  if(!fFlagJetType[iType])return;
   Int_t refMult = fMultRec;
   if(iType==kJetGen||iType==kJetGenFull){
     refMult = fMultGen;
+
   }
 
   Int_t nTrackOver = particlesList.GetSize();
@@ -958,10 +1020,13 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       Float_t tmpPt = tmpTrack->Pt();
       fh1PtTracksIn[iType]->Fill(tmpPt);
       fh1PtTracksInLow[iType]->Fill(tmpPt);
-      fh3MultTrackPtRP[iType]->Fill(refMult,tmpPt,0); 
+
       sumPt += tmpPt;
       Float_t tmpPhi = tmpTrack->Phi();
       if(tmpPhi<0)tmpPhi+=TMath::Pi()*2.;    
+      Int_t phiBin = GetPhiBin(tmpPhi-fRPAngle);
+      fh3MultTrackPtRP[iType]->Fill(refMult,tmpPt,phiBin); 
+
       if(tmpTrack==leading){
 	fh1PtTracksLeadingIn[iType]->Fill(tmpPt);
 	fh2LeadingTrackPtTrackPhi[iType]->Fill(tmpPt,tmpPhi);
@@ -1111,7 +1176,7 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
 
   //arrays for the number of bins in each dimension
   Int_t iBin[kNvar];
-  iBin[0] = 320; //bins in pt
+  iBin[0] = 160; //bins in pt
   iBin[1] =  1; //bins in eta 
   iBin[2] = 1; // bins in phi
 
@@ -1149,6 +1214,12 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   }
   fhnCorrelation->Sumw2();
 
+
+  for(Int_t ivar = 0; ivar < kNvar; ivar++)
+    delete [] binEdges[ivar];
+
+
+
   // for second correlation histogram
 
 
@@ -1160,6 +1231,8 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
   iBinPhiZ[2] = 20; // bins in Z
   iBinPhiZ[3] = 80; //bins in ptgen
 
+
+  return;
   //arrays for lower bounds :
   Double_t* binEdgesPhiZ[kNvarPhiZ];
   for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
@@ -1175,12 +1248,6 @@ void AliAnalysisTaskJetSpectrum2::MakeJetContainer(){
     fhnCorrelationPhiZRec->SetBinEdges(k,binEdgesPhiZ[k]);
   }
   fhnCorrelationPhiZRec->Sumw2();
-
-
-  // Add a histogram for Fake jets
-
-  for(Int_t ivar = 0; ivar < kNvar; ivar++)
-    delete [] binEdges[ivar];
 
   for(Int_t ivar = 0; ivar < kNvarPhiZ; ivar++)
     delete [] binEdgesPhiZ[ivar];
@@ -1284,6 +1351,17 @@ Int_t  AliAnalysisTaskJetSpectrum2::GetListOfTracks(TList *list,Int_t type){
 }
 
 
+Float_t AliAnalysisTaskJetSpectrum2::GetCentrality(){
+    AliAODEvent *aod = 0;
+    if(fUseAODTrackInput)aod = dynamic_cast<AliAODEvent*>(InputEvent());
+    else aod = AODEvent();
+    if(!aod){
+      return 100;
+    }
+    return aod->GetHeader()->GetCentrality();
+}
+
+
 
 Bool_t  AliAnalysisTaskJetSpectrum2::JetSelected(AliAODJet *jet){
   Bool_t selected = false;
@@ -1381,3 +1459,140 @@ AliVParticle *AliAnalysisTaskJetSpectrum2::LeadingTrackInCone(AliAODJet* jet,TLi
   }
   return leading;
 }
+
+Bool_t AliAnalysisTaskJetSpectrum2::CalculateReactionPlaneAngle(const TList *trackList)
+{
+
+  if(!trackList)return kFALSE;
+  fRPAngle=0;
+
+  // need to get this info from elsewhere??
+  Double_t fFlatA[2] = {1,1};
+  Double_t fFlatB[2] = {1,1}; 
+
+
+  Double_t fPsiRP =0,fDeltaPsiRP = 0;
+   
+   
+    
+  TVector2 mQ,mQ1,mQ2;
+  Float_t mQx=0, mQy=0;
+  
+  Float_t mQx1=0, mQy1=0;
+  Float_t mQx2=0, mQy2=0;
+  
+  AliVParticle *track=0x0;
+  Int_t count[3]={0,0,0};
+  
+
+  for (Int_t iter=0;iter<trackList->GetEntries();iter++){
+
+    track=(AliVParticle*)trackList->At(iter);
+    
+    //cuts already applied before
+    // Comment DCA not correctly implemented yet for AOD tracks
+    
+    Double_t momentum;
+    if(track->Charge()>0){momentum=track->Pt();}
+    else{momentum=-track->Pt();}
+
+       
+
+    // For Weighting
+    fh3RPPhiTracks->Fill(fCentrality,momentum,track->Phi());
+    count[0]++;
+
+    //    Double_t phiweight=GetPhiWeight(track->Phi(),momentum);
+    Double_t phiweight=1; 
+    Double_t weight=2;
+    if(track->Pt()<2){weight=track->Pt();}
+    
+
+    mQx += (cos(2*track->Phi()))*weight*phiweight;
+    mQy += (sin(2*track->Phi()))*weight*phiweight;
+
+    // Make random Subevents
+
+    if(fRPSubeventMethod==0){
+      if(fRandomizer->Binomial(1,0.5)){
+	mQx1 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy1 += (sin(2*track->Phi()))*weight*phiweight;
+	count[1]++;}
+      else{
+	mQx2 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy2 += (sin(2*track->Phi()))*weight*phiweight;
+	count[2]++;}
+    }
+    else if(fRPSubeventMethod==1){
+      // Make eta dependent subevents
+      if(track->Eta()>0){
+	mQx1 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy1 += (sin(2*track->Phi()))*weight*phiweight;
+	count[1]++;}
+      else{
+	mQx2 += (cos(2*track->Phi()))*weight*phiweight;
+	mQy2 += (sin(2*track->Phi()))*weight*phiweight;
+	count[2]++;}
+    }
+
+  }
+
+
+
+  //If no track passes the cuts, the ,Q.Phi() will return Pi and a peak at Pi/2 in the RP Angular Distribution will appear
+  if(count[0]==0||count[1]==0||count[2]==0){
+    return kFALSE;
+  }
+
+  mQ.Set(mQx,mQy);
+  mQ1.Set(mQx1,mQy1);
+  mQ2.Set(mQx2,mQy2);
+
+  // cout<<"MQ"<<mQx<<" " <<mQy<<" psi"<<endl;
+
+  fPsiRP=mQ.Phi()/2;
+    
+  //Correction
+  fPsiRP+=fFlatA[0]*TMath::Cos(2*fPsiRP)+fFlatB[0]*TMath::Sin(2*fPsiRP)+fFlatA[1]*TMath::Cos(4*fPsiRP)+fFlatB[1]*TMath::Sin(4*fPsiRP);
+
+  Double_t fPsiRP1=mQ1.Phi()/2;
+  fPsiRP1+=fFlatA[0]*TMath::Cos(2*fPsiRP1)+fFlatB[0]*TMath::Sin(2*fPsiRP1)+fFlatA[1]*TMath::Cos(4*fPsiRP1)+fFlatB[1]*TMath::Sin(4*fPsiRP1);
+  Double_t fPsiRP2=mQ2.Phi()/2;
+  fPsiRP2+=fFlatA[0]*TMath::Cos(2*fPsiRP2)+fFlatB[0]*TMath::Sin(2*fPsiRP2)+fFlatA[1]*TMath::Cos(4*fPsiRP2)+fFlatB[1]*TMath::Sin(4*fPsiRP2);
+  fDeltaPsiRP=fPsiRP1-fPsiRP2;
+  
+  if(fPsiRP>TMath::Pi()){fPsiRP-=TMath::Pi();}
+  if(fPsiRP<0){fPsiRP+=TMath::Pi();}
+  
+  // reactionplaneangle + Pi() is the same angle
+  if(TMath::Abs(fDeltaPsiRP)>TMath::Pi()/2){
+    if(fDeltaPsiRP>0)fDeltaPsiRP-=TMath::Pi();
+    else fDeltaPsiRP+=TMath::Pi();
+  }
+  
+  Double_t cos2deltaRP=TMath::Cos(2*fDeltaPsiRP);
+  
+  // FillHistograms
+  fh2RPSubevents->Fill(fPsiRP1,fPsiRP2);
+  fh1RP->Fill(fPsiRP);
+  fh2RPCentrality->Fill(fCentrality,fPsiRP);
+  fh2RPDeltaRP->Fill(fDeltaPsiRP,fCentrality);
+  fh2RPQxQy->Fill(mQx,mQy);
+  fh2RPCosDeltaRP->Fill(fCentrality,cos2deltaRP);
+  
+  fRPAngle=fPsiRP;
+  
+  return kTRUE;
+}
+
+Int_t AliAnalysisTaskJetSpectrum2::GetPhiBin(Double_t phi)
+{
+    Int_t phibin=-1;
+    if(!(TMath::Abs(phi)<=2*TMath::Pi())){AliError("phi w.r.t. RP out of defined range");return -1;}
+    Double_t phiwrtrp=TMath::ACos(TMath::Abs(TMath::Cos(phi)));
+    phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
+    if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
+    return phibin;
+}
+
+ //________________________________________________________________________

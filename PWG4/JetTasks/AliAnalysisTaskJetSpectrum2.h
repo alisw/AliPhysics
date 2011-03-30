@@ -28,6 +28,7 @@ class TChain;
 class TH1F;
 class TH2F;
 class TH3F;
+class TRandom3;
 class TProfile;
 class TSTring;
 
@@ -59,6 +60,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetNMatchJets(Short_t f){fNMatchJets = f;}
     virtual void SetMinJetPt(Float_t f){fMinJetPt = f;}
     virtual void SetNRPBins(Short_t i){fNRPBins = i;} 
+    virtual void SetFlagJetType(Int_t iType,Int_t iF){fFlagJetType[iType] = iF;}
     virtual void SetMinTrackPt(Float_t f){fMinTrackPt = f;}
     virtual void SetDeltaPhiWindow(Float_t f){fDeltaPhiWindow = f;}
     virtual void SetAnalysisType(Int_t i){fAnalysisType = i;}
@@ -103,7 +105,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     void    MakeJetContainer();
     Int_t   GetListOfTracks(TList *list,Int_t type);
     void    FillTrackHistos(TList &particlesList,int iType);
-
+    Float_t GetCentrality();
+    Bool_t  CalculateReactionPlaneAngle(const TList *trackList);
+    Int_t   GetPhiBin(Double_t phi);
     Int_t   GetListOfJets(TList *list,TClonesArray* jarray,Int_t type);
     void    FillJetHistos(TList &jetsList,TList &particlesList,Int_t iType);
 
@@ -132,6 +136,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TString       fBranchBkgGen;  //AOD branch for background 
     TString       fNonStdFile; // name of delta aod file to catch the extension
 
+    TRandom3*     fRandomizer; //! randomizer
+
     Bool_t        fUseAODJetInput;        // take jet from input AOD not from ouptu AOD
     Bool_t        fUseAODTrackInput;      // take track from input AOD not from ouptu AOD
     Bool_t        fUseAODMCInput;         // take MC from input AOD not from ouptu AOD
@@ -145,7 +151,9 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t         fAnalysisType;          // Analysis type 
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
+    Int_t         fFlagJetType[kJetTypes]; // disable the filling and booking of certain JetType histos
     Int_t         fEventClass;            // event class to be looked at for this instance of the task
+    Int_t         fRPSubeventMethod;      // method for subevent calculation
     Float_t       fAvgTrials;             // Average nimber of trials
     Float_t       fExternalWeight;        // external weight
     Float_t       fJetRecEtaWindow;       // eta window for rec jets
@@ -153,7 +161,8 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Float_t       fMinJetPt;              // limits the jet p_T in addition to what already is done in the jet finder, this is important for jet matching for JF with lo threshold
     Float_t       fMinTrackPt;            // limits the track p_T 
     Float_t       fDeltaPhiWindow;        // minium angle between dijets
-    Float_t       fRPAngle;               // ! angle of the reaction plane
+    Float_t       fCentrality;            // ! centrality
+    Float_t       fRPAngle;               // ! RP angle of the reaction plane
     Int_t         fMultRec;               // ! reconstructed track multiplicity
     Int_t         fMultGen;               // ! generated track multiplicity
     
@@ -165,12 +174,20 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH1F*         fh1PtHardTrials;  //! Number of trials 
     TH1F*         fh1ZVtx;          //! z-vtx distribution
     TH1F*         fh1RP;            //! RP distribution
+    TH1F*         fh1Centrality;    //! centrality distribution
     TH1F*         fh1TmpRho;        //! just temporary histo for calculation    
     TH2F*         fh2MultRec;       //! reconstructed track multiplicity   
     TH2F*         fh2MultGen;       //! generated track multiplicity   
+    TH2F*         fh2RPSubevents;   //! subevent RP 
+    TH2F*         fh2RPCentrality;   //! RP vs centrality
+    TH2F*         fh2RPDeltaRP;     //! centrality vs. RP dela  
+    TH2F*         fh2RPQxQy;        //! QX QY moments
+    TH2F*         fh2RPCosDeltaRP;  //! RP resolution
 
     TH2F*         fh2PtFGen;                //! found vs generated 
     TH2F*         fh2RelPtFGen;             //! relative difference between generated and found 
+
+    TH3F*         fh3RPPhiTracks; //! RP angle
     
 
     // Jet histos second go
@@ -212,7 +229,7 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TList *fHistList;                  //! Output list
    
 
-    ClassDef(AliAnalysisTaskJetSpectrum2, 13) // Analysis task for standard jet analysis
+    ClassDef(AliAnalysisTaskJetSpectrum2, 14) // Analysis task for standard jet analysis
 };
  
 #endif
