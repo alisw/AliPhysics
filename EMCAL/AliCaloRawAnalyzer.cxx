@@ -54,9 +54,13 @@ AliCaloRawAnalyzer::AliCaloRawAnalyzer(const char *name, const char *nameshort) 
 //  fFixTau(true)
 {
   //Comment 
-  snprintf(fName, 256,"%s", name);
-  snprintf(fNameShort,256, "%s", nameshort);
-    
+
+  //  snprintf(fName, 256,"%s", name);
+  // snprintf(fNameShort,256, "%s", nameshort);
+ 
+  sprintf(fName ,"%s", name);
+  sprintf(fNameShort, "%s", nameshort);
+  
   for(int i=0; i < ALTROMAXSAMPLES; i++ )
     {
       fReversed[i] = 0;
