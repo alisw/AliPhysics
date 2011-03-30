@@ -313,14 +313,13 @@ void  AliAnalysisTaskLeadingTrackUE::AnalyseCorrectionMode()
   
   //PROCESS TYPE (ND,SD,DD)
   AliAnalysisHelperJetTasks::MCProcessType eventId = AliAnalysisHelperJetTasks::kInvalidProcess;
-  if (fMcHandler && fMcEvent) {
-  	AliGenEventHeader* genHeader = fMcEvent->GenEventHeader();
-  	eventId = AliAnalysisHelperJetTasks::GetPythiaEventProcessType(genHeader,kFALSE);
-  	if (eventId<0){
-  	eventId = AliAnalysisHelperJetTasks::GetDPMjetEventProcessType(genHeader,kFALSE);
-  	}
-  	if (eventId<0 && fDebug>1)AliInfo("No Pythia or Phojet Header retrived!"); 
- 	} 
+  AliGenEventHeader* genHeader = fMcEvent->GenEventHeader();
+  eventId = AliAnalysisHelperJetTasks::GetPythiaEventProcessType(genHeader,kFALSE);
+  if (eventId<0)
+    eventId = AliAnalysisHelperJetTasks::GetDPMjetEventProcessType(genHeader,kFALSE);
+  if (eventId<0 && fDebug>1)
+    AliInfo("No Pythia or Phojet Header retrived!");
+    
   Int_t fillId=-1;
   if (eventId == AliAnalysisHelperJetTasks::kND)fillId = 0; 
   if (eventId == AliAnalysisHelperJetTasks::kSD)fillId = 1; 
