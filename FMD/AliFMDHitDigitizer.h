@@ -146,7 +146,7 @@ protected:
    *
    * @param loader The loader 
    */
-  void StoreDigits(AliLoader* loader);
+  void StoreDigits(const AliLoader* loader);
   
 
   Output_t      fOutput;           // Output mode
