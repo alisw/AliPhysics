@@ -170,10 +170,7 @@ void AliTRDarrayDictionary::Allocate(Int_t nrow, Int_t ncol, Int_t ntime)
       fDictionary=0;
     }
   fDictionary = new Int_t[fNDdim];
-  for(Int_t i=0; i<fNDdim; i++)
-    {
-      fDictionary[i] = -1; 
-    }
+  memset(fDictionary,-1,sizeof(Int_t)*fNDdim);
 
 }
 
@@ -265,16 +262,8 @@ void AliTRDarrayDictionary::Compress()
               delete [] fDictionary;
               fDictionary=0;
             }
-          fDictionary = new Int_t[newDim];
+	  fDictionary = buffer;
           fNDdim = newDim;
-          for(Int_t i=0; i<newDim; i++)
-            {
-              fDictionary[i] = buffer[i]; 
-            }
-
-          delete [] buffer;
-          buffer=0;
-
         }
     
       delete [] longArr;
@@ -293,30 +282,28 @@ void AliTRDarrayDictionary::Expand()
 
   Int_t dimexp=0;
 
-  if(!HasData()) //if the array has no data
+  if(!HasData()) //if the array has no data (only -1's)
     {
-      if(fDictionary)
-	{
+      if(fDictionary&&fNDdim==1)
+	{ 
 	  dimexp = -fDictionary[0];	
 	  delete [] fDictionary;
 	  fDictionary=0;
 	  fDictionary = new Int_t[dimexp];
 	  fNDdim = dimexp;
 	  // Re-initialize the array
-	  for(Int_t i=0; i<dimexp; i++)
-	    fDictionary[i] = -1; 
+	  memset(fDictionary,-1,sizeof(Int_t)*dimexp);
 	}
       return;
     }
 
-  Int_t *longArr = new Int_t[fNDdim];
+  UShort_t *longArr = new UShort_t[fNDdim];
   if(longArr && fDictionary)
     {
-
       //Initialize the array
-      memset(longArr,0,sizeof(Int_t)*fNDdim);
+      memset(longArr,0,sizeof(UShort_t)*fNDdim);
 
-      Int_t r2=0;
+      UShort_t r2=0;
       for(Int_t i=0; i<fNDdim;i++)
         {
           if((fDictionary[i]<0)&&(fDictionary[i]!=-1))  
@@ -330,9 +317,9 @@ void AliTRDarrayDictionary::Expand()
       for(Int_t i=0; i<fNDdim;i++)
         {
           if(longArr[i]!=0)      
-	    {
-	      dimexp=dimexp+longArr[i]-1;
-  	    }
+	    dimexp=dimexp+longArr[i]-1;
+	  if(longArr[i]==0)
+	    break;
         }
       dimexp=dimexp+fNDdim;  
 
@@ -340,6 +327,7 @@ void AliTRDarrayDictionary::Expand()
       Int_t contaexp =0;    
       Int_t h=0;
       Int_t* bufferE = new Int_t[dimexp];
+      memset(bufferE,-1,sizeof(Int_t)*dimexp);
 
       if(bufferE)
 	{
@@ -352,10 +340,6 @@ void AliTRDarrayDictionary::Expand()
 	        }
               if(fDictionary[contaexp]<-1)  
 	        {
-	          for(Int_t j=0; j<longArr[h];j++)
-	            {
-	              bufferE[i+j]=-1;
-	            }
 	          i=i+longArr[h]-1;
 	          h++;
 	        }
@@ -364,19 +348,10 @@ void AliTRDarrayDictionary::Expand()
 
           //Copy the buffer
           delete [] fDictionary;
-          fDictionary=0;
-          fDictionary = new Int_t[dimexp];
+          fDictionary=bufferE;
           fNDdim = dimexp;
-          for(Int_t i=0; i<dimexp; i++)
-            {
-              fDictionary[i] = bufferE[i]; 
-            }
-          delete [] bufferE;
-
 	}
-
     }
-
   if (longArr)
     {
       delete [] longArr; 
@@ -443,7 +418,7 @@ void AliTRDarrayDictionary::CreateLut()
       Int_t shiftposition = 1+3*mcm;
       for(Int_t index=lowerlimit;index<upperlimit;index++)
 	{
-	  fgLutPadNumbering[index]=index+shiftposition;
+	  fgLutPadNumbering[index]= index+shiftposition;
 	}
     }
 }
