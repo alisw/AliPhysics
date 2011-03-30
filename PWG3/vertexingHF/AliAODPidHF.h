@@ -117,14 +117,15 @@ class AliAODPidHF : public AliAODPid{
  Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
  Bool_t fCompat; // compatibility region : useful only if fMatch=1
  Double_t fPCompatTOF; //  compatibility p limit for TOF  
- Double_t *fnSigmaCompat; //  0: n sigma for TPC compatibility band, 1: for TOF  
+ Int_t fnNSigmaCompat; // number of sigmas
+ Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF  
  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
  Bool_t fOnePad; //  real data with one pad clusters 
  Bool_t fPbPb; //  real data PbPb 
  
 
 
- ClassDef(AliAODPidHF,8) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,9) // AliAODPid for heavy flavor PID
 
 };
 
