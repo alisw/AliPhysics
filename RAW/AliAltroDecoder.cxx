@@ -65,6 +65,8 @@ AliAltroDecoder::AliAltroDecoder() : f32DtaPtr(0),
   //				     fIsFirstChannelOfPayload(kTRUE)
 {
  // Default constructor
+  memset(fOutBuffer, 0, sizeof(fOutBuffer));
+  memset(fDDLBlockDummy, 0, sizeof(fDDLBlockDummy));
 }
 
 
