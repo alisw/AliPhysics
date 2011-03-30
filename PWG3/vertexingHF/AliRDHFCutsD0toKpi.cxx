@@ -239,6 +239,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
 	  return 0;
 	}
       }
+
       if(fUseMCVertex) {
 	if(d->GetOwnPrimaryVtx()) origownvtx=new AliAODVertex(*d->GetOwnPrimaryVtx());
 	if(!SetMCPrimaryVtx(d,aod)) {
@@ -300,7 +301,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       // call special cuts
       Int_t special=1;
       if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
-      if(!special) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+      //if(!special) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
       // unset recalculated primary vertex when not needed any more
       CleanOwnPrimaryVtx(d,aod,origownvtx);
@@ -644,10 +645,11 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
   for(Int_t daught=0;daught<2;daught++){
     //Loop con prongs
     AliAODTrack *aodtrack=(AliAODTrack*)d->GetDaughter(daught);
+    if(fPidHF->IsTOFPiKexcluded(aodtrack,5.)) return 0; 
     
     if(!(fPidHF->CheckStatus(aodtrack,"TPC")) && !(fPidHF->CheckStatus(aodtrack,"TOF"))) {
-    checkPIDInfo[daught]=kFALSE; 
-    continue;
+      checkPIDInfo[daught]=kFALSE; 
+      continue;
     }
 
     // identify kaon
