@@ -51,6 +51,7 @@ AliAODPidHF::AliAODPidHF():
   fMatch(0),
   fCompat(kFALSE),
   fPCompatTOF(1.5),
+  fnNSigmaCompat(2),
   fnSigmaCompat(),
   fMC(kFALSE),
   fOnePad(kFALSE),
@@ -62,7 +63,7 @@ AliAODPidHF::AliAODPidHF():
  fPLimit=new Double_t[fnPLimit];
  fnSigma=new Double_t[fnNSigma];
  fPriors=new Double_t[fnPriors];
- fnSigmaCompat=new Double_t[2];
+ fnSigmaCompat=new Double_t[fnNSigmaCompat];
 
  for(Int_t i=0;i<fnNSigma;i++){
   fnSigma[i]=0.;
@@ -73,7 +74,7 @@ AliAODPidHF::AliAODPidHF():
  for(Int_t i=0;i<fnPLimit;i++){
   fPLimit[i]=0.;
  }
- for(Int_t i=0;i<2;i++){
+ for(Int_t i=0;i<fnNSigmaCompat;i++){
   fnSigmaCompat[i]=3.;
  }
 
@@ -104,6 +105,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fMatch(pid.fMatch),
   fCompat(pid.fCompat),
   fPCompatTOF(pid.fPCompatTOF),
+  fnNSigmaCompat(pid.fnNSigmaCompat),
   fnSigmaCompat(pid.fnSigmaCompat),
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
