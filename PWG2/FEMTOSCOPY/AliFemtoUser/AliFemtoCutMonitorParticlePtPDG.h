@@ -4,8 +4,8 @@
 /// the difference between reconstructed and true momentum    ///
 ///                                                                          ///
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef AliFemtoCutMonitorParticlePtPDG_hh
-#define AliFemtoCutMonitorParticlePtPDG_hh
+#ifndef ALIFEMTOCUTMONITORPARTICLEPTPDG_H
+#define ALIFEMTOCUTMONITORPARTICLEPTPDG_H
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -46,21 +46,21 @@ public:
 
 private:
   TH2D *fPtPDG;    // Rapidity vs. Pt monitor
-  TH2D *ftpcHist;
-  TH1D *fPtGoodPi;
-  TH1D *fPtFakePi;
-  TH1D *fPtGoodK;
-  TH1D *fPtFakeK;
-  TH1D *fPtGoodP;
-  TH1D *fPtFakeP;
-  TH1D *fPtRPi;
-  TH1D *fPtRK;
-  TH1D *fPtRP;  
+  TH2D *ftpcHist;  // TPC histogram
+  TH1D *fPtGoodPi; // Good pions
+  TH1D *fPtFakePi; // Fake pions
+  TH1D *fPtGoodK;  // Good kaons
+  TH1D *fPtFakeK;  // Fake kaons
+  TH1D *fPtGoodP;  // Good protons
+  TH1D *fPtFakeP;  // Fake protons
+  TH1D *fPtRPi;    // Pions pt 
+  TH1D *fPtRK;     // Kaons pt
+  TH1D *fPtRP;     // Protons pt
   
-  TH1D *fPtContP;
-  TH1D *fPtContPi;
-  TH1D *fPtContMup;
-  TH1D *fPtContElp;
+  TH1D *fPtContP;  // Contamination protons
+  TH1D *fPtContPi; // Contamination pions
+  TH1D *fPtContMup;// Contamination muons
+  TH1D *fPtContElp;// Contamination electrons
   
   
   //TH2D *fYPhi;   // Rapidity cs. Phi monitor
