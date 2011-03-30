@@ -67,7 +67,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
   fMCPID(0),
-  fIgnoreSignInPID(kFALSE),
+  fIgnoreSignInMCPID(kFALSE),
   fCutMCisPrimary(kFALSE),
   fRequireTransportBitForPrimaries(kTRUE),
   fMCisPrimary(kFALSE),
@@ -115,7 +115,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
-  fParticleID(AliPID::kPion),
+  fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
   fAllowTOFmismatch(kFALSE)
 {
@@ -134,7 +134,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMCprocessType(kPNoProcess),
   fCutMCPID(kFALSE),
   fMCPID(0),
-  fIgnoreSignInPID(kFALSE),
+  fIgnoreSignInMCPID(kFALSE),
   fCutMCisPrimary(kFALSE),
   fRequireTransportBitForPrimaries(kTRUE),
   fMCisPrimary(kFALSE),
@@ -182,7 +182,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fPIDsource(kTOFpid),
   fTPCpidCuts(NULL),
   fTOFpidCuts(NULL),
-  fParticleID(AliPID::kPion),
+  fParticleID(AliPID::kUnknown),
   fParticleProbability(.9),
   fAllowTOFmismatch(kFALSE)
 {
@@ -209,7 +209,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMCprocessType(that.fMCprocessType),
   fCutMCPID(that.fCutMCPID),
   fMCPID(that.fMCPID),
-  fIgnoreSignInPID(that.fIgnoreSignInPID),
+  fIgnoreSignInMCPID(that.fIgnoreSignInMCPID),
   fCutMCisPrimary(that.fCutMCisPrimary),
   fRequireTransportBitForPrimaries(that.fRequireTransportBitForPrimaries),
   fMCisPrimary(that.fMCisPrimary),
@@ -289,7 +289,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fMCprocessType=that.fMCprocessType;
   fCutMCPID=that.fCutMCPID;
   fMCPID=that.fMCPID;
-  fIgnoreSignInPID=that.fIgnoreSignInPID,
+  fIgnoreSignInMCPID=that.fIgnoreSignInMCPID,
   fCutMCisPrimary=that.fCutMCisPrimary;
   fRequireTransportBitForPrimaries=that.fRequireTransportBitForPrimaries;
   fMCisPrimary=that.fMCisPrimary;
@@ -493,7 +493,7 @@ Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
   if (fCutMCPID)
   {
     Int_t pdgCode = mcparticle->PdgCode();
-    if (fIgnoreSignInPID) 
+    if (fIgnoreSignInMCPID) 
     {
       if (TMath::Abs(fMCPID) != TMath::Abs(pdgCode)) return kFALSE;
     }
@@ -682,7 +682,7 @@ Bool_t AliFlowTrackCuts::PassesESDcuts(AliESDtrack* track)
     if (pass) QAbefore(0)->Fill(track->GetP(),beta);
     if (pass) QAbefore(1)->Fill(pin->GetP(),dedx);
   }
-  if (fCutPID)
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
   {
     switch (fPIDsource)    
     {
@@ -1281,14 +1281,11 @@ void AliFlowTrackCuts::DefineHistograms()
 
   Bool_t adddirstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-  fQA=new TList();
-  fQA->SetOwner();
+  fQA=new TList(); fQA->SetOwner();
   fQA->SetName(Form("%s QA",GetName()));
-  TList* before = new TList();
-  before->SetOwner();
+  TList* before = new TList(); before->SetOwner();
   before->SetName("before");
-  TList* after = new TList();
-  after->SetOwner();
+  TList* after = new TList(); after->SetOwner();
   after->SetName("after");
   fQA->Add(before);
   fQA->Add(after);
@@ -1348,6 +1345,7 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       return esd->GetPmdTrack(i);
     case kV0:
       esd = dynamic_cast<AliESDEvent*>(fEvent);
+      if (!esd) return NULL;
       return esd->GetVZEROData();
     default:
       if (!fEvent) return NULL;
@@ -1372,13 +1370,12 @@ void AliFlowTrackCuts::Clear(Option_t*)
 Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 {
   //check if passes PID cut using timing in TOF
-  Bool_t goodtrack = (track) && 
-                     (track->GetStatus() & AliESDtrack::kTOFpid) && 
+  Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
                      (track->GetIntegratedLength() > 365);
                     
-  if ((track->GetStatus() & AliESDtrack::kTOFmismatch) && !fAllowTOFmismatch) return kFALSE;
+  if (!fAllowTOFmismatch) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
 
   if (!goodtrack) return kFALSE;
   
@@ -1434,13 +1431,12 @@ Float_t AliFlowTrackCuts::GetBeta(const AliESDtrack* track)
 Bool_t AliFlowTrackCuts::PassesTOFbetaCut(const AliESDtrack* track )
 {
   //check if passes PID cut using timing in TOF
-  Bool_t goodtrack = (track) && 
-                     (track->GetStatus() & AliESDtrack::kTOFpid) && 
+  Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFpid) && 
                      (track->GetTOFsignal() > 12000) && 
                      (track->GetTOFsignal() < 100000) && 
                      (track->GetIntegratedLength() > 365);
 
-  if ((track->GetStatus() & AliESDtrack::kTOFmismatch) && !fAllowTOFmismatch) return kFALSE;
+  if (!fAllowTOFmismatch) {if ((track->GetStatus() & AliESDtrack::kTOFmismatch)) return kFALSE;}
 
   if (!goodtrack) return kFALSE;
   

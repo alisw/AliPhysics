@@ -66,7 +66,7 @@ class AliFlowEventCuts : public TNamed {
   void SetMeanPtCuts( AliFlowTrackCuts* cuts ) {fMeanPtCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   AliFlowTrackCuts* GetRefMultCuts() const {return fRefMultCuts;}
   void DefineHistograms();
-  void SetQA() {DefineHistograms();}
+  void SetQA(Bool_t b=kTRUE) {if (b) DefineHistograms();}
   TList* GetQA() const {return fQA;}
   TH1* QAbefore(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(0))->At(i));}
   TH1* QAafter(Int_t i) {return static_cast<TH1*>(static_cast<TList*>(fQA->At(1))->At(i));}
