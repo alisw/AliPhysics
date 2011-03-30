@@ -75,6 +75,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask():
 AliAnalysisTaskSE(),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
+  fPass(0),
   fFile(0),
   fFile2(0),
   fCurrentRun(-1),
@@ -163,6 +164,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   AliAnalysisTaskSE(name),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
+  fPass(0),
   fFile(0),
   fFile2(0),
   fCurrentRun(-1),
@@ -262,6 +264,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   AliAnalysisTaskSE(ana),
   fAnalysisInput(ana.fDebug),
   fIsMCInput(ana.fIsMCInput),
+  fPass(ana.fPass),
   fFile(ana.fFile),
   fFile2(ana.fFile2),
   fCurrentRun(ana.fCurrentRun),
@@ -580,6 +583,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
 
   // ***** Scaling
+  // ***** Scaling for pass2 
+  if (fPass==2) {
+    fUseScaling=kFALSE;
+    fUseCleaning=kFALSE;
+  }
   // ***** Scaling for MC
   if (fIsMCInput) {
     fUseScaling=kFALSE;
@@ -771,11 +779,18 @@ Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
   if ( fCurrentRun <= 137165 ) fRunNo = 137161;
   else fRunNo = 137366;
   // CHANGE HERE FOR RUN RANGES
+
+  TString fileName;
+  TString fileName2;
+  if (fPass==1) {  
+  fileName=(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
+  fileName2=(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
+  } else if (fPass==2) {  
+  fileName=(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
+  fileName2=(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
+  }
   
-  TString fileName(Form("%s/COMMON/CENTRALITY/data/AliCentralityBy1D_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  TString fileName2(Form("%s/COMMON/CENTRALITY/data/AliCentralityByFunction_%d.root", AliAnalysisManager::GetOADBPath(), fRunNo));
-  
-  AliInfo(Form("Centrality Selection for run %d is initialized with %s", fCurrentRun, fileName.Data()));
+  AliInfo(Form("Centrality Selection for run %d and pass %d is initialized with %s", fCurrentRun, fPass, fileName.Data()));
   ReadCentralityHistos(fileName.Data());
   ReadCentralityHistos2(fileName2.Data());
   if (!fFile && !fFile2) {

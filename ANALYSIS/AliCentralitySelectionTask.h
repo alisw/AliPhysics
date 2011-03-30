@@ -37,6 +37,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
+  void SetPass(Int_t pass)                 {fPass = pass;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
   void DontUseCleaning()                   {fUseCleaning=kFALSE;}
   void ReadCentralityHistos(TString filename);
@@ -55,6 +56,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
+  Int_t    fPass;               // pass of reconstruction
   TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
   TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d  
   Int_t    fCurrentRun;         // current run number
