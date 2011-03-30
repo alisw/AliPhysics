@@ -400,7 +400,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   fh1ZVtx = new TH1F("fh1ZVtx","z vtx;z_{vtx} (cm)",400,-20,20);
   fHistList->Add(fh1ZVtx);
 
-  fh1RP = new TH1F("fh1RP","RP;#Psi",480,-180,360);
+  fh1RP = new TH1F("fh1RP","RP;#Psi",440, -1.*TMath::Pi(), 2.*TMath::Pi());
   fHistList->Add(fh1RP);
 
   fh1Centrality = new TH1F("fh1Centrality","cent;cent (%)",101,-0.5,100.5);
