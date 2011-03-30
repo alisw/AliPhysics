@@ -50,6 +50,8 @@ AliAODPidHF::AliAODPidHF():
   fTRD(kFALSE),
   fMatch(0),
   fCompat(kFALSE),
+  fPCompatTOF(1.5),
+  fnSigmaCompat(),
   fMC(kFALSE),
   fOnePad(kFALSE),
   fPbPb(kFALSE)
@@ -60,6 +62,7 @@ AliAODPidHF::AliAODPidHF():
  fPLimit=new Double_t[fnPLimit];
  fnSigma=new Double_t[fnNSigma];
  fPriors=new Double_t[fnPriors];
+ fnSigmaCompat=new Double_t[2];
 
  for(Int_t i=0;i<fnNSigma;i++){
   fnSigma[i]=0.;
@@ -69,6 +72,9 @@ AliAODPidHF::AliAODPidHF():
  }
  for(Int_t i=0;i<fnPLimit;i++){
   fPLimit[i]=0.;
+ }
+ for(Int_t i=0;i<2;i++){
+  fnSigmaCompat[i]=3.;
  }
 
 }
@@ -97,6 +103,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fTRD(pid.fTRD),
   fMatch(pid.fMatch),
   fCompat(pid.fCompat),
+  fPCompatTOF(pid.fPCompatTOF),
+  fnSigmaCompat(pid.fnSigmaCompat),
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
   fPbPb(pid.fPbPb)
@@ -509,7 +517,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
 
    if(compat && tTPCinfo<0){
     Double_t sig0tmp=fnSigma[0];
-    SetSigma(0,3.);
+    SetSigma(0,fnSigmaCompat[0]);
     if(specie==2 && IsPionRaw(track,"TPC")) tTPCinfo=0;
     if(specie==3 && IsKaonRaw(track,"TPC")) tTPCinfo=0;
     if(specie==4 && IsProtonRaw(track,"TPC")) tTPCinfo=0;
@@ -531,7 +539,14 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track,Int_t mode,Int_t specie,Bool_t
 
   if(compat && tTOFinfo>0){
    Double_t ptrack=track->P();
-   if(ptrack>1.5) tTOFinfo=0;
+   if(ptrack>fPCompatTOF) {
+    Double_t sig0tmp=fnSigma[3];
+    SetSigma(3,fnSigmaCompat[1]);
+    if(specie==2 && IsPionRaw(track,"TOF")) tTOFinfo=0;
+    if(specie==3 && IsKaonRaw(track,"TOF")) tTOFinfo=0;
+    if(specie==4 && IsProtonRaw(track,"TOF")) tTOFinfo=0;
+    SetSigma(3,sig0tmp);
+   }
   }
  }
 
@@ -639,7 +654,16 @@ Int_t AliAODPidHF::MakeRawPid(AliAODTrack *track, Int_t specie){
   return MatchTPCTOF(track,fMatch,specie,fCompat); 
  }else{
   if(fTPC && !fTOF && !fITS) {
-   Int_t tTPCres=ApplyPidTPCRaw(track,specie);
+   Int_t tTPCres=0;
+   if(!fAsym){
+   tTPCres=ApplyPidTPCRaw(track,specie);
+   }else{
+    if(TPCRawAsym(track,specie)) {
+     tTPCres=1;
+    }else{
+     tTPCres=-1;
+    }
+   }
    if(tTPCres==specie){return 1;}else{return tTPCres;};
   }else{
    AliError("You should enable just one detector if you don't want to match");
