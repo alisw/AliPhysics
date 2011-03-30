@@ -301,7 +301,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       // call special cuts
       Int_t special=1;
       if(fUseSpecialCuts) special=IsSelectedSpecialCuts(d);
-      //if(!special) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+      if(!special) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
       // unset recalculated primary vertex when not needed any more
       CleanOwnPrimaryVtx(d,aod,origownvtx);
