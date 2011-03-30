@@ -200,7 +200,7 @@ void AliACORDE::SetTreeAddress()
 
   TBranch *branch;
   char branchname[20];
-  //sprintf(branchname,"%s",GetName());
+  snprintf(branchname,19,"%s",GetName());
   // Branch address for hit tree
   TTree *treeH = fLoader->TreeH();
   if (treeH ) {

@@ -821,7 +821,7 @@ void AliACORDEv1::MakeBranch(Option_t *option)
 // Creates new branches in the current Root Tree
     
   char branchname[10];
-  //sprintf(branchname,"%s",GetName());
+  snprintf(branchname,9,"%s",GetName());
   AliDebug(2,Form("fBufferSize = %d",fBufferSize));
   const char *cH = strstr(option,"H");
   if (fHits   && fLoader->TreeH() && cH) {

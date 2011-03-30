@@ -424,17 +424,17 @@ void AliGenACORDE::InitMomentumGeneration()
       char buffer6[1024];
       char buffer7[1024];
 
-      //sprintf(buffer1, h1Coef, y, y, y, y, y, y);
-      //sprintf(buffer2, h2Coef, y, y, y, y, y, y);
-      //sprintf(buffer3, h3Coef, y, y, y, y, y, y);
-      //sprintf(buffer4, s2Coef, y, y, y, y, y, y);
+      snprintf(buffer1, 1023, h1Coef, y, y, y, y, y, y);
+      snprintf(buffer2, 1023, h2Coef, y, y, y, y, y, y);
+      snprintf(buffer3, 1023, h3Coef, y, y, y, y, y, y);
+      snprintf(buffer4, 1023, s2Coef, y, y, y, y, y, y);
       
-      //sprintf(buffer5, h, buffer1, buffer2, buffer3, buffer4);
+      snprintf(buffer5, 1023, h, buffer1, buffer2, buffer3, buffer4);
       
-      //sprintf(buffer6, flux, buffer5);
+      snprintf(buffer6, 1023, flux, buffer5);
       
       fMomentumDist = new TF1("fMomentumDist", buffer6, fPMin, fPMax);
-      //sprintf(buffer7, normalizedFlux, buffer5);
+      snprintf(buffer7, 1023, normalizedFlux, buffer5);
       fUnfoldedMomentumDist = new TF1("fUnfoldedMomentumDist", buffer7, fPMin, fPMax);
       for (Int_t i = 0; i < 4; i++ ) {
 	fMomentumDist->SetParName(i, paramNames[i]);
@@ -483,8 +483,8 @@ void AliGenACORDE::InitZenithalAngleGeneration()
       Float_t weight = 0;
       for ( Int_t i = 0; i < pEnd; i++ ) {
 	// Fill the distribution
-	//sprintf(name, "zenith%d", i+1);
-	//sprintf(title, "Zenith distribution, p=%f", fPMin+(Float_t)i);
+	snprintf(name, 25, "zenith%d", i+1);
+	snprintf(title, 51, "Zenith distribution, p=%f", fPMin+(Float_t)i);
 	zenith = new(mom[i]) TH1F(name, title, TMath::Abs(TMath::Nint(fZenithMax-fZenithMin)), TMath::Cos(fZenithMax*TMath::Pi()/180), TMath::Cos(fZenithMin*TMath::Pi()/180));
 
 	// Make a loop for the angle and fill the histogram for the weight
