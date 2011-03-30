@@ -31,6 +31,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliUEHist.h"
+#include "TString.h"
 
 class AliAODEvent;
 class AliAnalyseLeadingTrackUE;
@@ -41,6 +42,7 @@ class AliUEHistograms;
 class AliVParticle;
 class TH1D;
 class TObjArray;
+class AliEventPoolManager;
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
   {
@@ -71,8 +73,12 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetTrackEtaCut( Double_t val )    { fTrackEtaCut = val; }
     void   SetPtMin(Double_t val)            { fPtMin = val; }
     void   SetFilterBit( UInt_t val )        { fFilterBit = val;  }
+    
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
+    void   SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
+    void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
+
     
   private:
     AliAnalysisTaskPhiCorrelations(const  AliAnalysisTaskPhiCorrelations &det);
@@ -104,6 +110,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
     AliMCEvent*              fMcEvent;         //! MC event
     AliMCEventHandler*       fMcHandler;       //! MCEventHandler 
+    AliEventPoolManager*     fPoolMgr;         //! event pool manager
     
     // Histogram settings
     TList*              fListOfHistos;    //  Output list of containers 
@@ -111,6 +118,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     // Event QA cuts
     Int_t          	fnTracksVertex;        // QA tracks pointing to principal vertex (= 3 default) 
     Double_t       	fZVertex;              // Position of Vertex in Z direction
+    TString             fCentralityMethod;     // Method to determine centrality
     
     // Track cuts
     Double_t      	fTrackEtaCut;          // Eta cut on particles
@@ -118,6 +126,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     UInt_t         	fFilterBit;            // Select tracks from an specific track cut (default 0xFF all track selected)
     UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
     Bool_t         	fUseChargeHadrons;     // Only use charge hadrons
+    
+    Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     
     ClassDef( AliAnalysisTaskPhiCorrelations, 1); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
