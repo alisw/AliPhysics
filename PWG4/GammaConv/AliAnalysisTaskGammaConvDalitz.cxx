@@ -312,7 +312,7 @@ void AliAnalysisTaskGammaConvDalitz::UserExec(Option_t */*option*/)
    fBGEventHandler = fV0Reader->GetBGHandler();
    fESDpid = fV0Reader->GetESDpid();
    fESDEvent = fV0Reader->GetESDEvent();
-   if(fDoMC)
+   if(fDoMC && MCEvent())
    {
 	fStack= MCEvent()->Stack();
         fGCMCEvent=MCEvent();
