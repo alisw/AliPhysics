@@ -46,8 +46,8 @@ public:
    class AliTPCRow {
    public:
      AliTPCRow():
-         fN(0), fSize(kMaxClusterPerRow/8),
-         fClusterArray(new AliTPCcluster[fSize]), fX(0) {}
+         fN(0), fClusters(), fSize(kMaxClusterPerRow/8),
+         fClusterArray(new AliTPCcluster[fSize]), fIndex(), fX(0) {}
      ~AliTPCRow() {delete[] fClusterArray;}
      void InsertCluster(const AliTPCcluster *c, Int_t sec, Int_t row);
      void ResetClusters() {fN=0; delete[] fClusterArray; fClusterArray=0;}

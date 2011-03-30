@@ -801,8 +801,10 @@ void AliTPCtracker::CookLabel(AliKalmanTrack *t, Float_t wrong) const {
     lab=TMath::Abs(c->GetLabel(0));
     Int_t j;
     for (j=0; j<noc; j++) if (lb[j]==lab || mx[j]==0) break;
-    lb[j]=lab;
-    (mx[j])++;
+    if (j<noc) {
+       lb[j]=lab;
+       (mx[j])++;
+    }
   }
 
   Int_t max=0;
