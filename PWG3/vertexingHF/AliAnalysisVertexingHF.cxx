@@ -857,7 +857,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    threeTrackArray->AddAt(postrack2,2);
 	  }
 	  if(fMassCutBeforeVertexing)
-	    massCutOK = SelectInvMass(threeTrackArray);
+	    massCutOK = SelectInvMassAndPt(threeTrackArray);
 	}
 
 	if(f3Prong && !massCutOK) {
@@ -964,7 +964,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    // check invariant mass cuts for D0
 	    massCutOK=kTRUE;
 	    if(fMassCutBeforeVertexing) 
-	      massCutOK = SelectInvMass(fourTrackArray);
+	      massCutOK = SelectInvMassAndPt(fourTrackArray);
 	    
 	    if(!massCutOK) {
 	      fourTrackArray->Clear(); 
@@ -1050,7 +1050,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// check invariant mass cuts for D+,Ds,Lc
         massCutOK=kTRUE;
 	if(fMassCutBeforeVertexing && f3Prong) 
-	  massCutOK = SelectInvMass(threeTrackArray);
+	  massCutOK = SelectInvMassAndPt(threeTrackArray);
 
 	if(!massCutOK) { 
 	  threeTrackArray->Clear();
@@ -1429,9 +1429,9 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
 
   // invariant mass cut (try to improve coding here..)
   Bool_t okMassCut=kFALSE;
-  if(!okMassCut && fD0toKpi)   if(SelectInvMass(0,2,px,py,pz)) okMassCut=kTRUE;
-  if(!okMassCut && fJPSItoEle) if(SelectInvMass(1,2,px,py,pz)) okMassCut=kTRUE;
-  if(!okMassCut && fDstar)     if(SelectInvMass(3,2,px,py,pz)) okMassCut=kTRUE;
+  if(!okMassCut && fD0toKpi)   if(SelectInvMassAndPt(0,2,px,py,pz)) okMassCut=kTRUE;
+  if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPt(1,2,px,py,pz)) okMassCut=kTRUE;
+  if(!okMassCut && fDstar)     if(SelectInvMassAndPt(3,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
     AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
@@ -1534,7 +1534,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // invariant mass cut for D+, Ds, Lc
   Bool_t okMassCut=kFALSE;
   if(fMassCutBeforeVertexing) okMassCut=kTRUE; // mass cut already done and passed 
-  if(!okMassCut && f3Prong) if(SelectInvMass(2,3,px,py,pz)) okMassCut=kTRUE;
+  if(!okMassCut && f3Prong) if(SelectInvMassAndPt(2,3,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
     AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
@@ -1653,7 +1653,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   Bool_t okMassCut=kFALSE;
   if(fMassCutBeforeVertexing) okMassCut=kTRUE; // mass cut already done and passed 
   if(!okMassCut && !(fCutsD0toKpipipi->GetUsePID())) {      //no PID, to be implemented with PID
-    if(SelectInvMass(4,4,px,py,pz)) okMassCut=kTRUE;
+    if(SelectInvMassAndPt(4,4,px,py,pz)) okMassCut=kTRUE;
   }
   if(!okMassCut) {
     //if(fDebug) printf(" candidate didn't pass mass cut\n");
@@ -1939,7 +1939,7 @@ AliAODVertex* AliAnalysisVertexingHF::ReconstructSecondaryVertex(TObjArray *trkA
   return vertexAOD;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::SelectInvMass(TObjArray *trkArray) const {
+Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt(TObjArray *trkArray) const {
   // Invariant mass cut on tracks
 
   Int_t nProngs=trkArray->GetEntriesFast();
@@ -1965,7 +1965,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(TObjArray *trkArray) const {
     px3[1] = momentum[0]; py3[1] = momentum[1]; pz3[1] = momentum[2]; 
     postrack2->GetPxPyPz(momentum);
     px3[2] = momentum[0]; py3[2] = momentum[1]; pz3[2] = momentum[2]; 
-    retval = SelectInvMass(2,3,px3,py3,pz3);
+    retval = SelectInvMassAndPt(2,3,px3,py3,pz3);
     break;
   case 4:
     // invariant mass cut for D0->4prong
@@ -1981,31 +1981,37 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(TObjArray *trkArray) const {
     px4[2] = momentum[0]; py4[2] = momentum[1]; pz4[2] = momentum[2];
     negtrack2->GetPxPyPz(momentum);
     px4[3] = momentum[0]; py4[3] = momentum[1]; pz4[3] = momentum[2];
-    retval = SelectInvMass(4,4,px4,py4,pz4);
+    retval = SelectInvMassAndPt(4,4,px4,py4,pz4);
     break;
   default:
-    printf("SelectInvMass(): wrong decay selection\n");
+    printf("SelectInvMassAndPt(): wrong decay selection\n");
     break;
   }
 
   return retval;
 }
 //-----------------------------------------------------------------------------
-Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
+Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt(Int_t decay,
 					     Int_t nprongs,
 					     Double_t *px,
 					     Double_t *py,
 					     Double_t *pz) const {
-  // Check invariant mass cut
+  // Check invariant mass cut and pt candidate cut
 
   UInt_t pdg2[2],pdg3[3],pdg4[4];
   Double_t mPDG,minv;
+  Double_t minPt=0;
 
   Bool_t retval=kFALSE;
   switch (decay) 
     { 
     case 0:                  // D0->Kpi
       fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
+      // pt cut
+      minPt=fCutsD0toKpi->GetMinPtCandidate();
+      if(minPt>0.1) 
+	if(fMassCalc2->Pt2() < minPt*minPt) break;
+      // mass cut
       pdg2[0]=211; pdg2[1]=321;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = fMassCalc2->InvMass(nprongs,pdg2);
@@ -2016,6 +2022,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       break;
     case 1:                  // JPSI->ee
       fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
+      // pt cut
+      minPt=fCutsJpsitoee->GetMinPtCandidate();
+      if(minPt>0.1) 
+	if(fMassCalc2->Pt2() < minPt*minPt) break;
+      // mass cut
       pdg2[0]=11; pdg2[1]=11;
       mPDG=TDatabasePDG::Instance()->GetParticle(443)->Mass();
       minv = fMassCalc2->InvMass(nprongs,pdg2);
@@ -2023,6 +2034,12 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       break;
     case 2:                  // D+->Kpipi
       fMassCalc3->SetPxPyPzProngs(nprongs,px,py,pz);
+      // pt cut
+      minPt=TMath::Min(fCutsDplustoKpipi->GetMinPtCandidate(),fCutsDstoKKpi->GetMinPtCandidate());
+      minPt=TMath::Min(minPt,fCutsLctopKpi->GetMinPtCandidate());
+      if(minPt>0.1) 
+	if(fMassCalc3->Pt2() < minPt*minPt) break;
+      // mass cut
       pdg3[0]=211; pdg3[1]=321; pdg3[2]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(411)->Mass();
       minv = fMassCalc3->InvMass(nprongs,pdg3);
@@ -2046,6 +2063,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       break;
     case 3:                  // D*->D0pi
       fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
+      // pt cut
+      minPt=fCutsDStartoKpipi->GetMinPtCandidate();
+      if(minPt>0.1) 
+	if(fMassCalc2->Pt2() < minPt*minPt) break;
+      // mass cut
       pdg2[0]=211; pdg2[1]=421; // in twoTrackArrayCasc we put the pion first
       mPDG=TDatabasePDG::Instance()->GetParticle(413)->Mass();
       minv = fMassCalc2->InvMass(nprongs,pdg2);
@@ -2053,6 +2075,11 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       break;
     case 4:                 // D0->Kpipipi without PID
       fMassCalc4->SetPxPyPzProngs(nprongs,px,py,pz);
+      // pt cut
+      minPt=fCutsD0toKpipipi->GetMinPtCandidate();
+      if(minPt>0.1) 
+	if(fMassCalc4->Pt2() < minPt*minPt) break;
+      // mass cut
       pdg4[0]=321; pdg4[1]=211; pdg4[2]=211; pdg4[3]=211;
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = fMassCalc4->InvMass(nprongs,pdg4);
@@ -2071,7 +2098,7 @@ Bool_t AliAnalysisVertexingHF::SelectInvMass(Int_t decay,
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
       break;
     default:
-      printf("SelectInvMass(): wrong decay selection\n");
+      printf("SelectInvMassAndPt(): wrong decay selection\n");
       break;
     }
 

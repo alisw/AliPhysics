@@ -27,7 +27,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 					 AliESDtrackCuts::kAny);
   // |d0|>100 micron for pt<2GeV, no cut above 2
-  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0050*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
+  esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0075*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
   esdTrackCuts->SetPtRange(0.8,1.e10);
@@ -68,6 +68,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDplustoKpipi->SetCuts(12,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
+  cutsDplustoKpipi->SetMinPtCandidate(3.);
   vHF->SetCutsDplustoKpipi(cutsDplustoKpipi);
   AliRDHFCutsDstoKKpi *cutsDstoKKpi = new AliRDHFCutsDstoKKpi("CutsDstoKKpi");
   cutsDstoKKpi->SetStandardCutsPbPb2010();
@@ -76,6 +77,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsDstoKKpi->SetPtBins(nptbins,ptlimits);
   cutsDstoKKpi->SetCuts(14,cutsArrayDstoKKpi);
   cutsDstoKKpi->AddTrackCuts(esdTrackCuts);
+  cutsDstoKKpi->SetMinPtCandidate(4.);
   vHF->SetCutsDstoKKpi(cutsDstoKKpi);
   AliRDHFCutsLctopKpi *cutsLctopKpi = new AliRDHFCutsLctopKpi("CutsLctopKpi");
   cutsLctopKpi->SetStandardCutsPbPb2010();
@@ -84,7 +86,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsLctopKpi->SetPtBins(nptbins,ptlimits);
   cutsLctopKpi->SetCuts(12,cutsArrayLctopKpi);
   cutsLctopKpi->AddTrackCuts(esdTrackCuts);
-  cutsLctopKpi->SetMinPtCandidate(3.);
+  cutsLctopKpi->SetMinPtCandidate(4.);
   vHF->SetCutsLctopKpi(cutsLctopKpi);
   AliRDHFCutsD0toKpipipi *cutsD0toKpipipi = new AliRDHFCutsD0toKpipipi("CutsD0toKpipipi");
   Float_t cutsArrayD0toKpipipi[9]={0.2,0.04,0.00,0.01,0.02,0.8,0.,0.1,0.};
@@ -151,6 +153,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
  
   cutsDStartoKpipi->AddTrackCuts(esdTrackCuts);
   cutsDStartoKpipi->AddTrackCutsSoftPi(esdTrackCutsSoftPi);
+  cutsDStartoKpipi->SetMinPtCandidate(3.);
   vHF->SetCutsDStartoKpipi(cutsDStartoKpipi);
 
   //--------------------------------------------------------
