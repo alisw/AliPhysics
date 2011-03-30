@@ -1415,6 +1415,10 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
 	      ratioToB[kClassA]  = ratioToB[kClassA]  >0 ? 1  : 0;
 	      ratioToB[kClassC]  = ratioToB[kClassC]  >0 ? 1  : 0;
 	      ratioToB[kClassAC] = ratioToB[kClassAC] >0 ? 1  : 0;
+	      AliInfo(Form(" - BI Factor A:  %f",  fBIFactorA ));
+	      AliInfo(Form(" - BI Factor C:  %f",  fBIFactorC ));
+	      AliInfo(Form(" - BI Factor AC: %f",  fBIFactorAC ));
+	      
 	    }
 	  } else {
 	    AliWarning("Intensities not set!, assuming equal intensities");
@@ -1600,20 +1604,20 @@ void AliPhysicsSelection::SetBIFactors(const AliESDEvent * aESD) {
     // cout << "INT " <<intAA <<endl;
     // cout << "INT " <<intCC <<endl;
 
-    if (intAB > -1 && intAA > -1) {
+    if (intAB > 0 && intAA > 0) {
       fBIFactorA = intAB/intAA;
     } else {
       AliWarning("Cannot set fBIFactorA");
     }
     
-    if (intCB > -1 && intCC > -1) {
+    if (intCB > 0 && intCC > 0) {
       fBIFactorC = intCB/intCC;
     } else {
       AliWarning("Cannot set fBIFactorC");
     }
       
-    if (intAB > -1 && intAA > -1 &&
-	intCB > -1 && intCC > -1) {
+    if (intAB > 0 && intAA > 0 &&
+	intCB > 0 && intCC > 0) {
       fBIFactorAC = (intAB+intCB)/(intAA+intCC);
     } else {
       AliWarning("Cannot set fBIFactorAC");
