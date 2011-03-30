@@ -26,9 +26,10 @@ class AliUEHistograms : public TNamed
   virtual ~AliUEHistograms();
   
   void Fill(Int_t eventType, AliUEHist::CFStep step, AliVParticle* leading, TList* toward, TList* away, TList* min, TList* max);
-  void FillCorrelations(Int_t eventType, Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
+  void FillCorrelations(Double_t centrality, AliUEHist::CFStep step, TSeqCollection* particles, TSeqCollection* mixed = 0, Float_t weight = 1, Bool_t firstTime = kTRUE);
   void Fill(AliVParticle* leadingMC, AliVParticle* leadingReco);
   void FillEvent(Int_t eventType, Int_t step);
+  void FillEvent(Double_t centrality, Int_t step);
   void FillTrackingEfficiency(TObjArray* mc, TObjArray* recoPrim, TObjArray* recoAll, Int_t particleType, Double_t centrality = 0);
   
   void CopyReconstructedData(AliUEHistograms* from);
@@ -38,6 +39,10 @@ class AliUEHistograms : public TNamed
   AliUEHist* GetNumberDensitypT() { return fNumberDensitypT; }
   AliUEHist* GetSumpT() { return fSumpT; }
   AliUEHist* GetNumberDensityPhi() { return fNumberDensityPhi; }
+  
+  void SetNumberDensitypT(AliUEHist* obj) { fNumberDensitypT = obj; }
+  void SetSumpT(AliUEHist* obj) { fSumpT = obj; }
+  void SetNumberDensityPhi(AliUEHist* obj) { fNumberDensityPhi = obj; }
   
   TH2F* GetCorrelationpT()  { return fCorrelationpT; }
   TH2F* GetCorrelationEta() { return fCorrelationEta; }
@@ -59,7 +64,7 @@ class AliUEHistograms : public TNamed
   void SetCombineMinMax(Bool_t flag);
   void SetSelectCharge(Int_t selectCharge) { fSelectCharge = selectCharge; }
   
-  void ExtendTrackingEfficiency();
+  void ExtendTrackingEfficiency(Bool_t verbose = kFALSE);
   void Reset();
 
   AliUEHistograms(const AliUEHistograms &c);
@@ -86,15 +91,17 @@ protected:
   TH2F* fCorrelationLeading2Phi;// delta phi (true vs reco) vs pT,lead,MC
   TH2F* fCorrelationMultiplicity; // number of mc particls vs reco particles (for pT > 0.5 GeV/c)
   
-  TH2F* fEventCount;            // event count as function of step, event type (plus additional step -1 for all events without vertex range even in MC)
+  TH2F* fEventCount;            // event count as function of step, (for pp: event type (plus additional step -1 for all events without vertex range even in MC)) (for PbPb: centrality)
   TH3F* fEventCountDifferential;// event count as function of leading pT, step, event type
   
   TH1F* fVertexContributors;    // number of contributors to the vertex
   TH1F* fCentralityDistribution; // distribution of the variable used for centrality selection
   
+  TH3F* fITSClusterMap;          // its cluster map vs centrality vs pT
+  
   Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
   
-  ClassDef(AliUEHistograms, 4)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 6)  // underlying event histogram container
 };
 
 #endif
